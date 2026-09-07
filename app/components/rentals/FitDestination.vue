@@ -77,7 +77,7 @@
     </div>
     <p class="field-hint">{{ t('targetHint') }}</p>
     <VDialog v-model="mapOpen" max-width="720" scrollable>
-      <VCard :title="t('map')">
+      <VCard :title="t('map')" data-clarity-mask="true">
         <VCardText>
           <RentalsFitPointMap v-if="mapOpen" @select="selectMap" />
         </VCardText>

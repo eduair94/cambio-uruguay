@@ -395,14 +395,57 @@ defineOgImageComponent('Cambio', {
   title: 'Tu alquiler ideal',
   subtitle: 'Presupuesto, trabajo y estudio · Uruguay',
 })
-useHead({
-  link: [
+const canonical = computed(
+  () => 'https://cambio-uruguay.com' + localePath('/alquiler-ideal-uruguay')
+)
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonical.value }],
+  script: [
     {
-      rel: 'canonical',
-      href: 'https://cambio-uruguay.com' + localePath('/alquiler-ideal-uruguay'),
+      type: 'application/ld+json',
+      // Only the public tool belongs in structured data, never a personal scenario or its results.
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'WebApplication',
+            '@id': `${canonical.value}#application`,
+            name: t('title'),
+            description: t('seo'),
+            applicationCategory: 'LifestyleApplication',
+            operatingSystem: 'Web',
+            isAccessibleForFree: true,
+            inLanguage: locale.value,
+            url: canonical.value,
+            publisher: {
+              '@type': 'Organization',
+              name: 'Cambio Uruguay',
+              url: 'https://cambio-uruguay.com',
+            },
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com' + localePath('/'),
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: t('explore'),
+                item: 'https://cambio-uruguay.com' + localePath('/alquileres-uruguay'),
+              },
+              { '@type': 'ListItem', position: 3, name: t('title'), item: canonical.value },
+            ],
+          },
+        ],
+      }).replace(/</g, '\\u003c'),
     },
   ],
-})
+}))
 type DraftPerson = Omit<FitPerson, 'destinations'> & { destinations: DraftDestination[] }
 type DraftInput = Omit<RentalFitInput, 'people'> & { people: DraftPerson[] }
 let serial = 0

@@ -536,6 +536,8 @@ test('manual map selection requires confirmation and API errors keep the entered
     .getByRole('button', { name: 'Agregar trabajo, estudio u otro lugar', exact: true })
     .click()
   await page.getByRole('button', { name: 'Elegir en el mapa', exact: true }).click()
+  // Vuetify teleports this dialog outside the page's masked household container.
+  await expect(page.getByRole('dialog').locator('[data-clarity-mask="true"]')).toBeVisible()
   const dialog = page.getByRole('dialog')
   await expect(dialog.locator('.leaflet-container')).toBeVisible()
   await expect(dialog.getByRole('button', { name: 'Confirmar punto', exact: true })).toBeDisabled()
