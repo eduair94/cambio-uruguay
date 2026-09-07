@@ -148,6 +148,7 @@ export function createRentalGeocoder(
               raw.filter(row => rentalGeocodeMatchesScope(row, scope)),
               query
             )
+            if (scope.suggested) items = items.map(item => ({ ...item, suggested: true }))
           }
         } else {
           let raw = await fetchCandidates(query.text)

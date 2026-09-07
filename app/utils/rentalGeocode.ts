@@ -4,6 +4,7 @@ export interface RentalGeocodeItem {
   label: string
   lat: number
   lng: number
+  suggested?: true
 }
 export interface RentalGeocodeResponse {
   items: RentalGeocodeItem[]
@@ -86,9 +87,24 @@ interface RentalGeocodeScope {
   departmentId: number
   firstStreet: string
   secondStreet: string
+  suggested?: true
 }
 
 const name = (value: string) => fold(value.trim().replace(/\s+/g, ' '))
+/** A provider-supplied name may suggest one adjacent letter swap, never invented spelling. */
+function hasSingleLetterTransposition(entered: string, native: string): boolean {
+  if (entered.length !== native.length || (entered.match(/\p{L}/gu)?.length ?? 0) < 6) return false
+  let at = 0
+  while (at < entered.length && entered[at] === native[at]) at++
+  return (
+    at + 1 < entered.length &&
+    /\p{L}/u.test(entered[at]!) &&
+    /\p{L}/u.test(entered[at + 1]!) &&
+    entered[at] === native[at + 1] &&
+    entered[at + 1] === native[at] &&
+    entered.slice(at + 2) === native.slice(at + 2)
+  )
+}
 const nativeId = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value > 0
 const scopeText = (value: unknown): value is string =>
@@ -110,17 +126,23 @@ export function rentalGeocodeUniqueScope(
     raw.length >= RENTAL_GEOCODE_CANDIDATE_LIMIT
   )
     return null
+  const rows = raw.filter(
+    (row): row is Record<string, unknown> & { nomVia: string } =>
+      row &&
+      typeof row === 'object' &&
+      !Array.isArray(row) &&
+      row.type === 'CALLE' &&
+      scopeText(row.nomVia)
+  )
+  const entered = name(streets.firstStreet)
+  const exact = rows.filter(row => name(row.nomVia) === entered)
+  const suggested = !exact.length
+  const selected = exact.length
+    ? exact
+    : rows.filter(row => hasSingleLetterTransposition(entered, name(row.nomVia)))
   const candidates = new Map<string, RentalGeocodeScope>()
-  for (const value of raw) {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) continue
-    const row = value as Record<string, unknown>
-    if (
-      row.type !== 'CALLE' ||
-      !scopeText(row.nomVia) ||
-      name(row.nomVia) !== name(streets.firstStreet)
-    )
-      continue
-    // An exact-name row with missing native scope is unresolved, not permission to pick another.
+  for (const row of selected) {
+    // An unresolved matching row cannot be ignored to pick a different native street or city.
     if (
       row.state !== 1 ||
       row.stateMsg !== '' ||
@@ -131,7 +153,7 @@ export function rentalGeocodeUniqueScope(
       !scopeText(row.departamento)
     )
       return null
-    const key = `${row.idCalle}:${row.idLocalidad}:${row.idDepartamento}:${name(row.localidad)}:${name(row.departamento)}`
+    const key = `${row.idCalle}:${row.idLocalidad}:${row.idDepartamento}:${name(row.localidad)}:${name(row.departamento)}:${name(row.nomVia)}`
     candidates.set(key, {
       text: `${row.nomVia.trim()} esquina ${streets.secondStreet}, ${row.localidad.trim()}, ${row.departamento.trim()}`,
       streetId: row.idCalle,
@@ -139,6 +161,7 @@ export function rentalGeocodeUniqueScope(
       departmentId: row.idDepartamento,
       firstStreet: row.nomVia.trim(),
       secondStreet: streets.secondStreet,
+      ...(suggested ? { suggested: true as const } : {}),
     })
   }
   return candidates.size === 1 ? [...candidates.values()][0]! : null

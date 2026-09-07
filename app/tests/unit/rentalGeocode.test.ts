@@ -210,7 +210,7 @@ describe('unscoped intersections use native street evidence', () => {
     }
   )
 
-  it('accepts accent/case/spacing normalization but never a fuzzy street match', () => {
+  it('accepts accent/case/spacing normalization while retaining unique native scope', () => {
     expect(rentalGeocodeUniqueScope([{ ...street, nomVia: ' HÓCQUART ' }], query)).not.toBeNull()
     expect(rentalGeocodeUniqueScope([street, street], query)).not.toBeNull()
   })

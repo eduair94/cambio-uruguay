@@ -17,6 +17,7 @@ export const rentalMessages = {
     referenceAddressExample: 'Hocquart y Democracia, Montevideo',
     findAddress: 'Buscar dirección',
     addressResults: 'Direcciones encontradas',
+    addressSuggestion: '¿Buscabas esta dirección? Revisá la sugerencia antes de elegirla.',
     addressNotFound:
       'No encontramos esa dirección. Agregá la localidad o elegí el punto en el mapa.',
     addressError: 'No pudimos buscar la dirección. Volvé a intentar o elegí el punto en el mapa.',
@@ -244,6 +245,7 @@ export const rentalMessages = {
     referenceAddressExample: 'Hocquart y Democracia, Montevideo',
     findAddress: 'Find address',
     addressResults: 'Matching addresses',
+    addressSuggestion: 'Did you mean this address? Review the suggestion before selecting it.',
     addressNotFound: 'Address not found. Add the town or choose a point on the map.',
     addressError: 'We could not search this address. Try again or choose a point on the map.',
     addressBusy: 'Address search is busy. Wait a moment and try again.',
@@ -466,6 +468,7 @@ export const rentalMessages = {
     referenceAddressExample: 'Hocquart y Democracia, Montevideo',
     findAddress: 'Buscar endereço',
     addressResults: 'Endereços encontrados',
+    addressSuggestion: 'Você quis dizer este endereço? Confira a sugestão antes de selecionar.',
     addressNotFound:
       'Endereço não encontrado. Acrescente a localidade ou escolha um ponto no mapa.',
     addressError:

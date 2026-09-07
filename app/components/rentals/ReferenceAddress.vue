@@ -26,6 +26,9 @@
     <p v-else-if="searched && !pending && !items.length" role="status">
       {{ t('addressNotFound') }}
     </p>
+    <p v-if="items.some(item => item.suggested)" role="status">
+      {{ t('addressSuggestion') }}
+    </p>
     <ul v-if="items.length" :aria-label="t('addressResults')">
       <li v-for="item in items" :key="`${item.lat}:${item.lng}`">
         <button type="button" @click="select(item)">{{ item.label }}</button>
@@ -44,12 +47,9 @@
 
 <script setup lang="ts">
 import { rentalMessages } from '~/utils/rentalMessages'
+import type { RentalGeocodeItem } from '~/utils/rentalGeocode'
 
-interface AddressPoint {
-  label: string
-  lat: number
-  lng: number
-}
+type AddressPoint = RentalGeocodeItem
 const emit = defineEmits<{ select: [point: AddressPoint]; edit: [] }>()
 const { t } = useI18n({ useScope: 'local', messages: rentalMessages })
 const address = ref('')

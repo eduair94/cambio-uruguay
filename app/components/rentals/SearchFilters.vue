@@ -680,9 +680,7 @@ function clearNeighborhoods() {
   grid-column: 1 / -1;
 }
 .rental-search .rental-search__primary {
-  margin-top: 0;
   border-top: 0;
-  padding-top: 0;
 }
 .rental-search__group {
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));

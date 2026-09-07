@@ -71,8 +71,9 @@ the two-request budget instead resolves the first street and then its actual cro
 
 1. `candidates?q=Hocquart&limit=5` returns the unique exact-name native street 8294, locality 3180,
    department 1, with explicit locality/department names `MONTEVIDEO`. Its zero coordinates are
-   never used. The response must contain fewer than five rows; a capped, ambiguous, malformed or
-   fuzzy-name result cannot select a city for the user.
+   never used. The response must contain fewer than five rows; a capped, ambiguous or malformed
+   result cannot select a city for the user. Exact names take priority over the limited native
+   correction described below.
 2. `candidates?q=HOCQUART esquina Democracia, MONTEVIDEO, MONTEVIDEO&limit=5` returns the measured
    crossing. Its native locality/department and street ID must agree, as must both street names
    and their ID orientation. It still must be a successful, non-approximate `ESQUINA` point.
@@ -81,6 +82,19 @@ This supports entering exactly `Hocquart y Democracia` without first filtering r
 Montevideo. There is no default city: ambiguous names still need a locality or a chosen map point.
 A street/locality centroid is never substituted for an unresolved crossing. Every suggestion
 requires user selection and map confirmation; there is no geocoder request on each keystroke.
+
+Native spelling suggestions use the same two requests. On 2026-09-07, the exact user input
+`candidates?q=Hoqcuart&limit=5` returned the unique native street `HOCQUART`, ID 8294, locality
+3180 and department 1, with valid state and scope. When no exact-name row exists, a name with at
+least six letters may match one adjacent letter transposition. Numbers, spaces and the rest of the
+name must remain unchanged; deletions, insertions and substitutions are not accepted. This is a
+comparison against names the official service returned, never a guessed correction or city.
+The selected correction must have one complete native street/scope, in a non-truncated response.
+Any matching row with unresolved state/scope vetoes the suggestion. The second response must still
+prove both street names, their native IDs and an exact intersection in that same scope. Only then
+does the result carry `suggested: true`; exact searches omit this field. The UI identifies the
+suggestion and requires the existing selection and map confirmation. Property identity matching,
+rental coordinates and filter criteria are unaffected. No additional endpoint or request is used.
 
 Upstream requests use one fixed HTTPS host/path, encoded query parameters, no redirects and an
 8-second timeout per request (at most two requests, no automatic retry). This allows occasional
