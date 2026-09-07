@@ -44,6 +44,23 @@ import {
   loadRegionalSnapshot,
 } from "./classes/regional/store";
 import { buildSourcesReport, findSourceReport } from "./classes/regional/sources_report";
+import {
+  BASKET_ITEMS,
+  BASKET_PINNED_AT,
+  BASKET_VERSION,
+  MIN_COVERAGE,
+  MIN_QUALIFIED_STORES,
+} from "./classes/precios/basket";
+import { withinPlausibleRange } from "./classes/precios/geo";
+import { cheapestRankable, coverageNote, ratioNote, whyNotRankable } from "./classes/precios/present";
+import {
+  loadArticleDetail,
+  loadArticlesWithStats,
+  loadChanges as loadPrecioChanges,
+  loadLatestBasketDaily,
+  loadLatestStatDay,
+  loadStoresNear,
+} from "./classes/precios/store";
 import { REGIONAL_COUNTRY_CURRENCY } from "./classes/regional/types";
 import { origins } from "./classes/origins";
 import { redisCache } from "./classes/redis_cache";
@@ -901,6 +918,262 @@ const main = async () => {
       };
     }
     return { ...result, market: market ?? null, generatedAt: snapshot.generatedAt ?? null };
+  });
+
+  /**
+   * @openapi
+   * /precios/articles:
+   *   get:
+   *     tags: [Precios]
+   *     summary: Catalogo de articulos del SIPC con las estadisticas del dia
+   *     description: |
+   *       Los precios son los del SIPC (Sistema de Informacion de Precios al
+   *       Consumidor, MEF / Area Defensa del Consumidor), la fuente oficial:
+   *       `precios.gub.uy` responde 301 hacia `www.precios.uy`.
+   *
+   *       Lo que agrega esta API es el HISTORICO, que el origen no guarda: su
+   *       API devuelve solo el precio de hoy con su fecha y no tiene endpoint de
+   *       serie.
+   *     responses:
+   *       200:
+   *         description: Catalogo con minimo, mediana y maximo nacional por articulo
+   */
+  server.getJson("precios/articles", async (): Promise<any> => {
+    return redisCache.getOrSet(
+      "precios:articles",
+      async () => {
+        const day = await loadLatestStatDay();
+        if (!day) return { day: null, count: 0, basket: null, articles: [] };
+        const articles = await loadArticlesWithStats(day);
+        return {
+          day,
+          count: articles.length,
+          basket: {
+            version: BASKET_VERSION,
+            pinnedAt: BASKET_PINNED_AT,
+            items: BASKET_ITEMS.length,
+            minCoverage: MIN_COVERAGE,
+            minStoresPerScope: MIN_QUALIFIED_STORES,
+          },
+          articles,
+        };
+      },
+      900
+    );
+  });
+
+  /**
+   * @openapi
+   * /precios/article/{id}:
+   *   get:
+   *     tags: [Precios]
+   *     summary: Precio de un articulo local por local, con su antiguedad
+   *     description: |
+   *       Cada fila trae la FECHA que declara el origen. El 94 % son del dia o
+   *       del anterior, pero hay gondolas que no se actualizan desde hace
+   *       semanas, asi que `freshness` viene en cada fila y **`cheapest` nunca
+   *       es una fila `stale` ni una marcada `suspect`** - ordenar por precio a
+   *       secas sube al titular la gondola mas vieja o el error de carga.
+   *
+   *       `promo: true` significa que el origen declaro la celda como
+   *       `oferta - $N`: es 1 de cada 10 filas y es lo que se paga hoy, asi que
+   *       si puede encabezar.
+   *     parameters:
+   *       - { name: id, in: path, required: true, schema: { type: integer } }
+   *     responses:
+   *       200:
+   *         description: Filas por local, estadisticas del dia y serie propia
+   */
+  server.getJson("precios/article/:id", async (req: Request): Promise<any> => {
+    const articleId = Number(req.params.id);
+    if (!Number.isInteger(articleId) || articleId < 1) {
+      throw new ValidationError(
+        "Invalid id parameter",
+        createValidationError("id", String(req.params.id), [], "Use an article id from /precios/articles")
+      );
+    }
+    return redisCache.getOrSet(
+      `precios:article:${articleId}`,
+      async () => {
+        const day = (await loadLatestStatDay()) || new Date().toISOString().slice(0, 10);
+        const detail = await loadArticleDetail(articleId, day);
+        return {
+          day,
+          article: detail.article,
+          stats: detail.stats,
+          series: detail.series,
+          cheapest: cheapestRankable(detail.rows),
+          rows: detail.rows.map((row: any) => ({ ...row, blockedReason: whyNotRankable(row) })),
+        };
+      },
+      900
+    );
+  });
+
+  /**
+   * @openapi
+   * /precios/basket:
+   *   get:
+   *     tags: [Precios]
+   *     summary: Canasta propia, nivel de precios por departamento y por cadena
+   *     description: |
+   *       La canasta esta PINNEADA y versionada, y se calcula solo con
+   *       observaciones reales.
+   *
+   *       El orden es por canasta EMPAREJADA (`ratio`): lo que el local cobra
+   *       por los articulos que declara, contra la mediana nacional de esos
+   *       mismos articulos. No por el total, porque el total baja cuando al
+   *       local le FALTAN articulos y no cuando es barato - medido, la
+   *       correlacion entre cobertura y total crudo es 0,842 y de los diez mas
+   *       baratos por total solo uno sigue estando entre los diez mas baratos
+   *       por canasta emparejada.
+   *
+   *       Un local con menos del 70 % de la canasta no se rankea, y un
+   *       departamento o cadena con menos de 5 locales calificados tampoco:
+   *       dice `qualified: false`. No se publica ningun total completado.
+   *     responses:
+   *       200:
+   *         description: Canasta del ultimo dia, con ambitos y veredictos de gondola
+   */
+  server.getJson("precios/basket", async (): Promise<any> => {
+    return redisCache.getOrSet(
+      "precios:basket",
+      async () => {
+        const doc = await loadLatestBasketDaily();
+        if (!doc) return { day: null, basketVersion: null, scopes: [], cheapestStores: [] };
+        return {
+          ...doc,
+          nationalRatioNote: ratioNote(doc.nationalRatio),
+          cheapestStores: doc.cheapestStores.map((store) => ({
+            ...store,
+            ratioNote: ratioNote(store.ratio),
+            coverageNote: coverageNote(store.coverage),
+          })),
+        };
+      },
+      900
+    );
+  });
+
+  /**
+   * @openapi
+   * /precios/stores:
+   *   get:
+   *     tags: [Precios]
+   *     summary: Locales que declaran precios, dentro de un radio
+   *     description: |
+   *       Los 18 locales del catalogo que no traen coordenada NO pueden entrar
+   *       en una consulta por radio: sin coordenada no hay distancia.
+   *     parameters:
+   *       - { name: near, in: query, required: true, schema: { type: string, example: "-34.9011,-56.1645" } }
+   *       - { name: r, in: query, schema: { type: number, default: 5 } }
+   *     responses:
+   *       200:
+   *         description: Locales ordenados por distancia
+   */
+  server.getJson("precios/stores", async (req: Request): Promise<any> => {
+    const near = req.query.near === undefined ? "" : String(req.query.near).trim();
+    if (!near) {
+      throw new ValidationError(
+        "Missing near parameter",
+        createValidationError("near", "", [], "Use near=lat,lon - for example near=-34.9011,-56.1645")
+      );
+    }
+    const parts = near.split(",");
+    const lat = Number(parts[0]);
+    const lon = Number(parts[1]);
+    if (!withinPlausibleRange(lat, lon)) {
+      throw new ValidationError(
+        "Invalid near parameter",
+        createValidationError("near", near, [], "Use near=lat,lon with a coordinate inside Uruguay")
+      );
+    }
+    let km = 5;
+    if (req.query.r !== undefined) {
+      km = Number(req.query.r);
+      if (!Number.isFinite(km) || km <= 0 || km > 50) {
+        throw new ValidationError(
+          "Invalid r parameter",
+          createValidationError("r", String(req.query.r), [], "Radius must be a number between 0 and 50 km")
+        );
+      }
+    }
+    return redisCache.getOrSet(
+      `precios:stores:${lat.toFixed(4)}:${lon.toFixed(4)}:${km}`,
+      async () => {
+        const stores = await loadStoresNear(lat, lon, km);
+        return { near: { lat, lon }, radiusKm: km, count: stores.length, stores };
+      },
+      900
+    );
+  });
+
+  /**
+   * @openapi
+   * /precios/changes:
+   *   get:
+   *     tags: [Precios]
+   *     summary: Cada cambio de precio, sin umbral minimo
+   *     description: |
+   *       Es la mitad irreconstruible del archivo: la fila diaria se sobrescribe,
+   *       asi que un movimiento solo existe si se escribio cuando paso. Se
+   *       registra toda diferencia contra la lectura anterior, por chica que sea.
+   *     parameters:
+   *       - { name: articleId, in: query, schema: { type: integer } }
+   *       - { name: storeId, in: query, schema: { type: integer } }
+   *       - { name: day, in: query, schema: { type: string, format: date } }
+   *       - { name: limit, in: query, schema: { type: integer, default: 500 } }
+   *     responses:
+   *       200:
+   *         description: Movimientos de precio, del mas reciente al mas viejo
+   */
+  server.getJson("precios/changes", async (req: Request): Promise<any> => {
+    const intParam = (raw: unknown, name: string): number | undefined => {
+      if (raw === undefined || String(raw).trim() === "") return undefined;
+      const value = Number(raw);
+      if (!Number.isInteger(value) || value < 1) {
+        throw new ValidationError(
+          `Invalid ${name} parameter`,
+          createValidationError(name, String(raw), [], `${name} must be a positive integer`)
+        );
+      }
+      return value;
+    };
+    const articleId = intParam(req.query.articleId, "articleId");
+    const storeId = intParam(req.query.storeId, "storeId");
+    let day: string | undefined;
+    if (req.query.day !== undefined && String(req.query.day).trim() !== "") {
+      day = String(req.query.day).trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+        throw new ValidationError(
+          "Invalid day parameter",
+          createValidationError("day", day, [], "Use a YYYY-MM-DD date")
+        );
+      }
+    }
+    let limit = 500;
+    if (req.query.limit !== undefined) {
+      limit = Number(req.query.limit);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 5000) {
+        throw new ValidationError(
+          "Invalid limit parameter",
+          createValidationError("limit", String(req.query.limit), [], "Limit must be an integer between 1 and 5000")
+        );
+      }
+    }
+    return redisCache.getOrSet(
+      `precios:changes:${articleId ?? "all"}:${storeId ?? "all"}:${day ?? "all"}:${limit}`,
+      async () => {
+        const changes = await loadPrecioChanges({ articleId, storeId, day, limit });
+        return {
+          count: changes.length,
+          newest: changes.length ? changes[0].observedAt : null,
+          oldest: changes.length ? changes[changes.length - 1].observedAt : null,
+          changes,
+        };
+      },
+      300
+    );
   });
 
   /**

@@ -2142,6 +2142,27 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/precios-de-supermercado-uruguay',
+        labelKey: 'nav.preciosSupermercado',
+        icon: 'mdi-cart-outline',
+        // El barrido corre una vez por dia y el contenido cambia con el: mismo
+        // caso que alquileres, por eso `daily`.
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'precios supermercado uruguay',
+          'precios de supermercados',
+          'comparar precios supermercado',
+          'canasta basica uruguay',
+          'donde esta mas barato',
+          'precios uruguay',
+          'sipc precios',
+          'supermercado mas barato uruguay',
+          'precio del aceite uruguay',
+        ],
+      },
+      {
         to: '/alquileres-uruguay',
         labelKey: 'nav.alquileres',
         icon: 'mdi-home-city-outline',
@@ -2851,6 +2872,7 @@ export const UNLISTED_ROUTES: ReadonlyArray<{ to: string; priority: number; chan
  */
 export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freeze({
   'alquileres/[key]': 'consumer',
+  'precio/[slug]': 'consumer',
   'venta-viviendas-uruguay/[key]': 'consumer',
   'inmobiliarias-uruguay/[key]': 'consumer',
   'blog/[slug]': 'news',

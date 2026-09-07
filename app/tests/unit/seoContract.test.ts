@@ -153,6 +153,10 @@ const NOINDEXED = [
   'offline.vue',
   // Index the opportunity directory itself; query combinations opt out like rental filters.
   'oportunidades-inmobiliarias-uruguay.vue',
+  // La ficha por articulo del SIPC es INDEXABLE cuando la muestra alcanza; opta
+  // por salir solo cuando menos de 30 locales del pais declaran ese articulo,
+  // porque ahi la pagina no puede prometer la comparacion que promete su titulo.
+  'precio/[slug].vue',
   // Sale dossiers use the same reviewed, fresh pilot gate as their sitemap entries.
   'venta-viviendas-uruguay/[key].vue',
   'widget.vue',

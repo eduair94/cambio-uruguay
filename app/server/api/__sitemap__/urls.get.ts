@@ -14,6 +14,7 @@ import { importCategoryIndexSlugs } from '../../../utils/importCategoryIndex'
 import { hubSlugs } from '../../../utils/guideHubs'
 import { guideSlugs } from '../../../utils/guides'
 import { listIndicatorSlugs } from '../../../utils/indicators'
+import { PRECIOS_MIN_OBSERVATIONS, preciosSlug } from '../../../utils/preciosCatalog'
 import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
 import { toolSlugs } from '../../../utils/tools'
 import { videoTopicSlugs } from '../../../utils/videoTopics'
@@ -430,6 +431,32 @@ export default defineEventHandler(async _event => {
       addUrlsForAllLocales(`/casa/${origin}`, 0.7, 'daily', today)
     )
 
+    // --- /precio/<slug>: un articulo del SIPC por pagina --------------------
+    // Los precios viven en la Mongo del BACKEND, no en la del app, asi que esto
+    // va por la API publica y no por un modelo como el resto de este archivo.
+    // Solo entran los articulos con muestra suficiente: uno que casi ningun
+    // local declara tiene su pagina (alguien puede llegar por un enlace) pero
+    // se declara noindex, y mandar al sitemap una URL noindex es pedirle a
+    // Google que ignore lo que le acabamos de ofrecer.
+    let precioArticleSlugs = 0
+    try {
+      const apiBase = useRuntimeConfig().apiBaseServer
+      const catalogue = await $fetch<{ articles?: Array<{ name: string; n?: number }> }>(
+        `${apiBase}/precios/articles`,
+        { timeout: 15000 }
+      )
+      for (const article of catalogue?.articles ?? []) {
+        if ((article.n ?? 0) < PRECIOS_MIN_OBSERVATIONS) continue
+        const slug = preciosSlug(article.name)
+        if (!slug) continue
+        addUrlsForAllLocales(`/precio/${slug}`, 0.6, 'daily', today)
+        precioArticleSlugs++
+      }
+    } catch (error) {
+      // Un catalogo caido recorta el sitemap, no lo rompe.
+      console.warn('[sitemap] no se pudo listar los articulos de precios:', error)
+    }
+
     console.log(
       `Generated ${urls.length} sitemap URLs:`,
       `\n- Static + catalogue: ${staticCount} URLs`,
@@ -438,6 +465,7 @@ export default defineEventHandler(async _event => {
       `\n- Sucursales origins: ${sucursalesOrigins.size} routes`,
       `\n- Sucursales location pairs: ${sucursalesLocationPairs.size} routes`,
       `\n- Dolar department pages: ${departmentSlugs.size} routes`,
+      `\n- Precio article pages: ${precioArticleSlugs} routes`,
       `\n- Cotizacion currency pages: ${currencySlugs.length} routes`,
       `\n- Casa pages: ${sucursalesOrigins.size} routes`,
       `\n- Total across ${LOCALES.length} locales: ${urls.length} URLs`
