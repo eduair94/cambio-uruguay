@@ -188,6 +188,7 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('descriptio
 .agencies-page {
   max-width: 1080px;
   padding: 16px;
+  overflow-wrap: anywhere;
 }
 .agencies-page h1 {
   font-size: clamp(1.55rem, 3vw, 2.15rem);
