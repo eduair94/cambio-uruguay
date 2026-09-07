@@ -71,12 +71,25 @@ function priceBounds(value: string): [number, number] | null {
   return min < max ? [min, max] : null;
 }
 
+/** Counts alone cannot prove coverage: overlapping intervals can hide a gap elsewhere.
+ * Shared endpoints are allowed, but the interiors must not overlap and must span the parent. */
+function contiguousPrices(values: string[], parentValue?: string): boolean {
+  const parent = parentValue ? priceBounds(parentValue) : [0, Infinity];
+  const ranges = values.map(priceBounds);
+  if (!parent || ranges.some(range => !range)) return false;
+  const sorted = (ranges as Array<[number, number]>).sort((a, b) => a[0] - b[0]);
+  return sorted[0]?.[0] === parent[0] && sorted[sorted.length - 1]?.[1] === parent[1] &&
+    sorted.every((range, index) => index === 0 || sorted[index - 1]![1] === range[0]);
+}
+
 /** Partition only using native values actually offered for THIS category/current slice.
  * Boundaries can overlap (e.g. 25,000); global advert-ID deduplication handles that overlap.
- * Facets need not cover missing locations. The caller retains parent cards and reports partial. */
-export function mlPartitions(page: MLSearchEvidence, filters: MLFilters): MLFilters[] {
+ * Prefer bounded, contiguous price slices when locations leave a remainder. Otherwise preserve
+ * the location-first fallback; the caller retains parent cards and still reports partial. */
+export function mlPartitions(page: MLSearchEvidence, filters: MLFilters, maxPartitionSize = 120 * ML_PAGE_SIZE): MLFilters[] {
   const total = mlCount(page.paging?.total);
   if (!total || !Array.isArray(page.available_filters)) return [];
+  let fallback: MLFilters[] = [];
   for (const id of ["state", "city", "neighborhood", "price"]) {
     if (id !== "price" && filters[id]) continue;
     const facet = page.available_filters.find(filter => filter?.id === id);
@@ -93,10 +106,21 @@ export function mlPartitions(page: MLSearchEvidence, filters: MLFilters): MLFilt
       candidates.set(value, count);
     }
     if (candidates.size > 1) {
-      return [...candidates].sort((a, b) => b[1] - a[1]).map(([value]) => ({ ...filters, [id]: value }));
+      const children = [...candidates].sort((a, b) => b[1] - a[1]).map(([value]) => ({ ...filters, [id]: value }));
+      if (!fallback.length) {
+        fallback = children;
+        if (mlPartitionRemainder(page, filters, fallback) === 0) return fallback;
+      // A duplicate or malformed option must not disappear and make the remaining sum look complete.
+      } else if (id === "price" && facet?.values?.filter(value => !filters.price || value?.id !== filters.price).length === candidates.size &&
+        Number.isFinite(maxPartitionSize) && maxPartitionSize > 0 &&
+        [...candidates.values()].every(count => count <= maxPartitionSize) &&
+        mlPartitionRemainder(page, filters, children) === 0 &&
+        contiguousPrices([...candidates.keys()], filters.price)) {
+        return children;
+      }
     }
   }
-  return [];
+  return fallback;
 }
 
 export function mlBoundedNumber(value: unknown, fallback: number, min: number, max: number): number {

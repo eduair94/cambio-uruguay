@@ -22,6 +22,53 @@ y su bloque `coverage`. No había anuncios con pertenencia duplicada entre propi
 pública de diez días; no confirma que siga disponible. No se renuevan fechas para aumentar
 estas cifras. La poda histórica de 21 días es otra regla y no determina el inventario visible.
 
+## Resultado en producción
+
+El barrido desplegado (`7581e86`) terminó el 7 de septiembre a las 11:52 UTC, con salida 0,
+44.638 anuncios aceptados y 44.636 propiedades escritas en 45 minutos. A las 16:36 UTC,
+después de las actualizaciones horarias normales, el índice y la API coincidían:
+
+| Fuente | Avisos visibles antes, 10:50 UTC | Avisos visibles después, 16:36 UTC | Variación |
+|---|---:|---:|---:|
+| Mercado Libre | 7.298 | 23.688 | +16.390 |
+| InfoCasas | 16.468 | 16.494 | +26 |
+| Facebook Marketplace | 1.912 | 1.968 | +56 |
+| Casasweb | 2.649 | 2.660 | +11 |
+| Inmuebles El País | 5.940 | 5.957 | +17 |
+| Total de anuncios | 34.267 | 50.767 | +16.500 |
+
+La web mostraba **50.765 fichas**, porque dos grupos reúnen un anuncio de cada fuente.
+El inventario histórico almacenaba 53.344 anuncios. No había IDs de anuncios asignados a
+múltiples propiedades; esto no acredita que todas las fichas sean viviendas físicas distintas.
+Las variaciones incluyen la actividad del mercado y las actualizaciones horarias posteriores,
+no sólo los anuncios incorporados durante el barrido manual.
+
+La misma muestra de 684 IDs pasó de 302 a 679 visibles: se recuperaron los 365 faltantes de
+Mercado Libre, sus siete avisos archivados, la chacra de Casasweb y cuatro de los nueve
+candidatos faltantes de Facebook. Los cinco restantes de Facebook pasan el parser y la
+agrupación con sus tarjetas capturadas a las 10:34 UTC; no se guardaron las tarjetas crudas
+del barrido posterior, así que no se puede atribuir su ausencia con certeza a resultados
+dinámicos, cambios de contenido o ausencia en la respuesta. No se importó esa captura antigua
+como si fuera una lectura actual.
+
+Las comprobaciones públicas adicionales verificaron 11 condiciones con 13 GET (filtros,
+costos, mapa, fichas y campos permitidos) y tres GET de cobertura: todos devolvieron 200.
+La cobertura global permanece igual al aplicar un filtro o buscar un texto sin resultados.
+El último metadato `full` permaneció disponible después de las actualizaciones horarias.
+
+### Segunda revisión de la partición de Mercado Libre
+
+El primer barrido completó su cola principal: sus 1.430 solicitudes totales quedaron debajo
+del límite principal de 1.500 y alcanzó la etapa posterior de mascotas/particulares. Por eso
+el contador agregado de 70 tareas pendientes no representaba 70 segmentos principales sin
+leer. El registro ahora distingue catálogo, particulares y mascotas.
+
+Se detectó además una elección mejor de partición: los estados de casas explicaban 4.393 de
+4.418 resultados, mientras sus tres franjas nativas de precio explicaban los 4.418, con un
+máximo de 1.538 por franja. Se prefieren rangos completos y contiguos que caben en el límite
+de páginas antes de una división geográfica con resto. Cada respuesta sigue validando sus
+filtros y cada anuncio su categoría, operación y precio; `complete` permanece en `false`.
+
 ## Comprobaciones directas
 
 - **Mercado Libre:** el breadcrumb del portal identifica `MLU1473` como
@@ -59,6 +106,30 @@ estas cifras. La poda histórica de 21 días es otra regla y no determina el inv
 - **Gallito:** la página pública puede aparecer en buscadores, pero la petición identificada
   a `https://www.gallito.com.uy/inmuebles/casas/alquiler` volvió HTTP 403. No se incorporó una
   integración ni se intentó sortear esa respuesta. No está incluido en las cifras anteriores.
+
+## Directorios todavía no integrados
+
+Una revisión adicional de doce peticiones identificadas (11:09–11:12 UTC) encontró dos
+candidatos que merecen una evaluación propia. No se sumaron sus totales a la cobertura:
+
+- [BuscandoCasa](https://www.buscandocasa.com/bc/0_promocion.asp?promo=1) devuelve 40 últimos
+  ingresos y fichas propias en `ver.uy`, con alquiler mensual, gastos comunes y garantías.
+  Las fechas de esa ventana van de septiembre de 2026 a julio de 2025. No se comprobó
+  paginación nacional, actualización de cada ficha ni una señal fiable de baja.
+- [GoPunta](https://www.gopunta.uy/alquileres/) devuelve dos páginas con 50 IDs distintos
+  cada una y un total anunciado de 3.153. Tiene fichas de alquiler anual, pero también
+  resultados con condiciones temporarias. Una ficha publica la vigencia inválida
+  `30/11/-0001`: debe quedar desconocida, nunca convertirse en fecha de publicación.
+  Sus enlaces se resuelven contra el `<base href>` del HTML. Falta comprobar la última
+  página, las bajas y cuánto inventario aporta respecto de las fuentes ya integradas.
+- [BienesOnline](https://www.bienesonline.uy/) redirige sus resultados a `bienesonline.ai`;
+  no se validó el destino dentro de esta muestra. Properati falló por TLS desde este entorno,
+  lo que no prueba que el portal haya cerrado. [Trovit](https://casas.trovit.com.uy/) agrega
+  otros portales y su `robots.txt` excluye detalles, redirecciones y RSS; no se leyeron esas rutas.
+
+No hay un feed estable ni un ciclo de bajas demostrado para estas candidatas. Una futura
+integración debe conservar identidad por anuncio y última lectura propia, probar la elegibilidad
+mensual y medir el aporte adicional antes de anunciar una ampliación de cobertura.
 
 ## Auditoría reproducible
 
