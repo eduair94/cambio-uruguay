@@ -82,8 +82,11 @@ Montevideo. There is no default city: ambiguous names still need a locality or a
 A street/locality centroid is never substituted for an unresolved crossing. Every suggestion
 requires user selection and map confirmation; there is no geocoder request on each keystroke.
 
-Upstream requests use one fixed HTTPS host/path, encoded query parameters, no redirects and a
-4-second timeout per request. Responses are bounded at 128 KiB. No API key, browser identity,
+Upstream requests use one fixed HTTPS host/path, encoded query parameters, no redirects and an
+8-second timeout per request (at most two requests, no automatic retry). This allows occasional
+provider latency beyond the original 4-second deadline; it does not treat all upstream failures
+as timeouts. A transport regression accepts a valid response at six seconds and aborts a hung request
+at eight seconds. Responses are bounded at 128 KiB. No API key, browser identity,
 private property location, login or third-party account is involved.
 
 Process-local safeguards: identical pending searches coalesce; at most four different searches run
@@ -95,6 +98,10 @@ and the app does not log submitted address text.
 
 Invalid input returns 400, capacity/rate limits 429 with a retry delay, and upstream failures 503.
 A timeout or invalid payload never appears as a successful empty address search.
+
+Failed lookups emit only an allowlisted stage, failure category, elapsed milliseconds and an
+upstream HTTP status when relevant. Submitted text, request URLs, client identifiers, raw error
+messages and stacks are excluded. A failed diagnostic reporter cannot change the public response.
 
 ## Validation
 
