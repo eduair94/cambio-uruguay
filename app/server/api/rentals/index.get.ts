@@ -66,10 +66,11 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
       RentalListingModel.aggregate([
         ...publicStages,
         ...offerStages,
+        // Rich source evidence must not enter the blocking sort buffer.
+        { $project: rentalPublicPropertyProjection },
         { $sort: sort },
         { $skip: (query.page - 1) * query.perPage },
         { $limit: query.perPage },
-        { $project: rentalPublicPropertyProjection },
       ]).collation(RENTAL_COLLATION),
       RentalListingModel.aggregate([...publicStages, { $count: 'total' }]).collation(
         RENTAL_COLLATION
@@ -116,10 +117,11 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
       const middle = await RentalListingModel.aggregate([
         ...publicStages,
         ...offerStages,
+        // The median needs one number per home, not its offers, galleries or identity evidence.
+        { $project: { _id: 0, priceUyu: 1 } },
         { $sort: { priceUyu: 1 } },
         { $skip: Math.floor((total - 1) / 2) },
         { $limit: total % 2 === 0 ? 2 : 1 },
-        { $project: { _id: 0, priceUyu: 1 } },
       ]).collation(RENTAL_COLLATION)
       const prices = middle.map(row => Number(row.priceUyu)).filter(Number.isFinite)
       medianUyu = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0

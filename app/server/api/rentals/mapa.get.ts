@@ -78,8 +78,7 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
       RentalListingModel.aggregate([
         ...publicLocated,
         ...rentalOfferStages(query, usdUyu),
-        { $sort: rentalMongoSort(query.sort) },
-        { $limit: MAX_POINTS },
+        // Discard rich descriptions, galleries and private identity before Mongo keeps sort rows.
         {
           $project: {
             _id: 0,
@@ -87,6 +86,9 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
             latitude: 1,
             longitude: 1,
             price: 1,
+            // Internal sort keys, omitted from the public map-point mapper below.
+            priceUyu: 1,
+            freshAt: 1,
             currency: 1,
             bedrooms: 1,
             area: 1,
@@ -102,6 +104,8 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
             'offers.commonExpensesCurrency': 1,
           },
         },
+        { $sort: rentalMongoSort(query.sort) },
+        { $limit: MAX_POINTS },
       ]).collation(RENTAL_COLLATION),
     ])
     const total = Number(totals[0]?.total) || 0
