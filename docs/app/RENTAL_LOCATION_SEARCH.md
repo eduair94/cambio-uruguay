@@ -7,6 +7,11 @@ official candidate, and confirm the point. Choosing a reference is a presentatio
 does not impose a radius, change active property/offer filters, exclude unlocated adverts, or change
 the search count, coverage, facets and base-rent median.
 
+The address lookup is independent of the rental department filter. A user looking for homes in
+Canelones can choose Hocquart and Democracia in Montevideo as their reference without changing
+the home search. Arriving map results never reframe an explicitly selected point or interrupt
+point selection.
+
 ## Query and distances
 
 - `refLat` and `refLng` are a strict finite pair within the existing Uruguay map bounds, normalized
@@ -27,9 +32,20 @@ the search count, coverage, facets and base-rent median.
   existing map only draws rows with coordinates, and retains its separate `total`/`located` counts.
 - Rich source descriptions, galleries and private identity evidence are projected out before
   Mongo's blocking sort. Only the optional scalar distance is public; temporary sort keys are not.
+  List and map sorts may spill to temporary disk storage after that projection: the final page of
+  a large catalogue must retain far more sort rows than page one and can exceed Mongo's 100 MiB
+  memory limit even with the compact public projection.
 
 No collection migration or new geospatial index is required. Arithmetic is protected with Mongo
 `$cond`; sibling `$and` guards alone cannot prevent malformed historic Mixed data causing a 500.
+
+The list and map aggregate explicitly enable `allowDiskUse(true)` after retaining the early public
+projection. Production verification on 2026-09-07 reached 21,061 matching apartments/offices and
+page 1,756 at 12 rows per page: Mongo's top-k sort retains the preceding rows too, so even public
+offer text exceeded its 100 MiB memory limit. Disk spill preserves the complete filtered order
+instead of returning a 503 or truncating results. The Mongo regression reproduces error 292 with
+spill disabled on a 21,061-row fixture and verifies the exact final page, same-offer prices,
+unknown distances last and private-field exclusion with the endpoint's actual spill setting.
 
 ## Official address search
 

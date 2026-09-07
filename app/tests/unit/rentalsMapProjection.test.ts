@@ -7,19 +7,34 @@ const state = vi.hoisted(() => ({
   query: {} as Record<string, unknown>,
   pipelines: [] as Array<Array<Record<string, any>>>,
   mapRows: [] as Array<Record<string, any>>,
-  run: async (_pipeline: Array<Record<string, any>>, _collation: Record<string, unknown>) =>
-    [] as Array<Record<string, any>>,
+  sortDiskUse: undefined as boolean | undefined,
+  run: async (
+    _pipeline: Array<Record<string, any>>,
+    _collation: Record<string, unknown>,
+    _options: { allowDiskUse?: boolean }
+  ) => [] as Array<Record<string, any>>,
 }))
 vi.mock('../../server/models/RentalListing', () => ({
   RentalListingModel: {
-    aggregate: (pipeline: Array<Record<string, any>>) => ({
-      collation: async (collation: Record<string, unknown>) => {
-        state.pipelines.push(pipeline)
-        const rows = await state.run(pipeline, collation)
-        if (pipeline.some(stage => stage.$sort)) state.mapRows = rows
-        return rows
-      },
-    }),
+    aggregate: (pipeline: Array<Record<string, any>>) => {
+      const options: { allowDiskUse?: boolean } = {}
+      const chain = {
+        allowDiskUse: (enabled: boolean) => {
+          options.allowDiskUse = enabled
+          return chain
+        },
+        collation: async (collation: Record<string, unknown>) => {
+          state.pipelines.push(pipeline)
+          const rows = await state.run(pipeline, collation, options)
+          if (pipeline.some(stage => stage.$sort)) {
+            state.mapRows = rows
+            state.sortDiskUse = options.allowDiskUse
+          }
+          return rows
+        },
+      }
+      return chain
+    },
   },
 }))
 vi.mock('../../server/models/RentalMeta', () => ({
@@ -85,10 +100,14 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
       maxPoolSize: 1,
     })
     await client.connect()
-    state.run = (pipeline, collation) =>
+    state.run = (pipeline, collation, options) =>
       client
         .db()
-        .aggregate([{ $documents: fixtures }, ...pipeline], { collation, maxTimeMS: 10000 })
+        .aggregate([{ $documents: fixtures }, ...pipeline], {
+          collation,
+          maxTimeMS: 10000,
+          allowDiskUse: options.allowDiskUse ?? false,
+        })
         .toArray()
     vi.stubGlobal('defineEventHandler', (callback: unknown) => callback)
     vi.stubGlobal('getQuery', () => state.query)
@@ -105,6 +124,7 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
   beforeEach(() => {
     state.pipelines = []
     state.mapRows = []
+    state.sortDiskUse = undefined
     state.query = {}
   })
 
@@ -123,6 +143,7 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
     ]
     state.query = { sort }
     const result = await handler({})
+    expect(state.sortDiskUse).toBe(true)
     expect(result.points.map(point => point.key)).toEqual(keys)
     expect([result.total, result.located, result.shown]).toEqual([4, 4, 4])
     const stages = state.pipelines.find(pipeline => pipeline.some(stage => stage.$sort))!

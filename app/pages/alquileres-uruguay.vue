@@ -226,11 +226,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               :class="{ 'rentals-map__point-controls--picking': pickingPoint }"
             >
               <template v-if="pickingPoint">
-                <ReferenceAddress
-                  :department="query.department"
-                  @select="selectReferenceAddress"
-                  @edit="clearDraftReference"
-                />
+                <ReferenceAddress @select="selectReferenceAddress" @edit="clearDraftReference" />
                 <p id="rental-point-instructions">{{ t('pickPointHint') }}</p>
                 <p v-if="pointError" role="alert">{{ t('pointOutsideUruguay') }}</p>
                 <p v-if="draftPoint" role="status">{{ draftPointLabel || t('pointSelected') }}</p>
@@ -298,13 +294,13 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                   :center="referencePoint ? [referencePoint.lat, referencePoint.lng] : undefined"
                   :zoom="referencePoint ? 14 : 7"
                   :radius-km="sedeCentro ? query.radioKm : 0"
-                  :fit-to-markers="!referencePoint"
+                  :fit-to-markers="!referencePoint && !pickingPoint"
                   height="100%"
                   :directions-label="t('open')"
                   @marker-click="selectMapProperty"
                   @map-click="closeMapProperty(false)"
                   @map-point="selectReferencePoint"
-                  @ready="mapReady = true"
+                  @ready="onReferenceMapReady"
                 />
                 <span v-if="pickingPoint" class="rentals-map__crosshair" aria-hidden="true">+</span>
                 <MapPropertyDetail
@@ -900,6 +896,11 @@ const draftPoint = ref<{ lat: number; lng: number } | null>(null)
 const draftPointLabel = ref('')
 const pointError = ref(false)
 const mapReady = ref(false)
+function onReferenceMapReady() {
+  mapReady.value = true
+  // Address suggestions can arrive before the lazy map has finished initializing.
+  if (pickingPoint.value && draftPoint.value) rentalMap.value?.focusPoint(draftPoint.value)
+}
 watch(rentalMap, () => {
   mapReady.value = false
 })

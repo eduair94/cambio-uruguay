@@ -50,7 +50,6 @@ interface AddressPoint {
   lat: number
   lng: number
 }
-const props = defineProps<{ department: string }>()
 const emit = defineEmits<{ select: [point: AddressPoint]; edit: [] }>()
 const { t } = useI18n({ useScope: 'local', messages: rentalMessages })
 const address = ref('')
@@ -67,7 +66,7 @@ function cancelSearch() {
   searched.value = false
   error.value = ''
 }
-watch([address, () => props.department], () => {
+watch(address, () => {
   cancelSearch()
   emit('edit')
 })
@@ -80,10 +79,7 @@ async function search() {
   pending.value = true
   try {
     const result = await $fetch<{ items: AddressPoint[] }>('/api/rentals/geocode', {
-      query: {
-        q: address.value.trim(),
-        ...(props.department ? { department: props.department } : {}),
-      },
+      query: { q: address.value.trim() },
       signal: current.signal,
       retry: 0,
     })

@@ -120,7 +120,11 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
         },
         { $sort: rentalMongoSort(query.sort) },
         { $limit: MAX_POINTS },
-      ]).collation(RENTAL_COLLATION),
+      ])
+        // The retained point rows still contain own-offer terms. Keep the map available when
+        // a larger catalogue/offer set pushes even this projected sort beyond 100 MiB.
+        .allowDiskUse(true)
+        .collation(RENTAL_COLLATION),
     ])
     const total = Number(totals[0]?.total) || 0
     const locatedCount = Number(locatedTotals[0]?.total) || 0

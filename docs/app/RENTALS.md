@@ -33,7 +33,10 @@ requiere ese hash, respalda antes de escribir y cambia sólo `propertyType` y
 CAS compara la lista completa de campos BSON: la igualdad directa con `$$ROOT` dispara un error
 del optimizador del Mongo desplegado; `$objectToArray` fue comprobado en lectura contra las
 35 filas del plan. Una reanudación reconoce filas exactamente aplicadas y se detiene ante otros
-cambios. **El plan descrito aquí todavía no certifica una aplicación.**
+cambios. La aplicación del plan `dc2f6368e88ac9a09717f6c3c94913475dfe340eb2534371328f7703a589e5bc`
+se completó el 7 de septiembre después del despliegue `eff45d0`: **35 fichas cambiadas y 35
+verificadas contra su resultado esperado**, con cero cambios de fechas. El respaldo privado se
+conserva junto al plan en el servidor.
 
 Casasweb añade `g` al repaso horario de Montevideo, Canelones y Maldonado: tres páginas
 adicionales por ejecución. La consulta pública de Montevideo del 7 de septiembre a las 18:18 UTC

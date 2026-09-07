@@ -91,7 +91,11 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
         { $limit: query.perPage },
         ...(query.sort === 'total' ? [{ $unset: [...RENTAL_TOTAL_SORT_FIELDS] }] : []),
         ...(query.refLat !== null ? [{ $unset: [...RENTAL_DISTANCE_SORT_FIELDS] }] : []),
-      ]).collation(RENTAL_COLLATION),
+      ])
+        // Deep offsets retain every preceding public row in Mongo's top-k sort. Even the slim
+        // projection can exceed 100 MiB at this inventory size; allow bounded disk spill.
+        .allowDiskUse(true)
+        .collation(RENTAL_COLLATION),
       RentalListingModel.aggregate([...publicStages, { $count: 'total' }]).collation(
         RENTAL_COLLATION
       ),

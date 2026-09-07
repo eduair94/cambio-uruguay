@@ -236,7 +236,10 @@ function getCenter(): { lat: number; lng: number } | null {
   return point ? { lat: point.lat, lng: point.lng } : null
 }
 function focusPoint(point: { lat: number; lng: number }) {
-  map?.setView([point.lat, point.lng], 16, { animate: false })
+  if (!map) return
+  // A late marker response must not replace the point the user explicitly chose.
+  hasFitted = true
+  map.setView([point.lat, point.lng], 16, { animate: false })
 }
 
 function cashIcon() {
@@ -353,7 +356,7 @@ function renderZones() {
  */
 function fitOnce() {
   if (!props.fitToMarkers || hasFitted || !map || !cluster) return
-  if (props.userLocation) return
+  if (props.userLocation || props.referencePoint) return
   if (!props.branches.length && !props.zones.length) return
   const bounds = cluster.getBounds()
   for (const zone of props.zones)
