@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { MongoClient } from 'mongodb'
+import mongoose from 'mongoose'
 
 // Explicit migration only: importing a live Mongoose schema must not start these builds.
 export const RENTAL_QUERY_INDEXES = [
@@ -95,7 +95,7 @@ export async function rentalQueryIndexesMain(args = process.argv.slice(2)) {
   const uri = process.env.NUXT_MONGO_URI || process.env.MONGO_URI
   if (!uri || !new URL(uri).pathname.replace(/^\//, ''))
     throw new Error('Explicit app database is required')
-  const client = new MongoClient(uri, {
+  const client = new mongoose.mongo.MongoClient(uri, {
     maxPoolSize: 1,
     serverSelectionTimeoutMS: 5000,
     connectTimeoutMS: 5000,

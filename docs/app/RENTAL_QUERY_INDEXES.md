@@ -24,7 +24,9 @@ are not claimed to eliminate calculated distance sorts or make entire queries co
 
 Definitions intentionally live in `app/scripts/rental-query-indexes.mjs`, outside active Mongoose
 schemas. Adding them to a schema would let `autoIndex` start database writes on application startup,
-before this separate operation is reviewed. The script uses the native driver without loading models.
+before this separate operation is reviewed. The script uses the native driver exposed by the
+app's direct Mongoose dependency, without loading models or connecting Mongoose. It does not rely
+on a hoisted transitive `mongodb` package that may be absent in clean installations.
 
 ## Plan and apply
 

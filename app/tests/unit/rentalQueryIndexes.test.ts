@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import { MongoClient, type Collection } from 'mongodb'
+import mongoose from 'mongoose'
 import {
   RENTAL_QUERY_INDEXES,
   planRentalQueryIndexes,
@@ -65,8 +65,8 @@ describe('explicit rental index plan', () => {
 
 const uri = process.env.RENTALS_INDEX_TEST_MONGO_URI
 describe.skipIf(!uri)('actual rental pipelines with reviewed indexes on isolated Mongo', () => {
-  let client: MongoClient
-  let collection: Collection
+  let client: mongoose.mongo.MongoClient
+  let collection: mongoose.mongo.Collection
   const at = new Date().toISOString()
   const offer = (source: string, listingId: string, lastSeen = at) => ({
     source,
@@ -110,7 +110,10 @@ describe.skipIf(!uri)('actual rental pipelines with reviewed indexes on isolated
     ) {
       throw new Error('Index tests may write only to localhost/rental-index-qa')
     }
-    client = new MongoClient(uri!, { maxPoolSize: 1, serverSelectionTimeoutMS: 3000 })
+    client = new mongoose.mongo.MongoClient(uri!, {
+      maxPoolSize: 1,
+      serverSelectionTimeoutMS: 3000,
+    })
     await client.connect()
     collection = client.db().collection(`qa_rental_indexes_${process.pid}`)
     await collection.insertMany([
