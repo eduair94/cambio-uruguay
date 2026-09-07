@@ -15,6 +15,7 @@ const row = (articleId: number, price: number, over: Partial<any> = {}) => ({
   declarationId: articleId,
   price,
   sourceDay: "2026-09-07",
+  promo: false,
   storeName: "Local 1",
   address: "x",
   lat: -34.8,

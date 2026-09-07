@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePrice, parseSourceDay, parseUnit, rejectionReason } from "../../classes/precios/parse";
+import { isPromo, parsePrice, parseSourceDay, parseUnit, rejectionReason } from "../../classes/precios/parse";
 
 describe("parsePrice", () => {
   it("lee el formato del SIPC", () => {
@@ -11,6 +11,20 @@ describe("parsePrice", () => {
     // Medido 2026-09-07: compararCanasta devuelve el mismo "$509.32 (*)" en 722
     // de 722 locales para un articulo con 28 observaciones reales.
     expect(parsePrice("$509.32 (*)")).toBeNull();
+  });
+
+  it("lee el precio en oferta, que es 1 de cada 10 filas", () => {
+    // Medido sobre 5.913 filas: "$N" 89,2 % y "oferta - $N" 10,8 %, y no hay
+    // una tercera forma. Descartarlas sesgaba el indice hacia arriba porque
+    // son sistematicamente las baratas (7,8 % menos que el precio normal).
+    expect(parsePrice("oferta - $43.0")).toBe(43);
+    expect(parsePrice("oferta - $98.0")).toBe(98);
+    expect(isPromo("oferta - $43.0")).toBe(true);
+    expect(isPromo("$43.0")).toBe(false);
+  });
+
+  it("una oferta imputada sigue siendo imputada", () => {
+    expect(parsePrice("oferta - $509.32 (*)")).toBeNull();
   });
 
   it("rechaza lo que no es un precio", () => {
@@ -63,6 +77,10 @@ describe("rejectionReason", () => {
 
   it("acepta una observacion real", () => {
     expect(rejectionReason(row as any)).toBeNull();
+  });
+
+  it("acepta una observacion en oferta", () => {
+    expect(rejectionReason({ ...row, precio: "oferta - $43.0" } as any)).toBeNull();
   });
 
   it("rechaza precio imputado y fila sin fecha, con el motivo dicho", () => {

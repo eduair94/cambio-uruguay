@@ -63,6 +63,7 @@ describe("observationsFor", () => {
       declarationId: 217451,
       price: 92,
       sourceDay: "2026-09-06",
+      promo: false,
     });
   });
 
@@ -87,6 +88,12 @@ describe("observationsFor", () => {
     );
     expect(observations).toHaveLength(1);
     expect(observations[0].price).toBe(92);
+  });
+
+  it("marca la observacion en oferta sin descartarla", () => {
+    const { observations, rejected } = observationsFor(1, [row({ precio: "oferta - $43.0" })] as any, index);
+    expect(rejected).toHaveLength(0);
+    expect(observations[0]).toMatchObject({ price: 43, promo: true });
   });
 
   it("conserva la fila huerfana con su propia coordenada", () => {

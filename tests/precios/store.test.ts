@@ -7,6 +7,7 @@ const row = (articleId: number, storeId: number, price: number) => ({
   declarationId: 1,
   price,
   sourceDay: "2026-09-07",
+  promo: false,
   storeName: "Local",
   address: "x",
   lat: -34.8,

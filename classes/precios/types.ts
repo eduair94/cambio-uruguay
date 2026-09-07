@@ -52,6 +52,8 @@ export interface PrecioObservation {
   price: number;
   /** Día que declara el origen, en ISO. Es el eje de frescura. */
   sourceDay: string;
+  /** El origen declaró la celda como `oferta - $N`. 10,8 % de las filas. */
+  promo: boolean;
   storeName: string;
   address: string;
   lat: number | null;

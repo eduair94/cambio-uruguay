@@ -13,6 +13,27 @@
 // propio y sin fecha propia, no es una observación.
 import type { PrecioRawRow, PrecioUnit } from "./types";
 
+/**
+ * El origen escribe la celda de precio de DOS maneras, y sólo dos. Medido sobre
+ * 5.913 filas de 12 artículos el 2026-09-07:
+ *
+ *   `$92.0`            89,2 %
+ *   `oferta - $43.0`   10,8 %
+ *
+ * El prefijo `oferta - ` importa: la primera versión de este parser lo trataba
+ * como ilegible y descartaba una de cada diez observaciones, **todas del lado
+ * barato** (la oferta es 7,8 % más barata que el precio normal del mismo
+ * artículo). Eso no era prudencia, era sesgar el índice hacia arriba y borrar
+ * del ranking a los locales que están haciendo promoción. Un precio en oferta
+ * es lo que se paga hoy: se lee, se conserva y se etiqueta.
+ */
+const PROMO_PREFIX = /^oferta\s*-\s*/i;
+
+/** Si la celda declara que el precio es una promoción. */
+export function isPromo(raw: unknown): boolean {
+  return typeof raw === "string" && PROMO_PREFIX.test(raw.trim());
+}
+
 /** Precio numérico, o null si la celda no es una observación real. */
 export function parsePrice(raw: unknown): number | null {
   if (typeof raw !== "string") return null;
@@ -20,8 +41,9 @@ export function parsePrice(raw: unknown): number | null {
   if (!text) return null;
   // La marca de imputación del origen. Nunca se convierte en número.
   if (text.includes("(*)")) return null;
-  if (!/^\$\s*\d/.test(text)) return null;
-  const value = Number(text.replace(/[^0-9.]/g, ""));
+  const bare = text.replace(PROMO_PREFIX, "");
+  if (!/^\$\s*\d/.test(bare)) return null;
+  const value = Number(bare.replace(/[^0-9.]/g, ""));
   if (!Number.isFinite(value) || value <= 0) return null;
   return value;
 }

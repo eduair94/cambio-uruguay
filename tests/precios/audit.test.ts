@@ -10,6 +10,7 @@ const shelf = (storeId: number, factor: number, count = 20) =>
     declarationId: storeId * 1000 + i,
     price: 100 * factor,
     sourceDay: "2026-09-07",
+    promo: false,
     storeName: `Local ${storeId}`,
     address: "x",
     lat: -34.8,

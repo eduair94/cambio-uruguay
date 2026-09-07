@@ -15,7 +15,7 @@
 // nombre+dirección 100 %, cero huérfanas. Se prueba la coordenada primero
 // porque no depende de espacios ni de mayúsculas.
 import { fetchJson, NATIONAL_BBOX, SIPC_BASE } from "./net";
-import { parsePrice, parseSourceDay, rejectionReason } from "./parse";
+import { isPromo, parsePrice, parseSourceDay, rejectionReason } from "./parse";
 import type { PrecioObservation, PrecioRawRow, PrecioStore } from "./types";
 
 export type StoreIndex = { byCoord: Map<string, PrecioStore>; byName: Map<string, PrecioStore> };
@@ -80,6 +80,7 @@ export function observationsFor(
       declarationId: Number(row.id),
       price: parsePrice(row.precio) as number,
       sourceDay: parseSourceDay(row.fecha) as string,
+      promo: isPromo(row.precio),
       storeName: String(row.name ?? "").trim(),
       address: String(row.direccion ?? "").trim(),
       lat: store ? store.lat : Number.isFinite(Number(row.x)) ? Number(row.x) : null,
