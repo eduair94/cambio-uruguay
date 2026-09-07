@@ -32,12 +32,32 @@ export async function downloadServicePbf(): Promise<{ file: string; sourceSha256
   try {
     const headers = { "User-Agent": "CambioUruguayBot/1.0 (+https://cambio-uruguay.com/acerca)" };
     async function request(url: string): Promise<Response> {
-      for (let attempt = 0; ; attempt++) {
-        try { return await fetch(url, { headers, signal: controller.signal, redirect: "error" }); }
-        catch (error) {
-          if (attempt >= 2 || controller.signal.aborted) throw error;
-          await new Promise(resolve => setTimeout(resolve, 1500));
+      const visited = new Set<string>();
+      for (let redirects = 0; ; redirects++) {
+        const target = new URL(url);
+        if (target.origin !== "https://download.geofabrik.de" || target.username || target.password ||
+          target.href.includes("?") || target.href.includes("#") ||
+          !/^\/south-america\/uruguay-(?:latest|\d{6})\.osm\.pbf(?:\.md5)?$/.test(target.pathname)) {
+          throw new Error("Geofabrik redirect destination is not an official Uruguay extract");
         }
+        if (visited.has(target.href)) throw new Error("Geofabrik redirect loop");
+        visited.add(target.href);
+        let response: Response;
+        for (let attempt = 0; ; attempt++) {
+          try {
+            response = await fetch(target.href, { headers, signal: controller.signal, redirect: "manual" });
+            break;
+          } catch (error) {
+            if (attempt >= 2 || controller.signal.aborted) throw error;
+            await new Promise(resolve => setTimeout(resolve, 1500));
+          }
+        }
+        if (![301, 302, 303, 307, 308].includes(response.status)) return response;
+        const location = response.headers.get("location");
+        // Release every redirect body, including rejected destinations, before another request.
+        await response.body?.cancel();
+        if (!location || redirects >= 2) throw new Error("Geofabrik redirect limit or missing destination");
+        url = new URL(location, target).href;
       }
     }
     const check = await request(`${SERVICE_SOURCE}.md5`);
