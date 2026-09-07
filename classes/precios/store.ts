@@ -320,3 +320,113 @@ export async function countChanges(): Promise<number> {
   const rows = await changesDb().aggregate([{ $count: "n" }]);
   return rows[0]?.n ?? 0;
 }
+
+// ---------------------------------------------------------------------------
+// Lecturas para la API pública.
+//
+// El `from` de cada `$lookup` es el nombre REAL de la colección (pluralizado
+// por mongoose), no el del modelo: por eso existe `COLLECTIONS`.
+// ---------------------------------------------------------------------------
+
+/** El catálogo con las estadísticas nacionales del día pedido. */
+export async function loadArticlesWithStats(day: string): Promise<any[]> {
+  return statsDb().aggregate([
+    { $match: { day, scope: "nacional" } },
+    { $lookup: { from: COLLECTIONS.articles, localField: "articleId", foreignField: "id", as: "article" } },
+    { $unwind: "$article" },
+    {
+      $project: {
+        _id: 0,
+        articleId: 1,
+        n: 1,
+        min: 1,
+        p10: 1,
+        p50: 1,
+        p90: 1,
+        max: 1,
+        name: "$article.name",
+        group: "$article.group",
+        variant: "$article.variant",
+        unitRaw: "$article.unitRaw",
+        qty: "$article.qty",
+        unit: "$article.unit",
+        image: "$article.image",
+      },
+    },
+    { $sort: { name: 1 } },
+  ]);
+}
+
+/** El último día con agregados guardados, para que la API no dependa de "hoy". */
+export async function loadLatestStatDay(): Promise<string | null> {
+  const rows = await statsDb().aggregate([{ $sort: { day: -1 } }, { $limit: 1 }, { $project: { _id: 0, day: 1 } }]);
+  return rows[0]?.day ?? null;
+}
+
+export async function loadArticleDetail(articleId: number, day: string): Promise<any> {
+  const [rows, stats, series, article] = await Promise.all([
+    pricesDb().aggregate([
+      { $match: { articleId } },
+      { $lookup: { from: COLLECTIONS.stores, localField: "storeId", foreignField: "id", as: "store" } },
+      { $unwind: "$store" },
+      {
+        $project: {
+          _id: 0,
+          storeId: 1,
+          price: 1,
+          sourceDay: 1,
+          promo: 1,
+          freshness: 1,
+          verdict: 1,
+          storeName: "$store.name",
+          chain: "$store.chain",
+          department: "$store.department",
+          address: "$store.address",
+          lat: "$store.lat",
+          lon: "$store.lon",
+        },
+      },
+      { $sort: { price: 1 } },
+    ]),
+    statsDb().aggregate([{ $match: { day, articleId, scope: "nacional" } }, { $limit: 1 }, { $project: { _id: 0 } }]),
+    statsDb().aggregate([
+      { $match: { articleId, scope: "nacional" } },
+      { $sort: { day: -1 } },
+      { $limit: 180 },
+      { $project: { _id: 0, day: 1, min: 1, p50: 1, max: 1, n: 1 } },
+    ]),
+    articlesDb().aggregate([{ $match: { id: articleId } }, { $limit: 1 }, { $project: { _id: 0 } }]),
+  ]);
+  return { article: article[0] || null, rows, stats: stats[0] || null, series: series.reverse() };
+}
+
+/** Locales dentro de un radio. Los 18 sin coordenada no pueden entrar. */
+export async function loadStoresNear(lat: number, lon: number, km: number): Promise<any[]> {
+  const { haversineKm } = await import("./geo");
+  const stores = await storesDb().aggregate([
+    { $match: { lat: { $ne: null }, lon: { $ne: null } } },
+    { $project: { _id: 0 } },
+  ]);
+  return stores
+    .map((store: any) => ({ ...store, km: haversineKm({ lat, lon }, { lat: store.lat, lon: store.lon }) }))
+    .filter((store: any) => store.km <= km)
+    .sort((a: any, b: any) => a.km - b.km);
+}
+
+export async function loadChanges(filter: {
+  articleId?: number;
+  storeId?: number;
+  day?: string;
+  limit: number;
+}): Promise<any[]> {
+  const match: Record<string, unknown> = {};
+  if (filter.articleId !== undefined) match.articleId = filter.articleId;
+  if (filter.storeId !== undefined) match.storeId = filter.storeId;
+  if (filter.day) match.day = filter.day;
+  return changesDb().aggregate([
+    { $match: match },
+    { $sort: { observedAt: -1 } },
+    { $limit: filter.limit },
+    { $project: { _id: 0 } },
+  ]);
+}
