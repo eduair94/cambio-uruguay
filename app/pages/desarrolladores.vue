@@ -231,7 +231,7 @@ defineOgImageComponent('Cambio', {
 // `dev.subtitle` runs to ~250 characters, so Google truncated it mid-sentence
 // and the visible half named no endpoint, no format and no product. The snippet
 // below is written for the SERP: what you get, in what shape, at what price.
-const SEO_TITLE = 'API pública del dólar en Uruguay: REST gratuita, sin API key y OpenAPI 3.1'
+const SEO_TITLE = 'API pública del dólar en Uruguay: sin key'
 const SEO_DESCRIPTION =
   'Cotizaciones de las casas de cambio uruguayas por REST, gratis y sin autenticación: base api.cambio-uruguay.com, documento OpenAPI 3.1 para importar a Postman o Insomnia, servidor MCP para agentes y todo el código en GitHub.'
 

@@ -588,7 +588,7 @@ const FAQ: FaqItem[] = [
   },
 ]
 
-const title = 'API de cotizaciones de la región (Argentina, Brasil, Paraguay, Chile, Bolivia)'
+const title = 'API de cotizaciones de la región: 6 países'
 const description =
   'Endpoints públicos y gratuitos con el dólar y los cruces de la región: todos los mercados que publica cada país, series diarias desde 1995 y conversión entre monedas. Sin registro ni clave.'
 const canonicalUrl = 'https://cambio-uruguay.com/api-cotizaciones-regionales'

@@ -477,7 +477,7 @@ const sources = [
   },
 ]
 
-const title = 'Saldar deudas en Uruguay: cómo negociar y si conviene ChauDeudas o MiDeuda'
+const title = 'Saldar deudas: ChauDeudas o MiDeuda'
 const description =
   'Guía para saldar deudas en Uruguay: verificá prescripción, negociá una quita, entendé cuándo pueden retener o embargar el sueldo y reconstruí tu historial.'
 const canonicalUrl = 'https://cambio-uruguay.com/saldar-deudas-uruguay'

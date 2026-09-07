@@ -359,7 +359,7 @@ const faqItems = [
   },
 ]
 
-const title = 'Videos de economía en Uruguay: dólar, inflación, sueldos e inversiones'
+const title = 'Videos de economía en Uruguay: 13 temas'
 const description =
   'Los videos de YouTube sobre economía uruguaya, actualizados todos los días: dólar, inflación, sueldos, impuestos, inversiones, créditos y vivienda, agrupados por tema y con la fecha de cada uno.'
 const canonicalUrl = `${SITE_URL}/videos-de-economia-uruguay`

@@ -231,7 +231,11 @@ function staticTitle(source: string): string | null {
 }
 
 const MEASURABLE = 110
-const OVER_BUDGET = 44
+// 44 → 33 el 2026-09-07: once de los títulos más largos reescritos a 43 caracteres o menos. Los
+// once perdían la cola en el SERP, y la cola era el dato — «2 puntos o 9», «mora y 72 h», «1 mes
+// por año», «6 países», «13 temas», «ChauDeudas o MiDeuda» —, así que en cada uno se conservó la
+// cifra o la marca y se soltó el relleno que ya repite la descripción.
+const OVER_BUDGET = 33
 
 describe('el lector sigue los títulos trasladados a mensajes locales', () => {
   for (const [file, title] of [

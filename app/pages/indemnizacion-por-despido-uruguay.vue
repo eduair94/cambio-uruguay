@@ -319,7 +319,7 @@ const verifiedAt = new Date(`${DESPIDO_VERIFIED_AT}T12:00:00Z`).toLocaleDateStri
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/indemnizacion-por-despido-uruguay'
-const title = 'Indemnización por despido en Uruguay: cuánto es y hasta cuándo se reclama'
+const title = 'Indemnización por despido: 1 mes por año'
 const description =
   'Un mes de remuneración total por cada año o fracción, sin antigüedad mínima (Ley 10.489, art. 4). El tope son 6 mensualidades, pero baja a 3 si tenés derecho a jubilación: más de 10 años de servicios y 40 de edad (Ley 12.597, art. 5). A jornal, 2 días de salario cada 25 trabajados. Y la acción prescribe al año del cese.'
 

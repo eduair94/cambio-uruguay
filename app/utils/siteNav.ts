@@ -2049,6 +2049,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/cuanto-sale-el-pasaporte-uruguayo',
+        labelKey: 'nav.pasaporteCosto',
+        icon: 'mdi-passport',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'cuanto sale el pasaporte uruguayo',
+          'precio pasaporte uruguay',
+          'costo pasaporte uruguayo',
+          'renovar pasaporte uruguay precio',
+          'pasaporte urgente uruguay',
+          'pasaporte primera vez uruguay',
+          'certificado de antecedentes judiciales precio',
+          'dnic pasaporte costo',
+        ],
+      },
+      {
         to: '/declarar-dinero-en-efectivo-uruguay',
         labelKey: 'nav.declararEfectivo',
         icon: 'mdi-cash-multiple',

@@ -200,7 +200,7 @@ const verifiedAt = new Date(RESIDENCY_VERIFIED_AT).toLocaleDateString('es-UY', {
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/mudarme-a-uruguay-residencia'
-const title = 'Mudarme a Uruguay: residencia legal, requisitos y cuánto ingreso piden'
+const title = 'Mudarme a Uruguay: residencia y requisitos'
 const description =
   'No hay un monto mínimo de ingreso publicado para la residencia: se acreditan «medios de vida», no una cifra. Las tres vías (temporaria y permanente MERCOSUR, y permanente no MERCOSUR) con sus requisitos, el costo de 557,30 UI con Brasil y Paraguay exentos, dónde se hace el trámite, y la diferencia entre residencia legal y residencia fiscal, que son dos cosas distintas.'
 

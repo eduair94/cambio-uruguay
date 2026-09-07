@@ -1255,7 +1255,7 @@ const officialSources = [
 
 // ── SEO ──────────────────────────────────────────────────────────────────────
 const canonicalUrl = 'https://cambio-uruguay.com/impuestos-inversiones-uruguay'
-const title = 'Impuestos sobre inversiones en Uruguay: guía del IRPF Categoría I (2026)'
+const title = 'Impuestos de inversiones en Uruguay: IRPF'
 const description =
   'El «impuesto a las ganancias» no existe en Uruguay: las rentas de tus inversiones pagan IRPF Categoría I. Tasas por instrumento verificadas contra la norma: depósitos, dividendos, alquileres, ganancias de capital, deuda pública, brókers del exterior desde 2026, residencia fiscal, Impuesto al Patrimonio e IASS.'
 
