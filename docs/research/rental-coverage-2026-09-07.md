@@ -88,6 +88,11 @@ reparación del grupo de Cordón debe preservar los dos IDs, todas sus fechas y 
 como ambos títulos coinciden normalizados, la URL canónica anterior no es atribuible a
 un único anuncio y no debe asignarse arbitrariamente a uno de ellos.
 
+La retirada de esa URL se conserva en el registro versionado `retiredKeys.ts`, independiente
+de las filas históricas que se podan. Tanto la generación/herencia de claves como el guardado
+rechazan reutilizarla. Los dos anuncios conservan sus claves estables por ID; no se redirige
+la URL ambigua hacia una vivienda elegida sin evidencia.
+
 ## Comprobaciones directas
 
 - **Mercado Libre:** el breadcrumb del portal identifica `MLU1473` como
