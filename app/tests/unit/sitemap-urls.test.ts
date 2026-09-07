@@ -104,9 +104,14 @@ describe('sitemap with a healthy API', () => {
   })
 
   it('emits every route for all three locales', async () => {
-    const locs = new Set((await runHandler(HEALTHY)).map(u => u.loc))
+    const urls = await runHandler(HEALTHY)
+    const locs = new Set(urls.map(u => u.loc))
     for (const loc of ['/prestamos-uruguay', '/en/prestamos-uruguay', '/pt/prestamos-uruguay']) {
       expect(locs.has(loc)).toBe(true)
+    }
+    for (const prefix of ['', '/en', '/pt']) {
+      expect(urls.filter(url => url.loc === `${prefix}/alquiler-ideal-uruguay`)).toHaveLength(1)
+      expect(locs.has(`${prefix}/herramientas/alquiler-ideal-uruguay`)).toBe(false)
     }
   })
 })

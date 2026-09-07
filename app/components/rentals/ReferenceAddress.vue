@@ -18,8 +18,11 @@
         variant="tonal"
         :loading="pending"
         :disabled="address.trim().length < 4"
+        :aria-label="t('findAddress')"
+        :icon="compact ? 'mdi-magnify' : undefined"
       >
-        {{ t('findAddress') }}
+        <VIcon v-if="compact">mdi-magnify</VIcon>
+        <template v-else>{{ t('findAddress') }}</template>
       </VBtn>
     </div>
     <p v-if="error" role="alert">{{ t(error) }}</p>
@@ -50,6 +53,7 @@ import { rentalMessages } from '~/utils/rentalMessages'
 import type { RentalGeocodeItem } from '~/utils/rentalGeocode'
 
 type AddressPoint = RentalGeocodeItem
+defineProps<{ compact?: boolean }>()
 const emit = defineEmits<{ select: [point: AddressPoint]; edit: [] }>()
 const { t } = useI18n({ useScope: 'local', messages: rentalMessages })
 const address = ref('')

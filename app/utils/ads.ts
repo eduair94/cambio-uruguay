@@ -31,6 +31,7 @@ const LOCALE_PREFIXES = ['/en', '/pt'] as const
  * `isBareRoute`, which is also what keeps the loader script off them.
  */
 const NO_ADS = [
+  '/alquiler-ideal-uruguay',
   '/cuenta',
   '/conectar',
   '/contacto',

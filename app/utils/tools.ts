@@ -1,4 +1,4 @@
-// Catalogue of interactive calculators / tools under `pages/herramientas/*`.
+// Catalogue of interactive calculators and tools; most live under `pages/herramientas/*`.
 //
 // PURE data + helpers (no Vue/Nuxt runtime) so the hub page, the per-tool pages,
 // the sitemap route and tests can all share one source of truth for slugs,
@@ -7,10 +7,12 @@
 /** A grouping shown on the tools hub. */
 export type ToolCategory = 'divisas' | 'impuestos' | 'finanzas' | 'viajes'
 
-/** A single tool/calculator, addressable at `/herramientas/{slug}`. */
+/** A single tool/calculator; its canonical route is resolved by {@link toolPath}. */
 export interface Tool {
   /** URL-safe identifier, unique across {@link tools} (matches the page filename). */
   slug: string
+  /** Canonical app-relative route for tools outside `/herramientas/`. */
+  to?: string
   /** Card + H1 title. */
   title: string
   /** Short meta-description / card subtitle. */
@@ -205,6 +207,25 @@ export const tools: readonly Tool[] = [
     ],
   },
   {
+    slug: 'alquiler-ideal-uruguay',
+    to: '/alquiler-ideal-uruguay',
+    title: 'Planificador de alquiler para tu hogar',
+    description:
+      'Compará casas y apartamentos según el presupuesto del hogar y la cercanía a los lugares de trabajo o estudio de cada persona. Revisá gastos comunes, distancias y datos pendientes.',
+    icon: 'mdi-home-account',
+    category: 'finanzas',
+    keywords: [
+      'alquiler ideal uruguay',
+      'planificar alquiler',
+      'alquiler para mi hogar',
+      'presupuesto familiar alquiler',
+      'alquiler cerca del trabajo',
+      'alquiler cerca del estudio',
+      'pareja familia compartir alquiler',
+      'teletrabajo vivienda',
+    ],
+  },
+  {
     slug: 'calculadora-aguinaldo',
     title: 'Calculadora de aguinaldo en Uruguay',
     description:
@@ -299,9 +320,14 @@ export function getTool(slug: string): Tool | undefined {
   return tools.find(tool => tool.slug === slug)
 }
 
-/** Every tool slug, in catalogue order. Used by the sitemap route. */
+/** Resolve canonical links consistently in cards, search and structured data. */
+export function toolPath(tool: Pick<Tool, 'slug' | 'to'>): string {
+  return tool.to || `/herramientas/${tool.slug}`
+}
+
+/** Slugs backed by `/herramientas/` pages only; standalone tools belong to siteNav. */
 export function toolSlugs(): string[] {
-  return tools.map(tool => tool.slug)
+  return tools.filter(tool => !tool.to).map(tool => tool.slug)
 }
 
 /** Tools grouped by category, in {@link TOOL_CATEGORIES} order. */

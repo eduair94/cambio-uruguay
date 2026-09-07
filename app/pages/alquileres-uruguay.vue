@@ -19,6 +19,9 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
           }}</NuxtLink>
           <NuxtLink :to="localePath('/venta-viviendas-uruguay')">{{ t('salesShort') }}</NuxtLink>
           <NuxtLink :to="localePath('/inmobiliarias-uruguay')">{{ t('agenciesShort') }}</NuxtLink>
+          <NuxtLink :to="localePath('/alquiler-ideal-uruguay')">{{
+            globalT('nav.rentalFit')
+          }}</NuxtLink>
         </nav>
         <div class="rentals-provenance">
           <a href="#rental-coverage" :title="activeSourceLabels">{{ t('coverage') }}</a>
@@ -626,6 +629,7 @@ import {
 
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })
+const { t: globalT } = useI18n({ useScope: 'global' })
 const availability = useRentalAvailability()
 const availabilityCopy = computed(() => rentalAvailabilityCopy(locale.value))
 const localePath = useLocalePath()

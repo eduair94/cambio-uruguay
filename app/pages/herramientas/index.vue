@@ -30,7 +30,7 @@
           <VCol v-for="tool in group.items" :key="tool.slug" cols="12" sm="6" md="4">
             <VCard
               class="tool-card h-100 d-flex flex-column"
-              :to="localePath(`/herramientas/${tool.slug}`)"
+              :to="localePath(toolPath(tool))"
               elevation="3"
               hover
             >
@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { toolsByCategory, tools } from '~/utils/tools'
+import { toolPath, toolsByCategory, tools } from '~/utils/tools'
 
 const localePath = useLocalePath()
 const groups = toolsByCategory()
@@ -104,7 +104,7 @@ useHead({
         itemListElement: tools.map((t, i) => ({
           '@type': 'ListItem',
           position: i + 1,
-          url: `https://cambio-uruguay.com/herramientas/${t.slug}`,
+          url: `https://cambio-uruguay.com${toolPath(t)}`,
           name: t.title,
         })),
       }),

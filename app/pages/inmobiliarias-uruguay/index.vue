@@ -3,6 +3,9 @@
     <header>
       <h1>{{ t('title') }}</h1>
       <p>{{ t('intro') }}</p>
+      <NuxtLink :to="localePath('/alquiler-ideal-uruguay')" class="agencies-planner-link">{{
+        globalT('nav.rentalFit')
+      }}</NuxtLink>
     </header>
     <form class="agencies-search" role="search" @submit.prevent="apply">
       <label>
@@ -73,7 +76,7 @@
 <script setup lang="ts">
 import { normalizeAgencyQuery, agencyPath, type AgenciesResponse } from '../../utils/agencies'
 import { agencyMessage } from '../../utils/agencyMessages'
-const { locale } = useI18n(),
+const { locale, t: globalT } = useI18n(),
   localePath = useLocalePath(),
   route = useRoute()
 const t = (key: Parameters<typeof agencyMessage>[1]) => agencyMessage(locale.value, key)
@@ -247,6 +250,13 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('descriptio
   display: inline-flex;
   min-height: 44px;
   align-items: center;
+}
+.agencies-planner-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: rgb(var(--v-theme-link));
+  text-underline-offset: 3px;
 }
 .agencies-count {
   font-weight: 600;

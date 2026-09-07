@@ -59,7 +59,7 @@ import { glossary } from '~/utils/glossary'
 import { guides } from '~/utils/guides'
 import { indicators } from '~/utils/indicators'
 import { NAV_SECTIONS } from '~/utils/siteNav'
-import { tools } from '~/utils/tools'
+import { toolPath, tools } from '~/utils/tools'
 import { VIDEO_TOPIC_PAGES } from '~/utils/videoTopics'
 
 const localePath = useLocalePath()
@@ -85,7 +85,7 @@ const longTail = computed<Record<string, TailGroup[]>>(() => {
     tools: [
       {
         title: t('nav.herramientas'),
-        links: tools.map(tool => ({ to: `/herramientas/${tool.slug}`, label: tool.title })),
+        links: tools.map(tool => ({ to: toolPath(tool), label: tool.title })),
       },
       {
         title: t('nav.cotizacion'),

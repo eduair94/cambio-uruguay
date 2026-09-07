@@ -2184,6 +2184,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/alquiler-ideal-uruguay',
+        labelKey: 'nav.rentalFit',
+        icon: 'mdi-home-account',
+        priority: 0.7,
+        changefreq: 'weekly',
+        keywords: [
+          'alquiler ideal uruguay',
+          'planificar alquiler',
+          'alquiler para mi hogar',
+          'presupuesto familiar alquiler',
+          'alquiler cerca del trabajo',
+          'alquiler cerca del estudio',
+          'pareja familia compartir alquiler',
+          'teletrabajo vivienda',
+        ],
+      },
+      {
         to: '/venta-viviendas-uruguay',
         labelKey: 'nav.propertySales',
         icon: 'mdi-home-search-outline',
