@@ -49,6 +49,22 @@ Para inspeccionar sin escribir, ejecutar el entrypoint con `--dry-run --report=<
 
 El frontend utiliza caché por operación, después filtra y pagina en memoria. La página base es canónica y entra en navegación/búsqueda/sitemap; las variantes con parámetros son `noindex,follow`. La UI admite escritorio con sidebar y móvil con drawer lateral, botón persistente, foco contenido y restauración del scroll.
 
+### Jerarquía y selección visible (2026-09-07)
+
+Una única navegación ofrece alquiler, compra y alquileres económicos. Conserva ubicación, tipo, dormitorios y preferencia de disponibilidad entre modos; conserva los criterios de comparación entre alquiler y compra. No transfiere importes entre monedas ni arrastra la página anterior. Las consultas pendientes de barrios se invalidan al cambiar de modo.
+
+Las tarjetas priorizan motivo de selección, ubicación, costo mensual o precio pedido, título y características. El reporte comunitario permanece antes de las acciones. Los comparables y fundamentos completos se abren con un control nativo `details` que funciona con teclado, sin depender de hover. Las etiquetas se proyectan desde las señales existentes mediante `propertyOpportunityLabels`; no modifican cálculos, cohortes ni umbrales.
+
+- «Menor costo mensual» / «Menor precio»: señal de precio total.
+- «Menor precio por m²»: señal propia por superficie; su explicación conserva la mediana por m².
+- «Comparación exploratoria»: siempre visible cuando corresponde, incluso si hay dos señales de precio.
+
+El alquiler y los gastos comunes propios se desglosan como importes debajo de la comparación, sin añadir una etiqueta repetida.
+
+Se muestran hasta tres etiquetas, con el criterio filtrado como principal. Cada explicación identifica diferencia, muestra y fuentes. Los análisis vencidos no muestran etiquetas favorables ni el descuento destacado. No se presentan exclusividad, demanda elevada ni historial de rebajas porque los datos actuales no los acreditan. Las etiquetas están traducidas a español, inglés y portugués.
+
+La primera visita usa tema claro, incluso si el dispositivo está en oscuro. Una preferencia guardada de oscuro o sistema se conserva. El menú global tiene ancho definido desde SSR y permanece oculto hasta la hidratación; después conserva los gestos nativos. El monitoreo de errores se documenta en [SENTRY_ERRORS.md](SENTRY_ERRORS.md).
+
 ## Validación
 
 Las pruebas del motor incluyen precios condicionados, GC inconsistentes, superficies incompatibles, contradicciones de atributos, copia de evidencia, independencia de publicadores y fechas. Las del servicio comprueban contratos entre paquetes, separación de operaciones, proyección pública, conservación de snapshots y estados 200 vacío/503. Las de interfaz verifican filtros con carga pendiente, moneda/presupuesto, evidencia y drawer a 320, 390 y 1440 px. Los fixtures no sustituyen la revisión de capturas reales y la comprobación pública después de desplegar.

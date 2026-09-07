@@ -284,7 +284,7 @@ test('bands, applied geography and browser Back remain shareable; active mode ne
   await expect(page).toHaveURL(/band=10000_13000/)
   const bandUrl = page.url()
   await page
-    .getByRole('navigation', { name: 'Cómo buscar alquileres' })
+    .getByRole('navigation', { name: 'Cómo buscar propiedades' })
     .getByRole('link', { name: 'Alquileres económicos' })
     .click()
   expect(page.url()).toBe(bandUrl)
@@ -364,7 +364,11 @@ test('desktop sidebar, failed read retry and sale comparison remain separate', a
   await page.screenshot({ path: resolve(artifactRoot, '.sdd-budget-desktop.png'), fullPage: false })
   await navigate(page, `${path}?operation=sale&mode=budget`)
   await expect(page.getByTestId('budget-rentals')).toHaveCount(0)
-  await expect(page.getByRole('navigation', { name: 'Cómo buscar alquileres' })).toHaveCount(0)
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Cómo buscar propiedades' })
+      .getByRole('link', { name: 'Compra', exact: true })
+  ).toHaveAttribute('aria-current', 'page')
   await expect(page.locator('.opportunities__workspace')).toBeVisible()
   expect(state.comparisonReads.some(url => url.searchParams.get('operation') === 'sale')).toBe(true)
   expect(state.errors).toEqual([])

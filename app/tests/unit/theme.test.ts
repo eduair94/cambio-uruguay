@@ -7,10 +7,11 @@ describe('normalizeMode', () => {
     expect(normalizeMode('dark')).toBe('dark')
     expect(normalizeMode('system')).toBe('system')
   })
-  it('falls back to system for anything else', () => {
-    expect(normalizeMode(null)).toBe('system')
-    expect(normalizeMode('purple')).toBe('system')
-    expect(normalizeMode(undefined)).toBe('system')
+  it('falls back to light for missing or invalid preferences, even on a dark OS', () => {
+    for (const raw of [null, undefined, '', 'purple', false, {}]) {
+      expect(normalizeMode(raw)).toBe('light')
+      expect(resolveTheme(normalizeMode(raw), true)).toBe('light')
+    }
   })
 })
 

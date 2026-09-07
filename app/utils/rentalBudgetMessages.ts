@@ -2,7 +2,7 @@ export const rentalBudgetMessages = {
   es: {
     modeCompare: 'Comparar precios',
     modeBudget: 'Alquileres económicos',
-    modes: 'Cómo buscar alquileres',
+    modes: 'Cómo buscar propiedades',
     title: 'Alquileres económicos en Uruguay',
     intro:
       'Casas y apartamentos por franja de precio. Revisá el costo mensual y el anuncio original.',
@@ -71,7 +71,7 @@ export const rentalBudgetMessages = {
   en: {
     modeCompare: 'Compare prices',
     modeBudget: 'Budget rentals',
-    modes: 'How to search for rentals',
+    modes: 'How to search for properties',
     title: 'Budget rentals in Uruguay',
     intro: 'Houses and apartments by price range. Check the monthly cost and original listing.',
     introCompact: 'Houses and apartments by price range.',
@@ -139,7 +139,7 @@ export const rentalBudgetMessages = {
   pt: {
     modeCompare: 'Comparar preços',
     modeBudget: 'Aluguéis econômicos',
-    modes: 'Como buscar aluguéis',
+    modes: 'Como buscar imóveis',
     title: 'Aluguéis econômicos no Uruguai',
     intro: 'Casas e apartamentos por faixa de preço. Confira o custo mensal e o anúncio original.',
     introCompact: 'Casas e apartamentos por faixa de preço.',

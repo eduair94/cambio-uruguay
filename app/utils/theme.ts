@@ -11,12 +11,15 @@ export type ThemeMode = 'light' | 'dark' | 'system'
 /** A concrete Vuetify theme name. */
 export type AppliedTheme = 'light' | 'dark'
 
+/** First visits stay light; following the OS requires an explicit preference. */
+export const DEFAULT_THEME_MODE: AppliedTheme = 'light'
+
 /** localStorage key holding the persisted preference. */
 export const THEME_STORAGE_KEY = 'cu_theme'
 
-/** Coerce arbitrary stored input into a valid mode, defaulting to `system`. */
+/** Coerce arbitrary stored input into a valid mode, defaulting to light. */
 export function normalizeMode(raw: unknown): ThemeMode {
-  return raw === 'light' || raw === 'dark' || raw === 'system' ? raw : 'system'
+  return raw === 'light' || raw === 'dark' || raw === 'system' ? raw : DEFAULT_THEME_MODE
 }
 
 /** Resolve the concrete theme to apply from a mode + the current OS preference. */

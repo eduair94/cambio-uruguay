@@ -1,5 +1,32 @@
 import { fileURLToPath } from 'node:url'
+import { execFileSync } from 'node:child_process'
 import { CONSENT_STRICT_REGIONS } from './utils/consent'
+
+// Read only this checkout: app remains a self-contained deploy surface. PM2
+// need not load .env again; Nuxt serializes these build defaults into runtimeConfig.
+const sentryRelease = (() => {
+  if (process.env.SENTRY_RELEASE) return process.env.SENTRY_RELEASE
+  const revision =
+    process.env.GITHUB_SHA ||
+    (() => {
+      try {
+        return execFileSync('git', ['rev-parse', 'HEAD'], {
+          cwd: fileURLToPath(new URL('.', import.meta.url)),
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'ignore'],
+          timeout: 3000,
+        }).trim()
+      } catch {
+        return 'unknown'
+      }
+    })()
+  return `cambio-uruguay-app@${revision}`
+})()
+const sentryDefaults = {
+  enabled: process.env.SENTRY_ENABLED !== '0' && process.env.SENTRY_ENABLED !== 'false',
+  environment: process.env.SENTRY_ENVIRONMENT || 'production',
+  release: sentryRelease,
+}
 
 export default defineNuxtConfig({
   // Keep opt-in validation/CI builds isolated from a running dev server or another staging build.
@@ -137,8 +164,8 @@ export default defineNuxtConfig({
         { name: 'format-detection', content: 'telephone=no' },
 
         // Theme colors
-        { name: 'msapplication-TileColor', content: '#272727' },
-        { name: 'theme-color', content: '#272727' },
+        { name: 'msapplication-TileColor', content: '#f6f7f9' },
+        { name: 'theme-color', content: '#f6f7f9' },
       ],
       link: [
         {
@@ -634,8 +661,8 @@ export default defineNuxtConfig({
           short_name: 'Cambio Uruguay',
           description:
             'Cotización del dólar en Uruguay hoy. Compara precios de compra y venta en más de 40 casas de cambio en tiempo real.',
-          theme_color: '#272727',
-          background_color: '#272727',
+          theme_color: '#f6f7f9',
+          background_color: '#f6f7f9',
           display: 'standalone',
           orientation: 'portrait-primary',
           start_url: '/',
@@ -838,7 +865,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Private keys (only available on server-side)
     sentry: {
-      dsn: process.env.SENTRY_DSN,
+      ...sentryDefaults,
+      dsn: process.env.NUXT_SENTRY_DSN || process.env.SENTRY_DSN || '',
     },
     // Self-hosted scraper bases for the weekly casas:reviews refresh (Google
     // Places proxy + Trustpilot API). Baked from .env at build — prod reads
@@ -938,6 +966,12 @@ export default defineNuxtConfig({
     },
     // Public keys (exposed to client-side)
     public: {
+      // DSN is the public ingestion address, never an auth token. Runtime
+      // overrides are NUXT_PUBLIC_SENTRY_* / NUXT_SENTRY_* respectively.
+      sentry: {
+        ...sentryDefaults,
+        dsn: process.env.NUXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN || '',
+      },
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://cambio-uruguay.com',
       // Client-side API URL
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://api.cambio-uruguay.com',

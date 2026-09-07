@@ -123,7 +123,7 @@ async function setup(page: Page, theme: 'light' | 'dark' = 'dark') {
   })
   await expect(async () => {
     if (new URL(page.url()).searchParams.get('operation') === 'sale')
-      await page.getByRole('button', { name: 'Alquiler', exact: true }).click()
+      await page.getByRole('link', { name: 'Alquiler', exact: true }).click()
     await expect(page.getByTestId('opportunity-card')).toHaveCount(1, { timeout: 2000 })
   }).toPass({ timeout: 90000, intervals: [500, 1000] })
 }
@@ -131,7 +131,7 @@ async function setup(page: Page, theme: 'light' | 'dark' = 'dark') {
 async function checkButtonContrast(page: Page, theme: string, width: number) {
   const measurements = []
   for (const button of [
-    page.getByRole('button', { name: 'Alquiler', exact: true }),
+    page.getByRole('link', { name: 'Alquiler', exact: true }),
     page.getByRole('link', { name: 'Ver ficha del alquiler', exact: true }),
   ]) {
     const measurement = await button.evaluate(element => {
@@ -202,8 +202,8 @@ for (const width of [320, 390, 1440]) {
     await expect(card).toContainText('20% por debajo de la mediana')
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
     if (width < 960) {
-      await expect(card.locator('.opportunity-card__prices')).toBeInViewport({ ratio: 1 })
-      await expect(card.locator('.opportunity-card__evidence')).toBeInViewport({ ratio: 1 })
+      await expect(card.locator('.opportunity-card__asking')).toBeInViewport({ ratio: 1 })
+      await expect(card.locator('.opportunity-card__comparison')).toBeInViewport({ ratio: 1 })
     }
     await checkButtonContrast(page, 'dark', width)
     await page.screenshot({ path: `../.sdd-opportunities-first-${width}.png` })
@@ -255,7 +255,7 @@ for (const width of [320, 390, 1440]) {
     ).toBeVisible()
     if (width < 960) await expect(filterScope).not.toBeVisible()
     await expect(card).toHaveCount(1)
-    await page.getByRole('button', { name: 'Compra', exact: true }).click()
+    await page.getByRole('link', { name: 'Compra', exact: true }).click()
     await expect(page).toHaveURL(/operation=sale/)
     expect(new URL(page.url()).searchParams.has('maxPrice')).toBe(false)
     await expect(card).toContainText('USD 160.000')
@@ -276,7 +276,7 @@ for (const width of [320, 390, 1440]) {
         'rgb(246, 247, 249)'
       )
       await expect(page.locator('.opportunities h1')).toHaveCSS('color', 'color(srgb 0 0 0 / 0.87)')
-      await page.getByRole('button', { name: 'Alquiler', exact: true }).click()
+      await page.getByRole('link', { name: 'Alquiler', exact: true }).click()
       await expect(card).toContainText('UYU 32.000')
       await checkButtonContrast(page, 'light', width)
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
@@ -298,8 +298,8 @@ test('mobile first viewport shows price and evidence with readable light control
     await expect(page.locator('.v-application')).toHaveCSS('background-color', 'rgb(246, 247, 249)')
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
     const card = page.getByTestId('opportunity-card')
-    await expect(card.locator('.opportunity-card__prices')).toBeInViewport({ ratio: 1 })
-    await expect(card.locator('.opportunity-card__evidence')).toBeInViewport({ ratio: 1 })
+    await expect(card.locator('.opportunity-card__asking')).toBeInViewport({ ratio: 1 })
+    await expect(card.locator('.opportunity-card__comparison')).toBeInViewport({ ratio: 1 })
     await checkButtonContrast(page, 'light', width)
     await page.screenshot({ path: `../.sdd-opportunities-first-light-${width}.png` })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
@@ -345,17 +345,19 @@ for (const theme of ['dark', 'light'] as const) {
     for (const width of [320, 390]) {
       await page.setViewportSize({ width, height: 844 })
       await page
-        .getByRole('button', { name: width === 320 ? 'Compra' : 'Alquiler', exact: true })
+        .getByRole('link', { name: width === 320 ? 'Compra' : 'Alquiler', exact: true })
         .click()
       const card = page.getByTestId('opportunity-card')
       await expect(card).toContainText('25% por debajo de la mediana por m²')
-      await expect(card.locator('.opportunity-card__evidence')).toContainText(
+      await expect(card.locator('.opportunity-card__comparison')).toContainText(
         '6 comparables · 3 anunciantes'
       )
-      await expect(card.locator('.opportunity-card__evidence')).toContainText('Para explorar')
+      await expect(card.locator('.opportunity-card__labels')).toContainText(
+        'Comparación exploratoria'
+      )
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
-      await expect(card.locator('.opportunity-card__prices')).toBeInViewport({ ratio: 1 })
-      await expect(card.locator('.opportunity-card__evidence')).toBeInViewport({ ratio: 1 })
+      await expect(card.locator('.opportunity-card__asking')).toBeInViewport({ ratio: 1 })
+      await expect(card.locator('.opportunity-card__comparison')).toBeInViewport({ ratio: 1 })
       await expect(card).toContainText(width === 320 ? 'USD 160.000' : 'UYU 32.000')
       await page.screenshot({ path: `../.sdd-opportunities-signals-${theme}-${width}.png` })
       await card.locator('summary').click()
@@ -372,6 +374,8 @@ for (const theme of ['dark', 'light'] as const) {
     dualSignal = true
     await page.getByTestId('opportunity-filter-trigger').click()
     const dialog = page.getByRole('dialog', { name: 'Filtros', exact: true })
+    await dialog.locator('summary').filter({ hasText: 'Tipo de evidencia' }).click()
+    await expect(dialog.locator('.opportunity-filters__advanced')).toHaveAttribute('open', '')
     for (const [label, option] of [
       ['Comparar por', 'Precio por m²'],
       ['Tipo de evidencia', 'Para explorar'],
@@ -390,9 +394,9 @@ for (const theme of ['dark', 'light'] as const) {
     await expect(page.locator('.opportunity-card__difference')).toHaveText(
       '25% por debajo de la mediana por m²'
     )
-    await expect(page.getByTestId('opportunity-card')).toContainText(
-      'También destaca en: Precio total.'
-    )
+    await expect(
+      page.getByTestId('opportunity-card').locator('.opportunity-card__labels')
+    ).toContainText('Menor costo mensual')
   })
 }
 
@@ -420,7 +424,7 @@ test('unfiltered empty snapshots distinguish insufficient evidence from no quali
     data.coverage[0].observed = 10653
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(data) })
   })
-  await page.getByRole('button', { name: 'Compra', exact: true }).click()
+  await page.getByRole('link', { name: 'Compra', exact: true }).click()
   const empty = page.locator('.opportunities__empty')
   await expect(
     empty.getByRole('heading', { name: 'Todavía faltan comparables independientes' })
@@ -437,7 +441,7 @@ test('unfiltered empty snapshots distinguish insufficient evidence from no quali
   await expect(page.getByRole('heading', { name: 'Resultados no disponibles' })).toHaveCount(0)
   await page.screenshot({ path: '../.sdd-opportunities-empty-evidence-390.png' })
   analyzed = 15
-  await page.getByRole('button', { name: 'Alquiler', exact: true }).click()
+  await page.getByRole('link', { name: 'Alquiler', exact: true }).click()
   await expect(
     empty.getByRole('heading', {
       name: 'Por ahora no detectamos oportunidades con estos criterios',
@@ -467,11 +471,72 @@ test('opportunities explain empty and unavailable analyses without substitute re
       body: JSON.stringify({ statusCode: 503, statusMessage: 'Analysis pending' }),
     })
   )
-  await page.getByRole('button', { name: 'Compra', exact: true }).click()
+  await page.getByRole('link', { name: 'Compra', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Estamos preparando la comparación' })
   ).toBeVisible()
   await expect(page.getByRole('button', { name: 'Reintentar', exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Resultados no disponibles' })).toBeVisible()
   await expect(page.getByTestId('opportunity-card')).toHaveCount(0)
+})
+
+test('mobile navigation and results reflow when text is enlarged to 200%', async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 })
+    await setup(page, 'light')
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '200%'
+    })
+    const modes = page.getByRole('navigation', { name: 'Cómo buscar propiedades', exact: true })
+    for (const link of await modes.getByRole('link').all()) {
+      const box = await link.boundingBox()
+      expect(box!.x).toBeGreaterThanOrEqual(0)
+      expect(box!.x + box!.width).toBeLessThanOrEqual(width + 1)
+    }
+    const title = page.getByTestId('opportunity-card').locator('h3 a')
+    await title.focus()
+    await expect(title).toBeFocused()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
+      true
+    )
+    await modes.getByRole('link', { name: 'Compra', exact: true }).click()
+    await expect(page.getByTestId('opportunity-card')).toContainText('USD 160.000')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
+      true
+    )
+    await page.evaluate(() => {
+      document.documentElement.style.removeProperty('font-size')
+    })
+  }
+})
+
+test('selection labels have visible explanations and disappear on stale analysis', async ({
+  page,
+}) => {
+  test.setTimeout(120000)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await setup(page, 'light')
+  const card = page.getByTestId('opportunity-card')
+  await expect(card.getByTestId('opportunity-label').first()).toHaveText('Menor costo mensual')
+  expect(await card.getByTestId('opportunity-label').count()).toBeLessThanOrEqual(3)
+  await card.locator('summary').click()
+  await expect(card.locator('.opportunity-card__label-explanations')).toContainText(
+    'Fuentes de los comparables'
+  )
+  await expect(card.locator('.opportunity-card__label-explanations')).toContainText(
+    'Se compara alquiler más gastos comunes'
+  )
+  await expect(card).toContainText('Alquiler UYU 28.000 + gastos comunes UYU 4.000')
+  await page.route('**/api/property-opportunities?**', route => {
+    const result = fixture('sale')
+    result.stale = true
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify(result) })
+  })
+  await page.getByRole('link', { name: 'Compra', exact: true }).click()
+  await expect(card).toContainText('USD 160.000')
+  await expect(card.getByTestId('opportunity-label')).toHaveCount(0)
+  await expect(card.locator('.opportunity-card__comparison')).toHaveCount(0)
+  await expect(
+    page.getByText('Este análisis lleva más tiempo sin actualizarse.', { exact: false })
+  ).toBeVisible()
 })

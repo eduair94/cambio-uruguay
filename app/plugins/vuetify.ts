@@ -1,5 +1,6 @@
 import { h } from 'vue'
 import { createVuetify } from 'vuetify'
+import { DEFAULT_THEME_MODE } from '~/utils/theme'
 import { aliases as mdiAliases, mdi } from 'vuetify/iconsets/mdi'
 import {
   VAlert,
@@ -220,7 +221,7 @@ export default defineNuxtPlugin(nuxtApp => {
     theme: {
       // SSR + first paint default. The client theme plugin / `useThemeMode`
       // switches to the persisted or system preference after hydration.
-      defaultTheme: 'dark',
+      defaultTheme: DEFAULT_THEME_MODE,
       themes: {
         dark: {
           dark: true,

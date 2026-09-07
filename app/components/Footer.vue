@@ -260,8 +260,11 @@ $teal: #4dd0e1;
 // row, and the count steps down cleanly with width.
 .cu-footer__dir {
   display: grid;
+  min-width: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px 20px;
+  // Long labels must still fit their column when browser text is enlarged.
+  overflow-wrap: anywhere;
 }
 
 @media (min-width: 600px) {
@@ -302,6 +305,7 @@ $teal: #4dd0e1;
 
 .cu-footer__link {
   display: inline-block;
+  max-width: 100%;
   color: $muted;
   font-size: 0.8125rem;
   line-height: 1.35;

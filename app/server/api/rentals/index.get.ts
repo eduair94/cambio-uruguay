@@ -161,6 +161,7 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
     throw createError({
       statusCode: 503,
       statusMessage: 'Rental search is temporarily unavailable',
+      cause: error,
     })
   }
 })

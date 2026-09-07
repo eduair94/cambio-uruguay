@@ -6,8 +6,15 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
 -->
 <template>
   <VContainer class="opportunities">
-    <VBreadcrumbs :items="breadcrumbs" density="compact" class="px-0 py-1" />
-    <header class="opportunities__header">
+    <VBreadcrumbs
+      :items="breadcrumbs"
+      density="compact"
+      class="opportunities__breadcrumbs px-0 py-1"
+    />
+    <header
+      class="opportunities__header"
+      :class="{ 'opportunities__header--comparison': !budgetMode }"
+    >
       <h1>{{ budgetMode ? budgetCopy.title : t('title') }}</h1>
       <p>
         {{
@@ -18,8 +25,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
       </p>
       <div class="opportunities__intro-links">
         <template v-if="!budgetMode"
-          ><a href="#opportunity-method">{{ t('methodShort') }}</a
-          ><a href="#opportunity-coverage">{{ t('coverageShort') }}</a></template
+          ><a href="#opportunity-method">{{ t('methodShort') }}</a></template
         >
         <NuxtLink
           :to="
@@ -39,14 +45,17 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
         />
       </div>
     </header>
-    <nav
-      v-if="query.operation === 'rent'"
-      class="opportunities__modes"
-      :aria-label="budgetCopy.modes"
-    >
-      <NuxtLink :to="modeLink('compare')" :aria-current="!budgetMode ? 'page' : undefined">{{
-        budgetCopy.modeCompare
-      }}</NuxtLink>
+    <nav class="opportunities__modes" :aria-label="budgetCopy.modes">
+      <NuxtLink
+        :to="modeLink('rent')"
+        :aria-current="!budgetMode && query.operation === 'rent' ? 'page' : undefined"
+        >{{ t('rent') }}</NuxtLink
+      >
+      <NuxtLink
+        :to="modeLink('sale')"
+        :aria-current="query.operation === 'sale' ? 'page' : undefined"
+        >{{ t('sale') }}</NuxtLink
+      >
       <NuxtLink :to="modeLink('budget')" :aria-current="budgetMode ? 'page' : undefined">{{
         budgetCopy.modeBudget
       }}</NuxtLink>
@@ -68,32 +77,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
         />
       </aside>
       <div class="opportunities__content">
-        <VBtnToggle
-          v-if="smAndDown"
-          :model-value="query.operation"
-          class="opportunities__operation"
-          mandatory
-          divided
-          variant="outlined"
-          color="link"
-          :aria-label="t('operation')"
-          @update:model-value="changeOperation"
-          ><VBtn value="rent">{{ t('rent') }}</VBtn
-          ><VBtn value="sale">{{ t('sale') }}</VBtn></VBtnToggle
-        >
         <div class="opportunities__controls">
-          <VBtnToggle
-            v-if="!smAndDown"
-            :model-value="query.operation"
-            mandatory
-            divided
-            variant="outlined"
-            color="link"
-            :aria-label="t('operation')"
-            @update:model-value="changeOperation"
-            ><VBtn value="rent">{{ t('rent') }}</VBtn
-            ><VBtn value="sale">{{ t('sale') }}</VBtn></VBtnToggle
-          >
           <VBtn
             v-if="smAndDown"
             color="link"
@@ -177,7 +161,17 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
               hide-details
               class="opportunities__sort"
               @update:model-value="changeSort"
-            />
+            >
+              <template #selection="{ item }">
+                <template v-if="smAndDown">
+                  <span aria-hidden="true" :title="item.title">{{
+                    t(`sortShort_${query.sort}`)
+                  }}</span>
+                  <span class="d-sr-only">{{ item.title }}</span>
+                </template>
+                <span v-else>{{ item.title }}</span>
+              </template>
+            </VSelect>
           </div>
           <VProgressLinear v-if="pending" indeterminate color="primary" class="mb-4" />
           <VAlert
@@ -232,6 +226,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
               :key="item.subject.id"
               :item="item"
               :signal="query.signal"
+              :stale="data?.stale"
             />
           </div>
           <nav
@@ -329,13 +324,20 @@ const { smAndDown } = useDisplay()
 const query = computed(() => normalizeOpportunityQuery(route.query))
 const budgetMode = computed(() => query.value.operation === 'rent' && route.query.mode === 'budget')
 const budgetCopy = computed(() => rentalBudgetCopy(locale.value))
-function modeLink(mode: 'compare' | 'budget') {
-  if ((mode === 'budget') === budgetMode.value) return route.fullPath
-  const params: Record<string, string> = { operation: 'rent' }
+function modeLink(mode: 'rent' | 'sale' | 'budget') {
+  if (mode === 'budget' ? budgetMode.value : !budgetMode.value && query.value.operation === mode)
+    return route.fullPath
+  const params: Record<string, string> = { operation: mode === 'sale' ? 'sale' : 'rent' }
   if (mode === 'budget') params.mode = 'budget'
   for (const key of ['department', 'neighborhood', 'type', 'bedrooms', 'availability'] as const) {
     const value = query.value[key]
     if (value !== '' && value !== 'all') params[key] = String(value)
+  }
+  if (mode !== 'budget' && !budgetMode.value) {
+    for (const key of ['confidence', 'evidence', 'signal', 'sort'] as const) {
+      const value = query.value[key]
+      if (value !== 'all') params[key] = value
+    }
   }
   return { path: route.path, query: params }
 }
@@ -493,11 +495,6 @@ async function removeFilter(key: FilterKey) {
     page: 1,
   })
 }
-async function changeOperation(operation: unknown) {
-  if (operation !== 'sale' && operation !== 'rent') return
-  neighborhoodOverride.value = null
-  await updateQuery({ ...query.value, operation, maxPrice: null, page: 1 })
-}
 async function changeSort(sort: OpportunityQuery['sort']) {
   await updateQuery({ ...query.value, sort, page: 1 })
 }
@@ -523,6 +520,11 @@ async function loadNeighborhoods(department: string) {
 }
 watch(smAndDown, mobile => {
   if (!mobile) filtersOpen.value = false
+})
+watch([() => query.value.operation, budgetMode], () => {
+  facetRequest++
+  neighborhoodOverride.value = null
+  filtersOpen.value = false
 })
 const showSnackbar = ref(false)
 const snackbar = ref('')
@@ -668,6 +670,8 @@ useHead(() => ({
   line-height: 1.3;
   text-decoration: none;
   border-bottom: 2px solid transparent;
+  justify-content: center;
+  text-align: center;
 }
 .opportunities__modes a[aria-current='page'] {
   font-weight: 700;
@@ -850,14 +854,6 @@ useHead(() => ({
   .opportunities__header {
     margin-bottom: 12px;
   }
-  .opportunities__operation {
-    height: 44px;
-    margin-bottom: 6px;
-  }
-  .opportunities__operation :deep(.v-btn) {
-    min-height: 44px;
-    padding-inline: 16px;
-  }
   .opportunities__workspace {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
@@ -913,17 +909,23 @@ useHead(() => ({
     scroll-margin-top: 150px;
   }
 }
-@media (max-width: 599px) {
+@media (max-width: 700px) {
   .opportunities {
-    padding: 12px;
+    /* The layout already contributes 12px: retain 16px total at each edge. */
+    padding: 12px 4px 56px;
+  }
+  .opportunities__breadcrumbs {
+    display: none;
   }
   .opportunities__header {
-    margin: 8px 0 12px;
+    margin: 0 0 8px;
   }
   .opportunities h1 {
-    font-size: 1.35rem;
+    font-size: 1.375rem;
     line-height: 1.3;
     margin-bottom: 8px;
+    text-wrap: pretty;
+    overflow-wrap: anywhere;
   }
   .opportunities__header p {
     font-size: 0.875rem;
@@ -934,15 +936,41 @@ useHead(() => ({
     margin-top: 4px;
     align-items: center;
   }
+  .opportunities__header--comparison .opportunities__intro-links {
+    display: none;
+  }
+  .opportunities__modes {
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .opportunities__modes a {
+    flex: 1 1 4.5rem;
+    min-width: 0;
+    padding-inline: 4px;
+    overflow-wrap: anywhere;
+  }
   .opportunities__toolbar {
-    align-items: stretch;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 154px);
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .opportunities__toolbar h2 {
+    font-size: 1rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .opportunities__toolbar > div[role='status'] {
+    min-width: 0;
   }
   .opportunities__sort {
-    flex-basis: auto;
+    min-width: 0;
+    width: 100%;
   }
   .opportunities__controls {
     gap: 8px;
+    padding-block: 4px;
   }
   .opportunities__controls :deep(.v-btn) {
     padding-inline: 12px;
@@ -950,6 +978,7 @@ useHead(() => ({
   }
   .opportunities__pagination {
     gap: 6px;
+    flex-wrap: wrap;
   }
   .opportunities__pagination :deep(.v-btn) {
     padding-inline: 10px;

@@ -263,7 +263,7 @@
     "northStar": "La Mesa de Mercado",
     "overview": "Cambio Uruguay feels like a well-run market desk after dark: many live signals, one calm frame, and no ambiguity about what is actionable. Deep navy surfaces establish continuity while blue, amber, teal, green, and orange communicate roles rather than decorate.\n\nThe system is information-dense but never cramped. Familiar Material controls, generous container spacing, short transitions, and visible provenance make complex financial content easy to scan on a phone moments before a decision.\n\nThe implementation is Vuetify 4 running a restored Material 2 look: the v3 type ramp, elevation scale, and uppercase button/overline casing are pinned back in app/assets/variables.scss and app/assets/css/legacy-vuetify.css. Theme tokens come from a two-theme Vuetify definition (app/plugins/vuetify.ts); dark is the SSR default and useThemeMode swaps to the persisted or system preference after hydration.",
     "keyCharacteristics": [
-      "Dark-first, with a fully usable light counterpart rather than an inverted afterthought.",
+      "Light on a first visit; preserve explicitly saved dark or system preferences. Both palettes remain fully usable.",
       "Evidence and freshness stay close to every comparison or recommendation.",
       "Color carries meaning; hierarchy comes from type, spacing, and tonal layering.",
       "Responsive layouts recompose instead of merely shrinking.",

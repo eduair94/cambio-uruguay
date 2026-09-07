@@ -12,13 +12,25 @@ const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
  * not just on the app root. A rule whose whole selector is that class therefore hits
  * every button, icon and card on the site. `:global(.v-theme--dark) .card {}` inside a
  * scoped block compiles to exactly that: the descendant is dropped and the data-v
- * attribute is never added. Write `.v-theme--dark .card {}` instead.
+ * attribute is never added. The same applies to `:global(html[data-theme='dark'])`.
+ * Write `.v-theme--dark .card {}` or `html[data-theme='dark'] .card {}` instead.
  */
-const BARE_THEME_RULE = /(^|[},])\s*\.v-theme--(dark|light)\s*\{/
+const BARE_THEME_RULE =
+  /(^|[},])\s*(?:\.v-theme--(?:dark|light)|html\[data-theme=['"]?(?:dark|light)['"]?\])\s*\{/
 
 const sfcs = await glob('{pages,components,layouts}/**/*.vue', { cwd: appRoot, absolute: true })
 
 describe('scoped styles never leak a bare theme selector', () => {
+  it('recognizes leaked Vuetify and HTML theme selectors', () => {
+    for (const selector of [
+      '.v-theme--dark',
+      "html[data-theme='dark']",
+      'html[data-theme=light]',
+    ]) {
+      expect(`${selector}{color:red}`).toMatch(BARE_THEME_RULE)
+      expect(`${selector} .card[data-v-test]{color:red}`).not.toMatch(BARE_THEME_RULE)
+    }
+  })
   it('finds SFCs to check', () => {
     expect(sfcs.length).toBeGreaterThan(50)
   })

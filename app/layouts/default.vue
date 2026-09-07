@@ -6,12 +6,16 @@
 
     <!-- Navigation Drawer for mobile. Every item is generated from NAV_SECTIONS,
          so the drawer can no longer drift away from the desktop nav (it used to
-         be a hand-written list that had silently lost /mapa and /estado). -->
+         be a hand-written list that had silently lost /mapa and /estado).
+         Vuetify omits layout width until mounted: explicit width and display
+         keep the closed SSR drawer out of view even before hydration/CSS. -->
     <VNavigationDrawer
+      id="mobile-navigation"
       v-model="drawer"
       location="left"
       temporary
       width="288"
+      :style="{ width: '288px', display: navigationReady || drawer ? undefined : 'none' }"
       class="mobile-navigation-drawer"
       :aria-label="$t('a11y.primaryNav')"
     >
@@ -109,6 +113,8 @@
         class="d-flex d-lg-none mr-1 mr-sm-2"
         :aria-label="$t('a11y.menu')"
         :title="$t('a11y.menu')"
+        aria-controls="mobile-navigation"
+        :aria-expanded="drawer"
         @click.stop="drawer = !drawer"
       />
 
@@ -308,6 +314,11 @@ const formatNameRoute = () => {
 
 // Navigation drawer state
 const drawer = ref(false)
+const navigationReady = ref(false)
+// After hydration, retain Vuetify's native edge-swipe and closing transitions.
+onMounted(() => {
+  navigationReady.value = true
+})
 
 // Route change loading management. router.beforeEach/afterEach add GLOBAL guards
 // and return their removers; capture them and dispose on scope teardown so a

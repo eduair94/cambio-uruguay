@@ -1,5 +1,15 @@
 <template>
   <article class="opportunity-card" :aria-labelledby="headingId" data-testid="opportunity-card">
+    <ul v-if="labels.length" class="opportunity-card__labels" :aria-label="t('reasons')">
+      <li
+        v-for="label in labels"
+        :key="label.id"
+        :class="`opportunity-card__label--${label.tone}`"
+        data-testid="opportunity-label"
+      >
+        {{ label.label }}
+      </li>
+    </ul>
     <div class="opportunity-card__overview">
       <div class="opportunity-card__photo">
         <img
@@ -29,6 +39,10 @@
               .join(' · ')
           }}
         </p>
+        <div class="opportunity-card__asking">
+          <strong>{{ money(subject.comparisonPrice) }}</strong>
+          <span>{{ t(subject.operation === 'rent' ? 'monthly' : 'asking') }}</span>
+        </div>
         <h3 :id="headingId">
           <NuxtLink v-if="propertyPath" :to="localePath(propertyPath)">{{ subject.title }}</NuxtLink
           ><a v-else :href="subject.url" target="_blank" rel="noopener noreferrer">{{
@@ -36,77 +50,62 @@
           }}</a>
         </h3>
         <p class="opportunity-card__specs">{{ specs(subject) }}</p>
-        <div class="opportunity-card__prices">
-          <div>
-            <span>{{ t(subject.operation === 'rent' ? 'monthly' : 'asking') }}</span
-            ><strong>{{ money(subject.comparisonPrice) }}</strong>
-            <small v-if="metric?.signal === 'price_per_m2'">{{ perAreaMoney(metric.value) }}</small>
-          </div>
-          <div>
-            <span>{{ t(metric?.signal === 'price_per_m2' ? 'perAreaMedian' : 'median') }}</span
-            ><b>{{
-              metric?.signal === 'price_per_m2'
-                ? perAreaMoney(metric.median)
-                : money(analysis.median)
-            }}</b>
-          </div>
-        </div>
-        <p v-if="subject.operation === 'rent' && subject.expenses" class="opportunity-card__meta">
+      </div>
+    </div>
+    <div class="opportunity-card__summary">
+      <div v-if="metric && !stale" class="opportunity-card__comparison">
+        <strong class="opportunity-card__difference">{{
+          t(metric.signal === 'price_per_m2' ? 'belowPerArea' : 'below', {
+            n: number(metric.gapPct, 1),
+          })
+        }}</strong>
+        <p>
+          <template v-if="metric.signal === 'price_per_m2'"
+            >{{ perAreaMoney(metric.value) }} ·
+          </template>
+          {{ t(metric.signal === 'price_per_m2' ? 'perAreaMedian' : 'median') }}:
           {{
-            t('rentBreakdown', {
-              rent: originalMoney(subject.price),
-              expenses: originalMoney(subject.expenses),
-            })
+            metric.signal === 'price_per_m2' ? perAreaMoney(metric.median) : money(analysis.median)
           }}
         </p>
-        <div class="opportunity-card__evidence">
-          <span v-if="metric" class="opportunity-card__difference">{{
-            t(metric.signal === 'price_per_m2' ? 'belowPerArea' : 'below', {
-              n: number(metric.gapPct, 1),
-            })
-          }}</span
-          ><span>{{
+        <p>
+          {{
             t('comparisonEvidence', {
               n: number(analysis.distinctN),
               sellers: number(analysis.sellersN),
             })
-          }}</span>
-          <strong class="opportunity-card__tier">{{
-            t(exploratory ? 'exploratory' : 'standard')
-          }}</strong>
-        </div>
-        <p v-if="exploratory" class="opportunity-card__meta opportunity-card__exploration">
-          {{ exploratoryReasons.join(' ') }}
-        </p>
-        <p v-if="signals.length > 1" class="opportunity-card__meta">
-          {{
-            t('alsoSignal', {
-              signal: t(metric?.signal === 'price_per_m2' ? 'total_price' : 'price_per_m2'),
-            })
           }}
         </p>
-        <p class="opportunity-card__meta">
-          {{ sourceName(subject.source) }} · {{ t('sourceRead', { date: date(subject.lastSeen) }) }}
-        </p>
-        <RentalsAvailabilityReport
-          v-if="subject.operation === 'rent'"
-          :offers="[subject]"
-          :summary="subject.availability"
-          :title="subject.title"
-        />
-        <div class="opportunity-card__actions">
-          <VBtn v-if="propertyPath" :to="localePath(propertyPath)" variant="tonal" color="link">{{
-            t(subject.operation === 'sale' ? 'saleDetail' : 'detail')
-          }}</VBtn
-          ><VBtn
-            :href="subject.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="text"
-            append-icon="mdi-open-in-new"
-            >{{ t('original') }}</VBtn
-          >
-        </div>
+      </div>
+      <p v-if="subject.operation === 'rent' && subject.expenses" class="opportunity-card__meta">
+        {{
+          t('rentBreakdown', {
+            rent: originalMoney(subject.price),
+            expenses: originalMoney(subject.expenses),
+          })
+        }}
+      </p>
+      <p class="opportunity-card__meta">
+        {{ sourceName(subject.source) }} · {{ t('sourceRead', { date: date(subject.lastSeen) }) }}
+      </p>
+      <RentalsAvailabilityReport
+        v-if="subject.operation === 'rent'"
+        :offers="[subject]"
+        :summary="subject.availability"
+        :title="subject.title"
+      />
+      <div class="opportunity-card__actions">
+        <VBtn v-if="propertyPath" :to="localePath(propertyPath)" variant="flat" color="primary">{{
+          t(subject.operation === 'sale' ? 'saleDetail' : 'detail')
+        }}</VBtn
+        ><VBtn
+          :href="subject.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="text"
+          append-icon="mdi-open-in-new"
+          >{{ t('original') }}</VBtn
+        >
       </div>
     </div>
     <details class="opportunity-card__details" data-testid="opportunity-comparables">
@@ -116,6 +115,14 @@
       <div class="opportunity-card__expanded">
         <section>
           <h4>{{ t('reasons') }}</h4>
+          <ul v-if="labels.length" class="opportunity-card__label-explanations">
+            <li v-for="label in labels" :key="label.id">
+              <strong>{{ label.label }}.</strong> {{ label.explanation }}
+            </li>
+          </ul>
+          <p v-if="exploratory" class="opportunity-card__exploration">
+            {{ exploratoryReasons.join(' ') }}
+          </p>
           <p>
             {{
               t('referenceReasons', {
@@ -230,6 +237,7 @@ import type {
   OpportunitySignal,
 } from '~/utils/propertyOpportunities'
 import { propertyOpportunityMessages } from '~/utils/propertyOpportunityMessages'
+import { propertyOpportunityLabels } from '~/utils/propertyOpportunityLabels'
 import {
   opportunityAreaKey,
   opportunityDate,
@@ -237,16 +245,30 @@ import {
   opportunityNumber,
   opportunityPropertyPath,
   opportunitySourceLabels,
-  opportunitySignals,
   opportunityPrimaryMetric,
 } from '~/utils/propertyOpportunityPresentation'
 
-const props = defineProps<{ item: OpportunityItem; signal?: 'all' | OpportunitySignal }>()
+const props = defineProps<{
+  item: OpportunityItem
+  signal?: 'all' | OpportunitySignal
+  stale?: boolean
+}>()
 const { t, te, locale } = useI18n({ useScope: 'local', messages: propertyOpportunityMessages })
 const localePath = useLocalePath()
 const subject = computed(() => props.item.subject)
 const analysis = computed(() => props.item.analysis)
-const signals = computed(() => opportunitySignals(props.item))
+const labels = computed(() => {
+  const result = propertyOpportunityLabels(props.item, {
+    locale: locale.value,
+    selectedSignal: props.signal,
+    stale: props.stale,
+  })
+  // Common expenses are already itemized below. Reserve badges for the
+  // selection criteria and evidence level instead of repeating that metadata.
+  return [...(result.primary ? [result.primary] : []), ...result.secondary].filter(
+    label => label.id !== 'expenses_known'
+  )
+})
 const metric = computed(() => opportunityPrimaryMetric(props.item, props.signal))
 const exploratory = computed(() => analysis.value.evidenceTier === 'exploratory')
 const exploratoryReasons = computed(() => {
@@ -292,11 +314,52 @@ function specs(listing: OpportunityPublicListing) {
 }
 .opportunity-card__overview {
   display: grid;
-  grid-template-columns: minmax(180px, 31%) minmax(0, 1fr);
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 20px;
+  padding: 20px 20px 0;
+  align-items: start;
+}
+.opportunity-card__labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  padding: 16px 20px 0;
+  margin: 0;
+}
+.opportunity-card__labels li {
+  max-width: 100%;
+  padding: 5px 9px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  background: rgba(var(--v-theme-on-surface), 0.06);
+}
+.opportunity-card__labels .opportunity-card__label--value {
+  color: #14532d;
+  background: #e7f4eb;
+}
+.opportunity-card__labels .opportunity-card__label--caution {
+  color: #713f12;
+  background: #fff3d6;
+}
+.opportunity-card__label-explanations li + li {
+  margin-top: 8px;
+}
+html[data-theme='dark'] .opportunity-card__labels .opportunity-card__label--value {
+  color: #b7efcb;
+  background: #16392b;
+}
+html[data-theme='dark'] .opportunity-card__labels .opportunity-card__label--caution {
+  color: #ffe3a3;
+  background: #49361b;
 }
 .opportunity-card__photo {
   position: relative;
-  min-height: 250px;
+  height: 172px;
+  overflow: hidden;
+  border-radius: 8px;
   background: rgba(var(--v-theme-on-surface), 0.06);
 }
 .opportunity-card__photo img {
@@ -313,8 +376,9 @@ function specs(listing: OpportunityPublicListing) {
   flex-direction: column;
   gap: 12px;
   height: 100%;
-  min-height: 230px;
-  padding: 20px;
+  padding: 12px;
+  font-size: 0.8rem;
+  text-align: center;
 }
 .opportunity-card__credit {
   position: absolute;
@@ -327,7 +391,9 @@ function specs(listing: OpportunityPublicListing) {
 }
 .opportunity-card__body {
   min-width: 0;
-  padding: 20px;
+}
+.opportunity-card__summary {
+  padding: 16px 20px 20px;
 }
 .opportunity-card p {
   margin: 0;
@@ -335,12 +401,13 @@ function specs(listing: OpportunityPublicListing) {
 .opportunity-card__zone {
   font-size: 0.82rem;
   font-weight: 600;
-  color: rgb(var(--v-theme-link));
+  color: rgba(var(--v-theme-on-surface), 0.8);
 }
 .opportunity-card h3 {
-  margin: 7px 0 10px;
-  font-size: 1.12rem;
-  line-height: 1.5;
+  margin: 12px 0 6px;
+  font-size: 1rem;
+  line-height: 1.45;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 .opportunity-card h3 a {
@@ -354,50 +421,43 @@ function specs(listing: OpportunityPublicListing) {
   font-size: 0.83rem;
   line-height: 1.6;
 }
-.opportunity-card__prices {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin: 16px 0 5px;
-}
-.opportunity-card__prices div {
+.opportunity-card__asking {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
+  margin-top: 4px;
 }
-.opportunity-card__prices span {
+.opportunity-card__asking span {
   font-size: 0.76rem;
-}
-.opportunity-card__prices strong {
-  font-size: 1.3rem;
   line-height: 1.4;
 }
-.opportunity-card__prices b {
-  font-size: 1rem;
-  line-height: 1.8;
-  font-weight: 600;
+.opportunity-card__asking strong {
+  font-size: clamp(1.65rem, 3vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
 }
-.opportunity-card__prices strong,
-.opportunity-card__prices b,
+.opportunity-card__asking strong,
 .opportunity-card__range dd {
   font-variant-numeric: tabular-nums;
 }
-.opportunity-card__evidence {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  align-items: center;
-  margin: 14px 0 8px;
+.opportunity-card__comparison {
+  padding: 12px 0;
+  margin-bottom: 8px;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.opportunity-card__comparison p {
+  margin-top: 4px;
   font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.8);
 }
 .opportunity-card__difference {
-  color: rgb(var(--v-theme-link));
-  font-weight: 800;
-}
-.opportunity-card__tier {
   color: rgb(var(--v-theme-on-surface));
+  font-size: 0.92rem;
+  font-weight: 700;
 }
-.opportunity-card__prices small,
 .opportunity-card__comparables strong small {
   display: block;
   font-size: 0.74rem;
@@ -520,48 +580,35 @@ function specs(listing: OpportunityPublicListing) {
 }
 @media (max-width: 700px) {
   .opportunity-card__overview {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 16px 0;
+  }
+  .opportunity-card__labels {
+    padding: 12px 16px 0;
   }
   .opportunity-card__photo {
-    height: 144px;
-    min-height: 0;
+    height: 136px;
   }
-  .opportunity-card__no-photo {
-    min-height: 144px;
+  .opportunity-card__credit {
+    font-size: 0.65rem;
+    padding: 4px;
   }
-  .opportunity-card__body {
-    order: -1;
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
+  .opportunity-card__summary {
+    padding: 12px 16px 16px;
+  }
+  .opportunity-card__comparison {
+    padding-block: 8px;
   }
   .opportunity-card__body h3 {
-    order: 1;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     overflow: hidden;
   }
   .opportunity-card__body h3:focus-within {
     -webkit-line-clamp: unset;
     overflow: visible;
-  }
-  .opportunity-card__prices {
-    order: 2;
-    margin: 6px 0;
-  }
-  .opportunity-card__evidence {
-    order: 3;
-    margin: 6px 0 10px;
-  }
-  .opportunity-card__specs {
-    order: 4;
-  }
-  .opportunity-card__meta {
-    order: 5;
-  }
-  .opportunity-card__actions {
-    order: 6;
   }
   .opportunity-card__expanded {
     padding-inline: 16px;
@@ -578,14 +625,12 @@ function specs(listing: OpportunityPublicListing) {
   }
 }
 @media (max-width: 360px) {
-  .opportunity-card__prices {
-    gap: 6px;
+  .opportunity-card__overview {
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 10px;
   }
-  .opportunity-card__prices strong {
-    font-size: 1.12rem;
-  }
-  .opportunity-card__prices b {
-    font-size: 0.91rem;
+  .opportunity-card__asking strong {
+    font-size: 1.5rem;
   }
 }
 </style>

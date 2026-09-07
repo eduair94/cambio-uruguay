@@ -1,6 +1,6 @@
 ---
 name: Cambio Uruguay
-description: A dark-first, evidence-led interface for understanding Uruguay's exchange market.
+description: A light-first, evidence-led interface for comparing Uruguay's public market information.
 colors:
   midnight-canvas: "#0a0e1a"
   navy-surface: "#121a2e"
@@ -171,7 +171,7 @@ system preference after hydration.
 
 **Key Characteristics:**
 
-- Dark-first, with a fully usable light counterpart rather than an inverted afterthought.
+- Light on a first visit, including when the operating system is dark. Preserve an explicitly saved dark or system preference; both palettes remain fully usable. This default follows the mobile property-search feedback of September 2026.
 - Evidence and freshness stay close to every comparison or recommendation.
 - Color carries meaning; hierarchy comes from type, spacing, and tonal layering.
 - Responsive layouts recompose instead of merely shrinking.

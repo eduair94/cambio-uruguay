@@ -140,6 +140,10 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
   } catch (error) {
     console.error('[api/rentals/mapa] failed', error)
     setResponseHeader(event, 'cache-control', 'no-store')
-    throw createError({ statusCode: 503, statusMessage: 'Rental map is temporarily unavailable' })
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Rental map is temporarily unavailable',
+      cause: error,
+    })
   }
 })

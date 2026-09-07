@@ -7,20 +7,19 @@
   font-display: swap;
 }
 
-/* Basic layout and typography. Dark is the default (SSR + first paint); the
-   theme composable sets data-theme on <html> after hydration so the light
-   palette can override it. */
+/* First visits use light from the first paint. A saved dark/system preference
+   is applied by the theme controller after hydration. */
 body {
   font-family: 'Open Sans', sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #0a0e1a;
-  color: #ffffff;
-}
-
-html[data-theme='light'] body {
   background-color: #f6f7f9;
   color: #1a1a1a;
+}
+
+html[data-theme='dark'] body {
+  background-color: #0a0e1a;
+  color: #ffffff;
 }
 
 /* Auto ads retain their initial iframe width after a viewport resize. */
@@ -169,8 +168,11 @@ img {
 /* Skip-to-content link: off-screen until focused by keyboard. */
 .skip-link {
   position: fixed;
-  top: -120px;
+  top: 0;
   left: 8px;
+  max-width: calc(100% - 16px);
+  overflow-wrap: anywhere;
+  transform: translateY(calc(-100% - 8px));
   z-index: 3000;
   padding: 10px 16px;
   border-radius: 0 0 8px 8px;
@@ -178,11 +180,11 @@ img {
   color: #fff;
   font-weight: 700;
   text-decoration: none;
-  transition: top 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .skip-link:focus {
-  top: 0;
+  transform: translateY(0);
 }
 
 /* Visible keyboard focus ring on interactive elements. */
