@@ -127,3 +127,10 @@ global sorting, pagination and public projection. Mongo fixtures use read-only `
 `rentalGeocode.test.ts` and `rentalGeocodeApi.test.ts` cover the measured Hocquart/Democracia
 response, conservative intersection parsing, invalid/approximate candidates, cache/coalescing,
 bounded concurrency, rate windows and distinct error states without contacting IDE in CI.
+
+Public mobile verification on 2026-09-07 (390 × 844, fresh browser) used the exact reported
+`Hoqcuart y Democracia` query. The official suggestion required explicit selection and confirmation;
+the map reached zoom 16 at the verified intersection. Applying it preserved Canelones and the
+Viviendas/Oficinas/Garajes union, and the first 24 results had ascending distances. No horizontal
+overflow or uncaught page error was observed. The first filter group was also checked on desktop
+and mobile in both themes: its heading no longer overlaps the Departamento label.

@@ -4,6 +4,7 @@ Nuxt 4 (`compatibilityVersion: 4`) + Vuetify 4.1.5 SSR frontend for cambio-urugu
 
 ## Run / build / test / lint
 - Dev: `npm run dev` → **port 3311** (`0.0.0.0`); prod: `npm run build` then `npm run start`.
+- PM2 and the staging probe must explicitly set `NODE_ENV=production`: external Vue modules select their runtime when Node starts, independently of the Nuxt build mode. Also keep their `--max-old-space-size=512` budget aligned, below PM2's 900 MiB RSS restart threshold. An absent environment and oversized default heap contributed to memory restarts and intermittent 502s on 2026-09-07. Keep `ecosystem.config.cjs` and `scripts/check-staging.cjs` aligned; see `docs/app/SSR_RUNTIME.md`.
 - After `.nuxt` is wiped (dev restart, branch switch): `npx nuxi prepare` (also runs via `postinstall`/`prepare` = `nuxt prepare`).
 - **`npm run typecheck` (vue-tsc) is BROKEN — it crashes. Use `npm run lint` (eslint flat) instead;** `npm run lintfix` to auto-fix.
 - Prettier is enforced *through* eslint (`prettier/prettier` rule): `semi:false, singleQuote, arrowParens:avoid, printWidth:100, trailingComma:es5, tabWidth:2`. lint-staged runs `lintfix` on js/ts/vue, `prettier --write` on json/md/css. Known conflict: prettier vs `vue/html-self-closing` anchor/attr wrapping — let `lintfix` settle it, don't hand-format.
