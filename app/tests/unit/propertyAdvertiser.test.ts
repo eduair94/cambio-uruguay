@@ -33,6 +33,29 @@ const owner = {
 }
 afterEach(() => vi.useRealTimers())
 describe('source advertiser evidence', () => {
+  it.each(['apartamento', 'casa', 'terreno'])(
+    'keeps own-advert owner evidence from the native Mercado Libre %s host',
+    subdomain => {
+      const url = `https://${subdomain}.mercadolibre.com.uy/MLU-123456-alquiler-_JM`
+      const row = {
+        source: 'mercadolibre',
+        url,
+        sellerType: 'particular',
+        ownerDirect: { ...owner, sourceUrl: url },
+      }
+      expect(publicBusinessUrl(url, row.source)).toBe(url)
+      expect(publicAdvertiserMetadata(row, now).ownerDirect?.declared).toBe(true)
+      expect(advertiserMatches(row, { owner: true }, now)).toBe(true)
+    }
+  )
+  it.each([
+    'https://casa.mercadolibre.com.uy.ejemplo.com/MLU-123',
+    'https://desconocido.mercadolibre.com.uy/MLU-123',
+    'https://casa.mercadolibre.com.uy@ejemplo.com/MLU-123',
+    'https://casa.mercadolibre.com.uy/MLU-123?token=private',
+  ])('rejects impostor, unverified or credential-bearing source URLs: %s', url => {
+    expect(publicBusinessUrl(url, 'mercadolibre')).toBeNull()
+  })
   it('does not publish a contact from another advert or a profile link for another company', () => {
     const contact = {
       version: 1,

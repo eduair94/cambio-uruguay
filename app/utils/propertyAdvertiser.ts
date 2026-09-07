@@ -60,7 +60,15 @@ const sourceHosts: Record<string, readonly string[]> = {
   infocasas: ['infocasas.com.uy', 'www.infocasas.com.uy'],
   casasweb: ['casasweb.com', 'www.casasweb.com'],
   elpais: ['inmuebles.elpais.com.uy'],
-  mercadolibre: ['mercadolibre.com.uy', 'www.mercadolibre.com.uy', 'inmueble.mercadolibre.com.uy'],
+  // Native listing hosts observed in the rental-category harvest, not arbitrary subdomains.
+  mercadolibre: [
+    'mercadolibre.com.uy',
+    'www.mercadolibre.com.uy',
+    'inmueble.mercadolibre.com.uy',
+    'apartamento.mercadolibre.com.uy',
+    'casa.mercadolibre.com.uy',
+    'terreno.mercadolibre.com.uy',
+  ],
   facebook: ['facebook.com', 'www.facebook.com'],
 }
 export const ADVERTISER_EVIDENCE_MAX_AGE_DAYS = 30
