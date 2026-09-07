@@ -619,7 +619,7 @@ module.exports = {
       // Los precios oficiales del SIPC (MEF / Area Defensa del Consumidor), y el historico que
       // el Estado NO guarda: su API devuelve solo el precio de hoy con su fecha y no tiene
       // endpoint de serie, asi que nadie publica la evolucion. 215 POST a compararArticulo con
-      // bbox nacional, ~2,3 min medidos, ~75.600 observaciones por corrida.
+      // bbox nacional, 341 s y 75.858 observaciones en la corrida completa medida el 2026-09-07.
       // Diario y no mas seguido a proposito: la `fecha` que declara el origen tiene
       // granularidad de dia, asi que correr cada hora no agregaria una sola fila al ledger.
       // 03:12 UTC = 00:12 America/Montevideo: hueco libre, antes de rag-index (04:20) y del

@@ -2,7 +2,7 @@
 // `compararCanasta`.
 //
 // La tentación es real: la canasta entera entra en una llamada de 65 s contra
-// los ~2,3 min de este barrido. Pero imputa (ver `parse.ts`), su matriz tiene
+// los 341 s de este barrido. Pero imputa (ver `parse.ts`), su matriz tiene
 // 6 claves de columna duplicadas —`"Ta - Ta  | Cerro "`, `"Super XXI | Super
 // XXI"`…— y por lo tanto no se puede unir a locales de forma fiable.
 //
