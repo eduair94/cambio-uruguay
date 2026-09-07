@@ -110,7 +110,7 @@ describe('Sentry errors privacy boundary', () => {
       {
         exception: {
           values: [
-            { type: 'Customer_private', value: 'uid 123 secret-token query=monthlyMax12000' },
+            { type: 'Customer_private', value: 'Private customer input from a rental search' },
           ],
         },
       },
