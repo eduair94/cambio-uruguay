@@ -1,5 +1,24 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Auditoría de InfoCasas y alquileres económicos — 6 de septiembre de 2026
+
+La búsqueda pública de casas/apartamentos hasta $13.000 permitió reproducir dos causas distintas de faltantes:
+
+- **Profundidad aparente:** a las 00:00 UTC del 7 de septiembre, las páginas nacionales 600 y 850 de `?order=3` entregaron exactamente los mismos 21 IDs, todos de mayo de 2026. El paginador decía página 850/850, pero no estaba llegando a los avisos anteriores. No eran simplemente anuncios nuevos moviendo el listado. Se reemplaza el barrido nacional completo por cinco búsquedas públicas solapadas: hasta 13.000, 13.000–25.000, 25.000–40.000, 40.000–70.000 y desde 70.000 pesos. Cada una tenía menos de 9.000 resultados al comprobarla. Si crece, se divide antes de recorrerla. El repaso horario conserva el feed de novedades.
+- **Piso de precio:** el mínimo de $8.000 para casas/apartamentos descartaba viviendas como los avisos `193952249`, `193666397`, `194116585` y `194137551` de Colonia, publicados a $6.500–$7.000. InfoCasas puede admitir desde $3.000 UYU con evidencia propia de alquiler residencial y sin contradicciones. El piso anterior permanece para fuentes sin ese contexto y para importes en USD de período incierto.
+
+Ahora se validan el número de página efectivo, el paginador y los filtros recibidos; tres páginas sin IDs nuevos detienen una cola repetida. La nota distingue IDs observados, aceptados, descartados y lecturas repetidas. Los presupuestos son **globales**: 900 páginas y 40 minutos por defecto. El recorrido por franjas no constituye un snapshot transaccional: un aviso puede cambiar de precio durante la lectura. Por eso InfoCasas declara cobertura parcial incluso al terminar las franjas y **no permite caducar por ausencia**; se mantiene la conservación histórica y la frescura de cada oferta.
+
+La consulta de ejemplo también contiene tarifas diarias, de fin de semana y avisos clasificados como apartamentos cuyo único uso permitido es depósito u oficina. Esos resultados no prueban que haya igual cantidad de viviendas mensuales. `classes/rentals/eligibility.ts` y su espejo puro `app/utils/rentalEligibility.ts` distinguen evidencia de período, uso residencial y contradicciones para la selección económica; no infieren tasaciones ni disponibilidad real. Se verifica la paridad entre paquetes con pruebas.
+
+En oportunidades, el modo **Alquileres económicos** utiliza `/api/rentals/budget`, separado del análisis estadístico. Las franjas son disjuntas: hasta $10.000, más de $10.000 hasta $13.000, más de $13.000 hasta $16.000, más de $16.000 hasta $20.000 y más de $20.000 hasta $25.000. Se selecciona una oferta propia antes de asignar la franja. `rent` compara alquiler; `monthly` exige alquiler más gastos comunes conocidos del mismo aviso. El texto explícito puede corroborar cero gastos; ausencia, contradicción y moneda desconocida no se convierten en cero. No incluye cocheras, oficinas ni residencias compartidas como viviendas completas, ni promete que un precio bajo sea una oportunidad de inversión.
+
+La API filtra elegibilidad antes de contar/paginar, reutiliza frescura y reportes comunitarios y conserva enlace a ficha y origen. El catálogo acotado se cachea 60 segundos; los reportes se vuelven a aplicar a cada consulta. La proyección pública excluye identidad, descripciones privadas y contactos. Un universo que supere el límite de lectura devuelve indisponibilidad en vez de publicar una franja incompleta sin avisar.
+
+La lectura real de comprobación del 7 de septiembre, 00:07–00:37 UTC, terminó las cinco franjas: **872 páginas y 17.663 IDs únicos**, de los cuales **14.272** pasan el parser y la plausibilidad (11.361 casas/apartamentos). Entre las viviendas publicadas en UYU hay 78 hasta $13.000; 53 cumplen también los criterios económicos estrictos. Los cuatro avisos de $6.500–$7.000 mencionados arriba están presentes y admitidos. Son cifras de la captura, no altas nuevas ni cobertura completa del portal.
+
+Validación de esta entrega: compilación Nuxt de producción y lint sin errores; 5.684 pruebas unitarias de app aprobadas y 11 omitidas; contratos económicos contrastados también contra Mongo aislado, incluyendo más de 400 resultados y gastos contradictorios. Cinco recorridos E2E pasan para filtros, borradores, navegación Atrás, compartir y costos del mismo aviso. Inspección visual ES/EN/PT en 320/390/1440 px, claro/oscuro: sin desbordamiento ni errores JS observados; panel lateral opaco, controles de 44 px y acceso fijo a filtros tras desplazarse.
+
 ## Ampliación de fichas y revisión de identidad — 2026-09-06
 
 Verificación de producción a **04:54:57 UTC**: **28.758 resultados visibles** (Mercado Libre
@@ -198,8 +217,9 @@ la muestra real incluyó un alquiler de USD 120.000.000.
 
 Las fuentes habilitadas admiten degradación independiente. Sólo la marca interna **`complete: true`**
 permite expirar ofertas por ausencia; ML y Facebook declaran cobertura parcial por sus límites
-de búsqueda, y el modo horario aplica esa misma protección a todas las fuentes. InfoCasas sólo
-la declara si terminó sin cortes ni fallas; Casasweb aplica el mismo criterio. Tres respuestas
+de búsqueda, y el modo horario aplica esa misma protección a todas las fuentes. InfoCasas también
+conserva cobertura parcial por la inestabilidad del paginador (auditoría del 6 de septiembre);
+Casasweb exige terminar sin cortes ni fallas. Tres respuestas
 consecutivas fallidas detienen el barrido de Casasweb. El País sólo se declara completo si abrió
 las 19 búsquedas y leyó todas sus páginas: una búsqueda que no abrió es un **agujero del barrido**,
 no un departamento vacío, y con el interruptor apagado vuelve a `access: external_only` sin red.
@@ -278,7 +298,7 @@ lea `attributes_list` (`"2 dormitorios | 1 baño | 40 m² cubiertos"`) y `locati
   cambiar con `RENTALS_EP_USER_AGENT`.
 - Un request por host a la vez, con 1,2 s de separación (`RENTALS_HOST_GAP_MS`). El barrido completo
   de InfoCasas son ~900 páginas contra un solo host: va a las 04:52 UTC (01:52 de Montevideo).
-- `robots.txt` de InfoCasas prohíbe `/alquiler/*-y-*`. Sólo construimos `/alquiler/pagina<N>`, y
+- `robots.txt` de InfoCasas prohíbe `/alquiler/*-y-*`. Construimos `/alquiler/pagina<N>` y franjas simples `desde-<N>/hasta-<N>/pesos`, y
   `assertAllowed()` rechaza cualquier ruta con `-y-` para que un futuro slug tipo
   `treinta-y-tres` no se cuele.
 - Casasweb permite las rutas públicas de búsqueda para nuestra UA. En El País, `robots.txt` excluye
@@ -291,7 +311,7 @@ lea `attributes_list` (`"2 dormitorios | 1 baño | 40 m² cubiertos"`) y `locati
 - Gallito publica `Content-Signal: search=yes, ai-train=no, use=reference`, pero esa señal no
   habilita sortear su respuesta 403. Se indexan únicamente las fuentes accesibles, con enlaces
   de vuelta y sin entrenamiento de modelos.
-- Guardamos metadatos y el enlace, nunca la descripción del aviso.
+- Conservamos metadatos, enlaces y descripciones propias saneadas de HTML/contactos; las fichas muestran el extracto público y la identidad interna queda fuera de las APIs.
 
 ## Cómo se unifica (lo importante)
 
@@ -481,7 +501,8 @@ Antes de comparar, todo pasa por `normalize.ts`:
   misma oficina de 25 de Mayo 500 en dos filas.
 - Precios: **manda el último separador**. `$ 4.500` es 4500, nunca 4,50.
 - Se descartan ventas, "busco alquiler", alquileres por día/temporada/invernales y cualquier precio que no
-  pueda ser una mensualidad (`isPlausibleRent`: $3.000 a $900.000).
+  pueda ser una mensualidad (`isPlausibleRent`: pisos por tipo, hasta $900.000; la excepción residencial
+  de InfoCasas admite desde $3.000 UYU sólo con contexto propio validado).
 - Un contrato invernal puede tener un precio mensual plausible. Se reconoce su declaración
   explícita en el título y, para InfoCasas, también «alquiler invernal» en la descripción cuando
   no se menciona una opción anual. «Jardín de invierno» o ropa de cama no son plazos. Una
@@ -532,7 +553,8 @@ aislado que no importa el sync ni consulta DB.
 | var | default | para qué |
 |---|---|---|
 | `APP_MONGO_URI` | — | **obligatoria**: sin ella el job se niega a correr (escribiría la DB equivocada) |
-| `RENTALS_IC_MAX_PAGES` / `RENTALS_IC_FAST_PAGES` | 900 / 10 | tope de páginas de InfoCasas |
+| `RENTALS_IC_MAX_PAGES` / `RENTALS_IC_FAST_PAGES` | 900 / 10 | presupuesto global de páginas de InfoCasas |
+| `RENTALS_IC_MAX_DURATION_MS` | 2400000 | presupuesto global de 40 minutos; un corte conserva avisos anteriores |
 | `RENTALS_ML_MAX_PAGES` / `RENTALS_ML_FAST_PAGES` | 120 / 12 | tope de páginas por consulta en ML |
 | `RENTALS_CW_MAX_PAGES` | 60 | tope de páginas por departamento/tipo en Casasweb; la rápida toma una página por búsqueda |
 | `RENTALS_FB_ENABLED` | — | `0` apaga Marketplace |

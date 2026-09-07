@@ -8,11 +8,19 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
   <VContainer class="opportunities">
     <VBreadcrumbs :items="breadcrumbs" density="compact" class="px-0 py-1" />
     <header class="opportunities__header">
-      <h1>{{ t('title') }}</h1>
-      <p>{{ t(smAndDown ? 'introCompact' : 'intro') }}</p>
+      <h1>{{ budgetMode ? budgetCopy.title : t('title') }}</h1>
+      <p>
+        {{
+          budgetMode
+            ? budgetCopy[smAndDown ? 'introCompact' : 'intro']
+            : t(smAndDown ? 'introCompact' : 'intro')
+        }}
+      </p>
       <div class="opportunities__intro-links">
-        <a href="#opportunity-method">{{ t('methodShort') }}</a
-        ><a href="#opportunity-coverage">{{ t('coverageShort') }}</a>
+        <template v-if="!budgetMode"
+          ><a href="#opportunity-method">{{ t('methodShort') }}</a
+          ><a href="#opportunity-coverage">{{ t('coverageShort') }}</a></template
+        >
         <NuxtLink
           :to="
             localePath(
@@ -21,9 +29,30 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
           "
           >{{ t(query.operation === 'sale' ? 'sales' : 'rentals') }}</NuxtLink
         >
+        <VBtn
+          v-if="budgetMode && smAndDown"
+          class="opportunities__share-mobile"
+          icon="mdi-share-variant-outline"
+          variant="text"
+          :aria-label="budgetCopy.share"
+          @click="shareSearch"
+        />
       </div>
     </header>
-    <div class="opportunities__workspace">
+    <nav
+      v-if="query.operation === 'rent'"
+      class="opportunities__modes"
+      :aria-label="budgetCopy.modes"
+    >
+      <NuxtLink :to="modeLink('compare')" :aria-current="!budgetMode ? 'page' : undefined">{{
+        budgetCopy.modeCompare
+      }}</NuxtLink>
+      <NuxtLink :to="modeLink('budget')" :aria-current="budgetMode ? 'page' : undefined">{{
+        budgetCopy.modeBudget
+      }}</NuxtLink>
+    </nav>
+    <RentalsBudgetRentals v-if="budgetMode" />
+    <div v-else class="opportunities__workspace">
       <aside class="opportunities__sidebar" :aria-label="t('filters')">
         <OpportunityFilters
           v-model:open="filtersOpen"
@@ -270,6 +299,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
 
 <script setup lang="ts">
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
+import { rentalBudgetCopy } from '~/utils/rentalBudgetMessages'
 import { useDisplay } from 'vuetify'
 import OpportunityFilters from '~/components/property-opportunities/Filters.vue'
 import OpportunityCard from '~/components/property-opportunities/OpportunityCard.vue'
@@ -297,17 +327,34 @@ const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
 const query = computed(() => normalizeOpportunityQuery(route.query))
+const budgetMode = computed(() => query.value.operation === 'rent' && route.query.mode === 'budget')
+const budgetCopy = computed(() => rentalBudgetCopy(locale.value))
+function modeLink(mode: 'compare' | 'budget') {
+  if ((mode === 'budget') === budgetMode.value) return route.fullPath
+  const params: Record<string, string> = { operation: 'rent' }
+  if (mode === 'budget') params.mode = 'budget'
+  for (const key of ['department', 'neighborhood', 'type', 'bedrooms', 'availability'] as const) {
+    const value = query.value[key]
+    if (value !== '' && value !== 'all') params[key] = String(value)
+  }
+  return { path: route.path, query: params }
+}
 const requestKey = computed(() => JSON.stringify(query.value))
-const { data, pending, error, refresh } = await useAsyncData<PropertyOpportunitiesResponse>(
+const { data, pending, error, refresh } = await useAsyncData<PropertyOpportunitiesResponse | null>(
   'property-opportunities',
   () =>
-    $fetch('/api/property-opportunities', { query: availability.withRevision({ ...query.value }) }),
-  { watch: [requestKey] }
+    budgetMode.value
+      ? Promise.resolve(null)
+      : $fetch('/api/property-opportunities', {
+          query: availability.withRevision({ ...query.value }),
+        }),
+  { watch: [requestKey, budgetMode] }
 )
 const items = computed(() =>
   !pending.value && data.value?.operation === query.value.operation ? data.value.items : []
 )
 availability.watchChanges(async () => {
+  if (budgetMode.value) return
   await refresh()
   if (query.value.availability !== 'all') await focusResults()
 })
@@ -481,7 +528,11 @@ const showSnackbar = ref(false)
 const snackbar = ref('')
 async function shareSearch() {
   try {
-    if (navigator.share) await navigator.share({ title: t('title'), url: window.location.href })
+    if (navigator.share)
+      await navigator.share({
+        title: budgetMode.value ? budgetCopy.value.title : t('title'),
+        url: window.location.href,
+      })
     else {
       await navigator.clipboard.writeText(window.location.href)
       snackbar.value = t('copied')
@@ -497,15 +548,15 @@ const canonicalUrl = computed(
   () => `https://cambio-uruguay.com${localePath('/oportunidades-inmobiliarias-uruguay')}`
 )
 defineOgImageComponent('Cambio', {
-  title: () => t('title'),
-  subtitle: () => t('intro'),
+  title: () => (budgetMode.value ? budgetCopy.value.title : t('title')),
+  subtitle: () => (budgetMode.value ? budgetCopy.value.intro : t('intro')),
   tag: 'URUGUAY',
 })
 useSeoMeta({
-  title: () => t('title'),
-  description: () => t('intro'),
-  ogTitle: () => t('title'),
-  ogDescription: () => t('intro'),
+  title: () => (budgetMode.value ? budgetCopy.value.title : t('title')),
+  description: () => (budgetMode.value ? budgetCopy.value.intro : t('intro')),
+  ogTitle: () => (budgetMode.value ? budgetCopy.value.title : t('title')),
+  ogDescription: () => (budgetMode.value ? budgetCopy.value.intro : t('intro')),
   ogType: 'website',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
@@ -523,8 +574,8 @@ useHead(() => ({
             '@type': 'CollectionPage',
             '@id': `${canonicalUrl.value}#page`,
             url: canonicalUrl.value,
-            name: t('title'),
-            description: t('intro'),
+            name: budgetMode.value ? budgetCopy.value.title : t('title'),
+            description: budgetMode.value ? budgetCopy.value.intro : t('intro'),
             inLanguage: locale.value,
             isPartOf: {
               '@type': 'WebSite',
@@ -600,6 +651,31 @@ useHead(() => ({
   grid-template-columns: 282px minmax(0, 1fr);
   gap: 24px;
   align-items: start;
+}
+.opportunities__modes {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  margin: 0 0 16px;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.opportunities__modes a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  line-height: 1.3;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+.opportunities__modes a[aria-current='page'] {
+  font-weight: 700;
+  border-bottom-color: rgb(var(--v-theme-link));
+}
+.opportunities__modes a:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: -2px;
 }
 .opportunities__sidebar {
   position: sticky;
