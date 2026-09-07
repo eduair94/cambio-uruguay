@@ -85,9 +85,10 @@ describe("source-owned public advertiser metadata", () => {
     expect(published.agency?.key).toBe("infocasas:77"); expect(published.sellerType).toBe("inmobiliaria"); expect(published).not.toHaveProperty("address");
   });
   it("retains uninspected same-advert fields without renewing dates, but explicit clearing wins", () => {
-    const old = { source: "infocasas" as const, listingId: "infocasas:123", url: URL, sellerType: "inmobiliaria" as const, agency,
+    type AdvertiserFixture = Parameters<typeof retainAdvertiserFields>[1];
+    const old: AdvertiserFixture = { source: "infocasas", listingId: "infocasas:123", url: URL, sellerType: "inmobiliaria", agency,
       publicContact: contactFromVisibleHtml("business@example.com", agency, agency.profileUrl, NOW) };
-    const fresh = { source: old.source, listingId: old.listingId, url: URL, sellerType: old.sellerType };
+    const fresh: AdvertiserFixture = { source: old.source, listingId: old.listingId, url: URL, sellerType: old.sellerType };
     expect(retainAdvertiserFields(old, fresh, true).publicContact).toEqual(old.publicContact);
     expect(retainAdvertiserFields(old, { ...fresh, publicContact: null }, true).publicContact).toBeNull();
     expect(retainAdvertiserFields(old, { ...fresh, agency: null }, true).publicContact).toBeNull();
