@@ -6,6 +6,16 @@ import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { SERVICE_MAX_BYTES, SERVICE_SOURCE } from "./types";
 
+const TRANSIENT_STATUS = new Set([429, 500, 502, 503, 504]);
+// A longer server-requested pause defers this run rather than retrying too early.
+function retryDelay(header: string | null, attempt: number): number | null {
+  const backoff = 1500 * 2 ** attempt;
+  const value = header?.trim() || "";
+  const date = /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*[, ]/i.test(value) ? Date.parse(value) : NaN;
+  const requested = /^\d+$/.test(value) ? Number(value) * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+  return requested > 60_000 ? null : Math.max(backoff, requested);
+}
+
 const confined = (value: string) => {
   const path = resolve(value), root = resolve(process.cwd());
   if (!path.startsWith(root + require("node:path").sep)) throw new Error("OSM file must stay inside this worktree");
@@ -28,9 +38,26 @@ export async function downloadServicePbf(): Promise<{ file: string; sourceSha256
   await mkdir(directory, { recursive: true });
   const file = join(directory, `uruguay-${process.pid}-${Date.now()}.osm.pbf`);
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 5 * 60_000);
+  const deadline = Date.now() + 5 * 60_000;
+  const budgetError = () => new Error("Geofabrik download time budget exceeded");
+  const timer = setTimeout(() => controller.abort(budgetError()), 5 * 60_000);
   try {
     const headers = { "User-Agent": "CambioUruguayBot/1.0 (+https://cambio-uruguay.com/acerca)" };
+    const assertBudget = () => {
+      if (controller.signal.aborted || Date.now() >= deadline) throw budgetError();
+    };
+    async function pause(delay: number): Promise<void> {
+      assertBudget();
+      if (delay >= deadline - Date.now()) throw budgetError();
+      await new Promise<void>((done, fail) => {
+        const stop = () => { clearTimeout(wait); controller.signal.removeEventListener("abort", stop); fail(budgetError()); };
+        const wait = setTimeout(() => {
+          controller.signal.removeEventListener("abort", stop);
+          try { assertBudget(); done(); } catch (error) { fail(error); }
+        }, delay);
+        controller.signal.addEventListener("abort", stop, { once: true });
+      });
+    }
     async function request(url: string): Promise<Response> {
       const visited = new Set<string>();
       for (let redirects = 0; ; redirects++) {
@@ -44,15 +71,24 @@ export async function downloadServicePbf(): Promise<{ file: string; sourceSha256
         visited.add(target.href);
         let response: Response;
         for (let attempt = 0; ; attempt++) {
+          assertBudget();
           try {
             response = await fetch(target.href, { headers, signal: controller.signal, redirect: "manual" });
-            break;
           } catch (error) {
             if (attempt >= 2 || controller.signal.aborted) throw error;
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await pause(1500 * 2 ** attempt);
+            continue;
           }
+          if (!TRANSIENT_STATUS.has(response.status) || attempt >= 2) break;
+          const delay = retryDelay(response.headers.get("retry-after"), attempt);
+          await response.body?.cancel();
+          if (delay === null) break;
+          await pause(delay);
         }
-        if (![301, 302, 303, 307, 308].includes(response.status)) return response;
+        if (![301, 302, 303, 307, 308].includes(response.status)) {
+          if (!response.ok) await response.body?.cancel();
+          return response;
+        }
         const location = response.headers.get("location");
         // Release every redirect body, including rejected destinations, before another request.
         await response.body?.cancel();

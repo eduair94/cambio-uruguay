@@ -220,7 +220,8 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('descriptio
 .agencies-search select {
   width: 100%;
   min-width: 0;
-  height: 44px;
+  height: auto;
+  min-height: 44px;
   border: 1px solid rgba(var(--v-theme-on-surface), 0.48);
   border-radius: 6px;
   padding: 8px 10px;
@@ -265,7 +266,7 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('descriptio
 }
 @media (max-width: 700px) {
   .agencies-search {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
     gap: 12px;
   }
   .agencies-search label:first-child {

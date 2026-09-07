@@ -10,7 +10,7 @@ El job `sync_property_services.ts` descarga el [extracto Uruguay de Geofabrik](h
 
 `dataAsOf` viene de `osmosis_replication_timestamp` del PBF. `fetchedAt` es la lectura del archivo, no fecha de cada negocio. La vigencia usa `dataAsOf`: `ready` hasta 14 días, `stale` hasta 45, después `unavailable`. Una descarga/reimportación del mismo archivo no rejuvenece los datos.
 
-El archivo fuente no puede superar 120 MiB; descarga cinco minutos, parser diez y proceso quince minutos. Hay hasta dos reintentos de conexión dentro del mismo presupuesto. Hasta 100.000 POI y dos millones de referencias de nodos. Los archivos temporales propios se borran al finalizar. `--file` permite reproducir una captura, exige su `.md5` oficial adyacente y no borra el archivo proporcionado; su ruta y la del reporte deben quedar dentro del worktree.
+El archivo fuente no puede superar 120 MiB; descarga cinco minutos, parser diez y proceso quince minutos. Se aceptan hasta dos redirecciones dentro del mismo host HTTPS, únicamente hacia extractos Uruguay y sus checksums. Hay hasta dos reintentos por fallo de conexión o respuesta 429/500/502/503/504, con espera progresiva, dentro del mismo presupuesto total. Se respeta `Retry-After`; una pausa pedida de más de 60 segundos difiere la corrida y conserva los datos activos. Hasta 100.000 POI y dos millones de referencias de nodos. Los archivos temporales propios se borran al finalizar. `--file` permite reproducir una captura, exige su `.md5` oficial adyacente y no borra el archivo proporcionado; su ruta y la del reporte deben quedar dentro del worktree.
 
 ## Publicación y operación
 
