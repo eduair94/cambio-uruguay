@@ -79,6 +79,9 @@ describe("las pasadas filtradas de MercadoLibre", () => {
     const out = await harvestMercadoLibre("full", 41.45);
     expect(out.listings.length).toBeGreaterThan(0);
     expect(out.listings.every((l) => l.sellerType === "particular")).toBe(true);
+    expect(out.note).toContain("etapas[catálogo:solicitudes=");
+    expect(out.note).toContain(";particulares:solicitudes=");
+    expect(out.note).toContain(";mascotas:solicitudes=");
   });
 
   // EL CASO QUE JUSTIFICA LA GUARDA. `seller_type` con un valor invalido devuelve el total
@@ -268,5 +271,128 @@ describe("cobertura por categorías y particiones propias de MercadoLibre", () =
     const out = await harvestMercadoLibre("fast", 41.45);
     expect(out.listings).toHaveLength(0);
     expect(out.ok).toBe(false);
+  });
+});
+
+describe("particiones completas de precio frente a ubicaciones con faltantes", () => {
+  // Facetas nativas capturadas el 2026-09-07. Los estados omiten 25 casas y 100 apartamentos.
+  const houses = {
+    paging: { total: 4418 },
+    available_filters: [
+      { id: "state", values: [
+        ["TUxVUENBTnMxNzliYw", 1300], ["TUxVUENPTGExMTUwOQ", 178], ["TUxVUERVUm9kZDA1", 16],
+        ["TUxVUE1BTFo5OWMx", 1368], ["TUxVUE1PTlo2MDIy", 1340], ["TUxVUFBBWVo0YzEy", 33],
+        ["TUxVUFJJVlpjOWQ1", 12], ["TUxVUFJPQ1ozNWRm", 43], ["TUxVUFNBTloxMDk2NQ", 43],
+        ["TUxVUFRSRXNiY2Zh", 11], ["TUxVUEFSVHMxMzQ1Mw", 2], ["TUxVUENFUm9mOTJl", 5],
+        ["TUxVUEZMT3MxYjc", 1], ["TUxVUEZMT1o4MWUz", 10], ["TUxVUExBVlpkNTI0", 7],
+        ["TUxVUFLNT1oxNTQ4MQ", 4], ["TUxVUFNBTG9jMTM5", 5], ["TUxVUFNPUm9mOTcx", 10],
+        ["TUxVUFRBQ280MGE5", 5],
+      ].map(([id, results]) => ({ id, results })) },
+      { id: "price", values: [
+        { id: "*-30000", results: 1395 }, { id: "30000-100000", results: 1485 },
+        { id: "100000-*", results: 1538 },
+      ] },
+    ],
+  };
+  const apartments = {
+    paging: { total: 15440 },
+    available_filters: [
+      { id: "state", values: [
+        ["TUxVUENBTnMxNzliYw", 816], ["TUxVUENFUm9mOTJl", 4], ["TUxVUENPTGExMTUwOQ", 123],
+        ["TUxVUERVUm9kZDA1", 14], ["TUxVUE1BTFo5OWMx", 3373], ["TUxVUE1PTlo2MDIy", 10929],
+        ["TUxVUFBBWVo0YzEy", 31], ["TUxVUFJPQ1ozNWRm", 7], ["TUxVUFNBTG9jMTM5", 9],
+        ["TUxVUFNBTloxMDk2NQ", 20], ["TUxVUEZMT1o4MWUz", 4], ["TUxVUExBVlpkNTI0", 2],
+        ["TUxVUFJJVlpjOWQ1", 4], ["TUxVUFNPUm9mOTcx", 1], ["TUxVUFRSRXNiY2Zh", 3],
+      ].map(([id, results]) => ({ id, results })) },
+      { id: "price", values: [
+        { id: "*-25000", results: 3472 }, { id: "25000-40000", results: 6366 },
+        { id: "40000-*", results: 5602 },
+      ] },
+    ],
+  };
+
+  it("prefiere las tres franjas de casas que explican el total y caben en las hojas", () => {
+    const filters = { category: "MLU1467" };
+    const children = mlPartitions(houses, filters, 2400);
+    expect(children).toHaveLength(3);
+    expect(children.every(child => child.price && !child.state)).toBe(true);
+    expect(new Set(children.map(child => child.price))).toEqual(new Set(["*-30000", "30000-100000", "100000-*"]));
+    expect(mlPartitionRemainder(houses, filters, children)).toBe(0);
+  });
+
+  it("mantiene ubicación para apartamentos cuando sus franjas superarían el límite por hoja", () => {
+    const filters = { category: "MLU1473" };
+    const children = mlPartitions(apartments, filters, 2400);
+    expect(children).toHaveLength(15);
+    expect(children.every(child => child.state && !child.price)).toBe(true);
+    expect(mlPartitionRemainder(apartments, filters, children)).toBe(100);
+  });
+
+  it("respeta el umbral configurado, incluido su borde exacto", () => {
+    expect(mlPartitions(houses, { category: "MLU1467" }, 1538).every(child => child.price)).toBe(true);
+    expect(mlPartitions(houses, { category: "MLU1467" }, 1537).every(child => child.state)).toBe(true);
+  });
+
+  const location = { id: "state", values: [{ id: "state-A", results: 20 }, { id: "state-B", results: 20 }] };
+  const withPrices = (values: Array<{ id: string; results?: unknown }>) => ({
+    paging: { total: 50 }, available_filters: [location, { id: "price", values }],
+  });
+
+  it.each([
+    ["conteo incompleto", [{ id: "*-20000", results: 20 }, { id: "20000-*", results: 20 }]],
+    ["conteo mayor al padre", [{ id: "*-20000", results: 30 }, { id: "20000-*", results: 30 }]],
+    ["intervalos superpuestos con suma aparentemente correcta", [{ id: "*-30000", results: 25 }, { id: "20000-*", results: 25 }]],
+    ["hueco entre intervalos", [{ id: "*-20000", results: 25 }, { id: "30000-*", results: 25 }]],
+    ["sin extremo inferior", [{ id: "10000-20000", results: 25 }, { id: "20000-*", results: 25 }]],
+    ["sin extremo superior", [{ id: "*-20000", results: 25 }, { id: "20000-30000", results: 25 }]],
+    ["mismo ID con conteos contradictorios", [{ id: "*-20000", results: 25 }, { id: "20000-*", results: 25 }, { id: "20000-*", results: 20 }]],
+    ["candidato adicional inválido", [{ id: "*-20000", results: 25 }, { id: "20000-*", results: 25 }, { id: "broken", results: 10 }]],
+    ["candidato adicional sin conteo", [{ id: "*-20000", results: 25 }, { id: "20000-*", results: 25 }, { id: "10000-15000" }]],
+  ])("conserva ubicación y su resto ante %s", (_label, values) => {
+    const evidence = withPrices(values as Array<{ id: string; results?: unknown }>);
+    const filters = { category: "MLU1467" };
+    const children = mlPartitions(evidence, filters, 30);
+    expect(children).toEqual([{ ...filters, state: "state-A" }, { ...filters, state: "state-B" }]);
+    expect(mlPartitionRemainder(evidence, filters, children)).toBe(10);
+  });
+
+  it("exige cubrir el rango padre vigente y admite el chip de ese rango sin tratarlo como hijo", () => {
+    const filters = { category: "MLU1467", price: "10000-30000" };
+    const evidence = withPrices([
+      { id: "10000-30000" }, { id: "10000-20000", results: 25 }, { id: "20000-30000", results: 25 },
+    ]);
+    const children = mlPartitions(evidence, filters, 25);
+    expect(new Set(children.map(child => child.price))).toEqual(new Set(["10000-20000", "20000-30000"]));
+    const outsideParent = withPrices([{ id: "*-20000", results: 25 }, { id: "20000-*", results: 25 }]);
+    expect(mlPartitions(outsideParent, filters, 25).every(child => child.state)).toBe(true);
+  });
+
+  it("no promueve precios con un elemento nulo en la respuesta del portal", () => {
+    const evidence = withPrices([{ id: "*-20000", results: 25 }, { id: "20000-*", results: 25 }]);
+    evidence.available_filters[1]!.values.push(null as never);
+    expect(mlPartitions(evidence, { category: "MLU1467" }, 25).every(child => child.state)).toBe(true);
+  });
+
+  it("no cambia una partición de ubicaciones que ya explica el total", () => {
+    const evidence = withPrices([{ id: "*-20000", results: 25 }, { id: "20000-*", results: 25 }]);
+    evidence.available_filters[0] = { id: "state", values: [{ id: "state-A", results: 25 }, { id: "state-B", results: 25 }] };
+    expect(mlPartitions(evidence, { category: "MLU1467" }, 25).every(child => child.state)).toBe(true);
+  });
+
+  it("recupera un aviso fuera de las ubicaciones al recorrer las franjas con el límite real del harvester", async () => {
+    vi.stubEnv("RENTALS_ML_MAX_PAGES", "1");
+    fetchJson.mockImplementation(async (url: string) => {
+      const p = new URL(url).searchParams;
+      if (p.get("category") !== "MLU1467" || p.has("seller_type") || p.has("IS_SUITABLE_FOR_PETS")) return page([], 0, p);
+      if (p.has("price")) return page([p.get("price") === "20000-30000" ? "99" : "2"], 15, p);
+      if (p.has("state")) return page(["2"], 20, p);
+      return { ...page(["1"], 50, p), available_filters: [location, { id: "price", values: [
+        { id: "*-20000", results: 20 }, { id: "20000-30000", results: 15 }, { id: "30000-*", results: 15 },
+      ] }] };
+    });
+    const out = await harvestMercadoLibre("full", 41.45);
+    expect(out.listings.some(listing => listing.listingId === "mercadolibre:MLU99")).toBe(true);
+    expect(fetchJson.mock.calls.some(([url]) => new URL(url).searchParams.has("state"))).toBe(false);
+    expect(out.complete).toBe(false);
   });
 });

@@ -1,4 +1,5 @@
 import { publicAdvertiserFields } from "./advertiser";
+import { isRetiredRentalKey, RETIRED_RENTAL_KEYS } from "./retiredKeys";
 // One row per property, not per advert.
 //
 // This is the whole point of the directory. The same apartment is published by two inmobiliarias
@@ -205,6 +206,7 @@ export function resolveKey(
   context: DedupeContext,
   claimed: Set<string>,
   reserved: ReadonlySet<string> = new Set([
+    ...RETIRED_RENTAL_KEYS,
     ...context.propertyFirstSeen.keys(),
     ...context.offerToProperty.values(),
     ...(context.propertyCanonicalOffer?.keys() ?? []),
@@ -216,6 +218,8 @@ export function resolveKey(
   const clusterIds = new Set(cluster.map((listing) => listing.listingId));
   for (const listing of cluster) {
     const previous = context.offerToProperty.get(listing.listingId);
+    // Explicit withdrawals override even stale, uniquely attributed ownership in history.
+    if (previous && isRetiredRentalKey(previous)) continue;
     if (previous && context.propertyCanonicalOffer?.has(previous)) {
       const canonicalOwner = context.propertyCanonicalOffer.get(previous);
       // A split must not turn a known URL into a different unit merely because that unit's ID
@@ -233,7 +237,7 @@ export function resolveKey(
   // An unseen advert can share the address/specification tuple with another unit, while its
   // price keeps the clusters correctly separate. It must not claim that unit's existing URL,
   // even when an hourly run does not include the owner of the URL at all.
-  const available = (key: string): boolean => !claimed.has(key) && !reserved.has(key);
+  const available = (key: string): boolean => !isRetiredRentalKey(key) && !claimed.has(key) && !reserved.has(key);
   const computed = propertyKey(canonical, cluster);
   if (available(computed)) return computed;
   // Two clusters computing the same key means the identity tuple did not tell them apart. Rather
@@ -359,6 +363,7 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
   // other on upsert.
   const claimed = new Set<string>();
   const reserved = new Set([
+    ...RETIRED_RENTAL_KEYS,
     ...context.propertyFirstSeen.keys(),
     ...context.offerToProperty.values(),
     ...(context.propertyCanonicalOffer?.keys() ?? []),

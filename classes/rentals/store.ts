@@ -1,4 +1,5 @@
 import { retainRentalAdvertiser } from "./advertiserRetention";
+import { isRetiredRentalKey } from "./retiredKeys";
 // Reading and writing the rental directory in the APP database.
 //
 // The one non-obvious rule lives in `mergeOffers`: a property row is the UNION of what every portal
@@ -165,6 +166,9 @@ export async function planRentalPropertyUpdates(
   properties: RentalProperty[],
   context: SaveContext
 ): Promise<RentalWritePlan> {
+  if (properties.some(property => isRetiredRentalKey(property.key))) {
+    throw new Error("[rentals] a retired URL cannot receive adverts");
+  }
   const assignedTo = new Map<string, string>();
   for (const property of properties) {
     for (const offer of property.offers) {
@@ -228,6 +232,10 @@ export async function planRentalPropertyUpdates(
 }
 
 export async function writeRentalPropertyPlan(plan: RentalWritePlan): Promise<number> {
+  // Check the entire plan before its first chunk; a later invalid row must not leave partial writes.
+  if (plan.assigned.some(property => isRetiredRentalKey(property.key))) {
+    throw new Error("[rentals] a retired URL cannot receive adverts");
+  }
   for (let index = 0; index < plan.assigned.length; index += CHUNK) {
     const operations = [];
     for (const row of plan.assigned.slice(index, index + CHUNK)) {

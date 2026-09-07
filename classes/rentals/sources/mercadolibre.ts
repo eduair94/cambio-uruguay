@@ -148,6 +148,7 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
   let reachable = false;
   const pets = new Set<string>();
   const particulars = new Set<string>();
+  const phaseNotes: string[] = [];
 
   const canRead = (limit: number) => requests < limit && Date.now() - started < timeLimit;
   async function read(filters: MLFilters, offset: number, limit: number): Promise<SearchResult | null> {
@@ -180,6 +181,7 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
   }
 
   async function walk(initial: SearchTask[], limit: number, enrichment?: "pets" | "particular"): Promise<void> {
+    const before = { requests, filters: cuts.filters, pages: cuts.pages, residual: cuts.residual };
     const queue = [...initial];
     const scheduled = new Set(queue.map(task => JSON.stringify(task.filters)));
     while (queue.length && canRead(limit)) {
@@ -234,7 +236,7 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
       }
       const leafLimit = Math.min(maxPages * PAGE_SIZE, ML_OFFSET_CEILING);
       if (full && !task.offset && !task.fallback && total !== null && total > leafLimit && task.depth < 6) {
-        const children = mlPartitions(result, task.filters).filter(filters => !scheduled.has(JSON.stringify(filters)));
+        const children = mlPartitions(result, task.filters, leafLimit).filter(filters => !scheduled.has(JSON.stringify(filters)));
         if (children.length) {
           for (const filters of children) {
             scheduled.add(JSON.stringify(filters));
@@ -258,6 +260,11 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
       queue.push({ ...task, offset: next });
     }
     cuts.budget += queue.length;
+    // Attribute pending work to its stage: a partial pets/private scan is not a hole in
+    // the primary advert catalogue. Keep aggregate counters for existing diagnostics.
+    phaseNotes.push(`${enrichment === "pets" ? "mascotas" : enrichment === "particular" ? "particulares" : "catálogo"}:` +
+      `solicitudes=${requests - before.requests},filtro=${cuts.filters - before.filters},` +
+      `tope=${cuts.pages - before.pages},pendientes=${queue.length},residual=${cuts.residual - before.residual}`);
   }
 
   const roots = ML_RENTAL_CATEGORIES.map(category => ({
@@ -277,7 +284,7 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
     await walk(enrichedRoots("IS_SUITABLE_FOR_PETS", "242085"), enrichmentEnd, "pets");
   }
   const totals = ML_RENTAL_CATEGORIES.map(category => `${category.name}:${categoryTotals.get(category.id) ?? "?"}`).join(",");
-  const detail = `categorías[${totals}]; cortes[falla:${cuts.failed},filtro:${cuts.filters},repetida:${cuts.repeated},tope:${cuts.pages},presupuesto:${cuts.budget},sinPartición:${cuts.unpartitioned},residual:${cuts.residual},totalDesconocido:${cuts.shortUnknown},vacía:${cuts.empty}]`;
+  const detail = `categorías[${totals}]; cortes[falla:${cuts.failed},filtro:${cuts.filters},repetida:${cuts.repeated},tope:${cuts.pages},presupuesto:${cuts.budget},sinPartición:${cuts.unpartitioned},residual:${cuts.residual},totalDesconocido:${cuts.shortUnknown},vacía:${cuts.empty}]; etapas[${phaseNotes.join(";")}]`;
   console.log(`[rentals] ML ${mode}: ${pages} páginas/${requests} solicitudes, ${byId.size} IDs, ${duplicates} repetidos, ${detail}`);
   return {
     key: "mercadolibre", complete: false,
