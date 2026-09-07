@@ -180,9 +180,42 @@ Son tres porque **miran ejes distintos**, igual que en cotizaciones:
 
 ### Canasta e índice
 
-`basket.ts` define una canasta **fija y versionada** (`basketVersion`): la marca
-más barata dentro de cada grupo relevante, con cantidades explícitas
-(Laspeyres). Reglas que no son opcionales:
+`basket.ts` define una canasta **fija y versionada** (`basketVersion`): una lista
+**pinneada de ids de artículo** con cantidades explícitas (Laspeyres).
+
+La selección no es "la marca más barata": eso cambiaría la composición todos los
+días y un índice cuya canasta se mueve sola no mide precios, mide la canasta.
+El artículo de cada necesidad canónica se elige **una sola vez** por **mayor
+cantidad de observaciones** —que es lo que maximiza la comparabilidad entre
+locales— y queda escrito como dato en `basket_v1.ts` junto con los conteos y la
+fecha del pinneo. Cambiarlo exige una versión nueva, y una versión nueva corta
+la serie del índice a propósito.
+
+**Corrección del 2026-09-07, encontrada midiendo la implementación.** El diseño
+original ordenaba por costo total de canasta. Eso está mal, y el error es del
+mismo tipo que el que este spec le critica al comparador oficial, sólo que en
+la dirección contraria: el total suma únicamente lo que el local declara, así
+que a un local le baja el total **por faltarle artículos**, no por ser barato.
+Medido sobre los 211 locales calificados:
+
+| | |
+|---|---|
+| correlación cobertura ↔ total crudo | **0,842** |
+| correlación cobertura ↔ canasta emparejada | 0,278 |
+| coincidencia entre los dos top-10 | **1 de 10** |
+
+Nueve de los diez "más baratos" que se habrían publicado eran artefacto de
+cobertura. La regla de cobertura sola no alcanzaba: filtra las muestras chicas
+pero no empareja las que quedan.
+
+Se ordena entonces por **canasta emparejada**: lo que el local cobra por los
+artículos que declara, contra la mediana nacional de **esos mismos** artículos.
+Y **no se publica un total completado** — escalar ese ratio a los 33 artículos
+daría una cifra linda y comparable, pero sería imputar los artículos que el
+local no vende, que es exactamente lo que se le critica al `(*)` del SIPC. Se
+publica el ratio; el total va sólo al lado de su cobertura.
+
+Reglas que no son opcionales:
 
 - El costo de canasta de un local se calcula **sólo con observaciones reales**.
 - **Cobertura ≥ 70 %** de los artículos de la canasta para que un local se
