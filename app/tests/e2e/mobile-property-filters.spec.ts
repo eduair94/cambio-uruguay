@@ -12,7 +12,7 @@ const directories = [
     parameter: 'monthlyMax',
     original: '65000',
     next: '55000',
-    advanced: 'Más filtros',
+    advanced: 'Características',
     apply: 'Aplicar filtros',
     hasMap: true,
     cheapest: 'Menor alquiler',
@@ -100,7 +100,10 @@ for (const width of [320, 390]) {
       const url = page.url()
       await trigger.click()
       await expect(dialog).toBeVisible()
-      await expect(dialog.locator('details')).not.toHaveAttribute('open', '')
+      const advanced = dialog
+        .locator('details')
+        .filter({ has: page.locator('summary').filter({ hasText: directory.advanced }) })
+      await expect(advanced).not.toHaveAttribute('open', '')
       const budget = dialog.getByRole('spinbutton', { name: directory.budget, exact: true })
       await expect(budget).toHaveValue(directory.original)
       await budget.fill(directory.next)
@@ -115,7 +118,7 @@ for (const width of [320, 390]) {
       await expect(budget).toHaveValue(directory.original)
       const summary = dialog.locator('summary').filter({ hasText: directory.advanced })
       await summary.click()
-      await expect(dialog.locator('details')).toHaveAttribute('open', '')
+      await expect(advanced).toHaveAttribute('open', '')
       await summary.click()
       await budget.fill(directory.next)
       await dialog.getByRole('button', { name: directory.apply, exact: true }).click()

@@ -141,6 +141,30 @@ describe('rental alert matches preserve the directory semantics', () => {
     expect(result.price).toEqual({ amount: 30000, currency: 'UYU' })
   })
 
+  it('never sends a new advert using pets, parking, furnishing or guarantees from a different offer', () => {
+    const terms = {
+      petsAllowed: true as const,
+      furnished: true as const,
+      parkingSpaces: 1,
+      guarantees: ['anda'] as RentalOffer['guarantees'],
+    }
+    const rows = [property('1', [offer('1'), offer('2', terms)])]
+    const wanted = new Set(['rent:infocasas:1', 'rent:infocasas:2'])
+    for (const filters of [
+      { pets: '1' },
+      { furnished: '1' },
+      { parking: '1' },
+      { garantia: 'anda,contaduria' },
+      { pets: '1', furnished: '1', parking: '1', garantia: 'anda' },
+    ])
+      expect(
+        rentalAlertCandidatesFromRows(rows, filters, wanted, 40).map(candidate => candidate.id)
+      ).toEqual(['rent:infocasas:2'])
+    expect(
+      rentalAlertCandidatesFromRows(rows, { pets: '1' }, new Set(['rent:infocasas:1']), 40)
+    ).toEqual([])
+  })
+
   it('preserves a known zero common expense when its currency is immaterial', () => {
     const rows = [property('1', [offer('1', { commonExpenses: 0, commonExpensesCurrency: null })])]
     expect(

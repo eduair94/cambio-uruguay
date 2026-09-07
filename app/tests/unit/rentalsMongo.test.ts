@@ -12,6 +12,7 @@ import {
   rentalMongoSort,
   rentalOfferStages,
   rentalPublicStages,
+  totalMonthlyUyu,
   type RentalOffer,
 } from '../../utils/rentals'
 
@@ -78,6 +79,119 @@ describe.skipIf(!uri)('rental budgets evaluated by Mongo (read-only synthetic do
   })
   afterAll(async () => {
     await client?.close()
+  })
+
+  it('matches conditions, price and source on one advert in counts, details and JavaScript selection', async () => {
+    const terms: Partial<RentalOffer> = {
+      petsAllowed: true,
+      furnished: true,
+      parkingSpaces: 1,
+      guarantees: ['anda'],
+    }
+    const documents = [
+      doc('valid', [
+        offer({ listingId: 'cheap', priceUyu: 18000 }),
+        offer({ listingId: 'selected', priceUyu: 22000, ...terms }),
+      ]),
+      doc('split', [
+        offer({ petsAllowed: true, guarantees: ['anda'] }),
+        offer({ furnished: true, parkingSpaces: 1 }),
+      ]),
+      doc('legacy', [offer()], terms),
+      doc('malformed', [
+        offer({ ...terms, guarantees: 'anda' as unknown as RentalOffer['guarantees'] }),
+      ]),
+    ]
+    for (const input of [
+      { pets: 1 },
+      { furnished: 1 },
+      { parking: 1 },
+      { garantia: 'anda,contaduria' },
+      { pets: 1, furnished: 1, parking: 1, garantia: 'anda,contaduria' },
+      { pets: 1, priceMax: 20000 },
+      { pets: 1, furnished: 1, parking: 1, garantia: 'contaduria,anda', monthlyMax: 28000 },
+      { pets: 1, source: 'casasweb' },
+    ]) {
+      const query = normalizeRentalQuery(input)
+      const stages = rentalPublicStages(buildRentalFilter(query, 10, 40).filter, 10)
+      const rows = await client
+        .db()
+        .aggregate([{ $documents: documents }, ...stages, ...rentalOfferStages(query, 40)])
+        .toArray()
+      const expected = documents.filter(row => rentalMatchingOffer(row.offers, query, 40))
+      expect(rows.map(row => row.key).sort(), JSON.stringify(input)).toEqual(
+        expected.map(row => row.key).sort()
+      )
+      for (const row of rows) {
+        const original = documents.find(item => item.key === row.key)!
+        const selected = rentalMatchingOffer(original.offers, query, 40)!
+        expect(row.matchingOffer.listingId).toBe(selected.listingId)
+        expect(row.priceUyu).toBe(selected.priceUyu)
+        const detail = await client
+          .db()
+          .aggregate([{ $documents: documents }, ...rentalDetailStages(row.key, query, 10, 40)])
+          .toArray()
+        expect(detail[0].matchingOffer.listingId).toBe(selected.listingId)
+      }
+      const count = await client
+        .db()
+        .aggregate([{ $documents: documents }, ...stages, { $count: 'total' }])
+        .toArray()
+      expect(count[0]?.total || 0).toBe(expected.length)
+    }
+  })
+
+  it('orders known own monthly totals before unknowns without hiding homes or mixing offers', async () => {
+    const documents = [
+      doc('lower-total', [
+        offer({ listingId: 'low-rent', priceUyu: 18000, commonExpenses: 8000 }),
+        offer({ listingId: 'low-total', priceUyu: 20000, commonExpenses: 0 }),
+      ]),
+      doc('dollars', [
+        offer({ priceUyu: 16000, commonExpenses: 100, commonExpensesCurrency: 'USD' }),
+      ]),
+      doc('lower-rent', [offer({ priceUyu: 15000, commonExpenses: 7000 })]),
+      doc('unknown-low', [offer({ priceUyu: 9000, commonExpenses: null })]),
+      doc('unknown-currency', [
+        offer({ priceUyu: 10000, commonExpenses: 1000, commonExpensesCurrency: null }),
+      ]),
+      doc('unknown-high', [offer({ priceUyu: 12000, commonExpenses: null })]),
+      doc('unknown-expense-type', [
+        offer({ priceUyu: 14000, commonExpenses: 'not-a-number' as unknown as number }),
+      ]),
+    ]
+    for (const rate of [40, 0]) {
+      const query = normalizeRentalQuery({ sort: 'total' })
+      const rows = await client
+        .db()
+        .aggregate([
+          { $documents: documents },
+          ...rentalPublicStages(buildRentalFilter(query, 10, rate).filter, 10),
+          ...rentalOfferStages(query, rate),
+          { $sort: rentalMongoSort(query.sort) },
+          { $project: rentalPublicPropertyProjection },
+        ])
+        .toArray()
+      const oracle = documents
+        .map(row => {
+          const selected = rentalMatchingOffer(row.offers, query, rate)!
+          return { key: row.key, selected, monthly: totalMonthlyUyu(selected, rate) }
+        })
+        .sort(
+          (a, b) =>
+            Number(a.monthly === null) - Number(b.monthly === null) ||
+            (a.monthly ?? 0) - (b.monthly ?? 0) ||
+            a.selected.priceUyu - b.selected.priceUyu ||
+            a.key.localeCompare(b.key)
+        )
+      expect(rows.map(row => row.key)).toEqual(oracle.map(row => row.key))
+      expect(rows).toHaveLength(documents.length)
+      rows.forEach((row, index) => {
+        expect(row.matchingOffer.listingId).toBe(oracle[index].selected.listingId)
+        expect(row.priceUyu).toBe(oracle[index].selected.priceUyu)
+        expect(row).not.toHaveProperty('_rentalMonthlyTotal')
+      })
+    }
   })
 
   it('removes only reported adverts before prices, budgets, facets and pagination', async () => {

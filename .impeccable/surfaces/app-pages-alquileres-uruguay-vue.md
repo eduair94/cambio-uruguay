@@ -14,17 +14,17 @@ normalmente desde el celular. La interfaz conserva el sistema visual de Cambio U
 
 ## Recorrido principal
 
-1. Elegir departamento, varios barrios, tipo de propiedad, dormitorios y presupuesto mensual.
-2. Enviar la búsqueda explícitamente; escribir no dispara consultas ni altera la URL.
-3. Afinar características, gastos, garantías, anunciante, fuente o cercanía a salud con Más filtros
-   en escritorio o con el botón fijo Filtros en el celular.
-4. Comparar el alquiler y los gastos del mismo aviso, guardar candidatos y volver al portal original.
+1. Elegir departamento, varios barrios, rango de alquiler base en UYU, tipo y dormitorios.
+2. Confirmar la búsqueda explícitamente; editar no recarga resultados ni altera la URL. Cambiar departamento puede consultar su lista de barrios.
+3. Afinar mediante grupos desplegables: total mensual y gastos, características, garantías,
+   portal y disponibilidad, cercanía a salud. Los grupos con criterios aplicados se abren al entrar.
+4. Comparar costo total conocido y su desglose del mismo aviso. La ficha reúne contacto y servicios
+   cercanos, con sus límites y procedencia. Guardar candidatos y volver al portal original.
 
 La URL representa los filtros confirmados. Atrás/Adelante y las búsquedas guardadas deben restaurar
 la misma selección. Limpiar también vacía un borrador que nunca se envió.
 
-En móvil, el acceso a filtros permanece fijo al recorrer resultados. El diálogo usa pantalla
-completa y mantiene Cerrar, Limpiar y Aplicar fuera de su área desplazable. Cancelar descarta el
+En móvil, el acceso a filtros permanece visible bajo la cabecera al recorrer resultados. El diálogo usa un panel lateral derecho y mantiene Cerrar, Limpiar y Aplicar fuera de su área desplazable. Cancelar descarta el
 borrador y conserva la posición; Aplicar confirma la búsqueda y enfoca los resultados. Respetar
 el viewport visible y las áreas seguras, con objetivos táctiles de 48 px y texto de campos de 16 px.
 
@@ -32,7 +32,11 @@ el viewport visible y las áreas seguras, con objetivos táctiles de 48 px y tex
 
 - El presupuesto mensual está en UYU e incluye alquiler y gastos comunes publicados por una misma
   oferta. Cero explícito es distinto de desconocido. No estimar gastos ausentes.
-- Fuente, moneda, dueño y presupuesto deben satisfacerse en un mismo aviso.
+- Fuente, moneda, dueño, precio, gastos, mascotas, garaje, amueblado y garantías deben satisfacerse
+  en un mismo aviso. No mezclar condiciones de un anunciante con el precio de otro.
+- El orden `total` compara alquiler + GC conocidos de las ofertas que cumplen todos los criterios.
+  Los totales desconocidos quedan al final; no desaparecen y no se inventan gastos. La mediana
+  del alquiler base no cambia por elegir otro orden.
 - Mascotas, garaje, amueblado y garantías son declaraciones del origen, no verificaciones propias.
 - Mostrar última lectura sin inventar una hora cuando el origen sólo conserva el día.
 - La vigencia pública se evalúa por aviso: otro portal no rejuvenece una oferta antigua.
@@ -75,3 +79,15 @@ las tres publicadas requiere medir la precisión de extracción, no sólo agrega
 Alertas, búsquedas por trayecto y nuevos puntos de interés quedan para iteraciones con datos e
 infraestructura propios. Ver la investigación fechada en
 [rentals-ux-2026-09-04.md](../../docs/research/rentals-ux-2026-09-04.md).
+
+## Iteración de filtros — 2026-09-07
+
+Referencia pública fechada: [Mercado Libre, InfoCasas y Marketplace](../../docs/app/RENTALS_FILTER_BENCHMARK.md). La barra móvil concentra Filtros, vista, alertas y un menú
+para guardar/compartir. La tarjeta muestra foto y precio juntos; total mensual sólo cuando está
+publicado, con alquiler y gastos desglosados. Los criterios activos se pueden quitar individualmente
+y el estado sin resultados ofrece modificar o retirar un criterio sin borrar toda la búsqueda.
+
+Los rangos se validan antes de normalizar. Un máximo cero no se descarta silenciosamente:
+se pide un importe positivo o dejar vacío. Gastos comunes cero conserva su significado expreso.
+Limpiar en los paneles móviles de alquiler, venta, oportunidades y presupuesto sólo modifica el
+borrador hasta aplicar. Cerrar y Escape conservan resultados, URL, foco y posición.

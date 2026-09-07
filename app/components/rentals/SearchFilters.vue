@@ -27,60 +27,127 @@
       </header>
       <div class="rental-search__scroll">
         <PropertyAgencyFilter v-model="draft.agency" />
-        <div class="rental-search__main">
-          <VSelect
-            v-model="draft.department"
-            :items="departments"
-            :label="t('location')"
-            v-bind="field"
-            @update:model-value="clearNeighborhoods"
-          />
-          <VAutocomplete
-            v-model="draft.neighborhoods"
-            :items="neighborhoods"
-            :custom-filter="rentalTextMatches"
-            :label="t('neighborhoods')"
-            multiple
-            chips
-            closable-chips
-            clear-on-select
-            clearable
-            v-bind="field"
-          />
-          <VSelect v-model="draft.type" :items="typeItems" :label="t('type')" v-bind="field" />
-          <VSelect
-            v-model="draft.bedrooms"
-            :items="bedroomItems"
-            :label="t('bedrooms')"
-            v-bind="field"
-          />
-          <VTextField
-            v-model="draft.monthlyMax"
-            class="rental-search__budget"
-            :label="t('monthlyMax')"
-            type="number"
-            min="0"
-            inputmode="numeric"
-            clearable
-            v-bind="field"
-          />
-        </div>
-        <p class="rental-search__hint">{{ t('monthlyHint') }}</p>
-        <div class="rental-search__quick">
+        <fieldset class="rental-search__primary">
+          <legend>{{ t('whereSearch') }}</legend>
+          <div class="rental-search__fields">
+            <VSelect
+              v-model="draft.department"
+              :items="departments"
+              :label="t('location')"
+              v-bind="field"
+              class="rental-search__wide"
+              @update:model-value="clearNeighborhoods"
+            />
+            <VAutocomplete
+              v-model="draft.neighborhoods"
+              :items="neighborhoods"
+              :custom-filter="rentalTextMatches"
+              :label="t('neighborhoods')"
+              multiple
+              chips
+              closable-chips
+              clear-on-select
+              clearable
+              v-bind="field"
+              class="rental-search__wide"
+            />
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>{{ t('rentBudget') }}</legend>
+          <div class="rental-search__fields">
+            <VTextField
+              v-model="draft.priceMin"
+              :label="t('priceMin')"
+              type="number"
+              min="0"
+              inputmode="numeric"
+              clearable
+              v-bind="numberField('priceMin')"
+              data-testid="rental-filter-priceMin"
+            />
+            <VTextField
+              v-model="draft.priceMax"
+              :label="t('priceMax')"
+              type="number"
+              min="0"
+              inputmode="numeric"
+              clearable
+              v-bind="numberField('priceMax')"
+              data-testid="rental-filter-priceMax"
+            />
+          </div>
+          <p class="rental-search__hint">{{ t('rentBudgetHint') }}</p>
+        </fieldset>
+        <fieldset>
+          <legend>{{ t('homeSearch') }}</legend>
+          <div class="rental-search__fields">
+            <VSelect v-model="draft.type" :items="typeItems" :label="t('type')" v-bind="field" />
+            <VSelect
+              v-model="draft.bedrooms"
+              :items="bedroomItems"
+              :label="t('bedrooms')"
+              v-bind="field"
+            />
+          </div>
           <VCheckbox
-            v-model="draft.pets"
-            :label="t('pets')"
+            v-model="draft.bedroomsExact"
+            :label="t('exactBedrooms')"
             hide-details
             density="compact"
             color="primary"
+            :disabled="draft.bedrooms === null || draft.bedrooms === 0"
           />
-          <VCheckbox
-            v-model="draft.owner"
-            :label="t('owner')"
-            hide-details
-            density="compact"
-            color="primary"
-          />
+          <div class="rental-search__checks">
+            <VCheckbox
+              v-model="draft.pets"
+              :label="t('pets')"
+              hide-details
+              density="compact"
+              color="primary"
+            />
+            <VCheckbox
+              v-model="draft.owner"
+              :label="t('owner')"
+              hide-details
+              density="compact"
+              color="primary"
+            />
+          </div>
+        </fieldset>
+        <details
+          class="rental-search__group"
+          :open="costsOpen"
+          @toggle="costsOpen = ($event.target as HTMLDetailsElement).open"
+        >
+          <summary>
+            {{ t('totalAndExpenses') }}<span v-if="costFilterCount">{{ costFilterCount }}</span>
+          </summary>
+          <div class="rental-search__fields">
+            <VTextField
+              v-model="draft.monthlyMax"
+              :label="t('monthlyMax')"
+              type="number"
+              min="0"
+              inputmode="numeric"
+              clearable
+              v-bind="numberField('monthlyMax')"
+              data-testid="rental-filter-monthlyMax"
+              class="rental-search__wide"
+            />
+            <VTextField
+              v-model="draft.expensesMax"
+              :label="t('expensesMax')"
+              type="number"
+              min="0"
+              inputmode="numeric"
+              clearable
+              v-bind="numberField('expensesMax')"
+              data-testid="rental-filter-expensesMax"
+              class="rental-search__wide"
+            />
+          </div>
+          <p class="rental-search__hint">{{ t('monthlyHint') }}</p>
           <VCheckbox
             v-model="noExpenses"
             :label="t('noExpenses')"
@@ -88,197 +155,185 @@
             density="compact"
             color="primary"
           />
-        </div>
-        <component
-          :is="mobile ? 'details' : 'div'"
+          <VCheckbox
+            v-model="draft.withExpenses"
+            :label="t('expensesKnown')"
+            hide-details
+            density="compact"
+            color="primary"
+          />
+        </details>
+        <details
           id="rental-advanced"
-          class="rental-search__advanced"
+          class="rental-search__group"
           :open="advancedOpen"
           @toggle="advancedOpen = ($event.target as HTMLDetailsElement).open"
         >
-          <summary v-if="mobile" data-testid="rental-advanced-toggle">{{ t('more') }}</summary>
+          <summary data-testid="rental-advanced-toggle">
+            {{ t('features') }}<span v-if="featureFilterCount">{{ featureFilterCount }}</span>
+          </summary>
+          <div class="rental-search__fields">
+            <VSelect
+              v-model="draft.bathrooms"
+              :items="bathroomItems"
+              :label="t('bathrooms')"
+              v-bind="field"
+              class="rental-search__wide"
+            />
+            <VTextField
+              v-model="draft.areaMin"
+              :label="t('areaMin')"
+              type="number"
+              min="0"
+              inputmode="numeric"
+              clearable
+              v-bind="numberField('areaMin')"
+              data-testid="rental-filter-areaMin"
+            />
+            <VTextField
+              v-model="draft.areaMax"
+              :label="t('areaMax')"
+              type="number"
+              min="0"
+              inputmode="numeric"
+              clearable
+              v-bind="numberField('areaMax')"
+              data-testid="rental-filter-areaMax"
+            />
+            <VTextField
+              v-model="draft.q"
+              :label="t('text')"
+              maxlength="80"
+              clearable
+              v-bind="field"
+              class="rental-search__wide"
+            />
+          </div>
+          <div class="rental-search__checks">
+            <VCheckbox
+              v-model="draft.parking"
+              :label="t('parking')"
+              hide-details
+              density="compact"
+              color="primary"
+            /><VCheckbox
+              v-model="draft.furnished"
+              :label="t('furnished')"
+              hide-details
+              density="compact"
+              color="primary"
+            />
+          </div>
+        </details>
+        <details
+          class="rental-search__group"
+          :open="conditionsOpen"
+          @toggle="conditionsOpen = ($event.target as HTMLDetailsElement).open"
+        >
+          <summary>
+            {{ t('conditions')
+            }}<span v-if="draft.guarantees.length">{{ draft.guarantees.length }}</span>
+          </summary>
           <VSelect
-            v-model="draft.availability"
-            :items="availabilityItems"
-            :label="availabilityCopy.filter"
+            v-model="draft.guarantees"
+            :items="guaranteeItems"
+            :label="t('guarantee')"
             v-bind="field"
+            multiple
+            chips
+            closable-chips
+            clearable
           />
+          <p class="rental-search__hint">{{ t('guaranteeHint') }}</p>
+        </details>
+        <details
+          class="rental-search__group"
+          :open="sourceOpen"
+          @toggle="sourceOpen = ($event.target as HTMLDetailsElement).open"
+        >
+          <summary>
+            {{ t('sourceAndAvailability')
+            }}<span v-if="sourceFilterCount">{{ sourceFilterCount }}</span>
+          </summary>
+          <div class="rental-search__fields">
+            <VSelect
+              v-model="draft.source"
+              :items="sourceItems"
+              :label="t('source')"
+              v-bind="field"
+              class="rental-search__wide"
+            />
+            <VSelect
+              v-model="draft.currency"
+              :items="currencyItems"
+              :label="t('currency')"
+              v-bind="field"
+              class="rental-search__wide"
+            />
+            <VSelect
+              v-model="draft.availability"
+              :items="availabilityItems"
+              :label="availabilityCopy.filter"
+              v-bind="field"
+              class="rental-search__wide"
+            />
+          </div>
           <p class="rental-search__hint">{{ availabilityCopy.filterHint }}</p>
-          <fieldset>
-            <legend>{{ t('budget') }}</legend>
-            <div class="rental-search__fields">
-              <VTextField
-                v-model="draft.priceMin"
-                :label="t('priceMin')"
-                type="number"
-                min="0"
-                inputmode="numeric"
-                clearable
-                v-bind="field"
-              />
-              <VTextField
-                v-model="draft.priceMax"
-                :label="t('priceMax')"
-                type="number"
-                min="0"
-                inputmode="numeric"
-                clearable
-                v-bind="field"
-              />
-              <VTextField
-                v-model="draft.expensesMax"
-                :label="t('expensesMax')"
-                type="number"
-                min="0"
-                inputmode="numeric"
-                clearable
-                v-bind="field"
-              />
-              <VSelect
-                v-model="draft.currency"
-                :items="currencyItems"
-                :label="t('currency')"
-                v-bind="field"
-              />
-            </div>
-            <VCheckbox
-              v-model="draft.withExpenses"
-              :label="t('expensesKnown')"
-              hide-details
-              density="compact"
-              color="primary"
+          <VCheckbox
+            v-model="draft.multi"
+            :label="t('multi')"
+            hide-details
+            density="compact"
+            color="primary"
+          />
+        </details>
+        <details
+          class="rental-search__group"
+          :open="nearbyOpen"
+          @toggle="nearbyOpen = ($event.target as HTMLDetailsElement).open"
+        >
+          <summary>
+            {{ t('nearby') }}<span v-if="draft.sedes.length">{{ draft.sedes.length }}</span>
+          </summary>
+          <div class="rental-search__fields">
+            <VSelect
+              v-model="institution"
+              :items="mutualistaItems"
+              :label="t('institution')"
+              clearable
+              v-bind="field"
+              class="rental-search__wide"
+              @update:model-value="draft.sedes = []"
             />
-          </fieldset>
-          <fieldset>
-            <legend>{{ t('features') }}</legend>
-            <VCheckbox
-              v-model="draft.bedroomsExact"
-              :label="t('exactBedrooms')"
-              :disabled="draft.bedrooms === null || draft.bedrooms === 0"
-              hide-details
-              density="compact"
-              color="primary"
-              class="mb-3"
+            <VSelect
+              v-model="draft.sedes"
+              :items="sedeItems"
+              :label="t('branches')"
+              v-bind="field"
+              :disabled="!institution"
+              multiple
+              chips
+              closable-chips
+              clearable
+              class="rental-search__wide"
             />
-            <div class="rental-search__fields">
-              <VSelect
-                v-model="draft.bathrooms"
-                :items="bathroomItems"
-                :label="t('bathrooms')"
-                v-bind="field"
-              />
-              <VTextField
-                v-model="draft.areaMin"
-                :label="t('areaMin')"
-                type="number"
-                min="0"
-                inputmode="numeric"
-                clearable
-                v-bind="field"
-              />
-              <VTextField
-                v-model="draft.areaMax"
-                :label="t('areaMax')"
-                type="number"
-                min="0"
-                inputmode="numeric"
-                clearable
-                v-bind="field"
-              />
-              <VTextField
-                v-model="draft.q"
-                :label="t('text')"
-                maxlength="80"
-                clearable
-                v-bind="field"
-              />
-            </div>
-            <div class="rental-search__checks">
-              <VCheckbox
-                v-model="draft.parking"
-                :label="t('parking')"
-                hide-details
-                density="compact"
-                color="primary"
-              />
-              <VCheckbox
-                v-model="draft.furnished"
-                :label="t('furnished')"
-                hide-details
-                density="compact"
-                color="primary"
-              />
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend>{{ t('conditions') }}</legend>
-            <div class="rental-search__fields">
-              <VSelect
-                v-model="draft.guarantees"
-                :items="guaranteeItems"
-                :label="t('guarantee')"
-                multiple
-                chips
-                closable-chips
-                clearable
-                v-bind="field"
-              />
-              <VSelect
-                v-model="draft.source"
-                :items="sourceItems"
-                :label="t('source')"
-                v-bind="field"
-              />
-            </div>
-            <p class="rental-search__hint">{{ t('guaranteeHint') }}</p>
-            <VCheckbox
-              v-model="draft.multi"
-              :label="t('multi')"
-              hide-details
-              density="compact"
-              color="primary"
-            />
-          </fieldset>
-          <fieldset>
-            <legend>{{ t('nearby') }}</legend>
-            <div class="rental-search__fields">
-              <VSelect
-                v-model="institution"
-                :items="mutualistaItems"
-                :label="t('institution')"
-                clearable
-                v-bind="field"
-                @update:model-value="draft.sedes = []"
-              />
-              <VSelect
-                v-model="draft.sedes"
-                :items="sedeItems"
-                :label="t('branches')"
-                :disabled="!institution"
-                multiple
-                chips
-                closable-chips
-                clearable
-                v-bind="field"
-              />
-            </div>
-            <VSlider
-              v-model="draft.radioKm"
-              :label="t('radius', { n: draft.radioKm })"
-              :min="0.3"
-              :max="5"
-              :step="0.1"
-              :disabled="!draft.sedes.length"
-              hide-details
-              class="mt-4"
-            />
-            <p class="rental-search__hint">{{ t('nearbyHint') }}</p>
-          </fieldset>
-          <p class="rental-search__hint">{{ t('knownHint') }}</p>
-        </component>
+          </div>
+          <VSlider
+            v-model="draft.radioKm"
+            :label="t('radius', { n: draft.radioKm })"
+            :min="0.3"
+            :max="5"
+            :step="0.1"
+            :disabled="!draft.sedes.length"
+            hide-details
+            class="mt-4"
+          />
+          <p class="rental-search__hint">{{ t('nearbyHint') }}</p>
+        </details>
+        <p class="rental-search__hint">{{ t('knownHint') }}</p>
       </div>
       <footer class="rental-search__footer">
-        <p v-if="invalidRange" class="rental-search__error" role="alert">{{ t('invalidRange') }}</p>
+        <p v-if="hasErrors" class="rental-search__error" role="alert">{{ t('fixFields') }}</p>
         <VBtn variant="text" data-testid="rental-filters-reset" @click="reset">{{
           t('clearDraft')
         }}</VBtn>
@@ -331,7 +386,29 @@ const availabilityItems = computed(() =>
   }))
 )
 const dialogHeading = ref<HTMLElement | null>(null)
-const advancedOpen = ref(false)
+const advancedOpen = ref(
+  Boolean(
+    props.query.q ||
+      props.query.bathrooms !== null ||
+      props.query.areaMin !== null ||
+      props.query.areaMax !== null ||
+      props.query.parking ||
+      props.query.furnished
+  )
+)
+const costsOpen = ref(
+  props.query.monthlyMax !== null || props.query.expensesMax !== null || props.query.withExpenses
+)
+const conditionsOpen = ref(Boolean(props.query.guarantees.length))
+const sourceOpen = ref(
+  Boolean(
+    props.query.source ||
+      props.query.currency ||
+      props.query.availability !== 'all' ||
+      props.query.multi
+  )
+)
+const nearbyOpen = ref(Boolean(props.query.sedes.length))
 const viewportHeight = ref<number | null>(null)
 const viewportTop = ref(0)
 const dialogProps = computed(() =>
@@ -391,24 +468,17 @@ watch(
     draft.value = copy(props.query)
     const q = props.query
     advancedOpen.value = Boolean(
-      q.availability !== 'all' ||
-        q.q ||
-        q.source ||
-        q.currency ||
-        q.bedroomsExact ||
+      q.q ||
         q.bathrooms !== null ||
-        q.priceMin !== null ||
-        q.priceMax !== null ||
-        q.expensesMax !== null ||
         q.areaMin !== null ||
         q.areaMax !== null ||
-        q.withExpenses ||
         q.parking ||
-        q.furnished ||
-        q.multi ||
-        q.guarantees.length ||
-        q.sedes.length
+        q.furnished
     )
+    costsOpen.value = q.monthlyMax !== null || q.expensesMax !== null || q.withExpenses
+    conditionsOpen.value = Boolean(q.guarantees.length)
+    sourceOpen.value = Boolean(q.source || q.currency || q.availability !== 'all' || q.multi)
+    nearbyOpen.value = Boolean(q.sedes.length)
     institution.value =
       MUTUALISTA_SEDES.find(s => s.osmId === props.query.sedes[0])?.mutualista || ''
     syncViewport()
@@ -458,7 +528,7 @@ const typeItems = computed(() => [
 const bedroomItems = computed(() => [
   { title: t('any'), value: null },
   { title: t('studio'), value: 0 },
-  ...[1, 2, 3, 4].map(value => ({
+  ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(value => ({
     title: draft.value.bedroomsExact ? String(value) : t('atLeast', { n: value }),
     value,
   })),
@@ -492,21 +562,90 @@ const noExpenses = computed({
     draft.value.expensesMax = value ? 0 : null
   },
 })
-const invalidRange = computed(() =>
-  [
-    [draft.value.priceMin, draft.value.priceMax],
-    [draft.value.areaMin, draft.value.areaMax],
-  ].some(
-    ([min, max]) =>
-      min !== null &&
-      max !== null &&
-      Number(min) > 0 &&
-      Number(max) > 0 &&
-      Number(min) > Number(max)
-  )
+const numericKeys = [
+  'priceMin',
+  'priceMax',
+  'monthlyMax',
+  'expensesMax',
+  'areaMin',
+  'areaMax',
+] as const
+type NumericKey = (typeof numericKeys)[number]
+const present = (value: unknown) => value !== null && value !== undefined && value !== ''
+const errors = computed(() => {
+  const result: Partial<Record<NumericKey, string>> = {}
+  for (const key of numericKeys) {
+    const value = draft.value[key]
+    if (
+      present(value) &&
+      (!/^\d+(?:\.\d+)?$/.test(String(value)) ||
+        !Number.isFinite(Number(value)) ||
+        Number(value) > Number.MAX_SAFE_INTEGER)
+    )
+      result[key] = t('invalidNumber')
+    if (
+      present(value) &&
+      ['priceMax', 'monthlyMax', 'areaMax'].includes(key) &&
+      Number(value) === 0
+    )
+      result[key] = t('positiveMaximum')
+  }
+  for (const [min, max] of [
+    ['priceMin', 'priceMax'],
+    ['areaMin', 'areaMax'],
+  ] as const) {
+    if (
+      present(draft.value[min]) &&
+      present(draft.value[max]) &&
+      Number(draft.value[min]) > Number(draft.value[max])
+    )
+      result[max] = t('invalidRange')
+  }
+  return result
+})
+const hasErrors = computed(() => Object.keys(errors.value).length > 0)
+const numberField = (key: NumericKey) => ({
+  ...field,
+  step: 'any',
+  hideDetails: 'auto' as const,
+  errorMessages: errors.value[key] || [],
+})
+const costFilterCount = computed(
+  () =>
+    [
+      present(draft.value.monthlyMax),
+      present(draft.value.expensesMax),
+      draft.value.withExpenses,
+    ].filter(Boolean).length
+)
+const featureFilterCount = computed(
+  () =>
+    [
+      draft.value.q,
+      present(draft.value.bathrooms),
+      present(draft.value.areaMin),
+      present(draft.value.areaMax),
+      draft.value.parking,
+      draft.value.furnished,
+    ].filter(Boolean).length
+)
+const sourceFilterCount = computed(
+  () =>
+    [
+      draft.value.source,
+      draft.value.currency,
+      draft.value.availability !== 'all',
+      draft.value.multi,
+    ].filter(Boolean).length
 )
 function submit() {
-  if (invalidRange.value) return
+  if (hasErrors.value) {
+    const first = numericKeys.find(key => errors.value[key])
+    document
+      .querySelector<HTMLInputElement>(`[data-testid="rental-filter-${first}"] input`)
+      ?.focus()
+    return
+  }
   emit('search', copy(draft.value))
 }
 function reset() {
@@ -521,6 +660,39 @@ function clearNeighborhoods() {
 </script>
 
 <style scoped>
+.rental-search__wide {
+  grid-column: 1 / -1;
+}
+.rental-search .rental-search__primary {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
+}
+.rental-search__group {
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  margin-top: 16px;
+}
+.rental-search__group > summary {
+  min-height: 48px;
+  padding-block: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.rental-search__group > summary span {
+  margin-left: 8px;
+  font-size: 0.8rem;
+  color: rgb(var(--v-theme-link));
+}
+.rental-search__group > summary:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 2px;
+}
+.rental-search__group[open] {
+  padding-bottom: 8px;
+}
+.rental-search__group[open] > summary {
+  margin-bottom: 8px;
+}
 .rental-search {
   display: flex;
   flex-direction: column;
@@ -534,40 +706,17 @@ function clearNeighborhoods() {
 .rental-search--sidebar {
   max-height: calc(100dvh - 160px);
 }
-.rental-search__main {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
-}
 .rental-search__hint {
   margin: 12px 0 0;
   color: rgba(var(--v-theme-on-surface), 0.78);
   font-size: 0.8rem;
   line-height: 1.5;
 }
-.rental-search__quick,
 .rental-search__checks {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 24px;
-}
-.rental-search__quick {
-  margin-top: 8px;
-}
-.rental-search__advanced {
-  padding-top: 12px;
-}
-.rental-search__advanced > summary {
-  min-height: 44px;
-  padding-block: 10px;
-  cursor: pointer;
-  color: rgb(var(--v-theme-link));
-  font-weight: 700;
-}
-.rental-search__advanced > summary:focus-visible {
-  outline: 2px solid rgb(var(--v-theme-link));
-  outline-offset: 2px;
 }
 fieldset {
   border: 0;
@@ -592,9 +741,6 @@ legend {
 }
 .rental-search--dialog .rental-search__scroll {
   padding: 14px 16px 16px;
-}
-.rental-search--dialog .rental-search__main {
-  gap: 12px;
 }
 .rental-search--dialog fieldset {
   padding-top: 14px;
@@ -637,19 +783,10 @@ legend {
 .rental-search--sidebar .rental-search__fields {
   grid-template-columns: minmax(0, 1fr);
 }
-.rental-search--sidebar .rental-search__quick,
 .rental-search--sidebar .rental-search__checks {
   flex-direction: column;
   align-items: stretch;
   gap: 0;
-}
-.rental-search--dialog .rental-search__main {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.rental-search--dialog .rental-search__main > :first-child,
-.rental-search--dialog .rental-search__main > :nth-child(2),
-.rental-search--dialog .rental-search__budget {
-  grid-column: 1 / -1;
 }
 .rental-search :deep(input) {
   font-size: 16px;
@@ -706,28 +843,11 @@ legend {
   color: rgb(var(--v-theme-error));
 }
 @media (max-width: 599px) {
-  .rental-search__main {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px 10px;
-  }
-  .rental-search__main > :nth-child(2),
-  .rental-search__budget {
-    grid-column: 1 / -1;
-  }
-  .rental-search__main > :first-child {
-    grid-column: 1 / -1;
-  }
-  .rental-search__quick {
-    gap: 0 12px;
-  }
   .rental-search__fields {
     grid-template-columns: 1fr;
   }
 }
 @media (max-width: 360px) {
-  .rental-search--dialog .rental-search__main {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .rental-search--dialog :deep(.v-field-label:not(.v-field-label--floating)) {
     font-size: 14px;
   }

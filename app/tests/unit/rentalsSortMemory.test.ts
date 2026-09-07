@@ -67,7 +67,7 @@ async function capture(query: Record<string, string> = {}, total = 240) {
 }
 
 describe('rental endpoint sort input', () => {
-  it.each(['precio', 'precio-desc', 'metros', 'recientes'])(
+  it.each(['precio', 'precio-desc', 'metros', 'recientes', 'total'])(
     'retains every %s sort key while removing private evidence before buffering',
     async sort => {
       const { items, median } = await capture({ sort, source: 'casasweb' })
@@ -79,10 +79,23 @@ describe('rental endpoint sort input', () => {
       const projection = items.find(stage => stage.$project)!.$project
       for (const key of Object.keys(rentals.rentalMongoSort(sort as rentals.RentalSort)))
         expect(projection[key]).toBe(1)
-      expect(projection).toEqual(rentalPublicPropertyProjection)
+      expect(projection).toEqual({
+        ...rentalPublicPropertyProjection,
+        ...(sort === 'total'
+          ? Object.fromEntries(rentals.RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
+          : {}),
+      })
+      if (sort === 'total')
+        expect(items.at(-1)).toEqual({ $unset: [...rentals.RENTAL_TOTAL_SORT_FIELDS] })
       expect(median.find(stage => stage.$project)!.$project).toEqual({ _id: 0, priceUyu: 1 })
     }
   )
+
+  it('preserves the same base-rent median when only the presentation sort changes', async () => {
+    const base = await capture({ sort: 'precio', pets: '1' })
+    const monthly = await capture({ sort: 'total', pets: '1' })
+    expect(monthly.median).toEqual(base.median)
+  })
 })
 
 // Deliberately exercise the 100MiB boundary only on a developer's isolated localhost Mongo.
@@ -165,7 +178,7 @@ describe.skipIf(!uri)('real Mongo rental sort memory regression', () => {
     }
   })
 
-  it.each(['precio', 'precio-desc', 'metros', 'recientes'])(
+  it.each(['precio', 'precio-desc', 'metros', 'recientes', 'total'])(
     'keeps %s deep pages and same-advert prices exact without sorting private text',
     async sort => {
       const { items } = await capture({ sort, page: '5', perPage: '24', source: 'casasweb' })
@@ -176,6 +189,8 @@ describe.skipIf(!uri)('real Mongo rental sort memory regression', () => {
         priceUyu: 12000 + i,
         area: 40 + i,
         freshAt: date,
+        _rentalMonthlyUnknown: false,
+        _rentalMonthlyTotal: 12100 + i,
       })).sort((a, b) => {
         for (const [key, direction] of fields) {
           const x = a[key as keyof typeof a],
@@ -196,6 +211,7 @@ describe.skipIf(!uri)('real Mongo rental sort memory regression', () => {
         )
       ).toBe(true)
       expect(JSON.stringify(rows)).not.toMatch(/PRIVATE-|identity|details/)
+      expect(JSON.stringify(rows)).not.toContain('_rentalMonthly')
     }
   )
 })

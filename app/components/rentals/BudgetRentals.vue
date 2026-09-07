@@ -4,7 +4,7 @@
       :is="smAndDown ? VDialog : 'aside'"
       v-bind="dialogProps"
       @update:model-value="open = $event"
-      @after-enter="heading?.focus({ preventScroll: true })"
+      @after-enter="focusHeading"
       @after-leave="restoreFocus"
     >
       <form
@@ -77,7 +77,7 @@
           />
         </div>
         <footer>
-          <VBtn variant="text" @click="clear">{{ t('clear') }}</VBtn>
+          <VBtn variant="text" @click="resetFilters">{{ t('clear') }}</VBtn>
           <VBtn color="primary" type="submit" :loading="pending">{{ t('apply') }}</VBtn>
         </footer>
       </form>
@@ -346,6 +346,10 @@ const open = ref(false),
   draft = ref({ ...query.value })
 const heading = ref<HTMLElement | null>(null),
   results = ref<HTMLElement | null>(null)
+function focusHeading() {
+  if (heading.value?.closest('form')?.contains(document.activeElement)) return
+  heading.value?.focus({ preventScroll: true })
+}
 const failedImages = ref(new Set<string>())
 const field = { variant: 'outlined' as const, density: 'comfortable' as const, hideDetails: true }
 let activator: HTMLElement | null = null,
@@ -522,6 +526,11 @@ async function apply() {
 async function clear() {
   draft.value = normalizeRentalBudgetQuery({})
   await apply()
+}
+async function resetFilters() {
+  draft.value = normalizeRentalBudgetQuery({})
+  if (smAndDown.value) await loadDraftFacets()
+  else await apply()
 }
 async function changeBand(band: RentalBudgetBand) {
   await update({ ...query.value, band, page: 1 })

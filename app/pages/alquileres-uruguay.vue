@@ -8,21 +8,23 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
 -->
 <template>
   <VContainer class="rentals pt-1 pt-sm-4" :class="{ 'rentals--mobile': smAndDown }">
-    <VBreadcrumbs :items="breadcrumbs" density="compact" class="px-0 py-1" />
+    <VBreadcrumbs :items="breadcrumbs" density="compact" class="rentals-breadcrumbs px-0 py-1" />
     <div class="rentals-workspace">
       <header class="rentals-head">
         <h1>{{ t('title') }}</h1>
         <p class="rentals-lead">{{ t('subtitle') }}</p>
+        <nav class="rentals-related" :aria-label="t('relatedSearches')">
+          <NuxtLink :to="localePath('/oportunidades-inmobiliarias-uruguay')">{{
+            t('opportunitiesShort')
+          }}</NuxtLink>
+          <NuxtLink :to="localePath('/venta-viviendas-uruguay')">{{ t('salesShort') }}</NuxtLink>
+          <NuxtLink :to="localePath('/inmobiliarias-uruguay')">{{ t('agenciesShort') }}</NuxtLink>
+        </nav>
         <div class="rentals-provenance">
-          <span v-if="activeSourceLabels">{{ activeSourceLabels }}</span>
+          <a href="#rental-coverage" :title="activeSourceLabels">{{ t('coverage') }}</a>
           <span v-if="meta?.generatedAt">{{
             t('date', { date: dateLabel(meta.generatedAt) })
           }}</span>
-          <a href="#rental-coverage">{{ t('coverage') }}</a>
-          <NuxtLink :to="localePath('/venta-viviendas-uruguay')">{{ t('sales') }}</NuxtLink>
-          <NuxtLink :to="localePath('/oportunidades-inmobiliarias-uruguay')">{{
-            t('opportunities')
-          }}</NuxtLink>
         </div>
         <VAlert v-if="downSources.length" type="warning" variant="tonal" class="mt-3">{{
           t('sourceWarning', {
@@ -45,7 +47,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
         />
       </aside>
       <div class="rentals-content">
-        <div v-if="smAndDown" class="rentals-mobile-bar">
+        <div v-if="smAndDown" class="rentals-mobile-bar" data-testid="rental-mobile-toolbar">
           <VBtn
             color="link"
             variant="tonal"
@@ -58,22 +60,42 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             >{{ t('mobileFilters')
             }}<span v-if="filterChips.length"> ({{ filterChips.length }})</span></VBtn
           >
-          <VBtnToggle
-            :model-value="view"
-            mandatory
-            variant="outlined"
-            divided
-            :aria-label="`${t('list')} / ${t('map')}`"
-            @update:model-value="changeView"
-          >
-            <VBtn value="lista" :aria-label="t('list')" :title="t('list')">
-              <VIcon icon="mdi-view-grid-outline" />
-            </VBtn>
-            <VBtn value="mapa" :aria-label="t('map')" :title="t('map')">
-              <VIcon icon="mdi-map-marker-outline" />
-            </VBtn>
-          </VBtnToggle>
+          <VBtn
+            variant="text"
+            :icon="view === 'lista' ? 'mdi-map-marker-outline' : 'mdi-view-grid-outline'"
+            :aria-label="t(view === 'lista' ? 'map' : 'list')"
+            :title="t(view === 'lista' ? 'map' : 'list')"
+            @click="changeView(view === 'lista' ? 'mapa' : 'lista')"
+          />
           <RentalAlertButton kind="rental-search" :filters="{ ...query }" compact />
+          <VMenu>
+            <template #activator="{ props: menuProps }">
+              <VBtn
+                v-bind="menuProps"
+                icon="mdi-dots-vertical"
+                variant="text"
+                :aria-label="t('searchActions')"
+                :title="t('searchActions')"
+              />
+            </template>
+            <VList density="comfortable">
+              <VListItem
+                prepend-icon="mdi-bookmark-plus-outline"
+                :title="t('saveSearch')"
+                @click="saveSearch"
+              />
+              <VListItem
+                prepend-icon="mdi-heart-outline"
+                :title="t('saved') + ' (' + (saved.favorites.length + saved.searches.length) + ')'"
+                @click="showSaved = !showSaved"
+              />
+              <VListItem
+                prepend-icon="mdi-share-variant-outline"
+                :title="t('share')"
+                @click="shareSearch"
+              />
+            </VList>
+          </VMenu>
         </div>
         <div v-if="filterChips.length" class="rentals-chips" :aria-label="t('activeFilters')">
           <VChip
@@ -88,7 +110,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
           >
           <VBtn variant="text" size="small" @click="clearFilters">{{ t('reset') }}</VBtn>
         </div>
-        <div class="rentals-tools">
+        <div v-if="!smAndDown" class="rentals-tools">
           <RentalAlertButton v-if="!smAndDown" kind="rental-search" :filters="{ ...query }" />
           <VBtn
             variant="text"
@@ -150,6 +172,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               <p v-if="medianUyu && !pending">
                 {{ t('typical', { price: `$ ${numberFormat(medianUyu)}` }) }}
               </p>
+              <p v-if="query.sort === 'total'">{{ t('totalSortHint') }}</p>
             </div>
             <VSelect
               :model-value="query.sort"
@@ -244,7 +267,19 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             <VIcon size="40" color="primary">mdi-home-search-outline</VIcon>
             <h3>{{ t('empty') }}</h3>
             <p>{{ t('emptyHint') }}</p>
-            <VBtn color="primary" variant="tonal" @click="clearFilters">{{ t('reset') }}</VBtn>
+            <div class="rentals-empty__actions">
+              <VBtn v-if="smAndDown" color="primary" variant="tonal" @click="openMobileFilters">{{
+                t('editFilters')
+              }}</VBtn>
+              <VBtn
+                v-for="chip in filterChips.slice(0, 3)"
+                :key="chip.key"
+                variant="outlined"
+                @click="removeFilter(chip.keys)"
+                >{{ t('remove', { name: chip.label }) }}</VBtn
+              >
+              <VBtn variant="text" @click="clearFilters">{{ t('reset') }}</VBtn>
+            </div>
           </div>
           <div v-if="view === 'lista' && !error" class="rentals-grid">
             <article v-for="(property, index) in items" :key="property.key" class="rental-card">
@@ -286,44 +321,59 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                 />
               </div>
               <div class="rental-card__body">
-                <p class="rental-card__where">
-                  {{
-                    [property.neighborhood, property.department].filter(Boolean).join(', ') ||
-                    t('unknown')
-                  }}
-                </p>
-                <h3>
-                  <NuxtLink
-                    :to="localePath(rentalPropertyPath(property.key))"
-                    @pointerdown="rememberRentalSearch(route.fullPath)"
-                    @click="rememberRentalSearch(route.fullPath)"
-                    >{{ property.title }}</NuxtLink
-                  >
-                </h3>
-                <p class="rental-card__specs">{{ specsLabel(property) }}</p>
-                <p v-if="property.address" class="rental-card__address">{{ property.address }}</p>
-                <div class="rental-card__cost">
-                  <p class="rental-card__price">
-                    {{ priceLabel(property) }} <span>{{ t('rent') }}</span>
+                <div class="rental-card__overview">
+                  <p class="rental-card__where">
+                    {{
+                      [property.neighborhood, property.department].filter(Boolean).join(', ') ||
+                      t('unknown')
+                    }}
                   </p>
-                  <p class="rental-card__expenses">{{ expensesLabel(property) }}</p>
-                  <p
-                    v-if="monthlyTotal(property) !== null"
-                    class="rental-card__total"
-                    :title="t('totalHint')"
-                  >
-                    <span>{{ t('monthlyTotal') }}</span
-                    ><strong>$ {{ numberFormat(monthlyTotal(property)!) }}</strong>
-                  </p>
+                  <div class="rental-card__cost">
+                    <p class="rental-card__price" data-testid="rental-card-price">
+                      {{
+                        monthlyTotal(property) !== null
+                          ? '$ ' + numberFormat(monthlyTotal(property)!)
+                          : priceLabel(property)
+                      }}
+                    </p>
+                    <p class="rental-card__cost-label">
+                      {{ t(monthlyTotal(property) !== null ? 'rentAndExpenses' : 'rent') }}
+                    </p>
+                    <p v-if="monthlyTotal(property) !== null" class="rental-card__expenses">
+                      {{ priceLabel(property) }} {{ t('rent').toLowerCase() }} ·
+                      {{ expensesLabel(property) }}
+                    </p>
+                    <p v-else class="rental-card__expenses">{{ expensesLabel(property) }}</p>
+                  </div>
+
+                  <h3>
+                    <NuxtLink
+                      :to="localePath(rentalPropertyPath(property.key))"
+                      @pointerdown="rememberRentalSearch(route.fullPath)"
+                      @click="rememberRentalSearch(route.fullPath)"
+                      >{{ property.title }}</NuxtLink
+                    >
+                  </h3>
+                  <p class="rental-card__specs">{{ specsLabel(property) }}</p>
+                  <p v-if="property.address" class="rental-card__address">{{ property.address }}</p>
                 </div>
                 <div class="rental-card__tags">
-                  <VChip v-if="property.petsAllowed" size="small" variant="tonal">{{
+                  <VChip
+                    v-if="displayOffer(property)?.ownerDirect?.declared"
+                    size="small"
+                    variant="tonal"
+                    color="primary"
+                    >{{ t('owner') }}</VChip
+                  >
+                  <VChip v-if="displayOffer(property)?.petsAllowed" size="small" variant="tonal">{{
                     t('pets')
                   }}</VChip
-                  ><VChip v-if="(property.parkingSpaces ?? 0) > 0" size="small" variant="tonal">{{
-                    t('parking')
-                  }}</VChip
-                  ><VChip v-if="property.furnished" size="small" variant="tonal">{{
+                  ><VChip
+                    v-if="(displayOffer(property)?.parkingSpaces ?? 0) > 0"
+                    size="small"
+                    variant="tonal"
+                    >{{ t('parking') }}</VChip
+                  ><VChip v-if="displayOffer(property)?.furnished" size="small" variant="tonal">{{
                     t('furnished')
                   }}</VChip
                   ><VChip
@@ -373,7 +423,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                   @pointerdown="rememberRentalSearch(route.fullPath)"
                   @click="rememberRentalSearch(route.fullPath)"
                 >
-                  {{ t('detail') }}
+                  {{ t('detailsAndServices') }}
                   <VIcon size="20" aria-hidden="true">mdi-arrow-right</VIcon>
                 </NuxtLink>
               </div>
@@ -909,7 +959,7 @@ const expensesLabel = (property: RentalProperty) => {
   return `${t('expenses')}: ${offerPrice({ price: offer.commonExpenses, currency: offer.commonExpensesCurrency })}`
 }
 const publishedGuarantees = (property: RentalProperty) =>
-  (property.guarantees ?? []).filter(g => RENTAL_GUARANTEE_PUBLISHED.includes(g))
+  (displayOffer(property)?.guarantees ?? []).filter(g => RENTAL_GUARANTEE_PUBLISHED.includes(g))
 const sellerLabel = (property: RentalProperty) => {
   const offer = displayOffer(property)
   const type = t(
@@ -1077,6 +1127,46 @@ useHead(() => ({
 </script>
 
 <style scoped>
+.rentals-related {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 20px;
+  margin-top: 8px;
+}
+.rentals-related a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: rgb(var(--v-theme-link));
+  text-underline-offset: 3px;
+  font-size: 0.875rem;
+}
+.rental-card__overview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.rental-card__cost-label {
+  font-size: 0.8rem;
+}
+.rentals-empty__actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.rentals-empty__actions :deep(.v-btn) {
+  height: auto;
+  min-height: 44px;
+  max-width: 100%;
+  padding-block: 10px;
+}
+.rentals-empty__actions :deep(.v-btn__content) {
+  white-space: normal;
+}
+
 .rentals {
   max-width: 1280px;
   padding-bottom: 48px;
@@ -1112,10 +1202,6 @@ useHead(() => ({
   margin-right: auto;
   font-size: 0.8rem;
   letter-spacing: 0;
-}
-.rentals-mobile-bar :deep(.v-btn-toggle) {
-  height: 44px;
-  flex: none;
 }
 .rentals-mobile-bar :deep(.rental-alert-trigger) {
   width: 44px;
@@ -1181,16 +1267,6 @@ useHead(() => ({
 .rentals--mobile .rentals-chips > .v-btn {
   flex: none;
   min-height: 44px;
-}
-.rentals--mobile .rentals-tools {
-  margin: 0;
-  gap: 4px;
-  justify-content: flex-end;
-}
-.rentals--mobile .rentals-tools :deep(.v-btn) {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
 }
 .rentals--mobile .rentals-head {
   margin: 6px 0 12px;
@@ -1355,13 +1431,6 @@ useHead(() => ({
 .rental-card__expenses {
   font-size: 0.8rem;
   margin-top: 4px !important;
-}
-.rental-card__total {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 10px !important;
-  font-size: 0.875rem;
 }
 .rental-card__tags {
   display: flex;
@@ -1578,6 +1647,127 @@ useHead(() => ({
   }
   .rentals-provenance {
     gap: 6px 12px;
+  }
+}
+
+@media (max-width: 959px) {
+  .rentals-breadcrumbs {
+    display: none;
+  }
+  .rentals-related {
+    gap: 0 16px;
+    margin-top: 4px;
+  }
+  .rentals-related a {
+    font-size: 0.8rem;
+  }
+  .rentals--mobile .rentals-provenance {
+    margin-top: 0;
+    align-items: center;
+    gap: 0 12px;
+  }
+  .rentals-provenance > a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .rentals-mobile-bar > .v-btn {
+    flex: 0 0 44px;
+    padding-inline: 0;
+  }
+  .rentals-mobile-bar > .v-btn:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-start;
+    padding-inline: 8px;
+  }
+  .rentals-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rental-card {
+    display: grid;
+    grid-template-columns: clamp(80px, 24vw, 144px) minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+    align-items: start;
+  }
+  .rental-card__body {
+    display: contents;
+  }
+  .rental-card__visual {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .rental-card__overview {
+    grid-column: 2;
+    grid-row: 1;
+    gap: 6px;
+  }
+  .rental-card__body > :not(.rental-card__overview) {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+  .rental-card__media {
+    height: 168px;
+    aspect-ratio: auto;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .rental-card__noimage {
+    text-align: center;
+    font-size: 0.7rem;
+    padding: 4px;
+  }
+  .rental-card__save {
+    top: 4px;
+    right: 4px;
+    width: 44px;
+    height: 44px;
+  }
+  .rental-card__badge {
+    bottom: 4px;
+    left: 4px;
+    right: 4px;
+    padding: 4px;
+    text-align: center;
+    font-size: 0.65rem;
+  }
+  .rental-card__cost {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+  .rental-card__price {
+    font-size: 1.4rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  .rental-card__expenses {
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+  .rental-card h3 {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .rental-card h3 a {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .rental-card__address {
+    display: none;
+  }
+  .rental-card__offers {
+    padding-top: 0;
+  }
+  .rental-card__specs {
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  .rental-card__detail {
+    font-size: 0.875rem;
   }
 }
 </style>

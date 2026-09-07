@@ -3,13 +3,14 @@
     :is="mobile ? VDialog : 'div'"
     v-bind="dialogProps"
     @update:model-value="emit('update:open', $event)"
-    @after-enter="heading?.focus({ preventScroll: true })"
+    @after-enter="focusHeading"
     @after-leave="emit('closed')"
   >
     <form
       class="sale-search"
       :class="{ 'sale-search--mobile': mobile }"
       :aria-label="t('search')"
+      novalidate
       @submit.prevent="submit"
     >
       <header>
@@ -59,6 +60,24 @@
           />
         </fieldset>
         <fieldset>
+          <legend>{{ t('type') }}</legend>
+          <VSelect
+            v-model="draft.type"
+            :items="[
+              { title: t('all'), value: 'all' },
+              ...['casa', 'apartamento'].map(value => ({ title: t(value), value })),
+            ]"
+            :label="t('type')"
+            v-bind="field"
+          />
+          <VSelect
+            v-model="draft.bedrooms"
+            :items="bedroomItems"
+            :label="t('bedrooms')"
+            v-bind="field"
+          />
+        </fieldset>
+        <fieldset>
           <legend>{{ t('price') }}</legend>
           <VSelect
             v-model="draft.currency"
@@ -69,17 +88,29 @@
           <div class="sale-search__pair">
             <VTextField
               v-model="draft.minPrice"
+              name="minPrice"
               :label="t('minPrice')"
+              :error="invalidFields.includes('minPrice')"
+              :aria-describedby="
+                invalidFields.includes('minPrice') ? 'sale-filter-error' : undefined
+              "
               type="number"
               min="0"
+              step="any"
               inputmode="numeric"
               v-bind="field"
             />
             <VTextField
               v-model="draft.maxPrice"
+              name="maxPrice"
               :label="t('maxPrice')"
+              :error="invalidFields.includes('maxPrice')"
+              :aria-describedby="
+                invalidFields.includes('maxPrice') ? 'sale-filter-error' : undefined
+              "
               type="number"
               min="0"
+              step="any"
               inputmode="numeric"
               v-bind="field"
             />
@@ -96,28 +127,11 @@
           <fieldset>
             <legend v-if="!mobile">{{ t('features') }}</legend>
             <VSelect
-              v-model="draft.type"
-              :items="[
-                { title: t('all'), value: 'all' },
-                ...['casa', 'apartamento'].map(value => ({ title: t(value), value })),
-              ]"
-              :label="t('type')"
+              v-model="draft.bathrooms"
+              :items="bathroomItems"
+              :label="t('bathroomsMin')"
               v-bind="field"
             />
-            <div class="sale-search__pair">
-              <VSelect
-                v-model="draft.bedrooms"
-                :items="bedroomItems"
-                :label="t('bedrooms')"
-                v-bind="field"
-              />
-              <VSelect
-                v-model="draft.bathrooms"
-                :items="bathroomItems"
-                :label="t('bathroomsMin')"
-                v-bind="field"
-              />
-            </div>
             <VCheckbox
               v-for="key in checks"
               :key="key"
@@ -149,17 +163,29 @@
             <div class="sale-search__pair">
               <VTextField
                 v-model="draft.minArea"
+                name="minArea"
                 :label="t('minArea')"
+                :error="invalidFields.includes('minArea')"
+                :aria-describedby="
+                  invalidFields.includes('minArea') ? 'sale-filter-error' : undefined
+                "
                 type="number"
                 min="0"
+                step="any"
                 inputmode="decimal"
                 v-bind="field"
               />
               <VTextField
                 v-model="draft.maxArea"
+                name="maxArea"
                 :label="t('maxArea')"
+                :error="invalidFields.includes('maxArea')"
+                :aria-describedby="
+                  invalidFields.includes('maxArea') ? 'sale-filter-error' : undefined
+                "
                 type="number"
                 min="0"
+                step="any"
                 inputmode="decimal"
                 v-bind="field"
               />
@@ -201,7 +227,9 @@
         </component>
       </div>
       <footer>
-        <p v-if="invalid" role="alert" class="sale-search__error">{{ t('rangeError') }}</p>
+        <p v-if="invalid" id="sale-filter-error" role="alert" class="sale-search__error">
+          {{ invalid === 'number' ? t('numberError') : `${t(invalid)}: ${t('rangeError')}` }}
+        </p>
         <VBtn variant="text" @click="reset">{{ t('clear') }}</VBtn>
         <VBtn type="submit" color="primary" :loading="pending" data-testid="sale-filter-apply">
           {{ t('apply') }}
@@ -237,7 +265,13 @@ const field = { variant: 'outlined', density: 'comfortable', hideDetails: true }
 const checks = ['parking', 'furnished', 'photos'] as const
 const draft = ref(normalizePropertySalesQuery(props.query as unknown as Record<string, unknown>))
 const heading = ref<HTMLElement | null>(null)
-const invalid = ref(false)
+function focusHeading() {
+  if (heading.value?.closest('form')?.contains(document.activeElement)) return
+  heading.value?.focus({ preventScroll: true })
+}
+const invalid = ref<'number' | 'price' | 'area' | null>(null)
+const amountFields = ['minPrice', 'maxPrice', 'minArea', 'maxArea'] as const
+const invalidFields = ref<(typeof amountFields)[number][]>([])
 const advancedOpen = ref(false)
 const viewportHeight = ref('100dvh')
 const viewportTop = ref('0px')
@@ -292,26 +326,53 @@ function changeLocation(key: 'department' | 'locality') {
 }
 function reset() {
   draft.value = normalizePropertySalesQuery({ view: props.query.view, keys: props.query.keys })
-  invalid.value = false
+  invalid.value = null
+  invalidFields.value = []
   emit('location', draft.value)
 }
-function submit() {
-  const normalized = normalizePropertySalesQuery(draft.value as unknown as Record<string, unknown>)
-  invalid.value =
-    (normalized.minPrice !== null &&
-      normalized.maxPrice !== null &&
-      normalized.minPrice > normalized.maxPrice) ||
-    (normalized.minArea !== null &&
-      normalized.maxArea !== null &&
-      normalized.minArea > normalized.maxArea)
+function submit(event?: Event) {
+  const form = event?.currentTarget as HTMLFormElement | null
+  // Validate the draft first: query normalization intentionally drops invalid values.
+  invalidFields.value = amountFields.filter(key => {
+    const value = draft.value[key]
+    if (form?.querySelector<HTMLInputElement>(`input[name="${key}"]`)?.validity.badInput)
+      return true
+    return (
+      value !== null &&
+      String(value).trim() !== '' &&
+      (!Number.isFinite(Number(value)) || Number(value) < 0)
+    )
+  })
+  invalid.value = invalidFields.value.length ? 'number' : null
   if (invalid.value) return
+  for (const [min, max, label] of [
+    ['minPrice', 'maxPrice', 'price'],
+    ['minArea', 'maxArea', 'area'],
+  ] as const) {
+    const from = draft.value[min],
+      to = draft.value[max]
+    if (
+      from !== null &&
+      to !== null &&
+      String(from).trim() !== '' &&
+      String(to).trim() !== '' &&
+      Number(from) > Number(to)
+    ) {
+      invalid.value = label
+      invalidFields.value = [min, max]
+      break
+    }
+  }
+  if (invalid.value) return
+  const normalized = normalizePropertySalesQuery(draft.value as unknown as Record<string, unknown>)
   emit('search', { ...normalized, page: 1 })
 }
 watch(
   () => props.query,
   query => {
     draft.value = normalizePropertySalesQuery(query as unknown as Record<string, unknown>)
-    invalid.value = false
+    invalid.value = null
+    invalidFields.value = []
   },
   { deep: true }
 )
@@ -322,9 +383,7 @@ watch(
       draft.value = normalizePropertySalesQuery(props.query as unknown as Record<string, unknown>)
       const q = props.query
       advancedOpen.value = Boolean(
-        q.type !== 'all' ||
-          q.bedrooms !== '' ||
-          q.bathrooms !== '' ||
+        q.bathrooms !== '' ||
           q.parking ||
           q.furnished ||
           q.photos ||
@@ -336,7 +395,8 @@ watch(
           q.owner ||
           q.recent !== 'all'
       )
-      invalid.value = false
+      invalid.value = null
+      invalidFields.value = []
       syncViewport()
     }
   }

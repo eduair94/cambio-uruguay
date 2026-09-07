@@ -7,6 +7,7 @@ import { publicAdvertiserProjection } from '../../../utils/propertyAdvertiser'
 import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
+  RENTAL_TOTAL_SORT_FIELDS,
   buildRentalFilter,
   normalizeRentalQuery,
   rentalMatchingOffer,
@@ -92,6 +93,9 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
             // Internal sort keys, omitted from the public map-point mapper below.
             priceUyu: 1,
             freshAt: 1,
+            ...(query.sort === 'total'
+              ? Object.fromEntries(RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
+              : {}),
             currency: 1,
             bedrooms: 1,
             area: 1,
@@ -105,6 +109,10 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
             'offers.sellerType': 1,
             'offers.commonExpenses': 1,
             'offers.commonExpensesCurrency': 1,
+            'offers.petsAllowed': 1,
+            'offers.furnished': 1,
+            'offers.parkingSpaces': 1,
+            'offers.guarantees': 1,
           },
         },
         { $sort: rentalMongoSort(query.sort) },

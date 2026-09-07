@@ -3,12 +3,13 @@
     :is="mobile ? VDialog : 'div'"
     v-bind="dialogProps"
     @update:model-value="emit('update:open', $event)"
-    @after-enter="heading?.focus({ preventScroll: true })"
+    @after-enter="focusHeading"
     @after-leave="emit('closed')"
   >
     <form
       class="opportunity-filters"
       :class="{ 'opportunity-filters--dialog': mobile }"
+      novalidate
       @submit.prevent="submit"
     >
       <header>
@@ -45,6 +46,7 @@
         />
         <VTextField
           v-model="budget"
+          name="maxPrice"
           :label="t(query.operation === 'rent' ? 'maxRent' : 'maxSale')"
           type="number"
           min="1"
@@ -53,11 +55,17 @@
           clearable
           v-bind="field"
           :error="invalidBudget"
+          :aria-describedby="invalidBudget ? 'opportunity-budget-error' : 'opportunity-budget-hint'"
         />
-        <p v-if="invalidBudget" class="opportunity-filters__error" role="alert">
+        <p
+          v-if="invalidBudget"
+          id="opportunity-budget-error"
+          class="opportunity-filters__error"
+          role="alert"
+        >
           {{ t('invalidBudget') }}
         </p>
-        <p class="opportunity-filters__hint">
+        <p id="opportunity-budget-hint" class="opportunity-filters__hint">
           {{ t(query.operation === 'rent' ? 'rentBudget' : 'saleBudget') }}
         </p>
         <component
@@ -104,7 +112,7 @@
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { VDialog } from 'vuetify/components'
 import { propertyOpportunityMessages } from '~/utils/propertyOpportunityMessages'
-import type { OpportunityQuery } from '~/utils/propertyOpportunityQuery'
+import { normalizeOpportunityQuery, type OpportunityQuery } from '~/utils/propertyOpportunityQuery'
 
 const props = defineProps<{
   query: OpportunityQuery
@@ -130,6 +138,10 @@ const availabilityItems = computed(() =>
   }))
 )
 const heading = ref<HTMLElement | null>(null)
+function focusHeading() {
+  if (heading.value?.closest('form')?.contains(document.activeElement)) return
+  heading.value?.focus({ preventScroll: true })
+}
 const draft = ref({ ...props.query })
 const budget = ref<string | number | null>(props.query.maxPrice)
 const invalidBudget = ref(false)
@@ -233,9 +245,13 @@ watch(
 onBeforeUnmount(() => {
   if (import.meta.client) stopViewport()
 })
-function submit() {
-  const amount = budget.value === '' || budget.value === null ? null : Number(budget.value)
-  invalidBudget.value = amount !== null && (!Number.isFinite(amount) || amount <= 0)
+function submit(event?: Event) {
+  const form = event?.currentTarget as HTMLFormElement | null
+  const amount =
+    budget.value === null || String(budget.value).trim() === '' ? null : Number(budget.value)
+  invalidBudget.value =
+    Boolean(form?.querySelector<HTMLInputElement>('input[name="maxPrice"]')?.validity.badInput) ||
+    (amount !== null && (!Number.isFinite(amount) || amount <= 0))
   if (invalidBudget.value) return
   emit('search', {
     ...draft.value,
@@ -245,8 +261,11 @@ function submit() {
   })
 }
 function clear() {
+  draft.value = normalizeOpportunityQuery({ operation: props.query.operation })
+  budget.value = null
   invalidBudget.value = false
-  emit('clear')
+  advancedOpen.value = false
+  if (!props.mobile) emit('clear')
 }
 </script>
 

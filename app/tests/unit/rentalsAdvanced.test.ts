@@ -5,6 +5,7 @@ import {
   normalizeRentalQuery,
   rentalCommonExpensesUyu,
   rentalMatchingOffer,
+  rentalOfferMatchesQuery,
   rentalMongoSort,
   rentalOfferStages,
   rentalQueryToParams,
@@ -174,7 +175,7 @@ describe('rental property filters', () => {
 
   it('keeps indexed ordering for default searches and stable tie-breaks for every sort', () => {
     expect(rentalOfferStages(normalizeRentalQuery({}), 40)).toEqual([])
-    for (const sort of ['recientes', 'precio', 'precio-desc', 'metros'] as const)
+    for (const sort of ['recientes', 'precio', 'precio-desc', 'total', 'metros'] as const)
       expect(rentalMongoSort(sort).key).toBe(1)
   })
 
@@ -192,6 +193,98 @@ describe('rental property filters', () => {
 })
 
 describe('published expenses and the advert that actually meets a budget', () => {
+  it.each([
+    [{ pets: 1 }, { petsAllowed: true }],
+    [{ furnished: 1 }, { furnished: true }],
+    [{ parking: 1 }, { parkingSpaces: 1 }],
+    [{ garantia: 'anda,contaduria' }, { guarantees: ['anda'] }],
+  ] as const)('requires the selected advert itself to publish %j', (filters, terms) => {
+    const offers = [
+      offer({ priceUyu: 18_000 }),
+      offer({ listingId: 'infocasas:2', priceUyu: 22_000, ...terms } as Partial<RentalOffer>),
+    ]
+    const query = normalizeRentalQuery(filters)
+    expect(rentalMatchingOffer(offers, query, 40)?.listingId).toBe('infocasas:2')
+    expect(rentalOfferStages(query, 40).length).toBeGreaterThan(0)
+    expect(
+      rentalMatchingOffer(offers, normalizeRentalQuery({ ...filters, priceMax: 20_000 }), 40)
+    ).toBeUndefined()
+  })
+
+  it('keeps OR between guarantees but AND across required conditions, with no legacy inference', () => {
+    const query = normalizeRentalQuery({
+      pets: 1,
+      furnished: 1,
+      parking: 1,
+      garantia: 'anda,contaduria',
+    })
+    const complete = offer({
+      petsAllowed: true,
+      furnished: true,
+      parkingSpaces: 1,
+      guarantees: ['contaduria'],
+    })
+    expect(rentalOfferMatchesQuery(complete, query, 40)).toBe(true)
+    for (const missing of [
+      { petsAllowed: undefined },
+      { furnished: null },
+      { parkingSpaces: null },
+      { guarantees: [] },
+      { guarantees: 'anda' },
+      { parkingSpaces: '1' },
+      { parkingSpaces: Infinity },
+    ])
+      expect(rentalOfferMatchesQuery({ ...complete, ...missing } as RentalOffer, query, 40)).toBe(
+        false
+      )
+    expect(buildRentalFilter(query, 10, 40).filter.offers).toEqual({
+      $elemMatch: {
+        petsAllowed: true,
+        furnished: true,
+        parkingSpaces: { $type: 'number', $gte: 1, $lte: Number.MAX_VALUE },
+        guarantees: { $type: 'array', $in: ['anda', 'contaduria'] },
+      },
+    })
+  })
+
+  it('sorts by the own known monthly total, retaining unknowns and respecting every filter', () => {
+    const unknown = offer({ listingId: 'unknown', priceUyu: 10_000, commonExpenses: null })
+    const cheaperRent = offer({
+      listingId: 'cheaper-rent',
+      priceUyu: 18_000,
+      commonExpenses: 8_000,
+    })
+    const cheaperTotal = offer({ listingId: 'cheaper-total', priceUyu: 20_000, commonExpenses: 0 })
+    const offers = [unknown, cheaperRent, cheaperTotal]
+    const query = normalizeRentalQuery({ sort: 'total' })
+    expect(normalizeRentalQuery(rentalQueryToParams(query))).toEqual(query)
+    expect(rentalMatchingOffer(offers, query, 40)?.listingId).toBe('cheaper-total')
+    expect(rentalMatchingOffer(offers, normalizeRentalQuery({}), 40)?.listingId).toBe('unknown')
+    expect(
+      rentalMatchingOffer(offers, normalizeRentalQuery({ sort: 'total', priceMax: 19_000 }), 40)
+        ?.listingId
+    ).toBe('cheaper-rent')
+    expect(rentalMatchingOffer([unknown], query, 40)).toEqual(unknown)
+    expect(
+      rentalMatchingOffer([cheaperTotal, { ...cheaperRent, commonExpenses: 2_000 }], query, 40)
+        ?.listingId
+    ).toBe('cheaper-rent')
+    expect(
+      rentalMatchingOffer(
+        [cheaperTotal, { ...unknown, commonExpenses: 50, commonExpensesCurrency: 'USD' }],
+        query,
+        40
+      )?.listingId
+    ).toBe('unknown')
+    expect(
+      rentalMatchingOffer(
+        [cheaperTotal, { ...unknown, commonExpenses: 50, commonExpensesCurrency: 'USD' }],
+        query,
+        0
+      )?.listingId
+    ).toBe('cheaper-total')
+  })
+
   it('distinguishes unknown, explicitly free, and expenses with an unknown currency', () => {
     expect(totalMonthlyUyu(offer({ commonExpenses: null }), 40)).toBeNull()
     expect(totalMonthlyUyu(offer({ commonExpenses: 0, commonExpensesCurrency: null }), 0)).toBe(

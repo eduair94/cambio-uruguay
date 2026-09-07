@@ -26,14 +26,6 @@
         </NuxtLink>
         <NuxtLink :to="localePath('/comprar-o-alquilar-uruguay')">{{ t('buyOrRent') }}</NuxtLink>
         <a href="#sales-coverage">{{ t('coverage') }}</a>
-        <VBtn
-          v-if="smAndDown"
-          icon="mdi-share-variant-outline"
-          variant="text"
-          :aria-label="t('share')"
-          class="sales-directory__share-mobile"
-          @click="shareSearch"
-        />
       </nav>
     </header>
     <div class="sales-directory__workspace">
@@ -66,6 +58,7 @@
             <span v-if="chips.length">({{ chips.length }})</span>
           </VBtn>
           <VBtnToggle
+            v-if="!smAndDown"
             :model-value="query.view"
             mandatory
             divided
@@ -83,23 +76,34 @@
             </VBtn>
           </VBtnToggle>
           <VBtn
+            v-else
+            :icon="query.view === 'lista' ? 'mdi-map-outline' : 'mdi-view-list-outline'"
+            variant="outlined"
+            :aria-label="t(query.view === 'lista' ? 'map' : 'list')"
+            data-testid="sale-view-trigger"
+            @click="setView(query.view === 'lista' ? 'mapa' : 'lista')"
+          />
+          <VBtn
             :variant="savedOnly ? 'tonal' : 'text'"
             :color="savedOnly ? 'primary' : undefined"
             :prepend-icon="smAndDown ? undefined : 'mdi-heart-outline'"
             :aria-pressed="savedOnly"
             data-testid="sale-saved-trigger"
+            class="sales-directory__saved-button"
             :aria-label="`${t('saved')} (${favorites.keys.value.length})`"
             @click="toggleSaved"
           >
             <VIcon v-if="smAndDown" icon="mdi-heart-outline" />
-            <span class="sales-directory__saved-label">{{ t('saved') }}</span>
-            <span v-if="favorites.ready.value">({{ favorites.keys.value.length }})</span>
+            <span v-if="!smAndDown" class="sales-directory__saved-label">{{ t('saved') }}</span>
+            <span v-if="!smAndDown && favorites.ready.value"
+              >({{ favorites.keys.value.length }})</span
+            >
           </VBtn>
           <VBtn
-            v-if="!smAndDown"
             icon="mdi-share-variant-outline"
             variant="text"
             :aria-label="t('share')"
+            data-testid="sale-share-trigger"
             @click="shareSearch"
           />
         </div>
@@ -754,12 +758,6 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
   .sales-directory__header nav {
     margin-top: 4px;
   }
-  .sales-directory__share-mobile {
-    margin-left: auto;
-    flex: none;
-    width: 44px;
-    height: 44px;
-  }
   .sales-directory__workspace {
     display: block;
   }
@@ -770,8 +768,8 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
     top: 64px;
     margin: 0;
     padding: 5px 0;
-    gap: 6px;
-    flex-wrap: nowrap;
+    gap: 3px;
+    flex-wrap: wrap;
   }
   .sales-directory__toolbar > .v-btn:last-child {
     margin-left: auto;
@@ -784,6 +782,15 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
     min-width: 44px;
     height: 44px;
     letter-spacing: 0;
+  }
+  .sales-directory__toolbar .sales-directory__saved-button {
+    padding-inline: 4px;
+    width: 44px;
+    flex: 0 0 44px;
+  }
+  .sales-directory__toolbar > [data-testid='sale-share-trigger'] {
+    width: 44px;
+    flex: 0 0 44px;
   }
   .sales-directory__chips {
     flex-wrap: nowrap;
@@ -843,7 +850,7 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
     min-width: 145px;
   }
   .sales-directory__toolbar {
-    gap: 4px;
+    gap: 3px;
   }
   .sales-directory__toolbar > .v-btn {
     font-size: 0.75rem;

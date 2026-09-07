@@ -113,6 +113,7 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
     ['precio-desc', ['b', 'c', 'a', 'd']],
     ['metros', ['c', 'b', 'a', 'd']],
     ['recientes', ['c', 'a', 'd', 'b']],
+    ['total', ['a', 'd', 'c', 'b']],
   ])('preserves %s sorting and ties after discarding rich/private fields', async (sort, keys) => {
     fixtures = [
       property('a', 10000, 40, 1),
@@ -204,5 +205,55 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
     })
     expect(state.mapRows.find(row => row.key === 'eligible')?.priceUyu).toBe(30000)
     expect(JSON.stringify(result)).not.toContain('PRIVATE_')
+  })
+
+  it('keeps own advertised conditions through the slim projection and chooses the same map price/link', async () => {
+    const terms = { petsAllowed: true, furnished: true, parkingSpaces: 1, guarantees: ['anda'] }
+    fixtures = [
+      property('eligible', 18000, 40, 0, [
+        advert('cheap', 18000),
+        advert('selected', 22000, terms),
+      ]),
+      property('split', 15000, 40, 0, [
+        advert('pets-only', 15000, { petsAllowed: true, guarantees: ['anda'] }),
+        advert('furnished-only', 18000, { furnished: true, parkingSpaces: 1 }),
+      ]),
+    ]
+    state.query = {
+      pets: '1',
+      furnished: '1',
+      parking: '1',
+      garantia: 'contaduria,anda',
+      sort: 'precio',
+    }
+    const result = await handler({})
+    expect([result.total, result.located, result.shown]).toEqual([1, 1, 1])
+    expect(result.points[0]).toMatchObject({
+      key: 'eligible',
+      price: 22000,
+      url: 'https://www.infocasas.com.uy/fixture/selected',
+    })
+    state.query.priceMax = '20000'
+    expect((await handler({})).points).toEqual([])
+  })
+
+  it('shows the selected monthly-total advert and keeps homes with unknown expenses last', async () => {
+    fixtures = [
+      property('known', 18000, 40, 0, [
+        advert('base-cheaper', 18000, { commonExpenses: 8000 }),
+        advert('total-cheaper', 20000, { commonExpenses: 0 }),
+      ]),
+      property('unknown', 9000, 40, 0, [advert('unknown', 9000, { commonExpenses: null })]),
+      property('next', 19000, 40, 0, [advert('next', 19000, { commonExpenses: 2000 })]),
+    ]
+    state.query = { sort: 'total' }
+    const result = await handler({})
+    expect(result.points.map(point => point.key)).toEqual(['known', 'next', 'unknown'])
+    expect(result.points[0]).toMatchObject({
+      price: 20000,
+      url: 'https://www.infocasas.com.uy/fixture/total-cheaper',
+    })
+    expect(result.points).toHaveLength(3)
+    expect(JSON.stringify(result)).not.toContain('_rentalMonthly')
   })
 })

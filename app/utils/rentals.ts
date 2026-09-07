@@ -279,12 +279,13 @@ export const RENTAL_SELLER_LABEL: Record<RentalSellerType, string> = {
   desconocido: 'Sin dato',
 }
 
-export type RentalSort = 'recientes' | 'precio' | 'precio-desc' | 'metros'
+export type RentalSort = 'recientes' | 'precio' | 'precio-desc' | 'total' | 'metros'
 
 export const RENTAL_SORTS: ReadonlyArray<{ value: RentalSort; label: string }> = Object.freeze([
   { value: 'recientes', label: 'Más recientes' },
   { value: 'precio', label: 'Precio: menor a mayor' },
   { value: 'precio-desc', label: 'Precio: mayor a menor' },
+  { value: 'total', label: 'Menor total mensual' },
   { value: 'metros', label: 'Más metros' },
 ])
 
@@ -499,7 +500,8 @@ export function totalMonthlyUyu(
 ): number | null {
   const expenses = rentalCommonExpensesUyu(offer, usdUyu)
   if (expenses === null || !Number.isFinite(offer.priceUyu) || !(offer.priceUyu > 0)) return null
-  return Math.round(offer.priceUyu + expenses)
+  const total = offer.priceUyu + expenses
+  return Number.isFinite(total) ? Math.round(total) : null
 }
 
 /** Zero is meaningful only when explicitly published; unknown amount/currency stays unknown. */
@@ -511,8 +513,10 @@ export function rentalCommonExpensesUyu(
   if (typeof expenses !== 'number' || !Number.isFinite(expenses) || expenses < 0) return null
   if (expenses === 0) return 0
   if (offer.commonExpensesCurrency === 'UYU') return expenses
-  if (offer.commonExpensesCurrency === 'USD' && Number.isFinite(usdUyu) && usdUyu > 0)
-    return expenses * usdUyu
+  if (offer.commonExpensesCurrency === 'USD' && Number.isFinite(usdUyu) && usdUyu > 0) {
+    const converted = expenses * usdUyu
+    return Number.isFinite(converted) ? converted : null
+  }
   return null
 }
 
@@ -525,6 +529,21 @@ export function rentalOfferMatchesQuery(
   if (query.source && offer.source !== query.source) return false
   if (query.currency && offer.currency !== query.currency) return false
   if (!advertiserMatches(offer, query)) return false
+  if (query.pets && offer.petsAllowed !== true) return false
+  if (query.furnished && offer.furnished !== true) return false
+  if (
+    query.parking &&
+    (typeof offer.parkingSpaces !== 'number' ||
+      !Number.isFinite(offer.parkingSpaces) ||
+      offer.parkingSpaces < 1)
+  )
+    return false
+  if (
+    query.guarantees.length &&
+    (!Array.isArray(offer.guarantees) ||
+      !query.guarantees.some(guarantee => offer.guarantees!.includes(guarantee)))
+  )
+    return false
   if (query.priceMin !== null && offer.priceUyu < query.priceMin) return false
   if (query.priceMax !== null && offer.priceUyu > query.priceMax) return false
   if (
@@ -545,7 +564,7 @@ export function rentalOfferMatchesQuery(
   return Number.isFinite(offer.priceUyu) && offer.priceUyu > 0
 }
 
-/** Cheapest matching advert; same selection is used by list cards and map popups. */
+/** Cheapest matching advert for the chosen basis; unknown monthly totals follow all known ones. */
 export function rentalMatchingOffer(
   offers: RentalOffer[],
   query: RentalQuery,
@@ -553,7 +572,16 @@ export function rentalMatchingOffer(
 ): RentalOffer | undefined {
   return offers
     .filter(offer => rentalOfferMatchesQuery(offer, query, usdUyu))
-    .sort((a, b) => a.priceUyu - b.priceUyu)[0]
+    .sort((a, b) => {
+      if (query.sort === 'total') {
+        const first = totalMonthlyUyu(a, usdUyu)
+        const second = totalMonthlyUyu(b, usdUyu)
+        if (first === null && second !== null) return 1
+        if (first !== null && second === null) return -1
+        if (first !== null && second !== null && first !== second) return first - second
+      }
+      return a.priceUyu - b.priceUyu
+    })[0]
 }
 
 export function rentalPriceLabel(price: number, currency: RentalCurrency, usdUyu: number): string {
@@ -748,6 +776,12 @@ export function buildRentalFilter(
   if (query.currency) offer.currency = query.currency
   if (query.owner) offer['ownerDirect.declared'] = true
   if (query.agency) offer['agency.key'] = query.agency
+  // Commercial conditions belong to the same advert as the price, source and advertiser.
+  // Group-level unions remain useful prefilters but cannot establish an offer's own terms.
+  if (query.pets) offer.petsAllowed = true
+  if (query.furnished) offer.furnished = true
+  if (query.parking) offer.parkingSpaces = { $type: 'number', $gte: 1, $lte: Number.MAX_VALUE }
+  if (query.guarantees.length) offer.guarantees = { $type: 'array', $in: query.guarantees }
   if (query.withExpenses || query.expensesMax !== null || query.monthlyMax !== null)
     offer.commonExpenses = { $type: 'number', $gte: 0 }
   if (query.priceMin !== null || query.priceMax !== null) {
@@ -802,16 +836,22 @@ export function buildRentalFilter(
   return { filter, nonLocation, withoutNeighborhood }
 }
 
-/** Mongo equivalent of rentalOfferMatchesQuery for budgets; arithmetic never coerces unknown to 0. */
-function rentalOfferExpression(query: RentalQuery, usdUyu: number): Record<string, unknown> {
+/** Own expenses in UYU, with the same unknown/zero/currency semantics as the JavaScript helper. */
+function rentalExpensesUyuExpression(offer: string, usdUyu: number): Record<string, unknown> {
   const rate = Number.isFinite(usdUyu) && usdUyu > 0 ? usdUyu : null
-  const expense = '$$offer.commonExpenses'
-  const expenseCurrency = '$$offer.commonExpensesCurrency'
+  const expense = `${offer}.commonExpenses`
+  const expenseCurrency = `${offer}.commonExpensesCurrency`
   // The $cond protects arithmetic even on malformed historical Mixed documents. Mongo $and does
   // not promise short-circuit evaluation, so a sibling type guard alone cannot prevent a 500.
   const expensesUyu = {
     $cond: [
-      { $and: [{ $isNumber: expense }, { $gte: [expense, 0] }] },
+      {
+        $and: [
+          { $isNumber: expense },
+          { $gte: [expense, 0] },
+          { $lte: [expense, Number.MAX_VALUE] },
+        ],
+      },
       {
         $switch: {
           branches: [
@@ -828,18 +868,94 @@ function rentalOfferExpression(query: RentalQuery, usdUyu: number): Record<strin
       null,
     ],
   }
+  return {
+    $let: {
+      vars: { converted: expensesUyu },
+      in: {
+        $cond: [
+          { $and: [{ $ne: ['$$converted', null] }, { $lte: ['$$converted', Number.MAX_VALUE] }] },
+          '$$converted',
+          null,
+        ],
+      },
+    },
+  }
+}
+
+function rentalMonthlyUyuExpression(offer: string, usdUyu: number): Record<string, unknown> {
+  return {
+    $let: {
+      vars: {
+        expenses: rentalExpensesUyuExpression(offer, usdUyu),
+        rent: {
+          $convert: { input: `${offer}.priceUyu`, to: 'double', onError: null, onNull: null },
+        },
+      },
+      in: {
+        $let: {
+          vars: { total: { $add: ['$$rent', '$$expenses'] } },
+          in: {
+            $cond: [
+              {
+                $and: [
+                  { $isNumber: `${offer}.priceUyu` },
+                  { $gt: ['$$rent', 0] },
+                  { $ne: ['$$expenses', null] },
+                  { $lte: ['$$total', Number.MAX_VALUE] },
+                ],
+              },
+              { $floor: { $add: ['$$total', 0.5] } },
+              null,
+            ],
+          },
+        },
+      },
+    },
+  }
+}
+
+/** Mongo equivalent of rentalOfferMatchesQuery; arithmetic never coerces unknown to 0. */
+function rentalOfferExpression(query: RentalQuery, usdUyu: number): Record<string, unknown> {
+  const expense = '$$offer.commonExpenses'
   const conditions: unknown[] = [
     { $isNumber: '$$offer.priceUyu' },
     { $gt: ['$$offer.priceUyu', 0] },
+    { $lte: ['$$offer.priceUyu', Number.MAX_VALUE] },
   ]
   if (query.monthlyMax !== null || query.expensesMax !== null)
     conditions.push({ $ne: ['$$expenses', null] })
   if (query.withExpenses) {
-    conditions.push({ $isNumber: expense }, { $gte: [expense, 0] })
+    conditions.push(
+      { $isNumber: expense },
+      { $gte: [expense, 0] },
+      { $lte: [expense, Number.MAX_VALUE] }
+    )
   }
   if (query.source) conditions.push({ $eq: ['$$offer.source', query.source] })
   if (query.currency) conditions.push({ $eq: ['$$offer.currency', query.currency] })
   if (query.owner || query.agency) conditions.push(advertiserExpression(query, '$$offer.'))
+  if (query.pets) conditions.push({ $eq: ['$$offer.petsAllowed', true] })
+  if (query.furnished) conditions.push({ $eq: ['$$offer.furnished', true] })
+  if (query.parking)
+    conditions.push(
+      { $isNumber: '$$offer.parkingSpaces' },
+      { $gte: ['$$offer.parkingSpaces', 1] },
+      { $lte: ['$$offer.parkingSpaces', Number.MAX_VALUE] }
+    )
+  if (query.guarantees.length)
+    conditions.push({
+      $gt: [
+        {
+          $size: {
+            $setIntersection: [
+              { $cond: [{ $isArray: '$$offer.guarantees' }, '$$offer.guarantees', []] },
+              query.guarantees,
+            ],
+          },
+        },
+        0,
+      ],
+    })
   if (query.priceMin !== null) conditions.push({ $gte: ['$$offer.priceUyu', query.priceMin] })
   if (query.priceMax !== null) conditions.push({ $lte: ['$$offer.priceUyu', query.priceMax] })
   if (query.expensesMax !== null) conditions.push({ $lte: ['$$expenses', query.expensesMax] })
@@ -861,7 +977,12 @@ function rentalOfferExpression(query: RentalQuery, usdUyu: number): Record<strin
       ],
     })
   }
-  return { $let: { vars: { expenses: expensesUyu }, in: { $and: conditions } } }
+  return {
+    $let: {
+      vars: { expenses: rentalExpensesUyuExpression('$$offer', usdUyu) },
+      in: { $and: conditions },
+    },
+  }
 }
 
 function rentalBudgetExpression(query: RentalQuery, usdUyu: number): Record<string, unknown> {
@@ -1051,12 +1172,43 @@ export function rentalOfferStages(query: RentalQuery, usdUyu: number) {
     !query.currency &&
     !query.owner &&
     !query.agency &&
+    !query.pets &&
+    !query.furnished &&
+    !query.parking &&
+    !query.guarantees.length &&
+    query.sort !== 'total' &&
     !query.withExpenses &&
     query.priceMin === null &&
     query.monthlyMax === null &&
     query.expensesMax === null
   )
     return []
+  const lowerBasePrice = { $lt: ['$$this.priceUyu', '$$value.priceUyu'] }
+  const preferOffer =
+    query.sort === 'total'
+      ? {
+          $let: {
+            vars: {
+              candidate: rentalMonthlyUyuExpression('$$this', usdUyu),
+              current: rentalMonthlyUyuExpression('$$value', usdUyu),
+            },
+            in: {
+              $or: [
+                { $eq: ['$$value', null] },
+                {
+                  $and: [
+                    { $ne: ['$$candidate', null] },
+                    {
+                      $or: [{ $eq: ['$$current', null] }, { $lt: ['$$candidate', '$$current'] }],
+                    },
+                  ],
+                },
+                { $and: [{ $eq: ['$$candidate', '$$current'] }, lowerBasePrice] },
+              ],
+            },
+          },
+        }
+      : { $or: [{ $eq: ['$$value', null] }, lowerBasePrice] }
   return [
     {
       $set: {
@@ -1071,16 +1223,7 @@ export function rentalOfferStages(query: RentalQuery, usdUyu: number) {
             },
             initialValue: null,
             in: {
-              $cond: [
-                {
-                  $or: [
-                    { $eq: ['$$value', null] },
-                    { $lt: ['$$this.priceUyu', '$$value.priceUyu'] },
-                  ],
-                },
-                '$$this',
-                '$$value',
-              ],
+              $cond: [preferOffer, '$$this', '$$value'],
             },
           },
         },
@@ -1093,13 +1236,24 @@ export function rentalOfferStages(query: RentalQuery, usdUyu: number) {
         currency: { $ifNull: ['$matchingOffer.currency', '$currency'] },
       },
     },
+    ...(query.sort === 'total'
+      ? [
+          { $set: { _rentalMonthlyTotal: rentalMonthlyUyuExpression('$matchingOffer', usdUyu) } },
+          { $set: { _rentalMonthlyUnknown: { $eq: ['$_rentalMonthlyTotal', null] } } },
+        ]
+      : []),
   ]
 }
+
+/** Temporary sort keys only: project before the blocking sort, then discard before responding. */
+export const RENTAL_TOTAL_SORT_FIELDS = ['_rentalMonthlyUnknown', '_rentalMonthlyTotal'] as const
 
 /** Stable tie-breaks keep adjacent pages from repeating or skipping equal-price properties. */
 export function rentalMongoSort(sort: RentalSort): Record<string, 1 | -1> {
   if (sort === 'precio') return { priceUyu: 1, key: 1 }
   if (sort === 'precio-desc') return { priceUyu: -1, key: 1 }
+  if (sort === 'total')
+    return { _rentalMonthlyUnknown: 1, _rentalMonthlyTotal: 1, priceUyu: 1, key: 1 }
   if (sort === 'metros') return { area: -1, priceUyu: 1, key: 1 }
   return { freshAt: -1, key: 1 }
 }

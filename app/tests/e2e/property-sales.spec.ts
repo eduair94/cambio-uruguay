@@ -161,9 +161,11 @@ async function setup(page: Page, theme = 'dark') {
     waitUntil: 'domcontentloaded',
     timeout: 60000,
   })
-  // The count only appears after the favourites composable has mounted on the client.
-  // This avoids treating third-party background network activity as app readiness.
-  await expect(page.getByTestId('sale-saved-trigger')).toContainText('(0)', { timeout: 60000 })
+  // A working filter gesture below proves hydration; the saved count is announced in
+  // its accessible name on mobile, keeping the toolbar compact.
+  await expect(page.getByTestId('sale-saved-trigger')).toHaveAccessibleName('Guardados (0)', {
+    timeout: 60000,
+  })
   // Browser routes cannot intercept the initial SSR fetch. Apply on the client so fixtures
   // remain deterministic even when the preview database already contains real test rows.
   await expect
@@ -188,6 +190,34 @@ for (const width of [320, 390])
   }) => {
     await page.setViewportSize({ width, height: 844 })
     await setup(page)
+    const toolbar = page.locator('.sales-directory__toolbar')
+    const share = page.getByTestId('sale-share-trigger')
+    await expect(toolbar.getByTestId('sale-share-trigger')).toHaveCount(1)
+    await expect(page.locator('.sales-directory__header button')).toHaveCount(0)
+    const controls = await toolbar.locator('button').evaluateAll(elements =>
+      elements.map(element => {
+        const box = element.getBoundingClientRect()
+        return { top: box.top, width: box.width, height: box.height }
+      })
+    )
+    expect(controls.length).toBe(4)
+    expect(
+      Math.max(...controls.map(box => box.top)) - Math.min(...controls.map(box => box.top))
+    ).toBeLessThan(3)
+    for (const box of controls) {
+      expect(box.width).toBeGreaterThanOrEqual(44)
+      expect(box.height).toBeGreaterThanOrEqual(44)
+    }
+    await page.evaluate(() =>
+      Object.defineProperty(navigator, 'share', {
+        configurable: true,
+        value: async (data: { url: string }) => {
+          ;(window as any).__saleSharedUrl = data.url
+        },
+      })
+    )
+    await share.click()
+    expect(await page.evaluate(() => (window as any).__saleSharedUrl)).toBe(page.url())
     await page.evaluate(() => window.scrollTo(0, 1200))
     const trigger = page.getByTestId('sale-filter-trigger')
     await expect(trigger).toBeInViewport()
@@ -195,6 +225,9 @@ for (const width of [320, 390])
     await trigger.click()
     const dialog = page.getByRole('dialog', { name: 'Filtros' })
     await expect(dialog).toBeVisible()
+    await expect(dialog.getByLabel('Tipo de vivienda', { exact: true })).toBeVisible()
+    await expect(dialog.getByLabel('Dormitorios', { exact: true })).toBeVisible()
+    await expect(dialog.locator('details')).not.toHaveAttribute('open', '')
     await expect(dialog.getByTestId('sale-filter-apply')).toBeInViewport()
     await dialog.getByLabel('Precio desde', { exact: true }).fill('200000')
     await dialog.getByLabel('Precio hasta', { exact: true }).fill('170000')
@@ -205,10 +238,37 @@ for (const width of [320, 390])
     await expect(trigger).toBeFocused()
     expect(Math.abs((await page.evaluate(() => window.scrollY)) - scroll)).toBeLessThan(5)
     await trigger.click()
+    await dialog.getByLabel('Departamento', { exact: true }).fill('Montevideo')
+    await page.getByRole('option', { name: 'Montevideo (8)', exact: true }).click()
+    await dialog
+      .locator('.v-select')
+      .filter({ has: page.getByLabel('Tipo de vivienda', { exact: true }) })
+      .locator('.v-field__input')
+      .click()
+    const apartment = page.getByRole('option', { name: 'Apartamento', exact: true })
+    await apartment.click()
+    await expect(apartment).toBeHidden()
     await dialog.getByLabel('Precio hasta', { exact: true }).fill('170000')
     await dialog.getByTestId('sale-filter-apply').click()
     await expect(page).toHaveURL(/maxPrice=170000/)
     await expect(dialog).not.toBeVisible()
+    await expect(page).toHaveURL(/department=Montevideo/)
+    await expect(page).toHaveURL(/type=apartamento/)
+    const filteredControls = await toolbar.locator('button').evaluateAll(elements =>
+      elements.map(element => {
+        const box = element.getBoundingClientRect()
+        return { top: box.top, width: box.width, height: box.height }
+      })
+    )
+    expect(filteredControls).toHaveLength(4)
+    expect(
+      Math.max(...filteredControls.map(box => box.top)) -
+        Math.min(...filteredControls.map(box => box.top))
+    ).toBeLessThan(3)
+    for (const box of filteredControls) {
+      expect(box.width).toBeGreaterThanOrEqual(44)
+      expect(box.height).toBeGreaterThanOrEqual(44)
+    }
     await expect(page.locator('[data-sale-key]')).toHaveCount(8)
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)

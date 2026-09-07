@@ -11,6 +11,7 @@ import {
 import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
+  RENTAL_TOTAL_SORT_FIELDS,
   buildRentalFilter,
   normalizeRentalQuery,
   rentalMongoSort,
@@ -61,6 +62,8 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
     )
     const sort = rentalMongoSort(query.sort)
     const offerStages = rentalOfferStages(query, usdUyu)
+    // Sorting alone must not change the rental-price statistics for the same search.
+    const priceStages = rentalOfferStages({ ...query, sort: 'precio' }, usdUyu)
     const publicStages = rentalPublicStages(filter, STALE_DAYS, excluded)
 
     const [items, totals, departments, neighborhoods, dimensions, coverage] = await Promise.all([
@@ -68,10 +71,18 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
         ...publicStages,
         ...offerStages,
         // Rich source evidence must not enter the blocking sort buffer.
-        { $project: rentalPublicPropertyProjection },
+        {
+          $project: {
+            ...rentalPublicPropertyProjection,
+            ...(query.sort === 'total'
+              ? Object.fromEntries(RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
+              : {}),
+          },
+        },
         { $sort: sort },
         { $skip: (query.page - 1) * query.perPage },
         { $limit: query.perPage },
+        ...(query.sort === 'total' ? [{ $unset: [...RENTAL_TOTAL_SORT_FIELDS] }] : []),
       ]).collation(RENTAL_COLLATION),
       RentalListingModel.aggregate([...publicStages, { $count: 'total' }]).collation(
         RENTAL_COLLATION
@@ -103,7 +114,7 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
               { $group: { _id: '$sources', count: { $sum: 1 } } },
               { $sort: { count: -1 } },
             ],
-            price: [...offerStages, { $group: { _id: null, max: { $max: '$priceUyu' } } }],
+            price: [...priceStages, { $group: { _id: null, max: { $max: '$priceUyu' } } }],
           },
         },
       ]).collation(RENTAL_COLLATION),
@@ -117,7 +128,7 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
     if (total > 0) {
       const middle = await RentalListingModel.aggregate([
         ...publicStages,
-        ...offerStages,
+        ...priceStages,
         // The median needs one number per home, not its offers, galleries or identity evidence.
         { $project: { _id: 0, priceUyu: 1 } },
         { $sort: { priceUyu: 1 } },

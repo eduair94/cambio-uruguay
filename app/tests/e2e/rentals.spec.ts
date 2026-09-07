@@ -72,7 +72,9 @@ function property(
     price: offers[0].price,
     priceUyu: offers[0].priceUyu,
     currency: 'UYU',
-    offers,
+    // These fixtures explicitly publish the same accepted terms in each advert;
+    // a group-level flag alone no longer makes an individual offer satisfy them.
+    offers: offers.map((item): RentalOffer => ({ ...item, petsAllowed, guarantees: ['anda'] })),
     sources: [...new Set(offers.map(item => item.source))],
     freshAt: day,
     firstSeen: day,
@@ -321,10 +323,39 @@ async function closeMapDetailPreservingContext(panel: Locator, marker: Locator) 
 
 async function openAdvanced(page: Page) {
   if ((page.viewportSize()?.width ?? 1440) < 960) await openMobileFilters(page)
-  await expect(page.locator('#rental-advanced')).toBeVisible({ timeout: 90_000 })
+  const group = page.locator('#rental-advanced')
+  await expect(group).toBeVisible({ timeout: 90_000 })
+  if (!(await group.evaluate(element => (element as HTMLDetailsElement).open)))
+    await group.locator(':scope > summary').click()
+  await expect(group).toHaveAttribute('open', '')
 }
 
-async function expectMobileChipTargets(buttons: Locator, width: number) {
+async function revealFilterGroup(field: Locator) {
+  const group = field.locator('xpath=ancestor::details[1]')
+  if (await group.count()) {
+    if (!(await group.evaluate(element => (element as HTMLDetailsElement).open)))
+      await group.locator(':scope > summary').click()
+  }
+  await expect(field).toBeVisible()
+}
+
+async function expectMobileChipTargets(buttons: Locator, width: number, horizontal = false) {
+  if (horizontal) {
+    // Applied filters intentionally share a horizontally scrollable row. Each
+    // removal target must still be reachable without widening the document.
+    await buttons.page().evaluate(() => window.scrollTo(0, 0))
+    for (const button of await buttons.all()) {
+      await button.click({ trial: true })
+      const box = (await button.boundingBox())!
+      expect(box.width).toBeGreaterThanOrEqual(44)
+      expect(box.height).toBeGreaterThanOrEqual(44)
+      await expectInsideViewport(button, buttons.page())
+    }
+    expect(
+      await buttons.page().evaluate(() => document.documentElement.scrollWidth <= innerWidth)
+    ).toBe(true)
+    return
+  }
   const boxes = await buttons.evaluateAll(elements =>
     elements.map(element => {
       const { left, right, top, bottom, width, height } = element.getBoundingClientRect()
@@ -449,9 +480,13 @@ async function startFixtureSearch(page: Page, expectedCount = 3) {
 }
 
 async function applyBudget(page: Page, value: string) {
-  await page
-    .getByRole('spinbutton', { name: 'Presupuesto mensual máximo ($)', exact: true })
-    .fill(value)
+  const field = page.getByRole('spinbutton', {
+    name: 'Presupuesto mensual máximo ($)',
+    exact: true,
+    includeHidden: true,
+  })
+  await revealFilterGroup(field)
+  await field.fill(value)
   await submitFilters(page)
   await expect(page).toHaveURL(new RegExp(`monthlyMax=${value}`))
 }
@@ -812,8 +847,9 @@ test.describe('rental directory', () => {
       .locator('.rental-card')
       .filter({ hasText: fixtureProperties[2].title })
       .first()
-    await expect(multiple.locator('.rental-card__price')).toContainText('$ 22.000')
-    await expect(multiple.locator('.rental-card__total')).toContainText('$ 23.000')
+    await expect(multiple.locator('.rental-card__price')).toContainText('$ 23.000')
+    await expect(multiple.locator('.rental-card__cost-label')).toContainText('Alquiler + gastos')
+    await expect(multiple.locator('.rental-card__expenses')).toContainText('$ 22.000')
     await expect(multiple.locator('.rental-card__expenses')).toContainText('$ 1.000')
 
     await page.getByRole('checkbox', { name: 'Admite mascotas', exact: true }).check()
@@ -1210,6 +1246,7 @@ test.describe('rental directory', () => {
       const budget = page.getByRole('spinbutton', {
         name: 'Presupuesto mensual máximo ($)',
         exact: true,
+        includeHidden: true,
       })
       const area = page.getByRole('spinbutton', { name: 'Superficie desde (m²)', exact: true })
       const pets = page.getByRole('checkbox', { name: 'Admite mascotas', exact: true })
@@ -1229,7 +1266,8 @@ test.describe('rental directory', () => {
         .evaluate(element => element.getBoundingClientRect().top)
       await expectInsideViewport(trigger, page)
       await openMobileFilters(page)
-      // Entering a value during opening must keep the user's focus when the transition ends.
+      // Expanding the cost group must preserve focus while editing its monthly budget.
+      await revealFilterGroup(budget)
       await budget.focus()
       await expect(budget).toBeFocused()
       await budget.fill('25000')
@@ -1293,6 +1331,7 @@ test.describe('rental directory', () => {
 
       // Simulate the reduced visible space of a soft keyboard. Desktop Chrome does not show a
       // native phone keyboard, so this checks layout/reachability under an explicit short viewport.
+      await revealFilterGroup(budget)
       await budget.focus()
       await page.setViewportSize({ width, height: 360 })
       await budget.fill('25000')
@@ -1333,7 +1372,7 @@ test.describe('rental directory', () => {
       expect(listRequests.get(page)).toHaveLength(requestsBeforeEditing + 1)
       expect(mapRequests.get(page)).toHaveLength(0)
       await expectInsideViewport(trigger, page)
-      await expectMobileChipTargets(page.locator('.rentals-chips .v-chip__close'), width)
+      await expectMobileChipTargets(page.locator('.rentals-chips .v-chip__close'), width, true)
 
       const appliedUrl = page.url()
       await openMobileFilters(page)
@@ -1365,7 +1404,9 @@ test.describe('rental directory', () => {
     const budget = page.getByRole('spinbutton', {
       name: 'Presupuesto mensual máximo ($)',
       exact: true,
+      includeHidden: true,
     })
+    await revealFilterGroup(budget)
     await budget.fill('21000')
     await expectInsideViewport(page.getByTestId('rental-filters-apply'), page)
     await expectInsideViewport(page.getByTestId('rental-filters-cancel'), page)
@@ -1403,7 +1444,8 @@ test.describe('rental directory', () => {
         .getByRole('button', { name: `Guardar propiedad: ${item.title}`, exact: true })
         .click()
     }
-    await page.getByRole('button', { name: 'Mis guardados (3)', exact: true }).click()
+    await page.getByRole('button', { name: 'Guardar o compartir búsqueda', exact: true }).click()
+    await page.getByText('Mis guardados (3)', { exact: true }).click()
     await expect(page.locator('.saved-compare-table')).toBeVisible()
     await expect
       .poll(() =>
