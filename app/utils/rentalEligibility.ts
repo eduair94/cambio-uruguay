@@ -2,6 +2,8 @@
 export interface RentalEligibilityInput {
   title: string
   description?: string | null
+  /** Sanitized guarantee field published by this same advert; never a property fallback. */
+  guaranteeText?: string | null
   currency: 'UYU' | 'USD'
   price: number
   propertyType: string
@@ -15,6 +17,7 @@ export type RentalEligibilityReason =
   | 'unavailable'
   | 'non_residential_use'
   | 'ambiguous_units'
+  | 'ambiguous_transfer'
   | 'auction'
   | 'price_conflict'
 
@@ -159,6 +162,19 @@ function moneyConflict(input: RentalEligibilityInput, text: string): boolean {
   return false
 }
 
+/** Broker advertising is not evidence that this specific home accepts a guarantee. */
+function ownGuaranteeText(value: unknown): string {
+  return plain(value)
+    .split(/(?<=[.;!?])\s+|\n+/)
+    .filter(
+      sentence =>
+        !/(?:somos|soy)\s+corredor|corredores?\s+de\s+(?:seguros?|porto)|gestionamos\s+(?:tu|su)\s+garant|tramita\s+con\s+nosotros/.test(
+          sentence
+        )
+    )
+    .join(' ')
+}
+
 /** A shortlist guard, not a claim of availability or a valuation. Missing own evidence abstains. */
 export function rentalEligibility(input: RentalEligibilityInput): RentalEligibilityResult {
   const heading = plain(input.title)
@@ -176,9 +192,34 @@ export function rentalEligibility(input: RentalEligibilityInput): RentalEligibil
   const saleOnlyTitle =
     affirmed(heading, /\b(?:venta|vendo|se vende|permuta)\b/) &&
     !affirmed(heading, /\b(?:alquiler|alquilo|alquila|alquilar|arriendo)\b/)
-  if (!periods.rental || saleOnlyTitle || (input.currency === 'USD' && !periods.monthly))
+  // A named rental guarantee in this advert is explicit tenancy evidence in pesos.
+  // It does not establish the period of a dollar price or override any risk veto.
+  const rentalGuarantee =
+    input.currency === 'UYU' &&
+    (affirmed(
+      ownGuaranteeText(input.description),
+      /\bgarantias?\s*(?:[:=-]\s*)?(?:de\s+)?(?:anda|contaduria|porto(?:\s+seguros?)?|fideciu|sura)\b/
+    ) ||
+      affirmed(
+        ownGuaranteeText(input.guaranteeText),
+        /^\s*(?:(?:se\s+)?aceptan?\s+)?(?:garantias?\s*(?:[:=-]\s*)?(?:de\s+)?)?(?:anda|contaduria|porto(?:\s+seguros?)?|fideciu|sura)\b/
+      ))
+  if (
+    (!periods.rental && !rentalGuarantee) ||
+    saleOnlyTitle ||
+    (input.currency === 'USD' && !periods.monthly)
+  )
     reasons.push('no_rental_evidence')
   if (periods.shortTerm) reasons.push('short_term')
+  // A transfer price may be a one-off payment. Require the advert's explicit monthly rent.
+  if (
+    affirmed(text, /\b(?:traspaso|derechos?\s+de\s+(?:cesion|llave))\b/) &&
+    !affirmed(
+      text,
+      /\balquiler\s+(?:mensual\s*(?:(?::|de|=)\s*)?(?:(?:\$|uyu|uy\$|usd|u\s*\$\s*s|us\$)\s*)?\d[\d.,]*|(?:\$|uyu|uy\$|usd|u\s*\$\s*s|us\$)\s*\d[\d.,]*\s*(?:mensuales|(?:por|al)\s+mes))\b/
+    )
+  )
+    reasons.push('ambiguous_transfer')
   if (
     affirmed(
       text,

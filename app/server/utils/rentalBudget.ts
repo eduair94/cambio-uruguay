@@ -148,6 +148,7 @@ export function projectRentalBudgetProperty(row: BudgetRawProperty): RentalPubli
       !rentalEligibility({
         title: own.title,
         description,
+        guaranteeText: own.details?.guaranteeText,
         currency: own.currency,
         price: own.price,
         propertyType: identity?.propertyType || '',
@@ -316,6 +317,7 @@ export async function loadRentalBudgetCatalogue(): Promise<RentalBudgetCatalogue
           'offers.identity.propertyType': 1,
           'offers.identity.description': 1,
           'offers.details.description': 1,
+          'offers.details.guaranteeText': 1,
         },
       },
     ] as PipelineStage[])

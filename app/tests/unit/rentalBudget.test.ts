@@ -327,3 +327,60 @@ describe('economic rental live filters', () => {
     ).toBe(1)
   })
 })
+
+describe('economic rental own structured guarantee evidence', () => {
+  it('accepts only the advert with its own guarantee and strips the evidence before caching', () => {
+    const bare = {
+      title: 'Apartamento',
+      identity: { version: 1, propertyType: 'apartamento', description: '' },
+      details: {},
+    }
+    const unrelated = own('infocasas:999000001', 6000, bare)
+    const supported = own('infocasas:194064544', 12000, {
+      ...bare,
+      details: { guaranteeText: 'Anda, Porto Seguros o Sura.' },
+    })
+    const row = projectRentalBudgetProperty(
+      property('guarantee-group', [unrelated, supported], {
+        title: 'Alquiler mensual. Garantías Anda.',
+      })
+    )!
+    expect(row.offers.map(offer => offer.listingId)).toEqual(['infocasas:194064544'])
+    expect(JSON.stringify(row)).not.toMatch(/guaranteeText|identity|Porto Seguros|PRIVATE-/)
+    expect(row.offers[0]).not.toHaveProperty('details')
+    const result = queryRentalBudget(
+      { generatedAt: now.toISOString(), usdUyu: 40, properties: [row] },
+      { band: '10000_13000' },
+      index(),
+      now
+    )
+    expect(result.items[0]?.matchingOffer?.listingId).toBe('infocasas:194064544')
+    expect(result.items[0]?.budget.rentUyu).toBe(12000)
+    expect(JSON.stringify(result)).not.toMatch(/guaranteeText|identity|Porto Seguros|PRIVATE-/)
+  })
+  it('never substitutes a canonical guarantee or a negative own guarantee', () => {
+    const bare = {
+      title: 'Apartamento',
+      identity: { version: 1, propertyType: 'apartamento', description: '' },
+      details: {},
+    }
+    expect(
+      projectRentalBudgetProperty(
+        property('unknown-guarantee', [own('infocasas:999000002', 12000, bare)], {
+          details: { guaranteeText: 'Anda' },
+          title: 'Garantías Anda',
+        })
+      )
+    ).toBeNull()
+    expect(
+      projectRentalBudgetProperty(
+        property('negative-guarantee', [
+          own('infocasas:999000003', 12000, {
+            ...bare,
+            details: { guaranteeText: 'No acepta Anda' },
+          }),
+        ])
+      )
+    ).toBeNull()
+  })
+})
