@@ -1,8 +1,9 @@
+import { publicRentalAdvertisers, rentalPublicPropertyProjection } from '../../utils/rentalDetail'
 import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
 import { getRentalCoverage } from '../../utils/rentalCoverage'
-import { rentalPublicPropertyProjection } from '../../utils/rentalDetail'
+
 import {
   annotateRentalAvailability,
   loadRentalAvailabilityIndex,
@@ -141,7 +142,7 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
       meta: (meta as RentalMeta | null) ?? null,
       coverage,
       items: (items as RentalProperty[]).map(property =>
-        annotateRentalAvailability(property, availability)
+        annotateRentalAvailability(publicRentalAdvertisers(property), availability)
       ),
       total,
       page: query.page,

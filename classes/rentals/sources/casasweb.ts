@@ -1,3 +1,4 @@
+import { advertiserClassification, ownerDirectDeclaration } from "../advertiser";
 // Public Casasweb search cards. Pagination submits the exact search form served by the site;
 // no browser challenges, private APIs, contact data, or advert descriptions are collected.
 import * as cheerio from "cheerio";
@@ -45,7 +46,7 @@ function nextPageBody($: cheerio.CheerioAPI): string | null {
   return params.toString();
 }
 
-export function parseCasaswebPage(html: string): CasaswebPage | null {
+export function parseCasaswebPage(html: string, observedAt = new Date().toISOString()): CasaswebPage | null {
   const $ = cheerio.load(html);
   const count = clean($("body").text()).match(/([\d.,]+)\s+Resultados\b/i);
   if (!count || !$("select[id$=drpNegocio] option[value=A][selected]").length) return null;
@@ -83,7 +84,9 @@ export function parseCasaswebPage(html: string): CasaswebPage | null {
       commonExpenses: /\bsin gastos comunes\b/i.test(title) ? 0 : null,
       commonExpensesCurrency: null,
       sellerName: clean(card.parent().find(".card-footer h3").text()) || "Casasweb",
-      sellerType: "inmobiliaria", image, publishedAt: null,
+      sellerType: advertiserClassification({ title }).sellerType,
+      ownerDirect: ownerDirectDeclaration({ title }, new URL(href, ORIGIN).href, observedAt) ?? undefined,
+      image, publishedAt: null,
       propertyType: inferPropertyType(title, declaredType), department, neighborhood,
       // Cards do not have a separate street field; the title must not become a made-up address.
       address: "", street: "", streetNumber: "", latitude: null, longitude: null,

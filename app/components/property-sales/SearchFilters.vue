@@ -24,6 +24,7 @@
         />
       </header>
       <div class="sale-search__body">
+        <PropertyAgencyFilter v-model="draft.agency" />
         <VTextField
           v-model="draft.q"
           :label="t('keywords')"
@@ -167,6 +168,7 @@
           </fieldset>
           <fieldset>
             <legend>{{ t('source') }}</legend>
+            <VCheckbox v-model="draft.owner" :label="t('owner')" hide-details color="primary" />
             <VSelect
               v-model="draft.source"
               :items="[
@@ -331,6 +333,7 @@ watch(
           q.maxArea !== null ||
           q.source !== 'all' ||
           q.seller ||
+          q.owner ||
           q.recent !== 'all'
       )
       invalid.value = false
@@ -430,6 +433,8 @@ onBeforeUnmount(() => {
   gap: 8px;
 }
 .sale-search footer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   flex-wrap: wrap;
   padding-bottom: max(12px, env(safe-area-inset-bottom));
@@ -437,8 +442,17 @@ onBeforeUnmount(() => {
 }
 .sale-search footer .v-btn {
   min-height: 44px;
+  min-width: 0;
+  height: auto;
+  padding-block: 10px;
+}
+.sale-search footer :deep(.v-btn__content) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
 }
 .sale-search__error {
+  grid-column: 1 / -1;
   flex-basis: 100%;
   color: rgb(var(--v-theme-error));
   font-size: 0.85rem;
@@ -465,7 +479,7 @@ onBeforeUnmount(() => {
 .sale-search--mobile footer {
   padding-bottom: max(8px, env(safe-area-inset-bottom));
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
 }
 .sale-search--mobile footer .v-btn {
   min-width: 0;

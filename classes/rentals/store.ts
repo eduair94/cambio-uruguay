@@ -1,3 +1,4 @@
+import { retainRentalAdvertiser } from "./advertiserRetention";
 // Reading and writing the rental directory in the APP database.
 //
 // The one non-obvious rule lives in `mergeOffers`: a property row is the UNION of what every portal
@@ -136,11 +137,12 @@ export function mergeOffers(
     // corrida completa de las 04:52 lo repone. Y no avisa: el campo vuelve a null y el filtro
     // devuelve menos, no un error.
     const previo = byId.get(offer.listingId);
+    const enriched = retainRentalAdvertiser(previo, offer);
     if (previo?.petsAllowed === true && offer.petsAllowed !== true) {
-      byId.set(offer.listingId, { ...offer, petsAllowed: true });
+      byId.set(offer.listingId, { ...enriched, petsAllowed: true });
       continue;
     }
-    byId.set(offer.listingId, offer);
+    byId.set(offer.listingId, enriched);
   }
 
   // Similarity decides grouping, never whether an otherwise live advert survives.

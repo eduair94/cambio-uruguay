@@ -10,6 +10,12 @@
 
 import { MUTUALISTA_SEDES, type MutualistaSede } from './mutualistaSedes'
 import {
+  agencyKey,
+  advertiserMatches,
+  advertiserExpression,
+  type AdvertiserMetadata,
+} from './propertyAdvertiser'
+import {
   normalizeRentalAvailabilityFilter,
   type RentalAvailabilityFilter,
   type RentalAvailabilitySummary,
@@ -57,7 +63,7 @@ export interface RentalOfferDetails {
   guaranteeText: string
 }
 
-export interface RentalOffer {
+export interface RentalOffer extends AdvertiserMetadata {
   /** Recent community reports about this advert, never a confirmed availability status. */
   availability?: RentalAvailabilitySummary
   details?: RentalOfferDetails
@@ -317,8 +323,10 @@ export interface RentalQuery {
   guarantees: RentalGuarantee[]
   /** Sólo las que publican los gastos comunes, para poder comparar el costo real. */
   withExpenses: boolean
-  /** Sólo las que alquila el dueño, sin inmobiliaria: se ahorra la comisión de un mes + IVA. */
+  /** Own advert explicitly declares direct owner. A private seller classification is insufficient. */
   owner: boolean
+  /** Stable source agency identifier, never a name-derived identity. */
+  agency: string
   /** Ids de OSM de las sedes elegidas como punto de referencia. Vacío = sin filtro de distancia. */
   sedes: number[]
   /** Radio en km alrededor de cada sede elegida. */
@@ -407,6 +415,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     guarantees: parseGuarantees(input.garantia ?? input.guarantees),
     withExpenses: enabled(input.gc ?? input.withExpenses),
     owner: enabled(input.dueno ?? input.owner),
+    agency: agencyKey(scalar(input.agency)),
     sedes: parseSedes(input.sedes),
     radioKm: parseRadio(input.radio ?? input.radioKm),
     sort,
@@ -443,6 +452,7 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   if (query.guarantees.length) params.garantia = query.guarantees.join(',')
   if (query.withExpenses) params.gc = '1'
   if (query.owner) params.dueno = '1'
+  if (query.agency) params.agency = query.agency
   if (query.sedes.length) params.sedes = query.sedes.join(',')
   if (query.radioKm !== RADIO_KM_DEFAULT) params.radio = String(query.radioKm)
   if (query.sort !== 'recientes') params.sort = query.sort
@@ -514,7 +524,7 @@ export function rentalOfferMatchesQuery(
 ): boolean {
   if (query.source && offer.source !== query.source) return false
   if (query.currency && offer.currency !== query.currency) return false
-  if (query.owner && offer.sellerType !== 'particular') return false
+  if (!advertiserMatches(offer, query)) return false
   if (query.priceMin !== null && offer.priceUyu < query.priceMin) return false
   if (query.priceMax !== null && offer.priceUyu > query.priceMax) return false
   if (
@@ -736,7 +746,8 @@ export function buildRentalFilter(
   const offer: Record<string, unknown> = {}
   if (query.source) offer.source = query.source
   if (query.currency) offer.currency = query.currency
-  if (query.owner) offer.sellerType = 'particular'
+  if (query.owner) offer['ownerDirect.declared'] = true
+  if (query.agency) offer['agency.key'] = query.agency
   if (query.withExpenses || query.expensesMax !== null || query.monthlyMax !== null)
     offer.commonExpenses = { $type: 'number', $gte: 0 }
   if (query.priceMin !== null || query.priceMax !== null) {
@@ -753,7 +764,7 @@ export function buildRentalFilter(
       $lte: query.priceMax,
     }
   }
-  if (query.monthlyMax !== null || query.expensesMax !== null) {
+  if (query.monthlyMax !== null || query.expensesMax !== null || query.owner || query.agency) {
     nonLocation.$expr = rentalBudgetExpression(query, usdUyu)
   }
   if (query.q) {
@@ -828,7 +839,7 @@ function rentalOfferExpression(query: RentalQuery, usdUyu: number): Record<strin
   }
   if (query.source) conditions.push({ $eq: ['$$offer.source', query.source] })
   if (query.currency) conditions.push({ $eq: ['$$offer.currency', query.currency] })
-  if (query.owner) conditions.push({ $eq: ['$$offer.sellerType', 'particular'] })
+  if (query.owner || query.agency) conditions.push(advertiserExpression(query, '$$offer.'))
   if (query.priceMin !== null) conditions.push({ $gte: ['$$offer.priceUyu', query.priceMin] })
   if (query.priceMax !== null) conditions.push({ $lte: ['$$offer.priceUyu', query.priceMax] })
   if (query.expensesMax !== null) conditions.push({ $lte: ['$$expenses', query.expensesMax] })
@@ -1039,6 +1050,7 @@ export function rentalOfferStages(query: RentalQuery, usdUyu: number) {
     !query.source &&
     !query.currency &&
     !query.owner &&
+    !query.agency &&
     !query.withExpenses &&
     query.priceMin === null &&
     query.monthlyMax === null &&

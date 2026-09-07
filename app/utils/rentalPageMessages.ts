@@ -20,6 +20,7 @@ export const rentalPageMessages = {
     selectedOffer: 'Aviso seleccionado',
     selectedSource: 'Datos de {source}',
     contact: 'Consultar aviso original',
+    openAdvertShort: 'Ver aviso',
     photoCredit: 'Foto publicada en {source}',
     photoNumber: 'Ver foto {n} de {source}',
     photoHint:
@@ -154,6 +155,7 @@ export const rentalPageMessages = {
     selectedOffer: 'Selected advert',
     selectedSource: 'Data from {source}',
     contact: 'Open original advert',
+    openAdvertShort: 'View advert',
     photoCredit: 'Photo published on {source}',
     photoNumber: 'View photo {n} from {source}',
     photoHint:
@@ -288,6 +290,7 @@ export const rentalPageMessages = {
     selectedOffer: 'Anúncio selecionado',
     selectedSource: 'Dados de {source}',
     contact: 'Abrir anúncio original',
+    openAdvertShort: 'Ver anúncio',
     photoCredit: 'Foto publicada no {source}',
     photoNumber: 'Ver foto {n} do {source}',
     photoHint:

@@ -1,3 +1,5 @@
+import { readCasaswebAdvertiser } from "../rentals/casaswebContacts";
+import { advertiserClassification, ownerDirectDeclaration } from "../rentals/advertiser";
 import * as cheerio from "cheerio";
 import { rentalDescription, rentalImages } from "../rentals/details";
 import { canonicalDepartment, flatten, parseCurrency, parseMoney } from "../rentals/normalize";
@@ -64,6 +66,9 @@ export function readCasaswebSaleDetail(html: string, card: OpportunityListing, r
   const expenses = expenseCurrency && expenseAmount !== null ? { amount: expenseAmount, currency: expenseCurrency } : null;
   const riskFlags = [...new Set([...(card.riskFlags || []), ...(/\bProyecto\b/.test(card.description) ? ["project" as const] : []), ...(/\bRenta\b/.test(card.description) ? ["occupied" as const] : [])])];
   return { ...card, title, description, price: sourcePrice, expenses,
+    sellerType: advertiserClassification({ title, description }).sellerType,
+    ownerDirect: ownerDirectDeclaration({ title, description }, card.url, readAt),
+    ...(readCasaswebAdvertiser(html, { ...card, title }, readAt) || {}),
     image: images[0] || card.image, images: images.length ? images : card.images,
     bedrooms: number(get(/^dormitorios/)), bathrooms: number(get(/^banos/)), parkingSpaces: number(get(/^vehiculos/)),
     area: card.propertyType === "casa" && built ? { value: built, basis: "built" } : reported ? { value: reported, basis: "reported" } : null,
@@ -82,7 +87,8 @@ export function retainCasaswebDetail(previous: OpportunityListing | undefined, c
     previous.title !== card.title || previous.propertyType !== card.propertyType || previous.department !== card.department || previous.neighborhood !== card.neighborhood ||
     (card.bedrooms !== null && previous.bedrooms !== card.bedrooms) || (card.bathrooms !== null && previous.bathrooms !== card.bathrooms) ||
     (card.parkingSpaces !== null && previous.parkingSpaces !== card.parkingSpaces)) return card;
-  return previous;
+  const inspected = Object.fromEntries(["agency", "publicContact", "ownerDirect"].filter(key => card[key] !== undefined).map(key => [key, card[key]]));
+  return Object.keys(inspected).length ? { ...previous, ...inspected } : previous;
 }
 
 export async function enrichCasaswebSaleDetails(harvest: CasaswebSaleHarvest, options: {

@@ -1,3 +1,4 @@
+import { advertiserExpression } from './propertyAdvertiser'
 import {
   PROPERTY_SALES_FRESH_DAYS,
   type PropertySalesQuery,
@@ -57,6 +58,8 @@ export function propertySalesStages(
   if (query.furnished) match.furnished = true
   if (query.photos) match.image = { $type: 'string', $regex: '^https?://' }
   if (query.seller) match.sellerName = query.seller
+  if (query.agency) match['agency.key'] = query.agency
+  if (query.owner) match['ownerDirect.declared'] = true
   if (query.keys.length) match.key = { $in: query.keys }
   if (query.amenity) match.amenities = { $regex: amenityExpressions[query.amenity], $options: 'i' }
   if (query.recent !== 'all')
@@ -105,6 +108,9 @@ export function propertySalesStages(
     }
   return [
     { $match: match },
+    ...(query.agency || query.owner
+      ? [{ $match: { $expr: advertiserExpression(query, '$', now) } }]
+      : []),
     {
       $addFields: {
         _displayPrice: amount,

@@ -202,6 +202,15 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Weekly Uruguay OSM extract; services remain a local indexed snapshot between runs.
+      name: "currency-property-services",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_property_services.js",
+      cron_restart: "33 7 * * 0",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // BCU usury caps (topes de usura) for /saldar-deudas-uruguay. Monthly on the 1st, 10:13 UTC
       // ≈ 07:13 America/Montevideo. Minute 13: not a multiple of 5.
       name: "currency-debt-relief",

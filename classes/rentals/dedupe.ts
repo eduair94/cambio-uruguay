@@ -1,3 +1,4 @@
+import { publicAdvertiserFields } from "./advertiser";
 // One row per property, not per advert.
 //
 // This is the whole point of the directory. The same apartment is published by two inmobiliarias
@@ -264,6 +265,7 @@ export function freshnessOf(offers: RentalOffer[], fallback: string): string {
 
 function toOffer(listing: Candidate, context: DedupeContext): RentalOffer {
   return {
+    ...publicAdvertiserFields(listing, { source: listing.source, url: listing.url, sellerType: listing.sellerType }),
     identity: {
       version: 1,
       department: listing.department,

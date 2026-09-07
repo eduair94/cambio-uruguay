@@ -49,6 +49,23 @@ silenciosamente desde la interfaz.
 
 ## Cobertura y próximos pasos
 
+## Contexto de la vivienda y anunciantes — septiembre de 2026
+
+Las fichas y los paneles del mapa incorporan servicios cotidianos cercanos: supermercado,
+almacén, farmacia, salud, transporte y educación. Son distancias en línea recta desde un punto
+publicado aproximado, con un enlace para consultar una ruta peatonal real. No estiman tiempos,
+calidad del servicio ni necesidad de automóvil. Mostrar estados de carga, error, ubicación
+insuficiente y cobertura parcial; nunca convertir la ausencia de puntos en ausencia de servicios.
+Una lista compacta muestra el lugar más cercano por categoría y permite expandir alternativas.
+
+El contacto comercial conserva su anuncio, fuente y fecha. Sus acciones necesitan un clic;
+no disparan consultas ni mensajes automáticamente. El perfil de inmobiliaria enlaza avisos
+mediante un identificador del portal, sin unir marcas o empresas por parecido de nombre.
+“Particular” describe al anunciante; el filtro “dueño directo declarado” exige evidencia expresa
+del mismo aviso y no certifica titularidad ni ahorro de comisión.
+
+## Cobertura previa
+
 Casasweb e Inmuebles El País se suman mediante sus páginas públicas; la cobertura parcial debe
 permanecer explícita. Las pruebas de descarga no equivalen a altas netas de propiedades. Medir el
 incremento único y la antigüedad después del primer relevamiento desplegado.

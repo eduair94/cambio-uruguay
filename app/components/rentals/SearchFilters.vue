@@ -26,6 +26,7 @@
         />
       </header>
       <div class="rental-search__scroll">
+        <PropertyAgencyFilter v-model="draft.agency" />
         <div class="rental-search__main">
           <VSelect
             v-model="draft.department"

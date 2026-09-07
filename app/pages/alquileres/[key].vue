@@ -501,6 +501,7 @@ useHead(() => ({
                 }}</span>
               </div>
               <p>{{ seller(offer) }}</p>
+              <PropertyAdvertiserContact :publisher="offer" />
               <p class="rental-page__note">{{ t('originalTitle', { title: offer.title }) }}</p>
               <p class="rental-page__note">
                 {{ t('advertReference', { source: source(offer), id: offer.listingId }) }}
@@ -660,6 +661,7 @@ useHead(() => ({
           <p>
             <NuxtLink :to="nearbyLink">{{ t('exploreArea') }}</NuxtLink>
           </p>
+          <PropertyNearbyServices operation="rent" :property-key="property.key" />
         </section>
         <section
           v-if="market?.status !== 'not_comparable'"
@@ -841,7 +843,8 @@ useHead(() => ({
           rel="noopener noreferrer nofollow"
           color="primary"
           append-icon="mdi-open-in-new"
-          >{{ t('contact') }}</VBtn
+          :aria-label="t('contact')"
+          >{{ t('openAdvertShort') }}</VBtn
         >
       </div>
     </div>
@@ -853,6 +856,14 @@ useHead(() => ({
 .rental-page {
   max-width: 1220px;
   padding-bottom: 64px;
+  overflow-wrap: anywhere;
+}
+.rental-page :deep(.v-breadcrumbs) {
+  flex-wrap: wrap;
+}
+.rental-page :deep(.v-breadcrumbs-item) {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .rental-page__back {
   margin: 8px 0 20px -12px;
@@ -1222,8 +1233,9 @@ useHead(() => ({
     inset: auto 0 0;
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 10px;
-    padding: 10px max(76px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom))
+    padding: 10px max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom))
       max(12px, env(safe-area-inset-left));
     background: rgb(var(--v-theme-surface));
     border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
@@ -1231,10 +1243,22 @@ useHead(() => ({
   .rental-page__mobile-action > .v-btn {
     min-height: 48px;
   }
+  .rental-page__mobile-action > .v-btn:first-child {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+  }
   .rental-page__mobile-action > .v-btn:last-child {
     flex: 1;
     max-width: 420px;
     min-width: 0;
+    height: auto;
+    padding-block: 10px;
+  }
+  .rental-page__mobile-action :deep(.v-btn__content) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.3;
   }
 }
 @media (max-width: 599px) {
@@ -1291,9 +1315,6 @@ useHead(() => ({
   }
   .rental-page__similar img {
     height: 200px;
-  }
-  .rental-page__mobile-action {
-    padding-right: max(64px, env(safe-area-inset-right));
   }
 }
 </style>

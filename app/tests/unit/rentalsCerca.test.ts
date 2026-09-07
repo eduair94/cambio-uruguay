@@ -243,13 +243,12 @@ describe('solo se publican las garantias con precision medida', () => {
   })
 })
 
-// Alquilar al dueño evita la comision de la inmobiliaria: un mes de alquiler mas IVA. El directorio
-// detectaba 52 de 14.744 (0,35 %) porque el parser de MercadoLibre ponia `desconocido` en todo;
-// tras leer su `seller_type` son 519.
+// A private seller classification is not proof that the publisher owns the home.
 describe('filtro de dueno directo', () => {
-  it('pide particular, y no toma "desconocido" por inmobiliaria', () => {
+  it('requires a source-owned explicit owner declaration', () => {
     const { filter } = buildRentalFilter(normalizeRentalQuery({ dueno: '1' }), 10)
-    expect(filter.offers).toEqual({ $elemMatch: { sellerType: 'particular' } })
+    expect(filter.offers).toEqual({ $elemMatch: { 'ownerDirect.declared': true } })
+    expect(filter.$expr).toBeDefined()
     expect(buildRentalFilter(normalizeRentalQuery({}), 10).filter.offers).toBeUndefined()
   })
 

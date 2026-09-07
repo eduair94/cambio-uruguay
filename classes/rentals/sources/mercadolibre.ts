@@ -1,3 +1,4 @@
+import { advertiserClassification, ownerDirectDeclaration } from "../advertiser";
 // MercadoLibre Uruguay, read through the scraper service on the 104 box (pm2 `mercadolibre`,
 // :9656) — the same bridge the chair directory uses. We do not re-implement the MLU client here.
 //
@@ -62,7 +63,7 @@ export function collectPolycards(payload: unknown): Polycard[] {
 
 const componentOf = (card: Polycard, type: string) => card.components?.find((component) => component.type === type);
 
-export function toRawRental(card: Polycard): RawRental | null {
+export function toRawRental(card: Polycard, observedAt = new Date().toISOString()): RawRental | null {
   const id = String(card.metadata?.id || "").trim();
   if (!id) return null;
 
@@ -97,7 +98,8 @@ export function toRawRental(card: Polycard): RawRental | null {
     commonExpenses: null,
     commonExpensesCurrency: null,
     sellerName: "Mercado Libre",
-    sellerType: "desconocido",
+    sellerType: advertiserClassification({ title }).sellerType,
+    ownerDirect: ownerDirectDeclaration({ title }, permalink, observedAt) ?? undefined,
     image: String(params.get("picture") || params.get("thumbnail") || "").trim() || null,
     publishedAt: null,
     propertyType: inferPropertyType(title, card.metadata?.domain_id || null),

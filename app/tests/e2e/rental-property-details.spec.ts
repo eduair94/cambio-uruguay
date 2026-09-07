@@ -6,6 +6,7 @@ test.use({ serviceWorkers: 'block', extraHTTPHeaders: { 'Accept-Language': 'es-U
 
 async function openDossier(page: Page) {
   const date = new Date().toISOString().slice(0, 10)
+  const observedAt = new Date().toISOString()
   const first: RentalOffer = {
     source: 'infocasas',
     listingId: 'infocasas:fixture301',
@@ -18,6 +19,25 @@ async function openDossier(page: Page) {
     commonExpensesCurrency: null,
     sellerName: 'Inmobiliaria de prueba',
     sellerType: 'inmobiliaria',
+    agency: {
+      version: 1,
+      key: 'infocasas:301',
+      name: 'Inmobiliaria de prueba',
+      profileUrl: 'https://www.infocasas.com.uy/inmobiliarias/perfil/301-inmobiliaria-de-prueba',
+      observedAt,
+    },
+    publicContact: {
+      version: 1,
+      name: 'Inmobiliaria de prueba',
+      channels: [
+        {
+          kind: 'phone',
+          value: '+59829000000',
+          sourceUrl: 'https://www.infocasas.com.uy/inmobiliarias/perfil/301-inmobiliaria-de-prueba',
+          observedAt,
+        },
+      ],
+    },
     image: 'https://rental-test.example/cover.png',
     parkingSpaces: 1,
     furnished: null,
@@ -51,6 +71,16 @@ async function openDossier(page: Page) {
     priceUyu: 27000,
     commonExpenses: 1500,
     commonExpensesCurrency: 'UYU',
+    sellerType: 'particular',
+    sellerName: 'Particular de prueba',
+    agency: null,
+    publicContact: null,
+    ownerDirect: {
+      declared: true,
+      evidence: 'advert_text',
+      sourceUrl: 'https://inmuebles.elpais.com.uy/fixture301',
+      observedAt,
+    },
     details: {
       ...first.details!,
       description: 'Texto del segundo anunciante: consultar disponibilidad para ingresar.',
@@ -136,7 +166,60 @@ async function openDossier(page: Page) {
       }),
     })
   })
+  await page.route('**/api/property-nearby/rent/**', route =>
+    route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'ready',
+        operation: 'rent',
+        key: 'fixture301',
+        origin: { lat: -34.9, lng: -56.18, precision: 'approximate', basis: 'published_point' },
+        radiusM: 1000,
+        distanceMethod: 'straight_line',
+        coverage: 'partial',
+        dataAsOf: observedAt,
+        fetchedAt: observedAt,
+        attribution: {
+          text: '© OpenStreetMap contributors',
+          url: 'https://www.openstreetmap.org/copyright',
+          sourceUrl: 'https://download.geofabrik.de/south-america/uruguay.html',
+        },
+        categories: [
+          'supermarket',
+          'grocery',
+          'pharmacy',
+          'healthcare',
+          'transit',
+          'education',
+        ].map(id => ({
+          id,
+          hasMore: false,
+          items:
+            id === 'supermarket'
+              ? [1, 2].map(n => ({
+                  id: `node/${n}`,
+                  name: `Supermercado de prueba ${n}`,
+                  lat: -34.901,
+                  lng: -56.181,
+                  distanceM: 230 * n,
+                  pointKind: 'node',
+                  osmUrl: `https://www.openstreetmap.org/node/${n}`,
+                  walkingUrl: `https://www.google.com/maps/dir/?api=1&origin=-34.9%2C-56.18&destination=-34.901%2C-56.181&travelmode=walking`,
+                }))
+              : [],
+        })),
+      }),
+    })
+  )
   await page.goto('/alquileres-uruguay?page=2', { waitUntil: 'domcontentloaded' })
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const app = (document.getElementById('__nuxt') as any)?.__vue_app__?.$nuxt
+        return app?.isHydrating === false
+      })
+    )
+    .toBe(true)
   await expect(async () => {
     if (new URL(page.url()).searchParams.has('page')) {
       if ((page.viewportSize()?.width ?? 1440) < 960) {
@@ -211,6 +294,31 @@ for (const width of [320, 390, 1440]) {
       'href',
       'https://inmuebles.elpais.com.uy/fixture301'
     )
+    const adverts = detail.locator('.rental-page__offers > li')
+    await expect(adverts.nth(0).locator('a[href="tel:+59829000000"]')).toBeVisible()
+    await expect(adverts.nth(0).getByText('Dueño directo declarado', { exact: true })).toHaveCount(
+      0
+    )
+    await expect(adverts.nth(1).getByText('Dueño directo declarado', { exact: true })).toBeVisible()
+    await expect(adverts.nth(1).locator('a[href^="tel:"]')).toHaveCount(0)
+    await expect(
+      adverts.nth(0).getByRole('link', { name: 'Ver inmobiliaria: Inmobiliaria de prueba' })
+    ).toHaveAttribute('href', /\/inmobiliarias-uruguay\/infocasas(?::|%3A)301$/)
+    const nearby = detail.getByTestId('property-nearby')
+    await nearby.scrollIntoViewIfNeeded()
+    await expect(nearby).toContainText('Supermercado de prueba 1')
+    await expect(nearby).toContainText('Aprox. 225 m')
+    await expect(nearby).toContainText('Distancias en línea recta')
+    await expect(
+      nearby.getByText('Sin puntos registrados en esta consulta', { exact: true })
+    ).toHaveCount(5)
+    const directions = nearby.getByRole('link', {
+      name: 'Ver ruta a pie a Supermercado de prueba 1',
+    })
+    await expect(directions).toHaveAttribute('href', /travelmode=walking/)
+    expect((await directions.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    await nearby.locator('summary').filter({ hasText: 'Ver otros lugares cercanos' }).click()
+    await expect(nearby.getByText('Supermercado de prueba 2', { exact: true })).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
       true
     )

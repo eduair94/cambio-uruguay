@@ -17,6 +17,7 @@ import {
   type RentalBudgetResponse,
 } from '../../utils/rentalBudget'
 import { rentalEligibility } from '../../utils/rentalEligibility'
+import { publicAdvertiserMetadata, advertiserMatches } from '../../utils/propertyAdvertiser'
 import {
   rentalAvailabilityAdvertId,
   rentalAvailabilityHidden,
@@ -156,6 +157,7 @@ export function projectRentalBudgetProperty(row: BudgetRawProperty): RentalPubli
     )
       continue
     const offer = pick(own, offerFields) as unknown as RentalOffer
+    Object.assign(offer, publicAdvertiserMetadata(own))
     Object.assign(offer, rentalBudgetOwnExpenses(offer, description))
     offers.push(offer)
   }
@@ -208,6 +210,7 @@ export function queryRentalBudget(
       offer =>
         typeof offer.lastSeen === 'string' &&
         offer.lastSeen >= cutoff &&
+        advertiserMatches(offer, query, now.getTime()) &&
         !rentalAvailabilityHidden(
           availability.byAdvertId.get(
             rentalAvailabilityAdvertId(offer.source, offer.listingId) || ''

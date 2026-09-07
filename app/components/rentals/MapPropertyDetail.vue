@@ -169,6 +169,8 @@
           </li>
         </ul>
         <p class="rental-map-detail__publisher">{{ sellerLabel }}</p>
+        <PropertyAdvertiserContact :publisher="offer" />
+        <PropertyNearbyServices operation="rent" :property-key="property.key" />
         <p class="rental-map-detail__note">{{ t('seen', { date: seen }) }}</p>
         <p class="rental-map-detail__note">{{ t('mapLocationHint') }}</p>
         <p class="rental-map-detail__note">{{ t('mapContactHint') }}</p>

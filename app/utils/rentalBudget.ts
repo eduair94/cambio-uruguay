@@ -3,6 +3,7 @@ import {
   type RentalAvailabilityFilter,
 } from './rentalAvailability'
 import type { RentalPublicProperty } from './rentals'
+import { agencyKey } from './propertyAdvertiser'
 
 export const RENTAL_BUDGET_BANDS = [
   { id: 'under10000', minExclusive: 0, maxInclusive: 10_000 },
@@ -20,6 +21,8 @@ export interface RentalBudgetQuery {
   type: 'all' | 'casa' | 'apartamento'
   bedrooms: '' | number
   availability: RentalAvailabilityFilter
+  agency: string
+  owner: boolean
   page: number
   perPage: number
 }
@@ -71,6 +74,8 @@ export function normalizeRentalBudgetQuery(input: Record<string, unknown> = {}):
     type: input.type === 'casa' || input.type === 'apartamento' ? input.type : 'all',
     bedrooms: Number.isInteger(bedrooms) && bedrooms >= 0 && bedrooms <= 10 ? bedrooms : '',
     availability: normalizeRentalAvailabilityFilter(input.availability),
+    agency: agencyKey(input.agency),
+    owner: input.dueno === '1' || input.owner === '1' || input.owner === true,
     page: integer(input.page, 1, 10_000),
     perPage: integer(input.perPage, 24, 48),
   }
@@ -83,6 +88,8 @@ export function rentalBudgetQueryToParams(query: RentalBudgetQuery): Record<stri
   if (query.type !== 'all') params.type = query.type
   if (query.bedrooms !== '') params.bedrooms = String(query.bedrooms)
   if (query.availability !== 'all') params.availability = query.availability
+  if (query.agency) params.agency = query.agency
+  if (query.owner) params.dueno = '1'
   if (query.page > 1) params.page = String(query.page)
   if (query.perPage !== 24) params.perPage = String(query.perPage)
   return params

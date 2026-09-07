@@ -108,6 +108,7 @@ const searchKeys = new Set([
   'withExpenses',
   'dueno',
   'owner',
+  'agency',
   'sedes',
   'radio',
   'radioKm',
@@ -233,6 +234,8 @@ export function normalizeRentalAlertFilters(
       )
         throw new RentalAlertValidationError('unsupported_filter')
     }
+    if (populated(input.agency) && !query.agency)
+      throw new RentalAlertValidationError('unsupported_filter')
     query.neighborhoods.sort((a, b) => a.localeCompare(b, 'es'))
     query.guarantees.sort()
     query.sedes.sort((a, b) => a - b)

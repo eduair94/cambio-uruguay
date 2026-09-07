@@ -680,3 +680,23 @@ en DB; las pruebas con fixtures no realizan peticiones de red.
 El build raíz necesita `sheet_key.json`, archivo ignorado y exclusivo del entorno del servidor
 que importa `sync_sheet.ts`. Si falta localmente, `npm run build` reporta ese módulo ausente;
 no se crean credenciales falsas ni se modifica el build para ocultarlo.
+
+
+## Contacto comercial y dueño directo — 2026-09-07
+
+El usuario autorizó incorporar contactos publicados explícitamente por el anunciante y perfiles
+comerciales de inmobiliarias. Esta excepción se limita a `agency`, `publicContact` y `ownerDirect`
+por **oferta propia**, con URL de procedencia y fecha real. Las descripciones siguen depuradas;
+los datos de contacto ocultos en JSON, contactos de perfiles privados y datos de sesión siguen
+excluidos. No se contacta automáticamente a ninguna persona.
+
+InfoCasas identifica agencias por ID nativo y publica email comercial visible en su perfil;
+Ver teléfono requiere login y no se usa. Casasweb publica WhatsApp en su bloque comercial propio.
+El País publica `tel:` con el ID del aviso en el HTML de la ficha: se exige coincidencia de
+canonical e ID, sin copiar `contact.phone` ni `sourceAgency.emails` del JSON del buscador.
+La clasificación particular no certifica dueño: hace falta declaración propia explícita, sin
+contradicciones con intermediación. Datos sin inspeccionar pueden conservarse sólo para el mismo
+aviso compatible, sin cambiar su fecha; una retirada explícita los limpia.
+
+Contrato completo, límites de frescura, fuentes corroboradas y comandos de actualización:
+[PROPERTY_ADVERTISERS.md](./PROPERTY_ADVERTISERS.md).

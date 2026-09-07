@@ -1,3 +1,5 @@
+import { infoCasasAdvertiser, type InfoCasasAdvertiserRow } from "../rentals/advertiser";
+import { enrichAgencyContacts } from "../rentals/agencyContacts";
 import { rentalDescription, rentalImages, rentalOfferDetails } from "../rentals/details";
 import { fetchText } from "../rentals/net";
 import { canonicalDepartment, DEPARTMENTS, flatten, parseCurrency } from "../rentals/normalize";
@@ -51,7 +53,7 @@ export interface InfoCasasSaleRow {
   isProject?: unknown;
   isProjectUnit?: unknown;
   hidePrice?: unknown;
-  owner?: { name?: unknown } | null;
+  owner?: InfoCasasAdvertiserRow | null;
   facilities?: Array<{ name?: unknown }> | null;
   locations?: {
     country?: Array<{ name?: unknown }>;
@@ -157,6 +159,7 @@ export function toInfoCasasSale(row: InfoCasasSaleRow, readAt: string): Opportun
       land: details.landArea, terrace: details.terraceArea,
       reported: propertyType === "casa" ? details.totalArea : null },
     sellerName: rentalDescription(row.owner?.name, 160).replace(/\s+/g, " "),
+    ...infoCasasAdvertiser(row.owner, { url: url.href, title, description, observedAt: readAt }),
     department, locality, neighborhood, propertyType,
     bedrooms: integer(row.bedrooms, 0), bathrooms: integer(row.bathrooms, 1), area, landArea: details.landArea, price,
     // admin_included is never used: a sale price and monthly expenses are different concepts.
@@ -419,6 +422,7 @@ export async function harvestSalesInfoCasas(options: SaleHarvestOptions = {}): P
   }
   // Conflicting source states in the same run are withheld until a later active observation.
   const listings = [...byId.values()].filter(row => !unavailableIds.has(row.id));
+  if (!options.fetchPage) await enrichAgencyContacts(listings);
   const repeatedDepths = streams.filter(stream => stream.depthLimited).map(stream => ({ type: stream.type,
     department: stream.department, ...(stream.neighborhood ? { neighborhood: stream.neighborhood } : {}),
     advertisedLastPage: stream.lastPage, depthLimit: stream.limit }));

@@ -535,6 +535,7 @@ watch(smAndDown, mobile => {
   if (!mobile) mobileFiltersOpen.value = false
 })
 const query = computed(() => normalizeRentalQuery(route.query))
+const agencyName = useAgencySelection(() => query.value.agency)
 const requestParams = computed(() => rentalQueryToParams(query.value))
 const requestKey = computed(() => JSON.stringify(requestParams.value))
 const view = computed(() => (route.query.view === 'mapa' ? 'mapa' : 'lista'))
@@ -654,6 +655,7 @@ const filterChips = computed(() => {
     add('neighborhoods', q.neighborhoods.join(', '), ['neighborhood', 'neighborhoods'])
   if (q.type) add('type', typeLabel(q.type))
   if (q.q) add('q', q.q)
+  if (q.agency) add('agency', agencyName.value || t('selectedAgency'))
   if (q.bedrooms !== null)
     add(
       'bedrooms',
@@ -911,11 +913,13 @@ const publishedGuarantees = (property: RentalProperty) =>
 const sellerLabel = (property: RentalProperty) => {
   const offer = displayOffer(property)
   const type = t(
-    offer?.sellerType === 'particular'
-      ? 'individual'
-      : offer?.sellerType === 'inmobiliaria'
-        ? 'agency'
-        : 'unknown'
+    offer?.ownerDirect?.declared
+      ? 'owner'
+      : offer?.sellerType === 'particular'
+        ? 'individual'
+        : offer?.sellerType === 'inmobiliaria'
+          ? 'agency'
+          : 'unknown'
   )
   return offer?.sellerName && !/^(?:particular|mercado libre)$/i.test(offer.sellerName)
     ? `${type} · ${offer.sellerName}`

@@ -2162,6 +2162,21 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/inmobiliarias-uruguay',
+        labelKey: 'nav.realEstateAgencies',
+        icon: 'mdi-office-building-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        keywords: [
+          'inmobiliarias uruguay',
+          'directorio inmobiliarias',
+          'contacto inmobiliaria',
+          'agencias inmobiliarias montevideo',
+          'avisos de inmobiliarias',
+          'telefono inmobiliaria',
+        ],
+      },
+      {
         to: '/oportunidades-inmobiliarias-uruguay',
         labelKey: 'nav.propertyOpportunities',
         icon: 'mdi-home-search-outline',
@@ -2820,6 +2835,7 @@ export const UNLISTED_ROUTES: ReadonlyArray<{ to: string; priority: number; chan
 export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freeze({
   'alquileres/[key]': 'consumer',
   'venta-viviendas-uruguay/[key]': 'consumer',
+  'inmobiliarias-uruguay/[key]': 'consumer',
   'blog/[slug]': 'news',
   'casa/[origin]/index': 'houses',
   'casa/[origin]/[intent]': 'houses',

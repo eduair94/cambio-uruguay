@@ -6,6 +6,10 @@ import {
   type RentalPublicProperty,
   type RentalQuery,
 } from '../../utils/rentals'
+import {
+  publicAdvertiserMetadata,
+  publicAdvertiserProjection,
+} from '../../utils/propertyAdvertiser'
 
 const propertyFields: Array<keyof RentalPublicProperty> = [
   'key',
@@ -63,11 +67,15 @@ export const rentalPublicPropertyProjection = {
       offerFields.map(field => [`${parent}.${field}`, 1])
     )
   ),
+  ...publicAdvertiserProjection('offers'),
+  ...publicAdvertiserProjection('matchingOffer'),
 }
 
 /** Rich source text/photos belong on an opened property, never on each search-result card. */
 export const rentalExpandedPropertyProjection = {
   ...rentalPublicPropertyProjection,
+  ...publicAdvertiserProjection('offers', true),
+  ...publicAdvertiserProjection('matchingOffer', true),
   ...Object.fromEntries(
     ['offers', 'matchingOffer'].flatMap(parent =>
       [
@@ -82,6 +90,16 @@ export const rentalExpandedPropertyProjection = {
       ].map(field => [`${parent}.details.${field}`, 1])
     )
   ),
+}
+
+/** Run after the Mongo projection: source URLs and every nested field are revalidated. */
+export function publicRentalAdvertisers<T extends RentalPublicProperty>(property: T): T {
+  const offer = (row: RentalOffer) => ({ ...row, ...publicAdvertiserMetadata(row) })
+  return {
+    ...property,
+    offers: property.offers.map(offer),
+    ...(property.matchingOffer ? { matchingOffer: offer(property.matchingOffer) } : {}),
+  }
 }
 
 export function rentalDetailStages(

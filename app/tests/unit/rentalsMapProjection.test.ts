@@ -151,6 +151,12 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
           priceUyu: 30000,
           currency: 'USD',
           sellerType: 'particular',
+          ownerDirect: {
+            declared: true,
+            evidence: 'advert_text',
+            sourceUrl: 'https://casasweb.com/fixture-selected',
+            observedAt: today,
+          },
           commonExpenses: 100,
           commonExpensesCurrency: 'USD',
         }),
@@ -164,6 +170,13 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
       property('cheaper', 28000, 40, 0, [
         advert('cheaper', 700, {
           source: 'casasweb',
+          url: 'https://casasweb.com/fixture-cheaper',
+          ownerDirect: {
+            declared: true,
+            evidence: 'advert_text',
+            sourceUrl: 'https://casasweb.com/fixture-cheaper',
+            observedAt: today,
+          },
           priceUyu: 28000,
           currency: 'USD',
           sellerType: 'particular',

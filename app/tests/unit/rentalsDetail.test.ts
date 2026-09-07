@@ -28,7 +28,9 @@ describe('a requested rental property detail', () => {
     vi.clearAllMocks()
     connectDb.mockReset().mockResolvedValue(undefined)
     lean.mockReset().mockResolvedValue({ usdUyu: 40 })
-    collation.mockReset().mockResolvedValue([{ key: 'requested', title: 'Visible property' }])
+    collation
+      .mockReset()
+      .mockResolvedValue([{ key: 'requested', title: 'Visible property', offers: [] }])
     getRouterParam.mockReturnValue('requested')
     getQuery.mockReturnValue({})
   })
@@ -43,7 +45,7 @@ describe('a requested rental property detail', () => {
     })
     const result = await handler({} as any)
     expect(result).toEqual({
-      property: { key: 'requested', title: 'Visible property' },
+      property: { key: 'requested', title: 'Visible property', offers: [] },
       usdUyu: 40,
     })
     const stages = aggregate.mock.calls[0][0] as Array<Record<string, any>>

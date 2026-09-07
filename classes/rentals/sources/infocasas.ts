@@ -12,6 +12,7 @@
 //   * newest-first does NOT make the nationwide tail accessible. On 2026-09-07 pages 600 and 850
 //     returned the same 21 IDs despite different paginator numbers. Full runs partition the public
 //     search into overlapping price ranges below that depth; fast runs keep the newest-first feed.
+import { infoCasasAdvertiser, type InfoCasasAdvertiserRow } from "../advertiser";
 import { guaranteesFromField, guaranteesFromText, mergeGuarantees } from "../guarantees";
 import { rentalDescription, rentalOfferDetails } from "../details";
 import { fetchText } from "../net";
@@ -23,7 +24,7 @@ import {
   parseCurrency,
   parseStreet,
 } from "../normalize";
-import type { RawRental, RentalCurrency, RentalSellerType } from "../types";
+import type { RawRental, RentalCurrency } from "../types";
 import type { RentalSourceResult } from "./types";
 
 const ORIGIN = "https://www.infocasas.com.uy";
@@ -110,7 +111,7 @@ interface IcRow {
   commonExpenses?: IcMoney | null;
   property_type?: { id?: number; name?: string } | null;
   operation_type_id?: number | null;
-  owner?: { name?: string | null; type?: string | null; particular?: boolean | null } | null;
+  owner?: InfoCasasAdvertiserRow | null;
   locations?: {
     state?: IcLocationEntry[] | null;
     neighbourhood?: IcLocationEntry[] | null;
@@ -191,15 +192,7 @@ export function readPage(payload: unknown): IcPage | null {
 const currencyOf = (currency: IcCurrency | null | undefined): RentalCurrency | null =>
   parseCurrency(currency?.name || "");
 
-const sellerTypeOf = (owner: IcRow["owner"]): RentalSellerType => {
-  if (owner?.particular) return "particular";
-  const type = String(owner?.type || "").toLowerCase();
-  if (type.includes("inmobiliaria") || type.includes("constructora")) return "inmobiliaria";
-  if (type.includes("particular") || type.includes("dueno") || type.includes("dueño")) return "particular";
-  return "desconocido";
-};
-
-export function toRawRental(row: IcRow): RawRental | null {
+export function toRawRental(row: IcRow, observedAt = new Date().toISOString()): RawRental | null {
   const id = String(row.id ?? "").trim();
   const title = String(row.title ?? "").trim();
   const link = String(row.link ?? "").trim();
@@ -268,7 +261,7 @@ export function toRawRental(row: IcRow): RawRental | null {
     commonExpensesCurrency: commonExpenses === null ? null
       : Number.isFinite(explicitExpenses) && explicitExpenses >= 0 ? currencyOf(row.commonExpenses?.currency) : currency,
     sellerName: String(row.owner?.name || "").trim() || "InfoCasas",
-    sellerType: sellerTypeOf(row.owner),
+    ...infoCasasAdvertiser(row.owner, { url: link.startsWith("http") ? link : `${ORIGIN}${link.startsWith("/") ? "" : "/"}${link}`, title, description: row.description, observedAt }),
     petsAllowed: petsFromFacilities(row.facilities),
     guarantees: mergeGuarantees([guaranteesFromField(row.guarantee), guaranteesFromText(row.description)]),
     image: String(row.img || "").trim() || null,
@@ -365,7 +358,7 @@ export async function harvestInfoCasas(
         if (!rangeIds.has(id)) { newIds++; rangeIds.add(id); }
         if (seenIds.has(id)) repeatedRows++;
         seenIds.add(id);
-        const listing = toRawRental(row);
+        const listing = toRawRental(row, new Date().toISOString());
         if (!listing) { rejectedIds.add(id); continue; }
         const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
         if (!isPlausibleRent(priceUyu, listing.propertyType, listing)) { rejectedIds.add(id); continue; }

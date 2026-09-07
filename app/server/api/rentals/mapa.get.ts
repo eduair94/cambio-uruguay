@@ -3,6 +3,7 @@ import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
 import { loadRentalAvailabilityIndex } from '../../utils/rentalAvailability'
 import { rentalAvailabilityAdvertId } from '../../../utils/rentalAvailability'
+import { publicAdvertiserProjection } from '../../../utils/propertyAdvertiser'
 import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
@@ -82,6 +83,8 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
         {
           $project: {
             _id: 0,
+            ...publicAdvertiserProjection('offers'),
+            ...publicAdvertiserProjection('matchingOffer'),
             key: 1,
             latitude: 1,
             longitude: 1,

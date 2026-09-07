@@ -74,7 +74,8 @@
     "test_ai_insights": "ts-node scripts/oneoff/test_ai_insights.ts",
     "reddit_answer": "ts-node scripts/oneoff/reddit_answer.ts",
     "reddit_account": "ts-node scripts/oneoff/reddit_account.ts",
-    "reddit_sweep": "ts-node scripts/oneoff/reddit_sweep.ts"
+    "reddit_sweep": "ts-node scripts/oneoff/reddit_sweep.ts",
+    "sync_property_services": "ts-node sync_property_services.ts"
   },
   "author": "",
   "license": "ISC",
@@ -105,6 +106,7 @@
     "mongoose": "^6.4.6",
     "nstall": "^0.2.0",
     "openai": "^6.22.0",
+    "osm-pbf-parser-node": "1.1.4",
     "puppeteer": "^24.10.1",
     "puppeteer-core": "^24.10.1",
     "soap": "^1.9.3",

@@ -91,6 +91,7 @@
               </ClientOnly>
             </template>
             <p v-else>{{ t('noLocation') }}</p>
+            <PropertyNearbyServices operation="sale" :property-key="property.key" />
           </section>
         </div>
         <aside class="sale-detail__aside">
@@ -109,6 +110,7 @@
               {{ t('original') }}
             </VBtn>
             <p class="sale-detail__source-hint">{{ t('sourceHint') }}</p>
+            <PropertyAdvertiserContact :publisher="property" />
             <dl class="sale-detail__dates">
               <div>
                 <dt>{{ t('source') }}</dt>
@@ -354,7 +356,7 @@ defineOgImageComponent('Cambio', {
 .sale-detail :is(h1, h2, p, dl, dd) {
   margin: 0;
 }
-.sale-detail a {
+.sale-detail a:not(.v-btn) {
   color: rgb(var(--v-theme-link));
 }
 .sale-detail__back {

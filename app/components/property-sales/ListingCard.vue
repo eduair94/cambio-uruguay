@@ -49,6 +49,7 @@
         <span>
           {{ propertySaleSourceName(property.source) }}
           <template v-if="property.sellerName">· {{ property.sellerName }}</template>
+          <template v-if="property.ownerDirect?.declared"> · {{ t('owner') }}</template>
         </span>
         <time :datetime="property.lastSeen">{{ t('read') }}: {{ readDate }}</time>
       </div>

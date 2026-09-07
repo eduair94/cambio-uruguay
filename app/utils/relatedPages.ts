@@ -405,6 +405,7 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
   // both directions explicit instead of letting generic price keywords choose.
   '/alquileres-uruguay': [
     OPPORTUNITIES_PATH,
+    '/inmobiliarias-uruguay',
     '/primer-alquiler-uruguay',
     '/alquilar-en-uruguay',
     '/alquilar-sin-recibo-de-sueldo',
@@ -414,11 +415,20 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
   [OPPORTUNITIES_PATH]: OPPORTUNITY_RELATED.rent,
   '/venta-viviendas-uruguay': [
     OPPORTUNITIES_PATH,
+    '/inmobiliarias-uruguay',
     '/comprar-o-alquilar-uruguay',
     '/deuda-de-gastos-comunes-uruguay',
     '/por-que-no-baja-el-alquiler-uruguay',
     '/limite-de-efectivo-uruguay',
     '/alquileres-uruguay',
+  ],
+  '/inmobiliarias-uruguay': [
+    '/alquileres-uruguay',
+    '/venta-viviendas-uruguay',
+    OPPORTUNITIES_PATH,
+    '/primer-alquiler-uruguay',
+    '/alquilar-en-uruguay',
+    '/comprar-o-alquilar-uruguay',
   ],
   '/comprar-o-alquilar-uruguay': [
     '/venta-viviendas-uruguay',

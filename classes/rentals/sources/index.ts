@@ -1,3 +1,6 @@
+import { enrichCasaswebRentalContacts } from "../casaswebContacts";
+import { enrichElpaisRentalContacts } from "../elpaisContacts";
+import { enrichAgencyContacts } from "../agencyContacts";
 // The rental harvest: enabled sources run in parallel and fail independently.
 //
 // Gallito's direct listings returned 403 to our identifying UA. El País ran as external_only for
@@ -32,6 +35,10 @@ export async function harvestRentalMarket(mode: "full" | "fast", usdUyu: number)
     harvestElpais(mode, usdUyu),
   ]);
 
+  const listings = runs.flatMap(run => run.listings);
+  await enrichAgencyContacts(listings, { maxProfiles: mode === "fast" ? 12 : 80 });
+  await enrichCasaswebRentalContacts(listings, mode);
+  await enrichElpaisRentalContacts(listings, mode);
   return {
     runs,
     listings: runs.flatMap((run) => run.listings),

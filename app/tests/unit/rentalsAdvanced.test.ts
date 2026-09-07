@@ -166,7 +166,7 @@ describe('rental property filters', () => {
       $elemMatch: {
         source: 'elpais',
         currency: 'USD',
-        sellerType: 'particular',
+        'ownerDirect.declared': true,
         commonExpenses: { $type: 'number', $gte: 0 },
       },
     })

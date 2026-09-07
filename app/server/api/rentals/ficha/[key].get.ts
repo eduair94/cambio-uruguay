@@ -1,7 +1,8 @@
+import { publicRentalAdvertisers, rentalDetailStages } from '../../../utils/rentalDetail'
 import { RentalListingModel } from '../../../models/RentalListing'
 import { RentalMetaModel } from '../../../models/RentalMeta'
 import { connectDb } from '../../../utils/db'
-import { rentalDetailStages } from '../../../utils/rentalDetail'
+
 import {
   annotateRentalAvailability,
   loadRentalAvailabilityIndex,
@@ -61,8 +62,13 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse> => 
           ).collation(RENTAL_COLLATION)
         : []
       page = buildRentalPage(property, similar, usdUyu, otherOwners.length > 0, market)
-      page.property = annotateRentalAvailability(page.property, availability)
-      page.similar = page.similar.map(row => annotateRentalAvailability(row, availability))
+      page.property = annotateRentalAvailability(
+        publicRentalAdvertisers(page.property),
+        availability
+      )
+      page.similar = page.similar.map(row =>
+        annotateRentalAvailability(publicRentalAdvertisers(row), availability)
+      )
     }
   } catch (error) {
     console.error('[api/rentals/ficha] failed', error)

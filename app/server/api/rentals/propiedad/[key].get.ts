@@ -1,7 +1,8 @@
+import { publicRentalAdvertisers, rentalDetailStages } from '../../../utils/rentalDetail'
 import { RentalListingModel } from '../../../models/RentalListing'
 import { RentalMetaModel } from '../../../models/RentalMeta'
 import { connectDb } from '../../../utils/db'
-import { rentalDetailStages } from '../../../utils/rentalDetail'
+
 import {
   annotateRentalAvailability,
   loadRentalAvailabilityIndex,
@@ -40,7 +41,9 @@ export default defineEventHandler(async (event): Promise<RentalPropertyDetailRes
         availability.excludedAdvertIds(query.availability)
       )
     ).collation(RENTAL_COLLATION)
-    property = rows[0] ? annotateRentalAvailability(rows[0], availability) : undefined
+    property = rows[0]
+      ? annotateRentalAvailability(publicRentalAdvertisers(rows[0]), availability)
+      : undefined
   } catch (error) {
     console.error('[api/rentals/propiedad] failed', error)
     setResponseHeader(event, 'cache-control', 'no-store')

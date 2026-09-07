@@ -157,10 +157,25 @@ async function setup(page: Page, theme = 'dark') {
       await new Promise(resolve => setTimeout(resolve, 1000))
     return route.fulfill({ contentType: 'application/json', body: JSON.stringify(result(url)) })
   })
-  await page.goto('/venta-viviendas-uruguay', { waitUntil: 'domcontentloaded', timeout: 60000 })
+  await page.goto('/venta-viviendas-uruguay?page=2', {
+    waitUntil: 'domcontentloaded',
+    timeout: 60000,
+  })
   // The count only appears after the favourites composable has mounted on the client.
   // This avoids treating third-party background network activity as app readiness.
   await expect(page.getByTestId('sale-saved-trigger')).toContainText('(0)', { timeout: 60000 })
+  // Browser routes cannot intercept the initial SSR fetch. Apply on the client so fixtures
+  // remain deterministic even when the preview database already contains real test rows.
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (document.getElementById('__nuxt') as any)?.__vue_app__?.$nuxt?.isHydrating === false
+      )
+    )
+    .toBe(true)
+  if ((page.viewportSize()?.width ?? 1440) < 960)
+    await page.getByTestId('sale-filter-trigger').click()
+  await page.getByTestId('sale-filter-apply').click()
   if (!(await page.locator('[data-sale-key]').count())) {
     const retry = page.getByRole('button', { name: 'Reintentar', exact: true })
     if (await retry.count()) await retry.first().click()
@@ -355,7 +370,9 @@ test('mobile map opens visible own details; empty favourites stay empty and stor
       exact: true,
     })
     .click()
-  await expect(page.locator('.sale-map__panel h2')).toBeInViewport()
+  await expect(
+    page.locator('.sale-map__panel').getByRole('heading', { name: 'Datos publicados', exact: true })
+  ).toBeInViewport()
   await expect(page.locator('.sale-map__panel')).toContainText('Gastos comunes / mes')
   await page.screenshot({ path: '../.sdd-property-sales-map-mobile.png' })
   await page

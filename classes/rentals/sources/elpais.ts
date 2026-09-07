@@ -1,3 +1,4 @@
+import { advertiserClassification, ownerDirectDeclaration } from "../advertiser";
 // Inmuebles El País — collection ENABLED on 2026-09-05 by the portal's own operator.
 //
 // This adapter was born disabled. The 2026-09-05 review read the published terms of
@@ -26,8 +27,8 @@
 // WHAT IS STILL NOT TAKEN, authorisation or not: the AI enrichment (`visualDescription`,
 // `keywordsOfProperty`, `contentTags`, the `*Score` fields), the converted `expensesMonthlyUSD`,
 // the portal's import dates as a publication date — and, above all, the CONTACT DATA. Every row
-// carries `contact.phone` and `sourceAgency.emails`; `RawRental` has nowhere to put them and they
-// are never copied. Only the agency's public NAME crosses into our index.
+// carries `contact.phone` and `sourceAgency.emails`; these have not been corroborated in an explicit public contact block, so they remain excluded.
+// Agency/phone fields from search JSON are not evidence of public commercial contact.
 import { readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -109,7 +110,7 @@ function hasOnlyShortTermPrice(title: string, description: string): boolean {
   return /\bdisponible en alquiler en (?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|setiembre|septiembre|octubre|noviembre|diciembre) (?:de )?20\d{2}\b/.test(text);
 }
 
-export function elpaisToRawRental(value: unknown): RawRental | null {
+export function elpaisToRawRental(value: unknown, observedAt = new Date().toISOString()): RawRental | null {
   if (!value || typeof value !== "object") return null;
   const row = value as Record<string, any>;
   if (row.transactionType !== "rental" || row.status !== "active" || row.pausedByAdmin || row.trashedAt) return null;
@@ -150,7 +151,9 @@ export function elpaisToRawRental(value: unknown): RawRental | null {
     }),
     title, price, currency, commonExpenses,
     commonExpensesCurrency: commonExpenses === null ? null : parseCurrency(row.expenses?.currency),
-    sellerName: seller || "Inmuebles El País", sellerType: row.ownerDirect === true ? "particular" : seller ? "inmobiliaria" : "desconocido",
+    sellerName: seller || "Inmuebles El País",
+    sellerType: advertiserClassification({ ownerDirect: row.ownerDirect, title, description }).sellerType,
+    ownerDirect: ownerDirectDeclaration({ ownerDirect: row.ownerDirect, title, description }, `${ORIGIN}/property/${row._id}`, observedAt),
     image: typeof (image?.publicUrl || image?.url) === "string" ? image.publicUrl || image.url : null,
     // createdAt is the portal's import date, not necessarily the advert's publication date.
     publishedAt: null, propertyType: TYPES[String(row.propertyType)] || inferPropertyType(title),

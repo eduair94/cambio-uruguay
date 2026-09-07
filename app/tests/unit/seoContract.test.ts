@@ -146,6 +146,9 @@ const NOINDEXED = [
   // never put the site's own keyword list into the index.
   'estadisticas-de-busqueda.vue',
   'estado.vue',
+  // Agency pages exclude empty/error states, thin profiles and filtered directory copies.
+  'inmobiliarias-uruguay/[key].vue',
+  'inmobiliarias-uruguay/index.vue',
   'newsletter/archivo.vue',
   'offline.vue',
   // Index the opportunity directory itself; query combinations opt out like rental filters.

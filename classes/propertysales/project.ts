@@ -1,3 +1,5 @@
+import { retainSaleAdvertiser } from "./advertiser";
+import { publicAdvertiserFields } from "../rentals/advertiser";
 import { opportunityRisks } from "../propertyopportunities/analyze";
 import type { OpportunityListing, OpportunityRisk } from "../propertyopportunities/types";
 import { rentalDescription, rentalImages } from "../rentals/details";
@@ -34,7 +36,7 @@ export function mergeSaleCatalogInputs(stored: readonly SaleCatalogInput[], inco
   for (const listing of incoming) {
     const previous = rows.get(listing.id);
     if (previous && Date.parse(previous.listing.lastSeen) > Date.parse(listing.lastSeen)) continue;
-    rows.set(listing.id, { listing: retainCasaswebDetail(previous?.listing, listing), firstSeen: previous ? previous.firstSeen ?? null : listing.lastSeen });
+    rows.set(listing.id, { listing: retainSaleAdvertiser(previous?.listing, retainCasaswebDetail(previous?.listing, listing)), firstSeen: previous ? previous.firstSeen ?? null : listing.lastSeen });
   }
   for (const id of unavailableIds) rows.delete(id);
   return [...rows.values()];
@@ -143,6 +145,8 @@ export function publicSaleListing(input: SaleCatalogInput, now: string, usdUyu?:
     key: `${match[1]}-${match[2]}`, id: row.id, operation: "sale", source: row.source as PublicSaleListing["source"], listingId: row.listingId,
     url: url.href, title, description: description(row.description), image: images[0] || null, images,
     sellerName: text(row.sellerName, 160).replace(/\s+/g, " "), department,
+    sellerType: row.sellerType === "inmobiliaria" || row.sellerType === "particular" ? row.sellerType : "desconocido",
+    ...publicAdvertiserFields(row, { source: row.source, url: url.href, sellerType: row.sellerType, now }),
     locality: text(row.locality, 160), neighborhood: text(row.neighborhood, 160), propertyType: row.propertyType,
     bedrooms: count(row.bedrooms), bathrooms: count(row.bathrooms, 1), parkingSpaces: optionalParking ? null : count(row.parkingSpaces),
     price, expenses, areas,

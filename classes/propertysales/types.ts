@@ -1,5 +1,7 @@
+import type { RentalAdvertiserFields, RentalSellerType } from "../rentals/types";
 /** Public advert catalogue. One key means one source advert, never an inferred physical home. */
-export interface PublicSaleListing {
+export interface PublicSaleListing extends RentalAdvertiserFields {
+  sellerType: RentalSellerType;
   key: string;
   id: string;
   operation: "sale";

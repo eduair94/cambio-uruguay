@@ -23,6 +23,7 @@
           />
         </header>
         <div class="budget-filters__body">
+          <PropertyAgencyFilter v-model="draft.agency" @update:model-value="loadDraftFacets" />
           <VSelect
             v-model="draft.basis"
             :items="basisItems"
@@ -67,6 +68,13 @@
             @update:model-value="loadDraftFacets"
           />
           <p class="budget-hint">{{ availabilityCopy.filterHint }}</p>
+          <VCheckbox
+            v-model="draft.owner"
+            :label="t('owner')"
+            hide-details
+            color="primary"
+            @update:model-value="loadDraftFacets"
+          />
         </div>
         <footer>
           <VBtn variant="text" @click="clear">{{ t('clear') }}</VBtn>
@@ -326,6 +334,7 @@ const route = useRoute(),
 const availability = useRentalAvailability()
 const availabilityCopy = computed(() => rentalAvailabilityCopy(locale.value))
 const query = computed(() => normalizeRentalBudgetQuery(route.query))
+const agencyName = useAgencySelection(() => query.value.agency)
 const params = computed(() => rentalBudgetQueryToParams(query.value))
 const requestKey = computed(() => JSON.stringify(params.value))
 const { data, pending, error, refresh } = await useAsyncData<RentalBudgetResponse>(
@@ -426,11 +435,20 @@ const availabilityItems = computed(() =>
     title: availabilityCopy.value[value],
   }))
 )
-type FilterKey = 'department' | 'neighborhood' | 'type' | 'bedrooms' | 'availability'
+type FilterKey =
+  | 'department'
+  | 'neighborhood'
+  | 'type'
+  | 'bedrooms'
+  | 'availability'
+  | 'agency'
+  | 'owner'
 const chips = computed(() => {
   const q = query.value,
     rows: { key: FilterKey; label: string }[] = []
   if (q.department) rows.push({ key: 'department', label: q.department })
+  if (q.agency) rows.push({ key: 'agency', label: agencyName.value || t('selectedAgency') })
+  if (q.owner) rows.push({ key: 'owner', label: t('owner') })
   if (q.neighborhood) rows.push({ key: 'neighborhood', label: q.neighborhood })
   if (q.type !== 'all')
     rows.push({ key: 'type', label: t(q.type === 'casa' ? 'house' : 'apartment') })
@@ -653,7 +671,7 @@ async function share() {
 }
 .budget-filters footer {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
   gap: 8px;
   flex: 0 0 auto;
   padding: 8px 12px max(8px, env(safe-area-inset-bottom));
@@ -661,6 +679,16 @@ async function share() {
 }
 .budget-filters .v-btn {
   min-height: 44px;
+}
+.budget-filters footer .v-btn {
+  height: auto;
+  min-width: 0;
+  padding-block: 10px;
+}
+.budget-filters footer :deep(.v-btn__content) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
 }
 .budget-filters :deep(input),
 .budget-filters :deep(.v-select__selection),

@@ -45,29 +45,29 @@ describe('canonical rental page API', () => {
     lean.mockReset().mockResolvedValue({ usdUyu: 40 })
     collation
       .mockReset()
-      .mockResolvedValueOnce([{ key: 'canonical-key' }])
-      .mockResolvedValueOnce([{ key: 'peer' }])
+      .mockResolvedValueOnce([{ key: 'canonical-key', offers: [] }])
+      .mockResolvedValueOnce([{ key: 'peer', offers: [] }])
       .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([{ key: 'full-peer' }])
+      .mockResolvedValueOnce([{ key: 'full-peer', offers: [] }])
     getRouterParam.mockReturnValue('canonical-key')
     getQuery.mockReturnValue({ monthlyMax: '1', source: 'facebook' })
     rentalPageEvidenceStages.mockReturnValue([{ $match: { peer: true } }])
     buildRentalPage.mockReturnValue({
       canonicalPath: '/alquileres/canonical-key',
-      property: { key: 'canonical-key' },
+      property: { key: 'canonical-key', offers: [] },
       similar: [],
     })
   })
   it('ignores user query parameters so canonical content does not change by entrance path', async () => {
     expect(await handler({} as any)).toEqual({
       canonicalPath: '/alquileres/canonical-key',
-      property: { key: 'canonical-key' },
+      property: { key: 'canonical-key', offers: [] },
       similar: [],
     })
     expect(getQuery).not.toHaveBeenCalled()
     expect(buildRentalPage).toHaveBeenCalledWith(
-      { key: 'canonical-key' },
-      [{ key: 'full-peer' }],
+      { key: 'canonical-key', offers: [] },
+      [{ key: 'full-peer', offers: [] }],
       40,
       false,
       { status: 'insufficient' }
@@ -85,7 +85,7 @@ describe('canonical rental page API', () => {
   it('returns 503 on dependency failure, including peer data, instead of false absence or zero benchmark', async () => {
     collation
       .mockReset()
-      .mockResolvedValueOnce([{ key: 'canonical-key' }])
+      .mockResolvedValueOnce([{ key: 'canonical-key', offers: [] }])
       .mockRejectedValueOnce(new Error('DB unavailable'))
     const log = vi.spyOn(console, 'error').mockImplementation(() => undefined)
     try {

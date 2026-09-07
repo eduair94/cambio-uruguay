@@ -34,7 +34,7 @@ describe("El País offline period and metadata checks", () => {
 
   it("reads only the public agency name and tolerates malformed image arrays", () => {
     expect(elpaisToRawRental({ ...base, sourceAgency: { provider: "elpais", id: "internal", raw: "ABATE" }, images: {} }))
-      .toMatchObject({ sellerName: "ABATE", sellerType: "inmobiliaria", image: null });
+      .toMatchObject({ sellerName: "ABATE", sellerType: "desconocido", image: null });
     expect(elpaisToRawRental({ ...base, sourceAgency: { provider: "elpais" }, images: [null] }))
       .toMatchObject({ sellerName: "Inmuebles El País", sellerType: "desconocido", image: null });
   });

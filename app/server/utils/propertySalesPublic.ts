@@ -5,13 +5,19 @@ import {
   type PropertySaleSummary,
   type PropertySalesMeta,
 } from '../../utils/propertySales'
+import {
+  publicAdvertiserMetadata,
+  publicAdvertiserProjection,
+} from '../../utils/propertyAdvertiser'
 
 export const propertySaleSummaryProjection = {
   _id: 0,
+  ...publicAdvertiserProjection(),
   key: 1,
   id: 1,
   operation: 1,
   source: 1,
+  sellerType: 1,
   listingId: 1,
   url: 1,
   title: 1,
@@ -44,6 +50,7 @@ export const propertySaleSummaryProjection = {
 } as const
 export const propertySaleDetailProjection = {
   ...propertySaleSummaryProjection,
+  ...publicAdvertiserProjection('', true),
   description: 1,
   images: 1,
   amenities: 1,
@@ -73,7 +80,10 @@ const publicMoney = (value: PropertySaleMoney | null | undefined): PropertySaleM
 export function publicPropertySaleSummary(row: PropertySaleSummary): PropertySaleSummary {
   const price = publicMoney(row.price)
   if (!price || price.amount <= 0) throw new Error('Invalid public sale price')
+  const metadata = publicAdvertiserMetadata(row)
+  delete metadata.publicContact
   return {
+    ...metadata,
     key: string(row.key),
     id: string(row.id),
     operation: 'sale',
@@ -131,6 +141,7 @@ export function publicPropertySaleSummary(row: PropertySaleSummary): PropertySal
 export function publicPropertySaleListing(row: PropertySaleListing): PropertySaleListing {
   return {
     ...publicPropertySaleSummary(row),
+    ...publicAdvertiserMetadata(row),
     description: string(row.description, 12_000),
     images: [
       ...new Set(

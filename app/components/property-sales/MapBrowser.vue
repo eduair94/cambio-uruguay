@@ -73,6 +73,8 @@
                 {{ amenity }}
               </span>
             </div>
+            <PropertyAdvertiserContact :publisher="detail.property" />
+            <PropertyNearbyServices operation="sale" :property-key="detail.property.key" />
           </template>
         </section>
       </div>

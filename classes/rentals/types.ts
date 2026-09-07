@@ -43,6 +43,41 @@ export const RENTAL_PROPERTY_TYPES: readonly RentalPropertyType[] = [
 /** Who is publishing: an agency, a private owner, or unknown. */
 export type RentalSellerType = "inmobiliaria" | "particular" | "desconocido";
 
+/** Source-owned business identity. Names, domains and phones never join agencies. */
+export interface RentalAgency {
+  version: 1;
+  key: string;
+  name: string;
+  profileUrl: string;
+  listingsUrl?: string;
+  observedAt: string;
+}
+
+export interface RentalPublicContact {
+  version: 1;
+  name: string;
+  channels: Array<{
+    kind: "phone" | "whatsapp" | "email" | "website" | "profile";
+    value: string;
+    sourceUrl: string;
+    observedAt: string;
+  }>;
+}
+
+export interface RentalOwnerDirect {
+  declared: true;
+  evidence: "source_field" | "advert_text";
+  sourceUrl: string;
+  observedAt: string;
+}
+
+/** Undefined: not inspected. Null: inspected and absent/withdrawn. Never property-wide. */
+export interface RentalAdvertiserFields {
+  agency?: RentalAgency | null;
+  publicContact?: RentalPublicContact | null;
+  ownerDirect?: RentalOwnerDirect | null;
+}
+
 export type RentalCurrency = "UYU" | "USD";
 
 /** Original, per-advert facts. Never reconstructed from the merged property's attributes. */
@@ -85,7 +120,7 @@ export interface RentalOfferDetails {
 }
 
 /** One published advert. Several of these can point at the same physical property. */
-export interface RentalOffer {
+export interface RentalOffer extends RentalAdvertiserFields {
   /** Absent for legacy or sources that only expose summary cards. */
   details?: RentalOfferDetails;
   /** Absent on legacy records; absence cannot be used as evidence that two units match. */
@@ -213,7 +248,7 @@ export interface RentalProperty {
  * One advert as a harvester read it, before anything is merged. Flat on purpose: the dedupe needs
  * the location parts beside the price, and a nested shape would only be unwrapped again.
  */
-export interface RawRental {
+export interface RawRental extends RentalAdvertiserFields {
   /** Explicit publisher city/town, when supplied separately from department and barrio. */
   locality?: string;
   /** Publisher explicitly hides its street; it cannot establish an exact-address match. */

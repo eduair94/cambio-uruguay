@@ -282,6 +282,7 @@ const emptyFacets: PropertySalesResponse['facets'] = {
   sources: [],
 }
 const query = computed(() => normalizePropertySalesQuery(route.query))
+const agencyName = useAgencySelection(() => query.value.agency)
 const savedEmpty = computed(
   () => savedOnly.value && (!favorites.ready.value || favorites.keys.value.length === 0)
 )
@@ -325,6 +326,8 @@ const filterLabels: Record<string, string> = {
   photos: 'photos',
   amenity: 'amenity',
   seller: 'seller',
+  agency: 'selectedAgency',
+  owner: 'owner',
   recent: 'recent',
   source: 'source',
 }
@@ -333,7 +336,10 @@ const chips = computed(() =>
     .filter(([key]) => key in filterLabels)
     .map(([key, value]) => ({
       key,
-      label: `${t(filterLabels[key]!)}${['parking', 'furnished', 'photos'].includes(key) ? '' : `: ${['type', 'amenity'].includes(key) ? t(value) : key === 'source' ? propertySaleSourceName(value) : value}`}`,
+      label:
+        key === 'agency' && agencyName.value
+          ? agencyName.value
+          : `${t(filterLabels[key]!)}${['agency', 'owner', 'parking', 'furnished', 'photos'].includes(key) ? '' : `: ${['type', 'amenity'].includes(key) ? t(value) : key === 'source' ? propertySaleSourceName(value) : value}`}`,
     }))
 )
 const toast = ref('')

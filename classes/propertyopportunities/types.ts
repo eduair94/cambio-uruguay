@@ -1,3 +1,4 @@
+import type { RentalAdvertiserFields, RentalSellerType } from "../rentals/types";
 import type { RentalAvailabilitySummary } from "./rentalAvailability";
 
 /** An asking-price comparison, never a transaction valuation or a promised saving. */
@@ -32,7 +33,8 @@ export type OpportunityRisk =
   | "attribute_conflict";
 
 /** INTERNAL input: every field belongs to this advert; descriptions/addresses are not public output. */
-export interface OpportunityListing {
+export interface OpportunityListing extends RentalAdvertiserFields {
+  sellerType?: RentalSellerType;
   /** Operation-qualified source advert ID, e.g. sale:infocasas:123. */
   id: string;
   operation: OpportunityOperation;

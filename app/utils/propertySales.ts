@@ -1,5 +1,6 @@
 /** Public sale adverts. Separate from rentals and the private opportunity-analysis inputs. */
 import { PROPERTY_SALES_SEO_PILOT_KEYS } from './propertySalesSeo'
+import { agencyKey, type AdvertiserMetadata } from './propertyAdvertiser'
 export type PropertySaleCurrency = 'USD' | 'UYU'
 export type PropertySaleSource = 'infocasas' | 'casasweb'
 export type PropertySaleAreaBasis = 'built' | 'total' | 'land' | 'reported'
@@ -14,7 +15,7 @@ export interface PropertySaleMoney {
   amount: number
   currency: PropertySaleCurrency
 }
-export interface PropertySaleListing {
+export interface PropertySaleListing extends AdvertiserMetadata {
   key: string
   id: string
   operation: 'sale'
@@ -97,6 +98,8 @@ export interface PropertySalesQuery {
   furnished: boolean
   amenity: '' | PropertySaleAmenity
   seller: string
+  agency: string
+  owner: boolean
   photos: boolean
   recent: 'all' | '1' | '3' | '7'
   sort: 'recent' | 'price_asc' | 'price_desc' | 'area_desc'
@@ -210,6 +213,8 @@ export function normalizePropertySalesQuery(input: Record<string, unknown>): Pro
       ? (input.amenity as PropertySaleAmenity)
       : '',
     seller: text(input.seller),
+    agency: agencyKey(input.agency),
+    owner: input.dueno === '1' || input.owner === '1' || input.owner === true,
     photos: checked(input.photos),
     recent: ['1', '3', '7'].includes(String(input.recent))
       ? (String(input.recent) as PropertySalesQuery['recent'])

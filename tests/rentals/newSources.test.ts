@@ -270,14 +270,14 @@ describe("Inmuebles El País's offline public-page samples", () => {
     vi.resetModules();
   });
 
-  it("never copies the agency's phone or e-mail into the index", async () => {
+  it("never copies search JSON contacts or infers the seller's role from its name", async () => {
     const row = elpaisRow("1", {
       contact: { company: "VARELA INM", phone: "095110110" },
       sourceAgency: { provider: "elpais", id: "1001084", raw: "VARELA INM", emails: ["casacentral@ejemplo.com"] },
     });
     const listing = elpaisToRawRental(row)!;
     expect(listing.sellerName).toBe("VARELA INM");
-    expect(listing.sellerType).toBe("inmobiliaria");
+    expect(listing.sellerType).toBe("desconocido");
     const serialised = JSON.stringify(listing);
     expect(serialised).not.toContain("095110110");
     expect(serialised).not.toContain("ejemplo.com");

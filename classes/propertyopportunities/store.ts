@@ -1,3 +1,4 @@
+import { retainSaleAdvertiser } from "../propertysales/advertiser";
 import { appConnection } from "../appdb";
 import { PropertyOpportunitySnapshotModel } from "../models/PropertyOpportunitySnapshot";
 import { PropertySaleListingModel } from "../models/PropertySaleListing";
@@ -67,7 +68,10 @@ export async function saveSaleHarvest(harvest: SaleHarvestResult, now: string): 
   await saleCollection.createIndex({ lastSeen: 1 });
   await salesMeta().createIndex({ key: 1 }, { unique: true });
   for (let offset = 0; offset < harvest.listings.length; offset += CHUNK) {
-    await saleCollection.bulkWrite(harvest.listings.slice(offset, offset + CHUNK).map(listing => ({
+    const batch = harvest.listings.slice(offset, offset + CHUNK);
+    const old = await saleCollection.find({ id: { $in: batch.map(row => row.id) } }, { projection: { id: 1, listing: 1 }, maxTimeMS: 10_000 }).toArray();
+    const previous = new Map(old.map(row => [row.id as string, row.listing as OpportunityListing]));
+    await saleCollection.bulkWrite(batch.map(row => retainSaleAdvertiser(previous.get(row.id), row)).map(listing => ({
       updateOne: {
         filter: { id: listing.id },
         update: { $set: { listing, lastSeen: listing.lastSeen }, $unset: { retiredAt: "" }, $setOnInsert: { firstSeen: listing.lastSeen } },
