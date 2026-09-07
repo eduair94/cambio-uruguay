@@ -76,7 +76,7 @@ particular por sí solo no demuestra propiedad. El País conserva la declaració
 un anunciante desconocido en inmobiliaria. Sus contactos del JSON siguen excluidos. La ficha pública fue corroborada el 2026-09-07:
 `a[data-funnel=contact-phone][data-listing-id]` publica el teléfono y el nombre comercial tiene
 el mismo ID; se exige además canonical propio. Se copian únicamente esos controles visibles,
-sin contactos de recomendaciones, formularios o JSON. Una muestra rotativa lee hasta cinco
+sin contactos de recomendaciones, formularios o JSON. La lectura HTML reutiliza los mismos encabezados identificados y autorizados del buscador de El País: desde el VPS, la UA genérica devuelve 403, mientras esa configuración devuelve 200 en la misma ficha pública. No abre un navegador ni una sesión para contactos. Una muestra rotativa lee hasta cinco
 fichas en modo rápido y veinte en completo, con un minuto y tres fallos como límites. No se amplía el permiso de El País de alquileres
 a ventas. No se adquieren nuevos datos de perfiles/contactos de Facebook mediante sesión.
 

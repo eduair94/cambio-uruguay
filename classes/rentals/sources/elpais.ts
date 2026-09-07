@@ -260,7 +260,7 @@ const BROWSER_ENABLED = process.env.RENTALS_EP_BROWSER !== "0";
  * still find our traffic in their logs and can allowlist it. `RENTALS_EP_USER_AGENT` overrides the
  * UA the day they would rather see something else.
  */
-const PORTAL_HEADERS: Record<string, string> = {
+export const PORTAL_HEADERS: Record<string, string> = {
   "user-agent": process.env.RENTALS_EP_USER_AGENT
     || "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
   "x-cambio-uruguay-bot": "CambioUruguayBot/1.0 (+https://cambio-uruguay.com/alquileres-uruguay)",

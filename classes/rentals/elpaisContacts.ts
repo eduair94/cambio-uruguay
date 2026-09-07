@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import { publicContactFromVisibleHtml } from "./advertiser";
 import { rentalDescription } from "./details";
 import { fetchText } from "./net";
+import { PORTAL_HEADERS } from "./sources/elpais";
 import type { RawRental, RentalPublicContact } from "./types";
 
 /** The public advert's visible contact controls bind themselves to its exact listing ID. */
@@ -34,7 +35,8 @@ export async function enrichElpaisRentalContacts(listings: RawRental[], mode: "f
   const limit = Math.min(30, options.maxPages ?? (mode === "fast" ? 5 : 20));
   const offset = own.length ? (Math.floor(started / 3_600_000) * limit) % own.length : 0;
   const queue = [...own.slice(offset), ...own.slice(0, offset)].slice(0, limit);
-  const fetchPage = options.fetchPage || (url => fetchText(url, { timeoutMs: 10_000, retries: 0 }));
+  // Same operator-authorized identification as the catalogue: the bot remains named in its header.
+  const fetchPage = options.fetchPage || (url => fetchText(url, { headers: PORTAL_HEADERS, timeoutMs: 10_000, retries: 0 }));
   let inspected = 0, failures = 0;
   for (const row of queue) {
     if (now().getTime() - started > 60_000 || failures >= 3) break;
