@@ -121,6 +121,13 @@ async function setup(page: Page, theme: 'light' | 'dark' = 'dark') {
   await page.goto('/oportunidades-inmobiliarias-uruguay?operation=sale', {
     waitUntil: 'domcontentloaded',
   })
+  // An SSR link can navigate before Nuxt attaches its handler, bypassing the
+  // browser API fixture. Wait for the actual app to finish hydration first.
+  await page.waitForFunction(
+    () => (document.getElementById('__nuxt') as any)?.__vue_app__?.$nuxt?.isHydrating === false,
+    undefined,
+    { timeout: 90000 }
+  )
   await expect(async () => {
     if (new URL(page.url()).searchParams.get('operation') === 'sale')
       await page.getByRole('link', { name: 'Alquiler', exact: true }).click()
@@ -259,6 +266,11 @@ for (const width of [320, 390, 1440]) {
     await expect(page).toHaveURL(/operation=sale/)
     expect(new URL(page.url()).searchParams.has('maxPrice')).toBe(false)
     await expect(card).toContainText('USD 160.000')
+    await expect(page.getByTestId('opportunity-explore-directory')).toBeVisible()
+    await expect(page.getByTestId('opportunity-explore-directory')).toHaveAttribute(
+      'href',
+      '/venta-viviendas-uruguay'
+    )
     await expect(card.getByRole('link', { name: 'Ver ficha del alquiler' })).toHaveCount(0)
     await expect(card.getByRole('link', { name: 'Ver aviso original' })).toHaveAttribute(
       'href',
@@ -297,6 +309,10 @@ test('mobile first viewport shows price and evidence with readable light control
     await setup(page, 'light')
     await expect(page.locator('.v-application')).toHaveCSS('background-color', 'rgb(246, 247, 249)')
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+    const directory = page.getByTestId('opportunity-explore-directory')
+    await expect(directory).toBeInViewport({ ratio: 1 })
+    await expect(directory).toHaveAttribute('href', '/alquileres-uruguay')
+    expect((await directory.boundingBox())!.height).toBeGreaterThanOrEqual(44)
     const card = page.getByTestId('opportunity-card')
     await expect(card.locator('.opportunity-card__asking')).toBeInViewport({ ratio: 1 })
     await expect(card.locator('.opportunity-card__comparison')).toBeInViewport({ ratio: 1 })

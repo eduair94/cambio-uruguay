@@ -11,10 +11,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
       density="compact"
       class="opportunities__breadcrumbs px-0 py-1"
     />
-    <header
-      class="opportunities__header"
-      :class="{ 'opportunities__header--comparison': !budgetMode }"
-    >
+    <header class="opportunities__header">
       <h1>{{ budgetMode ? budgetCopy.title : t('title') }}</h1>
       <p>
         {{
@@ -24,10 +21,8 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
         }}
       </p>
       <div class="opportunities__intro-links">
-        <template v-if="!budgetMode"
-          ><a href="#opportunity-method">{{ t('methodShort') }}</a></template
-        >
         <NuxtLink
+          data-testid="opportunity-explore-directory"
           :to="
             localePath(
               query.operation === 'sale' ? '/venta-viviendas-uruguay' : '/alquileres-uruguay'
@@ -35,6 +30,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
           "
           >{{ t(query.operation === 'sale' ? 'sales' : 'rentals') }}</NuxtLink
         >
+        <a v-if="!budgetMode" href="#opportunity-method">{{ t('methodShort') }}</a>
         <VBtn
           v-if="budgetMode && smAndDown"
           class="opportunities__share-mobile"
@@ -918,7 +914,7 @@ useHead(() => ({
     display: none;
   }
   .opportunities__header {
-    margin: 0 0 8px;
+    margin: 0 0 4px;
   }
   .opportunities h1 {
     font-size: 1.375rem;
@@ -933,14 +929,11 @@ useHead(() => ({
   }
   .opportunities__intro-links {
     gap: 0 14px;
-    margin-top: 4px;
+    margin-top: 0;
     align-items: center;
   }
-  .opportunities__header--comparison .opportunities__intro-links {
-    display: none;
-  }
   .opportunities__modes {
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     flex-wrap: wrap;
   }
   .opportunities__modes a {

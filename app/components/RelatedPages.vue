@@ -14,7 +14,7 @@
     <VRow density="comfortable">
       <VCol v-for="item in items" :key="item.to" cols="12" sm="6" md="4">
         <VCard
-          :to="localePath(item.to)"
+          :to="localePath(item.query ? { path: item.to, query: item.query } : item.to)"
           class="related-card pa-4 h-100 d-flex flex-column"
           variant="flat"
           hover
@@ -44,8 +44,8 @@
 //
 // Deliberately NOT wrapped in <ClientOnly>: half the point is that the links are
 // in the server-rendered HTML, where a crawler can follow them into the long
-// tail. The list is a pure function of the path, so SSR and client agree and
-// there is nothing to hydrate mismatch.
+// tail. Housing uses the explicit search operation/mode too: route.query is
+// available to both SSR and the client, with no saved browser state involved.
 import { relatedEnabledForPath, relatedFor } from '~/utils/relatedPages'
 
 const route = useRoute()
@@ -54,7 +54,11 @@ const { t } = useI18n()
 const track = useTrack()
 
 const sourcePath = computed(() => route.path)
-const items = computed(() => (relatedEnabledForPath(route.path) ? relatedFor(route.path) : []))
+const items = computed(() =>
+  relatedEnabledForPath(route.path)
+    ? relatedFor(route.path, 6, { operation: route.query.operation, mode: route.query.mode })
+    : []
+)
 </script>
 
 <style scoped>

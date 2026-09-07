@@ -53,6 +53,8 @@ El frontend utiliza caché por operación, después filtra y pagina en memoria. 
 
 Una única navegación ofrece alquiler, compra y alquileres económicos. Conserva ubicación, tipo, dormitorios y preferencia de disponibilidad entre modos; conserva los criterios de comparación entre alquiler y compra. No transfiere importes entre monedas ni arrastra la página anterior. Las consultas pendientes de barrios se invalidan al cambiar de modo.
 
+El enlace para explorar el catálogo completo permanece visible en la cabecera a todos los anchos: alquileres para alquiler y presupuesto, viviendas en venta para compra. Comparación mantiene además el acceso a «Cómo funciona». Compactar el móvil nunca debe ocultar estas salidas. El bloque global de páginas relacionadas adapta sus destinos a la operación y ofrece recorridos hacia catálogos, guías y alternativas de presupuesto.
+
 Las tarjetas priorizan motivo de selección, ubicación, costo mensual o precio pedido, título y características. El reporte comunitario permanece antes de las acciones. Los comparables y fundamentos completos se abren con un control nativo `details` que funciona con teclado, sin depender de hover. Las etiquetas se proyectan desde las señales existentes mediante `propertyOpportunityLabels`; no modifican cálculos, cohortes ni umbrales.
 
 - «Menor costo mensual» / «Menor precio»: señal de precio total.

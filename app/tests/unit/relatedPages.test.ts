@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   CURATED,
+  OPPORTUNITY_RELATED,
   normalizeRelatedPath,
   relatedEnabledForPath,
   relatedFor,
@@ -123,6 +124,103 @@ describe('the curated lists stay honest', () => {
       const got = relatedFor(source).map(i => i.to)
       expect(got.slice(0, Math.min(targets.length, 6)), source).toEqual(targets.slice(0, 6))
     }
+  })
+
+  it('only uses existing, distinct navigation destinations in housing contexts', () => {
+    for (const targets of Object.values(OPPORTUNITY_RELATED)) {
+      expect(targets).toHaveLength(6)
+      expect(new Set(targets).size).toBe(targets.length)
+      for (const target of targets) expect(NAV_ROUTES).toContain(target)
+    }
+  })
+})
+
+describe('housing relationships preserve the search context', () => {
+  const opportunities = '/oportunidades-inmobiliarias-uruguay'
+  const targets = (operation?: unknown, mode?: unknown) =>
+    relatedFor(opportunities, 6, { operation, mode }).map(item => item.to)
+
+  it('starts rental discovery with the full catalogue, moving costs and guarantees', () => {
+    expect(targets().slice(0, 3)).toEqual([
+      '/alquileres-uruguay',
+      '/primer-alquiler-uruguay',
+      '/alquilar-en-uruguay',
+    ])
+    expect(targets()).toContain('/alquilar-sin-recibo-de-sueldo')
+    expect(targets()).toContain('/alquilar-estando-en-clearing')
+    expect(targets('invalid')).toEqual(targets())
+    expect(targets(['sale'])).toEqual(targets())
+  })
+
+  it('prioritizes buying and purchase costs for sale, even with a stray budget mode', () => {
+    expect(targets('sale').slice(0, 3)).toEqual([
+      '/venta-viviendas-uruguay',
+      '/comprar-o-alquilar-uruguay',
+      '/deuda-de-gastos-comunes-uruguay',
+    ])
+    expect(targets('sale', 'budget')).toEqual(targets('sale'))
+    expect(targets('sale')).not.toContain('/alquilar-sin-recibo-de-sueldo')
+  })
+
+  it('offers budget and room alternatives without pretending they are whole homes', () => {
+    const budget = targets('rent', 'budget')
+    expect(budget.slice(0, 3)).toEqual([
+      '/alquileres-uruguay',
+      '/vivir-con-25000-pesos-uruguay',
+      '/primer-alquiler-uruguay',
+    ])
+    expect(budget).toContain('/pensiones-estudiantiles-uruguay')
+    expect(budget).not.toContain('/venta-viviendas-uruguay')
+    expect(targets(undefined, 'budget')).toEqual(budget)
+  })
+
+  it('is locale independent, bounded and never points to the current opportunities page', () => {
+    for (const operation of ['rent', 'sale']) {
+      for (const prefix of ['', '/en', '/pt']) {
+        const items = relatedFor(`${prefix}${opportunities}`, 4, { operation })
+        expect(items).toEqual(relatedFor(opportunities, 4, { operation }))
+        expect(items).toHaveLength(4)
+        expect(items.map(item => item.to)).not.toContain(opportunities)
+        expect(items.every(item => item.labelKey && item.sectionKey && item.icon)).toBe(true)
+      }
+    }
+  })
+
+  it('keeps the sale operation when returning from the catalogue, a listing or mortgage guide', () => {
+    for (const prefix of ['', '/en', '/pt']) {
+      for (const source of [
+        '/venta-viviendas-uruguay',
+        '/venta-viviendas-uruguay/infocasas-123456789',
+        '/guias/credito-hipotecario-uruguay',
+      ]) {
+        const link = relatedFor(`${prefix}${source}`).find(item => item.to === opportunities)
+        expect(link?.query, source).toEqual({ operation: 'sale' })
+      }
+    }
+  })
+
+  it('returns from the cost calculator to budget discovery, keeping unrelated query data private', () => {
+    const context = { operation: 'sale', mode: 'budget', maxPrice: '27000', email: 'private' }
+    const calculator = relatedFor('/herramientas/costo-de-vida', 6, context)
+    expect(calculator.find(item => item.to === opportunities)?.query).toEqual({
+      operation: 'rent',
+      mode: 'budget',
+    })
+    expect(JSON.stringify(calculator)).not.toContain('27000')
+    expect(JSON.stringify(calculator)).not.toContain('private')
+    for (const source of ['/alquileres-uruguay', '/guias/garantias-de-alquiler-uruguay']) {
+      const link = relatedFor(source, 6, context).find(item => item.to === opportunities)
+      expect(link, source).toBeDefined()
+      expect(link?.query).toBeUndefined()
+    }
+  })
+
+  it('does not change ranking or exclusions for other parts of the site', () => {
+    for (const path of SAMPLE) {
+      expect(relatedFor(path, 6, { operation: 'sale', mode: 'budget' })).toEqual(relatedFor(path))
+    }
+    expect(relatedEnabledForPath('/cuenta')).toBe(false)
+    expect(relatedEnabledForPath('/privacidad')).toBe(false)
   })
 })
 

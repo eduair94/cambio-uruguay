@@ -14,6 +14,10 @@ El recorrido comienza eligiendo alquiler, compra o alquileres económicos en una
 Los cambios de operación conservan zona y atributos compatibles, pero nunca trasladan un importe
 entre monedas ni entre alquiler base y alquiler con gastos. Los filtros móviles permanecen
 disponibles al desplazarse y sólo aparecen como panel tras una acción explícita.
+El acceso al catálogo completo (alquileres o viviendas en venta) permanece visible también
+en móvil, junto a la explicación del método. Nunca ocultar esta salida al compactar la cabecera.
+Los enlaces relacionados al pie corresponden a la operación y conectan búsqueda, presupuesto
+y guías de vivienda; no deben desplazar los resultados ni duplicar bloques de navegación.
 
 En cada oportunidad lideran precio y ubicación, con una foto compacta. Título y atributos siguen
 en orden natural de lectura. La referencia de comparación tiene menor peso que el precio del

@@ -174,6 +174,13 @@ export interface RelatedPage {
   icon: string
   /** i18n key of the owning section, rendered as the card's chip. */
   sectionKey: string
+  /** Only an explicit housing destination can carry these search modes. */
+  query?: { operation: 'rent' | 'sale'; mode?: 'budget' }
+}
+
+export interface RelatedContext {
+  operation?: unknown
+  mode?: unknown
 }
 
 interface Candidate extends RelatedPage {
@@ -272,6 +279,36 @@ export function relatedEnabledForPath(path: string): boolean {
   return !matches(clean, NO_RELATED)
 }
 
+const OPPORTUNITIES_PATH = '/oportunidades-inmobiliarias-uruguay'
+
+/** These are editorial choices, not a ranking of investment or rental quality. */
+export const OPPORTUNITY_RELATED = {
+  rent: [
+    '/alquileres-uruguay',
+    '/primer-alquiler-uruguay',
+    '/alquilar-en-uruguay',
+    '/alquilar-sin-recibo-de-sueldo',
+    '/alquilar-estando-en-clearing',
+    '/comprar-o-alquilar-uruguay',
+  ],
+  sale: [
+    '/venta-viviendas-uruguay',
+    '/comprar-o-alquilar-uruguay',
+    '/deuda-de-gastos-comunes-uruguay',
+    '/por-que-no-baja-el-alquiler-uruguay',
+    '/limite-de-efectivo-uruguay',
+    '/alquileres-uruguay',
+  ],
+  budget: [
+    '/alquileres-uruguay',
+    '/vivir-con-25000-pesos-uruguay',
+    '/primer-alquiler-uruguay',
+    '/alquilar-sin-recibo-de-sueldo',
+    '/alquilar-estando-en-clearing',
+    '/pensiones-estudiantiles-uruguay',
+  ],
+} as const
+
 /**
  * Hand-picked neighbours for the routes that carry the traffic.
  *
@@ -364,14 +401,72 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
     '/alquileres-uruguay',
     '/saldar-deudas-uruguay',
   ],
-  // El directorio es una herramienta, no una nota: sus vecinos son lo que hace falta ANTES de
-  // firmar, no otras listas de precios.
+  // Search and preparation are two parts of the same housing journey. Keep
+  // both directions explicit instead of letting generic price keywords choose.
   '/alquileres-uruguay': [
+    OPPORTUNITIES_PATH,
+    '/primer-alquiler-uruguay',
     '/alquilar-en-uruguay',
     '/alquilar-sin-recibo-de-sueldo',
     '/alquilar-estando-en-clearing',
     '/comprar-o-alquilar-uruguay',
+  ],
+  [OPPORTUNITIES_PATH]: OPPORTUNITY_RELATED.rent,
+  '/venta-viviendas-uruguay': [
+    OPPORTUNITIES_PATH,
+    '/comprar-o-alquilar-uruguay',
+    '/deuda-de-gastos-comunes-uruguay',
     '/por-que-no-baja-el-alquiler-uruguay',
+    '/limite-de-efectivo-uruguay',
+    '/alquileres-uruguay',
+  ],
+  '/comprar-o-alquilar-uruguay': [
+    '/venta-viviendas-uruguay',
+    '/alquileres-uruguay',
+    OPPORTUNITIES_PATH,
+    '/por-que-no-baja-el-alquiler-uruguay',
+    '/deuda-de-gastos-comunes-uruguay',
+    '/limite-de-efectivo-uruguay',
+  ],
+  '/alquilar-en-uruguay': [
+    '/alquileres-uruguay',
+    OPPORTUNITIES_PATH,
+    '/primer-alquiler-uruguay',
+    '/alquilar-sin-recibo-de-sueldo',
+    '/alquilar-estando-en-clearing',
+    '/pensiones-estudiantiles-uruguay',
+  ],
+  '/primer-alquiler-uruguay': [
+    '/alquileres-uruguay',
+    OPPORTUNITIES_PATH,
+    '/alquilar-en-uruguay',
+    '/factura-de-ute-uruguay',
+    '/factura-de-ose-uruguay',
+    '/vivir-con-25000-pesos-uruguay',
+  ],
+  '/herramientas/costo-de-vida': [
+    OPPORTUNITIES_PATH,
+    '/alquileres-uruguay',
+    '/vivir-con-25000-pesos-uruguay',
+    '/primer-alquiler-uruguay',
+    '/alquilar-en-uruguay',
+    '/pensiones-estudiantiles-uruguay',
+  ],
+  '/guias/garantias-de-alquiler-uruguay': [
+    '/alquileres-uruguay',
+    OPPORTUNITIES_PATH,
+    '/alquilar-en-uruguay',
+    '/primer-alquiler-uruguay',
+    '/alquilar-sin-recibo-de-sueldo',
+    '/alquilar-estando-en-clearing',
+  ],
+  '/guias/credito-hipotecario-uruguay': [
+    '/venta-viviendas-uruguay',
+    '/comprar-o-alquilar-uruguay',
+    OPPORTUNITIES_PATH,
+    '/deuda-de-gastos-comunes-uruguay',
+    '/limite-de-efectivo-uruguay',
+    '/alquileres-uruguay',
   ],
   // Sin curar, el motor le ofrecía sillas de escritorio y la factura de UTE: la
   // página habla de "estudiante", "beca" y "hogar", tokens que no comparte con
@@ -393,7 +488,7 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
 })
 
 /** The curated neighbours for `clean`, resolved through the same longest-prefix rule as hubs. */
-function curatedFor(clean: string): Candidate[] {
+function curatedFor(clean: string, context: RelatedContext): Candidate[] {
   let key: string | undefined
   for (const candidate of Object.keys(CURATED)) {
     if (clean === candidate) {
@@ -403,8 +498,16 @@ function curatedFor(clean: string): Candidate[] {
     if (clean.startsWith(`${candidate}/`) && candidate.length > (key?.length ?? 0)) key = candidate
   }
   if (!key) return []
+  const targets =
+    clean === OPPORTUNITIES_PATH
+      ? context.operation === 'sale'
+        ? OPPORTUNITY_RELATED.sale
+        : context.mode === 'budget'
+          ? OPPORTUNITY_RELATED.budget
+          : OPPORTUNITY_RELATED.rent
+      : (CURATED[key] ?? [])
   return (
-    (CURATED[key] ?? [])
+    targets
       // A family key may legitimately list its own hub (`/casa` → `/historico`),
       // but never the page being viewed nor a hub the viewer is already inside.
       .filter(to => to !== clean && !clean.startsWith(`${to}/`))
@@ -446,14 +549,14 @@ function sourceEntry(clean: string): Candidate | undefined {
  * {@link MIN_RELATED}, where an almost-empty block would read as breakage, and
  * it draws from the top hit's own section so the filler at least stays on topic.
  */
-export function relatedFor(path: string, limit = 6): RelatedPage[] {
+export function relatedFor(path: string, limit = 6, context: RelatedContext = {}): RelatedPage[] {
   const clean = normalizeRelatedPath(path)
   const source = sourceEntry(clean)
   const tokens = new Set<string>([...contentTokens([clean]), ...(source?.tokens ?? [])])
 
   // Curated first, computed for the rest. Keeps the pages that actually carry
   // traffic hand-quality without anyone having to maintain 1.255 lists.
-  const pinned = curatedFor(clean)
+  const pinned = curatedFor(clean, context)
   const pinnedSet = new Set(pinned.map(c => c.to))
 
   const scored = CANDIDATES.filter(
@@ -504,5 +607,18 @@ export function relatedFor(path: string, limit = 6): RelatedPage[] {
     }
   }
 
-  return picked.map(({ to, labelKey, icon, sectionKey }) => ({ to, labelKey, icon, sectionKey }))
+  return picked.map(({ to, labelKey, icon, sectionKey }) => {
+    const item: RelatedPage = { to, labelKey, icon, sectionKey }
+    if (to === OPPORTUNITIES_PATH) {
+      if (
+        matches(clean, ['/venta-viviendas-uruguay']) ||
+        clean === '/guias/credito-hipotecario-uruguay'
+      ) {
+        item.query = { operation: 'sale' }
+      } else if (clean === '/herramientas/costo-de-vida') {
+        item.query = { operation: 'rent', mode: 'budget' }
+      }
+    }
+    return item
+  })
 }
