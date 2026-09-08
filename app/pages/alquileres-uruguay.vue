@@ -632,6 +632,7 @@ import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
 import { rentalMessages } from '~/utils/rentalMessages'
 import { rentalPropertyPath, rememberRentalSearch } from '~/utils/rentalPresentation'
 import {
+  rentalCatalogAlternateLinks,
   rentalCatalogCanonical,
   rentalCatalogIndexPage,
   rentalCatalogItemList,
@@ -1377,7 +1378,7 @@ const catalogList = computed(() =>
       )
     : undefined
 )
-const catalogLocaleHead = useLocaleHead()
+const catalogLocaleHead = useLocaleHead({ key: 'id' })
 defineOgImageComponent('Cambio', {
   title: () => t('title'),
   subtitle: () => t('subtitle'),
@@ -1399,12 +1400,7 @@ useHead(() => ({
   },
   link: [
     { id: 'i18n-can', rel: 'canonical', href: canonicalUrl.value },
-    ...(catalogLocaleHead.value.link ?? [])
-      .filter(link => link.rel === 'alternate')
-      .map(link => ({
-        ...link,
-        href: rentalCatalogCanonical(String(link.href).split(/[?#]/)[0]!, indexPage.value),
-      })),
+    ...rentalCatalogAlternateLinks(catalogLocaleHead.value.link ?? [], indexPage.value),
   ],
   meta: [
     { id: 'i18n-og-url', property: 'og:url', content: canonicalUrl.value },
@@ -2199,6 +2195,9 @@ useSchemaOrg([
 }
 @media (max-width: 359px) {
   /* Give full words room in two columns on the narrowest phones. */
+  .rentals-related .rentals-related-action {
+    padding-inline: 10px;
+  }
   .rentals-related-action .v-icon {
     display: none;
   }

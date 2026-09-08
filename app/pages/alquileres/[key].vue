@@ -299,8 +299,11 @@ const primaryPhotoAlt = computed(() =>
     ? t('photoDescription', { title: primaryPhoto.value.title || title.value, n: 1 })
     : undefined
 )
-// A real advert photo is the preview. Generate the site's card only when no photo is published.
-if (!primaryPhoto.value) {
+// The app root already registers a high-priority generated image. Dispose it,
+// including its 1200×630 dimensions, before publishing a real advert photo.
+if (primaryPhoto.value) {
+  defineOgImage(false)
+} else {
   defineOgImageComponent('Cambio', {
     title: () => pageTitle.value,
     subtitle: () => zone.value || t('title'),
