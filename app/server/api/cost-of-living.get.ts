@@ -16,20 +16,13 @@
 //     legumbres) sino que la acompaña para que sea auditable
 //
 // Cada uno falla por su cuenta: si el de precios se cae, el modelo sale igual.
+import { projectBasket, type MeasuredBasket } from '../utils/basketProjection'
 import {
   applyCostOverrides,
   baselineCosts,
   type LiveCosts,
   type LiveCostsResponse,
 } from '../utils/costsMerge'
-
-export interface MeasuredBasket {
-  day: string | null
-  basketVersion: number | null
-  basketItems: number | null
-  qualifiedStores: number | null
-  nationalRatio: number | null
-}
 
 export interface CostOfLivingPayload extends LiveCosts {
   basket: MeasuredBasket | null
@@ -72,19 +65,7 @@ export default defineCachedEventHandler(
 
     const model = merged ? applyCostOverrides(merged) : baselineCosts()
 
-    return {
-      ...model,
-      basket:
-        basket && typeof basket.day === 'string'
-          ? {
-              day: basket.day,
-              basketVersion: (basket.basketVersion as number) ?? null,
-              basketItems: (basket.basketItems as number) ?? null,
-              qualifiedStores: (basket.qualifiedStores as number) ?? null,
-              nationalRatio: (basket.nationalRatio as number) ?? null,
-            }
-          : null,
-    }
+    return { ...model, basket: projectBasket(basket) }
   },
   {
     maxAge: 60 * 60, // 1h
