@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { getTool, tools, toolSlugs, toolsByCategory, TOOL_CATEGORIES } from '../../utils/tools'
+import {
+  getTool,
+  toolPath,
+  tools,
+  toolSlugs,
+  toolsByCategory,
+  TOOL_CATEGORIES,
+} from '../../utils/tools'
 import {
   getTerm,
   glossary,
@@ -40,6 +47,19 @@ describe('tools catalogue', () => {
     const grouped = toolsByCategory()
     const count = grouped.reduce((n, g) => n + g.items.length, 0)
     expect(count).toBe(tools.length)
+  })
+
+  it('links the household planner at its canonical route without inventing a calculator page', () => {
+    const planner = getTool('alquiler-ideal-uruguay')
+    expect(planner).toBeDefined()
+    expect(toolPath(planner!)).toBe('/alquiler-ideal-uruguay')
+    expect(toolSlugs()).not.toContain('alquiler-ideal-uruguay')
+    expect(toolsByCategory().find(group => group.category === 'finanzas')?.items).toContain(planner)
+  })
+
+  it('keeps existing calculator URLs unchanged', () => {
+    expect(toolPath(getTool('costo-de-vida')!)).toBe('/herramientas/costo-de-vida')
+    expect(toolPath(getTool('conversor-de-monedas')!)).toBe('/herramientas/conversor-de-monedas')
   })
 })
 

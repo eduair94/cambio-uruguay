@@ -7,19 +7,34 @@ const state = vi.hoisted(() => ({
   query: {} as Record<string, unknown>,
   pipelines: [] as Array<Array<Record<string, any>>>,
   mapRows: [] as Array<Record<string, any>>,
-  run: async (_pipeline: Array<Record<string, any>>, _collation: Record<string, unknown>) =>
-    [] as Array<Record<string, any>>,
+  sortDiskUse: undefined as boolean | undefined,
+  run: async (
+    _pipeline: Array<Record<string, any>>,
+    _collation: Record<string, unknown>,
+    _options: { allowDiskUse?: boolean }
+  ) => [] as Array<Record<string, any>>,
 }))
 vi.mock('../../server/models/RentalListing', () => ({
   RentalListingModel: {
-    aggregate: (pipeline: Array<Record<string, any>>) => ({
-      collation: async (collation: Record<string, unknown>) => {
-        state.pipelines.push(pipeline)
-        const rows = await state.run(pipeline, collation)
-        if (pipeline.some(stage => stage.$sort)) state.mapRows = rows
-        return rows
-      },
-    }),
+    aggregate: (pipeline: Array<Record<string, any>>) => {
+      const options: { allowDiskUse?: boolean } = {}
+      const chain = {
+        allowDiskUse: (enabled: boolean) => {
+          options.allowDiskUse = enabled
+          return chain
+        },
+        collation: async (collation: Record<string, unknown>) => {
+          state.pipelines.push(pipeline)
+          const rows = await state.run(pipeline, collation, options)
+          if (pipeline.some(stage => stage.$sort)) {
+            state.mapRows = rows
+            state.sortDiskUse = options.allowDiskUse
+          }
+          return rows
+        },
+      }
+      return chain
+    },
   },
 }))
 vi.mock('../../server/models/RentalMeta', () => ({
@@ -85,10 +100,14 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
       maxPoolSize: 1,
     })
     await client.connect()
-    state.run = (pipeline, collation) =>
+    state.run = (pipeline, collation, options) =>
       client
         .db()
-        .aggregate([{ $documents: fixtures }, ...pipeline], { collation, maxTimeMS: 10000 })
+        .aggregate([{ $documents: fixtures }, ...pipeline], {
+          collation,
+          maxTimeMS: 10000,
+          allowDiskUse: options.allowDiskUse ?? false,
+        })
         .toArray()
     vi.stubGlobal('defineEventHandler', (callback: unknown) => callback)
     vi.stubGlobal('getQuery', () => state.query)
@@ -105,6 +124,7 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
   beforeEach(() => {
     state.pipelines = []
     state.mapRows = []
+    state.sortDiskUse = undefined
     state.query = {}
   })
 
@@ -123,6 +143,7 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
     ]
     state.query = { sort }
     const result = await handler({})
+    expect(state.sortDiskUse).toBe(true)
     expect(result.points.map(point => point.key)).toEqual(keys)
     expect([result.total, result.located, result.shown]).toEqual([4, 4, 4])
     const stages = state.pipelines.find(pipeline => pipeline.some(stage => stage.$sort))!
@@ -255,5 +276,56 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
     })
     expect(result.points).toHaveLength(3)
     expect(JSON.stringify(result)).not.toContain('_rentalMonthly')
+  })
+
+  it('orders map points from a chosen reference with the same filters and no leaked coordinate evidence', async () => {
+    const home = (key: string, latitude: number, extra = {}) => ({
+      ...property(key, 20000, 40, 0, [
+        advert(key, 20000, {
+          petsAllowed: true,
+          identity: { version: 1, latitude, longitude: -56.17, description: 'PRIVATE_OWN_POINT' },
+        }),
+      ]),
+      latitude,
+      ...extra,
+    })
+    fixtures = [
+      home('far', -34.8),
+      home('near-b', -34.899),
+      home('near-a', -34.899),
+      home('unknown-point', -34.9, { offers: [advert('legacy', 20000, { petsAllowed: true })] }),
+      home('unlocated', -34.9, { latitude: null }),
+      home('office', -34.9, { propertyType: 'oficina' }),
+    ]
+    state.query = {
+      sort: 'distancia',
+      refLat: '-34.9',
+      refLng: '-56.17',
+      type: 'vivienda',
+      pets: '1',
+    }
+    const result = await handler({})
+    expect(result.points.map(point => point.key)).toEqual([
+      'near-a',
+      'near-b',
+      'far',
+      'unknown-point',
+    ])
+    expect([result.total, result.located, result.shown]).toEqual([5, 4, 4])
+    expect(result.points[0]!.distanceKm).toBeCloseTo(0.111195, 5)
+    expect(result.points[3]!.distanceKm).toBeNull()
+    const pipeline = state.pipelines.find(rows => rows.some(stage => stage.$sort))!
+    expect(pipeline.findIndex(stage => stage.$set?.distanceKm)).toBeLessThan(
+      pipeline.findIndex(stage => stage.$project)
+    )
+    expect(pipeline.findIndex(stage => stage.$sort)).toBeLessThan(
+      pipeline.findIndex(stage => stage.$limit)
+    )
+    expect(JSON.stringify(result)).not.toMatch(/PRIVATE|identity|_rentalDistance/)
+
+    state.query.sort = 'precio'
+    expect(
+      (await handler({})).points.find(point => point.key === 'far')!.distanceKm
+    ).toBeGreaterThan(10)
   })
 })

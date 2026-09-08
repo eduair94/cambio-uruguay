@@ -21,6 +21,9 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
         }}
       </p>
       <div class="opportunities__intro-links">
+        <NuxtLink :to="localePath('/barrios-alquileres-uruguay')">{{
+          globalT('nav.rentalZones')
+        }}</NuxtLink>
         <NuxtLink
           data-testid="opportunity-explore-directory"
           :to="
@@ -311,6 +314,7 @@ import {
 import type { OpportunitySource } from '~/utils/propertyOpportunities'
 
 const { t, locale } = useI18n({ useScope: 'local', messages: propertyOpportunityMessages })
+const { t: globalT } = useI18n({ useScope: 'global' })
 const availability = useRentalAvailability()
 const availabilityCopy = computed(() => rentalAvailabilityCopy(locale.value))
 const localePath = useLocalePath()

@@ -39,6 +39,16 @@ describe('buildSearchIndex', () => {
     expect(new Set(docs.map(d => d.id)).size).toBe(docs.length)
   })
 
+  it('offers one household planner result at the real standalone route', () => {
+    const planner = docs.filter(doc => doc.to === '/alquiler-ideal-uruguay')
+    expect(planner).toHaveLength(1)
+    expect(planner[0]).toMatchObject({ id: 'tool:alquiler-ideal-uruguay', type: 'tool' })
+    expect(docs.some(doc => doc.to === '/herramientas/alquiler-ideal-uruguay')).toBe(false)
+    expect(scoreDocs('alquiler cerca del trabajo', docs).some(hit => hit.doc === planner[0])).toBe(
+      true
+    )
+  })
+
   it('precomputes folded haystacks', () => {
     for (const doc of docs) {
       expect(doc._title).toBe(doc._title.toLowerCase())

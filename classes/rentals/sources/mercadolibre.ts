@@ -9,7 +9,7 @@ import { advertiserClassification, ownerDirectDeclaration } from "../advertiser"
 // search page renders it: `attributes_list` for "2 dormitorios | 1 baño | 40 m² cubiertos" and
 // `location` for "Av. Garzón 1975 Bis, Colón, Montevideo".
 import { fetchJson } from "../net";
-import { isPlausibleRent, looksLikeRentalAdvert, parseAttributes, parseLocationLine } from "../normalize";
+import { inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, parseAttributes, parseLocationLine } from "../normalize";
 import type { RawRental, RentalCurrency } from "../types";
 import type { RentalSourceResult } from "./types";
 import {
@@ -95,7 +95,8 @@ export function toRawRental(card: Polycard, observedAt = new Date().toISOString(
     ownerDirect: ownerDirectDeclaration({ title }, permalink, observedAt) ?? undefined,
     image: String(params.get("picture") || params.get("thumbnail") || "").trim() || null,
     publishedAt: null,
-    propertyType: category.propertyType,
+    propertyType: category.propertyType === "otro" && inferPropertyType(title) === "garaje"
+      ? "garaje" : category.propertyType,
     department: location.department,
     neighborhood: location.neighborhood,
     address: location.address,

@@ -33,7 +33,10 @@ function fixture(
     join(serverDir, 'index.mjs'),
     `import { createServer } from 'node:http'
 import { writeFileSync } from 'node:fs'
+import { getHeapStatistics } from 'node:v8'
 writeFileSync(new URL('../child.pid', import.meta.url), String(process.pid))
+writeFileSync(new URL('../runtime-mode', import.meta.url), process.env.NODE_ENV || 'unset')
+writeFileSync(new URL('../heap-limit', import.meta.url), String(getHeapStatistics().heap_size_limit))
 const mode = ${JSON.stringify(mode)}
 // A broken probe must never leave this synthetic child alive for 120 seconds.
 setTimeout(() => process.exit(90), 5000).unref()
@@ -69,9 +72,16 @@ server.listen(Number(process.env.NITRO_PORT), process.env.NITRO_HOST, () => {
   return fixtureRoot
 }
 
-function probe(output: string, port: number) {
+function probe(output: string, port: number, nodeEnv?: string) {
+  const env = {
+    ...process.env,
+    DEPLOY_PROBE_PORT: String(port),
+    NODE_OPTIONS: '--max-old-space-size=8192',
+  }
+  if (nodeEnv === undefined) delete env.NODE_ENV
+  else env.NODE_ENV = nodeEnv
   const result = spawnSync(process.execPath, [helper, output], {
-    env: { ...process.env, DEPLOY_PROBE_PORT: String(port) },
+    env,
     cwd: repoRoot,
     timeout: 8_000,
     encoding: 'utf8',
@@ -97,6 +107,21 @@ afterEach(() => {
 })
 
 describe('staging readiness before publication', () => {
+  it.each([undefined, 'development', 'production'])(
+    'checks the production runtime regardless of the deploy shell NODE_ENV: %s',
+    async nodeEnv => {
+      const output = fixture('ready')
+      const result = probe(output, await freePort(), nodeEnv)
+      expect(result.status, result.stderr).toBe(0)
+      expect(readFileSync(join(output, 'runtime-mode'), 'utf8')).toBe('production')
+      // V8 adds its young generation allowance to the configured 512 MiB old space.
+      const heapMiB = Number(readFileSync(join(output, 'heap-limit'), 'utf8')) / 1024 ** 2
+      expect(heapMiB).toBeGreaterThanOrEqual(512)
+      expect(heapMiB).toBeLessThan(900)
+      await expectChildStopped(output)
+    }
+  )
+
   it('accepts IPC readiness plus the expected SSR page and stops its child', async () => {
     const output = fixture('ready')
     const result = probe(output, await freePort())

@@ -1517,6 +1517,8 @@
   "nav": {
     "alquileres": "Rentals in Uruguay",
     "rentalAnalysis": "Rental market analysis",
+    "rentalFit": "Plan my rental search",
+    "rentalZones": "Compare areas",
     "preciosSupermercado": "Supermarket prices",
     "propertyOpportunities": "Property opportunities",
     "propertySales": "Homes for sale",
@@ -1605,6 +1607,7 @@
     "declararCompraExterior": "How to declare an overseas purchase",
     "franquiciaViajero": "Traveler baggage allowance",
     "pasaporteCosto": "Uruguayan passport cost",
+    "cedulaCosto": "Uruguayan ID card cost",
     "declararEfectivo": "Declaring cash when entering or leaving",
     "impuestoAutosElectricos": "Tax on electric and hybrid cars",
     "problemasAduana": "Customs problems: what to do",

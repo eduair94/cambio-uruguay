@@ -157,6 +157,7 @@ export default defineEventHandler(async _event => {
   } catch (brandsError) {
     console.warn('Sitemap: no se pudo leer el catálogo de marcas:', brandsError)
   }
+  // Standalone tools already come from NAV_SECTIONS; these slugs have /herramientas/ pages.
   toolSlugs().forEach(slug => addUrlsForAllLocales(`/herramientas/${slug}`, 0.7, 'weekly'))
   glossarySlugs().forEach(slug => addUrlsForAllLocales(`/glosario/${slug}`, 0.6, 'monthly'))
   // Head-to-head pages: pure catalogue data, so they survive an upstream outage

@@ -34,7 +34,7 @@ import { guides } from './guides'
 import { IMPORT_CATEGORY_INDEX } from './importCategoryIndex'
 import { indicators } from './indicators'
 import { fold, makeDoc, navToDocs, type SearchDoc } from './siteNav'
-import { tools } from './tools'
+import { toolPath, tools } from './tools'
 import { VIDEO_TOPIC_PAGES } from './videoTopics'
 
 /** Spanish/English aliases per currency, folded into the search haystack. */
@@ -77,6 +77,10 @@ export function buildSearchIndex(ctx: SearchIndexContext): SearchDoc[] {
   const docs: SearchDoc[] = navToDocs(t, locale, themeMode)
 
   for (const tool of tools) {
+    const to = toolPath(tool)
+    // Standalone tools also belong to navigation; show one actionable search result.
+    const navIndex = docs.findIndex(doc => doc.to === to)
+    if (navIndex !== -1) docs.splice(navIndex, 1)
     docs.push(
       makeDoc({
         id: `tool:${tool.slug}`,
@@ -85,7 +89,7 @@ export function buildSearchIndex(ctx: SearchIndexContext): SearchDoc[] {
         title: tool.title,
         description: tool.description,
         icon: tool.icon,
-        to: `/herramientas/${tool.slug}`,
+        to,
         keywords: tool.keywords,
       })
     )

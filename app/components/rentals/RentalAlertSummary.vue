@@ -33,6 +33,8 @@ const rows = computed(() => {
       result.push({ label: t(label), value: String(value) })
   }
   const typeLabels: Record<string, string> = {
+    vivienda: 'homes',
+    garaje: 'garage',
     apartamento: 'apartment',
     casa: 'house',
     habitacion: 'room',
@@ -50,7 +52,7 @@ const rows = computed(() => {
       'anyNeighborhood',
       (q.neighborhoods.length ? q.neighborhoods : [q.neighborhood]).filter(Boolean).join(' · ')
     )
-    if (q.type && q.type !== 'all') add('type', t(typeLabels[q.type] || q.type))
+    if (q.types.length) add('type', q.types.map(type => t(typeLabels[type] || type)).join(' · '))
     if (q.source && q.source !== 'all')
       add('source', RENTAL_SOURCE_LABEL[q.source as keyof typeof RENTAL_SOURCE_LABEL] || q.source)
     if (q.bedrooms !== null)

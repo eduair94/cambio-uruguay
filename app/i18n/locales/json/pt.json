@@ -1510,6 +1510,8 @@
   "nav": {
     "alquileres": "Aluguéis no Uruguai",
     "rentalAnalysis": "Análise de aluguéis",
+    "rentalFit": "Planejar meu aluguel",
+    "rentalZones": "Comparar zonas",
     "preciosSupermercado": "Preços de supermercado",
     "propertyOpportunities": "Oportunidades imobiliárias",
     "propertySales": "Imóveis à venda",
@@ -1598,6 +1600,7 @@
     "declararCompraExterior": "Como declarar uma compra no exterior",
     "franquiciaViajero": "Franquia de bagagem de viajante",
     "pasaporteCosto": "Quanto custa o passaporte uruguaio",
+    "cedulaCosto": "Quanto custa a cédula uruguaia",
     "declararEfectivo": "Declarar dinheiro ao entrar ou sair",
     "impuestoAutosElectricos": "Imposto sobre carros elétricos e híbridos",
     "problemasAduana": "Problemas com a alfândega",

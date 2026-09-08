@@ -3,7 +3,7 @@ import {
   rentalQueryToParams,
   RENTAL_GUARANTEE_PUBLISHED,
   RENTAL_SOURCE_LABEL,
-  RENTAL_TYPE_LABEL,
+  isRentalTypeFilter,
 } from './rentals'
 import { normalizeOpportunityQuery } from './propertyOpportunityQuery'
 import { MUTUALISTA_SEDES } from './mutualistaSedes'
@@ -79,7 +79,7 @@ export class RentalAlertValidationError extends Error {
   }
 }
 
-const presentation = new Set(['page', 'perPage', 'sort', 'view'])
+const presentation = new Set(['page', 'perPage', 'sort', 'view', 'refLat', 'refLng', 'refLabel'])
 const searchKeys = new Set([
   'availability',
   'q',
@@ -87,6 +87,7 @@ const searchKeys = new Set([
   'neighborhood',
   'neighborhoods',
   'type',
+  'types',
   'source',
   'bedrooms',
   'bedroomsExact',
@@ -125,7 +126,7 @@ const opportunityKeys = new Set([
   'evidence',
   'signal',
 ])
-const arrayKeys = new Set(['neighborhoods', 'garantia', 'guarantees', 'sedes'])
+const arrayKeys = new Set(['types', 'neighborhoods', 'garantia', 'guarantees', 'sedes'])
 const searchBooleans = new Set([
   'bedroomsExact',
   'multi',
@@ -197,8 +198,19 @@ export function normalizeRentalAlertFilters(
   )
     throw new RentalAlertValidationError('unsupported_filter')
   if (kind === 'rental-search') {
-    if (populated(input.type) && !Object.hasOwn(RENTAL_TYPE_LABEL, String(input.type)))
-      throw new RentalAlertValidationError('unsupported_filter')
+    for (const field of ['type', 'types']) {
+      if (!populated(input[field])) continue
+      const value = input[field]
+      const types = (Array.isArray(value) ? value : [value])
+        .flatMap(type =>
+          String(type)
+            .split(',')
+            .map(part => part.trim())
+        )
+        .filter(Boolean)
+      if (types.some(type => !isRentalTypeFilter(type)))
+        throw new RentalAlertValidationError('unsupported_filter')
+    }
     if (populated(input.source) && !Object.hasOwn(RENTAL_SOURCE_LABEL, String(input.source)))
       throw new RentalAlertValidationError('unsupported_filter')
     if (populated(input.currency) && !['UYU', 'USD'].includes(String(input.currency).toUpperCase()))
@@ -239,7 +251,15 @@ export function normalizeRentalAlertFilters(
     query.neighborhoods.sort((a, b) => a.localeCompare(b, 'es'))
     query.guarantees.sort()
     query.sedes.sort((a, b) => a - b)
-    params = rentalQueryToParams({ ...query, page: 1, perPage: 24, sort: 'recientes' })
+    params = rentalQueryToParams({
+      ...query,
+      page: 1,
+      perPage: 24,
+      sort: 'recientes',
+      refLat: null,
+      refLng: null,
+      refLabel: '',
+    })
     if (!query.sedes.length) delete params.radio
   } else {
     if (populated(input.operation) && input.operation !== 'rent')

@@ -90,13 +90,19 @@ describe('los tres trámites', () => {
 
 describe('lo que la fuente no publica', () => {
   it('se dice en vez de completarse de memoria', () => {
-    expect(PASSPORT_UNPUBLISHED.map(u => u.key)).toEqual(['vigencia', 'cedula', 'sistarbanc'])
+    expect(PASSPORT_UNPUBLISHED.map(u => u.key)).toEqual(['vigencia', 'sistarbanc'])
+  })
+
+  // El arancel de la cédula estuvo acá, afirmando que gub.uy no lo publicaba. Sí lo publica: la
+  // ficha que se había mirado es un selector de casos, y el importe vive en cada ficha por caso.
+  // El test fija la corrección para que nadie lo devuelva a este bloque: una pregunta con
+  // respuesta sostenida por una fuente no puede volver a listarse como incontestable.
+  it('ya no cuenta el arancel de la cédula entre lo que no se puede saber', () => {
+    for (const u of PASSPORT_UNPUBLISHED) expect(u.pregunta, u.key).not.toMatch(/c[ée]dula/i)
   })
 
   // El bloque existe justamente para NO publicar estos números: un importe en pesos metido acá
-  // sería alguien contestando lo que la ficha calla. La nota de la cédula sí lleva edades (9 y 10
-  // años), que son plazos de entrega publicados y no el precio que falta, así que la prohibición
-  // de "años" corre sólo donde lo que falta ES una cantidad de años: la vigencia.
+  // sería alguien contestando lo que la ficha calla.
   it('no cuela una cifra en pesos, ni una vigencia en años', () => {
     for (const u of PASSPORT_UNPUBLISHED) expect(u.porQue, u.key).not.toMatch(/\$\s?\d/)
     const vigencia = PASSPORT_UNPUBLISHED.find(u => u.key === 'vigencia')

@@ -27,6 +27,21 @@
       </header>
       <div class="rental-search__scroll">
         <PropertyAgencyFilter v-model="draft.agency" />
+        <VSelect
+          v-model="draft.types"
+          :items="typeItems"
+          :label="t('type')"
+          :placeholder="t('allTypes')"
+          multiple
+          chips
+          closable-chips
+          clearable
+          v-bind="field"
+          data-testid="rental-filter-type"
+        />
+        <p v-if="draft.types.includes('vivienda')" class="rental-search__hint">
+          {{ t('homesHint') }}
+        </p>
         <fieldset class="rental-search__primary">
           <legend>{{ t('whereSearch') }}</legend>
           <div class="rental-search__fields">
@@ -50,6 +65,13 @@
               clearable
               v-bind="field"
               class="rental-search__wide"
+            />
+            <ZonesPicker
+              :model-value="directoryZones"
+              :department="draft.department"
+              directory
+              class="rental-search__wide"
+              @update:model-value="applyZones"
             />
           </div>
         </fieldset>
@@ -82,7 +104,6 @@
         <fieldset>
           <legend>{{ t('homeSearch') }}</legend>
           <div class="rental-search__fields">
-            <VSelect v-model="draft.type" :items="typeItems" :label="t('type')" v-bind="field" />
             <VSelect
               v-model="draft.bedrooms"
               :items="bedroomItems"
@@ -358,6 +379,8 @@ import {
   type RentalQuery,
 } from '~/utils/rentals'
 import { MUTUALISTA_SEDES, mutualistasConSede } from '~/utils/mutualistaSedes'
+import ZonesPicker from './zones/Picker.vue'
+import type { RentalZonePreferences } from '~/utils/rentalZoneTypes'
 
 const props = withDefaults(
   defineProps<{
@@ -451,11 +474,27 @@ function focusDialogHeading() {
 }
 const copy = (query: RentalQuery): RentalQuery => ({
   ...query,
+  types: [...query.types],
   neighborhoods: [...query.neighborhoods],
   guarantees: [...query.guarantees],
   sedes: [...query.sedes],
 })
 const draft = ref(copy(props.query))
+const directoryZones = computed<RentalZonePreferences>(() => ({
+  mode: 'only',
+  include: draft.value.department
+    ? draft.value.neighborhoods.map(neighborhood => ({
+        department: draft.value.department,
+        neighborhood,
+      }))
+    : [],
+  exclude: [],
+}))
+function applyZones(zones: RentalZonePreferences) {
+  if (zones.include.length) draft.value.department = zones.include[0]!.department
+  draft.value.neighborhoods = zones.include.map(zone => zone.neighborhood)
+  draft.value.neighborhood = zones.include.length === 1 ? zones.include[0]!.neighborhood : ''
+}
 const institution = ref(
   MUTUALISTA_SEDES.find(s => s.osmId === props.query.sedes[0])?.mutualista || ''
 )
@@ -514,13 +553,14 @@ const neighborhoods = computed(() =>
   )
 )
 const typeItems = computed(() => [
-  { title: t('any'), value: '' },
+  { title: t('homes'), value: 'vivienda' },
+  { title: t('offices'), value: 'oficina' },
+  { title: t('commercials'), value: 'local' },
+  { title: t('garages'), value: 'garaje' },
   ...Object.entries({
     apartamento: 'apartment',
     casa: 'house',
     habitacion: 'room',
-    local: 'commercial',
-    oficina: 'office',
     terreno: 'land',
     otro: 'other',
   }).map(([value, label]) => ({ title: t(label), value })),
@@ -664,9 +704,7 @@ function clearNeighborhoods() {
   grid-column: 1 / -1;
 }
 .rental-search .rental-search__primary {
-  margin-top: 0;
   border-top: 0;
-  padding-top: 0;
 }
 .rental-search__group {
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));

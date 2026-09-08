@@ -1,5 +1,49 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Tipos múltiples y garajes — 7 de septiembre de 2026
+
+El filtro permite seleccionar varios tipos con semántica **OR**. `type=oficina` sigue siendo
+compatible con enlaces y búsquedas guardadas anteriores; una selección plural se guarda como
+`types=garaje,oficina`, sin duplicados y con orden estable. `types` presente, incluso vacío,
+tiene prioridad sobre el campo singular para que limpiar el selector no reactive un tipo viejo.
+`vivienda` es un grupo de consulta (apartamento, casa y habitación), nunca una clasificación
+almacenada: no incluye oficinas, locales, garajes, terrenos ni tipos desconocidos. Lista, mapa,
+facetas, ficha contextual, biblioteca de búsquedas y alertas comparten la expansión de tipos.
+La ordenación por punto elegido tiene su contrato separado en
+[RENTAL_LOCATION_SEARCH.md](./RENTAL_LOCATION_SEARCH.md).
+
+`garaje` pasa a ser un tipo real, distinto del equipamiento de estacionamiento de una vivienda.
+La taxonomía propia de InfoCasas, Casasweb y El País tiene prioridad. Sin taxonomía, el título
+debe identificar el garaje/cochera como objeto principal del alquiler. «Casa con garaje» sigue
+siendo casa; «Garaje en edificio de apartamentos» es garaje. Mercado Libre conserva sus categorías
+nativas y sólo refina `otros inmuebles` con esa evidencia textual inequívoca. El piso de $2.000
+UYU es el mismo que tenían esos avisos bajo `otro`; no se relaja el piso de viviendas.
+
+La lectura pública de `otro` encontró 656 fichas y 69 títulos de garaje independiente. Eso no
+autoriza una reclasificación masiva: el plan histórico posterior, de **sólo lectura**, aprobó
+35 fichas. Exige un único aviso, identidad propia versión 1 con tipo `otro`, ambos títulos
+compatibles y ausencia de atributos o texto residencial/comercial contradictorio. Los demás
+casos quedan para nuevas lecturas o revisión; no se fabrica identidad para avisos antiguos.
+
+El helper `scripts/oneoff/backfill_rental_garages.ts` se ejecuta únicamente con
+`scripts/oneoff/backfill-rental-garages.sh`. Comparte el `flock` real de los jobs y crea un plan
+EJSON privado 0600 cuyo hash cubre el documento original y el resultado esperado. La aplicación
+requiere ese hash, respalda antes de escribir y cambia sólo `propertyType` y
+`offers.0.identity.propertyType`. No toca fechas, `updatedAt`, claves, enlaces ni contactos. El
+CAS compara la lista completa de campos BSON: la igualdad directa con `$$ROOT` dispara un error
+del optimizador del Mongo desplegado; `$objectToArray` fue comprobado en lectura contra las
+35 filas del plan. Una reanudación reconoce filas exactamente aplicadas y se detiene ante otros
+cambios. La aplicación del plan `dc2f6368e88ac9a09717f6c3c94913475dfe340eb2534371328f7703a589e5bc`
+se completó el 7 de septiembre después del despliegue `eff45d0`: **35 fichas cambiadas y 35
+verificadas contra su resultado esperado**, con cero cambios de fechas. El respaldo privado se
+conserva junto al plan en el servidor.
+
+Casasweb añade `g` al repaso horario de Montevideo, Canelones y Maldonado: tres páginas
+adicionales por ejecución. La consulta pública de Montevideo del 7 de septiembre a las 18:18 UTC
+entregó diez tarjetas de garaje en una página, con formulario/tipo/paginador correctos. Se
+incorporan a través del flujo normal de lectura y conservación; el modo horario no caduca avisos
+por ausencia.
+
 ## Auditoría de cobertura — 7 de septiembre de 2026
 
 La auditoría por ID y los límites de cada fuente están documentados en

@@ -116,7 +116,7 @@
         <VChip
           v-for="other in relatedTools"
           :key="other.slug"
-          :to="localePath(`/herramientas/${other.slug}`)"
+          :to="localePath(toolPath(other))"
           color="primary"
           variant="tonal"
           size="small"
@@ -151,7 +151,7 @@
 
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
-import { getTool, tools } from '~/utils/tools'
+import { getTool, toolPath, tools } from '~/utils/tools'
 
 const props = defineProps<{
   /** Tool slug; everything (title, description, SEO) is derived from the catalogue. */

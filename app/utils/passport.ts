@@ -18,10 +18,19 @@
 // vez se actualiza un arancel, no puede quedar un total viejo al lado.
 //
 // LO QUE NO SE PUBLICA, A PROPÓSITO (ver {@link PASSPORT_UNPUBLISHED}): la
-// vigencia del pasaporte, el arancel de la cédula y el recargo del pago en línea.
-// Las tres son preguntas que la gente hace y las tres las contestaríamos de
-// memoria o copiando un blog. La ficha oficial no las trae, así que la página
-// dice que no las trae en vez de inventar un número.
+// vigencia del pasaporte y el recargo del pago en línea. Las dos son preguntas
+// que la gente hace y las dos las contestaríamos de memoria o copiando un blog.
+// La ficha oficial no las trae, así que la página dice que no las trae en vez de
+// inventar un número.
+//
+// Acá había una tercera, «¿y cuánto sale la cédula?», con la explicación de que
+// la ficha del Documento Nacional de Identidad no publica arancel. Era falso, y
+// de la peor manera: la ficha que se miró —`/tramites/documento-nacional-
+// identidad-primera-vez`— es un selector de casos y en efecto no tiene bloque de
+// costos, pero cada una de las dieciséis fichas que cuelgan de ella sí lo tiene.
+// El dato existía y esta página estaba diciendo que no. Ahora está contestado y
+// sostenido con fuentes en `utils/idCard.ts` (/cuanto-sale-la-cedula-de-
+// identidad-uruguaya), y este bloque quedó en dos.
 
 /** Una fuente primaria: etiqueta legible + URL oficial. */
 export interface PassportSource {
@@ -217,12 +226,6 @@ export const PASSPORT_UNPUBLISHED: readonly PassportUnpublished[] = [
       'Ninguna de las tres fichas del trámite en gub.uy publica la vigencia del documento. Lo único que sí dicen sobre plazos es lo contrario: el pasaporte que no se retira dentro de los 60 días de expedido se destruye sin aviso al interesado. Preguntá la vigencia en la DNIC al hacer el trámite.',
   },
   {
-    key: 'cedula',
-    pregunta: '¿Y cuánto sale la cédula?',
-    porQue:
-      'La ficha del Documento Nacional de Identidad en gub.uy no tiene bloque de costos: no publica arancel. Sí publica plazos —los menores de 9 años lo retiran el mismo día y los mayores de 10, a partir de los 5 días hábiles—, así que acá va el plazo y no un precio.',
-  },
-  {
     key: 'sistarbanc',
     pregunta: '¿Cuánto se suma si pago en línea?',
     porQue:
@@ -283,7 +286,7 @@ export const PASSPORT_SOURCES: readonly PassportSource[] = [
   },
   {
     label:
-      'gub.uy — Documento Nacional de Identidad, primera vez: la ficha publica plazos de entrega y no publica arancel',
+      'gub.uy — Documento Nacional de Identidad, primera vez: el selector de casos, que publica plazos de entrega pero no arancel; el arancel de la cédula está en cada una de las fichas por caso que cuelgan de él',
     url: 'https://www.gub.uy/tramites/documento-nacional-identidad-primera-vez',
   },
 ]

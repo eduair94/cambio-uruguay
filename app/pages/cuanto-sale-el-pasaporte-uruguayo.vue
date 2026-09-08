@@ -152,14 +152,18 @@
 
     <!-- Lo que no publicamos -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">Tres preguntas que acá no se contestan</h2>
+      <h2 class="text-h5 font-weight-bold mb-2">Dos preguntas que acá no se contestan</h2>
       <p class="section-intro text-medium-emphasis mb-5">
         Y no por olvido: la fuente oficial no las contesta, y completarlas de memoria es cómo se
-        publica un dato falso con cara de dato oficial.
+        publica un dato falso con cara de dato oficial. Acá había una tercera —cuánto sale la
+        cédula— que resultó estar publicada, sólo que una ficha más adentro:
+        <NuxtLink :to="localePath('/cuanto-sale-la-cedula-de-identidad-uruguaya')"
+          >ahí está el arancel</NuxtLink
+        >.
       </p>
 
       <VRow>
-        <VCol v-for="item in PASSPORT_UNPUBLISHED" :key="item.key" cols="12" md="4">
+        <VCol v-for="item in PASSPORT_UNPUBLISHED" :key="item.key" cols="12" md="6">
           <VCard class="unpublished-card pa-5 h-100" variant="flat">
             <div class="font-weight-bold mb-2">{{ item.pregunta }}</div>
             <p class="applicant-text text-medium-emphasis mb-0">{{ item.porQue }}</p>
@@ -254,6 +258,7 @@ const desde = FECHA.format(new Date(`${PASSPORT_FEES_EFFECTIVE_FROM}T00:00:00Z`)
 const verificado = FECHA.format(new Date(`${PASSPORT_VERIFIED_AT}T00:00:00Z`))
 
 const RELATED = [
+  { to: '/cuanto-sale-la-cedula-de-identidad-uruguaya', label: 'Cuánto sale la cédula' },
   { to: '/franquicia-viajero-uruguay', label: 'Franquicia de equipaje' },
   { to: '/declarar-dinero-en-efectivo-uruguay', label: 'Declarar efectivo en aduana' },
   { to: '/herramientas/calculadora-presupuesto-viaje', label: 'Presupuesto de viaje' },

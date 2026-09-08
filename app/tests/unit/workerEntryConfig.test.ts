@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import { runInNewContext } from 'node:vm'
 import ts from 'typescript'
@@ -25,6 +26,15 @@ runInNewContext(
 )
 
 describe('worker entry selection', () => {
+  it('starts the deployed worker with the production Vue runtime', () => {
+    const require = createRequire(import.meta.url)
+    const { apps } = require('../../ecosystem.config.cjs')
+    const worker = apps.find((app: { name: string }) => app.name === 'cambio-uruguay')
+    expect(worker.script).toBe('./.output/server/index.mjs')
+    expect(worker.env.NODE_ENV).toBe('production')
+    expect(worker.node_args).toBe('--max-old-space-size=512')
+  })
+
   it('leaves the development worker entry and HMR transport to Nitro', () => {
     const config = { dev: true, entry: 'nitro-dev-entry' }
     context.captured.hooks['nitro:config'](config)

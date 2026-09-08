@@ -48,6 +48,7 @@
           </div>
           <div class="rental-map-detail__intro">
             <p class="rental-map-detail__where">{{ location || t('unknown') }}</p>
+            <p v-if="distanceLabel">{{ distanceLabel }}</p>
             <h4>{{ title }}</h4>
             <p v-if="address">{{ address }}</p>
             <NuxtLink
@@ -222,6 +223,7 @@ const props = defineProps<{
   pending: boolean
   error: 'unavailable' | 'failed' | null
   favorite: boolean
+  distanceLabel?: string
 }>()
 const emit = defineEmits<{
   close: []
@@ -301,6 +303,7 @@ const typeLabel = computed(() =>
         habitacion: 'room',
         local: 'commercial',
         oficina: 'office',
+        garaje: 'garage',
         terreno: 'land',
         otro: 'other',
       } as Record<string, string>

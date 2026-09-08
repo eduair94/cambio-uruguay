@@ -9,6 +9,7 @@
 // and a bare `SOURCES` or `formatPrice` here would silently collide with another page's helper.
 
 import { MUTUALISTA_SEDES, type MutualistaSede } from './mutualistaSedes'
+import { normalizeRentalReferenceLabel, parseRentalReferencePoint } from './rentalDistance'
 import {
   agencyKey,
   advertiserMatches,
@@ -44,8 +45,49 @@ export type RentalPropertyType =
   | 'habitacion'
   | 'local'
   | 'oficina'
+  | 'garaje'
   | 'terreno'
   | 'otro'
+
+/** Search groups never become a stored property classification. Unknown types are not homes. */
+export type RentalTypeFilter = RentalPropertyType | 'vivienda'
+export const RENTAL_TYPE_FILTER_TYPES: Readonly<
+  Record<RentalTypeFilter, readonly RentalPropertyType[]>
+> = Object.freeze({
+  vivienda: Object.freeze(['apartamento', 'casa', 'habitacion'] as const),
+  apartamento: Object.freeze(['apartamento'] as const),
+  casa: Object.freeze(['casa'] as const),
+  habitacion: Object.freeze(['habitacion'] as const),
+  local: Object.freeze(['local'] as const),
+  oficina: Object.freeze(['oficina'] as const),
+  garaje: Object.freeze(['garaje'] as const),
+  terreno: Object.freeze(['terreno'] as const),
+  otro: Object.freeze(['otro'] as const),
+})
+
+export function isRentalTypeFilter(value: unknown): value is RentalTypeFilter {
+  return typeof value === 'string' && Object.hasOwn(RENTAL_TYPE_FILTER_TYPES, value)
+}
+
+export function normalizeRentalTypes(input: unknown): RentalTypeFilter[] {
+  const values = (Array.isArray(input) ? input : [input]).flatMap(value =>
+    typeof value === 'string' ? value.split(',').map(type => type.trim()) : []
+  )
+  return [...new Set(values.filter(isRentalTypeFilter))].sort()
+}
+
+export function rentalTypeMatches(
+  propertyType: unknown,
+  filter: string | readonly string[]
+): boolean {
+  const filters = (Array.isArray(filter) ? filter : [filter]).filter(Boolean)
+  if (!filters.length) return true
+  return filters.some(
+    type =>
+      isRentalTypeFilter(type) &&
+      (RENTAL_TYPE_FILTER_TYPES[type] as readonly unknown[]).includes(propertyType)
+  )
+}
 
 export type RentalSellerType = 'inmobiliaria' | 'particular' | 'desconocido'
 
@@ -160,6 +202,8 @@ export interface RentalProperty {
   addressKey: string
   latitude: number | null
   longitude: number | null
+  /** Approximate straight-line distance to the chosen map point; null means no usable own point. */
+  distanceKm?: number | null
   bedrooms: number | null
   bathrooms: number | null
   area: number | null
@@ -269,6 +313,7 @@ export const RENTAL_TYPE_LABEL: Record<RentalPropertyType, string> = {
   habitacion: 'Habitación',
   local: 'Local',
   oficina: 'Oficina',
+  garaje: 'Garaje',
   terreno: 'Terreno',
   otro: 'Otro',
 }
@@ -279,7 +324,7 @@ export const RENTAL_SELLER_LABEL: Record<RentalSellerType, string> = {
   desconocido: 'Sin dato',
 }
 
-export type RentalSort = 'recientes' | 'precio' | 'precio-desc' | 'total' | 'metros'
+export type RentalSort = 'recientes' | 'precio' | 'precio-desc' | 'total' | 'metros' | 'distancia'
 
 export const RENTAL_SORTS: ReadonlyArray<{ value: RentalSort; label: string }> = Object.freeze([
   { value: 'recientes', label: 'Más recientes' },
@@ -287,6 +332,7 @@ export const RENTAL_SORTS: ReadonlyArray<{ value: RentalSort; label: string }> =
   { value: 'precio-desc', label: 'Precio: mayor a menor' },
   { value: 'total', label: 'Menor total mensual' },
   { value: 'metros', label: 'Más metros' },
+  { value: 'distancia', label: 'Más cerca del punto elegido' },
 ])
 
 export const RENTAL_PER_PAGE = 24
@@ -300,6 +346,8 @@ export interface RentalQuery {
   /** OR across neighborhoods. The singular field remains for old bookmarked URLs. */
   neighborhoods: string[]
   type: string
+  /** OR selection. The legacy type mirrors this only when exactly one criterion is selected. */
+  types: RentalTypeFilter[]
   source: string
   bedrooms: number | null
   bedroomsExact: boolean
@@ -332,6 +380,11 @@ export interface RentalQuery {
   sedes: number[]
   /** Radio en km alrededor de cada sede elegida. */
   radioKm: number
+  /** Presentation only: arbitrary map reference, never an implicit radius/filter. */
+  refLat: number | null
+  refLng: number | null
+  /** Optional label of the confirmed reference point; not an additional search criterion. */
+  refLabel: string
   sort: RentalSort
   page: number
   perPage: number
@@ -375,7 +428,11 @@ function parseNeighborhoods(input: unknown): string[] {
  */
 export function normalizeRentalQuery(input: Record<string, unknown> = {}): RentalQuery {
   const sortRaw = clean(input.sort, 12) as RentalSort
-  const sort = RENTAL_SORTS.some(option => option.value === sortRaw) ? sortRaw : 'recientes'
+  const reference = parseRentalReferencePoint(input)
+  const sort =
+    RENTAL_SORTS.some(option => option.value === sortRaw) && (sortRaw !== 'distancia' || reference)
+      ? sortRaw
+      : 'recientes'
   const page = Math.min(10_000, Math.max(1, toInt(input.page) ?? 1))
   const perPage = Math.min(
     RENTAL_PER_PAGE_MAX,
@@ -388,7 +445,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
   const neighborhoods = parseNeighborhoods(input.neighborhoods ?? input.neighborhood)
   const currency = clean(input.currency).toUpperCase()
   const expensesMax = toNumber(input.expensesMax)
-  const type = clean(input.type, 20)
+  const types = normalizeRentalTypes(input.types ?? input.type)
   const source = clean(input.source, 30)
 
   return {
@@ -397,7 +454,8 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     department: clean(input.department),
     neighborhood: neighborhoods.length === 1 ? neighborhoods[0]! : '',
     neighborhoods,
-    type: Object.hasOwn(RENTAL_TYPE_LABEL, type) ? type : '',
+    type: types.length === 1 ? types[0]! : '',
+    types,
     source: Object.hasOwn(RENTAL_SOURCE_LABEL, source) ? source : '',
     bedrooms: bedrooms !== null && bedrooms >= 0 && bedrooms <= 10 ? bedrooms : null,
     bedroomsExact: enabled(input.bedroomsExact),
@@ -419,6 +477,9 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     agency: agencyKey(scalar(input.agency)),
     sedes: parseSedes(input.sedes),
     radioKm: parseRadio(input.radio ?? input.radioKm),
+    refLat: reference?.lat ?? null,
+    refLng: reference?.lng ?? null,
+    refLabel: reference ? normalizeRentalReferenceLabel(input.refLabel) : '',
     sort,
     page,
     perPage,
@@ -434,7 +495,9 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   if (query.neighborhoods.length > 1) params.neighborhoods = query.neighborhoods.join(',')
   else if (query.neighborhoods.length === 1) params.neighborhood = query.neighborhoods[0]!
   else if (query.neighborhood) params.neighborhood = query.neighborhood
-  if (query.type) params.type = query.type
+  const types = normalizeRentalTypes(query.types ?? query.type)
+  if (types.length === 1) params.type = types[0]!
+  else if (types.length > 1) params.types = types.join(',')
   if (query.source) params.source = query.source
   if (query.bedrooms !== null) params.bedrooms = String(query.bedrooms)
   if (query.bedroomsExact) params.bedroomsExact = '1'
@@ -456,6 +519,13 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   if (query.agency) params.agency = query.agency
   if (query.sedes.length) params.sedes = query.sedes.join(',')
   if (query.radioKm !== RADIO_KM_DEFAULT) params.radio = String(query.radioKm)
+  const reference = parseRentalReferencePoint(query)
+  if (reference) {
+    params.refLat = String(reference.lat)
+    params.refLng = String(reference.lng)
+    const label = normalizeRentalReferenceLabel(query.refLabel)
+    if (label) params.refLabel = label
+  }
   if (query.sort !== 'recientes') params.sort = query.sort
   if (query.page > 1) params.page = String(query.page)
   if (query.perPage !== RENTAL_PER_PAGE) params.perPage = String(query.perPage)
@@ -614,6 +684,8 @@ export interface RentalMapPoint {
   key: string
   lat: number
   lng: number
+  /** Approximate straight-line distance; absent without a reference, null without own evidence. */
+  distanceKm?: number | null
   /** Precio en la moneda del aviso, ya formateado por el servidor para no mandar dos campos. */
   price: number
   currency: RentalCurrency
@@ -750,7 +822,17 @@ export function buildRentalFilter(
   const cutoff = new Date(Date.now() - staleDays * 86_400_000).toISOString().slice(0, 10)
   const nonLocation: Record<string, unknown> = { lastSeen: { $gte: cutoff } }
 
-  if (query.type) nonLocation.propertyType = query.type
+  const typeFilters = query.types ?? (query.type ? [query.type] : [])
+  if (typeFilters.length) {
+    const types = [
+      ...new Set(
+        typeFilters.flatMap(type =>
+          isRentalTypeFilter(type) ? RENTAL_TYPE_FILTER_TYPES[type] : []
+        )
+      ),
+    ]
+    nonLocation.propertyType = types.length === 1 ? types[0] : { $in: types }
+  }
   if (query.source) nonLocation.sources = query.source
   if (query.bedrooms !== null)
     nonLocation.bedrooms =
@@ -1250,6 +1332,7 @@ export const RENTAL_TOTAL_SORT_FIELDS = ['_rentalMonthlyUnknown', '_rentalMonthl
 
 /** Stable tie-breaks keep adjacent pages from repeating or skipping equal-price properties. */
 export function rentalMongoSort(sort: RentalSort): Record<string, 1 | -1> {
+  if (sort === 'distancia') return { _rentalDistanceUnknown: 1, distanceKm: 1, key: 1 }
   if (sort === 'precio') return { priceUyu: 1, key: 1 }
   if (sort === 'precio-desc') return { priceUyu: -1, key: 1 }
   if (sort === 'total')

@@ -28,7 +28,7 @@ export const RENTAL_SOURCE_LABEL: Record<RentalSource, string> = {
  * long tail (`penthouse`, `dúplex`, `monoambiente`) and a filter nobody can reason about is worse
  * than no filter. `otro` is the honest bucket, never a guess.
  */
-export type RentalPropertyType = "apartamento" | "casa" | "habitacion" | "local" | "oficina" | "terreno" | "otro";
+export type RentalPropertyType = "apartamento" | "casa" | "habitacion" | "local" | "oficina" | "garaje" | "terreno" | "otro";
 
 export const RENTAL_PROPERTY_TYPES: readonly RentalPropertyType[] = [
   "apartamento",
@@ -36,6 +36,7 @@ export const RENTAL_PROPERTY_TYPES: readonly RentalPropertyType[] = [
   "habitacion",
   "local",
   "oficina",
+  "garaje",
   "terreno",
   "otro",
 ];

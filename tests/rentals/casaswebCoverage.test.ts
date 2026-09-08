@@ -17,7 +17,7 @@ interface SearchPage {
 
 // Reduced structure from public search responses observed 2026-09-07. No external requests.
 function searchHtml({ department = 1, type = "a", page = 1, total = 0, hasNext = false, cards = [] }: SearchPage): string {
-  const label = type === "f" ? "Chacra" : "Apartamento";
+  const label = type === "f" ? "Chacra" : type === "g" ? "Garaje" : "Apartamento";
   return `<form>
     <input type="hidden" name="__VIEWSTATE" value="page-${page}" />
     <select id="ctl00_content_drpNegocio" name="ctl00$content$drpNegocio"><option value="A" selected>Alquiler</option></select>
@@ -69,8 +69,9 @@ describe("Casasweb coverage and absence safety", () => {
     expect([...sourcesAllowingExpiry([result], "full")]).toEqual(["casasweb"]);
     requests.length = 0;
     const fast = await harvestCasasweb("fast", 40);
-    expect(requests).toHaveLength(6);
-    expect(requests.every(request => request.page === 1 && ["a", "c"].includes(request.type))).toBe(true);
+    expect(requests).toHaveLength(9);
+    expect(requests.every(request => request.page === 1 && ["a", "c", "g"].includes(request.type))).toBe(true);
+    expect(requests.filter(request => request.type === "g").map(request => request.department)).toEqual([1, 3, 10]);
     expect(fast.complete).toBe(false);
   });
 

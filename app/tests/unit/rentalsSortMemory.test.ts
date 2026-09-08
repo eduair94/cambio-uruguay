@@ -5,6 +5,7 @@ import ts from 'typescript'
 import mongoose from 'mongoose'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import * as rentals from '../../utils/rentals'
+import * as rentalDistance from '../../utils/rentalDistance'
 import { rentalPublicPropertyProjection } from '../../server/utils/rentalDetail'
 
 type Stage = Record<string, any>
@@ -16,12 +17,19 @@ const compiled = ts.transpileModule(route, {
 /** Execute the actual endpoint with IO stubs, retaining its exact Mongo pipelines. */
 async function capture(query: Record<string, string> = {}, total = 240) {
   const pipelines: Stage[][] = []
+  const options: Array<{ allowDiskUse?: boolean }> = []
   const dependencies: Record<string, unknown> = {
     '../../models/RentalListing': {
       RentalListingModel: {
         aggregate: (pipeline: Stage[]) => {
           pipelines.push(pipeline)
-          return {
+          const execution: { allowDiskUse?: boolean } = {}
+          options.push(execution)
+          const chain = {
+            allowDiskUse: (enabled: boolean) => {
+              execution.allowDiskUse = enabled
+              return chain
+            },
             collation: () =>
               Promise.resolve(
                 pipeline.some(stage => stage.$count)
@@ -31,6 +39,7 @@ async function capture(query: Record<string, string> = {}, total = 240) {
                     : []
               ),
           }
+          return chain
         },
       },
     },
@@ -47,6 +56,7 @@ async function capture(query: Record<string, string> = {}, total = 240) {
       annotateRentalAvailability: (property: unknown) => property,
     },
     '../../../utils/rentals': rentals,
+    '../../../utils/rentalDistance': rentalDistance,
   }
   const module = { exports: {} as { default?: (event: unknown) => Promise<unknown> } }
   runInNewContext(compiled, {
@@ -63,14 +73,15 @@ async function capture(query: Record<string, string> = {}, total = 240) {
     console,
   })
   await module.exports.default!({})
-  return { items: pipelines[0]!, median: pipelines.at(-1)! }
+  return { items: pipelines[0]!, median: pipelines.at(-1)!, itemsOptions: options[0]! }
 }
 
 describe('rental endpoint sort input', () => {
   it.each(['precio', 'precio-desc', 'metros', 'recientes', 'total'])(
     'retains every %s sort key while removing private evidence before buffering',
     async sort => {
-      const { items, median } = await capture({ sort, source: 'casasweb' })
+      const { items, median, itemsOptions } = await capture({ sort, source: 'casasweb' })
+      expect(itemsOptions.allowDiskUse).toBe(true)
       for (const pipeline of [items, median]) {
         const projection = pipeline.findIndex(stage => stage.$project)
         expect(projection).toBeGreaterThanOrEqual(0)
@@ -96,6 +107,32 @@ describe('rental endpoint sort input', () => {
     const monthly = await capture({ sort: 'total', pets: '1' })
     expect(monthly.median).toEqual(base.median)
   })
+
+  it('computes distance before projecting and paging while excluding location evidence from the sort buffer', async () => {
+    const { items, median } = await capture({
+      sort: 'distancia',
+      refLat: '-34.9',
+      refLng: '-56.17',
+      page: '3',
+      pets: '1',
+    })
+    const distance = items.findIndex(stage => stage.$set?.distanceKm)
+    const projection = items.findIndex(stage => stage.$project)
+    const sort = items.findIndex(stage => stage.$sort)
+    const page = items.findIndex(stage => stage.$skip)
+    expect(distance).toBeGreaterThan(0)
+    expect(distance).toBeLessThan(projection)
+    expect(projection).toBeLessThan(sort)
+    expect(sort).toBeLessThan(page)
+    expect(items[projection]!.$project).toEqual({
+      ...rentalPublicPropertyProjection,
+      distanceKm: 1,
+      _rentalDistanceUnknown: 1,
+    })
+    expect(items[sort]!.$sort).toEqual({ _rentalDistanceUnknown: 1, distanceKm: 1, key: 1 })
+    expect(items.at(-1)).toEqual({ $unset: ['_rentalDistanceUnknown'] })
+    expect(median).toEqual((await capture({ pets: '1' })).median)
+  })
 })
 
 // Deliberately exercise the 100MiB boundary only on a developer's isolated localhost Mongo.
@@ -111,11 +148,23 @@ describe.skipIf(!uri)('real Mongo rental sort memory regression', () => {
     await client.connect()
   })
   afterAll(async () => client?.close())
-  const fixtures = (count: number): Stage[] => {
+  const fixtures = (count: number, largeInventory = false): Stage[] => {
+    const latitude = largeInventory
+      ? {
+          $cond: [
+            { $eq: [{ $mod: ['$i', 7] }, 0] },
+            null,
+            { $add: [-34.9, { $divide: [{ $mod: ['$i', 1000] }, 100000] }] },
+          ],
+        }
+      : -34.9
+    const title = largeInventory
+      ? 'Published advert title '.repeat(100)
+      : 'Alquiler mensual sintético'
     const offer = (source: string, offset: number) => ({
       source,
       listingId: { $concat: [source, ':', { $toString: '$i' }] },
-      title: 'Alquiler mensual sintético',
+      title,
       price: { $add: [10000, '$i', offset] },
       priceUyu: { $add: [10000, '$i', offset] },
       currency: 'UYU',
@@ -123,11 +172,11 @@ describe.skipIf(!uri)('real Mongo rental sort memory regression', () => {
       firstSeen: date,
       commonExpenses: 100,
       commonExpensesCurrency: 'UYU',
-      identity: { version: 1, description: '$seed' },
+      identity: { version: 1, description: '$seed', latitude, longitude: -56.17 },
       details: { description: '$seed', images: ['$seed'] },
     })
     return [
-      { $documents: [{ seed: 'PRIVATE-'.repeat(40000) }] },
+      { $documents: [{ seed: 'PRIVATE-'.repeat(largeInventory ? 50 : 40000) }] },
       { $set: { i: { $range: [0, count] } } },
       { $unwind: '$i' },
       {
@@ -135,13 +184,17 @@ describe.skipIf(!uri)('real Mongo rental sort memory regression', () => {
           _id: 0,
           key: { $concat: ['qa-', { $toString: '$i' }] },
           title: 'Synthetic home',
-          propertyType: 'apartamento',
+          propertyType: largeInventory
+            ? { $cond: [{ $eq: [{ $mod: ['$i', 2] }, 0] }, 'apartamento', 'oficina'] }
+            : 'apartamento',
           department: 'Montevideo',
           neighborhood: 'Cordón',
           lastSeen: date,
           firstSeen: date,
           freshAt: date,
           area: { $add: [40, '$i'] },
+          latitude,
+          longitude: { $literal: -56.17 },
           offers: [offer('infocasas', 0), offer('casasweb', 2000)],
         },
       },
@@ -214,4 +267,51 @@ describe.skipIf(!uri)('real Mongo rental sort memory regression', () => {
       expect(JSON.stringify(rows)).not.toContain('_rentalMonthly')
     }
   )
+
+  it('serves the final distance page of 21,061 matching homes after the projected sort exceeds 100 MiB', async () => {
+    const count = 21061
+    const lastPage = Math.ceil(count / 12)
+    const { items, itemsOptions } = await capture(
+      {
+        department: 'Montevideo',
+        types: 'apartamento,oficina',
+        source: 'casasweb',
+        priceMax: '45000',
+        sort: 'distancia',
+        refLat: '-34.88974',
+        refLng: '-56.17683',
+        perPage: '12',
+        page: String(lastPage),
+      },
+      count
+    )
+    const pipeline = [...fixtures(count, true), ...items]
+    const executeLarge = (allowDiskUse: boolean) =>
+      client
+        .db()
+        .aggregate(pipeline, {
+          allowDiskUse,
+          collation: rentals.RENTAL_COLLATION,
+          maxTimeMS: 30000,
+        })
+        .toArray()
+    // Reproduces the actual production failure even WITH the early public projection.
+    await expect(executeLarge(false)).rejects.toMatchObject({ code: 292 })
+    expect(itemsOptions.allowDiskUse).toBe(true)
+    const rows = await executeLarge(itemsOptions.allowDiskUse!)
+    const unknownKeys = Array.from({ length: count }, (_, i) => i)
+      .filter(i => i % 7 === 0)
+      .map(i => `qa-${i}`)
+      .sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }))
+    const size = count - (lastPage - 1) * 12
+    expect(rows.map(row => row.key)).toEqual(unknownKeys.slice(-size))
+    expect(rows.every(row => row.distanceKm === null)).toBe(true)
+    for (const row of rows) {
+      const id = Number(row.key.slice(3))
+      expect(row.priceUyu).toBe(12000 + id)
+      expect(row.matchingOffer.source).toBe('casasweb')
+      expect(row.matchingOffer.priceUyu).toBe(row.priceUyu)
+    }
+    expect(JSON.stringify(rows)).not.toMatch(/PRIVATE-|identity|details|_rentalDistance/)
+  }, 30000)
 })

@@ -1528,6 +1528,8 @@
   "nav": {
     "alquileres": "Alquileres en Uruguay",
     "rentalAnalysis": "Análisis de alquileres",
+    "rentalFit": "Planificar mi alquiler",
+    "rentalZones": "Comparar zonas",
     "preciosSupermercado": "Precios de supermercado",
     "propertyOpportunities": "Oportunidades inmobiliarias",
     "propertySales": "Viviendas en venta",
@@ -1616,6 +1618,7 @@
     "declararCompraExterior": "Cómo declarar una compra del exterior",
     "franquiciaViajero": "Franquicia de equipaje de viajero",
     "pasaporteCosto": "Cuánto sale el pasaporte",
+    "cedulaCosto": "Cuánto sale la cédula",
     "declararEfectivo": "Declarar efectivo al entrar o salir",
     "impuestoAutosElectricos": "Impuesto a los autos eléctricos e híbridos",
     "problemasAduana": "Problemas con la aduana",

@@ -9,6 +9,7 @@ const port = process.env.DEPLOY_PROBE_PORT || '13311'
 const child = fork(resolve(staging, 'server/index.mjs'), [], {
   env: {
     ...process.env,
+    NODE_ENV: 'production',
     pm_id: 'deploy-preflight',
     CU_DEPLOY_PREFLIGHT: '1',
     NITRO_PORT: port,
@@ -16,7 +17,8 @@ const child = fork(resolve(staging, 'server/index.mjs'), [], {
     NITRO_HOST: '127.0.0.1',
     NITRO_UNIX_SOCKET: '',
   },
-  execArgv: [],
+  // Match the live worker's heap budget, not the build shell's larger allowance.
+  execArgv: ['--max-old-space-size=512'],
   stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
 })
 

@@ -4,6 +4,7 @@ import { connectDb } from '../../utils/db'
 import { loadRentalAvailabilityIndex } from '../../utils/rentalAvailability'
 import { rentalAvailabilityAdvertId } from '../../../utils/rentalAvailability'
 import { publicAdvertiserProjection } from '../../../utils/propertyAdvertiser'
+import { rentalDistanceProjection, rentalDistanceStages } from '../../../utils/rentalDistance'
 import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
@@ -80,10 +81,12 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
       RentalListingModel.aggregate([
         ...publicLocated,
         ...rentalOfferStages(query, usdUyu),
+        ...rentalDistanceStages(query),
         // Discard rich descriptions, galleries and private identity before Mongo keeps sort rows.
         {
           $project: {
             _id: 0,
+            ...rentalDistanceProjection(query),
             ...publicAdvertiserProjection('offers'),
             ...publicAdvertiserProjection('matchingOffer'),
             key: 1,
@@ -117,7 +120,11 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
         },
         { $sort: rentalMongoSort(query.sort) },
         { $limit: MAX_POINTS },
-      ]).collation(RENTAL_COLLATION),
+      ])
+        // The retained point rows still contain own-offer terms. Keep the map available when
+        // a larger catalogue/offer set pushes even this projected sort beyond 100 MiB.
+        .allowDiskUse(true)
+        .collation(RENTAL_COLLATION),
     ])
     const total = Number(totals[0]?.total) || 0
     const locatedCount = Number(locatedTotals[0]?.total) || 0
@@ -137,6 +144,14 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
         key: String(row.key),
         lat,
         lng,
+        ...(query.refLat !== null
+          ? {
+              distanceKm:
+                typeof row.distanceKm === 'number' && Number.isFinite(row.distanceKm)
+                  ? row.distanceKm
+                  : null,
+            }
+          : {}),
         price: Number(matched?.price ?? row.price) || 0,
         currency: (matched?.currency ?? row.currency) === 'USD' ? 'USD' : 'UYU',
         bedrooms: typeof row.bedrooms === 'number' ? row.bedrooms : null,

@@ -6,6 +6,12 @@ module.exports = {
       exec_mode: 'cluster',
       instances: '2', // Or a number of instances
       script: './.output/server/index.mjs',
+      // External Vue modules select their runtime at process start, even for a
+      // production Nuxt build. Development SSR exhausted the worker memory limit.
+      env: { NODE_ENV: 'production' },
+      // Collect short-lived SSR allocations before PM2's 900 MiB RSS cutoff.
+      // Leave headroom for native buffers and the rest of the process.
+      node_args: '--max-old-space-size=512',
       // Listening only proves the socket exists. Keep the previous worker until
       // server/entry.ts has rendered a real page before opening its replacement's socket.
       wait_ready: true,

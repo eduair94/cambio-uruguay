@@ -56,6 +56,8 @@ interface Props {
   zoom?: number
   height?: string
   userLocation?: { lat: number; lng: number } | null
+  referencePoint?: { lat: number; lng: number } | null
+  referenceLabel?: string
   radiusKm?: number
   highlightId?: string | null
   /** Disable Leaflet HTML popups when the page supplies its own contextual panel. */
@@ -82,6 +84,8 @@ const props = withDefaults(defineProps<Props>(), {
   zoom: 7,
   height: '70vh',
   userLocation: null,
+  referencePoint: null,
+  referenceLabel: '',
   radiusKm: 0,
   highlightId: null,
   popups: true,
@@ -98,6 +102,8 @@ const emit = defineEmits<{
   'marker-click': [branch: Branch]
   'zone-click': [zone: AreaZone]
   'map-click': []
+  'map-point': [point: { lat: number; lng: number }]
+  ready: []
 }>()
 
 const config = useRuntimeConfig()
@@ -111,6 +117,7 @@ let cluster: any = null
 let cashCluster: any = null
 let zoneLayer: any = null
 let userMarker: any = null
+let referenceMarker: any = null
 let radiusCircle: any = null
 let initStarted = false
 /** Ya se encuadró sobre los datos: sólo se hace en el primer render con marcadores. */
@@ -172,7 +179,7 @@ async function init() {
   await import('leaflet.markercluster/dist/MarkerCluster.Default.css')
 
   map = L.map(el.value, { scrollWheelZoom: true }).setView(props.center, props.zoom)
-  map.on('click', (event: { originalEvent?: MouseEvent }) => {
+  map.on('click', (event: { originalEvent?: MouseEvent; latlng: { lat: number; lng: number } }) => {
     const target = event.originalEvent?.target
     // A cluster zoom, marker selection or map control must not dismiss the page's panel.
     if (
@@ -181,6 +188,7 @@ async function init() {
     )
       return
     emit('map-click')
+    emit('map-point', { lat: event.latlng.lat, lng: event.latlng.lng })
   })
   L.tileLayer(tileUrl, {
     attribution:
@@ -199,6 +207,39 @@ async function init() {
   renderCashPoints()
 
   renderUser()
+  renderReference()
+  emit('ready')
+}
+
+function renderReference() {
+  if (!map) return
+  if (referenceMarker) map.removeLayer(referenceMarker)
+  referenceMarker = null
+  if (!props.referencePoint) return
+  referenceMarker = L.marker([props.referencePoint.lat, props.referencePoint.lng], {
+    icon: L.divIcon({
+      className: 'reference-pin',
+      html: '<span aria-hidden="true">+</span>',
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+    }),
+    title: props.referenceLabel,
+    alt: props.referenceLabel,
+    interactive: false,
+    keyboard: false,
+    zIndexOffset: 1000,
+  }).addTo(map)
+}
+
+function getCenter(): { lat: number; lng: number } | null {
+  const point = map?.getCenter()
+  return point ? { lat: point.lat, lng: point.lng } : null
+}
+function focusPoint(point: { lat: number; lng: number }) {
+  if (!map) return
+  // A late marker response must not replace the point the user explicitly chose.
+  hasFitted = true
+  map.setView([point.lat, point.lng], 16, { animate: false })
 }
 
 function cashIcon() {
@@ -315,7 +356,7 @@ function renderZones() {
  */
 function fitOnce() {
   if (!props.fitToMarkers || hasFitted || !map || !cluster) return
-  if (props.userLocation) return
+  if (props.userLocation || props.referencePoint) return
   if (!props.branches.length && !props.zones.length) return
   const bounds = cluster.getBounds()
   for (const zone of props.zones)
@@ -438,7 +479,7 @@ function revealMarker(
     animate: false,
   })
 }
-defineExpose({ focusBranch, focusMarker, revealMarker })
+defineExpose({ focusBranch, focusMarker, revealMarker, getCenter, focusPoint })
 
 // <client-only> renders its default-slot div AFTER this component's onMounted
 // fires, so el.value can still be null here. Watch the ref and init the moment
@@ -456,6 +497,7 @@ onBeforeUnmount(() => {
   cashCluster = null
   zoneLayer = null
   userMarker = null
+  referenceMarker = null
   radiusCircle = null
   initStarted = false
   hasFitted = false
@@ -491,6 +533,7 @@ watch(
   () => renderUser(),
   { deep: true }
 )
+watch(() => [props.referencePoint, props.referenceLabel], renderReference, { deep: true })
 watch(
   () => props.highlightId,
   id => applyHighlight(id ?? null)
@@ -509,6 +552,17 @@ watch(
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.04);
+}
+.locations-map :deep(.reference-pin) {
+  display: grid;
+  place-items: center;
+  background: #1565c0;
+  color: #fff;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 700;
 }
 .locations-map :deep(.location-zone-badge) {
   display: flex;

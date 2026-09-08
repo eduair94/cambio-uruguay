@@ -246,6 +246,7 @@ const RENT_FLOOR_UYU: Record<RentalPropertyType, number> = {
   habitacion: 3_000,
   local: 3_000,
   oficina: 3_000,
+  garaje: 2_000,
   terreno: 2_000,
   otro: 2_000,
 };
@@ -318,8 +319,11 @@ const TYPE_PATTERNS: ReadonlyArray<[RegExp, RentalPropertyType]> = [
   [/\b(local|comercial|galpon|deposito|tienda)\b/, "local"],
   [/\b(oficina|coworking|consultorio|escritorio comercial)\b/, "oficina"],
   [/\b(terreno|predio|campo|padron)\b/, "terreno"],
-  [/\b(garage|garaje|cochera|estacionamiento)\b/, "otro"],
 ];
+
+// The rented object must head the advert. A house WITH a garage is still a house; a garage IN
+// an apartment building is still a garage. Portal taxonomy remains authoritative when present.
+const STANDALONE_GARAGE = /^(?:(?:se\s+)?(?:alquila|alquilo|alquiler|arriendo|arrendamiento)(?:\s+de)?\s+)?(?:(?:un|una|excelente|amplio|comodo)\s+)*(?:garages?|garajes?|cocheras?|estacionamientos?|lugares? (?:de|para) (?:garage|garaje|estacionamiento))\b/;
 
 /**
  * Type from the portal's own taxonomy first (ML ships a `domain_id`, InfoCasas a numeric type),
@@ -334,9 +338,15 @@ export function inferPropertyType(title: string, hint?: string | null): RentalPr
     if (/room|habitacion|pension/.test(hintFlat)) return "habitacion";
     if (/commercial|local|store|warehouse|galpon/.test(hintFlat)) return "local";
     if (/office|oficina/.test(hintFlat)) return "oficina";
+    if (/\b(?:garages?|garajes?|cocheras?|estacionamientos?|parking)\b/.test(hintFlat)) return "garaje";
     if (/land|lot|terreno|campo/.test(hintFlat)) return "terreno";
   }
   const flat = flatten(title);
+  if (STANDALONE_GARAGE.test(flat)) {
+    // A bundled garage + dwelling is not evidence of a standalone parking-space rental.
+    if (/\b(?:y|con|mas|incluye)\s+(?:(?:un|una)\s+)?(?:casa|apartamento|apto|vivienda|local|oficina)\b/.test(flat)) return "otro";
+    return "garaje";
+  }
   for (const [pattern, type] of TYPE_PATTERNS) if (pattern.test(flat)) return type;
   return "otro";
 }
