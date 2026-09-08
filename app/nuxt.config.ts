@@ -41,6 +41,13 @@ export default defineNuxtConfig({
     appManifest: false,
   },
 
+  // cssCodeSplit:false already links the complete stylesheet in SSR. Avoid
+  // generating duplicate per-component server style chunks (934 in the measured
+  // build). The linked CSS remains byte-identical; see DEPLOY_PERFORMANCE.md.
+  features: {
+    inlineStyles: false,
+  },
+
   // Enable Nuxt 4 features
   future: {
     compatibilityVersion: 4,

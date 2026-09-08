@@ -45,6 +45,20 @@ log() { printf '
 [1;36m[deploy][0m %s
 ' "$*"; }
 
+# Report phase costs without printing command arguments or environment variables.
+timed() {
+  local label="$1" started="$SECONDS" status
+  shift
+  log "$label…"
+  if "$@"; then
+    log "$label completed in $((SECONDS - started))s."
+  else
+    status=$?
+    log "$label failed after $((SECONDS - started))s (exit $status)."
+    return "$status"
+  fi
+}
+
 # Espera a que la app conteste. Se exige mas de un 200 SEGUIDO porque el socket lo escucha el God
 # daemon de pm2 y reparte round-robin: un solo 200 se contesta con una instancia arriba y la otra en
 # crash-loop, o incluso con un worker huerfano sirviendo el build anterior.
@@ -77,13 +91,7 @@ fi
 cd "$APP_DIR"
 
 if [ "$REEXEC" != "1" ]; then
-  log "Pulling latest main…"
-  # `npm install` (below, on prior deploys) can regenerate app/package-lock.json,
-  # leaving the server tree dirty so the next ff-only pull aborts with "local
-  # changes would be overwritten". Discard that tracked churn before pulling —
-  # the committed lock is the source of truth.
-  git -C "$REPO_DIR" checkout -- app/package-lock.json 2>/dev/null || true
-  git -C "$REPO_DIR" pull --ff-only origin main
+  bash "$APP_DIR/scripts/sync-deploy-source.sh" "$REPO_DIR"
 fi
 
 # Este script se actualiza a si mismo, y sin esto el arreglo llega siempre un deploy tarde.
@@ -129,8 +137,7 @@ if [ -n "$DEPS_HASH" ] && [ -d node_modules ] && [ -f "$DEPS_STAMP" ] &&
   [ "$(cat "$DEPS_STAMP")" = "$DEPS_HASH" ]; then
   log "Deps unchanged — skipping npm install."
 else
-  log "Installing deps (no-audit)…"
-  npm install --no-audit --no-fund
+  timed "Install dependencies" npm install --force --no-audit --no-fund
   # An `if`, not `[ … ] && …`: under `set -e` a trailing `&&` that short-circuits
   # returns 1 and would abort the deploy on the machines with no sha256sum.
   if [ -n "$DEPS_HASH" ]; then
@@ -138,10 +145,9 @@ else
   fi
 fi
 
-log "Building into staging dir ($STAGING) — live .output keeps serving…"
-rm -rf "$STAGING" "$APP_DIR/.nuxt"
+timed "Clear staging and generated build files" rm -rf "$STAGING" "$APP_DIR/.nuxt"
 # 8192 heap: 4096 OOM'd after firebase-auth landed (see memory/deploy notes).
-NODE_OPTIONS="--max-old-space-size=8192" NITRO_OUTPUT_DIR="$STAGING" npx nuxt build
+timed "Build staging output" env NODE_OPTIONS="--max-old-space-size=8192" NITRO_OUTPUT_DIR="$STAGING" npx nuxt build
 
 # Sanity: the staging build must have a server entry before we swap.
 if [ ! -f "$STAGING/server/index.mjs" ]; then
@@ -151,50 +157,17 @@ fi
 
 # A listening socket is not proof of working SSR. Validate the complete candidate
 # on a separate port BEFORE touching live output or asking PM2 to reload.
-log "Checking candidate SSR before the swap…"
-node "$APP_DIR/scripts/check-staging.cjs" "$STAGING"
+timed "Check candidate SSR before the swap" node "$APP_DIR/scripts/check-staging.cjs" "$STAGING"
 
 # The old workers still serve requests until each replacement has rendered SSR
 # and signalled ready. Their lazy server imports resolve through .output, too:
 # swapping only client assets stranded them between the swap and the reload.
-log "Retaining the previous worker's server chunks for the rolling reload…"
-bash "$APP_DIR/scripts/retain-server-chunks.sh" "$APP_DIR/.output" "$STAGING"
+timed "Retain previous server chunks" bash "$APP_DIR/scripts/retain-server-chunks.sh" "$APP_DIR/.output" "$STAGING"
 
-# Cached HTML and already-open tabs can reference the previous generation's
-# hashed chunks for up to an hour. Carry those immutable files into the fresh
-# output before the swap so a rolling reload never strands an old client.
-if [ -d "$APP_DIR/.output/public/_nuxt" ]; then
-  log "Carrying previous Nuxt assets into the fresh build..."
-  mkdir -p "$STAGING/public/_nuxt"
-  cp -a -n "$APP_DIR/.output/public/_nuxt/." "$STAGING/public/_nuxt/"
-  # Bound retained generations while leaving a wide margin over the 1h CDN TTL.
-  #
-  # This prune is close to a no-op and that is DELIBERATE — do not "fix" it
-  # without reading this. Two things were measured on the server (2026-08-18):
-  #
-  #   1. `-mtime` counts whole 24h periods, so `+2` means "older than THREE
-  #      days", not two. It matched 4 files out of 14.205. Lowering it to `+1`
-  #      (older than two days) matched the same 4. Age in days is simply the
-  #      wrong unit here.
-  #   2. The tree is big because of deploy FREQUENCY, not age: ~14k files and
-  #      407 MB, of which 13.411 were under a day old. Every deploy adds a
-  #      generation of chunks and `cp -a -n` keeps their original mtimes.
-  #
-  # So bounding this meaningfully needs hours (`-mmin +360` would drop 11.362
-  # files). That was left alone on purpose: `/root` has 130 GB free at 71% use,
-  # so the 407 MB buys nothing, while a shorter window raises the chance of
-  # 404ing a lazy chunk for a tab that was open or a laptop that was suspended.
-  # The `rm -rf` this was blamed for turned out to be I/O contention with the
-  # other pm2 jobs, not tree size, and it is off the critical path now anyway.
-  find "$STAGING/public/_nuxt" -type f -mtime +2 -delete
-fi
-
-# Nuxt reserves /_nuxt for generated files, so copy compatibility assets after
-# the build as well. These recover specific clients stranded by older deploys.
-if [ -d "$APP_DIR/public/_nuxt" ]; then
-  mkdir -p "$STAGING/public/_nuxt"
-  cp -a "$APP_DIR/public/_nuxt/." "$STAGING/public/_nuxt/"
-fi
+# Reuse immutable client files while preserving the three-day retention window.
+# Compatibility overrides go first so no later copy can modify a live hardlink.
+timed "Retain previous client assets" bash "$APP_DIR/scripts/retain-client-assets.sh" \
+  "$APP_DIR/.output" "$STAGING" "$APP_DIR/public/_nuxt"
 
 log "Swapping staging build into .output…"
 rm -rf "$PREV"

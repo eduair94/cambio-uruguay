@@ -1,6 +1,6 @@
 name: CI / Deploy
 
-# Tests run on every push and PR. A zero-downtime production deploy to the
+# Tests run for each changed package on pushes and PRs. A zero-downtime production deploy to the
 # 104 server runs only after tests pass on `main` (or via manual dispatch).
 on:
   push:
@@ -8,11 +8,11 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Never run two production deploys at once: queue a new one, never cancel a
-# deploy that is already swapping/reloading on the server.
+# PR checks can replace older PR checks without waiting for a production build.
+# Production deploys stay serialized and are never cancelled during a swap/reload.
 concurrency:
-  group: production-deploy
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('ci-pr-{0}', github.event.pull_request.number) || 'production-deploy' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   secret-scan:
@@ -21,6 +21,8 @@ jobs:
 
   test:
     name: Unit tests
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.appTests == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -38,12 +40,12 @@ jobs:
           cache-dependency-path: app/package-lock.json
       # `npm install`, not `npm ci` — same as the server's deploy.sh. The cache
       # above only warms ~/.npm; it does not change how the tree is resolved.
-      - run: npm install --no-audit --no-fund
+      - run: npm install --force --no-audit --no-fund
       - run: npm run test
 
   deploy:
     name: Zero-downtime deploy
-    needs: [secret-scan, test, changes]
+    needs: [secret-scan, test, backend-test, changes]
     # Deploy only for pushes to main (and manual dispatch on main); never for PRs
     # — AND only when the push actually touched the Nuxt app.
     #
@@ -67,6 +69,10 @@ jobs:
     # BEFORE the coupling lands, because the failure mode here is a change that
     # silently never reaches production.
     if: >-
+      !cancelled() &&
+      needs.secret-scan.result == 'success' &&
+      needs.test.result == 'success' &&
+      (needs.backend-test.result == 'success' || needs.backend-test.result == 'skipped') &&
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && needs.changes.outputs.app == 'true'))
@@ -112,6 +118,8 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       app: ${{ steps.filter.outputs.app }}
+      appTests: ${{ steps.filter.outputs.app == 'true' || steps.filter.outputs.appContracts == 'true' }}
+      backendTests: ${{ steps.filter.outputs.backend == 'true' || steps.filter.outputs.backendContracts == 'true' }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -121,6 +129,18 @@ jobs:
             app:
               - 'app/**'
               - '.github/workflows/deploy.yml'
+            # Test-only cross-package inputs never trigger the other package's deploy.
+            # Broader utility/server boundaries also cover transitive contract imports.
+            appContracts:
+              - 'classes/aduana/**'
+              - 'classes/origins.ts'
+              - 'classes/cambios/**'
+              - 'classes/rentals/guarantees.ts'
+            backendContracts:
+              - 'app/utils/**'
+              - 'app/server/**'
+              - 'app/pages/videos-de-economia-uruguay.vue'
+              - 'app/pages/videos-de-economia-uruguay/**'
             backend:
               - 'index.ts'
               - 'classes/**'
@@ -140,12 +160,18 @@ jobs:
 
   backend-test:
     name: Backend unit tests
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.backendTests == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          # Cache downloads even though this package deliberately has no lockfile.
+          # npm still resolves and installs the declared dependency ranges each run.
+          cache: npm
+          cache-dependency-path: package.json
       # El npm que trae Node 22 es la serie 10, y ahí `npm install` sin lockfile
       # revienta con "Cannot read properties of null (reading 'edgesOut')" — un
       # bug de arborist. Pasó dos veces seguidas el 2026-09-03 (6de2bc6 y
@@ -165,7 +191,7 @@ jobs:
 
   backend-deploy:
     name: Backend zero-downtime deploy
-    needs: [secret-scan, backend-test, changes, deploy]
+    needs: [secret-scan, test, backend-test, changes, deploy]
     # `needs: deploy` (the app deploy job above) is not a functional dependency
     # — it exists purely to sequence the two deploy jobs so their SSH sessions
     # never `git pull` the SAME repo tree at the same time (see the race note in
@@ -176,6 +202,7 @@ jobs:
       always() &&
       needs.secret-scan.result == 'success' &&
       needs.backend-test.result == 'success' &&
+      (needs.test.result == 'success' || needs.test.result == 'skipped') &&
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && needs.changes.outputs.backend == 'true'))
