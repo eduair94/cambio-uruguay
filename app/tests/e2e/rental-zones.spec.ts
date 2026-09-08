@@ -424,9 +424,18 @@ test('1366px: map polygons provide keyboard actions and an equivalent list', asy
   await expect(page.getByTestId('rental-zone-detail')).not.toContainText('violencia-domestica')
   await shot(page, info, 'crime-detail-1366')
   await page.getByRole('button', { name: 'Lista', exact: true }).click()
-  await expect(
-    page.getByRole('button', { name: 'Ver información de Cordón, Montevideo', exact: true })
-  ).toBeVisible()
+  const listButton = page.getByRole('button', {
+    name: 'Ver información de Cordón, Montevideo',
+    exact: true,
+  })
+  await expect(listButton).toBeVisible()
+  await page.getByTestId('rental-zone-detail-close').click()
+  await expect(page.getByTestId('rental-zone-detail')).toHaveCount(0)
+  await expect(listButton).toBeFocused()
+  await listButton.click()
+  await expect(page.getByTestId('rental-zone-detail')).toContainText('Cordón')
+  await page.keyboard.press('Escape')
+  await expect(page.getByTestId('rental-zone-detail')).toHaveCount(0)
   await noOverflow(page)
   expect(state.errors).toEqual([])
 })

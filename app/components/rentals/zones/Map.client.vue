@@ -48,6 +48,7 @@ function render() {
           if (!path) return
           path.setAttribute('tabindex', '0')
           path.setAttribute('role', 'button')
+          path.setAttribute('data-zone-id', id)
           path.setAttribute(
             'aria-label',
             props.labels[id] || String(feature.properties?.name || id)

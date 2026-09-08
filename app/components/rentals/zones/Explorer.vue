@@ -156,6 +156,7 @@
                 >
                   <button
                     type="button"
+                    :data-zone-id="zone.id"
                     :aria-label="
                       t('viewZone', { name: `${zone.ref.neighborhood}, ${zone.ref.department}` })
                     "
@@ -201,6 +202,7 @@
             :price-statistic="priceStatistic"
             :rental-date="data.rentalDataAsOf"
             :price-sources="data.sources"
+            @close="closeDetail"
           >
             <div class="detail-actions">
               <VBtn
@@ -496,6 +498,15 @@ async function selectDetail(id: string) {
     document
       .querySelector('[data-testid="rental-zone-detail"]')
       ?.scrollIntoView({ block: 'nearest', behavior: 'instant' })
+}
+async function closeDetail() {
+  const previous = selectedId.value
+  selectedId.value = null
+  if (!previous) return
+  await nextTick()
+  const origin = document.querySelector(`[data-zone-id="${CSS.escape(previous)}"]`)
+  if (origin instanceof HTMLElement || origin instanceof SVGElement)
+    origin.focus({ preventScroll: true })
 }
 const number = (value: number) =>
   new Intl.NumberFormat(locale.value, { maximumFractionDigits: 0 }).format(value)

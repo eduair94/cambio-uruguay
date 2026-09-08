@@ -5,10 +5,21 @@
     tabindex="-1"
     :aria-label="zone.ref.neighborhood"
     data-testid="rental-zone-detail"
+    @keydown.esc.stop.prevent="emit('close')"
   >
     <header>
-      <h3>{{ zone.ref.neighborhood }}</h3>
-      <p>{{ zone.ref.department }}</p>
+      <div class="heading">
+        <h3>{{ zone.ref.neighborhood }}</h3>
+        <p>{{ zone.ref.department }}</p>
+      </div>
+      <VBtn
+        data-testid="rental-zone-detail-close"
+        icon="mdi-close"
+        variant="text"
+        size="small"
+        :aria-label="t('closeDetail')"
+        @click="emit('close')"
+      />
     </header>
     <p v-if="!zone.boundaryAvailable" class="meta">{{ t('noMap') }}</p>
     <template v-if="layer === 'prices'">
@@ -128,6 +139,7 @@ const props = defineProps<{
   rentalDate: string | null
   priceSources: RentalZoneSource[]
 }>()
+const emit = defineEmits<{ close: [] }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalZoneMessages })
 const localePath = useLocalePath()
 const section = ref<HTMLElement>()
@@ -212,7 +224,17 @@ defineExpose({ focus: () => section.value?.focus({ preventScroll: true }) })
   margin: 0;
 }
 header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 12px;
+}
+header .heading {
+  min-width: 0;
+}
+header .v-btn {
+  margin: -4px -4px 0 0;
 }
 h3 {
   font-size: 1.25rem;
