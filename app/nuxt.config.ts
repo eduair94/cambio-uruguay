@@ -648,7 +648,8 @@ export default defineNuxtConfig({
         },
         client: {
           installPrompt: true,
-          periodicSyncForUpdates: 20,
+          // Our pwa-updates plugin preserves polling and handles transient network failures.
+          periodicSyncForUpdates: 0,
         },
         devOptions: {
           enabled: false,

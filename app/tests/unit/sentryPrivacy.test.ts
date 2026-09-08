@@ -43,8 +43,54 @@ describe('Sentry errors privacy boundary', () => {
     ['/api/me/rental-alerts/private-id?token=secret', '/api/me/rental-alerts/:item'],
     ['/api/rentals?source=private', '/api/rentals'],
     ['/api/rentals/budget?neighborhood=secret', '/api/rentals/budget'],
+    ['/api/rentals/geocode?q=private-address', '/api/rentals/geocode'],
+    [
+      '/__og-image__/image/pt/historico/private-origin/og.png?token=secret',
+      '/__og-image__/image/historico/:item',
+    ],
+    [
+      '/__og-image__/static/alquileres/private-house/og.png',
+      '/__og-image__/static/alquileres/:item',
+    ],
+    ['/__og-image__/image/private-page/og.png', '/__og-image__/image/other'],
+    ['/__og-image__/image/og.png', '/__og-image__/image/'],
+    ['/__og-image__/image/__og-image__/image/private', '/__og-image__/image/other'],
+    ['/__og-image__/image/pt/__og-image__/image/private', '/__og-image__/image/other'],
     ['/unlisted-private-path', '/other'],
   ])('redacts route %s', (path, category) => expect(sentryRouteCategory(path)).toBe(category))
+
+  it('keeps OG categories stable when a hook and beforeSend both sanitize them', () => {
+    for (const path of [
+      '/__og-image__/image/historico/private/og.png',
+      '/__og-image__/static/alquileres/private/og.png',
+      '/__og-image__/image/private/og.png',
+      '/__og-image__/image/og.png',
+    ]) {
+      const category = sentryRouteCategory(path)
+      expect(sentryRouteCategory(category)).toBe(category)
+    }
+  })
+
+  it.each([
+    [
+      '[Nuxt OG Image] HTML response from /private?email=private@example.invalid is missing the #nuxt-og-image-options script tag. Make sure you have defined an og image for this page.',
+      'OG image metadata missing from page',
+    ],
+    [
+      '[Nuxt OG Image] Failed to read the path /private?token=private for og-image extraction, returning no HTML.',
+      'OG image page returned no HTML',
+    ],
+  ])('preserves the technical OG failure without its page URL: %s', (value, expected) => {
+    const result = sanitizeSentryEvent(
+      { tags: { http_status: '500' }, exception: { values: [{ type: 'Error', value }] } },
+      {},
+      config,
+      'nitro'
+    )!
+    expect(result.exception?.values?.[0].value).toBe(expected)
+    expect(JSON.stringify(result)).not.toContain('private')
+    expect(result.tags?.http_status).toBe('500')
+  })
 
   it('projects only technical fields, including nested frames and attachments', () => {
     const secret = 'private-email@example.invalid'

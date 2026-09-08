@@ -25,6 +25,12 @@ No se envían usuarios, UID, email, IP como dato de evento, cookies, cabeceras, 
 
 La misma excepción se cuenta una vez aunque atraviese ambos hooks de Nuxt; errores independientes siguen siendo observables. No existe un endpoint público de prueba ni una ruta para generar errores a pedido.
 
+Las solicitudes de imágenes sociales conservan el prefijo `/__og-image__/image`
+o `/__og-image__/static` y sólo la categoría de la página subyacente, nunca su
+slug o consultas. Los errores conocidos de extracción distinguen falta de HTML
+y falta de metadatos OG. El buscador de direcciones tiene la categoría fija
+`/api/rentals/geocode`, sin conservar la dirección ingresada.
+
 ## Verificación sin envíos externos
 
 `sentryPrivacy.test.ts`, `sentryIntegration.test.ts` y `sentryBrowser.test.ts` prueban proyección, gates, deduplicación, los handlers reales del SDK en navegador, el hook Nitro y envelopes mediante un transporte en memoria. Un servidor H3 local confirma que la respuesta HTTP 503 no expone la causa ni el stack interno. Ninguna de estas pruebas envía eventos al proyecto del propietario.

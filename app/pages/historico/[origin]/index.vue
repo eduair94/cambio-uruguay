@@ -273,26 +273,12 @@ const items = computed<CambioItem[]>(() => {
 
   const dataArray = Array.isArray(rawData.value) ? rawData.value : [rawData.value]
 
-  const processedItems = dataArray
+  return dataArray
     .map((item: any) => ({
       ...item,
       spread: calculateSpread(item.buy, item.sell),
     }))
     .filter((item: any) => item.origin) // Filter items without origin
-
-  // Check if the origin exists
-  const originExists = processedItems.some(item => item.origin === route.params.origin)
-
-  if (processedItems.length > 0 && !originExists) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: `Casa de cambio "${formatOriginName(
-        route.params.origin as string
-      )}" no encontrada`,
-    })
-  }
-
-  return processedItems
 })
 
 // Last update timestamp
@@ -562,6 +548,17 @@ watch(
 onMounted(() => {
   restoreFiltersFromQuery()
 })
+
+// Reject before registering reactive metadata. Throwing inside `items` during
+// SSR leaves that computed undefined when Unhead reads it again, replacing the
+// intended 404 with a TypeError in pickOriginRate. An empty/unavailable board
+// does not prove the origin is unknown. Nuxt remounts this page for each origin.
+if (items.value.length > 0 && !items.value.some(item => item.origin === route.params.origin)) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: `Casa de cambio "${formatOriginName(route.params.origin as string)}" no encontrada`,
+  })
+}
 
 // Today's USD cash quote for this casa (SSR — items come from useAsyncData), so
 // the SERP snippet leads with the actual number ("Dólar en BROU hoy: compra $X,

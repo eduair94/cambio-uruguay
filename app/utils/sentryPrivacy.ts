@@ -44,6 +44,7 @@ const pageFamilies = [
   'blog',
 ]
 const apiFamilies = [
+  '/api/rentals/geocode',
   '/api/rentals/budget',
   '/api/rentals/mapa',
   '/api/rentals/availability',
@@ -67,6 +68,20 @@ export function sentryRouteCategory(value: unknown): string {
   } catch {
     return '/other'
   }
+  if (path === '/') return '/'
+  // OG URLs contain the underlying page, which can itself contain private
+  // slugs. Retain only its existing route category, including on a second pass.
+  const ogRoute = path.match(/^\/__og-image__\/(image|static)(\/.*)?$/)
+  if (ogRoute) {
+    const page = (ogRoute[2] || '/')
+      .replace(/\/og\.(?:png|jpe?g|webp|svg|json|html)$/, '')
+      .replace(/^\/(?:en|pt)(?=\/|$)/, '')
+    return `/__og-image__/${ogRoute[1]}${pageRouteCategory(page || '/')}`
+  }
+  return pageRouteCategory(path)
+}
+
+function pageRouteCategory(path: string): string {
   if (path === '/') return '/'
   for (const prefix of apiFamilies) {
     if (path === prefix || path.startsWith(`${prefix}/`))
@@ -107,6 +122,9 @@ function errorClass(value: unknown): string {
 function technicalMessage(value: unknown, status?: string): string {
   const message = typeof value === 'string' ? value : ''
   if (/Sort exceeded memory limit/i.test(message)) return 'MongoDB sort exceeded memory limit'
+  if (/\[Nuxt OG Image\].*missing the #nuxt-og-image-options script tag/.test(message))
+    return 'OG image metadata missing from page'
+  if (/\[Nuxt OG Image\].*returning no HTML/.test(message)) return 'OG image page returned no HTML'
   if (
     /Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk .+ failed/i.test(
       message
