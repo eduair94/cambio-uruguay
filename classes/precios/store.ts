@@ -63,6 +63,20 @@ export interface PrecioBasketDaily {
   qualifiedStores: number;
   /** Mediana nacional de la canasta emparejada. 1 = el nivel de precios medio. */
   nationalRatio: number;
+  /**
+   * Lo que cuesta la canasta a precios nacionales medianos, partido en comida y
+   * no-comida. Unica cifra absoluta que esta fuente da sin imputar; NO es un
+   * presupuesto alimentario (ver nationalBasketCost en basket.ts).
+   */
+  nationalCost: {
+    food: number;
+    nonFood: number;
+    total: number;
+    itemsPriced: number;
+    foodItems: number;
+    nonFoodItems: number;
+    items: number;
+  };
   indexPublished: boolean;
   indexReason: string;
   scopes: Array<{ scope: string; median: number; stores: number; qualified: boolean; note: string }>;

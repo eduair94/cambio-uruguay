@@ -84,6 +84,84 @@ export const NEEDS: ReadonlyArray<{ need: string; pattern: RegExp; qty: number }
 
 const BASKET_BY_ARTICLE = new Map(BASKET_ITEMS.map((item) => [item.articleId, item]));
 
+/**
+ * Las necesidades de la canasta que NO son comida.
+ *
+ * Existe porque la canasta se armó para comparar locales, y para eso conviene
+ * incluir limpieza e higiene —son artículos con mucha cobertura y precio
+ * comparable—. Pero cualquiera que use el total como gasto en alimentos estaría
+ * sumando el shampoo, que es el artículo más caro de la lista.
+ */
+export const NON_FOOD_NEEDS: ReadonlySet<string> = new Set([
+  "papel higiénico",
+  "detergente",
+  "jabón en polvo",
+  "hipoclorito",
+  "jabón de tocador",
+  "pasta dental",
+  "shampoo",
+]);
+
+export interface NationalBasketCost {
+  /** Σ mediana nacional × cantidad, sólo alimentos. */
+  food: number;
+  /** Ídem, limpieza e higiene. */
+  nonFood: number;
+  total: number;
+  /** Cuántos de los artículos de la canasta tenían mediana. */
+  itemsPriced: number;
+  /** Cuántos de los que tenían mediana son alimentos. */
+  foodItems: number;
+  /** Cuántos son limpieza e higiene. */
+  nonFoodItems: number;
+  items: number;
+}
+
+/**
+ * Lo que cuesta la canasta a precios nacionales MEDIANOS.
+ *
+ * Es la única cifra absoluta que esta fuente puede dar sin imputar nada: la
+ * mediana de cada artículo sale de observaciones reales de ese artículo, y no se
+ * rellena ningún hueco (a diferencia del total por local, que baja cuando al
+ * local le faltan artículos — ver `storeBasket`).
+ *
+ * NO es un presupuesto alimentario y no puede serlo: el catálogo del SIPC no
+ * tiene leche fluida, ni pan fresco, ni legumbres, y las cantidades de acá son
+ * las de un índice de precios, no las de un consumo real. Medido el 2026-09-08
+ * da $7.731 de comida para un hogar de dos, o sea $3.865 por adulto — por debajo
+ * de la propia línea de indigencia del INE ($6.628). Sirve para ver precios
+ * concretos y verificables, no para presupuestar.
+ */
+export function nationalBasketCost(medians: Map<number, number>): NationalBasketCost {
+  let food = 0;
+  let nonFood = 0;
+  let foodItems = 0;
+  let nonFoodItems = 0;
+
+  for (const item of BASKET_ITEMS) {
+    const median = medians.get(item.articleId);
+    if (!median || !Number.isFinite(median) || median <= 0) continue;
+    const line = median * item.qty;
+    if (NON_FOOD_NEEDS.has(item.need)) {
+      nonFood += line;
+      nonFoodItems++;
+    } else {
+      food += line;
+      foodItems++;
+    }
+  }
+
+  return {
+    food,
+    nonFood,
+    total: food + nonFood,
+    itemsPriced: foodItems + nonFoodItems,
+    foodItems,
+    nonFoodItems,
+    items: BASKET_ITEMS.length,
+  };
+}
+
 export interface StoreBasket {
   /** Lo que cuestan, en ESTE local, los artículos que ESTE local declara. */
   cost: number;

@@ -6,7 +6,15 @@
 // góndola va al final, porque necesita la mediana nacional de cada artículo,
 // que sólo existe cuando terminó todo.
 import { auditShelves, type PrecioScoredRow, type ShelfVerdict } from "./audit";
-import { BASKET_ITEMS, BASKET_PINNED_AT, BASKET_VERSION, groupBaskets, indexDecision, storeBasket } from "./basket";
+import {
+  BASKET_ITEMS,
+  BASKET_PINNED_AT,
+  BASKET_VERSION,
+  groupBaskets,
+  indexDecision,
+  nationalBasketCost,
+  storeBasket,
+} from "./basket";
 import { chainKey, fetchCatalog } from "./catalog";
 import { articleBand, percentile, priceVerdict } from "./plausibility";
 import { freshnessOf } from "./staleness";
@@ -219,6 +227,7 @@ export async function refreshPrecios(options: { limit?: number; day?: string } =
     basketItems: BASKET_ITEMS.length,
     qualifiedStores: qualified.length,
     nationalRatio,
+    nationalCost: nationalBasketCost(nationalMedians),
     indexPublished: indexVerdict.publish,
     indexReason: indexVerdict.reason,
     scopes: [
