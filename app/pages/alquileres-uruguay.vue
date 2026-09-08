@@ -18,20 +18,18 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
           :class="{ 'rentals-related-disclosure--expanded': relatedSearchesOpen }"
           data-testid="rental-related-searches"
         >
-          <button
+          <VBtn
             type="button"
-            class="rentals-related-toggle"
+            class="rentals-related-toggle text-none"
+            variant="outlined"
+            color="link"
+            :append-icon="relatedSearchesOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
             :aria-expanded="relatedSearchesOpen"
             aria-controls="rental-related-links"
             @click="relatedSearchesOpen = !relatedSearchesOpen"
           >
             {{ t('relatedSearches') }}
-            <VIcon
-              :icon="relatedSearchesOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-              size="18"
-              aria-hidden="true"
-            />
-          </button>
+          </VBtn>
           <nav id="rental-related-links" class="rentals-related" :aria-label="t('relatedSearches')">
             <NuxtLink :to="localePath('/analisis-alquileres-uruguay')">{{
               t('analysisShort')
@@ -51,9 +49,9 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
         </div>
         <div class="rentals-provenance">
           <a href="#rental-coverage" :title="activeSourceLabels">{{ t('coverage') }}</a>
-          <span v-if="meta?.generatedAt">{{
+          <time v-if="meta?.generatedAt" :datetime="meta.generatedAt">{{
             t('date', { date: dateLabel(meta.generatedAt) })
-          }}</span>
+          }}</time>
         </div>
         <VAlert v-if="downSources.length" type="warning" variant="tonal" class="mt-3">{{
           t('sourceWarning', {
@@ -1428,6 +1426,7 @@ useHead(() => ({
   flex: 0 0 44px;
 }
 .rentals-head {
+  min-width: 0;
   margin: 12px 0 24px;
 }
 .rentals-head h1 {
@@ -1440,6 +1439,7 @@ useHead(() => ({
 .rentals-lead {
   margin: 0;
   max-width: 75ch;
+  line-height: 1.5;
   color: rgba(var(--v-theme-on-surface), 0.8);
 }
 .rentals-provenance {
@@ -1447,7 +1447,9 @@ useHead(() => ({
   flex-wrap: wrap;
   gap: 8px 20px;
   margin-top: 12px;
-  font-size: 0.78rem;
+  align-items: center;
+  font-size: 0.8rem;
+  line-height: 1.5;
   color: rgba(var(--v-theme-on-surface), 0.76);
 }
 .rentals-provenance a,
@@ -1487,16 +1489,6 @@ useHead(() => ({
 .rentals--mobile .rentals-chips > .v-btn {
   flex: none;
   min-height: 44px;
-}
-.rentals--mobile .rentals-head {
-  margin: 6px 0 12px;
-}
-.rentals--mobile .rentals-lead {
-  font-size: 0.9rem;
-  line-height: 1.45;
-}
-.rentals--mobile .rentals-provenance {
-  margin-top: 8px;
 }
 .rentals--mobile .rentals-toolbar {
   margin: 8px 0 12px;
@@ -1905,7 +1897,7 @@ useHead(() => ({
 }
 @media (max-width: 599px) {
   .rentals-head h1 {
-    font-size: 1.55rem;
+    font-size: clamp(1.35rem, 6.4vw, 1.55rem);
   }
   .rentals-grid {
     grid-template-columns: 1fr;
@@ -1920,9 +1912,6 @@ useHead(() => ({
   .rentals-tools {
     gap: 0;
   }
-  .rentals-provenance {
-    gap: 6px 12px;
-  }
 }
 
 .rentals-related-toggle {
@@ -1933,19 +1922,29 @@ useHead(() => ({
   outline-offset: 2px;
 }
 @media (max-width: 959px) {
-  .rentals-related-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 44px;
-    padding-block: 10px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    line-height: 24px;
-    color: rgb(var(--v-theme-link));
+  .rentals-head {
+    margin: 8px 0 24px;
   }
-  .rentals-related-disclosure--expanded {
-    padding-bottom: 8px;
+  .rentals-related-disclosure {
+    margin-top: 16px;
+  }
+  .rentals-related-toggle {
+    display: inline-flex;
+    justify-content: space-between;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 48px;
+    height: auto;
+    padding: 12px 16px;
+    border-color: rgba(var(--v-border-color), var(--v-border-opacity));
+    font-size: 0.875rem;
+    line-height: 1.5;
+    letter-spacing: 0;
+    text-align: left;
+  }
+  .rentals-related-toggle :deep(.v-btn__content) {
+    justify-content: flex-start;
+    white-space: normal;
   }
   /* CSS closes the mobile links in the first HTML, before viewport hydration. */
   .rentals-related-disclosure:not(.rentals-related-disclosure--expanded) .rentals-related {
@@ -1955,16 +1954,14 @@ useHead(() => ({
     display: none;
   }
   .rentals-related {
-    gap: 0 16px;
-    margin-top: 4px;
+    gap: 4px 16px;
+    margin-top: 8px;
   }
   .rentals-related a {
-    font-size: 0.8rem;
+    font-size: 0.875rem;
   }
-  .rentals--mobile .rentals-provenance {
-    margin-top: 0;
-    align-items: center;
-    gap: 0 12px;
+  .rentals-provenance {
+    margin-top: 8px;
   }
   .rentals-provenance > a {
     min-height: 44px;
@@ -2068,6 +2065,20 @@ useHead(() => ({
   }
   .rental-card__detail {
     font-size: 0.875rem;
+  }
+}
+@media (max-width: 599px) {
+  .rentals-related-toggle {
+    width: 100%;
+  }
+  .rentals-related {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .rentals-provenance {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
   }
 }
 </style>
