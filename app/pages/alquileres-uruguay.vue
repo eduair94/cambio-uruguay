@@ -35,7 +35,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               v-for="search in relatedSearches"
               :key="search.path"
               :to="localePath(search.path)"
-              variant="tonal"
+              variant="outlined"
               color="link"
               class="rentals-related-action text-none"
             >
