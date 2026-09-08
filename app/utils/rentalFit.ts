@@ -9,6 +9,8 @@ import type {
   RentalFitInput,
   RentalFitResponse,
   RentalFitResult,
+  RentalFitZoneRef,
+  RentalFitZones,
 } from './rentalFitTypes'
 
 const invalid = () => new Error('Invalid household rental criteria')
@@ -58,6 +60,33 @@ const choice = <T extends string>(value: unknown, values: readonly T[], fallback
   return value as T
 }
 
+const zoneKey = (zone: RentalFitZoneRef) =>
+  JSON.stringify([fold(zone.department), fold(zone.neighborhood)])
+const zoneName = (value: unknown): string => {
+  if (typeof value !== 'string' || value.length > 100 || /[\p{Cc}\p{Cf}<>]/u.test(value))
+    throw invalid()
+  const name = value.normalize('NFC').trim().replace(/\s+/g, ' ')
+  if (!name) throw invalid()
+  return name
+}
+/** Exact scoped names only. Invalid or conflicting restrictions cannot silently broaden a search. */
+function normalizeZones(value: unknown): RentalFitZones {
+  const raw = value === undefined ? {} : ownObject(value)
+  const list = (value: unknown): RentalFitZoneRef[] => {
+    if (value === undefined) return []
+    if (!Array.isArray(value) || value.length > 20) throw invalid()
+    const zones = Array.from(value, value => {
+      const zone = ownObject(value)
+      return { department: zoneName(zone.department), neighborhood: zoneName(zone.neighborhood) }
+    })
+    return [...new Map(zones.map(zone => [zoneKey(zone), zone])).values()]
+  }
+  const include = list(raw.include),
+    exclude = list(raw.exclude)
+  if (include.some(zone => exclude.some(other => zoneKey(zone) === zoneKey(other)))) throw invalid()
+  return { mode: choice(raw.mode, ['prefer', 'only'] as const, 'prefer'), include, exclude }
+}
+
 /** Reject an invalid household as a whole; never silently remove a person's destination. */
 export function normalizeRentalFitInput(value: unknown): RentalFitInput {
   try {
@@ -102,6 +131,7 @@ export function normalizeRentalFitInput(value: unknown): RentalFitInput {
     const minBedrooms = number(raw.minBedrooms, 20, 0)
     if (!Number.isInteger(minBedrooms)) throw invalid()
     return {
+      zones: normalizeZones(raw.zones),
       people,
       housingBudgetUyu,
       otherExpensesUyu: amount(raw.otherExpensesUyu),
@@ -133,6 +163,7 @@ const fold = (value: string) =>
     .replace(/[\u0300-\u036F]/g, '')
     .toLowerCase()
     .trim()
+    .replace(/\s+/g, ' ')
 const nonnegative = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0
 const scoreForBurden = (burden: number) => 100 / (1 + burden)
@@ -152,6 +183,7 @@ function chooseOffer(
   usdUyu: number,
   cutoff: string
 ) {
+  const zones = input.zones!
   return candidate.property.offers
     .filter(offer => {
       if (
@@ -170,11 +202,34 @@ function chooseOffer(
       return !input.hideReported || !rentalAvailabilityHidden(reported, 'hide_any')
     })
     .map(offer => {
+      const evidence = candidate.offerZones?.find(
+        row => row.source === offer.source && row.listingId === offer.listingId
+      )
+      let zone: RentalFitZoneRef | null = null
+      try {
+        if (evidence?.zone)
+          zone = {
+            department: zoneName(evidence.zone.department),
+            neighborhood: zoneName(evidence.zone.neighborhood),
+          }
+      } catch {
+        /* Missing/malformed source zones never inherit the group label. */
+      }
+      const zoneMatch: RentalFitResult['zoneMatch'] = !zone
+        ? 'unknown'
+        : zones.include.some(included => zoneKey(included) === zoneKey(zone))
+          ? 'preferred'
+          : 'neutral'
       const expensesUyu = rentalCommonExpensesUyu(offer, usdUyu)
       const total = expensesUyu === null ? null : offer.priceUyu + expensesUyu
       const monthlyUyu = total !== null && Number.isFinite(total) ? total : null
-      return { offer, expensesUyu, monthlyUyu }
+      return { offer, expensesUyu, monthlyUyu, zone, zoneMatch }
     })
+    .filter(
+      ({ zone, zoneMatch }) =>
+        !(zone && zones.exclude.some(excluded => zoneKey(excluded) === zoneKey(zone))) &&
+        (zones.mode !== 'only' || !zones.include.length || zoneMatch === 'preferred')
+    )
     .filter(({ offer, monthlyUyu }) =>
       input.includeOverBudget ? true : (monthlyUyu ?? offer.priceUyu) <= input.housingBudgetUyu
     )
@@ -286,7 +341,7 @@ export function rankRentalFits(
       continue
     const selected = chooseOffer(candidate, criteria, usdUyu, cutoff)
     if (!selected) continue
-    const { offer, expensesUyu, monthlyUyu } = selected
+    const { offer, expensesUyu, monthlyUyu, zone, zoneMatch } = selected
     const travel = commute(candidate, criteria.people)
     const overBudget = (monthlyUyu ?? offer.priceUyu) > criteria.housingBudgetUyu
     const remainingUyu = monthlyUyu !== null && income > 0 ? income - monthlyUyu - reserved : null
@@ -295,15 +350,23 @@ export function rankRentalFits(
       monthlyUyu === null ? 0 : scoreForBurden(monthlyUyu / criteria.housingBudgetUyu)
     const budgetWeight =
       criteria.priority === 'budget' ? 0.75 : criteria.priority === 'commute' ? 0.25 : 0.5
-    const score = travel.activePeople
+    const baseScore = travel.activePeople
       ? budgetScore * budgetWeight + (travel.commuteScore ?? 0) * (1 - budgetWeight)
       : budgetScore
+    const preferZones = criteria.zones!.mode === 'prefer' && criteria.zones!.include.length > 0
+    const score = preferZones ? baseScore * 0.9 + (zoneMatch === 'preferred' ? 10 : 0) : baseScore
     const reasons: RentalFitResult['reasons'] = []
     const warnings: RentalFitResult['warnings'] = []
     if (monthlyUyu !== null && !overBudget) reasons.push('within_budget')
     if (!travel.activePeople) reasons.push('remote_household')
     if (travel.allWithinTarget) reasons.push('near_destinations')
     if (travel.activePeople > 1 && travel.allWithinTarget) reasons.push('balanced_commutes')
+    if (zoneMatch === 'preferred') reasons.push('preferred_zone')
+    if (
+      zoneMatch === 'unknown' &&
+      (criteria.zones!.include.length || criteria.zones!.exclude.length)
+    )
+      warnings.push('unknown_zone')
     if (monthlyUyu === null) warnings.push('unknown_expenses')
     if (travel.activePeople && !travel.point) warnings.push('unknown_location')
     if (overBudget) warnings.push('over_budget')
@@ -311,8 +374,12 @@ export function rankRentalFits(
     if (rentalAvailabilityHidden(offer.availability ?? property.availability, 'hide_any'))
       warnings.push('reported')
     const result: RentalFitResult = {
-      property,
+      property:
+        zone && (criteria.zones!.include.length || criteria.zones!.exclude.length)
+          ? { ...property, ...zone }
+          : property,
       offer,
+      zoneMatch,
       point: travel.point,
       score,
       budgetScore,

@@ -140,6 +140,10 @@ export const rentalFitMessages = {
     near_destinations: 'Cerca de los destinos',
     remote_household: 'Sin traslados configurados',
     balanced_commutes: 'Cercanía equilibrada entre personas',
+    preferred_zone: 'Zona elegida',
+    unknown_zone: 'Zona sin confirmar en el aviso',
+    invalidZones:
+      'Hay zonas elegidas fuera del departamento actual. Quitá ese filtro o revisá las zonas antes de comparar.',
     unknown_expenses: 'Faltan los gastos comunes',
     unknown_location: 'No podemos evaluar los traslados',
     over_budget: 'Supera tu presupuesto',
@@ -306,6 +310,10 @@ export const rentalFitMessages = {
     near_destinations: 'Near your destinations',
     remote_household: 'No commutes configured',
     balanced_commutes: 'Balanced proximity between people',
+    preferred_zone: 'Selected area',
+    unknown_zone: 'Area not confirmed in the advert',
+    invalidZones:
+      'Some selected areas are outside the current department. Remove that filter or review the areas before comparing.',
     unknown_expenses: 'Common charges are missing',
     unknown_location: 'We cannot assess travel',
     over_budget: 'Above your budget',
@@ -472,6 +480,10 @@ export const rentalFitMessages = {
     near_destinations: 'Perto dos destinos',
     remote_household: 'Sem deslocamentos configurados',
     balanced_commutes: 'Proximidade equilibrada entre pessoas',
+    preferred_zone: 'Região escolhida',
+    unknown_zone: 'Região não confirmada no anúncio',
+    invalidZones:
+      'Há regiões escolhidas fora do departamento atual. Remova esse filtro ou revise as regiões antes de comparar.',
     unknown_expenses: 'Faltam os gastos de condomínio',
     unknown_location: 'Não podemos avaliar os deslocamentos',
     over_budget: 'Acima do seu orçamento',

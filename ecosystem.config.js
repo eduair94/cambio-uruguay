@@ -211,6 +211,16 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Precomputed rental cohorts and official neighborhood context, independent of the API.
+      name: "currency-property-zones",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_property_zones.js",
+      node_args: "--max-old-space-size=512",
+      cron_restart: "53 6 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // BCU usury caps (topes de usura) for /saldar-deudas-uruguay. Monthly on the 1st, 10:13 UTC
       // ≈ 07:13 America/Montevideo. Minute 13: not a multiple of 5.
       name: "currency-debt-relief",

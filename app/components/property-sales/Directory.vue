@@ -15,6 +15,9 @@
       <h1>{{ t('title') }}</h1>
       <p>{{ t(smAndDown ? 'introShort' : 'intro') }}</p>
       <nav>
+        <NuxtLink :to="localePath('/barrios-alquileres-uruguay')">{{
+          globalT('nav.rentalZones')
+        }}</NuxtLink>
         <NuxtLink :to="localePath('/alquileres-uruguay')">{{ t('rentals') }}</NuxtLink>
         <NuxtLink
           :to="{
@@ -266,6 +269,7 @@ import {
 } from '~/utils/propertySales'
 import { propertySaleSourceName, propertySalesMessages } from '~/utils/propertySalesMessages'
 const { t, locale } = useI18n({ useScope: 'local', messages: propertySalesMessages })
+const { t: globalT } = useI18n({ useScope: 'global' })
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()

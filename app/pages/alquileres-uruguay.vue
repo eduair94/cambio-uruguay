@@ -14,6 +14,9 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
         <h1>{{ t('title') }}</h1>
         <p class="rentals-lead">{{ t('subtitle') }}</p>
         <nav class="rentals-related" :aria-label="t('relatedSearches')">
+          <NuxtLink :to="localePath('/barrios-alquileres-uruguay')">{{
+            globalT('nav.rentalZones')
+          }}</NuxtLink>
           <NuxtLink :to="localePath('/oportunidades-inmobiliarias-uruguay')">{{
             t('opportunitiesShort')
           }}</NuxtLink>

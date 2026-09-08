@@ -3,6 +3,11 @@
     <header>
       <h1>{{ t('title') }}</h1>
       <p>{{ t('intro') }}</p>
+      <NuxtLink
+        :to="localePath('/barrios-alquileres-uruguay')"
+        class="agencies-planner-link mr-4"
+        >{{ globalT('nav.rentalZones') }}</NuxtLink
+      >
       <NuxtLink :to="localePath('/alquiler-ideal-uruguay')" class="agencies-planner-link">{{
         globalT('nav.rentalFit')
       }}</NuxtLink>

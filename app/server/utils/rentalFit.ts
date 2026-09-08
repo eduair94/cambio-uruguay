@@ -37,6 +37,8 @@ interface FitIdentity {
   version?: number
   propertyType?: string
   description?: string
+  department?: string
+  neighborhood?: string
   latitude?: number
   longitude?: number
   addressHidden?: boolean
@@ -149,6 +151,19 @@ export function projectRentalFitCandidate(
     )
     return offer
   })
+  const zoneName = (value: unknown) =>
+    typeof value === 'string' && value.length <= 100 && !/[\p{Cc}\p{Cf}<>]/u.test(value)
+      ? value.normalize('NFC').trim().replace(/\s+/g, ' ')
+      : ''
+  const offerZones = ownOffers.map(own => {
+    const department = zoneName(own.identity?.department),
+      neighborhood = zoneName(own.identity?.neighborhood)
+    return {
+      source: own.source,
+      listingId: own.listingId,
+      zone: department && neighborhood ? { department, neighborhood } : null,
+    }
+  })
   const specification = (field: 'bedrooms' | 'bathrooms' | 'area') => {
     const value = amount(row[field])
     return ownOffers.some(
@@ -188,7 +203,7 @@ export function projectRentalFitCandidate(
       .at(-1)!,
     freshAt: text(row.freshAt, 40),
   }
-  return { property, point, pointAdvertIds }
+  return { property, point, pointAdvertIds, offerZones }
 }
 
 interface FitCursor extends AsyncIterable<RentalFitRawProperty> {
@@ -206,6 +221,8 @@ function openFitCursor(): FitCursor {
             'version',
             'propertyType',
             'description',
+            'department',
+            'neighborhood',
             'latitude',
             'longitude',
             'addressHidden',
@@ -329,6 +346,9 @@ export function currentRentalFitCandidates(
     )
     candidates.push({
       point,
+      offerZones: row.offerZones?.filter(zone =>
+        offers.some(offer => offer.source === zone.source && offer.listingId === zone.listingId)
+      ),
       property: {
         ...annotated,
         offers,

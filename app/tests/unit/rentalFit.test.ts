@@ -106,11 +106,199 @@ const candidate = (
 const rank = (rows: RentalFitCandidate[], changes: Partial<RentalFitInput> = {}, rate = 40) =>
   rankRentalFits(rows, input(changes), rate)
 
+const cordon = { department: 'Montevideo', neighborhood: 'Cordón' }
+const centro = { department: 'Montevideo', neighborhood: 'Centro' }
+const withZones = (
+  row: RentalFitCandidate,
+  zones: Array<typeof cordon | null>
+): RentalFitCandidate => ({
+  ...row,
+  offerZones: row.property.offers.map((offer, i) => ({
+    source: offer.source,
+    listingId: offer.listingId,
+    zone: zones[i] ?? null,
+  })),
+})
+
 beforeEach(() => {
   vi.useFakeTimers()
   vi.setSystemTime(now)
 })
 afterEach(() => vi.useRealTimers())
+
+describe('explicit household neighborhood choices', () => {
+  it('normalizes legacy omissions to empty zones and deduplicates exact accent/spacing scoped matches', () => {
+    expect(normalizeRentalFitInput(input()).zones).toEqual({
+      mode: 'prefer',
+      include: [],
+      exclude: [],
+    })
+    expect(
+      normalizeRentalFitInput(
+        input({
+          zones: {
+            mode: 'only',
+            include: [
+              cordon,
+              { department: ' MONTEVIDEO ', neighborhood: ' CORDON ' },
+              { department: 'Maldonado', neighborhood: 'Cordón' },
+            ],
+            exclude: [],
+          },
+        })
+      ).zones
+    ).toEqual({
+      mode: 'only',
+      include: [
+        { department: 'MONTEVIDEO', neighborhood: 'CORDON' },
+        { department: 'Maldonado', neighborhood: 'Cordón' },
+      ],
+      exclude: [],
+    })
+  })
+
+  it.each([
+    null,
+    { mode: 'invalid' },
+    { include: [{ neighborhood: 'Centro' }] },
+    { include: [{ department: '', neighborhood: 'Centro' }] },
+    { include: [{ department: 'Montevideo', neighborhood: '<img src=x>' }] },
+    { include: [cordon], exclude: [{ department: 'MONTEVIDEO', neighborhood: 'CORDON' }] },
+    { include: Array.from({ length: 21 }, () => cordon) },
+    { exclude: Array.from({ length: 21 }, () => centro) },
+    { include: 'Centro' },
+  ])('rejects invalid/conflicting zone input as a whole without echoing it: %j', zones => {
+    expect(() => normalizeRentalFitInput({ ...input(), zones })).toThrow(
+      'Invalid household rental criteria'
+    )
+  })
+
+  it('preserves legacy scores and ordering exactly with no active zone criteria', () => {
+    const rows = [
+      withZones(candidate('a'), [cordon]),
+      withZones(candidate('b'), [centro]),
+      candidate('c'),
+    ]
+    expect(rank(rows)).toEqual(rank(rows, { zones: { mode: 'prefer', include: [], exclude: [] } }))
+    expect(rank(rows).results.every(row => !row.warnings.includes('unknown_zone'))).toBe(true)
+  })
+
+  it('applies exact department-scoped selection without commercial aliases or canonical label inheritance', () => {
+    const rows = [
+      withZones(candidate('yes'), [{ department: ' montevideo ', neighborhood: 'CORDON' }]),
+      withZones(candidate('different-department'), [
+        { department: 'Maldonado', neighborhood: 'Cordón' },
+      ]),
+      withZones(candidate('commercial-alias'), [{ ...cordon, neighborhood: 'Cordón Sur' }]),
+      candidate('unknown'),
+    ]
+    const result = rank(rows, { zones: { mode: 'only', include: [cordon], exclude: [] } })
+    expect(result.results.map(row => row.property.key)).toEqual(['yes'])
+    expect(result.results[0]!.zoneMatch).toBe('preferred')
+    expect(result.results[0]!.reasons).toContain('preferred_zone')
+  })
+
+  it('retains an alternative eligible own offer when the cheapest offer is in an excluded zone', () => {
+    const row = withZones(
+      candidate('alternative', {
+        offers: [
+          offer('cheap', { priceUyu: 10000, commonExpenses: 0, petsAllowed: false }),
+          offer('allowed', { priceUyu: 20000, commonExpenses: 1000, petsAllowed: true }),
+        ],
+      }),
+      [centro, cordon]
+    )
+    const result = rank([row], {
+      pets: true,
+      zones: { mode: 'only', include: [cordon], exclude: [centro] },
+    }).results[0]!
+    expect(result.offer.listingId).toBe('allowed')
+    expect(result.monthlyUyu).toBe(21000)
+    expect(result.property.neighborhood).toBe('Cordón')
+    const inverse = withZones(row, [cordon, centro])
+    expect(
+      rank([inverse], { pets: true, zones: { mode: 'only', include: [cordon], exclude: [] } })
+        .matched
+    ).toBe(0)
+  })
+
+  it('does not borrow a preferred zone from another source or another advert', () => {
+    const row = candidate('wrong-ad')
+    row.offerZones = [
+      { source: 'casasweb', listingId: 'advert-1', zone: cordon },
+      { source: 'infocasas', listingId: 'different', zone: cordon },
+    ]
+    expect(rank([row], { zones: { mode: 'only', include: [cordon], exclude: [] } }).matched).toBe(0)
+  })
+
+  it('keeps unknown zones for exclude-only searches with an explicit warning and no preference bonus', () => {
+    const result = rank([candidate('unknown'), withZones(candidate('excluded'), [centro])], {
+      zones: { mode: 'prefer', include: [], exclude: [centro] },
+    })
+    expect(result.matched).toBe(1)
+    expect(result.results[0]!.zoneMatch).toBe('unknown')
+    expect(result.results[0]!.warnings).toContain('unknown_zone')
+    expect(result.results[0]!.score).toBe(rank([candidate('unknown')]).results[0]!.score)
+  })
+
+  it('adds at most ten score points for preference without turning it into a hidden exclusion', () => {
+    const rows = [
+      withZones(candidate('preferred'), [cordon]),
+      withZones(candidate('neutral'), [centro]),
+      candidate('unknown'),
+    ]
+    const base = rank(rows).results[0]!.score
+    const result = rank(rows, { zones: { mode: 'prefer', include: [cordon], exclude: [] } })
+    expect(result.matched).toBe(3)
+    expect(result.results.map(row => row.property.key)).toEqual(['preferred', 'neutral', 'unknown'])
+    expect(result.results[0]!.score).toBeCloseTo(base * 0.9 + 10)
+    expect(result.results[1]!.score).toBeCloseTo(base * 0.9)
+    expect(result.results[2]!.score).toBeCloseTo(base * 0.9)
+  })
+
+  it('never promotes preferred zones above financially feasible complete results or promotes incomplete results', () => {
+    const rows = [
+      withZones(
+        candidate('preferred-deficit', {
+          offers: [offer('costly', { priceUyu: 20000, commonExpenses: 0 })],
+        }),
+        [cordon]
+      ),
+      withZones(
+        candidate('preferred-incomplete', {
+          offers: [offer('partial', { priceUyu: 1000, commonExpenses: null })],
+        }),
+        [cordon]
+      ),
+      withZones(
+        candidate('neutral-feasible', {
+          offers: [offer('affordable', { priceUyu: 10000, commonExpenses: 0 })],
+        }),
+        [centro]
+      ),
+    ]
+    const result = rank(rows, {
+      people: [person('p', { incomeUyu: 25000 })],
+      zones: { mode: 'prefer', include: [cordon], exclude: [] },
+    })
+    expect(result.results.map(row => row.property.key)).toEqual([
+      'neutral-feasible',
+      'preferred-deficit',
+      'preferred-incomplete',
+    ])
+  })
+
+  it('applies zone preference across the full universe before top24 and keeps deterministic ties', () => {
+    const rows = Array.from({ length: 50 }, (_, i) =>
+      withZones(candidate(`home-${String(i).padStart(2, '0')}`), [i >= 40 ? cordon : centro])
+    )
+    const criteria = { zones: { mode: 'prefer' as const, include: [cordon], exclude: [] } }
+    const result = rank(rows, criteria)
+    expect(result.matched).toBe(50)
+    expect(result.results.slice(0, 10).every(row => row.zoneMatch === 'preferred')).toBe(true)
+    expect(result.results).toEqual(rank([...rows].reverse(), criteria).results)
+  })
+})
 
 describe('strict household input', () => {
   it('normalizes decimal form values and a detached bounded household', () => {

@@ -1,4 +1,8 @@
 import type { RentalOffer, RentalPublicProperty } from './rentals'
+import type { RentalZoneRef, RentalZonePreferences } from './rentalZoneTypes'
+
+export type RentalFitZoneRef = RentalZoneRef
+export type RentalFitZones = RentalZonePreferences
 
 export type FitMode = 'walking' | 'bicycling' | 'transit' | 'driving'
 export interface FitDestination {
@@ -20,6 +24,8 @@ export interface FitPerson {
   destinations: FitDestination[]
 }
 export interface RentalFitInput {
+  /** Omitted by legacy callers; normalized to an empty preference. */
+  zones?: RentalFitZones
   people: FitPerson[]
   housingBudgetUyu: number
   otherExpensesUyu: number
@@ -40,6 +46,12 @@ export interface RentalFitInput {
 export interface RentalFitCandidate {
   property: RentalPublicProperty
   point: { lat: number; lng: number } | null
+  /** Own-advert public zone, detached from private source identity and canonical group fields. */
+  offerZones?: Array<{
+    source: RentalOffer['source']
+    listingId: string
+    zone: RentalFitZoneRef | null
+  }>
 }
 export interface RentalFitTrip {
   personId: string
@@ -48,6 +60,7 @@ export interface RentalFitTrip {
   withinTarget: boolean | null
 }
 export interface RentalFitResult {
+  zoneMatch: 'preferred' | 'neutral' | 'unknown'
   property: RentalPublicProperty
   offer: RentalOffer
   point: { lat: number; lng: number } | null
@@ -64,13 +77,20 @@ export interface RentalFitResult {
   weeklyDistanceKm: number | null
   worstPersonDistanceKm: number | null
   trips: RentalFitTrip[]
-  reasons: ('within_budget' | 'near_destinations' | 'remote_household' | 'balanced_commutes')[]
+  reasons: (
+    | 'within_budget'
+    | 'near_destinations'
+    | 'remote_household'
+    | 'balanced_commutes'
+    | 'preferred_zone'
+  )[]
   warnings: (
     | 'unknown_expenses'
     | 'unknown_location'
     | 'over_budget'
     | 'low_remaining'
     | 'reported'
+    | 'unknown_zone'
   )[]
 }
 export interface RentalFitResponse {

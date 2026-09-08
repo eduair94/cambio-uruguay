@@ -23,6 +23,7 @@
     "sync_banks_news": "ts-node sync_banks_news.ts",
     "sync_figures": "ts-node sync_figures.ts",
     "sync_costs": "ts-node sync_costs.ts",
+    "sync_property_zones": "ts-node sync_property_zones.ts",
     "sync_debt_relief": "ts-node sync_debt_relief.ts",
     "sync_loans": "ts-node sync_loans.ts",
     "import_loan_history": "ts-node scripts/oneoff/import_loan_history.ts",

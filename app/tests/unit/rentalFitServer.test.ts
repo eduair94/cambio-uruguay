@@ -122,6 +122,28 @@ function cursor(rows: Iterable<any>) {
 const meta = async () => ({ generatedAt: stamp, usdUyu: 40 }) as any
 
 describe('household catalogue evidence and privacy', () => {
+  it('projects each advert own zone without inheriting a canonical neighborhood or private identity', () => {
+    const first = own('100')
+    const second = own('200')
+    Object.assign(first.identity, {
+      department: ' Montevideo ',
+      neighborhood: ' CORDON ',
+      private: 'PRIVATE_ZONE',
+    })
+    const projected = projectRentalFitCandidate(property('qa', [first, second]), now)!
+    expect(projected.offerZones).toEqual([
+      {
+        source: 'infocasas',
+        listingId: '100',
+        zone: { department: 'Montevideo', neighborhood: 'CORDON' },
+      },
+      { source: 'infocasas', listingId: '200', zone: null },
+    ])
+    expect(JSON.stringify(projected)).not.toContain('PRIVATE_')
+    Object.assign(first.identity, { department: 'Montevideo', neighborhood: '<b>Cordón</b>' })
+    expect(projectRentalFitCandidate(property('qa', [first]), now)!.offerZones![0]!.zone).toBeNull()
+  })
+
   it('keeps homes above the economic catalogue price cap and explicitly projects every nested field', () => {
     const raw = property()
     raw.offers[0].guarantees = ['anda', 'deposito', 'unknown']
@@ -204,6 +226,7 @@ describe('household catalogue evidence and privacy', () => {
     const hidden = currentRentalFitCandidates(stored, latest, true, now)[0]!
     expect(hidden.point).toBeNull()
     expect(hidden.property.offers.map(offer => offer.listingId)).toEqual(['101'])
+    expect(hidden.offerZones?.map(offer => offer.listingId)).toEqual(['101'])
     expect(hidden.property.latitude).toBeNull()
     expect(JSON.stringify(hidden)).not.toContain('pointAdvertIds')
     expect(stored.candidates[0]!.property.offers).toHaveLength(2)

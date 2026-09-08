@@ -66,6 +66,13 @@
               v-bind="field"
               class="rental-search__wide"
             />
+            <ZonesPicker
+              :model-value="directoryZones"
+              :department="draft.department"
+              directory
+              class="rental-search__wide"
+              @update:model-value="applyZones"
+            />
           </div>
         </fieldset>
         <fieldset>
@@ -372,6 +379,8 @@ import {
   type RentalQuery,
 } from '~/utils/rentals'
 import { MUTUALISTA_SEDES, mutualistasConSede } from '~/utils/mutualistaSedes'
+import ZonesPicker from './zones/Picker.vue'
+import type { RentalZonePreferences } from '~/utils/rentalZoneTypes'
 
 const props = withDefaults(
   defineProps<{
@@ -471,6 +480,21 @@ const copy = (query: RentalQuery): RentalQuery => ({
   sedes: [...query.sedes],
 })
 const draft = ref(copy(props.query))
+const directoryZones = computed<RentalZonePreferences>(() => ({
+  mode: 'only',
+  include: draft.value.department
+    ? draft.value.neighborhoods.map(neighborhood => ({
+        department: draft.value.department,
+        neighborhood,
+      }))
+    : [],
+  exclude: [],
+}))
+function applyZones(zones: RentalZonePreferences) {
+  if (zones.include.length) draft.value.department = zones.include[0]!.department
+  draft.value.neighborhoods = zones.include.map(zone => zone.neighborhood)
+  draft.value.neighborhood = zones.include.length === 1 ? zones.include[0]!.neighborhood : ''
+}
 const institution = ref(
   MUTUALISTA_SEDES.find(s => s.osmId === props.query.sedes[0])?.mutualista || ''
 )

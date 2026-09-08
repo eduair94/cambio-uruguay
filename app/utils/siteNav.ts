@@ -2201,6 +2201,20 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/barrios-alquileres-uruguay',
+        labelKey: 'nav.rentalZones',
+        icon: 'mdi-map-search-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        keywords: [
+          'precio alquiler por barrio',
+          'comparar barrios montevideo',
+          'mapa alquileres barrios',
+          'servicios por barrio',
+          'alquiler promedio montevideo',
+        ],
+      },
+      {
         to: '/venta-viviendas-uruguay',
         labelKey: 'nav.propertySales',
         icon: 'mdi-home-search-outline',

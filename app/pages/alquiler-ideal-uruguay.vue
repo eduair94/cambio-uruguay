@@ -185,6 +185,13 @@ The user delegated design choices. The composition study informs hierarchy, neve
                 :label="t('department')"
                 variant="outlined"
                 hide-details
+                class="fit-zone-picker"
+              />
+              <ZonesPicker
+                v-model="draft.zones"
+                :department="draft.department"
+                class="fit-zone-picker"
+                @validity="zonesValid = $event"
               />
               <VSelect
                 v-model="draft.types"
@@ -383,6 +390,7 @@ import type {
 import { normalizeRentalFitInput } from '~/utils/rentalFit'
 import { rentalFitMessages } from '~/utils/rentalFitMessages'
 import { rentalMoney, rentalPropertyPath } from '~/utils/rentalPresentation'
+import ZonesPicker from '~/components/rentals/zones/Picker.vue'
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalFitMessages })
 const localePath = useLocalePath()
 useSeoMeta({
@@ -463,6 +471,7 @@ const initial = (): DraftInput => ({
   savingsUyu: 0,
   transportUyu: 0,
   department: '',
+  zones: { mode: 'prefer', include: [], exclude: [] },
   types: ['casa', 'apartamento'],
   minBedrooms: 0,
   minArea: 0,
@@ -486,6 +495,7 @@ const submitted = shallowRef<RentalFitInput | null>(null)
 const selected = ref<string[]>([])
 const compareOpen = ref(false)
 const resetOpen = ref(false)
+const zonesValid = ref(true)
 let request: AbortController | null = null
 const money = (value: number) => rentalMoney(value, 'UYU', locale.value)
 const totalIncome = computed(() =>
@@ -600,6 +610,10 @@ async function goStep(index: number) {
 async function search() {
   if (pending.value) return
   error.value = ''
+  if (!zonesValid.value) {
+    error.value = 'invalidZones'
+    return
+  }
   let input: RentalFitInput
   try {
     // No display address, query string or shared Nuxt state carries this personal scenario.
@@ -705,6 +719,9 @@ onBeforeUnmount(() => {
 .rental-fit-page {
   max-width: 1120px;
   padding: 28px 16px 48px;
+}
+.fit-zone-picker {
+  grid-column: 1 / -1;
 }
 h1,
 h2,

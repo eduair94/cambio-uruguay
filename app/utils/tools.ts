@@ -226,6 +226,21 @@ export const tools: readonly Tool[] = [
     ],
   },
   {
+    slug: 'barrios-alquileres-uruguay',
+    to: '/barrios-alquileres-uruguay',
+    title: 'Comparar zonas para alquilar',
+    description:
+      'Explorá precios de alquiler por barrio, servicios registrados y denuncias oficiales con su período y alcance. Elegí las zonas para tu búsqueda.',
+    icon: 'mdi-map-search-outline',
+    category: 'finanzas',
+    keywords: [
+      'precio alquiler por barrio',
+      'comparar barrios',
+      'mapa alquileres',
+      'servicios por barrio',
+    ],
+  },
+  {
     slug: 'calculadora-aguinaldo',
     title: 'Calculadora de aguinaldo en Uruguay',
     description:
