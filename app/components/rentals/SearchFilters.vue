@@ -876,6 +876,10 @@ legend {
   /* Keep the search row stable when a tap moves focus to the next filter. */
   min-width: 64px;
 }
+.rental-search :deep(.v-autocomplete--chips .v-autocomplete__selection) {
+  /* Let each row contain its 44px chip instead of Vuetify's fixed 24px box. */
+  height: auto;
+}
 .rental-search :deep(.v-chip) {
   min-height: 44px;
 }
