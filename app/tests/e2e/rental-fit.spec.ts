@@ -1,4 +1,11 @@
-import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test'
+import {
+  expect,
+  test,
+  type Locator,
+  type Page,
+  type Request,
+  type TestInfo,
+} from '@playwright/test'
 import type { RentalFitInput, RentalFitResponse, RentalFitResult } from '../../utils/rentalFitTypes'
 import type { RentalOffer, RentalPublicProperty } from '../../utils/rentals'
 
@@ -118,7 +125,14 @@ function fixture(input: RentalFitInput): RentalFitResponse {
   }
 }
 
-async function setup(page: Page) {
+async function setup(page: Page, dismissConsent = true) {
+  const pendingReads = new Set<string>()
+  page.on('request', request => {
+    if (request.method() === 'GET') pendingReads.add(new URL(request.url()).pathname)
+  })
+  const settleRead = (request: Request) => pendingReads.delete(new URL(request.url()).pathname)
+  page.on('requestfinished', settleRead)
+  page.on('requestfailed', settleRead)
   const state = {
     requests: [] as RentalFitInput[],
     geocodes: [] as URL[],
@@ -176,15 +190,51 @@ async function setup(page: Page) {
   await page.goto('/alquiler-ideal-uruguay', { waitUntil: 'domcontentloaded' })
   const consent = page.getByTestId('cookie-consent-inline')
   await expect(consent).toBeVisible()
-  await expect(async () => {
-    await consent.getByRole('button', { name: 'Rechazar', exact: true }).click()
-    await expect(consent).toBeHidden({ timeout: 1000 })
-  }).toPass({ timeout: 60000 })
+  try {
+    if (dismissConsent) {
+      await expect(async () => {
+        await consent.getByRole('button', { name: 'Rechazar', exact: true }).click()
+        await expect(consent).toBeHidden({ timeout: 1000 })
+      }).toPass({ timeout: 60000 })
+    } else {
+      await expect
+        .poll(() =>
+          page.evaluate(() => {
+            const root = document.querySelector('#__nuxt')
+            return !!root && '__vue_app__' in root
+          })
+        )
+        .toBe(true)
+      await page.evaluate(() => document.fonts.ready)
+    }
+  } catch (error) {
+    // Initial navigation contains no household input. Keep only module/API paths,
+    // never query strings or response bodies, when diagnosing local HMR stalls.
+    const diagnostic = {
+      pendingReads: [...pendingReads].slice(0, 30),
+      mounted: await page.evaluate(() => {
+        const root = document.querySelector('#__nuxt')
+        return !!root && '__vue_app__' in root
+      }),
+      runtimeErrors: state.errors.length,
+    }
+    console.info('Initial household hydration:', JSON.stringify(diagnostic))
+    await test.info().attach('initial-hydration-diagnostic', {
+      contentType: 'application/json',
+      body: JSON.stringify(diagnostic),
+    })
+    throw error
+  }
   await expect(page.getByTestId('fit-budget').locator('input')).toHaveValue('20000')
   return state
 }
 
 const visibleStep = (page: Page) => page.locator('.fit-step:visible')
+async function setDetails(details: Locator, open = true) {
+  const isOpen = (await details.getAttribute('open')) !== null
+  if (isOpen !== open) await details.locator(':scope > summary').click()
+  await expect.poll(async () => (await details.getAttribute('open')) !== null).toBe(open)
+}
 async function select(page: Page, scope: Locator, label: string, option: string) {
   await scope
     .locator('.v-select')
@@ -280,6 +330,7 @@ for (const width of [390, 1366]) {
     await page.setViewportSize({ width, height: 844 })
     const state = await setup(page)
     await screenshot(page, info, `household-${width}`)
+    await setDetails(page.locator('.household-details'))
     await visibleStep(page)
       .getByLabel('Nombre o apodo (opcional)', { exact: true })
       .fill('PersonaQAAlfa')
@@ -294,7 +345,7 @@ for (const width of [390, 1366]) {
       .nth(1)
       .fill('25000')
     await page.getByTestId('fit-budget').locator('input').fill('30000')
-    await page.getByText('Lo que necesitan reservar cada mes', { exact: true }).click()
+    await setDetails(page.locator('.expenses-details'))
     await page
       .getByLabel('Comida, servicios, deudas y otros gastos ($)', { exact: true })
       .fill('40000')
@@ -307,10 +358,19 @@ for (const width of [390, 1366]) {
     await expect(
       page.getByText('El presupuesto supera lo que queda', { exact: false })
     ).toBeHidden()
+    await setDetails(page.locator('.household-details'), false)
+    await expect(page.locator('.household-details > summary')).toContainText('2 personas')
+    await setDetails(page.locator('.expenses-details'), false)
+    await expect(page.locator('.expenses-details > summary')).toContainText('68.000')
     await page.getByTestId('fit-next').click()
     const people = visibleStep(page).locator('.person-card')
+    await setDetails(people.nth(0).locator('.remote-details'))
+    await setDetails(people.nth(1).locator('.remote-details'))
     await people.nth(0).getByLabel('Días por semana desde casa', { exact: true }).fill('2')
     await people.nth(1).getByLabel('Días por semana desde casa', { exact: true }).fill('5')
+    await setDetails(people.nth(0).locator('.remote-details'), false)
+    await setDetails(people.nth(1).locator('.remote-details'), false)
+    await expect(people.nth(0).locator('.remote-details > summary')).toContainText('2')
     for (const [personIndex, kind, label, days] of [
       [0, 'Trabajo', 'OficinaQA', '3'],
       [0, 'Estudio', 'EstudioQA', '2'],
@@ -322,35 +382,45 @@ for (const width of [390, 1366]) {
         .click()
       const place = people.nth(personIndex).locator('.fit-destination').last()
       await select(page, place, 'Actividad', kind)
+      await setDetails(place.locator('.destination-options'))
       await place.getByLabel('Referencia (opcional)', { exact: true }).fill(label)
       await confirmAddress(place)
       await place.getByLabel('Visitas por semana', { exact: true }).fill(days)
       await place.getByLabel('Cercanía deseada (km)', { exact: true }).fill('2.5')
+      await setDetails(place.locator('.destination-options'), false)
+      await expect(place.locator('.destination-options > summary')).toContainText('2.5 km')
     }
     await assertNoOverflow(page)
     await screenshot(page, info, `destinations-${width}`)
     await page.getByTestId('fit-next').click()
     await select(page, visibleStep(page), 'Departamento', 'Montevideo')
-    await visibleStep(page)
-      .getByRole('radio', { name: 'Acercarnos a nuestros lugares', exact: true })
-      .check()
+    await select(
+      page,
+      visibleStep(page),
+      '¿Qué pesa más al elegir?',
+      'Acercarnos a nuestros lugares'
+    )
     await page.getByTestId('fit-next').click()
     await expect(page.locator('.fit-result')).toHaveCount(8)
     expect(state.requests).toHaveLength(1)
     expect(state.requests[0]).toMatchObject({
       housingBudgetUyu: 27000,
+      otherExpensesUyu: 40000,
+      savingsUyu: 15000,
+      transportUyu: 13000,
       department: 'Montevideo',
       priority: 'commute',
       people: [
         {
           label: '',
+          incomeUyu: 72341,
           remoteDays: 2,
           destinations: [
             { kind: 'work', days: 3 },
             { kind: 'study', days: 2 },
           ],
         },
-        { label: '', remoteDays: 5, destinations: [{ kind: 'other', days: 1 }] },
+        { label: '', incomeUyu: 25000, remoteDays: 5, destinations: [{ kind: 'other', days: 1 }] },
       ],
     })
     expect(state.requests[0]!.people[0]!.destinations[0]).not.toHaveProperty('address')
@@ -414,6 +484,94 @@ for (const width of [390, 1366]) {
   })
 }
 
+test('320px first visit shows the budget and one action while optional groups stay closed', async ({
+  page,
+}, info) => {
+  await page.setViewportSize({ width: 320, height: 740 })
+  const state = await setup(page, false)
+  const budget = page.getByTestId('fit-budget')
+  await expect(page.getByTestId('cookie-consent-inline')).toBeVisible()
+  await expect(budget).toBeInViewport({ ratio: 1 })
+  await expect(page.getByTestId('fit-next')).toHaveCount(1)
+  await expect(page.getByRole('button', { name: 'Continuar', exact: true })).toHaveCount(1)
+  await expect(page.getByTestId('fit-next')).toBeInViewport({ ratio: 1 })
+  const toolbar = await page.locator('.fit-toolbar').boundingBox()
+  expect(toolbar!.height).toBeLessThanOrEqual(65)
+  await expect(page.locator('.household-details')).not.toHaveAttribute('open', '')
+  await expect(page.locator('.expenses-details')).not.toHaveAttribute('open', '')
+  await expect(page.locator('.privacy-details')).not.toHaveAttribute('open', '')
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await assertNoOverflow(page)
+  await screenshot(page, info, 'first-visit-budget-320')
+  const summary = page.locator('.household-details > summary')
+  await summary.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('.household-details')).toHaveAttribute('open', '')
+  expect(state.requests).toHaveLength(0)
+})
+
+test('collapsed housing choices remain visible in summaries and survive editing', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 740 })
+  const state = await setup(page)
+  await page.getByTestId('fit-next').click()
+  await page.getByTestId('fit-next').click()
+  const extra = visibleStep(page).locator('.housing-extra')
+  await expect(extra).not.toHaveAttribute('open', '')
+  await setDetails(extra)
+  await extra.getByLabel('Superficie mínima (m²)', { exact: true }).fill('45')
+  await extra.getByRole('checkbox', { name: 'El aviso confirma mascotas', exact: true }).check()
+  await extra.getByRole('checkbox', { name: 'El aviso confirma garaje', exact: true }).check()
+  await setDetails(extra, false)
+  await expect(extra.locator('summary')).toContainText('45')
+  await expect(extra.locator('summary')).toContainText('Mascotas')
+  await expect(extra.locator('summary')).toContainText('Garaje')
+  await page.locator('.step-links button').nth(0).click()
+  await page.locator('.step-links button').nth(2).click()
+  await expect(extra).not.toHaveAttribute('open', '')
+  await page.getByTestId('fit-next').click()
+  await expect(page.locator('.fit-result')).toHaveCount(8)
+  expect(state.requests[0]).toMatchObject({ minArea: 45, pets: true, parking: true })
+  await page.getByTestId('fit-edit').click()
+  await setDetails(visibleStep(page).locator('.housing-extra'))
+  await expect(visibleStep(page).getByLabel('Superficie mínima (m²)', { exact: true })).toHaveValue(
+    '45'
+  )
+  await expect(
+    visibleStep(page).getByRole('checkbox', { name: 'El aviso confirma mascotas', exact: true })
+  ).toBeChecked()
+  await assertNoOverflow(page)
+  expect(state.errors).toEqual([])
+})
+
+test('an invalid optional income is revealed and focused from the final step without sending data', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 740 })
+  const state = await setup(page)
+  const household = page.locator('.household-details')
+  await setDetails(household)
+  const income = household.getByLabel('Ingreso líquido mensual ($)', { exact: true })
+  await income.fill('-1')
+  await setDetails(household, false)
+  await page.getByTestId('fit-next').click()
+  await page.getByTestId('fit-next').click()
+  await page.getByTestId('fit-next').click()
+  await expect(page.locator('.step-links button').nth(0)).toHaveAttribute('aria-current', 'step')
+  await expect(household).toHaveAttribute('open', '')
+  await expect(income).toBeFocused()
+  await expect(income).toBeInViewport()
+  expect(state.requests).toHaveLength(0)
+  await income.fill('40000')
+  await setDetails(household, false)
+  await page.locator('.step-links button').nth(2).click()
+  await page.getByTestId('fit-next').click()
+  await expect(page.locator('.fit-result')).toHaveCount(8)
+  expect(state.requests[0]!.people[0]!.incomeUyu).toBe(40000)
+  expect(state.errors).toEqual([])
+})
+
 test('320px remote-only household remains usable and comparison scroll stays inside the dialog', async ({
   page,
 }, info) => {
@@ -422,6 +580,7 @@ test('320px remote-only household remains usable and comparison scroll stays ins
   await assertNoOverflow(page)
   await screenshot(page, info, 'household-320')
   await page.getByTestId('fit-next').click()
+  await setDetails(visibleStep(page).locator('.remote-details'))
   await visibleStep(page).getByLabel('Días por semana desde casa', { exact: true }).fill('5')
   await expect(page.getByText('Sin destinos presenciales.', { exact: false })).toBeVisible()
   await page.getByTestId('fit-next').click()
@@ -429,9 +588,11 @@ test('320px remote-only household remains usable and comparison scroll stays ins
   await page.getByTestId('fit-next').click()
   await expect(page.locator('.fit-result')).toHaveCount(8)
   expect(state.requests[0]!.people[0]).toMatchObject({ remoteDays: 5, destinations: [] })
+  await setDetails(page.getByTestId('fit-result-0').locator('.match-details'))
   await expect(
     page.getByTestId('fit-result-0').getByText('Sin traslados configurados', { exact: true })
   ).toBeVisible()
+  await setDetails(page.getByTestId('fit-result-0').locator('.match-details'), false)
   await expect(page.locator('.trip-details')).toHaveCount(0)
   await compactResultToolbar(page)
   await assertNoOverflow(page)
@@ -500,6 +661,7 @@ test('reset cancellation preserves the scenario; confirmed reset ignores an in-f
   page,
 }) => {
   const state = await setup(page)
+  await setDetails(page.locator('.household-details'))
   await page.getByRole('button', { name: 'Agregar persona', exact: true }).click()
   await page.getByTestId('fit-budget').locator('input').fill('27000')
   await page.getByRole('button', { name: 'Borrar datos y empezar de nuevo', exact: true }).click()
@@ -585,12 +747,14 @@ test('editing a pending comparison cancels it, and cleared optional income stays
   page,
 }) => {
   const state = await setup(page)
+  await setDetails(page.locator('.household-details'))
   await visibleStep(page).getByLabel('Ingreso líquido mensual ($)', { exact: true }).fill('')
   await page.getByTestId('fit-next').click()
   await page.getByTestId('fit-next').click()
   state.pending = true
   await page.getByTestId('fit-next').click()
   await expect.poll(() => state.requests.length).toBe(1)
+  await setDetails(visibleStep(page).locator('.housing-extra'))
   await visibleStep(page).getByLabel('Superficie mínima (m²)', { exact: true }).fill('55')
   await expect(page.getByText('Comparando viviendas del directorio…', { exact: true })).toBeHidden()
   state.releases.forEach(release => release())

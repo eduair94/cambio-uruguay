@@ -390,7 +390,7 @@ for (const theme of ['dark', 'light'] as const) {
     dualSignal = true
     await page.getByTestId('opportunity-filter-trigger').click()
     const dialog = page.getByRole('dialog', { name: 'Filtros', exact: true })
-    await dialog.locator('summary').filter({ hasText: 'Tipo de evidencia' }).click()
+    await dialog.getByTestId('opportunity-advanced-toggle').click()
     await expect(dialog.locator('.opportunity-filters__advanced')).toHaveAttribute('open', '')
     for (const [label, option] of [
       ['Comparar por', 'Precio por m²'],
@@ -403,6 +403,11 @@ for (const theme of ['dark', 'light'] as const) {
         .click()
       await page.getByRole('option', { name: option, exact: true }).click()
     }
+    const advanced = dialog.getByTestId('opportunity-advanced-toggle')
+    await advanced.click()
+    await expect(dialog.locator('.opportunity-filters__advanced')).not.toHaveAttribute('open', '')
+    await expect(advanced).toContainText('Precio por m²')
+    await expect(advanced).toContainText('Para explorar')
     await dialog.getByRole('button', { name: 'Ver resultados', exact: true }).click()
     await expect(page).toHaveURL(/signal=price_per_m2/)
     expect(new URL(page.url()).searchParams.get('evidence')).toBe('exploratory')
@@ -413,6 +418,17 @@ for (const theme of ['dark', 'light'] as const) {
     await expect(
       page.getByTestId('opportunity-card').locator('.opportunity-card__labels')
     ).toContainText('Menor costo mensual')
+    await page.getByTestId('opportunity-filter-trigger').click()
+    await expect(dialog).toBeVisible()
+    await expect(dialog.locator('.opportunity-filters__advanced')).not.toHaveAttribute('open', '')
+    await expect(advanced).toContainText('Precio por m²')
+    await expect(advanced).toContainText('Para explorar')
+    const committedUrl = page.url()
+    await dialog.getByRole('button', { name: 'Limpiar', exact: true }).click()
+    await expect(advanced).not.toContainText('Precio por m²')
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+    expect(page.url()).toBe(committedUrl)
   })
 }
 

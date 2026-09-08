@@ -34,15 +34,13 @@ const { t: localT } = useI18n({
   useScope: 'local',
   messages: {
     es: {
-      message:
-        'Usamos cookies para medir visitas y mostrar anuncios. Podés aceptarlas o rechazarlas.',
+      message: 'Cookies para medir visitas y mostrar anuncios.',
     },
     en: {
-      message: 'We use cookies to measure visits and show ads. You can accept or reject them.',
+      message: 'Cookies to measure visits and show ads.',
     },
     pt: {
-      message:
-        'Usamos cookies para medir visitas e mostrar anúncios. Você pode aceitar ou rejeitar.',
+      message: 'Cookies para medir visitas e mostrar anúncios.',
     },
   },
 })
@@ -96,6 +94,13 @@ const containerProps = computed(() =>
   max-width: 1200px;
   margin: 0 auto;
   padding: 8px 12px;
+}
+.cookie-consent:not(.v-dialog) .cookie-consent__card {
+  border: 0;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 0;
+  padding: 4px 0 8px;
+  background: transparent;
 }
 .cookie-consent__card {
   display: flex;

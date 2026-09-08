@@ -13,22 +13,42 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
       <header class="rentals-head">
         <h1>{{ t('title') }}</h1>
         <p class="rentals-lead">{{ t('subtitle') }}</p>
-        <nav class="rentals-related" :aria-label="t('relatedSearches')">
-          <NuxtLink :to="localePath('/analisis-alquileres-uruguay')">{{
-            t('analysisShort')
-          }}</NuxtLink>
-          <NuxtLink :to="localePath('/barrios-alquileres-uruguay')">{{
-            globalT('nav.rentalZones')
-          }}</NuxtLink>
-          <NuxtLink :to="localePath('/oportunidades-inmobiliarias-uruguay')">{{
-            t('opportunitiesShort')
-          }}</NuxtLink>
-          <NuxtLink :to="localePath('/venta-viviendas-uruguay')">{{ t('salesShort') }}</NuxtLink>
-          <NuxtLink :to="localePath('/inmobiliarias-uruguay')">{{ t('agenciesShort') }}</NuxtLink>
-          <NuxtLink :to="localePath('/alquiler-ideal-uruguay')">{{
-            globalT('nav.rentalFit')
-          }}</NuxtLink>
-        </nav>
+        <div
+          class="rentals-related-disclosure"
+          :class="{ 'rentals-related-disclosure--expanded': relatedSearchesOpen }"
+          data-testid="rental-related-searches"
+        >
+          <button
+            type="button"
+            class="rentals-related-toggle"
+            :aria-expanded="relatedSearchesOpen"
+            aria-controls="rental-related-links"
+            @click="relatedSearchesOpen = !relatedSearchesOpen"
+          >
+            {{ t('relatedSearches') }}
+            <VIcon
+              :icon="relatedSearchesOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+              size="18"
+              aria-hidden="true"
+            />
+          </button>
+          <nav id="rental-related-links" class="rentals-related" :aria-label="t('relatedSearches')">
+            <NuxtLink :to="localePath('/analisis-alquileres-uruguay')">{{
+              t('analysisShort')
+            }}</NuxtLink>
+            <NuxtLink :to="localePath('/barrios-alquileres-uruguay')">{{
+              globalT('nav.rentalZones')
+            }}</NuxtLink>
+            <NuxtLink :to="localePath('/oportunidades-inmobiliarias-uruguay')">{{
+              t('opportunitiesShort')
+            }}</NuxtLink>
+            <NuxtLink :to="localePath('/venta-viviendas-uruguay')">{{ t('salesShort') }}</NuxtLink>
+            <NuxtLink :to="localePath('/inmobiliarias-uruguay')">{{ t('agenciesShort') }}</NuxtLink>
+            <NuxtLink :to="localePath('/alquiler-ideal-uruguay')">{{
+              globalT('nav.rentalFit')
+            }}</NuxtLink>
+          </nav>
+        </div>
         <div class="rentals-provenance">
           <a href="#rental-coverage" :title="activeSourceLabels">{{ t('coverage') }}</a>
           <span v-if="meta?.generatedAt">{{
@@ -643,6 +663,7 @@ const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
 const mobileFiltersOpen = ref(false)
+const relatedSearchesOpen = ref(false)
 let filterActivator: HTMLElement | null = null
 let filterReturnScroll = 0
 let filtersApplied = false
@@ -1904,7 +1925,32 @@ useHead(() => ({
   }
 }
 
+.rentals-related-toggle {
+  display: none;
+}
+.rentals-related-toggle:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 2px;
+}
 @media (max-width: 959px) {
+  .rentals-related-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding-block: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 24px;
+    color: rgb(var(--v-theme-link));
+  }
+  .rentals-related-disclosure--expanded {
+    padding-bottom: 8px;
+  }
+  /* CSS closes the mobile links in the first HTML, before viewport hydration. */
+  .rentals-related-disclosure:not(.rentals-related-disclosure--expanded) .rentals-related {
+    display: none;
+  }
   .rentals-breadcrumbs {
     display: none;
   }

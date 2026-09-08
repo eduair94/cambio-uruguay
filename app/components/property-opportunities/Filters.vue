@@ -37,13 +37,6 @@
           clearable
           v-bind="field"
         />
-        <VSelect v-model="draft.type" :items="typeItems" :label="t('type')" v-bind="field" />
-        <VSelect
-          v-model="draft.bedrooms"
-          :items="bedroomItems"
-          :label="t('bedrooms')"
-          v-bind="field"
-        />
         <VTextField
           v-model="budget"
           name="maxPrice"
@@ -68,13 +61,25 @@
         <p id="opportunity-budget-hint" class="opportunity-filters__hint">
           {{ t(query.operation === 'rent' ? 'rentBudget' : 'saleBudget') }}
         </p>
+        <VSelect v-model="draft.type" :items="typeItems" :label="t('type')" v-bind="field" />
+        <VSelect
+          v-model="draft.bedrooms"
+          :items="bedroomItems"
+          :label="t('bedrooms')"
+          v-bind="field"
+        />
         <component
           :is="mobile ? 'details' : 'div'"
           class="opportunity-filters__advanced"
           :open="advancedOpen"
           @toggle="advancedOpen = ($event.target as HTMLDetailsElement).open"
         >
-          <summary v-if="mobile">{{ t('evidenceFilter') }}</summary>
+          <summary v-if="mobile" data-testid="opportunity-advanced-toggle">
+            {{ t('moreFilters') }}
+            <span v-if="advancedSummary" class="opportunity-filters__selected">{{
+              advancedSummary
+            }}</span>
+          </summary>
           <VSelect
             v-if="query.operation === 'rent'"
             v-model="draft.availability"
@@ -176,6 +181,18 @@ const evidenceItems = computed(() => [
   { title: t('standard'), value: 'standard' },
   { title: t('exploratory'), value: 'exploratory' },
 ])
+const advancedSummary = computed(() =>
+  [
+    props.query.operation === 'rent' &&
+      draft.value.availability !== 'all' &&
+      availabilityCopy.value[draft.value.availability],
+    draft.value.signal !== 'all' && t(draft.value.signal),
+    draft.value.evidence !== 'all' && t(draft.value.evidence),
+    draft.value.confidence !== 'all' && `${t('confidence')}: ${t(draft.value.confidence)}`,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+)
 const dialogProps = computed(() =>
   props.mobile
     ? {
@@ -217,11 +234,7 @@ watch(
     draft.value = { ...props.query }
     budget.value = props.query.maxPrice
     invalidBudget.value = false
-    advancedOpen.value =
-      props.query.availability !== 'all' ||
-      props.query.signal !== 'all' ||
-      props.query.evidence !== 'all' ||
-      props.query.confidence !== 'all'
+    // Preserve manual disclosure state; active choices stay visible in the summary.
   },
   { deep: true }
 )
@@ -333,6 +346,15 @@ h2 {
 .opportunity-filters__advanced > summary:focus-visible {
   outline: 2px solid rgb(var(--v-theme-link));
   outline-offset: 2px;
+}
+.opportunity-filters__selected {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  color: rgba(var(--v-theme-on-surface), 0.8);
 }
 .opportunity-filters--dialog .opportunity-filters__advanced > .v-input {
   margin-top: 12px;

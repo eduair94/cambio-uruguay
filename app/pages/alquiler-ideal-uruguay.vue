@@ -10,8 +10,10 @@ The user delegated design choices. The composition study informs hierarchy, neve
   <VContainer class="rental-fit-page">
     <header class="page-heading">
       <h1>{{ t('title') }}</h1>
-      <p>{{ t('intro') }}</p>
-      <NuxtLink :to="localePath('/alquileres-uruguay')">{{ t('explore') }}</NuxtLink>
+      <p>
+        {{ t('introShort') }}
+        <NuxtLink :to="localePath('/alquileres-uruguay')">{{ t('exploreShort') }}</NuxtLink>
+      </p>
     </header>
     <div class="fit-private" data-clarity-mask="true">
       <template v-if="editing">
@@ -29,107 +31,24 @@ The user delegated design choices. The composition study informs hierarchy, neve
               >{{ t(label) }}
             </button>
           </div>
-          <VBtn
-            color="primary"
-            :loading="pending"
-            data-testid="fit-next"
-            @click="step < 2 ? goStep(step + 1) : search()"
-            >{{ t(step < 2 ? 'next' : 'rank') }}</VBtn
-          >
         </nav>
         <div ref="editor" class="fit-editor">
           <div v-show="step === 0" class="fit-step">
-            <h2>{{ t('peopleTitle') }}</h2>
-            <p class="section-hint">{{ t('peopleHint') }}</p>
-            <section v-for="(person, index) in draft.people" :key="person.id" class="person-card">
-              <div class="section-heading">
-                <h3>{{ t('person', { n: index + 1 }) }}</h3>
-                <VBtn
-                  v-if="draft.people.length > 1"
-                  icon="mdi-close"
-                  variant="text"
-                  :aria-label="t('removePerson')"
-                  @click="draft.people.splice(index, 1)"
-                />
-              </div>
-              <div class="field-grid">
-                <VTextField
-                  v-model="person.label"
-                  :label="t('alias')"
-                  variant="outlined"
-                  hide-details
-                  maxlength="60"
-                  autocomplete="off"
-                /><VTextField
-                  v-model.number="person.incomeUyu"
-                  :label="t('income')"
-                  type="number"
-                  min="0"
-                  max="10000000"
-                  variant="outlined"
-                  hide-details
-                />
-              </div>
-            </section>
-            <VBtn
-              v-if="draft.people.length < 8"
-              variant="text"
-              prepend-icon="mdi-account-plus-outline"
-              @click="addPerson"
-              >{{ t('addPerson') }}</VBtn
-            >
             <section class="budget-section">
-              <h2>{{ t('budgetTitle') }}</h2>
+              <h2>{{ t('budgetTitleShort') }}</h2>
               <VTextField
                 v-model.number="draft.housingBudgetUyu"
-                :label="t('budget')"
+                :label="t('budgetShort')"
                 type="number"
+                inputmode="decimal"
+                required
                 min="1"
                 max="10000000"
                 variant="outlined"
                 hide-details
                 data-testid="fit-budget"
               />
-              <p class="field-hint">{{ t('budgetHint') }}</p>
-              <p v-if="totalIncome" class="income-total">
-                {{ t('incomeTotal', { amount: money(totalIncome) }) }}
-              </p>
-              <details class="expenses-details">
-                <summary>{{ t('expensesTitle') }}</summary>
-                <div class="field-grid">
-                  <VTextField
-                    v-model.number="draft.otherExpensesUyu"
-                    :label="t('otherExpenses')"
-                    type="number"
-                    min="0"
-                    max="10000000"
-                    variant="outlined"
-                    hide-details
-                  />
-                  <VTextField
-                    v-model.number="draft.savingsUyu"
-                    :label="t('savings')"
-                    type="number"
-                    min="0"
-                    max="10000000"
-                    variant="outlined"
-                    hide-details
-                  />
-                  <VTextField
-                    v-model.number="draft.transportUyu"
-                    :label="t('transport')"
-                    type="number"
-                    min="0"
-                    max="10000000"
-                    variant="outlined"
-                    hide-details
-                  />
-                </div>
-                <p class="field-hint">{{ t('expensesHint') }}</p>
-              </details>
-              <p v-if="totalIncome" class="income-total">
-                {{ t('available', { amount: money(availableIncome) }) }}
-              </p>
+              <p class="field-hint">{{ t('budgetHintShort') }}</p>
               <VAlert
                 v-if="totalIncome && Number(draft.housingBudgetUyu) > availableIncome"
                 type="warning"
@@ -138,24 +57,123 @@ The user delegated design choices. The composition study informs hierarchy, neve
                 >{{ t('budgetIncomeWarning') }}</VAlert
               >
             </section>
+            <details class="optional-section household-details">
+              <summary>
+                <span>{{ t('peopleOptional') }}</span
+                ><small
+                  >{{
+                    draft.people.length === 1
+                      ? t('onePerson')
+                      : t('peopleSummary', { n: draft.people.length })
+                  }}<template v-if="totalIncome">
+                    · {{ money(totalIncome) }} / {{ t('monthShort') }}</template
+                  ></small
+                >
+              </summary>
+              <p class="section-hint">{{ t('peopleHint') }}</p>
+              <section v-for="(person, index) in draft.people" :key="person.id" class="person-card">
+                <div class="section-heading">
+                  <h3>{{ t('person', { n: index + 1 }) }}</h3>
+                  <VBtn
+                    v-if="draft.people.length > 1"
+                    icon="mdi-close"
+                    variant="text"
+                    :aria-label="t('removePerson')"
+                    @click="draft.people.splice(index, 1)"
+                  />
+                </div>
+                <div class="field-grid">
+                  <VTextField
+                    v-model="person.label"
+                    :label="t('alias')"
+                    variant="outlined"
+                    hide-details
+                    maxlength="60"
+                    autocomplete="off"
+                  /><VTextField
+                    v-model.number="person.incomeUyu"
+                    :label="t('income')"
+                    type="number"
+                    min="0"
+                    max="10000000"
+                    variant="outlined"
+                    hide-details
+                  />
+                </div>
+              </section>
+              <VBtn
+                v-if="draft.people.length < 8"
+                variant="text"
+                prepend-icon="mdi-account-plus-outline"
+                @click="addPerson"
+                >{{ t('addPerson') }}</VBtn
+              >
+            </details>
+            <details class="expenses-details optional-section">
+              <summary>
+                <span>{{ t('expensesShort') }}</span
+                ><small v-if="reservedIncome"
+                  >{{ money(reservedIncome) }} / {{ t('monthShort') }}</small
+                >
+              </summary>
+              <div class="field-grid">
+                <VTextField
+                  v-model.number="draft.otherExpensesUyu"
+                  :label="t('otherExpenses')"
+                  type="number"
+                  min="0"
+                  max="10000000"
+                  variant="outlined"
+                  hide-details
+                />
+                <VTextField
+                  v-model.number="draft.savingsUyu"
+                  :label="t('savings')"
+                  type="number"
+                  min="0"
+                  max="10000000"
+                  variant="outlined"
+                  hide-details
+                />
+                <VTextField
+                  v-model.number="draft.transportUyu"
+                  :label="t('transport')"
+                  type="number"
+                  min="0"
+                  max="10000000"
+                  variant="outlined"
+                  hide-details
+                />
+              </div>
+              <p class="field-hint">{{ t('expensesHint') }}</p>
+            </details>
+            <p v-if="totalIncome" class="income-total">
+              {{ t('available', { amount: money(availableIncome) }) }}
+            </p>
           </div>
           <div v-show="step === 1" class="fit-step">
             <h2>{{ t('placesTitle') }}</h2>
             <p class="section-hint">{{ t('placesHint') }}</p>
             <section v-for="(person, index) in draft.people" :key="person.id" class="person-card">
               <h3>{{ person.label || t('person', { n: index + 1 }) }}</h3>
-              <VTextField
-                v-model.number="person.remoteDays"
-                :label="t('remoteDays')"
-                type="number"
-                min="0"
-                max="7"
-                step="1"
-                variant="outlined"
-                hide-details
-                class="remote-days"
-              />
-              <p class="field-hint">{{ t('remoteHint') }}</p>
+              <details class="remote-details optional-section">
+                <summary>
+                  <span>{{ t('remoteTitle') }}</span
+                  ><small>{{ t('remoteSummary', { n: person.remoteDays || 0 }) }}</small>
+                </summary>
+                <VTextField
+                  v-model.number="person.remoteDays"
+                  :label="t('remoteDays')"
+                  type="number"
+                  min="0"
+                  max="7"
+                  step="1"
+                  variant="outlined"
+                  hide-details
+                  class="remote-days"
+                />
+                <p class="field-hint">{{ t('remoteHint') }}</p>
+              </details>
               <RentalsFitDestination
                 v-for="(destination, destinationIndex) in person.destinations"
                 :key="destination.id"
@@ -208,6 +226,12 @@ The user delegated design choices. The composition study informs hierarchy, neve
                 variant="outlined"
                 hide-details
               />
+            </div>
+            <details class="optional-section housing-extra">
+              <summary>
+                <span>{{ t('housingExtra') }}</span
+                ><small>{{ housingExtraSummary }}</small>
+              </summary>
               <VTextField
                 v-model.number="draft.minArea"
                 :label="t('area')"
@@ -217,28 +241,30 @@ The user delegated design choices. The composition study informs hierarchy, neve
                 variant="outlined"
                 hide-details
               />
-            </div>
-            <div class="housing-options">
-              <VCheckbox v-model="draft.pets" :label="t('pets')" hide-details />
-              <VCheckbox v-model="draft.parking" :label="t('parking')" hide-details />
-              <VCheckbox v-model="draft.furnished" :label="t('furnished')" hide-details />
-              <p class="field-hint">{{ t('strictHint') }}</p>
-              <VCheckbox v-model="draft.hideReported" :label="t('hideReported')" hide-details />
-              <p class="field-hint">{{ t('reportsHint') }}</p>
-              <VCheckbox v-model="draft.includeOverBudget" :label="t('overBudget')" hide-details />
-            </div>
+              <div class="housing-options">
+                <VCheckbox v-model="draft.pets" :label="t('pets')" hide-details />
+                <VCheckbox v-model="draft.parking" :label="t('parking')" hide-details />
+                <VCheckbox v-model="draft.furnished" :label="t('furnished')" hide-details />
+                <p class="field-hint">{{ t('strictHint') }}</p>
+                <VCheckbox v-model="draft.hideReported" :label="t('hideReported')" hide-details />
+                <p class="field-hint">{{ t('reportsHint') }}</p>
+                <VCheckbox
+                  v-model="draft.includeOverBudget"
+                  :label="t('overBudget')"
+                  hide-details
+                />
+              </div>
+            </details>
             <fieldset class="priority-field">
               <legend>{{ t('priorityTitle') }}</legend>
-              <VRadioGroup v-model="draft.priority" hide-details>
-                <VRadio
-                  v-for="choice in priorityItems"
-                  :key="choice.value"
-                  :value="choice.value"
-                  :label="choice.title"
-                />
-              </VRadioGroup>
+              <VSelect
+                v-model="draft.priority"
+                :items="priorityItems"
+                :aria-label="t('priorityTitle')"
+                variant="outlined"
+                hide-details
+              />
             </fieldset>
-            <p class="field-hint">{{ t('distanceHint') }}</p>
           </div>
           <VAlert v-if="error" type="error" variant="tonal" role="alert" class="fit-error">{{
             t(error)
@@ -249,11 +275,15 @@ The user delegated design choices. The composition study informs hierarchy, neve
             ><VBtn
               color="primary"
               :loading="pending"
+              data-testid="fit-next"
               @click="step < 2 ? goStep(step + 1) : search()"
               >{{ t(step < 2 ? 'next' : 'rank') }}</VBtn
             >
           </div>
-          <p class="privacy-note"><VIcon size="18">mdi-lock-outline</VIcon>{{ t('privacy') }}</p>
+          <details class="privacy-details">
+            <summary><VIcon size="18">mdi-lock-outline</VIcon>{{ t('privacyShort') }}</summary>
+            <p class="field-hint">{{ t('privacy') }}</p>
+          </details>
         </div>
       </template>
       <template v-else-if="response && submitted">
@@ -501,6 +531,25 @@ const money = (value: number) => rentalMoney(value, 'UYU', locale.value)
 const totalIncome = computed(() =>
   draft.value.people.reduce((sum, person) => sum + (Number(person.incomeUyu) || 0), 0)
 )
+const reservedIncome = computed(
+  () =>
+    Number(draft.value.otherExpensesUyu || 0) +
+    Number(draft.value.transportUyu || 0) +
+    Number(draft.value.savingsUyu || 0)
+)
+const housingExtraSummary = computed(
+  () =>
+    [
+      Number(draft.value.minArea) > 0 ? t('areaFact', { n: draft.value.minArea }) : '',
+      draft.value.pets ? t('petsShort') : '',
+      draft.value.parking ? t('parkingShort') : '',
+      draft.value.furnished ? t('furnishedShort') : '',
+      draft.value.hideReported ? t('reportsShort') : '',
+      draft.value.includeOverBudget ? t('overBudgetShort') : '',
+    ]
+      .filter(Boolean)
+      .join(' · ') || t('noExtra')
+)
 const availableIncome = computed(
   () =>
     totalIncome.value -
@@ -636,6 +685,21 @@ async function search() {
     })
   } catch {
     error.value = 'invalid'
+    const invalid = editor.value?.querySelector<HTMLInputElement>('input:invalid')
+    if (invalid) {
+      const section = invalid.closest('.fit-step')
+      const sections = Array.from(editor.value?.querySelectorAll('.fit-step') || [])
+      const index = sections.indexOf(section as Element)
+      if (index >= 0) step.value = index
+      let parent = invalid.parentElement
+      while (parent && parent !== editor.value) {
+        if (parent instanceof HTMLDetailsElement) parent.open = true
+        parent = parent.parentElement
+      }
+      await nextTick()
+      invalid.focus({ preventScroll: true })
+      invalid.scrollIntoView({ block: 'center', behavior: 'instant' })
+    }
     return
   }
   const current = new AbortController()
@@ -742,9 +806,9 @@ h1 {
   margin-top: 12px;
   line-height: 1.55;
 }
-.page-heading > a {
+.page-heading a {
   display: inline-block;
-  padding-block: 12px;
+  text-underline-offset: 3px;
 }
 h2 {
   font-size: 1.35rem;
@@ -832,10 +896,10 @@ h3 {
   min-width: 0;
 }
 .budget-section {
-  margin-top: 28px;
+  margin-top: 0;
 }
 .budget-section > h2 {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 .field-hint {
   margin-top: 8px;
@@ -847,7 +911,27 @@ h3 {
   font-weight: 600;
 }
 .expenses-details {
+  margin-top: 0;
+}
+.optional-section {
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   margin-top: 16px;
+}
+.optional-section > summary small {
+  display: block;
+  margin: 4px 0 0 16px;
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.45;
+}
+.optional-section[open] > summary {
+  margin-bottom: 12px;
+}
+.remote-details {
+  margin: 12px 0;
+}
+.remote-details .remote-days {
+  margin-top: 0;
 }
 .expenses-details .field-grid {
   margin-top: 16px;
@@ -880,7 +964,10 @@ summary {
 .priority-field {
   border: 0;
   padding: 0;
-  margin-top: 28px;
+  margin-top: 20px;
+}
+.priority-field legend {
+  margin-bottom: 12px;
 }
 legend {
   font-weight: 700;
@@ -892,15 +979,19 @@ legend {
   gap: 12px;
   margin-top: 28px;
 }
-.privacy-note {
+.privacy-details {
+  margin-top: 16px;
+  font-size: 0.8rem;
+}
+.privacy-details summary {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   font-size: 0.8rem;
   line-height: 1.55;
-  margin-top: 24px;
+  font-weight: 400;
 }
-.privacy-note .v-icon {
+.privacy-details .v-icon {
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -982,13 +1073,23 @@ legend {
 }
 @media (max-width: 599px) {
   .rental-fit-page {
-    padding: 20px 12px 36px;
+    padding: 16px 12px 28px;
+  }
+  .page-heading {
+    margin-bottom: 16px;
+  }
+  .page-heading h1 {
+    font-size: 1.6rem;
+  }
+  .page-heading > p {
+    font-size: 0.9rem;
+    margin-top: 8px;
   }
   .fit-toolbar {
-    top: 56px;
+    top: 64px;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 8px 0;
+    padding: 4px 0;
   }
   .step-links {
     gap: 8px;
@@ -998,9 +1099,6 @@ legend {
   .step-links button {
     font-size: 0.8rem;
     gap: 4px;
-  }
-  .fit-toolbar > .v-btn {
-    flex: 1 1 100%;
   }
   .result-toolbar > .v-btn {
     flex: 1 1 auto;
@@ -1014,11 +1112,32 @@ legend {
     grid-template-columns: minmax(0, 1fr);
   }
   .person-card {
-    padding: 16px 12px;
+    border: 0;
+    border-radius: 0;
+    padding: 12px 0;
+    background: transparent;
+  }
+  .person-card + .person-card {
+    border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   }
   .fit-editor {
-    margin-top: 22px;
-    scroll-margin-top: 190px;
+    margin-top: 18px;
+    scroll-margin-top: 120px;
+  }
+  .housing-fields {
+    margin-top: 20px;
+  }
+  .step-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 4;
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+    background: rgb(var(--v-theme-background));
+    border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    margin-top: 20px;
+  }
+  .step-actions > .v-btn:last-child {
+    flex: 1;
   }
   .add-place {
     height: auto;

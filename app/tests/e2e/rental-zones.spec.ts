@@ -198,7 +198,7 @@ async function setup(page: Page, target: string, marketOnly = false, mapScaleReg
       },
     })
   })
-  await page.goto('/acerca', { waitUntil: 'domcontentloaded' })
+  await page.goto('/barrios-alquileres-uruguay', { waitUntil: 'domcontentloaded' })
   const consent = page.getByTestId('cookie-consent-inline')
   await expect(consent).toBeVisible()
   await expect(async () => {
@@ -206,14 +206,15 @@ async function setup(page: Page, target: string, marketOnly = false, mapScaleReg
       await consent.getByRole('button', { name: 'Rechazar', exact: true }).click()
     await expect(consent).toBeHidden({ timeout: 1000 })
   }).toPass({ timeout: 60000 })
-  await page.evaluate(async path => {
-    const element = document.getElementById('__nuxt') as HTMLElement & {
-      __vue_app__: {
-        config: { globalProperties: { $router: { push: (path: string) => unknown } } }
+  if (target !== '/barrios-alquileres-uruguay')
+    await page.evaluate(async path => {
+      const element = document.getElementById('__nuxt') as HTMLElement & {
+        __vue_app__: {
+          config: { globalProperties: { $router: { push: (path: string) => unknown } } }
+        }
       }
-    }
-    await element.__vue_app__.config.globalProperties.$router.push(path)
-  }, target)
+      await element.__vue_app__.config.globalProperties.$router.push(path)
+    }, target)
   return state
 }
 async function shot(page: Page, info: TestInfo, name: string) {
@@ -225,12 +226,14 @@ async function noOverflow(page: Page) {
   ).toBeLessThanOrEqual(1)
 }
 async function selectField(page: Page, label: string, choice: string) {
-  await page
+  const field = page
     .locator('.v-select')
     .filter({ has: page.getByRole('textbox', { name: label, exact: true }) })
-    .locator('.v-field__append-inner')
-    .click()
+  if (!(await field.isVisible())) await page.locator('.zone-filter-toggle:visible').click()
+  await field.locator('.v-field__append-inner').click()
   await page.getByRole('option', { name: choice, exact: true }).click()
+  const close = page.getByRole('button', { name: 'Ver comparación', exact: true })
+  if (await close.isVisible()) await close.click()
 }
 test.afterEach(async ({ page }, info) => {
   if (info.status !== info.expectedStatus) await shot(page, info, 'failure').catch(() => {})
@@ -245,6 +248,14 @@ for (const width of [320, 390])
     await expect(
       page.getByRole('button', { name: 'Ver información de Cordón, Montevideo', exact: true })
     ).toBeVisible()
+    await expect(page.locator('.zone-filter-toggle')).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.locator('.zone-options')).toBeHidden()
+    await expect(page.locator('.criteria-summary')).toContainText('Menor valor')
+    await expect(page.locator('.zone-list > li').first().locator('.row-value')).toBeInViewport()
+    await expect(page.locator('.zone-list > li').first().locator('.row-value')).toContainText(
+      '$ 15.000'
+    )
+    await expect(page.locator('.explorer-footer')).toBeHidden()
     await shot(page, info, `controls-${width}`)
     await page
       .getByRole('button', { name: 'Ver información de Cordón, Montevideo', exact: true })
@@ -253,7 +264,11 @@ for (const width of [320, 390])
     await expect(detail).toContainText('$ 20.000')
     await expect(detail).toContainText('$ 22.000')
     await expect(detail).toContainText('12 avisos comparables')
-    await page.locator('.cohort-toggle').click()
+    await expect(detail.locator('.evidence')).not.toHaveAttribute('open', '')
+    await expect(detail.getByRole('button', { name: 'Elegir zona', exact: true })).toBeInViewport()
+    await detail.locator('.evidence > summary').click()
+    await expect(detail.getByText('$ 22.000', { exact: true })).toBeVisible()
+    await detail.locator('.evidence > summary').click()
     await selectField(page, 'Precio', 'Promedio')
     await selectField(page, 'Ordenar por', 'Menor valor')
     await expect(page.locator('.zone-list > li').first()).toContainText('Atlántida')
@@ -342,8 +357,7 @@ test('390px: directory comparison applies to the draft before applying rental fi
   await page.getByTestId('rental-zones-apply').click()
   await expect(drawer).toBeVisible()
   expect(new URL(page.url()).searchParams.has('department')).toBe(false)
-  await expect(drawer.getByTestId('rental-zones-picker')).toContainText('Cordón')
-  await expect(drawer.getByTestId('rental-zones-picker')).toContainText('Pocitos')
+  await expect(drawer.getByTestId('rental-zones-picker')).toContainText('Cordón +1')
   await drawer.getByTestId('rental-filters-apply').click()
   await expect.poll(() => new URL(page.url()).searchParams.get('department')).toBe('Montevideo')
   expect(new URL(page.url()).searchParams.get('neighborhoods')).toBe('Cordón,Pocitos')

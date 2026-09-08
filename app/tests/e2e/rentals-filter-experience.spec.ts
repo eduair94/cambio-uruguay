@@ -11,6 +11,45 @@ test.use({
 })
 test.setTimeout(120000)
 
+test.describe('property navigation before hydration', () => {
+  test.use({ javaScriptEnabled: false })
+  test('mobile related links are closed in the first HTML without hiding the main directory link', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 844 })
+    await page.goto('/alquileres-uruguay', { waitUntil: 'domcontentloaded' })
+    const related = page.getByTestId('rental-related-searches')
+    await expect(related.getByRole('button')).toBeVisible()
+    await expect(related.getByRole('button')).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.locator('#rental-related-links')).toBeHidden()
+    await expect(page.locator('#rental-related-links a')).toHaveCount(6)
+    await expect(page.locator('#rental-related-links a').first()).toHaveAttribute(
+      'href',
+      '/analisis-alquileres-uruguay'
+    )
+    expect((await related.getByRole('button').boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    await page.setViewportSize({ width: 1366, height: 900 })
+    await expect(related.getByRole('button')).toBeHidden()
+    await expect(page.locator('#rental-related-links')).toBeVisible()
+    await page.setViewportSize({ width: 320, height: 844 })
+    await page.goto('/oportunidades-inmobiliarias-uruguay?operation=rent', {
+      waitUntil: 'domcontentloaded',
+    })
+    const toggle = page.locator('.opportunities__related-toggle')
+    await expect(toggle).toBeVisible()
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.locator('#opportunity-related-options')).toBeHidden()
+    await expect(page.locator('#opportunity-related-options a')).toHaveCount(2)
+    const directory = page.getByTestId('opportunity-explore-directory')
+    await expect(directory).toBeVisible()
+    await expect(directory).toHaveAttribute('href', '/alquileres-uruguay')
+    expect((await toggle.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    await page.setViewportSize({ width: 1366, height: 900 })
+    await expect(toggle).toBeHidden()
+    await expect(page.locator('#opportunity-related-options')).toBeVisible()
+  })
+})
+
 // Browser-only fixtures: this suite checks interaction and presentation, while the
 // Mongo suites independently verify real filtering and selection of the same advert.
 const observedAt = new Date().toISOString()
@@ -204,15 +243,14 @@ async function openFilters(page: Page) {
   const dialog = page.getByTestId('rental-mobile-filters-dialog')
   await expect(dialog).toBeVisible()
   await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+  await expect(dialog.locator('.v-overlay__content')).toHaveCSS('transform', 'none')
   return dialog
 }
 
 async function priceFields(dialog: Locator) {
-  const min = dialog.getByRole('spinbutton', { name: 'Alquiler desde ($)', exact: true })
-  if (!(await min.isVisible())) await dialog.getByTestId('rental-advanced-toggle').click()
   return {
-    min,
-    max: dialog.getByRole('spinbutton', { name: 'Alquiler hasta ($)', exact: true }),
+    min: dialog.getByTestId('rental-filter-priceMin').getByRole('spinbutton'),
+    max: dialog.getByTestId('rental-filter-priceMax').getByRole('spinbutton'),
   }
 }
 
@@ -777,6 +815,64 @@ test('invalid ranges do not fetch; equal endpoints work; clearing the drawer rem
   expect(state.errors).toEqual([])
 })
 
+test('mobile advanced filters keep visible summaries, closed groups and cancellable drafts', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  const state = await setup(
+    page,
+    'monthlyMax=30000&expensesMax=0&pets=1&owner=1&guarantees=anda&source=infocasas&areaMin=40'
+  )
+  const committedUrl = page.url()
+  const initialReads = state.reads.length
+  let dialog = await openFilters(page)
+  await expect(dialog.locator('details[open]')).toHaveCount(0)
+  await expect(dialog.getByTestId('rental-costs-toggle')).toContainText('30000')
+  await expect(dialog.getByTestId('rental-costs-toggle')).toContainText('Sin gastos comunes')
+  await expect(dialog.getByTestId('rental-advanced-toggle')).toContainText('Admite mascotas')
+  await expect(dialog.getByTestId('rental-advanced-toggle')).toContainText('40')
+  await expect(dialog.getByTestId('rental-conditions-toggle')).toContainText(
+    'Dueño directo declarado'
+  )
+  await expect(dialog.getByTestId('rental-conditions-toggle')).toContainText('ANDA')
+  await expect(dialog.getByTestId('rental-source-toggle')).toContainText('InfoCasas')
+  await dialog.getByTestId('rental-advanced-toggle').click()
+  await dialog.getByRole('checkbox', { name: 'Admite mascotas', exact: true }).uncheck()
+  await dialog.getByTestId('rental-advanced-toggle').click()
+  await expect(dialog.getByTestId('rental-advanced-toggle')).not.toContainText('Admite mascotas')
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeHidden()
+  expect(page.url()).toBe(committedUrl)
+  expect(state.reads.length).toBe(initialReads)
+
+  dialog = await openFilters(page)
+  await expect(dialog.locator('details[open]')).toHaveCount(0)
+  await expect(dialog.getByTestId('rental-advanced-toggle')).toContainText('Admite mascotas')
+  await dialog.getByTestId('rental-advanced-toggle').click()
+  const maximum = dialog.getByTestId('rental-filter-areaMax').locator('input')
+  await maximum.fill('-1')
+  await dialog.getByTestId('rental-advanced-toggle').click()
+  await dialog.getByTestId('rental-filters-apply').click()
+  await expect(dialog.locator('#rental-advanced')).toHaveAttribute('open', '')
+  await expect(maximum).toBeFocused()
+  expect(page.url()).toBe(committedUrl)
+  expect(state.reads.length).toBe(initialReads)
+  await maximum.fill('0')
+  await dialog.getByTestId('rental-advanced-toggle').click()
+  await dialog.getByTestId('rental-filters-apply').click()
+  await expect(dialog.locator('#rental-advanced')).toHaveAttribute('open', '')
+  await expect(maximum).toBeFocused()
+  expect(page.url()).toBe(committedUrl)
+  expect(state.reads.length).toBe(initialReads)
+  await maximum.fill('50')
+  await dialog.getByTestId('rental-advanced-toggle').click()
+  await dialog.getByTestId('rental-filters-apply').click()
+  await expect(dialog).toBeHidden()
+  await expect.poll(() => new URL(page.url()).searchParams.get('areaMax')).toBe('50')
+  expect(new URL(page.url()).searchParams.get('pets')).toBe('1')
+  expect(state.errors).toEqual([])
+})
+
 for (const viewport of [
   { width: 320, height: 640 },
   { width: 390, height: 844 },
@@ -789,6 +885,17 @@ for (const viewport of [
     const state = await setup(page)
     await expect(page.locator('.rental-card__price').first()).toBeInViewport({ ratio: 1 })
     await expect(page.locator('.rental-card__price').first()).toContainText('$ 20.000')
+    const related = page.getByTestId('rental-related-searches')
+    await expect(related.getByRole('button')).toHaveAttribute('aria-expanded', 'false')
+    await reachable(related.getByRole('button'))
+    await related.getByRole('button').click()
+    await expect(related.getByRole('link')).toHaveCount(6)
+    await expect(related.getByRole('link', { name: 'Analizar precios' })).toHaveAttribute(
+      'href',
+      '/analisis-alquileres-uruguay'
+    )
+    for (const link of await related.getByRole('link').all()) await expect(link).toBeVisible()
+    await related.getByRole('button').click()
     await page.screenshot({
       path: resolve(artifactRoot, `.sdd-rentals-filter-${viewport.width}.png`),
     })
@@ -808,6 +915,17 @@ for (const viewport of [
     await page.evaluate(() => scrollTo(0, 1200))
     await reachable(page.getByTestId('rental-mobile-filters-trigger'))
     const dialog = await openFilters(page)
+    const priceMinimum = dialog.getByTestId('rental-filter-priceMin')
+    const priceMaximum = dialog.getByTestId('rental-filter-priceMax')
+    const rangeBoxes = await Promise.all([priceMinimum.boundingBox(), priceMaximum.boundingBox()])
+    expect(Math.abs(rangeBoxes[0]!.y - rangeBoxes[1]!.y)).toBeLessThan(2)
+    expect(rangeBoxes[0]!.width).toBeGreaterThanOrEqual(100)
+    await expect(priceMinimum).toContainText('Desde ($)')
+    await expect(priceMaximum).toContainText('Hasta ($)')
+    await page.screenshot({
+      path: resolve(artifactRoot, `.sdd-rentals-filter-drawer-full-${viewport.width}.png`),
+      animations: 'disabled',
+    })
     await page.setViewportSize({ width: viewport.width, height: 390 })
     await reachable(dialog.getByTestId('rental-filters-apply'))
     await reachable(dialog.getByTestId('rental-filters-reset'))

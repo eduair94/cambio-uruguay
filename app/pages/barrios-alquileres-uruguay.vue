@@ -3,7 +3,6 @@
   <VContainer class="rental-zones-page">
     <header class="page-heading">
       <h1>{{ t('title') }}</h1>
-      <p>{{ t('intro') }}</p>
       <nav>
         <NuxtLink :to="localePath('/alquileres-uruguay')">{{ t('rentalsShort') }}</NuxtLink
         ><NuxtLink :to="localePath('/alquiler-ideal-uruguay')">{{ t('plannerShort') }}</NuxtLink>
@@ -12,6 +11,7 @@
     <ZoneExplorer
       :initial="initial"
       directory
+      standalone
       @apply="apply"
       @cancel="navigateTo(localePath('/alquileres-uruguay'))"
     />
@@ -70,27 +70,22 @@ function apply(zones: RentalZonePreferences) {
 <style scoped>
 .rental-zones-page {
   max-width: 1240px;
-  padding: 28px 16px 48px;
+  padding: 20px 16px 32px;
 }
 .page-heading {
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 .page-heading h1 {
   margin: 0;
-  font-size: clamp(1.65rem, 4vw, 2.4rem);
+  font-size: clamp(1.45rem, 4vw, 2.15rem);
   font-weight: 800;
   line-height: 1.2;
-}
-.page-heading p {
-  margin: 12px 0 0;
-  max-width: 760px;
-  line-height: 1.6;
 }
 .page-heading nav {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 24px;
-  margin-top: 12px;
+  margin-top: 4px;
 }
 .page-heading a {
   display: inline-flex;
@@ -107,5 +102,10 @@ function apply(zones: RentalZonePreferences) {
   position: sticky;
   bottom: 0;
   z-index: 2;
+}
+@media (max-width: 959px) {
+  .rental-zones-page :deep(.zone-toolbar) {
+    top: 64px;
+  }
 }
 </style>

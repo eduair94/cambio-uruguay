@@ -1,22 +1,24 @@
 <template>
   <div class="zone-explorer" data-testid="rental-zone-explorer">
     <div class="explorer-scroll">
-      <div class="zone-controls">
-        <VSelect
-          v-model="department"
-          :items="departments"
-          :label="t('department')"
-          :disabled="Boolean(lockedDepartment)"
-          v-bind="field"
-        />
-        <VTextField
-          v-model="search"
-          :label="t('search')"
-          clearable
-          v-bind="field"
-          prepend-inner-icon="mdi-magnify"
-        />
-        <VSelect v-model="layer" :items="layers" :label="t('layer')" v-bind="field" />
+      <VTextField
+        v-model="search"
+        :label="t('search')"
+        clearable
+        v-bind="field"
+        prepend-inner-icon="mdi-magnify"
+        class="zone-search"
+      />
+      <div class="zone-toolbar">
+        <VBtn
+          class="zone-filter-toggle"
+          variant="text"
+          prepend-icon="mdi-tune-variant"
+          :aria-expanded="filtersOpen"
+          :aria-controls="filtersId"
+          @click="toggleFilters"
+          >{{ t('filters') }}</VBtn
+        >
         <div class="view-buttons" :aria-label="t('layer')">
           <VBtn
             :variant="view === 'list' ? 'tonal' : 'text'"
@@ -36,59 +38,65 @@
         </div>
       </div>
       <button
-        v-if="layer === 'prices'"
         type="button"
-        class="cohort-toggle"
-        :aria-expanded="comparisonOpen"
-        :aria-controls="comparisonId"
-        @click="comparisonOpen = !comparisonOpen"
+        class="criteria-summary"
+        :aria-expanded="filtersOpen"
+        :aria-controls="filtersId"
+        @click="toggleFilters"
       >
-        <span>{{ comparisonSummary }}</span>
-        <VIcon size="20">{{ comparisonOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</VIcon>
+        <span>{{ criteriaSummary }}</span>
+        <VIcon size="18">{{ filtersOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</VIcon>
       </button>
       <div
-        v-if="layer === 'prices'"
-        :id="comparisonId"
-        class="cohort-controls"
-        :class="{ 'is-expanded': comparisonOpen }"
+        :id="filtersId"
+        ref="filterPanel"
+        class="zone-options"
+        :class="{ 'is-expanded': filtersOpen }"
       >
-        <VSelect v-model="propertyType" :items="types" :label="t('type')" v-bind="field">
-          <template #selection="{ item }">
-            <span :aria-label="item.title">{{
-              propertyType === 'apartamento' ? t('apartmentShort') : item.title
-            }}</span>
-          </template>
-        </VSelect>
-        <VSelect v-model="bedrooms" :items="bedroomItems" :label="t('bedrooms')" v-bind="field" />
+        <div class="zone-controls">
+          <VSelect
+            v-model="department"
+            :items="departments"
+            :label="t('department')"
+            :disabled="Boolean(lockedDepartment)"
+            v-bind="field"
+          />
+          <VSelect v-model="layer" :items="layers" :label="t('layer')" v-bind="field" />
+        </div>
+        <div v-if="layer === 'prices'" class="cohort-controls">
+          <VSelect v-model="propertyType" :items="types" :label="t('type')" v-bind="field">
+            <template #selection="{ item }">
+              <span :aria-label="item.title">{{
+                propertyType === 'apartamento' ? t('apartmentShort') : item.title
+              }}</span>
+            </template>
+          </VSelect>
+          <VSelect v-model="bedrooms" :items="bedroomItems" :label="t('bedrooms')" v-bind="field" />
+          <VSelect
+            v-model="priceStatistic"
+            :items="priceStatistics"
+            :label="t('priceStatistic')"
+            v-bind="field"
+          />
+          <VSelect v-model="sortOrder" :items="sortItems" :label="t('order')" v-bind="field" />
+          <p class="hint">{{ t('cohortHint') }}</p>
+        </div>
         <VSelect
-          v-model="priceStatistic"
-          :items="priceStatistics"
-          :label="t('priceStatistic')"
+          v-if="layer === 'services'"
+          v-model="serviceCategory"
+          :items="serviceItems"
+          :label="t('services')"
           v-bind="field"
+          class="service-filter"
         />
-        <VSelect v-model="sortOrder" :items="sortItems" :label="t('order')" v-bind="field" />
-        <p class="hint">{{ t('cohortHint') }}</p>
+        <div v-if="layer !== 'prices'" class="context-order">
+          <VSelect v-model="sortOrder" :items="sortItems" :label="t('order')" v-bind="field" />
+        </div>
+        <VBtn class="close-filters" variant="text" @click="toggleFilters">{{
+          t('showComparison')
+        }}</VBtn>
       </div>
-      <VSelect
-        v-if="layer === 'services'"
-        v-model="serviceCategory"
-        :items="serviceItems"
-        :label="t('services')"
-        v-bind="field"
-        class="service-filter"
-      />
-      <div v-if="layer !== 'prices'" class="context-order">
-        <VSelect v-model="sortOrder" :items="sortItems" :label="t('order')" v-bind="field" />
-      </div>
-      <template v-if="layer === 'crime'">
-        <p class="hint">{{ t('crimeHint') }}</p>
-        <details class="crime-coverage">
-          <summary>{{ t('crimeCoverageTitle') }}</summary>
-          <p class="hint">{{ t('crimeCoverage') }}</p>
-          <p v-for="period in crimePeriods" :key="period" class="meta">{{ period }}</p>
-        </details>
-      </template>
-      <p v-if="directory" class="hint">{{ t('directoryHint') }}</p>
+      <p v-if="layer === 'crime'" class="hint">{{ t('crimeShort') }}</p>
       <p v-if="status === 'pending' || status === 'idle'" class="notice" role="status">
         {{ t('loading') }}
       </p>
@@ -98,13 +106,10 @@
       </div>
       <template v-else>
         <p v-if="data.status === 'stale'" class="notice" role="status">{{ t('stale') }}</p>
-        <p v-if="data.rentalDataAsOf" class="meta">
-          {{ t('updated', { date: date(data.rentalDataAsOf) }) }}
-        </p>
-        <div class="zone-layout">
+        <div class="zone-layout" :class="{ 'has-detail': selectedZone }">
           <div class="zone-browser">
             <template v-if="view === 'map'">
-              <p class="hint">{{ t('mapCoverage') }}</p>
+              <p class="map-caption">{{ t('mapShort') }}</p>
               <p v-if="boundaryPending" role="status">{{ t('loading') }}</p>
               <p v-else-if="boundaryError || !boundaries" role="status">
                 {{ t('mapUnavailable') }}
@@ -119,7 +124,6 @@
               /></ClientOnly>
               <div class="legend" :aria-label="t('legend')">
                 <strong>{{ metricLabel }}</strong>
-                <p class="hint">{{ t('mapScale') }}</p>
                 <p v-if="layer === 'crime'" class="meta">{{ crimePeriods.join(' · ') }}</p>
                 <ul>
                   <li v-for="(bin, index) in bins" :key="index">
@@ -129,12 +133,20 @@
                   </li>
                   <li><i class="no-data-swatch" aria-hidden="true" />{{ t('noData') }}</li>
                 </ul>
+                <details class="map-methodology">
+                  <summary>{{ t('mapMethodology') }}</summary>
+                  <p class="hint">{{ t('mapScale') }}</p>
+                  <p class="hint">{{ t('mapCoverage') }}</p>
+                </details>
               </div>
             </template>
             <details :open="view === 'list'" class="list-wrapper">
               <summary>
                 {{ t('listCount', { n: filteredZones.length }) }} · {{ metricLabel }}
               </summary>
+              <p v-if="data.rentalDataAsOf" class="list-date">
+                {{ date(data.rentalDataAsOf) }}
+              </p>
               <p v-if="!filteredZones.length" role="status" class="notice">{{ t('empty') }}</p>
               <ul v-else class="zone-list">
                 <li
@@ -207,7 +219,6 @@
               >
             </div>
           </ZoneDetail>
-          <p v-else class="choose-zone">{{ t('chooseZone') }}</p>
         </div>
       </template>
       <details v-if="selectionCount" class="selected-zones" open>
@@ -243,9 +254,20 @@
       </details>
       <p v-if="selectionCount >= 20" class="notice" role="status">{{ t('selectionLimit') }}</p>
       <p v-if="mismatched" class="notice" role="alert">{{ t('mismatch') }}</p>
-      <p class="hint">{{ t('publicOnly') }}</p>
+      <details class="comparison-methodology">
+        <summary>{{ t('methodology') }}</summary>
+        <p class="hint">{{ t('cohortHint') }}</p>
+        <p v-if="directory" class="hint">{{ t('directoryHint') }}</p>
+        <p class="hint">{{ t('publishedZones') }}</p>
+        <template v-if="layer === 'crime'">
+          <p class="hint">{{ t('crimeHint') }}</p>
+          <p class="hint">{{ t('crimeCoverage') }}</p>
+          <p v-for="period in crimePeriods" :key="period" class="meta">{{ period }}</p>
+        </template>
+        <p class="hint">{{ t('publicOnly') }}</p>
+      </details>
     </div>
-    <footer class="explorer-footer">
+    <footer v-if="!standalone || selectionCount" class="explorer-footer">
       <VBtn variant="text" @click="emit('cancel')">{{ t('cancel') }}</VBtn>
       <VBtn color="primary" :disabled="mismatched" data-testid="rental-zones-apply" @click="apply">
         <span>{{ t('apply') }}</span>
@@ -270,8 +292,13 @@ import { rentalZoneMessages } from '~/utils/rentalZoneMessages'
 import ZoneMap from './Map.client.vue'
 import ZoneDetail from './Detail.vue'
 const props = withDefaults(
-  defineProps<{ initial: RentalZonePreferences; lockedDepartment?: string; directory?: boolean }>(),
-  { lockedDepartment: '', directory: false }
+  defineProps<{
+    initial: RentalZonePreferences
+    lockedDepartment?: string
+    directory?: boolean
+    standalone?: boolean
+  }>(),
+  { lockedDepartment: '', directory: false, standalone: false }
 )
 const emit = defineEmits<{ apply: [zones: RentalZonePreferences]; cancel: [] }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalZoneMessages })
@@ -287,9 +314,17 @@ const propertyType = ref<RentalZonePropertyType>('apartamento')
 const bedrooms = ref<RentalZoneBedrooms>('1')
 const layer = ref<'prices' | 'services' | 'crime'>('prices')
 const priceStatistic = ref<'median' | 'mean'>('median')
-const sortOrder = ref<'name' | 'low' | 'high'>('name')
-const comparisonOpen = ref(false)
-const comparisonId = useId()
+const sortOrder = ref<'name' | 'low' | 'high'>('low')
+const filtersOpen = ref(false)
+const filtersId = useId()
+const filterPanel = ref<HTMLElement>()
+async function toggleFilters() {
+  filtersOpen.value = !filtersOpen.value
+  if (filtersOpen.value) {
+    await nextTick()
+    filterPanel.value?.scrollIntoView({ block: 'nearest', behavior: 'instant' })
+  }
+}
 const view = ref<'list' | 'map'>('list')
 const serviceCategory = ref<RentalZoneServiceCategory>('supermarket')
 const search = ref('')
@@ -353,6 +388,16 @@ const comparisonSummary = computed(() =>
     ...(sortOrder.value === 'name'
       ? []
       : [t(sortOrder.value === 'low' ? 'lowOrder' : 'highOrder')]),
+  ].join(' · ')
+)
+const criteriaSummary = computed(() =>
+  [
+    department.value || t('country'),
+    layer.value === 'prices' ? comparisonSummary.value : t(layer.value),
+    ...(layer.value === 'services' ? [t(serviceCategory.value)] : []),
+    ...(layer.value !== 'prices'
+      ? [sortItems.value.find(item => item.value === sortOrder.value)!.title]
+      : []),
   ].join(' · ')
 )
 const fold = (value: string) =>
@@ -592,6 +637,19 @@ onBeforeUnmount(() => boundaryRequest?.abort())
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
+.zone-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-block: 8px;
+  background: rgb(var(--v-theme-surface));
+}
+.zone-filter-toggle,
+.criteria-summary,
+.close-filters {
+  display: none;
+}
 .view-buttons {
   display: flex;
   align-items: center;
@@ -607,9 +665,6 @@ onBeforeUnmount(() => boundaryRequest?.abort())
   gap: 12px;
   margin-top: 16px;
 }
-.cohort-toggle {
-  display: none;
-}
 .cohort-controls p {
   grid-column: 1/-1;
 }
@@ -620,9 +675,6 @@ onBeforeUnmount(() => boundaryRequest?.abort())
 .context-order {
   margin-top: 12px;
   max-width: 400px;
-}
-.crime-coverage {
-  font-size: 0.85rem;
 }
 .zone-explorer .hint {
   margin-top: 12px;
@@ -639,10 +691,13 @@ onBeforeUnmount(() => boundaryRequest?.abort())
 }
 .zone-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.72fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
-  margin-top: 20px;
+  margin-top: 12px;
   align-items: start;
+}
+.zone-layout.has-detail {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.72fr);
 }
 .zone-layout > * {
   min-width: 0;
@@ -716,11 +771,23 @@ summary::before {
 details[open] > summary::before {
   content: '▾';
 }
-.choose-zone {
-  padding: 24px;
-  font-size: 0.95rem;
-  background: rgba(var(--v-theme-on-surface), 0.03);
-  border-radius: 12px;
+.map-caption,
+.list-date {
+  font-size: 0.8rem;
+  color: rgba(var(--v-theme-on-surface), 0.76);
+}
+.zone-explorer .map-caption {
+  margin-block: 0 8px;
+}
+.zone-explorer .list-date {
+  margin-block: -4px 8px;
+}
+.comparison-methodology {
+  margin-top: 16px;
+  font-size: 0.8rem;
+}
+.map-methodology summary {
+  font-weight: 400;
 }
 .legend {
   margin-block: 12px;
@@ -793,7 +860,7 @@ details[open] > summary::before {
   font-size: 16px;
 }
 @media (max-width: 959px) {
-  .zone-layout {
+  .zone-layout.has-detail {
     grid-template-columns: minmax(0, 1fr);
   }
   .explorer-scroll {
@@ -807,17 +874,48 @@ details[open] > summary::before {
   .cohort-controls {
     gap: 8px;
   }
-  .cohort-controls:not(.is-expanded) {
+  .zone-options:not(.is-expanded) {
     display: none;
   }
-  .cohort-toggle {
+  .zone-options {
+    padding-block: 8px;
+  }
+  .zone-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 0;
+    margin-block: 4px;
+    border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+  .zone-toolbar .v-btn {
+    min-width: 0;
+    padding-inline: 8px;
+    min-height: 44px;
+    letter-spacing: normal;
+    font-size: 0.75rem;
+  }
+  .zone-filter-toggle,
+  .close-filters {
+    display: inline-flex;
+  }
+  .close-filters {
+    min-height: 44px;
+    margin-top: 8px;
+  }
+  .view-buttons {
+    gap: 0;
+  }
+  .criteria-summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
     width: 100%;
     min-height: 44px;
-    margin-top: 12px;
+    margin-top: 0;
     padding: 8px 0;
     border: 0;
     background: transparent;
@@ -825,7 +923,7 @@ details[open] > summary::before {
     text-align: left;
     cursor: pointer;
     font: inherit;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
   }
   .explorer-footer {
     padding-inline: 12px;

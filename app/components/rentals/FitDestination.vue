@@ -17,14 +17,6 @@
         variant="outlined"
         hide-details
       />
-      <VTextField
-        v-model="model.label"
-        :label="t('placeName')"
-        variant="outlined"
-        hide-details
-        maxlength="60"
-        autocomplete="off"
-      />
     </div>
     <div v-if="model.lat !== null && model.lng !== null" class="confirmed-point" role="status">
       <VIcon color="primary" size="20">mdi-map-marker-check-outline</VIcon>
@@ -46,36 +38,53 @@
         t('map')
       }}</VBtn>
     </template>
-    <div class="fit-fields destination-options">
-      <VTextField
-        v-model.number="model.days"
-        :label="t('days')"
-        type="number"
-        min="0"
-        max="7"
-        step="1"
-        variant="outlined"
-        hide-details
-      />
-      <VSelect
-        v-model="model.mode"
-        :items="modes"
-        :label="t('mode')"
-        variant="outlined"
-        hide-details
-      />
-      <VTextField
-        v-model.number="model.targetKm"
-        :label="t('target')"
-        type="number"
-        min="0.1"
-        max="300"
-        step="0.5"
-        variant="outlined"
-        hide-details
-      />
-    </div>
-    <p class="field-hint">{{ t('targetHint') }}</p>
+    <details class="destination-options">
+      <summary>
+        <span>{{ t('travelOptions') }}</span
+        ><small
+          >{{ t('visitsSummary', { n: model.days }) }} · {{ t(model.mode) }} ·
+          {{ t('targetSummary', { km: model.targetKm }) }}</small
+        >
+      </summary>
+      <div class="fit-fields">
+        <VTextField
+          v-model="model.label"
+          :label="t('placeName')"
+          variant="outlined"
+          hide-details
+          maxlength="60"
+          autocomplete="off"
+        />
+        <VTextField
+          v-model.number="model.days"
+          :label="t('days')"
+          type="number"
+          min="0"
+          max="7"
+          step="1"
+          variant="outlined"
+          hide-details
+        />
+        <VSelect
+          v-model="model.mode"
+          :items="modes"
+          :label="t('mode')"
+          variant="outlined"
+          hide-details
+        />
+        <VTextField
+          v-model.number="model.targetKm"
+          :label="t('target')"
+          type="number"
+          min="0.1"
+          max="300"
+          step="0.5"
+          variant="outlined"
+          hide-details
+        />
+      </div>
+      <p class="field-hint">{{ t('targetHint') }}</p>
+    </details>
     <VDialog v-model="mapOpen" max-width="720" scrollable>
       <VCard :title="t('map')" data-clarity-mask="true">
         <VCardText>
@@ -166,7 +175,23 @@ p {
   margin: 4px 0 0;
 }
 .destination-options {
-  margin: 20px 0 0;
+  margin: 12px 0 0;
+}
+.destination-options summary {
+  min-height: 44px;
+  padding: 10px 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+.destination-options summary small {
+  display: block;
+  margin: 4px 0 0 16px;
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.destination-options[open] .fit-fields {
+  margin-top: 16px;
 }
 .field-hint {
   margin-top: 10px;

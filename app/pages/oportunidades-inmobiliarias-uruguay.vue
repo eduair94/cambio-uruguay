@@ -20,10 +20,10 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
             : t(smAndDown ? 'introCompact' : 'intro')
         }}
       </p>
-      <div class="opportunities__intro-links">
-        <NuxtLink :to="localePath('/barrios-alquileres-uruguay')">{{
-          globalT('nav.rentalZones')
-        }}</NuxtLink>
+      <div
+        class="opportunities__intro-links"
+        :class="{ 'opportunities__intro-links--budget': budgetMode }"
+      >
         <NuxtLink
           data-testid="opportunity-explore-directory"
           :to="
@@ -33,7 +33,31 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
           "
           >{{ t(query.operation === 'sale' ? 'sales' : 'rentals') }}</NuxtLink
         >
-        <a v-if="!budgetMode" href="#opportunity-method">{{ t('methodShort') }}</a>
+        <button
+          v-if="!budgetMode"
+          type="button"
+          class="opportunities__related-toggle"
+          :aria-expanded="relatedOptionsOpen"
+          aria-controls="opportunity-related-options"
+          @click="relatedOptionsOpen = !relatedOptionsOpen"
+        >
+          {{ t('moreTools') }}
+          <VIcon
+            :icon="relatedOptionsOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+            size="18"
+            aria-hidden="true"
+          />
+        </button>
+        <div
+          id="opportunity-related-options"
+          class="opportunities__related-options"
+          :class="{ 'opportunities__related-options--expanded': relatedOptionsOpen }"
+        >
+          <NuxtLink :to="localePath('/barrios-alquileres-uruguay')">{{
+            globalT('nav.rentalZones')
+          }}</NuxtLink>
+          <a v-if="!budgetMode" href="#opportunity-method">{{ t('methodShort') }}</a>
+        </div>
         <VBtn
           v-if="budgetMode && smAndDown"
           class="opportunities__share-mobile"
@@ -382,6 +406,7 @@ const breadcrumbs = computed(() => [
 ])
 const resultsElement = ref<HTMLElement | null>(null)
 const filtersOpen = ref(false)
+const relatedOptionsOpen = ref(false)
 const neighborhoodOverride = ref<string[] | null>(null)
 let facetRequest = 0
 let filterActivator: HTMLElement | null = null
@@ -642,6 +667,26 @@ useHead(() => ({
   min-height: 44px;
   font-size: 0.85rem;
 }
+.opportunities__related-toggle {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding-block: 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 24px;
+  color: rgb(var(--v-theme-link));
+}
+.opportunities__related-toggle:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 2px;
+}
+.opportunities__related-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+}
 .opportunities__share-mobile {
   margin-left: auto;
   flex: 0 0 44px;
@@ -851,6 +896,22 @@ useHead(() => ({
   color: rgba(var(--v-theme-on-surface), 0.8);
 }
 @media (max-width: 959px) {
+  .opportunities__intro-links:not(.opportunities__intro-links--budget) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0 12px;
+  }
+  .opportunities__related-toggle {
+    display: flex;
+  }
+  .opportunities__related-options {
+    grid-column: 1 / -1;
+  }
+  /* The first mobile HTML is compact even before Vue knows the viewport width. */
+  .opportunities__intro-links:not(.opportunities__intro-links--budget)
+    .opportunities__related-options:not(.opportunities__related-options--expanded) {
+    display: none;
+  }
   .opportunities__header {
     margin-bottom: 12px;
   }
@@ -912,7 +973,7 @@ useHead(() => ({
 @media (max-width: 700px) {
   .opportunities {
     /* The layout already contributes 12px: retain 16px total at each edge. */
-    padding: 12px 4px 56px;
+    padding: 4px 4px 56px;
   }
   .opportunities__breadcrumbs {
     display: none;

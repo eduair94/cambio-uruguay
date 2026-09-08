@@ -1,23 +1,19 @@
 <template>
   <div class="zone-picker" data-testid="rental-zones-picker">
-    <VBtn variant="text" prepend-icon="mdi-map-search-outline" @click="open = true">
-      <span>{{ t('choose') }}</span>
+    <VBtn
+      variant="text"
+      prepend-icon="mdi-map-search-outline"
+      append-icon="mdi-chevron-right"
+      :aria-label="t('choose')"
+      class="picker-trigger"
+      @click="open = true"
+    >
+      <span class="trigger-copy">
+        <span class="trigger-label">{{ t('zonesShort') }}</span>
+        <span class="trigger-summary">{{ selectionSummary }}</span>
+      </span>
     </VBtn>
-    <p v-if="count" class="selection-summary">
-      {{ t(modelValue.mode === 'only' ? 'only' : 'prefer') }} · {{ t('selected', { n: count }) }}
-    </p>
     <p v-if="mismatched" class="selection-summary" role="alert">{{ t('mismatch') }}</p>
-    <details v-if="count" class="selection-list">
-      <summary>{{ t('included') }} / {{ t('excluded') }}</summary>
-      <ul>
-        <li v-for="zone in modelValue.include" :key="`in:${zone.department}:${zone.neighborhood}`">
-          {{ zone.neighborhood }} · {{ zone.department }}
-        </li>
-        <li v-for="zone in modelValue.exclude" :key="`out:${zone.department}:${zone.neighborhood}`">
-          {{ t('excludedTag') }}: {{ zone.neighborhood }} · {{ zone.department }}
-        </li>
-      </ul>
-    </details>
     <VDialog v-model="open" :fullscreen="xs" max-width="1160" class="zone-picker-dialog">
       <VCard class="picker-card" data-clarity-mask="true">
         <header class="picker-header">
@@ -58,6 +54,16 @@ const { t } = useI18n({ useScope: 'local', messages: rentalZoneMessages })
 const { xs } = useDisplay()
 const open = ref(false)
 const count = computed(() => props.modelValue.include.length + props.modelValue.exclude.length)
+const selectionSummary = computed(() => {
+  if (!count.value) return t('anyZones')
+  const summarize = (kind: 'include' | 'exclude') => {
+    const zones = props.modelValue[kind]
+    if (!zones.length) return ''
+    const names = `${zones[0]!.neighborhood}${zones.length > 1 ? ` +${zones.length - 1}` : ''}`
+    return `${t(kind === 'exclude' ? 'excludeShort' : props.modelValue.mode === 'only' ? 'onlyShort' : 'preferShort')}: ${names}`
+  }
+  return [summarize('include'), summarize('exclude')].filter(Boolean).join(' · ')
+})
 const fold = (value: string) =>
   value
     .normalize('NFD')
@@ -83,37 +89,41 @@ function apply(value: RentalZonePreferences) {
 .zone-picker {
   min-width: 0;
 }
-.zone-picker > .v-btn {
+.picker-trigger {
+  width: 100%;
   min-height: 44px;
   white-space: normal;
   height: auto;
   text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  padding: 8px;
+  justify-content: flex-start;
+}
+.picker-trigger :deep(.v-btn__content) {
+  flex: 1;
+  justify-content: flex-start;
+  min-width: 0;
+}
+.trigger-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.trigger-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.trigger-summary {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: rgba(var(--v-theme-on-surface), 0.76);
 }
 .selection-summary {
   margin: 8px 0 0;
   font-size: 0.8rem;
   line-height: 1.5;
-}
-.selection-list {
-  margin-top: 4px;
-  font-size: 0.8rem;
-}
-.selection-list summary {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  cursor: pointer;
-}
-.selection-list summary::before {
-  content: '▸';
-  margin-right: 8px;
-}
-.selection-list[open] summary::before {
-  content: '▾';
-}
-.selection-list ul {
-  margin: 0;
-  padding-left: 20px;
 }
 .picker-card {
   display: flex;

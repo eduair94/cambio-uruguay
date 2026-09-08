@@ -44,9 +44,6 @@
           }}</NuxtLink>
         </h3>
         <p>{{ facts }}</p>
-        <p class="small">
-          {{ t('updated', { date: rentalDate(result.offer.lastSeen, locale) || t('unknown') }) }}
-        </p>
       </div>
       <div class="result-cost">
         <strong class="price">{{ money(result.monthlyUyu ?? result.rentUyu) }}</strong>
@@ -55,22 +52,30 @@
         <p v-else class="small">{{ money(result.rentUyu) }} + {{ money(result.expensesUyu!) }}</p>
       </div>
     </div>
-    <div class="reasons">
-      <span v-for="reason in result.reasons" :key="reason" class="reason">{{ t(reason) }}</span>
+    <div v-if="result.warnings.length" class="reasons">
       <span v-for="warning in result.warnings" :key="warning" class="warning">{{
         t(warning)
       }}</span>
     </div>
-    <dl v-if="result.remainingUyu !== null || result.incomeShare !== null" class="result-balance">
-      <div v-if="result.remainingUyu !== null">
-        <dt>{{ t('remaining') }}</dt>
-        <dd :class="{ negative: result.remainingUyu < 0 }">{{ money(result.remainingUyu) }}</dd>
+    <details class="match-details">
+      <summary>{{ t('matchDetails') }}</summary>
+      <div v-if="result.reasons.length" class="reasons">
+        <span v-for="reason in result.reasons" :key="reason" class="reason">{{ t(reason) }}</span>
       </div>
-      <div v-if="result.incomeShare !== null">
-        <dt>{{ t('share') }}</dt>
-        <dd>{{ Math.round(result.incomeShare * 100) }}%</dd>
-      </div>
-    </dl>
+      <p class="small">
+        {{ t('updated', { date: rentalDate(result.offer.lastSeen, locale) || t('unknown') }) }}
+      </p>
+      <dl v-if="result.remainingUyu !== null || result.incomeShare !== null" class="result-balance">
+        <div v-if="result.remainingUyu !== null">
+          <dt>{{ t('remaining') }}</dt>
+          <dd :class="{ negative: result.remainingUyu < 0 }">{{ money(result.remainingUyu) }}</dd>
+        </div>
+        <div v-if="result.incomeShare !== null">
+          <dt>{{ t('share') }}</dt>
+          <dd>{{ Math.round(result.incomeShare * 100) }}%</dd>
+        </div>
+      </dl>
+    </details>
     <details v-if="result.trips.length" class="trip-details">
       <summary>{{ t('tripsTitle') }}</summary>
       <ul>
@@ -300,6 +305,15 @@ dd {
 .trip-details {
   margin-top: 14px;
 }
+.match-details {
+  margin-top: 12px;
+}
+.match-details .reasons {
+  margin-top: 4px;
+}
+.match-details > p {
+  margin-top: 12px;
+}
 summary {
   min-height: 44px;
   cursor: pointer;
@@ -349,21 +363,39 @@ summary {
 }
 @media (max-width: 700px) {
   .result-main {
-    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-columns: 88px minmax(0, 1fr);
+    grid-template-areas: 'photo cost' 'intro intro';
     gap: 12px;
   }
   .result-photo {
-    height: 100px;
+    grid-area: photo;
+    height: 88px;
+  }
+  .result-intro {
+    grid-area: intro;
+  }
+  .result-intro h3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .result-cost {
-    grid-column: 1 / -1;
+    grid-area: cost;
   }
   .fit-result {
     padding: 14px;
   }
   .result-heading {
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .result-heading > strong,
+  .result-heading :deep(.v-label) {
+    font-size: 0.8rem;
+  }
+  .result-actions > .v-btn {
+    flex: 1;
   }
 }
 </style>
