@@ -165,6 +165,33 @@ timeout. Historical diagnostics had no network codes, so they cannot establish s
 causality. New recovery/diagnostics must be verified through the public worker; isolated successes
 alone do not prove that this intermittent failure has disappeared.
 
+### IDE connection-family correction (2026-09-08)
+
+The first autocomplete deployment exposed the previously hidden connection codes. Three of four
+public API checks failed, and the interactive browser failed on its second query; the same online
+worker recorded `ETIMEDOUT` together with `ENETUNREACH`. Neither worker restarted. Read-only
+connectivity checks on the serving host found one A and one AAAA record for `direcciones.ide.uy`:
+IPv4 connected, while IPv6 failed with `ENETUNREACH`. Node 22.14.0 used address-family selection
+with a 250 ms connection-attempt timeout. Its [versioned implementation](https://github.com/nodejs/node/blob/v22.14.0/lib/net.js#L1620)
+closes the current attempt before trying the next address. That explains how an IPv4 attempt that
+exceeds the short connection window can be discarded before an unreachable IPv6 attempt. The
+isolated successful IPv4 sample itself took 150 ms after DNS; its 329 ms total must not be treated
+as proof that this individual TCP attempt exceeded 250 ms.
+
+Only requests to the fixed IDE endpoint now use a reusable Undici Agent with `connect.family: 4`
+and `autoSelectFamily: false`. Its pool is limited to four connections, one active request per
+connection, four seconds of idle keep-alive and a ten-second maximum idle extension. DNS still
+resolves the official hostname; no address is pinned. The global dispatcher and other services
+are unaffected. Default TLS certificate/hostname verification, refused redirects, the eight-second
+shared deadline, conditional single retry and 128 KiB response limit remain intact. Undici 7.22.0
+is an exact direct dependency, promoted from the existing locked version; its Node minimum
+20.18.1 is below the serving host's 22.14.0.
+
+Before publication, two isolated HTTPS GETs from that host using the exact Agent settings returned
+200 in 1,120/1,887 ms, with the crossing point correct, the Agent closed and the global dispatcher
+unchanged. Public worker verification is still required: these two successes validate the chosen
+transport but do not certify that an external service can never fail.
+
 ## Validation
 
 `rentalDistance.test.ts`, `rentalDistanceMongo.test.ts`, `rentalsSortMemory.test.ts` and
@@ -178,6 +205,8 @@ bounded concurrency, rate windows and distinct error states without contacting I
 `rentalGeocodeAutocomplete.test.ts` covers street refinements, explicit scopes, incomplete crossings,
 numbered prefixes and first-street coalescing. `rentalGeocodeRetry.test.ts` and the native deadline
 transport/diagnostic suites cover recovery, no-retry cases, shared budgets and private-field exclusion.
+`rentalGeocodeDispatcher.test.ts` additionally verifies the bounded, reused IDE-only Agent and
+unchanged global transport, hostname resolution and TLS defaults.
 
 Public mobile verification on 2026-09-07 (390 × 844, fresh browser) used the exact reported
 `Hoqcuart y Democracia` query. The official suggestion required explicit selection and confirmation;

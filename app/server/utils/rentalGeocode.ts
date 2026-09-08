@@ -1,3 +1,4 @@
+import { Agent } from 'undici'
 import {
   normalizeRentalGeocodeQuery,
   RENTAL_GEOCODE_CANDIDATE_LIMIT,
@@ -63,6 +64,16 @@ export class RentalGeocodeError extends Error {
 }
 
 const IDE_ENDPOINT = 'https://direcciones.ide.uy/api/v1/geocode/candidates'
+// IDE publishes AAAA records, but the serving host has no IPv6 route. Keep this policy
+// local to IDE; otherwise Node's family fallback can abandon a viable IPv4 connection.
+const ideDispatcher = new Agent({
+  connections: 4,
+  pipelining: 1,
+  connect: { family: 4 },
+  autoSelectFamily: false,
+  keepAliveTimeout: 4000,
+  keepAliveMaxTimeout: 10000,
+})
 
 class IdeNetworkError extends RentalGeocodeError {
   constructor(
@@ -111,14 +122,16 @@ function transportError(error: unknown, signal: AbortSignal): RentalGeocodeError
 async function fetchIdeAttempt(url: URL, signal: AbortSignal): Promise<unknown> {
   let response: Response
   try {
-    response = await fetch(url, {
+    const options = {
+      dispatcher: ideDispatcher,
       signal,
-      redirect: 'error',
+      redirect: 'error' as const,
       headers: {
         Accept: 'application/json',
         'User-Agent': 'CambioUruguay/1.0 (+https://cambio-uruguay.com)',
       },
-    })
+    }
+    response = await fetch(url, options)
   } catch (error) {
     throw transportError(error, signal)
   }
