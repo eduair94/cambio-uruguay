@@ -1,15 +1,18 @@
 import type { PipelineStage } from 'mongoose'
+import { createHash } from 'node:crypto'
 import {
   analyzeRentalMarket,
   estimateRentalPrice,
+  normalizeRentalAnalysisQuery,
   rentalAnalysisFresh,
   rentalAnalysisText,
   type RentalAnalysisCatalogue,
   type RentalAnalysisListing,
   type RentalAnalysisType,
+  type RentalAnalysisResponse,
   type RentalEstimateQuery,
 } from '../../utils/rentalAnalysis'
-import { RENTAL_STALE_DAYS, type RentalOffer } from '../../utils/rentals'
+import type { RentalOffer } from '../../utils/rentals'
 import { rentalEligibility } from '../../utils/rentalEligibility'
 import { publicBusinessUrl, safeAgency } from '../../utils/propertyAdvertiser'
 import { rentalAvailabilityAdvertId } from '../../utils/rentalAvailability'
@@ -18,6 +21,17 @@ import { RentalMetaModel } from '../models/RentalMeta'
 import { connectDb } from './db'
 import { rentalBudgetOwnExpenses } from './rentalBudget'
 import { loadRentalAvailabilityIndex } from './rentalAvailability'
+import {
+  createRentalAnalysisCatalogueCache,
+  createRentalAnalysisResponseCache,
+  rentalAnalysisSnapshotRevision,
+} from './rentalAnalysisCache'
+import {
+  createRentalAnalysisDiskCache,
+  RENTAL_ANALYSIS_CACHE_BYTES,
+  RENTAL_ANALYSIS_CACHE_ROWS,
+} from './rentalAnalysisDiskCache'
+export { RentalAnalysisStaleError } from './rentalAnalysisCache'
 
 interface AnalysisIdentity {
   version?: number
@@ -161,85 +175,98 @@ export function projectRentalAnalysisProperty(
 }
 
 const MAX_PROPERTIES = 100_000
-export class RentalAnalysisStaleError extends Error {
-  readonly code = 'RENTAL_ANALYSIS_STALE'
-
-  constructor(readonly generatedAt: string) {
-    super('Rental analysis source metadata is stale')
-    this.name = 'RentalAnalysisStaleError'
-  }
+async function readAnalysisMeta() {
+  await connectDb()
+  return RentalMetaModel.findOne({ key: 'uy-rentals' })
+    .select({ _id: 0, generatedAt: 1 })
+    .maxTimeMS(10_000)
+    .lean()
 }
-
-let cache: { until: number; value: RentalAnalysisCatalogue } | null = null
-let loading: Promise<RentalAnalysisCatalogue> | null = null
-export async function loadRentalAnalysisCatalogue(): Promise<RentalAnalysisCatalogue> {
-  if (cache && cache.until > Date.now()) return cache.value
-  if (loading) return loading
-  loading = (async () => {
-    await connectDb()
-    const now = new Date()
-    const cutoff = new Date(now.getTime() - RENTAL_STALE_DAYS * 86_400_000)
-      .toISOString()
-      .slice(0, 10)
-    const meta = await RentalMetaModel.findOne({ key: 'uy-rentals' })
-      .select({ _id: 0, generatedAt: 1 })
-      .maxTimeMS(10_000)
-      .lean()
-    if (
-      typeof meta?.generatedAt !== 'string' ||
-      !Number.isFinite(Date.parse(meta.generatedAt)) ||
-      Date.parse(meta.generatedAt) > now.getTime()
-    )
-      throw new Error('Rental analysis source metadata unavailable')
-    if (!rentalAnalysisFresh(meta.generatedAt, now))
-      throw new RentalAnalysisStaleError(meta.generatedAt)
-    const cursor = RentalListingModel.aggregate<RentalAnalysisRawProperty>([
-      { $match: { lastSeen: { $gte: cutoff } } },
-      { $limit: MAX_PROPERTIES + 1 },
-      { $project: rentalAnalysisProjection },
-    ] as PipelineStage[])
-      .option({ maxTimeMS: 15_000 })
-      .cursor({ batchSize: 500 })
-    let catalogueProperties = 0
-    const listings: RentalAnalysisListing[] = []
-    try {
-      for await (const property of cursor) {
-        catalogueProperties++
-        if (catalogueProperties > MAX_PROPERTIES)
-          throw new Error('Rental analysis exceeds its complete read budget')
-        // Discard each raw document after normalization instead of retaining a second catalogue.
-        for (const listing of projectRentalAnalysisProperty(property, now)) listings.push(listing)
-      }
-    } finally {
-      await cursor.close()
-    }
-    const value: RentalAnalysisCatalogue = {
-      generatedAt: meta.generatedAt,
-      catalogueProperties,
-      listings,
-    }
-    cache = { until: Date.now() + 60_000, value }
-    return value
-  })()
+async function readAnalysisCatalogue(
+  generatedAt: string,
+  at: number,
+  cutoff: string
+): Promise<RentalAnalysisCatalogue> {
+  const now = new Date(at)
+  const cursor = RentalListingModel.aggregate<RentalAnalysisRawProperty>([
+    { $match: { lastSeen: { $gte: cutoff } } },
+    { $limit: MAX_PROPERTIES + 1 },
+    { $project: rentalAnalysisProjection },
+  ] as PipelineStage[])
+    .option({ maxTimeMS: 15_000 })
+    .cursor({ batchSize: 500 })
+  let catalogueProperties = 0,
+    bytes = 0
+  const listings: RentalAnalysisListing[] = []
   try {
-    return await loading
+    for await (const property of cursor) {
+      catalogueProperties++
+      if (catalogueProperties > MAX_PROPERTIES)
+        throw new Error('Rental analysis exceeds its complete read budget')
+      // Discard each raw document after normalization instead of retaining a second catalogue.
+      for (const listing of projectRentalAnalysisProperty(property, now)) {
+        bytes += Buffer.byteLength(JSON.stringify(listing))
+        if (bytes > RENTAL_ANALYSIS_CACHE_BYTES || listings.length >= RENTAL_ANALYSIS_CACHE_ROWS)
+          throw new Error('Rental analysis exceeds its normalized read budget')
+        listings.push(listing)
+      }
+    }
   } finally {
-    loading = null
+    await cursor.close()
   }
+  return { generatedAt, catalogueProperties, listings }
 }
+const loadAnalysisSnapshot = createRentalAnalysisCatalogueCache({
+  readMeta: readAnalysisMeta,
+  readCatalogue: readAnalysisCatalogue,
+  // Unit tests use injected stores; they must never share production/local fixture state.
+  shared: process.env.NODE_ENV === 'test' ? undefined : createRentalAnalysisDiskCache(),
+})
+export async function loadRentalAnalysisCatalogue(): Promise<RentalAnalysisCatalogue> {
+  return (await loadAnalysisSnapshot()).value
+}
+const responseCache = createRentalAnalysisResponseCache<RentalAnalysisResponse>()
 
-async function currentCatalogue(): Promise<RentalAnalysisCatalogue> {
-  const [catalogue, availability] = await Promise.all([
-    loadRentalAnalysisCatalogue(),
+async function currentAnalysis() {
+  const [snapshot, availability] = await Promise.all([
+    loadAnalysisSnapshot(),
     loadRentalAvailabilityIndex(),
   ])
-  // Community evidence is checked on every read, even when the normalized source is cached.
-  const excluded = new Set(availability.excludedAdvertIds('hide_any'))
-  return { ...catalogue, listings: catalogue.listings.filter(row => !excluded.has(row.advertId)) }
+  // Community evidence is checked before even looking up an aggregate response.
+  const excluded = availability.excludedAdvertIds('hide_any').sort()
+  return { snapshot, excluded }
 }
 export async function loadRentalAnalysis(input: Record<string, unknown>) {
-  return analyzeRentalMarket(await currentCatalogue(), input)
+  const { snapshot, excluded } = await currentAnalysis()
+  const query = normalizeRentalAnalysisQuery(input)
+  const exclusions = createHash('sha256').update(JSON.stringify(excluded)).digest('hex')
+  const key = JSON.stringify([
+    rentalAnalysisSnapshotRevision(snapshot),
+    query,
+    new Date().toISOString().slice(0, 10),
+    exclusions,
+  ])
+  const existing = responseCache.get(key)
+  if (existing) return existing
+  const hidden = new Set(excluded)
+  const result = analyzeRentalMarket(
+    {
+      ...snapshot.value,
+      listings: snapshot.value.listings.filter(row => !hidden.has(row.advertId)),
+    },
+    input
+  )
+  responseCache.set(key, result)
+  return result
 }
 export async function loadRentalEstimate(query: RentalEstimateQuery) {
-  return estimateRentalPrice(await currentCatalogue(), query)
+  const { snapshot, excluded } = await currentAnalysis()
+  const hidden = new Set(excluded)
+  return estimateRentalPrice(
+    {
+      ...snapshot.value,
+      listings: snapshot.value.listings.filter(row => !hidden.has(row.advertId)),
+    },
+    query
+  )
 }

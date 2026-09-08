@@ -50,6 +50,28 @@ En esta máquina el precalentado inicial del servidor de desarrollo puede excede
 chequeo de Playwright: si ya se inició manualmente, la configuración local de validación
 omite `webServer` para impedir un segundo Nuxt que sobrescriba `.nuxt`.
 
+## Mapa integrado y carga (2026-09-08)
+
+El botón principal «Ver mapa por barrio» y el enlace `#mapa-alquileres` abren el mapa
+bajo los filtros, incluso si la selección no encuentra alquileres. Leaflet y los límites
+se descargan al abrirlo. Las capas alternan promedio/mediana de alquiler, cinco categorías
+de denuncias y seis servicios; cada una conserva fechas y cobertura propias y tiene una
+lista equivalente navegable con teclado. `rentMean` es la media aritmética de la misma
+selección y moneda que `rent`, también en los resúmenes de barrios y departamentos.
+Se requiere N≥8 para colorear precios. Sólo se unen nombres oficiales exactos y, para
+contexto, código e identificador territorial concordantes; nunca se usan los precios
+convertidos de `/api/rentals/zones`. Los nombres comerciales sin coincidencia se explican
+en un aviso; no se reubican. El mapa cubre Montevideo y ofrece cambiar explícitamente
+a ese departamento cuando los filtros corresponden a otro.
+
+El estimador reutiliza las facetas de la consulta principal, incluido su estado pendiente,
+vacío o de error; sólo pide otras cuando el usuario elige un departamento distinto.
+Los formatos numéricos se reutilizan por moneda e idioma. Las validaciones de las rutas
+de guías, temas, glosario, importaciones y tipos de casas de cambio importan sus catálogos
+al validar esas rutas, evitando incluir sus textos completos en la carga de este análisis.
+La precarga HTTP de la consulta se descartó tras reproducir peticiones simultáneas
+duplicadas con respuestas lentas; la entrada realiza una sola petición de análisis.
+
 ## Qué se mide
 
 El tablero describe **precios pedidos de anuncios residenciales observados**. Permite
@@ -210,8 +232,22 @@ El POST y los errores usan `Cache-Control: no-store`. El GET correcto usa
 
 ## Presupuesto operativo
 
-La caché normalizada tiene una sola entrada durante 60 segundos y comparte una carga
-en curso entre consultas. No crece por combinación de filtros. La lectura tiene un
+La caché normalizada tiene una entrada por proceso y comparte el snapshot privado
+`.data/rental-analysis/catalogue-v1.json` entre workers y reinicios. Revalida el metadato
+cada 60 segundos; normaliza de nuevo cuando cambia su generación o el día UTC, y como
+máximo cada 10 minutos para incorporar reparaciones fuera del ciclo. Valida vigencia
+también en las lecturas calientes, vuelve a leer el metadato al terminar el cursor y
+reintenta una sola vez si cambió durante el barrido. El archivo versionado se escribe
+atómicamente con proyección explícita, sin textos crudos ni contactos. El bloqueo dura
+lo que dura la normalización, espera hasta 25 segundos y recupera archivos abandonados;
+un proceso vivo nunca pierde su bloqueo por tardar. Un fallo de escritura no invalida
+una lectura actual completa. No se sirve un snapshot vencido si falla su reemplazo.
+
+Hay además hasta 16 respuestas GET durante 30 segundos, con clave de revisión,
+consulta normalizada, día UTC y hash de exclusiones. Antes de consultar esta caché se
+lee siempre el índice de disponibilidad `hide_any`. El POST no guarda respuestas ni
+atributos ingresados por la persona. La lectura normalizada admite 200.000 ofertas y
+64 MiB; superar el presupuesto falla la lectura completa. La lectura Mongo tiene un
 máximo de 100.000 documentos, más un centinela: si lo supera responde 503, evitando
 publicar estadísticas truncadas silenciosamente. El límite contempla los 51.017 documentos
 recientes observados en producción el 2026-09-07; no es un tamaño de muestra ni habilita

@@ -300,18 +300,15 @@
 
 <script setup lang="ts">
 import { FRANCHISE_ANNUAL_USD, MAX_WEIGHT_KG } from '~/utils/importRules'
-import {
-  IMPORT_CATEGORIES,
-  getImportCategory,
-  importCategorySlugs,
-  type RegimeOutcome,
-} from '~/utils/importCategories'
+import { IMPORT_CATEGORIES, getImportCategory, type RegimeOutcome } from '~/utils/importCategories'
 
-// Slug desconocido → 404 en el guard, sin render parcial. El catálogo es estático y puro, así que
-// el validator lo lee directo. OJO: `validate` se extrae en build, así que editar la lista exige
-// reiniciar el dev server.
+// Slug desconocido → 404 sin render parcial. El guard extraído por Nuxt carga
+// el catálogo sólo al validar esta ruta, no al abrir cualquier página del sitio.
 definePageMeta({
-  validate: route => importCategorySlugs().includes(String(route.params.categoria ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/importCategories')
+    return catalogue.importCategorySlugs().includes(String(route.params.categoria ?? ''))
+  },
 })
 
 const localePath = useLocalePath()

@@ -2,7 +2,7 @@
 THESIS: Move from a local asking-price distribution to a home-specific reference with evidence.
 OWN-WORLD: Existing Open Sans, paper/navy surfaces, blue actions, familiar labeled controls.
 STORY: Select comparable homes, inspect area ranges and costs, then test one property's rent.
-FIRST VIEWPORT: Compact heading and estimator action above filters and an area comparison workspace.
+FIRST VIEWPORT: Compact heading, visible map and estimator actions, filters and area comparison.
 FORM: Market explorer and estimation worksheet (surface seed ab18f049, structure 7); labeled ranges,
 not decorative charts. On phones the chart rows recompose and the form stays in document flow.
 -->
@@ -14,12 +14,23 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
         <h1>{{ t('title') }}</h1>
         <p class="rental-analysis__lead">{{ t('intro') }}</p>
       </div>
-      <VBtn href="#estimar-alquiler" color="primary" prepend-icon="mdi-home-search-outline">
-        {{ t('estimate') }}
-      </VBtn>
+      <div class="rental-analysis__actions">
+        <VBtn
+          href="#mapa-alquileres"
+          color="primary"
+          prepend-icon="mdi-map-outline"
+          @click.prevent="openMap"
+        >
+          {{ t('mapLink') }}
+        </VBtn>
+        <VBtn href="#estimar-alquiler" variant="outlined" prepend-icon="mdi-home-search-outline">
+          {{ t('estimate') }}
+        </VBtn>
+      </div>
     </header>
     <nav class="rental-analysis__links" :aria-label="t('breadcrumb')">
       <NuxtLink :to="directoryLink">{{ t('directory') }}</NuxtLink>
+      <a href="#mapa-alquileres" @click.prevent="openMap">{{ t('mapLayers') }}</a>
       <a href="#detalle-mercado">{{ t('detailLink') }}</a>
       <a href="#presupuesto-alquiler">{{ t('incomeLink') }}</a>
       <a href="#comparar-barrios">{{ t('compareLink') }}</a>
@@ -69,6 +80,16 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
       <div v-if="query.neighborhood" class="rental-analysis__scope">
         <strong>{{ query.department }} · {{ query.neighborhood }}</strong>
         <VBtn variant="text" size="small" @click="selectZone('')">{{ t('allNeighborhoods') }}</VBtn>
+      </div>
+      <div id="mapa-alquileres">
+        <LazyRentalsAnalysisMap
+          v-if="mapVisible"
+          :analysis="error ? null : (data ?? null)"
+          :query="query"
+          :loading="loading"
+          @explore="selectZone"
+          @montevideo="selectMontevideo"
+        />
       </div>
       <div :aria-busy="loading" aria-live="polite" class="rental-analysis__results">
         <div v-if="loading" class="rental-analysis__state" role="status">
@@ -365,11 +386,15 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
 
     <div id="estimar-alquiler" class="rental-analysis__estimator">
       <RentalsPriceEstimator
-        :department="query.department || 'Montevideo'"
+        :department="query.department"
         :neighborhood="query.neighborhood"
         :departments="departments"
         :neighborhoods="data?.facets.neighborhoods ?? []"
         :currency="query.currency"
+        :facets-ready="!loading && !error"
+        :facets-error="Boolean(error)"
+        :facets-stale="staleCatalogue"
+        @retry-facets="refresh"
       />
     </div>
 
@@ -411,7 +436,8 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { withQuery } from 'ufo'
 import { rentalAnalysisMessages } from '~/utils/rentalAnalysisMessages'
 import { normalizeRentalAnalysisQuery, type RentalAnalysisResponse } from '~/utils/rentalAnalysis'
 import { rentalAnalysisIncome } from '~/utils/rentalAnalysisComparison'
@@ -431,10 +457,39 @@ const query = computed(() =>
 const draft = reactive({ ...query.value })
 watch(query, value => Object.assign(draft, value))
 const apiQuery = computed(() => ({ ...query.value, bedrooms: query.value.bedrooms ?? '' }))
+const analysisUrl = computed(() => withQuery('/api/rentals/analysis', apiQuery.value))
 const { data, pending, error, status, refresh } = await useFetch<RentalAnalysisResponse>(
-  '/api/rentals/analysis',
-  { query: apiQuery, server: false }
+  analysisUrl,
+  { server: false, retry: 0 }
 )
+const mapVisible = ref(false)
+async function openMap() {
+  mapVisible.value = true
+  if (route.hash !== '#mapa-alquileres')
+    await router.replace({ query: route.query, hash: '#mapa-alquileres' })
+  await nextTick()
+  document.getElementById('mapa-alquileres')?.scrollIntoView({ block: 'start' })
+}
+onMounted(() => {
+  if (route.hash === '#mapa-alquileres') openMap()
+})
+watch(
+  () => route.hash,
+  hash => {
+    if (hash === '#mapa-alquileres') mapVisible.value = true
+  }
+)
+async function selectMontevideo() {
+  await router.replace({
+    query: {
+      ...query.value,
+      bedrooms: query.value.bedrooms ?? '',
+      department: 'Montevideo',
+      neighborhood: '',
+    },
+    hash: '#mapa-alquileres',
+  })
+}
 const loading = computed(() => pending.value || status.value === 'idle')
 const failureData = computed(
   () => error.value?.data as { data?: { code?: string; generatedAt?: string } } | undefined
@@ -481,25 +536,32 @@ const maxBin = computed(() =>
 const numberLocale = computed(() =>
   locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY'
 )
-const integer = (value: number) => new Intl.NumberFormat(numberLocale.value).format(value)
-const decimal = (value: number) =>
-  new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 1 }).format(value)
+const integerFormat = computed(() => new Intl.NumberFormat(numberLocale.value))
+const decimalFormat = computed(
+  () => new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 1 })
+)
+const moneyFormat = computed(
+  () =>
+    new Intl.NumberFormat(numberLocale.value, {
+      style: 'currency',
+      currency: query.value.currency,
+      currencyDisplay: 'symbol',
+      maximumFractionDigits: 0,
+    })
+)
+const dateFormat = computed(
+  () =>
+    new Intl.DateTimeFormat(numberLocale.value, {
+      dateStyle: 'medium',
+      timeZone: 'America/Montevideo',
+    })
+)
+const integer = (value: number) => integerFormat.value.format(value)
+const decimal = (value: number) => decimalFormat.value.format(value)
 const money = (value: number | null | undefined) =>
-  value == null
-    ? t('noData')
-    : new Intl.NumberFormat(numberLocale.value, {
-        style: 'currency',
-        currency: query.value.currency,
-        currencyDisplay: 'symbol',
-        maximumFractionDigits: 0,
-      }).format(value)
+  value == null ? t('noData') : moneyFormat.value.format(value)
 const dateLabel = (value: string) =>
-  Number.isFinite(Date.parse(value))
-    ? new Intl.DateTimeFormat(numberLocale.value, {
-        dateStyle: 'medium',
-        timeZone: 'America/Montevideo',
-      }).format(new Date(value))
-    : t('noData')
+  Number.isFinite(Date.parse(value)) ? dateFormat.value.format(new Date(value)) : t('noData')
 const expensesLabel = (n: number, pct: number) =>
   t('knownExpenses', { n: integer(n), pct: decimal(pct) })
 const income = ref<number | string>('')
@@ -532,6 +594,7 @@ async function applyFilters() {
   allZones.value = false
   zoneSearch.value = ''
   await router.replace({
+    hash: route.hash,
     query: {
       ...draft,
       bedrooms: draft.bedrooms ?? '',
@@ -541,6 +604,7 @@ async function applyFilters() {
 }
 async function selectZone(name: string) {
   await router.replace({
+    hash: route.hash,
     query: {
       ...query.value,
       bedrooms: query.value.bedrooms ?? '',
@@ -673,8 +737,14 @@ useHead(() => ({
 .rental-analysis__header > div {
   max-width: 770px;
 }
-.rental-analysis__header > .v-btn {
+.rental-analysis__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   flex-shrink: 0;
+}
+#mapa-alquileres {
+  scroll-margin-top: 100px;
 }
 .rental-analysis__lead {
   margin-top: 16px !important;

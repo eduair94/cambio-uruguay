@@ -295,24 +295,33 @@ const t = (key: MessageKey, values: Record<string, string | number> = {}) =>
 const numberLocale = computed(() =>
   locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY'
 )
-const integer = (value: number) =>
-  new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 0 }).format(value)
-const decimal = (value: number) =>
-  new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 1 }).format(value)
-const compact = (value: number) =>
-  new Intl.NumberFormat(numberLocale.value, {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(value)
+const integerFormat = computed(
+  () => new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 0 })
+)
+const decimalFormat = computed(
+  () => new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 1 })
+)
+const compactFormat = computed(
+  () =>
+    new Intl.NumberFormat(numberLocale.value, {
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    })
+)
+const moneyFormat = computed(
+  () =>
+    new Intl.NumberFormat(numberLocale.value, {
+      style: 'currency',
+      currency: props.analysis.query.currency,
+      currencyDisplay: 'narrowSymbol',
+      maximumFractionDigits: 0,
+    })
+)
+const integer = (value: number) => integerFormat.value.format(value)
+const decimal = (value: number) => decimalFormat.value.format(value)
+const compact = (value: number) => compactFormat.value.format(value)
 const money = (value: number | null | undefined) =>
-  value == null
-    ? t('noData')
-    : new Intl.NumberFormat(numberLocale.value, {
-        style: 'currency',
-        currency: props.analysis.query.currency,
-        currencyDisplay: 'narrowSymbol',
-        maximumFractionDigits: 0,
-      }).format(value)
+  value == null ? t('noData') : moneyFormat.value.format(value)
 const range = (measure: RentalAnalysisMeasure | null) =>
   measure ? `${money(measure.p25)} – ${money(measure.p75)}` : t('noData')
 const details = computed(() => props.analysis.details)

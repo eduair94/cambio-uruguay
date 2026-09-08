@@ -197,14 +197,16 @@
 
 <script setup lang="ts">
 import { hubOfGuide } from '~/utils/guideHubs'
-import { getGuide, guideSlugs } from '~/utils/guides'
+import { getGuide } from '~/utils/guides'
 
 // Reject unknown slugs at the route guard so they 404 (on SSR and client nav)
-// without partially rendering this component. The guide catalogue is static and
-// framework-agnostic, so the validator can read it directly. NOTE: `validate`
-// is extracted at build time, so editing this list needs a dev-server restart.
+// without partially rendering this component. Nuxt extracts this guard into
+// shared route metadata; load the catalogue only when this route is validated.
 definePageMeta({
-  validate: route => guideSlugs().includes(String(route.params.slug ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/guides')
+    return catalogue.guideSlugs().includes(String(route.params.slug ?? ''))
+  },
 })
 
 const { t, locale } = useI18n()

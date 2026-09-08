@@ -120,9 +120,16 @@ function territorialContext(): RentalZoneResponse {
 async function prepare(
   page: Page,
   path = '/analisis-alquileres-uruguay',
-  options: { contextFails?: () => boolean } = {}
+  options: {
+    contextFails?: () => boolean
+    analysisFails?: () => boolean
+    analysisGate?: Promise<void>
+    onAnalysisRequest?: (url: URL) => void
+    sample?: RentalAnalysisCatalogue
+    expectLoaded?: boolean
+  } = {}
 ) {
-  const sample = catalogue()
+  const sample = options.sample ?? catalogue()
   await page.route('**/api/rentals/zones?**', async route => {
     if (options.contextFails?.()) {
       await route.fulfill({ status: 503, json: { statusMessage: 'Fixture context unavailable' } })
@@ -132,6 +139,12 @@ async function prepare(
   })
   await page.route('**/api/rentals/analysis?**', async route => {
     const url = new URL(route.request().url())
+    options.onAnalysisRequest?.(url)
+    if (options.analysisGate) await options.analysisGate
+    if (options.analysisFails?.()) {
+      await route.fulfill({ status: 503, json: { statusMessage: 'Fixture analysis unavailable' } })
+      return
+    }
     const query = Object.fromEntries(url.searchParams)
     await route.fulfill({ json: analyzeRentalMarket(sample, query) })
   })
@@ -150,14 +163,17 @@ async function prepare(
     undefined,
     { timeout: 90000 }
   )
-  await expect(page.locator('.rental-analysis__provenance')).toContainText('36')
+  if (options.expectLoaded !== false)
+    await expect(page.locator('.rental-analysis__provenance')).toContainText('36')
 }
 
 test('filters, chart drilldown, currency and local income comparison stay consistent', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 1000 })
-  await prepare(page)
+  const analysisRequests: URL[] = []
+  await prepare(page, undefined, { onAnalysisRequest: url => analysisRequests.push(url) })
+  expect(analysisRequests).toHaveLength(1)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'El mercado de alquileres, zona por zona'
   )
@@ -190,10 +206,88 @@ test('filters, chart drilldown, currency and local income comparison stay consis
     page.getByRole('heading', { name: 'Todavía no hay una muestra con estos filtros' })
   ).toBeVisible()
   await expect(page.locator('.rental-analysis__measures')).toHaveCount(0)
+  const estimator = page.getByTestId('rental-price-estimator')
+  await expect(estimator.locator('select[name="estimator-neighborhood"]')).toBeDisabled()
+  await expect(estimator.getByRole('alert')).toHaveCount(0)
+  expect(analysisRequests.every(url => url.searchParams.get('type') === 'apartamento')).toBe(true)
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
     'https://cambio-uruguay.com/analisis-alquileres-uruguay'
   )
+})
+
+test('estimator shares pending parent facets and fetches only a separately selected department', async ({
+  page,
+}) => {
+  const sample = catalogue()
+  sample.listings.push({
+    ...sample.listings[0]!,
+    propertyKey: 'analysis-fixture-canelones',
+    advertId: 'infocasas:fixture-canelones',
+    department: 'Canelones',
+    neighborhood: 'El Pinar',
+  })
+  sample.catalogueProperties = sample.listings.length
+  const requests: URL[] = []
+  let release!: () => void
+  const analysisGate = new Promise<void>(resolve => {
+    release = resolve
+  })
+  const estimator = page.getByTestId('rental-price-estimator')
+  const neighborhood = estimator.locator('select[name="estimator-neighborhood"]')
+  try {
+    await prepare(page, undefined, {
+      sample,
+      analysisGate,
+      expectLoaded: false,
+      onAnalysisRequest: url => requests.push(url),
+    })
+    await expect(neighborhood).toBeDisabled()
+    await expect(neighborhood).toContainText('Cargando zonas…')
+    expect(requests).toHaveLength(1)
+  } finally {
+    release()
+  }
+  await expect(page.locator('.rental-analysis__provenance')).toContainText('36 viviendas')
+  await expect(neighborhood).toBeEnabled()
+  await neighborhood.selectOption('Cordón')
+  expect(requests).toHaveLength(1)
+  await estimator.locator('select[name="estimator-department"]').selectOption('Canelones')
+  await expect(neighborhood).toBeEnabled()
+  await expect(neighborhood.locator('option')).toHaveCount(2)
+  await neighborhood.selectOption('El Pinar')
+  expect(requests).toHaveLength(2)
+  expect(requests[1]!.searchParams.get('department')).toBe('Canelones')
+  expect(requests[1]!.searchParams.has('type')).toBe(false)
+  await estimator.locator('select[name="estimator-department"]').selectOption('Montevideo')
+  await expect(neighborhood.locator('option')).toHaveCount(4)
+  await expect(neighborhood).toHaveValue('')
+  expect(requests).toHaveLength(2)
+})
+
+test('estimator surfaces and retries a parent facet failure without a duplicate analysis', async ({
+  page,
+}) => {
+  let fail = true
+  const requests: URL[] = []
+  await prepare(page, undefined, {
+    expectLoaded: false,
+    analysisFails: () => fail,
+    onAnalysisRequest: url => requests.push(url),
+  })
+  const estimator = page.getByTestId('rental-price-estimator')
+  const neighborhood = estimator.locator('select[name="estimator-neighborhood"]')
+  await expect(estimator.getByRole('alert')).toContainText('No pudimos cargar las zonas')
+  await expect(neighborhood).toBeDisabled()
+  await expect(
+    estimator.getByRole('button', { name: 'Comparar con avisos similares' })
+  ).toBeDisabled()
+  fail = false
+  await estimator.getByRole('button', { name: 'Reintentar', exact: true }).click()
+  await expect(page.locator('.rental-analysis__provenance')).toContainText('36 viviendas')
+  await expect(estimator.getByRole('alert')).toHaveCount(0)
+  await expect(neighborhood).toBeEnabled()
+  expect(requests.every(url => url.searchParams.get('type') === 'apartamento')).toBe(true)
 })
 
 test('mobile estimator handles supported, insufficient, stale and failed responses', async ({

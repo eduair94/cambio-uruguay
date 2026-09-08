@@ -35,13 +35,13 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
             :id="`${id}-neighborhood`"
             v-model="form.neighborhood"
             name="estimator-neighborhood"
-            :disabled="neighborhoodsBusy || !form.department || !neighborhoodOptions.length"
+            :disabled="facetsBusy || facetsError || !form.department || !neighborhoodOptions.length"
             required
           >
             <option value="" disabled>
               {{
                 t(
-                  neighborhoodsBusy
+                  facetsBusy
                     ? 'loadingNeighborhoods'
                     : neighborhoodOptions.length
                       ? 'chooseNeighborhood'
@@ -54,8 +54,8 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
             </option>
           </select>
         </label>
-        <div v-if="neighborhoodsError" class="rent-estimator__field-error" role="alert">
-          <p>{{ t(neighborhoodsStale ? 'stale' : 'neighborhoodError') }}</p>
+        <div v-if="facetsError" class="rent-estimator__field-error" role="alert">
+          <p>{{ t(facetsStale ? 'stale' : 'neighborhoodError') }}</p>
           <button
             type="button"
             class="rent-estimator__text-button"
@@ -148,7 +148,7 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
           type="submit"
           color="primary"
           :loading="busy"
-          :disabled="neighborhoodsBusy || !form.neighborhood"
+          :disabled="facetsBusy || facetsError || !form.neighborhood"
         >
           {{ t(error === 'requestError' ? 'retry' : 'submit') }}
         </VBtn>
@@ -436,6 +436,7 @@ import type {
   RentalAnalysisAreaBasis,
 } from '~/utils/rentalAnalysis'
 import { rentalEstimateMessages } from '~/utils/rentalEstimateMessages'
+import { rentalAnalysisLocationName } from '~/utils/rentalAnalysisComparison'
 import { rentalPropertyPath } from '~/utils/rentalPresentation'
 import { RENTAL_SOURCE_LABEL, type RentalCurrency } from '~/utils/rentals'
 
@@ -445,12 +446,16 @@ const props = defineProps<{
   neighborhoods: string[]
   departments: string[]
   currency: RentalCurrency
+  facetsReady?: boolean
+  facetsError?: boolean
+  facetsStale?: boolean
 }>()
+const emit = defineEmits<{ retryFacets: [] }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalEstimateMessages })
 const localePath = useLocalePath()
 const id = useId()
 const form = reactive({
-  department: props.department,
+  department: props.department || 'Montevideo',
   neighborhood: props.neighborhood,
   type: 'apartamento' as RentalAnalysisType,
   bedrooms: '1',
@@ -472,6 +477,20 @@ const neighborhoodsBusy = ref(false)
 const neighborhoodsError = ref(false)
 const neighborhoodsStale = ref(false)
 const localNeighborhoods = ref([...props.neighborhoods])
+const usesParentFacets = computed(
+  () => rentalAnalysisLocationName(form.department) === rentalAnalysisLocationName(props.department)
+)
+const facetsBusy = computed(() =>
+  usesParentFacets.value
+    ? props.facetsReady === false && !props.facetsError
+    : neighborhoodsBusy.value
+)
+const facetsError = computed(() =>
+  usesParentFacets.value ? Boolean(props.facetsError) : neighborhoodsError.value
+)
+const facetsStale = computed(() =>
+  usesParentFacets.value ? Boolean(props.facetsStale) : neighborhoodsStale.value
+)
 let estimateController: AbortController | undefined
 let neighborhoodsController: AbortController | undefined
 let estimateSequence = 0
@@ -479,20 +498,56 @@ let neighborhoodsSequence = 0
 const departmentOptions = computed(() => [
   ...new Set([...props.departments, form.department].filter(Boolean)),
 ])
-const neighborhoodOptions = computed(() => [
-  ...new Set([...localNeighborhoods.value, form.neighborhood].filter(Boolean)),
-])
+const neighborhoodOptions = computed(() => {
+  const available = usesParentFacets.value
+    ? props.facetsReady !== false && !props.facetsError
+      ? props.neighborhoods
+      : []
+    : localNeighborhoods.value
+  return [...new Set([...available, form.neighborhood].filter(Boolean))]
+})
 const numberLocale = computed(() =>
   locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY'
 )
+const currencyFormatters = computed(() => {
+  const formatters = {} as Record<
+    RentalCurrency,
+    { integer: Intl.NumberFormat; fraction: Intl.NumberFormat }
+  >
+  for (const currency of ['UYU', 'USD'] as const) {
+    formatters[currency] = {
+      integer: new Intl.NumberFormat(numberLocale.value, {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 0,
+      }),
+      fraction: new Intl.NumberFormat(numberLocale.value, {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 2,
+      }),
+    }
+  }
+  return formatters
+})
+const numberFormatters = computed(() => ({
+  0: new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 0 }),
+  1: new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 1 }),
+  3: new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 3 }),
+}))
+const dateFormatter = computed(
+  () =>
+    new Intl.DateTimeFormat(numberLocale.value, {
+      dateStyle: 'medium',
+      timeZone: 'America/Montevideo',
+    })
+)
 const money = (amount: number, currency = props.currency) =>
-  new Intl.NumberFormat(numberLocale.value, {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: Number.isInteger(amount) ? 0 : 2,
-  }).format(amount)
-const number = (amount: number, maximumFractionDigits = 1) =>
-  new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits }).format(amount)
+  currencyFormatters.value[currency][Number.isInteger(amount) ? 'integer' : 'fraction'].format(
+    amount
+  )
+const number = (amount: number, maximumFractionDigits: 0 | 1 | 3 = 1) =>
+  numberFormatters.value[maximumFractionDigits].format(amount)
 const askingDifference = computed(() => {
   if (!result.value?.range || result.value.query.askingPrice === null) return null
   return result.value.query.askingPrice - result.value.range.median
@@ -546,20 +601,13 @@ const comparableAreaDifference = (area: number) => {
 }
 const dateLabel = (value: string) => {
   const date = new Date(value)
-  return Number.isFinite(date.getTime())
-    ? new Intl.DateTimeFormat(numberLocale.value, {
-        dateStyle: 'medium',
-        timeZone: 'America/Montevideo',
-      }).format(date)
-    : t('unknown')
+  return Number.isFinite(date.getTime()) ? dateFormatter.value.format(date) : t('unknown')
 }
 const askingComparison = computed(() => {
   const percent = result.value?.comparisonToAskingPct
   if (percent === null || percent === undefined) return ''
   return t(percent > 0 ? 'askingAbove' : percent < 0 ? 'askingBelow' : 'askingEqual', {
-    pct: new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 1 }).format(
-      Math.abs(percent)
-    ),
+    pct: number(Math.abs(percent)),
   })
 })
 const features = (item: RentalAnalysisComparable) =>
@@ -606,21 +654,39 @@ watch(
 watch(
   () => [props.department, props.neighborhood],
   () => {
-    form.department = props.department
+    form.department = props.department || form.department || 'Montevideo'
     form.neighborhood = props.neighborhood
   }
 )
 watch(
-  () => props.neighborhoods,
-  names => {
-    if (form.department === props.department) localNeighborhoods.value = [...names]
-  }
+  () =>
+    [usesParentFacets.value, props.neighborhoods, props.facetsReady, props.facetsError] as const,
+  () => {
+    if (!usesParentFacets.value) return
+    neighborhoodsSequence++
+    neighborhoodsController?.abort()
+    neighborhoodsBusy.value = false
+    neighborhoodsError.value = false
+    neighborhoodsStale.value = false
+    localNeighborhoods.value = []
+    if (props.facetsReady === false || props.facetsError) {
+      clearEstimate()
+      return
+    }
+    if (form.neighborhood) {
+      form.neighborhood =
+        props.neighborhoods.find(
+          name => rentalAnalysisLocationName(name) === rentalAnalysisLocationName(form.neighborhood)
+        ) ?? ''
+    }
+  },
+  { immediate: true }
 )
 watch(
-  () => [form.department, props.currency],
+  () => [form.department, props.currency, props.department],
   ([department], [previousDepartment]) => {
     if (department !== previousDepartment)
-      form.neighborhood = department === props.department ? props.neighborhood : ''
+      form.neighborhood = usesParentFacets.value ? props.neighborhood : ''
     if (import.meta.client) void loadNeighborhoods()
   }
 )
@@ -638,8 +704,11 @@ async function loadNeighborhoods(force = false) {
     localNeighborhoods.value = []
     return
   }
-  if (!force && form.department === props.department && props.neighborhoods.length) {
-    localNeighborhoods.value = [...props.neighborhoods]
+  // The parent already loads every neighborhood facet for its department. An empty
+  // array can mean loading, no data or failure; none justify a second full analysis.
+  if (usesParentFacets.value) {
+    localNeighborhoods.value = []
+    if (force) emit('retryFacets')
     return
   }
   localNeighborhoods.value = []

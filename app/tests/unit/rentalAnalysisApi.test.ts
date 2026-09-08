@@ -1,15 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { H3Event } from 'h3'
 
-const { connect, metadata, rows, aggregate, cursor, close, headers } = vi.hoisted(() => ({
-  connect: vi.fn(),
-  metadata: vi.fn(),
-  rows: vi.fn(),
-  aggregate: vi.fn(),
-  cursor: vi.fn(),
-  close: vi.fn(),
-  headers: vi.fn(),
-}))
+const { connect, metadata, rows, aggregate, cursor, close, headers, availability } = vi.hoisted(
+  () => ({
+    connect: vi.fn(),
+    metadata: vi.fn(),
+    rows: vi.fn(),
+    aggregate: vi.fn(),
+    cursor: vi.fn(),
+    close: vi.fn(),
+    headers: vi.fn(),
+    availability: vi.fn(),
+  })
+)
 vi.mock('../../server/utils/db', () => ({ connectDb: connect }))
 vi.mock('../../server/models/RentalMeta', () => ({
   RentalMetaModel: {
@@ -20,7 +23,7 @@ vi.mock('../../server/models/RentalListing', () => ({
   RentalListingModel: { aggregate },
 }))
 vi.mock('../../server/utils/rentalAvailability', () => ({
-  loadRentalAvailabilityIndex: async () => ({ excludedAdvertIds: () => [] }),
+  loadRentalAvailabilityIndex: availability,
 }))
 vi.mock('h3', async importOriginal => ({
   ...(await importOriginal<typeof import('h3')>()),
@@ -47,6 +50,7 @@ beforeEach(() => {
   vi.setSystemTime(now)
   connect.mockResolvedValue(undefined)
   metadata.mockResolvedValue({ generatedAt: '2026-09-07T04:00:00Z' })
+  availability.mockResolvedValue({ excludedAdvertIds: () => [] })
   rows.mockImplementation(async function* () {})
   close.mockResolvedValue(undefined)
   cursor.mockImplementation(() => ({ close, [Symbol.asyncIterator]: () => rows() }))
@@ -97,7 +101,7 @@ describe('rental analysis source freshness', () => {
     await expect(loadRentalAnalysisCatalogue()).resolves.toMatchObject({
       generatedAt: '2026-09-07T04:00:00Z',
     })
-    expect(metadata).toHaveBeenCalledTimes(2)
+    expect(metadata).toHaveBeenCalledTimes(3)
   })
 })
 
@@ -130,7 +134,7 @@ describe('rental analysis complete streamed catalogue', () => {
       catalogueProperties: 100_000,
     })
     expect(close).toHaveBeenCalledTimes(2)
-    expect(metadata).toHaveBeenCalledTimes(2)
+    expect(metadata).toHaveBeenCalledTimes(3)
   })
 
   it('normalizes each document before requesting the next raw document', async () => {
@@ -197,7 +201,58 @@ describe('rental analysis complete streamed catalogue', () => {
     expect(cursor).toHaveBeenCalledOnce()
     vi.setSystemTime(now.getTime() + 60_001)
     await loadRentalAnalysisCatalogue()
+    expect(cursor).toHaveBeenCalledOnce()
+    vi.setSystemTime(now.getTime() + 600_001)
+    await loadRentalAnalysisCatalogue()
     expect(cursor).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('rental analysis cached responses keep availability current', () => {
+  it('reuses aggregates only after checking reports and changes the key when hide_any changes', async () => {
+    rows.mockImplementation(async function* () {
+      yield {
+        key: 'property-1',
+        offers: [
+          {
+            source: 'infocasas',
+            listingId: '123',
+            title: 'Alquiler mensual apartamento',
+            url: 'https://www.infocasas.com.uy/apartamento/123',
+            price: 20000,
+            currency: 'UYU',
+            commonExpenses: null,
+            commonExpensesCurrency: null,
+            lastSeen: now.toISOString(),
+            parkingSpaces: null,
+            identity: {
+              version: 1,
+              propertyType: 'apartamento',
+              department: 'Montevideo',
+              neighborhood: 'Cordón',
+              bedrooms: 1,
+              bathrooms: 1,
+              description: 'Alquiler mensual de vivienda.',
+            },
+          },
+        ],
+      }
+    })
+    const { loadRentalAnalysis } = await import('../../server/utils/rentalAnalysis')
+    const first = await loadRentalAnalysis({ department: 'Montevideo' })
+    expect(first.summary.count).toBe(1)
+    expect(await loadRentalAnalysis({ department: 'Montevideo' })).toBe(first)
+    expect(availability).toHaveBeenCalledTimes(2)
+    availability.mockResolvedValueOnce({ excludedAdvertIds: () => ['rent:infocasas:123'] })
+    expect((await loadRentalAnalysis({ department: 'Montevideo' })).summary.count).toBe(0)
+    expect(await loadRentalAnalysis({ department: 'Montevideo' })).toBe(first)
+    expect(cursor).toHaveBeenCalledOnce()
+  })
+  it('does not return a cached aggregate if availability cannot be validated', async () => {
+    const { loadRentalAnalysis } = await import('../../server/utils/rentalAnalysis')
+    await loadRentalAnalysis({})
+    availability.mockRejectedValueOnce(new Error('reports unavailable'))
+    await expect(loadRentalAnalysis({})).rejects.toThrow('reports unavailable')
   })
 })
 

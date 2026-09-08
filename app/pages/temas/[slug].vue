@@ -113,13 +113,15 @@
 </template>
 
 <script setup lang="ts">
-import { getHub, hubGuides, hubSlugs } from '~/utils/guideHubs'
+import { getHub, hubGuides } from '~/utils/guideHubs'
 
 // Reject unknown slugs at the route guard so they 404 without partially
-// rendering. The hub catalogue is static/framework-agnostic. NOTE: `validate` is
-// extracted at build time, so editing this list needs a dev-server restart.
+// rendering. The extracted guard loads the catalogue only for this route.
 definePageMeta({
-  validate: route => hubSlugs().includes(String(route.params.slug ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/guideHubs')
+    return catalogue.hubSlugs().includes(String(route.params.slug ?? ''))
+  },
 })
 
 const localePath = useLocalePath()

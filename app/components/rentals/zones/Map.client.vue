@@ -17,7 +17,7 @@ const props = defineProps<{
   labels: Record<string, string>
   selectedId: string | null
 }>()
-const emit = defineEmits<{ select: [id: string] }>()
+const emit = defineEmits<{ select: [id: string]; failed: [] }>()
 const { t } = useI18n({ useScope: 'local', messages: rentalZoneMessages })
 const element = ref<HTMLElement>()
 const failed = ref(false)
@@ -90,6 +90,7 @@ onMounted(async () => {
     observer.observe(element.value)
   } catch {
     failed.value = true
+    emit('failed')
   }
 })
 watch(() => [props.boundaries, props.colors, props.labels], render)

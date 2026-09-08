@@ -276,25 +276,31 @@ const offenses = ['hurto', 'rapina', 'lesiones', 'violencia-domestica', 'abigeat
 const numberLocale = computed(() =>
   locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY'
 )
+const integerFormat = computed(() => new Intl.NumberFormat(numberLocale.value))
+const decimalFormat = computed(
+  () => new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 1 })
+)
+const moneyFormat = computed(
+  () =>
+    new Intl.NumberFormat(numberLocale.value, {
+      style: 'currency',
+      currency: props.analysis.query.currency,
+      maximumFractionDigits: 0,
+    })
+)
+const dateFormat = computed(
+  () => new Intl.DateTimeFormat(numberLocale.value, { dateStyle: 'medium', timeZone: 'UTC' })
+)
 const integer = (value: number | null | undefined) =>
-  value == null ? t('noData') : new Intl.NumberFormat(numberLocale.value).format(value)
-const decimal = (value: number) =>
-  new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits: 1 }).format(value)
+  value == null ? t('noData') : integerFormat.value.format(value)
+const decimal = (value: number) => decimalFormat.value.format(value)
 const money = (value: number | null | undefined) =>
-  value == null
-    ? t('noData')
-    : new Intl.NumberFormat(numberLocale.value, {
-        style: 'currency',
-        currency: props.analysis.query.currency,
-        maximumFractionDigits: 0,
-      }).format(value)
+  value == null ? t('noData') : moneyFormat.value.format(value)
 const signedMoney = (value: number) => `${value > 0 ? '+' : ''}${money(value)}`
 const signedPercent = (value: number) => `${value > 0 ? '+' : ''}${decimal(value)}%`
 const date = (value: string | null) =>
   value && Number.isFinite(Date.parse(value))
-    ? new Intl.DateTimeFormat(numberLocale.value, { dateStyle: 'medium', timeZone: 'UTC' }).format(
-        new Date(value)
-      )
+    ? dateFormat.value.format(new Date(value))
     : t('noData')
 </script>
 

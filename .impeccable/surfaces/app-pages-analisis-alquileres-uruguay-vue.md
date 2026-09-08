@@ -29,3 +29,11 @@ y revisa hasta treinta comparables, seis visibles inicialmente. El presupuesto a
 ingresados localmente y escenarios mensuales/anuales constantes. Hasta tres barrios se contrastan
 con precios de la misma moneda y contexto independiente INE/OSM/MI, con fechas y cobertura al lado;
 no se infieren alias, distancias, efectos causales ni puntajes de seguridad.
+
+Mapa integrado 2026-09-08: acceso principal junto al estimador y enlace directo #mapa-alquileres.
+Se abre bajo los filtros y descarga geometrías y Leaflet sólo al solicitarlo. La media y mediana
+usan la misma moneda y selección del análisis; denuncias MI y servicios OSM son capas separadas,
+con período/fecha propios y lista accesible equivalente. Sólo se unen nombres oficiales exactos;
+menos de ocho viviendas o datos ausentes se muestran neutros. El mapa sigue disponible aunque la
+selección no tenga alquileres. El estimador reutiliza las zonas recibidas y los formatos de cifras
+se crean una vez por moneda e idioma. Los catálogos de otras rutas no bloquean esta pantalla.

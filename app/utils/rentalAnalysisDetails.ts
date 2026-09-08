@@ -110,6 +110,7 @@ const knownParking = (row: RentalAnalysisListing) =>
   row.parkingSpaces <= 10
 
 export function rentalAnalysisSummary(rows: RentalAnalysisListing[]): RentalAnalysisSummary {
+  const prices = rows.map(row => row.price).filter(Number.isFinite)
   const known = rows.filter(knownExpenses)
   const perM2 = (basis: RentalAnalysisAreaBasis) =>
     rentalAnalysisMeasure(
@@ -121,7 +122,10 @@ export function rentalAnalysisSummary(rows: RentalAnalysisListing[]): RentalAnal
   const dates = rows.map(row => row.lastSeen).sort()
   return {
     count: rows.length,
-    rent: rentalAnalysisMeasure(rows.map(row => row.price)),
+    rent: rentalAnalysisMeasure(prices),
+    rentMean: prices.length
+      ? rounded(prices.reduce((sum, price) => sum + price, 0) / prices.length)
+      : null,
     expenses: rentalAnalysisMeasure(known.map(row => row.commonExpenses!)),
     monthly: rentalAnalysisMeasure(known.map(row => row.price + row.commonExpenses!)),
     expensesKnownCount: known.length,

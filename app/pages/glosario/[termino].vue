@@ -77,10 +77,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { getTerm, glossarySlugs, relatedTerms, GLOSSARY_CATEGORIES } from '~/utils/glossary'
+import { getTerm, relatedTerms, GLOSSARY_CATEGORIES } from '~/utils/glossary'
 
 definePageMeta({
-  validate: route => glossarySlugs().includes(String(route.params.termino ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/glossary')
+    return catalogue.glossarySlugs().includes(String(route.params.termino ?? ''))
+  },
 })
 
 const localePath = useLocalePath()

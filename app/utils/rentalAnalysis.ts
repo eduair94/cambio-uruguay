@@ -37,6 +37,8 @@ export interface RentalAnalysisMeasure {
 export interface RentalAnalysisSummary {
   count: number
   rent: RentalAnalysisMeasure | null
+  /** Arithmetic mean of the same original-currency cohort as rent. */
+  rentMean: number | null
   expenses: RentalAnalysisMeasure | null
   monthly: RentalAnalysisMeasure | null
   expensesKnownCount: number

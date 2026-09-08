@@ -1,5 +1,7 @@
 export const rentalAnalysisMessages = {
   es: {
+    mapLink: 'Ver mapa por barrio',
+    mapLayers: 'Mapa: precios, denuncias y servicios',
     detailLink: 'Precios y superficies',
     incomeLink: 'Presupuesto',
     compareLink: 'Comparar barrios',
@@ -117,6 +119,8 @@ export const rentalAnalysisMessages = {
     firstRental: 'Preparar mi primer alquiler',
   },
   en: {
+    mapLink: 'View neighborhood map',
+    mapLayers: 'Map: prices, crime reports and services',
     detailLink: 'Prices and floor areas',
     incomeLink: 'Budget',
     compareLink: 'Compare neighborhoods',
@@ -233,6 +237,8 @@ export const rentalAnalysisMessages = {
     firstRental: 'Plan my first rental',
   },
   pt: {
+    mapLink: 'Ver mapa por bairro',
+    mapLayers: 'Mapa: preços, denúncias e serviços',
     detailLink: 'Preços e áreas',
     incomeLink: 'Orçamento',
     compareLink: 'Comparar bairros',

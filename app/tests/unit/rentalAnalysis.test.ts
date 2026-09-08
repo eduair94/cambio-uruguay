@@ -58,6 +58,25 @@ const subject = (overrides: Partial<RentalEstimateQuery> = {}): RentalEstimateQu
 })
 
 describe('rental market asking-price statistics', () => {
+  it('reports the arithmetic mean separately from the median for each same-currency zone', () => {
+    const result = analyzeRentalMarket(
+      catalogue([
+        listing(1, { price: 20000 }),
+        listing(2, { price: 20000 }),
+        listing(3, { price: 50000 }),
+        listing(4, { price: 500, currency: 'USD' }),
+        listing(5, { price: 90000, bedrooms: 3 }),
+        listing(6, { price: 10000, neighborhood: 'Pocitos' }),
+      ]),
+      { department: 'Montevideo', neighborhood: 'Cordón', bedrooms: 1 },
+      now
+    )
+    expect(result.summary.rentMean).toBe(30000)
+    expect(result.summary.rent?.median).toBe(20000)
+    expect(result.neighborhoods.find(row => row.name === 'Cordón')?.rentMean).toBe(30000)
+    expect(result.neighborhoods.find(row => row.name === 'Pocitos')?.rentMean).toBe(10000)
+    expect(rentalAnalysisSummary([]).rentMean).toBeNull()
+  })
   it('keeps currencies separate across summaries, charts and available locations', () => {
     const data = catalogue([
       ...sample(),
