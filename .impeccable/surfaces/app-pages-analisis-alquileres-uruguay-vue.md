@@ -22,3 +22,10 @@ ninguna cifra representa contratos cerrados, vacancia, demanda ni un precio ópt
 Primera visita clara; se conserva la preferencia oscura. Las gráficas tienen valores legibles sin
 color ni tooltips; en móvil se recomponen sus filas. Carga, error y ausencia de evidencia son estados
 distintos. No se ilustran resultados reales con datos de demostración.
+
+Ampliación 2026-09-08: navegación por secciones, percentiles y media, dispersión con alternativa
+tabular, bandas de superficie y cobertura de atributos/fuentes. El usuario descarga agregados CSV
+y revisa hasta treinta comparables, seis visibles inicialmente. El presupuesto agrega costos
+ingresados localmente y escenarios mensuales/anuales constantes. Hasta tres barrios se contrastan
+con precios de la misma moneda y contexto independiente INE/OSM/MI, con fechas y cobertura al lado;
+no se infieren alias, distancias, efectos causales ni puntajes de seguridad.

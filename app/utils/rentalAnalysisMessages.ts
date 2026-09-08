@@ -1,5 +1,19 @@
 export const rentalAnalysisMessages = {
   es: {
+    detailLink: 'Precios y superficies',
+    incomeLink: 'Presupuesto',
+    compareLink: 'Comparar barrios',
+    coverageLink: 'Calidad de los datos',
+    findZone: 'Buscar una zona en el gráfico',
+    zoneSearchHint: 'Nombre del barrio o departamento',
+    noZoneMatch: 'No hay zonas que coincidan con esa búsqueda.',
+    extraCosts: 'Otros gastos mensuales previstos',
+    extraCostsHint:
+      'Podés sumar tu estimación de luz, agua, internet u otros gastos. El cálculo se hace en tu navegador y no se envía ni se guarda.',
+    plannedMonthly: 'Costo mensual del escenario',
+    annualCost: 'Proyección de 12 meses al mismo costo',
+    requiredIncome: 'Ingreso para destinar el {pct}%',
+    remainingIncome: 'Ingreso que quedaría después de este costo',
     title: 'El mercado de alquileres, zona por zona',
     breadcrumb: 'Análisis de alquileres',
     intro:
@@ -75,11 +89,13 @@ export const rentalAnalysisMessages = {
     incomeCurrency: 'Ingresalo en {currency}, igual que los avisos seleccionados.',
     allocation: 'Porcentaje que querés destinar',
     budget: 'Tu presupuesto mensual',
-    burden: 'El costo mediano con gastos representa {pct}% de ese ingreso.',
+    burden:
+      'El costo mediano con gastos comunes y tus adicionales representa {pct}% de ese ingreso.',
     incomeEmpty: 'Ingresá tu ingreso para ver la relación con los costos de esta muestra.',
     budgetNote:
-      'Este cálculo incluye alquiler y gastos comunes declarados. No incluye servicios, garantía, comisión, mudanza ni requisitos del arrendador.',
-    incomeInvalid: 'Ingresá un ingreso mayor que cero y un porcentaje entre 1 y 100.',
+      'El escenario usa la muestra con gastos comunes conocidos y los adicionales que ingreses. No contempla aumentos futuros, garantía, comisión ni mudanza. El ingreso calculado no es un requisito del arrendador.',
+    incomeInvalid:
+      'Ingresá un ingreso mayor que cero, un porcentaje entre 1 y 100 y gastos adicionales no negativos.',
     methodTitle: 'Qué te dicen estos datos y qué queda afuera',
     methodSample:
       'La muestra usa los avisos del catálogo con datos propios del anuncio y lecturas de hasta {days} días. Una vivienda aporta una observación por moneda. Puede haber duplicados entre portales que no logramos identificar; no cubrimos todo el mercado.',
@@ -101,6 +117,20 @@ export const rentalAnalysisMessages = {
     firstRental: 'Preparar mi primer alquiler',
   },
   en: {
+    detailLink: 'Prices and floor areas',
+    incomeLink: 'Budget',
+    compareLink: 'Compare neighborhoods',
+    coverageLink: 'Data quality',
+    findZone: 'Find an area in the chart',
+    zoneSearchHint: 'Neighborhood or department name',
+    noZoneMatch: 'No areas match this search.',
+    extraCosts: 'Other expected monthly expenses',
+    extraCostsHint:
+      'Add your estimate for electricity, water, internet or other expenses. This calculation runs in your browser and is neither sent nor stored.',
+    plannedMonthly: 'Scenario monthly cost',
+    annualCost: '12-month projection at the same cost',
+    requiredIncome: 'Income to allocate {pct}%',
+    remainingIncome: 'Income remaining after this cost',
     title: 'The rental market, area by area',
     breadcrumb: 'Rental market analysis',
     intro:
@@ -176,11 +206,13 @@ export const rentalAnalysisMessages = {
     incomeCurrency: 'Enter {currency}, the same currency as the selected listings.',
     allocation: 'Share you want to allocate',
     budget: 'Your monthly budget',
-    burden: 'The median cost including expenses represents {pct}% of that income.',
+    burden:
+      'The median cost with shared expenses and your extras represents {pct}% of that income.',
     incomeEmpty: 'Enter your income to compare it with costs in this sample.',
     budgetNote:
-      'Includes rent and declared shared expenses. Excludes utilities, guarantees, agency fees, moving costs and landlord requirements.',
-    incomeInvalid: 'Enter income greater than zero and a percentage between 1 and 100.',
+      'The scenario uses listings with known shared expenses and the extras you enter. It excludes future increases, guarantees, agency fees and moving costs. The calculated income is not a landlord requirement.',
+    incomeInvalid:
+      'Enter income greater than zero, a percentage between 1 and 100, and non-negative extra expenses.',
     methodTitle: 'What these data tell you, and what they leave out',
     methodSample:
       'The sample uses catalogue listings with advert-specific evidence, read within {days} days. Each home contributes one observation per currency. Some cross-portal duplicates may remain; coverage is not exhaustive.',
@@ -201,6 +233,20 @@ export const rentalAnalysisMessages = {
     firstRental: 'Plan my first rental',
   },
   pt: {
+    detailLink: 'Preços e áreas',
+    incomeLink: 'Orçamento',
+    compareLink: 'Comparar bairros',
+    coverageLink: 'Qualidade dos dados',
+    findZone: 'Buscar uma região no gráfico',
+    zoneSearchHint: 'Nome do bairro ou departamento',
+    noZoneMatch: 'Nenhuma região corresponde à busca.',
+    extraCosts: 'Outras despesas mensais previstas',
+    extraCostsHint:
+      'Some sua estimativa de luz, água, internet ou outras despesas. O cálculo é feito no navegador e não é enviado nem salvo.',
+    plannedMonthly: 'Custo mensal do cenário',
+    annualCost: 'Projeção de 12 meses ao mesmo custo',
+    requiredIncome: 'Renda para destinar {pct}%',
+    remainingIncome: 'Renda restante após este custo',
     title: 'O mercado de aluguéis, região por região',
     breadcrumb: 'Análise de aluguéis',
     intro:
@@ -277,11 +323,13 @@ export const rentalAnalysisMessages = {
     incomeCurrency: 'Informe em {currency}, a mesma moeda dos anúncios selecionados.',
     allocation: 'Porcentagem que deseja destinar',
     budget: 'Seu orçamento mensal',
-    burden: 'O custo mediano com condomínio representa {pct}% dessa renda.',
+    burden:
+      'O custo mediano com condomínio e suas despesas adicionais representa {pct}% dessa renda.',
     incomeEmpty: 'Informe sua renda para comparar com os custos desta amostra.',
     budgetNote:
-      'Inclui aluguel e condomínio declarado. Não inclui serviços, garantia, comissão, mudança ou requisitos do locador.',
-    incomeInvalid: 'Informe uma renda maior que zero e uma porcentagem entre 1 e 100.',
+      'O cenário usa anúncios com condomínio conhecido e as despesas adicionais informadas. Não inclui reajustes futuros, garantia, comissão ou mudança. A renda calculada não é uma exigência do locador.',
+    incomeInvalid:
+      'Informe uma renda maior que zero, uma porcentagem entre 1 e 100 e despesas adicionais não negativas.',
     methodTitle: 'O que estes dados mostram e o que fica de fora',
     methodSample:
       'A amostra usa anúncios do catálogo com dados próprios, lidos há até {days} dias. Cada imóvel contribui com uma observação por moeda. Algumas duplicatas entre portais podem permanecer; a cobertura não é completa.',

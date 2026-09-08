@@ -175,20 +175,44 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
       <p v-if="result.comparables[0]" class="rent-estimator__small">
         {{ t('sampleSource', { source: RENTAL_SOURCE_LABEL[result.comparables[0].source] }) }}
       </p>
+      <p class="rent-estimator__small">
+        {{
+          t('areaWindow', {
+            min: number(
+              Math.max(20, result.query.area * (1 - result.criteria.areaTolerancePct / 100)),
+              3
+            ),
+            max: number(
+              Math.min(450, result.query.area * (1 + result.criteria.areaTolerancePct / 100)),
+              3
+            ),
+            basis: t(result.query.areaBasis === 'total' ? 'total' : 'built'),
+          })
+        }}
+      </p>
       <div v-if="result.status === 'supported' && result.range" class="rent-estimator__supported">
         <h4>{{ t('supported') }}</h4>
         <dl class="rent-estimator__range">
           <div>
             <dt>{{ t('p25') }}</dt>
-            <dd>{{ money(result.range.p25) }}</dd>
+            <dd>
+              {{ money(result.range.p25) }}
+              <p>{{ t('p25Meaning') }}</p>
+            </dd>
           </div>
           <div class="rent-estimator__median">
             <dt>{{ t('median') }}</dt>
-            <dd>{{ money(result.range.median) }}</dd>
+            <dd>
+              {{ money(result.range.median) }}
+              <p>{{ t('medianMeaning') }}</p>
+            </dd>
           </div>
           <div>
             <dt>{{ t('p75') }}</dt>
-            <dd>{{ money(result.range.p75) }}</dd>
+            <dd>
+              {{ money(result.range.p75) }}
+              <p>{{ t('p75Meaning') }}</p>
+            </dd>
           </div>
         </dl>
         <p class="rent-estimator__small">{{ currency }} · {{ t('monthlyUnit') }}</p>
@@ -197,6 +221,39 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
           <p>
             <strong>{{ askingComparison }}</strong>
           </p>
+          <p v-if="askingDifference !== null">
+            {{ t('askingDifference', { amount: money(Math.abs(askingDifference)) }) }}
+          </p>
+          <div v-if="result.askingPosition" class="rent-estimator__position">
+            <h4>{{ t('askingPositionTitle') }}</h4>
+            <p>
+              {{
+                t('askingPositionSummary', {
+                  below: result.askingPosition.belowCount,
+                  equal: result.askingPosition.equalCount,
+                  above: result.askingPosition.aboveCount,
+                  total: result.sampleCount,
+                })
+              }}
+            </p>
+            <div class="rent-estimator__position-bar" aria-hidden="true">
+              <span
+                v-for="part in askingPositionParts"
+                :key="part.key"
+                :class="`rent-estimator__position-${part.key}`"
+                :style="{ width: `${(part.count / result.sampleCount) * 100}%` }"
+              />
+            </div>
+            <ul class="rent-estimator__position-legend">
+              <li v-for="part in askingPositionParts" :key="part.key">
+                <span :class="`rent-estimator__position-${part.key}`" aria-hidden="true" />
+                {{ t(part.label, { n: part.count }) }}
+              </li>
+            </ul>
+            <p class="rent-estimator__small">
+              {{ t('askingPercentile', { percentile: number(result.askingPosition.percentile) }) }}
+            </p>
+          </div>
           <p>{{ t('askingContext') }}</p>
         </div>
         <div class="rent-estimator__monthly">
@@ -206,6 +263,14 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
               t('monthlySummary', {
                 price: money(result.monthly.median),
                 n: result.expensesKnownCount,
+              })
+            }}
+          </p>
+          <p v-if="result.monthly" class="rent-estimator__small">
+            {{
+              t('monthlyRange', {
+                low: money(result.monthly.p25),
+                high: money(result.monthly.p75),
               })
             }}
           </p>
@@ -219,6 +284,28 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
         <h4>{{ t(result.status === 'dispersed' ? 'dispersed' : 'insufficient') }}</h4>
         <p v-if="result.reason">{{ t(result.reason) }}</p>
       </div>
+      <details
+        v-if="result.diagnostics"
+        class="rent-estimator__selection"
+        :open="result.status !== 'supported'"
+      >
+        <summary>{{ t('selectionTitle') }}</summary>
+        <p>{{ t('selectionIntro') }}</p>
+        <ol class="rent-estimator__selection-steps">
+          <li v-for="step in selectionSteps" :key="step.key">
+            <span>{{ t(step.label) }}</span>
+            <strong>{{ number(step.count, 0) }}</strong>
+          </li>
+        </ol>
+        <p class="rent-estimator__small">
+          {{
+            t('selectionLimit', {
+              n: result.criteria.maxComparables,
+              perAdvertiser: result.criteria.maxPerAdvertiser,
+            })
+          }}
+        </p>
+      </details>
       <p class="rent-estimator__method">
         {{
           t('criteria', {
@@ -232,14 +319,34 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
       <p class="rent-estimator__small">
         {{ t('snapshot', { date: dateLabel(result.generatedAt) }) }}
       </p>
+      <p v-if="result.oldestLastSeen && result.newestLastSeen" class="rent-estimator__small">
+        {{
+          t('observedBetween', {
+            from: dateLabel(result.oldestLastSeen),
+            to: dateLabel(result.newestLastSeen),
+          })
+        }}
+      </p>
 
       <div v-if="result.comparables.length" class="rent-estimator__comparables">
         <h4>{{ t('comparableTitle') }}</h4>
-        <p v-if="result.comparables.length < result.sampleCount" class="rent-estimator__small">
+        <p class="rent-estimator__small">
           {{
-            t('comparableSubset', { shown: result.comparables.length, total: result.sampleCount })
+            t('comparableSubset', { shown: visibleComparables.length, total: result.sampleCount })
           }}
         </p>
+        <div class="rent-estimator__table-controls">
+          <label :for="`${id}-sort`">
+            <span>{{ t('sortComparables') }}</span>
+            <select :id="`${id}-sort`" v-model="comparableSort" name="estimator-comparable-sort">
+              <option value="similar">{{ t('sortSimilar') }}</option>
+              <option value="price-asc">{{ t('sortPriceAsc') }}</option>
+              <option value="price-desc">{{ t('sortPriceDesc') }}</option>
+              <option value="seen">{{ t('sortSeen') }}</option>
+            </select>
+          </label>
+          <p class="rent-estimator__small">{{ t('comparableReading') }}</p>
+        </div>
         <table class="cu-mobile-cards rent-estimator__table">
           <caption class="rent-estimator__sr-only">
             {{
@@ -251,12 +358,12 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
               <th scope="col">{{ t('property') }}</th>
               <th scope="col">{{ t('rent') }}</th>
               <th scope="col">{{ t('features') }}</th>
-              <th scope="col">{{ t('expenses') }}</th>
+              <th scope="col">{{ t('monthlyDetail') }}</th>
               <th scope="col">{{ t('seen') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in result.comparables" :key="item.propertyKey">
+            <tr v-for="item in visibleComparables" :key="item.propertyKey">
               <td :data-label="t('property')">
                 <NuxtLink :to="localePath(rentalPropertyPath(item.propertyKey))">{{
                   item.title
@@ -272,14 +379,30 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
               </td>
               <td :data-label="t('rent')" class="rent-estimator__price">
                 {{ money(item.price, item.currency) }}
+                <span v-if="item.area !== null && item.area > 0" class="rent-estimator__cell-note">
+                  {{ t('rentPerM2', { amount: money(item.price / item.area, item.currency) }) }}
+                </span>
+                <span v-if="result.query.askingPrice !== null" class="rent-estimator__cell-note">
+                  {{ comparablePriceDifference(item.price) }}
+                </span>
               </td>
-              <td :data-label="t('features')">{{ features(item) }}</td>
-              <td :data-label="t('expenses')">
+              <td :data-label="t('features')">
+                {{ features(item) }}
+                <span v-if="item.area !== null" class="rent-estimator__cell-note">
+                  {{ comparableAreaDifference(item.area) }}
+                </span>
+              </td>
+              <td :data-label="t('monthlyDetail')">
+                <strong>{{ t('expenses') }}:</strong>
                 {{
                   item.commonExpenses === null
                     ? t('unknown')
                     : money(item.commonExpenses, item.currency)
                 }}
+                <span v-if="item.commonExpenses !== null" class="rent-estimator__cell-note">
+                  <strong>{{ t('monthlyTotal') }}:</strong>
+                  {{ money(item.price + item.commonExpenses, item.currency) }}
+                </span>
               </td>
               <td :data-label="t('seen')">
                 <time :datetime="item.lastSeen">{{ dateLabel(item.lastSeen) }}</time>
@@ -287,6 +410,15 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
             </tr>
           </tbody>
         </table>
+        <button
+          v-if="result.comparables.length > INITIAL_COMPARABLES"
+          type="button"
+          class="rent-estimator__text-button rent-estimator__show-all"
+          :aria-expanded="showAllComparables"
+          @click="showAllComparables = !showAllComparables"
+        >
+          {{ t(showAllComparables ? 'showFewer' : 'showAll', { n: result.comparables.length }) }}
+        </button>
       </div>
     </section>
   </section>
@@ -332,6 +464,9 @@ const result = ref<RentalEstimateResponse | null>(null)
 const resultElement = ref<HTMLElement | null>(null)
 const busy = ref(false)
 const hasCompared = ref(false)
+const INITIAL_COMPARABLES = 6
+const showAllComparables = ref(false)
+const comparableSort = ref<'similar' | 'price-asc' | 'price-desc' | 'seen'>('similar')
 const error = ref<'validation' | 'requestError' | 'stale' | null>(null)
 const neighborhoodsBusy = ref(false)
 const neighborhoodsError = ref(false)
@@ -354,8 +489,61 @@ const money = (amount: number, currency = props.currency) =>
   new Intl.NumberFormat(numberLocale.value, {
     style: 'currency',
     currency,
-    maximumFractionDigits: 0,
+    maximumFractionDigits: Number.isInteger(amount) ? 0 : 2,
   }).format(amount)
+const number = (amount: number, maximumFractionDigits = 1) =>
+  new Intl.NumberFormat(numberLocale.value, { maximumFractionDigits }).format(amount)
+const askingDifference = computed(() => {
+  if (!result.value?.range || result.value.query.askingPrice === null) return null
+  return result.value.query.askingPrice - result.value.range.median
+})
+const askingPositionParts = computed(() => {
+  const position = result.value?.askingPosition
+  if (!position) return []
+  return [
+    { key: 'below', label: 'positionBelow', count: position.belowCount },
+    { key: 'equal', label: 'positionEqual', count: position.equalCount },
+    { key: 'above', label: 'positionAbove', count: position.aboveCount },
+  ]
+})
+const selectionSteps = computed(() => {
+  const diagnostics = result.value?.diagnostics
+  if (!diagnostics) return []
+  return [
+    { key: 'zone', label: 'selectionZone', count: diagnostics.sameZoneCount },
+    { key: 'features', label: 'selectionFeatures', count: diagnostics.matchingFeaturesCount },
+    { key: 'area', label: 'selectionArea', count: diagnostics.matchingAreaCount },
+    { key: 'identity', label: 'selectionIdentity', count: diagnostics.identifiedAdvertiserCount },
+    { key: 'selected', label: 'selectionSelected', count: diagnostics.selectedCount },
+  ]
+})
+const visibleComparables = computed(() => {
+  const items = [...(result.value?.comparables || [])]
+  if (comparableSort.value === 'price-asc') items.sort((a, b) => a.price - b.price)
+  if (comparableSort.value === 'price-desc') items.sort((a, b) => b.price - a.price)
+  if (comparableSort.value === 'seen') items.sort((a, b) => b.lastSeen.localeCompare(a.lastSeen))
+  return showAllComparables.value ? items : items.slice(0, INITIAL_COMPARABLES)
+})
+const comparablePriceDifference = (price: number) => {
+  const askingPrice = result.value?.query.askingPrice
+  if (!askingPrice) return ''
+  const difference = price - askingPrice
+  return t(
+    difference > 0 ? 'comparableAbove' : difference < 0 ? 'comparableBelow' : 'comparableEqual',
+    {
+      amount: money(Math.abs(difference)),
+      pct: number(Math.abs((difference / askingPrice) * 100)),
+    }
+  )
+}
+const comparableAreaDifference = (area: number) => {
+  const subjectArea = result.value?.query.area
+  if (!subjectArea) return ''
+  const difference = area - subjectArea
+  return t(difference > 0 ? 'areaLarger' : difference < 0 ? 'areaSmaller' : 'areaEqual', {
+    pct: number(Math.abs((difference / subjectArea) * 100)),
+  })
+}
 const dateLabel = (value: string) => {
   const date = new Date(value)
   return Number.isFinite(date.getTime())
@@ -385,7 +573,9 @@ const features = (item: RentalAnalysisComparable) =>
     item.area === null
       ? ''
       : `${item.area} m² · ${t(item.areaBasis === 'total' ? 'total' : 'built')}`,
-    item.parkingSpaces === null ? '' : t('parkingCount', { n: item.parkingSpaces }),
+    item.parkingSpaces === null
+      ? t('parkingUnknown')
+      : t('parkingCount', { n: item.parkingSpaces }),
   ]
     .filter(Boolean)
     .join(' · ') || t('unknown')
@@ -396,6 +586,8 @@ function clearEstimate() {
   result.value = null
   busy.value = false
   error.value = null
+  showAllComparables.value = false
+  comparableSort.value = 'similar'
 }
 watch(() => [form, props.currency], clearEstimate, { deep: true, flush: 'sync' })
 watch(
@@ -664,6 +856,13 @@ onBeforeUnmount(() => {
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
+.rent-estimator__range p {
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.8);
+}
 .rent-estimator__median {
   color: rgb(var(--v-theme-link));
 }
@@ -674,12 +873,103 @@ onBeforeUnmount(() => {
 .rent-estimator__monthly {
   margin-top: 24px;
 }
+.rent-estimator__position {
+  margin-top: 18px;
+  max-width: 760px;
+}
+.rent-estimator__position-bar {
+  display: flex;
+  height: 16px;
+  margin-top: 14px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(var(--v-theme-on-surface), 0.12);
+}
+.rent-estimator__position-below {
+  background: rgb(var(--v-theme-link));
+}
+.rent-estimator__position-equal {
+  background: rgba(var(--v-theme-on-surface), 0.65);
+}
+.rent-estimator__position-above {
+  background: rgba(var(--v-theme-on-surface), 0.25);
+}
+.rent-estimator__position-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+}
+.rent-estimator__position-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rent-estimator__position-legend span {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+.rent-estimator__selection {
+  margin-top: 24px;
+  max-width: 820px;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  padding: 0 0 12px;
+}
+.rent-estimator__selection:not([open]) {
+  padding-bottom: 0;
+}
+.rent-estimator__selection summary {
+  padding: 14px 0;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+.rent-estimator__selection p {
+  margin-top: 0;
+}
+.rent-estimator__selection-steps {
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+.rent-estimator__selection-steps li {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.rent-estimator__selection-steps strong {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
 .rent-estimator p.rent-estimator__method {
   margin-top: 24px;
   font-size: 0.875rem;
 }
 .rent-estimator__comparables {
   margin-top: 32px;
+}
+.rent-estimator__table-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 14px 24px;
+  margin-top: 16px;
+}
+.rent-estimator__table-controls label {
+  flex: 0 1 300px;
+}
+.rent-estimator__table-controls p {
+  flex: 1 1 240px;
+  margin: 0 0 4px;
 }
 .rent-estimator__table {
   width: 100%;
@@ -719,7 +1009,19 @@ onBeforeUnmount(() => {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
-.rent-estimator :is(input, select, button, a):focus-visible {
+.rent-estimator__cell-note {
+  display: block;
+  margin-top: 6px;
+  color: rgba(var(--v-theme-on-surface), 0.8);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+.rent-estimator__show-all {
+  margin-top: 14px;
+  padding: 6px 0;
+  text-align: left;
+}
+.rent-estimator :is(input, select, button, a, summary):focus-visible {
   outline: 2px solid rgb(var(--v-theme-link));
   outline-offset: 3px;
 }
@@ -747,7 +1049,7 @@ onBeforeUnmount(() => {
     gap: 12px;
   }
   .rent-estimator__range dt {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
   }
   .rent-estimator__range dd {
     font-size: 1rem;
@@ -769,6 +1071,15 @@ onBeforeUnmount(() => {
   .rent-estimator__actions {
     align-items: stretch;
     flex-direction: column;
+  }
+}
+@media (max-width: 380px) {
+  .rent-estimator__range {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .rent-estimator__range p {
+    margin-top: 4px;
   }
 }
 </style>

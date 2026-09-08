@@ -5,6 +5,51 @@ Lee el catálogo actual de alquileres en APP DB; no cosecha portales, no modific
 no publica mensajes y no crea un trabajo programado. El frontend conserva su propio
 paquete y no importa código del backend raíz.
 
+## Ampliación del 2026-09-08
+
+- `details` agrega media, mínimo/máximo y P10/P25/P50/P75/P90 de la misma selección;
+  bandas de superficie, baños, cochera y tipo de vivienda; cobertura de campos y portales.
+  Los desgloses mantienen todos los filtros, salvo dormitorios/departamentos/barrios del
+  análisis original, cuyo ámbito independiente queda indicado en la interfaz y el CSV.
+- `rentalAnalysisDetails.ts` concentra las medidas y el resumen puro. La dispersión
+  precio/superficie está limitada a 80 puntos por base (`built`/`total`), elegidos a
+  intervalos de la lista ordenada por área. No es una muestra aleatoria, no permite
+  estimar densidades y no publica identificadores. Incluye alternativa tabular.
+- La descarga CSV local contiene agregados, moneda, fecha y filtros por fila. No
+  descarga el catálogo ni datos de anunciantes y neutraliza fórmulas en celdas de texto.
+- El presupuesto suma adicionales ingresados por el usuario a la mediana **del total
+  por aviso**. Proyecta 12 meses constantes, calcula la renta del hogar compatible con
+  el porcentaje elegido y muestra el remanente; no pronostica reajustes ni requisitos.
+  Valores inválidos ocultan los resultados correspondientes, sin sustituirlos por cero.
+  Ingreso y gastos adicionales sólo viven en el navegador, sin almacenamiento.
+- `ZoneComparison.vue` contrasta hasta tres barrios con las métricas de esta API y
+  adjunta servicios/denuncias del snapshot público `/api/rentals/zones`. **No utiliza
+  sus precios convertidos**. Sólo une nombres y departamentos iguales tras normalizar
+  espacios, mayúsculas y tildes; nunca alias comerciales ni proximidad. La geometría
+  es INE2011, los servicios OSM/Geofabrik y las denuncias MI/AECA. Cada capa muestra su
+  fecha y estado propios; un fallo contextual no retira el mercado. Los conteos de
+  delitos no se normalizan por población ni generan clasificación de seguridad.
+  Ver [PROPERTY_ZONES.md](./PROPERTY_ZONES.md) para fuentes, ventanas y cobertura.
+- El estimador publica todas las observaciones seleccionadas (máximo 30), con seis
+  visibles inicialmente. Expone `diagnostics` como conteos de viviendas de cada etapa,
+  incluido `identifiedAdvertiserCount` (viviendas con anunciante identificable, **no**
+  cantidad de anunciantes), y el portal elegido. `askingPosition` muestra cantidades
+  por debajo/igual/encima y percentil de rango medio con empates; sólo se entrega con
+  muestra respaldada y precio ingresado. Ninguna etapa selecciona por precio.
+
+No se agregaron trabajos, nuevas cosechas, conversiones, series históricas inferidas
+ni nuevas escrituras de base. El endpoint conserva su lectura normalizada acotada y
+su caché existente; el contexto usa dos snapshots precalculados independientes.
+
+Validación local de esta ampliación: 6.466 pruebas unitarias aprobadas (44 omitidas
+por sus condiciones de entorno) y los siete recorridos E2E de la página verificados.
+Incluyen descarga CSV, moneda/superficie, presupuesto con entradas inválidas, coincidencia
+territorial exacta, fallo independiente de contexto y catálogo vencido recuperable.
+Revisión visual ES1440/390, EN320 oscuro y PT320 claro, sin desbordamiento horizontal.
+En esta máquina el precalentado inicial del servidor de desarrollo puede exceder el
+chequeo de Playwright: si ya se inició manualmente, la configuración local de validación
+omite `webServer` para impedir un segundo Nuxt que sobrescriba `.nuxt`.
+
 ## Qué se mide
 
 El tablero describe **precios pedidos de anuncios residenciales observados**. Permite
@@ -98,7 +143,7 @@ hace antes de calcular los precios.
 Si faltan comparables/anunciantes, la respuesta tiene estado `insufficient` y no entrega
 una mediana como estimación. Si `(P75 - P25) / mediana > 0,5`, responde `dispersed` y
 también se abstiene. Estos umbrales son decisiones conservadoras del producto, no una
-precisión validada profesionalmente. Hasta 12 anuncios de la muestra se publican con
+precisión validada profesionalmente. Hasta 30 anuncios de la muestra se publican con
 enlace propio para revisar la evidencia.
 
 El resultado `supported` entrega mediana y cuartiles del alquiler pedido. Sólo muestra

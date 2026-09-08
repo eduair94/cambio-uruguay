@@ -1,4 +1,11 @@
 import { RENTAL_STALE_DAYS, type RentalCurrency, type RentalSource } from './rentals'
+import {
+  buildRentalAnalysisDetails,
+  rentalAnalysisAreaFor as areaFor,
+  rentalAnalysisSummary,
+  type RentalAnalysisDetails,
+} from './rentalAnalysisDetails'
+export { rentalAnalysisMeasure, rentalAnalysisSummary } from './rentalAnalysisDetails'
 
 export type RentalAnalysisType = 'apartamento' | 'casa'
 export type RentalAnalysisAreaBasis = 'built' | 'total'
@@ -44,6 +51,7 @@ export interface RentalAnalysisResponse {
   analyzedAt: string
   query: RentalAnalysisQuery
   summary: RentalAnalysisSummary
+  details: RentalAnalysisDetails
   departments: Array<RentalAnalysisSummary & { name: string }>
   neighborhoods: Array<RentalAnalysisSummary & { name: string }>
   bedrooms: Array<RentalAnalysisSummary & { bedrooms: number }>
@@ -106,6 +114,22 @@ export interface RentalEstimateResponse {
   expensesKnownCount: number
   /** Positive means the submitted asking price exceeds the comparable median. */
   comparisonToAskingPct: number | null
+  diagnostics: {
+    sameZoneCount: number
+    matchingFeaturesCount: number
+    matchingAreaCount: number
+    /** Homes with a verified source-native advertiser identity, not distinct advertisers. */
+    identifiedAdvertiserCount: number
+    selectedCount: number
+    selectedSource: RentalSource | null
+  }
+  /** Midrank percentile: 100 × (lower-priced + half equally-priced homes) / sample size. */
+  askingPosition: {
+    belowCount: number
+    equalCount: number
+    aboveCount: number
+    percentile: number
+  } | null
   comparables: RentalAnalysisComparable[]
   criteria: typeof RENTAL_ESTIMATE_CRITERIA
   oldestLastSeen: string | null
@@ -187,20 +211,6 @@ export function normalizeRentalEstimateQuery(
   }
 }
 
-export function rentalAnalysisMeasure(values: readonly number[]): RentalAnalysisMeasure | null {
-  const sorted = values
-    .filter(Number.isFinite)
-    .slice()
-    .sort((a, b) => a - b)
-  if (!sorted.length) return null
-  const quantile = (p: number) => {
-    const index = (sorted.length - 1) * p
-    const low = Math.floor(index),
-      high = Math.ceil(index)
-    return Math.round((sorted[low]! + (sorted[high]! - sorted[low]!) * (index - low)) * 100) / 100
-  }
-  return { count: sorted.length, median: quantile(0.5), p25: quantile(0.25), p75: quantile(0.75) }
-}
 export function rentalAnalysisFresh(lastSeen: string, now: Date): boolean {
   const parsed = Date.parse(lastSeen)
   const cutoff = new Date(now.getTime() - RENTAL_STALE_DAYS * 86_400_000).toISOString().slice(0, 10)
@@ -238,38 +248,6 @@ function distinctRows(rows: RentalAnalysisListing[]): RentalAnalysisListing[] {
       adverts.add(row.advertId)
       return true
     })
-}
-function areaFor(row: RentalAnalysisListing, basis: RentalAnalysisAreaBasis): number | null {
-  if (basis === 'total' && row.type !== 'apartamento') return null
-  const area = row.areas ? row.areas[basis] : row.areaBasis === basis ? row.area : null
-  return typeof area === 'number' && Number.isFinite(area) && area >= 20 && area <= 450
-    ? area
-    : null
-}
-export function rentalAnalysisSummary(rows: RentalAnalysisListing[]): RentalAnalysisSummary {
-  const known = rows.filter(
-    row =>
-      row.commonExpenses !== null && Number.isFinite(row.commonExpenses) && row.commonExpenses >= 0
-  )
-  const perM2 = (basis: RentalAnalysisAreaBasis) =>
-    rentalAnalysisMeasure(
-      rows.flatMap(row => {
-        const area = areaFor(row, basis)
-        return area === null ? [] : [row.price / area]
-      })
-    )
-  const dates = rows.map(row => row.lastSeen).sort()
-  return {
-    count: rows.length,
-    rent: rentalAnalysisMeasure(rows.map(row => row.price)),
-    expenses: rentalAnalysisMeasure(known.map(row => row.commonExpenses!)),
-    monthly: rentalAnalysisMeasure(known.map(row => row.price + row.commonExpenses!)),
-    expensesKnownCount: known.length,
-    expensesCoveragePct: rows.length ? Math.round((known.length / rows.length) * 1000) / 10 : 0,
-    perM2: { built: perM2('built'), total: perM2('total') },
-    oldestLastSeen: dates[0] || null,
-    newestLastSeen: dates.at(-1) || null,
-  }
 }
 function locations(rows: RentalAnalysisListing[], field: 'department' | 'neighborhood') {
   const groups = new Map<string, { name: string; rows: RentalAnalysisListing[] }>()
@@ -348,6 +326,7 @@ export function analyzeRentalMarket(
     analyzedAt: now.toISOString(),
     query,
     summary: rentalAnalysisSummary(local),
+    details: buildRentalAnalysisDetails(local, now),
     departments: locations(selected, 'department'),
     neighborhoods: query.department ? locations(department, 'neighborhood') : [],
     bedrooms,
@@ -390,7 +369,20 @@ export function estimateRentalPrice(
   query: RentalEstimateQuery,
   now = new Date()
 ): RentalEstimateResponse {
-  const compatible = eligibleRows(catalogue, now)
+  const sameZone = eligibleRows(catalogue, now).filter(
+    row =>
+      row.currency === query.currency &&
+      folded(row.department) === folded(query.department) &&
+      folded(row.neighborhood) === folded(query.neighborhood)
+  )
+  const matchingFeatures = sameZone.filter(
+    row =>
+      row.type === query.type &&
+      row.bedrooms === query.bedrooms &&
+      row.bathrooms === query.bathrooms &&
+      (query.parkingSpaces === null || row.parkingSpaces === query.parkingSpaces)
+  )
+  const matchingArea = matchingFeatures
     .map(row => ({
       ...row,
       area: areaFor(row, query.areaBasis),
@@ -398,19 +390,11 @@ export function estimateRentalPrice(
     }))
     .filter(
       row =>
-        row.currency === query.currency &&
-        folded(row.department) === folded(query.department) &&
-        folded(row.neighborhood) === folded(query.neighborhood) &&
-        row.type === query.type &&
-        row.bedrooms === query.bedrooms &&
-        row.bathrooms === query.bathrooms &&
-        row.areaBasis === query.areaBasis &&
         row.area !== null &&
         Math.abs(row.area / query.area - 1) <=
-          RENTAL_ESTIMATE_CRITERIA.areaTolerancePct / 100 + 1e-9 &&
-        (query.parkingSpaces === null || row.parkingSpaces === query.parkingSpaces) &&
-        row.advertiserKey?.startsWith(`${row.source}:`)
+          RENTAL_ESTIMATE_CRITERIA.areaTolerancePct / 100 + 1e-9
     )
+  const compatible = matchingArea.filter(row => row.advertiserKey?.startsWith(`${row.source}:`))
   // Native agency IDs prove independence within a portal, not between two portals. Never
   // count the same possible agency on different portals as two independent advertisers.
   const cohorts = [...new Set(compatible.map(row => row.source))]
@@ -476,6 +460,21 @@ export function estimateRentalPrice(
       )
       .map(row => row.advertiserKey)
   ).size
+  const askingPosition =
+    supported && query.askingPrice !== null
+      ? {
+          belowCount: rows.filter(row => row.price < query.askingPrice!).length,
+          equalCount: rows.filter(row => row.price === query.askingPrice!).length,
+          aboveCount: rows.filter(row => row.price > query.askingPrice!).length,
+          percentile: 0,
+        }
+      : null
+  if (askingPosition) {
+    askingPosition.percentile =
+      Math.round(
+        ((askingPosition.belowCount + askingPosition.equalCount / 2) / rows.length) * 1000
+      ) / 10
+  }
   return {
     generatedAt: catalogue.generatedAt,
     query,
@@ -495,7 +494,16 @@ export function estimateRentalPrice(
       supported && query.askingPrice && range
         ? Math.round((query.askingPrice / range.median - 1) * 1000) / 10
         : null,
-    comparables: rows.slice(0, 12).map(publicComparable),
+    diagnostics: {
+      sameZoneCount: distinctRows(sameZone).length,
+      matchingFeaturesCount: distinctRows(matchingFeatures).length,
+      matchingAreaCount: distinctRows(matchingArea).length,
+      identifiedAdvertiserCount: distinctRows(compatible).length,
+      selectedCount: rows.length,
+      selectedSource: rows[0]?.source || null,
+    },
+    askingPosition,
+    comparables: rows.map(publicComparable),
     criteria: { ...RENTAL_ESTIMATE_CRITERIA },
     oldestLastSeen: summary.oldestLastSeen,
     newestLastSeen: summary.newestLastSeen,

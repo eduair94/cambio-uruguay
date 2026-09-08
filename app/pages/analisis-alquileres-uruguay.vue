@@ -20,6 +20,10 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
     </header>
     <nav class="rental-analysis__links" :aria-label="t('breadcrumb')">
       <NuxtLink :to="directoryLink">{{ t('directory') }}</NuxtLink>
+      <a href="#detalle-mercado">{{ t('detailLink') }}</a>
+      <a href="#presupuesto-alquiler">{{ t('incomeLink') }}</a>
+      <a href="#comparar-barrios">{{ t('compareLink') }}</a>
+      <a href="#cobertura-datos">{{ t('coverageLink') }}</a>
       <a href="#metodologia-alquileres">{{ t('methodLink') }}</a>
     </nav>
 
@@ -132,6 +136,16 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
                 </select>
               </label>
             </div>
+            <label class="rental-analysis__zone-search">
+              <span>{{ t('findZone') }}</span>
+              <input
+                v-model="zoneSearch"
+                name="analysis-zone-search"
+                type="search"
+                :placeholder="t('zoneSearchHint')"
+              />
+            </label>
+            <p v-if="!zones.length" class="rental-analysis__note">{{ t('noZoneMatch') }}</p>
             <div class="rental-analysis__range-head" aria-hidden="true">
               <span>{{ t('zone') }}</span
               ><span>{{ t('range') }} · {{ query.currency }}</span
@@ -245,7 +259,13 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
             </section>
           </div>
 
-          <section class="rental-analysis__income" aria-labelledby="income-title">
+          <RentalsMarketDetails :analysis="data" />
+
+          <section
+            id="presupuesto-alquiler"
+            class="rental-analysis__income"
+            aria-labelledby="income-title"
+          >
             <div>
               <h3 id="income-title">{{ t('incomeTitle') }}</h3>
               <p>{{ t('incomeHint') }}</p>
@@ -269,10 +289,20 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
                     max="100"
                     step="any"
                 /></label>
+                <label
+                  >{{ t('extraCosts') }} ({{ query.currency }})<input
+                    v-model="extraCosts"
+                    type="number"
+                    inputmode="decimal"
+                    min="0"
+                    step="any"
+                    data-testid="analysis-extra-costs"
+                /></label>
               </div>
               <p id="analysis-income-currency" class="rental-analysis__note">
                 {{ t('incomeCurrency', { currency: query.currency }) }}
               </p>
+              <p class="rental-analysis__note">{{ t('extraCostsHint') }}</p>
             </div>
             <div class="rental-analysis__budget" role="status">
               <template v-if="validIncome">
@@ -281,16 +311,54 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
                 <p v-if="data.summary.monthly">
                   {{
                     t('burden', {
-                      pct: decimal((data.summary.monthly.median / Number(income)) * 100),
+                      pct: decimal(
+                        ((data.summary.monthly.median + Number(extraCosts)) / Number(income)) * 100
+                      ),
                     })
                   }}
                 </p>
                 <p v-else>{{ t('noData') }}: {{ t('monthlyMedian') }}.</p>
+                <dl v-if="data.summary.monthly" class="rental-analysis__budget-facts">
+                  <div>
+                    <dt>{{ t('plannedMonthly') }}</dt>
+                    <dd>{{ money(data.summary.monthly.median + Number(extraCosts)) }}</dd>
+                  </div>
+                  <div>
+                    <dt>{{ t('annualCost') }}</dt>
+                    <dd>{{ money((data.summary.monthly.median + Number(extraCosts)) * 12) }}</dd>
+                  </div>
+                  <div>
+                    <dt>{{ t('requiredIncome', { pct: decimal(Number(allocation)) }) }}</dt>
+                    <dd>
+                      {{
+                        money(
+                          rentalAnalysisIncome(
+                            data.summary.monthly.median,
+                            Number(allocation),
+                            Number(extraCosts)
+                          )
+                        )
+                      }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{{ t('remainingIncome') }}</dt>
+                    <dd>
+                      {{ money(Number(income) - data.summary.monthly.median - Number(extraCosts)) }}
+                    </dd>
+                  </div>
+                </dl>
               </template>
               <p v-else>{{ income !== '' ? t('incomeInvalid') : t('incomeEmpty') }}</p>
               <p class="rental-analysis__note">{{ t('budgetNote') }}</p>
             </div>
           </section>
+          <RentalsZoneComparison
+            :analysis="data"
+            :allocation="validAllocation && validExtraCosts ? Number(allocation) : 0"
+            :extra-costs="validExtraCosts ? Number(extraCosts) : 0"
+            @explore="selectZone"
+          />
         </template>
       </div>
     </section>
@@ -346,6 +414,7 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
 import { computed, reactive, ref, watch } from 'vue'
 import { rentalAnalysisMessages } from '~/utils/rentalAnalysisMessages'
 import { normalizeRentalAnalysisQuery, type RentalAnalysisResponse } from '~/utils/rentalAnalysis'
+import { rentalAnalysisIncome } from '~/utils/rentalAnalysisComparison'
 
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalAnalysisMessages })
 const localePath = useLocalePath()
@@ -386,10 +455,17 @@ const departments = computed(() =>
 )
 const allZones = ref(false)
 const zoneSort = ref('price')
+const zoneSearch = ref('')
+const zoneText = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036F]/g, '')
+    .toLowerCase()
+    .trim()
 const zones = computed(() => {
   const rows = query.value.department ? data.value?.neighborhoods : data.value?.departments
   return [...(rows ?? [])]
-    .filter(row => row.rent)
+    .filter(row => row.rent && zoneText(row.name).includes(zoneText(zoneSearch.value)))
     .sort((a, b) =>
       zoneSort.value === 'count'
         ? b.count - a.count || a.name.localeCompare(b.name)
@@ -428,21 +504,33 @@ const expensesLabel = (n: number, pct: number) =>
   t('knownExpenses', { n: integer(n), pct: decimal(pct) })
 const income = ref<number | string>('')
 const allocation = ref<number | string>(30)
+const extraCosts = ref<number | string>(0)
+const validAllocation = computed(
+  () =>
+    Number.isFinite(Number(allocation.value)) &&
+    Number(allocation.value) >= 1 &&
+    Number(allocation.value) <= 100
+)
+const validExtraCosts = computed(
+  () => Number.isFinite(Number(extraCosts.value)) && Number(extraCosts.value) >= 0
+)
 const validIncome = computed(
   () =>
     Number.isFinite(Number(income.value)) &&
     Number(income.value) > 0 &&
-    Number(allocation.value) >= 1 &&
-    Number(allocation.value) <= 100
+    validAllocation.value &&
+    validExtraCosts.value
 )
 watch(
   () => query.value.currency,
   () => {
     income.value = ''
+    extraCosts.value = 0
   }
 )
 async function applyFilters() {
   allZones.value = false
+  zoneSearch.value = ''
   await router.replace({
     query: {
       ...draft,
@@ -696,6 +784,29 @@ useHead(() => ({
 }
 .rental-analysis__zones {
   margin-top: 32px;
+}
+#presupuesto-alquiler {
+  scroll-margin-top: 100px;
+}
+.rental-analysis__zone-search {
+  margin-top: 16px;
+  max-width: 380px;
+}
+.rental-analysis__budget-facts {
+  margin-top: 16px !important;
+  font-size: 0.85rem;
+}
+.rental-analysis__budget-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.15);
+}
+.rental-analysis__budget-facts dd {
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 .rental-analysis__section-head {
   display: flex;
