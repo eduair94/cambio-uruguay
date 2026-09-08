@@ -31,20 +31,17 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             {{ t('relatedSearches') }}
           </VBtn>
           <nav id="rental-related-links" class="rentals-related" :aria-label="t('relatedSearches')">
-            <NuxtLink :to="localePath('/analisis-alquileres-uruguay')">{{
-              t('analysisShort')
-            }}</NuxtLink>
-            <NuxtLink :to="localePath('/barrios-alquileres-uruguay')">{{
-              globalT('nav.rentalZones')
-            }}</NuxtLink>
-            <NuxtLink :to="localePath('/oportunidades-inmobiliarias-uruguay')">{{
-              t('opportunitiesShort')
-            }}</NuxtLink>
-            <NuxtLink :to="localePath('/venta-viviendas-uruguay')">{{ t('salesShort') }}</NuxtLink>
-            <NuxtLink :to="localePath('/inmobiliarias-uruguay')">{{ t('agenciesShort') }}</NuxtLink>
-            <NuxtLink :to="localePath('/alquiler-ideal-uruguay')">{{
-              globalT('nav.rentalFit')
-            }}</NuxtLink>
+            <VBtn
+              v-for="search in relatedSearches"
+              :key="search.path"
+              :to="localePath(search.path)"
+              variant="tonal"
+              color="link"
+              class="rentals-related-action text-none"
+            >
+              <VIcon :icon="search.icon" size="20" aria-hidden="true" />
+              <span>{{ search.label }}</span>
+            </VBtn>
           </nav>
         </div>
         <div class="rentals-provenance">
@@ -662,6 +659,30 @@ const router = useRouter()
 const { smAndDown } = useDisplay()
 const mobileFiltersOpen = ref(false)
 const relatedSearchesOpen = ref(false)
+const relatedSearches = computed(() => [
+  { path: '/analisis-alquileres-uruguay', icon: 'mdi-chart-line', label: t('analysisShort') },
+  {
+    path: '/barrios-alquileres-uruguay',
+    icon: 'mdi-map-search-outline',
+    label: globalT('nav.rentalZones'),
+  },
+  {
+    path: '/oportunidades-inmobiliarias-uruguay',
+    icon: 'mdi-tag-outline',
+    label: t('opportunitiesShort'),
+  },
+  { path: '/venta-viviendas-uruguay', icon: 'mdi-home-outline', label: t('salesShort') },
+  {
+    path: '/inmobiliarias-uruguay',
+    icon: 'mdi-office-building-outline',
+    label: t('agenciesShort'),
+  },
+  {
+    path: '/alquiler-ideal-uruguay',
+    icon: 'mdi-home-search-outline',
+    label: globalT('nav.rentalFit'),
+  },
+])
 let filterActivator: HTMLElement | null = null
 let filterReturnScroll = 0
 let filtersApplied = false
@@ -1348,17 +1369,38 @@ useHead(() => ({
 .rentals-related {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 20px;
+  gap: 8px;
   margin-top: 8px;
 }
-.rentals-related a {
-  display: inline-flex;
-  align-items: center;
+.rentals-related .rentals-related-action {
+  display: flex;
+  justify-content: flex-start;
+  min-width: 0;
   min-height: 44px;
-  color: rgb(var(--v-theme-link));
-  text-underline-offset: 3px;
+  height: auto;
+  padding: 8px 12px;
   font-size: 0.875rem;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-align: left;
+  white-space: normal;
+}
+.rentals-related-action :deep(.v-btn__content) {
+  min-width: 0;
+  justify-content: flex-start;
+  gap: 8px;
+  white-space: normal;
+}
+.rentals-related-action .v-icon {
+  flex-shrink: 0;
+}
+.rentals-related-action span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.rentals-related-action:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 2px;
 }
 .rental-card__overview {
   display: flex;
@@ -1931,6 +1973,7 @@ useHead(() => ({
   .rentals-related-toggle {
     display: inline-flex;
     justify-content: space-between;
+    width: 100%;
     min-width: 0;
     max-width: 100%;
     min-height: 48px;
@@ -1943,6 +1986,7 @@ useHead(() => ({
     text-align: left;
   }
   .rentals-related-toggle :deep(.v-btn__content) {
+    flex: 1;
     justify-content: flex-start;
     white-space: normal;
   }
@@ -1954,11 +1998,13 @@ useHead(() => ({
     display: none;
   }
   .rentals-related {
-    gap: 4px 16px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
     margin-top: 8px;
   }
-  .rentals-related a {
-    font-size: 0.875rem;
+  .rentals-related .rentals-related-action {
+    min-height: 56px;
   }
   .rentals-provenance {
     margin-top: 8px;
@@ -2068,17 +2114,16 @@ useHead(() => ({
   }
 }
 @media (max-width: 599px) {
-  .rentals-related-toggle {
-    width: 100%;
-  }
-  .rentals-related {
-    flex-direction: column;
-    align-items: stretch;
-  }
   .rentals-provenance {
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
+  }
+}
+@media (max-width: 359px) {
+  /* Give full words room in two columns on the narrowest phones. */
+  .rentals-related-action .v-icon {
+    display: none;
   }
 }
 </style>
