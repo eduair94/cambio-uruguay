@@ -35,6 +35,9 @@ la familia `rentals`, dividida en archivos de 1.000 URLs. Sus entradas contienen
 canónicas españolas y las imágenes originales de la misma galería visible. No hay `lastmod`:
 volver a leer un aviso no demuestra un cambio significativo.
 
+Robots permite los archivos públicos CSS/JavaScript de `/_nuxt/`, necesarios para renderizar
+la página como la ve el usuario. Se conserva el bloqueo de las rutas administrativas.
+
 La fuente independiente `/api/__sitemap__/rentals` se actualiza con caché de una hora. Lee
 dossiers con un cursor de 64 documentos para no cargar el catálogo completo de propiedades
 en memoria; conserva sólo URLs/fotos. Verifica identidades compartidas y deduplica las URLs.
