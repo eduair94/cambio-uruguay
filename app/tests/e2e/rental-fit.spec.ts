@@ -194,9 +194,11 @@ async function select(page: Page, scope: Locator, label: string, option: string)
   await page.getByRole('option', { name: option, exact: true }).click()
 }
 async function confirmAddress(place: Locator) {
-  await place.getByTestId('rental-reference-address').locator('input').fill('Hocquart y Democracia')
-  await place.getByRole('button', { name: 'Buscar dirección', exact: true }).click()
-  await place.getByRole('button', { name: address, exact: true }).click()
+  await place
+    .getByTestId('rental-reference-address')
+    .getByRole('combobox')
+    .fill('Hocquart y Democracia')
+  await place.page().getByRole('option', { name: address, exact: true }).click()
   await expect(place.getByText('Ubicación confirmada', { exact: true })).toBeVisible()
 }
 async function assertNoOverflow(page: Page) {
@@ -354,7 +356,12 @@ for (const width of [390, 1366]) {
     expect(state.requests[0]!.people[0]!.destinations[0]).not.toHaveProperty('address')
     expect(state.geocodes).toHaveLength(3)
     expect(
-      state.geocodes.every(url => url.searchParams.size === 1 && url.searchParams.has('q'))
+      state.geocodes.every(
+        url =>
+          url.searchParams.size === 2 &&
+          url.searchParams.has('q') &&
+          url.searchParams.get('autocomplete') === '1'
+      )
     ).toBe(true)
     await expect(
       page.getByTestId('fit-result-0').getByText('Afinidad 78/100', { exact: true })

@@ -9,6 +9,8 @@ export interface RentalGeocodeItem {
 export interface RentalGeocodeResponse {
   items: RentalGeocodeItem[]
   source: 'IDE Uruguay'
+  /** Native street text to refine; deliberately contains no coordinates or selected point. */
+  refinements?: Array<{ label: string; query: string }>
 }
 export interface RentalGeocodeQuery {
   text: string
@@ -16,6 +18,9 @@ export interface RentalGeocodeQuery {
   fallback: string | null
   /** Resolve the first street's own scope before looking up an otherwise unscoped crossing. */
   unscopedIntersection?: { firstStreet: string; secondStreet: string }
+  autocomplete?: true
+  department?: string
+  intersectionStreets?: { firstStreet: string; secondStreet: string }
 }
 
 export const RENTAL_GEOCODE_CANDIDATE_LIMIT = 5
@@ -26,12 +31,13 @@ const fold = (value: string) =>
     .replace(/[\u0300-\u036F]/g, '')
     .toLowerCase()
 
-/** Explicit submissions only. Both parameters are text, never arrays or geocoder URL inputs. */
+/** Queries remain plain text; autocomplete is an explicit mode, never a geocoder URL input. */
 export function normalizeRentalGeocodeQuery(
   input: Record<string, unknown>
 ): RentalGeocodeQuery | null {
   if (typeof input.q !== 'string' || input.q.length > 180) return null
   if (input.department !== undefined && typeof input.department !== 'string') return null
+  if (input.autocomplete !== undefined && input.autocomplete !== '1') return null
   const address = input.q.normalize('NFC').trim().replace(/\s+/g, ' ')
   const department = String(input.department ?? '')
     .normalize('NFC')
@@ -54,6 +60,9 @@ export function normalizeRentalGeocodeQuery(
   const segments = protectedStreet.split(/\s+y\s+/i)
   const natural =
     !explicit && segments.length === 2 && segments.every(part => part.trim().length >= 2)
+  const incompleteCrossing =
+    input.autocomplete === '1' &&
+    (/\s+y(?:\s+|$)/i.test(protectedStreet) || /\s+esq(?:uina)?\.?(?:\s+|$)/i.test(street!))
   const fallback = natural
     ? [segments.map(part => part.replace(/\0/g, ' y ')).join(' esquina '), ...location].join(',') +
       suffix
@@ -67,8 +76,18 @@ export function normalizeRentalGeocodeQuery(
     crossing.every(part => part.trim().length >= 2)
   return {
     text,
-    intersection: explicit || natural,
+    intersection: explicit || natural || incompleteCrossing,
     fallback,
+    ...(input.autocomplete === '1' ? { autocomplete: true as const } : {}),
+    ...(input.autocomplete === '1' && department ? { department } : {}),
+    ...(input.autocomplete === '1' && (explicit || natural) && crossing.length === 2
+      ? {
+          intersectionStreets: {
+            firstStreet: crossing[0]!.trim(),
+            secondStreet: crossing[1]!.trim(),
+          },
+        }
+      : {}),
     ...(unscoped
       ? {
           unscopedIntersection: {
@@ -88,6 +107,7 @@ interface RentalGeocodeScope {
   firstStreet: string
   secondStreet: string
   suggested?: true
+  autocomplete?: true
 }
 
 const name = (value: string) => fold(value.trim().replace(/\s+/g, ' '))
@@ -112,6 +132,93 @@ const scopeText = (value: unknown): value is string =>
   value.trim().length >= 2 &&
   value.length <= 100 &&
   !/[\p{Cc}\p{Cf}<>,]/u.test(value)
+
+function completesStreet(entered: string, native: string): boolean {
+  return (entered.match(/\p{L}/gu)?.length ?? 0) >= 4 && native.startsWith(entered)
+}
+
+function matchesQueryScope(row: Record<string, unknown>, query: RentalGeocodeQuery): boolean {
+  const parts = query.text.split(',').slice(1).map(name).filter(Boolean)
+  if (!parts.length) return true
+  if (!scopeText(row.localidad) || !scopeText(row.departamento)) return false
+  if (query.department && name(row.departamento) !== name(query.department)) return false
+  return parts.length === 1
+    ? [name(row.localidad), name(row.departamento)].includes(parts[0]!)
+    : parts.length === 2 && name(row.localidad) === parts[0] && name(row.departamento) === parts[1]
+}
+
+/** A street option only refines the entered address. Street geometry/centroids never leave here. */
+export function rentalGeocodeRefinements(
+  raw: unknown,
+  query: RentalGeocodeQuery
+): NonNullable<RentalGeocodeResponse['refinements']> {
+  if (!query.autocomplete || query.intersection || !Array.isArray(raw)) return []
+  const entered = name(query.text.split(',')[0]!)
+  const results = new Map<string, { label: string; query: string }>()
+  for (const value of raw.slice(0, 50)) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) continue
+    const row = value as Record<string, unknown>
+    if (
+      row.type !== 'CALLE' ||
+      row.state !== 1 ||
+      row.stateMsg !== '' ||
+      !nativeId(row.idCalle) ||
+      !nativeId(row.idLocalidad) ||
+      !nativeId(row.idDepartamento) ||
+      !scopeText(row.nomVia) ||
+      !scopeText(row.localidad) ||
+      !scopeText(row.departamento) ||
+      !matchesQueryScope(row, query)
+    )
+      continue
+    const native = name(row.nomVia)
+    if (
+      entered !== native &&
+      !completesStreet(entered, native) &&
+      !hasSingleLetterTransposition(entered, native)
+    )
+      continue
+    const text = `${row.nomVia.trim()}, ${row.localidad.trim()}, ${row.departamento.trim()}`
+    if (text.length > 180) continue
+    results.set(name(text), { label: text, query: text })
+    if (results.size === 5) break
+  }
+  return [...results.values()]
+}
+
+/** Autocomplete may complete the last street name, but every returned point must be a native crossing. */
+function autocompleteCrossing(
+  row: Record<string, unknown>,
+  query: RentalGeocodeQuery
+): { suggested: boolean } | null {
+  const streets = query.intersectionStreets
+  if (
+    !streets ||
+    row.type !== 'ESQUINA' ||
+    !nativeId(row.idCalle) ||
+    !nativeId(row.idCalleEsq) ||
+    row.idCalle === row.idCalleEsq ||
+    !nativeId(row.idLocalidad) ||
+    !nativeId(row.idDepartamento) ||
+    typeof row.address !== 'string' ||
+    !matchesQueryScope(row, query)
+  )
+    return null
+  const parts = row.address
+    .split(',')[0]!
+    .split(/\s+esq(?:uina)?\.?\s+/i)
+    .map(name)
+  if (parts.length !== 2) return null
+  const first = name(streets.firstStreet),
+    second = name(streets.secondStreet)
+  for (const order of [parts, [...parts].reverse()]) {
+    const matchesFirst = order[0] === first || hasSingleLetterTransposition(first, order[0]!)
+    const matchesSecond = order[1] === second || completesStreet(second, order[1]!)
+    if (matchesFirst && matchesSecond)
+      return { suggested: order[0] !== first || order[1] !== second }
+  }
+  return null
+}
 
 /** A truncated or ambiguous street search cannot choose a city for the user. No point is used. */
 export function rentalGeocodeUniqueScope(
@@ -161,6 +268,7 @@ export function rentalGeocodeUniqueScope(
       departmentId: row.idDepartamento,
       firstStreet: row.nomVia.trim(),
       secondStreet: streets.secondStreet,
+      ...(query.autocomplete ? { autocomplete: true as const } : {}),
       ...(suggested ? { suggested: true as const } : {}),
     })
   }
@@ -190,7 +298,9 @@ export function rentalGeocodeMatchesScope(value: unknown, scope: RentalGeocodeSc
   return (
     parts.length === 2 &&
     parts[firstIndex] === name(scope.firstStreet) &&
-    parts[1 - firstIndex] === name(scope.secondStreet)
+    (parts[1 - firstIndex] === name(scope.secondStreet) ||
+      (scope.autocomplete === true &&
+        completesStreet(name(scope.secondStreet), parts[1 - firstIndex]!)))
   )
 }
 
@@ -205,6 +315,9 @@ export function rentalGeocodeItems(raw: unknown, query: RentalGeocodeQuery): Ren
     if (row.state !== 1 || row.stateMsg !== '') continue
     const allowed = query.intersection ? ['ESQUINA'] : ['ESQUINA', 'CALLEyPORTAL', 'POI']
     if (!allowed.includes(String(row.type))) continue
+    const completion =
+      query.autocomplete && query.intersection ? autocompleteCrossing(row, query) : null
+    if (query.autocomplete && query.intersection && !completion) continue
     if (typeof row.lat !== 'number' || typeof row.lng !== 'number') continue
     const point = parseRentalReferencePoint({ refLat: row.lat, refLng: row.lng })
     if (!point || typeof row.address !== 'string') continue
@@ -213,7 +326,7 @@ export function rentalGeocodeItems(raw: unknown, query: RentalGeocodeQuery): Ren
     const key = `${point.lat},${point.lng}`
     if (seen.has(key)) continue
     seen.add(key)
-    items.push({ label, ...point })
+    items.push({ label, ...point, ...(completion?.suggested ? { suggested: true as const } : {}) })
     if (items.length === 5) break
   }
   return items

@@ -2,8 +2,8 @@
 
 Implemented 2026-09-07 for `/alquileres-uruguay`.
 
-The user can choose a point in the map or explicitly submit an address/intersection, inspect the
-official candidate, and confirm the point. Choosing a reference is a presentation preference: it
+The user can choose a point in the map or type an address/intersection, inspect an official
+suggestion, and confirm the point. Choosing a reference is a presentation preference: it
 does not impose a radius, change active property/offer filters, exclude unlocated adverts, or change
 the search count, coverage, facets and base-rent median.
 
@@ -80,8 +80,8 @@ the two-request budget instead resolves the first street and then its actual cro
 
 This supports entering exactly `Hocquart y Democracia` without first filtering rentals to
 Montevideo. There is no default city: ambiguous names still need a locality or a chosen map point.
-A street/locality centroid is never substituted for an unresolved crossing. Every suggestion
-requires user selection and map confirmation; there is no geocoder request on each keystroke.
+A street/locality centroid is never substituted for an unresolved crossing. Every point suggestion
+requires user selection and map confirmation.
 
 Native spelling suggestions use the same two requests. On 2026-09-07, the exact user input
 `candidates?q=Hoqcuart&limit=5` returned the unique native street `HOCQUART`, ID 8294, locality
@@ -94,28 +94,76 @@ Any matching row with unresolved state/scope vetoes the suggestion. The second r
 prove both street names, their native IDs and an exact intersection in that same scope. Only then
 does the result carry `suggested: true`; exact searches omit this field. The UI identifies the
 suggestion and requires the existing selection and map confirmation. Property identity matching,
-rental coordinates and filter criteria are unaffected. No additional endpoint or request is used.
+rental coordinates and filter criteria are unaffected. No additional endpoint or semantic lookup is used.
+
+### Autocomplete and street refinements (2026-09-08)
+
+The shared address field used by rental filters and the household planner searches after a
+600 ms pause, with at least four characters. Explicit submission searches immediately. Aborted or
+outdated client responses cannot replace the current suggestions or select a point. Editing a
+previous selection invalidates its draft point; dismissing the list retains the entered text.
+
+The field sends `autocomplete=1`. This opt-in mode retains `items` and can additionally return
+`refinements: [{ label, query }]`. A refinement is a native `CALLE` name plus its explicit locality
+and department, for example `HOCQUART, MONTEVIDEO, MONTEVIDEO`. It contains no coordinates or
+native IDs. It requires successful state and complete native street/locality/department IDs;
+the entered name must match, prefix the native name or satisfy the limited transposition rule.
+Up to five native alternatives let the user choose a locality rather than silently assuming one.
+Choosing a refinement fills the text and places the caret before the locality suffix so the user
+can add a number or crossing. It never selects a map point. Street centroid coordinates remain
+ineligible even when the source includes them.
+
+Autocomplete can complete the final street in a crossing when the entered prefix has at least
+four letters and preserves the exact native prefix, including numbers. Thus `18 de Ju` can match
+`18 de Julio`, but `19 de Ju` cannot. Incomplete `y`/`esquina` entries cannot fall through to an
+unrelated point. Both street names and native IDs must support the returned `ESQUINA`, with the
+known first-street ID and unique scope retained in unscoped searches. Explicit locality/department
+constraints are respected. Completions carry `suggested: true` and still require confirmation.
+Legacy requests without `autocomplete=1` retain the exact-name behavior and response shape.
+
+Live source checks on 2026-09-08 returned the native Hocquart street for `Hocq`, and the previously
+verified Hocquart/Democracia intersection for scoped `Demo` and `Democ` prefixes. These measured
+responses are fixtures, not hardcoded street rules or coordinates.
 
 Upstream requests use one fixed HTTPS host/path, encoded query parameters, no redirects and an
-8-second timeout per request (at most two requests, no automatic retry). This allows occasional
-provider latency beyond the original 4-second deadline; it does not treat all upstream failures
-as timeouts. A transport regression accepts a valid response at six seconds and aborts a hung request
-at eight seconds. Responses are bounded at 128 KiB. No API key, browser identity,
+8-second deadline per semantic lookup. One additional GET attempt is allowed only for explicit
+transient network codes (`ECONNRESET`, `EAI_AGAIN`, `ETIMEDOUT`, `UND_ERR_SOCKET` or
+`UND_ERR_CONNECT_TIMEOUT`). Both attempts share the original abort signal and deadline; two
+semantic lookups therefore use at most four physical GETs, normally one or two. HTTP failures,
+redirects, invalid/oversized responses, certificate failures, unknown codes and mixed transient/
+permanent aggregate failures are not retried. Partial response buffers are discarded before a
+retry. This is bounded recovery, not evidence that a particular connection fault caused an incident.
+A transport regression accepts a valid response at six seconds and aborts a hung request at eight
+seconds. Responses are bounded at 128 KiB per attempt. No API key, browser identity,
 private property location, login or third-party account is involved.
 
 Process-local safeguards: identical pending searches coalesce; at most four different searches run
-concurrently; at most 30 new searches per minute and 10 requests per client per minute. Client
+concurrently; at most 60 new searches per minute and 60 requests per client per minute. Client
 rate records expire after one minute and are capped at 2,048. The response cache holds at most 128
-queries, for 15 minutes on success or one minute on a valid empty answer. These are per-instance
+queries, for 15 minutes on point/refinement success or one minute on a valid empty answer. Legacy
+and autocomplete queries use separate cache keys, including explicit department constraints.
+First-street lookups also coalesce across changing final-street prefixes and cache at most 128
+bounded native metadata results, using the same positive/empty durations. That cache retains no
+point geometry or arbitrary source fields, preserves capped/invalid rows so ambiguity checks still
+fail safely, and does not cache transport errors. These are per-instance
 bounds, not a claimed distributed rate limiter. Address responses use `no-store` at the HTTP layer
 and the app does not log submitted address text.
 
 Invalid input returns 400, capacity/rate limits 429 with a retry delay, and upstream failures 503.
 A timeout or invalid payload never appears as a successful empty address search.
 
-Failed lookups emit only an allowlisted stage, failure category, elapsed milliseconds and an
-upstream HTTP status when relevant. Submitted text, request URLs, client identifiers, raw error
-messages and stacks are excluded. A failed diagnostic reporter cannot change the public response.
+Failed lookups emit only an allowlisted stage, failure category, elapsed milliseconds, an
+upstream HTTP status when relevant and at most four allowlisted network codes. Codes can be read
+from bounded nested causes/aggregate errors, but those objects are never retained or reported.
+Submitted text, request URLs, client identifiers, raw error messages and stacks are excluded. A
+failed diagnostic reporter cannot change the public response.
+
+Production browser checks at 01:01–01:02 UTC on 2026-09-08 reproduced two 503s despite earlier
+successful public and isolated official requests. The corresponding worker recorded network
+failures in the street/query stages at 822/1,743 ms, without a worker restart or an eight-second
+timeout. Historical diagnostics had no network codes, so they cannot establish socket, DNS or TLS
+causality. New recovery/diagnostics must be verified through the public worker; isolated successes
+alone do not prove that this intermittent failure has disappeared.
 
 ## Validation
 
@@ -127,6 +175,9 @@ global sorting, pagination and public projection. Mongo fixtures use read-only `
 `rentalGeocode.test.ts` and `rentalGeocodeApi.test.ts` cover the measured Hocquart/Democracia
 response, conservative intersection parsing, invalid/approximate candidates, cache/coalescing,
 bounded concurrency, rate windows and distinct error states without contacting IDE in CI.
+`rentalGeocodeAutocomplete.test.ts` covers street refinements, explicit scopes, incomplete crossings,
+numbered prefixes and first-street coalescing. `rentalGeocodeRetry.test.ts` and the native deadline
+transport/diagnostic suites cover recovery, no-retry cases, shared budgets and private-field exclusion.
 
 Public mobile verification on 2026-09-07 (390 × 844, fresh browser) used the exact reported
 `Hoqcuart y Democracia` query. The official suggestion required explicit selection and confirmation;

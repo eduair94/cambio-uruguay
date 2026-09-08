@@ -16,6 +16,13 @@ export const rentalMessages = {
     referenceAddress: 'Dirección o esquina',
     referenceAddressExample: 'Hocquart y Democracia, Montevideo',
     findAddress: 'Buscar dirección',
+    clearAddress: 'Limpiar dirección',
+    addressAutocomplete:
+      'Escribí una calle y número o esquina. Elegí una sugerencia para ubicarla.',
+    addressCompleteStreet: 'Agregá un número o una esquina',
+    addressSuggestedResult: 'Sugerencia: revisá la dirección antes de elegirla',
+    addressSearching: 'Buscando sugerencias…',
+    addressResultCount: '{n} sugerencias. Usá las flechas y Enter, o tocá una opción.',
     addressResults: 'Direcciones encontradas',
     addressSuggestion: '¿Buscabas esta dirección? Revisá la sugerencia antes de elegirla.',
     addressNotFound:
@@ -244,6 +251,13 @@ export const rentalMessages = {
     referenceAddress: 'Address or intersection',
     referenceAddressExample: 'Hocquart y Democracia, Montevideo',
     findAddress: 'Find address',
+    clearAddress: 'Clear address',
+    addressAutocomplete:
+      'Type a street and number or intersection. Choose a suggestion to locate it.',
+    addressCompleteStreet: 'Add a number or an intersecting street',
+    addressSuggestedResult: 'Suggestion: check the address before selecting it',
+    addressSearching: 'Finding suggestions…',
+    addressResultCount: '{n} suggestions. Use the arrow keys and Enter, or tap an option.',
     addressResults: 'Matching addresses',
     addressSuggestion: 'Did you mean this address? Review the suggestion before selecting it.',
     addressNotFound: 'Address not found. Add the town or choose a point on the map.',
@@ -467,6 +481,13 @@ export const rentalMessages = {
     referenceAddress: 'Endereço ou cruzamento',
     referenceAddressExample: 'Hocquart y Democracia, Montevideo',
     findAddress: 'Buscar endereço',
+    clearAddress: 'Limpar endereço',
+    addressAutocomplete:
+      'Digite a rua e o número ou cruzamento. Escolha uma sugestão para localizá-la.',
+    addressCompleteStreet: 'Acrescente um número ou uma rua transversal',
+    addressSuggestedResult: 'Sugestão: confira o endereço antes de selecionar',
+    addressSearching: 'Buscando sugestões…',
+    addressResultCount: '{n} sugestões. Use as setas e Enter ou toque em uma opção.',
     addressResults: 'Endereços encontrados',
     addressSuggestion: 'Você quis dizer este endereço? Confira a sugestão antes de selecionar.',
     addressNotFound:

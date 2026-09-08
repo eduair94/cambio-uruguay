@@ -319,17 +319,17 @@ describe('bounded official address search', () => {
     let clock = 1000
     const fetch = vi.fn().mockResolvedValue([])
     const lookup = createRentalGeocoder(fetch, () => clock)
-    for (let i = 0; i < 10; i++) await lookup({ q: `Dirección ${i}` }, 'same-client')
-    await expect(lookup({ q: 'Dirección 11' }, 'same-client')).rejects.toMatchObject({
+    for (let i = 0; i < 60; i++) await lookup({ q: 'Dirección 0' }, 'same-client')
+    await expect(lookup({ q: 'Dirección 1' }, 'same-client')).rejects.toMatchObject({
       statusCode: 429,
     })
-    for (let i = 10; i < 30; i++) await lookup({ q: `Dirección ${i}` }, `client-${i}`)
-    await expect(lookup({ q: 'Dirección 31' }, 'new-client')).rejects.toMatchObject({
+    for (let i = 1; i < 60; i++) await lookup({ q: `Dirección ${i}` }, `client-${i}`)
+    await expect(lookup({ q: 'Dirección 61' }, 'new-client')).rejects.toMatchObject({
       statusCode: 429,
     })
-    expect(fetch).toHaveBeenCalledTimes(30)
+    expect(fetch).toHaveBeenCalledTimes(60)
     clock += 60_001
-    await expect(lookup({ q: 'Dirección 31' }, 'same-client')).resolves.toEqual({
+    await expect(lookup({ q: 'Dirección 61' }, 'same-client')).resolves.toEqual({
       items: [],
       source: 'IDE Uruguay',
     })

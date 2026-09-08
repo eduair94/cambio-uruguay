@@ -442,18 +442,18 @@ test('390px mobile: a street intersection stays independent from the properties 
   const state = await setup(page, 'department=Canelones&type=vivienda&pets=1')
   await page.locator('.rentals-sort').getByRole('combobox').click()
   await page.getByRole('option', { name: 'Más cerca', exact: true }).click()
-  const address = page.getByTestId('rental-reference-address').getByRole('textbox')
+  const address = page.getByTestId('rental-reference-address').getByRole('combobox')
   await expect(address).toBeVisible()
   await address.fill('Hocquart y Democracia')
-  // Typing never starts a lookup or changes the committed search.
+  // Lookup is debounced; typing never changes the committed search.
   expect(state.geocodeReads).toHaveLength(0)
   expect(new URL(page.url()).searchParams.get('refLat')).toBeNull()
-  await page.getByRole('button', { name: 'Buscar dirección', exact: true }).click()
   await expect.poll(() => state.geocodeReads.length).toBe(1)
   expect(state.geocodeReads[0].searchParams.get('q')).toBe('Hocquart y Democracia')
+  expect(state.geocodeReads[0].searchParams.get('autocomplete')).toBe('1')
   expect(state.geocodeReads[0].searchParams.get('department')).toBeNull()
   await page
-    .getByRole('button', { name: 'HOCQUART ESQ DEMOCRACIA, MONTEVIDEO, MONTEVIDEO', exact: true })
+    .getByRole('option', { name: 'HOCQUART ESQ DEMOCRACIA, MONTEVIDEO, MONTEVIDEO', exact: true })
     .click()
   const apply = page.getByTestId('rental-point-apply')
   await expect(apply).toBeEnabled()
@@ -464,11 +464,10 @@ test('390px mobile: a street intersection stays independent from the properties 
   expect(state.geocodeReads).toHaveLength(1)
   await address.fill('Hocquart y Democracia')
   await expect(apply).toBeDisabled()
-  await page.getByRole('button', { name: 'Buscar dirección', exact: true }).click()
   await expect.poll(() => state.geocodeReads.length).toBe(2)
   await page.screenshot({ path: resolve(artifactRoot, '.sdd-rentals-address-390.png') })
   await page
-    .getByRole('button', { name: 'HOCQUART ESQ DEMOCRACIA, MONTEVIDEO, MONTEVIDEO', exact: true })
+    .getByRole('option', { name: 'HOCQUART ESQ DEMOCRACIA, MONTEVIDEO, MONTEVIDEO', exact: true })
     .click()
   await expect(apply).toBeEnabled()
   await apply.click()
@@ -549,11 +548,10 @@ test('390px mobile: late map results cannot move the camera away from the chosen
     ).toBeEnabled()
     await page
       .getByTestId('rental-reference-address')
-      .getByRole('textbox')
+      .getByRole('combobox')
       .fill('Hocquart y Democracia')
-    await page.getByRole('button', { name: 'Buscar dirección', exact: true }).click()
     await page
-      .getByRole('button', { name: 'HOCQUART ESQ DEMOCRACIA, MONTEVIDEO, MONTEVIDEO', exact: true })
+      .getByRole('option', { name: 'HOCQUART ESQ DEMOCRACIA, MONTEVIDEO, MONTEVIDEO', exact: true })
       .click()
     const map = page.locator('.rentals-map__frame .leaflet-container')
     const reference = map.locator('.reference-pin')
@@ -614,11 +612,10 @@ test('390px mobile: an address chosen before Leaflet loads is centered when the 
     await expect(center).toBeDisabled()
     await page
       .getByTestId('rental-reference-address')
-      .getByRole('textbox')
+      .getByRole('combobox')
       .fill('Hocquart y Democracia')
-    await page.getByRole('button', { name: 'Buscar dirección', exact: true }).click()
     await page
-      .getByRole('button', { name: 'HOCQUART ESQ DEMOCRACIA, MONTEVIDEO, MONTEVIDEO', exact: true })
+      .getByRole('option', { name: 'HOCQUART ESQ DEMOCRACIA, MONTEVIDEO, MONTEVIDEO', exact: true })
       .click()
     await expect(page.getByTestId('rental-point-apply')).toBeEnabled()
     await expect(center).toBeDisabled()
