@@ -4,6 +4,8 @@ import { aggregateCrimeCsv, crimeCsvRows, crimeReportingPeriod } from '../../cla
 import { loadOfficialPropertyZoneGeometry, officialCrimeNeighborhoodCodes } from '../../classes/propertyzones/sources/geometry';
 import { CRIME_CSV_URL, CRIME_METADATA_URL, CRIME_RESOURCE_ID, loadPropertyZoneSources } from '../../classes/propertyzones/sources';
 
+// Keep fixtures compatible with the backend's TypeScript 4.9 DOM declarations.
+const jsonResponse = (value: unknown) => new Response(JSON.stringify(value), { headers: { 'content-type': 'application/json' } });
 const NOW = new Date('2026-09-08T12:00:00Z');
 const PERIOD = { periodFrom: '2025-07-01', periodTo: '2026-06-30' };
 const HEADER = 'ID_EVENTO;DELITO;VICT_RAP;VICT_HUR;TENTATIVA;FECHA;AÑO;MES;SEMESTRE;TRIMESTRE;DIA_SEMANA;HORA;DEPTO;JURISDICCION;BARRIO_MONTEVIDEO';
@@ -33,7 +35,7 @@ const metadata = (size: number, override: Record<string, unknown> = {}) => ({
 });
 function fixtureFetcher(input = csv(1200), override: Record<string, unknown> = {}) {
   return vi.fn(async (url: string | URL | Request) => {
-    if (url === CRIME_METADATA_URL) return Response.json(metadata(Buffer.byteLength(input), override));
+    if (url === CRIME_METADATA_URL) return jsonResponse(metadata(Buffer.byteLength(input), override));
     if (url === CRIME_CSV_URL) return new Response(input, { headers: { 'content-length': String(Buffer.byteLength(input)) } });
     throw new Error('Unexpected URL');
   });
@@ -147,7 +149,7 @@ describe('offline metadata-versioned source loader', () => {
   it('reloads after a resource modification and never returns old counts when that reload fails', async () => {
     const first = await loadPropertyZoneSources({ now: NOW, fetchImpl: fixtureFetcher() as typeof fetch });
     const fail = vi.fn(async (url: string | URL | Request) => url === CRIME_METADATA_URL
-      ? Response.json(metadata(Buffer.byteLength(csv(1200)), { last_modified: '2026-08-01T00:00:00' })) : new Response('', { status: 503 }));
+      ? jsonResponse(metadata(Buffer.byteLength(csv(1200)), { last_modified: '2026-08-01T00:00:00' })) : new Response('', { status: 503 }));
     await expect(loadPropertyZoneSources({ now: NOW, previous: first, fetchImpl: fail as typeof fetch })).rejects.toThrow(/unavailable/);
     expect(fail).toHaveBeenCalledTimes(2);
   });
@@ -179,7 +181,7 @@ describe('offline metadata-versioned source loader', () => {
   it('refuses a truncated download even if all twelve months happen to precede the cut', async () => {
     const input = csv(1200);
     const fetcher = vi.fn(async (url: string | URL | Request) => url === CRIME_METADATA_URL
-      ? Response.json(metadata(Buffer.byteLength(input) + 100)) : new Response(input));
+      ? jsonResponse(metadata(Buffer.byteLength(input) + 100)) : new Response(input));
     await expect(loadPropertyZoneSources({ now: NOW, fetchImpl: fetcher as typeof fetch })).rejects.toThrow(/metadata size/);
   });
 });
