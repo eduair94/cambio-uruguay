@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { applyCostOverrides, baselineCosts } from '../../server/utils/costsMerge'
-import { COST_MODEL, SALARY_REFERENCE } from '../../utils/costOfLiving'
+import { COST_MODEL, INE_PER_CAPITA_LINES, SALARY_REFERENCE } from '../../utils/costOfLiving'
 
 // The guardrail behaviour the page depends on: no overrides -> pure baseline; a valid boleto or
 // rent figure is applied with the SAME arithmetic that used to live in costOfLivingLive.ts
@@ -95,5 +95,49 @@ describe('baselineCosts', () => {
     const b = baselineCosts()
     a.model.rentMontevideo.monoambiente = 999999
     expect(b.model.rentMontevideo.monoambiente).toBe(COST_MODEL.rentMontevideo.monoambiente)
+  })
+})
+
+// La comida: el override que reexpresa el ancla del INE a precios de hoy.
+//
+// No reemplaza la cifra por una medida —el SIPC no puede dar el costo de la
+// comida, su catalogo no tiene leche ni pan fresco ni legumbres— sino que deja
+// de servir el nivel de precios de diciembre como presupuesto de hoy.
+describe('applyCostOverrides: comida reexpresada', () => {
+  const live = (figures: Record<string, unknown>, updated: string[]) =>
+    applyCostOverrides({
+      figures: figures as never,
+      asOf: '2026-09-08T00:00:00.000Z',
+      updated,
+      sources: [],
+    })
+
+  it('sin inflacion, foodPerAdult queda como el baseline', () => {
+    const out = live({ boletoStm: 52 }, ['boletoStm'])
+    expect(out.model.foodPerAdult).toBe(COST_MODEL.foodPerAdult)
+    expect(out.updated).not.toContain('foodPerAdult')
+    expect(out.food).toBeDefined()
+    expect(out.food!.adjusted).toBe(false)
+  })
+
+  it('con inflacion, sube el foodPerAdult y lo declara actualizado', () => {
+    const out = live({ inflacionAnual: 5.5 }, ['inflacionAnual'])
+    expect(out.model.foodPerAdult).toBeGreaterThan(COST_MODEL.foodPerAdult)
+    expect(out.updated).toContain('foodPerAdult')
+    expect(out.food!.adjusted).toBe(true)
+    expect(out.food!.note).toMatch(/reexpresado/i)
+  })
+
+  it('una inflacion imposible no toca la comida', () => {
+    const out = live({ inflacionAnual: 900 }, ['inflacionAnual'])
+    expect(out.model.foodPerAdult).toBe(COST_MODEL.foodPerAdult)
+    expect(out.food!.adjusted).toBe(false)
+  })
+
+  it('el resultado nunca queda por debajo de la linea de indigencia del INE', () => {
+    // foodPerAdult es ~2x la CBA per capita; si un ajuste lo dejara debajo de la
+    // CBA publicada, el ajuste esta mal, no la CBA.
+    const out = live({ inflacionAnual: 5.5 }, ['inflacionAnual'])
+    expect(out.model.foodPerAdult).toBeGreaterThan(INE_PER_CAPITA_LINES.montevideo.cba)
   })
 })

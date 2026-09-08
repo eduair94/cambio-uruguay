@@ -385,6 +385,49 @@
         </p>
       </div>
 
+      <!-- ── La canasta de góndola MEDIDA. No reemplaza la línea de comida de
+           arriba: la hace auditable. El catálogo oficial de precios no tiene
+           leche fluida, ni pan fresco, ni legumbres, así que de ahí no sale un
+           presupuesto alimentario — sale el precio real y verificable de una
+           lista concreta. ── -->
+      <div v-if="measured" class="cv-basket mt-4 pa-4">
+        <div class="d-flex align-center ga-2 mb-1">
+          <VIcon size="18" color="primary">mdi-cart-outline</VIcon>
+          <span class="text-subtitle-2 font-weight-bold">
+            Lo que cuestan hoy {{ measured.foodItems }} alimentos concretos
+          </span>
+        </div>
+        <p class="text-body-2 mb-3">
+          Precios declarados al SIPC, el sistema oficial del Ministerio de Economía, leídos el
+          {{ measured.day }} en {{ measured.stores }} bocas del país. A precios medianos, esa lista
+          de alimentos sale <strong>{{ formatUYU(measured.food, 0) }}</strong> por mes para dos
+          personas, y la limpieza y la higiene otros {{ formatUYU(measured.nonFood, 0) }}.
+        </p>
+        <VAlert
+          type="info"
+          variant="tonal"
+          density="compact"
+          icon="mdi-information-outline"
+          class="mb-3"
+        >
+          <span class="text-body-2">
+            <strong>Esto no es tu gasto en comida</strong>, y la diferencia con la línea de arriba
+            no es un error: son {{ measured.foodItems }} artículos elegidos para poder comparar
+            supermercados entre sí, con cantidades de índice y no de consumo. La fuente oficial no
+            publica precios de leche, pan fresco ni legumbres. Está acá para que puedas verificar
+            precios uno por uno, no para presupuestar.
+          </span>
+        </VAlert>
+        <VBtn
+          variant="outlined"
+          size="small"
+          prepend-icon="mdi-magnify"
+          :to="localePath('/precios-de-supermercado-uruguay')"
+        >
+          Ver los precios producto por producto
+        </VBtn>
+      </div>
+
       <!-- Ingreso de los hogares por región: para dimensionar el resultado -->
       <div class="cv-income mt-4 pa-4">
         <div class="text-subtitle-2 font-weight-bold mb-2">
@@ -617,6 +660,30 @@ interface LiveCostsResp {
   salary: { minimoNacional: number; medianaLiquidoAprox: number }
   asOf: string | null
   updated: string[]
+  /** Qué pasó con la línea de comida: publicada, reexpresada, y por qué. */
+  food?: {
+    published: number
+    restated: number
+    monthsElapsed: number
+    annualInflationPct: number | null
+    adjusted: boolean
+    note: string
+  }
+  /** La canasta de góndola MEDIDA. Acompaña la estimación, no la reemplaza. */
+  basket?: {
+    day: string | null
+    basketItems: number | null
+    qualifiedStores: number | null
+    nationalCost?: {
+      food: number
+      nonFood: number
+      total: number
+      itemsPriced: number
+      foodItems: number
+      nonFoodItems: number
+      items: number
+    } | null
+  } | null
 }
 const { data: live } = await useFetch<LiveCostsResp>('/api/cost-of-living', {
   key: 'cost-of-living',
@@ -642,6 +709,27 @@ const model = computed(() => {
   }
 })
 const salaryRef = computed(() => live.value?.salary ?? SALARY_REFERENCE)
+
+/**
+ * La canasta de góndola medida, o null cuando no hay lectura.
+ *
+ * Se pide `nationalCost` explícitamente: un documento guardado antes de que ese
+ * campo existiera no debe renderizar un bloque con ceros, porque un cero acá se
+ * lee como "la comida sale $0" y no como "todavía no medimos".
+ */
+const measured = computed(() => {
+  const b = live.value?.basket
+  const cost = b?.nationalCost
+  if (!b?.day || !cost || !cost.itemsPriced || cost.food <= 0) return null
+  return {
+    day: b.day,
+    stores: b.qualifiedStores ?? 0,
+    food: cost.food,
+    nonFood: cost.nonFood,
+    foodItems: cost.foodItems,
+    items: cost.items,
+  }
+})
 const updatedLabel = computed(() => {
   const iso = live.value?.asOf
   if (!iso) return ''

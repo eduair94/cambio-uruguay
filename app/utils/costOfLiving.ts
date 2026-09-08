@@ -240,6 +240,117 @@ export const INE_PER_CAPITA_LINES: Readonly<Record<City, PerCapitaLines>> = Obje
 export const INE_LINES_PERIOD = 'diciembre de 2025'
 
 /**
+ * El mismo mes que INE_LINES_PERIOD, en ISO, para poder calcular cuánto tiempo
+ * pasó. La prosa sola no sirve: el problema de estas cifras no es que estén mal,
+ * es que un nivel de precios de diciembre se sirve como presupuesto de
+ * septiembre y nada en el código lo sabe.
+ */
+export const INE_LINES_ANCHOR = '2025-12-01'
+
+/**
+ * Cuántas CBA per cápita gasta comiendo un adulto real.
+ *
+ * La CBA es la línea de INDIGENCIA —el piso alimentario, no lo que come una
+ * persona— y `COST_MODEL.foodPerAdult` siempre fue ~2× ella. Acá esa relación
+ * se hace explícita para poder reexpresar la cifra a precios de hoy; el valor
+ * horneado de COST_MODEL no cambia, porque el ajuste se aplica en la capa de
+ * cifras vivas (app/server/utils/costsMerge.ts), igual que el boleto.
+ */
+export const FOOD_CBA_MULTIPLE = 2
+
+/**
+ * Tope de indexación, en meses. Más allá de esto NO se ajusta.
+ *
+ * Capitalizar tres años de inflación sobre una canasta que nadie actualizó
+ * produce un número que parece fresco y esconde el problema real, que es la
+ * canasta vieja. Es la misma lección que dejó la BPC de 2024 publicada durante
+ * meses: el guardarraíl medía plausibilidad, no actualidad.
+ */
+export const RESTATE_MAX_MONTHS = 36
+
+/** Meses calendario entre dos ISO `YYYY-MM-DD`. Nunca negativo; NaN si no se leen. */
+export function monthsSince(anchor: string, today: string): number {
+  const a = new Date(`${anchor}T00:00:00Z`)
+  const b = new Date(`${today}T00:00:00Z`)
+  if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) return Number.NaN
+  const months =
+    (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth())
+  return Math.max(0, months)
+}
+
+export interface RestatedFigure {
+  /** El valor publicado, intacto. */
+  published: number
+  /** El valor a precios de la fecha pedida, o el publicado si no se pudo ajustar. */
+  restated: number
+  monthsElapsed: number
+  annualInflationPct: number | null
+  adjusted: boolean
+  /** Por qué se ajustó, o por qué no. Va a la página. */
+  note: string
+}
+
+/** Banda de una inflación interanual creíble para Uruguay, en puntos porcentuales. */
+const PLAUSIBLE_INFLATION: readonly [number, number] = [0.5, 200]
+
+/**
+ * Reexpresa una cifra publicada en `anchor` a precios de `today`, usando la
+ * inflación interanual.
+ *
+ * SUPUESTO DECLARADO, y hay que decirlo en la página: la inflación general no es
+ * la inflación de los alimentos. Reexpresar con el índice general es una
+ * aproximación; servir el nivel de precios de diciembre en septiembre no es una
+ * aproximación, es estar viejo.
+ */
+export function restateFood(
+  published: number,
+  annualInflationPct: number | null | undefined,
+  today: string,
+  anchor: string = INE_LINES_ANCHOR
+): RestatedFigure {
+  const months = monthsSince(anchor, today)
+  const base: RestatedFigure = {
+    published,
+    restated: published,
+    monthsElapsed: Number.isFinite(months) ? months : 0,
+    annualInflationPct: typeof annualInflationPct === 'number' ? annualInflationPct : null,
+    adjusted: false,
+    note: '',
+  }
+
+  if (!Number.isFinite(months)) {
+    return { ...base, note: 'no se pudo leer la fecha de la canasta publicada' }
+  }
+  if (months <= 0) {
+    return { ...base, note: 'la canasta publicada es del mes en curso' }
+  }
+  if (months > RESTATE_MAX_MONTHS) {
+    return {
+      ...base,
+      note: `la canasta publicada quedó demasiado vieja (${months} meses): hay que actualizarla, no indexarla`,
+    }
+  }
+  if (
+    typeof annualInflationPct !== 'number' ||
+    !Number.isFinite(annualInflationPct) ||
+    annualInflationPct < PLAUSIBLE_INFLATION[0] ||
+    annualInflationPct > PLAUSIBLE_INFLATION[1]
+  ) {
+    return { ...base, note: 'sin una cifra de inflación usable, se muestra el valor publicado' }
+  }
+
+  const restated = Math.round(published * (1 + annualInflationPct / 100) ** (months / 12))
+  return {
+    ...base,
+    restated,
+    adjusted: true,
+    note: `reexpresado a precios de hoy: ${months} ${
+      months === 1 ? 'mes' : 'meses'
+    } al ${annualInflationPct} % interanual`,
+  }
+}
+
+/**
  * Cuánto más barato come el interior, según el propio INE: es la relación entre
  * las dos Canastas Básicas Alimentarias per cápita que publica (interior /
  * Montevideo). Se deriva de INE_PER_CAPITA_LINES en vez de escribirse a mano

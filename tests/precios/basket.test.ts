@@ -6,6 +6,8 @@ import {
   groupBaskets,
   indexDecision,
   MIN_COVERAGE,
+  nationalBasketCost,
+  NON_FOOD_NEEDS,
   storeBasket,
 } from "../../classes/precios/basket";
 
@@ -149,5 +151,44 @@ describe("indexDecision", () => {
 
   it("el primer dia publica nivel, sin variacion previa", () => {
     expect(indexDecision({ version: 1, qualifiedStores: 400 }, null).publish).toBe(true);
+  });
+});
+
+describe("nationalBasketCost", () => {
+  // La canasta a precios nacionales medianos: es la unica cifra ABSOLUTA que
+  // esta fuente puede dar sin imputar nada, porque cada mediana sale de
+  // observaciones reales de ese articulo. No es un presupuesto alimentario:
+  // el catalogo del SIPC no tiene leche fluida, ni pan fresco, ni legumbres.
+  const medians = new Map(BASKET_ITEMS.map((item) => [item.articleId, 100]));
+
+  it("suma precio mediano x cantidad y parte comida de no-comida", () => {
+    const out = nationalBasketCost(medians);
+    const expected = BASKET_ITEMS.reduce((sum, item) => sum + 100 * item.qty, 0);
+    expect(out.total).toBeCloseTo(expected, 5);
+    expect(out.food + out.nonFood).toBeCloseTo(out.total, 5);
+    expect(out.food).toBeGreaterThan(0);
+    expect(out.nonFood).toBeGreaterThan(0);
+    expect(out.itemsPriced).toBe(BASKET_ITEMS.length);
+  });
+
+  it("la limpieza y la higiene NO cuentan como comida", () => {
+    const hygiene = BASKET_ITEMS.filter((item) => NON_FOOD_NEEDS.has(item.need));
+    expect(hygiene.length).toBeGreaterThanOrEqual(5);
+    const out = nationalBasketCost(medians);
+    const hygieneCost = hygiene.reduce((sum, item) => sum + 100 * item.qty, 0);
+    expect(out.nonFood).toBeCloseTo(hygieneCost, 5);
+  });
+
+  it("no inventa el precio de un articulo sin mediana", () => {
+    const partial = new Map([[BASKET_ITEMS[0].articleId, 100]]);
+    const out = nationalBasketCost(partial);
+    expect(out.itemsPriced).toBe(1);
+    expect(out.total).toBeCloseTo(100 * BASKET_ITEMS[0].qty, 5);
+  });
+
+  it("con cero medianas devuelve cero y lo dice contando los articulos", () => {
+    const out = nationalBasketCost(new Map());
+    expect(out.total).toBe(0);
+    expect(out.itemsPriced).toBe(0);
   });
 });
