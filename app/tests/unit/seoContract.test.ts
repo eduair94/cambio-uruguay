@@ -138,6 +138,8 @@ const NOINDEXED = [
   'alquileres-uruguay.vue',
   // Public property dossiers: only the reviewed, currently valid pilot is indexable.
   'alquileres/[key].vue',
+  // Index the market analysis itself; user-selected filter combinations opt out.
+  'analisis-alquileres-uruguay.vue',
   'buscar.vue',
   'cuenta/index.vue',
   // La herramienta "¿tengo descuento acá?": la respuesta depende de la ubicación de quien la abre.
