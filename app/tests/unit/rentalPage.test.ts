@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import type { RentalOffer, RentalPublicProperty } from '../../utils/rentals'
 import {
   buildRentalPage,
@@ -8,9 +8,8 @@ import {
   rentalPageReprice,
   rentalPageEvidenceStages,
   rentalPageSitemapUrls,
+  rentalPageSitemapStages,
 } from '../../server/utils/rentalPage'
-
-vi.mock('../../utils/rentalSeoPilot', () => ({ RENTAL_SEO_PILOT_KEYS: ['pilot'] }))
 
 function offer(overrides: Partial<RentalOffer> = {}): RentalOffer {
   return {
@@ -246,15 +245,15 @@ describe('public rental page evidence', () => {
       })
     ).toEqual([])
   })
-  it('only indexes the fixed reviewed pilot while retaining complete useful data for other keys', () => {
+  it('indexes useful dossiers by current evidence instead of a fixed historic allowlist', () => {
     expect(buildRentalPage(property(), peers(), 40).seo).toEqual({
       indexable: true,
       reasons: [],
       contentUpdatedAt: null,
     })
     const page = buildRentalPage(property({ key: 'another-property' }), peers(), 40)
-    expect(page.seo.indexable).toBe(false)
-    expect(page.seo.reasons).toContain('outside_reviewed_pilot')
+    expect(page.seo.indexable).toBe(true)
+    expect(page.seo.reasons).toEqual([])
     expect(page.similar).toHaveLength(6)
     expect(page.canonicalPath).toBe('/alquileres/another-property')
     expect(page.similar[0]?.priceUyu).toBe(40000)
@@ -267,7 +266,7 @@ describe('public rental page evidence', () => {
       ],
     })
     expect(buildRentalPage(unknown, peers(), 40).seo.reasons).toContain(
-      'pilot_needs_known_monthly_cost'
+      'missing_known_monthly_cost'
     )
     expect(buildRentalPage(property({ offers: [offer()] }), [], 40).seo.indexable).toBe(true)
     expect(
@@ -278,7 +277,9 @@ describe('public rental page evidence', () => {
   it('requires a source-backed dossier without rewarding uncertain multi-portal joins', () => {
     const single = property({ offers: [offer()], sources: ['infocasas'] })
     expect(buildRentalPage(single, [], 40).seo.indexable).toBe(true)
-    expect(rentalPageSitemapUrls([single], 40)).toEqual([{ loc: '/alquileres/pilot' }])
+    expect(rentalPageSitemapUrls([single], 40)).toEqual([
+      { loc: '/alquileres/pilot', images: [{ loc: 'https://images.example.com/one.jpg' }] },
+    ])
     expect(
       buildRentalPage({ ...single, address: single.title }, peers(), 40).seo.reasons
     ).toContain('missing_address_or_source_description')
@@ -305,7 +306,9 @@ describe('public rental page evidence', () => {
       ],
     }
     expect(buildRentalPage(hiddenAddress, [], 40).seo.indexable).toBe(true)
-    expect(rentalPageSitemapUrls([hiddenAddress], 40)).toEqual([{ loc: '/alquileres/pilot' }])
+    expect(rentalPageSitemapUrls([hiddenAddress], 40)).toEqual([
+      { loc: '/alquileres/pilot', images: [{ loc: 'https://images.example.com/one.jpg' }] },
+    ])
   })
   it('uses exact property specs in the DB query and projects only public fields', () => {
     const evidenceProjection = rentalPageEvidenceStages(property())!.at(-1)! as {
@@ -333,7 +336,7 @@ describe('public rental page evidence', () => {
     })
     expect(rentalPagePeerStages(property({ neighborhood: '' }))).toBeNull()
   })
-  it('sitemap emits only qualified Spanish pilot URLs and never invents lastmod', () => {
+  it('sitemap emits qualified Spanish URLs with real gallery images and never invents lastmod', () => {
     expect(
       rentalPageSitemapUrls(
         [
@@ -343,6 +346,44 @@ describe('public rental page evidence', () => {
         ],
         40
       )
-    ).toEqual([{ loc: '/alquileres/pilot' }])
+    ).toEqual([
+      { loc: '/alquileres/pilot', images: [{ loc: 'https://images.example.com/one.jpg' }] },
+      { loc: '/alquileres/not-reviewed', images: [{ loc: 'https://images.example.com/one.jpg' }] },
+    ])
+    const stages = rentalPageSitemapStages()
+    expect(stages[0]).toMatchObject({
+      $match: { propertyType: { $in: ['apartamento', 'casa'] } },
+    })
+    expect((stages[0] as { $match: Record<string, unknown> }).$match.key).toBeUndefined()
+  })
+  it('uses the attributed gallery for photo eligibility and rejects unlinked or unsafe images', () => {
+    const row = property({
+      offers: [
+        offer({
+          image: null,
+          details: {
+            description: '',
+            images: [
+              'https://images.example.com/gallery.jpg',
+              'javascript:bad',
+              'https://images.example.com/gallery.jpg',
+            ],
+            builtArea: null,
+            totalArea: null,
+            landArea: null,
+            terraceArea: null,
+            amenities: [],
+            guaranteeText: '',
+          },
+        }),
+      ],
+    })
+    expect(buildRentalPage(row, [], 40).seo.indexable).toBe(true)
+    expect(rentalPageSitemapUrls([row], 40)[0]?.images).toEqual([
+      { loc: 'https://images.example.com/gallery.jpg' },
+    ])
+    expect(
+      rentalPageSitemapUrls([{ ...row, offers: [offer({ url: 'javascript:bad' })] }], 40)
+    ).toEqual([])
   })
 })

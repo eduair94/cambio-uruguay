@@ -10,6 +10,7 @@ import BudgetPlanner from '~/components/rentals/BudgetPlanner.vue'
 import PropertyGallery from '~/components/rentals/PropertyGallery.vue'
 import { rentalPageMessages } from '~/utils/rentalPageMessages'
 import type { RentalPageResponse } from '~/utils/rentalPage'
+import { rentalPageSchema } from '~/utils/rentalPageSeo'
 import {
   RENTAL_GUARANTEE_PUBLISHED,
   RENTAL_SOURCE_LABEL,
@@ -270,7 +271,16 @@ const relatedOffer = (entry: RentalPublicProperty) => entry.matchingOffer ?? ent
 const pageTitle = computed(() =>
   property.value && defaultOffer.value
     ? t('propertySeo', {
-        type: typeLabel.value,
+        type: [
+          typeLabel.value,
+          !uncertainData.value && property.value.bedrooms !== null
+            ? property.value.bedrooms === 0
+              ? t('studio')
+              : t('seoBedrooms', { n: property.value.bedrooms })
+            : '',
+        ]
+          .filter(Boolean)
+          .join(' '),
         zone: zone.value || 'Uruguay',
         price: money(defaultOffer.value.price, defaultOffer.value.currency),
       })
@@ -278,14 +288,25 @@ const pageTitle = computed(() =>
 )
 const description = computed(() =>
   property.value
-    ? t('propertyDescription', { title: title.value, zone: zone.value || 'Uruguay' })
+    ? t('propertyDescription', {
+        summary: [pageTitle.value, street.value].filter(Boolean).join(' · '),
+      })
     : t('unavailableHint')
 )
-defineOgImageComponent('Cambio', {
-  title: () => pageTitle.value,
-  subtitle: () => zone.value || t('title'),
-  tag: 'ALQUILERES',
-})
+const primaryPhoto = computed(() => photos.value[0])
+const primaryPhotoAlt = computed(() =>
+  primaryPhoto.value
+    ? t('photoDescription', { title: primaryPhoto.value.title || title.value, n: 1 })
+    : undefined
+)
+// A real advert photo is the preview. Generate the site's card only when no photo is published.
+if (!primaryPhoto.value) {
+  defineOgImageComponent('Cambio', {
+    title: () => pageTitle.value,
+    subtitle: () => zone.value || t('title'),
+    tag: 'ALQUILERES',
+  })
+}
 useSeoMeta({
   title: () => pageTitle.value,
   description: () => description.value,
@@ -293,10 +314,16 @@ useSeoMeta({
   ogDescription: () => description.value,
   ogUrl: () => canonical.value,
   ogType: 'website',
+  ogImage: () => primaryPhoto.value?.url,
+  ogImageAlt: () => primaryPhotoAlt.value,
+  twitterImage: () => primaryPhoto.value?.url,
+  twitterImageAlt: () => primaryPhotoAlt.value,
+  twitterTitle: () => pageTitle.value,
+  twitterDescription: () => description.value,
   twitterCard: 'summary_large_image',
   robots: () =>
     locale.value === 'es' && data.value?.seo.indexable && !error.value
-      ? 'index, follow'
+      ? 'index, follow, max-image-preview:large'
       : 'noindex, follow',
 })
 useHead(() => ({
@@ -306,83 +333,28 @@ useHead(() => ({
       ? [
           {
             type: 'application/ld+json',
-            innerHTML: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@graph': [
-                {
-                  '@type': 'BreadcrumbList',
-                  itemListElement: [
-                    {
-                      '@type': 'ListItem',
-                      position: 1,
-                      name: t('title'),
-                      item: `https://cambio-uruguay.com${localePath('/alquileres-uruguay')}`,
-                    },
-                    { '@type': 'ListItem', position: 2, name: title.value, item: canonical.value },
-                  ],
-                },
-                {
-                  '@type': 'RealEstateListing',
-                  '@id': `${canonical.value}#listing`,
-                  url: canonical.value,
-                  name: title.value,
-                  description: description.value,
-                  inLanguage: locale.value,
-                  image: photos.value.map(image => image.url),
-                  about: {
-                    '@type':
-                      property.value.propertyType === 'apartamento'
-                        ? 'Apartment'
-                        : property.value.propertyType === 'casa'
-                          ? 'SingleFamilyResidence'
-                          : 'Place',
-                    name: title.value,
-                    address: {
-                      '@type': 'PostalAddress',
-                      addressCountry: 'UY',
-                      addressRegion: property.value.department,
-                      ...(property.value.neighborhood
-                        ? { addressLocality: property.value.neighborhood }
-                        : {}),
-                      ...(street.value ? { streetAddress: street.value } : {}),
-                    },
-                    ...(!uncertainData.value &&
-                    ['apartamento', 'casa'].includes(property.value.propertyType)
-                      ? {
-                          ...(property.value.bedrooms !== null
-                            ? { numberOfBedrooms: property.value.bedrooms }
-                            : {}),
-                          ...(property.value.bathrooms !== null
-                            ? { numberOfBathroomsTotal: property.value.bathrooms }
-                            : {}),
-                          ...(property.value.area
-                            ? {
-                                floorSize: {
-                                  '@type': 'QuantitativeValue',
-                                  value: property.value.area,
-                                  unitCode: 'MTK',
-                                },
-                              }
-                            : {}),
-                        }
-                      : {}),
+            key: 'rental-property-schema',
+            innerHTML: JSON.stringify(
+              rentalPageSchema({
+                property: property.value,
+                canonical: canonical.value,
+                locale: locale.value,
+                title: pageTitle.value,
+                description: description.value,
+                uncertain: Boolean(uncertainData.value),
+                breadcrumbs: [
+                  { name: t('country'), url: `https://cambio-uruguay.com${localePath('/')}` },
+                  {
+                    name: t('title'),
+                    url: `https://cambio-uruguay.com${localePath('/alquileres-uruguay')}`,
                   },
-                  offers: offers.value.map(offer => ({
-                    '@type': 'Offer',
-                    url: offer.url,
-                    price: offer.price,
-                    priceCurrency: offer.currency,
-                    businessFunction: 'http://purl.org/goodrelations/v1#LeaseOut',
-                    priceSpecification: {
-                      '@type': 'UnitPriceSpecification',
-                      price: offer.price,
-                      priceCurrency: offer.currency,
-                      unitText: 'mes',
-                    },
-                  })),
-                },
-              ],
-            }).replace(/</g, '\\u003c'),
+                  { name: title.value, url: canonical.value },
+                ],
+                photoCaption: (photoTitle, n) => t('photoDescription', { title: photoTitle, n }),
+                photoCredit: photoSource =>
+                  t('photoCredit', { source: RENTAL_SOURCE_LABEL[photoSource] }),
+              })
+            ).replace(/</g, '\\u003c'),
           },
         ]
       : [],

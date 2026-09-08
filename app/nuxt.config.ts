@@ -798,6 +798,18 @@ export default defineNuxtConfig({
   // Sitemap Configuration
   sitemap: {
     sources: ['/api/__sitemap__/urls'],
+    // Keep the existing language URLs and isolate the growing image-rich rental
+    // catalogue. Explicit locale filters replace the module's automatic mapping.
+    sitemaps: {
+      'en-US': { includeAppSources: true, include: ['/en/**'] },
+      'es-ES': { includeAppSources: true, exclude: ['/en/**', '/pt/**'] },
+      'pt-PT': { includeAppSources: true, include: ['/pt/**'] },
+      rentals: {
+        includeAppSources: false,
+        sources: [['/api/__sitemap__/rentals', { timeout: 60_000 }]],
+        chunks: 1000,
+      },
+    },
     // Serve the large sitemap on demand and reuse it for one hour. This keeps
     // production builds independent from catalogue growth while preserving the
     // same public /sitemap.xml URL for crawlers.

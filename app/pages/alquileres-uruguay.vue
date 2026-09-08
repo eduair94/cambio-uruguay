@@ -529,7 +529,19 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               :length="pageCount"
               :total-visible="smAndDown ? 1 : 7"
               @update:model-value="onPageChange"
-            />
+            >
+              <template #prev="props">
+                <VBtn v-bind="paginationLinkProps(props, query.page - 1)" />
+              </template>
+              <template #item="{ key, page, props }">
+                <VBtn v-bind="paginationLinkProps(props, typeof key === 'number' ? key : null)">
+                  {{ page }}
+                </VBtn>
+              </template>
+              <template #next="props">
+                <VBtn v-bind="paginationLinkProps(props, query.page + 1)" />
+              </template>
+            </VPagination>
             <p v-if="smAndDown" class="text-caption text-center mt-1">
               {{ t('pageStatus', { current: query.page, total: pageCount }) }}
             </p>
@@ -619,6 +631,12 @@ import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
 import { rentalMessages } from '~/utils/rentalMessages'
 import { rentalPropertyPath, rememberRentalSearch } from '~/utils/rentalPresentation'
+import {
+  rentalCatalogCanonical,
+  rentalCatalogIndexPage,
+  rentalCatalogItemList,
+  rentalCatalogMetadata,
+} from '~/utils/rentalCatalogSeo'
 import {
   RENTAL_GUARANTEE_PUBLISHED,
   RENTAL_SOURCE_LABEL,
@@ -807,6 +825,30 @@ async function onPageChange(page: number) {
     behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     block: 'start',
   })
+}
+function paginationLinkProps(props: Record<string, unknown>, page: number | null) {
+  const enabled = page !== null && page >= 1 && page <= pageCount.value && !props.disabled
+  return {
+    ...props,
+    variant: 'text' as const,
+    href: enabled
+      ? router.resolve({ query: rentalQueryToParams({ ...query.value, page }) }).href
+      : undefined,
+    // Keep native link behavior for new tabs and crawlers; ordinary clicks retain scroll context.
+    onClick: (event: MouseEvent) => {
+      if (
+        !enabled ||
+        event.button !== 0 ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return
+      event.preventDefault()
+      void onPageChange(page)
+    },
+  }
 }
 const neighborhoodOverride = ref<RentalFacetValue[] | null>(null)
 const neighborhoodFacets = computed(
@@ -1312,57 +1354,85 @@ const relatedLinks = [
   { to: '/alquilar-sin-recibo-de-sueldo', label: 'independent' },
   { to: '/alquilar-estando-en-clearing', label: 'clearing' },
 ]
-const canonicalUrl = computed(
+const catalogBaseUrl = computed(
   () => `https://cambio-uruguay.com${localePath('/alquileres-uruguay')}`
 )
+const indexPage = computed(() => rentalCatalogIndexPage(route.query, pageCount.value))
+const canonicalUrl = computed(() => rentalCatalogCanonical(catalogBaseUrl.value, indexPage.value))
+const seoMetadata = computed(() => rentalCatalogMetadata(locale.value, indexPage.value ?? 1))
+const catalogIndexable = computed(
+  () => indexPage.value !== null && !error.value && items.value.length > 0
+)
+const catalogList = computed(() =>
+  catalogIndexable.value && !pending.value && view.value === 'lista'
+    ? rentalCatalogItemList(
+        items.value.map(property => ({
+          name: property.title,
+          url: `https://cambio-uruguay.com${localePath(rentalPropertyPath(property.key))}`,
+          image: failedImages.has(property.key) ? null : displayOffer(property)?.image,
+        })),
+        canonicalUrl.value,
+        query.value.page,
+        data.value?.perPage || query.value.perPage
+      )
+    : undefined
+)
+const catalogLocaleHead = useLocaleHead()
 defineOgImageComponent('Cambio', {
   title: () => t('title'),
   subtitle: () => t('subtitle'),
   tag: 'ALQUILERES',
 })
 useSeoMeta({
-  title: () =>
-    locale.value === 'es'
-      ? 'Alquileres en Uruguay: compará portales, precios y gastos'
-      : t('title'),
-  description: () => t('subtitle'),
-  ogTitle: () => t('title'),
-  ogDescription: () => t('subtitle'),
+  title: () => seoMetadata.value.title,
+  description: () => seoMetadata.value.description,
+  ogTitle: () => seoMetadata.value.title,
+  ogDescription: () => seoMetadata.value.description,
   ogType: 'website',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
 })
 useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl.value }],
-  meta:
-    query.value.page > 1 ||
-    filterChips.value.length ||
-    referencePoint.value ||
-    query.value.sort !== 'recientes' ||
-    view.value === 'mapa'
-      ? [{ name: 'robots', content: 'noindex, follow' }]
-      : [],
-  script: items.value.length
-    ? [
-        {
-          type: 'application/ld+json',
-          innerHTML: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'ItemList',
-            name: t('title'),
-            url: canonicalUrl.value,
-            numberOfItems: items.value.length,
-            itemListElement: items.value.map((property, index) => ({
-              '@type': 'ListItem',
-              position: (query.value.page - 1) * query.value.perPage + index + 1,
-              name: property.title,
-              url: `https://cambio-uruguay.com${localePath(rentalPropertyPath(property.key))}`,
-            })),
-          }).replace(/</g, '\\u003c'),
-        },
-      ]
-    : [],
+  // The schema module otherwise derives its node IDs from route.path, dropping ?page=N.
+  templateParams: {
+    schemaOrg: { path: canonicalUrl.value.replace('https://cambio-uruguay.com', '') },
+  },
+  link: [
+    { id: 'i18n-can', rel: 'canonical', href: canonicalUrl.value },
+    ...(catalogLocaleHead.value.link ?? [])
+      .filter(link => link.rel === 'alternate')
+      .map(link => ({
+        ...link,
+        href: rentalCatalogCanonical(String(link.href).split(/[?#]/)[0]!, indexPage.value),
+      })),
+  ],
+  meta: [
+    { id: 'i18n-og-url', property: 'og:url', content: canonicalUrl.value },
+    {
+      name: 'robots',
+      content: catalogIndexable.value
+        ? 'index, follow, max-image-preview:large'
+        : 'noindex, follow',
+    },
+  ],
 }))
+// Extend the module's existing WebPage node instead of publishing a second competing graph.
+useSchemaOrg([
+  defineWebPage({
+    '@type': () => (indexPage.value !== null ? 'CollectionPage' : 'SearchResultsPage'),
+    name: () => seoMetadata.value.title,
+    description: () => seoMetadata.value.description,
+    url: () => canonicalUrl.value,
+    inLanguage: () => seoMetadata.value.language,
+    mainEntity: () => catalogList.value,
+  }),
+  defineBreadcrumb({
+    itemListElement: () => [
+      { name: t('country'), item: `https://cambio-uruguay.com${localePath('/')}` },
+      { name: t('search'), item: canonicalUrl.value },
+    ],
+  }),
+])
 </script>
 
 <style scoped>

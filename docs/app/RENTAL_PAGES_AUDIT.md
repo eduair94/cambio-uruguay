@@ -1,5 +1,10 @@
 # Auditoría del piloto de fichas de alquiler
 
+**Actualización 2026-09-08:** a solicitud del usuario, el piloto fijo fue sustituido por
+elegibilidad automática con los controles vigentes de calidad e identidad. Las fichas y sus
+imágenes se publican en un sitemap separado y paginado. Ver [RENTAL_SEO.md](RENTAL_SEO.md).
+Las cifras y el alcance del piloto que siguen son el registro histórico de esas auditorías.
+
 ## Revisión del 2026-09-06: una ficha útil no exige unir portales
 
 Las cifras del 5 de septiembre que siguen son históricas. La reparación de identidad separó

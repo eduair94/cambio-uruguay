@@ -19,14 +19,6 @@ import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
 import { toolSlugs } from '../../../utils/tools'
 import { videoTopicSlugs } from '../../../utils/videoTopics'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
-import { RentalListingModel } from '../../models/RentalListing'
-import { RentalMetaModel } from '../../models/RentalMeta'
-import { RENTAL_COLLATION, type RentalPublicProperty } from '../../../utils/rentals'
-import {
-  rentalPageSitemapStages,
-  rentalPageSitemapUrls,
-  rentalPageAmbiguousKeysStages,
-} from '../../utils/rentalPage'
 import { listPosts } from '../../utils/blog'
 import { listIssueDates } from '../../utils/newsletterArchive'
 import { loadPropertySaleSitemapUrls } from '../../utils/propertySales'
@@ -37,6 +29,7 @@ interface SitemapUrl {
   lastmod?: string
   changefreq?: string
   priority?: number
+  alternatives?: Array<{ hreflang: string; href: string }>
 }
 
 const LOCALES = ['es', 'en', 'pt']
@@ -78,9 +71,17 @@ export default defineEventHandler(async _event => {
     changefreq: string = 'daily',
     lastmod?: string
   ) => {
+    // Explicit per-language sitemap filtering happens before the module builds
+    // alternates. Preserve reciprocal translations on dynamic URLs at the source.
+    const alternatives = [
+      { hreflang: 'es-ES', href: path },
+      { hreflang: 'en-US', href: `/en${path}` },
+      { hreflang: 'pt-PT', href: `/pt${path}` },
+      { hreflang: 'x-default', href: path },
+    ]
     LOCALES.forEach(locale => {
       const loc = locale === DEFAULT_LOCALE ? path : `/${locale}${path}`
-      urls.push({ loc, changefreq, priority, ...(lastmod ? { lastmod } : {}) })
+      urls.push({ loc, changefreq, priority, alternatives, ...(lastmod ? { lastmod } : {}) })
     })
   }
 
@@ -236,31 +237,8 @@ export default defineEventHandler(async _event => {
     console.warn('Failed to add newsletter issues to sitemap:', issueError)
   }
 
-  // Fixed reviewed Spanish rental pilot; the same live quality gate as each page.
-  // No lastmod: seeing an advert again is not evidence that its content changed.
-  try {
-    await connectDb()
-    const [properties, meta, ambiguous] = await Promise.all([
-      RentalListingModel.aggregate<RentalPublicProperty>(rentalPageSitemapStages()).collation(
-        RENTAL_COLLATION
-      ),
-      RentalMetaModel.findOne({ key: 'uy-rentals' }).select({ usdUyu: 1 }).lean(),
-      RentalListingModel.aggregate<{ key: string }>(rentalPageAmbiguousKeysStages()).collation(
-        RENTAL_COLLATION
-      ),
-    ])
-    urls.push(
-      ...rentalPageSitemapUrls(
-        properties,
-        Number(meta?.usdUyu) || 0,
-        new Set(ambiguous.map(row => row.key))
-      )
-    )
-  } catch (rentalError) {
-    console.warn('Failed to add reviewed rental pages to sitemap:', rentalError)
-  } finally {
-    await disconnectDbAfterPrerender()
-  }
+  // Rental dossiers have their own cached, chunked source: a growing property
+  // catalogue must not slow down or overflow the site's three language sitemaps.
 
   // Source-specific sale dossiers: reviewed Spanish pilot with the same live page gate.
   // A scrape timestamp is not a content modification, so these omit lastmod.

@@ -1,18 +1,22 @@
-// Smoke-checks that every real route's OG image actually renders.
-// Route list comes from the site's own live sitemap endpoint, so it can
-// never drift from what's actually deployed (unlike a hand-maintained list).
+// Smoke-checks a bounded sample of actual published OG images.
+// By default routes come from the general sitemap source. Use OG_PATHS for
+// targeted detail checks without fetching the separate, large rental sitemap.
 //
 // Usage:
 //   node scripts/check-og-images.mjs
 //   BASE=https://cambio-uruguay.com node scripts/check-og-images.mjs
+//   OG_PATHS=/alquileres-uruguay,/alquileres/example node scripts/check-og-images.mjs
 import {
   evaluateOgImageResponse,
+  explicitOgImagePaths,
   filterDefaultLocalePaths,
-  ogImageUrl,
+  pageOgImageUrl,
+  sampleOgImagePaths,
 } from './lib/og-image-check.mjs'
 
 const BASE = process.env.BASE || 'http://localhost:3000'
-const CONCURRENCY = Number(process.env.OG_CONCURRENCY) || 5
+const CONCURRENCY = Math.min(5, Math.max(1, Math.floor(Number(process.env.OG_CONCURRENCY) || 3)))
+const LIMIT = Math.min(500, Math.max(1, Math.floor(Number(process.env.OG_LIMIT) || 60)))
 
 async function fetchSitemapPaths() {
   const res = await fetch(`${BASE}/api/__sitemap__/urls`)
@@ -24,8 +28,13 @@ async function fetchSitemapPaths() {
 }
 
 async function checkPath(path) {
-  const url = ogImageUrl(BASE, path)
+  const pageUrl = new URL(path, BASE).href
+  let url = null
   try {
+    const page = await fetch(pageUrl, { signal: AbortSignal.timeout(15000) })
+    if (!page.ok) return { path, url: pageUrl, ok: false, reason: `page HTTP ${page.status}` }
+    url = pageOgImageUrl(await page.text(), pageUrl)
+    if (!url) return { path, url: pageUrl, ok: false, reason: 'missing or invalid og:image' }
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) })
     const buf = await res.arrayBuffer()
     const verdict = evaluateOgImageResponse({
@@ -54,9 +63,13 @@ async function runPool(items, worker, concurrency) {
 }
 
 async function main() {
-  console.log(`Fetching route list from ${BASE}/api/__sitemap__/urls ...`)
-  const paths = await fetchSitemapPaths()
-  console.log(`Checking ${paths.length} default-locale OG images (concurrency ${CONCURRENCY}) ...`)
+  const explicit = explicitOgImagePaths(process.env.OG_PATHS)
+  if (!explicit) console.log(`Fetching route list from ${BASE}/api/__sitemap__/urls ...`)
+  const allPaths = explicit ?? (await fetchSitemapPaths())
+  const paths = sampleOgImagePaths(allPaths, LIMIT)
+  console.log(
+    `Checking ${paths.length}/${allPaths.length} ${explicit ? 'explicit' : 'general-sitemap'} OG images (concurrency ${CONCURRENCY}; OG_LIMIT=${LIMIT}) ...`
+  )
 
   const results = await runPool(paths, checkPath, CONCURRENCY)
   const failures = results.filter(r => !r.ok)
