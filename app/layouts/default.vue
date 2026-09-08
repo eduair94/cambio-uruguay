@@ -283,7 +283,10 @@
              the footer, never in the middle of a tool. Routes opt out through
              `utils/ads.ts` or `definePageMeta({ ads: false })`; long articles
              may add a single <AdSlot placement="in-article" /> of their own. -->
-        <ClientOnly><AdSlot placement="content-end" /></ClientOnly>
+        <!-- Home uses this space budget for ConLaTuyaBanner after its rates. -->
+        <ClientOnly v-if="normalizeAdPath(route.path) !== '/'">
+          <AdSlot placement="content-end" />
+        </ClientOnly>
       </div>
     </VMain>
 
@@ -300,6 +303,7 @@
 <script setup lang="ts">
 import { useLocalePath } from '#imports'
 import { useLoadingStore } from '~/stores/loading'
+import { normalizeAdPath } from '~/utils/ads'
 import { NAV_SECTIONS, type NavEntry, type NavSection } from '~/utils/siteNav'
 
 const route = useRoute()

@@ -2,6 +2,14 @@
   "ads": {
     "label": "Publicidad"
   },
+  "conLaTuyaPromo": {
+    "brand": "Con la tuya",
+    "title": "¿En qué se gasta la plata del Estado?",
+    "description": "Explorá los gastos estatales en Con la tuya.",
+    "cta": "Explorar gastos",
+    "external": "Sitio externo",
+    "ctaLabel": "Explorar gastos estatales en Con la tuya (se abre en otra pestaña)"
+  },
   "estado": {
     "nav": "Estado",
     "title": "Estado de los scrapers",

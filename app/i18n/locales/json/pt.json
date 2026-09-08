@@ -2,6 +2,14 @@
   "ads": {
     "label": "Publicidade"
   },
+  "conLaTuyaPromo": {
+    "brand": "Con la tuya",
+    "title": "Para onde vai o dinheiro público?",
+    "description": "Explore os gastos públicos no Con la tuya.",
+    "cta": "Explorar gastos",
+    "external": "Site externo em espanhol",
+    "ctaLabel": "Explorar gastos públicos no Con la tuya (em espanhol, abre em outra aba)"
+  },
   "estado": {
     "nav": "Status",
     "title": "Status dos scrapers",

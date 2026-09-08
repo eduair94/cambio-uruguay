@@ -2,6 +2,14 @@
   "ads": {
     "label": "Advertisement"
   },
+  "conLaTuyaPromo": {
+    "brand": "Con la tuya",
+    "title": "Where does public money go?",
+    "description": "Explore government spending on Con la tuya.",
+    "cta": "Explore spending",
+    "external": "External site in Spanish",
+    "ctaLabel": "Explore spending on Con la tuya (in Spanish, opens in a new tab)"
+  },
   "estado": {
     "nav": "Status",
     "title": "Scraper status",

@@ -660,6 +660,11 @@
       </VContainer>
     </section>
 
+    <!-- The homepage's single manual promotion follows the main rate lookup. -->
+    <VContainer class="py-4">
+      <ConLaTuyaBanner />
+    </VContainer>
+
     <!-- Nearby Casa Finder Banner - flagship tourist tool, links to the
          dedicated smart nearby-finder page. -->
     <section v-reveal class="nearby-finder-banner py-10">
