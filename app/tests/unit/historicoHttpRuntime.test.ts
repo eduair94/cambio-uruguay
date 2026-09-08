@@ -49,7 +49,7 @@ function sfc(path: string, modules: Record<string, unknown>, globals = {}, ssr =
   ).default
 }
 
-it('returns HTTP 404 from the actual installed Nuxt SSR runtime after history setup rejects', async () => {
+it('returns HTTP 404 through app.vue and the installed Nuxt SSR runtime after history setup rejects', async () => {
   const hooks = { callHook: async () => {}, callHookWith: () => [] }
   const ssrContext: any = {
     url: '/historico/no-existe',
@@ -104,9 +104,22 @@ it('returns HTTP 404 from the actual installed Nuxt SSR runtime after history se
       },
     }
   )
-  // Only setup runs here; omit the page's Vuetify template. The Nuxt root and
-  // its SSR template below are compiled and rendered unchanged.
+  // Only setup runs for the page; omit its Vuetify template. Compile and render
+  // the real app.vue and Nuxt root so an intervening error boundary cannot hide
+  // the rejection from Nuxt and turn the response into an empty HTTP 200.
   page.ssrRender = () => {}
+  const appComponent = sfc(
+    'app.vue',
+    { vue, 'vue/server-renderer': serverRenderer },
+    {
+      defineOgImageComponent: () => {},
+      useHead: () => {},
+      useSeoMeta: () => {},
+      useAds: () => ({ pubId: '', scriptAllowed: vue.ref(false) }),
+      onErrorCaptured: vue.onErrorCaptured,
+    },
+    true
+  )
   const root = sfc(
     'node_modules/nuxt/dist/app/components/nuxt-root.vue',
     {
@@ -116,7 +129,7 @@ it('returns HTTP 404 from the actual installed Nuxt SSR runtime after history se
       '../composables/error': errors,
       '../composables/router': { useRoute: () => route },
       '../components/injections': { PageRouteSymbol: Symbol('route') },
-      '#build/app-component.mjs': { default: page, __esModule: true },
+      '#build/app-component.mjs': { default: appComponent, __esModule: true },
       '#build/error-component.mjs': { default: { render: () => 'error' }, __esModule: true },
       '#build/nuxt.config.mjs': { componentIslands: false },
     },
@@ -130,25 +143,43 @@ it('returns HTTP 404 from the actual installed Nuxt SSR runtime after history se
     ),
     {
       'node:async_hooks': {},
-      'vue-bundle-renderer/runtime': {},
+      'vue-bundle-renderer/runtime': {
+        getRequestDependencies: () => ({ styles: {}, scripts: {} }),
+        getPreloadLinks: () => [],
+        getPrefetchLinks: () => [],
+      },
       h3,
       ufo,
-      '@unhead/vue/server': { propsToString: () => '' },
+      '@unhead/vue/server': {
+        propsToString: () => '',
+        renderSSRHead: () => ({ headTags: '', bodyTags: '', bodyTagsOpen: '' }),
+      },
       destr: {},
       'nitropack/runtime': {
         defineRenderHandler: (handler: unknown) => handler,
         getRouteRules: () => ({}),
-        useNitroApp: () => ({}),
+        useNitroApp: () => ({ hooks }),
       },
       '../utils/renderer/build-files.js': {
         getRenderer: async () => ({
-          renderToString: async () => ({
-            html: await serverRenderer.renderToString(vue.createSSRApp(root), ssrContext),
-          }),
+          renderToString: async () => {
+            const vueApp = vue.createSSRApp(root)
+            vueApp.component('NuxtPage', page)
+            vueApp.component('NuxtLayout', {
+              setup:
+                (_props, { slots }) =>
+                () =>
+                  slots.default?.(),
+            })
+            vueApp.component('NuxtLoadingIndicator', { render: () => null })
+            vueApp.component('ClientOnly', { render: () => null })
+            vueApp.component('PWANetworkStatus', { render: () => null })
+            return { html: await serverRenderer.renderToString(vueApp, ssrContext) }
+          },
         }),
       },
       '../utils/cache.js': {},
-      '../utils/renderer/payload.js': {},
+      '../utils/renderer/payload.js': { renderPayloadScript: () => [] },
       '../utils/renderer/app.js': { createSSRContext: () => ssrContext },
       '../utils/renderer/inline-styles.js': {},
       '../utils/renderer/islands.js': {},

@@ -40,9 +40,8 @@ no puedan aparecer nuevos eventos después del despliegue.
 [8](https://eduardo-vn.sentry.io/issues/7716291446/) es el evento del helper
 `.sdd-sentry-diagnostic.cjs`; no corresponde a un fallo de una funcionalidad pública.
 
-No se generaron eventos sintéticos en producción, no se cambiaron estados de las
-incidencias y no se desplegó desde esta revisión. La verificación de ausencia de
-recurrencias queda para el release que incluya estos cambios.
+La fase inicial fue de lectura y pruebas locales, sin despliegues ni cambios de
+estado. Las actuaciones posteriores y su verificación se detallan abajo.
 
 ## Nueva incidencia J y publicación de los arreglos
 
@@ -76,3 +75,23 @@ pruebas incluidos en el cambio.
 - Sin build completo ni comprobación del release en producción. El test HTTP
   del histórico usa el renderer y el manejo de errores instalados de Nuxt,
   devuelve 404 y no inicia trabajos programados ni conexiones a bases de datos.
+
+## Verificación posterior al despliegue
+
+`a5a3ba91ccd21cca53034f25a21d63f61eb87a7b` se publicó mediante la corrida
+[34255192837](https://github.com/eduair94/cambio-uruguay/actions/runs/34255192837),
+con pruebas y despliegue satisfactorios. La respuesta pública con una consulta
+de comprobación confirmó ese release; la portada sin consulta aún tenía una
+copia CDN anterior (`s-maxage=3600`). El bundle servido `/_nuxt/sRS3vfup.js`
+contiene el plugin corregido. Se extrajo únicamente ese plugin y se ejecutó con
+red y temporizadores simulados: recupera un fallo de `fetch`, uno de `update`
+y permite el siguiente intento; también limpia el intervalo y el hook. J quedó
+marcada como resuelta después de esta comprobación.
+
+La comprobación HTTP del histórico detectó un segundo problema: una casa
+inexistente ya no causaba el TypeError original, pero devolvía un shell vacío con
+HTTP 200. Los dos `onErrorCaptured` de `app.vue` devolvían `false`, bloqueando el
+manejador de Nuxt. La prueba anterior usaba el root de Nuxt sin este componente
+intermedio y por eso no detectaba el fallo. Se amplía con el `app.vue` real y se
+retiran ambos manejadores redundantes para que Nuxt procese los errores y
+conserve su estado HTTP. La prueba ampliada reprodujo el 200 antes del arreglo.
