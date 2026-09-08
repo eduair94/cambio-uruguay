@@ -22,6 +22,8 @@ export const rentalPageMessages = {
     contact: 'Consultar aviso original',
     openAdvertShort: 'Ver aviso',
     photoCredit: 'Foto publicada en {source}',
+    photoDescription: '{title} · Foto {n}',
+    seoBedrooms: '{n} dorm.',
     photoNumber: 'Ver foto {n} de {source}',
     photoHint:
       'Fotos publicadas por los anunciantes. La selección puede ser parcial; cada foto conserva su enlace al aviso original.',
@@ -134,7 +136,7 @@ export const rentalPageMessages = {
     unavailableRetry: 'Hay un problema temporal al cargar la información. Volvé a intentarlo.',
     propertySeo: '{type} en alquiler en {zone}: {price}',
     propertyDescription:
-      '{title}. Compará alquiler, gastos comunes, condiciones y avisos de esta propiedad en {zone}. Guardá la ficha y consultá el portal original.',
+      '{summary}. Revisá fotos, gastos comunes, condiciones y el aviso original del alquiler.',
   },
   en: {
     ...rentalMessages.en,
@@ -157,6 +159,8 @@ export const rentalPageMessages = {
     contact: 'Open original advert',
     openAdvertShort: 'View advert',
     photoCredit: 'Photo published on {source}',
+    photoDescription: '{title} · Photo {n}',
+    seoBedrooms: '{n} bed',
     photoNumber: 'View photo {n} from {source}',
     photoHint:
       'Photos published by advertisers. The selection may be partial; each photo links to its original advert.',
@@ -269,7 +273,7 @@ export const rentalPageMessages = {
     unavailableRetry: 'There is a temporary problem loading the information. Please try again.',
     propertySeo: '{type} for rent in {zone}: {price}',
     propertyDescription:
-      '{title}. Compare rent, common expenses, conditions and adverts for this property in {zone}. Save the page and contact the original portal.',
+      '{summary}. View rental photos, common expenses, conditions and the original advert.',
   },
   pt: {
     ...rentalMessages.pt,
@@ -292,6 +296,8 @@ export const rentalPageMessages = {
     contact: 'Abrir anúncio original',
     openAdvertShort: 'Ver anúncio',
     photoCredit: 'Foto publicada no {source}',
+    photoDescription: '{title} · Foto {n}',
+    seoBedrooms: '{n} quartos',
     photoNumber: 'Ver foto {n} do {source}',
     photoHint:
       'Fotos publicadas pelos anunciantes. A seleção pode ser parcial; cada foto tem um link para o anúncio original.',
@@ -404,6 +410,6 @@ export const rentalPageMessages = {
     unavailableRetry: 'Há um problema temporário ao carregar as informações. Tente novamente.',
     propertySeo: '{type} para alugar em {zone}: {price}',
     propertyDescription:
-      '{title}. Compare aluguel, condomínio, condições e anúncios deste imóvel em {zone}. Salve a ficha e consulte o portal original.',
+      '{summary}. Confira fotos, despesas comuns, condições e o anúncio original do aluguel.',
   },
 }

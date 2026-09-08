@@ -45,12 +45,12 @@ watch(
         ref="openButton"
         type="button"
         class="property-gallery__open"
-        :aria-label="t('expandPhoto')"
+        :aria-label="`${t('expandPhoto')}: ${current.title || property.title}`"
         @click="expanded = true"
       >
         <img
           :src="current.url"
-          :alt="current.title || property.title"
+          :alt="t('photoDescription', { title: current.title || property.title, n: selected + 1 })"
           width="720"
           height="450"
           fetchpriority="high"
@@ -74,10 +74,11 @@ watch(
         >
           <img
             :src="photo.url"
-            alt=""
+            :alt="t('photoDescription', { title: photo.title || property.title, n: index + 1 })"
             width="80"
             height="60"
             loading="lazy"
+            decoding="async"
             referrerpolicy="no-referrer"
             @error="markFailed(photo.url)"
           />
@@ -114,7 +115,9 @@ watch(
           <img
             v-if="current && available.length"
             :src="current.url"
-            :alt="current.title || property.title"
+            :alt="
+              t('photoDescription', { title: current.title || property.title, n: selected + 1 })
+            "
             referrerpolicy="no-referrer"
             @error="markFailed(current.url)"
           />

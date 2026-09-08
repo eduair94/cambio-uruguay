@@ -12,13 +12,11 @@ import type {
   RentalPageMarket,
   RentalPageResponse,
 } from '../../utils/rentalPage'
-import { RENTAL_SEO_PILOT_KEYS } from '../../utils/rentalSeoPilot'
-import { rentalStreet } from '../../utils/rentalPresentation'
+import { rentalPhotos, rentalStreet } from '../../utils/rentalPresentation'
 import { rentalPublicPropertyProjection, rentalExpandedPropertyProjection } from './rentalDetail'
 
 export const RENTAL_PAGE_STALE_DAYS = RENTAL_STALE_DAYS
 export const RENTAL_MARKET_MINIMUM_SAMPLE = 10
-const pilot = new Set(RENTAL_SEO_PILOT_KEYS)
 const locationCollator = new Intl.Collator('es', { sensitivity: 'base' })
 export type RentalPageEvidence = Pick<
   RentalPublicProperty,
@@ -212,7 +210,7 @@ export function rentalPageQualityIssues(property: RentalPublicProperty, usdUyu: 
     property.furnished === true,
   ].filter(Boolean).length
   if (attributes < 3) issues.push('insufficient_specific_attributes')
-  if (!property.offers.some(offer => publicUrl(offer.image))) issues.push('missing_photo')
+  if (!rentalPhotos(property).length) issues.push('missing_photo')
   if (!property.offers.some(offer => publicUrl(offer.url))) issues.push('missing_original_advert')
   if (!property.title || property.title.trim().length < 15) issues.push('insufficient_title')
   const comparableOffers = property.offers.filter(offer => publicUrl(offer.url))
@@ -228,7 +226,7 @@ export function rentalPageQualityIssues(property: RentalPublicProperty, usdUyu: 
   if (!rentalStreet(property) && !sourceDescription)
     issues.push('missing_address_or_source_description')
   if (!comparableOffers.some(offer => totalMonthlyUyu(offer, usdUyu) !== null))
-    issues.push('pilot_needs_known_monthly_cost')
+    issues.push('missing_known_monthly_cost')
   return issues
 }
 
@@ -385,7 +383,6 @@ export function buildRentalPage(
     }
   const reasons = rentalPageQualityIssues(property, usdUyu)
   if (ambiguousIdentity) reasons.push('ambiguous_identity')
-  if (!pilot.has(property.key)) reasons.push('outside_reviewed_pilot')
   const seen = new Set<string>([property.key])
   const similar = peers
     .filter(peer => {
@@ -414,7 +411,7 @@ export function rentalPageSitemapStages() {
   const { filter } = buildRentalFilter(query, RENTAL_PAGE_STALE_DAYS, 0)
   return [
     ...rentalPublicStages(
-      { ...filter, key: { $in: [...RENTAL_SEO_PILOT_KEYS] } },
+      { ...filter, propertyType: { $in: ['apartamento', 'casa'] } },
       RENTAL_PAGE_STALE_DAYS
     ),
     { $project: rentalExpandedPropertyProjection },
@@ -429,7 +426,11 @@ export function rentalPageSitemapUrls(
   return properties
     .map(property => buildRentalPage(property, [], usdUyu, ambiguousKeys.has(property.key)))
     .filter(page => page.seo.indexable)
-    .map(page => ({ loc: page.canonicalPath }))
+    .map(page => ({
+      loc: page.canonicalPath,
+      // The same attributed gallery as the page; no invented image captions or dates.
+      images: rentalPhotos(page.property).map(photo => ({ loc: photo.url })),
+    }))
 }
 
 /** A shared current advert is not evidence for two distinct canonical rental pages. */

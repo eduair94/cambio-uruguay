@@ -31,6 +31,7 @@ interface SitemapUrl {
   lastmod?: string
   changefreq?: string
   priority?: number
+  alternatives?: Array<{ hreflang: string; href: string }>
 }
 
 /** Import the handler fresh with `$fetch` stubbed, then run it. */
@@ -71,6 +72,15 @@ afterEach(() => {
 describe('sitemap with a healthy API', () => {
   it('emits the static backbone plus the API-derived routes', async () => {
     const urls = await runHandler(HEALTHY)
+    const counterparts = [
+      { hreflang: 'es-ES', href: '/alquileres-uruguay' },
+      { hreflang: 'en-US', href: '/en/alquileres-uruguay' },
+      { hreflang: 'pt-PT', href: '/pt/alquileres-uruguay' },
+      { hreflang: 'x-default', href: '/alquileres-uruguay' },
+    ]
+    for (const variant of counterparts.slice(0, 3)) {
+      expect(urls.find(url => url.loc === variant.href)?.alternatives).toEqual(counterparts)
+    }
     const locs = new Set(urls.map(u => u.loc))
     expect(locs.has('/')).toBe(true)
     expect(locs.has('/historico/brou')).toBe(true)
