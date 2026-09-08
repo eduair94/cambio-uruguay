@@ -70,6 +70,32 @@ y ancho a 390 px sin JavaScript, sin assets fallidos ni desbordes. Ambas variant
 Las capturas PNG de ambas rutas también resultaron idénticas byte por byte. La captura local
 de alquileres usa un catálogo vacío: cubre cabecera, filtros y estado vacío.
 
+## Resultado en producción
+
+Comparación con el despliegue inmediatamente anterior, `07a13cf`
+([run 34257572159](https://github.com/eduair94/cambio-uruguay/actions/runs/34257572159)), y el
+despliegue optimizado `b2a1bbb`
+([run 34261478646](https://github.com/eduair94/cambio-uruguay/actions/runs/34261478646)):
+
+| Paso | Anterior | Optimizado |
+| --- | ---: | ---: |
+| Build completo | 407,710 s | 351,064 s (−13,9 %) |
+| Cliente Vite | 153,810 s | 133,302 s |
+| SSR Vite | 134,237 s | 113,133 s |
+| Retención de assets del cliente | 4,802 s | 1,272 s |
+| Script remoto completo | 444,275 s | 384,193 s (−13,5 %) |
+| Job de despliegue del frontend, incluyendo SSH | 7 min 39 s | 6 min 30 s |
+
+La carga del servidor y la red varían: la copia del run inicial tardó 33 s, pero ya había bajado
+a 4,8 s antes de esta mejora. Por eso la comparación principal usa el run inmediatamente anterior.
+En la transición, el script antiguo hizo el pull en 0,43 s y reejecutó el nuevo: el helper de Git
+entrará en acción en la próxima publicación; todavía no se atribuye un ahorro medido a ese cambio.
+
+Producción confirmó la release `b2a1bbb` con HTTP 200. La hoja CSS mantuvo URL y SHA-256
+idénticos; el CSS dentro del HTML de alquileres bajó de 51.165 a 14.577 bytes. Se verificó el
+botón de 48 px, su apertura/cierre con seis enlaces y ausencia de desbordes a 320, 390 y 1.440 px.
+El service worker respondió 200. Las comprobaciones SSR previas y posteriores a la recarga pasaron.
+
 ## Garantías y comprobaciones
 
 Se mantienen flock, build separado en `.output-next`, prueba SSR antes del swap, retención de la
@@ -84,6 +110,11 @@ candidato que no renderiza SSR. La guarda de privacidad de ingresos también cor
 del frontend para los cambios sólo de páginas. Validación local: 60 pruebas aprobadas (incluidas
 las de actualización y caché PWA) y cuatro omisiones por plataforma; ESLint, Bash y actionlint
 sin errores.
+
+En Linux/Node 22, el [run de publicación 34261478646](https://github.com/eduair94/cambio-uruguay/actions/runs/34261478646)
+aprobó 6.429 pruebas del frontend (41 omitidas) y 2.557 del backend. Las siete pruebas de
+sincronización Git y las siete de retención del cliente pasaron, incluidas las comprobaciones
+de symlinks que no se ejecutan en Windows.
 
 No activar `experimental.buildCache` como arreglo de una línea: en las versiones instaladas de
 Nuxt y `@vite-pwa/nuxt`, un acierto de caché saltea la inicialización Vite del plugin PWA, por lo
