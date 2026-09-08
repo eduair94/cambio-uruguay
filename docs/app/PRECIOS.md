@@ -229,8 +229,49 @@ estimación y se dice.
 | boleto del interior | sólo STM | intendencias |
 | educación (matrícula, materiales) | ausente | ANEP y privados |
 
-El subproyecto **B** reemplaza la línea de comida de `costOfLiving.ts` por el
-precio medido de esta canasta. El **C** arma el plan de vida por ingreso, y
+### Subproyecto B, y por qué NO reemplazó la línea de comida
+
+**Hecho el 2026-09-08, con el alcance corregido por la medición.** El plan era
+reemplazar `COST_MODEL.foodPerAdult` por el costo medido de esta canasta. No se
+puede, y no es un defecto de la medición:
+
+| | medido | modelo | ratio |
+|---|---|---|---|
+| comida, hogar de 2, mensual | **$7.731** | $26.000 | **0,297×** |
+| por adulto | **$3.865** | $13.000 | — |
+| limpieza e higiene | $1.541 | $7.000 (misc) | 0,22× |
+
+$3.865 por adulto queda **por debajo de la línea de indigencia del INE**
+($6.628 de CBA per cápita). La causa está en la fuente, no en el cálculo: el
+catálogo del SIPC **no tiene leche fluida, ni pan fresco, ni legumbres, ni
+zanahoria, ni morrón, ni atún, ni avena** (verificado sobre los 213 artículos con
+mediana), y las cantidades de `NEEDS` son las de un índice de precios, no las de
+un consumo real. Publicar eso como presupuesto habría hecho la calculadora peor
+que con la estimación.
+
+Lo que B sí hizo:
+
+1. **La línea de comida se reexpresa a precios de hoy.** Sigue anclada en la CBA
+   del INE —una canasta completa, hecha por quien mide consumo— pero dejó de
+   servir el nivel de precios de diciembre de 2025 como presupuesto de septiembre
+   de 2026. Se indexa con el IPC interanual que ya sirve `GET /uy-figures`
+   (`restateFood` en `app/utils/costOfLiving.ts`, aplicado en `costsMerge.ts`
+   por el mismo mecanismo de override que el boleto). Supuesto declarado en la
+   página: **la inflación general no es la de los alimentos**. Se niega a indexar
+   más de **36 meses**: capitalizar tres años sobre una canasta que nadie
+   actualizó produce un número que parece fresco y esconde el problema real.
+2. **La canasta medida se publica en la calculadora** como sección propia, con
+   los alimentos concretos y su precio de hoy, y dice en la cara que no es un
+   presupuesto y por qué. Hace auditable la estimación en vez de taparla.
+3. **`nationalBasketCost`** (en `basket.ts`) da la única cifra **absoluta** que
+   esta fuente puede dar sin imputar nada, porque cada mediana sale de
+   observaciones reales de ese artículo — a diferencia del total por local, que
+   baja cuando al local le faltan artículos. Separa comida de limpieza e higiene:
+   el artículo más caro de la lista es el shampoo.
+
+Queda **sin hacer** y sería el próximo paso natural: cuando el índice de góndola
+tenga meses de historia, reemplazar el IPC general por el movimiento medido de
+los alimentos, que es más fino que el índice general para esta línea. El **C** arma el plan de vida por ingreso, y
 depende de que estas seis líneas dejen de ser supuestos o de que sigan siéndolo
 **y se diga**.
 
