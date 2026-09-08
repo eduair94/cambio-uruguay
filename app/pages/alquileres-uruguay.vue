@@ -1511,26 +1511,41 @@ useHead(() => ({
 .rentals-tools {
   margin: 8px 0 12px;
 }
-.rentals--mobile .rentals-chips :deep(.v-chip) {
-  height: 44px;
-  min-height: 44px;
-  flex: none;
-  max-width: none;
-}
-.rentals--mobile .rentals-chips :deep(.v-chip__content) {
-  white-space: nowrap;
-}
-.rentals--mobile .rentals-chips {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  margin-top: 8px;
-  gap: 6px;
-  scrollbar-width: thin;
-}
-.rentals--mobile .rentals-chips > .v-btn {
-  flex: none;
-  min-height: 44px;
+@media (max-width: 959px) {
+  .rentals-chips {
+    margin-top: 8px;
+    gap: 4px;
+  }
+  .rentals-chips :deep(.v-chip) {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+    min-height: 44px;
+    padding-inline: 8px 0;
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+  .rentals-chips :deep(.v-chip__content) {
+    min-width: 0;
+    padding-block: 4px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+  }
+  .rentals-chips :deep(.v-chip__close) {
+    flex: 0 0 44px;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    margin-inline: 0;
+  }
+  .rentals-chips > .v-btn {
+    flex: none;
+    min-height: 44px;
+  }
 }
 .rentals--mobile .rentals-toolbar {
   margin: 8px 0 12px;
@@ -1541,14 +1556,6 @@ useHead(() => ({
 }
 .rentals--mobile .rentals-results {
   scroll-margin-top: 126px;
-}
-.rentals--mobile .rentals-chips :deep(.v-chip__close) {
-  flex: 0 0 44px;
-  justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
-  max-width: 44px;
-  max-height: 44px;
 }
 .rentals-toolbar {
   display: flex;
