@@ -491,7 +491,8 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 // hreflang links for es/en/pt + x-default, plus htmlAttrs lang/dir) into useHead
 // at the layout level so every page emits them. Kept separate from the static
 // useHead below to avoid clobbering the existing canonical/meta/JSON-LD.
-const i18nHead = useLocaleHead()
+// Unhead deduplicates `id`; i18n's legacy default `hid` is no longer recognized.
+const i18nHead = useLocaleHead({ key: 'id' })
 useHead(() => ({
   htmlAttrs: i18nHead.value.htmlAttrs ?? {},
   link: i18nHead.value.link ?? [],
