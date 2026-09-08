@@ -119,6 +119,7 @@
               /></ClientOnly>
               <div class="legend" :aria-label="t('legend')">
                 <strong>{{ metricLabel }}</strong>
+                <p class="hint">{{ t('mapScale') }}</p>
                 <p v-if="layer === 'crime'" class="meta">{{ crimePeriods.join(' · ') }}</p>
                 <ul>
                   <li v-for="(bin, index) in bins" :key="index">
@@ -499,6 +500,7 @@ const crimePeriods = computed(() =>
 const palette = ['#d6e6f5', '#a8cae8', '#75a9d7', '#3d80ba', '#15517e']
 const values = computed(() =>
   (data.value?.zones || [])
+    .filter(zone => zone.boundaryAvailable)
     .map(metric)
     .filter((value): value is number => value !== null && Number.isFinite(value))
 )

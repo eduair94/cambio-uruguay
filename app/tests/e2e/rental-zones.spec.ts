@@ -51,8 +51,8 @@ const zone = (
     geographyName: department === 'Montevideo' ? neighborhood : department,
     periodFrom: '2025-07-01',
     periodTo: '2026-06-30',
-    total: 123,
-    byOffense: { Hurtos: 100, Rapiñas: 23 },
+    total: 124,
+    byOffense: { Hurtos: 100, Rapiñas: 23, 'violencia-domestica': 1 },
     source,
   },
 })
@@ -63,7 +63,7 @@ const zones = [
 ]
 zones[2]!.prices.rent = { count: 12, mean: 17000, median: 15000, p25: 14000, p75: 18000 }
 
-async function setup(page: Page, target: string, marketOnly = false) {
+async function setup(page: Page, target: string, marketOnly = false, mapScaleRegression = false) {
   const state = {
     requests: [] as URL[],
     posts: [] as Record<string, unknown>[],
@@ -95,7 +95,36 @@ async function setup(page: Page, target: string, marketOnly = false) {
         .map(item =>
           marketOnly
             ? { ...item, services: null, crime: null, boundaryAvailable: false, officialCode: null }
-            : item
+            : !mapScaleRegression
+              ? item
+              : {
+                  ...item,
+                  prices: {
+                    ...item.prices,
+                    rent: {
+                      ...distribution(12),
+                      mean:
+                        item.id === 'atlantida' ? 163727 : item.id === 'pocitos' ? 37323 : 22000,
+                    },
+                  },
+                  services: {
+                    status: 'ready',
+                    source,
+                    coverage: 'partial',
+                    counts: {
+                      supermarket: item.id === 'atlantida' ? 9999 : item.id === 'pocitos' ? 20 : 3,
+                    },
+                  },
+                  crime: {
+                    ...item.crime!,
+                    total: item.id === 'atlantida' ? 99999 : item.id === 'pocitos' ? 500 : 124,
+                    byOffense: {
+                      Hurtos: item.id === 'atlantida' ? 99975 : item.id === 'pocitos' ? 476 : 100,
+                      Rapiñas: 23,
+                      'violencia-domestica': 1,
+                    },
+                  },
+                }
         ),
       boundaryUrl: marketOnly ? null : '/api/rentals/zones/boundaries',
       sources: [source],
@@ -346,7 +375,7 @@ test('1366px: map polygons provide keyboard actions and an equivalent list', asy
   page,
 }, info) => {
   await page.setViewportSize({ width: 1366, height: 844 })
-  const state = await setup(page, '/barrios-alquileres-uruguay')
+  const state = await setup(page, '/barrios-alquileres-uruguay', false, true)
   await expect(
     page.getByRole('button', { name: 'Ver información de Cordón, Montevideo', exact: true })
   ).toBeVisible()
@@ -363,9 +392,23 @@ test('1366px: map polygons provide keyboard actions and an equivalent list', asy
   const meanPolygon = page.getByRole('button', { name: /Cordón: Alquiler promedio/ })
   await expect(meanPolygon).toHaveAttribute('aria-label', /22\.000/)
   await expect(page.locator('.legend')).toContainText('Alquiler promedio · UYU')
+  await expect(page.locator('.legend')).toContainText('37.323')
+  await expect(page.locator('.legend')).not.toContainText('163.727')
+  expect(await meanPolygon.getAttribute('fill')).not.toBe(
+    await page.getByRole('button', { name: /Pocitos: Alquiler promedio/ }).getAttribute('fill')
+  )
   await meanPolygon.focus()
   await page.keyboard.press('Enter')
   await shot(page, info, 'map-detail-1366')
+  await selectField(page, 'Qué querés comparar', 'Servicios registrados')
+  await expect(page.locator('.legend')).toContainText('20')
+  await expect(page.locator('.legend')).not.toContainText('9999')
+  await selectField(page, 'Qué querés comparar', 'Denuncias registradas')
+  await expect(page.locator('.legend')).toContainText('500')
+  await expect(page.locator('.legend')).not.toContainText('99.999')
+  await expect(page.getByTestId('rental-zone-detail')).toContainText('Violencia doméstica')
+  await expect(page.getByTestId('rental-zone-detail')).not.toContainText('violencia-domestica')
+  await shot(page, info, 'crime-detail-1366')
   await page.getByRole('button', { name: 'Lista', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Ver información de Cordón, Montevideo', exact: true })

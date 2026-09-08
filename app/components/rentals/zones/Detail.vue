@@ -155,7 +155,7 @@ function offenseLabel(value: string | number) {
     .replace(/[\u0300-\u036F]/g, '')
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '_')
+    .replace(/[-\s]+/g, '_')
   const key = offenseKeys[normalized]
   return key ? t(key) : String(value)
 }

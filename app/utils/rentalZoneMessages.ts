@@ -97,6 +97,7 @@ export const rentalZoneMessages = {
     notZero: 'Sin dato no significa cero.',
     rentalsInZone: 'Ver alquileres en esta zona',
     legend: 'Leyenda',
+    mapScale: 'Escala calculada sólo con los barrios del mapa que tienen datos.',
     lower: 'Menor valor',
     higher: 'Mayor valor',
     mapUnavailable: 'No pudimos cargar el mapa. La lista conserva toda la información.',
@@ -228,6 +229,7 @@ export const rentalZoneMessages = {
     notZero: 'No data does not mean zero.',
     rentalsInZone: 'View rentals in this area',
     legend: 'Legend',
+    mapScale: 'The scale uses only mapped neighbourhoods with available data.',
     lower: 'Lower value',
     higher: 'Higher value',
     mapUnavailable: 'We could not load the map. All information remains available in the list.',
@@ -359,6 +361,7 @@ export const rentalZoneMessages = {
     notZero: 'Sem dados não significa zero.',
     rentalsInZone: 'Ver aluguéis nesta região',
     legend: 'Legenda',
+    mapScale: 'A escala usa somente bairros do mapa com dados disponíveis.',
     lower: 'Menor valor',
     higher: 'Maior valor',
     mapUnavailable:
