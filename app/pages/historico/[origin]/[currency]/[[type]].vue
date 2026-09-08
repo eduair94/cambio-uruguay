@@ -1200,6 +1200,23 @@ const getSellColor = (value: number): string => {
   return 'green-darken-2'
 }
 
+// The one URL that represents this page. BILLETE/CABLE/INTERBANCARIO are
+// alternate views of the same series and fold into the base, so Google
+// consolidates their signals instead of splitting them across near-duplicates;
+// eBROU is a distinct product and stays self-canonical.
+//
+// Initialize before useSeoMeta: Unhead immediately evaluates getters on the
+// client, including og:url, while server rendering defers their evaluation.
+// The canonical, BreadcrumbList and Dataset all share this same URL.
+const historicalCanonical = computed(
+  () =>
+    `https://cambio-uruguay.com${historyDetailCanonicalPath(
+      String(route.params.origin),
+      String(route.params.currency),
+      route.params.type as string | undefined
+    )}`
+)
+
 // SEO Configuration with dynamic values
 // Lead the snippet with this casa's actual numbers — the rate is what the query
 // asked for. The rate lives in the description, never the <title>: a title is
@@ -1277,21 +1294,6 @@ defineOgImageComponent('Cambio', {
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 
-// The one URL that represents this page. BILLETE/CABLE/INTERBANCARIO are
-// alternate views of the same series and fold into the base, so Google
-// consolidates their signals instead of splitting them across near-duplicates;
-// eBROU is a distinct product and stays self-canonical.
-//
-// Used for <link rel=canonical>, og:url, the BreadcrumbList trail and the
-// Dataset url, so structured data never points somewhere the canonical does not.
-const historicalCanonical = computed(
-  () =>
-    `https://cambio-uruguay.com${historyDetailCanonicalPath(
-      String(route.params.origin),
-      String(route.params.currency),
-      route.params.type as string | undefined
-    )}`
-)
 useHead(() => ({
   // Overrides the self-canonical that @nuxtjs/i18n's useLocaleHead emits from
   // the layout — it keys the tag `i18n-can`, so reuse that key or both render.
