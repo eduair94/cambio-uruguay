@@ -56,12 +56,19 @@ fallo de esta familia de rutas, sin afirmar que se reconstruyó su URL exacta.
   módulo sin su nombre ni frames. Nuxt ya tiene recuperación mediante recarga;
   el nuevo despliegue mantiene la misma retención de tres días. Pasaron 23
   pruebas de retención y caché; una de symlinks se omitió en Windows. No se
-  atribuye este evento a una causa concreta sólo por no repetirse.
+  atribuye este evento a una causa concreta sólo por no repetirse. La consulta
+  final mostró un segundo evento a las 22:42:23 UTC en release `c4dd0d5`, ruta
+  `/sucursales`: tampoco conserva nombre del archivo ni frames. Ese evento
+  es anterior a la finalización del despliegue `adda48a` y no demuestra que
+  éste corrija el fallo de carga.
 
-[K](https://eduardo-vn.sentry.io/issues/7719782797/) tiene un evento en el bundle
-`BR_MveoI.js` y requiere cotejo de su traza. [8](https://eduardo-vn.sentry.io/issues/7716291446/)
-es el diagnóstico sintético antiguo `.sdd-sentry-diagnostic.cjs`, no una
-funcionalidad pública.
+[K](https://eduardo-vn.sentry.io/issues/7719782797/) corresponde a la petición
+periódica de actualización PWA sin manejo del fallo de red: se cotejó
+`BR_MveoI.js:2253:57015` de release `6666116`. La corrección `a5a3ba9` ya cubre
+ese caso y se confirmó su recuperación en el bundle desplegado. Se marcó como
+resuelta. [8](https://eduardo-vn.sentry.io/issues/7716291446/) es el diagnóstico
+sintético antiguo `.sdd-sentry-diagnostic.cjs`, no una funcionalidad pública;
+también se cerró, identificándolo como prueba.
 
 ## Validación previa a publicar
 
@@ -70,3 +77,25 @@ cuatro archivos de implementación y pruebas modificados. Los casos sin causa
 confirmada no se consideran arreglados ni se cierran por mera ausencia de
 recurrencias. La actualización de estados se realiza después de comprobar el
 despliegue, con la sesión autenticada de Sentry.
+
+## Comprobación en producción
+
+El [despliegue 34286922303](https://github.com/eduair94/cambio-uruguay/actions/runs/34286922303)
+finalizó correctamente para `adda48ab69b795288702c9155469c755595ef0c3`. A las
+22:48:49 UTC se confirmó esa release en los recursos servidos en producción,
+la recuperación PWA y su limpieza de temporizadores. El histórico válido
+respondió 200; el origen inexistente y su imagen OG, 404. La imagen OG de una
+casa válida respondió 200 con contenido PNG.
+
+El navegador real cargó el detalle de BROU con título, canónica y `og:url`
+correctos y sin los `ReferenceError`/`TypeError` reparados. Apareció un aviso
+genérico de discrepancia de hidratación sin identificar el elemento. Las
+fechas y el rango visibles coinciden con el HTML del servidor; no se atribuye
+ese aviso a una causa confirmada ni se considera corregido.
+
+Tras estas verificaciones, Sentry confirmó individualmente el estado
+`Resolved` de M, Q, N, P y 9. Junto con K y la prueba 8, son siete incidencias
+cerradas en esta revisión; D, E y H permanecen abiertas por falta de evidencia
+para confirmar una corrección.
+La consulta final `is:unresolved`, todos los entornos y últimos catorce días,
+mostró exactamente esas tres incidencias.
