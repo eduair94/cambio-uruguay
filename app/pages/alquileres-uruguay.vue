@@ -1704,8 +1704,10 @@ useSchemaOrg([
 }
 .rentals-head h1 {
   margin: 0 0 8px;
-  font-size: 2rem;
-  font-weight: 800;
+  /* Rol Headline de DESIGN.md. No Display: ese es el idioma `.hero-title` de las landings, y su
+     minimo de 1.55rem parte este titulo en dos lineas a 320px. Medido. */
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
@@ -1864,7 +1866,7 @@ button.rental-card__media {
   align-items: center;
   gap: 6px;
   padding: 5px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgb(var(--v-theme-surface));
   color: rgb(var(--v-theme-on-surface));
   font-size: 0.76rem;
@@ -1901,7 +1903,7 @@ button.rental-card__media {
   bottom: 12px;
   left: 12px;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgb(var(--v-theme-surface));
   color: rgb(var(--v-theme-on-surface));
   font-size: 0.78rem;
@@ -1964,8 +1966,9 @@ button.rental-card__media {
   border-block: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 .rental-card__price {
-  font-size: 1.35rem;
-  font-weight: 800;
+  /* The Stat Step de DESIGN.md: la cifra titular de una tarjeta de dato. */
+  font-size: 1.5rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 .rental-card__price span {
@@ -2005,7 +2008,7 @@ button.rental-card__media {
   gap: 8px;
   min-height: 44px;
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.78rem;
   text-decoration: none;
   color: inherit;
@@ -2258,9 +2261,6 @@ button.rental-card__media {
   }
 }
 @media (max-width: 599px) {
-  .rentals-head h1 {
-    font-size: clamp(1.35rem, 6.4vw, 1.55rem);
-  }
   .rentals-grid {
     grid-template-columns: 1fr;
   }
@@ -2379,7 +2379,7 @@ button.rental-card__media {
   }
   .rental-card__noimage {
     text-align: center;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     padding: 4px;
   }
   .rental-card__save {
@@ -2406,7 +2406,7 @@ button.rental-card__media {
     right: 4px;
     padding: 4px;
     text-align: center;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
   }
   .rental-card__cost {
     border: 0;
@@ -2414,7 +2414,6 @@ button.rental-card__media {
     margin: 0;
   }
   .rental-card__price {
-    font-size: 1.4rem;
     line-height: 1.2;
     overflow-wrap: anywhere;
   }

@@ -1,0 +1,34 @@
+fix(alquileres): los siete valores del directorio vuelven a la rampa de DESIGN.md
+
+El detector marcaba 7 valores fuera del sistema en /alquileres-uruguay. Ninguno era nuevo (blame:
+a0417e0b del 4/9, f668df8f del 7/9, 4aafd524 del 8/9); se resuelven ahora contra DESIGN.md, no se
+silencian con un ignore.
+
+Radios (3): DESIGN.md fija la escala en 4/8/12/16/pill y dice que un radio fuera de esos pasos es
+deriva, que se redondea al mas cercano en vez de agregar un quinto. Los 6px de `__flag`, `__badge`
+y `__offer` pasan a 8px, el paso de "compact records and list rows", que es lo que son y el que ya
+usaba la foto de la tarjeta al lado.
+
+Tamanos por debajo del piso (2): The Four Steps Rule dice "nothing renders below 0.75rem". El
+0.7rem de `__noimage` y el 0.65rem de `__badge` a 359px suben a 0.75rem (label). Medido a 320px:
+ninguno de los dos desborda su contenedor.
+
+Titulo (1): el h1 estaba en 2rem fijo mas un override movil a mano. Pasa al rol Headline
+(700, clamp(1.35rem, 3vw, 1.75rem), 1.2), y el override sobra porque el clamp cubre el mismo rango.
+NO se usa Display, que a primera vista seria el rol de un h1: Display es el idioma `.hero-title` de
+las landings y su minimo de 1.55rem parte este titulo en dos lineas a 320px (26 -> 55 px de alto,
+medido). Headline deja el movil identico (21,6 px, una linea) y baja el escritorio de 32 a 28 px.
+
+Precio (1): el override movil lo subia a 1.4rem, por encima de su propia base de 1.35rem, y
+ninguno de los dos es un paso. La cifra titular de una tarjeta de dato tiene rol propio -- The Stat
+Step, 700 y 1.5rem con tabular-nums, que la clase ya declaraba --, asi que la base pasa a `stat` y
+el override desaparece. Medido a 320, 1440 y 2200 px: cero desbordes en las 24 tarjetas y sin
+scroll horizontal, con la grilla nueva de 3/4/5 columnas.
+
+Detector en cero sobre el archivo. Lint limpio y 6.661 tests verdes.
+
+Queda anotado y sin tocar: `.rental-card__price` traia 1.35rem y `__badge`/`__offer` traen 0.78rem,
+que tampoco son pasos de la rampa y que el detector no marca. El 1.35rem se va con este cambio; los
+0.78rem quedan para quien este rediseniando la tarjeta.
+
+Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
