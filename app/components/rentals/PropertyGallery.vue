@@ -150,6 +150,7 @@ watch(
       v-model="expanded"
       :photos="media"
       :title="property.title"
+      :dialog-label="t('photos')"
       :start-index="selected"
       referrer-policy="no-referrer"
     />
