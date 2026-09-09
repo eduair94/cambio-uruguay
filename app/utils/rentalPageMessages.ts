@@ -14,6 +14,14 @@ export const rentalPageMessages = {
     back: 'Volver a mi búsqueda',
     overview: 'Resumen',
     offersHeading: 'Compará los avisos de esta propiedad',
+    gapHeading: 'El mismo inmueble, más barato en otro portal',
+    gapLine: '{cheap} lo publica a {cheapPrice}; en {dear} está {diff} más caro ({pct} %).',
+    gapNote:
+      'Compara el alquiler pedido en cada aviso, no el total con gastos comunes, y los avisos pueden ser de inmobiliarias distintas. Un aviso en dólares se pasa a pesos con la cotización de la lectura. Confirmá precio y condiciones con el anunciante antes de decidir.',
+    listedPublished: 'Publicado hace {days} días ({date})',
+    listedObserved: 'Lo vemos hace {days} días (desde {date})',
+    listedObservedNote:
+      'Es la primera vez que leímos el aviso, no necesariamente la fecha en que se publicó. Ningún portal publica cuánto lleva un aviso en circulación.',
     offersHint:
       'Cada precio, gasto y condición pertenece a un aviso. Elegí uno para revisar su costo y las condiciones que declara.',
     chooseOffer: 'Usar este aviso para calcular',
@@ -151,6 +159,14 @@ export const rentalPageMessages = {
     back: 'Back to my search',
     overview: 'Overview',
     offersHeading: 'Compare adverts for this property',
+    gapHeading: 'The same home, cheaper on another portal',
+    gapLine: '{cheap} lists it at {cheapPrice}; on {dear} it is {diff} more ({pct} %).',
+    gapNote:
+      'This compares the rent each advert asks for, not the total with common expenses, and the adverts may come from different agencies. An advert priced in dollars is converted at the reading’s rate. Confirm price and terms with the advertiser before deciding.',
+    listedPublished: 'Published {days} days ago ({date})',
+    listedObserved: 'We have been seeing it for {days} days (since {date})',
+    listedObservedNote:
+      'That is when we first read the advert, not necessarily when it was published. No portal publishes how long an advert has been circulating.',
     offersHint:
       'Each price, fee and condition belongs to one advert. Select an advert to review its costs and stated conditions.',
     chooseOffer: 'Use this advert for calculations',
@@ -288,6 +304,14 @@ export const rentalPageMessages = {
     back: 'Voltar à minha busca',
     overview: 'Resumo',
     offersHeading: 'Compare os anúncios deste imóvel',
+    gapHeading: 'O mesmo imóvel, mais barato em outro portal',
+    gapLine: '{cheap} anuncia por {cheapPrice}; em {dear} está {diff} mais caro ({pct} %).',
+    gapNote:
+      'Compara o aluguel pedido em cada anúncio, não o total com condomínio, e os anúncios podem ser de imobiliárias diferentes. Um anúncio em dólares é convertido pela cotação da leitura. Confirme preço e condições com o anunciante antes de decidir.',
+    listedPublished: 'Publicado há {days} dias ({date})',
+    listedObserved: 'Nós o vemos há {days} dias (desde {date})',
+    listedObservedNote:
+      'É a primeira vez que lemos o anúncio, não necessariamente a data de publicação. Nenhum portal publica há quanto tempo um anúncio circula.',
     offersHint:
       'Cada preço, despesa e condição pertence a um anúncio. Escolha um para conferir seu custo e as condições informadas.',
     chooseOffer: 'Usar este anúncio no cálculo',

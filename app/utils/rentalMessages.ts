@@ -181,6 +181,13 @@ export const rentalMessages = {
     viewPhotos: 'Ver fotos',
     loadingPhotos: 'Buscando el resto de las fotos…',
     portals: '{n} portales',
+    gapLine: 'Más barato en {cheap}: {diff} menos que en {dear} ({pct} %)',
+    gapNote:
+      'Compara el alquiler pedido en cada aviso, no el total con gastos comunes; un aviso en dólares se pasa a pesos con la cotización de la lectura. Confirmá precio y condiciones con el anunciante.',
+    listedPublished: 'Publicado hace {days} días',
+    listedObserved: 'Lo vemos hace {days} días',
+    listedObservedNote:
+      'Es la primera vez que leímos el aviso, no necesariamente la fecha en que se publicó.',
     rent: 'Alquiler',
     monthlyTotal: 'Total mensual',
     expenses: 'Gastos comunes',
@@ -418,6 +425,13 @@ export const rentalMessages = {
     viewPhotos: 'View photos',
     loadingPhotos: 'Fetching the remaining photos…',
     portals: '{n} portals',
+    gapLine: 'Cheaper on {cheap}: {diff} less than on {dear} ({pct} %)',
+    gapNote:
+      'This compares the rent each advert asks for, not the total with common expenses; an advert priced in dollars is converted at the reading’s rate. Confirm price and terms with the advertiser.',
+    listedPublished: 'Published {days} days ago',
+    listedObserved: 'We have been seeing it for {days} days',
+    listedObservedNote:
+      'That is when we first read the advert, not necessarily when it was published.',
     rent: 'Rent',
     monthlyTotal: 'Monthly total',
     expenses: 'Common expenses',
@@ -660,6 +674,13 @@ export const rentalMessages = {
     viewPhotos: 'Ver fotos',
     loadingPhotos: 'Buscando as demais fotos…',
     portals: '{n} portais',
+    gapLine: 'Mais barato em {cheap}: {diff} a menos do que em {dear} ({pct} %)',
+    gapNote:
+      'Compara o aluguel pedido em cada anúncio, não o total com condomínio; um anúncio em dólares é convertido pela cotação da leitura. Confirme preço e condições com o anunciante.',
+    listedPublished: 'Publicado há {days} dias',
+    listedObserved: 'Nós o vemos há {days} dias',
+    listedObservedNote:
+      'É a primeira vez que lemos o anúncio, não necessariamente a data de publicação.',
     rent: 'Aluguel',
     monthlyTotal: 'Total mensal',
     expenses: 'Condomínio',

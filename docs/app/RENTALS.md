@@ -1,5 +1,13 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Antigüedad del aviso y brecha entre portales — 9 de septiembre de 2026
+
+La tarjeta y la ficha muestran **cuánto lleva publicada** la vivienda, y —cuando corresponde— que
+el mismo inmueble está más barato en otro portal. Los dos cálculos son puros y viven en
+`app/utils/rentalPortals.ts`. La medición que descubrió que los inventarios son casi disjuntos
+(una sola vivienda multiportal en 54.645), la comparativa pública que la explica y el endpoint
+`GET /api/rentals/portales` están en [RENTAL_PORTALS.md](./RENTAL_PORTALS.md).
+
 ## Tipos múltiples y garajes — 7 de septiembre de 2026
 
 El filtro permite seleccionar varios tipos con semántica **OR**. `type=oficina` sigue siendo

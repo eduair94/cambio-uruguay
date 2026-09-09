@@ -18,6 +18,7 @@ import {
   type RentalOffer,
   type RentalPublicProperty,
 } from '~/utils/rentals'
+import { portalPriceGap, rentalListedFor } from '~/utils/rentalPortals'
 import {
   emptyRentalSaved,
   readRentalSaved,
@@ -81,6 +82,19 @@ const selectedOffer = computed(
 )
 const usdUyu = computed(() => data.value?.usdUyu ?? 0)
 const source = (offer: RentalOffer) => RENTAL_SOURCE_LABEL[offer.source]
+const sourceName = (key: RentalOffer['source']) => RENTAL_SOURCE_LABEL[key]
+// La brecha se calcula sobre los avisos QUE SE MUESTRAN (`offers`, ya filtrados por enlace usable):
+// anunciar un precio más barato en un aviso que la ficha no enlaza sería una promesa sin puerta.
+const priceGap = computed(() =>
+  property.value ? portalPriceGap({ ...property.value, offers: offers.value }) : null
+)
+// Mismo instante para servidor y cliente: ver el comentario en /alquileres-uruguay.
+const renderedAt = useState('rental-rendered-at', () => Date.now())
+const listedFor = computed(() =>
+  property.value
+    ? rentalListedFor({ ...property.value, offers: offers.value }, new Date(renderedAt.value))
+    : null
+)
 const money = (value: number, currency: RentalOffer['currency'] = 'UYU') =>
   rentalMoney(value, currency, locale.value)
 const date = (value: string | null | undefined) =>
@@ -474,6 +488,28 @@ useHead(() => ({
         >
           <h2 id="rental-offers-title">{{ t('offersHeading') }}</h2>
           <p>{{ t('offersHint') }}</p>
+          <VAlert
+            v-if="priceGap"
+            type="success"
+            variant="tonal"
+            density="comfortable"
+            class="mb-4"
+            data-testid="rental-page-gap"
+          >
+            <p class="font-weight-medium mb-1">{{ t('gapHeading') }}</p>
+            <p class="mb-1">
+              {{
+                t('gapLine', {
+                  cheap: source(priceGap.cheapestOffer),
+                  cheapPrice: money(priceGap.cheapestUyu),
+                  dear: sourceName(priceGap.runnerUpSource),
+                  diff: money(priceGap.diffUyu),
+                  pct: Math.round(priceGap.diffPct),
+                })
+              }}
+            </p>
+            <p class="text-caption mb-0">{{ t('gapNote') }}</p>
+          </VAlert>
           <RentalsAvailabilityReport
             :offers="offers"
             :summary="property.availability"
@@ -716,6 +752,17 @@ useHead(() => ({
           aria-labelledby="rental-provenance-title"
         >
           <h2 id="rental-provenance-title">{{ t('provenanceTitle') }}</h2>
+          <p v-if="listedFor" data-testid="rental-page-listed">
+            {{
+              t(listedFor.basis === 'published' ? 'listedPublished' : 'listedObserved', {
+                days: listedFor.days,
+                date: date(listedFor.date),
+              })
+            }}
+          </p>
+          <p v-if="listedFor?.basis === 'observed'" class="text-caption">
+            {{ t('listedObservedNote') }}
+          </p>
           <p>{{ t('firstIndexed', { date: date(property.firstSeen) }) }}</p>
           <p>{{ t('freshnessHint') }}</p>
           <NuxtLink :to="{ path: localePath('/alquileres-uruguay'), hash: '#rental-coverage' }">{{
