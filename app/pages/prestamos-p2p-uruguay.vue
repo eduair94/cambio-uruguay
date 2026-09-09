@@ -904,7 +904,7 @@ useHead(() => ({
 
 <style scoped>
 /* Esta página declara sus propios márgenes: ver DESIGN.md, "The Text Block Owns Its Top Margin". */
-.p2p-page :is(p, h1, h2, h3, ul, ol, blockquote) {
+:where(.p2p-page) :where(p, h1, h2, h3, ul, ol, blockquote) {
   margin-top: 0;
 }
 

@@ -585,7 +585,7 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
   max-width: 1280px;
   padding: 12px;
 }
-.sales-directory :is(h1, h2, h3, p) {
+:where(.sales-directory) :where(h1, h2, h3, p) {
   margin: 0;
 }
 .sales-directory__header {

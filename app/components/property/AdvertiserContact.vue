@@ -141,7 +141,7 @@ const date = (value: string) =>
   margin-block: 16px;
   overflow-wrap: anywhere;
 }
-.advertiser-contact :is(p, ul) {
+:where(.advertiser-contact) :where(p, ul) {
   margin: 0;
 }
 .advertiser-contact a {

@@ -358,7 +358,7 @@ defineOgImageComponent('Cambio', {
   max-width: 1280px;
   padding: 12px;
 }
-.sale-detail :is(h1, h2, p, dl, dd) {
+:where(.sale-detail) :where(h1, h2, p, dl, dd) {
   margin: 0;
 }
 .sale-detail a:not(.v-btn) {

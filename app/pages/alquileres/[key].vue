@@ -1082,8 +1082,13 @@ useHead(() => ({
   min-width: 0;
 }
 /* Every text block declares its own gap; the browser's 1em margins are not ours. `dd` belongs in
-   this list: its UA `margin-inline-start: 40px` indented every value that is not in a flex row. */
-.rental-page :is(h1, h2, h3, p, ul, ol, dl, dd) {
+   this list: its UA `margin-inline-start: 40px` indented every value that is not in a flex row.
+   `:where()` and NOT `:is()`: `:is()` takes the specificity of its argument, so this reset scored
+   (0,1,1) and beat every `.rental-page__x { margin-top }` in this file, which score (0,1,0). It
+   was silently flattening seventeen blocks to zero — the amenity chips sat flush against their
+   own heading. `:where()` scores zero, so the reset still clears the UA margins and every class
+   below still wins. Medido en producción antes y después; ver docs/app/CSS_RESET_SPECIFICITY.md. */
+:where(.rental-page) :where(h1, h2, h3, p, ul, ol, dl, dd) {
   margin: 0;
 }
 .rental-page h1 {

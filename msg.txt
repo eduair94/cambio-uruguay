@@ -1,0 +1,33 @@
+fix(app): los resets de margen van en :where(), no en :is()
+
+Reportado como "chips pegadas al titulo de la seccion" en la ficha de alquiler. La causa no
+estaba en las chips: diecisiete componentes y paginas abren su bloque de estilos con un reset
+escrito `.foo :is(h1, h2, p, ul, ...) { margin: 0 }`, y `:is()` TOMA LA ESPECIFICIDAD DE SU
+ARGUMENTO. Ese selector no puntua (0,1,0) sino (0,1,1), asi que le gana a todas las reglas del
+propio archivo, que son clases sueltas. El reset no limpiaba los margenes del navegador:
+borraba los del autor, en silencio, porque una regla que pierde la cascada no aparece en ningun
+log ni rompe ningun test.
+
+Medido en produccion con el navegador, no leido del codigo:
+- Ficha de alquiler: 17 bloques aplastados a margin-top 0. Las chips de comodidades quedaban a
+  0 px de su encabezado donde su clase pedia 12.
+- /prestamos-p2p-uruguay: 40 elementos. Ahi lo pisado son las utilidades mt-2/mt-3/mt-4 de
+  Vuetify, que tambien puntuan (0,1,0): ningun margen escrito en ese template se aplicaba.
+- El reset de SurfaceCard viaja dentro de :deep(), asi que aplastaba tambien el contenido que
+  cualquier pagina le pasa por slot.
+
+`:where()` puntua cero: el reset le sigue ganando a la hoja del navegador (cualquier declaracion
+del autor le gana al user-agent) y pierde contra cualquier clase. La clase raiz tambien va en
+:where(), y no por prolijidad: dejarla suelta deja el selector en (0,1,0), que EMPATA con
+`.rental-page__amenities` y con `mt-3`, y un empate lo decide el orden de aparicion entre el CSS
+scoped del componente y las utilidades de Vuetify, que no es predecible.
+
+No se toca `.market-head :is(h1, h2)` de ChairMarketDirectory: ese :is() agrupa tipografia, no
+resetea margenes, y su especificidad extra no le esta ganando a nadie.
+
+Verificado reescribiendo las reglas en vivo sobre produccion a 360 px: encabezado -> primera chip
+pasa de 0 a 12 px, el hueco entre filas queda igual en 8, y el documento crece 1 % (14.933 ->
+15.083 px). No agrega aire: devuelve el que cada regla ya declaraba. Suite completa del app en
+verde (6.668 tests) y lint limpio.
+
+Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>

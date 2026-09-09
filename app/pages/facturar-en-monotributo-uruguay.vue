@@ -600,7 +600,7 @@ useHead(() => ({
 /* El ritmo vertical lo declara la página, no la hoja del navegador: Vuetify 4 no resetea los
    bloques de texto y su `margin-block: 1em` gana por colapso a cualquier gap más chico.
    Ver DESIGN.md, "The Text Block Owns Its Top Margin Rule". */
-.mono-invoicing-page :is(p, h1, h2, h3, h4, ul, ol) {
+:where(.mono-invoicing-page) :where(p, h1, h2, h3, h4, ul, ol) {
   margin-top: 0;
 }
 

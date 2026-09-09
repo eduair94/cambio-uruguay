@@ -421,7 +421,7 @@ onBeforeUnmount(() => {
   color: rgb(var(--v-theme-on-surface));
   overflow: hidden;
 }
-.sale-search :is(h2, p) {
+:where(.sale-search) :where(h2, p) {
   margin: 0;
 }
 .sale-search header,

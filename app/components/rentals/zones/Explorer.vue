@@ -640,7 +640,7 @@ onBeforeUnmount(() => boundaryRequest?.abort())
   padding: 20px;
   overscroll-behavior: contain;
 }
-.zone-explorer :is(p, ul) {
+:where(.zone-explorer) :where(p, ul) {
   margin: 0;
 }
 .zone-controls {

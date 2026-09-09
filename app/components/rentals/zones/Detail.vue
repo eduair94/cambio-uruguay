@@ -220,7 +220,7 @@ defineExpose({ focus: () => section.value?.focus({ preventScroll: true }) })
   border-radius: 12px;
   background: rgb(var(--v-theme-surface));
 }
-.zone-detail :is(h3, p, ul, dl, dd) {
+:where(.zone-detail) :where(h3, p, ul, dl, dd) {
   margin: 0;
 }
 header {

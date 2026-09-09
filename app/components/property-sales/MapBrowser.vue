@@ -195,7 +195,7 @@ watch(params, () => closeDetail(false))
 onBeforeUnmount(() => controller?.abort())
 </script>
 <style scoped>
-.sale-map :is(p, h2) {
+:where(.sale-map) :where(p, h2) {
   margin: 0;
 }
 .sale-map__count {

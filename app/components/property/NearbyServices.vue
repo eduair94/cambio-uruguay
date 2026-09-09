@@ -141,7 +141,7 @@ const distance = (value: number) =>
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.14);
   scroll-margin-top: 100px;
 }
-.nearby-services :is(h2, h3, p, ul) {
+:where(.nearby-services) :where(h2, h3, p, ul) {
   margin: 0;
 }
 .nearby-services h2 {

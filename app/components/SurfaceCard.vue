@@ -82,7 +82,7 @@ withDefaults(
 }
 
 /* El ritmo lo declaramos nosotros, no la hoja del navegador. */
-.surface-card :deep(:is(p, h2, h3, h4, h5, ul, ol, dl)) {
+:where(.surface-card) :deep(:where(p, h2, h3, h4, h5, ul, ol, dl)) {
   margin-top: 0;
 }
 .surface-card :deep(p) {

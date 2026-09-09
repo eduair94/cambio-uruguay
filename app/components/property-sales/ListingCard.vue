@@ -144,7 +144,7 @@ const readDate = computed(() =>
   background: rgb(var(--v-theme-surface));
   overflow: hidden;
 }
-.sale-card :is(p, h3) {
+:where(.sale-card) :where(p, h3) {
   margin: 0;
 }
 .sale-card__visual {

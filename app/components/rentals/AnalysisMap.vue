@@ -635,7 +635,7 @@ onBeforeUnmount(() => {
   border-radius: 12px;
   scroll-margin-top: 100px;
 }
-.analysis-map :is(h2, h3, p, ul, dl, dd) {
+:where(.analysis-map) :where(h2, h3, p, ul, dl, dd) {
   margin: 0;
 }
 .analysis-map h2 {

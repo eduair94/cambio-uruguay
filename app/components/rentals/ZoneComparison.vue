@@ -311,7 +311,7 @@ const date = (value: string | null) =>
   padding-top: 28px;
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.18);
 }
-.rental-comparison :is(h3, h4, p, dl, dd) {
+:where(.rental-comparison) :where(h3, h4, p, dl, dd) {
   margin: 0;
 }
 .rental-comparison h3 {

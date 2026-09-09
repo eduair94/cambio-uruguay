@@ -65,7 +65,7 @@ const money = (amount: number, currency: 'USD' | 'UYU') =>
   propertySaleMoney(amount, currency, locale.value)
 </script>
 <style scoped>
-.sale-facts :is(p, dl, dt, dd) {
+:where(.sale-facts) :where(p, dl, dt, dd) {
   margin: 0;
 }
 .sale-facts__label,
