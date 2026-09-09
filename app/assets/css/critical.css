@@ -53,6 +53,16 @@ ins.adsbygoogle {
   text-align: center;
 }
 
+/* Segunda capa, que no depende de cómo llame Google a su contenedor: el envoltorio
+   cae POR ENCIMA del .v-container y arrastra a la página entera. Cada página vive
+   dentro de un .v-container, así que declarar ahí la alineación corta cualquier
+   herencia que venga de más arriba. Lo que se centra a propósito lo hace sobre su
+   propio elemento —o con la utilidad .text-center de Vuetify, que es !important—,
+   así que esto no le gana a ninguna decisión de diseño. */
+.v-application .v-container {
+  text-align: start;
+}
+
 /* Ensure Vuetify components use Open Sans */
 .v-application {
   font-family: 'Open Sans', sans-serif !important;
