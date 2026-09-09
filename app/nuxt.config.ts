@@ -741,7 +741,8 @@ export default defineNuxtConfig({
   robots: {
     // /estadisticas-de-busqueda is the owner's Search Console dashboard: it renders the queries
     // visitors typed, so it is disallowed here AND noindexed on the page AND gated server-side.
-    disallow: ['/admin/', '/server/', '/_nuxt/', '/api-reference', '/estadisticas-de-busqueda'],
+    // Crawlers need the public CSS/JS under /_nuxt/ to render the mobile page.
+    disallow: ['/admin/', '/server/', '/api-reference', '/estadisticas-de-busqueda'],
     allow: [
       '/',
       '/avanzado',
@@ -783,7 +784,7 @@ export default defineNuxtConfig({
           'cohere-ai',
         ],
         allow: ['/'],
-        disallow: ['/admin/', '/server/', '/_nuxt/'],
+        disallow: ['/admin/', '/server/'],
       },
     ],
     // El índice, no /sitemap.xml.
