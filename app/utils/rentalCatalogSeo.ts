@@ -16,6 +16,26 @@ export function rentalCatalogCanonical(base: string, page: number | null): strin
   return page !== null && page > 1 ? `${base}?page=${page}` : base
 }
 
+interface RentalCatalogHeadLink {
+  id?: string
+  rel?: string
+  href?: string
+  hreflang?: string
+}
+
+/** Override the layout's same-ID language links, retaining only canonical pagination. */
+export function rentalCatalogAlternateLinks(links: RentalCatalogHeadLink[], page: number | null) {
+  const languages = new Map<string, RentalCatalogHeadLink>()
+  for (const link of links) {
+    if (link.rel !== 'alternate' || !link.hreflang || !link.href) continue
+    languages.set(link.hreflang, {
+      ...link,
+      href: rentalCatalogCanonical(link.href.split(/[?#]/)[0]!, page),
+    })
+  }
+  return [...languages.values()]
+}
+
 const RENTAL_CATALOG_META = {
   es: {
     title: 'Alquileres en Uruguay: precios y mapa',
