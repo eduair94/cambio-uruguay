@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { runInThisContext } from 'node:vm'
 import { parse } from '@vue/compiler-sfc'
+import unheadVite from '@unhead/addons/vite'
 import * as unhead from '@unhead/vue'
 import { createHead, renderSSRHead } from '@unhead/vue/server'
 import * as defu from 'defu'
@@ -10,6 +11,7 @@ import * as h3 from 'h3'
 import ts from 'typescript'
 import * as ufo from 'ufo'
 import * as vue from 'vue'
+import { parse as parseJs } from 'acorn'
 import { describe, expect, it } from 'vitest'
 
 function execute(source: string, modules: Record<string, unknown>, globals = {}, server = true) {
@@ -55,6 +57,15 @@ const pageSeo = pageAst.statements
       ts.isExpressionStatement(statement) &&
       ts.isCallExpression(statement.expression) &&
       statement.expression.expression.getText(pageAst) === 'useSeoMeta'
+  )!
+  .getText(pageAst)
+const photoHead = pageAst.statements
+  .find(
+    statement =>
+      ts.isExpressionStatement(statement) &&
+      ts.isCallExpression(statement.expression) &&
+      statement.expression.expression.getText(pageAst) === 'useHead' &&
+      statement.expression.arguments.length === 2
   )!
   .getText(pageAst)
 const appAst = ts.createSourceFile('app.ts', script('../../app.vue'), ts.ScriptTarget.Latest, true)
@@ -117,6 +128,7 @@ async function renderPreview(hasPhoto = true, legacy = false) {
     ...composable,
     ...component,
     useSeoMeta,
+    useHead,
     primaryPhoto: vue.ref(hasPhoto ? { url: photoUrl } : undefined),
     primaryPhotoAlt: vue.ref(hasPhoto ? 'Apartamento en Canelones · Foto 1' : undefined),
     pageTitle: vue.ref('Apartamento en alquiler en Canelones'),
@@ -136,7 +148,16 @@ async function renderPreview(hasPhoto = true, legacy = false) {
     {},
     globals
   )
-  execute(pageSeo, {}, globals)
+  // Exercise the production optimizer too: installed Unhead 2.0.10 rewrites
+  // inline useSeoMeta objects and drops their second options argument.
+  const optimizer = unheadVite().find(plugin => plugin.name === 'unhead:use-seo-meta-transform')!
+  const headSource = legacy ? pageSeo : `${pageSeo}\n${photoHead}`
+  const transformed = await (optimizer.transform as any).call(
+    { parse: (code: string) => parseJs(code, { ecmaVersion: 'latest', sourceType: 'module' }) },
+    headSource,
+    '/rental-preview.js'
+  )
+  execute(transformed?.code || headSource, {}, globals)
   return renderSSRHead(head)
 }
 

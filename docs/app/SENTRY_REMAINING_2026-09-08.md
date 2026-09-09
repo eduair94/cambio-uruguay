@@ -122,3 +122,11 @@ del anunciante. Sin foto se conserva la tarjeta con sus dimensiones reales.
 la página con Unhead y los composables instalados de nuxt-og-image en ambos
 casos, y reproduce la pérdida de payload al retirar la tarjeta de la raíz.
 La guarda anterior de 404/410 permanece intacta; no se filtra el error 500.
+
+La verificación del primer despliegue detectó que `@unhead/addons` 2.0.10
+reescribe `useSeoMeta({...}, options)` durante el build y descarta `options`.
+La prueba inicial de SSR sin esa transformación no lo detectaba: la tarjeta
+recuperó su payload, pero volvió a desplazar a la foto. Se reprodujo el fallo
+ejecutando el optimizador instalado en la prueba. La prioridad de la foto se
+registra ahora mediante `useHead` explícito, que conserva las opciones al
+compilar. Las pruebas pasan por ese optimizador antes de renderizar el HTML.

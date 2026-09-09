@@ -306,32 +306,43 @@ defineOgImageComponent('Cambio', {
   subtitle: () => zone.value || t('title'),
   tag: 'ALQUILERES',
 })
-useSeoMeta(
-  {
-    title: () => pageTitle.value,
-    description: () => description.value,
-    ogTitle: () => pageTitle.value,
-    ogDescription: () => description.value,
-    ogUrl: () => canonical.value,
-    ogType: 'website',
-    ogImage: () => primaryPhoto.value?.url,
-    ogImageAlt: () => primaryPhotoAlt.value,
-    ogImageType: () => (primaryPhoto.value ? null : undefined),
-    ogImageWidth: () => (primaryPhoto.value ? null : undefined),
-    ogImageHeight: () => (primaryPhoto.value ? null : undefined),
-    twitterImage: () => primaryPhoto.value?.url,
-    twitterImageSrc: () => primaryPhoto.value?.url,
-    twitterImageAlt: () => primaryPhotoAlt.value,
-    twitterImageWidth: () => (primaryPhoto.value ? null : undefined),
-    twitterImageHeight: () => (primaryPhoto.value ? null : undefined),
-    twitterTitle: () => pageTitle.value,
-    twitterDescription: () => description.value,
-    twitterCard: 'summary_large_image',
-    robots: () =>
-      locale.value === 'es' && data.value?.seo.indexable && !error.value
-        ? 'index, follow, max-image-preview:large'
-        : 'noindex, follow',
-  },
+useSeoMeta({
+  title: () => pageTitle.value,
+  description: () => description.value,
+  ogTitle: () => pageTitle.value,
+  ogDescription: () => description.value,
+  ogUrl: () => canonical.value,
+  ogType: 'website',
+  ogImage: () => primaryPhoto.value?.url,
+  ogImageAlt: () => primaryPhotoAlt.value,
+  twitterImage: () => primaryPhoto.value?.url,
+  twitterImageAlt: () => primaryPhotoAlt.value,
+  twitterTitle: () => pageTitle.value,
+  twitterDescription: () => description.value,
+  twitterCard: 'summary_large_image',
+  robots: () =>
+    locale.value === 'es' && data.value?.seo.indexable && !error.value
+      ? 'index, follow, max-image-preview:large'
+      : 'noindex, follow',
+})
+// Use explicit head tags: the installed production useSeoMeta optimizer drops
+// its options argument, including tagPriority. Keep this photo override at the
+// OG module's priority without removing the generated card's payload.
+useHead(
+  () => ({
+    meta: primaryPhoto.value
+      ? [
+          { property: 'og:image', content: primaryPhoto.value.url },
+          { name: 'twitter:image', content: primaryPhoto.value.url },
+          { name: 'twitter:image:src', content: primaryPhoto.value.url },
+          { property: 'og:image:type', content: null },
+          { property: 'og:image:width', content: null },
+          { property: 'og:image:height', content: null },
+          { name: 'twitter:image:width', content: null },
+          { name: 'twitter:image:height', content: null },
+        ]
+      : [],
+  }),
   { tagPriority: 'high' }
 )
 useHead(() => ({
