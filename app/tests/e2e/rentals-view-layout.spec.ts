@@ -204,6 +204,30 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   await expect(grid(page)).toHaveClass(/rentals-grid--mosaico/)
 })
 
+test('un contenedor de auto ads no puede centrar la ficha', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 950 })
+  await setup(page)
+
+  // Auto ads envuelve contenido nuestro en un div con text-align:center en el
+  // atributo style, y todo lo de adentro lo hereda. No aparece en una medicion
+  // comun porque sin consentimiento no se cargan anuncios: se reproduce a mano.
+  await page.evaluate(() => {
+    const target =
+      document.querySelector('.rentals-workspace') ?? document.querySelector('.rentals')
+    if (!target?.parentNode) throw new Error('sin contenedor donde envolver')
+    const wrapper = document.createElement('div')
+    wrapper.className = 'google-auto-placed'
+    wrapper.setAttribute('style', 'width:100%;height:auto;clear:both;text-align:center')
+    target.parentNode.insertBefore(wrapper, target)
+    wrapper.appendChild(target)
+  })
+
+  expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
+  await page.getByRole('button', { name: 'Lista', exact: true }).click()
+  await expect(grid(page)).toHaveClass(/rentals-grid--lista/)
+  expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
+})
+
 test('la vista elegida no viaja en la URL y sobrevive a ir y volver del mapa', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 950 })
   await setup(page)

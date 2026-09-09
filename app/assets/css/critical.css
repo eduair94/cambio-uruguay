@@ -27,6 +27,16 @@ html[data-theme='dark'] body {
   overflow-x: clip;
 }
 
+/* Auto ads no se insertan sólo entre bloques: envuelven contenido nuestro en un
+   div con `text-align: center` en el atributo style, y todo lo de adentro lo
+   hereda. Así se centraron las tarjetas de alquiler y la ayuda de los filtros,
+   y no aparecía en ninguna medición porque sin consentimiento no hay anuncios.
+   El atributo style sólo lo gana un !important, así que se corta en los hijos:
+   el anuncio conserva su centrado y nuestros bloques vuelven al borde. */
+.google-auto-placed > :not(ins):not(iframe) {
+  text-align: start;
+}
+
 /* Ensure Vuetify components use Open Sans */
 .v-application {
   font-family: 'Open Sans', sans-serif !important;
