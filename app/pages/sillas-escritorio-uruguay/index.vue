@@ -709,12 +709,21 @@ FORM: Grounded structure 5, diagnosis-before-doctrine staging, surface seed aa73
       </div>
     </div>
 
-    <ChairPhotoViewer
+    <MediaPhotoViewer
       v-model="photoViewerOpen"
       :photos="photoViewerPhotos"
       :title="photoViewerTitle"
       :start-index="photoViewerStart"
-    />
+      :dialog-label="t('chairTiers.photos.dialogAria', { chair: photoViewerTitle })"
+    >
+      <template #credit="{ photo }">
+        <span>{{ photo.alt }}</span>
+        <a :href="photo.sourceUrl" target="_blank" rel="noopener noreferrer">
+          {{ t('chairTiers.photos.source', { source: photo.sourceName }) }}
+          <VIcon icon="mdi-open-in-new" size="14" />
+        </a>
+      </template>
+    </MediaPhotoViewer>
   </main>
 </template>
 

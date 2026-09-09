@@ -1,4 +1,16 @@
 {
+  "photoViewer": {
+    "dialogAria": "Photo gallery for {title}",
+    "counter": "{index} of {total}",
+    "zoomOut": "Zoom out",
+    "zoomIn": "Zoom in",
+    "close": "Close gallery",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "goTo": "Go to photo {index}",
+    "source": "View the listing on {source}",
+    "unavailable": "This photo is no longer available at the source."
+  },
   "ads": {
     "label": "Advertisement"
   },
@@ -2040,12 +2052,6 @@
       "count": "{count} photos",
       "enlarge": "Enlarge",
       "dialogAria": "Photo gallery for {chair}",
-      "counter": "{index} of {total}",
-      "zoomOut": "Zoom out",
-      "zoomIn": "Zoom in",
-      "close": "Close gallery",
-      "previous": "Previous photo",
-      "next": "Next photo",
       "goTo": "Go to photo {index}",
       "source": "View product at {source}"
     },

@@ -371,15 +371,16 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
           <div v-if="view === 'lista' && !error" class="rentals-grid">
             <article v-for="(property, index) in items" :key="property.key" class="rental-card">
               <div class="rental-card__visual">
-                <NuxtLink
-                  :to="localePath(rentalPropertyPath(property.key))"
+                <!-- Con foto la imagen abre la galería sin salir de la búsqueda; sin foto no hay
+                     nada que previsualizar y el destino útil sigue siendo la ficha. -->
+                <button
+                  v-if="hasPhoto(property)"
+                  type="button"
                   class="rental-card__media"
-                  :aria-label="`${t('detail')}: ${property.title}`"
-                  @pointerdown="rememberRentalSearch(route.fullPath)"
-                  @click="rememberRentalSearch(route.fullPath)"
+                  :aria-label="`${t('viewPhotos')}: ${property.title}`"
+                  @click="openPhotoPreview(property)"
                 >
                   <img
-                    v-if="displayOffer(property)?.image && !failedImages.has(property.key)"
                     :src="displayOffer(property)?.image || ''"
                     :alt="property.title"
                     :loading="index < 3 ? 'eager' : 'lazy'"
@@ -388,7 +389,23 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                     height="260"
                     @error="failedImages.add(property.key)"
                   />
-                  <span v-else class="rental-card__noimage">
+                  <span class="rental-card__zoom" aria-hidden="true">
+                    <VIcon size="16">mdi-image-multiple-outline</VIcon>
+                    {{ t('viewPhotos') }}
+                  </span>
+                  <span v-if="property.sources.length > 1" class="rental-card__badge">{{
+                    t('portals', { n: property.sources.length })
+                  }}</span>
+                </button>
+                <NuxtLink
+                  v-else
+                  :to="localePath(rentalPropertyPath(property.key))"
+                  class="rental-card__media"
+                  :aria-label="`${t('detail')}: ${property.title}`"
+                  @pointerdown="rememberRentalSearch(route.fullPath)"
+                  @click="rememberRentalSearch(route.fullPath)"
+                >
+                  <span class="rental-card__noimage">
                     <VIcon size="36">mdi-home-city-outline</VIcon>
                     <span>{{ t('noPhoto') }}</span>
                   </span>
@@ -523,6 +540,14 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               </div>
             </article>
           </div>
+          <RentalsPhotoLightbox
+            v-model="previewOpen"
+            :property="previewProperty"
+            :params="previewParams"
+            :detail-href="
+              previewProperty ? localePath(rentalPropertyPath(previewProperty.key)) : ''
+            "
+          />
           <div v-if="pageCount > 1 && view === 'lista' && !error" class="mt-6">
             <VPagination
               :model-value="query.page"
@@ -1206,6 +1231,18 @@ const typeLabel = (type: string) =>
     )[type] || 'other'
   )
 const displayOffer = (property: RentalProperty) => property.matchingOffer ?? property.offers[0]
+/** Sólo se previsualiza lo que la tarjeta ya pudo mostrar: sin portada no hay galería que abrir. */
+const hasPhoto = (property: RentalProperty) =>
+  Boolean(displayOffer(property)?.image) && !failedImages.has(property.key)
+// Ver las fotos no debería costar una navegación: la búsqueda, el scroll y los filtros siguen ahí
+// cuando se cierra el visor. La ficha completa sigue a un clic desde el título y desde el pie.
+const previewProperty = shallowRef<RentalProperty | null>(null)
+const previewOpen = ref(false)
+const previewParams = computed(() => availability.withRevision(mapParams.value))
+function openPhotoPreview(property: RentalProperty) {
+  previewProperty.value = property
+  previewOpen.value = true
+}
 const offerPrice = (offer: { price: number; currency: string }) =>
   `${offer.currency === 'USD' ? 'U$S' : '$'} ${numberFormat(offer.price)}`
 const priceLabel = (property: RentalProperty) => {
@@ -1672,13 +1709,51 @@ useSchemaOrg([
 }
 .rental-card__media {
   display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
   aspect-ratio: 3 / 2;
   background: rgba(var(--v-theme-on-surface), 0.06);
+}
+button.rental-card__media {
+  cursor: zoom-in;
 }
 .rental-card__media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+/* La foto ahora hace algo distinto que el resto de la tarjeta: sin este cartel, abrir un visor en
+   vez de navegar sorprende. Aparece al pasar el mouse y queda fijo donde no hay hover (táctil). */
+.rental-card__zoom {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 0.76rem;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.rental-card__media:hover .rental-card__zoom,
+.rental-card__media:focus-visible .rental-card__zoom {
+  opacity: 1;
+}
+@media (hover: none) {
+  .rental-card__zoom {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rental-card__zoom {
+    transition: none;
+  }
 }
 .rental-card__noimage {
   display: flex;

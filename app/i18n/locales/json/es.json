@@ -1,4 +1,16 @@
 {
+  "photoViewer": {
+    "dialogAria": "Galería de fotos de {title}",
+    "counter": "{index} de {total}",
+    "zoomOut": "Alejar imagen",
+    "zoomIn": "Ampliar imagen",
+    "close": "Cerrar galería",
+    "previous": "Foto anterior",
+    "next": "Foto siguiente",
+    "goTo": "Ir a la foto {index}",
+    "source": "Ver la publicación en {source}",
+    "unavailable": "Esta foto ya no está disponible en el origen."
+  },
   "ads": {
     "label": "Publicidad"
   },
@@ -2051,12 +2063,6 @@
       "count": "{count} fotos",
       "enlarge": "Ampliar",
       "dialogAria": "Galería de fotos de {chair}",
-      "counter": "{index} de {total}",
-      "zoomOut": "Alejar imagen",
-      "zoomIn": "Ampliar imagen",
-      "close": "Cerrar galería",
-      "previous": "Foto anterior",
-      "next": "Foto siguiente",
       "goTo": "Ir a la foto {index}",
       "source": "Ver producto en {source}"
     },
