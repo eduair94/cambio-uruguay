@@ -46,6 +46,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
         </div>
         <div class="rentals-provenance">
           <a href="#rental-coverage" :title="activeSourceLabels">{{ t('coverage') }}</a>
+          <span v-if="meta?.generatedAt" class="rentals-provenance__sep" aria-hidden="true">·</span>
           <time v-if="meta?.generatedAt" :datetime="meta.generatedAt">{{
             t('date', { date: dateLabel(meta.generatedAt) })
           }}</time>
@@ -1720,12 +1721,20 @@ useSchemaOrg([
 .rentals-provenance {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 20px;
+  /* Sólo el hueco entre renglones sale de `gap`. El aire horizontal lo pone el
+     separador con padding propio: el HTML es `</a><time>` sin nada en el medio,
+     así que si `gap` no llega a aplicarse los dos textos quedan literalmente
+     pegados ("Fuentes y coberturaActualizado 9/9"). */
+  gap: 8px 0;
   margin-top: 12px;
   align-items: center;
   font-size: 0.8rem;
   line-height: 1.5;
   color: rgba(var(--v-theme-on-surface), 0.76);
+}
+.rentals-provenance__sep {
+  padding-inline: 8px;
+  color: rgba(var(--v-theme-on-surface), 0.55);
 }
 .rentals-provenance a,
 .rentals-external a,
@@ -2450,6 +2459,10 @@ button.rental-card__media {
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
+  }
+  /* En columna el punto separaría dos renglones, no dos textos. */
+  .rentals-provenance__sep {
+    display: none;
   }
 }
 @media (max-width: 359px) {
