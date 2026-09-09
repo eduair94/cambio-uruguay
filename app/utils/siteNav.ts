@@ -2245,6 +2245,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/comparar-portales-de-alquiler-uruguay',
+        labelKey: 'nav.portalesAlquiler',
+        icon: 'mdi-scale-balance',
+        priority: 0.6,
+        changefreq: 'monthly',
+        keywords: [
+          'portales de alquiler uruguay',
+          'paginas para alquilar en uruguay',
+          'donde buscar alquiler uruguay',
+          'infocasas o mercado libre',
+          'mejor portal de alquiler uruguay',
+          'buscar alquiler en todos los portales',
+          'alternativa a infocasas',
+          'paginas de alquileres montevideo',
+        ],
+      },
+      {
         to: '/alquiler-ideal-uruguay',
         labelKey: 'nav.rentalFit',
         icon: 'mdi-home-account',

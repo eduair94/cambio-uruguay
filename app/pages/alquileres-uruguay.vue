@@ -464,6 +464,22 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                         {{ expensesLabel(property) }}
                       </p>
                       <p v-else class="rental-card__expenses">{{ expensesLabel(property) }}</p>
+                      <p
+                        v-if="priceGaps.get(property.key)"
+                        class="rental-card__gap"
+                        data-testid="rental-card-gap"
+                        :title="t('gapNote')"
+                      >
+                        <VIcon size="14" aria-hidden="true">mdi-swap-horizontal</VIcon>
+                        {{
+                          t('gapLine', {
+                            cheap: sourceLabel(priceGaps.get(property.key)!.cheapestSource),
+                            dear: sourceLabel(priceGaps.get(property.key)!.runnerUpSource),
+                            diff: '$ ' + numberFormat(priceGaps.get(property.key)!.diffUyu),
+                            pct: numberFormat(Math.round(priceGaps.get(property.key)!.diffPct)),
+                          })
+                        }}
+                      </p>
                     </div>
 
                     <h3>
@@ -480,6 +496,26 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                     </p>
                   </div>
                   <div class="rental-card__tags">
+                    <VChip
+                      v-if="listedFor.get(property.key)"
+                      size="small"
+                      variant="tonal"
+                      color="warning"
+                      data-testid="rental-card-listed"
+                      :title="
+                        listedFor.get(property.key)!.basis === 'observed'
+                          ? t('listedObservedNote')
+                          : undefined
+                      "
+                      >{{
+                        t(
+                          listedFor.get(property.key)!.basis === 'published'
+                            ? 'listedPublished'
+                            : 'listedObserved',
+                          { days: listedFor.get(property.key)!.days }
+                        )
+                      }}</VChip
+                    >
                     <VChip
                       v-if="displayOffer(property)?.ownerDirect?.declared"
                       size="small"
@@ -702,6 +738,7 @@ import {
   type RentalFacetValue,
   type RentalsResponse,
 } from '~/utils/rentals'
+import { portalPriceGap, rentalListedFor, type PortalPriceGap } from '~/utils/rentalPortals'
 import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
 import {
   RENTAL_SAVED_STORAGE_ID,
@@ -797,6 +834,29 @@ const { data, pending, error, refresh } = await useAsyncData<RentalsResponse>(
   { watch: [requestKey] }
 )
 const items = computed(() => data.value?.items ?? [])
+// La antigüedad se mide contra un instante FIJADO EN EL SERVIDOR y transferido en el payload. Con
+// `Date.now()` la página renderizada a las 23:59 diría un día y el cliente hidratando a las 00:00
+// otro: Vue lo reporta como discrepancia de hidratación y vuelve a pintar la lista entera.
+const renderedAt = useState('rental-rendered-at', () => Date.now())
+const listedNow = computed(() => new Date(renderedAt.value))
+// Un cálculo por vivienda y no uno por interpolación: la tarjeta lo usa en dos lugares y la lista
+// puede traer 24 filas.
+const priceGaps = computed(() => {
+  const map = new Map<string, PortalPriceGap>()
+  for (const property of items.value) {
+    const gap = portalPriceGap(property)
+    if (gap) map.set(property.key, gap)
+  }
+  return map
+})
+const listedFor = computed(() => {
+  const map = new Map<string, ReturnType<typeof rentalListedFor>>()
+  for (const property of items.value) {
+    const listed = rentalListedFor(property, listedNow.value)
+    if (listed) map.set(property.key, listed)
+  }
+  return map
+})
 const total = computed(() => data.value?.total ?? 0)
 const meta = computed(() => data.value?.meta ?? null)
 const coverage = computed(() => data.value?.coverage ?? null)
@@ -1916,6 +1976,16 @@ button.rental-card__media {
 .rental-card__expenses {
   font-size: 0.8rem;
   margin-top: 4px !important;
+}
+/* La única línea de la tarjeta que ningún portal puede escribir: se gana el color. */
+.rental-card__gap {
+  align-items: center;
+  color: rgb(var(--v-theme-success));
+  display: flex;
+  font-size: 0.8rem;
+  font-weight: 600;
+  gap: 4px;
+  margin-top: 4px;
 }
 .rental-card__tags {
   display: flex;
