@@ -14,7 +14,7 @@
       v-if="validOffers.length"
       variant="text"
       size="small"
-      prepend-icon="mdi-flag-outline"
+      append-icon="mdi-flag-outline"
       class="availability-report__trigger cu-btn-flush"
       :aria-label="`${t(shownSummary?.count ? 'review' : 'report')}: ${title || selected?.title || sourceLabel(selected)}`"
       @click="show"
@@ -352,24 +352,13 @@ onBeforeUnmount(() => {
   white-space: normal;
   text-align: start;
 }
-/* La etiqueta tiene que caer en la misma columna que el anunciante y la última
-   lectura; con el retroceso normal de cu-btn-flush arrancaba 19 px adentro,
-   porque adelante va la bandera. Se retrocede también el ancho del icono y su
-   separación (12 del padding + 18 + 6 - 2 que Vuetify ya le resta al prepend),
-   así el icono queda colgado en el margen —como la viñeta de una lista— y el
-   texto en el borde. Medido en producción: texto en 19, igual que sus vecinos. */
-/* Sólo desde 960: en la tarjeta compacta el aire es de 12 px, colgar el icono lo
-   saca fuera del recorte de la tarjeta y se ve cortado contra el borde (medido a
-   390 px: la bandera caia en -9). Ahi el icono vuelve a la columna y la etiqueta
-   lo sigue, que es como se lee cualquier control con icono. */
-@media (min-width: 960px) {
-  .availability-report__trigger.cu-btn-flush {
-    --cu-btn-pad: 34px;
-  }
-}
-.availability-report__trigger :deep(.v-btn__prepend) {
-  margin-inline-start: 0;
-}
+/* La bandera va DETRÁS de la etiqueta. Adelante obligaba a elegir entre dos
+   defectos: o el texto arrancaba 19 px adentro de la columna donde arrancan el
+   anunciante y la última lectura, o se colgaba el icono en el margen y entonces
+   la caja del botón invadía el aire de la tarjeta y el icono quedaba cortado
+   contra el borde —las dos se probaron y las dos se ven mal—. Detrás, el
+   retroceso normal de cu-btn-flush alcanza: la etiqueta cae en la columna, la
+   bandera la sigue y nada sale del recorte, en mosaico y en compacto. */
 .availability-dialog {
   display: flex;
   flex-direction: column;
