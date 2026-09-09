@@ -23,7 +23,7 @@
       <header class="viewer__bar">
         <div class="viewer__id">
           <p class="viewer__title">{{ title }}</p>
-          <p v-if="photos.length > 1" class="viewer__counter">
+          <p v-if="photos.length > 1" class="viewer__counter" role="status">
             {{ $t('photoViewer.counter', { index: index + 1, total: photos.length }) }}
           </p>
         </div>
@@ -31,7 +31,6 @@
         <div class="viewer__tools">
           <VBtn
             variant="text"
-            size="small"
             icon="mdi-magnify-minus-outline"
             :disabled="zoom === 1"
             :aria-label="$t('photoViewer.zoomOut')"
@@ -39,7 +38,6 @@
           />
           <VBtn
             variant="text"
-            size="small"
             icon="mdi-magnify-plus-outline"
             :disabled="zoom > 1"
             :aria-label="$t('photoViewer.zoomIn')"
@@ -47,7 +45,6 @@
           />
           <VBtn
             variant="text"
-            size="small"
             icon="mdi-close"
             :aria-label="$t('photoViewer.close')"
             @click="open = false"

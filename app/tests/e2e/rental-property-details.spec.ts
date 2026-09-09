@@ -266,12 +266,13 @@ for (const width of [320, 390, 1440]) {
     await expand.click()
     const viewer = page.getByRole('dialog', { name: 'Fotos del alquiler', exact: true })
     await expect(viewer).toBeVisible()
-    await expect(viewer.getByRole('status')).toHaveText('Foto 1 de 3')
+    // The shared viewer's counter is the live region; its copy is "{index} de {total}".
+    await expect(viewer.getByRole('status')).toHaveText('1 de 3')
     const next = viewer.getByRole('button', { name: 'Foto siguiente', exact: true })
     await next.click()
-    await expect(viewer.getByRole('status')).toHaveText('Foto 2 de 3')
+    await expect(viewer.getByRole('status')).toHaveText('2 de 3')
     await page.keyboard.press('ArrowRight')
-    await expect(viewer.getByRole('status')).toHaveText('Foto 3 de 3')
+    await expect(viewer.getByRole('status')).toHaveText('3 de 3')
     const close = viewer.getByRole('button', { name: 'Cerrar galería', exact: true })
     expect((await close.boundingBox())!.height).toBeGreaterThanOrEqual(44)
     const box = (await close.boundingBox())!
