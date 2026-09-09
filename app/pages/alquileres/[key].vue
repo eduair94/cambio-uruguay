@@ -1,9 +1,9 @@
 <!--
 THESIS: Make a rental decision with the published costs, competing adverts and unanswered questions together.
 OWN-WORLD: Extend the directory's navy/paper surfaces, Open Sans, blue actions and explicit data provenance.
-STORY: Inspect the property, choose an advert, compare costs, prepare the enquiry and contact its publisher.
-FIRST VIEWPORT: Property title and attributed photo alongside a sticky cost summary; mobile has a persistent contact action.
-FORM: Property dossier with a working comparison, budget planner and visit checklist. No speculative marketing copy.
+STORY: See the photos, price and key facts first; then description, location, adverts and the enquiry.
+FIRST VIEWPORT: Title with the key-facts strip, the cover photo with its counter, and a sticky price card with the contact action; mobile keeps a persistent price + contact bar.
+FORM: A portal-style property page (Mercado Libre / InfoCasas grammar) with the site's provenance demoted to footnotes, never removed.
 -->
 <script setup lang="ts">
 import BudgetPlanner from '~/components/rentals/BudgetPlanner.vue'
@@ -129,19 +129,120 @@ const guarantees = computed(() =>
     .filter(value => RENTAL_GUARANTEE_PUBLISHED.includes(value))
     .map(value => t(value))
 )
+const sellerType = (offer: RentalOffer) =>
+  t(
+    offer.sellerType === 'particular'
+      ? 'individual'
+      : offer.sellerType === 'inmobiliaria'
+        ? 'agency'
+        : 'notPublished'
+  )
 const seller = (offer: RentalOffer) =>
-  [
-    offer.sellerName,
-    t(
-      offer.sellerType === 'particular'
-        ? 'individual'
-        : offer.sellerType === 'inmobiliaria'
-          ? 'agency'
-          : 'notPublished'
-    ),
+  [offer.sellerName, sellerType(offer)].filter(Boolean).join(' · ')
+const parkingSpaces = computed(
+  () => selectedOffer.value?.parkingSpaces ?? property.value?.parkingSpaces ?? 0
+)
+// The strip under the title: the four numbers a portal visitor scans before anything else.
+const keyFacts = computed(() => {
+  const entry = property.value
+  if (!entry) return []
+  const facts: { icon: string; text: string }[] = []
+  if (entry.bedrooms === 0) facts.push({ icon: 'mdi-bed-outline', text: t('studio') })
+  else if (entry.bedrooms !== null)
+    facts.push({
+      icon: 'mdi-bed-outline',
+      text: t('bedroomCount', { n: entry.bedrooms }, entry.bedrooms),
+    })
+  if (entry.bathrooms !== null)
+    facts.push({
+      icon: 'mdi-shower',
+      text: t('bathroomCount', { n: entry.bathrooms }, entry.bathrooms),
+    })
+  if (entry.area) facts.push({ icon: 'mdi-ruler-square', text: `${entry.area} m²` })
+  if (parkingSpaces.value > 0)
+    facts.push({
+      icon: 'mdi-car-outline',
+      text: t('parkingCount', { n: parkingSpaces.value }, parkingSpaces.value),
+    })
+  return facts
+})
+interface Fact {
+  key: string
+  label: string
+  value: string
+  empty?: boolean
+}
+// Property-level facts. A detail surface is shown only when it says something the headline
+// surface does not: the same 20 m² repeated as built, total and land is noise, not data.
+const propertyFacts = computed<Fact[]>(() => {
+  const entry = property.value
+  if (!entry) return []
+  const details = selectedOffer.value?.details
+  const surface = (key: string, value: number | null | undefined): Fact[] =>
+    value && value !== entry.area ? [{ key, label: t(key), value: `${value} m²` }] : []
+  return [
+    { key: 'type', label: t('type'), value: typeLabel.value },
+    {
+      key: 'bedrooms',
+      label: t('bedrooms'),
+      value:
+        entry.bedrooms === 0
+          ? t('studio')
+          : entry.bedrooms === null
+            ? t('notPublished')
+            : String(entry.bedrooms),
+      empty: entry.bedrooms === null,
+    },
+    {
+      key: 'bathrooms',
+      label: t('bathrooms'),
+      value: entry.bathrooms === null ? t('notPublished') : String(entry.bathrooms),
+      empty: entry.bathrooms === null,
+    },
+    {
+      key: 'area',
+      label: t('mapArea'),
+      value: entry.area ? `${entry.area} m²` : t('notPublished'),
+      empty: !entry.area,
+    },
+    ...surface('builtArea', details?.builtArea),
+    ...surface('totalArea', details?.totalArea),
+    ...surface('landArea', details?.landArea),
+    ...surface('terraceArea', details?.terraceArea),
   ]
-    .filter(Boolean)
-    .join(' · ')
+})
+// Conditions belong to ONE advert, never to the merged property.
+const conditionFacts = computed<Fact[]>(() => {
+  const offer = selectedOffer.value
+  if (!offer) return []
+  const parking = offer.parkingSpaces ?? 0
+  return [
+    {
+      key: 'pets',
+      label: t('petsCondition'),
+      value: t(offer.petsAllowed ? 'accepted' : 'notPublished'),
+      empty: !offer.petsAllowed,
+    },
+    {
+      key: 'furnished',
+      label: t('furnishedCondition'),
+      value: t(offer.furnished ? 'declared' : 'notPublished'),
+      empty: !offer.furnished,
+    },
+    {
+      key: 'garage',
+      label: t('garageCondition'),
+      value: parking > 0 ? String(parking) : t('notPublished'),
+      empty: !(parking > 0),
+    },
+    {
+      key: 'guarantee',
+      label: t('guaranteeCondition'),
+      value: guarantees.value.length ? guarantees.value.join(' · ') : t('notPublished'),
+      empty: !guarantees.value.length,
+    },
+  ]
+})
 const photos = computed(() => (property.value ? rentalPhotos(property.value) : []))
 const saved = ref(emptyRentalSaved())
 const favorite = computed(() => saved.value.favorites.some(item => item.key === propertyKey.value))
@@ -152,6 +253,29 @@ const checked = ref<string[]>([])
 const showMap = ref(false)
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
 const mapped = computed(() => property.value && rentalHasLocation(property.value))
+// The map is the portal norm, but Leaflet is not free: it mounts by itself only once the
+// location section is about to scroll into view, and the toggle still lets the visitor hide it.
+const locationSection = ref<HTMLElement | null>(null)
+let mapObserver: IntersectionObserver | null = null
+watch(
+  locationSection,
+  element => {
+    mapObserver?.disconnect()
+    mapObserver = null
+    if (!element || !mapped.value || typeof IntersectionObserver === 'undefined') return
+    mapObserver = new IntersectionObserver(
+      entries => {
+        if (!entries.some(entry => entry.isIntersecting)) return
+        showMap.value = true
+        mapObserver?.disconnect()
+        mapObserver = null
+      },
+      { rootMargin: '200px 0px' }
+    )
+    mapObserver.observe(element)
+  },
+  { flush: 'post' }
+)
 const branches = computed(() =>
   property.value && mapped.value
     ? [
@@ -261,13 +385,28 @@ onMounted(() => {
   }
   window.addEventListener('storage', onStorage)
 })
-onBeforeUnmount(() => window.removeEventListener('storage', onStorage))
+onBeforeUnmount(() => {
+  window.removeEventListener('storage', onStorage)
+  mapObserver?.disconnect()
+})
 watch(propertyKey, () => {
   selectedId.value = ''
   checked.value = []
   showMap.value = false
 })
 const relatedOffer = (entry: RentalPublicProperty) => entry.matchingOffer ?? entry.offers[0]
+const relatedSpecs = (entry: RentalPublicProperty) =>
+  [
+    entry.bedrooms === 0
+      ? t('studio')
+      : entry.bedrooms !== null
+        ? t('bedroomCount', { n: entry.bedrooms }, entry.bedrooms)
+        : '',
+    entry.bathrooms !== null ? t('bathroomCount', { n: entry.bathrooms }, entry.bathrooms) : '',
+    entry.area ? `${entry.area} m²` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
 const pageTitle = computed(() =>
   property.value && defaultOffer.value
     ? t('propertySeo', {
@@ -382,14 +521,17 @@ useHead(() => ({
 
 <template>
   <VContainer class="rental-page pt-1 pt-sm-4" data-testid="rental-property-page">
-    <VBreadcrumbs :items="breadcrumbs" density="compact" class="px-0 py-1" />
-    <VBtn
-      :to="returnPath || localePath('/alquileres-uruguay')"
-      variant="text"
-      prepend-icon="mdi-arrow-left"
-      class="rental-page__back"
-      >{{ returnPath ? t('back') : t('search') }}</VBtn
-    >
+    <div class="rental-page__topbar">
+      <VBtn
+        :to="returnPath || localePath('/alquileres-uruguay')"
+        variant="text"
+        prepend-icon="mdi-arrow-left"
+        class="rental-page__back cu-btn-flush"
+        :class="{ 'is-generic': !returnPath }"
+        >{{ returnPath ? t('back') : t('search') }}</VBtn
+      >
+      <VBreadcrumbs :items="breadcrumbs" density="compact" class="rental-page__crumbs px-0 py-0" />
+    </div>
     <VSkeletonLoader v-if="pending" type="heading, image, paragraph" />
     <section v-else-if="error || !property || !selectedOffer" class="rental-page__unavailable">
       <h1>{{ t(failureCode === 404 ? 'unavailableTitle' : 'unavailableError') }}</h1>
@@ -400,42 +542,49 @@ useHead(() => ({
     <div v-else class="rental-page__layout">
       <article class="rental-page__main">
         <header class="rental-page__heading">
-          <p class="rental-page__zone">{{ typeLabel }} · {{ zone }}</p>
-          <h1>{{ title }}</h1>
-          <VAlert v-if="uncertainData" type="warning" variant="tonal" class="my-4">{{
+          <div class="rental-page__heading-row">
+            <div class="rental-page__heading-text">
+              <p class="rental-page__zone">{{ typeLabel }} · {{ zone }}</p>
+              <h1>{{ title }}</h1>
+              <p v-if="street" class="rental-page__street">
+                <VIcon icon="mdi-map-marker-outline" size="18" aria-hidden="true" />{{ street }}
+              </p>
+            </div>
+            <div class="rental-page__tools">
+              <VBtn
+                :icon="favorite ? 'mdi-heart' : 'mdi-heart-outline'"
+                variant="text"
+                :aria-pressed="favorite"
+                :aria-label="t(favorite ? 'unfavorite' : 'favorite')"
+                :title="t(favorite ? 'unfavorite' : 'favorite')"
+                class="rental-page__icon-tool"
+                @click="save"
+              />
+              <VBtn
+                icon="mdi-share-variant-outline"
+                variant="text"
+                :aria-label="t('share')"
+                :title="t('share')"
+                class="rental-page__icon-tool"
+                @click="share"
+              />
+            </div>
+          </div>
+          <ul v-if="keyFacts.length" class="rental-page__keyfacts" :aria-label="t('keyFacts')">
+            <li v-for="fact in keyFacts" :key="fact.icon">
+              <VIcon :icon="fact.icon" size="20" aria-hidden="true" />{{ fact.text }}
+            </li>
+          </ul>
+          <VAlert v-if="uncertainData" type="warning" variant="tonal" class="mt-4">{{
             t('uncertainData')
           }}</VAlert>
-          <p v-if="street">{{ street }}</p>
-          <div class="rental-page__tools">
-            <VBtn
-              :prepend-icon="favorite ? 'mdi-heart' : 'mdi-heart-outline'"
-              variant="text"
-              :aria-pressed="favorite"
-              :aria-label="t(favorite ? 'unfavorite' : 'favorite')"
-              class="rental-page__icon-tool"
-              @click="save"
-              ><span class="rental-page__tool-label">{{
-                t(favorite ? 'unfavorite' : 'favorite')
-              }}</span></VBtn
-            >
-            <VBtn
-              prepend-icon="mdi-share-variant-outline"
-              variant="text"
-              :aria-label="t('share')"
-              class="rental-page__icon-tool"
-              @click="share"
-              ><span class="rental-page__tool-label">{{ t('share') }}</span></VBtn
-            >
-            <VBtn href="#rental-cost-title" variant="text" prepend-icon="mdi-cash-multiple">{{
-              t('monthlyOverview')
-            }}</VBtn>
-          </div>
         </header>
         <PropertyGallery :property="property" class="rental-page__gallery" />
         <nav class="rental-page__sections" :aria-label="t('onThisPage')">
           <a href="#rental-facts-title">{{ t('factsShort') }}</a>
-          <a href="#rental-page-offers">{{ t('costsShort') }}</a>
+          <a href="#rental-description-title">{{ t('descriptionShort') }}</a>
           <a href="#rental-location-title">{{ t('locationShort') }}</a>
+          <a href="#rental-page-offers">{{ t('costsShort') }}</a>
           <a href="#rental-visit-title">{{ t('visitShort') }}</a>
         </nav>
         <section class="rental-page__section" aria-labelledby="rental-facts-title">
@@ -444,36 +593,144 @@ useHead(() => ({
             <strong>{{ t('factsToConfirm') }}</strong>
           </p>
           <dl class="rental-page__facts">
-            <div>
-              <dt>{{ t('type') }}</dt>
-              <dd>{{ typeLabel }}</dd>
-            </div>
-            <div>
-              <dt>{{ t('bedrooms') }}</dt>
-              <dd>
-                {{
-                  property.bedrooms === 0 ? t('studio') : (property.bedrooms ?? t('notPublished'))
-                }}
-              </dd>
-            </div>
-            <div>
-              <dt>{{ t('bathrooms') }}</dt>
-              <dd>{{ property.bathrooms ?? t('notPublished') }}</dd>
-            </div>
-            <div>
-              <dt>{{ t('mapArea') }}</dt>
-              <dd>{{ property.area ? `${property.area} m²` : t('notPublished') }}</dd>
+            <div v-for="fact in propertyFacts" :key="fact.key">
+              <dt>{{ fact.label }}</dt>
+              <dd :class="{ 'is-empty': fact.empty }">{{ fact.value }}</dd>
             </div>
           </dl>
+          <div class="rental-page__subhead">
+            <h3>{{ t('conditions') }}</h3>
+            <span>{{ t('selectedSource', { source: source(selectedOffer) }) }}</span>
+          </div>
+          <dl class="rental-page__facts">
+            <div v-for="fact in conditionFacts" :key="fact.key">
+              <dt>{{ fact.label }}</dt>
+              <dd :class="{ 'is-empty': fact.empty }">{{ fact.value }}</dd>
+            </div>
+          </dl>
+          <p v-if="selectedOffer.details?.guaranteeText" class="rental-page__quote">
+            <strong>{{ t('guaranteeText') }}:</strong> {{ selectedOffer.details.guaranteeText }}
+          </p>
+          <template v-if="selectedOffer.details?.amenities?.length">
+            <div class="rental-page__subhead">
+              <h3>{{ t('amenitiesTitle') }}</h3>
+            </div>
+            <ul class="rental-page__amenities">
+              <li v-for="amenity in selectedOffer.details.amenities" :key="amenity">
+                <VIcon icon="mdi-check" size="16" aria-hidden="true" />{{ amenity }}
+              </li>
+            </ul>
+          </template>
           <p class="rental-page__note">{{ t('sourceFacts') }}</p>
+        </section>
+        <section class="rental-page__section" aria-labelledby="rental-description-title">
+          <h2 id="rental-description-title">{{ t('descriptionShort') }}</h2>
+          <p
+            v-if="selectedOffer.details?.description"
+            class="rental-page__description"
+            data-testid="rental-source-description"
+          >
+            {{ selectedOffer.details.description }}
+          </p>
+          <p v-else>{{ t('descriptionEmpty') }}</p>
+          <p class="rental-page__note">
+            {{ t('descriptionSource', { source: source(selectedOffer) }) }}
+          </p>
+        </section>
+        <section
+          ref="locationSection"
+          class="rental-page__section"
+          aria-labelledby="rental-location-title"
+        >
+          <h2 id="rental-location-title">{{ t('locationShort') }}</h2>
+          <p class="rental-page__address">
+            <VIcon icon="mdi-map-marker-outline" size="20" aria-hidden="true" />
+            <span>{{ [street, zone].filter(Boolean).join(' · ') }}</span>
+          </p>
+          <template v-if="mapped">
+            <div class="rental-page__location-actions">
+              <VBtn
+                variant="tonal"
+                prepend-icon="mdi-map-outline"
+                :aria-expanded="showMap"
+                aria-controls="rental-location-map"
+                @click="showMap = !showMap"
+                >{{ t(showMap ? 'hideMap' : 'showMap') }}</VBtn
+              >
+              <VBtn variant="text" :to="nearbyLink" prepend-icon="mdi-home-search-outline">{{
+                t('exploreArea')
+              }}</VBtn>
+            </div>
+            <div v-if="showMap" id="rental-location-map" class="rental-page__map">
+              <ClientOnly
+                ><LocationsMap
+                  :branches="branches"
+                  :center="[property.latitude!, property.longitude!]"
+                  :zoom="15"
+                  height="320px"
+                  :popups="false"
+                  :marker-hit-size="44"
+              /></ClientOnly>
+            </div>
+            <p class="rental-page__note">{{ t('mapLocationHint') }}</p>
+          </template>
+          <template v-else>
+            <p class="rental-page__note">{{ t('noCoordinates') }}</p>
+            <div class="rental-page__location-actions">
+              <VBtn variant="text" :to="nearbyLink" prepend-icon="mdi-home-search-outline">{{
+                t('exploreArea')
+              }}</VBtn>
+            </div>
+          </template>
+          <PropertyNearbyServices operation="rent" :property-key="property.key" />
+        </section>
+        <section
+          v-if="market?.status !== 'not_comparable'"
+          class="rental-page__section"
+          aria-labelledby="rental-market-title"
+        >
+          <h2 id="rental-market-title">{{ t('marketShort') }}</h2>
+          <template v-if="market?.status === 'available' && market.medianRentUyu !== null">
+            <dl class="rental-page__market">
+              <div>
+                <dt>{{ t('median') }}</dt>
+                <dd>{{ money(market.medianRentUyu) }}</dd>
+              </div>
+              <div v-if="market.p25RentUyu !== null && market.p75RentUyu !== null">
+                <dt>{{ t('middleRange') }}</dt>
+                <dd>{{ money(market.p25RentUyu) }} – {{ money(market.p75RentUyu) }}</dd>
+              </div>
+            </dl>
+            <p v-if="difference !== null" class="rental-page__verdict">
+              {{
+                Math.abs(difference) < 1
+                  ? t('atMedian')
+                  : t('marketDifference', {
+                      n: Math.abs(difference),
+                      direction: t(difference > 0 ? 'above' : 'below'),
+                    })
+              }}
+            </p>
+            <p class="rental-page__note">
+              {{
+                t('marketIntro', { n: market.sampleSize, zone: market.scope?.neighborhood || zone })
+              }}
+              {{ t('marketHint') }}
+            </p>
+          </template>
+          <p v-else class="rental-page__note">
+            {{ t('smallSample', { n: market?.minimumSample || 10 }) }}
+          </p>
         </section>
         <section
           id="rental-page-offers"
           class="rental-page__section"
           aria-labelledby="rental-offers-title"
         >
-          <h2 id="rental-offers-title">{{ t('offersHeading') }}</h2>
-          <p>{{ t('offersHint') }}</p>
+          <h2 id="rental-offers-title">
+            {{ t('advertsShort') }}<span v-if="offers.length > 1"> ({{ offers.length }})</span>
+          </h2>
+          <p v-if="offers.length > 1" class="rental-page__note">{{ t('offersHint') }}</p>
           <RentalsAvailabilityReport
             :offers="offers"
             :summary="property.availability"
@@ -484,20 +741,23 @@ useHead(() => ({
             <li
               v-for="offer in offers"
               :key="offerId(offer)"
-              :class="{ 'is-selected': offerId(offer) === offerId(selectedOffer) }"
+              :class="{
+                'is-selected': offers.length > 1 && offerId(offer) === offerId(selectedOffer),
+              }"
             >
               <div class="rental-page__offer-head">
-                <h3>{{ source(offer) }}</h3>
-                <span v-if="offerId(offer) === offerId(selectedOffer)">{{
-                  t('selectedOffer')
-                }}</span>
+                <div class="rental-page__offer-title">
+                  <h3>{{ source(offer) }}</h3>
+                  <p>{{ seller(offer) }}</p>
+                </div>
+                <span
+                  v-if="offers.length > 1 && offerId(offer) === offerId(selectedOffer)"
+                  class="rental-page__offer-flag"
+                  ><VIcon icon="mdi-check-circle" size="16" aria-hidden="true" />{{
+                    t('selectedOffer')
+                  }}</span
+                >
               </div>
-              <p>{{ seller(offer) }}</p>
-              <PropertyAdvertiserContact :publisher="offer" />
-              <p class="rental-page__note">{{ t('originalTitle', { title: offer.title }) }}</p>
-              <p class="rental-page__note">
-                {{ t('advertReference', { source: source(offer), id: offer.listingId }) }}
-              </p>
               <dl class="rental-page__offer-costs">
                 <div>
                   <dt>{{ t('rent') }}</dt>
@@ -518,10 +778,16 @@ useHead(() => ({
                   </dd>
                 </div>
               </dl>
-              <p class="rental-page__note">{{ t('seen', { date: date(offer.lastSeen) }) }}</p>
-              <p v-if="offer.publishedAt" class="rental-page__note">
-                {{ t('publishedDate', { date: date(offer.publishedAt) }) }}
-              </p>
+              <PropertyAdvertiserContact :publisher="offer" />
+              <p class="rental-page__offer-seen">{{ t('seen', { date: date(offer.lastSeen) }) }}</p>
+              <details class="rental-page__offer-more">
+                <summary>{{ t('advertData') }}</summary>
+                <p>{{ t('originalTitle', { title: offer.title }) }}</p>
+                <p>{{ t('advertReference', { source: source(offer), id: offer.listingId }) }}</p>
+                <p v-if="offer.publishedAt">
+                  {{ t('publishedDate', { date: date(offer.publishedAt) }) }}
+                </p>
+              </details>
               <div class="rental-page__offer-actions">
                 <VBtn
                   v-if="offers.length > 1"
@@ -541,156 +807,7 @@ useHead(() => ({
             </li>
           </ul>
         </section>
-        <section class="rental-page__section" aria-labelledby="rental-description-title">
-          <h2 id="rental-description-title">{{ t('descriptionTitle') }}</h2>
-          <p class="rental-page__note">
-            {{ t('descriptionSource', { source: source(selectedOffer) }) }}
-          </p>
-          <p
-            v-if="selectedOffer.details?.description"
-            class="rental-page__description"
-            data-testid="rental-source-description"
-          >
-            {{ selectedOffer.details.description }}
-          </p>
-          <p v-else>{{ t('descriptionEmpty') }}</p>
-          <dl
-            v-if="
-              selectedOffer.details?.builtArea ||
-              selectedOffer.details?.totalArea ||
-              selectedOffer.details?.landArea ||
-              selectedOffer.details?.terraceArea
-            "
-            class="rental-page__facts"
-          >
-            <div v-if="selectedOffer.details?.builtArea">
-              <dt>{{ t('builtArea') }}</dt>
-              <dd>{{ selectedOffer.details.builtArea }} m²</dd>
-            </div>
-            <div v-if="selectedOffer.details?.totalArea">
-              <dt>{{ t('totalArea') }}</dt>
-              <dd>{{ selectedOffer.details.totalArea }} m²</dd>
-            </div>
-            <div v-if="selectedOffer.details?.landArea">
-              <dt>{{ t('landArea') }}</dt>
-              <dd>{{ selectedOffer.details.landArea }} m²</dd>
-            </div>
-            <div v-if="selectedOffer.details?.terraceArea">
-              <dt>{{ t('terraceArea') }}</dt>
-              <dd>{{ selectedOffer.details.terraceArea }} m²</dd>
-            </div>
-          </dl>
-          <template v-if="selectedOffer.details?.amenities?.length">
-            <h3>{{ t('amenitiesTitle') }}</h3>
-            <ul class="rental-page__amenities">
-              <li v-for="amenity in selectedOffer.details.amenities" :key="amenity">
-                {{ amenity }}
-              </li>
-            </ul>
-          </template>
-        </section>
-        <section class="rental-page__section" aria-labelledby="rental-conditions-title">
-          <h2 id="rental-conditions-title">{{ t('offerFeatures') }}</h2>
-          <p class="rental-page__note">
-            {{ t('selectedSource', { source: source(selectedOffer) }) }}
-          </p>
-          <dl class="rental-page__facts">
-            <div>
-              <dt>{{ t('petsCondition') }}</dt>
-              <dd>{{ t(selectedOffer.petsAllowed ? 'accepted' : 'notPublished') }}</dd>
-            </div>
-            <div>
-              <dt>{{ t('furnishedCondition') }}</dt>
-              <dd>{{ t(selectedOffer.furnished ? 'declared' : 'notPublished') }}</dd>
-            </div>
-            <div>
-              <dt>{{ t('garageCondition') }}</dt>
-              <dd>
-                {{
-                  (selectedOffer.parkingSpaces ?? 0) > 0
-                    ? selectedOffer.parkingSpaces
-                    : t('notPublished')
-                }}
-              </dd>
-            </div>
-            <div>
-              <dt>{{ t('guaranteeCondition') }}</dt>
-              <dd>{{ guarantees.length ? guarantees.join(' · ') : t('notPublished') }}</dd>
-            </div>
-          </dl>
-          <p v-if="selectedOffer.details?.guaranteeText">
-            <strong>{{ t('guaranteeText') }}:</strong> {{ selectedOffer.details.guaranteeText }}
-          </p>
-          <p>{{ t('knownHint') }}</p>
-        </section>
         <BudgetPlanner :key="property.key" :offer="selectedOffer" :usd-uyu="usdUyu" />
-        <section class="rental-page__section" aria-labelledby="rental-location-title">
-          <h2 id="rental-location-title">{{ t('locationTitle') }}</h2>
-          <p>{{ [street, zone].filter(Boolean).join(' · ') }}</p>
-          <template v-if="mapped">
-            <p class="rental-page__note">{{ t('mapLocationHint') }}</p>
-            <VBtn
-              variant="tonal"
-              prepend-icon="mdi-map-marker-outline"
-              :aria-expanded="showMap"
-              aria-controls="rental-location-map"
-              @click="showMap = !showMap"
-              >{{ t(showMap ? 'hideMap' : 'showMap') }}</VBtn
-            >
-            <div v-if="showMap" id="rental-location-map" class="rental-page__map">
-              <ClientOnly
-                ><LocationsMap
-                  :branches="branches"
-                  :center="[property.latitude!, property.longitude!]"
-                  :zoom="15"
-                  height="320px"
-                  :popups="false"
-                  :marker-hit-size="44"
-              /></ClientOnly>
-            </div>
-          </template>
-          <p v-else class="rental-page__note">{{ t('noCoordinates') }}</p>
-          <p>
-            <NuxtLink :to="nearbyLink">{{ t('exploreArea') }}</NuxtLink>
-          </p>
-          <PropertyNearbyServices operation="rent" :property-key="property.key" />
-        </section>
-        <section
-          v-if="market?.status !== 'not_comparable'"
-          class="rental-page__section"
-          aria-labelledby="rental-market-title"
-        >
-          <h2 id="rental-market-title">{{ t('marketTitle') }}</h2>
-          <template v-if="market?.status === 'available' && market.medianRentUyu !== null">
-            <p>
-              {{
-                t('marketIntro', { n: market.sampleSize, zone: market.scope?.neighborhood || zone })
-              }}
-            </p>
-            <dl class="rental-page__market">
-              <div>
-                <dt>{{ t('median') }}</dt>
-                <dd>{{ money(market.medianRentUyu) }}</dd>
-              </div>
-              <div v-if="market.p25RentUyu !== null && market.p75RentUyu !== null">
-                <dt>{{ t('middleRange') }}</dt>
-                <dd>{{ money(market.p25RentUyu) }} – {{ money(market.p75RentUyu) }}</dd>
-              </div>
-            </dl>
-            <p v-if="difference !== null">
-              <strong>{{
-                Math.abs(difference) < 1
-                  ? t('atMedian')
-                  : t('marketDifference', {
-                      n: Math.abs(difference),
-                      direction: t(difference > 0 ? 'above' : 'below'),
-                    })
-              }}</strong>
-            </p>
-            <p class="rental-page__note">{{ t('marketHint') }}</p>
-          </template>
-          <p v-else>{{ t('smallSample', { n: market?.minimumSample || 10 }) }}</p>
-        </section>
         <section class="rental-page__section" aria-labelledby="rental-visit-title">
           <h2 id="rental-visit-title">{{ t('visitTitle') }}</h2>
           <p>{{ t('visitIntro') }}</p>
@@ -725,12 +842,12 @@ useHead(() => ({
       </article>
       <aside class="rental-page__decision" aria-labelledby="rental-cost-title">
         <h2 id="rental-cost-title">{{ t('costTitle') }}</h2>
-        <p class="rental-page__note">
-          {{ t('selectedSource', { source: source(selectedOffer) }) }}
-        </p>
         <p class="rental-page__rent">
           {{ money(selectedOffer.price, selectedOffer.currency)
-          }}<span>{{ t('monthlyRent') }}</span>
+          }}<span
+            >{{ t('monthlyRent') }} ·
+            {{ t('selectedSource', { source: source(selectedOffer) }) }}</span
+          >
         </p>
         <dl class="rental-page__monthly">
           <div>
@@ -744,18 +861,14 @@ useHead(() => ({
         </dl>
         <p class="rental-page__note">
           {{ total === null ? t(rateMissing ? 'rateUnavailable' : 'costUnknown') : t('totalHint') }}
-        </p>
-        <p
-          v-if="
-            usdUyu > 0 &&
-            (selectedOffer.currency === 'USD' || selectedOffer.commonExpensesCurrency === 'USD')
-          "
-          class="rental-page__note"
-        >
-          {{ t('rate', { rate: usdUyu.toFixed(2) }) }}
-        </p>
-        <p v-if="offers.length > 1">
-          <a href="#rental-page-offers">{{ t('offersHeading') }} ({{ offers.length }})</a>
+          <template
+            v-if="
+              usdUyu > 0 &&
+              (selectedOffer.currency === 'USD' || selectedOffer.commonExpensesCurrency === 'USD')
+            "
+          >
+            {{ t('rate', { rate: usdUyu.toFixed(2) }) }}
+          </template>
         </p>
         <VBtn
           :href="rentalSavedSafeUrl(selectedOffer.url)!"
@@ -767,7 +880,27 @@ useHead(() => ({
           data-testid="rental-page-contact"
           >{{ t('contact') }}</VBtn
         >
-        <p class="rental-page__note">{{ t('mapContactHint') }}</p>
+        <div class="rental-page__publisher">
+          <p>
+            <VIcon
+              :icon="
+                selectedOffer.sellerType === 'inmobiliaria'
+                  ? 'mdi-office-building-outline'
+                  : 'mdi-account-outline'
+              "
+              size="20"
+              aria-hidden="true"
+            />
+            <span
+              ><span class="rental-page__publisher-label">{{ t('publisher') }}</span>
+              <strong>{{ selectedOffer.sellerName || sellerType(selectedOffer) }}</strong>
+              <template v-if="selectedOffer.sellerName">
+                · {{ sellerType(selectedOffer) }}</template
+              >
+            </span>
+          </p>
+          <PropertyAdvertiserContact :publisher="selectedOffer" compact />
+        </div>
         <VBtn
           :prepend-icon="favorite ? 'mdi-heart' : 'mdi-heart-outline'"
           :aria-pressed="favorite"
@@ -777,6 +910,9 @@ useHead(() => ({
           >{{ t(favorite ? 'unfavorite' : 'favorite') }}</VBtn
         >
         <p class="rental-page__note">{{ t('saveHint') }}</p>
+        <p v-if="offers.length > 1" class="rental-page__decision-link">
+          <a href="#rental-page-offers">{{ t('advertsShort') }} ({{ offers.length }})</a>
+        </p>
       </aside>
       <section
         v-if="data?.similar.length"
@@ -784,33 +920,34 @@ useHead(() => ({
         aria-labelledby="rental-similar-title"
       >
         <h2 id="rental-similar-title">{{ t('similarTitle') }}</h2>
-        <p>{{ t('similarHint') }}</p>
+        <p class="rental-page__note">{{ t('similarHint') }}</p>
         <ul>
           <li v-for="entry in data.similar" :key="entry.key">
-            <NuxtLink :to="localePath(rentalPropertyPath(entry.key))"
-              ><img
-                v-if="rentalSavedSafeUrl(relatedOffer(entry)?.image)"
-                :src="rentalSavedSafeUrl(relatedOffer(entry)?.image)!"
-                :alt="entry.title"
-                width="320"
-                height="200"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-              /><span class="rental-page__similar-body"
-                ><span>{{ [entry.neighborhood, entry.department].filter(Boolean).join(', ') }}</span
-                ><strong>{{ entry.title }}</strong
-                ><span
-                  >{{
-                    entry.bedrooms === 0
-                      ? t('studio')
-                      : entry.bedrooms !== null
-                        ? `${entry.bedrooms} ${t('bedrooms').toLowerCase()}`
-                        : ''
-                  }}{{ entry.area ? ` · ${entry.area} m²` : '' }}</span
-                ><b>{{ money(relatedOffer(entry).price, relatedOffer(entry).currency) }}</b
-                ><span>{{ t('expenses') }}: {{ expenses(relatedOffer(entry)) }}</span></span
-              ></NuxtLink
-            >
+            <NuxtLink :to="localePath(rentalPropertyPath(entry.key))">
+              <span class="rental-page__similar-media">
+                <img
+                  v-if="rentalSavedSafeUrl(relatedOffer(entry)?.image)"
+                  :src="rentalSavedSafeUrl(relatedOffer(entry)?.image)!"
+                  :alt="entry.title"
+                  width="320"
+                  height="200"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                />
+                <VIcon v-else icon="mdi-home-city-outline" size="36" aria-hidden="true" />
+              </span>
+              <span class="rental-page__similar-body">
+                <b>{{ money(relatedOffer(entry).price, relatedOffer(entry).currency) }}</b>
+                <span class="rental-page__similar-expenses"
+                  >{{ t('expenses') }}: {{ expenses(relatedOffer(entry)) }}</span
+                >
+                <strong>{{ entry.title }}</strong>
+                <span class="rental-page__similar-specs">{{ relatedSpecs(entry) }}</span>
+                <span class="rental-page__similar-zone">{{
+                  [entry.neighborhood, entry.department].filter(Boolean).join(', ')
+                }}</span>
+              </span>
+            </NuxtLink>
           </li>
         </ul>
       </section>
@@ -829,7 +966,14 @@ useHead(() => ({
           :aria-pressed="favorite"
           variant="tonal"
           @click="save"
-        /><VBtn
+        />
+        <p class="rental-page__bar-price">
+          <strong>{{ money(selectedOffer.price, selectedOffer.currency) }}</strong>
+          <span>{{
+            total === null ? t('monthlyRent') : t('priceBarTotal', { price: money(total) })
+          }}</span>
+        </p>
+        <VBtn
           :href="rentalSavedSafeUrl(selectedOffer.url)!"
           target="_blank"
           rel="noopener noreferrer nofollow"
@@ -850,46 +994,65 @@ useHead(() => ({
   padding-bottom: 64px;
   overflow-wrap: anywhere;
 }
+.rental-page__topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 20px;
+  margin-bottom: 16px;
+}
 .rental-page :deep(.v-breadcrumbs) {
   flex-wrap: wrap;
+  font-size: 0.875rem;
 }
 .rental-page :deep(.v-breadcrumbs-item) {
   white-space: normal;
   overflow-wrap: anywhere;
 }
 .rental-page__back {
-  margin: 8px 0 20px -12px;
   min-height: 44px;
 }
 .rental-page__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 344px;
-  gap: 36px 44px;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 32px 40px;
   align-items: start;
 }
 .rental-page__main {
   min-width: 0;
 }
+/* Every text block declares its own gap; the browser's 1em margins are not ours. */
+.rental-page :is(h1, h2, h3, p, ul, ol, dl) {
+  margin: 0;
+}
 .rental-page h1 {
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
-  line-height: 1.25;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  line-height: 1.2;
   text-wrap: balance;
-  margin: 8px 0 12px;
+  margin: 4px 0 8px;
   overflow-wrap: anywhere;
 }
 .rental-page h2 {
-  font-size: 1.375rem;
-  line-height: 1.35;
-  margin: 0 0 12px;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  font-weight: 700;
   text-wrap: balance;
 }
 .rental-page h3 {
-  font-size: 1.0625rem;
-  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 700;
 }
 .rental-page p {
-  margin: 10px 0;
-  line-height: 1.65;
+  line-height: 1.6;
+}
+.rental-page__section > h2 + p,
+.rental-page__section > h2 + dl,
+.rental-page__section > h2 + ul {
+  margin-top: 12px;
+}
+.rental-page__section > p + p {
+  margin-top: 8px;
 }
 .rental-page a:not(.v-btn) {
   color: rgb(var(--v-theme-link));
@@ -897,6 +1060,7 @@ useHead(() => ({
 }
 .rental-page a:focus-visible,
 .rental-page button:focus-visible,
+.rental-page summary:focus-visible,
 .rental-page input:focus-visible {
   outline: 2px solid rgb(var(--v-theme-primary));
   outline-offset: 3px;
@@ -911,39 +1075,159 @@ useHead(() => ({
   padding-block: 8px;
   line-height: 1.4;
 }
+
+/* Heading: the kicker, the title, the address and the four numbers a visitor scans first. */
+.rental-page__heading-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px 24px;
+}
+.rental-page__heading-text {
+  min-width: 0;
+}
 .rental-page__zone {
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgb(var(--v-theme-link));
+}
+.rental-page__street {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(var(--v-theme-on-surface), 0.76);
+  font-size: 0.95rem;
 }
 .rental-page__tools {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  margin: 12px 0 20px -12px;
+  flex-shrink: 0;
+  gap: 4px;
+  margin-inline-end: -8px;
 }
-.rental-page__gallery {
-  margin: 0;
+.rental-page__tools .rental-page__icon-tool {
+  width: 44px;
+  height: 44px;
 }
-.rental-page__sections {
+.rental-page__keyfacts {
+  list-style: none;
+  padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 20px;
+  gap: 8px 22px;
+  margin-top: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.rental-page__keyfacts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.rental-page__keyfacts .v-icon {
+  color: rgba(var(--v-theme-on-surface), 0.68);
+}
+.rental-page__gallery {
   margin-top: 20px;
-  padding-block: 8px;
+}
+
+/* In-page nav: one row, scrolls sideways on a phone, sticks under the app bar. */
+.rental-page__sections {
+  position: sticky;
+  top: 64px;
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+  margin-top: 16px;
+  padding-block: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: rgb(var(--v-theme-background));
   border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.rental-page__sections::-webkit-scrollbar {
+  display: none;
 }
 .rental-page__sections a {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
   font-size: 0.875rem;
   font-weight: 600;
+  text-decoration: none;
+  transition: background-color 150ms ease;
 }
-.rental-page h2[id] {
-  scroll-margin-top: 104px;
+.rental-page__sections a:hover {
+  background: rgba(var(--v-theme-primary), 0.08);
 }
-.rental-page__description {
-  white-space: pre-line;
+.rental-page h2[id],
+.rental-page__section,
+.rental-page__section :deep(.nearby-services) {
+  scroll-margin-top: 124px;
+}
+
+/* Sections are separated by a hairline and a generous gap: portal rhythm. */
+.rental-page__section {
+  margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.rental-page__section:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 28px;
+}
+.rental-page__note {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.72);
+}
+.rental-page__subhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-top: 24px;
+}
+.rental-page__subhead span {
+  font-size: 0.8rem;
+  color: rgba(var(--v-theme-on-surface), 0.72);
+}
+.rental-page__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 40px;
+  margin-top: 12px;
+}
+.rental-page__facts > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.rental-page dt {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.76);
+}
+.rental-page dd {
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: end;
   overflow-wrap: anywhere;
+}
+.rental-page dd.is-empty {
+  font-weight: 400;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+.rental-page__quote {
+  margin-top: 16px;
+  font-size: 0.95rem;
 }
 .rental-page__amenities {
   display: flex;
@@ -951,152 +1235,259 @@ useHead(() => ({
   gap: 8px;
   padding: 0;
   list-style: none;
-  margin: 16px 0;
+  margin-top: 12px;
 }
 .rental-page__amenities li {
-  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 10px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 8px;
+  border-radius: 999px;
   font-size: 0.875rem;
 }
-.rental-page__section {
-  margin-top: 40px;
-  scroll-margin-top: 100px;
+.rental-page__amenities .v-icon {
+  color: rgb(var(--v-theme-primary));
 }
-.rental-page__facts {
+.rental-page__description {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  max-width: 72ch;
+}
+.rental-page__address {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  font-weight: 600;
+}
+.rental-page__address .v-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: rgba(var(--v-theme-on-surface), 0.68);
+}
+.rental-page__location-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 16px;
+}
+.rental-page__map {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 16px;
+  isolation: isolate;
+}
+.rental-page__market {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 24px;
-  margin: 16px 0;
+  gap: 16px;
+  margin-top: 16px;
 }
-.rental-page__facts > div {
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+.rental-page__market > div {
+  padding: 16px 18px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 12px;
 }
-.rental-page dt {
-  font-size: 0.875rem;
-  line-height: 1.5;
+.rental-page__market dd {
+  margin-top: 4px;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  text-align: start;
+  font-variant-numeric: tabular-nums;
 }
-.rental-page dd {
-  margin: 4px 0 0;
+.rental-page__verdict {
+  margin-top: 16px;
   font-weight: 700;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
 }
-.rental-page__note {
-  font-size: 0.875rem;
-}
+
+/* One card per advert. Selection is a ring, not a stripe. */
 .rental-page__offers {
   list-style: none;
   padding: 0;
-  margin: 20px 0;
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
 }
 .rental-page__offers > li {
-  padding: 22px 0;
-  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  padding: 18px 20px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 12px;
+  background: rgb(var(--v-theme-surface));
+  transition: box-shadow 150ms ease;
+}
+.rental-page__offers > li.is-selected {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: inset 0 0 0 1px rgb(var(--v-theme-primary));
 }
 .rental-page__offer-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px 16px;
   flex-wrap: wrap;
 }
-.rental-page__offer-head > span {
+.rental-page__offer-title p {
+  margin-top: 2px;
+  font-size: 0.875rem;
+  color: rgba(var(--v-theme-on-surface), 0.76);
+}
+.rental-page__offer-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(var(--v-theme-primary), 0.1);
   color: rgb(var(--v-theme-link));
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 .rental-page__offer-costs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  margin: 16px 0;
+  margin-top: 16px;
+  padding: 12px 0;
+  border-block: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.rental-page__offer-costs dd {
+  margin-top: 2px;
+  text-align: start;
+}
+.rental-page__offer-seen {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: rgba(var(--v-theme-on-surface), 0.72);
+}
+.rental-page__offer-more {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: rgba(var(--v-theme-on-surface), 0.72);
+}
+.rental-page__offer-more summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  cursor: pointer;
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+}
+.rental-page__offer-more p + p {
+  margin-top: 4px;
 }
 .rental-page__offer-actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 16px;
+  margin-top: 12px;
 }
+
+/* The decision card: price first, one action, the publisher, then save. */
 .rental-page__decision {
   position: sticky;
   top: 96px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 24px;
   background: rgb(var(--v-theme-surface));
 }
 .rental-page__decision h2 {
-  font-size: 1.125rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.0333em;
+  text-transform: uppercase;
+  color: rgba(var(--v-theme-on-surface), 0.72);
 }
 .rental-page__rent {
+  margin-top: 8px;
   font-size: 2rem;
   font-weight: 750;
-  line-height: 1.25 !important;
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
 .rental-page__rent > span {
   display: block;
-  font-size: 0.875rem;
+  margin-top: 4px;
+  font-size: 0.8rem;
   font-weight: 400;
-  margin-top: 8px;
+  color: rgba(var(--v-theme-on-surface), 0.72);
 }
 .rental-page__monthly {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 .rental-page__monthly > div {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 6px 16px;
+  gap: 4px 16px;
   padding-block: 10px;
-}
-.rental-page__monthly-total {
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 .rental-page__monthly-total dd {
   font-size: 1.375rem;
+  font-variant-numeric: tabular-nums;
 }
-.rental-page__decision > a:not(.v-btn) {
-  display: inline-block;
+.rental-page__decision .rental-page__note {
   margin-top: 8px;
 }
 .rental-page__contact {
   width: 100%;
-  margin-top: 24px;
+  margin-top: 20px;
   min-height: 48px !important;
 }
-.rental-page__map {
-  border-radius: 12px;
-  overflow: hidden;
-  margin-top: 20px;
-  isolation: isolate;
+.rental-page__publisher {
+  margin-block: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
-.rental-page__market {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-block: 24px;
+.rental-page__publisher > p {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.95rem;
 }
-.rental-page__market dd {
-  font-size: 1.375rem;
-  font-variant-numeric: tabular-nums;
+.rental-page__publisher .v-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: rgba(var(--v-theme-on-surface), 0.68);
 }
+.rental-page__publisher-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.0333em;
+  text-transform: uppercase;
+  color: rgba(var(--v-theme-on-surface), 0.72);
+}
+.rental-page__decision-link {
+  margin-top: 12px;
+  font-size: 0.875rem;
+}
+
+/* The budget planner sits between two sections; the next section's rule is its closing line. */
+.rental-page :deep(.rental-budget) {
+  margin-top: 32px;
+  border-bottom: 0;
+  padding-block: 12px 8px;
+}
+
+/* Visit checklist and provenance. */
 .rental-page__questions {
   list-style: none;
   padding: 0;
-  margin: 16px 0 24px;
+  margin: 12px 0 20px;
 }
 .rental-page__questions label {
   display: flex;
   align-items: start;
   gap: 14px;
-  padding-block: 12px;
+  padding-block: 10px;
   cursor: pointer;
   line-height: 1.55;
-  min-height: 48px;
+  min-height: 44px;
 }
 .rental-page__questions input {
   width: 20px;
@@ -1107,32 +1498,45 @@ useHead(() => ({
 }
 .rental-page__questions input:checked + span {
   text-decoration: line-through;
+  color: rgba(var(--v-theme-on-surface), 0.6);
 }
-.rental-page__provenance {
-  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  padding-top: 24px;
+.rental-page__provenance p,
+.rental-page__provenance a {
+  font-size: 0.875rem;
 }
+.rental-page__provenance a {
+  display: inline-block;
+  margin-top: 8px;
+}
+
+/* Similar homes: a card grid in the directory's vocabulary, ink on the card, blue only on the title. */
 .rental-page__similar,
 .rental-page__help {
   grid-column: 1 / -1;
 }
-.rental-page__similar {
-  margin-top: 8px;
-}
 .rental-page__similar ul {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  gap: 20px;
   padding: 0;
   list-style: none;
-  margin-top: 24px;
+  margin-top: 20px;
 }
 .rental-page__similar li {
+  min-width: 0;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 12px;
   overflow: hidden;
+  background: rgb(var(--v-theme-surface));
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
 }
-.rental-page__similar a {
+.rental-page__similar li:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+.rental-page .rental-page__similar a {
   display: block;
   height: 100%;
   text-decoration: none;
@@ -1141,27 +1545,45 @@ useHead(() => ({
 .rental-page__similar a:hover strong {
   text-decoration: underline;
 }
-.rental-page__similar img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
+.rental-page__similar-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 3 / 2;
   background: rgba(var(--v-theme-on-surface), 0.06);
+  color: rgba(var(--v-theme-on-surface), 0.5);
+}
+.rental-page__similar-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .rental-page__similar-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px;
-}
-.rental-page__similar-body > span {
-  font-size: 0.875rem;
-}
-.rental-page__similar-body > strong {
-  color: rgb(var(--v-theme-link));
-  line-height: 1.4;
+  gap: 4px;
+  padding: 14px 16px 16px;
 }
 .rental-page__similar-body > b {
   font-size: 1.25rem;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.rental-page__similar-expenses,
+.rental-page__similar-specs {
+  font-size: 0.8rem;
+  color: rgba(var(--v-theme-on-surface), 0.76);
+}
+.rental-page__similar-body > strong {
+  margin-top: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgb(var(--v-theme-link));
+}
+.rental-page__similar-zone {
+  font-size: 0.8rem;
+  color: rgba(var(--v-theme-on-surface), 0.76);
 }
 .rental-page__help {
   display: flex;
@@ -1174,6 +1596,8 @@ useHead(() => ({
   flex-basis: 100%;
 }
 .rental-page__help a {
+  display: inline-flex;
+  align-items: center;
   min-height: 44px;
 }
 .rental-page__mobile-action {
@@ -1182,6 +1606,12 @@ useHead(() => ({
 .rental-page__unavailable {
   max-width: 65ch;
   padding-block: 24px 80px;
+}
+.rental-page__unavailable h1 {
+  margin-bottom: 12px;
+}
+.rental-page__unavailable p {
+  margin-bottom: 20px;
 }
 @media (min-width: 960px) and (max-height: 740px) {
   .rental-page__decision {
@@ -1194,7 +1624,7 @@ useHead(() => ({
   }
   .rental-page__layout {
     grid-template-columns: minmax(0, 1fr);
-    gap: 28px;
+    gap: 24px;
   }
   .rental-page__main {
     display: contents;
@@ -1204,17 +1634,24 @@ useHead(() => ({
   }
   .rental-page__gallery {
     grid-row: 2;
+    margin-top: 0;
   }
   .rental-page__decision {
     grid-row: 3;
     position: static;
     padding: 20px;
   }
-  .rental-page__section {
-    margin-top: 16px;
+  /* The chip row scrolls sideways; the fade says so before anyone swipes. */
+  .rental-page__sections {
+    margin-top: 0;
+    mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
   }
-  .rental-page__tools {
-    margin-bottom: 0;
+  .rental-page__section {
+    margin-top: 24px;
+    padding-top: 24px;
+  }
+  .rental-page__section:first-of-type {
+    margin-top: 20px;
   }
   .rental-page__similar ul {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1223,26 +1660,24 @@ useHead(() => ({
     position: fixed;
     z-index: 1900;
     inset: auto 0 0;
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: 10px;
     padding: 10px max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom))
       max(12px, env(safe-area-inset-left));
     background: rgb(var(--v-theme-surface));
     border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.08);
   }
   .rental-page__mobile-action > .v-btn {
     min-height: 48px;
   }
   .rental-page__mobile-action > .v-btn:first-child {
-    flex: 0 0 48px;
     width: 48px;
     height: 48px;
   }
   .rental-page__mobile-action > .v-btn:last-child {
-    flex: 1;
-    max-width: 420px;
     min-width: 0;
     height: auto;
     padding-block: 10px;
@@ -1252,60 +1687,107 @@ useHead(() => ({
     overflow-wrap: anywhere;
     line-height: 1.3;
   }
+  .rental-page__bar-price {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.2;
+  }
+  .rental-page__bar-price strong {
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .rental-page__bar-price span {
+    font-size: 0.75rem;
+    color: rgba(var(--v-theme-on-surface), 0.72);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
-@media (max-width: 599px) {
-  .rental-page__tools {
-    flex-wrap: nowrap;
-    gap: 4px;
-    margin-inline: 0;
+@media (max-width: 767px) {
+  .rental-page__sections {
+    top: 56px;
   }
-  .rental-page__tools .rental-page__icon-tool {
-    width: 44px;
-    min-width: 44px;
-    flex: 0 0 44px;
-    padding-inline: 0;
+  .rental-page h2[id],
+  .rental-page__section,
+  .rental-page__section :deep(.nearby-services) {
+    scroll-margin-top: 112px;
   }
-  .rental-page__tool-label {
+}
+/* Desktop shows the breadcrumb; a "back" that only repeats its middle crumb adds nothing. */
+@media (min-width: 600px) {
+  .rental-page__back.is-generic {
     display: none;
   }
-  .rental-page__icon-tool :deep(.v-btn__prepend) {
-    margin-inline: 0;
+}
+@media (max-width: 599px) {
+  .rental-page__topbar {
+    margin-bottom: 8px;
   }
-  .rental-page__tools > .v-btn:last-child {
-    flex: 1 1 auto;
-    min-width: 0;
+  .rental-page__crumbs {
+    display: none;
   }
-  .rental-page__back {
-    margin-bottom: 12px;
+  .rental-page__heading-row {
+    gap: 8px;
+  }
+  .rental-page__tools {
+    gap: 0;
+  }
+  .rental-page__keyfacts {
+    gap: 6px 16px;
+    font-size: 0.875rem;
   }
   .rental-page__layout {
     gap: 20px;
   }
+  .rental-page__facts {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .rental-page__offers > li {
+    padding: 16px;
+  }
   .rental-page__offer-costs {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 6px;
   }
   .rental-page__offer-costs > div {
     display: flex;
     justify-content: space-between;
+    align-items: baseline;
     flex-wrap: wrap;
-    gap: 6px 12px;
+    gap: 4px 12px;
   }
   .rental-page__offer-costs dd {
     margin-top: 0;
+    text-align: end;
   }
   .rental-page__offer-actions > .v-btn {
     width: 100%;
   }
   .rental-page__market {
     grid-template-columns: 1fr;
-    gap: 18px;
+    gap: 12px;
   }
   .rental-page__similar ul {
     grid-template-columns: 1fr;
   }
-  .rental-page__similar img {
-    height: 200px;
+}
+@media (max-width: 359px) {
+  .rental-page__bar-price span {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rental-page__similar li,
+  .rental-page__sections a,
+  .rental-page__offers > li {
+    transition: none;
+  }
+  .rental-page__similar li:hover {
+    transform: none;
   }
 }
 </style>

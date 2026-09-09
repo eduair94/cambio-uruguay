@@ -23,6 +23,10 @@ function restoreFocus() {
   openButton.value?.focus({ preventScroll: true })
 }
 const failed = ref(new Set<string>())
+// La portada recorta como los portales (cover). Una foto vertical —una fachada, un pasillo— se
+// recortaría por la mitad, así que se la muestra entera sobre un fondo oscuro. Se decide con la
+// foto ya cargada, no antes: el origen no publica las medidas.
+const portrait = ref(new Set<string>())
 const current = computed(() => photos.value[selected.value])
 const available = computed(() => photos.value.filter(photo => !failed.value.has(photo.url)))
 function move(direction: number) {
@@ -38,6 +42,10 @@ function markFailed(url: string) {
   failed.value.add(url)
   if (current.value?.url === url) move(1)
 }
+function measure(event: Event, url: string) {
+  const image = event.target as HTMLImageElement
+  if (image.naturalWidth && image.naturalHeight > image.naturalWidth * 0.95) portrait.value.add(url)
+}
 // Al cerrar el visor el foco vuelve a la foto que lo abrió, no al principio de la página.
 watch(expanded, isOpen => {
   if (!isOpen) void nextTick(restoreFocus)
@@ -48,6 +56,7 @@ watch(
     selected.value = 0
     expanded.value = false
     failed.value = new Set()
+    portrait.value = new Set()
   }
 )
 </script>
@@ -55,25 +64,54 @@ watch(
 <template>
   <figure class="property-gallery" data-testid="rental-property-gallery">
     <template v-if="current && available.length">
-      <button
-        ref="openButton"
-        type="button"
-        class="property-gallery__open"
-        :aria-label="`${t('expandPhoto')}: ${current.title || property.title}`"
-        @click="expanded = true"
-      >
-        <img
-          :src="current.url"
-          :alt="t('photoDescription', { title: current.title || property.title, n: selected + 1 })"
-          width="720"
-          height="450"
-          fetchpriority="high"
-          decoding="async"
-          referrerpolicy="no-referrer"
-          @error="markFailed(current.url)"
-        />
-        <span><VIcon icon="mdi-arrow-expand-all" size="18" />{{ t('expandPhoto') }}</span>
-      </button>
+      <div class="property-gallery__stage" :class="{ 'is-portrait': portrait.has(current.url) }">
+        <button
+          ref="openButton"
+          type="button"
+          class="property-gallery__open"
+          :aria-label="t('expandPhoto')"
+          @click="expanded = true"
+        >
+          <img
+            :src="current.url"
+            :alt="
+              t('photoDescription', { title: current.title || property.title, n: selected + 1 })
+            "
+            width="960"
+            height="600"
+            fetchpriority="high"
+            decoding="async"
+            referrerpolicy="no-referrer"
+            @load="measure($event, current.url)"
+            @error="markFailed(current.url)"
+          />
+          <span class="property-gallery__expand"
+            ><VIcon icon="mdi-arrow-expand-all" size="18" />{{ t('expandPhoto') }}</span
+          >
+        </button>
+        <template v-if="available.length > 1">
+          <button
+            type="button"
+            class="property-gallery__arrow is-prev"
+            :aria-label="t('previousPhoto')"
+            @click="move(-1)"
+          >
+            <VIcon icon="mdi-chevron-left" size="28" />
+          </button>
+          <button
+            type="button"
+            class="property-gallery__arrow is-next"
+            :aria-label="t('nextPhoto')"
+            @click="move(1)"
+          >
+            <VIcon icon="mdi-chevron-right" size="28" />
+          </button>
+        </template>
+        <span class="property-gallery__count" aria-hidden="true">
+          <VIcon icon="mdi-image-multiple-outline" size="16" />
+          <span>{{ selected + 1 }} / {{ photos.length }}</span>
+        </span>
+      </div>
       <div v-if="photos.length > 1" class="property-gallery__thumbs" :aria-label="t('photos')">
         <button
           v-for="(photo, index) in photos"
@@ -89,8 +127,8 @@ watch(
           <img
             :src="photo.url"
             :alt="t('photoDescription', { title: photo.title || property.title, n: index + 1 })"
-            width="80"
-            height="60"
+            width="96"
+            height="72"
             loading="lazy"
             decoding="async"
             referrerpolicy="no-referrer"
@@ -102,7 +140,7 @@ watch(
         <a :href="current.sourceUrl" target="_blank" rel="noopener noreferrer nofollow">{{
           t('photoCredit', { source: RENTAL_SOURCE_LABEL[current.source] })
         }}</a>
-        <p>{{ t('photoHint') }}</p>
+        <span>{{ t('photoHint') }}</span>
       </figcaption>
     </template>
     <div v-else class="property-gallery__empty">
@@ -123,34 +161,78 @@ watch(
   margin: 0;
   min-width: 0;
 }
-.property-gallery__open {
-  display: block;
+.property-gallery__stage {
   position: relative;
-  width: 100%;
   border-radius: 12px;
   overflow: hidden;
-  background: rgba(var(--v-theme-on-surface), 0.06);
+  aspect-ratio: 16 / 10;
+  max-height: 520px;
+  background: #0a0e1a;
+}
+.property-gallery__open {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: zoom-in;
 }
 .property-gallery__open > img {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 8 / 5;
-  max-height: 460px;
+  height: 100%;
+  object-fit: cover;
+}
+.property-gallery__stage.is-portrait > .property-gallery__open > img {
   object-fit: contain;
 }
-.property-gallery__open > span {
+.property-gallery__expand,
+.property-gallery__count {
   position: absolute;
-  right: 12px;
   bottom: 12px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 6px;
+  padding: 0 12px;
+  min-height: 36px;
+  border-radius: 8px;
   background: rgb(var(--v-theme-surface));
   color: rgb(var(--v-theme-on-surface));
-  border-radius: 8px;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+.property-gallery__expand {
+  right: 12px;
+}
+.property-gallery__count {
+  left: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.property-gallery__arrow {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  opacity: 0.92;
+  transition:
+    opacity 150ms ease,
+    background-color 150ms ease;
+}
+.property-gallery__arrow:hover {
+  opacity: 1;
+}
+.property-gallery__arrow.is-prev {
+  left: 12px;
+}
+.property-gallery__arrow.is-next {
+  right: 12px;
 }
 .property-gallery__empty {
   display: flex;
@@ -169,19 +251,29 @@ watch(
   gap: 8px;
   overflow-x: auto;
   padding: 12px 2px 2px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
 }
 .property-gallery__thumbs button {
-  flex: 0 0 84px;
-  border: 2px solid transparent;
+  flex: 0 0 96px;
+  height: 72px;
   border-radius: 8px;
   overflow: hidden;
-  height: 64px;
+  opacity: 0.72;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  scroll-snap-align: start;
+  transition: opacity 150ms ease;
+}
+.property-gallery__thumbs button:hover {
+  opacity: 1;
 }
 .property-gallery__thumbs button[aria-pressed='true'] {
-  border-color: rgb(var(--v-theme-primary));
+  opacity: 1;
+  outline-color: rgb(var(--v-theme-primary));
 }
 .property-gallery__thumbs button:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
 }
 .property-gallery__thumbs img {
   display: block;
@@ -190,12 +282,13 @@ watch(
   object-fit: cover;
 }
 .property-gallery figcaption {
-  font-size: 0.8125rem;
-  margin-top: 12px;
-}
-.property-gallery figcaption p {
-  margin: 6px 0 0;
-  line-height: 1.6;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.72);
 }
 .property-gallery a {
   color: rgb(var(--v-theme-link));
@@ -206,9 +299,26 @@ watch(
   outline: 2px solid rgb(var(--v-theme-primary));
   outline-offset: 3px;
 }
+.property-gallery__thumbs button:focus-visible {
+  outline-offset: -2px;
+}
 @media (max-width: 599px) {
-  .property-gallery__open > img {
-    max-height: 300px;
+  .property-gallery__stage {
+    aspect-ratio: 4 / 3;
+    max-height: 340px;
+  }
+  .property-gallery__expand > .v-icon + * {
+    display: none;
+  }
+  .property-gallery__thumbs button {
+    flex-basis: 84px;
+    height: 64px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .property-gallery__arrow,
+  .property-gallery__thumbs button {
+    transition: none;
   }
 }
 </style>

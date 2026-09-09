@@ -12,8 +12,13 @@ const props = withDefaults(
   defineProps<{
     publisher: AdvertiserMetadata & { source?: string; sellerType?: string; url?: string }
     showAgency?: boolean
+    /**
+     * The sticky price card: channels become buttons and the explanatory prose goes away.
+     * Source and date stay — provenance travels with the contact wherever it is shown.
+     */
+    compact?: boolean
   }>(),
-  { showAgency: true }
+  { showAgency: true, compact: false }
 )
 const { t, locale } = useI18n({ useScope: 'local', messages: propertyExperienceMessages })
 const localePath = useLocalePath()
@@ -63,28 +68,40 @@ const date = (value: string) =>
 </script>
 
 <template>
-  <div v-if="visible" class="advertiser-contact" data-testid="property-advertiser-contact">
+  <div
+    v-if="visible"
+    class="advertiser-contact"
+    :class="{ 'advertiser-contact--compact': compact }"
+    data-testid="property-advertiser-contact"
+  >
     <div v-if="metadata.ownerDirect" class="advertiser-contact__owner">
       <p class="advertiser-contact__owner-title">
         <VIcon icon="mdi-account-key-outline" size="20" aria-hidden="true" />
         <strong>{{ t('ownerDeclared') }}</strong>
       </p>
-      <p>{{ t('ownerHint') }}</p>
-      <a :href="metadata.ownerDirect.sourceUrl" target="_blank" rel="noopener noreferrer nofollow">
-        {{ t('ownerEvidence') }}
-      </a>
+      <template v-if="!compact">
+        <p>{{ t('ownerHint') }}</p>
+        <a
+          :href="metadata.ownerDirect.sourceUrl"
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+        >
+          {{ t('ownerEvidence') }}
+        </a>
+      </template>
     </div>
     <NuxtLink
       v-if="showAgency !== false && metadata.agency"
       :to="localePath(agencyPath(metadata.agency.key))"
       class="advertiser-contact__agency"
+      :aria-label="compact ? `${t('agency')}: ${metadata.agency.name}` : undefined"
     >
       <VIcon icon="mdi-office-building-outline" size="20" aria-hidden="true" />
-      <span>{{ t('agency') }}: {{ metadata.agency.name }}</span>
+      <span>{{ compact ? t('agency') : `${t('agency')}: ${metadata.agency.name}` }}</span>
       <VIcon icon="mdi-arrow-right" size="16" aria-hidden="true" />
     </NuxtLink>
     <template v-if="channels.length">
-      <p class="advertiser-contact__heading">
+      <p v-if="!compact" class="advertiser-contact__heading">
         <strong>{{ t('contactTitle') }}</strong>
       </p>
       <ul class="advertiser-contact__channels">
@@ -177,5 +194,35 @@ const date = (value: string) =>
 .advertiser-contact a:focus-visible {
   outline: 2px solid rgb(var(--v-theme-primary));
   outline-offset: 3px;
+}
+/* Compact: the price card's contact row. Buttons, not prose. */
+.advertiser-contact--compact {
+  margin-block: 0;
+}
+.advertiser-contact--compact .advertiser-contact__owner {
+  margin-bottom: 4px;
+}
+.advertiser-contact--compact .advertiser-contact__agency {
+  min-height: 36px;
+  font-size: 0.875rem;
+}
+.advertiser-contact--compact .advertiser-contact__channels {
+  gap: 8px;
+  margin-top: 8px;
+}
+.advertiser-contact--compact .advertiser-contact__action {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 4px;
+  background: rgba(var(--v-theme-primary), 0.1);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: background-color 150ms ease;
+}
+.advertiser-contact--compact .advertiser-contact__action:hover {
+  background: rgba(var(--v-theme-primary), 0.18);
+}
+.advertiser-contact--compact .advertiser-contact__evidence {
+  margin-top: 6px;
 }
 </style>
