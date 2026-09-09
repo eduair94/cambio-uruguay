@@ -156,6 +156,25 @@ const columns = async (page: Page, selector: string) =>
     .split(' ')
     .filter(Boolean).length
 const stored = (page: Page) => page.evaluate(() => localStorage.getItem('cu_rentals_layout'))
+const labelOffsets = (page: Page) =>
+  page
+    .locator('.rental-card')
+    .first()
+    .evaluate(card => {
+      const edge = card.getBoundingClientRect().left
+      const seller = card.querySelector('.rental-card__meta')
+      const content = card.querySelector('.availability-report__trigger .v-btn__content')
+      const text = content
+        ? [...content.childNodes].find(node => node.nodeType === 3 && node.textContent?.trim())
+        : null
+      let informe = -1
+      if (text) {
+        const range = document.createRange()
+        range.selectNodeContents(text)
+        informe = Math.round(range.getBoundingClientRect().left - edge)
+      }
+      return { anunciante: Math.round((seller?.getBoundingClientRect().left ?? 0) - edge), informe }
+    })
 const alignments = (page: Page) =>
   page
     .locator('.rental-card')
@@ -189,6 +208,10 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   await expect(page.locator('.rental-card__rail').first()).toBeVisible()
   expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
   expect(await stored(page)).toBe('lista')
+
+  // "Informar posible alquiler" arranca en la misma columna que el anunciante:
+  // el boton conserva su padding y la bandera cuelga en el margen.
+  expect(await labelOffsets(page)).toEqual({ anunciante: 19, informe: 19 })
 
   // Recarga completa: el servidor sigue mandando mosaico y el cliente aplica lo guardado.
   await page.reload({ waitUntil: 'domcontentloaded' })
