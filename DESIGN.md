@@ -24,6 +24,13 @@ colors:
   sentiment-positive: "#35d07f"
   sentiment-neutral: "#7d8aa3"
   sentiment-negative: "#ff655d"
+  map-shade-1: "#d6e6f5"
+  map-shade-2: "#a8cae8"
+  map-shade-3: "#75a9d7"
+  map-shade-4: "#3d80ba"
+  map-shade-5: "#15517e"
+  map-no-data: "#d4d9df"
+  map-ink: "#102c4c"
 typography:
   display:
     fontFamily: "Open Sans, sans-serif"
@@ -226,6 +233,22 @@ reusing the dark one, because the same swatch cannot clear 4.5:1 on both `#0a0e1
   solid black or a solid white fill is drift.
 - Muted dark text is drawn from the canvas ramps (`#b3bdcc`, `#b5bdc9`, `#818da0`), not from grey.
 
+### Map Data
+
+Choropleth maps (rental zones, rental analysis) paint values, not surfaces, so their colors are a
+sequential ramp rather than theme tokens — the fill has to stay readable against OpenStreetMap
+tiles, which are neither of our canvases.
+
+- **Map Shade 1–5** (`#d6e6f5`, `#a8cae8`, `#75a9d7`, `#3d80ba`, `#15517e`): the five quantile bins
+  of the active metric, light to dark. Always fills at `0.78` opacity over the tile layer, always
+  accompanied by a legend that repeats each bin's numeric range: color alone never carries the
+  value.
+- **Map No Data** (`#d4d9df`): a zone with no measurement. Deliberately outside the blue ramp — it
+  is not "the lowest value", and the legend labels it as its own class.
+- **Map Ink** (`#102c4c`): the stroke of the selected polygon and of `:focus-visible`, over the
+  white `#ffffff` stroke every other polygon carries. It is the only place this value is used, and
+  never as a fill or as text.
+
 ### Named Rules
 
 **The Signal Has a Job Rule.** Saturated colors must communicate action, selection, tier, or status;
@@ -236,6 +259,13 @@ slabs use the shared `.on-dark` treatment.
 
 **The Link Token Rule.** Blue text below 16px uses `rgb(var(--v-theme-link))`. `--v-theme-primary`
 is for fills, strokes, and focus rings — as small text on a tinted panel it fails AA.
+
+**The Map Ramp Is Data Rule.** The map shades, Map No Data and Map Ink are the only literals allowed
+outside the theme tokens, and only inside a map layer: they answer to the tile background, not to
+the light/dark surfaces. They never become text, chips, borders or panel fills, and a map that uses
+them always ships the legend that decodes them. The ramp lives twice today —
+`components/rentals/zones/Explorer.vue` and `utils/rentalAnalysisMap.ts` — and the two must stay
+identical; a third map imports one of them instead of pasting new hexes.
 
 **The Ramp Not Grey Rule.** Secondary text on a colored surface is tinted from that surface's own
 hue ramp. A grey (`#9e9e9e`, `#757575`) on either canvas fails AA and is remapped away globally in
