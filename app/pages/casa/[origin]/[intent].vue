@@ -4,7 +4,12 @@
       <VRow justify="center">
         <VCol cols="12" md="10" lg="9">
           <div class="mb-4">
-            <VBtn :to="localePath(`/casa/${origin}`)" variant="text" size="small" class="px-1">
+            <VBtn
+              :to="localePath(`/casa/${origin}`)"
+              variant="text"
+              size="small"
+              class="cu-btn-flush"
+            >
               <VIcon start size="small">mdi-arrow-left</VIcon>
               Todo sobre {{ facts.name }}
             </VBtn>

@@ -7,7 +7,7 @@
         :to="localePath('/videos-de-economia-uruguay')"
         variant="text"
         size="small"
-        class="px-1"
+        class="cu-btn-flush"
       >
         <VIcon start size="small">mdi-arrow-left</VIcon>
         Videos de economía

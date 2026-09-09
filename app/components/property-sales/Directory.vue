@@ -803,6 +803,11 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
     height: 44px;
     letter-spacing: 0;
   }
+  /* The one labelled button in the bar keeps Vuetify's default padding: its
+     prepend icon sits in a negative margin and at 10px it was 6px from the edge. */
+  .sales-directory__toolbar > [data-testid='sale-filter-trigger'] {
+    padding-inline: 16px;
+  }
   .sales-directory__toolbar .sales-directory__saved-button {
     padding-inline: 4px;
     width: 44px;

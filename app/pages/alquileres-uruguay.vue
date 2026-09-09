@@ -1594,6 +1594,9 @@ useSchemaOrg([
 }
 .rentals-mobile-bar > .v-btn:first-child {
   margin-right: auto;
+  /* Vuetify's default inline padding, not the bar's 10px: the prepend icon sits
+     in a negative margin (height / -9) and at 10px it was 6px from the edge. */
+  padding-inline: 16px;
   font-size: 0.8rem;
   letter-spacing: 0;
 }
@@ -2228,7 +2231,6 @@ button.rental-card__media {
     flex: 1 1 auto;
     min-width: 0;
     justify-content: flex-start;
-    padding-inline: 8px;
   }
   .rentals-grid {
     grid-template-columns: minmax(0, 1fr);

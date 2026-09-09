@@ -6,7 +6,7 @@
         :to="localePath('/tarjetas-de-debito-uruguay')"
         variant="text"
         size="small"
-        class="px-1"
+        class="cu-btn-flush"
       >
         <VIcon start size="small">mdi-arrow-left</VIcon>
         Tarjetas de débito

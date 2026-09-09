@@ -194,7 +194,7 @@ depende de vos.
             color="primary"
             variant="text"
             append-icon="mdi-arrow-right"
-            class="px-0"
+            class="cu-btn-flush"
           >
             Ver la página
           </VBtn>
@@ -207,7 +207,7 @@ depende de vos.
             color="primary"
             variant="text"
             append-icon="mdi-arrow-right"
-            class="px-0"
+            class="cu-btn-flush"
           >
             Ver la página
           </VBtn>

@@ -908,7 +908,6 @@ legend {
 }
 .rental-search__footer > .v-btn {
   min-height: 48px;
-  padding-inline: 8px;
 }
 .rental-search--sidebar .rental-search__footer {
   padding: 12px;

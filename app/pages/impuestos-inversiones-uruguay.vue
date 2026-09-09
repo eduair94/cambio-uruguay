@@ -2,7 +2,12 @@
   <div class="imp-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
-      <VBtn :to="localePath('/inversiones-uruguay')" variant="text" size="small" class="px-1">
+      <VBtn
+        :to="localePath('/inversiones-uruguay')"
+        variant="text"
+        size="small"
+        class="cu-btn-flush"
+      >
         <VIcon start size="small">mdi-arrow-left</VIcon>
         Inversiones en Uruguay
       </VBtn>

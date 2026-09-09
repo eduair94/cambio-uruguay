@@ -5,7 +5,7 @@
         <VCol cols="12" md="10" lg="9">
           <!-- Breadcrumb -->
           <div class="mb-4">
-            <VBtn :to="localePath('/convertir')" variant="text" size="small" class="px-1">
+            <VBtn :to="localePath('/convertir')" variant="text" size="small" class="cu-btn-flush">
               <VIcon start size="small">mdi-arrow-left</VIcon>
               Conversiones
             </VBtn>

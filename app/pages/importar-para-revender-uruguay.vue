@@ -329,7 +329,7 @@ FORM: Guía operativa con simulador, extensión de la familia /franquicia-aduana
         :to="localePath('/preguntas-frecuentes-aduana-uruguay')"
         variant="text"
         color="primary"
-        class="mt-3 px-1"
+        class="mt-3 cu-btn-flush"
       >
         Ver el resto de las preguntas de aduana
         <VIcon end>mdi-arrow-right</VIcon>

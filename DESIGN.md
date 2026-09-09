@@ -457,6 +457,12 @@ one side. State goes in a labelled chip, not in a stripe.
 - **Hover / Focus:** 150–200ms tonal or lift response; `:focus-visible` always shows the 2px Action
   Blue outline with a 2px offset from `critical.css`.
 - **Ghost:** Transparent, using the theme's accessible link blue.
+- **Padding:** a button keeps Vuetify's own inline padding for its size (8/12/16/20/24px). The
+  hover and focus box is the button's border box, so `px-0` or `padding-inline: 0` leaves the
+  label — and a prepend icon, which sits in a negative margin — on the edge, and the control reads
+  as cut off. A label that has to align with the paragraph above it uses `cu-btn-flush`
+  (`legacy-vuetify.css`): the padding stays and a negative start margin moves the box.
+  `scripts/btn-overflow-audit.mjs` reports the breach as `FLUSH`.
 
 ### Chips
 

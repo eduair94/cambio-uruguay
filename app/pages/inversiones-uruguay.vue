@@ -2,7 +2,7 @@
   <div class="inversiones-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
-      <VBtn :to="localePath('/herramientas')" variant="text" size="small" class="px-1">
+      <VBtn :to="localePath('/herramientas')" variant="text" size="small" class="cu-btn-flush">
         <VIcon start size="small">mdi-arrow-left</VIcon>
         Herramientas
       </VBtn>
@@ -464,7 +464,7 @@
         :to="localePath('/impuestos-inversiones-uruguay')"
         variant="text"
         color="primary"
-        class="px-0 mt-3"
+        class="cu-btn-flush mt-3"
       >
         <VIcon start size="small">mdi-file-percent-outline</VIcon>
         Ver la guía completa: impuestos sobre inversiones en Uruguay
@@ -490,7 +490,7 @@
           :to="localePath('/herramientas/costo-real-de-invertir-afuera')"
           variant="text"
           color="primary"
-          class="px-0"
+          class="cu-btn-flush"
         >
           <VIcon start size="small">mdi-calculator-variant-outline</VIcon>
           Calcular el costo real de invertir afuera, ida y vuelta

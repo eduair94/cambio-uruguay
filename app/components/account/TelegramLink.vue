@@ -24,7 +24,7 @@
           variant="text"
           size="small"
           color="info"
-          class="align-self-start px-1"
+          class="align-self-start cu-btn-flush"
           @click="toggleCode"
         >
           {{ $t('tg.useCode') }}

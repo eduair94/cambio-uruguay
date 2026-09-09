@@ -8,7 +8,7 @@
               :to="localePath(`/comparativas/${family.slug}`)"
               variant="text"
               size="small"
-              class="px-1"
+              class="cu-btn-flush"
             >
               <VIcon start size="small">mdi-arrow-left</VIcon>
               Comparativas de {{ family.label }}

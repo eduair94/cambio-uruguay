@@ -186,7 +186,7 @@
         :to="localePath('/preguntas-frecuentes-aduana-uruguay')"
         variant="text"
         color="primary"
-        class="mt-3 px-1"
+        class="mt-3 cu-btn-flush"
       >
         Ver también preguntas de compras, productos y envíos retenidos
         <VIcon end>mdi-arrow-right</VIcon>

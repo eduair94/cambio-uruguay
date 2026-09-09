@@ -1,7 +1,12 @@
 <template>
   <VContainer class="aduana-faq-page py-6 py-md-10">
     <nav class="mb-4" aria-label="Migas de pan">
-      <VBtn :to="localePath('/franquicia-aduana-uruguay')" variant="text" size="small" class="px-1">
+      <VBtn
+        :to="localePath('/franquicia-aduana-uruguay')"
+        variant="text"
+        size="small"
+        class="cu-btn-flush"
+      >
         <VIcon start size="small">mdi-arrow-left</VIcon>
         Franquicia y aduana
       </VBtn>

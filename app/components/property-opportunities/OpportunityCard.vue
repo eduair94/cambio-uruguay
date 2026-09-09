@@ -560,9 +560,10 @@ html[data-theme='dark'] .opportunity-card__labels .opportunity-card__label--caut
   gap: 4px 8px;
   margin-top: 14px;
 }
+/* Vuetify's own inline padding stays: the "open in new" append icon sits in a
+   negative margin (height / -9), and at 10px it was 6px from the box edge. */
 .opportunity-card__actions :deep(.v-btn) {
   min-height: 44px;
-  padding-inline: 10px;
   font-size: 0.78rem;
 }
 .opportunity-card__details {

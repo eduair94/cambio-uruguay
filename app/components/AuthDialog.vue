@@ -65,7 +65,12 @@
                 {{ $t('auth.register') }}
               </VBtn>
             </div>
-            <VBtn variant="text" size="small" class="mt-2 px-0" @click="store.resetPassword(email)">
+            <VBtn
+              variant="text"
+              size="small"
+              class="mt-2 cu-btn-flush"
+              @click="store.resetPassword(email)"
+            >
               {{ $t('auth.forgotPassword') }}
             </VBtn>
           </VTabsWindowItem>

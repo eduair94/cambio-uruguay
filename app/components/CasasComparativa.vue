@@ -2,13 +2,15 @@
   <div class="casas-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3 d-flex align-center flex-wrap ga-1">
-      <VBtn :to="localePath('/')" variant="text" size="small" class="px-1">
+      <VBtn :to="localePath('/')" variant="text" size="small" class="cu-btn-flush">
         <VIcon start size="small">mdi-arrow-left</VIcon>
         Cambio Uruguay
       </VBtn>
       <template v-if="lockedCategory">
         <VIcon size="small" color="grey">mdi-chevron-right</VIcon>
-        <VBtn :to="localePath(CASAS_PATH)" variant="text" size="small" class="px-1">
+        <!-- Not flush: it follows the chevron, so it keeps its own padding
+             instead of pulling its box back over the separator. -->
+        <VBtn :to="localePath(CASAS_PATH)" variant="text" size="small">
           {{ c.backToAll }}
         </VBtn>
       </template>

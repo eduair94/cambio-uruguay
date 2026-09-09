@@ -204,3 +204,43 @@
 .cu-btn-grid > .v-btn--variant-outlined.v-btn--active {
   border-color: currentColor;
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * `cu-btn-flush` — a text button whose LABEL has to sit on the content edge.
+ *
+ * The habit was `class="px-0"` (or `padding-inline: 0` in a scoped block): the
+ * label lines up with the paragraph above it, and the hover/focus box — which
+ * is the button's own border box — now hugs the text on both sides, so the
+ * control reads as cut off. With a prepend icon it IS cut off: Vuetify's
+ * `.v-btn__prepend` carries a negative start margin (height / -9) that only
+ * works over real padding, so the glyph pokes 3–4px past the box. Measured on
+ * /alquileres-uruguay 2026-09-08: "Informar posible alquiler" at -4px, 24 per page.
+ *
+ * Keep the padding, move the box: a negative start margin equal to Vuetify's
+ * own inline padding for that size puts the label on the edge and lets the
+ * box breathe on both sides, the way Material lays a text button in a flow.
+ * The end side keeps its padding so the box stays symmetric around the label.
+ * `--cu-btn-pad` mirrors VBtn.css (`padding: 0 <n>` per `--size-*`).
+ *
+ * Regression check: `node scripts/btn-overflow-audit.mjs` reports FLUSH for any
+ * non-icon button whose inner run (icon + label) gets within 8px of its edge. */
+.cu-btn-flush {
+  --cu-btn-pad: 16px;
+  margin-inline-start: calc(-1 * var(--cu-btn-pad));
+}
+
+.cu-btn-flush.v-btn--size-x-small {
+  --cu-btn-pad: 8px;
+}
+
+.cu-btn-flush.v-btn--size-small {
+  --cu-btn-pad: 12px;
+}
+
+.cu-btn-flush.v-btn--size-large {
+  --cu-btn-pad: 20px;
+}
+
+.cu-btn-flush.v-btn--size-x-large {
+  --cu-btn-pad: 24px;
+}

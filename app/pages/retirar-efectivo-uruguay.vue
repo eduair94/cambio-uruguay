@@ -2,7 +2,7 @@
   <div class="withdraw-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
-      <VBtn :to="localePath('/herramientas')" variant="text" size="small" class="px-1">
+      <VBtn :to="localePath('/herramientas')" variant="text" size="small" class="cu-btn-flush">
         <VIcon start size="small">mdi-arrow-left</VIcon>
         {{ c.ui.backToTools }}
       </VBtn>

@@ -408,7 +408,7 @@
         :to="localePath('/preguntas-frecuentes-aduana-uruguay')"
         variant="text"
         color="primary"
-        class="mt-3 px-1"
+        class="mt-3 cu-btn-flush"
       >
         Ver todas las preguntas de aduana, productos, retenciones y viajeros
         <VIcon end>mdi-arrow-right</VIcon>

@@ -5,7 +5,7 @@
         <VCol cols="12" md="9" lg="8">
           <!-- Breadcrumb -->
           <div class="mb-4">
-            <VBtn :to="localePath('/glosario')" variant="text" size="small" class="px-1">
+            <VBtn :to="localePath('/glosario')" variant="text" size="small" class="cu-btn-flush">
               <VIcon start size="small">mdi-arrow-left</VIcon>
               Glosario
             </VBtn>

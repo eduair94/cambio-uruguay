@@ -723,7 +723,6 @@
                 rel="noopener noreferrer"
                 variant="text"
                 size="x-small"
-                class="px-1"
               >
                 sitio oficial
               </VBtn>

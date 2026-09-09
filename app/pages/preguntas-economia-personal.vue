@@ -1,7 +1,12 @@
 <template>
   <VContainer class="money-faq-page py-6 py-md-10">
     <nav class="mb-5" aria-label="Migas de pan">
-      <VBtn :to="localePath('/temas-de-dinero-reddit')" variant="text" size="small" class="px-1">
+      <VBtn
+        :to="localePath('/temas-de-dinero-reddit')"
+        variant="text"
+        size="small"
+        class="cu-btn-flush"
+      >
         <VIcon start size="small">mdi-arrow-left</VIcon>
         Temas de dinero en Reddit
       </VBtn>

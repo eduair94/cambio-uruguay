@@ -17,6 +17,13 @@
 //   SPILL   — label escapes horizontally or vertically. Always a defect.
 //   ICON    — an icon button whose glyph is wider than the button. A different defect
 //             (the square control got squeezed), and out of reach of any wrap rule.
+//   FLUSH   — the label (icon included) sits within 8px of the button's own edge. Not a
+//             width problem: the button was authored with its horizontal padding
+//             zeroed, so the hover/focus box hugs the text and the control reads as
+//             cut off. 8px is Vuetify's own floor (`--size-x-small`); nothing it ships
+//             gets closer. A flush-left label that must align with the paragraph above
+//             it uses `cu-btn-flush` (legacy-vuetify.css), which keeps the padding and
+//             pulls the box out with a negative margin instead.
 //   TIGHT   — label fits inside the border box but eats into the horizontal padding
 //             (<2px of air left). Not broken today; the next translation breaks it.
 //   GREW    — FIX=1 only: the rule changed this button's box. Its blast radius; every
@@ -115,6 +122,21 @@ const probe = ({ css }) => {
     const padR = parseFloat(cs.paddingRight) || 0
     const out = Math.max(box.left - label.left, label.right - box.right, label.bottom - box.bottom)
     const air = Math.min(label.left - (box.left + padL), box.right - padR - label.right)
+    // FLUSH measures the whole inner run — prepend icon, label, append icon — against
+    // the border box, because a zeroed padding shows first on the icon: `.v-btn__prepend`
+    // carries a negative start margin that only reads as intended over real padding.
+    const inner = [
+      ...el.querySelectorAll(
+        ':scope > .v-btn__prepend, :scope > .v-btn__content, :scope > .v-btn__append'
+      ),
+    ]
+      .map(part => part.getBoundingClientRect())
+      .filter(r => r.width > 0)
+      .reduce(
+        (acc, r) => ({ left: Math.min(acc.left, r.left), right: Math.max(acc.right, r.right) }),
+        { left: label.left, right: label.right }
+      )
+    const edge = Math.min(inner.left - box.left, box.right - inner.right)
 
     const row = {
       desc: describe(el),
@@ -127,8 +149,17 @@ const probe = ({ css }) => {
     // narrower than its own glyph — and no wrap rule can help it, so it gets its own
     // bucket instead of making a clean FIX=1 run look like a failure.
     const isIcon = el.classList.contains('v-btn--icon')
-    const kind = out > 1 ? (isIcon ? 'ICON' : 'SPILL') : air < 2 && !isIcon ? 'TIGHT' : null
-    if (kind) findings.push({ ...row, kind })
+    const kind =
+      out > 1
+        ? isIcon
+          ? 'ICON'
+          : 'SPILL'
+        : !isIcon && edge < 8
+          ? 'FLUSH'
+          : air < 2 && !isIcon
+            ? 'TIGHT'
+            : null
+    if (kind) findings.push({ ...row, kind, out: kind === 'FLUSH' ? Math.round(edge) : row.out })
 
     const prev = before && before[i]
     if (prev && (Math.abs(prev.h - box.height) > 0.5 || Math.abs(prev.w - box.width) > 0.5)) {
@@ -174,7 +205,7 @@ console.log(
 )
 
 const browser = await chromium.launch()
-const totals = { SPILL: 0, TIGHT: 0, GREW: 0, ICON: 0 }
+const totals = { SPILL: 0, FLUSH: 0, TIGHT: 0, GREW: 0, ICON: 0 }
 const byIdiom = new Map()
 let failed = 0
 
@@ -220,22 +251,27 @@ const dump = kind => {
   for (const [, v] of rows) {
     const { view, sample } = v
     const pages = [...v.routes]
+    const measure =
+      kind === 'FLUSH'
+        ? `label ${sample.label}px in ${sample.box}px (${sample.out}px to the edge)`
+        : `label ${sample.label}px in ${sample.box}px (+${sample.out}px out)`
     console.log(
-      `${String(v.count).padStart(4)}x [${view}] ${sample.desc}  "${sample.text}"  label ${sample.label}px in ${sample.box}px (+${sample.out}px out)` +
+      `${String(v.count).padStart(4)}x [${view}] ${sample.desc}  "${sample.text}"  ${measure}` +
         `\n       ${pages.slice(0, 5).join(', ')}${pages.length > 5 ? ` (+${pages.length - 5})` : ''}`
     )
   }
 }
 dump('SPILL')
+dump('FLUSH')
 dump('ICON')
 if (css) dump('GREW')
 if (process.env.TIGHT) dump('TIGHT')
 
 const reads = routes.length * viewports.length
 console.log(
-  `\nSPILL=${totals.SPILL} ICON=${totals.ICON} TIGHT=${totals.TIGHT}` +
+  `\nSPILL=${totals.SPILL} FLUSH=${totals.FLUSH} ICON=${totals.ICON} TIGHT=${totals.TIGHT}` +
     (css ? ` GREW=${totals.GREW}` : '') +
     ` (${reads - failed}/${reads} page loads read)` +
     (process.env.TIGHT ? '' : '  — set TIGHT=1 to list the near-misses')
 )
-process.exitCode = totals.SPILL > 0 || failed > 0 ? 1 : 0
+process.exitCode = totals.SPILL > 0 || totals.FLUSH > 0 || failed > 0 ? 1 : 0

@@ -204,7 +204,7 @@ const SOURCE_LABELS: Record<FinderFact['source'], string> = {
         rel="noopener noreferrer nofollow"
         variant="text"
         size="small"
-        class="px-1"
+        class="cu-btn-flush"
       >
         <VIcon start size="small">mdi-open-in-new</VIcon>
         Abrir {{ f.name }}

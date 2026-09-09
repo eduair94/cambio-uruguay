@@ -97,7 +97,9 @@ function apply(value: RentalZonePreferences) {
   text-align: left;
   text-transform: none;
   letter-spacing: normal;
-  padding: 8px;
+  /* Vuetify's default inline padding: both icons sit in negative margins
+     (height / -9), so at 8px the map glyph was 4px from the edge. */
+  padding: 8px 16px;
   justify-content: flex-start;
 }
 .picker-trigger :deep(.v-btn__content) {

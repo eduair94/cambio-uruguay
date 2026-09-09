@@ -1,6 +1,11 @@
 <template>
   <VContainer class="page py-6">
-    <VBtn :to="localePath('/salud-financiera')" variant="text" size="small" class="px-1 mb-2">
+    <VBtn
+      :to="localePath('/salud-financiera')"
+      variant="text"
+      size="small"
+      class="cu-btn-flush mb-2"
+    >
       <VIcon start icon="mdi-arrow-left" /> Salud financiera
     </VBtn>
 

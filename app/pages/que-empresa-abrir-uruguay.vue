@@ -1,7 +1,7 @@
 <template>
   <div class="empresa-page pb-8">
     <div class="mb-3">
-      <VBtn :to="localePath('/salud-financiera')" variant="text" size="small" class="px-1">
+      <VBtn :to="localePath('/salud-financiera')" variant="text" size="small" class="cu-btn-flush">
         <VIcon start size="small">mdi-arrow-left</VIcon>
         Salud financiera
       </VBtn>

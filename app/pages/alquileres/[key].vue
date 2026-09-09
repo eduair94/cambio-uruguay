@@ -1274,7 +1274,6 @@ useHead(() => ({
   .rental-page__tools > .v-btn:last-child {
     flex: 1 1 auto;
     min-width: 0;
-    padding-inline: 8px;
   }
   .rental-page__back {
     margin-bottom: 12px;

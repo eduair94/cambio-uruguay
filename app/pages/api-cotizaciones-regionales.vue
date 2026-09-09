@@ -116,8 +116,10 @@
         <div class="d-flex flex-wrap align-center ga-2 mb-2">
           <VChip size="small" color="primary" variant="flat">GET</VChip>
           <span class="endpoint-url font-weight-bold">{{ endpoint.path }}</span>
+          <!-- small, not x-small: with a prepend icon the 8px x-small padding
+               leaves the glyph 6px from the box edge. -->
           <VBtn
-            size="x-small"
+            size="small"
             variant="text"
             prepend-icon="mdi-open-in-new"
             :href="`${API_BASE}${endpoint.example}`"

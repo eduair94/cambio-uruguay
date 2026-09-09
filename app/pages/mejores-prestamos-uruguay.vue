@@ -2,7 +2,7 @@
   <div class="loantier-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
-      <VBtn :to="localePath('/prestamos-uruguay')" variant="text" size="small" class="px-1">
+      <VBtn :to="localePath('/prestamos-uruguay')" variant="text" size="small" class="cu-btn-flush">
         <VIcon start size="small">mdi-arrow-left</VIcon>
         Préstamos en Uruguay
       </VBtn>

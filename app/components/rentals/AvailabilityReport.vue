@@ -13,6 +13,7 @@
     <VBtn
       v-if="validOffers.length"
       variant="text"
+      size="small"
       prepend-icon="mdi-flag-outline"
       class="availability-report__trigger"
       :aria-label="`${t(shownSummary?.count ? 'review' : 'report')}: ${title || selected?.title || sourceLabel(selected)}`"
@@ -337,12 +338,14 @@ onBeforeUnmount(() => {
   font-size: 0.75rem;
   margin-top: 2px;
 }
+/* Keeps Vuetify's small-size padding (12px): the hover/focus box is the button's
+   own border box, and zeroing the padding left the label — and the flag icon,
+   which sits in a negative margin — on the box's edge. The 44px floor is the
+   touch target; `size="small"` only sets the type step and the padding. */
 .availability-report__trigger {
   min-height: 44px;
   max-width: 100%;
   margin-top: 4px;
-  padding-inline: 0;
-  font-size: 0.75rem;
   letter-spacing: 0;
 }
 .availability-report__trigger :deep(.v-btn__content) {
