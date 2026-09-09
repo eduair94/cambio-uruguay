@@ -15,7 +15,7 @@
       variant="text"
       size="small"
       prepend-icon="mdi-flag-outline"
-      class="availability-report__trigger"
+      class="availability-report__trigger cu-btn-flush"
       :aria-label="`${t(shownSummary?.count ? 'review' : 'report')}: ${title || selected?.title || sourceLabel(selected)}`"
       @click="show"
       >{{ t(shownSummary?.count ? 'review' : 'report') }}</VBtn

@@ -2521,6 +2521,11 @@ button.rental-card__media {
     align-items: center;
     gap: 4px 12px;
   }
+  /* En el pie en renglon el boton no arranca ninguna columna: sin el retroceso
+     de cu-btn-flush se comeria el espacio que lo separa del anunciante. */
+  .rentals-grid--lista .rental-card__footnote :deep(.cu-btn-flush) {
+    margin-inline-start: 0;
+  }
   .rentals-grid--lista .rental-card__detail {
     justify-content: flex-start;
     gap: 8px;
