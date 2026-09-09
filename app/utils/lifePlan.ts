@@ -15,7 +15,7 @@
 //
 // `app/utils/` es un namespace plano de auto-imports, así que todo lo exportado
 // lleva prefijo `lifePlan`/`LIFE_PLAN` salvo los tipos del dominio.
-import { type BudgetResult } from '~/utils/costOfLiving'
+import type { BudgetResult } from '~/utils/costOfLiving'
 import { payoffPlan, type Debt, type PayoffPlan } from '~/utils/debt'
 import { netOfIrpf, type DepositCurrency } from '~/utils/investments'
 
@@ -313,8 +313,7 @@ export function buildLifePlan(
       id: 'esenciales',
       label: 'Lo esencial',
       monthly: budget.essentials,
-      reason:
-        'Vivienda, comida, servicios, transporte y salud, con los precios medidos del sitio.',
+      reason: 'Vivienda, comida, servicios, transporte y salud, con los precios medidos del sitio.',
       evidence: null,
       unresolved: false,
       committed: true,
@@ -479,8 +478,7 @@ export function buildLifePlan(
       id: 'deuda-barata',
       label: 'Deuda barata, después del colchón',
       monthly: take(left),
-      reason:
-        'Rinde menos que tener el colchón, así que no conviene adelantarla antes de tenerlo.',
+      reason: 'Rinde menos que tener el colchón, así que no conviene adelantarla antes de tenerlo.',
       evidence: bestRealNet
         ? `Por debajo de ${asPct(bestRealNet.pct)} real de ${bestRealNet.from}.`
         : null,
