@@ -172,6 +172,8 @@ interface Fact {
   value: string
   empty?: boolean
 }
+/** Half a column holds a label and a short value; past that the pair stacks instead of wrapping. */
+const stacked = (fact: Fact) => fact.value.length > 20
 // Property-level facts. A detail surface is shown only when it says something the headline
 // surface does not: the same 20 m² repeated as built, total and land is noise, not data.
 const propertyFacts = computed<Fact[]>(() => {
@@ -593,7 +595,11 @@ useHead(() => ({
             <strong>{{ t('factsToConfirm') }}</strong>
           </p>
           <dl class="rental-page__facts">
-            <div v-for="fact in propertyFacts" :key="fact.key">
+            <div
+              v-for="fact in propertyFacts"
+              :key="fact.key"
+              :class="{ 'is-stacked': stacked(fact) }"
+            >
               <dt>{{ fact.label }}</dt>
               <dd :class="{ 'is-empty': fact.empty }">{{ fact.value }}</dd>
             </div>
@@ -603,7 +609,11 @@ useHead(() => ({
             <span>{{ t('selectedSource', { source: source(selectedOffer) }) }}</span>
           </div>
           <dl class="rental-page__facts">
-            <div v-for="fact in conditionFacts" :key="fact.key">
+            <div
+              v-for="fact in conditionFacts"
+              :key="fact.key"
+              :class="{ 'is-stacked': stacked(fact) }"
+            >
               <dt>{{ fact.label }}</dt>
               <dd :class="{ 'is-empty': fact.empty }">{{ fact.value }}</dd>
             </div>
@@ -799,7 +809,7 @@ useHead(() => ({
                   :href="rentalSavedSafeUrl(offer.url)!"
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  variant="text"
+                  variant="outlined"
                   append-icon="mdi-open-in-new"
                   >{{ t('mapOpen', { source: source(offer) }) }}</VBtn
                 >
@@ -989,10 +999,13 @@ useHead(() => ({
 </template>
 
 <style scoped>
+/* `anywhere` parte adentro de la palabra: a 320px el título salía "Monoambient / e en alquiler".
+   Se rompe sólo lo que no entra solo en una línea, y `anywhere` queda para lo que de verdad lo
+   necesita — la descripción del origen, los valores y las referencias del aviso. */
 .rental-page {
   max-width: 1220px;
   padding-bottom: 64px;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 .rental-page__topbar {
   display: flex;
@@ -1021,8 +1034,9 @@ useHead(() => ({
 .rental-page__main {
   min-width: 0;
 }
-/* Every text block declares its own gap; the browser's 1em margins are not ours. */
-.rental-page :is(h1, h2, h3, p, ul, ol, dl) {
+/* Every text block declares its own gap; the browser's 1em margins are not ours. `dd` belongs in
+   this list: its UA `margin-inline-start: 40px` indented every value that is not in a flex row. */
+.rental-page :is(h1, h2, h3, p, ul, ol, dl, dd) {
   margin: 0;
 }
 .rental-page h1 {
@@ -1030,7 +1044,6 @@ useHead(() => ({
   line-height: 1.2;
   text-wrap: balance;
   margin: 4px 0 8px;
-  overflow-wrap: anywhere;
 }
 .rental-page h2 {
   font-size: 1.25rem;
@@ -1162,6 +1175,11 @@ useHead(() => ({
 .rental-page__sections a:hover {
   background: rgba(var(--v-theme-primary), 0.08);
 }
+/* Keep the padding, move the box: the first label sits on the column edge like every heading
+   below it, and its hover pill still breathes on both sides (the `cu-btn-flush` idiom). */
+.rental-page__sections a:first-child {
+  margin-inline-start: -12px;
+}
 .rental-page h2[id],
 .rental-page__section,
 .rental-page__section :deep(.nearby-services) {
@@ -1209,6 +1227,15 @@ useHead(() => ({
   gap: 8px 16px;
   padding: 11px 0;
   border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+/* A value too long for half a column stops fighting its label and stacks under it: the pair
+   "Garantías mencionadas / ANDA · Contaduría · Aseguradora" wrapped on both sides at 374px. */
+.rental-page__facts > div.is-stacked {
+  display: block;
+}
+.rental-page__facts > div.is-stacked dd {
+  margin-top: 2px;
+  text-align: start;
 }
 .rental-page dt {
   font-size: 0.875rem;
@@ -1374,6 +1401,10 @@ useHead(() => ({
   color: rgb(var(--v-theme-link));
   font-weight: 600;
 }
+/* "Referencia en InfoCasas: infocasas:194222908" es una sola palabra de 30 caracteres. */
+.rental-page__offer-more p {
+  overflow-wrap: anywhere;
+}
 .rental-page__offer-more p + p {
   margin-top: 4px;
 }
@@ -1433,26 +1464,37 @@ useHead(() => ({
 .rental-page__decision .rental-page__note {
   margin-top: 8px;
 }
-.rental-page__contact {
+/* Both actions in the card are full width and the same height: two stacked buttons that differ by
+   4px read as a mistake, not as hierarchy. Hierarchy is carried by fill against tonal. */
+.rental-page__decision > .v-btn {
   width: 100%;
-  margin-top: 20px;
   min-height: 48px !important;
+}
+.rental-page__contact {
+  margin-top: 20px;
 }
 .rental-page__publisher {
   margin-block: 20px;
   padding-top: 16px;
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
+/* Un solo eje de texto: el ícono abre la columna y todo lo que sigue —nombre, tipo y el enlace a
+   la inmobiliaria— arranca en la misma vertical. */
+.rental-page__publisher {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 2px 8px;
+}
 .rental-page__publisher > p {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  display: contents;
   font-size: 0.95rem;
 }
-.rental-page__publisher .v-icon {
-  flex-shrink: 0;
+.rental-page__publisher > p > .v-icon {
   margin-top: 2px;
   color: rgba(var(--v-theme-on-surface), 0.68);
+}
+.rental-page__publisher > .advertiser-contact {
+  grid-column: 2;
 }
 .rental-page__publisher-label {
   display: block;
@@ -1729,11 +1771,22 @@ useHead(() => ({
   .rental-page__crumbs {
     display: none;
   }
+  /* Los dos botones se llevaban 88 de los 296px de la fila y al título le quedaban 161: a 320px
+     "Monoambiente" no entraba en su propia línea y se partía al medio. Salen del flujo, se apoyan
+     sobre el kicker —que sí puede envolver— y el título recupera el ancho entero. */
   .rental-page__heading-row {
-    gap: 8px;
+    position: relative;
+    display: block;
+  }
+  .rental-page__zone {
+    padding-inline-end: 92px;
   }
   .rental-page__tools {
+    position: absolute;
+    top: -4px;
+    inset-inline-end: -8px;
     gap: 0;
+    margin-inline-end: 0;
   }
   .rental-page__keyfacts {
     gap: 6px 16px;

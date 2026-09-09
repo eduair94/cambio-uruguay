@@ -96,7 +96,9 @@ const date = (value: string) =>
       class="advertiser-contact__agency"
       :aria-label="compact ? `${t('agency')}: ${metadata.agency.name}` : undefined"
     >
-      <VIcon icon="mdi-office-building-outline" size="20" aria-hidden="true" />
+      <!-- Compacto: la fila de arriba ya trae el ícono de inmobiliaria; repetirlo son dos edificios
+           en la misma tarjeta diciendo lo mismo. -->
+      <VIcon v-if="!compact" icon="mdi-office-building-outline" size="20" aria-hidden="true" />
       <span>{{ compact ? t('agency') : `${t('agency')}: ${metadata.agency.name}` }}</span>
       <VIcon icon="mdi-arrow-right" size="16" aria-hidden="true" />
     </NuxtLink>

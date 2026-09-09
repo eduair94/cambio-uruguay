@@ -27,6 +27,7 @@ const failed = ref(new Set<string>())
 // recortaría por la mitad, así que se la muestra entera sobre un fondo oscuro. Se decide con la
 // foto ya cargada, no antes: el origen no publica las medidas.
 const portrait = ref(new Set<string>())
+const cover = ref<HTMLImageElement | null>(null)
 const current = computed(() => photos.value[selected.value])
 const available = computed(() => photos.value.filter(photo => !failed.value.has(photo.url)))
 function move(direction: number) {
@@ -42,10 +43,17 @@ function markFailed(url: string) {
   failed.value.add(url)
   if (current.value?.url === url) move(1)
 }
-function measure(event: Event, url: string) {
-  const image = event.target as HTMLImageElement
-  if (image.naturalWidth && image.naturalHeight > image.naturalWidth * 0.95) portrait.value.add(url)
+function measure(image: HTMLImageElement | null, url: string | undefined) {
+  if (!image || !url || !image.naturalWidth) return
+  if (image.naturalHeight > image.naturalWidth * 0.95) portrait.value.add(url)
 }
+// `load` no vuelve a dispararse para una foto que ya estaba completa al hidratar —el caso normal,
+// porque la portada viaja en el HTML del servidor—, así que también se mide a mano.
+function measureCover() {
+  void nextTick(() => measure(cover.value, current.value?.url))
+}
+onMounted(measureCover)
+watch(selected, measureCover)
 // Al cerrar el visor el foco vuelve a la foto que lo abrió, no al principio de la página.
 watch(expanded, isOpen => {
   if (!isOpen) void nextTick(restoreFocus)
@@ -73,6 +81,7 @@ watch(
           @click="expanded = true"
         >
           <img
+            ref="cover"
             :src="current.url"
             :alt="
               t('photoDescription', { title: current.title || property.title, n: selected + 1 })
@@ -82,7 +91,7 @@ watch(
             fetchpriority="high"
             decoding="async"
             referrerpolicy="no-referrer"
-            @load="measure($event, current.url)"
+            @load="measure($event.target as HTMLImageElement, current.url)"
             @error="markFailed(current.url)"
           />
           <span class="property-gallery__expand"
@@ -162,18 +171,35 @@ watch(
   margin: 0;
   min-width: 0;
 }
+/* `width: 100%` va declarado: sin él, `max-height` con una proporción angosta encoge el ANCHO y el
+   escenario deja de llegar al borde de la columna (693 de 788 medidos). */
 .property-gallery__stage {
   position: relative;
+  width: 100%;
   border-radius: 12px;
   overflow: hidden;
   aspect-ratio: 16 / 10;
   max-height: 520px;
-  background: #0a0e1a;
+  /* El mismo fondo tonal que la tarjeta del directorio usa detrás de una foto. */
+  background: rgba(var(--v-theme-on-surface), 0.06);
 }
+/* Una foto vertical entra entera en un escenario más alto: con 16/10 el mismo aviso perdía un
+   tercio del ancho en bandas. Es la proporción que usan los portales para fotos de celular. */
+.property-gallery__stage.is-portrait {
+  aspect-ratio: 4 / 3;
+  max-height: 620px;
+}
+/* Sin este reset la foto queda 8px adentro por cada lado: es el padding que el navegador le da a
+   todo <button>, y el fondo del escenario asoma alrededor como un marco que nadie dibujó. */
 .property-gallery__open {
   display: block;
   width: 100%;
   height: 100%;
+  padding: 0;
+  border: 0;
+  /* `buttonface` es un gris claro y este botón cubre todo el escenario: sin esto, las bandas de
+     una foto vertical salen del navegador y no de nuestra paleta. */
+  background: transparent;
   cursor: zoom-in;
 }
 .property-gallery__open > img {
@@ -199,7 +225,10 @@ watch(
   color: rgb(var(--v-theme-on-surface));
   font-size: 0.8rem;
   font-weight: 700;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  /* El contorno de un pixel es lo único que separa la pastilla de una foto clara. */
+  box-shadow:
+    0 0 0 1px rgba(var(--v-border-color), var(--v-border-opacity)),
+    0 6px 16px rgba(0, 0, 0, 0.15);
 }
 .property-gallery__expand {
   right: 12px;
@@ -220,7 +249,9 @@ watch(
   justify-content: center;
   background: rgb(var(--v-theme-surface));
   color: rgb(var(--v-theme-on-surface));
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 0 0 1px rgba(var(--v-border-color), var(--v-border-opacity)),
+    0 6px 16px rgba(0, 0, 0, 0.15);
   opacity: 0.92;
   transition:
     opacity 150ms ease,
@@ -247,17 +278,25 @@ watch(
   text-align: center;
   background: rgba(var(--v-theme-on-surface), 0.06);
 }
+/* La barra nativa de Windows mide 17px, se comía la fila y dejaba una banda gris de punta a punta.
+   La miniatura cortada del borde ya dice que hay más, que es como lo resuelven los portales. */
 .property-gallery__thumbs {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding: 12px 2px 2px;
+  overflow-y: hidden;
+  padding: 12px 0 0;
   scroll-snap-type: x proximity;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+}
+.property-gallery__thumbs::-webkit-scrollbar {
+  display: none;
 }
 .property-gallery__thumbs button {
   flex: 0 0 96px;
   height: 72px;
+  padding: 0;
+  border: 0;
   border-radius: 8px;
   overflow: hidden;
   opacity: 0.72;
@@ -308,8 +347,11 @@ watch(
     aspect-ratio: 4 / 3;
     max-height: 340px;
   }
-  .property-gallery__expand > .v-icon + * {
-    display: none;
+  /* En una pantalla angosta lo que sobra es alto, no ancho: una foto vertical en 4/3 quedaba
+     de 179px y con bandas a los costados. */
+  .property-gallery__stage.is-portrait {
+    aspect-ratio: 1 / 1;
+    max-height: 420px;
   }
   .property-gallery__thumbs button {
     flex-basis: 84px;
