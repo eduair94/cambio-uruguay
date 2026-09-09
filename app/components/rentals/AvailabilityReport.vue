@@ -358,8 +358,14 @@ onBeforeUnmount(() => {
    separación (12 del padding + 18 + 6 - 2 que Vuetify ya le resta al prepend),
    así el icono queda colgado en el margen —como la viñeta de una lista— y el
    texto en el borde. Medido en producción: texto en 19, igual que sus vecinos. */
-.availability-report__trigger.cu-btn-flush {
-  --cu-btn-pad: 34px;
+/* Sólo desde 960: en la tarjeta compacta el aire es de 12 px, colgar el icono lo
+   saca fuera del recorte de la tarjeta y se ve cortado contra el borde (medido a
+   390 px: la bandera caia en -9). Ahi el icono vuelve a la columna y la etiqueta
+   lo sigue, que es como se lee cualquier control con icono. */
+@media (min-width: 960px) {
+  .availability-report__trigger.cu-btn-flush {
+    --cu-btn-pad: 34px;
+  }
 }
 .availability-report__trigger :deep(.v-btn__prepend) {
   margin-inline-start: 0;

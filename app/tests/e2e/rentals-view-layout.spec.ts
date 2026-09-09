@@ -227,6 +227,34 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   await expect(grid(page)).toHaveClass(/rentals-grid--mosaico/)
 })
 
+test('en la tarjeta compacta nada se pisa ni se sale del recorte', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await setup(page)
+
+  const geometria = await page
+    .locator('.rental-card')
+    .first()
+    .evaluate(card => {
+      const edge = card.getBoundingClientRect()
+      const rect = (selector: string) => {
+        const element = card.querySelector(selector)
+        if (!element) return null
+        const box = element.getBoundingClientRect()
+        return { left: box.left - edge.left, right: box.right - edge.left }
+      }
+      return {
+        chapa: rect('.rental-card__zoom'),
+        guardar: rect('.rental-card__save'),
+        bandera: rect('.availability-report__trigger .v-icon'),
+      }
+    })
+
+  // La chapa de fotos y el corazon comparten una miniatura de 80-144 px.
+  expect(geometria.chapa!.right).toBeLessThanOrEqual(geometria.guardar!.left)
+  // La tarjeta recorta lo que se sale: la bandera tiene que quedar adentro.
+  expect(geometria.bandera!.left).toBeGreaterThan(0)
+})
+
 test('un contenedor de auto ads no puede centrar la ficha', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 950 })
   await setup(page)

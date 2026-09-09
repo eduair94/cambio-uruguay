@@ -399,7 +399,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                   />
                   <span class="rental-card__zoom" aria-hidden="true">
                     <VIcon size="16">mdi-image-multiple-outline</VIcon>
-                    {{ t('viewPhotos') }}
+                    <span class="rental-card__zoom-label">{{ t('viewPhotos') }}</span>
                   </span>
                   <span v-if="property.sources.length > 1" class="rental-card__badge">{{
                     t('portals', { n: property.sources.length })
@@ -2317,6 +2317,18 @@ button.rental-card__media {
     right: 4px;
     width: 44px;
     height: 44px;
+  }
+  /* Sobre la miniatura de 80-144 px la chapa con etiqueta y el corazon se pisan
+     (medido a 390 px: la chapa llegaba a 107 y el corazon arrancaba en 59). En
+     compacto queda el icono solo, que es lo que cabe al lado del corazon. */
+  .rental-card__zoom {
+    top: 4px;
+    left: 4px;
+    padding: 4px;
+    gap: 0;
+  }
+  .rental-card__zoom-label {
+    display: none;
   }
   .rental-card__badge {
     bottom: 4px;
