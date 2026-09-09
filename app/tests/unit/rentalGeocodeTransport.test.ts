@@ -70,7 +70,8 @@ describe('official address HTTP transport with native deadlines', () => {
     const [url, options] = fetch.mock.calls[0]!
     expect(url.origin + url.pathname).toBe('https://direcciones.ide.uy/api/v1/geocode/candidates')
     expect(url.searchParams.get('q')).toBe('Hocquart esquina Democracia, Montevideo')
-    expect(url.searchParams.get('limit')).toBe('5')
+    // Quince candidatos: con cinco, el ranking de IDE los llenaba de localidades.
+    expect(url.searchParams.get('limit')).toBe('15')
     expect(options.redirect).toBe('error')
     expect(options.signal?.aborted).toBe(false)
   }, 10000)

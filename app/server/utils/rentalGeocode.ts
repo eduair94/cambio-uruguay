@@ -1,4 +1,5 @@
 import { Agent } from 'undici'
+import { resolveRentalGeocodePoints } from './rentalGeocodePoints'
 import {
   normalizeRentalGeocodeQuery,
   RENTAL_GEOCODE_CANDIDATE_LIMIT,
@@ -169,12 +170,20 @@ async function fetchIdeAttempt(url: URL, signal: AbortSignal): Promise<unknown> 
   return raw
 }
 
+/**
+ * IDE ordena por su propio ranking y pone las localidades primero: pidiendo cinco
+ * candidatos, "sarandi 690" traia una sola fila util y "18 de julio 1234" dos, y
+ * el resto eran localidades que el filtro descarta. Se piden quince y filtramos
+ * nosotros; el tope de respuesta sigue siendo el mismo.
+ */
+const IDE_FETCH_LIMIT = 15
+
 /** Fixed official host; one transient retry shares the original eight-second deadline. */
 async function fetchIdeCandidates(query: string): Promise<unknown> {
   const url = new URL(IDE_ENDPOINT)
   url.search = new URLSearchParams({
     q: query,
-    limit: String(RENTAL_GEOCODE_CANDIDATE_LIMIT),
+    limit: String(IDE_FETCH_LIMIT),
   }).toString()
   const signal = AbortSignal.timeout(8000)
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -188,9 +197,60 @@ async function fetchIdeCandidates(query: string): Promise<unknown> {
   throw new RentalGeocodeError(503)
 }
 
+/**
+ * IDE dejó de publicar coordenadas en las filas de calle, portal y esquina: todas
+ * vuelven en 0,0 y el validador de puntos —con razón— las descarta, así que toda
+ * dirección con número daba cero resultados. Este paso las ubica sin cambiar
+ * quién decide qué direcciones existen. Ver `rentalGeocodePoints.ts`.
+ */
+async function withResolvedPoints(raw: unknown): Promise<unknown> {
+  if (!Array.isArray(raw)) return raw
+  const rows = raw.slice(0, 50)
+  const pending: Array<{
+    index: number
+    address: string
+    street: string | null
+    portal: number | null
+    locality: string | null
+    department: string | null
+  }> = []
+  rows.forEach((value, index) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return
+    const row = value as Record<string, unknown>
+    if (row.state !== 1 || row.stateMsg !== '') return
+    if (!['CALLEyPORTAL', 'ESQUINA'].includes(String(row.type))) return
+    if (typeof row.lat === 'number' && typeof row.lng === 'number' && (row.lat || row.lng)) return
+    if (typeof row.address !== 'string' || !row.address.trim()) return
+    const text = (value: unknown) => (typeof value === 'string' && value.trim() ? value : null)
+    pending.push({
+      index,
+      address: row.address,
+      street: text(row.nomVia),
+      portal:
+        typeof row.portalNumber === 'number' &&
+        Number.isInteger(row.portalNumber) &&
+        row.portalNumber > 0
+          ? row.portalNumber
+          : null,
+      locality: text(row.localidad),
+      department: text(row.departamento),
+    })
+  })
+  if (!pending.length) return rows
+  const points = await resolveRentalGeocodePoints(pending)
+  const resolved = [...rows]
+  pending.forEach((row, position) => {
+    const point = points[position]
+    if (!point) return
+    resolved[row.index] = { ...(rows[row.index] as Record<string, unknown>), ...point }
+  })
+  return resolved
+}
+
 /** Process-local bounds complement the UI debounce, selection and stale-response guards. */
 export function createRentalGeocoder(
-  fetchCandidates: (query: string) => Promise<unknown> = fetchIdeCandidates,
+  fetchCandidates: (query: string) => Promise<unknown> = query =>
+    fetchIdeCandidates(query).then(withResolvedPoints),
   now: () => number = Date.now,
   reportFailure: (report: RentalGeocodeFailureReport) => void = report =>
     console.warn('[rentals.geocode]', report)

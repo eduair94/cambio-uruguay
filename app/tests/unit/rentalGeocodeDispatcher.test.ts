@@ -21,8 +21,8 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('IDE-only connection policy', () => {
-  it('reuses a bounded IPv4 dispatcher without changing global transport or TLS verification', async () => {
+describe('per-host connection policy', () => {
+  it('keeps one bounded dispatcher per upstream without changing global transport or TLS verification', async () => {
     const global = getGlobalDispatcher()
     const { createRentalGeocoder } = await import('../../server/utils/rentalGeocode')
     const fetch = vi.fn().mockImplementation(() => Promise.resolve(new Response('[]')))
@@ -30,7 +30,17 @@ describe('IDE-only connection policy', () => {
     const lookup = createRentalGeocoder()
     await lookup({ q: 'Hocquart' }, 'client')
     await lookup({ q: 'Democracia' }, 'client')
+    // Dos orígenes, dos agentes acotados; el de Photon se crea primero porque su
+    // módulo se importa antes. La política de IPv4 es de IDE, que publica AAAA sin
+    // ruta; Photon —que sólo ubica lo que IDE ya nombró— no la hereda, porque una
+    // política de familia ajena esconde una IP que sí sirve.
     expect(captured.options).toEqual([
+      {
+        connections: 4,
+        pipelining: 1,
+        keepAliveTimeout: 4000,
+        keepAliveMaxTimeout: 10000,
+      },
       {
         connections: 4,
         pipelining: 1,
