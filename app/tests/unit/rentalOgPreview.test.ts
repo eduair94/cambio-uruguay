@@ -10,7 +10,7 @@ import * as h3 from 'h3'
 import ts from 'typescript'
 import * as ufo from 'ufo'
 import * as vue from 'vue'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 function execute(source: string, modules: Record<string, unknown>, globals = {}, server = true) {
   const context = {
@@ -44,8 +44,9 @@ const pageAst = ts.createSourceFile('page.ts', pageSource, ts.ScriptTarget.Lates
 const imageBranch = pageAst.statements
   .find(
     statement =>
-      ts.isIfStatement(statement) &&
-      statement.expression.getText(pageAst).includes('primaryPhoto.value')
+      ts.isExpressionStatement(statement) &&
+      ts.isCallExpression(statement.expression) &&
+      statement.expression.expression.getText(pageAst) === 'defineOgImageComponent'
   )!
   .getText(pageAst)
 const pageSeo = pageAst.statements
@@ -70,10 +71,11 @@ const pagePath = '/alquileres/canelones-apartamento-avenida-de-las-americas-1dw4
 const photoUrl = 'https://cdn1.infocasas.com.uy/repo/img/176366570_ALB-1447-TRA_904.jpg'
 const generatedUrl = `/__og-image__/image${pagePath}/og.png`
 
-async function renderPreview(hasPhoto = true, disposeRoot = true) {
+async function renderPreview(hasPhoto = true, legacy = false) {
   const head = createHead()
   const useHead = (input: any, options: any = {}) => unhead.useHead(input, { ...options, head })
-  const useSeoMeta = (input: any) => unhead.useSeoMeta(input, { head })
+  const useSeoMeta = (input: any, options: any = {}) =>
+    unhead.useSeoMeta(input, { ...options, head })
   const config = {
     app: { baseURL: '/' },
     'nuxt-og-image': {
@@ -128,7 +130,9 @@ async function renderPreview(hasPhoto = true, disposeRoot = true) {
   }
   execute(rootImage, {}, globals)
   execute(
-    disposeRoot ? imageBranch : imageBranch.replace('defineOgImage(false)', 'void 0'),
+    legacy
+      ? `if (primaryPhoto.value) { defineOgImage(false) } else { ${imageBranch} }`
+      : imageBranch,
     {},
     globals
   )
@@ -137,40 +141,10 @@ async function renderPreview(hasPhoto = true, disposeRoot = true) {
 }
 
 describe('rental previews through installed nuxt-og-image and Unhead SSR', () => {
-  it('does not dispose application entries during client hydration or SPA navigation', () => {
-    const dispose = vi.fn()
-    const composable = execute(
-      readFileSync(
-        resolve(
-          __dirname,
-          '../../node_modules/nuxt-og-image/dist/runtime/app/composables/defineOgImage.js'
-        ),
-        'utf8'
-      ),
-      {
-        h3,
-        vue,
-        'nuxt/app': {
-          useNuxtApp: () => ({
-            payload: { path: pagePath },
-            ssrContext: { _ogImageInstances: [{ dispose }] },
-          }),
-          useRoute: () => ({ path: pagePath }),
-        },
-        '../../server/util/kit.js': {},
-        '../../shared.js': {},
-        '../utils.js': {},
-      },
-      {},
-      false
-    )
-    composable.defineOgImage(false)
-    expect(dispose).not.toHaveBeenCalled()
-  })
-  it('reproduces the root generated image overriding page metadata without explicit disposal', async () => {
-    const { headTags } = await renderPreview(true, false)
-    expect(headTags).toContain(`property="og:image" content="${generatedUrl}"`)
-    expect(headTags).toContain('property="og:image:width" content="1200"')
+  it('reproduces the missing generated-card payload after disposing the root preview', async () => {
+    const { headTags, bodyTags } = await renderPreview(true, true)
+    expect(headTags).toContain(`property="og:image" content="${photoUrl}"`)
+    expect(bodyTags).not.toContain('nuxt-og-image-options')
   })
   it('publishes one real photo for OG/Twitter without inherited generated-image dimensions', async () => {
     const { headTags, bodyTags } = await renderPreview()
@@ -181,8 +155,19 @@ describe('rental previews through installed nuxt-og-image and Unhead SSR', () =>
       'property="og:image:alt" content="Apartamento en Canelones · Foto 1"'
     )
     expect(headTags).toContain('index, follow, max-image-preview:large')
-    expect(headTags).not.toMatch(/(?:og|twitter):image:(?:width|height|src)/)
-    expect(bodyTags).not.toContain('nuxt-og-image-options')
+    expect(headTags).not.toMatch(/(?:og|twitter):image:(?:width|height|type)/)
+    expect(headTags).toContain(`name="twitter:image:src" content="${photoUrl}"`)
+    const payload = bodyTags.match(
+      /<script[^>]+id="nuxt-og-image-options"[^>]*>(.*?)<\/script>/
+    )?.[1]
+    expect(payload).toBeDefined()
+    expect(devalue.parse(payload!)).toMatchObject({
+      props: {
+        title: 'Apartamento en alquiler en Canelones',
+        subtitle: 'Canelones',
+        tag: 'ALQUILERES',
+      },
+    })
   })
   it('retains the generated preview and rendering payload when the advert has no photo', async () => {
     const { headTags, bodyTags } = await renderPreview(false)

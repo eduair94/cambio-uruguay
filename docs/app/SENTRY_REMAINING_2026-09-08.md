@@ -99,3 +99,26 @@ cerradas en esta revisión; D, E y H permanecen abiertas por falta de evidencia
 para confirmar una corrección.
 La consulta final `is:unresolved`, todos los entornos y últimos catorce días,
 mostró exactamente esas tres incidencias.
+
+## Reaparición de 9 en fichas con foto (2026-09-09 00:11 UTC)
+
+El evento `ad581932` de release `371ee2d` pertenece a
+`/__og-image__/image/alquileres/:item`. Es otro caso del mismo mensaje: una
+ficha válida publica su foto original en `og:image`, pero omitía por completo
+`defineOgImageComponent` cuando tenía foto. La corrección de prioridades en
+`0da2b16` agregó `defineOgImage(false)` para retirar la tarjeta de la raíz;
+eso también retiró su payload. Su antigua URL de tarjeta generada
+queda sin el payload que requiere el extractor. Se reprodujo en producción
+con `/alquileres/artigas-apartamento-17im6g2`: ficha 200, foto original presente,
+sin `nuxt-og-image-options`, tarjeta generada 500. El identificador del evento
+está redactado; se reproduce la condición en una ficha pública equivalente.
+
+La página ahora registra siempre los datos de la tarjeta. Sus metadatos de
+foto tienen la misma prioridad que los del módulo y se registran después,
+conservando la foto original como única imagen social. Se anulan el tipo y
+las dimensiones de la tarjeta cuando hay foto, porque no describen la imagen
+del anunciante. Sin foto se conserva la tarjeta con sus dimensiones reales.
+`rentalOgPreview.test.ts` ejecuta los bloques reales de metadatos de la raíz y
+la página con Unhead y los composables instalados de nuxt-og-image en ambos
+casos, y reproduce la pérdida de payload al retirar la tarjeta de la raíz.
+La guarda anterior de 404/410 permanece intacta; no se filtra el error 500.

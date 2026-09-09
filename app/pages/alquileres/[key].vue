@@ -299,36 +299,41 @@ const primaryPhotoAlt = computed(() =>
     ? t('photoDescription', { title: primaryPhoto.value.title || title.value, n: 1 })
     : undefined
 )
-// The app root already registers a high-priority generated image. Dispose it,
-// including its 1200×630 dimensions, before publishing a real advert photo.
-if (primaryPhoto.value) {
-  defineOgImage(false)
-} else {
-  defineOgImageComponent('Cambio', {
-    title: () => pageTitle.value,
-    subtitle: () => zone.value || t('title'),
-    tag: 'ALQUILERES',
-  })
-}
-useSeoMeta({
+// Keep the generated URL usable for older links and image crawlers, even when
+// the published preview uses the advert's own photo.
+defineOgImageComponent('Cambio', {
   title: () => pageTitle.value,
-  description: () => description.value,
-  ogTitle: () => pageTitle.value,
-  ogDescription: () => description.value,
-  ogUrl: () => canonical.value,
-  ogType: 'website',
-  ogImage: () => primaryPhoto.value?.url,
-  ogImageAlt: () => primaryPhotoAlt.value,
-  twitterImage: () => primaryPhoto.value?.url,
-  twitterImageAlt: () => primaryPhotoAlt.value,
-  twitterTitle: () => pageTitle.value,
-  twitterDescription: () => description.value,
-  twitterCard: 'summary_large_image',
-  robots: () =>
-    locale.value === 'es' && data.value?.seo.indexable && !error.value
-      ? 'index, follow, max-image-preview:large'
-      : 'noindex, follow',
+  subtitle: () => zone.value || t('title'),
+  tag: 'ALQUILERES',
 })
+useSeoMeta(
+  {
+    title: () => pageTitle.value,
+    description: () => description.value,
+    ogTitle: () => pageTitle.value,
+    ogDescription: () => description.value,
+    ogUrl: () => canonical.value,
+    ogType: 'website',
+    ogImage: () => primaryPhoto.value?.url,
+    ogImageAlt: () => primaryPhotoAlt.value,
+    ogImageType: () => (primaryPhoto.value ? null : undefined),
+    ogImageWidth: () => (primaryPhoto.value ? null : undefined),
+    ogImageHeight: () => (primaryPhoto.value ? null : undefined),
+    twitterImage: () => primaryPhoto.value?.url,
+    twitterImageSrc: () => primaryPhoto.value?.url,
+    twitterImageAlt: () => primaryPhotoAlt.value,
+    twitterImageWidth: () => (primaryPhoto.value ? null : undefined),
+    twitterImageHeight: () => (primaryPhoto.value ? null : undefined),
+    twitterTitle: () => pageTitle.value,
+    twitterDescription: () => description.value,
+    twitterCard: 'summary_large_image',
+    robots: () =>
+      locale.value === 'es' && data.value?.seo.indexable && !error.value
+        ? 'index, follow, max-image-preview:large'
+        : 'noindex, follow',
+  },
+  { tagPriority: 'high' }
+)
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonical.value }],
   script:
