@@ -156,6 +156,16 @@ const columns = async (page: Page, selector: string) =>
     .split(' ')
     .filter(Boolean).length
 const stored = (page: Page) => page.evaluate(() => localStorage.getItem('cu_rentals_layout'))
+const alignments = (page: Page) =>
+  page
+    .locator('.rental-card')
+    .first()
+    .evaluate(card =>
+      ['.rental-card__where', '.rental-card__price', 'h3', '.rental-card__specs'].map(selector => {
+        const element = card.querySelector(selector)
+        return element ? getComputedStyle(element).textAlign : 'ausente'
+      })
+    )
 
 test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recarga', async ({
   page,
@@ -167,6 +177,9 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   await expect(grid(page)).toHaveClass(/rentals-grid--mosaico/)
   expect(await columns(page, '.rentals-grid')).toBeGreaterThan(1)
   expect(await stored(page)).toBeNull()
+  // Zona, precio, titulo y ficha arrancan en el mismo borde, como en Mercado
+  // Libre. Centrado se reporto dos veces y ninguna prueba lo habria visto.
+  expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
 
   // Filas: una sola columna de tarjetas y tres zonas dentro de cada una.
   await page.getByRole('button', { name: 'Lista', exact: true }).click()
@@ -174,6 +187,7 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   expect(await columns(page, '.rentals-grid')).toBe(1)
   expect(await columns(page, '.rental-card')).toBe(3)
   await expect(page.locator('.rental-card__rail').first()).toBeVisible()
+  expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
   expect(await stored(page)).toBe('lista')
 
   // Recarga completa: el servidor sigue mandando mosaico y el cliente aplica lo guardado.
