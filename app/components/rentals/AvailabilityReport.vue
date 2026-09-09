@@ -15,7 +15,7 @@
       variant="text"
       size="small"
       prepend-icon="mdi-flag-outline"
-      class="availability-report__trigger"
+      class="availability-report__trigger cu-btn-flush"
       :aria-label="`${t(shownSummary?.count ? 'review' : 'report')}: ${title || selected?.title || sourceLabel(selected)}`"
       @click="show"
       >{{ t(shownSummary?.count ? 'review' : 'report') }}</VBtn
@@ -351,6 +351,18 @@ onBeforeUnmount(() => {
 .availability-report__trigger :deep(.v-btn__content) {
   white-space: normal;
   text-align: start;
+}
+/* La etiqueta tiene que caer en la misma columna que el anunciante y la última
+   lectura; con el retroceso normal de cu-btn-flush arrancaba 19 px adentro,
+   porque adelante va la bandera. Se retrocede también el ancho del icono y su
+   separación (12 del padding + 18 + 6 - 2 que Vuetify ya le resta al prepend),
+   así el icono queda colgado en el margen —como la viñeta de una lista— y el
+   texto en el borde. Medido en producción: texto en 19, igual que sus vecinos. */
+.availability-report__trigger.cu-btn-flush {
+  --cu-btn-pad: 34px;
+}
+.availability-report__trigger :deep(.v-btn__prepend) {
+  margin-inline-start: 0;
 }
 .availability-dialog {
   display: flex;

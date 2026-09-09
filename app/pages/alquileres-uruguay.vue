@@ -1767,6 +1767,13 @@ useSchemaOrg([
   background: rgb(var(--v-theme-surface));
   display: flex;
   flex-direction: column;
+  /* La ficha se lee en columna, como en Mercado Libre e InfoCasas: todo arranca
+     en el mismo borde izquierdo. Va declarado y no heredado porque centrado se
+     reportó dos veces desde builds viejos en el navegador, y un contenedor que
+     centre texto —un estado vacío, un ancestro nuevo— lo volvería a romper sin
+     que ninguna prueba lo note. Las excepciones (el cartel de "sin foto" y la
+     chapa de portales) fijan su propio centrado más abajo. */
+  text-align: start;
 }
 .rental-card__visual {
   position: relative;
@@ -2513,6 +2520,11 @@ button.rental-card__media {
     flex-wrap: wrap;
     align-items: center;
     gap: 4px 12px;
+  }
+  /* En el pie en renglon el boton no arranca ninguna columna: sin el retroceso
+     de cu-btn-flush se comeria el espacio que lo separa del anunciante. */
+  .rentals-grid--lista .rental-card__footnote :deep(.cu-btn-flush) {
+    margin-inline-start: 0;
   }
   .rentals-grid--lista .rental-card__detail {
     justify-content: flex-start;

@@ -156,6 +156,35 @@ const columns = async (page: Page, selector: string) =>
     .split(' ')
     .filter(Boolean).length
 const stored = (page: Page) => page.evaluate(() => localStorage.getItem('cu_rentals_layout'))
+const labelOffsets = (page: Page) =>
+  page
+    .locator('.rental-card')
+    .first()
+    .evaluate(card => {
+      const edge = card.getBoundingClientRect().left
+      const seller = card.querySelector('.rental-card__meta')
+      const content = card.querySelector('.availability-report__trigger .v-btn__content')
+      const text = content
+        ? [...content.childNodes].find(node => node.nodeType === 3 && node.textContent?.trim())
+        : null
+      let informe = -1
+      if (text) {
+        const range = document.createRange()
+        range.selectNodeContents(text)
+        informe = Math.round(range.getBoundingClientRect().left - edge)
+      }
+      return { anunciante: Math.round((seller?.getBoundingClientRect().left ?? 0) - edge), informe }
+    })
+const alignments = (page: Page) =>
+  page
+    .locator('.rental-card')
+    .first()
+    .evaluate(card =>
+      ['.rental-card__where', '.rental-card__price', 'h3', '.rental-card__specs'].map(selector => {
+        const element = card.querySelector(selector)
+        return element ? getComputedStyle(element).textAlign : 'ausente'
+      })
+    )
 
 test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recarga', async ({
   page,
@@ -167,6 +196,9 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   await expect(grid(page)).toHaveClass(/rentals-grid--mosaico/)
   expect(await columns(page, '.rentals-grid')).toBeGreaterThan(1)
   expect(await stored(page)).toBeNull()
+  // Zona, precio, titulo y ficha arrancan en el mismo borde, como en Mercado
+  // Libre. Centrado se reporto dos veces y ninguna prueba lo habria visto.
+  expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
 
   // Filas: una sola columna de tarjetas y tres zonas dentro de cada una.
   await page.getByRole('button', { name: 'Lista', exact: true }).click()
@@ -174,7 +206,12 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   expect(await columns(page, '.rentals-grid')).toBe(1)
   expect(await columns(page, '.rental-card')).toBe(3)
   await expect(page.locator('.rental-card__rail').first()).toBeVisible()
+  expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
   expect(await stored(page)).toBe('lista')
+
+  // "Informar posible alquiler" arranca en la misma columna que el anunciante:
+  // el boton conserva su padding y la bandera cuelga en el margen.
+  expect(await labelOffsets(page)).toEqual({ anunciante: 19, informe: 19 })
 
   // Recarga completa: el servidor sigue mandando mosaico y el cliente aplica lo guardado.
   await page.reload({ waitUntil: 'domcontentloaded' })
@@ -188,6 +225,41 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   expect(await stored(page)).toBe('mosaico')
   await page.reload({ waitUntil: 'domcontentloaded' })
   await expect(grid(page)).toHaveClass(/rentals-grid--mosaico/)
+})
+
+test('un contenedor de auto ads no puede centrar la ficha', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 950 })
+  await setup(page)
+
+  // Auto ads envuelve contenido nuestro en un div con text-align:center en el
+  // atributo style, y todo lo de adentro lo hereda. No aparece en una medicion
+  // comun porque sin consentimiento no se cargan anuncios: se reproduce a mano.
+  await page.evaluate(() => {
+    const target =
+      document.querySelector('.rentals-workspace') ?? document.querySelector('.rentals')
+    if (!target?.parentNode) throw new Error('sin contenedor donde envolver')
+    const wrapper = document.createElement('div')
+    wrapper.className = 'google-auto-placed'
+    wrapper.setAttribute('style', 'width:100%;height:auto;clear:both;text-align:center')
+    target.parentNode.insertBefore(wrapper, target)
+    wrapper.appendChild(target)
+  })
+
+  expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
+  // Y no sólo la tarjeta: el envoltorio alcanza al titulo y a la ayuda de los
+  // filtros, que fue como se vio el problema la segunda vez.
+  expect(
+    await page.evaluate(() =>
+      ['.rentals-head h1', '.rentals-sidebar p', '.rentals-summary h2'].map(selector => {
+        const element = document.querySelector(selector)
+        return element ? getComputedStyle(element).textAlign : 'ausente'
+      })
+    )
+  ).toEqual(['start', 'start', 'start'])
+
+  await page.getByRole('button', { name: 'Lista', exact: true }).click()
+  await expect(grid(page)).toHaveClass(/rentals-grid--lista/)
+  expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
 })
 
 test('la vista elegida no viaja en la URL y sobrevive a ir y volver del mapa', async ({ page }) => {

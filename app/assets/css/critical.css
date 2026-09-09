@@ -27,6 +27,42 @@ html[data-theme='dark'] body {
   overflow-x: clip;
 }
 
+/* Auto ads no se insertan sólo entre bloques: a veces envuelven contenido
+   nuestro en un div con `text-align: center` en el atributo style, y todo lo de
+   adentro lo hereda —las tarjetas de alquiler y la ayuda de los filtros se
+   vieron centradas así—. Qué envuelve cambia entre renders: en una medición con
+   consentimiento aceptado los contenedores traían sólo el anuncio, y aun así el
+   inspector del usuario mostraba la ficha heredando de uno. Por eso la
+   corrección va sobre el contenedor y no sobre sus hijos, y necesita
+   `!important`, que es lo único que le gana a un atributo style.
+
+   El anuncio sí va centrado: el iframe es inline y se centra por el text-align
+   de su caja, así que se lo devolvemos al `ins`, que es el que lo contiene.
+
+   No aparecía en ninguna medición del sitio porque sin consentimiento no se
+   cargan anuncios y el DOM queda sin envolver. */
+.google-auto-placed,
+.ap_container {
+  text-align: start !important;
+}
+
+.google-auto-placed > ins,
+.google-auto-placed > iframe,
+.ap_container > ins,
+ins.adsbygoogle {
+  text-align: center;
+}
+
+/* Segunda capa, que no depende de cómo llame Google a su contenedor: el envoltorio
+   cae POR ENCIMA del .v-container y arrastra a la página entera. Cada página vive
+   dentro de un .v-container, así que declarar ahí la alineación corta cualquier
+   herencia que venga de más arriba. Lo que se centra a propósito lo hace sobre su
+   propio elemento —o con la utilidad .text-center de Vuetify, que es !important—,
+   así que esto no le gana a ninguna decisión de diseño. */
+.v-application .v-container {
+  text-align: start;
+}
+
 /* Ensure Vuetify components use Open Sans */
 .v-application {
   font-family: 'Open Sans', sans-serif !important;
