@@ -600,7 +600,7 @@ const relatedLinks = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/declarar-compra-exterior-uruguay'
-const title = 'Cómo declarar una compra del exterior en Uruguay: correo, Amazon y Temu'
+const title = 'Declarar compras del exterior en Uruguay'
 const description =
   'Paso a paso para declarar compras del exterior en Uruguay sin courier, por Correo Uruguayo, Amazon Global, Temu o courier. Quién hace el trámite y cuándo se necesita despachante.'
 

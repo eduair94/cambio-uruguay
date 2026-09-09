@@ -333,7 +333,7 @@ const formatUiCantidad = (n: number): string => n.toLocaleString('es-UY')
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/limite-de-efectivo-uruguay'
-const title = 'Límite de efectivo en Uruguay: hasta cuánto podés pagar en billetes'
+const title = 'Límite de efectivo en Uruguay: 200.000 UI'
 const description =
   'Podés pagar en efectivo hasta 200.000 UI, o el 5 % de la operación si da más, con tope de 450.000 UI (Ley 19.210 art. 35, redacción de la Ley 20.469 de 2026). Los dólares billete cuentan, el excedente va sí o sí por otro medio, y la multa alcanza el 25 % o 10.000 UI.'
 

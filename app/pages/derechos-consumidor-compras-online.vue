@@ -521,7 +521,7 @@ async function copyReply() {
 }
 
 // --- SEO ---
-const title = 'Derechos del consumidor en compras online: reclamos por cada incidente'
+const title = 'Derechos del consumidor en compras online'
 const description =
   'Guía uruguaya para reclamar entregas atrasadas, productos defectuosos o distintos, garantías, cobros incorrectos, renovaciones, publicidad y servicios online. Elegí el incidente y generá un texto basado en la Ley 17.250.'
 

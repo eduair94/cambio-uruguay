@@ -1,7 +1,7 @@
 export const finesNavigationMessages = {
   es: {
     heading: 'Multas de tránsito y deuda de patente en Uruguay',
-    title: 'Multas y deuda de patente en Uruguay: circular, consultar y reclamar',
+    title: 'Multas y deuda de patente en Uruguay',
     description:
       'Multa por circular con deuda de patente: cuándo aplica y cómo consultar tu deuda en SUCIVE. Plazos para reclamar multas, convenios de pago y prescripción.',
     navigation: 'Ir a una sección de multas y patente',
@@ -23,7 +23,7 @@ export const finesNavigationMessages = {
   },
   en: {
     heading: 'Traffic fines and vehicle tax debt in Uruguay',
-    title: 'Fines and vehicle tax debt in Uruguay: driving, checks and appeals',
+    title: 'Fines and vehicle tax debt in Uruguay',
     description:
       'Fines for driving with overdue vehicle tax: when they apply and how to check SUCIVE debt. Fine appeal deadlines, payment plans and limitation periods.',
     navigation: 'Jump to a section on fines and vehicle tax',
@@ -45,7 +45,7 @@ export const finesNavigationMessages = {
   },
   pt: {
     heading: 'Multas de trânsito e dívida de patente no Uruguai',
-    title: 'Multas e dívida de patente no Uruguai: circular, consultar e recorrer',
+    title: 'Multas e dívida de patente no Uruguai',
     description:
       'Multa por circular com patente vencida: quando se aplica e como consultar a dívida no SUCIVE. Prazos para recorrer de multas, parcelamento e prescrição.',
     navigation: 'Ir a uma seção sobre multas e patente',

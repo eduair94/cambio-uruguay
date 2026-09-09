@@ -292,7 +292,7 @@ const verifiedAt = new Date(DEFENSE_VERIFIED_AT).toLocaleDateString('es-UY', {
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/defensa-al-consumidor-uruguay'
-const title = 'Defensa del Consumidor en Uruguay: qué puede hacer por vos y qué no'
+const title = 'Defensa del Consumidor: qué puede y qué no'
 const description =
   'Defensa del Consumidor concilia y sanciona, pero no ordena que te devuelvan la plata: la multa la cobra el Estado y la restitución la ordena un juez. Las dos palancas de la ley que casi nadie usa, las reglas de la compra presencial (no hay arrepentimiento, el vale no vence, en el cambio vale el precio de lista) y cómo se hace el reclamo.'
 

@@ -17,7 +17,7 @@ export const growthEntryMessages = {
     },
     clearing: {
       title: 'Garantías de alquiler estando en el clearing en Uruguay',
-      seoTitle: 'Alquilar estando en clearing: garantías en Uruguay',
+      seoTitle: 'Alquilar en clearing: garantías en Uruguay',
       description:
         'Compará garantías de alquiler estando en el clearing. Selector según tu situación, requisitos por proveedor y fuentes para verificar antes de decidir.',
       navigation: 'Encontrar una opción de alquiler',

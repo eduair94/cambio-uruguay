@@ -236,7 +236,18 @@ const MEASURABLE = 111
 // once perdían la cola en el SERP, y la cola era el dato — «2 puntos o 9», «mora y 72 h», «1 mes
 // por año», «6 países», «13 temas», «ChauDeudas o MiDeuda» —, así que en cada uno se conservó la
 // cifra o la marca y se soltó el relleno que ya repite la descripción.
-const OVER_BUDGET = 33
+//
+// 33 → 16 el 2026-09-09: diecisiete títulos, los catorce que quedaban arriba de los 69 caracteres
+// más los tres que viven en los catálogos de mensajes locales (el peor de todos estaba ahí: 85).
+// Acá el criterio fue al revés que en la tanda anterior: el que tenía una cifra publicable se la
+// llevó AL TÍTULO en vez de dejarla sólo en la descripción («200.000 UI», «US$ 800 al año», «3 días
+// por duelo», «5 años», «precio por kilo»), porque la mitad recortada era una explicación que la
+// descripción ya da entera y la cifra es lo único que el título puede decir y el SERP no puede
+// reescribir. En los tres de catálogo se recortaron las tres traducciones, no sólo la medida: el
+// test mide `es` y dejar `en`/`pt` largos habría escondido el mismo defecto en dos idiomas.
+// El bound quedó en el conteo real (16) y no en un número redondo: el sobrante de 3 que tenía el 33
+// alcanzaba para que tres páginas nuevas entraran cortadas sin poner nada en rojo.
+const OVER_BUDGET = 16
 
 describe('el lector sigue los títulos trasladados a mensajes locales', () => {
   for (const [file, title] of [

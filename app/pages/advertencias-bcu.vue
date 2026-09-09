@@ -241,7 +241,7 @@ function formatDate(iso: string): string {
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/advertencias-bcu'
-const title = 'Advertencias del BCU: empresas sobre las que el Banco Central alertó'
+const title = 'Advertencias del BCU: buscá la empresa'
 const description =
   'Buscá una empresa antes de darle tu plata. Todas las advertencias publicadas por el Banco Central del Uruguay sobre entidades no autorizadas ni registradas, con el comunicado oficial linkeado. Que no aparezca no significa que sea confiable.'
 

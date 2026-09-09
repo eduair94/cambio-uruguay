@@ -246,7 +246,7 @@ const verifiedAt = new Date(`${LEY_USURA_VERIFIED_AT}T12:00:00Z`).toLocaleDateSt
 const faq = LEY_USURA_FAQ as unknown as FaqItem[]
 
 const canonicalUrl = 'https://cambio-uruguay.com/ley-de-usura-uruguay'
-const title = 'Ley de usura en Uruguay: los seis topes y qué pasa si te los pasan'
+const title = 'Ley de usura en Uruguay: los seis topes'
 const description =
   'El tope legal es un recargo sobre la tasa media del BCU: 55 % en un crédito común, 20 % si es Crédito de Nómina, 30 % en otras retenciones, 80 % en mora. Se mide contra la tasa implícita, que incluye comisiones, gastos y seguros. Si hay usura caduca todo lo accesorio y lo ya cobrado se descuenta del capital.'
 

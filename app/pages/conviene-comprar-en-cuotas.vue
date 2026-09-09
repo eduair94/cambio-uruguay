@@ -953,7 +953,7 @@ const faq = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/conviene-comprar-en-cuotas'
-const title = '¿Conviene comprar en 24 cuotas e invertir el efectivo, o pagar contado?'
+const title = '¿Conviene comprar en 24 cuotas o contado?'
 const description =
   'La cuenta completa, con datos de 2026: cómo sacar la tasa implícita que el comercio no te dice, cuánto rinde de verdad la plata en Uruguay (5,4% anual como máximo seguro), y por qué la jugada de financiar sin recargo e invertir da empate una vez que contás el seguro sobre saldo deudor y la rebaja de IVA del débito. Con calculadora y simulación.'
 

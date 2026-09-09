@@ -550,7 +550,7 @@ const sources = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/salir-del-clearing'
-const title = 'Cómo salir del clearing en Uruguay: derechos, plazos y plan de deudas'
+const title = 'Cómo salir del clearing en Uruguay: 5 años'
 const description =
   'Qué es el Clearing de Informes y en qué se diferencia de la Central de Riesgos del BCU, cómo consultar tu situación gratis, y qué dice de verdad la Ley 18.331: una deuda impaga se registra cinco años y el acreedor puede renovar por otros cinco, mientras que una deuda pagada queda hasta cinco años más contados desde el pago. Con un planificador para salir de deudas y una calculadora de la tasa real que te cobran.'
 

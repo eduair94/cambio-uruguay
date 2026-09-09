@@ -839,7 +839,7 @@ const faqs = [
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/franquicia-aduana-uruguay'
-const title = 'Franquicia y aduana en Uruguay 2026: ¿tu compra del exterior paga IVA?'
+const title = 'Franquicia aduana Uruguay: US$ 800 al año'
 const description =
   'Qué regla rige hoy y qué cambia el 1.º de octubre de 2026. Franquicia de US$ 800 en 3 envíos, prestación única del 60% (mínimo US$ 20), la exoneración de IVA para compras de EE.UU. de hasta US$ 200, y por qué los topes de US$ 50 (correo no exprés) y US$ 200 (EMS) que todavía publica el Correo están derogados desde mayo de 2026.'
 

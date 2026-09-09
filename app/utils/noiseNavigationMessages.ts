@@ -1,7 +1,7 @@
 export const noiseNavigationMessages = {
   es: {
     heading: 'Denuncia por ruidos molestos en Uruguay: dónde y cómo hacerla',
-    title: 'Denuncia por ruidos molestos en Uruguay: canales y plantilla',
+    title: 'Denuncia por ruidos molestos en Uruguay',
     description:
       'Dónde denunciar ruidos molestos en Uruguay, qué canales admiten denuncia anónima y qué datos necesitás. Completá la plantilla y consultá los requisitos oficiales.',
     navigation: 'Ir a una sección de la guía de ruidos molestos',

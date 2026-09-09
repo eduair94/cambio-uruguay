@@ -496,7 +496,7 @@ const sources = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/couriers-uruguay'
-const title = 'Couriers para comprar en el exterior desde Uruguay (comparativa 2026)'
+const title = 'Couriers en Uruguay: precio por kilo 2026'
 const description =
   'Comparativa de couriers puerta a puerta de Miami a Uruguay: precio de referencia por kilo, cargo de manejo y demora. Gripper, Envía Mi Compra, Casilla Mía, Punto Mío y más, con fuentes oficiales.'
 

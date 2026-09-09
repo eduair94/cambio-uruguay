@@ -279,7 +279,7 @@ const verdict = computed(() => usdRoutesVerdict(sane.value))
 const saves = computed(() => verdict.value.annualUsdSaved > 0)
 
 const canonicalUrl = 'https://cambio-uruguay.com/cobrar-en-dolares-gastar-en-pesos'
-const title = 'Cobrás en dólares y gastás en pesos: ¿conviene que convierta el banco?'
+const title = 'Cobrás en dólares y gastás en pesos'
 const description =
   'Cómo medir el tipo de cambio real que te aplica tu banco con tu propio estado de cuenta, y comparar las tres rutas: pagar con la tarjeta en dólares, vender los dólares y pagar con débito, o vender y pagar con crédito. Incluye la rebaja de IVA de la Ley 19.210, que son 1,64 % sobre el precio final y no 2 %.'
 
