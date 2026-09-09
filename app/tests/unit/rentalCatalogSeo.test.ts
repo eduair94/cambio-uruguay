@@ -5,6 +5,7 @@ import { useHead } from '@unhead/vue'
 import { createHead, renderSSRHead } from '@unhead/vue/server'
 import { defineWebPage, useSchemaOrg } from '@unhead/schema-org/vue'
 import {
+  rentalCatalogAlternateLinks,
   rentalCatalogCanonical,
   rentalCatalogIndexPage,
   rentalCatalogItemList,
@@ -52,6 +53,62 @@ describe('rental catalogue crawl boundaries', () => {
       'https://cambio-uruguay.com/en/alquileres-uruguay?page=3'
     )
   })
+
+  it.each([
+    ['?page=2', 2],
+    ['?department=Montevideo', null],
+  ] as const)(
+    'deduplicates layout and page language links in real Unhead SSR: %s',
+    async (query, indexPage) => {
+      const head = createHead()
+      const links = [
+        ['x-default', '', 'i18n-xd'],
+        ['x-default', '', 'i18n-xd'],
+        ['es', '', 'i18n-alt-es'],
+        ['es-ES', '', 'i18n-alt-es-ES'],
+        ['en', '/en', 'i18n-alt-en'],
+        ['en-US', '/en', 'i18n-alt-en-US'],
+        ['pt', '/pt', 'i18n-alt-pt'],
+        ['pt-PT', '/pt', 'i18n-alt-pt-PT'],
+      ].map(([hreflang, localePath, id]) => ({
+        id,
+        rel: 'alternate',
+        hreflang,
+        href: `https://cambio-uruguay.com${localePath}/alquileres-uruguay${query}`,
+      }))
+      // Match the two entries emitted by the layout and catalogue in production.
+      const app = createSSRApp({
+        setup() {
+          useHead({ link: [{ id: 'i18n-can', rel: 'canonical', href: base }, ...links] })
+          useHead({
+            link: [
+              {
+                // The catalogue uses the i18n ID; existing dossier pages use only rel=canonical.
+                ...(indexPage === null ? {} : { id: 'i18n-can' }),
+                rel: 'canonical',
+                href: rentalCatalogCanonical(base, indexPage),
+              },
+              ...rentalCatalogAlternateLinks(links, indexPage),
+            ],
+          })
+          return () => null
+        },
+      })
+      app.use(head)
+      await renderToString(app)
+      const html = (await renderSSRHead(head)).headTags
+      const canonicals = [...html.matchAll(/<link\s[^>]*rel="canonical"[^>]*>/g)]
+      expect(canonicals).toHaveLength(1)
+      expect(canonicals[0]![0]).toContain(`href="${rentalCatalogCanonical(base, indexPage)}"`)
+      const alternates = [...html.matchAll(/<link\s[^>]*hreflang="([^"]+)"[^>]*>/g)]
+      expect(alternates).toHaveLength(7)
+      expect(new Set(alternates.map(match => match[1])).size).toBe(7)
+      for (const match of alternates) {
+        const href = match[0].match(/href="([^"]+)"/)![1]!
+        expect(new URL(href).search).toBe(indexPage === null ? '' : '?page=2')
+      }
+    }
+  )
 })
 
 describe('rental catalogue result markup', () => {

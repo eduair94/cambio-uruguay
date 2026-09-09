@@ -202,6 +202,12 @@ describe('sitemap during prerender', () => {
 // arrancaba con un salto que no hacia falta, y el archivo terminaba declarando dos URLs para lo
 // mismo. Se declara el indice.
 describe('la URL de sitemap que declara robots.txt', () => {
+  it('lets crawlers load the public CSS and JavaScript used to render the rental pages', () => {
+    const config = readFileSync(resolve(process.cwd(), 'nuxt.config.ts'), 'utf8')
+    for (const rule of config.matchAll(/disallow:\s*\[([^\]]*)\]/g)) {
+      expect(rule[1]).not.toContain('/_nuxt/')
+    }
+  })
   it('es el indice y no la que redirige', () => {
     const config = readFileSync(resolve(__dirname, '../../nuxt.config.ts'), 'utf8')
     const declared = config.match(/sitemap: 'https:\/\/cambio-uruguay\.com\/([^']+)'/)
