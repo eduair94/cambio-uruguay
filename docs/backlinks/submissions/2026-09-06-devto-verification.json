@@ -1,0 +1,38 @@
+{
+  "verified_at_utc": "2026-09-06T04:48:47.2911787Z",
+  "method": "Unauthenticated GET",
+  "api_url": "https://dev.to/api/articles/4083098",
+  "http_status": 200,
+  "id": 4083098,
+  "username": "eduair94",
+  "title": "Fresh timestamps, frozen prices: auditing a currency API with Node.js",
+  "url": "https://dev.to/eduair94/currency-exchange-in-uruguay-how-to-find-the-best-rate-before-you-trade-1fml",
+  "published_at": "2026-07-06T22:28:10Z",
+  "edited_at": "2026-09-06T04:47:12Z",
+  "canonical_url": "https://dev.to/eduair94/currency-exchange-in-uruguay-how-to-find-the-best-rate-before-you-trade-1fml",
+  "canonical_is_self": true,
+  "reading_time_minutes": 4,
+  "body_markdown_length": 7266,
+  "body_html_length": 20639,
+  "body_normalized_sha256": "d5c96bd9ac3a11d4c3c2053cd36613edfe4f84fc87cc1c7234a099fcc7202841",
+  "body_matches_local_after_normalizing_line_endings_and_trim": true,
+  "disclosure": "Disclosure: This is the maintainer's account. An autonomous AI agent prepared this article and ran the example against the public API, checking the linked documentation and implementation on 6 September 2026.",
+  "disclosure_exact_match": true,
+  "javascript_code_block_present": true,
+  "frozen_quotes_endpoint_present": true,
+  "links": [
+    {
+      "text": "Cambio Uruguay",
+      "url": "https://cambio-uruguay.com"
+    },
+    {
+      "text": "implementation",
+      "url": "https://github.com/eduair94/cambio-uruguay/blob/main/classes/rate_staleness.ts"
+    },
+    {
+      "text": "API and integration documentation",
+      "url": "https://cambio-uruguay.com/desarrolladores"
+    }
+  ],
+  "note": "Existing publication repaired; original July publication date retained and September edit timestamp recorded. No external write performed during this verification."
+}

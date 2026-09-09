@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-09-06T04:44:49.5705623Z",
+  "initialize": {
+    "serverName": "cambio-uruguay",
+    "httpStatus": 200,
+    "serverVersion": "0.1.0",
+    "protocolVersion": "2025-06-18"
+  },
+  "toolsList": {
+    "httpStatus": 200,
+    "count": 7,
+    "names": [
+      "get_rates",
+      "best_house",
+      "convert",
+      "list_houses",
+      "get_evolution",
+      "get_news",
+      "daily_summary"
+    ]
+  },
+  "getRates": {
+    "currency": "USD",
+    "httpStatus": 200,
+    "isError": false,
+    "structuredDataReturned": true
+  },
+  "registry": {
+    "version": "0.1.0",
+    "latestUrl": "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.eduair94%2Fcambio-uruguay/versions/latest",
+    "publishHttpStatus": 200,
+    "status": "active",
+    "searchCount": 1,
+    "searchUrl": "https://registry.modelcontextprotocol.io/v0.1/servers?search=cambio-uruguay&limit=10"
+  }
+}

@@ -1,0 +1,225 @@
+{
+  "verification_scope": "Public remote connector only; source-server listing is a distinct resource.",
+  "response": {
+    "status": 200,
+    "retrieved_at": "2026-09-06T05:09:23.5703229Z",
+    "final_url": "https://glama.ai/mcp/connectors/io.github.eduair94/cambio-uruguay",
+    "headers": {
+      "last_modified": null,
+      "date": [
+        "Sun, 06 Sep 2026 05:09:24 GMT"
+      ],
+      "content_type": [
+        "text/html; charset=utf-8"
+      ]
+    }
+  },
+  "html_sha256": "132ee76f96b61970741572104b0c1a5af010c46d9f0fe03b13f3e173a01a7f60",
+  "metadata": [
+    {
+      "content": "Live buy/sell rates from 40+ Uruguayan exchange houses: best rates, conversion, history and news.",
+      "name": "description"
+    },
+    {
+      "href": "https://glama.ai/mcp/connectors/io.github.eduair94/cambio-uruguay",
+      "rel": "canonical"
+    },
+    {
+      "content": "Cambio Uruguay - MCP Connector",
+      "property": "og:title"
+    },
+    {
+      "content": "Live buy/sell rates from 40+ Uruguayan exchange houses: best rates, conversion, history and news.",
+      "property": "og:description"
+    },
+    {
+      "content": "https://glama.ai/mcp/connectors/io.github.eduair94/cambio-uruguay",
+      "property": "og:url"
+    }
+  ],
+  "connector_public_loader_metadata": {
+    "title": "Cambio Uruguay",
+    "name": "io.github.eduair94/cambio-uruguay",
+    "namespace": "io.github.eduair94",
+    "slug": "cambio-uruguay",
+    "url": "https://mcp.cambio-uruguay.com/mcp",
+    "transportType": "Streamable HTTP",
+    "authType": "none",
+    "isRegistryLinked": true,
+    "registryNamespace": "io.github.eduair94",
+    "githubRepository": null
+  },
+  "domain_links": {
+    "main_site_anchor_count": 0,
+    "main_site_anchors": [],
+    "direct_mcp_endpoint_anchor_count": 0,
+    "direct_mcp_endpoint_anchors": [],
+    "endpoint_input_fields": [
+      {
+        "type": "text",
+        "value": "https://mcp.cambio-uruguay.com/mcp",
+        "readonly": ""
+      }
+    ],
+    "all_cambio_related_anchors": [
+      {
+        "href": "/mcp/connectors/io.github.eduair94/cambio-uruguay",
+        "text": "Cambio Uruguay"
+      },
+      {
+        "href": "/sign-in?returnPath=%2Fmcp%2Fconnectors%2Fio.github.eduair94%2Fcambio-uruguay%23claim-connector",
+        "rel": "nofollow",
+        "text": "claim ownership"
+      },
+      {
+        "href": "/oauth/github/auth?returnPath=%2Fmcp%2Fconnectors%2Fio.github.eduair94%2Fcambio-uruguay",
+        "rel": "nofollow",
+        "text": "Login with GitHub to comment"
+      },
+      {
+        "href": "/mcp/servers/eduair94/cambio-uruguay",
+        "text": "Cambio Uruguay MCP"
+      },
+      {
+        "href": "/mcp/inspector?servers=%5B%7B%22id%22%3A%22https%3A%2F%2Fmcp.cambio-uruguay.com%2Fmcp%22%2C%22name%22%3A%22Cambio+Uruguay%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.cambio-uruguay.com%2Fmcp%22%7D%5D",
+        "rel": "nofollow",
+        "text": "Try in Browser"
+      }
+    ]
+  },
+  "connector_publication_timestamp": null,
+  "timestamp_note": "No addedAt, createdAt or updatedAt field on the connector remote object and no publication date attributable to this connector. Visible time elements belong to related server cards and are not connector publication dates.",
+  "source_note": "The public loader reports isRegistryLinked=true and registryNamespace=io.github.eduair94. The source-server URL appearing among related anchors is recorded separately and is not treated as this connector.",
+  "conclusions": {
+    "connector_is_public": true,
+    "direct_backlink_to_main_site_observed": false,
+    "mcp_endpoint_visible_as_input": true,
+    "quality_assessed": false,
+    "source_server_status_assessed": false
+  },
+  "source_server_verification": {
+    "verification_scope": "Distinct source-server listing, verified separately after the connector.",
+    "response": {
+      "status": 200,
+      "retrieved_at": "2026-09-06T05:10:15.7714601Z",
+      "final_url": "https://glama.ai/mcp/servers/eduair94/cambio-uruguay",
+      "headers": {
+        "last_modified": null,
+        "content_type": [
+          "text/html; charset=utf-8"
+        ],
+        "date": [
+          "Sun, 06 Sep 2026 05:10:16 GMT"
+        ]
+      }
+    },
+    "html_sha256": "53d63bba36eb57e11f1acc9f2493af6858c47ce52cae872152278b8481c459a8",
+    "metadata": [
+      {
+        "content": "Read-only tools for published currency buy and sell quotes from more than 40 Uruguayan exchange houses and banks, rate comparisons, conversion, historical data, and economic news. Open-source TypeScript server with stdio and remote HTTP transports; no API key required.",
+        "name": "description"
+      },
+      {
+        "href": "https://glama.ai/mcp/servers/eduair94/cambio-uruguay",
+        "rel": "canonical"
+      },
+      {
+        "content": "Cambio Uruguay MCP by eduair94",
+        "property": "og:title"
+      },
+      {
+        "content": "Read-only tools for published currency buy and sell quotes from more than 40 Uruguayan exchange houses and banks, rate comparisons, conversion, historical data, and economic news. Open-source TypeScript server with stdio and remote HTTP transports; no API key required.",
+        "property": "og:description"
+      },
+      {
+        "content": "https://glama.ai/mcp/servers/eduair94/cambio-uruguay",
+        "property": "og:url"
+      }
+    ],
+    "source_public_loader_metadata": {
+      "displayName": "Cambio Uruguay MCP",
+      "namespace": {
+        "owner": {
+          "githubAccount": {
+            "login": "eduair94"
+          }
+        },
+        "slug": "eduair94"
+      },
+      "slug": "cambio-uruguay",
+      "addedAt": "2026-09-06T05:06:57.776883Z",
+      "updatedAt": "2026-09-06T05:10:15.866697Z"
+    },
+    "direct_main_site_anchor_count": 8,
+    "direct_main_site_anchors": [
+      {
+        "href": "https://cambio-uruguay.com",
+        "rel": "ugc nofollow",
+        "text": "cambio-uruguay.com"
+      },
+      {
+        "href": "https://cambio-uruguay.com",
+        "rel": "ugc nofollow",
+        "text": "https://cambio-uruguay.com"
+      },
+      {
+        "href": "https://cambio-uruguay.com",
+        "rel": "ugc nofollow",
+        "text": "comparador"
+      },
+      {
+        "href": "https://cambio-uruguay.com/convertir",
+        "rel": "ugc nofollow",
+        "text": "conversor"
+      },
+      {
+        "href": "https://cambio-uruguay.com/historico",
+        "rel": "ugc nofollow",
+        "text": "histórico"
+      },
+      {
+        "href": "https://cambio-uruguay.com/mapa",
+        "rel": "ugc nofollow",
+        "text": "mapa de casas"
+      },
+      {
+        "href": "https://cambio-uruguay.com/casas-de-cambio",
+        "rel": "ugc nofollow",
+        "text": "casas de cambio"
+      },
+      {
+        "href": "https://cambio-uruguay.com/retirar-efectivo-uruguay",
+        "rel": "ugc nofollow",
+        "text": "retirar efectivo (turistas)"
+      }
+    ],
+    "github_source_anchors": [
+      {
+        "href": "https://github.com/eduair94/cambio-uruguay/blob/main/mcp/README.md",
+        "rel": "ugc nofollow",
+        "text": "docs"
+      },
+      {
+        "href": "https://github.com/eduair94/cambio-uruguay/blob/main/bots",
+        "rel": "ugc nofollow",
+        "text": "bots/"
+      },
+      {
+        "href": "https://github.com/eduair94/cambio-uruguay/blob/main/mcp/README.md",
+        "rel": "ugc nofollow",
+        "text": "mcp/README.md"
+      },
+      {
+        "href": "https://github.com/eduair94/cambio-uruguay/tree/main/mcp",
+        "text": "GitHub Repository"
+      }
+    ],
+    "quality_assessed": false,
+    "claim_status_assessed": false,
+    "conclusions": {
+      "source_listing_is_public": true,
+      "direct_backlink_to_main_site_observed": true,
+      "no_quality_or_claim_inference": true
+    }
+  }
+}
