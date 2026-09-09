@@ -247,6 +247,28 @@ export interface BuiltEmail {
   text: string
 }
 
+// Only editorial links in the daily email carry attribution. Confirmation and
+// unsubscribe links bypass this helper; external publishers keep their own URLs.
+function dailyEmailLink(href: string, issueDate: string): string {
+  try {
+    const url = new URL(href, 'https://cambio-uruguay.com')
+    if (
+      !['https://cambio-uruguay.com', 'https://www.cambio-uruguay.com'].includes(url.origin) ||
+      url.pathname === '/api' ||
+      url.pathname.startsWith('/api/')
+    )
+      return href
+
+    url.searchParams.set('utm_source', 'newsletter')
+    url.searchParams.set('utm_medium', 'email')
+    url.searchParams.set('utm_campaign', 'dolar_diario')
+    url.searchParams.set('utm_content', issueDate)
+    return url.toString()
+  } catch {
+    return href
+  }
+}
+
 /** Pure: render the localized daily email. */
 export function buildDailyEmail(
   data: DigestData,
@@ -254,7 +276,8 @@ export function buildDailyEmail(
   unsubUrl: string
 ): BuiltEmail {
   const L = LABELS[lang] ?? LABELS.es
-  const site = 'https://cambio-uruguay.com'
+  const site = dailyEmailLink('https://cambio-uruguay.com', data.date)
+  const news = data.news.map(n => ({ ...n, link: dailyEmailLink(n.link, data.date) }))
 
   const rows = data.currencies
     .map(c => {
@@ -280,10 +303,10 @@ export function buildDailyEmail(
       )}</div>`
     : ''
 
-  const newsHtml = data.news.length
+  const newsHtml = news.length
     ? `<h3 style="margin:22px 0 8px;font-size:16px;color:#0d0f14;">📰 ${L.news}</h3>
 <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.7;">
-${data.news.map(n => `<li><a href="${esc(n.link)}" style="color:#1565c0;">${esc(n.title)}</a> — <span style="color:#888;">${esc(n.source)}</span></li>`).join('\n')}
+${news.map(n => `<li><a href="${esc(n.link)}" style="color:#1565c0;">${esc(n.title)}</a> — <span style="color:#888;">${esc(n.source)}</span></li>`).join('\n')}
 </ul>`
     : ''
 
@@ -310,7 +333,7 @@ ${data.news.map(n => `<li><a href="${esc(n.link)}" style="color:#1565c0;">${esc(
     ${aiHtml}
     ${newsHtml}
     <div style="margin:24px 0 0;text-align:center;">
-      <a href="${site}" style="display:inline-block;background:#16c784;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;">cambio-uruguay.com</a>
+      <a href="${esc(site)}" style="display:inline-block;background:#16c784;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;">cambio-uruguay.com</a>
     </div>
   </td></tr>
   <tr><td style="padding:16px 24px;background:#fafafa;border-top:1px solid #eee;font-size:12px;color:#999;text-align:center;">
@@ -331,7 +354,9 @@ ${data.news.map(n => `<li><a href="${esc(n.link)}" style="color:#1565c0;">${esc(
     '',
     data.ai,
     '',
-    ...data.news.map(n => `- ${n.title} (${n.source}) ${n.link}`),
+    ...news.map(n => `- ${n.title} (${n.source}) ${n.link}`),
+    '',
+    site,
     '',
     `${L.unsubscribe}: ${unsubUrl}`,
   ].join('\n')
