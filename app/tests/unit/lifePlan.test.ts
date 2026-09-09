@@ -7,7 +7,10 @@ import {
   lifePlanReturns,
   type LifePlanDebtInput,
   type LifePlanRates,
+  LIFE_PLAN_EMERGENCY_MONTHS_DEFAULT,
+  buildLifePlan,
 } from '../../utils/lifePlan'
+import { estimateBudget } from '../../utils/costOfLiving'
 
 // Medido en produccion el 2026-09-08.
 const RATES: LifePlanRates = {
@@ -140,5 +143,139 @@ describe('LIFE_PLAN_DEBT_KINDS', () => {
     expect(measured).toContain('sin_descuento')
     expect(measured).toContain('con_descuento')
     expect(measured).not.toContain('gastos_comunes')
+  })
+})
+
+const budgetFor = (netIncome: number) =>
+  estimateBudget({
+    netIncome,
+    situation: 'solo',
+    city: 'montevideo',
+    housing: 'alquila',
+    children: 0,
+  })
+
+const cardDebt = (over: Partial<LifePlanDebtInput> = {}): LifePlanDebtInput => ({
+  id: 'tarjeta',
+  name: 'Tarjeta',
+  balance: 60_000,
+  minPayment: 4_000,
+  kind: 'sin_descuento',
+  ...over,
+})
+
+describe('buildLifePlan: guarda 1, sin ingreso suficiente no hay plan', () => {
+  it('con deficit devuelve no-alcanza y NO reparte nada', () => {
+    const budget = budgetFor(15_000)
+    expect(budget.deficit).toBeGreaterThan(0)
+    const plan = buildLifePlan(budget, [cardDebt()], {}, RATES)
+    expect(plan.verdict).toBe('no-alcanza')
+    // Ni un paso de asignacion: repartir un ingreso que no cubre lo esencial es
+    // exactamente lo que hace una regla 50/30/20 aplicada sin mirar el piso.
+    expect(plan.steps.filter(s => !s.committed && s.monthly > 0)).toEqual([])
+  })
+})
+
+describe('buildLifePlan: guarda 2, sin evidencia no se afirma un orden', () => {
+  it('sin tasas de deuda el paso queda unresolved y se declara', () => {
+    const plan = buildLifePlan(
+      budgetFor(90_000),
+      [cardDebt()],
+      {},
+      { ...RATES, deudaSinDescuento: null }
+    )
+    const deuda = plan.steps.find(s => s.id.startsWith('deuda'))
+    expect(deuda?.unresolved).toBe(true)
+    expect(plan.unresolvedNotes.length).toBeGreaterThan(0)
+  })
+
+  it('sin ningun destino con tasa NO hay umbral y no se clasifica la deuda', () => {
+    const plan = buildLifePlan(
+      budgetFor(90_000),
+      [cardDebt()],
+      {},
+      { ...RATES, plazoFijoBrou: null, fondoPesos: null }
+    )
+    expect(plan.bestRealNet).toBeNull()
+    expect(plan.unresolvedNotes.join(' ')).toMatch(/umbral|comparar/i)
+  })
+})
+
+describe('buildLifePlan: guarda 3, neverPaysOff se propaga', () => {
+  it('si el minimo no cubre el interes lo dice', () => {
+    // 80,72 % anual sobre 60.000 son ~4.033 por mes de interes: un minimo de 500
+    // no lo cubre. Se pasa extra 0 para aislar la guarda del excedente.
+    const plan = buildLifePlan(
+      budgetFor(90_000),
+      [cardDebt({ minPayment: 500, balance: 5_000_000 })],
+      {},
+      RATES
+    )
+    expect(plan.payoff?.neverPaysOff).toBe(true)
+    expect(plan.unresolvedNotes.join(' ')).toMatch(/nunca|no se cancela/i)
+  })
+})
+
+describe('buildLifePlan: el orden', () => {
+  const plan = () => buildLifePlan(budgetFor(90_000), [cardDebt()], { savingsNow: 0 }, RATES)
+
+  it('los esenciales van primero y estan comprometidos', () => {
+    expect(plan().steps[0].id).toBe('esenciales')
+    expect(plan().steps[0].committed).toBe(true)
+  })
+
+  it('los minimos son obligacion y van antes del colchon', () => {
+    const ids = plan().steps.map(s => s.id)
+    expect(ids.indexOf('minimos')).toBeLessThan(ids.indexOf('colchon'))
+    expect(plan().steps.find(s => s.id === 'minimos')?.committed).toBe(true)
+  })
+
+  it('la deuda cara va antes del colchon, y dice por que con numeros', () => {
+    const ids = plan().steps.map(s => s.id)
+    expect(ids.indexOf('deuda-cara')).toBeLessThan(ids.indexOf('colchon'))
+    const paso = plan().steps.find(s => s.id === 'deuda-cara')
+    expect(paso?.evidence).toMatch(/80\.72|80,72/)
+    expect(paso?.unresolved).toBe(false)
+  })
+
+  it('una deuda MAS BARATA que el colchon va despues del colchon', () => {
+    const barata = cardDebt({ kind: 'otro', annualRatePct: 1, id: 'subsidiado' })
+    const ids = buildLifePlan(budgetFor(90_000), [barata], {}, RATES).steps.map(s => s.id)
+    expect(ids.indexOf('colchon')).toBeLessThan(ids.indexOf('deuda-barata'))
+  })
+
+  it('el colchon apunta a 3 meses de esenciales por defecto', () => {
+    expect(LIFE_PLAN_EMERGENCY_MONTHS_DEFAULT).toBe(3)
+    const p = plan()
+    expect(p.emergencyTarget).toBeCloseTo(p.budget.essentials * 3, 5)
+  })
+
+  it('lo que ya tenes ahorrado descuenta del colchon', () => {
+    const p = buildLifePlan(budgetFor(90_000), [], { savingsNow: 1_000_000 }, RATES)
+    expect(p.emergencyGap).toBe(0)
+    expect(p.steps.find(s => s.id === 'colchon')?.monthly).toBe(0)
+  })
+
+  it('el excedente se reparte DESPUES de los minimos, no antes', () => {
+    const p = plan()
+    expect(p.pot).toBeCloseTo(p.budget.savingsMax - p.minimums, 5)
+  })
+
+  it('sin excedente despues de los minimos lo dice y no ordena destinos', () => {
+    const p = buildLifePlan(budgetFor(90_000), [cardDebt({ minPayment: 200_000 })], {}, RATES)
+    expect(p.verdict).toBe('sin-excedente')
+  })
+
+  it('reparte como maximo el pote, nunca mas', () => {
+    const p = plan()
+    const repartido = p.steps.filter(s => !s.committed).reduce((a, s) => a + s.monthly, 0)
+    expect(repartido).toBeLessThanOrEqual(p.pot + 0.01)
+  })
+
+  it('el colchon se puede mover, y queda acotado entre 1 y 12 meses', () => {
+    const p = buildLifePlan(budgetFor(90_000), [], { emergencyMonths: 99 }, RATES)
+    expect(p.emergencyTarget).toBeCloseTo(p.budget.essentials * 12, 5)
+    const q = buildLifePlan(budgetFor(90_000), [], { emergencyMonths: 0 }, RATES)
+    expect(q.emergencyTarget).toBeCloseTo(q.budget.essentials * 1, 5)
   })
 })

@@ -15,6 +15,8 @@
 //
 // `app/utils/` es un namespace plano de auto-imports, así que todo lo exportado
 // lleva prefijo `lifePlan`/`LIFE_PLAN` salvo los tipos del dominio.
+import { type BudgetResult } from '~/utils/costOfLiving'
+import { payoffPlan, type Debt, type PayoffPlan } from '~/utils/debt'
 import { netOfIrpf, type DepositCurrency } from '~/utils/investments'
 
 export interface LifePlanRates {
@@ -227,4 +229,273 @@ export function lifePlanDebtRate(
     }
   }
   return { annualRatePct: null, source: 'sin tasa: cargala para poder ordenarla', measured: false }
+}
+
+export type LifePlanVerdict = 'no-alcanza' | 'sin-excedente' | 'ordenado'
+
+export interface LifePlanStep {
+  id: string
+  label: string
+  monthly: number
+  reason: string
+  /** La cifra que justifica la posición del paso, con su fuente. null si no llegó. */
+  evidence: string | null
+  /** true cuando el paso no se puede justificar con lo que hay. */
+  unresolved: boolean
+  /** true cuando el monto es obligación y no decisión (esenciales, mínimos). */
+  committed: boolean
+}
+
+export interface LifePlanOptions {
+  emergencyMonths?: number
+  savingsNow?: number
+}
+
+export interface LifePlanResult {
+  verdict: LifePlanVerdict
+  budget: BudgetResult
+  /** Lo repartible: ingreso − esenciales − mínimos. */
+  pot: number
+  minimums: number
+  steps: LifePlanStep[]
+  payoff: PayoffPlan | null
+  bestRealNet: { pct: number; from: string } | null
+  returns: LifePlanReturn[]
+  unresolvedNotes: string[]
+  emergencyTarget: number
+  emergencyGap: number
+}
+
+export const LIFE_PLAN_EMERGENCY_MONTHS_DEFAULT = 3
+export const LIFE_PLAN_EMERGENCY_MONTHS_MIN = 1
+export const LIFE_PLAN_EMERGENCY_MONTHS_MAX = 12
+
+const asPct = (n: number): string => `${n.toFixed(2)} %`
+
+/**
+ * La cascada.
+ *
+ * Las cuatro guardas del spec están acá y ninguna es opcional:
+ *   1. con déficit no hay plan, hay un faltante y un puntero a los apoyos;
+ *   2. un paso sin evidencia va `unresolved` y el plan declara qué le faltó;
+ *   3. `neverPaysOff` se propaga;
+ *   4. no se proyecta nada más allá de los meses que salen de los saldos.
+ *
+ * Los pasos se empujan incluso con monto 0, porque el orden ES la información:
+ * ver "colchón: 0 este mes, porque primero va la deuda al 80 %" explica más que
+ * no ver el colchón.
+ */
+export function buildLifePlan(
+  budget: BudgetResult,
+  debts: readonly LifePlanDebtInput[],
+  options: LifePlanOptions,
+  rates: LifePlanRates
+): LifePlanResult {
+  const returns = lifePlanReturns(rates)
+  const bestRealNet = lifePlanBestRealNet(returns)
+  const unresolvedNotes: string[] = []
+
+  const emergencyMonths = Math.min(
+    LIFE_PLAN_EMERGENCY_MONTHS_MAX,
+    Math.max(
+      LIFE_PLAN_EMERGENCY_MONTHS_MIN,
+      options.emergencyMonths ?? LIFE_PLAN_EMERGENCY_MONTHS_DEFAULT
+    )
+  )
+  const savingsNow = Math.max(0, options.savingsNow ?? 0)
+  const emergencyTarget = budget.essentials * emergencyMonths
+  const emergencyGap = Math.max(0, emergencyTarget - savingsNow)
+
+  const minimums = debts.reduce((sum, d) => sum + Math.max(0, d.minPayment), 0)
+
+  const steps: LifePlanStep[] = [
+    {
+      id: 'esenciales',
+      label: 'Lo esencial',
+      monthly: budget.essentials,
+      reason:
+        'Vivienda, comida, servicios, transporte y salud, con los precios medidos del sitio.',
+      evidence: null,
+      unresolved: false,
+      committed: true,
+    },
+  ]
+
+  // Guarda 1: sin ingreso suficiente no hay plan.
+  if (budget.deficit > 0) {
+    steps.push({
+      id: 'faltante',
+      label: 'Falta para llegar a lo esencial',
+      monthly: budget.deficit,
+      reason:
+        'El ingreso no cubre lo esencial, así que no hay excedente que ordenar. Antes que un reparto, revisá los apoyos del Estado que te puedan corresponder.',
+      evidence: null,
+      unresolved: false,
+      committed: true,
+    })
+    return {
+      verdict: 'no-alcanza',
+      budget,
+      pot: 0,
+      minimums,
+      steps,
+      payoff: null,
+      bestRealNet,
+      returns,
+      unresolvedNotes,
+      emergencyTarget,
+      emergencyGap,
+    }
+  }
+
+  if (minimums > 0) {
+    steps.push({
+      id: 'minimos',
+      label: 'Pagos mínimos de tus deudas',
+      monthly: minimums,
+      reason: 'Los mínimos son obligación, no decisión: salen antes de cualquier destino.',
+      evidence: null,
+      unresolved: false,
+      committed: true,
+    })
+  }
+
+  const pot = Math.max(0, budget.savingsMax - minimums)
+
+  // La deuda se clasifica sólo si hay umbral con el que compararla (guarda 2).
+  const rated = debts.map(d => ({ input: d, ...lifePlanDebtRate(d, rates) }))
+  const sinTasa = rated.filter(r => r.annualRatePct === null)
+  if (sinTasa.length) {
+    unresolvedNotes.push(
+      `No se pudo ordenar ${
+        sinTasa.length === 1 ? 'una deuda' : `${sinTasa.length} deudas`
+      } porque no tienen tasa cargada.`
+    )
+  }
+  if (!bestRealNet) {
+    unresolvedNotes.push(
+      'No llegó ninguna tasa de referencia, así que no hay umbral con el que comparar tus deudas.'
+    )
+  }
+
+  const expensive = rated.filter(
+    r => r.annualRatePct !== null && bestRealNet !== null && r.annualRatePct > bestRealNet.pct
+  )
+  const cheap = rated.filter(
+    r => r.annualRatePct !== null && bestRealNet !== null && r.annualRatePct <= bestRealNet.pct
+  )
+
+  // Guarda 3: el plan de pago y su neverPaysOff.
+  const payoffDebts: Debt[] = rated
+    .filter(r => r.annualRatePct !== null)
+    .map(r => ({
+      id: r.input.id,
+      name: r.input.name,
+      balance: r.input.balance,
+      annualRatePct: r.annualRatePct as number,
+      minPayment: r.input.minPayment,
+    }))
+  const payoff = payoffDebts.length ? payoffPlan(payoffDebts, pot, 'avalancha') : null
+  if (payoff?.neverPaysOff) {
+    unresolvedNotes.push(
+      'Con esos mínimos la deuda no se cancela nunca: el interés crece más rápido de lo que pagás.'
+    )
+  }
+
+  let left = pot
+  const take = (amount: number): number => {
+    const used = Math.max(0, Math.min(left, amount))
+    left -= used
+    return used
+  }
+
+  if (expensive.length || sinTasa.length) {
+    const worst = expensive.reduce<(typeof expensive)[number] | null>(
+      (a, b) => (a === null || (b.annualRatePct as number) > (a.annualRatePct as number) ? b : a),
+      null
+    )
+    const evidence =
+      worst && bestRealNet
+        ? `${asPct(worst.annualRatePct as number)} de la deuda contra ${asPct(
+            bestRealNet.pct
+          )} real de ${bestRealNet.from}: pagarla rinde más que colocar la plata.`
+        : null
+    steps.push({
+      id: 'deuda-cara',
+      label: 'Deuda cara, primero',
+      monthly: expensive.length ? take(left) : 0,
+      reason: worst
+        ? 'Ordenada de mayor a menor tasa: es el orden que minimiza el interés total.'
+        : 'No hay con qué decidir si tus deudas son caras.',
+      evidence,
+      unresolved: !worst || !bestRealNet,
+      committed: false,
+    })
+  }
+
+  steps.push({
+    id: 'colchon',
+    label: `Colchón de ${emergencyMonths} ${emergencyMonths === 1 ? 'mes' : 'meses'}`,
+    monthly: emergencyGap > 0 ? take(left) : 0,
+    reason:
+      emergencyGap > 0
+        ? `Te faltan ${Math.round(emergencyGap).toLocaleString('es-UY')} pesos para tener ${emergencyMonths} ${
+            emergencyMonths === 1 ? 'mes' : 'meses'
+          } de lo esencial guardado.`
+        : 'Ya tenés el colchón completo.',
+    evidence: null,
+    unresolved: false,
+    committed: false,
+  })
+
+  if (cheap.length) {
+    steps.push({
+      id: 'deuda-barata',
+      label: 'Deuda barata, después del colchón',
+      monthly: take(left),
+      reason:
+        'Rinde menos que tener el colchón, así que no conviene adelantarla antes de tenerlo.',
+      evidence: bestRealNet
+        ? `Por debajo de ${asPct(bestRealNet.pct)} real de ${bestRealNet.from}.`
+        : null,
+      unresolved: !bestRealNet,
+      committed: false,
+    })
+  }
+
+  for (const destino of returns) {
+    if (left <= 0) break
+    steps.push({
+      id: `destino-${destino.id}`,
+      label: destino.label,
+      monthly: take(left),
+      reason: destino.note,
+      evidence:
+        destino.realPct !== null
+          ? `${asPct(destino.grossPct)} nominal, ${asPct(destino.netPct)} neto de IRPF, ${asPct(
+              destino.realPct
+            )} real.`
+          : `${asPct(destino.grossPct)} nominal, ${asPct(
+              destino.netPct
+            )} neto de IRPF. No se pudo descontar inflación.`,
+      unresolved: destino.realPct === null,
+      committed: false,
+    })
+  }
+
+  const verdict: LifePlanVerdict = pot <= 0 ? 'sin-excedente' : 'ordenado'
+
+  return {
+    verdict,
+    budget,
+    pot,
+    minimums,
+    steps,
+    payoff,
+    bestRealNet,
+    returns,
+    unresolvedNotes,
+    emergencyTarget,
+    emergencyGap,
+  }
 }
