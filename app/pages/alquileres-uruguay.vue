@@ -211,13 +211,16 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             />
             <VBtnToggle
               v-if="!smAndDown"
-              :model-value="view"
+              :model-value="viewMode"
+              :aria-label="t('viewMode')"
               mandatory
               variant="outlined"
               density="comfortable"
               divided
-              @update:model-value="changeView"
-              ><VBtn value="lista" prepend-icon="mdi-view-grid-outline">{{ t('list') }}</VBtn
+              class="rentals-view"
+              @update:model-value="changeViewMode"
+              ><VBtn value="mosaico" prepend-icon="mdi-view-grid-outline">{{ t('tiles') }}</VBtn
+              ><VBtn value="lista" prepend-icon="mdi-view-list-outline">{{ t('list') }}</VBtn
               ><VBtn value="mapa" prepend-icon="mdi-map-marker-outline">{{
                 t('map')
               }}</VBtn></VBtnToggle
@@ -368,7 +371,12 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               <VBtn variant="text" @click="clearFilters">{{ t('reset') }}</VBtn>
             </div>
           </div>
-          <div v-if="view === 'lista' && !error" class="rentals-grid">
+          <div
+            v-if="view === 'lista' && !error"
+            class="rentals-grid"
+            :class="`rentals-grid--${layout}`"
+            data-testid="rental-results-grid"
+          >
             <article v-for="(property, index) in items" :key="property.key" class="rental-card">
               <div class="rental-card__visual">
                 <!-- Con foto la imagen abre la galería sin salir de la búsqueda; sin foto no hay
@@ -706,6 +714,14 @@ import {
   toggleRentalFavorite,
   removeRentalFavorite,
 } from '~/utils/rentalSaved'
+import {
+  DEFAULT_RENTAL_LAYOUT,
+  RENTAL_LAYOUT_STORAGE_KEY,
+  normalizeRentalLayout,
+  readRentalLayout,
+  writeRentalLayout,
+  type RentalLayout,
+} from '~/utils/rentalLayout'
 
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })
@@ -769,6 +785,12 @@ const agencyName = useAgencySelection(() => query.value.agency)
 const requestParams = computed(() => rentalQueryToParams(query.value))
 const requestKey = computed(() => JSON.stringify(requestParams.value))
 const view = computed(() => (route.query.view === 'mapa' ? 'mapa' : 'lista'))
+// El mosaico o las filas son gusto del visitante, no otra dirección: viven en
+// localStorage y no en la URL, así la misma búsqueda sigue siendo una sola
+// página indexable. El servidor pinta siempre el mosaico y lo guardado entra al
+// montar; por eso no hay desajuste de hidratación.
+const layout = ref<RentalLayout>(DEFAULT_RENTAL_LAYOUT)
+const viewMode = computed(() => (view.value === 'mapa' ? 'mapa' : layout.value))
 const { data, pending, error, refresh } = await useAsyncData<RentalsResponse>(
   'rental-directory',
   () => $fetch('/api/rentals', { query: availability.withRevision(requestParams.value) }),
@@ -859,6 +881,15 @@ function changeView(next: string) {
   void router.push({
     query: { ...requestParams.value, ...(next === 'mapa' ? { view: 'mapa' } : {}) },
   })
+}
+function changeViewMode(next: string) {
+  if (next === 'mapa') {
+    changeView('mapa')
+    return
+  }
+  layout.value = normalizeRentalLayout(next)
+  writeRentalLayout(layout.value)
+  if (view.value === 'mapa') changeView('lista')
 }
 async function onPageChange(page: number) {
   await navigate(rentalQueryToParams({ ...query.value, page }))
@@ -1379,6 +1410,8 @@ async function shareSearch() {
 }
 const onStorage = (event: StorageEvent) => {
   if (event.key === RENTAL_SAVED_STORAGE_ID || event.key === null) saved.value = readRentalSaved()
+  if (event.key === RENTAL_LAYOUT_STORAGE_KEY || event.key === null)
+    layout.value = readRentalLayout()
 }
 availability.watchChanges(async () => {
   await refresh()
@@ -1396,6 +1429,7 @@ availability.watchChanges(async () => {
 })
 onMounted(() => {
   saved.value = readRentalSaved()
+  layout.value = readRentalLayout()
   window.addEventListener('storage', onStorage)
   if (view.value === 'mapa') void loadMap()
 })
@@ -2346,104 +2380,127 @@ button.rental-card__media {
    ficha, acciones— y nada queda suelto en el medio. El corte es 1264 porque
    abajo de eso la barra de filtros (304) deja menos de 900 px de resultados y
    la fila se comprime. */
-@media (min-width: 1264px) {
-  .rentals-grid {
+/* Vista "lista": filas horizontales, como InfoCasas y la vista lista de Mercado
+   Libre. Convive con el mosaico, que es lo que se sirve por defecto; la elección
+   la guarda el visitante en localStorage (utils/rentalLayout.ts).
+
+   Con tarjetas en columnas la ficha crecia hasta ~700 px de ancho para cinco
+   lineas de texto y el ojo cruzaba media pantalla vacia entre la foto y el
+   precio. Acá el ancho se reparte en zonas de trabajo y nada queda suelto en el
+   medio. Abajo de 960 no hay conmutador y manda la tarjeta compacta de siempre. */
+@media (min-width: 960px) {
+  .rentals-grid.rentals-grid--lista {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
-  .rental-card {
+  .rentals-grid--lista .rental-card {
     display: grid;
-    /* Foto y riel ceden ancho a la ficha cuando la fila se angosta: con 288 y
-       264 fijos, a 1264 el título quedaba en dos líneas y el pie en otras dos. */
-    grid-template-columns:
-      clamp(208px, 19%, 288px)
-      minmax(0, 1fr)
-      clamp(240px, 17%, 268px);
+    grid-template-columns: clamp(200px, 26%, 280px) minmax(0, 1fr);
     align-items: stretch;
     transition:
       border-color 0.15s ease-out,
       box-shadow 0.15s ease-out;
   }
-  .rental-card:hover {
+  .rentals-grid--lista .rental-card:hover {
     border-color: rgba(var(--v-theme-primary), 0.45);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   }
-  .rental-card__body {
+  .rentals-grid--lista .rental-card__body {
     display: contents;
   }
   /* La foto llena la columna en lugar de fijar la altura de la fila: una foto
      vertical la estiraba a 630 px y dejaba el precio arriba, el enlace abajo y
-     medio metro de vacío en el medio. */
-  .rental-card__visual {
-    min-height: 232px;
+     medio metro de vacio en el medio. */
+  .rentals-grid--lista .rental-card__visual {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    min-height: 208px;
   }
-  .rental-card__media {
+  .rentals-grid--lista .rental-card__media {
     position: absolute;
     inset: 0;
     height: 100%;
     aspect-ratio: auto;
   }
-  .rental-card__main {
+  .rentals-grid--lista .rental-card__main {
+    grid-column: 2;
+    grid-row: 1;
     display: flex;
     flex-direction: column;
     gap: 10px;
     min-width: 0;
     padding: 16px 20px;
   }
-  .rental-card__rail {
+  /* Hasta 1280 el riel no entra como tercera columna sin comerle el ancho al
+     titulo: los portales y el enlace van en un renglon al pie de la ficha. */
+  .rentals-grid--lista .rental-card__rail {
+    grid-column: 2;
+    grid-row: 2;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 12px;
-    padding: 16px 20px;
-    border-left: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 0 20px 16px;
   }
-  /* Zona y distancia comparten renglón: son la misma respuesta ("dónde queda"). */
-  .rental-card__overview {
+  .rentals-grid--lista .rental-card__offers {
+    flex: 1 1 240px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0;
+    padding-top: 0;
+  }
+  .rentals-grid--lista .rental-card__offer {
+    flex: 1 1 200px;
+  }
+  /* Zona y distancia comparten renglon: son la misma respuesta ("donde queda"). */
+  .rentals-grid--lista .rental-card__overview {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: baseline;
     gap: 4px 10px;
   }
-  .rental-card__where {
+  .rentals-grid--lista .rental-card__where {
     grid-column: 1;
   }
-  .rental-card__distance {
+  .rentals-grid--lista .rental-card__distance {
     grid-column: 2;
     justify-self: start;
     font-size: 0.8rem;
   }
-  .rental-card__overview > :not(.rental-card__where):not(.rental-card__distance) {
+  .rentals-grid--lista
+    .rental-card__overview
+    > :not(.rental-card__where):not(.rental-card__distance) {
     grid-column: 1 / -1;
   }
-  .rental-card__cost {
+  .rentals-grid--lista .rental-card__cost {
     margin: 0;
     padding: 0;
     border: 0;
   }
-  .rental-card__price {
+  .rentals-grid--lista .rental-card__price {
     font-size: 1.5rem;
   }
-  .rental-card h3 {
+  .rentals-grid--lista .rental-card h3 {
     font-size: 1.075rem;
     font-weight: 700;
   }
-  .rental-card h3 a {
+  .rentals-grid--lista .rental-card h3 a {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .rental-card__specs,
-  .rental-card__address {
+  .rentals-grid--lista .rental-card__specs,
+  .rentals-grid--lista .rental-card__address {
     font-size: 0.875rem;
   }
-  .rental-card__tags {
+  .rentals-grid--lista .rental-card__tags {
     margin-top: 2px;
   }
-  /* Anunciante, aviso de ocupado y última lectura son una sola línea de pie:
-     apilados dejaban tres renglones cortos contra 800 px de vacío a su derecha. */
-  .rental-card__footnote {
+  /* Anunciante, aviso de ocupado y ultima lectura son una sola linea de pie:
+     apilados dejaban tres renglones cortos contra 800 px de vacio a su derecha. */
+  .rentals-grid--lista .rental-card__footnote {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -2451,19 +2508,48 @@ button.rental-card__media {
     margin-top: auto;
     padding-top: 4px;
   }
-  .rental-card__footnote :deep(.availability-report) {
+  .rentals-grid--lista .rental-card__footnote :deep(.availability-report) {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 4px 12px;
   }
-  .rental-card__offers {
-    margin: 0;
-    padding-top: 0;
-  }
-  .rental-card__detail {
+  .rentals-grid--lista .rental-card__detail {
     justify-content: flex-start;
     gap: 8px;
+    margin: 0;
+  }
+}
+/* Desde 1280 la fila entra en tres zonas: foto, ficha y acciones. Foto y riel
+   ceden ancho a la ficha cuando la fila se angosta; con 288 y 264 fijos, a 1280
+   el titulo quedaba en dos lineas y el pie en otras dos. */
+@media (min-width: 1280px) {
+  .rentals-grid--lista .rental-card {
+    grid-template-columns:
+      clamp(208px, 19%, 288px)
+      minmax(0, 1fr)
+      clamp(240px, 17%, 268px);
+  }
+  .rentals-grid--lista .rental-card__visual {
+    min-height: 232px;
+  }
+  .rentals-grid--lista .rental-card__rail {
+    grid-column: 3;
+    grid-row: 1;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 12px;
+    padding: 16px 20px;
+    border-left: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+  .rentals-grid--lista .rental-card__offers {
+    flex: 0 0 auto;
+    flex-direction: column;
+  }
+  .rentals-grid--lista .rental-card__offer {
+    flex: 0 0 auto;
   }
 }
 </style>
