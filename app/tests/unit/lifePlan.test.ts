@@ -279,3 +279,50 @@ describe('buildLifePlan: el orden', () => {
     expect(q.emergencyTarget).toBeCloseTo(q.budget.essentials * 1, 5)
   })
 })
+
+describe('buildLifePlan: el colchon minimo va ANTES de la deuda cara', () => {
+  // Encontrado corriendo la cascada con datos reales: todo el excedente se iba
+  // a la deuda y el colchon quedaba en cero. Es la comparacion de tasas tomada
+  // al pie de la letra, y esta mal por la misma aritmetica: sin colchon, la
+  // proxima urgencia vuelve a la tarjeta al 80 %. El rendimiento de un colchon
+  // minimo no es el 2,58 % del deposito, es evitar el 80 %.
+  const plan = () => buildLifePlan(budgetFor(90_000), [cardDebt()], { savingsNow: 0 }, RATES)
+
+  it('existe y va primero entre los pasos repartibles', () => {
+    const ids = plan().steps.map(s => s.id)
+    expect(ids).toContain('colchon-minimo')
+    expect(ids.indexOf('colchon-minimo')).toBeLessThan(ids.indexOf('deuda-cara'))
+  })
+
+  it('se justifica con la tasa de la deuda, no con la del deposito', () => {
+    const paso = plan().steps.find(s => s.id === 'colchon-minimo')
+    expect(paso?.evidence).toMatch(/80\.72|80,72/)
+    expect(paso?.monthly).toBeGreaterThan(0)
+  })
+
+  it('apunta a UN mes de lo esencial, no al colchon entero', () => {
+    const p = plan()
+    const minimo = p.steps.find(s => s.id === 'colchon-minimo')
+    expect(minimo!.monthly).toBeLessThanOrEqual(p.budget.essentials)
+  })
+
+  it('con el colchon ya cubierto el paso NO aparece, y todo va a la deuda', () => {
+    // Distinto de "colchon: 0 este mes porque primero va la deuda", que si es
+    // informacion y por eso se muestra: aca no hay nada que decir.
+    const p = buildLifePlan(budgetFor(90_000), [cardDebt()], { savingsNow: 999_999 }, RATES)
+    expect(p.steps.map(s => s.id)).not.toContain('colchon-minimo')
+    expect(p.steps.find(s => s.id === 'deuda-cara')?.monthly).toBeGreaterThan(0)
+  })
+
+  it('sin deuda cara no aparece el paso: el colchon entero ya viene despues', () => {
+    const ids = buildLifePlan(budgetFor(90_000), [], { savingsNow: 0 }, RATES).steps.map(s => s.id)
+    expect(ids).not.toContain('colchon-minimo')
+    expect(ids).toContain('colchon')
+  })
+
+  it('sigue repartiendo como maximo el pote', () => {
+    const p = plan()
+    const repartido = p.steps.filter(s => !s.committed).reduce((a, s) => a + s.monthly, 0)
+    expect(repartido).toBeLessThanOrEqual(p.pot + 0.01)
+  })
+})

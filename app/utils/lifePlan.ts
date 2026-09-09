@@ -409,11 +409,37 @@ export function buildLifePlan(
     return used
   }
 
+  const worst = expensive.reduce<(typeof expensive)[number] | null>(
+    (a, b) => (a === null || (b.annualRatePct as number) > (a.annualRatePct as number) ? b : a),
+    null
+  )
+
+  // El colchón MÍNIMO va antes de la deuda cara, y no es una excepción al orden
+  // por tasa: es el orden por tasa bien aplicado.
+  //
+  // Salió de correr la cascada con datos reales: todo el excedente se iba a la
+  // deuda y el colchón quedaba en cero. Pero sin colchón, la próxima urgencia
+  // vuelve a la tarjeta, así que el rendimiento del primer mes de colchón no es
+  // el ~2,6 % real del depósito — es evitar el ~80 % de volver a endeudarse.
+  // Medido contra esa tasa, el primer mes gana.
+  //
+  // Sólo el PRIMER mes. El resto del colchón sí rinde el 2,6 % y por eso sigue
+  // después de la deuda.
+  if (worst && emergencyGap > 0) {
+    const minimoTarget = Math.max(0, Math.min(emergencyGap, budget.essentials))
+    steps.push({
+      id: 'colchon-minimo',
+      label: 'Un mes de colchón, antes de atacar la deuda',
+      monthly: take(minimoTarget),
+      reason:
+        'Sin nada guardado, la próxima urgencia vuelve a la tarjeta. Este primer mes rinde lo que evita: la tasa de tu deuda, no la del depósito.',
+      evidence: `Evita volver a endeudarte al ${asPct(worst.annualRatePct as number)}.`,
+      unresolved: false,
+      committed: false,
+    })
+  }
+
   if (expensive.length || sinTasa.length) {
-    const worst = expensive.reduce<(typeof expensive)[number] | null>(
-      (a, b) => (a === null || (b.annualRatePct as number) > (a.annualRatePct as number) ? b : a),
-      null
-    )
     const evidence =
       worst && bestRealNet
         ? `${asPct(worst.annualRatePct as number)} de la deuda contra ${asPct(
