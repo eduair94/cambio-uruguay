@@ -2414,6 +2414,30 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El impuesto de la vivienda que el sitio sólo nombraba de costado: como línea deducible
+        // en el IRPF del alquiler y como advertencia en la guía del primer alquiler ("no lo pagás
+        // vos"). Va acá, al lado de gastos comunes, porque la pregunta que llega es la misma —qué
+        // le corresponde pagar a quién por una vivienda— y no la de los impuestos de la renta.
+        to: '/impuesto-de-primaria-uruguay',
+        labelKey: 'nav.impuestoPrimaria',
+        icon: 'mdi-school-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'impuesto de primaria uruguay',
+          'impuesto de primaria 2026',
+          'quien paga el impuesto de primaria',
+          'monto exonerado impuesto de primaria',
+          'escala impuesto de primaria',
+          'consultar deuda impuesto de primaria',
+          'impuesto de primaria alquiler quien lo paga',
+          'exoneracion impuesto de primaria campo',
+          'impuesto de ensenanza primaria dgi',
+          'valor imponible catastro uruguay',
+        ],
+      },
+      {
         to: '/alquilar-estando-en-clearing',
         labelKey: 'nav.alquilarClearing',
         icon: 'mdi-home-lock-open',
