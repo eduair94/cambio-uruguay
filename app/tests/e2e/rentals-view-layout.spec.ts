@@ -223,6 +223,17 @@ test('un contenedor de auto ads no puede centrar la ficha', async ({ page }) => 
   })
 
   expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
+  // Y no sólo la tarjeta: el envoltorio alcanza al titulo y a la ayuda de los
+  // filtros, que fue como se vio el problema la segunda vez.
+  expect(
+    await page.evaluate(() =>
+      ['.rentals-head h1', '.rentals-sidebar p', '.rentals-summary h2'].map(selector => {
+        const element = document.querySelector(selector)
+        return element ? getComputedStyle(element).textAlign : 'ausente'
+      })
+    )
+  ).toEqual(['start', 'start', 'start'])
+
   await page.getByRole('button', { name: 'Lista', exact: true }).click()
   await expect(grid(page)).toHaveClass(/rentals-grid--lista/)
   expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
