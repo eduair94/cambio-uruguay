@@ -58,7 +58,7 @@
       </div>
 
       <div v-if="selection.layer === 'prices'" class="analysis-map__layer-note">
-        <p>{{ t('priceScope') }}</p>
+        <p>{{ t('priceMapScope') }}</p>
         <p v-if="loading" role="status">{{ t('priceLoading') }}</p>
         <p v-else-if="!pricesReady" role="status">{{ t('priceUnavailable') }}</p>
         <p v-else-if="analysis?.generatedAt" class="analysis-map__meta">
@@ -283,7 +283,8 @@
           <p>{{ t('scaleHint') }}</p>
           <p>{{ t('geometryHint') }}</p>
           <template v-if="selection.layer === 'prices'"
-            ><p>{{ t('meanExplanation') }}</p>
+            ><p>{{ t('priceScope') }}</p>
+            <p>{{ t('meanExplanation') }}</p>
             <p>{{ t('priceMinimum') }}</p></template
           >
           <template v-else-if="selection.layer === 'crime'"

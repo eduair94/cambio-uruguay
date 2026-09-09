@@ -2,8 +2,8 @@ import { rentalZoneMessages } from './rentalZoneMessages'
 
 export const rentalAnalysisMapMessages = {
   es: {
-    closeDetail: 'Cerrar detalle',
     ...rentalZoneMessages.es,
+    priceMapScope: 'Todos los barrios de Montevideo · misma selección de viviendas',
     title: 'Mapa de alquileres, denuncias y servicios',
     intro: 'Elegí qué comparar y tocá un barrio para ver sus cifras, la muestra y las fuentes.',
     rentalLayer: 'Precio de alquiler',
@@ -60,8 +60,8 @@ export const rentalAnalysisMapMessages = {
     crimePeriod: 'Denuncias del {from} al {to}',
   },
   en: {
-    closeDetail: 'Close details',
     ...rentalZoneMessages.en,
+    priceMapScope: 'All Montevideo neighbourhoods · the same property selection',
     title: 'Map of asking rents, reported crime and services',
     intro:
       'Choose what to compare and select a neighbourhood to see its figures, sample and sources.',
@@ -119,8 +119,8 @@ export const rentalAnalysisMapMessages = {
     crimePeriod: 'Reported crime from {from} to {to}',
   },
   pt: {
-    closeDetail: 'Fechar detalhes',
     ...rentalZoneMessages.pt,
+    priceMapScope: 'Todos os bairros de Montevidéu · a mesma seleção de imóveis',
     title: 'Mapa de aluguéis, denúncias e serviços',
     intro:
       'Escolha o que comparar e selecione um bairro para ver seus números, a amostra e as fontes.',

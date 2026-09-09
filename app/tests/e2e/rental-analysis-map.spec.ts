@@ -189,7 +189,7 @@ test('map loads on request and switches same-currency mean, median, services and
   await map.locator('select[name="analysis-map-statistic"]').selectOption('median')
   await expect(detail.locator('.analysis-map__value')).toContainText('20.000')
   await expect(map.locator('path[data-zone-id="test-2"]')).toHaveAttribute('fill', '#d4d9df')
-  await detail.getByRole('button', { name: 'Cerrar detalle' }).click()
+  await detail.getByRole('button', { name: 'Cerrar el panel de la zona' }).click()
   await expect(detail).toHaveCount(0)
   await expect(cordon).toBeFocused()
   await cordon.press('Enter')

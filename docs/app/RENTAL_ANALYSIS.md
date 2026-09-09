@@ -69,6 +69,10 @@ vacío o de error; sólo pide otras cuando el usuario elige un departamento dist
 Los formatos numéricos se reutilizan por moneda e idioma. Las validaciones de las rutas
 de guías, temas, glosario, importaciones y tipos de casas de cambio importan sus catálogos
 al validar esas rutas, evitando incluir sus textos completos en la carga de este análisis.
+El módulo local `modules/catalogue-prefetch.ts` también desactiva exclusivamente las
+pistas SSR de precarga especulativa de esos catálogos: `vue-bundle-renderer` las emitía
+incluso para imports dinámicos. Conserva los imports y los modulepreload necesarios
+cuando se abre una guía, un término o cualquiera de las rutas correspondientes.
 La precarga HTTP de la consulta se descartó tras reproducir peticiones simultáneas
 duplicadas con respuestas lentas; la entrada realiza una sola petición de análisis.
 
