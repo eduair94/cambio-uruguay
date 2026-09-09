@@ -1,5 +1,7 @@
 # Backlinks pack — cambio-uruguay.com
 
+> **Ejecución más reciente: [continuación del 6/9/2026](./followup-2026-09-06.md).** Incluye Glama, resolución del PR MCP antiguo, un PR a awesome-quant y correcciones publicadas en Medium ES/EN. La [primera campaña](./campaign-2026-09-06.md) registra MCP oficial, DEV, Medium PT y los tres primeros envíos. Consultá resultados y tracker antes de repetir envíos. El material de julio contiene afirmaciones de dofollow y facilidad de alta que no deben tomarse como verificadas.
+
 Everything needed to build backlinks off Medium. **Content is written for you.** Your job = create accounts, paste, submit, space it out.
 
 ## Files

@@ -983,4 +983,9 @@ useSchemaOrg([
 .avanzado_main .container_custom {
   max-width: none;
 }
+/* Directorios con sidebar + grilla de tarjetas: el cap de 1280 deja media
+   pantalla vacía en monitores anchos. La página pone su propio tope. */
+.alquileres-uruguay_main .container_custom {
+  max-width: none;
+}
 </style>

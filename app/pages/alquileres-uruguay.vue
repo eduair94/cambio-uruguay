@@ -425,118 +425,128 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                 />
               </div>
               <div class="rental-card__body">
-                <div class="rental-card__overview">
-                  <p class="rental-card__where">
-                    {{
-                      [property.neighborhood, property.department].filter(Boolean).join(', ') ||
-                      t('unknown')
-                    }}
-                  </p>
-                  <p
-                    v-if="referencePoint && !pending"
-                    class="rental-card__distance"
-                    data-testid="rental-card-distance"
-                  >
-                    {{ distanceLabel(property.distanceKm) }}
-                  </p>
-                  <div class="rental-card__cost">
-                    <p class="rental-card__price" data-testid="rental-card-price">
+                <div class="rental-card__main">
+                  <div class="rental-card__overview">
+                    <p class="rental-card__where">
                       {{
-                        monthlyTotal(property) !== null
-                          ? '$ ' + numberFormat(monthlyTotal(property)!)
-                          : priceLabel(property)
+                        [property.neighborhood, property.department].filter(Boolean).join(', ') ||
+                        t('unknown')
                       }}
                     </p>
-                    <p class="rental-card__cost-label">
-                      {{ t(monthlyTotal(property) !== null ? 'rentAndExpenses' : 'rent') }}
-                    </p>
-                    <p v-if="monthlyTotal(property) !== null" class="rental-card__expenses">
-                      {{ priceLabel(property) }} {{ t('rent').toLowerCase() }} ·
-                      {{ expensesLabel(property) }}
-                    </p>
-                    <p v-else class="rental-card__expenses">{{ expensesLabel(property) }}</p>
-                  </div>
-
-                  <h3>
-                    <NuxtLink
-                      :to="localePath(rentalPropertyPath(property.key))"
-                      @pointerdown="rememberRentalSearch(route.fullPath)"
-                      @click="rememberRentalSearch(route.fullPath)"
-                      >{{ property.title }}</NuxtLink
+                    <p
+                      v-if="referencePoint && !pending"
+                      class="rental-card__distance"
+                      data-testid="rental-card-distance"
                     >
-                  </h3>
-                  <p class="rental-card__specs">{{ specsLabel(property) }}</p>
-                  <p v-if="property.address" class="rental-card__address">{{ property.address }}</p>
+                      {{ distanceLabel(property.distanceKm) }}
+                    </p>
+                    <div class="rental-card__cost">
+                      <p class="rental-card__price" data-testid="rental-card-price">
+                        {{
+                          monthlyTotal(property) !== null
+                            ? '$ ' + numberFormat(monthlyTotal(property)!)
+                            : priceLabel(property)
+                        }}
+                      </p>
+                      <p class="rental-card__cost-label">
+                        {{ t(monthlyTotal(property) !== null ? 'rentAndExpenses' : 'rent') }}
+                      </p>
+                      <p v-if="monthlyTotal(property) !== null" class="rental-card__expenses">
+                        {{ priceLabel(property) }} {{ t('rent').toLowerCase() }} ·
+                        {{ expensesLabel(property) }}
+                      </p>
+                      <p v-else class="rental-card__expenses">{{ expensesLabel(property) }}</p>
+                    </div>
+
+                    <h3>
+                      <NuxtLink
+                        :to="localePath(rentalPropertyPath(property.key))"
+                        @pointerdown="rememberRentalSearch(route.fullPath)"
+                        @click="rememberRentalSearch(route.fullPath)"
+                        >{{ property.title }}</NuxtLink
+                      >
+                    </h3>
+                    <p class="rental-card__specs">{{ specsLabel(property) }}</p>
+                    <p v-if="property.address" class="rental-card__address">
+                      {{ property.address }}
+                    </p>
+                  </div>
+                  <div class="rental-card__tags">
+                    <VChip
+                      v-if="displayOffer(property)?.ownerDirect?.declared"
+                      size="small"
+                      variant="tonal"
+                      color="primary"
+                      >{{ t('owner') }}</VChip
+                    >
+                    <VChip
+                      v-if="displayOffer(property)?.petsAllowed"
+                      size="small"
+                      variant="tonal"
+                      >{{ t('pets') }}</VChip
+                    ><VChip
+                      v-if="(displayOffer(property)?.parkingSpaces ?? 0) > 0"
+                      size="small"
+                      variant="tonal"
+                      >{{ t('parking') }}</VChip
+                    ><VChip v-if="displayOffer(property)?.furnished" size="small" variant="tonal">{{
+                      t('furnished')
+                    }}</VChip
+                    ><VChip
+                      v-for="guarantee in publishedGuarantees(property)"
+                      :key="guarantee"
+                      size="small"
+                      variant="outlined"
+                      >{{ t(guarantee) }}</VChip
+                    >
+                  </div>
+                  <div class="rental-card__footnote">
+                    <p class="rental-card__meta">{{ sellerLabel(property) }}</p>
+                    <RentalsAvailabilityReport
+                      :offers="property.offers"
+                      :summary="property.availability"
+                      :preferred="displayOffer(property)"
+                      :title="property.title"
+                    />
+                    <p class="rental-card__meta">
+                      {{
+                        t('seen', {
+                          date: dateLabel(displayOffer(property)?.lastSeen || property.lastSeen),
+                        })
+                      }}
+                    </p>
+                  </div>
                 </div>
-                <div class="rental-card__tags">
-                  <VChip
-                    v-if="displayOffer(property)?.ownerDirect?.declared"
-                    size="small"
-                    variant="tonal"
-                    color="primary"
-                    >{{ t('owner') }}</VChip
+                <div class="rental-card__rail">
+                  <div class="rental-card__offers">
+                    <a
+                      v-for="offer in property.offers"
+                      :key="offer.listingId"
+                      :href="offer.url"
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      class="rental-card__offer"
+                      :class="{
+                        'rental-card__offer--selected':
+                          offer.listingId === displayOffer(property)?.listingId,
+                      }"
+                      ><span>{{ sourceLabel(offer.source) }}</span
+                      ><strong>{{ offerPrice(offer) }}</strong
+                      ><VIcon size="16">mdi-open-in-new</VIcon></a
+                    >
+                  </div>
+                  <NuxtLink
+                    :to="localePath(rentalPropertyPath(property.key))"
+                    class="rental-card__detail"
+                    data-testid="rental-card-detail-link"
+                    :aria-label="`${t('detail')}: ${property.title}`"
+                    @pointerdown="rememberRentalSearch(route.fullPath)"
+                    @click="rememberRentalSearch(route.fullPath)"
                   >
-                  <VChip v-if="displayOffer(property)?.petsAllowed" size="small" variant="tonal">{{
-                    t('pets')
-                  }}</VChip
-                  ><VChip
-                    v-if="(displayOffer(property)?.parkingSpaces ?? 0) > 0"
-                    size="small"
-                    variant="tonal"
-                    >{{ t('parking') }}</VChip
-                  ><VChip v-if="displayOffer(property)?.furnished" size="small" variant="tonal">{{
-                    t('furnished')
-                  }}</VChip
-                  ><VChip
-                    v-for="guarantee in publishedGuarantees(property)"
-                    :key="guarantee"
-                    size="small"
-                    variant="outlined"
-                    >{{ t(guarantee) }}</VChip
-                  >
+                    {{ t('detailsAndServices') }}
+                    <VIcon size="20" aria-hidden="true">mdi-arrow-right</VIcon>
+                  </NuxtLink>
                 </div>
-                <div class="rental-card__offers">
-                  <a
-                    v-for="offer in property.offers"
-                    :key="offer.listingId"
-                    :href="offer.url"
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    class="rental-card__offer"
-                    :class="{
-                      'rental-card__offer--selected':
-                        offer.listingId === displayOffer(property)?.listingId,
-                    }"
-                    ><span>{{ sourceLabel(offer.source) }}</span
-                    ><strong>{{ offerPrice(offer) }}</strong
-                    ><VIcon size="16">mdi-open-in-new</VIcon></a
-                  >
-                </div>
-                <p class="rental-card__meta">{{ sellerLabel(property) }}</p>
-                <RentalsAvailabilityReport
-                  :offers="property.offers"
-                  :summary="property.availability"
-                  :preferred="displayOffer(property)"
-                  :title="property.title"
-                />
-                <p class="rental-card__meta">
-                  {{
-                    t('seen', {
-                      date: dateLabel(displayOffer(property)?.lastSeen || property.lastSeen),
-                    })
-                  }}
-                </p>
-                <NuxtLink
-                  :to="localePath(rentalPropertyPath(property.key))"
-                  class="rental-card__detail"
-                  data-testid="rental-card-detail-link"
-                  :aria-label="`${t('detail')}: ${property.title}`"
-                  @pointerdown="rememberRentalSearch(route.fullPath)"
-                  @click="rememberRentalSearch(route.fullPath)"
-                >
-                  {{ t('detailsAndServices') }}
-                  <VIcon size="20" aria-hidden="true">mdi-arrow-right</VIcon>
-                </NuxtLink>
               </div>
             </article>
           </div>
@@ -1531,7 +1541,11 @@ useSchemaOrg([
 }
 
 .rentals {
-  max-width: 1280px;
+  /* El directorio es sidebar + grilla: con 1280 fijos un monitor de 2560
+     mostraba 2 tarjetas y media pantalla vacía. Medido a 2560: 2200 da 5
+     columnas de 348px (legibles) y sigue centrando; el tope va acá porque el
+     layout ya liberó el cap global para esta ruta. */
+  max-width: 2200px;
   padding-bottom: 48px;
 }
 .rentals--mobile {
@@ -1784,6 +1798,14 @@ button.rental-card__media {
   flex: 1;
   gap: 8px;
   min-width: 0;
+}
+/* Zonas de la tarjeta: __main es la ficha y __rail las acciones (portales y
+   detalle). Abajo de 1264 no son cajas — se disuelven para que sus hijos sigan
+   siendo hijos directos de la columna, que es el layout vertical de siempre. */
+.rental-card__main,
+.rental-card__rail,
+.rental-card__footnote {
+  display: contents;
 }
 .rental-card__body p {
   margin: 0;
@@ -2076,6 +2098,25 @@ button.rental-card__media {
     grid-area: results;
   }
 }
+/* Más columnas a medida que hay ancho, con saltos medidos y no auto-fill: la
+   grilla vive al lado de un sidebar de 304px, así que el ancho de columna no
+   se deduce del viewport. Cada salto entra cuando la tarjeta queda >= 320px
+   (a 2560 son 5 de 349px; a 1920, 4 de 362px; a 1440, 3 de 325px). */
+@media (min-width: 1400px) {
+  .rentals-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1750px) {
+  .rentals-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (min-width: 2100px) {
+  .rentals-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
 @media (max-width: 959px) {
   .rentals-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2194,7 +2235,9 @@ button.rental-card__media {
     grid-row: 1;
     gap: 6px;
   }
-  .rental-card__body > :not(.rental-card__overview) {
+  .rental-card__main > :not(.rental-card__overview),
+  .rental-card__rail > *,
+  .rental-card__footnote > * {
     grid-column: 1 / -1;
     margin: 0;
   }
@@ -2275,6 +2318,133 @@ button.rental-card__media {
   }
   .rentals-related-action .v-icon {
     display: none;
+  }
+}
+/* Fila horizontal en pantallas anchas, como InfoCasas y la vista lista de
+   Mercado Libre. Con dos columnas de tarjetas la ficha crecía hasta ~700 px de
+   ancho para cinco líneas de texto: el ojo cruzaba media pantalla vacía entre
+   la foto y el precio. Acá el ancho se reparte en tres zonas de trabajo —foto,
+   ficha, acciones— y nada queda suelto en el medio. El corte es 1264 porque
+   abajo de eso la barra de filtros (304) deja menos de 900 px de resultados y
+   la fila se comprime. */
+@media (min-width: 1264px) {
+  .rentals-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .rental-card {
+    display: grid;
+    /* Foto y riel ceden ancho a la ficha cuando la fila se angosta: con 288 y
+       264 fijos, a 1264 el título quedaba en dos líneas y el pie en otras dos. */
+    grid-template-columns:
+      clamp(208px, 19%, 288px)
+      minmax(0, 1fr)
+      clamp(240px, 17%, 268px);
+    align-items: stretch;
+    transition:
+      border-color 0.15s ease-out,
+      box-shadow 0.15s ease-out;
+  }
+  .rental-card:hover {
+    border-color: rgba(var(--v-theme-primary), 0.45);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  }
+  .rental-card__body {
+    display: contents;
+  }
+  /* La foto llena la columna en lugar de fijar la altura de la fila: una foto
+     vertical la estiraba a 630 px y dejaba el precio arriba, el enlace abajo y
+     medio metro de vacío en el medio. */
+  .rental-card__visual {
+    min-height: 232px;
+  }
+  .rental-card__media {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+  .rental-card__main {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 16px 20px;
+  }
+  .rental-card__rail {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-left: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+  /* Zona y distancia comparten renglón: son la misma respuesta ("dónde queda"). */
+  .rental-card__overview {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: 4px 10px;
+  }
+  .rental-card__where {
+    grid-column: 1;
+  }
+  .rental-card__distance {
+    grid-column: 2;
+    justify-self: start;
+    font-size: 0.8rem;
+  }
+  .rental-card__overview > :not(.rental-card__where):not(.rental-card__distance) {
+    grid-column: 1 / -1;
+  }
+  .rental-card__cost {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .rental-card__price {
+    font-size: 1.5rem;
+  }
+  .rental-card h3 {
+    font-size: 1.075rem;
+    font-weight: 700;
+  }
+  .rental-card h3 a {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .rental-card__specs,
+  .rental-card__address {
+    font-size: 0.875rem;
+  }
+  .rental-card__tags {
+    margin-top: 2px;
+  }
+  /* Anunciante, aviso de ocupado y última lectura son una sola línea de pie:
+     apilados dejaban tres renglones cortos contra 800 px de vacío a su derecha. */
+  .rental-card__footnote {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 16px;
+    margin-top: auto;
+    padding-top: 4px;
+  }
+  .rental-card__footnote :deep(.availability-report) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+  }
+  .rental-card__offers {
+    margin: 0;
+    padding-top: 0;
+  }
+  .rental-card__detail {
+    justify-content: flex-start;
+    gap: 8px;
   }
 }
 </style>

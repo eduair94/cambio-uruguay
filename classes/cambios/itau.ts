@@ -1,7 +1,7 @@
 import axios from "axios";
+import { load } from "cheerio";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
-import { load } from "cheerio";
 import { withDolarAhoraOnlineRate } from "./dolarahora";
 
 class Itau extends Cambio {
@@ -47,7 +47,15 @@ class Itau extends Cambio {
         .get()
         .filter((el) => el.compra && el.moneda !== "LINK");
       const f = result.map((el) => {
-        const { code, type } = this.conversions[el.moneda];
+        const conversion = this.conversions[
+          el.moneda as keyof typeof this.conversions
+        ];
+
+        if (!conversion) {
+          return null;
+        }
+
+        const { code, type } = conversion;
         return {
           code,
           type,
@@ -55,7 +63,7 @@ class Itau extends Cambio {
           buy: el.compra,
           sell: el.venta,
         };
-      });
+      }).filter((el): el is Exclude<typeof el, null> => el !== null);
       return f;
     });
   }

@@ -1,0 +1,134 @@
+{
+  "verified_at_utc": "2026-09-06T05:17:51.153Z",
+  "source": "https://cambio-uruguay.medium.com/feed",
+  "method": "Unauthenticated GET",
+  "http_status": 200,
+  "normalization": "Compare visible text after NFKC, smart-to-straight apostrophes/quotes and whitespace removal; exclude RSS tracking image. Markdown rendered with local marked before comparison.",
+  "posts": [
+    {
+      "language": "es",
+      "post_id": "27d3669d3839",
+      "title": "Cómo saber el mejor precio del dólar en Uruguay hoy (sin recorrer casas de cambio)",
+      "url": "https://cambio-uruguay.medium.com/c%C3%B3mo-saber-el-mejor-precio-del-d%C3%B3lar-en-uruguay-hoy-sin-recorrer-casas-de-cambio-27d3669d3839",
+      "original_published_at": "Sat, 04 Jul 2026 20:31:35 GMT",
+      "creator": "Eduardo Airaudo",
+      "tags_observed_in_feed": [
+        "uruguay"
+      ],
+      "body_html_length": 3815,
+      "body_matches_prepared_markdown": true,
+      "paragraph_count": 13,
+      "disclosure_second_paragraph": "Transparencia: esta es la cuenta del responsable de Cambio Uruguay. Un agente autónomo de IA actualizó este artículo y verificó los enlaces y los datos de cobertura el 6 de septiembre de 2026.",
+      "links": [
+        {
+          "text": "Cambio Uruguay",
+          "url": "https://cambio-uruguay.com/"
+        },
+        {
+          "text": "sección de cotizaciones",
+          "url": "https://cambio-uruguay.com/cotizacion"
+        },
+        {
+          "text": "mapa",
+          "url": "https://cambio-uruguay.com/mapa"
+        },
+        {
+          "text": "conversor de monedas",
+          "url": "https://cambio-uruguay.com/convertir"
+        },
+        {
+          "text": "glosario",
+          "url": "https://cambio-uruguay.com/glosario"
+        },
+        {
+          "text": "guía de retiro de efectivo",
+          "url": "https://cambio-uruguay.com/retirar-efectivo-uruguay"
+        },
+        {
+          "text": "panel de estado",
+          "url": "https://cambio-uruguay.com/estado"
+        }
+      ],
+      "editorial_link_count": 7,
+      "english_route_count": 0,
+      "browser_metadata_source": "Publishing root agent UI verification",
+      "browser_metadata": {
+        "custom_external_canonical": false,
+        "canonical_control": "This story was originally published elsewhere: unchecked",
+        "partner_program": "Not enrolled",
+        "seo_title": "Dólar en Uruguay: cómo comparar compra y venta",
+        "seo_description": "Compará el dólar en Uruguay: entendé compra y venta, ubicá sucursales y revisá cotizaciones, fechas y condiciones antes de cambiar dinero en efectivo.",
+        "configured_tags": [
+          "Uruguay",
+          "Personal Finance"
+        ]
+      },
+      "tag_verification_note": "Configured tags were confirmed in the publisher UI but are not all visible in this feed response; no further polling was performed."
+    },
+    {
+      "language": "en",
+      "post_id": "3a5fd46e3fc4",
+      "title": "Currency Exchange in Uruguay: How to Find the Best Rate Before You Trade",
+      "url": "https://cambio-uruguay.medium.com/currency-exchange-in-uruguay-how-to-find-the-best-rate-before-you-trade-3a5fd46e3fc4",
+      "original_published_at": "Sat, 04 Jul 2026 20:31:18 GMT",
+      "creator": "Eduardo Airaudo",
+      "tags_observed_in_feed": [],
+      "body_html_length": 3751,
+      "body_matches_prepared_markdown": true,
+      "paragraph_count": 13,
+      "disclosure_second_paragraph": "Disclosure: This is the maintainer’s account. An autonomous AI agent updated this article and checked its links and coverage information on 6 September 2026.",
+      "links": [
+        {
+          "text": "Cambio Uruguay",
+          "url": "https://cambio-uruguay.com/en"
+        },
+        {
+          "text": "rates section (in Spanish)",
+          "url": "https://cambio-uruguay.com/cotizacion"
+        },
+        {
+          "text": "map",
+          "url": "https://cambio-uruguay.com/en/mapa"
+        },
+        {
+          "text": "currency converter (in Spanish)",
+          "url": "https://cambio-uruguay.com/convertir"
+        },
+        {
+          "text": "glossary (in Spanish)",
+          "url": "https://cambio-uruguay.com/glosario"
+        },
+        {
+          "text": "cash withdrawal guide",
+          "url": "https://cambio-uruguay.com/en/retirar-efectivo-uruguay"
+        },
+        {
+          "text": "status dashboard",
+          "url": "https://cambio-uruguay.com/en/estado"
+        }
+      ],
+      "editorial_link_count": 7,
+      "english_route_count": 4,
+      "browser_metadata_source": "Publishing root agent UI verification",
+      "browser_metadata": {
+        "custom_external_canonical": false,
+        "canonical_control": "This story was originally published elsewhere: unchecked",
+        "partner_program": "Not enrolled",
+        "seo_title": "Uruguay exchange rates: compare buy and sell",
+        "seo_description": "Compare exchange rates in Uruguay: understand buy and sell quotes, locate branches, and check dates and transaction conditions before exchanging cash.",
+        "configured_tags": [
+          "Uruguay",
+          "Travel"
+        ]
+      },
+      "tag_verification_note": "Configured tags were confirmed in the publisher UI but are not all visible in this feed response; no further polling was performed."
+    }
+  ],
+  "source_files_updated": [
+    "docs/medium-articles/es-dolar-hoy-uruguay.md",
+    "docs/medium-articles/es-dolar-hoy-uruguay.html",
+    "docs/medium-articles/en-exchange-rates-uruguay.md",
+    "docs/medium-articles/en-exchange-rates-uruguay.html"
+  ],
+  "note": "The RSS feed retains original July publication dates. Root reported Save and publish for revised bodies. No rendered canonical tag was inferred from feed metadata; absence of a custom external canonical was verified by root in Story Settings. No external writes performed by this verification subtask."
+}

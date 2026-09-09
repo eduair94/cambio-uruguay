@@ -1,0 +1,4 @@
+event: message
+data: {"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{"listChanged":true},"prompts":{"listChanged":true}},"serverInfo":{"name":"cambio-uruguay","version":"0.1.0"}},"jsonrpc":"2.0","id":1}
+
+

@@ -1,0 +1,72 @@
+{
+  "verified_at_utc": "2026-09-06T04:56:09.3426178Z",
+  "method": "Unauthenticated GET of public RSS feed",
+  "feed_url": "https://cambio-uruguay.medium.com/feed",
+  "feed_http_status": 200,
+  "feed_item_count": 3,
+  "post_id": "4bb607353037",
+  "short_url": "https://medium.com/p/4bb607353037",
+  "final_url_from_feed": "https://cambio-uruguay.medium.com/c%C3%A2mbio-no-uruguai-como-ler-compra-e-venda-antes-de-trocar-reais-4bb607353037",
+  "title": "Câmbio no Uruguai: como ler compra e venda antes de trocar reais",
+  "author": "Eduardo Airaudo",
+  "published_at": "Sun, 06 Sep 2026 04:53:37 GMT",
+  "content_html_length": 3951,
+  "content_html_sha256": "04598f77c949b984d3193d089a6be0ca82518f19eea8ffe4955fcef635129fd5",
+  "body_matches_local_after_removing_markdown_formatting_html_tags_and_whitespace": true,
+  "language_observed": "Portuguese",
+  "disclosure": "Transparência: esta é a conta do responsável pelo Cambio Uruguay. Um agente autônomo de IA preparou este texto e verificou as páginas citadas em 6 de setembro de 2026.",
+  "disclosure_matches_ignoring_whitespace": true,
+  "editorial_link_count": 3,
+  "editorial_links": [
+    {
+      "url": "https://cambio-uruguay.com/pt",
+      "text": "Cambio Uruguay em português"
+    },
+    {
+      "url": "https://cambio-uruguay.com/pt/estado",
+      "text": "painel de status"
+    },
+    {
+      "url": "https://cambio-uruguay.com/pt/mapa",
+      "text": "mapa de casas de câmbio"
+    }
+  ],
+  "tags_from_feed": [
+    "travel",
+    "uruguay"
+  ],
+  "canonical_url": null,
+  "canonical_status": "Publisher Story Settings UI: no custom external canonical configured. Rendered HTML canonical tag not independently verified.",
+  "direct_article_http_status": 403,
+  "direct_article_note": "403 describes this HTTP client response; the article is present with its full body in the public feed and was observed in the browser by the publishing agent.",
+  "public_feed_contains_full_article": true,
+  "browser_evidence_reported_by_publishing_agent": {
+    "heading_and_full_body_visible": true,
+    "three_portuguese_links_visible": true,
+    "publication_banner": "Your story has been published and sent!",
+    "monetization_notice": "This story isn’t currently eligible to earn money. ... join Medium Partner Program.",
+    "paywall_configuration": "No Partner Program/paywall configured, per publishing agent UI inspection",
+    "canonical": "This story was originally published elsewhere: checkbox unchecked",
+    "partner_program_status": "Not enrolled",
+    "seo_title": "Câmbio no Uruguai: compra e venda de reais",
+    "seo_description": "Vai trocar reais no Uruguai? Entenda compra e venda, compare a mesma operação e confira cotações, condições e agências antes de sair. Guia em português.",
+    "configured_tags": [
+      "Uruguay",
+      "Travel"
+    ]
+  },
+  "anonymous_browser_verification": {
+    "verified_at_utc": "2026-09-06T04:59:06.928Z",
+    "browser": "Codex in-app browser, separate unauthenticated session",
+    "observed_sign_in_and_sign_up": true,
+    "observed_unknown_user": true,
+    "full_article_visible_through_final_paragraph": true,
+    "paywall_blocks_reading": false,
+    "editorial_links_visible": [
+      "https://cambio-uruguay.com/pt",
+      "https://cambio-uruguay.com/pt/estado",
+      "https://cambio-uruguay.com/pt/mapa"
+    ],
+    "observed_document_title": "Câmbio no Uruguai: compra e venda de reais | Medium"
+  }
+}

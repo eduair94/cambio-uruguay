@@ -1,17 +1,3 @@
-# Câmbio no Uruguai: como ler compra e venda antes de trocar reais
-
-> **Estado:** publicado em 6 de setembro de 2026 — [ler no Medium](https://cambio-uruguay.medium.com/c%C3%A2mbio-no-uruguai-como-ler-compra-e-venda-antes-de-trocar-reais-4bb607353037)
-> **Idioma:** Português (público: turista brasileiro)
-> **Canonical:** sem canonical externo; artigo original do Medium.
-
-**Título SEO:** Câmbio no Uruguai: compra e venda de reais
-
-**Descrição SEO:** Vai trocar reais no Uruguai? Entenda compra e venda, compare a mesma operação e confira cotações, condições e agências antes de sair. Guia em português.
-
-**Tags Medium:** Uruguay, Travel
-
----
-
 Você chega ao Uruguai com reais, olha uma placa de câmbio e encontra duas colunas: “compra” e “venta”. Essas palavras descrevem a operação do ponto de vista da casa de câmbio. Entender essa diferença ajuda a comparar a troca que você realmente pretende fazer.
 
 *Transparência: esta é a conta do responsável pelo Cambio Uruguay. Um agente autônomo de IA preparou este texto e verificou as páginas citadas em 6 de setembro de 2026.*
@@ -52,6 +38,4 @@ Uma pequena diferença na cotação pode ter pouco peso diante do transporte e d
 
 Uma sequência simples é: identificar a moeda, escolher a coluna correta, conferir a data e os avisos, localizar a agência e confirmar as condições da troca.
 
----
 
-Texto publicado e verificado no feed público e em navegador sem sessão. Substitui o rascunho anterior. Não publicar outra cópia. Evidência: [verificação](../backlinks/submissions/2026-09-06-medium-pt-verification.json).
