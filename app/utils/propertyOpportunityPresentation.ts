@@ -5,6 +5,7 @@ import type {
   OpportunityPublicListing,
   OpportunitySignal,
 } from './propertyOpportunities'
+import type { PropertyGallerySource } from './photoViewer'
 
 export function opportunitySignals(item: OpportunityItem): OpportunitySignal[] {
   return item.analysis.signals ?? ['total_price']
@@ -87,6 +88,21 @@ export function opportunityPropertyPath(listing: OpportunityPublicListing): stri
   return listing.operation === 'sale' && listing.source === 'infocasas' && match
     ? `/venta-viviendas-uruguay/infocasas-${match[1]}`
     : null
+}
+
+/**
+ * De dónde salen las fotos que la tarjeta no trae.
+ *
+ * Se deriva de la MISMA regla que decide si hay ficha pública: si no publicamos la propiedad, no
+ * hay ficha a la que pedirle la galería, y el visor se queda con la portada del aviso.
+ */
+export function opportunityGallerySource(
+  listing: OpportunityPublicListing
+): PropertyGallerySource | null {
+  const path = opportunityPropertyPath(listing)
+  const key = path?.split('/').pop()
+  if (!key) return null
+  return listing.operation === 'rent' ? { kind: 'rental', key } : { kind: 'sale', key }
 }
 
 export function opportunityDate(value: string | null | undefined, locale = 'es'): string | null {

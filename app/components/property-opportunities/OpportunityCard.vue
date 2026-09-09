@@ -12,17 +12,29 @@
     </ul>
     <div class="opportunity-card__overview">
       <div class="opportunity-card__photo">
-        <img
+        <!-- La foto abre el visor sin salir del listado; la ficha sigue en el titulo y en el pie. -->
+        <button
           v-if="subject.image && !imageFailed"
-          :src="subject.image"
-          :alt="subject.title"
-          loading="lazy"
-          decoding="async"
-          width="420"
-          height="315"
-          referrerpolicy="no-referrer"
-          @error="imageFailed = true"
-        />
+          type="button"
+          class="opportunity-card__open"
+          :aria-label="`${t('viewPhotos')}: ${subject.title}`"
+          @click="requestPreview"
+        >
+          <img
+            :src="subject.image"
+            :alt="subject.title"
+            loading="lazy"
+            decoding="async"
+            width="420"
+            height="315"
+            referrerpolicy="no-referrer"
+            @error="imageFailed = true"
+          />
+          <span class="opportunity-card__zoom" aria-hidden="true">
+            <VIcon icon="mdi-image-multiple-outline" size="15" />
+            {{ t('viewPhotos') }}
+          </span>
+        </button>
         <span v-else class="opportunity-card__no-photo">
           <VIcon icon="mdi-home-outline" size="40" />
           {{ t('noImage') }}
@@ -238,9 +250,11 @@ import type {
 } from '~/utils/propertyOpportunities'
 import { propertyOpportunityMessages } from '~/utils/propertyOpportunityMessages'
 import { propertyOpportunityLabels } from '~/utils/propertyOpportunityLabels'
+import type { PropertyPreviewRequest } from '~/utils/photoViewer'
 import {
   opportunityAreaKey,
   opportunityDate,
+  opportunityGallerySource,
   opportunityMoney,
   opportunityNumber,
   opportunityPropertyPath,
@@ -279,9 +293,25 @@ const exploratoryReasons = computed(() => {
   if (!reasons.length) reasons.push(t('exploratoryHint'))
   return reasons
 })
+const emit = defineEmits<{ preview: [PropertyPreviewRequest] }>()
 const imageFailed = ref(false)
 const headingId = computed(() => `opportunity-${subject.value.id.replace(/[^\w-]/g, '-')}`)
 const propertyPath = computed(() => opportunityPropertyPath(subject.value))
+function requestPreview() {
+  if (!subject.value.image || imageFailed.value) return
+  emit('preview', {
+    title: subject.value.title,
+    photos: [
+      {
+        url: subject.value.image,
+        sourceName: sourceName(subject.value.source),
+        sourceUrl: subject.value.url,
+      },
+    ],
+    source: opportunityGallerySource(subject.value),
+    detailHref: propertyPath.value ? localePath(propertyPath.value) : '',
+  })
+}
 const number = (value: number, digits = 0) => opportunityNumber(value, locale.value, digits)
 const originalMoney = (value: OpportunityMoney) => opportunityMoney(value, locale.value)
 const money = (value: number) => originalMoney({ amount: value, currency: analysis.value.currency })
@@ -361,6 +391,47 @@ html[data-theme='dark'] .opportunity-card__labels .opportunity-card__label--caut
   overflow: hidden;
   border-radius: 8px;
   background: rgba(var(--v-theme-on-surface), 0.06);
+}
+.opportunity-card__open {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+/* La foto hace algo distinto que el resto de la tarjeta: sin cartel, abrir un visor sorprende. */
+.opportunity-card__zoom {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 0.7rem;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.opportunity-card__open:hover .opportunity-card__zoom,
+.opportunity-card__open:focus-visible .opportunity-card__zoom {
+  opacity: 1;
+}
+@media (hover: none) {
+  .opportunity-card__zoom {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .opportunity-card__zoom {
+    transition: none;
+  }
 }
 .opportunity-card__photo img {
   width: 100%;

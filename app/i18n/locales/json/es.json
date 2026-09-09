@@ -9,6 +9,9 @@
     "next": "Foto siguiente",
     "goTo": "Ir a la foto {index}",
     "source": "Ver la publicación en {source}",
+    "photoAlt": "{title} · Foto {n}",
+    "detail": "Ver la ficha completa",
+    "loading": "Buscando el resto de las fotos…",
     "unavailable": "Esta foto ya no está disponible en el origen."
   },
   "ads": {

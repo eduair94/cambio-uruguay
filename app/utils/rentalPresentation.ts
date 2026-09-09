@@ -1,4 +1,5 @@
 import {
+  RENTAL_SOURCE_LABEL,
   normalizeRentalQuery,
   rentalQueryToParams,
   type RentalCurrency,
@@ -6,6 +7,7 @@ import {
   type RentalPublicProperty,
 } from './rentals'
 import { rentalSavedSafeUrl } from './rentalSaved'
+import type { PropertyPhotoRef } from './photoViewer'
 
 export const RENTAL_RETURN_STORAGE = 'cu_rental_return_v1'
 
@@ -147,4 +149,13 @@ export function rentalBudget(
     remaining: monthly !== null && valid(extra.budget) ? extra.budget! - monthly : null,
     estimatedExpenses: publishedExpenses === null && expenses !== null,
   }
+}
+
+/** Las fotos de una propiedad tal como las espera el visor, con el portal de cada una. */
+export function rentalPhotoRefs(property: RentalPublicProperty): PropertyPhotoRef[] {
+  return rentalPhotos(property).map(photo => ({
+    url: photo.url,
+    sourceName: RENTAL_SOURCE_LABEL[photo.source],
+    sourceUrl: photo.sourceUrl,
+  }))
 }

@@ -195,6 +195,7 @@
               :compareable="savedOnly"
               :compared="compared.includes(item.key)"
               @compare="toggleCompare"
+              @preview="openPreview"
             />
           </div>
           <div v-else class="sales-directory__empty">
@@ -203,6 +204,13 @@
             <p>{{ t('emptyHint') }}</p>
             <VBtn color="primary" @click="clearFilters">{{ t('clear') }}</VBtn>
           </div>
+          <PropertyPhotoLightbox
+            v-model="previewOpen"
+            :title="preview?.title || ''"
+            :photos="preview?.photos || []"
+            :source="preview?.source || null"
+            :detail-href="preview?.detailHref || ''"
+          />
         </div>
         <nav
           v-if="!savedEmpty && !pending && query.view === 'lista' && (data?.pages || 0) > 1"
@@ -268,8 +276,16 @@ import {
   type PropertySalesResponse,
 } from '~/utils/propertySales'
 import { propertySaleSourceName, propertySalesMessages } from '~/utils/propertySalesMessages'
+import type { PropertyPreviewRequest } from '~/utils/photoViewer'
 const { t, locale } = useI18n({ useScope: 'local', messages: propertySalesMessages })
 const { t: globalT } = useI18n({ useScope: 'global' })
+// Un solo visor para toda la grilla: la tarjeta sólo dice qué foto tocaron.
+const preview = shallowRef<PropertyPreviewRequest | null>(null)
+const previewOpen = ref(false)
+function openPreview(request: PropertyPreviewRequest) {
+  preview.value = request
+  previewOpen.value = true
+}
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()

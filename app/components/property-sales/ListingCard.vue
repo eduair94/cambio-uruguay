@@ -1,13 +1,16 @@
 <template>
   <article class="sale-card" :data-sale-key="property.key">
     <div class="sale-card__visual">
-      <NuxtLink
-        :to="localePath(propertySalePath(property.key))"
-        :aria-label="`${t('detail')}: ${property.title}`"
+      <!-- Con foto, la imagen abre el visor sin salir del listado; sin foto no hay nada que
+           previsualizar y el destino util sigue siendo la ficha. -->
+      <button
+        v-if="property.image && !failed"
+        type="button"
         class="sale-card__photo"
+        :aria-label="`${t('viewPhotos')}: ${property.title}`"
+        @click="requestPreview"
       >
         <img
-          v-if="property.image && !failed"
           :src="property.image"
           :alt="property.title"
           loading="lazy"
@@ -16,7 +19,18 @@
           referrerpolicy="no-referrer"
           @error="failed = true"
         />
-        <span v-else>
+        <span class="sale-card__zoom" aria-hidden="true">
+          <VIcon icon="mdi-image-multiple-outline" size="15" />
+          {{ t('viewPhotos') }}
+        </span>
+      </button>
+      <NuxtLink
+        v-else
+        :to="localePath(propertySalePath(property.key))"
+        :aria-label="`${t('detail')}: ${property.title}`"
+        class="sale-card__photo"
+      >
+        <span>
           <VIcon icon="mdi-home-outline" size="40" />
           <span>{{ t('noPhoto') }}</span>
         </span>
@@ -90,6 +104,8 @@ import {
   type PropertySaleSummary,
 } from '~/utils/propertySales'
 import { propertySaleSourceName, propertySalesMessages } from '~/utils/propertySalesMessages'
+import { propertySalePhotoRefs } from '~/utils/propertySalesPhotos'
+import type { PropertyPreviewRequest } from '~/utils/photoViewer'
 const props = withDefaults(
   defineProps<{
     property: PropertySaleSummary
@@ -99,7 +115,16 @@ const props = withDefaults(
   }>(),
   { areaBasis: 'built', compareable: false, compared: false }
 )
-defineEmits<{ compare: [key: string] }>()
+const emit = defineEmits<{ compare: [key: string]; preview: [PropertyPreviewRequest] }>()
+function requestPreview() {
+  if (!props.property.image || failed.value) return
+  emit('preview', {
+    title: props.property.title,
+    photos: propertySalePhotoRefs(props.property),
+    source: { kind: 'sale', key: props.property.key },
+    detailHref: localePath(propertySalePath(props.property.key)),
+  })
+}
 const { t, locale } = useI18n({ useScope: 'local', messages: propertySalesMessages })
 const localePath = useLocalePath()
 const favorites = usePropertySaleFavorites()
@@ -135,6 +160,42 @@ const readDate = computed(() =>
   background: rgba(var(--v-theme-on-surface), 0.045);
   color: rgba(var(--v-theme-on-surface), 0.65);
   text-decoration: none;
+}
+button.sale-card__photo {
+  padding: 0;
+  border: 0;
+  cursor: zoom-in;
+}
+/* La foto hace algo distinto que el resto de la tarjeta: sin cartel, abrir un visor sorprende. */
+.sale-card__photo > .sale-card__zoom {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 0.7rem;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.sale-card__photo:hover > .sale-card__zoom,
+.sale-card__photo:focus-visible > .sale-card__zoom {
+  opacity: 1;
+}
+@media (hover: none) {
+  .sale-card__photo > .sale-card__zoom {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sale-card__photo > .sale-card__zoom {
+    transition: none;
+  }
 }
 .sale-card__photo img {
   width: 100%;

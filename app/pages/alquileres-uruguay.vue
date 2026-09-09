@@ -550,10 +550,11 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               </div>
             </article>
           </div>
-          <RentalsPhotoLightbox
+          <PropertyPhotoLightbox
             v-model="previewOpen"
-            :property="previewProperty"
-            :params="previewParams"
+            :title="previewProperty?.title || ''"
+            :photos="previewPhotos"
+            :source="previewSource"
             :detail-href="
               previewProperty ? localePath(rentalPropertyPath(previewProperty.key)) : ''
             "
@@ -665,7 +666,11 @@ import MapPropertyDetail from '~/components/rentals/MapPropertyDetail.vue'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
 import { rentalMessages } from '~/utils/rentalMessages'
-import { rentalPropertyPath, rememberRentalSearch } from '~/utils/rentalPresentation'
+import {
+  rentalPhotoRefs,
+  rentalPropertyPath,
+  rememberRentalSearch,
+} from '~/utils/rentalPresentation'
 import {
   rentalCatalogAlternateLinks,
   rentalCatalogCanonical,
@@ -1250,6 +1255,18 @@ const hasPhoto = (property: RentalProperty) =>
 const previewProperty = shallowRef<RentalProperty | null>(null)
 const previewOpen = ref(false)
 const previewParams = computed(() => availability.withRevision(mapParams.value))
+const previewPhotos = computed(() =>
+  previewProperty.value ? rentalPhotoRefs(previewProperty.value) : []
+)
+const previewSource = computed(() =>
+  previewProperty.value
+    ? {
+        kind: 'rental' as const,
+        key: previewProperty.value.key,
+        params: previewParams.value,
+      }
+    : null
+)
 function openPhotoPreview(property: RentalProperty) {
   previewProperty.value = property
   previewOpen.value = true

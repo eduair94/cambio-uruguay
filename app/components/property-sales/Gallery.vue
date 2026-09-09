@@ -38,67 +38,46 @@
         <img :src="url" alt="" loading="lazy" width="90" height="64" referrerpolicy="no-referrer" />
       </button>
     </div>
-    <VDialog
+    <MediaPhotoViewer
       v-model="open"
-      fullscreen
-      :aria-label="t('photos')"
-      @after-leave="trigger?.focus({ preventScroll: true })"
-    >
-      <section
-        class="sale-gallery__dialog"
-        @keydown.left.prevent="step(-1)"
-        @keydown.right.prevent="step(1)"
-      >
-        <header>
-          <p>{{ t('photo', { n: index + 1, total: images.length }) }}</p>
-          <VBtn
-            icon="mdi-close"
-            :aria-label="t('close')"
-            variant="text"
-            autofocus
-            @click="open = false"
-          />
-        </header>
-        <div class="sale-gallery__stage">
-          <img
-            v-if="images[index] && !failed.has(images[index]!)"
-            :src="images[index]"
-            :alt="title"
-            referrerpolicy="no-referrer"
-            @error="failed.add(images[index]!)"
-          />
-          <p v-else>{{ t('noPhoto') }}</p>
-        </div>
-        <footer>
-          <VBtn prepend-icon="mdi-chevron-left" :disabled="images.length < 2" @click="step(-1)">
-            {{ t('previous') }}
-          </VBtn>
-          <VBtn append-icon="mdi-chevron-right" :disabled="images.length < 2" @click="step(1)">
-            {{ t('next') }}
-          </VBtn>
-        </footer>
-      </section>
-    </VDialog>
+      :photos="media"
+      :title="title"
+      :start-index="index"
+      referrer-policy="no-referrer"
+    />
   </section>
 </template>
 <script setup lang="ts">
 import { propertySalesMessages } from '~/utils/propertySalesMessages'
-const props = defineProps<{ images: string[]; title: string }>()
+const props = withDefaults(
+  defineProps<{ images: string[]; title: string; sourceName?: string; sourceUrl?: string }>(),
+  { sourceName: '', sourceUrl: '' }
+)
 const { t } = useI18n({ useScope: 'local', messages: propertySalesMessages })
+// El visor a pantalla completa es el mismo de todo el sitio; acá las fotos ya estan en la ficha,
+// asi que no hay nada que pedir: solo se traducen al formato que espera.
+const media = computed(() =>
+  props.images.map((url, i) => ({
+    url,
+    alt: t('photo', { n: i + 1, total: props.images.length }),
+    sourceName: props.sourceName,
+    sourceUrl: props.sourceUrl,
+  }))
+)
 const index = ref(0)
 const open = ref(false)
 const trigger = ref<HTMLButtonElement | null>(null)
 const failed = reactive(new Set<string>())
-const step = (amount: number) => {
-  if (props.images.length)
-    index.value = (index.value + amount + props.images.length) % props.images.length
-}
 watch(
   () => props.images,
   () => {
     index.value = 0
   }
 )
+// Al cerrar el visor el foco vuelve a la foto que lo abrio, no al principio de la pagina.
+watch(open, isOpen => {
+  if (!isOpen) void nextTick(() => trigger.value?.focus({ preventScroll: true }))
+})
 </script>
 <style scoped>
 .sale-gallery__main {
@@ -162,39 +141,5 @@ watch(
 .sale-gallery button:focus-visible {
   outline: 2px solid rgb(var(--v-theme-primary));
   outline-offset: 2px;
-}
-.sale-gallery__dialog {
-  height: 100dvh;
-  background: rgb(var(--v-theme-background));
-  display: flex;
-  flex-direction: column;
-  color: rgb(var(--v-theme-on-background));
-}
-.sale-gallery__dialog header,
-.sale-gallery__dialog footer {
-  padding: 12px max(12px, env(safe-area-inset-right));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex: none;
-}
-.sale-gallery__dialog header p {
-  margin: 0;
-}
-.sale-gallery__dialog footer {
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
-}
-.sale-gallery__stage {
-  min-height: 0;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.sale-gallery__stage img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
 }
 </style>

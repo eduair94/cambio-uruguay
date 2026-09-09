@@ -250,8 +250,16 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
               :item="item"
               :signal="query.signal"
               :stale="data?.stale"
+              @preview="openPreview"
             />
           </div>
+          <PropertyPhotoLightbox
+            v-model="previewOpen"
+            :title="preview?.title || ''"
+            :photos="preview?.photos || []"
+            :source="preview?.source || null"
+            :detail-href="preview?.detailHref || ''"
+          />
           <nav
             v-if="!error && (data?.pages ?? 0) > 1"
             class="opportunities__pagination"
@@ -323,6 +331,7 @@ import OpportunityFilters from '~/components/property-opportunities/Filters.vue'
 import OpportunityCard from '~/components/property-opportunities/OpportunityCard.vue'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
+import type { PropertyPreviewRequest } from '~/utils/photoViewer'
 import { propertyOpportunityMessages } from '~/utils/propertyOpportunityMessages'
 import {
   normalizeOpportunityQuery,
@@ -384,6 +393,13 @@ availability.watchChanges(async () => {
   await refresh()
   if (query.value.availability !== 'all') await focusResults()
 })
+// Un solo visor para todo el listado: la tarjeta sólo dice qué foto tocaron.
+const preview = shallowRef<PropertyPreviewRequest | null>(null)
+const previewOpen = ref(false)
+function openPreview(request: PropertyPreviewRequest) {
+  preview.value = request
+  previewOpen.value = true
+}
 const unavailable = computed(() => error.value?.statusCode === 503)
 const number = (value: number) => opportunityNumber(value, locale.value)
 const date = (value: string) => opportunityDate(value, locale.value) || t('unknownDate')

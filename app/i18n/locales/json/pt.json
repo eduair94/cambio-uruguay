@@ -9,6 +9,9 @@
     "next": "Próxima foto",
     "goTo": "Ir para a foto {index}",
     "source": "Ver o anúncio em {source}",
+    "photoAlt": "{title} · Foto {n}",
+    "detail": "Ver a ficha completa",
+    "loading": "Buscando as demais fotos…",
     "unavailable": "Esta foto não está mais disponível na origem."
   },
   "ads": {

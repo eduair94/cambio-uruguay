@@ -6,6 +6,16 @@ import { RENTAL_SOURCE_LABEL, type RentalPublicProperty } from '~/utils/rentals'
 const props = defineProps<{ property: RentalPublicProperty }>()
 const { t } = useI18n({ useScope: 'local', messages: rentalPageMessages })
 const photos = computed(() => rentalPhotos(props.property))
+// El visor a pantalla completa es el mismo de todo el sitio; acá las fotos ya vinieron con la
+// ficha, así que no hay nada que pedir: sólo se traducen al formato que espera.
+const media = computed(() =>
+  photos.value.map((photo, index) => ({
+    url: photo.url,
+    alt: t('photoDescription', { title: photo.title || props.property.title, n: index + 1 }),
+    sourceName: RENTAL_SOURCE_LABEL[photo.source],
+    sourceUrl: photo.sourceUrl,
+  }))
+)
 const selected = ref(0)
 const expanded = ref(false)
 const openButton = ref<HTMLButtonElement | null>(null)
@@ -28,6 +38,10 @@ function markFailed(url: string) {
   failed.value.add(url)
   if (current.value?.url === url) move(1)
 }
+// Al cerrar el visor el foco vuelve a la foto que lo abrió, no al principio de la página.
+watch(expanded, isOpen => {
+  if (!isOpen) void nextTick(restoreFocus)
+})
 watch(
   () => props.property.key,
   () => {
@@ -94,58 +108,13 @@ watch(
     <div v-else class="property-gallery__empty">
       <VIcon icon="mdi-home-city-outline" size="44" /><span>{{ t('noGallery') }}</span>
     </div>
-    <VDialog v-model="expanded" fullscreen :aria-label="t('photos')" @after-leave="restoreFocus">
-      <VCard
-        class="property-gallery__viewer"
-        @keydown.left.prevent="move(-1)"
-        @keydown.right.prevent="move(1)"
-      >
-        <header>
-          <span role="status">{{
-            t('photoPosition', { n: selected + 1, total: photos.length })
-          }}</span>
-          <VBtn
-            icon="mdi-close"
-            :aria-label="t('closeGallery')"
-            variant="text"
-            @click="expanded = false"
-          />
-        </header>
-        <div class="property-gallery__stage">
-          <img
-            v-if="current && available.length"
-            :src="current.url"
-            :alt="
-              t('photoDescription', { title: current.title || property.title, n: selected + 1 })
-            "
-            referrerpolicy="no-referrer"
-            @error="markFailed(current.url)"
-          />
-          <p v-else>{{ t('noGallery') }}</p>
-        </div>
-        <footer>
-          <VBtn
-            icon="mdi-chevron-left"
-            :aria-label="t('previousPhoto')"
-            :disabled="available.length < 2"
-            @click="move(-1)"
-          />
-          <a
-            v-if="current"
-            :href="current.sourceUrl"
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            >{{ t('photoCredit', { source: RENTAL_SOURCE_LABEL[current.source] }) }}</a
-          >
-          <VBtn
-            icon="mdi-chevron-right"
-            :aria-label="t('nextPhoto')"
-            :disabled="available.length < 2"
-            @click="move(1)"
-          />
-        </footer>
-      </VCard>
-    </VDialog>
+    <MediaPhotoViewer
+      v-model="expanded"
+      :photos="media"
+      :title="property.title"
+      :start-index="selected"
+      referrer-policy="no-referrer"
+    />
   </figure>
 </template>
 
@@ -228,8 +197,7 @@ watch(
   margin: 6px 0 0;
   line-height: 1.6;
 }
-.property-gallery a,
-.property-gallery__viewer a {
+.property-gallery a {
   color: rgb(var(--v-theme-link));
   text-underline-offset: 3px;
 }
@@ -237,50 +205,6 @@ watch(
 .property-gallery a:focus-visible {
   outline: 2px solid rgb(var(--v-theme-primary));
   outline-offset: 3px;
-}
-.property-gallery__viewer {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  height: 100dvh;
-  border-radius: 0;
-}
-.property-gallery__viewer header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: max(12px, env(safe-area-inset-top)) 16px 12px;
-}
-.property-gallery__stage {
-  display: grid;
-  place-items: center;
-  min-height: 0;
-  min-width: 0;
-  padding: 8px;
-  overflow: hidden;
-}
-.property-gallery__stage img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-.property-gallery__viewer footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 12px max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
-    max(12px, env(safe-area-inset-left));
-}
-.property-gallery__viewer footer a {
-  text-align: center;
-  overflow-wrap: anywhere;
-  font-size: 0.875rem;
-}
-.property-gallery__viewer .v-btn {
-  flex: 0 0 48px;
-  min-width: 48px;
-  min-height: 48px;
 }
 @media (max-width: 599px) {
   .property-gallery__open > img {

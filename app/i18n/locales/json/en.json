@@ -9,6 +9,9 @@
     "next": "Next photo",
     "goTo": "Go to photo {index}",
     "source": "View the listing on {source}",
+    "photoAlt": "{title} · Photo {n}",
+    "detail": "View the full listing",
+    "loading": "Fetching the remaining photos…",
     "unavailable": "This photo is no longer available at the source."
   },
   "ads": {

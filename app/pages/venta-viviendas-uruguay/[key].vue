@@ -44,7 +44,12 @@
       </header>
       <div class="sale-detail__layout">
         <div class="sale-detail__main">
-          <PropertySalesGallery :images="images" :title="property.title" />
+          <PropertySalesGallery
+            :images="images"
+            :title="property.title"
+            :source-name="propertySaleSourceName(property.source)"
+            :source-url="property.url"
+          />
           <section
             v-if="property.conditions.length"
             class="sale-detail__section sale-detail__conditions"
