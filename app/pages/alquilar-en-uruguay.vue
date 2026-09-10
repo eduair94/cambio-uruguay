@@ -18,6 +18,9 @@
         <VBtn variant="outlined" href="#garantias" prepend-icon="mdi-shield-key-outline">
           Comparar garantías
         </VBtn>
+        <VBtn variant="tonal" href="#recorrido" prepend-icon="mdi-map-marker-path">
+          Ver el recorrido completo
+        </VBtn>
       </div>
     </header>
 
@@ -83,6 +86,10 @@
         </div>
       </div>
     </section>
+
+    <div id="recorrido">
+      <RentalJourney />
+    </div>
 
     <section id="armar-busqueda" class="anchor-section mb-10" aria-labelledby="armar-title">
       <p class="step-kicker">Paso 1</p>
@@ -358,7 +365,7 @@
       </p>
     </section>
 
-    <section class="mb-10" aria-labelledby="presupuesto-title">
+    <section id="presupuesto" class="anchor-section mb-10" aria-labelledby="presupuesto-title">
       <p class="step-kicker">Paso 3</p>
       <h2 id="presupuesto-title" class="section-heading mb-2">
         Calculá el costo real, no solo el aviso
@@ -526,7 +533,7 @@
       </VAlert>
     </section>
 
-    <section class="mb-10" aria-labelledby="visita-title">
+    <section id="visita" class="anchor-section mb-10" aria-labelledby="visita-title">
       <p class="step-kicker">Paso 6</p>
       <h2 id="visita-title" class="section-heading mb-2">
         Visitá como si fueras a discutir el depósito
@@ -584,7 +591,7 @@
       </VRow>
     </section>
 
-    <section class="mb-10" aria-labelledby="estafas-title">
+    <section id="estafas" class="anchor-section mb-10" aria-labelledby="estafas-title">
       <p class="step-kicker error-kicker">Antes de pagar</p>
       <h2 id="estafas-title" class="section-heading mb-2">Señales para frenar y verificar</h2>
       <div class="red-flags mt-4">
@@ -659,6 +666,7 @@
 </template>
 
 <script setup lang="ts">
+import RentalJourney from '~/components/rentals/RentalJourney.vue'
 import { COST_MODEL } from '~/utils/costOfLiving'
 import { formatUYU } from '~/utils/format'
 import { redditSubmit, type SendAction } from '~/utils/messageChannels'
