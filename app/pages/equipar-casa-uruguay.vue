@@ -532,6 +532,16 @@ useHead(() => ({
   text-decoration: none;
   color: #1565c0;
 }
+/*
+ * The dark half of the same rule. Measured after shipping only the light one: #1565c0 on the
+ * midnight canvas is 3.35:1 — worse than the #1976d2 it replaced. link-sky clears 8.7:1 there.
+ * The selector is scoped-safe on purpose: a bare `.v-theme--dark {}` block would hit every
+ * Vuetify component on the site (tests/unit/scopedStyles.test.ts).
+ */
+.v-theme--dark .eyebrow,
+.v-theme--dark .section-nav a {
+  color: #64b5f6;
+}
 .section-nav a:hover {
   text-decoration: underline;
 }
