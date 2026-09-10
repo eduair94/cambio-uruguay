@@ -357,7 +357,8 @@
           <tbody>
             <tr v-for="c in cliffs" :key="c.origin + c.below">
               <td data-label="Institución">{{ c.label }}</td>
-              <td data-label="Corte" class="text-right num">{{ formatUYU(c.below) }}</td>
+              <!-- Sin decimales: es el borde de una banda del tarifario, no un importe cobrado. -->
+              <td data-label="Corte" class="text-right num">{{ formatUYU(c.below, 0) }}</td>
               <td data-label="Abajo" class="text-right num">{{ feeText(c.feeBelow) }}</td>
               <td data-label="Arriba" class="text-right num">
                 <strong class="text-error">{{ feeText(c.feeAbove) }}</strong>
