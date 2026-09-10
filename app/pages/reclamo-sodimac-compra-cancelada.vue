@@ -698,7 +698,7 @@ async function copyComplaint() {
   }
 }
 
-const title = 'Sodimac canceló tu compra por error de precio: reclamo y denuncia'
+const title = 'Sodimac canceló tu compra: cómo reclamar'
 const description =
   'Guía para compradores de Sodimac Uruguay afectados por cancelaciones de julio de 2026: criterio oficial sobre errores de precio, valor de la factura y plantilla para reclamar o denunciar ante el MEF.'
 

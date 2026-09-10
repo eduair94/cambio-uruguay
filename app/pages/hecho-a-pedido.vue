@@ -301,7 +301,7 @@ const FAQ: FaqItem[] = [
   },
 ]
 
-const title = 'Hecho a pedido: lo que se construyó porque alguien lo pidió'
+const title = 'Hecho a pedido: qué se pidió y qué se hizo'
 const description =
   'Endpoints, páginas y arreglos de este sitio que existen porque alguien los pidió por correo, por un issue o preguntando en público. Qué se pidió, qué se hizo y qué se aprendió — sin publicar quién.'
 const canonicalUrl = 'https://cambio-uruguay.com/hecho-a-pedido'

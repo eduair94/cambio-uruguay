@@ -385,7 +385,7 @@ const coverageVerifiedAt = fmtDate(HEALTH_COVERAGE_VERIFIED_AT)
 const refundDate = fmtDate(LAST_PUBLISHED_REFUND.availableFrom)
 
 const canonicalUrl = 'https://cambio-uruguay.com/cambiar-de-mutualista-uruguay'
-const title = 'Cambiar de mutualista en Uruguay: cuándo te toca según tu cédula'
+const title = 'Cambiar de mutualista: el mes de tu cédula'
 const description =
   'El calendario de movilidad regulada de BPS mes a mes según el último dígito de la cédula, los 23 meses de permanencia que piden, y las cinco salidas para cambiar fuera de fecha: el cambio hacia ASSE o un seguro integral se puede hacer en cualquier momento (Decreto 344/020 art. 17), y además están la afiliación de oficio, la mudanza a otro departamento, los problemas asistenciales y los tiempos de espera del Decreto 359/007. Más cómo funciona la devolución de FONASA.'
 
