@@ -150,6 +150,39 @@ module.exports = {
       args: "--fast",
       cron_restart: "23 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
+    },    {
+      // Daily household market for /equipar-casa-uruguay: what it costs to fill an empty home.
+      // Reads the SAME sixteen storefronts, MercadoLibre and Marketplace the chair directory reads,
+      // through the shared classes/retail harvester — one sweep per store, classified against all
+      // thirty-eight categories at once.
+      //
+      // 12:47 UTC keeps a clear hour after currency-chairs (11:41): both hit the same hosts and the
+      // same two bridges on :9656/:9657, and overlapping them would double the load on somebody
+      // else's small shop for no gain.
+      //
+      // RETAIL_STORE_MAX_PDP is raised here and only here. The default of 260 product pages per
+      // Fenicio store is right for one category and would truncate thirty-eight in sitemap order,
+      // which silently biases every band toward whatever the store happens to list first.
+      name: "currency-equipar",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_equipar.js",
+      env: { RETAIL_STORE_MAX_PDP: "900" },
+      cron_restart: "47 12 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Hourly price-only refresh of the household catalogue, on half the search budget. Skips the
+      // Fenicio storefronts for the same reason the chair job does: reading them is one request per
+      // product page, which is fine once a day and abusive every hour. Minute 53 keeps it away from
+      // currency-chairs-hourly at :23.
+      name: "currency-equipar-hourly",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_equipar.js",
+      args: "--fast",
+      cron_restart: "53 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
       // Daily rental sweep for /alquileres-uruguay. Reads MercadoLibre (scraper service on :9656),

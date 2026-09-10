@@ -14,6 +14,8 @@ import { PropertyOpportunitySnapshotModel } from "../../classes/models/PropertyO
 import { SearchConsoleSnapshotModel } from "../../classes/models/SearchConsoleSnapshot";
 import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapshot";
 import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
+import { EquiparItemModel } from "../../classes/models/EquiparItem";
+import { EquiparMetaModel } from "../../classes/models/EquiparMeta";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -109,6 +111,13 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+  it("EquiparItem declares exactly the app's top-level fields", () => {
+    expect(Object.keys(EquiparItemModel.schema.obj).sort()).toEqual(appFields(appModel("EquiparItem")).sort());
+  });
+
+  it("EquiparMeta declares exactly the app's top-level fields", () => {
+    expect(Object.keys(EquiparMetaModel.schema.obj).sort()).toEqual(appFields(appModel("EquiparMeta")).sort());
+  });
   it("writes the collections the app already reads — not mongoose's guess", () => {
     expect(PricePredictionModel.collection.name).toBe("pricepredictions");
     expect(MoveExplanationModel.collection.name).toBe("moveexplanations");
@@ -121,5 +130,7 @@ describe("app-Mongo schema parity", () => {
     expect(RentalMetaModel.collection.name).toBe("rentalmetas");
     expect(SearchConsoleSnapshotModel.collection.name).toBe("searchconsolesnapshots");
     expect(SiteRevenueSnapshotModel.collection.name).toBe("siterevenuesnapshots");
+    expect(EquiparItemModel.collection.name).toBe("equiparitems");
+    expect(EquiparMetaModel.collection.name).toBe("equiparmeta");
   });
 });
