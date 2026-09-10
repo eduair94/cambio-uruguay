@@ -73,7 +73,7 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
 | `config/` | `config.ts` |
 | `dist/` | root build output (gitignored) |
 
-`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks bcurates costs debt explain figures gaps gsc loans precios predictions rag redditbot regional rentals site-analytics temas-analysis` (each `refresh.ts`/`store.ts`).
+`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks bcurates costs debt explain figures gaps gsc loans precios predictions rag redditbot regional rentals site-analytics temas-analysis` (each `refresh.ts`/`store.ts`). La excepción es `mercadopago/`, que es SÓLO un parser puro y no tiene job: los topes de las promos viven en `api.mercadopago.com`, cuyo `robots.txt` es `Disallow: /`, así que los lee una persona con `npm run mp_promos` y se publican fechados en `app/utils/mercadoPagoPromos.ts`. No convertirlo en cron.
 
 ## Build / run / test / lint
 - Root: `npm run dev` (API), `npm run build`, `npm test` (`vitest run`, `tests/**/*.test.ts`). One-offs: `npm run prex`, `bcu_backfill`, `get_locations`, etc. (ts-node, in `scripts/oneoff/`, NOT compiled).
