@@ -71,59 +71,84 @@ planner is client state only and never persists.
 
         <p v-if="!byTier[tier]?.length" class="empty-note">{{ c.noData }}</p>
 
-        <table v-else class="tier-table cu-mobile-cards">
-          <thead>
-            <tr>
-              <th scope="col">{{ c.colItem }}</th>
-              <th scope="col">{{ c.colNew }}</th>
-              <th scope="col">{{ c.colUsed }}</th>
-              <th scope="col">{{ c.colSaving }}</th>
-              <th scope="col">{{ c.colWhy }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in byTier[tier]" :key="item.key">
-              <th scope="row" :data-label="c.colItem">
-                <span class="item-name">{{ item.categoryLabel }}</span>
-                <span class="item-variant">{{ item.variantLabel }}</span>
-                <span v-if="item.quantity > 1" class="item-qty">{{
-                  c.quantityLabel.replace('{n}', String(item.quantity))
+        <!--
+          One card per CATEGORY, not per variant row. The first version was a table with a row per
+          category+variant, which repeated the same two-paragraph reason three times for the fridge,
+          three for the mattress and three for the pot: the argument that justifies the tier became
+          the wall of text you scroll past. Here the reason is said once and the sizes are a compact
+          list under it.
+        -->
+        <div class="cat-grid">
+          <article v-for="group in byTier[tier]" :key="group.key" class="cat-card">
+            <div class="cat-media" aria-hidden="true">
+              <img
+                v-if="group.image"
+                :src="group.image"
+                alt=""
+                loading="lazy"
+                decoding="async"
+                @error="onImageError(group.key)"
+              />
+              <VIcon v-else :icon="roomIcon(group.room)" size="34" class="cat-media__fallback" />
+            </div>
+
+            <div class="cat-body">
+              <h4 class="cat-name">
+                {{ group.label }}
+                <span v-if="group.quantity > 1" class="cat-qty">{{
+                  c.quantityLabel.replace('{n}', String(group.quantity))
                 }}</span>
-              </th>
-              <td :data-label="c.colNew">
-                <template v-if="item.newBand">
-                  <span class="price"
-                    >{{ equiparMoney(item.newBand.p25) }}–{{
-                      equiparMoney(item.newBand.median)
-                    }}</span
-                  >
-                  <span class="obs">{{
-                    c.observations.replace('{n}', String(item.newBand.n))
-                  }}</span>
-                </template>
-                <span v-else class="muted">{{ c.noData }}</span>
-              </td>
-              <td :data-label="c.colUsed">
-                <span v-if="!item.usedOk" class="muted">{{ c.usedNotAdvised }}</span>
-                <template v-else-if="item.usedBand">
-                  <span class="price">{{ equiparMoney(item.usedBand.median) }}</span>
-                  <span class="obs">{{
-                    c.observations.replace('{n}', String(item.usedBand.n))
-                  }}</span>
-                </template>
-                <span v-else class="muted">{{ c.noUsedData }}</span>
-              </td>
-              <td :data-label="c.colSaving">
-                <span v-if="item.usedSavingPct" class="saving">−{{ item.usedSavingPct }}%</span>
-                <span v-else class="muted">—</span>
-              </td>
-              <td class="why" :data-label="c.colWhy">
-                {{ item.reason }}
-                <em v-if="item.usedNote" class="used-note">{{ item.usedNote }}</em>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </h4>
+              <p class="cat-reason">{{ group.reason }}</p>
+              <p v-if="group.usedNote" class="cat-used-note">{{ group.usedNote }}</p>
+
+              <ul class="var-list">
+                <li class="var-head" aria-hidden="true">
+                  <span />
+                  <span>{{ c.colNew }}</span>
+                  <span>{{ c.colUsed }}</span>
+                </li>
+                <li v-for="item in group.items" :key="item.key" class="var-row">
+                  <span class="var-name">{{ item.variantLabel }}</span>
+
+                  <span class="var-cell">
+                    <template v-if="item.newBand">
+                      <span class="price"
+                        >{{ equiparMoney(item.newBand.p25) }}–{{
+                          equiparMoney(item.newBand.median)
+                        }}</span
+                      >
+                      <span class="obs">{{
+                        c.observations.replace('{n}', String(item.newBand.n))
+                      }}</span>
+                    </template>
+                    <template v-else>
+                      <span class="sr-only">{{ c.colNew }}: </span>
+                      <span class="muted">{{ c.noData }}</span>
+                    </template>
+                  </span>
+
+                  <span class="var-cell">
+                    <span v-if="!item.usedOk" class="muted">{{ c.usedNotAdvised }}</span>
+                    <template v-else-if="item.usedBand">
+                      <span class="price">{{ equiparMoney(item.usedBand.median) }}</span>
+                      <span v-if="item.usedSavingPct" class="saving">
+                        −{{ item.usedSavingPct }}%
+                      </span>
+                      <span class="obs">{{
+                        c.observations.replace('{n}', String(item.usedBand.n))
+                      }}</span>
+                    </template>
+                    <template v-else>
+                      <span class="sr-only">{{ c.colUsed }}: </span>
+                      <span class="muted">{{ c.noUsedData }}</span>
+                    </template>
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -275,9 +300,65 @@ const baskets = computed(() => data.value?.meta?.baskets ?? [])
 const runs = computed(() => data.value?.meta?.runs ?? [])
 const asOf = computed(() => data.value?.meta?.generatedAt?.slice(0, 10) ?? '')
 
-const byTier = computed<Record<EquiparTier, EquiparItemDoc[]>>(() => {
-  const grouped = { S: [], A: [], B: [], C: [] } as Record<EquiparTier, EquiparItemDoc[]>
-  for (const item of items.value) grouped[item.tier]?.push(item)
+interface CategoryGroup {
+  key: string
+  label: string
+  room: EquiparItemDoc['room']
+  reason: string
+  usedNote?: string
+  quantity: number
+  image: string | null
+  items: EquiparItemDoc[]
+}
+
+/** Images that 404 at run time: drop to the room icon rather than leave a broken frame. */
+const brokenImages = ref<string[]>([])
+function onImageError(key: string): void {
+  if (!brokenImages.value.includes(key)) brokenImages.value.push(key)
+}
+
+const ROOM_ICONS: Record<EquiparItemDoc['room'], string> = {
+  cocina: 'mdi-silverware-fork-knife',
+  dormitorio: 'mdi-bed-outline',
+  bano: 'mdi-shower',
+  living: 'mdi-sofa-outline',
+  limpieza: 'mdi-broom',
+}
+const roomIcon = (room: EquiparItemDoc['room']): string => ROOM_ICONS[room] || 'mdi-home-outline'
+
+/**
+ * One group per CATEGORY inside each tier.
+ *
+ * The reason a category sits in its tier is the same sentence for every size of it, so grouping is
+ * what stops the page repeating two paragraphs three times per fridge. Item order inside the group
+ * is whatever the API sent, which is already "priced first, then by size".
+ */
+const byTier = computed<Record<EquiparTier, CategoryGroup[]>>(() => {
+  const grouped = { S: [], A: [], B: [], C: [] } as Record<EquiparTier, CategoryGroup[]>
+  const seen = new Map<string, CategoryGroup>()
+  for (const item of items.value) {
+    let group = seen.get(item.category)
+    if (!group) {
+      group = {
+        key: item.category,
+        label: item.categoryLabel,
+        room: item.room,
+        reason: item.reason,
+        usedNote: item.usedNote,
+        quantity: item.quantity,
+        image: item.image,
+        items: [],
+      }
+      seen.set(item.category, group)
+      grouped[item.tier]?.push(group)
+    }
+    // The first variant with a photo speaks for the category; a size without one still shows.
+    if (!group.image && item.image) group.image = item.image
+    group.items.push(item)
+  }
+  for (const group of seen.values()) {
+    if (brokenImages.value.includes(group.key)) group.image = null
+  }
   return grouped
 })
 
@@ -406,12 +487,19 @@ useHead(() => ({
 .equipar p {
   margin: 12px 0 0;
 }
+/*
+ * NOT `--v-theme-primary`. That token is #1976d2, which measures 4.29:1 on the paper canvas and
+ * 4.18:1 on the midnight one — both under AA for text this size, and axe flagged six nodes of it
+ * here while the sibling guide pages had none. The two DESIGN.md blues that do clear it are
+ * ink-blue on light (5.4:1) and link-sky on dark (8.7:1), so each theme gets its own.
+ */
 .eyebrow {
   margin: 0;
   font-size: 0.75rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgb(var(--v-theme-primary));
+  color: #1565c0;
 }
 .equipar-header h1 {
   margin: 6px 0 0;
@@ -436,9 +524,13 @@ useHead(() => ({
   border-bottom: 1px solid rgba(var(--v-border-color), 0.2);
 }
 .section-nav a {
+  /* 44px of vertical hit area for a 14px link: WCAG 2.5.8 asks for 24, and a thumb asks for more. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-size: 0.875rem;
   text-decoration: none;
-  color: rgb(var(--v-theme-primary));
+  color: #1565c0;
 }
 .section-nav a:hover {
   text-decoration: underline;
@@ -535,6 +627,12 @@ useHead(() => ({
   font-size: 0.8rem;
   opacity: 0.75;
 }
+/*
+ * The four tier chips come from the DESIGN.md palette, and each one carries the text colour that
+ * actually clears 4.5:1 on it — amber takes ink, the two deep ones take white. The quiet tier is
+ * the only unsaturated chip on purpose: "can wait months" should not shout in the same register as
+ * "the house does not work without it".
+ */
 .tier-letter {
   display: grid;
   place-items: center;
@@ -544,74 +642,155 @@ useHead(() => ({
   border-radius: 8px;
   font-weight: 800;
   font-size: 1.075rem;
-  color: #fff;
-  background: #64748b;
+  color: rgb(var(--v-theme-on-surface));
+  background: rgba(var(--v-theme-on-surface), 0.12);
 }
 .tier-s .tier-letter {
-  background: #b91c1c;
+  color: #ffffff;
+  background: #bf360c;
 }
 .tier-a .tier-letter {
-  background: #c2410c;
+  color: #000000;
+  background: #ff8f00;
 }
 .tier-b .tier-letter {
-  background: #0369a1;
+  color: #ffffff;
+  background: #1565c0;
 }
-.tier-c .tier-letter {
-  background: #475569;
+/* Tarjeta por categoría */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
 }
-.tier-table {
+.cat-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(var(--v-border-color), 0.25);
+  border-radius: 12px;
+  background: rgb(var(--v-theme-surface));
+  overflow: hidden;
+}
+.cat-media {
+  display: grid;
+  place-items: center;
+  /* Reserved from the first paint: a photo that arrives late must not push the prices down. */
+  aspect-ratio: 16 / 9;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+}
+.cat-media img {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 12px;
-  font-size: 0.875rem;
-}
-.tier-table th,
-.tier-table td {
+  height: 100%;
+  object-fit: contain;
   padding: 12px;
-  text-align: left;
-  vertical-align: top;
-  border-bottom: 1px solid rgba(var(--v-border-color), 0.18);
 }
-.tier-table thead th {
+.cat-media__fallback {
+  opacity: 0.3;
+}
+.cat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+.cat-name {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.075rem;
+  line-height: 1.3;
+}
+.cat-qty {
   font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 400;
   opacity: 0.7;
 }
-.item-name {
-  display: block;
+.cat-reason {
+  margin: 0 !important;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  opacity: 0.9;
+  text-wrap: pretty;
+}
+.cat-used-note {
+  margin: 0 !important;
+  font-size: 0.8rem;
+  font-style: italic;
+  opacity: 0.85;
+  text-wrap: pretty;
+}
+.var-list {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.var-head,
+.var-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 1.1fr) 1fr 1fr;
+  gap: 4px 10px;
+  align-items: baseline;
+  padding: 8px 0;
+}
+.var-head {
+  padding-bottom: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  /* 0.7 is the floor that still clears 4.5:1 on the paper canvas — see .muted. */
+  opacity: 0.7;
+}
+.var-row + .var-row,
+.var-head + .var-row {
+  border-top: 1px solid rgba(var(--v-border-color), 0.18);
+}
+.var-name {
+  font-size: 0.8rem;
   font-weight: 600;
 }
-.item-variant,
-.item-qty,
+.var-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+}
 .obs {
-  display: block;
   font-size: 0.75rem;
   opacity: 0.7;
-  font-weight: 400;
 }
 .price {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 .saving {
   font-weight: 700;
   color: rgb(var(--v-theme-success));
 }
+/*
+ * This is the text that says we do NOT have a price. The first production build had it at
+ * opacity 0.55, which measured 3.64:1 on the paper canvas — the page's own disclosure was the
+ * least readable thing on it, and axe counted 53 of them. 0.66 is where the same composite
+ * clears 4.5:1; dark mode was already passing and only gets clearer.
+ */
 .muted {
-  opacity: 0.55;
-  font-size: 0.875rem;
-}
-.why {
-  max-width: 40ch;
-  font-size: 0.875rem;
-  opacity: 0.9;
-}
-.used-note {
-  display: block;
-  margin-top: 6px;
+  opacity: 0.66;
   font-size: 0.8rem;
-  opacity: 0.85;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Planner */
@@ -641,8 +820,8 @@ useHead(() => ({
   display: flex;
   align-items: center;
   gap: 8px;
+  min-height: 44px;
   font-size: 0.875rem;
-  padding-bottom: 9px;
 }
 .owned {
   margin-top: 18px;
@@ -664,11 +843,26 @@ useHead(() => ({
   padding: 0;
   list-style: none;
 }
+/*
+ * The label IS the target. A bare checkbox renders at 13x13 here, and there are thirty-four of
+ * them: WCAG 2.5.8 asks for 24x24, and a list of tick boxes you mis-tap is worse than no list.
+ * Making the whole row clickable costs nothing and gives every one of them 32px.
+ */
 .owned-list label {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
+  min-height: 32px;
+  padding: 2px 0;
+  cursor: pointer;
   font-size: 0.875rem;
+}
+.owned-list input,
+.calc-toggle input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  cursor: pointer;
 }
 .plan {
   margin-top: 20px;

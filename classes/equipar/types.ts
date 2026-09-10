@@ -108,6 +108,16 @@ export interface EquiparItem {
    * price inside a tier looks reasonable and is not — it just picks a different essential to drop.
    */
   rank: number;
+  /** Order of the variant inside its category: 1 is the smallest/cheapest. */
+  variantRank: number;
+  /**
+   * A representative photo, so the page can be read by eye rather than parsed.
+   *
+   * Only ever from a storefront or MercadoLibre. Marketplace photos are the seller's own —
+   * a phone picture of their kitchen — and their URLs expire, so a card would rot into a
+   * broken image.
+   */
+  image: string | null;
   regime: EquiparRegime;
   reason: string;
   usedOk: boolean;

@@ -25,6 +25,8 @@ function itemFor(categoryKey: string, newMedian: number | null, usedMedian: numb
     room: category.room,
     tier: category.tier,
     rank: index,
+    variantRank: variant.rank,
+    image: null,
     regime: category.regime,
     reason: category.reason,
     usedOk: category.usedOk,

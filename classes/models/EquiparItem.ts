@@ -18,6 +18,8 @@ const EquiparItemSchema = new Schema(
     room: { type: String, required: true },
     tier: { type: String, required: true },
     rank: { type: Number, default: 999 },
+    variantRank: { type: Number, default: 1 },
+    image: { type: String, default: null },
     regime: { type: String, required: true },
     reason: { type: String, default: "" },
     usedOk: { type: Boolean, default: true },

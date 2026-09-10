@@ -132,6 +132,23 @@ function buildProducts(
     .slice(0, 12);
 }
 
+/**
+ * A photo to put on the card, so the page can be read by eye instead of parsed.
+ *
+ * Storefronts and MercadoLibre only. A Marketplace photo is the seller's own — their kitchen, at
+ * night, with the fridge half open — and its URL expires, so a card built on one rots into a broken
+ * image. The median-priced listing is preferred over the cheapest: the cheapest row in any category
+ * is disproportionately the accessory, the miniature or the mis-titled one, and its photo would
+ * misrepresent the whole category.
+ */
+function representativeImage(listings: readonly RetailListing[]): string | null {
+  const usable = listings
+    .filter((listing) => listing.source !== "facebook" && listing.image && listing.available !== false)
+    .sort((a, b) => a.price - b.price);
+  if (!usable.length) return null;
+  return usable[Math.floor(usable.length / 2)]!.image;
+}
+
 export interface BuildCatalogInput {
   listings: readonly RetailListing[];
   usdUyu: number;
@@ -143,7 +160,16 @@ export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
 
   // The harvester already tagged each listing with the spec that claimed it; re-deriving the
   // category here would let the two disagree, so the tag is trusted and only the variant is new.
-  const byItem = new Map<string, { category: EquiparCategory; variant: string; variantLabel: string; listings: RetailListing[] }>();
+  const byItem = new Map<
+    string,
+    {
+      category: EquiparCategory;
+      variant: string;
+      variantLabel: string;
+      variantRank: number;
+      listings: RetailListing[];
+    }
+  >();
 
   for (const listing of input.listings) {
     const tagged = listing.attributes?.CATEGORY_SPEC;
@@ -155,6 +181,7 @@ export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
       category,
       variant: variant.key,
       variantLabel: variant.label,
+      variantRank: variant.rank,
       listings: [],
     };
     bucket.listings.push(listing);
@@ -193,6 +220,8 @@ export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
       room: category.room,
       tier: category.tier,
       rank: categoryOrder.get(category.key) ?? 999,
+      variantRank: bucket.variantRank,
+      image: representativeImage(bucket.listings),
       regime: category.regime,
       reason: category.reason,
       usedOk: category.usedOk,
@@ -208,10 +237,17 @@ export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
     });
   }
 
+  // Within a category, a row that can say nothing never leads. Measured on the first production
+  // run: sorting variants alphabetically put an empty "Heladera / Frigobar" at the very top of
+  // "sin esto la casa no funciona", and listed the calefón as 100 L, 50 L, 80 L. The variant rank
+  // is the size order the registry already declares; using it was always the intent.
+  const hasPrice = (item: EquiparItem): number => (item.newBand || item.usedBand ? 0 : 1);
   return items.sort(
     (a, b) =>
       TIER_ORDER[a.tier]! - TIER_ORDER[b.tier]! ||
       categoryOrder.get(a.category)! - categoryOrder.get(b.category)! ||
+      hasPrice(a) - hasPrice(b) ||
+      a.variantRank - b.variantRank ||
       a.variant.localeCompare(b.variant)
   );
 }

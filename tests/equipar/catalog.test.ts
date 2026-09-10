@@ -127,6 +127,61 @@ describe("catálogo", () => {
     expect(keys).toContain("heladera:media");
   });
 
+  it("no deja que una variante sin precio encabece su categoría", () => {
+    // Medido en la primera corrida de producción: ordenar variantes alfabéticamente puso una
+    // "Heladera / Frigobar" vacía en el primer renglón de "sin esto la casa no funciona", y listó
+    // el calefón como 100 L, 50 L, 80 L. Una fila que no puede decir nada no encabeza.
+    const items = buildEquiparCatalog({
+      listings: [
+        ...newFridges(),
+        // Un frigobar con un solo aviso: no llega al piso de muestra, así que no tendrá banda.
+        listing({
+          title: "Frigobar Consul 90 Lts",
+          brand: "Consul",
+          price: 11_000,
+          attributes: { CATEGORY_SPEC: "heladera" },
+        }),
+      ],
+      usdUyu: 40,
+    });
+    expect(items[0]!.variant).toBe("media");
+    expect(items[0]!.newBand).not.toBeNull();
+    expect(items[items.length - 1]!.variant).toBe("frigobar");
+    expect(items[items.length - 1]!.newBand).toBeNull();
+  });
+
+  it("ordena las variantes por tamaño, no por alfabeto", () => {
+    const sizes = ["50", "80", "100"];
+    const listings = sizes.flatMap(size =>
+      Array.from({ length: 10 }, (_, index) =>
+        listing({
+          title: `Calefón Rheem ${size} litros`,
+          brand: "Rheem",
+          price: Number(size) * 100 + index * 50,
+          attributes: { CATEGORY_SPEC: "calefon" },
+        })
+      )
+    );
+    const items = buildEquiparCatalog({ listings, usdUyu: 40 });
+    expect(items.map(item => item.variant)).toEqual(["50l", "80l", "100l"]);
+  });
+
+  it("le pone una foto a la fila, y nunca una de Marketplace", () => {
+    const items = buildEquiparCatalog({
+      listings: [
+        ...newFridges().map((row, index) =>
+          index === 5 ? { ...row, image: "https://tienda.uy/heladera.jpg" } : row
+        ),
+        ...usedFridges().map(row => ({ ...row, image: "https://scontent.fb/expira-en-dias.jpg" })),
+      ],
+      usdUyu: 40,
+    });
+    const withPhoto = items.find(item => item.image);
+    expect(withPhoto?.image).toBe("https://tienda.uy/heladera.jpg");
+    // Una foto de Marketplace es la cocina del vendedor y su URL caduca: la tarjeta se rompería.
+    expect(items.every(item => !item.image?.includes("scontent"))).toBe(true);
+  });
+
   it("declara las categorías que no produjeron nada, en vez de esconderlas", () => {
     const items = buildEquiparCatalog({ listings: newFridges(), usdUyu: 40 });
     const uncovered = uncoveredCategories(items);

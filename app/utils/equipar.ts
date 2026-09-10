@@ -48,6 +48,10 @@ export interface EquiparItemDoc {
   tier: EquiparTier
   /** Position in the published necessity order. The planner buys in exactly this order. */
   rank: number
+  /** Order of the variant inside its category: 1 is the smallest/cheapest. */
+  variantRank: number
+  /** Representative photo, from a storefront or MercadoLibre only — never a Marketplace snapshot. */
+  image: string | null
   regime: EquiparRegime
   reason: string
   usedOk: boolean
