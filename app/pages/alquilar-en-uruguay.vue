@@ -882,14 +882,23 @@ useHead(() => ({
 .hero {
   max-width: 900px;
 }
+/*
+ * NOT `--v-theme-primary`. That token is #1976d2, which measures 4.29:1 on the paper canvas and
+ * 4.18:1 on the midnight one -- both under AA for 12px text, and axe counts ten of these on this
+ * page alone. The two DESIGN.md blues that clear it are ink-blue on light and link-sky on dark.
+ */
 .eyebrow,
 .step-kicker {
-  color: rgb(var(--v-theme-primary));
+  color: #1565c0;
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.09em;
   margin-bottom: 5px;
   text-transform: uppercase;
+}
+.v-theme--dark .eyebrow,
+.v-theme--dark .step-kicker {
+  color: #64b5f6;
 }
 .error-kicker {
   color: rgb(var(--v-theme-error));
