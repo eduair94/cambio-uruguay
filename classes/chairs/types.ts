@@ -1,3 +1,5 @@
+import type { RetailChannel, RetailListing, RetailMarketSource } from "../retail/types";
+
 export const CHAIR_QUERIES = [
   '"silla" escritorio',
   '"silla" oficina',
@@ -134,40 +136,14 @@ export interface ChairTierItem {
 // ---------------------------------------------------------------------------
 
 /** Where a listing was read from. `store` covers every real Uruguayan retailer. */
-export type ChairMarketSource = "mercadolibre" | "facebook" | "store";
+export type ChairMarketSource = RetailMarketSource;
 
-export type ChairChannel = "marketplace" | "local-store" | "importer" | "classifieds";
+export type ChairChannel = RetailChannel;
 
 export type ChairCategory = "ergonomic" | "gaming" | "executive" | "operative" | "unknown";
 
 /** A single price observation: one product, at one seller, at one moment. */
-export interface ChairListing {
-  /** Stable across runs: `ml:MLU123`, `store:bertoni:<sku>`, `fb:<id>`. */
-  listingId: string;
-  source: ChairMarketSource;
-  /** Registry key of the store, or the marketplace id. */
-  sellerKey: string;
-  sellerName: string;
-  channel: ChairChannel;
-  title: string;
-  url: string;
-  price: number;
-  currency: "UYU" | "USD";
-  condition: "new" | "refurbished" | "used" | "unknown";
-  available: boolean;
-  image: string | null;
-  brand: string;
-  model: string;
-  /** Marketplace catalog id (MercadoLibre `catalog_product_id`), when the source has one. */
-  catalogId: string | null;
-  attributes: Record<string, string>;
-  rating: number | null;
-  ratingCount: number;
-  location: string | null;
-  freeShipping: boolean | null;
-  officialStore: boolean;
-  observedAt: string;
-}
+export type ChairListing = RetailListing;
 
 export interface ChairSpec {
   id: string;
