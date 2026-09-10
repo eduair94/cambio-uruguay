@@ -1,7 +1,12 @@
 import { EquiparItemModel } from '../../models/EquiparItem'
 import { EquiparMetaModel } from '../../models/EquiparMeta'
 import { connectDb } from '../../utils/db'
-import type { EquiparItemDoc, EquiparMetaDoc, EquiparResponse } from '../../../utils/equipar'
+import {
+  equiparSortItems,
+  type EquiparItemDoc,
+  type EquiparMetaDoc,
+  type EquiparResponse,
+} from '../../../utils/equipar'
 
 /**
  * The household catalogue for /equipar-casa-uruguay.
@@ -41,7 +46,9 @@ export default defineEventHandler(async (event): Promise<EquiparResponse> => {
 
     return {
       meta: (meta as unknown as EquiparMetaDoc) ?? null,
-      items: (rows as unknown as EquiparItemDoc[]) ?? [],
+      // Sorted here, not left to Mongo: `find()` returns insertion order, and an upsert never moves
+      // a document, so rows first written by an older build keep that build's order forever.
+      items: equiparSortItems((rows as unknown as EquiparItemDoc[]) ?? []),
     }
   } catch {
     // A database hiccup renders the page's empty state, never a 500: the rest of the page (what to

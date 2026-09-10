@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   equiparPlan,
+  equiparSortItems,
   equiparUnitPrice,
   type EquiparBand,
   type EquiparItemDoc,
@@ -42,6 +43,8 @@ function item(
     room: 'cocina',
     tier,
     rank: RANKS[category] ?? 99,
+    variantRank: 1,
+    image: null,
     regime: 'commodity',
     reason: 'porque sí',
     usedOk: true,
@@ -163,5 +166,44 @@ describe('hasta dónde llega la plata', () => {
       acceptUsed: false,
     })
     expect(plan.lines.some(line => line.item.category === 'calefon')).toBe(false)
+  })
+})
+
+describe('orden de lectura', () => {
+  const row = (
+    category: string,
+    variant: string,
+    variantRank: number,
+    priced: boolean
+  ): EquiparItemDoc => ({
+    ...item(category, 'S', priced ? 1000 : null),
+    key: `${category}:${variant}`,
+    variant,
+    variantRank,
+  })
+
+  it('ordena las variantes por tamano y no por alfabeto', () => {
+    // Produccion mostraba el calefon como 100 L, 50 L, 80 L: los documentos se habian insertado con
+    // una build vieja que ordenaba alfabeticamente, y un upsert nunca mueve un documento.
+    const sorted = equiparSortItems([
+      row('calefon', '100l', 3, true),
+      row('calefon', '50l', 1, true),
+      row('calefon', '80l', 2, true),
+    ])
+    expect(sorted.map(r => r.variant)).toEqual(['50l', '80l', '100l'])
+  })
+
+  it('manda al final las variantes que no pueden decir un precio', () => {
+    const sorted = equiparSortItems([
+      row('cubiertos', 'servicio12', 2, false),
+      row('cubiertos', 'servicio6', 1, true),
+    ])
+    expect(sorted.map(r => r.variant)).toEqual(['servicio6', 'servicio12'])
+  })
+
+  it('respeta el tier antes que cualquier otra cosa', () => {
+    const b = { ...item('tv', 'B', 1000), variantRank: 1 }
+    const s = { ...item('heladera', 'S', 1000), variantRank: 9 }
+    expect(equiparSortItems([b, s]).map(r => r.tier)).toEqual(['S', 'B'])
   })
 })

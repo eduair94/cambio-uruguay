@@ -117,6 +117,28 @@ export const EQUIPAR_TIER_ORDER: Record<EquiparTier, number> = { S: 0, A: 1, B: 
 
 export const EQUIPAR_TIERS: EquiparTier[] = ['S', 'A', 'B', 'C']
 
+/**
+ * Puts the catalogue in reading order: tier, then the published necessity rank, then rows that can
+ * actually quote a price, then size.
+ *
+ * It runs on READ and not only on write, which is the whole point. The job sorts before saving, but
+ * `find()` hands documents back in insertion order, and these rows were first inserted by an
+ * earlier build that sorted variants alphabetically — so production kept showing the calefón as
+ * 100 L, 50 L, 80 L and an empty "Cubiertos / servicio para 12" above the one with prices, long
+ * after the write-side sort was fixed. An upsert never moves a document; only sorting the read does.
+ */
+export function equiparSortItems(items: EquiparItemDoc[]): EquiparItemDoc[] {
+  const priced = (item: EquiparItemDoc): number => (item.newBand || item.usedBand ? 0 : 1)
+  return [...items].sort(
+    (a, b) =>
+      EQUIPAR_TIER_ORDER[a.tier] - EQUIPAR_TIER_ORDER[b.tier] ||
+      (a.rank ?? 999) - (b.rank ?? 999) ||
+      priced(a) - priced(b) ||
+      (a.variantRank ?? 1) - (b.variantRank ?? 1) ||
+      a.variant.localeCompare(b.variant)
+  )
+}
+
 /** What the money actually buys for one item, given whether the reader accepts second-hand. */
 export function equiparUnitPrice(
   item: EquiparItemDoc,

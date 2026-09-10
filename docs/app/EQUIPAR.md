@@ -121,6 +121,27 @@ menciona en la nota de cocina, sin cifra propia.
 8. **Accesorios fuera antes de clasificar** (`NOT_A_PRODUCT`): fundas, repuestos, gomas de puerta,
    controles remotos y los "no funciona, para repuesto" de Marketplace, que entrarían derecho al
    fondo de la banda de usados.
+9. **Una fila sin precio nunca encabeza su categoría.** Medido en la primera corrida de producción:
+   ordenar variantes alfabéticamente puso una "Heladera / Frigobar" **vacía** en el primer renglón
+   de "sin esto la casa no funciona", y listó el calefón como 100 L, 50 L, 80 L. El orden es
+   tier → categoría → tiene precio → rango de la variante, que es el tamaño que el registro ya
+   declaraba.
+
+## Lo que encontró auditar la página en producción
+
+Vale dejarlo escrito porque ninguno de los cuatro se veía en el código, sólo en la página real con
+datos reales:
+
+- **El texto de "no sé" era el menos legible de la página.** 53 nodos a 3,64:1 en claro (axe), y
+  eran exactamente `sin precio esta semana` y `sin datos suficientes de usado`. La declaración de
+  honestidad sobre la que se apoya todo el diseño resultaba ser el texto más difícil de leer.
+  `opacity: 0.66` es donde ese mismo compuesto cruza 4,5:1.
+- **El azul de texto chico no era del sistema.** `--v-theme-primary` (#1976d2) da 4,29:1 en claro y
+  4,18:1 en oscuro. Medidas `/primer-alquiler-uruguay` y `/plan-de-vida-uruguay`: **cero**
+  violaciones con ese color, así que lo había introducido esta página. Va `ink-blue` en claro.
+- **Los cuatro colores de tier estaban fuera de la paleta.** Ahora salen de DESIGN.md, cada uno con
+  el color de texto que realmente cruza 4,5:1 encima (el ámbar lleva tinta, los profundos blanco).
+- **34 checkboxes de 13×13** contra el mínimo de 24 de WCAG 2.5.8. La etiqueta entera es el blanco.
 
 ## Las tres canastas
 
@@ -140,8 +161,20 @@ la única categoría del catálogo donde la opción barata es el mal consejo, y 
 totales se renderizan en el servidor: son la cifra que Google puede citar y la respuesta que la
 mayoría vino a buscar.
 
-Debajo, la tier list y la **calculadora**: "tengo $X", tilde de usado, tildes de lo que ya se tiene.
-Baja en orden de necesidad y dice **dónde se corta la plata**. Estado de sesión, sin persistencia.
+**Una tarjeta por categoría, con foto — no una tabla por variante.** La primera versión era una
+tabla con una fila por categoría+variante, y eso repetía el mismo motivo de dos párrafos tres veces
+para la heladera, tres para el colchón y tres para la olla: el argumento que justifica el tier —lo
+único que esta página tiene y un comparador de precios no— se convertía en el muro de texto que uno
+saltea. Ahora el motivo se dice una vez y las medidas van como lista compacta debajo.
+
+La foto sale del propio relevamiento (`representativeImage` en `catalog.ts`) y **nunca de
+Marketplace**: esa es la cocina del vendedor de noche y su URL caduca, así que la tarjeta se
+rompería sola. Se toma la del aviso de precio **mediano**, no la del más barato — el más barato de
+cualquier categoría es desproporcionadamente el accesorio o el mal titulado, y su foto
+representaría mal a toda la categoría. Si igual devuelve 404, la tarjeta cae a un ícono por ambiente.
+
+Debajo, la **calculadora**: "tengo $X", tilde de usado, tildes de lo que ya se tiene. Baja en orden
+de necesidad y dice **dónde se corta la plata**. Estado de sesión, sin persistencia.
 
 **El planificador ordena por el `rank` publicado**, no por precio. Es un campo guardado, no derivado:
 el plan y la tabla TIENEN que coincidir, o la página se contradice. Ordenar por precio dentro del
