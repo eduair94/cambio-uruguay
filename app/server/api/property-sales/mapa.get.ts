@@ -39,6 +39,8 @@ export default defineEventHandler(async (event): Promise<PropertySalesMapRespons
         { $limit: MAX_POINTS },
         { $project: propertySaleSummaryProjection },
       ])
+        // Same unprojected sort as the list above, over the located adverts.
+        .allowDiskUse(true)
         .collation(PROPERTY_SALES_COLLATION)
         .option({ maxTimeMS: 10000 }),
       // Zone markers aggregate only adverts WITHOUT a published coordinate. They link back to
@@ -117,6 +119,8 @@ export default defineEventHandler(async (event): Promise<PropertySalesMapRespons
         error instanceof Error && error.message === 'SALE_CATALOG_PREPARING'
           ? 'Property sales catalogue is being prepared'
           : 'Property sales map is temporarily unavailable',
+      // The public JSON stays generic; the report keeps what actually failed.
+      cause: error,
     })
   }
 })

@@ -5,6 +5,7 @@ import {
   sentryErrorOptions,
   sentryErrorsEnabled,
   sentryHttpStatus,
+  sentryMongoCode,
   sentryRouteCategory,
 } from '../../utils/sentryPrivacy'
 
@@ -228,5 +229,98 @@ describe('Sentry errors privacy boundary', () => {
     expect(sentryHttpStatus({ statusCode: 503 })).toBe(503)
     expect(sentryHttpStatus({ statusCode: 401 })).toBe(401)
     expect(sentryHttpStatus(new Error('503'))).toBeNull()
+  })
+
+  it('drops failures raised inside third-party scripts the page only embeds', () => {
+    // AdSense throwing inside its own stack is Google's failure in our page: no
+    // change here can fix it, and it competes with our own reports.
+    const { denyUrls } = sentryErrorOptions(config, 'browser') as { denyUrls: RegExp[] }
+    const denied = (url: string) => denyUrls.some(pattern => pattern.test(url))
+    for (const url of [
+      'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js',
+      'https://googleads.g.doubleclick.net/pagead/ads',
+      'chrome-extension://abcdefghijklmnop/inject.js',
+      'moz-extension://1234/content.js',
+      'safari-web-extension://5678/script.js',
+    ])
+      expect(denied(url)).toBe(true)
+    for (const url of [
+      'https://cambio-uruguay.com/_nuxt/B9YBhYkO.js',
+      'https://cambio-uruguay.com/sw.js',
+    ])
+      expect(denied(url)).toBe(false)
+    expect(sentryErrorOptions(config, 'nitro')).not.toHaveProperty('denyUrls')
+  })
+
+  it('names the failing API endpoint instead of folding it into /other', () => {
+    // Every /api segment here is a directory in `server/api`, so it names the
+    // endpoint and never the visitor: only the parameters below it collapse.
+    for (const [path, expected] of [
+      ['/api/property-sales/ficha/infocasas-private-id?token=secret', '/api/property-sales/:item'],
+      ['/api/branches', '/api/branches'],
+      ['/api/property-nearby/alquiler/private-key', '/api/property-nearby/:item'],
+      ['/api/agencies/private-agency', '/api/agencies/:item'],
+      ['/api/__sitemap__/rentals', '/api/__sitemap__/:item'],
+      // The deliberate deeper families keep their own precision.
+      ['/api/rentals/geocode?q=private-address', '/api/rentals/geocode'],
+      ['/api/me/rental-alerts/private-id', '/api/me/rental-alerts/:item'],
+    ] as const)
+      expect(sentryRouteCategory(path)).toBe(expected)
+    // A page keeps the allowlist: its first segment is whatever was requested.
+    for (const path of ['/private-invite-code', '/wp-admin/setup.php'])
+      expect(sentryRouteCategory(path)).toBe('/other')
+    // Folding is idempotent, so a second pass cannot widen or leak it.
+    for (const path of ['/api/property-sales/:item', '/api/branches'])
+      expect(sentryRouteCategory(sentryRouteCategory(path))).toBe(path)
+  })
+
+  it('reports the numeric Mongo failure code from the cause chain and nothing else', () => {
+    const mongo = Object.assign(new Error('Sort exceeded memory limit private@example.invalid'), {
+      name: 'MongoServerError',
+      code: 292,
+    })
+    expect(sentryMongoCode(Object.assign(new Error('unavailable'), { cause: mongo }))).toBe('292')
+    expect(sentryMongoCode(mongo)).toBe('292')
+    // Only the driver's own numeric enum: never a string code, a foreign error
+    // or a chain long enough to walk an unbounded structure.
+    expect(sentryMongoCode(Object.assign(new Error('dns'), { code: 'ENOTFOUND' }))).toBeUndefined()
+    expect(
+      sentryMongoCode(Object.assign(new Error('x'), { name: 'MongoServerError', code: '292' }))
+    ).toBeUndefined()
+    expect(sentryMongoCode(new Error('plain'))).toBeUndefined()
+    const cyclic: { cause?: unknown } = {}
+    cyclic.cause = cyclic
+    expect(sentryMongoCode(cyclic)).toBeUndefined()
+    let deep: unknown = mongo
+    for (let level = 0; level < 6; level += 1)
+      deep = Object.assign(new Error('wrap'), { cause: deep })
+    expect(sentryMongoCode(deep)).toBeUndefined()
+  })
+
+  it('keeps the diagnostic tags only in their technical shapes', () => {
+    const tagsFor = (tags: Record<string, string>) =>
+      sanitizeSentryEvent(
+        { tags, exception: { values: [{ type: 'Error', value: 'x' }] } } as unknown as Event,
+        {},
+        config,
+        'nitro'
+      )!.tags
+    expect(tagsFor({ mongo_code: '292', og_source: '200' })).toEqual({
+      application: 'cambio-uruguay-app',
+      runtime: 'nitro',
+      route: '/other',
+      mongo_code: '292',
+      og_source: '200',
+    })
+    for (const tags of [
+      { mongo_code: 'private-collection', og_source: '/alquileres/private-house' },
+      { mongo_code: '292 private@example.invalid', og_source: '200 private' },
+      { mongo_code: '', og_source: '' },
+    ]) {
+      const result = tagsFor(tags)
+      expect(result).not.toHaveProperty('mongo_code')
+      expect(result).not.toHaveProperty('og_source')
+    }
+    expect(tagsFor({ og_source: 'unobserved' })).toHaveProperty('og_source', 'unobserved')
   })
 })

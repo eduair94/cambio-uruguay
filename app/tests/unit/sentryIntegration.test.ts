@@ -121,6 +121,81 @@ describe('Nitro error lifecycle', () => {
     expect(body).not.toContain('source=private')
   })
 
+  it('names the failing endpoint and the Mongo code without naming the advert', async () => {
+    const hooks = new Map<string, (...args: unknown[]) => unknown>()
+    vi.stubGlobal('defineNitroPlugin', (plugin: unknown) => plugin)
+    vi.stubGlobal('useRuntimeConfig', () => ({ sentry: config }))
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('CU_DEPLOY_PREFLIGHT', '')
+    const { default: plugin } = await import('../../server/plugins/sentry')
+    const envelopes: Envelope[] = []
+    Sentry.init({
+      ...sentryErrorOptions(config, 'nitro'),
+      registerEsmLoaderHooks: false,
+      skipOpenTelemetrySetup: true,
+      transport: () => ({
+        send: async envelope => {
+          envelopes.push(envelope)
+          return { statusCode: 200 }
+        },
+        flush: async () => true,
+      }),
+    })
+    plugin({
+      hooks: { hook: (name: string, fn: (...args: unknown[]) => unknown) => hooks.set(name, fn) },
+    } as never)
+    const cause = Object.assign(new Error('operation exceeded time limit private-advert-key'), {
+      name: 'MongoServerError',
+      code: 50,
+    })
+    hooks.get('error')!(
+      createError({
+        statusCode: 503,
+        statusMessage: 'Property sale advert is temporarily unavailable',
+        cause,
+      }),
+      {
+        event: {
+          path: '/api/property-sales/ficha/infocasas-private-advert-key',
+          method: 'GET',
+          context: {},
+        },
+      }
+    )
+    // The OG failure the extractor cannot explain by itself: the diagnostic is
+    // the status its own page read returned, not the page's address.
+    hooks.get('error')!(
+      Object.assign(new Error('[Nuxt OG Image] HTML response from /x is missing the'), {
+        statusCode: 500,
+      }),
+      {
+        event: {
+          path: '/__og-image__/image/sucursales/brou/montevideo/og.png',
+          method: 'GET',
+          context: { ogSourceStatus: '200' },
+        },
+      }
+    )
+    await hooks.get('close')!()
+    expect(envelopes).toHaveLength(2)
+    const events = envelopes.map(
+      envelope => (envelope[1][0][1] as { tags: Record<string, string> }).tags
+    )
+    expect(events[0]).toMatchObject({
+      route: '/api/property-sales/:item',
+      http_status: '503',
+      mongo_code: '50',
+    })
+    expect(events[0]).not.toHaveProperty('og_source')
+    expect(events[1]).toMatchObject({
+      route: '/__og-image__/image/sucursales/:item',
+      og_source: '200',
+    })
+    const body = JSON.stringify(envelopes)
+    for (const secret of ['private-advert-key', 'infocasas', 'brou', 'montevideo'])
+      expect(body).not.toContain(secret)
+  })
+
   it('registers no handlers or transport in tests or deployment preflight', async () => {
     vi.stubGlobal('defineNitroPlugin', (plugin: unknown) => plugin)
     vi.stubGlobal('useRuntimeConfig', () => ({ sentry: config }))

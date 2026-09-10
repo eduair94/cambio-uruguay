@@ -45,6 +45,7 @@ afterEach(() => vi.unstubAllGlobals())
 async function runtime(patched = true) {
   const hooks = new Map<string, (event: h3.H3Event) => unknown>()
   const captured: Array<{ path: string; status: number }> = []
+  const events = new Map<string, h3.H3Event>()
   const sourceReads: string[] = []
   const directory = {
     casas: { brou: { name: 'BROU' } },
@@ -74,6 +75,7 @@ async function runtime(patched = true) {
   const app = h3.createApp({
     onRequest: async event => {
       event.fetch = async input => request(String(input))
+      events.set(event.path, event)
       await hooks.get('request')?.(event)
     },
     onError: (error, event) => {
@@ -163,7 +165,7 @@ async function runtime(patched = true) {
       return `<html><script id="nuxt-og-image-options" type="application/json">${payload}</script></html>`
     })
   )
-  return { request, captured, sourceReads, delegated }
+  return { request, captured, events, sourceReads, delegated }
 }
 
 describe('OG image status through the installed Nuxt validator, extractor and H3', () => {
@@ -211,6 +213,22 @@ describe('OG image status through the installed Nuxt validator, extractor and H3
     const path = '/__og-image__/image/renderer-failure/og.png'
     expect((await request(path)).status).toBe(500)
     expect(captured.find(error => error.path === path)?.status).toBe(500)
+  })
+
+  it('records the status its own page read saw, so a 500 says which case it was', async () => {
+    const { request, events } = await runtime()
+    for (const [source, expected] of [
+      ['/broken', '200'],
+      ['/sucursales/no-existe', '404'],
+      ['/sucursales/brou/montevideo', '200'],
+    ] as const) {
+      const path = `/__og-image__/image${source}/og.png`
+      await request(path)
+      expect(events.get(path)?.context.ogSourceStatus).toBe(expected)
+    }
+    // A request the plugin does not handle keeps no diagnostic at all.
+    await request('/unavailable')
+    expect(events.get('/unavailable')?.context.ogSourceStatus).toBeUndefined()
   })
 
   it('does not mix statuses between parallel OG requests or alter unrelated route errors', async () => {

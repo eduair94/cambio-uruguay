@@ -64,6 +64,8 @@ export default defineEventHandler(async (event): Promise<PropertySaleDetailRespo
     throw createError({
       statusCode: 503,
       statusMessage: 'Property sale advert is temporarily unavailable',
+      // The public JSON stays generic; the report keeps what actually failed.
+      cause: error,
     })
   }
   if (!page) {

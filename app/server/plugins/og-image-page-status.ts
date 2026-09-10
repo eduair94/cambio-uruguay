@@ -13,11 +13,17 @@ export default defineNitroPlugin(nitroApp => {
       .match(/^\/__og-image__\/(?:image|static)(\/.*)?\/og\.(?:png|jpe?g|svg|html|json)$/)
     if (!match || !event.fetch) return
     const sourcePath = match[1] || '/'
+    // What the module's page read saw, kept for the error report. The remaining
+    // failures are pages answering 2xx without their OG payload — or reads that
+    // never resolved — and the two are indistinguishable in the error itself.
+    const context = event.context as { ogSourceStatus?: string }
+    context.ogSourceStatus = 'unobserved'
     const fetchPage = event.fetch.bind(event)
     event.fetch = async (input, init) => {
       const response = await fetchPage(input, init)
       if ((String(input).split('?')[0] || '/') === sourcePath) {
         sourceStatuses.set(event, response.status)
+        context.ogSourceStatus = String(response.status)
       }
       return response
     }

@@ -73,7 +73,12 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse> => 
   } catch (error) {
     console.error('[api/rentals/ficha] failed', error)
     setResponseHeader(event, 'cache-control', 'no-store')
-    throw createError({ statusCode: 503, statusMessage: 'Rental page is temporarily unavailable' })
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Rental page is temporarily unavailable',
+      // The public JSON stays generic; the report keeps what actually failed.
+      cause: error,
+    })
   }
   if (!page) {
     setResponseHeader(event, 'cache-control', 'no-store')

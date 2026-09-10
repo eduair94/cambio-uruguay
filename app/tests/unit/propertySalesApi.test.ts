@@ -4,11 +4,15 @@ const data = vi.hoisted(() => ({ meta: null as any, calls: [] as any[], headers:
 vi.mock('../../server/models/PropertySaleCatalog', () => ({
   PropertySaleCatalogModel: {
     aggregate: (pipeline: any[]) => {
-      const call = { pipeline, collation: null as any, options: null as any }
+      const call = { pipeline, collation: null as any, options: null as any, disk: false }
       data.calls.push(call)
       const result = Promise.resolve([]) as any
       result.collation = (value: any) => {
         call.collation = value
+        return result
+      }
+      result.allowDiskUse = (value: boolean) => {
+        call.disk = value
         return result
       }
       result.option = (value: any) => {
@@ -80,6 +84,23 @@ describe('sale API availability and bounded queries', () => {
         expect(call.pipeline[0].$match.lastSeen.$gte).toBeTruthy()
       }
       expect(data.headers).toContainEqual(['cache-control', 'public, max-age=60, s-maxage=120'])
+    }
+  )
+  it.each([
+    ['list', list],
+    ['map', map],
+  ] as const)(
+    'lets the %s sort spill to disk, since the projection runs after it',
+    async (_name, handler) => {
+      data.meta = { usdUyu: 40, total: 0, sources: [] }
+      await handler({ query: {} } as any)
+      // Every matching advert crosses this sort whole: `/api/rentals` reached
+      // Mongo's 100 MiB in-memory limit with the same shape and answered 503.
+      const sorted = data.calls.filter((call: any) =>
+        call.pipeline.some((stage: any) => stage.$sort?._freshAt || stage.$sort?._displayPrice)
+      )
+      expect(sorted).toHaveLength(1)
+      expect(sorted[0].disk).toBe(true)
     }
   )
   it('groups only adverts without published coordinates into zone markers', async () => {

@@ -34,11 +34,13 @@ export default defineEventHandler(async event => {
       : snapshot
     setResponseHeader(event, 'cache-control', 'public, max-age=30, s-maxage=60')
     return queryPropertyOpportunities(current, input)
-  } catch {
+  } catch (error) {
     setResponseHeader(event, 'cache-control', 'no-store')
     throw createError({
       statusCode: 503,
       statusMessage: 'Property comparison is temporarily unavailable',
+      // The public JSON stays generic; the report keeps what actually failed.
+      cause: error,
     })
   }
 })

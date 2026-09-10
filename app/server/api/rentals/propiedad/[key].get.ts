@@ -50,6 +50,8 @@ export default defineEventHandler(async (event): Promise<RentalPropertyDetailRes
     throw createError({
       statusCode: 503,
       statusMessage: 'Rental detail is temporarily unavailable',
+      // The public JSON stays generic; the report keeps what actually failed.
+      cause: error,
     })
   }
   if (!property) {

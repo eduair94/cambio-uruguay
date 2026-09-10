@@ -81,16 +81,51 @@ export function sentryRouteCategory(value: unknown): string {
   return pageRouteCategory(path)
 }
 
+/**
+ * The driver's numeric failure code, from the error or its cause chain.
+ *
+ * A Mongo message can quote the query, so it is withheld like any other free
+ * text; the code is a fixed enum (292 = sort over the memory limit, 50 = the
+ * operation's time limit) and says what failed without saying on what.
+ */
+export function sentryMongoCode(error: unknown): string | undefined {
+  const seen = new Set<unknown>()
+  let current = error
+  for (let depth = 0; depth < 5 && current && typeof current === 'object'; depth += 1) {
+    if (seen.has(current)) return undefined
+    seen.add(current)
+    const candidate = current as { name?: unknown; code?: unknown; cause?: unknown }
+    if (
+      String(candidate.name).startsWith('Mongo') &&
+      Number.isInteger(candidate.code) &&
+      (candidate.code as number) >= 0 &&
+      (candidate.code as number) <= 999999
+    )
+      return String(candidate.code)
+    current = candidate.cause
+  }
+  return undefined
+}
+
 function pageRouteCategory(path: string): string {
   if (path === '/') return '/'
   for (const prefix of apiFamilies) {
     if (path === prefix || path.startsWith(`${prefix}/`))
       return path === prefix ? prefix : `${prefix}/:item`
   }
-  const first = path.split('/')[1]
-  return pageFamilies.includes(first)
-    ? `/${first}${path.split('/').length > 2 ? '/:item' : ''}`
-    : '/other'
+  const segments = path.split('/')
+  const first = segments[1]
+  if (pageFamilies.includes(first)) return `/${first}${segments.length > 2 ? '/:item' : ''}`
+  // Every server route under /api is a file in `server/api`, so its first
+  // segment is a directory name, never a visitor's slug: no route directory is
+  // dynamic at that depth, and an invented /api path has no handler and cannot
+  // reach this with a 5xx. Naming it is what separates a failing endpoint from
+  // the `/other` that 126 of the 139 API routes reported. Deeper segments are
+  // the parameters, so they collapse. Pages stay on the list above: a first
+  // segment there can be anything a visitor or a crawler put in the address.
+  if (first === 'api' && /^_{0,2}[a-z][a-z\d-]{0,30}_{0,2}$/.test(segments[2] || ''))
+    return `/api/${segments[2]}${segments.length > 3 ? '/:item' : ''}`
+  return '/other'
 }
 
 function safeFrame(frame: StackFrame): StackFrame {
@@ -142,6 +177,14 @@ function technicalMessage(value: unknown, status?: string): string {
   return 'Error message withheld; inspect the bundled stack'
 }
 
+// Diagnostic tags, each a fixed technical vocabulary rather than free text:
+// the Mongo failure code, and the status the OG extractor's own page read saw
+// (`unobserved` when it never resolved). Anything else in the tag is dropped.
+const diagnosticTags: Array<[string, RegExp]> = [
+  ['mongo_code', /^\d{1,6}$/],
+  ['og_source', /^(?:[1-5]\d{2}|unobserved)$/],
+]
+
 /** An allowlist, so future SDK integrations cannot silently add private data. */
 export function sanitizeSentryEvent(
   event: Event,
@@ -174,6 +217,11 @@ export function sanitizeSentryEvent(
       ...(/^(?:GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)$/.test(String(event.tags?.method))
         ? { method: event.tags!.method }
         : {}),
+      ...Object.fromEntries(
+        diagnosticTags
+          .filter(([name, shape]) => shape.test(String(event.tags?.[name] ?? '')))
+          .map(([name]) => [name, String(event.tags![name])])
+      ),
     },
     exception: {
       values: event.exception.values.slice(-3).map(exception => ({
@@ -205,6 +253,19 @@ export function sentryErrorOptions(
       ? config.environment
       : 'production',
     release: /^[\w.@+-]{1,160}$/.test(config.release || '') ? config.release : undefined,
+    // Scripts the page embeds but does not control. Their frames are their own
+    // code, so the report is not actionable here; InboundFilters reads the last
+    // named frame, which for these failures is the third-party file itself.
+    ...(runtime === 'browser'
+      ? {
+          denyUrls: [
+            /googlesyndication\.com/,
+            /doubleclick\.net/,
+            /adsbygoogle/,
+            /^(?:chrome|moz|safari-web|safari)-extension:/,
+          ],
+        }
+      : {}),
     sendDefaultPii: false,
     sendClientReports: false,
     autoSessionTracking: false,

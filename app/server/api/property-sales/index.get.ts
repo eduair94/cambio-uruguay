@@ -61,6 +61,10 @@ export default defineEventHandler(async (event): Promise<PropertySalesResponse> 
       { $limit: query.perPage },
       { $project: propertySaleSummaryProjection },
     ])
+      // The projection runs after the sort, so every matching advert crosses it
+      // whole. `/api/rentals` hit Mongo's 100 MiB sort limit with this same
+      // shape at its own inventory; allow bounded disk spill instead of a 503.
+      .allowDiskUse(true)
       .collation(PROPERTY_SALES_COLLATION)
       .option({ maxTimeMS: 10000 })
     const toFacet = (values: Array<{ _id: string; count: number }>): PropertySaleFacet[] =>
@@ -94,6 +98,8 @@ export default defineEventHandler(async (event): Promise<PropertySalesResponse> 
         error instanceof Error && error.message === 'SALE_CATALOG_PREPARING'
           ? 'Property sales catalogue is being prepared'
           : 'Property sales search is temporarily unavailable',
+      // The public JSON stays generic; the report keeps what actually failed.
+      cause: error,
     })
   }
 })
