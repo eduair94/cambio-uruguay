@@ -373,6 +373,13 @@
                     <v-icon size="x-small" class="mr-1">mdi-calendar-clock</v-icon
                     >{{ dayNote(item) }}
                   </div>
+                  <div v-if="mpCapNote(item)" class="text-caption mt-1 mp-cap">
+                    <v-icon size="x-small" class="mr-1">mdi-gauge</v-icon>{{ mpCapNote(item) }}
+                  </div>
+                  <div v-if="mpWarnNote(item)" class="text-caption mt-1 mp-warn">
+                    <v-icon size="x-small" class="mr-1">mdi-alert-outline</v-icon
+                    >{{ mpWarnNote(item) }}
+                  </div>
                   <div
                     v-if="item.otherBanks?.length"
                     class="text-caption mt-1 d-flex flex-wrap align-center ga-1"
@@ -553,6 +560,13 @@ import {
   type BankosItem,
 } from '~/utils/bankos'
 import { BANKOS_CATEGORY_PAGES, bankPageForBankId } from '~/utils/bankosPages'
+import { formatUYU } from '~/utils/format'
+import {
+  mercadoPagoDaysLeft,
+  mercadoPagoPromoFor,
+  mercadoPagoSaturation,
+  mercadoPagoStatus,
+} from '~/utils/mercadoPagoPromos'
 import { useBankosCardsStore } from '~/stores/bankosCards'
 import { useBankosFavoritesStore } from '~/stores/bankosFavorites'
 import { useAuthStore } from '~/stores/auth'
@@ -832,6 +846,13 @@ const favoritesStore = useBankosFavoritesStore()
 // Day-aware filtering: ~200 discounts only run on certain weekdays (verified mapping,
 // utils/bankos + tests/unit/bankosDays.test.ts). "Hoy" is the question people actually ask.
 const today = ref(isoWeekdayToday())
+/**
+ * Fecha de referencia para el vencimiento de las campañas de Mercado Pago.
+ *
+ * Se fija una sola vez en el setup, igual que `today`: si cada llamada creara su propio `new Date()`
+ * el texto podría cambiar entre el render del servidor y el del cliente.
+ */
+const nowDate = ref(new Date())
 const todayLabel = computed(() => BANKOS_DAY_LABELS[today.value] ?? '')
 const onlyToday = ref(false)
 const onlyFavorites = ref(false)
@@ -841,6 +862,47 @@ const onlyTopRated = ref(false)
 function appliesToday(item: BankosItem): boolean {
   return item.banks.some(b => appliesOnDay(b, today.value))
 }
+/**
+ * El tope de Mercado Pago, que es el dato que el mapa no trae.
+ *
+ * Bankos publica el porcentaje ("20% de descuento con dinero disponible en Mercado Pago") y en tres
+ * marcas los días, pero ninguna de sus filas dice que el beneficio topea. Y topea siempre: $ 300 o
+ * $ 500 por mes según la campaña. Con ese techo, un 20 % y un 10 % devuelven exactamente lo mismo a
+ * fin de mes en cuanto el consumo pasa la saturación, así que el porcentaje solo ordena mal.
+ *
+ * Sale de los términos oficiales de cada campaña, leídos a mano y fechados en
+ * `utils/mercadoPagoPromos.ts` — ver ahí por qué no puede ser un job.
+ */
+function mpCapNote(item: BankosItem): string {
+  if (!item.banks.some(b => b.bankId === 'mercadopago')) return ''
+  const promo = mercadoPagoPromoFor(item.brandId)
+  if (!promo || promo.capUyu === null) return ''
+  const periodo = promo.capPeriod === 'mes' ? 'por mes' : 'en toda la campaña'
+  const saturacion = mercadoPagoSaturation(promo)
+  const agota = saturacion
+    ? ` — se agota a los ${formatUYU(saturacion, 0)} de consumo${promo.capPeriod === 'mes' ? ' mensual' : ''}`
+    : ''
+  return `Mercado Pago topea en ${formatUYU(promo.capUyu, 0)} ${periodo}${agota}`
+}
+
+/** Lo que hay que decir aunque no se pueda resolver: vencimiento cercano y fuentes que se contradicen. */
+function mpWarnNote(item: BankosItem): string {
+  if (!item.banks.some(b => b.bankId === 'mercadopago')) return ''
+  const promo = mercadoPagoPromoFor(item.brandId)
+  if (!promo) return ''
+  const partes: string[] = []
+  const estado = mercadoPagoStatus(promo, nowDate.value)
+  if (estado === 'vencida') partes.push('La campaña figura vencida en los términos de Mercado Pago')
+  else if (estado === 'indeterminado' && promo.datesInconsistent)
+    partes.push('Los términos de Mercado Pago se contradicen en las fechas de vigencia')
+  else {
+    const dias = mercadoPagoDaysLeft(promo, nowDate.value)
+    if (dias !== null && dias <= 45) partes.push(`Vence en ${dias} día${dias === 1 ? '' : 's'}`)
+  }
+  if (promo.disagreement) partes.push(promo.disagreement)
+  return partes.join(' · ')
+}
+
 /** "solo miércoles, sábados y domingos" for the banks that restrict days; '' when all are daily. */
 function dayNote(item: BankosItem): string {
   const notes = new Set<string>()
@@ -1194,5 +1256,13 @@ useHead(() => ({
   font-size: 0.72rem;
   color: rgba(var(--v-theme-on-surface), 0.6);
   font-variant-numeric: tabular-nums;
+}
+/* El tope y su advertencia se apoyan en el lienzo de la tarjeta, no en un panel tintado, así que
+   el color va mezclado hacia `on-surface` para llegar a 4,5:1 en los dos temas. */
+.mp-cap {
+  color: color-mix(in srgb, rgb(var(--v-theme-info)) 62%, rgb(var(--v-theme-on-surface)));
+}
+.mp-warn {
+  color: color-mix(in srgb, rgb(var(--v-theme-warning)) 55%, rgb(var(--v-theme-on-surface)));
 }
 </style>

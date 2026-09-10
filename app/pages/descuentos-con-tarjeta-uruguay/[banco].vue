@@ -154,10 +154,71 @@
                 {{ brand.locations }} local{{ brand.locations === 1 ? '' : 'es' }}
                 <template v-if="brandDayNote(brand)"> · {{ brandDayNote(brand) }}</template>
                 <template v-if="brandHasDebit(brand)"> · también con débito</template>
+                <template v-if="brandCapNote(brand)">
+                  · <span class="brand-cap">{{ brandCapNote(brand) }}</span>
+                </template>
               </span>
             </li>
           </ul>
         </section>
+      </section>
+
+      <!-- 2b. Sólo Mercado Pago: los topes que publica en sus propios términos y que el mapa no
+           trae. Es la diferencia entre "20 %" y "$ 300 por mes", que no son lo mismo. -->
+      <section v-if="mpPromos.length" class="mb-8">
+        <h2 class="text-h6 font-weight-bold mb-1">Cuánto se ahorra de verdad: el tope</h2>
+        <p class="text-body-2 text-medium-emphasis mb-3 lead">
+          Ninguno de estos descuentos es un porcentaje libre: todos topean, y el tope está en los
+          términos de cada campaña, no en el mapa. Con un techo de {{ formatUYU(300, 0) }} por mes,
+          un 20 % y un 10 % devuelven <strong>lo mismo</strong> apenas el consumo pasa la columna
+          «se agota a los». Leído a mano el {{ dateText(MERCADO_PAGO_PROMOS_REVIEWED) }}; cada fila
+          enlaza los términos oficiales.
+        </p>
+        <div class="table-scroll">
+          <table class="cmp cu-mobile-cards">
+            <thead>
+              <tr>
+                <th>Marca</th>
+                <th class="num">Descuento</th>
+                <th class="num">Tope</th>
+                <th class="num">Se agota a los</th>
+                <th>Vigencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="promo in mpPromos" :key="promo.campaignId">
+                <td data-label="Marca">
+                  <a :href="promo.termsUrl" target="_blank" rel="noopener nofollow">
+                    {{ promo.brandLabel }}
+                  </a>
+                  <span v-if="promo.days" class="d-block text-caption text-medium-emphasis">
+                    {{ promo.days }}
+                  </span>
+                </td>
+                <td data-label="Descuento" class="num">
+                  {{ promo.percent === null ? 'sin dato' : `${promo.percent} %` }}
+                </td>
+                <td data-label="Tope" class="num">
+                  {{ promo.capUyu === null ? 'sin tope declarado' : formatUYU(promo.capUyu, 0) }}
+                  <span v-if="promo.capPeriod" class="text-caption text-medium-emphasis">
+                    {{ promo.capPeriod === 'mes' ? '/mes' : '/campaña' }}
+                  </span>
+                </td>
+                <td data-label="Se agota a los" class="num">
+                  {{
+                    mercadoPagoSaturation(promo) === null
+                      ? '—'
+                      : formatUYU(mercadoPagoSaturation(promo)!, 0)
+                  }}
+                </td>
+                <td data-label="Vigencia">{{ mpValidity(promo) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ul v-if="mpCaveats.length" class="mp-caveats mt-3">
+          <li v-for="(c, i) in mpCaveats" :key="i" class="text-body-2 mb-1">{{ c }}</li>
+        </ul>
       </section>
 
       <!-- 3. Cómo se compara. Sale de /api/bankos/analysis, que es una reducción chica del mismo
@@ -267,6 +328,17 @@ import { computed } from 'vue'
 import { BANKOS_BANK_BY_ID, BANKOS_CARD_PAGE_ANCHORS, dayRestrictionLabel } from '~/utils/bankos'
 import type { BrandRow, OfferTier } from '~/utils/bankosBrands'
 import type { BankosAnalysis } from '~/utils/bankosAnalysis'
+import { formatUYU } from '~/utils/format'
+import {
+  MERCADO_PAGO_PROMOS,
+  MERCADO_PAGO_PROMOS_REVIEWED,
+  MERCADO_PAGO_UNAVAILABLE,
+  mercadoPagoDaysLeft,
+  mercadoPagoPromoFor,
+  mercadoPagoSaturation,
+  mercadoPagoStatus,
+  type MercadoPagoPromo,
+} from '~/utils/mercadoPagoPromos'
 import {
   BANKOS_BANK_PAGES,
   BANKOS_SHARED_FAQ,
@@ -372,6 +444,62 @@ function brandHasDebit(brand: BrandRow): boolean {
 function brandDayNote(brand: BrandRow): string {
   const days = brand.offers.find(offer => offer.days?.length)?.days
   return dayRestrictionLabel(days ?? null)
+}
+
+// ─── Mercado Pago: el tope, que el mapa no trae ───────────────────────────────
+//
+// Bankos publica el porcentaje y, en tres marcas, los días. Nunca el techo, y el techo es lo que
+// decide: con $ 300 por mes, un 20 % y un 10 % pagan lo mismo apenas el consumo pasa la
+// saturación. Sale de los términos oficiales de cada campaña, leídos a mano y fechados en
+// `utils/mercadoPagoPromos.ts` — ahí está por qué no puede ser un job.
+
+/** Vacío en toda página que no sea la de Mercado Pago. */
+const mpPromos = computed(() =>
+  bankId === 'mercadopago' ? MERCADO_PAGO_PROMOS.filter(p => p.bankosBrandIds.length > 0) : []
+)
+
+const nowDate = new Date()
+
+/** Tope resumido para la línea de una marca del listado por rubro. */
+function brandCapNote(brand: BrandRow): string {
+  if (bankId !== 'mercadopago') return ''
+  const promo = mercadoPagoPromoFor(brand.brandId)
+  if (!promo || promo.capUyu === null) return ''
+  return `tope ${formatUYU(promo.capUyu, 0)}${promo.capPeriod === 'mes' ? '/mes' : '/campaña'}`
+}
+
+function mpValidity(promo: MercadoPagoPromo): string {
+  const estado = mercadoPagoStatus(promo, nowDate)
+  if (estado === 'indeterminado') return 'los términos se contradicen'
+  if (estado === 'vencida') return 'vencida según sus términos'
+  if (estado === 'futura') return 'todavía no empezó'
+  const dias = mercadoPagoDaysLeft(promo, nowDate)
+  if (dias === null) return 'vigente'
+  return dias <= 45 ? `vence en ${dias} día${dias === 1 ? '' : 's'}` : 'vigente'
+}
+
+/**
+ * Lo que no se puede resolver desde afuera, dicho en vez de escondido: las campañas cuyos términos
+ * contradicen al mapa, y las que la página de Mercado Pago enlaza sin que exista el documento.
+ */
+const mpCaveats = computed<string[]>(() => {
+  if (bankId !== 'mercadopago') return []
+  const out = MERCADO_PAGO_PROMOS.filter(p => p.disagreement).map(
+    p => `${p.brandLabel}: ${p.disagreement}`
+  )
+  if (MERCADO_PAGO_UNAVAILABLE.length) {
+    out.push(
+      `La página de promociones enlaza ${MERCADO_PAGO_UNAVAILABLE.length} campaña más (${MERCADO_PAGO_UNAVAILABLE.join(', ')}) cuyos términos Mercado Pago ya no sirve, así que no se publica ni su tope ni su vigencia.`
+    )
+  }
+  return out
+})
+
+const dateText = (iso: string): string => {
+  const d = new Date(`${iso}T12:00:00`)
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 /**
@@ -594,6 +722,15 @@ useHead(() => ({
   display: block;
   font-size: 0.75rem;
   color: rgba(var(--v-theme-on-surface), 0.65);
+}
+/* El tope se apoya en el lienzo de la página, no en un panel tintado, así que el matiz va mezclado
+   hacia `on-surface` para llegar a 4,5:1 en los dos temas. */
+.brand-cap {
+  color: color-mix(in srgb, rgb(var(--v-theme-info)) 62%, rgb(var(--v-theme-on-surface)));
+}
+.mp-caveats {
+  padding-left: 1.1rem;
+  color: rgba(var(--v-theme-on-surface), 0.8);
 }
 .rubro h3 a {
   color: rgb(var(--v-theme-link));
