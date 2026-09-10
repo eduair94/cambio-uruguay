@@ -116,5 +116,19 @@ proyección; sin medirlo se arriesga un orden silenciosamente equivocado.
   el departamento.
 - ESLint aprobado en los trece archivos modificados.
 
-Queda pendiente comprobar en producción el release desplegado y volver a leer las
-incidencias; ninguna se cierra en Sentry por este cambio.
+## Comprobación en producción
+
+El [despliegue 34509506683](https://github.com/eduair94/cambio-uruguay/actions/runs/34509506683)
+terminó correctamente para `ae820011`, y la portada sirve exactamente ese release
+(`cambio-uruguay-app@ae820011...`). Respondieron 200 las cinco superficies que
+tocan los cambios: `/api/property-sales` (lista y mapa), `/api/property-opportunities`,
+la ficha de un aviso real, `/venta-viviendas-uruguay` y la imagen social de
+sucursales.
+
+Estados actualizados en Sentry con la sesión del propietario: **F** resuelta —su
+release `bc6b0ce` es anterior al arreglo `a5a3ba9`, ya verificado en el bundle
+servido— y **V** archivada, porque su stack es entero de `adsbygoogle.js` y ahora
+`denyUrls` lo descarta antes de enviarlo. Ninguna otra se cierra: quedan **diez**
+abiertas (9, C, X, R, H, W, T, S, E, D). Las tres que este cambio hace
+atribuibles —X, C y 9— sólo lo serán con su **próximo** evento; que hoy no vuelvan
+a aparecer no demuestra nada todavía.
