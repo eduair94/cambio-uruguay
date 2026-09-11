@@ -809,7 +809,7 @@ const lastReviewedLabel = formatReviewedDate(RENT_GUIDE_LAST_REVIEWED)
 const communitiesReviewedLabel = formatReviewedDate(RENT_COMMUNITIES_LAST_REVIEWED)
 
 const canonicalUrl = 'https://cambio-uruguay.com/alquilar-en-uruguay'
-const title = 'Cómo alquilar en Uruguay: guía definitiva y ruta urgente (2026)'
+const title = 'Cómo alquilar en Uruguay: la ruta urgente'
 const description =
   'Guía completa para alquilar en Uruguay: qué hacer si necesitás techo hoy, cómo buscar habitación o vivienda, garantías ANDA, CGN, seguro, BHU y sin garantía, costos, contrato, derechos y estafas.'
 

@@ -322,7 +322,7 @@ const RELATED = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/renunciar-al-trabajo-uruguay'
-const title = 'Renuncié en Uruguay: qué me tienen que pagar y en qué plazo'
+const title = 'Renuncia: qué cobrás y el plazo de 10 días'
 const description =
   'Quien renuncia sí cobra: licencia no gozada, salario vacacional y aguinaldo generado (MTSS). Lo único que se pierde es la indemnización por despido. No hay plazo en la norma laboral, así que el MTSS remite al art. 1440 del Código Civil: exigible a los 10 días corridos, y el art. 29 de la Ley 18.572 suma un recargo automático del 10 % si no pagan.'
 

@@ -272,7 +272,7 @@ const verifiedAt = new Date(OSE_VERIFIED_AT).toLocaleDateString('es-UY', {
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/factura-de-ose-uruguay'
-const title = 'Factura de OSE: por qué el saneamiento te cobra el agua dos veces'
+const title = 'Factura de OSE: $ 464,55 de cargos fijos'
 const description =
   'Un hogar con saneamiento paga $ 464,55 por mes de cargos fijos antes del primer metro cúbico: $ 327,50 de agua (conexión de 12,5 a 13 mm) más $ 137,05 de saneamiento. Y después cada m³ se factura dos veces, porque el cargo variable del saneamiento es el 100 % del de agua. Los cuatro conceptos de la factura, el ajuste de 8,5 % que rige desde enero de 2026 (4,8 % de inflación proyectada y 3,7 % de desequilibrio estructural) y el Decreto 340/025 que fija todo.'
 

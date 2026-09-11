@@ -422,7 +422,7 @@ const verifiedAt = new Date(UNEMPLOYMENT_VERIFIED_AT).toLocaleDateString('es-UY'
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/seguro-de-paro-uruguay'
-const title = 'Seguro de paro en Uruguay: cuánto cobrás y por qué baja cada mes'
+const title = 'Seguro de paro: 66 % el primer mes y topes'
 const description =
   'Cuánto se cobra de seguro de paro con los porcentajes y topes 2026 de BPS. Por despido: 66 %, 57 %, 50 %, 45 %, 42 % y 40 % del promedio nominal de los últimos seis meses, con un tope distinto para cada mes. Por suspensión total y trabajo reducido: 50 % fijo. Calculadora por causal, extensión de seis meses para 50 o más (sólo en despido), complemento del 20 % por cargas familiares, aportes previos, quién queda amparado, qué corta el subsidio y cómo es el trámite.'
 

@@ -2048,7 +2048,7 @@ const sources = computed<SourceEntry[]>(() => {
 
 // ── SEO ───────────────────────────────────────────────────────────────────────
 const canonicalUrl = 'https://cambio-uruguay.com/que-empresa-abrir-uruguay'
-const title = 'Qué empresa abrir en Uruguay: monotributo, unipersonal, SAS o SRL'
+const title = 'Qué empresa abrir: monotributo, SAS o SRL'
 const description =
   'Descubrí qué figura legal te conviene según lo que facturás: monotributo, unipersonal Literal E, IRPF, SAS o SRL. Costos reales 2026, topes y responsabilidad, con la norma citada.'
 

@@ -247,7 +247,18 @@ const MEASURABLE = 111
 // test mide `es` y dejar `en`/`pt` largos habría escondido el mismo defecto en dos idiomas.
 // El bound quedó en el conteo real (16) y no en un número redondo: el sobrante de 3 que tenía el 33
 // alcanzaba para que tres páginas nuevas entraran cortadas sin poner nada en rojo.
-const OVER_BUDGET = 16
+//
+// 16 → 0 el 2026-09-10: los dieciséis que quedaban, todos entre 76 y 83 caracteres. Con el bound en
+// cero esto deja de ser un trinquete y pasa a ser contrato: ya no hay sobrante que pueda absorber
+// un título nuevo que se corte. Mismo criterio que en las tandas anteriores — el que tenía una
+// cifra publicable en la página se la llevó al título («10 días» del art. 1440, «3 puertas», «66 %»
+// del primer mes de seguro de paro, «$ 464,55» de cargos fijos de OSE) y el resto conservó la marca
+// o la intención de la consulta («Sodimac», «Cotización BCU», «tier list») soltando la explicación
+// que la descripción ya da entera. Ninguno de estos `title` se renderiza en el template, así que
+// ningún H1 visible cambió: lo único que cambia es lo que llega al SERP.
+//
+// Si CI falla acá, el título que agregaste no entra: 43 caracteres o menos.
+const OVER_BUDGET = 0
 
 describe('el lector sigue los títulos trasladados a mensajes locales', () => {
   for (const [file, title] of [

@@ -368,7 +368,7 @@ const fpp = ref('')
 const calendario = computed(() => (fpp.value ? calendarioMaternidad(fpp.value) : null))
 
 const canonicalUrl = 'https://cambio-uruguay.com/licencia-por-maternidad-y-paternidad-uruguay'
-const title = 'Licencia por maternidad y paternidad en Uruguay: días y quién paga'
+const title = 'Licencia por maternidad y paternidad 2026'
 const description = `Desde el 1 de enero de 2026 la licencia por paternidad es de ${PATERNIDAD_DIAS_TOTAL} días corridos: ${PATERNIDAD_DIAS_EMPRESA} los paga la empresa (Ley 18.345) y ${PATERNIDAD_DIAS_BPS_DEPENDIENTE} el BPS (Ley 20.312). La maternal son ${MATERNIDAD_DIAS_TOTAL} días, ${MATERNIDAD_DIAS_PREPARTO} antes del parto y ${MATERNIDAD_DIAS_POSPARTO} después, y el medio horario se corta a los ${MEDIO_HORARIO_HASTA_MESES} meses del bebé. Poné tu fecha probable de parto y mirá en qué días cae.`
 
 defineOgImageComponent('Cambio', {
