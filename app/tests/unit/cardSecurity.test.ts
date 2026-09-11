@@ -2,10 +2,12 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  CARD_COMMUNITY_CLAIMS,
   CARD_MYTHS,
   CARD_SECURITY_FAQ,
   CARD_SECURITY_GAPS,
   CARD_SECURITY_LAST_REVIEWED,
+  CLAIM_VERDICT_LABELS,
   CLONING_VECTORS,
   CONTROL_LABELS,
   CONTROL_WEIGHTS,
@@ -198,10 +200,24 @@ describe('hallazgos que la página afirma', () => {
    * política y el dato se actualiza, el test falla y el texto de la página se
    * revisa junto con el dato — que es exactamente lo que tiene que pasar.
    */
-  it('en BROU el aviso completo es pago', () => {
+  /**
+   * La versión anterior de este test exigía `pago`, y ese era justo el error que
+   * el hilo nos marcó: en BROU el aviso por compra existe y es gratis, lo pago
+   * es el SMS que agrega las compras autenticadas. El test se da vuelta con el
+   * dato para que nadie pueda volver al titular viejo sin romperlo.
+   */
+  it('en BROU el aviso gratuito existe, y lo pago es sólo el tramo que falta', () => {
     const brou = ISSUERS.find(i => i.id === 'brou') as Issuer
-    expect(brou.controls.aviso.state).toBe('pago')
+    expect(brou.controls.aviso.state).toBe('parcial')
+    expect(brou.controls.aviso.detail).toMatch(/gratis|gratuito/i)
     expect(brou.controls.aviso.detail).toMatch(/\$ ?75/)
+    expect(brou.controls.aviso.detail).toMatch(/PIN/)
+  })
+
+  it('OCA publica un tope diario, aunque el titular no lo pueda mover', () => {
+    const oca = ISSUERS.find(i => i.id === 'oca') as Issuer
+    expect(oca.controls.limites.state).toBe('parcial')
+    expect(oca.controls.limites.quote).toMatch(/20\.000/)
   })
 
   it('Midinero es el único que publica topes por canal ajustables', () => {
@@ -239,6 +255,69 @@ describe('mitos', () => {
 
   it('la banda magnética queda como "es al revés", no como mito neutro', () => {
     expect(CARD_MYTHS.find(m => m.id === 'banda-vieja')?.verdict).toBe('al-reves')
+  })
+})
+
+describe('lo que discutió la comunidad', () => {
+  it('cada afirmación trae lo que se dijo, lo que encontramos y la fuente', () => {
+    for (const claim of CARD_COMMUNITY_CLAIMS) {
+      expect(claim.said.length, claim.id).toBeGreaterThan(30)
+      expect(claim.found.length, claim.id).toBeGreaterThan(80)
+      expect(claim.sources.length, claim.id).toBeGreaterThan(0)
+      for (const source of claim.sources) expect(source.url, claim.id).toMatch(/^https:\/\//)
+      expect(CLAIM_VERDICT_LABELS[claim.verdict], claim.id).toBeTruthy()
+    }
+  })
+
+  it('los ids no se repiten', () => {
+    const ids = CARD_COMMUNITY_CLAIMS.map(c => c.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  /**
+   * La sección existe para publicar la corrección que nos hicieron, no para
+   * exhibir sólo las que ganamos. Si algún día quedaran únicamente veredictos
+   * que nos dan la razón, la sección dejó de hacer lo que dice que hace.
+   */
+  it('incluye al menos una corrección contra la propia página', () => {
+    const brou = CARD_COMMUNITY_CLAIMS.find(c => c.id === 'brou-avisa-todo')
+    expect(brou?.verdict).toBe('confirmado')
+    expect(brou?.found).toMatch(/esta p[áa]gina/i)
+  })
+
+  it('lo que no se pudo contrastar queda etiquetado como tal, no borrado', () => {
+    const unverified = CARD_COMMUNITY_CLAIMS.filter(c => c.verdict === 'sin-verificar')
+    expect(unverified.length).toBeGreaterThan(0)
+    for (const claim of unverified) {
+      expect(claim.found, claim.id).toMatch(
+        /no (se puede|encontramos|hay|puede)|no publica|ning[úu]n emisor/i
+      )
+    }
+  })
+
+  it('las citas de la gente van entre comillas angulares, separadas de nuestra voz', () => {
+    for (const claim of CARD_COMMUNITY_CLAIMS) {
+      expect(claim.said.includes('«'), claim.id).toBe(true)
+      expect(claim.said.includes('»'), claim.id).toBe(true)
+    }
+  })
+})
+
+describe('advertencias por emisor', () => {
+  it('toda nota lleva texto y fuente con URL', () => {
+    for (const issuer of ISSUERS) {
+      if (!issuer.note) continue
+      expect(issuer.note.text.length, issuer.id).toBeGreaterThan(60)
+      expect(issuer.note.sources.length, issuer.id).toBeGreaterThan(0)
+      for (const source of issuer.note.sources) {
+        expect(source.url, issuer.id).toMatch(/^https:\/\//)
+      }
+    }
+  })
+
+  it('Scotiabank advierte lo de la Amex, que es el único emisor que la tiene', () => {
+    const scotia = ISSUERS.find(i => i.id === 'scotiabank') as Issuer
+    expect(scotia.note?.text).toMatch(/frente/i)
   })
 })
 

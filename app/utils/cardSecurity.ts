@@ -20,17 +20,31 @@
 // se rellena con la app de otro país ni con lo que cuenta un usuario.
 //
 // LOS TRES HALLAZGOS QUE ORDENAN LA PÁGINA:
-//   1. La recomendación 7 del BCU es "ESTABLEZCA ALERTAS para las compras
-//      realizadas con sus tarjetas". En el banco más usado del país esa alerta
-//      completa ES PAGA: la notificación gratis cubre sólo las compras sin
-//      segundo factor, y la que cubre todas cuesta $75 + IVA por un paquete de
-//      25 mensajes al mes.
-//   2. La clonación que cuenta la gente casi nunca es la del chip. Es el número
+//   1. La clonación que cuenta la gente casi nunca es la del chip. Es el número
 //      viajando sin la tarjeta: lo anotan o lo fotografían en el mostrador y lo
 //      usan por internet. Por eso el control que más sirve no es físico.
+//   2. El aviso por compra del BROU es GRATIS y cubre justo ese vector, pero
+//      tiene un hueco definido: la notificación sin costo (buzón de eBROU +
+//      PUSH) deja afuera las compras que pidieron PIN y las de internet que
+//      pasaron por Visa Secure o MCIDcheck. El servicio que avisa TODAS las
+//      compras es el SMS, y cuesta $75 + IVA por 25 mensajes al mes.
 //   3. Taparle los números con cinta no resuelve nada, y hay emisores que ya
 //      resolvieron el problema de raíz: la prepaga de Mercado Pago se emite
 //      "sin datos impresos".
+//
+// POR QUÉ EL HALLAZGO 2 ESTÁ REESCRITO (2026-09-11). La primera versión de esta
+// página titulaba que "la alerta del BROU es paga", se publicó en el propio
+// hilo 1wd0ufw y el autor del hilo contestó lo contrario desde su experiencia:
+// "ahora el BROU anda mandando notificaciones con cada compra". Un segundo
+// usuario lo confirmó para crédito, débito y extensión. Fuimos a la letra del
+// BROU y el que estaba mal encuadrado era el titular: el servicio gratuito
+// alcanza a Crédito, Débito y Prepaga, propias y de adicionales, y lo que deja
+// afuera son exactamente las transacciones en las que alguien tuvo que probar
+// que era el titular (PIN o segundo factor). O sea: contra el fraude que esta
+// página documenta, el aviso gratis SÍ suena. La sección "Lo que discutieron en
+// el hilo" (CARD_COMMUNITY_CLAIMS) publica esa corrección y las otras que
+// dejaron los comentarios, cada una contra la fuente que la confirma o la
+// desmiente.
 //
 // MÓDULO PURO (sin Vue/Nuxt) para que la página y su test compartan una sola
 // fuente de verdad. Es información, no asesoramiento: no publica cómo se
@@ -43,7 +57,7 @@
 import type { DeliverySource } from './parcelDelivery'
 
 /** Fecha (YYYY-MM-DD) en que se contrastó cada casilla contra su fuente. */
-export const CARD_SECURITY_LAST_REVIEWED = '2026-09-10'
+export const CARD_SECURITY_LAST_REVIEWED = '2026-09-11'
 
 /** El hilo que originó la página. Se cita porque la pregunta es textual. */
 export const CARD_SECURITY_SOURCE_THREAD =
@@ -80,6 +94,18 @@ export interface CloningVector {
   sources: readonly DeliverySource[]
 }
 
+/**
+ * American Express, sobre dónde imprime su código de seguridad. Se declara acá
+ * arriba y no junto al resto de las fuentes de emisor porque la usan las dos
+ * mitades del módulo: el vector del mostrador y la ficha de Scotiabank. Abajo
+ * quedaría en zona muerta temporal cuando se evalúa `CLONING_VECTORS`.
+ */
+const AMEX_CID: DeliverySource = {
+  label: 'American Express — el código de seguridad va al frente, 4 dígitos',
+  url: 'https://www.americanexpress.com/ar/merchant/faqs.html',
+  kind: 'operador',
+}
+
 export const CLONING_VECTORS: readonly CloningVector[] = Object.freeze([
   {
     id: 'datos-en-el-mostrador',
@@ -88,7 +114,7 @@ export const CLONING_VECTORS: readonly CloningVector[] = Object.freeze([
     weight: 'dominante',
     needs:
       'El número, el vencimiento y los tres dígitos del dorso. La tarjeta no se va a ningún lado.',
-    how: 'La tarjeta sale de tu vista unos segundos —se la llevan a la caja, al fondo, detrás de una vidriera— y eso alcanza para anotar o fotografiar las dos caras. Después las compras entran por internet, donde el plástico no hace falta. En los relatos locales el gasto aparece en compras web de comercios grandes y en apps de delivery, no en un POS.',
+    how: 'La tarjeta sale de tu vista unos segundos —se la llevan a la caja, al fondo, detrás de una vidriera— y eso alcanza para anotar o fotografiar las dos caras. Después las compras entran por internet, donde el plástico no hace falta. En los relatos locales el gasto aparece en compras web de comercios grandes y en apps de delivery, no en un POS. Cuánto tiene que durar ese descuido depende de la marca: en Visa y Mastercard hacen falta las dos caras, en American Express no, porque el código de seguridad son cuatro dígitos impresos al frente, arriba del número.',
     stops: [
       'Que la tarjeta no salga de tu vista: el POS se acerca a la tarjeta, no al revés.',
       'Un número que no sirva para una segunda compra: tarjeta virtual o prepaga con saldo acotado para lo de internet.',
@@ -109,6 +135,7 @@ export const CLONING_VECTORS: readonly CloningVector[] = Object.freeze([
         url: 'https://reddit.com/r/uruguay/comments/1nxf3at/me_clonaron_la_tarjeta_brou_recompensas/',
         kind: 'practica',
       },
+      AMEX_CID,
     ],
   },
   {
@@ -282,6 +309,14 @@ export interface Issuer {
   /** Teléfono o canal para bloquear ya, tal como lo publica el emisor. */
   report: string
   reportSource: DeliverySource
+  /**
+   * Una advertencia que no entra en ninguna casilla porque no es un control:
+   * algo del producto (cómo está impreso el plástico, qué producto queda
+   * afuera del servicio, qué tope es fijo) que cambia la exposición y que sólo
+   * se ve leyendo la letra chica del emisor. Nunca reemplaza una casilla: si
+   * es un control, va al cuadro; si no, va acá y con su fuente igual.
+   */
+  note?: { text: string; sources: readonly DeliverySource[] }
 }
 
 const BROU_NOTIF: DeliverySource = {
@@ -350,6 +385,35 @@ const PREX_AYUDA: DeliverySource = {
   kind: 'operador',
 }
 
+/**
+ * La cartilla oficial de OCA Blue, en PDF. Es la única pieza donde OCA publica
+ * el tope diario de compras, y es el dato que discutía el hilo.
+ */
+const OCA_CARTILLA: DeliverySource = {
+  label: 'OCA — Cartilla OCA Blue (PDF)',
+  url: 'https://www.oca.com.uy/download/Cartilla_OCABlue.pdf',
+  kind: 'operador',
+}
+
+const SCOTIA_AMEX: DeliverySource = {
+  label: 'Scotiabank — Tarjeta American Express (ficha del producto)',
+  url: 'https://www.scotiabank.com.uy/Personas/Tarjetas/Tipos-de-tarjetas/american-express/tarjeta-de-credito-american-express',
+  kind: 'operador',
+}
+
+const SCOTIA_AMEX_GAVIOTAS: DeliverySource = {
+  label: 'Scotiabank — Gaviotas American Express (ficha del producto)',
+  url: 'https://www.scotiabank.com.uy/Personas/Tarjetas/Tipos-de-tarjetas/american-express/tarjeta-gaviotas-american-express',
+  kind: 'operador',
+}
+
+/** El caso de prensa que sí existe sobre Prex, y que NO es clonación de plástico. */
+const PREX_PHISHING: DeliverySource = {
+  label: 'El Observador — phishing en Prex: US$ 3.000 en transferencias Prex a Prex',
+  url: 'https://www.elobservador.com.uy/nota/exedil-fue-estafado-en-prex-y-le-robaron-us-3-mil-mira-como-fue-la-maniobra-2023210121659',
+  kind: 'practica',
+}
+
 const MIDINERO_FUNC: DeliverySource = {
   label: 'Midinero — Funcionalidades',
   url: 'https://www.midinero.com.uy/preguntas-frecuentes/funcionalidades/',
@@ -386,13 +450,17 @@ export const ISSUERS: readonly Issuer[] = Object.freeze([
       url: 'https://www.brou.com.uy/institucional/denuncia-de-tarjetas',
       kind: 'operador',
     },
+    note: {
+      text: 'El aviso gratuito no hay que contratarlo: al buzón de eBROU llega solo, y el push del celular exige una sola configuración —App eBROU › Información Personal › Configurar dispositivos push— más tener las notificaciones habilitadas en el teléfono. Si creés que BROU no te avisa, mirá ahí antes de pagar el SMS. Dos cosas quedan afuera y conviene saberlas: el débito Maestro no tiene el servicio gratuito, y la notificación por correo electrónico no figura publicada en ningún lado (los canales gratis son buzón y push).',
+      sources: [BROU_NOTIF],
+    },
     controls: {
       aviso: {
-        state: 'pago',
+        state: 'parcial',
         detail:
-          'Hay dos servicios y conviene no confundirlos. El gratis (push + buzón de eBROU) avisa las compras que no piden PIN y las rechazadas, y deja afuera las autenticadas con Visa Secure o MCIDcheck. El que avisa todas las compras es el de SMS, y cuesta $ 75 + IVA por un paquete de 25 mensajes al mes. Las Mastercard procesadas por Fiserv no lo tienen.',
+          'Hay dos servicios y conviene no confundirlos, pero el gratis alcanza más de lo que suele creerse: el push de la App eBROU más el buzón de eBROU avisan por cada compra presencial que no pidió PIN, por cada compra no presencial sin segundo factor y por TODA compra rechazada, en Crédito, Débito y Prepaga, propias y de tus adicionales. El hueco son las que sí pidieron PIN o pasaron por Visa Secure o MCIDcheck: para esas hay que contratar el SMS, $ 75 + IVA por un paquete de 25 mensajes al mes. Débito Maestro queda afuera del servicio gratuito, y las Mastercard procesadas por Fiserv no tienen el de SMS.',
         quote:
-          '"El servicio de Notificación de Transacciones informa determinados tipos de compra, mientras que el servicio de alerta SMS tiene un costo y comunica todas las transacciones de compra que realices."',
+          '"Te brindamos la posibilidad de recibir notificaciones gratuitas vía medios electrónicos cada vez que realices una transacción de compra con tus Tarjetas Mastercard y Visa (Crédito, Débito y Prepaga), en los casos que no tienen un segundo factor de autenticación para validar al tarjetahabiente. […] Este servicio gratuito no sustituye el de Alerta SMS (con costo, que incluye todos los tipos de transacciones de compra que realices)."',
         sources: [BROU_NOTIF, BROU_SMS],
       },
       bloqueoApp: {
@@ -505,6 +573,10 @@ export const ISSUERS: readonly Issuer[] = Object.freeze([
     kind: 'banco',
     report: 'Bloqueo desde Scotia Móvil; denuncia por el Centro de Contacto',
     reportSource: SCOTIA_BLOQUEO,
+    note: {
+      text: 'Es el único emisor del cuadro con American Express, y eso cambia la exposición física de la tarjeta: en una Amex el código de seguridad son cuatro dígitos impresos AL FRENTE, arriba del número, así que una sola foto de la cara de adelante trae número, vencimiento y código. En Visa y Mastercard hacen falta las dos caras. No es un defecto de Scotiabank —es el diseño de Amex en todo el mundo— pero si tu tarjeta es esa, «que no salga de tu vista» deja de ser un consejo genérico. Lo que sí varía por producto es el sin contacto: la ficha de la Amex Internacional lista «Pagos sin contactos» y la de Gaviotas American Express no lo menciona.',
+      sources: [AMEX_CID, SCOTIA_AMEX, SCOTIA_AMEX_GAVIOTAS],
+    },
     controls: {
       aviso: {
         state: 'parcial',
@@ -574,7 +646,14 @@ export const ISSUERS: readonly Issuer[] = Object.freeze([
           'Bloqueo temporal desde la app o Mi Cuenta ante una duda sobre un movimiento, y rehabilitación después, sin reimpresión.',
         sources: [OCA_CIBER],
       },
-      limites: NO_PUBLICA('el sitio de OCA', OCA_CIBER),
+      limites: {
+        state: 'parcial',
+        detail:
+          'La cartilla de OCA Blue publica un tope diario fijo de compras locales e internacionales de $ 20.000 y U$S 500, que acota cuánto se puede gastar en un día si el número se escapa. Cuenta a medias porque es un techo del emisor, no un control tuyo: OCA no documenta forma de subirlo ni de bajarlo desde la app ni desde Mi Cuenta. El "aumento de límite" que sí documenta es otra cosa —el límite de crédito de la tarjeta de crédito, transitorio por 60 días—, no el tope diario del débito.',
+        quote:
+          '"Las compras locales e internacionales no podrán exceder los montos diarios de $20.000 y U$S500."',
+        sources: [OCA_CARTILLA],
+      },
       virtual: {
         state: 'parcial',
         detail:
@@ -594,6 +673,10 @@ export const ISSUERS: readonly Issuer[] = Object.freeze([
     kind: 'iede',
     report: 'Bloqueo desde la app (Mis tarjetas › Bloquear) o por el chat',
     reportSource: PREX_AYUDA,
+    note: {
+      text: 'Prex es la que más aparece nombrada cuando se habla de fraude, y conviene separar de qué fraude se habla: los casos que llegaron a la prensa no son clonaciones del plástico sino tomas de cuenta por phishing —a un exedil le sacaron US$ 3.000 en tres transferencias de Prex a Prex—. Eso no lo frena ningún control de este cuadro, porque el atacante no copia la tarjeta: consigue que le des el acceso. La defensa ahí es otra: no seguir enlaces, no dictar códigos, y que el segundo factor viva en un lado distinto del teléfono donde te escriben.',
+      sources: [PREX_PHISHING],
+    },
     controls: {
       aviso: {
         state: 'si',
@@ -858,6 +941,24 @@ export const CARD_MYTHS: readonly CardMyth[] = Object.freeze([
     sources: [MP_CUENTA],
   },
   {
+    id: 'dos-caras',
+    claim: 'Para copiarla les hacen falta las dos caras de la tarjeta.',
+    verdict: 'a-medias',
+    why: 'En Visa y Mastercard sí: el número y el vencimiento están adelante y el código de tres dígitos atrás, así que hay que dar vuelta el plástico. En American Express no hay vuelta que dar: el código de seguridad son cuatro dígitos impresos al frente, arriba del número. Una sola foto de la cara de adelante ya trae todo lo que hace falta para comprar por internet. En Uruguay las Amex las emite Scotiabank.',
+    instead:
+      'Si tu tarjeta es Amex, el consejo de "que no salga de tu vista" pasa de recomendación a requisito, y el aviso por cada compra deja de ser opcional. Para lo de internet, mejor un número que no sea el de ese plástico.',
+    sources: [AMEX_CID, SCOTIA_AMEX],
+  },
+  {
+    id: 'brou-no-avisa',
+    claim: 'El BROU no te avisa de las compras si no pagás el servicio de alertas.',
+    verdict: 'no-sirve',
+    why: 'Es media verdad que circula como verdad entera, y nos la marcaron en el propio hilo. BROU manda notificaciones gratis —al buzón de eBROU y como push en la App eBROU— por cada compra presencial que no pidió PIN, por cada compra de internet sin segundo factor y por toda compra rechazada, en crédito, débito y prepaga, incluidas las de tus adicionales. Lo pago es el SMS, y lo que agrega son justamente las compras en las que alguien tuvo que poner tu PIN o tu código de Visa Secure. Contra el fraude que cuenta la gente acá, el aviso gratis suena.',
+    instead:
+      'Antes de contratar el SMS, revisá que el push esté prendido: App eBROU › Información Personal › Configurar dispositivos push, y las notificaciones habilitadas en el teléfono. Si tu débito es Maestro, ahí sí el servicio gratuito no aplica.',
+    sources: [BROU_NOTIF, BROU_SMS],
+  },
+  {
     id: 'billetera-rfid',
     claim: 'Comprar una billetera con bloqueo RFID.',
     verdict: 'no-sirve',
@@ -907,7 +1008,114 @@ export const CARD_MYTHS: readonly CardMyth[] = Object.freeze([
 ])
 
 // ---------------------------------------------------------------------------
-// 5. Qué hacer en la primera hora (y de qué depende la plata)
+// 5. Lo que discutieron en el hilo, contra la fuente
+// ---------------------------------------------------------------------------
+
+/**
+ * La devolución de la comunidad, publicada con nombre y resultado.
+ *
+ * POR QUÉ ES UNA SECCIÓN Y NO UNA CORRECCIÓN SILENCIOSA. Esta página se publicó
+ * en el hilo que le dio origen y la respuesta fue una corrección de fondo con
+ * tres votos a favor: el autor decía que el BROU sí avisa por cada compra. Tenía
+ * razón en lo que importa. Dejar eso en una edición invisible sería quedarse con
+ * el dato y tirar la evidencia de cómo se consiguió; peor, sería no contestar a
+ * quien se tomó el trabajo de contestarnos.
+ *
+ * LA REGLA DE ESTA SECCIÓN. Cada línea trae lo que se dijo y lo que encontramos
+ * al ir a la fuente, con la fuente al lado. Un veredicto `sin-verificar` es un
+ * resultado válido y frecuente: que una afirmación no se pueda contrastar no la
+ * vuelve falsa, y decir "no lo pudimos comprobar" es más honesto que borrarla.
+ * Lo que NO se hace acá es convertir un comentario en una casilla del cuadro: el
+ * cuadro sigue midiendo sólo lo que el emisor publica.
+ */
+export type ClaimVerdict = 'confirmado' | 'matizado' | 'desmentido' | 'sin-verificar'
+
+export interface CommunityClaim {
+  id: string
+  /** Lo que se dijo, lo más cerca posible de cómo se dijo. */
+  said: string
+  verdict: ClaimVerdict
+  /** Qué encontramos al ir a buscarlo. */
+  found: string
+  sources: readonly DeliverySource[]
+}
+
+export const CLAIM_VERDICT_LABELS: Readonly<Record<ClaimVerdict, string>> = Object.freeze({
+  confirmado: 'lo confirma la fuente',
+  matizado: 'cierto con un matiz',
+  desmentido: 'la fuente dice otra cosa',
+  'sin-verificar': 'no lo pudimos verificar',
+})
+
+export const CARD_COMMUNITY_CLAIMS: readonly CommunityClaim[] = Object.freeze([
+  {
+    id: 'brou-avisa-todo',
+    said: '«Ahora el BROU anda mandando notificaciones con cada compra.» Y un segundo usuario: «no sólo débito, a mí me notifica la app todas las compras, débito o crédito, tarjeta principal y extensión».',
+    verdict: 'confirmado',
+    found:
+      'Lo dice el propio BROU y es gratis: el buzón de eBROU y el push de la App eBROU avisan por cada compra presencial sin PIN, por cada compra no presencial sin segundo factor y por toda compra rechazada, alcanzando Crédito, Débito y Prepaga, propias y de adicionales. Esta página titulaba antes que «la alerta del BROU es paga» y el encuadre estaba mal: lo pago es el SMS, que agrega las compras autenticadas con PIN o con Visa Secure / MCIDcheck. Corregido el 11/9/2026, que es de donde salió esta sección.',
+    sources: [BROU_NOTIF, BROU_SMS],
+  },
+  {
+    id: 'brou-mail-gratis',
+    said: '«En el BROU es paga la notificación por celular, pero es gratis la notificación por mail.»',
+    verdict: 'desmentido',
+    found:
+      'Está dado vuelta. El canal gratuito al celular existe y es el push de la App eBROU; el correo electrónico no figura en la letra del servicio, que nombra dos canales y ninguno es mail: «recibas una notificación de la transacción en el buzón de eBROU (aplica para versión Web y para App) y a su vez una PUSH en el celular». Si te llegan correos igual, es algo que BROU no documenta y por eso acá no se cuenta.',
+    sources: [BROU_NOTIF],
+  },
+  {
+    id: 'todas-igual-clonables',
+    said: '«No creo que una tarjeta en sí sea más clonable que otra, o sea la tecnología que usan es la misma.» Fue el comentario más votado del hilo.',
+    verdict: 'matizado',
+    found:
+      'Del plástico para adentro tiene razón: el chip EMV es el mismo en todas y ninguna se duplica leyéndola. Lo que cambia no es la tarjeta, es el emisor —qué te avisa, qué podés bloquear solo, qué tope podés bajar—, y eso es todo el cuadro de arriba. La única diferencia física que encontramos es de marca y no de banco: la American Express trae el código de seguridad al frente, así que una foto de una sola cara alcanza.',
+    sources: [AMEX_CID],
+  },
+  {
+    id: 'amex-un-lado',
+    said: '«La Amex tiene todos los códigos del mismo lado de la tarjeta. Con eso te la clonan sacándote una foto al lado tuyo.»',
+    verdict: 'confirmado',
+    found:
+      'American Express lo publica: «El Código de Seguridad de las Tarjetas American Express se encuentra al frente de la tarjeta, tiene 4 dígitos y está ubicado sobre el Número de Tarjeta». Es el diseño de la marca en todo el mundo, no una decisión del emisor local. En Uruguay las Amex las emite Scotiabank.',
+    sources: [AMEX_CID, SCOTIA_AMEX],
+  },
+  {
+    id: 'amex-sin-contacto',
+    said: '«La Amex no se puede usar por contacto, sólo por chip o banda.»',
+    verdict: 'desmentido',
+    found:
+      'Depende del producto, y en el principal no es así: la ficha de la Tarjeta American Express de Scotiabank lista «Pagos sin contactos» entre sus características. La de Gaviotas American Express no lo menciona, así que la observación puede ser cierta para una tarjeta concreta; como afirmación general sobre la marca, la propia ficha del emisor la contradice.',
+    sources: [SCOTIA_AMEX, SCOTIA_AMEX_GAVIOTAS],
+  },
+  {
+    id: 'oca-tope',
+    said: '«OCA, al menos con la Blue, no te deja aumentar el tope de uso diario. Me hicieron ir como 3 veces y no pude hacerlo.»',
+    verdict: 'confirmado',
+    found:
+      'Coincide con lo publicado: la cartilla de OCA Blue fija un tope diario de compras locales e internacionales de $ 20.000 y U$S 500, y OCA no documenta ninguna vía para moverlo desde la app ni desde Mi Cuenta. El «aumento de límite» que sí está documentado es el del límite de crédito de la tarjeta de crédito, transitorio por 60 días: otra cosa. Para el titular que quiere gastar más es una molestia; para esta página es un techo que acota cuánto se puede gastar en un día con un número robado, y por eso la casilla de límites pasó de «sin publicar» a «parcial».',
+    sources: [OCA_CARTILLA],
+  },
+  {
+    id: 'prex-lo-peor',
+    said: '«Prex es de lo peor. Las clonan y hacen estafas a cada rato, al punto que si hacés una transferencia media grande a Prex desde un banco te piden algún tipo de confirmación.»',
+    verdict: 'sin-verificar',
+    found:
+      'La frecuencia no se puede contrastar: no hay estadística pública de fraude por emisor en Uruguay, y tampoco encontramos publicado el requisito extra de confirmación para transferir a Prex. Lo que sí está documentado es de otro tipo: los casos de prensa son tomas de cuenta por phishing —a un exedil le sacaron US$ 3.000 en tres transferencias de Prex a Prex—, no copias del plástico. Importa porque la defensa es distinta: ahí no lo frena el tope ni la billetera, lo frena no entregar el acceso.',
+    sources: [PREX_PHISHING],
+  },
+  {
+    id: 'reposicion',
+    said: '«Quizás con el BROU sea más tranza resolverlo; con otros bancos la das de baja por teléfono y te mandan la nueva.»',
+    verdict: 'sin-verificar',
+    found:
+      'Es la dimensión que este cuadro no mide y no puede medir con lo publicado: ningún emisor uruguayo dice en cuánto tiempo repone el plástico, ni si el trámite de desconocimiento se hace por la app o en una sucursal. Queda anotado entre los huecos, no disfrazado de casilla.',
+    sources: [BROU_FAQ],
+  },
+])
+
+// ---------------------------------------------------------------------------
+// 6. Qué hacer en la primera hora (y de qué depende la plata)
 // ---------------------------------------------------------------------------
 
 export interface FirstHourStep {
@@ -992,7 +1200,7 @@ export const FIRST_HOUR: readonly FirstHourStep[] = Object.freeze([
 ])
 
 // ---------------------------------------------------------------------------
-// 6. Lo que no sabemos
+// 7. Lo que no sabemos
 // ---------------------------------------------------------------------------
 
 /**
@@ -1004,10 +1212,12 @@ export const CARD_SECURITY_GAPS: readonly string[] = Object.freeze([
   'El monto que se puede gastar sin PIN en modalidad sin contacto sólo está publicado por BROU, y por producto. El resto de los emisores no lo dice, así que no se puede comparar cuánto expone cada tarjeta si te la roban.',
   'El cuadro mide lo que el emisor PUBLICA. Una app puede tener un control que su sitio no documenta; acá eso queda como "sin publicar" y no como "no tiene".',
   'Ningún emisor publica en cuánto tiempo corta una compra después del bloqueo, que es el dato que decidiría si conviene llamar o bloquear desde la app primero.',
+  'Tampoco publican lo de después: en cuántos días llega el plástico nuevo, ni si el desconocimiento se tramita por la app o hay que ir a una sucursal. En el hilo lo plantearon como la diferencia práctica entre un emisor y otro —"con otros bancos la das de baja por teléfono y te mandan la nueva"— y es una dimensión que el cuadro no puede medir sin que el emisor la diga.',
+  'No hay estadística pública de fraude POR EMISOR, así que "a este le pasa más" no se puede afirmar ni desmentir. Cuando alguien lo dice, acá queda como "no lo pudimos verificar", que es lo que es.',
 ])
 
 // ---------------------------------------------------------------------------
-// 7. Preguntas que se hacen, contestadas
+// 8. Preguntas que se hacen, contestadas
 // ---------------------------------------------------------------------------
 
 export interface CardSecurityFaq {
@@ -1061,8 +1271,14 @@ export const CARD_SECURITY_FAQ: readonly CardSecurityFaq[] = Object.freeze([
   },
   {
     id: 'alerta-paga',
-    question: '¿Es normal que me cobren por las alertas de compra?',
+    question: '¿El BROU me avisa de cada compra o hay que pagar por eso?',
     answer:
-      'Pasa, y es el dato que más sorprende del cuadro. El BCU recomienda establecer alertas para las compras con tarjeta; en BROU la notificación gratuita cubre las compras que no piden PIN y las rechazadas, mientras el servicio que avisa todas las compras cuesta $ 75 + IVA por un paquete de 25 mensajes al mes. Otros emisores las dan configurables sin costo. No es un detalle menor: es la diferencia entre enterarte mientras pasa o al cierre del estado de cuenta.',
+      'Te avisa gratis, y más de lo que suele creerse. Sin contratar nada llegan al buzón de eBROU y como push a la App eBROU las compras presenciales que no pidieron PIN, las de internet sin segundo factor y todas las rechazadas, en crédito, débito y prepaga, incluidas las de tus adicionales. Lo que agrega el servicio pago de SMS —$ 75 + IVA por 25 mensajes al mes— son justamente las compras autenticadas con tu PIN o con Visa Secure / MCIDcheck. Para que el push llegue hay que habilitarlo una vez: App eBROU › Información Personal › Configurar dispositivos push. El débito Maestro queda afuera del servicio gratuito.',
+  },
+  {
+    id: 'mas-clonable',
+    question: '¿Hay tarjetas más clonables que otras? ¿La BROU Recompensa es insegura?',
+    answer:
+      'El plástico no: el chip EMV es el mismo en todas y ninguna se duplica leyéndola. Lo que cambia es el emisor —si te avisa por cada compra, si la bloqueás y desbloqueás solo, qué tope podés bajar— y eso es lo que compara el cuadro de arriba. La única diferencia física que encontramos es de marca: la American Express lleva el código de seguridad al frente, así que le alcanza una foto de una sola cara. Que una tarjeta aparezca más en los relatos suele decir cuánta gente la usa, no cuán frágil es.',
   },
 ])
