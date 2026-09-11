@@ -1821,6 +1821,32 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // «carne de salud» se busca como un precio y la respuesta está en el
+        // Decreto 274/017: en el prestador propio no se paga. Las consultas de
+        // costo y vigencia no las contestaba ninguna página del sitio.
+        to: '/carne-de-salud-uruguay',
+        labelKey: 'nav.carneDeSalud',
+        icon: 'mdi-card-account-details-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'carne de salud',
+          'carne de salud uruguay',
+          'cuanto sale el carne de salud',
+          'carne de salud precio',
+          'carne de salud gratis',
+          'carne de salud asse',
+          'carne de salud mutualista',
+          'donde hacer el carne de salud',
+          'cuanto dura el carne de salud',
+          'carne de salud vigencia',
+          'requisitos carne de salud',
+          'control en salud decreto 274/017',
+          'carne de salud provisorio',
+        ],
+      },
+      {
         to: '/salud-financiera',
         labelKey: 'nav.saludFinanciera',
         icon: 'mdi-heart-pulse',
