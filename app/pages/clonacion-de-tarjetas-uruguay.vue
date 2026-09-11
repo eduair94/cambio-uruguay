@@ -598,15 +598,21 @@ useHead(() => ({
 .related {
   border: 1px solid rgba(var(--v-border-color), 0.16);
 }
-/* La respuesta corta: destacada sin gritar, con la barra del lado del primer
- * carácter para que se lea como un bloque y no como otra tarjeta más. */
+/* La respuesta corta se separa del resto por el fondo y el borde teñidos, sin
+ * barra lateral gruesa: ese acento de un solo lado es el tic más reconocible de
+ * una interfaz generada, y en esta página de todas es la que menos se lo puede
+ * permitir. La jerarquía la da el número de cada línea, no un adorno. */
 .answer {
   border: 1px solid rgba(var(--v-theme-primary), 0.28);
-  border-left-width: 4px;
   background: rgba(var(--v-theme-primary), 0.05);
 }
 .answer-list {
   padding-left: 1.2rem;
+}
+.answer-list::marker,
+.answer-list li::marker {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
 }
 /* Lo que dijo otra persona, marcado como cita ajena: mismo tratamiento que la
  * cita del emisor, para que el lector distinga de un vistazo lo transcrito de
