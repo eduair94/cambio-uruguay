@@ -476,10 +476,13 @@ useHead(() => ({
   font-weight: 700;
   color: rgb(var(--v-theme-primary));
 }
+/* Paso `display` de DESIGN.md, tal cual: el resto de las páginas todavía usa una
+ * escala propia, pero acá no hay motivo para salirse de la documentada. */
 .hero-title {
-  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-size: clamp(1.55rem, 4.4vw, 2.5rem);
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 .hero-lead {
   max-width: 68ch;
@@ -523,10 +526,16 @@ useHead(() => ({
 .tight-list li + li {
   margin-top: 0.35rem;
 }
+/*
+ * La cita textual del emisor, separada del texto propio SIN barra lateral: lo que
+ * marca que es cita son las comillas que trae el propio dato (`quote` siempre viene
+ * entrecomillado, y hay test que lo exige) más el fondo y la bajada de tamaño.
+ */
 .quote-box {
-  border-left: 3px solid rgba(var(--v-theme-primary), 0.55);
+  border: 1px solid rgba(var(--v-border-color), 0.22);
   background: rgba(var(--v-theme-surface-variant), 0.14);
-  border-radius: 4px;
+  border-radius: 8px;
+  font-style: italic;
 }
 .step-num {
   width: 28px;
