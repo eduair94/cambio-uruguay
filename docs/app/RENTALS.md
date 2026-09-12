@@ -630,10 +630,11 @@ aislado que no importa el sync ni consulta DB.
 
 ### Cuando una corrida falla — 12 de septiembre de 2026
 
-**Los logs de pm2 no sirven para diagnosticarla.** En el VPS, `/root/cleanup_tmp_files.sh` (crontab
-de root, `0 * * * *`) corre `pm2 flush` a cada hora en punto: el barrido de las 04:52 queda borrado
-antes de terminar y pm2-logrotate nunca llega a guardar un rotado de `currency-rentals-out`. Lo que
-sobrevive es la meta en APP DB `rentalmetas`: `uy-rentals` (última corrida, horaria o completa) y
+**Primero la meta; los logs, después.** Hasta ese día, `/root/cleanup_tmp_files.sh` (crontab de
+root, `0 * * * *`) corría `pm2 flush` a cada hora en punto y el barrido de las 04:52 quedaba borrado
+antes de terminar. Se sacó el mismo día (ahora sólo borra logs huérfanos de más de 30 días; ver
+AGENTS.md) y pm2-logrotate guarda cinco rotados diarios, pero la fuente de verdad sigue siendo la
+meta en APP DB `rentalmetas`: `uy-rentals` (última corrida, horaria o completa) y
 `uy-rentals-last-full` (último barrido completo). Cada `sources[]` trae `ok`, `listings`, `note` y:
 
 - `lastOkAt`: la última corrida en que esa fuente volvió `ok`, arrastrada entre fallas;
