@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="tarjetas-page pb-8">
+  <VContainer class="tarjetas-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn :to="localePath('/salud-financiera')" variant="text" size="small" class="cu-btn-flush">
@@ -411,7 +411,7 @@
         </VCard>
       </VCol>
     </VRow>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

@@ -1,5 +1,5 @@
 <template>
-  <div class="imp-page pb-8">
+  <VContainer class="imp-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn
@@ -956,7 +956,7 @@
         </VCard>
       </VCol>
     </VRow>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

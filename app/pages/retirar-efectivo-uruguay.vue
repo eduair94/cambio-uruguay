@@ -1,5 +1,5 @@
 <template>
-  <div class="withdraw-page pb-8">
+  <VContainer class="withdraw-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn :to="localePath('/herramientas')" variant="text" size="small" class="cu-btn-flush">
@@ -211,7 +211,7 @@
         </li>
       </ul>
     </VCard>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

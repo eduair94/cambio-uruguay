@@ -1,5 +1,5 @@
 <template>
-  <div class="mapa-temas-page pb-8">
+  <VContainer class="mapa-temas-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn :to="localePath('/temas')" variant="text" size="small" class="cu-btn-flush">
@@ -430,7 +430,7 @@
         r/UruguayFinanzas, r/Burises, r/AskUruguayan y r/LegalUruguay.
       </p>
     </VCard>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

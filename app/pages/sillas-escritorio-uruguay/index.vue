@@ -6,7 +6,7 @@ FIRST VIEWPORT: A blunt question and priority controls face a live evidence trac
 FORM: Grounded structure 5, diagnosis-before-doctrine staging, surface seed aa73e570.
 -->
 <template>
-  <main class="chair-page pb-10">
+  <VContainer tag="main" class="chair-page pb-10">
     <section class="chair-hero on-dark" aria-labelledby="chair-title">
       <div class="hero-copy">
         <div class="source-mark">
@@ -724,7 +724,7 @@ FORM: Grounded structure 5, diagnosis-before-doctrine staging, surface seed aa73
         </a>
       </template>
     </MediaPhotoViewer>
-  </main>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

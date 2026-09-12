@@ -1,5 +1,5 @@
 <template>
-  <div class="adv-page pb-8">
+  <VContainer class="adv-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn
@@ -819,7 +819,7 @@
     </section>
 
     <NewsletterCapture v-if="adsOn" class="mt-6" />
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

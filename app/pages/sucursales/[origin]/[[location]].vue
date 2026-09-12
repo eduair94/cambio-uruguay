@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <VContainer fluid>
     <!-- Header Section -->
     <v-row>
       <v-col cols="12">
@@ -189,7 +189,7 @@
         </nav>
       </v-col>
     </v-row>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

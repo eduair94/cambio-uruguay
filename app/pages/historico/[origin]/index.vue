@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <VContainer fluid>
     <v-row>
       <v-col cols="12">
         <!-- Breadcrumb navigation -->
@@ -182,7 +182,7 @@
         </v-card>
       </v-col>
     </v-row>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

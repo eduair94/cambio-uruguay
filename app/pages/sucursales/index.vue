@@ -1,5 +1,5 @@
 <template>
-  <div class="pb-5">
+  <VContainer fluid class="pb-5">
     <!-- Header Section -->
     <v-row>
       <v-col cols="12">
@@ -243,7 +243,7 @@
         </v-col>
       </v-row>
     </div>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="proyectos-page pb-8">
+  <VContainer class="proyectos-page pb-8">
     <!-- Breadcrumb: this page is the local-projects companion to /inversiones-uruguay -->
     <div class="mb-3">
       <VBtn
@@ -249,7 +249,7 @@
         </VBtn>
       </div>
     </VCard>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

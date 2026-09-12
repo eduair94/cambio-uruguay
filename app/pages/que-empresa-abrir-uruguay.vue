@@ -1,5 +1,5 @@
 <template>
-  <div class="empresa-page pb-8">
+  <VContainer class="empresa-page pb-8">
     <div class="mb-3">
       <VBtn :to="localePath('/salud-financiera')" variant="text" size="small" class="cu-btn-flush">
         <VIcon start size="small">mdi-arrow-left</VIcon>
@@ -1252,7 +1252,7 @@
         </VCard>
       </VCol>
     </VRow>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

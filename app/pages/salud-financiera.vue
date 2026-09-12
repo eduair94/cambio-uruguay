@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="salud-page pb-8">
+  <VContainer class="salud-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn :to="localePath('/herramientas')" variant="text" size="small" class="cu-btn-flush">
@@ -343,7 +343,7 @@
         </VCard>
       </VCol>
     </VRow>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

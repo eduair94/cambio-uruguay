@@ -1,5 +1,5 @@
 <template>
-  <div v-if="tool" class="tool-page pb-8">
+  <VContainer v-if="tool" class="tool-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn :to="localePath('/herramientas')" variant="text" size="small" class="cu-btn-flush">
@@ -146,7 +146,7 @@
         </VBtn>
       </div>
     </VCard>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

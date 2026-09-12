@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="pagar-page pb-8">
+  <VContainer class="pagar-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn :to="localePath('/salud-financiera')" variant="text" size="small" class="cu-btn-flush">
@@ -312,7 +312,7 @@
         Ver el ranking de tarjetas
       </VBtn>
     </VCard>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

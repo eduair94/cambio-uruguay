@@ -1,5 +1,5 @@
 <template>
-  <div class="coins-page pb-8">
+  <VContainer class="coins-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn :to="localePath('/')" variant="text" size="small" class="cu-btn-flush">
@@ -131,7 +131,7 @@
         </li>
       </ul>
     </VCard>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

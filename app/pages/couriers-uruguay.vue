@@ -1,5 +1,5 @@
 <template>
-  <div class="couriers-page pb-8">
+  <VContainer class="couriers-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn :to="localePath('/herramientas')" variant="text" size="small" class="cu-btn-flush">
@@ -328,7 +328,7 @@
         Calcular impuestos de importación
       </VBtn>
     </VCard>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

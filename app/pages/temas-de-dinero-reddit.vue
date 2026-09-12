@@ -1,5 +1,5 @@
 <template>
-  <div class="rt-page pb-8">
+  <VContainer class="rt-page pb-8">
     <div class="mb-3">
       <VBtn :to="localePath('/economia-uruguay')" variant="text" size="small" class="cu-btn-flush">
         <VIcon start size="small">mdi-arrow-left</VIcon>
@@ -141,7 +141,7 @@
         </VCard>
       </VCol>
     </VRow>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

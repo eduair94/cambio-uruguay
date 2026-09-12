@@ -1,5 +1,5 @@
 <template>
-  <div class="prestamos-page pb-8">
+  <VContainer class="prestamos-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn :to="localePath('/herramientas')" variant="text" size="small" class="cu-btn-flush">
@@ -382,7 +382,7 @@
         Calcular cuota de préstamo
       </VBtn>
     </VCard>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

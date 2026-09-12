@@ -1,5 +1,5 @@
 <template>
-  <div class="loantier-page pb-8">
+  <VContainer class="loantier-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn :to="localePath('/prestamos-uruguay')" variant="text" size="small" class="cu-btn-flush">
@@ -677,7 +677,7 @@
         afiliado. Las tasas son las publicadas; confirmá siempre el CFT antes de firmar.
       </p>
     </section>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

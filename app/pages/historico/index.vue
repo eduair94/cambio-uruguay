@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <VContainer fluid>
     <v-row>
       <v-col cols="12">
         <v-card>
@@ -200,7 +200,7 @@
         </v-alert>
       </v-col>
     </v-row>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

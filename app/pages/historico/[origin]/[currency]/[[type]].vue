@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <VContainer fluid>
     <!-- Exchange House Information Section -->
     <v-row v-if="evolutionData?.localData">
       <v-col cols="12">
@@ -472,7 +472,7 @@
         </v-btn>
       </v-col>
     </v-row>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

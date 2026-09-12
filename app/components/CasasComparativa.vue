@@ -1,5 +1,5 @@
 <template>
-  <div class="casas-page pb-8">
+  <VContainer fluid class="casas-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3 d-flex align-center flex-wrap ga-1">
       <VBtn :to="localePath('/')" variant="text" size="small" class="cu-btn-flush">
@@ -649,7 +649,7 @@
         </VBtn>
       </div>
     </VCard>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="indicator" class="pb-8">
+  <VContainer v-if="indicator" class="pb-8">
     <!-- Header with the headline value -->
     <v-row>
       <v-col cols="12">
@@ -168,7 +168,7 @@
         </v-card>
       </v-col>
     </v-row>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

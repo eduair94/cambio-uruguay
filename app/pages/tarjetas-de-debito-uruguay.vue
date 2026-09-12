@@ -1,5 +1,5 @@
 <template>
-  <div class="debit-page pb-8">
+  <VContainer class="debit-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn
@@ -619,7 +619,7 @@
         </li>
       </ul>
     </VCard>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

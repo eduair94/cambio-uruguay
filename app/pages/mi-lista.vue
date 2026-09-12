@@ -1,5 +1,5 @@
 <template>
-  <div class="mi-lista pb-8">
+  <VContainer class="mi-lista pb-8">
     <header class="wl-head">
       <p class="wl-eyebrow">Tu lista</p>
       <h1 class="wl-title">Mi lista de seguimiento</h1>
@@ -191,7 +191,7 @@
     </VDialog>
 
     <VSnackbar v-model="snackOpen" :timeout="4000">{{ snackText }}</VSnackbar>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

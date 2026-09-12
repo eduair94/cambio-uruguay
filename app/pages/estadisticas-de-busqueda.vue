@@ -1,5 +1,5 @@
 <template>
-  <div class="gsc-page py-6">
+  <VContainer fluid class="gsc-page py-6">
     <h1 class="text-h4 mb-1">Search Console</h1>
     <p class="text-body-2 text-medium-emphasis mb-6">
       Panel privado. Lo escribe el job <code>currency-gsc</code> una vez por día y no lo ve nadie
@@ -338,7 +338,7 @@
         </tbody>
       </VTable>
     </template>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

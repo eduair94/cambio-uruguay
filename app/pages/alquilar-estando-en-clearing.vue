@@ -1,5 +1,5 @@
 <template>
-  <div class="rc-page pb-8">
+  <VContainer class="rc-page pb-8">
     <div class="mb-3">
       <VBtn
         :to="localePath('/alquilar-en-uruguay')"
@@ -400,7 +400,7 @@
         </VCard>
       </VCol>
     </VRow>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

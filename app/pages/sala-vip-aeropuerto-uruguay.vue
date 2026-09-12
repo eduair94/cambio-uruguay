@@ -1,5 +1,5 @@
 <template>
-  <div class="vip-page pb-8">
+  <VContainer class="vip-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
       <VBtn
@@ -446,7 +446,7 @@
         aviso: si la diferencia te importa, confirmá con el banco antes de contar con el acceso.
       </p>
     </VCard>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

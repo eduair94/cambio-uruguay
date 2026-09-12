@@ -1,5 +1,5 @@
 <template>
-  <div class="ph-page pb-8">
+  <VContainer class="ph-page pb-8">
     <div class="mb-3">
       <VBtn
         :to="localePath('/alquilar-en-uruguay')"
@@ -433,7 +433,7 @@
         <span class="text-medium-emphasis"> — {{ source.detail }}</span>
       </li>
     </ul>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

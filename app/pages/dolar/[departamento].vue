@@ -2,7 +2,7 @@
   <!-- `data` is null only for an unknown slug, where setup throws a 404. Gating
        the whole page on it keeps that error-path SSR render empty (and crash-free)
        so the thrown 404 status is what the response carries. -->
-  <div v-if="data" class="pb-8">
+  <VContainer v-if="data" class="pb-8">
     <!-- Header -->
     <v-row>
       <v-col cols="12">
@@ -145,7 +145,7 @@
         </v-col>
       </v-row>
     </template>
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">

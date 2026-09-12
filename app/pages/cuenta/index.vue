@@ -1,5 +1,5 @@
 <template>
-  <div class="cuenta-page py-6">
+  <VContainer class="cuenta-page py-6">
     <h1 class="text-h4 mb-6">{{ $t('account.title') }}</h1>
     <RentalAlertResume />
 
@@ -91,7 +91,7 @@
       </VTabsWindowItem>
     </VTabsWindow>
     <RentalAlertDialog />
-  </div>
+  </VContainer>
 </template>
 
 <script setup lang="ts">
