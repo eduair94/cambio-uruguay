@@ -90,6 +90,7 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
 ## Non-obvious gotchas
 - **currency-server is pm2 cluster ×2 → NO recurring scheduler may live in the API process** (`setInterval`/cron would run once per instance). Guard with `classes/cluster.ts` `isPrimaryInstance()` or (preferred) a separate single-instance pm2 cron app. Tripwire: `tests/no_scheduler_in_api.test.ts`.
 - Root vs app use different Mongo hosts/DBs; jobs writing app collections refuse to run without `APP_MONGO_URI`.
+- **pm2 logs on the VPS do not survive the hour**: `/root/cleanup_tmp_files.sh` (root crontab, `0 * * * *`) runs `pm2 flush`, which empties EVERY app's log — a 04:52 job's output is gone by 05:00, and pm2-logrotate never gets to keep a rotated copy. Don't diagnose a failed job from `~/.pm2/logs`; persist what matters in the DB (rentals: `rentalmetas` `sources[].note/lastOkAt/failingSince`, see `docs/app/RENTALS.md`).
 - Secrets: `.env` (dotenv), `sheet_key.json`, `serviceAccount.json`, `prex_session.txt`, `proxy.txt` all gitignored/server-only. See `.env.sample` (PREX_* USD scrape, AI_* wormgpt).
 - Ignore root scratch junk: `/*.html`, `/*.png`, `*.mp4`, `*.stackdump`, `.sdd-*`, `.superpowers/`, `docs/seo/data/` are gitignored debug artifacts.
 - DB-derived casa scrapers (federal/argentino/romantico mirror BROU) false-fail without a live Mongo connection.

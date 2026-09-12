@@ -124,6 +124,43 @@ describe("El País pagination cannot authorize expiry on incomplete evidence", (
     expect(run.complete).toBe(false);
   });
 
+  // Both full sweeps of 2026-09-12 said "2 lecturas incompletas" and nothing else: no department,
+  // no page, no cause. A hole in the sweep has to say where it is to be worth reporting.
+  it.each([
+    ["repeated page with an advancing paginator", response(2, 3, 2, [row(1), row(2)]), "MONTEVIDEO página 2: página repetida o con IDs inválidos"],
+    ["early empty last page", response(2, 3, 2, []), "MONTEVIDEO página 2: respuesta inválida"],
+    ["total changed during pagination", response(2, 4, 2, [row(3), row(4)]), "MONTEVIDEO página 2: el resultado cambió durante la lectura"],
+    ["network failure", null, "MONTEVIDEO página 2: sin respuesta"],
+  ])("names the department, page and cause after %s", async (_label, lastPage, expected) => {
+    const run = await harvest({ 1: response(1, 3, 2, [row(1), row(2)]), 2: lastPage });
+    expect(run.note).toContain(`1 lecturas incompletas: ${expected}`);
+  });
+
+  it("carries the transport reason when the portal does not answer", async () => {
+    vi.mocked(fetchJson).mockImplementation(async (raw, options) => {
+      const url = new URL(raw);
+      if (url.pathname.endsWith("/init")) return null;
+      if (url.pathname.includes("/0000000000000001/")) {
+        if (url.searchParams.get("page") === "2") { options?.onFailure?.("HTTP 502"); return null; }
+        return response(1, 3, 2, [row(1), row(2)]) as any;
+      }
+      return response(1, 0, 0, []) as any;
+    });
+    const run = await harvestElpais("full", 41.5);
+    expect(run.note).toContain("1 lecturas incompletas: MONTEVIDEO página 2: sin respuesta (HTTP 502)");
+  });
+
+  it("names a department whose search could not be opened", async () => {
+    vi.mocked(fetchJson).mockImplementation(async raw => {
+      const url = new URL(raw);
+      // The cached search was forgotten (its first page fails) and a new one cannot be opened.
+      if (url.pathname.endsWith("/init") || url.pathname.includes("/0000000000000001/")) return null;
+      return response(1, 0, 0, []) as any;
+    });
+    const run = await harvestElpais("full", 41.5);
+    expect(run.note).toContain("1 lecturas incompletas: MONTEVIDEO: búsqueda sin abrir");
+  });
+
   it("keeps hourly reads partial even when their first page is the whole result", async () => {
     const run = await harvest({ 1: response(1, 1, 1, [row(1)]) }, "fast");
     expect(run.ok).toBe(true);

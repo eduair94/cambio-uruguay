@@ -628,6 +628,44 @@ filtro de despliegue del backend. `tests/sync/rentals_lock.test.ts` comprueba el
 Linux con `flock`, la exclusión real y la liberación después de matar un proceso de prueba
 aislado que no importa el sync ni consulta DB.
 
+### Cuando una corrida falla — 12 de septiembre de 2026
+
+**Los logs de pm2 no sirven para diagnosticarla.** En el VPS, `/root/cleanup_tmp_files.sh` (crontab
+de root, `0 * * * *`) corre `pm2 flush` a cada hora en punto: el barrido de las 04:52 queda borrado
+antes de terminar y pm2-logrotate nunca llega a guardar un rotado de `currency-rentals-out`. Lo que
+sobrevive es la meta en APP DB `rentalmetas`: `uy-rentals` (última corrida, horaria o completa) y
+`uy-rentals-last-full` (último barrido completo). Cada `sources[]` trae `ok`, `listings`, `note` y:
+
+- `lastOkAt`: la última corrida en que esa fuente volvió `ok`, arrastrada entre fallas;
+- `failingSince`: la primera corrida de la racha de fallas actual; no está mientras la fuente anda.
+
+La nota dice **por qué** falló, no sólo que falló. `classes/rentals/net.ts` informa el motivo del
+`null` (`HTTP 403`, `tiempo agotado (40000 ms)`, `error de red ECONNREFUSED`, `cuerpo ilegible`) y
+nunca el mensaje del error, que trae la dirección del host: la nota se publica tal cual en la página.
+InfoCasas distingue `sin respuesta del portal (…)`, `página sin datos de búsqueda` (desafío o
+mantenimiento), `formato de búsqueda distinto`, `respuesta de otra búsqueda` y `página vacía a mitad
+de la búsqueda`; El País nombra departamento, página y causa de cada lectura incompleta; Facebook
+agrega el motivo a `sin respuesta del servicio`.
+
+Lo que pasó ese día, y lo que cambió por eso:
+
+- **InfoCasas.** A las 04:52 las cinco franjas fallaron en la página 1 y la corrida publicó 0 avisos
+  con la nota "respuesta incompleta o distinta", la misma que habría dejado un cambio de formato. A
+  la tarde las mismas URLs parseaban perfecto: el portal no había contestado, y 14.480 avisos
+  quedaron un día sin leerse. Ahora una franja que no contestó (sin respuesta, o sin
+  `__NEXT_DATA__`) se **reintenta al final**, a los 2 y a los 6 minutos, retomando en la página que
+  falló y con lo que ya había leído. Lo que contestó otra cosa no se reintenta: esperar no arregla
+  un formato nuevo. El reintento respeta el presupuesto de 40 minutos y no alarga el job, que lo
+  marca Mercado Libre. La horaria no reintenta.
+- **Mercado Libre, mascotas.** 602 avisos marcados a la mañana y 20 a la tarde, con el mismo código.
+  La reserva del enriquecimiento cuidaba solicitudes (se usaron 1.420 de 1.600) pero no tiempo: con
+  el puente lento, el catálogo gastó los 40 minutos y a la pasada de mascotas le quedó una sola
+  solicitud. Ahora el catálogo cierra con la misma proporción del reloj que de solicitudes
+  reservadas (100/1.600, o sea 2,5 minutos) y lo que queda se reparte entre particulares y mascotas
+  igual que las solicitudes. Lo ya guardado no se perdía: `store.ts` conserva un `true` anterior.
+- **Facebook.** El puente (:9657, repo trustpilot) estuvo caído del 2026-09-11 23:48 al 2026-09-12
+  16:16 UTC. En este repo no había nada que corregir más allá del motivo en la nota.
+
 ## Variables de entorno
 
 | var | default | para qué |

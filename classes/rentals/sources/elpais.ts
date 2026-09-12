@@ -448,12 +448,21 @@ export function parseElpaisResultsPage(value: unknown, requestedPage: number): R
   return { rows, total, totalPages };
 }
 
-async function readPage(chatId: string, page: number, sort: string): Promise<ResultsPage | null> {
+interface PageRead {
+  page: ResultsPage | null;
+  /** Why `page` is null. A hole in the sweep has to say where and what it was to be worth reporting. */
+  problem: string;
+}
+
+async function readPage(chatId: string, page: number, sort: string): Promise<PageRead> {
+  let transport = "";
   const body = await fetchJson<ChatResultsResponse>(
     `${ORIGIN}/api/chat/${chatId}/results?page=${page}&limit=${PAGE_SIZE}${sort}`,
-    { headers: PORTAL_HEADERS, timeoutMs: 90_000 }
+    { headers: PORTAL_HEADERS, timeoutMs: 90_000, onFailure: (reason) => { transport = reason; } }
   );
-  return parseElpaisResultsPage(body, page);
+  if (!body) return { page: null, problem: `sin respuesta${transport ? ` (${transport})` : ""}` };
+  const parsed = parseElpaisResultsPage(body, page);
+  return { page: parsed, problem: parsed ? "" : "respuesta inválida" };
 }
 
 export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Promise<RentalSourceResult> {
@@ -475,9 +484,10 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
   // every page anyway, where sorting would only change which page a row lands on.
   const sort = mode === "fast" ? "&sort=newest" : "";
   let pages = 0;
-  let failed = 0;
   let viaBrowser = 0;
   let incomplete = mode !== "full" || searches.length !== SEARCHES.length;
+  /** "DEPARTAMENTO página N: causa" for every hole in the sweep. */
+  const holes: string[] = [];
 
   // 1. Which searches do we already have? A cached id is proved by its FIRST PAGE, which the sweep
   //    needs anyway — so verifying costs nothing extra. A forgotten chat answers 404, never an
@@ -486,7 +496,7 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
   const missing: ElpaisSearch[] = [];
   for (const search of searches) {
     const chatId = chats.get(search.province) ?? "";
-    const first = chatId ? await readPage(chatId, 1, sort) : null;
+    const first = chatId ? (await readPage(chatId, 1, sort)).page : null;
     if (first) firstPages.set(search.province, first);
     else {
       chats.delete(search.province);
@@ -501,12 +511,12 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
     for (const [province, chatId] of result.opened) chats.set(province, chatId);
     for (const search of missing) {
       const chatId = chats.get(search.province) ?? "";
-      const first = chatId ? await readPage(chatId, 1, sort) : null;
+      const first = chatId ? (await readPage(chatId, 1, sort)).page : null;
       if (first) firstPages.set(search.province, first);
       else {
         // A search we could not open is a hole in the sweep, not an empty department.
         chats.delete(search.province);
-        failed++;
+        holes.push(`${search.province}: búsqueda sin abrir`);
         incomplete = true;
       }
     }
@@ -522,9 +532,10 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
     const seenIds = new Set<string>();
 
     for (let page = 1; page <= budget; page++) {
-      const body = page === 1 ? first : await readPage(chatId, page, sort);
+      const read = page === 1 ? { page: first, problem: "" } : await readPage(chatId, page, sort);
+      const body = read.page;
       if (!body || body.total !== first.total || body.totalPages !== first.totalPages) {
-        failed++;
+        holes.push(`${search.province} página ${page}: ${body ? "el resultado cambió durante la lectura" : read.problem}`);
         incomplete = true;
         break;
       }
@@ -542,7 +553,7 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
         byId.set(listing.listingId, listing);
       }
       if (repeatedOrInvalid) {
-        failed++;
+        holes.push(`${search.province} página ${page}: página repetida o con IDs inválidos`);
         incomplete = true;
         break;
       }
@@ -566,7 +577,7 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
   return {
     key: "elpais", ok: byId.size > 0, complete: !incomplete, listings: [...byId.values()],
     note: `${pages} páginas, ${byId.size} avisos únicos; departamentos consultados: ${covered.length} de ${searches.length}`
-      + partial + (failed ? `; ${failed} lecturas incompletas` : "")
+      + partial + (holes.length ? `; ${holes.length} lecturas incompletas: ${holes.slice(0, 3).join("; ")}` : "")
       + (viaBrowser ? `; ${viaBrowser} abiertas con navegador` : ""),
   };
 }
