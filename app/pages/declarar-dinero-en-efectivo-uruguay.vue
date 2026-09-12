@@ -47,13 +47,13 @@
               mandatory
               divided
               variant="outlined"
-              class="w-100 mb-4"
+              class="w-100 mb-4 offence-toggle"
             >
-              <VBtn :value="false" class="flex-grow-1">
+              <VBtn :value="false">
                 <VIcon start>mdi-numeric-1-circle-outline</VIcon>
                 Primera omisión
               </VBtn>
-              <VBtn :value="true" class="flex-grow-1">
+              <VBtn :value="true">
                 <VIcon start>mdi-repeat</VIcon>
                 Reincidencia
               </VBtn>
@@ -455,5 +455,19 @@ useHead(() => ({
   flex-direction: column;
   gap: 6px;
   font-size: 0.85rem;
+}
+/* Dos segmentos de ancho parejo que pueden encoger. Con `flex-grow-1` solo (grow sin
+   shrink) los rótulos con ícono suman 336px en una columna de 285 y «Reincidencia»
+   asomaba 6px por fuera del viewport en un teléfono; el rótulo puede partirse en dos
+   líneas antes que salirse de la tarjeta. */
+.offence-toggle :deep(.v-btn) {
+  flex: 1 1 0;
+  min-width: 0;
+  height: auto;
+  min-height: 36px;
+  padding-block: 6px;
+}
+.offence-toggle :deep(.v-btn__content) {
+  white-space: normal;
 }
 </style>
