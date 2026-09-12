@@ -1847,6 +1847,33 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // «cuanto sale la libreta de conducir» se busca como precio y afuera se
+        // contesta «depende de tu intendencia». Dejó de depender en 2023: el
+        // Congreso de Intendentes y el Sucive unificaron la emisión en UR 1,25,
+        // y lo que cambia el importe es el plazo que te otorgan, no el
+        // departamento. Ninguna página del sitio lo contestaba.
+        to: '/libreta-de-conducir-uruguay',
+        labelKey: 'nav.libretaDeConducir',
+        icon: 'mdi-card-account-details-star-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'libreta de conducir',
+          'libreta de conducir uruguay',
+          'cuanto sale la libreta de conducir',
+          'licencia de conducir uruguay',
+          'licencia de conducir precio',
+          'permiso unico nacional de conducir',
+          'punc',
+          'renovar libreta de conducir',
+          'duplicado libreta de conducir',
+          'cuantos anos dura la libreta de conducir',
+          'libreta de conducir primera vez',
+          'costo libreta de conducir intendencia',
+        ],
+      },
+      {
         to: '/salud-financiera',
         labelKey: 'nav.saludFinanciera',
         icon: 'mdi-heart-pulse',
