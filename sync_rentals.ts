@@ -28,8 +28,10 @@ import { fetchUsdUyuRate } from "./classes/rentals/rate";
 import { harvestRentalMarket } from "./classes/rentals/sources";
 import { sourcesAllowingExpiry } from "./classes/rentals/sources/types";
 import {
+  carrySourceHistory,
   countRentals,
   loadRentalHistory,
+  loadRentalMeta,
   dropReassignedOffers,
   pruneStaleRentals,
   saveRentalMeta,
@@ -151,7 +153,8 @@ async function main(): Promise<void> {
       ...(run.access ? { access: run.access } : {}),
     })),
   };
-  await saveRentalMeta(meta);
+  // A failed read of the previous summary only loses the streak dates, never the run itself.
+  await saveRentalMeta(carrySourceHistory(meta, await loadRentalMeta().catch(() => null)));
 
   console.log(
     `[rentals] listo en ${Math.round(meta.durationMs / 1000)}s :: ${written} filas escritas, ` +

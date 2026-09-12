@@ -6,6 +6,10 @@
 //   * a failed fetch resolves to null instead of throwing, so one dead portal degrades the run
 //     instead of failing it.
 //
+// A bare null cannot say WHY, and "the portal did not answer" needs a different fix than "the
+// portal changed its page". `onFailure` hands the caller the reason (2026-09-12: InfoCasas failed a
+// whole sweep and its note could not tell which of the two it had been).
+//
 // The gap here is far longer than the chair one (1.2 s vs 350 ms) because a full InfoCasas sweep is
 // ~900 page requests against a single host, where the chair job spreads a few hundred over a dozen
 // storefronts.
@@ -36,6 +40,12 @@ export interface FetchOptions {
   headers?: Record<string, string>;
   /** Skip the throttle — only for our own bridges on the same box. */
   unthrottled?: boolean;
+  /**
+   * Told why the request came back null: `HTTP 403`, `tiempo agotado (40000 ms)`,
+   * `error de red ECONNREFUSED`, `cuerpo ilegible`. Run notes are published on the site, and an
+   * error MESSAGE names the host it failed to reach, so only a status or an error code is reported.
+   */
+  onFailure?: (reason: string) => void;
 }
 
 export function hostOf(url: string): string {
@@ -69,9 +79,18 @@ async function throttled<T>(host: string, task: () => Promise<T>): Promise<T> {
   return run;
 }
 
-async function rawFetch(url: string, options: FetchOptions): Promise<Response | null> {
+type Attempt = { response: Response } | { failure: string };
+
+/** The error's code (ECONNREFUSED, ENOTFOUND…), never its message: that one carries the address. */
+function networkFailure(error: unknown): string {
+  const code = (error as { cause?: { code?: unknown } } | null)?.cause?.code;
+  return typeof code === "string" && /^[A-Z][A-Z0-9_]{1,39}$/.test(code) ? `error de red ${code}` : "error de red";
+}
+
+async function rawFetch(url: string, options: FetchOptions): Promise<Attempt> {
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(url, {
       method: options.method,
@@ -85,9 +104,9 @@ async function rawFetch(url: string, options: FetchOptions): Promise<Response | 
         ...(options.headers || {}),
       },
     });
-    return response;
-  } catch {
-    return null;
+    return { response };
+  } catch (error) {
+    return { failure: controller.signal.aborted ? `tiempo agotado (${timeoutMs} ms)` : networkFailure(error) };
   } finally {
     clearTimeout(timer);
   }
@@ -95,13 +114,21 @@ async function rawFetch(url: string, options: FetchOptions): Promise<Response | 
 
 async function withRetries(url: string, options: FetchOptions): Promise<Response | null> {
   const attempts = (options.retries ?? 2) + 1;
+  let failure = "sin respuesta";
   for (let attempt = 0; attempt < attempts; attempt++) {
-    const response = await rawFetch(url, options);
-    if (response && response.ok) return response;
-    // 404/410 are answers, not failures: retrying them only wastes the host's time.
-    if (response && response.status >= 400 && response.status < 500 && response.status !== 429) return null;
+    const outcome = await rawFetch(url, options);
+    if ("response" in outcome) {
+      const { status } = outcome.response;
+      if (outcome.response.ok) return outcome.response;
+      failure = `HTTP ${status}`;
+      // 404/410 are answers, not failures: retrying them only wastes the host's time.
+      if (status >= 400 && status < 500 && status !== 429) break;
+    } else {
+      failure = outcome.failure;
+    }
     if (attempt < attempts - 1) await sleep(800 * (attempt + 1));
   }
+  options.onFailure?.(failure);
   return null;
 }
 
@@ -112,6 +139,7 @@ async function run<T>(url: string, options: FetchOptions, read: (response: Respo
     try {
       return await read(response);
     } catch {
+      options.onFailure?.("cuerpo ilegible");
       return null;
     }
   };

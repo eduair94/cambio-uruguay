@@ -138,6 +138,10 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
   // Enrichment has a small reservation, and cannot consume the primary coverage budget.
   const reserve = full ? Math.min(100, Math.floor(requestLimit / 10)) : 0;
   const primaryLimit = requestLimit - reserve;
+  // ...and the same share of the clock. Reserving requests alone was not enough: on 2026-09-12 a
+  // slow bridge let the catalogue run out all 40 minutes with 180 requests unspent, and the pets
+  // pass got a single request (602 adverts marked that morning, 20 that afternoon, same code).
+  const primaryTimeLimit = timeLimit - Math.floor(timeLimit * reserve / requestLimit);
   const started = Date.now();
   const byId = new Map<string, RawRental>();
   const categoryTotals = new Map<string, number>();
@@ -151,13 +155,14 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
   const particulars = new Set<string>();
   const phaseNotes: string[] = [];
 
-  const canRead = (limit: number) => requests < limit && Date.now() - started < timeLimit;
-  async function read(filters: MLFilters, offset: number, limit: number): Promise<SearchResult | null> {
-    for (let attempt = 0; attempt < 2 && canRead(limit); attempt++) {
+  /** `deadline` is ms since `started`: each stage stops at its own share of the clock. */
+  const canRead = (limit: number, deadline = timeLimit) => requests < limit && Date.now() - started < deadline;
+  async function read(filters: MLFilters, offset: number, limit: number, deadline: number): Promise<SearchResult | null> {
+    for (let attempt = 0; attempt < 2 && canRead(limit, deadline); attempt++) {
       requests++;
       const payload = await fetchJson<MLSearchEvidence & { components?: unknown }>(
         `${API_BASE}/search?${mlParams(filters, offset)}`,
-        { timeoutMs: Math.max(1, Math.min(45_000, timeLimit - (Date.now() - started))), retries: 0 },
+        { timeoutMs: Math.max(1, Math.min(45_000, deadline - (Date.now() - started))), retries: 0 },
       );
       if (payload && typeof payload === "object") {
         pages++;
@@ -181,13 +186,13 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
     }
   }
 
-  async function walk(initial: SearchTask[], limit: number, enrichment?: "pets" | "particular"): Promise<void> {
+  async function walk(initial: SearchTask[], limit: number, deadline: number, enrichment?: "pets" | "particular"): Promise<void> {
     const before = { requests, filters: cuts.filters, pages: cuts.pages, residual: cuts.residual };
     const queue = [...initial];
     const scheduled = new Set(queue.map(task => JSON.stringify(task.filters)));
-    while (queue.length && canRead(limit)) {
+    while (queue.length && canRead(limit, deadline)) {
       const task = queue.shift()!;
-      const result = await read(task.filters, task.offset, limit);
+      const result = await read(task.filters, task.offset, limit, deadline);
       if (!result) continue;
       // The upstream can silently reset an offset or discard a category/invalid facet.
       // In either case the response is not evidence for this slice (including pets/owner).
@@ -272,7 +277,7 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
     filters: { category: category.id, ...(full ? {} : { since: "today" }) } as MLFilters,
     offset: 0, depth: 0, seen: new Set<string>(),
   }));
-  await walk(roots, primaryLimit);
+  await walk(roots, primaryLimit, primaryTimeLimit);
   if (full && byId.size && canRead(requestLimit)) {
     // Both effective filter presence AND a reduced total are required. Never infer the opposite
     // side from absence, and a private seller flag alone does not declare ownerDirect.
@@ -281,8 +286,11 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
         parentTotal: categoryTotals.get(root.filters.category!) }));
     const enrichmentEnd = Math.min(requestLimit, requests + reserve);
     const middle = Math.min(enrichmentEnd, requests + Math.ceil(reserve / 2));
-    await walk(enrichedRoots("seller_type", "private_seller"), middle, "particular");
-    await walk(enrichedRoots("IS_SUITABLE_FOR_PETS", "242085"), enrichmentEnd, "pets");
+    // The clock is split the way the requests are, so the owners pass cannot starve pets either.
+    const elapsed = Date.now() - started;
+    const middleTime = elapsed + Math.ceil((timeLimit - elapsed) / 2);
+    await walk(enrichedRoots("seller_type", "private_seller"), middle, middleTime, "particular");
+    await walk(enrichedRoots("IS_SUITABLE_FOR_PETS", "242085"), enrichmentEnd, timeLimit, "pets");
   }
   const totals = ML_RENTAL_CATEGORIES.map(category => `${category.name}:${categoryTotals.get(category.id) ?? "?"}`).join(",");
   const detail = `categorías[${totals}]; cortes[falla:${cuts.failed},filtro:${cuts.filters},repetida:${cuts.repeated},tope:${cuts.pages},presupuesto:${cuts.budget},sinPartición:${cuts.unpartitioned},residual:${cuts.residual},totalDesconocido:${cuts.shortUnknown},vacía:${cuts.empty}]; etapas[${phaseNotes.join(";")}]`;

@@ -396,3 +396,34 @@ describe("particiones completas de precio frente a ubicaciones con faltantes", (
     expect(out.complete).toBe(false);
   });
 });
+
+describe("reserva de tiempo para las pasadas de enriquecimiento", () => {
+  // 2026-09-12: con el puente lento, el catálogo gastó los 40 minutos enteros y a la pasada de
+  // mascotas le quedó UNA solicitud — 602 avisos marcados a la mañana, 20 a la tarde, mismo
+  // código. La reserva cuidaba solicitudes (se usaron 1420 de 1600) pero no tiempo.
+  it("deja tiempo para mascotas aunque el catálogo pudiera consumir todo el presupuesto", async () => {
+    vi.stubEnv("RENTALS_ML_TIME_BUDGET_MS", "100000");
+    let clock = 1_000_000;
+    const now = vi.spyOn(Date, "now").mockImplementation(() => clock);
+    try {
+      fetchJson.mockImplementation(async (url: string) => {
+        clock += 1_000; // Cada lectura del puente tarda un segundo.
+        const p = new URL(url).searchParams;
+        if (p.get("category") !== "MLU1473") return page([], 0, p);
+        if (p.has("IS_SUITABLE_FOR_PETS")) return page(["0", "1"], 2, p);
+        if (p.has("seller_type")) return page([], 0, p);
+        const offset = Number(p.get("offset") || 0);
+        return page(Array.from({ length: 20 }, (_, i) => String(offset + i)), 100_000, p);
+      });
+      const out = await harvestMercadoLibre("full", 41.45);
+      const urls = fetchJson.mock.calls.map(([url]) => new URL(url).searchParams);
+      expect(urls.filter(p => p.has("IS_SUITABLE_FOR_PETS")).length).toBeGreaterThan(0);
+      expect(out.listings.filter(row => row.petsAllowed === true).map(row => row.listingId).sort())
+        .toEqual(["mercadolibre:MLU0", "mercadolibre:MLU1"]);
+      // La reserva es chica: el catálogo sigue llevándose casi todo el presupuesto.
+      expect(urls.filter(p => !p.has("IS_SUITABLE_FOR_PETS") && !p.has("seller_type")).length).toBeGreaterThan(85);
+    } finally {
+      now.mockRestore();
+    }
+  });
+});

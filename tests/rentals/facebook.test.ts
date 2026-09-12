@@ -61,6 +61,18 @@ describe("Facebook partial coverage and source-owned location", () => {
     expect(result.note).toContain("0/2 consultas respondidas, 2 fallidas");
   });
 
+  it("says why the bridge did not answer", async () => {
+    // 2026-09-11 23:48 → 2026-09-12 16:16: sixteen hourly runs said only "sin respuesta del
+    // servicio", which cannot tell a dead bridge from a slow one.
+    vi.mocked(fetchJson).mockImplementation(async (_url: string, options?: { onFailure?: (reason: string) => void }) => {
+      options?.onFailure?.("error de red ECONNREFUSED");
+      return null;
+    });
+    const result = await harvestFacebookMarketplace("fast", 41.5);
+    expect(result.ok).toBe(false);
+    expect(result.note).toContain("último fallo: sin respuesta del servicio (error de red ECONNREFUSED)");
+  });
+
   it("records rejected rows and keeps the advertised bound within the bridge limit", async () => {
     vi.stubEnv("RENTALS_FB_LIMIT", "500");
     vi.mocked(fetchJson).mockResolvedValue({ ok: true, results: [advert("1"), { ...advert("2"), title: "Busco alquiler" }] });

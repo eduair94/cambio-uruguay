@@ -15,7 +15,7 @@
 import { infoCasasAdvertiser, type InfoCasasAdvertiserRow } from "../advertiser";
 import { guaranteesFromField, guaranteesFromText, mergeGuarantees } from "../guarantees";
 import { rentalDescription, rentalOfferDetails } from "../details";
-import { fetchText } from "../net";
+import { fetchText, sleep } from "../net";
 import {
   canonicalDepartment,
   inferPropertyType,
@@ -285,9 +285,29 @@ export interface InfoCasasHarvestOptions {
   maxDurationMs?: number;
   /** Read-only diagnostics can isolate a range; production uses all ranges. */
   ranges?: readonly InfoCasasPriceRange[];
-  fetchPage?: (url: string) => Promise<string | null>;
+  /**
+   * Pause before each retry round for the pages the portal did not answer. Full sweeps only by
+   * default: the hourly feed runs again in an hour, and waiting would hold the shared lock.
+   */
+  retryDelaysMs?: readonly number[];
+  fetchPage?: (url: string, onFailure: (reason: string) => void) => Promise<string | null>;
   onProgress?: (progress: { pages: number; uniqueRows: number; accepted: number; range: InfoCasasPriceRange }) => void;
 }
+
+/** One price range being walked; kept whole so a retry resumes where the portal went silent. */
+interface InfoCasasStream {
+  range: InfoCasasPriceRange;
+  /** "búsqueda N" in the note: the order in which streams are first read. */
+  label: number;
+  page: number;
+  rangeIds: Set<string>;
+  advertised: number;
+  noNewPages: number;
+  /** The failure that stopped this stream, until a retry reads past it. */
+  failure?: string;
+}
+
+type InfoCasasStreamEnd = "done" | "truncated" | "retryable" | "failed";
 
 function boundedInteger(value: unknown, fallback: number, max: number): number {
   const n = Number(value);
@@ -311,43 +331,57 @@ export async function harvestInfoCasas(
     ? process.env.RENTALS_IC_FAST_PAGES : process.env.RENTALS_IC_MAX_PAGES), mode === "fast" ? 10 : 900, 1800);
   const maxDurationMs = boundedInteger(options.maxDurationMs ?? process.env.RENTALS_IC_MAX_DURATION_MS, 40 * 60_000, 60 * 60_000);
   const started = Date.now();
-  const fetchPage = options.fetchPage || ((url: string) => fetchText(url, { timeoutMs: 40_000, retries: 1 }));
-  const queue = [...(options.ranges || (mode === "fast" ? [{}] : INFOCASAS_PRICE_RANGES))];
+  const fetchPage = options.fetchPage || ((url: string, onFailure: (reason: string) => void) =>
+    fetchText(url, { timeoutMs: 40_000, retries: 1, onFailure }));
+  // 2026-09-12 04:52 UTC: all five ranges failed on page 1, and the same URLs parsed fine that
+  // afternoon. Waiting costs the job no wall clock: MercadoLibre's walk sets its length, not this.
+  const retryDelays = options.retryDelaysMs ?? (mode === "full" ? [120_000, 360_000] : []);
   const byId = new Map<string, RawRental>();
   const seenIds = new Set<string>();
   const rejectedIds = new Set<string>();
-  let pages = 0, rawRows = 0, repeatedRows = 0, repeatedTails = 0, failedPages = 0, completedRanges = 0;
-  let truncated = false, missingIds = false;
-  const issues: string[] = [];
+  let pages = 0, rawRows = 0, repeatedRows = 0, repeatedTails = 0, completedRanges = 0, recoveredPages = 0;
+  let truncated = false, missingIds = false, labels = 0;
+  const tailIssues: string[] = [];
+  const streams: InfoCasasStream[] = [];
+  const open = (range: InfoCasasPriceRange): InfoCasasStream => {
+    const stream: InfoCasasStream = { range, label: 0, page: 1, rangeIds: new Set<string>(), advertised: 0, noNewPages: 0 };
+    streams.push(stream);
+    return stream;
+  };
 
-  for (let stream = 0; stream < queue.length; stream++) {
-    const range = queue[stream]!;
-    const rangeIds = new Set<string>();
-    let advertised = 0, noNewPages = 0;
-    for (let page = 1; ; page++) {
-      if (pages >= maxPages || Date.now() - started >= maxDurationMs) { truncated = true; break; }
+  async function walkStream(stream: InfoCasasStream): Promise<{ end: InfoCasasStreamEnd; split?: InfoCasasPriceRange[] }> {
+    if (!stream.label) stream.label = ++labels;
+    const range = stream.range;
+    for (; ; stream.page++) {
+      if (pages >= maxPages || Date.now() - started >= maxDurationMs) return { end: "truncated" };
+      const page = stream.page;
       const url = infoCasasPageUrl(page, range);
       if (!assertAllowed(new URL(url).pathname)) throw new Error("disallowed InfoCasas path");
       let html: string | null = null;
-      try { html = await fetchPage(url); } catch { /* Preserve prior data when one stream fails. */ }
+      let transport = "";
+      try { html = await fetchPage(url, (reason) => { transport = reason; }); } catch { /* Preserve prior data when one stream fails. */ }
       pages++;
       const payload = html ? extractNextData(html) : null;
       const parsed = readPage(payload);
-      if (!parsed || parsed.currentPage !== page || !matchesPriceRange(payload, range) ||
-        (!parsed.rows.length && parsed.hasMorePages)) {
-        failedPages++;
-        issues.push(`búsqueda ${stream + 1}, página ${page}: respuesta incompleta o distinta`);
-        break;
+      const problem = !html ? `sin respuesta del portal${transport ? ` (${transport})` : ""}`
+        : !payload ? "página sin datos de búsqueda"
+          : !parsed ? "formato de búsqueda distinto"
+            : parsed.currentPage !== page || !matchesPriceRange(payload, range) ? "respuesta de otra búsqueda"
+              : !parsed.rows.length && parsed.hasMorePages ? "página vacía a mitad de la búsqueda" : "";
+      if (problem || !parsed) {
+        stream.failure = `búsqueda ${stream.label}, página ${page}: ${problem}`;
+        // Only silence can change by waiting: another search or a new layout will still be there.
+        return { end: !html || !payload ? "retryable" : "failed" };
       }
-      advertised = Math.max(advertised, parsed.total);
+      if (stream.failure) { stream.failure = undefined; recoveredPages++; }
+      stream.advertised = Math.max(stream.advertised, parsed.total);
       // Keep each stream below the observed ~10,000-result deep-pagination ceiling. If the
       // market grows, split this range before wasting hundreds of requests on its repeated tail.
-      if (mode === "full" && page === 1 && parsed.total > 9000 && queue.length < 32) {
+      if (mode === "full" && page === 1 && parsed.total > 9000 && streams.length < 32) {
         const min = range.min || 0;
         const mid = range.max ? Math.floor((min + range.max) / 2) : Math.max(13_000, min * 2);
         if (mid > min && (range.max === undefined || mid < range.max)) {
-          queue.splice(stream + 1, 0, { ...range, max: mid }, { min: mid, ...(range.max ? { max: range.max } : {}) });
-          break;
+          return { end: "done", split: [{ ...range, max: mid }, { min: mid, ...(range.max ? { max: range.max } : {}) }] };
         }
       }
       let newIds = 0;
@@ -355,7 +389,7 @@ export async function harvestInfoCasas(
       for (const row of parsed.rows) {
         if (!row || typeof row !== "object" || !/^\d+$/.test(String(row.id || ""))) continue;
         const id = String(row.id);
-        if (!rangeIds.has(id)) { newIds++; rangeIds.add(id); }
+        if (!stream.rangeIds.has(id)) { newIds++; stream.rangeIds.add(id); }
         if (seenIds.has(id)) repeatedRows++;
         seenIds.add(id);
         const listing = toRawRental(row, new Date().toISOString());
@@ -366,22 +400,44 @@ export async function harvestInfoCasas(
         byId.set(listing.listingId, listing);
       }
       options.onProgress?.({ pages, uniqueRows: seenIds.size, accepted: byId.size, range });
-      noNewPages = newIds ? 0 : noNewPages + 1;
-      if (noNewPages >= 3 && parsed.hasMorePages) {
+      stream.noNewPages = newIds ? 0 : stream.noNewPages + 1;
+      if (stream.noNewPages >= 3 && parsed.hasMorePages) {
         repeatedTails++;
-        issues.push(`búsqueda ${stream + 1}: cola repetida desde página ${page - 2}`);
-        break;
+        tailIssues.push(`búsqueda ${stream.label}: cola repetida desde página ${page - 2}`);
+        return { end: "done" };
       }
       if (!parsed.hasMorePages) {
         completedRanges++;
         // Counting HTTP pages does not prove completeness. Stable boundaries can still omit
         // IDs when the source changes order within one publication date.
-        if (rangeIds.size < advertised) missingIds = true;
-        break;
+        if (stream.rangeIds.size < stream.advertised) missingIds = true;
+        return { end: "done" };
       }
     }
-    if (truncated) break;
   }
+
+  const silent: InfoCasasStream[] = [];
+  async function walk(list: InfoCasasStream[]): Promise<void> {
+    for (let index = 0; index < list.length; index++) {
+      const stream = list[index]!;
+      const { end, split } = await walkStream(stream);
+      // A split range's halves are read right after it, as the single queue always did.
+      if (split) list.splice(index + 1, 0, ...split.map(open));
+      if (end === "retryable") silent.push(stream);
+      if (end === "truncated") { truncated = true; return; }
+    }
+  }
+
+  await walk((options.ranges || (mode === "fast" ? [{}] : INFOCASAS_PRICE_RANGES)).map(open));
+  // The other ranges go first; a silent one resumes at its failed page with what it had read.
+  for (const delay of retryDelays) {
+    if (truncated || !silent.length || pages >= maxPages || Date.now() - started + delay >= maxDurationMs) break;
+    await sleep(delay);
+    await walk(silent.splice(0));
+  }
+
+  const failed = streams.filter((stream) => stream.failure);
+  const issues = [...failed.map((stream) => stream.failure!), ...tailIssues];
   const ok = byId.size > 0;
   // Even a fully walked, overlapping set of price filters is not a transactional snapshot:
   // adverts can move between ranges while we read. Never expire unseen offers on this evidence.
@@ -392,7 +448,8 @@ export async function harvestInfoCasas(
     (mode === "full" ? " por franjas de precio" : " — repaso de novedades") +
     (truncated ? ` — CORTADO por presupuesto (${maxPages} páginas / ${Math.round(maxDurationMs / 60_000)} min)` : "") +
     (missingIds ? " — el portal omitió IDs entre páginas" : "") +
-    (failedPages ? ` — ${failedPages} páginas fallidas` : "") +
+    (failed.length ? ` — ${failed.length} páginas fallidas` : "") +
+    (recoveredPages ? ` — ${recoveredPages} páginas recuperadas en reintento` : "") +
     (repeatedTails ? ` — ${repeatedTails} colas repetidas` : "") +
     (issues.length ? `; ${issues.slice(0, 3).join("; ")}` : "") +
     "; cobertura parcial: se conservan avisos no vistos";

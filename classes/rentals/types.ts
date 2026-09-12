@@ -322,6 +322,10 @@ export interface RentalSourceRun {
   access?: "external_only";
   listings: number;
   note: string;
+  /** The last run in which this source came back ok, carried across failing runs. */
+  lastOkAt?: string;
+  /** The first run of the current failing streak; absent while the source is ok. */
+  failingSince?: string;
 }
 
 /** One document: what the last run did. Mirrors ChairCatalogMeta. */

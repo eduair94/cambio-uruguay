@@ -352,6 +352,28 @@ export async function countRentals(): Promise<number> {
   return RentalListingModel.countDocuments({});
 }
 
+/**
+ * Carries each portal's last good run and the start of its failing streak from the previous run
+ * summary. The VPS flushes every pm2 log once an hour, so a run's console output is gone before
+ * anyone reads it; on 2026-09-12 "since when is Facebook failing?" took an aggregation over 60k
+ * listings. Summaries written before this field existed still date the streak by their own run.
+ */
+export function carrySourceHistory(
+  meta: RentalMeta, previous: Pick<RentalMeta, "generatedAt" | "sources"> | null,
+): RentalMeta {
+  const before = new Map((previous?.sources ?? []).map((source) => [source.key, source]));
+  return {
+    ...meta,
+    sources: meta.sources.map(({ lastOkAt: _lastOkAt, failingSince: _failingSince, ...source }) => {
+      if (source.ok) return { ...source, lastOkAt: meta.generatedAt };
+      const prior = before.get(source.key);
+      const lastOkAt = prior?.lastOkAt ?? (prior?.ok ? previous!.generatedAt : undefined);
+      const failingSince = prior && !prior.ok ? prior.failingSince ?? previous!.generatedAt : meta.generatedAt;
+      return { ...source, ...(lastOkAt ? { lastOkAt } : {}), failingSince };
+    }),
+  };
+}
+
 export async function saveRentalMeta(meta: RentalMeta): Promise<void> {
   // Hourly top-ups are deliberately partial. Their small counts must not erase the evidence
   // needed to diagnose a daily pagination cut or a portal outage. No extra public endpoint.

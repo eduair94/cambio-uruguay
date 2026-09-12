@@ -135,10 +135,14 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
         location,
         limit: String(perQuery),
       })}`;
-      const payload = await fetchJson<FbResponse>(url, { timeoutMs: 120_000, retries: 1, unthrottled: true });
+      let transport = "";
+      const payload = await fetchJson<FbResponse>(url, {
+        timeoutMs: 120_000, retries: 1, unthrottled: true, onFailure: (reason) => { transport = reason; },
+      });
       if (!payload) {
         failed++;
-        lastError = "sin respuesta del servicio";
+        // A dead bridge (connection refused) and a slow one (timeout) need different fixes.
+        lastError = `sin respuesta del servicio${transport ? ` (${transport})` : ""}`;
         continue;
       }
       if (payload.ok !== true || payload.error || !Array.isArray(payload.results)) {

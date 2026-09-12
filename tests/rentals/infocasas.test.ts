@@ -113,7 +113,7 @@ describe("InfoCasas rental coverage", () => {
   it("preserves successful readings if a later page fails or lies about its number", async () => {
     for (const response of [null, html(page([row(2)], 1, 2, 2))]) {
       let count = 0;
-      const result = await harvestInfoCasas("full", 41.5, { ranges: [{}], fetchPage: async () =>
+      const result = await harvestInfoCasas("full", 41.5, { ranges: [{}], retryDelaysMs: [], fetchPage: async () =>
         ++count === 1 ? html(page([row(1)], 1, 2, 2)) : response });
       expect(result.listings).toHaveLength(1);
       expect(result.note).toContain("1 páginas fallidas");
