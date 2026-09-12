@@ -16,6 +16,7 @@
     "check:og-images": "node scripts/check-og-images.mjs",
     "audit:margins": "node scripts/ua-margin-audit.mjs",
     "audit:display": "node scripts/display-utility-audit.mjs",
+    "audit:gutters": "node scripts/gutter-audit.mjs",
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
     "test:unit": "vitest run",

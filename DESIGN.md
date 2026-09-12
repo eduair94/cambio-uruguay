@@ -331,8 +331,8 @@ grammar nobody chose.
 
 ## Layout
 
-Content sits in a single centred column: `.container_custom` caps the page at **1280px** with 12px
-gutters, and full-bleed routes (home, `/mapa`, `/sucursales`, `/avanzado`) opt out by route class
+Content sits in a single centred column: `.container_custom` caps the page at **1280px** with 12px of
+its own gutter (each page's `<VContainer>` adds the other 16px), and full-bleed routes (home, `/mapa`, `/sucursales`, `/avanzado`) opt out by route class
 rather than by page-local CSS. The app bar is fixed; `VMain` reserves 64px (56px under 768px).
 
 Breakpoints are pinned to the Vuetify 3 thresholds in **both** `useDisplay()` and
@@ -353,6 +353,17 @@ below 600px each row stacks into a labelled card. A table whose cells run past o
 `cu-roomy` alongside it, which owns the ≥600px rhythm the card mode never covered.
 
 ### Named Rules
+
+**The Page Brings Its Container Rule.** The layout's 12px is not the gutter; it is the half the
+layout can promise. Every page root is a `<VContainer>` (or a wrapper whose first child is one),
+which adds the other 16px and the shared width cap, so content starts 28px from the edge on a phone
+and sits in the same column on every route. A bare `<div>` or a `<v-row>` at the root gets only
+the 12px — and Vuetify 4's grid no longer hides that behind the v3 negative row margins — which is
+how 57 of 214 templates measured 12px on 2026-09-12 while the rest measured 28. Use `fluid` where
+width is information (charts, wide tables, the branches directory) so the 1200px cap does not crop
+them; the full-bleed exceptions stay on the route class, never on the page.
+`tests/unit/pageContainer.test.ts` reads the source; `npm run audit:gutters` reads the rendered
+result.
 
 **The Min-Width Zero Rule.** Any grid or flex item that can contain an image, a long thread title,
 or a URL carries `min-width: 0`. Without it the item's min-content floor silently widens the whole
