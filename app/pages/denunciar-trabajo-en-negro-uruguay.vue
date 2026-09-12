@@ -235,7 +235,7 @@ const verifiedAt = new Date(UNDECLARED_VERIFIED_AT).toLocaleDateString('es-UY', 
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/denunciar-trabajo-en-negro-uruguay'
-const title = 'Trabajo en negro en Uruguay: cómo denunciarlo y qué reclamar'
+const title = 'Trabajo en negro en Uruguay: las 3 vías'
 const description =
   'Tu empleador no te declara: las tres puertas que resuelven cosas distintas. La denuncia anónima ante la Inspección General del Trabajo (pide vínculo vigente), la denuncia ante BPS para que los años existan en tu historia laboral, y la conciliación previa para cobrar lo que te deben. Con los plazos de prescripción, qué se pierde sin aportes y qué te deben igual.'
 

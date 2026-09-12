@@ -231,7 +231,10 @@ function staticTitle(source: string): string | null {
 }
 
 // 110 → 111 el 2026-09-09: la comparativa de portales de alquiler.
-const MEASURABLE = 111
+// 111 → 120 el 2026-09-12: nueve páginas nuevas de las últimas corridas ya se leían y nadie había
+// subido el piso, así que el bound tenía nueve de sobra — sobrante suficiente para que volver
+// dinámico un título medido pasara inadvertido, que es lo único que este número existe para evitar.
+const MEASURABLE = 120
 // 44 → 33 el 2026-09-07: once de los títulos más largos reescritos a 43 caracteres o menos. Los
 // once perdían la cola en el SERP, y la cola era el dato — «2 puntos o 9», «mora y 72 h», «1 mes
 // por año», «6 países», «13 temas», «ChauDeudas o MiDeuda» —, así que en cada uno se conservó la
@@ -247,7 +250,14 @@ const MEASURABLE = 111
 // test mide `es` y dejar `en`/`pt` largos habría escondido el mismo defecto en dos idiomas.
 // El bound quedó en el conteo real (16) y no en un número redondo: el sobrante de 3 que tenía el 33
 // alcanzaba para que tres páginas nuevas entraran cortadas sin poner nada en rojo.
-const OVER_BUDGET = 16
+//
+// 16 → 0 el 2026-09-12: los dieciséis que quedaban, todos entre 76 y 83 caracteres. Esto deja de ser
+// un trinquete que cuenta deuda vieja y pasa a ser contrato: no queda número para subir, y un título
+// nuevo que no entre en el SERP pone CI en rojo el día que se escribe y no meses después.
+// El criterio de recorte fue el de la tanda anterior — el que tenía cifra publicable se la llevó al
+// título («66 % a 40 %», «98 días, paternidad 20», «10 días», «las 3 vías») y el resto soltó la
+// explicación que la descripción ya da entera. Ninguno perdió la palabra por la que se lo busca.
+const OVER_BUDGET = 0
 
 describe('el lector sigue los títulos trasladados a mensajes locales', () => {
   for (const [file, title] of [

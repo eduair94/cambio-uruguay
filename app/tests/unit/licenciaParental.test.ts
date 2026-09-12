@@ -3,6 +3,8 @@
 // contradice a la otra a la vista) y la aritmética del calendario maternal, que produce fechas
 // concretas a partir de la fecha presunta de parto.
 
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -123,5 +125,23 @@ describe('el contenido publicado se sostiene en fuentes', () => {
 
   it('los casos especiales están todos atribuidos', () => {
     for (const c of LICENCIA_PARENTAL_CASOS) expect(c.source.length).toBeGreaterThan(5)
+  })
+})
+
+// El `<title>` de la página lleva los dos totales escritos a mano, y tiene que ser así: el
+// presupuesto de 60 caracteres del SERP lo mide `seoTitleBudget.test.ts` leyendo el literal del
+// archivo, así que un título armado con las constantes en tiempo de render dejaría de medirse.
+// El costo de escribirlos a mano es que pueden quedar contradiciendo a la página que titulan —
+// que es exactamente lo que pasa cuando una ley cambia un escalón y se toca sólo la constante.
+describe('el título de la página no se despega de las constantes', () => {
+  it('dice los mismos días de maternidad y paternidad que publica la página', () => {
+    const source = readFileSync(
+      join(__dirname, '..', '..', 'pages', 'licencia-por-maternidad-y-paternidad-uruguay.vue'),
+      'utf8'
+    )
+    const title = source.match(/\nconst title = '([^']+)'/)?.[1] ?? ''
+    expect(title).not.toBe('')
+    expect(title).toContain(`maternidad ${MATERNIDAD_DIAS_TOTAL} días`)
+    expect(title).toContain(`paternidad ${PATERNIDAD_DIAS_TOTAL}`)
   })
 })

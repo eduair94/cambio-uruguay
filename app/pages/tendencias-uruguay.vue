@@ -357,7 +357,7 @@ function answersFor(term: string): Array<{ to: string; title: string }> {
   )
 }
 
-const title = 'Lo que Uruguay busca hoy: tendencias de búsqueda, foros y economía'
+const title = 'Lo que Uruguay busca hoy: Google y foros'
 const description =
   'Las tendencias de búsqueda del día en Uruguay según Google, los hilos más comentados de los foros uruguayos y los titulares de economía de la semana, separando lo que toca el bolsillo. Se actualiza cada 3 horas.'
 const canonicalUrl = 'https://cambio-uruguay.com/tendencias-uruguay'

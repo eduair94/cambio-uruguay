@@ -620,7 +620,7 @@ const sources = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/importar-a-uruguay-siendo-extranjero'
-const title = 'Importar a Uruguay siendo extranjero: Amazon, China y Mercosur'
+const title = 'Importar a Uruguay siendo extranjero'
 const description =
   'Guía 2026 para recibir compras en Uruguay durante una estadía temporal: qué cambia con o sin cédula uruguaya, impuestos desde Mercosur, Amazon y China, y cómo elegir courier.'
 

@@ -277,7 +277,7 @@ const verifiedAt = new Date(`${BCU_COTIZACION_VERIFIED_AT}T00:00:00Z`).toLocaleD
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/cotizacion-del-bcu'
-const title = 'Cotización del BCU: qué publica y por qué no es la del cambio'
+const title = 'Cotización del BCU: no es la del cambio'
 const description =
   'El BCU informa una cotización única por moneda, no compra y venta: el dólar fondo de cierre es el promedio ponderado de las operaciones hechas en BEVSA (Comunicación 2008/001). Es el mayorista entre instituciones, no un precio de mostrador. Y para la DGI se usa el interbancario del día anterior a la operación: un lunes toma el del viernes.'
 
