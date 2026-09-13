@@ -75,7 +75,10 @@ export function normalizeRentalAmenities(input: unknown): RentalAmenity[] {
 }
 
 /** ¿Alguna etiqueta publicada corresponde a esta comodidad? El mismo patrón que la consulta. */
-export function rentalAmenityPublished(labels: readonly unknown[], amenity: RentalAmenity): boolean {
+export function rentalAmenityPublished(
+  labels: readonly unknown[],
+  amenity: RentalAmenity
+): boolean {
   const pattern = new RegExp(RENTAL_AMENITY_PATTERNS[amenity], 'i')
   return labels.some(label => typeof label === 'string' && pattern.test(label))
 }

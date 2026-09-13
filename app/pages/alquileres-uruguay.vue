@@ -199,6 +199,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               </p>
               <p v-if="query.sort === 'total'">{{ t('totalSortHint') }}</p>
               <p v-if="query.sort === 'distancia'">{{ t('distanceSortHint') }}</p>
+              <p v-if="query.sort === 'precio-m2'">{{ t('pricePerM2SortHint') }}</p>
             </div>
             <VSelect
               :model-value="query.sort"
@@ -741,6 +742,7 @@ import {
 } from '~/utils/rentals'
 import { portalPriceGap, rentalListedFor, type PortalPriceGap } from '~/utils/rentalPortals'
 import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
+import { rentalPricePerM2 } from '~/utils/rentalPricePerM2'
 import {
   RENTAL_SAVED_STORAGE_ID,
   RENTAL_SAVED_FAVORITE_LIMIT,
@@ -1055,6 +1057,11 @@ const filterChips = computed(() => {
     )
   if (q.source) add('source', sourceLabel(q.source))
   if (q.guarantees.length) add('garantia', q.guarantees.map(g => t(g)).join(', '))
+  if (q.amenities.length)
+    add(
+      'comodidades',
+      `${t('amenities')}: ${q.amenities.map(value => t(`amenity-${value}`)).join(', ')}`
+    )
   if (q.sedes.length) add('sedes', `${t('nearby')} · ${q.radioKm} km`, ['sedes', 'radio'])
   return chips
 })
@@ -1371,6 +1378,11 @@ const priceLabel = (property: RentalProperty) => {
     ? offerPrice(offer)
     : rentalPriceLabel(property.price, property.currency, usdUyu.value)
 }
+/** The same rule and headline price as the "Menor precio por m²" sort; nothing when it can't say. */
+const pricePerM2Label = (property: RentalProperty) => {
+  const value = rentalPricePerM2(property)
+  return value === null ? '' : t('pricePerM2', { price: `$ ${numberFormat(Math.round(value))}` })
+}
 const specsLabel = (property: RentalProperty) =>
   [
     typeLabel(property.propertyType),
@@ -1381,6 +1393,7 @@ const specsLabel = (property: RentalProperty) =>
       : '',
     property.bathrooms !== null ? `${property.bathrooms} ${t('bathrooms').toLowerCase()}` : '',
     property.area ? `${property.area} m²` : '',
+    pricePerM2Label(property),
   ]
     .filter(Boolean)
     .join(' · ')

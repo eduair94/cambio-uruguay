@@ -38,7 +38,9 @@ function evaluate(expr: unknown, doc: Doc, vars: Doc = {}): unknown {
     }
     case '$cond': {
       const [condition, then, otherwise] = arg as unknown[]
-      return evaluate(condition, doc, vars) ? evaluate(then, doc, vars) : evaluate(otherwise, doc, vars)
+      return evaluate(condition, doc, vars)
+        ? evaluate(then, doc, vars)
+        : evaluate(otherwise, doc, vars)
     }
     case '$and':
       return (arg as unknown[]).every(item => Boolean(evaluate(item, doc, vars)))

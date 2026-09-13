@@ -241,6 +241,19 @@
               color="primary"
             />
           </div>
+          <VSelect
+            v-model="draft.amenities"
+            :items="amenityItems"
+            :label="t('amenities')"
+            v-bind="field"
+            multiple
+            chips
+            closable-chips
+            clearable
+            class="mt-2"
+            data-testid="rental-filter-amenities"
+          />
+          <p class="rental-search__hint">{{ t('amenitiesHint') }}</p>
         </details>
         <details
           class="rental-search__group"
@@ -386,6 +399,7 @@ import {
   type RentalQuery,
 } from '~/utils/rentals'
 import { MUTUALISTA_SEDES, mutualistasConSede } from '~/utils/mutualistaSedes'
+import { RENTAL_AMENITIES } from '~/utils/rentalAmenities'
 import ZonesPicker from './zones/Picker.vue'
 import type { RentalZonePreferences } from '~/utils/rentalZoneTypes'
 
@@ -425,7 +439,8 @@ const advancedOpen = ref(
         props.query.areaMax !== null ||
         props.query.parking ||
         props.query.furnished ||
-        props.query.pets
+        props.query.pets ||
+        props.query.amenities.length
     )
 )
 const costsOpen = ref(
@@ -493,6 +508,7 @@ const copy = (query: RentalQuery): RentalQuery => ({
   types: [...query.types],
   neighborhoods: [...query.neighborhoods],
   guarantees: [...query.guarantees],
+  amenities: [...query.amenities],
   sedes: [...query.sedes],
 })
 const draft = ref(copy(props.query))
@@ -593,6 +609,9 @@ const sourceItems = computed(() => [
 const guaranteeItems = computed(() =>
   RENTAL_GUARANTEE_PUBLISHED.map(value => ({ title: t(value), value }))
 )
+const amenityItems = computed(() =>
+  RENTAL_AMENITIES.map(value => ({ title: t(`amenity-${value}`), value }))
+)
 const mutualistaItems = mutualistasConSede()
 const sedeItems = computed(() =>
   MUTUALISTA_SEDES.filter(s => s.mutualista === institution.value).map(s => ({
@@ -669,6 +688,7 @@ const featureSummary = computed(() =>
     draft.value.pets && t('pets'),
     draft.value.parking && t('parking'),
     draft.value.furnished && t('furnished'),
+    ...draft.value.amenities.map(value => t(`amenity-${value}`)),
     present(draft.value.bathrooms) &&
       `${t('bathrooms')}: ${t('atLeast', { n: draft.value.bathrooms })}`,
     amountSummary('areaMin'),
