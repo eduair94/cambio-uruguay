@@ -56,6 +56,19 @@ const PROGRAMMATIC_PAGES: Array<{ file: string; sitemapMarker: string }> = [
   { file: 'comparativas/index.vue', sitemapMarker: '/comparativas' },
   { file: 'comparativas/[familia]/index.vue', sitemapMarker: '`/comparativas/${slug}`' },
   { file: 'comparativas/[familia]/[par].vue', sitemapMarker: 'comparativaPaths()' },
+  // One page per catalogue entity, each next to the index that lists them all.
+  { file: 'couriers-uruguay/index.vue', sitemapMarker: '/couriers-uruguay' },
+  { file: 'couriers-uruguay/[courier].vue', sitemapMarker: '`/couriers-uruguay/${slug}`' },
+  { file: 'tarjetas-de-credito-uruguay/index.vue', sitemapMarker: '/tarjetas-de-credito-uruguay' },
+  {
+    file: 'tarjetas-de-credito-uruguay/[programa].vue',
+    sitemapMarker: '`/tarjetas-de-credito-uruguay/${slug}`',
+  },
+  { file: 'tarjetas-de-debito-uruguay/index.vue', sitemapMarker: '/tarjetas-de-debito-uruguay' },
+  {
+    file: 'tarjetas-de-debito-uruguay/[tarjeta].vue',
+    sitemapMarker: '`/tarjetas-de-debito-uruguay/${slug}`',
+  },
 ]
 
 describe('the programmatic families exist on disk', () => {

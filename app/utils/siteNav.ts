@@ -3123,6 +3123,11 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'casa/[origin]/[intent]': 'houses',
   'comparativas/[familia]/index': 'banking',
   'comparativas/[familia]/[par]': 'banking',
+  // Una ficha por courier, por programa de tarjeta de crédito y por tarjeta de débito. Los slugs
+  // viven en utils/entityPageSlugs.ts, el mismo mapa que leen el sitemap y la guarda de cada ruta.
+  'couriers-uruguay/[courier]': 'imports',
+  'tarjetas-de-credito-uruguay/[programa]': 'banking',
+  'tarjetas-de-debito-uruguay/[tarjeta]': 'banking',
   'casas-de-cambio/[tipo]': 'houses',
   'convertir/[slug]': 'tools',
   // Las páginas individuales de descuentos: una por emisor y una por rubro, ambas alimentadas por

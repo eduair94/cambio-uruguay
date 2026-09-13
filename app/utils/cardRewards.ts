@@ -451,7 +451,11 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       'Catálogo amplio (viajes, tecnología, hogar) además de pasajes',
     ],
     cons: [
-      'Recargo por compras en el exterior: 3% + IVA (~3,66% efectivo) en toda tarjeta de crédito Itaú, y en Visa un 3% adicional sobre el tipo de cambio de Visa Internacional. Entre las dos cosas se comen varias veces el ~1% que devuelve la milla, justo en el gasto que la tarjeta promete premiar. Solo la Visa Infinite de Personal Bank tiene 0% de recargo',
+      // Re-verificado el 2026-09-13 contra el Manual de tarifas de Itaú (versión setiembre 2026): el
+      // recargo lo fija el PAQUETE de cuentas, no la tarjeta — 9.1 Personal Bank «Sin costo», 9.2
+      // Full «1% + IVA», 9.3 Light «3% + IVA»; fuera de paquete rige la nota de tarjetas (3% + IVA).
+      // Antes decía «3% + IVA en toda tarjeta» y que sólo la Infinite de Personal Bank tenía 0%.
+      'Recargo por compras en el exterior: 3% + IVA (~3,66% efectivo), y en Visa un 3% adicional sobre el tipo de cambio de Visa Internacional. Entre las dos cosas se comen varias veces el ~1% que devuelve la milla, justo en el gasto que la tarjeta promete premiar. El recargo lo baja el paquete de cuentas, no la tarjeta: con el Paquete Full es 1% + IVA y con Personal Bank no hay recargo (tarifario de setiembre de 2026)',
       'Valor monetario de la milla no publicado; depende del catálogo/Jetmar (rendimiento real incierto)',
       'No acumulan retiros de efectivo, préstamos tasa 0, intereses/cargos del banco ni pagos por Abitab/Redpagos',
       'Millas vencen a los 5 años',
@@ -497,7 +501,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     cons: [
       'Costo anual mayor (UI 1.058 ≈ $U 7.020) que la Internacional',
-      'Recargo por compras en el exterior: 3% + IVA, más 3% adicional sobre el tipo de cambio de Visa Internacional',
+      'Recargo por compras en el exterior: 3% + IVA (1% + IVA con el Paquete Full; sin recargo con Personal Bank), más 3% adicional sobre el tipo de cambio de Visa Internacional',
       'Requiere ingreso/límite alto ($U 125.000)',
       'Millas vencen a los 5 años y sin valor de milla publicado',
       'Mismas exclusiones de acumulación (efectivo, intereses, redes de cobranza)',
@@ -543,7 +547,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     cons: [
       'Para mantener los beneficios hay que acumular 15.625 millas en consumos entre el 1 de enero y el 31 de diciembre del año siguiente al de activación: a 1 milla por US$ 1, son US$ 15.625 de gasto anual solo para no perder el nivel que estás pagando',
-      'Recargo por compras en el exterior: 3% + IVA, más 3% adicional sobre el tipo de cambio de Visa Internacional',
+      'Recargo por compras en el exterior: 3% + IVA (1% + IVA con el Paquete Full; sin recargo con Personal Bank), más 3% adicional sobre el tipo de cambio de Visa Internacional',
       'Costo anual mayor (UI 1.058 ≈ $U 7.020) y requisito de límite alto ($U 125.000)',
       'Millas atadas a LATAM/socios; menos flexible que Volar',
       'Vencimiento a 36 meses salvo renovación por actividad',
@@ -589,7 +593,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     cons: [
       'Costo anual más alto de la gama (UI 1.454 ≈ $U 9.647)',
-      'Recargo por compras en el exterior: 3% + IVA en toda la línea de crédito de Itaú',
+      'Recargo por compras en el exterior: 3% + IVA (1% + IVA con el Paquete Full; sin recargo con Personal Bank)',
       'Millas vencen a los 5 años; sin valor de milla oficial',
       'Mismas exclusiones de acumulación',
     ],
@@ -726,7 +730,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     cons: [
       'Tasa baja: solo 1 milla cada US$2 (mitad que la Volar crédito)',
       'No trae los beneficios de viaje que se le suelen atribuir: sin check-in preferente, sin tramos de cortesía de upgrade, sin selección anticipada de asiento, sin equipaje prioritario y sin acceso a Lounge Visa',
-      'Recargo por compras en el exterior: 3% + IVA, más 3% adicional sobre el tipo de cambio de Visa Internacional',
+      'Recargo por compras en el exterior: 3% + IVA (1% + IVA con el Paquete Full; sin recargo con Personal Bank), más 3% adicional sobre el tipo de cambio de Visa Internacional',
       'Millas atadas a LATAM y socios; menos flexible que Volar',
       'Vencimiento a 36 meses (más corto que Volar) salvo renovación por actividad',
       'No acumulan intereses, adelantos, juegos de azar/casinos, reestructuras, préstamos contra límite ni pago de tributos',
@@ -1193,6 +1197,140 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     rationale:
       'Ultimo puesto de forma objetiva: estas tarjetas NO tienen programa de puntos ni recompensas —ahora verificado en la cartilla propia de BTG de julio de 2026, ya bajo la marca nueva, no en la heredada de HSBC—, por lo que carecen de acumulacion y canje, las dos dimensiones de mayor peso. El retorno se limita a la reduccion de IVA en gastronomia (9 puntos hasta el 30/9/2026, 5 desde el 1/10) y al aviso por SMS. Costo baja de 48 a 42 al leerse el tarifario completo: aparecen el tramo no residente, mas caro en todas las tarjetas, las adicionales pagas de Mastercard ($U 2.827 a $U 3.642 + IVA) y el recargo de 3% + IVA por compras en el exterior (1% en Infinite).',
     verified: true,
+  },
+])
+
+/** A source the credit-card ranking cites, with the programmes whose figures it backs. */
+export interface CardRewardsSource {
+  label: string
+  url: string
+  /** Ids in {@link CARD_PROGRAMS} whose ficha takes figures from this source. */
+  programs: readonly string[]
+}
+
+const ITAU_PROGRAMS = [
+  'itau-volar',
+  'itau-volar-platinum',
+  'itau-latam-pass-platinum',
+  'itau-volar-black',
+  'itau-latam-pass-internacional',
+] as const
+
+const SCOTIA_PROGRAMS = [
+  'scotia-puntos',
+  'scotia-puntos-american-express',
+  'scotia-connectmiles',
+] as const
+
+/**
+ * The sources behind the credit-card ranking, in the order /tarjetas-de-credito-uruguay lists
+ * them.
+ *
+ * They used to be a literal array inside that page, which left the per-programme pages
+ * (/tarjetas-de-credito-uruguay/<programa>) no way to cite them. Moved here unchanged — same
+ * labels, same URLs, same order — and `programs` says which fichas each one backs, going by what
+ * each ficha's own notes cite: an issuer's programme page backs its programmes, its tariff backs
+ * their costs, INE's UI value backs every cost quoted in Unidades Indexadas and converted with the
+ * UI of 17/8/2026, and DGI's note backs the two fichas that describe the gastronomy IVA cut.
+ * `tests/unit/cardProgramPages.test.ts` fails if a listed id stops existing.
+ */
+export const CARD_REWARDS_SOURCES: readonly CardRewardsSource[] = Object.freeze([
+  {
+    label: 'Itaú — Programa Volar (millas)',
+    url: 'https://www.itau.com.uy/inst/millasItauVolar.html',
+    programs: ['itau-volar', 'itau-volar-platinum', 'itau-volar-black'],
+  },
+  {
+    label: 'Santander — Soy Santander Puntos',
+    url: 'https://www.santander.com.uy/',
+    programs: ['santander-soy-santander-puntos'],
+  },
+  {
+    label: 'BBVA Uruguay — Puntos BBVA',
+    url: 'https://www.bbva.com.uy/personas/productos/tarjetas.html',
+    programs: ['bbva-puntos-bbva', 'bbva-comunidad-plus'],
+  },
+  {
+    label: 'Scotiabank — Scotia Puntos',
+    url: 'https://www.scotiabank.com.uy/Personas/Tarjetas/Programas-de-premios',
+    programs: SCOTIA_PROGRAMS,
+  },
+  {
+    label: 'Scotiabank — Club Card Tienda Inglesa',
+    url: 'https://www.scotiabank.com.uy/Personas/Tarjetas/Programas-de-premios/club-card',
+    programs: ['scotia-club-card-tienda-inglesa', 'club-tienda-inglesa-puntos'],
+  },
+  {
+    label: 'BROU — Tarjeta Recompensa',
+    url: 'https://www.brou.com.uy/',
+    programs: ['brou-recompensa'],
+  },
+  {
+    label: 'OCA — Programa Metraje (Bases y Condiciones)',
+    url: 'https://metraje.oca.com.uy/files/terminos_y_condicionesB.pdf',
+    programs: ['oca-oca-blue'],
+  },
+  {
+    label: 'Pronto! — Términos y condiciones de tarjeta (tarifario, vigencia agosto 2026)',
+    url: 'https://www.pronto.com.uy/terminos-y-condiciones-de-tarjeta/',
+    programs: ['pronto-visa'],
+  },
+  {
+    label: 'PassCard — Bases y condiciones de la Tienda Passcard',
+    url: 'https://www.passcard.com.uy/descargar/Bases%20y%20condiciones%20Tienda%20Passcard',
+    programs: ['passcard-puntos-pass'],
+  },
+  {
+    label: 'Tienda Inglesa — Bases del Programa Puntos (vigentes desde el 1/1/2026)',
+    url: 'https://www.tiendainglesa.com.uy/supermercado/landing/bases-y-condiciones-programa-puntos/349',
+    programs: ['club-tienda-inglesa-puntos', 'scotia-club-card-tienda-inglesa'],
+  },
+  {
+    label: 'Scotiabank — Cartilla Tarjetas de Crédito Personas Físicas (F.2540, 20/03/2026)',
+    url: 'https://www.scotiabank.com.uy/Personas/ScotiaPuntos/home',
+    programs: SCOTIA_PROGRAMS,
+  },
+  {
+    label: 'BROU — Costos y exoneraciones de tarjetas de crédito',
+    url: 'https://www.brou.com.uy/personas/tarjetas/costos-y-exoneraciones-visa-y-master/credito',
+    programs: ['brou-recompensa'],
+  },
+  {
+    label: 'Itaú — Tarifario oficial (versión 1 de agosto de 2026)',
+    url: 'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
+    programs: ITAU_PROGRAMS,
+  },
+  {
+    label: 'ANDA — Programa de puntos Dale',
+    url: 'https://anda.com.uy/programa-de-puntos-dale/',
+    programs: ['tarjeta-anda'],
+  },
+  {
+    label: 'OCA — Preguntas frecuentes del Metraje (tabla de canje)',
+    url: 'https://metraje.oca.com.uy/site/view-preguntas-frecuentes',
+    programs: ['oca-oca-blue'],
+  },
+  {
+    label: 'BTG Pactual — Tarifas y cartillas (cartilla de tarjetas, julio 2026)',
+    url: 'https://www.btgpactual.uy/tarifas-y-cartillas',
+    programs: ['btg-uruguay-tdc'],
+  },
+  {
+    label: 'INE — Valor de la Unidad Indexada (agosto 2026)',
+    url: 'https://www5.ine.gub.uy/web/guest/unidad-indexada',
+    programs: [
+      ...ITAU_PROGRAMS,
+      ...SCOTIA_PROGRAMS,
+      'bbva-puntos-bbva',
+      'bbva-comunidad-plus',
+      'oca-oca-blue',
+      'tarjeta-anda',
+    ],
+  },
+  {
+    label: 'DGI — Reducción de 9 puntos de IVA en gastronomía (baja a 5 el 1/10/2026)',
+    url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/reduccion-9-puntos-iva-determinados-servicios-siempre-sean-abonados',
+    programs: ['btg-uruguay-tdc', 'tarjeta-anda'],
   },
 ])
 

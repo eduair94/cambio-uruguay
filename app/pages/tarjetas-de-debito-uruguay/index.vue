@@ -346,7 +346,12 @@
           </div>
           <div class="flex-grow-1 rank-body">
             <div class="d-flex align-center ga-2">
-              <h3 class="text-subtitle-1 font-weight-bold mb-0 flex-grow-1">{{ r.name }}</h3>
+              <h3 class="text-subtitle-1 font-weight-bold mb-0 flex-grow-1">
+                <NuxtLink v-if="cardLink(r.id)" :to="cardLink(r.id)" class="rank-name-link">
+                  {{ r.name }}
+                </NuxtLink>
+                <template v-else>{{ r.name }}</template>
+              </h3>
               <div class="rank-score">
                 <span class="rank-score-num">{{ r.overall }}</span
                 ><span class="rank-score-den">/100</span>
@@ -523,7 +528,10 @@
           <tbody>
             <tr v-for="row in h2hRows" :key="row.id">
               <td data-label="Tarjeta">
-                {{ row.name }}
+                <NuxtLink v-if="cardLink(row.id)" :to="cardLink(row.id)" class="inline-link">
+                  {{ row.name }}
+                </NuxtLink>
+                <template v-else>{{ row.name }}</template>
                 <span v-if="row.estimate" class="muted">· est.</span>
                 <span v-if="row.noOfficial" class="muted">· sin comisión oficial</span>
               </td>
@@ -625,6 +633,7 @@
 <script setup lang="ts">
 import { BANKOS_BANK_BY_DEBIT_CARD, bankosBankName, bankosMapPath } from '~/utils/bankos'
 import { bankPageForBankId } from '~/utils/bankosPages'
+import { debitCardPagePath } from '~/utils/entityPageSlugs'
 import {
   DEBIT_CARDS,
   DEBIT_CARDS_LAST_REVIEWED,
@@ -642,6 +651,12 @@ import {
 } from '~/utils/debitCards'
 
 const localePath = useLocalePath()
+
+/** The card's own page (`/tarjetas-de-debito-uruguay/<slug>`), localized; empty when none. */
+function cardLink(cardId: string): string {
+  const path = debitCardPagePath(cardId)
+  return path ? localePath(path) : ''
+}
 
 /**
  * Link al mapa de descuentos con el débito de ese emisor ya elegido.
@@ -875,6 +890,9 @@ useHead(() => ({
               '@type': 'ListItem',
               position: i + 1,
               name: `${r.name} — ${r.overall}/100`,
+              ...(debitCardPagePath(r.id)
+                ? { url: `https://cambio-uruguay.com${debitCardPagePath(r.id)}` }
+                : {}),
             })),
           },
           {
@@ -1279,5 +1297,18 @@ function fmtPesos(n: number): string {
 }
 .sources a {
   color: rgb(var(--v-theme-primary));
+}
+
+/* The card name links to its own page; it keeps the heading colour so the ranking still reads as
+   a list of names, with an underline in the link token saying it goes somewhere. */
+.rank-name-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--v-theme-link), 0.45);
+  text-underline-offset: 3px;
+}
+.rank-name-link:hover,
+.rank-name-link:focus-visible {
+  color: rgb(var(--v-theme-link));
 }
 </style>

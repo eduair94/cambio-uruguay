@@ -279,7 +279,7 @@ describe('courierShipping', () => {
     expect(COURIER_RATES_VERIFIED_AT).toBe('2026-06-18')
 
     const page = readFileSync(
-      fileURLToPath(new URL('../../pages/couriers-uruguay.vue', import.meta.url)),
+      fileURLToPath(new URL('../../pages/couriers-uruguay/index.vue', import.meta.url)),
       'utf8'
     )
     // The page must READ the constant, not retype the date — the "either/or" version of this
@@ -296,7 +296,7 @@ describe('courierShipping', () => {
     // charges. There is no correct hardcoded sigla here — the page must print POSTAL_SURCHARGE,
     // which carries the official label, the full name and the words the invoice uses.
     const page = readFileSync(
-      fileURLToPath(new URL('../../pages/couriers-uruguay.vue', import.meta.url)),
+      fileURLToPath(new URL('../../pages/couriers-uruguay/index.vue', import.meta.url)),
       'utf8'
     )
 

@@ -118,7 +118,12 @@
           </div>
           <div class="flex-grow-1">
             <div class="d-flex align-center ga-2 flex-wrap mb-1">
-              <h3 class="text-subtitle-1 font-weight-bold mb-0">{{ p.name }}</h3>
+              <h3 class="text-subtitle-1 font-weight-bold mb-0">
+                <NuxtLink v-if="programLink(p.id)" :to="programLink(p.id)" class="rank-name-link">
+                  {{ p.name }}
+                </NuxtLink>
+                <template v-else>{{ p.name }}</template>
+              </h3>
               <VChip
                 v-if="p.verified"
                 size="x-small"
@@ -254,6 +259,11 @@
             <p class="text-caption text-grey-lighten-1 mb-0 mt-2">
               <VIcon size="13">mdi-account-check-outline</VIcon>
               Ideal para: {{ p.bestFor }}
+            </p>
+            <p v-if="programLink(p.id)" class="text-body-2 mb-0 mt-2">
+              <NuxtLink :to="programLink(p.id)" class="rank-map-link">
+                Ver la ficha completa: puntaje eje por eje, preguntas frecuentes y comparativas
+              </NuxtLink>
             </p>
 
             <!-- What Uruguayans say about this issuer on Reddit (daily snapshot) -->
@@ -417,6 +427,7 @@
 <script setup lang="ts">
 import {
   CARD_REWARDS_LAST_REVIEWED,
+  CARD_REWARDS_SOURCES,
   rankedPrograms,
   REWARD_RUBRIC,
   ISSUER_TYPE_LABELS,
@@ -428,10 +439,17 @@ import {
 } from '~/utils/cardRewards'
 import { BANKOS_BANK_BY_CREDIT_PROGRAM, bankosBankName, bankosMapPath } from '~/utils/bankos'
 import { bankPageForBankId } from '~/utils/bankosPages'
+import { cardProgramPagePath } from '~/utils/entityPageSlugs'
 import { growthEntryMessages } from '~/utils/growthEntryMessages'
 
 const localePath = useLocalePath()
 const { t } = useI18n({ useScope: 'local', messages: growthEntryMessages })
+
+/** The programme's own page (`/tarjetas-de-credito-uruguay/<slug>`), localized; empty if none. */
+function programLink(programId: string): string {
+  const path = cardProgramPagePath(programId)
+  return path ? localePath(path) : ''
+}
 
 /**
  * Link al mapa de descuentos con las tarjetas de crédito de ese emisor ya elegidas.
@@ -493,74 +511,9 @@ function rankTone(rank: number): string {
         : 'tone-plain'
 }
 
-const sources = [
-  {
-    label: 'Itaú — Programa Volar (millas)',
-    url: 'https://www.itau.com.uy/inst/millasItauVolar.html',
-  },
-  { label: 'Santander — Soy Santander Puntos', url: 'https://www.santander.com.uy/' },
-  {
-    label: 'BBVA Uruguay — Puntos BBVA',
-    url: 'https://www.bbva.com.uy/personas/productos/tarjetas.html',
-  },
-  {
-    label: 'Scotiabank — Scotia Puntos',
-    url: 'https://www.scotiabank.com.uy/Personas/Tarjetas/Programas-de-premios',
-  },
-  {
-    label: 'Scotiabank — Club Card Tienda Inglesa',
-    url: 'https://www.scotiabank.com.uy/Personas/Tarjetas/Programas-de-premios/club-card',
-  },
-  { label: 'BROU — Tarjeta Recompensa', url: 'https://www.brou.com.uy/' },
-  {
-    label: 'OCA — Programa Metraje (Bases y Condiciones)',
-    url: 'https://metraje.oca.com.uy/files/terminos_y_condicionesB.pdf',
-  },
-  {
-    label: 'Pronto! — Términos y condiciones de tarjeta (tarifario, vigencia agosto 2026)',
-    url: 'https://www.pronto.com.uy/terminos-y-condiciones-de-tarjeta/',
-  },
-  {
-    label: 'PassCard — Bases y condiciones de la Tienda Passcard',
-    url: 'https://www.passcard.com.uy/descargar/Bases%20y%20condiciones%20Tienda%20Passcard',
-  },
-  {
-    label: 'Tienda Inglesa — Bases del Programa Puntos (vigentes desde el 1/1/2026)',
-    url: 'https://www.tiendainglesa.com.uy/supermercado/landing/bases-y-condiciones-programa-puntos/349',
-  },
-  {
-    label: 'Scotiabank — Cartilla Tarjetas de Crédito Personas Físicas (F.2540, 20/03/2026)',
-    url: 'https://www.scotiabank.com.uy/Personas/ScotiaPuntos/home',
-  },
-  {
-    label: 'BROU — Costos y exoneraciones de tarjetas de crédito',
-    url: 'https://www.brou.com.uy/personas/tarjetas/costos-y-exoneraciones-visa-y-master/credito',
-  },
-  {
-    label: 'Itaú — Tarifario oficial (versión 1 de agosto de 2026)',
-    url: 'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
-  },
-  {
-    label: 'ANDA — Programa de puntos Dale',
-    url: 'https://anda.com.uy/programa-de-puntos-dale/',
-  },
-  {
-    label: 'OCA — Preguntas frecuentes del Metraje (tabla de canje)',
-    url: 'https://metraje.oca.com.uy/site/view-preguntas-frecuentes',
-  },
-  {
-    label: 'BTG Pactual — Tarifas y cartillas (cartilla de tarjetas, julio 2026)',
-    url: 'https://www.btgpactual.uy/tarifas-y-cartillas',
-  },
-  {
-    label: 'INE — Valor de la Unidad Indexada (agosto 2026)',
-    url: 'https://www5.ine.gub.uy/web/guest/unidad-indexada',
-  },
-  {
-    label: 'DGI — Reducción de 9 puntos de IVA en gastronomía (baja a 5 el 1/10/2026)',
-    url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/reduccion-9-puntos-iva-determinados-servicios-siempre-sean-abonados',
-  },
-]
+// The ranking's sources live in cardRewards.ts now, each tagged with the fichas it backs, so the
+// per-programme pages cite the same list this page prints.
+const sources = CARD_REWARDS_SOURCES
 
 const canonicalUrl = 'https://cambio-uruguay.com/tarjetas-de-credito-uruguay'
 const title = computed(() => t('cards.seoTitle'))
@@ -623,6 +576,9 @@ useHead(() => ({
               '@type': 'ListItem',
               position: p.rank,
               name: `${p.name} (${p.issuer})`,
+              ...(cardProgramPagePath(p.id)
+                ? { url: `https://cambio-uruguay.com${cardProgramPagePath(p.id)}` }
+                : {}),
             })),
           },
         ],
@@ -880,6 +836,18 @@ useHead(() => ({
 }
 /* El link al mapa vive dentro del <dd>, que baja el contraste del texto: se pinta con el token
    de link (no con `primary`, que en oscuro queda en 4:1 sobre la tarjeta y no llega a AA). */
+/* The programme name links to its own page. It keeps the heading's colour so the ranking still
+   reads as a list of names, with an underline in the link token saying it goes somewhere. */
+.rank-name-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--v-theme-link), 0.45);
+  text-underline-offset: 3px;
+}
+.rank-name-link:hover,
+.rank-name-link:focus-visible {
+  color: rgb(var(--v-theme-link));
+}
 .rank-map-link {
   color: rgb(var(--v-theme-link));
   font-weight: 600;

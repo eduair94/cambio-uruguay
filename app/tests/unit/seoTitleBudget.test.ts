@@ -262,7 +262,7 @@ const OVER_BUDGET = 0
 describe('el lector sigue los títulos trasladados a mensajes locales', () => {
   for (const [file, title] of [
     ['alquilar-estando-en-clearing.vue', growthEntryMessages.es.clearing.seoTitle],
-    ['tarjetas-de-credito-uruguay.vue', growthEntryMessages.es.cards.seoTitle],
+    ['tarjetas-de-credito-uruguay/index.vue', growthEntryMessages.es.cards.seoTitle],
     ['denunciar-ruidos-molestos-uruguay.vue', noiseNavigationMessages.es.title],
     ['multas-de-transito-y-patente-uruguay.vue', finesNavigationMessages.es.title],
   ]) {

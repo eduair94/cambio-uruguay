@@ -71,7 +71,8 @@
       <p class="text-caption text-grey-lighten-1 mb-4">
         Los couriers cobran por escalas de peso; el valor por kg es la escala de paquete chico.
         Donde figura «Consultar», el courier cotiza desde su propio sitio. Mirá las notas y el sitio
-        oficial para el detalle por tramo.
+        oficial para el detalle por tramo. Tocá el nombre de un courier para ver su ficha: tarifa,
+        un paquete de ejemplo, opiniones y cómo se compara con los demás.
         <template v-if="updatedLabel">
           <br /><strong>Tarifas actualizadas automáticamente el {{ updatedLabel }}.</strong>
         </template>
@@ -93,7 +94,12 @@
           </thead>
           <tbody>
             <tr v-for="c in couriers" :key="c.id">
-              <td class="font-weight-medium" data-label="">{{ c.name }}</td>
+              <td class="font-weight-medium" data-label="">
+                <NuxtLink v-if="courierLink(c.id)" :to="courierLink(c.id)" class="couriers-link">
+                  {{ c.name }}
+                </NuxtLink>
+                <template v-else>{{ c.name }}</template>
+              </td>
               <td class="text-grey-lighten-1" data-label="Modalidad">{{ c.modality }}</td>
               <td class="text-right" data-label="US$/kg (ref.)">{{ rateLabel(c.perKgUsd) }}</td>
               <td class="text-right" data-label="Cargo fijo">{{ rateLabel(c.baseUsd) }}</td>
@@ -147,7 +153,14 @@
       <div class="d-md-none">
         <div v-for="c in couriers" :key="c.id" class="courier-card">
           <div class="d-flex align-center justify-space-between ga-2 mb-1">
-            <span class="text-subtitle-1 font-weight-bold">{{ c.name }}</span>
+            <NuxtLink
+              v-if="courierLink(c.id)"
+              :to="courierLink(c.id)"
+              class="text-subtitle-1 font-weight-bold couriers-link"
+            >
+              {{ c.name }}
+            </NuxtLink>
+            <span v-else class="text-subtitle-1 font-weight-bold">{{ c.name }}</span>
             <span class="courier-rate">
               {{ rateLabel(c.perKgUsd) }}<small v-if="c.perKgUsd != null">/kg</small>
             </span>
@@ -338,9 +351,16 @@ import {
   POSTAL_SURCHARGE,
   type Courier,
 } from '~/utils/courierShipping'
+import { courierPagePath } from '~/utils/entityPageSlugs'
 import { starParts } from '~/utils/reviews'
 
 const localePath = useLocalePath()
+
+/** The courier's own page (`/couriers-uruguay/<slug>`), localized; empty when it has none. */
+function courierLink(id: string): string {
+  const path = courierPagePath(id)
+  return path ? localePath(path) : ''
+}
 
 // POSTAL_SURCHARGE is rendered straight into the template on purpose: the page must not own a
 // second name for the 10%. Its disclaimer said "TSPU" while all seven notes said "TFSPU", so one
@@ -540,7 +560,9 @@ useHead(() => ({
               '@type': 'ListItem',
               position: i + 1,
               name: c.name,
-              url: c.website,
+              url: courierPagePath(c.id)
+                ? `https://cambio-uruguay.com${courierPagePath(c.id)}`
+                : c.website,
             })),
           },
           {

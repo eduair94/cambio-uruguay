@@ -2,6 +2,7 @@ import type { BranchPage } from '../../../utils/branches'
 import { intentsFor } from '../../../utils/casaIntents'
 import { casaTypePaths } from '../../../utils/casasDirectory'
 import { comparativaFamilySlugs, comparativaPaths } from '../../../utils/comparativas'
+import { entityPageSlugs } from '../../../utils/entityPageSlugs'
 import { bankPageSlugs, categoryPageSlugs } from '../../../utils/bankosPages'
 import { buildBrandPageIndex } from '../../../utils/bankosBrandPage'
 import { reduceBrands, type BrandsRawData } from '../../../utils/bankosBrands'
@@ -168,6 +169,18 @@ export default defineEventHandler(async _event => {
     urls.push({ loc: `/comparativas/${slug}`, changefreq: 'monthly', priority: 0.6 })
   )
   comparativaPaths().forEach(path => urls.push({ loc: path, changefreq: 'monthly', priority: 0.6 }))
+  // One page per courier, per credit-card programme and per debit card. Pure catalogue slugs from
+  // the same import-free map the route guards read, so the sitemap can never submit a slug that
+  // 404s. Spanish only, like the comparativas: the body is Spanish prose built from Spanish copy.
+  entityPageSlugs('couriers').forEach(slug =>
+    urls.push({ loc: `/couriers-uruguay/${slug}`, changefreq: 'monthly', priority: 0.7 })
+  )
+  entityPageSlugs('tarjetas-de-credito').forEach(slug =>
+    urls.push({ loc: `/tarjetas-de-credito-uruguay/${slug}`, changefreq: 'monthly', priority: 0.7 })
+  )
+  entityPageSlugs('tarjetas-de-debito').forEach(slug =>
+    urls.push({ loc: `/tarjetas-de-debito-uruguay/${slug}`, changefreq: 'monthly', priority: 0.7 })
+  )
   convertSlugs().forEach(slug => addUrlsForAllLocales(`/convertir/${slug}`, 0.6, 'weekly'))
   // Curated border-department pages (real/peso argentino at the frontier). A
   // hand-picked allowlist, so — unlike the per-casa history — it is emitted from
