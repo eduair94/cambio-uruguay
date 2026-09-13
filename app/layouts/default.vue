@@ -267,18 +267,23 @@
       <CookieConsent />
       <div class="container_custom">
         <slot />
-        <!-- Where to go next, server-rendered so crawlers follow it too. Routes
-             opt out through `utils/relatedPages.ts`; it sits above the ad
-             because the reader's next page is worth more than the impression. -->
-        <!-- Ampliaciones que el bot escribió para esta ruta a partir de lo que Reddit preguntó
-             y la página no contestaba. Vive acá y no en cada página para que un job automático
-             nunca tenga que parchear un .vue escrito a mano. Ver utils/generated/addenda.ts. -->
-        <PageAddenda />
-        <RelatedPages />
-        <!-- The end-of-article ask. Long reads only (`utils/capture.ts`), and it
-             sits after the recirculation block: giving the reader somewhere to go
-             costs them nothing, asking for an email costs them something. -->
-        <NewsletterCapture />
+        <!-- Lo que el layout agrega después de la página va en una columna propia: las rutas
+             que liberan el tope global (directorios, mapas) lo liberan para su grilla, no para
+             esto. Ver `.layout-tail` abajo y tests/unit/layoutTail.test.ts. -->
+        <div class="layout-tail">
+          <!-- Where to go next, server-rendered so crawlers follow it too. Routes
+               opt out through `utils/relatedPages.ts`; it sits above the ad
+               because the reader's next page is worth more than the impression. -->
+          <!-- Ampliaciones que el bot escribió para esta ruta a partir de lo que Reddit preguntó
+               y la página no contestaba. Vive acá y no en cada página para que un job automático
+               nunca tenga que parchear un .vue escrito a mano. Ver utils/generated/addenda.ts. -->
+          <PageAddenda />
+          <RelatedPages />
+          <!-- The end-of-article ask. Long reads only (`utils/capture.ts`), and it
+               sits after the recirculation block: giving the reader somewhere to go
+               costs them nothing, asking for an email costs them something. -->
+          <NewsletterCapture />
+        </div>
         <!-- The one ad every allowed route carries: after the content, before
              the footer, never in the middle of a tool. Routes opt out through
              `utils/ads.ts` or `definePageMeta({ ads: false })`; long articles
@@ -987,5 +992,13 @@ useSchemaOrg([
    pantalla vacía en monitores anchos. La página pone su propio tope. */
 .alquileres-uruguay_main .container_custom {
   max-width: none;
+}
+/* Ampliaciones, "Seguí leyendo" y newsletter son lectura: conservan el ancho que tienen en
+   cualquier ruta con tope (1280 menos el padding de 12 + 12) aunque la ruta lo haya liberado.
+   Sin esto, a 1958 px en /alquileres-uruguay las tarjetas quedaban a 12 px del borde y el bloque
+   medía 1919 de ancho. En las rutas con tope es un no-op: su caja ya mide 1256. */
+.layout-tail {
+  max-width: 1256px;
+  margin-inline: auto;
 }
 </style>
