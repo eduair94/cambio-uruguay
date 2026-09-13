@@ -2138,6 +2138,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/certificado-de-antecedentes-judiciales-uruguay',
+        labelKey: 'nav.certificadoAntecedentes',
+        icon: 'mdi-file-document-check-outline',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'certificado de antecedentes judiciales uruguay',
+          'certificado de buena conducta uruguay',
+          'cuanto sale el certificado de antecedentes judiciales',
+          'antecedentes judiciales uruguay tramite',
+          'certificado ley 19791',
+          'certificado antecedentes judiciales urgente',
+          'policia cientifica antecedentes judiciales',
+          'certificado de antecedentes judiciales en linea',
+        ],
+      },
+      {
         to: '/cuanto-sale-la-cedula-de-identidad-uruguaya',
         labelKey: 'nav.cedulaCosto',
         icon: 'mdi-card-account-details-outline',
