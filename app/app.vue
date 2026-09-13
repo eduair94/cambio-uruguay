@@ -58,16 +58,15 @@ useSeoMeta({
 const { pubId: adsensePubId, scriptAllowed } = useAds()
 if (adsensePubId) {
   useHead({ meta: [{ name: 'google-adsense-account', content: adsensePubId }] })
+  // The loader waits for hydration and never ships in the server HTML: Auto Ads drops its own
+  // <div> into <main> the moment it runs, and mid-hydration Vue adopts that div as the layout's
+  // container. See `adsenseLoaderScripts`.
+  const hydrated = ref(false)
+  onNuxtReady(() => {
+    hydrated.value = true
+  })
   useHead(() => ({
-    script: scriptAllowed.value
-      ? [
-          {
-            src: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsensePubId}`,
-            async: true,
-            crossorigin: 'anonymous',
-          },
-        ]
-      : [],
+    script: adsenseLoaderScripts(adsensePubId, scriptAllowed.value, hydrated.value),
   }))
 }
 </script>

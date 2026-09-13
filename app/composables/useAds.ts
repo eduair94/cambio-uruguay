@@ -17,6 +17,28 @@ const SLOT_KEY: Record<AdPlacement, 'contentEnd' | 'inArticle'> = {
   'in-article': 'inArticle',
 }
 
+/**
+ * The AdSense loader for `useHead`, or nothing.
+ *
+ * Only after hydration. Auto Ads inserts its own `<div class="google-auto-placed">` into `<main>`
+ * as soon as the script runs. With the script in the server HTML that happened while Vue was still
+ * hydrating, and the div landed exactly where Vue expected the layout's `div.container_custom`.
+ * Same tag, so Vue adopted it without touching the class, rendered the page again inside it and
+ * removed the real container: every block without a container of its own went edge to edge, and
+ * AdSense threw `no_div` for the ad it had just lost. Measured 2026-09-12 on /avanzado and
+ * /alquilar-en-uruguay ("Hydration completed but contains mismatches").
+ */
+export function adsenseLoaderScripts(pubId: string, allowed: boolean, hydrated: boolean) {
+  if (!pubId || !allowed || !hydrated) return []
+  return [
+    {
+      src: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${pubId}`,
+      async: true,
+      crossorigin: 'anonymous' as const,
+    },
+  ]
+}
+
 export function useAds() {
   const route = useRoute()
   const publicConfig = useRuntimeConfig().public
