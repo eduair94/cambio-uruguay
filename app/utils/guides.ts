@@ -12,8 +12,14 @@
 
 // The Reddit-mined economy/finance/legal guides live in their own module and
 // are appended to the catalogue below (keeps this file focused on the core set).
+import { consumoGuides } from './guidesConsumo'
+import { deudasGuides } from './guidesDeudas'
+import { pagosGuides } from './guidesPagos'
 import { parejaGuides } from './guidesPareja'
 import { redditGuides } from './guidesReddit'
+import { trabajoBpsGuides } from './guidesTrabajoBps'
+import { tramitesGuides } from './guidesTramites'
+import { viviendaGuides } from './guidesVivienda'
 
 /** An optional comparison table rendered below a section's prose. */
 export interface GuideTable {
@@ -1484,6 +1490,16 @@ export const guides: readonly Guide[] = [
   // Couple & family money guides (régimen patrimonial, separación de bienes,
   // unión concubinaria, dividir gastos, divorcio). Same free wiring.
   ...parejaGuides,
+  // Tanda del 2026-09-13: 30 guías minadas de Reddit y de la cola de demanda del autocompletado
+  // (pagos y bancos, deudas, trabajo y BPS, vivienda, trámites, consumo y auto). Cada módulo lo
+  // redactó un agente que verificó en fuente primaria y lo revisó otro en modo adversarial.
+  // Guardadas por `tests/unit/guidesRedditSep2026.test.ts`. Mismo cableado gratis.
+  ...pagosGuides,
+  ...deudasGuides,
+  ...trabajoBpsGuides,
+  ...viviendaGuides,
+  ...tramitesGuides,
+  ...consumoGuides,
 ]
 
 /**

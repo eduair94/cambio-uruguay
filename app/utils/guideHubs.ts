@@ -264,6 +264,10 @@ export const guideHubs: readonly GuideHub[] = [
       'bhu-como-funciona',
       'comprar-un-terreno-uruguay',
       'promesa-de-compraventa-uruguay',
+      'comision-inmobiliaria-uruguay',
+      'comprar-en-remate-uruguay',
+      'derechos-posesorios-uruguay',
+      'certificado-unico-departamental-uruguay',
     ],
     resources: [
       {
@@ -384,6 +388,8 @@ export const guideHubs: readonly GuideHub[] = [
       'credito-prendario-auto-uruguay',
       'costos-de-tener-auto-uruguay',
       'transferir-un-auto-uruguay',
+      'pagar-patente-sucive-uruguay',
+      'titulo-del-auto-uruguay',
     ],
     resources: [
       {
@@ -425,6 +431,10 @@ export const guideHubs: readonly GuideHub[] = [
       'elegir-tarjeta-credito-beneficios-uruguay',
       'cashback-millas-o-puntos-uruguay',
       'tarjeta-debito-vs-credito-uruguay',
+      'cuando-prescribe-una-deuda-uruguay',
+      'cancelar-prestamo-antes-de-tiempo-uruguay',
+      'me-compraron-la-deuda-uruguay',
+      'saldo-a-favor-tarjeta-de-credito-uruguay',
     ],
     resources: [
       {
@@ -453,7 +463,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/herramientas/calculadora-prestamo',
       },
     ],
-    relatedHubs: ['sueldo-trabajo-e-impuestos-uruguay', 'finanzas-personales-y-jubilacion-uruguay'],
+    relatedHubs: [
+      'sueldo-trabajo-e-impuestos-uruguay',
+      'finanzas-personales-y-jubilacion-uruguay',
+      'bancos-y-pagos-uruguay',
+    ],
   },
   {
     slug: 'sueldo-trabajo-e-impuestos-uruguay',
@@ -478,6 +492,9 @@ export const guideHubs: readonly GuideHub[] = [
       'como-funciona-el-irpf-uruguay',
       'trabajar-para-el-exterior-desde-uruguay',
       'salario-minimo-uruguay-cuanto-es',
+      'me-quede-sin-trabajo-mutualista-fonasa-uruguay',
+      'como-pedir-un-aumento-de-sueldo-uruguay',
+      'pedir-que-me-despidan-uruguay',
     ],
     resources: [
       {
@@ -537,6 +554,7 @@ export const guideHubs: readonly GuideHub[] = [
       'me-deben-el-sueldo-uruguay',
       'abogado-gratis-uruguay',
       'estudio-de-cobranza-uruguay',
+      'devoluciones-y-cambios-en-tiendas-uruguay',
     ],
     resources: [
       {
@@ -565,7 +583,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/preguntas-economia-personal',
       },
     ],
-    relatedHubs: ['sueldo-trabajo-e-impuestos-uruguay', 'deudas-y-credito-uruguay'],
+    relatedHubs: [
+      'sueldo-trabajo-e-impuestos-uruguay',
+      'deudas-y-credito-uruguay',
+      'tramites-y-documentos-uruguay',
+    ],
   },
   {
     slug: 'ahorrar-e-invertir-uruguay',
@@ -638,6 +660,10 @@ export const guideHubs: readonly GuideHub[] = [
       'billeteras-digitales-uruguay-como-funcionan',
       'como-evitar-estafas-financieras-uruguay',
       'educacion-financiera-para-jovenes-uruguay',
+      'subsidio-expensas-funerarias-bps-uruguay',
+      'cobrar-jubilacion-uruguaya-desde-el-exterior',
+      'canasta-fin-de-ano-bps-uruguay',
+      'precio-supergas-garrafa-uruguay',
     ],
     resources: [
       {
@@ -666,7 +692,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/estafas-uruguay',
       },
     ],
-    relatedHubs: ['ahorrar-e-invertir-uruguay', 'deudas-y-credito-uruguay'],
+    relatedHubs: [
+      'ahorrar-e-invertir-uruguay',
+      'deudas-y-credito-uruguay',
+      'bancos-y-pagos-uruguay',
+    ],
   },
   {
     slug: 'emprender-y-empresa-uruguay',
@@ -683,6 +713,7 @@ export const guideHubs: readonly GuideHub[] = [
       'monotributo-uruguay-que-es-y-cuando-conviene',
       'abrir-empresa-unipersonal-uruguay',
       'facturar-como-freelancer-uruguay',
+      'vender-por-mercado-libre-uruguay',
     ],
     resources: [
       {
@@ -712,6 +743,116 @@ export const guideHubs: readonly GuideHub[] = [
       },
     ],
     relatedHubs: ['sueldo-trabajo-e-impuestos-uruguay', 'ahorrar-e-invertir-uruguay'],
+  },
+  // Los dos hubs de la tanda del 2026-09-13: no había dónde poner las guías de pagos ni las de
+  // trámites sin estirar el tema de otro hub.
+  {
+    slug: 'bancos-y-pagos-uruguay',
+    title: 'Bancos, tarjetas y pagos en Uruguay',
+    seoTitle: 'Bancos y pagos en Uruguay: débito, transferencias y alias',
+    description:
+      'Pagar, cobrar y transferir en Uruguay sin perder plata: débito y recargos, saldo retenido, transferencias equivocadas, alias, dinero del exterior y tarjetas uruguayas en Argentina.',
+    tag: 'PAGOS',
+    icon: 'mdi-bank-transfer',
+    intro:
+      'Casi todo lo que hacemos con la plata pasa por un banco o una app: cobrar el sueldo, pagar con débito, transferirle a alguien, recibir un pago de afuera o usar la tarjeta en un viaje. Y casi todo tiene una letra chica que se descubre tarde: el comercio que pide un monto mínimo para cobrar con débito, el saldo que aparece retenido sin explicación, la transferencia que salió a la cuenta equivocada, la comisión que el banco descuenta al recibir un giro del exterior. Estas guías explican cómo funciona cada cosa en Uruguay, qué dice la norma y qué podés exigir, con la fuente al lado.',
+    guideSlugs: [
+      'comercio-no-acepta-debito-uruguay',
+      'saldo-retenido-tarjeta-debito-uruguay',
+      'transferencia-a-cuenta-equivocada-uruguay',
+      'recibir-transferencia-del-exterior-uruguay',
+      'alias-para-transferir-uruguay',
+      'usar-tarjeta-uruguaya-en-argentina',
+    ],
+    resources: [
+      {
+        label: 'Comisiones de transferencia',
+        description: 'Qué cobra cada banco por transferir dentro de Uruguay.',
+        to: '/comisiones-de-transferencia-uruguay',
+      },
+      {
+        label: 'Mejores bancos de Uruguay',
+        description: 'Comparativa de bancos y fintech.',
+        to: '/mejores-bancos-uruguay',
+      },
+      {
+        label: 'Tarjetas de débito',
+        description: 'Comisión en el exterior, spread y costo de cada una.',
+        to: '/tarjetas-de-debito-uruguay',
+      },
+      {
+        label: 'Tarjetas de crédito',
+        description: 'Ranking y beneficios reales, tarjeta por tarjeta.',
+        to: '/tarjetas-de-credito-uruguay',
+      },
+      {
+        label: 'Me cobran algo que no autoricé',
+        description: 'Cómo frenar un cargo y a quién reclamar.',
+        to: '/me-cobran-algo-que-no-autorice',
+      },
+    ],
+    relatedHubs: [
+      'deudas-y-credito-uruguay',
+      'finanzas-personales-y-jubilacion-uruguay',
+      'dolar-y-casas-de-cambio-uruguay',
+    ],
+  },
+  {
+    slug: 'tramites-y-documentos-uruguay',
+    title: 'Trámites y documentos en Uruguay',
+    seoTitle: 'Trámites en Uruguay: ciudadanía, cédula, antecedentes y más',
+    description:
+      'Los trámites por los que más se pregunta en Uruguay, con requisitos, costo y plazo: ciudadanía legal, cédula para extranjeros, antecedentes judiciales, casarse por civil y cuánto guardar cada papel.',
+    tag: 'TRÁMITES',
+    icon: 'mdi-file-document-outline',
+    intro:
+      'Un trámite mal hecho cuesta dos veces: la vuelta perdida y la plata que se va en el camino. Acá están los trámites por los que más se pregunta en Uruguay, contados en orden: qué pedir, dónde, cuánto sale según la tarifa publicada y cuánto demora. La ciudadanía legal y en qué se diferencia de la residencia, la cédula para quien llega del Mercosur, el certificado de antecedentes que piden los organismos, cómo es casarse por civil y cuánto tiempo conviene guardar cada comprobante. Cada guía lleva la fuente oficial para que confirmes el dato el día que vayas.',
+    guideSlugs: [
+      'ciudadania-legal-uruguaya',
+      'cedula-uruguaya-para-argentinos',
+      'casarse-por-civil-uruguay',
+      'cuanto-tiempo-guardar-recibos-y-facturas-uruguay',
+    ],
+    resources: [
+      {
+        // Página propia (otra sesión, 4dbf17e3): la guía que había acá competía con ella por la
+        // misma consulta y se sacó de la tanda.
+        label: 'Certificado de antecedentes judiciales',
+        description: 'Cuánto sale hoy en pesos, los dos certificados y cuándo vence.',
+        to: '/certificado-de-antecedentes-judiciales-uruguay',
+      },
+      {
+        label: 'Cuánto sale la cédula',
+        description: 'Tarifas vigentes y dónde tramitarla.',
+        to: '/cuanto-sale-la-cedula-de-identidad-uruguaya',
+      },
+      {
+        label: 'Cuánto sale el pasaporte',
+        description: 'Costo, plazos y requisitos.',
+        to: '/cuanto-sale-el-pasaporte-uruguayo',
+      },
+      {
+        label: 'Mudarse a Uruguay',
+        description: 'Residencia legal, paso a paso.',
+        to: '/mudarme-a-uruguay-residencia',
+      },
+      {
+        label: 'Libreta de conducir',
+        description: 'Costo y trámite por departamento.',
+        to: '/libreta-de-conducir-uruguay',
+      },
+      {
+        label: 'Carné de salud',
+        description: 'Dónde hacerlo y cuánto sale.',
+        to: '/carne-de-salud-uruguay',
+      },
+      {
+        label: 'A quién le reclamo',
+        description: 'El organismo que corresponde a cada problema.',
+        to: '/a-quien-le-reclamo-uruguay',
+      },
+    ],
+    relatedHubs: ['derechos-y-reclamos-uruguay', 'pareja-familia-y-dinero-uruguay'],
   },
 ]
 
