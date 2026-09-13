@@ -30,6 +30,7 @@ import {
   comparisonLinks,
   dateLabel,
   ensurePeriod,
+  fitDescription,
   fitTitle,
   formatNumberEs,
   formatUsd,
@@ -140,6 +141,16 @@ export function commissionPhrase(card: DebitCard): string {
   if (fixed > 0) parts.push(`${formatUsd(fixed)} fijo`)
   if (card.ivaSobreComision) parts.push('IVA')
   return `cobra ${parts.join(' + ')} por compra en el exterior`
+}
+
+/** The commission as the figure that opens the description: `2,5% + US$ 0,50 fijo + IVA de comisión`. */
+function commissionFigure(card: DebitCard): string {
+  if (card.comisionExteriorPct === null) return 'sin comisión oficial publicada'
+  const fixed = card.cargoFijoUsd ?? 0
+  if (card.comisionExteriorPct === 0 && fixed === 0) return '0% de comisión'
+  return `${formatNumberEs(card.comisionExteriorPct)}%${fixed > 0 ? ` + ${formatUsd(fixed)} fijo` : ''}${
+    card.ivaSobreComision ? ' + IVA' : ''
+  } de comisión`
 }
 
 /** The commission as a table value. */
@@ -306,12 +317,19 @@ export function buildDebitCardPage(card: DebitCard): DebitCardPageModel {
     name,
   ])
   const heading = `${name}: cuánto te cobra al comprar en dólares y en el exterior`
-  const balanceClause = card.fundeaEnUsd
-    ? 'permite tener saldo en dólares'
-    : 'no tiene saldo en dólares'
-  const description = normalizeSpaces(
-    `${name} ${commissionPhrase(card)} y ${balanceClause}. Puesto ${self.rank} de ${of} en nuestro ranking de débito y prepagas (${self.overall}/100), revisado el ${reviewedLabel}.`
-  )
+  // Opens with the commission, the figure people search the card for, so it is what survives the
+  // SERP's cut; each rung drops the least important clause until it fits.
+  const opening = `${name}: ${commissionFigure(card)} por compra en el exterior, ${
+    card.fundeaEnUsd
+      ? 'con saldo en dólares'
+      : 'sin saldo en dólares: toda compra en USD se convierte desde pesos'
+  }.`
+  const description = fitDescription([
+    `${opening} Puesto ${self.rank} de ${of} en nuestro ranking de débito y prepagas (${self.overall}/100), revisado el ${reviewedLabel}.`,
+    `${opening} Puesto ${self.rank} de ${of} en nuestro ranking (${self.overall}/100), revisado el ${reviewedLabel}.`,
+    `${opening} Puesto ${self.rank} de ${of} en nuestro ranking (${self.overall}/100).`,
+    opening,
+  ])
   const lead = ensurePeriod(card.verdict)
 
   const dataStatus = card.estimate

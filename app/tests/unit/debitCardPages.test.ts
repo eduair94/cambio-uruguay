@@ -18,7 +18,13 @@ import {
   rankedCards,
 } from '../../utils/debitCards'
 import { debitCardPagePath } from '../../utils/entityPageSlugs'
-import { BRAND_SUFFIX, MAX_TITLE, dateLabel, formatNumberEs } from '../../utils/entityPages'
+import {
+  BRAND_SUFFIX,
+  MAX_DESCRIPTION,
+  MAX_TITLE,
+  dateLabel,
+  formatNumberEs,
+} from '../../utils/entityPages'
 import { rankingTierForScore } from '../../utils/rankingTiers'
 
 const PAGES = join(__dirname, '..', '..', 'pages')
@@ -64,12 +70,23 @@ describe('every debit and prepaid card gets a page', () => {
     expect(new Set(pages.map(page => page.description)).size).toBe(pages.length)
   })
 
-  it('writes a description a SERP can show, dated with the review', () => {
+  it('fits the description in the SERP, opening with the commission figure', () => {
     for (const page of pages) {
-      expect(page.description.length, page.description).toBeGreaterThanOrEqual(100)
-      expect(page.description.length, page.description).toBeLessThanOrEqual(230)
-      expect(page.description).toContain(page.name)
-      expect(page.description).toContain(dateLabel(DEBIT_CARDS_LAST_REVIEWED))
+      expect(page.description.length, page.description).toBeGreaterThanOrEqual(60)
+      expect(page.description.length, page.description).toBeLessThanOrEqual(MAX_DESCRIPTION)
+      expect(page.description.startsWith(`${page.name}: `)).toBe(true)
+      // The figure comes right after the name, so it is what survives the SERP's cut.
+      if (cardOf(page).comisionExteriorPct !== null) {
+        expect(page.description.indexOf('%'), page.description).toBeLessThan(page.name.length + 12)
+      }
+    }
+  })
+
+  it('dates the ficha with the catalogue review date', () => {
+    for (const page of pages) {
+      expect(page.facts.find(fact => fact.label === 'Datos')?.value).toContain(
+        dateLabel(DEBIT_CARDS_LAST_REVIEWED)
+      )
     }
   })
 

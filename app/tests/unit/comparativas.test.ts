@@ -22,6 +22,8 @@ import {
   type ComparableEntity,
   type ComparativaPair,
 } from '../../utils/comparativas'
+import { allCourierPages } from '../../utils/courierPages'
+import { COURIERS, courierParcelQuote } from '../../utils/courierShipping'
 
 const allPairs = allComparativaPairs()
 
@@ -227,14 +229,17 @@ describe('the comparison', () => {
 describe('courier arithmetic', () => {
   const courierPairs = allPairs.filter(pair => pair.family === 'couriers')
 
-  it('adds the postal surcharge to the reference parcel', () => {
-    const withRate = COMPARATIVA_FAMILY_META.find(f => f.slug === 'couriers')?.entities.find(
-      entity => entity.metrics?.perKgUsd !== null
-    )
-    expect(withRate).toBeDefined()
-    const metrics = withRate!.metrics!
-    const expected = (metrics.perKgUsd! * COURIER_REFERENCE_KG + (metrics.baseUsd ?? 0)) * 1.1
-    expect(courierReferenceCost(withRate!)).toBeCloseTo(expected, 6)
+  // The flat `(base + perKg·kg) × 1,1` this replaced added the surcharge to SoyCourier's "todo
+  // incluido" rate and left out Aerobox's "+IVA": the parcel is priced by the courier's own note.
+  it('prices the reference parcel through courierParcelQuote', () => {
+    const entities = COMPARATIVA_FAMILY_META.find(f => f.slug === 'couriers')?.entities ?? []
+    expect(entities.length).toBeGreaterThan(0)
+    for (const entity of entities) {
+      const courier = COURIERS.find(candidate => candidate.id === entity.id)!
+      expect(courierReferenceCost(entity), entity.id).toBe(
+        courierParcelQuote(courier, COURIER_REFERENCE_KG)?.totalUsd ?? null
+      )
+    }
   })
 
   // A courier that only quotes through its own calculator has no published
@@ -265,6 +270,98 @@ describe('courier arithmetic', () => {
     })
     if (!mixed) return
     expect(comparativaSummary(mixed)).toContain('calculadora')
+  })
+})
+
+// A pair page and a courier page must never show two totals for the same parcel. Both price it
+// through courierParcelQuote; this pins that, pair by pair, against what each page actually prints.
+describe('courier pairs show the parcel exactly like the courier pages', () => {
+  const courierFamily = getComparativaFamily('couriers')!
+  const courierPairs = familyPairs(courierFamily)
+  const detailPages = allCourierPages()
+  const usd = (value: number) =>
+    `USD ${value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const courierOf = (entity: ComparableEntity) =>
+    COURIERS.find(courier => courier.id === entity.id)!
+  const entityOf = (id: string) => courierFamily.entities.find(entity => entity.id === id)!
+  const parcelFact = (entity: ComparableEntity) =>
+    entity.facts.find(fact => fact.label === `Paquete de ${COURIER_REFERENCE_KG} kg`)?.value ?? ''
+  const pairsWith = (id: string) =>
+    courierPairs.filter(pair => pair.a.id === id || pair.b.id === id)
+
+  it('gives every pair, on both sides, the total the courier’s own page shows', () => {
+    expect(courierPairs.length).toBeGreaterThan(0)
+    for (const pair of courierPairs) {
+      const summary = comparativaSummary(pair)
+      for (const side of [pair.a, pair.b]) {
+        const detail = detailPages.find(page => page.id === side.id)!
+        const total = courierReferenceCost(side)
+        expect(total, `${pair.slug}: ${side.id}`).toBe(detail.reference?.totalUsd ?? null)
+        if (total === null) continue
+        // …and the pair page prints that same total, in its facts and in its verdict.
+        expect(parcelFact(side), `${pair.slug}: ${side.id}`).toContain(usd(total))
+        expect(summary, `${pair.slug}: ${side.id}`).toContain(usd(total))
+      }
+    }
+  })
+
+  it('adds nothing on top of SoyCourier’s all-inclusive rate, and says so', () => {
+    expect(parcelFact(entityOf('soycourier'))).toContain('todo incluido')
+    for (const pair of pairsWith('soycourier')) {
+      const summary = comparativaSummary(pair)
+      expect(summary, pair.slug).not.toContain('Los dos suman el mismo recargo')
+      expect(summary, pair.slug).toContain('todo incluido')
+    }
+  })
+
+  it('says "los dos suman el mismo recargo" only when it is true of both couriers', () => {
+    for (const pair of courierPairs) {
+      const both = [pair.a, pair.b].every(
+        side => courierReferenceCost(side) !== null && !courierOf(side).rateIncludesSurcharge
+      )
+      expect(
+        comparativaSummary(pair).includes('Los dos suman el mismo recargo de ley'),
+        pair.slug
+      ).toBe(both)
+    }
+  })
+
+  it.each(['aerobox', 'starbox'])('shows the IVA of a handling fee published "+IVA" (%s)', id => {
+    const entity = entityOf(id)
+    expect(entity.facts.find(fact => fact.label === 'Cargo fijo por envío')?.value).toBe(
+      'USD 5,00 + IVA'
+    )
+    expect(parcelFact(entity)).toContain('IVA del cargo fijo')
+  })
+
+  it('never crowns a total that leaves out a fee the courier publishes (Casilla Mía)', () => {
+    expect(parcelFact(entityOf('casillamia'))).toContain('sin despacho de aduana')
+    const pairs = pairsWith('casillamia')
+    expect(pairs.length).toBeGreaterThan(0)
+    for (const pair of pairs) {
+      const summary = comparativaSummary(pair)
+      expect(summary, pair.slug).not.toContain('sale más barato')
+      expect(summary, pair.slug).not.toContain('prácticamente lo mismo')
+      expect(summary, pair.slug).toContain('despacho de aduana')
+      expect(summary, pair.slug).toContain(usd(75))
+      expect(summary, pair.slug).toContain(usd(135))
+    }
+  })
+
+  it('says a missing handling fee is unpublished (Grinbox, Glic), never "caso a caso"', () => {
+    for (const id of ['grinbox', 'glic']) {
+      expect(entityOf(id).facts.find(fact => fact.label === 'Cargo fijo por envío')?.value).toBe(
+        'No publica cargo fijo'
+      )
+    }
+    for (const pair of courierPairs) {
+      const text = [
+        comparativaSummary(pair),
+        ...pair.a.facts.map(fact => fact.value),
+        ...pair.b.facts.map(fact => fact.value),
+      ].join(' ')
+      expect(text, pair.slug).not.toContain('caso a caso')
+    }
   })
 })
 
