@@ -70,6 +70,8 @@ const rows = computed(() => {
       if (q[key]) add('features', t(key))
     if (q.withExpenses) add('features', t('expensesKnown'))
     if (q.guarantees.length) add('anyGuarantee', q.guarantees.map(value => t(value)).join(' · '))
+    if (q.amenities.length)
+      add('amenities', q.amenities.map(value => t(`amenity-${value}`)).join(' · '))
     if (q.sedes.length) {
       add(
         'healthCenters',

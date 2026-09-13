@@ -103,6 +103,15 @@ describe('rental subscription criteria', () => {
     )
   })
 
+  it('keeps requested amenities in the stable order the directory uses', () => {
+    expect(
+      normalizeRentalAlertFilters('rental-search', { comodidades: 'piscina,gimnasio' }).comodidades
+    ).toBe('gimnasio,piscina')
+    expect(
+      normalizeRentalAlertFilters('rental-search', { comodidades: ['sauna', 'aire'] }).comodidades
+    ).toBe('aire,sauna')
+  })
+
   it.each([
     ['rental-search', { priceMax: { $gt: 1 } }],
     ['rental-search', { keys: 'known-house' }],
@@ -112,6 +121,7 @@ describe('rental subscription criteria', () => {
     ['rental-search', { bedrooms: 99 }],
     ['rental-search', { garantia: 'deposito' }],
     ['rental-search', { sedes: '999999999999999' }],
+    ['rental-search', { comodidades: 'gimnasio,jacuzzi' }],
     ['rental-opportunity', { operation: 'sale' }],
     ['rental-opportunity', { monthlyMax: 10000 }],
     ['rental-opportunity', { confidence: 'guaranteed' }],

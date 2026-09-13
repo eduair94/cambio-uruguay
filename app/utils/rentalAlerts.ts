@@ -7,6 +7,7 @@ import {
 } from './rentals'
 import { normalizeOpportunityQuery } from './propertyOpportunityQuery'
 import { MUTUALISTA_SEDES } from './mutualistaSedes'
+import { isRentalAmenity } from './rentalAmenities'
 
 export type RentalAlertKind = 'rental-search' | 'rental-opportunity'
 export type RentalAlertFrequency = 'hourly' | 'daily'
@@ -113,6 +114,7 @@ const searchKeys = new Set([
   'sedes',
   'radio',
   'radioKm',
+  'comodidades',
 ])
 const opportunityKeys = new Set([
   'availability',
@@ -126,7 +128,14 @@ const opportunityKeys = new Set([
   'evidence',
   'signal',
 ])
-const arrayKeys = new Set(['types', 'neighborhoods', 'garantia', 'guarantees', 'sedes'])
+const arrayKeys = new Set([
+  'types',
+  'neighborhoods',
+  'garantia',
+  'guarantees',
+  'sedes',
+  'comodidades',
+])
 const searchBooleans = new Set([
   'bedroomsExact',
   'multi',
@@ -220,6 +229,13 @@ export function normalizeRentalAlertFilters(
       .flatMap(v => String(v ?? '').split(','))
       .filter(Boolean)
     if (guarantees.some(v => !RENTAL_GUARANTEE_PUBLISHED.includes(v as never)))
+      throw new RentalAlertValidationError('unsupported_filter')
+    // An amenity the directory cannot filter would be dropped by normalisation: a wider alert.
+    const amenities = (Array.isArray(input.comodidades) ? input.comodidades : [input.comodidades])
+      .flatMap(v => String(v ?? '').split(','))
+      .map(v => v.trim())
+      .filter(Boolean)
+    if (amenities.some(v => !isRentalAmenity(v)))
       throw new RentalAlertValidationError('unsupported_filter')
     const query = normalizeRentalQuery(input)
     for (const field of [
