@@ -61,7 +61,7 @@
       <h2 class="text-h5 font-weight-bold mb-2">Las tres vías</h2>
       <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
         Cuál te toca depende de tu nacionalidad. La vía MERCOSUR es sensiblemente más liviana: no
-        aparece el requisito de medios de vida ni el carné de salud uruguayo.
+        aparece el requisito de medios de vida, y el carné de salud sólo lo pide la temporaria.
       </p>
       <VRow>
         <VCol v-for="p in RESIDENCY_PATHS" :key="p.id" cols="12" md="4">

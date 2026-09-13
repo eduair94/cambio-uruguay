@@ -196,6 +196,9 @@ export const RESIDENCY_PATHS: readonly ResidencyPath[] = Object.freeze([
       'Certificado de antecedentes penales del país de origen y de cualquier país donde hayas residido 6 meses o más en los últimos 5 años, apostillado y traducido.',
       'Partida de nacimiento apostillada y traducida.',
       'Certificado de vacunación.',
+      // Ficha actualizada el 12/03/2026: «Se requerirá a efectos de acreditar el estado sanitario
+      // del interesado, el Carné de Salud Laboral». La permanente MERCOSUR no lo pide.
+      'Carné de Salud Laboral vigente, de un prestador habilitado por el MSP.',
     ],
     url: 'https://www.gub.uy/tramites/residencia-legal-temporaria-mercosur',
   },
@@ -205,7 +208,7 @@ export const RESIDENCY_PATHS: readonly ResidencyPath[] = Object.freeze([
     who: 'Nacionales del MERCOSUR y asociados, y extranjeros familiares de uruguayos.',
     duration: null,
     requirements: [
-      'La misma base documental que la temporaria.',
+      'Documento de identidad, antecedentes penales y certificado de vacunación: la base de la temporaria, sin el carné de salud.',
       'Partida que acredite el vínculo, cuando la vía es por familiar uruguayo.',
     ],
     url: 'https://www.gub.uy/tramites/residencia-permanente-nacionales-mercosur-estados-parte-asociados-extranjeros-familiares-uruguayos',
@@ -265,7 +268,7 @@ export const RESIDENCY_FAQ: readonly ResidencyFaq[] = Object.freeze([
     question: 'Soy venezolano. ¿Tengo que demostrar medios de vida?',
     short: 'Venezuela entra por la vía MERCOSUR, que no lo pide.',
     answer:
-      'Venezuela está en el grupo que accede por la vía MERCOSUR, y esa base documental es bastante más liviana: no aparece el requisito de acreditar medios de vida ni el carné de salud uruguayo que sí pide la permanente general. Es lo contrario de lo que suele suponerse en los hilos, donde se discute cuánto hay que ganar para que "te dejen entrar". El trámite migratorio no es el cuello de botella; el costo de vida sí.',
+      'Venezuela está en el grupo que accede por la vía MERCOSUR, y esa base documental es bastante más liviana: no aparece el requisito de acreditar medios de vida que sí pide la permanente general. El carné de salud depende de la puerta: la temporaria MERCOSUR pide el Carné de Salud Laboral y la permanente MERCOSUR no. Es lo contrario de lo que suele suponerse en los hilos, donde se discute cuánto hay que ganar para que "te dejen entrar". El trámite migratorio no es el cuello de botella; el costo de vida sí.',
   },
   {
     question: 'Tengo título de otro país. ¿Necesito revalidarlo?',
@@ -289,7 +292,7 @@ export const RESIDENCY_FAQ: readonly ResidencyFaq[] = Object.freeze([
     question: 'Soy argentino, brasileño o de un país del MERCOSUR: ¿cambia algo?',
     short: 'Sí: hay una vía MERCOSUR con requisitos más simples.',
     answer:
-      'Los nacionales de Argentina, Brasil, Chile, Bolivia, Paraguay, Perú, Ecuador, Colombia, Venezuela, Surinam y Guyana entran por la vía MERCOSUR, que tiene una temporaria de hasta dos años renovable y también una permanente. La base documental es más liviana que la de no MERCOSUR: no aparece el requisito de acreditar medios de vida ni el carné de salud uruguayo que sí pide la permanente general.',
+      'Los nacionales de Argentina, Brasil, Chile, Bolivia, Paraguay, Perú, Ecuador, Colombia, Venezuela, Surinam y Guyana entran por la vía MERCOSUR, que tiene una temporaria de hasta dos años renovable y también una permanente. La base documental es más liviana que la de no MERCOSUR: no aparece el requisito de acreditar medios de vida. El carné de salud sí depende de la vía: la temporaria MERCOSUR pide el Carné de Salud Laboral, y la permanente MERCOSUR no lo menciona.',
   },
   {
     question: '¿Puedo hacer el trámite desde mi país?',

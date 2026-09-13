@@ -257,9 +257,13 @@ export const CERTIFICADO_FACTS: readonly CertificadoFact[] = Object.freeze([
       'No es una consulta informativa cualquiera: el artículo le da carácter oficial y liberatorio, o sea que hace fe de lo que dice a la fecha de expedición. Es la diferencia entre esto y una captura de pantalla de la consulta rápida.',
   },
   {
-    label: 'La vigencia es diaria',
+    label: 'Para firmar, vale 24 horas hábiles',
+    // Congreso de Intendentes, «Funcionamiento del Certificado SUCIVE» (25/07/2022): para actos
+    // formales, «su vigencia de 24 horas hábiles computables desde su emisión, ampliación o
+    // reemisión»; para el efecto liberatorio y los reclamos, «90 corridos días». Antes decía
+    // «vale por el día», que se queda corto: uno sacado un viernes de tarde sirve el lunes.
     detail:
-      'El certificado vale por el día. Un certificado de hace tres semanas no te sirve para firmar: pedilo cerca de la fecha en que vas a señar o a escriturar, no al empezar a mirar.',
+      'Para la compraventa o la escritura, el certificado vale 24 horas hábiles desde que se emite o se amplía; para reclamar o rectificar lo que figura, 90 días corridos. Un certificado de hace tres semanas no te sirve para firmar: pedilo cerca de la fecha en que vas a señar o a escriturar, no al empezar a mirar.',
   },
   {
     label: 'Cuesta tres documentos',
@@ -635,7 +639,7 @@ export const BEFORE_BUYING_STEPS: readonly CheckStep[] = Object.freeze([
   {
     title: 'Después sí, el Certificado SUCIVE',
     detail:
-      'Cuando el auto te interesa en serio y antes de entregar plata, pedí el certificado: es el único documento con carácter liberatorio, cubre las multas de la Policía Nacional de Tránsito y los peajes que la consulta rápida no te muestra, y vale por el día.',
+      'Cuando el auto te interesa en serio y antes de entregar plata, pedí el certificado: es el único documento con carácter liberatorio, cubre las multas de la Policía Nacional de Tránsito y los peajes que la consulta rápida no te muestra, y para firmar vale 24 horas hábiles desde que se emite.',
   },
   {
     title: 'Contá los ejercicios, no los pesos',

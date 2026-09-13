@@ -397,7 +397,10 @@ export const PATENTE_FIXED_BANDS: readonly PatenteBand[] = Object.freeze([
 export const PATENTE_FLOOR_RULE =
   'Ningún vehículo modelo 1992 o posterior tributa menos que el valor vigente para la banda 1986-1991. Es el piso del sistema: por más viejo que sea un modelo del 92 para arriba, no baja de ahí.'
 
-/** Vencimientos del ejercicio 2026: seis cuotas bimestrales, todas el día 20. */
+/**
+ * Vencimientos del ejercicio 2026: seis cuotas bimestrales, el día 20 de cada mes de pago. La de
+ * setiembre figura el 21 porque el 20/9/2026 cae domingo (así la publica la IM).
+ */
 export const PATENTE_DUE_DATES: readonly string[] = Object.freeze([
   '20 de enero',
   '20 de marzo',
@@ -408,7 +411,7 @@ export const PATENTE_DUE_DATES: readonly string[] = Object.freeze([
 ])
 
 export const PATENTE_DUE_DATE_RULE =
-  'El vencimiento es todos los días 20 de los meses de pago. Cuando la fecha cae sábado, domingo o feriado no se aplican multas ni recargos hasta pasado el primer día hábil.'
+  'El vencimiento es el día 20 de cada mes de pago. Cuando esa fecha cae sábado, domingo o feriado no se aplican multas ni recargos hasta pasado el primer día hábil: por eso en 2026 la cuota de setiembre figura el 21, porque el 20 cae domingo.'
 
 export interface PatenteBonificacion {
   pct: string

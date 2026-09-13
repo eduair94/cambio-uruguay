@@ -41,7 +41,8 @@
 //     https://www.impo.com.uy/bases/leyes/19210-2014
 //   - Ley 18.507 (procesos de consumo hasta 100 UR)
 //     https://www.impo.com.uy/bases/leyes/18507-2009
-//   - Ley 18.212 art. 11 (usura) y Ley 18.331 art. 22 (Central de Riesgos)
+//   - Ley 18.212 art. 11 (usura) y Ley 18.331 art. 22 (cuánto figura una deuda en una base privada
+//     de antecedentes como el Clearing; la Central de Riesgos es otra cosa: es del BCU)
 //   - RNRCSF (Recopilación de Regulación y Control del Sistema Financiero) arts. 327, 359, 361,
 //     364 lit. h, 367, 378, 379 y 384.1
 //   - RNSR (Recopilación de Seguros y Reaseguros) arts. 86.1, 86.6 y 86.8
@@ -499,7 +500,7 @@ export const CHARGE_TRAPS: ChargeTrap[] = [
     id: 'dejar-de-pagar',
     title: 'Dejar de pagar la cuota mientras reclamás',
     detail:
-      'Ninguna norma suspende la exigibilidad del cargo mientras se tramita el reclamo. Se configura mora, el interés puede llegar legalmente hasta las tasas medias del BCU más un 80% en operaciones por debajo de 2:000.000 UI (Ley 18.212 art. 11), y después la deuda va a la Central de Riesgos, donde queda 5 años. Salir del Clearing sale más caro que la cuota que estás discutiendo: pagá bajo protesta y peleá el reintegro.',
+      'Ninguna norma suspende la exigibilidad del cargo mientras se tramita el reclamo. Se configura mora, el interés puede llegar legalmente hasta las tasas medias del BCU más un 80% en operaciones por debajo de 2:000.000 UI (Ley 18.212 art. 11), y después el atraso lo informa el emisor a la Central de Riesgos del BCU y puede terminar en el Clearing de Informes, una base privada donde una deuda impaga figura cinco años (Ley 18.331 art. 22). Salir del Clearing sale más caro que la cuota que estás discutiendo: pagá bajo protesta y peleá el reintegro.',
     sources: [
       {
         label: 'Ley 18.212 art. 11',
@@ -507,7 +508,8 @@ export const CHARGE_TRAPS: ChargeTrap[] = [
         kind: 'norma',
       },
       {
-        label: 'Ley 18.331 art. 22 (plazos de la Central de Riesgos)',
+        label:
+          'Ley 18.331 art. 22 (cuánto figura una deuda en una base privada de antecedentes como el Clearing)',
         url: 'https://www.impo.com.uy/bases/leyes/18331-2008',
         kind: 'norma',
       },

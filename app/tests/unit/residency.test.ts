@@ -62,13 +62,20 @@ describe('vías de residencia', () => {
     expect(path('mercosur-permanente').duration).toBeNull()
   })
 
-  // La diferencia práctica entre las vías: medios de vida y carné de salud sólo en no-MERCOSUR.
-  it('sólo la vía no MERCOSUR exige medios de vida y carné de salud', () => {
+  // La diferencia práctica entre las vías: medios de vida sólo en no-MERCOSUR.
+  it('sólo la vía no MERCOSUR exige medios de vida', () => {
     const noMerco = path('no-mercosur-permanente').requirements.join(' ')
     const merco = path('mercosur-temporaria').requirements.join(' ')
     expect(noMerco).toMatch(/medios de vida/i)
     expect(noMerco).toMatch(/carn[eé] de salud/i)
     expect(merco).not.toMatch(/medios de vida/i)
+  })
+
+  // Corrección 2026-09-13: el sitio decía que ninguna vía MERCOSUR pedía carné de salud. La ficha
+  // de la temporaria (actualizada el 12/03/2026) pide el Carné de Salud Laboral; la permanente no.
+  it('el carné de salud lo pide la temporaria MERCOSUR y no la permanente MERCOSUR', () => {
+    expect(path('mercosur-temporaria').requirements.join(' ')).toMatch(/Carn[eé] de Salud Laboral/)
+    expect(path('mercosur-permanente').requirements.join(' ')).toMatch(/sin el carn[eé] de salud/i)
   })
 
   it('todas piden antecedentes penales apostillados', () => {
