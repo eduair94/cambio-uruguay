@@ -8,6 +8,10 @@ import {
   rentalDistanceProjection,
   rentalDistanceStages,
 } from '../../../utils/rentalDistance'
+import {
+  RENTAL_PRICE_PER_M2_SORT_FIELDS,
+  rentalPricePerM2Stages,
+} from '../../../utils/rentalPricePerM2'
 
 import {
   annotateRentalAvailability,
@@ -76,6 +80,8 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
         ...publicStages,
         ...offerStages,
         ...rentalDistanceStages(query),
+        // On the advert chosen above: the card divides this same price by the same area.
+        ...(query.sort === 'precio-m2' ? rentalPricePerM2Stages() : []),
         // Rich source evidence must not enter the blocking sort buffer.
         {
           $project: {
@@ -84,12 +90,16 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
             ...(query.sort === 'total'
               ? Object.fromEntries(RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
               : {}),
+            ...(query.sort === 'precio-m2'
+              ? Object.fromEntries(RENTAL_PRICE_PER_M2_SORT_FIELDS.map(field => [field, 1]))
+              : {}),
           },
         },
         { $sort: sort },
         { $skip: (query.page - 1) * query.perPage },
         { $limit: query.perPage },
         ...(query.sort === 'total' ? [{ $unset: [...RENTAL_TOTAL_SORT_FIELDS] }] : []),
+        ...(query.sort === 'precio-m2' ? [{ $unset: [...RENTAL_PRICE_PER_M2_SORT_FIELDS] }] : []),
         ...(query.refLat !== null ? [{ $unset: [...RENTAL_DISTANCE_SORT_FIELDS] }] : []),
       ])
         // Deep offsets retain every preceding public row in Mongo's top-k sort. Even the slim

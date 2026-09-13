@@ -10,6 +10,13 @@ import {
   rentalAmenityPublished,
   type RentalAmenity,
 } from '~/utils/rentalAmenities'
+import {
+  buildRentalFilter,
+  normalizeRentalQuery,
+  rentalPublicStages,
+  rentalQueryToParams,
+} from '~/utils/rentals'
+import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
 
 const LABELS: Array<[string, RentalAmenity | null]> = [
   ['Aire acondicionado', 'aire'],
@@ -73,5 +80,53 @@ describe('claves de comodidades', () => {
     expect(rentalAmenityConditions(['gimnasio'])).toEqual([
       { 'offers.details.amenities': { $regex: '^(gimnasio|gym)$', $options: 'i' } },
     ])
+  })
+})
+
+describe('comodidades en la URL', () => {
+  it('va y vuelve por el contrato de la consulta', () => {
+    const params = rentalQueryToParams(normalizeRentalQuery({ comodidades: 'piscina, gimnasio' }))
+    expect(params.comodidades).toBe('gimnasio,piscina')
+    expect(normalizeRentalQuery(params).amenities).toEqual(['gimnasio', 'piscina'])
+    expect(rentalQueryToParams(normalizeRentalQuery({})).comodidades).toBeUndefined()
+  })
+})
+
+describe('filtro de comodidades', () => {
+  it('pide TODAS las elegidas', () => {
+    const query = normalizeRentalQuery({ comodidades: 'gimnasio,piscina' })
+    expect(buildRentalFilter(query, 10).filter.$and).toEqual(
+      rentalAmenityConditions(['gimnasio', 'piscina'])
+    )
+  })
+
+  it('convive con la cercanía a una sede y con el buscador de texto', () => {
+    const sede = MUTUALISTA_SEDES[0]!
+    const query = normalizeRentalQuery({
+      comodidades: 'gimnasio',
+      sedes: String(sede.osmId),
+      q: 'rambla',
+    })
+    const { filter } = buildRentalFilter(query, 10)
+    const and = filter.$and as Array<Record<string, unknown>>
+    expect(and).toHaveLength(2)
+    expect(and[0]).toEqual(rentalAmenityConditions(['gimnasio'])[0])
+    expect(and[1]!.$expr).toBeDefined()
+    expect(Array.isArray(filter.$or)).toBe(true)
+  })
+
+  it('sin comodidades no agrega condiciones', () => {
+    expect(buildRentalFilter(normalizeRentalQuery({}), 10).filter.$and).toBeUndefined()
+  })
+
+  it('se vuelve a exigir después de descartar los avisos vencidos', () => {
+    const { filter } = buildRentalFilter(normalizeRentalQuery({ comodidades: 'gimnasio' }), 10)
+    const stages = rentalPublicStages(filter, 10) as Array<Record<string, any>>
+    const matches = stages.filter(stage => stage.$match?.$and)
+    const current = stages.findIndex(stage => stage.$set?.offers)
+    // Prefiltro sobre todos los avisos (barato, superconjunto) y match exacto sobre los vigentes.
+    expect(matches).toHaveLength(2)
+    expect(stages.indexOf(matches[0]!)).toBeLessThan(current)
+    expect(stages.indexOf(matches[1]!)).toBeGreaterThan(current)
   })
 })

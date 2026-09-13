@@ -11,6 +11,11 @@
 import { MUTUALISTA_SEDES, type MutualistaSede } from './mutualistaSedes'
 import { normalizeRentalReferenceLabel, parseRentalReferencePoint } from './rentalDistance'
 import {
+  normalizeRentalAmenities,
+  rentalAmenityConditions,
+  type RentalAmenity,
+} from './rentalAmenities'
+import {
   agencyKey,
   advertiserMatches,
   advertiserExpression,
@@ -324,13 +329,21 @@ export const RENTAL_SELLER_LABEL: Record<RentalSellerType, string> = {
   desconocido: 'Sin dato',
 }
 
-export type RentalSort = 'recientes' | 'precio' | 'precio-desc' | 'total' | 'metros' | 'distancia'
+export type RentalSort =
+  | 'recientes'
+  | 'precio'
+  | 'precio-desc'
+  | 'total'
+  | 'precio-m2'
+  | 'metros'
+  | 'distancia'
 
 export const RENTAL_SORTS: ReadonlyArray<{ value: RentalSort; label: string }> = Object.freeze([
   { value: 'recientes', label: 'Más recientes' },
   { value: 'precio', label: 'Precio: menor a mayor' },
   { value: 'precio-desc', label: 'Precio: mayor a menor' },
   { value: 'total', label: 'Menor total mensual' },
+  { value: 'precio-m2', label: 'Menor precio por m²' },
   { value: 'metros', label: 'Más metros' },
   { value: 'distancia', label: 'Más cerca del punto elegido' },
 ])
@@ -370,6 +383,8 @@ export interface RentalQuery {
   furnished: boolean
   /** Garantías pedidas. Una propiedad entra si acepta AL MENOS UNA de las marcadas. */
   guarantees: RentalGuarantee[]
+  /** Comodidades pedidas (ver `rentalAmenities.ts`). La propiedad tiene que publicarlas TODAS. */
+  amenities: RentalAmenity[]
   /** Sólo las que publican los gastos comunes, para poder comparar el costo real. */
   withExpenses: boolean
   /** Own advert explicitly declares direct owner. A private seller classification is insufficient. */
@@ -472,6 +487,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     parking: enabled(input.parking),
     furnished: enabled(input.furnished),
     guarantees: parseGuarantees(input.garantia ?? input.guarantees),
+    amenities: normalizeRentalAmenities(input.comodidades ?? input.amenities),
     withExpenses: enabled(input.gc ?? input.withExpenses),
     owner: enabled(input.dueno ?? input.owner),
     agency: agencyKey(scalar(input.agency)),
@@ -514,6 +530,7 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   if (query.parking) params.parking = '1'
   if (query.furnished) params.furnished = '1'
   if (query.guarantees.length) params.garantia = query.guarantees.join(',')
+  if (query.amenities.length) params.comodidades = query.amenities.join(',')
   if (query.withExpenses) params.gc = '1'
   if (query.owner) params.dueno = '1'
   if (query.agency) params.agency = query.agency
@@ -889,6 +906,13 @@ export function buildRentalFilter(
     const safe = query.q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const pattern = new RegExp(safe, 'i')
     nonLocation.$or = [{ title: pattern }, { address: pattern }, { neighborhood: pattern }]
+  }
+
+  // ── Comodidades ── (ver `rentalAmenities.ts`). En `$and`, igual que la cercanía de abajo: el
+  // buscador de texto ya ocupa el `$or` de primer nivel.
+  if (query.amenities.length) {
+    const previos = Array.isArray(nonLocation.$and) ? (nonLocation.$and as unknown[]) : []
+    nonLocation.$and = [...previos, ...rentalAmenityConditions(query.amenities)]
   }
 
   // ── Cerca de una sede ──
@@ -1337,6 +1361,9 @@ export function rentalMongoSort(sort: RentalSort): Record<string, 1 | -1> {
   if (sort === 'precio-desc') return { priceUyu: -1, key: 1 }
   if (sort === 'total')
     return { _rentalMonthlyUnknown: 1, _rentalMonthlyTotal: 1, priceUyu: 1, key: 1 }
+  // Campos de `rentalPricePerM2Stages()`: lo que la regla no puede afirmar va al final.
+  if (sort === 'precio-m2')
+    return { _rentalPricePerM2Unknown: 1, _rentalPricePerM2: 1, priceUyu: 1, key: 1 }
   if (sort === 'metros') return { area: -1, priceUyu: 1, key: 1 }
   return { freshAt: -1, key: 1 }
 }

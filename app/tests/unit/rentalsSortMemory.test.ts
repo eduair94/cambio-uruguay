@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import * as rentals from '../../utils/rentals'
 import * as rentalDistance from '../../utils/rentalDistance'
+import * as rentalPricePerM2 from '../../utils/rentalPricePerM2'
 import { rentalPublicPropertyProjection } from '../../server/utils/rentalDetail'
 
 type Stage = Record<string, any>
@@ -57,6 +58,7 @@ async function capture(query: Record<string, string> = {}, total = 240) {
     },
     '../../../utils/rentals': rentals,
     '../../../utils/rentalDistance': rentalDistance,
+    '../../../utils/rentalPricePerM2': rentalPricePerM2,
   }
   const module = { exports: {} as { default?: (event: unknown) => Promise<unknown> } }
   runInNewContext(compiled, {
@@ -77,7 +79,7 @@ async function capture(query: Record<string, string> = {}, total = 240) {
 }
 
 describe('rental endpoint sort input', () => {
-  it.each(['precio', 'precio-desc', 'metros', 'recientes', 'total'])(
+  it.each(['precio', 'precio-desc', 'metros', 'recientes', 'total', 'precio-m2'])(
     'retains every %s sort key while removing private evidence before buffering',
     async sort => {
       const { items, median, itemsOptions } = await capture({ sort, source: 'casasweb' })
@@ -95,12 +97,40 @@ describe('rental endpoint sort input', () => {
         ...(sort === 'total'
           ? Object.fromEntries(rentals.RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
           : {}),
+        ...(sort === 'precio-m2'
+          ? Object.fromEntries(
+              rentalPricePerM2.RENTAL_PRICE_PER_M2_SORT_FIELDS.map(field => [field, 1])
+            )
+          : {}),
       })
       if (sort === 'total')
         expect(items.at(-1)).toEqual({ $unset: [...rentals.RENTAL_TOTAL_SORT_FIELDS] })
+      if (sort === 'precio-m2')
+        expect(items.at(-1)).toEqual({
+          $unset: [...rentalPricePerM2.RENTAL_PRICE_PER_M2_SORT_FIELDS],
+        })
       expect(median.find(stage => stage.$project)!.$project).toEqual({ _id: 0, priceUyu: 1 })
     }
   )
+
+  it('prices per m² with the advert chosen by the filters, before projecting and paging', async () => {
+    const { items, median } = await capture({ sort: 'precio-m2', source: 'casasweb', page: '2' })
+    const priced = items.findLastIndex(stage => stage.$set?.priceUyu)
+    const perM2 = items.findIndex(stage => stage.$set?._rentalPricePerM2)
+    const unknown = items.findIndex(stage => stage.$set?._rentalPricePerM2Unknown)
+    const projection = items.findIndex(stage => stage.$project)
+    const page = items.findIndex(stage => stage.$skip !== undefined)
+    expect(priced).toBeGreaterThan(0)
+    expect(perM2).toBeGreaterThan(priced)
+    expect(unknown).toBe(perM2 + 1)
+    expect(projection).toBeGreaterThan(unknown)
+    expect(page).toBeGreaterThan(projection)
+    expect(items[perM2]!.$set._rentalPricePerM2).toEqual(
+      rentalPricePerM2.rentalPricePerM2Expression()
+    )
+    // Sorting alone must not move the rent median of the same search.
+    expect(median).toEqual((await capture({ sort: 'precio', source: 'casasweb' })).median)
+  })
 
   it('preserves the same base-rent median when only the presentation sort changes', async () => {
     const base = await capture({ sort: 'precio', pets: '1' })
