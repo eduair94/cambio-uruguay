@@ -28,9 +28,10 @@ Es la misma trampa que la pizarra congelada: ordenar por "más barato" premia el
 - Resto de tipos (oficina, local, garaje, terreno, otro): sólo el mínimo de 15 m². Un galpón a
   $75/m² es real.
 
-Efecto medido: quedan rankeados 30.841 de 34.910 apartamentos (131 fuera por tope, 13 por piso,
-331 por menos de 15 m², 3.600 sin superficie) y 7.200 de 9.660 casas. El apartamento más barato
-por m² pasa de "0 $/m²" a $102/m².
+Efecto medido con la regla final (función y expresión dieron el mismo valor en las 58.276 filas
+públicas): quedan rankeados 30.801 de 34.916 apartamentos y 7.200 de 9.665 casas; las 644
+habitaciones quedan fuera. El primer apartamento del orden pasa de "$0/m²" (1 dormitorio con
+55.000 m²) a $150/m² (2 dormitorios, 100 m², Cerro, $15.000).
 
 `null` NO oculta la propiedad: va al final del orden, igual que el total mensual desconocido en
 `sort=total`. La guarda decide qué número se muestra y se ordena, no qué existe.
@@ -63,21 +64,24 @@ gimnasio**. Facebook y Casasweb no publican nada.
 Por eso el filtro no toca el crawler en esta versión: lee lo que ya está guardado. La ausencia no es
 negativa: un aviso sin la marca puede tener gimnasio, y la interfaz lo dice.
 
-### Lista (conteo = propiedades públicas con la etiqueta)
+### Lista (conteo = propiedades públicas que el filtro devuelve, 2026-09-13)
 
 | clave | etiquetas de InfoCasas | propiedades |
 |---|---|---|
 | gimnasio | Gym | 2.214 |
 | piscina | Piscina | 1.678 |
-| parrillero | Parrillero / Barbacoa, Barbacoa | 5.120 + 740 |
+| parrillero | Parrillero / Barbacoa, Barbacoa | 5.278 |
 | ascensor | Ascensor | 3.081 |
 | aire | Aire acondicionado (NO "Previsión A.A.") | 5.162 |
-| balcon | Balcón / Terraza, Balcón, Terraza (NO "Terraza lavadero") | 5.052 + 1.813 |
-| lavadero | Lavadero, Terraza lavadero, Lavandería | 3.514 + 1.514 + 721 |
-| calefaccion | Calefacción, Calefacción individual/central, Losa radiante | 1.281 + 2.259 + 552 + 817 |
-| jardin | Jardín / Patio, Patio | 2.187 + 1.030 |
-| sauna | Sauna, Spa | 1.003 + 20 |
-| salon | Salón de uso común, Playroom | 937 + 1.386 |
+| balcon | Balcón / Terraza, Balcón, Terraza (NO "Terraza lavadero") | 6.076 |
+| lavadero | Lavadero, Terraza lavadero, Lavandería | 4.969 |
+| calefaccion | Calefacción, Calefacción individual/central, Losa radiante | 4.235 |
+| jardin | Jardín / Patio, Patio | 2.734 |
+| sauna | Sauna, Spa | 1.015 |
+| salon | Salón de uso común, Playroom | 2.107 |
+
+Gimnasio y piscina a la vez: 859. Cada conteo del filtro coincidió exactamente con uno independiente
+hecho en JavaScript sobre los avisos vigentes (ver Verificación).
 
 Seguridad/portería no existe en las etiquetas de alquiler: no se ofrece un filtro que siempre
 devolvería cero.

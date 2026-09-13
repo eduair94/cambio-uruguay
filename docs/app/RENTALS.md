@@ -1,5 +1,32 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Precio por m² y comodidades — 13 de septiembre de 2026
+
+Pedido: ordenar por precio por m² y elegir si hay gimnasio u otros servicios. Diseño y mediciones
+completas en [la spec](../superpowers/specs/2026-09-13-alquileres-precio-m2-comodidades-design.md).
+
+**`sort=precio-m2` no es `precio / área`.** Así ordenado, los 20 primeros eran errores de carga
+(un 1 dormitorio con 55.000 m², casas de balneario con el terreno como superficie). La regla vive
+en `app/utils/rentalPricePerM2.ts` en dos formas —función para la tarjeta, expresión para Mongo—:
+habitaciones nunca (precio por cama sobre toda la residencia), superficie de 15 a 1.000.000 m², y
+en apartamentos y casas un tope de `100 + 80 × dormitorios` m² (400 sin dormitorios) y un piso de
+$150/m² (apartamento) o $100/m² (casa). Lo que no pasa va al final del orden y la tarjeta no
+muestra cifra: no se esconde. Sobre las 58.276 filas públicas la función y la expresión dieron el
+mismo valor en todas; quedan rankeados 30.801 de 34.916 apartamentos y 7.200 de 9.665 casas.
+
+**`comodidades=gimnasio,piscina` lee lo que ya está guardado.** Sólo InfoCasas publica comodidades
+como dato (`offers[].details.amenities`, 13.341 propiedades); las de El País son generadas y se
+excluyen, MercadoLibre no tiene filtro de gimnasio y Facebook y Casasweb no publican nada. Once
+comodidades mapeadas a etiquetas enteras en `app/utils/rentalAmenities.ts` ("Terraza lavadero" no
+es terraza, "Previsión A.A." no es aire). Exige TODAS, se evalúa a nivel propiedad y otra vez
+después de descartar los avisos vencidos. Cada conteo del filtro coincidió con uno independiente
+(gimnasio 2.214, piscina 1.678, las dos a la vez 859). Las alertas guardadas la aceptan y rechazan
+claves desconocidas; el matcher por aviso no la mira porque la proyección pública no trae `details`.
+
+Siguiente paso posible, no hecho: pasadas de MercadoLibre por `HAS_SWIMMING_POOL`, `HAS_LIFT`,
+`HAS_AIR_CONDITIONING`, `HAS_TERRACE` y `HAS_GARDEN`, como la de mascotas. Compiten por el mismo
+presupuesto de solicitudes.
+
 ## Antigüedad del aviso y brecha entre portales — 9 de septiembre de 2026
 
 La tarjeta y la ficha muestran **cuánto lleva publicada** la vivienda, y —cuando corresponde— que
