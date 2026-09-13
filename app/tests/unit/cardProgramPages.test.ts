@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { BANKOS_BANK_BY_CREDIT_PROGRAM } from '../../utils/bankos'
 import { bankPageForBankId } from '../../utils/bankosPages'
 import {
+  CARD_PROGRAM_HEADLINES,
   CARD_PROGRAM_NAMES,
   allCardProgramPages,
   getCardProgramPage,
@@ -19,7 +20,13 @@ import {
 } from '../../utils/cardRewards'
 import { getComparativaFamily, getComparativaPair } from '../../utils/comparativas'
 import { cardProgramPagePath } from '../../utils/entityPageSlugs'
-import { BRAND_SUFFIX, MAX_TITLE, dateLabel, ensurePeriod } from '../../utils/entityPages'
+import {
+  BRAND_SUFFIX,
+  MAX_DESCRIPTION,
+  MAX_TITLE,
+  dateLabel,
+  ensurePeriod,
+} from '../../utils/entityPages'
 import { rankingTierForScore } from '../../utils/rankingTiers'
 
 const PAGES = join(__dirname, '..', '..', 'pages')
@@ -75,21 +82,24 @@ describe('every credit-card programme gets a page', () => {
     expect(new Set(pages.map(page => page.description)).size).toBe(pages.length)
   })
 
-  it('writes a description a SERP can show', () => {
+  it('fits the description in the SERP, opening with the programme’s own figure', () => {
     for (const page of pages) {
-      expect(page.description.length, page.description).toBeGreaterThanOrEqual(100)
-      expect(page.description.length, page.description).toBeLessThanOrEqual(230)
-      expect(page.description).toContain(page.name)
+      expect(page.description.length, page.description).toBeGreaterThanOrEqual(60)
+      expect(page.description.length, page.description).toBeLessThanOrEqual(MAX_DESCRIPTION)
+      expect(page.description.startsWith(`${page.name}: ${CARD_PROGRAM_HEADLINES[page.id]}`)).toBe(
+        true
+      )
     }
   })
 
-  it('never prints a placeholder artefact', () => {
+  it('never prints a placeholder artefact, FAQ answers included', () => {
     for (const page of pages) {
       const text = [
         ...generated(page),
         page.comparisonsNote ?? '',
         page.sourcesNote ?? '',
-        ...page.faq.map(item => item.question),
+        ...page.facts.map(fact => fact.value),
+        ...page.faq.flatMap(item => [item.question, item.answer]),
       ].join(' ')
       expect(text).not.toMatch(/\bundefined\b|\bNaN\b|\bnull\b/)
       for (const line of generated(page)) expect(line).not.toMatch(/\s{2,}/)
@@ -122,7 +132,39 @@ describe('rank, score and tier are the ranking’s own', () => {
   it('dates the ficha with the catalogue review date', () => {
     for (const page of pages) {
       expect(page.reviewedAt).toBe(CARD_REWARDS_LAST_REVIEWED)
-      expect(page.description).toContain(dateLabel(CARD_REWARDS_LAST_REVIEWED))
+      const status = page.facts.find(fact => fact.label === 'Datos confirmados')
+      expect(status?.value).toContain(dateLabel(CARD_REWARDS_LAST_REVIEWED))
+    }
+  })
+})
+
+describe('the description headlines restate the ficha', () => {
+  it('has one distinct headline per programme', () => {
+    expect(Object.keys(CARD_PROGRAM_HEADLINES).sort()).toEqual(
+      CARD_PROGRAMS.map(program => program.id).sort()
+    )
+    const lines = Object.values(CARD_PROGRAM_HEADLINES)
+    expect(new Set(lines).size).toBe(lines.length)
+  })
+
+  // Every figure in a headline must be one the programme's own notes print: a headline is a
+  // restatement, never a new fact.
+  it('uses only numbers the programme’s own notes publish', () => {
+    const numbers = (text: string) => text.match(/\d+(?:[.,]\d+)*/g) ?? []
+    for (const program of CARD_PROGRAMS) {
+      const notes = [
+        program.pointsProgramName,
+        program.earnRateNote,
+        program.pointValueNote ?? '',
+        program.redemptionNote,
+        program.discountNote,
+        program.feeNote,
+        program.note ?? '',
+      ].join(' ')
+      const published = new Set(numbers(notes))
+      for (const figure of numbers(CARD_PROGRAM_HEADLINES[program.id] ?? '')) {
+        expect(published.has(figure), `${program.id}: ${figure}`).toBe(true)
+      }
     }
   })
 })
@@ -141,11 +183,29 @@ describe('the reward noun follows the programme name', () => {
 })
 
 describe('the FAQ quotes the ficha instead of paraphrasing it', () => {
-  it('asks about the point value only when the ficha has one', () => {
+  it('asks about the point value only for a programme that has points and a value note', () => {
     for (const page of pages) {
       const program = programOf(page)
-      expect(page.faq.some(item => item.id === 'valor')).toBe(Boolean(program.pointValueNote))
+      const expected = Boolean(page.rewardNoun && program.pointValueNote)
+      expect(
+        page.faq.some(item => item.id === 'valor'),
+        page.id
+      ).toBe(expected)
+      expect(
+        page.facts.some(fact => fact.label.startsWith('Cuánto vale')),
+        page.id
+      ).toBe(expected)
     }
+  })
+
+  // Cabal and Líder carry a pointValueNote that says "No aplica": a points question there would
+  // contradict the ficha that answers it.
+  it.each(['cabal', 'tarjeta-lider'])('asks no points question of %s', slug => {
+    const page = getCardProgramPage(slug)
+    expect(page?.rewardNoun).toBeNull()
+    expect(page?.faq.some(item => item.id === 'valor')).toBe(false)
+    expect(page?.faq.some(item => /cuánto vale/i.test(item.question))).toBe(false)
+    expect(page?.facts.some(fact => fact.label.startsWith('Cuánto vale'))).toBe(false)
   })
 
   it('answers with the ficha’s own fields', () => {

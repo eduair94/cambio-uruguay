@@ -19,6 +19,9 @@ export const MAX_TITLE = 60
 /** What a page title may spend before the brand suffix eats the rest. */
 export const TITLE_BUDGET = MAX_TITLE - BRAND_SUFFIX.length
 
+/** What a SERP shows of a meta description before cutting it. */
+export const MAX_DESCRIPTION = 160
+
 /** How many sibling detail pages each page links to. */
 export const SIBLING_LIMIT = 4
 
@@ -91,11 +94,30 @@ export function lowerFirst(text: string): string {
  * rung is the bare name, kept even if it overflows: a title never drops the name.
  */
 export function fitTitle(candidates: ReadonlyArray<string | false | null | undefined>): string {
+  return firstThatFits(candidates, TITLE_BUDGET)
+}
+
+/**
+ * The first meta description that fits {@link MAX_DESCRIPTION}, most specific first.
+ *
+ * Same ladder as {@link fitTitle}: each rung drops the least important clause, so the figure that
+ * opens the description is the part that always survives the SERP's cut.
+ */
+export function fitDescription(
+  candidates: ReadonlyArray<string | false | null | undefined>
+): string {
+  return firstThatFits(candidates, MAX_DESCRIPTION)
+}
+
+function firstThatFits(
+  candidates: ReadonlyArray<string | false | null | undefined>,
+  max: number
+): string {
   const clean = candidates
     .filter((candidate): candidate is string => typeof candidate === 'string')
     .map(normalizeSpaces)
     .filter(Boolean)
-  return clean.find(candidate => candidate.length <= TITLE_BUDGET) ?? clean[clean.length - 1] ?? ''
+  return clean.find(candidate => candidate.length <= max) ?? clean[clean.length - 1] ?? ''
 }
 
 /** `2026-06-18` → `18/06/2026`, the way the index pages print their verification dates. */

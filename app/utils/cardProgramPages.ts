@@ -30,6 +30,7 @@ import {
   comparisonLinks,
   dateLabel,
   ensurePeriod,
+  fitDescription,
   fitTitle,
   joinSpanishList,
   lowerFirst,
@@ -79,6 +80,47 @@ export const CARD_PROGRAM_NAMES: Readonly<Record<string, string>> = Object.freez
   'cabal-uruguay': 'Cabal Uruguay',
   'tarjeta-lider': 'Tarjeta Líder (Italmundo)',
   'btg-uruguay-tdc': 'BTG Pactual (ex HSBC)',
+})
+
+/**
+ * The one figure that opens each programme's meta description: its earn rate, or its annual cost
+ * or best discount when that is what sets it apart.
+ *
+ * All 23 descriptions used to share one template ("cómo suma puntos, cuánto vale el punto, costo
+ * anual…"), which told a SERP nothing about any of them. Each line restates figures from the ficha's
+ * own notes and nothing else: `tests/unit/cardProgramPages.test.ts` checks that every number here
+ * appears in that programme's notes, so a ficha that changes turns its headline red.
+ */
+export const CARD_PROGRAM_HEADLINES: Readonly<Record<string, string>> = Object.freeze({
+  'brou-recompensa': '1 punto cada $U 100 pagados con crédito y cada punto vale $U 1',
+  'club-tienda-inglesa-puntos': '15 puntos cada $U 900 en Tienda Inglesa y cada punto vale $U 1',
+  'scotia-puntos': 'de 1 punto cada $U 150 a 1 cada $U 80 según la tarjeta; el punto vale $U 1',
+  'santander-soy-santander-puntos':
+    'de 1 punto cada $U 100 a 1 cada $U 70 según el segmento; el punto vale $U 1',
+  'bbva-puntos-bbva': '1 punto cada $100 (cada $80 en la gama alta) y el punto vale $1',
+  'bbva-comunidad-plus':
+    'suma Puntos BBVA y Puntos Plus a la vez; 743 UI al año desde el segundo año',
+  'itau-volar': '1 milla por cada US$ 1 y UI 864 al año después del primer año',
+  'itau-volar-platinum': '1 milla por cada US$ 1 y UI 1.058 al año después del primer año',
+  'itau-latam-pass-platinum':
+    '1 milla LATAM Pass por cada US$ 1 y UI 1.058 al año después del primer año',
+  'itau-volar-black': '1 milla por cada US$ 1 y UI 1.454 al año, con el primer año sin costo',
+  'scotia-puntos-american-express': '1 punto por cada dólar y cargo anual desde UI 1.000',
+  'scotia-connectmiles': '1 milla por cada US$ 1 y cargo anual de UI 1.000 a UI 2.100',
+  'itau-latam-pass-internacional':
+    '1 milla LATAM Pass cada US$ 2 y UI 864 al año después del primer año',
+  'oca-oca-blue': '1 Metro cada $U 104 con OCA Blue y $U 0,20 por Metro al canjear',
+  'scotia-club-card-tienda-inglesa': '30 puntos cada $900 en Tienda Inglesa y el punto vale $1 ahí',
+  'pronto-visa': '1 punto cada $30 de compra y 1.000 puntos de bienvenida',
+  'mas-grupo-disco-sumaclub': '2 puntos cada $420 en Disco, Devoto y Géant y 1 cada $650 afuera',
+  'creditel-credipuntos':
+    '1 Credipunto cada $25 en compras y hasta 20% de descuento todos los días',
+  'passcard-puntos-pass':
+    '1 punto cada $100 (1 punto = $1) y 25% a 30% por rubro de lunes a viernes',
+  'tarjeta-anda': 'sin costo anual y 1 punto cada $U 40 gastados con la tarjeta',
+  'cabal-uruguay': '50% en cine y 40% en medicamentos con receta, sin programa de puntos publicado',
+  'tarjeta-lider': 'hasta 30% en supermercados y 25% en combustible (nivel Platino)',
+  'btg-uruguay-tdc': 'Visa Internacional US$ 85 al año + IVA y sin programa de puntos',
 })
 
 /** What the programme pays back in, read off its own programme name. */
@@ -157,8 +199,9 @@ function issuerKey(id: string): string | null {
 export function buildCardProgramPage(program: CardProgram): CardProgramPageModel {
   const path = cardProgramPagePath(program.id)
   const name = CARD_PROGRAM_NAMES[program.id]
-  if (!path || !name) {
-    throw new Error(`El programa ${program.id} no tiene slug o nombre de página`)
+  const headline = CARD_PROGRAM_HEADLINES[program.id]
+  if (!path || !name || !headline) {
+    throw new Error(`El programa ${program.id} no tiene slug, nombre o titular de página`)
   }
 
   const ranked = rankedPrograms()
@@ -199,11 +242,14 @@ export function buildCardProgramPage(program: CardProgram): CardProgramPageModel
 
   const heading = `${name}: ${noun ? `cómo suma ${noun}, ` : ''}cuánto cuesta y qué beneficios tiene`
 
-  const description = normalizeSpaces(
-    `${name}: ${
-      noun ? `cómo suma ${noun}, ${program.pointValueNote ? `cuánto vale ${pointWord}, ` : ''}` : ''
-    }costo anual y descuentos. Puesto ${self.rank} de ${of} en nuestro ranking de tarjetas de crédito de Uruguay (${self.overall}/100), revisado el ${reviewedLabel}.`
-  )
+  // Opens with the programme's own figure, so the part a SERP keeps says something no other card
+  // page says; each rung drops the least important clause until it fits.
+  const description = fitDescription([
+    `${name}: ${headline}. Puesto ${self.rank} de ${of} en nuestro ranking de tarjetas de crédito (${self.overall}/100), revisado el ${reviewedLabel}.`,
+    `${name}: ${headline}. Puesto ${self.rank} de ${of} en nuestro ranking (${self.overall}/100), revisado el ${reviewedLabel}.`,
+    `${name}: ${headline}. Puesto ${self.rank} de ${of} en nuestro ranking (${self.overall}/100).`,
+    `${name}: ${headline}.`,
+  ])
 
   const lead = normalizeSpaces(
     `${program.name} está ${self.rank}º de ${of} en nuestro ranking de tarjetas de crédito de Uruguay, con ${self.overall} puntos sobre 100 (tier ${tier}). Ideal para ${lowerFirst(
@@ -217,7 +263,9 @@ export function buildCardProgramPage(program: CardProgram): CardProgramPageModel
     { label: 'Redes', value: networks },
     { label: 'Programa', value: program.pointsProgramName },
     { label: 'Cómo acumula', value: program.earnRateNote },
-    ...(program.pointValueNote
+    // A card with no points programme (Cabal, Líder) still carries a pointValueNote that says "No
+    // aplica"; asking what its point is worth would contradict the ficha. Gated on the noun.
+    ...(noun && program.pointValueNote
       ? [{ label: `Cuánto vale ${pointWord}`, value: program.pointValueNote }]
       : []),
     { label: 'Cómo se canjea', value: program.redemptionNote },
@@ -251,7 +299,7 @@ export function buildCardProgramPage(program: CardProgram): CardProgramPageModel
         : `¿${name} tiene programa de puntos?`,
       answer: ensurePeriod(program.earnRateNote),
     },
-    ...(program.pointValueNote
+    ...(noun && program.pointValueNote
       ? [
           {
             id: 'valor',
@@ -333,11 +381,12 @@ export function buildCardProgramPage(program: CardProgram): CardProgramPageModel
       url: source.url,
     }))
   )
+  // Only what is true of every programme without a link: the ranking cites none of its own. The
+  // old "la nota de arriba dice de dónde sale cada dato" overclaimed for Cabal and Líder, whose
+  // notes are corrections, not sourcing.
   const sourcesNote = sources.length
     ? null
-    : program.note
-      ? 'El ranking no enlaza una fuente propia para esta ficha: la nota de arriba dice de dónde sale cada dato.'
-      : 'El ranking no enlaza una fuente propia para esta ficha.'
+    : 'El ranking no cita una fuente propia para este programa.'
 
   return {
     id: program.id,

@@ -29,8 +29,10 @@ import {
 } from '../../utils/entityPageSlugs'
 import {
   BRAND_SUFFIX,
+  MAX_DESCRIPTION,
   MAX_TITLE,
   TITLE_BUDGET,
+  fitDescription,
   comparisonLinks,
   dateLabel,
   ensurePeriod,
@@ -164,6 +166,13 @@ describe('the per-family path helpers', () => {
 describe('the shared copy helpers', () => {
   it('budgets titles for the brand the title template appends', () => {
     expect(TITLE_BUDGET).toBe(MAX_TITLE - BRAND_SUFFIX.length)
+  })
+
+  it('takes the richest description that fits the SERP', () => {
+    const long = 'y'.repeat(MAX_DESCRIPTION + 1)
+    expect(fitDescription([long, 'Corta y con la cifra'])).toBe('Corta y con la cifra')
+    expect(fitDescription([false, 'Única'])).toBe('Única')
+    expect(fitDescription([long])).toBe(long)
   })
 
   it('takes the richest title that fits, and never drops the name', () => {

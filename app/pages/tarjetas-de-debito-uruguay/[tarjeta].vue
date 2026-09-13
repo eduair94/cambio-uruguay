@@ -23,7 +23,7 @@
               </VChip>
               <VChip v-if="page.balanceYield.available" size="small" variant="outlined">
                 <VIcon start size="small">mdi-chart-line</VIcon>
-                El saldo rinde (pesos)
+                El saldo rinde
               </VChip>
               <VChip v-if="page.estimate" size="small" variant="outlined">
                 <VIcon start size="small">mdi-alert-outline</VIcon>

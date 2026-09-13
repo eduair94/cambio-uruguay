@@ -153,6 +153,32 @@ function commissionValue(card: DebitCard): string {
 }
 
 /**
+ * The commission's percentage and fixed fee only, for the worked purchase's commission row.
+ *
+ * `commissionValue()` already ends in "+ IVA 22% sobre la comisión", and the IVA gets a row of
+ * its own right below, so reusing it printed the IVA twice ("Comisión (0% (sin recargo))" for the
+ * cards with none).
+ */
+function commissionRateLabel(card: DebitCard): string {
+  const fixed = card.cargoFijoUsd ?? 0
+  return `${formatNumberEs(card.comisionExteriorPct ?? 0)}%${fixed > 0 ? ` + ${formatUsd(fixed)} fijo` : ''}`
+}
+
+/**
+ * What the ficha says about IVA on this card's commission, for the ranking sentence.
+ *
+ * Stated per card and only as its data says it: the ranking itself leaves IVA out, because the
+ * tariffs are not equally explicit about it and ranking on it would rank the wording.
+ */
+function ivaSentence(card: DebitCard): string {
+  if (card.ivaSobreComision) return `Esta tarjeta suma además IVA ${IVA_PCT}% sobre la comisión.`
+  if ((card.comisionExteriorPct ?? 0) > 0 || (card.cargoFijoUsd ?? 0) > 0) {
+    return 'El tarifario de esta tarjeta no explicita IVA sobre la comisión.'
+  }
+  return ''
+}
+
+/**
  * Whether IVA lands on the commission, worded for the case at hand.
  *
  * A card that charges a commission with `ivaSobreComision: false` is BROU's, whose tariff does not
@@ -169,18 +195,29 @@ function ivaValue(card: DebitCard): string {
 
 interface ExampleRow {
   card: DebitCard
-  subtotalUsd: number
+  /** The published percentage plus fixed fee on the example purchase, WITHOUT IVA. */
+  commissionUsd: number
 }
 
-/** The worked purchase for every card that publishes a commission, cheapest first. */
+/**
+ * Every card that publishes a commission, cheapest first by the percentage and fixed fee it
+ * publishes, IVA left out.
+ *
+ * Ranking with IVA ranked the wording of the tariffs, not the cards: BROU's says nothing about IVA
+ * on this commission and Scotiabank's page "no lo deletrea" either, yet one carries
+ * `ivaSobreComision: true` and the other `false`, and the same 3% came out 5th and 6th. The
+ * figures stay as verified; IVA is stated per card, as each ficha states it.
+ */
 export function debitExampleTable(): ExampleRow[] {
   return DEBIT_CARDS.filter(card => card.comisionExteriorPct !== null)
     .map(card => ({
       card,
-      subtotalUsd: estimateIntlCost({ purchaseUsd: DEBIT_EXAMPLE_USD, card, fxVenta: 1 })
-        .subtotalUsd,
+      commissionUsd: estimateIntlCost({ purchaseUsd: DEBIT_EXAMPLE_USD, card, fxVenta: 1 })
+        .comisionUsd,
     }))
-    .sort((a, b) => a.subtotalUsd - b.subtotalUsd || a.card.name.localeCompare(b.card.name, 'es'))
+    .sort(
+      (a, b) => a.commissionUsd - b.commissionUsd || a.card.name.localeCompare(b.card.name, 'es')
+    )
 }
 
 function exampleFor(card: DebitCard, table: readonly ExampleRow[]): DebitExample | null {
@@ -190,15 +227,17 @@ function exampleFor(card: DebitCard, table: readonly ExampleRow[]): DebitExample
   if (!mine || !cheapest) return null
 
   const cost = estimateIntlCost({ purchaseUsd: DEBIT_EXAMPLE_USD, card, fxVenta: 1 })
-  const rank = 1 + table.filter(row => row.subtotalUsd < mine.subtotalUsd - CENT).length
+  const rank = 1 + table.filter(row => row.commissionUsd < mine.commissionUsd - CENT).length
   const tied = table
-    .filter(row => row.card.id !== card.id && Math.abs(row.subtotalUsd - mine.subtotalUsd) < CENT)
+    .filter(
+      row => row.card.id !== card.id && Math.abs(row.commissionUsd - mine.commissionUsd) < CENT
+    )
     .map(row => row.card.name)
   const of = table.length
 
   const rows: DebitExampleRow[] = [
     { label: 'Compra en el exterior', value: formatUsd(cost.purchaseUsd) },
-    { label: `Comisión (${commissionValue(card)})`, value: formatUsd(cost.comisionUsd) },
+    { label: `Comisión (${commissionRateLabel(card)})`, value: formatUsd(cost.comisionUsd) },
     ...(card.ivaSobreComision
       ? [{ label: `IVA ${IVA_PCT}% sobre la comisión`, value: formatUsd(cost.ivaUsd) }]
       : []),
@@ -206,18 +245,19 @@ function exampleFor(card: DebitCard, table: readonly ExampleRow[]): DebitExample
   ]
 
   const cheapestNames = table
-    .filter(row => Math.abs(row.subtotalUsd - cheapest.subtotalUsd) < CENT)
+    .filter(row => Math.abs(row.commissionUsd - cheapest.commissionUsd) < CENT)
     .map(row => row.card.name)
+  const basis = 'Por la comisión que publica (porcentaje y cargo fijo, sin el IVA)'
   const lead =
     rank === 1
-      ? `En comisión está entre las más baratas del ranking: ninguna de las ${of} tarjetas cobra menos por una compra de ${formatUsd(
+      ? `${basis} está entre las más baratas del ranking: ninguna de las ${of} tarjetas cobra menos por una compra de ${formatUsd(
           DEBIT_EXAMPLE_USD
         )}${tied.length ? `, y empata con ${joinSpanishList(tied)}` : ''}.`
-      : `En comisión queda ${rank}ª de ${of} para una compra de ${formatUsd(DEBIT_EXAMPLE_USD)}${
+      : `${basis} queda ${rank}ª de ${of} para una compra de ${formatUsd(DEBIT_EXAMPLE_USD)}${
           tied.length ? `, empatada con ${joinSpanishList(tied)}` : ''
         }; ${cheapestNames.length > 1 ? 'las más baratas en ese punto son' : 'la más barata en ese punto es'} ${joinSpanishList(
           cheapestNames
-        )}, con ${formatUsd(cheapest.subtotalUsd)}.`
+        )}, con ${formatUsd(cheapest.commissionUsd)} de comisión.`
 
   return {
     purchaseUsd: cost.purchaseUsd,
@@ -227,7 +267,9 @@ function exampleFor(card: DebitCard, table: readonly ExampleRow[]): DebitExample
     rank,
     of,
     rows,
-    position: `${lead} La comparación es sólo de comisión: el costo de pasar pesos a dólares va aparte y depende de cómo convierte cada emisor.`,
+    position: normalizeSpaces(
+      `${lead} ${ivaSentence(card)} La comparación es sólo de comisión: el costo de pasar pesos a dólares va aparte y depende de cómo convierte cada emisor.`
+    ),
   }
 }
 

@@ -8,19 +8,23 @@
 // assembled from its fields, and a field the catalogue lacks is said to be unpublished, never
 // filled in.
 //
-// The worked 2 kg parcel is costed by `courierReferenceCost` from the comparativas module, the same
-// function behind /comparativas/couriers/<par>, so a courier's page and its head-to-heads can never
-// quote two different prices for the same parcel.
+// The worked 2 kg parcel comes from `courierParcelQuote`, which follows each courier's own note: a
+// rate published "todo incluido" gets nothing added on top, a handling fee published "+IVA" gets its
+// IVA, and a fee the note lists on top is shown next to the total. When that fee depends on
+// something a generic parcel does not fix, the total is shown as a floor and the courier is left
+// out of the price ranking rather than ranked on a price it may not honour.
 //
 // PURE module (no Vue/Nuxt runtime, relative imports only): the page stays thin and vitest
 // exercises every courier's copy directly.
 
-import { COURIER_REFERENCE_KG, courierReferenceCost, getComparativaFamily } from './comparativas'
+import { COURIER_REFERENCE_KG } from './comparativas'
 import {
   COURIERS,
   COURIER_RATES_VERIFIED_AT,
   POSTAL_SURCHARGE,
+  courierParcelQuote,
   type Courier,
+  type CourierExtraFee,
 } from './courierShipping'
 import { ENTITY_PAGE_ROUTES, courierPagePath, entityIdForSlug } from './entityPageSlugs'
 import {
@@ -28,6 +32,7 @@ import {
   comparisonLinks,
   dateLabel,
   ensurePeriod,
+  fitDescription,
   fitTitle,
   formatRating,
   formatUsd,
@@ -42,6 +47,7 @@ import {
   type EntityLink,
   type EntitySource,
 } from './entityPages'
+import { IVA_TASA_BASICA } from './ivaTarjeta'
 import type { ReviewSource } from './reviews'
 
 const ROUTE = ENTITY_PAGE_ROUTES.couriers
@@ -53,21 +59,28 @@ const CENT = 0.005
 export interface CourierParcelRow {
   label: string
   value: string
+  /** `total` for the worked total; `aside` for a published fee shown next to it, not added. */
+  kind?: 'total' | 'aside'
 }
 
-/** The reference parcel, costed with this courier's published tariff. */
+/** The reference parcel, costed with this courier's published tariff and its own note. */
 export interface CourierReferenceParcel {
   kg: number
   tariffUsd: number
+  baseIvaUsd: number
   surchargeUsd: number
   totalUsd: number
-  /** 1-based position by total among the couriers that publish a per-kg tariff; ties share it. */
-  rank: number
-  /** How many couriers publish a per-kg tariff. */
+  /** `false` when a published fee may apply that a generic parcel cannot price: the total is a floor. */
+  complete: boolean
+  /** 1-based position among the couriers with a complete price; `null` when this one has none. */
+  rank: number | null
+  /** How many couriers have a complete price for the parcel. */
   of: number
   rows: CourierParcelRow[]
-  /** Where this courier lands among the others, in one or two sentences. */
+  /** Where this courier lands among the others, or why it is not ranked. */
   position: string
+  /** What the note changes about the arithmetic, one sentence each. */
+  caveats: string[]
   /** `position` plus the caveats a reader needs before trusting the number. */
   comparison: string
 }
@@ -84,6 +97,8 @@ export interface CourierSurcharge {
   faqPath: string
   source: string
   sourceUrl: string
+  /** `true` when this courier publishes its rate as all-inclusive: the page adds no surcharge. */
+  included: boolean
 }
 
 export interface CourierPageModel {
@@ -127,74 +142,139 @@ interface ReferenceRow {
 }
 
 /**
- * What the reference parcel costs with every courier that publishes a per-kg tariff, cheapest
- * first. A courier that only quotes through its own calculator has no row: there is nothing
- * published to compute from, and inventing a price is what this family must never do.
+ * The couriers whose reference parcel has a complete price, cheapest first. A courier that only
+ * quotes through its own calculator has no row (there is nothing published to compute from), and
+ * neither does one whose note lists a fee a generic parcel cannot price: ranking it on the part it
+ * can price would put it above couriers that are actually cheaper.
  */
 export function courierReferenceTable(): ReferenceRow[] {
-  const entities = getComparativaFamily('couriers')?.entities ?? []
   return COURIERS.flatMap(courier => {
-    const entity = entities.find(candidate => candidate.id === courier.id)
-    const totalUsd = entity ? courierReferenceCost(entity) : null
-    return totalUsd === null ? [] : [{ courier, totalUsd }]
+    const quote = courierParcelQuote(courier, COURIER_REFERENCE_KG)
+    return quote?.complete ? [{ courier, totalUsd: quote.totalUsd }] : []
   }).sort((a, b) => a.totalUsd - b.totalUsd || a.courier.name.localeCompare(b.courier.name, 'es'))
+}
+
+/** `Despacho de aduana (hasta 800)`: a fee's label with the note's own qualifier. */
+function feeLabel(fee: CourierExtraFee): string {
+  return fee.when ? `${fee.label} (${fee.when})` : fee.label
+}
+
+/** `~US$ 7,50` or `US$ 75,00`, marking an amount the note gives as approximate. */
+function feeAmount(fee: CourierExtraFee): string {
+  return `${fee.approximate ? '~' : ''}${formatUsd(fee.usd)}`
+}
+
+/** `despacho de aduana de US$ 75,00 (hasta 800) o US$ 135,00 (más de 800)`, grouped by label. */
+function feesText(fees: readonly CourierExtraFee[]): string {
+  const labels = [...new Set(fees.map(fee => fee.label))]
+  return joinSpanishList(
+    labels.map(label => {
+      const amounts = fees
+        .filter(fee => fee.label === label)
+        .map(fee => `${feeAmount(fee)}${fee.when ? ` (${fee.when})` : ''}`)
+      return `${lowerFirst(label)} de ${joinSpanishList(amounts, 'o')}`
+    })
+  )
+}
+
+/** The handling fee as a value: `US$ 5,00 + IVA`, `Sin cargo fijo` or `No publica cargo fijo`. */
+function baseValue(courier: Courier): string {
+  if (courier.baseUsd === null) return 'No publica cargo fijo'
+  if (courier.baseUsd === 0) return 'No cobra cargo fijo aparte'
+  return `${formatUsd(courier.baseUsd)}${courier.baseIvaExcluded ? ' + IVA' : ''}`
 }
 
 function referenceParcel(
   courier: Courier,
   table: readonly ReferenceRow[]
 ): CourierReferenceParcel | null {
-  const perKg = courier.perKgUsd
-  const mine = table.find(row => row.courier.id === courier.id)
-  const cheapest = table[0]
-  if (perKg === null || !mine || !cheapest) return null
-
   const kg = COURIER_REFERENCE_KG
-  const weightUsd = perKg * kg
-  const tariffUsd = weightUsd + (courier.baseUsd ?? 0)
-  const surchargeUsd = mine.totalUsd - tariffUsd
-  const rank = 1 + table.filter(row => row.totalUsd < mine.totalUsd - CENT).length
-  const tied = table
-    .filter(row => row.courier.id !== courier.id && Math.abs(row.totalUsd - mine.totalUsd) < CENT)
-    .map(row => row.courier.name)
-  const of = table.length
+  const quote = courierParcelQuote(courier, kg)
+  const perKg = courier.perKgUsd
+  if (!quote || perKg === null) return null
+
+  const { label: surchargeLabel, ratePct } = POSTAL_SURCHARGE
+  const optional = quote.pendingFees.filter(fee => fee.kind === 'optional')
+  const conditional = quote.pendingFees.filter(fee => fee.kind === 'conditional')
+  const conditionalLabels = [...new Set(conditional.map(fee => lowerFirst(fee.label)))]
 
   const rows: CourierParcelRow[] = [
-    { label: `${kg} kilos a ${formatUsd(perKg)} el kilo`, value: formatUsd(weightUsd) },
+    { label: `${kg} kilos a ${formatUsd(perKg)} el kilo`, value: formatUsd(quote.weightUsd) },
+    { label: 'Cargo fijo por envío', value: baseValue(courier) },
+    { label: 'Tarifa del envío', value: formatUsd(quote.tariffUsd) },
     {
-      label: 'Cargo fijo por envío',
-      value: courier.baseUsd === null ? 'No publicado' : formatUsd(courier.baseUsd),
+      label: `${surchargeLabel} (${ratePct}% sobre la tarifa)`,
+      value: courier.rateIncludesSurcharge
+        ? 'No se suma: tarifa todo incluido'
+        : formatUsd(quote.surchargeUsd),
     },
-    { label: 'Tarifa del envío', value: formatUsd(tariffUsd) },
+    ...(quote.baseIvaUsd > 0
+      ? [
+          {
+            label: `IVA ${IVA_TASA_BASICA}% sobre el cargo fijo`,
+            value: formatUsd(quote.baseIvaUsd),
+          },
+        ]
+      : []),
     {
-      label: `${POSTAL_SURCHARGE.label} (${POSTAL_SURCHARGE.ratePct}% sobre la tarifa)`,
-      value: formatUsd(surchargeUsd),
+      label: quote.complete ? 'Total del envío' : `Total sin ${joinSpanishList(conditionalLabels)}`,
+      value: formatUsd(quote.totalUsd),
+      kind: 'total',
     },
-    { label: 'Total del envío', value: formatUsd(mine.totalUsd) },
+    ...quote.pendingFees.map(fee => ({
+      label: `Aparte: ${lowerFirst(feeLabel(fee))}`,
+      value: feeAmount(fee),
+      kind: 'aside' as const,
+    })),
   ]
 
+  const mine = table.find(row => row.courier.id === courier.id)
+  const cheapest = table[0]
+  const of = table.length
+  let rank: number | null = null
   let position: string
-  if (rank === 1) {
-    const runnerUp = table.find(
-      row => row.courier.id !== courier.id && !tied.includes(row.courier.name)
-    )
-    position = tied.length
-      ? `Para ${kg} kilos es el más barato de los ${of} couriers que publican tarifa por kilo, empatado con ${joinSpanishList(tied)}.`
-      : `Para ${kg} kilos es el más barato de los ${of} couriers que publican tarifa por kilo${
-          runnerUp ? `; le sigue ${runnerUp.courier.name}, con ${formatUsd(runnerUp.totalUsd)}` : ''
-        }.`
+  if (mine && cheapest) {
+    rank = 1 + table.filter(row => row.totalUsd < mine.totalUsd - CENT).length
+    const tied = table
+      .filter(row => row.courier.id !== courier.id && Math.abs(row.totalUsd - mine.totalUsd) < CENT)
+      .map(row => row.courier.name)
+    if (rank === 1) {
+      const runnerUp = table.find(
+        row => row.courier.id !== courier.id && !tied.includes(row.courier.name)
+      )
+      position = tied.length
+        ? `Para ${kg} kilos es el más barato de los ${of} couriers con un precio completo publicado, empatado con ${joinSpanishList(tied)}.`
+        : `Para ${kg} kilos es el más barato de los ${of} couriers con un precio completo publicado${
+            runnerUp
+              ? `; le sigue ${runnerUp.courier.name}, con ${formatUsd(runnerUp.totalUsd)}`
+              : ''
+          }.`
+    } else {
+      position = `Para ${kg} kilos queda ${rank}º de ${of} entre los couriers con un precio completo publicado${
+        tied.length ? `, empatado con ${joinSpanishList(tied)}` : ''
+      }. El más barato para ese paquete es ${cheapest.courier.name}, con ${formatUsd(cheapest.totalUsd)}.`
+    }
   } else {
-    position = `Para ${kg} kilos queda ${rank}º de ${of} entre los couriers que publican tarifa por kilo${
-      tied.length ? `, empatado con ${joinSpanishList(tied)}` : ''
-    }. El más barato para ese paquete es ${cheapest.courier.name}, con ${formatUsd(cheapest.totalUsd)}.`
+    position = `No entra en el orden por precio: su tarifa publica además ${feesText(conditional)}, que no se puede asignar a un paquete genérico. El total de arriba es un piso, no un precio.`
   }
+
+  const caveats = [
+    courier.baseUsd === null
+      ? `${courier.name} no publica cargo fijo por envío, así que la cuenta no suma ninguno.`
+      : '',
+    courier.rateIncludesSurcharge
+      ? `${courier.name} publica su tarifa como todo incluido, así que la cuenta no le suma el ${ratePct}% de ${surchargeLabel} aparte.`
+      : '',
+    quote.baseIvaUsd > 0
+      ? `Su cargo fijo se publica más IVA, y la cuenta le suma el ${IVA_TASA_BASICA}%.`
+      : '',
+    optional.length ? `No suma lo que su tarifa cobra aparte: ${feesText(optional)}.` : '',
+  ].filter(Boolean)
 
   const comparison = normalizeSpaces(
     [
       position,
-      courier.baseUsd === null
-        ? `${courier.name} no publica un cargo fijo aparte, así que la cuenta no lo suma.`
-        : '',
+      ...caveats,
       'La cuenta usa la escala de paquete chico de su tarifa: para paquetes más pesados, mirá los tramos en la letra chica o en el sitio del courier.',
       'No incluye los impuestos de aduana, que dependen del valor de lo que compraste y no del courier.',
     ].join(' ')
@@ -202,13 +282,16 @@ function referenceParcel(
 
   return {
     kg,
-    tariffUsd,
-    surchargeUsd,
-    totalUsd: mine.totalUsd,
+    tariffUsd: quote.tariffUsd,
+    baseIvaUsd: quote.baseIvaUsd,
+    surchargeUsd: quote.surchargeUsd,
+    totalUsd: quote.totalUsd,
+    complete: quote.complete,
     rank,
     of,
     rows,
     position,
+    caveats,
     comparison,
   }
 }
@@ -232,6 +315,10 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
   const table = courierReferenceTable()
   const reference = referenceParcel(courier, table)
   const rate = POSTAL_SURCHARGE.ratePct
+  const surchargeLabel = POSTAL_SURCHARGE.label
+  const extraFees = courier.extraFees ?? []
+  const conditional = extraFees.filter(fee => fee.kind === 'conditional')
+  const ivaOnBase = Boolean(courier.baseIvaExcluded && base)
 
   const title = fitTitle(
     perKg !== null
@@ -253,30 +340,64 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
   if (questions.length === 1 && note) questions.push('qué condiciones publica')
   const heading = `${name}: ${joinSpanishList(questions)}`
 
-  const baseShort =
-    base === null ? '' : base === 0 ? ' sin cargo fijo' : ` más ${formatUsd(base)} por envío`
-  const description = normalizeSpaces(
-    perKg !== null && reference
-      ? `${name} cobra ${formatUsd(perKg)} por kilo${baseShort}${
-          transit ? ` y declara ${transit} de demora` : ''
-        } (tarifa verificada el ${verifiedLabel}). Un paquete de ${reference.kg} kg sale ${formatUsd(
-          reference.totalUsd
-        )} con el ${rate}% de ley.`
-      : `${name} no publica una tarifa fija por kilo: cotiza cada envío en ${websiteHost}.${
-          ratingLabel ? ` Reputación de ${ratingLabel} sobre 5 en reseñas públicas.` : ''
-        } Sus condiciones${hasOpinions ? ', opiniones' : ''} y cómo se compara con otros couriers de Uruguay.`
-  )
+  // The description leads with the figure people search for, so the part the SERP keeps is the
+  // price. Each rung drops the least important clause until it fits.
+  const baseWords =
+    base === null
+      ? ', sin cargo fijo publicado'
+      : base === 0
+        ? ', sin cargo fijo'
+        : ` más ${formatUsd(base)}${ivaOnBase ? ' + IVA' : ''} de cargo fijo`
+  let description: string
+  if (reference && perKg !== null && reference.complete) {
+    const totalWords = courier.rateIncludesSurcharge
+      ? 'con su tarifa todo incluido'
+      : `con el ${rate}% de ${surchargeLabel}${ivaOnBase ? ' y el IVA del cargo fijo' : ''}`
+    const opening = `${name}: un paquete de ${reference.kg} kg sale ${formatUsd(reference.totalUsd)} ${totalWords}.`
+    description = fitDescription([
+      `${opening} ${formatUsd(perKg)} el kilo${baseWords}${transit ? `, ${transit} de demora` : ''}. Tarifa del ${verifiedLabel}.`,
+      `${opening} ${formatUsd(perKg)} el kilo${baseWords}. Tarifa del ${verifiedLabel}.`,
+      `${opening} ${formatUsd(perKg)} el kilo${baseWords}.`,
+      `${opening} Tarifa del ${verifiedLabel}.`,
+      opening,
+    ])
+  } else if (reference && perKg !== null) {
+    const pendingLabels = joinSpanishList([
+      ...new Set(conditional.map(fee => lowerFirst(fee.label))),
+    ])
+    const amounts = joinSpanishList(
+      conditional.map(fee => feeAmount(fee)),
+      'o'
+    )
+    const opening = `${name}: ${formatUsd(perKg)} el kilo${baseWords}; un paquete de ${reference.kg} kg sale ${formatUsd(reference.totalUsd)} sin ${pendingLabels}, que va aparte (${amounts}).`
+    description = fitDescription([
+      `${opening} Tarifa del ${verifiedLabel}.`,
+      opening,
+      `${name}: ${formatUsd(perKg)} el kilo${baseWords}; ${pendingLabels} aparte (${amounts}).`,
+    ])
+  } else {
+    description = fitDescription([
+      ratingLabel &&
+        `${name}: ${ratingLabel} sobre 5 en reseñas públicas. No publica tarifa por kilo: cotiza cada envío en ${websiteHost}. Qué dicen los usuarios y cómo se compara.`,
+      `${name} no publica tarifa por kilo: cotiza cada envío en ${websiteHost}. Sus condiciones${
+        hasOpinions ? ', opiniones' : ''
+      } y cómo se compara con otros couriers de Uruguay.`,
+      `${name} no publica tarifa por kilo: cotiza cada envío en ${websiteHost}.`,
+    ])
+  }
 
+  const baseLead =
+    base === null
+      ? ' y no publica cargo fijo por envío'
+      : base === 0
+        ? ', sin cargo fijo por envío'
+        : `, más ${formatUsd(base)}${ivaOnBase ? ' + IVA' : ''} fijos por envío`
   const lead = normalizeSpaces(
     [
       `${name} es un courier puerta a puerta que funciona como ${lowerFirst(courier.modality)}.`,
       perKg !== null
-        ? `Publica una tarifa de referencia de ${formatUsd(perKg)} por kilo en la escala de paquete chico${
-            base === null
-              ? ' y cotiza caso a caso el cargo fijo'
-              : base === 0
-                ? ', sin cargo fijo por envío'
-                : `, más ${formatUsd(base)} fijos por envío`
+        ? `Publica una tarifa de referencia de ${formatUsd(perKg)} por kilo en la escala de paquete chico${baseLead}${
+            courier.rateIncludesSurcharge ? ', y la presenta como todo incluido' : ''
           }.`
         : `No publica una tarifa fija por kilo: cada envío se cotiza en ${websiteHost}.`,
       transit ? `La demora que declara es de ${transit}.` : 'No publica una demora típica.',
@@ -300,20 +421,22 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
           ? 'No publica tarifa fija: cotiza cada envío en su sitio'
           : `${formatUsd(perKg)}, escala de paquete chico`,
     },
-    {
-      label: 'Cargo fijo por envío',
-      value:
-        base === null
-          ? 'No publica uno aparte: cotiza caso a caso'
-          : base === 0
-            ? 'No cobra cargo fijo aparte'
-            : formatUsd(base),
-    },
+    { label: 'Cargo fijo por envío', value: baseValue(courier) },
+    ...(extraFees.length
+      ? [
+          {
+            label: 'Otros cargos que publica',
+            value: extraFees.map(fee => `${feeLabel(fee)}: ${feeAmount(fee)}`).join('; '),
+          },
+        ]
+      : []),
     { label: 'Demora típica', value: transit ?? 'No la publica' },
     ...(note ? [{ label: 'Letra chica', value: note }] : []),
     {
       label: 'Recargo de ley',
-      value: `${rate}% de ${POSTAL_SURCHARGE.label} sobre ${POSTAL_SURCHARGE.base}`,
+      value: courier.rateIncludesSurcharge
+        ? `Tarifa publicada como todo incluido: esta página no le suma el ${rate}% de ${surchargeLabel} aparte`
+        : `${rate}% de ${surchargeLabel} sobre ${POSTAL_SURCHARGE.base}`,
     },
     {
       label: 'Reputación',
@@ -327,7 +450,7 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
 
   const surcharge: CourierSurcharge = {
     ratePct: rate,
-    label: POSTAL_SURCHARGE.label,
+    label: surchargeLabel,
     name: POSTAL_SURCHARGE.name,
     base: POSTAL_SURCHARGE.base,
     summary: POSTAL_SURCHARGE.summary,
@@ -338,23 +461,28 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
     faqPath: POSTAL_SURCHARGE.faqPath,
     source: POSTAL_SURCHARGE.source,
     sourceUrl: POSTAL_SURCHARGE.sourceUrl,
+    included: Boolean(courier.rateIncludesSurcharge),
   }
 
   const faq: EntityFaq[] = []
   if (perKg !== null) {
     const baseClause =
       base === null
-        ? '; no publica un cargo fijo aparte, lo cotiza caso a caso'
+        ? '; no publica cargo fijo por envío'
         : base === 0
           ? ', sin cargo fijo por envío'
-          : `, más un cargo fijo de ${formatUsd(base)} por envío`
+          : `, más un cargo fijo de ${formatUsd(base)}${ivaOnBase ? ' + IVA' : ''} por envío`
     faq.push({
       id: 'precio-por-kilo',
       question: `¿Cuánto cobra ${name} por kilo?`,
       answer: normalizeSpaces(
         `Según su tarifa publicada, verificada el ${verifiedLabel}, ${name} cobra ${formatUsd(perKg)} por kilo en la escala de paquete chico${baseClause}. ${
           note ? `La letra chica que publica: ${lowerFirst(ensurePeriod(note))}` : ''
-        } Sobre esa tarifa corre además el ${rate}% de ${POSTAL_SURCHARGE.label} (${POSTAL_SURCHARGE.name}).`
+        } ${
+          courier.rateIncludesSurcharge
+            ? `La presenta como todo incluido, así que esta página no le suma el ${rate}% de ${surchargeLabel} aparte.`
+            : `Sobre esa tarifa corre además el ${rate}% de ${surchargeLabel} (${POSTAL_SURCHARGE.name}).`
+        }`
       ),
     })
   } else {
@@ -366,24 +494,30 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
   }
 
   if (reference && perKg !== null) {
+    const terms = [`${formatUsd(perKg)} × ${reference.kg}`]
+    if (base) terms.push(`${formatUsd(base)} de cargo fijo`)
+    if (reference.surchargeUsd > 0) {
+      terms.push(`${formatUsd(reference.surchargeUsd)} del ${rate}% de ${surchargeLabel}`)
+    }
+    if (reference.baseIvaUsd > 0) {
+      terms.push(`${formatUsd(reference.baseIvaUsd)} de IVA sobre el cargo fijo`)
+    }
     faq.push({
       id: 'paquete-de-referencia',
       question: `¿Cuánto sale traer un paquete de ${reference.kg} kilos con ${name}?`,
       answer: normalizeSpaces(
-        `Con la tarifa de referencia, ${formatUsd(reference.totalUsd)}: ${formatUsd(perKg)} × ${reference.kg}${
-          base ? ` + ${formatUsd(base)} de cargo fijo` : ''
-        } = ${formatUsd(reference.tariffUsd)} de tarifa, más ${formatUsd(reference.surchargeUsd)} del ${rate}% de ${POSTAL_SURCHARGE.label}. ${
-          base === null
-            ? `${name} no publica un cargo fijo aparte, así que la cuenta no lo suma.`
-            : ''
-        } No incluye los impuestos de aduana, que dependen del valor de lo que compraste y no del courier.`
+        `Con la tarifa de referencia, ${formatUsd(reference.totalUsd)}${
+          reference.complete ? '' : ` sin contar ${feesText(conditional)}`
+        }: ${terms.join(' + ')}. ${reference.caveats.join(' ')} No incluye los impuestos de aduana, que dependen del valor de lo que compraste y no del courier.`
       ),
     })
-    faq.push({
-      id: 'mas-barato',
-      question: `¿${name} es más barato que otros couriers?`,
-      answer: `${reference.position} La comparación le suma a cada courier el mismo recargo de ley, así que está hecha sobre la misma base.`,
-    })
+    if (reference.rank !== null) {
+      faq.push({
+        id: 'mas-barato',
+        question: `¿${name} es más barato que otros couriers?`,
+        answer: `${reference.position} Cada total sigue la tarifa publicada de cada courier: el ${rate}% de ${surchargeLabel} se suma salvo cuando la tarifa se publica como todo incluido, y el IVA del cargo fijo cuando la tarifa lo aclara.`,
+      })
+    }
   }
 
   if (transit) {
@@ -406,11 +540,19 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
     })
   }
 
-  faq.push({
-    id: 'recargo-de-ley',
-    question: `¿Qué es el ${rate}% de ${POSTAL_SURCHARGE.label} que se suma a la tarifa de ${name}?`,
-    answer: `Es la ${POSTAL_SURCHARGE.name}: ${rate}% sobre ${POSTAL_SURCHARGE.base}. ${POSTAL_SURCHARGE.summary} En la factura puede figurar como ${surcharge.aliases}: es el mismo cargo. Fuente: ${POSTAL_SURCHARGE.source}.`,
-  })
+  faq.push(
+    courier.rateIncludesSurcharge
+      ? {
+          id: 'recargo-de-ley',
+          question: `¿${name} cobra aparte el ${rate}% de ${surchargeLabel}?`,
+          answer: `${name} publica su tarifa como todo incluido, así que la cuenta de esta página no le suma el ${rate}% aparte. Ese ${rate}% es la ${POSTAL_SURCHARGE.name}, que corre sobre ${POSTAL_SURCHARGE.base}. ${POSTAL_SURCHARGE.summary} En la factura puede figurar como ${surcharge.aliases}: es el mismo cargo. Fuente: ${POSTAL_SURCHARGE.source}.`,
+        }
+      : {
+          id: 'recargo-de-ley',
+          question: `¿Qué es el ${rate}% de ${surchargeLabel} que se suma a la tarifa de ${name}?`,
+          answer: `Es la ${POSTAL_SURCHARGE.name}: ${rate}% sobre ${POSTAL_SURCHARGE.base}. ${POSTAL_SURCHARGE.summary} En la factura puede figurar como ${surcharge.aliases}: es el mismo cargo. Fuente: ${POSTAL_SURCHARGE.source}.`,
+        }
+  )
 
   // Siblings: with a published tariff, the couriers whose reference parcel costs closest to this
   // one (the real alternatives at that price); without one, the best-rated.
@@ -453,7 +595,7 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
     { to: '/herramientas/carrito-importacion', label: 'Carrito de importación' },
     {
       to: POSTAL_SURCHARGE.faqPath,
-      label: `Qué es la ${POSTAL_SURCHARGE.label} y cómo controlarla en la factura`,
+      label: `Qué es la ${surchargeLabel} y cómo controlarla en la factura`,
     },
   ]
 

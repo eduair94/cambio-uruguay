@@ -130,6 +130,40 @@ describe('the figures are the ficha’s and the ranking’s', () => {
     }
   })
 
+  it('states the IVA of the example once, in its own row', () => {
+    for (const page of pages) {
+      const card = cardOf(page)
+      if (!page.example) continue
+      const rows = page.example.rows
+      const commission = rows.find(row => row.label.startsWith('Comisión'))!
+      expect(commission.label).not.toContain('IVA')
+      expect(commission.label).not.toContain('((')
+      expect(rows.filter(row => row.label.includes('IVA'))).toHaveLength(
+        card.ivaSobreComision ? 1 : 0
+      )
+    }
+    expect(getDebitCardPage('oca-blue')?.example?.rows[1]?.label).toBe('Comisión (0%)')
+    expect(getDebitCardPage('prex')?.example?.rows[1]?.label).toBe(
+      'Comisión (2,5% + US$ 0,50 fijo)'
+    )
+  })
+
+  it('ranks the commission on the published figures, IVA left out and stated per card', () => {
+    const rankOf = (slug: string) => getDebitCardPage(slug)?.example?.rank
+    // The same published 3% ranks the same, whatever each tariff says or omits about IVA.
+    expect(rankOf('brou-debito')).toBe(rankOf('scotiabank-debito'))
+    expect(rankOf('brou-debito')).toBe(rankOf('santander-debito'))
+    for (const page of pages) {
+      if (!page.example) continue
+      expect(page.example.position).toContain('sin el IVA')
+      const card = cardOf(page)
+      if (card.ivaSobreComision) expect(page.example.position).toContain('suma además IVA')
+      else if ((card.comisionExteriorPct ?? 0) > 0) {
+        expect(page.example.position).toContain('no explicita IVA')
+      }
+    }
+  })
+
   it('answers the dollar-balance question with the ficha’s yes or no', () => {
     for (const page of pages) {
       const answer = page.faq.find(item => item.id === 'saldo-en-dolares')?.answer ?? ''

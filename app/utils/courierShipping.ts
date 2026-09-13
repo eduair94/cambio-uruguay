@@ -6,6 +6,27 @@
 // selector pre-fills a courier's typical per-kg rate which feeds the freight
 // input of the import-tax calculation. Pure functions → unit-testable.
 import { round } from './calculators'
+import { IVA_TASA_BASICA } from './ivaTarjeta'
+
+/**
+ * A fee a courier's own `note` publishes beyond the per-kg rate and the handling fee.
+ *
+ * - `optional`: a service the reference parcel does not need (delivery to the interior). Shown next
+ *   to a worked total, never added into it.
+ * - `conditional`: charged depending on something a generic parcel does not fix (the tier of the
+ *   purchase). A worked total is shown without it and marked incomplete, so the courier stays out of
+ *   any price ranking instead of being ranked on a price it may not honour.
+ */
+export interface CourierExtraFee {
+  /** What the note calls it, e.g. `'Despacho de aduana'`. */
+  label: string
+  usd: number
+  /** The note's own qualifier, when it gives one, e.g. `'hasta 800'`. */
+  when?: string
+  kind: 'optional' | 'conditional'
+  /** `true` when the note gives the amount as approximate (`~`). */
+  approximate?: boolean
+}
 
 export interface Courier {
   id: string
@@ -34,6 +55,14 @@ export interface Courier {
   reviewsNote?: string
   /** Links backing the reputation (Reddit, Trustpilot, Google, ...). */
   reviewSources?: import('./reviews').ReviewSource[]
+  // The three fields below restate what `note` already says, typed so arithmetic can use it. Set one
+  // ONLY when the note carries the words; `tests/unit/courierPages.test.ts` pins each to its note.
+  /** The note publishes the rate as "todo incluido": nothing is added on top, not even the surcharge. */
+  rateIncludesSurcharge?: boolean
+  /** The note publishes the handling fee as "+IVA": basic-rate IVA lands on `baseUsd`. */
+  baseIvaExcluded?: boolean
+  /** Fees the note publishes on top of the per-kg rate and the handling fee. */
+  extraFees?: readonly CourierExtraFee[]
 }
 
 /** Date the surcharge below was last checked against the norm. Bump it when you re-read art. 15. */
@@ -131,6 +160,7 @@ export const COURIERS: Courier[] = [
     website: 'https://www.soycourier.com',
     source: 'https://www.soycourier.com',
     note: 'Tarifa todo incluido (manejo, despacho, seguro y entrega); descuenta el impuesto',
+    rateIncludesSurcharge: true,
     rating: null,
     reviewsNote:
       'Solo testimonios en su propio sitio; sin reseñas independientes verificables (operador nuevo).',
@@ -172,6 +202,7 @@ export const COURIERS: Courier[] = [
     website: 'https://aerobox.com.uy',
     source: 'https://aerobox.com.uy/tarifas/',
     note: '1–500 g US$11,99 fijo; 5–10 kg US$20,5/kg; 10–20 kg US$17,5/kg; +10% TFSPU; manejo US$5+IVA',
+    baseIvaExcluded: true,
     rating: 4.2,
     reviewsNote:
       'Buena atención por WhatsApp y dos vuelos semanales; algunas críticas por precio y cobertura fuera de Montevideo.',
@@ -195,6 +226,10 @@ export const COURIERS: Courier[] = [
     website: 'https://www.casillamia.uy',
     source: 'https://www.casillamia.uy/Tarifas',
     note: 'Por tramos de 500 g; despacho de aduana US$75 (≤800) / US$135 (>800)',
+    extraFees: [
+      { label: 'Despacho de aduana', usd: 75, when: 'hasta 800', kind: 'conditional' },
+      { label: 'Despacho de aduana', usd: 135, when: 'más de 800', kind: 'conditional' },
+    ],
     rating: 1.9,
     reviewsNote:
       'Reputación muy negativa: demoras extremas y mala comunicación pese a ser de los más baratos. El peor calificado del grupo.',
@@ -233,6 +268,7 @@ export const COURIERS: Courier[] = [
     website: 'https://usxcargo.com',
     source: 'https://usxcargo.com',
     note: 'Desde EE.UU. US$17,5/kg; desde Europa US$21,5/kg; envío al interior ~US$7,5',
+    extraFees: [{ label: 'Envío al interior', usd: 7.5, kind: 'optional', approximate: true }],
     rating: 4.7,
     reviewsNote:
       'Muy recomendado en foros por precio competitivo y atención personalizada; quejas por coordinación con entregadores tercerizados.',
@@ -280,6 +316,8 @@ export const COURIERS: Courier[] = [
     website: 'https://www.starboxuruguay.com',
     source: 'https://www.starboxuruguay.com/',
     note: '0–500 g US$17 fijo; 501–999 g US$21; 1–4,99 kg US$21/kg; 5–10 kg US$20/kg; +10% TFSPU; manejo US$5+IVA; interior +US$10',
+    baseIvaExcluded: true,
+    extraFees: [{ label: 'Envío al interior', usd: 10, kind: 'optional' }],
     rating: null,
     reviewsNote: 'Operador menor; sin reseñas independientes verificables a la fecha.',
     reviewSources: [],
@@ -386,4 +424,55 @@ export function shippingCostUsd(perKgUsd: number, baseUsd: number, weightKg: num
   const perKg = Math.max(perKgUsd || 0, 0)
   const base = Math.max(baseUsd || 0, 0)
   return round(base + perKg * kg)
+}
+
+/** A parcel costed from ONE courier's published rate and what its own note says about it. */
+export interface CourierParcelQuote {
+  kg: number
+  weightUsd: number
+  /** The handling fee, net of IVA; `null` when the courier publishes none. */
+  baseUsd: number | null
+  /** Basic-rate IVA on the handling fee, when the note publishes it "+IVA"; else 0. */
+  baseIvaUsd: number
+  /** Weight plus handling fee, net of IVA: what the postal surcharge runs on. */
+  tariffUsd: number
+  /** The postal surcharge; 0 when the note publishes the rate as all-inclusive. */
+  surchargeUsd: number
+  /** Everything that can honestly be added: tariff + surcharge + IVA on the handling fee. */
+  totalUsd: number
+  /** Published fees shown next to the total and never added into it. */
+  pendingFees: readonly CourierExtraFee[]
+  /** `false` when a conditional fee may apply: the total is then a floor, not a price. */
+  complete: boolean
+}
+
+/**
+ * What a `kg` parcel costs with one courier, following its own note instead of a flat formula.
+ *
+ * The flat `(base + perKg·kg) + 10%` model contradicted four notes at once: it added the surcharge
+ * to a rate published "todo incluido", left out the IVA of a handling fee published "+IVA", and
+ * printed a total with no trace of a customs-dispatch fee the note lists. `null` when the courier
+ * publishes no per-kg rate: there is nothing to compute from.
+ */
+export function courierParcelQuote(courier: Courier, kg: number): CourierParcelQuote | null {
+  if (courier.perKgUsd === null) return null
+  const weightUsd = courier.perKgUsd * kg
+  const base = courier.baseUsd ?? 0
+  const baseIvaUsd = courier.baseIvaExcluded ? (base * IVA_TASA_BASICA) / 100 : 0
+  const tariffUsd = weightUsd + base
+  const surchargeUsd = courier.rateIncludesSurcharge
+    ? 0
+    : (tariffUsd * POSTAL_SURCHARGE.ratePct) / 100
+  const pendingFees = courier.extraFees ?? []
+  return {
+    kg,
+    weightUsd,
+    baseUsd: courier.baseUsd,
+    baseIvaUsd,
+    tariffUsd,
+    surchargeUsd,
+    totalUsd: tariffUsd + surchargeUsd + baseIvaUsd,
+    pendingFees,
+    complete: !pendingFees.some(fee => fee.kind === 'conditional'),
+  }
 }

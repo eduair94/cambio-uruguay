@@ -53,9 +53,12 @@
                 </thead>
                 <tbody>
                   <tr
-                    v-for="(row, i) in page.reference.rows"
+                    v-for="row in page.reference.rows"
                     :key="row.label"
-                    :class="{ 'total-row': i === page.reference.rows.length - 1 }"
+                    :class="{
+                      'total-row': row.kind === 'total',
+                      'aside-row': row.kind === 'aside',
+                    }"
                   >
                     <td data-label="">{{ row.label }}</td>
                     <td class="num" data-label="Monto">{{ row.value }}</td>
@@ -112,7 +115,11 @@
             icon="mdi-receipt-text-outline"
           >
             <p class="mb-1">
-              <strong>
+              <strong v-if="page.surcharge.included">
+                {{ page.name }} publica su tarifa como todo incluido: esta página no le suma el
+                {{ page.surcharge.ratePct }}% de {{ page.surcharge.label }} aparte.
+              </strong>
+              <strong v-else>
                 El {{ page.surcharge.ratePct }}% de {{ page.surcharge.label }} que se suma a la
                 tarifa es un tributo.
               </strong>
@@ -134,7 +141,7 @@
             </h2>
             <p class="text-body-2 text-medium-emphasis mt-0 mb-3">
               Cada comparación pone lado a lado la tarifa por kilo, el cargo fijo, la demora y la
-              reputación, con el mismo paquete de referencia para los dos.
+              reputación de los dos couriers.
             </p>
             <div class="d-flex flex-wrap ga-2">
               <VChip
@@ -381,6 +388,11 @@ useHead({
 .entity-table .total-row td {
   font-weight: 700;
   border-top: 2px solid rgba(var(--v-border-color), 0.28);
+}
+/* A fee the note publishes on top: shown next to the total, visibly not part of it. */
+.entity-table .aside-row td {
+  font-size: 0.86rem;
+  color: rgba(var(--v-theme-on-surface), 0.72);
 }
 
 .entity-stars {
