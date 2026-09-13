@@ -81,6 +81,9 @@ describe('layout tail', () => {
     const tail = block('.layout-tail')
     expect(px(tail, 'max-width')).toEqual([cap! - 2 * inline])
     expect(tail).toMatch(/margin(?:-inline)?\s*:\s*(?:0\s+)?auto/)
+    // Y el margen interior del <VContainer> de cada página (DESIGN.md → "The Page Brings Its
+    // Container Rule"): 12 del layout + 16 = la misma columna que el contenido, 28 px del borde.
+    expect(px(tail, 'padding-inline')).toEqual([16])
   })
 
   it('is never released by the routes that release the page cap', () => {

@@ -994,11 +994,13 @@ useSchemaOrg([
   max-width: none;
 }
 /* Ampliaciones, "Seguí leyendo" y newsletter son lectura: conservan el ancho que tienen en
-   cualquier ruta con tope (1280 menos el padding de 12 + 12) aunque la ruta lo haya liberado.
-   Sin esto, a 1958 px en /alquileres-uruguay las tarjetas quedaban a 12 px del borde y el bloque
-   medía 1919 de ancho. En las rutas con tope es un no-op: su caja ya mide 1256. */
+   cualquier ruta con tope (1280 menos el padding de 12 + 12) aunque la ruta lo haya liberado, y
+   el margen interior del <VContainer> de cada página, así caen en la misma columna que el
+   contenido (12 + 16 = 28 px del borde). Sin esto, a 1958 px en /alquileres-uruguay las tarjetas
+   quedaban a 12 px del borde y el bloque medía 1919 de ancho. */
 .layout-tail {
   max-width: 1256px;
   margin-inline: auto;
+  padding-inline: 16px;
 }
 </style>
