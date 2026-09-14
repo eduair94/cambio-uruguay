@@ -128,6 +128,8 @@ Hipótesis: facilitar la resolución de una búsqueda de marca existente con inf
 
 Validación previa a publicación: 112 pruebas pertinentes y lint dirigido aprobados; revisión independiente sin hallazgos materiales. Las dos APIs y doce páginas de la comprobación HTTP respondieron 200 y aprobaron 178 controles de datos, enlaces, fuentes, payload y schema. El nuevo bloque no ofrece intenciones comerciales para BCU. La revisión del navegador confirma los enlaces móviles, su tamaño mínimo de 44 px, las fuentes y el teléfono `tel:+59846224521`. La fuente propia se volvió a leer con HTTP 200 el 14/9 a las 08:06:47 UTC. Una vista desactualizada durante HMR no se reprodujo desde una carga nueva; se conserva el manejo reactivo existente.
 
+El primer run `34821819857` de `52b466ed` no desplegó: la suite completa encontró una expectativa anterior en `openingHoursReales.test.ts` que interpretaba un lunes omitido como cierre confirmado. Se actualiza a «Sin informar», manteniendo los horarios de los días expresos y las pruebas de cierre explícito. Las otras 7.444 pruebas app y el backend aprobaron en esa ejecución.
+
 ## Próximas decisiones
 
 - Verificar las fuentes de la excepción Cambio Principal cuando cambien los datos de origen y, como máximo, en la revisión mensual siguiente. La fecha del 14/9 es una comprobación puntual, no una vigilancia automática de la web propia. La tabla semanal no interpreta ausencia de horario como cierre.

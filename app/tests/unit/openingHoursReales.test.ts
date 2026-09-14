@@ -40,7 +40,7 @@ describe('enumeraciones de días: "A, B y C"', () => {
     const tabla = weeklyHoursTable('Martes, Jueves y Viernes de 13 a 18 hs.')
     expect(tabla[1]!.hours).toBe('13:00 a 18:00') // martes
     expect(tabla[3]!.hours).toBe('13:00 a 18:00') // jueves
-    expect(tabla[0]!.hours).toBe('Cerrado') // lunes, que de verdad cierra
+    expect(tabla[0]!.hours).toBe('Sin informar') // el texto no declara si abre o cierra el lunes
   })
 
   it('no une días cuando entre medio hay un horario', () => {
