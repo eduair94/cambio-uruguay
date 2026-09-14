@@ -68,7 +68,8 @@
         <div class="d-flex align-center flex-wrap ga-2 mb-3">
           <VIcon size="small" color="primary">mdi-compass-outline</VIcon>
           <h2 class="text-subtitle-2 font-weight-bold mb-0">
-            Cuánto se paga hoy por {{ months || 0 }} {{ (months || 0) === 1 ? 'mes' : 'meses' }} en
+            Tasas de referencia para {{ months || 0 }}
+            {{ (months || 0) === 1 ? 'mes' : 'meses' }} en
             {{ money.name }}
           </h2>
         </div>
@@ -157,7 +158,7 @@
         <p class="ref-foot mt-3 mb-0">
           Las dos son <strong>tasas efectivas anuales</strong>. La media del BCU es lo que se pactó
           de verdad en el mes, no algo que puedas contratar; la pizarra del BROU sí se contrata, y
-          es el precio comercial de un banco entre varios. Verificado el
+          es el precio comercial de un banco entre varios. Tasas BROU y BCU verificadas el
           {{ DEPOSIT_REFERENCE_VERIFIED_AT }}.
         </p>
       </VCard>
@@ -275,19 +276,18 @@
             >. Si alguien te ofrece 15% o 20% en pesos, no es un plazo fijo uruguayo.
           </p>
           <p>
-            En todos los tramos en {{ pfBelowCurrenciesText }}, la media que cobran las personas
-            físicas queda por debajo del total del sistema: en pesos a menos de 30 días fue
-            <strong>{{ pct(hl.uyuCortoPersonas) }}</strong> contra {{ pct(hl.uyuCortoTotal) }}. El
-            total incluye a las personas jurídicas, que colocan montos mayores y consiguen mejores
-            tasas en cada tramo. Por eso la referencia que mostramos primero es la de personas
-            físicas: es la fila que te corresponde.
+            Mostramos primero la media de personas físicas. El total del sistema también incluye
+            personas jurídicas y puede quedar por encima, por debajo o igual: en pesos a menos de 30
+            días, las cifras fueron <strong>{{ pct(hl.uyuCortoPersonas) }}</strong> para personas
+            físicas y {{ pct(hl.uyuCortoTotal) }} para el total. Son medias ponderadas de
+            operaciones distintas; la diferencia no demuestra que un tipo de cliente consiga siempre
+            mejores condiciones.
           </p>
-          <p v-for="tie in pfTies" :key="`${tie.currency}-${tie.bucket.label}`">
-            No en todos: en {{ tie.moneda }}, tramo <strong>{{ tie.bucket.label }}</strong
-            >, las dos cifras publicadas empatan ({{ cell(tie.bucket.personaFisica) }} contra
-            {{ cell(tie.bucket.totalSistema) }}). En la planilla la persona física sigue un pelo
-            abajo, pero la diferencia no sobrevive a los dos decimales que el BCU publica, que son
-            los que ves en la tabla de arriba. No lo redondeamos a favor del titular.
+          <p v-for="item in pfExceptions" :key="`${item.currency}-${item.bucket.label}`">
+            En {{ item.moneda }}, tramo <strong>{{ item.bucket.label }}</strong
+            >, la media de personas físicas no queda por debajo:
+            {{ cell(item.bucket.personaFisica) }}, frente a {{ cell(item.bucket.totalSistema) }} del
+            total. Se comparan los valores publicados a dos decimales.
           </p>
           <p>
             Ojo con confundir la media con una oferta. Nadie te vende el promedio: es un dato de
@@ -316,17 +316,17 @@
             {{ hl.minimoPeriodic }}.
           </p>
           <p>
-            <strong>La misma pizarra publica otra cosa en pesos que no es un plazo fijo.</strong>
-            Se llama {{ ahorro.name }} y paga <strong>{{ pct(ahorro.year1) }}</strong> el primer año
-            del contrato, <strong>{{ pct(ahorro.year2) }}</strong> el segundo y
-            <strong>{{ pct(ahorro.year3) }}</strong> el tercero: la tasa de pizarra más una prima
-            por permanencia de {{ pct(ahorro.primaPct2) }} y {{ pct(ahorro.primaPct3) }}
-            <em>sobre esa tasa</em>. Es {{ ahorro.what }}: {{ ahorro.term }}, depósitos mensuales de
-            {{ ahorroMin }} a {{ ahorroMax }} y {{ ahorro.channel }}. No entra en la tabla de arriba
-            —no colocás un monto único ni queda inmovilizado—, pero es la única tasa en pesos de
-            este documento que supera el {{ pct(hl.largoOnline) }}, así que el techo de la tabla no
-            es el techo del banco.
-            {{ ahorro.requirement }}
+            <strong>La misma pizarra incluye {{ ahorro.name }}, un ahorro mensual en pesos.</strong>
+            Publica {{ pct(ahorro.year1) }} para el primer período y {{ pct(ahorro.year2) }} /
+            {{ pct(ahorro.year3) }} con las primas de {{ pct(ahorro.primaPct2) }} /
+            {{ pct(ahorro.primaPct3) }} sobre la tasa. En cada renovación se usa la pizarra vigente
+            entonces: esos últimos porcentajes no están garantizados para años futuros.
+          </p>
+          <p>
+            Es {{ ahorro.term }}, con depósitos mensuales de {{ ahorroMin }} a {{ ahorroMax }} y
+            {{ ahorro.channel }}. El capital está disponible al vencimiento del contrato. No entra
+            en esta tabla porque son aportes mensuales, no la colocación inicial única que simula la
+            calculadora. {{ ahorro.requirement }}
           </p>
           <p>
             Es una pizarra de un banco, no un ranking. Otros bancos publican la suya y cambian sin
@@ -521,16 +521,11 @@ const hl = {
 }
 
 /**
- * El alcance real de "la persona física paga menos que el total del sistema", derivado de la
- * tabla en vez de afirmado. La frase decía "en todos los tramos" y la propia tabla la desmentía:
- * en UI, a 367 días o más, las dos columnas publican 1,73%.
+ * Excepciones a que la media de personas físicas sea menor: pueden ser empates o valores
+ * mayores. La prosa muestra ambas cifras sin inventar una relación fija entre los grupos.
  */
 const CURRENCY_ORDER: DepositCurrency[] = ['UYU', 'USD', 'UI']
-const pfBelowCurrencies = CURRENCY_ORDER.filter(c => pfNotBelowTotal(c).length === 0)
-const pfBelowCurrenciesText = pfBelowCurrencies
-  .map(c => MONEY[c].name)
-  .join(pfBelowCurrencies.length > 2 ? ', ' : ' y ')
-const pfTies = CURRENCY_ORDER.flatMap(c =>
+const pfExceptions = CURRENCY_ORDER.flatMap(c =>
   pfNotBelowTotal(c).map(bucket => ({ currency: c, moneda: MONEY[c].name, bucket }))
 )
 
@@ -655,7 +650,7 @@ const faq = [
   },
   {
     q: `¿${formatNumber(hl.largoOnline)}% es lo máximo que paga el BROU en pesos?`,
-    a: `En plazo fijo sí: el tramo más largo (${hl.largoRango} días) paga ${formatNumber(hl.largoOnline)}% por e-BROU y la pizarra no publica ninguno más largo. Pero el mismo PDF publica ${ahorro.name}, que no es un plazo fijo sino ${ahorro.what}: paga ${formatNumber(ahorro.year1)}% el primer año del contrato, ${formatNumber(ahorro.year2)}% el segundo y ${formatNumber(ahorro.year3)}% el tercero, sumándole a la tasa de pizarra una prima por permanencia de ${formatNumber(ahorro.primaPct2)}% y ${formatNumber(ahorro.primaPct3)}% sobre esa tasa. Es en pesos, con ${ahorro.term}, depósitos mensuales de ${ahorroMin} a ${ahorroMax} y ${ahorro.channel}. ${ahorro.requirement}`,
+    a: `Es el máximo del plazo fijo en pesos de esta pizarra por e-BROU. El PDF también muestra ${ahorro.name}: ${pct(ahorro.year1)} de base y ${pct(ahorro.year2)} / ${pct(ahorro.year3)} con primas. Es ahorro mensual, con capital disponible al vencimiento. Las renovaciones toman la pizarra vigente entonces, más ${pct(ahorro.primaPct2)} / ${pct(ahorro.primaPct3)} sobre esa tasa; no garantizan hoy esos porcentajes futuros.`,
   },
   {
     q: '¿Puedo comparar la tasa de todos los bancos en un cuadro oficial?',

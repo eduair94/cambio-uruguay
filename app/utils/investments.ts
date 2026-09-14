@@ -918,9 +918,11 @@ export const CUSTODY_INSOLVENCY: Readonly<{
 // fuente de verdad tributaria. Ahora salen de `irpfMatrixText()` / `irpfDepositMatrix()`, que las
 // leen de DEPOSIT_RULES: si el legislador toca la escala, el texto se mueve con el cálculo.
 //
-// FUENTES, descargadas y leídas el 2026-08-10:
+// FUENTES: revisión inicial del 2026-08-10. Tasas BCU/BROU y condiciones de Ahorro en Sueldo
+// revalidadas el 2026-09-14; esta actualización no vuelve a verificar la matriz de IRPF ni la
+// metodología de tasas activas.
 //   - BCU — Series estadísticas / Tasas de interés: la planilla `tasas.xls`, hojas "Pasivas $",
-//     "Pasivas UI" y "Pasivas U$S" (último mes publicado: junio de 2026), con sus notas (1), (2)
+//     "Pasivas UI" y "Pasivas U$S" (último mes publicado: julio de 2026), con sus notas (1), (2)
 //     y (3). La página del BCU linkea sólo las pasivas en moneda nacional y en dólares; la hoja de
 //     UI está en el mismo libro aunque no tenga link propio.
 //   - BCU — Tasas medias de interés (listado completo de la biblioteca: 11 archivos, sin
@@ -932,7 +934,8 @@ export const CUSTODY_INSOLVENCY: Readonly<{
 //     pizarra de unidades indexadas. Por eso cada serie lleva su `vigenciaMoneda` y la página la
 //     muestra: decir "vigente al 01/07/2026" en pesos sugiere un cambio de precio que no hubo.
 //   - BROU — el mismo PDF, bajo el mismo título, publica un producto en pesos que NO es un plazo
-//     fijo: "AHORRO EN SUELDO" (5,50% el 1er año del contrato, 6,33% el 2do, 6,88% el 3ro). Va en
+//     fijo: "AHORRO EN SUELDO" (pizarra actual: 5,50%; con primas, 6,33% y 6,88%). Al renovar se
+//     aplica la pizarra vigente en ese momento, no una tasa futura garantizada hoy. Va en
 //     `ahorroEnSueldo` con sus condiciones, leídas de la ficha del producto
 //     (brou.com.uy/personas/inversiones/ahorro-en-sueldo): depósitos mensuales de $500 a $50.000
 //     debitados de una cuenta vista, contrato de un año renovable hasta dos veces, contratación
@@ -942,8 +945,8 @@ export const CUSTODY_INSOLVENCY: Readonly<{
 //     desde el 1/1/2023.
 // Es información de referencia, no asesoramiento financiero. Las tasas comerciales cambian.
 
-/** Fecha en que se descargaron y contrastaron las tasas de referencia de esta sección. */
-export const DEPOSIT_REFERENCE_VERIFIED_AT = '2026-08-10'
+/** Fecha de contraste de las tasas BROU/BCU; no es una nueva verificación de las reglas de IRPF. */
+export const DEPOSIT_REFERENCE_VERIFIED_AT = '2026-09-14'
 
 /** Las tres monedas en las que hay serie del BCU y pizarra de BROU. El euro va aparte. */
 export type DepositCurrency = 'UYU' | 'UI' | 'USD'
@@ -985,8 +988,8 @@ export const BCU_DEPOSIT_RATES: Readonly<{
   seriesUrl: string
   series: Readonly<Record<DepositCurrency, MarketRateSeries>>
 }> = Object.freeze({
-  period: 'junio de 2026',
-  periodIso: '2026-06',
+  period: 'julio de 2026',
+  periodIso: '2026-07',
   scope:
     'Total sistema bancario: BROU, BHU, bancos privados, cooperativas de intermediación financiera y casas financieras en actividad en cada fecha. No hay apertura por banca pública / privada ni por institución.',
   weighting:
@@ -1005,40 +1008,40 @@ export const BCU_DEPOSIT_RATES: Readonly<{
           label: 'Menos de 30 días',
           minDays: 0,
           maxDays: 30,
-          personaFisica: 3.63,
-          totalSistema: 4.63,
+          personaFisica: 4.42,
+          totalSistema: 4.78,
         },
         {
           label: '30 a 60 días',
           minDays: 30,
           maxDays: 61,
-          personaFisica: 4.45,
-          totalSistema: 5.01,
+          personaFisica: 4.38,
+          totalSistema: 5.04,
         },
         {
           label: '61 a 90 días',
           minDays: 61,
           maxDays: 91,
-          personaFisica: 4.94,
-          totalSistema: 5.58,
+          personaFisica: 4.92,
+          totalSistema: 5.42,
         },
         {
           label: '91 a 180 días',
           minDays: 91,
           maxDays: 181,
-          personaFisica: 4.92,
-          totalSistema: 5.17,
+          personaFisica: 5.03,
+          totalSistema: 5.14,
         },
         {
           label: '181 a 366 días',
           minDays: 181,
           maxDays: 367,
-          personaFisica: 5.22,
-          totalSistema: 5.25,
+          personaFisica: 5.12,
+          totalSistema: 5.26,
         },
       ],
       promedioPersonaFisica: 4.79,
-      promedioTotalSistema: 4.96,
+      promedioTotalSistema: 5.02,
     }),
     UI: Object.freeze({
       currency: 'UI',
@@ -1071,26 +1074,26 @@ export const BCU_DEPOSIT_RATES: Readonly<{
           label: '91 a 180 días',
           minDays: 91,
           maxDays: 181,
-          personaFisica: 1.94,
-          totalSistema: 2.36,
+          personaFisica: 2.85,
+          totalSistema: 2.01,
         },
         {
           label: '181 a 366 días',
           minDays: 181,
           maxDays: 367,
-          personaFisica: 1.65,
-          totalSistema: 1.68,
+          personaFisica: 1.43,
+          totalSistema: 1.4,
         },
         {
           label: '367 días o más',
           minDays: 367,
           maxDays: null,
-          personaFisica: 1.73,
-          totalSistema: 1.73,
+          personaFisica: 1.52,
+          totalSistema: 2.59,
         },
       ],
-      promedioPersonaFisica: 1.67,
-      promedioTotalSistema: 1.69,
+      promedioPersonaFisica: 1.45,
+      promedioTotalSistema: 1.97,
     }),
     USD: Object.freeze({
       currency: 'USD',
@@ -1102,40 +1105,40 @@ export const BCU_DEPOSIT_RATES: Readonly<{
           label: 'Menos de 30 días',
           minDays: 0,
           maxDays: 30,
-          personaFisica: 2.53,
-          totalSistema: 2.67,
+          personaFisica: 2.77,
+          totalSistema: 2.59,
         },
         {
           label: '30 a 60 días',
           minDays: 30,
           maxDays: 61,
-          personaFisica: 2.07,
-          totalSistema: 2.34,
+          personaFisica: 2.09,
+          totalSistema: 2.37,
         },
         {
           label: '61 a 90 días',
           minDays: 61,
           maxDays: 91,
-          personaFisica: 2.66,
-          totalSistema: 2.76,
+          personaFisica: 2.67,
+          totalSistema: 2.8,
         },
         {
           label: '91 a 180 días',
           minDays: 91,
           maxDays: 181,
-          personaFisica: 2.49,
-          totalSistema: 2.54,
+          personaFisica: 2.53,
+          totalSistema: 2.6,
         },
         {
           label: '181 a 366 días',
           minDays: 181,
           maxDays: 367,
-          personaFisica: 2.66,
-          totalSistema: 2.75,
+          personaFisica: 2.67,
+          totalSistema: 2.69,
         },
       ],
-      promedioPersonaFisica: 2.38,
-      promedioTotalSistema: 2.54,
+      promedioPersonaFisica: 2.41,
+      promedioTotalSistema: 2.55,
     }),
   }),
 })
@@ -1168,10 +1171,10 @@ export interface BankBoardSeries {
 }
 
 /**
- * "Ahorro en Sueldo": el otro producto en pesos de la misma pizarra. NO es un plazo fijo —no
- * colocás un monto único ni queda inmovilizado—, sino un plan de depósitos mensuales, y es la
- * única tasa en pesos del documento que supera el 5,50%. Se publica porque omitirlo hacía que la
- * página dijera "el máximo contratable en pesos es 5,50%" citando un PDF que muestra 6,88%.
+ * "Ahorro en Sueldo": un plan de depósitos mensuales con contratos anuales. El capital está
+ * disponible al vencimiento. Las cifras de segundo y tercer año son las de la pizarra revisada;
+ * al renovar se toma la tasa vigente en ese momento y se aplica la prima por permanencia.
+ * No son tasas futuras garantizadas al abrir el contrato.
  */
 export interface SalarySavingsPlan {
   name: string
@@ -1182,8 +1185,9 @@ export interface SalarySavingsPlan {
   maxMonthly: number
   /** Tasa de pizarra del producto, 1er año del contrato. */
   year1: number
-  /** 2º y 3er año: la de pizarra MÁS la prima por permanencia. */
+  /** Pizarra revisada más prima del 2º año; al renovar se recalcula con la tasa entonces vigente. */
   year2: number
+  /** Pizarra revisada más prima del 3er año; al renovar se recalcula con la tasa entonces vigente. */
   year3: number
   /** La prima es un % SOBRE la tasa, no puntos: 5,50 × 1,15 = 6,33 y 5,50 × 1,25 = 6,88. */
   primaPct2: number
@@ -1480,9 +1484,8 @@ export const DEPOSIT_REFERENCE_ABSENCES: readonly DepositAbsence[] = Object.free
   },
   {
     missing: 'Una media de mercado en UI a menos de 91 días',
-    instead:
-      'En junio de 2026 la planilla dice "sin operaciones" en los tres tramos de menos de 91 días en unidades indexadas. No es un cero: es que no se pactó ningún depósito en ese plazo. La pizarra del BROU coincide, porque su plazo fijo en UI arranca recién en 181 días.',
-    source: 'BCU — tasas.xls, hoja "Pasivas UI", junio 2026',
+    instead: `En ${BCU_DEPOSIT_RATES.period} la planilla dice "sin operaciones" en los tres tramos de menos de 91 días en unidades indexadas. No es un cero: es que no se pactó ningún depósito en ese plazo. Por su parte, el plazo fijo en UI de la pizarra del BROU arranca recién en 181 días.`,
+    source: `BCU — tasas.xls, hoja "Pasivas UI", ${BCU_DEPOSIT_RATES.period}`,
   },
 ])
 
@@ -1591,7 +1594,8 @@ export function netOfIrpf(grossPct: number, currency: DepositCurrency, months: n
  * desmentía: en unidades indexadas, a 367 días o más, junio de 2026 muestra 1,73% en las dos
  * columnas. En `tasas.xls` son 1,727685 y 1,734339 —la persona física sí está abajo—, pero el
  * lector sólo ve el redondeo, y una afirmación universal contra una tabla que empata es un error
- * a la vista. La página deriva de acá el alcance de la frase en vez de escribirlo a mano.
+ * a la vista. También incluye valores mayores: en julio de 2026 ocurre en dólares a menos de
+ * 30 días y en UI entre 91 y 366 días. La página muestra ambas cifras sin presumir un empate.
  */
 export function pfNotBelowTotal(currency: DepositCurrency): MarketRateBucket[] {
   return BCU_DEPOSIT_RATES.series[currency].buckets.filter(

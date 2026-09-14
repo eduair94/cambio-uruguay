@@ -58,9 +58,19 @@ Desplegado: commit `23933db9ae3d463b8547674353dbc1ebe78dcdbf`, [run 34808670562]
 
 Search Console aprobó la prueba en vivo de la nueva página en español y aceptó una única solicitud de indexación a las 05:23:25 UTC. Esto no confirma indexación ni tráfico. Registro privado: `data/organic-iteration-2026-09-14/mutualista-indexation-request.json`.
 
+## Tercera iteración: 14/9/2026
+
+La calculadora de plazo fijo se actualiza a las medias del BCU de julio de 2026, última fila disponible en las tres hojas de tasas pasivas. Se conservan los datos sin operaciones, la separación por moneda y plazo y los promedios generales. Las tasas comerciales y las fechas por moneda de BROU siguen coincidiendo con su pizarra vigente y no se sustituyen.
+
+La interpretación también cambia: personas físicas pueden quedar por debajo, por encima o igual al total del sistema. La página muestra las cifras de las excepciones sin atribuir a las empresas mejores condiciones por una media agregada. Ahorro en Sueldo se presenta como aportes mensuales, con capital disponible al vencimiento; las primas de permanencia se aplican sobre la pizarra vigente en cada renovación, sin garantizar hoy los porcentajes de años futuros. La fecha de comprobación se limita a tasas BROU/BCU, sin insinuar una nueva revisión de IRPF.
+
+Hipótesis y evaluación: conservar exactitud y utilidad de una página con demanda observada. No se presume que el dato anterior explicara una caída de clics. Comprobar publicación y cálculos enseguida; revisar el tráfico con 28 días finales de GSC. Evidencia y celdas privadas en `data/revenue-2026-09-14/plazo-fijo-freshness.md`; registro de esta iteración en `plazo-fijo-iteration.md` de la misma carpeta.
+
+Validación local: 118 pruebas aprobadas, lint dirigido limpio, las 38 celdas BCU contrastadas y revisión independiente del texto. Se ejercitaron los controles en las tres monedas, la ausencia de operaciones en UI y el cambio de capitalización mensual a anual al aplicar una referencia. Las tasas y funciones de cálculo de BROU se conservaron.
+
 ## Próximas decisiones
 
-- Actualizar el comparativo de plazo fijo del BCU de junio a julio de 2026 y corregir su interpretación de empates. La revisión de fuentes también detectó dos aclaraciones necesarias en Ahorro en Sueldo: disponibilidad del capital al vencimiento y tasas futuras sujetas a renovación. Las tasas vigentes de BROU están correctas; no sustituirlas sin una nueva publicación. Evidencia y celdas exactas: `data/revenue-2026-09-14/plazo-fijo-freshness.md`. La revisión no certifica todos los restantes datos fiscales de esa página.
+- Revisar el desglose de AdSense por plataforma, formato y método de colocación antes de decidir otro experimento publicitario. El informe del bloque manual cubre una parte pequeña de las impresiones; la diferencia entre escritorio y móvil en GA4 no prueba por sí sola un defecto de carga ni justifica aumentar la densidad.
 - AdSense confirma anuncios automáticos activos, optimización automática desactivada y cero exclusiones de páginas en la cuenta. El límite de `utils/ads.ts` regula las unidades manuales: **no certifica un límite global de anuncios automáticos**. No interpretar el código como prueba de la configuración de la cuenta.
 - Comparar formatos automáticos, ubicaciones manuales y páginas antes de otro experimento de visibilidad. El informe por bloque manual no suma todo el ingreso de la cuenta.
 - Revisar pérdidas de clics sobre páginas con demanda comprobada y el rendimiento de las guías/fichas publicadas el 13/9. Verificar indexación y enlaces antes de crear más URL.

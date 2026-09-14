@@ -408,10 +408,22 @@ describe('valores de referencia del plazo fijo', () => {
   })
 
   it('la serie del BCU dice de qué mes es y de dónde sale', () => {
-    expect(BCU_DEPOSIT_RATES.periodIso).toMatch(/^\d{4}-\d{2}$/)
-    expect(BCU_DEPOSIT_RATES.period.trim()).not.toBe('')
+    expect(BCU_DEPOSIT_RATES.periodIso).toBe('2026-07')
+    expect(BCU_DEPOSIT_RATES.period).toBe('julio de 2026')
     expect(BCU_DEPOSIT_RATES.seriesUrl).toMatch(/^https:\/\/www\.bcu\.gub\.uy\//)
     expect(BCU_DEPOSIT_RATES.pageUrl).toMatch(/^https:\/\/www\.bcu\.gub\.uy\//)
+  })
+
+  // Fila 354 de las hojas pasivas de tasas.xls: la referencia que usa el plazo inicial de
+  // 12 meses debe cambiar con el mes, conservando separadas Persona Física y Total.
+  it.each([
+    ['UYU', 5.12, 5.26],
+    ['UI', 1.43, 1.4],
+    ['USD', 2.67, 2.69],
+  ] as const)('a 12 meses, %s usa las dos columnas de julio de 2026', (currency, pf, total) => {
+    const bucket = marketBucketFor(currency, 12)
+    expect(bucket?.personaFisica).toBe(pf)
+    expect(bucket?.totalSistema).toBe(total)
   })
 
   // El punto de la tarea: la serie NO abre por tipo de banca. Si alguien inventa una fila
@@ -607,31 +619,28 @@ describe('valores de referencia del plazo fijo', () => {
     )
   })
 
-  // LEVE: "en todos los tramos la persona física paga menos" era universal y la propia tabla de
-  // la página lo desmentía en UI a 367 días o más (1,73% contra 1,73%). El alcance ahora se
-  // deriva de los datos; estos dos tests fijan de qué lado cae cada moneda.
-  it('detecta los tramos donde el redondeo publicado empata', () => {
-    for (const c of ['UYU', 'USD'] as DepositCurrency[]) {
-      expect(
-        pfNotBelowTotal(c),
-        `${c}: la persona física dejó de quedar por debajo del total en algún tramo`
-      ).toEqual([])
+  // Julio ya no presenta sólo el empate que había en junio: en tres tramos la media de
+  // personas físicas SUPERA al total. Buscar únicamente igualdad escondería las excepciones.
+  it('detecta las excepciones de julio aunque la persona física supere al total', () => {
+    expect(pfNotBelowTotal('UYU')).toEqual([])
+    expect(pfNotBelowTotal('USD').map(b => b.minDays)).toEqual([0])
+    expect(pfNotBelowTotal('UI').map(b => b.minDays)).toEqual([91, 181])
+    for (const c of CURRENCIES) {
+      for (const bucket of pfNotBelowTotal(c)) {
+        expect(bucket.personaFisica!).toBeGreaterThan(bucket.totalSistema!)
+      }
     }
-    const empates = pfNotBelowTotal('UI')
-    expect(empates.length, 'UI: se perdió el empate del tramo largo').toBe(1)
-    expect(empates[0]!.minDays).toBe(367)
-    expect(empates[0]!.personaFisica).toBe(empates[0]!.totalSistema)
   })
 
-  it('la página acota la frase en vez de afirmarla para todos los tramos', () => {
+  it('la página obtiene las excepciones de los datos sin describirlas todas como empates', () => {
     const page = readApp('pages/herramientas/calculadora-plazo-fijo.vue')
     expect(page, 'volvió la afirmación universal que la tabla desmiente').not.toMatch(
       /En todos los tramos, la media/
     )
-    expect(page, 'el alcance de la frase dejó de derivarse de los datos').toMatch(
-      /pfBelowCurrenciesText/
+    expect(page, 'las excepciones dejaron de derivarse de los datos').toMatch(/pfNotBelowTotal\(/)
+    expect(page, 'una media mayor volvió a describirse como empate').not.toMatch(
+      /las dos cifras publicadas empatan/
     )
-    expect(page, 'ya no publica el tramo donde las dos cifras empatan').toMatch(/pfTies/)
   })
 
   // LEVE: la matriz de IRPF estaba reescrita a mano en la prosa y en dos preguntas frecuentes.
@@ -737,11 +746,20 @@ describe('valores de referencia del plazo fijo', () => {
     expect(a.requirement).toMatch(/cuenta vista/i)
   })
 
-  it('la página deja de afirmar que el techo en pesos es el de la tabla', () => {
-    const page = readApp('pages/herramientas/calculadora-plazo-fijo.vue')
+  it('Ahorro en Sueldo explica el vencimiento y la renovación sin prometer liquidez o tasas futuras', () => {
+    const page = readApp('pages/herramientas/calculadora-plazo-fijo.vue').replace(/\s+/g, ' ')
     expect(page, 'Ahorro en Sueldo sigue sin aparecer').toMatch(/ahorro\.year3/)
-    expect(page, 'no dice que la pizarra tiene otro producto con tasa mayor').toMatch(
-      /el techo de la tabla no\s+es el techo del banco/
+    expect(page, 'volvió la afirmación de libre disponibilidad').not.toMatch(
+      /ni queda inmovilizado/
+    )
+    expect(page, 'omite cuándo se dispone del capital').toMatch(
+      /capital (?:está )?disponible al vencimiento/
+    )
+    expect(page, 'omite qué tasa se aplica al renovar').toMatch(
+      /renovaci[oó]n[^.]*pizarra vigente/i
+    )
+    expect(page, 'la pizarra actual vuelve a prometerse para los tres años').not.toMatch(
+      /ahorro\.year2\)\}% el segundo y \$\{formatNumber\(ahorro\.year3\)\}% el tercero/
     )
   })
 
