@@ -1,5 +1,11 @@
 <template>
-  <details v-if="references.length" class="provider-reviews" :lang="locale" @toggle="toggle">
+  <details
+    v-if="references.length"
+    ref="details"
+    class="provider-reviews"
+    :lang="locale"
+    @toggle="toggle"
+  >
     <summary>{{ c.title }} ({{ references.length }})</summary>
     <p class="review-note">{{ c.scope }}</p>
     <p v-if="references.some(reference => reference.live)" class="review-note">{{ c.liveHint }}</p>
@@ -104,6 +110,7 @@ const references = computed(() =>
 )
 const results = ref<Record<string, MovingReviewsResult>>({})
 const loading = ref<Record<string, boolean>>({})
+const details = ref<HTMLDetailsElement>()
 let open = false
 let generation = 0
 const controllers = new Map<string, AbortController>()
@@ -115,8 +122,16 @@ function clear() {
   loading.value = {}
 }
 onBeforeUnmount(clear)
-async function toggle(event: Event) {
-  open = (event.currentTarget as HTMLDetailsElement).open
+onMounted(() => {
+  // A native details element can open while this row is still waiting for hydration.
+  void setOpen(Boolean(details.value?.open))
+})
+function toggle(event: Event) {
+  return setOpen((event.currentTarget as HTMLDetailsElement).open)
+}
+async function setOpen(nextOpen: boolean) {
+  if (nextOpen === open) return
+  open = nextOpen
   if (!open) {
     clear()
     return
@@ -129,6 +144,8 @@ async function toggle(event: Event) {
   }
 }
 async function load(reference: MovingReviewReference) {
+  if (!details.value?.open) return
+  open = true
   if (loading.value[reference.key]) return
   const version = generation
   const controller = new AbortController()
@@ -164,7 +181,7 @@ async function load(reference: MovingReviewReference) {
             attributions: [],
           }
   } finally {
-    controllers.delete(reference.key)
+    if (controllers.get(reference.key) === controller) controllers.delete(reference.key)
     if (generation === version) loading.value[reference.key] = false
   }
 }

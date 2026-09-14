@@ -23,7 +23,14 @@
            Vuetify's default role=listbox on the inner list (its mixed link/button/
            divider children aren't listbox options) so it's a plain container — the
            links inside remain the navigable content. -->
-      <VList v-model:opened="openGroups" role="presentation" tabindex="-1">
+      <!-- Build the large mobile menu only when requested. Keep it mounted after
+           the first opening so closing transitions and expanded groups survive. -->
+      <VList
+        v-if="drawerContentReady"
+        v-model:opened="openGroups"
+        role="presentation"
+        tabindex="-1"
+      >
         <VListItem>
           <VListItemTitle class="text-h6"> Menu </VListItemTitle>
           <template #append>
@@ -326,6 +333,10 @@ const formatNameRoute = () => {
 
 // Navigation drawer state
 const drawer = ref(false)
+const drawerContentReady = ref(false)
+watch(drawer, open => {
+  if (open) drawerContentReady.value = true
+})
 const navigationReady = ref(false)
 // After hydration, retain Vuetify's native edge-swipe and closing transitions.
 onMounted(() => {

@@ -16,6 +16,7 @@ import {
   warmWorkerBeforeReady,
   WORKER_READINESS_PATH,
 } from './utils/workerReadiness'
+import { createPropertySsrListener } from './utils/propertySsrAdmission'
 
 async function startServer() {
   const cert = process.env.NITRO_SSL_CERT
@@ -40,10 +41,9 @@ async function startServer() {
     console.info(`[pm2-ready] worker ${process.pid} rendered SSR in ${Date.now() - started}ms`)
   }
 
+  const nodeListener = createPropertySsrListener(toNodeListener(nitroApp.h3App))
   const server =
-    cert && key
-      ? new HttpsServer({ key, cert }, toNodeListener(nitroApp.h3App))
-      : new HttpServer(toNodeListener(nitroApp.h3App))
+    cert && key ? new HttpsServer({ key, cert }, nodeListener) : new HttpServer(nodeListener)
   const port = destr(process.env.NITRO_PORT || process.env.PORT) || 3e3
   const host = process.env.NITRO_HOST || process.env.HOST
   const path = process.env.NITRO_UNIX_SOCKET

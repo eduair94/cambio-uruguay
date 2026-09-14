@@ -114,7 +114,7 @@ FORM: Extension of the rental journey: searchable directory with progressively d
         >
           {{ priceGroupLabel(provider) }}
         </p>
-        <MovingProviderRow
+        <VisibleProviderRow
           :provider="provider"
           :category="category"
           :query="query || ''"
@@ -168,6 +168,8 @@ FORM: Extension of the rental journey: searchable directory with progressively d
 </template>
 
 <script setup lang="ts">
+import { defineAsyncComponent, hydrateOnVisible } from 'vue'
+import ProviderRow from '~/components/moving/ProviderRow.vue'
 import {
   MOVING_CATEGORIES,
   MOVING_DEPARTMENTS,
@@ -187,6 +189,13 @@ import {
   type MovingSort,
 } from '~/utils/movingServices'
 import { movingServicesCopy } from '~/utils/movingServicesCopy'
+
+// Keep the component import in the SSR manifest so its CSS is present even
+// without JavaScript. Only hydration waits for the row to approach the viewport.
+const VisibleProviderRow = defineAsyncComponent({
+  loader: () => Promise.resolve(ProviderRow),
+  hydrate: hydrateOnVisible({ rootMargin: '200px' }),
+})
 
 const { locale } = useI18n()
 const route = useRoute()

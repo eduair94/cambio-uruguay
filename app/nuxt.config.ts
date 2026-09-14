@@ -41,9 +41,8 @@ export default defineNuxtConfig({
     appManifest: false,
   },
 
-  // cssCodeSplit:false already links the complete stylesheet in SSR. Avoid
-  // generating duplicate per-component server style chunks (934 in the measured
-  // build). The linked CSS remains byte-identical; see DEPLOY_PERFORMANCE.md.
+  // Link route-specific CSS through the SSR manifest instead of duplicating it
+  // in the HTML. Keep this independent of Vite's CSS splitting below.
   features: {
     inlineStyles: false,
   },
@@ -263,7 +262,9 @@ export default defineNuxtConfig({
       noExternal: ['@nuxtjs/i18n', 'vue-i18n'],
     },
     build: {
-      cssCodeSplit: false, // Disable CSS code splitting to avoid dependency issues
+      // A single sheet made every page download styles for the entire site.
+      // Vite/Nuxt load each route's CSS in SSR and before client navigation.
+      cssCodeSplit: true,
       minify: 'esbuild', // Switch to esbuild for more reliable minification
       chunkSizeWarningLimit: 1000,
     },

@@ -33,8 +33,8 @@ test('shared filters, history, grouped prices and live review states', async ({
   })
   const query = page.getByRole('textbox', { name: 'Empresa, localidad o servicio', exact: true })
   async function select(label: string, option: string) {
-    await page.getByLabel(label, { exact: true }).focus()
-    await page.getByLabel(label, { exact: true }).press('ArrowDown')
+    await page.getByRole('textbox', { name: label, exact: true }).focus()
+    await page.getByRole('textbox', { name: label, exact: true }).press('ArrowDown')
     await page.getByRole('option', { name: option, exact: true }).click()
   }
   async function ready() {
@@ -67,14 +67,20 @@ test('shared filters, history, grouped prices and live review states', async ({
   await page.reload({ waitUntil: 'domcontentloaded' })
   await ready()
   await expect(query).toHaveValue('Furniture')
-  await expect(page.getByLabel('Departamento', { exact: true })).toHaveValue('Canelones')
+  await expect(page.getByRole('textbox', { name: 'Departamento', exact: true })).toHaveValue(
+    'Canelones'
+  )
 
   await select('Departamento', 'Montevideo')
   await expect(page).toHaveURL(/departamento=Montevideo/)
   await page.goBack()
-  await expect(page.getByLabel('Departamento', { exact: true })).toHaveValue('Canelones')
+  await expect(page.getByRole('textbox', { name: 'Departamento', exact: true })).toHaveValue(
+    'Canelones'
+  )
   await page.goForward()
-  await expect(page.getByLabel('Departamento', { exact: true })).toHaveValue('Montevideo')
+  await expect(page.getByRole('textbox', { name: 'Departamento', exact: true })).toHaveValue(
+    'Montevideo'
+  )
   // A pending text edit must never overwrite a history entry with the same committed q.
   await query.fill('pendiente')
   await page.goBack()
