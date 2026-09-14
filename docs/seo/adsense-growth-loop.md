@@ -102,7 +102,15 @@ Hipótesis: cubrir una intención detectada en la cola de demanda que la guía a
 
 Validación local: 19 pruebas DGI y 12 de etiquetas/rutas sin etiquetas aprobadas, lint dirigido limpio y compilación/ejecución del componente con ES/EN/PT. Las tres rutas respondieron 200 y conservaron su canonical español existente, los tres casos y cinco fuentes. El nuevo bloque fecha sus fuentes al 14/9; la verificación anterior sigue en 10/8. La revisión factual independiente no encontró fallas materiales. Investigación y registros privados: `data/revenue-2026-09-14/next-demand-candidate.md`, `irpf-extension-draft.md`, `irpf-extension-review.md` e `irpf-local-validation.json`.
 
-La revisión visual confirmó ES/PT móviles sin desbordamiento y EN en escritorio oscuro. Se corrigió el margen del ancla nueva para dejar su título visible bajo la barra fija. En desarrollo no se observaron scripts de etiquetas de Google tras navegar por las variantes. Registro privado: `irpf-ui-validation.md`. Estado: pendiente de despliegue y comprobación pública.
+La revisión visual confirmó ES/PT móviles sin desbordamiento y EN en escritorio oscuro. Se corrigió el margen del ancla nueva para dejar su título visible bajo la barra fija. En desarrollo no se observaron scripts de etiquetas de Google tras navegar por las variantes. Registro privado: `irpf-ui-validation.md`.
+
+Desplegado: `2e630ec3` y `e3c224f8baf458a65b2c1b58284a73e804219588`, enviados juntos. CI `34817102567` aprobó a las 07:26:56 UTC: 7.430 pruebas app y 2.661 backend, build y controles de salud correctos. Las tres rutas públicas aprobaron a las 07:27:46 UTC (`irpf-production-validation.json`). El navegador confirmó el bloque y su título bajo la barra fija; las etiquetas Google de producción siguen cargando. No hay aún una ventana posterior de ingresos atribuible al cambio.
+
+## Sexta iteración: 14/9/2026
+
+Durante la revisión se comprobó que el encabezado a 1280 px superponía búsqueda y Más y recortaba el selector de idioma en ES/EN/PT. La suma de los controles requería más ancho que la barra. Se ocultan únicamente los siete iconos decorativos de los enlaces primarios entre los breakpoints lg y xl (1280–1919 px), donde liberan 133 px; los textos, destinos, áreas de interacción y el menú Más se conservan. Desde 1920 px los iconos vuelven a aparecer mediante las utilidades CSS existentes, con el mismo árbol SSR/cliente.
+
+La geometría local no presenta recortes ni intersecciones en los tres idiomas a 1280 px ni en los controles adicionales ES a 360, 1279, 1440, 1919 y 1920 px. Menú móvil, Más, selector de idioma y búsqueda comprobados, con cierre por teclado y retorno del foco de búsqueda. Lint limpio y tres pruebas SSR de navegación aprobadas. La sesión autenticada no se ensayó; su botón existente es más pequeño que la variante desconectada medida. Evidencia privada: `header-overlap-followup.md`, `header-overlap-review.md` y `header-ui-validation.md`. Pendiente de despliegue y verificación pública. No se atribuye a la corrección un aumento de tráfico o ingresos.
 
 ## Próximas decisiones
 

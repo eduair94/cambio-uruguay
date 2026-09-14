@@ -155,7 +155,7 @@
           class="nav-btn text-none"
           :class="{ 'nav-btn--active': isActiveRoute(item.to as string) }"
         >
-          <VIcon start size="small">{{ item.icon }}</VIcon>
+          <VIcon start size="small" class="d-none d-xl-inline-flex">{{ item.icon }}</VIcon>
           {{ navLabel(item) }}
         </VBtn>
 
