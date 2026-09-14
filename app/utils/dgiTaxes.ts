@@ -111,6 +111,150 @@ export const IRPF_CAMPAIGN: IrpfCampaign = Object.freeze({
 export const REFUND_RULE =
   'Si presentás antes del día 15, la devolución se cobra antes de fin de mes en bancos o redes de cobranza. Si presentás después, pasa al mes siguiente.'
 
+// The procedure review is separate from campaign amounts, sanctions and debt
+// prescription above/below. Do not advance DGI_VERIFIED_AT for these new links.
+// DGI's 2026 campaign still links the pending-return (24/05/2024) and
+// reliquidation (26/06/2025) guides. Form 1102 is work income, category II.
+// Applications for older years do not establish that a credit remains payable.
+export const IRPF_PROCEDURES_VERIFIED_AT = '2026-09-14'
+
+export const IRPF_PROCEDURE_SOURCES = Object.freeze({
+  portal: 'https://servicios.dgi.gub.uy/serviciosenlinea/irpf/principal_irpf',
+  refunds:
+    'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/devoluciones-del-irpf',
+  pending:
+    'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/usted-tiene-pendiente-presentacion-declaraciones-juradas-0',
+  correction:
+    'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/reliquidacion-declaracion-jurada-irpf',
+  form1102:
+    'https://www.gub.uy/direccion-general-impositiva/politicas-y-gestion/aplicacion-formulario-1102?hrt=436',
+})
+
+type IrpfProcedureLang = 'es' | 'en' | 'pt'
+interface IrpfPastYearsCopy {
+  heading: string
+  cases: readonly {
+    id: 'registered' | 'pending' | 'correction'
+    heading: string
+    body: string
+    action: string
+    source: 'portal' | 'pending' | 'correction'
+  }[]
+  limit: string
+  verifiedLabel: string
+  additionalSources: Record<'refunds' | 'form1102', string>
+}
+
+// Portal labels stay in Spanish in each locale so readers can find the actual
+// public menu. No assumptions about controls behind authentication are included.
+const IRPF_PAST_YEARS_COPY: Record<IrpfProcedureLang, IrpfPastYearsCopy> = {
+  es: {
+    heading: 'Devoluciones y declaraciones de años anteriores',
+    cases: [
+      {
+        id: 'registered',
+        heading: 'Ya presentaste y querés consultar la devolución',
+        body: 'Ingresá con tu identidad digital a Servicios en Línea de DGI y buscá «Consulta de Devoluciones». El estado puede indicar que está disponible o que tiene observaciones. Para resolver estas últimas, DGI ofrece «Trámite devolución con observaciones»: allí identifica los formularios, años y documentos requeridos. El cobro queda sujeto a sus controles.',
+        action: 'Consultar devoluciones en DGI',
+        source: 'portal',
+      },
+      {
+        id: 'pending',
+        heading: 'Te quedó una declaración pendiente',
+        body: 'El portal ofrece «Declaracion IRPF · Anteriores». Revisá el ejercicio que corresponde y sus datos; presentar un año atrasado puede dar saldo a pagar o crédito. La guía de declaraciones pendientes explica el acceso para omisos, pero no garantiza que resulte una devolución.',
+        action: 'Ver la guía de declaraciones pendientes',
+        source: 'pending',
+      },
+      {
+        id: 'correction',
+        heading: 'Necesitás corregir una declaración presentada',
+        body: 'Para rentas de trabajo del formulario 1102, DGI indica usar la aplicación del período y seleccionar RELIQUIDACIÓN. Incluí toda la información del ejercicio: reemplaza la declaración anterior, no sólo los datos que cambiás. La guía oficial explica su presentación por web o redes de cobranza.',
+        action: 'Ver cómo reliquidar el formulario 1102',
+        source: 'correction',
+      },
+    ],
+    limit:
+      'Consultá a DGI por el ejercicio y tu situación concreta para saber si el crédito sigue cobrable. No apliques el calendario de la campaña actual a una devolución de otro año.',
+    verifiedLabel: 'Fuentes de estos trámites consultadas el',
+    additionalSources: {
+      refunds: 'DGI: estados y observaciones de las devoluciones',
+      form1102: 'DGI: aplicación e instructivos del formulario 1102 por ejercicio',
+    },
+  },
+  en: {
+    heading: 'Refunds and tax returns for previous years',
+    cases: [
+      {
+        id: 'registered',
+        heading: 'You filed a return and want to check the refund',
+        body: 'Sign in to DGI online services with your digital identity and look for “Consulta de Devoluciones”. Its status may show that the refund is available or has issues requiring attention. “Trámite devolución con observaciones” identifies the forms, years and documents needed to address those issues. Payment remains subject to DGI checks.',
+        action: 'Check refunds with DGI',
+        source: 'portal',
+      },
+      {
+        id: 'pending',
+        heading: 'You have an unfiled return',
+        body: 'The portal provides “Declaracion IRPF · Anteriores”. Review the relevant tax year and its information; filing late may result in tax owed or a credit. DGI’s guide for outstanding returns explains access for people who have not filed, but does not guarantee a refund.',
+        action: 'Read the guide to outstanding returns',
+        source: 'pending',
+      },
+      {
+        id: 'correction',
+        heading: 'You need to correct a filed return',
+        body: 'For work income reported on form 1102, DGI instructs you to use the application for that year and select RELIQUIDACIÓN. Include all information for the year: it replaces the earlier return, not just the figures you change. The official guide explains submission online or through payment networks.',
+        action: 'Read how to amend form 1102',
+        source: 'correction',
+      },
+    ],
+    limit:
+      'Ask DGI whether the credit for your specific tax year and circumstances can still be collected. Do not apply the current campaign’s payment calendar to a refund for another year.',
+    verifiedLabel: 'Sources for these procedures checked on',
+    additionalSources: {
+      refunds: 'DGI: refund status and issues requiring attention',
+      form1102: 'DGI: form 1102 application and instructions by tax year',
+    },
+  },
+  pt: {
+    heading: 'Devoluções e declarações de anos anteriores',
+    cases: [
+      {
+        id: 'registered',
+        heading: 'Você já declarou e quer consultar a devolução',
+        body: 'Acesse os serviços on-line da DGI com sua identidade digital e procure “Consulta de Devoluciones”. O estado pode indicar que a devolução está disponível ou tem pendências. Em “Trámite devolución con observaciones”, a DGI identifica os formulários, anos e documentos necessários para resolvê-las. O pagamento depende das verificações da DGI.',
+        action: 'Consultar devoluções na DGI',
+        source: 'portal',
+      },
+      {
+        id: 'pending',
+        heading: 'Ficou uma declaração por apresentar',
+        body: 'O portal oferece “Declaracion IRPF · Anteriores”. Confira o exercício correspondente e seus dados; apresentar um ano em atraso pode resultar em imposto a pagar ou crédito. O guia de declarações pendentes explica o acesso para quem não declarou, mas não garante uma devolução.',
+        action: 'Ver o guia de declarações pendentes',
+        source: 'pending',
+      },
+      {
+        id: 'correction',
+        heading: 'Você precisa corrigir uma declaração apresentada',
+        body: 'Para rendimentos do trabalho no formulário 1102, a DGI orienta usar o aplicativo do exercício e selecionar RELIQUIDACIÓN. Inclua todas as informações do ano: ela substitui a declaração anterior, não apenas os dados alterados. O guia oficial explica a apresentação pela internet ou pelas redes de cobrança.',
+        action: 'Ver como retificar o formulário 1102',
+        source: 'correction',
+      },
+    ],
+    limit:
+      'Consulte a DGI sobre o exercício e sua situação específica para saber se o crédito ainda pode ser recebido. Não aplique o calendário da campanha atual a uma devolução de outro ano.',
+    verifiedLabel: 'Fontes destes procedimentos consultadas em',
+    additionalSources: {
+      refunds: 'DGI: estado e pendências das devoluções',
+      form1102: 'DGI: aplicativo e instruções do formulário 1102 por exercício',
+    },
+  },
+}
+
+export function irpfPastYearsCopy(locale = 'es'): IrpfPastYearsCopy {
+  return IRPF_PAST_YEARS_COPY[
+    locale.startsWith('en') ? 'en' : locale.startsWith('pt') ? 'pt' : 'es'
+  ]
+}
+
 export type FilerKind = 'dependiente' | 'independiente' | 'capital'
 
 export interface ObligationCase {

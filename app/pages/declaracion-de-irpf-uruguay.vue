@@ -100,6 +100,33 @@
       </VCard>
     </section>
 
+    <!-- Earlier tax years: procedure review has its own date and sources. -->
+    <section id="ejercicios-anteriores" class="mb-12" aria-labelledby="irpf-past-years-title">
+      <h2 id="irpf-past-years-title" class="text-h5 font-weight-bold mt-0 mb-4">
+        {{ pastYears.heading }}
+      </h2>
+      <div v-for="item in pastYears.cases" :key="item.id" class="mb-6" style="max-width: 72ch">
+        <h3 class="text-subtitle-1 font-weight-bold mt-0 mb-2">{{ item.heading }}</h3>
+        <p class="mt-0 mb-2">{{ item.body }}</p>
+        <a :href="IRPF_PROCEDURE_SOURCES[item.source]" target="_blank" rel="noopener noreferrer">
+          {{ item.action }}
+        </a>
+      </div>
+      <p class="mt-0 mb-4" style="max-width: 72ch">{{ pastYears.limit }}</p>
+      <p class="text-body-2 text-medium-emphasis mt-0 mb-2">
+        {{ pastYears.verifiedLabel }}
+        <time :datetime="IRPF_PROCEDURES_VERIFIED_AT">{{ proceduresVerifiedAt }}</time
+        >.
+      </p>
+      <ul class="sources-list mt-0 mb-0">
+        <li v-for="key in ['refunds', 'form1102'] as const" :key="key">
+          <a :href="IRPF_PROCEDURE_SOURCES[key]" target="_blank" rel="noopener noreferrer">
+            {{ pastYears.additionalSources[key] }}
+          </a>
+        </li>
+      </ul>
+    </section>
+
     <!-- Mora -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Si te da a pagar y llegás tarde</h2>
@@ -197,6 +224,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { formatUYU } from '~/utils/format'
 import {
   DGI_FAQ,
@@ -205,6 +233,9 @@ import {
   GOOD_HISTORY_RELIEF,
   IRPF_CAMPAIGN,
   IRPF_FORMS,
+  IRPF_PROCEDURES_VERIFIED_AT,
+  IRPF_PROCEDURE_SOURCES,
+  irpfPastYearsCopy,
   MORA_FACILIDADES_PCT,
   MORA_TIERS,
   NOT_OBLIGATED,
@@ -215,6 +246,14 @@ import {
 } from '~/utils/dgiTaxes'
 
 const localePath = useLocalePath()
+const { locale } = useI18n()
+const pastYears = computed(() => irpfPastYearsCopy(locale.value))
+const proceduresVerifiedAt = computed(() =>
+  new Date(IRPF_PROCEDURES_VERIFIED_AT).toLocaleDateString(
+    locale.value.startsWith('en') ? 'en-US' : locale.value.startsWith('pt') ? 'pt-BR' : 'es-UY',
+    { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }
+  )
+)
 
 /** Esta página responde el trámite; la prescripción vive en su propia página. */
 const faq = DGI_FAQ.filter(f => !/prescrib|patente vieja|interrumpe/i.test(f.question))
@@ -303,6 +342,10 @@ useHead(() => ({
 </script>
 
 <style scoped>
+#ejercicios-anteriores {
+  scroll-margin-top: 5rem;
+}
+
 .irpf-page {
   max-width: 1180px;
 }
