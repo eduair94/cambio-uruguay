@@ -91,6 +91,8 @@
       </template>
     </div>
 
+    <MovingProviderReviews :provider-id="provider.id" />
+
     <details class="provider-details">
       <summary :lang="locale">{{ c.details }}</summary>
       <p v-if="provider.coverage.length > 6" class="provider-area">
@@ -187,11 +189,17 @@ import {
 } from '~/utils/movingServices'
 import { movingServicesCopy } from '~/utils/movingServicesCopy'
 
-const props = defineProps<{ provider: MovingProvider; category?: string; query?: string }>()
+const props = defineProps<{
+  provider: MovingProvider
+  category?: string
+  query?: string
+  sortByPrice?: boolean
+  comparisonPrice?: MovingPrice
+}>()
 const { locale } = useI18n()
 const c = computed(() => movingServicesCopy(locale.value))
 const prices = computed(() => movingPricesFor(props.provider, props.category, props.query))
-const firstPrice = computed(() => prices.value[0])
+const firstPrice = computed(() => (props.sortByPrice ? props.comparisonPrice : prices.value[0]))
 const allPrices = ref(false)
 const tariffQuery = ref<string | null>('')
 const searchedPrices = computed(() => {

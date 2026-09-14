@@ -23,7 +23,7 @@ test.describe('moving directory', () => {
     await expect(page.locator('#depunta .provider-price')).toContainText('Heladera')
     await expect(page.locator('#depunta .provider-price')).toContainText('Tasa postal')
     await expect(page.locator('#depunta .provider-actions')).toContainText('Montevideo')
-    await page.locator('#depunta summary').click()
+    await page.locator('#depunta .provider-details > summary').click()
     await page
       .locator('#depunta')
       .getByRole('textbox', { name: 'Buscar en estas tarifas', exact: true })
@@ -107,7 +107,7 @@ test.describe('moving directory', () => {
           .fill('DePunta')
         await expect(page.locator('.provider')).toHaveCount(1)
       }).toPass()
-      await page.locator('#depunta summary').click()
+      await page.locator('#depunta .provider-details > summary').click()
       await page
         .locator('#depunta')
         .getByRole('textbox', { name: 'Buscar en estas tarifas', exact: true })

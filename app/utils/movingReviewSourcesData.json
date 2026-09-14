@@ -1,0 +1,1030 @@
+{
+  "reviewedAt": "2026-09-14",
+  "google": [
+    {
+      "key": "furniture-home-google-canelones",
+      "providerId": "furniture-home",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJ_fSL3b1dKWwRexEdi-tcgKo",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Furniture+Home&query_place_id=ChIJ_fSL3b1dKWwRexEdi-tcgKo",
+      "label": "Furniture Home — Canelones",
+      "expectedNames": [
+        "Furniture Home",
+        "Furniture Home S.T."
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59892972375",
+        "+59897197929"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://forniturehome-st.com/",
+          "value": "https://g.page/r/CXsRHYvrXICqEBM/review",
+          "label": "Soy Cliente  de Canelones  quiero dejar una calificación"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "furniture-home-google-montevideo",
+      "providerId": "furniture-home",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJeYROI42Bn5URoe_mE46JM0c",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Furniture+Home&query_place_id=ChIJeYROI42Bn5URoe_mE46JM0c",
+      "label": "Furniture Home — Montevideo",
+      "expectedNames": [
+        "Furniture Home",
+        "Furniture Home S.T."
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59892972375",
+        "+59897197929"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://forniturehome-st.com/",
+          "value": "https://g.page/r/CaHv5hOOiTNHEBM/review",
+          "label": "Soy Cliente  de Montevideo  quiero dejar una calificación"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "all-box-google-1",
+      "providerId": "all-box",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJxd2J7tuHn5URD1IHneRtzhE",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=All+Box+Uruguay&query_place_id=ChIJxd2J7tuHn5URD1IHneRtzhE",
+      "label": "All Box Uruguay",
+      "expectedNames": [
+        "All Box Uruguay",
+        "All Box"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59825247138",
+        "+59894079152"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://allboxuruguay.com/contacto/",
+          "value": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3273.0352402841186!2d-56.11343608476291!3d-34.880461380388816!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f87dbee89ddc5%3A0x11ce6de49d07520f!2sAll%20Box!5e0!3m2!1ses!2suy!4v1649074981812!5m2!1ses!2suy",
+          "label": ""
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://allboxuruguay.com/contacto/",
+          "value": "0x959f87dbee89ddc5:0x11ce6de49d07520f",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. También coinciden país Uruguay, nombre compatible, teléfono y dominio propios. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "all-storage-google-1",
+      "providerId": "all-storage",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJ-Y6ErUbSYq8Rw_cx4PK-psw",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=All+Storage+Uruguay&query_place_id=ChIJ-Y6ErUbSYq8Rw_cx4PK-psw",
+      "label": "Camino Tomkinson 2622, Montevideo.",
+      "expectedNames": [
+        "All Storage Uruguay",
+        "All Storage"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59898899042"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://allstorage.com.uy/servicios-de-almacenamiento/",
+          "value": "https://maps.app.goo.gl/gsTSASNDSpW7WKfy7",
+          "label": "Camino Tomkinson 2622, Montevideo."
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://allstorage.com.uy/servicios-de-almacenamiento/",
+          "value": "0xaf62d246ad848ef9:0xcca6bef2e031f7c3",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. También coinciden país Uruguay, nombre compatible, teléfono y dominio propios. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "los-pinones-google-2",
+      "providerId": "los-pinones",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJRS1VssmBn5URozG7ehb603Y",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Fletes+y+Mudanzas+Los+Pi%C3%B1ones&query_place_id=ChIJRS1VssmBn5URozG7ehb603Y",
+      "label": "Fletes y Mudanzas Los Piñones",
+      "expectedNames": [
+        "Fletes y Mudanzas Los Piñones"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59893686479"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://mudanzasmontevideo.uy/",
+          "value": "https://maps.app.goo.gl/cQaLDXmmiw4K4sNs8",
+          "label": "Dirección"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://mudanzasmontevideo.uy/",
+          "value": "0x959f81c9b2552d45:0x76d3fa167abb31a3",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. También coinciden país Uruguay, nombre compatible, teléfono y dominio propios. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "mudanzas-lugo-google-1",
+      "providerId": "mudanzas-lugo",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJGVjCeTaBn5URteF1cw86-qU",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Fletes+y+Mudanzas+Lugo&query_place_id=ChIJGVjCeTaBn5URteF1cw86-qU",
+      "label": "Fletes y Mudanzas Lugo",
+      "expectedNames": [
+        "Fletes y Mudanzas Lugo",
+        "Fletes Lugo"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59896601465"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.mudanzaslugo.com.uy/",
+          "value": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3272.6900481894113!2d-56.1170996847627!3d-34.88912878038637!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f813679c25819%3A0xa5fa3a0f7375e1b5!2sFletes%20Lugo!5e0!3m2!1ses-419!2suy!4v1655765600337!5m2!1ses-419!2suy",
+          "label": ""
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://www.mudanzaslugo.com.uy/",
+          "value": "0x959f813679c25819:0xa5fa3a0f7375e1b5",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. También coinciden país Uruguay, nombre compatible, teléfono y dominio propios. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "naterial-envio-armado-google-1",
+      "providerId": "naterial-envio-armado",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJJ04JhQyBn5URuSu8d7EHw9Y",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Naterial&query_place_id=ChIJJ04JhQyBn5URuSu8d7EHw9Y",
+      "label": "Naterial — Punta Carretas",
+      "expectedNames": [
+        "Naterial",
+        "Naterial Punta Carretas"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "https://maps.app.goo.gl/KUbikTqh6XBdkbu9A",
+          "label": "Punta Carretas Shopping, pasaje boulevard, Solano García esquina José Ellauri, M"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "0x959f810c85094e27:0xd6c307b177bc2bb9",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        },
+        {
+          "kind": "corporate_contact_not_profile_constraint",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "+59891473030",
+          "fact": "Contacto general publicado por la empresa. No es una expectativa de teléfono para esta sucursal; la identidad del perfil se comprobó por CID, país, nombre y dominio."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "naterial-envio-armado-google-2",
+      "providerId": "naterial-envio-armado",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJ_WFRRNOJn5URyXgzftraHZ8",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Naterial&query_place_id=ChIJ_WFRRNOJn5URyXgzftraHZ8",
+      "label": "Naterial — Car One",
+      "expectedNames": [
+        "Naterial",
+        "Naterial Car One"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59891473030"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "https://maps.app.goo.gl/ddbswsdv9NJqH9qV9",
+          "label": "Ruta Interbalnearia y Camino de Los Horneros, Ciudad de la Costa, Canelones"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "0x959f89d3445161fd:0x9f1ddada7e3378c9",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "naterial-envio-armado-google-3",
+      "providerId": "naterial-envio-armado",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJkXnHoMgFdZURKbSCgxlPIlc",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Naterial&query_place_id=ChIJkXnHoMgFdZURKbSCgxlPIlc",
+      "label": "Naterial — La Barra",
+      "expectedNames": [
+        "Naterial",
+        "Naterial La Barra"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "https://maps.app.goo.gl/KbpLi3LMipWeU8WDA",
+          "label": "Ruta 10 esq. los suspiros, La Barra , Maldonado"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "0x957505c8a0c77991:0x57224f198382b429",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        },
+        {
+          "kind": "corporate_contact_not_profile_constraint",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "+59891473030",
+          "fact": "Contacto general publicado por la empresa. No es una expectativa de teléfono para esta sucursal; la identidad del perfil se comprobó por CID, país, nombre y dominio."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "one-storage-google-5",
+      "providerId": "one-storage",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJ0ZkSgLopoJURquZu9tHB_TQ",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=ONE+Storage&query_place_id=ChIJ0ZkSgLopoJURquZu9tHB_TQ",
+      "label": "Google Maps: ONE Storage Montevideo",
+      "expectedNames": [
+        "ONE Storage"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59896053532"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.onestorage.uy/",
+          "value": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3276.8809108874957!2d-56.061057100000006!3d-34.7837732!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95a029ba801299d1%3A0x34fdc1d1f66ee6aa!2sONE%20Storage!5e0!3m2!1ses-419!2sve!4v1681947660051!5m2!1ses-419!2sve",
+          "label": "Google Maps: ONE Storage Montevideo"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://www.onestorage.uy/",
+          "value": "0x95a029ba801299d1:0x34fdc1d1f66ee6aa",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "selfbox-google-1",
+      "providerId": "selfbox",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJS2uDwBmBn5UR1jl13ib-75U",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=SelfBox&query_place_id=ChIJS2uDwBmBn5UR1jl13ib-75U",
+      "label": "SelfBox Juan Paullier - Tres Cruces",
+      "expectedNames": [
+        "SelfBox"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59898130584",
+        "+59899599831"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "https://www.google.com/maps?cid=10804133473979546070",
+          "label": "SelfBox Juan Paullier - Tres Cruces"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "10804133473979546070",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "selfbox-google-2",
+      "providerId": "selfbox",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJs_f4C-KBn5URg5Ri9oYurk4",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=SelfBox&query_place_id=ChIJs_f4C-KBn5URg5Ri9oYurk4",
+      "label": "SelfBox Francisco Bauzá - Parque Batllé",
+      "expectedNames": [
+        "SelfBox"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59898130584",
+        "+59899599831"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "https://www.google.com/maps?cid=5669520138100184195",
+          "label": "SelfBox Francisco Bauzá - Parque Batllé"
+        },
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "https://maps.app.goo.gl/ue5M9m1UgCh9kAZV8",
+          "label": "Francisco Bauzá 3341 - Pocitos, Montevideo."
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "5669520138100184195",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "selfbox-google-3",
+      "providerId": "selfbox",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJ4bTQol-Bn5URdeM7CPTUawc",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=SelfBox&query_place_id=ChIJ4bTQol-Bn5URdeM7CPTUawc",
+      "label": "SelfBox Mac Eachen - Pocitos",
+      "expectedNames": [
+        "SelfBox"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59898130584",
+        "+59899599831"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "https://www.google.com/maps?cid=534755125348787061",
+          "label": "SelfBox Mac Eachen - Pocitos"
+        },
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "https://maps.app.goo.gl/hPAm7dS7RTp5AnjZ6",
+          "label": "Mac Eachen 1395 - Pocitos, Montevideo."
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "534755125348787061",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "simplebox-google-1",
+      "providerId": "simplebox",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJA4Gx0M1_n5UR1VqOKnLk8N4",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Simple+Box&query_place_id=ChIJA4Gx0M1_n5UR1VqOKnLk8N4",
+      "label": "Casa Central",
+      "expectedNames": [
+        "Simple Box"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "https://maps.app.goo.gl/L52dG2XFtL9BKQ5s8",
+          "label": "Casa Central"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "0x959f7fcdd0b18103:0xdef0e4722a8e5ad5",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        },
+        {
+          "kind": "corporate_contact_not_profile_constraint",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "+59892333025",
+          "fact": "Contacto general publicado por la empresa. No es una expectativa de teléfono para esta sucursal; la identidad del perfil se comprobó por CID, país, nombre y dominio."
+        },
+        {
+          "kind": "corporate_contact_not_profile_constraint",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "+59829151515",
+          "fact": "Contacto general publicado por la empresa. No es una expectativa de teléfono para esta sucursal; la identidad del perfil se comprobó por CID, país, nombre y dominio."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "simplebox-google-2",
+      "providerId": "simplebox",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJU88xxq2Bn5UR2piwxf7jd0M",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Simple+Box&query_place_id=ChIJU88xxq2Bn5UR2piwxf7jd0M",
+      "label": "Sucursal 25",
+      "expectedNames": [
+        "Simple Box"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59892333025",
+        "+59829151515"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "https://maps.app.goo.gl/6z2QdWiANd9KZQPF6",
+          "label": "Sucursal 25"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "0x959f81adc631cf53:0x4377e3fec5b098da",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    },
+    {
+      "key": "teske-transportes-google-1",
+      "providerId": "teske-transportes",
+      "platform": "google",
+      "status": "verified",
+      "placeId": "ChIJ_0hwSITJr5URu-ogFeOZJnc",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Teske+Transportes&query_place_id=ChIJ_0hwSITJr5URu-ogFeOZJnc",
+      "label": "Teske Transportes",
+      "expectedNames": [
+        "Teske Transportes",
+        "Teske Transporte de Carga"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59847225034"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://teske.com.uy/",
+          "value": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d53951.470625601556!2d-58.121194839477525!3d-32.312742589858004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95afc984487048ff%3A0x772699e31520eabb!2sTeske%20Transporte%20de%20Carga!5e0!3m2!1ses-419!2suy!4v1774048613066!5m2!1ses-419!2suy",
+          "label": ""
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://teske.com.uy/",
+          "value": "0x95afc984487048ff:0x772699e31520eabb",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. También coinciden país Uruguay, nombre compatible, teléfono y dominio propios. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14"
+    }
+  ],
+  "references": [
+    {
+      "key": "furniture-home-google-canelones",
+      "providerId": "furniture-home",
+      "platform": "google",
+      "label": "Furniture Home — Canelones",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Furniture+Home&query_place_id=ChIJ_fSL3b1dKWwRexEdi-tcgKo",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://forniturehome-st.com/",
+      "live": true
+    },
+    {
+      "key": "furniture-home-google-montevideo",
+      "providerId": "furniture-home",
+      "platform": "google",
+      "label": "Furniture Home — Montevideo",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Furniture+Home&query_place_id=ChIJeYROI42Bn5URoe_mE46JM0c",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://forniturehome-st.com/",
+      "live": true
+    },
+    {
+      "key": "all-box-google-1",
+      "providerId": "all-box",
+      "platform": "google",
+      "label": "All Box Uruguay",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=All+Box+Uruguay&query_place_id=ChIJxd2J7tuHn5URD1IHneRtzhE",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://allboxuruguay.com/contacto/",
+      "live": true
+    },
+    {
+      "key": "all-storage-google-1",
+      "providerId": "all-storage",
+      "platform": "google",
+      "label": "Camino Tomkinson 2622, Montevideo.",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=All+Storage+Uruguay&query_place_id=ChIJ-Y6ErUbSYq8Rw_cx4PK-psw",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://allstorage.com.uy/servicios-de-almacenamiento/",
+      "live": true
+    },
+    {
+      "key": "autogiro-facebook-1",
+      "providerId": "autogiro",
+      "platform": "facebook",
+      "label": "Facebook",
+      "profileUrl": "https://www.facebook.com/Autogiro-277269922295679/?fref=ts",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://www.autogiro.com.uy/",
+      "live": false
+    },
+    {
+      "key": "delgado-fletes-minas-1122-1",
+      "providerId": "delgado-fletes-minas",
+      "platform": "1122",
+      "label": "Delgado Fletes",
+      "profileUrl": "https://1122.com.uy/local/delgado-fletes/LOC515570001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/delgado-fletes/LOC515570001",
+      "live": false
+    },
+    {
+      "key": "diego-batista-transportes-1122-1",
+      "providerId": "diego-batista-transportes",
+      "platform": "1122",
+      "label": "Diego Batista Transportes Fletes y Mudanzas",
+      "profileUrl": "https://1122.com.uy/local/diego-batista-transportes-fletes-y-mudanzas/LOC826260001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/diego-batista-transportes-fletes-y-mudanzas/LOC826260001",
+      "live": false
+    },
+    {
+      "key": "dt-transportes-facebook-1",
+      "providerId": "dt-transportes",
+      "platform": "facebook",
+      "label": "Fb",
+      "profileUrl": "https://www.facebook.com/Dturuguayuy",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://www.dt.com.uy/",
+      "live": false
+    },
+    {
+      "key": "expreso-2000-1122-1",
+      "providerId": "expreso-2000",
+      "platform": "1122",
+      "label": "Expreso 2000 Transportes y Servicios",
+      "profileUrl": "https://1122.com.uy/local/expreso-2000-transportes-y-servicios/LOC545120001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/expreso-2000-transportes-y-servicios/LOC545120001",
+      "live": false
+    },
+    {
+      "key": "expreso-este-facebook-1",
+      "providerId": "expreso-este",
+      "platform": "facebook",
+      "label": "facebook",
+      "profileUrl": "https://www.facebook.com/Expreso-Este-180864142604410/",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://www.expresoeste.com.uy/",
+      "live": false
+    },
+    {
+      "key": "fletes-atlantida-1122-1",
+      "providerId": "fletes-atlantida",
+      "platform": "1122",
+      "label": "Fletes Atlántida",
+      "profileUrl": "https://1122.com.uy/local/fletes-atlantida/LOC701680001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/fletes-atlantida/LOC701680001",
+      "live": false
+    },
+    {
+      "key": "fletes-costa-de-oro-1122-1",
+      "providerId": "fletes-costa-de-oro",
+      "platform": "1122",
+      "label": "Fletes Costa de Oro",
+      "profileUrl": "https://1122.com.uy/local/fletes-costa-de-oro/LOC553940001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/fletes-costa-de-oro/LOC553940001",
+      "live": false
+    },
+    {
+      "key": "fletes-juan-topayan-1122-1",
+      "providerId": "fletes-juan-topayan",
+      "platform": "1122",
+      "label": "Fletes y Mudanzas Juan Topayan",
+      "profileUrl": "https://1122.com.uy/local/fletes-y-mudanzas-juan-topayan/LOC584330001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/fletes-y-mudanzas-juan-topayan/LOC584330001",
+      "live": false
+    },
+    {
+      "key": "fletes-laura-1122-1",
+      "providerId": "fletes-laura",
+      "platform": "1122",
+      "label": "Fletes Laura",
+      "profileUrl": "https://1122.com.uy/local/fletes-laura/LOC884210001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/fletes-laura/LOC884210001",
+      "live": false
+    },
+    {
+      "key": "fletes-moraes-1122-1",
+      "providerId": "fletes-moraes",
+      "platform": "1122",
+      "label": "Fletes Moraes",
+      "profileUrl": "https://1122.com.uy/local/fletes-moraes/LOC501970001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/fletes-moraes/LOC501970001",
+      "live": false
+    },
+    {
+      "key": "fletes-mudanzas-paysandu-1122-1",
+      "providerId": "fletes-mudanzas-paysandu",
+      "platform": "1122",
+      "label": "Fletes y Mudanzas Paysandú",
+      "profileUrl": "https://1122.com.uy/local/fletes-y-mudanzas-paysandu/LOC883850001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/fletes-y-mudanzas-paysandu/LOC883850001",
+      "live": false
+    },
+    {
+      "key": "fletes-oriental-facebook-1",
+      "providerId": "fletes-oriental",
+      "platform": "facebook",
+      "label": "Facebook",
+      "profileUrl": "https://www.facebook.com/FletesOriental/",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "http://www.fletesoriental.com/",
+      "live": false
+    },
+    {
+      "key": "fletes-quintero-1122-1",
+      "providerId": "fletes-quintero",
+      "platform": "1122",
+      "label": "Fletes Quintero",
+      "profileUrl": "https://1122.com.uy/local/fletes-quintero/LOC447420001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/fletes-quintero/LOC447420001",
+      "live": false
+    },
+    {
+      "key": "fletes-sosa-las-piedras-1122-1",
+      "providerId": "fletes-sosa-las-piedras",
+      "platform": "1122",
+      "label": "Fletes Sosa",
+      "profileUrl": "https://1122.com.uy/local/fletes-sosa/LOC757830001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/fletes-sosa/LOC757830001",
+      "live": false
+    },
+    {
+      "key": "fletes-vaz-mercedes-1122-1",
+      "providerId": "fletes-vaz-mercedes",
+      "platform": "1122",
+      "label": "Fletes Vaz",
+      "profileUrl": "https://1122.com.uy/local/fletes-vaz/LOC761940001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/fletes-vaz/LOC761940001",
+      "live": false
+    },
+    {
+      "key": "flety-facebook-1",
+      "providerId": "flety",
+      "platform": "facebook",
+      "label": "Flety Uruguay",
+      "profileUrl": "https://www.facebook.com/fletyuruguay",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://www.flety.uy/",
+      "live": false
+    },
+    {
+      "key": "los-pinones-facebook-1",
+      "providerId": "los-pinones",
+      "platform": "facebook",
+      "label": "Facebook",
+      "profileUrl": "https://www.facebook.com/people/Los-pi%25C3%25B1ones-fletes-y-mudanzas-a-todo-el-pa%25C3%25ADs-somos-de-montevideo/100078981181123/",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://mudanzasmontevideo.uy/",
+      "live": false
+    },
+    {
+      "key": "los-pinones-google-2",
+      "providerId": "los-pinones",
+      "platform": "google",
+      "label": "Fletes y Mudanzas Los Piñones",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Fletes+y+Mudanzas+Los+Pi%C3%B1ones&query_place_id=ChIJRS1VssmBn5URozG7ehb603Y",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://mudanzasmontevideo.uy/",
+      "live": true
+    },
+    {
+      "key": "marcos-perez-durazno-1122-1",
+      "providerId": "marcos-perez-durazno",
+      "platform": "1122",
+      "label": "Marcos Pérez Fletes",
+      "profileUrl": "https://1122.com.uy/local/marcos-perez/LOC515080001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/marcos-perez/LOC515080001",
+      "live": false
+    },
+    {
+      "key": "mudanzas-lugo-facebook-1",
+      "providerId": "mudanzas-lugo",
+      "platform": "facebook",
+      "label": "Fletes y Mudanzas Lugo",
+      "profileUrl": "https://www.facebook.com/lugomudanzasyfletes/",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://www.mudanzaslugo.com.uy/",
+      "live": false
+    },
+    {
+      "key": "mudanzas-lugo-google-1",
+      "providerId": "mudanzas-lugo",
+      "platform": "google",
+      "label": "Fletes y Mudanzas Lugo",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Fletes+y+Mudanzas+Lugo&query_place_id=ChIJGVjCeTaBn5URteF1cw86-qU",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://www.mudanzaslugo.com.uy/",
+      "live": true
+    },
+    {
+      "key": "naterial-envio-armado-facebook-1",
+      "providerId": "naterial-envio-armado",
+      "platform": "facebook",
+      "label": "Naterial — envío y armado de compra",
+      "profileUrl": "https://www.facebook.com/naterial.uy",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://www.naterial.com/uy/politica-de-envio",
+      "live": false
+    },
+    {
+      "key": "naterial-envio-armado-google-1",
+      "providerId": "naterial-envio-armado",
+      "platform": "google",
+      "label": "Naterial — Punta Carretas",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Naterial&query_place_id=ChIJJ04JhQyBn5URuSu8d7EHw9Y",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+      "live": true
+    },
+    {
+      "key": "naterial-envio-armado-google-2",
+      "providerId": "naterial-envio-armado",
+      "platform": "google",
+      "label": "Naterial — Car One",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Naterial&query_place_id=ChIJ_WFRRNOJn5URyXgzftraHZ8",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+      "live": true
+    },
+    {
+      "key": "naterial-envio-armado-google-3",
+      "providerId": "naterial-envio-armado",
+      "platform": "google",
+      "label": "Naterial — La Barra",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Naterial&query_place_id=ChIJkXnHoMgFdZURKbSCgxlPIlc",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+      "live": true
+    },
+    {
+      "key": "one-storage-google-5",
+      "providerId": "one-storage",
+      "platform": "google",
+      "label": "Google Maps: ONE Storage Montevideo",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=ONE+Storage&query_place_id=ChIJ0ZkSgLopoJURquZu9tHB_TQ",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://www.onestorage.uy/",
+      "live": true
+    },
+    {
+      "key": "poa-fletes-homesolution-1",
+      "providerId": "poa-fletes",
+      "platform": "homesolution",
+      "label": "POA Fletes",
+      "profileUrl": "https://homesolution.net/uy/fletero/poa-fletes-1735",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://homesolution.net/uy/fletero/poa-fletes-1735",
+      "live": false
+    },
+    {
+      "key": "rg-mudanzas-rocha-1122-1",
+      "providerId": "rg-mudanzas-rocha",
+      "platform": "1122",
+      "label": "RG Mudanzas y Fletes",
+      "profileUrl": "https://1122.com.uy/local/rg-mudanzas-y-fletes/LOC790300001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/rg-mudanzas-y-fletes/LOC790300001",
+      "live": false
+    },
+    {
+      "key": "selfbox-google-1",
+      "providerId": "selfbox",
+      "platform": "google",
+      "label": "SelfBox Juan Paullier - Tres Cruces",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=SelfBox&query_place_id=ChIJS2uDwBmBn5UR1jl13ib-75U",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+      "live": true
+    },
+    {
+      "key": "selfbox-google-2",
+      "providerId": "selfbox",
+      "platform": "google",
+      "label": "SelfBox Francisco Bauzá - Parque Batllé",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=SelfBox&query_place_id=ChIJs_f4C-KBn5URg5Ri9oYurk4",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+      "live": true
+    },
+    {
+      "key": "selfbox-google-3",
+      "providerId": "selfbox",
+      "platform": "google",
+      "label": "SelfBox Mac Eachen - Pocitos",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=SelfBox&query_place_id=ChIJ4bTQol-Bn5URdeM7CPTUawc",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+      "live": true
+    },
+    {
+      "key": "simplebox-facebook-1",
+      "providerId": "simplebox",
+      "platform": "facebook",
+      "label": "Facebook",
+      "profileUrl": "https://www.facebook.com/simplebox.uy",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://simplebox.uy/particulares",
+      "live": false
+    },
+    {
+      "key": "simplebox-google-1",
+      "providerId": "simplebox",
+      "platform": "google",
+      "label": "Casa Central",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Simple+Box&query_place_id=ChIJA4Gx0M1_n5UR1VqOKnLk8N4",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://simplebox.uy/particulares",
+      "live": true
+    },
+    {
+      "key": "simplebox-google-2",
+      "providerId": "simplebox",
+      "platform": "google",
+      "label": "Sucursal 25",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Simple+Box&query_place_id=ChIJU88xxq2Bn5UR2piwxf7jd0M",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://simplebox.uy/particulares",
+      "live": true
+    },
+    {
+      "key": "teske-transportes-google-1",
+      "providerId": "teske-transportes",
+      "platform": "google",
+      "label": "Teske Transportes",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=Teske+Transportes&query_place_id=ChIJ_0hwSITJr5URu-ogFeOZJnc",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://teske.com.uy/",
+      "live": true
+    },
+    {
+      "key": "tienda-porto-instalaciones-facebook-1",
+      "providerId": "tienda-porto-instalaciones",
+      "platform": "facebook",
+      "label": " Facebook",
+      "profileUrl": "https://www.facebook.com/profile.php?id=61580326682646",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://tienda.portoservicios.com.uy/servicios",
+      "live": false
+    },
+    {
+      "key": "tm-transportes-colonia-1122-1",
+      "providerId": "tm-transportes-colonia",
+      "platform": "1122",
+      "label": "TM Transportes",
+      "profileUrl": "https://1122.com.uy/local/tm-transportes/LOC791840002",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/tm-transportes/LOC791840002",
+      "live": false
+    },
+    {
+      "key": "transporte-tabajara-1122-1",
+      "providerId": "transporte-tabajara",
+      "platform": "1122",
+      "label": "Transporte Tabajara",
+      "profileUrl": "https://1122.com.uy/local/transporte-tabajara/LOC889370001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/transporte-tabajara/LOC889370001",
+      "live": false
+    },
+    {
+      "key": "transportes-el-aguila-rivera-1122-1",
+      "providerId": "transportes-el-aguila-rivera",
+      "platform": "1122",
+      "label": "Transportes El Águila",
+      "profileUrl": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001",
+      "live": false
+    },
+    {
+      "key": "transportes-sanchez-1122-colonia",
+      "providerId": "transportes-sanchez",
+      "platform": "1122",
+      "label": "Transportes Sánchez — ficha Colonia",
+      "profileUrl": "https://1122.com.uy/local/transportes-sanchez/LOC589240001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/transportes-sanchez/LOC589240001",
+      "live": false
+    },
+    {
+      "key": "unsi-armado-tienda-facebook-1",
+      "providerId": "unsi-armado-tienda",
+      "platform": "facebook",
+      "label": "UNSI Home & Deco on Facebook",
+      "profileUrl": "https://www.facebook.com/unsi.uy",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+      "live": false
+    },
+    {
+      "key": "vamos-uy-facebook-1",
+      "providerId": "vamos-uy",
+      "platform": "facebook",
+      "label": "VAMOS UY",
+      "profileUrl": "https://www.facebook.com/profile.php?id=100088086566072",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://vamosfletesymudanzas.uy/",
+      "live": false
+    },
+    {
+      "key": "walymar-colonia-1122-1",
+      "providerId": "walymar-colonia",
+      "platform": "1122",
+      "label": "Walymar Fletes Mudanzas",
+      "profileUrl": "https://1122.com.uy/local/walymar-fletes-mudanzas/LOC523230001",
+      "checkedAt": "2026-09-14",
+      "sourceUrl": "https://1122.com.uy/local/walymar-fletes-mudanzas/LOC523230001",
+      "live": false
+    }
+  ]
+}

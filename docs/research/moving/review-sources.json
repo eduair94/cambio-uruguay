@@ -1,0 +1,3238 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-09-14",
+  "status": "complete",
+  "scope": {
+    "providersChecked": 80,
+    "pricedProvidersPrioritized": 19,
+    "sourceChecks": 123,
+    "profilesByStatus": {
+      "verified": 48,
+      "ambiguous": 10,
+      "rejected": 3
+    },
+    "profilesByPlatform": {
+      "google": 26,
+      "facebook": 15,
+      "1122": 19,
+      "homesolution": 1
+    },
+    "providersWithVerifiedProfile": 38,
+    "profilesWithPlaceId": 16,
+    "providersWithPlaceId": 10
+  },
+  "methodology": [
+    "Se inspeccionaron enlaces públicos de los sitios y referencias comerciales del catálogo, sin búsquedas por nombre para inferir coincidencias.",
+    "Verified describe evidencia de identidad del perfil; no certifica calidad del servicio ni disponibilidad de reseñas.",
+    "No se guardaron opiniones personales, autores, fotos, estrellas, recuentos de valoraciones ni payloads de Google Maps.",
+    "Enlaces de compartir, perfiles de autores de reseñas y redes sociales del directorio o tienda que recomendó a un armador fueron excluidos.",
+    "La redirección pública sirve para corroborar destino e identificadores. No hubo inicio de sesión, mensajes ni publicación.",
+    "Una puntuación de tienda o sucursal no representa automáticamente armado, flete u otro servicio específico.",
+    "No se hallaron enlaces propios a Trustpilot en la muestra. La ausencia de enlaces no indica ausencia de reputación."
+  ],
+  "profiles": [
+    {
+      "key": "furniture-home-google-canelones",
+      "providerId": "furniture-home",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://g.page/r/CXsRHYvrXICqEBM/review",
+      "label": "Furniture Home — Canelones",
+      "expectedNames": [
+        "Furniture Home",
+        "Furniture Home S.T."
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://forniturehome-st.com/",
+          "value": "https://g.page/r/CXsRHYvrXICqEBM/review",
+          "label": "Soy Cliente  de Canelones  quiero dejar una calificación"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace explícito para calificar esa sede. Place ID observado en redirección pública a writereview; no se inició sesión ni se enviaron reseñas."
+      ],
+      "expectedPhoneNumbers": [
+        "+59892972375",
+        "+59897197929"
+      ],
+      "resolvedUrl": "https://search.google.com/local/writereview?placeid=ChIJ_fSL3b1dKWwRexEdi-tcgKo&source=g.page.m.ia._&laa=nmx-review-solicitation-ia2",
+      "placeId": "ChIJ_fSL3b1dKWwRexEdi-tcgKo"
+    },
+    {
+      "key": "furniture-home-google-montevideo",
+      "providerId": "furniture-home",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://g.page/r/CaHv5hOOiTNHEBM/review",
+      "label": "Furniture Home — Montevideo",
+      "expectedNames": [
+        "Furniture Home",
+        "Furniture Home S.T."
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://forniturehome-st.com/",
+          "value": "https://g.page/r/CaHv5hOOiTNHEBM/review",
+          "label": "Soy Cliente  de Montevideo  quiero dejar una calificación"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace explícito para calificar esa sede. Place ID observado en redirección pública a writereview; no se inició sesión ni se enviaron reseñas."
+      ],
+      "expectedPhoneNumbers": [
+        "+59892972375",
+        "+59897197929"
+      ],
+      "resolvedUrl": "https://search.google.com/local/writereview?placeid=ChIJeYROI42Bn5URoe_mE46JM0c&source=g.page.m.ia._&laa=nmx-review-solicitation-ia2",
+      "placeId": "ChIJeYROI42Bn5URoe_mE46JM0c"
+    },
+    {
+      "key": "all-box-google-1",
+      "providerId": "all-box",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3273.0352402841186!2d-56.11343608476291!3d-34.880461380388816!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f87dbee89ddc5%3A0x11ce6de49d07520f!2sAll%20Box!5e0!3m2!1ses!2suy!4v1649074981812!5m2!1ses!2suy",
+      "label": "All Box Uruguay",
+      "expectedNames": [
+        "All Box Uruguay",
+        "All Box"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://allboxuruguay.com/contacto/",
+          "value": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3273.0352402841186!2d-56.11343608476291!3d-34.880461380388816!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f87dbee89ddc5%3A0x11ce6de49d07520f!2sAll%20Box!5e0!3m2!1ses!2suy!4v1649074981812!5m2!1ses!2suy",
+          "label": ""
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://allboxuruguay.com/contacto/",
+          "value": "0x959f87dbee89ddc5:0x11ce6de49d07520f",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. También coinciden país Uruguay, nombre compatible, teléfono y dominio propios. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google."
+      ],
+      "expectedPhoneNumbers": [
+        "+59825247138",
+        "+59894079152"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3273.0352402841186!2d-56.11343608476291!3d-34.880461380388816!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f87dbee89ddc5%3A0x11ce6de49d07520f!2sAll%20Box!5e0!3m2!1ses!2suy!4v1649074981812!5m2!1ses!2suy",
+      "featureId": "0x959f87dbee89ddc5:0x11ce6de49d07520f",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_feature_cid_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": true,
+        "publicDomainMatches": true
+      },
+      "placeId": "ChIJxd2J7tuHn5URD1IHneRtzhE"
+    },
+    {
+      "key": "all-storage-google-1",
+      "providerId": "all-storage",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://maps.app.goo.gl/gsTSASNDSpW7WKfy7",
+      "label": "Camino Tomkinson 2622, Montevideo.",
+      "expectedNames": [
+        "All Storage Uruguay",
+        "All Storage"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://allstorage.com.uy/servicios-de-almacenamiento/",
+          "value": "https://maps.app.goo.gl/gsTSASNDSpW7WKfy7",
+          "label": "Camino Tomkinson 2622, Montevideo."
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://allstorage.com.uy/servicios-de-almacenamiento/",
+          "value": "0xaf62d246ad848ef9:0xcca6bef2e031f7c3",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. También coinciden país Uruguay, nombre compatible, teléfono y dominio propios. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google."
+      ],
+      "expectedPhoneNumbers": [
+        "+59898899042"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/place/All+Storage/@-34.8264068,-56.2367623,10z/data=!4m6!3m5!1s0xaf62d246ad848ef9:0xcca6bef2e031f7c3!8m2!3d-34.8403118!4d-56.2772445!16s%2Fg%2F11xm4zjd0l?entry=tts&g_ep=EgoyMDI1MDcyMy4wIPu8ASoASAFQAw%3D%3D&skid=36ce0974-dbdb-4124-8e79-8ad1b7cb58ff",
+      "featureId": "0xaf62d246ad848ef9:0xcca6bef2e031f7c3",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_feature_cid_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": true,
+        "publicDomainMatches": true
+      },
+      "placeId": "ChIJ-Y6ErUbSYq8Rw_cx4PK-psw"
+    },
+    {
+      "key": "all-storage-google-2",
+      "providerId": "all-storage",
+      "platform": "google",
+      "status": "ambiguous",
+      "profileUrl": "https://maps.google.com/maps?q=All%20Storage%20Montevideo&t=m&z=15&output=embed&iwloc=near",
+      "label": "All Storage Montevideo",
+      "expectedNames": [
+        "All Storage Uruguay"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://allstorage.com.uy/contacto/",
+          "value": "https://maps.google.com/maps?q=All%20Storage%20Montevideo&t=m&z=15&output=embed&iwloc=near",
+          "label": "All Storage Montevideo"
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Sólo dirección, coordenadas o búsqueda de texto; no prueba un Business Profile del prestador.",
+        "No hay Place ID explícito. featureId/cid, si constan, son identificadores distintos y no se enviarán como Places ID."
+      ],
+      "expectedPhoneNumbers": [
+        "+59898899042"
+      ],
+      "resolvedUrl": "https://maps.google.com/maps?q=All%20Storage%20Montevideo&t=m&z=15&output=embed&iwloc=near"
+    },
+    {
+      "key": "armadores-montevideo-google-1",
+      "providerId": "armadores-montevideo",
+      "platform": "google",
+      "status": "ambiguous",
+      "profileUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1635.9951328746324!2d-56.21224656105294!3d-34.9066937935711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f7f84716a0411%3A0x6d499049aebda667!2sCalle%20Perez%20Castellano%20%26%20Cerrito%2C%2011000%20Montevideo%2C%20Departamento%20de%20Montevideo%2C%20Uruguay!5e0!3m2!1sen!2sca!4v1731026315567!5m2!1sen!2sca",
+      "label": "ArmadoresMontevideo",
+      "expectedNames": [
+        "ArmadoresMontevideo"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://armadoresmontevideo.uy/",
+          "value": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1635.9951328746324!2d-56.21224656105294!3d-34.9066937935711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f7f84716a0411%3A0x6d499049aebda667!2sCalle%20Perez%20Castellano%20%26%20Cerrito%2C%2011000%20Montevideo%2C%20Departamento%20de%20Montevideo%2C%20Uruguay!5e0!3m2!1sen!2sca!4v1731026315567!5m2!1sen!2sca",
+          "label": ""
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Sólo dirección, coordenadas o búsqueda de texto; no prueba un Business Profile del prestador.",
+        "No hay Place ID explícito. featureId/cid, si constan, son identificadores distintos y no se enviarán como Places ID."
+      ],
+      "expectedPhoneNumbers": [
+        "+59895881009"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1635.9951328746324!2d-56.21224656105294!3d-34.9066937935711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f7f84716a0411%3A0x6d499049aebda667!2sCalle%20Perez%20Castellano%20%26%20Cerrito%2C%2011000%20Montevideo%2C%20Departamento%20de%20Montevideo%2C%20Uruguay!5e0!3m2!1sen!2sca!4v1731026315567!5m2!1sen!2sca",
+      "featureId": "0x959f7f84716a0411:0x6d499049aebda667"
+    },
+    {
+      "key": "autogiro-facebook-1",
+      "providerId": "autogiro",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/Autogiro-277269922295679/?fref=ts",
+      "label": "Facebook",
+      "expectedNames": [
+        "Autogiro"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.autogiro.com.uy/",
+          "value": "https://www.facebook.com/Autogiro-277269922295679/?fref=ts",
+          "label": "Facebook"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ],
+      "expectedPhoneNumbers": [
+        "+59829241577"
+      ]
+    },
+    {
+      "key": "delgado-fletes-minas-1122-1",
+      "providerId": "delgado-fletes-minas",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/delgado-fletes/LOC515570001",
+      "label": "Delgado Fletes",
+      "expectedNames": [
+        "Delgado Fletes"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/delgado-fletes/LOC515570001",
+          "value": "094244302"
+        },
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/delgado-fletes/LOC515570001",
+          "value": "44431220"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59894244302",
+        "+59844431220"
+      ]
+    },
+    {
+      "key": "diego-batista-transportes-1122-1",
+      "providerId": "diego-batista-transportes",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/diego-batista-transportes-fletes-y-mudanzas/LOC826260001",
+      "label": "Diego Batista Transportes Fletes y Mudanzas",
+      "expectedNames": [
+        "Diego Batista Transportes Fletes y Mudanzas"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/diego-batista-transportes-fletes-y-mudanzas/LOC826260001",
+          "value": "091411219"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59891411219"
+      ]
+    },
+    {
+      "key": "dt-transportes-facebook-1",
+      "providerId": "dt-transportes",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/Dturuguayuy",
+      "label": "Fb",
+      "expectedNames": [
+        "DT Transportes / Distribución Total"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.dt.com.uy/",
+          "value": "https://www.facebook.com/Dturuguayuy",
+          "label": "Fb"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ],
+      "expectedPhoneNumbers": [
+        "+59829035535",
+        "+59829035567",
+        "+59894477139",
+        "+59894477198"
+      ]
+    },
+    {
+      "key": "expreso-2000-1122-1",
+      "providerId": "expreso-2000",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/expreso-2000-transportes-y-servicios/LOC545120001",
+      "label": "Expreso 2000 Transportes y Servicios",
+      "expectedNames": [
+        "Expreso 2000 Transportes y Servicios"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/expreso-2000-transportes-y-servicios/LOC545120001",
+          "value": "099270809"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59899270809"
+      ]
+    },
+    {
+      "key": "expreso-este-facebook-1",
+      "providerId": "expreso-este",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/Expreso-Este-180864142604410/",
+      "label": "facebook",
+      "expectedNames": [
+        "Expreso Este"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.expresoeste.com.uy/",
+          "value": "https://www.facebook.com/Expreso-Este-180864142604410/",
+          "label": "facebook"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ],
+      "expectedPhoneNumbers": [
+        "+59842224031",
+        "+59891667611",
+        "+59891470345"
+      ]
+    },
+    {
+      "key": "fletes-atlantida-1122-1",
+      "providerId": "fletes-atlantida",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/fletes-atlantida/LOC701680001",
+      "label": "Fletes Atlántida",
+      "expectedNames": [
+        "Fletes Atlántida"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-atlantida/LOC701680001",
+          "value": "+59843727489"
+        },
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-atlantida/LOC701680001",
+          "value": "+59899601615"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59843727489",
+        "+59899601615"
+      ]
+    },
+    {
+      "key": "fletes-costa-de-oro-1122-1",
+      "providerId": "fletes-costa-de-oro",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/fletes-costa-de-oro/LOC553940001",
+      "label": "Fletes Costa de Oro",
+      "expectedNames": [
+        "Fletes Costa de Oro"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-costa-de-oro/LOC553940001",
+          "value": "+59894831382"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59894831382"
+      ]
+    },
+    {
+      "key": "fletes-juan-topayan-1122-1",
+      "providerId": "fletes-juan-topayan",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/fletes-y-mudanzas-juan-topayan/LOC584330001",
+      "label": "Fletes y Mudanzas Juan Topayan",
+      "expectedNames": [
+        "Fletes y Mudanzas Juan Topayan"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-y-mudanzas-juan-topayan/LOC584330001",
+          "value": "47237476"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59847237476"
+      ]
+    },
+    {
+      "key": "fletes-laura-1122-1",
+      "providerId": "fletes-laura",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/fletes-laura/LOC884210001",
+      "label": "Fletes Laura",
+      "expectedNames": [
+        "Fletes Laura"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-laura/LOC884210001",
+          "value": "+59825134638"
+        },
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-laura/LOC884210001",
+          "value": "+59895602063"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59825134638",
+        "+59895602063"
+      ]
+    },
+    {
+      "key": "fletes-moraes-1122-1",
+      "providerId": "fletes-moraes",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/fletes-moraes/LOC501970001",
+      "label": "Fletes Moraes",
+      "expectedNames": [
+        "Fletes Moraes"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-moraes/LOC501970001",
+          "value": "099734896"
+        },
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-moraes/LOC501970001",
+          "value": "091037010"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59899734896",
+        "+59891037010"
+      ]
+    },
+    {
+      "key": "fletes-mudanzas-paysandu-1122-1",
+      "providerId": "fletes-mudanzas-paysandu",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/fletes-y-mudanzas-paysandu/LOC883850001",
+      "label": "Fletes y Mudanzas Paysandú",
+      "expectedNames": [
+        "Fletes y Mudanzas Paysandú"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-y-mudanzas-paysandu/LOC883850001",
+          "value": "098979954"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59898979954"
+      ]
+    },
+    {
+      "key": "fletes-oriental-facebook-1",
+      "providerId": "fletes-oriental",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/FletesOriental/",
+      "label": "Facebook",
+      "expectedNames": [
+        "Fletes Oriental"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "http://www.fletesoriental.com/",
+          "value": "https://www.facebook.com/FletesOriental/",
+          "label": "Facebook"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ],
+      "expectedPhoneNumbers": [
+        "+59893766489"
+      ]
+    },
+    {
+      "key": "fletes-quintero-1122-1",
+      "providerId": "fletes-quintero",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/fletes-quintero/LOC447420001",
+      "label": "Fletes Quintero",
+      "expectedNames": [
+        "Fletes Quintero"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-quintero/LOC447420001",
+          "value": "43422924"
+        },
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-quintero/LOC447420001",
+          "value": "095111044"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59843422924",
+        "+59895111044"
+      ]
+    },
+    {
+      "key": "fletes-sosa-las-piedras-1122-1",
+      "providerId": "fletes-sosa-las-piedras",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/fletes-sosa/LOC757830001",
+      "label": "Fletes Sosa",
+      "expectedNames": [
+        "Fletes Sosa"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-sosa/LOC757830001",
+          "value": "+59891528768"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59891528768"
+      ]
+    },
+    {
+      "key": "fletes-vaz-mercedes-1122-1",
+      "providerId": "fletes-vaz-mercedes",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/fletes-vaz/LOC761940001",
+      "label": "Fletes Vaz",
+      "expectedNames": [
+        "Fletes Vaz"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/fletes-vaz/LOC761940001",
+          "value": "099533675"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59899533675"
+      ]
+    },
+    {
+      "key": "flety-facebook-1",
+      "providerId": "flety",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/fletyuruguay",
+      "label": "Flety Uruguay",
+      "expectedNames": [
+        "Flety"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.flety.uy/",
+          "value": "https://www.facebook.com/fletyuruguay",
+          "label": "Flety Uruguay"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ]
+    },
+    {
+      "key": "furniture-home-facebook-1",
+      "providerId": "furniture-home",
+      "platform": "facebook",
+      "status": "ambiguous",
+      "profileUrl": "https://www.facebook.com/share/18j4dH4S8Y/",
+      "label": "Enlace social: https://www.facebook.com/share/18j4dH4S8Y/",
+      "expectedNames": [
+        "Furniture Home"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://forniturehome-st.com/",
+          "value": "https://www.facebook.com/share/18j4dH4S8Y/",
+          "label": "Enlace social: https://www.facebook.com/share/18j4dH4S8Y/"
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar.",
+        "Enlace compartido o perfil personal; no se ha confirmado una página comercial con recomendaciones."
+      ],
+      "expectedPhoneNumbers": [
+        "+59892972375",
+        "+59897197929"
+      ]
+    },
+    {
+      "key": "grupo-meta-integral-google-1",
+      "providerId": "grupo-meta-integral",
+      "platform": "google",
+      "status": "rejected",
+      "profileUrl": "https://maps.app.goo.gl/2TWiaf3DBfx5HQNy9",
+      "label": "Montevideo, Uruguay\nAguada/Cordón (Centro)",
+      "expectedNames": [
+        "Grupo Meta Integral"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://grupometaintegral.uy/servicios/limpieza-de-mudanza-en-montevideo/",
+          "value": "https://maps.app.goo.gl/2TWiaf3DBfx5HQNy9",
+          "label": "Montevideo, Uruguay\nAguada/Cordón (Centro)"
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El enlace presentado como Montevideo resuelve a Joy of Cleaning en Florida, Estados Unidos (27.7729261,-82.63893): negocio y país incompatibles.",
+        "No hay Place ID explícito. featureId/cid, si constan, son identificadores distintos y no se enviarán como Places ID."
+      ],
+      "expectedPhoneNumbers": [
+        "+59897280720"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/place/Joy+of+Cleaning/@27.7729308,-82.6415103,1219m/data=!3m2!1e3!5s0x88e7db236641dcc7:0xd3be73b915d68970!4m6!3m5!1s0x88c2e1e99ef55a9b:0xb16a7d07765addf8!8m2!3d27.7729261!4d-82.63893!16s%2Fg%2F11j7kg2bq4?coh=225988&entry=tts&g_ep=EgoyMDI1MDExNS4wIPu8ASoASAFQAw%3D%3D",
+      "featureId": "0x88c2e1e99ef55a9b:0xb16a7d07765addf8"
+    },
+    {
+      "key": "los-pinones-facebook-1",
+      "providerId": "los-pinones",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/people/Los-pi%25C3%25B1ones-fletes-y-mudanzas-a-todo-el-pa%25C3%25ADs-somos-de-montevideo/100078981181123/",
+      "label": "Facebook",
+      "expectedNames": [
+        "Fletes y Mudanzas Los Piñones"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://mudanzasmontevideo.uy/",
+          "value": "https://www.facebook.com/people/Los-pi%25C3%25B1ones-fletes-y-mudanzas-a-todo-el-pa%25C3%25ADs-somos-de-montevideo/100078981181123/",
+          "label": "Facebook"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ],
+      "expectedPhoneNumbers": [
+        "+59893686479"
+      ]
+    },
+    {
+      "key": "los-pinones-google-1",
+      "providerId": "los-pinones",
+      "platform": "google",
+      "status": "ambiguous",
+      "profileUrl": "https://maps.google.com/maps?q=Fletes%20y%20Mudanzas%20Los%20Pi%C3%B1ones%20Av.%2018%20de%20Julio%2C%2011800%20Montevideo%2C%20Departamento%20de%20Montevideo%2C%20Uruguay&t=m&z=13&output=embed&iwloc=near",
+      "label": "Fletes y Mudanzas Los Piñones Av. 18 de Julio, 11800 Montevideo, Departamento de Montevideo, Uruguay",
+      "expectedNames": [
+        "Fletes y Mudanzas Los Piñones"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://mudanzasmontevideo.uy/",
+          "value": "https://maps.google.com/maps?q=Fletes%20y%20Mudanzas%20Los%20Pi%C3%B1ones%20Av.%2018%20de%20Julio%2C%2011800%20Montevideo%2C%20Departamento%20de%20Montevideo%2C%20Uruguay&t=m&z=13&output=embed&iwloc=near",
+          "label": "Fletes y Mudanzas Los Piñones Av. 18 de Julio, 11800 Montevideo, Departamento de Montevideo, Uruguay"
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Sólo dirección, coordenadas o búsqueda de texto; no prueba un Business Profile del prestador.",
+        "No hay Place ID explícito. featureId/cid, si constan, son identificadores distintos y no se enviarán como Places ID."
+      ],
+      "expectedPhoneNumbers": [
+        "+59893686479"
+      ],
+      "resolvedUrl": "https://maps.google.com/maps?q=Fletes%20y%20Mudanzas%20Los%20Pi%C3%B1ones%20Av.%2018%20de%20Julio%2C%2011800%20Montevideo%2C%20Departamento%20de%20Montevideo%2C%20Uruguay&t=m&z=13&output=embed&iwloc=near"
+    },
+    {
+      "key": "los-pinones-google-2",
+      "providerId": "los-pinones",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://maps.app.goo.gl/cQaLDXmmiw4K4sNs8",
+      "label": "Fletes y Mudanzas Los Piñones",
+      "expectedNames": [
+        "Fletes y Mudanzas Los Piñones"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://mudanzasmontevideo.uy/",
+          "value": "https://maps.app.goo.gl/cQaLDXmmiw4K4sNs8",
+          "label": "Dirección"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://mudanzasmontevideo.uy/",
+          "value": "0x959f81c9b2552d45:0x76d3fa167abb31a3",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. También coinciden país Uruguay, nombre compatible, teléfono y dominio propios. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google."
+      ],
+      "expectedPhoneNumbers": [
+        "+59893686479"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/place/Fletes+y+Mudanzas+Los+Pi%C3%B1ones/@-34.9018092,-56.1761232,15z/data=!4m6!3m5!1s0x959f81c9b2552d45:0x76d3fa167abb31a3!8m2!3d-34.9018092!4d-56.1761232!16s%2Fg%2F11khsn37jk?sa=X&ved=1t:2428&ictx=111&entry=tts&g_ep=EgoyMDI0MTAwOS4wIPu8ASoASAFQAw%3D%3D",
+      "featureId": "0x959f81c9b2552d45:0x76d3fa167abb31a3",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_feature_cid_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": true,
+        "publicDomainMatches": true
+      },
+      "placeId": "ChIJRS1VssmBn5URozG7ehb603Y"
+    },
+    {
+      "key": "maeso-transportes-facebook-1",
+      "providerId": "maeso-transportes",
+      "platform": "facebook",
+      "status": "ambiguous",
+      "profileUrl": "https://www.facebook.com/german.maeso.9",
+      "label": "Facebook",
+      "expectedNames": [
+        "Maeso Transportes"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://maesotransportes.com.uy/",
+          "value": "https://www.facebook.com/german.maeso.9",
+          "label": "Facebook"
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar.",
+        "Enlace compartido o perfil personal; no se ha confirmado una página comercial con recomendaciones."
+      ],
+      "expectedPhoneNumbers": [
+        "+59897432680"
+      ]
+    },
+    {
+      "key": "maeso-transportes-google-1",
+      "providerId": "maeso-transportes",
+      "platform": "google",
+      "status": "ambiguous",
+      "profileUrl": "https://goo.gl/maps/m72hMf5AMXx1a7qz9",
+      "label": "Ignacio Medina 3843",
+      "expectedNames": [
+        "Maeso Transportes"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://maesotransportes.com.uy/",
+          "value": "https://goo.gl/maps/m72hMf5AMXx1a7qz9",
+          "label": "Ignacio Medina 3843"
+        },
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://maesotransportes.com.uy/",
+          "value": "https://www.google.com.uy/maps/place/Ignacio+Medina+3843,+11700+Montevideo,+Departamento+de+Montevideo/@-34.8559472,-56.1936794,20z/data=!4m5!3m4!1s0x95a02ab06944fb79:0x19ff696b985bfef7!8m2!3d-34.855961!4d-56.1934729?hl=es-419&coh=164777&entry=tt&shorturl=1",
+          "label": "Ignacio Medina 3843"
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Sólo dirección, coordenadas o búsqueda de texto; no prueba un Business Profile del prestador.",
+        "No hay Place ID explícito. featureId/cid, si constan, son identificadores distintos y no se enviarán como Places ID."
+      ],
+      "expectedPhoneNumbers": [
+        "+59897432680"
+      ],
+      "resolvedUrl": "https://www.google.com.uy/maps/place/Ignacio+Medina+3843,+11700+Montevideo,+Departamento+de+Montevideo/@-34.8559472,-56.1936794,20z/data=!4m5!3m4!1s0x95a02ab06944fb79:0x19ff696b985bfef7!8m2!3d-34.855961!4d-56.1934729?hl=es-419&coh=164777&entry=tt&shorturl=1",
+      "featureId": "0x95a02ab06944fb79:0x19ff696b985bfef7",
+      "alternateProfileUrls": [
+        "https://www.google.com.uy/maps/place/Ignacio+Medina+3843,+11700+Montevideo,+Departamento+de+Montevideo/@-34.8559472,-56.1936794,20z/data=!4m5!3m4!1s0x95a02ab06944fb79:0x19ff696b985bfef7!8m2!3d-34.855961!4d-56.1934729?hl=es-419&coh=164777&entry=tt&shorturl=1"
+      ]
+    },
+    {
+      "key": "marcos-perez-durazno-1122-1",
+      "providerId": "marcos-perez-durazno",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/marcos-perez/LOC515080001",
+      "label": "Marcos Pérez Fletes",
+      "expectedNames": [
+        "Marcos Pérez Fletes"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/marcos-perez/LOC515080001",
+          "value": "099359864"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59899359864"
+      ]
+    },
+    {
+      "key": "mudanzas-lugo-facebook-1",
+      "providerId": "mudanzas-lugo",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/lugomudanzasyfletes/",
+      "label": "Fletes y Mudanzas Lugo",
+      "expectedNames": [
+        "Fletes y Mudanzas Lugo"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.mudanzaslugo.com.uy/",
+          "value": "https://www.facebook.com/lugomudanzasyfletes/",
+          "label": ""
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ],
+      "expectedPhoneNumbers": [
+        "+59896601465"
+      ]
+    },
+    {
+      "key": "mudanzas-lugo-google-1",
+      "providerId": "mudanzas-lugo",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3272.6900481894113!2d-56.1170996847627!3d-34.88912878038637!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f813679c25819%3A0xa5fa3a0f7375e1b5!2sFletes%20Lugo!5e0!3m2!1ses-419!2suy!4v1655765600337!5m2!1ses-419!2suy",
+      "label": "Fletes y Mudanzas Lugo",
+      "expectedNames": [
+        "Fletes y Mudanzas Lugo",
+        "Fletes Lugo"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.mudanzaslugo.com.uy/",
+          "value": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3272.6900481894113!2d-56.1170996847627!3d-34.88912878038637!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f813679c25819%3A0xa5fa3a0f7375e1b5!2sFletes%20Lugo!5e0!3m2!1ses-419!2suy!4v1655765600337!5m2!1ses-419!2suy",
+          "label": ""
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://www.mudanzaslugo.com.uy/",
+          "value": "0x959f813679c25819:0xa5fa3a0f7375e1b5",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. También coinciden país Uruguay, nombre compatible, teléfono y dominio propios. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google."
+      ],
+      "expectedPhoneNumbers": [
+        "+59896601465"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3272.6900481894113!2d-56.1170996847627!3d-34.88912878038637!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f813679c25819%3A0xa5fa3a0f7375e1b5!2sFletes%20Lugo!5e0!3m2!1ses-419!2suy!4v1655765600337!5m2!1ses-419!2suy",
+      "featureId": "0x959f813679c25819:0xa5fa3a0f7375e1b5",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_feature_cid_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": true,
+        "publicDomainMatches": true
+      },
+      "placeId": "ChIJGVjCeTaBn5URteF1cw86-qU"
+    },
+    {
+      "key": "naterial-envio-armado-facebook-1",
+      "providerId": "naterial-envio-armado",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/naterial.uy",
+      "label": "Naterial — envío y armado de compra",
+      "expectedNames": [
+        "Naterial — envío y armado de compra"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.naterial.com/uy/politica-de-envio",
+          "value": "https://www.facebook.com/naterial.uy",
+          "label": ""
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ],
+      "expectedPhoneNumbers": [
+        "+59891473030"
+      ]
+    },
+    {
+      "key": "naterial-envio-armado-google-1",
+      "providerId": "naterial-envio-armado",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://maps.app.goo.gl/KUbikTqh6XBdkbu9A",
+      "label": "Naterial — Punta Carretas",
+      "expectedNames": [
+        "Naterial",
+        "Naterial Punta Carretas"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "https://maps.app.goo.gl/KUbikTqh6XBdkbu9A",
+          "label": "Punta Carretas Shopping, pasaje boulevard, Solano García esquina José Ellauri, M"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "0x959f810c85094e27:0xd6c307b177bc2bb9",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        },
+        {
+          "kind": "corporate_contact_not_profile_constraint",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "+59891473030",
+          "fact": "Contacto general publicado por la empresa. No es una expectativa de teléfono para esta sucursal; la identidad del perfil se comprobó por CID, país, nombre y dominio."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Perfil de sucursal de tienda; no atribuir toda su reputación a armado, entrega o mudanzas.",
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google.",
+        "El contacto corporativo no coincide con el de esta sucursal; no se usa como expectativa de teléfono para validar este perfil. No se copió el teléfono devuelto por Google."
+      ],
+      "resolvedUrl": "https://www.google.com/maps/place/Naterial+Punta+Carretas/@-34.9233949,-56.1613128,17z/data=!3m1!4b1!4m6!3m5!1s0x959f810c85094e27:0xd6c307b177bc2bb9!8m2!3d-34.9233993!4d-56.1587379!16s%2Fg%2F11njcl3lzc?entry=tts&g_ep=EgoyMDI2MDcxNC4wIPu8ASoASAFQAw%3D%3D&skid=6ff2493a-9c21-45f3-8cc3-6b737b249666",
+      "featureId": "0x959f810c85094e27:0xd6c307b177bc2bb9",
+      "placeId": "ChIJJ04JhQyBn5URuSu8d7EHw9Y",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_feature_cid_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": false,
+        "publicDomainMatches": true
+      }
+    },
+    {
+      "key": "naterial-envio-armado-google-2",
+      "providerId": "naterial-envio-armado",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://maps.app.goo.gl/ddbswsdv9NJqH9qV9",
+      "label": "Naterial — Car One",
+      "expectedNames": [
+        "Naterial",
+        "Naterial Car One"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "https://maps.app.goo.gl/ddbswsdv9NJqH9qV9",
+          "label": "Ruta Interbalnearia y Camino de Los Horneros, Ciudad de la Costa, Canelones"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "0x959f89d3445161fd:0x9f1ddada7e3378c9",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Perfil de sucursal de tienda; no atribuir toda su reputación a armado, entrega o mudanzas.",
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google."
+      ],
+      "expectedPhoneNumbers": [
+        "+59891473030"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/place/Naterial+Car+One/@-34.8171125,-55.9826182,17z/data=!3m1!4b1!4m6!3m5!1s0x959f89d3445161fd:0x9f1ddada7e3378c9!8m2!3d-34.8171169!4d-55.9800433!16s%2Fg%2F11scsrnntt?entry=tts&g_ep=EgoyMDI2MDcxNC4wIPu8ASoASAFQAw%3D%3D&skid=52abbae9-1ec3-4050-a6b9-41366d050b44",
+      "featureId": "0x959f89d3445161fd:0x9f1ddada7e3378c9",
+      "placeId": "ChIJ_WFRRNOJn5URyXgzftraHZ8",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_feature_cid_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": true,
+        "publicDomainMatches": true
+      }
+    },
+    {
+      "key": "naterial-envio-armado-google-3",
+      "providerId": "naterial-envio-armado",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://maps.app.goo.gl/KbpLi3LMipWeU8WDA",
+      "label": "Naterial — La Barra",
+      "expectedNames": [
+        "Naterial",
+        "Naterial La Barra"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "https://maps.app.goo.gl/KbpLi3LMipWeU8WDA",
+          "label": "Ruta 10 esq. los suspiros, La Barra , Maldonado"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "0x957505c8a0c77991:0x57224f198382b429",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        },
+        {
+          "kind": "corporate_contact_not_profile_constraint",
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "value": "+59891473030",
+          "fact": "Contacto general publicado por la empresa. No es una expectativa de teléfono para esta sucursal; la identidad del perfil se comprobó por CID, país, nombre y dominio."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Perfil de sucursal de tienda; no atribuir toda su reputación a armado, entrega o mudanzas.",
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google.",
+        "El contacto corporativo no coincide con el de esta sucursal; no se usa como expectativa de teléfono para validar este perfil. No se copió el teléfono devuelto por Google."
+      ],
+      "resolvedUrl": "https://www.google.com/maps/place/Naterial+La+Barra/@-34.9153076,-54.8569293,17z/data=!3m1!4b1!4m6!3m5!1s0x957505c8a0c77991:0x57224f198382b429!8m2!3d-34.915312!4d-54.8543544!16s%2Fg%2F11vkfh0tv7?entry=tts&g_ep=EgoyMDI2MDcxNC4wIPu8ASoASAFQAw%3D%3D&skid=7c6cbd89-7f85-41ad-9c50-a55c878b0724",
+      "featureId": "0x957505c8a0c77991:0x57224f198382b429",
+      "placeId": "ChIJkXnHoMgFdZURKbSCgxlPIlc",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_feature_cid_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": false,
+        "publicDomainMatches": true
+      }
+    },
+    {
+      "key": "one-storage-google-1",
+      "providerId": "one-storage",
+      "platform": "google",
+      "status": "rejected",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=-34.43354,-58.7907588",
+      "label": "Cómo llegar",
+      "expectedNames": [
+        "ONE Storage"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.onestorage.uy/",
+          "value": "https://www.google.com/maps/search/?api=1&query=-34.43354,-58.7907588",
+          "label": "Cómo llegar"
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Sólo dirección, coordenadas o búsqueda de texto; no prueba un Business Profile del prestador.",
+        "Coordenadas de Argentina; no corresponden al directorio uruguayo.",
+        "No hay Place ID explícito. featureId/cid, si constan, son identificadores distintos y no se enviarán como Places ID."
+      ],
+      "expectedPhoneNumbers": [
+        "+59896053532"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/search/?api=1&query=-34.43354,-58.7907588"
+    },
+    {
+      "key": "one-storage-google-2",
+      "providerId": "one-storage",
+      "platform": "google",
+      "status": "rejected",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=-34.5481145,-58.8535024",
+      "label": "Cómo llegar",
+      "expectedNames": [
+        "ONE Storage"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.onestorage.uy/",
+          "value": "https://www.google.com/maps/search/?api=1&query=-34.5481145,-58.8535024",
+          "label": "Cómo llegar"
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Sólo dirección, coordenadas o búsqueda de texto; no prueba un Business Profile del prestador.",
+        "Coordenadas de Argentina; no corresponden al directorio uruguayo.",
+        "No hay Place ID explícito. featureId/cid, si constan, son identificadores distintos y no se enviarán como Places ID."
+      ],
+      "expectedPhoneNumbers": [
+        "+59896053532"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/search/?api=1&query=-34.5481145,-58.8535024"
+    },
+    {
+      "key": "one-storage-google-3",
+      "providerId": "one-storage",
+      "platform": "google",
+      "status": "ambiguous",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=-34.8640754,-55.1346022",
+      "label": "Cómo llegar",
+      "expectedNames": [
+        "ONE Storage"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.onestorage.uy/",
+          "value": "https://www.google.com/maps/search/?api=1&query=-34.8640754,-55.1346022",
+          "label": "Cómo llegar"
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Sólo dirección, coordenadas o búsqueda de texto; no prueba un Business Profile del prestador.",
+        "No hay Place ID explícito. featureId/cid, si constan, son identificadores distintos y no se enviarán como Places ID."
+      ],
+      "expectedPhoneNumbers": [
+        "+59896053532"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/search/?api=1&query=-34.8640754,-55.1346022"
+    },
+    {
+      "key": "one-storage-google-4",
+      "providerId": "one-storage",
+      "platform": "google",
+      "status": "ambiguous",
+      "profileUrl": "https://www.google.com/maps/search/?api=1&query=-34.7837732,-56.0610571",
+      "label": "Cómo llegar",
+      "expectedNames": [
+        "ONE Storage"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.onestorage.uy/",
+          "value": "https://www.google.com/maps/search/?api=1&query=-34.7837732,-56.0610571",
+          "label": "Cómo llegar"
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Sólo dirección, coordenadas o búsqueda de texto; no prueba un Business Profile del prestador.",
+        "No hay Place ID explícito. featureId/cid, si constan, son identificadores distintos y no se enviarán como Places ID."
+      ],
+      "expectedPhoneNumbers": [
+        "+59896053532"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/search/?api=1&query=-34.7837732,-56.0610571"
+    },
+    {
+      "key": "one-storage-google-5",
+      "providerId": "one-storage",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3276.8809108874957!2d-56.061057100000006!3d-34.7837732!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95a029ba801299d1%3A0x34fdc1d1f66ee6aa!2sONE%20Storage!5e0!3m2!1ses-419!2sve!4v1681947660051!5m2!1ses-419!2sve",
+      "label": "Google Maps: ONE Storage Montevideo",
+      "expectedNames": [
+        "ONE Storage"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://www.onestorage.uy/",
+          "value": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3276.8809108874957!2d-56.061057100000006!3d-34.7837732!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95a029ba801299d1%3A0x34fdc1d1f66ee6aa!2sONE%20Storage!5e0!3m2!1ses-419!2sve!4v1681947660051!5m2!1ses-419!2sve",
+          "label": "Google Maps: ONE Storage Montevideo"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://www.onestorage.uy/",
+          "value": "0x95a029ba801299d1:0x34fdc1d1f66ee6aa",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google."
+      ],
+      "expectedPhoneNumbers": [
+        "+59896053532"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3276.8809108874957!2d-56.061057100000006!3d-34.7837732!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95a029ba801299d1%3A0x34fdc1d1f66ee6aa!2sONE%20Storage!5e0!3m2!1ses-419!2sve!4v1681947660051!5m2!1ses-419!2sve",
+      "featureId": "0x95a029ba801299d1:0x34fdc1d1f66ee6aa",
+      "placeId": "ChIJ0ZkSgLopoJURquZu9tHB_TQ",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_feature_cid_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": true,
+        "publicDomainMatches": true
+      }
+    },
+    {
+      "key": "poa-fletes-homesolution-1",
+      "providerId": "poa-fletes",
+      "platform": "homesolution",
+      "status": "verified",
+      "profileUrl": "https://homesolution.net/uy/fletero/poa-fletes-1735",
+      "label": "POA Fletes",
+      "expectedNames": [
+        "POA Fletes"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://homesolution.net/uy/fletero/poa-fletes-1735",
+          "value": "+59895757095"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59895757095"
+      ]
+    },
+    {
+      "key": "rg-mudanzas-rocha-1122-1",
+      "providerId": "rg-mudanzas-rocha",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/rg-mudanzas-y-fletes/LOC790300001",
+      "label": "RG Mudanzas y Fletes",
+      "expectedNames": [
+        "RG Mudanzas y Fletes"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/rg-mudanzas-y-fletes/LOC790300001",
+          "value": "098289588"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59898289588"
+      ]
+    },
+    {
+      "key": "selfbox-google-1",
+      "providerId": "selfbox",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://www.google.com/maps?cid=10804133473979546070",
+      "label": "SelfBox Juan Paullier - Tres Cruces",
+      "expectedNames": [
+        "SelfBox"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "https://www.google.com/maps?cid=10804133473979546070",
+          "label": "SelfBox Juan Paullier - Tres Cruces"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "10804133473979546070",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google."
+      ],
+      "expectedPhoneNumbers": [
+        "+59898130584",
+        "+59899599831"
+      ],
+      "resolvedUrl": "https://www.google.com/maps?cid=10804133473979546070",
+      "cid": "10804133473979546070",
+      "placeId": "ChIJS2uDwBmBn5UR1jl13ib-75U",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_cid_phone_domain_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": true,
+        "publicDomainMatches": true
+      }
+    },
+    {
+      "key": "selfbox-google-2",
+      "providerId": "selfbox",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://www.google.com/maps?cid=5669520138100184195",
+      "label": "SelfBox Francisco Bauzá - Parque Batllé",
+      "expectedNames": [
+        "SelfBox"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "https://www.google.com/maps?cid=5669520138100184195",
+          "label": "SelfBox Francisco Bauzá - Parque Batllé"
+        },
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "https://maps.app.goo.gl/ue5M9m1UgCh9kAZV8",
+          "label": "Francisco Bauzá 3341 - Pocitos, Montevideo."
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "5669520138100184195",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace corto de la misma sucursal conservado como alias, no como perfil adicional.",
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google."
+      ],
+      "expectedPhoneNumbers": [
+        "+59898130584",
+        "+59899599831"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/place/SelfBox/@-34.9006503,-56.1457325,17z/data=!3m1!4b1!4m6!3m5!1s0x959f81e20bf8f7b3:0x4eae2e86f6629483!8m2!3d-34.9006503!4d-56.1431576!16s%2Fg%2F11w1m38b65?entry=tts&g_ep=EgoyMDI0MDcwOC4xKgBIAVAD",
+      "cid": "5669520138100184195",
+      "alternateProfileUrls": [
+        "https://maps.app.goo.gl/ue5M9m1UgCh9kAZV8"
+      ],
+      "placeId": "ChIJs_f4C-KBn5URg5Ri9oYurk4",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_cid_phone_domain_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": true,
+        "publicDomainMatches": true
+      }
+    },
+    {
+      "key": "selfbox-google-3",
+      "providerId": "selfbox",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://www.google.com/maps?cid=534755125348787061",
+      "label": "SelfBox Mac Eachen - Pocitos",
+      "expectedNames": [
+        "SelfBox"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "https://www.google.com/maps?cid=534755125348787061",
+          "label": "SelfBox Mac Eachen - Pocitos"
+        },
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "https://maps.app.goo.gl/hPAm7dS7RTp5AnjZ6",
+          "label": "Mac Eachen 1395 - Pocitos, Montevideo."
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "value": "534755125348787061",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace corto de la misma sucursal conservado como alias, no como perfil adicional.",
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google."
+      ],
+      "expectedPhoneNumbers": [
+        "+59898130584",
+        "+59899599831"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/place/SelfBox/@-34.9037563,-56.151333,17z/data=!4m6!3m5!1s0x959f815fa2d0b4e1:0x76bd4f4083be375!8m2!3d-34.9031996!4d-56.1499203!16s%2Fg%2F11h2hhczsq?entry=tts&g_ep=EgoyMDI0MDcwOC4xKgBIAVAD",
+      "cid": "534755125348787061",
+      "alternateProfileUrls": [
+        "https://maps.app.goo.gl/hPAm7dS7RTp5AnjZ6"
+      ],
+      "placeId": "ChIJ4bTQol-Bn5URdeM7CPTUawc",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_cid_phone_domain_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": true,
+        "publicDomainMatches": true
+      }
+    },
+    {
+      "key": "simplebox-facebook-1",
+      "providerId": "simplebox",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/simplebox.uy",
+      "label": "Facebook",
+      "expectedNames": [
+        "Simple Box"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "https://www.facebook.com/simplebox.uy",
+          "label": "Facebook"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ],
+      "expectedPhoneNumbers": [
+        "+59892333025",
+        "+59829151515"
+      ]
+    },
+    {
+      "key": "simplebox-google-1",
+      "providerId": "simplebox",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://maps.app.goo.gl/L52dG2XFtL9BKQ5s8",
+      "label": "Casa Central",
+      "expectedNames": [
+        "Simple Box"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "https://maps.app.goo.gl/L52dG2XFtL9BKQ5s8",
+          "label": "Casa Central"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "0x959f7fcdd0b18103:0xdef0e4722a8e5ad5",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        },
+        {
+          "kind": "corporate_contact_not_profile_constraint",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "+59892333025",
+          "fact": "Contacto general publicado por la empresa. No es una expectativa de teléfono para esta sucursal; la identidad del perfil se comprobó por CID, país, nombre y dominio."
+        },
+        {
+          "kind": "corporate_contact_not_profile_constraint",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "+59829151515",
+          "fact": "Contacto general publicado por la empresa. No es una expectativa de teléfono para esta sucursal; la identidad del perfil se comprobó por CID, país, nombre y dominio."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google.",
+        "El contacto corporativo no coincide con el de esta sucursal; no se usa como expectativa de teléfono para validar este perfil. No se copió el teléfono devuelto por Google."
+      ],
+      "resolvedUrl": "https://www.google.com/maps/place/Box+y+Dep%C3%B3sitos+-+Simple+Box/@-34.9047663,-56.2078808,17.16z/data=!4m6!3m5!1s0x959f7fcdd0b18103:0xdef0e4722a8e5ad5!8m2!3d-34.9042643!4d-56.206893!16s%2Fg%2F11v0_xjwpp?entry=tts&g_ep=EgoyMDI1MDMxNi4wIPu8ASoASAFQAw%3D%3D",
+      "featureId": "0x959f7fcdd0b18103:0xdef0e4722a8e5ad5",
+      "placeId": "ChIJA4Gx0M1_n5UR1VqOKnLk8N4",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_feature_cid_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": false,
+        "publicDomainMatches": true
+      }
+    },
+    {
+      "key": "simplebox-google-2",
+      "providerId": "simplebox",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://maps.app.goo.gl/6z2QdWiANd9KZQPF6",
+      "label": "Sucursal 25",
+      "expectedNames": [
+        "Simple Box"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "https://maps.app.goo.gl/6z2QdWiANd9KZQPF6",
+          "label": "Sucursal 25"
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "value": "0x959f81adc631cf53:0x4377e3fec5b098da",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. País Uruguay y nombre compatibles. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google."
+      ],
+      "expectedPhoneNumbers": [
+        "+59892333025",
+        "+59829151515"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/place/Simple+box+-+Depositos+Privados+y+Boxes/@-34.9047949,-56.2044169,17z/data=!4m6!3m5!1s0x959f81adc631cf53:0x4377e3fec5b098da!8m2!3d-34.9047949!4d-56.2022229!16s%2Fg%2F11flvvfh0c?entry=tts&g_ep=EgoyMDI1MDMxNi4wIPu8ASoASAFQAw%3D%3D",
+      "featureId": "0x959f81adc631cf53:0x4377e3fec5b098da",
+      "placeId": "ChIJU88xxq2Bn5UR2piwxf7jd0M",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_feature_cid_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": true,
+        "publicDomainMatches": true
+      }
+    },
+    {
+      "key": "tabanacore-google-1",
+      "providerId": "tabanacore",
+      "platform": "google",
+      "status": "ambiguous",
+      "profileUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3273.184618461942!2d-56.19575412424797!3d-34.87671007285754!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f80054dd82669%3A0x203bf07956a09d64!2sZapic%C3%A1n%202738%2C%2011800%20Montevideo%2C%20Departamento%20de%20Montevideo!5e0!3m2!1sen!2suy!4v1695771180561!5m2!1sen!2suy",
+      "label": "Transportes Andrés Banacore (TABANACORE)",
+      "expectedNames": [
+        "Transportes Andrés Banacore (TABANACORE)"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://tabanacore.com/contacto.php",
+          "value": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3273.184618461942!2d-56.19575412424797!3d-34.87671007285754!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f80054dd82669%3A0x203bf07956a09d64!2sZapic%C3%A1n%202738%2C%2011800%20Montevideo%2C%20Departamento%20de%20Montevideo!5e0!3m2!1sen!2suy!4v1695771180561!5m2!1sen!2suy",
+          "label": ""
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Sólo dirección, coordenadas o búsqueda de texto; no prueba un Business Profile del prestador.",
+        "No hay Place ID explícito. featureId/cid, si constan, son identificadores distintos y no se enviarán como Places ID."
+      ],
+      "expectedPhoneNumbers": [
+        "+59894429371",
+        "+59898429371"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3273.184618461942!2d-56.19575412424797!3d-34.87671007285754!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f80054dd82669%3A0x203bf07956a09d64!2sZapic%C3%A1n%202738%2C%2011800%20Montevideo%2C%20Departamento%20de%20Montevideo!5e0!3m2!1sen!2suy!4v1695771180561!5m2!1sen!2suy",
+      "featureId": "0x959f80054dd82669:0x203bf07956a09d64"
+    },
+    {
+      "key": "teske-transportes-google-1",
+      "providerId": "teske-transportes",
+      "platform": "google",
+      "status": "verified",
+      "profileUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d53951.470625601556!2d-58.121194839477525!3d-32.312742589858004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95afc984487048ff%3A0x772699e31520eabb!2sTeske%20Transporte%20de%20Carga!5e0!3m2!1ses-419!2suy!4v1774048613066!5m2!1ses-419!2suy",
+      "label": "Teske Transportes",
+      "expectedNames": [
+        "Teske Transportes",
+        "Teske Transporte de Carga"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://teske.com.uy/",
+          "value": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d53951.470625601556!2d-58.121194839477525!3d-32.312742589858004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95afc984487048ff%3A0x772699e31520eabb!2sTeske%20Transporte%20de%20Carga!5e0!3m2!1ses-419!2suy!4v1774048613066!5m2!1ses-419!2suy",
+          "label": ""
+        },
+        {
+          "kind": "official_profile_id_reconciled",
+          "sourceUrl": "https://teske.com.uy/",
+          "value": "0x95afc984487048ff:0x772699e31520eabb",
+          "fact": "El CID del perfil enlazado por el prestador coincide exactamente con la URL devuelta al consultar el Place ID. También coinciden país Uruguay, nombre compatible, teléfono y dominio propios. No se convirtió CID a Place ID."
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Place ID devuelto por la API y corroborado contra el perfil enlazado en la fuente propia; no se guardaron puntuaciones, recuentos ni respuesta de Google."
+      ],
+      "expectedPhoneNumbers": [
+        "+59847225034"
+      ],
+      "resolvedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d53951.470625601556!2d-58.121194839477525!3d-32.312742589858004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95afc984487048ff%3A0x772699e31520eabb!2sTeske%20Transporte%20de%20Carga!5e0!3m2!1ses-419!2suy!4v1774048613066!5m2!1ses-419!2suy",
+      "featureId": "0x95afc984487048ff:0x772699e31520eabb",
+      "pinVerification": {
+        "verdict": "verified",
+        "checkedAt": "2026-09-14",
+        "method": "official_feature_cid_exact",
+        "countryAndNameCompatible": true,
+        "officialCidMatches": true,
+        "publicPhoneMatches": true,
+        "publicDomainMatches": true
+      },
+      "placeId": "ChIJ_0hwSITJr5URu-ogFeOZJnc"
+    },
+    {
+      "key": "tienda-porto-instalaciones-facebook-1",
+      "providerId": "tienda-porto-instalaciones",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/profile.php?id=61580326682646",
+      "label": " Facebook",
+      "expectedNames": [
+        "Tienda Porto — instalaciones"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://tienda.portoservicios.com.uy/servicios",
+          "value": "https://www.facebook.com/profile.php?id=61580326682646",
+          "label": " Facebook"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ],
+      "expectedPhoneNumbers": [
+        "+59824803480"
+      ]
+    },
+    {
+      "key": "tm-transportes-colonia-1122-1",
+      "providerId": "tm-transportes-colonia",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/tm-transportes/LOC791840002",
+      "label": "TM Transportes",
+      "expectedNames": [
+        "TM Transportes"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/tm-transportes/LOC791840002",
+          "value": "092331299"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59892331299"
+      ]
+    },
+    {
+      "key": "tm-transportes-colonia-facebook-1",
+      "providerId": "tm-transportes-colonia",
+      "platform": "facebook",
+      "status": "ambiguous",
+      "profileUrl": "https://www.facebook.com/amoblamientoscolonia",
+      "label": "TM Transportes",
+      "expectedNames": [
+        "TM Transportes"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "directory_outbound_link",
+          "sourceUrl": "https://1122.com.uy/local/tm-transportes/LOC791840002",
+          "value": "https://www.facebook.com/amoblamientoscolonia",
+          "label": "TM Transportes"
+        }
+      ],
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar.",
+        "El directorio vincula Amoblamientos Colonia: no está probado que sus reseñas describan el servicio TM Transportes."
+      ],
+      "expectedPhoneNumbers": [
+        "+59892331299"
+      ]
+    },
+    {
+      "key": "transporte-tabajara-1122-1",
+      "providerId": "transporte-tabajara",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/transporte-tabajara/LOC889370001",
+      "label": "Transporte Tabajara",
+      "expectedNames": [
+        "Transporte Tabajara"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/transporte-tabajara/LOC889370001",
+          "value": "099000804"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59899000804"
+      ]
+    },
+    {
+      "key": "transportes-el-aguila-rivera-1122-1",
+      "providerId": "transportes-el-aguila-rivera",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001",
+      "label": "Transportes El Águila",
+      "expectedNames": [
+        "Transportes El Águila"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001",
+          "value": "46238488"
+        },
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001",
+          "value": "099154155"
+        },
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001",
+          "value": "099098017"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59846238488",
+        "+59899154155",
+        "+59899098017"
+      ]
+    },
+    {
+      "key": "transportes-sanchez-1122-colonia",
+      "providerId": "transportes-sanchez",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/transportes-sanchez/LOC589240001",
+      "label": "Transportes Sánchez — ficha Colonia",
+      "expectedNames": [
+        "Transportes Sánchez"
+      ],
+      "expectedCountryCode": "UY",
+      "expectedPhoneNumbers": [
+        "+59895176226"
+      ],
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/transportes-sanchez/LOC589240001",
+          "value": "095176226"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Mismo contacto comercial del prestador ya incluido; no es otro proveedor."
+      ]
+    },
+    {
+      "key": "unsi-armado-tienda-facebook-1",
+      "providerId": "unsi-armado-tienda",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/unsi.uy",
+      "label": "UNSI Home & Deco on Facebook",
+      "expectedNames": [
+        "UNSI — armado de compra en tienda"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+          "value": "https://www.facebook.com/unsi.uy",
+          "label": "UNSI Home & Deco on Facebook"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ]
+    },
+    {
+      "key": "vamos-uy-facebook-1",
+      "providerId": "vamos-uy",
+      "platform": "facebook",
+      "status": "verified",
+      "profileUrl": "https://www.facebook.com/profile.php?id=100088086566072",
+      "label": "VAMOS UY",
+      "expectedNames": [
+        "VAMOS UY"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "official_outbound_link",
+          "sourceUrl": "https://vamosfletesymudanzas.uy/",
+          "value": "https://www.facebook.com/profile.php?id=100088086566072",
+          "label": ""
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "Enlace de identidad publicado por el sitio; disponibilidad de recomendaciones y acceso público a ellas sin verificar."
+      ],
+      "expectedPhoneNumbers": [
+        "+59894867695"
+      ]
+    },
+    {
+      "key": "walymar-colonia-1122-1",
+      "providerId": "walymar-colonia",
+      "platform": "1122",
+      "status": "verified",
+      "profileUrl": "https://1122.com.uy/local/walymar-fletes-mudanzas/LOC523230001",
+      "label": "Walymar Fletes Mudanzas",
+      "expectedNames": [
+        "Walymar Fletes Mudanzas"
+      ],
+      "expectedCountryCode": "UY",
+      "identityEvidence": [
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/walymar-fletes-mudanzas/LOC523230001",
+          "value": "098440725"
+        },
+        {
+          "kind": "phone_exact",
+          "sourceUrl": "https://1122.com.uy/local/walymar-fletes-mudanzas/LOC523230001",
+          "value": "098171800"
+        }
+      ],
+      "verifiedAt": "2026-09-14",
+      "checkedAt": "2026-09-14",
+      "reviewAvailability": "not_checked",
+      "notes": [
+        "El perfil permite consultar la reputación de ese prestador; no se extraen puntuaciones ni opiniones en este relevamiento."
+      ],
+      "expectedPhoneNumbers": [
+        "+59898440725",
+        "+59898171800"
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "providerId": "ab-moving",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.ab.com.uy/",
+          "httpStatus": null,
+          "error": "ReadTimeout"
+        },
+        {
+          "sourceUrl": "https://www.ab.com.uy/",
+          "error": "ReadTimeout"
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "all-box",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://allboxuruguay.com/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://allboxuruguay.com/contacto/",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "armado-fast",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://armadofast.com/",
+          "httpStatus": 520,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://armadofast.com/precios-armado-de-muebles-montevideo",
+          "httpStatus": 520
+        },
+        {
+          "sourceUrl": "https://armadofast.com/precios-armado-de-muebles-maldonado",
+          "httpStatus": 520
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "armadores-montevideo",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://armadoresmontevideo.uy/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://armadoresmontevideo.uy/precios/",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://armadoresmontevideo.uy/nosotros",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://armadoresmontevideo.uy/contacto",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "autogiro",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.autogiro.com.uy/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://www.autogiro.com.uy/espanol/nosotros-2",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://www.autogiro.com.uy/espanol/contacto-7",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "deleste-fletes",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://delestefletes.com/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "depunta",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://depunta.com/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "dt-transportes",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.dt.com.uy/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://www.dt.com.uy/packs-mudanzas.html",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://www.dt.com.uy/contacto.html",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "empresa-dante",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://empresadante.com.uy/",
+          "httpStatus": 406,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://empresadante.com.uy/deposito/",
+          "httpStatus": 406
+        },
+        {
+          "sourceUrl": "https://empresadante.com.uy/servicio-de-mudanzas/",
+          "httpStatus": 406
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "expreso-este",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.expresoeste.com.uy/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-oriental",
+      "sourceChecks": [
+        {
+          "sourceUrl": "http://www.fletesoriental.com/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "los-pinones",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://mudanzasmontevideo.uy/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://mudanzasmontevideo.uy/nosotros/",
+          "httpStatus": 403
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "mudanzas-lugo",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.mudanzaslugo.com.uy/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletesbox",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://fletesbox.com/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://fletesbox.com/servicios/",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://fletesbox.com/nosotros/",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "furniture-home",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://forniturehome-st.com/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "grupo-pellejeros",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.grupopellejeros.com/",
+          "httpStatus": null,
+          "error": "ConnectionError"
+        },
+        {
+          "sourceUrl": "https://www.grupopellejeros.com/",
+          "error": "ConnectionError"
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "canelones-residuos-especiales",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.gub.uy/tramites/solicitud-recoleccion-residuos-especiales-canelones",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://www.gub.uy/contacto",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "im-residuos-grandes",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://montevideo.gub.uy/servicio-de-recoleccion-de-residuos-grandes",
+          "httpStatus": 403,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://montevideo.gub.uy/montevideo-integra",
+          "httpStatus": 403
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "maeso-transportes",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://maesotransportes.com.uy/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "mudanzas-en-montevideo",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://mudanzasenmontevideo.uy/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://mudanzasenmontevideo.uy/contacto/",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://mudanzasenmontevideo.uy/nosotros/",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "mudanzas-gustavo",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://mudanzasgustavo.com/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://mudanzasgustavo.com/contacto/",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "casuriaga",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://mudanzasyfletescasuriaga.uy/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://mudanzasyfletescasuriaga.uy/mudanzas-en-las-piedras/",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "naterial-envio-armado",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.naterial.com/uy/politica-de-envio",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://www.naterial.com/uy/contacta-con-nosotros",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "one-storage",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.onestorage.uy/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "perez-company",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://perezcompany.com.uy/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "selfbox",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "sose-transporte",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://sosetransporte.uy/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://fletesmontevideo.uy/mudanzas-en-montevideo/",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "tienda-porto-instalaciones",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://tienda.portoservicios.com.uy/servicios",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://tienda.portoservicios.com.uy/condiciones-instalaciones",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://tienda.portoservicios.com.uy/catalogo/instalacion-de-lavarropa_SERVLAV001_SERVLAV001",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://tienda.portoservicios.com.uy/contacto",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "tabanacore",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://tabanacore.com/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://tabanacore.com/servicios.php",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://tabanacore.com/contacto.php",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "transportes-posadas",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://transportesposadas.com.uy/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "transportes-sanchez",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.fletesymudanzas.uy/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://www.fletesymudanzas.uy/camion-grande-de-mudanzas/",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://www.fletesymudanzas.uy/501-2/",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "unsi-armado-tienda",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://unsi.com.uy/pages/contactanos",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://unsi.com.uy/pages/nosotros",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "uruvan",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.uruvan.com.uy/es/",
+          "httpStatus": 406,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://www.uruvan.com.uy/es/services/mudanza-hogar/",
+          "httpStatus": 406
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "vamos-uy",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://vamosfletesymudanzas.uy/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "all-storage",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://allstorage.com.uy/servicios-de-almacenamiento/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://allstorage.com.uy/sobre-nosotros/",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://allstorage.com.uy/contacto/",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "almango",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://services.almango.com.uy/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "boxit",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://boxit.com.uy/",
+          "httpStatus": 403,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "brian-morales",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "cleanfach",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.empresadelimpiezamontevideo.com/",
+          "httpStatus": 406,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "delgado-fletes-minas",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/delgado-fletes/LOC515570001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "diego-batista-transportes",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/diego-batista-transportes-fletes-y-mudanzas/LOC826260001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "diego-vidal",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "emaus-grupo-aportes",
+      "sourceChecks": [
+        {
+          "sourceUrl": "http://emausgrupoaportes.com/Donaciones.aspx",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "emiliano-garcia-armado",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.divino.com.uy/armadoresexternos",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "expreso-2000",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/expreso-2000-transportes-y-servicios/LOC545120001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-atlantida",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/fletes-atlantida/LOC701680001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-costa-de-oro",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/fletes-costa-de-oro/LOC553940001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-laura",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/fletes-laura/LOC884210001",
+          "httpStatus": 503,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://1122.com.uy/local/fletes-laura/LOC884210001",
+          "httpStatus": 200,
+          "note": "Relectura posterior corroboró encabezado comercial y teléfono exacto."
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-moraes",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/fletes-moraes/LOC501970001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-quintero",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/fletes-quintero/LOC447420001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-sosa-las-piedras",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/fletes-sosa/LOC757830001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-uruguay",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://mejoresfletesuruguay.com/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-vaz-mercedes",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/fletes-vaz/LOC761940001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-walter-rivera",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://laguiauruguay.com.uy/empresas/fletes-walter-en-rivera/",
+          "httpStatus": 406,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-juan-topayan",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/fletes-y-mudanzas-juan-topayan/LOC584330001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "fletes-mudanzas-paysandu",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/fletes-y-mudanzas-paysandu/LOC883850001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "flety",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.flety.uy/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "gonzalo-dematte",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "grupo-meta-integral",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://grupometaintegral.uy/servicios/limpieza-de-mudanza-en-montevideo/",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://grupometaintegral.uy/sobre-nosotros/",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://grupometaintegral.uy/sobre-nosotros/proceso-de-limpieza/",
+          "httpStatus": 200
+        },
+        {
+          "sourceUrl": "https://grupometaintegral.uy/sobre-nosotros/preguntas-frecuentes/",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "luifer",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://luifer.com.uy/servicios",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "marcos-cabral-armado",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.divino.com.uy/armadoresexternos",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "marcos-perez-durazno",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/marcos-perez/LOC515080001",
+          "httpStatus": 503,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://1122.com.uy/local/marcos-perez/LOC515080001",
+          "httpStatus": 200,
+          "note": "Relectura posterior corroboró encabezado comercial y teléfono exacto."
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "matias-rodriguez-armado",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.divino.com.uy/armadoresexternos",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "michael-goro",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "pedro-burdin-armado",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://www.divino.com.uy/armadoresexternos",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "poa-fletes",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://homesolution.net/uy/fletero/poa-fletes-1735",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "puntahogar",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://puntahogar.com/servicios/almacenamiento",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "rg-mudanzas-rocha",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/rg-mudanzas-y-fletes/LOC790300001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "rivera-fletes",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://riverafletes.jimdofree.com/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "schubert-pereyra",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "servicios-jr",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://serviciosjr.uy/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "simplebox",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://simplebox.uy/particulares",
+          "httpStatus": 200,
+          "error": null
+        },
+        {
+          "sourceUrl": "https://simplebox.uy/nosotros",
+          "httpStatus": 200
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "teske-transportes",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://teske.com.uy/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "tm-transportes-colonia",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/tm-transportes/LOC791840002",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "transporte-dyd-melo",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://laguiauruguay.com.uy/empresas/transporte-d-y-d-en-melo/",
+          "httpStatus": 406,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "transporte-tabajara",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/transporte-tabajara/LOC889370001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "transportes-el-aguila-rivera",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "transportes-el-calabres",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://transporteselcalabres.com/servicios/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "walymar-colonia",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://1122.com.uy/local/walymar-fletes-mudanzas/LOC523230001",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    },
+    {
+      "providerId": "wp-servicios",
+      "sourceChecks": [
+        {
+          "sourceUrl": "https://wpservicios.site/",
+          "httpStatus": 200,
+          "error": null
+        }
+      ],
+      "note": "No encontrar un enlace no demuestra ausencia de perfil ni de reseñas."
+    }
+  ],
+  "pinEnrichment": {
+    "checkedAt": "2026-09-14",
+    "profilesAttempted": 14,
+    "requestsMade": 33,
+    "maximumRequests": 33,
+    "newVerifiedPlaceIds": 14,
+    "unresolved": 0,
+    "correctedProtocolQueries": 5,
+    "method": "Búsquedas dirigidas por teléfono público o nombre, dominio y localidad. Cinco búsquedas por teléfono fallaron por protocolo y se corrigieron, con autorización, a textquery; no hubo otras búsquedas. Una consulta de detalle por candidato. Identidad confirmada con CID del perfil propio, país y nombre; coincidencia de teléfono y dominio como corroboración adicional. Pausa 250 ms. Sólo se persisten Place IDs y veredictos de identidad."
+  }
+}

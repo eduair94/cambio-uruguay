@@ -899,6 +899,12 @@ export default defineNuxtConfig({
       gmapsUrl: process.env.CASAS_REVIEWS_GMAPS_URL || '',
       trustpilotUrl: process.env.CASAS_REVIEWS_TRUSTPILOT_URL || '',
     },
+    // Moving reviews are fetched only when a visitor opens a pinned business profile.
+    // No Google scores or review text are stored in a scheduled snapshot.
+    movingReviews: {
+      enabled: !/^(?:0|false|off)$/i.test(process.env.MOVING_REVIEWS_ENABLED || ''),
+      gmapsUrl: process.env.MOVING_REVIEWS_GMAPS_URL || process.env.CASAS_REVIEWS_GMAPS_URL || '',
+    },
     // Server-side API URL (for SSR requests)
     apiBaseServer: process.env.NUXT_API_BASE_SERVER || 'http://104.234.204.107:3528',
     // Server-side proxy that resolves eBay item metadata (FlareSolverr-backed)

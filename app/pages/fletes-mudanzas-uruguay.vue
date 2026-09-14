@@ -49,6 +49,32 @@ FORM: Extension of the rental journey: searchable directory with progressively d
           clearable
         />
       </div>
+      <div class="directory-order">
+        <VSelect
+          v-model="sort"
+          :items="sortOptions"
+          :label="c.sort"
+          class="sort-control"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+        />
+        <VBtn variant="tonal" color="primary" prepend-icon="mdi-link-variant" @click="shareSearch">
+          {{ c.shareSearch }}
+        </VBtn>
+        <span role="status" class="share-status">{{ shareMessage }}</span>
+      </div>
+      <VTextField
+        v-if="shareFallback"
+        :model-value="shareFallback"
+        :label="c.shareFallback"
+        class="mt-3"
+        variant="outlined"
+        readonly
+        hide-details
+        @focus="($event.target as HTMLInputElement).select()"
+      />
+      <p v-if="sort !== 'name'" class="filter-hint">{{ c.sortHint }}</p>
       <div class="filter-checks">
         <VCheckbox v-model="pricedOnly" :label="c.pricesOnly" density="compact" hide-details />
         <VCheckbox v-model="vehicleOnly" :label="c.vehicleOnly" density="compact" hide-details />
@@ -78,13 +104,24 @@ FORM: Extension of the rental journey: searchable directory with progressively d
         <p>{{ c.empty }}</p>
         <VBtn color="primary" variant="tonal" @click="reset">{{ c.reset }}</VBtn>
       </div>
-      <MovingProviderRow
-        v-for="provider in visible"
-        :key="provider.id"
-        :provider="provider"
-        :category="category"
-        :query="query || ''"
-      />
+      <template v-for="(provider, index) in visible" :key="provider.id">
+        <p
+          v-if="
+            sort !== 'name' &&
+            (index === 0 || priceGroup(provider) !== priceGroup(visible[index - 1]!))
+          "
+          class="price-group"
+        >
+          {{ priceGroupLabel(provider) }}
+        </p>
+        <MovingProviderRow
+          :provider="provider"
+          :category="category"
+          :query="query || ''"
+          :sort-by-price="sort !== 'name'"
+          :comparison-price="movingPriceForSort(provider, activeFilters)"
+        />
+      </template>
       <VBtn
         v-if="visible.length < filtered.length"
         variant="tonal"
@@ -140,28 +177,85 @@ import {
   filterMovingProviders,
   movingEvidenceAge,
   movingPricesFor,
+  readMovingQuery,
+  buildMovingQuery,
+  sortMovingProviders,
+  movingPriceForSort,
+  movingPriceGroupKey,
+  type MovingDirectoryState,
+  type MovingProvider,
+  type MovingSort,
 } from '~/utils/movingServices'
 import { movingServicesCopy } from '~/utils/movingServicesCopy'
 
 const { locale } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const localePath = useLocalePath()
 const c = computed(() => movingServicesCopy(locale.value))
-const initialCategory =
-  typeof route.query.servicio === 'string' &&
-  MOVING_CATEGORIES.includes(route.query.servicio as (typeof MOVING_CATEGORIES)[number])
-    ? route.query.servicio
-    : ''
-const category = ref(initialCategory)
-const department = ref('')
-const query = ref<string | null>('')
-const pricedOnly = ref(false)
-const vehicleOnly = ref(false)
-const localOnly = ref(false)
+const directoryState = computed(() => readMovingQuery(route.query))
+const query = ref<string | null>(directoryState.value.query)
+const category = computed({
+  get: () => directoryState.value.category,
+  set: value => updateState({ category: value }),
+})
+const department = computed({
+  get: () => directoryState.value.department,
+  set: value => updateState({ department: value }),
+})
+const pricedOnly = computed({
+  get: () => directoryState.value.pricedOnly,
+  set: value => updateState({ pricedOnly: value }),
+})
+const vehicleOnly = computed({
+  get: () => directoryState.value.vehicleOnly,
+  set: value => updateState({ vehicleOnly: value }),
+})
+const localOnly = computed({
+  get: () => directoryState.value.localOnly,
+  set: value => updateState({ localOnly: value }),
+})
+const sort = computed({
+  get: () => directoryState.value.sort,
+  set: (value: MovingSort) => updateState({ sort: value }),
+})
+let queryTimer: ReturnType<typeof setTimeout> | undefined
+function updateState(patch: Partial<MovingDirectoryState>, replace = false) {
+  if (queryTimer) clearTimeout(queryTimer)
+  const nextQuery = buildMovingQuery(
+    { ...directoryState.value, query: query.value || '', ...patch },
+    route.query
+  )
+  const target = { path: route.path, query: nextQuery, hash: route.hash }
+  if (router.resolve(target).fullPath === route.fullPath) return
+  return replace ? router.replace(target) : router.push(target)
+}
+watch(query, value => {
+  if (queryTimer) clearTimeout(queryTimer)
+  if ((value || '').trim() === directoryState.value.query) return
+  queryTimer = setTimeout(() => updateState({ query: value || '' }, true), 300)
+})
+watch(
+  () => route.fullPath,
+  () => {
+    if (queryTimer) clearTimeout(queryTimer)
+    const value = directoryState.value.query
+    if ((query.value || '').trim() !== value) query.value = value
+  }
+)
+onBeforeUnmount(() => {
+  if (queryTimer) clearTimeout(queryTimer)
+})
 const limit = ref(18)
 const hasFilters = computed(() =>
   Boolean(
-    category.value || department.value || query.value || pricedOnly.value || vehicleOnly.value
+    category.value ||
+      department.value ||
+      query.value ||
+      pricedOnly.value ||
+      vehicleOnly.value ||
+      localOnly.value ||
+      sort.value !== 'name'
   )
 )
 const categoryOptions = computed(() => [
@@ -172,15 +266,25 @@ const departmentOptions = computed(() => [
   { title: c.value.allDepartments, value: '' },
   ...MOVING_DEPARTMENTS.map(value => ({ title: value, value })),
 ])
+const sortOptions = computed(() => [
+  { title: c.value.sortName, value: 'name' },
+  { title: c.value.sortPriceAsc, value: 'price-asc' },
+  { title: c.value.sortPriceDesc, value: 'price-desc' },
+])
+const activeFilters = computed(() => ({
+  category: category.value,
+  department: department.value,
+  query: query.value || '',
+  pricedOnly: pricedOnly.value,
+  vehicleOnly: vehicleOnly.value,
+  localOnly: localOnly.value,
+}))
 const filtered = computed(() =>
-  filterMovingProviders(MOVING_PROVIDERS, {
-    category: category.value,
-    department: department.value,
-    query: query.value || '',
-    pricedOnly: pricedOnly.value,
-    vehicleOnly: vehicleOnly.value,
-    localOnly: localOnly.value,
-  })
+  sortMovingProviders(
+    filterMovingProviders(MOVING_PROVIDERS, activeFilters.value),
+    activeFilters.value,
+    sort.value
+  )
 )
 const visible = computed(() => filtered.value.slice(0, limit.value))
 const pricedCount = computed(
@@ -189,16 +293,50 @@ const pricedCount = computed(
       movingPricesFor(provider, category.value).some(price => !price.additional)
     ).length
 )
-watch([category, department, query, pricedOnly, vehicleOnly, localOnly], () => {
+watch([category, department, query, pricedOnly, vehicleOnly, localOnly, sort], () => {
   limit.value = 18
+  shareMessage.value = ''
+  shareFallback.value = ''
 })
 function reset() {
-  category.value = ''
-  department.value = ''
   query.value = ''
-  pricedOnly.value = false
-  vehicleOnly.value = false
-  localOnly.value = false
+  return updateState({
+    category: '',
+    department: '',
+    query: '',
+    pricedOnly: false,
+    vehicleOnly: false,
+    localOnly: false,
+    sort: 'name',
+  })
+}
+function priceGroup(provider: MovingProvider) {
+  return movingPriceGroupKey(movingPriceForSort(provider, activeFilters.value))
+}
+function priceGroupLabel(provider: MovingProvider) {
+  const price = movingPriceForSort(provider, activeFilters.value)
+  return price
+    ? `${c.value.categories[price.category]} · ${price.currency} / ${c.value.units[price.unit]}`
+    : c.value.noComparablePrice
+}
+const shareMessage = ref('')
+const shareFallback = ref('')
+async function shareSearch() {
+  await updateState({ query: query.value || '' }, true)
+  await nextTick()
+  // Share only this directory's controls; unrelated tracking parameters stay out of copied links.
+  const path = router.resolve({
+    path: route.path,
+    query: buildMovingQuery(directoryState.value),
+  }).fullPath
+  const url = new URL(path, window.location.origin).href
+  try {
+    await navigator.clipboard.writeText(url)
+    shareMessage.value = c.value.shareCopied
+  } catch {
+    shareFallback.value = url
+    shareMessage.value = c.value.shareFallback
+  }
 }
 const reviewed = computed(() =>
   new Intl.DateTimeFormat(
@@ -352,6 +490,25 @@ summary:focus-visible {
   padding: 24px 0;
   border-top: 1px solid rgba(var(--v-border-color), 0.25);
 }
+.directory-order {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-top: 16px;
+}
+.sort-control {
+  flex: 0 1 370px;
+  min-width: 280px;
+}
+.share-status {
+  font-size: 0.875rem;
+}
+.moving-page .price-group {
+  margin: 28px 0 12px;
+  font-size: 1rem;
+  font-weight: 700;
+}
 .empty-results h3 {
   margin-top: 0;
 }
@@ -421,6 +578,10 @@ summary:focus-visible {
   }
   .filter-checks {
     display: block;
+  }
+  .sort-control {
+    flex-basis: 100%;
+    min-width: 0;
   }
   .quote-checklist {
     grid-template-columns: 1fr;

@@ -108,6 +108,78 @@ export interface MovingFilters {
   localOnly?: boolean
 }
 
+export const MOVING_SORTS = ['name', 'price-asc', 'price-desc'] as const
+export type MovingSort = (typeof MOVING_SORTS)[number]
+export interface MovingDirectoryState extends Required<MovingFilters> {
+  sort: MovingSort
+}
+/** Compatible with router query values without importing Vue or Nuxt into these helpers. */
+export type MovingRouteQuery = Record<string, string | null | (string | null)[] | undefined>
+const movingQueryKeys = ['servicio', 'departamento', 'q', 'precios', 'camion', 'local', 'orden']
+
+/** Repeated parameters use their first value; malformed values return to the default. */
+export function readMovingQuery(query: MovingRouteQuery = {}): MovingDirectoryState {
+  const scalar = (key: string) => {
+    const raw = query[key]
+    const value = Array.isArray(raw) ? raw[0] : raw
+    return typeof value === 'string' ? value.trim() : ''
+  }
+  const requestedCategory = scalar('servicio').toLowerCase()
+  const category = MOVING_CATEGORIES.find(value => value === requestedCategory) || ''
+  const department =
+    MOVING_DEPARTMENTS.find(value => movingFold(value) === movingFold(scalar('departamento'))) || ''
+  const requestedSort = scalar('orden')
+  return {
+    category,
+    department,
+    query: scalar('q').replace(/\s+/g, ' '),
+    pricedOnly: scalar('precios') === '1',
+    vehicleOnly: scalar('camion') === '1',
+    localOnly: Boolean(department) && scalar('local') === '1',
+    sort:
+      requestedSort === 'precio-asc'
+        ? 'price-asc'
+        : requestedSort === 'precio-desc'
+          ? 'price-desc'
+          : 'name',
+  }
+}
+
+/** Replace our parameters only, preserving campaign or other unrelated query values. */
+export function buildMovingQuery(
+  state: Partial<MovingDirectoryState>,
+  existingQuery: MovingRouteQuery = {}
+): MovingRouteQuery {
+  const normalized = readMovingQuery({
+    servicio: state.category,
+    departamento: state.department,
+    q: state.query,
+    precios: state.pricedOnly ? '1' : undefined,
+    camion: state.vehicleOnly ? '1' : undefined,
+    local: state.localOnly ? '1' : undefined,
+    orden:
+      state.sort === 'price-asc'
+        ? 'precio-asc'
+        : state.sort === 'price-desc'
+          ? 'precio-desc'
+          : undefined,
+  })
+  const query: MovingRouteQuery = Object.fromEntries(
+    Object.entries(existingQuery)
+      .filter(([key]) => !movingQueryKeys.includes(key))
+      .map(([key, value]) => [key, Array.isArray(value) ? [...value] : value])
+  )
+  if (normalized.category) query.servicio = normalized.category
+  if (normalized.department) query.departamento = normalized.department
+  if (normalized.query) query.q = normalized.query
+  if (normalized.pricedOnly) query.precios = '1'
+  if (normalized.vehicleOnly) query.camion = '1'
+  if (normalized.localOnly) query.local = '1'
+  if (normalized.sort !== 'name')
+    query.orden = normalized.sort === 'price-asc' ? 'precio-asc' : 'precio-desc'
+  return query
+}
+
 export function movingVehicleDocumented(vehicle: MovingVehicle): boolean {
   return Boolean(vehicle.dimensions || vehicle.volumeM3 || vehicle.payloadKg)
 }
@@ -221,6 +293,59 @@ export function movingPricesFor(
       Number(matches(b)) - Number(matches(a)) ||
       Number(Boolean(a.additional)) - Number(Boolean(b.additional))
   )
+}
+
+/** The exact published tariff the UI must highlight when this provider is price-sorted. */
+export function movingPriceForSort(
+  provider: MovingProvider,
+  filters: MovingFilters = {}
+): MovingPrice | undefined {
+  return movingPricesFor(provider, filters.category, filters.query).find(
+    price => !price.additional && Number.isFinite(price.amount) && price.amount >= 0
+  )
+}
+
+/** A group describes the published unit, not equivalent scope or a normalized total. */
+export function movingPriceGroupKey(price?: MovingPrice): string {
+  return price ? `${price.category}|${price.currency}|${price.unit}` : 'unpriced'
+}
+
+const movingSortCurrencies: MovingPrice['currency'][] = ['UYU', 'USD']
+const movingSortUnits: MovingUnit[] = ['hour', 'trip', 'km', 'item', 'month', 'm2', 'service']
+
+/**
+ * Sort already-filtered providers. Currency/unit groups keep a fixed order in both directions;
+ * only amounts within a group reverse. Package totals, fractions and range/from starting amounts
+ * stay as published, with the selected tariff's label and conditions required alongside the price.
+ */
+export function sortMovingProviders(
+  providers: readonly MovingProvider[],
+  filters: MovingFilters = {},
+  sort: MovingSort = 'name'
+): MovingProvider[] {
+  const byName = (a: MovingProvider, b: MovingProvider) =>
+    a.name.localeCompare(b.name, 'es') || a.id.localeCompare(b.id, 'es')
+  if (sort === 'name') return [...providers].sort(byName)
+
+  const entries = providers.map(provider => ({
+    provider,
+    price: movingPriceForSort(provider, filters),
+  }))
+  const direction = sort === 'price-desc' ? -1 : 1
+  entries.sort((a, b) => {
+    if (!a.price && !b.price) return byName(a.provider, b.provider)
+    if (!a.price) return 1
+    if (!b.price) return -1
+    return (
+      MOVING_CATEGORIES.indexOf(a.price.category) - MOVING_CATEGORIES.indexOf(b.price.category) ||
+      movingSortCurrencies.indexOf(a.price.currency) -
+        movingSortCurrencies.indexOf(b.price.currency) ||
+      movingSortUnits.indexOf(a.price.unit) - movingSortUnits.indexOf(b.price.unit) ||
+      direction * (a.price.amount - b.price.amount) ||
+      byName(a.provider, b.provider)
+    )
+  })
+  return entries.map(entry => entry.provider)
 }
 
 export function filterMovingProviders(

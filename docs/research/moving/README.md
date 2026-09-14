@@ -4,6 +4,22 @@
 
 La cantidad de tarifas necesita contexto: **132 corresponden a rutas de Sánchez**, con y sin peones, y **128 a variantes de encomiendas de DePunta**. Son dos prestadores, no 260 empresas ni 260 presupuestos independientes. Las fichas también incluyen servicios municipales gratuitos y armado asociado a compras. No se afirma exhaustividad, disponibilidad para una fecha concreta ni vigencia certificada de los importes.
 
+**Estado de publicación al 14/09/2026:** el directorio inicial está desplegado en el commit `dc3a708`, con cinco E2E aprobados en producción. La ampliación con búsqueda compartible, orden por precio y referencias/reseñas está implementada localmente y pendiente de despliegue. Tiene 346 pruebas unitarias aprobadas en ocho archivos y el nuevo E2E integrado aprobado en ambos temas. Tres perfiles reales también pasaron el parser y la verificación de identidad; la prueba de la API pública se hará tras el despliegue.
+
+## Encontrar, ordenar y compartir una búsqueda
+
+Los filtros combinan servicio, departamento, búsqueda de empresa/localidad/artículo, precio publicado, medidas de vehículo y base local. Las etiquetas de las tarifas participan en la búsqueda: «heladera» permite encontrar los envíos de DePunta; los tarifarios extensos incluyen un buscador dentro de la ficha. Elegir armado presenta tarifas de armado o presupuesto, sin reutilizar el precio de depósito de una empresa que ofrece ambos trabajos.
+
+El enlace guarda `servicio`, `departamento`, `q`, `precios`, `camion`, `local` y `orden`. Los tres interruptores usan `1`; `local` requiere departamento. `orden=precio-asc` y `orden=precio-desc` activan el orden por importe; ausencia significa orden alfabético. Los valores predeterminados se omiten. Ejemplo de contrato:
+
+```text
+/fletes-mudanzas-uruguay?servicio=assembly&departamento=Canelones&q=ropero&precios=1&orden=precio-asc
+```
+
+Recarga y atrás/adelante restauran los filtros; limpiar elimina sólo sus parámetros. «Copiar búsqueda» incluye el texto pendiente y los filtros actuales, sin seguimiento ajeno al directorio. El [contrato técnico completo](../../app/MOVING_SERVICES.md#url-compartible-y-orden) documenta valores, normalización y sincronización.
+
+El orden por precio utiliza la misma tarifa principal que destaca cada ficha. Separa grupos por **servicio, moneda y unidad**, excluye recargos como precio de entrada y deja al final los servicios sin tarifa pertinente. Dentro del grupo ordena el importe publicado; los rangos y precios «desde» conservan su condición. Paquetes de dos horas y bloques de media hora mantienen sus totales: no se convierten a hora, no se calculan impuestos ausentes y no se supone que incluyan el mismo personal. Las condiciones deben leerse incluso dentro de un mismo grupo.
+
 ## Qué cubre y dónde falta información
 
 Las categorías se superponen: hay 49 fichas de flete, 43 de mudanza, 26 de armado/desarmado, 22 de almacenamiento, 21 de embalaje, nueve de instalaciones, cinco de limpieza y tres de retirada. Una misma empresa puede aparecer en varias. “Flete” puede ser transporte de un artículo o carga comercial; “mudanza” identifica una oferta de traslado del hogar, cuyo trabajo incluido depende del paquete.
@@ -14,15 +30,15 @@ Diecisiete fichas declaran alcance nacional. Esa declaración no demuestra una s
 
 ## Fletes y mudanzas: precios con condiciones comparables
 
-Todos los importes de esta sección están en **pesos uruguayos (UYU)**. La comparación conserva horas, trabajadores e impuestos: no se ordenan juntos un paquete sin carga y una mudanza asistida.
+Todos los importes de esta sección están en **pesos uruguayos (UYU)**. La comparación conserva horas, trabajadores e impuestos. Ordenar el importe de dos paquetes no hace equivalentes uno sin carga y otro con mudanza asistida.
 
-| Prestador y modalidad | Importe publicado | Alcance que define el precio |
-| --- | ---: | --- |
-| [SOSE](https://sosetransporte.uy/), camión chico | 1.250 por hora + IVA | Mínimo dos horas; dos peones, embalaje y seguro de carga anunciados. Mediano 1.550 y grande 1.750 por hora. |
-| [Mudanzas en Montevideo](https://mudanzasenmontevideo.uy/), chico | 1.250 por hora + IVA | Mínimo dos horas; chofer y dos peones. Publica los mismos escalones, pero tiene otro contacto: ficha separada. |
-| [DT](https://www.dt.com.uy/packs-mudanzas.html), chico | 3.120 por paquete | Dos horas, dos ayudantes y embalaje; hora adicional 1.560. No aclara IVA en el tarifario. |
-| [FletesBox](https://fletesbox.com/servicios/), básica/intermedia | 2.400 / 3.800 por paquete | Dos horas y 12 m³; básica sin carga/descarga, intermedia con dos ayudantes. Su mapa delimita las zonas. |
-| [Los Piñones](https://mudanzasmontevideo.uy/) | 1.750 por hora | Camión cerrado de cinco metros, chofer, dos ayudantes, film y mantas. Tarifario septiembre de 2026; declara que no cobra IVA y no publica mínimo. |
+| Prestador y modalidad                                             |         Importe publicado | Alcance que define el precio                                                                                                                      |
+| ----------------------------------------------------------------- | ------------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [SOSE](https://sosetransporte.uy/), camión chico                  |      1.250 por hora + IVA | Mínimo dos horas; dos peones, embalaje y seguro de carga anunciados. Mediano 1.550 y grande 1.750 por hora.                                       |
+| [Mudanzas en Montevideo](https://mudanzasenmontevideo.uy/), chico |      1.250 por hora + IVA | Mínimo dos horas; chofer y dos peones. Publica los mismos escalones, pero tiene otro contacto: ficha separada.                                    |
+| [DT](https://www.dt.com.uy/packs-mudanzas.html), chico            |         3.120 por paquete | Dos horas, dos ayudantes y embalaje; hora adicional 1.560. No aclara IVA en el tarifario.                                                         |
+| [FletesBox](https://fletesbox.com/servicios/), básica/intermedia  | 2.400 / 3.800 por paquete | Dos horas y 12 m³; básica sin carga/descarga, intermedia con dos ayudantes. Su mapa delimita las zonas.                                           |
+| [Los Piñones](https://mudanzasmontevideo.uy/)                     |            1.750 por hora | Camión cerrado de cinco metros, chofer, dos ayudantes, film y mantas. Tarifario septiembre de 2026; declara que no cobra IVA y no publica mínimo. |
 
 Los mínimos cambian el desembolso: dos horas de SOSE chico equivalen a **2.500 UYU antes de IVA**, cálculo del tarifario, no una cotización. Escaleras, recorrido, espera, estacionamiento y embalaje total pueden cambiar el presupuesto. Que un sitio mencione seguro no acredita por sí solo límites, exclusiones o cobertura del contenido.
 
@@ -64,6 +80,18 @@ El retiro responsable puede evitar transportar objetos descartados. [Montevideo]
 
 Para reconectar equipos, [Porto](https://tienda.portoservicios.com.uy/catalogo/instalacion-de-lavarropa_SERVLAV001_SERVLAV001) publica instalación de lavarropas a **1.980 UYU**. El [recambio de calefón](https://tienda.portoservicios.com.uy/catalogo/desinstalacion-instalacion-de-calefon-hasta-60_SERVDICAL001_SERVDICAL001) hasta 60 litros cuesta **3.280**, pero describe sustitución en el mismo lugar, no retiro y montaje entre dos viviendas. Deben confirmarse redes existentes, materiales y aceptación de equipos comprados fuera de la tienda.
 
+## Reseñas y referencias externas
+
+El [relevamiento de perfiles](review-sources.json) revisó las fuentes públicas de los 80 prestadores mediante 123 lecturas. La [proyección asociada](../../../app/utils/movingReviewSourcesData.json) contiene **48 referencias de 38 prestadores**: 16 Google Maps, 12 Facebook, 19 fichas 1122 y una HomeSolution. Estos conteos son independientes de las 94 URLs del catálogo de servicios; no se suman como si fueran fuentes distintas. Diez asociaciones ambiguas y tres rechazadas quedaron fuera de la proyección.
+
+La comprobación acredita que el perfil pertenece a la empresa o sucursal indicada. No acredita calidad, habilitación, seguro ni disponibilidad de opiniones. Se excluyeron coincidencias sostenidas sólo por nombre, perfiles de autores y redes del directorio o tienda que recomendó a un armador. La puntuación de una sucursal puede abarcar ventas y trabajos distintos de una mudanza; los servicios de una misma marca no heredan automáticamente una valoración común. No encontrar un vínculo tampoco demuestra falta de reputación.
+
+Hay **16 perfiles Google con Place ID para diez prestadores**, preparados para consulta bajo demanda cuando el entorno esté configurado. Al abrir «Reseñas y referencias externas» se consultan hasta tres perfiles de ese prestador y los restantes mediante su botón. El resultado muestra puntuación, recuento, enlace, atribución y hora de consulta; no fecha de la última opinión. Cerrar el bloque descarta esos valores y cancela las lecturas pendientes. Facebook, 1122 y HomeSolution permanecen como referencias externas, sin puntuación importada.
+
+El JSON editorial no almacena estrellas, recuentos, textos, autores, fotos ni respuestas de Google. Tampoco existe un ranking por reputación. La lectura efímera distingue perfil sin opiniones, identidad contradictoria, falta de configuración, error y límite de consultas. No se solicita Google para todos los prestadores al abrir la página y no se muestran puntuaciones antiguas como respaldo de un fallo.
+
+La [política oficial de Places API](https://developers.google.com/maps/documentation/places/web-service/policies) establece restricciones de almacenamiento y requisitos de atribución. La [guía oficial de Place IDs](https://developers.google.com/maps/documentation/places/web-service/place-id) distingue los identificadores que pueden conservarse y recomienda revisar los de más de doce meses. Los perfiles identificados no garantizan por sí solos conexión activa o una respuesta utilizable.
+
 ## Método, límites y actualización
 
 Se priorizaron páginas propias y trámites oficiales; para ampliar el interior se conservaron fichas comerciales completas, identificadas como fuentes secundarias. Cada precio mantiene moneda, unidad, mínimo, inclusiones y exclusiones disponibles. Se omitieron datos desconocidos y se registraron contradicciones. La fecha de consulta no se reutiliza como fecha de publicación.
@@ -73,6 +101,10 @@ La deduplicación exige evidencia comercial: SOSE y Fletes Montevideo comparten 
 La [revisión de marketplaces](marketplace-notes.md) examinó 169 tarjetas: 50 de fletes y 50 de armado en Mercado Libre, más 36 y 33 en Facebook. Nueve originales seleccionados no aportaron cuerpo suficiente: cinco devolvieron 403 y cuatro Facebook sólo título. La búsqueda de armado mezclaba productos y herramientas; fletes cubría 50 de 69 resultados declarados. Se incorporaron **cero fichas nuevas** desde esas tarjetas y ningún importe sin unidad. Las restricciones de lectura no demuestran inactividad del anunciante.
 
 Una actualización debe releer las mismas fuentes, comparar precios y condiciones, conservar el historial de cambios y revisar contactos y cobertura. No basta renovar la fecha de consulta. Prioridades: las seis bases departamentales faltantes, armadores del interior, limpieza con alcance definido, capacidad de camiones e impuestos. El documento y JSON son una captura documentada; no prometen actualización automática.
+
+La proyección editorial es manual: `node app/scripts/build-moving-directory.mjs` consolida servicios y `node app/scripts/build-moving-review-sources.mjs` proyecta sólo vínculos verificados. Ambos aceptan `--check` para comprobar sin escribir. Nuxt consume los JSON dentro de `app/`; su build no depende de `docs/`. Los perfiles de reseñas se actualizan revisando `review-sources.json`, sin añadir datos de opiniones.
+
+La consulta de Google depende de `MOVING_REVIEWS_GMAPS_URL`, con fallback al proxy de `CASAS_REVIEWS_GMAPS_URL`, y del interruptor `MOVING_REVIEWS_ENABLED`. Las respuestas no se guardan en MongoDB ni snapshots; la API envía `no-store`. El [documento de implementación](../../app/MOVING_SERVICES.md#referencias-externas-y-puntuaciones-bajo-demanda) detalla identidad, atribución, límites y configuración privada. Su [sección de verificación](../../app/MOVING_SERVICES.md#verificación) incluye los comandos unitarios y E2E actualizados; las pruebas de reseñas usan respuestas sintéticas y no prueban la conectividad real de un entorno.
 
 ## Inventario completo
 
