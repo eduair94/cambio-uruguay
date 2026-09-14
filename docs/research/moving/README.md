@@ -4,7 +4,7 @@
 
 La cantidad de tarifas necesita contexto: **132 corresponden a rutas de Sánchez**, con y sin peones, y **128 a variantes de encomiendas de DePunta**. Son dos prestadores, no 260 empresas ni 260 presupuestos independientes. Las fichas también incluyen servicios municipales gratuitos y armado asociado a compras. No se afirma exhaustividad, disponibilidad para una fecha concreta ni vigencia certificada de los importes.
 
-**Estado de publicación al 14/09/2026:** el directorio inicial está desplegado en el commit `dc3a708`, con cinco E2E aprobados en producción. La ampliación con búsqueda compartible, orden por precio y referencias/reseñas está implementada localmente y pendiente de despliegue. Tiene 346 pruebas unitarias aprobadas en ocho archivos y el nuevo E2E integrado aprobado en ambos temas. Tres perfiles reales también pasaron el parser y la verificación de identidad; la prueba de la API pública se hará tras el despliegue.
+**Publicado y verificado el 14/09/2026:** [directorio público](https://cambio-uruguay.com/fletes-mudanzas-uruguay), con filtros compartibles, orden por precio y referencias/reseñas. El commit `1e345c0` quedó desplegado a las 09:38 UTC ([ejecución de CI](https://github.com/eduair94/cambio-uruguay/actions/runs/34828153253)). Pasaron 7.519 pruebas de app, 2.661 del backend y seis E2E contra producción. Los 16 perfiles Google de 10 prestadores respondieron correctamente desde la API pública, con identidad verificada y respuestas sin caché. Es una comprobación fechada de conectividad y datos, no una garantía de calidad futura del servicio.
 
 ## Encontrar, ordenar y compartir una búsqueda
 

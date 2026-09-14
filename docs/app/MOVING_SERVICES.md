@@ -6,9 +6,10 @@ de fuentes públicas del **14 de septiembre de 2026**. La primera versión conso
 Las tarifas son variantes de trabajo: 132 son rutas de Transportes Sánchez y 128 son artículos de
 DePunta. No son 381 empresas ni 381 cotizaciones de mudanzas completas.
 
-**Estado del 14 de septiembre de 2026:** la entrega inicial `dc3a708` está desplegada y tiene cinco
-casos E2E aprobados contra producción. La ampliación de URLs compartibles, orden por precio y
-referencias/reseñas descrita abajo está implementada localmente; su despliegue sigue pendiente.
+**Estado del 14 de septiembre de 2026:** directorio y ampliación publicados en producción, con
+filtros compartibles, orden por precio y referencias/reseñas. El despliegue de `1e345c0` terminó
+a las 09:38 UTC en [CI / Deploy 34828153253](https://github.com/eduair94/cambio-uruguay/actions/runs/34828153253).
+Seis casos E2E aprobados contra producción y 16 perfiles Google comprobados mediante la API pública.
 
 ## Superficies
 
@@ -203,9 +204,17 @@ ajenos, copia, reset y correspondencia entre grupos/importe destacado. Las respu
 se simulan para probar éxito, identidad contradictoria, límites, consulta sólo al abrir, limpieza
 al cerrar y atribución en claro/oscuro: pasar estos casos no acredita conectividad real del proxy.
 
-Validación registrada del 2026-09-14: entrega inicial con 288 unitarias locales y cinco E2E aprobados;
-despliegue `dc3a708` exitoso y cinco E2E aprobados en producción. La ampliación tiene **346 unitarias
-locales en ocho archivos aprobadas**, ESLint limpio y el nuevo E2E integrado aprobado, con capturas
-revisadas en claro y oscuro. Tres lecturas reales de Google (Furniture Home Canelones, Naterial
-Punta Carretas y All Box) pasaron el parser y la verificación de identidad sin almacenar sus
-puntuaciones. Su despliegue y la comprobación de la API pública siguen pendientes.
+Validación final del 2026-09-14: **7.519 pruebas de app y 2.661 de backend aprobadas en CI**, además de
+ESLint específico, ambas proyecciones, escaneo Gitleaks y `git diff --check`. La verificación pública
+aprobó **los seis E2E en 42,7 s**, con capturas revisadas en claro y oscuro. Los **16 perfiles Google
+de 10 prestadores** devolvieron `200/ok`, identidad coincidente, puntuación válida, recuento entero,
+hora fresca, `Cache-Control` y `CDN-Cache-Control: no-store`, y borde Cloudflare `DYNAMIC`.
+Las consultas se separaron para respetar la cuota; no se almacenaron sus puntuaciones ni respuestas.
+Las rutas de proveedor inexistente, sucursal omitida, perfil no permitido y parámetros ajenos
+respondieron respectivamente 404, 400, 404 y 400. El HTML público contiene filtros, compartir y
+reseñas, y conserva `public, max-age=0, must-revalidate`.
+
+El primer intento `94c4671` se detuvo antes de desplegar: Gitleaks confundió nueve identificadores
+públicos de 1122, repetidos en origen/proyección, con credenciales por el atributo JSON `key`.
+`1e345c0` cambió sólo ese atributo a `id`; el cargador conserva `key` en el contrato de API/UI.
+Una prueba del catálogo real comprueba esa asociación. No se añadieron excepciones al escáner.
