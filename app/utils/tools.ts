@@ -36,6 +36,16 @@ export const TOOL_CATEGORIES: Readonly<Record<ToolCategory, string>> = Object.fr
 /** The full catalogue. Order here drives the hub listing within each category. */
 export const tools: readonly Tool[] = [
   {
+    slug: 'tickets-mutualistas-uruguay',
+    to: '/tickets-mutualistas-uruguay',
+    title: 'Tickets y órdenes de mutualistas',
+    description:
+      'Consultá precios base y máximos autorizados del MSP para cinco prestaciones, por institución y afiliación. Tarifarios de julio de 2026, sin IVA ni timbres.',
+    icon: 'mdi-receipt-text-outline',
+    category: 'finanzas',
+    keywords: ['tickets mutualistas', 'órdenes mutualistas', 'tasas moderadoras', 'precios MSP'],
+  },
+  {
     slug: 'calculadora-impuestos-importacion',
     title: 'Calculadora de impuestos de importación en Uruguay',
     description:

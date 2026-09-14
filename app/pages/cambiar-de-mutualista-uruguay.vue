@@ -15,6 +15,13 @@
       </p>
     </header>
 
+    <ContentTaskLinks
+      class="mb-8"
+      :label="t('mutualistaCosts.navLabel')"
+      :items="[{ label: t('mutualistaCosts.costsLink'), to: '/tickets-mutualistas-uruguay' }]"
+      placement="mutualista_change_costs"
+    />
+
     <!-- Checker -->
     <section id="cuando-me-toca" class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">¿Cuándo te toca?</h2>
@@ -351,6 +358,13 @@ import {
   REFUND_FACTS,
   checkMobility,
 } from '~/utils/healthProvider'
+
+import { mutualistaCostMessages } from '~/utils/mutualistaCostMessages'
+
+const { t, mergeLocaleMessage } = useI18n()
+for (const [lang, messages] of Object.entries(mutualistaCostMessages)) {
+  mergeLocaleMessage(lang, { mutualistaCosts: messages })
+}
 
 const formatInt = (n: number) => n.toLocaleString('es-UY')
 

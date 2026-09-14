@@ -1781,6 +1781,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/tickets-mutualistas-uruguay',
+        labelKey: 'nav.ticketsMutualistas',
+        icon: 'mdi-receipt-text-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'tickets mutualistas uruguay',
+          'precio ordenes mutualistas',
+          'tasas moderadoras msp',
+          'ticket medicamentos fonasa',
+          'mutualistas en montevideo precios',
+          'comparar costos mutualistas',
+          'precio consulta mutualista',
+        ],
+      },
+      {
         to: '/cambiar-de-mutualista-uruguay',
         labelKey: 'nav.cambiarMutualista',
         icon: 'mdi-hospital-box-outline',

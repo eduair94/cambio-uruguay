@@ -18,7 +18,7 @@
           class="related-card pa-4 h-100 d-flex flex-column"
           variant="flat"
           hover
-          @click="track('related_click', { from: sourcePath, to: item.to })"
+          @click="trackRelatedClick(item.to)"
         >
           <div class="d-flex align-center ga-2 mb-2">
             <VIcon size="small" color="primary">{{ item.icon }}</VIcon>
@@ -59,6 +59,16 @@ const items = computed(() =>
     ? relatedFor(route.path, 6, { operation: route.query.operation, mode: route.query.mode })
     : []
 )
+
+function trackRelatedClick(destination: string) {
+  const middleware = route.meta.middleware
+  if (middleware === 'auth' || (Array.isArray(middleware) && middleware.includes('auth'))) return
+  track('related_click', {
+    content_path: sourcePath.value,
+    destination_path: localePath(destination),
+    placement: 'related_pages',
+  })
+}
 </script>
 
 <style scoped>
