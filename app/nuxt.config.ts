@@ -522,6 +522,7 @@ export default defineNuxtConfig({
     [
       'nuxt-gtag',
       {
+        enabled: process.env.NODE_ENV === 'production',
         id: 'G-F97PNVRMRF',
         loadingStrategy: 'defer', // Defer loading for better performance
         // `plugins/gtag-init.client.ts` starts GA on every page EXCEPT the
