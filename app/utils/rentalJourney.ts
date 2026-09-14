@@ -160,12 +160,18 @@ export const JOURNEY_STAGES: JourneyStage[] = [
   },
   {
     key: 'equipar',
-    label: 'Equipar',
-    question: 'Está vacío. ¿Qué compro primero?',
+    label: 'Mudarte y equipar',
+    question: '¿Cómo llevo mis cosas y qué me falta comprar?',
     icon: 'mdi-fridge-outline',
     blurb:
-      'La parte que casi nadie presupuesta y que llega toda junta la primera semana. Ordenada por necesidad, con precio de mercado y el usado al lado del nuevo.',
+      'Coordiná el flete, el armado y la limpieza. Después, completá lo que falta con precios de mercado y el usado al lado del nuevo.',
     links: [
+      {
+        to: '/fletes-mudanzas-uruguay',
+        label: 'Fletes, mudanzas y armado',
+        hint: 'Proveedores, tarifas publicadas, camiones, guardamuebles y limpieza',
+        icon: 'mdi-truck-outline',
+      },
       {
         to: '/equipar-casa-uruguay',
         label: 'Qué comprar y cuánto sale',

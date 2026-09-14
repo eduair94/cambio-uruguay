@@ -775,6 +775,11 @@ const { smAndDown } = useDisplay()
 const mobileFiltersOpen = ref(false)
 const relatedSearchesOpen = ref(false)
 const relatedSearches = computed(() => [
+  {
+    path: '/fletes-mudanzas-uruguay',
+    icon: 'mdi-truck-outline',
+    label: globalT('nav.mudanzas'),
+  },
   { path: '/analisis-alquileres-uruguay', icon: 'mdi-chart-line', label: t('analysisShort') },
   {
     path: '/barrios-alquileres-uruguay',

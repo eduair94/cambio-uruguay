@@ -1,0 +1,2028 @@
+[
+  {
+    "id": "armadores-montevideo",
+    "name": "ArmadoresMontevideo",
+    "categories": [
+      "assembly",
+      "installation"
+    ],
+    "coverage": [
+      "Montevideo (con exclusiones por barrio)",
+      "Ciudad de la Costa"
+    ],
+    "summary": "Armado independiente, desarme para mudanza y fijaciones a domicilio.",
+    "services": [
+      "Armado de muebles de distintas marcas",
+      "Desarme y rearmado para mudanzas a cotizar",
+      "Soportes de TV y fijaciones",
+      "Herramientas y traslado en Montevideo incluidos; garantía anunciada de 30 días"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "Mesa de luz — orientativo",
+        "amount": 350,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://armadoresmontevideo.uy/precios/",
+        "conditions": "Sólo armado; IVA incluido. Confirmar modelo por foto.",
+        "category": "assembly"
+      },
+      {
+        "label": "Escritorio o rack — orientativo",
+        "amount": 650,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://armadoresmontevideo.uy/precios/",
+        "conditions": "Sólo armado; IVA incluido. Confirmar modelo por foto.",
+        "category": "assembly"
+      },
+      {
+        "label": "Cama simple — orientativo",
+        "amount": 700,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://armadoresmontevideo.uy/precios/",
+        "conditions": "Sólo armado; IVA incluido. Confirmar modelo por foto.",
+        "category": "assembly"
+      },
+      {
+        "label": "Placard 2 puertas — orientativo",
+        "amount": 700,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://armadoresmontevideo.uy/precios/",
+        "conditions": "Sólo armado; IVA incluido. Confirmar modelo por foto.",
+        "category": "assembly"
+      },
+      {
+        "label": "Placard 4 puertas — orientativo",
+        "amount": 1000,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://armadoresmontevideo.uy/precios/",
+        "conditions": "Sólo armado; IVA incluido. Confirmar modelo por foto.",
+        "category": "assembly"
+      },
+      {
+        "label": "Placard 6 puertas — orientativo",
+        "amount": 1300,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://armadoresmontevideo.uy/precios/",
+        "conditions": "Sólo armado; IVA incluido. Confirmar modelo por foto.",
+        "category": "assembly"
+      },
+      {
+        "label": "Placard 8 puertas — orientativo",
+        "amount": 1500,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://armadoresmontevideo.uy/precios/",
+        "conditions": "Sólo armado; IVA incluido. Confirmar modelo por foto.",
+        "category": "assembly"
+      },
+      {
+        "label": "Placard 3 corredizas con espejo — orientativo",
+        "amount": 1600,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://armadoresmontevideo.uy/precios/",
+        "conditions": "Sólo armado; IVA incluido. Confirmar modelo por foto.",
+        "category": "assembly"
+      },
+      {
+        "label": "Cómoda hasta 5 cajones — orientativo",
+        "amount": 600,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://armadoresmontevideo.uy/precios/",
+        "conditions": "Sólo armado; IVA incluido. Confirmar modelo por foto.",
+        "category": "assembly"
+      },
+      {
+        "label": "Cucheta — orientativo",
+        "amount": 1200,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://armadoresmontevideo.uy/precios/",
+        "conditions": "Sólo armado; IVA incluido. Confirmar modelo por foto.",
+        "category": "assembly"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "+59895881009",
+        "sourceUrl": "https://armadoresmontevideo.uy/"
+      },
+      {
+        "kind": "phone",
+        "value": "+59895881009",
+        "sourceUrl": "https://armadoresmontevideo.uy/"
+      }
+    ],
+    "website": "https://armadoresmontevideo.uy/",
+    "sources": [
+      {
+        "url": "https://armadoresmontevideo.uy/",
+        "title": "Armado de muebles a domicilio",
+        "accessedAt": "2026-09-14"
+      },
+      {
+        "url": "https://armadoresmontevideo.uy/precios/",
+        "title": "Precios de armado",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "El tarifario excluye Villa Biarritz, La Teja, Capurro, Piedras Blancas, Patas Blancas, Cerro, Manga, Paso de la Arena, Sayago y Casabó; confirmar cobertura antes de agendar.",
+      "El tarifario contempla posibles recargos fuera de horario o fines de semana; no confundir con urgencia en horario habitual."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "furniture-home",
+    "name": "Furniture Home",
+    "categories": [
+      "assembly",
+      "installation"
+    ],
+    "coverage": [
+      "Montevideo",
+      "Canelones",
+      "Maldonado"
+    ],
+    "summary": "Armado y desarmado independiente, reparación, amurado y muebles a medida.",
+    "services": [
+      "Armado multimarca",
+      "Desarmado y rearmado en dos domicilios",
+      "Fijación de muebles, estantes y televisores",
+      "Reparación y restauración"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "Mesas de luz",
+        "amount": 600,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://forniturehome-st.com/",
+        "maxAmount": 900,
+        "conditions": "Orientativo; depende del modelo, cantidad y ubicación.",
+        "category": "assembly"
+      },
+      {
+        "label": "Escritorios",
+        "amount": 700,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://forniturehome-st.com/",
+        "maxAmount": 1500,
+        "conditions": "Orientativo; depende del modelo, cantidad y ubicación.",
+        "category": "assembly"
+      },
+      {
+        "label": "Cómodas",
+        "amount": 620,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://forniturehome-st.com/",
+        "maxAmount": 1500,
+        "conditions": "Orientativo; depende del modelo, cantidad y ubicación.",
+        "category": "assembly"
+      },
+      {
+        "label": "Racks",
+        "amount": 700,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://forniturehome-st.com/",
+        "maxAmount": 1200,
+        "conditions": "Orientativo; depende del modelo, cantidad y ubicación.",
+        "category": "assembly"
+      },
+      {
+        "label": "Camas",
+        "amount": 1000,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://forniturehome-st.com/",
+        "maxAmount": 1800,
+        "conditions": "Orientativo; depende del modelo, cantidad y ubicación.",
+        "category": "assembly"
+      },
+      {
+        "label": "Placares pequeños",
+        "amount": 1300,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://forniturehome-st.com/",
+        "maxAmount": 1900,
+        "conditions": "Orientativo; depende del modelo, cantidad y ubicación.",
+        "category": "assembly"
+      },
+      {
+        "label": "Placares hasta 230 cm",
+        "amount": 1900,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://forniturehome-st.com/",
+        "maxAmount": 2500,
+        "conditions": "Orientativo; depende del modelo, cantidad y ubicación.",
+        "category": "assembly"
+      },
+      {
+        "label": "Cocina/bajomesada",
+        "amount": 900,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://forniturehome-st.com/",
+        "maxAmount": 1800,
+        "conditions": "Orientativo; depende del modelo, cantidad y ubicación.",
+        "category": "assembly"
+      },
+      {
+        "label": "Bibliotecas",
+        "amount": 700,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://forniturehome-st.com/",
+        "maxAmount": 1500,
+        "conditions": "Orientativo; depende del modelo, cantidad y ubicación.",
+        "category": "assembly"
+      },
+      {
+        "label": "Placares grandes/vestidores",
+        "amount": 2500,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "from",
+        "sourceUrl": "https://forniturehome-st.com/",
+        "category": "assembly"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59892972375",
+        "sourceUrl": "https://forniturehome-st.com/"
+      },
+      {
+        "kind": "phone",
+        "value": "+59897197929",
+        "sourceUrl": "https://forniturehome-st.com/"
+      },
+      {
+        "kind": "email",
+        "value": "furniturehome.s.a.uy@gmail.com",
+        "sourceUrl": "https://forniturehome-st.com/"
+      }
+    ],
+    "website": "https://forniturehome-st.com/",
+    "sources": [
+      {
+        "url": "https://forniturehome-st.com/",
+        "title": "Furniture Home — servicios y precios 2026",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "El sitio también anuncia todo Uruguay; coordinar zonas fuera de Montevideo, Canelones y Maldonado.",
+      "Garantía anunciada de 7 días. Los cartones quedan en el domicilio; retiro de embalajes y reparaciones de fábrica no incluidos."
+    ],
+    "baseDepartment": "Montevideo",
+    "nationwide": true
+  },
+  {
+    "id": "armado-fast",
+    "name": "Armado FAST",
+    "categories": [
+      "assembly",
+      "packing",
+      "installation"
+    ],
+    "coverage": [
+      "Montevideo",
+      "Maldonado"
+    ],
+    "summary": "Armado multimarca y desarmado con piezas identificadas, con tarifas diferenciadas por departamento.",
+    "services": [
+      "Armado de muebles nuevos",
+      "Desarmado y rearmado para mudanzas",
+      "Rotulado de piezas y bolsas de herrajes",
+      "Protección de piezas frágiles",
+      "Fijación a pared a convenir"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "Montevideo: ropero",
+        "amount": 1490,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "from",
+        "sourceUrl": "https://armadofast.com/precios-armado-de-muebles-montevideo",
+        "publishedAt": "2026-01",
+        "conditions": "Orientativo; visita incluida.",
+        "category": "assembly"
+      },
+      {
+        "label": "Montevideo: escritorio",
+        "amount": 990,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "from",
+        "sourceUrl": "https://armadofast.com/precios-armado-de-muebles-montevideo",
+        "publishedAt": "2026-01",
+        "conditions": "Orientativo; visita incluida.",
+        "category": "assembly"
+      },
+      {
+        "label": "Montevideo: mesa de luz/estante",
+        "amount": 620,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "from",
+        "sourceUrl": "https://armadofast.com/precios-armado-de-muebles-montevideo",
+        "publishedAt": "2026-01",
+        "conditions": "Orientativo; visita incluida.",
+        "category": "assembly"
+      },
+      {
+        "label": "Montevideo: cama/marinera",
+        "amount": 2240,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "from",
+        "sourceUrl": "https://armadofast.com/precios-armado-de-muebles-montevideo",
+        "publishedAt": "2026-01",
+        "conditions": "Orientativo; visita incluida.",
+        "category": "assembly"
+      },
+      {
+        "label": "Montevideo: rack",
+        "amount": 890,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "from",
+        "sourceUrl": "https://armadofast.com/precios-armado-de-muebles-montevideo",
+        "publishedAt": "2026-01",
+        "conditions": "Orientativo; visita incluida.",
+        "category": "assembly"
+      },
+      {
+        "label": "Maldonado: ropero",
+        "amount": 2200,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "from",
+        "sourceUrl": "https://armadofast.com/precios-armado-de-muebles-maldonado",
+        "publishedAt": "2026-01",
+        "conditions": "Orientativo; visita incluida.",
+        "category": "assembly"
+      },
+      {
+        "label": "Maldonado: escritorio",
+        "amount": 1500,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "from",
+        "sourceUrl": "https://armadofast.com/precios-armado-de-muebles-maldonado",
+        "publishedAt": "2026-01",
+        "conditions": "Orientativo; visita incluida.",
+        "category": "assembly"
+      },
+      {
+        "label": "Maldonado: mesa de luz/estante",
+        "amount": 990,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "from",
+        "sourceUrl": "https://armadofast.com/precios-armado-de-muebles-maldonado",
+        "publishedAt": "2026-01",
+        "conditions": "Orientativo; visita incluida.",
+        "category": "assembly"
+      },
+      {
+        "label": "Maldonado: cama",
+        "amount": 2500,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "from",
+        "sourceUrl": "https://armadofast.com/precios-armado-de-muebles-maldonado",
+        "publishedAt": "2026-01",
+        "conditions": "Orientativo; visita incluida.",
+        "category": "assembly"
+      },
+      {
+        "label": "Desarmar escritorio",
+        "amount": 620,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://armadofast.com/servicios/desarmado-de-muebles",
+        "maxAmount": 990,
+        "publishedAt": "2026-01",
+        "conditions": "Montevideo; sólo desarme. Rearmado se cotiza aparte.",
+        "category": "assembly"
+      },
+      {
+        "label": "Desarmar ropero 2–4 puertas",
+        "amount": 990,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://armadofast.com/servicios/desarmado-de-muebles",
+        "maxAmount": 1800,
+        "publishedAt": "2026-01",
+        "conditions": "Montevideo; sólo desarme. Rearmado se cotiza aparte.",
+        "category": "assembly"
+      },
+      {
+        "label": "Desarmar ropero 6–8 puertas",
+        "amount": 1800,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://armadofast.com/servicios/desarmado-de-muebles",
+        "maxAmount": 2800,
+        "publishedAt": "2026-01",
+        "conditions": "Montevideo; sólo desarme. Rearmado se cotiza aparte.",
+        "category": "assembly"
+      },
+      {
+        "label": "Desarmar cama",
+        "amount": 620,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "range",
+        "sourceUrl": "https://armadofast.com/servicios/desarmado-de-muebles",
+        "maxAmount": 1200,
+        "publishedAt": "2026-01",
+        "conditions": "Montevideo; sólo desarme. Rearmado se cotiza aparte.",
+        "category": "assembly"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "+59897717224",
+        "sourceUrl": "https://armadofast.com/servicios/desarmado-de-muebles"
+      },
+      {
+        "kind": "email",
+        "value": "contacto@armadofast.com",
+        "sourceUrl": "https://armadofast.com/servicios/desarmado-de-muebles"
+      }
+    ],
+    "website": "https://armadofast.com/",
+    "sources": [
+      {
+        "url": "https://armadofast.com/precios-armado-de-muebles-montevideo",
+        "title": "Precios de armado en Montevideo",
+        "accessedAt": "2026-09-14",
+        "notes": "Original leído por HTTP público.",
+        "publishedAt": "2026-01"
+      },
+      {
+        "url": "https://armadofast.com/precios-armado-de-muebles-maldonado",
+        "title": "Precios de armado en Maldonado",
+        "accessedAt": "2026-09-14",
+        "notes": "Original leído por HTTP público.",
+        "publishedAt": "2026-01"
+      },
+      {
+        "url": "https://armadofast.com/servicios/desarmado-de-muebles",
+        "title": "Desarmado para mudanzas",
+        "accessedAt": "2026-09-14",
+        "publishedAt": "2026-01"
+      }
+    ],
+    "caveats": [
+      "Cotizar combo desarmado y rearmado; no incluye transporte por inferencia.",
+      "Hay textos distintos sobre el retiro de embalajes y el costo del amurado: confirmarlos al cotizar.",
+      "Muebles pegados pueden tener limitaciones de desarme."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "one-storage",
+    "name": "ONE Storage",
+    "categories": [
+      "storage"
+    ],
+    "coverage": [
+      "Montevideo",
+      "Maldonado"
+    ],
+    "summary": "Boxes individuales en contenedores para mudanzas y guardado temporal.",
+    "services": [
+      "Boxes nominales de 4, 5, 8, 10, 15 y 30 m²",
+      "Acceso todos los días de 8 a 19 h con app",
+      "Contratación mes a mes",
+      "Monitoreo 24 horas",
+      "Sedes: Ruta 8 Nº 10220 y Ruta Interbalnearia km 110"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "BOX 4 m²",
+        "amount": 5000,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "fixed",
+        "sourceUrl": "https://www.onestorage.uy/",
+        "category": "storage"
+      },
+      {
+        "label": "BOX 5 m²",
+        "amount": 6000,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "fixed",
+        "sourceUrl": "https://www.onestorage.uy/",
+        "category": "storage"
+      },
+      {
+        "label": "BOX 8 m²",
+        "amount": 7000,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "fixed",
+        "sourceUrl": "https://www.onestorage.uy/",
+        "category": "storage"
+      },
+      {
+        "label": "BOX 10 m²",
+        "amount": 8000,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "fixed",
+        "sourceUrl": "https://www.onestorage.uy/",
+        "category": "storage"
+      },
+      {
+        "label": "BOX 15 m²",
+        "amount": 9000,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "fixed",
+        "sourceUrl": "https://www.onestorage.uy/",
+        "category": "storage"
+      },
+      {
+        "label": "BOX 30 m²",
+        "amount": 15000,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "fixed",
+        "sourceUrl": "https://www.onestorage.uy/",
+        "category": "storage"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59896053532",
+        "sourceUrl": "https://www.onestorage.uy/"
+      },
+      {
+        "kind": "whatsapp",
+        "value": "+59896053532",
+        "sourceUrl": "https://www.onestorage.uy/"
+      },
+      {
+        "kind": "email",
+        "value": "info@onestorage.uy",
+        "sourceUrl": "https://www.onestorage.uy/"
+      }
+    ],
+    "website": "https://www.onestorage.uy/",
+    "sources": [
+      {
+        "url": "https://www.onestorage.uy/",
+        "title": "ONE Storage",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "Confirmar disponibilidad, impuestos y condiciones finales.",
+      "Los volúmenes publicados no coinciden con el producto de las medidas lineales; no se usan para calcular capacidad.",
+      "Monitoreo 24 horas no significa acceso 24 horas."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "selfbox",
+    "name": "SelfBox",
+    "categories": [
+      "storage",
+      "freight"
+    ],
+    "coverage": [
+      "Montevideo"
+    ],
+    "summary": "Guardamuebles urbanos con acceso autónomo y opciones de transporte.",
+    "services": [
+      "Centros en Juan Paullier 1867, Francisco Bauzá 3341 y Mac Eachen 1395",
+      "Acceso diario de 7 a 20 h",
+      "Seguro de incendio y robo incluido según el proveedor",
+      "Carritos, montacargas y carga/descarga",
+      "Transporte sin costo al contratar al menos 3 meses"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "Box pequeño 1–2 m²",
+        "amount": 1900,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "from",
+        "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+        "category": "storage"
+      },
+      {
+        "label": "Box mediano 3–5 m²",
+        "amount": 4800,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "from",
+        "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+        "category": "storage"
+      },
+      {
+        "label": "Box grande más de 6 m²",
+        "amount": 7000,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "from",
+        "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+        "category": "storage"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59898130584",
+        "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/"
+      },
+      {
+        "kind": "phone",
+        "value": "+59899599831",
+        "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/"
+      },
+      {
+        "kind": "email",
+        "value": "info@selfbox.uy",
+        "sourceUrl": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/"
+      }
+    ],
+    "website": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+    "sources": [
+      {
+        "url": "https://selfbox.uy/alquiler-de-guardamuebles-en-montevideo/",
+        "title": "SelfBox",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "Precio depende del tamaño y plazo; confirmar alcance y zona del transporte promocional.",
+      "No se verificó póliza ni suma asegurada."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "simplebox",
+    "name": "Simple Box",
+    "categories": [
+      "storage",
+      "freight",
+      "packing"
+    ],
+    "coverage": [
+      "Montevideo"
+    ],
+    "summary": "Depósitos para particulares, fletes y venta de materiales para embalar.",
+    "services": [
+      "Guardamuebles para mudanzas y reformas",
+      "Venta de cajas y materiales de embalaje",
+      "Servicio de fletes",
+      "Alquiler de estanterías",
+      "Piedras 477 y 25 de Mayo 680"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "+59892333025",
+        "sourceUrl": "https://simplebox.uy/particulares"
+      },
+      {
+        "kind": "phone",
+        "value": "+59829151515",
+        "sourceUrl": "https://simplebox.uy/particulares"
+      },
+      {
+        "kind": "email",
+        "value": "info@simplebox.uy",
+        "sourceUrl": "https://simplebox.uy/particulares"
+      }
+    ],
+    "website": "https://simplebox.uy/particulares",
+    "sources": [
+      {
+        "url": "https://simplebox.uy/particulares",
+        "title": "Simple Box",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "No se obtuvo tarifa numérica verificable en la página abierta; solicitar presupuesto.",
+      "Venta de embalajes no implica que la mano de obra de packing esté incluida."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "boxit",
+    "name": "BoxIt",
+    "categories": [
+      "storage"
+    ],
+    "coverage": [
+      "Montevideo"
+    ],
+    "summary": "Boxes modulares para almacenamiento doméstico y empresarial.",
+    "services": [
+      "Ramón Márquez 3152",
+      "Espacio fraccionable cada 1,5 m²",
+      "Acceso mediante tarjetas",
+      "Equipamiento para movimiento interno y descarga bajo techo"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59891714132",
+        "sourceUrl": "https://boxit.com.uy/"
+      },
+      {
+        "kind": "phone",
+        "value": "+59822049238",
+        "sourceUrl": "https://boxit.com.uy/"
+      }
+    ],
+    "website": "https://boxit.com.uy/",
+    "sources": [
+      {
+        "url": "https://boxit.com.uy/",
+        "title": "BoxIt",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "Tarifas mediante cotización o reserva; no se creó usuario.",
+      "Descuentos publicados sujetos a ocupación y no acumulables."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "all-box",
+    "name": "All Box Uruguay",
+    "categories": [
+      "storage"
+    ],
+    "coverage": [
+      "Montevideo"
+    ],
+    "summary": "Depósitos urbanos con rampas vehiculares y ascensor.",
+    "services": [
+      "Hipólito Yrigoyen 2066, Malvín",
+      "Acceso mediante ID remoto o tarjeta",
+      "Estacionamiento",
+      "Instalaciones en cuatro niveles"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "Mini box",
+        "amount": 1650,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "fixed",
+        "sourceUrl": "https://allboxuruguay.com/",
+        "includes": [
+          "IVA"
+        ],
+        "category": "storage"
+      },
+      {
+        "label": "Box 2 m² aprox.",
+        "amount": 2660,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "fixed",
+        "sourceUrl": "https://allboxuruguay.com/",
+        "includes": [
+          "IVA"
+        ],
+        "category": "storage"
+      },
+      {
+        "label": "Box 3 m² aprox.",
+        "amount": 3240,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "fixed",
+        "sourceUrl": "https://allboxuruguay.com/",
+        "includes": [
+          "IVA"
+        ],
+        "category": "storage"
+      },
+      {
+        "label": "Box 6 m² aprox.",
+        "amount": 6300,
+        "currency": "UYU",
+        "unit": "month",
+        "kind": "fixed",
+        "sourceUrl": "https://allboxuruguay.com/",
+        "includes": [
+          "IVA"
+        ],
+        "category": "storage"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59825247138",
+        "sourceUrl": "https://allboxuruguay.com/contacto/"
+      },
+      {
+        "kind": "phone",
+        "value": "+59894079152",
+        "sourceUrl": "https://allboxuruguay.com/contacto/"
+      },
+      {
+        "kind": "email",
+        "value": "info@allboxuruguay.com",
+        "sourceUrl": "https://allboxuruguay.com/contacto/"
+      }
+    ],
+    "website": "https://allboxuruguay.com/",
+    "sources": [
+      {
+        "url": "https://allboxuruguay.com/",
+        "title": "All Box — tamaños y tarifas",
+        "accessedAt": "2026-09-14",
+        "notes": "Tamaños corroborados en las imágenes visibles de cada tarjeta."
+      },
+      {
+        "url": "https://allboxuruguay.com/contacto/",
+        "title": "All Box — contacto",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "La superficie del mini box no está indicada. Confirmar disponibilidad y tarifa al contratar."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "all-storage",
+    "name": "All Storage Uruguay",
+    "categories": [
+      "storage"
+    ],
+    "coverage": [
+      "Montevideo"
+    ],
+    "summary": "Boxes para mudanzas y almacenamiento temporal con acceso declarado 24/7.",
+    "services": [
+      "Camino Tomkinson 2622",
+      "Boxes anunciados de 10 a 30 m²",
+      "Descarga frente a la unidad",
+      "Seguro anunciado hasta USD 2.000",
+      "Modalidades de días, semanas o meses"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "+59898899042",
+        "sourceUrl": "https://allstorage.com.uy/servicios-de-almacenamiento/"
+      },
+      {
+        "kind": "email",
+        "value": "consultas@allstorage.com.uy",
+        "sourceUrl": "https://allstorage.com.uy/servicios-de-almacenamiento/"
+      }
+    ],
+    "website": "https://allstorage.com.uy/servicios-de-almacenamiento/",
+    "sources": [
+      {
+        "url": "https://allstorage.com.uy/servicios-de-almacenamiento/",
+        "title": "All Storage Uruguay",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "No hay tarifa pública en la página leída; no se verificó póliza.",
+      "Se descartó el teléfono de ejemplo +098 765 4321 y un correo de plantilla; se conserva el contacto comercial específico del sitio."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "grupo-meta-integral",
+    "name": "Grupo Meta Integral",
+    "categories": [
+      "cleaning"
+    ],
+    "coverage": [
+      "Montevideo",
+      "Área metropolitana"
+    ],
+    "summary": "Limpieza de entrada o entrega de viviendas tras una mudanza.",
+    "services": [
+      "Cocina, baños y pisos",
+      "Interiores de placares y electrodomésticos",
+      "Vidrios y marcos interiores",
+      "Lunes a domingo de 8 a 20 h"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "+59897280720",
+        "sourceUrl": "https://grupometaintegral.uy/servicios/limpieza-de-mudanza-en-montevideo/"
+      },
+      {
+        "kind": "email",
+        "value": "info@grupometaintegral.uy",
+        "sourceUrl": "https://grupometaintegral.uy/servicios/limpieza-de-mudanza-en-montevideo/"
+      }
+    ],
+    "website": "https://grupometaintegral.uy/servicios/limpieza-de-mudanza-en-montevideo/",
+    "sources": [
+      {
+        "url": "https://grupometaintegral.uy/servicios/limpieza-de-mudanza-en-montevideo/",
+        "title": "Grupo Meta Integral",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "Precio a presupuesto por vivienda y estado.",
+      "Productos proporcionados por el cliente o por la empresa con costo adicional."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "cleanfach",
+    "name": "CleanFach",
+    "categories": [
+      "cleaning"
+    ],
+    "coverage": [
+      "Montevideo",
+      "Canelones",
+      "Maldonado"
+    ],
+    "summary": "Limpiezas puntuales, profundas y antes o después de una mudanza.",
+    "services": [
+      "Limpieza pre/post mudanza",
+      "Limpieza doméstica profunda y periódica",
+      "Insumos y equipamiento anunciados como incluidos"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59892107197",
+        "sourceUrl": "https://www.empresadelimpiezamontevideo.com/"
+      },
+      {
+        "kind": "whatsapp",
+        "value": "+59892107197",
+        "sourceUrl": "https://www.empresadelimpiezamontevideo.com/"
+      },
+      {
+        "kind": "email",
+        "value": "cleanfach2026@gmail.com",
+        "sourceUrl": "https://www.empresadelimpiezamontevideo.com/"
+      }
+    ],
+    "website": "https://www.empresadelimpiezamontevideo.com/",
+    "sources": [
+      {
+        "url": "https://www.empresadelimpiezamontevideo.com/",
+        "title": "CleanFach",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "La limpieza de mudanza se presupuesta por separado; el plan mensual publicado no es una tarifa para este trabajo."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "wp-servicios",
+    "name": "WP Servicios",
+    "categories": [
+      "cleaning"
+    ],
+    "coverage": [
+      "Montevideo"
+    ],
+    "summary": "Limpieza de viviendas para entrada, entrega a inmobiliaria o final de reforma.",
+    "services": [
+      "Limpieza de mudanza",
+      "Limpieza profunda",
+      "Final de obra/reforma",
+      "Limpieza puntual y mantenimiento"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "+59893301090",
+        "sourceUrl": "https://wpservicios.site/home/contact/"
+      },
+      {
+        "kind": "email",
+        "value": "wpservicios.2023@gmail.com",
+        "sourceUrl": "https://wpservicios.site/home/contact/"
+      }
+    ],
+    "website": "https://wpservicios.site/",
+    "sources": [
+      {
+        "url": "https://wpservicios.site/",
+        "title": "WP — servicios de limpieza",
+        "accessedAt": "2026-09-14"
+      },
+      {
+        "url": "https://wpservicios.site/home/contact/",
+        "title": "WP — contacto",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "No se obtuvo tarifa pública: el enlace Tarifas del propio sitio devuelve página inexistente.",
+      "Confirmar tareas, materiales y cantidad de operarios al presupuestar."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "servicios-jr",
+    "name": "Servicios JR",
+    "categories": [
+      "cleaning",
+      "moving"
+    ],
+    "coverage": [
+      "Montevideo",
+      "Canelones",
+      "Maldonado",
+      "Colonia",
+      "San José"
+    ],
+    "summary": "Limpieza de hogares y provisión de personal para carga y descarga.",
+    "services": [
+      "Limpieza de hogares",
+      "Personal para carga y descarga",
+      "Auxiliar de depósito"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59897471130",
+        "sourceUrl": "https://serviciosjr.uy/"
+      },
+      {
+        "kind": "phone",
+        "value": "+59897979474",
+        "sourceUrl": "https://serviciosjr.uy/"
+      },
+      {
+        "kind": "phone",
+        "value": "+59844705789",
+        "sourceUrl": "https://serviciosjr.uy/"
+      },
+      {
+        "kind": "email",
+        "value": "info@serviciosjr.uy",
+        "sourceUrl": "https://serviciosjr.uy/"
+      }
+    ],
+    "website": "https://serviciosjr.uy/",
+    "sources": [
+      {
+        "url": "https://serviciosjr.uy/",
+        "title": "Servicios JR",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "No se publica tarifa ni camión; el personal de carga no implica transporte incluido.",
+      "La página no define un paquete específico de limpieza de mudanza."
+    ]
+  },
+  {
+    "id": "im-residuos-grandes",
+    "name": "Intendencia de Montevideo — residuos grandes",
+    "categories": [
+      "removal"
+    ],
+    "coverage": [
+      "Montevideo"
+    ],
+    "summary": "Retiro público gratuito de muebles y electrodomésticos descartados, con agenda.",
+    "services": [
+      "Hasta 5 muebles o electrodomésticos por solicitud",
+      "Retiro en día y hora asignados por municipio",
+      "Derivación a recuperación de muebles mediante Montevideo Integra"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "Retiro municipal agendado",
+        "amount": 0,
+        "currency": "UYU",
+        "unit": "service",
+        "kind": "fixed",
+        "sourceUrl": "https://montevideo.gub.uy/servicio-de-recoleccion-de-residuos-grandes",
+        "conditions": "Máximo 5 muebles/electrodomésticos por solicitud.",
+        "category": "removal"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "+59892250260",
+        "sourceUrl": "https://montevideo.gub.uy/servicio-de-recoleccion-de-residuos-grandes"
+      }
+    ],
+    "website": "https://montevideo.gub.uy/servicio-de-recoleccion-de-residuos-grandes",
+    "sources": [
+      {
+        "url": "https://montevideo.gub.uy/servicio-de-recoleccion-de-residuos-grandes",
+        "title": "Recolección de residuos grandes",
+        "accessedAt": "2026-09-14"
+      },
+      {
+        "url": "https://montevideo.gub.uy/montevideo-integra",
+        "title": "Montevideo Integra — recuperación de muebles",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "Sacar los residuos a la vereda a la hora coordinada; no dejarlos junto al contenedor por cuenta propia.",
+      "No incluye bajar muebles desde pisos. Para donar recuperables, coordinar el procedimiento específico con el mismo canal."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "canelones-residuos-especiales",
+    "name": "Intendencia de Canelones — residuos especiales",
+    "categories": [
+      "removal"
+    ],
+    "coverage": [
+      "Canelones"
+    ],
+    "summary": "Retiro municipal gratuito de voluminosos y otros residuos especiales.",
+    "services": [
+      "Hasta 4 m³ por solicitud",
+      "Residuos voluminosos, podas y escombros embolsados"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "Recolección de residuos especiales",
+        "amount": 0,
+        "currency": "UYU",
+        "unit": "service",
+        "kind": "fixed",
+        "sourceUrl": "https://www.gub.uy/tramites/solicitud-recoleccion-residuos-especiales-canelones",
+        "conditions": "Hasta 4 m³ por vez.",
+        "category": "removal"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "1828",
+        "sourceUrl": "https://www.gub.uy/tramites/solicitud-recoleccion-residuos-especiales-canelones"
+      }
+    ],
+    "website": "https://www.gub.uy/tramites/solicitud-recoleccion-residuos-especiales-canelones",
+    "sources": [
+      {
+        "url": "https://www.gub.uy/tramites/solicitud-recoleccion-residuos-especiales-canelones",
+        "title": "Solicitud de recolección de residuos especiales — Canelones",
+        "accessedAt": "2026-09-14",
+        "publishedAt": "2025-02-03"
+      }
+    ],
+    "caveats": [
+      "Informar dirección, tipo y volumen. Disponer frente al domicilio después de recibir fecha o plazo de retiro.",
+      "Cantidades mayores requieren otra solicitud; confirmar condiciones de la localidad."
+    ],
+    "baseDepartment": "Canelones"
+  },
+  {
+    "id": "emaus-grupo-aportes",
+    "name": "Emaús Grupo Aportes",
+    "categories": [
+      "removal"
+    ],
+    "coverage": [
+      "Montevideo"
+    ],
+    "summary": "Recolección coordinada de donaciones recuperables para reutilización y fines sociales.",
+    "services": [
+      "Retiro domiciliario coordinado de objetos utilizables",
+      "Clasificación, recuperación y venta económica/donación social"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59824092263",
+        "sourceUrl": "http://emausgrupoaportes.com/Donaciones.aspx"
+      },
+      {
+        "kind": "phone",
+        "value": "+59824097762",
+        "sourceUrl": "http://emausgrupoaportes.com/Donaciones.aspx"
+      }
+    ],
+    "website": "http://emausgrupoaportes.com/Donaciones.aspx",
+    "sources": [
+      {
+        "url": "http://emausgrupoaportes.com/Donaciones.aspx",
+        "title": "Emaús Grupo Aportes — donaciones",
+        "accessedAt": "2026-09-14",
+        "notes": "Original accesible por HTTP; HTTPS no respondió."
+      }
+    ],
+    "caveats": [
+      "No recoge basura. Aceptación y retiro sujetos a coordinación.",
+      "La fuente muestra horarios y numeración de sede distintos; confirmar antes de acudir.",
+      "No se presume gratuidad del retiro al no haber una tarifa explícita."
+    ],
+    "baseDepartment": "Montevideo"
+  },
+  {
+    "id": "puntahogar",
+    "name": "PuntaHogar",
+    "categories": [
+      "storage",
+      "freight"
+    ],
+    "coverage": [
+      "Maldonado"
+    ],
+    "summary": "Canal de servicios en Maldonado que ofrece almacenamiento temporal con flete.",
+    "services": [
+      "Guardado de muebles durante mudanzas y reformas",
+      "Fletes vinculados al depósito",
+      "Contrato anunciado desde un mes",
+      "Acceso al almacenamiento coordinado"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59898228323",
+        "sourceUrl": "https://puntahogar.com/servicios/almacenamiento"
+      },
+      {
+        "kind": "email",
+        "value": "puntahouseventas@gmail.com",
+        "sourceUrl": "https://puntahogar.com/servicios/almacenamiento"
+      }
+    ],
+    "website": "https://puntahogar.com/servicios/almacenamiento",
+    "sources": [
+      {
+        "url": "https://puntahogar.com/servicios/almacenamiento",
+        "title": "PuntaHogar",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "Publica estimaciones de $3.000–6.000 (hasta 10 m²), $6.000–12.000 (10–25 m²) y $12.000–25.000 (25 m² o más), sin indicar período de cobro en la tabla; no se cargan como tarifas mensuales.",
+      "El sitio opera como canal de servicios; no identifica dirección del depósito ni operador asignado. Confirmarlos antes de contratar."
+    ],
+    "baseDepartment": "Maldonado"
+  },
+  {
+    "id": "tienda-porto-instalaciones",
+    "name": "Tienda Porto — instalaciones",
+    "categories": [
+      "installation"
+    ],
+    "coverage": [
+      "Montevideo",
+      "Ciudad de la Costa"
+    ],
+    "summary": "Instalaciones y recambios de electrodomésticos con servicios publicados por separado.",
+    "services": [
+      "Instalación de lavarropas",
+      "Instalación de calefones",
+      "Desinstalación e instalación de TV",
+      "Garantía de mano de obra anunciada hasta 90 días"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "Instalar lavarropas",
+        "amount": 1980,
+        "currency": "UYU",
+        "unit": "service",
+        "kind": "fixed",
+        "sourceUrl": "https://tienda.portoservicios.com.uy/catalogo/instalacion-de-lavarropa_SERVLAV001_SERVLAV001",
+        "includes": [
+          "Destraba, nivelación y prueba de conexiones"
+        ],
+        "category": "installation"
+      },
+      {
+        "label": "Instalar calefón horizontal 60 litros",
+        "amount": 2860,
+        "currency": "UYU",
+        "unit": "service",
+        "kind": "fixed",
+        "sourceUrl": "https://tienda.portoservicios.com.uy/catalogo/instalacion-de-calefon-60l-horizontal_SERVCAL003_SERVCAL003",
+        "excludes": [
+          "Modificar instalación eléctrica/sanitaria",
+          "Albañilería"
+        ],
+        "conditions": "Redes compatibles preexistentes.",
+        "category": "installation"
+      },
+      {
+        "label": "Recambio de calefón hasta 60 litros",
+        "amount": 3280,
+        "currency": "UYU",
+        "unit": "service",
+        "kind": "fixed",
+        "sourceUrl": "https://tienda.portoservicios.com.uy/catalogo/desinstalacion-instalacion-de-calefon-hasta-60_SERVDICAL001_SERVDICAL001",
+        "includes": [
+          "Desinstalación e instalación",
+          "Colillas hasta 40 cm"
+        ],
+        "conditions": "Describe equipo existente y nuevo en el mismo lugar; dos domicilios no confirmados.",
+        "category": "installation"
+      },
+      {
+        "label": "Recambio de TV hasta 85 pulgadas",
+        "amount": 3960,
+        "currency": "UYU",
+        "unit": "service",
+        "kind": "fixed",
+        "sourceUrl": "https://tienda.portoservicios.com.uy/catalogo/desinstalacion-instalacion-de-tv-hasta-85_SERVDITEL002_SERVDITEL002",
+        "conditions": "Retirar instalación previa y colocar nuevo TV; dos domicilios no confirmados.",
+        "category": "installation"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "+59824803480",
+        "sourceUrl": "https://tienda.portoservicios.com.uy/condiciones-instalaciones"
+      }
+    ],
+    "website": "https://tienda.portoservicios.com.uy/servicios",
+    "sources": [
+      {
+        "url": "https://tienda.portoservicios.com.uy/condiciones-instalaciones",
+        "title": "Condiciones de instalaciones",
+        "accessedAt": "2026-09-14"
+      },
+      {
+        "url": "https://tienda.portoservicios.com.uy/catalogo/instalacion-de-lavarropa_SERVLAV001_SERVLAV001",
+        "title": "Instalación de lavarropa",
+        "accessedAt": "2026-09-14"
+      },
+      {
+        "url": "https://tienda.portoservicios.com.uy/catalogo/instalacion-de-calefon-60l-horizontal_SERVCAL003_SERVCAL003",
+        "title": "Calefón horizontal 60 L",
+        "accessedAt": "2026-09-14",
+        "notes": "Original leído por HTTP público."
+      },
+      {
+        "url": "https://tienda.portoservicios.com.uy/catalogo/desinstalacion-instalacion-de-calefon-hasta-60_SERVDICAL001_SERVDICAL001",
+        "title": "Recambio de calefón hasta 60 L",
+        "accessedAt": "2026-09-14",
+        "notes": "Original leído por HTTP público."
+      },
+      {
+        "url": "https://tienda.portoservicios.com.uy/catalogo/desinstalacion-instalacion-de-tv-hasta-85_SERVDITEL002_SERVDITEL002",
+        "title": "Recambio de TV hasta 85 pulgadas",
+        "accessedAt": "2026-09-14",
+        "notes": "Original leído por HTTP público."
+      }
+    ],
+    "caveats": [
+      "Equipo debe estar en su lugar; ingreso y subida no incluidos. Debe permanecer un adulto responsable.",
+      "Los combos de recambio no acreditan traslado entre viviendas.",
+      "Confirmar aceptación de equipos adquiridos fuera de la tienda."
+    ]
+  },
+  {
+    "id": "unsi-armado-tienda",
+    "name": "UNSI — armado de compra en tienda",
+    "categories": [
+      "assembly"
+    ],
+    "coverage": [],
+    "summary": "Armado previo al envío de muebles comprados en UNSI; posibilidad sujeta al producto.",
+    "services": [
+      "Preparación de muebles armados para envío"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "Biblioteca/armario/estantería",
+        "amount": 680,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "conditions": "Armado de tienda, previo al envío.",
+        "category": "assembly"
+      },
+      {
+        "label": "Cómoda hasta 5 cajones",
+        "amount": 620,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "conditions": "Armado de tienda, previo al envío.",
+        "category": "assembly"
+      },
+      {
+        "label": "Cómoda 6+ cajones",
+        "amount": 990,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "conditions": "Armado de tienda, previo al envío.",
+        "category": "assembly"
+      },
+      {
+        "label": "Cucheta/cuna",
+        "amount": 1320,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "conditions": "Armado de tienda, previo al envío.",
+        "category": "assembly"
+      },
+      {
+        "label": "Escritorio",
+        "amount": 680,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "conditions": "Armado de tienda, previo al envío.",
+        "category": "assembly"
+      },
+      {
+        "label": "Mesa de luz/mesa",
+        "amount": 620,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "conditions": "Armado de tienda, previo al envío.",
+        "category": "assembly"
+      },
+      {
+        "label": "Rack/aparador",
+        "amount": 680,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "conditions": "Armado de tienda, previo al envío.",
+        "category": "assembly"
+      },
+      {
+        "label": "Sofá/butaca",
+        "amount": 380,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "conditions": "Armado de tienda, previo al envío.",
+        "category": "assembly"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "email",
+        "value": "unsi@unicom.com.uy",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados"
+      }
+    ],
+    "website": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+    "sources": [
+      {
+        "url": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "title": "UNSI — armado de compra en tienda",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "No es el precio del armado independiente a domicilio.",
+      "Algunos muebles no pueden transportarse armados por volumen o fragilidad."
+    ]
+  },
+  {
+    "id": "naterial-envio-armado",
+    "name": "Naterial — envío y armado de compra",
+    "categories": [
+      "assembly",
+      "freight"
+    ],
+    "coverage": [
+      "Montevideo",
+      "Canelones",
+      "Maldonado"
+    ],
+    "summary": "Entrega y armado de los muebles comprados a Naterial Uruguay.",
+    "services": [
+      "Entrega y armado de muebles",
+      "Entrega y armado de pérgolas y barbacoas"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "Envío + armado muebles, Montevideo/Canelones",
+        "amount": 80,
+        "currency": "USD",
+        "unit": "service",
+        "kind": "fixed",
+        "sourceUrl": "https://www.naterial.com/uy/politica-de-envio",
+        "publishedAt": "2025-03",
+        "category": "assembly"
+      },
+      {
+        "label": "Envío + armado muebles, Maldonado",
+        "amount": 120,
+        "currency": "USD",
+        "unit": "service",
+        "kind": "fixed",
+        "sourceUrl": "https://www.naterial.com/uy/politica-de-envio",
+        "publishedAt": "2025-03",
+        "category": "assembly"
+      },
+      {
+        "label": "Envío + armado pérgolas/barbacoas, Montevideo/Canelones",
+        "amount": 150,
+        "currency": "USD",
+        "unit": "service",
+        "kind": "fixed",
+        "sourceUrl": "https://www.naterial.com/uy/politica-de-envio",
+        "publishedAt": "2025-03",
+        "category": "assembly"
+      },
+      {
+        "label": "Envío + armado pérgolas/barbacoas, Maldonado",
+        "amount": 190,
+        "currency": "USD",
+        "unit": "service",
+        "kind": "fixed",
+        "sourceUrl": "https://www.naterial.com/uy/politica-de-envio",
+        "publishedAt": "2025-03",
+        "category": "assembly"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "+59891473030",
+        "sourceUrl": "https://www.naterial.com/uy/politica-de-envio"
+      }
+    ],
+    "website": "https://www.naterial.com/uy/politica-de-envio",
+    "sources": [
+      {
+        "url": "https://www.naterial.com/uy/politica-de-envio",
+        "title": "Política de envío Naterial Uruguay",
+        "accessedAt": "2026-09-14",
+        "publishedAt": "2025-03"
+      }
+    ],
+    "caveats": [
+      "Servicio asociado a compra en tienda; no acredita mudanzas de muebles propios.",
+      "No incluye escaleras, elevación con cuerda ni amurado de pérgolas.",
+      "Tarifario fechado marzo de 2025; reconfirmar vigencia."
+    ]
+  },
+  {
+    "id": "gonzalo-dematte",
+    "name": "Gonzalo Dematté",
+    "categories": [
+      "assembly"
+    ],
+    "coverage": [
+      "Montevideo"
+    ],
+    "summary": "Armador referido públicamente por UNSI.",
+    "services": [
+      "Armado de muebles a coordinar"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59894729098",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados"
+      }
+    ],
+    "website": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+    "sources": [
+      {
+        "url": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "title": "UNSI — armadores externos",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria: recomendación del comerciante."
+      }
+    ],
+    "caveats": [
+      "Confirmar presupuesto y aceptación de muebles propios; sin tarifa individual verificada."
+    ]
+  },
+  {
+    "id": "diego-vidal",
+    "name": "Diego Vidal",
+    "categories": [
+      "assembly"
+    ],
+    "coverage": [
+      "Montevideo"
+    ],
+    "summary": "Armador referido públicamente por UNSI.",
+    "services": [
+      "Armado de muebles a coordinar"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59898912078",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados"
+      }
+    ],
+    "website": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+    "sources": [
+      {
+        "url": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "title": "UNSI — armadores externos",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria: recomendación del comerciante."
+      }
+    ],
+    "caveats": [
+      "Confirmar presupuesto y aceptación de muebles propios; sin tarifa individual verificada."
+    ]
+  },
+  {
+    "id": "schubert-pereyra",
+    "name": "Schubert Pereyra",
+    "categories": [
+      "assembly"
+    ],
+    "coverage": [
+      "Costa de Oro"
+    ],
+    "summary": "Armador referido públicamente por UNSI.",
+    "services": [
+      "Armado de muebles a coordinar"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59894510686",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados"
+      }
+    ],
+    "website": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+    "sources": [
+      {
+        "url": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "title": "UNSI — armadores externos",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria: recomendación del comerciante."
+      }
+    ],
+    "caveats": [
+      "Confirmar presupuesto y aceptación de muebles propios; sin tarifa individual verificada."
+    ]
+  },
+  {
+    "id": "michael-goro",
+    "name": "Michael Goro",
+    "categories": [
+      "assembly"
+    ],
+    "coverage": [
+      "Costa de Oro",
+      "Las Piedras",
+      "La Paz",
+      "Alrededores"
+    ],
+    "summary": "Armador referido públicamente por UNSI.",
+    "services": [
+      "Armado de muebles a coordinar"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59894996852",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados"
+      }
+    ],
+    "website": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+    "sources": [
+      {
+        "url": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "title": "UNSI — armadores externos",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria: recomendación del comerciante."
+      }
+    ],
+    "caveats": [
+      "Confirmar presupuesto y aceptación de muebles propios; sin tarifa individual verificada."
+    ]
+  },
+  {
+    "id": "brian-morales",
+    "name": "Brian Morales",
+    "categories": [
+      "assembly"
+    ],
+    "coverage": [
+      "Costa de Oro"
+    ],
+    "summary": "Armador referido públicamente por UNSI.",
+    "services": [
+      "Armado de muebles a coordinar"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59897057969",
+        "sourceUrl": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados"
+      }
+    ],
+    "website": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+    "sources": [
+      {
+        "url": "https://unsi.com.uy/pages/tarifas-de-envio-y-armados",
+        "title": "UNSI — armadores externos",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria: recomendación del comerciante."
+      }
+    ],
+    "caveats": [
+      "Confirmar presupuesto y aceptación de muebles propios; sin tarifa individual verificada."
+    ]
+  },
+  {
+    "id": "emiliano-garcia-armado",
+    "name": "Emiliano García",
+    "categories": [
+      "assembly"
+    ],
+    "coverage": [
+      "Maldonado"
+    ],
+    "summary": "Armador referido públicamente por Divino.",
+    "services": [
+      "Armado de muebles a coordinar"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59892676580",
+        "sourceUrl": "https://www.divino.com.uy/armadoresexternos"
+      }
+    ],
+    "website": "https://www.divino.com.uy/armadoresexternos",
+    "sources": [
+      {
+        "url": "https://www.divino.com.uy/armadoresexternos",
+        "title": "Divino — armadores externos",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria: recomendación del comerciante."
+      }
+    ],
+    "caveats": [
+      "Confirmar presupuesto y aceptación de muebles propios; sin tarifa individual verificada."
+    ]
+  },
+  {
+    "id": "marcos-cabral-armado",
+    "name": "Marcos Cabral",
+    "categories": [
+      "assembly"
+    ],
+    "coverage": [
+      "Maldonado",
+      "Rocha"
+    ],
+    "summary": "Armador referido públicamente por Divino.",
+    "services": [
+      "Armado de muebles a coordinar"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59899969560",
+        "sourceUrl": "https://www.divino.com.uy/armadoresexternos"
+      }
+    ],
+    "website": "https://www.divino.com.uy/armadoresexternos",
+    "sources": [
+      {
+        "url": "https://www.divino.com.uy/armadoresexternos",
+        "title": "Divino — armadores externos",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria: recomendación del comerciante."
+      }
+    ],
+    "caveats": [
+      "Confirmar presupuesto y aceptación de muebles propios; sin tarifa individual verificada."
+    ]
+  },
+  {
+    "id": "pedro-burdin-armado",
+    "name": "Pedro Burdín",
+    "categories": [
+      "assembly"
+    ],
+    "coverage": [
+      "Salto"
+    ],
+    "summary": "Armador referido públicamente por Divino.",
+    "services": [
+      "Armado de muebles a coordinar"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59894529170",
+        "sourceUrl": "https://www.divino.com.uy/armadoresexternos"
+      }
+    ],
+    "website": "https://www.divino.com.uy/armadoresexternos",
+    "sources": [
+      {
+        "url": "https://www.divino.com.uy/armadoresexternos",
+        "title": "Divino — armadores externos",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria: recomendación del comerciante."
+      }
+    ],
+    "caveats": [
+      "Confirmar presupuesto y aceptación de muebles propios; sin tarifa individual verificada."
+    ]
+  },
+  {
+    "id": "matias-rodriguez-armado",
+    "name": "Matías Rodriguez",
+    "categories": [
+      "assembly"
+    ],
+    "coverage": [
+      "Salto"
+    ],
+    "summary": "Armador referido públicamente por Divino.",
+    "services": [
+      "Armado de muebles a coordinar"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "+59899221287",
+        "sourceUrl": "https://www.divino.com.uy/armadoresexternos"
+      }
+    ],
+    "website": "https://www.divino.com.uy/armadoresexternos",
+    "sources": [
+      {
+        "url": "https://www.divino.com.uy/armadoresexternos",
+        "title": "Divino — armadores externos",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria: recomendación del comerciante."
+      }
+    ],
+    "caveats": [
+      "Confirmar presupuesto y aceptación de muebles propios; sin tarifa individual verificada."
+    ]
+  },
+  {
+    "id": "almango",
+    "name": "ALMANGO",
+    "categories": [
+      "assembly"
+    ],
+    "coverage": [
+      "Montevideo",
+      "Maldonado",
+      "Canelones",
+      "San José"
+    ],
+    "summary": "Servicio de armado referido por NYR, Divino y UNSI.",
+    "services": [
+      "Armado a coordinar directamente"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "+59892612655",
+        "sourceUrl": "https://www.nyr.com.uy/contacto-armador"
+      },
+      {
+        "kind": "phone",
+        "value": "08008248",
+        "sourceUrl": "https://www.nyr.com.uy/contacto-armador"
+      }
+    ],
+    "website": "https://services.almango.com.uy/",
+    "sources": [
+      {
+        "url": "https://www.nyr.com.uy/contacto-armador",
+        "title": "NYR — contactos para armado",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria: recomendación del comerciante."
+      },
+      {
+        "url": "https://www.divino.com.uy/armadoresexternos",
+        "title": "Divino — armadores externos",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "No se atribuye el tarifario de las tiendas a ALMANGO.",
+      "Confirmar presupuesto y aceptación de muebles propios."
+    ]
+  }
+]

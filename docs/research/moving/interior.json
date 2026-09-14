@@ -1,0 +1,3241 @@
+[
+  {
+    "id": "deleste-fletes",
+    "name": "Deleste Fletes",
+    "categories": [
+      "moving",
+      "freight",
+      "packing"
+    ],
+    "baseDepartment": "Maldonado",
+    "coverage": [
+      "Maldonado",
+      "Punta del Este",
+      "La Barra",
+      "José Ignacio",
+      "San Carlos",
+      "Piriápolis",
+      "Punta Ballena",
+      "Manantiales",
+      "Pinares",
+      "Solanas",
+      "Punta Colorada",
+      "Montevideo",
+      "Rocha"
+    ],
+    "nationwide": false,
+    "summary": "Mudanzas de casas y apartamentos y traslados puntuales en el Este. Declara vehículo y personal propios.",
+    "services": [
+      "Mudanzas completas",
+      "Fletes express",
+      "Traslados para comercios e inmobiliarias",
+      "Embalaje con mantas, cartón corrugado y film",
+      "Carga y descarga"
+    ],
+    "vehicles": [
+      {
+        "label": "Vehículo propio",
+        "notes": "No se publica capacidad numérica ni medidas.",
+        "sourceUrl": "https://delestefletes.com/"
+      }
+    ],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "099216595",
+        "sourceUrl": "https://delestefletes.com/"
+      },
+      {
+        "kind": "email",
+        "value": "delestefletes@gmail.com",
+        "sourceUrl": "https://delestefletes.com/"
+      }
+    ],
+    "website": "https://delestefletes.com/",
+    "sources": [
+      {
+        "url": "https://delestefletes.com/",
+        "title": "Deleste Fletes",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "No publica tarifas numéricas; cotiza según origen, destino y carga.",
+      "Declara embalaje incluido; confirmar alcance y condiciones en el presupuesto."
+    ]
+  },
+  {
+    "id": "expreso-este",
+    "name": "Expreso Este",
+    "categories": [
+      "moving",
+      "freight",
+      "packing",
+      "assembly",
+      "installation",
+      "storage"
+    ],
+    "baseDepartment": "Maldonado",
+    "coverage": [
+      "Maldonado",
+      "Montevideo"
+    ],
+    "nationwide": false,
+    "summary": "Empresa de logística de Maldonado con mudanzas por hora, opción de camión con chofer y contratación de personal.",
+    "services": [
+      "Mudanzas express por hora",
+      "Camión con chofer",
+      "Personal de carga a solicitud",
+      "Embalaje y empaquetado",
+      "Armado de muebles",
+      "Conexiones de equipos",
+      "Almacenamiento techado y abierto"
+    ],
+    "vehicles": [
+      {
+        "label": "Camión con chofer",
+        "sourceUrl": "https://www.expresoeste.com.uy/"
+      }
+    ],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "42224031",
+        "sourceUrl": "https://www.expresoeste.com.uy/"
+      },
+      {
+        "kind": "phone",
+        "value": "091667611",
+        "sourceUrl": "https://www.expresoeste.com.uy/",
+        "label": "Contacto y pie de página"
+      },
+      {
+        "kind": "phone",
+        "value": "091470345",
+        "sourceUrl": "https://www.expresoeste.com.uy/",
+        "label": "Cabecera"
+      },
+      {
+        "kind": "email",
+        "value": "info@expresoeste.com.uy",
+        "sourceUrl": "https://www.expresoeste.com.uy/"
+      }
+    ],
+    "website": "https://www.expresoeste.com.uy/",
+    "sources": [
+      {
+        "url": "https://www.expresoeste.com.uy/",
+        "title": "Expreso Este",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "No publica monto por hora ni capacidad del camión.",
+      "La cabecera y el bloque de contacto muestran celulares diferentes; se conservan con su contexto.",
+      "La página anuncia traslados nacionales e internacionales, sin enumerar destinos de mudanzas."
+    ]
+  },
+  {
+    "id": "teske-transportes",
+    "name": "Teske Transportes",
+    "categories": [
+      "freight",
+      "storage"
+    ],
+    "baseDepartment": "Paysandú",
+    "coverage": [
+      "Uruguay",
+      "Argentina",
+      "Brasil",
+      "Chile"
+    ],
+    "nationwide": true,
+    "summary": "Transporte de cargas con base en Paysandú. Incluye pequeñas cargas express y almacenaje.",
+    "services": [
+      "Fletes y logística",
+      "Pequeñas cargas express",
+      "Almacenamiento de mercadería",
+      "Cargas consolidadas",
+      "Transporte nacional e internacional"
+    ],
+    "vehicles": [
+      {
+        "label": "Vehículos para pequeñas cargas express",
+        "volumeM3": 20,
+        "payloadKg": 4500,
+        "notes": "El sitio especifica hasta 4,5 toneladas y 20 m³; confirmar la unidad asignada.",
+        "sourceUrl": "https://teske.com.uy/"
+      }
+    ],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "47225034",
+        "sourceUrl": "https://teske.com.uy/"
+      },
+      {
+        "kind": "email",
+        "value": "logistica@tesketransportes.com.uy",
+        "sourceUrl": "https://teske.com.uy/",
+        "label": "Ventas"
+      }
+    ],
+    "website": "https://teske.com.uy/",
+    "sources": [
+      {
+        "url": "https://teske.com.uy/",
+        "title": "Teske Transportes",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "Cotiza cada servicio; no publica tarifas.",
+      "Ofrece flete de mercadería; no declara una mudanza doméstica integral con embalaje y peones."
+    ]
+  },
+  {
+    "id": "rivera-fletes",
+    "name": "Rivera Fletes",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Rivera",
+    "coverage": [
+      "Rivera",
+      "Montevideo",
+      "Maldonado",
+      "Atlántida",
+      "Costa de Oro"
+    ],
+    "nationwide": false,
+    "summary": "Fletes y mudanzas con casa central en Rivera y bases permanentes en Montevideo y el Este.",
+    "services": [
+      "Mudanzas",
+      "Fletes de muebles y electrodomésticos",
+      "Pequeñas cargas dentro de la ciudad",
+      "Fletes compartidos entre ciudades",
+      "Mudanzas de ida y retorno coordinados"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "099654523",
+        "sourceUrl": "https://riverafletes.jimdofree.com/"
+      }
+    ],
+    "website": "https://riverafletes.jimdofree.com/",
+    "sources": [
+      {
+        "url": "https://riverafletes.jimdofree.com/",
+        "title": "Rivera Fletes",
+        "accessedAt": "2026-09-14"
+      },
+      {
+        "url": "https://riverafletes.jimdofree.com/peque%C3%B1as-cargas/",
+        "title": "Pequeñas cargas",
+        "accessedAt": "2026-09-14"
+      },
+      {
+        "url": "https://riverafletes.jimdofree.com/viajes-compartidos/",
+        "title": "Viajes compartidos",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "No publica tarifas ni capacidad de camión.",
+      "Las mudanzas con aprovechamiento de retorno sólo están disponibles en ciertas fechas.",
+      "Se omitió el teléfono fijo 4623445 porque aparece incompleto; no se corrigió por inferencia.",
+      "La página no muestra fecha de actualización."
+    ]
+  },
+  {
+    "id": "transportes-el-calabres",
+    "name": "Transportes El Calabrés",
+    "categories": [
+      "freight",
+      "storage"
+    ],
+    "coverage": [
+      "Tacuarembó",
+      "Montevideo",
+      "Uruguay"
+    ],
+    "nationwide": true,
+    "summary": "Transporte de mercadería y muebles entre Montevideo y Tacuarembó, con frecuencia diaria y almacenamiento.",
+    "services": [
+      "Encomiendas de muebles, cajas y mercadería",
+      "Frecuencia diaria Montevideo–Tacuarembó",
+      "Cargas generales en todo el país",
+      "Almacenamiento flexible por plazo y espacio",
+      "Depósitos y contenedores para autogestión"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "46322146",
+        "sourceUrl": "https://transporteselcalabres.com/servicios/",
+        "label": "Tacuarembó"
+      },
+      {
+        "kind": "phone",
+        "value": "097914504",
+        "sourceUrl": "https://transporteselcalabres.com/servicios/",
+        "label": "Tacuarembó"
+      },
+      {
+        "kind": "phone",
+        "value": "23201212",
+        "sourceUrl": "https://transporteselcalabres.com/servicios/",
+        "label": "Montevideo"
+      },
+      {
+        "kind": "email",
+        "value": "transcalabres-@hotmail.com",
+        "sourceUrl": "https://transporteselcalabres.com/servicios/"
+      }
+    ],
+    "website": "https://transporteselcalabres.com/servicios/",
+    "sources": [
+      {
+        "url": "https://transporteselcalabres.com/servicios/",
+        "title": "Transportes El Calabrés — Servicios",
+        "accessedAt": "2026-09-14",
+        "notes": "El sitio usa Canva; contenido corroborado en el documento HTML público, incluidos muebles, contactos y almacenamiento."
+      }
+    ],
+    "caveats": [
+      "No publica precios ni capacidad de vehículo.",
+      "Se ofrece transporte de muebles; no se declara servicio doméstico integral de embalaje o armado."
+    ]
+  },
+  {
+    "id": "luifer",
+    "name": "LuiFeR",
+    "categories": [
+      "freight"
+    ],
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor de servicios con sucursales en Rocha, Maldonado y Carmelo. Su catálogo incluye fletes de productos.",
+    "services": [
+      "Fletes de productos"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "099871069",
+        "sourceUrl": "https://luifer.com.uy/servicios",
+        "label": "Rocha"
+      },
+      {
+        "kind": "whatsapp",
+        "value": "099872500",
+        "sourceUrl": "https://luifer.com.uy/servicios",
+        "label": "Maldonado"
+      },
+      {
+        "kind": "whatsapp",
+        "value": "098766344",
+        "sourceUrl": "https://luifer.com.uy/servicios",
+        "label": "Carmelo"
+      },
+      {
+        "kind": "email",
+        "value": "luiferrocha@gmail.com",
+        "sourceUrl": "https://luifer.com.uy/servicios"
+      }
+    ],
+    "website": "https://luifer.com.uy/servicios",
+    "sources": [
+      {
+        "url": "https://luifer.com.uy/servicios",
+        "title": "LuiFeR — Nuestros servicios",
+        "accessedAt": "2026-09-14",
+        "notes": "Contenido y enlaces WhatsApp corroborados en HTML público; sucursales en Rocha, Maldonado y Carmelo."
+      }
+    ],
+    "caveats": [
+      "No publica precios, medidas ni capacidad de vehículos.",
+      "No declara mudanzas integrales, peones o embalaje; confirmar que acepta los muebles a trasladar.",
+      "La existencia de sucursales no prueba cobertura de todo el departamento."
+    ]
+  },
+  {
+    "id": "rg-mudanzas-rocha",
+    "name": "RG Mudanzas y Fletes",
+    "categories": [
+      "moving",
+      "freight",
+      "packing"
+    ],
+    "baseDepartment": "Rocha",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor listado en Rocha para mudanzas, fletes, embalaje, traslado de mercadería.",
+    "services": [
+      "Mudanzas",
+      "Fletes",
+      "Embalaje",
+      "Traslado de mercadería"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "098289588",
+        "sourceUrl": "https://1122.com.uy/local/rg-mudanzas-y-fletes/LOC790300001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/rg-mudanzas-y-fletes/LOC790300001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/rg-mudanzas-y-fletes/LOC790300001",
+        "title": "RG Mudanzas y Fletes — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "1122 declara verificación con el dueño el 12/12/2025; esa fecha no constituye una verificación propia.",
+      "Anuncia atención 24 horas y presupuesto sin cargo.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "fletes-walter-rivera",
+    "name": "Fletes Walter",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Rivera",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor listado en Rivera para mudanzas, transporte general, repartos.",
+    "services": [
+      "Mudanzas",
+      "Transporte general",
+      "Repartos"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "095808156",
+        "sourceUrl": "https://laguiauruguay.com.uy/empresas/fletes-walter-en-rivera/"
+      }
+    ],
+    "website": "https://laguiauruguay.com.uy/empresas/fletes-walter-en-rivera/",
+    "sources": [
+      {
+        "url": "https://laguiauruguay.com.uy/empresas/fletes-walter-en-rivera/",
+        "title": "Fletes Walter — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "fletes-mudanzas-paysandu",
+    "name": "Fletes y Mudanzas Paysandú",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Paysandú",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor listado en Paysandú para fletes, mudanzas.",
+    "services": [
+      "Fletes",
+      "Mudanzas"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "098979954",
+        "sourceUrl": "https://1122.com.uy/local/fletes-y-mudanzas-paysandu/LOC883850001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/fletes-y-mudanzas-paysandu/LOC883850001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/fletes-y-mudanzas-paysandu/LOC883850001",
+        "title": "Fletes y Mudanzas Paysandú — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "fletes-juan-topayan",
+    "name": "Fletes y Mudanzas Juan Topayan",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Paysandú",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor listado en Paysandú para fletes, mudanzas.",
+    "services": [
+      "Fletes",
+      "Mudanzas"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "47237476",
+        "sourceUrl": "https://1122.com.uy/local/fletes-y-mudanzas-juan-topayan/LOC584330001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/fletes-y-mudanzas-juan-topayan/LOC584330001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/fletes-y-mudanzas-juan-topayan/LOC584330001",
+        "title": "Fletes y Mudanzas Juan Topayan — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "transportes-el-aguila-rivera",
+    "name": "Transportes El Águila",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Rivera",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor listado en Rivera para fletes, mudanzas, traslados.",
+    "services": [
+      "Fletes",
+      "Mudanzas",
+      "Traslados"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "46238488",
+        "sourceUrl": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001"
+      },
+      {
+        "kind": "phone",
+        "value": "099154155",
+        "sourceUrl": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001"
+      },
+      {
+        "kind": "phone",
+        "value": "099098017",
+        "sourceUrl": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/transportes-el-aguila/LOC592920001",
+        "title": "Transportes El Águila — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "Ficha anuncia atención 24 horas.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "tm-transportes-colonia",
+    "name": "TM Transportes",
+    "categories": [
+      "moving",
+      "freight",
+      "assembly"
+    ],
+    "baseDepartment": "Colonia",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor listado en Colonia para fletes, mudanzas, encomiendas, armado y desarmado de muebles.",
+    "services": [
+      "Fletes",
+      "Mudanzas",
+      "Encomiendas",
+      "Armado y desarmado de muebles"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "092331299",
+        "sourceUrl": "https://1122.com.uy/local/tm-transportes/LOC791840002"
+      }
+    ],
+    "website": "https://1122.com.uy/local/tm-transportes/LOC791840002",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/tm-transportes/LOC791840002",
+        "title": "TM Transportes — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "1122 declara verificación con el dueño el 24/03/2025.",
+      "La ficha vincula Amoblamientos Colonia en el mismo domicilio; se conserva como un proveedor.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "walymar-colonia",
+    "name": "Walymar Fletes Mudanzas",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Colonia",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor listado en Colonia para fletes, mudanzas, repartos.",
+    "services": [
+      "Fletes",
+      "Mudanzas",
+      "Repartos"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "098440725",
+        "sourceUrl": "https://1122.com.uy/local/walymar-fletes-mudanzas/LOC523230001"
+      },
+      {
+        "kind": "phone",
+        "value": "098171800",
+        "sourceUrl": "https://1122.com.uy/local/walymar-fletes-mudanzas/LOC523230001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/walymar-fletes-mudanzas/LOC523230001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/walymar-fletes-mudanzas/LOC523230001",
+        "title": "Walymar Fletes Mudanzas — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "fletes-quintero",
+    "name": "Fletes Quintero",
+    "categories": [
+      "freight"
+    ],
+    "baseDepartment": "San José",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor listado en San José para fletes.",
+    "services": [
+      "Fletes"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "43422924",
+        "sourceUrl": "https://1122.com.uy/local/fletes-quintero/LOC447420001"
+      },
+      {
+        "kind": "phone",
+        "value": "095111044",
+        "sourceUrl": "https://1122.com.uy/local/fletes-quintero/LOC447420001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/fletes-quintero/LOC447420001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/fletes-quintero/LOC447420001",
+        "title": "Fletes Quintero — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "expreso-2000",
+    "name": "Expreso 2000 Transportes y Servicios",
+    "categories": [
+      "freight"
+    ],
+    "baseDepartment": "San José",
+    "coverage": [
+      "San José de Mayo",
+      "Montevideo"
+    ],
+    "nationwide": false,
+    "summary": "Proveedor listado en San José para fletes, encomiendas, transportes.",
+    "services": [
+      "Fletes",
+      "Encomiendas",
+      "Transportes"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "099270809",
+        "sourceUrl": "https://1122.com.uy/local/expreso-2000-transportes-y-servicios/LOC545120001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/expreso-2000-transportes-y-servicios/LOC545120001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/expreso-2000-transportes-y-servicios/LOC545120001",
+        "title": "Expreso 2000 — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "La ficha ilustra el servicio San José–Montevideo."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "No declara mudanza doméstica integral; consultar carga, descarga y embalaje.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "diego-batista-transportes",
+    "name": "Diego Batista Transportes Fletes y Mudanzas",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Maldonado",
+    "coverage": [
+      "Playa Grande",
+      "Maldonado",
+      "Montevideo",
+      "Uruguay"
+    ],
+    "nationwide": true,
+    "summary": "Proveedor listado en Maldonado para fletes, mudanzas, encomiendas puerta a puerta, traslado de mascotas, traslado de motos.",
+    "services": [
+      "Fletes",
+      "Mudanzas",
+      "Encomiendas puerta a puerta",
+      "Traslado de mascotas",
+      "Traslado de motos"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "091411219",
+        "sourceUrl": "https://1122.com.uy/local/diego-batista-transportes-fletes-y-mudanzas/LOC826260001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/diego-batista-transportes-fletes-y-mudanzas/LOC826260001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/diego-batista-transportes-fletes-y-mudanzas/LOC826260001",
+        "title": "Diego Batista Transportes Fletes y Mudanzas — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "Anuncia envíos a todo el país, atención 24 horas y presupuesto sin cargo.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "grupo-pellejeros",
+    "name": "Grupo Pellejero's",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Maldonado",
+    "coverage": [
+      "Maldonado",
+      "Punta del Este",
+      "Montevideo",
+      "Uruguay"
+    ],
+    "nationwide": true,
+    "summary": "Mudanzas residenciales y corporativas desde Maldonado a todo el país, con servicio especializado de elevación de muebles.",
+    "services": [
+      "Mudanzas residenciales",
+      "Mudanzas corporativas",
+      "Elevación de muebles",
+      "Encomiendas a Montevideo"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "099060907",
+        "sourceUrl": "https://www.grupopellejeros.com/"
+      }
+    ],
+    "website": "https://www.grupopellejeros.com/",
+    "sources": [
+      {
+        "url": "https://www.grupopellejeros.com/",
+        "title": "Grupo Pellejero's",
+        "accessedAt": "2026-09-14"
+      }
+    ],
+    "caveats": [
+      "No publica precios, capacidad del camión ni altura/carga del elevador.",
+      "Horario publicado: lunes a viernes de 8 a 19.",
+      "Se deduplica con Transporte E. Pellejero Logística por coincidencia del celular 099060907."
+    ]
+  },
+  {
+    "id": "fletes-moraes",
+    "name": "Fletes Moraes",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Salto",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor listado en Salto para fletes, mudanzas, traslados de motos.",
+    "services": [
+      "Fletes",
+      "Mudanzas",
+      "Traslados de motos"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "099734896",
+        "sourceUrl": "https://1122.com.uy/local/fletes-moraes/LOC501970001"
+      },
+      {
+        "kind": "phone",
+        "value": "091037010",
+        "sourceUrl": "https://1122.com.uy/local/fletes-moraes/LOC501970001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/fletes-moraes/LOC501970001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/fletes-moraes/LOC501970001",
+        "title": "Fletes Moraes — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "La ficha anuncia atención 24 horas.",
+      "La cobertura nacional aparece en un aviso de 2017; no se promueve a cobertura vigente.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "delgado-fletes-minas",
+    "name": "Delgado Fletes",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Lavalleja",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor listado en Lavalleja para fletes, mudanzas, encomiendas, repartos.",
+    "services": [
+      "Fletes",
+      "Mudanzas",
+      "Encomiendas",
+      "Repartos"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "094244302",
+        "sourceUrl": "https://1122.com.uy/local/delgado-fletes/LOC515570001"
+      },
+      {
+        "kind": "phone",
+        "value": "44431220",
+        "sourceUrl": "https://1122.com.uy/local/delgado-fletes/LOC515570001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/delgado-fletes/LOC515570001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/delgado-fletes/LOC515570001",
+        "title": "Delgado Fletes — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "La ficha ubica el proveedor en Minas y anuncia atención diaria de 8 a 22.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "transporte-dyd-melo",
+    "name": "Transporte D y D",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Cerro Largo",
+    "coverage": [
+      "Melo",
+      "Ruta 7"
+    ],
+    "nationwide": false,
+    "summary": "Proveedor listado en Cerro Largo para fletes, mudanzas, cargas, encomiendas, repartos por ruta 7.",
+    "services": [
+      "Fletes",
+      "Mudanzas",
+      "Cargas",
+      "Encomiendas",
+      "Repartos por ruta 7"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "46424196",
+        "sourceUrl": "https://laguiauruguay.com.uy/empresas/transporte-d-y-d-en-melo/"
+      },
+      {
+        "kind": "email",
+        "value": "agdyd@hotmail.com",
+        "sourceUrl": "https://laguiauruguay.com.uy/empresas/transporte-d-y-d-en-melo/"
+      }
+    ],
+    "website": "https://laguiauruguay.com.uy/empresas/transporte-d-y-d-en-melo/",
+    "sources": [
+      {
+        "url": "https://laguiauruguay.com.uy/empresas/transporte-d-y-d-en-melo/",
+        "title": "Transporte D y D — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos provenientes de una ficha de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "El sitio enlazado transportedyd.com.uy devolvió error; no se pudo corroborar allí.",
+      "No publica precios ni dimensiones/capacidad de vehículo."
+    ]
+  },
+  {
+    "id": "depunta",
+    "name": "DePunta Soluciones Logísticas",
+    "categories": [
+      "freight"
+    ],
+    "coverage": [
+      "Montevideo",
+      "Maldonado",
+      "San Carlos",
+      "Piriápolis",
+      "Atlántida",
+      "José Ignacio"
+    ],
+    "nationwide": false,
+    "summary": "Transporte de muebles y electrodomésticos por artículo y encomiendas en el corredor entre Montevideo y José Ignacio.",
+    "services": [
+      "Envíos por artículo",
+      "Retiro y entrega a domicilio",
+      "Despacho y entrega en agencia",
+      "Servicio express sujeto a disponibilidad",
+      "Seguimiento de envíos"
+    ],
+    "vehicles": [],
+    "prices": [
+      {
+        "label": "Envío de Aire acondicionado 9000 BTU — Estándar",
+        "amount": 1540,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Aire acondicionado 9000 BTU — Express",
+        "amount": 2000,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Aire acondicionado 12000 BTU — Estándar",
+        "amount": 1540,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Aire acondicionado 12000 BTU — Express",
+        "amount": 2000,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Aire acondicionado 18000 BTU — Estándar",
+        "amount": 2038,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Aire acondicionado 18000 BTU — Express",
+        "amount": 2650,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Aire acondicionado 24000 BTU — Estándar",
+        "amount": 2300,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Aire acondicionado 24000 BTU — Express",
+        "amount": 2990,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Arco fútbol (Chico) — Estándar",
+        "amount": 1255,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Arco fútbol (Chico) — Express",
+        "amount": 1635,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Arco fútbol (Mediano) — Estándar",
+        "amount": 1570,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Arco fútbol (Mediano) — Express",
+        "amount": 2050,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Arco fútbol (Grande) — Estándar",
+        "amount": 1885,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Arco fútbol (Grande) — Express",
+        "amount": 2450,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Barbacoa en caja (Chica) — Estándar",
+        "amount": 1360,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Barbacoa en caja (Chica) — Express",
+        "amount": 1770,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Barbacoa en caja (Mediana) — Estándar",
+        "amount": 1620,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Barbacoa en caja (Mediana) — Express",
+        "amount": 2100,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Barbacoa en caja (Grande) — Estándar",
+        "amount": 1880,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Barbacoa en caja (Grande) — Express",
+        "amount": 2445,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Bicicleta (Chica en caja) — Estándar",
+        "amount": 525,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Bicicleta (Chica en caja) — Express",
+        "amount": 680,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Bicicleta (Grande en caja) — Estándar",
+        "amount": 660,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Bicicleta (Grande en caja) — Express",
+        "amount": 860,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Bicicleta (Chica armada) — Estándar",
+        "amount": 870,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Bicicleta (Chica armada) — Express",
+        "amount": 1130,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Bicicleta (Grande armada) — Estándar",
+        "amount": 1100,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Bicicleta (Grande armada) — Express",
+        "amount": 1430,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Calefón (Chico - 40 lts) — Estándar",
+        "amount": 610,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Calefón (Chico - 40 lts) — Express",
+        "amount": 795,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Calefón (Mediano - 60 lts) — Estándar",
+        "amount": 760,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Calefón (Mediano - 60 lts) — Express",
+        "amount": 990,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Calefón (Grande - 90 lts) — Estándar",
+        "amount": 1020,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Calefón (Grande - 90 lts) — Express",
+        "amount": 1325,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cama (1 plaza) — Estándar",
+        "amount": 1450,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cama (1 plaza) — Express",
+        "amount": 1885,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cama (2 plazas) — Estándar",
+        "amount": 2080,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cama (2 plazas) — Express",
+        "amount": 2710,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Colchón (1 plaza) — Estándar",
+        "amount": 870,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Colchón (1 plaza) — Express",
+        "amount": 1130,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Colchón (2 plazas) — Estándar",
+        "amount": 1390,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Colchón (2 plazas) — Express",
+        "amount": 1810,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Box somier (1 plaza) — Estándar",
+        "amount": 925,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Box somier (1 plaza) — Express",
+        "amount": 1200,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Box somier (2 plazas) — Estándar",
+        "amount": 1845,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Box somier (2 plazas) — Express",
+        "amount": 2400,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Somier (1 plaza) — Estándar",
+        "amount": 1850,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Somier (1 plaza) — Express",
+        "amount": 2405,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Somier (2 plazas) — Estándar",
+        "amount": 3690,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Somier (2 plazas) — Express",
+        "amount": 4800,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cocina — Estándar",
+        "amount": 1440,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cocina — Express",
+        "amount": 1870,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cocina (Grande) — Estándar",
+        "amount": 2600,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cocina (Grande) — Express",
+        "amount": 3380,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cuatriciclo (Chico) — Estándar",
+        "amount": 3830,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cuatriciclo (Chico) — Express",
+        "amount": 4980,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cuatriciclo (Mediano) — Estándar",
+        "amount": 6600,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cuatriciclo (Mediano) — Express",
+        "amount": 8580,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cuatriciclo (Grande) — Estándar",
+        "amount": 10300,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Cuatriciclo (Grande) — Express",
+        "amount": 13390,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Freezer (Chico) — Estándar",
+        "amount": 890,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Freezer (Chico) — Express",
+        "amount": 1160,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Freezer (Mediano) — Estándar",
+        "amount": 2275,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Freezer (Mediano) — Express",
+        "amount": 2960,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Freezer (Grande) — Estándar",
+        "amount": 3660,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Freezer (Grande) — Express",
+        "amount": 4760,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Heladera (Chica) — Estándar",
+        "amount": 2150,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Heladera (Chica) — Express",
+        "amount": 2795,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Heladera (Grande) — Estándar",
+        "amount": 2900,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Heladera (Grande) — Express",
+        "amount": 3770,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Heladera doble puerta — Estándar",
+        "amount": 3970,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Heladera doble puerta — Express",
+        "amount": 5160,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Heladera vitrina — Estándar",
+        "amount": 4705,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Heladera vitrina — Express",
+        "amount": 6110,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Generador (Chico) — Estándar",
+        "amount": 480,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Generador (Chico) — Express",
+        "amount": 625,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Generador (Mediano) — Estándar",
+        "amount": 590,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Generador (Mediano) — Express",
+        "amount": 770,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Generador (Grande) — Estándar",
+        "amount": 700,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Generador (Grande) — Express",
+        "amount": 910,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Kayak (2 m) — Estándar",
+        "amount": 1880,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Kayak (2 m) — Express",
+        "amount": 2445,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Kayak (3 m) — Estándar",
+        "amount": 2615,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Kayak (3 m) — Express",
+        "amount": 3400,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Kayak (4 m) — Estándar",
+        "amount": 3970,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Kayak (4 m) — Express",
+        "amount": 5200,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Lavarropas (Liviano) — Estándar",
+        "amount": 1280,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Lavarropas (Liviano) — Express",
+        "amount": 1665,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Lavarropas (Carga horizontal) — Estándar",
+        "amount": 2080,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Lavarropas (Carga horizontal) — Express",
+        "amount": 2710,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Mesa (Chica) — Estándar",
+        "amount": 1040,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Mesa (Chica) — Express",
+        "amount": 1355,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Mesa (Mediana) — Estándar",
+        "amount": 1740,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Mesa (Mediana) — Express",
+        "amount": 2260,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Mesa (Grande) — Estándar",
+        "amount": 2890,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Mesa (Grande) — Express",
+        "amount": 3760,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Mesa de ping pong — Estándar",
+        "amount": 1880,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Mesa de ping pong — Express",
+        "amount": 2445,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Mesa de pool — Estándar",
+        "amount": 3660,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Mesa de pool — Express",
+        "amount": 4760,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Moto (Chica) — Estándar",
+        "amount": 4034,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Moto (Chica) — Express",
+        "amount": 5244,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Moto (Mediana) — Estándar",
+        "amount": 4600,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Moto (Mediana) — Express",
+        "amount": 5980,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Moto (Grande) — Estándar",
+        "amount": 8640,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Moto (Grande) — Express",
+        "amount": 11230,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Silla — Estándar",
+        "amount": 420,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Silla — Express",
+        "amount": 550,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Silla (Grande) — Estándar",
+        "amount": 570,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Silla (Grande) — Express",
+        "amount": 740,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Sillón (1 cuerpo) — Estándar",
+        "amount": 1850,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Sillón (1 cuerpo) — Express",
+        "amount": 2405,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Sillón (2 cuerpos) — Estándar",
+        "amount": 3100,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Sillón (2 cuerpos) — Express",
+        "amount": 4030,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Sillón (3 cuerpos) — Estándar",
+        "amount": 4040,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de Sillón (3 cuerpos) — Express",
+        "amount": 5255,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 22\" — Estándar",
+        "amount": 376,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 22\" — Express",
+        "amount": 490,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 32\" — Estándar",
+        "amount": 606,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 32\" — Express",
+        "amount": 788,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 42\" — Estándar",
+        "amount": 920,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 42\" — Express",
+        "amount": 1195,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 50-55\" — Estándar",
+        "amount": 1250,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 50-55\" — Express",
+        "amount": 1625,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 65-75\" — Estándar",
+        "amount": 2410,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 65-75\" — Express",
+        "amount": 3135,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 85-100\" — Estándar",
+        "amount": 2880,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. ",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      },
+      {
+        "label": "Envío de TV LCD 85-100\" — Express",
+        "amount": 3745,
+        "currency": "UYU",
+        "unit": "item",
+        "kind": "fixed",
+        "includes": [
+          "IVA"
+        ],
+        "excludes": [
+          "Tasa postal del 10% cuando corresponda"
+        ],
+        "conditions": "Precio de referencia de encomienda por artículo. El operador determina el precio final al despachar. No es mudanza integral ni armado/instalación. Express sujeto a disponibilidad y capacidad operativa.",
+        "sourceUrl": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "category": "freight"
+      }
+    ],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "098617630",
+        "sourceUrl": "https://depunta.com/"
+      },
+      {
+        "kind": "phone",
+        "value": "42229237",
+        "sourceUrl": "https://depunta.com/",
+        "label": "Maldonado Lussich"
+      },
+      {
+        "kind": "phone",
+        "value": "42232696",
+        "sourceUrl": "https://depunta.com/",
+        "label": "Terminal Maldonado"
+      },
+      {
+        "kind": "phone",
+        "value": "44320194",
+        "sourceUrl": "https://depunta.com/",
+        "label": "Piriápolis"
+      },
+      {
+        "kind": "phone",
+        "value": "42669919",
+        "sourceUrl": "https://depunta.com/",
+        "label": "San Carlos"
+      },
+      {
+        "kind": "phone",
+        "value": "24015474",
+        "sourceUrl": "https://depunta.com/",
+        "label": "Montevideo"
+      }
+    ],
+    "website": "https://depunta.com/",
+    "sources": [
+      {
+        "url": "https://depunta.com/",
+        "title": "DePunta — Tarifas y sucursales",
+        "accessedAt": "2026-09-14"
+      },
+      {
+        "url": "https://depunta.com/data/tarifarioProductos1.json?v=61",
+        "title": "Tarifario público de mobiliario y productos",
+        "accessedAt": "2026-09-14",
+        "notes": "JSON que alimenta la tabla visible; descubierto en script.js?v=61. Sin fecha de vigencia explícita."
+      }
+    ],
+    "caveats": [
+      "Servicio por encomienda/artículo; las tarifas no representan una mudanza completa ni incluyen armado o instalación.",
+      "Precios con IVA; se agrega tasa postal del 10% cuando corresponda.",
+      "El operador determina el precio final al despachar; Express sujeto a disponibilidad y capacidad operativa.",
+      "No se publica fecha de actualización del tarifario.",
+      "Tamaños como chico o grande son etiquetas del tarifario y no medidas del objeto o vehículo.",
+      "Sucursales en Montevideo, Maldonado Lussich, Terminal Maldonado, San Carlos, Piriápolis y Atlántida; no se identifica una casa central."
+    ]
+  },
+  {
+    "id": "fletes-vaz-mercedes",
+    "name": "Fletes Vaz",
+    "categories": [
+      "freight"
+    ],
+    "baseDepartment": "Soriano",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Servicio de fletes listado en Mercedes, Soriano, con atención 24 horas.",
+    "services": [
+      "Fletes"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "099533675",
+        "sourceUrl": "https://1122.com.uy/local/fletes-vaz/LOC761940001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/fletes-vaz/LOC761940001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/fletes-vaz/LOC761940001",
+        "title": "Fletes Vaz — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa."
+      }
+    ],
+    "caveats": [
+      "Datos de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "No publica precios ni medidas/capacidad del vehículo.",
+      "No declara mudanza doméstica integral; confirmar si acepta los muebles a trasladar."
+    ]
+  },
+  {
+    "id": "transporte-tabajara",
+    "name": "Transporte Tabajara",
+    "categories": [
+      "moving",
+      "freight",
+      "storage"
+    ],
+    "baseDepartment": "Rocha",
+    "coverage": [
+      "La Coronilla",
+      "Uruguay"
+    ],
+    "nationwide": true,
+    "summary": "Transporte de muebles y mudanzas desde La Coronilla a todo el país; la ficha declara depósito.",
+    "services": [
+      "Mudanzas",
+      "Fletes",
+      "Transporte de muebles",
+      "Encomiendas",
+      "Depósito"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "whatsapp",
+        "value": "099000804",
+        "sourceUrl": "https://1122.com.uy/local/transporte-tabajara/LOC889370001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/transporte-tabajara/LOC889370001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/transporte-tabajara/LOC889370001",
+        "title": "Transporte Tabajara — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria; 1122 declara verificación con el dueño el 08/04/2026."
+      }
+    ],
+    "caveats": [
+      "Disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "No publica precios ni medidas/capacidad del vehículo o depósito.",
+      "Confirmar si el depósito admite guardamuebles de particulares, plazo y condiciones."
+    ]
+  },
+  {
+    "id": "marcos-perez-durazno",
+    "name": "Marcos Pérez Fletes",
+    "categories": [
+      "moving",
+      "freight"
+    ],
+    "baseDepartment": "Durazno",
+    "coverage": [],
+    "nationwide": false,
+    "summary": "Proveedor de fletes y mudanzas listado en Durazno con atención diaria de 24 horas.",
+    "services": [
+      "Fletes",
+      "Mudanzas",
+      "Transporte de carga"
+    ],
+    "vehicles": [],
+    "prices": [],
+    "contacts": [
+      {
+        "kind": "phone",
+        "value": "099359864",
+        "sourceUrl": "https://1122.com.uy/local/marcos-perez/LOC515080001"
+      }
+    ],
+    "website": "https://1122.com.uy/local/marcos-perez/LOC515080001",
+    "sources": [
+      {
+        "url": "https://1122.com.uy/local/marcos-perez/LOC515080001",
+        "title": "Marcos Pérez — ficha comercial",
+        "accessedAt": "2026-09-14",
+        "notes": "Fuente secundaria consultada completa; la categoría propia incluye mudanzas."
+      }
+    ],
+    "caveats": [
+      "Datos de directorio comercial; disponibilidad y condiciones no corroboradas directamente con el proveedor.",
+      "No publica precios ni medidas/capacidad del vehículo."
+    ]
+  }
+]

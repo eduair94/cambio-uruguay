@@ -1,0 +1,858 @@
+{
+  "query": "mercadolibre-armado",
+  "purpose": "Descubrimiento: importes sin unidad ni alcance no publicables como tarifas",
+  "records": [
+    {
+      "id": "MLU729802622",
+      "title": "Galpón De Jardín Cobertizo Plástico 1.5m2 Piso Inc. Armado",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-de-jardin-cobertizo-plastico-15m2-piso-inc-armado/up/MLUU3170807394",
+      "url": null,
+      "price": {
+        "amount": 20175,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 2017,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU661908274",
+      "title": "Galpón Cobertizos Casa Almacenamiento Jardín Con Armado 9m2",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-cobertizos-casa-almacenamiento-jardin-con-armado-9m2/up/MLUU2687449200",
+      "url": null,
+      "price": {
+        "amount": 34900,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 3490,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU698373170",
+      "title": "Galpón De Jardín Montevideo Armado Incluido",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-de-jardin-montevideo-armado-incluido/up/MLUU2609116467",
+      "url": null,
+      "price": {
+        "amount": 22290,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 2229,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU706189570",
+      "title": "Ropero 2 Puertas Corredizas Dormitorio Armado Gratis Tmax",
+      "permalink": "https://articulo.mercadolibre.com.uy/MLU-706189570-ropero-2-puertas-corredizas-dormitorio-armado-gratis-tmax-_JM",
+      "url": null,
+      "price": {
+        "amount": 5340,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 534,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU693445728",
+      "title": "Galpon Chapa Galvanizada 4m2 Jardin Exterior Incluye Armado",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-chapa-galvanizada-4m2-jardin-exterior-incluye-armado/up/MLUU2447517018",
+      "url": null,
+      "price": {
+        "amount": 22000,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 2200,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU660689078",
+      "title": "Galpón Cobertizos Casa Almacenamiento Jardín Con Armado",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-cobertizos-casa-almacenamiento-jardin-con-armado/up/MLUU3616820070",
+      "url": null,
+      "price": {
+        "amount": 34900,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 3490,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU693483826",
+      "title": "Galpon Chapa Galvanizada 1.5m2exteriorjardin Incluye Armado",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-chapa-galvanizada-15m2exteriorjardin-incluye-armado/up/MLUU2447517028",
+      "url": null,
+      "price": {
+        "amount": 11500,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 1150,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU639289950",
+      "title": "Multiuso 4 Puertas Con Estantes. Armado Gratis. Tienda Max",
+      "permalink": "https://articulo.mercadolibre.com.uy/MLU-639289950-multiuso-4-puertas-con-estantes-armado-gratis-tienda-max-_JM",
+      "url": null,
+      "price": {
+        "amount": 4840,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 484,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU630215843",
+      "title": "Ropero 6 Puertas 2 Cajones. Armado Gratis. Tienda Max",
+      "permalink": "https://articulo.mercadolibre.com.uy/MLU-630215843-ropero-6-puertas-2-cajones-armado-gratis-tienda-max-_JM",
+      "url": null,
+      "price": {
+        "amount": 9090,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 909,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU729711464",
+      "title": "Galpón Cobertizo De Jardín 2.5m2 Plástico Piso Inc. Armado",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-cobertizo-de-jardin-25m2-plastico-piso-inc-armado/up/MLUU3165272741",
+      "url": null,
+      "price": {
+        "amount": 28870,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 2887,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU659529919",
+      "title": "Multiuso 2 Puertas Estantes Mdp Cocina Dormitorio Armado",
+      "permalink": "https://www.mercadolibre.com.uy/multiuso-2-puertas-estantes-mdp-cocina-dormitorio-armado/up/MLUU3794436644",
+      "url": null,
+      "price": {
+        "amount": 2290,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 229,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU664720754",
+      "title": "Ropero 3 Puertas 2 Cajones Armado Gratis Tiendamax",
+      "permalink": "https://www.mercadolibre.com.uy/ropero-3-puertas-2-cajones-armado-gratis-tiendamax/up/MLUU2444991808",
+      "url": null,
+      "price": {
+        "amount": 3490,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 349,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU737219766",
+      "title": "Mueble Multiuso Ropero Alacena 2 Puertas Armado Tienda Max",
+      "permalink": "https://www.mercadolibre.com.uy/mueble-multiuso-ropero-alacena-2-puertas-armado-tienda-max/up/MLUU3212186592",
+      "url": null,
+      "price": {
+        "amount": 3640,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 364,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU465992549",
+      "title": "Armado De Muebles, Traslados, Trabajos Con Garantía!",
+      "permalink": "https://www.mercadolibre.com.uy/armado-de-muebles-traslados-trabajos-con-garantia/up/MLUU2439802402",
+      "url": null,
+      "price": {
+        "amount": 50,
+        "currency": "UYU"
+      },
+      "location": null
+    },
+    {
+      "id": "MLU1459739070",
+      "title": "Ropero 4 Puertas 2 Cajones Armado Gratis Tienda Max",
+      "permalink": "https://www.mercadolibre.com.uy/ropero-4-puertas-2-cajones-armado-gratis-tienda-max/up/MLUU4322941785",
+      "url": null,
+      "price": {
+        "amount": 6190,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 619,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU1463200492",
+      "title": "Ropero 3 Puertas 2 Cajones Combinado Armado Tienda Max",
+      "permalink": "https://www.mercadolibre.com.uy/ropero-3-puertas-2-cajones-combinado-armado-tienda-max/up/MLUU4380476590",
+      "url": null,
+      "price": {
+        "amount": 5690,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 569,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU644649781",
+      "title": "Galpón Chapa Galvanizada 3.8 M2 Jardín Exterior Incl Armado",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-chapa-galvanizada-38-m2-jardin-exterior-incl-armado/up/MLUU2443782000",
+      "url": null,
+      "price": {
+        "amount": 22000,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 2200,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU766371600",
+      "title": "Galpón De Jardín Cobertizo Poliprop 1.5m2 Piso Inc. Armado",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-de-jardin-cobertizo-poliprop-15m2-piso-inc-armado/up/MLUU3274230132",
+      "url": null,
+      "price": {
+        "amount": 20175,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 2017,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU766890992",
+      "title": "Galpón Storage De Jardín 2.5m2 Poliprop C/piso Inc. Armado",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-storage-de-jardin-25m2-poliprop-cpiso-inc-armado/up/MLUU3268439205",
+      "url": null,
+      "price": {
+        "amount": 28870,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 2887,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU644675317",
+      "title": "Galpón Chapa Galvanizada 1.5m2exteriorjardin Incluye Armado",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-chapa-galvanizada-15m2exteriorjardin-incluye-armado/up/MLUU2439068097",
+      "url": null,
+      "price": {
+        "amount": 12000,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 1200,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU769713456",
+      "title": "Galpón Para Patio 2 X 1 X 1.5 M De Profundidad Armado",
+      "permalink": "https://www.mercadolibre.com.uy/galpon-para-patio-2-x-1-x-15-m-de-profundidad-armado/up/MLUU3279477978",
+      "url": null,
+      "price": {
+        "amount": 35000,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 3500,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU608622524",
+      "title": "Armador De Muebles En El Días Roperos Muebles Todos",
+      "permalink": "https://www.mercadolibre.com.uy/armador-de-muebles-en-el-dias-roperos-muebles-todos/up/MLUU2435654201",
+      "url": null,
+      "price": {
+        "amount": 200,
+        "currency": "UYU"
+      },
+      "location": null
+    },
+    {
+      "id": "MLU654160885",
+      "title": "Tenaza 9 De Medio Corte Toyoki Vittohome",
+      "permalink": "https://www.mercadolibre.com.uy/tenaza-9-de-medio-corte-toyoki-vittohome/p/MLU2091153192",
+      "url": null,
+      "price": {
+        "amount": 432,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 43.2,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU1248554074",
+      "title": "Tenaza Armador Alicate De Carpintero 8 Pulgadas Jadever",
+      "permalink": "https://www.mercadolibre.com.uy/tenaza-armador-alicate-de-carpintero-8-pulgadas-jadever/p/MLU38795739",
+      "url": null,
+      "price": {
+        "amount": 5.99,
+        "currency": "USD"
+      },
+      "location": null
+    },
+    {
+      "id": "MLU644702139",
+      "title": "Tenaza Armador 9 Pulgadas Cr-v Total Industrial - Tvirtual",
+      "permalink": "https://www.mercadolibre.com.uy/tenaza-armador-9-pulgadas-cr-v-total-industrial-tvirtual/p/MLU26283424",
+      "url": null,
+      "price": {
+        "amount": 7.39,
+        "currency": "USD"
+      },
+      "location": null
+    },
+    {
+      "id": "MLU634005569",
+      "title": "Tenaza Armador 9 Pulgadas Alambre 225mm - Electroimporta",
+      "permalink": "https://www.mercadolibre.com.uy/tenaza-armador-9-pulgadas-alambre-225mm-electroimporta/p/MLU2109535690",
+      "url": null,
+      "price": {
+        "amount": 210,
+        "currency": "UYU"
+      },
+      "location": null
+    },
+    {
+      "id": "MLU826886860",
+      "title": "Estantería Metálica Rack Encastre 4 Niveles 2x2x0.6m 800kg",
+      "permalink": "https://www.mercadolibre.com.uy/estanteria-metalica-rack-encastre-4-niveles-2x2x06m-800kg/p/MLU53925236#is_advertising=true&searchVariation=MLU53925236&backend_model=search-backend&be_origin=backend&position=5&search_layout=grid&type=pad&tracking_id=f95d7bcb-7669-4ffe-93dd-5df6e777db7b",
+      "url": null,
+      "price": {
+        "amount": 6390,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 639,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU688353764",
+      "title": "Estanteria Metalica Reforzada Facil Armado 1mt X 2mt Unilux",
+      "permalink": "https://www.mercadolibre.com.uy/estanteria-metalica-reforzada-facil-armado-1mt-x-2mt-unilux/up/MLUU2446433610#is_advertising=true&searchVariation=MLUU2446433610&backend_model=search-backend&be_origin=backend&position=6&search_layout=grid&type=pad&tracking_id=f95d7bcb-7669-4ffe-93dd-5df6e777db7b",
+      "url": null,
+      "price": {
+        "amount": 9461,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 946.1,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU1413272028",
+      "title": "Organizador Con Estante 3 Niveles Para Sobre Lavarropa, Mueble Ahorrador De Espacio, Estructura Resistente Multiuso, Ideal Para Baño Y Lavadero, Fácil Armado, Diseño Moderno Funcional Everest",
+      "permalink": "https://www.mercadolibre.com.uy/organizador-con-estante-3-niveles-para-sobre-lavarropa-mueble-ahorrador-de-espacio-estructura-resistente-multiuso-ideal-para-bano-y-lavadero-facil-armado-diseno-moderno-funcional-everest/p/MLU70510510",
+      "url": null,
+      "price": {
+        "amount": 719.2,
+        "currency": "UYU",
+        "original_amount": 899,
+        "discount_percent": 20,
+        "installments": {
+          "quantity": 10,
+          "amount": 71.92,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU1450581806",
+      "title": "Zapatero de Bambú Organizador de Zapatos 3 Niveles | Estante Multiuso para Calzado, Diseño Moderno y Resistente, Ideal para Dormitorio, Entrada Vestidor o Living | Fácil Armado, Ahorra Espacio Everest",
+      "permalink": "https://www.mercadolibre.com.uy/zapatero-de-bambu-organizador-de-zapatos-3-niveles-estante-multiuso-para-calzado-diseno-moderno-y-resistente-ideal-para-dormitorio-entrada-vestidor-o-living-facil-armado-ahorra-espacio-everest/p/MLU74956681",
+      "url": null,
+      "price": {
+        "amount": 799.2,
+        "currency": "UYU",
+        "original_amount": 999,
+        "discount_percent": 20,
+        "installments": {
+          "quantity": 10,
+          "amount": 79.92,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU639609925",
+      "title": "Comoda Cajonera 4 Cajones Dormitorio Guarda Ropa Expansionuy",
+      "permalink": "https://articulo.mercadolibre.com.uy/MLU-639609925-comoda-cajonera-4-cajones-dormitorio-guarda-ropa-expansionuy-_JM#is_advertising=true&searchVariation=183881127027&backend_model=search-backend&be_origin=backend&position=10&search_layout=grid&type=pad&tracking_id=f95d7bcb-7669-4ffe-93dd-5df6e777db7b",
+      "url": null,
+      "price": {
+        "amount": 1890,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 189,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU710568920",
+      "title": "Cómoda 2 Puertas Mueble De Guardado Mostrador Auxiliar",
+      "permalink": "https://articulo.mercadolibre.com.uy/MLU-710568920-comoda-2-puertas-mueble-de-guardado-mostrador-auxiliar-_JM#is_advertising=true&searchVariation=182840640792&backend_model=search-backend&be_origin=backend&position=11&search_layout=grid&type=pad&tracking_id=f95d7bcb-7669-4ffe-93dd-5df6e777db7b",
+      "url": null,
+      "price": {
+        "amount": 1890,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 189,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU449763367",
+      "title": "Comoda Cajonera Grande 135x119x045 - 2 Puertas Cajones Llave",
+      "permalink": "https://articulo.mercadolibre.com.uy/MLU-449763367-comoda-cajonera-grande-135x119x045-2-puertas-cajones-llave-_JM#is_advertising=true&searchVariation=66316410469&backend_model=search-backend&be_origin=backend&position=12&search_layout=grid&type=pad&tracking_id=f95d7bcb-7669-4ffe-93dd-5df6e777db7b",
+      "url": null,
+      "price": {
+        "amount": 7031,
+        "currency": "UYU",
+        "original_amount": 7990,
+        "discount_percent": 12,
+        "installments": {
+          "quantity": 10,
+          "amount": 703.12,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU1410489034",
+      "title": "Estantes Para Zapatos 5 Pisos Organizador Multifuncional Desarmable Ahorra Espacio Ideal Para Dormitorio Entrada Vestidor Hogar Resistente Fácil Armado Diseño Moderno Compacto Y Práctico Everest",
+      "permalink": "https://www.mercadolibre.com.uy/estantes-para-zapatos-5-pisos-organizador-multifuncional-desarmable-ahorra-espacio-ideal-para-dormitorio-entrada-vestidor-hogar-resistente-facil-armado-diseno-moderno-compacto-y-practico-everest/p/MLU70367579",
+      "url": null,
+      "price": {
+        "amount": 495.2,
+        "currency": "UYU",
+        "original_amount": 619,
+        "discount_percent": 20,
+        "installments": {
+          "quantity": 10,
+          "amount": 49.52,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU1447039378",
+      "title": "Mueble Esquinero Blanco Organizador 4 Estantes Decorativo Multiuso Para Cocina, Baño, Dormitorio O Lavadero | Estantería De Esquina Ahorradora De Espacio Fácil Armado Everest",
+      "permalink": "https://www.mercadolibre.com.uy/mueble-esquinero-blanco-organizador-4-estantes-decorativo-multiuso-para-cocina-bano-dormitorio-o-lavadero-estanteria-de-esquina-ahorradora-de-espacio-facil-armado-everest/p/MLU74578656",
+      "url": null,
+      "price": {
+        "amount": 1222,
+        "currency": "UYU",
+        "original_amount": 1287,
+        "discount_percent": 5,
+        "installments": {
+          "quantity": 10,
+          "amount": 122.27,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU887578004",
+      "title": "Mesa De Luz C/ Cajón, Estación De Carga Tapa Aérea Dormitor",
+      "permalink": "https://articulo.mercadolibre.com.uy/MLU-887578004-mesa-de-luz-c-cajon-estacion-de-carga-tapa-aerea-dormitor-_JM#is_advertising=true&searchVariation=191490016595&backend_model=search-backend&be_origin=backend&position=15&search_layout=grid&type=pad&tracking_id=f95d7bcb-7669-4ffe-93dd-5df6e777db7b",
+      "url": null,
+      "price": {
+        "amount": 6415,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 641.57,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU652258941",
+      "title": "Mesa De Luz Aerea Capri 30 X 35 Cm - Berna Home",
+      "permalink": "https://www.mercadolibre.com.uy/mesa-de-luz-aerea-capri-30-x-35-cm--berna-home/up/MLUU3286254608#is_advertising=true&searchVariation=MLUU3286254608&backend_model=search-backend&be_origin=backend&position=16&search_layout=grid&type=pad&tracking_id=f95d7bcb-7669-4ffe-93dd-5df6e777db7b",
+      "url": null,
+      "price": {
+        "amount": 2930,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 293,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU657215508",
+      "title": "Mesa De Luz 2 Cajones Mesita De Noche Negra Minimalista",
+      "permalink": "https://articulo.mercadolibre.com.uy/MLU-657215508-mesa-de-luz-2-cajones-mesita-de-noche-negra-minimalista-_JM#is_advertising=true&searchVariation=189954233443&backend_model=search-backend&be_origin=backend&position=17&search_layout=grid&type=pad&tracking_id=f95d7bcb-7669-4ffe-93dd-5df6e777db7b",
+      "url": null,
+      "price": {
+        "amount": 1290,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 129,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU1408707668",
+      "title": "Zapatera Hasta 18 Pares Elegante Y Cómoda Color Tabaco",
+      "permalink": "https://www.mercadolibre.com.uy/zapatera-hasta-18-pares-elegante-y-comoda-color-tabaco/p/MLU70304027",
+      "url": null,
+      "price": {
+        "amount": 2390,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 239,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU1449241992",
+      "title": "Cómoda Nórdica con 4 Cajones y Patas, Blanca",
+      "permalink": "https://www.mercadolibre.com.uy/comoda-nordica-con-4-cajones-y-patas-blanca/p/MLU74902561",
+      "url": null,
+      "price": {
+        "amount": 9990,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 999,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU465112708",
+      "title": "Armario De Servicio Escobero Blanco 1 Pta 179 - Amarelo",
+      "permalink": "https://www.mercadolibre.com.uy/armario-de-servicio-escobero-blanco-1-pta-179--amarelo/up/MLUU2439302976",
+      "url": null,
+      "price": {
+        "amount": 2290,
+        "currency": "UYU",
+        "original_amount": 2490,
+        "discount_percent": 8,
+        "installments": {
+          "quantity": 10,
+          "amount": 229.08,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU1496875672",
+      "title": "Estanterías Metálicas Galvanizadas Pack X2 90x40x180 waluminio",
+      "permalink": "https://www.mercadolibre.com.uy/estanterias-metalicas-galvanizadas-pack-x2-90x40x180-waluminio/p/MLU63778133",
+      "url": null,
+      "price": {
+        "amount": 3190,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 319,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU654395988",
+      "title": "Estanteria Metalica Reforzada Facil Armado 1mt X 2mt Unilux",
+      "permalink": "https://www.mercadolibre.com.uy/estanteria-metalica-reforzada-facil-armado-1mt-x-2mt-unilux/up/MLUU2439698465#is_advertising=true&searchVariation=MLUU2439698465&backend_model=search-backend&be_origin=backend&position=22&search_layout=grid&type=pad&tracking_id=f95d7bcb-7669-4ffe-93dd-5df6e777db7b",
+      "url": null,
+      "price": {
+        "amount": 7211,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 721.1,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU653547581",
+      "title": "Zapatera Organizador 4 Niveles De Facil Armado",
+      "permalink": "https://www.mercadolibre.com.uy/zapatera-organizador-4-niveles-de-facil-armado/up/MLUU3489554856#is_advertising=true&searchVariation=MLUU3489554856&backend_model=search-backend&be_origin=backend&position=23&search_layout=grid&type=pad&tracking_id=f95d7bcb-7669-4ffe-93dd-5df6e777db7b",
+      "url": null,
+      "price": {
+        "amount": 757,
+        "currency": "UYU",
+        "original_amount": 890,
+        "discount_percent": 14,
+        "installments": {
+          "quantity": 10,
+          "amount": 75.7,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU639949369",
+      "title": "Pack de 2 Mesas de Luz Nórdicas Badecor de Bambú, con 2 Cajones y Estante",
+      "permalink": "https://www.mercadolibre.com.uy/pack-de-2-mesas-de-luz-nordicas-badecor-de-bambu-con-2-cajones-y-estante/p/MLU36866562",
+      "url": null,
+      "price": {
+        "amount": 5386,
+        "currency": "UYU",
+        "original_amount": 5985,
+        "discount_percent": 10,
+        "installments": {
+          "quantity": 10,
+          "amount": 538.6,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU679527664",
+      "title": "Pack de 2 Mesas de Luz Nórdicas Badecor, con 2 Cajones de Bambú Marrón",
+      "permalink": "https://www.mercadolibre.com.uy/pack-de-2-mesas-de-luz-nordicas-badecor-con-2-cajones-de-bambu-marron/p/MLU36755021",
+      "url": null,
+      "price": {
+        "amount": 5386,
+        "currency": "UYU",
+        "original_amount": 5985,
+        "discount_percent": 10,
+        "installments": {
+          "quantity": 10,
+          "amount": 538.6,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU949898606",
+      "title": "Mesa De Luz Auxiliar 1 Cajón Eames LG Semibrillo Blanco",
+      "permalink": "https://www.mercadolibre.com.uy/mesa-de-luz-auxiliar-1-cajon-eames-lg-semibrillo-blanco/p/MLU61938055",
+      "url": null,
+      "price": {
+        "amount": 1304,
+        "currency": "UYU",
+        "original_amount": 1490,
+        "discount_percent": 12,
+        "installments": {
+          "quantity": 10,
+          "amount": 130.4,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU1492700636",
+      "title": "Mesa De Luz Flotante Con Cajon Estilo Nordica Color Blanco",
+      "permalink": "https://www.mercadolibre.com.uy/mesa-de-luz-flotante-con-cajon-estilo-nordica-color-blanco/p/MLU24542622",
+      "url": null,
+      "price": {
+        "amount": 1276,
+        "currency": "UYU",
+        "original_amount": 1450,
+        "discount_percent": 12,
+        "installments": {
+          "quantity": 10,
+          "amount": 127.6,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU672556504",
+      "title": "Mesa De Luz Flotante Con Cajon Estilo Nordica Color Negro Muebles Web",
+      "permalink": "https://www.mercadolibre.com.uy/mesa-de-luz-flotante-con-cajon-estilo-nordica-color-negro-muebles-web/p/MLU34102435",
+      "url": null,
+      "price": {
+        "amount": 1256,
+        "currency": "UYU",
+        "installments": {
+          "quantity": 10,
+          "amount": 125.6,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    },
+    {
+      "id": "MLU878869346",
+      "title": "Mesa De Luz Flotante Cajon, Estante Estilo Nordico Reforzada Acabado Mate Color Castaño",
+      "permalink": "https://www.mercadolibre.com.uy/mesa-de-luz-flotante-cajon-estante-estilo-nordico-reforzada-acabado-mate-color-castano/p/MLU58296260",
+      "url": null,
+      "price": {
+        "amount": 1317,
+        "currency": "UYU",
+        "original_amount": 1550,
+        "discount_percent": 15,
+        "installments": {
+          "quantity": 10,
+          "amount": 131.75,
+          "currency": "UYU",
+          "interest_free": true
+        }
+      },
+      "location": null
+    }
+  ],
+  "paging": {
+    "total": 858,
+    "offset": 0,
+    "limit": 50,
+    "returned": 50,
+    "primary_results": 858
+  },
+  "queriedAt": "2026-09-14T04:59:25.6295386Z"
+}

@@ -2300,6 +2300,20 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/fletes-mudanzas-uruguay',
+        labelKey: 'nav.mudanzas',
+        icon: 'mdi-truck-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        keywords: [
+          'fletes mudanzas uruguay montevideo interior',
+          'precio camion mudanza ayudantes peones',
+          'armado desarmado muebles',
+          'guardamuebles deposito limpieza retiro muebles',
+          'alquiler casa mudarse servicios',
+        ],
+      },
+      {
         to: '/plan-de-vida-uruguay',
         labelKey: 'nav.planDeVida',
         icon: 'mdi-chart-timeline-variant',
