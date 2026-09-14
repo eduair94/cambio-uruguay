@@ -270,11 +270,58 @@ describe('opening hours', () => {
     expect(openingHoursSpecification('ABITAB SA')).toEqual([])
   })
 
-  it('renders a weekly table with explicit closed days', () => {
+  it('does not infer that an omitted day is closed', () => {
     const table = weeklyHoursTable('L a V 9 a 19. Sáb 9 a 13')
     expect(table).toHaveLength(7)
     expect(table[0]).toEqual({ day: 'Lunes', hours: '09:00 a 19:00' })
-    expect(table[6]).toEqual({ day: 'Domingo', hours: 'Cerrado' })
+    expect(table[6]).toEqual({ day: 'Domingo', hours: 'Sin informar' })
+  })
+
+  it('keeps the unreported weekend unknown for the current Cambio Principal schedule', () => {
+    const raw = 'Lunes a Viernes 8:00 a 18:00'
+    const table = weeklyHoursTable(raw)
+    expect(table.slice(0, 5).every(row => row.hours === '08:00 a 18:00')).toBe(true)
+    expect(table.slice(5)).toEqual([
+      { day: 'Sábado', hours: 'Sin informar' },
+      { day: 'Domingo', hours: 'Sin informar' },
+    ])
+    expect(openingHoursSpecification(raw).flatMap(window => window.dayOfWeek)).toEqual([
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+    ])
+  })
+
+  it.each(['Domingos Cerrado', 'Domingos: Cerrado'])(
+    'distinguishes %s from an omitted day without adding schema windows',
+    closure => {
+      const raw = `Lunes a Viernes 8:00 a 18:00. ${closure}`
+      expect(weeklyHoursTable(raw).slice(5)).toEqual([
+        { day: 'Sábado', hours: 'Sin informar' },
+        { day: 'Domingo', hours: 'Cerrado' },
+      ])
+      expect(openingHoursSpecification(raw)).toEqual(
+        openingHoursSpecification('Lunes a Viernes 8:00 a 18:00')
+      )
+    }
+  )
+
+  it('recognises a closure-only clause without treating the rest of the week as closed', () => {
+    const raw = 'Sábados y domingos cerrado'
+    const table = weeklyHoursTable(raw)
+    expect(table.slice(0, 5).every(row => row.hours === 'Sin informar')).toBe(true)
+    expect(table.slice(5).every(row => row.hours === 'Cerrado')).toBe(true)
+    expect(openingHoursSpecification(raw)).toEqual([])
+  })
+
+  it('does not borrow closures from self-service or seasonal text', () => {
+    for (const tail of ['Buzonera: domingos cerrado', 'Verano: domingos cerrado']) {
+      expect(weeklyHoursTable(`Lunes a Viernes 8:00 a 18:00. ${tail}`)[6]?.hours).toBe(
+        'Sin informar'
+      )
+    }
   })
 
   it('renders no table when the schedule could not be parsed', () => {

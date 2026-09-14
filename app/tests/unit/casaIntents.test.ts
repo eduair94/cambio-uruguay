@@ -173,6 +173,11 @@ describe('availability gating', () => {
     const withoutPhone = buildBranchPages([branch({ phone: '' })])
     expect(intentAvailable('telefono', { ...base, branches: withPhone })).toBe(true)
     expect(intentAvailable('telefono', { ...base, branches: withoutPhone })).toBe(false)
+    for (const phone of ['Sin teléfono', '--- --- ---', 'Tel. 123']) {
+      const branches = buildBranchPages([branch({ phone })])
+      expect(intentAvailable('telefono', { ...base, branches })).toBe(false)
+      expect(intentsFor({ ...base, branches })).not.toContain('telefono')
+    }
   })
 
   it('needs a public USD quote for the buy/sell pages', () => {

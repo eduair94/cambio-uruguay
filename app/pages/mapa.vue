@@ -194,9 +194,15 @@ function popupFor(b: any): string {
   const rateLine = rate
     ? `<br>${esc(currency.value)}: ${t('compra')} ${rate.buy ?? '—'} / ${t('venta')} ${rate.sell ?? '—'}`
     : ''
+  const hoursSource = b.fieldSources?.hours
+  const sourceLine =
+    hoursSource && /^https:\/\//i.test(hoursSource.url)
+      ? `<br><a href="${esc(hoursSource.url)}" target="_blank" rel="noopener noreferrer">${esc(hoursSource.publisher)}</a> · ${esc(hoursSource.verifiedAt)}`
+      : ''
   return (
     `<strong>${esc(nameFor(b))}</strong><br>${esc(b.address)}<br>${esc(b.locality)}, ${esc(b.dept)}` +
     (b.hours ? `<br><em>${esc(b.hours)}</em>` : '') +
+    sourceLine +
     rateLine +
     `<br><a href="${dir}" target="_blank" rel="noopener">${t('map.directions')} →</a>`
   )

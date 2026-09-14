@@ -131,12 +131,22 @@
               <div class="text-wrap">
                 {{ (item as any).Telefono }}
               </div>
+              <BranchDataSources
+                v-if="(item as any).fieldSources?.phone"
+                :sources="(item as any).fieldSources"
+                :fields="['phone']"
+              />
             </template>
 
             <template #item.Horarios="{ item }">
               <div class="text-wrap text-caption">
                 {{ (item as any).Horarios }}
               </div>
+              <BranchDataSources
+                v-if="(item as any).fieldSources?.hours"
+                :sources="(item as any).fieldSources"
+                :fields="['hours']"
+              />
             </template>
 
             <template #item.distance="{ item }">
@@ -195,6 +205,7 @@
 <script setup lang="ts">
 import LocationsMap from '~/components/map/LocationsMap.vue'
 import { deptKey, deptLabel, humaniseOrigin, type BranchPage } from '~/utils/branches'
+import { applyBranchCorrections, type BranchFieldSources } from '~/utils/branchCorrections'
 
 interface BranchDirectory {
   branches: BranchPage[]
@@ -443,6 +454,7 @@ const mapBranches = computed(() =>
       lng: Number(s.longitude),
       mapUrl: s.map || '',
       source: 'bcu',
+      fieldSources: s.fieldSources,
     }))
 )
 
@@ -484,21 +496,33 @@ const {
     //
     // Unificar las dos fuentes sería el arreglo de fondo, pero cambia de dónde sale una tabla que
     // hoy funciona; esto se queda en lo comprobable: de la respuesta viva sólo se serializan los
-    // once campos que la página lee — cuatro los pinta la tabla y siete los consume el mapa.
+    // campos que la página lee, más la procedencia de las correcciones aplicadas.
     transform: (rows: unknown) =>
-      (Array.isArray(rows) ? rows : []).map((row: Record<string, unknown>) => ({
-        NroSucursal: row.NroSucursal,
-        Direccion: row.Direccion,
-        Telefono: row.Telefono,
-        Horarios: row.Horarios,
-        Nombre: row.Nombre,
-        Departamento: row.Departamento,
-        Localidad: row.Localidad,
-        id: row.id,
-        latitude: row.latitude,
-        longitude: row.longitude,
-        map: row.map,
-      })),
+      (Array.isArray(rows) ? rows : []).map((row: Record<string, unknown>) => {
+        const corrected = applyBranchCorrections({
+          origin: String(row.origin ?? origin),
+          id: String(row.id ?? ''),
+          address: String(row.Direccion ?? ''),
+          dept: String(row.Departamento ?? ''),
+          phone: String(row.Telefono ?? ''),
+          hours: String(row.Horarios ?? ''),
+          fieldSources: undefined as BranchFieldSources | undefined,
+        })
+        return {
+          NroSucursal: row.NroSucursal,
+          Direccion: row.Direccion,
+          Telefono: corrected.fieldSources?.phone ? corrected.phone : row.Telefono,
+          Horarios: corrected.fieldSources?.hours ? corrected.hours : row.Horarios,
+          Nombre: row.Nombre,
+          Departamento: row.Departamento,
+          Localidad: row.Localidad,
+          id: row.id,
+          latitude: row.latitude,
+          longitude: row.longitude,
+          map: row.map,
+          fieldSources: corrected.fieldSources,
+        }
+      }),
   }
 )
 

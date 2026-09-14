@@ -47,12 +47,12 @@
           <template v-if="intent === 'horarios'">
             <section class="mb-8">
               <p class="text-body-1 casa-prose mb-4">
-                Estos son los horarios que {{ facts.name }} declaró ante el Banco Central para cada
-                una de sus {{ hoursBranches.length }}
-                {{ hoursBranches.length === 1 ? 'sucursal' : 'sucursales' }}{{ whereSuffix }}. Son
-                el horario habitual de atención al público: en vísperas de feriado, el 24 y el 31 de
-                diciembre y durante la Semana de Turismo suelen recortarse, así que para un trámite
-                que no admite volver otro día conviene confirmar por teléfono.
+                Estos son los horarios publicados de {{ hoursBranches.length }}
+                {{ hoursBranches.length === 1 ? 'sucursal' : 'sucursales' }} de {{ facts.name
+                }}{{ whereSuffix }}. Son datos del BCU, con las actualizaciones del sitio oficial
+                identificadas en cada local. En vísperas de feriado, el 24 y el 31 de diciembre y
+                durante la Semana de Turismo suelen recortarse, así que para un trámite que no
+                admite volver otro día conviene confirmar por teléfono.
               </p>
               <div v-for="branch in hoursBranches" :key="branch.slug" class="casa-branch mb-5">
                 <h2 class="text-h6 font-weight-bold mb-1">
@@ -64,6 +64,7 @@
                   {{ branch.deptLabel
                   }}<span v-if="branch.phoneLabel"> · Tel. {{ branch.phoneLabel }}</span>
                 </p>
+                <BranchDataSources :sources="branch.fieldSources" />
                 <div v-if="weeklyFor(branch).length" class="table-scroll">
                   <table class="casa-table cu-mobile-cards">
                     <thead>
@@ -94,10 +95,10 @@
                 {{ facts.name }} publica {{ phoneBranches.length }}
                 {{ phoneBranches.length === 1 ? 'número' : 'números' }} de contacto{{
                   whereSuffix
-                }}. Son los teléfonos que la propia institución informa al Banco Central, uno por
-                local: para consultar una cotización por monto grande, reservar billetes de una
-                denominación puntual o confirmar si abren un feriado, llamar al local que te queda
-                cerca funciona mejor que un número central.
+                }}. Los datos provienen del registro del BCU; cuando se corrige un dato desde el
+                sitio oficial, se indica su fuente y fecha. Para consultar una cotización por monto
+                grande, reservar billetes de una denominación puntual o confirmar si abren un
+                feriado, llamar al local que te queda cerca funciona mejor que un número central.
               </p>
               <div class="table-scroll">
                 <table class="casa-table cu-mobile-cards">
@@ -120,6 +121,7 @@
                           {{ branch.phoneLabel }}
                         </a>
                         <span v-else>{{ branch.phoneLabel }}</span>
+                        <BranchDataSources :sources="branch.fieldSources" :fields="['phone']" />
                       </td>
                       <td data-label="Departamento">{{ branch.deptLabel }}</td>
                     </tr>

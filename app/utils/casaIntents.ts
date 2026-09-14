@@ -15,7 +15,7 @@
 // sitemap never lists one — a page whose whole job is to print a phone number
 // and cannot is the definition of thin.
 
-import { deptLabel, displayableHours, tidy, type BranchPage } from './branches'
+import { deptLabel, displayableHours, telHref, type BranchPage } from './branches'
 import {
   CURRENCY_SLUG_TO_CODE,
   currencyDisplayName,
@@ -345,7 +345,7 @@ export function branchesWithHours(branches: readonly BranchPage[]): BranchPage[]
 
 /** Branches with a phone number. */
 export function branchesWithPhone(branches: readonly BranchPage[]): BranchPage[] {
-  return branches.filter(branch => tidy(branch.phoneLabel).length >= 7)
+  return branches.filter(branch => telHref(branch.phoneLabel) !== null)
 }
 
 /** The minimum a caller must know to decide which intent pages exist. */
@@ -537,7 +537,7 @@ export function intentDescription(intent: CasaIntent, facts: CasaFacts): string 
 
   switch (intent) {
     case 'horarios':
-      return `A qué hora abre y cierra ${facts.name}: horario declarado ante el BCU de ${withHours} ${
+      return `A qué hora abre y cierra ${facts.name}: horario publicado de ${withHours} ${
         withHours === 1 ? 'sucursal' : 'sucursales'
       }${where}, día por día, con la dirección y el teléfono de cada una.`
     case 'telefono':

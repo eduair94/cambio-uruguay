@@ -22,6 +22,7 @@
 //     JSON-LD, because publishing a wrong `geo` is worse than publishing none.
 
 import { slugifyText } from './longform'
+import type { BranchFieldSources } from './branchCorrections'
 
 /** One physical branch as served by `/api/locations`. */
 export interface Branch {
@@ -37,6 +38,7 @@ export interface Branch {
   lng: number
   mapUrl: string
   source?: string
+  fieldSources?: BranchFieldSources
 }
 
 /** A branch enriched with its stable page slug and display labels. */
@@ -441,13 +443,13 @@ function publicHoursPart(text: string): string {
  * `"L a V 9 a 19. Sáb 9 a 13"`, `"Lunes, Miércoles y Viernes de 13 a 18hs"`,
  * `"Lunes a Viernes de 8 a 19 hs. Sábados 8 a 12.30 hs y 15 a 19 hs"`.
  *
- * Returns `[]` when it cannot parse confidently — the caller then shows the raw
- * string and emits NO `openingHoursSpecification`, because wrong structured data
- * about when a business is open is worse than none at all.
+ * Keeps explicit whole-day closures separately from opening windows. When
+ * neither can be parsed confidently, the caller shows the raw string and emits
+ * NO `openingHoursSpecification` instead of inventing a schedule.
  */
-export function parseOpeningHours(raw: string): OpeningWindow[] {
+function parseHoursDetails(raw: string): { windows: OpeningWindow[]; closedDays: number[] } {
   const text = publicHoursPart(normaliseHours(raw))
-  if (!text || text === 'sin informar' || !/\d/.test(text)) return []
+  if (!text || text === 'sin informar') return { windows: [], closedDays: [] }
 
   // Day-spec matcher, longest alternatives first so "lunes a viernes" wins over
   // "lunes". `\.?` after every abbreviation because the feed writes both
@@ -499,7 +501,7 @@ export function parseOpeningHours(raw: string): OpeningWindow[] {
     segments.push({ days, from: match.index, to: match.index + match[0].length })
   }
 
-  if (!segments.length) return []
+  if (!segments.length) return { windows: [], closedDays: [] }
 
   // Une los días que el texto enumera: "Martes, Jueves y Viernes de 13 a 18" son TRES day-specs
   // seguidos separados sólo por comas y por "y", y sin unirlos el rango horario se le asigna nada
@@ -526,11 +528,19 @@ export function parseOpeningHours(raw: string): OpeningWindow[] {
   const timeRange =
     /(\d{1,2})(?:[:.](\d{2}))?\s*(?:(?:h|hs|hrs|horas)\s*)?(?:a|hasta|-)\s*(\d{1,2})(?:[:.](\d{2}))?/g
   const windows: OpeningWindow[] = []
+  const closedDays = new Set<number>()
 
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i] as Segment
     const end = i + 1 < segments.length ? (segments[i + 1] as Segment).from : text.length
     const slice = text.slice(segment.to, end)
+    // A missing window is unknown, not closed. Only an explicit whole-day
+    // clause such as "Domingos Cerrado" establishes a closure; a mention in
+    // prose or in an excluded self-service/seasonal schedule does not.
+    if (/^[\s:./-]*cerrad[oa]s?[\s:./-]*$/.test(slice)) {
+      segment.days.forEach(day => closedDays.add(day))
+      continue
+    }
     timeRange.lastIndex = 0
     let time: RegExpExecArray | null
     while ((time = timeRange.exec(slice)) !== null) {
@@ -544,12 +554,18 @@ export function parseOpeningHours(raw: string): OpeningWindow[] {
   // "Lunes a Viernes de 13 a 18 hs./ Lunes a Viernes de 13 a 18 hs." is a real
   // value in the feed — emit the window once.
   const seen = new Set<string>()
-  return windows.filter(window => {
+  const uniqueWindows = windows.filter(window => {
     const key = `${window.days.join(',')}|${window.opens}|${window.closes}`
     if (seen.has(key)) return false
     seen.add(key)
     return true
   })
+  return { windows: uniqueWindows, closedDays: [...closedDays] }
+}
+
+/** Published opening windows only; omitted or explicitly closed days add no windows. */
+export function parseOpeningHours(raw: string): OpeningWindow[] {
+  return parseHoursDetails(raw).windows
 }
 
 /** Schema.org `openingHoursSpecification` entries, or `[]` when unparseable. */
@@ -567,15 +583,20 @@ export function openingHoursSpecification(raw: string): Array<{
   }))
 }
 
-/** A human-readable weekly table: one row per weekday, `'Cerrado'` when absent. */
+/** A weekly table distinguishing an explicitly closed day from an unreported day. */
 export function weeklyHoursTable(raw: string): Array<{ day: string; hours: string }> {
-  const windows = parseOpeningHours(raw)
-  if (!windows.length) return []
+  const { windows, closedDays } = parseHoursDetails(raw)
+  if (!windows.length && !closedDays.length) return []
   return DAY_LABELS_ES.map((label, index) => {
     const ranges = windows
       .filter(window => window.days.includes(index))
       .map(window => `${window.opens} a ${window.closes}`)
-    return { day: label, hours: ranges.length ? ranges.join(' y ') : 'Cerrado' }
+    const hours = ranges.length
+      ? ranges.join(' y ')
+      : closedDays.includes(index)
+        ? 'Cerrado'
+        : 'Sin informar'
+    return { day: label, hours }
   })
 }
 

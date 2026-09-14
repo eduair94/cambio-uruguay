@@ -69,6 +69,33 @@
       </v-col>
     </v-row>
 
+    <nav
+      v-if="data.navigationIntents.length"
+      class="casa-details-nav"
+      :aria-label="hubT('navigationLabel', { casa: casaName })"
+      data-testid="casa-details-navigation"
+    >
+      <div class="d-flex flex-wrap ga-4">
+        <NuxtLink
+          v-for="intent in data.navigationIntents"
+          :key="intent"
+          :to="`/casa/${origin}/${intent}`"
+          hreflang="es"
+          class="casa-details-link"
+          :aria-describedby="locale === 'es' ? undefined : 'casa-details-language'"
+        >
+          {{ hubT(intent) }}
+        </NuxtLink>
+      </div>
+      <p
+        v-if="locale !== 'es'"
+        id="casa-details-language"
+        class="text-body-2 text-medium-emphasis mt-1 mb-0"
+      >
+        {{ hubT('spanishNote') }}
+      </p>
+    </nav>
+
     <!-- Loading -->
     <v-row v-if="pending">
       <v-col cols="12" class="text-center py-10">
@@ -284,6 +311,9 @@ import { ratesForOrigin, type CasaRate } from '~/utils/currencyPages'
 import { pickOriginRate } from '~/utils/rateSource'
 import { mirrorOf } from '~/utils/rateMirrors'
 import { computePageRecords } from '~/utils/rateStats'
+import type { BranchPage } from '~/utils/branches'
+import { intentsFor } from '~/utils/casaIntents'
+import { casaHubMessages } from '~/utils/casaHubMessages'
 // `formatBareRate` va aliaseado: esta página ya tiene un `formatRate` local que arma la moneda
 // entera ("$ 39,00"), y la meta description quiere el número pelado porque el "$" es parte de
 // la oración.
@@ -311,6 +341,7 @@ definePageMeta({
 })
 
 const { t, locale } = useI18n()
+const { t: hubT } = useI18n({ useScope: 'local', messages: casaHubMessages })
 const localePath = useLocalePath()
 const route = useRoute()
 const { smAndDown } = useDisplay()
@@ -327,6 +358,14 @@ interface CasaDepartment {
   title: string
 }
 
+type CasaNavigationIntent = 'horarios' | 'telefono' | 'opiniones'
+
+interface CasaNavigationDirectory {
+  branches: BranchPage[]
+  casas: Record<string, { bcu?: string }>
+  quotesUsd?: string[]
+}
+
 // Shape resolved by the SSR fetch. `null` marks an unknown origin (the `validate`
 // hook normally rejects those first; this is the fallback signal).
 interface CasaPageData {
@@ -337,6 +376,8 @@ interface CasaPageData {
   departments: CasaDepartment[]
   /** This casa's own USD quote, or null when it publishes none (e.g. BCU). */
   usdToday: { buy: number; sell: number } | null
+  /** Only available destination slugs cross into the hydration payload. */
+  navigationIntents: CasaNavigationIntent[]
 }
 
 // Title-case an UPPERCASE department name for display (e.g. "CERRO LARGO" ->
@@ -351,12 +392,34 @@ function titleCaseDepartment(name: string): string {
 const { data, pending } = await useAsyncData<CasaPageData | null>(
   () => `casa-${origin.value}`,
   async () => {
-    const result = await getProcessedExchangeData('')
+    const casaOrigin = origin.value
+    const [result, directory] = await Promise.all([
+      getProcessedExchangeData(''),
+      $fetch<CasaNavigationDirectory>('/api/branches', { timeout: 3000, retry: 0 }).catch(
+        () => null
+      ),
+    ])
     const localData = (result?.localData ?? {}) as LocalDataMap
     const rows = (result?.exchangeData ?? []) as ExchangeRate[]
 
-    const entry = localData[origin.value]
+    const entry = localData[casaOrigin]
     if (!entry) return null
+
+    const ownBranches = (directory?.branches ?? []).filter(branch => branch.origin === casaOrigin)
+    // Match the destination's directory requirement. Missing enrichment must
+    // remove these links without taking the casa's exchange rates down with it.
+    const navigationIntents =
+      casaOrigin !== 'bcu' && directory?.casas?.[casaOrigin]
+        ? intentsFor({
+            branches: ownBranches,
+            quotesUsd: (directory.quotesUsd ?? []).includes(casaOrigin),
+            hasBcu: Boolean(directory.casas[casaOrigin]?.bcu),
+            hasRating: false,
+          }).filter(
+            (intent): intent is CasaNavigationIntent =>
+              intent === 'horarios' || intent === 'telefono' || intent === 'opiniones'
+          )
+        : []
 
     const departments: CasaDepartment[] = (entry.departments ?? [])
       .filter(dep => dep && dep.trim())
@@ -366,15 +429,16 @@ const { data, pending } = await useAsyncData<CasaPageData | null>(
     // This casa's own USD quote, resolved server-side so the SERP snippet leads
     // with the number the "cambio {casa}" query is really asking for. Only the
     // two scalars cross into the hydration payload, not the market array.
-    const usd = pickOriginRate(rows, origin.value)
+    const usd = pickOriginRate(rows, casaOrigin)
 
     return {
-      name: entry.name && entry.name.trim() ? entry.name : origin.value,
+      name: entry.name && entry.name.trim() ? entry.name : casaOrigin,
       website: entry.website ?? '',
       bcu: entry.bcu ?? '',
-      rates: ratesForOrigin(rows, origin.value),
+      rates: ratesForOrigin(rows, casaOrigin),
       departments,
       usdToday: usd ? { buy: usd.buy, sell: usd.sell } : null,
+      navigationIntents,
     }
   }
 )
@@ -574,6 +638,26 @@ useHead({
 .casa-intro {
   max-width: 760px;
   line-height: 1.6;
+}
+
+.casa-details-nav {
+  margin-block: 0.5rem 1rem;
+}
+
+.casa-details-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  max-width: 100%;
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  border-radius: 4px;
+}
+
+.casa-details-link:hover {
+  text-decoration-thickness: 2px;
 }
 
 /* Readable CTA on dark theme (avoid Vuetify outlined color tinting the text) */

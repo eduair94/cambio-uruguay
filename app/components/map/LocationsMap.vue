@@ -11,6 +11,7 @@
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import type { BranchFieldSources } from '~/utils/branchCorrections'
 
 interface Branch {
   origin: string
@@ -25,6 +26,7 @@ interface Branch {
   lng: number
   mapUrl: string
   source: string
+  fieldSources?: BranchFieldSources
 }
 
 interface CashPoint {
@@ -156,10 +158,19 @@ function defaultPopup(b: Branch): string {
       ? b.mapUrl
       : `https://www.google.com/maps/search/${encodeURIComponent(`${b.name} ${b.address} ${b.locality}`)}`
   const dir = esc(rawDir)
+  const fieldSources = Object.values(b.fieldSources || {})
+    .filter((source, index, all) => all.findIndex(other => other.url === source.url) === index)
+    .filter(source => /^https:\/\//i.test(source.url))
+    .map(
+      source =>
+        `<br><a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.publisher)}</a> · ${esc(source.verifiedAt)}`
+    )
+    .join('')
   return (
     `<strong>${esc(b.name || b.origin)}</strong><br>${esc(b.address)}<br>${esc(b.locality)}, ${esc(b.dept)}` +
     (b.hours ? `<br><em>${esc(b.hours)}</em>` : '') +
     (b.phone ? `<br>📞 ${esc(b.phone)}` : '') +
+    fieldSources +
     `<br><a href="${dir}" target="_blank" rel="noopener">${esc(props.directionsLabel)} →</a>`
   )
 }

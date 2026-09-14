@@ -63,6 +63,7 @@
                 </div>
               </VCol>
             </VRow>
+            <BranchDataSources :sources="branch.fieldSources" />
 
             <div class="d-flex flex-wrap ga-2 mt-4">
               <VBtn
@@ -94,8 +95,9 @@
           <section v-if="weekly.length" class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">Horarios de {{ branch.casaName }}</h2>
             <p class="text-body-2 text-medium-emphasis mb-3">
-              Horario declarado ante el Banco Central para esta sucursal. Los feriados y las
-              vísperas pueden alterarlo: si vas por algo puntual, conviene confirmar por teléfono.
+              Horario publicado para esta sucursal, con fuente propia cuando hay una actualización.
+              Los feriados y las vísperas pueden alterarlo: si vas por algo puntual, conviene
+              confirmar por teléfono.
             </p>
             <div class="table-scroll">
               <table class="branch-table cu-mobile-cards">
@@ -428,6 +430,7 @@ const mapBranches = computed(() =>
           lng: branch.value.lng,
           mapUrl: branch.value.mapUrl,
           source: 'bcu' as const,
+          fieldSources: branch.value.fieldSources,
         },
       ]
     : []

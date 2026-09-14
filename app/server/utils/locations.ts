@@ -1,3 +1,5 @@
+import { applyBranchCorrections, type BranchFieldSources } from '../../utils/branchCorrections'
+
 export interface MapBranch {
   origin: string
   id: string
@@ -11,6 +13,7 @@ export interface MapBranch {
   lng: number
   mapUrl: string
   source: 'bcu' | 'osm' | 'web'
+  fieldSources?: BranchFieldSources
 }
 
 const str = (v: any): string => (v === undefined || v === null ? '' : String(v))
@@ -19,7 +22,7 @@ export function projectBackendBranch(raw: any): MapBranch | null {
   const lat = Number(raw?.lat)
   const lng = Number(raw?.lng)
   if (!isFinite(lat) || !isFinite(lng) || lat === 0 || lng === 0) return null
-  return {
+  return applyBranchCorrections({
     origin: str(raw.origin),
     id: str(raw.id),
     name: str(raw.name),
@@ -31,8 +34,8 @@ export function projectBackendBranch(raw: any): MapBranch | null {
     lat,
     lng,
     mapUrl: str(raw.mapUrl),
-    source: 'bcu',
-  }
+    source: 'bcu' as const,
+  })
 }
 
 // Rough metres between two lat/lng points (equirectangular approximation — fine for ~tens of metres).

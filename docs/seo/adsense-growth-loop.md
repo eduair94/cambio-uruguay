@@ -116,7 +116,21 @@ Desplegado: `d8c42582ef3535da941a2b93972a00fb0fe67207`, CI `34818214977` aprobad
 
 El colector privado de entradas orgánicas ahora exige ventanas explícitas, ofrece plan sin conexión por defecto y reserva una salida fechada exclusiva para cada ejecución real. Conserva la consulta y el TOTAL del API; se comprobó con 26 pruebas locales sin extraer datos nuevos. El uso anterior por stdin remoto queda retirado. `data/revenue-2026-09-14/measurement-runner-handoff.md` documenta el contrato y la limitación del analizador anterior.
 
+## Séptima iteración: 14/9/2026
+
+Las fichas `/casa/:origin` ofrecen accesos a horarios, teléfonos y reputación que ya existían, según la disponibilidad del mismo directorio que valida los destinos. Se serializan sólo los slugs disponibles; si el enriquecimiento falla, las cotizaciones siguen funcionando. Los enlaces nuevos tienen etiquetas ES/EN/PT y avisan a lectores EN/PT que los destinos están en español. No se crean nuevas páginas ni se cambian los títulos del histórico.
+
+El contraste de Cambio Principal encontró un conflicto entre fuentes del propio BCU: la lista y el detalle de la sucursal 2456-1 informan 2622 4521, mientras la ficha institucional y el [contacto oficial de la casa](https://cambioprincipal.com.uy/contacto/) coinciden en 4622 4521. El detalle actualizado del BCU y la casa también coinciden en lunes a viernes de 08:00 a 18:00; nuestra copia conservaba otro horario, incluido un sábado que las fuentes actuales no informan.
+
+Se aplica una corrección fechada por campo, limitada a identidad, dirección, departamento y valores antiguos observados. El dato bruto del backend se conserva y un valor futuro diferente no se reemplaza. La procedencia y fecha acompañan los datos corregidos en fichas, tabla de sucursales y mapas. La tabla semanal distingue días sin informar de cierres explícitos, y el schema conserva sólo ventanas de apertura publicadas. El filtro de teléfonos ahora exige dígitos suficientes para coincidir con la guarda del destino.
+
+Hipótesis: facilitar la resolución de una búsqueda de marca existente con información coherente y enlaces utilizables. La observación puntual del buscador ya mostraba nuestro histórico; no demuestra una necesidad de cambiar títulos, crear otra URL ni solicitar indexación. Las impresiones de consultas registradas no son volumen de mercado. Evaluar entradas y recorridos con la ventana posterior acordada, sin atribuir ingresos al mero despliegue. Evidencia privada: `data/revenue-2026-09-14/principal-*` y `branch-correction-review.md`.
+
+Validación previa a publicación: 112 pruebas pertinentes y lint dirigido aprobados; revisión independiente sin hallazgos materiales. Las dos APIs y doce páginas de la comprobación HTTP respondieron 200 y aprobaron 178 controles de datos, enlaces, fuentes, payload y schema. El nuevo bloque no ofrece intenciones comerciales para BCU. La revisión del navegador confirma los enlaces móviles, su tamaño mínimo de 44 px, las fuentes y el teléfono `tel:+59846224521`. La fuente propia se volvió a leer con HTTP 200 el 14/9 a las 08:06:47 UTC. Una vista desactualizada durante HMR no se reprodujo desde una carga nueva; se conserva el manejo reactivo existente.
+
 ## Próximas decisiones
+
+- Verificar las fuentes de la excepción Cambio Principal cuando cambien los datos de origen y, como máximo, en la revisión mensual siguiente. La fecha del 14/9 es una comprobación puntual, no una vigilancia automática de la web propia. La tabla semanal no interpreta ausencia de horario como cierre.
 
 - Medir la ampliación IRPF con la ventana prevista y conservar sus límites sobre créditos antiguos. Reutilizar la investigación ya guardada antes de ampliar el alcance; la cola propone una hipótesis editorial y no demuestra volumen de adquisición.
 - Dejar los títulos y series BCU estables durante la ventana de evaluación. La revisión pública no acreditó un canal adicional de adquisición a escala: no construir otro exportador, catálogo o URL por fecha por esa sola hipótesis. Si se autoriza Bing Webmaster, obtener las consultas que faltan antes de ampliar el piloto.
