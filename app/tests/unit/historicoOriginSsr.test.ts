@@ -1,3 +1,4 @@
+import * as bcuHistory from '../../utils/bcuHistory'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { runInNewContext } from 'node:vm'
@@ -45,6 +46,7 @@ function setupHistory(origin: string, payload: unknown) {
       }
       if (name === 'vuetify') return { useDisplay: () => ({ smAndDown: vue.ref(false) }) }
       if (name === '@/utils/rateSource') return rates
+      if (name === '@/utils/bcuHistory') return bcuHistory
       throw new Error(`Unexpected import: ${name}`)
     },
     useApiService: () => ({ getExchangeData: async () => payload }),
@@ -102,7 +104,14 @@ describe('historical origin SSR and metadata', () => {
     const { setup, seo } = setupHistory('bcu', quotes)
     const page = await setup
     expect(page.usdToday.value).toBeNull()
-    expect(seo.mock.calls[0][0].description()).toContain('BCU hoy: UI $6,50')
+    expect(seo.mock.calls[0][0].description()).toBe(bcuHistory.bcuHistoryCopy('es').hubDescription)
+    expect(page.headers.value.map((header: { key: string }) => header.key)).toEqual([
+      'code',
+      'type',
+      'reference',
+      'date',
+      'name',
+    ])
   })
 
   it.each([[], { error: 'Backend unavailable' }])(

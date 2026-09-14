@@ -1,3 +1,4 @@
+import * as bcuHistory from '../../utils/bcuHistory'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { runInNewContext } from 'node:vm'
@@ -86,6 +87,7 @@ it('returns HTTP 404 through app.vue and the installed Nuxt SSR runtime after hi
       'vue-i18n': { useI18n: () => ({ t: (key: string) => key, locale: vue.ref('es') }) },
       vuetify: { useDisplay: () => ({ smAndDown: vue.ref(false) }) },
       '@/utils/rateSource': rates,
+      '@/utils/bcuHistory': bcuHistory,
     },
     {
       useLocalePath: () => (path: string) => path,

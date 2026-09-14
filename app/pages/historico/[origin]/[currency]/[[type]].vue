@@ -17,10 +17,12 @@
                     </p>
                     <h1 class="text-h6 text-sm-h5 text-md-h4 font-weight-bold text-white">
                       {{
-                        $t('historical.heading', {
-                          currency: currencyLabel,
-                          origin: exchangeHouseName,
-                        })
+                        isBcu
+                          ? bcuText.detailHeading(currencyLabel)
+                          : $t('historical.heading', {
+                              currency: currencyLabel,
+                              origin: exchangeHouseName,
+                            })
                       }}
                     </h1>
                     <div class="d-flex flex-wrap ga-2 align-center mt-1">
@@ -48,8 +50,8 @@
               <v-col cols="12" md="4" class="text-center text-md-right">
                 <div class="d-flex flex-column flex-md-row justify-start justify-md-end ga-2">
                   <v-btn
-                    v-if="evolutionData.localData.website"
-                    :href="evolutionData.localData.website"
+                    v-if="isBcu || evolutionData.localData.website"
+                    :href="isBcu ? BCU_HISTORY_SOURCE : evolutionData.localData.website"
                     target="_blank"
                     color="white"
                     variant="outlined"
@@ -57,10 +59,10 @@
                     class="text-decoration-none"
                   >
                     <v-icon start>mdi-web</v-icon>
-                    {{ $t('sitioWeb') }}
+                    {{ isBcu ? bcuText.source : $t('sitioWeb') }}
                   </v-btn>
                   <v-btn
-                    v-if="evolutionData.localData.maps"
+                    v-if="!isBcu && evolutionData.localData.maps"
                     :href="evolutionData.localData.maps"
                     target="_blank"
                     color="white"
@@ -72,7 +74,7 @@
                     {{ $t('ubicacion') }}
                   </v-btn>
                   <v-btn
-                    v-if="evolutionData.localData.bcu"
+                    v-if="!isBcu && evolutionData.localData.bcu"
                     :href="evolutionData.localData.bcu"
                     target="_blank"
                     color="white"
@@ -96,18 +98,27 @@
             <p class="text-body-1 mb-0">
               {{ answerSentence }}
               <time :datetime="answerFacts.asOf" class="text-medium-emphasis">
-                {{ $t('historical.asOf', { date: asOfDate }) }}
+                {{
+                  isBcu
+                    ? `${bcuText.recordDate}: ${asOfDate}`
+                    : $t('historical.asOf', { date: asOfDate })
+                }}
               </time>
             </p>
 
             <!-- Records for THIS casa and THIS currency: facts no single-rate
                  competitor can publish, and unique text per URL, which is what
                  the near-identical templates lacked. -->
+            <p v-if="isBcu" class="text-body-2 text-medium-emphasis mt-2 mb-0">{{ bcuScope }}</p>
             <dl v-if="periodRecords" class="cu-records mt-4 mb-0">
               <div class="cu-record">
                 <dt>{{ $t('records.max') }}</dt>
                 <dd>
-                  ${{ formatRate(periodRecords.max.value, localeTag) }}
+                  ${{
+                    isBcu
+                      ? formatBcuNumber(periodRecords.max.value, locale)
+                      : formatRate(periodRecords.max.value, localeTag)
+                  }}
                   <span class="text-medium-emphasis">
                     · {{ formatDay(periodRecords.max.date) }}
                   </span>
@@ -116,7 +127,11 @@
               <div class="cu-record">
                 <dt>{{ $t('records.min') }}</dt>
                 <dd>
-                  ${{ formatRate(periodRecords.min.value, localeTag) }}
+                  ${{
+                    isBcu
+                      ? formatBcuNumber(periodRecords.min.value, locale)
+                      : formatRate(periodRecords.min.value, localeTag)
+                  }}
                   <span class="text-medium-emphasis">
                     · {{ formatDay(periodRecords.min.date) }}
                   </span>
@@ -167,8 +182,16 @@
             </VAlert>
           </v-card-text>
 
+          <v-card-text v-if="isBcu" class="pa-4">
+            <p class="text-body-2 mb-2">{{ bcuExplanation }}</p>
+            <NuxtLink :to="localePath('/cotizacion-del-bcu')">{{
+              bcuText.methodologyLink
+            }}</NuxtLink>
+            <p v-if="!answerFacts" class="text-body-2 mt-3 mb-0">{{ bcuText.empty }}</p>
+          </v-card-text>
+
           <!-- Additional Info Bar -->
-          <v-card-text class="bg-grey-lighten-5 pa-4">
+          <v-card-text v-if="!isBcu" class="bg-grey-lighten-5 pa-4">
             <v-row align="center">
               <v-col cols="12" md="6">
                 <div class="d-flex align-center">
@@ -248,8 +271,31 @@
 
     <!-- Main Content -->
     <div v-else-if="evolutionData">
+      <!-- BCU cards use the same single type as the chart, never aggregate API statistics. -->
+      <v-row v-if="isBcu && answerFacts" class="mb-6">
+        <v-col cols="12" md="6">
+          <v-card>
+            <v-card-text>
+              <p class="text-body-2 mb-2">{{ bcuText.latest }} · {{ bcuSeriesLabel }}</p>
+              <p class="text-h5 font-weight-bold mb-2">
+                {{ formatBcuReference(answerFacts, locale) }}
+              </p>
+              <p class="text-body-2 mb-0">{{ bcuText.unit(currencyName) }} · {{ asOfDate }}</p>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-card>
+            <v-card-text>
+              <p class="text-body-2 mb-2">{{ bcuText.observations }}</p>
+              <p class="text-h5 font-weight-bold mb-2">{{ bcuRows.length }}</p>
+              <p class="text-body-2 mb-0">{{ bcuScope }}</p>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
       <!-- Statistics Cards -->
-      <v-row class="mb-6">
+      <v-row v-if="!isBcu" class="mb-6">
         <v-col cols="12" md="3" sm="6">
           <v-card class="text-center bg-green-darken-4">
             <v-card-title class="justify-center text-white">
@@ -325,7 +371,7 @@
       </v-row>
 
       <!-- AI Trend Analysis -->
-      <v-row class="mb-6">
+      <v-row v-if="!isBcu" class="mb-6">
         <v-col cols="12">
           <AITrendCard
             :insight="aiInsight"
@@ -342,7 +388,9 @@
           <v-card>
             <v-card-title class="d-flex align-center flex-wrap ga-3 py-3">
               <v-icon start>mdi-chart-line</v-icon>
-              {{ $t('evolucionCotizaciones') }} - {{ route.params.currency }}
+              {{
+                isBcu ? bcuSeriesLabel : `${$t('evolucionCotizaciones')} - ${route.params.currency}`
+              }}
               <v-spacer />
               <v-btn-toggle v-model="chartType" mandatory density="compact">
                 <v-btn
@@ -362,7 +410,11 @@
               <div
                 :class="['chart-container']"
                 role="img"
-                :aria-label="`${$t('evolucionCotizaciones')} - ${route.params.currency}`"
+                :aria-label="
+                  isBcu
+                    ? bcuSeriesLabel
+                    : `${$t('evolucionCotizaciones')} - ${route.params.currency}`
+                "
                 style="position: relative; height: 400px"
               >
                 <Line
@@ -400,6 +452,12 @@
                 density="compact"
               />
             </v-card-title>
+            <v-card-text v-if="isBcu" class="pt-0">
+              <p class="text-body-2 mb-0">{{ bcuText.tableNote }}</p>
+              <p v-if="!hasSingleBcuReference(tableData)" class="text-body-2 mt-2 mb-0">
+                {{ bcuText.dualNote }}
+              </p>
+            </v-card-text>
             <v-data-table
               :headers="headers"
               :items="tableData"
@@ -417,6 +475,9 @@
             >
               <template #item.date="{ item }">
                 <span>{{ formatDate((item as any).date) }}</span>
+              </template>
+              <template #item.reference="{ item }">
+                <span>{{ formatBcuReference(item as EvolutionItem, locale) }}</span>
               </template>
               <template #item.buy="{ item }">
                 <v-chip :color="getBuyColor((item as any).buy)" variant="flat" size="small">
@@ -444,7 +505,11 @@
     </div>
 
     <!-- Data-grounded FAQ for this currency + scoped FAQPage JSON-LD -->
-    <FaqBlock v-if="currencyFaqItems.length" :items="currencyFaqItems" :heading="$t('faq.title')" />
+    <FaqBlock
+      v-if="!isBcu && currencyFaqItems.length"
+      :items="currencyFaqItems"
+      :heading="$t('faq.title')"
+    />
 
     <!-- Up-link to the casa hub. This leaf is the site's highest-impression
          page; /casa/[origin] is the page meant to win the "cambio {casa}" brand
@@ -459,10 +524,10 @@
           color="primary"
           variant="tonal"
           size="large"
-          :to="localePath(`/casa/${route.params.origin}`)"
+          :to="localePath(isBcu ? '/historico/bcu' : `/casa/${route.params.origin}`)"
         >
           <v-icon start>mdi-storefront-outline</v-icon>
-          {{ $t('casaPage.fromHistorico', { casa: exchangeHouseName }) }}
+          {{ isBcu ? bcuText.hubLink : $t('casaPage.fromHistorico', { casa: exchangeHouseName }) }}
         </v-btn>
       </v-col>
       <v-col cols="12" class="text-center">
@@ -498,6 +563,14 @@ import { useDisplay } from 'vuetify'
 import { markPoints } from '~/utils/chartMoveMarkers'
 import { attributeMove } from '~/utils/attribution'
 import { historyDetailCanonicalPath } from '~/utils/historyCanonical'
+import {
+  BCU_HISTORY_SOURCE,
+  bcuHistoryCopy,
+  bcuReferenceExplanation,
+  formatBcuNumber,
+  formatBcuReference,
+  hasSingleBcuReference,
+} from '~/utils/bcuHistory'
 import { mirrorOf } from '~/utils/rateMirrors'
 import { computePageRecords, sanitizeSeries } from '~/utils/rateStats'
 import { currencyDisplayName, currencyFromSlug, type CurrencyLang } from '~/utils/currencyPages'
@@ -623,6 +696,8 @@ const { withLoading } = useLoading()
 const { loading: aiLoading, error: aiError, insight: aiInsight, getTrendAnalysis } = useAIInsights()
 
 const { locale } = useI18n()
+const isBcu = computed(() => String(route.params.origin).toLowerCase() === 'bcu')
+const bcuText = computed(() => bcuHistoryCopy(locale.value))
 
 /** BCP-47 tag for number/date formatting: the site's audience is Uruguay. */
 const localeTag = computed(() =>
@@ -656,7 +731,9 @@ const selectedPeriod = ref(6) // Default to 6 months
 // markers, no extra tooltip line, no thrown errors.
 const ANALYSIS_SUPPORTED = new Set(['USD', 'EUR', 'ARS'])
 const currencyUpper = computed(() => String(route.params.currency ?? '').toUpperCase())
-const analysisSupported = computed(() => ANALYSIS_SUPPORTED.has(currencyUpper.value))
+const analysisSupported = computed(
+  () => !isBcu.value && ANALYSIS_SUPPORTED.has(currencyUpper.value)
+)
 
 interface AnalysisMove {
   date: string
@@ -718,14 +795,23 @@ const periodOptions = computed(() => [
 ])
 
 // Table headers
-const headers = computed(() => [
-  { title: t('fechaLabel'), key: 'date', sortable: true },
-  { title: t('compra'), key: 'buy', sortable: true },
-  { title: t('venta'), key: 'sell', sortable: true },
-  { title: 'Spread', key: 'spread', sortable: true },
-  { title: t('tipoLabel'), key: 'type', sortable: false },
-  { title: t('nombre'), key: 'name', sortable: false },
-])
+const headers = computed(() =>
+  isBcu.value
+    ? [
+        { title: t('fechaLabel'), key: 'date', sortable: true },
+        { title: bcuText.value.value, key: 'reference', sortable: false },
+        { title: t('tipoLabel'), key: 'type', sortable: false },
+        { title: t('nombre'), key: 'name', sortable: false },
+      ]
+    : [
+        { title: t('fechaLabel'), key: 'date', sortable: true },
+        { title: t('compra'), key: 'buy', sortable: true },
+        { title: t('venta'), key: 'sell', sortable: true },
+        { title: 'Spread', key: 'spread', sortable: true },
+        { title: t('tipoLabel'), key: 'type', sortable: false },
+        { title: t('nombre'), key: 'name', sortable: false },
+      ]
+)
 
 // Utility function to format origin name
 const formatOriginName = (origin: string): string => {
@@ -857,12 +943,13 @@ const answerFacts = computed(() => {
     statistics?: EvolutionStatistics
     evolution?: EvolutionRow[]
   } | null
-  const rows = payload?.evolution
+  const rows = isBcu.value ? bcuRows.value : payload?.evolution
   const periodMonths = payload?.statistics?.dateRange?.periodMonths
   const fromRows = rows?.length
     ? factsFromRows(rows, route.params.type as string | undefined, periodMonths)
     : null
-  return fromRows ?? rateAnswerFacts(payload?.statistics)
+  // A missing BCU type is not evidence for the last date/value of another type.
+  return isBcu.value ? fromRows : (fromRows ?? rateAnswerFacts(payload?.statistics))
 })
 
 /** Render an ISO date as `DD/MM/AAAA` in Montevideo. */
@@ -874,6 +961,42 @@ const formatDay = (iso: string) =>
     year: 'numeric',
   })
 
+// Keep the chart, latest value and records on the existing preferred/explicit type.
+// Invalid observations stay in the detailed table, but cannot become chart evidence.
+const bcuRows = computed(() => {
+  const rows = (evolutionData.value as EvolutionData | null)?.evolution ?? []
+  return selectTypeRows(rows, route.params.type as string | undefined)
+    .filter(
+      row =>
+        Number.isFinite(row.buy) &&
+        row.buy > 0 &&
+        Number.isFinite(row.sell) &&
+        row.sell > 0 &&
+        Number.isFinite(Date.parse(row.date))
+    )
+    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date))
+})
+const bcuType = computed(() =>
+  String(bcuRows.value[0]?.type ?? route.params.type ?? '').toUpperCase()
+)
+const bcuSeriesLabel = computed(() => bcuText.value.series(currencyName.value, bcuType.value))
+const bcuExplanation = computed(() =>
+  bcuReferenceExplanation(currencyName.value, bcuType.value, locale.value)
+)
+const bcuScope = computed(() => {
+  const rows = bcuRows.value
+  return rows.length
+    ? bcuText.value.scope(
+        bcuSeriesLabel.value,
+        formatDay(rows[0].date),
+        formatDay(rows[rows.length - 1].date)
+      )
+    : ''
+})
+const chartRows = computed(() =>
+  isBcu.value ? bcuRows.value : ((evolutionData.value as EvolutionData | null)?.evolution ?? [])
+)
+
 /** The most recent date in the series, as `DD/MM/AAAA` in Montevideo. */
 const asOfDate = computed(() => (answerFacts.value ? formatDay(answerFacts.value.asOf) : ''))
 
@@ -884,7 +1007,9 @@ const asOfDate = computed(() => (answerFacts.value ? formatDay(answerFacts.value
 // thin, near-identical templates are what Google declined to index.
 const sellSeries = computed(() => {
   const rows = (evolutionData.value as { evolution?: EvolutionRow[] } | null)?.evolution ?? []
-  const typed = selectTypeRows(rows, route.params.type as string | undefined)
+  const typed = isBcu.value
+    ? bcuRows.value
+    : selectTypeRows(rows, route.params.type as string | undefined)
   return sanitizeSeries(
     typed
       .map(r => ({ date: r.date, value: r.sell }))
@@ -900,7 +1025,11 @@ const mirror = computed(() => mirrorOf(route.params.origin as string))
 
 // `computePageRecords` trae los dos guardas adentro (saneamiento + mínimo de tres puntos) y es el
 // mismo bundle que publica el hub `/casa/[casa]`: un solo lugar donde puede haber un bug.
-const periodRecords = computed(() => (mirror.value ? null : computePageRecords(sellSeries.value)))
+const periodRecords = computed(() =>
+  mirror.value || (isBcu.value && !hasSingleBcuReference(bcuRows.value))
+    ? null
+    : computePageRecords(sellSeries.value)
+)
 
 /** "subió 3 días seguidos" / "bajó 2 días seguidos" / "" when flat. */
 const streakSentence = computed(() => {
@@ -916,6 +1045,11 @@ const streakSentence = computed(() => {
 const answerSentence = computed(() => {
   const f = answerFacts.value
   if (!f) return ''
+  if (isBcu.value)
+    return bcuText.value.answer(
+      bcuSeriesLabel.value,
+      `${formatBcuReference(f, locale.value)} ${bcuText.value.unit(currencyName.value)}`
+    )
   // "Hoy {date}" con la fecha de la ULTIMA fila, fuera cual fuera. Medido en produccion el
   // 2026-09-04: /historico/nonica/usd publicaba «Hoy 07/08/2026, el Dólar en Cambio El Trébol
   // cotiza a $41,30» — un precio de 28 dias atras presentado como el de hoy, porque el scraper de
@@ -950,7 +1084,8 @@ const tableData = computed(() => {
 const chartData = computed(() => {
   if (!(evolutionData.value as any)?.evolution) return { labels: [], datasets: [] }
 
-  const evolution = (evolutionData.value as any).evolution
+  const evolution = chartRows.value
+  const singleReference = isBcu.value && hasSingleBcuReference(evolution)
   const labels = evolution.map((item: EvolutionItem) => format(parseISO(item.date), 'MM/yyyy'))
   const dates = evolution.map((item: EvolutionItem) => item.date)
   // Chart.js's PointElement routes an unset pointBackgroundColor to the
@@ -965,7 +1100,11 @@ const chartData = computed(() => {
     labels,
     datasets: [
       {
-        label: t('precioCompra'),
+        label: isBcu.value
+          ? singleReference
+            ? bcuText.value.reference
+            : 'TCC'
+          : t('precioCompra'),
         data: evolution.map((item: EvolutionItem) => item.buy),
         borderColor: 'rgb(75, 192, 192)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -978,7 +1117,7 @@ const chartData = computed(() => {
         pointHoverRadius: buyMarks.pointRadius.map(r => r + 2),
       },
       {
-        label: t('precioVenta'),
+        label: isBcu.value ? 'TCV' : t('precioVenta'),
         data: evolution.map((item: EvolutionItem) => item.sell),
         borderColor: 'rgb(255, 99, 132)',
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -988,7 +1127,7 @@ const chartData = computed(() => {
         pointBackgroundColor: sellMarks.pointBackgroundColor,
         pointHoverRadius: sellMarks.pointRadius.map(r => r + 2),
       },
-    ],
+    ].filter((_, index) => !singleReference || index === 0),
   }
 })
 
@@ -1011,7 +1150,9 @@ const chartOptions = computed(() => ({
   plugins: {
     title: {
       display: true,
-      text: `${t('evolucion')} ${route.params.currency} - ${(evolutionData.value as EvolutionData)?.localData.name}`,
+      text: isBcu.value
+        ? bcuSeriesLabel.value
+        : `${t('evolucion')} ${route.params.currency} - ${(evolutionData.value as EvolutionData)?.localData.name}`,
       color: '#1976d2',
       font: {
         size: 16,
@@ -1039,14 +1180,16 @@ const chartOptions = computed(() => ({
         title: (context: any) => {
           // Include year in the tooltip title
           const dataIndex = context[0].dataIndex
-          const evolution = (evolutionData.value as any).evolution
+          const evolution = chartRows.value
           const date = evolution[dataIndex].date
-          return format(parseISO(date), 'dd/MM/yyyy')
+          return isBcu.value ? formatDay(date) : format(parseISO(date), 'dd/MM/yyyy')
         },
         label: (context: any) => {
           // Use inline formatting to avoid referencing this
           const value = context.parsed.y
           if (typeof value !== 'number') return `${context.dataset.label}: -`
+          if (isBcu.value)
+            return `${context.dataset.label}: ${formatBcuNumber(value, locale.value)} ${bcuText.value.unit(currencyName.value)}`
           return `${context.dataset.label}: ${value.toLocaleString('es-UY', {
             style: 'currency',
             currency: 'UYU',
@@ -1057,7 +1200,7 @@ const chartOptions = computed(() => ({
         afterBody: (context: any) => {
           const dataIndex = context[0]?.dataIndex
           if (dataIndex === undefined) return []
-          const evolution = (evolutionData.value as any)?.evolution ?? []
+          const evolution = chartRows.value
           const date = evolution[dataIndex]?.date
           if (!date) return []
           const dayDate = String(date).slice(0, 10)
@@ -1103,7 +1246,7 @@ const chartOptions = computed(() => ({
       display: true,
       title: {
         display: true,
-        text: 'Precio (UYU)',
+        text: isBcu.value ? bcuText.value.unit(currencyName.value) : 'Precio (UYU)',
         color: '#1976d2',
         font: {
           size: 14,
@@ -1222,8 +1365,20 @@ const historicalCanonical = computed(
 // asked for. The rate lives in the description, never the <title>: a title is
 // cached in the SERP for weeks and would go stale, while Google refreshes a
 // description. Falls back to the generic sentence when the payload is short.
+const seoTitle = computed(() =>
+  isBcu.value
+    ? bcuText.value.detailTitle(currencyLabel.value)
+    : t('seo.historicalDetailTitle', {
+        origin: exchangeHouseName.value,
+        currency: currencyLabel.value,
+      })
+)
 const seoDescription = computed(() => {
   const f = answerFacts.value
+  if (isBcu.value)
+    return f
+      ? `${answerSentence.value} ${bcuText.value.recordDate}: ${asOfDate.value}.`
+      : bcuText.value.detailDescription(currencyLabel.value)
   // Sin datos, o con datos que ya no son de hoy, va la generica. La variante "Live" escribe
   // «{moneda} en {casa} hoy: venta $X» y esa palabra «hoy» tiene que ser cierta: es la linea que
   // Google muestra en el resultado. Misma bifurcacion que ya hace /casa/<origin>.
@@ -1242,54 +1397,32 @@ const seoDescription = computed(() => {
 })
 
 useSeoMeta({
-  title: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyLabel.value,
-    }),
+  title: () => seoTitle.value,
   description: () => seoDescription.value,
   keywords: () => t('seo.historicalDetailKeywords'),
-  ogTitle: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyLabel.value,
-    }),
+  ogTitle: () => seoTitle.value,
   ogDescription: () => seoDescription.value,
   ogType: 'website',
   // Matches <link rel=canonical>: a type variant shares the base page's og:url.
   ogUrl: () => historicalCanonical.value,
   twitterCard: 'summary_large_image',
-  twitterTitle: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyLabel.value,
-    }),
+  twitterTitle: () => seoTitle.value,
   twitterDescription: () =>
-    t('seo.historicalDetailDescription', {
-      origin: exchangeHouseName.value,
-      currency: currencyLabel.value,
-    }),
-  ogImageAlt: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyLabel.value,
-    }),
-  twitterImageAlt: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyLabel.value,
-    }),
+    isBcu.value
+      ? seoDescription.value
+      : t('seo.historicalDetailDescription', {
+          origin: exchangeHouseName.value,
+          currency: currencyLabel.value,
+        }),
+  ogImageAlt: () => seoTitle.value,
+  twitterImageAlt: () => seoTitle.value,
 })
 
 // Branded, copyright-free OG image (1200x630) generated server-side by
 // nuxt-og-image. This page previously declared summary_large_image but shipped
 // no image, so social/Search previews had no visual.
 defineOgImageComponent('Cambio', {
-  title: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyLabel.value,
-    }),
+  title: () => seoTitle.value,
   tag: () => currencyName.value,
   locale: locale.value as 'es' | 'en' | 'pt',
 })
@@ -1347,14 +1480,13 @@ useHead(() => ({
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'Dataset',
-        name: t('seo.historicalDetailTitle', {
-          origin: exchangeHouseName.value,
-          currency: currencyLabel.value,
-        }),
-        description: t('seo.historicalDetailDescription', {
-          origin: exchangeHouseName.value,
-          currency: currencyLabel.value,
-        }),
+        name: seoTitle.value,
+        description: isBcu.value
+          ? bcuText.value.detailDescription(currencyLabel.value)
+          : t('seo.historicalDetailDescription', {
+              origin: exchangeHouseName.value,
+              currency: currencyLabel.value,
+            }),
         url: historicalCanonical.value,
         isAccessibleForFree: true,
         creator: {
@@ -1363,10 +1495,24 @@ useHead(() => ({
           url: 'https://cambio-uruguay.com',
         },
         keywords: [currencyName.value, exchangeHouseName.value, 'cotización', 'Uruguay', 'BCU'],
-        variableMeasured: [
-          { '@type': 'PropertyValue', name: t('compra'), unitText: 'UYU' },
-          { '@type': 'PropertyValue', name: t('venta'), unitText: 'UYU' },
-        ],
+        variableMeasured: isBcu.value
+          ? hasSingleBcuReference(tableData.value)
+            ? [
+                {
+                  '@type': 'PropertyValue',
+                  name: bcuText.value.reference,
+                  unitText: bcuText.value.unit(currencyName.value),
+                },
+              ]
+            : ['TCC', 'TCV'].map(name => ({
+                '@type': 'PropertyValue',
+                name,
+                unitText: bcuText.value.unit(currencyName.value),
+              }))
+          : [
+              { '@type': 'PropertyValue', name: t('compra'), unitText: 'UYU' },
+              { '@type': 'PropertyValue', name: t('venta'), unitText: 'UYU' },
+            ],
         ...(tableData.value.length
           ? {
               temporalCoverage: `${String(tableData.value[tableData.value.length - 1].date).slice(0, 10)}/${String(tableData.value[0].date).slice(0, 10)}`,

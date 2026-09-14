@@ -1,3 +1,4 @@
+import * as bcuHistory from '../../utils/bcuHistory'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { runInNewContext } from 'node:vm'
@@ -61,8 +62,20 @@ const renderer = vue.createRenderer<any, any>({
   patchProp() {},
 })
 
-function setupHistory(type?: string, server = false, mount = false) {
-  const route = vue.reactive({ params: { origin: 'brou', currency: 'usd', type }, query: {} })
+function setupHistory(
+  type?: string,
+  server = false,
+  mount = false,
+  options: {
+    origin?: string
+    currency?: string
+    evolution?: answer.EvolutionRow[]
+  } = {}
+) {
+  const route = vue.reactive({
+    params: { origin: options.origin ?? 'brou', currency: options.currency ?? 'usd', type },
+    query: {},
+  })
   // The actual client path in Unhead eagerly evaluates SEO getters. No DOM
   // rendering plugin is installed, so this exercises reactivity without a browser.
   const head = server ? createServerHead() : createUnhead({ document: {} as Document })
@@ -87,6 +100,7 @@ function setupHistory(type?: string, server = false, mount = false) {
     '~/utils/rateStats': stats,
     '~/utils/currencyPages': currencies,
     '~/utils/rateAnswer': answer,
+    '~/utils/bcuHistory': bcuHistory,
   }
   const context = {
     exports: {} as any,
@@ -97,7 +111,21 @@ function setupHistory(type?: string, server = false, mount = false) {
     useI18n: () => ({ t: (key: string) => key, locale: vue.ref('es') }),
     useLocalePath: () => (path: string) => path,
     useApiService: () => ({
-      getEvolutionData: async () => ({ data: { evolution: [], localData: { name: 'BROU' } } }),
+      getEvolutionData: async () => ({
+        data: {
+          evolution: options.evolution ?? [],
+          localData: { name: options.origin === 'bcu' ? 'Banco Central del Uruguay' : 'BROU' },
+          statistics: {
+            buy: { current: 99, avg: 99, min: 99, max: 99, change: 0 },
+            sell: { current: 99, avg: 99, min: 99, max: 99, change: 0 },
+            dateRange: {
+              start: '2026-03-14T03:00:00.000Z',
+              end: '2026-09-14T03:00:00.000Z',
+              periodMonths: 6,
+            },
+          },
+        },
+      }),
     }),
     useLoading: () => ({ withLoading: (fn: () => unknown) => fn() }),
     useAIInsights: () => ({
@@ -202,5 +230,97 @@ describe('historical detail client metadata', () => {
     await vue.nextTick()
     expect(errors).toEqual([])
     expect(await head.resolveTags()).toEqual([])
+  })
+})
+
+const bcuRow = (day: string, type = 'BILLETE', buy = 40.2, sell = buy): answer.EvolutionRow => ({
+  date: `${day}T03:00:00.000Z`,
+  type,
+  buy,
+  sell,
+})
+
+describe('BCU reference presentation in the compiled page', () => {
+  it('charts the preferred type, keeps all table types, and dates the last observation instead of the request', async () => {
+    const rows = [bcuRow('2026-09-10'), bcuRow('2026-09-11'), bcuRow('2026-09-11', 'CABLE', 41, 42)]
+    const { setup, head } = setupHistory(undefined, false, false, {
+      origin: 'bcu',
+      evolution: rows,
+    })
+    const page = (await setup) as any
+    expect(page.answerFacts.value).toMatchObject({ buy: 40.2, sell: 40.2, asOf: rows[1].date })
+    expect(page.bcuRows.value).toEqual(rows.slice(0, 2))
+    expect(page.bcuType.value).toBe('BILLETE')
+    expect(page.chartData.value.datasets).toHaveLength(1)
+    expect(page.chartData.value.datasets[0].data).toEqual([40.2, 40.2])
+    expect(page.tableData.value).toHaveLength(3)
+    expect(page.headers.value.map((header: { key: string }) => header.key)).toEqual([
+      'date',
+      'reference',
+      'type',
+      'name',
+    ])
+    expect(page.answerSentence.value).not.toMatch(/hoy|no publicó|compra|venta/)
+    expect(page.bcuScope.value).toContain('10/09/2026')
+    expect(page.bcuScope.value).toContain('11/09/2026')
+    page.selectedPeriod.value = 24 // the old payload remains until refresh resolves
+    expect(page.bcuScope.value).toContain('10/09/2026')
+    expect(page.bcuScope.value).not.toContain('24')
+    const tags = await head.resolveTags()
+    expect(tags.find(tag => tag.tag === 'title')?.textContent).toBe(
+      'BCU Dólar: referencia e histórico'
+    )
+    expect(tags.find(tag => tag.props.name === 'description')?.props.content).toContain(
+      '11/09/2026'
+    )
+    expect(tags.find(tag => tag.props.rel === 'canonical')?.props.href).toBe(
+      'https://cambio-uruguay.com/historico/bcu/usd'
+    )
+    const dataset = tags
+      .filter(tag => tag.tag === 'script')
+      .map(tag => JSON.parse(String(tag.innerHTML)))
+      .find(item => item['@type'] === 'Dataset')
+    expect(dataset.variableMeasured.map((value: { name: string }) => value.name)).toEqual([
+      'TCC',
+      'TCV',
+    ])
+  })
+
+  it('does not hide an earlier unequal pair when the latest reference is equal', async () => {
+    const rows = [bcuRow('2026-09-10', 'BILLETE', 40.2001, 40.2002), bcuRow('2026-09-11')]
+    const { setup } = setupHistory('billete', false, false, { origin: 'bcu', evolution: rows })
+    const page = (await setup) as any
+    expect(
+      page.chartData.value.datasets.map((dataset: { label: string }) => dataset.label)
+    ).toEqual(['TCC', 'TCV'])
+    expect(page.chartData.value.datasets[0].data[0]).toBe(40.2001)
+    expect(page.chartData.value.datasets[1].data[0]).toBe(40.2002)
+    expect(page.periodRecords.value).toBeNull()
+  })
+
+  it('does not substitute aggregate statistics when an explicit BCU type has no observations', async () => {
+    const { setup, head } = setupHistory('cable', true, false, {
+      origin: 'bcu',
+      evolution: [bcuRow('2026-09-11')],
+    })
+    const page = (await setup) as any
+    expect(page.answerFacts.value).toBeNull()
+    expect(page.bcuRows.value).toEqual([])
+    expect(page.chartData.value.labels).toEqual([])
+    expect(page.bcuExplanation.value).not.toContain('BEVSA')
+    const tags = await head.resolveTags()
+    expect(tags.find(tag => tag.props.name === 'description')?.props.content).not.toMatch(
+      /99|14\/09|Última/
+    )
+  })
+
+  it('keeps the existing retail chart with both prices and all payload rows', async () => {
+    const rows = [bcuRow('2026-09-10', '', 39, 41), bcuRow('2026-09-11', 'EBROU', 40, 42)]
+    const { setup } = setupHistory(undefined, false, false, { evolution: rows })
+    const page = (await setup) as any
+    expect(
+      page.chartData.value.datasets.map((dataset: { label: string }) => dataset.label)
+    ).toEqual(['precioCompra', 'precioVenta'])
+    expect(page.chartData.value.datasets[0].data).toEqual([39, 40])
   })
 })

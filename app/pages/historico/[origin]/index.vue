@@ -26,12 +26,15 @@
                  /historico/itau y /historico/prex). La variante de tres segmentos
                  (/historico/brou/usd) sí lo tenía; ésta se había quedado atrás. `ma-0` mantiene
                  el layout exacto: el margen por defecto rompería el flex del v-card-title. -->
-            <h1 class="text-h5 text-md-h4 ma-0">
-              Cotizaciones de
-              {{ formatOriginName(route.params.origin as string) }}
+            <h1 class="text-h5 text-md-h4 ma-0" :class="{ 'text-wrap': isBcu }">
+              {{
+                isBcu
+                  ? bcuText.hubHeading
+                  : `Cotizaciones de ${formatOriginName(route.params.origin as string)}`
+              }}
             </h1>
             <v-spacer />
-            <ClientOnly>
+            <ClientOnly v-if="!isBcu">
               <Updated />
             </ClientOnly>
           </v-card-title>
@@ -39,7 +42,26 @@
           <!-- Hub cross-link: funnels this high-traffic history page into the
                comprehensive /casa page (rate + branches + reputation), which is
                the page positioned to rank for "cambio X" brand queries. -->
-          <v-card-text class="pt-0 pb-2">
+          <v-card-text v-if="isBcu" class="pt-0 pb-2">
+            <p class="mb-3">{{ bcuText.hubIntro }}</p>
+            <div class="d-flex flex-wrap ga-3">
+              <NuxtLink :to="localePath('/historico/bcu/usd')">{{ bcuText.archiveLink }}</NuxtLink>
+              <NuxtLink :to="localePath('/cotizacion-del-bcu')">{{
+                bcuText.methodologyLink
+              }}</NuxtLink>
+              <a :href="BCU_HISTORY_SOURCE" target="_blank" rel="noopener noreferrer">{{
+                bcuText.source
+              }}</a>
+            </div>
+            <p class="text-body-2 text-medium-emphasis mt-3 mb-0">{{ bcuText.tableNote }}</p>
+            <p
+              v-if="items.some(item => item.origin === 'bcu' && !hasSingleBcuReference([item]))"
+              class="text-body-2 mt-2 mb-0"
+            >
+              {{ bcuText.dualNote }}
+            </p>
+          </v-card-text>
+          <v-card-text v-else class="pt-0 pb-2">
             <NuxtLink
               :to="localePath(`/casa/${route.params.origin}`)"
               class="casa-hub-link d-inline-flex align-center ga-1"
@@ -138,6 +160,16 @@
               <span v-else class="text-grey">-</span>
             </template>
 
+            <template #item.reference="{ item }">
+              <span>{{ formatBcuReference(item, locale) }}</span>
+            </template>
+            <template #item.date="{ item }">
+              <time v-if="item.date" :datetime="item.date">{{
+                String(item.date).slice(0, 10)
+              }}</time>
+              <span v-else>—</span>
+            </template>
+
             <!-- Celda de Compra -->
             <template #item.buy="{ item }">
               <div class="text-right">
@@ -191,6 +223,12 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { originHeadlineRates, pickOriginRate } from '@/utils/rateSource'
+import {
+  BCU_HISTORY_SOURCE,
+  bcuHistoryCopy,
+  formatBcuReference,
+  hasSingleBcuReference,
+} from '@/utils/bcuHistory'
 
 interface CambioItem {
   origin: string
@@ -200,6 +238,7 @@ interface CambioItem {
   sell: number
   name: string
   spread: number
+  date?: string
 }
 
 interface CurrencyName {
@@ -223,6 +262,9 @@ const router = useRouter()
 const route = useRoute()
 const localePath = useLocalePath()
 const { smAndDown } = useDisplay()
+const { t, locale } = useI18n()
+const isBcu = computed(() => String(route.params.origin).toLowerCase() === 'bcu')
+const bcuText = computed(() => bcuHistoryCopy(locale.value))
 
 // Initialize API service
 const apiService = useApiService()
@@ -296,7 +338,7 @@ const _lastUpdate = computed(() => {
 const originName = computed(() => formatOriginName(route.params.origin as string))
 
 // Headers definition
-const headers = ref([
+const retailHeaders = [
   {
     title: 'Moneda',
     key: 'code',
@@ -336,7 +378,18 @@ const headers = ref([
     sortable: true,
     width: '200px',
   },
-])
+]
+const headers = computed(() =>
+  isBcu.value
+    ? [
+        { title: t('monedaLabel'), key: 'code', sortable: true },
+        { title: t('tipoLabel'), key: 'type', sortable: true },
+        { title: bcuText.value.value, key: 'reference', sortable: false },
+        { title: bcuText.value.recordDate, key: 'date', sortable: true },
+        { title: t('nombre'), key: 'name', sortable: true },
+      ]
+    : retailHeaders
+)
 
 // Computed properties
 const currencyOptions = computed(() => {
@@ -529,9 +582,6 @@ const updateQueryParams = () => {
     .catch(() => {})
 }
 
-// Composables
-const { t, locale } = useI18n()
-
 // Watchers
 watch(selectedCurrency, updateQueryParams)
 watch(selectedType, updateQueryParams)
@@ -580,6 +630,7 @@ const headlineRates = computed(() =>
   originHeadlineRates(items.value ?? [], route.params.origin as string, 2)
 )
 const seoDescription = computed(() => {
+  if (isBcu.value) return bcuText.value.hubDescription
   const base = t('seo.historicalOriginDescription', { origin: originName.value })
   const u = usdToday.value
   if (u) {
@@ -600,23 +651,41 @@ const seoDescription = computed(() => {
 })
 
 useSeoMeta({
-  title: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  title: () =>
+    isBcu.value
+      ? bcuText.value.hubTitle
+      : t('seo.historicalOriginTitle', { origin: originName.value }),
   description: () => seoDescription.value,
   keywords: () => t('seo.historicalOriginKeywords'),
-  ogTitle: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  ogTitle: () =>
+    isBcu.value
+      ? bcuText.value.hubTitle
+      : t('seo.historicalOriginTitle', { origin: originName.value }),
   ogDescription: () => seoDescription.value,
   ogType: 'website',
   ogUrl: () => `https://cambio-uruguay.com/historico/${route.params.origin}`,
   twitterCard: 'summary_large_image',
-  twitterTitle: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  twitterTitle: () =>
+    isBcu.value
+      ? bcuText.value.hubTitle
+      : t('seo.historicalOriginTitle', { origin: originName.value }),
   twitterDescription: () => seoDescription.value,
-  ogImageAlt: () => t('seo.historicalOriginTitle', { origin: originName.value }),
-  twitterImageAlt: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  ogImageAlt: () =>
+    isBcu.value
+      ? bcuText.value.hubTitle
+      : t('seo.historicalOriginTitle', { origin: originName.value }),
+  twitterImageAlt: () =>
+    isBcu.value
+      ? bcuText.value.hubTitle
+      : t('seo.historicalOriginTitle', { origin: originName.value }),
 })
 
 // Branded, copyright-free OG image generated server-side (page had no image).
 defineOgImageComponent('Cambio', {
-  title: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  title: () =>
+    isBcu.value
+      ? bcuText.value.hubTitle
+      : t('seo.historicalOriginTitle', { origin: originName.value }),
   tag: () => t('historico'),
   locale: locale.value as 'es' | 'en' | 'pt',
 })
