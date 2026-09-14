@@ -166,3 +166,31 @@ enlace `mailto:`. Una prueba con el SFC real, el HTML transformado y el decoder
 público reprodujo tres advertencias en la versión anterior y ninguna con el
 ajuste; la dirección quedó presente una sola vez y el enlace conservó su destino.
 La regresión no se resuelve ocultando advertencias ni normalizando todo el DOM.
+
+Este ajuste se publicó en `20056e04` mediante [CI 34860381926](https://github.com/eduair94/cambio-uruguay/actions/runs/34860381926),
+que terminó correctamente aproximadamente a las 15:19 UTC. Los dos E2E públicos
+de hidratación pasaron, incluido desplazamiento, correo único, enlace correcto,
+apertura de reseñas y ausencia de advertencias de hidratación.
+
+La repetición móvil sobre esa versión obtuvo respuesta inicial de 0,75 s,
+contenido principal a los 6,16 s, hidratación a los 17,30 s y 8,31 s de trabajo
+bloqueante observado. Las dos mediciones posteriores muestran variación: contenido
+a los 5,64–6,16 s e hidratación a los 13,32–17,30 s, frente a 7,80 y 23,16 s en
+la referencia anterior sin saturación. Se conservan ambas capturas; no se presenta
+el mejor resultado como un tiempo garantizado para cualquier celular.
+
+La prueba rápida de compartir detectó además una carrera anterior a este cambio:
+escribir inmediatamente después de Limpiar podía perder el nuevo texto cuando
+terminaba la navegación del reset. El watcher de URL cancelaba el debounce y
+reponía el borrador vacío. Esperar más en la prueba habría ocultado la pérdida;
+se corrige la coordinación entre la navegación propia y los borradores posteriores,
+conservando la restauración de estado al usar Atrás y Adelante.
+
+La página registra la revisión del borrador al despachar una navegación propia y
+mantiene ese registro hasta que Nuxt expone su URL, incluso si `router.push` ya
+resolvió. Un borrador posterior se confirma contra los filtros recién aplicados.
+Si una navegación falla, sólo un borrador posterior habilita otro intento; no se
+reintenta indefinidamente el mismo texto rechazado. Seis pruebas del script SFC
+real controlan ambos momentos y los cambios de historial. Lint correcto y 23
+pruebas específicas correctas, junto con las de query/sort y ciclo de reseñas.
+El E2E rápido se conserva sin introducir una espera que oculte la carrera.

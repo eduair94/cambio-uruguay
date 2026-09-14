@@ -229,6 +229,14 @@ const sort = computed({
   set: (value: MovingSort) => updateState({ sort: value }),
 })
 let queryTimer: ReturnType<typeof setTimeout> | undefined
+let draftRevision = 0
+const ownNavigations = new Map<string, { draftRevision: number }>()
+function scheduleQueryUpdate() {
+  if (queryTimer) clearTimeout(queryTimer)
+  const value = query.value || ''
+  if (ownNavigations.size || value.trim() === directoryState.value.query) return
+  queryTimer = setTimeout(() => updateState({ query: query.value || '' }, true), 300)
+}
 function updateState(patch: Partial<MovingDirectoryState>, replace = false) {
   if (queryTimer) clearTimeout(queryTimer)
   const nextQuery = buildMovingQuery(
@@ -236,24 +244,51 @@ function updateState(patch: Partial<MovingDirectoryState>, replace = false) {
     route.query
   )
   const target = { path: route.path, query: nextQuery, hash: route.hash }
-  if (router.resolve(target).fullPath === route.fullPath) return
-  return replace ? router.replace(target) : router.push(target)
+  const fullPath = router.resolve(target).fullPath
+  if (fullPath === route.fullPath) return
+  const navigation = { draftRevision }
+  ownNavigations.set(fullPath, navigation)
+  const failed = () => {
+    if (ownNavigations.get(fullPath) !== navigation) return
+    ownNavigations.delete(fullPath)
+    if (draftRevision > navigation.draftRevision) scheduleQueryUpdate()
+  }
+  return (replace ? router.replace(target) : router.push(target)).then(
+    failure => {
+      if (failure) failed()
+      return failure
+    },
+    error => {
+      failed()
+      throw error
+    }
+  )
 }
-watch(query, value => {
-  if (queryTimer) clearTimeout(queryTimer)
-  if ((value || '').trim() === directoryState.value.query) return
-  queryTimer = setTimeout(() => updateState({ query: value || '' }, true), 300)
-})
+watch(
+  query,
+  () => {
+    draftRevision++
+    scheduleQueryUpdate()
+  },
+  { flush: 'sync' }
+)
 watch(
   () => route.fullPath,
   () => {
-    if (queryTimer) clearTimeout(queryTimer)
+    // Nuxt can expose useRoute after router.push resolves. Keep our marker until
+    // that acknowledgement, so a late reset cannot erase a more recent draft.
+    const navigation = ownNavigations.get(route.fullPath)
+    if (navigation) ownNavigations.delete(route.fullPath)
+    else ownNavigations.clear()
     const value = directoryState.value.query
-    if ((query.value || '').trim() !== value) query.value = value
+    const newerDraft = navigation && draftRevision > navigation.draftRevision
+    if (!newerDraft && (query.value || '').trim() !== value) query.value = value
+    scheduleQueryUpdate()
   }
 )
 onBeforeUnmount(() => {
   if (queryTimer) clearTimeout(queryTimer)
+  ownNavigations.clear()
 })
 const limit = ref(18)
 const hasFilters = computed(() =>
