@@ -84,7 +84,9 @@ Evaluación: publicación y controles primero; comparar entradas orgánicas, int
 
 Validación local: 84 pruebas pertinentes aprobadas, lint dirigido limpio y revisión independiente de las condiciones para mostrar una referencia única. Doce rutas respondieron 200 y conservaron sus canonical: portada y dólar en ES/EN/PT, variantes BILLETE/CABLE/PROMED.FONDO, UI y las páginas comerciales de BROU y Prex. La comprobación móvil ejercitó el cambio de seis a tres meses y los enlaces entre portada y dólar. Los períodos, fechas y conteos corresponden al tipo graficado; la tabla conserva los registros originales. No se modifican el scraper ni la serie almacenada.
 
-Estado: pendiente de despliegue y comprobación pública. Evidencia local privada: `bcu-local-validation.json`, `bcu-reference-review.md` y `bcu-ui-validation.md` de la carpeta de esta iteración.
+El primer [run 34813559422](https://github.com/eduair94/cambio-uruguay/actions/runs/34813559422), del commit `f00a7db6e41439ad96ed02d295fbbf93f04310e7`, detuvo el despliegue: el comprobador de enlaces internos no reconocía `[[type]]` como segmento opcional de Nuxt y rechazaba el enlace válido al dólar BCU. Se corrigió el matcher por segmentos y se verificaron las formas con/sin opcional, los segmentos requeridos y el rechazo de rutas demasiado largas; cinco pruebas y lint dirigidos aprobaron. No se cambió el enlace para eludir el control.
+
+Estado: pendiente de despliegue y comprobación pública del commit que corrige el comprobador. Evidencia local privada: `bcu-local-validation.json`, `bcu-reference-review.md` y `bcu-ui-validation.md` de la carpeta de esta iteración.
 
 ## Próximas decisiones
 

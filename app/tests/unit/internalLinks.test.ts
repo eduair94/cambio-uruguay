@@ -41,19 +41,25 @@ function fileToRoute(file: string): string {
 
 const staticRoutes = new Set(pageFiles.filter(f => !f.includes('[')).map(fileToRoute))
 
-/** `/casa/[origin]/[intent]` -> a matcher; `[...slug]` swallows the rest. */
+/** Optional Nuxt segments include their slash: `/foo/[[bar]]` also matches `/foo`. */
+function routeMatcher(route: string): RegExp {
+  const pattern = route
+    .split('/')
+    .slice(1)
+    .map(segment => {
+      if (/^\[\[[^\]]+\]\]$/.test(segment)) return '(?:/[^/]+)?'
+      if (/^\[\.\.\.[^\]]+\]$/.test(segment)) return '/.+'
+      if (/^\[[^\]]+\]$/.test(segment)) return '/[^/]+'
+      return `/${segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
+    })
+    .join('')
+  return new RegExp(`^${pattern}$`)
+}
+
 const dynamicRoutes = pageFiles
   .filter(f => f.includes('['))
   .map(fileToRoute)
-  .map(
-    route =>
-      new RegExp(
-        `^${route
-          .replace(/\[\.\.\.[^\]]+\]/g, '.+')
-          .replace(/\[[^\]]+\]/g, '[^/]+')
-          .replace(/\//g, '\\/')}$`
-      )
-  )
+  .map(routeMatcher)
 
 function resolves(path: string): boolean {
   return staticRoutes.has(path) || dynamicRoutes.some(re => re.test(path))
@@ -114,6 +120,28 @@ const scanned = [
 ]
 
 describe('every hard-coded internal link resolves to a page', () => {
+  it('accepts both forms of optional historical and branch segments', () => {
+    for (const path of [
+      '/historico/bcu/usd',
+      '/historico/bcu/usd/billete',
+      '/sucursales/brou',
+      '/sucursales/brou/montevideo',
+    ]) {
+      expect(resolves(path), path).toBe(true)
+    }
+  })
+
+  it('still rejects missing required segments and extra path segments', () => {
+    for (const path of [
+      '/frontera',
+      '/historico/bcu/usd/billete/extra',
+      '/sucursales/brou/montevideo/extra',
+    ]) {
+      expect(resolves(path), path).toBe(false)
+    }
+    expect(resolves('/frontera/chuy')).toBe(true)
+  })
+
   it('finds link literals to check at all', () => {
     // Guards the guard: a regex that silently stops matching would make this
     // whole file pass on zero links.
