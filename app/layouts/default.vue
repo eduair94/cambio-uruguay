@@ -290,7 +290,10 @@
              may add a single <AdSlot placement="in-article" /> of their own. -->
         <!-- Home uses this space budget for ConLaTuyaBanner after its rates. -->
         <ClientOnly v-if="normalizeAdPath(route.path) !== '/'">
-          <AdSlot placement="content-end" />
+          <!-- The layout survives navigation. A new page needs its own lazy slot,
+               including after an ad-free page or an unfilled response. Query and
+               hash changes keep this instance: filtering is not a new page. -->
+          <AdSlot :key="route.path" placement="content-end" />
         </ClientOnly>
       </div>
     </VMain>

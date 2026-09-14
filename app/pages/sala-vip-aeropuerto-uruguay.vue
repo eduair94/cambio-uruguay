@@ -96,8 +96,6 @@
       </p>
     </VCard>
 
-    <AdSlot v-if="adsOn" class="mb-5" />
-
     <!-- ── Calculator ── -->
     <VCard id="calculadora" variant="flat" class="calc-card pa-4 pa-sm-5 mb-5">
       <div class="d-flex align-center ga-2 mb-1">
@@ -294,7 +292,7 @@
       </VExpansionPanels>
     </section>
 
-    <AdSlot v-if="adsOn" class="mb-6" />
+    <AdSlot v-if="adsOn" placement="in-article" class="mb-6" />
 
     <!-- ── Without a card ── -->
     <section id="sin-tarjeta" class="mb-6">

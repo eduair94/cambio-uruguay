@@ -168,6 +168,18 @@
         <strong>cancelada</strong>, y esa mención puede quedar hasta cinco años más contados desde
         el pago. Guardá siempre el comprobante y el convenio por escrito.
       </VAlert>
+      <p class="text-body-2 text-medium-emphasis mt-4 mb-1">{{ t('debtGuideIntro') }}</p>
+      <ContentTaskLinks
+        :label="t('debtGuides')"
+        :items="[
+          {
+            label: t('prescriptionGuide'),
+            to: localePath('/guias/cuando-prescribe-una-deuda-uruguay'),
+          },
+          { label: t('creditorGuide'), to: localePath('/guias/me-compraron-la-deuda-uruguay') },
+        ]"
+        placement="guide_context"
+      />
     </VCard>
 
     <!-- TOOL 1: payoff planner -->
@@ -486,8 +498,10 @@
 <script setup lang="ts">
 import { compareStrategies, effectiveRate, type Debt } from '~/utils/debt'
 import { formatUYU } from '~/utils/format'
+import { guideDiscoveryMessages } from '~/utils/guideDiscoveryMessages'
 
 const localePath = useLocalePath()
+const { t } = useI18n({ useScope: 'local', messages: guideDiscoveryMessages })
 
 // --- payoff planner ---
 let seq = 3

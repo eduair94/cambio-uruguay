@@ -95,8 +95,6 @@
       </p>
     </VCard>
 
-    <AdSlot v-if="adsOn" class="mb-5" />
-
     <!-- ── Calculator ── -->
     <VCard id="calculadora" variant="flat" class="calc-card pa-4 pa-sm-5 mb-5">
       <div class="d-flex align-center ga-2 mb-1">
@@ -466,7 +464,7 @@
       </VCard>
     </section>
 
-    <AdSlot v-if="adsOn" class="mb-6" />
+    <AdSlot v-if="adsOn" placement="in-article" class="mb-6" />
 
     <!-- ── Crypto route ── -->
     <section id="cripto" class="mb-6">

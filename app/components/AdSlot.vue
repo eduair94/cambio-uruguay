@@ -75,22 +75,25 @@ watch(near, async isNear => {
   // page would otherwise cause; AdSense throws on a second push per <ins>.
   if (!el || el.dataset.cuPushed === '1') return
   el.dataset.cuPushed = '1'
-  try {
-    const w = window as unknown as { adsbygoogle?: unknown[] }
-    w.adsbygoogle = w.adsbygoogle || []
-    w.adsbygoogle.push({})
-  } catch {
-    return
-  }
-  // AdSense stamps data-ad-status="unfilled" on the <ins> when the auction
-  // came back empty. That is the only signal that the reserved box is dead.
-  mo = new MutationObserver(() => {
+  // Observe BEFORE requesting: an already loaded AdSense runtime can answer
+  // during push(). Watching afterwards misses that response permanently.
+  const checkStatus = () => {
     if (el.getAttribute('data-ad-status') !== 'unfilled') return
     unfilled.value = true
     mo?.disconnect()
     mo = null
-  })
+  }
+  mo = new MutationObserver(checkStatus)
   mo.observe(el, { attributes: true, attributeFilter: ['data-ad-status'] })
+  try {
+    const w = window as unknown as { adsbygoogle?: unknown[] }
+    w.adsbygoogle = w.adsbygoogle || []
+    w.adsbygoogle.push({})
+    checkStatus()
+  } catch {
+    mo?.disconnect()
+    mo = null
+  }
 })
 
 onBeforeUnmount(() => {

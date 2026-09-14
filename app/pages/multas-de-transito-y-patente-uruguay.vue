@@ -345,6 +345,14 @@
         </h3>
         <p class="mb-0">{{ CONVENIO_VS_PRESCRIPCION_NOTE }}</p>
       </VCard>
+      <ContentTaskLinks
+        :label="t('vehicleGuides')"
+        :items="[
+          { label: t('taxPaymentGuide'), to: localePath('/guias/pagar-patente-sucive-uruguay') },
+        ]"
+        placement="guide_context"
+        class="mt-4"
+      />
     </section>
 
     <!-- Reempadronar -->

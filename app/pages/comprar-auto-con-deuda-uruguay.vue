@@ -54,6 +54,16 @@
         </li>
       </ol>
 
+      <ContentTaskLinks
+        :label="t('vehicleGuides')"
+        :items="[
+          { label: t('vehicleTitleGuide'), to: localePath('/guias/titulo-del-auto-uruguay') },
+          { label: t('taxPaymentGuide'), to: localePath('/guias/pagar-patente-sucive-uruguay') },
+        ]"
+        placement="guide_context"
+        class="mt-4"
+      />
+
       <div class="d-flex flex-wrap ga-2 mt-5">
         <VBtn
           :href="CONSULTA_DEUDA_URL"
@@ -458,6 +468,7 @@
 </template>
 
 <script setup lang="ts">
+import { guideDiscoveryMessages } from '~/utils/guideDiscoveryMessages'
 import {
   BEFORE_BUYING_STEPS,
   CAR_DEBT_FAQ,
@@ -486,6 +497,7 @@ import {
 } from '~/utils/carDebt'
 
 const localePath = useLocalePath()
+const { t } = useI18n({ useScope: 'local', messages: guideDiscoveryMessages })
 
 const CONSULTA_DEUDA_URL = 'https://www.sucive.gub.uy/consulta_deuda'
 const CERTIFICADO_URL = 'https://www.sucive.gub.uy/certificado_sucive'

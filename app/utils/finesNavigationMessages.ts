@@ -1,5 +1,8 @@
+import { guideDiscoveryMessages } from './guideDiscoveryMessages'
+
 export const finesNavigationMessages = {
   es: {
+    ...guideDiscoveryMessages.es,
     heading: 'Multas de tránsito y deuda de patente en Uruguay',
     title: 'Multas y deuda de patente en Uruguay',
     description:
@@ -22,6 +25,7 @@ export const finesNavigationMessages = {
     findAuthority: 'Encontrar a quién reclamar',
   },
   en: {
+    ...guideDiscoveryMessages.en,
     heading: 'Traffic fines and vehicle tax debt in Uruguay',
     title: 'Fines and vehicle tax debt in Uruguay',
     description:
@@ -44,6 +48,7 @@ export const finesNavigationMessages = {
     findAuthority: 'Find the right complaints authority',
   },
   pt: {
+    ...guideDiscoveryMessages.pt,
     heading: 'Multas de trânsito e dívida de patente no Uruguai',
     title: 'Multas e dívida de patente no Uruguai',
     description:
