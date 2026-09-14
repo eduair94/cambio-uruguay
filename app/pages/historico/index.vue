@@ -209,6 +209,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import CurrencyFlag from '~/components/CurrencyFlag.vue'
+import { BCU_ORIGIN } from '~/utils/rateSource'
 
 interface CambioItem {
   origin: string
@@ -255,18 +256,100 @@ const localePath = useLocalePath()
 // /historico for the same query instead of consolidating into it.
 const canonicalUrl = computed(() => `https://cambio-uruguay.com${localePath('/historico')}`)
 
+// Load data using useAsyncData for SSR.
+//
+// Va ANTES del bloque de SEO a propósito: la descripción de abajo se arma con la cobertura real del
+// archivo, así que necesita la lectura ya resuelta cuando el head se evalúa. No es lazy — el HTML
+// que ve el crawler tiene que traer las cifras, no el estado vacío.
+const { data: rawData, pending: loading } = await useAsyncData(
+  'historico-cambios',
+  async () => {
+    try {
+      const result = await apiService.getProcessedExchangeData('')
+
+      if ((result as any).error) {
+        throw createError({
+          statusCode: 500,
+          statusMessage: 'Error al cargar las cotizaciones',
+        })
+      }
+
+      return result
+    } catch (err) {
+      console.error(err)
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Error al cargar las cotizaciones',
+      })
+    }
+  },
+  {
+    default: () => {
+      return {
+        localData: [],
+        exchangeData: [],
+        error: null,
+      }
+    },
+  }
+)
+
+/**
+ * Qué cubre el archivo, contado de la propia lectura.
+ *
+ * Este hub es la puerta de la familia que más tracción tiene del sitio (174.947 impresiones a 1,44%
+ * de CTR) y era de las últimas que seguía describiéndose con una frase sin un solo dato:
+ * "Consulta el historial completo … Datos actualizados en tiempo real" sirve igual para cualquier
+ * sitio de cotizaciones, y acá está medido que una descripción con cifras corre a ~1,4% y una
+ * genérica a 0,03–0,2% desde la misma posición.
+ *
+ * Las cantidades salen de las filas que la página ya muestra, así que la descripción no puede
+ * prometer una cobertura distinta de la que la tabla de abajo entrega. No se cita ningún PRECIO:
+ * el "dólar hoy" es la intención de la home y de `/historico/[origin]/[currency]`, y repetirla acá
+ * pondría tres URLs propias a disputarse la misma consulta — que es exactamente lo que el resto de
+ * esta familia ya tuvo que deshacer.
+ */
+const archiveCoverage = computed(() => {
+  const rows: CambioItem[] = (rawData.value as any)?.exchangeData ?? []
+  const origins = new Set<string>()
+  const codes = new Set<string>()
+  for (const row of rows) {
+    // El BCU se cuenta aparte y NO entra en el número que publica la descripción: la tabla lo
+    // lista —su referencia oficial es parte del archivo— pero no es una casa de cambio ni un
+    // banco comercial, y la frase dice "casas de cambio y bancos". Contar los orígenes a secas es
+    // justo el error contra el que advierte el AGENTS.md de la raíz: son 46 orígenes y 45 casas.
+    if (row?.origin && row.origin !== BCU_ORIGIN) origins.add(row.origin)
+    if (row?.code) codes.add(row.code)
+  }
+  return { origins: origins.size, codes: codes.size }
+})
+
+// Vuelve al texto traducido cuando la lectura no llegó: un "0 casas de cambio" es peor que la frase
+// genérica que este cambio vino a reemplazar.
+//
+// Corta cerca de los 155 caracteres que muestra el SERP: lo que Google recorta no lo lee nadie, y
+// las dos cifras —que son el motivo del cambio— van al principio por eso mismo.
+const seoDescription = computed(() => {
+  const { origins, codes } = archiveCoverage.value
+  if (!origins || !codes) return t('seo.historicalDescription')
+  return (
+    `Histórico de cotizaciones de ${origins} casas de cambio y bancos de Uruguay en ${codes} ` +
+    `monedas: compra, venta y spread de cada pizarra, con su serie y su gráfico.`
+  )
+})
+
 // SEO/Head
 useSeoMeta({
   title: () => t('seo.historicalTitle'),
-  description: () => t('seo.historicalDescription'),
+  description: () => seoDescription.value,
   keywords: () => t('seo.historicalKeywords'),
   ogTitle: () => t('seo.historicalTitle'),
-  ogDescription: () => t('seo.historicalDescription'),
+  ogDescription: () => seoDescription.value,
   ogType: 'website',
   ogUrl: 'https://cambio-uruguay.com/historico',
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.historicalTitle'),
-  twitterDescription: () => t('seo.historicalDescription'),
+  twitterDescription: () => seoDescription.value,
   ogImageAlt: () => t('seo.historicalTitle'),
   twitterImageAlt: () => t('seo.historicalTitle'),
 })
@@ -312,39 +395,6 @@ const selectedOrigin = ref<string[]>([])
 const selectedCurrency = ref<string[]>([])
 const selectedType = ref<string[]>([])
 
-// Load data using useAsyncData for SSR
-const { data: rawData, pending: loading } = await useAsyncData(
-  'historico-cambios',
-  async () => {
-    try {
-      const result = await apiService.getProcessedExchangeData('')
-
-      if ((result as any).error) {
-        throw createError({
-          statusCode: 500,
-          statusMessage: 'Error al cargar las cotizaciones',
-        })
-      }
-
-      return result
-    } catch (err) {
-      console.error(err)
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Error al cargar las cotizaciones',
-      })
-    }
-  },
-  {
-    default: () => {
-      return {
-        localData: [],
-        exchangeData: [],
-        error: null,
-      }
-    },
-  }
-)
 const getLink = (item: CambioItem): string => {
   if (!item.origin || !item.code) return ''
   // En minúscula al CONSTRUIR, no después. El sitemap declara la minúscula y el servidor 301ea

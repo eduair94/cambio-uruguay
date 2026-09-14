@@ -2501,7 +2501,12 @@ useSeoMeta({
   ogLocaleAlternate: ['en_US', 'pt_BR'],
   twitterCard: 'summary_large_image',
   twitterTitle: () => homeTitle.value,
-  twitterDescription: () => t('seo.homeDescription'),
+  // La misma descripción viva que `description`/`ogDescription`, no la estática. Estaba escrita a
+  // mano con `t('seo.homeDescription')` mientras sus dos hermanas ya usaban `homeDescription`, así
+  // que la tarjeta de X/Twitter era la única superficie del sitio que seguía anunciando la home sin
+  // el precio del día — justo la cifra por la que se hizo el cambio. El fallback lo trae
+  // `homeDescription`, que vuelve al texto traducido si no llegó la lectura del mercado.
+  twitterDescription: () => homeDescription.value,
 })
 </script>
 

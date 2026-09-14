@@ -395,6 +395,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/banco-o-casa-de-cambio-uruguay',
+        labelKey: 'nav.bankOrCasa',
+        icon: 'mdi-bank-transfer',
+        priority: 0.8,
+        changefreq: 'daily',
+        keywords: [
+          'banco o casa de cambio',
+          'conviene cambiar en el banco',
+          'cambiar dolares en el banco',
+          'banco vs casa de cambio',
+          'donde cambiar dolares',
+          'brou o casa de cambio',
+          'el banco cambia mas caro',
+        ],
+      },
+      {
         to: '/casa-de-cambio-cerca-de-mi',
         labelKey: 'nav.nearby',
         icon: 'mdi-map-marker-account',
