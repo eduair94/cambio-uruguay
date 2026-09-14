@@ -5,6 +5,37 @@ import {
   safeMovingGoogleProfileUrl,
   type MovingReviewProfile,
 } from '../../utils/movingReviews'
+import { MOVING_REVIEW_REFERENCES, MOVING_REVIEW_SOURCES } from '../../utils/movingReviewSources'
+import { MOVING_PROVIDERS } from '../../utils/movingServices'
+
+describe('moving review catalog contract', () => {
+  it('normalizes public IDs into unique runtime keys with matching live references', () => {
+    const providers = new Set(MOVING_PROVIDERS.map(provider => provider.id))
+    expect(MOVING_REVIEW_SOURCES.length).toBeGreaterThan(0)
+    for (const rows of [MOVING_REVIEW_SOURCES, MOVING_REVIEW_REFERENCES]) {
+      expect(new Set(rows.map(row => row.key)).size).toBe(rows.length)
+      for (const row of rows) {
+        expect(row.key).toBeTruthy()
+        expect(providers.has(row.providerId)).toBe(true)
+      }
+    }
+    for (const source of MOVING_REVIEW_SOURCES) {
+      expect(isLiveMovingReviewProfile(source)).toBe(true)
+      expect(
+        MOVING_REVIEW_REFERENCES.some(
+          reference =>
+            reference.live &&
+            reference.platform === 'google' &&
+            reference.key === source.key &&
+            reference.providerId === source.providerId
+        )
+      ).toBe(true)
+    }
+    expect(MOVING_REVIEW_REFERENCES.filter(reference => reference.live).length).toBe(
+      MOVING_REVIEW_SOURCES.length
+    )
+  })
+})
 
 const profile: MovingReviewProfile = {
   key: 'furniture-home-montevideo',

@@ -12,9 +12,9 @@
       "rejected": 3
     },
     "profilesByPlatform": {
+      "1122": 19,
       "google": 26,
       "facebook": 15,
-      "1122": 19,
       "homesolution": 1
     },
     "providersWithVerifiedProfile": 38,
@@ -32,7 +32,7 @@
   ],
   "profiles": [
     {
-      "key": "furniture-home-google-canelones",
+      "id": "furniture-home-google-canelones",
       "providerId": "furniture-home",
       "platform": "google",
       "status": "verified",
@@ -65,7 +65,7 @@
       "placeId": "ChIJ_fSL3b1dKWwRexEdi-tcgKo"
     },
     {
-      "key": "furniture-home-google-montevideo",
+      "id": "furniture-home-google-montevideo",
       "providerId": "furniture-home",
       "platform": "google",
       "status": "verified",
@@ -98,7 +98,7 @@
       "placeId": "ChIJeYROI42Bn5URoe_mE46JM0c"
     },
     {
-      "key": "all-box-google-1",
+      "id": "all-box-google-1",
       "providerId": "all-box",
       "platform": "google",
       "status": "verified",
@@ -147,7 +147,7 @@
       "placeId": "ChIJxd2J7tuHn5URD1IHneRtzhE"
     },
     {
-      "key": "all-storage-google-1",
+      "id": "all-storage-google-1",
       "providerId": "all-storage",
       "platform": "google",
       "status": "verified",
@@ -195,7 +195,7 @@
       "placeId": "ChIJ-Y6ErUbSYq8Rw_cx4PK-psw"
     },
     {
-      "key": "all-storage-google-2",
+      "id": "all-storage-google-2",
       "providerId": "all-storage",
       "platform": "google",
       "status": "ambiguous",
@@ -225,7 +225,7 @@
       "resolvedUrl": "https://maps.google.com/maps?q=All%20Storage%20Montevideo&t=m&z=15&output=embed&iwloc=near"
     },
     {
-      "key": "armadores-montevideo-google-1",
+      "id": "armadores-montevideo-google-1",
       "providerId": "armadores-montevideo",
       "platform": "google",
       "status": "ambiguous",
@@ -256,7 +256,7 @@
       "featureId": "0x959f7f84716a0411:0x6d499049aebda667"
     },
     {
-      "key": "autogiro-facebook-1",
+      "id": "autogiro-facebook-1",
       "providerId": "autogiro",
       "platform": "facebook",
       "status": "verified",
@@ -285,7 +285,7 @@
       ]
     },
     {
-      "key": "delgado-fletes-minas-1122-1",
+      "id": "delgado-fletes-minas-1122-1",
       "providerId": "delgado-fletes-minas",
       "platform": "1122",
       "status": "verified",
@@ -319,7 +319,7 @@
       ]
     },
     {
-      "key": "diego-batista-transportes-1122-1",
+      "id": "diego-batista-transportes-1122-1",
       "providerId": "diego-batista-transportes",
       "platform": "1122",
       "status": "verified",
@@ -347,7 +347,7 @@
       ]
     },
     {
-      "key": "dt-transportes-facebook-1",
+      "id": "dt-transportes-facebook-1",
       "providerId": "dt-transportes",
       "platform": "facebook",
       "status": "verified",
@@ -379,7 +379,7 @@
       ]
     },
     {
-      "key": "expreso-2000-1122-1",
+      "id": "expreso-2000-1122-1",
       "providerId": "expreso-2000",
       "platform": "1122",
       "status": "verified",
@@ -407,7 +407,7 @@
       ]
     },
     {
-      "key": "expreso-este-facebook-1",
+      "id": "expreso-este-facebook-1",
       "providerId": "expreso-este",
       "platform": "facebook",
       "status": "verified",
@@ -438,7 +438,7 @@
       ]
     },
     {
-      "key": "fletes-atlantida-1122-1",
+      "id": "fletes-atlantida-1122-1",
       "providerId": "fletes-atlantida",
       "platform": "1122",
       "status": "verified",
@@ -472,7 +472,7 @@
       ]
     },
     {
-      "key": "fletes-costa-de-oro-1122-1",
+      "id": "fletes-costa-de-oro-1122-1",
       "providerId": "fletes-costa-de-oro",
       "platform": "1122",
       "status": "verified",
@@ -500,7 +500,7 @@
       ]
     },
     {
-      "key": "fletes-juan-topayan-1122-1",
+      "id": "fletes-juan-topayan-1122-1",
       "providerId": "fletes-juan-topayan",
       "platform": "1122",
       "status": "verified",
@@ -528,7 +528,7 @@
       ]
     },
     {
-      "key": "fletes-laura-1122-1",
+      "id": "fletes-laura-1122-1",
       "providerId": "fletes-laura",
       "platform": "1122",
       "status": "verified",
@@ -562,7 +562,7 @@
       ]
     },
     {
-      "key": "fletes-moraes-1122-1",
+      "id": "fletes-moraes-1122-1",
       "providerId": "fletes-moraes",
       "platform": "1122",
       "status": "verified",
@@ -596,7 +596,7 @@
       ]
     },
     {
-      "key": "fletes-mudanzas-paysandu-1122-1",
+      "id": "fletes-mudanzas-paysandu-1122-1",
       "providerId": "fletes-mudanzas-paysandu",
       "platform": "1122",
       "status": "verified",
@@ -624,7 +624,7 @@
       ]
     },
     {
-      "key": "fletes-oriental-facebook-1",
+      "id": "fletes-oriental-facebook-1",
       "providerId": "fletes-oriental",
       "platform": "facebook",
       "status": "verified",
@@ -653,7 +653,7 @@
       ]
     },
     {
-      "key": "fletes-quintero-1122-1",
+      "id": "fletes-quintero-1122-1",
       "providerId": "fletes-quintero",
       "platform": "1122",
       "status": "verified",
@@ -687,7 +687,7 @@
       ]
     },
     {
-      "key": "fletes-sosa-las-piedras-1122-1",
+      "id": "fletes-sosa-las-piedras-1122-1",
       "providerId": "fletes-sosa-las-piedras",
       "platform": "1122",
       "status": "verified",
@@ -715,7 +715,7 @@
       ]
     },
     {
-      "key": "fletes-vaz-mercedes-1122-1",
+      "id": "fletes-vaz-mercedes-1122-1",
       "providerId": "fletes-vaz-mercedes",
       "platform": "1122",
       "status": "verified",
@@ -743,7 +743,7 @@
       ]
     },
     {
-      "key": "flety-facebook-1",
+      "id": "flety-facebook-1",
       "providerId": "flety",
       "platform": "facebook",
       "status": "verified",
@@ -769,7 +769,7 @@
       ]
     },
     {
-      "key": "furniture-home-facebook-1",
+      "id": "furniture-home-facebook-1",
       "providerId": "furniture-home",
       "platform": "facebook",
       "status": "ambiguous",
@@ -799,7 +799,7 @@
       ]
     },
     {
-      "key": "grupo-meta-integral-google-1",
+      "id": "grupo-meta-integral-google-1",
       "providerId": "grupo-meta-integral",
       "platform": "google",
       "status": "rejected",
@@ -830,7 +830,7 @@
       "featureId": "0x88c2e1e99ef55a9b:0xb16a7d07765addf8"
     },
     {
-      "key": "los-pinones-facebook-1",
+      "id": "los-pinones-facebook-1",
       "providerId": "los-pinones",
       "platform": "facebook",
       "status": "verified",
@@ -859,7 +859,7 @@
       ]
     },
     {
-      "key": "los-pinones-google-1",
+      "id": "los-pinones-google-1",
       "providerId": "los-pinones",
       "platform": "google",
       "status": "ambiguous",
@@ -889,7 +889,7 @@
       "resolvedUrl": "https://maps.google.com/maps?q=Fletes%20y%20Mudanzas%20Los%20Pi%C3%B1ones%20Av.%2018%20de%20Julio%2C%2011800%20Montevideo%2C%20Departamento%20de%20Montevideo%2C%20Uruguay&t=m&z=13&output=embed&iwloc=near"
     },
     {
-      "key": "los-pinones-google-2",
+      "id": "los-pinones-google-2",
       "providerId": "los-pinones",
       "platform": "google",
       "status": "verified",
@@ -936,7 +936,7 @@
       "placeId": "ChIJRS1VssmBn5URozG7ehb603Y"
     },
     {
-      "key": "maeso-transportes-facebook-1",
+      "id": "maeso-transportes-facebook-1",
       "providerId": "maeso-transportes",
       "platform": "facebook",
       "status": "ambiguous",
@@ -965,7 +965,7 @@
       ]
     },
     {
-      "key": "maeso-transportes-google-1",
+      "id": "maeso-transportes-google-1",
       "providerId": "maeso-transportes",
       "platform": "google",
       "status": "ambiguous",
@@ -1005,7 +1005,7 @@
       ]
     },
     {
-      "key": "marcos-perez-durazno-1122-1",
+      "id": "marcos-perez-durazno-1122-1",
       "providerId": "marcos-perez-durazno",
       "platform": "1122",
       "status": "verified",
@@ -1033,7 +1033,7 @@
       ]
     },
     {
-      "key": "mudanzas-lugo-facebook-1",
+      "id": "mudanzas-lugo-facebook-1",
       "providerId": "mudanzas-lugo",
       "platform": "facebook",
       "status": "verified",
@@ -1062,7 +1062,7 @@
       ]
     },
     {
-      "key": "mudanzas-lugo-google-1",
+      "id": "mudanzas-lugo-google-1",
       "providerId": "mudanzas-lugo",
       "platform": "google",
       "status": "verified",
@@ -1110,7 +1110,7 @@
       "placeId": "ChIJGVjCeTaBn5URteF1cw86-qU"
     },
     {
-      "key": "naterial-envio-armado-facebook-1",
+      "id": "naterial-envio-armado-facebook-1",
       "providerId": "naterial-envio-armado",
       "platform": "facebook",
       "status": "verified",
@@ -1139,7 +1139,7 @@
       ]
     },
     {
-      "key": "naterial-envio-armado-google-1",
+      "id": "naterial-envio-armado-google-1",
       "providerId": "naterial-envio-armado",
       "platform": "google",
       "status": "verified",
@@ -1192,7 +1192,7 @@
       }
     },
     {
-      "key": "naterial-envio-armado-google-2",
+      "id": "naterial-envio-armado-google-2",
       "providerId": "naterial-envio-armado",
       "platform": "google",
       "status": "verified",
@@ -1241,7 +1241,7 @@
       }
     },
     {
-      "key": "naterial-envio-armado-google-3",
+      "id": "naterial-envio-armado-google-3",
       "providerId": "naterial-envio-armado",
       "platform": "google",
       "status": "verified",
@@ -1294,7 +1294,7 @@
       }
     },
     {
-      "key": "one-storage-google-1",
+      "id": "one-storage-google-1",
       "providerId": "one-storage",
       "platform": "google",
       "status": "rejected",
@@ -1325,7 +1325,7 @@
       "resolvedUrl": "https://www.google.com/maps/search/?api=1&query=-34.43354,-58.7907588"
     },
     {
-      "key": "one-storage-google-2",
+      "id": "one-storage-google-2",
       "providerId": "one-storage",
       "platform": "google",
       "status": "rejected",
@@ -1356,7 +1356,7 @@
       "resolvedUrl": "https://www.google.com/maps/search/?api=1&query=-34.5481145,-58.8535024"
     },
     {
-      "key": "one-storage-google-3",
+      "id": "one-storage-google-3",
       "providerId": "one-storage",
       "platform": "google",
       "status": "ambiguous",
@@ -1386,7 +1386,7 @@
       "resolvedUrl": "https://www.google.com/maps/search/?api=1&query=-34.8640754,-55.1346022"
     },
     {
-      "key": "one-storage-google-4",
+      "id": "one-storage-google-4",
       "providerId": "one-storage",
       "platform": "google",
       "status": "ambiguous",
@@ -1416,7 +1416,7 @@
       "resolvedUrl": "https://www.google.com/maps/search/?api=1&query=-34.7837732,-56.0610571"
     },
     {
-      "key": "one-storage-google-5",
+      "id": "one-storage-google-5",
       "providerId": "one-storage",
       "platform": "google",
       "status": "verified",
@@ -1463,7 +1463,7 @@
       }
     },
     {
-      "key": "poa-fletes-homesolution-1",
+      "id": "poa-fletes-homesolution-1",
       "providerId": "poa-fletes",
       "platform": "homesolution",
       "status": "verified",
@@ -1491,7 +1491,7 @@
       ]
     },
     {
-      "key": "rg-mudanzas-rocha-1122-1",
+      "id": "rg-mudanzas-rocha-1122-1",
       "providerId": "rg-mudanzas-rocha",
       "platform": "1122",
       "status": "verified",
@@ -1519,7 +1519,7 @@
       ]
     },
     {
-      "key": "selfbox-google-1",
+      "id": "selfbox-google-1",
       "providerId": "selfbox",
       "platform": "google",
       "status": "verified",
@@ -1567,7 +1567,7 @@
       }
     },
     {
-      "key": "selfbox-google-2",
+      "id": "selfbox-google-2",
       "providerId": "selfbox",
       "platform": "google",
       "status": "verified",
@@ -1625,7 +1625,7 @@
       }
     },
     {
-      "key": "selfbox-google-3",
+      "id": "selfbox-google-3",
       "providerId": "selfbox",
       "platform": "google",
       "status": "verified",
@@ -1683,7 +1683,7 @@
       }
     },
     {
-      "key": "simplebox-facebook-1",
+      "id": "simplebox-facebook-1",
       "providerId": "simplebox",
       "platform": "facebook",
       "status": "verified",
@@ -1713,7 +1713,7 @@
       ]
     },
     {
-      "key": "simplebox-google-1",
+      "id": "simplebox-google-1",
       "providerId": "simplebox",
       "platform": "google",
       "status": "verified",
@@ -1770,7 +1770,7 @@
       }
     },
     {
-      "key": "simplebox-google-2",
+      "id": "simplebox-google-2",
       "providerId": "simplebox",
       "platform": "google",
       "status": "verified",
@@ -1818,7 +1818,7 @@
       }
     },
     {
-      "key": "tabanacore-google-1",
+      "id": "tabanacore-google-1",
       "providerId": "tabanacore",
       "platform": "google",
       "status": "ambiguous",
@@ -1850,7 +1850,7 @@
       "featureId": "0x959f80054dd82669:0x203bf07956a09d64"
     },
     {
-      "key": "teske-transportes-google-1",
+      "id": "teske-transportes-google-1",
       "providerId": "teske-transportes",
       "platform": "google",
       "status": "verified",
@@ -1898,7 +1898,7 @@
       "placeId": "ChIJ_0hwSITJr5URu-ogFeOZJnc"
     },
     {
-      "key": "tienda-porto-instalaciones-facebook-1",
+      "id": "tienda-porto-instalaciones-facebook-1",
       "providerId": "tienda-porto-instalaciones",
       "platform": "facebook",
       "status": "verified",
@@ -1927,7 +1927,7 @@
       ]
     },
     {
-      "key": "tm-transportes-colonia-1122-1",
+      "id": "tm-transportes-colonia-1122-1",
       "providerId": "tm-transportes-colonia",
       "platform": "1122",
       "status": "verified",
@@ -1955,7 +1955,7 @@
       ]
     },
     {
-      "key": "tm-transportes-colonia-facebook-1",
+      "id": "tm-transportes-colonia-facebook-1",
       "providerId": "tm-transportes-colonia",
       "platform": "facebook",
       "status": "ambiguous",
@@ -1984,7 +1984,7 @@
       ]
     },
     {
-      "key": "transporte-tabajara-1122-1",
+      "id": "transporte-tabajara-1122-1",
       "providerId": "transporte-tabajara",
       "platform": "1122",
       "status": "verified",
@@ -2012,7 +2012,7 @@
       ]
     },
     {
-      "key": "transportes-el-aguila-rivera-1122-1",
+      "id": "transportes-el-aguila-rivera-1122-1",
       "providerId": "transportes-el-aguila-rivera",
       "platform": "1122",
       "status": "verified",
@@ -2052,7 +2052,7 @@
       ]
     },
     {
-      "key": "transportes-sanchez-1122-colonia",
+      "id": "transportes-sanchez-1122-colonia",
       "providerId": "transportes-sanchez",
       "platform": "1122",
       "status": "verified",
@@ -2080,7 +2080,7 @@
       ]
     },
     {
-      "key": "unsi-armado-tienda-facebook-1",
+      "id": "unsi-armado-tienda-facebook-1",
       "providerId": "unsi-armado-tienda",
       "platform": "facebook",
       "status": "verified",
@@ -2106,7 +2106,7 @@
       ]
     },
     {
-      "key": "vamos-uy-facebook-1",
+      "id": "vamos-uy-facebook-1",
       "providerId": "vamos-uy",
       "platform": "facebook",
       "status": "verified",
@@ -2135,7 +2135,7 @@
       ]
     },
     {
-      "key": "walymar-colonia-1122-1",
+      "id": "walymar-colonia-1122-1",
       "providerId": "walymar-colonia",
       "platform": "1122",
       "status": "verified",

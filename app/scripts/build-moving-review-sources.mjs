@@ -10,7 +10,7 @@ const research = JSON.parse(
 const providers = new Set(
   JSON.parse(readFileSync(resolve(app, 'utils/movingServicesData.json'), 'utf8')).map(p => p.id)
 )
-const keys = new Set()
+const ids = new Set()
 const profiles = research.profiles.filter(profile => profile.status === 'verified')
 function readLink(profile) {
   if (profile.platform !== 'google') return profile.profileUrl
@@ -30,20 +30,20 @@ function readLink(profile) {
   return profile.profileUrl
 }
 for (const profile of profiles) {
-  if (!providers.has(profile.providerId) || keys.has(profile.key))
-    throw new Error(`Invalid/duplicate profile: ${profile.key}`)
-  keys.add(profile.key)
-  if (!profile.identityEvidence?.length) throw new Error(`No identity evidence: ${profile.key}`)
+  if (!providers.has(profile.providerId) || ids.has(profile.id))
+    throw new Error(`Invalid/duplicate profile: ${profile.id}`)
+  ids.add(profile.id)
+  if (!profile.identityEvidence?.length) throw new Error(`No identity evidence: ${profile.id}`)
   const url = new URL(readLink(profile))
   if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password)
-    throw new Error(`Unsafe profile: ${profile.key}`)
+    throw new Error(`Unsafe profile: ${profile.id}`)
 }
 const output = {
   reviewedAt: research.checkedAt,
   google: profiles
     .filter(p => p.platform === 'google' && p.placeId)
     .map(p => ({
-      key: p.key,
+      id: p.id,
       providerId: p.providerId,
       platform: 'google',
       status: 'verified',
@@ -58,7 +58,7 @@ const output = {
       checkedAt: p.checkedAt,
     })),
   references: profiles.map(p => ({
-    key: p.key,
+    id: p.id,
     providerId: p.providerId,
     platform: p.platform,
     label: p.label,

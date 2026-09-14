@@ -2,7 +2,7 @@
   "reviewedAt": "2026-09-14",
   "google": [
     {
-      "key": "furniture-home-google-canelones",
+      "id": "furniture-home-google-canelones",
       "providerId": "furniture-home",
       "platform": "google",
       "status": "verified",
@@ -30,7 +30,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "furniture-home-google-montevideo",
+      "id": "furniture-home-google-montevideo",
       "providerId": "furniture-home",
       "platform": "google",
       "status": "verified",
@@ -58,7 +58,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "all-box-google-1",
+      "id": "all-box-google-1",
       "providerId": "all-box",
       "platform": "google",
       "status": "verified",
@@ -92,7 +92,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "all-storage-google-1",
+      "id": "all-storage-google-1",
       "providerId": "all-storage",
       "platform": "google",
       "status": "verified",
@@ -125,7 +125,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "los-pinones-google-2",
+      "id": "los-pinones-google-2",
       "providerId": "los-pinones",
       "platform": "google",
       "status": "verified",
@@ -157,7 +157,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "mudanzas-lugo-google-1",
+      "id": "mudanzas-lugo-google-1",
       "providerId": "mudanzas-lugo",
       "platform": "google",
       "status": "verified",
@@ -190,7 +190,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "naterial-envio-armado-google-1",
+      "id": "naterial-envio-armado-google-1",
       "providerId": "naterial-envio-armado",
       "platform": "google",
       "status": "verified",
@@ -226,7 +226,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "naterial-envio-armado-google-2",
+      "id": "naterial-envio-armado-google-2",
       "providerId": "naterial-envio-armado",
       "platform": "google",
       "status": "verified",
@@ -259,7 +259,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "naterial-envio-armado-google-3",
+      "id": "naterial-envio-armado-google-3",
       "providerId": "naterial-envio-armado",
       "platform": "google",
       "status": "verified",
@@ -295,7 +295,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "one-storage-google-5",
+      "id": "one-storage-google-5",
       "providerId": "one-storage",
       "platform": "google",
       "status": "verified",
@@ -327,7 +327,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "selfbox-google-1",
+      "id": "selfbox-google-1",
       "providerId": "selfbox",
       "platform": "google",
       "status": "verified",
@@ -360,7 +360,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "selfbox-google-2",
+      "id": "selfbox-google-2",
       "providerId": "selfbox",
       "platform": "google",
       "status": "verified",
@@ -399,7 +399,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "selfbox-google-3",
+      "id": "selfbox-google-3",
       "providerId": "selfbox",
       "platform": "google",
       "status": "verified",
@@ -438,7 +438,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "simplebox-google-1",
+      "id": "simplebox-google-1",
       "providerId": "simplebox",
       "platform": "google",
       "status": "verified",
@@ -479,7 +479,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "simplebox-google-2",
+      "id": "simplebox-google-2",
       "providerId": "simplebox",
       "platform": "google",
       "status": "verified",
@@ -512,7 +512,7 @@
       "checkedAt": "2026-09-14"
     },
     {
-      "key": "teske-transportes-google-1",
+      "id": "teske-transportes-google-1",
       "providerId": "teske-transportes",
       "platform": "google",
       "status": "verified",
@@ -547,7 +547,7 @@
   ],
   "references": [
     {
-      "key": "furniture-home-google-canelones",
+      "id": "furniture-home-google-canelones",
       "providerId": "furniture-home",
       "platform": "google",
       "label": "Furniture Home — Canelones",
@@ -557,7 +557,7 @@
       "live": true
     },
     {
-      "key": "furniture-home-google-montevideo",
+      "id": "furniture-home-google-montevideo",
       "providerId": "furniture-home",
       "platform": "google",
       "label": "Furniture Home — Montevideo",
@@ -567,7 +567,7 @@
       "live": true
     },
     {
-      "key": "all-box-google-1",
+      "id": "all-box-google-1",
       "providerId": "all-box",
       "platform": "google",
       "label": "All Box Uruguay",
@@ -577,7 +577,7 @@
       "live": true
     },
     {
-      "key": "all-storage-google-1",
+      "id": "all-storage-google-1",
       "providerId": "all-storage",
       "platform": "google",
       "label": "Camino Tomkinson 2622, Montevideo.",
@@ -587,7 +587,7 @@
       "live": true
     },
     {
-      "key": "autogiro-facebook-1",
+      "id": "autogiro-facebook-1",
       "providerId": "autogiro",
       "platform": "facebook",
       "label": "Facebook",
@@ -597,7 +597,7 @@
       "live": false
     },
     {
-      "key": "delgado-fletes-minas-1122-1",
+      "id": "delgado-fletes-minas-1122-1",
       "providerId": "delgado-fletes-minas",
       "platform": "1122",
       "label": "Delgado Fletes",
@@ -607,7 +607,7 @@
       "live": false
     },
     {
-      "key": "diego-batista-transportes-1122-1",
+      "id": "diego-batista-transportes-1122-1",
       "providerId": "diego-batista-transportes",
       "platform": "1122",
       "label": "Diego Batista Transportes Fletes y Mudanzas",
@@ -617,7 +617,7 @@
       "live": false
     },
     {
-      "key": "dt-transportes-facebook-1",
+      "id": "dt-transportes-facebook-1",
       "providerId": "dt-transportes",
       "platform": "facebook",
       "label": "Fb",
@@ -627,7 +627,7 @@
       "live": false
     },
     {
-      "key": "expreso-2000-1122-1",
+      "id": "expreso-2000-1122-1",
       "providerId": "expreso-2000",
       "platform": "1122",
       "label": "Expreso 2000 Transportes y Servicios",
@@ -637,7 +637,7 @@
       "live": false
     },
     {
-      "key": "expreso-este-facebook-1",
+      "id": "expreso-este-facebook-1",
       "providerId": "expreso-este",
       "platform": "facebook",
       "label": "facebook",
@@ -647,7 +647,7 @@
       "live": false
     },
     {
-      "key": "fletes-atlantida-1122-1",
+      "id": "fletes-atlantida-1122-1",
       "providerId": "fletes-atlantida",
       "platform": "1122",
       "label": "Fletes Atlántida",
@@ -657,7 +657,7 @@
       "live": false
     },
     {
-      "key": "fletes-costa-de-oro-1122-1",
+      "id": "fletes-costa-de-oro-1122-1",
       "providerId": "fletes-costa-de-oro",
       "platform": "1122",
       "label": "Fletes Costa de Oro",
@@ -667,7 +667,7 @@
       "live": false
     },
     {
-      "key": "fletes-juan-topayan-1122-1",
+      "id": "fletes-juan-topayan-1122-1",
       "providerId": "fletes-juan-topayan",
       "platform": "1122",
       "label": "Fletes y Mudanzas Juan Topayan",
@@ -677,7 +677,7 @@
       "live": false
     },
     {
-      "key": "fletes-laura-1122-1",
+      "id": "fletes-laura-1122-1",
       "providerId": "fletes-laura",
       "platform": "1122",
       "label": "Fletes Laura",
@@ -687,7 +687,7 @@
       "live": false
     },
     {
-      "key": "fletes-moraes-1122-1",
+      "id": "fletes-moraes-1122-1",
       "providerId": "fletes-moraes",
       "platform": "1122",
       "label": "Fletes Moraes",
@@ -697,7 +697,7 @@
       "live": false
     },
     {
-      "key": "fletes-mudanzas-paysandu-1122-1",
+      "id": "fletes-mudanzas-paysandu-1122-1",
       "providerId": "fletes-mudanzas-paysandu",
       "platform": "1122",
       "label": "Fletes y Mudanzas Paysandú",
@@ -707,7 +707,7 @@
       "live": false
     },
     {
-      "key": "fletes-oriental-facebook-1",
+      "id": "fletes-oriental-facebook-1",
       "providerId": "fletes-oriental",
       "platform": "facebook",
       "label": "Facebook",
@@ -717,7 +717,7 @@
       "live": false
     },
     {
-      "key": "fletes-quintero-1122-1",
+      "id": "fletes-quintero-1122-1",
       "providerId": "fletes-quintero",
       "platform": "1122",
       "label": "Fletes Quintero",
@@ -727,7 +727,7 @@
       "live": false
     },
     {
-      "key": "fletes-sosa-las-piedras-1122-1",
+      "id": "fletes-sosa-las-piedras-1122-1",
       "providerId": "fletes-sosa-las-piedras",
       "platform": "1122",
       "label": "Fletes Sosa",
@@ -737,7 +737,7 @@
       "live": false
     },
     {
-      "key": "fletes-vaz-mercedes-1122-1",
+      "id": "fletes-vaz-mercedes-1122-1",
       "providerId": "fletes-vaz-mercedes",
       "platform": "1122",
       "label": "Fletes Vaz",
@@ -747,7 +747,7 @@
       "live": false
     },
     {
-      "key": "flety-facebook-1",
+      "id": "flety-facebook-1",
       "providerId": "flety",
       "platform": "facebook",
       "label": "Flety Uruguay",
@@ -757,7 +757,7 @@
       "live": false
     },
     {
-      "key": "los-pinones-facebook-1",
+      "id": "los-pinones-facebook-1",
       "providerId": "los-pinones",
       "platform": "facebook",
       "label": "Facebook",
@@ -767,7 +767,7 @@
       "live": false
     },
     {
-      "key": "los-pinones-google-2",
+      "id": "los-pinones-google-2",
       "providerId": "los-pinones",
       "platform": "google",
       "label": "Fletes y Mudanzas Los Piñones",
@@ -777,7 +777,7 @@
       "live": true
     },
     {
-      "key": "marcos-perez-durazno-1122-1",
+      "id": "marcos-perez-durazno-1122-1",
       "providerId": "marcos-perez-durazno",
       "platform": "1122",
       "label": "Marcos Pérez Fletes",
@@ -787,7 +787,7 @@
       "live": false
     },
     {
-      "key": "mudanzas-lugo-facebook-1",
+      "id": "mudanzas-lugo-facebook-1",
       "providerId": "mudanzas-lugo",
       "platform": "facebook",
       "label": "Fletes y Mudanzas Lugo",
@@ -797,7 +797,7 @@
       "live": false
     },
     {
-      "key": "mudanzas-lugo-google-1",
+      "id": "mudanzas-lugo-google-1",
       "providerId": "mudanzas-lugo",
       "platform": "google",
       "label": "Fletes y Mudanzas Lugo",
@@ -807,7 +807,7 @@
       "live": true
     },
     {
-      "key": "naterial-envio-armado-facebook-1",
+      "id": "naterial-envio-armado-facebook-1",
       "providerId": "naterial-envio-armado",
       "platform": "facebook",
       "label": "Naterial — envío y armado de compra",
@@ -817,7 +817,7 @@
       "live": false
     },
     {
-      "key": "naterial-envio-armado-google-1",
+      "id": "naterial-envio-armado-google-1",
       "providerId": "naterial-envio-armado",
       "platform": "google",
       "label": "Naterial — Punta Carretas",
@@ -827,7 +827,7 @@
       "live": true
     },
     {
-      "key": "naterial-envio-armado-google-2",
+      "id": "naterial-envio-armado-google-2",
       "providerId": "naterial-envio-armado",
       "platform": "google",
       "label": "Naterial — Car One",
@@ -837,7 +837,7 @@
       "live": true
     },
     {
-      "key": "naterial-envio-armado-google-3",
+      "id": "naterial-envio-armado-google-3",
       "providerId": "naterial-envio-armado",
       "platform": "google",
       "label": "Naterial — La Barra",
@@ -847,7 +847,7 @@
       "live": true
     },
     {
-      "key": "one-storage-google-5",
+      "id": "one-storage-google-5",
       "providerId": "one-storage",
       "platform": "google",
       "label": "Google Maps: ONE Storage Montevideo",
@@ -857,7 +857,7 @@
       "live": true
     },
     {
-      "key": "poa-fletes-homesolution-1",
+      "id": "poa-fletes-homesolution-1",
       "providerId": "poa-fletes",
       "platform": "homesolution",
       "label": "POA Fletes",
@@ -867,7 +867,7 @@
       "live": false
     },
     {
-      "key": "rg-mudanzas-rocha-1122-1",
+      "id": "rg-mudanzas-rocha-1122-1",
       "providerId": "rg-mudanzas-rocha",
       "platform": "1122",
       "label": "RG Mudanzas y Fletes",
@@ -877,7 +877,7 @@
       "live": false
     },
     {
-      "key": "selfbox-google-1",
+      "id": "selfbox-google-1",
       "providerId": "selfbox",
       "platform": "google",
       "label": "SelfBox Juan Paullier - Tres Cruces",
@@ -887,7 +887,7 @@
       "live": true
     },
     {
-      "key": "selfbox-google-2",
+      "id": "selfbox-google-2",
       "providerId": "selfbox",
       "platform": "google",
       "label": "SelfBox Francisco Bauzá - Parque Batllé",
@@ -897,7 +897,7 @@
       "live": true
     },
     {
-      "key": "selfbox-google-3",
+      "id": "selfbox-google-3",
       "providerId": "selfbox",
       "platform": "google",
       "label": "SelfBox Mac Eachen - Pocitos",
@@ -907,7 +907,7 @@
       "live": true
     },
     {
-      "key": "simplebox-facebook-1",
+      "id": "simplebox-facebook-1",
       "providerId": "simplebox",
       "platform": "facebook",
       "label": "Facebook",
@@ -917,7 +917,7 @@
       "live": false
     },
     {
-      "key": "simplebox-google-1",
+      "id": "simplebox-google-1",
       "providerId": "simplebox",
       "platform": "google",
       "label": "Casa Central",
@@ -927,7 +927,7 @@
       "live": true
     },
     {
-      "key": "simplebox-google-2",
+      "id": "simplebox-google-2",
       "providerId": "simplebox",
       "platform": "google",
       "label": "Sucursal 25",
@@ -937,7 +937,7 @@
       "live": true
     },
     {
-      "key": "teske-transportes-google-1",
+      "id": "teske-transportes-google-1",
       "providerId": "teske-transportes",
       "platform": "google",
       "label": "Teske Transportes",
@@ -947,7 +947,7 @@
       "live": true
     },
     {
-      "key": "tienda-porto-instalaciones-facebook-1",
+      "id": "tienda-porto-instalaciones-facebook-1",
       "providerId": "tienda-porto-instalaciones",
       "platform": "facebook",
       "label": " Facebook",
@@ -957,7 +957,7 @@
       "live": false
     },
     {
-      "key": "tm-transportes-colonia-1122-1",
+      "id": "tm-transportes-colonia-1122-1",
       "providerId": "tm-transportes-colonia",
       "platform": "1122",
       "label": "TM Transportes",
@@ -967,7 +967,7 @@
       "live": false
     },
     {
-      "key": "transporte-tabajara-1122-1",
+      "id": "transporte-tabajara-1122-1",
       "providerId": "transporte-tabajara",
       "platform": "1122",
       "label": "Transporte Tabajara",
@@ -977,7 +977,7 @@
       "live": false
     },
     {
-      "key": "transportes-el-aguila-rivera-1122-1",
+      "id": "transportes-el-aguila-rivera-1122-1",
       "providerId": "transportes-el-aguila-rivera",
       "platform": "1122",
       "label": "Transportes El Águila",
@@ -987,7 +987,7 @@
       "live": false
     },
     {
-      "key": "transportes-sanchez-1122-colonia",
+      "id": "transportes-sanchez-1122-colonia",
       "providerId": "transportes-sanchez",
       "platform": "1122",
       "label": "Transportes Sánchez — ficha Colonia",
@@ -997,7 +997,7 @@
       "live": false
     },
     {
-      "key": "unsi-armado-tienda-facebook-1",
+      "id": "unsi-armado-tienda-facebook-1",
       "providerId": "unsi-armado-tienda",
       "platform": "facebook",
       "label": "UNSI Home & Deco on Facebook",
@@ -1007,7 +1007,7 @@
       "live": false
     },
     {
-      "key": "vamos-uy-facebook-1",
+      "id": "vamos-uy-facebook-1",
       "providerId": "vamos-uy",
       "platform": "facebook",
       "label": "VAMOS UY",
@@ -1017,7 +1017,7 @@
       "live": false
     },
     {
-      "key": "walymar-colonia-1122-1",
+      "id": "walymar-colonia-1122-1",
       "providerId": "walymar-colonia",
       "platform": "1122",
       "label": "Walymar Fletes Mudanzas",
