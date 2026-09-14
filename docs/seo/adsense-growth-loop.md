@@ -130,6 +130,8 @@ Validación previa a publicación: 112 pruebas pertinentes y lint dirigido aprob
 
 El primer run `34821819857` de `52b466ed` no desplegó: la suite completa encontró una expectativa anterior en `openingHoursReales.test.ts` que interpretaba un lunes omitido como cierre confirmado. Se actualiza a «Sin informar», manteniendo los horarios de los días expresos y las pruebas de cierre explícito. Las otras 7.444 pruebas app y el backend aprobaron en esa ejecución.
 
+Desplegado: `52b466ed` y su ajuste de prueba `61116caa`, mediante [CI 34822183720](https://github.com/eduair94/cambio-uruguay/actions/runs/34822183720), aprobado a las 08:30:17 UTC. La suite app completó 7.445 pruebas (41 omitidas), la compilación tomó 403 s y los controles SSR y de salud aprobaron. El script desplegó `dc3a708`, revisión de main que también incluía el directorio de fletes de otra intervención. La validación pública terminó a las 08:32:23 UTC: 181 controles sobre dos APIs y doce HTML en 200, fuentes fechadas, teléfono y schema correctos, enlaces disponibles y BCU excluido. El navegador confirmó el recorrido hub → teléfonos → horarios y el fin de semana sin información. Evidencia privada: `principal-production-validation-dc3a7085.json` y `principal-ui-validation.md`. Esta publicación no constituye evidencia de un aumento de ingresos.
+
 ## Próximas decisiones
 
 - Verificar las fuentes de la excepción Cambio Principal cuando cambien los datos de origen y, como máximo, en la revisión mensual siguiente. La fecha del 14/9 es una comprobación puntual, no una vigilancia automática de la web propia. La tabla semanal no interpreta ausencia de horario como cierre.
