@@ -84,6 +84,12 @@ test.describe('moving directory progressive hydration', () => {
       'href',
       /^https?:\/\//
     )
+    const email = page.getByRole('link', {
+      name: 'Correo Fletes y Mudanzas Lugo: contacto@mudanzaslugo.com.uy',
+      exact: true,
+    })
+    await expect(email).toHaveAttribute('href', 'mailto:contacto@mudanzaslugo.com.uy')
+    await expect(email).toHaveText('Correo · contacto@mudanzaslugo.com.uy')
     expect(errors).toEqual([])
   })
 

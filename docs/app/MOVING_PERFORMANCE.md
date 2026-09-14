@@ -23,12 +23,19 @@ No se hicieron solicitudes de reseñas durante la llegada: sólo se consultan
 cuando se abre el perfil. El JSON del directorio comprimido ronda 27 KB; no era
 la causa principal de los segundos de espera.
 
+Antes de publicar, a las 14:47 UTC aproximadamente, se repitió la medición de la
+versión anterior con el mismo perfil móvil. El pico de tráfico había cesado:
+respuesta inicial 1,35 s, primer contenido 7,80 s, hidratación 23,16 s y 14,23 s
+de trabajo bloqueante observado. Esta es la referencia para comparar el cambio
+del navegador; no se atribuye al código la recuperación del pico anterior.
+
 ## Incidente compartido del servidor
 
 Los dos workers de la app agotaban el heap de 512 MiB y terminaban con SIGABRT;
 no alcanzaban el umbral de reinicio PM2 de 900 MiB. En aproximadamente dos minutos
-sumaron seis y cinco reinicios. Uno alcanzó 504 MiB de heap usado y 16 solicitudes
-activas. El proceso calentaba `/acerca` en unos 1,2 s antes de aceptar tráfico,
+sumaron seis y cinco reinicios. Uno alcanzó 504 MiB de heap usado y el indicador
+PM2 «Active requests» marcaba 16; ese contador no demuestra por sí solo la cantidad
+de solicitudes HTTP simultáneas. El proceso calentaba `/acerca` en unos 1,2 s antes de aceptar tráfico,
 pero esa página llegó a tardar 55,6 s una vez bajo carga.
 
 Una muestra agregada de mil solicitudes completadas, entre 14:08:58 y 14:14:24 UTC,
@@ -102,3 +109,60 @@ predeterminado de 4 GiB durante Nitro. Esto es independiente del presupuesto de
   Dos pruebas compilan el SFC real y ejercitan esas secuencias en JSDOM; forman parte
   de las 60 pruebas correctas de reseñas, catálogo y filtros. Este último ajuste no
   altera estilos y se incluye en el build final de CI y su verificación pública.
+
+## Medición en producción después del despliegue
+
+Publicado en `54b1ad2e` mediante [CI 34857651508](https://github.com/eduair94/cambio-uruguay/actions/runs/34857651508),
+completado correctamente el 2026-09-14 aproximadamente a las 14:56 UTC. La medición
+de las 15:01 UTC usa la misma URL, caché vacía, conexión y CPU limitadas. La columna
+anterior corresponde a la repetición de las 14:47 UTC, cuando el servidor ya se
+había recuperado del pico de tráfico, antes de desplegar estos cambios.
+
+| Métrica | Versión anterior sin saturación | Versión publicada |
+| --- | ---: | ---: |
+| Respuesta inicial del servidor | 1,35 s | 0,95 s |
+| Primer contenido / elemento principal (h1) | 7,80 s | 5,64 s |
+| Fin de hidratación de la página | 23,16 s | 13,32 s |
+| Trabajo bloqueante observado hasta terminar la captura | 14,23 s | 5,11 s |
+| Elementos DOM | 3.922 | 2.404 |
+| CSS decodificado observado | 1.843.196 bytes | 894.634 bytes |
+| Transferencia CSS observada por Resource Timing | 284.352 bytes | 144.117 bytes |
+| Fichas presentes en el HTML inicial | 18 | 18 |
+
+El contenido principal aparece un 28 % antes, la hidratación termina un 42 % antes
+y el trabajo bloqueante observado baja un 64 %. Este último valor es la suma de
+la porción superior a 50 ms de las tareas largas hasta terminar cada captura;
+no se presenta como TBT de Lighthouse. La hidratación global no significa que las
+18 fichas se hayan activado: las que siguen fuera de pantalla se activan al acercarse.
+
+La transferencia total de esta captura aumentó de 1,76 a 1,96 MB porque los scripts
+externos llegaron antes dentro de la ventana observada (0,20 frente a 0,46 MB).
+La transferencia del propio sitio bajó de 1,56 a 1,50 MB. No se confunde la reducción
+del CSS y del trabajo inicial con una reducción equivalente de todos los recursos.
+
+A las 15:01 UTC ambos workers seguían con los mismos PID y contadores de reinicio
+desde el despliegue, después de más de cinco minutos. Heap usado: 170 y 191 MiB.
+Es una observación acotada bajo tráfico natural, no una prueba de carga ni una
+garantía sobre futuros picos de tráfico.
+
+La lectura de registros a las 15:03 UTC agregó 1.552 accesos completados desde las
+14:56: 1.529 respuestas 200, ninguna 502 y dos 503. Las fichas de alquiler tuvieron
+399 respuestas 200 y dos 503 cuyo tamaño de cuerpo coincide con el rechazo plano
+del límite de admisión. Fletes respondió 200 en sus 19 accesos. Los procesos y
+contadores de reinicio seguían iguales, sin salidas ni menciones OOM posteriores
+al despliegue en el log del supervisor; heap de 231–247 MiB en esa muestra.
+
+## Corrección detectada sólo detrás de Cloudflare
+
+La primera ejecución pública de los ocho E2E pasó siete casos y detectó una
+advertencia de hidratación al desplazarse hasta una ficha con correo. Cloudflare
+reescribe ese texto como `__cf_email__`; su decoder restituye la dirección pero
+deja separados los nodos de texto del separador y el correo. El VDOM esperaba
+un único nodo y tenía que reconstruirlos al hidratar la ficha.
+
+Se envolvieron el separador y el valor del contacto en un único `span`, que Vue
+trata como contenido de texto del elemento. Conserva el mismo item flex y el
+enlace `mailto:`. Una prueba con el SFC real, el HTML transformado y el decoder
+público reprodujo tres advertencias en la versión anterior y ninguna con el
+ajuste; la dirección quedó presente una sola vez y el enlace conservó su destino.
+La regresión no se resuelve ocultando advertencias ni normalizando todo el DOM.

@@ -82,7 +82,8 @@
           :target="contact.kind === 'whatsapp' ? '_blank' : undefined"
           rel="noopener noreferrer"
         >
-          <span :lang="locale">{{ c[contact.kind] }}</span> · {{ contact.value }}
+          <span :lang="locale">{{ c[contact.kind] }}</span>
+          <span> · {{ contact.value }}</span>
           <span v-if="contact.label">({{ contact.label }})</span>
         </a>
         <span v-else
