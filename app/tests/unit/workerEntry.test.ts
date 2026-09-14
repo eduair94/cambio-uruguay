@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
 import { transformSync } from 'esbuild'
 import { describe, expect, it, vi } from 'vitest'
+import { createPropertySsrListener } from '../../server/utils/propertySsrAdmission'
 import {
   needsWorkerReadiness,
   warmWorkerBeforeReady,
@@ -56,6 +57,7 @@ function runEntry(
     wsAdapter: () => ({ handleUpgrade: () => {} }),
     destr: Number,
     toNodeListener: () => () => {},
+    createPropertySsrListener,
     useNitroApp: () => ({ h3App: {}, localFetch: render }),
     useRuntimeConfig: () => ({ app: { baseURL: '/' } }),
     setupGracefulShutdown: graceful,
