@@ -501,6 +501,49 @@ export async function fetchPublicCommentBodies(fullnames: readonly string[]): Pr
   return out;
 }
 
+export interface LiveInfo {
+  score: number;
+  gone: boolean;
+  numComments?: number;
+}
+
+/**
+ * Votos actuales y si el texto sigue público, por fullname (`t1_…`/`t3_…`). Para el termómetro de
+ * r/CharruaDevs: lo borrado hoy (por el autor o la moderación) deja de mostrarse en el buscador.
+ *
+ * `null` cuando la API no contestó, igual que `fetchPostsByIdsOrNull`: con la convención de []
+ * una ráfaga de 429 se leería como "se borró todo lo del último mes".
+ */
+export async function fetchInfoLive(fullnames: readonly string[]): Promise<Map<string, LiveInfo> | null> {
+  if (!redditConfigured() || !fullnames.length) return null;
+  const out = new Map<string, LiveInfo>();
+  for (let i = 0; i < fullnames.length; i += 100) {
+    const batch = fullnames.slice(i, i + 100);
+    const res = await api<
+      Listing<{
+        name?: string;
+        score?: number;
+        body?: string;
+        selftext?: string;
+        num_comments?: number;
+        removed_by_category?: string | null;
+      }>
+    >("/api/info", { id: batch.join(","), raw_json: 1 });
+    if (!res) return null;
+    const seen = new Set<string>();
+    for (const child of res.data?.children ?? []) {
+      const d = child.data;
+      if (!d?.name) continue;
+      seen.add(d.name);
+      const text = child.kind === "t1" ? d.body : d.selftext;
+      const gone = text === "[removed]" || text === "[deleted]" || (child.kind === "t3" && !!d.removed_by_category);
+      out.set(d.name, { score: d.score ?? 0, gone, numComments: d.num_comments });
+    }
+    for (const name of batch) if (!seen.has(name)) out.set(name, { score: 0, gone: true });
+  }
+  return out;
+}
+
 /** Hard stop per thread, so one 10k-comment megathread can't blow up a run. */
 const MAX_COMMENTS_PER_POST = 2000;
 /** `/api/morechildren` accepts at most 100 ids per call. */
