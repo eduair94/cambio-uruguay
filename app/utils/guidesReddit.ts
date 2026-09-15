@@ -390,41 +390,193 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'garantias-de-alquiler-uruguay',
-    title: 'Garantías de alquiler en Uruguay: cuál te conviene',
+    title: 'Garantía de alquiler: ANDA, Contaduría, Porto, Sura o Mapfre',
     description:
-      'Comparación de las garantías de alquiler en Uruguay: Contaduría, ANDA, propietario, seguro de fianza y depósito, con costos y trade-offs.',
+      'Comparativa de las garantías de alquiler en Uruguay: cuánto cuesta cada una, cuánto podés alquilar y cuál acepta más rápido, con lo que publica cada proveedor.',
     tag: 'GARANTÍAS',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-09-15',
     sections: [
       {
         heading: 'Qué es una garantía y por qué te la piden',
-        body: 'Cuando alquilás, el propietario quiere seguridad de que va a cobrar aunque vos dejes de pagar. La garantía es justamente eso: un tercero o un mecanismo que responde por vos si no cumplís. En Uruguay conviven varias opciones, y cuál te conviene depende de si tenés ingresos formales y con qué antigüedad, de si sos funcionario público o pasivo, de si tenés una propiedad para ofrecer y de cuánto podés adelantar. No todas cuestan lo mismo ni te dan la misma flexibilidad. Entender las diferencias te ahorra plata y te evita quedar atado a la única opción que te ofrezca la inmobiliaria.',
+        body: 'Cuando alquilás, el propietario quiere seguridad de que va a cobrar aunque vos dejes de pagar. La garantía es exactamente eso: un tercero que responde por vos si no cumplís, y sin ella casi ninguna inmobiliaria te va a tomar la solicitud. No es lo mismo que el depósito, que es plata tuya inmovilizada y vuelve al final del contrato si no dejás deudas ni daños. La garantía la emite una institución que cobra por el riesgo y que, si tiene que pagar, después te lo reclama a vos. Queda una vía más, que no cuesta plata pero depende de a quién conozcas: el garante propietario, una persona con un inmueble en Uruguay que responde por vos y que el propietario puede rechazar. Cuál podés usar no lo elegís del todo: cada una pide un tipo de ingreso, una antigüedad mínima y pone un tope al alquiler que te garantiza, atado a lo que ganás.',
+        links: [{ label: 'El depósito de alquiler', to: '/guias/deposito-de-alquiler-uruguay' }],
       },
       {
-        heading: 'Garantía de la Contaduría General de la Nación',
-        body: 'La garantía de alquileres de la Contaduría General de la Nación, a través de su Servicio de Garantía de Alquileres (SGA), suele ser de las opciones más económicas y confiables para el propietario, porque el alquiler se retiene directamente del sueldo o de la pasividad. Un punto importante: no es solo para funcionarios públicos. También pueden usarla los jubilados y pensionistas y los empleados de empresas privadas cuya empresa esté inscripta en el registro del SGA, en todos los casos con cierta antigüedad y con topes según tu ingreso disponible. Si calificás, suele quedar entre las alternativas más baratas. Conviene consultar directamente en la Contaduría General de la Nación los requisitos, los costos y el tope vigentes.',
+        heading: 'La comparativa, en una tabla',
+        body: 'La tabla junta las siete alternativas que funcionan hoy en el mercado uruguayo. Leéla por familias. Las de retención, que son la Contaduría, ANDA y FIDECIU, no te cobran una prima adelantada: descuentan el alquiler de tu sueldo o tu pasividad y se quedan con un porcentaje mensual. La Contaduría, ANDA y el fondo del Ministerio publican ese porcentaje y es el 3 %, que en los dos programas estatales se cobra a cada parte; FIDECIU no publica el suyo. Los seguros de fianza, que son Porto Seguro, Sura y Mapfre, funcionan al revés: pagás una prima, la aseguradora le cubre al propietario el alquiler impago, los daños y los consumos, y después te lo reclama a vos. Ninguna de las tres publica el precio en su sitio, las tres te mandan al cotizador. Y abajo está el Fondo de Garantía de Alquiler del Ministerio, que no compite con las demás: es para ingresos formales bajos y te excluye si ya calificás en la Contaduría.',
+        table: {
+          headers: ['Garantía', 'Cuánto cuesta', 'Cuánto podés alquilar', 'Quién puede', 'Demora'],
+          rows: [
+            [
+              'Contaduría (SGA)',
+              '3 % del alquiler a cada parte, más retención de IRPF salvo exoneración',
+              'hasta el 40 % del sueldo o pasividad nominal',
+              'públicos con 6 meses, privados de empresas inscriptas en el SGA con 6 meses, jubilados',
+              'no publica el plazo',
+            ],
+            [
+              'ANDA',
+              '3 % mensual del alquiler más la cuota social',
+              'hasta el 40 % del ingreso nominal',
+              'privados con 4 meses, públicos con 1 mes, jubilados, independientes con certificado',
+              '24 a 48 horas hábiles',
+            ],
+            [
+              'Porto Seguro',
+              'no publica el costo: cotizador online (alrededor de un mes de alquiler por año, según relevamientos)',
+              'no publica el tope',
+              'inquilinos sin fiador; el análisis vale 60 días',
+              'análisis en el día',
+            ],
+            [
+              'Sura',
+              'no publica el costo: cotizá por la app o garantia@segurossura.com.uy',
+              'no publica el tope',
+              'dependientes, independientes con 1 año, jubilados menores de 80, rentistas',
+              'no publica el plazo',
+            ],
+            [
+              'Mapfre',
+              'no publica el costo: simulador online (alrededor del 80 % de un mes por año, según relevamientos)',
+              'hasta el 30 % de los ingresos declarados (se suman hasta 5 personas)',
+              'dependientes con 3 meses, independientes y rentistas con 1 año, jubilados',
+              'resultado en plazo breve; 30 días para contratar',
+            ],
+            [
+              'Fondo de Garantía de Alquiler (MVOTMA/ANV)',
+              'trámite gratis; después 3 % mensual a cada parte más un depósito único',
+              'hasta 18 UR (21 UR en vivienda promovida); jóvenes 22,5 UR',
+              'núcleos con ingresos formales de 15 a 100 UR; jóvenes de 18 a 29',
+              '120 días para conseguir vivienda una vez aprobado',
+            ],
+            [
+              'FIDECIU',
+              'no publica el costo',
+              'hasta el 40 % del ingreso (30 % jubilados)',
+              'dependientes con 6 meses, pasivos, independientes con documentación',
+              'precalificación en el día; garantía en 48 horas',
+            ],
+          ],
+        },
       },
       {
-        heading: 'Garantía de ANDA',
-        body: 'ANDA ofrece garantía de alquileres a sus asociados, tanto trabajadores privados como públicos, según ingresos y antigüedad. Es una de las vías más usadas por quien no tiene una propiedad para ofrecer ni entra en la Contaduría. Implica asociarse a ANDA y pagar un costo por el servicio de garantía, además de cumplir requisitos de ingreso demostrable. La ventaja es que le da tranquilidad al propietario y te abre puertas en inmobiliarias que exigen garantía formal. La contra es el costo mensual o anual y los trámites. Conviene comparar ese costo con el de un seguro de fianza antes de decidir.',
+        heading: 'Contaduría General de la Nación: la del Estado',
+        body: 'El Servicio de Garantía de Alquileres de la Contaduría General de la Nación es el trámite más viejo del país y no es sólo para funcionarios públicos: también entran los empleados de empresas privadas inscriptas en el registro del SGA, con 6 meses de antigüedad, y los jubilados y pensionistas. La solicitud no tiene costo, pero una vez que arranca el descuento se cobra el 3 % del alquiler a cada parte, y sobre el alquiler se retiene el 10,5 % por IRPF salvo que tramites la exoneración. El tope es duro: la garantía se limita al 40 % del sueldo, jubilación o pensión nominal. Necesitás el Informe de Líquido Disponible, que vence a los 30 días corridos de emitido, así que no lo pidas antes de tiempo. Al propietario se le paga sólo por transferencia bancaria, dentro de los primeros días hábiles del mes: las propias páginas oficiales no coinciden en cuál es el día exacto.',
       },
       {
-        heading: 'Garantía de propietario y depósito',
-        body: 'La garantía de propietario es cuando alguien que tiene un inmueble en Uruguay lo ofrece como respaldo de tu contrato. No cuesta plata directa, pero necesitás a alguien dispuesto a asumir ese riesgo, y muchas veces la inmobiliaria pide que la propiedad esté libre de deudas. Otra alternativa es el depósito: entregás una suma de dinero que queda en garantía y se devuelve al final si no hay deudas ni daños. El depósito no siempre alcanza como única garantía y te inmoviliza capital, pero evita pagos mensuales a un tercero. Es útil si tenés el dinero disponible y el propietario lo acepta.',
+        heading: 'ANDA: afiliarte y descontar del sueldo',
+        body: 'ANDA es una asociación mutual, así que primero te hacés socio y después pedís la garantía. El servicio cuesta el 3 % mensual del alquiler garantizado y aparte pagás la cuota social, cuyo monto no está publicado en el sitio de ANDA: hay que preguntarlo antes de comparar contra un seguro. El tope de ingreso es el más alto del mercado privado, hasta el 40 % de tu ingreso nominal, el mismo que da el Estado. La antigüedad cambia según cómo trabajes: 4 meses si sos dependiente privado, 1 mes si sos público presupuestado, ninguna si sos jubilado o pensionista, y certificado de contador o escribano si sos independiente. Con la documentación completa contestan en 24 a 48 horas hábiles y el contrato tiene que ser de 1 año como mínimo. Cubren el alquiler, los daños según su propia tabla de desperfectos y los gastos del inmueble que te tocan a vos; el propietario cobra el 14 de cada mes.',
       },
       {
-        heading: 'Seguro de fianza',
-        body: 'El seguro de fianza de alquiler lo emiten aseguradoras como el Banco de Seguros del Estado y compañías privadas del mercado. Vos pagás una prima y la aseguradora garantiza al propietario el pago si dejás de cumplir; si la aseguradora paga, después te lo reclama a vos. La ventaja es que no necesitás garante propietario ni ser funcionario público, y el trámite suele ser rápido. La contra es que es un gasto que no recuperás, como cualquier seguro. Los costos y coberturas varían entre compañías, así que pedí varias cotizaciones y leé qué cubre exactamente (solo alquiler, o también gastos comunes y daños).',
+        heading: 'Porto Seguro: análisis en el día',
+        body: 'Porto Seguro es de las que resuelven antes: hace el análisis de crédito en el día y no te pide fiador solidario. Podés arrancar el trámite sin tener el apartamento elegido, porque el análisis te queda vigente 60 días, algo que sirve cuando todavía estás visitando. La cobertura para el propietario llega hasta 36 meses de alquiler impago, con honorarios de abogado y costas judiciales incluidos, daños al inmueble hasta 5 veces el valor del alquiler, y gastos comunes, tributos domiciliarios y saneamiento hasta el 30 % del alquiler mensual. El costo no está publicado: hay que pasar por el cotizador con el monto real del alquiler. Los relevamientos de terceros lo ubican alrededor de un mes de alquiler por año, pero es una estimación de mercado y no una cifra de la compañía. Se paga por el portal, en Abitab o Redpagos, por débito automático o en cuotas con tarjeta.',
       },
       {
-        heading: 'Cuál te conviene y una aclaración',
-        body: 'En general: si tenés ingresos formales con cierta antigüedad, mirá primero la Contaduría, que admite a funcionarios públicos, pasivos y también a empleados de empresas privadas cuya empresa esté registrada, porque suele ser lo más barato; si no calificás o tu empresa no está en el registro, compará ANDA contra un seguro de fianza según costo y requisitos; si tenés capital ocioso o un garante propietario, esas vías te ahorran pagos mensuales. Pensá también en la flexibilidad para renovar o mudarte. Esta guía es información general, no reemplaza el asesoramiento de un profesional, y los costos y condiciones cambian con el tiempo y entre instituciones. Antes de contratar, pedí las condiciones vigentes a cada entidad (Contaduría, ANDA, la aseguradora) y consultá con la inmobiliaria cuáles acepta el propietario.',
+        heading: 'Sura: 24 meses y consumos',
+        body: 'Sura cubre hasta 24 meses de alquiler impago, un techo más bajo que el de Porto y Mapfre, pero detalla bien los consumos: OSE, UTE y gas hasta el 25 % del alquiler mensual con tope de 6 meses, gastos comunes hasta el 35 % con tope de 24 meses, daños hasta 5 veces el valor del alquiler, una cobertura de accidentes personales y la gestión del desalojo por incumplimiento. Aceptan trabajadores dependientes nacionales y extranjeros, independientes con 1 año de actividad, jubilados y pensionistas menores de 80 años y perceptores de renta o pensión alimenticia. Si sos unipersonal o sociedad de hecho te piden 1 año y certificados de BPS y DGI al día; si sos empresa, 2 años. El costo tampoco está publicado: se cotiza por la app de Sura o escribiendo a garantia@segurossura.com.uy. Los relevamientos de terceros hablan de alrededor del 70 % de un mes de alquiler, cifra que la compañía no confirma.',
+      },
+      {
+        heading: 'Mapfre: 30 % de los ingresos, hasta cinco personas',
+        body: 'Mapfre publica la regla de ingreso más explícita de las aseguradoras: el alquiler mensual no puede ser mayor al 30 % del monto total de ingresos declarados, y para llegar a ese número podés sumar los ingresos de hasta 5 personas, que es lo que salva el caso de alquilar con tu pareja, con amigos o con un codeudor. La antigüedad que piden es corta, 3 meses si sos dependiente, 1 año si sos independiente o vivís de rentas, y aceptan jubilados y pensionistas. Del lado del propietario cubren hasta 36 meses de alquiler, gastos comunes hasta 3 meses, cada servicio hasta 3 meses, tributos domiciliarios hasta 4 y daños hasta 6 meses de alquiler, con todos los costos del proceso legal a cargo de la aseguradora. La póliza es anual y renovable. El costo sale del simulador; los relevamientos lo ubican alrededor del 80 % de un mes por año. Aprobado el análisis, tenés 30 días para contratar.',
+      },
+      {
+        heading: 'Si tus ingresos son bajos o tenés entre 18 y 29: el fondo del Ministerio',
+        body: 'El Fondo de Garantía de Alquiler del Ministerio de Vivienda, la Agencia Nacional de Vivienda y la Contaduría es otra cosa: está pensado para núcleos con ingreso líquido formal de 15 a 100 UR, y excluye a jubilados, pensionistas, funcionarios públicos y empleados de empresas con convenio con la Contaduría, que ya tienen el programa general. El certificado se tramita gratis; después se paga el 3 % mensual a cada parte más un depósito único: 24 % del monto de la garantía en el plan general y 12 % en el de jóvenes; las páginas oficiales no aclaran si la diferencia es un beneficio del plan joven. El alquiler garantizado no puede pasar de 18 UR, o 21 en vivienda promovida. El plan joven, de 18 a 29 años, llega a 22,5 UR, admite grupos de hasta 5 con 30 UR de ingreso colectivo y limita el alquiler al 40 % del ingreso. Aprobado el certificado, tenés 120 días para conseguir vivienda. Si no entrás en ninguno, FIDECIU retiene del sueldo y resuelve en 48 horas, sin publicar su costo.',
+      },
+      {
+        heading: 'Cuál te conviene, según tu caso',
+        body: 'Si sos funcionario público, pasivo o trabajás en una empresa inscripta en el SGA con 6 meses de antigüedad, empezá por la Contaduría: no hay prima adelantada y el 3 % mensual es de lo más barato que vas a encontrar. Si sos privado con poca antigüedad, mirá ANDA, que pide 4 meses, o Mapfre, que pide 3, y pedí las dos cotizaciones antes de decidir, porque el seguro se paga por adelantado y la mutual mes a mes. Si tenés que firmar ya, Porto Seguro analiza en el día. Si el alquiler que buscás entra en las 18 UR, el fondo del Ministerio sale más barato que cualquier privado. Y si tu ingreso no está formalizado, si estás en el clearing o si no tenés ninguna garantía a mano, hay caminos propios para cada caso.',
+        links: [
+          { label: 'Alquilar sin recibo de sueldo', to: '/alquilar-sin-recibo-de-sueldo' },
+          { label: 'Alquilar estando en clearing', to: '/alquilar-estando-en-clearing' },
+          { label: 'Alquilar sin garantía', to: '/guias/alquilar-sin-garantia-uruguay' },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cuánto cuesta una garantía de alquiler?',
+        a: 'Depende de la familia. La Contaduría, ANDA y el fondo del Ministerio se quedan con un 3 % mensual del alquiler, cobrado a cada parte en los dos programas estatales. Porto Seguro, Sura y Mapfre cobran una prima que no publican en su sitio: hay que pasar por el cotizador, y los relevamientos de terceros la ubican cerca de un mes de alquiler por año. FIDECIU tampoco publica el suyo.',
+      },
+      {
+        q: '¿La Contaduría es sólo para funcionarios públicos?',
+        a: 'No. También pueden usarla los jubilados y pensionistas y los empleados de empresas privadas inscriptas en el registro del Servicio de Garantía de Alquileres, en todos los casos con 6 meses de antigüedad. Lo que no admite, según lo publicado, son los trabajadores independientes: para ellos quedan ANDA, FIDECIU o un seguro de fianza.',
+      },
+      {
+        q: '¿Qué garantía aprueba más rápido?',
+        a: 'Porto Seguro hace el análisis de crédito en el día y FIDECIU precalifica en el día y emite la garantía en 48 horas como máximo. ANDA contesta en 24 a 48 horas hábiles desde que subís toda la documentación. La Contaduría y Sura no publican un plazo, y el fondo del Ministerio suma una entrevista previa.',
+      },
+      {
+        q: '¿La garantía cubre gastos comunes y UTE?',
+        a: 'Los seguros sí, con topes. Porto Seguro cubre gastos comunes, tributos y saneamiento hasta el 30 % del alquiler mensual, y UTE, OSE y gas hasta el 25 %. Sura llega al 35 % en gastos comunes y al 25 % en consumos, con tope de 6 meses. Mapfre cubre 3 meses de cada servicio y 4 de tributos. ANDA incluye los gastos del inmueble que están a tu cargo.',
+      },
+      {
+        q: '¿Puedo cambiar de garantía con el contrato firmado?',
+        a: 'Sí, pero no es automático: la garantía es parte del contrato, así que el propietario tiene que aceptar la nueva y el cambio se documenta por escrito. Conviene tener aprobada la nueva antes de dar de baja la anterior, y revisar si la que dejás te cobra algo por cancelar antes de tiempo.',
+      },
+      {
+        q: '¿Qué pasa si dejo de pagar el alquiler?',
+        a: 'La garantía le paga al propietario y después te lo reclama a vos: no es un perdón, es un cambio de acreedor. ANDA, la Contaduría y FIDECIU lo descuentan de tu sueldo o tu pasividad. Porto Seguro y Mapfre gestionan el cobro y el desalojo con honorarios y costas a su cargo, y Sura gestiona el desalojo por incumplimiento; la deuda te queda igual.',
+      },
+      {
+        q: '¿Hay garantía para jóvenes?',
+        a: 'Sí. El Fondo de Garantía de Alquiler para Jóvenes, de la Agencia Nacional de Vivienda, es para personas de 18 a 29 años que estudien o trabajen. Admite grupos de hasta 5 personas con 30 unidades reajustables de ingreso colectivo, garantiza alquileres de hasta 22,5 unidades reajustables y exige que el alquiler no supere el 40 % del ingreso.',
+      },
+    ],
+    sources: [
+      {
+        label: 'Garantía de alquiler de la Contaduría General de la Nación: costos y requisitos',
+        url: 'https://www.gub.uy/tramites/alquiler-contaduria-general-nacion',
+        publisher: 'gub.uy',
+      },
+      {
+        label: 'Garantía de alquiler de ANDA para el inquilino',
+        url: 'https://www.anda.com.uy/garantia-de-alquiler/inquilino/',
+        publisher: 'ANDA',
+      },
+      {
+        label: 'Garantía de alquiler de Porto Seguro: cotizador y coberturas',
+        url: 'https://www.portoseguro.com.uy/',
+        publisher: 'Porto Seguro',
+      },
+      {
+        label: 'Garantía de alquiler de Sura: requisitos y coberturas',
+        url: 'https://www.segurossura.com.uy/',
+        publisher: 'Seguros Sura',
+      },
+      {
+        label: 'Garantía de alquiler de Mapfre: regla del 30 % y coberturas',
+        url: 'https://www.mapfre.com.uy/seguros-garantia-alquiler/',
+        publisher: 'Mapfre',
+      },
+      {
+        label: 'Fondo de Garantía de Alquiler: montos y condiciones',
+        url: 'https://www.anv.gub.uy/fondo-de-garantia-de-alquiler',
+        publisher: 'Agencia Nacional de Vivienda',
+      },
+      {
+        label: 'Fondo de Garantía de Alquiler para Jóvenes de 18 a 29 años',
+        url: 'https://www.anv.gub.uy/fondo-de-garantia-de-alquiler-para-jovenes',
+        publisher: 'Agencia Nacional de Vivienda',
+      },
+      {
+        label: 'Trámite del Fondo de Garantía de Alquiler: requisitos y exclusiones',
+        url: 'https://www.gub.uy/tramites/fga-garantia-alquiler',
+        publisher: 'gub.uy',
+      },
+      {
+        label: 'Requisitos y plazos de la garantía de FIDECIU',
+        url: 'https://fideciu.uy/',
+        publisher: 'FIDECIU',
       },
     ],
     related: [
       { label: 'Guía para alquilar', to: '/alquilar-en-uruguay' },
+      { label: 'Alquilar sin recibo de sueldo', to: '/alquilar-sin-recibo-de-sueldo' },
+      { label: 'Alquilar estando en clearing', to: '/alquilar-estando-en-clearing' },
+      { label: 'Tu primer alquiler', to: '/primer-alquiler-uruguay' },
       { label: 'Alquilar sin garantía', to: '/guias/alquilar-sin-garantia-uruguay' },
-      { label: 'El depósito de alquiler', to: '/guias/deposito-de-alquiler-uruguay' },
+      { label: 'Ser garante o codeudor', to: '/guias/ser-garante-o-codeudor-riesgos-uruguay' },
     ],
   },
   {
