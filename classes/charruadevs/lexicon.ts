@@ -12,8 +12,10 @@ export const LEX: Record<LexKey, RegExp> = {
   reemplazo_ia:
     /\b(ia|ai|chatgpt|llm|agentes?)\b[^.]{0,60}(reemplaz|sustitu|quitar(nos)? el trabajo|dejar sin trabajo)|reemplaz[a-z]* (por|con) (la )?(ia|ai)\b/i,
   ia_menciones: /\b(ia|ai|chatgpt|gpt-?\d*|copilot|claude|cursor|llms?|gemini|vibe ?cod\w*|agentes?)\b/i,
+  // El lookbehind no es cosmético: sin él, "no hay laburo" y "no conseguí trabajo" —las dos frases
+  // más pesimistas del sub— contaban como optimismo.
   optimismo:
-    /(hay|sobra) (mucho )?(laburo|trabajo)|consegu[ií] (laburo|trabajo)|me (contrataron|sali[oó] (una|el) (laburo|trabajo|oferta))|buena carrera/i,
+    /(?<!no )(hay|sobra) (mucho )?(laburo|trabajo)|(?<!no )consegu[ií] (laburo|trabajo)|me (contrataron|sali[oó] (una|el) (laburo|trabajo|oferta))|buena carrera/i,
 };
 
 export function lexCounts(bodies: readonly string[]): { n: number; counts: Record<LexKey, number> } {
