@@ -30,6 +30,13 @@
           Ver el paso a paso para Correo, courier, Amazon Global y Temu </NuxtLink
         >.
       </p>
+      <p class="text-caption text-medium-emphasis mt-2 mb-0">
+        <VIcon size="14" class="mr-1">mdi-cart-outline</VIcon>
+        ¿Comprás en Temu, Shein o AliExpress y querés la cuenta hecha, con BFE Express incluido?
+        <NuxtLink :to="localePath('/guias/impuesto-temu-uruguay')">
+          Impuesto Temu: qué es y cuánto pagás </NuxtLink
+        >.
+      </p>
     </header>
 
     <!-- The semáforo -->

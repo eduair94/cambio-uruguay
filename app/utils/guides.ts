@@ -14,6 +14,7 @@
 // are appended to the catalogue below (keeps this file focused on the core set).
 import { consumoGuides } from './guidesConsumo'
 import { deudasGuides } from './guidesDeudas'
+import { importacionGuides } from './guidesImportacion'
 import { pagosGuides } from './guidesPagos'
 import { parejaGuides } from './guidesPareja'
 import { redditGuides } from './guidesReddit'
@@ -1500,6 +1501,9 @@ export const guides: readonly Guide[] = [
   ...viviendaGuides,
   ...tramitesGuides,
   ...consumoGuides,
+  // Importación y aduana: el "impuesto Temu" (IVA de las compras web del exterior) y BFE Express.
+  // Mismo cableado gratis; guardada por `tests/unit/guidesImportacion.test.ts`.
+  ...importacionGuides,
 ]
 
 /**
