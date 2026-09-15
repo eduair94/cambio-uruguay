@@ -1868,6 +1868,32 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'cpe fonasa',
           'retencion irpf devolucion fonasa',
           'devolucion fonasa jubilados',
+          'devolucion fonasa 2026',
+          'como saber si tengo devolucion fonasa',
+          'consulta devolucion fonasa',
+          'a quien le corresponde devolucion fonasa',
+          'anticipo fonasa',
+          'anticipo fonasa servicios personales',
+        ],
+      },
+      {
+        // Elección del 22/11/2026: «elecciones bps 2026 son obligatorias» y «multa por no votar»
+        // eran breakout en Trends (2026-09-15); el sitio tiene la UR viva y da la multa en pesos.
+        to: '/elecciones-bps-2026',
+        labelKey: 'nav.eleccionesBps',
+        icon: 'mdi-vote',
+        priority: 0.7,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'elecciones bps',
+          'elecciones bps 2026',
+          'elecciones bps obligatorias',
+          'multa por no votar bps',
+          'elecciones bps circuitos',
+          'padron elecciones bps',
+          'quienes votan elecciones bps',
+          'justificar no voto bps',
         ],
       },
       {
@@ -2837,6 +2863,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'retiro de placas deuda patente',
           'comprar auto usado uruguay',
           'me sacan el auto por deuda',
+        ],
+      },
+      {
+        // Trends UY 2026-09-15: «nafta» es el 23 % del volumen de «dólar», con picos cada fin de
+        // mes («cuánto sube la nafta», «cuándo sube»). Era el único tema de costos sin página.
+        to: '/precio-de-la-nafta-uruguay',
+        labelKey: 'nav.precioNafta',
+        icon: 'mdi-gas-station',
+        priority: 0.8,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'nafta',
+          'precio nafta',
+          'precio de la nafta hoy',
+          'nafta super precio',
+          'nafta premium precio',
+          'precio gasoil',
+          'precio supergas',
+          'cuanto sube la nafta',
+          'cuando sube la nafta',
+          'precio combustibles uruguay',
+          'ancap precios',
         ],
       },
       {
