@@ -419,6 +419,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['cerca de mi', 'cercana', 'proxima', 'mas cerca', 'ubicacion'],
       },
       {
+        to: '/cobrar-giro-del-exterior-uruguay',
+        labelKey: 'nav.remittancePickup',
+        icon: 'mdi-cash-fast',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'cobrar giro del exterior',
+          'western union uruguay',
+          'moneygram uruguay',
+          'donde cobro un giro',
+          'recibir dinero del exterior',
+          'remesas uruguay',
+          'giros internacionales',
+          'me mandan plata de afuera',
+        ],
+      },
+      {
         to: '/casas-de-cambio-abiertas-fin-de-semana',
         labelKey: 'nav.weekendOpen',
         icon: 'mdi-calendar-weekend',
