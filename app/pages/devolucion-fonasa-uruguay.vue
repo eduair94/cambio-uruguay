@@ -14,6 +14,38 @@
         y el cambio de metodología que recién se va a notar en {{ METHODOLOGY_FIRST_IMPACT_YEAR }}.
       </p>
 
+      <VCard class="consulta-card pa-5 pa-md-6 mb-6" variant="flat">
+        <div class="text-overline mb-3">¿Estás comprendido? Consultalo</div>
+        <div class="d-flex flex-wrap ga-3 mb-3">
+          <VBtn
+            :href="FONASA_CONSULTA.web"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="primary"
+            variant="flat"
+            prepend-icon="mdi-web"
+          >
+            Consultar en bps.gub.uy
+          </VBtn>
+          <VBtn href="tel:08002016" variant="tonal" prepend-icon="mdi-phone">
+            {{ FONASA_CONSULTA.phone }}
+          </VBtn>
+          <VBtn
+            :href="FONASA_CONSULTA.whatsappUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="tonal"
+            prepend-icon="mdi-whatsapp"
+          >
+            WhatsApp {{ FONASA_CONSULTA.whatsapp }}
+          </VBtn>
+        </div>
+        <p class="mb-0 text-medium-emphasis text-body-2">
+          Habilitado desde el 1.º de setiembre para usuarios registrados y desde el 7 para todo el
+          mundo.
+        </p>
+      </VCard>
+
       <VCard class="warn-card pa-5 pa-md-6" variant="flat">
         <div class="d-flex align-start">
           <VIcon icon="mdi-information-outline" color="primary" class="mr-3 mt-1" />
@@ -62,6 +94,42 @@
           <span class="text-body-2">{{ CPE_ADJUSTMENT_RULE }}</span>
         </VAlert>
       </VCard>
+    </section>
+
+    <!-- Dónde y cómo se cobra en 2026 -->
+    <section class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Dónde y cómo se cobra en 2026</h2>
+      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+        Esto es lo único que depende de vos y lo único que puede demorarte el cobro: elegir dónde
+        recibir el dinero antes del {{ chooseByDate }}.
+      </p>
+      <VRow>
+        <VCol cols="12" md="6">
+          <VCard variant="flat" class="cobro-card pa-5 h-100">
+            <div class="text-overline mb-2">Depósito</div>
+            <p class="mb-2">
+              Elegí una de estas opciones antes del <strong>{{ chooseByDate }}</strong
+              >:
+            </p>
+            <ul class="cobro-list mb-3">
+              <li v-for="opt in FONASA_COBRO.depositOptions" :key="opt">{{ opt }}</li>
+            </ul>
+            <p class="mb-0 text-medium-emphasis text-body-2">
+              El BPS acredita el dinero dentro de las {{ FONASA_COBRO.depositWithin }} siguientes al
+              primer día de pago.
+            </p>
+          </VCard>
+        </VCol>
+        <VCol cols="12" md="6">
+          <VCard variant="flat" class="cobro-card pa-5 h-100">
+            <div class="text-overline mb-2">Presencial</div>
+            <p class="mb-2">Si no elegiste depósito, cobrás con cédula de identidad en:</p>
+            <ul class="cobro-list mb-0">
+              <li v-for="place in FONASA_COBRO.inPerson" :key="place">{{ place }}</li>
+            </ul>
+          </VCard>
+        </VCol>
+      </VRow>
     </section>
 
     <!-- Calculadora -->
@@ -246,19 +314,27 @@
     </section>
 
     <!-- FAQ -->
+    <FaqSection :items="faqItems" heading="Preguntas frecuentes" expanded class="mb-12" />
+
+    <!-- Anticipo FONASA de servicios personales -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
-      <VExpansionPanels variant="accordion">
-        <VExpansionPanel v-for="f in FONASA_FAQ" :key="f.question">
-          <VExpansionPanelTitle>
-            <div>
-              <div class="font-weight-medium">{{ f.question }}</div>
-              <div class="text-caption text-medium-emphasis">{{ f.short }}</div>
-            </div>
-          </VExpansionPanelTitle>
-          <VExpansionPanelText>{{ f.answer }}</VExpansionPanelText>
-        </VExpansionPanel>
-      </VExpansionPanels>
+      <h2 class="text-h5 font-weight-bold mb-2">Anticipo FONASA para servicios personales</h2>
+      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+        No confundir con la devolución: es un trámite mensual, no anual. Lo pagan los titulares de
+        servicios personales que no están incluidos en el FONASA por otra actividad (dependiente o
+        jubilación).
+      </p>
+      <VCard variant="flat" class="anticipo-card pa-5 pa-md-6">
+        <p class="mb-3">
+          El mínimo es el {{ FONASA_ANTICIPO.minPctOfCpe }} % del costo promedio equivalente:
+          <strong>{{ money(FONASA_ANTICIPO.minMonthly) }}</strong> desde el {{ anticipoSince }}.
+        </p>
+        <p class="mb-3">{{ FONASA_ANTICIPO.dueExample }}.</p>
+        <p class="mb-0">
+          La factura se saca en el sitio del
+          <a :href="FONASA_ANTICIPO.url" target="_blank" rel="noopener noreferrer">BPS</a>.
+        </p>
+      </VCard>
     </section>
 
     <!-- Related -->
@@ -303,10 +379,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import type { FaqItem } from '~/utils/faqAnswers'
 import {
   CPE_EXERCISE,
   CPE_ADJUSTMENT_RULE,
   CPE_MONTHLY,
+  FONASA_ANTICIPO,
+  FONASA_COBRO,
+  FONASA_CONSULTA,
   FONASA_EXERCISES,
   FONASA_FAQ,
   FONASA_SOURCES,
@@ -361,16 +441,23 @@ const longDate = (iso: string) =>
 
 const verifiedAt = longDate(FONASA_VERIFIED_AT)
 const paidFrom = longDate(latest.paidFrom)
+const chooseByDate = longDate(FONASA_COBRO.chooseBy)
+const anticipoSince = longDate(FONASA_ANTICIPO.since)
 const people = computed(() => latest.people.toLocaleString('es-UY'))
 const totalMillones = Math.round(latest.totalPesos / 1_000_000).toLocaleString('es-UY')
 
+/** `FONASA_FAQ` trae `question/short/answer`; `FaqSection` espera `FaqItem` (`id/question/answer`). */
+const faqItems = computed<FaqItem[]>(() =>
+  FONASA_FAQ.map((f, i) => ({ id: `fonasa-faq-${i}`, question: f.question, answer: f.answer }))
+)
+
 const canonicalUrl = 'https://cambio-uruguay.com/devolucion-fonasa-uruguay'
-const title = 'Devolución de FONASA: quién cobra y cuánto'
-const description = `Por ${latest.year} el BPS devolvió ${totalMillones} millones a ${latest.people.toLocaleString('es-UY')} personas. Cobrás si tu promedio mensual pasó $ ${money(latest.workerThreshold)} ($ ${money(latest.retireeThreshold)} jubilados). Calculá tu tope con el CPE de $ ${money(CPE_MONTHLY)}.`
+const title = 'Devolución FONASA 2026: cuándo se cobra'
+const description = `Por ${latest.year} el BPS devolvió ${totalMillones} millones a ${latest.people.toLocaleString('es-UY')} personas. Cobrás si tu promedio mensual pasó $ ${money(latest.workerThreshold)} ($ ${money(latest.retireeThreshold)} jubilados). Calculá tu tope con el CPE de $ ${money(CPE_MONTHLY)}. Consultá si estás comprendido en bps.gub.uy, ${FONASA_CONSULTA.phone} o WhatsApp ${FONASA_CONSULTA.whatsapp}.`
 
 defineOgImageComponent('Cambio', {
   title: 'Devolución de FONASA',
-  subtitle: 'Quién cobra, cuánto y cuándo',
+  subtitle: 'Se paga desde el 21 de setiembre de 2026',
   tag: 'BPS',
 })
 
@@ -392,7 +479,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'devolucion fonasa, devolucion fonasa bps, cuando cobro la devolucion fonasa, estoy comprendido fonasa, excedente de aportes fonasa, tope anual fonasa, costo promedio equivalente cpe, cpe 2026, retencion irpf devolucion fonasa, devolucion fonasa jubilados, ley 18731 articulo 3, decreto 317/025',
+        'devolucion fonasa, devolucion fonasa bps, cuando cobro la devolucion fonasa, estoy comprendido fonasa, excedente de aportes fonasa, tope anual fonasa, costo promedio equivalente cpe, cpe 2026, retencion irpf devolucion fonasa, devolucion fonasa jubilados, ley 18731 articulo 3, decreto 317/025, devolucion fonasa 2026, como saber si tengo devolucion fonasa, consulta devolucion fonasa, a quien le corresponde devolucion fonasa, anticipo fonasa, anticipo fonasa servicios personales',
     },
   ],
   script: [
@@ -418,14 +505,6 @@ useHead(() => ({
               },
             ],
           },
-          {
-            '@type': 'FAQPage',
-            mainEntity: FONASA_FAQ.map(f => ({
-              '@type': 'Question',
-              name: f.question,
-              acceptedAnswer: { '@type': 'Answer', text: f.answer },
-            })),
-          },
         ],
       }),
     },
@@ -449,13 +528,26 @@ useHead(() => ({
 .step-card,
 .path-card,
 .results-card,
-.formula-card {
+.formula-card,
+.consulta-card,
+.cobro-card,
+.anticipo-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
   border-radius: 14px;
   background: rgba(var(--v-theme-surface), 1);
 }
 .warn-card {
   background: rgba(var(--v-theme-primary), 0.06);
+}
+.consulta-card {
+  background: rgba(var(--v-theme-primary), 0.06);
+}
+.cobro-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+.cobro-list li {
+  margin-bottom: 4px;
 }
 .verdict-card.is-ok {
   background: rgba(22, 199, 132, 0.08);
@@ -511,7 +603,10 @@ useHead(() => ({
 }
 .step-card p,
 .path-card p,
-.warn-card p {
+.warn-card p,
+.consulta-card p,
+.cobro-card p,
+.anticipo-card p {
   margin-top: 0;
 }
 .path-card p + p {

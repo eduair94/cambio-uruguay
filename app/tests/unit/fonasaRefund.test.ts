@@ -4,10 +4,14 @@ import {
   CPE_ADJUSTMENT_RULE,
   CPE_MONTHLY,
   CPE_UPLIFT,
+  FONASA_ANTICIPO,
+  FONASA_COBRO,
+  FONASA_CONSULTA,
   FONASA_EXERCISES,
   FONASA_FAQ,
   FONASA_SOURCES,
   FONASA_STEPS,
+  FONASA_VERIFIED_AT,
   IRPF_RETENTION_PCT,
   LATEST_EXERCISE,
   annualCap,
@@ -148,5 +152,50 @@ describe('la regla de ajuste del CPE', () => {
   // Y no estima el valor de hoy: no encontramos el decreto posterior, y estimarlo seria inventar.
   it('no publica un CPE estimado', () => {
     expect(CPE_ADJUSTMENT_RULE).not.toMatch(/\$\s*\d/)
+  })
+})
+
+// El BPS publico las cifras del ejercicio 2025 (se cobra en 2026) el 2026-09-15: consulta por
+// tres canales, plazo para elegir deposito y el anticipo mensual de servicios personales, que es
+// un tramite distinto y no debe confundirse con esta devolucion anual.
+describe('el ejercicio 2025 (se cobra en 2026)', () => {
+  it('es el último y trae las cifras del BPS', () => {
+    expect(LATEST_EXERCISE.year).toBe(2025)
+    expect(LATEST_EXERCISE.paidFrom).toBe('2026-09-21')
+    expect(LATEST_EXERCISE.people).toBe(152000)
+    expect(LATEST_EXERCISE.totalPesos).toBe(8_676_000_000)
+    expect(LATEST_EXERCISE.workerThreshold).toBe(122629)
+    expect(LATEST_EXERCISE.retireeThreshold).toBe(132848)
+  })
+  it('los umbrales suben respecto de 2024 y los años van en orden', () => {
+    const years = FONASA_EXERCISES.map(e => e.year)
+    expect(years).toEqual([...years].sort((a, b) => a - b))
+    const prev = FONASA_EXERCISES[FONASA_EXERCISES.length - 2]!
+    expect(LATEST_EXERCISE.workerThreshold).toBeGreaterThan(prev.workerThreshold)
+    expect(LATEST_EXERCISE.retireeThreshold).toBeGreaterThan(prev.retireeThreshold)
+  })
+})
+
+describe('consulta, cobro y anticipo', () => {
+  it('canales y fechas', () => {
+    expect(FONASA_CONSULTA.web).toMatch(/^https:\/\/www\.bps\.gub\.uy\//)
+    expect(FONASA_CONSULTA.phone).toBe('0800 2016')
+    expect(FONASA_CONSULTA.whatsapp).toBe('092 366 272')
+    expect(FONASA_CONSULTA.openedForRegistered < FONASA_CONSULTA.openedForAll).toBe(true)
+    expect(FONASA_COBRO.chooseBy).toBe('2026-09-16')
+    expect(FONASA_COBRO.depositOptions).toContain('Prex')
+    expect(FONASA_COBRO.inPerson.length).toBeGreaterThanOrEqual(4)
+  })
+  it('el mínimo del anticipo es el 75 % del CPE', () => {
+    expect(FONASA_ANTICIPO.minPctOfCpe).toBe(75)
+    expect(FONASA_ANTICIPO.minMonthly).toBe(Math.round(CPE_MONTHLY * 0.75))
+    expect(FONASA_ANTICIPO.url).toMatch(/^https:\/\//)
+  })
+  it('FAQ y fuentes crecieron con 2026', () => {
+    expect(FONASA_FAQ.some(f => /cómo saber si tengo/i.test(f.question))).toBe(true)
+    expect(FONASA_FAQ.some(f => /2026/.test(f.question))).toBe(true)
+    expect(FONASA_SOURCES.some(s => s.url.includes('bps.gub.uy/10573'))).toBe(true)
+    for (const s of FONASA_SOURCES) expect(s.url).toMatch(/^https:\/\//)
+    expect(FONASA_VERIFIED_AT).toBe('2026-09-15')
   })
 })

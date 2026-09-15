@@ -21,19 +21,24 @@
 // cambio de metodología NO toca la devolución que se paga en 2026: recién impacta en la de 2027.
 // Es el dato que más se malinterpreta del tema y por eso está en la página, no acá.
 //
-// LO QUE DELIBERADAMENTE NO SE PUBLICA: los umbrales del ejercicio 2025 (los que se pagan en
-// setiembre de 2026). Al 19/8/2026 el BPS todavía no los publicó, y estimarlos indexando los de
-// 2024 sería inventar una cifra. La página dice qué ejercicio es el último publicado y con qué
-// fecha, en vez de rellenar el hueco.
+// LO QUE CAMBIÓ EL 2026-09-15: el BPS publicó las cifras del ejercicio 2025 (se cobra desde el 21
+// de setiembre de 2026) y habilitó la consulta de «¿me toca?» por web, teléfono y WhatsApp —el
+// 1.º de setiembre para quienes tienen Usuario Personal BPS, el 7 para todo el mundo—. Esos números
+// entraron a `FONASA_EXERCISES`, y se agregaron `FONASA_CONSULTA` (los tres canales y las dos
+// fechas de habilitación) y `FONASA_COBRO` (el plazo para elegir depósito y la red de cobro
+// presencial). También se agregó `FONASA_ANTICIPO`: el anticipo MENSUAL de FONASA que pagan los
+// titulares de servicios personales no incluidos por otra actividad — un trámite distinto (mensual,
+// no anual) que se confunde con esta devolución porque comparte el nombre.
 //
-// FUENTES PRIMARIAS, verificadas el 2026-08-19 (ver FONASA_SOURCES para la lista completa):
+// FUENTES PRIMARIAS, verificadas el 2026-09-15 (ver FONASA_SOURCES para la lista completa):
 //   - Ley 18.731 art. 3 — la comparación al 31 de diciembre y el excedente a devolver. VIGENTE.
 //     https://www.impo.com.uy/bases/leyes/18731-2011/3
 //   - Decreto 317/025 arts. 17 y 18 — nueva metodología del CPE y su valor desde el 1/1/2026.
 //     https://www.impo.com.uy/bases/decretos-originales/317-2025
 //   - MEF, «Preguntas y respuestas sobre el cambio al CPE» (09/01/2026) — el impacto recién en 2027
-//   - Presidencia (03/09/2025) — cifras y calendario del ejercicio 2024
+//   - Presidencia (03/09/2025 y 2026) — cifras y calendario de los ejercicios 2024 y 2025
 //   - BPS — cómo se arma el tope anual y la retención de IRPF sobre lo devuelto
+//   - BPS — devolución Fonasa 2026 (consulta, cobro) y anticipo Fonasa de servicios personales
 
 export interface FonasaSource {
   readonly label: string
@@ -56,7 +61,7 @@ export interface FonasaExercise {
 }
 
 /** Fecha en la que se contrastó todo lo de este archivo contra la fuente oficial. */
-export const FONASA_VERIFIED_AT = '2026-08-19'
+export const FONASA_VERIFIED_AT = '2026-09-15'
 
 /**
  * El 25 % del artículo 3 de la Ley 18.731: el tope no es el CPE, es el CPE más un cuarto.
@@ -111,10 +116,53 @@ export const FONASA_EXERCISES: readonly FonasaExercise[] = [
     workerThreshold: 113167,
     retireeThreshold: 122598,
   },
+  {
+    year: 2025,
+    paidFrom: '2026-09-21',
+    people: 152000,
+    totalPesos: 8_676_000_000,
+    workerThreshold: 122629,
+    retireeThreshold: 132848,
+  },
 ]
 
 /** El último ejercicio con cifras oficiales. */
 export const LATEST_EXERCISE: FonasaExercise = FONASA_EXERCISES[FONASA_EXERCISES.length - 1]!
+
+/** Cómo saber si estás comprendido en la devolución 2026 (BPS, verificado 2026-09-15). */
+export const FONASA_CONSULTA = {
+  web: 'https://www.bps.gub.uy/15053/',
+  phone: '0800 2016',
+  whatsapp: '092 366 272',
+  whatsappUrl: 'https://wa.me/59892366272?text=FONASA',
+  /** Usuarios registrados en BPS. */
+  openedForRegistered: '2026-09-01',
+  /** Toda la población. */
+  openedForAll: '2026-09-07',
+} as const
+
+export const FONASA_COBRO = {
+  /** Último día para elegir depósito en cuenta o dinero electrónico. */
+  chooseBy: '2026-09-16',
+  depositOptions: ['cuenta bancaria', 'MiDinero', 'DeAnda', 'Prex', 'OCA Blue'],
+  depositWithin: '72 horas hábiles',
+  inPerson: [
+    'Abitab',
+    'Redpagos',
+    'ANDA',
+    'supermercados El Dorado',
+    'Tesorería del BPS (Colonia 1851, planta baja)',
+  ],
+} as const
+
+/** Anticipo mensual de FONASA de servicios personales (BPS, comunicado 6/2026). */
+export const FONASA_ANTICIPO = {
+  minPctOfCpe: 75,
+  minMonthly: 5020,
+  since: '2026-01-01',
+  dueExample: 'la factura de los servicios de enero de 2026 venció el 24 de febrero',
+  url: 'https://www.bps.gub.uy/9534/servicios-personales:-anticipo-fonasa.html',
+} as const
 
 export interface FonasaStep {
   readonly n: number
@@ -133,13 +181,12 @@ export const FONASA_STEPS: readonly FonasaStep[] = [
     n: 2,
     title: 'Consultás si te toca',
     detail:
-      'Con Usuario Personal BPS ves el monto y el detalle del cálculo en «Consultar detalle de devolución Fonasa». Sin usuario sólo podés saber si estás comprendido o no, por la web, el 0800 2016 o el WhatsApp 092 366 272.',
+      'Por la web (bps.gub.uy), el 0800 2016 o el WhatsApp 092 366 272 podés saber si estás comprendido, sin necesidad de Usuario Personal. La consulta se habilitó el 1.º de setiembre de 2026 para quienes ya tienen Usuario Personal BPS, y desde el 7 de setiembre para el resto de la población. Con Usuario Personal además ves el monto y el detalle del cálculo en «Consultar detalle de devolución Fonasa».',
   },
   {
     n: 3,
     title: 'Elegís dónde cobrar',
-    detail:
-      'Esto sí depende de vos y es lo único que puede demorarte el cobro. Si tenés cuenta bancaria o instrumento de dinero electrónico registrado, te lo depositan el primer día de pago; si no, cobrás en red de cobranzas según el último dígito de la cédula.',
+    detail: `Esto sí depende de vos y es lo único que puede demorarte el cobro: si elegís depósito en cuenta bancaria o dinero electrónico antes del 16 de setiembre, te lo acreditan el primer día de pago; si no, cobrás presencial con cédula en ${FONASA_COBRO.inPerson.join(', ')}.`,
   },
   {
     n: 4,
@@ -162,6 +209,26 @@ export interface FonasaFaq {
 }
 
 export const FONASA_FAQ: readonly FonasaFaq[] = [
+  {
+    question: '¿Cómo saber si tengo devolución de FONASA?',
+    short: 'Web, teléfono o WhatsApp: no hace falta ningún trámite',
+    answer: `Podés consultarlo en ${FONASA_CONSULTA.web}, llamando al ${FONASA_CONSULTA.phone} o por WhatsApp al ${FONASA_CONSULTA.whatsapp}. La consulta se habilitó el 1.º de setiembre de 2026 para quienes tienen Usuario Personal BPS, y desde el 7 de setiembre para el resto de la población.`,
+  },
+  {
+    question: '¿Cuándo es la devolución de FONASA 2026?',
+    short: 'Se empieza a pagar el 21 de setiembre',
+    answer: `El primer día de pago del ejercicio ${LATEST_EXERCISE.year} es el 21 de setiembre de 2026. Si elegiste depósito en cuenta bancaria o dinero electrónico antes del 16 de setiembre, el BPS lo acredita dentro de las ${FONASA_COBRO.depositWithin} siguientes al 21 de setiembre, el primer día de pago.`,
+  },
+  {
+    question: '¿A quién le corresponde la devolución de FONASA?',
+    short: 'No es un sueldo fijo: depende de tu tope anual',
+    answer: `No hay un ingreso fijo desde el cual se cobra: depende de tu tope anual (el CPE de tu cobertura y la de quienes tenés a cargo, más 25 %). Como referencia, en el ejercicio ${LATEST_EXERCISE.year} tuvieron devolución los trabajadores con un promedio mensual nominal superior a $ ${LATEST_EXERCISE.workerThreshold.toLocaleString('es-UY')} y los jubilados o pensionistas con más de $ ${LATEST_EXERCISE.retireeThreshold.toLocaleString('es-UY')}. Quien atribuye cobertura a más personas tiene un tope más alto y necesita ganar más para superarlo.`,
+  },
+  {
+    question: '¿Qué pasa si no elegí cómo cobrar antes del 16 de setiembre?',
+    short: 'Se cobra presencial, con cédula',
+    answer: `Si no elegiste depósito en cuenta bancaria o dinero electrónico antes del 16 de setiembre de 2026, el cobro pasa a ser presencial con cédula de identidad en ${FONASA_COBRO.inPerson.join(', ')}.`,
+  },
   {
     question: '¿Hay que pedir la devolución de FONASA?',
     short: 'El cálculo es de oficio; lo que elegís es dónde cobrar',
@@ -247,6 +314,18 @@ export const FONASA_SOURCES: readonly FonasaSource[] = [
   {
     label: 'BPS — Consulta de devolución Fonasa',
     url: 'https://devolucionfonasa.bps.gub.uy/',
+  },
+  {
+    label: 'BPS — Devolución Fonasa 2026',
+    url: 'https://www.bps.gub.uy/10573/devolucion-fonasa.html',
+  },
+  {
+    label: 'Presidencia — BPS habilitó la consulta de la devolución Fonasa 2026',
+    url: 'https://www.gub.uy/presidencia/comunicacion/noticias/devolucion-fonasa-bps-consulta-2026',
+  },
+  {
+    label: 'BPS — Servicios personales: anticipo Fonasa',
+    url: 'https://www.bps.gub.uy/9534/servicios-personales:-anticipo-fonasa.html',
   },
 ]
 
