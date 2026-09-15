@@ -983,4 +983,18 @@ export const UNEMPLOYMENT_FAQ: readonly UnemploymentFaq[] = Object.freeze([
     answer:
       'El artículo 6.4 es preciso y la parte que se suele omitir es la del medio: quienes agotaron el término máximo «podrán comenzar a recibirla de nuevo cuando hayan transcurrido al menos doce meses, seis de ellos de aportación efectiva, desde que percibieron la última prestación, y reúnan las restantes condiciones requeridas para el reconocimiento de tal derecho». O sea que no alcanza con dejar pasar el año: hay que haber vuelto a aportar seis meses. Y las «restantes condiciones» son los aportes previos, que en industria y comercio se piden acumulados: 180 días en planilla si cobrás por mes; 180 días en planilla Y 150 jornales si cobrás por jornal; 180 días en planilla Y 6 BPC si cobrás a destajo o por comisión. Si sos rural o del servicio doméstico las cantidades son otras —en el rural, 270 días o 225 jornales o 9 BPC en 30 meses—: fijate en el bloque de aportes previos, no traslades los números de industria y comercio.',
   },
+  {
+    question: '¿Qué es el seguro de paro parcial y cuánto se cobra?',
+    short:
+      'Suspensión total o reducción de jornada de al menos 25 %: se cobra el 50 % fijo del promedio, no la escala del despido.',
+    answer:
+      'BPS junta estas dos causales en una sola página y un solo trámite. Se otorga a quien fue suspendido en la empresa —no trabaja ni cobra sueldo, pero sigue siendo empleado— o tiene una reducción laboral de al menos un 25 %. Mensuales y destajistas cobran el 50 % del promedio de los últimos seis meses enteros; los jornaleros, 12 jornales por mes calculados con esos mismos seis meses. En la reducción se liquida por el período de la reducción, en proporción a los días desocupados, y el destajista sólo tiene subsidio parcial cuando la reducción supera ese 25 %. El tope máximo, $ 67.754, es el mismo para las dos causales; el mínimo, $ 8.467, alcanza a la suspensión total pero no al trabajo reducido, al que el artículo 7.7 no nombra (enero 2026).',
+  },
+  {
+    question: '¿Cuánto es el tope del seguro de paro en 2026?',
+    short:
+      'Por despido baja cada mes, de $ 93.155 a $ 50.802; por suspensión o reducción es fijo en $ 67.754.',
+    answer:
+      'En la causal despido el tope no es uno solo: baja mes a mes junto con el porcentaje, de $ 93.155 el primer mes a $ 80.445, $ 67.754, $ 59.287, $ 55.044 y $ 50.802 el sexto (enero 2026). En suspensión total y en trabajo reducido el tope es único, $ 67.754 —el mismo importe que el tercer mes del despido—, porque el artículo 7.8 pone a las dos causales en el mismo numeral con el mismo máximo. Un tope de 8 BPC que circula en calculadoras de terceros no aparece en ninguna página de BPS: los topes reales son los seis de arriba. Si el promedio da menos, hay un mínimo de $ 8.467 para despido y suspensión total; el trabajo reducido no lo tiene, porque el artículo 7.7 no lo nombra.',
+  },
 ])

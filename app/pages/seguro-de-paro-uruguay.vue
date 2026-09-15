@@ -235,6 +235,77 @@
       </VCard>
     </section>
 
+    <!-- Partial unemployment: suspension and reduced schedule -->
+    <section id="paro-parcial" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Paro parcial: reducción de jornada o suspensión</h2>
+      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+        BPS junta estas dos causales en una sola página y un solo trámite: te suspendieron —no
+        trabajás ni cobrás sueldo, pero seguís siendo empleado— o te bajaron la jornada
+        <strong>al menos un 25 %</strong>. En las dos rige el 50 % fijo del artículo 7.2, no la
+        escala decreciente del despido.
+      </p>
+
+      <VRow class="mb-5">
+        <VCol cols="12" md="6">
+          <VCard variant="flat" class="req-card pa-5 h-100">
+            <h3 class="text-subtitle-1 font-weight-bold mb-2">Cuánto se cobra</h3>
+            <p class="mb-0 text-medium-emphasis">
+              Mensuales y destajistas: <strong>50 % del promedio</strong> de los últimos seis meses
+              enteros. Jornaleros: <strong>12 jornales por mes</strong>, calculados con esos mismos
+              seis meses. En reducción se liquida por el período de la reducción, en proporción a
+              los días desocupados, y el destajista tiene subsidio parcial recién cuando la
+              reducción supera el 25 %.
+            </p>
+          </VCard>
+        </VCol>
+        <VCol cols="12" md="6">
+          <VCard variant="flat" class="req-card pa-5 h-100">
+            <h3 class="text-subtitle-1 font-weight-bold mb-2">El trámite</h3>
+            <p class="mb-0 text-medium-emphasis">
+              La empresa tiene que ingresar la solicitud en línea dentro de los
+              <strong>10 días hábiles</strong> desde que se configura la causal. Si se niega a
+              hacerlo, el trabajador puede presentarse en las oficinas de BPS dentro de los
+              <strong>30 días corridos</strong> para reservar el derecho mientras se resuelve.
+            </p>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <VCard variant="flat" class="results-card pa-0">
+        <VTable class="cu-mobile-cards" density="comfortable">
+          <thead>
+            <tr>
+              <th scope="col">Situación</th>
+              <th scope="col">Cuánto cobrás</th>
+              <th scope="col" class="text-right">Tope</th>
+              <th scope="col">Duración</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in partialTable" :key="row.situation">
+              <td data-label="Situación">{{ row.situation }}</td>
+              <td data-label="Cuánto cobrás">{{ row.amount }}</td>
+              <td data-label="Tope" class="text-right">{{ formatUYU(row.cap) }}</td>
+              <td data-label="Duración">{{ row.duration }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+
+      <p class="text-caption text-medium-emphasis mt-3 mb-0">
+        El mínimo, {{ formatUYU(BENEFIT_FLOOR) }}, y el complemento del
+        {{ FAMILY_COMPLEMENT_PCT }} % por cónyuge, hijos o personas a cargo con ingresos de hasta 1
+        BPC ({{ formatUYU(bpc) }}) son los mismos que en la causal despido, y alcanzan a la
+        suspensión total (el trabajo reducido no lleva mínimo). Fuente:
+        <a
+          href="https://www.bps.gub.uy/18239/subsidio-por-desempleo-por-suspension.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          >BPS — Subsidio por desempleo por suspensión</a
+        >.
+      </p>
+    </section>
+
     <!-- Coverage -->
     <section id="a-quien-ampara" class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">A quién ampara</h2>
@@ -369,6 +440,7 @@ import { computed, reactive } from 'vue'
 import { URUGUAY } from '~/utils/calculators'
 import { formatUYU } from '~/utils/format'
 import {
+  BENEFIT_FLOOR,
   CAUSAL_DISPUTE_PROOF,
   CAUSALES,
   COVERAGE_RULES,
@@ -378,6 +450,8 @@ import {
   REPEAT_AFTER_MONTHS,
   REPEAT_CONTRIBUTION_MONTHS,
   REQUIREMENTS,
+  SUSPENSION_CAP,
+  SUSPENSION_PERCENTAGE,
   TERMINATION_CAUSES,
   UNEMPLOYMENT_CAPS_YEAR,
   UNEMPLOYMENT_FAQ,
@@ -414,6 +488,31 @@ const capsYear = UNEMPLOYMENT_CAPS_YEAR
 const repeatAfterMonths = REPEAT_AFTER_MONTHS
 const repeatContributionMonths = REPEAT_CONTRIBUTION_MONTHS
 
+/** Tabla chica de "Paro parcial": arma el texto sobre los datos ya publicados por el motor, sin
+ * duplicar ningún importe (SUSPENSION_CAP, SUSPENSION_PERCENTAGE, meses/jornales de CAUSALES).
+ * OJO CON LA DURACIÓN DE "REDUCCIÓN": BPS sólo publica "72 jornales" para esa causal (no un
+ * equivalente en meses, a diferencia de la suspensión total, que sí trae "4 meses o 48
+ * jornales"). `CAUSALES.reduccion.months` existe para la extensión por 50 años y el motor de
+ * cálculo (ver el test que fija "dura 6 meses o 72 jornales, como dice el artículo 6.1"), pero acá
+ * no se muestra: mostrar "6 meses" en esta tabla sería publicar un dato que BPS no publica para
+ * esta causal. */
+const suspensionCausal = CAUSALES.find(c => c.id === 'suspension')!
+const reduccionCausal = CAUSALES.find(c => c.id === 'reduccion')!
+const partialTable = [
+  {
+    situation: 'Suspensión total',
+    amount: `${SUSPENSION_PERCENTAGE} % del promedio (12 jornales por mes si cobrás por jornal)`,
+    cap: SUSPENSION_CAP,
+    duration: `${suspensionCausal.months} meses o ${suspensionCausal.jornales} jornales`,
+  },
+  {
+    situation: 'Reducción de jornada (≥25 %)',
+    amount: `Diferencia entre el ${SUSPENSION_PERCENTAGE} % del promedio y lo que seguís cobrando`,
+    cap: SUSPENSION_CAP,
+    duration: `${reduccionCausal.jornales} jornales`,
+  },
+]
+
 const verifiedAt = new Date(UNEMPLOYMENT_VERIFIED_AT).toLocaleDateString('es-UY', {
   day: 'numeric',
   month: 'long',
@@ -424,7 +523,7 @@ const verifiedAt = new Date(UNEMPLOYMENT_VERIFIED_AT).toLocaleDateString('es-UY'
 const canonicalUrl = 'https://cambio-uruguay.com/seguro-de-paro-uruguay'
 const title = 'Seguro de paro por despido: 66 % a 40 %'
 const description =
-  'Cuánto se cobra de seguro de paro con los porcentajes y topes 2026 de BPS. Por despido: 66 %, 57 %, 50 %, 45 %, 42 % y 40 % del promedio nominal de los últimos seis meses, con un tope distinto para cada mes. Por suspensión total y trabajo reducido: 50 % fijo. Calculadora por causal, extensión de seis meses para 50 o más (sólo en despido), complemento del 20 % por cargas familiares, aportes previos, quién queda amparado, qué corta el subsidio y cómo es el trámite.'
+  'Por despido cobrás 66 % a 40 % del promedio, con topes de $ 93.155 a $ 50.802 en 2026; por suspensión o reducción, 50 % fijo. Calculadora y requisitos.'
 
 defineOgImageComponent('Cambio', {
   title: 'Seguro de paro: cuánto cobrás',
@@ -450,7 +549,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'seguro de paro uruguay, cuanto cobro seguro de paro, subsidio por desempleo bps, seguro de paro cuantos meses, por que baja el seguro de paro, tope seguro de paro 2026, seguro de paro suspension, trabajo reducido bps, complemento 20 cargas familiares, seguro de paro 50 años, requisitos seguro de paro',
+        'seguro de paro uruguay, cuanto cobro seguro de paro, subsidio por desempleo bps, seguro de paro cuantos meses, por que baja el seguro de paro, tope seguro de paro 2026, seguro de paro suspension, trabajo reducido bps, complemento 20 cargas familiares, seguro de paro 50 años, requisitos seguro de paro, seguro de paro parcial, paro parcial, cuanto se cobra en el seguro de paro, seguro de paro reduccion de jornada',
     },
   ],
   script: [

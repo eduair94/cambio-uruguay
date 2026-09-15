@@ -908,3 +908,35 @@ describe('el FAQ cubre los huecos medidos en Reddit', () => {
     expect(f?.answer).not.toMatch(/Para el despido no publica ninguno/)
   })
 })
+
+// Agregado en la revisión de la sección "Paro parcial" (2026-09-15): fija las dos preguntas nuevas
+// por su texto exacto y los seis topes de despido que la respuesta del tope tiene que citar.
+describe('paro parcial y topes (agregado 2026-09-15)', () => {
+  it('pin: "¿Qué es el seguro de paro parcial y cuánto se cobra?" existe y menciona 25 % y 50 %', () => {
+    const f = UNEMPLOYMENT_FAQ.find(
+      x => x.question === '¿Qué es el seguro de paro parcial y cuánto se cobra?'
+    )
+    expect(f).toBeTruthy()
+    expect(f?.answer).toMatch(/25 %/)
+    expect(f?.answer).toMatch(/50 %/)
+  })
+
+  it('pin: "¿Cuánto es el tope del seguro de paro en 2026?" cita los seis topes de despido', () => {
+    const f = UNEMPLOYMENT_FAQ.find(
+      x => x.question === '¿Cuánto es el tope del seguro de paro en 2026?'
+    )
+    expect(f).toBeTruthy()
+    for (const cap of ['93.155', '80.445', '67.754', '59.287', '55.044', '50.802']) {
+      expect(f?.answer).toContain(cap)
+    }
+    // El debunk del "8 BPC" no puede dejar un importe suelto ($ 54.912) que un snippet levante
+    // fuera de contexto como si fuera un tope real.
+    expect(f?.answer).not.toMatch(/54\.912/)
+  })
+
+  it('los seis topes de despido y los topes únicos de suspensión/reducción son los vigentes', () => {
+    expect(DESPIDO_MONTHLY_CAPS).toEqual([93155, 80445, 67754, 59287, 55044, 50802])
+    expect(SUSPENSION_CAP).toBe(67754)
+    expect(BENEFIT_FLOOR).toBe(8467)
+  })
+})
