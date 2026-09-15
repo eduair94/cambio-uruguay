@@ -87,6 +87,7 @@ describe('adDensityForPath', () => {
       '/mi-lista',
       '/buscar',
       '/convertir/usd-a-uyu',
+      '/meal-prep-uruguay',
     ]) {
       expect(adDensityForPath(p), p).toBe('light')
       expect(maxAdSlots(adDensityForPath(p)), p).toBe(1)

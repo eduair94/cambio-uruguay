@@ -43,4 +43,4 @@ Nuxt 4 (`compatibilityVersion: 4`) + Vuetify 4.1.5 SSR frontend for cambio-urugu
 - Nitro `scheduledTasks` (UTC) in `nuxt.config.ts`: `drivers:daily`, `blog:daily`, `figures:drift`, `newsletter:daily`, `alerts:check` (*/10m), `telegram:summary`, `couriers:scrape`, `withdraw:iva-check`, `casas:reviews`, `reddit:sentiment`, `bcu:warnings`. Durable fs stores under `.data/` (blog, couriers, withdraw, casas-reviews, figures, company).
 
 ## Deeper docs
-`docs/app/SEO_README.md`, `docs/app/AUTH_README.md`, `docs/app/PERFORMANCE_IMPROVEMENTS.md`; SEO strategy/audits in `docs/seo/`. Env template: `app/.env.example`. Backend/deploy specifics live in the root `AGENTS.md` and the maintainer's memory, not here.
+`docs/app/SEO_README.md`, `docs/app/AUTH_README.md`, `docs/app/PERFORMANCE_IMPROVEMENTS.md`; SEO strategy/audits in `docs/seo/`. Calculadoras puras con página propia: `docs/app/PLAN_DE_VIDA.md`, `docs/app/MEAL_PREP.md` (`/meal-prep-uruguay`: motor en `utils/mealprep/`, precios proyectados de `GET /precios/articles`, sin job). Env template: `app/.env.example`. Backend/deploy specifics live in the root `AGENTS.md` and the maintainer's memory, not here.

@@ -80,6 +80,8 @@ function isCalculator(path: string): boolean {
  */
 const LIGHT = [
   '/',
+  // Un planificador es un instrumento: una sola unidad, que no se meta en la tabla.
+  '/meal-prep-uruguay',
   '/dolar-hoy',
   '/dolar',
   '/cotizacion',
