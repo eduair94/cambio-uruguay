@@ -4,7 +4,7 @@
 
     <header class="mb-6">
       <VChip color="primary" variant="tonal" size="small" class="mb-3">
-        Combustibles · vigente desde el 1.º de {{ month }}
+        Combustibles<template v-if="month"> · vigente desde el 1.º de {{ month }}</template>
       </VChip>
       <h1 class="text-h4 text-md-h3 font-weight-bold mb-3">Precio de la nafta en Uruguay hoy</h1>
       <p class="text-body-1" style="max-width: 68ch">
@@ -12,7 +12,9 @@
         <strong>{{ fmt(latest.premium97) }}</strong
         >; el Gasoil 50-S, <strong>{{ fmt(latest.gasoil50s) }}</strong
         >, y el supergás, <strong>{{ fmt(latest.supergas) }}</strong> el kilo. Precios fijados por
-        decreto, iguales en todo el país, vigentes desde el 1.º de {{ month }}.
+        decreto, iguales en todo el país<template v-if="month"
+          >, vigentes desde el 1.º de {{ month }}</template
+        >.
       </p>
       <p v-if="superMove" class="text-body-2 text-medium-emphasis mb-1" style="max-width: 68ch">
         {{ superMove }}
@@ -28,10 +30,10 @@
         <VTable class="cu-mobile-cards" density="comfortable">
           <thead>
             <tr>
-              <th>Producto</th>
-              <th class="text-right">Precio</th>
-              <th class="text-right">vs. mes anterior</th>
-              <th class="text-right">Último cambio</th>
+              <th scope="col">Producto</th>
+              <th scope="col" class="text-right">Precio</th>
+              <th scope="col" class="text-right">vs. mes anterior</th>
+              <th scope="col" class="text-right">Último cambio</th>
             </tr>
           </thead>
           <tbody>
@@ -49,6 +51,12 @@
           </tbody>
         </VTable>
       </div>
+      <VAlert v-if="staleMonth" type="info" variant="tonal" density="comfortable" class="mt-3">
+        <span class="text-body-2">
+          Última vigencia publicada: 1.º de {{ month }}. Si el Ejecutivo ya fijó los precios de
+          {{ currentMonth }}, la tabla se actualiza en el día.
+        </span>
+      </VAlert>
       <p class="text-caption text-medium-emphasis mt-2">Fuente: ANCAP. {{ asOfLabel }}</p>
     </section>
 
@@ -60,8 +68,9 @@
       </p>
       <p style="max-width: 68ch">
         El decreto se firma en los últimos días del mes, después del informe de paridad de
-        importación de URSEA. Si el Ejecutivo decide mantener los precios, la tabla de arriba no se
-        mueve.
+        importación que publica
+        <a :href="URSEA_PPI_URL" target="_blank" rel="noopener noreferrer" class="cu-link">URSEA</a
+        >. Si el Ejecutivo decide mantener los precios, la tabla de arriba no se mueve.
       </p>
     </section>
 
@@ -83,13 +92,13 @@
         <VTable class="cu-mobile-cards" density="compact">
           <thead>
             <tr>
-              <th>Vigencia</th>
-              <th class="text-right">Súper 95</th>
-              <th class="text-right">Premium 97</th>
-              <th class="text-right">Gasoil 50-S</th>
-              <th class="text-right">Gasoil 10-S</th>
-              <th class="text-right">Queroseno</th>
-              <th class="text-right">Supergás (kg)</th>
+              <th scope="col">Vigencia</th>
+              <th scope="col" class="text-right">Súper 95</th>
+              <th scope="col" class="text-right">Premium 97</th>
+              <th scope="col" class="text-right">Gasoil 50-S</th>
+              <th scope="col" class="text-right">Gasoil 10-S</th>
+              <th scope="col" class="text-right">Queroseno</th>
+              <th scope="col" class="text-right">Supergás (kg)</th>
             </tr>
           </thead>
           <tbody>
@@ -171,7 +180,8 @@ import {
   formatUyu,
   lastChange,
   monthLabel,
-  nextMonthLabel,
+  monthOfYearLabel,
+  nextMonthOfYearLabel,
   yearAgo,
 } from '~/utils/fuelPrices'
 import type { FuelResponse, FuelRow } from '~/utils/fuelPrices'
@@ -201,8 +211,32 @@ const showAll = ref(false)
 const visibleRows = computed(() => (showAll.value ? rowsDesc.value : rowsDesc.value.slice(0, 12)))
 
 const fmt = formatUyu
-const month = computed(() => monthLabel(latest.value.from))
-const nextMonth = computed(() => nextMonthLabel(latest.value.from))
+// "setiembre de 2026": estas dos van dentro de la frase «1.º de …». Las celdas de la tabla siguen
+// con `monthLabel` ("setiembre 2026"), que es una etiqueta y no una oración.
+const month = computed(() => monthOfYearLabel(latest.value.from))
+const nextMonth = computed(() => nextMonthOfYearLabel(latest.value.from))
+
+// El mes de hoy en Montevideo, resuelto UNA vez en setup: en el template `Date.now()` se
+// reevaluaría en cada render y el SSR y el cliente podrían no coincidir.
+const TODAY_MONTH = new Date()
+  .toLocaleDateString('en-CA', { timeZone: 'America/Montevideo' })
+  .slice(0, 7)
+const currentMonth = monthOfYearLabel(`${TODAY_MONTH}-01`)
+
+/**
+ * La vigencia más nueva no es de este mes.
+ *
+ * No es un error por sí solo —el decreto se firma en los últimos días del mes y puede tardar— pero
+ * la página dice "hoy" en el título, así que tiene que admitir cuándo el dato que muestra es del
+ * mes pasado en vez de dejar al lector suponiendo que nadie tocó el precio.
+ */
+const staleMonth = computed(() => {
+  const from = latest.value.from
+  return Boolean(from) && from.slice(0, 7) !== TODAY_MONTH
+})
+
+const URSEA_PPI_URL =
+  'https://www.gub.uy/unidad-reguladora-servicios-energia-agua/tematica/paridad-precios-importacion-ppi'
 
 const signed = (c: { abs: number; pct: number } | null): string =>
   c == null

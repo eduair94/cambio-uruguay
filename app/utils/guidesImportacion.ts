@@ -56,7 +56,7 @@ export const importacionGuides: readonly Guide[] = [
       },
       {
         heading: 'Cuándo no pagás',
-        body: 'Hay dos puertas de salida y las dos son estrechas. La primera: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío, que la Aduana exonera de IVA por el acuerdo comercial vigente con ese país. Ojo con la fecha, porque cambia el resultado: desde el 1.º de octubre de 2026 la exoneración además exige que el vendedor que emite la factura esté registrado ante la Aduana, y si no figura en la lista oficial el envío paga. La segunda puerta: los obsequios familiares genuinos, de persona física a persona física, en cantidades razonables y para uso personal, con declaración de valor. Escribir "regalo" sobre una compra comercial no la convierte en obsequio. Y acá está el detalle que descoloca a todo el mundo: no pagar no es no consumir. Un envío exonerado igual te gasta uno de los tres del año y su valor se descuenta del cupo, así que si traés US$ 198 de Estados Unidos sin IVA te quedan US$ 602 y dos envíos.',
+        body: 'Hay dos puertas de salida y las dos son estrechas. La primera: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío, que la Aduana exonera de IVA por el acuerdo comercial vigente con ese país. Ojo con la fecha, porque cambia el resultado: desde el 1.º de octubre de 2026, salvo nueva prórroga, la exoneración además exige que el vendedor que emite la factura esté registrado ante la Aduana, y si no figura en la lista oficial el envío paga. La segunda puerta: los obsequios familiares genuinos, de persona física a persona física, en cantidades razonables y para uso personal, con declaración de valor. Escribir "regalo" sobre una compra comercial no la convierte en obsequio. Y acá está el detalle que descoloca a todo el mundo: no pagar no es no consumir. Un envío exonerado igual te gasta uno de los tres del año y su valor se descuenta del cupo, así que si traés US$ 198 de Estados Unidos sin IVA te quedan US$ 602 y dos envíos.',
       },
       {
         heading: 'La franquicia nueva: US$ 800 en tres envíos',
@@ -125,7 +125,7 @@ export const importacionGuides: readonly Guide[] = [
       },
       {
         q: '¿Conviene comprar en EE.UU.?',
-        a: 'Para valores bajos, muchas veces sí: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío están exonerados de IVA. Pero desde el 1.º de octubre de 2026 el vendedor que factura tiene que estar registrado ante la Aduana, y el envío igual te consume uno de los tres del año.',
+        a: 'Para valores bajos, muchas veces sí: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío están exonerados de IVA. Pero desde el 1.º de octubre de 2026, salvo nueva prórroga, el vendedor que factura tiene que estar registrado ante la Aduana, y el envío igual te consume uno de los tres del año.',
       },
     ],
     related: [

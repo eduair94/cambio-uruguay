@@ -95,7 +95,6 @@ export const JUSTIFICATION_CAUSES: readonly string[] = [
   'Razones de fuerza mayor',
   'Estar fuera del país el día de la elección',
   'Residir en un departamento distinto al del circuito asignado',
-  'Ser mayor de 75 años o titular de una prestación por incapacidad (no hace falta justificar)',
 ]
 
 export function fineInPesos(ur: number, urValue: number | null | undefined): number | null {

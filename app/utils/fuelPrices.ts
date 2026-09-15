@@ -63,14 +63,38 @@ export function monthLabel(from: string): string {
   return month ? `${month} ${m[1]}` : ''
 }
 
-/** La vigencia siguiente a una ISO: el próximo día 1 en el que el precio puede cambiar. */
-export function nextMonthLabel(from: string): string {
+/**
+ * "setiembre de 2026": la misma vigencia, con el "de" que pide la frase «1.º de setiembre de 2026».
+ *
+ * Existe aparte de `monthLabel` porque las dos formas se leen distinto según dónde caen: una celda
+ * de la tabla quiere "setiembre 2026" (es una etiqueta), y una oración no puede decir "desde el
+ * 1.º de setiembre 2026". Un solo formato obligaría a elegir cuál de los dos se lee mal.
+ */
+export function monthOfYearLabel(from: string): string {
+  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(from ?? '')
+  if (!m) return ''
+  const month = MONTHS[Number(m[2]) - 1]
+  return month ? `${month} de ${m[1]}` : ''
+}
+
+/** La vigencia siguiente a una ISO, como fecha del día 1. Cadena vacía si la entrada no es legible. */
+function nextFrom(from: string): string {
   const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(from ?? '')
   if (!m) return ''
   const month = Number(m[2])
   const year = month === 12 ? Number(m[1]) + 1 : Number(m[1])
   const next = month === 12 ? 1 : month + 1
-  return monthLabel(`${year}-${String(next).padStart(2, '0')}-01`)
+  return `${year}-${String(next).padStart(2, '0')}-01`
+}
+
+/** La vigencia siguiente a una ISO: el próximo día 1 en el que el precio puede cambiar. */
+export function nextMonthLabel(from: string): string {
+  return monthLabel(nextFrom(from))
+}
+
+/** Ídem, en la forma que pide «el 1.º de …». */
+export function nextMonthOfYearLabel(from: string): string {
+  return monthOfYearLabel(nextFrom(from))
 }
 
 const round2 = (n: number): number => Math.round(n * 100) / 100
@@ -190,10 +214,10 @@ export function buildFuelFaq(
   previous: FuelRow | null,
   rows: readonly FuelRow[]
 ): FaqItem[] {
-  const month = monthLabel(latest.from)
+  const month = monthOfYearLabel(latest.from)
   // Sin vigencia legible no se escribe "desde el 1.º de ." — la cláusula entera desaparece.
   const since = month ? ` desde el 1.º de ${month}` : ''
-  const next = nextMonthLabel(latest.from)
+  const next = nextMonthOfYearLabel(latest.from)
   const superChange = changeBetween(previous?.super95, latest.super95)
   const last = lastChange(rows, 'super95')
   // Nombre de la vigencia anterior, con salida por si esa fila viniera sin fecha legible.

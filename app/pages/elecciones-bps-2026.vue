@@ -259,7 +259,9 @@ const canonicalUrl = 'https://cambio-uruguay.com/elecciones-bps-2026'
 const title = 'Elecciones del BPS 2026: quién vota y multa'
 const description = computed(() => {
   const one = fmt(fineInPesos(1, urValue.value))
-  return `Domingo 22 de noviembre de 2026, voto obligatorio para trabajadores, jubilados y empresas; exentos los mayores de 75 y las prestaciones por incapacidad. Multa de 1 UR${one ? ` (hoy ${one})` : ''}, 2 UR para públicos y profesionales, 6 a 20 UR para empresas. Cómo justificar hasta el 21 de enero de 2027.`
+  // ≤ 160 caracteres: Google corta la description y el resto no lo lee nadie. Lo que sobrevive al
+  // recorte es la fecha, que es obligatorio y cuánto cuesta faltar.
+  return `Domingo 22 de noviembre de 2026, voto obligatorio. La multa por no votar es de 1 UR${one ? ` (hoy ${one})` : ''}; 2 UR para públicos y de 6 a 20 UR para empresas.`
 })
 
 defineOgImageComponent('Cambio', {

@@ -186,7 +186,9 @@ export const FONASA_STEPS: readonly FonasaStep[] = [
   {
     n: 3,
     title: 'Elegís dónde cobrar',
-    detail: `Esto sí depende de vos y es lo único que puede demorarte el cobro: si elegís depósito en cuenta bancaria o dinero electrónico antes del 16 de setiembre, te lo acreditan el primer día de pago; si no, cobrás presencial con cédula en ${FONASA_COBRO.inPerson.join(', ')}.`,
+    // Sin tiempo verbal a propósito: la fecha límite (16 de setiembre de 2026) pasa a mitad de la
+    // vida útil de la página y «si elegís antes del 16» quedaría falso al día siguiente.
+    detail: `Es la única parte del trámite que depende de vos: con depósito en cuenta bancaria o dinero electrónico elegido hasta el 16 de setiembre de 2026, el BPS acredita el primer día de pago; sin esa opción registrada, el cobro es presencial con cédula en ${FONASA_COBRO.inPerson.join(', ')}.`,
   },
   {
     n: 4,
@@ -217,17 +219,17 @@ export const FONASA_FAQ: readonly FonasaFaq[] = [
   {
     question: '¿Cuándo es la devolución de FONASA 2026?',
     short: 'Se empieza a pagar el 21 de setiembre',
-    answer: `El primer día de pago del ejercicio ${LATEST_EXERCISE.year} es el 21 de setiembre de 2026. Si elegiste depósito en cuenta bancaria o dinero electrónico antes del 16 de setiembre, el BPS lo acredita dentro de las ${FONASA_COBRO.depositWithin} siguientes al 21 de setiembre, el primer día de pago.`,
+    answer: `El primer día de pago del ejercicio ${LATEST_EXERCISE.year} es el 21 de setiembre de 2026. Con depósito en cuenta bancaria o dinero electrónico elegido hasta el 16 de setiembre, el BPS acredita el dinero dentro de las ${FONASA_COBRO.depositWithin} siguientes a ese primer día de pago.`,
   },
   {
     question: '¿A quién le corresponde la devolución de FONASA?',
     short: 'No es un sueldo fijo: depende de tu tope anual',
-    answer: `No hay un ingreso fijo desde el cual se cobra: depende de tu tope anual (el CPE de tu cobertura y la de quienes tenés a cargo, más 25 %). Como referencia, en el ejercicio ${LATEST_EXERCISE.year} tuvieron devolución los trabajadores con un promedio mensual nominal superior a $ ${LATEST_EXERCISE.workerThreshold.toLocaleString('es-UY')} y los jubilados o pensionistas con más de $ ${LATEST_EXERCISE.retireeThreshold.toLocaleString('es-UY')}. Quien atribuye cobertura a más personas tiene un tope más alto y necesita ganar más para superarlo.`,
+    answer: `No hay un ingreso fijo desde el cual se cobra: depende de tu tope anual (el CPE de tu cobertura y la de quienes tenés a cargo, más 25 %). Como referencia, por el ejercicio ${LATEST_EXERCISE.year} el BPS informó que les corresponde devolución a los trabajadores con un promedio mensual nominal superior a $ ${LATEST_EXERCISE.workerThreshold.toLocaleString('es-UY')} y a los jubilados o pensionistas con más de $ ${LATEST_EXERCISE.retireeThreshold.toLocaleString('es-UY')}. Quien atribuye cobertura a más personas tiene un tope más alto y necesita ganar más para superarlo.`,
   },
   {
     question: '¿Qué pasa si no elegí cómo cobrar antes del 16 de setiembre?',
     short: 'Se cobra presencial, con cédula',
-    answer: `Si no elegiste depósito en cuenta bancaria o dinero electrónico antes del 16 de setiembre de 2026, el cobro pasa a ser presencial con cédula de identidad en ${FONASA_COBRO.inPerson.join(', ')}.`,
+    answer: `Sin depósito en cuenta bancaria o dinero electrónico elegido hasta el 16 de setiembre de 2026, el cobro es presencial con cédula de identidad en ${FONASA_COBRO.inPerson.join(', ')}.`,
   },
   {
     question: '¿Hay que pedir la devolución de FONASA?',
@@ -238,7 +240,7 @@ export const FONASA_FAQ: readonly FonasaFaq[] = [
   {
     question: '¿Desde qué sueldo te devuelven?',
     short: 'No hay un sueldo fijo: depende de a cuánta gente cubrís',
-    answer: `No hay un umbral único. Por el ejercicio ${LATEST_EXERCISE.year} el BPS informó que tuvieron devolución los trabajadores con un promedio de ingresos mensuales superior a $ ${LATEST_EXERCISE.workerThreshold.toLocaleString('es-UY')} y los jubilados o pensionistas con más de $ ${LATEST_EXERCISE.retireeThreshold.toLocaleString('es-UY')} (valores nominales). Esas cifras corresponden al caso más simple. Si atribuís cobertura a hijos o a tu cónyuge, tu tope anual sube y hace falta ganar más para superarlo.`,
+    answer: `No hay un umbral único. Por el ejercicio ${LATEST_EXERCISE.year} el BPS informó que les corresponde devolución a los trabajadores con un promedio de ingresos mensuales superior a $ ${LATEST_EXERCISE.workerThreshold.toLocaleString('es-UY')} y a los jubilados o pensionistas con más de $ ${LATEST_EXERCISE.retireeThreshold.toLocaleString('es-UY')} (valores nominales). Esas cifras corresponden al caso más simple. Si atribuís cobertura a hijos o a tu cónyuge, tu tope anual sube y hace falta ganar más para superarlo.`,
   },
   {
     question: '¿Qué es el CPE y por qué se le suma 25 %?',

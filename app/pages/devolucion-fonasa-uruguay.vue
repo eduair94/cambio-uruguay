@@ -7,11 +7,18 @@
       </h1>
       <p class="lead mb-6">
         Una vez por año el BPS compara lo que aportaste al FONASA con un tope, y si lo pasaste te
-        devuelve la diferencia. Por el ejercicio {{ latest.year }} le tocó a
-        <strong>{{ people }} personas</strong> y se pagaron
-        <strong>{{ totalMillones }} millones de pesos</strong> a partir del {{ paidFrom }}. Acá
-        están la cuenta exacta, por qué el «sueldo desde el que te devuelven» no es una regla fija,
-        y el cambio de metodología que recién se va a notar en {{ METHODOLOGY_FIRST_IMPACT_YEAR }}.
+        devuelve la diferencia. Por el ejercicio {{ latest.year }}
+        <template v-if="paidFromPassed">
+          le tocó a <strong>{{ people }} personas</strong> y se pagaron
+          <strong>{{ totalMillones }} millones de pesos</strong> a partir del {{ paidFrom }}.
+        </template>
+        <template v-else>
+          le toca a <strong>{{ people }} personas</strong> y se pagan
+          <strong>{{ totalMillones }} millones de pesos</strong> a partir del {{ paidFrom }}.
+        </template>
+        Acá están la cuenta exacta, por qué el «sueldo desde el que te devuelven» no es una regla
+        fija, y el cambio de metodología que recién se va a notar en
+        {{ METHODOLOGY_FIRST_IMPACT_YEAR }}.
       </p>
 
       <VCard class="consulta-card pa-5 pa-md-6 mb-6" variant="flat">
@@ -99,17 +106,25 @@
     <!-- Dónde y cómo se cobra en 2026 -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Dónde y cómo se cobra en 2026</h2>
-      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+      <p v-if="!chooseByPassed" class="text-medium-emphasis mb-5" style="max-width: 72ch">
         Esto es lo único que depende de vos y lo único que puede demorarte el cobro: elegir dónde
         recibir el dinero antes del {{ chooseByDate }}.
+      </p>
+      <p v-else class="text-medium-emphasis mb-5" style="max-width: 72ch">
+        Era lo único que dependía de vos, y el plazo ya venció: si elegiste depósito antes del
+        {{ chooseByDate }} cobrás por ahí; si no, el cobro es presencial con cédula.
       </p>
       <VRow>
         <VCol cols="12" md="6">
           <VCard variant="flat" class="cobro-card pa-5 h-100">
             <div class="text-overline mb-2">Depósito</div>
-            <p class="mb-2">
+            <p v-if="!chooseByPassed" class="mb-2">
               Elegí una de estas opciones antes del <strong>{{ chooseByDate }}</strong
               >:
+            </p>
+            <p v-else class="mb-2">
+              Si antes del <strong>{{ chooseByDate }}</strong> elegiste una de estas opciones,
+              cobrás por depósito:
             </p>
             <ul class="cobro-list mb-3">
               <li v-for="opt in FONASA_COBRO.depositOptions" :key="opt">{{ opt }}</li>
@@ -266,7 +281,7 @@
           <thead>
             <tr>
               <th>Ejercicio</th>
-              <th>Se pagó desde</th>
+              <th>Primer día de pago</th>
               <th>Personas</th>
               <th>Total devuelto</th>
               <th>Promedio mensual desde el que hubo devolución</th>
@@ -275,7 +290,7 @@
           <tbody>
             <tr v-for="e in FONASA_EXERCISES" :key="e.year">
               <td data-label="Ejercicio" class="font-weight-medium">{{ e.year }}</td>
-              <td data-label="Se pagó desde">{{ longDate(e.paidFrom) }}</td>
+              <td data-label="Primer día de pago">{{ longDate(e.paidFrom) }}</td>
               <td data-label="Personas">+{{ e.people.toLocaleString('es-UY') }}</td>
               <td data-label="Total devuelto">
                 {{ Math.round(e.totalPesos / 1_000_000).toLocaleString('es-UY') }} millones
@@ -329,7 +344,7 @@
           El mínimo es el {{ FONASA_ANTICIPO.minPctOfCpe }} % del costo promedio equivalente:
           <strong>{{ money(FONASA_ANTICIPO.minMonthly) }}</strong> desde el {{ anticipoSince }}.
         </p>
-        <p class="mb-3">{{ FONASA_ANTICIPO.dueExample }}.</p>
+        <p class="mb-3">Por ejemplo, {{ FONASA_ANTICIPO.dueExample }}.</p>
         <p class="mb-0">
           La factura se saca en el sitio del
           <a :href="FONASA_ANTICIPO.url" target="_blank" rel="noopener noreferrer">BPS</a>.
@@ -439,6 +454,18 @@ const longDate = (iso: string) =>
     timeZone: 'UTC',
   })
 
+/**
+ * Hoy en Montevideo, como YYYY-MM-DD, resuelto UNA vez al armar la página.
+ *
+ * Es lo que decide el tiempo verbal: el primer día de pago del ejercicio 2025 es el 21 de setiembre
+ * de 2026, así que la página se escribió con «se pagaron» sobre un pago que todavía no había
+ * empezado. En SSR esto se evalúa al renderizar, que es lo correcto acá porque la página no está
+ * cacheada por un año; comparar cadenas ISO evita depender del huso del proceso.
+ */
+const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Montevideo' })
+const paidFromPassed = todayIso >= latest.paidFrom
+const chooseByPassed = todayIso > FONASA_COBRO.chooseBy
+
 const verifiedAt = longDate(FONASA_VERIFIED_AT)
 const paidFrom = longDate(latest.paidFrom)
 const chooseByDate = longDate(FONASA_COBRO.chooseBy)
@@ -453,7 +480,12 @@ const faqItems = computed<FaqItem[]>(() =>
 
 const canonicalUrl = 'https://cambio-uruguay.com/devolucion-fonasa-uruguay'
 const title = 'Devolución FONASA 2026: cuándo se cobra'
-const description = `Por ${latest.year} el BPS devolvió ${totalMillones} millones a ${latest.people.toLocaleString('es-UY')} personas. Cobrás si tu promedio mensual pasó $ ${money(latest.workerThreshold)} ($ ${money(latest.retireeThreshold)} jubilados). Calculá tu tope con el CPE de $ ${money(CPE_MONTHLY)}. Consultá si estás comprendido en bps.gub.uy, ${FONASA_CONSULTA.phone} o WhatsApp ${FONASA_CONSULTA.whatsapp}.`
+// ≤ 160 caracteres (la anterior tenía 243 y Google la cortaba a la mitad), y en el tiempo verbal
+// que corresponde: el primer día de pago es el 21 de setiembre de 2026 y antes de esa fecha «el BPS
+// devolvió» era falso.
+const description = paidFromPassed
+  ? `El BPS devolvió ${totalMillones} millones a ${latest.people.toLocaleString('es-UY')} personas desde el ${paidFrom}. Consultá si te toca en bps.gub.uy, ${FONASA_CONSULTA.phone} o WhatsApp.`
+  : `El BPS informó que devolverá ${totalMillones} millones a ${latest.people.toLocaleString('es-UY')} personas desde el ${paidFrom}. Consultá si te toca en bps.gub.uy, ${FONASA_CONSULTA.phone} o WhatsApp.`
 
 defineOgImageComponent('Cambio', {
   title: 'Devolución de FONASA',
@@ -533,7 +565,7 @@ useHead(() => ({
 .cobro-card,
 .anticipo-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(var(--v-theme-surface), 1);
 }
 .warn-card {

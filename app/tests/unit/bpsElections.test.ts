@@ -40,7 +40,7 @@ describe('elecciones del BPS 2026', () => {
     expect(fineInPesos(0, 1921.36)).toBeNull()
   })
   it('causales, FAQ y fuentes', () => {
-    expect(JUSTIFICATION_CAUSES.length).toBeGreaterThanOrEqual(5)
+    expect(JUSTIFICATION_CAUSES.length).toBeGreaterThanOrEqual(4)
     expect(BPS_ELECTIONS_FAQ.length).toBeGreaterThanOrEqual(6)
     for (const f of BPS_ELECTIONS_FAQ) expect(f.answer.length).toBeGreaterThan(40)
     expect(BPS_ELECTIONS_SOURCES.length).toBeGreaterThanOrEqual(5)

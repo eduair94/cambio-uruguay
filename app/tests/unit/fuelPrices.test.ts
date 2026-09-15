@@ -10,7 +10,9 @@ import {
   formatUyu,
   lastChange,
   monthLabel,
+  monthOfYearLabel,
   nextMonthLabel,
+  nextMonthOfYearLabel,
   yearAgo,
 } from '../../utils/fuelPrices'
 import type { FuelRow } from '../../utils/fuelPrices'
@@ -39,6 +41,17 @@ describe('monthLabel', () => {
   it('no explota con basura', () => {
     expect(monthLabel('')).toBe('')
     expect(monthLabel('nope')).toBe('')
+  })
+})
+
+describe('monthOfYearLabel', () => {
+  it('agrega el "de" que pide «el 1.º de …»', () => {
+    expect(monthOfYearLabel('2026-09-01')).toBe('setiembre de 2026')
+    expect(nextMonthOfYearLabel('2026-12-01')).toBe('enero de 2027')
+  })
+  it('no explota con basura', () => {
+    expect(monthOfYearLabel('')).toBe('')
+    expect(nextMonthOfYearLabel('nope')).toBe('')
   })
 })
 
@@ -139,7 +152,7 @@ describe('buildFuelFaq', () => {
   })
   it('las respuestas llevan los números vigentes', () => {
     expect(faq.map(f => f.answer).join(' ')).toContain('$ 88,67')
-    expect(faq.map(f => f.answer).join(' ')).toContain('setiembre 2026')
+    expect(faq.map(f => f.answer).join(' ')).toContain('setiembre de 2026')
   })
   it('sin vigencia anterior escribe respuestas enteras, sin undefined ni huecos', () => {
     const sinPrevia = buildFuelFaq(rows[3]!, null, rows)
@@ -151,7 +164,7 @@ describe('buildFuelFaq', () => {
       expect(f.answer, f.id).not.toMatch(/\bde\s*[.,]/)
       expect(f.answer, f.id).not.toMatch(/ {2,}/)
     }
-    expect(sinPrevia.map(f => f.answer).join(' ')).toContain('setiembre 2026')
+    expect(sinPrevia.map(f => f.answer).join(' ')).toContain('setiembre de 2026')
   })
   it('sin vigencia legible no promete una fecha que no tiene', () => {
     const huerfana = buildFuelFaq({ ...rows[3]!, from: '' }, null, [])
