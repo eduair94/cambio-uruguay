@@ -1,0 +1,1709 @@
+{
+ "day": "2026-09-14",
+ "articles": [
+  {
+   "articleId": 361,
+   "name": "Aceite de girasol - Precio Líder",
+   "qty": 900,
+   "unit": "ml",
+   "p50": 98,
+   "n": 80
+  },
+  {
+   "articleId": 2,
+   "name": "Aceite de girasol - Río de la Plata",
+   "qty": 900,
+   "unit": "ml",
+   "p50": 124.9,
+   "n": 366
+  },
+  {
+   "articleId": 359,
+   "name": "Aceite de girasol - Tata",
+   "qty": 900,
+   "unit": "ml",
+   "p50": 99,
+   "n": 86
+  },
+  {
+   "articleId": 3,
+   "name": "Aceite de girasol - Uruguay",
+   "qty": 900,
+   "unit": "ml",
+   "p50": 97,
+   "n": 361
+  },
+  {
+   "articleId": 1,
+   "name": "Aceite de girasol - Óptimo",
+   "qty": 900,
+   "unit": "ml",
+   "p50": 109,
+   "n": 666
+  },
+  {
+   "articleId": 365,
+   "name": "Aceite de girasol y maíz - Tienda Inglesa",
+   "qty": 900,
+   "unit": "ml",
+   "p50": 104,
+   "n": 78
+  },
+  {
+   "articleId": 4,
+   "name": "Aceite de maíz - Delicia",
+   "qty": 900,
+   "unit": "ml",
+   "p50": 131,
+   "n": 440
+  },
+  {
+   "articleId": 5,
+   "name": "Aceite de maíz - Rio de la Plata",
+   "qty": 900,
+   "unit": "ml",
+   "p50": 145,
+   "n": 360
+  },
+  {
+   "articleId": 7,
+   "name": "Aceite de soja - Condesa",
+   "qty": 900,
+   "unit": "ml",
+   "p50": 82,
+   "n": 427
+  },
+  {
+   "articleId": 8,
+   "name": "Aceite de soja - Río de la Plata",
+   "qty": 900,
+   "unit": "ml",
+   "p50": 79,
+   "n": 356
+  },
+  {
+   "articleId": 9,
+   "name": "Aceite de soja - Salad",
+   "qty": 900,
+   "unit": "ml",
+   "p50": 69,
+   "n": 13
+  },
+  {
+   "articleId": 318,
+   "name": "Afeitadora Gillette Mach3 Dispenser",
+   "qty": 2,
+   "unit": "un",
+   "p50": 588,
+   "n": 490
+  },
+  {
+   "articleId": 319,
+   "name": "Afeitadora Xtreme3 Piel Delicada",
+   "qty": 1,
+   "unit": "un",
+   "p50": 111,
+   "n": 558
+  },
+  {
+   "articleId": 12,
+   "name": "Agua de mesa - Con Gas Salus",
+   "qty": 2,
+   "unit": "l",
+   "p50": 80,
+   "n": 597
+  },
+  {
+   "articleId": 10,
+   "name": "Agua de mesa Con Gas - Matutina",
+   "qty": 2.25,
+   "unit": "l",
+   "p50": 65,
+   "n": 479
+  },
+  {
+   "articleId": 11,
+   "name": "Agua de mesa Con Gas - Nativa",
+   "qty": 2,
+   "unit": "l",
+   "p50": 79,
+   "n": 376
+  },
+  {
+   "articleId": 367,
+   "name": "Agua de mesa Sin Gas - Matutina",
+   "qty": 2.25,
+   "unit": "l",
+   "p50": 65,
+   "n": 437
+  },
+  {
+   "articleId": 366,
+   "name": "Agua de mesa Sin Gas - Salus",
+   "qty": 2.25,
+   "unit": "l",
+   "p50": 80,
+   "n": 594
+  },
+  {
+   "articleId": 368,
+   "name": "Agua de mesa Sin Gas - Vitale",
+   "qty": 2.5,
+   "unit": "l",
+   "p50": 75,
+   "n": 584
+  },
+  {
+   "articleId": 370,
+   "name": "Agua mineral Sin Gas (bidón) - Nativa",
+   "qty": 6,
+   "unit": "l",
+   "p50": 139.9,
+   "n": 398
+  },
+  {
+   "articleId": 369,
+   "name": "Agua mineral Sin Gas (bidón) - Salus",
+   "qty": 6.25,
+   "unit": "l",
+   "p50": 147,
+   "n": 610
+  },
+  {
+   "articleId": 14,
+   "name": "Aguja Vacuna Sin  hueso",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 369,
+   "n": 180
+  },
+  {
+   "articleId": 13,
+   "name": "Aguja vacuna Con hueso",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 469,
+   "n": 125
+  },
+  {
+   "articleId": 347,
+   "name": "Alcohol en gel Bioset 250ml.",
+   "qty": 250,
+   "unit": "ml",
+   "p50": 142,
+   "n": 139
+  },
+  {
+   "articleId": 346,
+   "name": "Alcohol rectificado Droguería Paysandú 250ml.",
+   "qty": 250,
+   "unit": "ml",
+   "p50": 80,
+   "n": 29
+  },
+  {
+   "articleId": 348,
+   "name": "Algodón Zig Zag Cisne 100grs.",
+   "qty": 100,
+   "unit": "g",
+   "p50": 128,
+   "n": 625
+  },
+  {
+   "articleId": 18,
+   "name": "Arroz Blanco - Aruba",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 48,
+   "n": 203
+  },
+  {
+   "articleId": 15,
+   "name": "Arroz Blanco - Blue Patna",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 65,
+   "n": 443
+  },
+  {
+   "articleId": 16,
+   "name": "Arroz blanco - Green Chef",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 55,
+   "n": 443
+  },
+  {
+   "articleId": 17,
+   "name": "Arroz blanco - Saman Blanco",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 73.9,
+   "n": 633
+  },
+  {
+   "articleId": 20,
+   "name": "Arroz blanco - Vidarroz",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 43,
+   "n": 240
+  },
+  {
+   "articleId": 22,
+   "name": "Arvejas en conserva Cololó",
+   "qty": 300,
+   "unit": "g",
+   "p50": 46,
+   "n": 415
+  },
+  {
+   "articleId": 23,
+   "name": "Arvejas en conserva Nidemar",
+   "qty": 300,
+   "unit": "g",
+   "p50": 26.34,
+   "n": 124
+  },
+  {
+   "articleId": 24,
+   "name": "Azúcar blanco Azucarlito",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 48,
+   "n": 395
+  },
+  {
+   "articleId": 25,
+   "name": "Azúcar blanco Bella Unión",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 48,
+   "n": 433
+  },
+  {
+   "articleId": 257,
+   "name": "Banana Brasil",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 69,
+   "n": 96
+  },
+  {
+   "articleId": 255,
+   "name": "Banana Ecuador",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 139,
+   "n": 142
+  },
+  {
+   "articleId": 331,
+   "name": "Bebe & Co Colonia + Talco",
+   "qty": 120,
+   "unit": "ml",
+   "p50": 681,
+   "n": 413
+  },
+  {
+   "articleId": 27,
+   "name": "Café envasado  Chaná",
+   "qty": 250,
+   "unit": "g",
+   "p50": 405,
+   "n": 640
+  },
+  {
+   "articleId": 28,
+   "name": "Café envasado  Saint",
+   "qty": 250,
+   "unit": "g",
+   "p50": 217,
+   "n": 218
+  },
+  {
+   "articleId": 26,
+   "name": "Café envasado  Águila",
+   "qty": 250,
+   "unit": "g",
+   "p50": 325,
+   "n": 622
+  },
+  {
+   "articleId": 29,
+   "name": "Carne picada vacuna Hasta  5 % de grasa",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 479,
+   "n": 207
+  },
+  {
+   "articleId": 30,
+   "name": "Carne picada vacuna Hasta 20 % de grasa",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 379,
+   "n": 142
+  },
+  {
+   "articleId": 31,
+   "name": "Cerveza Patricia",
+   "qty": 0.96,
+   "unit": "l",
+   "p50": 186,
+   "n": 402
+  },
+  {
+   "articleId": 32,
+   "name": "Cerveza Pilsen",
+   "qty": 0.96,
+   "unit": "l",
+   "p50": 149,
+   "n": 404
+  },
+  {
+   "articleId": 33,
+   "name": "Cerveza Zillertal",
+   "qty": 1,
+   "unit": "l",
+   "p50": 189,
+   "n": 429
+  },
+  {
+   "articleId": 37,
+   "name": "Chorizos Cattivelli",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 727.95,
+   "n": 144
+  },
+  {
+   "articleId": 38,
+   "name": "Chorizos Centenario",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 619,
+   "n": 126
+  },
+  {
+   "articleId": 39,
+   "name": "Chorizos La Familia",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 375.35,
+   "n": 22
+  },
+  {
+   "articleId": 349,
+   "name": "Cinta leuco Ready Plast 1cm.",
+   "qty": 1,
+   "unit": null,
+   "p50": 64,
+   "n": 261
+  },
+  {
+   "articleId": 40,
+   "name": "Cocoa Copacabana",
+   "qty": 500,
+   "unit": "g",
+   "p50": 336,
+   "n": 649
+  },
+  {
+   "articleId": 41,
+   "name": "Cocoa Vascolet",
+   "qty": 500,
+   "unit": "g",
+   "p50": 296.5,
+   "n": 586
+  },
+  {
+   "articleId": 323,
+   "name": "Crema Facial Asepxia Emergencia Color Piel",
+   "qty": 28,
+   "unit": "g",
+   "p50": 395,
+   "n": 37
+  },
+  {
+   "articleId": 322,
+   "name": "Crema Facial Revitalift Filler Dia",
+   "qty": 50,
+   "unit": "ml",
+   "p50": 1682,
+   "n": 300
+  },
+  {
+   "articleId": 350,
+   "name": "Curitas Ready Plast 8 unidades",
+   "qty": 8,
+   "unit": "un",
+   "p50": 60,
+   "n": 444
+  },
+  {
+   "articleId": 42,
+   "name": "Desodorante en aerosol Axe Musk",
+   "qty": 105,
+   "unit": "g",
+   "p50": 204,
+   "n": 714
+  },
+  {
+   "articleId": 43,
+   "name": "Desodorante en aerosol Dove Original",
+   "qty": 150,
+   "unit": "ml",
+   "p50": 248,
+   "n": 711
+  },
+  {
+   "articleId": 44,
+   "name": "Desodorante en aerosol Rexona Active Emotion",
+   "qty": 150,
+   "unit": "g",
+   "p50": 220,
+   "n": 653
+  },
+  {
+   "articleId": 45,
+   "name": "Detergente para vajilla Deterjane limón",
+   "qty": 1.25,
+   "unit": "l",
+   "p50": 148,
+   "n": 362
+  },
+  {
+   "articleId": 46,
+   "name": "Detergente para vajilla Hurra Nevex limón",
+   "qty": 1.25,
+   "unit": "l",
+   "p50": 145,
+   "n": 587
+  },
+  {
+   "articleId": 47,
+   "name": "Detergente para vajilla Protergente limón",
+   "qty": 1.25,
+   "unit": "l",
+   "p50": 76,
+   "n": 440
+  },
+  {
+   "articleId": 48,
+   "name": "Dulce de leche envasado Conaprole",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 302,
+   "n": 452
+  },
+  {
+   "articleId": 49,
+   "name": "Dulce de leche envasado Los Nietitos",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 229,
+   "n": 495
+  },
+  {
+   "articleId": 50,
+   "name": "Dulce de leche envasado Manjar",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 204.5,
+   "n": 486
+  },
+  {
+   "articleId": 51,
+   "name": "Dulce de membrillo  envasado Los Nietitos",
+   "qty": 400,
+   "unit": "g",
+   "p50": 83,
+   "n": 597
+  },
+  {
+   "articleId": 52,
+   "name": "Fideos secos al huevo Adria",
+   "qty": 500,
+   "unit": "g",
+   "p50": 92,
+   "n": 595
+  },
+  {
+   "articleId": 53,
+   "name": "Fideos secos al huevo Cololó (Moñas)",
+   "qty": 500,
+   "unit": "g",
+   "p50": 75,
+   "n": 327
+  },
+  {
+   "articleId": 54,
+   "name": "Fideos secos al huevo Las Acacias",
+   "qty": 500,
+   "unit": "g",
+   "p50": 89,
+   "n": 471
+  },
+  {
+   "articleId": 55,
+   "name": "Fideos secos semolados Adria",
+   "qty": 500,
+   "unit": "g",
+   "p50": 64,
+   "n": 240
+  },
+  {
+   "articleId": 56,
+   "name": "Fideos secos semolados Las Acacias",
+   "qty": 500,
+   "unit": "g",
+   "p50": 64.9,
+   "n": 207
+  },
+  {
+   "articleId": 60,
+   "name": "Frankfurters Cortos Envasados al Vacío  - Schneck",
+   "qty": 8,
+   "unit": "un",
+   "p50": 294,
+   "n": 455
+  },
+  {
+   "articleId": 58,
+   "name": "Frankfurters Cortos Envasados al Vacío -  Centenario",
+   "qty": 8,
+   "unit": "un",
+   "p50": 229,
+   "n": 155
+  },
+  {
+   "articleId": 59,
+   "name": "Frankfurters Cortos Envasados al Vacío - Ottonello",
+   "qty": 8,
+   "unit": "un",
+   "p50": 227,
+   "n": 385
+  },
+  {
+   "articleId": 61,
+   "name": "Galletitas al agua Famosa",
+   "qty": 140,
+   "unit": "g",
+   "p50": 87,
+   "n": 569
+  },
+  {
+   "articleId": 62,
+   "name": "Galletitas al agua Maestro Cubano",
+   "qty": 120,
+   "unit": "g",
+   "p50": 40,
+   "n": 102
+  },
+  {
+   "articleId": 351,
+   "name": "Gasa estéril 40 unidades",
+   "qty": 40,
+   "unit": "un",
+   "p50": 90,
+   "n": 203
+  },
+  {
+   "articleId": 63,
+   "name": "Gaseosa Coca Cola",
+   "qty": 1.5,
+   "unit": "l",
+   "p50": 155,
+   "n": 640
+  },
+  {
+   "articleId": 64,
+   "name": "Gaseosa Coca Cola.",
+   "qty": 2.25,
+   "unit": "l",
+   "p50": 199,
+   "n": 545
+  },
+  {
+   "articleId": 66,
+   "name": "Gaseosa Pepsi",
+   "qty": 2.5,
+   "unit": "l",
+   "p50": 182,
+   "n": 410
+  },
+  {
+   "articleId": 67,
+   "name": "Gaseosa Pepsi.",
+   "qty": 1.5,
+   "unit": "l",
+   "p50": 137,
+   "n": 460
+  },
+  {
+   "articleId": 68,
+   "name": "Hamburguesas carne vacuna Burgy (3 unidades)",
+   "qty": 3,
+   "unit": "un",
+   "p50": 45.5,
+   "n": 390
+  },
+  {
+   "articleId": 69,
+   "name": "Hamburguesas carne vacuna Paty (2 unidades)",
+   "qty": 2,
+   "unit": "un",
+   "p50": 52,
+   "n": 178
+  },
+  {
+   "articleId": 70,
+   "name": "Hamburguesas carne vacuna Schneck (3 unidades)",
+   "qty": 3,
+   "unit": "un",
+   "p50": 105,
+   "n": 463
+  },
+  {
+   "articleId": 71,
+   "name": "Harina de maíz Gourmet",
+   "qty": 400,
+   "unit": "g",
+   "p50": 33,
+   "n": 155
+  },
+  {
+   "articleId": 72,
+   "name": "Harina de maíz Presto Pronta Arcor",
+   "qty": 500,
+   "unit": "g",
+   "p50": 57,
+   "n": 388
+  },
+  {
+   "articleId": 73,
+   "name": "Harina de maíz Puritas",
+   "qty": 450,
+   "unit": "g",
+   "p50": 42,
+   "n": 439
+  },
+  {
+   "articleId": 74,
+   "name": "Harina trigo 000 Cañuelas",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 52,
+   "n": 600
+  },
+  {
+   "articleId": 75,
+   "name": "Harina trigo 000 Cololó",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 47,
+   "n": 156
+  },
+  {
+   "articleId": 76,
+   "name": "Harina trigo 0000 Cañuelas",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 60,
+   "n": 635
+  },
+  {
+   "articleId": 77,
+   "name": "Harina trigo común 0000 Cololó",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 55,
+   "n": 392
+  },
+  {
+   "articleId": 363,
+   "name": "Harina trigo común 0000 G. La Sonrisa",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 53,
+   "n": 71
+  },
+  {
+   "articleId": 360,
+   "name": "Harina trigo común 0000 Precio Líder",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 55,
+   "n": 80
+  },
+  {
+   "articleId": 78,
+   "name": "Harina trigo común 0000 Primor",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 56,
+   "n": 309
+  },
+  {
+   "articleId": 358,
+   "name": "Harina trigo común 0000 Tata",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 57,
+   "n": 86
+  },
+  {
+   "articleId": 364,
+   "name": "Harina trigo común 0000 Tienda Inglesa",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 59,
+   "n": 78
+  },
+  {
+   "articleId": 79,
+   "name": "Helado familiar Conaprole Triple",
+   "qty": 1,
+   "unit": "l",
+   "p50": 297,
+   "n": 471
+  },
+  {
+   "articleId": 80,
+   "name": "Helado familiar Crufi Triple",
+   "qty": 1,
+   "unit": "l",
+   "p50": 295,
+   "n": 378
+  },
+  {
+   "articleId": 82,
+   "name": "Hipoclorito de sodio Agua Jane",
+   "qty": 1.02,
+   "unit": "l",
+   "p50": 93,
+   "n": 640
+  },
+  {
+   "articleId": 83,
+   "name": "Hipoclorito de sodio Sello Rojo",
+   "qty": 1,
+   "unit": "l",
+   "p50": 74,
+   "n": 621
+  },
+  {
+   "articleId": 84,
+   "name": "Hipoclorito de sodio Solución Cristal",
+   "qty": 1,
+   "unit": "l",
+   "p50": 89.9,
+   "n": 476
+  },
+  {
+   "articleId": 85,
+   "name": "Huevos colorados El Jefe",
+   "qty": 6,
+   "unit": "un",
+   "p50": 113,
+   "n": 128
+  },
+  {
+   "articleId": 86,
+   "name": "Huevos colorados Prodhin",
+   "qty": 6,
+   "unit": "un",
+   "p50": 124,
+   "n": 307
+  },
+  {
+   "articleId": 87,
+   "name": "Huevos colorados Super Huevo",
+   "qty": 6,
+   "unit": "un",
+   "p50": 122,
+   "n": 305
+  },
+  {
+   "articleId": 339,
+   "name": "Jabón de Glicerina Ann Bow",
+   "qty": 140,
+   "unit": "g",
+   "p50": 99.9,
+   "n": 527
+  },
+  {
+   "articleId": 338,
+   "name": "Jabón de Tocador Dove Blanco",
+   "qty": 90,
+   "unit": "g",
+   "p50": 78,
+   "n": 713
+  },
+  {
+   "articleId": 324,
+   "name": "Jabón de Tocador Neutrogena Deep Clean",
+   "qty": 80,
+   "unit": "g",
+   "p50": 185,
+   "n": 323
+  },
+  {
+   "articleId": 88,
+   "name": "Jabón de tocador Astral plata",
+   "qty": 125,
+   "unit": "g",
+   "p50": 51,
+   "n": 717
+  },
+  {
+   "articleId": 89,
+   "name": "Jabón de tocador Palmolive",
+   "qty": 125,
+   "unit": "g",
+   "p50": 41,
+   "n": 519
+  },
+  {
+   "articleId": 90,
+   "name": "Jabón de tocador Rexona",
+   "qty": 125,
+   "unit": "g",
+   "p50": 45,
+   "n": 456
+  },
+  {
+   "articleId": 93,
+   "name": "Jabón en Polvo Máquina Skip",
+   "qty": 600,
+   "unit": "g",
+   "p50": 150,
+   "n": 605
+  },
+  {
+   "articleId": 91,
+   "name": "Jabón en polvo máquina Drive",
+   "qty": 800,
+   "unit": "g",
+   "p50": 155,
+   "n": 147
+  },
+  {
+   "articleId": 92,
+   "name": "Jabón en polvo máquina Nevex",
+   "qty": 800,
+   "unit": "g",
+   "p50": 189,
+   "n": 620
+  },
+  {
+   "articleId": 94,
+   "name": "Jabón para  ropa en barra Bull Dog",
+   "qty": 300,
+   "unit": "g",
+   "p50": 91,
+   "n": 455
+  },
+  {
+   "articleId": 95,
+   "name": "Jabón para  ropa en barra Nevex multi.",
+   "qty": 200,
+   "unit": "g",
+   "p50": 62,
+   "n": 502
+  },
+  {
+   "articleId": 96,
+   "name": "Jabón para  ropa en barra Primor",
+   "qty": 200,
+   "unit": "g",
+   "p50": 39,
+   "n": 500
+  },
+  {
+   "articleId": 97,
+   "name": "Jamón cocido no artesanal Cativelli",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 880,
+   "n": 35
+  },
+  {
+   "articleId": 98,
+   "name": "Jamón cocido no artesanal Ottonello",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 690,
+   "n": 191
+  },
+  {
+   "articleId": 238,
+   "name": "Lechuga Crespa",
+   "qty": 1,
+   "unit": "un",
+   "p50": 49,
+   "n": 143
+  },
+  {
+   "articleId": 239,
+   "name": "Lechuga Mantecosa",
+   "qty": 1,
+   "unit": "un",
+   "p50": 59,
+   "n": 137
+  },
+  {
+   "articleId": 99,
+   "name": "Leonesa La Constancia",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 430,
+   "n": 1
+  },
+  {
+   "articleId": 100,
+   "name": "Leonesa Ottonello",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 480,
+   "n": 54
+  },
+  {
+   "articleId": 101,
+   "name": "Leonesa Schneck",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 730,
+   "n": 216
+  },
+  {
+   "articleId": 103,
+   "name": "Manteca Conaprole sin sal",
+   "qty": 200,
+   "unit": "g",
+   "p50": 111,
+   "n": 596
+  },
+  {
+   "articleId": 104,
+   "name": "Manteca Kasdorf",
+   "qty": 200,
+   "unit": "g",
+   "p50": 109,
+   "n": 298
+  },
+  {
+   "articleId": 275,
+   "name": "Manzana Fuji",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 139,
+   "n": 28
+  },
+  {
+   "articleId": 276,
+   "name": "Manzana Granny Smith",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 129,
+   "n": 106
+  },
+  {
+   "articleId": 277,
+   "name": "Manzana Red Deliciosa",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 129,
+   "n": 220
+  },
+  {
+   "articleId": 380,
+   "name": "Margarina - Adorita",
+   "qty": 250,
+   "unit": "g",
+   "p50": 53,
+   "n": 364
+  },
+  {
+   "articleId": 381,
+   "name": "Margarina - Qualy",
+   "qty": 250,
+   "unit": "g",
+   "p50": 62,
+   "n": 324
+  },
+  {
+   "articleId": 105,
+   "name": "Margarina Doriana nueva",
+   "qty": 250,
+   "unit": "g",
+   "p50": 82,
+   "n": 113
+  },
+  {
+   "articleId": 109,
+   "name": "Mayonesa común Hellmans 500grs",
+   "qty": 500,
+   "unit": "g",
+   "p50": 113,
+   "n": 581
+  },
+  {
+   "articleId": 110,
+   "name": "Mayonesa común Uruguay",
+   "qty": 500,
+   "unit": "g",
+   "p50": 99,
+   "n": 651
+  },
+  {
+   "articleId": 112,
+   "name": "Mermelada de durazno El Hogar",
+   "qty": 400,
+   "unit": "g",
+   "p50": 69.5,
+   "n": 154
+  },
+  {
+   "articleId": 113,
+   "name": "Mermelada de durazno Los Nietitos",
+   "qty": 400,
+   "unit": "g",
+   "p50": 137,
+   "n": 665
+  },
+  {
+   "articleId": 114,
+   "name": "Nalga vacuna con  hueso",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 607,
+   "n": 28
+  },
+  {
+   "articleId": 115,
+   "name": "Nalga vacuna sin  hueso",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 429,
+   "n": 184
+  },
+  {
+   "articleId": 286,
+   "name": "Naranja Navel",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 59,
+   "n": 111
+  },
+  {
+   "articleId": 287,
+   "name": "Naranja Valencia",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 56,
+   "n": 13
+  },
+  {
+   "articleId": 116,
+   "name": "Paleta  vacuna con  hueso",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 479,
+   "n": 143
+  },
+  {
+   "articleId": 117,
+   "name": "Paleta  vacuna sin  hueso",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 369,
+   "n": 200
+  },
+  {
+   "articleId": 118,
+   "name": "Pan de molde americano lacteado Los Sorchantes",
+   "qty": 400,
+   "unit": "g",
+   "p50": 126,
+   "n": 402
+  },
+  {
+   "articleId": 119,
+   "name": "Pan de molde blanco lacteado Bimbo",
+   "qty": 330,
+   "unit": "g",
+   "p50": 143,
+   "n": 290
+  },
+  {
+   "articleId": 120,
+   "name": "Pan de molde blanco lacteado Pan Catalán",
+   "qty": 330,
+   "unit": "g",
+   "p50": 76,
+   "n": 100
+  },
+  {
+   "articleId": 121,
+   "name": "Pan flauta Sin marca",
+   "qty": 215,
+   "unit": "g",
+   "p50": 59,
+   "n": 108
+  },
+  {
+   "articleId": 244,
+   "name": "Papa Blanca",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 109,
+   "n": 168
+  },
+  {
+   "articleId": 245,
+   "name": "Papa Rosada",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 59,
+   "n": 140
+  },
+  {
+   "articleId": 122,
+   "name": "Papel higiénico hoja simple Elite",
+   "qty": 4,
+   "unit": "un",
+   "p50": 115,
+   "n": 485
+  },
+  {
+   "articleId": 124,
+   "name": "Papel higiénico hoja simple Higienol Sin Fin",
+   "qty": 4,
+   "unit": "un",
+   "p50": 137,
+   "n": 465
+  },
+  {
+   "articleId": 123,
+   "name": "Papel higiénico hoja simple Higienol Texturado",
+   "qty": 4,
+   "unit": "un",
+   "p50": 65,
+   "n": 464
+  },
+  {
+   "articleId": 125,
+   "name": "Pasta dental Colgate Herbal Blanqueador",
+   "qty": 90,
+   "unit": "g",
+   "p50": 83,
+   "n": 480
+  },
+  {
+   "articleId": 126,
+   "name": "Pasta dental Kolynos Triple acción",
+   "qty": 90,
+   "unit": "g",
+   "p50": 44.9,
+   "n": 589
+  },
+  {
+   "articleId": 127,
+   "name": "Pasta dental Pico Jenner Plus",
+   "qty": 90,
+   "unit": "g",
+   "p50": 55,
+   "n": 112
+  },
+  {
+   "articleId": 326,
+   "name": "Pañales Adultos Readysec Grande",
+   "qty": 24,
+   "unit": "un",
+   "p50": 894,
+   "n": 359
+  },
+  {
+   "articleId": 327,
+   "name": "Pañales Babysec Premium Extra Extra Grande",
+   "qty": 48,
+   "unit": "un",
+   "p50": 1240,
+   "n": 644
+  },
+  {
+   "articleId": 328,
+   "name": "Pañales Huggies Primeros 100 Dias Pequeño",
+   "qty": 40,
+   "unit": "un",
+   "p50": 812,
+   "n": 445
+  },
+  {
+   "articleId": 128,
+   "name": "Peceto vacuno",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 509,
+   "n": 203
+  },
+  {
+   "articleId": 341,
+   "name": "Perfume Casapueblo 24 Heures Blue Edt",
+   "qty": 100,
+   "unit": "ml",
+   "p50": 788,
+   "n": 215
+  },
+  {
+   "articleId": 340,
+   "name": "Perfume Delice Candy Edt",
+   "qty": 50,
+   "unit": "ml",
+   "p50": 647,
+   "n": 263
+  },
+  {
+   "articleId": 129,
+   "name": "Pescado fresco - Bifes de merluza",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 449,
+   "n": 19
+  },
+  {
+   "articleId": 130,
+   "name": "Pollo entero fresco con menudos Avicola del Oeste",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 169,
+   "n": 196
+  },
+  {
+   "articleId": 132,
+   "name": "Pollo entero fresco con menudos Tres Arroyos",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 209,
+   "n": 31
+  },
+  {
+   "articleId": 352,
+   "name": "Protector solar SPF 20-Dermaglós",
+   "qty": 250,
+   "unit": "ml",
+   "p50": 1384,
+   "n": 199
+  },
+  {
+   "articleId": 354,
+   "name": "Protector solar SPF 30-Hawaiian Tropic",
+   "qty": 180,
+   "unit": "ml",
+   "p50": 1171,
+   "n": 182
+  },
+  {
+   "articleId": 353,
+   "name": "Protector solar SPF 40-Dermaglós",
+   "qty": 250,
+   "unit": "ml",
+   "p50": 1874,
+   "n": 217
+  },
+  {
+   "articleId": 355,
+   "name": "Protector solar SPF 50-Eucerin kids",
+   "qty": 150,
+   "unit": "ml",
+   "p50": 824,
+   "n": 11
+  },
+  {
+   "articleId": 357,
+   "name": "Protector solar SPF 50-Hawaiian baby",
+   "qty": 240,
+   "unit": "ml",
+   "p50": 1067,
+   "n": 289
+  },
+  {
+   "articleId": 356,
+   "name": "Protector solar SPF 60-Sundown kids",
+   "qty": 120,
+   "unit": "ml",
+   "p50": 912,
+   "n": 459
+  },
+  {
+   "articleId": 133,
+   "name": "Pulpa de tomate Conaprole",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 100,
+   "n": 612
+  },
+  {
+   "articleId": 135,
+   "name": "Pulpa de tomate Gourmet",
+   "qty": 1.02,
+   "unit": "kg",
+   "p50": 99,
+   "n": 623
+  },
+  {
+   "articleId": 134,
+   "name": "Pulpa de tomate concentrada De Ley",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 79,
+   "n": 437
+  },
+  {
+   "articleId": 136,
+   "name": "Queso rallado Artesano",
+   "qty": 80,
+   "unit": "g",
+   "p50": 159,
+   "n": 243
+  },
+  {
+   "articleId": 137,
+   "name": "Queso rallado Conaprole",
+   "qty": 80,
+   "unit": "g",
+   "p50": 110,
+   "n": 491
+  },
+  {
+   "articleId": 138,
+   "name": "Queso rallado Milky",
+   "qty": 80,
+   "unit": "g",
+   "p50": 114,
+   "n": 252
+  },
+  {
+   "articleId": 314,
+   "name": "Repelente Jupiter Aerosol",
+   "qty": 165,
+   "unit": null,
+   "p50": 165,
+   "n": 426
+  },
+  {
+   "articleId": 313,
+   "name": "Repelente Jupiter Crema",
+   "qty": 80,
+   "unit": "g",
+   "p50": 234,
+   "n": 313
+  },
+  {
+   "articleId": 312,
+   "name": "Repelente Off Kids Crema",
+   "qty": 90,
+   "unit": "g",
+   "p50": 417,
+   "n": 303
+  },
+  {
+   "articleId": 315,
+   "name": "Repelente Off Larga Duración",
+   "qty": 170,
+   "unit": "ml",
+   "p50": 510,
+   "n": 624
+  },
+  {
+   "articleId": 310,
+   "name": "Repelente Off! Family Aerosol",
+   "qty": 170,
+   "unit": null,
+   "p50": 395,
+   "n": 634
+  },
+  {
+   "articleId": 308,
+   "name": "Repelente Off! Family Crema",
+   "qty": 200,
+   "unit": "g",
+   "p50": 530,
+   "n": 352
+  },
+  {
+   "articleId": 309,
+   "name": "Repelente Off! Family Spray",
+   "qty": 177,
+   "unit": null,
+   "p50": 640,
+   "n": 362
+  },
+  {
+   "articleId": 139,
+   "name": "Rueda vacuna con hueso sin marca",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 583,
+   "n": 23
+  },
+  {
+   "articleId": 140,
+   "name": "Sal fina yodada fluorada Sek",
+   "qty": 500,
+   "unit": "g",
+   "p50": 60,
+   "n": 349
+  },
+  {
+   "articleId": 141,
+   "name": "Sal fina yodada fluorada Torrevieja",
+   "qty": 500,
+   "unit": "g",
+   "p50": 57,
+   "n": 110
+  },
+  {
+   "articleId": 142,
+   "name": "Sal fina yodada fluorada Urusal",
+   "qty": 500,
+   "unit": "g",
+   "p50": 56,
+   "n": 485
+  },
+  {
+   "articleId": 320,
+   "name": "Shampoo Dove",
+   "qty": 400,
+   "unit": "ml",
+   "p50": 461,
+   "n": 579
+  },
+  {
+   "articleId": 34,
+   "name": "Shampoo Fructis",
+   "qty": 350,
+   "unit": "ml",
+   "p50": 382,
+   "n": 603
+  },
+  {
+   "articleId": 321,
+   "name": "Shampoo Pantene",
+   "qty": 400,
+   "unit": "ml",
+   "p50": 515,
+   "n": 614
+  },
+  {
+   "articleId": 35,
+   "name": "Shampoo Sedal",
+   "qty": 340,
+   "unit": "ml",
+   "p50": 227,
+   "n": 211
+  },
+  {
+   "articleId": 36,
+   "name": "Shampoo Suave",
+   "qty": 930,
+   "unit": "ml",
+   "p50": 185,
+   "n": 397
+  },
+  {
+   "articleId": 337,
+   "name": "Talco Johnson’s Baby Clásico  200.0 gramos",
+   "qty": 200,
+   "unit": "g",
+   "p50": 469,
+   "n": 387
+  },
+  {
+   "articleId": 336,
+   "name": "Talco Xanapie Aerosol",
+   "qty": 175,
+   "unit": "ml",
+   "p50": 235,
+   "n": 589
+  },
+  {
+   "articleId": 335,
+   "name": "Talco Xanapie Bolsa Repuesto",
+   "qty": 180,
+   "unit": "g",
+   "p50": 108,
+   "n": 430
+  },
+  {
+   "articleId": 342,
+   "name": "Tinta Excellence Tinta N.9",
+   "qty": 1,
+   "unit": "un",
+   "p50": 854,
+   "n": 433
+  },
+  {
+   "articleId": 344,
+   "name": "Tinta Garnier Nutrisse Intense N° 8",
+   "qty": 1,
+   "unit": "un",
+   "p50": 345,
+   "n": 616
+  },
+  {
+   "articleId": 343,
+   "name": "Tinta Issue Decolorante Semilla Lino",
+   "qty": 1,
+   "unit": "un",
+   "p50": 269,
+   "n": 504
+  },
+  {
+   "articleId": 332,
+   "name": "Toallitas Femeninas Ladysoft Básica",
+   "qty": 16,
+   "unit": "un",
+   "p50": 108,
+   "n": 655
+  },
+  {
+   "articleId": 333,
+   "name": "Toallitas Femeninas Siempre Libre Nocturna Max Con Alas",
+   "qty": 8,
+   "unit": "un",
+   "p50": 160,
+   "n": 375
+  },
+  {
+   "articleId": 253,
+   "name": "Tomate Americano",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 334,
+   "n": 174
+  },
+  {
+   "articleId": 254,
+   "name": "Tomate Perita",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 229,
+   "n": 131
+  },
+  {
+   "articleId": 143,
+   "name": "Té negro en saquitos Hornimans",
+   "qty": 10,
+   "unit": "un",
+   "p50": 48,
+   "n": 451
+  },
+  {
+   "articleId": 144,
+   "name": "Té negro en saquitos La Virginia",
+   "qty": 10,
+   "unit": "un",
+   "p50": 42,
+   "n": 588
+  },
+  {
+   "articleId": 145,
+   "name": "Té negro en saquitos President",
+   "qty": 10,
+   "unit": "un",
+   "p50": 75,
+   "n": 388
+  },
+  {
+   "articleId": 146,
+   "name": "Vino tinto común tetrabrick Faisán",
+   "qty": 1,
+   "unit": "l",
+   "p50": 135,
+   "n": 489
+  },
+  {
+   "articleId": 147,
+   "name": "Vino tinto común tetrabrick Santa Teresa Clásico",
+   "qty": 1,
+   "unit": "l",
+   "p50": 149,
+   "n": 480
+  },
+  {
+   "articleId": 148,
+   "name": "Vino tinto común tetrabrick Tango",
+   "qty": 1,
+   "unit": "l",
+   "p50": 109,
+   "n": 143
+  },
+  {
+   "articleId": 149,
+   "name": "Yerba mate común Baldo",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 198,
+   "n": 667
+  },
+  {
+   "articleId": 150,
+   "name": "Yerba mate común Canarias",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 198,
+   "n": 628
+  },
+  {
+   "articleId": 151,
+   "name": "Yerba mate común Del Cebador",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 184,
+   "n": 437
+  },
+  {
+   "articleId": 153,
+   "name": "Yogur Conaprole BIO TOP",
+   "qty": 1,
+   "unit": "l",
+   "p50": 98.28,
+   "n": 423
+  },
+  {
+   "articleId": 152,
+   "name": "Yogur semi-descremado frutado durazno Calcar",
+   "qty": 1,
+   "unit": "l",
+   "p50": 98,
+   "n": 301
+  },
+  {
+   "articleId": 154,
+   "name": "Yogur semi-descremado frutado durazno Parmalat BIO YOGUR",
+   "qty": 1,
+   "unit": "l",
+   "p50": 97,
+   "n": 219
+  },
+  {
+   "articleId": 262,
+   "name": "Zapallo Calabacín",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 64.9,
+   "n": 36
+  },
+  {
+   "articleId": 264,
+   "name": "Zapallo Criollo",
+   "qty": 1,
+   "unit": "kg",
+   "p50": 69,
+   "n": 39
+  }
+ ]
+}
