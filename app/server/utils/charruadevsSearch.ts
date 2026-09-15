@@ -7,10 +7,15 @@ import type { SearchFacets, SearchQuery } from '../../utils/charruadevs'
  * Sin collation a propósito: `$text` usa su propio índice (español, sin tildes ni mayúsculas) y
  * una collation en la consulta anularía los índices comunes (ver memoria collation-anula-el-indice).
  */
-export function buildSearchMatch(q: SearchQuery): Record<string, unknown> {
+export function buildSearchMatch(
+  q: SearchQuery,
+  opts: { ignoreStance?: boolean } = {}
+): Record<string, unknown> {
   const match: Record<string, unknown> = { rel: true, gone: false }
   if (q.q) match.$text = { $search: q.q, $language: 'spanish' }
-  match.stance = q.stance.length ? { $in: q.stance } : { $ne: null }
+  // `ignoreStance` es para las facetas de tono: con el filtro "sólo negativos" puesto, el tono de la
+  // búsqueda daría 100 % negativo todos los años, que es verdad y no dice nada.
+  match.stance = q.stance.length && !opts.ignoreStance ? { $in: q.stance } : { $ne: null }
   if (q.kind) match.kind = q.kind
   if (q.theme) match.themes = q.theme
   if (q.ai) match.ai = q.ai

@@ -133,10 +133,15 @@
       <template v-else>
         <strong>{{ fmtInt(data.total) }}</strong> {{ data.total === 1 ? 'texto' : 'textos'
         }}{{ query.q ? ` con «${query.q}»` : '' }}
-        <template v-if="data.total"
-          >· {{ fmtPct(sideShare('neg')) }} negativos ·
-          {{ fmtPct(sideShare('pos')) }} positivos</template
-        >
+        <template v-if="data.facets.all && query.stance.length">
+          · de las {{ fmtInt(data.facets.all) }} opiniones{{
+            query.q ? ` sobre «${query.q}»` : ''
+          }}, {{ fmtPct(sideShare('neg')) }} son negativas y
+          {{ fmtPct(sideShare('pos')) }} positivas
+        </template>
+        <template v-else-if="data.total">
+          · {{ fmtPct(sideShare('neg')) }} negativos · {{ fmtPct(sideShare('pos')) }} positivos
+        </template>
       </template>
     </div>
     <VProgressLinear v-if="pending && data" indeterminate height="2" color="primary" class="mb-2" />
@@ -157,7 +162,10 @@
         </span>
       </div>
       <div v-if="yearRows.length > 1" class="years">
-        <div class="years-title">Qué parte de esta búsqueda es negativa, año por año</div>
+        <div class="years-title">
+          Qué parte de lo que se dice{{ query.q ? ` sobre «${query.q}»` : '' }} es negativo, año por
+          año{{ query.stance.length ? ' (sin el filtro de sentimiento)' : '' }}
+        </div>
         <div v-for="y in yearRows" :key="y.y" class="year">
           <span class="y">{{ y.y }}</span>
           <span class="track"
@@ -333,14 +341,19 @@ const pages = computed(() =>
 </script>
 
 <style scoped>
+/* `minmax(0, 1fr)`: sin él, el ancho mínimo del input manda y a 400 px el buscador desborda. */
 .search-panel {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
 .bar {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+.bar :deep(.v-input) {
+  min-width: 0;
 }
 .bar-btn {
   flex: none;

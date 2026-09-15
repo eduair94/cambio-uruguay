@@ -41,6 +41,18 @@ describe('charruadevs search', () => {
     })
   })
 
+  it('can drop the stance filter for the tone facets and nothing else', () => {
+    const q = normalizeSearchQuery({ q: 'ia', s: '-2,-1', t: 'ia' })
+    expect(buildSearchMatch(q, { ignoreStance: true })).toEqual({
+      rel: true,
+      gone: false,
+      $text: { $search: 'ia', $language: 'spanish' },
+      stance: { $ne: null },
+      themes: 'ia',
+    })
+    expect(buildSearchMatch(q).stance).toEqual({ $in: [-2, -1] })
+  })
+
   it('sorts by date, votes or text score', () => {
     expect(buildSearchSort(normalizeSearchQuery({}))).toEqual({ createdAt: -1 })
     expect(buildSearchSort(normalizeSearchQuery({ orden: 'votes' }))).toEqual({

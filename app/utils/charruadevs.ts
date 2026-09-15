@@ -297,9 +297,14 @@ export interface SearchItem {
   event: string
 }
 
+/**
+ * El tono de la búsqueda. Se calcula SIN el filtro de sentimiento: `all` es cuántas opiniones hay
+ * sobre lo buscado, y `stance`/`byYear` cómo se reparten, aunque la lista muestre sólo una parte.
+ */
 export interface SearchFacets {
   stance: Record<string, number>
   byYear: Array<{ y: number; neg: number; neu: number; pos: number }>
+  all: number
 }
 
 export interface SearchResponse {

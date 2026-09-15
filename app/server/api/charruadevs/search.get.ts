@@ -44,7 +44,9 @@ export default defineEventHandler(async (event): Promise<SearchResponse> => {
       event: 1,
     }
     if (q.q) projection.ts = { $meta: 'textScore' }
-    const [docs, facetRows] = await Promise.all([
+    // Las facetas de tono miran la búsqueda SIN el filtro de sentimiento (ver buildSearchMatch).
+    const toneMatch = buildSearchMatch(q, { ignoreStance: true })
+    const [docs, facetRows, filteredTotal] = await Promise.all([
       CharruaTextModel.find(match, projection)
         // El cast es por los tipos de mongoose, que no aceptan { $meta: 'textScore' } como orden.
         .sort(buildSearchSort(q) as unknown as Record<string, 1 | -1>)
@@ -52,7 +54,7 @@ export default defineEventHandler(async (event): Promise<SearchResponse> => {
         .limit(SEARCH_PER_PAGE)
         .lean(),
       CharruaTextModel.aggregate<FacetRaw>([
-        { $match: match },
+        { $match: toneMatch },
         {
           $facet: {
             total: [{ $count: 'n' }],
@@ -68,6 +70,8 @@ export default defineEventHandler(async (event): Promise<SearchResponse> => {
           },
         },
       ]),
+      // Sin filtro de sentimiento el total sale de las facetas; con filtro hace falta contar aparte.
+      q.stance.length ? CharruaTextModel.countDocuments(match) : Promise.resolve(null),
     ])
     const terms = queryTerms(q.q)
     const items: SearchItem[] = docs.map(d => ({
@@ -85,11 +89,11 @@ export default defineEventHandler(async (event): Promise<SearchResponse> => {
     }))
     const facets = shapeFacets(facetRows[0])
     return {
-      total: facets.total,
+      total: filteredTotal ?? facets.total,
       page: q.page,
       perPage: SEARCH_PER_PAGE,
       items,
-      facets: { stance: facets.stance, byYear: facets.byYear },
+      facets: { stance: facets.stance, byYear: facets.byYear, all: facets.total },
     }
   } catch {
     setResponseHeader(event, 'cache-control', 'no-store')
