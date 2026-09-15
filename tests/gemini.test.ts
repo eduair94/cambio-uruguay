@@ -4,7 +4,7 @@ const post = vi.fn();
 const get = vi.fn();
 vi.mock("axios", () => ({ default: { post: (...a: unknown[]) => post(...a), get: (...a: unknown[]) => get(...a) } }));
 
-import { askGrounded, askPlain, geminiConfigured, groundedHeadlines } from "../classes/gemini";
+import { askGrounded, askJSON, askPlain, geminiConfigured, groundedHeadlines } from "../classes/gemini";
 
 const reply = (text: string, chunks: unknown[], supports: unknown[] = []) => ({
   data: {
@@ -91,5 +91,36 @@ describe("classes/gemini", () => {
     post.mockResolvedValue(reply("resumen", []));
     expect(await askPlain("p")).toBe("resumen");
     expect(post.mock.calls[0]![1]).not.toHaveProperty("tools");
+  });
+});
+
+describe("askJSON", () => {
+  beforeEach(() => {
+    post.mockReset();
+    process.env.GEMINI_API_KEY = "k";
+  });
+  afterEach(() => {
+    delete process.env.GEMINI_API_KEY;
+  });
+
+  it("sends the schema and the pinned model, and parses the JSON reply", async () => {
+    post.mockResolvedValue({ data: { candidates: [{ content: { parts: [{ text: '{"items":[{"id":"a"}]}' }] } }] } });
+    const out = await askJSON<{ items: Array<{ id: string }> }>("p", { type: "OBJECT" }, { system: "s", model: "gemini-3.5-flash-lite" });
+    expect(out).toEqual({ items: [{ id: "a" }] });
+    const [url, body] = post.mock.calls[0]!;
+    expect(url).toContain("gemini-3.5-flash-lite:generateContent");
+    expect(body.generationConfig.responseMimeType).toBe("application/json");
+    expect(body.generationConfig.responseSchema).toEqual({ type: "OBJECT" });
+    expect(body.systemInstruction.parts[0].text).toBe("s");
+    expect(body).not.toHaveProperty("tools");
+  });
+
+  it("is null on bad JSON, on HTTP errors and without a key", async () => {
+    post.mockResolvedValue({ data: { candidates: [{ content: { parts: [{ text: "{roto" }] } }] } });
+    expect(await askJSON("p", {})).toBeNull();
+    post.mockRejectedValue(Object.assign(new Error("400"), { response: { status: 400 } }));
+    expect(await askJSON("p", {})).toBeNull();
+    delete process.env.GEMINI_API_KEY;
+    expect(await askJSON("p", {})).toBeNull();
   });
 });

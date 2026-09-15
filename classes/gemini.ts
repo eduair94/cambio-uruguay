@@ -475,3 +475,43 @@ export async function askPlain(prompt: string, timeoutMs = TIMEOUT_MS): Promise<
     return null;
   }
 }
+
+/**
+ * One NON-grounded question whose answer must be JSON matching `schema` (Gemini structured output:
+ * responseMimeType + responseSchema). Same key, pacing and retries as the rest of this module.
+ * Returns the parsed object, or null on anything at all going wrong — a bad parse is null, never a
+ * hand-repaired guess. `model` overrides GEMINI_MODEL for callers that pinned their own (a
+ * classification series must not change model under it because the grounded jobs moved on).
+ */
+export async function askJSON<T>(
+  prompt: string,
+  schema: unknown,
+  opts: { system?: string; model?: string; temperature?: number; maxOutputTokens?: number; timeoutMs?: number } = {}
+): Promise<T | null> {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.NUXT_GEMINI_API_KEY;
+  if (!apiKey) return null;
+  const model = (opts.model || GEMINI_MODEL).trim();
+  try {
+    const res = await postGemini(
+      {
+        ...(opts.system ? { systemInstruction: { parts: [{ text: opts.system }] } } : {}),
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: opts.temperature ?? 0.1,
+          maxOutputTokens: opts.maxOutputTokens ?? 32768,
+          responseMimeType: "application/json",
+          responseSchema: schema,
+        },
+      },
+      opts.timeoutMs ?? 120000,
+      apiKey,
+      `${MODELS_BASE}/${model}:generateContent`
+    );
+    const text = (res.data?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("").trim();
+    if (!text) return null;
+    return JSON.parse(text) as T;
+  } catch (error: any) {
+    console.warn("[gemini] json call failed:", error?.message || error);
+    return null;
+  }
+}
