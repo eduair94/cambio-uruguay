@@ -9,6 +9,7 @@ import {
   FAQ,
   FIGURES,
   LEYENDAS,
+  MONO_APORTES_2026,
   MONO_INVOICING_VERIFIED_AT,
   MYTHS,
   QUOTE_CHANNELS,
@@ -148,6 +149,48 @@ describe('contenido', () => {
   })
 })
 
+describe('MONO_APORTES_2026', () => {
+  it('is verified against BPS on 2026-09-15, separate from the invoicing figures', () => {
+    expect(MONO_APORTES_2026.verifiedAt).toBe('2026-09-15')
+  })
+
+  it('matches the ley 19.942 gradualidad (25/50/100%, tramos de 12 meses)', () => {
+    expect(MONO_APORTES_2026.ley19942.primerAnio.sinFonasa).toBe(1071)
+    expect(MONO_APORTES_2026.ley19942.segundoAnio.sinFonasa).toBe(1594)
+    expect(MONO_APORTES_2026.ley19942.pleno.sinFonasa).toBe(2637)
+    // El tramo pleno de la 19.942 coincide con la 18.083 (sin gradualidad).
+    expect(MONO_APORTES_2026.ley19942.pleno.conFonasaSinConyuge).toBe(6996)
+    expect(MONO_APORTES_2026.ley19942.pleno.conFonasaConConyuge).toBe(7888)
+  })
+
+  it('matches the Mides gradualidad (25/50/75/100%, cuatro tramos de 12 meses)', () => {
+    expect(MONO_APORTES_2026.mides.sinFonasa).toEqual([659, 1320, 1979, 2637])
+    expect(MONO_APORTES_2026.mides.conFonasa[3]!.sinConyugeConHijos).toBe(6996)
+    expect(MONO_APORTES_2026.mides.conFonasa[0]!.sinConyugeConHijos).toBe(5430)
+  })
+
+  it('publishes the 2026 caps (unipersonal, sociedad de hecho, activos)', () => {
+    expect(MONO_APORTES_2026.topes.unipersonal).toBe(1_175_537)
+    expect(MONO_APORTES_2026.topes.sociedadDeHecho).toBe(1_959_229)
+    expect(MONO_APORTES_2026.topes.activos).toBe(979_614)
+  })
+
+  it('sources every table to bps.gub.uy over https', () => {
+    expect(MONO_APORTES_2026.sources.length).toBeGreaterThanOrEqual(3)
+    for (const s of MONO_APORTES_2026.sources) {
+      expect(s.url).toMatch(/^https:\/\/(www\.)?bps\.gub\.uy\//)
+    }
+  })
+
+  // FIGURES ya traía sueltos estos tres valores (aporte MIDES año 1, pleno, tope unipersonal):
+  // tienen que coincidir con la tabla completa de BPS, no divergir.
+  it('agrees with the standalone Figure values already published on the page', () => {
+    expect(FIGURES.aporteMidesAnio1SinFonasa.value).toBe(MONO_APORTES_2026.mides.sinFonasa[0])
+    expect(FIGURES.aporteMidesPlenoSinFonasa.value).toBe(MONO_APORTES_2026.mides.sinFonasa[3])
+    expect(FIGURES.topeAnualUnipersonal.value).toBe(MONO_APORTES_2026.topes.unipersonal)
+  })
+})
+
 describe('compareInvoicingCost', () => {
   const base = {
     talonarioPrecio: 1500,
@@ -218,5 +261,23 @@ describe('la página existe y usa la data', () => {
     expect(page).toContain('https://cambio-uruguay.com/facturar-en-monotributo-uruguay')
     expect(page).toContain('FAQPage')
     expect(page).toContain('defineOgImageComponent')
+  })
+
+  it('publishes the 2026 monthly-amounts section as accessible, mobile-friendly tables', () => {
+    expect(page).toContain('MONO_APORTES_2026')
+    expect(page).toContain('id="montos-2026"')
+    expect(page).toContain('cu-mobile-cards')
+    // Cada tabla nueva declara scope="col" en su fila de encabezado.
+    expect((page.match(/scope="col"/g) ?? []).length).toBeGreaterThanOrEqual(6)
+    expect((page.match(/data-label="/g) ?? []).length).toBeGreaterThan(0)
+  })
+
+  it('never writes "septiembre" (house style is "setiembre")', () => {
+    expect(page.toLowerCase()).not.toContain('septiembre')
+  })
+
+  it('emits exactly one FAQPage graph node and one <h1>', () => {
+    expect((page.match(/'@type':\s*'FAQPage'/g) ?? []).length).toBe(1)
+    expect((page.match(/<h1[ >]/g) ?? []).length).toBe(1)
   })
 })

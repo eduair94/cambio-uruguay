@@ -109,6 +109,9 @@ const IMPO_688 = 'https://www.impo.com.uy/bases/resoluciones-dgi-interes-general
 const IMPO_798_025 = 'https://www.impo.com.uy/bases/resoluciones-dgi-originales/798-2025'
 const BPS_MIDES = 'https://www.bps.gub.uy/6667/monotributo-social-mides-ley-18874.html'
 const DGI_EFACTURA = 'https://www.efactura.dgi.gub.uy/principal/Informacion_General?es='
+const BPS_LEY_19942 = 'https://www.bps.gub.uy/18051/monotributo-ley-19942.html'
+const BPS_LEY_18083 = 'https://www.bps.gub.uy/6668/monotributo-ley-18083.html'
+const BPS_TOPES_2026 = 'https://www.bps.gub.uy/23987/'
 
 const V = MONO_INVOICING_VERIFIED_AT
 
@@ -176,6 +179,115 @@ export const FIGURES = {
     DGI_TOPE_MIDES
   ),
 } as const satisfies Record<string, Figure>
+
+// ---------------------------------------------------------------------------
+// Cuánto se paga por mes en 2026 (BPS, vigencia enero 2026, verificado 2026-09-15)
+// ---------------------------------------------------------------------------
+//
+// Tres regímenes con montos DISTINTOS a los de arriba: ley 18.083 (altas hasta el 31/12/2020,
+// sin gradualidad), ley 19.942 (altas desde el 1/1/2021, con gradualidad 25/50/100% en tramos de
+// 12 meses — su tramo pleno coincide con la 18.083) y Monotributo Social MIDES (ley 18.874, con
+// gradualidad de CUATRO tramos: 25/50/75/100% cada 12 meses, no tres). `FIGURES` de arriba ya
+// traía sueltos el aporte MIDES del año 1 y el pleno, más el tope unipersonal: se contrastaron
+// contra BPS el 2026-09-15 y coinciden con esta tabla, así que no se corrigieron.
+export interface MonoAportesTramo {
+  /** Aporte mensual sin cobertura FONASA. */
+  sinFonasa: number
+  /** Aporte mensual con FONASA, sin cónyuge o concubino (columna "con hijos a cargo" de BPS). */
+  conFonasaSinConyuge: number
+  /** Aporte mensual con FONASA, con cónyuge o concubino (columna "con hijos a cargo" de BPS). */
+  conFonasaConConyuge: number
+}
+
+export interface MonoAportesMidesConFonasaTramo {
+  sinConyugeConHijos: number
+  sinConyugeSinHijos: number
+  conConyugeConHijos: number
+  conConyugeSinHijos: number
+}
+
+/** Documenta la forma de `MONO_APORTES_2026`; el valor real va con `as const` para las fuentes. */
+export interface MonoAportes2026Shape {
+  verifiedAt: string
+  sources: readonly { label: string; url: string }[]
+  ley19942: Record<'primerAnio' | 'segundoAnio' | 'pleno', MonoAportesTramo>
+  mides: {
+    sinFonasa: readonly [number, number, number, number]
+    conFonasa: readonly [
+      MonoAportesMidesConFonasaTramo,
+      MonoAportesMidesConFonasaTramo,
+      MonoAportesMidesConFonasaTramo,
+      MonoAportesMidesConFonasaTramo,
+    ]
+  }
+  topes: { unipersonal: number; sociedadDeHecho: number; activos: number }
+}
+
+export const MONO_APORTES_2026 = {
+  verifiedAt: '2026-09-15',
+  sources: [
+    {
+      label: 'BPS — Monotributo ley 19.942 (vigencia enero 2026)',
+      url: BPS_LEY_19942,
+    },
+    {
+      label: 'BPS — Monotributo social Mides, ley 18.874 (vigencia enero 2026)',
+      url: BPS_MIDES,
+    },
+    {
+      label: 'BPS — Tope de ingresos y capital de la empresa (2026)',
+      url: BPS_TOPES_2026,
+    },
+  ],
+  /** Monotributo ley 19.942 — altas desde el 1/1/2021, unipersonal sin dependientes. */
+  ley19942: {
+    /** Mes 1 a 12 de actividad (25% del aporte pleno). */
+    primerAnio: { sinFonasa: 1071, conFonasaSinConyuge: 5430, conFonasaConConyuge: 6322 },
+    /** Mes 13 a 24 de actividad (50%). */
+    segundoAnio: { sinFonasa: 1594, conFonasaSinConyuge: 5953, conFonasaConConyuge: 6845 },
+    /** Desde el mes 25 de actividad (100%). Idéntico a la ley 18.083. */
+    pleno: { sinFonasa: 2637, conFonasaSinConyuge: 6996, conFonasaConConyuge: 7888 },
+  },
+  /**
+   * Monotributo Social MIDES — ley 18.874, gradualidad de 4 tramos de 12 meses (25/50/75/100%).
+   * Los arrays van en ese orden: índice 0 = meses 1-12 (25%) ... índice 3 = desde el mes 37 (100%).
+   */
+  mides: {
+    sinFonasa: [659, 1320, 1979, 2637],
+    conFonasa: [
+      {
+        sinConyugeConHijos: 5430,
+        sinConyugeSinHijos: 4761,
+        conConyugeConHijos: 6322,
+        conConyugeSinHijos: 5653,
+      },
+      {
+        sinConyugeConHijos: 5953,
+        sinConyugeSinHijos: 5284,
+        conConyugeConHijos: 6845,
+        conConyugeSinHijos: 6176,
+      },
+      {
+        sinConyugeConHijos: 6475,
+        sinConyugeSinHijos: 5806,
+        conConyugeConHijos: 7367,
+        conConyugeSinHijos: 6698,
+      },
+      {
+        sinConyugeConHijos: 6996,
+        sinConyugeSinHijos: 6327,
+        conConyugeConHijos: 7888,
+        conConyugeSinHijos: 7219,
+      },
+    ],
+  },
+  /** Topes anuales 2026 (aplican a monotributo ley 18.083 y 19.942; el de activos no rige para MIDES). */
+  topes: {
+    unipersonal: 1_175_537,
+    sociedadDeHecho: 1_959_229,
+    activos: 979_614,
+  },
+} as const satisfies MonoAportes2026Shape
 
 /** La leyenda que va en el recuadro, según el régimen. */
 export const LEYENDAS = [
@@ -564,6 +676,12 @@ export const FAQ: readonly Faq[] = [
       'Existe un crédito fiscal de hasta 80 UI mensuales ($514 durante 2026) que subsidia el abono del facturador y que la pequeña empresa de IVA mínimo recibe descontado directamente del precio. DGI aclara que ese beneficio no aplica a contribuyentes de Monotributo ni de Monotributo Social MIDES. Pagás tarifa de lista.',
   },
   {
+    question: '¿Cuáles son las categorías del monotributo en 2026?',
+    short: 'No hay, como en Argentina.',
+    answer:
+      'No existen «categorías» que subas o bajes según cuánto facturás, como en el monotributo argentino: mientras no superés el tope anual de ingresos, la cuota mensual no depende de tu facturación. Lo que cambia el monto es otra cosa: si sumás FONASA o no, si tenés cónyuge o concubino con FONASA, si hay hijos a cargo, y —en la ley 19.942 y en el Monotributo Social MIDES— la antigüedad de la empresa, porque los dos aportan gradual (25/50/100% la 19.942 en tramos de 12 meses; 25/50/75/100% el Mides) hasta llegar al monto pleno.',
+  },
+  {
     question: '¿Cuánto cuesta el trámite en DGI para imprimir el talonario?',
     short: 'Nada.',
     answer:
@@ -637,6 +755,9 @@ export const SOURCES: readonly Source[] = [
   },
   { label: 'DGI — Tope de ingresos anuales del Monotributo Social MIDES', url: DGI_TOPE_MIDES },
   { label: 'BPS — Monotributo Social MIDES, ley 18.874', url: BPS_MIDES },
+  { label: 'BPS — Monotributo ley 19.942 (montos por gradualidad)', url: BPS_LEY_19942 },
+  { label: 'BPS — Monotributo ley 18.083 (altas hasta 2020)', url: BPS_LEY_18083 },
+  { label: 'BPS — Tope de ingresos y capital de la empresa (2026)', url: BPS_TOPES_2026 },
   { label: 'DGI e-Factura — Información general del régimen de CFE', url: DGI_EFACTURA },
 ] as const
 

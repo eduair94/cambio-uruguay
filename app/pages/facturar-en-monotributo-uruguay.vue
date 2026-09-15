@@ -243,6 +243,93 @@
       </SurfaceCard>
     </section>
 
+    <!-- Montos 2026 -->
+    <section id="montos-2026" class="mb-12">
+      <h2 class="section-title">Cuánto se paga por mes en 2026</h2>
+      <p class="section-intro">
+        La cuota no depende de cuánto facturás: depende de si sumás FONASA, si tenés cónyuge o
+        concubino con FONASA, si hay hijos a cargo y —en la ley 19.942 y en el Mides— de la
+        antigüedad de la empresa. Montos vigentes desde enero de 2026, verificados el 15 de
+        setiembre de 2026 contra BPS.
+      </p>
+
+      <h3 class="card-title card-title--sm">Monotributo ley 19.942 (altas desde el 1/1/2021)</h3>
+      <div class="table-scroll mb-3">
+        <table class="rate-table cu-mobile-cards">
+          <thead>
+            <tr>
+              <th scope="col">Antigüedad de la empresa</th>
+              <th scope="col">Sin FONASA</th>
+              <th scope="col">Con FONASA, sin cónyuge, con hijos</th>
+              <th scope="col">Con FONASA, con cónyuge, con hijos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="t in LEY_19942_ROWS" :key="t.label">
+              <th scope="row">{{ t.label }}</th>
+              <td data-label="Sin FONASA">{{ formatUYU(t.sinFonasa, 0) }}</td>
+              <td data-label="Con FONASA, sin cónyuge, con hijos">
+                {{ formatUYU(t.conFonasaSinConyuge, 0) }}
+              </td>
+              <td data-label="Con FONASA, con cónyuge, con hijos">
+                {{ formatUYU(t.conFonasaConConyuge, 0) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">
+        Las columnas «con FONASA» son la situación con hijos a cargo: BPS no publica para este
+        régimen una columna separada sin hijos, a diferencia del Mides. Y «con cónyuge» es el hogar
+        con cónyuge o concubino con FONASA, no el caso en que ambos integran la misma empresa (paga
+        otro monto, más alto, y no está en esta tabla).
+      </p>
+      <p class="table-note">
+        Las empresas que abrieron hasta el 31/12/2020 quedan en la ley 18.083: no tienen gradualidad
+        y pagan siempre el monto pleno, el mismo de la fila «Desde el mes 25» de arriba.
+      </p>
+
+      <h3 class="card-title card-title--sm mt-8">Monotributo Social MIDES (ley 18.874)</h3>
+      <div class="table-scroll mb-3">
+        <table class="rate-table cu-mobile-cards">
+          <thead>
+            <tr>
+              <th scope="col">Antigüedad de la empresa</th>
+              <th scope="col">Sin FONASA</th>
+              <th scope="col">Con FONASA, sin cónyuge, con hijos</th>
+              <th scope="col">Con FONASA, con cónyuge, con hijos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="t in MIDES_ROWS" :key="t.label">
+              <th scope="row">{{ t.label }}</th>
+              <td data-label="Sin FONASA">{{ formatUYU(t.sinFonasa, 0) }}</td>
+              <td data-label="Con FONASA, sin cónyuge, con hijos">
+                {{ formatUYU(t.sinConyugeConHijos, 0) }}
+              </td>
+              <td data-label="Con FONASA, con cónyuge, con hijos">
+                {{ formatUYU(t.conConyugeConHijos, 0) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">
+        El Mides tiene cuatro tramos, no tres: 25/50/75/100% del aporte, cada uno de 12 meses.
+      </p>
+
+      <VRow class="mt-6">
+        <VCol v-for="c in TOPES_2026_TILES" :key="c.label" cols="12" sm="6" md="4">
+          <SurfaceCard padding="compact" stretch>
+            <StatTile :label="c.label" :value="c.value" :note="c.note" />
+          </SurfaceCard>
+        </VCol>
+      </VRow>
+      <p class="table-note">
+        El tope de activos no aplica a las empresas del Monotributo Social MIDES.
+      </p>
+    </section>
+
     <!-- Mitos -->
     <section class="mb-12">
       <h2 class="section-title">Lo que se dice y lo que dice DGI</h2>
@@ -434,7 +521,8 @@
       <h2 class="text-h6 font-weight-bold mb-3">Fuentes</h2>
       <p class="text-body-2 text-medium-emphasis mb-3">
         Contrastado el {{ verifiedAt }} con DGI, BPS y los textos vigentes de IMPO.
-        {{ DISCLAIMER }}
+        {{ DISCLAIMER }} Los montos mensuales de 2026 de la sección «Cuánto se paga por mes» se
+        verificaron aparte el 15 de setiembre de 2026 contra el BPS.
       </p>
       <ul class="sources-list">
         <li v-for="s in SOURCES" :key="s.url">
@@ -454,6 +542,7 @@ import {
   FAQ,
   FIGURES,
   LEYENDAS,
+  MONO_APORTES_2026,
   MONO_INVOICING_VERIFIED_AT,
   MYTHS,
   QUOTE_CHANNELS,
@@ -497,6 +586,53 @@ const CONTEXT_TILES = [
     label: 'Tope anual, sociedad de hecho',
     value: formatUYU(FIGURES.topeAnualSociedad.value, 0),
     note: 'ingresos 2026',
+  },
+]
+
+const LEY_19942_ROWS = [
+  { label: 'Primeros 12 meses (25%)', ...MONO_APORTES_2026.ley19942.primerAnio },
+  { label: 'Segundos 12 meses (50%)', ...MONO_APORTES_2026.ley19942.segundoAnio },
+  { label: 'Desde el mes 25 (100%)', ...MONO_APORTES_2026.ley19942.pleno },
+]
+
+const MIDES_ROWS = [
+  {
+    label: 'Meses 1 a 12 (25%)',
+    sinFonasa: MONO_APORTES_2026.mides.sinFonasa[0],
+    ...MONO_APORTES_2026.mides.conFonasa[0],
+  },
+  {
+    label: 'Meses 13 a 24 (50%)',
+    sinFonasa: MONO_APORTES_2026.mides.sinFonasa[1],
+    ...MONO_APORTES_2026.mides.conFonasa[1],
+  },
+  {
+    label: 'Meses 25 a 36 (75%)',
+    sinFonasa: MONO_APORTES_2026.mides.sinFonasa[2],
+    ...MONO_APORTES_2026.mides.conFonasa[2],
+  },
+  {
+    label: 'Desde el mes 37 (100%)',
+    sinFonasa: MONO_APORTES_2026.mides.sinFonasa[3],
+    ...MONO_APORTES_2026.mides.conFonasa[3],
+  },
+]
+
+const TOPES_2026_TILES = [
+  {
+    label: 'Tope de ingresos, unipersonal',
+    value: formatUYU(MONO_APORTES_2026.topes.unipersonal, 0),
+    note: 'ingresos anuales 2026',
+  },
+  {
+    label: 'Tope de ingresos, sociedad de hecho',
+    value: formatUYU(MONO_APORTES_2026.topes.sociedadDeHecho, 0),
+    note: 'ingresos anuales 2026',
+  },
+  {
+    label: 'Tope de activos',
+    value: formatUYU(MONO_APORTES_2026.topes.activos, 0),
+    note: 'no aplica al Mides',
   },
 ]
 
@@ -555,7 +691,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'facturar monotributo uruguay, talonario monotributo, monotributo social mides factura, factura electronica monotributo obligatoria, cai talonario dgi, imprenta autorizada dgi, constancia impresion documentacion, cfe monotributo, credito 80 ui facturacion electronica, boleta monotributo',
+        'facturar monotributo uruguay, talonario monotributo, monotributo social mides factura, factura electronica monotributo obligatoria, cai talonario dgi, imprenta autorizada dgi, constancia impresion documentacion, cfe monotributo, credito 80 ui facturacion electronica, boleta monotributo, categorias monotributo 2026, monotributo montos 2026, cuanto se paga de monotributo, monotributo mides cuota',
     },
   ],
   script: [
@@ -684,6 +820,39 @@ useHead(() => ({
   text-transform: none;
   opacity: 1;
   margin-bottom: 12px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+.rate-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.rate-table th,
+.rate-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.6rem 0.7rem;
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.16);
+  line-height: 1.5;
+}
+.rate-table thead th {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.rate-table tbody th {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.table-note {
+  font-size: 0.85rem;
+  opacity: 0.72;
+  margin-bottom: 24px;
+}
+.table-note:last-child {
+  margin-bottom: 0;
 }
 
 .tight-list {
