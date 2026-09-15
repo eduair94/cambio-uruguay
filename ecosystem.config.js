@@ -70,6 +70,16 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // ANCAP fuel prices (historical HTML table, no LLM). Twice a day (07:11 and 13:11 UTC)
+      // because the government can publish a new decree at an unpredictable hour.
+      name: "currency-combustibles",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_combustibles.js",
+      cron_restart: "11 7,13 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Cost-of-living live figures (salario mínimo, boleto STM, alquileres típicos) for
       // /herramientas/costo-de-vida. Only the validated figures are stored — the arithmetic that
       // turns them into a full cost model stays in the app (COST_MODEL). Daily 09:43 UTC ≈ 06:43

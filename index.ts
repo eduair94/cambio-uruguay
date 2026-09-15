@@ -25,6 +25,9 @@ import { baselineTable as baselineBcuRates } from "./classes/bcurates/table";
 import { loadBcuRates } from "./classes/bcurates/store";
 import { BASELINE_FIGURES } from "./classes/figures/bands";
 import { loadFigures } from "./classes/figures/store";
+import { buildFuelResponse } from "./classes/combustibles/api";
+import { BASELINE_FUEL_ROWS } from "./classes/combustibles/baseline";
+import { loadFuelMeta, loadFuelRows } from "./classes/combustibles/store";
 import { loadLoanRates } from "./classes/loans/store";
 import {
   buildSantanderPreferentialRatesResponse,
@@ -2735,6 +2738,30 @@ const main = async () => {
    */
   server.getJson("uy-figures", async (req: Request): Promise<any> => {
     return await redisCache.getOrSet("uy-figures", async () => (await loadFigures()) ?? BASELINE_FIGURES, 1800);
+  });
+
+  /**
+   * @openapi
+   * /combustibles:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Precios de combustibles de ANCAP (vigentes e histórico mensual desde 2021)
+   *     description: Nafta Súper 95, Premium 97, Gasoil 50-S, Gasoil 10-S, queroseno (pesos por litro) y supergás (pesos por kg), una fila por vigencia, leídas de la tabla pública de ANCAP. `asOf` es null cuando se sirve el baseline horneado.
+   *     responses:
+   *       200:
+   *         description: latest, previous y rows ascendentes
+   */
+  server.getJson("combustibles", async (): Promise<any> => {
+    return await redisCache.getOrSet(
+      "combustibles",
+      async () => {
+        const rows = await loadFuelRows();
+        if (!rows.length) return buildFuelResponse([...BASELINE_FUEL_ROWS], null);
+        return buildFuelResponse(rows, await loadFuelMeta());
+      },
+      1800
+    );
   });
 
   /**
