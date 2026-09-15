@@ -262,10 +262,12 @@
         <div class="kicker">Contexto</div>
         <h2 id="afuera" class="text-h5 font-weight-bold mb-2">¿Exagera el sub?</h2>
         <p class="lead">{{ contextText }}</p>
-        <VCard variant="outlined" class="pa-4">
+        <!-- Sin serie no hay gráfico: un eje vacío se lee como "cero avisos". -->
+        <VCard v-if="fredRows.length" variant="outlined" class="pa-4">
           <div class="fig-title">Avisos de desarrollo de software en Indeed, Estados Unidos</div>
           <div class="fig-sub">
-            Índice, febrero de 2020 = 100. Promedio mensual de la serie de Indeed Hiring Lab (FRED).
+            Índice, febrero de 2020 = 100. Promedio mensual de la serie de Indeed Hiring Lab (la
+            misma que publica FRED).
           </div>
           <div class="chart-wrap">
             <ClientOnly>
@@ -660,8 +662,11 @@ const votesText = computed(
 const contextText = computed(() => {
   const last = fredLast.value
   const low = fredLow.value
-  const below = last ? Math.round(100 - last.v) : null
-  return `Afuera el cuadro es más mixto que en el sub. En Estados Unidos —el mercado que más software le compra a Uruguay— los avisos de desarrollo en Indeed están ${below != null ? `${below} % por debajo` : 'por debajo'} de febrero de 2020${low ? `, aunque rebotaron desde el piso de ${monthLabelLong(`${low.m}-01`)}` : ''}. En Uruguay, el empleo del sector no cae y desarrollador de software fue el puesto más pedido en la primera mitad de 2026. Lo que cambió es para quién hay: equipos más chicos y más senior, con menos lugar para el primer empleo. El pesimismo del sub es real, pero está más cerca de «está difícil entrar» que de «no hay trabajo».`
+  // Sin la serie de Indeed la frase de EE.UU. se omite entera: no se afirma una cifra que no se muestra.
+  const usa = last
+    ? ` En Estados Unidos —el mercado que más software le compra a Uruguay— los avisos de desarrollo en Indeed están ${Math.round(100 - last.v)} % por debajo de febrero de 2020${low ? `, aunque rebotaron desde el piso de ${monthLabelLong(`${low.m}-01`)}` : ''}.`
+    : ''
+  return `Afuera el cuadro es más mixto que en el sub.${usa} En Uruguay, el empleo del sector no cae y desarrollador de software fue el puesto más pedido en la primera mitad de 2026. Lo que cambió es para quién hay: equipos más chicos y más senior, con menos lugar para el primer empleo. El pesimismo del sub es real, pero está más cerca de «está difícil entrar» que de «no hay trabajo».`
 })
 
 // ---------------------------------------------------------------- gráficos
