@@ -45,8 +45,13 @@ export interface SupplementOptions {
 }
 
 /**
- * Estimación del suplemento: base menos el 33 % de la pasividad. Otros ingresos: el BPS descuenta el
- * 33 % (65 años o más) o el 100 % (menos de 65). Es una estimación: el BPS mira todos los ingresos.
+ * Estimación del suplemento: base menos el 33 % de la pasividad. Otros ingresos: se descuenta el
+ * 33 % (65 años o más) o el 100 % (menos de 65) de TODO el otro ingreso declarado.
+ *
+ * El BPS aplica sobre esos otros ingresos un tope que no publica en la página del suplemento, así
+ * que descontar desde el primer peso es deliberadamente conservador: el suplemento real sólo puede
+ * ser igual o mayor al que devuelve esta función, nunca menor. La copia de la página y el FAQ dicen
+ * exactamente eso; si algún día el BPS publica el valor del tope, se cambian juntos.
  */
 export function estimateSupplement(pension: number, opts: SupplementOptions = {}): number | null {
   const other = opts.otherIncome ?? 0
@@ -103,7 +108,7 @@ export const SUPLEMENTO_FAQ: readonly FaqItem[] = [
     id: 'como-se-calcula',
     question: '¿Cómo se calcula?',
     answer:
-      'Base menos el 33 % del total de tus jubilaciones y pensiones. Otros ingresos: si tenés 65 o más se descuenta el 33 % de lo que supere el tope; si tenés menos de 65, el 100 %. Con unos $ 53.300 de pasividad el suplemento se agota.',
+      'Base menos el 33 % del total de tus jubilaciones y pensiones. La calculadora descuenta además el 33 % de todos tus otros ingresos si tenés 65 años o más, o el 100 % si tenés menos. El BPS aplica sobre esos otros ingresos un tope que no publica en esa página, así que es una estimación conservadora: la cifra real puede ser mayor. Con $ 53.306 de pasividad el suplemento se agota.',
   },
   {
     id: 'regimen-viejo',

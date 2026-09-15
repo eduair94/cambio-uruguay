@@ -391,7 +391,8 @@
       </p>
     </section>
 
-    <!-- Plan Redondo -->
+    <!-- Plan Redondo: ventana de compras 1/9/2026–31/3/2027 — revisar y retirar o actualizar
+         después del 31/3/2027. -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">
         Plan Redondo: $ 2.500 o $ 5.000 de descuento por un electrodoméstico eficiente

@@ -129,6 +129,30 @@ export const MP_FEES: readonly MpFeeRow[] = [
     release: '21 días',
     pct: 11.24,
   },
+  // Tarjetas internacionales en Point Smart: la landing las publica aparte de la tabla doméstica,
+  // en el FAQ (JSON-LD `FAQPage` de la misma página). Sin fila de débito internacional a 21 días,
+  // igual que en la tabla doméstica. Dossier §1.5.
+  {
+    method: 'point',
+    label: 'Point Smart',
+    payer: 'Tarjeta internacional: débito',
+    release: 'instante',
+    pct: 5,
+  },
+  {
+    method: 'point',
+    label: 'Point Smart',
+    payer: 'Tarjeta internacional: crédito',
+    release: 'instante',
+    pct: 6.74,
+  },
+  {
+    method: 'point',
+    label: 'Point Smart',
+    payer: 'Tarjeta internacional: crédito',
+    release: '21 días',
+    pct: 5.99,
+  },
 ]
 
 /**
@@ -154,8 +178,12 @@ export function feeForSale(
 
 export interface MpPointDevice {
   name: string
+  /** Precio de lista, en pesos uruguayos: el que rige cuando se termina la oferta. */
+  listPrice: number
   /** Precio de oferta vigente, en pesos uruguayos. */
   price: number
+  /** Qué es ese precio de oferta y a qué fecha se leyó: una oferta caduca, el de lista no. */
+  priceNote: string
   note: string
 }
 
@@ -167,8 +195,10 @@ export interface MpPointDevice {
 export const MP_POINT_DEVICES: readonly MpPointDevice[] = [
   {
     name: 'Point Smart (2)',
+    listPrice: 5000,
     price: 3699,
-    note: 'Precio de oferta (26% OFF sobre $ 5.000 de lista), o 12 cuotas de $ 308,25. Envío gratis a todo el país. Incluye rollos de impresión gratis de por vida, SIM 4G gratis, QR impreso gratis y 1 año de garantía. Pantalla táctil 6,0", batería 3.300 mAh, 4G + WiFi, Android 12. Point Mini y Point Tap no están a la venta en Uruguay.',
+    priceNote: 'en oferta al 15/9/2026 (26 % de descuento sobre el precio de lista)',
+    note: 'Se puede pagar en 12 cuotas de $ 308,25. Envío gratis a todo el país. Incluye rollos de impresión gratis de por vida, SIM 4G gratis, QR impreso gratis y 1 año de garantía. Pantalla táctil 6,0", batería 3.300 mAh, 4G + WiFi, Android 12. Point Mini y Point Tap no están a la venta en Uruguay.',
   },
 ]
 
@@ -245,7 +275,7 @@ export const MP_FAQ: readonly FaqItem[] = [
     id: 'cuando-libera-plata',
     question: '¿Cuándo me libera Mercado Pago el dinero de una venta?',
     answer:
-      'Elegís entre dos plazos por cada medio de cobro: al instante o a 21 días. La diferencia la paga el propio porcentaje: pedir el dinero al instante cuesta más comisión que esperar los 21 días (por ejemplo, link de pago 5,99 % al instante contra 4,99 % a 21 días).',
+      'Elegís entre dos plazos por cada medio de cobro: al instante o a 21 días. La diferencia la paga el propio porcentaje: pedir el dinero al instante cuesta más comisión que esperar los 21 días (por ejemplo, link de pago 5,99 % + IVA al instante contra 4,99 % + IVA a 21 días).',
   },
   {
     id: 'cuanto-sale-point',

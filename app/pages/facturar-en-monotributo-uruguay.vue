@@ -469,7 +469,7 @@
         {{ FIGURES.gradualidadMeses.value }} meses.
       </p>
       <VRow>
-        <VCol v-for="c in CONTEXT_TILES" :key="c.label" cols="12" sm="6" md="3">
+        <VCol v-for="c in CONTEXT_TILES" :key="c.label" cols="12" sm="6" md="6">
           <SurfaceCard padding="compact" stretch>
             <StatTile :label="c.label" :value="c.value" :note="c.note" />
           </SurfaceCard>
@@ -577,16 +577,8 @@ const CONTEXT_TILES = [
     value: formatUYU(FIGURES.aporteMidesPlenoSinFonasa.value, 0),
     note: 'desde el mes 37, sin FONASA',
   },
-  {
-    label: 'Tope anual, unipersonal',
-    value: formatUYU(FIGURES.topeAnualUnipersonal.value, 0),
-    note: 'ingresos 2026',
-  },
-  {
-    label: 'Tope anual, sociedad de hecho',
-    value: formatUYU(FIGURES.topeAnualSociedad.value, 0),
-    note: 'ingresos 2026',
-  },
+  // Los topes de ingresos 2026 se publican una sola vez, en `TOPES_2026_TILES`, junto a la tabla
+  // de montos: repetirlos acá era la misma cifra dos veces en la misma página.
 ]
 
 const LEY_19942_ROWS = [
@@ -664,8 +656,10 @@ const verifiedAt = new Date(MONO_INVOICING_VERIFIED_AT).toLocaleDateString('es-U
 
 const canonicalUrl = 'https://cambio-uruguay.com/facturar-en-monotributo-uruguay'
 const title = 'Facturar en Monotributo y Monotributo MIDES'
+// La meta description se corta a los ~160 caracteres en el resultado de búsqueda: entra la
+// promesa (facturar en monotributo, cuánto se paga por mes en 2026, MIDES) y nada más.
 const description =
-  '¿Es obligatorio el talonario o podés facturar electrónico? DGI exceptúa al Monotributo y al Monotributo Social MIDES de emitir CFE: el papel es el camino legal y el barato. Con el trámite gratis de autorización, las palancas para bajar el precio de imprenta, y por qué el crédito de 80 UI que abarata la factura electrónica no te alcanza.'
+  'Talonario o factura electrónica: cómo facturar en monotributo, cuánto se paga por mes en 2026 y los montos del Monotributo Social MIDES.'
 
 defineOgImageComponent('Cambio', {
   title: 'Facturar en Monotributo',

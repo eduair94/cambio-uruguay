@@ -496,7 +496,7 @@ export const redditGuides: readonly Guide[] = [
     faqs: [
       {
         q: '¿Cuánto cuesta una garantía de alquiler?',
-        a: 'Depende de la familia. La Contaduría, ANDA y el fondo del Ministerio se quedan con un 3 % mensual del alquiler, cobrado a cada parte en los dos programas estatales. Porto Seguro, Sura y Mapfre cobran una prima que no publican en su sitio: hay que pasar por el cotizador, y los relevamientos de terceros la ubican cerca de un mes de alquiler por año. FIDECIU tampoco publica el suyo.',
+        a: 'Depende de la familia. La Contaduría, ANDA y el fondo del Ministerio se quedan con un 3 % mensual del alquiler, cobrado a cada parte en los dos programas estatales. Las aseguradoras no publican la prima: hay que pasar por el cotizador. Según relevamientos, Porto Seguro ronda un mes de alquiler por año, Sura alrededor del 70 % de un mes y Mapfre alrededor del 80 %. FIDECIU tampoco publica el suyo.',
       },
       {
         q: '¿La Contaduría es sólo para funcionarios públicos?',

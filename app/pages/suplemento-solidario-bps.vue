@@ -15,8 +15,8 @@
 
     <p class="text-body-1 mb-6" style="max-width: 68ch">
       Es un complemento para las pasividades bajas del régimen nuevo (Ley 20.130): el BPS paga la
-      diferencia entre un valor base de $ {{ money(BASE_2026) }} y el {{ DEDUCTION_PCT }} % de lo
-      que ya cobrás, junto con la jubilación o pensión.
+      diferencia entre un valor base de {{ formatUYU(BASE_2026, 0) }} y el {{ DEDUCTION_PCT }} % de
+      lo que ya cobrás, junto con la jubilación o pensión.
     </p>
 
     <!-- Calculadora -->
@@ -60,6 +60,10 @@
             class="mt-4"
             hide-details
           />
+          <p v-if="!hasAge" class="text-caption text-medium-emphasis mt-2 mb-0">
+            Sin edad, asumimos 65 años o más (descuento del {{ DEDUCTION_PCT }} % sobre otros
+            ingresos).
+          </p>
         </VCard>
       </VCol>
       <VCol cols="12" md="7">
@@ -67,13 +71,14 @@
           <div class="text-overline mb-2">Suplemento estimado</div>
           <p class="text-h5 font-weight-bold mb-2">
             <template v-if="result === null">Completá los datos con números válidos.</template>
-            <template v-else-if="result > 0">$ {{ money(result) }} por mes</template>
+            <template v-else-if="result > 0">{{ formatUYU(result, 0) }} por mes</template>
             <template v-else>No te correspondería suplemento con estos datos.</template>
           </p>
           <p class="mb-0 text-medium-emphasis text-body-2">
-            Estimación; el BPS considera todos tus ingresos. Al valor base se le descuenta el
-            {{ DEDUCTION_PCT }} % de tu pasividad y, si declarás otros ingresos, el
-            {{ DEDUCTION_PCT }} % de esa parte si tenés 65 años o más, o el 100 % si tenés menos.
+            Estimación conservadora. Al valor base se le descuenta el {{ DEDUCTION_PCT }} % de tu
+            pasividad y el {{ DEDUCTION_PCT }} % de todos los otros ingresos que declares si tenés
+            65 años o más, o el 100 % si tenés menos. El BPS aplica sobre esos otros ingresos un
+            tope que no publica en esa página, así que la cifra real puede ser mayor.
           </p>
         </VCard>
       </VCol>
@@ -104,9 +109,9 @@
         </thead>
         <tbody>
           <tr v-for="e in EXAMPLES" :key="e.pension">
-            <td data-label="Jubilación o pensión">$ {{ money(e.pension) }}</td>
+            <td data-label="Jubilación o pensión">{{ formatUYU(e.pension, 0) }}</td>
             <td data-label="Suplemento" class="font-weight-medium">
-              {{ e.supplement > 0 ? `$ ${money(e.supplement)}` : 'No corresponde' }}
+              {{ e.supplement > 0 ? formatUYU(e.supplement, 0) : 'No corresponde' }}
             </td>
           </tr>
         </tbody>
@@ -133,13 +138,13 @@
           <tr>
             <td data-label="Referencia">Jubilación mínima</td>
             <td data-label="Valor" class="font-weight-medium">
-              $ {{ money(JUBILACION_MINIMA_2026) }}
+              {{ formatUYU(JUBILACION_MINIMA_2026, 0) }}
             </td>
           </tr>
           <tr>
             <td data-label="Referencia">Pensión a la vejez e invalidez</td>
             <td data-label="Valor" class="font-weight-medium">
-              $ {{ money(PENSION_VEJEZ_INVALIDEZ_2026) }}
+              {{ formatUYU(PENSION_VEJEZ_INVALIDEZ_2026, 0) }}
             </td>
           </tr>
           <tr>
@@ -188,6 +193,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { FaqItem } from '~/utils/faqAnswers'
+import { formatUYU } from '~/utils/format'
 import {
   APPLY_STEPS,
   AUMENTO_2026_FROM,
@@ -209,14 +215,19 @@ const localePath = useLocalePath()
 
 const pension = ref(15000)
 const otherIncome = ref(0)
-const age = ref(70)
+// `v-model.number` deja '' (o NaN) cuando el campo queda vacío: sin edad no se le pasa `age` a
+// `estimateSupplement`, que entonces asume 65 años o más — no un NaN que se compare como `false`.
+const age = ref<number | string | null>(70)
+
+const ageSafe = computed<number | undefined>(() => {
+  const raw = age.value
+  return typeof raw === 'number' && Number.isFinite(raw) ? raw : undefined
+})
+const hasAge = computed(() => ageSafe.value !== undefined)
 
 const result = computed(() =>
-  estimateSupplement(pension.value, { otherIncome: otherIncome.value, age: age.value })
+  estimateSupplement(pension.value, { otherIncome: otherIncome.value, age: ageSafe.value })
 )
-
-const moneyFmt = new Intl.NumberFormat('es-UY', { maximumFractionDigits: 0 })
-const money = (n: number) => moneyFmt.format(Math.round(n))
 
 const longDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString('es-UY', {
@@ -233,7 +244,7 @@ const faq = SUPLEMENTO_FAQ as FaqItem[]
 
 const canonicalUrl = 'https://cambio-uruguay.com/suplemento-solidario-bps'
 const title = 'Suplemento solidario BPS 2026: quién cobra'
-const description = `El BPS paga hasta $ ${money(BASE_2026)} menos el ${DEDUCTION_PCT} % de tu pasividad a jubilados y pensionistas del régimen nuevo. Requisitos, ejemplos y cómo pedirlo.`
+const description = `El BPS paga hasta ${formatUYU(BASE_2026, 0)} menos el ${DEDUCTION_PCT} % de tu pasividad a jubilados y pensionistas del régimen nuevo. Requisitos, ejemplos y cómo pedirlo.`
 
 defineOgImageComponent('Cambio', {
   title: 'Suplemento solidario del BPS',

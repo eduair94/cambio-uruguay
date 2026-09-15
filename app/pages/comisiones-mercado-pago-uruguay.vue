@@ -15,8 +15,9 @@
     <p class="lead mb-8">
       Mercado Pago cobra entre 1,15 % y 11,99 % + IVA por cada venta, según el medio de cobro
       (código QR, link de pago, checkout, suscripción o el lector Point), cómo paga el cliente y el
-      plazo que elegís para tener el dinero disponible. Acá está la tabla oficial completa, lo que
-      sale el aparato Point y cuándo y cómo se retira la plata. Última lectura:
+      plazo que elegís para tener el dinero disponible. Acá está la tabla oficial de Mercado Pago,
+      medio por medio, cuánto te queda de cada venta, lo que sale el aparato Point y cuándo y cómo
+      se retira la plata. Última lectura:
       {{ verifiedAt }}.
     </p>
 
@@ -88,10 +89,11 @@
 
     <!-- Tabla completa -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">La tabla oficial completa</h2>
+      <h2 class="text-h5 font-weight-bold mb-2">La tabla oficial, medio por medio</h2>
       <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
         Todos los porcentajes son <strong>+ IVA</strong>. "Te quedan" es el neto de una venta de $
-        1.000, comisión e IVA ya descontados.
+        1.000, comisión e IVA ya descontados. Las tarjetas internacionales tienen sus propias tasas,
+        más altas que las locales: están en la tabla, en las filas del Point.
       </p>
       <div class="table-wrap">
         <VTable density="comfortable" class="cu-mobile-cards">
@@ -145,7 +147,11 @@
           <VIcon icon="mdi-cellphone-check" color="primary" size="32" class="mt-1" />
           <div>
             <div class="text-subtitle-1 font-weight-bold mb-1">{{ device.name }}</div>
-            <p class="text-h6 font-weight-bold mb-2">{{ formatUYU(device.price, 0) }}</p>
+            <p class="text-h6 font-weight-bold mb-1">
+              {{ formatUYU(device.listPrice, 0) }} de lista ·
+              {{ formatUYU(device.price, 0) }}
+            </p>
+            <p class="text-caption text-medium-emphasis mb-2">{{ device.priceNote }}</p>
             <p class="mb-0 text-medium-emphasis">{{ device.note }}</p>
           </div>
         </div>
@@ -266,7 +272,13 @@ import {
 const localePath = useLocalePath()
 
 const amount = ref(1000)
-const rowIndex = ref(3) // link de pago, al instante — el medio sin distinción por tarjeta.
+// Link de pago al instante: el medio sin distinción por tarjeta. Se busca por contenido y no por
+// posición para que agregar una fila a `MP_FEES` no cambie lo que muestra la calculadora al abrir.
+const defaultRowIndex = Math.max(
+  0,
+  MP_FEES.findIndex(row => row.method === 'link' && row.release === 'instante')
+)
+const rowIndex = ref(defaultRowIndex)
 
 const rowOptions = MP_FEES.map((row, index) => ({
   index,

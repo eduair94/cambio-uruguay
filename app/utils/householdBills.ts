@@ -854,6 +854,8 @@ export const BILLS_FAQ: readonly BillFaq[] = Object.freeze([
     answer:
       'El Plan Redondo es un descuento en la factura de UTE por comprar un equipo con características de interés para UTE y registrarlo: no es un precio rebajado en el comercio ni algo automático. El descuento es de $ 2.500 IVA incluido por equipo, y sube a $ 5.000 para termotanque con bomba de calor y para sistemas SAVE, con un tope de 6 equipos por cliente. Está disponible para clientes residenciales y comerciales con potencia contratada de hasta 40 kW, sobre compras hechas entre el 1.º de setiembre de 2026 y el 31 de marzo de 2027, y el equipo tiene que quedar instalado en el servicio donde se pide el descuento. Se registra presentando el comprobante fiscal electrónico de la compra: en el portal de UTE, en una oficina comercial o por WhatsApp al 098 1930 00.',
     // Fuente: UTE, «Plan Redondo».
+    // Plan Redondo: ventana de compras 1/9/2026–31/3/2027 — revisar y retirar o actualizar después
+    // del 31/3/2027.
   },
   {
     question: '¿UTE me compensa por un corte de luz?',
