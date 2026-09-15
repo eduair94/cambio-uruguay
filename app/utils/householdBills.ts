@@ -90,6 +90,18 @@
 //     periódicamente en función del Índice Medio de Salarios» y no habla de periodicidad, así
 //     que este módulo no le atribuye una.
 //     https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ur-ura-coeficiente-alquileres
+//
+// FUENTES PRIMARIAS AGREGADAS EL 2026-09-15, para las secciones del Plan Redondo y de las
+// compensaciones por corte de luz:
+//   - UTE, «Plan Redondo» (descuento por electrodoméstico eficiente registrado)
+//     https://www.ute.com.uy/clientes/soluciones-para-el-hogar/planredondo
+//   - UTE, «Compensaciones por calidad del servicio»
+//     https://www.ute.com.uy/facturas/compensaciones-por-calidad-del-servicio
+//   - UTE, «Reclamos por cortes en el servicio de energía eléctrica»
+//     https://www.ute.com.uy/reclamos/reclamos-por-cortes-en-el-servicio-de-energia-electrica
+//   - gub.uy, trámite «Reclamos ante URSEA» (segunda instancia, tras 15 días hábiles sin
+//     respuesta o disconforme con la de UTE)
+//     https://www.gub.uy/tramites/reclamos-ursea
 
 /** Fecha en que cada cifra de este módulo se contrastó con las fuentes de arriba. */
 export const BILLS_VERIFIED_AT = '2026-08-09'
@@ -101,8 +113,11 @@ export const BILLS_VERIFIED_AT = '2026-08-09'
  * reglamento de URSEA, el Reglamento de Distribución, las dos leyes y las páginas de trámites,
  * pero NO se volvieron a contrastar los tramos ni los cargos fijos de OSE. Fusionar las dos
  * constantes diría que se verificó algo que no se verificó.
+ *
+ * Bump a 2026-09-15: se sumaron las dos preguntas del Plan Redondo y de la compensación por
+ * corte de luz, contra las páginas de UTE y URSEA/gub.uy listadas más abajo.
  */
-export const BILLS_FAQ_VERIFIED_AT = '2026-08-10'
+export const BILLS_FAQ_VERIFIED_AT = '2026-09-15'
 
 /** Desde cuándo rigen los precios de UTE y OSE que usa este módulo. */
 export const TARIFFS_EFFECTIVE_FROM = '2026-01-01'
@@ -228,6 +243,22 @@ export const TARIFF_SOURCES: readonly TariffSource[] = Object.freeze([
     label:
       'INE — Series históricas de la Unidad Reajustable (los cargos de corte y reconexión de OSE se fijan en UR)',
     url: 'https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ur-ura-coeficiente-alquileres',
+  },
+  {
+    label: 'UTE — Plan Redondo: descuento por electrodoméstico eficiente registrado',
+    url: 'https://www.ute.com.uy/clientes/soluciones-para-el-hogar/planredondo',
+  },
+  {
+    label: 'UTE — Compensaciones por calidad del servicio',
+    url: 'https://www.ute.com.uy/facturas/compensaciones-por-calidad-del-servicio',
+  },
+  {
+    label: 'UTE — Reclamos por cortes en el servicio de energía eléctrica',
+    url: 'https://www.ute.com.uy/reclamos/reclamos-por-cortes-en-el-servicio-de-energia-electrica',
+  },
+  {
+    label: 'gub.uy — Trámite de reclamos ante URSEA (segunda instancia)',
+    url: 'https://www.gub.uy/tramites/reclamos-ursea',
   },
 ])
 
@@ -815,5 +846,22 @@ export const BILLS_FAQ: readonly BillFaq[] = Object.freeze([
     answer:
       'El pliego tarifario vigente desde el 01/01/2026 no tiene ninguna tarifa de movilidad eléctrica ni una sola mención a vehículos o cargadores. Las tres residenciales se definen «para los servicios conectados en los niveles de tensión 230 V y 400 V con modalidad de consumo Residencial»: por tensión y potencia contratada, no por el uso que le des a la energía. La General Simple, en cambio, es la de «modalidad de consumo no Residencial ni Alumbrado Público». Tampoco figura en el pliego ningún requisito de medidor aparte para cargar en casa. Lo que sí se mueve es la potencia: el cargador suma kW simultáneos y cada kW contratado cuesta $ 83,2 más IVA todos los meses, lo uses o no. Antes de subirla, leé la letra chica del propio pliego: con instalación monofásica y potencia contratada de hasta 11,5 kW no se puede renunciar parcialmente a la potencia contratada antes de los 12 meses contados desde la última contratación. Y si vas a cargar de madrugada, la Triple Horario es donde eso paga: el valle de 00:00 a 07:00 está a $ 2,443 el kWh contra $ 8,452 del tramo medio de la Simple.',
     // Fuente: Pliego Tarifario vigente desde el 01/01/2026 (tarifas residenciales y tasas).
+  },
+  {
+    question: '¿Qué es el Plan Redondo de UTE?',
+    short:
+      'Hasta $ 5.000 de descuento en la factura por comprar y registrar un electrodoméstico eficiente, no un precio más bajo en el comercio.',
+    answer:
+      'El Plan Redondo es un descuento en la factura de UTE por comprar un equipo con características de interés para UTE y registrarlo: no es un precio rebajado en el comercio ni algo automático. El descuento es de $ 2.500 IVA incluido por equipo, y sube a $ 5.000 para termotanque con bomba de calor y para sistemas SAVE, con un tope de 6 equipos por cliente. Está disponible para clientes residenciales y comerciales con potencia contratada de hasta 40 kW, sobre compras hechas entre el 1.º de setiembre de 2026 y el 31 de marzo de 2027, y el equipo tiene que quedar instalado en el servicio donde se pide el descuento. Se registra presentando el comprobante fiscal electrónico de la compra: en el portal de UTE, en una oficina comercial o por WhatsApp al 098 1930 00.',
+    // Fuente: UTE, «Plan Redondo».
+  },
+  {
+    question: '¿UTE me compensa por un corte de luz?',
+    short:
+      'Sólo si tu zona incumple los indicadores de calidad de URSEA, y se descuenta solo, al cierre del semestre; sin eso, primero va el reclamo a UTE.',
+    answer:
+      'Primero el reclamo por el corte va a UTE, por la web, la app o el 0800 1930. Las compensaciones por calidad del servicio son otra cosa y no se piden aparte: salen del Reglamento de Calidad de Servicio de Distribución de URSEA, que mide nueve indicadores por semestre (respuesta a reclamos, tiempo de reconexión, lecturas estimadas, frecuencia y duración de las interrupciones, y los límites máximos admitidos) y, cuando una zona los incumple, UTE descuenta el importe en la factura al cierre del semestre, en proporción al desvío y a tu facturación promedio. Si UTE no responde tu reclamo o la respuesta no te conforma, URSEA atiende en segunda instancia después de 15 días hábiles, por formulario web o con cita presencial en Liniers 1324, y hay que llevar el número del reclamo original. Si un corte o una sobretensión te rompió un aparato, eso es un reclamo distinto —por daños eléctricos, con presupuesto en papel membretado— y no se resuelve por esta vía (ver la pregunta sobre variaciones de tensión).',
+    // Fuentes: UTE, «Compensaciones por calidad del servicio» y «Reclamos por cortes en el
+    // servicio de energía eléctrica»; gub.uy, trámite «Reclamos ante URSEA».
   },
 ])

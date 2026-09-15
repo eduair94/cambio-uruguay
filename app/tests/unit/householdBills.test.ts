@@ -538,3 +538,25 @@ describe('preguntas nuevas del FAQ', () => {
     expect(BILLS_FAQ_VERIFIED_AT >= BILLS_VERIFIED_AT).toBe(true)
   })
 })
+
+describe('Plan Redondo y corte de luz (agregado 2026-09-15)', () => {
+  // Pin las dos preguntas nuevas por su texto exacto: el test de forma genérico ('cada
+  // pregunta del FAQ tiene respuesta corta y desarrollo') pasaría igual de verde si alguna de
+  // las dos se renombrara o se borrara del array.
+  it('publica la pregunta del Plan Redondo con su texto exacto', () => {
+    expect(BILLS_FAQ.some(f => f.question === '¿Qué es el Plan Redondo de UTE?')).toBe(true)
+  })
+
+  it('publica la pregunta de la compensación por corte de luz con su texto exacto', () => {
+    expect(BILLS_FAQ.some(f => f.question === '¿UTE me compensa por un corte de luz?')).toBe(true)
+  })
+
+  it('la fecha de verificación del FAQ quedó en 2026-09-15', () => {
+    expect(BILLS_FAQ_VERIFIED_AT).toBe('2026-09-15')
+  })
+
+  it('la fuente del Plan Redondo está en la lista de fuentes', () => {
+    const urls = TARIFF_SOURCES.map(s => s.url)
+    expect(urls).toContain('https://www.ute.com.uy/clientes/soluciones-para-el-hogar/planredondo')
+  })
+})

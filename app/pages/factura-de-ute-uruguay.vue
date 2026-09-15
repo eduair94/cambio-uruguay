@@ -391,6 +391,103 @@
       </p>
     </section>
 
+    <!-- Plan Redondo -->
+    <section class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">
+        Plan Redondo: $ 2.500 o $ 5.000 de descuento por un electrodoméstico eficiente
+      </h2>
+      <p class="text-medium-emphasis mb-4" style="max-width: 72ch">
+        Es un descuento en la factura de UTE por comprar un equipo con las características que pide
+        UTE y registrarlo: no es un precio más bajo en el comercio ni algo automático.
+      </p>
+      <VCard variant="flat" class="results-card pa-5">
+        <ul class="mb-0 pl-4">
+          <li>
+            $ 2.500 IVA incluido por equipo; $ 5.000 para termotanque con bomba de calor y sistemas
+            SAVE.
+          </li>
+          <li>Hasta 6 equipos por cliente.</li>
+          <li>Clientes residenciales y comerciales con potencia contratada de hasta 40 kW.</li>
+          <li>Compras entre el 1.º de setiembre de 2026 y el 31 de marzo de 2027.</li>
+          <li>El equipo tiene que quedar instalado en el servicio donde se pide el descuento.</li>
+          <li>
+            Se registra con el comprobante fiscal electrónico de la compra: en el
+            <a
+              href="https://www.ute.com.uy/clientes/soluciones-para-el-hogar/planredondo"
+              target="_blank"
+              rel="noopener noreferrer"
+              >portal de UTE</a
+            >, en una oficina comercial o por WhatsApp al 098 1930 00.
+          </li>
+        </ul>
+      </VCard>
+    </section>
+
+    <!-- Power outage claims and compensation -->
+    <section class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">
+        Corte de luz: cómo reclamar y qué compensación hay
+      </h2>
+      <p class="text-medium-emphasis mb-4" style="max-width: 72ch">
+        Primero el reclamo va a UTE. Las compensaciones por calidad del servicio son otra cosa: no
+        se piden, se descuentan solas cuando tu zona incumple los indicadores de URSEA.
+      </p>
+      <VRow>
+        <VCol cols="12" md="6">
+          <VCard variant="flat" class="lever-card pa-5 h-100">
+            <div class="d-flex align-start mb-3">
+              <VIcon icon="mdi-flash-alert-outline" color="primary" class="mr-3 mt-1" />
+              <h3 class="text-subtitle-1 font-weight-bold mb-0">Reclamo por el corte</h3>
+            </div>
+            <p class="mb-0">
+              Se hace por la
+              <a
+                href="https://www.ute.com.uy/reclamos/reclamos-por-cortes-en-el-servicio-de-energia-electrica"
+                target="_blank"
+                rel="noopener noreferrer"
+                >web de UTE</a
+              >, por la app o por el 0800 1930. Si un corte o una sobretensión te rompió un aparato,
+              es un trámite aparte: el reclamo por daños eléctricos, con presupuesto en papel
+              membretado (ver la pregunta sobre variaciones de tensión más abajo).
+            </p>
+          </VCard>
+        </VCol>
+        <VCol cols="12" md="6">
+          <VCard variant="flat" class="lever-card pa-5 h-100">
+            <div class="d-flex align-start mb-3">
+              <VIcon icon="mdi-cash-refund" color="primary" class="mr-3 mt-1" />
+              <h3 class="text-subtitle-1 font-weight-bold mb-0">
+                Compensación por calidad del servicio
+              </h3>
+            </div>
+            <p class="mb-0">
+              Salen del
+              <a
+                href="https://www.ute.com.uy/facturas/compensaciones-por-calidad-del-servicio"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Reglamento de Calidad de Servicio de Distribución de URSEA</a
+              >, que mide nueve indicadores por semestre (reclamos, reconexión, lecturas estimadas,
+              frecuencia y duración de las interrupciones). Si tu zona incumple, UTE descuenta el
+              importe en la factura al cierre del semestre, en proporción al desvío y a tu
+              facturación promedio: no hay que pedirlo.
+            </p>
+          </VCard>
+        </VCol>
+      </VRow>
+      <p class="text-body-2 text-medium-emphasis mt-4 mb-0" style="max-width: 72ch">
+        Si UTE no responde o la respuesta no te conforma, URSEA atiende en segunda instancia después
+        de 15 días hábiles: por
+        <a
+          href="https://www.gub.uy/tramites/reclamos-ursea"
+          target="_blank"
+          rel="noopener noreferrer"
+          >formulario web</a
+        >
+        o con cita presencial en Liniers 1324, llevando el número del reclamo original a UTE.
+      </p>
+    </section>
+
     <!-- FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -507,9 +604,11 @@ const title = 'Factura de UTE alta: qué tarifa te conviene'
  * Ojo con el cierre: esta frase es lo que se ve en Google y al compartir, y una parte grande de la
  * audiencia está en Montevideo, donde el saneamiento no viene en la factura de OSE. Prometer ahí
  * «el saneamiento te cobra el agua dos veces» es exactamente el error que se corrigió en el h2.
+ * Recortada a ≤160 caracteres (SEO): sigue nombrando OSE, Montevideo, la Intendencia y el decreto,
+ * que es lo que exige `householdBills.test.ts`.
  */
 const description =
-  'La factura de luz desarmada con los precios del Decreto 339/025: por qué el invierno la dispara (los escalones de la Tarifa Residencial Simple), qué renglón lleva IVA y cuál no, comparador de Simple vs Doble vs Triple Horario con tu consumo real, la bonificación del 40 % y quién te cobra el saneamiento (OSE en el interior; en Montevideo, la Intendencia).'
+  'Por qué sube tu factura de UTE (Decreto 339/025): comparador Simple, Doble y Triple Horario, y quién cobra el saneamiento: OSE o la Intendencia de Montevideo.'
 
 defineOgImageComponent('Cambio', {
   title: '¿Por qué te vino cara la factura de UTE?',
@@ -535,7 +634,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'factura ute alta, por que sube la factura de ute, tarifa residencial simple, doble horario ute, triple horario ute, escalones ute kwh, potencia contratada ute bajar, bonificacion 40 ute jubilados, ute estudiantes fondo de solidaridad, cargo fijo ute iva, ose saneamiento cargo variable, quien cobra el saneamiento en montevideo, tarifa ose 2026',
+        'factura ute alta, por que sube la factura de ute, tarifa residencial simple, doble horario ute, triple horario ute, escalones ute kwh, potencia contratada ute bajar, bonificacion 40 ute jubilados, ute estudiantes fondo de solidaridad, cargo fijo ute iva, ose saneamiento cargo variable, quien cobra el saneamiento en montevideo, tarifa ose 2026, plan redondo ute, plan redondo, reclamo corte de luz, ute corte de luz reclamo, compensacion ute corte',
     },
   ],
   script: [
