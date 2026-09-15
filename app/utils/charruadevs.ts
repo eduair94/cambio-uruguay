@@ -206,6 +206,26 @@ export interface Segment {
   hit: boolean
 }
 
+const WORD_CHAR = /[\p{L}\p{N}]/u
+
+/**
+ * La próxima aparición de `term` que empieza una palabra. Los términos de hasta 3 letras además
+ * tienen que terminarla: buscar "IA" no puede resaltar el "ia" de "industrias" (el buscador de Mongo
+ * ya compara palabras enteras; el resaltado tiene que decir lo mismo). Los largos admiten sufijo,
+ * como el stemming: "despid" encuentra "despidieron".
+ */
+function findWord(folded: string, term: string, from = 0): number {
+  let i = folded.indexOf(term, from)
+  while (i >= 0) {
+    const end = i + term.length
+    const startsWord = i === 0 || !WORD_CHAR.test(folded[i - 1]!)
+    const endsWord = term.length > 3 || end === folded.length || !WORD_CHAR.test(folded[end]!)
+    if (startsWord && endsWord) return i
+    i = folded.indexOf(term, i + 1)
+  }
+  return -1
+}
+
 /** Corta `text` en tramos con y sin coincidencia, sin tildes ni mayúsculas. Nunca HTML. */
 export function highlightSegments(text: string, terms: string[]): Segment[] {
   if (!text) return []
@@ -213,10 +233,10 @@ export function highlightSegments(text: string, terms: string[]): Segment[] {
   const folded = fold(text)
   const ranges: Array<[number, number]> = []
   for (const term of terms) {
-    let i = folded.indexOf(term)
+    let i = findWord(folded, term)
     while (i >= 0) {
       ranges.push([i, i + term.length])
-      i = folded.indexOf(term, i + term.length)
+      i = findWord(folded, term, i + term.length)
     }
   }
   if (!ranges.length) return [{ text, hit: false }]
@@ -245,7 +265,7 @@ export function excerptAround(body: string, terms: string[], max = 320): string 
   const folded = fold(text)
   let at = -1
   for (const t of terms) {
-    const i = folded.indexOf(t)
+    const i = findWord(folded, t)
     if (i >= 0 && (at < 0 || i < at)) at = i
   }
   if (at < 0) return `${text.slice(0, max).replace(/\s+\S*$/, '')} …`

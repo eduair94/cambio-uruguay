@@ -100,9 +100,30 @@ describe('highlight and excerpt', () => {
   })
 
   it('merges overlapping hits', () => {
-    expect(highlightSegments('laburo', ['lab', 'abur']).filter(s => s.hit)).toEqual([
-      { text: 'labur', hit: true },
+    expect(highlightSegments('laburo', ['labur', 'laburo']).filter(s => s.hit)).toEqual([
+      { text: 'laburo', hit: true },
     ])
+  })
+
+  it('never lights up a short term inside another word', () => {
+    // "IA" dentro de "industrias" era el primer resultado resaltado de la búsqueda "IA".
+    expect(
+      highlightSegments('Las industrias y la IA', queryTerms('IA')).filter(s => s.hit)
+    ).toEqual([{ text: 'IA', hit: true }])
+  })
+
+  it('lets a long term match its own suffixes, like the stemmer does', () => {
+    expect(highlightSegments('los despidieron a todos', ['despid']).filter(s => s.hit)).toEqual([
+      { text: 'despid', hit: true },
+    ])
+    expect(highlightSegments('los redespidieron', ['despid']).filter(s => s.hit)).toEqual([])
+  })
+
+  it('centres the excerpt on the standalone term, not on a substring', () => {
+    const body = `En otras industrias ${'relleno '.repeat(60)}la IA cambió todo ${'fin '.repeat(60)}`
+    const ex = excerptAround(body, ['ia'], 120)
+    expect(ex).toContain('la IA cambió')
+    expect(ex).not.toContain('industrias')
   })
 
   it('ignores punctuation and one-letter words in the query', () => {
