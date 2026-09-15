@@ -71,6 +71,9 @@ export async function publishSaleCatalog(inputs: readonly SaleCatalogInput[], no
   await collection.createIndex({ lastSeen: -1 });
   await collection.createIndex({ department: 1, propertyType: 1, bedrooms: 1, lastSeen: -1 });
   await collection.createIndex({ department: 1, neighborhood: 1, propertyType: 1, lastSeen: -1 }, { collation: { locale: "es", strength: 1 } });
+  // The advert's "similar" block queries under the es collation, which cannot use the simple-collation
+  // index above; without this one it scanned half the catalogue and sorted it in memory (10 s under load).
+  await collection.createIndex({ department: 1, propertyType: 1, bedrooms: 1, publishedAt: -1, firstSeen: -1, key: 1 }, { collation: { locale: "es", strength: 1 } });
   await collection.createIndex({ neighborhood: 1, lastSeen: -1 });
   await collection.createIndex({ "price.currency": 1, "price.amount": 1 });
   await metas.createIndex({ key: 1 }, { unique: true });

@@ -35,22 +35,28 @@ export default defineEventHandler(async (event): Promise<PropertySaleDetailRespo
       const location: Record<string, unknown> = { department: property.department }
       if (property.locality) location.locality = property.locality
       if (property.neighborhood) location.neighborhood = property.neighborhood
-      const related =
-        property.department && (property.locality || property.neighborhood)
-          ? await PropertySaleCatalogModel.find({
-              ...propertySalesVisibleFilter(),
-              ...location,
-              propertyType: property.propertyType,
-              key: { $ne: key },
-              ...(property.bedrooms !== null ? { bedrooms: property.bedrooms } : {}),
-            })
-              .select(propertySaleSummaryProjection)
-              .sort({ publishedAt: -1, firstSeen: -1, key: 1 })
-              .limit(6)
-              .collation(PROPERTY_SALES_COLLATION)
-              .maxTimeMS(10000)
-              .lean()
-          : []
+      // They are also optional and the page hides an empty list, so a slow scan must not take the
+      // advert down with it: a 10 s time limit under load once turned the whole ficha into a 503.
+      let related: Parameters<typeof publicPropertySaleSummary>[0][] = []
+      if (property.department && (property.locality || property.neighborhood)) {
+        try {
+          related = await PropertySaleCatalogModel.find({
+            ...propertySalesVisibleFilter(),
+            ...location,
+            propertyType: property.propertyType,
+            key: { $ne: key },
+            ...(property.bedrooms !== null ? { bedrooms: property.bedrooms } : {}),
+          })
+            .select(propertySaleSummaryProjection)
+            .sort({ publishedAt: -1, firstSeen: -1, key: 1 })
+            .limit(6)
+            .collation(PROPERTY_SALES_COLLATION)
+            .maxTimeMS(3000)
+            .lean()
+        } catch (error) {
+          console.error('[api/property-sales/ficha] similar adverts skipped', error)
+        }
+      }
       page = {
         property,
         usdUyu: meta?.usdUyu || 0,
