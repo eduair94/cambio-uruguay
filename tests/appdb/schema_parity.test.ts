@@ -16,6 +16,8 @@ import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapsh
 import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
 import { EquiparItemModel } from "../../classes/models/EquiparItem";
 import { EquiparMetaModel } from "../../classes/models/EquiparMeta";
+import { CharruaTextModel } from "../../classes/models/CharruaText";
+import { CharruaSnapshotModel } from "../../classes/models/CharruaSnapshot";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -117,6 +119,20 @@ describe("app-Mongo schema parity", () => {
 
   it("EquiparMeta declares exactly the app's top-level fields", () => {
     expect(Object.keys(EquiparMetaModel.schema.obj).sort()).toEqual(appFields(appModel("EquiparMeta")).sort());
+  });
+
+  it("CharruaText declares exactly the app's top-level fields", () => {
+    // El corpus del buscador de /mercado-it-uruguay: un campo que el backend escribe y el app no
+    // declara es un filtro que devuelve cero resultados sin avisar.
+    expect(Object.keys(CharruaTextModel.schema.obj).sort()).toEqual(appFields(appModel("CharruaText")).sort());
+    expect(CharruaTextModel.collection.name).toBe("charruadevstexts");
+  });
+
+  it("CharruaSnapshot declares exactly the app's top-level fields", () => {
+    expect(Object.keys(CharruaSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("CharruaSnapshot")).sort()
+    );
+    expect(CharruaSnapshotModel.collection.name).toBe("charruadevssnapshots");
   });
   it("writes the collections the app already reads — not mongoose's guess", () => {
     expect(PricePredictionModel.collection.name).toBe("pricepredictions");
