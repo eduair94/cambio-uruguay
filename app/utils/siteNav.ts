@@ -178,6 +178,26 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // Trends UY 2026-09-15: «cuánto es la comisión de mercado pago» y «point smart» breakout,
+        // «mercado pago pos» +1.150 %. Tabla oficial por medio y plazo, con el neto de cada venta.
+        to: '/comisiones-mercado-pago-uruguay',
+        labelKey: 'nav.comisionesMercadoPago',
+        icon: 'mdi-qrcode-scan',
+        priority: 0.7,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'comision mercado pago',
+          'cuanto cobra mercado pago',
+          'mercado pago point precio',
+          'point smart',
+          'mercado pago pos',
+          'comisiones mercado pago uruguay',
+          'cobrar con mercado pago',
+          'link de pago mercado pago',
+        ],
+      },
+      {
         to: '/comparar-plataformas-dolar-uruguay',
         labelKey: 'platformComparison.nav',
         icon: 'mdi-scale-balance',
@@ -1542,6 +1562,10 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'cai talonario uruguay',
           'como facturar emprendimiento uruguay',
           'boleta consumo final monotributo',
+          'categorias monotributo 2026',
+          'monotributo montos 2026',
+          'cuanto se paga de monotributo',
+          'monotributo mides cuota',
         ],
       },
       {
@@ -1564,6 +1588,11 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'seguro de paro 50 años',
           'requisitos seguro de paro',
           'me quede sin trabajo uruguay',
+          'seguro de paro parcial',
+          'paro parcial',
+          'cuanto se cobra en el seguro de paro',
+          'seguro de paro reduccion de jornada',
+          'tope seguro de paro 2026',
         ],
       },
       {
@@ -1894,6 +1923,25 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'padron elecciones bps',
           'quienes votan elecciones bps',
           'justificar no voto bps',
+        ],
+      },
+      {
+        // Trending Now 10/9/2026: 10.000+ búsquedas el día que la prensa publicó el valor 2026
+        // ($ 17.591). Valor base, quién lo cobra y cómo se descuenta el 33 %.
+        to: '/suplemento-solidario-bps',
+        labelKey: 'nav.suplementoSolidario',
+        icon: 'mdi-hand-coin',
+        priority: 0.7,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'suplemento solidario',
+          'suplemento solidario bps',
+          'suplemento solidario 2026',
+          'quienes cobran el suplemento solidario',
+          'suplemento solidario requisitos',
+          'suplemento solidario monto',
+          'ley 20130 suplemento',
         ],
       },
       {
@@ -2724,6 +2772,11 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'factura de ose saneamiento',
           'tarifa ose 2026',
           'luz cara uruguay',
+          'plan redondo ute',
+          'plan redondo',
+          'reclamo corte de luz',
+          'ute corte de luz reclamo',
+          'compensacion ute corte',
         ],
       },
       {
