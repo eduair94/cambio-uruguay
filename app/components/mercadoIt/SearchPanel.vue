@@ -187,8 +187,8 @@
       v-if="pages > 1"
       :model-value="query.page"
       :length="pages"
-      :total-visible="6"
-      density="comfortable"
+      :total-visible="smAndDown ? 3 : 6"
+      :density="smAndDown ? 'compact' : 'comfortable'"
       class="mt-4"
       @update:model-value="goPage"
     />
@@ -197,6 +197,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import ResultCard from '~/components/mercadoIt/ResultCard.vue'
 import {
   AI_LABELS,
@@ -220,6 +221,9 @@ const props = defineProps<{ years: number[] }>()
 
 const route = useRoute()
 const router = useRouter()
+// La paginación sólo existe en el cliente (los resultados no se piden en el servidor), así que leer
+// el ancho acá no puede desalinear la hidratación. A 385 px, seis botones desbordaban 8 px.
+const { smAndDown } = useDisplay()
 
 // La URL es el estado: se puede compartir una búsqueda y el botón atrás deshace un filtro.
 const query = computed(() => normalizeSearchQuery(route.query as Record<string, unknown>))
