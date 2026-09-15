@@ -636,6 +636,19 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Termómetro del mercado IT (/mercado-it-uruguay): r/CharruaDevs desde Arctic Shift, cada post
+      // y cada comentario "de mercado" clasificado con Gemini (postura −2…+2, tema, IA, relato),
+      // votos vivos vía la API de Reddit y un snapshot en la base del APP. Diario 12:14 UTC: minuto
+      // 14, fuera de los */5 de currency-sync; ~100 textos nuevos por día. Necesita APP_MONGO_URI y
+      // la clave de Gemini.
+      name: "currency-charruadevs",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_charruadevs.js",
+      cron_restart: "14 12 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Regional board for /cotizaciones-de-la-region and `GET /regional`: thirteen public
       // sources across Argentina, Brasil, Paraguay, Chile and Bolivia (four of them central
       // banks), joined with this site's own Uruguayan board.

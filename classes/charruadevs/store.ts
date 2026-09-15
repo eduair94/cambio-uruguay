@@ -16,9 +16,11 @@ export async function ensureIndexes(): Promise<void> {
 export async function upsertTexts(docs: CharruaText[]): Promise<number> {
   let n = 0;
   for (let i = 0; i < docs.length; i += CHUNK) {
+    // El cast es por los tipos de mongoose 6, que no aceptan un `$set` con el documento entero
+    // tipado; la forma es la de siempre (updateOne + upsert por clave única).
     const ops = docs.slice(i, i + CHUNK).map((d) => ({
       updateOne: { filter: { rid: d.rid }, update: { $set: d }, upsert: true },
-    }));
+    })) as unknown as Parameters<typeof CharruaTextModel.bulkWrite>[0];
     const res = await CharruaTextModel.bulkWrite(ops, { ordered: false });
     n += (res.upsertedCount || 0) + (res.modifiedCount || 0);
   }
