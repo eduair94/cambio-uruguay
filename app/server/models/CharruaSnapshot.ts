@@ -19,4 +19,8 @@ const CharruaSnapshotSchema = new Schema<CharruaSnapshotDoc>(
 
 export const CharruaSnapshotModel: Model<CharruaSnapshotDoc> =
   (mongoose.models.CharruaSnapshot as Model<CharruaSnapshotDoc>) ||
-  mongoose.model<CharruaSnapshotDoc>('CharruaSnapshot', CharruaSnapshotSchema, 'charruadevssnapshots')
+  mongoose.model<CharruaSnapshotDoc>(
+    'CharruaSnapshot',
+    CharruaSnapshotSchema,
+    'charruadevssnapshots'
+  )

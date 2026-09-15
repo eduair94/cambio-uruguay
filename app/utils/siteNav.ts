@@ -1449,6 +1449,28 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El termómetro de r/CharruaDevs: va pegado a contractor porque es la otra mitad de la misma
+        // pregunta (¿hay laburo y cuánto se paga?), contada por quienes la están viviendo.
+        to: '/mercado-it-uruguay',
+        labelKey: 'nav.mercadoIt',
+        icon: 'mdi-thermometer-lines',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'mercado it uruguay',
+          'mercado laboral it uruguay',
+          'trabajo de programador uruguay',
+          'como esta el mercado para programadores',
+          'esta saturado el mercado it',
+          'la ia va a reemplazar a los programadores',
+          'conseguir trabajo junior it',
+          'charruadevs',
+          'reddit programadores uruguay',
+          'despidos it uruguay',
+        ],
+      },
+      {
         to: '/desvincularme-de-la-afap-uruguay',
         labelKey: 'nav.desvincularAfap',
         icon: 'mdi-account-arrow-left-outline',
