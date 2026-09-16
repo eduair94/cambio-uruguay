@@ -1967,6 +1967,26 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // «pensión» apareció dos veces en Trending Now (10 y 13/9/2026, 2.000+). Completa el
+        // racimo del BPS: el piso de quien NO tiene jubilación, que no es el suplemento.
+        to: '/pension-a-la-vejez-uruguay',
+        labelKey: 'nav.pensionVejez',
+        icon: 'mdi-account-clock',
+        priority: 0.7,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'pension a la vejez',
+          'pension vejez bps',
+          'pension por invalidez bps',
+          'requisitos pension a la vejez',
+          'monto pension a la vejez 2026',
+          'pension no contributiva uruguay',
+          'carencia de recursos bps',
+          'asistencia a la vejez mides',
+        ],
+      },
+      {
         // «carne de salud» se busca como un precio y la respuesta está en el
         // Decreto 274/017: en el prestador propio no se paga. Las consultas de
         // costo y vigencia no las contestaba ninguna página del sitio.
