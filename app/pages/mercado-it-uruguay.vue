@@ -243,6 +243,33 @@
           <QuoteCard v-for="q in snap.quotesPos.slice(0, 4)" :key="q.rid" :quote="q" />
         </div>
       </section>
+
+      <section v-if="snap.authors" class="block" aria-labelledby="quienes">
+        <div class="kicker">Quiénes</div>
+        <h2 id="quienes" class="text-h5 font-weight-bold mb-2">
+          ¿Y quiénes lo dicen? Un ranking aparte
+        </h2>
+        <p class="lead">{{ rankingTeaser }}</p>
+        <VCard variant="outlined" class="pa-5 rank-cta">
+          <div>
+            <h3 class="text-subtitle-1 font-weight-bold mb-1">
+              Ranking de autores de r/CharruaDevs
+            </h3>
+            <p class="text-body-2 mb-0">
+              Los más negativos y los más positivos, los catastrofistas, los que más opinan y los
+              que cambiaron de opinión — con enlace al perfil de cada uno.
+            </p>
+          </div>
+          <VBtn
+            :to="localePath('/ranking-usuarios-charruadevs')"
+            color="primary"
+            variant="flat"
+            append-icon="mdi-arrow-right"
+          >
+            Ver el ranking
+          </VBtn>
+        </VCard>
+      </section>
     </template>
 
     <section id="buscador" class="block" aria-labelledby="buscador-titulo">
@@ -654,6 +681,12 @@ const votesTitle = computed(() =>
     ? 'Un poco, sí'
     : 'No mucho'
 )
+const rankingTeaser = computed(() => {
+  const a = snap.value?.authors
+  if (!a) return ''
+  return `Las opiniones no están repartidas parejo: el 10 % de las cuentas escribe ${fmtPct(a.concentration.top10)} de todo lo que se dice del mercado, y ${fmtInt(a.concentration.single)} opinaron una sola vez en cinco años. Entre quienes opinan seguido, ${fmtPct(a.mix.negative)} son mayormente negativos y ${fmtPct(a.mix.positive)} mayormente positivos.`
+})
+
 const votesText = computed(
   () =>
     `Un comentario negativo junta en promedio ${x1(negMean.value)} votos; uno neutral o positivo, ${x1(restMean.value)}. La mediana es la misma para todos: la diferencia la hacen los pocos comentarios negativos que explotan. El sub no castiga el pesimismo, y a veces lo premia.`
@@ -1219,6 +1252,16 @@ useHead(() => ({
   font-variant-numeric: tabular-nums;
   font-size: 0.85rem;
   text-align: right;
+}
+.rank-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+.rank-cta > div {
+  flex: 1 1 320px;
 }
 .quotes {
   display: grid;

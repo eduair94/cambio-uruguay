@@ -27,6 +27,22 @@ export async function upsertTexts(docs: CharruaText[]): Promise<number> {
   return n;
 }
 
+/**
+ * Backfill de autores sobre textos ya guardados (`--authors`). El corpus se sembro sin autor y el
+ * ranking lo necesita hacia atras; de aca en adelante lo escribe `upsertTexts`.
+ */
+export async function backfillAuthors(pairs: Array<{ rid: string; author: string }>): Promise<number> {
+  let n = 0;
+  for (let i = 0; i < pairs.length; i += CHUNK) {
+    const ops = pairs.slice(i, i + CHUNK).map((p) => ({
+      updateOne: { filter: { rid: p.rid }, update: { $set: { author: p.author } } },
+    }));
+    const res = await CharruaTextModel.bulkWrite(ops, { ordered: false });
+    n += res.modifiedCount || 0;
+  }
+  return n;
+}
+
 export async function knownRids(rids: string[]): Promise<Set<string>> {
   const out = new Set<string>();
   for (let i = 0; i < rids.length; i += 5000) {

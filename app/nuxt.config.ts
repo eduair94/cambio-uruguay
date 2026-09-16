@@ -745,7 +745,15 @@ export default defineNuxtConfig({
     // visitors typed, so it is disallowed here AND noindexed on the page AND gated server-side.
     // /_nuxt/ serves the public JS, CSS and fonts needed to render the site.
     // Crawlers must be able to fetch those assets, including in the explicit groups below.
-    disallow: ['/admin/', '/server/', '/api-reference', '/estadisticas-de-busqueda'],
+    disallow: [
+      '/admin/',
+      '/server/',
+      '/api-reference',
+      '/estadisticas-de-busqueda',
+      // Lista de autores de r/CharruaDevs con nombre propio: noindex en la pagina y fuera del
+      // rastreo. Los mismos datos, agregados y sin nombres, estan en /mercado-it-uruguay.
+      '/ranking-usuarios-charruadevs',
+    ],
     allow: [
       '/',
       '/avanzado',
@@ -830,6 +838,7 @@ export default defineNuxtConfig({
       '/api-reference',
       '/estadisticas-de-busqueda',
       '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
+      '/ranking-usuarios-charruadevs',
       '/*/offline',
       '/*/widget',
       '/*/cuenta',
@@ -837,6 +846,7 @@ export default defineNuxtConfig({
       '/*/api-reference',
       '/*/estadisticas-de-busqueda',
       '/*/descuentos-con-tarjeta-uruguay/cerca-de-mi',
+      '/*/ranking-usuarios-charruadevs',
     ],
   },
 

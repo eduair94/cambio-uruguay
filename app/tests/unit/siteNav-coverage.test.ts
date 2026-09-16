@@ -139,6 +139,7 @@ describe('the navigation model has no dead links', () => {
       '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/estadisticas-de-busqueda',
       '/offline',
+      '/ranking-usuarios-charruadevs',
       '/widget',
     ])
   })

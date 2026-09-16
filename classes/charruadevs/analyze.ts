@@ -3,6 +3,7 @@
 // Ponderación: los posts son la población entera (peso 1). Los comentarios pesan
 // candidatos/clasificados de su mes, así un mes con huecos de clasificación (Gemini caído) no pesa
 // menos de lo que pesa. Con el corpus completo el peso es ~1.
+import { buildAuthorRanking } from "./authors";
 import { LEX_KEYS, RATE_THEMES } from "./types";
 import type { AiView, CharruaText, LexKey, LifeEvent, MonthRow, Theme } from "./types";
 import type { FredPoint } from "./fred";
@@ -11,6 +12,7 @@ import type { ValidationSet } from "./validation";
 export interface AnalyzeRow {
   rid: string;
   kind: "post" | "comment";
+  author?: string;
   createdAt: Date;
   month: string;
   score: number;
@@ -415,6 +417,9 @@ export function buildSnapshot(input: SnapshotInput) {
     quotesPos,
     postsNeg12,
     postsPos12,
+    // El ranking de autores: quien sostiene el pesimismo y cuantos son. Sale del corpus entero, sin
+    // la ponderacion mensual (esa corrige cobertura de clasificacion; aca se cuenta gente).
+    authors: buildAuthorRanking(units, NOW),
     fred: input.fred,
     validation: input.validation,
   };

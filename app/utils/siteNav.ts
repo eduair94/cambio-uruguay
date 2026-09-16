@@ -3323,6 +3323,10 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   // "¿Tengo descuento acá?": una herramienta cuya respuesta depende de dónde está parado quien la
   // abre. No hay nada que indexar; se llega desde el mapa.
   '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
+  // El ranking de autores de r/CharruaDevs: una lista de personas con nombre. Existe, se llega
+  // desde /mercado-it-uruguay y no se indexa — buscar un nombre propio no tiene por que traer a
+  // alguien a "los mas negativos del sub".
+  '/ranking-usuarios-charruadevs',
 ])
 
 /**

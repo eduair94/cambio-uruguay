@@ -6,6 +6,7 @@ import mongoose, { Schema, type Model } from 'mongoose'
 export interface CharruaTextDoc {
   rid: string
   kind: 'post' | 'comment'
+  author: string
   thread: string
   title: string
   body: string
@@ -29,6 +30,9 @@ const CharruaTextSchema = new Schema<CharruaTextDoc>(
   {
     rid: { type: String, required: true },
     kind: { type: String, required: true },
+    // Lo escribe el job para el ranking de /ranking-usuarios-charruadevs. El buscador tiene
+    // proyeccion explicita y no lo devuelve: el autor se publica solo agregado.
+    author: { type: String, default: '' },
     thread: { type: String, required: true },
     title: { type: String, default: '' },
     body: { type: String, default: '' },

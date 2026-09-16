@@ -1,6 +1,9 @@
 // Espejo de app/server/models/CharruaText.ts sobre la base del APP (classes/appdb.ts). Un doc por
 // post o comentario clasificado de r/CharruaDevs; lo lee el buscador de /mercado-it-uruguay.
-// Sin autores a propósito. `createdAt` es la fecha de Reddit, no un timestamp de mongoose.
+// `createdAt` es la fecha de Reddit, no un timestamp de mongoose.
+//
+// `author` existe para el ranking de /ranking-usuarios-charruadevs y se publica AGREGADO (el bloque
+// `authors` del snapshot). El buscador usa proyección explícita y no lo devuelve nunca.
 //
 // Los índices viven acá y no en el app: el job los crea (`ensureIndexes`), el app arranca con
 // `autoIndex: false` para no construir un índice de texto sobre 150k documentos en cada deploy.
@@ -12,6 +15,7 @@ const CharruaTextSchema = new Schema(
   {
     rid: { type: String, required: true },
     kind: { type: String, required: true },
+    author: { type: String, default: "" },
     thread: { type: String, required: true },
     title: { type: String, default: "" },
     body: { type: String, default: "" },

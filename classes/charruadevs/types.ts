@@ -50,10 +50,15 @@ export interface Label {
   persona?: Persona;
 }
 
-/** Un documento de `charruadevstexts`. Sin autor a propósito. */
+/**
+ * Un documento de `charruadevstexts`. El `author` se guarda para el ranking de
+ * /ranking-usuarios-charruadevs y sale del snapshot sólo agregado: el buscador tiene proyección
+ * explícita y nunca lo devuelve.
+ */
 export interface CharruaText {
   rid: string;
   kind: Kind;
+  author?: string;
   thread: string;
   title: string;
   body: string;

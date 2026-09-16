@@ -484,6 +484,102 @@ export interface CharruaSnapshot {
   postsPos12: TopPost[]
   fred: Array<{ m: string; v: number }>
   validation: { date: string; reader: string; posts: ValidationRow; comments: ValidationRow }
+  /** Puede faltar: un snapshot escrito antes del ranking no lo trae. */
+  authors?: AuthorsBlock
+}
+
+// ------------------------------------------------- ranking de autores
+
+export interface AuthorRow {
+  a: string
+  n: number
+  texts: number
+  neg: number
+  pos: number
+  doom: number
+  mean: number
+  score: number
+  karma: number
+  negK: number
+  posK: number
+  first: string
+  last: string
+  themes: Array<{ th: string; n: number }>
+}
+
+export interface AuthorShift extends AuthorRow {
+  oldN: number
+  oldMean: number
+  recentN: number
+  recentMean: number
+  delta: number
+}
+
+export interface AuthorsBlock {
+  minOps: number
+  k: number
+  prior: number
+  authors: number
+  opinions: number
+  negatives: number
+  concentration: {
+    top1: number
+    top1Neg: number
+    top5: number
+    top10: number
+    top10Neg: number
+    top25: number
+    top20Abs: number
+    single: number
+    singleShare: number
+    gini: number
+    tableNegShare: number
+  }
+  mix: { minOps: number; n: number; negative: number; positive: number; mixed: number }
+  karmaByOrientation: {
+    negative: number | null
+    mixed: number | null
+    positive: number | null
+    n: number
+  }
+  shift: { both: number; morePessimistic: number; moreOptimistic: number; window: string }
+  negative: AuthorRow[]
+  positive: AuthorRow[]
+  doomers: AuthorRow[]
+  loudest: AuthorRow[]
+  mostUpvotedNeg: AuthorRow[]
+  mostUpvotedPos: AuthorRow[]
+  pessimistic: AuthorShift[]
+  optimistic: AuthorShift[]
+}
+
+/** Un nombre de Reddit es [A-Za-z0-9_-]; cualquier otra cosa no se convierte en enlace. */
+export function isRedditUsername(a: string | null | undefined): boolean {
+  return !!a && /^[\w-]{2,20}$/.test(a)
+}
+
+export function redditUserUrl(a: string): string {
+  return `https://www.reddit.com/user/${encodeURIComponent(a)}/`
+}
+
+/** El espejo sin login ni JS, para leer el perfil sin entrar a Reddit. */
+export function ghostdditUserUrl(a: string): string {
+  return `https://ghostddit.aeddit.com/user/${encodeURIComponent(a)}`
+}
+
+export type Orientation = 'negative' | 'positive' | 'mixed'
+
+/** La misma regla que usa el job: "mayormente" pide 10 puntos de diferencia, no uno. */
+export function orientationOf(row: { neg: number; pos: number }): Orientation {
+  if (row.neg > row.pos + 0.1) return 'negative'
+  if (row.pos > row.neg + 0.1) return 'positive'
+  return 'mixed'
+}
+
+export const ORIENTATION_LABELS: Record<Orientation, string> = {
+  negative: 'Mayormente negativo',
+  positive: 'Mayormente positivo',
+  mixed: 'Mixto',
 }
 
 // ---------------------------------------------------------------- formato

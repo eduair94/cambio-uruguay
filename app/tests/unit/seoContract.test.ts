@@ -172,6 +172,9 @@ const NOINDEXED = [
   // por salir solo cuando menos de 30 locales del pais declaran ese articulo,
   // porque ahi la pagina no puede prometer la comparacion que promete su titulo.
   'precio/[slug].vue',
+  // El ranking de autores de r/CharruaDevs nombra personas: se llega desde el termometro y no entra
+  // al indice. La pagina que SI se indexa es /mercado-it-uruguay, con los mismos datos sin nombres.
+  'ranking-usuarios-charruadevs.vue',
   // Sale dossiers use the same reviewed, fresh pilot gate as their sitemap entries.
   'venta-viviendas-uruguay/[key].vue',
   'widget.vue',

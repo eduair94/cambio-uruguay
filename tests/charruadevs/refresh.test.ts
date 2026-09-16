@@ -57,7 +57,7 @@ describe("refresh", () => {
       kind === "posts"
         ? [
             // 1789000000 = 2026-09-10, dentro de los dos meses que cosecha una corrida del 2026-09-15.
-            { id: "p1", created_utc: 1789000000, title: "No hay laburo", selftext: "", permalink: "/r/CharruaDevs/comments/p1/x/" },
+            { id: "p1", created_utc: 1789000000, title: "No hay laburo", selftext: "", author: "pepe", permalink: "/r/CharruaDevs/comments/p1/x/" },
             { id: "p2", created_utc: 1789000100, title: "Duda con React", selftext: "" },
           ]
         : [{ id: "c1", link_id: "t3_p1", parent_id: "t3_p1", created_utc: 1789000200, body: "el mercado está muerto", author: "u" }]
@@ -71,7 +71,10 @@ describe("refresh", () => {
     expect(classifyPosts.mock.calls[0][0].map((p: { id: string }) => p.id)).toEqual(["p1"]);
     const stored = store.upsertTexts.mock.calls.flatMap((c) => c[0] as Array<Record<string, unknown>>);
     expect(stored.map((d) => d.rid)).toEqual(["t3_p1"]);
-    expect(stored.some((d) => "author" in d)).toBe(false);
+    // El autor SÍ se guarda desde que existe el ranking de /ranking-usuarios-charruadevs; lo que no
+    // puede pasar es que salga texto por texto, y eso lo garantiza la proyección del buscador
+    // (app/tests/unit/charruadevsSearch.test.ts), no este documento.
+    expect(stored.map((d) => d.author)).toEqual(["pepe"]);
     expect(report.failed).toBe(1);
     const saved = store.saveState.mock.calls[0][0] as { months: Array<{ m: string; candidates: number }> };
     expect(saved.months.find((r) => r.m === "2026-09")?.candidates).toBe(1);

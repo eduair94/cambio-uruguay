@@ -7,6 +7,7 @@
 //
 //   node dist/sync_charruadevs.js                 corrida diaria
 //   node dist/sync_charruadevs.js --seed <dir>    siembra (texts.jsonl + state.json)
+//   node dist/sync_charruadevs.js --authors <f>   pega autores sobre el corpus ya sembrado
 //   node dist/sync_charruadevs.js --dry-run       calcula todo, no escribe estado ni snapshot
 import dotenv from "dotenv";
 dotenv.config();
@@ -28,8 +29,14 @@ async function main(): Promise<void> {
     console.error("[charruadevs] --seed necesita un directorio con texts.jsonl y state.json");
     process.exit(1);
   }
+  const authorsIdx = process.argv.indexOf("--authors");
+  const authorsFile = authorsIdx >= 0 ? process.argv[authorsIdx + 1] : undefined;
+  if (authorsIdx >= 0 && !authorsFile) {
+    console.error("[charruadevs] --authors necesita un .jsonl con { rid, author } por linea");
+    process.exit(1);
+  }
   try {
-    const report = await runRefresh({ seedDir, dryRun: process.argv.includes("--dry-run") });
+    const report = await runRefresh({ seedDir, authorsFile, dryRun: process.argv.includes("--dry-run") });
     console.log(`[charruadevs] ${JSON.stringify(report)}`);
     if (report.failed) console.warn(`[charruadevs] ${report.failed} textos sin etiqueta (Gemini); se reintentan en la próxima corrida`);
     if (report.reason && report.reason !== "dry-run") console.error(`[charruadevs] no se pisó el snapshot: ${report.reason}`);

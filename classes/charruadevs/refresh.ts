@@ -17,7 +17,7 @@ import type { ArcticComment, ArcticPost, CharruaText, HarvestState, Label, Month
 import { VALIDATION } from "./validation";
 
 export interface RefreshReport {
-  mode: "seed" | "daily";
+  mode: "seed" | "daily" | "authors";
   newPosts: number;
   newComments: number;
   classified: number;
@@ -48,6 +48,7 @@ function postDoc(p: ArcticPost, k: Label): CharruaText {
   return {
     rid: `t3_${p.id}`,
     kind: "post",
+    author: p.author || "",
     thread: p.id,
     title: p.title || "",
     body: isGone(p.selftext) ? "" : clip(p.selftext || "", 1500),
@@ -73,6 +74,7 @@ function commentDoc(c: ArcticComment, k: Label, threadTitle: string): CharruaTex
   return {
     rid: `t1_${c.id}`,
     kind: "comment",
+    author: c.author || "",
     thread: pid,
     title: threadTitle,
     body: clip((c.body || "").trim(), 1500),
@@ -105,6 +107,28 @@ async function importSeed(dir: string): Promise<{ texts: number; state: HarvestS
   }
   if (batch.length) n += await store.upsertTexts(batch);
   return { texts: n, state: { months: state.months } };
+}
+
+/**
+ * `--authors <archivo.jsonl>`: pega el autor sobre el corpus ya sembrado, que se escribio sin el.
+ * Una linea por texto, `{ "rid": "t1_xxx", "author": "usuario" }`. Se corre una vez; despues cada
+ * texto nuevo llega con autor.
+ */
+async function importAuthors(file: string): Promise<number> {
+  const lines = fs.readFileSync(file, "utf8").split("\n").filter(Boolean);
+  let batch: Array<{ rid: string; author: string }> = [];
+  let n = 0;
+  for (const line of lines) {
+    const d = JSON.parse(line) as { rid?: string; author?: string };
+    if (!d.rid || !d.author) continue;
+    batch.push({ rid: d.rid, author: d.author });
+    if (batch.length >= 5000) {
+      n += await store.backfillAuthors(batch);
+      batch = [];
+    }
+  }
+  if (batch.length) n += await store.backfillAuthors(batch);
+  return n;
 }
 
 async function daily(state: HarvestState, now: Date, report: RefreshReport): Promise<HarvestState> {
@@ -175,10 +199,12 @@ async function daily(state: HarvestState, now: Date, report: RefreshReport): Pro
   return { months: [...merged.values()].sort((a, b) => (a.m < b.m ? -1 : 1)), seededAt: state.seededAt, lastRunAt: now.toISOString() };
 }
 
-export async function runRefresh(opts: { seedDir?: string; now?: Date; dryRun?: boolean } = {}): Promise<RefreshReport> {
+export async function runRefresh(
+  opts: { seedDir?: string; authorsFile?: string; now?: Date; dryRun?: boolean } = {}
+): Promise<RefreshReport> {
   const now = opts.now ?? new Date();
   const report: RefreshReport = {
-    mode: opts.seedDir ? "seed" : "daily",
+    mode: opts.authorsFile ? "authors" : opts.seedDir ? "seed" : "daily",
     newPosts: 0,
     newComments: 0,
     classified: 0,
@@ -190,7 +216,12 @@ export async function runRefresh(opts: { seedDir?: string; now?: Date; dryRun?: 
   await store.ensureIndexes();
 
   let state: HarvestState;
-  if (opts.seedDir) {
+  if (opts.authorsFile) {
+    const stored = await store.loadState();
+    if (!stored) throw new Error("sin estado en charruadevssnapshots: sembrar primero con --seed <dir>");
+    state = stored;
+    report.classified = await importAuthors(opts.authorsFile);
+  } else if (opts.seedDir) {
     const seeded = await importSeed(opts.seedDir);
     state = { ...seeded.state, seededAt: now.toISOString() };
     report.classified = seeded.texts;

@@ -51,8 +51,29 @@ niveles: el error es el mismo todos los meses, y la curva sin IA se mueve igual.
 - `--dry-run` calcula todo y no escribe.
 - Guardas: sin `APP_MONGO_URI` se niega; un snapshot con 10 % menos textos que el guardado no se
   escribe; un mes que Arctic Shift devuelve vacío no pisa la fila guardada.
-- Privacidad: no se guarda ningún autor. Lo borrado hoy en Reddit (autor o moderación) queda
-  `gone: true`: cuenta en los agregados anónimos pero no aparece en el buscador ni en las citas.
+- Autores: cada texto guarda `author` (lo necesita el ranking). El **buscador nunca lo devuelve**:
+  `search.get.ts` proyecta campo por campo y el autor no está en la lista. Lo borrado hoy en Reddit
+  (autor o moderación) queda `gone: true`: cuenta en los agregados pero no aparece en el buscador ni
+  en las citas.
+- Backfill de autores: `node dist/sync_charruadevs.js --authors <archivo.jsonl>`, una línea
+  `{ "rid": "t1_xxx", "author": "usuario" }` por texto. Se corrió una vez (2026-09-16) porque el
+  corpus se había sembrado sin autor; de ahí en adelante lo escribe la corrida diaria.
+
+## Ranking de autores — `/ranking-usuarios-charruadevs`
+
+Quién sostiene el pesimismo, con nombre y enlace al perfil (Reddit y el espejo Ghostddit). Sale del
+bloque `authors` del snapshot (`classes/charruadevs/authors.ts`, puro) y se recalcula todos los días
+con el resto.
+
+- **`noindex, nofollow`, fuera del sitemap y fuera de la navegación** (`EXCLUDED_ROUTES`): es una
+  lista de personas. Se llega desde `/mercado-it-uruguay`, que es la página indexable y sin nombres.
+- **Media encogida** hacia la media del sub con K = 30, y mínimo de 25 opiniones por tabla: sin eso
+  el ranking lo gana una cuenta con cuatro opiniones. Las dos cosas hacen falta, ordenan distinto.
+- **`negK`/`posK`**: el karma de las opiniones de cada signo, no el total. Con el total mezclado,
+  "pesimismo más votado" lo encabeza un optimista con un comentario viral.
+- **Karma por orientación, sólo comentarios** (los posts juntan mucho más voto): medido, el sub NO
+  premia al pesimista — 3,47 / 3,65 / 3,56 para autores mayormente negativos / mixtos / positivos.
+- Fuera del ranking: `AutoModerator` y las cuentas borradas.
 
 ## Cambiar la rúbrica o el modelo
 
