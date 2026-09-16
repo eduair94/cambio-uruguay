@@ -431,32 +431,241 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'enviar-recibir-dinero-exterior',
-    title: 'Enviar y recibir dinero del exterior en Uruguay',
+    title: 'Cobrar del exterior en Uruguay: cuánto te cuesta cada vía',
     description:
-      'Guía para enviar y recibir dinero del exterior en Uruguay: transferencias internacionales, remesas, el dólar cable y cómo cuidar la cotización a la que se liquida.',
-    tag: 'REMESAS',
-    updatedAt: '2026-06-17',
+      'Cuánto te cuesta cobrar un pago del exterior en Uruguay: Payoneer, Wise, Prex, PayPal, SWIFT al banco y plataformas de contrato, con las tarifas que publica cada uno.',
+    tag: 'COBRAR',
+    updatedAt: '2026-09-16',
     sections: [
       {
-        heading: 'Tres formas de mover dinero entre países',
-        body: 'Para enviar o recibir dinero del exterior solés tener tres caminos: la transferencia bancaria internacional (red SWIFT), los servicios de remesas y las plataformas digitales. Cada uno tiene costos, plazos y tipos de cambio distintos. Antes de elegir, conviene comparar no solo la comisión visible, sino también la cotización a la que te convierten el dinero, que es donde muchas veces está el costo real.',
+        heading: 'Las tres vías por las que te llega la plata',
+        body: 'Cuando una empresa o un cliente del exterior te paga, el dinero puede entrar por tres caminos y el costo cambia muchísimo entre ellos. El primero es la transferencia bancaria internacional por la red SWIFT, directo a tu cuenta uruguaya: es la única vía que te puede dejar dólares en una caja de ahorro, y también la que suma comisiones de bancos que vos no elegiste. El segundo es una cuenta receptora en una plataforma, Payoneer, Wise o PayPal, donde el dinero queda en dólares o euros y el costo real recién aparece cuando lo bajás a Uruguay. El tercero es la plataforma de contrato, tipo Deel, Remote u Ontop, que suele pagar por transferencia local y te ahorra el problema, salvo que pidas cobrar en otra moneda. Prex no es una cuarta vía: no recibe nada del exterior, es el último salto de las otras.',
       },
       {
-        heading: 'El dólar cable y por qué importa',
-        body: 'Las operaciones con el exterior se vinculan con la cotización del dólar cable, que puede diferir del dólar local. Si recibís dólares de afuera y los pasás a pesos, la diferencia entre una buena y una mala cotización se nota en el monto final. Por eso, una vez que el dinero llegó, comparar dónde liquidarlo puede mejorar bastante lo que recibís.',
+        heading: 'La comparativa, en una tabla',
+        body: 'La tabla junta las seis vías con lo que cada proveedor publica al 16 de setiembre de 2026. Leéla mirando dos columnas a la vez, porque el error clásico es quedarse en una: casi ninguna vía te cobra fuerte al recibir y casi todas te cobran al sacar. Payoneer no cobra nada por acreditarte en la misma moneda y después se lleva hasta el 4 % en el retiro; Wise es al revés, recibir es gratis y todo el costo está en el envío hacia acá. Donde dice no publica no es un olvido nuestro: es que la cifra no está en la web del proveedor y sale recién del cotizador o de la pantalla de confirmación. Y falta una columna que no se puede tabular, el tipo de cambio con el que te convierten, que más abajo tiene su propia sección.',
+        table: {
+          headers: [
+            'Vía',
+            'Qué te cobran por recibir',
+            'Qué te cobran por sacarlo',
+            'En qué moneda te queda',
+            'Cuánto demora',
+          ],
+          rows: [
+            [
+              'Payoneer',
+              'gratis en la misma moneda de tu cuenta receptora; 1 % (mínimo USD 1) si la moneda es distinta; de un marketplace, varía según el marketplace',
+              '1,2 % a 4 % a banco local (mínimo de hasta USD 20); 2 % a Prex (mínimo USD 10); USD 3,15 más la comisión del cajero',
+              'pesos al banco uruguayo y a Prex; dólares sólo eligiendo la moneda en el cajero',
+              'instantáneo a Prex; 1 a 3 días hábiles al banco',
+            ],
+            [
+              'Wise',
+              'gratis recibir en tus datos de cuenta propios en USD, EUR o GBP',
+              'USD 22,37 por cada USD 1.000 enviados a Uruguay pagando con saldo; USD 28,70 por transferencia bancaria',
+              'pesos uruguayos: Wise no acredita dólares en un banco de acá',
+              '74 % en menos de 20 segundos; 95 % en menos de un día',
+            ],
+            [
+              'Prex',
+              'no recibe transferencias del exterior: entra por retiro de Payoneer o de PayPal',
+              '2 % (mínimo USD 10) desde Payoneer; USD 4 más IVA desde PayPal',
+              'siempre pesos, aunque la cuenta sea bimoneda',
+              'instantáneo',
+            ],
+            [
+              'Banco por SWIFT',
+              'cambia según el banco: un mínimo fijo alto, un tope, y lo que descuenten los corresponsales (los números, en la guía de bancos)',
+              'nada si la dejás quieta: el costo aparece al pasar los dólares a pesos',
+              'la moneda de la cuenta: con caja de ahorro en dólares te quedan dólares',
+              '1 a 5 días hábiles, según los corresponsales',
+            ],
+            [
+              'PayPal',
+              '3,5 % de conversión al recibir en otra moneda (tarifa de las Américas)',
+              '200 pesos fijos por retiro a un banco uruguayo; USD 4 más IVA si lo pasás a Prex',
+              'pesos',
+              '1 a 7 días hábiles al banco; instantáneo a Prex',
+            ],
+            [
+              'Plataforma de contrato (Deel, Remote, Ontop)',
+              'Deel no cobra la transferencia bancaria local; por SWIFT aparecen corresponsales de USD 20 a USD 50 que la plataforma no controla',
+              'Deel cobra 1 % a Payoneer y 2,5 % (mínimo USD 0,25) a PayPal; Ontop no publica su comisión',
+              'pesos por transferencia local; dólares sólo si la plataforma tiene billetera propia',
+              '1 a 5 días hábiles la local; 5 a 7 el SWIFT',
+            ],
+          ],
+        },
+        links: [
+          {
+            label: 'Cuánto cobra cada banco por recibir',
+            to: '/guias/recibir-transferencia-del-exterior-uruguay',
+          },
+        ],
       },
       {
-        heading: 'Comisiones y tipo de cambio: mirá las dos cosas',
-        body: 'Un servicio puede anunciar "envío gratis" pero aplicarte un tipo de cambio peor, y terminar siendo más caro que otro con comisión explícita y mejor cotización. La forma honesta de comparar es preguntar cuántos pesos (o dólares) recibe efectivamente el destinatario al final, descontando todo. Esa cifra final es la única que importa.',
+        heading: 'Payoneer: barato al recibir, caro al bajar',
+        body: 'Payoneer es el estándar de los marketplaces, de Upwork a Amazon, porque la cuenta receptora ya viene integrada en el pago. Su tarifario publica que recibir de una empresa o de un cliente directo es gratis si te pagan en la misma moneda de esa cuenta, y 1 % con un mínimo de USD 1 si la moneda es distinta; lo que cobra un marketplace varía según el marketplace y no tiene porcentaje general publicado. El costo fuerte llega al bajar la plata: retirar a un banco local en una moneda distinta a la de tu saldo cuesta entre 1,2 % y 4 %, con un mínimo de hasta USD 20, y los relevamientos de terceros ubican el caso uruguayo cerca del 3 %. Por cajero son USD 3,15 de Payoneer más alrededor de USD 1,40 del cajero, según esos mismos relevamientos. La tarjeta cuesta USD 29,95 al año y exige haber recibido USD 100 antes.',
       },
       {
-        heading: 'Recibir remesas: cuidá la liquidación',
-        body: 'Si te llegan remesas de forma recurrente, pequeñas diferencias de cotización suman a lo largo del año. Tené a mano una referencia del mejor precio del día y, cuando puedas elegir, liquidá donde la cotización te favorezca. Comparar antes de cambiar es la rutina que más dinero ahorra a quien recibe ingresos del exterior.',
+        heading: 'Wise: sí funciona acá, pero sólo te entrega pesos',
+        body: 'Wise habilita a Uruguay: el país figura en su lista oficial de lugares donde se puede abrir un saldo, sin el asterisco de restricción que llevan otros, así que podés tener cuenta y guardar dólares o euros adentro. Y acá está el dato que decide el caso, el que casi nadie cuenta: cuando el dinero sale de Wise hacia una cuenta bancaria uruguaya, llega en pesos. Lo dice su propia página de envíos a Uruguay. No hay opción de acreditar dólares en un banco de acá, así que si lo que buscás son dólares, esta vía no te sirve y la única forma de conservarlos es dejar el saldo adentro de Wise. Si te sirven los pesos, en cambio, es de lo más barato medido en porcentaje y sin sorpresas de corresponsalía. Lo demás que hace y que no hace Wise acá está en la guía de al lado.',
+        links: [
+          {
+            label: 'Wise en Uruguay, en detalle',
+            to: '/guias/recibir-transferencia-del-exterior-uruguay',
+          },
+        ],
       },
       {
-        heading: 'Antes de operar: compará',
-        body: 'Sea para enviar o recibir, entrá a Cambio Uruguay y mirá la cotización del dólar y de otras divisas en más de 40 casas de cambio. Tener el mejor precio del día como referencia te da poder de negociación y te evita aceptar la primera cifra que te ofrecen.',
+        heading: 'Prex: no recibe del exterior, es el último salto',
+        body: 'Prex aparece en todas las conversaciones porque tiene cuenta bimoneda y tarjeta internacional sin costo de mantenimiento, pero conviene tener claro qué no hace: no recibe transferencias bancarias del exterior ni una SWIFT directa. Lo que sí hace es ser el puente barato desde Payoneer o desde PayPal. Retirar de Payoneer a Prex cuesta 2 %, con un mínimo de USD 10, es instantáneo y tiene topes de USD 2.000 por retiro, USD 10.000 por mes y USD 30.000 por año. Retirar de PayPal a Prex cuesta USD 4 más IVA, con topes de USD 2.000 diarios y USD 3.000 mensuales. El detalle que sorprende: esos retiros se acreditan siempre en pesos, aunque tu cuenta sea bimoneda. La comisión de Prex nunca es la única que pagás, se suma a la que ya se llevó el primer salto.',
+        links: [{ label: 'Cotización de Prex', to: '/casa/prex' }],
       },
+      {
+        heading: 'El banco por SWIFT: por qué el monto decide',
+        body: 'La SWIFT al banco es la única vía que te puede dejar dólares en tu propia caja de ahorro, y ahí está su valor. Cuánto te cuesta depende de con quién tengas la cuenta: el BROU, el Itaú, el Santander y el BBVA publican tarifario y sus estructuras no se parecen entre sí, así que el pago que sale barato en uno sale caro en otro. Para elegir vía alcanza con la regla: la comisión del banco arranca en un mínimo fijo y termina en un tope, o sea que castiga los pagos chicos y perdona los grandes, justo al revés que una plataforma. Aparte, los bancos intermediarios descuentan lo suyo en el camino y eso no lo controla nadie. Un detalle antes de dar una cuenta: el tarifario del BBVA publica para los pagos más chicos un porcentaje muy superior al del resto de la plaza, así que confirmalo con el banco. Los números banco por banco están en la guía de al lado.',
+        links: [
+          {
+            label: 'Cuánto cobra cada banco por recibir',
+            to: '/guias/recibir-transferencia-del-exterior-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'El costo que no se ve: el tipo de cambio',
+        body: 'La comisión se publica; la cotización con la que te convierten, no siempre, y suele pesar más que la comisión. El spread entre lo que una plataforma compra y lo que vende se aplica sobre todo el monto y no figura en ninguna tabla de costos, así que una vía con comisión baja y cotización mala te puede dejar menos plata que otra con comisión visible y buen precio. Acá no te vamos a dejar un número congelado, porque envejece en horas y sigue pareciendo creíble: el dato hay que mirarlo el día que liquidás. Medimos en vivo la cotización propia de Prex y la de más de cuarenta casas de cambio, así que la pregunta honesta, cuántos pesos te quedan en la mano al final con todo descontado, se puede contestar con el precio de hoy y no con el de la nota.',
+        links: [
+          { label: 'Comparar plataformas y casas', to: '/comparar-plataformas-dolar-uruguay' },
+          { label: 'Cotización de Prex, en vivo', to: '/casa/prex' },
+          { label: 'La pizarra del día', to: '/pizarra' },
+        ],
+      },
+      {
+        heading: 'El lado impositivo, como regla general',
+        body: 'Esto es la regla, no un consejo para tu caso: para eso está un contador. La DGI publica que no están gravadas por IVA las exportaciones de servicios que determinó el Poder Ejecutivo en el artículo 34 del Decreto 220/998, y esa lista es cerrada: que el cliente esté afuera no alcanza por sí solo. La exoneración de IRAE por exportación de servicios es otra cosa, con requisitos propios, y no viene junto con la del IVA. Sobre dónde queda la plata, el criterio de la ley es dónde se presta el servicio y no dónde queda depositado el dinero: la fórmula del principio de la fuente habla de rentas provenientes de actividades desarrolladas en la República. Y el monotributo casi nunca encaja acá: el BPS lo acota a actividades en la vía pública o en locales de hasta 15 metros cuadrados.',
+        links: [
+          { label: 'Facturar en monotributo', to: '/facturar-en-monotributo-uruguay' },
+          {
+            label: 'Trabajar para el exterior',
+            to: '/guias/trabajar-para-el-exterior-desde-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Mandar plata afuera y las remesas familiares',
+        body: 'Del otro lado del mostrador valen las mismas familias: el banco por SWIFT, un servicio de remesas o una plataforma. Un servicio puede anunciar envío gratis y aplicarte una cotización peor, y terminar más caro que otro con comisión explícita: la única cifra que importa es cuánto recibe efectivamente la persona del otro lado, con todo descontado. Si las remesas te llegan de forma recurrente, las diferencias chicas de cotización se acumulan a lo largo del año, así que tené a mano la referencia del mejor precio del día y liquidá donde te convenga cuando puedas elegir. Y si la remesa entra por SWIFT a tu banco vale la misma regla de arriba: el mínimo fijo de la comisión vuelve carísima una transferencia chica, así que juntar dos meses en un envío suele salir mejor que mandar todos los meses.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cuál es la forma más barata de cobrar del exterior?',
+        a: 'Depende del monto y de en qué moneda querés quedarte. Para cobros chicos y recurrentes de un marketplace, Payoneer con retiro a Prex sale 2 %, con un mínimo de USD 10. Si tu cliente puede pagar por Wise, mandar USD 1.000 a una cuenta uruguaya cuesta entre USD 22,37 y USD 28,70. Para montos grandes suele ganar la SWIFT al banco, porque su comisión tiene tope.',
+      },
+      {
+        q: '¿Wise funciona en Uruguay?',
+        a: 'Sí, con una limitación grande. Uruguay está en la lista oficial de países donde se puede abrir un saldo Wise, sin asterisco de restricción, así que podés tener cuenta y guardar dólares o euros. Pero cuando Wise manda el dinero a una cuenta bancaria uruguaya lo entrega en pesos: no hay forma de acreditar dólares en un banco de acá por esa vía.',
+      },
+      {
+        q: '¿Me conviene Payoneer o que me manden un SWIFT al banco?',
+        a: 'Mirá el monto. Payoneer cobra poco al recibir y hasta 4 % al bajar la plata: es porcentual y no tiene techo. La comisión del banco va al revés, arranca en un mínimo fijo alto y termina en un tope, así que le pega fuerte al pago chico y se vuelve conveniente en el grande. Para cobros chicos suele ganar la plataforma; para un pago grande, el banco.',
+      },
+      {
+        q: '¿Puedo quedarme con los dólares sin convertir?',
+        a: 'Por SWIFT a una caja de ahorro en dólares, sí: la transferencia se acredita en la moneda de la cuenta. Por Wise no, porque hacia Uruguay sólo entrega pesos. Payoneer no publica un circuito de retiro en dólares a un banco uruguayo, y los retiros a Prex se acreditan siempre en pesos aunque la cuenta sea bimoneda.',
+      },
+      {
+        q: '¿Tengo que facturar lo que cobro de afuera?',
+        a: 'La regla general es que un ingreso por trabajo prestado desde Uruguay se declara acá, y para cobrarle a una empresa del exterior vas a necesitar emitir factura de exportación de servicios. Cómo te conviene formalizarte, entre unipersonal y sociedad, depende de cuánto facturás y de cómo trabajás: es una conversación con un contador, no una regla de tabla.',
+      },
+      {
+        q: '¿El banco me va a pedir papeles?',
+        a: 'Puede pedirlos. El nombre del beneficiario tiene que coincidir con el titular de la cuenta, y los bancos están obligados a justificar el origen de los fondos, así que a partir de cierto monto te van a pedir facturas o documentación de respaldo. No hay un umbral único publicado a partir del cual todos piden la factura: depende de cada banco y de si el movimiento es recurrente.',
+      },
+      {
+        q: '¿Sirve el monotributo para cobrar del exterior?',
+        a: 'En general no, para este perfil. El BPS acota el monotributo a actividades en la vía pública y en espacios públicos, o en locales de hasta 15 metros cuadrados, con un dependiente como máximo. Un desarrollador o un diseñador que trabaja online para un cliente de afuera no encaja en ese objeto, salvo que su actividad concreta esté en el listado.',
+      },
+    ],
+    sources: [
+      {
+        label: 'Tarifas de Payoneer: recibir, convertir y retirar a un banco local',
+        url: 'https://www.payoneer.com/pricing/',
+        publisher: 'Payoneer',
+      },
+      {
+        label: 'Costo y plazo de un envío de Wise a Uruguay (entrega en pesos)',
+        url: 'https://wise.com/us/send-money/send-money-to-uruguay',
+        publisher: 'Wise',
+      },
+      {
+        label: 'Países donde se puede abrir un saldo Wise, con Uruguay en la lista',
+        url: 'https://wise.com/help/articles/2813542/where-can-i-open-a-wise-balance',
+        publisher: 'Wise',
+      },
+      {
+        label: 'Qué cuesta retirar a Prex desde PayPal y desde Payoneer',
+        url: 'https://www.prexcard.com.ar/centro-de-ayuda/prex-uruguay/cargas-transferencias-y-retiros/que-costo-tiene-retirar-plata-desde-paypal-y-payoneer',
+        publisher: 'Prex',
+      },
+      {
+        label: 'Recibir transferencias del exterior: comisión, mínimos y requisitos',
+        url: 'https://www.brou.com.uy/personas/servicios/giros-transferencias/recibir-exterior',
+        publisher: 'BROU',
+      },
+      {
+        label: 'Tarifario, sección 8.1: órdenes de pago recibidas del exterior y corresponsalía',
+        url: 'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
+        publisher: 'Itaú (versión del 1 de setiembre de 2026)',
+      },
+      {
+        label: 'Manual de tarifas: comisión por transferencias recibidas del exterior',
+        url: 'https://www.santander.com.uy/tarifas-cartillas-y-formularios',
+        publisher: 'Santander (versión del 15 de setiembre de 2026)',
+      },
+      {
+        label: 'Tarifario, sección 21.2: transferencias recibidas del exterior',
+        url: 'https://www.bbva.com.uy/content/dam/public-web/uruguay/documents/NuevoTarifario2024.pdf',
+        publisher: 'BBVA',
+      },
+      {
+        label: 'Comisiones de PayPal en Uruguay: retiro a banco y conversión de moneda',
+        url: 'https://www.paypal.com/uy/webapps/mpp/paypal-fees',
+        publisher: 'PayPal',
+      },
+      {
+        label: 'Opciones de cobro y retiro para contractors, con sus costos',
+        url: 'https://www.deel.com/blog/contractor-payment-withdrawal-options-on-deel/',
+        publisher: 'Deel',
+      },
+      {
+        label: 'Exportación de servicios no gravada por IVA: artículo 34 del Decreto 220/998',
+        url: 'https://www.impo.com.uy/bases/decretos/220-1998/34',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Principio de la fuente: rentas de actividades desarrolladas en la República',
+        url: 'https://www.impo.com.uy/bases/leyes-originales/18083-2006/9',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Actividades incluidas en el monotributo',
+        url: 'https://www.bps.gub.uy/10442/actividades-incluidas.html',
+        publisher: 'BPS',
+      },
+    ],
+    related: [
+      {
+        label: 'Cuánto cobra cada banco por recibir',
+        to: '/guias/recibir-transferencia-del-exterior-uruguay',
+      },
+      { label: 'Ser contractor en Uruguay', to: '/contractor-en-uruguay' },
+      { label: 'Comisiones de transferencia', to: '/comisiones-de-transferencia-uruguay' },
+      { label: 'Comparar plataformas de dólar', to: '/comparar-plataformas-dolar-uruguay' },
+      { label: 'Facturar en monotributo', to: '/facturar-en-monotributo-uruguay' },
+      { label: 'Cobrar en dólares y gastar en pesos', to: '/cobrar-en-dolares-gastar-en-pesos' },
+      { label: 'Comisiones de Mercado Pago', to: '/comisiones-mercado-pago-uruguay' },
     ],
   },
   {

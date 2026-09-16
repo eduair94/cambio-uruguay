@@ -113,7 +113,6 @@ export const guideHubs: readonly GuideHub[] = [
       'impuesto-temu-uruguay',
       'importar-de-aliexpress-a-uruguay',
       'comprar-en-amazon-desde-uruguay',
-      'enviar-recibir-dinero-exterior',
     ],
     resources: [
       {
@@ -762,6 +761,7 @@ export const guideHubs: readonly GuideHub[] = [
       'saldo-retenido-tarjeta-debito-uruguay',
       'transferencia-a-cuenta-equivocada-uruguay',
       'recibir-transferencia-del-exterior-uruguay',
+      'enviar-recibir-dinero-exterior',
       'alias-para-transferir-uruguay',
       'usar-tarjeta-uruguaya-en-argentina',
     ],
