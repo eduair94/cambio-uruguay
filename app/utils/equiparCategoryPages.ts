@@ -24,6 +24,14 @@ export interface EquiparCategoryPage {
   description: string
   room: EquiparRoom
   tier: EquiparTier
+  /**
+   * Espejo de `usedOk`/`usedNote` en `classes/equipar/registry.ts`: es un juicio editorial de la
+   * CATEGORÍA (¿tiene sentido comprarla usada?), no un dato de la corrida. El FAQ lee estos dos
+   * campos siempre desde acá — nunca desde si la corrida de hoy trajo o no items — porque una
+   * categoría sin datos hoy no es lo mismo que una categoría donde el usado no conviene.
+   */
+  usedOk: boolean
+  usedNote: string | null
   /** "Qué mirar al comprar": afirmaciones generales verificables, sin cifras propias. */
   guide: readonly string[] | null
   /** Aplica / no aplica al Plan Redondo de UTE, con su condición. */
@@ -50,6 +58,9 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de heladeras nuevas y usadas en tiendas uruguayas y Mercado Libre: mediana por tamaño y qué revisar antes de comprar una.',
     room: 'cocina',
     tier: 'S',
+    usedOk: true,
+    usedNote:
+      'Usada conviene, pero pedí verla enfriando: el compresor es lo que se muere y no se ve en la foto.',
     guide: [
       'Frío húmedo o frío seco (no frost): el no frost no junta hielo y suele costar más.',
       'Los litros del aviso son totales: incluyen el freezer.',
@@ -69,6 +80,9 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de colchones en Uruguay por medida, con la mediana relevada y por qué comprar uno usado no es un buen ahorro acá.',
     room: 'dormitorio',
     tier: 'S',
+    usedOk: false,
+    usedNote:
+      'Es la única compra de esta lista donde el usado no se recomienda: chinches, ácaros y un hundimiento que no se ve hasta que dormís encima.',
     guide: [
       'Espuma o resortes: en espuma mirá la densidad; en resortes, si son independientes (pocket) o de bloque.',
       'Medidas habituales: 1 plaza 80 u 88 × 190 cm, 2 plazas 140 × 190 cm, queen 160 × 200 cm, king 200 × 200 cm. Confirmá la de tu cama.',
@@ -86,6 +100,9 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de lavarropas nuevos y usados en Uruguay, por tipo de carga, con la mediana relevada y qué mirar antes de elegir uno.',
     room: 'limpieza',
     tier: 'A',
+    usedOk: true,
+    usedNote:
+      'Usado es común y sano; pedí verlo centrifugando, que es donde aparecen los rulemanes gastados.',
     guide: [
       'Carga frontal o superior: la frontal suele gastar menos agua; la superior no te obliga a agacharte.',
       'Los kilos son de ropa seca: para una o dos personas alcanza con 6 a 7 kg.',
@@ -104,6 +121,9 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de cocinas y anafes en Uruguay, con la mediana relevada por tipo y qué diferencia una cocina a gas de una eléctrica.',
     room: 'cocina',
     tier: 'S',
+    usedOk: true,
+    usedNote:
+      'El supergas de la garrafa de 13 kg tiene precio regulado y va aparte: no se compra con la cocina.',
     guide: [
       'Supergás (garrafa) o gas natural por cañería: la conexión es distinta, confirmala antes de comprar.',
       'Buscá termocupla: corta el gas si la llama se apaga.',
@@ -122,6 +142,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de calefones en Uruguay por capacidad en litros, con la mediana relevada y el descuento de UTE para los más eficientes.',
     room: 'bano',
     tier: 'S',
+    usedOk: true,
+    usedNote: null,
     guide: [
       'Más personas, más litros: un calefón chico se queda sin agua caliente en la segunda ducha.',
       'La etiqueta de eficiencia energética es obligatoria: la clase A pierde menos calor.',
@@ -141,6 +163,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de microondas en Uruguay por capacidad, con la mediana relevada y la diferencia entre uno con grill y uno sin grill.',
     room: 'cocina',
     tier: 'A',
+    usedOk: true,
+    usedNote: null,
     guide: [
       '20 litros alcanzan para calentar; para platos grandes, 25 a 30 litros.',
       'Con grill dora; sin grill sólo calienta.',
@@ -158,6 +182,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de televisores en Uruguay por tamaño de pantalla, con la mediana relevada y qué mirar antes de elegir el tuyo.',
     room: 'living',
     tier: 'B',
+    usedOk: true,
+    usedNote: null,
     guide: [
       'Las pulgadas se eligen por la distancia al sillón: a más distancia, más pantalla.',
       '4K empieza a notarse desde 43 o 50 pulgadas.',
@@ -176,6 +202,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de aires acondicionados en Uruguay por potencia en BTU, con la mediana relevada y si conviene uno frío/calor o portátil.',
     room: 'living',
     tier: 'B',
+    usedOk: true,
+    usedNote: 'Sumale la instalación: no es un electrodoméstico que se enchufa.',
     guide: [
       'Los BTU dependen del ambiente: tamaño, orientación, aislación y altura del techo. Pedile al instalador que lo calcule para tu cuarto.',
       'Inverter regula la potencia del compresor: cuesta más y consume menos si lo usás muchas horas.',
@@ -196,6 +224,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de roperos y placares en Uruguay por cantidad de puertas, con la mediana relevada en tiendas y Mercado Libre.',
     room: 'dormitorio',
     tier: 'A',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -209,6 +239,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de juegos de mesa con sillas en Uruguay, con la mediana relevada por cantidad de sillas para el comedor.',
     room: 'living',
     tier: 'A',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -222,6 +254,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de sofás en Uruguay por tamaño, con la mediana relevada en tiendas y Mercado Libre para amueblar el living.',
     room: 'living',
     tier: 'B',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -235,6 +269,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de ollas en Uruguay por tamaño, con la mediana relevada y por qué conviene priorizar pocas y buenas antes que muchas.',
     room: 'cocina',
     tier: 'S',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -248,6 +284,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de sartenes en Uruguay por tamaño, con la mediana relevada en tiendas y Mercado Libre para la cocina de todos los días.',
     room: 'cocina',
     tier: 'S',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -261,6 +299,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de cuchillos de cocina en Uruguay, con la mediana relevada y por qué uno bueno reemplaza a varios cuchillos malos.',
     room: 'cocina',
     tier: 'S',
+    usedOk: false,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -274,6 +314,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de juegos de cubiertos en Uruguay por cantidad de servicios, con la mediana relevada en tiendas y Mercado Libre.',
     room: 'cocina',
     tier: 'S',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -287,6 +329,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de juegos de platos en Uruguay por cantidad de servicios, con la mediana relevada en tiendas y Mercado Libre.',
     room: 'cocina',
     tier: 'S',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -300,6 +344,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de juegos de vasos en Uruguay por cantidad de piezas, con la mediana relevada en tiendas y Mercado Libre.',
     room: 'cocina',
     tier: 'S',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -313,6 +359,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de tablas de picar en Uruguay, con la mediana relevada y por qué conviene una de madera antes que una de vidrio.',
     room: 'cocina',
     tier: 'A',
+    usedOk: false,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -326,6 +374,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de escurridores de platos en Uruguay, con la mediana relevada en tiendas y Mercado Libre para la pileta de la cocina.',
     room: 'cocina',
     tier: 'A',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -339,6 +389,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de pavas y calderas en Uruguay, con la mediana relevada entre la común y la eléctrica para tomar mate o té.',
     room: 'cocina',
     tier: 'B',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -352,6 +404,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de mixers y licuadoras en Uruguay, con la mediana relevada entre el de mano y el de vaso para cocinar todos los días.',
     room: 'cocina',
     tier: 'B',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -365,6 +419,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de tostadoras en Uruguay, con la mediana relevada en tiendas y Mercado Libre para el desayuno de todos los días.',
     room: 'cocina',
     tier: 'C',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -378,6 +434,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de cafeteras en Uruguay, con la mediana relevada en tiendas y Mercado Libre para las de filtro más habituales.',
     room: 'cocina',
     tier: 'C',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -391,6 +449,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de hornos eléctricos en Uruguay, con la mediana relevada y cuándo tiene sentido sumar uno a una cocina con anafe.',
     room: 'cocina',
     tier: 'C',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo:
       'Los hornos de mesa no entran: el plan pide hornos empotrables de 55 litros o más.',
@@ -405,6 +465,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de juegos de sábanas en Uruguay por medida de cama, con la mediana relevada en tiendas y Mercado Libre.',
     room: 'dormitorio',
     tier: 'S',
+    usedOk: false,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -418,6 +480,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de almohadas en Uruguay, con la mediana relevada en tiendas y Mercado Libre para dormir mejor desde el primer día.',
     room: 'dormitorio',
     tier: 'A',
+    usedOk: false,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -431,6 +495,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de acolchados y frazadas en Uruguay por medida de cama, con la mediana relevada según llega el frío o el calor.',
     room: 'dormitorio',
     tier: 'A',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -444,6 +510,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de toallas y toallones en Uruguay, con la mediana relevada en tiendas y Mercado Libre para bañarse desde el día uno.',
     room: 'bano',
     tier: 'S',
+    usedOk: false,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -457,6 +525,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de cortinas de baño en Uruguay, con la mediana relevada para cuando la ducha no tiene mampara instalada.',
     room: 'bano',
     tier: 'B',
+    usedOk: false,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -470,6 +540,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios del kit de limpieza para una casa en Uruguay: balde, escoba y secador, con la mediana relevada en tiendas y Mercado Libre.',
     room: 'limpieza',
     tier: 'S',
+    usedOk: false,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -483,6 +555,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de tachos de basura en Uruguay por tipo de tapa o pedal, con la mediana relevada en tiendas y Mercado Libre.',
     room: 'limpieza',
     tier: 'S',
+    usedOk: false,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -496,6 +570,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de planchas de ropa en Uruguay, con la mediana relevada en tiendas y Mercado Libre para quien plancha camisas seguido.',
     room: 'limpieza',
     tier: 'A',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -509,6 +585,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de ventiladores en Uruguay por tipo, con la mediana relevada y el costo por hora de tenerlo prendido en verano.',
     room: 'living',
     tier: 'A',
+    usedOk: true,
+    usedNote: null,
     guide: [
       'De pie, de techo o turbo: el de techo mueve más aire en toda la habitación.',
       'Un ventilador gasta muy poco: el costo por hora está abajo.',
@@ -525,6 +603,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de estufas y calefactores en Uruguay por tipo, con la mediana relevada y el costo por hora de tenerlos prendidos.',
     room: 'living',
     tier: 'A',
+    usedOk: true,
+    usedNote: null,
     guide: [
       'Caloventor, oleoeléctrica, panel o a gas: el caloventor calienta rápido y fuerte; la oleoeléctrica tarda pero es pareja y silenciosa.',
       'La potencia en W define el consumo: el costo por hora está abajo.',
@@ -541,6 +621,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de aspiradoras en Uruguay por tipo, con la mediana relevada en tiendas y Mercado Libre para completar la limpieza.',
     room: 'limpieza',
     tier: 'B',
+    usedOk: true,
+    usedNote: null,
     guide: [
       'Trineo, escoba inalámbrica o robot: la inalámbrica es cómoda para el día a día y tiene autonomía limitada.',
       'Con bolsa o ciclónica (sin bolsa): la ciclónica no requiere comprar bolsas.',
@@ -557,6 +639,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de secarropas en Uruguay, con la mediana relevada y por qué conviene sólo en invierno sin balcón para tender.',
     room: 'limpieza',
     tier: 'C',
+    usedOk: true,
+    usedNote: null,
     guide: [
       'Centrífugo sólo escurre; de tambor (a calor) seca.',
       'El centrífugo es más barato y casi no gasta luz; el de tambor consume bastante más.',
@@ -574,6 +658,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de deshumidificadores en Uruguay, con la mediana relevada en tiendas y Mercado Libre para las casas que se humedecen de verdad.',
     room: 'living',
     tier: 'C',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -587,6 +673,8 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
       'Precios de impresoras multifunción en Uruguay, con la mediana relevada en tiendas y Mercado Libre para el trámite urgente.',
     room: 'living',
     tier: 'C',
+    usedOk: true,
+    usedNote: null,
     guide: null,
     planRedondo: null,
     wattsExample: null,
@@ -723,6 +811,10 @@ const agree = (root: string, g: EquiparGrammar): string =>
 const verbForm = (singular: string, plural: string, g: EquiparGrammar): string =>
   g.plural ? plural : singular
 
+/** Pronombre de objeto directo para "comprar_lo/la/los/las_ usado/a/os/as". */
+const objectPronoun = (g: EquiparGrammar): string =>
+  g.plural ? (g.gender === 'f' ? 'las' : 'los') : g.gender === 'f' ? 'la' : 'lo'
+
 /** `'2026-09-10T00:00:00.000Z'` -> `'10 de setiembre de 2026'` (grafía uruguaya, ver `dateLocale`). */
 function formatFaqDate(iso: string | null): string | null {
   if (!iso) return null
@@ -789,25 +881,31 @@ export function equiparCategoryFaq(
     answer: cuantoSaleAnswer,
   })
 
-  // ¿Conviene comprar usado?
-  const usedOk = catItems.length ? Boolean(catItems[0]?.usedOk) : false
-  const usedNote = catItems.find(item => item.usedNote)?.usedNote ?? null
+  // ¿Conviene comprar usado? `usedOk`/`usedNote` son un juicio de la CATEGORÍA (`page`, espejo del
+  // registro), no de la corrida: una categoría sin items todavía no es una categoría donde el usado
+  // no convenga. Sólo la mediana/el ahorro salen de `items`, y si no hay banda usada la respuesta lo
+  // dice en vez de callarlo.
   const usedBandItem = catItems.find(
     (item): item is EquiparItemDoc & { usedBand: EquiparBand } => item.usedBand !== null
   )
   const savingItem = catItems.find(item => typeof item.usedSavingPct === 'number')
   let usadoAnswer: string
-  if (!usedOk) {
-    usadoAnswer = usedNote
-      ? `No: ${usedNote}`
-      : `No: ${labelLower} es de las pocas cosas de esta lista donde comprarla usada no conviene.`
+  if (!page.usedOk) {
+    usadoAnswer = page.usedNote
+      ? `No: ${page.usedNote}`
+      : `No: comprar${objectPronoun(grammar)} ${agree('usad', grammar)} no conviene.`
   } else {
-    usadoAnswer = usedNote ? `Sí. ${usedNote}` : 'Sí, es una compra segura de segunda mano.'
+    usadoAnswer = page.usedNote
+      ? `Sí. ${page.usedNote}`
+      : 'Sí, es una compra segura de segunda mano.'
     if (usedBandItem) {
       usadoAnswer += ` La mediana de las ofertas usadas relevadas es ${money(usedBandItem.usedBand.median)}.`
-    }
-    if (savingItem && typeof savingItem.usedSavingPct === 'number') {
-      usadoAnswer += ` Eso ahorra alrededor de ${Math.round(savingItem.usedSavingPct)} % frente al precio nuevo.`
+      if (savingItem && typeof savingItem.usedSavingPct === 'number') {
+        usadoAnswer += ` Eso ahorra alrededor de ${Math.round(savingItem.usedSavingPct)} % frente al precio nuevo.`
+      }
+    } else {
+      usadoAnswer +=
+        ' Todavía no relevamos suficientes ofertas usadas como para publicar una mediana.'
     }
   }
   faq.push({
@@ -824,7 +922,7 @@ export function equiparCategoryFaq(
       cheapest.priceUyu
     )}. El precio cambia todos los días: es una referencia${dateStr ? ` del ${dateStr}` : ''}, no un precio fijo.`
   } else {
-    dondeAnswer = `Todavía no relevamos suficientes ofertas nuevas de ${labelLower} como para decir dónde sale más barata.`
+    dondeAnswer = `Todavía no relevamos suficientes ofertas nuevas de ${labelLower} como para decir dónde ${verbForm('está', 'están', grammar)} más ${agree('barat', grammar)}.`
   }
   faq.push({
     question: `¿Dónde ${verbForm('está', 'están', grammar)} ${definiteArticle(grammar)} ${labelLower} más ${agree('barat', grammar)}?`,

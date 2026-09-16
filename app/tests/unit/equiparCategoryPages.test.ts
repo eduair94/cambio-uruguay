@@ -173,21 +173,44 @@ describe('equiparCategoryTitle', () => {
 })
 
 describe('equiparCategoryFaq', () => {
-  it('para colchón (usedOk false) responde que NO conviene usado', () => {
+  it('para colchón (usedOk false en el registro) responde que NO conviene usado, con o sin items', () => {
     const page = equiparCategoryPage('colchon') as EquiparCategoryPage
-    const items = [
-      item('colchon', '2plazas', '2 plazas (140 cm)', 'S', {
-        usedOk: false,
-        usedNote: 'Es la única compra de esta lista donde el usado no se recomienda.',
-        newBand: band(9500),
-      }),
-    ]
-    const faq = equiparCategoryFaq(page, items, '2026-09-10T00:00:00.000Z')
+    expect(page.usedOk).toBe(false)
+    for (const items of [
+      [],
+      [item('colchon', '2plazas', '2 plazas (140 cm)', 'S', { newBand: band(9500) })],
+    ]) {
+      const faq = equiparCategoryFaq(page, items, '2026-09-10T00:00:00.000Z')
+      const usadoQA = faq.find(qa => qa.question.toLowerCase().includes('usad'))
+      expect(usadoQA).toBeDefined()
+      expect(usadoQA?.answer.startsWith('No')).toBe(true)
+      expect(usadoQA?.answer.toLowerCase()).not.toMatch(/^sí/)
+      expect(usadoQA?.answer.toLowerCase()).not.toContain('sí, conviene')
+    }
+  })
+
+  it('C1: una categoría usedOk:true (heladera) sin items NO dice que el usado no conviene', () => {
+    const heladera = equiparCategoryPage('heladera') as EquiparCategoryPage
+    expect(heladera.usedOk).toBe(true)
+    const faq = equiparCategoryFaq(heladera, [], null)
     const usadoQA = faq.find(qa => qa.question.toLowerCase().includes('usad'))
-    expect(usadoQA).toBeDefined()
-    expect(usadoQA?.answer.startsWith('No')).toBe(true)
-    expect(usadoQA?.answer.toLowerCase()).not.toMatch(/^sí/)
-    expect(usadoQA?.answer.toLowerCase()).not.toContain('sí, conviene')
+    expect(usadoQA?.answer.toLowerCase()).not.toContain('no conviene')
+    expect(usadoQA?.answer.startsWith('Sí')).toBe(true)
+    // Sin banda usada relevada, lo dice en vez de callarlo.
+    expect(usadoQA?.answer).toContain('Todavía no relevamos suficientes ofertas usadas')
+  })
+
+  it('usedOk/usedNote salen siempre de la página (registro), nunca de si la corrida trajo items', () => {
+    // Mismo escenario que rompía antes del fix: una categoría usedOk:true sin ningún item hoy.
+    for (const page of EQUIPAR_CATEGORY_PAGES) {
+      const faq = equiparCategoryFaq(page, [], null)
+      const usadoQA = faq.find(qa => qa.question.toLowerCase().includes('usad'))
+      if (page.usedOk) {
+        expect(usadoQA?.answer.startsWith('Sí'), page.key).toBe(true)
+      } else {
+        expect(usadoQA?.answer.startsWith('No'), page.key).toBe(true)
+      }
+    }
   })
 
   it('para heladera con banda nueva y usada, incluye la mediana de cada una', () => {
@@ -229,6 +252,57 @@ describe('equiparCategoryFaq', () => {
     const faq = equiparCategoryFaq(page, items, '2026-09-10T00:00:00.000Z')
     const dondeQA = faq.find(qa => qa.question.startsWith('¿Dónde'))
     expect(dondeQA?.answer).toContain('TYT')
+  })
+})
+
+describe('I1: concordancia de género/número en las respuestas por defecto', () => {
+  it('"no conviene" concuerda: masculino singular (cuchillo) y femenino plural (toallas)', () => {
+    const cuchillo = equiparCategoryPage('cuchillo') as EquiparCategoryPage
+    const toallas = equiparCategoryPage('toallas') as EquiparCategoryPage
+    expect(cuchillo.usedOk).toBe(false)
+    expect(cuchillo.usedNote).toBeNull()
+    expect(toallas.usedOk).toBe(false)
+    expect(toallas.usedNote).toBeNull()
+
+    const cuchilloAnswer =
+      equiparCategoryFaq(cuchillo, [], null).find(qa => qa.question.toLowerCase().includes('usad'))
+        ?.answer ?? ''
+    const toallasAnswer =
+      equiparCategoryFaq(toallas, [], null).find(qa => qa.question.toLowerCase().includes('usad'))
+        ?.answer ?? ''
+
+    expect(cuchilloAnswer).toContain('comprarlo usado no conviene')
+    expect(toallasAnswer).toContain('comprarlas usadas no conviene')
+  })
+
+  it('"no conviene" concuerda en masculino plural (cubiertos, forzando usedOk:false para el caso)', () => {
+    // El registro real dice `cubiertos.usedOk === true` (comprobado en el test de arriba con
+    // EQUIPAR_CATEGORY_PAGES), así que no hay ninguna categoría real masculina-plural con
+    // usedOk:false para ejercitar esta rama. Se construye la página a mano para probar la
+    // concordancia del helper de gramática en ese caso, sin tocar el dato real de `cubiertos`.
+    const cubiertosNoUsado: EquiparCategoryPage = {
+      ...(equiparCategoryPage('cubiertos') as EquiparCategoryPage),
+      usedOk: false,
+      usedNote: null,
+    }
+    const answer =
+      equiparCategoryFaq(cubiertosNoUsado, [], null).find(qa =>
+        qa.question.toLowerCase().includes('usad')
+      )?.answer ?? ''
+    expect(answer).toContain('comprarlos usados no conviene')
+  })
+
+  it('"dónde está/están más barato/a" concuerda: masculino, femenino plural y masculino plural', () => {
+    const cuchillo = equiparCategoryPage('cuchillo') as EquiparCategoryPage
+    const toallas = equiparCategoryPage('toallas') as EquiparCategoryPage
+    const cubiertos = equiparCategoryPage('cubiertos') as EquiparCategoryPage
+
+    const answerFor = (page: EquiparCategoryPage): string =>
+      equiparCategoryFaq(page, [], null).find(qa => qa.question.startsWith('¿Dónde'))?.answer ?? ''
+
+    expect(answerFor(cuchillo)).toContain('dónde está más barato')
+    expect(answerFor(toallas)).toContain('dónde están más baratas')
+    expect(answerFor(cubiertos)).toContain('dónde están más baratos')
   })
 })
 
