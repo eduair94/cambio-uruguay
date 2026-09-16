@@ -400,8 +400,10 @@ const refundDate = fmtDate(LAST_PUBLISHED_REFUND.availableFrom)
 
 const canonicalUrl = 'https://cambio-uruguay.com/cambiar-de-mutualista-uruguay'
 const title = 'Cambiar de mutualista: el mes de tu cédula'
+// El texto largo de antes (450 caracteres) nunca se mostraba entero: Google corta cerca de 155, y
+// la consulta que trae visitas es "cuándo me puedo cambiar de mutualista". La respuesta va primero.
 const description =
-  'El calendario de movilidad regulada de BPS mes a mes según el último dígito de la cédula, los 23 meses de permanencia que piden, y las cinco salidas para cambiar fuera de fecha: el cambio hacia ASSE o un seguro integral se puede hacer en cualquier momento (Decreto 344/020 art. 17), y además están la afiliación de oficio, la mudanza a otro departamento, los problemas asistenciales y los tiempos de espera del Decreto 359/007. Más cómo funciona la devolución de FONASA.'
+  'Te podés cambiar de mutualista en el mes que le toca al último dígito de tu cédula, con 23 meses en tu prestador. Calendario BPS y las salidas fuera de fecha, como pasarte a ASSE.'
 
 defineOgImageComponent('Cambio', {
   title: 'Cambiar de mutualista',

@@ -499,7 +499,15 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
     '/alquilar-estando-en-clearing',
     '/vivir-con-25000-pesos-uruguay',
   ],
+  '/prestamo-sin-recibo-de-sueldo-uruguay': [
+    '/mejores-prestamos-uruguay',
+    '/alquilar-sin-recibo-de-sueldo',
+    '/salir-del-clearing',
+    '/ley-de-usura-uruguay',
+    '/prestamos-uruguay',
+  ],
   '/prestamos-uruguay': [
+    '/prestamo-sin-recibo-de-sueldo-uruguay',
     '/salir-del-clearing',
     '/saldar-deudas-uruguay',
     '/conviene-comprar-en-cuotas',

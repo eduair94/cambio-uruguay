@@ -148,6 +148,19 @@ Validación local: 7.997 pruebas del app aprobadas (27 de indicadores, 12 nuevas
 
 Descartado en esta iteración: medir si Auto Ads vuelve a ubicar anuncios después de una navegación SPA. Bloquear las solicitudes publicitarias también impide que Auto Ads baje su configuración, y medirlo con solicitudes reales generaría impresiones propias automatizadas. Queda como hipótesis sin evidencia.
 
+## Novena iteración: 16/9/2026
+
+Lectura nueva: Search Console página×consulta de 90 días (17/6–14/9, sólo lectura, privado en `data/revenue-2026-09-16/page-query-90d.json`). Fuera de cotizaciones, la demanda revelada es chica y el techo es de autoridad: en temas comerciales caros el sitio aparece muy lejos del primer resultado. En paralelo hay páginas en posiciones 5 a 13 con cero clics cuyo título no responde la consulta.
+
+Cambios:
+
+1. **`/prestamo-sin-recibo-de-sueldo-uruguay`** (nueva). "Préstamo sin recibo de sueldo" figuraba en el informe de Trends del 15/9 como hueco sin cobertura, en la categoría de mayor rendimiento por vista del sitio. El SERP uruguayo son landings de prestamistas y un blog de afiliados sin tasas. La página filtra el catálogo de `/mejores-prestamos-uruguay` (mismo fetch y refresh semanal: tasa publicada, clearing, supervisión BCU), toma el tope de usura de `/api/bcu-rates` y explica tres vías con citas fechadas de la página de cada institución (BROU, OCA, Pronto!). Sin acuerdos comerciales.
+2. **Títulos que responden**: salario mínimo con la cifra vigente desde julio (el primer resultado oficial todavía muestra la de enero) y un test que la ata al catálogo; descripción de cambio de mutualista con la respuesta primero (antes eran 450 caracteres); título de propinas que entra en el SERP. No se tocaron cédula ni asignación familiar: sus títulos con cifras son del 1 y el 8/9 y la ventana medida es anterior.
+
+Descartado con evidencia: calendario mensual de pagos BPS (SERP de BPS y prensa), calculadora de aguinaldo (granjas de calculadoras), snippet de sucursales (título y descripción ya correctos; Google elige horarios por la intención) y más actividad del bot de Reddit (cuenta con shadowban).
+
+Evaluación: indexación y consultas de la página nueva a 28 días; clics de las tres páginas retituladas con 28 días finales posteriores contra 17/6–14/9.
+
 ## Próximas decisiones
 
 - Verificar las fuentes de la excepción Cambio Principal cuando cambien los datos de origen y, como máximo, en la revisión mensual siguiente. La fecha del 14/9 es una comprobación puntual, no una vigilancia automática de la web propia. La tabla semanal no interpreta ausencia de horario como cierre.
