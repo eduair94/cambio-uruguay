@@ -70,7 +70,10 @@
         <p class="lead">{{ curveText }}</p>
         <VCard variant="outlined" class="pa-4">
           <div class="fig-title">Opiniones negativas y positivas sobre el mercado y la carrera</div>
-          <div class="fig-sub">Parte de las opiniones de cada mes, promedio móvil de 3 meses.</div>
+          <div class="fig-sub">
+            Parte de las opiniones de cada mes, promedio móvil de 3 meses. Los puntos violeta marcan
+            los meses con algún lanzamiento de IA.
+          </div>
           <div class="chart-wrap tall">
             <ClientOnly>
               <LineChart
@@ -122,14 +125,15 @@
           <VCard variant="outlined" class="pa-4">
             <div class="fig-title">Comentarios que mencionan la IA</div>
             <div class="fig-sub">
-              Por cada 1.000 comentarios del mes. Conteo directo, sin modelo de lenguaje.
+              Por cada 1.000 comentarios del mes. Conteo directo, sin modelo de lenguaje. Los puntos
+              violeta marcan los meses con algún lanzamiento de IA.
             </div>
             <div class="chart-wrap">
               <ClientOnly>
                 <LineChart
                   :key="`ai-${themeKey}`"
                   :chart-data="aiMentionsData"
-                  :options="perMilleOptions"
+                  :options="lexOptions"
                   aria-label="Menciones de IA por cada mil comentarios"
                 />
                 <template #fallback>
@@ -158,6 +162,57 @@
             </div>
           </VCard>
         </div>
+      </section>
+
+      <section class="block" aria-labelledby="lanzamientos">
+        <div class="kicker">Los lanzamientos</div>
+        <h2 id="lanzamientos" class="text-h5 font-weight-bold mb-2">{{ releasesTitle }}</h2>
+        <p class="lead">{{ releasesText }}</p>
+        <VCard variant="outlined" class="pa-4">
+          <div class="fig-title">Los lanzamientos marcados, uno por uno</div>
+          <div class="fig-sub">
+            Cada fecha es la del anuncio del propio fabricante, enlazado. Leídas contra su página
+            oficial el {{ releasesVerifiedLabel }}.
+          </div>
+          <div class="table-wrap">
+            <VTable density="comfortable" class="cu-mobile-cards releases-table">
+              <thead>
+                <tr>
+                  <th scope="col">Fecha</th>
+                  <th scope="col">Qué salió</th>
+                  <th scope="col">Quién</th>
+                  <th scope="col">Menciones de IA, antes → después</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="r in releaseRows" :key="`${r.date}-${r.label}`">
+                  <td data-label="Fecha" class="text-no-wrap">{{ r.dateLabel }}</td>
+                  <td data-label="Qué salió">
+                    <a :href="r.url" target="_blank" rel="noopener">{{ r.label }}</a>
+                    <span class="why">{{ r.why }}</span>
+                  </td>
+                  <td data-label="Quién">{{ r.vendor }}</td>
+                  <td data-label="Menciones de IA, antes → después" class="text-no-wrap">
+                    {{ r.baLabel }}
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
+        </VCard>
+        <p class="small mt-4">
+          Esto no prueba causa. Los lanzamientos vienen en racimo —Claude Code en mayo de 2025 y
+          Cursor 1.0 en junio—, así que el punto de un mes casi nunca es un solo producto. Los
+          gráficos por trimestre no llevan marca: un trimestre tapa dos o tres lanzamientos y un
+          punto ahí no distinguiría nada. El sub además cambió de composición con los años, como
+          dice el método más abajo. Y el mercado se movió por cosas que no son un lanzamiento: el
+          índice de avisos de Indeed que está más abajo en esta página se derrumba a lo largo de
+          2022 y 2023, y ese movimiento no tiene ninguna fila en esta tabla. La comparación además
+          juega en contra suyo a propósito: muchos meses «sin lanzamiento» tienen uno a dos o tres
+          meses de distancia y comparten media ventana con él, y eso acerca las dos proporciones.{{
+            robustnessNote
+          }}
+        </p>
       </section>
 
       <section class="block" aria-labelledby="quien">
@@ -390,14 +445,15 @@
             <div class="fig-title">Control sin IA: frases de alarma</div>
             <div class="fig-sub">
               Comentarios con "no hay laburo", "mercado muerto/saturado", despidos o "reemplazo",
-              por cada 1.000 del mes (promedio de 3 meses).
+              por cada 1.000 del mes (promedio de 3 meses). Los puntos violeta marcan los meses con
+              algún lanzamiento de IA.
             </div>
             <div class="chart-wrap">
               <ClientOnly>
                 <LineChart
                   :key="`lex-${themeKey}`"
                   :chart-data="alarmData"
-                  :options="perMilleOptions"
+                  :options="lexOptions"
                   aria-label="Frases de alarma por cada mil comentarios"
                 />
                 <template #fallback>
@@ -422,6 +478,17 @@ import LikertChart from '~/components/mercadoIt/LikertChart.vue'
 import QuoteCard from '~/components/mercadoIt/QuoteCard.vue'
 import SearchPanel from '~/components/mercadoIt/SearchPanel.vue'
 import ThemesTable from '~/components/mercadoIt/ThemesTable.vue'
+import {
+  AI_RELEASES,
+  AI_RELEASES_VERIFIED_AT,
+  beforeAfter,
+  markReleaseMonths,
+  releaseMonth,
+  releasesInMonth,
+  riseSplit,
+  type ReleaseMarkerStyle,
+  type RiseSplit,
+} from '~/utils/aiReleases'
 import type { FaqItem } from '~/utils/faqAnswers'
 import {
   fmtInt,
@@ -452,6 +519,9 @@ const NEG_DEEP = STANCE_META[0]!.color
 const POS = STANCE_META[3]!.color
 const POS_DEEP = STANCE_META[4]!.color
 const NEU = STANCE_META[2]!.color
+// El marcador de lanzamiento. Violeta a propósito: tiene que leerse sobre el fondo claro y sobre
+// el oscuro, y no poder confundirse ni con el rojo de lo negativo ni con el verde de lo positivo.
+const REL = '#8b5cf6'
 
 const dark = computed(() => theme.current.value.dark)
 const themeKey = computed(() => (dark.value ? 'd' : 'l'))
@@ -705,7 +775,11 @@ const contextText = computed(() => {
 // ---------------------------------------------------------------- gráficos
 
 const pct100 = (v: number | null | undefined) => (v == null ? null : Math.round(v * 1000) / 10)
-function baseLineOptions(tick: (v: number) => string, yMax?: number) {
+function baseLineOptions(
+  tick: (v: number) => string,
+  yMax?: number,
+  tooltipCallbacks?: Record<string, unknown>
+) {
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -713,6 +787,8 @@ function baseLineOptions(tick: (v: number) => string, yMax?: number) {
     interaction: { mode: 'index' as const, intersect: false },
     plugins: {
       legend: { position: 'bottom' as const, labels: { color: axisColor.value, boxWidth: 14 } },
+      // Sin callbacks el objeto queda exactamente como estaba: chart.js arma su tooltip solo.
+      ...(tooltipCallbacks ? { tooltip: { callbacks: tooltipCallbacks } } : {}),
     },
     scales: {
       x: { ticks: { color: axisColor.value, maxTicksLimit: 8 }, grid: { color: gridColor.value } },
@@ -725,17 +801,43 @@ function baseLineOptions(tick: (v: number) => string, yMax?: number) {
     },
   }
 }
-const pctLineOptions = computed(() => baseLineOptions(v => `${v} %`, 60))
 const perMilleOptions = computed(() => baseLineOptions(v => `${v} ‰`))
 const indexOptions = computed(() => baseLineOptions(v => String(v)))
 
-const line = (label: string, data: Array<number | null>, color: string, fill = false) => ({
+/**
+ * El tooltip que cuenta qué salió ese mes. Se arma una sola vez, al montar el gráfico (el
+ * componente no observa `options`), pero lee el getter en cada llamada, así que sigue a los datos.
+ */
+function releaseTooltip(monthAt: (i: number) => string | undefined) {
+  return {
+    afterBody: (ctx: Array<{ dataIndex: number }>) => {
+      const month = monthAt(ctx[0]?.dataIndex ?? -1)
+      const rels = month ? releasesInMonth(month) : []
+      if (!rels.length) return []
+      return ['', 'Ese mes salió:', ...rels.map(r => `· ${r.label} (${r.vendor})`)]
+    },
+  }
+}
+
+const line = (
+  label: string,
+  data: Array<number | null>,
+  color: string,
+  fill = false,
+  marks?: ReleaseMarkerStyle
+) => ({
   label,
   data,
   borderColor: color,
   backgroundColor: fill ? `${color}22` : color,
   borderWidth: 2,
-  pointRadius: 0,
+  pointRadius: marks ? marks.pointRadius : 0,
+  ...(marks
+    ? {
+        pointBackgroundColor: marks.pointBackgroundColor,
+        pointHoverRadius: marks.pointRadius.map(r => r + 2),
+      }
+    : {}),
   tension: 0.25,
   fill,
   spanGaps: true,
@@ -744,18 +846,30 @@ const line = (label: string, data: Array<number | null>, color: string, fill = f
 const curveMonths = computed(() =>
   (snap.value?.monthly ?? []).filter(m => m.m >= '2022-01' && m.rel3 >= 60)
 )
+const curveMonthKeys = computed(() => curveMonths.value.map(m => m.m))
+const pctLineOptions = computed(() =>
+  baseLineOptions(
+    v => `${v} %`,
+    60,
+    releaseTooltip(i => curveMonthKeys.value[i])
+  )
+)
 const curveData = computed(() => ({
   labels: curveMonths.value.map(m => monthLabel(m.m)),
   datasets: [
     line(
       'Negativas (−1 y −2)',
       curveMonths.value.map(m => pct100(m.neg3)),
-      NEG
+      NEG,
+      false,
+      markReleaseMonths(curveMonthKeys.value, REL, NEG)
     ),
     line(
       'Positivas (+1 y +2)',
       curveMonths.value.map(m => pct100(m.pos3)),
-      POS
+      POS,
+      false,
+      markReleaseMonths(curveMonthKeys.value, REL, POS)
     ),
   ],
 }))
@@ -771,6 +885,14 @@ const likertRows = computed(() =>
 const lexRows = computed(() =>
   (snap.value?.lexMonthly ?? []).filter(r => r.m >= '2022-01' && r.n >= 200)
 )
+const lexMonthKeys = computed(() => lexRows.value.map(r => r.m))
+const lexOptions = computed(() =>
+  baseLineOptions(
+    v => `${v} ‰`,
+    undefined,
+    releaseTooltip(i => lexMonthKeys.value[i])
+  )
+)
 const aiMentionsData = computed(() => ({
   labels: lexRows.value.map(r => monthLabel(r.m)),
   datasets: [
@@ -778,7 +900,8 @@ const aiMentionsData = computed(() => ({
       'Comentarios con IA, por mil',
       lexRows.value.map(r => r.ia_menciones),
       inkColor.value,
-      true
+      true,
+      markReleaseMonths(lexMonthKeys.value, REL, inkColor.value)
     ),
   ],
 }))
@@ -905,8 +1028,128 @@ const alarmData = computed(() => {
   })
   return {
     labels: lexRows.value.map(r => monthLabel(r.m)),
-    datasets: [line('Frases de alarma, por mil', rolled, NEG)],
+    datasets: [
+      line(
+        'Frases de alarma, por mil',
+        rolled,
+        NEG,
+        false,
+        markReleaseMonths(lexMonthKeys.value, REL, NEG)
+      ),
+    ],
   }
+})
+
+// ---------------------------------------------------------------- lanzamientos de IA
+//
+// El placebo es la sección entera: la misma cuenta, hecha sobre los meses SIN lanzamiento, va en
+// la misma oración que el resultado. Sobre una serie que sube casi todos los meses, cualquier
+// fecha que marques queda "seguida de una suba", así que el número de la izquierda solo no dice
+// nada. Por eso los textos se derivan de la COMPARACIÓN y no de un umbral escrito a mano.
+
+/** Lo que separa "se ve la diferencia" de "es la misma proporción", en partes de 1. */
+const RISE_GAP = 0.1
+const RELEASE_MONTHS = new Set(AI_RELEASES.map(releaseMonth))
+
+const lexIaValues = computed(() => lexRows.value.map(r => r.ia_menciones ?? null))
+const iaRise = computed(() => riseSplit(lexMonthKeys.value, lexIaValues.value, RELEASE_MONTHS))
+// La serie que va acá es la NEGATIVIDAD CRUDA del mes, no la `neg3` que dibuja el gráfico: `neg3`
+// ya es un promedio de tres meses, así que meterla en una ventana de tres meses arrastra el mes
+// del lanzamiento adentro del "después" y solapa las dos ventanas por la suavización. La cuenta
+// tiene que hacerse sobre la misma cantidad que muestra la curva, sin el suavizado.
+const negRise = computed(() =>
+  riseSplit(
+    curveMonthKeys.value,
+    curveMonths.value.map(m => pct100(m.neg)),
+    RELEASE_MONTHS
+  )
+)
+// La MISMA cuenta sobre las opiniones que toman partido (la medida del titular de la página). No
+// se publica como resultado: se publica como control de robustez, porque da otra brecha y elegir
+// entre las dos series sin decirlo es exactamente cómo se fabrica un hallazgo.
+const negOpRise = computed(() =>
+  riseSplit(
+    curveMonthKeys.value,
+    curveMonths.value.map(m => pct100(m.negOfOpinion)),
+    RELEASE_MONTHS
+  )
+)
+function gapOf(s: RiseSplit): number | null {
+  const { share: a } = s.withRelease
+  const { share: b } = s.without
+  return a == null || b == null ? null : a - b
+}
+const iaGap = computed(() => gapOf(iaRise.value))
+const negGap = computed(() => gapOf(negRise.value))
+const negOpGap = computed(() => gapOf(negOpRise.value))
+const ppText = (gap: number) => `${Math.round(Math.abs(gap) * 100)} puntos`
+const negGapClause = computed(() => {
+  const gap = negGap.value
+  if (gap == null) return 'y todavía no hay muestra para comparar'
+  if (Math.abs(gap) < RISE_GAP) return 'o sea casi la misma proporción'
+  return gap > 0 ? `o sea ${ppText(gap)} más seguido` : `o sea ${ppText(gap)} menos seguido`
+})
+
+// El mismo conteo da otra brecha según qué serie de negatividad se mire, y eso es un dato sobre
+// la cuenta, no sobre la IA. Publicar las dos es lo único que impide elegir después la que da el
+// número más lindo.
+const robustnessNote = computed(() => {
+  const a = negGap.value
+  const b = negOpGap.value
+  if (a == null || b == null) return ''
+  return ` Y el resultado se mueve según la serie que se mire: sobre las opiniones que toman partido —la medida del titular de esta página— la brecha da ${ppText(b)} en lugar de ${ppText(a)}. Acá se publica la serie que está dibujada arriba, no la que da el número más grande.`
+})
+
+function dayLabelLong(d: string): string {
+  return `${Number(d.slice(8, 10))} de ${MES_LARGO[Number(d.slice(5, 7)) - 1]} de ${d.slice(0, 4)}`
+}
+const releasesVerifiedLabel = dayLabelLong(AI_RELEASES_VERIFIED_AT)
+
+const releaseRows = computed(() =>
+  AI_RELEASES.map(r => {
+    const i = lexMonthKeys.value.indexOf(releaseMonth(r))
+    // Un lanzamiento de los últimos tres meses no tiene "después": son tres meses que todavía no
+    // pasaron. Eso se dice con una raya, nunca con un promedio de menos meses disfrazado.
+    const ba = i < 0 ? { before: null, after: null } : beforeAfter(lexIaValues.value, i)
+    return {
+      ...r,
+      dateLabel: dayLabelLong(r.date),
+      baLabel: ba.before == null || ba.after == null ? '—' : `${x1(ba.before)} → ${x1(ba.after)}`,
+    }
+  })
+)
+
+const releasesTitle = computed(() => {
+  const ia = iaGap.value
+  const neg = negGap.value
+  if (ia == null || neg == null) return 'Todavía no hay meses suficientes para comparar'
+  const iaClear = ia >= RISE_GAP
+  const negClear = neg >= RISE_GAP
+  if (iaClear && negClear) return 'Los meses con lanzamiento suben más seguido que el resto'
+  if (iaClear) return 'Se nota en las menciones de IA, no en el pesimismo'
+  if (negClear) return 'Se nota en el pesimismo, no en las menciones de IA'
+  return 'El marcador no separa el lanzamiento de la tendencia'
+})
+
+function riseLine(what: string, s: RiseSplit): string {
+  return `${what}: subieron ${s.withRelease.rose} de los ${s.withRelease.n} meses con lanzamiento (${fmtPct(s.withRelease.share)}) y ${s.without.rose} de los ${s.without.n} meses sin lanzamiento (${fmtPct(s.without.share)})`
+}
+function gapVerdict(what: string, gap: number): string {
+  if (Math.abs(gap) < RISE_GAP) {
+    return `En ${what} las dos proporciones quedan a ${ppText(gap)} de distancia: el marcador no separa el lanzamiento de la tendencia.`
+  }
+  return gap > 0
+    ? `En ${what} los meses con lanzamiento suben ${ppText(gap)} más seguido que un mes cualquiera.`
+    : `En ${what} los meses con lanzamiento suben ${ppText(gap)} menos seguido que un mes cualquiera.`
+}
+
+const releasesText = computed(() => {
+  const ia = iaGap.value
+  const neg = negGap.value
+  if (ia == null || neg == null) {
+    return 'Todavía no hay meses con las dos ventanas de tres meses enteras como para comparar los que tuvieron un lanzamiento contra los que no. Hasta que los haya no se publica la mitad de la cuenta: sobre una serie que sube casi todos los meses, cualquier fecha que marques queda seguida de una suba.'
+  }
+  return `Para cada mes se promedian los tres meses de antes y los tres de después y se mira si la serie quedó más arriba; los meses del borde, sin las dos ventanas enteras, no entran. ${riseLine('Menciones de IA', iaRise.value)}. ${riseLine('Opiniones negativas del mes', negRise.value)}. ${gapVerdict('las menciones', ia)} ${gapVerdict('la negatividad', neg)} La segunda proporción de cada par es un placebo, no un test, y es lo único que hace legible a la primera.`
 })
 
 const validationRows = computed(() => {
@@ -949,6 +1192,11 @@ const faq = computed<FaqItem[]>(() => {
       id: 'mercado-it-ia',
       question: '¿La IA va a reemplazar a los programadores?',
       answer: `En el sub la IA pasó de casi no aparecer a estar en ${fmtPct(last90.value?.aiShare)} de las opiniones sobre el mercado, y la mirada se volvió más temerosa: en el último trimestre ${fmtPct(aiShareOf(aiLast.value, 'amenaza'))} de lo que se opina la ve como amenaza y ${fmtPct(aiShareOf(aiLast.value, 'herramienta'))} como herramienta. Lo que muestran los datos de empleo es menos un reemplazo masivo que un cambio de forma: equipos más chicos y más senior.`,
+    },
+    {
+      id: 'mercado-it-lanzamientos',
+      question: '¿El pesimismo del sub arranca con ChatGPT?',
+      answer: `Con estos datos no se puede afirmar. ChatGPT salió en noviembre de 2022 y la curva ya venía subiendo: en 2022 el ${fmtPct(y2022.value?.negOfOpinion)} de las opiniones que tomaban partido eran negativas y en los últimos 90 días son el ${fmtPct(last90.value?.negOfOpinion)}. Lo que sí se puede hacer es marcar los ${AI_RELEASES.length} lanzamientos de IA que le cambiaron el día a quien programa y comparar esos meses contra los que no tuvieron ninguno: la parte negativa del mes quedó más arriba tres meses después en ${negRise.value.withRelease.rose} de ${negRise.value.withRelease.n} meses con lanzamiento (${fmtPct(negRise.value.withRelease.share)}) y en ${negRise.value.without.rose} de ${negRise.value.without.n} sin lanzamiento (${fmtPct(negRise.value.without.share)}), ${negGapClause.value}; en las menciones de IA la relación es ${fmtPct(iaRise.value.withRelease.share)} contra ${fmtPct(iaRise.value.without.share)}. Los lanzamientos vienen en racimo y la serie sube sola, así que nada de esto prueba causa.`,
     },
     {
       id: 'mercado-it-junior',
@@ -1310,6 +1558,14 @@ useHead(() => ({
 }
 .table-wrap {
   overflow-x: auto;
+}
+.releases-table .why {
+  display: block;
+  max-width: 48ch;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 @media (max-width: 860px) {
   .hero-grid,
