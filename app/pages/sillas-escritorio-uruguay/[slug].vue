@@ -493,7 +493,7 @@ const ratingAria = computed(() =>
 const observedDate = computed(() => {
   const raw = best.value?.observedAt || meta.value?.asOf
   return raw
-    ? new Date(raw).toLocaleDateString(locale.value, { day: '2-digit', month: 'short' })
+    ? new Date(raw).toLocaleDateString(dateLocale(locale.value), { day: '2-digit', month: 'short' })
     : '—'
 })
 
@@ -501,7 +501,7 @@ const evidenceTone = (sentiment: number): 'positive' | 'neutral' | 'negative' =>
   sentiment >= 0.25 ? 'positive' : sentiment <= -0.25 ? 'negative' : 'neutral'
 
 const evidenceDate = (value: string): string =>
-  new Date(value).toLocaleDateString(locale.value, {
+  new Date(value).toLocaleDateString(dateLocale(locale.value), {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

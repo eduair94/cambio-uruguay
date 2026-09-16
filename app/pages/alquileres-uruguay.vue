@@ -1321,15 +1321,12 @@ const dateLabel = (value: string) => {
   const date = new Date(value)
   const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value)
   return Number.isFinite(date.getTime())
-    ? date.toLocaleString(
-        locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY',
-        {
-          day: '2-digit',
-          month: '2-digit',
-          ...(dateOnly ? {} : { hour: '2-digit' as const, minute: '2-digit' as const }),
-          timeZone: dateOnly ? 'UTC' : 'America/Montevideo',
-        }
-      )
+    ? date.toLocaleString(dateLocale(locale.value), {
+        day: '2-digit',
+        month: '2-digit',
+        ...(dateOnly ? {} : { hour: '2-digit' as const, minute: '2-digit' as const }),
+        timeZone: dateOnly ? 'UTC' : 'America/Montevideo',
+      })
     : t('unknown')
 }
 const sourceLabel = (source: string) =>

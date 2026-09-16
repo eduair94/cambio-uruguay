@@ -2431,7 +2431,7 @@ useHead({
 // pizarra y la imagen OG; pero servir esa misma coma en /en da "$40,65", que un lector anglo lee
 // como cuarenta mil seiscientos cincuenta. Portugués comparte la coma con el castellano.
 const fmtRate = (value: number) =>
-  value.toLocaleString(locale.value === 'en' ? 'en-US' : 'es-UY', {
+  value.toLocaleString(dateLocale(locale.value), {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })

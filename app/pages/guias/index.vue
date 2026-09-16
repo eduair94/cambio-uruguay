@@ -63,7 +63,11 @@ const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
 const formatDate = (iso: string): string =>
-  new Date(iso).toLocaleDateString(locale.value, { year: 'numeric', month: 'long', day: 'numeric' })
+  new Date(iso).toLocaleDateString(dateLocale(locale.value), {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 
 const canonicalUrl = 'https://cambio-uruguay.com/guias'
 

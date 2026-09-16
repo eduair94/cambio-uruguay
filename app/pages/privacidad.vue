@@ -181,7 +181,7 @@ const rentalAlertPrivacy = computed(() => {
   return 'Las alertas de alquiler son opcionales. Guardamos los filtros, la frecuencia y los canales elegidos, el correo verificado y el registro de envíos para evitar notificaciones repetidas. Push utiliza un identificador de registro del dispositivo. Podés pausar o eliminar una alerta desde tu cuenta; al eliminarla también se borra su historial de envíos. Cada correo incluye un enlace para cancelar los emails de esa alerta, de forma independiente de las notificaciones push.'
 })
 const lastUpdatedDisplay = computed(() =>
-  new Date(LAST_UPDATED).toLocaleDateString(locale.value, {
+  new Date(LAST_UPDATED).toLocaleDateString(dateLocale(locale.value), {
     timeZone: 'UTC',
     year: 'numeric',
     month: 'long',

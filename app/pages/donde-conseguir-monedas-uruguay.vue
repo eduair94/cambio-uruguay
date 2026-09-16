@@ -145,7 +145,7 @@ const c = computed(() => getCoinsContent(locale.value))
 const sources = COINS_SOURCES
 
 const lastCheckedDate = computed(() =>
-  new Date(`${LAST_RESEARCHED}T00:00:00Z`).toLocaleDateString(c.value.lang, {
+  new Date(`${LAST_RESEARCHED}T00:00:00Z`).toLocaleDateString(dateLocale(c.value.lang), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

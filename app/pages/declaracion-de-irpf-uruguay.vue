@@ -314,10 +314,12 @@ const localePath = useLocalePath()
 const { locale } = useI18n()
 const pastYears = computed(() => irpfPastYearsCopy(locale.value))
 const proceduresVerifiedAt = computed(() =>
-  new Date(IRPF_PROCEDURES_VERIFIED_AT).toLocaleDateString(
-    locale.value.startsWith('en') ? 'en-US' : locale.value.startsWith('pt') ? 'pt-BR' : 'es-UY',
-    { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }
-  )
+  new Date(IRPF_PROCEDURES_VERIFIED_AT).toLocaleDateString(dateLocale(locale.value), {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
 )
 
 /** Esta página responde el trámite; la prescripción vive en su propia página. */

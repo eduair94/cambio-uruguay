@@ -1,4 +1,5 @@
 import * as bcuHistory from '../../utils/bcuHistory'
+import * as format from '../../utils/format'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { runInNewContext } from 'node:vm'
@@ -144,6 +145,11 @@ function setupHistory(
     onMounted: () => {},
     onBeforeMount: () => {},
     watch: () => {},
+    // Auto-imported by Nuxt (no explicit `import` in the page, same as onMounted/
+    // watch above), so it has to be exposed as a bare context global rather than
+    // routed through the require() map like the explicitly-imported neighbours
+    // below. Reuses the real implementation instead of re-deriving the mapping.
+    dateLocale: format.dateLocale,
     useHead: (input: Parameters<typeof useHead>[0]) => scope.run(() => useHead(input, { head })),
     definePageMeta: () => {},
     defineOgImageComponent: () => {},

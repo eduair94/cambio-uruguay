@@ -486,7 +486,7 @@ const related = [
 ]
 
 const verifiedDisplay = computed(() =>
-  new Date(SHIPPING_ROUTES_VERIFIED_AT).toLocaleDateString(locale.value, {
+  new Date(SHIPPING_ROUTES_VERIFIED_AT).toLocaleDateString(dateLocale(locale.value), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

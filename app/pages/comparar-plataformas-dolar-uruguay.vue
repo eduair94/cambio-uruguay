@@ -320,7 +320,7 @@ const totalCriteria = COMPARISON_CRITERIA.length
 const ownLeadCount = scores.cambioUruguay
 
 const reviewedDate = computed(() =>
-  new Date(`${COMPARISON_REVIEWED_AT}T12:00:00Z`).toLocaleDateString(locale.value, {
+  new Date(`${COMPARISON_REVIEWED_AT}T12:00:00Z`).toLocaleDateString(dateLocale(locale.value), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

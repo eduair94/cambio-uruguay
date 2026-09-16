@@ -109,7 +109,7 @@ const localePath = useLocalePath()
 
 const LAST_UPDATED = '2026-06-20'
 const lastUpdatedDisplay = computed(() =>
-  new Date(LAST_UPDATED).toLocaleDateString(locale.value, {
+  new Date(LAST_UPDATED).toLocaleDateString(dateLocale(locale.value), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

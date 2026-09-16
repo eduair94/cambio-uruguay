@@ -359,7 +359,7 @@ const activePreferentialRate = computed(
 )
 
 const formatPlainNumber = (value: number) =>
-  value.toLocaleString(locale.value, { maximumFractionDigits: 2 })
+  value.toLocaleString(dateLocale(locale.value), { maximumFractionDigits: 2 })
 
 const activePreferentialRange = computed(() => {
   const rate = activePreferentialRate.value

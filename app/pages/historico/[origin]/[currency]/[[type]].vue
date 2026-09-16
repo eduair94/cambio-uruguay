@@ -700,9 +700,7 @@ const isBcu = computed(() => String(route.params.origin).toLowerCase() === 'bcu'
 const bcuText = computed(() => bcuHistoryCopy(locale.value))
 
 /** BCP-47 tag for number/date formatting: the site's audience is Uruguay. */
-const localeTag = computed(() =>
-  locale.value?.startsWith('en') ? 'en-US' : locale.value?.startsWith('pt') ? 'pt-BR' : 'es-UY'
-)
+const localeTag = computed(() => dateLocale(locale.value))
 
 // Data-grounded FAQ for this currency (rate/buy/sell of route.params.currency),
 // rendered with its own scoped FAQPage JSON-LD via FaqBlock.

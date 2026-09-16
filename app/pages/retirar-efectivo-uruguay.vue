@@ -235,7 +235,7 @@ const sources = WITHDRAW_SOURCES
 // season) — kept honest by the withdraw:iva-check watchdog task.
 const ivaNow = resolveIvaStatus(new Date())
 const fmtDate = (iso: string) =>
-  new Date(`${iso}T00:00:00Z`).toLocaleDateString(c.value.lang, {
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString(dateLocale(c.value.lang), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

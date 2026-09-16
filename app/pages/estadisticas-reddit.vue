@@ -333,7 +333,11 @@ const dateLabel = (value: string | Date | null): string => {
   const d = new Date(value)
   return Number.isNaN(d.getTime())
     ? ''
-    : d.toLocaleDateString(locale.value, { day: 'numeric', month: 'short', year: 'numeric' })
+    : d.toLocaleDateString(dateLocale(locale.value), {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
 }
 
 const sinceLabel = computed(() => (stats.value?.since ? dateLabel(stats.value.since) : '—'))
