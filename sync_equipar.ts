@@ -35,6 +35,7 @@ import { retailStores } from "./classes/retail/stores";
 import { applyUnitGuard } from "./classes/retail/unitGuard";
 import { EQUIPAR_STORE_QUERIES } from "./classes/equipar/budget";
 import { mergeStoreSnapshot } from "./classes/equipar/storeSnapshot";
+import { recordPricewatch } from "./classes/pricewatch/record";
 
 /**
  * How many MercadoLibre searches and Marketplace searches one run may spend.
@@ -148,6 +149,17 @@ async function main(): Promise<void> {
   };
 
   await saveEquiparCatalog(stored, meta);
+
+  // Own try/catch: a failure recording history must never cost the catalogue that was just saved.
+  // Recorded over `guarded.listings` (pre-merge, unit-guarded) rather than the possibly
+  // snapshot-merged `listings` — a fast run's snapshot rows were not observed THIS run, and giving
+  // them today's date would fake a price point that was never actually seen today.
+  try {
+    const pw = await recordPricewatch(guarded.listings, "equipar");
+    console.log(`[equipar] pricewatch ${pw.written} ofertas`);
+  } catch (error) {
+    console.error("[equipar] no se pudo registrar el historial de precios", error);
+  }
 
   // Only the daily run writes the store snapshot, and only after it published: a thin run already
   // exited above, so it can never overwrite a good snapshot either.
