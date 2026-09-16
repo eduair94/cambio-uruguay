@@ -387,3 +387,41 @@
 - [ ] **Step 1:** test de paridad → FAIL si difieren (debería pasar); docs.
 - [ ] **Step 2:** raíz `npm test` + `npm run build`; app `npm test` + `npm run lint`. Pegar resumen.
 - [ ] **Step 3: commit** — `docs(tiendas): fichas de tiendas online y job semanal`.
+
+---
+
+### Task 12: Reddit incremental por ventanas (se ejecuta DESPUÉS de la Task 6 y ANTES de la Task 7)
+
+Origen (medido por la Task 6 el 16/9/2026 contra Arctic Shift): el servicio contesta **HTTP 422** con `{"error":"Timeout. Maybe slow down a bit"}` (no sólo 200), las búsquedas de comentarios de r/uruguay con ventanas de ~6 meses o más se cortan siempre, y una búsqueda que sí contesta devuelve como máximo 100 filas (el tope de `limit`). Con el diseño de la Task 4 la señal casi nunca se llenaría y, cuando se llenara, estaría truncada.
+
+**Files:**
+- Modify: `classes/stores/signals/reddit.ts`, `classes/stores/profile.ts`, `classes/stores/store.ts`, `classes/models/StoreProfile.ts`, `app/server/models/StoreProfile.ts`, `sync_store_profiles.ts`
+- Test: `tests/stores/reddit.test.ts`, `tests/stores/profile.test.ts`
+
+**Interfaces:**
+- Produces:
+  ```ts
+  export interface StoredRedditMention { id: string; kind: "post" | "comment"; sub: string; createdUtc: number; threadId: string; title: string | null; permalink: string; score: number } // sin texto, sin autor
+  export interface RedditCursor { backfillStartUtc: number; backfillNextUtc: number; backfillDone: boolean; checkedUntilUtc: number }
+  export const STORE_REDDIT_BACKFILL_MONTHS = 24;
+  export const STORE_REDDIT_MAX_MENTIONS = 500;
+  export function planRedditWindows(cursor: RedditCursor | null, nowUtc: number): Array<{ kind: "post" | "comment"; afterUtc: number; beforeUtc: number }>;
+  export async function fetchRedditIncrement(entry: StoreEntry, cursor: RedditCursor | null, nowUtc: number, budget: { calls: number }): Promise<{ mentions: RedditMention[]; cursor: RedditCursor; complete: boolean } | undefined>;
+  export function mergeStoredMentions(stored: StoredRedditMention[], fresh: RedditMention[]): { mentions: StoredRedditMention[]; capped: boolean };
+  ```
+  `StoreProfileDoc` suma `redditMentions: StoredRedditMention[]` y `redditCursor: RedditCursor | null` (backend y app, paridad de esquema; la API del app NO los expone). `RedditSignal` suma `capped: boolean` (true cuando se alcanzó el tope de 500 y la cifra es "500 o más").
+
+- [ ] **Step 1: tests que fallan.**
+  - `planRedditWindows(null, now)`: arranca 24 meses atrás; posts en ventanas de 6 meses y comentarios en ventanas de 3 meses, contiguas y sin huecos hasta `now`. Con `backfillDone: true`: una sola ventana por tipo desde `checkedUntilUtc - 86400` (un día de solape) hasta `now`. Con backfill a medias: continúa desde `backfillNextUtc`.
+  - Paginación: una página con exactamente 100 filas pide la siguiente con `after` = `created_utc` de la última fila; una con menos de 100 termina; ids repetidos entre páginas no se duplican.
+  - Reintento: 422 con `{"error":"Timeout. Maybe slow down a bit"}`, 429, 5xx y 200 con `error` de timeout se reintentan hasta 3 veces con la espera configurable; si una ventana de comentarios sigue fallando, se parte a la mitad y se reintentan las dos mitades, hasta un mínimo de 14 días; por debajo de eso la corrida de esa tienda devuelve lo avanzado con `complete: false` y el cursor en la última ventana completada (nunca más allá).
+  - Presupuesto: cada llamada HTTP descuenta 1 de `budget.calls`; con 0 se corta, devuelve `complete: false` y el cursor en la última ventana completa.
+  - `mergeStoredMentions`: une por `id`, ordena por `createdUtc` descendente, recorta a 500 y marca `capped`; nunca guarda `text` ni `author` (assert sobre `JSON.stringify`).
+  - Perfil: `summarizeMentions` se calcula sobre las menciones guardadas (no sólo las nuevas); si `fetchRedditIncrement` devuelve `undefined`, la señal y las menciones guardadas quedan intactas.
+- [ ] **Step 2:** FAIL.
+- [ ] **Step 3: implementación.**
+  - `reddit.ts`: `after`/`before` en segundos epoch; `sort=asc`; `limit=100`; subreddits `uruguay` y `montevideo`; los mismos términos y el mismo filtro local (`mentionMatches`) que hoy; mantener `summarizeMentions`. Espera entre llamadas y espera de reintento por env (`STORES_REDDIT_GAP_MS` default 4000, `STORES_REDDIT_RETRY_MS` default 20000) para que los tests no esperen.
+  - `sync_store_profiles.ts`: presupuesto por corrida `STORES_REDDIT_MAX_CALLS` (default 900); **guardar cada perfil apenas se procesa su tienda** (no al final), para que un backfill largo no pierda lo hecho; el log de cada tienda dice `reddit=<n>(+<nuevas>)` y `backfill <fecha del cursor>` mientras no termina. La regla de corrida flaca sigue igual (una tienda con Reddit `undefined` pero otras señales frescas cuenta como fresca).
+  - Modelos backend y app con los dos campos nuevos (paridad).
+- [ ] **Step 4:** `npx vitest run tests/stores tests/appdb tests/sync`; `npx tsc -p tsconfig.production.json --noEmit` con UN solo error (`sync_sheet.ts`/`sheet_key.json`); `cd app && npx eslint server/models/StoreProfile.ts` sin problemas; corrida en seco acotada `STORES_REDDIT_MAX_CALLS=40 npx ts-node sync_store_profiles.ts --dry-run --only=tiendamia,magic-center` (máximo 8 minutos, en primer plano) y pegar el log.
+- [ ] **Step 5: commit** — `fix(tiendas): Reddit incremental por ventanas, con paginación y reintentos`.
