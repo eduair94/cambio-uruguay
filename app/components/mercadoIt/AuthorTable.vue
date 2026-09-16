@@ -109,9 +109,9 @@ function metricValue(u: Row): string {
 
 function metricNote(u: Row): string {
   if (props.metric === 'score') return `media ${signed(u.mean)}`
-  if (props.metric === 'doom') return 'de sus opiniones son «se terminó»'
-  if (props.metric === 'negK') return 'votos en lo que dijo en contra'
-  if (props.metric === 'posK') return 'votos en lo que dijo a favor'
+  if (props.metric === 'doom') return 'de sus opiniones'
+  if (props.metric === 'negK') return 'votos en contra'
+  if (props.metric === 'posK') return 'votos a favor'
   if (props.metric === 'n') return `${fmtInt(u.texts)} textos en total`
   return `${signed(u.oldMean ?? 0)} → ${signed(u.recentMean ?? 0)}`
 }
@@ -159,7 +159,7 @@ const shortMonth = (m: string): string => monthLabel(`${m}-01`)
 .rank {
   font-variant-numeric: tabular-nums;
   opacity: 0.55;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 .who {
   display: flex;
@@ -182,12 +182,23 @@ a.user:hover {
   text-decoration-color: currentColor;
 }
 .mirror {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: inherit;
   opacity: 0.55;
   line-height: 1;
 }
 .mirror:hover {
   opacity: 1;
+}
+/* Con el dedo, el icono de 15 px no es un blanco: se agranda la caja sin mover la linea. */
+@media (pointer: coarse) {
+  .mirror {
+    min-width: 44px;
+    min-height: 44px;
+    margin: -14px -12px;
+  }
 }
 .themes {
   flex-basis: 100%;
@@ -210,11 +221,13 @@ a.user:hover {
   font-size: 0.75rem;
   opacity: 0.68;
 }
+/* Los hues de sentimiento son RELLENO, no tinta: crudos miden 2,0-2,9:1 sobre blanco. Como texto
+   van mezclados contra la superficie, que es el mismo tratamiento de las otras paginas del sitio. */
 .is-neg {
-  color: v-bind(NEG);
+  color: color-mix(in srgb, v-bind(NEG) 45%, rgb(var(--v-theme-on-surface)));
 }
 .is-pos {
-  color: v-bind(POS);
+  color: color-mix(in srgb, v-bind(POS) 45%, rgb(var(--v-theme-on-surface)));
 }
 .ops {
   font-variant-numeric: tabular-nums;
@@ -272,13 +285,16 @@ a.user:hover {
 /* Angosto de verdad: el nombre se parte a la mitad de la palabra y los temas caen en una tira de
    una palabra por línea. Cada fila pasa a tres bloques apilados. */
 @container (max-width: 600px) {
+  /* El nombre de usuario deja de compartir la linea con la metrica: es una cadena que no se puede
+     cortar y, compitiendo con "media -1,09", se partia a la mitad de la palabra. Ahora ocupa el
+     ancho entero y la metrica baja a su propia linea, con el volumen alineado a la derecha. */
   .row {
     grid-template-columns: 22px minmax(0, 1fr) auto;
     grid-template-areas:
-      'rank who metric'
-      '. ops ops'
+      'rank who who'
+      '. metric ops'
       '. split split';
-    row-gap: 6px;
+    row-gap: 8px;
     align-items: start;
   }
   /* El encabezado sigue en el DOM (la tabla necesita sus columnheader) pero no se dibuja. */
@@ -297,15 +313,23 @@ a.user:hover {
   .who {
     grid-area: who;
   }
+  /* Valor y glosa en linea: en vertical la glosa larga del karma dejaba cuatro lineas de una
+     palabra. */
   .metric {
     grid-area: metric;
-    align-items: flex-end;
-    text-align: right;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 6px;
+    min-width: 0;
   }
   .ops {
     grid-area: ops;
+    justify-self: end;
+    align-self: baseline;
     font-size: 0.8rem;
     opacity: 0.75;
+    white-space: nowrap;
   }
   /* Sin encabezado visible, el número suelto no dice de qué es. */
   .ops::after {
@@ -336,10 +360,10 @@ a.user:hover {
     .row {
       grid-template-columns: 22px minmax(0, 1fr) auto;
       grid-template-areas:
-        'rank who metric'
-        '. ops ops'
+        'rank who who'
+        '. metric ops'
         '. split split';
-      row-gap: 6px;
+      row-gap: 8px;
       align-items: start;
     }
     .head {
@@ -359,13 +383,19 @@ a.user:hover {
     }
     .metric {
       grid-area: metric;
-      align-items: flex-end;
-      text-align: right;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 2px 6px;
+      min-width: 0;
     }
     .ops {
       grid-area: ops;
+      justify-self: end;
+      align-self: baseline;
       font-size: 0.8rem;
       opacity: 0.75;
+      white-space: nowrap;
     }
     .ops::after {
       content: ' opiniones';

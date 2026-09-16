@@ -338,7 +338,7 @@ useSeoMeta({
 }
 .kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
   gap: 14px;
   margin-top: 22px;
 }
@@ -378,19 +378,19 @@ useSeoMeta({
 }
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
   gap: 14px;
 }
 .cards p {
   line-height: 1.55;
   opacity: 0.9;
 }
-/* Dos tablas al lado sólo si cada una tiene ancho de tabla. Con 340 px entraban de a dos en una
-   tableta y adentro se partía el nombre de usuario: la grilla de la fila mira el viewport, no el
-   contenedor, así que la que decide es esta. */
+/* Dos tablas al lado sólo si cada una tiene ancho de tabla. El `min(480px, 100%)` no es adorno: un
+   `minmax(480px, …)` pelado es un piso duro que `auto-fit` no baja, así que en un teléfono de 375 px
+   la grilla medía 508 y arrastraba la página entera al scroll horizontal. */
 .pair {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr));
   gap: 16px;
 }
 .fig-title {
