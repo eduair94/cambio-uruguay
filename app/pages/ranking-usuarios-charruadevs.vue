@@ -306,7 +306,7 @@ const shiftText = computed(() => {
   return `Sólo entran las cuentas con ${s.window}. La comparación es entre la media de lo que opinaban antes y la de lo que opinan ahora: ${fmtInt(s.morePessimistic)} empeoraron y ${fmtInt(s.moreOptimistic)} mejoraron.`
 })
 
-const TITLE = 'Ranking de usuarios de r/CharruaDevs: los más negativos y los más positivos'
+const TITLE = 'Ranking de usuarios de r/CharruaDevs'
 const description =
   'Quiénes sostienen el pesimismo (y el optimismo) sobre el mercado IT en r/CharruaDevs, medido sobre todas sus opiniones clasificadas desde 2021.'
 
