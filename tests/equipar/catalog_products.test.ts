@@ -100,7 +100,7 @@ describe("catálogo: productos agrupados por catalogId de MercadoLibre", () => {
     expect(prices).toEqual([...prices].sort((a, b) => a - b));
   });
 
-  it("nunca junta dos catalogId distintos aunque el título sea idéntico", () => {
+  it("nunca junta dos catalogId distintos aunque el título sea idéntico, y desambigua el slug", () => {
     const listings: RetailListing[] = [
       listing({
         title: "Heladera Zafiro ZF-500 400L",
@@ -126,15 +126,39 @@ describe("catálogo: productos agrupados por catalogId de MercadoLibre", () => {
         price: 41_000,
         attributes: { CATEGORY_SPEC: "heladera" },
       }),
+      // Sin catalogId, misma marca+modelo que AMBOS grupos de catálogo votaron. Sólo puede sumarse a
+      // uno: el índice es "first-wins", así que tiene que terminar en MLU111111 (el primero en
+      // reclamar esa identidad), nunca en MLU222222.
+      listing({
+        title: "Heladera Zafiro ZF-500 400 Litros",
+        brand: "Zafiro",
+        model: "ZF-500",
+        price: 39_500,
+        attributes: { CATEGORY_SPEC: "heladera" },
+      }),
     ];
 
     const [item] = buildEquiparCatalog({ listings, usdUyu: 40 });
     const zafiro = item!.products.filter((product) => product.brand === "zafiro");
     expect(zafiro).toHaveLength(2);
-    expect(zafiro.every((product) => product.sellers === 1)).toBe(true);
+
+    // Dos catalogId distintos votando la misma marca+modelo no pueden compartir slug: una página de
+    // producto o un JSON-LD posterior lo usa como identificador único.
+    const slugs = zafiro.map((product) => product.slug);
+    expect(new Set(slugs).size).toBe(2);
+    expect(slugs).toContain("heladera-zafiro-zf-500");
+    expect(slugs).toContain("heladera-zafiro-zf-500-222222");
+
+    const joined = zafiro.find((product) => product.sellers === 2);
+    const untouched = zafiro.find((product) => product.sellers === 1);
+    expect(joined).toBeDefined();
+    expect(untouched).toBeDefined();
+    expect(joined!.offers).toHaveLength(2);
+    expect(untouched!.offers).toHaveLength(1);
+    expect(joined!.offers.some((offer) => offer.seller === "Divino")).toBe(true);
   });
 
-  it("nombra el grupo por marca cuando ningún aviso del catalogId identifica marca+modelo", () => {
+  it("nombra el grupo por marca cuando ningún aviso del catalogId identifica marca+modelo, sin publicar el placeholder", () => {
     const listings: RetailListing[] = [
       listing({
         title: "Heladera con freezer 338 litros blanca",
@@ -164,5 +188,44 @@ describe("catálogo: productos agrupados por catalogId de MercadoLibre", () => {
     const product = item!.products.find((candidate) => candidate.sellers === 2);
     expect(product).toBeDefined();
     expect(product!.offers).toHaveLength(2);
+    // "Sin marca" es un placeholder (NOT_A_BRAND), igual que en identify(): no puede aparecer en lo
+    // que se publica. El nombre queda sólo con lo que salió del título.
+    expect(product!.brand).toBe("");
+    expect(product!.name.toLowerCase()).not.toContain("sin marca");
+    expect(product!.slug).not.toContain("sin-marca");
+  });
+
+  it("no publica un grupo de catalogo cuyo nombre queda vacio, pero sus avisos siguen contando para el precio", () => {
+    const listings: RetailListing[] = [
+      listing({
+        title: "Heladera",
+        source: "mercadolibre",
+        sellerKey: "ml:seller-f",
+        sellerName: "Vendedor F",
+        channel: "marketplace",
+        brand: "",
+        catalogId: "MLU444444",
+        price: 27_000,
+        attributes: { CATEGORY_SPEC: "heladera" },
+      }),
+      listing({
+        title: "Heladera",
+        source: "mercadolibre",
+        sellerKey: "ml:seller-g",
+        sellerName: "Vendedor G",
+        channel: "marketplace",
+        brand: "",
+        catalogId: "MLU444444",
+        price: 26_500,
+        attributes: { CATEGORY_SPEC: "heladera" },
+      }),
+    ];
+
+    const [item] = buildEquiparCatalog({ listings, usdUyu: 40 });
+    // Sin marca y sin nada útil en el título (sólo queda la palabra de la categoría, que se recorta):
+    // no hay nombre que publicar como producto.
+    expect(item!.products).toHaveLength(0);
+    // Pero los avisos no se pierden: siguen contando para el precio de la fila.
+    expect(item!.offers.length).toBeGreaterThan(0);
   });
 });

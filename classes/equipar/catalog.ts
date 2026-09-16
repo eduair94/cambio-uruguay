@@ -157,10 +157,19 @@ function buildProducts(
     if (winner) {
       group.brand = winner.brand;
       group.model = winner.model;
-      catalogIndex.set(`${winner.brand}|${winner.model}`, key);
+      const voteKey = `${winner.brand}|${winner.model}`;
+      // First-wins: if a LATER catalogue group happens to vote the same identity (two catalogue ids
+      // MercadoLibre split for what is arguably one product), it must not steal a storefront listing
+      // away from the group that claimed this identity first.
+      if (!catalogIndex.has(voteKey)) catalogIndex.set(voteKey, key);
     } else {
+      // No seller in this catalogue group named a recognisable brand at all. `identify()` runs every
+      // brand it reads through NOT_A_BRAND before trusting it (a `catalog_product_id` does not turn
+      // "Sin marca" into a real brand), so this fallback applies the same filter — otherwise a
+      // placeholder leaks straight into the published name and slug.
       const first = group.listings[0]!;
-      group.brand = norm(first.brand);
+      const fallbackBrand = norm(first.brand);
+      group.brand = fallbackBrand && !NOT_A_BRAND.test(fallbackBrand) ? fallbackBrand : "";
       group.model = norm(first.title)
         .replace(category.include, " ")
         .replace(/\s+/g, " ")
@@ -191,8 +200,10 @@ function buildProducts(
     identityGroups.set(key, group);
   }
 
+  const usedSlugs = new Set<string>();
   const products: EquiparProduct[] = [];
-  for (const group of [...catalogGroups.values(), ...identityGroups.values()]) {
+
+  const publish = (group: ProductGroup, name: string, catalogId?: string): void => {
     // One seller alone does not corroborate a product; it corroborates a listing. It is still
     // published — as it always has been — because dropping it would lose the price, not just the row.
     const offers = group.listings
@@ -201,9 +212,20 @@ function buildProducts(
     // Two ML listings from the same seller under one catalogId (rare, but possible) must not count
     // twice, so sellers are counted by normalised name, exactly like the rest of this module.
     const sellers = new Set(offers.map((offer) => norm(offer.seller))).size;
-    const name = `${group.brand} ${group.model}`.replace(/\s+/g, " ").trim();
+
+    // Two different catalogue ids can vote the same brand+model on purpose (MercadoLibre split what
+    // is arguably one product across two catalogue pages), and they stay separate products —
+    // catalogId is authoritative — but a later consumer keys rows and JSON-LD by slug, so a collision
+    // here would silently point two different products at one identifier. A short catalogue suffix on
+    // the later one is enough to break the tie without renaming the group MercadoLibre named first.
+    const base = slugify(`${category.key}-${name}`);
+    const slug = usedSlugs.has(base)
+      ? `${base}-${(catalogId ?? String(usedSlugs.size)).slice(-6).toLowerCase()}`
+      : base;
+    usedSlugs.add(slug);
+
     products.push({
-      slug: slugify(`${category.key}-${name}`),
+      slug,
       name,
       brand: group.brand,
       model: group.model,
@@ -212,6 +234,20 @@ function buildProducts(
       bestPriceUyu: offers[0]!.priceUyu,
       sellers,
     });
+  };
+
+  for (const [key, group] of catalogGroups) {
+    const name = `${group.brand} ${group.model}`.replace(/\s+/g, " ").trim();
+    // A catalogue group whose brand was a placeholder ("sin marca") and whose title left nothing
+    // behind after the category word is not a name — it is blank. The catalogId still groups its
+    // listings correctly for the price band (see buildEquiparCatalog); publishing an empty-named
+    // "product" card would only be worse than not publishing one at all.
+    if (name.length < 2) continue;
+    publish(group, name, key.slice("cat:".length));
+  }
+  for (const group of identityGroups.values()) {
+    const name = `${group.brand} ${group.model}`.replace(/\s+/g, " ").trim();
+    publish(group, name);
   }
 
   // A product corroborated by more sellers is a stronger claim than a cheaper one from a single
