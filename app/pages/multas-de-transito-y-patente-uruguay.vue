@@ -25,6 +25,8 @@
         <VBtn href="#pasos" variant="tonal">{{ t('appeal') }}</VBtn>
         <VBtn href="#consulta-patente" variant="tonal">{{ t('checkDebt') }}</VBtn>
         <VBtn href="#patente" variant="text">{{ t('taxAmount') }}</VBtn>
+        <VBtn href="#como-pagar" variant="text">{{ t('payWays') }}</VBtn>
+        <VBtn href="#motos" variant="text">{{ t('motorcycles') }}</VBtn>
         <VBtn href="#reempadronar" variant="text">{{ t('registration') }}</VBtn>
       </nav>
 
@@ -190,11 +192,13 @@
       </VRow>
 
       <VCard id="consulta-patente" variant="flat" class="plain-card pa-5">
-        <h3 class="text-subtitle-1 font-weight-bold mb-2">Consultá tu importe</h3>
+        <h3 class="text-subtitle-1 font-weight-bold mb-2">Cuánto pagás y cuánto debés</h3>
         <p class="mb-3 text-medium-emphasis">
           El valor de patente y la deuda se consultan gratis con matrícula, padrón y gobierno
           departamental. Es el único lugar donde sale tu número.
         </p>
+        <p class="mb-3 text-medium-emphasis">{{ PATENTE_DEUDA_QUE_NECESITAS }}</p>
+        <p class="mb-3 text-medium-emphasis">{{ PATENTE_2027_STATUS }}</p>
         <div class="d-flex flex-wrap ga-2">
           <VBtn
             :href="PATENTE_CONSULTA_URL"
@@ -238,15 +242,83 @@
         <p class="mb-0">{{ PATENTE_BONIFICACION_TRAP }}</p>
       </VCard>
 
-      <VCard variant="flat" class="plain-card pa-5">
-        <h3 class="text-subtitle-1 font-weight-bold mb-2">Vencimientos {{ PATENTE_YEAR }}</h3>
-        <div class="d-flex flex-wrap ga-2 mb-3">
-          <VChip v-for="d in PATENTE_DUE_DATES" :key="d" size="small" variant="tonal">
-            {{ d }}
-          </VChip>
-        </div>
-        <p class="mb-0 text-medium-emphasis">{{ PATENTE_DUE_DATE_RULE }}</p>
+      <h3 class="text-subtitle-1 font-weight-bold mb-2">
+        Calendario de vencimientos {{ PATENTE_YEAR }}
+      </h3>
+      <VCard variant="flat" class="plain-card pa-0 mb-2">
+        <VTable class="cu-mobile-cards" density="comfortable">
+          <thead>
+            <tr>
+              <th scope="col">Cuota</th>
+              <th scope="col">Vence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(d, i) in PATENTE_DUE_DATES" :key="d">
+              <td data-label="Cuota" class="font-weight-medium">{{ i + 1 }}ª</td>
+              <td data-label="Vence">{{ d }}</td>
+            </tr>
+          </tbody>
+        </VTable>
       </VCard>
+      <p class="mb-0 text-medium-emphasis">{{ PATENTE_DUE_DATE_RULE }}</p>
+    </section>
+
+    <!-- Medios de pago -->
+    <section id="como-pagar" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Cómo se paga la patente</h2>
+      <VCard variant="flat" class="plain-card pa-0 mb-2">
+        <VTable class="cu-mobile-cards" density="comfortable">
+          <thead>
+            <tr>
+              <th scope="col">Canal</th>
+              <th scope="col">Cómo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="c in PATENTE_PAYMENT_CHANNELS" :key="c.label">
+              <td data-label="Canal" class="font-weight-medium">{{ c.label }}</td>
+              <td data-label="Cómo" class="text-medium-emphasis">{{ c.detail }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+      <VCard variant="flat" class="warn-card pa-5 mt-4">
+        <h3 class="text-subtitle-1 font-weight-bold mb-2">¿Y con tarjeta OCA?</h3>
+        <p class="mb-0">{{ PATENTE_OCA_NOTE }}</p>
+      </VCard>
+    </section>
+
+    <!-- Motos -->
+    <section id="motos" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Cuánto debe una moto</h2>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        Para motos de 500 cc o más, la alícuota está fijada a nivel nacional:
+      </p>
+      <VCard variant="flat" class="plain-card pa-0 mb-2">
+        <VTable class="cu-mobile-cards" density="comfortable">
+          <thead>
+            <tr>
+              <th scope="col">Moto</th>
+              <th scope="col">Alícuota</th>
+              <th scope="col">Sobre qué</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="r in motoRates" :key="r.vehicle">
+              <td data-label="Moto" class="font-weight-medium">{{ r.vehicle }}</td>
+              <td data-label="Alícuota">{{ r.rate }}</td>
+              <td data-label="Sobre qué" class="text-medium-emphasis">{{ r.base }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+      <p class="text-body-2 text-medium-emphasis mb-0">
+        La escala completa por cilindrada, y por qué hasta 499 cc no hay porcentaje nacional, está
+        en <a href="#patente" class="fines-link">la sección de arriba</a>. El importe exacto de tu
+        moto —y si tenés algo pendiente— sale de la misma consulta oficial por matrícula y padrón de
+        <a href="#consulta-patente" class="fines-link">Cuánto pagás y cuánto debés</a>.
+      </p>
     </section>
 
     <!-- Si no pagás -->
@@ -434,8 +506,9 @@
         el texto ordenado del SUCIVE. Alícuotas, bandas fijas, vencimientos y bonificaciones de
         {{ PATENTE_YEAR }} contrastados el {{ patenteVerifiedAt }} con el Congreso de Intendentes y
         la Intendencia de Montevideo; los valores de patente se revotan todos los años en noviembre,
-        así que el importe manda consultarlo. Es información de referencia: lo que resuelve la
-        intendencia es lo que vale.
+        así que el importe manda consultarlo. La consulta de deuda, los medios de pago y el estado
+        de los valores 2027 se contrastaron el {{ deudaVerifiedAt }} con sucive.gub.uy. Es
+        información de referencia: lo que resuelve la intendencia es lo que vale.
       </p>
       <ul class="sources-list">
         <li v-for="s in FINES_SOURCES" :key="s.url">
@@ -463,19 +536,24 @@ import {
   FINE_REFUND_ROUTES,
   FINE_STEPS,
   MOTO_CILINDRADA_RULE,
+  PATENTE_2027_STATUS,
   PATENTE_AFORO_RULE,
   PATENTE_BONIFICACIONES,
   PATENTE_BONIFICACION_TRAP,
   PATENTE_CLEARING_ABSENCE,
   PATENTE_CONSEQUENCES,
   PATENTE_CONSULTA_URL,
+  PATENTE_DEUDA_QUE_NECESITAS,
   PATENTE_DEUDA_URL,
+  PATENTE_DEUDA_VERIFIED_AT,
   PATENTE_DUE_DATES,
   PATENTE_DUE_DATE_RULE,
   PATENTE_FIXED_BANDS,
   PATENTE_FLOOR_RULE,
   PATENTE_MORA_RECARGO_RULE,
   PATENTE_MORA_TIERS,
+  PATENTE_OCA_NOTE,
+  PATENTE_PAYMENT_CHANNELS,
   PATENTE_PRESCRIPTION_RULE,
   PATENTE_PRESCRIPTION_TRAMITE,
   PATENTE_PRESCRIPTION_YEARS,
@@ -494,6 +572,11 @@ const drivingFine = PATENTE_CONSEQUENCES.find(
   consequence => consequence.norm === 'Texto Ordenado del SUCIVE 2026, art. 10'
 )
 const otherConsequences = PATENTE_CONSEQUENCES.filter(consequence => consequence !== drivingFine)
+// Sólo las dos filas con alícuota confirmada (500 cc o más): las de "hasta 499 cc" ya están en la
+// tabla de Alícuotas de la sección de arriba, y repetirlas acá sería la misma tabla dos veces.
+const motoRates = computed(() =>
+  PATENTE_RATES.filter(r => r.category === 'C' && r.rate.includes('%'))
+)
 
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString('es-UY', {
@@ -505,6 +588,7 @@ const fmtDate = (iso: string) =>
 
 const verifiedAt = fmtDate(FINES_VERIFIED_AT)
 const patenteVerifiedAt = fmtDate(PATENTE_VERIFIED_AT)
+const deudaVerifiedAt = fmtDate(PATENTE_DEUDA_VERIFIED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/multas-de-transito-y-patente-uruguay'
 const title = computed(() => t('title'))
@@ -534,7 +618,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'multas de transito uruguay, descargo multa montevideo, apelar multa transito, prescripcion multas de transito, sucive multas, deuda de patente, devolucion multa pagada, 10 dias habiles descargo, recurso reposicion apelacion intendente, cuanto pago de patente, como se calcula la patente uruguay, patente de moto cilindrada, aforo patente de rodados, consulta patente por matricula, convenio de pago patente sucive, prescripcion deuda de patente, reempadronar en otro departamento, patente impaga clearing',
+        'multas de transito uruguay, descargo multa montevideo, apelar multa transito, prescripcion multas de transito, sucive multas, deuda de patente, devolucion multa pagada, 10 dias habiles descargo, recurso reposicion apelacion intendente, cuanto pago de patente, como se calcula la patente uruguay, patente de moto cilindrada, aforo patente de rodados, consulta patente por matricula, convenio de pago patente sucive, prescripcion deuda de patente, reempadronar en otro departamento, patente impaga clearing, sucive cuanto debo, consulta deuda sucive, sucive como pagar, sucive cuando vence, patente moto, convenio sucive, bonificacion pago contado patente',
     },
   ],
   script: [

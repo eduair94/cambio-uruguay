@@ -119,6 +119,14 @@ export const FINES_SOURCES: readonly FinesSource[] = Object.freeze([
     url: 'https://www.sucive.gub.uy/consulta_patente',
   },
   {
+    label: 'SUCIVE — Consulta de deuda por patente, convenios, peajes e infracciones',
+    url: 'https://www.sucive.gub.uy/consulta_deuda',
+  },
+  {
+    label: 'SUCIVE — Calendario de vencimientos 2026',
+    url: 'https://www.sucive.gub.uy',
+  },
+  {
     label: 'Congreso de Intendentes — Valores de patente de rodados 2026',
     url: 'https://www.gub.uy/congreso-intendentes/comunicacion/noticias/congreso-intendentes-aprueba-unanimidad-valor-patente-rodados-para-ano-2026',
   },
@@ -455,6 +463,76 @@ export const PATENTE_BONIFICACION_TRAP =
   'Las dos bonificaciones son únicas y no se acumulan: o el 20% de contado o el 10% por pagar cada cuota en fecha (art. 31 del texto ordenado). El 20% se aplica sobre el pago del monto anualizado hecho dentro del plazo de la primera cuota que te vence, así que dejar pasar esa primera cuota normalmente lo hace perder. Y el mismo artículo agrega una condición que sorprende: el pago tiene que hacerse en un solo acto, y son inválidos a estos efectos los depósitos que se hagan en más de una vez, aunque sumados den el total. Hay dos excepciones escritas, pero ninguna es una prórroga que se pida por haber tenido un imprevisto propio. El artículo 11 habla de quien «por causa ajena a su voluntad» no pudo pagar en fecha, y lo que describe después es un mecanismo del sistema: aplica cuando el pago no estaba habilitado y, «una vez que queda habilitado el pago», el sistema se lo comunica a la intendencia y la intendencia al contribuyente. Recién ahí se abre una ventana, y es cerrada: se puede pagar «sin las sanciones por mora y con las bonificaciones correspondientes» hasta el fin del mes siguiente si esa comunicación cae dentro de los 15 primeros días del mes, y hasta el 15 del mes subsiguiente si cae después del 15. La otra excepción: el SUCIVE extiende los beneficios por circular cuando el vehículo todavía no tiene valor de patente asignado. Si es tu caso, preguntá antes de darlo por perdido.'
 
 // ---------------------------------------------------------------------------
+// PATENTE: consulta de deuda, medios de pago y estado de los valores 2027
+//
+// POR QUÉ ESTE BLOQUE ES DISTINTO DEL DE ARRIBA: "cuánto pagás" (el bloque anterior) es la
+// alícuota sobre el aforo, un cálculo. "Cuánto debés" es otra pregunta: cuánto de eso ya venció y
+// no pagaste, y eso no se calcula, se consulta. Las siete formulaciones de la cola de demanda que
+// este bloque contesta (cuánto debo, cuándo vence, cómo pagar, cuándo se paga, cuánto debe mi
+// moto, puedo pagar con OCA) no estaban en el sitio.
+//
+// QUÉ NO SE PUBLICA ACÁ, a propósito: el paso a paso del formulario de consulta de deuda (qué
+// campo pide primero, si es cédula o RUT) no se pudo confirmar contra un fetch limpio de
+// sucive.gub.uy/consulta_deuda (bloqueo/redirect en la sesión de investigación). Y que OCA sea un
+// canal de pago tampoco: dos fuentes se contradicen y ninguna página oficial con la lista completa
+// las desempata. Se publica el dónde y el qué necesitás, no el trámite exacto ni la contradicción
+// resuelta a favor de una de las dos.
+// ---------------------------------------------------------------------------
+
+/**
+ * Fecha en que la consulta de deuda, los medios de pago y el estado de los valores 2027 se
+ * contrastaron con sucive.gub.uy. Separada de PATENTE_VERIFIED_AT porque responde otra pregunta:
+ * no cuánto se paga este año, sino dónde se consulta la deuda y con qué se puede pagar.
+ */
+export const PATENTE_DEUDA_VERIFIED_AT = '2026-09-16'
+
+/**
+ * Lo que hace falta para la consulta de deuda, y nada más. Matrícula y padrón están confirmados
+ * porque son los mismos dos datos que ya pide la consulta de VALOR de la patente, de más arriba.
+ */
+export const PATENTE_DEUDA_QUE_NECESITAS =
+  'La consulta de deuda agrupa lo que debés por patente, convenios, peajes e infracciones. Para entrar hace falta la matrícula del vehículo (con letras) y el número de padrón; es gratis y no requiere crear usuario. No es la misma consulta que la del valor de la patente del ejercicio: esa calcula cuánto te toca pagar, ésta muestra lo que ya venció y no pagaste.'
+
+/**
+ * Estado a una fecha, no un hecho permanente: se actualiza el día que el Congreso de Intendentes
+ * vote los valores 2027. El patrón de años anteriores (2026 se aprobó el 14/11/2025) es la única
+ * base para decir "todavía no": no hay un anuncio oficial que diga explícitamente que falta.
+ */
+export const PATENTE_2027_STATUS =
+  'Los valores de patente para 2027 todavía no estaban publicados al 16 de setiembre de 2026. El patrón de los últimos ejercicios es que el Congreso de Intendentes los aprueba en noviembre del año anterior a que rijan (los de 2026 se aprobaron el 14 de noviembre de 2025), así que hasta que eso pase la referencia sigue siendo la tabla de 2026 de más arriba.'
+
+export interface PatentePaymentChannel {
+  label: string
+  detail: string
+}
+
+/**
+ * Canales de pago confirmados. Deliberadamente NO incluye OCA: ver PATENTE_OCA_NOTE. La fuente es
+ * una síntesis sobre la guía de medios de pago del Congreso de Intendentes (el fetch directo del
+ * documento sólo devolvió un fragmento parcial), no una cita verbatim de una lista completa, pero
+ * es consistente entre búsquedas independientes.
+ */
+export const PATENTE_PAYMENT_CHANNELS: readonly PatentePaymentChannel[] = Object.freeze([
+  {
+    label: 'SUCIVE en línea',
+    detail:
+      'Con tarjeta de crédito, débito, o adhiriendo débito automático. Es el mismo sitio donde se consulta el valor y la deuda.',
+  },
+  { label: 'Abitab', detail: 'Red de cobranza presencial, en efectivo.' },
+  { label: 'Redpagos', detail: 'Red de cobranza presencial, en efectivo.' },
+  { label: 'Correo Uruguayo', detail: 'Red de cobranza presencial, en efectivo.' },
+])
+
+/**
+ * La duda que NO se resuelve acá: dos fuentes sobre si OCA es o no un canal de pago se
+ * contradicen entre sí (una dice que OCA habilitó el pago en cuotas con tarjeta de crédito, otra
+ * dice que las tarjetas OCA no se pueden usar), y ninguna página oficial de SUCIVE con la lista
+ * completa las desempata. Se publica la contradicción, no una de las dos versiones.
+ */
+export const PATENTE_OCA_NOTE =
+  'No pudimos confirmar si las tarjetas OCA son un canal de pago de la patente: una fuente dice que OCA habilitó el pago en cuotas con tarjeta de crédito, y otra dice lo contrario, y no encontramos una página oficial de SUCIVE con la lista completa de medios de pago que resuelva la contradicción. Los cuatro canales de arriba sí están confirmados. Si pensás pagar con OCA, confirmalo antes en la tarjeta o en la red de cobranza en vez de darlo por hecho.'
+
+// ---------------------------------------------------------------------------
 // PATENTE: qué pasa si no pagás
 // ---------------------------------------------------------------------------
 
@@ -762,5 +840,48 @@ export const FINES_FAQ: readonly FinesFaq[] = Object.freeze([
     short: 'Chapas y libreta, con importe que fija cada intendencia. Consultá la tuya.',
     answer:
       'Al reempadronar se pagan chapas nuevas y libreta. No publicamos el importe porque varía según la intendencia y el tipo de vehículo, y usar el número de un departamento en otro te hace presupuestar mal: consultalo en la intendencia donde vas a reempadronar. El trámite arranca con una solicitud en línea en el SUCIVE y recién cuando figura como aceptada se gestiona en el gobierno departamental de destino. Tené presente que el sistema controla automáticamente que no haya deuda vencida, así que la deuda hay que resolverla antes.',
+  },
+  {
+    question: '¿Cómo sé cuánto debo de patente?',
+    short: 'Se consulta en SUCIVE con matrícula y padrón; es distinto de cuánto pagás por año.',
+    answer:
+      'Cuánto DEBÉS —tu deuda acumulada, si la tenés— no es lo mismo que cuánto PAGÁS por el ejercicio, que es la alícuota sobre el aforo de más arriba. La consulta de deuda de SUCIVE agrupa patente, convenios, peajes e infracciones en un mismo lugar, y para entrar pide la matrícula del vehículo y el número de padrón; es gratis y no requiere usuario ni clave. No publicamos el paso a paso exacto del formulario porque no lo pudimos confirmar contra una fuente limpia, pero con esos dos datos a mano se resuelve.',
+  },
+  {
+    question: '¿Cuándo vence cada cuota de la patente en 2026?',
+    short: 'Seis cuotas bimestrales, de enero a noviembre; la de setiembre corre al 21.',
+    answer:
+      'El ejercicio 2026 tiene seis cuotas bimestrales: 20 de enero, 20 de marzo, 20 de mayo, 20 de julio, 21 de setiembre y 20 de noviembre. La de setiembre corre un día porque el 20 cae domingo, y esa regla se repite cada vez que un vencimiento cae sábado, domingo o feriado: no corren multas ni recargos hasta pasado el primer día hábil siguiente.',
+  },
+  {
+    question: '¿Cuándo se paga la patente?',
+    short:
+      'En seis cuotas bimestrales, o de contado en la primera, con descuento en los dos casos.',
+    answer:
+      'Podés elegir entre pagar las seis cuotas bimestrales del año, cada una en su vencimiento y con 10% de descuento si las pagás en fecha, o pagar todo el año de una vez dentro del plazo de la primera cuota, con 20% de descuento. Las dos bonificaciones son excluyentes, no se acumulan, y el pago de contado tiene que hacerse en un solo depósito para conservar el 20%: sumar varios pagos parciales no cuenta igual.',
+  },
+  {
+    question: '¿Cómo se paga la patente?',
+    short: 'SUCIVE en línea, Abitab, Redpagos o Correo Uruguayo; confirmá OCA antes de ir.',
+    answer:
+      'Los canales confirmados son SUCIVE en línea, con tarjeta de crédito, débito o débito automático, y las redes de cobranza presencial de Abitab, Redpagos y Correo Uruguayo. No pudimos confirmar si las tarjetas OCA están habilitadas: encontramos fuentes que se contradicen entre sí y ninguna lista oficial completa que lo resuelva. Si pensás pagar con OCA, confirmalo antes en la tarjeta o en la red de cobranza en vez de darlo por hecho.',
+  },
+  {
+    question: '¿Puedo pagar la patente con tarjeta OCA?',
+    short: 'No lo pudimos confirmar: hay fuentes que se contradicen entre sí.',
+    answer:
+      'No lo pudimos confirmar. Una fuente dice que OCA habilitó el pago de la patente en cuotas con tarjeta de crédito, y otra dice justo lo contrario, y no encontramos una página oficial de SUCIVE con la lista completa de medios de pago que zanje la contradicción. Lo que sí está confirmado son otros cuatro canales: SUCIVE en línea, Abitab, Redpagos y Correo Uruguayo. Antes de ir a pagar con OCA, confirmalo directamente en la tarjeta o en el canal.',
+  },
+  {
+    question: '¿Cómo hago un convenio de pago de la patente?',
+    short: 'Se suscribe con usuario de gub.uy; las reglas de cuotas y bloqueo están más abajo.',
+    answer:
+      'El convenio se suscribe con usuario de gub.uy, Abitab o TuID. No publicamos acá el paso a paso exacto del formulario porque no lo verificamos contra una fuente limpia, pero las reglas que sí están confirmadas —son dos convenios distintos, hasta 36 cuotas mensuales, entrega inicial a pagar dentro de los tres días hábiles de firmar, y qué te bloquea firmar uno nuevo— están completas en "El convenio de pago del SUCIVE", más abajo en esta misma página.',
+  },
+  {
+    question: '¿Cuánto debe mi moto?',
+    short: 'Depende de la cilindrada: 5% o 4,5% desde 500 cc; por debajo, lo fija la intendencia.',
+    answer:
+      'Si tu moto es de 500 cc o más, paga alícuota sobre el valor de mercado: 5% menos IVA si es 0 km y 4,5% si es usada empadronada en 2024 o 2025. Si es de hasta 499 cc, no hay porcentaje nacional: el monto de la 0 km lo fija la intendencia del primer empadronamiento, y de ahí en más arrastra ese importe ajustado por IPC. En los dos casos, el número exacto de tu moto —y si tenés algo pendiente— sale de la consulta oficial por matrícula y padrón, no de una cuenta que puedas hacer vos.',
   },
 ])

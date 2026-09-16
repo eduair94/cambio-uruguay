@@ -15,19 +15,24 @@ import {
   FINE_REFUND_ROUTES,
   FINE_STEPS,
   MOTO_CILINDRADA_RULE,
+  PATENTE_2027_STATUS,
   PATENTE_AFORO_RULE,
   PATENTE_BONIFICACIONES,
   PATENTE_BONIFICACION_TRAP,
   PATENTE_CLEARING_ABSENCE,
   PATENTE_CONSEQUENCES,
   PATENTE_CONSULTA_URL,
+  PATENTE_DEUDA_QUE_NECESITAS,
   PATENTE_DEUDA_URL,
+  PATENTE_DEUDA_VERIFIED_AT,
   PATENTE_DUE_DATES,
   PATENTE_DUE_DATE_RULE,
   PATENTE_FIXED_BANDS,
   PATENTE_FLOOR_RULE,
   PATENTE_MORA_RECARGO_RULE,
   PATENTE_MORA_TIERS,
+  PATENTE_OCA_NOTE,
+  PATENTE_PAYMENT_CHANNELS,
   PATENTE_PRESCRIPTION_RULE,
   PATENTE_PRESCRIPTION_TRAMITE,
   PATENTE_PRESCRIPTION_YEARS,
@@ -497,5 +502,102 @@ describe('el FAQ cubre las tres preguntas de patente', () => {
     const f = find(/deuda de patente prescribe/i)!
     expect(f.answer).toMatch(/diez años/i)
     expect(f.answer).toMatch(/no lo confundas/i)
+  })
+})
+
+describe('patente: consulta de deuda, medios de pago y motos (cola de demanda)', () => {
+  // La consulta de deuda es una pregunta distinta de "cuánto pago": una es tu deuda acumulada,
+  // la otra es la alícuota sobre el aforo. Confundirlas es el error que este bloque corta.
+  it('distingue consultar la deuda de calcular la patente, y pide matrícula y padrón', () => {
+    expect(PATENTE_DEUDA_QUE_NECESITAS).toMatch(/matrícula/i)
+    expect(PATENTE_DEUDA_QUE_NECESITAS).toMatch(/padrón/i)
+    expect(PATENTE_DEUDA_QUE_NECESITAS).toMatch(/convenios/i)
+    expect(PATENTE_DEUDA_QUE_NECESITAS).toMatch(/peajes/i)
+    expect(PATENTE_DEUDA_QUE_NECESITAS).toMatch(/infracciones/i)
+  })
+
+  // No se pudo confirmar el formulario contra un fetch limpio: no hay que inventar el orden de
+  // los campos ni si pide cédula o RUT.
+  it('no publica el paso a paso del formulario de consulta', () => {
+    expect(PATENTE_DEUDA_QUE_NECESITAS).not.toMatch(/cédula|RUT|primer campo|paso 1/i)
+  })
+
+  it('declara su propia fecha de verificación', () => {
+    expect(PATENTE_DEUDA_VERIFIED_AT).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  // El patrón (2026 se aprobó en noviembre de 2025) es la única base para decir "todavía no": se
+  // publica como estado a una fecha, no como un hecho permanente.
+  it('publica el estado de 2027 fechado, no como hecho definitivo', () => {
+    expect(PATENTE_2027_STATUS).toMatch(/2027/)
+    expect(PATENTE_2027_STATUS).toMatch(/todavía no estaban publicados/i)
+    expect(PATENTE_2027_STATUS).toMatch(/16 de setiembre de 2026/)
+  })
+
+  it('trae los cuatro canales de pago confirmados', () => {
+    const labels = PATENTE_PAYMENT_CHANNELS.map(c => c.label)
+    expect(labels).toEqual(['SUCIVE en línea', 'Abitab', 'Redpagos', 'Correo Uruguayo'])
+    for (const c of PATENTE_PAYMENT_CHANNELS) expect(c.detail.length).toBeGreaterThan(10)
+  })
+
+  // El hallazgo del dossier: dos fuentes sobre OCA se contradicen entre sí. Publicar una de las
+  // dos como si fuera la confirmada es el error que esta nota existe para evitar.
+  it('no publica OCA como canal confirmado y explica la contradicción', () => {
+    expect(PATENTE_PAYMENT_CHANNELS.some(c => /OCA/i.test(c.label))).toBe(false)
+    expect(PATENTE_OCA_NOTE).toMatch(/no pudimos confirmar/i)
+    expect(PATENTE_OCA_NOTE).toMatch(/OCA/)
+    expect(PATENTE_OCA_NOTE).toMatch(/se contradicen|dice lo contrario/i)
+    expect(PATENTE_OCA_NOTE).not.toMatch(/OCA (es|está habilitad[oa]) (como|un) canal/i)
+  })
+
+  // Las siete formulaciones de la cola de demanda que este bloque de FAQ contesta.
+  it('el FAQ contesta las siete consultas de la cola de demanda', () => {
+    const find = (re: RegExp) => FINES_FAQ.find(f => re.test(f.question))
+    expect(find(/cómo sé cuánto debo de patente/i)).toBeDefined()
+    expect(find(/cuándo vence cada cuota/i)).toBeDefined()
+    expect(find(/cómo hago un convenio de pago/i)).toBeDefined()
+    expect(find(/cómo se paga la patente/i)).toBeDefined()
+    expect(find(/cuándo se paga la patente/i)).toBeDefined()
+    expect(find(/cuánto debe mi moto/i)).toBeDefined()
+    expect(find(/puedo pagar la patente con tarjeta oca/i)).toBeDefined()
+  })
+
+  it('el FAQ de OCA tampoco lo confirma ni lo descarta sin fuente', () => {
+    const faq = FINES_FAQ.find(f => /puedo pagar la patente con tarjeta oca/i.test(f.question))!
+    expect(faq.answer).toMatch(/no lo pudimos confirmar/i)
+    expect(faq.short).toMatch(/no lo pudimos confirmar|se contradicen/i)
+  })
+
+  // El "cómo hago un convenio" no repite las reglas de cuotas/entrega inicial que ya están en
+  // CONVENIO_FACTS y en su propia sección: linkea, no duplica.
+  it('el FAQ de cómo hacer un convenio linkea a la sección existente en vez de duplicarla', () => {
+    const faq = FINES_FAQ.find(f => /cómo hago un convenio de pago/i.test(f.question))!
+    expect(faq.answer).toMatch(/más abajo/i)
+    expect(faq.answer).not.toMatch(/\bUI\b/)
+  })
+
+  it('el FAQ de la moto reusa el corte de 500 cc sin inventar un número nuevo', () => {
+    const faq = FINES_FAQ.find(f => /cuánto debe mi moto/i.test(f.question))!
+    expect(faq.answer).toMatch(/500 cc/)
+    expect(faq.answer).toMatch(/499 cc/)
+    expect(faq.answer).toMatch(/5%/)
+    expect(faq.answer).toMatch(/4,5%/)
+  })
+
+  it('cada pregunta nueva termina en signo de interrogación y trae desarrollo', () => {
+    const nuevas = [
+      /cómo sé cuánto debo de patente/i,
+      /cuándo vence cada cuota/i,
+      /cómo hago un convenio de pago/i,
+      /cómo se paga la patente/i,
+      /cuándo se paga la patente/i,
+      /cuánto debe mi moto/i,
+      /puedo pagar la patente con tarjeta oca/i,
+    ]
+    for (const re of nuevas) {
+      const faq = FINES_FAQ.find(f => re.test(f.question))!
+      expect(faq.question.endsWith('?')).toBe(true)
+      expect(faq.answer.length).toBeGreaterThan(120)
+    }
   })
 })
