@@ -1,7 +1,7 @@
 // Guías de vivienda minadas de Reddit: comisión inmobiliaria (hilos 1qpd9yg, 1ti2vtm y 1q2e8us de
 // r/uruguay), comprar en remate (1tzj94f), derechos posesorios (1rem79k y 1uutyjm de r/LegalUruguay)
 // y el Certificado Único Departamental (1svi2jr). Todo verificado el 2026-09-13 contra: arancel de la
-// CIU (septiembre de 2007) y de CIPEM (2023/2025); Código de Comercio art. 112; Ley 20.380 art. 5;
+// CIU (setiembre de 2007) y de CIPEM (2023/2025); Código de Comercio art. 112; Ley 20.380 art. 5;
 // DGI (IVA 22 %); Ley 19.574 art. 13 (red. Ley 20.469); CGP arts. 387 y 390; Decreto-Ley 15.508;
 // página y edicto de remates de la ANV; Acordada SCJ 7.883 (circular 150/2016); Código Civil arts.
 // 1204, 1206 y 1211 y Ley 19.889 art. 467; Título 19 del TO 2023 (ITP); Leyes 19.355 art. 247, 16.871
@@ -19,18 +19,18 @@ export const viviendaGuides: readonly Guide[] = [
     sections: [
       {
         heading: '¿Hay un tope legal para la comisión inmobiliaria?',
-        body: 'No. Ninguna ley fija cuánto cobra una inmobiliaria en Uruguay, y lo que se repite como si fuera norma —el 3 % más IVA en la venta, un mes más IVA en el alquiler— sale de un documento privado: el Arancel Oficial de la Cámara Inmobiliaria Uruguaya, fechado en septiembre de 2007. El propio texto se define como "arancel mínimo" y dice que su incumplimiento lo sanciona la Comisión de Ética de la Cámara, o sea que ordena a sus socios, no a vos. La Ley 20.380, de 2024, que regula a los operadores inmobiliarios, les reconoce "el cobro de sus honorarios", pero no fija montos ni dice quién los paga. La única regla legal sobre quién paga está en el Código de Comercio, en el capítulo de los corredores: el artículo 112 dice que todo derecho de corretaje, "no mediando estipulación en contrario, será pagado proporcionalmente por las partes". Es una regla supletoria, que rige sólo si no se pactó otra cosa. Por eso la pregunta útil no es cuánto permite la ley, sino qué dice el papel que te hacen firmar antes de la visita, la reserva o el contrato, porque eso es lo que después se puede reclamar.',
+        body: 'No. Ninguna ley fija cuánto cobra una inmobiliaria en Uruguay, y lo que se repite como si fuera norma —el 3 % más IVA en la venta, un mes más IVA en el alquiler— sale de un documento privado: el Arancel Oficial de la Cámara Inmobiliaria Uruguaya, fechado en setiembre de 2007. El propio texto se define como "arancel mínimo" y dice que su incumplimiento lo sanciona la Comisión de Ética de la Cámara, o sea que ordena a sus socios, no a vos. La Ley 20.380, de 2024, que regula a los operadores inmobiliarios, les reconoce "el cobro de sus honorarios", pero no fija montos ni dice quién los paga. La única regla legal sobre quién paga está en el Código de Comercio, en el capítulo de los corredores: el artículo 112 dice que todo derecho de corretaje, "no mediando estipulación en contrario, será pagado proporcionalmente por las partes". Es una regla supletoria, que rige sólo si no se pactó otra cosa. Por eso la pregunta útil no es cuánto permite la ley, sino qué dice el papel que te hacen firmar antes de la visita, la reserva o el contrato, porque eso es lo que después se puede reclamar.',
       },
       {
         heading: 'Cuánto cobra la inmobiliaria cuando vendés o comprás',
-        body: 'El artículo 1 del arancel de la Cámara fija el 3 % sobre el precio total de la venta a cada parte, vendedora y compradora, y el artículo 12 obliga a sumarle el IVA. Con la tasa básica del 22 %, cada parte paga el 3,66 % del precio: en una venta de 150.000 dólares son 5.490 dólares para el comprador y otros tantos para el vendedor. En Maldonado y Punta del Este la cámara local publica el mismo orden de magnitud con otra presentación: 4 % a cada parte, que es 3,28 % de arancel más IVA, según su tabla 2023/2025, que seguía publicada en septiembre de 2026. El arancel de la Cámara prevé además dos rebajas que casi nadie pide: si vendés y comprás con la misma inmobiliaria dentro de noventa días, la operación menor admite hasta 50 % de bonificación, y cuando el vendedor es la empresa promotora de un edificio, a esa parte se le puede rebajar hasta la mitad. Esta comisión va aparte de los honorarios del escribano y del ITP, que se liquidan en la escritura.',
+        body: 'El artículo 1 del arancel de la Cámara fija el 3 % sobre el precio total de la venta a cada parte, vendedora y compradora, y el artículo 12 obliga a sumarle el IVA. Con la tasa básica del 22 %, cada parte paga el 3,66 % del precio: en una venta de 150.000 dólares son 5.490 dólares para el comprador y otros tantos para el vendedor. En Maldonado y Punta del Este la cámara local publica el mismo orden de magnitud con otra presentación: 4 % a cada parte, que es 3,28 % de arancel más IVA, según su tabla 2023/2025, que seguía publicada en setiembre de 2026. El arancel de la Cámara prevé además dos rebajas que casi nadie pide: si vendés y comprás con la misma inmobiliaria dentro de noventa días, la operación menor admite hasta 50 % de bonificación, y cuando el vendedor es la empresa promotora de un edificio, a esa parte se le puede rebajar hasta la mitad. Esta comisión va aparte de los honorarios del escribano y del ITP, que se liquidan en la escritura.',
         links: [{ label: 'Costos de escrituración', to: '/guias/costos-de-escrituracion-uruguay' }],
       },
       {
         heading: 'Cuánto cobran por alquilar, y por qué al dueño a veces no',
         body: 'Para los contratos de un año o más en régimen de libre contratación, el artículo 6 del arancel fija "un mes de alquiler a cada parte", con una salvedad que explica mucho de lo que se discute en los foros: al arrendador, es decir al dueño, se le puede bonificar hasta el 50 %. Al inquilino el arancel no le prevé ninguna rebaja. Si el contrato es por menos de un año se cobra a prorrata, y en los alquileres de temporada de hasta cinco meses la comisión es el 8 % del monto total del contrato a cada parte, con la redacción del contrato incluida. Todo eso lleva IVA, así que el mes de comisión es en realidad 1,22 alquileres: sobre un alquiler de 25.000 pesos, son 30.500 pesos. Que el dueño no pague nada no sale del arancel, que como mínimo le cobraría la mitad, sino de la competencia entre inmobiliarias por conseguir la propiedad para publicarla. Las renovaciones se cobran igual, con rebaja de hasta 50 % para cada parte.',
         table: {
-          headers: ['Operación', 'Arancel de la Cámara (septiembre de 2007)', 'Con IVA del 22 %'],
+          headers: ['Operación', 'Arancel de la Cámara (setiembre de 2007)', 'Con IVA del 22 %'],
           rows: [
             ['Venta, a cada parte', '3 % del precio total', '3,66 % del precio'],
             [
@@ -91,7 +91,7 @@ export const viviendaGuides: readonly Guide[] = [
       },
       {
         q: '¿Cuánto cobra una inmobiliaria por alquilar un apartamento?',
-        a: 'Según el arancel de la Cámara Inmobiliaria (septiembre de 2007), un mes de alquiler a cada parte en contratos de un año o más, más IVA: 1,22 alquileres. En temporada de hasta cinco meses, el 8 % del contrato a cada parte, más IVA.',
+        a: 'Según el arancel de la Cámara Inmobiliaria (setiembre de 2007), un mes de alquiler a cada parte en contratos de un año o más, más IVA: 1,22 alquileres. En temporada de hasta cinco meses, el 8 % del contrato a cada parte, más IVA.',
       },
       {
         q: '¿Hay un máximo legal para la comisión inmobiliaria?',
@@ -114,7 +114,7 @@ export const viviendaGuides: readonly Guide[] = [
     sources: [
       {
         label:
-          'Arancel Oficial (septiembre de 2007) — ventas: "el 3% (tres por ciento) sobre el precio total de la venta, a cada parte"; alquiler de un año o más: "un mes de alquiler a cada parte, pudiéndose bonificar al arrendador hasta en un 50%"; temporada: 8 % a cada parte; es un "arancel mínimo" al que "deberá adicionarse el impuesto al valor agregado"',
+          'Arancel Oficial (setiembre de 2007) — ventas: "el 3% (tres por ciento) sobre el precio total de la venta, a cada parte"; alquiler de un año o más: "un mes de alquiler a cada parte, pudiéndose bonificar al arrendador hasta en un 50%"; temporada: 8 % a cada parte; es un "arancel mínimo" al que "deberá adicionarse el impuesto al valor agregado"',
         url: 'https://ciu.org.uy/wp-content/uploads/2024/05/7_Arancel-Oficial_180907.pdf',
         publisher: 'Cámara Inmobiliaria Uruguaya',
       },
@@ -168,7 +168,7 @@ export const viviendaGuides: readonly Guide[] = [
       },
       {
         heading: 'Cómo funciona un remate de la ANV',
-        body: 'La ANV publica sus remates en el Diario Oficial y en su sitio, con estas condiciones a septiembre de 2026: la base es el 50 % del valor de tasación, la seña es el 5 % de la oferta y la comisión del rematador es el 1 % más IVA, bastante menos que en un remate judicial. En el acto se paga además una suma por gastos de remate que figura en el edicto y que no forma parte del precio, y si el remate es en el interior la ANV avisa que se suma otro 1 % por las Leyes 12.700 y 16.694. Los plazos los fija cada edicto, que la propia ANV llama la referencia obligatoria: su página dice que el plazo para el saldo por lo general es de cinco días hábiles, y el edicto de abril de 2026 daba diez días desde la aprobación del remate para el saldo y diez desde el aviso de la ANV para escriturar, con los pagos del acto a acreditar en 72 horas hábiles bajo pena de multa. Se puede financiar en unidades indexadas hasta el tope del edicto, sólo para el mejor postor. No pueden ofertar los funcionarios de la ANV, sus cónyuges ni quien tenga un crédito vigente en el sistema público de vivienda.',
+        body: 'La ANV publica sus remates en el Diario Oficial y en su sitio, con estas condiciones a setiembre de 2026: la base es el 50 % del valor de tasación, la seña es el 5 % de la oferta y la comisión del rematador es el 1 % más IVA, bastante menos que en un remate judicial. En el acto se paga además una suma por gastos de remate que figura en el edicto y que no forma parte del precio, y si el remate es en el interior la ANV avisa que se suma otro 1 % por las Leyes 12.700 y 16.694. Los plazos los fija cada edicto, que la propia ANV llama la referencia obligatoria: su página dice que el plazo para el saldo por lo general es de cinco días hábiles, y el edicto de abril de 2026 daba diez días desde la aprobación del remate para el saldo y diez desde el aviso de la ANV para escriturar, con los pagos del acto a acreditar en 72 horas hábiles bajo pena de multa. Se puede financiar en unidades indexadas hasta el tope del edicto, sólo para el mejor postor. No pueden ofertar los funcionarios de la ANV, sus cónyuges ni quien tenga un crédito vigente en el sistema público de vivienda.',
         table: {
           headers: ['Punto', 'Remate judicial', 'Remate de la ANV'],
           rows: [
@@ -296,7 +296,7 @@ export const viviendaGuides: readonly Guide[] = [
       },
       {
         label:
-          'Remates de la ANV (septiembre de 2026) — base del "50% del valor de la tasación", "5% de seña", "comisión del rematador (1% de la oferta más IVA)" y otro 1 % en el interior (Leyes 12.700 y 16.694); en Montevideo, "por lo general", la contribución, los tributos de cobro conjunto y Primaria van en los gastos del remate; "La deuda por gastos comunes es de cargo del comprador"; el plazo del saldo "por lo general, es de cinco días hábiles"; recuperar el inmueble dura "entre seis y diez meses"',
+          'Remates de la ANV (setiembre de 2026) — base del "50% del valor de la tasación", "5% de seña", "comisión del rematador (1% de la oferta más IVA)" y otro 1 % en el interior (Leyes 12.700 y 16.694); en Montevideo, "por lo general", la contribución, los tributos de cobro conjunto y Primaria van en los gastos del remate; "La deuda por gastos comunes es de cargo del comprador"; el plazo del saldo "por lo general, es de cinco días hábiles"; recuperar el inmueble dura "entre seis y diez meses"',
         url: 'https://www.anv.gub.uy/remates',
         publisher: 'Agencia Nacional de Vivienda',
       },

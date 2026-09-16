@@ -141,7 +141,7 @@ export const pagosGuides: readonly Guide[] = [
       },
       {
         heading: 'Si dice "pendiente de ejecución", mirá las comisiones',
-        body: 'Es el caso de la mayoría de las consultas: una cuenta quieta, sin saldo, que siguió generando cargos que el banco no pudo debitar. En el BROU, por ejemplo, la página de comisiones de cuentas de personas, consultada en septiembre de 2026, fija para la Cuenta Ahorro una comisión de administración de UI 30 mensuales, que no se cobra si el saldo promedio del mes supera $ 40.600 o US$ 1.000, un umbral que se actualiza cada año con la unidad indexada; y cobra el exceso de movimientos a UI 20 en sucursales y UI 15 en el resto de los canales, que con la bonificación promocional del 20 % que publica el banco quedan en UI 16 y UI 12. A eso se suman el costo de la tarjeta y otros cargos. Si cuando el banco va a cobrar no hay saldo, el cargo no se borra: queda pendiente. Por eso, apenas depositás, la plata "desaparece": el sistema cobra lo que tenía en espera. Las condiciones de su débito prevén incluso cobrar la comisión por uso en otras redes de cualquier otra cuenta que tengas en el banco, si la asociada a la tarjeta no tiene fondos.',
+        body: 'Es el caso de la mayoría de las consultas: una cuenta quieta, sin saldo, que siguió generando cargos que el banco no pudo debitar. En el BROU, por ejemplo, la página de comisiones de cuentas de personas, consultada en setiembre de 2026, fija para la Cuenta Ahorro una comisión de administración de UI 30 mensuales, que no se cobra si el saldo promedio del mes supera $ 40.600 o US$ 1.000, un umbral que se actualiza cada año con la unidad indexada; y cobra el exceso de movimientos a UI 20 en sucursales y UI 15 en el resto de los canales, que con la bonificación promocional del 20 % que publica el banco quedan en UI 16 y UI 12. A eso se suman el costo de la tarjeta y otros cargos. Si cuando el banco va a cobrar no hay saldo, el cargo no se borra: queda pendiente. Por eso, apenas depositás, la plata "desaparece": el sistema cobra lo que tenía en espera. Las condiciones de su débito prevén incluso cobrar la comisión por uso en otras redes de cualquier otra cuenta que tengas en el banco, si la asociada a la tarjeta no tiene fondos.',
       },
       {
         heading: 'Compras en otra moneda: por qué no coincide lo retenido con lo cobrado',
@@ -189,7 +189,7 @@ export const pagosGuides: readonly Guide[] = [
       },
       {
         q: 'Deposité plata y me la descontaron sola, ¿qué pasó?',
-        a: 'Lo más probable es que el banco tuviera cargos pendientes, como la comisión de administración o el exceso de movimientos, que no pudo debitar mientras la cuenta estaba sin saldo. En el BROU, por ejemplo, la Cuenta Ahorro paga UI 30 por mes si el promedio no supera $ 40.600 o US$ 1.000 (página consultada en septiembre de 2026).',
+        a: 'Lo más probable es que el banco tuviera cargos pendientes, como la comisión de administración o el exceso de movimientos, que no pudo debitar mientras la cuenta estaba sin saldo. En el BROU, por ejemplo, la Cuenta Ahorro paga UI 30 por mes si el promedio no supera $ 40.600 o US$ 1.000 (página consultada en setiembre de 2026).',
       },
       {
         q: '¿Puedo dejar la tarjeta de débito como garantía para alquilar un auto?',
@@ -395,7 +395,7 @@ export const pagosGuides: readonly Guide[] = [
       },
       {
         heading: 'La tabla: cuánto cobra cada banco por recibir',
-        body: 'Estas son las comisiones para personas físicas que figuran en los tarifarios vigentes a septiembre de 2026, sin contar gastos de intermediarios salvo donde el banco los publica. Las diferencias de estructura importan más que el número suelto: BROU y Scotiabank cobran un porcentaje con mínimo y máximo, Santander un tanto por mil con mínimo y máximo, Itaú un fijo más una escala de corresponsal por tramo, y BBVA un porcentaje para montos chicos y un fijo por encima de US$ 150. Si tu banco no está acá, buscá en su tarifario el rubro de órdenes de pago o giros recibidos del exterior: casi todos lo publican con ese nombre. Y mirá también qué pasa con la moneda: BBVA, por ejemplo, aclara que cobra en la moneda de la transferencia recibida.',
+        body: 'Estas son las comisiones para personas físicas que figuran en los tarifarios vigentes a setiembre de 2026, sin contar gastos de intermediarios salvo donde el banco los publica. Las diferencias de estructura importan más que el número suelto: BROU y Scotiabank cobran un porcentaje con mínimo y máximo, Santander un tanto por mil con mínimo y máximo, Itaú un fijo más una escala de corresponsal por tramo, y BBVA un porcentaje para montos chicos y un fijo por encima de US$ 150. Si tu banco no está acá, buscá en su tarifario el rubro de órdenes de pago o giros recibidos del exterior: casi todos lo publican con ese nombre. Y mirá también qué pasa con la moneda: BBVA, por ejemplo, aclara que cobra en la moneda de la transferencia recibida.',
         table: {
           headers: ['Banco', 'Comisión por recibir', 'Condiciones que publica', 'Tarifario'],
           rows: [
@@ -409,7 +409,7 @@ export const pagosGuides: readonly Guide[] = [
               'Itaú',
               'US$ 10 más costo de corresponsal',
               'Corresponsal: US$ 10 (101 a 500), US$ 15 (501 a 2.000), US$ 25 (2.001 a 20.000), US$ 35 (más de 20.000)',
-              'Manual de tarifas, septiembre de 2026',
+              'Manual de tarifas, setiembre de 2026',
             ],
             [
               'Santander',
@@ -493,7 +493,7 @@ export const pagosGuides: readonly Guide[] = [
       },
       {
         q: '¿Cuánto cobra Itaú por recibir una transferencia del exterior?',
-        a: 'Según su manual de tarifas de septiembre de 2026, US$ 10 para personas físicas más un costo de corresponsal que va de US$ 10 (entre US$ 101 y 500) a US$ 35 (más de US$ 20.000). Una transferencia de US$ 1.000 queda en US$ 25 en total.',
+        a: 'Según su manual de tarifas de setiembre de 2026, US$ 10 para personas físicas más un costo de corresponsal que va de US$ 10 (entre US$ 101 y 500) a US$ 35 (más de US$ 20.000). Una transferencia de US$ 1.000 queda en US$ 25 en total.',
       },
       {
         q: '¿Puedo usar Wise para pasar la plata al BROU?',
@@ -526,7 +526,7 @@ export const pagosGuides: readonly Guide[] = [
       },
       {
         label:
-          'Itaú, manual de tarifas (septiembre de 2026), 8.1 Órdenes de pago recibidas del exterior — "Personas Físicas U$S 10" más costo de corresponsal de U$S 10 a U$S 35 según el monto',
+          'Itaú, manual de tarifas (setiembre de 2026), 8.1 Órdenes de pago recibidas del exterior — "Personas Físicas U$S 10" más costo de corresponsal de U$S 10 a U$S 35 según el monto',
         url: 'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
         publisher: 'Itaú Uruguay',
       },
@@ -538,7 +538,7 @@ export const pagosGuides: readonly Guide[] = [
       },
       {
         label:
-          'BBVA, manual de tarifas y comisiones (3 de septiembre de 2026), 21.2 Órdenes de pago recibidas del exterior — 20 % hasta USD 150 y USD 30 por encima',
+          'BBVA, manual de tarifas y comisiones (3 de setiembre de 2026), 21.2 Órdenes de pago recibidas del exterior — 20 % hasta USD 150 y USD 30 por encima',
         url: 'https://www.bbva.com.uy/content/dam/public-web/uruguay/documents/NuevoTarifario2024.pdf',
         publisher: 'BBVA Uruguay',
       },
@@ -566,7 +566,7 @@ export const pagosGuides: readonly Guide[] = [
     sections: [
       {
         heading: '¿Qué es el alias para transferir en Uruguay?',
-        body: 'Es tu número de celular funcionando como dirección de tu cuenta. El BCU lo explica en su portal para usuarios: podés asociar un alias a tu cuenta, como tu número de celular, para que te transfieran con ese dato en lugar del número de cuenta. En septiembre de 2024 lo presentó como uno de los hitos del sistema de pagos, una "modalidad que permite asociar el número de cuenta al número de celular". No es el alias argentino de tres palabras: acá, en la práctica, es el celular. Los términos de Itaú ya prevén otros formatos, como un correo electrónico, cadenas de texto o un código QR, pero lo que describen hoy los bancos para transferir entre personas es el número de móvil. La transferencia en sí no cambia: sale de la app de tu banco como cualquier otra, sólo que en vez de tipear el número de cuenta elegís un contacto o escribís un celular.',
+        body: 'Es tu número de celular funcionando como dirección de tu cuenta. El BCU lo explica en su portal para usuarios: podés asociar un alias a tu cuenta, como tu número de celular, para que te transfieran con ese dato en lugar del número de cuenta. En setiembre de 2024 lo presentó como uno de los hitos del sistema de pagos, una "modalidad que permite asociar el número de cuenta al número de celular". No es el alias argentino de tres palabras: acá, en la práctica, es el celular. Los términos de Itaú ya prevén otros formatos, como un correo electrónico, cadenas de texto o un código QR, pero lo que describen hoy los bancos para transferir entre personas es el número de móvil. La transferencia en sí no cambia: sale de la app de tu banco como cualquier otra, sólo que en vez de tipear el número de cuenta elegís un contacto o escribís un celular.',
       },
       {
         heading: 'Cómo se activa en el BROU y en Itaú',
@@ -578,7 +578,7 @@ export const pagosGuides: readonly Guide[] = [
       },
       {
         heading: '¿Cuánto cuesta y cuál es el tope?',
-        body: 'El alias no tiene tarifa propia: cuesta lo mismo que la transferencia que termina siendo. El BROU lo dice así: "Las tarifas son las mismas que aplican a los servicios de transferencias a cuentas BROU y SPI", y entre bancos se liquida por el Sistema de Pagos Interbancarios. Con los topes conviene mirar tu banco: los términos de Itaú, por ejemplo, se reservan poner límites por monto o por cantidad. Como referencia, el BCU describía en septiembre de 2024 las transferencias interbancarias instantáneas como de "hasta aproximadamente 20.000 pesos, en tiempo real, las 24 horas, los 365 días", y la cartilla de Scotiabank vigente desde el 1/7/2026 sólo habilita el giro instantáneo por importes menores a US$ 500 o $ 22.000; por encima figura como "No habilitado" y hay que ir por la transferencia común. Cuánto cobra cada banco por cada tipo de transferencia lo tenemos comparado aparte.',
+        body: 'El alias no tiene tarifa propia: cuesta lo mismo que la transferencia que termina siendo. El BROU lo dice así: "Las tarifas son las mismas que aplican a los servicios de transferencias a cuentas BROU y SPI", y entre bancos se liquida por el Sistema de Pagos Interbancarios. Con los topes conviene mirar tu banco: los términos de Itaú, por ejemplo, se reservan poner límites por monto o por cantidad. Como referencia, el BCU describía en setiembre de 2024 las transferencias interbancarias instantáneas como de "hasta aproximadamente 20.000 pesos, en tiempo real, las 24 horas, los 365 días", y la cartilla de Scotiabank vigente desde el 1/7/2026 sólo habilita el giro instantáneo por importes menores a US$ 500 o $ 22.000; por encima figura como "No habilitado" y hay que ir por la transferencia común. Cuánto cobra cada banco por cada tipo de transferencia lo tenemos comparado aparte.',
         links: [
           {
             label: 'Comisiones de transferencia por banco',
@@ -714,7 +714,7 @@ export const pagosGuides: readonly Guide[] = [
               'Itaú Visa Débito',
               'Sin costo, más 3 % sobre el tipo de cambio de Visa',
               'US$ 2 en Red Link, Banelco e Itaú',
-              'Manual de tarifas, septiembre de 2026',
+              'Manual de tarifas, setiembre de 2026',
             ],
             [
               'Santander Visa Débito',
@@ -732,7 +732,7 @@ export const pagosGuides: readonly Guide[] = [
               'Prex',
               '2,5 % más US$ 0,50, más IVA; en pesos argentinos, tipo de cambio de la marca con costos de hasta 1,5 %',
               'US$ 3 más IVA, y la cartilla incluye los retiros en la comisión de 2,5 % más US$ 0,50',
-              'Cartilla de uso, consultada en septiembre de 2026',
+              'Cartilla de uso, consultada en setiembre de 2026',
             ],
           ],
         },
@@ -755,7 +755,7 @@ export const pagosGuides: readonly Guide[] = [
       },
       {
         heading: 'Prex, Mercado Pago y otras prepagas',
-        body: 'Las prepagas funcionan igual que el débito: pagan con el saldo que cargaste y convierten según la moneda que tengas. Prex publica en su cartilla de uso, consultada en septiembre de 2026, una "Comisión por compras de productos, servicios y retiros en el exterior (2,5% + USD 0,5) + IVA", y aparte "USD 3 + IVA" por cada retiro en efectivo en el exterior; el fijo de medio dólar pesa más cuanto más chica es la compra, así que rinde en pagos medianos y no en un café. Y como el peso argentino no es dólar ni peso uruguayo, la misma cartilla avisa que esas compras quedan sujetas "al tipo de cambio de la marca y costos asociados que no excederán el 1,5% del valor de la transacción". Con la tarjeta de Mercado Pago, antes de viajar revisá en su centro de ayuda si cobra comisión por compras en el exterior y a qué tipo de cambio convierte: si la tarjeta sólo tiene saldo en pesos uruguayos, cada compra en pesos argentinos pasa por las dos conversiones que explicamos arriba, aunque la comisión sea cero. La cuenta que importa es la misma para todas: cuántos pesos uruguayos o dólares salieron de tu saldo por cada peso argentino que pagaste.',
+        body: 'Las prepagas funcionan igual que el débito: pagan con el saldo que cargaste y convierten según la moneda que tengas. Prex publica en su cartilla de uso, consultada en setiembre de 2026, una "Comisión por compras de productos, servicios y retiros en el exterior (2,5% + USD 0,5) + IVA", y aparte "USD 3 + IVA" por cada retiro en efectivo en el exterior; el fijo de medio dólar pesa más cuanto más chica es la compra, así que rinde en pagos medianos y no en un café. Y como el peso argentino no es dólar ni peso uruguayo, la misma cartilla avisa que esas compras quedan sujetas "al tipo de cambio de la marca y costos asociados que no excederán el 1,5% del valor de la transacción". Con la tarjeta de Mercado Pago, antes de viajar revisá en su centro de ayuda si cobra comisión por compras en el exterior y a qué tipo de cambio convierte: si la tarjeta sólo tiene saldo en pesos uruguayos, cada compra en pesos argentinos pasa por las dos conversiones que explicamos arriba, aunque la comisión sea cero. La cuenta que importa es la misma para todas: cuántos pesos uruguayos o dólares salieron de tu saldo por cada peso argentino que pagaste.',
       },
     ],
     faqs: [
@@ -805,7 +805,7 @@ export const pagosGuides: readonly Guide[] = [
       },
       {
         label:
-          'Itaú, manual de tarifas (septiembre de 2026) — compras con VISA Débito "sin costo" y "3% adicional sobre el tipo de cambio de Visa Internacional" en moneda extranjera; retiro en Red Link, Banelco e Itaú U$S 2; recargo en crédito según paquete',
+          'Itaú, manual de tarifas (setiembre de 2026) — compras con VISA Débito "sin costo" y "3% adicional sobre el tipo de cambio de Visa Internacional" en moneda extranjera; retiro en Red Link, Banelco e Itaú U$S 2; recargo en crédito según paquete',
         url: 'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
         publisher: 'Itaú Uruguay',
       },

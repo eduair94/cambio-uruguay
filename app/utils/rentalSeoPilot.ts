@@ -7,7 +7,7 @@
 export const RENTAL_SEO_PILOT_KEYS: readonly string[] = Object.freeze([
   'montevideo-pocitos-26-de-marzo-twecvp',
   'montevideo-cordon-arenal-grande-1o9en65',
-  'montevideo-punta-carretas-21-de-septiembre-99v1ms',
+  'montevideo-punta-carretas-21-de-setiembre-99v1ms',
   'montevideo-pocitos-juan-benito-blanco-1hu46eq',
   'montevideo-cordon-mercedes-al-9y238m-6a2am5',
   'montevideo-tres-cruces-acevedo-diaz-rovd6z',

@@ -186,7 +186,7 @@ export const firstRentalEs: FirstRentalCopy = {
   sourcesTitle: 'Fuentes para comprobar cada trámite',
   sourceNewTab: 'Abrir fuente en otra pestaña',
   reviewed:
-    'Fuentes revisadas el 6 de septiembre de 2026. Los importes del presupuesto los ingresás vos; consultá tus facturas y las condiciones de tu contrato.',
+    'Fuentes revisadas el 6 de setiembre de 2026. Los importes del presupuesto los ingresás vos; consultá tus facturas y las condiciones de tu contrato.',
   sourceLabels: {
     cgnFee: 'CGN · Comisión mensual',
     cgnBills: 'CGN · Servicios accesorios',

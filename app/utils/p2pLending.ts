@@ -951,7 +951,7 @@ export const UY_CASES: readonly UyCase[] = Object.freeze([
     kind: 'fondo-ganadero',
     pitch: 'El primer fondo ganadero en caer. La fiscalía lo calificó como estafa piramidal.',
     outcome:
-      'Jairo Larrarte fue condenado el 5 de septiembre de 2025, por proceso abreviado, a tres años y ocho meses de prisión efectiva por estafa continuada, apropiación indebida y libramiento de cheques sin fondo.',
+      'Jairo Larrarte fue condenado el 5 de setiembre de 2025, por proceso abreviado, a tres años y ocho meses de prisión efectiva por estafa continuada, apropiación indebida y libramiento de cheques sin fondo.',
     numbers: 'Unos US$ 12 millones y alrededor de 170 inversores, según El Observador.',
     wasEappp: false,
     source:

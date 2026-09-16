@@ -279,7 +279,7 @@ export const trabajoBpsGuides: readonly Guide[] = [
       },
       {
         heading: '¿Con qué países tiene convenio Uruguay?',
-        body: 'La lista la mantiene el BPS y conviene mirarla antes de iniciar nada, porque define el camino. En la versión actualizada en septiembre de 2026 figuran convenios bilaterales con España, Italia, Francia, Alemania, Estados Unidos, Canadá, Chile e Israel, entre otros, y dos convenios multilaterales: el del Mercosur, que alcanza a Argentina, Brasil y Paraguay, y el Convenio Multilateral Iberoamericano de Seguridad Social, que es por donde entra, por ejemplo, Perú. Según el BPS, estos acuerdos permiten la "acumulación de períodos de servicio en ambos países", el traslado temporal de trabajadores y el "pago de jubilaciones y pensiones en el exterior sin quitas ni retenciones". Cada convenio tiene su propio texto y sus propias reglas, así que la lista te dice si hay convenio, no cómo se aplica en tu caso. Si tu país no figura, los años de allá no se suman a los de acá, pero lo que generaste en Uruguay se sigue pudiendo pedir y cobrar desde afuera.',
+        body: 'La lista la mantiene el BPS y conviene mirarla antes de iniciar nada, porque define el camino. En la versión actualizada en setiembre de 2026 figuran convenios bilaterales con España, Italia, Francia, Alemania, Estados Unidos, Canadá, Chile e Israel, entre otros, y dos convenios multilaterales: el del Mercosur, que alcanza a Argentina, Brasil y Paraguay, y el Convenio Multilateral Iberoamericano de Seguridad Social, que es por donde entra, por ejemplo, Perú. Según el BPS, estos acuerdos permiten la "acumulación de períodos de servicio en ambos países", el traslado temporal de trabajadores y el "pago de jubilaciones y pensiones en el exterior sin quitas ni retenciones". Cada convenio tiene su propio texto y sus propias reglas, así que la lista te dice si hay convenio, no cómo se aplica en tu caso. Si tu país no figura, los años de allá no se suman a los de acá, pero lo que generaste en Uruguay se sigue pudiendo pedir y cobrar desde afuera.',
       },
       {
         heading: 'Cómo se suman los años: cada país paga su parte',
@@ -287,7 +287,7 @@ export const trabajoBpsGuides: readonly Guide[] = [
       },
       {
         heading: 'Cómo te llega la plata: el giro al exterior',
-        body: 'Una vez otorgada, la jubilación del BPS se puede cobrar donde vivas. El BPS envía por giro al exterior sus prestaciones y también las rentas permanentes del BSE, de las AFAP y por accidentes de trabajo, y lo hace "a partir del 5to día hábil de cada mes en la moneda del país de residencia". Sobre el costo, la ficha dice dos cosas que conviene leer juntas: el BPS no cobra comisión por realizar el giro, pero el BROU aplica un descuento por comisión de US$ 8, cualquiera sea el destino, según la ficha actualizada el 2 de septiembre de 2025. Para cobrar en un banco del resto del mundo tenés que darle al BPS el código IBAN de tu cuenta y el código SWIFT del banco pagador. Argentina tiene un circuito propio: el titular necesita DNI argentino y cobra con una tarjeta Banelco que se retira en la sucursal del BROU en Buenos Aires. Si cambiás de banco o de país, esos datos se actualizan con el BPS antes del siguiente giro.',
+        body: 'Una vez otorgada, la jubilación del BPS se puede cobrar donde vivas. El BPS envía por giro al exterior sus prestaciones y también las rentas permanentes del BSE, de las AFAP y por accidentes de trabajo, y lo hace "a partir del 5to día hábil de cada mes en la moneda del país de residencia". Sobre el costo, la ficha dice dos cosas que conviene leer juntas: el BPS no cobra comisión por realizar el giro, pero el BROU aplica un descuento por comisión de US$ 8, cualquiera sea el destino, según la ficha actualizada el 2 de setiembre de 2025. Para cobrar en un banco del resto del mundo tenés que darle al BPS el código IBAN de tu cuenta y el código SWIFT del banco pagador. Argentina tiene un circuito propio: el titular necesita DNI argentino y cobra con una tarjeta Banelco que se retira en la sucursal del BROU en Buenos Aires. Si cambiás de banco o de país, esos datos se actualizan con el BPS antes del siguiente giro.',
       },
       {
         heading: 'Lo que no viaja: pensión a la vejez, invalidez y prestaciones de activos',
@@ -343,7 +343,7 @@ export const trabajoBpsGuides: readonly Guide[] = [
       },
       {
         q: '¿Me cobran comisión por cobrar la jubilación afuera?',
-        a: 'El BPS no cobra comisión por el giro, pero su ficha, actualizada el 2 de septiembre de 2025, advierte que el BROU descuenta US$ 8 de comisión, cualquiera sea el destino.',
+        a: 'El BPS no cobra comisión por el giro, pero su ficha, actualizada el 2 de setiembre de 2025, advierte que el BROU descuenta US$ 8 de comisión, cualquiera sea el destino.',
       },
       {
         q: 'Vivo en Argentina, ¿cómo cobro?',

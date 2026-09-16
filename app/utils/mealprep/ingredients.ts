@@ -20,7 +20,7 @@ const n = (kcal: number, protein: number, carbs: number, fat: number, fiber = 0)
   fiber,
 })
 
-/** Estimado de góndola de Montevideo, relevado a mano en septiembre de 2026. */
+/** Estimado de góndola de Montevideo, relevado a mano en setiembre de 2026. */
 const EST = '2026-09'
 
 export const INGREDIENTS: ReadonlyArray<Ingredient> = Object.freeze([

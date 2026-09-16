@@ -703,7 +703,7 @@ export function buildWeekPlan(
   const measuredTotal = lines.filter(l => l.source === 'sipc').reduce((s, l) => s + l.usedCost, 0)
   const priceDay = lines.find(l => l.day)?.day ?? null
   if (!priceDay) {
-    warnings.push('El SIPC no contestó: todos los precios son estimados de septiembre de 2026.')
+    warnings.push('El SIPC no contestó: todos los precios son estimados de setiembre de 2026.')
   }
 
   return {

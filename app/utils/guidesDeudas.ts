@@ -154,7 +154,7 @@ export const deudasGuides: readonly Guide[] = [
       },
       {
         q: 'Mi deuda es de antes de 2020, ¿no eran veinte años?',
-        a: 'Hasta la Ley 19.889 de 2020, la acción personal del Código Civil prescribía a los veinte años. El artículo 467 de esa ley dispone que las prescripciones que ya estaban corriendo se determinan por el plazo nuevo de diez, con un margen: las que el acortamiento daba por cumplidas antes de tiempo se consumaron recién al terminar dos años desde que la ley pasó a regir, lapso que la Ley 20.061 estiró cuarenta y ocho meses más sólo para las deudas con el Ministerio de Vivienda, el BHU y la ANV. A septiembre de 2026 los dos márgenes ya terminaron, así que una deuda anterior a 2020 también se cuenta con los diez años.',
+        a: 'Hasta la Ley 19.889 de 2020, la acción personal del Código Civil prescribía a los veinte años. El artículo 467 de esa ley dispone que las prescripciones que ya estaban corriendo se determinan por el plazo nuevo de diez, con un margen: las que el acortamiento daba por cumplidas antes de tiempo se consumaron recién al terminar dos años desde que la ley pasó a regir, lapso que la Ley 20.061 estiró cuarenta y ocho meses más sólo para las deudas con el Ministerio de Vivienda, el BHU y la ANV. A setiembre de 2026 los dos márgenes ya terminaron, así que una deuda anterior a 2020 también se cuenta con los diez años.',
       },
     ],
     related: [
@@ -225,12 +225,12 @@ export const deudasGuides: readonly Guide[] = [
       },
       {
         heading: 'Qué publican las entidades sobre cancelar antes',
-        body: 'La tabla reúne condiciones publicadas por los propios prestamistas y la regla legal del hipotecario, según lo que estaba en línea al 13 de septiembre de 2026. No es un ranking: sirve para ver que las formas de cobrar la cancelación son muy distintas. Una comisión expresada como porcentaje del capital que queda pesa más cuanto antes canceles, porque el capital pendiente es mayor; una bonificación de los intereses a vencer, en cambio, te devuelve más cuanto antes canceles, porque es cuando más intereses faltan. Por eso dos préstamos con la misma tasa pueden terminar costando distinto si pensás adelantar pagos. Si tu entidad no está en la tabla, pedile la condición por escrito antes de firmar: el Banco Central exige que las instituciones supervisadas te informen de antemano todos los intereses, cargos y comisiones del producto, con su concepto, su monto y su periodicidad.',
+        body: 'La tabla reúne condiciones publicadas por los propios prestamistas y la regla legal del hipotecario, según lo que estaba en línea al 13 de setiembre de 2026. No es un ranking: sirve para ver que las formas de cobrar la cancelación son muy distintas. Una comisión expresada como porcentaje del capital que queda pesa más cuanto antes canceles, porque el capital pendiente es mayor; una bonificación de los intereses a vencer, en cambio, te devuelve más cuanto antes canceles, porque es cuando más intereses faltan. Por eso dos préstamos con la misma tasa pueden terminar costando distinto si pensás adelantar pagos. Si tu entidad no está en la tabla, pedile la condición por escrito antes de firmar: el Banco Central exige que las instituciones supervisadas te informen de antemano todos los intereses, cargos y comisiones del producto, con su concepto, su monto y su periodicidad.',
         table: {
           headers: ['Caso', 'Qué se publica', 'Fuente'],
           rows: [
             [
-              'Préstamos al consumo del BROU (tarifa a septiembre de 2026)',
+              'Préstamos al consumo del BROU (tarifa a setiembre de 2026)',
               'Comisión sobre el saldo de capital adeudado: 5 % en pesos, 2 % en unidades indexadas y 2,5 % en dólares; no se cuenta el capital vencido ni el que vence antes de 30 días',
               'Página de cancelación anticipada del BROU',
             ],
@@ -295,11 +295,11 @@ export const deudasGuides: readonly Guide[] = [
     faqs: [
       {
         q: 'Si cancelo el préstamo antes, ¿pago menos o pago lo mismo?',
-        a: 'Depende del contrato. Si te cobran sólo el capital pendiente, más una eventual comisión, ahorrás los intereses de las cuotas que faltaban; si te cobran la suma de las cuotas restantes, no ahorrás nada. Los términos de PreXtamo publicados a septiembre de 2026, por ejemplo, bonifican el 100 % de los intereses a vencer si cancelás en forma total tu único préstamo.',
+        a: 'Depende del contrato. Si te cobran sólo el capital pendiente, más una eventual comisión, ahorrás los intereses de las cuotas que faltaban; si te cobran la suma de las cuotas restantes, no ahorrás nada. Los términos de PreXtamo publicados a setiembre de 2026, por ejemplo, bonifican el 100 % de los intereses a vencer si cancelás en forma total tu único préstamo.',
       },
       {
         q: '¿Me pueden cobrar una multa por cancelar antes?',
-        a: 'Sí, si está pactada: la Unidad Defensa del Consumidor aclara que el acreedor no está obligado a aceptar la cancelación anticipada, así que las condiciones las fija el contrato. El BROU, por ejemplo, publica para sus préstamos al consumo una comisión del 5 % sobre el saldo de capital en pesos, del 2 % en unidades indexadas y del 2,5 % en dólares (tarifa vigente a septiembre de 2026).',
+        a: 'Sí, si está pactada: la Unidad Defensa del Consumidor aclara que el acreedor no está obligado a aceptar la cancelación anticipada, así que las condiciones las fija el contrato. El BROU, por ejemplo, publica para sus préstamos al consumo una comisión del 5 % sobre el saldo de capital en pesos, del 2 % en unidades indexadas y del 2,5 % en dólares (tarifa vigente a setiembre de 2026).',
       },
       {
         q: '¿Puedo cancelar un préstamo hipotecario antes de tiempo?',
@@ -522,7 +522,7 @@ export const deudasGuides: readonly Guide[] = [
       },
       {
         heading: '¿Pagar antes del cierre te ahorra el seguro sobre saldo?',
-        body: 'Es la pregunta de fondo de mucha gente que adelanta pagos, y la respuesta depende de sobre qué saldo se calcula el seguro de vida de tu tarjeta. El Banco Central obliga a las instituciones a informar "cómo se calculará el monto del seguro a pagar" y, cuando la prima es mensual, si el porcentaje "se aplicará a la totalidad de lo adeudado, incluidos los créditos a vencer". En la cartilla de tarjetas de Itaú vigente a septiembre de 2026, por ejemplo, el monto asegurado es el saldo contado del estado de cuenta más las cuotas a vencer o futuras, calculado al procesar el cierre, y la prima es del 3 por mil. Con una base así, si tenés compras en cuotas pendientes, al cierre sigue habiendo saldo asegurado aunque hayas pagado todo lo del mes, y el seguro se cobra igual. Con esa misma fórmula, en cambio, un cierre sin saldo y sin cuotas daría una base de cero. Cada emisor tiene su fórmula: buscala en la cartilla antes de organizar tus pagos alrededor del seguro.',
+        body: 'Es la pregunta de fondo de mucha gente que adelanta pagos, y la respuesta depende de sobre qué saldo se calcula el seguro de vida de tu tarjeta. El Banco Central obliga a las instituciones a informar "cómo se calculará el monto del seguro a pagar" y, cuando la prima es mensual, si el porcentaje "se aplicará a la totalidad de lo adeudado, incluidos los créditos a vencer". En la cartilla de tarjetas de Itaú vigente a setiembre de 2026, por ejemplo, el monto asegurado es el saldo contado del estado de cuenta más las cuotas a vencer o futuras, calculado al procesar el cierre, y la prima es del 3 por mil. Con una base así, si tenés compras en cuotas pendientes, al cierre sigue habiendo saldo asegurado aunque hayas pagado todo lo del mes, y el seguro se cobra igual. Con esa misma fórmula, en cambio, un cierre sin saldo y sin cuotas daría una base de cero. Cada emisor tiene su fórmula: buscala en la cartilla antes de organizar tus pagos alrededor del seguro.',
       },
       {
         heading: '¿El saldo a favor rinde o cuesta algo?',

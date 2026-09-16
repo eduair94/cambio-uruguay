@@ -243,7 +243,7 @@ export const INE_LINES_PERIOD = 'diciembre de 2025'
  * El mismo mes que INE_LINES_PERIOD, en ISO, para poder calcular cuánto tiempo
  * pasó. La prosa sola no sirve: el problema de estas cifras no es que estén mal,
  * es que un nivel de precios de diciembre se sirve como presupuesto de
- * septiembre y nada en el código lo sabe.
+ * setiembre y nada en el código lo sabe.
  */
 export const INE_LINES_ANCHOR = '2025-12-01'
 
@@ -299,7 +299,7 @@ const PLAUSIBLE_INFLATION: readonly [number, number] = [0.5, 200]
  *
  * SUPUESTO DECLARADO, y hay que decirlo en la página: la inflación general no es
  * la inflación de los alimentos. Reexpresar con el índice general es una
- * aproximación; servir el nivel de precios de diciembre en septiembre no es una
+ * aproximación; servir el nivel de precios de diciembre en setiembre no es una
  * aproximación, es estar viejo.
  */
 export function restateFood(
