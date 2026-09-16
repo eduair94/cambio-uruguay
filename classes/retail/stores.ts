@@ -157,6 +157,11 @@ export const RETAIL_STORES: RetailStore[] = [
     // The Store API declares `currency_minor_unit` but sends whole units (TYT: "15900" is $ 15.900).
     // Verified 2026-09-16.
     priceInMajorUnits: true,
+    // ...but not for every product. Same run, same declared unit: "Calefon Termotanque De Acero
+    // Enxuta 60 L" came as 20500 (pesos) and "Termotanque Calefon Enxuta 60 Lts" as 960000 (cents);
+    // "Telefunken Calefón TLF30V" 487900. Whole units stay the starting point, and the per-listing
+    // resolver tries /100 against MercadoLibre's band for the category.
+    priceUnitAmbiguous: true,
     enabled: true,
   },
   {

@@ -40,7 +40,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "grande", label: "Grande (más de 330 L)", numeric: { unit: "litros", min: 331, max: 900 }, rank: 3 },
     ],
     include: /\b(heladera|refrigerador|frigobar)\b/,
-    exclude: /\b(conservadora|portatil|de auto|12v|vinos|cervecera|exhibidora|mostrador|carnicer)\b/,
+    exclude: /\b(conservadora|portatil|de auto|para camion(es)?|12v|vinos|cervecera|exhibidora|mostrador|carnicer)\b/,
     urlHint: /(heladera|frigobar|refrigerador)/i,
     storeQueries: ["heladera", "heladeras", "frigobar"],
     mlQueries: ["heladera", "heladera con freezer", "frigobar", "heladera no frost"],
@@ -67,7 +67,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     // fruit layer at the bottom. El Dorado is a supermarket, so four of them at $ 70 became the
     // cheapest "2 plazas" products on the page. The grams/millilitres and the dairy aisle catch them.
     exclude:
-      /\b(inflable|de aire|para bebe|cuna|corralito|camping|yoga|antiescara|sofa cama|para perro|mascota|topper|cubre|base para colchon|cama box|sommier base|base de cama|protector|yogur\w*|lacteos|\d+ ?(gr|grs|gramos|ml)\b)\b/,
+      /\b(inflable|de aire|para bebe|cuna|corralito|camping|yoga|antiescara|sofa cama|para perros?|cucha|mascotas?|topper|cubre|base para colchon|cama box|sommier base|base de cama|protector|yogur\w*|lacteos|\d+ ?(gr|grs|gramos|ml)\b)\b/,
     urlHint: /colchon/i,
     storeQueries: ["colchon", "colchones"],
     mlQueries: ["colchon 2 plazas", "colchon 1 plaza", "colchon queen", "colchon resortes"],
@@ -90,7 +90,9 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     include: /\b(lavarropas|lavadora|lavasecarropas)\b/,
     // "Semi-automático" keeps its hyphen through `norm`, and "doble cuba" is the same machine under
     // another name: no spin cycle, a fraction of the price, a different market.
-    exclude: /\b(secarropas|semi ?-?automatic\w*|doble cuba|para bebe|de juguete|industrial)\b/,
+    // "Lavadora de alta presión" is a pressure washer, and a drain hose names the machine it fits.
+    exclude:
+      /\b(secarropas|semi ?-?automatic\w*|doble cuba|para bebe|de juguete|industrial|alta presion|hidrolavadoras?|mangueras?|desagote)\b/,
     urlHint: /(lavarropas|lavadora)/i,
     storeQueries: ["lavarropas", "lavadora"],
     mlQueries: ["lavarropas", "lavarropas automatico", "lavarropas carga frontal"],
@@ -110,7 +112,9 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "anafe", label: "Anafe (2 hornallas)", match: /\banafe\b|\b2 hornallas\b/, rank: 1 },
       { key: "cocina4", label: "Cocina 4 hornallas con horno", match: /\b(4|cuatro) hornallas\b|\bcon horno\b/, fallback: true, rank: 2 },
     ],
-    include: /\b(anafe|cocina (a )?(gas|electrica|supergas)|cocina \d ?hornallas|hornalla)\b/,
+    // "Cocina Grenno Massima Con Horno Electrico" names neither gas nor burners; the title starting
+    // with "Cocina" and saying "con horno" is what makes it a stove and not an oven.
+    include: /\b(anafe|cocina (a )?(gas|electrica|supergas)|cocina \d ?hornallas|hornalla|^cocina\b.*\bcon horno)\b/,
     // A butane cartridge says "anafe" because that is what it feeds.
     exclude:
       /\b(mueble|bajo mesada|alacena|campana|isla|juguete|de juguete|libro|curso|cartucho|gas butano|isobutano|garrafa|camping|cocinilla)\b/,
@@ -136,7 +140,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     include: /\b(calefon|calefones|termotanque)\b/,
     // A gas instantaneous heater is sold as "calefón a gas", but it is another install (flue, gas
     // line) and another price. This row is the electric tank a rental is expected to have.
-    exclude: /\b(solar|a gas de paso|instalacion|a gas|tiro natural|instantaneo)\b/,
+    exclude: /\b(solar|a gas de paso|instalacion|a gas|tiro natural|instantaneo|colillas?)\b/,
     urlHint: /(calefon|termotanque)/i,
     storeQueries: ["calefon", "termotanque"],
     mlQueries: ["calefon", "calefon 80 litros", "termotanque"],
@@ -215,13 +219,13 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     // pipe is matched where it is the product (first word, or a kit) and not anywhere, because a
     // real unit lists "con caño de cobre" among what comes in the box.
     exclude:
-      /\b(convector|estufa|calefactor|caloventor|portatil de aire|^canos?|kit de canos?|instalacion|soporte|bomba|control remoto)\b/,
+      /\b(convector|estufa|calefactor|caloventor|portatil de aire|^canos?|kit de canos?|instalacion|soporte|bomba|control remoto|limpiador(es)?|prensas?|cintas?|automotriz|de auto)\b/,
     urlHint: /(aire-acondicionado|split)/i,
-    // No "aire portatil" here, although ML gets it: VTEX and WooCommerce send the deduplicated store
-    // queries in registry order and stop at 24, and one more query above the pot costs every capped
-    // store its pots (measured, see tests/equipar/registry.test.ts). A portable unit is titled
-    // "aire acondicionado portátil", so the first query can already reach it.
-    storeQueries: ["aire acondicionado", "split"],
+    // VTEX and WooCommerce send the deduplicated store queries in registry order and stop at a cap.
+    // At the default 24 this query evicted "olla" from every capped store (measured); the daily run
+    // now sends all of them (RETAIL_*_MAX_QUERIES=80, see tests/equipar/registry.test.ts), and the
+    // hourly run's 24 only ever loses the cheap tail.
+    storeQueries: ["aire acondicionado", "split", "aire portatil"],
     mlQueries: [
       "aire acondicionado split",
       "aire acondicionado 12000",
@@ -329,7 +333,8 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "28", label: "28 cm o más", numeric: { unit: "cm", min: 27, max: 40 }, rank: 3 },
     ],
     include: /\b(sarten|sartenes|wok|paellera)\b/,
-    exclude: /\b(electric|de juguete|mango de repuesto)\b/,
+    // "Mango De Cuero Para Sarten" (TYT) is the handle sold alone: first word, like the AC pipe.
+    exclude: /\b(electric|de juguete|mango de repuesto|^mangos?)\b/,
     urlHint: /(sarten|wok)/i,
     storeQueries: ["sarten", "sartenes"],
     mlQueries: ["sarten antiadherente", "sarten 24", "wok"],
@@ -350,7 +355,11 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "juego", label: "Juego de cuchillos", match: /\b(juego|set)\b/, rank: 2 },
     ],
     include: /\b(cuchillo|cuchillos)\b/,
-    exclude: /\b(de caza|tactico|carnicero industrial|electrico|de juguete|afilador|para pan de repuesto|cortapluma)\b/,
+    // Measured once the daily run searched every store: El Dorado's party aisle (disposable
+    // cutlery), TYT's sharpening machines and hex keys "tipo cuchillo", and a cutlery set that
+    // mentions its steak knives, which belongs to "cubiertos" below.
+    exclude:
+      /\b(de caza|caza|pesca|tactico|carnicero industrial|electrico|de juguete|afilador\w*|afilar|llaves?|descartables?|(set|juego) de cubiertos|para pan de repuesto|cortapluma)\b/,
     urlHint: /cuchillo/i,
     storeQueries: ["cuchillo", "cuchillos"],
     mlQueries: ["cuchillo de cocina", "juego de cuchillos"],
@@ -370,7 +379,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "servicio12", label: "Servicio para 12 (48 piezas)", numeric: { unit: "piezas", min: 40, max: 100 }, rank: 2 },
     ],
     include: /\b(cubiertos|cubierteria|juego de cubiertos)\b/,
-    exclude: /\b(de juguete|descartable|plastico descartable|para bebe|organizador|cubiertera)\b/,
+    exclude: /\b(de juguete|descartables?|plastico descartable|para bebe|organizador|cubiertera|escurridor(es)?)\b/,
     urlHint: /cubierto/i,
     storeQueries: ["cubiertos", "cubierteria"],
     mlQueries: ["juego de cubiertos", "cubiertos acero inoxidable"],
@@ -445,7 +454,9 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     quantity: 1,
     variants: [{ key: "estandar", label: "Estándar", fallback: true, rank: 1 }],
     include: /\b(escurridor|secaplatos|escurreplatos)\b/,
-    exclude: /\b(de ensalada|de pastas|para fregadero de repuesto)\b/,
+    // A mop bucket "con escurridor" is the cleaning kit further down, which then claims it; a
+    // cutlery drainer is a $ 149 caddy, not the dish rack this row prices.
+    exclude: /\b(de ensalada|de pastas|de cubiertos|para fregadero de repuesto|mopas?|fregonas?|baldes?)\b/,
     urlHint: /(escurridor|secaplatos)/i,
     storeQueries: ["escurridor", "secaplatos"],
     mlQueries: ["escurridor de platos", "secaplatos"],
@@ -487,7 +498,9 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "licuadora", label: "Licuadora de vaso", match: /\blicuadora\b/, rank: 2 },
     ],
     include: /\b(mixer|minipimer|licuadora|procesadora)\b/,
-    exclude: /\b(industrial|de pintura|de cemento|vaso de repuesto|cuchilla de repuesto)\b/,
+    // TYT sells power-tool kits "+ mixer" and a paint mixer; neither blends soup.
+    exclude:
+      /\b(industrial|de pintura|pintura|mezclador(es)?|de cemento|atornillador(es)?|taladros?|llaves?|linternas?|weg|vaso de repuesto|cuchilla de repuesto)\b/,
     urlHint: /(mixer|licuadora|procesadora)/i,
     storeQueries: ["mixer", "licuadora"],
     mlQueries: ["mixer de mano", "licuadora", "procesadora de alimentos"],
@@ -539,7 +552,11 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     quantity: 1,
     variants: [{ key: "40l", label: "Hasta 45 L", fallback: true, rank: 1 }],
     include: /\b(horno electrico|horno de mesa|airfryer|freidora de aire)\b/,
-    exclude: /\b(a gas|empotrable|industrial|bandeja de repuesto)\b/,
+    // A stove "con horno eléctrico" starts with "Cocina". Anchored to the start of the title on
+    // purpose: the exclude also reads the store's context, where "Cocina" is the aisle half the
+    // storefronts file every airfryer under.
+    // "Papas Mccain Airfryer" is frozen chips (El Dorado, /Comestibles/Congelados/).
+    exclude: /\b(a gas|empotrable|industrial|bandeja de repuesto|^cocinas?|^papas?|comestibles)\b/,
     urlHint: /(horno|airfryer)/i,
     storeQueries: ["horno electrico", "airfryer"],
     mlQueries: ["horno electrico", "freidora de aire"],
@@ -615,7 +632,11 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     quantity: 2,
     variants: [{ key: "toallon", label: "Toallón", fallback: true, rank: 1 }],
     include: /\b(toalla|toallas|toallon|toallones)\b/,
-    exclude: /\b(de papel|descartable|de playa|para auto|microfibra de limpieza|femenina)\b/,
+    // "Toalla de cocina" is kitchen paper in a supermarket (El Dorado: "Maxirollo 200 paños").
+    // A supermarket's "toallas" aisle is sanitary pads, wet wipes and nappies with a free pack of
+    // wipes; its store path says "Cuidado Personal", which a bath towel never sits under.
+    exclude:
+      /\b(de papel|papel(es)?|rollos?|panos?|de cocina|descartables?|de playa|para auto|microfibra de limpieza|femeninas?|humedas?|panal(es)?|con alas|cuidado personal)\b/,
     urlHint: /toall/i,
     storeQueries: ["toallas", "toallon"],
     mlQueries: ["toallon", "juego de toallas"],
@@ -651,7 +672,10 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     quantity: 1,
     variants: [{ key: "kit", label: "Balde, escoba y secador", fallback: true, rank: 1 }],
     include: /\b(balde|escoba|secador de piso|mopa|set de limpieza|kit de limpieza|lampazo)\b/,
-    exclude: /\b(de obra|industrial|de pelo|de ropa|para auto|de juguete|piscina)\b/,
+    // A hardware store's buckets are for mortar, paint and 20 L of engine oil, and a supermarket's
+    // are for the beach and for ice. A cordless "aspiradora escoba" is the vacuum further down.
+    exclude:
+      /\b(de obra|obra|albanil|construccion|pintar|pintor|hormigonera|enduido|aceites?|lubricantes?|membranas?|rastrillos?|industrial|de pelo|de ropa|para auto|de juguete|jugueteria|de playa|para hielo|piscina|aspiradoras?)\b/,
     urlHint: /(balde|escoba|mopa|lampazo)/i,
     storeQueries: ["balde", "escoba", "mopa"],
     mlQueries: ["set de limpieza hogar", "balde y escoba", "mopa"],
@@ -707,7 +731,8 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "techo", label: "De techo", match: /\bde techo\b/, rank: 2 },
     ],
     include: /\b(ventilador|ventiladores)\b/,
-    exclude: /\b(de pc|de notebook|extractor|de auto|de repuesto|cooler)\b/,
+    exclude:
+      /\b(de pc|de notebook|extractor|de auto|industrial(es)?|12v|24v|vehiculos?|camionetas?|obra|de mano|de repuesto|cooler)\b/,
     urlHint: /ventilador/i,
     storeQueries: ["ventilador"],
     mlQueries: ["ventilador de pie", "ventilador de techo"],
@@ -730,7 +755,10 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     include: /\b(estufa|calefactor|caloventor|panel calefactor|radiador de aceite)\b/,
     // A butane camping stove is sometimes titled "anafe estufa"; once "cocina" stopped taking
     // cartridge stoves, this was the next category that would.
-    exclude: /\b(a lena de obra|industrial|de auto|de repuesto|resistencia|anafe|hornallas?)\b/,
+    // TYT, once searched in full: patio "hongo" heaters, a windscreen demister, a camping grill "o
+    // estufa a leña", refractory bricks, a flue kit and a 60.000 BTU workshop heat cannon.
+    exclude:
+      /\b(a lena de obra|industrial|de auto|12v|parabrisas|hongo|exterior|parrillas?|parrillero|refractario|instalacion|canon de calor|de repuesto|resistencia|anafe|hornallas?)\b/,
     urlHint: /(estufa|calefactor|caloventor)/i,
     storeQueries: ["estufa", "calefactor", "caloventor"],
     mlQueries: ["caloventor", "estufa electrica", "panel calefactor"],
@@ -747,7 +775,9 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     quantity: 1,
     variants: [{ key: "trineo", label: "De trineo o escoba", fallback: true, rank: 1 }],
     include: /\b(aspiradora|aspiradoras)\b/,
-    exclude: /\b(de auto|industrial|de taller|bolsa de repuesto|robot de repuesto)\b/,
+    // TYT files pressure washers, leaf blowers and a sander "con aspiradora" next to the vacuums.
+    exclude:
+      /\b(de auto|para auto|industrial|de taller|hidrolavadoras?|sopladoras?|lijadoras?|amoladoras?|taladros?|rotomartillos?|atornillador(es)?|bolsa de repuesto|robot de repuesto)\b/,
     urlHint: /aspiradora/i,
     storeQueries: ["aspiradora"],
     mlQueries: ["aspiradora", "aspiradora escoba"],

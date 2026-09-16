@@ -1,3 +1,4 @@
+import path from "path";
 import { describe, expect, it } from "vitest";
 import { EQUIPAR_CATEGORIES, NOT_A_PRODUCT, TIER_LABEL } from "../../classes/equipar/registry";
 import { equiparSpecs } from "../../classes/equipar/classify";
@@ -56,14 +57,37 @@ describe("registro de categorías", () => {
     expect(specs[0]!.key).toBe("heladera");
   });
 
-  it("sumar una consulta de tienda arriba no le saca la olla a VTEX y WooCommerce", () => {
-    // Esos dos adaptadores mandan las storeQueries deduplicadas EN ORDEN DEL REGISTRO y cortan en 24
-    // (RETAIL_VTEX_MAX_QUERIES / RETAIL_WOO_MAX_QUERIES, sin override en producción). "olla" es
-    // justo la 24. Medido con el dry run al sumar "aire portatil" al aire acondicionado: El Dorado
-    // pasó de 198 a 138 productos revisados y TYT de 149 a 95 aceptados, y las dos tiendas
-    // perdieron todas sus ollas, que son tier S. Una consulta nueva arriba de la olla cuesta la olla.
-    const sentToCappedStores = [...new Set(EQUIPAR_CATEGORIES.flatMap((category) => category.storeQueries))].slice(0, 24);
-    expect(sentToCappedStores).toContain("olla");
+  it("la corrida diaria manda TODAS las búsquedas de tienda a VTEX y WooCommerce", () => {
+    // Esos dos adaptadores mandan las storeQueries deduplicadas EN ORDEN DEL REGISTRO y cortan en
+    // RETAIL_VTEX_MAX_QUERIES / RETAIL_WOO_MAX_QUERIES, 24 por defecto. Con 24 llegaba hasta "olla":
+    // sartén, cubiertos, vajilla, vasos, sábanas, toallas, limpieza y tacho —casi todo el tier S—
+    // nunca se buscaban en El Dorado ni en las cinco tiendas WooCommerce. Medido en la Task 3: sumar
+    // "aire portatil" arriba de la olla le sacó las ollas a El Dorado (198 -> 138 productos
+    // revisados) y a TYT (149 -> 95 aceptados). La diaria sube el tope a 80 en ecosystem.config.js.
+    const DAILY_STORE_QUERY_CAP = 80;
+    const deduplicated = [...new Set(EQUIPAR_CATEGORIES.flatMap((category) => category.storeQueries))];
+    expect(deduplicated.slice(0, DAILY_STORE_QUERY_CAP)).toEqual(deduplicated);
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const apps = require(path.join(__dirname, "..", "..", "ecosystem.config.js")).apps as Array<{
+      name: string;
+      env?: Record<string, string>;
+    }>;
+    const daily = apps.find((app) => app.name === "currency-equipar")!;
+    expect(daily.env?.RETAIL_WOO_MAX_QUERIES).toBe(String(DAILY_STORE_QUERY_CAP));
+    expect(daily.env?.RETAIL_VTEX_MAX_QUERIES).toBe(String(DAILY_STORE_QUERY_CAP));
+
+    // La horaria se queda en el default de 24 a propósito: corre 24 veces por día contra tiendas
+    // chicas, y subirle el tope multiplicaría esa carga por tres para refrescar precios que la
+    // diaria ya trae. Pierde la cola del registro, que es la parte barata.
+    const hourly = apps.find((app) => app.name === "currency-equipar-hourly")!;
+    expect(hourly.env?.RETAIL_WOO_MAX_QUERIES).toBeUndefined();
+    expect(hourly.env?.RETAIL_VTEX_MAX_QUERIES).toBeUndefined();
+  });
+
+  it("el aire portátil vuelve a buscarse en las tiendas", () => {
+    const aire = EQUIPAR_CATEGORIES.find((category) => category.key === "aire-acondicionado")!;
+    expect(aire.storeQueries).toContain("aire portatil");
   });
 
   it("ningún filtro lleva acentos ni ñ, porque corren sobre el título normalizado", () => {

@@ -36,6 +36,19 @@ const median = (values: readonly number[]): number => percentile([...values].sor
 
 const groupKey = (sellerKey: string, spec: string): string => `${sellerKey}::${spec}`;
 
+/** MercadoLibre prices per category, in pesos. Both guards measure against this and nothing else. */
+function mlPricesBySpec(listings: readonly RetailListing[], usdUyu: number): Map<string, number[]> {
+  const bySpec = new Map<string, number[]>();
+  for (const listing of listings) {
+    const spec = listing.attributes.CATEGORY_SPEC;
+    if (listing.source !== "mercadolibre" || !spec) continue;
+    const bucket = bySpec.get(spec) ?? [];
+    bucket.push(toUyu(listing, usdUyu));
+    bySpec.set(spec, bucket);
+  }
+  return bySpec;
+}
+
 /**
  * Drops every listing from a (store, category) pair whose median price, in pesos, sits more than
  * {@link RATIO}x away from MercadoLibre's median for the same category. Only decides when BOTH sides
@@ -46,23 +59,16 @@ export function applyUnitGuard(
   listings: readonly RetailListing[],
   usdUyu: number
 ): { listings: RetailListing[]; dropped: UnitGuardDrop[] } {
-  const mlPricesBySpec = new Map<string, number[]>();
+  const mlBySpec = mlPricesBySpec(listings, usdUyu);
   const storePricesByGroup = new Map<string, number[]>();
 
   for (const listing of listings) {
     const spec = listing.attributes.CATEGORY_SPEC;
-    if (!spec) continue;
-    const uyu = toUyu(listing, usdUyu);
-    if (listing.source === "mercadolibre") {
-      const bucket = mlPricesBySpec.get(spec) ?? [];
-      bucket.push(uyu);
-      mlPricesBySpec.set(spec, bucket);
-    } else if (listing.source === "store") {
-      const key = groupKey(listing.sellerKey, spec);
-      const bucket = storePricesByGroup.get(key) ?? [];
-      bucket.push(uyu);
-      storePricesByGroup.set(key, bucket);
-    }
+    if (listing.source !== "store" || !spec) continue;
+    const key = groupKey(listing.sellerKey, spec);
+    const bucket = storePricesByGroup.get(key) ?? [];
+    bucket.push(toUyu(listing, usdUyu));
+    storePricesByGroup.set(key, bucket);
   }
 
   const dropped: UnitGuardDrop[] = [];
@@ -71,7 +77,7 @@ export function applyUnitGuard(
   for (const [key, storePrices] of storePricesByGroup) {
     if (storePrices.length < MIN_SAMPLE) continue;
     const [sellerKey, spec] = key.split("::");
-    const mlPrices = mlPricesBySpec.get(spec);
+    const mlPrices = mlBySpec.get(spec);
     if (!mlPrices || mlPrices.length < MIN_SAMPLE) continue;
 
     const storeMedianUyu = median(storePrices);
@@ -93,4 +99,91 @@ export function applyUnitGuard(
   });
 
   return { listings: survivors, dropped };
+}
+
+/** Wrong units are off by exactly this factor: cents read as pesos. */
+const UNIT_FACTOR = 100;
+/**
+ * How far past the band's ceiling a published price must sit before it is rescaled.
+ *
+ * A cents error multiplies a price that is INSIDE the band by 100, so it lands far outside it:
+ * TYT's calefones in cents came in at 16x to 33x MercadoLibre's p90. A genuinely expensive product
+ * lands just outside: "Smart Tv Samsung Qled 85« 4k" at 229900 was 7.5x the television p90, and
+ * 2299 happened to fall inside the band's floor, so without this margin it was published at
+ * $ 2.299. 3x the ceiling (9x the p90) sits between the two measured cases.
+ */
+const RESCALE_MARGIN = 3;
+
+/**
+ * Per-listing unit resolution for a seller that mixes units INSIDE one catalogue.
+ *
+ * TYT sends most products in whole pesos and some in cents, all under the same declared
+ * `currency_minor_unit: 2` (measured 2026-09-16: "Calefon Termotanque De Acero Enxuta 60 L" at
+ * 20500 and "Termotanque Calefon Enxuta 60 Lts" at 960000 in the same run). {@link applyUnitGuard}
+ * cannot see that: it judges a store's MEDIAN, and the half published right holds the median
+ * steady while the other half goes out at 100x. So for a seller flagged ambiguous each listing is
+ * judged on its own, against MercadoLibre's band for its category, in pesos: [p10/3, p90*3] — the
+ * same shape as the exchange-rate plausibility band, wide enough for a genuinely cheap or premium
+ * item and still two orders of magnitude narrower than the error.
+ *
+ *   price in band, price/100 not  -> kept as published
+ *   price/100 in band, price not,
+ *     and price > RESCALE_MARGIN x ceiling -> rescaled (price and listPrice, in their own currency)
+ *   anything else (both, neither,
+ *     or just past the ceiling)   -> dropped: the number cannot tell us which it is
+ *   no MercadoLibre band (<5)     -> dropped: there is nothing to judge it against
+ *
+ * Dropping is the honest default because a guess is published as a fact. Sellers that are not
+ * flagged, and MercadoLibre itself, pass through untouched. Nothing is mutated.
+ */
+export function resolveAmbiguousUnits(
+  listings: readonly RetailListing[],
+  usdUyu: number,
+  ambiguousSellerKeys: ReadonlySet<string>
+): { listings: RetailListing[]; rescaled: number; dropped: number } {
+  if (!ambiguousSellerKeys.size) return { listings: [...listings], rescaled: 0, dropped: 0 };
+
+  const bands = new Map<string, { low: number; high: number }>();
+  for (const [spec, prices] of mlPricesBySpec(listings, usdUyu)) {
+    if (prices.length < MIN_SAMPLE) continue;
+    const sorted = [...prices].sort((a, b) => a - b);
+    bands.set(spec, { low: percentile(sorted, 0.1) / 3, high: percentile(sorted, 0.9) * 3 });
+  }
+
+  const out: RetailListing[] = [];
+  let rescaled = 0;
+  let dropped = 0;
+
+  for (const listing of listings) {
+    if (listing.source !== "store" || !ambiguousSellerKeys.has(listing.sellerKey)) {
+      out.push(listing);
+      continue;
+    }
+    const spec = listing.attributes.CATEGORY_SPEC;
+    const band = spec ? bands.get(spec) : undefined;
+    if (!band) {
+      dropped++;
+      continue;
+    }
+    const inBand = (uyu: number): boolean => uyu >= band.low && uyu <= band.high;
+    const publishedUyu = toUyu(listing, usdUyu);
+    const asPublished = inBand(publishedUyu);
+    const asCents = inBand(publishedUyu / UNIT_FACTOR);
+
+    if (asPublished && !asCents) {
+      out.push(listing);
+    } else if (asCents && !asPublished && publishedUyu > band.high * RESCALE_MARGIN) {
+      const scale = (value: number): number => Math.round((value / UNIT_FACTOR) * 100) / 100;
+      out.push({
+        ...listing,
+        price: scale(listing.price),
+        listPrice: listing.listPrice ? scale(listing.listPrice) : listing.listPrice,
+      });
+      rescaled++;
+    } else {
+      dropped++;
+    }
+  }
+
+  return { listings: out, rescaled, dropped };
 }

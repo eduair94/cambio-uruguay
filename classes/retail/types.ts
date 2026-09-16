@@ -72,6 +72,13 @@ export interface RetailStore {
    * Verified 2026-09-16.
    */
   priceInMajorUnits?: boolean;
+  /**
+   * The unit is not consistent across the store's own catalogue: some products come in whole pesos
+   * and some in cents under the same declared minor unit. Each listing is then resolved on its own
+   * against MercadoLibre's band for its category (`resolveAmbiguousUnits` in unitGuard.ts), and a
+   * listing that cannot be told apart is dropped instead of guessed.
+   */
+  priceUnitAmbiguous?: boolean;
   enabled: boolean;
   note?: string;
 }

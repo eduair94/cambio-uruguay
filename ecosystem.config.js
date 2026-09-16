@@ -173,11 +173,19 @@ module.exports = {
       // RETAIL_STORE_MAX_PDP is raised here and only here. The default of 260 product pages per
       // Fenicio store is right for one category and would truncate thirty-eight in sitemap order,
       // which silently biases every band toward whatever the store happens to list first.
+      //
+      // RETAIL_WOO_MAX_QUERIES / RETAIL_VTEX_MAX_QUERIES (read by classes/retail/sources/woocommerce.ts
+      // and vtex.ts) likewise go to 80 here and only here. The registry has ~70 deduplicated store
+      // searches sent in registry order, and at the default 24 the list stopped at "olla": sartén,
+      // cubiertos, vajilla, vasos, sábanas, toallas, limpieza and tacho, most of tier S, were never
+      // searched on El Dorado or the five WooCommerce stores. The hourly app keeps 24 on purpose: it
+      // runs 24 times a day against small shops, and tripling that load to refresh prices the daily
+      // run already has only buys the cheap tail.
       name: "currency-equipar",
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync_equipar.js",
-      env: { RETAIL_STORE_MAX_PDP: "900" },
+      env: { RETAIL_STORE_MAX_PDP: "900", RETAIL_WOO_MAX_QUERIES: "80", RETAIL_VTEX_MAX_QUERIES: "80" },
       cron_restart: "47 12 * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },

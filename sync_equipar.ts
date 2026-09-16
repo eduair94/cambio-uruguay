@@ -30,7 +30,7 @@ import {
 import type { EquiparMeta } from "./classes/equipar/types";
 import { harvestRetail } from "./classes/retail/harvest";
 import { retailStores } from "./classes/retail/stores";
-import { applyUnitGuard } from "./classes/retail/unitGuard";
+import { applyUnitGuard, resolveAmbiguousUnits } from "./classes/retail/unitGuard";
 
 /**
  * How many MercadoLibre searches and Marketplace searches one run may spend.
@@ -58,10 +58,11 @@ async function main(): Promise<void> {
 
   const startedAt = Date.now();
   const specs = equiparSpecs();
+  const stores = retailStores();
 
   const [harvest, usdUyu, previous, storedCount] = await Promise.all([
     harvestRetail({
-      stores: retailStores(),
+      stores,
       specs,
       fast,
       maxMlScans: fast ? Math.round(ML_BUDGET / 2) : ML_BUDGET,
@@ -81,10 +82,17 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  // A store that mixes pesos and cents INSIDE its own catalogue (TYT) is resolved listing by
+  // listing first. It has to run before the per-store guard: that one judges a store's median, and
+  // an unresolved half at 100x could tip a whole category of the store out of the page.
+  const ambiguousSellers = new Set(stores.filter((store) => store.priceUnitAmbiguous).map((store) => store.key));
+  const resolved = resolveAmbiguousUnits(harvest.listings, usdUyu, ambiguousSellers);
+  console.log(`[equipar] unidades ambiguas: ${resolved.rescaled} reescalados, ${resolved.dropped} descartados`);
+
   // Backstop for a WooCommerce store that sends whole pesos while declaring a minor unit (TYT was
   // the measured case — see classes/retail/unitGuard.ts). Runs after the per-store override so the
   // guard only ever catches the NEXT store nobody has fixed yet.
-  const guarded = applyUnitGuard(harvest.listings, usdUyu);
+  const guarded = applyUnitGuard(resolved.listings, usdUyu);
   for (const drop of guarded.dropped) {
     console.log(
       `[equipar] unidad: ${drop.sellerKey} en ${drop.spec} mediana $${drop.storeMedianUyu} contra $${drop.mlMedianUyu} de ML — descartada`
