@@ -168,11 +168,16 @@ describe("httpText", () => {
   });
 
   it("sends the bot-identification header and a browser user-agent", async () => {
-    const fetchMock = vi.fn(async () => new Response("ok", { status: 200 }));
+    // Typed against the real `fetch` signature (not inferred from the zero-arg implementation
+    // below) so `.mock.calls[0]` is `Parameters<typeof fetch>` instead of `[]` — an untyped
+    // `vi.fn()` here made tsc infer an empty-tuple call shape and reject the `as [string,
+    // RequestInit]` cast (TS2352) under tsconfig.production.json, which the root tsconfig
+    // includes via `./**/*.ts` and which gates every backend deploy.
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response("ok", { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
     await httpText("https://ejemplo.com/");
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    const headers = init.headers as Record<string, string>;
+    const [, init] = fetchMock.mock.calls[0];
+    const headers = init?.headers as Record<string, string>;
     expect(headers["x-cambio-uruguay-bot"]).toBe("store-profiles");
     expect(headers["user-agent"]).toMatch(/Chrome/);
   });
