@@ -424,6 +424,26 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Fichas de /tiendas-online-uruguay: por cada tienda del registro curado
+      // (classes/stores/registry.ts) lee su home, la antigüedad del dominio (crt.sh, Wayback),
+      // Trustpilot (:3029), Google Maps (:2221, sólo si el sitio de la ficha ES el dominio), las
+      // menciones en r/uruguay y r/montevideo (Arctic Shift) y la presencia en los catálogos propios
+      // → APP DB `storeprofiles`. Una fuente que falla conserva su último valor con su fecha vieja;
+      // una corrida en la que menos del 40 % de las tiendas respondió no escribe y sale con 1.
+      //
+      // Domingos 07:17 UTC = 04:17 en Montevideo. Semanal porque reseñas y antigüedad se mueven en
+      // semanas, y porque Arctic Shift pide ir despacio: recorrer las menciones de todo el registro
+      // lleva su rato. Lejos de currency-search-demand (06:40) y de currency-rag-index (04:20), y de
+      // currency-charruadevs (12:14), que lee el mismo Arctic Shift. Minuto 17: no es múltiplo de 5.
+      // Necesita APP_MONGO_URI.
+      name: "currency-store-profiles",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_store_profiles.js",
+      cron_restart: "17 7 * * 0",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Lender TEA refresh (bancos/financieras/cooperativas/fintech) for /prestamos-uruguay.
       // Fallback chain: regex parser first (oca/pronto/cash), Gemini-grounded lookup for the rest
       // (host-gated to the lender's own resolved domain). Daily 08:47 UTC ≈ 05:47

@@ -21,6 +21,7 @@ import { CharruaSnapshotModel } from "../../classes/models/CharruaSnapshot";
 import { CarCatalogMetaModel } from "../../classes/models/CarCatalogMeta";
 import { CarMarketSnapshotModel } from "../../classes/models/CarMarketSnapshot";
 import { CarOpportunitySnapshotModel } from "../../classes/models/CarOpportunitySnapshot";
+import { StoreProfileModel } from "../../classes/models/StoreProfile";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -150,6 +151,12 @@ describe("app-Mongo schema parity", () => {
     expect(CarOpportunitySnapshotModel.collection.name).toBe("caropportunitysnapshots");
   });
 
+  it("StoreProfile declares exactly the app's top-level fields", () => {
+    // Las fichas de /tiendas-online-uruguay: una señal que el backend guarda y el app no declara es
+    // un bloque de la ficha que desaparece sin error, y la ficha pasa a decir menos de lo que sabemos.
+    expect(Object.keys(StoreProfileModel.schema.obj).sort()).toEqual(appFields(appModel("StoreProfile")).sort());
+  });
+
   it("writes the collections the app already reads — not mongoose's guess", () => {
     expect(PricePredictionModel.collection.name).toBe("pricepredictions");
     expect(MoveExplanationModel.collection.name).toBe("moveexplanations");
@@ -164,5 +171,6 @@ describe("app-Mongo schema parity", () => {
     expect(SiteRevenueSnapshotModel.collection.name).toBe("siterevenuesnapshots");
     expect(EquiparItemModel.collection.name).toBe("equiparitems");
     expect(EquiparMetaModel.collection.name).toBe("equiparmeta");
+    expect(StoreProfileModel.collection.name).toBe("storeprofiles");
   });
 });
