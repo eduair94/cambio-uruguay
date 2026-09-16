@@ -125,6 +125,115 @@
       </VCard>
     </section>
 
+    <!-- Plazo y reclamo -->
+    <section class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">El plazo y qué hacer si no te lo pagan</h2>
+      <p class="section-intro text-medium-emphasis mb-5">
+        El decreto del Poder Ejecutivo para 2026 confirma el mismo calendario que fija la ley:
+        {{ AGUINALDO_2026_DECREE.juneNote }} {{ AGUINALDO_2026_DECREE.decemberNote }} Si esa fecha
+        pasa y no cobraste, hay dos consecuencias que se acumulan.
+      </p>
+
+      <VTable class="base-table cu-mobile-cards mb-6" density="comfortable">
+        <thead>
+          <tr>
+            <th>Consecuencia</th>
+            <th>Detalle</th>
+            <th>Fuente</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="c in AGUINALDO_LATE_PAYMENT_CONSEQUENCES" :key="c.label">
+            <td data-label="Consecuencia">
+              <span class="font-weight-medium">{{ c.label }}</span>
+            </td>
+            <td data-label="Detalle" class="cu-cell-prose text-caption text-medium-emphasis">
+              {{ c.detail }}
+            </td>
+            <td data-label="Fuente" class="text-caption text-no-wrap">{{ c.source }}</td>
+          </tr>
+        </tbody>
+      </VTable>
+
+      <VCard class="warn-card pa-5 pa-md-6" variant="flat">
+        <div class="d-flex align-start">
+          <VIcon icon="mdi-office-building-marker-outline" color="primary" class="mr-3 mt-1" />
+          <div>
+            <div class="text-overline mb-2">Dónde reclamar</div>
+            <p class="callout-text mb-2">
+              {{ AGUINALDO_COMPLAINT_CHANNEL.office }}, {{ AGUINALDO_COMPLAINT_CHANNEL.address }}.
+              {{ AGUINALDO_COMPLAINT_CHANNEL.hours }}.
+            </p>
+            <p class="callout-text mb-0">
+              Email: {{ AGUINALDO_COMPLAINT_CHANNEL.email }}. Teléfonos:
+              {{ AGUINALDO_COMPLAINT_CHANNEL.phones.join(', ') }}.
+            </p>
+          </div>
+        </div>
+      </VCard>
+    </section>
+
+    <!-- Construcción -->
+    <section class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">En la construcción lo paga el Fondo Social</h2>
+      <p class="section-intro text-medium-emphasis mb-3">
+        {{ AGUINALDO_CONSTRUCTION.mechanism }}
+      </p>
+      <p class="section-intro text-medium-emphasis mb-3">
+        {{ AGUINALDO_CONSTRUCTION.administrator }} {{ AGUINALDO_CONSTRUCTION.payWindow }}
+      </p>
+      <VCard variant="flat" class="note-card pa-5">
+        <p class="note-text mb-0">
+          <VIcon icon="mdi-information-outline" color="warning" size="18" class="mr-1" />
+          {{ AGUINALDO_CONSTRUCTION.formulaNote }}
+        </p>
+      </VCard>
+    </section>
+
+    <!-- Licencia, enfermedad, seguro de paro -->
+    <section class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Si estuviste de licencia o enfermo</h2>
+      <p class="section-intro text-medium-emphasis mb-5">
+        Tres situaciones que generan la misma duda: ¿ese período cuenta para el aguinaldo? Cada
+        respuesta llega hasta donde lo confirma la fuente oficial, ni un paso más.
+      </p>
+      <VTable class="base-table cu-mobile-cards" density="comfortable">
+        <thead>
+          <tr>
+            <th>Situación</th>
+            <th>Qué dice la fuente oficial</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="l in AGUINALDO_LEAVE_CASES" :key="l.situation">
+            <td data-label="Situación">
+              <span class="font-weight-medium">{{ l.situation }}</span>
+            </td>
+            <td
+              data-label="Qué dice la fuente oficial"
+              class="cu-cell-prose text-caption text-medium-emphasis"
+            >
+              {{ l.detail }}
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+    </section>
+
+    <!-- Jubilados -->
+    <section class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">{{ AGUINALDO_RETIREES.headline }}</h2>
+      <p class="section-intro text-medium-emphasis mb-3">
+        {{ AGUINALDO_RETIREES.detail }} {{ AGUINALDO_RETIREES.benefit }}
+      </p>
+      <VCard variant="flat" class="note-card pa-5">
+        <p class="note-text mb-0">
+          <VIcon icon="mdi-account-cash-outline" color="warning" size="18" class="mr-1" />
+          {{ AGUINALDO_RETIREES.eligibility }}
+        </p>
+      </VCard>
+    </section>
+
     <!-- FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -186,9 +295,15 @@
 
 <script setup lang="ts">
 import {
+  AGUINALDO_2026_DECREE,
   AGUINALDO_BASE_RULES,
+  AGUINALDO_COMPLAINT_CHANNEL,
+  AGUINALDO_CONSTRUCTION,
   AGUINALDO_FAQ,
+  AGUINALDO_LATE_PAYMENT_CONSEQUENCES,
+  AGUINALDO_LEAVE_CASES,
   AGUINALDO_MILESTONES,
+  AGUINALDO_RETIREES,
   AGUINALDO_SOURCES,
   AGUINALDO_VERIFIED_AT,
 } from '~/utils/aguinaldo'
@@ -205,7 +320,7 @@ const verifiedAt = new Date(`${AGUINALDO_VERIFIED_AT}T00:00:00Z`).toLocaleDateSt
 const canonicalUrl = 'https://cambio-uruguay.com/cuando-se-cobra-el-aguinaldo-uruguay'
 const title = '¿Cuándo se cobra el aguinaldo en Uruguay?'
 const description =
-  'El aguinaldo (sueldo anual complementario) se paga dentro de los diez días anteriores al 24 de diciembre, y desde el Decreto-Ley 14.525 puede cobrarse en dos mitades: una en junio y otra en diciembre. Es la doceava parte de lo cobrado en dinero —los tickets no cuentan— y al irte del trabajo cobrás la parte proporcional (Ley 12.840).'
+  'El aguinaldo se paga antes del 24 de diciembre (Ley 12.840): multa del doble y recargo del 10% si no te lo pagan. Construcción, licencia y jubilados.'
 
 defineOgImageComponent('Cambio', {
   title: 'Cuándo se cobra el aguinaldo',
@@ -231,7 +346,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'aguinaldo uruguay, cuando se cobra el aguinaldo, cuando se paga el aguinaldo, aguinaldo 2026 uruguay, medio aguinaldo junio, segunda cuota aguinaldo diciembre, sueldo anual complementario, como se calcula el aguinaldo, aguinaldo tickets de alimentacion, aguinaldo proporcional despido',
+        'aguinaldo uruguay, cuando se cobra el aguinaldo, cuando se paga el aguinaldo, aguinaldo 2026 uruguay, medio aguinaldo junio, segunda cuota aguinaldo diciembre, sueldo anual complementario, como se calcula el aguinaldo, aguinaldo tickets de alimentacion, aguinaldo proporcional despido, aguinaldo de la construccion, cuando pagan el aguinaldo 2026, no me pagaron el aguinaldo, aguinaldo proporcional 3 meses, aguinaldo jubilados',
     },
   ],
   script: [
