@@ -97,6 +97,8 @@ describe("text flags", () => {
     expect(descriptionFlags("Vendo peugeot chapa brasilera")).toEqual(["foreign_plate"]);
     expect(descriptionFlags("Matrícula Mercosur, patente paga")).toEqual([]);
     expect(descriptionFlags("Transferencia de leasing")).toEqual(["paperwork"]);
+    expect(descriptionFlags("Vendo accidentado para repuestos")).toEqual(["damaged"]);
+    expect(descriptionFlags("Nunca fue accidentado, service al día")).toEqual([]);
   });
   it("flags down-payment titles and a second price in the title", () => {
     expect(titleFlags("Topcaruy Usd 5500 Cuotas En Pesos", 10900, "USD")).toEqual(["financing", "price_mismatch"]);
@@ -105,6 +107,10 @@ describe("text flags", () => {
     expect(titleFlags("Peugeot 208 Extra Full 1.6 2025 Financio Garzón Automóviles", 16990, "USD")).toEqual([]);
     expect(titleFlags("Renault Kwid 1.0 Sce 66cv Life", 8700, "USD")).toEqual([]);
     expect(titleFlags("Toyota Hilux 2.7 Cd Srv Vvti 4x2 - A3", 19900, "USD")).toEqual([]);
+    expect(titleFlags("Chevrolet Onix Ltz 2021 45.000 Kms Entrega Inmediata", 14500, "USD")).toEqual([]);
+    expect(titleFlags("Retira Ya Tu Peugeot 208 2019", 12000, "USD")).toEqual([]);
+    expect(titleFlags("Baw L7 Eléctrico 2026 Retira U$d 7.990 Y Financia", 12990, "USD")).toEqual(["financing", "price_mismatch"]);
+    expect(titleFlags("Anticipo De Usd 5000 Y Financio Hyundai Hb20", 13900, "USD")).toEqual(["financing", "price_mismatch"]);
   });
   it("removes contact data from public text", () => {
     expect(cleanPublicText("Gol 2015 llamar 099 123 456 o mail a@b.com")).toBe("Gol 2015 llamar o mail");

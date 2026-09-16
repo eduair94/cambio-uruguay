@@ -4,7 +4,7 @@
 import type { CarCurrency, CarFuel, CarKmQuality, CarSellerType, CarTextFlag, CarTransmission } from "./types";
 
 export function fold(text: string): string {
-  return String(text || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  return String(text || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
 export function slugify(text: string): string {
@@ -122,7 +122,7 @@ function affirmed(text: string, source: string): boolean {
 
 // Plural/gender tolerant on purpose: `rueda\b` never matched "Ruedas" in the chair directory.
 const DESCRIPTION_FLAGS: ReadonlyArray<[CarTextFlag, string]> = [
-  ["damaged", "\\b(chocad[oa]s?|a reparar|para reparar|a arreglar|para repuestos?|por partes|no arranca|siniestrad[oa]s?|incendiad[oa]s?|inundad[oa]s?|para desarme|(?:motor|caja) (?:fundid[oa]|rot[oa]|trancad[oa]|a reparar))\\b"],
+  ["damaged", "\\b(chocad[oa]s?|accidentad[oa]s?|a reparar|para reparar|a arreglar|para repuestos?|por partes|no arranca|siniestrad[oa]s?|incendiad[oa]s?|inundad[oa]s?|para desarme|(?:motor|caja) (?:fundid[oa]|rot[oa]|trancad[oa]|a reparar))\\b"],
   ["recovered", "\\b(recuperad[oa]s? (?:de|por|del) (?:robo|hurto|seguro|aseguradora)|de aseguradora|ex seguro)\\b"],
   ["paperwork", "\\b(sin (?:papeles|titulo|libreta|documentos)|con deudas?|tiene deudas?|embargad[oa]s?|remate|leasing|sucesion)\\b"],
   ["foreign_plate", "\\b(?:chapa|placa|matricula|patente|empadronad[oa])s? (?:en |de )?(?:argentin[oa]|brasil(?:en[oa]|er[oa])?|paraguay[oa]?|extranjer[oa])\\b"],
@@ -139,16 +139,27 @@ function amountOf(text: string): number {
   return Number(text.replace(/[.,](?=\d{3}\b)/g, "").replace(/[^\d]/g, ""));
 }
 
+// "Entrega Inmediata" / "Retira Ya" are delivery timing, not a down payment: the keyword only
+// counts when an amount sits right next to it (at most one connector word and an optional
+// currency marker in between). Runs against the UNSTRIPPED text: `stripped` eats "7.990" as if
+// it were an engine displacement ("\d\.\d\w*"), which would hide the very amount we're looking for.
+const FINANCING_KEYWORD_AMOUNT = /\b(?:entrega|anticipo|retira\w*)\b(?:\s+(?:de|con|minima|solo|y)\b)?(?:\s+(?:u\$s|u\$d|us\$|usd|\$))?\s+(?:\d[\d.,]*\d|\d{2,})\b/;
+// "Usd 5500 Cuotas En Pesos": a currency amount landing directly on "cuotas" (or one word away).
+const FINANCING_CURRENCY_BEFORE_CUOTAS = /\b(?:u\$s|u\$d|us\$|usd)\s+(?:\d[\d.,]*\d|\d{2,})\b(?:\s+\S+)?\s+(?:cuotas?|cuot)\b/;
+
 /** Title-only signals: a down payment in the headline, or a second price that is not the listed one. */
 export function titleFlags(title: string, price: number, currency: CarCurrency): CarTextFlag[] {
   const flags = new Set<CarTextFlag>(descriptionFlags(title));
   const text = flatText(title);
   const stripped = text
     .replace(/\b(19|20)\d{2}\b/g, " ")
-    .replace(/\b\d\.\d\w*/g, " ")
+    // Engine displacement ("1.6t", "1.8"): single digit either side of the dot, letters only
+    // after it — never `\w*`, which also eats digits and would swallow a thousands-dot amount
+    // like "7.990" as if it were "7.9" plus a suffix.
+    .replace(/\b\d\.\d[a-z]*\b/g, " ")
     .replace(/\b\d+ ?(cv|hp|p|puertas|km|kms|v)\b/g, " ")
     .replace(/\b\dx\d\b/g, " ");
-  if (/\b(entrega|anticipo|cuotas?|cuot|retira\w*)\b/.test(text) && /\d{2,}|u\$[sd]|\busd\b|us\$/.test(stripped)) flags.add("financing");
+  if (FINANCING_KEYWORD_AMOUNT.test(text) || FINANCING_CURRENCY_BEFORE_CUOTAS.test(text)) flags.add("financing");
   if (currency === "USD") {
     const pattern = /(?:u\$[sd]|us\$|\busd|\bdolares?)\s*(\d{1,3}(?:[.,]\d{3})+|\d{4,6})/g;
     let match: RegExpExecArray | null;
