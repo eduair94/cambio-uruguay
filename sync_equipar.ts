@@ -30,6 +30,7 @@ import {
 import type { EquiparMeta } from "./classes/equipar/types";
 import { harvestRetail } from "./classes/retail/harvest";
 import { retailStores } from "./classes/retail/stores";
+import { applyUnitGuard } from "./classes/retail/unitGuard";
 
 /**
  * How many MercadoLibre searches and Marketplace searches one run may spend.
@@ -80,7 +81,19 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const items = buildEquiparCatalog({ listings: harvest.listings, usdUyu });
+  // Backstop for a WooCommerce store that sends whole pesos while declaring a minor unit (TYT was
+  // the measured case — see classes/retail/unitGuard.ts). Runs after the per-store override so the
+  // guard only ever catches the NEXT store nobody has fixed yet.
+  const guarded = applyUnitGuard(harvest.listings, usdUyu);
+  for (const drop of guarded.dropped) {
+    console.log(
+      `[equipar] unidad: ${drop.sellerKey} en ${drop.spec} mediana $${drop.storeMedianUyu} contra $${drop.mlMedianUyu} de ML — descartada`
+    );
+    const run = harvest.runs.find((candidate) => candidate.key === drop.sellerKey);
+    if (run) run.note += `, descartada en ${drop.spec} por unidad`;
+  }
+
+  const items = buildEquiparCatalog({ listings: guarded.listings, usdUyu });
   const priced = items.filter((item) => item.newBand || item.usedBand);
 
   // A run that priced almost nothing is an outage, not a market. Publishing it would blank a page
@@ -99,7 +112,7 @@ async function main(): Promise<void> {
   const meta: EquiparMeta = {
     generatedAt: new Date().toISOString(),
     usdUyu,
-    listings: harvest.listings.length,
+    listings: guarded.listings.length,
     items: items.length,
     runs: harvest.runs,
     baskets,
@@ -115,7 +128,7 @@ async function main(): Promise<void> {
     );
   }
   console.log(
-    `[equipar] ${items.length} ítems de ${EQUIPAR_CATEGORIES.length} categorías, ${harvest.listings.length} avisos, ${((Date.now() - startedAt) / 1000).toFixed(1)}s`
+    `[equipar] ${items.length} ítems de ${EQUIPAR_CATEGORIES.length} categorías, ${guarded.listings.length} avisos, ${((Date.now() - startedAt) / 1000).toFixed(1)}s`
   );
   process.exit(0);
 }

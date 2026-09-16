@@ -75,10 +75,22 @@ export function parseWooProducts(body: string | null): WooProduct[] | null {
   }
 }
 
-/** "399000" + minor unit 2 -> 3990. Returns null when the store publishes no usable price. */
-export function wooPrice(prices: WooProduct["prices"]): number | null {
+/**
+ * "399000" + minor unit 2 -> 3990. Returns null when the store publishes no usable price.
+ *
+ * TYT's Store API declares `currency_minor_unit: 2` but sends whole pesos — "15900" for a
+ * $ 15.900 TV, not $ 159 — so a store flagged `priceInMajorUnits` skips the divisor entirely
+ * rather than trusting the field it lies about. Verified 2026-09-16.
+ */
+export function wooPrice(
+  prices: WooProduct["prices"],
+  store?: Pick<RetailStore, "priceInMajorUnits">
+): number | null {
   const raw = Number(prices?.price);
   if (!Number.isFinite(raw) || raw <= 0) return null;
+  if (store?.priceInMajorUnits) {
+    return raw > 0 ? Math.round(raw * 100) / 100 : null;
+  }
   const minorUnit = Number(prices?.currency_minor_unit);
   const divisor = Number.isFinite(minorUnit) && minorUnit >= 0 ? 10 ** minorUnit : 1;
   const value = raw / divisor;
@@ -122,7 +134,7 @@ export async function harvestWooStore(
         const spec = specs.find((candidate) => candidate.accept(title, context));
         if (!spec) continue;
 
-        const price = wooPrice(product.prices);
+        const price = wooPrice(product.prices, store);
         if (price === null) continue;
         const currency = String(product.prices?.currency_code || "").toUpperCase();
         if (currency !== "UYU" && currency !== "USD") {
@@ -156,7 +168,10 @@ export async function harvestWooStore(
           location: null,
           freeShipping: null,
           officialStore: true,
-          listPrice: listPriceOf(price, wooPrice({ ...product.prices, price: product.prices?.regular_price })),
+          listPrice: listPriceOf(
+            price,
+            wooPrice({ ...product.prices, price: product.prices?.regular_price }, store)
+          ),
           observedAt,
         });
       }

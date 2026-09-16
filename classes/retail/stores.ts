@@ -154,6 +154,9 @@ export const RETAIL_STORES: RetailStore[] = [
     adapter: "woocommerce",
     channel: "local-store",
     expectCurrency: "UYU",
+    // The Store API declares `currency_minor_unit` but sends whole units (TYT: "15900" is $ 15.900).
+    // Verified 2026-09-16.
+    priceInMajorUnits: true,
     enabled: true,
   },
   {

@@ -67,6 +67,11 @@ export interface RetailStore {
   expectCurrency?: "UYU" | "USD";
   /** Shopify only: restrict the scan to these collection handles instead of the whole catalogue. */
   collections?: string[];
+  /**
+   * The Store API declares `currency_minor_unit` but sends whole units (TYT: "15900" is $ 15.900).
+   * Verified 2026-09-16.
+   */
+  priceInMajorUnits?: boolean;
   enabled: boolean;
   note?: string;
 }
