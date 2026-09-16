@@ -205,8 +205,11 @@ descriptivo; no es tasación.
   `/guias/transferir-un-auto-uruguay`, `/multas-de-transito-y-patente-uruguay`,
   `/precio-de-la-nafta-uruguay`, `/guias/costos-de-tener-auto-uruguay`), sitemap de modelos,
   `seoContract` (`NOINDEXED` para la ficha), regex de admisión SSR si aplica.
-- i18n: mensajes locales es/en/pt en `utils/carsMessages.ts` (patrón de `propertySalesMessages`),
-  sin `|` crudo.
+- Copy en español inline en los SFC (patrón de `pages/precio/[slug].vue`); sólo las etiquetas
+  `nav.*` van a es/en/pt, sin `|` crudo. Todo export nuevo de `app/utils` lleva prefijo `car`
+  (namespace de auto-import plano: `formatUsd` ya existe).
+- Los umbrales del método se publican DENTRO del snapshot (`policy`), así la página los muestra sin
+  duplicar constantes.
 - Textos obligatorios en oportunidades: "No es una tasación"; "precio pedido, no de cierre";
   "verificá con el Certificado SUCIVE antes de señar" → `/comprar-auto-con-deuda-uruguay`; método
   con los umbrales reales; fecha de la lectura; n y vendedores de cada comparación.
