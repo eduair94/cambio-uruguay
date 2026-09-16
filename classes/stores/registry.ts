@@ -655,6 +655,8 @@ export const STORES: readonly StoreEntry[] = [
     trustpilotDomain: "antel.com.uy",
     redditTerms: ["tienda antel"],
   },
+  // Movistar Uruguay became Tigo on 2026-04-13 after Millicom's acquisition (May 2025); sellers
+  // still named Movistar are the same company.
   {
     key: "tigo",
     name: "Tigo Uruguay",
@@ -737,7 +739,7 @@ export const STORE_BY_KEY: ReadonlyMap<string, StoreEntry> = new Map(
 export function storeNorm(value: string): string {
   return String(value || "")
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
