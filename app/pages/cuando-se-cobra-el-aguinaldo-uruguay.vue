@@ -85,9 +85,9 @@
       <VTable class="base-table cu-mobile-cards" density="comfortable">
         <thead>
           <tr>
-            <th>Partida</th>
-            <th>¿Integra el aguinaldo?</th>
-            <th>Detalle</th>
+            <th scope="col">Partida</th>
+            <th scope="col">¿Integra el aguinaldo?</th>
+            <th scope="col">Detalle</th>
           </tr>
         </thead>
         <tbody>
@@ -137,9 +137,9 @@
       <VTable class="base-table cu-mobile-cards mb-6" density="comfortable">
         <thead>
           <tr>
-            <th>Consecuencia</th>
-            <th>Detalle</th>
-            <th>Fuente</th>
+            <th scope="col">Consecuencia</th>
+            <th scope="col">Detalle</th>
+            <th scope="col">Fuente</th>
           </tr>
         </thead>
         <tbody>
@@ -200,8 +200,8 @@
       <VTable class="base-table cu-mobile-cards" density="comfortable">
         <thead>
           <tr>
-            <th>Situación</th>
-            <th>Qué dice la fuente oficial</th>
+            <th scope="col">Situación</th>
+            <th scope="col">Qué dice la fuente oficial</th>
           </tr>
         </thead>
         <tbody>

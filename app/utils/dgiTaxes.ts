@@ -401,9 +401,15 @@ export const RENTAL_CREDIT_TOURISM_QUOTE =
  * Lo que exige el ARTÍCULO (identificar al arrendador) NO es lo mismo que lo que exige DGI para
  * poder computar el crédito. Antes esta constante decía "única condición" / "no exige nada más",
  * lo cual era falso y se contradecía con la propia tabla de la sección (fix round 3).
+ *
+ * Fix round 4: "exige una sola cosa" seguía siendo demasiado ancho. El artículo tiene DOS
+ * oraciones y hacen dos cosas distintas: la primera dice cómo SE CALCULA el crédito (y ahí sí la
+ * única condición es identificar al arrendador), la segunda dice QUIÉN puede computarlo ("el
+ * titular o titulares del contrato de arrendamiento, en las condiciones que establezca la
+ * reglamentación"). La frase ahora separa los dos ejes en vez de resumir el artículo entero en uno.
  */
 export const RENTAL_CREDIT_CONDITION =
-  'El artículo 51 (Título 7) del Texto Ordenado exige una sola cosa para el crédito en sí: identificar al arrendador (nombre y documento o RUT). Pero la guía operativa de DGI agrega condiciones propias para poder computarlo: el contrato tiene que ser escrito y de un año o más (aunque esté vencido), tenés que ser titular del contrato de arrendamiento, y tenés que haber generado IRPF por rentas de trabajo en el ejercicio que declarás. Cada una, con su cita, está en la tabla de abajo.'
+  'Para calcular el crédito, el artículo 51 (Título 7) del Texto Ordenado pone una sola condición: identificar al arrendador (nombre y documento o RUT). Quién puede computarlo es otra cosa, y la fija el mismo artículo en la oración siguiente: "el titular o titulares del contrato de arrendamiento, en las condiciones que establezca la reglamentación". Esa reglamentación es la que suma el resto, y está en la guía operativa de DGI: el contrato tiene que ser escrito y de un año o más (aunque esté vencido), tenés que ser titular del contrato de arrendamiento, y tenés que haber generado IRPF por rentas de trabajo en el ejercicio que declarás. Cada una, con su cita, está en la tabla de abajo.'
 
 /** Por qué el 6 % sigue circulando, en una sola idea. */
 export const RENTAL_CREDIT_CONFUSION =

@@ -15,6 +15,8 @@
 //
 // Módulo PURO: sin imports de Vue/Nuxt, para que vitest lo cargue en node.
 
+import { AJUSTE_PASIVIDADES_2026_PCT, JUBILACION_MINIMA_2026 } from './bpsFigures2026'
+
 /** La fecha de nacimiento a partir de la cual rige el nuevo sistema previsional común. */
 export const NEW_SYSTEM_FIRST_BIRTH_YEAR = 1973
 
@@ -205,7 +207,9 @@ export interface AmountRow {
   amount: number
 }
 
-export const RETIREMENT_MIN_GENERAL_2026 = 20935
+// La mínima general y el ajuste de pasividades los comparte esta página con el suplemento
+// solidario y con la pensión a la vejez: viven una sola vez en `bpsFigures2026.ts`.
+export const RETIREMENT_MIN_GENERAL_2026 = JUBILACION_MINIMA_2026
 export const RETIREMENT_MIN_AGE_60_2026 = 10795
 export const RETIREMENT_MIN_AGE_70_2026 = 23749
 export const RETIREMENT_MAX_INTERGENERATIONAL_2026 = 79430
@@ -213,7 +217,7 @@ export const RETIREMENT_MAX_TRANSITION_2026 = 117460
 export const RETIREMENT_ACCUMULATION_CAP_TRANSITION_2026 = 166080
 
 /** Ajuste de pasividades de 2026, en porcentaje. Se paga desde marzo con retroactividad a enero. */
-export const RETIREMENT_ADJUSTMENT_2026_PCT = 5.97
+export const RETIREMENT_ADJUSTMENT_2026_PCT = AJUSTE_PASIVIDADES_2026_PCT
 
 /**
  * Mínima y máxima 2026. Hay DOS topes máximos porque el régimen de
@@ -296,7 +300,8 @@ export interface InvalidityPensionNote {
 
 export const INVALIDITY_PENSION_NOTE: InvalidityPensionNote = {
   name: 'Pensión por invalidez',
-  eligibility: 'No contributiva: no pide años de trabajo aportados.',
+  eligibility:
+    'No contributiva: no pide años de trabajo aportados ni edad mínima. La abre el dictamen médico del BPS, a cualquier edad.',
   evaluator:
     'El BPS, con dictamen médico de incapacidad severa o, sin discapacidad severa, con prueba de carencia de recursos.',
   amountNote: 'El mismo monto que la pensión a la vejez.',

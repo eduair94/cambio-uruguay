@@ -237,7 +237,9 @@
           <strong>Quién la evalúa:</strong> {{ INVALIDITY_PENSION_NOTE.evaluator }}
         </p>
         <p class="body-text mb-0">
-          <strong>Monto:</strong> {{ INVALIDITY_PENSION_NOTE.amountNote }} El detalle vive en
+          <strong>Monto:</strong> {{ INVALIDITY_PENSION_NOTE.amountNote }} Los requisitos de esta
+          vía —que no incluyen ninguna edad— y los de la vía por vejez están, uno al lado del otro,
+          en
           <NuxtLink :to="localePath('/pension-a-la-vejez-uruguay')"
             >pensión a la vejez e invalidez</NuxtLink
           >.

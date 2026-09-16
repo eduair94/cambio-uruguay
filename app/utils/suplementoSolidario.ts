@@ -1,6 +1,7 @@
 // Suplemento solidario (Ley 20.130, Decreto 232/023). Verificado el 2026-09-15 contra
 // https://www.bps.gub.uy/20541/suplemento-solidario.html y
 // https://www.bps.gub.uy/6182/montos-y-aumentos-de-pasividades.html
+import { AJUSTE_PASIVIDADES_2026_PCT, BPS_FIGURES_2026_UPDATED_AT } from './bpsFigures2026'
 import type { FaqItem } from './faqAnswers'
 
 export const SUPLEMENTO_VERIFIED_AT = '2026-09-15'
@@ -8,11 +9,13 @@ export const SUPLEMENTO_VERIFIED_AT = '2026-09-15'
 export const BASE_2026 = 17591
 /** Se descuenta el 33 % del monto de las prestaciones previsionales, incluida la que da origen. */
 export const DEDUCTION_PCT = 33
-export const JUBILACION_MINIMA_2026 = 20935
-export const PENSION_VEJEZ_INVALIDEZ_2026 = 18575
+// La jubilación mínima y la pensión vejez/invalidez NO se exportan desde acá: viven, con ese mismo
+// nombre, sólo en `bpsFigures2026.ts`. `utils/` es un namespace plano para el auto-import de Nuxt,
+// así que re-exportarlas duplicaría el nombre en ese namespace — quien las necesite las importa
+// del módulo canónico. El BPS reajusta todos los marzos y una cifra sólo puede tener una casa.
 /** Aumento general de pasividades 2026. */
-export const AUMENTO_2026_PCT = 5.97
-export const AUMENTO_2026_FROM = '2026-02-09'
+export const AUMENTO_2026_PCT = AJUSTE_PASIVIDADES_2026_PCT
+export const AUMENTO_2026_FROM = BPS_FIGURES_2026_UPDATED_AT
 
 export const ELIGIBLE: readonly string[] = [
   'Jubilados de cualquier caja que se jubilaron dentro del Sistema Previsional Común (SPC), el régimen nuevo de la Ley 20.130.',

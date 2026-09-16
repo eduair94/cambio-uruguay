@@ -147,4 +147,48 @@ describe('jubilados y pensionistas', () => {
     expect(AGUINALDO_RETIREES.amount).toBe(3151)
     expect(AGUINALDO_RETIREES.benefit).toMatch(/no es un aguinaldo/i)
   })
+
+  // La partida la fija el BPS edición por edición: la que está publicada con su letra chica es la
+  // de 2025 ("mayores de 65 años al 31/10/2025"). Sin el año adentro del texto, "$ 3.151" en un
+  // archivo verificado en 2026 se lee como la cifra de este año — es la falla que ya dejó la BPC
+  // de 2024 publicada durante meses.
+  it('la partida va fechada: el año viaja en el texto, no sólo en un campo', () => {
+    expect(AGUINALDO_RETIREES.amountYear).toBe(2025)
+    expect(AGUINALDO_RETIREES.benefit).toMatch(/edición 2025/i)
+    expect(AGUINALDO_RETIREES.eligibility).toMatch(/edición 2025/i)
+    expect(AGUINALDO_RETIREES.eligibility).toContain('31 de octubre de 2025')
+    // Y dice que la cifra de la edición siguiente no sale de esta página.
+    expect(AGUINALDO_RETIREES.benefit).toMatch(/cada año/i)
+  })
+
+  // "3.111 BPC" se lee en Uruguay como tres mil ciento once. Es 3,111.
+  it('el tope en BPC usa la coma decimal uruguaya', () => {
+    expect(AGUINALDO_RETIREES.eligibility).toContain('3,111 BPC')
+    expect(AGUINALDO_RETIREES.eligibility).not.toContain('3.111 BPC')
+  })
+})
+
+// Fix round final. Tres cosas que el texto decía de más o de menos.
+describe('lo que dice la ley, con la palabra de la ley', () => {
+  it('la multa del art. 7 es el doble del SUELDO ANUAL COMPLEMENTARIO, no de lo adeudado', () => {
+    const multa = AGUINALDO_LATE_PAYMENT_CONSEQUENCES.find(c => /doble/i.test(c.label))!
+    expect(multa.detail).toMatch(/doble del monto del sueldo anual complementario/i)
+    expect(multa.detail).not.toMatch(/doble del monto adeudado/i)
+    const faq = AGUINALDO_FAQ.find(f => /doble/i.test(f.answer))
+    expect(faq?.answer).toMatch(/doble del monto del sueldo anual complementario/i)
+    for (const f of AGUINALDO_FAQ) expect(f.answer).not.toMatch(/doble del monto adeudado/i)
+  })
+
+  // La fila de licencia vive en una tabla titulada "Qué dice la fuente oficial", y el dossier la
+  // marca como "Abierto / no se investigó": tiene que leerse como razonamiento, no como cita.
+  it('la fila de licencia se declara razonamiento, no cita', () => {
+    const licencia = AGUINALDO_LEAVE_CASES.find(l => /licencia/i.test(l.situation))!
+    expect(licencia.detail).toMatch(/razonamiento/i)
+    expect(licencia.detail).toMatch(/no hay una página oficial/i)
+    // Y remite a dónde confirmarlo, como hace la fila del seguro de paro.
+    expect(licencia.detail).toMatch(/MTSS|BPS/)
+    // Las otras dos filas sí citan una fuente y no llevan esa advertencia.
+    const enfermedad = AGUINALDO_LEAVE_CASES.find(l => /enfermedad/i.test(l.situation))!
+    expect(enfermedad.detail).not.toMatch(/razonamiento/i)
+  })
 })

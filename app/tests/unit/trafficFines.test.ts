@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -599,5 +602,41 @@ describe('patente: consulta de deuda, medios de pago y motos (cola de demanda)',
       expect(faq.question.endsWith('?')).toBe(true)
       expect(faq.answer.length).toBeGreaterThan(120)
     }
+  })
+})
+
+// La tabla de "alícuota de moto" de la página se arma filtrando PATENTE_RATES. Filtraba por
+// `rate.includes('%')`, que no es la pregunta que quiere hacer: una fila futura redactada
+// "Patente 2025 ajustada por IPC 5%" trae un "%" y NO es una alícuota nacional, y se colaría sola
+// en una tabla que promete exactamente eso. Se filtra por el nombre de las dos filas que sí lo son.
+describe('la tabla de alícuotas de moto filtra por fila, no por el signo %', () => {
+  const pageSource = readFileSync(
+    join(__dirname, '..', '..', 'pages', 'multas-de-transito-y-patente-uruguay.vue'),
+    'utf8'
+  )
+
+  it('la página no filtra por rate.includes("%")', () => {
+    expect(pageSource).not.toMatch(/rate\.includes\(\s*['"]%['"]\s*\)/)
+    expect(pageSource).toContain('MOTO_RATE_VEHICLES')
+  })
+
+  it('las dos etiquetas que usa el filtro existen en PATENTE_RATES, con alícuota y categoría C', () => {
+    const labels = [
+      'Motos 0 km desde 500 cc',
+      'Motos usadas desde 500 cc empadronadas en 2024 y 2025',
+    ]
+    for (const label of labels) {
+      expect(pageSource).toContain(label)
+      const row = PATENTE_RATES.find(r => r.vehicle === label)
+      expect(row).toBeDefined()
+      expect(row!.category).toBe('C')
+      expect(row!.rate).toMatch(/%/)
+    }
+  })
+
+  it('las filas de hasta 499 cc quedan fuera: no tienen alícuota nacional', () => {
+    const fuera = PATENTE_RATES.filter(r => r.category === 'C' && /499 cc/.test(r.vehicle))
+    expect(fuera.length).toBeGreaterThan(0)
+    for (const row of fuera) expect(pageSource).not.toContain(`'${row.vehicle}'`)
   })
 })

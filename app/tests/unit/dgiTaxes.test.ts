@@ -121,6 +121,17 @@ describe('crédito fiscal de IRPF por arrendamiento (T.O. 2023 DGI, art. 51 T7)'
     expect(RENTAL_CREDIT_CONDITION).not.toMatch(/no exige nada más/i)
   })
 
+  // Fix round 4: "el artículo exige una sola cosa" seguía siendo demasiado ancho. El artículo tiene
+  // dos oraciones: una dice cómo se CALCULA el crédito, la otra dice QUIÉN puede computarlo
+  // ("el titular o titulares del contrato"). La frase tiene que separar los dos ejes.
+  it('distingue qué pide el artículo para calcular el crédito de quién puede computarlo', () => {
+    expect(RENTAL_CREDIT_CONDITION).toMatch(/para calcular el crédito/i)
+    expect(RENTAL_CREDIT_CONDITION).toMatch(/quién puede computarlo/i)
+    expect(RENTAL_CREDIT_CONDITION).toContain('titular o titulares del contrato de arrendamiento')
+    // Y ya no resume el artículo entero como si pidiera una sola cosa.
+    expect(RENTAL_CREDIT_CONDITION).not.toMatch(/exige una sola cosa/i)
+  })
+
   it('nada publicado de esta sección repite la afirmación falsa de la "única condición"', () => {
     const rentalCreditTexts = [
       RENTAL_CREDIT_QUOTE,

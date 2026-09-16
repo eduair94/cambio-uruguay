@@ -164,8 +164,10 @@ export interface AguinaldoConsequence {
 export const AGUINALDO_LATE_PAYMENT_CONSEQUENCES: readonly AguinaldoConsequence[] = [
   {
     label: 'Multa del doble',
+    // La ley no dice "el doble de lo adeudado": dice "el doble del monto del sueldo anual
+    // complementario". No es lo mismo cuando te pagaron una parte, así que va la palabra de la ley.
     detail:
-      'El empleador que viola el plazo de pago del aguinaldo es sancionado con una multa equivalente al doble del monto adeudado.',
+      'El empleador que viola la ley del aguinaldo es sancionado con una multa equivalente al doble del monto del sueldo anual complementario.',
     source: 'Ley 12.840, art. 7',
   },
   {
@@ -243,8 +245,11 @@ export interface AguinaldoLeaveCase {
 export const AGUINALDO_LEAVE_CASES: readonly AguinaldoLeaveCase[] = [
   {
     situation: 'Estuviste de licencia',
+    // Esta fila NO tiene fuente oficial detrás: es un razonamiento a partir de la regla general de
+    // la Ley 12.840 (el aguinaldo se calcula sobre los sueldos ABONADOS EN DINERO). Va marcada
+    // como tal, en la primera línea de la celda, para que no se lea como una cita.
     detail:
-      'Durante la licencia seguís cobrando tu sueldo (el jornal de licencia), que se paga en dinero, así que esos meses integran la base del aguinaldo igual que los demás meses trabajados.',
+      'Acá no hay una página oficial que lo diga: es un razonamiento, no una cita. La Ley 12.840 calcula el aguinaldo sobre los sueldos pagados en dinero, y durante la licencia seguís cobrando tu sueldo (el jornal de licencia), que se paga en dinero; de ahí se sigue que esos meses integran la base igual que los demás. Si tu caso es dudoso, confirmalo en el MTSS.',
   },
   {
     situation: 'Tuviste subsidio por enfermedad (BPS/DISSE)',
@@ -265,16 +270,25 @@ export const AGUINALDO_LEAVE_CASES: readonly AguinaldoLeaveCase[] = [
 /**
  * El BPS no llama "aguinaldo" a nada de lo que paga a pasivos, y la partida que sí existe es un
  * beneficio distinto: monto fijo, focalizado por ingreso, no proporcional al sueldo. No confundir.
+ *
+ * LA PARTIDA VA FECHADA. El monto y el tope de ingresos los fija el BPS edición por edición, y la
+ * única que está publicada con su letra chica es la de 2025 (el corte de edad es "mayores de 65
+ * años al 31/10/2025"). Publicar "$ 3.151" a secas, en un archivo verificado en 2026, lo hace leer
+ * como la cifra de este año: es exactamente la falla que ya dejó la BPC de 2024 en el sitio
+ * durante meses. El año viaja dentro del string, no sólo en un campo que la página podría no
+ * renderizar.
  */
 export const AGUINALDO_RETIREES = {
   headline: 'Los jubilados y pensionistas no cobran aguinaldo',
   detail:
     'El sueldo anual complementario es un derecho de quien trabaja en relación de dependencia, no de quien está jubilado o pensionista. El BPS no paga aguinaldo a pasivos.',
   benefit:
-    'Lo que el BPS sí paga a fin de año es una partida especial —la "canasta de fin de año"— de $ 3.151, focalizada en pasividades bajas. No es un aguinaldo: es un monto fijo, no una doceava parte del sueldo.',
+    'Lo que el BPS sí paga a fin de año es una partida especial —la "canasta de fin de año"—, focalizada en pasividades bajas: no es un aguinaldo, es un monto fijo y no una doceava parte del sueldo. En la edición 2025 fue de $ 3.151. El BPS vuelve a fijar el monto y el tope de ingresos cada año, así que la cifra de la edición siguiente sale de su página, no de esta.',
   eligibility:
-    'Corresponde a jubilados con pasividad de hasta $ 20.458 (3.111 BPC), y a pensionistas por sobrevivencia, vejez o invalidez y beneficiarios de Asistencia a la Vejez (Mides) mayores de 65 años con ingresos hasta ese mismo tope, siempre que residan en Uruguay y no perciban otros ingresos públicos o privados.',
+    'En la edición 2025 correspondió a jubilados con pasividad de hasta $ 20.458 (3,111 BPC), y a pensionistas por sobrevivencia, vejez o invalidez y beneficiarios de Asistencia a la Vejez (Mides) mayores de 65 años al 31 de octubre de 2025 con ingresos hasta ese mismo tope, siempre que residieran en Uruguay y no percibieran otros ingresos públicos o privados.',
   amount: 3151,
+  /** La edición de la partida a la que corresponden `amount` y `eligibility`. */
+  amountYear: 2025,
 }
 
 // ---------------------------------------------------------------------------
@@ -340,7 +354,7 @@ export const AGUINALDO_FAQ: readonly AguinaldoFaq[] = [
     question: '¿Qué pasa si no me pagan el aguinaldo a tiempo?',
     short: 'Multa del doble para el empleador y recargo del 10 % a tu favor',
     answer:
-      'El empleador que no paga el aguinaldo en plazo puede ser sancionado con una multa equivalente al doble del monto adeudado (Ley 12.840, art. 7), y además se genera automáticamente un recargo del 10 % sobre el monto adeudado a tu favor (Ley 18.572, art. 29). Podés denunciarlo en la Inspección General del Trabajo y de la Seguridad Social del MTSS.',
+      'El empleador que no paga el aguinaldo en plazo puede ser sancionado con una multa equivalente al doble del monto del sueldo anual complementario (Ley 12.840, art. 7), y además se genera automáticamente un recargo del 10 % sobre el monto adeudado a tu favor (Ley 18.572, art. 29). Podés denunciarlo en la Inspección General del Trabajo y de la Seguridad Social del MTSS.',
   },
   {
     question: '¿Cuántos días de aguinaldo me corresponden?',
@@ -399,7 +413,7 @@ export const AGUINALDO_SOURCES: readonly AguinaldoSource[] = [
   },
   {
     label:
-      'BPS — Partida especial de fin de año para jubilados y pensionistas: $ 3.151, y por qué no es un aguinaldo',
+      'BPS — Partida especial de fin de año para jubilados y pensionistas: $ 3.151 en la edición 2025, y por qué no es un aguinaldo',
     url: 'https://www.bps.gub.uy/23594/partida-especial-de-fin-de-ano-para-jubilados-y-pensionistas.html',
   },
 ]

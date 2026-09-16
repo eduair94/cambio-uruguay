@@ -26,13 +26,17 @@
       <p class="text-h4 font-weight-bold mb-1">{{ formatUYU(AMOUNT_2026, 0) }} por mes</p>
       <p class="text-body-2 text-medium-emphasis mb-0">
         Según la tabla de montos y aumentos de pasividades del BPS, actualizada al
-        {{ amountUpdatedAt }}, con el ajuste general de pasividades de {{ ADJUSTMENT_2026_PCT }} %
-        para 2026.
+        {{ amountUpdatedAt }}, con el ajuste general de pasividades de
+        {{ formatNumber(ADJUSTMENT_2026_PCT) }} % para 2026.
       </p>
     </VCard>
 
     <!-- ¿Te corresponde? -->
-    <h2 class="text-h6 font-weight-bold mb-2">¿Te corresponde?</h2>
+    <h2 class="text-h6 font-weight-bold mb-2">¿Te corresponde por vejez?</h2>
+    <p class="text-body-2 text-medium-emphasis mb-2" style="max-width: 68ch">
+      Estos son los requisitos de la vía por <strong>vejez</strong>. Si lo tuyo es una incapacidad,
+      la vía es otra y <a href="#invalidez" class="cu-link">no tiene edad mínima</a>.
+    </p>
     <ul class="plain-list mb-2">
       <li>
         Tener más de {{ AGE_REQUIREMENT.base }} años, o más de {{ AGE_REQUIREMENT.caregiverFrom }}
@@ -52,8 +56,9 @@
     <!-- Qué mira el BPS de tus ingresos -->
     <h2 class="text-h6 font-weight-bold mb-2">Qué mira el BPS de tus ingresos</h2>
     <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 68ch">
-      Esto no es una calculadora: son las tres reglas de carencia de recursos que publica el BPS. El
-      BPS decide con la declaración jurada y la documentación de cada caso, no con esta página.
+      Esto no es una calculadora: son las tres reglas de carencia de recursos que el BPS publica
+      para la vía por vejez. El BPS decide con la declaración jurada y la documentación de cada
+      caso, no con esta página.
     </p>
     <VRow class="mb-3">
       <VCol v-for="rule in MEANS_TEST" :key="rule.id" cols="12" md="4">
@@ -66,6 +71,49 @@
     <VAlert type="warning" variant="tonal" density="comfortable" class="mb-6">
       {{ INCOMPATIBILITIES }}
     </VAlert>
+
+    <!-- Pensión por invalidez: la otra vía -->
+    <h2 id="invalidez" class="text-h6 font-weight-bold mb-2">
+      La otra vía: {{ INVALIDITY_NAME.toLowerCase() }}
+    </h2>
+    <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 68ch">
+      El BPS liquida las dos prestaciones en una sola fila —"Pensión vejez e invalidez",
+      {{ formatUYU(INVALIDITY_AMOUNT_2026, 0) }} por mes— y por eso se las confunde. Pero son dos
+      prestaciones distintas, con su propia ficha, y los requisitos no son los mismos.
+    </p>
+    <VAlert type="success" variant="tonal" density="comfortable" class="mb-3">
+      {{ INVALIDITY_AGE_RULE }}
+    </VAlert>
+    <VRow class="mb-3">
+      <VCol v-for="route in INVALIDITY_ROUTES" :key="route.id" cols="12" md="6">
+        <VCard variant="flat" class="rule-card pa-4 h-100">
+          <div class="text-subtitle-1 font-weight-bold mb-1">{{ route.title }}</div>
+          <p class="text-body-2 text-medium-emphasis mb-0">{{ route.detail }}</p>
+        </VCard>
+      </VCol>
+    </VRow>
+    <ul class="plain-list mb-2">
+      <li>
+        <strong>Monto:</strong> {{ formatUYU(INVALIDITY_AMOUNT_2026, 0) }} por mes, el mismo que la
+        pensión a la vejez.
+      </li>
+      <li><strong>Quién decide:</strong> {{ INVALIDITY_EVALUATION }}</li>
+      <li><strong>Residencia:</strong> {{ INVALIDITY_RESIDENCY_RULE }}</li>
+      <li><strong>Ingresos:</strong> {{ INVALIDITY_MEANS_TEST }}</li>
+      <li>{{ INVALIDITY_LAPSE_RULE }}</li>
+    </ul>
+    <p class="text-body-2 text-medium-emphasis mb-6" style="max-width: 68ch">
+      Lo que no está acá —cómo trabaja la evaluación médica por dentro, si la prestación es
+      vitalicia— el BPS no lo publica en esa ficha, así que no lo afirmamos:
+      <a :href="INVALIDITY_URL" target="_blank" rel="noopener" class="cu-link">
+        la ficha de la pensión por invalidez del BPS
+      </a>
+      y el
+      <a :href="INVALIDITY_EVALUATION_URL" target="_blank" rel="noopener" class="cu-link">
+        trámite de evaluación de incapacidad
+      </a>
+      son la fuente.
+    </p>
 
     <!-- No la confundas con... -->
     <h2 class="text-h6 font-weight-bold mb-2">No la confundas con…</h2>
@@ -142,7 +190,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatUYU } from '~/utils/format'
+import { formatNumber, formatUYU } from '~/utils/format'
 import type { FaqItem } from '~/utils/faqAnswers'
 import {
   ADJUSTMENT_2026_PCT,
@@ -152,6 +200,16 @@ import {
   APPLY_URL,
   CAREGIVER_DETAIL,
   INCOMPATIBILITIES,
+  INVALIDITY_AGE_RULE,
+  INVALIDITY_AMOUNT_2026,
+  INVALIDITY_EVALUATION,
+  INVALIDITY_EVALUATION_URL,
+  INVALIDITY_LAPSE_RULE,
+  INVALIDITY_MEANS_TEST,
+  INVALIDITY_NAME,
+  INVALIDITY_RESIDENCY_RULE,
+  INVALIDITY_ROUTES,
+  INVALIDITY_URL,
   LAPSE_RULE,
   MEANS_TEST,
   PENSION_FAQ,

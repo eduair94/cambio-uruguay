@@ -574,9 +574,15 @@ const drivingFine = PATENTE_CONSEQUENCES.find(
 const otherConsequences = PATENTE_CONSEQUENCES.filter(consequence => consequence !== drivingFine)
 // Sólo las dos filas con alícuota confirmada (500 cc o más): las de "hasta 499 cc" ya están en la
 // tabla de Alícuotas de la sección de arriba, y repetirlas acá sería la misma tabla dos veces.
-const motoRates = computed(() =>
-  PATENTE_RATES.filter(r => r.category === 'C' && r.rate.includes('%'))
-)
+//
+// Se filtra por el NOMBRE de esas dos filas, no por si el texto de la alícuota trae un signo de
+// porcentaje: una fila futura redactada "Patente 2025 ajustada por IPC 5%" lo trae y NO es una
+// alícuota nacional, y se colaría sola en una tabla que promete exactamente eso.
+const MOTO_RATE_VEHICLES = [
+  'Motos 0 km desde 500 cc',
+  'Motos usadas desde 500 cc empadronadas en 2024 y 2025',
+]
+const motoRates = computed(() => PATENTE_RATES.filter(r => MOTO_RATE_VEHICLES.includes(r.vehicle)))
 
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString('es-UY', {

@@ -150,7 +150,7 @@
           <tr>
             <td data-label="Referencia">Aumento general de pasividades 2026</td>
             <td data-label="Valor" class="font-weight-medium">
-              {{ AUMENTO_2026_PCT }} % desde el {{ aumentoDesde }}
+              {{ formatNumber(AUMENTO_2026_PCT) }} % desde el {{ aumentoDesde }}
             </td>
           </tr>
         </tbody>
@@ -192,8 +192,9 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { JUBILACION_MINIMA_2026, PENSION_VEJEZ_INVALIDEZ_2026 } from '~/utils/bpsFigures2026'
 import type { FaqItem } from '~/utils/faqAnswers'
-import { formatUYU } from '~/utils/format'
+import { formatNumber, formatUYU } from '~/utils/format'
 import {
   APPLY_STEPS,
   AUMENTO_2026_FROM,
@@ -202,8 +203,6 @@ import {
   DEDUCTION_PCT,
   ELIGIBLE,
   EXAMPLES,
-  JUBILACION_MINIMA_2026,
-  PENSION_VEJEZ_INVALIDEZ_2026,
   RESIDENCY_RULE,
   SUPLEMENTO_FAQ,
   SUPLEMENTO_SOURCES,
