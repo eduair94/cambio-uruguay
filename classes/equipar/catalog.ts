@@ -79,13 +79,25 @@ const slugify = (value: string): string =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 70);
 
+interface ProductGroup {
+  brand: string;
+  model: string;
+  listings: RetailListing[];
+}
+
 /**
  * Groups the new offers of a `modelo` category into products.
  *
- * Only listings that name BOTH a brand and a model take part. That is the rule the chair directory
- * learned: two listings merge when brand and model agree, and a description ("silla ergonómica
- * negra") is dropped rather than pooled. Everything dropped here still counts toward the band, so
- * nothing is lost from the price statistics — only from the product list.
+ * MercadoLibre stamps every seller's copy of the same catalogue page with the same
+ * `catalog_product_id` (`RetailListing.catalogId`) — ground truth this site never used before this
+ * function. Measured in production on 2026-09-16: 109 products, zero with two sellers, because
+ * `identify()` reading each seller's own title almost never agrees across sellers ("BC-450 338L" vs
+ * "Bc450 338 Litros" vs "BC-450 heladera frio seco" are the same product, three different strings).
+ * A `catalogId` is trusted first and unconditionally groups its listings. A storefront never has one
+ * (it isn't MercadoLibre), so it still has to earn its way in the old way — brand and model matching
+ * EXACTLY against the group's identity — which is now checked against catalogue groups too, not only
+ * against other catalogId-less listings. Facebook and used listings never take part; see the filter
+ * below, unchanged from before this task.
  */
 function buildProducts(
   listings: readonly RetailListing[],
@@ -93,27 +105,102 @@ function buildProducts(
   usdUyu: number
 ): EquiparProduct[] {
   if (category.regime !== "modelo") return [];
-  const groups = new Map<string, { brand: string; model: string; listings: RetailListing[] }>();
 
-  for (const listing of listings) {
-    // A Marketplace title cannot identify a product. It belongs in the used band and nowhere else.
-    if (listing.source === "facebook") continue;
-    if (conditionOf(listing) !== "new") continue;
+  // A Marketplace title cannot identify a product, and a used listing prices a different market —
+  // both belong only in the band, never in a product row.
+  const eligible = listings.filter(
+    (listing) => listing.source !== "facebook" && conditionOf(listing) === "new"
+  );
+
+  const catalogGroups = new Map<string, ProductGroup>();
+  const withoutCatalog: RetailListing[] = [];
+
+  // Pass 1: every listing that carries a `catalogId` joins the SAME group, whatever its own title
+  // says. Two different catalogue ids never merge even when their titles are identical — a seller
+  // typo or a genuinely split catalogue entry on MercadoLibre's side is not this code's call to undo.
+  for (const listing of eligible) {
+    if (!listing.catalogId) {
+      withoutCatalog.push(listing);
+      continue;
+    }
+    const key = `cat:${listing.catalogId}`;
+    const group = catalogGroups.get(key) ?? { brand: "", model: "", listings: [] };
+    group.listings.push(listing);
+    catalogGroups.set(key, group);
+  }
+
+  // Name each catalogue group off the identity its OWN sellers agree on most — a plurality vote, so
+  // one seller's oddly worded title cannot outvote two who agree. `catalogIndex` remembers only the
+  // WINNING brand+model, so a storefront can find its way into pass 2 below. A group whose sellers
+  // never named a brand at all is still a real product (the catalogue id says so) — it is named off
+  // whichever listing happened to arrive first, and simply cannot be joined by brand+model since it
+  // never had one to index.
+  const catalogIndex = new Map<string, string>();
+  for (const [key, group] of catalogGroups) {
+    const votes = new Map<string, { brand: string; model: string; count: number }>();
+    for (const listing of group.listings) {
+      const identity = identify(listing, category);
+      if (!identity) continue;
+      const voteKey = `${identity.brand}|${identity.model}`;
+      const vote = votes.get(voteKey);
+      if (vote) vote.count += 1;
+      else votes.set(voteKey, { ...identity, count: 1 });
+    }
+    let winner: { brand: string; model: string } | null = null;
+    let winnerVotes = 0;
+    for (const vote of votes.values()) {
+      if (vote.count > winnerVotes) {
+        winner = { brand: vote.brand, model: vote.model };
+        winnerVotes = vote.count;
+      }
+    }
+    if (winner) {
+      group.brand = winner.brand;
+      group.model = winner.model;
+      catalogIndex.set(`${winner.brand}|${winner.model}`, key);
+    } else {
+      const first = group.listings[0]!;
+      group.brand = norm(first.brand);
+      group.model = norm(first.title)
+        .replace(category.include, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .split(" ")
+        .slice(0, 4)
+        .join(" ");
+    }
+  }
+
+  // Pass 2: unchanged from before this task, except the index it checks against now also holds
+  // catalogue identities. A listing with no `catalogId` (a storefront, or an ML listing the harvester
+  // never tagged) only merges when ITS OWN brand+model matches exactly; otherwise it starts its own
+  // single-listing group, same as it always has.
+  const identityGroups = new Map<string, ProductGroup>();
+  for (const listing of withoutCatalog) {
     const identity = identify(listing, category);
     if (!identity) continue;
-    const key = `${identity.brand}|${identity.model}`;
-    const group = groups.get(key) ?? { ...identity, listings: [] };
+    const voteKey = `${identity.brand}|${identity.model}`;
+    const catalogKey = catalogIndex.get(voteKey);
+    if (catalogKey) {
+      catalogGroups.get(catalogKey)!.listings.push(listing);
+      continue;
+    }
+    const key = `id:${voteKey}`;
+    const group = identityGroups.get(key) ?? { ...identity, listings: [] };
     group.listings.push(listing);
-    groups.set(key, group);
+    identityGroups.set(key, group);
   }
 
   const products: EquiparProduct[] = [];
-  for (const [, group] of groups) {
-    // One seller alone does not corroborate a product; it corroborates a listing.
+  for (const group of [...catalogGroups.values(), ...identityGroups.values()]) {
+    // One seller alone does not corroborate a product; it corroborates a listing. It is still
+    // published — as it always has been — because dropping it would lose the price, not just the row.
     const offers = group.listings
       .map((listing) => toOffer(listing, usdUyu))
       .sort((a, b) => a.priceUyu - b.priceUyu);
-    const sellers = new Set(offers.map((offer) => offer.seller)).size;
+    // Two ML listings from the same seller under one catalogId (rare, but possible) must not count
+    // twice, so sellers are counted by normalised name, exactly like the rest of this module.
+    const sellers = new Set(offers.map((offer) => norm(offer.seller))).size;
     const name = `${group.brand} ${group.model}`.replace(/\s+/g, " ").trim();
     products.push({
       slug: slugify(`${category.key}-${name}`),
@@ -127,6 +214,8 @@ function buildProducts(
     });
   }
 
+  // A product corroborated by more sellers is a stronger claim than a cheaper one from a single
+  // seller, so it leads — products the catalogue id pulled together now surface first on purpose.
   return products
     .sort((a, b) => b.sellers - a.sellers || a.bestPriceUyu - b.bestPriceUyu)
     .slice(0, 12);
