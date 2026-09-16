@@ -56,6 +56,34 @@ describe("registro de categorías", () => {
     expect(specs[0]!.key).toBe("heladera");
   });
 
+  it("sumar una consulta de tienda arriba no le saca la olla a VTEX y WooCommerce", () => {
+    // Esos dos adaptadores mandan las storeQueries deduplicadas EN ORDEN DEL REGISTRO y cortan en 24
+    // (RETAIL_VTEX_MAX_QUERIES / RETAIL_WOO_MAX_QUERIES, sin override en producción). "olla" es
+    // justo la 24. Medido con el dry run al sumar "aire portatil" al aire acondicionado: El Dorado
+    // pasó de 198 a 138 productos revisados y TYT de 149 a 95 aceptados, y las dos tiendas
+    // perdieron todas sus ollas, que son tier S. Una consulta nueva arriba de la olla cuesta la olla.
+    const sentToCappedStores = [...new Set(EQUIPAR_CATEGORIES.flatMap((category) => category.storeQueries))].slice(0, 24);
+    expect(sentToCappedStores).toContain("olla");
+  });
+
+  it("ningún filtro lleva acentos ni ñ, porque corren sobre el título normalizado", () => {
+    // `norm` saca los diacríticos antes de probar el filtro: una palabra escrita con ñ o tilde en
+    // el registro nunca coincide con nada y el filtro queda muerto sin que ningún test lo note. Así
+    // estuvo el "caño" del aire acondicionado.
+    const nonAscii = /[^\x00-\x7f]/;
+    const patterns: Array<[string, RegExp]> = [["NOT_A_PRODUCT", NOT_A_PRODUCT]];
+    for (const category of EQUIPAR_CATEGORIES) {
+      patterns.push([`${category.key}.include`, category.include]);
+      if (category.exclude) patterns.push([`${category.key}.exclude`, category.exclude]);
+      for (const variant of category.variants) {
+        if (variant.match) patterns.push([`${category.key}:${variant.key}.match`, variant.match]);
+      }
+    }
+    for (const [name, pattern] of patterns) {
+      expect(nonAscii.test(pattern.source), `${name} tiene un carácter que norm() ya sacó`).toBe(false);
+    }
+  });
+
   it("el filtro de accesorios saca repuestos, fundas y publicaciones rotas", () => {
     for (const title of [
       "funda para sofa 3 cuerpos",

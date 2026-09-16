@@ -24,13 +24,16 @@ const UNIT_PATTERNS: Record<EquiparUnit, RegExp> = {
   cm: /(\d{1,3})\s*(?:cm|centimetros)\b/,
   plazas: /(\d)\s*plazas?\b/,
   piezas: /(\d{1,3})\s*(?:piezas|pzas|unidades|u\b)/,
-  btu: /(\d{4,6})\s*(?:btu|btus)\b/,
+  // "12.000 BTU", "12,000 btus", "9000btu": Uruguayan titles write the thousands separator about
+  // half the time, and without it here "12.000" read as nothing and fell to the default variant.
+  btu: /\b(\d{1,2}[.,]?\d{3})\s*(?:btu|btus)\b/,
 };
 
 export function numericValue(title: string, unit: EquiparUnit): number | null {
   const match = UNIT_PATTERNS[unit].exec(title);
   if (!match) return null;
-  const value = Number(match[1]);
+  // Only a separator followed by exactly three digits is a thousands mark; "7.2" stays 7.2.
+  const value = Number(match[1]!.replace(/[.,](?=\d{3}$)/, ""));
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 

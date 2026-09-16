@@ -42,6 +42,20 @@ function itemFor(categoryKey: string, newMedian: number | null, usedMedian: numb
   };
 }
 
+/** Same as {@link itemFor}, for one named variant instead of the default one. */
+function itemForVariant(categoryKey: string, variantKey: string, newMedian: number): EquiparItem {
+  const category = EQUIPAR_CATEGORIES.find((entry) => entry.key === categoryKey)!;
+  const variant = category.variants.find((entry) => entry.key === variantKey);
+  if (!variant) throw new Error(`${categoryKey} no tiene la variante ${variantKey}`);
+  return {
+    ...itemFor(categoryKey, newMedian),
+    key: `${category.key}:${variant.key}`,
+    variant: variant.key,
+    variantLabel: variant.label,
+    variantRank: variant.rank,
+  };
+}
+
 /** Every S category priced, so the "mínima" basket is complete. */
 const everyEssential = (): EquiparItem[] =>
   EQUIPAR_CATEGORIES.filter((category) => category.tier === "S").map((category) =>
@@ -123,6 +137,26 @@ describe("qué precio toma cada canasta", () => {
     const heladera = completa.lines.find((line) => line.itemKey.startsWith("heladera"))!;
     expect(heladera.condition).toBe("used");
     expect(completa.missing.some((row) => row.itemKey === "heladera")).toBe(false);
+  });
+
+  it("la completa sigue comprando el split de 12.000 BTU aunque el portátil y el de 9.000 sean más baratos", () => {
+    // Sumar "portatil" (rank 1) y "9000" (rank 2) corrió el rank del 12.000 al 3. La canasta no
+    // elige la típica por posición sino por la variante marcada `fallback`, así que el 12.000 tiene
+    // que seguir siendo esa: si alguien mueve el `fallback`, este test lo dice. Y la mínima no lleva
+    // aire acondicionado de ningún tamaño, porque es tier B.
+    const aire = [
+      itemForVariant("aire-acondicionado", "portatil", 15_000),
+      itemForVariant("aire-acondicionado", "9000", 18_000),
+      itemForVariant("aire-acondicionado", "12000", 25_000),
+      itemForVariant("aire-acondicionado", "18000", 40_000),
+    ];
+    const [minima, decente, completa] = buildBaskets([...everyEssential(), ...aire], 40);
+
+    const line = completa!.lines.find((entry) => entry.itemKey.startsWith("aire-acondicionado"))!;
+    expect(line.itemKey).toBe("aire-acondicionado:12000");
+    expect(line.unitPriceUyu).toBe(25_000);
+    expect(minima!.lines.some((entry) => entry.itemKey.startsWith("aire-acondicionado"))).toBe(false);
+    expect(decente!.lines.some((entry) => entry.itemKey.startsWith("aire-acondicionado"))).toBe(false);
   });
 
   it("convierte a dólares con la referencia que le pasan", () => {

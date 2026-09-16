@@ -63,7 +63,11 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "queen", label: "Queen o King (160 cm+)", match: /\b(queen|king)\b|\b16[05] ?x ?[12]|\b18[05] ?x ?[12]|\b200 ?x ?200/, rank: 3 },
     ],
     include: /\bcolchon(es)?\b/,
-    exclude: /\b(inflable|de aire|para bebe|cuna|corralito|camping|yoga|antiescara|sofa cama|para perro|mascota|topper|cubre)\b/,
+    // A supermarket catalogue sells "Yogur Calcar Colchón de Frutillas 130gr" — the yogurt with the
+    // fruit layer at the bottom. El Dorado is a supermarket, so four of them at $ 70 became the
+    // cheapest "2 plazas" products on the page. The grams/millilitres and the dairy aisle catch them.
+    exclude:
+      /\b(inflable|de aire|para bebe|cuna|corralito|camping|yoga|antiescara|sofa cama|para perro|mascota|topper|cubre|base para colchon|cama box|sommier base|base de cama|protector|yogur\w*|lacteos|\d+ ?(gr|grs|gramos|ml)\b)\b/,
     urlHint: /colchon/i,
     storeQueries: ["colchon", "colchones"],
     mlQueries: ["colchon 2 plazas", "colchon 1 plaza", "colchon queen", "colchon resortes"],
@@ -84,7 +88,9 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "frontal", label: "Carga frontal", match: /\b(carga )?frontal\b|\bfront load\b/, fallback: true, rank: 2 },
     ],
     include: /\b(lavarropas|lavadora|lavasecarropas)\b/,
-    exclude: /\b(secarropas|semi ?automatic|para bebe|de juguete|industrial)\b/,
+    // "Semi-automático" keeps its hyphen through `norm`, and "doble cuba" is the same machine under
+    // another name: no spin cycle, a fraction of the price, a different market.
+    exclude: /\b(secarropas|semi ?-?automatic\w*|doble cuba|para bebe|de juguete|industrial)\b/,
     urlHint: /(lavarropas|lavadora)/i,
     storeQueries: ["lavarropas", "lavadora"],
     mlQueries: ["lavarropas", "lavarropas automatico", "lavarropas carga frontal"],
@@ -105,7 +111,9 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "cocina4", label: "Cocina 4 hornallas con horno", match: /\b(4|cuatro) hornallas\b|\bcon horno\b/, fallback: true, rank: 2 },
     ],
     include: /\b(anafe|cocina (a )?(gas|electrica|supergas)|cocina \d ?hornallas|hornalla)\b/,
-    exclude: /\b(mueble|bajo mesada|alacena|campana|isla|juguete|de juguete|libro|curso)\b/,
+    // A butane cartridge says "anafe" because that is what it feeds.
+    exclude:
+      /\b(mueble|bajo mesada|alacena|campana|isla|juguete|de juguete|libro|curso|cartucho|gas butano|isobutano|garrafa|camping|cocinilla)\b/,
     urlHint: /(anafe|cocina|hornalla)/i,
     storeQueries: ["anafe", "cocina", "hornallas"],
     mlQueries: ["cocina a gas", "anafe", "cocina 4 hornallas"],
@@ -126,7 +134,9 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "100l", label: "100 litros o más", numeric: { unit: "litros", min: 90, max: 400 }, rank: 3 },
     ],
     include: /\b(calefon|calefones|termotanque)\b/,
-    exclude: /\b(solar|a gas de paso|instalacion)\b/,
+    // A gas instantaneous heater is sold as "calefón a gas", but it is another install (flue, gas
+    // line) and another price. This row is the electric tank a rental is expected to have.
+    exclude: /\b(solar|a gas de paso|instalacion|a gas|tiro natural|instantaneo)\b/,
     urlHint: /(calefon|termotanque)/i,
     storeQueries: ["calefon", "termotanque"],
     mlQueries: ["calefon", "calefon 80 litros", "termotanque"],
@@ -146,7 +156,10 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "grande", label: "24 L o más", numeric: { unit: "litros", min: 24, max: 90 }, rank: 2 },
     ],
     include: /\b(microondas|micro ?ondas)\b/,
-    exclude: /\b(bandeja|plato giratorio|grill de repuesto)\b/,
+    // "Apto microondas" describes a bowl, a mixer jug or a tupper; "para microondas" is the cabinet
+    // the oven sits in.
+    exclude:
+      /\b(bandeja|plato giratorio|grill de repuesto|mueble|soporte|estante|apto microondas|para microondas|bowl|recipiente|tupper|batidora|olla|tapa)\b/,
     urlHint: /microondas/i,
     storeQueries: ["microondas"],
     mlQueries: ["microondas", "microondas digital"],
@@ -162,9 +175,11 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       "Nada en la casa deja de funcionar sin televisor, y hoy compite con un celular. Entra cuando ya está lo demás.",
     usedOk: true,
     variants: [
-      { key: "32", label: '32 pulgadas', numeric: { unit: "pulgadas", min: 20, max: 39 }, fallback: true, rank: 1 },
-      { key: "43", label: '43 pulgadas', numeric: { unit: "pulgadas", min: 40, max: 49 }, rank: 2 },
-      { key: "55", label: '55 pulgadas o más', numeric: { unit: "pulgadas", min: 50, max: 90 }, rank: 3 },
+      // The label is the range the bucket really holds. The keys stay "32"/"43"/"55": stored price
+      // history lives under tv:32, tv:43 and tv:55.
+      { key: "32", label: "Hasta 39 pulgadas", numeric: { unit: "pulgadas", min: 20, max: 39 }, fallback: true, rank: 1 },
+      { key: "43", label: "40 a 49 pulgadas", numeric: { unit: "pulgadas", min: 40, max: 49 }, rank: 2 },
+      { key: "55", label: "50 pulgadas o más", numeric: { unit: "pulgadas", min: 50, max: 90 }, rank: 3 },
     ],
     include: /\b(smart ?tv|televisor|television|led tv)\b/,
     exclude: /\b(monitor|proyector|decodificador|antena|rack|mesa para tv|box|chromecast)\b/,
@@ -183,15 +198,36 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       "Frío en enero y calor en julio. Se sobrevive sin él —hay ventilador y estufa más abajo, mucho más baratos—, pero es la compra que más cambia la casa cuando hay resto. Además deshumidifica, así que reemplaza al deshumidificador del tier C.",
     usedOk: true,
     usedNote: "Sumale la instalación: no es un electrodoméstico que se enchufa.",
+    // Rank is size. The TYPICAL unit, the one the "completa" basket buys, is the 12.000 BTU split,
+    // and the basket finds it through `fallback`, never through its position: adding the portable
+    // and the 9.000 moved it from rank 1 to rank 3. Keys "12000" and "18000" carry stored price
+    // history and are never renamed.
     variants: [
-      { key: "12000", label: "12.000 BTU", numeric: { unit: "btu", min: 1000, max: 12999 }, fallback: true, rank: 1 },
-      { key: "18000", label: "18.000 BTU o más", numeric: { unit: "btu", min: 13000, max: 40000 }, rank: 2 },
+      { key: "portatil", label: "Portátil", match: /\bportatil\b/, rank: 1 },
+      { key: "9000", label: "9.000 BTU", numeric: { unit: "btu", min: 1000, max: 10499 }, rank: 2 },
+      { key: "12000", label: "12.000 BTU", numeric: { unit: "btu", min: 10500, max: 12999 }, fallback: true, rank: 3 },
+      { key: "18000", label: "18.000 BTU o más", numeric: { unit: "btu", min: 13000, max: 40000 }, rank: 4 },
     ],
-    include: /\b(aire acondicionado|split|aire split)\b/,
-    exclude: /\b(portatil de aire|caño|instalacion|soporte|bomba)\b/,
+    // A bare "split" let in a convector heater sold as "Split Digital". A real unit says "aire
+    // acondicionado", a split type, or its BTU.
+    include: /\b(aire acondicionado|aire split|split (inverter|frio|on ?off)|\d{4,5} ?btu)\b/,
+    // `norm` turns "caño" into "cano", so the filter used to spell a word no title can contain. The
+    // pipe is matched where it is the product (first word, or a kit) and not anywhere, because a
+    // real unit lists "con caño de cobre" among what comes in the box.
+    exclude:
+      /\b(convector|estufa|calefactor|caloventor|portatil de aire|^canos?|kit de canos?|instalacion|soporte|bomba|control remoto)\b/,
     urlHint: /(aire-acondicionado|split)/i,
+    // No "aire portatil" here, although ML gets it: VTEX and WooCommerce send the deduplicated store
+    // queries in registry order and stop at 24, and one more query above the pot costs every capped
+    // store its pots (measured, see tests/equipar/registry.test.ts). A portable unit is titled
+    // "aire acondicionado portátil", so the first query can already reach it.
     storeQueries: ["aire acondicionado", "split"],
-    mlQueries: ["aire acondicionado split", "aire acondicionado 12000"],
+    mlQueries: [
+      "aire acondicionado split",
+      "aire acondicionado 12000",
+      "aire acondicionado 9000 btu",
+      "aire acondicionado portatil",
+    ],
     fbQueries: ["aire acondicionado"],
   },
   // ---------------------------------------------------------------- muebles
@@ -692,7 +728,9 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "panel", label: "Panel o aceite", match: /\b(panel|aceite|radiador)\b/, rank: 2 },
     ],
     include: /\b(estufa|calefactor|caloventor|panel calefactor|radiador de aceite)\b/,
-    exclude: /\b(a lena de obra|industrial|de auto|de repuesto|resistencia)\b/,
+    // A butane camping stove is sometimes titled "anafe estufa"; once "cocina" stopped taking
+    // cartridge stoves, this was the next category that would.
+    exclude: /\b(a lena de obra|industrial|de auto|de repuesto|resistencia|anafe|hornallas?)\b/,
     urlHint: /(estufa|calefactor|caloventor)/i,
     storeQueries: ["estufa", "calefactor", "caloventor"],
     mlQueries: ["caloventor", "estufa electrica", "panel calefactor"],
@@ -762,7 +800,8 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     usedOk: true,
     quantity: 1,
     variants: [{ key: "multifuncion", label: "Multifunción", fallback: true, rank: 1 }],
-    include: /\b(impresora|multifuncion)\b/,
+    // "Multifunción" alone is how Xiaomi sells a flashlight and a rice cooker.
+    include: /\bimpresora\b/,
     exclude: /\b(3d|cartucho|toner|tinta|cabezal|de repuesto|etiquetas|termica de tickets)\b/,
     urlHint: /impresora/i,
     storeQueries: ["impresora"],
