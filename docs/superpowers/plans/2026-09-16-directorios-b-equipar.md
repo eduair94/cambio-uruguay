@@ -509,3 +509,30 @@ Medido: 109 productos, 0 con dos vendedores. ML trae `catalog_product_id` (ya en
 - [ ] **Step 1:** escribir los docs (español, mismo tono que `EQUIPAR.md`: hechos medidos con fecha, sin marketing).
 - [ ] **Step 2: verificación completa.** Raíz: `npm test` y `npm run build`. App: `npm test` y `npm run lint`. Pegar el resumen (cantidad de tests, 0 fallas) en el reporte. Si fallan `gemini_key_ownership`/`claude_endpoint_ownership` por copias ajenas del repo, confirmar que en este worktree no hay `.artifacts/`/`.sdd-*` y reportar.
 - [ ] **Step 3: commit** — `docs(equipar): calidad, pricewatch y páginas por categoría`.
+
+---
+
+### Task 10: Unidades mixtas por producto, tope de búsquedas por tienda y colados (seguimiento de la Task 3; se ejecuta ANTES de la Task 4)
+
+Origen: las corridas en seco de la Task 3 (catálogos reales, 16/9/2026) mostraron tres defectos que el plan no preveía.
+
+**Files:**
+- Modify: `classes/retail/types.ts` (`RetailStore.priceUnitAmbiguous?: boolean`), `classes/retail/stores.ts` (`tyt`), `classes/retail/unitGuard.ts` (resolución por aviso), `sync_equipar.ts`
+- Modify: `classes/equipar/registry.ts`, `ecosystem.config.js` (env de `currency-equipar`, NO de `currency-equipar-hourly`)
+- Test: `tests/retail/unit_guard.test.ts`, `tests/equipar/production_cases.test.ts`, `tests/equipar/registry.test.ts`
+
+**Interfaces:**
+- Produces: `export function resolveAmbiguousUnits(listings: readonly RetailListing[], usdUyu: number, ambiguousSellerKeys: ReadonlySet<string>): { listings: RetailListing[]; rescaled: number; dropped: number }` en `unitGuard.ts`; `sync_equipar.ts` lo aplica ANTES de `applyUnitGuard`, con el conjunto de `retailStores()` que tienen `priceUnitAmbiguous`.
+
+- [ ] **Step 1: tests que fallan.**
+  - Unidades mixtas: TYT publica algunos productos en unidades enteras y otros en centavos con el mismo `currency_minor_unit: 2` (medido: "Calefon Termotanque … Enxuta 60 L" 20500 y "Termotanque Calefon Enxuta 60 Lts" 960000 en la misma corrida; "Telefunken Calefón TLF30V" 487900). Para un vendedor ambiguo, cada aviso se compara contra la banda de MercadoLibre de su misma categoría (`CATEGORY_SPEC`, en UYU, ≥5 avisos): si el precio tal cual cae dentro de `[p10/3, p90×3]` y el precio/100 no → se deja; si sólo el precio/100 cae dentro → se reescala (`price /= 100`, también `listPrice`); si caen los dos o ninguno → se descarta el aviso (no se puede saber). Sin banda de ML para la categoría → se descarta. Tests con esos tres casos más "ambos dentro" y "sin banda". Vendedores no marcados no se tocan.
+  - Colados medidos en las corridas en seco (cada uno `not.toBe` de la categoría indicada): "Toalla De Cocina Felpita Maxirollo 200paños" → `toallas`; "Lavadora de alta presión Bosch" y "Hidrolavadora Lavadora De Alta Presión" → `lavarropas`; "Manguera de desagote para lavarropas" → `lavarropas`; "Cama Cucha Colchón Para Perros" → `colchon`; "Limpiador De Aire Acondicionado 150 Ml", "Prensa Manguera Aire Acondicionado Automotriz", "Cinta Aluminio Aire Acondicionado" → `aire-acondicionado`; "Colilla Para Calefón" → `calefon`; "Heladera Chica Para Camion" → `heladera`. Y "Cocina Grenno Massima Con Horno Electrico" → `cocina` (no `horno-electrico`).
+  - Tope de búsquedas: `registry.test.ts` fija que con 80 búsquedas de tienda entran TODAS las `storeQueries` deduplicadas del registro (hoy 70), y que `"aire portatil"` vuelve a estar en las `storeQueries` de `aire-acondicionado`.
+- [ ] **Step 2:** FAIL.
+- [ ] **Step 3: implementación.**
+  - `tyt` en `stores.ts`: `priceUnitAmbiguous: true` con comentario de lo medido; se mantiene `priceInMajorUnits: true` (el resolvedor parte del valor entero y prueba /100).
+  - `registry.ts`: excludes plural-tolerantes (`perros?`, `camion(es)?`), `toallas.exclude` suma `de cocina|papel|rollo|panos`, `lavarropas.exclude` suma `alta presion|hidrolavadora|manguera|desagote`, `aire-acondicionado.exclude` suma `limpiador|prensa|cinta|automotriz|de auto`, `calefon.exclude` suma `colilla`, `heladera.exclude` suma `para camion(es)?`, `horno-electrico.exclude` suma `cocina`; `aire-acondicionado.storeQueries` vuelve a sumar `"aire portatil"`.
+  - `ecosystem.config.js`, app `currency-equipar` (la diaria): `env` suma `RETAIL_WOO_MAX_QUERIES: "80"` y `RETAIL_VTEX_MAX_QUERIES: "80"` con comentario (70 búsquedas deduplicadas; con 24 no se consultaba la mayoría del tier S; sólo la diaria, la horaria sigue en 24 para no multiplicar por 24 la carga a tiendas chicas). Confirmar leyendo `classes/retail/sources/woocommerce.ts` y `vtex.ts` que esos nombres de variable son los que se leen.
+  - `sync_equipar.ts`: loguear `[equipar] unidades ambiguas: <rescaled> reescalados, <dropped> descartados`.
+- [ ] **Step 4:** `npx vitest run tests/retail tests/equipar tests/chairs tests/sync` → PASS; corrida en seco `npx ts-node scripts/oneoff/equipar_dry_run.ts tyt calefon` antes/después (el script puede no aplicar el resolvedor: si no lo aplica, sumarle una opción `--resolve` que lo aplique con una banda de ML de 6 búsquedas) y pegar en el reporte qué avisos se reescalaron y cuáles se descartaron.
+- [ ] **Step 5: commit** — `fix(equipar): unidades mixtas de TYT, todas las búsquedas en la corrida diaria y más colados`.
