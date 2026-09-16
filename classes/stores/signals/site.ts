@@ -73,7 +73,18 @@ function norm(value: string): string {
 // A RUT is 12 digits; the page must LABEL it as RUT (accepting the common "R.U.T." spelling and
 // spaces the site owner put in for readability) or it is not published as a RUT at all — a bare
 // 12-digit number (order codes, phone numbers with a country prefix...) is not evidence.
-const RUT_LABEL_RE = /r\.?\s*u\.?\s*t\.?[^0-9]{0,10}([0-9][0-9.\- ]{8,20}[0-9])/i;
+//
+// The label must be a standalone token: no letter immediately before the "r" and no letter
+// immediately after the final "t"/"t." — otherwise "ruta", "bruto", "fruta" or "rutina" (the
+// letters r-u-t sitting inside an ordinary word) were matching and fabricating a RUT out of
+// whatever 12-digit number happened to follow. `À-ÖØ-öø-ÿ` is the standard Latin-1 accented-letter
+// range (both cases, skipping the ×/÷ math symbols in the two gaps) so an accented word right
+// before/after the label ("própio", "número"...) is still recognised as a letter, not a boundary.
+const LETTER_CLASS = "A-Za-zÀ-ÖØ-öø-ÿ";
+const RUT_LABEL_RE = new RegExp(
+  `(?<![${LETTER_CLASS}])r\\.?\\s*u\\.?\\s*t\\.?(?![${LETTER_CLASS}])[^0-9]{0,10}([0-9][0-9.\\- ]{8,20}[0-9])`,
+  "i"
+);
 
 function extractRut(html: string): string | null {
   const match = RUT_LABEL_RE.exec(html);

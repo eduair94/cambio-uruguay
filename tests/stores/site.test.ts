@@ -79,6 +79,19 @@ describe("parseSite: RUT", () => {
     const signal = parseSite(fixture("rut-unlabeled.html"), FINAL_URL, CHECKED_AT);
     expect(signal.rut).toBeNull();
   });
+
+  // Regression: the label must be a standalone token. "ruta", "bruto", "fruta" and "rutina" all
+  // contain the letters r-u-t inside an ordinary word, and an earlier version of RUT_LABEL_RE
+  // matched them, publishing whatever 12-digit number followed as a fabricated RUT.
+  it.each([
+    ["ruta (word starts with rut, more letters after)", "Seguí tu pedido en ruta: código 214567890012"],
+    ["bruto (word ends with rut, letter before)", "Precio bruto: 214567890012"],
+    ["fruta (letter before rut, letters after too)", "Vendemos fruta 214567890012"],
+    ["rutina (word starts with rut, more letters after)", "Arma tu rutina 214567890012"],
+  ])("never matches 'rut' embedded inside another word: %s", (_label, text) => {
+    const html = `<!doctype html><html><body><p>${text}</p></body></html>`;
+    expect(parseSite(html, FINAL_URL, CHECKED_AT).rut).toBeNull();
+  });
 });
 
 describe("parseSite: JSON-LD address", () => {
