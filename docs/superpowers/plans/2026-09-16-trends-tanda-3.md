@@ -139,9 +139,31 @@ Scotiabank tiene una **discrepancia declarada** (su página comercial dice "desd
 
 ---
 
-### Task 7 (M)
+### Task 7 (M): guía de enviar/recibir → cobrar del exterior, con costos reales
 
-Se agrega cuando llegue `dossier-cobrar-exterior.md`.
+**Files:** Modify `app/utils/guides.ts` (sólo la entrada `slug: 'enviar-recibir-dinero-exterior'`). Create `app/tests/unit/guidesCobrarExterior.test.ts`.
+**Dossier:** `dossier-cobrar-exterior.md` — leerlo entero, incluidas las ocho dudas abiertas.
+
+La guía de hoy tiene 380 palabras, sin tabla, sin FAQ, sin fuentes, y no nombra un solo proveedor ni una sola comisión. Se conserva el slug (sirve igual para "recibir dinero del exterior") y se reescribe con el caso que la gente busca adelante: me pagan de afuera, cómo lo cobro más barato.
+
+**La tabla** (`headers: ['Vía', 'Qué te cobran por recibir', 'Qué te cobran por sacarlo', 'En qué moneda te queda', 'Cuánto demora']`), una fila por vía con los valores del dossier y su etiqueta; donde el proveedor no publique un número, "no publica". Filas: Payoneer, Wise, Prex, banco por SWIFT (con la aclaración de que cada banco cobra distinto y remitiendo a la sección), PayPal, plataforma de contrato (Deel/Remote/Ontop).
+
+**Hechos que dan valor propio** y que ninguna otra página uruguaya junta:
+- **Wise sí opera para residentes uruguayos** (podés tener saldo) **pero sólo entrega pesos a cuentas uruguayas, no dólares**: si querés dólares, esa vía no te sirve.
+- **Prex no recibe SWIFT directo**; entra por el puente de Payoneer/PayPal con sus costos propios.
+- **Los cuatro bancos publican tarifario** (BROU, Itaú v.01-09-2026, Santander v.15-09-2026, BBVA actualizado 03-09-2026): la sección de bancos compara comisión de acreditación y gastos de corresponsalía con esas cifras, que son las que vuelven cara una transferencia chica.
+- **El costo que no se ve es el tipo de cambio** con el que te convierten: enlazar la pizarra del sitio y `/comparar-plataformas-dolar-uruguay`, porque el sitio ya mide la cotización propia de Prex.
+- **Monotributo casi nunca es la vía** para este perfil: la elección real es unipersonal (IRPF Cat. II o IRAE) o sociedad. Decirlo como regla general con la fuente del BPS/DGI y sin asesorar; la exoneración de IVA por exportación de servicios va citada, y lo que el dossier marca como inferencia (la plata que queda afuera igual tributa) **no se publica como cita de DGI**: se escribe como "el criterio es dónde se presta el servicio, no dónde queda el dinero" con el artículo del principio de la fuente.
+
+**Secciones (8–9).** Las tres vías y qué cambia entre ellas; la tabla; Payoneer; Wise (con la limitación de la moneda); Prex y el puente; el banco por SWIFT (comisión de acreditación + corresponsalía + qué papeles te piden); el tipo de cambio, que suele pesar más que la comisión; el lado tributario en una sección corta; enviar plata al exterior y remesas familiares (lo que queda de la guía vieja, resumido).
+
+`faqs` ≥ 6: ¿cuál es la forma más barata de cobrar del exterior?; ¿Wise funciona en Uruguay? (sí, con la limitación); ¿me conviene Payoneer o que me manden un SWIFT al banco?; ¿puedo quedarme con los dólares sin convertir?; ¿tengo que facturar?; ¿el banco me va a pedir papeles?; ¿sirve el monotributo?
+`sources` ≥ 6 (páginas de tarifas de Payoneer y Wise, los tarifarios de al menos dos bancos, DGI e BPS). `related`: `/contractor-en-uruguay`, `/comisiones-de-transferencia-uruguay`, `/comparar-plataformas-dolar-uruguay`, `/facturar-en-monotributo-uruguay`, `/cobrar-en-dolares-gastar-en-pesos`, `/comisiones-mercado-pago-uruguay`.
+
+- [ ] **Step 1: test (falla)** — `app/tests/unit/guidesCobrarExterior.test.ts`: mismo slug y `updatedAt === '2026-09-16'`; título ≤ 60 y descripción 100–190; nombra Payoneer, Wise, Prex, SWIFT y al menos dos bancos; la tabla tiene esos 5 encabezados y ≥ 5 filas de 5 celdas; el texto dice que Wise entrega pesos (no dólares) a cuentas uruguayas; ≥ 6 FAQ; ≥ 6 fuentes https; `related` incluye `/comparar-plataformas-dolar-uruguay` y `/contractor-en-uruguay`; sin markdown; sin "septiembre".
+- [ ] **Step 2: correr y ver que falla** — `npx vitest run tests/unit/guidesCobrarExterior.test.ts` desde `app/`.
+- [ ] **Step 3: reescribir la entrada** con la estructura de arriba (prosa plana, "vos", secciones 90–180 palabras, FAQ 30–80).
+- [ ] **Step 4: verde y lint** — `npx vitest run tests/unit/guidesCobrarExterior.test.ts tests/unit/guides.test.ts tests/unit/guideHubs.test.ts`; eslint sobre los dos archivos.
 
 ---
 
