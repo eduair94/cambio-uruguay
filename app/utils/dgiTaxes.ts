@@ -65,6 +65,14 @@ export const DGI_SOURCES: readonly DgiSource[] = Object.freeze([
     label: 'DGI — Calendario de la campaña 2026 de IRPF',
     url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/noticias/calendario-campana-2026-irpf',
   },
+  {
+    label: 'Texto Ordenado 2023 DGI, art. 51 (Título 7) — crédito fiscal por arrendamiento',
+    url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/51_T7',
+  },
+  {
+    label: 'DGI — Crédito fiscal por arrendamiento de inmuebles en IRPF',
+    url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/credito-fiscal-arrendamiento-inmuebles-irpf',
+  },
 ])
 
 // ---------------------------------------------------------------------------
@@ -323,6 +331,184 @@ export const IRPF_FORMS: readonly IrpfForm[] = Object.freeze([
 ])
 
 // ---------------------------------------------------------------------------
+// Crédito fiscal de IRPF por arrendamiento (T.O. 2023 DGI, art. 51 Título 7)
+// ---------------------------------------------------------------------------
+//
+// EL HALLAZGO: el porcentaje vigente es 8 %, no el 6 % que circula en foros y notas
+// viejas. El 6 % es dos cosas a la vez, y ninguna es "el crédito general de hoy":
+// (a) fue la tasa histórica, para ejercicios cerrados antes del 31/12/2023, y
+// (b) sigue siendo, en el MISMO artículo, el tope de un régimen distinto: los
+// arrendamientos turísticos temporarios, no la vivienda permanente.
+//
+// Verificado por fetch directo a impo.com.uy el 2026-09-16 (ambas citas, verbatim).
+//
+// El dossier marcaba SIN VERIFICAR cinco puntos: plazo del contrato, si hace falta
+// registrarlo, el formulario exacto, el tope contra el IRPF de rentas del trabajo y el
+// orden IRPF→IASS. Los cinco se confirmaron el 2026-09-16 con cita verbatim propia contra
+// la publicación de DGI "Crédito fiscal por arrendamiento de inmuebles en IRPF" (ver
+// DGI_SOURCES) y se publican como hecho, cada uno con su cita textual abajo. La regla que
+// sigue rigiendo: lo que no tenga cita verbatim propia no se afirma, va como "confirmá en
+// DGI" — pero para estos cinco esa cita ya existe.
+//
+// TRAMPA DE FECHA: esa publicación de DGI está fechada 26/01/2026 y es la guía de la
+// campaña 2026 (ejercicio 2025) — dice literalmente «el 8% del precio del arrendamiento
+// efectivamente pagado correspondiente al año 2025». La REGLA no cambia de año a año: es
+// el alquiler efectivamente pagado y DEVENGADO en el ejercicio que se declara, no un año
+// fijo. Por eso ningún texto de esta sección cita «2025»: se generaliza como «el ejercicio
+// que declarás» para no quedar vieja en la campaña 2027 (fix round 2, 2026-09-16).
+//
+// FIX ROUND 3 (2026-09-16): "la única condición es identificar al arrendador" era falso y
+// se contradecía con la propia tabla de la sección. El artículo 51-T7 (T.O. 2023) exige eso
+// y nada más EN EL TEXTO LEGAL, pero la guía operativa de DGI agrega condiciones propias
+// para poder COMPUTAR el crédito: contrato escrito de un año o más (aunque esté vencido),
+// ser titular del contrato de arrendamiento, y haber generado IRPF por rentas de trabajo en
+// el ejercicio. La frase "única condición" / "no exige nada más" se retiró de toda la
+// sección (prosa, FAQ y encabezados). Se agregó "titular del contrato", que no estaba
+// publicado, y se corrigió RENTAL_CREDIT_CONTRACT_QUOTE: cortaba la oración antes de ", en
+// tanto puedan identificar al arrendador" sin marcarlo — el texto completo de esta sección
+// del T.O. 2023 (impo.com.uy) además confirma "titular" desde la propia ley: "Dicha
+// imputación se realizará por parte del titular o titulares del contrato de arrendamiento,
+// en las condiciones que establezca la reglamentación" (oración aparte, inmediatamente
+// después de RENTAL_CREDIT_QUOTE, no incluida ahí porque esa cita ya cierra en un punto
+// real y no está cortada a mitad de oración).
+
+/** Cuándo se contrastaron estas cifras y citas contra el T.O. 2023 y la publicación de DGI. */
+export const RENTAL_CREDIT_VERIFIED_AT = '2026-09-16'
+
+/** El porcentaje vigente, para vivienda permanente. */
+export const RENTAL_CREDIT_PCT = 8
+
+/** El porcentaje histórico (ejercicios cerrados antes del 31/12/2023). No es el vigente. */
+export const RENTAL_CREDIT_PCT_HISTORIC = 6
+
+/** El tope del régimen turístico temporario, en el MISMO artículo. Tampoco es el vigente. */
+export const RENTAL_CREDIT_TOURISM_PCT = 6
+
+/**
+ * Cita verbatim, T.O. 2023 DGI, art. 51 Título 7 (impo.com.uy). Es la que sostiene el 8 %.
+ */
+export const RENTAL_CREDIT_QUOTE =
+  'Los contribuyentes que fueran arrendatarios de inmuebles con destino a vivienda permanente podrán imputar el pago de este impuesto hasta el monto equivalente al 8% (ocho por ciento) del precio del arrendamiento, siempre que se identifique el arrendador.'
+
+/**
+ * El mismo artículo, para un régimen DISTINTO (turístico temporario). De acá sale la confusión
+ * del 6 %: no es un error de nadie, es otro párrafo del mismo artículo con otro destino.
+ */
+export const RENTAL_CREDIT_TOURISM_QUOTE =
+  'Para los arrendamientos temporarios de inmuebles con fines turísticos, facúltase al Poder Ejecutivo a instrumentar un régimen de imputación de un monto de hasta el 6% (seis por ciento) del precio del arrendamiento, siempre que se identifique al arrendador.'
+
+/**
+ * Lo que exige el ARTÍCULO (identificar al arrendador) NO es lo mismo que lo que exige DGI para
+ * poder computar el crédito. Antes esta constante decía "única condición" / "no exige nada más",
+ * lo cual era falso y se contradecía con la propia tabla de la sección (fix round 3).
+ */
+export const RENTAL_CREDIT_CONDITION =
+  'El artículo 51 (Título 7) del Texto Ordenado exige una sola cosa para el crédito en sí: identificar al arrendador (nombre y documento o RUT). Pero la guía operativa de DGI agrega condiciones propias para poder computarlo: el contrato tiene que ser escrito y de un año o más (aunque esté vencido), tenés que ser titular del contrato de arrendamiento, y tenés que haber generado IRPF por rentas de trabajo en el ejercicio que declarás. Cada una, con su cita, está en la tabla de abajo.'
+
+/** Por qué el 6 % sigue circulando, en una sola idea. */
+export const RENTAL_CREDIT_CONFUSION =
+  'No es un error: el 6 % fue la tasa vigente para ejercicios cerrados antes del 31/12/2023, y en el mismo artículo del Texto Ordenado sigue siendo el tope de un régimen distinto (arrendamientos turísticos temporarios), no el de la vivienda permanente. Para alquilar donde vivís, hoy es 8 %.'
+
+/** Publicación de DGI dedicada a este crédito. Fuente de las citas que siguen. */
+export const RENTAL_CREDIT_SOURCE_URL =
+  'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/credito-fiscal-arrendamiento-inmuebles-irpf'
+
+/**
+ * La base de cálculo, generalizada a propósito. La guía de DGI de arriba habla del "año 2025"
+ * porque es la guía de esa campaña puntual (fechada 26/01/2026): la regla de fondo no es un año
+ * fijo, es el ejercicio que cada quien declara.
+ */
+export const RENTAL_CREDIT_BASIS =
+  'El crédito se calcula sobre el 8 % del alquiler efectivamente pagado y devengado en el ejercicio que declarás, no sobre un año fijo: la guía de DGI que citamos es la de una campaña puntual y usa un año como ejemplo.'
+
+/**
+ * Los cinco puntos que el dossier marcaba sin verificar, YA confirmados con cita verbatim
+ * propia contra la publicación de DGI de arriba (fetch 2026-09-16). Un elemento nuevo que no
+ * traiga su propia cita verbatim de una fuente primaria no entra en esta lista: se hedgea.
+ */
+export interface RentalCreditFact {
+  /** La pregunta que resuelve, en las palabras del lector. */
+  heading: string
+  /** Cita verbatim de la publicación de DGI (RENTAL_CREDIT_SOURCE_URL). */
+  quote: string
+}
+
+/**
+ * El contrato: escrito, un año o más, puede estar vencido. Cita verbatim DGI, fetch 2026-09-16.
+ * Oración COMPLETA (fix round 3: la versión anterior cortaba antes de ", en tanto puedan
+ * identificar al arrendador" sin marcar el corte, presentando una oración truncada como si
+ * fuera la cita entera).
+ */
+export const RENTAL_CREDIT_CONTRACT_QUOTE =
+  'Tendrán acceso entonces los contribuyentes del IRPF por rentas de trabajo que fueran arrendatarios de inmuebles con destino a vivienda permanente, cuyos contratos hayan sido celebrados por escrito (aunque se encuentren vencidos) y tengan un plazo igual o mayor a un año, en tanto puedan identificar al arrendador.'
+
+/** No hace falta registrar el contrato. Cita verbatim DGI, fetch 2026-09-16. */
+export const RENTAL_CREDIT_REGISTRATION_QUOTE =
+  'No es condición necesaria que el contrato se encuentre inscripto para poder computar el crédito.'
+
+/** Cómo se reclama: formulario 1102 o 1103. Cita verbatim DGI, fetch 2026-09-16. */
+export const RENTAL_CREDIT_FORMS_QUOTE =
+  'Debe presentar la declaración jurada correspondiente, formulario 1102 o 1103.'
+
+/** El tope: el excedente no se devuelve ni se arrastra. Cita verbatim DGI, fetch 2026-09-16. */
+export const RENTAL_CREDIT_CAP_QUOTE =
+  'En caso de surgir un excedente, el mismo no podrá ser imputado a impuestos de futuros ejercicios ni dará derecho a devolución.'
+
+/** Orden de imputación: primero IRPF, el excedente después contra IASS. Cita verbatim DGI, fetch 2026-09-16. */
+export const RENTAL_CREDIT_ORDER_QUOTE =
+  'El crédito fiscal por arrendamientos debe imputarse en primer término al IRPF y el excedente podrá imputarse al IASS.'
+
+/**
+ * Alquiler pagado por adelantado: sólo se imputa lo devengado en cada año, no el pago completo.
+ * Cita verbatim DGI, fetch 2026-09-16.
+ */
+export const RENTAL_CREDIT_ADVANCE_QUOTE =
+  'En caso que se pague el arrendamiento por adelantado (por ejemplo se abona el alquiler de dos años), únicamente se permite imputar el 8% del arrendamiento efectivamente pagado y devengado en el año correspondiente.'
+
+/**
+ * Dos o más arrendatarios en el mismo contrato: se reparte de común acuerdo, o en partes
+ * iguales si no lo hay. Cita verbatim DGI, fetch 2026-09-16.
+ */
+export const RENTAL_CREDIT_MULTI_TENANT_QUOTE =
+  'El crédito fiscal a computar, se deberá considerar de común acuerdo. En caso contrario, el crédito será considerado en partes iguales.'
+
+/**
+ * Sólo puede reclamarlo quien sea titular del contrato de arrendamiento. Cita verbatim DGI,
+ * fetch 2026-09-16. Confirmado ADEMÁS, en una oración aparte, por el propio T.O. 2023 (art.
+ * 51-T7, impo.com.uy): "Dicha imputación se realizará por parte del titular o titulares del
+ * contrato de arrendamiento, en las condiciones que establezca la reglamentación." — es la
+ * condición que la sección no publicaba (fix round 3).
+ */
+export const RENTAL_CREDIT_TITULAR_QUOTE =
+  'Solamente podrán acceder a este crédito quienes sean titulares del contrato de arrendamiento.'
+
+/**
+ * Hay que haber generado IRPF por rentas de trabajo en el ejercicio. Cita verbatim DGI, fetch
+ * 2026-09-16, cortada a propósito ANTES del año de la campaña («…durante el ejercicio 2025.»)
+ * para no repetir el error del round 2 (esta guía es de la campaña 2026 y envejecería mal si
+ * citáramos "2025" como si fuera la regla). El corte se marca con «…», tal como pide fix round 3
+ * para cualquier cita que no cierre en el punto real de la oración.
+ */
+export const RENTAL_CREDIT_IRPF_REQUIRED_QUOTE =
+  'En primer lugar, para computar el crédito fiscal es necesario haber generado IRPF por rentas de trabajo durante el ejercicio…'
+
+/** Las nueve, en el orden en que responden las preguntas de la sección y del FAQ. */
+export const RENTAL_CREDIT_FACTS: readonly RentalCreditFact[] = Object.freeze([
+  { heading: 'El contrato', quote: RENTAL_CREDIT_CONTRACT_QUOTE },
+  { heading: '¿Quién puede reclamarlo?', quote: RENTAL_CREDIT_TITULAR_QUOTE },
+  { heading: 'Tenés que haber generado IRPF', quote: RENTAL_CREDIT_IRPF_REQUIRED_QUOTE },
+  { heading: '¿Hay que registrarlo?', quote: RENTAL_CREDIT_REGISTRATION_QUOTE },
+  { heading: 'Cómo se reclama', quote: RENTAL_CREDIT_FORMS_QUOTE },
+  { heading: '¿Tiene tope?', quote: RENTAL_CREDIT_CAP_QUOTE },
+  { heading: 'IRPF primero, después IASS', quote: RENTAL_CREDIT_ORDER_QUOTE },
+  { heading: 'Si pagaste el alquiler adelantado', quote: RENTAL_CREDIT_ADVANCE_QUOTE },
+  {
+    heading: 'Si el contrato tiene más de un arrendatario',
+    quote: RENTAL_CREDIT_MULTI_TENANT_QUOTE,
+  },
+])
+
+// ---------------------------------------------------------------------------
 // Mora: qué se paga por llegar tarde (Código Tributario art. 94)
 // ---------------------------------------------------------------------------
 
@@ -486,6 +672,32 @@ export const DGI_FAQ: readonly DgiFaq[] = Object.freeze([
     short: 'Depende de si presentaste antes o después del día 15.',
     answer:
       'Las devoluciones originadas en la declaración jurada se empiezan a pagar el 28 de julio. Si presentaste antes del día 15, cobrás antes de fin de mes en bancos o redes de cobranza; si presentaste después, pasa al mes siguiente. Es la regla que más cambia la fecha de cobro y casi nadie la tiene presente.',
+  },
+  {
+    question: '¿Cuánto puedo descontar del IRPF por el alquiler?',
+    short:
+      'Hasta el 8 % del alquiler de tu vivienda permanente, si cumplís las condiciones de DGI.',
+    answer:
+      'Si sos arrendatario de tu vivienda permanente, podés imputar contra tu IRPF hasta el 8 % del alquiler efectivamente pagado y devengado en el ejercicio que declarás, no de un año fijo. El Texto Ordenado 2023 de DGI lo dice así: "los contribuyentes que fueran arrendatarios de inmuebles con destino a vivienda permanente podrán imputar el pago de este impuesto hasta el monto equivalente al 8% (ocho por ciento) del precio del arrendamiento, siempre que se identifique el arrendador". Esa identificación es lo único que exige el artículo, pero la guía operativa de DGI agrega condiciones propias para poder computarlo: tenés que ser titular del contrato de arrendamiento, el contrato tiene que ser escrito y de un año o más (aunque esté vencido), y tenés que haber generado IRPF por rentas de trabajo en el ejercicio.',
+  },
+  {
+    question: '¿El crédito por alquiler es 6 % u 8 %?',
+    short: 'Es 8 % para vivienda permanente. El 6 % es otra cosa, dos veces.',
+    answer:
+      'Es 8 %, no 6 %. El 6 % que circula es dos cosas distintas y ninguna es el crédito general vigente: fue la tasa histórica, para ejercicios cerrados antes del 31/12/2023, y en el mismo artículo del Texto Ordenado 2023 de DGI sigue siendo el tope de un régimen aparte, el de los arrendamientos turísticos temporarios ("facúltase al Poder Ejecutivo a instrumentar un régimen de imputación de un monto de hasta el 6% (seis por ciento) del precio del arrendamiento, siempre que se identifique al arrendador"). Si alquilás para vivir todo el año, el porcentaje que te corresponde es 8 %.',
+  },
+  {
+    question: '¿Cómo reclamo el crédito por alquiler?',
+    short:
+      'Ser titular de un contrato escrito de un año o más (puede estar vencido), sin necesidad de registrarlo, con el formulario 1102 o 1103.',
+    answer:
+      'DGI da acceso al crédito a "los contribuyentes del IRPF por rentas de trabajo que fueran arrendatarios de inmuebles con destino a vivienda permanente, cuyos contratos hayan sido celebrados por escrito (aunque se encuentren vencidos) y tengan un plazo igual o mayor a un año, en tanto puedan identificar al arrendador". Además, "solamente podrán acceder a este crédito quienes sean titulares del contrato de arrendamiento", y hace falta haber generado IRPF por rentas de trabajo en el ejercicio que declarás. No hace falta registrar el contrato: "no es condición necesaria que el contrato se encuentre inscripto para poder computar el crédito". El trámite es la declaración jurada anual: "debe presentar la declaración jurada correspondiente, formulario 1102 o 1103".',
+  },
+  {
+    question: '¿El crédito por alquiler tiene tope?',
+    short: 'Sí: se aplica primero contra el IRPF, después contra el IASS, y el sobrante se pierde.',
+    answer:
+      'Sí. DGI aclara el orden y qué pasa con lo que sobra: "el crédito fiscal por arrendamientos debe imputarse en primer término al IRPF y el excedente podrá imputarse al IASS". Y si aun así queda un excedente, se pierde: "en caso de surgir un excedente, el mismo no podrá ser imputado a impuestos de futuros ejercicios ni dará derecho a devolución". No se cobra aparte ni se arrastra al año siguiente.',
   },
   {
     question: 'Me da a pagar y no llego: ¿cuánto es la multa?',

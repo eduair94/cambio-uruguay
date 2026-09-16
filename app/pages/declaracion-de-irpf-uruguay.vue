@@ -100,6 +100,63 @@
       </VCard>
     </section>
 
+    <!-- Rental credit: the 8 % everyone thinks is 6 %. -->
+    <section id="credito-alquiler" class="mb-12" aria-labelledby="credito-alquiler-title">
+      <h2 id="credito-alquiler-title" class="text-h5 font-weight-bold mb-2">
+        Si alquilás: el crédito del {{ RENTAL_CREDIT_PCT }} %
+      </h2>
+      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+        Si sos arrendatario de tu vivienda permanente, podés imputar parte de lo que pagás de
+        alquiler contra tu IRPF. El porcentaje que circula en foros y notas viejas es
+        {{ RENTAL_CREDIT_PCT_HISTORIC }} %: el vigente es {{ RENTAL_CREDIT_PCT }} %.
+        {{ RENTAL_CREDIT_BASIS }}
+      </p>
+
+      <VCard variant="flat" class="highlight-card pa-5 pa-md-6 mb-5">
+        <p class="text-overline mb-2">Texto Ordenado 2023 de DGI, art. 51 (Título 7)</p>
+        <blockquote class="rental-credit-quote mb-0">“{{ RENTAL_CREDIT_QUOTE }}”</blockquote>
+      </VCard>
+
+      <VRow>
+        <VCol cols="12" md="6">
+          <VCard variant="flat" class="case-card pa-5 h-100">
+            <h3 class="text-subtitle-1 font-weight-bold mb-1">
+              ¿Y el {{ RENTAL_CREDIT_PCT_HISTORIC }} % que circula?
+            </h3>
+            <p class="mb-0 text-medium-emphasis">{{ RENTAL_CREDIT_CONFUSION }}</p>
+          </VCard>
+        </VCol>
+        <VCol cols="12" md="6">
+          <VCard variant="flat" class="case-card pa-5 h-100">
+            <h3 class="text-subtitle-1 font-weight-bold mb-1">
+              Identificar al arrendador no es lo único que hace falta
+            </h3>
+            <p class="mb-0 text-medium-emphasis">{{ RENTAL_CREDIT_CONDITION }}</p>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <h3 class="text-subtitle-1 font-weight-bold mt-5 mb-3">
+        Quién puede reclamarlo, cómo, el tope y otros detalles confirmados con DGI
+      </h3>
+      <VCard variant="flat" class="results-card pa-0 mb-3">
+        <VTable class="cu-mobile-cards" density="comfortable">
+          <tbody>
+            <tr v-for="item in RENTAL_CREDIT_FACTS" :key="item.heading">
+              <td data-label="Punto" class="font-weight-medium">{{ item.heading }}</td>
+              <td data-label="Qué dice DGI">“{{ item.quote }}”</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+      <p class="text-caption text-medium-emphasis mt-0 mb-0">
+        Fuente: DGI, «Crédito fiscal por arrendamiento de inmuebles en IRPF».
+        <a :href="RENTAL_CREDIT_SOURCE_URL" target="_blank" rel="noopener noreferrer">
+          Ver la publicación completa </a
+        >.
+      </p>
+    </section>
+
     <!-- Earlier tax years: procedure review has its own date and sources. -->
     <section id="ejercicios-anteriores" class="mb-12" aria-labelledby="irpf-past-years-title">
       <h2 id="irpf-past-years-title" class="text-h5 font-weight-bold mt-0 mb-4">
@@ -242,6 +299,14 @@ import {
   OBLIGATION_CASES,
   RECARGOS_RULE,
   REFUND_RULE,
+  RENTAL_CREDIT_BASIS,
+  RENTAL_CREDIT_CONDITION,
+  RENTAL_CREDIT_CONFUSION,
+  RENTAL_CREDIT_FACTS,
+  RENTAL_CREDIT_PCT,
+  RENTAL_CREDIT_PCT_HISTORIC,
+  RENTAL_CREDIT_QUOTE,
+  RENTAL_CREDIT_SOURCE_URL,
   type FilerKind,
 } from '~/utils/dgiTaxes'
 
@@ -279,7 +344,7 @@ const verifiedAt = fmt(DGI_VERIFIED_AT)
 const canonicalUrl = 'https://cambio-uruguay.com/declaracion-de-irpf-uruguay'
 const title = 'Declaración de IRPF en Uruguay: quién debe'
 const description =
-  'Quién tiene que presentar la declaración jurada de IRPF y quién no, con los casos que obligan (más de un empleador, sin ingreso en diciembre, formulario 3100, núcleo familiar, servicios personales, rentas de capital), las fechas de la campaña 2026, los formularios 1102/1103/1101, la regla del día 15 que decide cuándo cobrás la devolución, y la multa por mora del artículo 94 del Código Tributario.'
+  'Quién debe presentar el IRPF, los formularios, cuándo cobrás la devolución, la multa por mora y el crédito del 8 % del alquiler para inquilinos.'
 
 defineOgImageComponent('Cambio', {
   title: '¿Tenés que declarar IRPF?',
@@ -305,7 +370,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'declaracion jurada irpf uruguay, quienes estan obligados irpf, formulario 1102, formulario 1103, formulario 1101, devolucion irpf cuando cobro, irpf dos empleadores, formulario 3100, multa por mora dgi, articulo 94 codigo tributario, campaña irpf 2026',
+        'declaracion jurada irpf uruguay, quienes estan obligados irpf, formulario 1102, formulario 1103, formulario 1101, devolucion irpf cuando cobro, irpf dos empleadores, formulario 3100, multa por mora dgi, articulo 94 codigo tributario, campaña irpf 2026, credito fiscal alquiler, irpf alquiler, deducir alquiler irpf, 8 por ciento alquiler irpf, arrendamiento irpf',
     },
   ],
   script: [
@@ -409,6 +474,15 @@ useHead(() => ({
 
 .form-code {
   font-variant-numeric: tabular-nums;
+}
+
+.rental-credit-quote {
+  margin: 0;
+  padding-left: 1rem;
+  border-left: 3px solid rgba(var(--v-theme-primary), 0.5);
+  font-size: 1.05rem;
+  font-style: italic;
+  line-height: 1.6;
 }
 
 .sources-list {

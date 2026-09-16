@@ -421,15 +421,26 @@
         de firmar.
       </VAlert>
 
-      <VBtn
-        :to="localePath('/herramientas/costo-de-vida')"
-        class="mt-4"
-        color="primary"
-        variant="outlined"
-        prepend-icon="mdi-calculator-variant-outline"
-      >
-        Probar mi sueldo en la calculadora
-      </VBtn>
+      <div class="d-flex flex-wrap ga-2">
+        <VBtn
+          :to="localePath('/herramientas/costo-de-vida')"
+          class="mt-4"
+          color="primary"
+          variant="outlined"
+          prepend-icon="mdi-calculator-variant-outline"
+        >
+          Probar mi sueldo en la calculadora
+        </VBtn>
+        <VBtn
+          :to="localePath('/declaracion-de-irpf-uruguay#credito-alquiler')"
+          class="mt-4"
+          color="primary"
+          variant="text"
+          prepend-icon="mdi-cash-refund"
+        >
+          Descontá el 8 % del alquiler de tu IRPF
+        </VBtn>
+      </div>
     </section>
 
     <section id="garantias" class="anchor-section mb-10" aria-labelledby="garantias-title">
