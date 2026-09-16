@@ -252,7 +252,7 @@ export const deudasGuides: readonly Guide[] = [
         body: 'El artículo 15 de la Ley 18.574 es la única regla general de cancelación anticipada para personas que encontramos. Dice que "todo deudor de un préstamo hipotecario con destino a vivienda" puede cancelar en forma anticipada, total o parcialmente, lo que debe de capital, siempre que hayan pasado por lo menos cinco años desde el otorgamiento. Junto con el capital paga los intereses devengados hasta ese momento, más los costos administrativos y financieros que la cancelación le genera al acreedor. Los administrativos no pueden superar el 1 % del saldo de capital adeudado, y los financieros, que compensan la pérdida de reinversión, se calculan con las tasas medias para préstamos de vivienda que publica el Banco Central en la moneda del préstamo. El artículo termina con una frase que vale la pena subrayar: "La facultad concedida al deudor en este artículo es irrenunciable". Una cláusula de tu contrato que diga lo contrario no te quita ese derecho. Antes de los cinco años, en cambio, vuelve a mandar lo que hayas firmado.',
         links: [
           {
-            label: 'Cómo funciona el crédito hipotecario',
+            label: 'Comparativa de crédito hipotecario',
             to: '/guias/credito-hipotecario-uruguay',
           },
         ],

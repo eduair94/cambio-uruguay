@@ -881,41 +881,230 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'credito-hipotecario-uruguay',
-    title: 'Cómo funciona el crédito hipotecario en Uruguay',
+    title: 'Comparativa de crédito hipotecario en Uruguay',
     description:
-      'Cómo funciona el crédito hipotecario en Uruguay: BHU vs bancos, la moneda del préstamo y su riesgo, requisitos, relación cuota-ingreso y plazos.',
+      'Qué publica cada prestamista de vivienda en Uruguay: BHU, Fondo de Garantía, Itaú, Santander, BBVA, Scotiabank y BTG Pactual, con tasa, plazo, financiación y cuota sobre el ingreso.',
     tag: 'HIPOTECA',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-09-16',
     sections: [
       {
         heading: 'Qué es y quién presta',
-        body: 'Un crédito hipotecario financia la compra de una vivienda dejando la propia vivienda como garantía: si no pagás, el acreedor puede ejecutar la hipoteca. En Uruguay los principales oferentes son el BHU (Banco Hipotecario del Uruguay), el BROU y los bancos privados. El BHU está especializado en vivienda y suele tener líneas pensadas para primera vivienda y sectores de ingresos medios; los bancos ofrecen productos hipotecarios más flexibles en moneda y plazo. Conviene comparar más de una opción, porque cambian tasa, moneda, plazo máximo y el porcentaje del valor que financian.',
+        body: 'Un crédito hipotecario financia la compra de una vivienda dejando esa misma vivienda como garantía: si dejás de pagar, el acreedor puede ejecutar la hipoteca. En Uruguay prestan para comprar el BHU, que es el banco público especializado, y cinco bancos privados: Itaú, Santander, BBVA, Scotiabank y BTG Pactual, que se quedó con la operación uruguaya de HSBC y hoy publica esas condiciones bajo su propia cartilla. La Agencia Nacional de Vivienda no presta plata: administra el Fondo de Garantía de Créditos Hipotecarios, una garantía del Estado que se monta sobre el préstamo de un banco adherido. Y hay una ausencia que sorprende. El BROU no da crédito hipotecario de compra: su propia página dice que el BHU es el único banco público habilitado a otorgar préstamos hipotecarios, y lo que ofrece a sus clientes es una bonificación en el costo de solicitar ese crédito en el BHU.',
       },
       {
-        heading: 'La moneda del crédito es lo más importante',
-        body: 'En Uruguay el crédito de vivienda suele otorgarse en Unidades Indexadas (UI), que se ajustan por inflación (IPC). La cuota en UI es fija, pero medida en pesos se reajusta con la inflación, así que en pesos crece con el tiempo. También existen préstamos en Unidades Reajustables (UR), atadas a la evolución de los salarios, o directamente en dólares o pesos. La regla de oro: ganás y pensás en la moneda de tu sueldo. Endeudarte en dólares cobrando en pesos te expone a que, si sube el dólar, la cuota se dispare respecto a tu ingreso. UI y UR reparten ese riesgo distinto; entendé cuál asumís.',
+        heading: 'La moneda es la decisión, antes que la tasa',
+        body: 'Mirá primero en qué unidad queda la deuda. El BHU presta sólo en Unidades Indexadas; los cinco privados ofrecen UI o dólares. La UI se reajusta por el Índice de Precios al Consumo, así que tu cuota medida en pesos sube con la inflación aunque tu sueldo quede quieto. La Unidad Reajustable es otra cosa: sigue el Índice Medio de Salarios, y por eso los créditos viejos en UR no se comparan con los que se firman hoy. En dólares no hay ajuste por inflación, pero si cobrás en pesos asumís la devaluación entera, y en las cartillas relevadas la tasa en dólares está dos o tres puntos por encima de la misma línea en UI. No horneamos acá el valor de la unidad porque cambia todos los meses: mirá cuánto vale hoy en el conversor de Unidad Indexada y pasá tu cuota a pesos con la cifra del día.',
+        links: [
+          { label: 'Conversor de Unidad Indexada', to: '/herramientas/conversor-unidad-indexada' },
+          { label: 'Valor de la UI hoy', to: '/indicadores/unidad-indexada' },
+          { label: 'Valor de la UR hoy', to: '/indicadores/unidad-reajustable' },
+        ],
       },
       {
-        heading: 'Requisitos de ingreso y capacidad de pago',
-        body: 'El banco o el BHU evalúa que puedas pagar. El criterio central es la relación cuota-ingreso: la cuota no debería superar en torno al 25% al 35% de tu ingreso familiar neto mensual, según la institución, la moneda del crédito y si el pago se descuenta de la nómina; verificá el tope vigente con cada banco o con el BHU. Piden antigüedad laboral demostrable (los dependientes suelen necesitar uno o dos años; los independientes, actividad probada con DGI al día). Podés sumar ingresos del cónyuge o de codeudores para calificar. También revisan tus antecedentes crediticios en la Central de Riesgos del BCU y, en la práctica, en el Clearing de Informes, que es privado y distinto.',
+        heading: 'Lo que publica cada prestamista',
+        body: 'La tabla junta lo que cada uno publica hoy en su sitio o en su cartilla oficial, que es el documento que rige el contrato y no siempre coincide con el titular de la landing. Leéla sabiendo qué estás comparando. Las tasas son efectivas anuales sobre la unidad del crédito, casi todas son "desde" y dependen del plazo, del monto y de que tengas el paquete o el sueldo en el banco. El porcentaje que financian se mide contra el valor de compraventa o el de tasación según la institución, no contra lo que vos pagaste. Y la cuota máxima sobre el ingreso es el filtro que más gente deja afuera: es el techo que el banco acepta, no una recomendación de cuánto conviene comprometer. Ninguna fila es una oferta: son condiciones publicadas, que se confirman recién con una solicitud.',
+        table: {
+          headers: [
+            'Prestamista',
+            'Moneda',
+            'Tasa (TEA)',
+            'Plazo máximo',
+            'Financia hasta',
+            'Cuota máxima sobre el ingreso',
+          ],
+          rows: [
+            [
+              'BHU',
+              'UI exclusivamente',
+              'UI: desde 4,50 % en la línea "Préstamo Soñado", variable según plazo, monto y perfil',
+              '25 años (reforma, 20)',
+              '90 % del valor; la línea Soñado cita hasta el 100 %',
+              '25 % del ingreso disponible',
+            ],
+            [
+              'ANV / Fondo de Garantía (FGCH)',
+              'UI o pesos, según el banco adherido',
+              'no publica tasa: la fija el banco adherido',
+              '25 años',
+              '95 %, con ahorro previo mínimo del 5 %',
+              'menos del 35 %, con ingreso del núcleo que no supere 100 UR',
+            ],
+            [
+              'BROU: no da hipotecario de compra',
+              'no aplica',
+              'no publica tasa hipotecaria',
+              'no aplica',
+              'no aplica: deriva al BHU y bonifica el costo de solicitar el crédito',
+              'no publica relación cuota-ingreso',
+            ],
+            [
+              'Itaú',
+              'UI',
+              'UI: desde 3,75 % con paquete Personal Bank o Full',
+              '30 años',
+              '80 % del valor de mercado, según zona',
+              '35 %, con ingreso familiar mínimo de UI 10.000',
+            ],
+            [
+              'Santander',
+              'UI o USD',
+              'UI hasta 10 años, 4,00 %; de 11 a 30 años, 4,75 %',
+              '30 años en UI',
+              'hasta 85 % del valor de compraventa (80 % público general)',
+              '35 % en UI y hasta 20 % en USD, ingreso mínimo UI 10.000',
+            ],
+            [
+              'BBVA',
+              'UI o USD',
+              'desde USD 100.000: UI hasta 25 años, 3,75 %; USD hasta 25 años, 6,50 %',
+              '25 años (300 cuotas)',
+              '80 %, y 90 % en propiedades de más de USD 150.000',
+              '30 % en UI, con ingreso mínimo de $ 30.000 del titular',
+            ],
+            [
+              'Scotiabank',
+              'UI o USD',
+              'UI: 4,50 % y 4,65 % según segmento (cartilla oficial)',
+              '25 años',
+              '90 % primera vivienda, 75 % segunda',
+              'no publica; ingresos líquidos mínimos desde $ 50.000 (UI)',
+            ],
+            [
+              'BTG Pactual (ex HSBC)',
+              'UI o USD',
+              'en UI: 3,75 % para préstamos de USD 99.999 a 500.000 y 4,75 % de USD 30.000 a 99.999; en USD: 5,75 % fijo a 20 años',
+              '25 años en UI, 20 en USD',
+              '90 % primera vivienda (80 % por encima de USD 150.000)',
+              '35 %, con ingreso mínimo del núcleo $ 60.000 nominales',
+            ],
+          ],
+        },
       },
       {
-        heading: 'Plazo, tasa y cuánto financian',
-        body: 'El plazo de un hipotecario suele ir hasta 20, 25 o 30 años. A mayor plazo, cuota mensual más baja pero muchísimo más interés total pagado a lo largo de la vida del préstamo. La tasa se expresa como tasa efectiva anual (TEA) sobre la unidad del crédito (por ejemplo, un porcentaje anual en UI). Además, casi nunca te prestan el 100%: es habitual financiar hasta el 80% o 90% del valor, por lo que necesitás ahorro previo para la diferencia. Pedí siempre la TEA y una tabla de amortización para comparar en serio.',
+        heading: 'El BHU y el Fondo de Garantía',
+        body: 'El BHU presta en UI hasta 25 años para comprar o construir y 20 para reformar, con una cuota de hasta el 25 % del ingreso disponible para empleados y jubilados, 30 % si aceptás el débito de haberes y 20 % si vivís de otros ingresos. Su línea "Préstamo Soñado" arranca en 4,50 % de tasa efectiva anual y publica financiación de hasta el 100 % del valor de la vivienda. Pide 18 años cumplidos, no superar los 70 al terminar el préstamo y antigüedad laboral de 6 meses en el Estado o 2 años en el sector privado. El Fondo de Garantía de Créditos Hipotecarios, que administra la ANV, es la vía para llegar al 95 % con un ahorro previo del 5 %: exige que el ingreso líquido del núcleo no supere las 100 UR y que la cuota quede por debajo del 35 %. La lista de bancos adheridos que publica la ANV nombra a BBVA, BHU, HSBC, Santander y Scotiabank, y no incluye ni al BROU ni a Itaú, sin explicación pública.',
       },
       {
-        heading: 'Costos y seguros que se suman',
-        body: 'El crédito trae gastos más allá de la cuota. Suele haber costo de tasación del inmueble, gastos de otorgamiento y estudio, y seguros obligatorios: seguro de vida sobre el saldo deudor (si el deudor fallece, cancela la deuda) y seguro del inmueble contra incendio y ciertos siniestros. Estos seguros van dentro o encima de la cuota y conviene incluirlos al comparar el costo real. También pagás los gastos de la escritura de compraventa y de la hipoteca, que se firman ante escribano. Pedí el detalle completo por escrito antes de firmar.',
+        heading: 'Itaú, Santander y BBVA',
+        body: 'Itaú presta en UI a 30 años, desde 3,75 % con el paquete Personal Bank o Full, financia hasta el 80 % del valor de mercado según la zona y pide un ingreso familiar mínimo de UI 10.000 con la cuota topeada en el 35 %. Santander llega también a 30 años en UI, pero sólo para nómina, Select, profesionales universitarios y empleados públicos: al público general le publica 20 años. Su cartilla marca 4,00 % hasta 10 años y 4,75 % de 11 a 30, financia hasta el 85 % del valor de compraventa, 80 % al público general, y admite 35 % de cuota en UI contra 20 % en dólares. BBVA topea en 25 años y 300 cuotas: desde USD 100.000 publica 3,75 % en UI y 6,50 % en dólares, financia el 80 % y sube al 90 % en propiedades de más de USD 150.000, con ingreso mínimo de $ 30.000 del titular y cuota del 30 % en UI.',
       },
       {
-        heading: 'Esto es orientación general',
-        body: 'Esta guía explica el mecanismo, no es asesoramiento financiero personalizado. Las tasas, los topes de cuota-ingreso, los montos máximos y las líneas disponibles cambian y dependen de tu perfil: verificá las condiciones vigentes directamente con el BHU, el BROU o el banco privado, y consultá la Central de Riesgos del BCU para conocer tu situación crediticia. Antes de comprometerte a un plazo largo, hacé el cálculo del costo total y evaluá con un contador o asesor si la cuota es sostenible ante subas de inflación o del dólar.',
+        heading: 'Scotiabank y BTG Pactual, el que era HSBC',
+        body: 'La cartilla vigente de Scotiabank publica 4,50 % y 4,65 % de tasa efectiva anual según el segmento, a 25 años, con hasta 90 % de financiación en primera vivienda y 75 % en la segunda, e ingresos líquidos mínimos desde $ 50.000 en la línea en UI. Su página comercial anuncia al mismo tiempo "desde 3,80 %" con sueldo domiciliado: son dos cifras distintas del mismo banco y acá publicamos la de la cartilla, porque es el documento que rige el contrato. Pedila fechada antes de comparar. BTG Pactual continúa el producto que vendía HSBC y publica 3,75 % en UI de USD 99.999 a 500.000 a 25 años, 4,75 % entre USD 30.000 y 99.999; en dólares topea en 20 años, a 5,75 % fijo. Financia hasta el 90 % de la primera vivienda, baja al 80 % por encima de USD 150.000 y pide $ 60.000 nominales de ingreso del núcleo. Su cartilla se declara operativa del Fondo de Garantía, pero la ANV todavía lista a HSBC y no a BTG Pactual.',
+      },
+      {
+        heading: 'Lo que no entra en la cuota',
+        body: 'La cuota no es todo lo que pagás. El Impuesto a las Transmisiones Patrimoniales es del 2 % para el comprador y 2 % para el vendedor, y la DGI lo calcula sobre el valor real que fija Catastro, actualizado por el IPC, no sobre el precio que pactaste. La escrituración completa, con honorario del escribano, aporte a la Caja Notarial, certificados y timbres, se cita en torno al 3 % a 5 % del precio: es una referencia de mercado, no un arancel oficial, así que pedile al escribano una liquidación por escrito. Después vienen los costos del propio crédito: la tasación, que el banco cobra antes de aprobar; el seguro de vida sobre el saldo deudor y el de incendio, obligatorios en todos los bancos relevados; los gastos de otorgamiento y estudio, y un cargo mensual sobre el saldo fijado por el BCU que no aparece en ningún aviso. Si comprás en propiedad horizontal, sumá los gastos comunes.',
+        links: [{ label: 'Costos de escrituración', to: '/guias/costos-de-escrituracion-uruguay' }],
+      },
+      {
+        heading: 'Cuánto tenés que ganar',
+        body: 'No hay una regla única, ni siquiera dentro del mismo banco. La banda publicada va del 20 % al 35 % del ingreso: el BHU admite 25 % para empleados y jubilados, 30 % con débito de haberes y 20 % para otros ingresos; Itaú, Santander en UI y BTG Pactual llegan al 35 %; BBVA se queda en 30 % en UI y baja al 15 % en dólares; Santander corta en 20 % cuando el crédito es en dólares. A eso se suma un piso de ingreso: UI 10.000 de ingreso familiar en Itaú y en Santander, $ 30.000 del titular en BBVA, desde $ 50.000 líquidos en Scotiabank y $ 60.000 nominales del núcleo en BTG Pactual. El Fondo de Garantía va al revés y pone un techo: si el ingreso líquido del núcleo pasa las 100 UR, quedás afuera. Para llegar al piso podés sumar el ingreso del cónyuge o de un codeudor.',
+      },
+      {
+        heading: 'Qué preguntar antes de firmar',
+        body: 'Pedí la cartilla vigente con fecha, no la landing: en Scotiabank y en Santander el titular comercial y el documento oficial no dicen lo mismo. Pedí la tasa efectiva anual con todos los cargos adentro y la tabla de amortización completa, porque dos créditos con la misma tasa terminan costando distinto según los seguros y las comisiones. Preguntá tres cosas que casi nunca están en el aviso: cuánto cuesta cancelar antes de tiempo, si la comisión de apertura se suma al capital financiado y por lo tanto paga intereses, y si el IVA sobre los intereses está exonerado en tu moneda y destino. Confirmá los topes de precio del Fondo de Garantía, que la ANV republica todos los meses. Tomá todo esto como orientación: son condiciones publicadas al 16 de setiembre de 2026, cambian sin aviso y la cifra que manda es la que el banco te dé por escrito.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cuánto tengo que ganar para que me den un crédito hipotecario?',
+        a: 'Depende del banco, y son dos reglas a la vez. Hay un piso de ingreso: UI 10.000 de ingreso familiar en Itaú y en Santander, $ 30.000 del titular en BBVA, desde $ 50.000 líquidos en Scotiabank y $ 60.000 nominales del núcleo en BTG Pactual. Y hay un techo de cuota, entre el 20 % y el 35 % de tu ingreso según la institución y la moneda.',
+      },
+      {
+        q: '¿Conviene el crédito en UI o en dólares?',
+        a: 'Depende de en qué cobrás. La cuota en UI se reajusta por inflación, así que medida en pesos sube aunque tu sueldo quede quieto; la cuota en dólares no tiene ese ajuste, pero te deja expuesto a la devaluación si tu ingreso es en pesos. En las cartillas relevadas la tasa en dólares está dos o tres puntos por encima de la misma línea en UI.',
+      },
+      {
+        q: '¿Cuánto financian los bancos?',
+        a: 'Por su cuenta, entre el 80 % y el 90 %: Itaú publica 80 % del valor de mercado, Santander 85 % del valor de compraventa y 80 % al público general, BBVA 80 % y 90 % arriba de USD 150.000, Scotiabank 90 % en primera vivienda y BTG Pactual 90 %. Para pasar de ahí está el Fondo de Garantía, que llega al 95 %, y la línea Soñado del BHU, que cita hasta el 100 %.',
+      },
+      {
+        q: '¿Qué gastos hay además de la cuota?',
+        a: 'El ITP, que es 2 % del comprador sobre el valor de Catastro y no sobre el precio; la escrituración, que se cita en torno al 3 % a 5 % del precio; la tasación que cobra el banco antes de aprobar; los seguros de vida e incendio, obligatorios en todos los bancos relevados; los gastos de otorgamiento, y un cargo mensual sobre el saldo fijado por el BCU.',
+      },
+      {
+        q: '¿El BROU da préstamos hipotecarios?',
+        a: 'No para comprar vivienda. Su propia página dice que el BHU es el único banco público habilitado a otorgar préstamos hipotecarios, y lo que el BROU ofrece a sus clientes es una bonificación en el costo de solicitar ese crédito en el BHU. Su producto "Renová tu Casa" es un préstamo de consumo en pesos para reformas, sin garantía hipotecaria.',
+      },
+      {
+        q: '¿Qué es el Fondo de Garantía y para quién es?',
+        a: 'Es una garantía del Estado, administrada por la Agencia Nacional de Vivienda, que se monta sobre el préstamo de un banco adherido y permite financiar hasta el 95 % con un ahorro previo del 5 %, a 25 años. No tiene tasa propia: la pone el banco. Exige que el ingreso líquido del núcleo familiar no supere las 100 UR y que la cuota quede por debajo del 35 %.',
+      },
+      {
+        q: '¿Puedo pedir un hipotecario estando en el clearing?',
+        a: 'Es muy difícil. Todos los bancos relevados piden antecedentes crediticios limpios y varios lo escriben como requisito explícito, junto con la consulta a la Central de Riesgos del BCU; BTG Pactual exige 12 meses de antecedentes favorables. Lo práctico es regularizar la deuda y esperar a que la información salga del registro antes de presentar la solicitud.',
+      },
+    ],
+    sources: [
+      {
+        label: 'Preguntas frecuentes de préstamos: moneda, plazos, cuota e ingresos',
+        url: 'https://www.bhu.com.uy/preguntas-frecuentes/prestamos',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Préstamo Soñado: tasa desde 4,50 % y financiación publicada',
+        url: 'https://www.bhu.com.uy/credito/prestamo-sonado',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Fondo de Garantía de Créditos Hipotecarios: 95 %, 100 UR y bancos adheridos',
+        url: 'https://www.anv.gub.uy/preguntas-frecuentes-fondo-de-garantia-de-creditos-hipotecarios',
+        publisher: 'Agencia Nacional de Vivienda',
+      },
+      {
+        label: 'El BHU es el único banco público habilitado a otorgar préstamos hipotecarios',
+        url: 'https://mi.brou.com.uy/mis_metas/mudarme',
+        publisher: 'BROU',
+      },
+      {
+        label: 'Préstamos hipotecarios de Itaú: plazo, financiación, ingreso y gastos',
+        url: 'https://www.itau.com.uy/inst/prestamos-hipotecarios.html',
+        publisher: 'Itaú Uruguay',
+      },
+      {
+        label:
+          'Crédito hipotecario de Santander: simulador oficial y acceso a la cartilla vigente ' +
+          '(las tasas de esta guía salen de esa cartilla, no del simulador)',
+        url: 'https://www.creditohipotecariosantander.com.uy/simular',
+        publisher: 'Santander Uruguay',
+      },
+      {
+        label: 'Préstamo hipotecario de BBVA: tabla de tasas, 300 cuotas y financiación',
+        url: 'https://www.bbva.com.uy/personas/productos/prestamos/hipotecario/hipotecario.html',
+        publisher: 'BBVA Uruguay',
+      },
+      {
+        label: 'Préstamo inmobiliario de Scotiabank: financiación, ingreso mínimo y cartilla',
+        url: 'https://www.scotiabank.com.uy/Personas/Prestamos/Productos/prestamoinmobiliario/prestamoinmobiliario',
+        publisher: 'Scotiabank Uruguay',
+      },
+      {
+        label: 'Cartilla del préstamo hipotecario de BTG Pactual: tasas, plazos y cargos',
+        url: 'https://static.btgpactual.com/media/prestamos-hipotecarios.pdf',
+        publisher: 'BTG Pactual Uruguay',
+      },
+      {
+        label: 'Impuesto a las Transmisiones Patrimoniales: 2 % sobre el valor real de Catastro',
+        url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/impuesto-transmisiones-patrimoniales-0',
+        publisher: 'DGI',
+      },
+      {
+        label: 'Unidad Indexada: qué es y valores diarios publicados',
+        url: 'https://www.gub.uy/direccion-general-impositiva/datos-y-estadisticas/datos/unidad-indexada',
+        publisher: 'DGI',
       },
     ],
     related: [
+      { label: 'Conversor de Unidad Indexada', to: '/herramientas/conversor-unidad-indexada' },
+      { label: 'Valor de la UR hoy', to: '/indicadores/unidad-reajustable' },
+      { label: '¿Comprar o alquilar?', to: '/comprar-o-alquilar-uruguay' },
+      { label: 'Viviendas en venta', to: '/venta-viviendas-uruguay' },
+      { label: 'Oportunidades inmobiliarias', to: '/oportunidades-inmobiliarias-uruguay' },
+      { label: 'Costos de escrituración', to: '/guias/costos-de-escrituracion-uruguay' },
       { label: 'Cómo funciona el BHU', to: '/guias/bhu-como-funciona' },
       { label: 'Comprar tu primera vivienda', to: '/guias/comprar-primera-vivienda-uruguay' },
-      { label: 'Conversor de Unidad Indexada', to: '/herramientas/conversor-unidad-indexada' },
+      { label: 'Salir del clearing', to: '/salir-del-clearing' },
     ],
   },
   {
