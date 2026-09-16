@@ -429,13 +429,15 @@ module.exports = {
       // Trustpilot (:3029), Google Maps (:2221, sólo si el sitio de la ficha ES el dominio), las
       // menciones en r/uruguay y r/montevideo (Arctic Shift) y la presencia en los catálogos propios
       // → APP DB `storeprofiles`. Una fuente que falla conserva su último valor con su fecha vieja;
-      // una corrida en la que menos del 40 % de las tiendas respondió no escribe y sale con 1.
+      // si ya hay perfiles guardados, una corrida en la que menos del 40 % de las tiendas respondió
+      // no escribe y sale con 1.
       //
       // Domingos 07:17 UTC = 04:17 en Montevideo. Semanal porque reseñas y antigüedad se mueven en
       // semanas, y porque Arctic Shift pide ir despacio: recorrer las menciones de todo el registro
-      // lleva su rato. Lejos de currency-search-demand (06:40) y de currency-rag-index (04:20), y de
-      // currency-charruadevs (12:14), que lee el mismo Arctic Shift. Minuto 17: no es múltiplo de 5.
-      // Necesita APP_MONGO_URI.
+      // lleva su rato. Vecinos reales: currency-loan-tiers (domingos 07:23),
+      // currency-property-services (domingos 07:33) y currency-property-opportunities-hourly (minuto
+      // :17 de cada hora); ninguno usa los mismos servicios externos. Arctic Shift también lo lee
+      // currency-charruadevs, pero a las 12:14. Minuto 17: no es múltiplo de 5. Necesita APP_MONGO_URI.
       name: "currency-store-profiles",
       autorestart: false,
       exec_mode: "fork",

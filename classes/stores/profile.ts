@@ -135,16 +135,57 @@ function asFetched(value: unknown): { checkedAt: string } | null | undefined {
   return undefined;
 }
 
+const stripWww = (host: string): string => host.trim().toLowerCase().replace(/^www\./, "");
+
+/** The domain a Trustpilot page reviews, read off its `/review/<domain>` path; null if absent. */
+function trustpilotReviewedDomain(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    const match = /\/review\/([^/?#]+)/.exec(new URL(url).pathname);
+    return match ? stripWww(decodeURIComponent(match[1])) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The previous values that may still be carried for this store. Site, domain age, Google Maps and
+ * Trustpilot are facts about a DOMAIN: when the registry changes the store's domain, what we had
+ * describes another site, so none of it survives a week in which the new domain could not be read
+ * (a fresh `undefined` then yields `null`, never the old domain's value). Trustpilot is also dropped
+ * when its page reviews a different domain than the one now targeted (`trustpilotDomain ?? domain`),
+ * or when the page does not say which domain it reviews. Reddit and our own catalogue are keyed by
+ * the store, not by its domain, and carry over.
+ */
+function carriedSignals(entry: StoreEntry, previous: StoreProfileDoc | null): Partial<SignalFields> {
+  if (!previous) return {};
+  const carried: Partial<SignalFields> = { ...previous };
+  const domain = entry.domain ?? null;
+  if ((previous.domain ?? null) !== domain) {
+    carried.site = null;
+    carried.age = null;
+    carried.google = null;
+    carried.trustpilot = null;
+  }
+  if (carried.trustpilot) {
+    const target = entry.trustpilotDomain ?? domain;
+    const reviewed = trustpilotReviewedDomain(carried.trustpilot.url);
+    if (!target || !reviewed || reviewed !== stripWww(target)) carried.trustpilot = null;
+  }
+  return carried;
+}
+
 export function buildProfile(
   entry: StoreEntry,
   fetched: Partial<Record<StoreSignalName, unknown>>,
   previous: StoreProfileDoc | null,
   now: Date
 ): StoreProfileDoc {
+  const carried = carriedSignals(entry, previous);
   const signal = <K extends StoreSignalName>(name: K): StoreProfileDoc[K] => {
     if (!storeSignalApplies(entry, name)) return null;
     return mergeSignal(
-      previous?.[name] as { checkedAt: string } | null | undefined,
+      carried[name] as { checkedAt: string } | null | undefined,
       asFetched(fetched[name])
     ) as StoreProfileDoc[K];
   };

@@ -310,6 +310,70 @@ describe("buildProfile", () => {
     expect(doc.trustpilot).toBeNull();
   });
 
+  it("drops facts about the OLD domain when the registry changed it and the sources did not answer", () => {
+    // Registry moved the store from vieja.com.uy to nueva.com.uy; this week crt.sh, Trustpilot and
+    // Maps were down. What we had describes a different site and must not be published as this one.
+    const store = entry({ domain: "nueva.com.uy" });
+    const previous = previousDoc({
+      domain: "vieja.com.uy",
+      site: site({ finalHost: "www.vieja.com.uy" }),
+      age: age(),
+      trustpilot: trustpilot({ url: "https://www.trustpilot.com/review/vieja.com.uy" }),
+      google: google(),
+      reddit: reddit(),
+      catalog: catalog(),
+      signals: 6,
+      indexable: true,
+    });
+    const doc = buildProfile(
+      store,
+      { site: undefined, age: undefined, trustpilot: undefined, google: undefined, reddit: undefined, catalog: undefined },
+      previous,
+      NOW
+    );
+    expect(doc.domain).toBe("nueva.com.uy");
+    expect(doc.site).toBeNull();
+    expect(doc.age).toBeNull();
+    expect(doc.trustpilot).toBeNull();
+    expect(doc.google).toBeNull();
+    // Reddit terms and our own catalogue are keyed by the store, not by its domain: they carry over.
+    expect(doc.reddit).toEqual(previous.reddit);
+    expect(doc.catalog).toEqual(previous.catalog);
+    expect(doc.signals).toBe(2);
+    expect(doc.indexable).toBe(false);
+  });
+
+  it("still takes a fresh value for the new domain after a domain change", () => {
+    const store = entry({ domain: "nueva.com.uy" });
+    const fresh = site({ finalHost: "nueva.com.uy" });
+    const doc = buildProfile(store, { site: fresh }, previousDoc({ domain: "vieja.com.uy", site: site() }), NOW);
+    expect(doc.site).toEqual(fresh);
+  });
+
+  it("drops a kept Trustpilot value whose page reviews a different domain than the one now targeted", () => {
+    // Same store domain, but the registry now points Trustpilot at another domain.
+    const store = entry({ domain: "tienda.com.uy", trustpilotDomain: "otra.com" });
+    const previous = previousDoc({ trustpilot: trustpilot({ url: "https://www.trustpilot.com/review/tienda.com.uy" }) });
+    const doc = buildProfile(store, { trustpilot: undefined }, previous, NOW);
+    expect(doc.trustpilot).toBeNull();
+  });
+
+  it("keeps a Trustpilot value whose page reviews the targeted domain, ignoring www.", () => {
+    const store = entry({ domain: "tiendamia.com" });
+    const prevTp = trustpilot({ url: "https://www.trustpilot.com/review/www.tiendamia.com" });
+    const previous = previousDoc({ domain: "tiendamia.com", trustpilot: prevTp });
+    const doc = buildProfile(store, { trustpilot: undefined }, previous, NOW);
+    expect(doc.trustpilot).toEqual(prevTp);
+
+    const viaOverride = buildProfile(
+      entry({ domain: "tienda.com.uy", trustpilotDomain: "www.otra.com" }),
+      { trustpilot: undefined },
+      previousDoc({ trustpilot: trustpilot({ url: "https://www.trustpilot.com/review/otra.com" }) }),
+      NOW
+    );
+    expect(viaOverride.trustpilot).not.toBeNull();
+  });
+
   it("treats a fetched value that is not a signal (no checkedAt) as a failed query", () => {
     const prevSite = site({ checkedAt: daysAgo(7) });
     const doc = buildProfile(entry(), { site: { status: "ok" } }, previousDoc({ site: prevSite }), NOW);

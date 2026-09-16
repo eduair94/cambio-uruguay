@@ -52,6 +52,7 @@ describe("sync_store_profiles.ts dry run", () => {
   });
 
   it("refuses to write without the app database configured", () => {
-    expect(SRC).toContain("appDbConfigured()");
+    // The guard itself, not just the name: `appDbConfigured()` also appears in the catalogue branch.
+    expect(SRC).toMatch(/if\s*\(\s*!dryRun\s*&&\s*!appDbConfigured\(\)\s*\)\s*\{[^}]*process\.exit\(1\);?\s*\}/);
   });
 });
