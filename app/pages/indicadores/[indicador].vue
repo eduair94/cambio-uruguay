@@ -82,6 +82,97 @@
       </v-col>
     </v-row>
 
+    <!-- Equivalence table + month-by-month series -->
+    <v-row v-if="equivalences.length || hasHistory" class="mt-2">
+      <v-col v-if="equivalences.length" cols="12" :md="hasHistory ? 6 : 12">
+        <v-card class="h-100">
+          <v-card-title tag="h2" class="d-flex align-center py-3 text-h6">
+            <v-icon start>mdi-table</v-icon>
+            Cuánto son las {{ indicator.abbr }} en pesos
+          </v-card-title>
+          <v-card-text>
+            <p class="text-body-2 text-grey mb-3">
+              Con 1 {{ indicator.abbr }} a {{ formattedValue }}{{ whenSuffix }}.
+            </p>
+            <VTable density="compact" class="indicador-table" data-testid="indicador-equivalences">
+              <thead>
+                <tr>
+                  <th scope="col">{{ indicator.name }}</th>
+                  <th scope="col" class="text-right">Pesos uruguayos</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in equivalences" :key="item.units">
+                  <td>{{ formatUnits(item.units) }} {{ indicator.abbr }}</td>
+                  <td class="text-right">
+                    {{ item.units === 1 ? formattedValue : formatPesos(item.pesos, 2) }}
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+            <p v-if="indicator.code === 'UR'" class="text-body-2 mt-3 mb-0 indicador-note">
+              Muchos alquileres se pactan en UR, así que el monto en pesos cambia cuando cambia la
+              UR. Si estás por alquilar, compará las
+              <NuxtLink :to="localePath('/guias/garantias-de-alquiler-uruguay')"
+                >garantías de alquiler</NuxtLink
+              >; si te querés ir antes de tiempo, mirá
+              <NuxtLink :to="localePath('/guias/como-rescindir-contrato-alquiler-uruguay')"
+                >cómo rescindir el contrato</NuxtLink
+              >.
+            </p>
+            <p v-else-if="indicator.code === 'UI'" class="text-body-2 mt-3 mb-0 indicador-note">
+              Los créditos hipotecarios en UI se pagan en pesos al valor del día. Antes de firmar,
+              mirá la
+              <NuxtLink :to="localePath('/guias/credito-hipotecario-uruguay')"
+                >comparativa de créditos hipotecarios</NuxtLink
+              >
+              o pasá cualquier monto con el
+              <NuxtLink :to="localePath('/herramientas/conversor-unidad-indexada')"
+                >conversor de UI a pesos</NuxtLink
+              >.
+            </p>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col v-if="hasHistory" cols="12" :md="equivalences.length ? 6 : 12">
+        <v-card class="h-100">
+          <v-card-title tag="h2" class="d-flex align-center py-3 text-h6">
+            <v-icon start>mdi-chart-timeline-variant</v-icon>
+            {{ indicator.abbr }} mes a mes
+          </v-card-title>
+          <v-card-text>
+            <p v-if="yearChangeText" class="text-body-2 mb-3">{{ yearChangeText }}</p>
+            <VTable density="compact" class="indicador-table" data-testid="indicador-history">
+              <thead>
+                <tr>
+                  <th scope="col">Mes</th>
+                  <th scope="col" class="text-right">
+                    {{ indicator.code === 'UI' ? 'Valor al cierre' : 'Valor' }}
+                  </th>
+                  <th scope="col" class="text-right">Variación</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(m, i) in historyRows" :key="m.month">
+                  <td>
+                    {{ capitalize(monthLabelEs(m.month)) }}
+                    <span v-if="i === 0 && indicator.code === 'UI'" class="text-grey">
+                      (en curso)</span
+                    >
+                  </td>
+                  <td class="text-right">{{ formatPesos(m.value, indicator.decimals) }}</td>
+                  <td class="text-right">{{ formatChange(m.changePct) }}</td>
+                </tr>
+              </tbody>
+            </VTable>
+            <p class="text-caption text-grey mt-2 mb-0">
+              Serie del Banco Central del Uruguay. La variación compara con el mes anterior.
+            </p>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
     <!-- What it is -->
     <v-row class="mt-2">
       <v-col cols="12" md="7">
@@ -174,7 +265,19 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { ExchangeRate } from '~/types/api'
-import { currentIndicatorValue, indicatorFromSlug } from '~/utils/indicators'
+import { formatNumber } from '~/utils/format'
+import {
+  EQUIVALENCE_AMOUNTS,
+  changeOverDays,
+  dayLabelEs,
+  equivalenceTable,
+  indicatorFromSlug,
+  liveIndicatorReading,
+  monthLabelEs,
+  montevideoMonthKey,
+  monthlyHistory,
+  type EvolutionPoint,
+} from '~/utils/indicators'
 
 definePageMeta({
   validate: route => indicatorFromSlug(String(route.params.indicador ?? '')) !== null,
@@ -182,28 +285,40 @@ definePageMeta({
 
 const route = useRoute()
 const localePath = useLocalePath()
-const { getProcessedExchangeData } = useApiService()
+const { getProcessedExchangeData, getEvolutionData } = useApiService()
 
 const indicator = computed(() => indicatorFromSlug(String(route.params.indicador ?? '')))
 
-// SSR fetch of today's rows, reduced to this indicator's current value. Keyed by
-// slug so each indicator page caches separately.
-const { data: value } = await useAsyncData(
+// SSR fetch of today's rows, reduced to this indicator's live reading (value + date). `null` when
+// the read failed OR the indicator has no live code (BPC) — `publishedValue` tells them apart.
+const { data: live } = await useAsyncData(
   () => `indicador-${indicator.value?.slug ?? 'na'}`,
   async () => {
     const ind = indicator.value
-    if (!ind) return null
+    if (!ind?.code) return null
     const result = await getProcessedExchangeData('')
     const rows = (result?.exchangeData ?? []) as ExchangeRate[]
-    return currentIndicatorValue(rows, ind)
+    return liveIndicatorReading(rows, ind)
+  }
+)
+
+// Twelve months of the BCU series, reduced ON THE SERVER to ~13 monthly rows: the raw daily series
+// is ~370 points and would otherwise ride along in the hydration payload of every visit.
+const { data: history } = await useAsyncData(
+  () => `indicador-hist-${indicator.value?.slug ?? 'na'}`,
+  async () => {
+    const ind = indicator.value
+    if (!ind?.code) return null
+    const res = await getEvolutionData('bcu', ind.code, undefined, 13)
+    const points = (res?.data as { evolution?: EvolutionPoint[] } | null)?.evolution ?? []
+    if (!points.length) return null
+    return { months: monthlyHistory(points, 13), yearChangePct: changeOverDays(points) }
   }
 )
 
 if (!indicator.value) {
   throw createError({ statusCode: 404, statusMessage: 'Indicador no encontrado' })
 }
-
-const currentValue = computed(() => value.value ?? indicator.value!.referenceValue)
 
 const formatPesos = (n: number, decimals: number): string =>
   n.toLocaleString('es-UY', {
@@ -213,13 +328,66 @@ const formatPesos = (n: number, decimals: number): string =>
     maximumFractionDigits: decimals,
   })
 
+/**
+ * The number this page may PUBLISH (title, description, table): the live reading for UI/UR, the
+ * yearly legal value for the BPC, and nothing when the live read failed.
+ */
+const publishedValue = computed<number | null>(() =>
+  indicator.value!.code ? (live.value?.value ?? null) : indicator.value!.referenceValue
+)
+
+// The calculator still needs a number to multiply when the read failed; it is labelled as such.
+const currentValue = computed(() => publishedValue.value ?? indicator.value!.referenceValue)
+
 const formattedValue = computed(() => formatPesos(currentValue.value, indicator.value!.decimals))
 
-const valueLabel = computed(() =>
-  indicator.value!.code
-    ? 'Valor vigente según el Banco Central del Uruguay'
-    : indicator.value!.referenceLabel
+/** "setiembre de 2026" for the monthly UR, "16 de setiembre de 2026" for the daily UI. */
+const liveWhen = computed(() => {
+  const date = live.value?.date
+  if (!date) return null
+  if (indicator.value!.code === 'UR') {
+    const month = montevideoMonthKey(date)
+    return month ? { prefix: 'en', label: monthLabelEs(month) } : null
+  }
+  const day = dayLabelEs(date)
+  return day ? { prefix: 'el', label: day } : null
+})
+
+const whenSuffix = computed(() =>
+  liveWhen.value ? ` (vigente ${liveWhen.value.prefix} ${liveWhen.value.label})` : ''
 )
+
+const valueLabel = computed(() => {
+  const ind = indicator.value!
+  if (!ind.code) return ind.referenceLabel
+  if (!live.value) return 'Valor de referencia: no pudimos leer el valor de hoy'
+  return liveWhen.value
+    ? `Banco Central del Uruguay, vigente ${liveWhen.value.prefix} ${liveWhen.value.label}`
+    : 'Valor vigente según el Banco Central del Uruguay'
+})
+
+const equivalences = computed(() =>
+  publishedValue.value === null
+    ? []
+    : equivalenceTable(EQUIVALENCE_AMOUNTS[indicator.value!.slug] ?? [], publishedValue.value)
+)
+
+const hasHistory = computed(() => (history.value?.months.length ?? 0) >= 3)
+const historyRows = computed(() => [...(history.value?.months ?? [])].reverse())
+
+const formatUnits = (n: number): string => formatNumber(n, Number.isInteger(n) ? 0 : 2)
+
+const formatChange = (pct: number | null): string =>
+  pct === null ? '—' : `${pct > 0 ? '+' : ''}${formatNumber(pct, 2)} %`
+
+const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1)
+
+const yearChangeText = computed(() => {
+  const pct = history.value?.yearChangePct
+  if (pct == null) return null
+  const verb = pct >= 0 ? 'subió' : 'bajó'
+  return `En los últimos 12 meses la ${indicator.value!.abbr} ${verb} ${formatNumber(Math.abs(pct), 2)} %.`
+})
 
 // Two-way converter: `units` is the source of truth; editing pesos derives units.
 const unitsInput = ref<number | null>(1)
@@ -260,26 +428,51 @@ defineOgImageComponent('Cambio', {
  * séptimos con un título sin una sola cifra. El cluster entero de la UR son 594 consultas, 18.251
  * impresiones y 15 clics.
  *
- * LA GUARDA, que viene de un error propio: el número se muestra SÓLO cuando vino de la lectura
- * viva. `currentValue` cae al `referenceValue` del catálogo cuando la lectura falla, y estampar un
- * valor de referencia viejo en el título es exactamente el bug que en julio puso la misma
- * cotización equivocada en cuarenta páginas de casas.
+ * LA GUARDA, que viene de un error propio: el número se publica SÓLO cuando vino de la lectura
+ * viva (o es el valor legal anual de la BPC). La guarda anterior comparaba contra `null` un valor
+ * que nunca era `null` —el helper caía al `referenceValue`—, así que una API caída habría
+ * publicado la referencia de junio como "hoy". `publishedValue` sale de `liveIndicatorReading`.
+ *
+ * 2026-09-16: la descripción suma la fecha de vigencia, la variación a 12 meses y un ejemplo tomado
+ * de las consultas reales ("10 ur a pesos", "1000 ui a pesos"). La UR tenía 25.000 impresiones en
+ * 28 días, posición ~10 y 12 clics.
  */
-const liveValue = computed(() => (value.value == null ? null : formattedValue.value))
-const currentYear = new Date().getFullYear()
+const liveFormatted = computed(() =>
+  publishedValue.value === null
+    ? null
+    : formatPesos(publishedValue.value, indicator.value!.decimals)
+)
+
+const EXAMPLE_UNITS: Record<string, number> = { UI: 1000, UR: 10 }
+
+const seoDescription = computed(() => {
+  const ind = indicator.value!
+  const value = publishedValue.value
+  if (value === null || !liveFormatted.value) return ind.shortDef
+  let when = ind.code ? ' hoy' : ` en ${new Date().getFullYear()}`
+  if (liveWhen.value) {
+    when =
+      liveWhen.value.prefix === 'en'
+        ? ` en ${liveWhen.value.label}`
+        : ` hoy, ${liveWhen.value.label}`
+  }
+  const pct = history.value?.yearChangePct
+  const change = pct == null ? '' : `, ${pct > 0 ? '+' : ''}${formatNumber(pct, 2)} % en 12 meses`
+  const units = EXAMPLE_UNITS[ind.code ?? ''] ?? 10
+  const example = `${formatUnits(units)} ${ind.abbr} = ${formatPesos(Math.round(units * value * 100) / 100, 2)}`
+  const tail = ind.code ? 'Tabla de equivalencias y valor mes a mes.' : 'Tabla de equivalencias.'
+  return `La ${ind.name} (${ind.abbr}) vale ${liveFormatted.value}${when}${change}. ${example}. ${tail}`
+})
 
 useSeoMeta({
   title: () =>
-    liveValue.value
-      ? `Valor de la ${indicator.value!.abbr} hoy: ${liveValue.value} | Cambio Uruguay`
+    liveFormatted.value
+      ? `Valor de la ${indicator.value!.abbr} hoy: ${liveFormatted.value} | Cambio Uruguay`
       : `Valor de la ${indicator.value!.name} (${indicator.value!.abbr}) Hoy | Cambio Uruguay`,
-  description: () =>
-    liveValue.value
-      ? `La ${indicator.value!.name} (${indicator.value!.abbr}) vale hoy ${liveValue.value} en ${currentYear}. ${indicator.value!.shortDef}`
-      : indicator.value!.shortDef,
+  description: () => seoDescription.value,
   ogTitle: () =>
-    liveValue.value
-      ? `${indicator.value!.abbr} hoy: ${liveValue.value}`
+    liveFormatted.value
+      ? `${indicator.value!.abbr} hoy: ${liveFormatted.value}`
       : `Valor de la ${indicator.value!.name} (${indicator.value!.abbr}) hoy`,
   ogDescription: () => indicator.value!.shortDef,
   ogType: 'website',
@@ -360,5 +553,11 @@ useHead({
 }
 .indicador-prose {
   line-height: 1.7;
+}
+.indicador-table {
+  font-variant-numeric: tabular-nums;
+}
+.indicador-note a {
+  color: rgb(var(--v-theme-primary));
 }
 </style>

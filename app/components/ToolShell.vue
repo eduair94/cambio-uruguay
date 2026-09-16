@@ -169,6 +169,13 @@ const props = defineProps<{
    *   for long, article-length explainers.
    */
   contentLayout?: 'aside' | 'below'
+  /**
+   * Overrides the catalogue's `<title>` / meta description. For tools whose answer is a number that
+   * changes (the UI conversor): the number in the snippet is what wins the click. The page must only
+   * pass it when the number came from a live read, never a reference fallback.
+   */
+  seoTitle?: string
+  seoDescription?: string
 }>()
 
 const localePath = useLocalePath()
@@ -203,10 +210,10 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: () => `${tool.value?.title ?? 'Herramienta'} | Cambio Uruguay`,
-  description: () => tool.value?.description ?? '',
+  title: () => props.seoTitle || `${tool.value?.title ?? 'Herramienta'} | Cambio Uruguay`,
+  description: () => props.seoDescription || tool.value?.description || '',
   ogTitle: () => tool.value?.title ?? 'Herramienta',
-  ogDescription: () => tool.value?.description ?? '',
+  ogDescription: () => props.seoDescription || tool.value?.description || '',
   ogType: 'website',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',

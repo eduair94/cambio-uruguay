@@ -1,6 +1,26 @@
 <template>
-  <ToolShell slug="conversor-unidad-indexada" :faq="faq" :sources="sources">
+  <ToolShell
+    slug="conversor-unidad-indexada"
+    :faq="faq"
+    :sources="sources"
+    :seo-title="seoTitle"
+    :seo-description="seoDescription"
+  >
     <VCard class="pa-4 pa-sm-6">
+      <div class="ui-today mb-5" data-testid="ui-today">
+        <div class="text-overline text-grey">Valor de la UI hoy</div>
+        <template v-if="live">
+          <div class="text-h5 font-weight-bold">1 UI = {{ formatUYU(live.value, 4) }}</div>
+          <div class="text-caption text-grey">
+            Banco Central del Uruguay<template v-if="liveDay">, vigente el {{ liveDay }}</template>
+          </div>
+        </template>
+        <div v-else class="text-body-2 text-grey">
+          No pudimos leer el valor de hoy. Usamos una referencia ({{ formatUYU(reference, 4) }}):
+          corregila con el valor vigente del BCU o el INE.
+        </div>
+      </div>
+
       <div class="text-overline text-grey mb-2">Sentido de la conversión</div>
       <VBtnToggle
         v-model="mode"
@@ -44,7 +64,7 @@
             variant="outlined"
             density="comfortable"
             hide-details
-            hint="Valor del día"
+            :hint="live ? 'Valor de hoy' : 'Valor de referencia'"
             persistent-hint
           />
         </VCol>
@@ -63,6 +83,30 @@
       </div>
     </VCard>
 
+    <VCard v-if="equivalences.length" class="pa-4 pa-sm-6 mt-4">
+      <h2 class="text-h6 font-weight-bold mb-1">Cuánto son las UI en pesos uruguayos hoy</h2>
+      <p class="text-body-2 text-grey mb-3">
+        Con la UI a {{ formatUYU(live!.value, 4)
+        }}<template v-if="liveDay"> ({{ liveDay }})</template>.
+      </p>
+      <VTable class="equiv-table" density="compact" data-testid="ui-equivalences">
+        <thead>
+          <tr>
+            <th scope="col">Unidades indexadas</th>
+            <th scope="col" class="text-right">Pesos uruguayos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="rowItem in equivalences" :key="rowItem.units">
+            <td>{{ formatNumber(rowItem.units, 0) }} UI</td>
+            <td class="text-right">
+              {{ rowItem.units === 1 ? formatUYU(live!.value, 4) : formatUYU(rowItem.pesos) }}
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+    </VCard>
+
     <template #content>
       <h2>Qué es la Unidad Indexada</h2>
       <p>
@@ -71,15 +115,16 @@
         alquileres, créditos hipotecarios, ahorro y contratos de largo plazo.
       </p>
       <p>
-        Convertir es directo: multiplicás la cantidad de UI por el <strong>valor del día</strong>,
-        que publica el Banco Central. Actualizá el valor de la UI con el dato vigente para mayor
-        precisión.
+        Convertir es directo: multiplicás la cantidad de UI por el <strong>valor del día</strong>.
+        El conversor ya viene cargado con el valor que publica el Banco Central; si tu contrato fija
+        otra fecha, cambiá el valor por el de ese día.
       </p>
       <p>
-        ¿No sabés el valor de hoy? Consultá el
+        ¿Querés ver cómo evolucionó? En el
         <NuxtLink :to="localePath('/indicadores/unidad-indexada')"
           >valor de la Unidad Indexada hoy</NuxtLink
-        >, que tomamos del Banco Central y se actualiza automáticamente.
+        >
+        está la serie mes a mes de los últimos doce meses.
       </p>
       <p>
         ¿Querés entenderla a fondo? Leé la guía
@@ -87,26 +132,52 @@
           >Unidad Indexada explicada</NuxtLink
         >
         o la comparación entre
-        <NuxtLink :to="localePath('/guias/ui-ur-bpc-diferencias')">UI, UR y BPC</NuxtLink>.
+        <NuxtLink :to="localePath('/guias/ui-ur-bpc-diferencias')">UI, UR y BPC</NuxtLink>. Si estás
+        sacando un préstamo en UI, mirá la
+        <NuxtLink :to="localePath('/guias/credito-hipotecario-uruguay')"
+          >comparativa de créditos hipotecarios</NuxtLink
+        >.
       </p>
     </template>
 
     <template #disclaimer>
-      El valor de la UI cambia todos los días (referencia ≈ $6,58 en junio de 2026). Ingresá el
-      valor vigente publicado por el INE o el BCU para un cálculo exacto.
+      El valor de la UI cambia todos los días y lo toma este conversor del Banco Central del
+      Uruguay. Para un contrato, usá el valor de la fecha que fija el propio contrato.
     </template>
   </ToolShell>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import type { ExchangeRate } from '~/types/api'
 import { round } from '~/utils/calculators'
 import { formatNumber, formatUYU } from '~/utils/format'
+import {
+  EQUIVALENCE_AMOUNTS,
+  dayLabelEs,
+  equivalenceTable,
+  indicatorFromSlug,
+  liveIndicatorReading,
+} from '~/utils/indicators'
 
 const localePath = useLocalePath()
+const { getProcessedExchangeData } = useApiService()
+const indicator = indicatorFromSlug('unidad-indexada')!
+const reference = indicator.referenceValue
+
+// Same read as /indicadores/unidad-indexada. Only the live value may reach the title, the
+// description or the table: the reference is a fallback for the calculator, not a quote.
+const { data: live } = await useAsyncData('conversor-ui-live', async () => {
+  const result = await getProcessedExchangeData('')
+  const rows = (result?.exchangeData ?? []) as ExchangeRate[]
+  return liveIndicatorReading(rows, indicator)
+})
+
+const liveDay = computed(() => (live.value?.date ? dayLabelEs(live.value.date) : null))
+
 const mode = ref<'uiToPesos' | 'pesosToUi'>('uiToPesos')
 const amount = ref(1000)
-const uiValue = ref(6.58)
+const uiValue = ref(live.value?.value ?? reference)
 
 const sources = [
   { label: 'INE — Unidad Indexada (valor diario oficial)', url: 'https://www.ine.gub.uy' },
@@ -124,7 +195,32 @@ const result = computed(() => {
     : round((amount.value || 0) / v, 2)
 })
 
-const faq = [
+const equivalences = computed(() =>
+  live.value ? equivalenceTable(EQUIVALENCE_AMOUNTS['unidad-indexada'] ?? [], live.value.value) : []
+)
+
+const seoTitle = computed(() =>
+  live.value
+    ? `Conversor UI a pesos: 1 UI = ${formatUYU(live.value.value, 4)} hoy | Cambio Uruguay`
+    : undefined
+)
+
+const seoDescription = computed(() => {
+  if (!live.value) return undefined
+  const thousand = formatUYU(Math.round(live.value.value * 1000 * 100) / 100)
+  const when = liveDay.value ? ` (BCU, ${liveDay.value})` : ' (BCU)'
+  return `La Unidad Indexada vale hoy ${formatUYU(live.value.value, 4)}${when}. 1.000 UI = ${thousand}. Convertí UI a pesos uruguayos y viceversa, con tabla de equivalencias.`
+})
+
+const faq = computed(() => [
+  ...(live.value
+    ? [
+        {
+          q: '¿Cuánto vale 1 UI hoy?',
+          a: `1 Unidad Indexada vale ${formatUYU(live.value.value, 4)} según el Banco Central del Uruguay${liveDay.value ? `, valor vigente el ${liveDay.value}` : ''}. 1.000 UI equivalen a ${formatUYU(Math.round(live.value.value * 1000 * 100) / 100)}.`,
+        },
+      ]
+    : []),
   {
     q: '¿Cómo convierto UI a pesos?',
     a: 'Multiplicás la cantidad de Unidades Indexadas por el valor de la UI del día, que publica el Banco Central del Uruguay. Por ejemplo, 1.000 UI a un valor de $6,50 equivalen a $6.500.',
@@ -137,7 +233,13 @@ const faq = [
     q: '¿En qué se diferencia de la Unidad Reajustable (UR)?',
     a: 'La UI ajusta por precios (IPC) y la UR por salarios (Índice Medio de Salarios). Por eso pueden evolucionar de forma distinta. La UR se usa habitualmente en alquileres y préstamos del BHU.',
   },
-]
+])
 </script>
+
+<style scoped>
+.equiv-table {
+  font-variant-numeric: tabular-nums;
+}
+</style>
 
 <!-- Layout primitives shared from ToolShell (.tool-page namespace). -->

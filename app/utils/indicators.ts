@@ -118,6 +118,8 @@ export const indicators: readonly Indicator[] = Object.freeze([
     ],
     related: [
       { label: 'Conversor de Unidad Indexada', to: '/herramientas/conversor-unidad-indexada' },
+      { label: 'Unidad Indexada explicada', to: '/guias/unidad-indexada-explicada' },
+      { label: 'Crédito hipotecario: comparativa', to: '/guias/credito-hipotecario-uruguay' },
       { label: 'Calculadora de inflación', to: '/herramientas/calculadora-inflacion' },
       { label: 'Unidad Reajustable (UR)', to: '/indicadores/unidad-reajustable' },
     ],
@@ -167,9 +169,14 @@ export const indicators: readonly Indicator[] = Object.freeze([
       },
     ],
     related: [
+      { label: 'Garantías de alquiler comparadas', to: '/guias/garantias-de-alquiler-uruguay' },
+      {
+        label: 'Cómo rescindir un contrato de alquiler',
+        to: '/guias/como-rescindir-contrato-alquiler-uruguay',
+      },
+      { label: 'UI, UR y BPC: diferencias', to: '/guias/ui-ur-bpc-diferencias' },
       { label: 'Unidad Indexada (UI)', to: '/indicadores/unidad-indexada' },
       { label: 'Calculadora de inflación', to: '/herramientas/calculadora-inflacion' },
-      { label: 'Glosario financiero', to: '/glosario' },
     ],
     updatedAt: '2026-06-20',
   },
@@ -249,14 +256,186 @@ export function listIndicatorSlugs(): string[] {
  */
 export function currentIndicatorValue(rows: readonly ExchangeRate[], indicator: Indicator): number {
   if (!indicator.code) return indicator.referenceValue
+  return liveIndicatorReading(rows, indicator)?.value ?? indicator.referenceValue
+}
 
-  let fallback: number | null = null
+/** A value read from the API today, with the date the source stamped on it. */
+export interface IndicatorReading {
+  value: number
+  /** ISO date of the row, or `null` when the row carried none. */
+  date: string | null
+}
+
+/**
+ * The live reading ONLY — never the catalogue's reference value.
+ *
+ * `currentIndicatorValue` falls back to `referenceValue`, which is right for the calculator but
+ * wrong for a `<title>`: when the API read fails, a title built from it stamps a months-old number
+ * as "hoy". That already happened once on this page (the guard in `[indicador].vue` checked for
+ * `null`, and the old helper never returned `null`). Anything that publishes the number —
+ * title, description, the equivalence table — must read it from here.
+ *
+ * Statically-valued indicators (BPC) have no live reading and return `null`.
+ */
+export function liveIndicatorReading(
+  rows: readonly ExchangeRate[],
+  indicator: Indicator
+): IndicatorReading | null {
+  if (!indicator.code) return null
+
+  let fallback: IndicatorReading | null = null
   for (const row of rows) {
     if (row.code !== indicator.code) continue
     const value = typeof row.sell === 'number' && row.sell > 0 ? row.sell : row.buy
-    if (typeof value !== 'number' || value <= 0) continue
-    if (row.origin === BCU_ORIGIN) return value // authoritative
-    if (fallback === null) fallback = value
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) continue
+    const reading = { value, date: row.date || null }
+    if (row.origin === BCU_ORIGIN) return reading // authoritative
+    if (fallback === null) fallback = reading
   }
-  return fallback ?? indicator.referenceValue
+  return fallback
+}
+
+/**
+ * The amounts each equivalence table lists.
+ *
+ * Taken from what people actually type (Search Console, 2026-08-15..09-11): "15 ur a pesos
+ * uruguayos", "12 ur", "10 ur", "1.25 ur en pesos uruguayos"; "20 ui a pesos uruguayos", "500 ui",
+ * "1000 unidades indexadas", "1500 ui". The rest fill the ladder people need for a rent (UR), a
+ * mortgage (UI, in the hundreds of thousands) or the IRPF brackets (7, 10, 15, 30 and 50 BPC).
+ */
+export const EQUIVALENCE_AMOUNTS: Readonly<Record<string, readonly number[]>> = Object.freeze({
+  'unidad-indexada': [1, 10, 20, 50, 100, 500, 1000, 1500, 5000, 10000, 100000],
+  'unidad-reajustable': [1, 1.25, 5, 10, 12, 15, 20, 25, 30, 50, 100],
+  bpc: [0.5, 1, 2, 5, 7, 10, 15, 20, 30, 50],
+})
+
+export interface EquivalenceRow {
+  units: number
+  pesos: number
+}
+
+/** `units × value` for every amount, rounded to cents (what a contract or a receipt shows). */
+export function equivalenceTable(amounts: readonly number[], value: number): EquivalenceRow[] {
+  if (!Number.isFinite(value) || value <= 0) return []
+  return amounts.map(units => ({ units, pesos: Math.round(units * value * 100) / 100 }))
+}
+
+/** One point of `GET /evolution/:origin/:code`. */
+export interface EvolutionPoint {
+  date: string
+  buy?: number | null
+  sell?: number | null
+}
+
+export interface MonthlyValue {
+  /** `YYYY-MM`, in Montevideo time. */
+  month: string
+  /** ISO date of the last observation of that month. */
+  date: string
+  value: number
+  /** Percent change against the previous month in the series, or `null` for the first one. */
+  changePct: number | null
+}
+
+const MONTEVIDEO_OFFSET_MS = 3 * 60 * 60 * 1000 // UTC−3 all year: Uruguay dropped DST in 2015.
+
+function pointValue(point: EvolutionPoint): number | null {
+  const sell = point.sell
+  const buy = point.buy
+  const value = typeof sell === 'number' && sell > 0 ? sell : buy
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null
+}
+
+function pointTime(point: EvolutionPoint): number | null {
+  const t = Date.parse(point.date)
+  return Number.isNaN(t) ? null : t
+}
+
+/**
+ * Month key in Montevideo time. The API stamps each day at 03:00 UTC (local midnight), so a naive
+ * UTC month would still be right today — but a row written at 01:00 UTC on the 1st belongs to the
+ * previous local month, and that is exactly the row that would silently move a month boundary.
+ */
+export function montevideoMonthKey(iso: string): string | null {
+  const t = Date.parse(iso)
+  if (Number.isNaN(t)) return null
+  return new Date(t - MONTEVIDEO_OFFSET_MS).toISOString().slice(0, 7)
+}
+
+/**
+ * The last observation of each month, oldest first, with the month-on-month change.
+ *
+ * The UR is published once a month, so its last daily row IS the month's value; for the UI (daily)
+ * it is the closing value. The change of the first returned month is computed against the month
+ * before the window when the series has it, so trimming never produces a spurious `null`.
+ */
+export function monthlyHistory(points: readonly EvolutionPoint[], maxMonths = 13): MonthlyValue[] {
+  const latest = new Map<string, { time: number; date: string; value: number }>()
+  for (const point of points) {
+    const value = pointValue(point)
+    const time = pointTime(point)
+    if (value === null || time === null) continue
+    const month = montevideoMonthKey(point.date)
+    if (!month) continue
+    const current = latest.get(month)
+    if (!current || time > current.time) latest.set(month, { time, date: point.date, value })
+  }
+
+  const months = [...latest.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+  const withChange: MonthlyValue[] = months.map(([month, entry], i) => {
+    const prev = i > 0 ? months[i - 1]![1].value : null
+    return {
+      month,
+      date: entry.date,
+      value: entry.value,
+      changePct: prev ? ((entry.value - prev) / prev) * 100 : null,
+    }
+  })
+  return withChange.slice(-Math.max(0, maxMonths))
+}
+
+/**
+ * Percent change between the newest observation and the one `days` earlier.
+ *
+ * Returns `null` unless the series has a point within `toleranceDays` of that date: a "12 month"
+ * change measured against a point from month 9 is a different, smaller number with the same label.
+ */
+export function changeOverDays(
+  points: readonly EvolutionPoint[],
+  days = 365,
+  toleranceDays = 7
+): number | null {
+  const valid = points
+    .map(p => ({ time: pointTime(p), value: pointValue(p) }))
+    .filter((p): p is { time: number; value: number } => p.time !== null && p.value !== null)
+  if (valid.length < 2) return null
+
+  const newest = valid.reduce((a, b) => (b.time > a.time ? b : a))
+  const target = newest.time - days * 86_400_000
+  let best: { time: number; value: number } | null = null
+  for (const p of valid) {
+    if (!best || Math.abs(p.time - target) < Math.abs(best.time - target)) best = p
+  }
+  if (!best || Math.abs(best.time - target) > toleranceDays * 86_400_000) return null
+  return ((newest.value - best.value) / best.value) * 100
+}
+
+/** `'2026-09'` → `'setiembre de 2026'` (Uruguayan spelling; see `dateLocale` in `format.ts`). */
+export function monthLabelEs(month: string): string {
+  const match = /^(\d{4})-(\d{2})$/.exec(month)
+  if (!match) return month
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, 15))
+  return date.toLocaleDateString('es-UY', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+}
+
+/** An ISO timestamp as a Montevideo calendar day: `'16 de setiembre de 2026'`. */
+export function dayLabelEs(iso: string): string | null {
+  const t = Date.parse(iso)
+  if (Number.isNaN(t)) return null
+  return new Date(t).toLocaleDateString('es-UY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'America/Montevideo',
+  })
 }
