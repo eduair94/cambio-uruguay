@@ -5,6 +5,7 @@
 // 40x error. So the currency is read from the storefront at run time and a store whose currency
 // cannot be established is skipped rather than guessed.
 import { fetchJson, fetchText } from "../net";
+import { listPriceOf } from "../price";
 import type { CategorySpec, RetailListing, RetailSourceResult, RetailStore } from "../types";
 
 const PAGE_SIZE = 250;
@@ -18,7 +19,15 @@ interface ShopifyProduct {
   product_type?: string;
   tags?: string[] | string;
   body_html?: string;
-  variants?: Array<{ id?: number; sku?: string; price?: string; available?: boolean; title?: string }>;
+  variants?: Array<{
+    id?: number;
+    sku?: string;
+    price?: string;
+    /** Shopify's own crossed-out price for the variant, when a discount is configured. */
+    compare_at_price?: string | null;
+    available?: boolean;
+    title?: string;
+  }>;
   images?: Array<{ src?: string }>;
 }
 
@@ -100,6 +109,7 @@ export async function harvestShopifyStore(
           location: null,
           freeShipping: null,
           officialStore: true,
+          listPrice: listPriceOf(price, Number(variant?.compare_at_price)),
           observedAt,
         });
       }

@@ -36,6 +36,12 @@ export interface RetailListing {
   location: string | null;
   freeShipping: boolean | null;
   officialStore: boolean;
+  /**
+   * The crossed-out price the seller shows beside the real one, when it is genuinely above it.
+   * `null`/absent means there is none — Fenicio, the structured-data adapter and Facebook never
+   * see a reference price, so they leave this undefined rather than fabricate one.
+   */
+  listPrice?: number | null;
   observedAt: string;
 }
 

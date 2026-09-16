@@ -9,6 +9,7 @@
 // Reading it naively inflates every price by 100x. And the body is not always clean JSON, which is
 // why nothing here goes through `fetchJson` — see {@link parseWooProducts}.
 import { fetchText } from "../net";
+import { listPriceOf } from "../price";
 import type { CategorySpec, RetailListing, RetailSourceResult, RetailStore } from "../types";
 
 /**
@@ -46,6 +47,8 @@ interface WooProduct {
   description?: string;
   prices?: {
     price?: string;
+    /** The crossed-out sticker price, in the same minor-unit encoding as `price`. */
+    regular_price?: string;
     currency_code?: string;
     currency_minor_unit?: number;
   };
@@ -153,6 +156,7 @@ export async function harvestWooStore(
           location: null,
           freeShipping: null,
           officialStore: true,
+          listPrice: listPriceOf(price, wooPrice({ ...product.prices, price: product.prices?.regular_price })),
           observedAt,
         });
       }

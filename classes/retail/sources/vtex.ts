@@ -10,6 +10,7 @@
 //     the storefront declares in its own HTML, so it is read at run time and a store whose currency
 //     cannot be established is skipped rather than guessed: USD published as UYU is a 40x error.
 import { fetchJson, fetchText } from "../net";
+import { listPriceOf } from "../price";
 import type { CategorySpec, RetailListing, RetailSourceResult, RetailStore } from "../types";
 
 /** The legacy catalogue API caps a page at 50 products, addressed through `_from`/`_to`. */
@@ -94,7 +95,7 @@ const specValues = (product: VtexProduct, name: string): string[] => {
 /** The first SKU with a real price, preferring the store's own listing over a marketplace seller. */
 export function vtexOffer(
   product: VtexProduct
-): { price: number; available: boolean; image: string | null } | null {
+): { price: number; available: boolean; image: string | null; listPrice: number | null } | null {
   for (const item of product.items || []) {
     const sellers = item.sellers || [];
     const seller =
@@ -108,6 +109,8 @@ export function vtexOffer(
         seller?.commertialOffer?.IsAvailable !== false &&
         Number(seller?.commertialOffer?.AvailableQuantity ?? 1) > 0,
       image: item.images?.find((image) => image.imageUrl)?.imageUrl || null,
+      // Same commertialOffer as the price above, never a different SKU's ListPrice.
+      listPrice: listPriceOf(price, seller?.commertialOffer?.ListPrice),
     };
   }
   return null;
@@ -207,6 +210,7 @@ export async function harvestVtexStore(
           location: null,
           freeShipping: null,
           officialStore: true,
+          listPrice: offer.listPrice,
           observedAt,
         });
       }

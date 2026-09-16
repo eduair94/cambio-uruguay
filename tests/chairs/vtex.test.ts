@@ -60,6 +60,8 @@ describe("vtexOffer", () => {
       price: 11603.35,
       available: true,
       image: "https://eldoradouy.vteximg.com.br/arquivos/ids/1171475/1642880.jpg",
+      // Price and ListPrice are equal on this fixture, so there is no genuine discount to show.
+      listPrice: null,
     });
   });
 
@@ -70,12 +72,25 @@ describe("vtexOffer", () => {
         { sellers: [{ commertialOffer: { Price: 5982.35, AvailableQuantity: 0, IsAvailable: false } }] },
       ],
     };
-    expect(vtexOffer(product)).toEqual({ price: 5982.35, available: false, image: null });
+    expect(vtexOffer(product)).toEqual({ price: 5982.35, available: false, image: null, listPrice: null });
   });
 
   it("returns nothing when no SKU has a price", () => {
     expect(vtexOffer({ items: [{ sellers: [] }] })).toBeNull();
     expect(vtexOffer({})).toBeNull();
+  });
+
+  it("reports the crossed-out price from the same commertialOffer, when it is a real discount", () => {
+    const product = {
+      items: [
+        {
+          sellers: [
+            { sellerDefault: true, commertialOffer: { Price: 8000, ListPrice: 10000, IsAvailable: true } },
+          ],
+        },
+      ],
+    };
+    expect(vtexOffer(product)).toEqual({ price: 8000, available: true, image: null, listPrice: 10000 });
   });
 });
 
