@@ -181,6 +181,118 @@
       </p>
     </section>
 
+    <!-- Mínima y máxima -->
+    <section class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Cuánto es la mínima y cuál es el tope</h2>
+      <p class="section-intro text-medium-emphasis mb-5">
+        La jubilación mínima general en 2026 es de {{ formatUYU(RETIREMENT_MIN_GENERAL_2026, 0) }}.
+        El monto inicial cambia según la edad en que te jubilás, y también hay tope máximo: no uno
+        solo, sino dos, distintos según el régimen. El ajuste de pasividades de 2026 fue del
+        {{ formatNumber(RETIREMENT_ADJUSTMENT_2026_PCT) }} %.
+      </p>
+
+      <VTable class="cu-mobile-cards" density="comfortable">
+        <thead>
+          <tr>
+            <th scope="col">Concepto</th>
+            <th scope="col">Monto mensual</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in RETIREMENT_AMOUNTS_2026" :key="row.label">
+            <td data-label="Concepto">{{ row.label }}</td>
+            <td data-label="Monto mensual">{{ formatUYU(row.amount, 0) }}</td>
+          </tr>
+        </tbody>
+      </VTable>
+
+      <p class="fineprint mt-4 mb-0">
+        El tope por acumulación de pasividades sólo rige para quien acumula más de una pasividad del
+        régimen de transición; no es el tope máximo de una jubilación individual.
+      </p>
+    </section>
+
+    <!-- Incapacidad -->
+    <section class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Si no podés seguir trabajando por salud</h2>
+      <p class="section-intro text-medium-emphasis mb-5">
+        Hay tres figuras del BPS: dos contributivas —según si la incapacidad es total o parcial—,
+        que decide una junta médica, y una tercera no contributiva, la pensión por invalidez, que el
+        BPS evalúa por otra vía. Ninguna es automática con presentar un certificado.
+      </p>
+
+      <div v-for="benefit in DISABILITY_BENEFITS" :key="benefit.id" class="mb-6">
+        <h3 class="text-subtitle-1 font-weight-bold mb-2">{{ benefit.name }}</h3>
+        <p class="body-text mb-1"><strong>Quién califica:</strong> {{ benefit.eligibility }}</p>
+        <p class="body-text mb-1"><strong>Duración:</strong> {{ benefit.duration }}</p>
+        <p class="body-text mb-0"><strong>Monto:</strong> {{ benefit.amountNote }}</p>
+      </div>
+
+      <div class="mb-6">
+        <h3 class="text-subtitle-1 font-weight-bold mb-2">{{ INVALIDITY_PENSION_NOTE.name }}</h3>
+        <p class="body-text mb-1">
+          <strong>Quién califica:</strong> {{ INVALIDITY_PENSION_NOTE.eligibility }}
+        </p>
+        <p class="body-text mb-1">
+          <strong>Quién la evalúa:</strong> {{ INVALIDITY_PENSION_NOTE.evaluator }}
+        </p>
+        <p class="body-text mb-0">
+          <strong>Monto:</strong> {{ INVALIDITY_PENSION_NOTE.amountNote }} El detalle vive en
+          <NuxtLink :to="localePath('/pension-a-la-vejez-uruguay')"
+            >pensión a la vejez e invalidez</NuxtLink
+          >.
+        </p>
+      </div>
+
+      <p class="body-text mb-0">
+        La jubilación por incapacidad total y la jubilación anticipada por puestos de trabajo
+        particularmente exigentes son las dos causales alcanzadas por el
+        <NuxtLink :to="localePath('/suplemento-solidario-bps')">suplemento solidario</NuxtLink>
+        del BPS.
+      </p>
+    </section>
+
+    <!-- Mi jubilación estimada -->
+    <section class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Mirá tu jubilación estimada</h2>
+      <p class="body-text mb-3">
+        El BPS tiene un servicio propio, "Mi jubilación estimada", que calcula el monto aproximado
+        de tu jubilación para la edad en que cumplas los requisitos y para tres edades posteriores.
+        Si tenés aportes a una AFAP y das tu consentimiento, también suma esa componente a la
+        estimación.
+      </p>
+      <p class="body-text mb-3">
+        Pide usuario personal del BPS (con inicio de sesión) y está pensado para quien ya reúne la
+        edad y los años de trabajo para jubilarse por BPS, o le faltan dos años o menos, dentro del
+        régimen mixto o de transición.
+      </p>
+      <p class="body-text mb-3">
+        Lo que <strong>no</strong> hace: no calcula jubilaciones por incapacidad, ni casos con
+        acumulación de años entre cajas o convenios internacionales, ni actividad de pesca,
+        portuaria, zafral, a la orden o a destajo, ni para quien ya cobra otra pasividad del BPS. El
+        propio BPS aclara que el cálculo <strong>no implica el otorgamiento ni la solicitud</strong>
+        de una jubilación: la solicitud es un trámite aparte.
+      </p>
+      <p class="body-text mb-0">
+        <a href="https://www.bps.gub.uy/21573/" target="_blank" rel="noopener nofollow">
+          Ir al servicio "Mi jubilación estimada" en bps.gub.uy
+        </a>
+      </p>
+    </section>
+
+    <!-- FAQ -->
+    <section class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
+      <VExpansionPanels variant="accordion">
+        <VExpansionPanel v-for="f in RETIREMENT_FAQ" :key="f.question">
+          <VExpansionPanelTitle>
+            <span class="font-weight-medium">{{ f.question }}</span>
+          </VExpansionPanelTitle>
+          <VExpansionPanelText>{{ f.answer }}</VExpansionPanelText>
+        </VExpansionPanel>
+      </VExpansionPanels>
+    </section>
+
     <!-- Fuentes -->
     <section class="mb-4">
       <h2 class="text-h5 font-weight-bold mb-2">De dónde salen estas cifras</h2>
@@ -217,14 +329,21 @@
 
 <script setup lang="ts">
 import {
+  DISABILITY_BENEFITS,
   EXTENDED_CAREER,
+  INVALIDITY_PENSION_NOTE,
   NEW_SYSTEM_FIRST_GRANT_YEAR,
   NEW_SYSTEM_NORMAL,
   PREVIOUS_SYSTEM_NORMAL,
   REDUCED_SERVICE_SCALE,
+  RETIREMENT_ADJUSTMENT_2026_PCT,
+  RETIREMENT_AMOUNTS_2026,
+  RETIREMENT_FAQ,
+  RETIREMENT_MIN_GENERAL_2026,
   RETIREMENT_SOURCES,
   retirementFor,
 } from '~/utils/retirementAge'
+import { formatNumber, formatUYU } from '~/utils/format'
 
 const localePath = useLocalePath()
 
@@ -248,12 +367,14 @@ const relatedLinks = [
   { to: '/indemnizacion-por-despido-uruguay', label: 'Indemnización por despido' },
   { to: '/seguro-de-paro-uruguay', label: 'Seguro de paro' },
   { to: '/impuestos-inversiones-uruguay', label: 'IASS e impuestos a las inversiones' },
+  { to: '/suplemento-solidario-bps', label: 'Suplemento solidario del BPS' },
+  { to: '/pension-a-la-vejez-uruguay', label: 'Pensión a la vejez e invalidez' },
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/cuando-me-puedo-jubilar-uruguay'
 const title = '¿Cuándo me puedo jubilar en Uruguay?'
 const description =
-  'Nacidos antes del 1/1/1973: 60 años y 30 de trabajo. Desde 1973 rige la Ley 20.130 y la edad sube un año por generación: 61 para 1973, 62 para 1974, 63 para 1975, 64 para 1976 y 65 de 1977 en adelante. Con las escalas del BPS por menos de 30 años y por carrera extensa.'
+  'Nacidos antes del 1/1/1973: 60 años y 30 de trabajo. Desde 1973, la Ley 20.130 sube la edad un año por generación hasta los 65 según tu año de nacimiento.'
 
 defineOgImageComponent('Cambio', {
   title: '¿Cuándo me puedo jubilar en Uruguay?',
@@ -279,7 +400,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'cuando me puedo jubilar uruguay, edad jubilatoria uruguay, ley 20130, reforma jubilatoria uruguay, jubilacion bps edad, causal jubilatoria comun, jubilacion anticipada uruguay, edad avanzada bps, 30 años de trabajo jubilacion, jubilarme a los 60 uruguay',
+        'cuando me puedo jubilar uruguay, edad jubilatoria uruguay, ley 20130, reforma jubilatoria uruguay, jubilacion bps edad, causal jubilatoria comun, jubilacion anticipada uruguay, edad avanzada bps, 30 años de trabajo jubilacion, jubilarme a los 60 uruguay, jubilacion minima 2026, jubilacion por incapacidad, jubilacion por enfermedad, mi jubilacion estimada, bps jubilacion estimada, tope jubilacion',
     },
   ],
   script: [
@@ -304,6 +425,14 @@ useHead(() => ({
                 item: canonicalUrl,
               },
             ],
+          },
+          {
+            '@type': 'FAQPage',
+            mainEntity: RETIREMENT_FAQ.map(f => ({
+              '@type': 'Question',
+              name: f.question,
+              acceptedAnswer: { '@type': 'Answer', text: f.answer },
+            })),
           },
           {
             '@type': 'Article',

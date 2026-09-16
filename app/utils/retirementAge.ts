@@ -166,4 +166,157 @@ export const RETIREMENT_SOURCES: readonly RetirementSource[] = [
     label: 'BPS — Jubilación anticipada por puestos de trabajo particularmente exigentes',
     url: 'https://www.bps.gub.uy/20534/jubilacion-anticipada-por-desempeno-de-puestos-de-trabajo-particularmente-exigentes.html',
   },
+  {
+    label: 'BPS — Montos y aumentos de pasividades',
+    url: 'https://www.bps.gub.uy/6182/montos-y-aumentos-de-pasividades.html',
+  },
+  {
+    label: 'BPS — Jubilación por incapacidad total',
+    url: 'https://www.bps.gub.uy/3501/jubilacion-por-incapacidad-total.html',
+  },
+  {
+    label: 'BPS — Subsidio transitorio por incapacidad parcial',
+    url: 'https://www.bps.gub.uy/9780/subsidio-transitorio-por-incapacidad-parcial.html',
+  },
+  {
+    label: 'BPS — Mi jubilación estimada',
+    url: 'https://www.bps.gub.uy/21674/mi-jubilacion-estimada.html',
+  },
+  {
+    label: 'BPS — Suplemento solidario',
+    url: 'https://www.bps.gub.uy/20541/suplemento-solidario.html',
+  },
+]
+
+// ---------------------------------------------------------------------------
+// Montos 2026: mínima, máxima y las tres figuras de incapacidad
+// ---------------------------------------------------------------------------
+//
+// Todo lo de acá abajo son cifras publicadas por el BPS en "Montos y aumentos
+// de pasividades" y en las fichas de cada prestación, verificadas contra esas
+// páginas el 2026-09-16. Lo que el BPS no confirma con una cita textual (el
+// tope del sueldo básico jubilatorio de $288.288, la renovación "180 días
+// antes" de otras prestaciones, o una tasa de reemplazo del 65/66 % para la
+// incapacidad total) NO está acá: no se publica un número que no se pudo citar.
+
+/** Una fila de "cuánto es la jubilación mínima o máxima", en pesos por mes. */
+export interface AmountRow {
+  label: string
+  amount: number
+}
+
+export const RETIREMENT_MIN_GENERAL_2026 = 20935
+export const RETIREMENT_MIN_AGE_60_2026 = 10795
+export const RETIREMENT_MIN_AGE_70_2026 = 23749
+export const RETIREMENT_MAX_INTERGENERATIONAL_2026 = 79430
+export const RETIREMENT_MAX_TRANSITION_2026 = 117460
+export const RETIREMENT_ACCUMULATION_CAP_TRANSITION_2026 = 166080
+
+/** Ajuste de pasividades de 2026, en porcentaje. Se paga desde marzo con retroactividad a enero. */
+export const RETIREMENT_ADJUSTMENT_2026_PCT = 5.97
+
+/**
+ * Mínima y máxima 2026. Hay DOS topes máximos porque el régimen de
+ * solidaridad intergeneracional y el régimen de transición (Ley 16.713)
+ * publican cifras distintas, y el tope de acumulación de pasividades es
+ * exclusivo del régimen de transición.
+ * Fuente: BPS, "Montos y aumentos de pasividades".
+ */
+export const RETIREMENT_AMOUNTS_2026: readonly AmountRow[] = [
+  { label: 'Mínima general', amount: RETIREMENT_MIN_GENERAL_2026 },
+  { label: 'Mínima inicial, jubilación a los 60 años', amount: RETIREMENT_MIN_AGE_60_2026 },
+  {
+    label: 'Mínima inicial, jubilación a los 70 años o más',
+    amount: RETIREMENT_MIN_AGE_70_2026,
+  },
+  {
+    label: 'Máxima, régimen de solidaridad intergeneracional',
+    amount: RETIREMENT_MAX_INTERGENERATIONAL_2026,
+  },
+  { label: 'Máxima, régimen de transición', amount: RETIREMENT_MAX_TRANSITION_2026 },
+  {
+    label: 'Tope por acumulación de pasividades (régimen de transición)',
+    amount: RETIREMENT_ACCUMULATION_CAP_TRANSITION_2026,
+  },
+]
+
+/** Una de las dos figuras contributivas del BPS para quien no puede seguir trabajando por salud. */
+export interface DisabilityBenefit {
+  id: string
+  name: string
+  eligibility: string
+  duration: string
+  amountNote: string
+}
+
+/**
+ * Jubilación por incapacidad total y subsidio transitorio por incapacidad
+ * parcial: las dos figuras CONTRIBUTIVAS del BPS para quien no puede seguir
+ * trabajando por salud. La pensión por invalidez es una tercera figura, no
+ * contributiva, que vive en `/pension-a-la-vejez-uruguay` y no se repite acá.
+ * Fuentes: BPS 3501 y BPS 9780.
+ */
+export const DISABILITY_BENEFITS: readonly DisabilityBenefit[] = [
+  {
+    id: 'total',
+    name: 'Jubilación por incapacidad total',
+    eligibility:
+      'Incapacidad total y permanente para todo trabajo, dictaminada por el BPS mediante junta médica, con actividad previa (6 meses a 2 años según la edad, o sin mínimo si la incapacidad es a causa del trabajo).',
+    duration: 'Vitalicia, sujeta a controles de compatibilidad.',
+    amountNote:
+      'Se calcula proyectando los años de trabajo hasta un mínimo de 65 años y aplicando la tasa de adquisición de derechos del art. 46 de la ley.',
+  },
+  {
+    id: 'partial',
+    name: 'Subsidio transitorio por incapacidad parcial',
+    eligibility: 'Incapacidad parcial dictaminada por el BPS, con los mismos mínimos de actividad.',
+    duration:
+      'Tres años, o hasta cumplir la edad y los años de trabajo para configurar causal jubilatoria, lo que ocurra antes. Si al vencer se confirma incapacidad total y no hay otra causal, pasa a ser jubilación por incapacidad total.',
+    amountNote:
+      'Se calcula según los artículos 44 a 46 de la Ley 20.130, con un adicional del 20 % para quienes tienen hijos a cargo.',
+  },
+]
+
+/**
+ * Nota corta sobre la pensión por invalidez, para que las tres figuras se vean
+ * con la misma forma (quién califica / quién evalúa / monto) a simple vista.
+ * No es una `DisabilityBenefit`: es no contributiva y no comparte régimen con
+ * las dos de arriba, así que no entra en `DISABILITY_BENEFITS`. El detalle
+ * completo vive en `/pension-a-la-vejez-uruguay`; acá sólo lo necesario para
+ * distinguirla.
+ * Fuente: BPS 20545 (Pensión por invalidez) y BPS 6182 (mismo monto que la
+ * pensión a la vejez).
+ */
+export interface InvalidityPensionNote {
+  name: string
+  eligibility: string
+  evaluator: string
+  amountNote: string
+}
+
+export const INVALIDITY_PENSION_NOTE: InvalidityPensionNote = {
+  name: 'Pensión por invalidez',
+  eligibility: 'No contributiva: no pide años de trabajo aportados.',
+  evaluator:
+    'El BPS, con dictamen médico de incapacidad severa o, sin discapacidad severa, con prueba de carencia de recursos.',
+  amountNote: 'El mismo monto que la pensión a la vejez.',
+}
+
+/** Una pregunta frecuente de la página, con su respuesta para el FAQPage. */
+export interface RetirementFaqItem {
+  question: string
+  answer: string
+}
+
+export const RETIREMENT_FAQ: readonly RetirementFaqItem[] = [
+  {
+    question: '¿Cuál es la jubilación mínima en 2026?',
+    answer:
+      'La jubilación mínima general es de $ 20.935 por mes en 2026. Si te jubilás a los 60 años, el mínimo inicial es $ 10.795; si te jubilás a los 70 años o más, $ 23.749. También hay tope máximo, y es distinto según el régimen: $ 79.430 en el régimen de solidaridad intergeneracional y $ 117.460 en el régimen de transición, con un tope aparte de $ 166.080 para quien acumula más de una pasividad en el régimen de transición. El ajuste de pasividades de 2026 fue del 5,97 %.',
+  },
+  {
+    question: '¿Qué diferencia hay entre jubilación por incapacidad y pensión por invalidez?',
+    answer:
+      'La jubilación por incapacidad total es contributiva y vitalicia: la cobra quien tiene actividad aportada al BPS y queda con incapacidad total y permanente para cualquier trabajo. La pensión por invalidez es no contributiva: no exige aportes previos, pero sí probar carencia de recursos (salvo discapacidad severa), y paga el mismo monto que la pensión a la vejez. Si la incapacidad es parcial y no total, corresponde el subsidio transitorio por incapacidad parcial, que dura hasta tres años o hasta que se configure otra causal jubilatoria.',
+  },
 ]
