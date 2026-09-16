@@ -80,7 +80,7 @@
                 :key="`curve-${themeKey}`"
                 :chart-data="curveData"
                 :options="pctLineOptions"
-                aria-label="Evolución mensual de las opiniones negativas y positivas en r/CharruaDevs"
+                aria-label="Evolución mensual de las opiniones negativas y positivas en r/CharruaDevs. Los puntos marcan los meses con un lanzamiento de IA, detallados en la tabla de la sección Los lanzamientos"
               />
               <template #fallback>
                 <VSkeletonLoader type="image" height="100%" />
@@ -134,7 +134,7 @@
                   :key="`ai-${themeKey}`"
                   :chart-data="aiMentionsData"
                   :options="lexOptions"
-                  aria-label="Menciones de IA por cada mil comentarios"
+                  aria-label="Menciones de IA por cada mil comentarios. Los puntos marcan los meses con un lanzamiento de IA, detallados en la tabla de la sección Los lanzamientos"
                 />
                 <template #fallback>
                   <VSkeletonLoader type="image" height="100%" />
@@ -181,18 +181,18 @@
                   <th scope="col">Fecha</th>
                   <th scope="col">Qué salió</th>
                   <th scope="col">Quién</th>
-                  <th scope="col">Menciones de IA, antes → después</th>
+                  <th scope="col">Menciones de IA por mil, antes → después</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="r in releaseRows" :key="`${r.date}-${r.label}`">
                   <td data-label="Fecha" class="text-no-wrap">{{ r.dateLabel }}</td>
-                  <td data-label="Qué salió">
+                  <td data-label="Qué salió" class="cu-cell-prose">
                     <a :href="r.url" target="_blank" rel="noopener">{{ r.label }}</a>
                     <span class="why">{{ r.why }}</span>
                   </td>
                   <td data-label="Quién">{{ r.vendor }}</td>
-                  <td data-label="Menciones de IA, antes → después" class="text-no-wrap">
+                  <td data-label="Menciones de IA por mil, antes → después" class="text-no-wrap">
                     {{ r.baLabel }}
                   </td>
                 </tr>
@@ -201,17 +201,16 @@
           </div>
         </VCard>
         <p class="small mt-4">
-          Esto no prueba causa. Los lanzamientos vienen en racimo —Claude Code en mayo de 2025 y
-          Cursor 1.0 en junio—, así que el punto de un mes casi nunca es un solo producto. Los
-          gráficos por trimestre no llevan marca: un trimestre tapa dos o tres lanzamientos y un
-          punto ahí no distinguiría nada. El sub además cambió de composición con los años, como
-          dice el método más abajo. Y el mercado se movió por cosas que no son un lanzamiento: el
-          índice de avisos de Indeed que está más abajo en esta página se derrumba a lo largo de
-          2022 y 2023, y ese movimiento no tiene ninguna fila en esta tabla. La comparación además
-          juega en contra suyo a propósito: muchos meses «sin lanzamiento» tienen uno a dos o tres
-          meses de distancia y comparten media ventana con él, y eso acerca las dos proporciones.{{
-            robustnessNote
-          }}
+          Esto no prueba causa. Los lanzamientos vienen en racimo —abril, mayo y junio de 2025 traen
+          uno cada uno—, así que la ventana de tres meses de un lanzamiento casi siempre contiene
+          otro: lo que se mide es el racimo, no el producto de esa fila. Los gráficos por trimestre
+          no llevan marca: un trimestre tapa dos o tres lanzamientos y un punto ahí no distinguiría
+          nada. El sub además cambió de composición con los años, como dice el método más abajo. Y
+          el mercado se movió por cosas que no son un lanzamiento: el índice de avisos de Indeed que
+          está más abajo en esta página se derrumba a lo largo de 2022 y 2023, y ese movimiento no
+          tiene ninguna fila en esta tabla. La comparación además juega en contra suyo a propósito:
+          muchos meses «sin lanzamiento» tienen uno a dos o tres meses de distancia y comparten
+          media ventana con él, y eso acerca las dos proporciones.{{ robustnessNote }}
         </p>
       </section>
 
@@ -454,7 +453,7 @@
                   :key="`lex-${themeKey}`"
                   :chart-data="alarmData"
                   :options="lexOptions"
-                  aria-label="Frases de alarma por cada mil comentarios"
+                  aria-label="Frases de alarma por cada mil comentarios. Los puntos marcan los meses con un lanzamiento de IA, detallados en la tabla de la sección Los lanzamientos"
                 />
                 <template #fallback>
                   <VSkeletonLoader type="image" height="100%" />
@@ -489,6 +488,7 @@ import {
   type ReleaseMarkerStyle,
   type RiseSplit,
 } from '~/utils/aiReleases'
+import { stratifiedRiseGap, type RiseStratum, type StratifiedGap } from '~/utils/aiReleasesStrata'
 import type { FaqItem } from '~/utils/faqAnswers'
 import {
   fmtInt,
@@ -835,7 +835,7 @@ const line = (
   ...(marks
     ? {
         pointBackgroundColor: marks.pointBackgroundColor,
-        pointHoverRadius: marks.pointRadius.map(r => r + 2),
+        pointHoverRadius: marks.pointRadius.map(r => Math.max(r + 2, 4)),
       }
     : {}),
   tension: 0.25,
@@ -1049,6 +1049,12 @@ const alarmData = computed(() => {
 
 /** Lo que separa "se ve la diferencia" de "es la misma proporción", en partes de 1. */
 const RISE_GAP = 0.1
+/**
+ * El listón, mucho más alto, que necesita el TÍTULO para afirmar algo. La muestra son trece meses
+ * con lanzamiento repartidos en cinco años: casi ningún año aporta más de dos. Una brecha de diez
+ * puntos ahí no distingue una señal de un sorteo, y un `<h2>` no se lee con la muestra al lado.
+ */
+const TITLE_GAP = 0.25
 const RELEASE_MONTHS = new Set(AI_RELEASES.map(releaseMonth))
 
 const lexIaValues = computed(() => lexRows.value.map(r => r.ia_menciones ?? null))
@@ -1082,6 +1088,21 @@ function gapOf(s: RiseSplit): number | null {
 const iaGap = computed(() => gapOf(iaRise.value))
 const negGap = computed(() => gapOf(negRise.value))
 const negOpGap = computed(() => gapOf(negOpRise.value))
+
+// La brecha cruda mide el ALMANAQUE: los lanzamientos se amontonan en los años en que la serie
+// subió todos los meses, con lanzamiento o sin él. El veredicto de la sección se decide con la
+// brecha estratificada por año —cada mes con lanzamiento contra los meses sin lanzamiento del
+// MISMO año—, que es la única de las dos que puede distinguir el lanzamiento del calendario.
+const iaStrat = computed(() =>
+  stratifiedRiseGap(lexMonthKeys.value, lexIaValues.value, RELEASE_MONTHS)
+)
+const negStrat = computed(() =>
+  stratifiedRiseGap(
+    curveMonthKeys.value,
+    curveMonths.value.map(m => pct100(m.neg)),
+    RELEASE_MONTHS
+  )
+)
 const ppText = (gap: number) => `${Math.round(Math.abs(gap) * 100)} puntos`
 const negGapClause = computed(() => {
   const gap = negGap.value
@@ -1098,6 +1119,24 @@ const robustnessNote = computed(() => {
   const b = negOpGap.value
   if (a == null || b == null) return ''
   return ` Y el resultado se mueve según la serie que se mire: sobre las opiniones que toman partido —la medida del titular de esta página— la brecha da ${ppText(b)} en lugar de ${ppText(a)}. Acá se publica la serie que está dibujada arriba, no la que da el número más grande.`
+})
+
+// La respuesta de la FAQ sale entera al JSON-LD, sin la sección alrededor que la explique. Por
+// eso tiene su propia guarda: con pocos meses, "0 de 0 (—)" es una respuesta publicada.
+const releasesAnswer = computed(() => {
+  const head = `Con estos datos no se puede afirmar. ChatGPT salió en noviembre de 2022 y la curva ya venía subiendo: en 2022 el ${fmtPct(y2022.value?.negOfOpinion)} de las opiniones que tomaban partido eran negativas y en los últimos 90 días son el ${fmtPct(last90.value?.negOfOpinion)}.`
+  const s = negRise.value
+  const strat = negStrat.value.gap
+  if (s.withRelease.share == null || s.without.share == null) {
+    return `${head} La página marca los ${AI_RELEASES.length} lanzamientos de IA que le cambiaron el día a quien programa, pero todavía no hay meses suficientes con las dos ventanas de tres meses enteras como para comparar los que tuvieron uno contra los que no.`
+  }
+  const tail =
+    strat == null
+      ? 'y no hay años con meses de los dos tipos como para corregir por el calendario'
+      : Math.abs(strat) < RISE_GAP
+        ? `pero comparando cada mes contra los del mismo año la diferencia se cae a ${ppText(strat)}, porque los lanzamientos se amontonan justo en los años en que la serie subía sola`
+        : `y comparando cada mes contra los del mismo año la diferencia se sostiene en ${ppText(strat)}`
+  return `${head} Lo que sí se puede hacer es marcar esos ${AI_RELEASES.length} lanzamientos y comparar los ${s.withRelease.n} meses comparables que tuvieron uno contra los ${s.without.n} que no: promediando los tres meses previos contra los tres siguientes, la parte negativa del mes quedó más arriba en ${s.withRelease.rose} de ${s.withRelease.n} (${fmtPct(s.withRelease.share)}) y en ${s.without.rose} de ${s.without.n} (${fmtPct(s.without.share)}), ${negGapClause.value}, ${tail}. Los lanzamientos vienen en racimo y la serie sube sola, así que nada de esto prueba causa.`
 })
 
 function dayLabelLong(d: string): string {
@@ -1119,16 +1158,20 @@ const releaseRows = computed(() =>
   })
 )
 
+// El título se decide con la brecha ESTRATIFICADA, no con la cruda: la cruda da un número alto
+// por el almanaque y el título es justo la frase que se lee sin leer el resto.
 const releasesTitle = computed(() => {
-  const ia = iaGap.value
-  const neg = negGap.value
+  const ia = iaStrat.value.gap
+  const neg = negStrat.value.gap
   if (ia == null || neg == null) return 'Todavía no hay meses suficientes para comparar'
-  const iaClear = ia >= RISE_GAP
-  const negClear = neg >= RISE_GAP
-  if (iaClear && negClear) return 'Los meses con lanzamiento suben más seguido que el resto'
-  if (iaClear) return 'Se nota en las menciones de IA, no en el pesimismo'
-  if (negClear) return 'Se nota en el pesimismo, no en las menciones de IA'
-  return 'El marcador no separa el lanzamiento de la tendencia'
+  // Para AFIRMAR algo desde el título hacen falta las dos series, para el mismo lado y con una
+  // brecha grande. Con trece meses con lanzamiento, una diferencia de diez o quince puntos entra
+  // holgada en el ruido, y el título es lo único de la sección que se lee sin el resto al lado.
+  const loud = Math.abs(ia) >= TITLE_GAP && Math.abs(neg) >= TITLE_GAP && ia > 0 === neg > 0
+  if (!loud) return 'El marcador no separa el lanzamiento de la tendencia'
+  return ia > 0
+    ? 'Comparando dentro del mismo año, los meses con lanzamiento suben más seguido'
+    : 'Comparando dentro del mismo año, los meses con lanzamiento suben menos seguido'
 })
 
 function riseLine(what: string, s: RiseSplit): string {
@@ -1136,11 +1179,43 @@ function riseLine(what: string, s: RiseSplit): string {
 }
 function gapVerdict(what: string, gap: number): string {
   if (Math.abs(gap) < RISE_GAP) {
-    return `En ${what} las dos proporciones quedan a ${ppText(gap)} de distancia: el marcador no separa el lanzamiento de la tendencia.`
+    return `En ${what} las dos proporciones quedan a ${ppText(gap)} de distancia.`
   }
   return gap > 0
-    ? `En ${what} los meses con lanzamiento suben ${ppText(gap)} más seguido que un mes cualquiera.`
-    : `En ${what} los meses con lanzamiento suben ${ppText(gap)} menos seguido que un mes cualquiera.`
+    ? `En ${what} la diferencia cruda es de ${ppText(gap)} a favor de los meses con lanzamiento.`
+    : `En ${what} la diferencia cruda es de ${ppText(gap)} en contra de los meses con lanzamiento.`
+}
+
+/** El año que más meses con lanzamiento aporta, que es de dónde sale la brecha cruda. */
+function heaviestYear(s: StratifiedGap): RiseStratum | null {
+  return s.strata.reduce<RiseStratum | null>(
+    (top, x) => (!top || x.withRelease.n > top.withRelease.n ? x : top),
+    null
+  )
+}
+
+// Acá se dice la parte incómoda: la diferencia cruda casi toda la explica el año, no el
+// lanzamiento. Se escribe con el número que dé, para los dos lados.
+function stratVerdict(s: StratifiedGap): string {
+  const gap = s.gap
+  if (gap == null)
+    return 'Ningún año tiene meses de los dos tipos, así que no hay con qué corregir.'
+  const top = heaviestYear(s)
+  const where =
+    top && top.withRelease.n > 1
+      ? ` Los lanzamientos no están repartidos parejo: ${top.withRelease.n} de los ${s.weight} meses comparables caen en ${top.key}, y en ${top.key} subieron ${fmtPct(top.withRelease.share)} de los meses con lanzamiento y ${fmtPct(top.without.share)} de los que no tuvieron ninguno.`
+      : ''
+  const verdict =
+    Math.abs(gap) < RISE_GAP
+      ? `la diferencia se cae a ${ppText(gap)}: lo que medía la cuenta cruda era el almanaque.`
+      : `la diferencia se sostiene en ${ppText(gap)}.`
+  return `${where} Comparando cada mes con lanzamiento contra los meses sin lanzamiento del mismo año, ${verdict}`
+}
+
+/** La misma corrección sobre la otra serie, y el recordatorio de cuántos meses la sostienen. */
+function stratTail(s: StratifiedGap): string {
+  if (s.gap == null) return ''
+  return ` En las opiniones negativas la misma corrección deja ${ppText(s.gap)}, sobre ${s.weight} meses con lanzamiento repartidos en ${s.strata.length} años: es una muestra chica y ninguna de las dos cifras alcanza para afirmar un efecto.`
 }
 
 const releasesText = computed(() => {
@@ -1149,7 +1224,7 @@ const releasesText = computed(() => {
   if (ia == null || neg == null) {
     return 'Todavía no hay meses con las dos ventanas de tres meses enteras como para comparar los que tuvieron un lanzamiento contra los que no. Hasta que los haya no se publica la mitad de la cuenta: sobre una serie que sube casi todos los meses, cualquier fecha que marques queda seguida de una suba.'
   }
-  return `Para cada mes se promedian los tres meses de antes y los tres de después y se mira si la serie quedó más arriba; los meses del borde, sin las dos ventanas enteras, no entran. ${riseLine('Menciones de IA', iaRise.value)}. ${riseLine('Opiniones negativas del mes', negRise.value)}. ${gapVerdict('las menciones', ia)} ${gapVerdict('la negatividad', neg)} La segunda proporción de cada par es un placebo, no un test, y es lo único que hace legible a la primera.`
+  return `Para cada mes se promedian los tres meses de antes y los tres de después y se mira si la serie quedó más arriba; los meses del borde, sin las dos ventanas enteras, no entran. ${riseLine('Menciones de IA', iaRise.value)}. ${riseLine('Opiniones negativas del mes', negRise.value)}. ${gapVerdict('las menciones', ia)} ${gapVerdict('la negatividad', neg)} La segunda proporción de cada par es un placebo, no un test, y es lo único que hace legible a la primera.${stratVerdict(iaStrat.value)}${stratTail(negStrat.value)}`
 })
 
 const validationRows = computed(() => {
@@ -1196,7 +1271,7 @@ const faq = computed<FaqItem[]>(() => {
     {
       id: 'mercado-it-lanzamientos',
       question: '¿El pesimismo del sub arranca con ChatGPT?',
-      answer: `Con estos datos no se puede afirmar. ChatGPT salió en noviembre de 2022 y la curva ya venía subiendo: en 2022 el ${fmtPct(y2022.value?.negOfOpinion)} de las opiniones que tomaban partido eran negativas y en los últimos 90 días son el ${fmtPct(last90.value?.negOfOpinion)}. Lo que sí se puede hacer es marcar los ${AI_RELEASES.length} lanzamientos de IA que le cambiaron el día a quien programa y comparar esos meses contra los que no tuvieron ninguno: la parte negativa del mes quedó más arriba tres meses después en ${negRise.value.withRelease.rose} de ${negRise.value.withRelease.n} meses con lanzamiento (${fmtPct(negRise.value.withRelease.share)}) y en ${negRise.value.without.rose} de ${negRise.value.without.n} sin lanzamiento (${fmtPct(negRise.value.without.share)}), ${negGapClause.value}; en las menciones de IA la relación es ${fmtPct(iaRise.value.withRelease.share)} contra ${fmtPct(iaRise.value.without.share)}. Los lanzamientos vienen en racimo y la serie sube sola, así que nada de esto prueba causa.`,
+      answer: releasesAnswer.value,
     },
     {
       id: 'mercado-it-junior',

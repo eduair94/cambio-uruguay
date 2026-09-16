@@ -65,7 +65,9 @@ describe('los marcadores van sólo en las series mensuales', () => {
 
   it('un dataset sin marcas sigue saliendo con pointRadius 0 y sin color de punto', () => {
     expect(page).toContain('pointRadius: marks ? marks.pointRadius : 0')
-    expect(page).toContain('pointHoverRadius: marks.pointRadius.map(r => r + 2)')
+    // El piso de 4 es el hoverRadius por defecto de chart.js: sin él un punto sin marcar se
+    // ACHICA al pasarle el mouse, que es lo contrario de lo que espera cualquiera.
+    expect(page).toContain('pointHoverRadius: marks.pointRadius.map(r => Math.max(r + 2, 4))')
   })
 })
 
@@ -151,9 +153,51 @@ describe('las convenciones del sitio', () => {
     expect(page).not.toContain('septiembre')
   })
 
-  it('no mete un "|" en un texto que después pasa por vue-i18n', () => {
-    const template = page.slice(0, page.indexOf('</template>'))
-    expect(template).not.toContain('|')
+  // `page.indexOf('</template>')` encuentra el cierre del PRIMER `<template #fallback>`, o sea
+  // 87 líneas de 1.600: daba por revisada justo la prosa nueva, que empieza mucho más abajo. Se
+  // acota a la sección de los lanzamientos, que es lo que agregó este cambio, en vez de a un
+  // prefijo que no contiene nada de ella.
+  it('no mete un "|" en el texto nuevo, que después pasa por vue-i18n', () => {
+    const from = page.indexOf('aria-labelledby="lanzamientos"')
+    const to = page.indexOf('aria-labelledby="quien"')
+    expect(from).toBeGreaterThan(0)
+    expect(to).toBeGreaterThan(from)
+    expect(page.slice(from, to)).not.toContain('|')
+  })
+
+  it('la celda de prosa de la tabla lleva el escape documentado de cu-mobile-cards', () => {
+    // responsive-tables.css: una celda cuyo valor es PROSA necesita `cu-cell-prose`, o en el
+    // teléfono queda apretada contra la etiqueta en una cinta angosta y alineada a la derecha.
+    expect(page).toContain('<td data-label="Qué salió" class="cu-cell-prose">')
+  })
+
+  it('el veredicto del título se decide con la brecha estratificada, no con la cruda', () => {
+    // La brecha cruda mide el almanaque: los lanzamientos se amontonan en los años en que la
+    // serie subía sola. Si el título vuelve a colgarse de `iaGap`/`negGap` esto lo frena.
+    const title = page.slice(page.indexOf('const releasesTitle'), page.indexOf('function riseLine'))
+    expect(title).toContain('iaStrat.value.gap')
+    expect(title).toContain('negStrat.value.gap')
+    expect(title).not.toContain('iaGap.value')
+    expect(title).not.toContain('negGap.value')
+  })
+
+  it('la cuenta de negatividad no usa la serie ya suavizada', () => {
+    // `neg3` es un promedio de tres meses: meterlo en una ventana de tres meses arrastra el mes
+    // del lanzamiento adentro del "después". El fix no tenía test y el próximo refactor lo
+    // volvía a poner.
+    const block = page.slice(page.indexOf('const negRise'), page.indexOf('function gapOf'))
+    expect(block).toContain('pct100(m.neg)')
+    expect(block).not.toContain('m.neg3')
+  })
+
+  it('la respuesta de la FAQ tiene su propia guarda de muestra', () => {
+    // Sale entera al JSON-LD, sin la sección que la explica alrededor.
+    const block = page.slice(
+      page.indexOf('const releasesAnswer'),
+      page.indexOf('function dayLabelLong')
+    )
+    expect(block).toContain('withRelease.share == null')
+    expect(block).toContain('todavía no hay meses suficientes')
   })
 })
 
