@@ -45,6 +45,16 @@ export interface RetailListing {
   observedAt: string;
 }
 
+/** Per-run knobs a caller hands a storefront adapter. Adapters that do not search ignore them. */
+export interface StoreHarvestOptions {
+  /**
+   * Distinct search terms sent to a store that filters server-side (WooCommerce, VTEX). Absent means
+   * the adapter's env default (RETAIL_WOO_MAX_QUERIES / RETAIL_VTEX_MAX_QUERIES, then 24), which is
+   * what the chair directory runs on.
+   */
+  maxQueries?: number;
+}
+
 export interface RetailSourceResult {
   listings: RetailListing[];
   ok: boolean;
@@ -67,18 +77,6 @@ export interface RetailStore {
   expectCurrency?: "UYU" | "USD";
   /** Shopify only: restrict the scan to these collection handles instead of the whole catalogue. */
   collections?: string[];
-  /**
-   * The Store API declares `currency_minor_unit` but sends whole units (TYT: "15900" is $ 15.900).
-   * Verified 2026-09-16.
-   */
-  priceInMajorUnits?: boolean;
-  /**
-   * The unit is not consistent across the store's own catalogue: some products come in whole pesos
-   * and some in cents under the same declared minor unit. Each listing is then resolved on its own
-   * against MercadoLibre's band for its category (`resolveAmbiguousUnits` in unitGuard.ts), and a
-   * listing that cannot be told apart is dropped instead of guessed.
-   */
-  priceUnitAmbiguous?: boolean;
   enabled: boolean;
   note?: string;
 }

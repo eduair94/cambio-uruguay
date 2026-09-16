@@ -222,9 +222,10 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       /\b(convector|estufa|calefactor|caloventor|portatil de aire|^canos?|kit de canos?|instalacion|soporte|bomba|control remoto|limpiador(es)?|prensas?|cintas?|automotriz|de auto)\b/,
     urlHint: /(aire-acondicionado|split)/i,
     // VTEX and WooCommerce send the deduplicated store queries in registry order and stop at a cap.
-    // At the default 24 this query evicted "olla" from every capped store (measured); the daily run
-    // now sends all of them (RETAIL_*_MAX_QUERIES=80, see tests/equipar/registry.test.ts), and the
-    // hourly run's 24 only ever loses the cheap tail.
+    // At 24 this query pushed "olla" out of every capped store (measured). The daily run now sends
+    // all of them (classes/equipar/budget.ts). The hourly run still stops at 24, so "olla" and
+    // everything after it are not searched hourly; their store offers come from the daily run's
+    // snapshot (classes/equipar/storeSnapshot.ts) until it is 36 h old.
     storeQueries: ["aire acondicionado", "split", "aire portatil"],
     mlQueries: [
       "aire acondicionado split",
@@ -456,7 +457,10 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     include: /\b(escurridor|secaplatos|escurreplatos)\b/,
     // A mop bucket "con escurridor" is the cleaning kit further down, which then claims it; a
     // cutlery drainer is a $ 149 caddy, not the dish rack this row prices.
-    exclude: /\b(de ensalada|de pastas|de cubiertos|para fregadero de repuesto|mopas?|fregonas?|baldes?)\b/,
+    // The caddy is excluded only when nothing says it holds plates: a dish rack sold "con escurridor
+    // de cubiertos" is still the dish rack.
+    exclude:
+      /\b(de ensalada|de pastas|^(?!.*\b(platos?|vajilla|escurreplatos|secaplatos)\b).*\bde cubiertos|para fregadero de repuesto|mopas?|fregonas?|baldes?)\b/,
     urlHint: /(escurridor|secaplatos)/i,
     storeQueries: ["escurridor", "secaplatos"],
     mlQueries: ["escurridor de platos", "secaplatos"],
@@ -500,7 +504,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     include: /\b(mixer|minipimer|licuadora|procesadora)\b/,
     // TYT sells power-tool kits "+ mixer" and a paint mixer; neither blends soup.
     exclude:
-      /\b(industrial|de pintura|pintura|mezclador(es)?|de cemento|atornillador(es)?|taladros?|llaves?|linternas?|weg|vaso de repuesto|cuchilla de repuesto)\b/,
+      /\b(industrial|de pintura|pintura|de cemento|atornillador(es)?|taladros?|llaves?|linternas?|weg|vaso de repuesto|cuchilla de repuesto)\b/,
     urlHint: /(mixer|licuadora|procesadora)/i,
     storeQueries: ["mixer", "licuadora"],
     mlQueries: ["mixer de mano", "licuadora", "procesadora de alimentos"],
@@ -731,8 +735,11 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "techo", label: "De techo", match: /\bde techo\b/, rank: 2 },
     ],
     include: /\b(ventilador|ventiladores)\b/,
+    // "Industrial" alone is marketing: El Dorado sells an 18" "Industrial Fan 3 en 1" for the living
+    // room. It excludes only with a workshop size (24"+ written with or without the inch mark, or
+    // 60 cm+) or metal blades.
     exclude:
-      /\b(de pc|de notebook|extractor|de auto|industrial(es)?|12v|24v|vehiculos?|camionetas?|obra|de mano|de repuesto|cooler)\b/,
+      /\b(de pc|de notebook|extractor|de auto|industrial\w*\b.*\b(2[4-9]|3[0-6])\b(?! ?(w|watts?|v|hz|mm|kg|l|lts?|litros|rpm|m)\b)|industrial\w*\b.*\b([6-9]\d|1\d\d) ?cms?|industrial\w*\b.*\bmetal\w*|metal\w*\b.*\bindustrial|12v|24v|vehiculos?|camionetas?|obra|de mano|de repuesto|cooler)\b/,
     urlHint: /ventilador/i,
     storeQueries: ["ventilador"],
     mlQueries: ["ventilador de pie", "ventilador de techo"],
@@ -775,9 +782,10 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     quantity: 1,
     variants: [{ key: "trineo", label: "De trineo o escoba", fallback: true, rank: 1 }],
     include: /\b(aspiradora|aspiradoras)\b/,
-    // TYT files pressure washers, leaf blowers and a sander "con aspiradora" next to the vacuums.
+    // TYT files pressure washers, leaf blowers and a sander "con aspiradora" next to the vacuums. The
+    // blower is matched only as the first word: "Aspiradora ... 3 En 1 Sopladora" is a hand vacuum.
     exclude:
-      /\b(de auto|para auto|industrial|de taller|hidrolavadoras?|sopladoras?|lijadoras?|amoladoras?|taladros?|rotomartillos?|atornillador(es)?|bolsa de repuesto|robot de repuesto)\b/,
+      /\b(de auto|para auto|industrial|de taller|hidrolavadoras?|^(sopla|soplador(a|as|es)?)|lijadoras?|amoladoras?|taladros?|rotomartillos?|atornillador(es)?|bolsa de repuesto|robot de repuesto)\b/,
     urlHint: /aspiradora/i,
     storeQueries: ["aspiradora"],
     mlQueries: ["aspiradora", "aspiradora escoba"],

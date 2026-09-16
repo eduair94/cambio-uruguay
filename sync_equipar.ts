@@ -24,13 +24,17 @@ import { EQUIPAR_CATEGORIES } from "./classes/equipar/registry";
 import {
   countStoredItems,
   loadPreviousItems,
+  loadStoreSnapshot,
   saveEquiparCatalog,
+  saveStoreSnapshot,
   withHistory,
 } from "./classes/equipar/store";
 import type { EquiparMeta } from "./classes/equipar/types";
 import { harvestRetail } from "./classes/retail/harvest";
 import { retailStores } from "./classes/retail/stores";
-import { applyUnitGuard, resolveAmbiguousUnits } from "./classes/retail/unitGuard";
+import { applyUnitGuard } from "./classes/retail/unitGuard";
+import { EQUIPAR_STORE_QUERIES } from "./classes/equipar/budget";
+import { mergeStoreSnapshot } from "./classes/equipar/storeSnapshot";
 
 /**
  * How many MercadoLibre searches and Marketplace searches one run may spend.
@@ -60,17 +64,26 @@ async function main(): Promise<void> {
   const specs = equiparSpecs();
   const stores = retailStores();
 
-  const [harvest, usdUyu, previous, storedCount] = await Promise.all([
+  const [harvest, usdUyu, previous, storedCount, storeSnapshot] = await Promise.all([
     harvestRetail({
       stores,
       specs,
       fast,
       maxMlScans: fast ? Math.round(ML_BUDGET / 2) : ML_BUDGET,
       maxFbQueries: fast ? Math.round(FB_BUDGET / 2) : FB_BUDGET,
+      maxStoreQueries: fast ? EQUIPAR_STORE_QUERIES.fast : EQUIPAR_STORE_QUERIES.daily,
     }),
     fetchUsdUyuRate(),
     loadPreviousItems(),
     countStoredItems(),
+    // Only the hourly run reads it. A snapshot that cannot be read leaves the hourly run exactly as
+    // it was before the snapshot existed; it never fails the run.
+    fast
+      ? loadStoreSnapshot().catch((error) => {
+          console.error("[equipar] no se pudo leer la foto de tiendas de la diaria", error);
+          return null;
+        })
+      : Promise.resolve(null),
   ]);
 
   for (const run of harvest.runs) {
@@ -82,17 +95,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // A store that mixes pesos and cents INSIDE its own catalogue (TYT) is resolved listing by
-  // listing first. It has to run before the per-store guard: that one judges a store's median, and
-  // an unresolved half at 100x could tip a whole category of the store out of the page.
-  const ambiguousSellers = new Set(stores.filter((store) => store.priceUnitAmbiguous).map((store) => store.key));
-  const resolved = resolveAmbiguousUnits(harvest.listings, usdUyu, ambiguousSellers);
-  console.log(`[equipar] unidades ambiguas: ${resolved.rescaled} reescalados, ${resolved.dropped} descartados`);
-
-  // Backstop for a WooCommerce store that sends whole pesos while declaring a minor unit (TYT was
-  // the measured case — see classes/retail/unitGuard.ts). Runs after the per-store override so the
-  // guard only ever catches the NEXT store nobody has fixed yet.
-  const guarded = applyUnitGuard(resolved.listings, usdUyu);
+  // Backstop for the NEXT store whose declared unit or currency lies (TYT's lying currency is read
+  // off its rendered price in the adapter — see classes/retail/unitGuard.ts for the story).
+  const guarded = applyUnitGuard(harvest.listings, usdUyu);
   for (const drop of guarded.dropped) {
     console.log(
       `[equipar] unidad: ${drop.sellerKey} en ${drop.spec} mediana $${drop.storeMedianUyu} contra $${drop.mlMedianUyu} de ML — descartada`
@@ -101,7 +106,22 @@ async function main(): Promise<void> {
     if (run) run.note += `, descartada en ${drop.spec} por unidad`;
   }
 
-  const items = buildEquiparCatalog({ listings: guarded.listings, usdUyu });
+  // The hourly run skips the Fenicio stores and searches 24 terms instead of 80, and each item is
+  // replaced whole on save — so it completes the store side with the daily run's snapshot (fresh
+  // listings win, rows older than 36 h are ignored, MercadoLibre and Marketplace never come from it).
+  // The snapshot rows already passed the unit guard against the daily run's larger ML sample.
+  let listings = guarded.listings;
+  if (fast && storeSnapshot) {
+    const merged = mergeStoreSnapshot(listings, storeSnapshot.listings, Date.now());
+    console.log(
+      `[equipar] foto de tiendas del ${storeSnapshot.generatedAt}: ${merged.fromSnapshot} avisos sumados, ${merged.stale} vencidos`
+    );
+    listings = merged.listings;
+  } else if (fast) {
+    console.log("[equipar] sin foto de tiendas de la diaria: se publica sólo lo leído en esta corrida");
+  }
+
+  const items = buildEquiparCatalog({ listings, usdUyu });
   const priced = items.filter((item) => item.newBand || item.usedBand);
 
   // A run that priced almost nothing is an outage, not a market. Publishing it would blank a page
@@ -120,7 +140,7 @@ async function main(): Promise<void> {
   const meta: EquiparMeta = {
     generatedAt: new Date().toISOString(),
     usdUyu,
-    listings: guarded.listings.length,
+    listings: listings.length,
     items: items.length,
     runs: harvest.runs,
     baskets,
@@ -129,6 +149,17 @@ async function main(): Promise<void> {
 
   await saveEquiparCatalog(stored, meta);
 
+  // Only the daily run writes the store snapshot, and only after it published: a thin run already
+  // exited above, so it can never overwrite a good snapshot either.
+  if (!fast) {
+    const storeListings = guarded.listings.filter((listing) => listing.source === "store");
+    const snapshot = await saveStoreSnapshot(storeListings, meta.generatedAt);
+    console.log(
+      `[equipar] foto de tiendas: ${storeListings.length} avisos, ${(snapshot.bytes / 1024 / 1024).toFixed(2)} MB` +
+        (snapshot.saved ? "" : " — supera el tope, se conserva la anterior")
+    );
+  }
+
   for (const basket of baskets) {
     console.log(
       `[equipar] canasta ${basket.label.padEnd(9)} $${basket.totalUyu.toLocaleString("es-UY")}` +
@@ -136,7 +167,7 @@ async function main(): Promise<void> {
     );
   }
   console.log(
-    `[equipar] ${items.length} ítems de ${EQUIPAR_CATEGORIES.length} categorías, ${guarded.listings.length} avisos, ${((Date.now() - startedAt) / 1000).toFixed(1)}s`
+    `[equipar] ${items.length} ítems de ${EQUIPAR_CATEGORIES.length} categorías, ${listings.length} avisos, ${((Date.now() - startedAt) / 1000).toFixed(1)}s`
   );
   process.exit(0);
 }

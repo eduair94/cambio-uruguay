@@ -154,14 +154,10 @@ export const RETAIL_STORES: RetailStore[] = [
     adapter: "woocommerce",
     channel: "local-store",
     expectCurrency: "UYU",
-    // The Store API declares `currency_minor_unit` but sends whole units (TYT: "15900" is $ 15.900).
-    // Verified 2026-09-16.
-    priceInMajorUnits: true,
-    // ...but not for every product. Same run, same declared unit: "Calefon Termotanque De Acero
-    // Enxuta 60 L" came as 20500 (pesos) and "Termotanque Calefon Enxuta 60 Lts" as 960000 (cents);
-    // "Telefunken Calefón TLF30V" 487900. Whole units stay the starting point, and the per-listing
-    // resolver tries /100 against MercadoLibre's band for the category.
-    priceUnitAmbiguous: true,
+    // No per-store price flag. TYT's minor unit is honest; its `currency_code` is not: it says "UYU"
+    // on every product while the storefront renders 149 of 515 in dollars ("15900" is USD 159,00,
+    // not $ 15.900 and not $ 159). The adapter reads the rendered currency from `price_html`; see
+    // wooPricing in sources/woocommerce.ts. Measured 2026-09-16.
     enabled: true,
   },
   {

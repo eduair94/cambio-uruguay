@@ -123,6 +123,33 @@ describe("lo que se coló en producción el 16/9/2026", () => {
     expect(categoryFor(title, context)?.key ?? null).not.toBe(category);
   });
 
+  it("ajustes de la revisión: sopladoras sólo como producto, ventilador industrial por tamaño, escurridor de platos", () => {
+    // Una sopladora "de jardín con aspiradora" empieza por sopladora; una aspiradora de mano 3 en 1
+    // que además sopla empieza por aspiradora y es de la casa.
+    expect(categoryFor("Aspiradora Inalambrica Recargable Portatil 3 En 1 Sopladora")?.key).toBe("aspiradora");
+    expect(categoryFor("Sopladora Aspiradora Stanley 600w Stpt600 Tyt")?.key ?? null).not.toBe("aspiradora");
+    expect(categoryFor("Soplador Aspiradora 3000w Triturador Forest & Garden T")?.key ?? null).not.toBe("aspiradora");
+    expect(categoryFor("Sopla Aspiradora 3 En 1 Deluxe Equus Tyt")?.key ?? null).not.toBe("aspiradora");
+
+    // "Mezclador" no es una herramienta por sí sola: la batidora de mano también lo dice.
+    expect(categoryFor("Mixer De Mano Mezclador 3 En 1 Atma")?.key).toBe("mixer");
+    expect(categoryFor("Mixer Mezclador Pintura Mx11008 Ingco 1100w Tyt", "Pinturas")?.key ?? null).not.toBe("mixer");
+
+    // "Industrial" en un ventilador de 18 o 20 pulgadas es marketing de uno de casa; de 24" o 60 cm
+    // para arriba, o con aspas de metal, es de galpón.
+    expect(
+      categoryFor('Ventilador Grenno Fs-1805 Industrial Fan 3 en 1 18"', "/Electro Audio Y Tv/Electrodomésticos/Frío Y Calor/")?.key
+    ).toBe("ventilador");
+    expect(categoryFor("Ventilador Industrial 3 En 1 De Pie 20 Pulgadas Kassel")?.key).toBe("ventilador");
+    expect(categoryFor("Ventilador Industrial De Pie Goldtech 3 Aspas 26 tyt")?.key ?? null).not.toBe("ventilador");
+    expect(categoryFor("Ventilador De Pie Industrial Kassel 180 Watts 60cm Casahogar")?.key ?? null).not.toBe("ventilador");
+    expect(categoryFor("Ventilador De Pared Industrial Xion Aspas 65 Cms 115 W Tyt")?.key ?? null).not.toBe("ventilador");
+    expect(categoryFor("Ventilador Industrial Goldtech 5 Aspas Metálicas 20 Pulgadas")?.key ?? null).not.toBe("ventilador");
+
+    // Un escurridor de platos que trae su escurridor de cubiertos sigue siendo un escurridor de platos.
+    expect(categoryFor("Escurridor De Platos Con Escurridor De Cubiertos Acero Inoxidable")?.key).toBe("escurridor");
+  });
+
   it("las que sí son siguen entrando en las categorías que se ajustaron por el tope 80", () => {
     // Todos medidos en la misma corrida en seco.
     expect(categoryFor("Balde Jupiter Limpieza Plastico 10lt", "/Limpieza/Limpieza Hogar/Acc. Limpieza/")?.key).toBe("limpieza");

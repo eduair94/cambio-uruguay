@@ -1,7 +1,9 @@
+import fs from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import { EQUIPAR_CATEGORIES, NOT_A_PRODUCT, TIER_LABEL } from "../../classes/equipar/registry";
 import { equiparSpecs } from "../../classes/equipar/classify";
+import { EQUIPAR_STORE_QUERIES } from "../../classes/equipar/budget";
 
 /**
  * The registry is data, and data with no test rots quietly: a category added without a fallback
@@ -57,32 +59,45 @@ describe("registro de categorías", () => {
     expect(specs[0]!.key).toBe("heladera");
   });
 
-  it("la corrida diaria manda TODAS las búsquedas de tienda a VTEX y WooCommerce", () => {
-    // Esos dos adaptadores mandan las storeQueries deduplicadas EN ORDEN DEL REGISTRO y cortan en
-    // RETAIL_VTEX_MAX_QUERIES / RETAIL_WOO_MAX_QUERIES, 24 por defecto. Con 24 llegaba hasta "olla":
-    // sartén, cubiertos, vajilla, vasos, sábanas, toallas, limpieza y tacho —casi todo el tier S—
-    // nunca se buscaban en El Dorado ni en las cinco tiendas WooCommerce. Medido en la Task 3: sumar
-    // "aire portatil" arriba de la olla le sacó las ollas a El Dorado (198 -> 138 productos
-    // revisados) y a TYT (149 -> 95 aceptados). La diaria sube el tope a 80 en ecosystem.config.js.
-    const DAILY_STORE_QUERY_CAP = 80;
+  it("la corrida diaria manda TODAS las búsquedas de tienda a VTEX y WooCommerce, por código", () => {
+    // Esos dos adaptadores mandan las storeQueries deduplicadas EN ORDEN DEL REGISTRO y cortan en un
+    // tope, 24 por defecto. Con 24 llegaba hasta "olla": sartén, cubiertos, vajilla, vasos, sábanas,
+    // toallas, limpieza y tacho —casi todo el tier S— nunca se buscaban en El Dorado ni en las cinco
+    // tiendas WooCommerce. Medido en la Task 3: sumar "aire portatil" arriba de la olla le sacó las
+    // ollas a El Dorado (198 -> 138 productos revisados) y a TYT (149 -> 95 aceptados).
     const deduplicated = [...new Set(EQUIPAR_CATEGORIES.flatMap((category) => category.storeQueries))];
-    expect(deduplicated.slice(0, DAILY_STORE_QUERY_CAP)).toEqual(deduplicated);
+    expect(EQUIPAR_STORE_QUERIES.daily).toBe(80);
+    expect(deduplicated.slice(0, EQUIPAR_STORE_QUERIES.daily)).toEqual(deduplicated);
 
+    // La horaria busca 24: corre 23 veces por día contra tiendas chicas. Lo que no alcanza a buscar
+    // NO se pierde: sale de la foto de avisos de tienda que guarda la diaria (storeSnapshot.ts).
+    expect(EQUIPAR_STORE_QUERIES.fast).toBe(24);
+
+    // sync_equipar.ts es un entrypoint (correr main al importarlo), así que se fija por su texto.
+    const job = fs.readFileSync(path.join(__dirname, "..", "..", "sync_equipar.ts"), "utf8");
+    expect(job).toMatch(/maxStoreQueries:\s*fast\s*\?\s*EQUIPAR_STORE_QUERIES\.fast\s*:\s*EQUIPAR_STORE_QUERIES\.daily/);
+  });
+
+  it("el tope NO vive en el env de pm2, donde el deploy nunca lo reaplicaría", () => {
+    // scripts/deploy-backend.sh sólo recrea una app registrada cuando cambia su cron: un env nuevo
+    // en ecosystem.config.js no llega nunca al VPS y el tope quedaba en 24 sin que nada lo dijera.
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const apps = require(path.join(__dirname, "..", "..", "ecosystem.config.js")).apps as Array<{
       name: string;
       env?: Record<string, string>;
     }>;
-    const daily = apps.find((app) => app.name === "currency-equipar")!;
-    expect(daily.env?.RETAIL_WOO_MAX_QUERIES).toBe(String(DAILY_STORE_QUERY_CAP));
-    expect(daily.env?.RETAIL_VTEX_MAX_QUERIES).toBe(String(DAILY_STORE_QUERY_CAP));
+    for (const name of ["currency-equipar", "currency-equipar-hourly"]) {
+      const app = apps.find((entry) => entry.name === name)!;
+      expect(app.env?.RETAIL_WOO_MAX_QUERIES, name).toBeUndefined();
+      expect(app.env?.RETAIL_VTEX_MAX_QUERIES, name).toBeUndefined();
+    }
+  });
 
-    // La horaria se queda en el default de 24 a propósito: corre 24 veces por día contra tiendas
-    // chicas, y subirle el tope multiplicaría esa carga por tres para refrescar precios que la
-    // diaria ya trae. Pierde la cola del registro, que es la parte barata.
-    const hourly = apps.find((app) => app.name === "currency-equipar-hourly")!;
-    expect(hourly.env?.RETAIL_WOO_MAX_QUERIES).toBeUndefined();
-    expect(hourly.env?.RETAIL_VTEX_MAX_QUERIES).toBeUndefined();
+  it("la horaria completa con la foto de la diaria y la diaria la guarda", () => {
+    const job = fs.readFileSync(path.join(__dirname, "..", "..", "sync_equipar.ts"), "utf8");
+    expect(job).toContain("mergeStoreSnapshot(");
+    expect(job).toContain("saveStoreSnapshot(");
+    expect(job).toContain("loadStoreSnapshot(");
   });
 
   it("el aire portátil vuelve a buscarse en las tiendas", () => {

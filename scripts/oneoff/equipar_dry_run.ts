@@ -3,24 +3,28 @@
 //
 //   npx ts-node scripts/oneoff/equipar_dry_run.ts eldorado [categoria]
 //   npx ts-node scripts/oneoff/equipar_dry_run.ts ml aire-acondicionado
-//   npx ts-node scripts/oneoff/equipar_dry_run.ts tyt calefon --resolve [--usd=40]
+//   npx ts-node scripts/oneoff/equipar_dry_run.ts tyt calefon --guard [--queries=80] [--usd=40]
 //
 // Budgets of 0 are real zeros for the shared harvester (`plan.slice(0, 0)`), so a store run never
-// spends a MercadoLibre or Marketplace query. `--resolve` is the exception: it spends 6 MercadoLibre
-// searches to build the per-category band and runs the per-listing unit resolver the daily job runs
-// (resolveAmbiguousUnits), then prints what it kept, rescaled and dropped for flagged sellers.
-// The store-query cap is the adapters' default (24) unless RETAIL_WOO_MAX_QUERIES /
-// RETAIL_VTEX_MAX_QUERIES are set in the environment, like the daily pm2 app does.
+// spends a MercadoLibre or Marketplace query. `--guard` is the exception: it spends ONE MercadoLibre
+// search per category (what the production plan gives most categories) and runs the same unit guard
+// the daily job runs, printing what it would drop. `--queries=N` is the store-search cap the job
+// passes as `maxStoreQueries` (80 daily, 24 hourly; the adapters' default of 24 when absent).
+// Each store row prints its currency: TYT's comes from the price its storefront renders, and the
+// store run's note counts the rows whose currency was corrected or dropped.
 import { harvestRetail } from "../../classes/retail/harvest";
 import { retailStores } from "../../classes/retail/stores";
-import { resolveAmbiguousUnits } from "../../classes/retail/unitGuard";
+import { applyUnitGuard } from "../../classes/retail/unitGuard";
 import { equiparSpecs } from "../../classes/equipar/classify";
 import type { RetailListing } from "../../classes/retail/types";
 
 const flags = process.argv.slice(2).filter((arg) => arg.startsWith("--"));
 const [storeKey = "eldorado", only] = process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
-const resolve = flags.includes("--resolve");
-const usdUyu = Number(flags.find((flag) => flag.startsWith("--usd="))?.slice("--usd=".length) || 40);
+const flagValue = (name: string): string | undefined =>
+  flags.find((flag) => flag.startsWith(`--${name}=`))?.slice(name.length + 3);
+const guard = flags.includes("--guard");
+const usdUyu = Number(flagValue("usd") || 40);
+const maxStoreQueries = flagValue("queries") ? Number(flagValue("queries")) : undefined;
 
 const line = (listing: RetailListing): string =>
   [
@@ -41,27 +45,27 @@ const line = (listing: RetailListing): string =>
   const harvest = await harvestRetail({
     stores,
     specs,
-    maxMlScans: storeKey === "ml" || resolve ? 6 : 0,
+    maxMlScans: storeKey === "ml" ? 6 : guard ? specs.length : 0,
     maxFbQueries: 0,
+    maxStoreQueries,
   });
 
   let listings = harvest.listings;
-  if (resolve) {
-    const ambiguous = new Set(stores.filter((store) => store.priceUnitAmbiguous).map((store) => store.key));
-    const result = resolveAmbiguousUnits(listings, usdUyu, ambiguous);
-    const after = new Map(result.listings.map((listing) => [listing.listingId, listing]));
-    for (const listing of listings) {
-      if (listing.source !== "store" || !ambiguous.has(listing.sellerKey)) continue;
-      const kept = after.get(listing.listingId);
-      if (!kept) console.log(`DESCARTADO  ${listing.price} | ${listing.title}`);
-      else if (kept.price !== listing.price) console.log(`REESCALADO  ${listing.price} -> ${kept.price} | ${listing.title}`);
-      else console.log(`SE DEJA     ${listing.price} | ${listing.title}`);
+  if (guard) {
+    const guarded = applyUnitGuard(listings, usdUyu);
+    for (const drop of guarded.dropped) {
+      console.log(
+        `GUARDA descarta ${drop.sellerKey} en ${drop.spec}: mediana $${Math.round(drop.storeMedianUyu)} contra $${Math.round(drop.mlMedianUyu)} de ML (${drop.n} avisos)`
+      );
     }
-    console.log(`resolver (usd ${usdUyu}): ${result.rescaled} reescalados, ${result.dropped} descartados`);
-    listings = result.listings;
+    if (!guarded.dropped.length) console.log(`GUARDA (usd ${usdUyu}): no descarta nada`);
+    listings = guarded.listings;
   }
 
-  for (const listing of listings) console.log(line(listing));
+  for (const listing of listings) {
+    if (guard && listing.source === "mercadolibre") continue;
+    console.log(line(listing));
+  }
   for (const run of harvest.runs) console.log(run.key, run.ok, run.listings, run.note);
 })().catch((error) => {
   console.error(error);

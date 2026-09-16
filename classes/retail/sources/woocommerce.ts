@@ -4,13 +4,16 @@
 // documented Store API — `/wp-json/wc/store/v1/products` — so this is one adapter for all of them
 // and no HTML parsing, exactly like the Shopify one.
 //
-// Two traps. The price format: the Store API returns prices as an INTEGER STRING in minor units
+// Three traps. The price format: the Store API returns prices as an INTEGER STRING in minor units
 // with the divisor in `currency_minor_unit`. "399000" with minor unit 2 is 3 990, not 399 000.
-// Reading it naively inflates every price by 100x. And the body is not always clean JSON, which is
-// why nothing here goes through `fetchJson` — see {@link parseWooProducts}.
+// Reading it naively inflates every price by 100x. The currency: `currency_code` is the store's
+// default, not the product's — TYT sells in pesos and dollars under one "UYU" (see
+// {@link wooPricing}). And the body is not always clean JSON, which is why nothing here goes
+// through `fetchJson` — see {@link parseWooProducts}.
 import { fetchText } from "../net";
 import { listPriceOf } from "../price";
-import type { CategorySpec, RetailListing, RetailSourceResult, RetailStore } from "../types";
+import type { CategorySpec, RetailListing, RetailSourceResult, RetailStore, StoreHarvestOptions } from "../types";
+import { parsePrice } from "./structured";
 
 /**
  * WooCommerce returns titles with HTML entities ("Silla de oficina &#8211; Manila 984A"). Left
@@ -52,6 +55,8 @@ interface WooProduct {
     currency_code?: string;
     currency_minor_unit?: number;
   };
+  /** The price as the storefront renders it, currency symbol included. See {@link wooPricing}. */
+  price_html?: string;
   images?: Array<{ src?: string }>;
   categories?: Array<{ name?: string }>;
 }
@@ -75,41 +80,95 @@ export function parseWooProducts(body: string | null): WooProduct[] | null {
   }
 }
 
-/**
- * "399000" + minor unit 2 -> 3990. Returns null when the store publishes no usable price.
- *
- * TYT's Store API declares `currency_minor_unit: 2` but sends whole pesos — "15900" for a
- * $ 15.900 TV, not $ 159 — so a store flagged `priceInMajorUnits` skips the divisor entirely
- * rather than trusting the field it lies about. Verified 2026-09-16.
- */
-export function wooPrice(
-  prices: WooProduct["prices"],
-  store?: Pick<RetailStore, "priceInMajorUnits">
-): number | null {
+/** "399000" + minor unit 2 -> 3990. Returns null when the store publishes no usable price. */
+export function wooPrice(prices: WooProduct["prices"]): number | null {
   const raw = Number(prices?.price);
   if (!Number.isFinite(raw) || raw <= 0) return null;
-  if (store?.priceInMajorUnits) {
-    return raw > 0 ? Math.round(raw * 100) / 100 : null;
-  }
   const minorUnit = Number(prices?.currency_minor_unit);
   const divisor = Number.isFinite(minorUnit) && minorUnit >= 0 ? 10 ** minorUnit : 1;
   const value = raw / divisor;
   return value > 0 ? Math.round(value * 100) / 100 : null;
 }
 
+/** Only symbols that name one currency. "$" is the peso in Uruguay but does not say so. */
+const USD_SYMBOL = /^(usd|u\$s|us\$|u\$d)$/i;
+const UYU_SYMBOL = /^(uyu|\$u|\$uy)$/i;
+
+/**
+ * The price the storefront itself renders, read from the Store API's own `price_html`.
+ *
+ * On a sale the markup carries the crossed-out price in `<del>` and the current one in `<ins>`, so
+ * only the `<ins>` part is read. Returns null when the symbol does not name a currency ("$", or
+ * nothing) or the markup holds no amount.
+ */
+export function wooDisplayedPrice(priceHtml: string | null | undefined): { currency: "UYU" | "USD"; amount: number } | null {
+  const html = String(priceHtml || "");
+  const current = html.includes("<ins") ? html.slice(html.indexOf("<ins")) : html;
+  const symbols = [...current.matchAll(/woocommerce-Price-currencySymbol["'][^>]*>([^<]*)</g)].map((match) =>
+    decodeEntities(match[1] || "").replace(/&#0?36;/g, "$").trim()
+  );
+  const currencies = new Set(
+    symbols.map((symbol) => (USD_SYMBOL.test(symbol) ? "USD" : UYU_SYMBOL.test(symbol) ? "UYU" : null))
+  );
+  if (currencies.size !== 1) return null;
+  const [currency] = [...currencies];
+  if (!currency) return null;
+  const amountText = /woocommerce-Price-currencySymbol["'][^>]*>[^<]*<\/span>(?:&nbsp;|\s)*([\d.,]+)/.exec(current)?.[1];
+  const amount = parsePrice(amountText);
+  return amount === null ? null : { currency, amount };
+}
+
+/** How far the rendered amount may sit from `price / 10^minor` and still be the same number. */
+const DISPLAY_TOLERANCE = 0.02;
+
+/**
+ * Price, currency and crossed-out price of one product.
+ *
+ * The trap this exists for: TYT's Store API declares `currency_code: "UYU"` on EVERY product while
+ * its own storefront renders 149 of 515 of them in dollars (measured 2026-09-16). The minor unit is
+ * honest — "20500" is USD 205,00 and "960000" is UYU 9.600,00 — only the currency field lies, and
+ * the rendered `price_html` in the same response says which it is. Its amount matched
+ * `price / 100` on 515 of 515 products, so the rendered currency is trusted only when that number
+ * agrees; when the currencies disagree AND the number does too, nothing can be told apart and the
+ * product is dropped rather than guessed. When the rendered symbol says the same currency, or says
+ * nothing ("$"), the API is used exactly as before — prontometal renders "U$S 89 + IVA" against a
+ * price of 113 in the same currency, and that is not ours to correct.
+ */
+export function wooPricing(
+  product: Pick<WooProduct, "prices" | "price_html">
+): { price: number; currency: string; listPrice: number | null; currencyFromDisplay: boolean } | { dropped: string } | null {
+  const price = wooPrice(product.prices);
+  if (price === null) return null;
+  const apiCurrency = String(product.prices?.currency_code || "").toUpperCase();
+  const listPrice = listPriceOf(price, wooPrice({ ...product.prices, price: product.prices?.regular_price }));
+  const shown = wooDisplayedPrice(product.price_html);
+
+  if (!shown || shown.currency === apiCurrency) {
+    return { price, currency: apiCurrency, listPrice, currencyFromDisplay: false };
+  }
+  if (Math.abs(shown.amount - price) > price * DISPLAY_TOLERANCE) {
+    return { dropped: "precio mostrado distinto" };
+  }
+  return { price, currency: shown.currency, listPrice, currencyFromDisplay: true };
+}
+
 export async function harvestWooStore(
   store: RetailStore,
-  specs: readonly CategorySpec[]
+  specs: readonly CategorySpec[],
+  options: StoreHarvestOptions = {}
 ): Promise<RetailSourceResult> {
   const observedAt = new Date().toISOString();
   const byId = new Map<string, RetailListing>();
-  const queries = [...new Set(specs.flatMap((spec) => spec.storeQueries ?? []))].slice(0, MAX_QUERIES);
+  const maxQueries = options.maxQueries ?? MAX_QUERIES;
+  const queries = [...new Set(specs.flatMap((spec) => spec.storeQueries ?? []))].slice(0, maxQueries);
   if (!queries.length) {
     return { listings: [], ok: true, note: "sin terminos de busqueda para esta tienda" };
   }
   let reachable = false;
   let scanned = 0;
   let wrongCurrency = 0;
+  let currencyFromDisplay = 0;
+  const dropped = new Map<string, string[]>();
 
   for (const query of queries) {
     for (let page = 1; page <= MAX_PAGES; page++) {
@@ -134,15 +193,22 @@ export async function harvestWooStore(
         const spec = specs.find((candidate) => candidate.accept(title, context));
         if (!spec) continue;
 
-        const price = wooPrice(product.prices, store);
-        if (price === null) continue;
-        const currency = String(product.prices?.currency_code || "").toUpperCase();
+        const pricing = wooPricing(product);
+        if (!pricing) continue;
+        if ("dropped" in pricing) {
+          const titles = dropped.get(pricing.dropped) ?? [];
+          if (!titles.includes(title)) titles.push(title);
+          dropped.set(pricing.dropped, titles);
+          continue;
+        }
+        const { price, currency, listPrice } = pricing;
         if (currency !== "UYU" && currency !== "USD") {
           wrongCurrency++;
           continue;
         }
 
         const id = `store:${store.key}:${product.id ?? title}`;
+        if (pricing.currencyFromDisplay && !byId.has(id)) currencyFromDisplay++;
         byId.set(id, {
           listingId: id,
           source: "store",
@@ -168,10 +234,7 @@ export async function harvestWooStore(
           location: null,
           freeShipping: null,
           officialStore: true,
-          listPrice: listPriceOf(
-            price,
-            wooPrice({ ...product.prices, price: product.prices?.regular_price }, store)
-          ),
+          listPrice,
           observedAt,
         });
       }
@@ -179,11 +242,18 @@ export async function harvestWooStore(
     }
   }
 
+  // Every correction and every drop is counted where the run is reported, with a few titles, so a
+  // store whose rendered prices start disagreeing shows up in the job log instead of in the page.
+  const droppedNote = [...dropped]
+    .map(([reason, titles]) => `, ${titles.length} descartados (${reason}: ${titles.slice(0, 3).join(" / ")})`)
+    .join("");
   return {
     listings: [...byId.values()],
     ok: reachable,
     note: reachable
-      ? `${scanned} productos revisados, ${byId.size} aceptados${wrongCurrency ? `, ${wrongCurrency} en moneda no soportada` : ""}`
+      ? `${scanned} productos revisados, ${byId.size} aceptados${
+          currencyFromDisplay ? `, ${currencyFromDisplay} con la moneda del precio mostrado` : ""
+        }${droppedNote}${wrongCurrency ? `, ${wrongCurrency} en moneda no soportada` : ""}`
       : "la Store API de WooCommerce no respondió",
   };
 }

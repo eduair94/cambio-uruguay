@@ -11,7 +11,7 @@
 //     cannot be established is skipped rather than guessed: USD published as UYU is a 40x error.
 import { fetchJson, fetchText } from "../net";
 import { listPriceOf } from "../price";
-import type { CategorySpec, RetailListing, RetailSourceResult, RetailStore } from "../types";
+import type { CategorySpec, RetailListing, RetailSourceResult, RetailStore, StoreHarvestOptions } from "../types";
 
 /** The legacy catalogue API caps a page at 50 products, addressed through `_from`/`_to`. */
 const PAGE_SIZE = 50;
@@ -144,10 +144,12 @@ export async function detectVtexCurrency(baseUrl: string): Promise<"UYU" | "USD"
 
 export async function harvestVtexStore(
   store: RetailStore,
-  specs: readonly CategorySpec[]
+  specs: readonly CategorySpec[],
+  options: StoreHarvestOptions = {}
 ): Promise<RetailSourceResult> {
   const observedAt = new Date().toISOString();
-  const queries = [...new Set(specs.flatMap((spec) => spec.storeQueries ?? []))].slice(0, MAX_QUERIES);
+  const maxQueries = options.maxQueries ?? MAX_QUERIES;
+  const queries = [...new Set(specs.flatMap((spec) => spec.storeQueries ?? []))].slice(0, maxQueries);
   if (!queries.length) {
     return { listings: [], ok: true, note: "sin terminos de busqueda para esta tienda" };
   }
