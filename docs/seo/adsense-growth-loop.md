@@ -132,6 +132,22 @@ El primer run `34821819857` de `52b466ed` no desplegó: la suite completa encont
 
 Desplegado: `52b466ed` y su ajuste de prueba `61116caa`, mediante [CI 34822183720](https://github.com/eduair94/cambio-uruguay/actions/runs/34822183720), aprobado a las 08:30:17 UTC. La suite app completó 7.445 pruebas (41 omitidas), la compilación tomó 403 s y los controles SSR y de salud aprobaron. El script desplegó `dc3a708`, revisión de main que también incluía el directorio de fletes de otra intervención. La validación pública terminó a las 08:32:23 UTC: 181 controles sobre dos APIs y doce HTML en 200, fuentes fechadas, teléfono y schema correctos, enlaces disponibles y BCU excluido. El navegador confirmó el recorrido hub → teléfonos → horarios y el fin de semana sin información. Evidencia privada: `principal-production-validation-dc3a7085.json` y `principal-ui-validation.md`. Esta publicación no constituye evidencia de un aumento de ingresos.
 
+## Octava iteración: 16/9/2026
+
+Lectura nueva de sólo lectura (GA4 por país, fuente y página desde el 3/9; snapshot de oportunidades de `currency-gsc`; SERP uruguayo por `google_search_server`). Evidencia privada en `data/revenue-2026-09-16/`. Tres conclusiones que cambian la priorización:
+
+1. **El rendimiento por vista depende del tipo de página, no del país.** Las guías de problemas de dinero, vivienda, deudas e importación rinden varias veces más por vista que cotizaciones, históricos, alquileres u oportunidades. Los visitantes de fuera de Uruguay no rinden más: una estrategia en otro idioma por RPM no tiene respaldo en estos datos.
+2. **La curva de CTR del propio sitio es plana arriba.** Mejorar posición en consultas de cotización rinde poco aunque se gane; donde sí existe el clic es en consultas sin caja de respuesta de Google.
+3. **El cluster UR/UI es la mayor demanda ganable fuera del pozo de cero clic**: posiciones orgánicas quinta y sexta, detrás de organismos públicos y de dos sitios de datos que muestran el valor vivo.
+
+Cambio publicado: el conversor de Unidad Indexada traía un valor fijo de junio y no mostraba cifra en el snippet; ahora lee el valor del BCU, lo publica en título y descripción sólo si la lectura fue viva y suma una tabla de equivalencias. Las páginas de indicadores tenían una guarda de "valor vivo" que nunca se activaba (el helper caía al valor de referencia); se reemplazó por una lectura que devuelve `null`, y se agregaron tabla de equivalencias con los montos que aparecen en las consultas, UR/UI mes a mes con variación a 12 meses (serie del BCU reducida en el servidor) y enlaces de contexto a las guías de alquiler e hipotecario.
+
+Hipótesis: responder mejor que los competidores directos la intención "valor de hoy / N unidades en pesos" mejora CTR y, con el tiempo, posición; el enlace de contexto lleva parte de ese tráfico a páginas de mayor rendimiento. Evaluación: GSC con 28 días finales posteriores al despliegue sobre las tres URLs y las consultas "valor de la ur hoy", "unidad reajustable" y "ui a pesos uruguayos", contra 15/8–11/9. No atribuir ingresos antes de esa ventana.
+
+Validación local: 7.997 pruebas del app aprobadas (27 de indicadores, 12 nuevas), lint limpio, SSR verificado en las cuatro rutas (título, descripción, tablas, payload de ~3 KB) y revisión visual en 390 px y escritorio sin desbordes.
+
+Descartado en esta iteración: medir si Auto Ads vuelve a ubicar anuncios después de una navegación SPA. Bloquear las solicitudes publicitarias también impide que Auto Ads baje su configuración, y medirlo con solicitudes reales generaría impresiones propias automatizadas. Queda como hipótesis sin evidencia.
+
 ## Próximas decisiones
 
 - Verificar las fuentes de la excepción Cambio Principal cuando cambien los datos de origen y, como máximo, en la revisión mensual siguiente. La fecha del 14/9 es una comprobación puntual, no una vigilancia automática de la web propia. La tabla semanal no interpreta ausencia de horario como cierre.
