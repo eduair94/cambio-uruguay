@@ -263,8 +263,12 @@ interface StoreFaqItem {
 }
 
 /** Google's listing first (it is checked against the store's own domain — see
- * `classes/stores/signals/google.ts`'s `sameSite`), the site's own JSON-LD `PostalAddress` second. */
-function storeAddress(profile: StorePublicProfile): { address: string; source: string } | null {
+ * `classes/stores/signals/google.ts`'s `sameSite`), the site's own JSON-LD `PostalAddress` second.
+ * Exported (Task 9) so the store detail page's own "Identidad" block shows the exact same address,
+ * from the exact same priority, as the "¿tiene local físico?" FAQ answer below. */
+export function storeAddress(
+  profile: StorePublicProfile
+): { address: string; source: string } | null {
   if (profile.google?.address) return { address: profile.google.address, source: 'Google Maps' }
   if (profile.site?.address)
     return { address: profile.site.address, source: 'el sitio de la tienda' }

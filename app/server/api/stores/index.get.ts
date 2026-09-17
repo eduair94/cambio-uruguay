@@ -31,24 +31,34 @@ export interface StoreCard {
   catalogOffers: number | null
   signals: number
   indexable: boolean
+  /** Whether the backend has ever written a profile document for this store (Task 9). The detail
+   * route 404s on a curated key with no document, so the hub links a row only when this is true. */
+  hasProfile: boolean
 }
 
 export interface StoresIndexResponse {
   stores: StoreCard[]
+  /** The newest `updatedAt` across every written profile — "when was this hub last revised" —
+   * `null` when no profile exists yet. One page-wide date, never published per-store. */
+  reviewedAt: string | null
 }
 
 // Excludes the backend's own working state (never published, see StoreProfile.ts's header) and
 // Mongo bookkeeping. All-exclusion projection, same shape as equipar/index.get.ts's `.select`.
+//
+// `updatedAt` is deliberately kept (unlike the detail route's identical-looking SELECT): this route
+// needs it to compute `reviewedAt` below, the only place that revision date is read from.
 const SELECT = {
   _id: 0,
   __v: 0,
   createdAt: 0,
-  updatedAt: 0,
   toneCache: 0,
   redditMentions: 0,
   redditCursor: 0,
   redditTermsKey: 0,
 }
+
+type StoreDocWithMeta = StorePublicProfile & { updatedAt?: string | Date | null }
 
 export default defineEventHandler(async (event): Promise<StoresIndexResponse> => {
   setResponseHeader(
@@ -62,8 +72,15 @@ export default defineEventHandler(async (event): Promise<StoresIndexResponse> =>
     const now = new Date()
     const docs = (await StoreProfileModel.find({})
       .select(SELECT)
-      .lean()) as unknown as StorePublicProfile[]
+      .lean()) as unknown as StoreDocWithMeta[]
     const byKey = new Map(docs.map(doc => [doc.key, doc]))
+
+    let reviewedAt: string | null = null
+    for (const doc of docs) {
+      if (!doc.updatedAt) continue
+      const iso = new Date(doc.updatedAt).toISOString()
+      if (!reviewedAt || iso > reviewedAt) reviewedAt = iso
+    }
 
     const stores: StoreCard[] = STORE_DIRECTORY.map(entry => {
       const profile = byKey.get(entry.key) ?? null
@@ -90,6 +107,7 @@ export default defineEventHandler(async (event): Promise<StoresIndexResponse> =>
         catalogOffers: freshCatalog ? profile!.catalog!.offers : null,
         signals: profile ? storeFreshSignals(profile, now) : 0,
         indexable: profile ? storeIndexable(profile, now) : false,
+        hasProfile: Boolean(profile),
       }
     })
 
@@ -97,9 +115,9 @@ export default defineEventHandler(async (event): Promise<StoresIndexResponse> =>
     // what a reader scanning an A-Z directory expects.
     stores.sort((a, b) => a.name.localeCompare(b.name, 'es'))
 
-    return { stores }
+    return { stores, reviewedAt }
   } catch {
     // A database hiccup renders the hub's empty state, never a 500.
-    return { stores: [] }
+    return { stores: [], reviewedAt: null }
   }
 })

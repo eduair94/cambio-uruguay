@@ -3150,6 +3150,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/tiendas-online-uruguay',
+        labelKey: 'nav.tiendasOnline',
+        icon: 'mdi-store-search-outline',
+        priority: 0.7,
+        changefreq: 'weekly',
+        keywords: [
+          'tiendas online uruguay opiniones',
+          'es confiable esta tienda',
+          'opiniones tienda online uruguay',
+          'reclamo tienda online uruguay',
+          'trustpilot tienda uruguay',
+          'hace cuanto existe esta tienda',
+          'tienda online uruguay estafa',
+        ],
+      },
+      {
         to: '/advertencias-bcu',
         labelKey: 'nav.advertenciasBcu',
         icon: 'mdi-alert-octagon-outline',
@@ -3432,6 +3448,9 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   // Una página por categoría de /equipar-casa-uruguay (heladera, colchón, aire acondicionado…). Los
   // slugs son el espejo del registro en utils/equiparCategoryPages.ts; misma sección que el hub.
   'equipar-casa-uruguay/[categoria]': 'consumer',
+  // Una ficha por tienda de /tiendas-online-uruguay. Los slugs son el registro curado de
+  // utils/storeDirectory.ts; misma sección que el hub.
+  'tiendas-online-uruguay/[tienda]': 'consumer',
   // Las páginas individuales de descuentos: una por emisor y una por rubro, ambas alimentadas por
   // el mismo catálogo de Bankos que el mapa de /descuentos-con-tarjeta-uruguay.
   'descuentos-con-tarjeta-uruguay/[banco]': 'banking',

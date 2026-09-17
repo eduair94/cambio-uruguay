@@ -47,6 +47,7 @@ afterAll(() => vi.unstubAllGlobals())
 
 describe('GET /api/stores', () => {
   it('returns every curated store, alphabetical, merging in whatever profile exists', async () => {
+    const updatedAt = freshAt(1)
     find.mockReturnValue(
       chain([
         {
@@ -74,6 +75,7 @@ describe('GET /api/stores', () => {
           indexable: false,
           firstSeen: '2026-01-01',
           lastSeen: '2026-09-10',
+          updatedAt,
         },
       ])
     )
@@ -91,6 +93,10 @@ describe('GET /api/stores', () => {
     expect(temu.redditMentions).toBeNull()
     expect(temu.catalogOffers).toBeNull()
     expect(temu.signals).toBe(2) // age + trustpilot, both fresh
+    expect(temu.hasProfile).toBe(true)
+
+    // The one written profile's own `updatedAt` becomes the hub-wide `reviewedAt`.
+    expect(result.reviewedAt).toBe(new Date(updatedAt).toISOString())
 
     // A store with no written profile still appears, fully empty.
     const noProfile = result.stores.find((s: any) => s.key === 'bertoni')
@@ -101,7 +107,58 @@ describe('GET /api/stores', () => {
       catalogOffers: null,
       signals: 0,
       indexable: false,
+      hasProfile: false,
     })
+  })
+
+  it('takes the newest updatedAt across every written profile as reviewedAt', async () => {
+    const older = freshAt(10)
+    const newer = freshAt(1)
+    find.mockReturnValue(
+      chain([
+        {
+          key: 'temu',
+          name: 'Temu',
+          domain: 'temu.com',
+          kind: 'compra-exterior',
+          rubros: ['general'],
+          aliases: ['Temu'],
+          site: null,
+          age: null,
+          trustpilot: null,
+          google: null,
+          reddit: null,
+          catalog: null,
+          signals: 0,
+          indexable: false,
+          firstSeen: '2026-01-01',
+          lastSeen: '2026-09-10',
+          updatedAt: newer,
+        },
+        {
+          key: 'shein',
+          name: 'Shein',
+          domain: 'shein.com',
+          kind: 'compra-exterior',
+          rubros: ['moda'],
+          aliases: ['Shein'],
+          site: null,
+          age: null,
+          trustpilot: null,
+          google: null,
+          reddit: null,
+          catalog: null,
+          signals: 0,
+          indexable: false,
+          firstSeen: '2026-01-01',
+          lastSeen: '2026-09-10',
+          updatedAt: older,
+        },
+      ])
+    )
+
+    const result = await (indexHandler as any)({})
+    expect(result.reviewedAt).toBe(new Date(newer).toISOString())
   })
 
   it('does not publish a stale Trustpilot/Google signal as if it were current (C1)', async () => {
@@ -226,7 +283,7 @@ describe('GET /api/stores', () => {
   it('returns the empty shape, never throws, on a database failure', async () => {
     connectDb.mockRejectedValue(new Error('mongo down'))
     const result = await (indexHandler as any)({})
-    expect(result).toEqual({ stores: [] })
+    expect(result).toEqual({ stores: [], reviewedAt: null })
   })
 })
 
