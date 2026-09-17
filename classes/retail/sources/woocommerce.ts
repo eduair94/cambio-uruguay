@@ -99,9 +99,14 @@ const UYU_SYMBOL = /^(uyu|\$u|\$uy)$/i;
  *
  * On a sale the markup carries the crossed-out price in `<del>` and the current one in `<ins>`, so
  * only the `<ins>` part is read. Returns null when the symbol does not name a currency ("$", or
- * nothing) or the markup holds no amount.
+ * nothing). When the symbol names a currency but no amount can be read after it (a theme that
+ * prints the symbol AFTER the number, or no number at all), the currency still comes back with
+ * `amount: null`: returning null here would let {@link wooPricing} fall back to the API's currency,
+ * which is exactly the field that lies.
  */
-export function wooDisplayedPrice(priceHtml: string | null | undefined): { currency: "UYU" | "USD"; amount: number } | null {
+export function wooDisplayedPrice(
+  priceHtml: string | null | undefined
+): { currency: "UYU" | "USD"; amount: number | null } | null {
   const html = String(priceHtml || "");
   const current = html.includes("<ins") ? html.slice(html.indexOf("<ins")) : html;
   const symbols = [...current.matchAll(/woocommerce-Price-currencySymbol["'][^>]*>([^<]*)</g)].map((match) =>
@@ -114,8 +119,7 @@ export function wooDisplayedPrice(priceHtml: string | null | undefined): { curre
   const [currency] = [...currencies];
   if (!currency) return null;
   const amountText = /woocommerce-Price-currencySymbol["'][^>]*>[^<]*<\/span>(?:&nbsp;|\s)*([\d.,]+)/.exec(current)?.[1];
-  const amount = parsePrice(amountText);
-  return amount === null ? null : { currency, amount };
+  return { currency, amount: parsePrice(amountText) };
 }
 
 /** How far the rendered amount may sit from `price / 10^minor` and still be the same number. */
@@ -129,8 +133,8 @@ const DISPLAY_TOLERANCE = 0.02;
  * honest — "20500" is USD 205,00 and "960000" is UYU 9.600,00 — only the currency field lies, and
  * the rendered `price_html` in the same response says which it is. Its amount matched
  * `price / 100` on 515 of 515 products, so the rendered currency is trusted only when that number
- * agrees; when the currencies disagree AND the number does too, nothing can be told apart and the
- * product is dropped rather than guessed. When the rendered symbol says the same currency, or says
+ * agrees; when the currencies disagree and the number does not match — or cannot be read at all —
+ * nothing can be told apart and the product is dropped rather than guessed. When the rendered symbol says the same currency, or says
  * nothing ("$"), the API is used exactly as before — prontometal renders "U$S 89 + IVA" against a
  * price of 113 in the same currency, and that is not ours to correct.
  */
@@ -145,6 +149,12 @@ export function wooPricing(
 
   if (!shown || shown.currency === apiCurrency) {
     return { price, currency: apiCurrency, listPrice, currencyFromDisplay: false };
+  }
+  // The storefront names another currency and there is no number to check it against. Trusting the
+  // API here is how a USD product becomes pesos 40x too cheap; trusting the symbol would publish an
+  // amount nobody confirmed. Neither is ours to guess, so the product is dropped and counted.
+  if (shown.amount === null) {
+    return { dropped: "moneda mostrada sin importe legible" };
   }
   if (Math.abs(shown.amount - price) > price * DISPLAY_TOLERANCE) {
     return { dropped: "precio mostrado distinto" };

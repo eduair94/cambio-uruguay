@@ -106,6 +106,37 @@ describe("precio y moneda de un producto WooCommerce", () => {
     ).toMatchObject({ price: 2200, currency: "UYU", currencyFromDisplay: false });
   });
 
+  // Si el tema de TYT mueve el símbolo detrás del importe, o el importe deja de leerse, la moneda
+  // mostrada sigue diciendo dólares pero no hay número que la confirme. Caer a la moneda de la API
+  // publicaría 149 productos en dólares como pesos, 40 veces más baratos: se descartan.
+  it("símbolo después del importe con U$S contra una API en UYU: se descarta, no cae a pesos", () => {
+    const symbolAfter =
+      '<span class="woocommerce-Price-amount amount"><bdi>2.299,00&nbsp;<span class="woocommerce-Price-currencySymbol">U$S</span></bdi></span>';
+    expect(wooDisplayedPrice(symbolAfter)).toEqual({ currency: "USD", amount: null });
+    expect(wooPricing({ prices: tytPrices(TYT.qled85.price), price_html: symbolAfter })).toEqual({
+      dropped: "moneda mostrada sin importe legible",
+    });
+  });
+
+  it("importe ilegible con U$S contra una API en UYU: se descarta", () => {
+    const unreadable = amount("U$S", "consultar");
+    expect(wooDisplayedPrice(unreadable)).toEqual({ currency: "USD", amount: null });
+    expect(wooPricing({ prices: tytPrices("20500"), price_html: unreadable })).toEqual({
+      dropped: "moneda mostrada sin importe legible",
+    });
+  });
+
+  it("importe ilegible pero la misma moneda que la API: se queda con el precio de la API", () => {
+    const sameCurrency =
+      '<span class="woocommerce-Price-amount amount"><bdi>9.600,00&nbsp;<span class="woocommerce-Price-currencySymbol">UYU</span></bdi></span>';
+    expect(wooPricing({ prices: tytPrices(TYT.enxuta60.price), price_html: sameCurrency })).toEqual({
+      price: 9600,
+      currency: "UYU",
+      listPrice: null,
+      currencyFromDisplay: false,
+    });
+  });
+
   it("el precio tachado usa la misma unidad y la misma moneda que el precio", () => {
     expect(
       wooPricing({
