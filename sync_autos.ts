@@ -34,8 +34,12 @@ async function main(): Promise<void> {
   const reportFile = argument("report");
   const snapshotFile = argument("harvest-snapshot");
   const saveHarvestFile = argument("save-harvest");
+  // Replaying an old harvest into production would move lastSeen back and un-retire adverts
+  // the real world has since dropped; only a --dry-run may read one.
+  if (snapshotFile && !dryRun) throw new Error("--harvest-snapshot requires --dry-run");
   if (!dryRun && !appDbConfigured()) throw new Error("APP_MONGO_URI is required; refusing to use a different database");
-  if (process.env.AUTOS_ML_ENABLED === "0" && !snapshotFile) {
+  const mlDisabled = process.env.AUTOS_ML_ENABLED === "0";
+  if (mlDisabled && !snapshotFile) {
     console.log("[autos] AUTOS_ML_ENABLED=0: skipping Mercado Libre, analysing stored adverts only");
     analyzeOnly = true;
   }
@@ -44,7 +48,7 @@ async function main(): Promise<void> {
   if (!(usdUyu > 0)) throw new Error("No current USD/UYU reference; keeping previous publication");
 
   let harvest: CarHarvestResult | null = null;
-  if (snapshotFile) harvest = JSON.parse(fs.readFileSync(snapshotFile, "utf8").replace(/^﻿/, ""));
+  if (snapshotFile) harvest = JSON.parse(fs.readFileSync(snapshotFile, "utf8").replace(/^\uFEFF/, ""));
   else if (!analyzeOnly) {
     harvest = await harvestMercadoLibreCars({
       mode: fast ? "fast" : "full",
@@ -75,11 +79,11 @@ async function main(): Promise<void> {
   const details = new Map(listings.filter(listing => listing.detail).map(listing => [listing.key, listing.detail!] as [string, CarDetail]));
   let analysis = analyzeCars(listings, { now, details, vocabularies: trimsByModel });
 
-  if (analysis.needsDetail.length) {
+  if (analysis.needsDetail.length && !mlDisabled) {
     const byKey = new Map(listings.map(listing => [listing.key, listing]));
     const fetched = await fetchCarDetails(
       analysis.needsDetail.map(key => byKey.get(key)!).map(listing => ({ key: listing.key, permalink: listing.permalink })),
-      { max: Number(process.env.AUTOS_DETAIL_MAX || 400), maxDurationMs: 20 * 60_000 },
+      { max: Number(process.env.AUTOS_DETAIL_MAX || (fast ? 120 : 400)), maxDurationMs: (fast ? 8 : 20) * 60_000 },
     );
     console.log(`[autos] advert pages: ${fetched.details.size} read, ${fetched.gone.length} gone, ${fetched.failed} failed`);
     if (!dryRun) await saveCarDetails(fetched, new Date().toISOString());
@@ -112,7 +116,8 @@ async function main(): Promise<void> {
   if (catalogRefusal) console.warn(`[autos] ${catalogRefusal}`);
   else {
     await publishCarCatalog(catalog.listings, catalog.meta);
-    await publishCarMarkets(markets);
+    if (markets.length) await publishCarMarkets(markets);
+    else console.log("[autos] sin modelos con avisos frescos suficientes; se saltea la publicación de mercados");
   }
   const previousStats = await loadOpportunityStats();
   const snapshotRefusal = collapseRefusal(previousStats?.input, snapshot.stats.input, "oportunidades");

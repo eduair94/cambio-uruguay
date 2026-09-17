@@ -189,8 +189,10 @@ export async function loadCatalogMeta(): Promise<PublicCarCatalogMeta | null> {
   return (doc?.meta as PublicCarCatalogMeta | undefined) ?? null;
 }
 
+// A separate doc, never a nested field on "uy-cars": saveHarvestMeta() replaces that doc's whole
+// `data` wholesale on every successful harvest, which would silently wipe a recorded refusal.
 export async function saveRefusal(reason: string | null, at: string): Promise<void> {
-  await CarHarvestMetaModel.updateOne({ key: "uy-cars" }, { $set: { "data.publishRefusal": { reason, at } } }, { upsert: true });
+  await CarHarvestMetaModel.updateOne({ key: "uy-cars-publish" }, { $set: { updatedAt: at, data: { reason, at } } }, { upsert: true });
 }
 
 export async function publishCarCatalog(rows: readonly PublicCarListing[], meta: PublicCarCatalogMeta): Promise<void> {

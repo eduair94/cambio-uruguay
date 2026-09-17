@@ -21,9 +21,10 @@ describe("used-car job wiring", () => {
     expect(deploy).toMatch(/OTHER_APPS=\([^)]*\bcurrency-autos-hourly\b[^)]*\)/);
     expect(read(".github/workflows/deploy.yml")).toContain("'scripts/run-autos.sh'");
   });
-  it("locks and execs the compiled entrypoint", () => {
+  it("locks and execs the compiled entrypoint, waiting for the full sweep but not the hourly one", () => {
     const wrapper = read("scripts/run-autos.sh");
-    expect(wrapper).toContain("flock -n 9");
+    expect(wrapper).toContain("flock -n -E 75 9");
+    expect(wrapper).toContain('flock -w "$FULL_LOCK_WAIT_SECONDS" -E 75 9');
     expect(wrapper).toContain('exec node dist/sync_autos.js "$@"');
   });
 });

@@ -94,17 +94,17 @@ describe("pure store rules", () => {
 });
 
 describe("saveRefusal", () => {
-  it("persists a refusal and can clear it with null", async () => {
+  it("persists a refusal on its own doc (never the shared uy-cars harvest record) and can clear it with null", async () => {
     await saveRefusal("catálogo: caída de más de 60 %", "2026-09-16T10:30:00.000Z");
     expect(CarHarvestMetaModel.updateOne).toHaveBeenLastCalledWith(
-      { key: "uy-cars" },
-      { $set: { "data.publishRefusal": { reason: "catálogo: caída de más de 60 %", at: "2026-09-16T10:30:00.000Z" } } },
+      { key: "uy-cars-publish" },
+      { $set: { updatedAt: "2026-09-16T10:30:00.000Z", data: { reason: "catálogo: caída de más de 60 %", at: "2026-09-16T10:30:00.000Z" } } },
       { upsert: true },
     );
     await saveRefusal(null, "2026-09-16T11:00:00.000Z");
     expect(CarHarvestMetaModel.updateOne).toHaveBeenLastCalledWith(
-      { key: "uy-cars" },
-      { $set: { "data.publishRefusal": { reason: null, at: "2026-09-16T11:00:00.000Z" } } },
+      { key: "uy-cars-publish" },
+      { $set: { updatedAt: "2026-09-16T11:00:00.000Z", data: { reason: null, at: "2026-09-16T11:00:00.000Z" } } },
       { upsert: true },
     );
   });

@@ -260,7 +260,8 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
-      // Hourly: only adverts published today, then re-analyse and republish. Never retires.
+      // Hourly: only adverts published today, then re-analyse and republish. Never retires by
+      // absence (a 404/410 on the advert's own page still retires it, in any mode).
       name: "currency-autos-hourly",
       autorestart: false,
       exec_mode: "fork",

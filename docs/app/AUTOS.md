@@ -15,13 +15,15 @@ Se lee por el puente `:9656` (pm2 `mercadolibre`, repo trustpilot) partiendo mar
 ## Jobs
 
 - `currency-autos` (07:43 UTC): barrido completo, análisis y publicación.
-- `currency-autos-hourly` (:29): sólo `since=today`; nunca retira avisos.
+- `currency-autos-hourly` (:29): sólo `since=today`; nunca retira por ausencia (sí retira un
+  aviso si su ficha propia da 404/410, igual que el barrido completo).
 - Ambos por `scripts/run-autos.sh` (flock propio). `AUTOS_ML_ENABLED=0` publica sin cosechar.
 
 ## Colecciones (APP DB)
 
 Privadas: `carlistings` (observación, historial de precio, ficha con descripción) y
-`carharvestmetas` (`uy-cars`, `uy-cars-last-full`, `uy-cars-last-fast`, `uy-cars-vocabulary`).
+`carharvestmetas` (`uy-cars`, `uy-cars-last-full`, `uy-cars-last-fast`, `uy-cars-vocabulary`,
+`uy-cars-publish`).
 Públicas: `carcatalog`, `carcatalogmetas` (`uy-cars`), `carmarketsnapshots`, `caropportunitysnapshots` (`used`).
 
 Un aviso se retira sólo si su ficha da 404/410 o si dos barridos completos de su marca, sin páginas
@@ -30,7 +32,10 @@ fallidas, no lo vieron. Una caída del universo mayor a 60 % conserva lo publica
 ## Diagnosticar
 
 Leer `carharvestmetas` `uy-cars-last-full`: `ok`, `note`, `failedPages`, `gaps`, `lastOkAt`,
-`failingSince`. Reprocesar sin red: `node dist/sync_autos.js --dry-run --harvest-snapshot=<archivo> --report=<salida>`.
+`failingSince`. El rechazo de la última publicación (si lo hubo) vive aparte, en
+`carharvestmetas` `uy-cars-publish`. Reprocesar sin cosechar (lee fichas y la cotización):
+`node dist/sync_autos.js --dry-run --harvest-snapshot=<archivo> --report=<salida>` (`--harvest-snapshot`
+exige `--dry-run`: nunca escribe una cosecha vieja sobre la base en producción).
 Guardar una captura: `--save-harvest=<archivo>`.
 
 ## Método de oportunidades
