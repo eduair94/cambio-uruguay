@@ -102,6 +102,20 @@ su propio `marca|modelo` coincide EXACTO con el que ya ganó esa votación —pr
 dos productos, el segundo lleva un sufijo con los últimos 6 dígitos de su `catalogId`. `sellers` cuenta
 nombres de vendedor normalizados, no la cadena cruda de cada oferta.
 
+**Un producto sólo sale de avisos que pasaron la banda.** `buildProducts` recibía todos los avisos del
+ítem, incluidos los que `screen()` descartaba o marcaba sospechosos, y la tabla de modelos ordena por
+precio: medido en producción el 16/9/2026, colchón abría con cuatro yogures a $ 70–77 y aire
+acondicionado con un convector Kassel a $ 2.773, publicados además como `Offer` en el JSON-LD. Ahora
+recibe sólo los avisos nuevos de `newScreen.kept`. Como el app se despliega antes que el backend, la
+API (`equiparPlausibleProducts` en `app/utils/equipar.ts`, dentro de `equiparCategoryProjection`) y
+la tabla también sacan todo producto con `bestPriceUyu` por debajo de `newBand.p25 / 2`: tapa los
+documentos escritos por el código anterior hasta que la corrida los reescriba.
+
+**El nombre publicado conserva la grafía del aviso.** La clave normalizada (minúsculas, sin tildes)
+sigue agrupando y armando el slug, pero se imprimía como nombre: "grenno fr-kh200b". Cada palabra
+de la clave se busca, entera, en la marca, el modelo y el título del aviso más barato del producto
+(`originalSpelling`), y sale "Grenno FR-KH200B". Ninguna URL cambia.
+
 ## El orden es necesidad, no precio
 
 El tier mide qué tan rápido la casa deja de funcionar sin eso, y **cada categoría escribe por qué**
@@ -165,7 +179,10 @@ el Smart TV Samsung QLED 85" (229900) bajaba a $ 2.299. El arreglo definitivo le
 propia tienda renderiza en la misma respuesta (`price_html`, función `wooDisplayedPrice` en
 `classes/retail/sources/woocommerce.ts`) y sólo la usa cuando el monto coincide con `price / 100`
 dentro de ±2 % (`wooPricing`); si no coincide, el producto se descarta ("precio mostrado distinto") en
-vez de adivinarse. Verificado en las 515 filas: 515 de 515 coinciden. `priceInMajorUnits` y el
+vez de adivinarse. Verificado en las 515 filas: 515 de 515 coinciden. Si el símbolo nombra otra
+moneda pero el importe no se puede leer (un tema que pone el símbolo después del número, o ningún
+número), el producto también se descarta ("moneda mostrada sin importe legible"): caer a la moneda
+de la API es justo lo que publicaría un producto en dólares como pesos, 40 veces más barato. `priceInMajorUnits` y el
 resolver de banda se sacaron del código.
 
 **"Colchón de frutillas" es un yogur.** El Dorado (supermercado, VTEX) vende "Yogur ... Colchón De
@@ -184,6 +201,13 @@ en `ventilador`; entre otros (lista completa, con el título real de cada caso, 
 tareas 3 y 10 del ledger `.superpowers/sdd/2026-09-16-directorios-b-equipar/`). `aire-acondicionado`
 ganó además las variantes `portatil` y `9000` (BTU), separadas de `12000`/`18000`.
 
+**La serie de `aire-acondicionado:12000` da un escalón el día del despliegue.** Antes esa variante era
+el `fallback` de 1.000 a 12.999 BTU y juntaba los equipos de 9.000 BTU y los portátiles; desde el
+despliegue de esta rama (`feat/directorios-b-equipar`, setiembre de 2026) va de 10.500 a 12.999 BTU,
+y los 9.000 BTU y los portátiles tienen su propia fila. La historia guardada es la del mismo `key`,
+así que el gráfico de `/equipar-casa-uruguay/aire-acondicionado` muestra una suba de un día para el
+otro en la mediana de 12.000 BTU: es la muestra que cambió, no el precio.
+
 **El tope de búsquedas por tienda dejaba fuera a media tabla de tier S.** WooCommerce y VTEX mandan
 las `storeQueries` del registro en el orden del registro y cortan a las 24 primeras
 (`RETAIL_WOO_MAX_QUERIES` / `RETAIL_VTEX_MAX_QUERIES`); hay unas 71 consultas distintas en el
@@ -197,7 +221,11 @@ registro); la horaria se queda en 24 para no golpear cada hora a El Dorado y a l
 Lo que la horaria no busca no se pierde: la diaria guarda una foto de sus propios avisos de tienda,
 ya pasados por la guarda de unidad (`equiparstoresnapshots`, APP DB), y la horaria la mezcla por
 `listingId` antes de armar el catálogo —gana lo fresco, una fila de más de 36 horas se descarta— lo
-que además corrige a Fenicio, al que la corrida horaria siempre saltea entero.
+que además corrige a Fenicio, al que la corrida horaria siempre saltea entero. La foto se guarda sin
+`attributes.DESCRIPTION` (`storeSnapshotRows`): Fenicio copia ahí la descripción entera del producto,
+nada después de la cosecha la lee, y era el grueso de un documento que tiene que quedar bajo 12 MB.
+Guardarla va en su propio `try/catch`: si falla, el catálogo ya está publicado y la corrida termina
+en 0; la horaria sigue con la foto anterior.
 
 ## Lo que encontró auditar la página en producción
 
@@ -268,7 +296,9 @@ p25–p75, la usada con su ahorro, el gráfico de la mediana diaria (desde tres 
 modelos con sus ofertas (hasta 8 nuevas + 6 usadas por producto), los avisos más baratos, el motivo
 del tier, la guía de compra, el Plan Redondo de UTE (ventana de compras 1/9/2026–31/3/2027,
 verificada en ute.com.uy el 16/9/2026 — sólo donde la categoría aplica) y el costo por hora donde
-corresponde, y el FAQ generado con los datos del día. JSON-LD: migas + hasta 10 `Product` con
+corresponde, y el FAQ generado con los datos del día (cada respuesta con cifras nombra su variante —
+la mediana usada y su ahorro salen del mismo ítem—, sin nota de usado no afirma nada sobre el estado
+de un usado, y donde el plan excluye la categoría no agrega la ventana de compras). JSON-LD: migas + hasta 10 `Product` con
 `Offer`, **nunca** `AggregateRating` (el sitio no mide calificaciones).
 
 El sitemap sólo declara las categorías con alguna banda vista en los últimos 4 días —la misma ventana
@@ -286,17 +316,23 @@ avisos". Cada tarjeta del índice enlaza a su categoría.
 - `tests/equipar/basket.test.ts` — **la guarda central**: total parcial + faltantes.
 - `tests/equipar/catalog.test.ts` — nuevo y usado separados; FB no arma productos.
 - `tests/equipar/catalog_products.test.ts` — agrupación por `catalog_product_id` de ML, votación de
-  marca/modelo, placeholder sin publicar, slug desambiguado entre dos `catalogId`.
+  marca/modelo, placeholder sin publicar, slug desambiguado entre dos `catalogId`; un aviso de $ 70 o
+  uno sospechoso nunca es producto ni oferta de un producto; el nombre conserva mayúsculas y tildes.
 - `tests/equipar/production_cases.test.ts` — colados reales de producción pinneados por título (yogur,
   convector, calefón a gas, aspiradoras/hidrolavadoras, etc.), con su contraparte de que el producto
   real de esa misma categoría sigue entrando.
 - `tests/retail/woo_currency.test.ts` — el adaptador de WooCommerce lee la moneda de TYT desde
-  `price_html` en vez de asumirla, y descarta cuando el monto mostrado no coincide con la API.
+  `price_html` en vez de asumirla, y descarta cuando el monto mostrado no coincide con la API o no se
+  puede leer.
 - `tests/retail/unit_guard.test.ts` — el guardarraíl genérico tienda-vs-ML (`applyUnitGuard`) descarta
   a más de 20×, y con muestra insuficiente de cualquiera de los dos lados no decide nada.
 - `app/tests/unit/equiparPlan.test.ts` — el plan compra en el orden publicado.
 - `app/tests/unit/equiparCategoryPage.test.ts` — la página por categoría: 404 real, `transform`, un H1,
-  canonical sin idioma, `Product`/`Offer` sin calificaciones, y el índice enlazando cada tarjeta.
+  canonical sin idioma, `Product`/`Offer` sin calificaciones, productos filtrados por la banda, la
+  ventana del Plan Redondo sólo donde entra, y el índice enlazando cada tarjeta.
+- `app/tests/unit/equiparCategoryPages.test.ts` — copy y FAQ por categoría: variantes nombradas, nada
+  de "segura", Plan Redondo excluido sin ventana.
+- `app/tests/unit/equiparCategoryApi.test.ts` — recortes de la API y `equiparPlausibleProducts`.
 - `tests/appdb/schema_parity.test.ts` — los dos lados declaran los mismos campos.
 - `tests/pricewatch/record.test.ts` — historial diario por oferta (ver [PRICEWATCH.md](PRICEWATCH.md)).
 
