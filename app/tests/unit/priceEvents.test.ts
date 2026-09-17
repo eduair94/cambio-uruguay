@@ -4,12 +4,16 @@ import { describe, expect, it } from 'vitest'
 import {
   priceEventCountdown,
   priceEventCountdownHeadline,
+  priceEventDayLabel,
   priceEventDropRows,
   priceEventFaq,
   priceEventFormatDate,
+  priceEventMlSharePct,
+  priceEventMontevideoToday,
   priceEventOtherUnconfirmed,
   priceEventPastEditions,
   priceEventPct,
+  priceEventPlural,
   type PriceEventCountdown,
   type PriceEventDropDoc,
   type PriceEventSnapshotResponse,
@@ -113,38 +117,107 @@ describe('priceEventCountdownHeadline', () => {
     endsOn: null,
   }
 
-  it('upcoming: "Faltan N días para <label>."', () => {
-    expect(priceEventCountdownHeadline({ ...base, status: 'upcoming', daysUntilStart: 5 })).toBe(
-      'Faltan 5 días para Black Friday 2026.'
-    )
+  it('upcoming: "Faltan N días para <label>." (plural)', () => {
+    expect(
+      priceEventCountdownHeadline({ ...base, status: 'upcoming', daysUntilStart: 5 }, '2026-11-22')
+    ).toBe('Faltan 5 días para Black Friday 2026.')
+  })
+
+  // M3 (final review): "Faltan 1 días" era uno de los tres bugs de plural — un solo día en curso
+  // conjuga distinto tanto el verbo ("Falta", no "Faltan") como el sustantivo ("día", no "días").
+  it('upcoming con 1 día: "Falta 1 día para <label>." (singular, verbo Y sustantivo)', () => {
+    expect(
+      priceEventCountdownHeadline({ ...base, status: 'upcoming', daysUntilStart: 1 }, '2026-11-26')
+    ).toBe('Falta 1 día para Black Friday 2026.')
   })
 
   it('first-day: "Hoy empieza <label>." — nunca "faltan 0 días"', () => {
-    expect(priceEventCountdownHeadline({ ...base, status: 'first-day' })).toBe(
+    expect(priceEventCountdownHeadline({ ...base, status: 'first-day' }, '2026-11-27')).toBe(
       'Hoy empieza Black Friday 2026.'
     )
   })
 
   it('in-progress: "<label>: en curso hasta el <fecha>."', () => {
     expect(
-      priceEventCountdownHeadline({ ...base, status: 'in-progress', endsOn: '2026-11-30' })
+      priceEventCountdownHeadline(
+        { ...base, status: 'in-progress', endsOn: '2026-11-30' },
+        '2026-11-29'
+      )
     ).toBe('Black Friday 2026: en curso hasta el 30 de noviembre de 2026.')
   })
 
   it('undated: "<label>: a confirmar por la CEDU."', () => {
     expect(
-      priceEventCountdownHeadline({
-        ...base,
-        event: { ...base.event, key: 'ciberlunes-2026-11', label: 'CyberLunes noviembre 2026' },
-        status: 'undated',
-      })
+      priceEventCountdownHeadline(
+        {
+          ...base,
+          event: { ...base.event, key: 'ciberlunes-2026-11', label: 'CyberLunes noviembre 2026' },
+          status: 'undated',
+        },
+        '2026-09-17'
+      )
     ).toBe('CyberLunes noviembre 2026: a confirmar por la CEDU.')
   })
 
-  it('none: avisa que no hay fechas publicadas, sin nombrar un evento vencido', () => {
-    expect(priceEventCountdownHeadline({ ...base, event: null, status: 'none' })).toBe(
-      'Todavía no hay fechas publicadas para la próxima edición de CyberLunes ni de Black Friday.'
+  // I4 (final review): "Todavía no hay fechas publicadas" es una afirmación que se vuelve falsa sola
+  // el día que se publique una fecha real — fecharla la mantiene honesta indefinidamente.
+  it('none: avisa la fecha en que se supo esto, sin nombrar un evento vencido', () => {
+    expect(
+      priceEventCountdownHeadline({ ...base, event: null, status: 'none' }, '2026-12-15')
+    ).toBe(
+      'Al 15 de diciembre de 2026 todavía no hay fechas publicadas para la próxima edición de CyberLunes ni de Black Friday.'
     )
+  })
+})
+
+// ---------------------------------------------------------------------------
+// priceEventPlural
+// ---------------------------------------------------------------------------
+
+describe('priceEventPlural', () => {
+  it('elige el singular cuando count es exactamente 1', () => {
+    expect(priceEventPlural(1, 'oferta', 'ofertas')).toBe('oferta')
+  })
+
+  it('elige el plural para 0 y para cualquier cosa mayor que 1', () => {
+    expect(priceEventPlural(0, 'oferta', 'ofertas')).toBe('ofertas')
+    expect(priceEventPlural(2, 'oferta', 'ofertas')).toBe('ofertas')
+    expect(priceEventPlural(250, 'oferta', 'ofertas')).toBe('ofertas')
+  })
+
+  it('sirve igual para frases enteras con su propio verbo, no sólo sustantivos sueltos', () => {
+    expect(priceEventPlural(1, 'Falta', 'Faltan')).toBe('Falta')
+    expect(priceEventPlural(3, 'Falta', 'Faltan')).toBe('Faltan')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// priceEventMontevideoToday
+// ---------------------------------------------------------------------------
+
+describe('priceEventMontevideoToday', () => {
+  // M4 (final review): 01:30 UTC del 27 de noviembre todavía es la noche del 26 en Montevideo
+  // (UTC-3) — la página tiene que usar ESE día, no el de Greenwich.
+  it('01:30 UTC del 27 de noviembre sigue siendo 26 de noviembre en Montevideo', () => {
+    expect(priceEventMontevideoToday(new Date('2026-11-27T01:30:00Z'))).toBe('2026-11-26')
+  })
+
+  it('a media mañana UTC, coincide con la fecha UTC (ya es el mismo día en los dos husos)', () => {
+    expect(priceEventMontevideoToday(new Date('2026-11-27T15:00:00Z'))).toBe('2026-11-27')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// priceEventDayLabel
+// ---------------------------------------------------------------------------
+
+describe('priceEventDayLabel', () => {
+  it('"hoy" cuando el día del snapshot coincide con el día del visitante', () => {
+    expect(priceEventDayLabel('2026-09-17', '2026-09-17')).toBe('hoy')
+  })
+
+  it('la fecha formateada cuando el snapshot quedó viejo (no coincide con hoy)', () => {
+    expect(priceEventDayLabel('2026-09-15', '2026-09-17')).toBe('15 de setiembre de 2026')
   })
 })
 
@@ -318,9 +391,43 @@ function snapshot(overrides: Partial<PriceEventSnapshotResponse> = {}): PriceEve
     dropsCount: 0,
     inflatedCount: 0,
     sellers: [],
+    bySource: {},
+    suspect: 0,
     ...overrides,
   }
 }
+
+// ---------------------------------------------------------------------------
+// priceEventMlSharePct
+// ---------------------------------------------------------------------------
+
+describe('priceEventMlSharePct', () => {
+  it('mide la proporción desde bySource, nunca un porcentaje fijo', () => {
+    const result = priceEventMlSharePct(
+      snapshot({ eligible: 100, bySource: { mercadolibre: 94, fenicio: 6 } })
+    )
+    expect(result).toBe(94)
+  })
+
+  it('null sin snapshot', () => {
+    expect(priceEventMlSharePct(null)).toBeNull()
+  })
+
+  it('null cuando eligible es 0 (nada que dividir)', () => {
+    expect(
+      priceEventMlSharePct(snapshot({ eligible: 0, bySource: { mercadolibre: 0 } }))
+    ).toBeNull()
+  })
+
+  it('null cuando bySource no trae la clave mercadolibre en absoluto', () => {
+    expect(priceEventMlSharePct(snapshot({ eligible: 40, bySource: { fenicio: 40 } }))).toBeNull()
+  })
+
+  it('redondea a 1 decimal, igual que priceEventPct lo espera', () => {
+    const result = priceEventMlSharePct(snapshot({ eligible: 3, bySource: { mercadolibre: 1 } }))
+    expect(result).toBe(33.3)
+  })
+})
 
 describe('priceEventFaq', () => {
   it('sin snapshot todavía explica las dos reglas base', () => {

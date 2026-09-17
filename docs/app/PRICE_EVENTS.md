@@ -52,6 +52,53 @@ fija ambos bordes en las dos direcciones.
 - Sin punto de historial fechado exactamente `today`: no hay nada que evaluar hoy (se descarta, no es
   un error).
 
+## Guarda de plausibilidad y moneda por punto (revisión final, hallazgo I2)
+
+Ni `history` tenía moneda propia por punto hasta este cambio, ni todos los adaptadores de retail
+garantizan una sola moneda por aviso en el tiempo: Fenicio mezcla moneda por ítem, Shopify lee el
+precio de la primera variante, y 1.730 ofertas medidas están en USD conviviendo con el resto en UYU.
+Sin freno, 30 días a UYU 20.000 y hoy USD 500 clasificaba como una "baja real" del 97,5 % — una
+confusión de unidades, no un CyberLunes. Dos guardas, complementarias:
+
+- **(a) Banda de plausibilidad** (`analyzeOfferOutcome`, `classes/priceevents/analyze.ts`): si el
+  precio de hoy, o su precio de lista, cae fuera de `[1/5, 5]` veces `priorMedian`, la oferta NO se
+  clasifica y se cuenta aparte como `suspect` en el snapshot (`PriceEventSnapshot.suspect`, distinto
+  de "no tiene historial suficiente"). Es el freno de última línea: corre siempre, tenga o no moneda
+  cada punto.
+- **(b) Moneda por punto** (`PricewatchPoint.c`, `"UYU" | "USD"`, opcional): `classes/pricewatch/record.ts`
+  graba la moneda del aviso en CADA punto nuevo desde este cambio. `analyzeOfferOutcome` descarta un
+  punto previo cuyo `c` sea conocido y distinto del `c` de hoy, ANTES de calcular
+  `priorMin`/`priorMax`/`priorMedian` — un punto viejo en otra moneda no es "un precio más bajo", es
+  otra unidad. Un punto SIN `c` (historial grabado antes de este cambio) nunca se filtra por esta
+  regla: queda a cargo exclusivo de la guarda (a). Retrocompatible y aditivo — no reprocesa historial
+  viejo.
+
+`analyzeOffer` (la firma que ya usaban los tests y `refresh.ts` antes de este cambio) sigue devolviendo
+`PriceEventAnalysis | null`; `analyzeOfferOutcome` es la nueva firma que además expone `suspect`, y es
+la que llama `refresh.ts` para poder contarlo. Ver `tests/priceevents/analyze.test.ts` (describe
+"I2a"/"I2b") para los casos de borde, incluido el escenario exacto de la revisión (30 días UYU 20.000,
+hoy USD 500).
+
+## Vendedores de MercadoLibre sin identificar (revisión final, hallazgo C1)
+
+`classes/retail/sources/mercadolibre.ts::mlToListing` cae al nombre literal `"Mercado Libre"` cuando el
+aviso no tiene un nombre de vendedor usable, y a la clave `ml:unknown` cuando ADEMÁS no tiene un id
+numérico (`mlSellerKey`). Un id numérico sin nombre (`ml:<id>` con el nombre literal) es igual de
+anónimo para mostrar: no es una tienda, es "MercadoLibre no nos dio con qué identificarlo".
+`isUnidentifiedMlSeller(sellerKey, sellerName)` (`classes/priceevents/types.ts`) es la única regla:
+clave que empieza con `ml:` Y nombre exactamente `"Mercado Libre"`. Consecuencias, todas en
+`classes/priceevents/aggregate.ts`:
+
+- **Nunca entra a `sellers`**: "cuántos tachados de MercadoLibre están por encima" no es una frase
+  sobre una tienda — se filtra antes de agregar, así que ni ocupa una fila ni cuenta para el piso de 5.
+- **En `topDrops` se relabela** como `"Vendedor sin identificar (Mercado Libre)"` (constante
+  `ML_UNKNOWN_SELLER_DISPLAY_NAME`) — la clave (`sellerKey`) queda intacta, sólo cambia el nombre que
+  se guarda en el snapshot.
+- **No comparte el tope de 3 por vendedor**: cada aviso sin identificar cachea contra su propio
+  `listingId` (`\`listing:${listingId}\``, no contra `sellerKey`), así que un tope pensado para "que
+  ninguna TIENDA domine la vitrina" no termina bloqueando 200 avisos anónimos distintos por compartir
+  la misma clave `ml:unknown`.
+
 ## `analyzed` vs `eligible`
 
 `analyzed` es cuántas ofertas se LEYERON hoy en total, con o sin punto calificado — el denominador que
@@ -80,9 +127,21 @@ sobreescrito cada corrida — mismo patrón `current`/`day:` que `RegionalSnapsh
 - **`sellers`**: sólo vendedores con ≥ `PRICE_EVENT_MIN_SELLER_LISTINGS = 5` ofertas con precio de
   lista hoy — bajo esa cantidad, "la mitad de mis tachados están inflados" no dice nada. Cada fila es
   `sellerKey`/`sellerName`/`withListPrice`/`inflated`/`share` (`inflated / withListPrice`, 1 decimal),
-  ordenadas por nombre — nunca por `share`, para no fabricar un ranking de "peor tienda".
+  ordenadas por nombre — nunca por `share`, para no fabricar un ranking de "peor tienda". Un vendedor
+  de MercadoLibre sin identificar nunca entra acá (ver "Vendedores de MercadoLibre sin identificar"
+  arriba). **Nombres duplicados** (revisión final, hallazgo M9): si dos vendedores distintos publican
+  bajo el mismo `sellerName` (una tienda con sitio propio Y storefront en MercadoLibre, cada uno con
+  su propio `sellerKey`), el de MercadoLibre (`sellerKey` que empieza con `ml:`) se sufija
+  `" (Mercado Libre)"` para que la tabla no muestre dos filas idénticas sin forma de distinguirlas.
 - **`byVertical`**: `{ eligible, drops, inflated }` por vertical (equipar/sillas hoy; una vertical
   nueva no toca este código porque `loadVerticals()` lee `distinct("vertical")` de los datos mismos).
+- **`bySource`** (revisión final, hallazgo M5): cuántas ofertas elegibles de hoy vinieron de cada
+  `source` (`mercadolibre`, `fenicio`, …) — `refresh.ts` lo tabula mientras recorre el cursor (no lo
+  necesita `analyzeOfferOutcome`, así que no viaja en `PriceEventAnalysis`). La página lo usa para decir
+  qué fracción del día es MercadoLibre SIN hardcodear un porcentaje (`priceEventMlSharePct`,
+  `app/utils/priceEvents.ts`).
+- **`suspect`** (revisión final, hallazgo I2a): ofertas que la guarda de plausibilidad descartó — ver
+  arriba. Documentativo: la página no lo muestra todavía.
 - **`trackingSince`**: el `firstSeen` más viejo de TODA la colección `pricewatchoffers`, sin importar
   vertical (`loadTrackingSince()`, índice `{ firstSeen: 1 }`) — nunca hardcodeado (ruling del plan):
   viene de los datos, así que se corrige solo si algún día se reconstruye el historial desde otra
@@ -119,7 +178,7 @@ corrida horaria no suma nada.
 
 `sync_price_events.ts --event-only` (cron `19 * * * *`, cada hora) llama
 `classes/priceevents/calendar.ts::activeEvent(today)` ANTES de tocar Mongo: si no hay evento activo
-hoy, loggea y sale con código 0 **sin conectarse a la base** — son 24 corridas por hora, 365 días al
+hoy, loggea y sale con código 0 **sin conectarse a la base** — son 24 corridas por día, 365 días al
 año, casi todas sin nada que hacer, y no deben costar ni una conexión. Cuando SÍ hay un evento activo
 corre el mismo pipeline que la diaria (mismo `runPriceEvents`), sin podar. La corrida diaria
 (`13 15 * * *` = 15:13 UTC ≈ 12:13 America/Montevideo) va después de `currency-equipar` (12:47 UTC) y
@@ -134,6 +193,16 @@ que la CEDU confirme la fecha real, en vez de quedarse dormido hasta que alguien
 dos ventanas se solapan, gana la CONFIRMADA (`resolveActiveEvent`, probado con datos sintéticos aparte
 de `activeEvent` para no depender de que el calendario real algún día tenga dos ediciones que se pisen).
 
+**`noDataYet` (revisión final, hallazgo M1).** Dentro de una ventana activa, el horario corre cada
+hora — incluida la de las 00:19 UTC, ANTES de que `sync_equipar.ts`/`sync_chairs.ts` (~12:xx UTC)
+escriban el primer punto del día UTC nuevo. Esa corrida lee `analyzed === 0` (cero ofertas, no "pocas
+elegibles"), que antes de este fix activaba la guarda de corrida flaca contra el `current` del día
+anterior y salía en 1 — una "falla" en pm2 todas las horas de la mañana de cada día de evento.
+`runPriceEvents({ eventOnly: true, … })` ahora distingue este caso (`PriceEventRunResult.noDataYet`):
+no escribe, no marca `thin`, sale en 0 con un log explicando por qué. La corrida diaria (`eventOnly`
+sin marcar) nunca activa esto — un `analyzed === 0` ahí sigue usando la guarda de corrida flaca de
+siempre. Ver `tests/priceevents/dry_run.test.ts`, describe "M1".
+
 ## El calendario, con fuentes (`classes/priceevents/calendar.ts` / `app/utils/priceEvents.ts`)
 
 Verificado 16–17/9/2026:
@@ -142,7 +211,7 @@ Verificado 16–17/9/2026:
 |---|---|---|---|
 | `ciberlunes-2025-11` | 2025-11-03 a 05 | sí | [cuti.org.uy](https://cuti.org.uy/en/destacados/noviembre-comienza-con-una-nueva-edicion-de-ciberlunes-con-hasta-70-off/) |
 | `ciberlunes-2026-06` | 2026-06-01 a 03 | sí | [sodimac.com.uy](https://www.sodimac.com.uy/sodimac-uy/content/Ciberlunes/) |
-| `ciberlunes-2026-11` | sin fecha (`start`/`end` `null`) | **no** | [cedu.org.uy/ciberlunes](https://www.cedu.org.uy/ciberlunes/) — "La CEDU todavía no publicó la fecha." |
+| `ciberlunes-2026-11` | sin fecha (`start`/`end` `null`) | **no** | [cedu.org.uy/ciberlunes](https://www.cedu.org.uy/ciberlunes/) — "Al 17 de setiembre de 2026 la CEDU no había publicado la fecha." (fechado a propósito, revisión final I4 — ver "Cuándo revisar la fecha de noviembre" abajo) |
 | `black-friday-2026` | 2026-11-27 a 30 | sí | sin URL — nota: "Del viernes 27 al lunes 30 de noviembre (Cyber Monday de EE.UU.)." |
 
 CyberLunes lo organiza la CEDU dos veces por año (junio y noviembre); Black Friday sigue el calendario
@@ -166,10 +235,13 @@ inventar una fecha** para completar esta lista mientras la CEDU no publique la d
   `/sillas-escritorio-uruguay` — nunca una afirmación sobre el mercado completo. La FAQ "¿desde cuándo
   tienen este historial?" (sólo aparece si `trackingSince` no es `null`) y "¿por qué no aparecen todas
   las tiendas?" existen para que esa limitación quede explícita, no implícita.
-- **Ningún enlace de "voto" a una oferta de tercero.** Las filas de la tabla de bajas sin ficha propia
-  enlazan afuera con `rel="nofollow noopener"` (no `noreferrer`, que sí llevaban los enlaces del
-  calendario) — mismo criterio que equipar/sillas: nunca se le regala autoridad de enlace a un
-  vendedor externo por aparecer en una tabla de bajas.
+- **Ningún enlace de "voto" a una oferta de tercero.** TODA fila de la tabla de bajas enlaza afuera con
+  `rel="nofollow noopener"` (no `noreferrer`, que sí llevaban los enlaces del calendario) — mismo
+  criterio que equipar/sillas: nunca se le regala autoridad de enlace a un vendedor externo por
+  aparecer en una tabla de bajas. Desde la revisión final (hallazgo M6), una fila con ficha propia
+  muestra LAS DOS cosas — el enlace "Ficha" (interno, sin `nofollow`) Y "Ver oferta" (externo,
+  `nofollow`) — nunca una en vez de la otra: la ficha mantiene a la persona en el sitio, pero la oferta
+  externa es la prueba concreta de que el precio de hoy existe en esa tienda.
 
 ## El contrato de la API (`GET /api/price-events`, `app/server/api/price-events.get.ts`)
 
@@ -182,11 +254,39 @@ inventar una fecha** para completar esta lista mientras la CEDU no publique la d
   sentido mandar el resto por la red.
 - **Caché**: `cache-control: public, max-age=600, s-maxage=600, stale-while-revalidate=86400` (10
   minutos de frescura, un día de tolerancia mientras revalida).
-- **Ante cualquier error de Mongo**: forma vacía (`{ current: null, days: [], events: PRICE_EVENT_CALENDAR }`)
-  — un problema de base nunca puede tirar la página entera; el resto (metodología, marco legal,
-  enlaces relacionados) vale la pena leerlo aunque hoy no haya datos.
-- **`events`** siempre sale del espejo estático `app/utils/priceEvents.ts::PRICE_EVENT_CALENDAR`,
-  independiente de la base — el calendario no vive en Mongo.
+- **Ante cualquier error de Mongo**: forma vacía (`{ current: null, days: [] }`) — un problema de base
+  nunca puede tirar la página entera; el resto (metodología, marco legal, enlaces relacionados) vale
+  la pena leerlo aunque hoy no haya datos.
+- **`events` YA NO se sirve** (revisión final, hallazgo M7): la página nunca lo leyó — el calendario
+  que pinta viene siempre de `app/utils/priceEvents.ts::PRICE_EVENT_CALENDAR`, independiente de la
+  base, no de esta ruta. Devolverlo igual era ~40 KB por visita sin lector; se sacó de
+  `PriceEventApiResponse` y del handler. Si algún consumidor futuro sí necesita el calendario servido
+  por la API, agregarlo de nuevo (tipo + handler) junto con su test en
+  `app/tests/unit/priceEventsApi.test.ts`.
+- **`current.select()` proyecta `bySource`/`suspect`** además de los campos de siempre — son
+  escalares/objeto chico, no cambia el tamaño de forma perceptible, pero hay que acordarse de sumarlos
+  acá si el modelo gana un campo nuevo (ver `tests/appdb/schema_parity.test.ts`).
+- **La página recorta la respuesta con `transform`** (revisión final, hallazgo M7,
+  `app/pages/ciberlunes-y-black-friday-uruguay.vue`): cada fila de `topDrops` llega de Mongo con
+  `listPrice`/`priorMax`/`priorMedian`/`priorPoints`/`classes` que la tabla nunca pinta (`topDrops` ya
+  viene filtrado a puras `baja-real` desde `aggregate.ts`, así que ni `classes` aporta algo ahí); el
+  `transform` de `useFetch` los descarta ANTES de guardar el estado reactivo, así que también se achica
+  lo que queda embebido en el HTML hidratado (SSR incluido), no sólo lo que pide de nuevo el cliente.
+  El tipo `PriceEventDropRowFields` (`app/utils/priceEvents.ts`) es el contrato de qué sobrevive al
+  recorte; `priceEventDropRows`/`priceEventInternalHref` aceptan ese subconjunto, así que un objeto
+  completo (como el que arman los tests) lo sigue satisfaciendo sin cambios.
+- **El job usa `$slice` para pedir sólo los últimos 61 puntos de `history`** (revisión final, hallazgo
+  M7, `classes/priceevents/store.ts::offersSeenTodayByVertical`): `history` guarda hasta 120 puntos
+  (`classes/pricewatch/record.ts`) pero `analyzeOfferOutcome` sólo necesita hoy más los 60 días
+  previos — sin este recorte, cada oferta viajaba con el DOBLE de historial del que este job puede
+  llegar a usar, todos los días. `.select({ ...campos: 1, history: { $slice: -61 } })` es una
+  PROYECCIÓN de Mongo (recorta antes de que el documento cruce la red, no un `.slice()` de JS después
+  de traerlo entero); como `applyHistory` siempre reemplaza el punto del día en su lugar y agrega los
+  nuevos al final, el arreglo queda en orden cronológico ascendente, así que los últimos 61 SON los 61
+  días más recientes (60 previos + hoy). Sintaxis verificada con mongoose 6.4 (la versión de la raíz,
+  ver `package.json`) en `tests/priceevents/store.test.ts`, que fija el objeto de proyección exacto
+  (mezclar `$slice` en un campo con inclusiones planas en los demás es MongoDB estándar, no algo
+  específico de esta versión, pero vale pinearlo con una aserción real en vez de confiar a ojo).
 
 ## La cuenta regresiva (`app/utils/priceEvents.ts::priceEventCountdown`)
 
@@ -208,6 +308,29 @@ adentro ni un reloj que tickea en el cliente — SSR e hidratación tienen que c
 `priceEventOtherUnconfirmed()` es la segunda línea aparte: cuando Black Friday (fecha fija) gana el
 titular pero CyberLunes noviembre (sin fecha) en la práctica podría venir antes, esa función decide si
 todavía vale la pena mostrarlo como nota — mismas reglas de ventana vencida que `none`.
+
+**`today` es la fecha calendario de Montevideo, no la UTC del servidor** (revisión final, hallazgo M4,
+`priceEventMontevideoToday()`). El job (raíz) sigue usando UTC porque escribe un `day:` que tiene que
+calzar con el `lastSeen` que ya graban equipar/sillas — pero lo que lee una PERSONA (cuenta regresiva,
+ediciones pasadas) tiene que resolver al día que ve alguien en Montevideo. A la 01:30 UTC del 27 de
+noviembre en Montevideo (UTC-3) todavía es 26 — sin este ajuste la página decía "Hoy empieza Black
+Friday" tres horas antes de que fuera cierto ahí. Calculado UNA vez en el servidor (`useState`), nunca
+de nuevo en el cliente.
+
+## Ajustes de redacción de la página (revisión final)
+
+- **Encabezados fechados, no siempre "hoy"** (hallazgo M2, `priceEventDayLabel()`): si un snapshot
+  viejo sigue publicado (la guarda de corrida flaca conservó el anterior), "Bajas reales de hoy" y la
+  intro de "Cómo medimos" pasan a "Bajas reales del \<día del snapshot\>" — comparando
+  `current.day` contra el `today` de Montevideo de arriba.
+- **Plurales correctos, un solo helper** (hallazgo M3, `priceEventPlural(count, singular, plural)`):
+  "Falta 1 día"/"Faltan 5 días", "1 oferta bajó"/"3 ofertas bajaron", "1 baja"/"2 bajas", "1 tachado
+  por encima"/"2 tachados por encima" — antes decían "Faltan 1 días" etc. con cualquier conteo de 1.
+- **Cada baja muestra los DOS enlaces** (hallazgo M6): la ficha propia (cuando existe) Y la oferta
+  externa, nunca una en vez de la otra — antes, tener ficha propia ocultaba la prueba concreta del
+  precio de hoy en la tienda.
+- **La sección legal se enmarca como general** (hallazgo M10): una línea aclara que la cita de la ley
+  es el marco general y la tabla de arriba no acusa a ninguna tienda puntual de incumplirla.
 
 ## Cómo cargar la fecha de noviembre cuando la CEDU la publique
 
@@ -232,6 +355,28 @@ todavía vale la pena mostrarlo como nota — mismas reglas de ventana vencida q
    `celulares` con `productKey: 'phone:<slug>'` — no hace falta tocar esa función, sólo el enlace fijo
    de la lista de relacionados.
 
+### Recordatorio fechado (revisión final, hallazgo M11)
+
+**Si al 25 de octubre de 2026 la CEDU no publicó la fecha de CyberLunes noviembre 2026**, revisar
+[cedu.org.uy/ciberlunes](https://www.cedu.org.uy/ciberlunes/) a mano: si para entonces sigue sin
+fecha, la ventana adivinada (2026-11-01..08) puede terminar sin cubrir la edición real (el ruling del
+plan ya advertía esto — hallazgo M11 original) y hay que decidir si ampliarla o dejarla vencer. Sea
+cual sea el resultado:
+
+- **Si la CEDU publicó una fecha real**: seguir los 4 pasos de arriba (editar los dos calendarios,
+  `confirmed: true`, `note: ''`, correr los tests, pushear los dos archivos juntos).
+- **Si pasó el 8 de noviembre de 2026 sin que nadie cargara una fecha real**: la edición sin fecha
+  queda automáticamente fuera de `activeEvent()`/`priceEventCountdown()` (su ventana adivinada venció,
+  ver el estado `none` arriba) — no hace falta tocar código para que DEJE de anunciarse como "próxima".
+  Pero **tampoco pasa sola a `priceEventPastEditions()`**: esa función filtra por `entry.end !== null`,
+  y esta edición tiene `end: null` para siempre mientras nadie cargue una fecha real. Si la CEDU
+  confirma la fecha DESPUÉS de que ya pasó (por ejemplo, confirma en diciembre que fue del 3 al 5 de
+  noviembre), cargarla igual que el caso normal — con `start`/`end` reales, `confirmed: true` — y
+  automáticamente aparecerá en "ediciones pasadas" la próxima vez que alguien visite la página, sin
+  código nuevo. Si la CEDU nunca confirma nada para esa edición, se queda sin fecha para siempre y el
+  bloque "Cuándo es" simplemente no la vuelve a mencionar una vez vencida su ventana — no es necesario
+  "limpiarla" del array.
+
 ## Cómo diagnosticar
 
 - **Corrida en seco**: `npx ts-node sync_price_events.ts --dry-run` lee y agrega, nunca escribe ni
@@ -243,10 +388,11 @@ todavía vale la pena mostrarlo como nota — mismas reglas de ventana vencida q
   - Corrida normal: `[price-events] <YYYY-MM-DD> evento=<key|ninguno> verticales=<lista|-> leídas=<analyzed> elegibles=<eligible> trackingSince=<fecha|->`.
   - Corrida flaca (exit 1): `[price-events] corrida flaca: <N> elegibles contra <M> ya publicadas — se conserva el snapshot anterior`.
   - `--event-only` sin evento (exit 0, sin conexión a Mongo): `[price-events] --event-only: sin evento activo hoy (<fecha>) — no se conecta a la base`.
+  - `--event-only` con evento pero sin datos todavía (exit 0, revisión final M1): `[price-events] --event-only: 0 ofertas leídas para <fecha> todavía (equipar/sillas escriben más tarde en el día) — no es una corrida flaca, se sale sin escribir`.
 - **Campos a mirar en Mongo** (APP DB, colección `priceeventsnapshots`): `key: "current"` es el
   puntero que lee la API; `key: "day:YYYY-MM-DD"` son las filas de archivo. `analyzed`/`eligible`/
-  `dropsCount`/`inflatedCount`/`trackingSince`/`byVertical` cuentan la historia completa de una
-  corrida sin tener que leer `topDrops` entero.
+  `dropsCount`/`inflatedCount`/`trackingSince`/`byVertical`/`bySource`/`suspect` cuentan la historia
+  completa de una corrida sin tener que leer `topDrops` entero.
 - **Estado de producción medido el 2026-09-17** (ver el ledger del plan): `pricewatchoffers` tenía
   5.761 ofertas (equipar 5.174, sillas 587), con el `firstSeen` más viejo de TODA la colección en
   **2026-09-17** — el historial recién empieza. Con `PRICE_EVENT_MIN_AGE_DAYS = 21`, el primer día en
@@ -254,13 +400,18 @@ todavía vale la pena mostrarlo como nota — mismas reglas de ventana vencida q
   corridas es el comportamiento esperado, no un bug — y el piso de la guarda de corrida flaca
   (`PRICE_EVENT_THIN_FLOOR = 20`) está diseñado explícitamente para no dispararse durante ese tramo.
 - **Tests a leer primero** cuando algo no clasifica como se espera: `tests/priceevents/analyze.test.ts`
-  (umbrales y bordes de centavos enteros), `tests/priceevents/aggregate.test.ts` (orden determinista de
-  `topDrops`, tope por vendedor, `sellers`), `tests/priceevents/calendar.test.ts` (ventanas, solape),
-  `tests/priceevents/dry_run.test.ts` (guarda de corrida flaca, orquestación completa con `store.ts`
-  mockeado); del lado del app, `app/tests/unit/priceEvents.test.ts` (calendario, cuenta regresiva, FAQ,
-  formato), `app/tests/unit/priceEventsApi.test.ts` (contrato de la ruta) y
-  `app/tests/unit/priceEventsCalendarParity.test.ts` (paridad de los dos calendarios). Medido
-  2026-09-17: 67 tests en 4 archivos (raíz) + 76 tests en 3 archivos (app) = 143 tests, todos verdes.
+  (umbrales y bordes de centavos enteros, la banda de plausibilidad I2a, la moneda por punto I2b),
+  `tests/priceevents/aggregate.test.ts` (orden determinista de `topDrops`, tope por vendedor, `sellers`,
+  la exclusión de MercadoLibre sin identificar C1, el sufijo de nombres duplicados M9),
+  `tests/priceevents/calendar.test.ts` (ventanas, solape), `tests/priceevents/dry_run.test.ts` (guarda
+  de corrida flaca, `noDataYet` M1, `bySource`/`suspect`, orquestación completa con `store.ts`
+  mockeado), `tests/priceevents/store.test.ts` (la proyección `$slice` de `history`); del lado del app,
+  `app/tests/unit/priceEvents.test.ts` (calendario, cuenta regresiva, plurales, fecha de Montevideo,
+  FAQ, formato), `app/tests/unit/priceEventsApi.test.ts` (contrato de la ruta, sin `events`) y
+  `app/tests/unit/priceEventsCalendarParity.test.ts` (paridad de los dos calendarios). Conteos exactos
+  varían con cada ronda de fixes — correr `npx vitest run tests/priceevents` (raíz) y
+  `npm test -- tests/unit/priceEvents` (app) para el número vigente en vez de confiar en uno citado
+  acá.
 
 ## Ver también
 

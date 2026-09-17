@@ -27,9 +27,15 @@ Un documento por `listingId` (índice único), con:
   vio la corrida más reciente que lo escribió.
 - `firstSeen` / `lastSeen` (fechas `YYYY-MM-DD`, UTC): `firstSeen` sólo se fija al insertar y nunca
   se vuelve a tocar (`$ifNull` contra el campo existente); `lastSeen` se pisa en cada corrida.
-- `history`: arreglo de hasta **120** puntos `{ d, p, lp }` — fecha, precio y precio de lista
-  (tachado) ese día, en la moneda del aviso. Un resync dentro del mismo día UTC reemplaza el punto de
-  ese día, nunca lo duplica; al superar 120 puntos se descarta el más viejo.
+- `history`: arreglo de hasta **120** puntos `{ d, p, lp, c }` — fecha, precio, precio de lista
+  (tachado) ese día y moneda (`c`, `"UYU"` | `"USD"`), en la moneda del aviso. Un resync dentro del
+  mismo día UTC reemplaza el punto de ese día, nunca lo duplica; al superar 120 puntos se descarta el
+  más viejo. **`c` se agregó el 2026-09-17** (revisión final del Plan D, hallazgo I2b) y es aditivo/
+  opcional: un punto grabado antes de ese cambio simplemente no lo tiene, y no se reprocesa el
+  historial viejo para completarlo. El lector (`classes/priceevents/analyze.ts`) descarta un punto
+  previo cuyo `c` sea conocido y distinto del `c` de hoy — un precio en otra moneda no es "más barato",
+  es otra unidad — pero nunca filtra por esto un punto sin `c`, que queda a cargo de su propia guarda
+  de plausibilidad (precio/lista de hoy fuera de `[1/5, 5]` veces la mediana previa).
 
 No hay modelo espejo en `app/`: la colección es sólo del backend, así que
 `tests/appdb/schema_parity.test.ts` no la incluye a propósito — ese test sólo recorre modelos que
@@ -100,8 +106,9 @@ propia sobre `pricewatchoffers` en sí — sólo lo lee, nunca lo expone campo a
 
 ## Tests
 
-- `tests/pricewatch/record.test.ts` — 21 casos, sin base de datos (el modelo va simulado): `pricewatchEligible` (Facebook y
+- `tests/pricewatch/record.test.ts` — sin base de datos (el modelo va simulado): `pricewatchEligible` (Facebook y
   usado excluidos, precio y `url` requeridos), `pricewatchOperation` (forma del pipeline, la trampa
-  del `$literal` con un título que empieza con "$"), `applyHistory` (reemplaza el punto del mismo
+  del `$literal` con un título que empieza con "$", y desde el 2026-09-17 que el punto nuevo lleva su
+  propia moneda `c` envuelta en `$literal`), `applyHistory` (reemplaza el punto del mismo
   día, no lo duplica; recorta a `maxPoints`), `pricewatchPruneFilter` (180 días, por vertical) y
   el orden de `recordPricewatch` (escribe y recién después poda).

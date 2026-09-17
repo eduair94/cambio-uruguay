@@ -75,7 +75,7 @@ describe('GET /api/price-events', () => {
     ])
   })
 
-  it('always returns the event calendar, even with no snapshot', async () => {
+  it('resolves current: null and days: [] with no snapshot, without throwing', async () => {
     connectDb.mockResolvedValue(undefined)
     leanOneMock.mockResolvedValue(null)
     leanMock.mockResolvedValue([])
@@ -84,8 +84,19 @@ describe('GET /api/price-events', () => {
 
     expect(result.current).toBeNull()
     expect(result.days).toEqual([])
-    expect(result.events.length).toBeGreaterThan(0)
-    expect(result.events.some((e: any) => e.key === 'black-friday-2026')).toBe(true)
+  })
+
+  // M7 (final review): the page never reads `events` — it always paints the calendar from the static
+  // mirror `PRICE_EVENT_CALENDAR` (`app/utils/priceEvents.ts`), independent of the database. Serving
+  // it here too was ~40 KB per visit nobody read; the route (and `PriceEventApiResponse`) dropped it.
+  it('never serves an `events` field — the calendar comes from the static mirror, not this route', async () => {
+    connectDb.mockResolvedValue(undefined)
+    leanOneMock.mockResolvedValue(null)
+    leanMock.mockResolvedValue([])
+
+    const result = await handler({} as any)
+
+    expect(result).not.toHaveProperty('events')
   })
 
   it('takes days.drops/inflated from dropsCount/inflatedCount, never from topDrops.length', async () => {
@@ -163,7 +174,7 @@ describe('GET /api/price-events', () => {
 
     expect(result.current).toBeNull()
     expect(result.days).toEqual([])
-    expect(result.events.length).toBeGreaterThan(0)
+    expect(result).not.toHaveProperty('events')
   })
 
   it('resolves the empty shape, without throwing, when the day query rejects', async () => {
@@ -176,7 +187,6 @@ describe('GET /api/price-events', () => {
     expect(result).toEqual({
       current: null,
       days: [],
-      events: expect.any(Array),
     })
   })
 })

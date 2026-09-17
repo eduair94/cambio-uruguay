@@ -62,7 +62,9 @@ export const PRICE_EVENT_CALENDAR: readonly PriceEventCalendarEntry[] = [
     end: null,
     confirmed: false,
     source: 'https://www.cedu.org.uy/ciberlunes/',
-    note: 'La CEDU todavía no publicó la fecha.',
+    // Final review I4: dated so a stale page reads as stale, not silently wrong once CEDU announces.
+    // Keep byte-for-byte in sync with classes/priceevents/calendar.ts (parity test).
+    note: 'Al 17 de setiembre de 2026 la CEDU no había publicado la fecha.',
   },
   {
     key: 'black-friday-2026',
@@ -186,15 +188,36 @@ export function priceEventCountdown(today: string): PriceEventCountdown {
 }
 
 /**
+ * `count === 1 ? singular : plural` — un solo helper para toda la página en vez de un ternario suelto
+ * por lugar (final review M3: "Faltan 1 días", "1 ofertas", "1 bajas" eran tres bugs del mismo tipo).
+ * Sirve tanto para sustantivos ("oferta"/"ofertas") como para frases enteras con su propio verbo
+ * ("Falta"/"Faltan", "oferta bajó"/"ofertas bajaron"), que es más simple y más seguro que conjugar
+ * sustantivo y verbo por separado en cada lugar que los usa.
+ */
+export function priceEventPlural(count: number, singular: string, plural: string): string {
+  return count === 1 ? singular : plural
+}
+
+/**
  * El texto principal del bloque de fechas para un `PriceEventCountdown` ya resuelto. Centralizado
  * acá (no en el template) para poder probar cada estado con un `toBe` exacto, incluidos los dos que
  * este archivo existe para arreglar: ningún día del evento dice "primer día" salvo el primero, y
  * ninguna edición sin fecha sigue anunciándose "próxima" después de que su ventana adivinada cerró.
+ *
+ * `today` sólo lo usa el caso `none` (final review I4): sin fecha que citar, la única forma honesta
+ * de decir "todavía no sabemos" es fecharla — "no hay fechas publicadas" es una afirmación que se
+ * vuelve falsa sola en cuanto se publica una, mientras que "al 17 de setiembre no había" sigue siendo
+ * cierto para siempre, aunque la página quede vieja.
  */
-export function priceEventCountdownHeadline(countdown: PriceEventCountdown): string {
+export function priceEventCountdownHeadline(countdown: PriceEventCountdown, today: string): string {
   switch (countdown.status) {
-    case 'upcoming':
-      return `Faltan ${countdown.daysUntilStart} días para ${countdown.event!.label}.`
+    case 'upcoming': {
+      const days = countdown.daysUntilStart!
+      return (
+        `${priceEventPlural(days, 'Falta', 'Faltan')} ${days} ${priceEventPlural(days, 'día', 'días')} ` +
+        `para ${countdown.event!.label}.`
+      )
+    }
     case 'first-day':
       return `Hoy empieza ${countdown.event!.label}.`
     case 'in-progress':
@@ -202,7 +225,10 @@ export function priceEventCountdownHeadline(countdown: PriceEventCountdown): str
     case 'undated':
       return `${countdown.event!.label}: a confirmar por la CEDU.`
     case 'none':
-      return 'Todavía no hay fechas publicadas para la próxima edición de CyberLunes ni de Black Friday.'
+      return (
+        `Al ${priceEventFormatDate(today)} todavía no hay fechas publicadas para la próxima edición ` +
+        'de CyberLunes ni de Black Friday.'
+      )
   }
 }
 
@@ -256,6 +282,38 @@ export function priceEventFormatDate(iso: string): string {
 }
 
 /**
+ * "Hoy" para esta página = la fecha CALENDARIO en América/Montevideo, no la fecha UTC del servidor
+ * (final review M4). `sync_price_events.ts` (raíz) sí usa la fecha UTC porque escribe un `day:
+ * YYYY-MM-DD` que tiene que calzar con el `lastSeen` que ya graban equipar/sillas — esta función es
+ * SÓLO para lo que el visitante lee: la cuenta regresiva y "ediciones pasadas" tienen que resolver al
+ * mismo día que ve una persona en Montevideo, no al de Greenwich. Ej.: `2026-11-27T01:30:00Z` (la
+ * madrugada del 27 en UTC) todavía es `26` de noviembre en Montevideo (UTC-3) — sin este ajuste, la
+ * página diría "Hoy empieza Black Friday" tres horas antes de que sea cierto ahí. Calculado UNA vez
+ * en el servidor (`useState` en la página) y nunca de nuevo en el cliente, para que SSR e hidratación
+ * calculen el mismo valor.
+ */
+export function priceEventMontevideoToday(now: Date = new Date()): string {
+  // 'en-CA' es el único locale común de Intl que formatea como YYYY-MM-DD directamente, sin tener
+  // que reordenar partes a mano.
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Montevideo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now)
+}
+
+/**
+ * "hoy" cuando `day` (el día del snapshot) coincide con `today` (el día del visitante, ver
+ * {@link priceEventMontevideoToday}), o la fecha formateada en caso contrario — final review M2: un
+ * snapshot viejo (una corrida flaca conservó el anterior, una caída del cron) nunca debe seguir
+ * afirmando "hoy" una vez que el calendario avanzó. Ambos parámetros son `YYYY-MM-DD`.
+ */
+export function priceEventDayLabel(day: string, today: string): string {
+  return day === today ? 'hoy' : priceEventFormatDate(day)
+}
+
+/**
  * Formatea un porcentaje como lo escribe Uruguay: coma decimal, un decimal fijo, sin espacio antes
  * del `%` — mismo criterio que `formatPctEs` (`utils/casaIntents.ts`) y el formateador de
  * `utils/costOfLiving.ts`. `dropPct`/`share` ya vienen redondeados a 1 decimal desde
@@ -264,6 +322,22 @@ export function priceEventFormatDate(iso: string): string {
  */
 export function priceEventPct(value: number): string {
   return `${value.toLocaleString('es-UY', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
+}
+
+/**
+ * Qué fracción de las ofertas elegibles de hoy vino de MercadoLibre — final review M5: la revisión
+ * final midió ~94 % en un día puntual, pero hardcodear esa cifra en la página la hubiera dejado mal
+ * el día que la mezcla cambiara (más tiendas propias, menos ML). Se MIDE de `bySource` en cada
+ * respuesta en vez de citarse de memoria. `null` cuando no hay `eligible` (nada que dividir) o
+ * cuando `bySource` no trae la clave `mercadolibre` en absoluto.
+ */
+export function priceEventMlSharePct(
+  current: Pick<PriceEventSnapshotResponse, 'bySource' | 'eligible'> | null
+): number | null {
+  if (!current || !current.eligible) return null
+  const ml = current.bySource?.mercadolibre
+  if (typeof ml !== 'number') return null
+  return Math.round((ml / current.eligible) * 1000) / 10
 }
 
 // ---------------------------------------------------------------------------
@@ -319,6 +393,12 @@ export interface PriceEventSnapshotResponse {
   dropsCount: number
   inflatedCount: number
   sellers: PriceEventSellerStat[]
+  /** Ofertas elegibles de hoy, por `source` (`mercadolibre`, `fenicio`, …) — final review M5, para
+   * medir (nunca hardcodear) qué fracción del día es MercadoLibre. Ver `priceEventMlSharePct`. */
+  bySource: Record<string, number>
+  /** Ofertas que la guarda de plausibilidad (I2a, raíz) descartó por implausibles — documentativo acá,
+   * la página no lo muestra todavía. */
+  suspect: number
 }
 
 export interface PriceEventDayPoint {
@@ -328,17 +408,51 @@ export interface PriceEventDayPoint {
   inflated: number
 }
 
+/**
+ * Final review M7: la página nunca lee `events` — el calendario que pinta viene siempre de
+ * `PRICE_EVENT_CALENDAR` (el espejo estático de acá arriba), independiente de la base. Devolverlo
+ * también en la respuesta HTTP era ~40 KB por visita que nadie leía; se sacó del contrato de la API
+ * (ver `app/server/api/price-events.get.ts`) y de este tipo. Si algún día una página SÍ necesita el
+ * calendario servido por la API (en vez de importarlo directo), agregarlo de nuevo acá y actualizar
+ * `app/tests/unit/priceEventsApi.test.ts` en el mismo cambio.
+ */
 export interface PriceEventApiResponse {
   current: PriceEventSnapshotResponse | null
   days: PriceEventDayPoint[]
-  events: readonly PriceEventCalendarEntry[]
 }
 
 // ---------------------------------------------------------------------------
 // Filas de la tabla de bajas, con el enlace interno cuando se puede derivar
 // ---------------------------------------------------------------------------
 
-export interface PriceEventDropRow extends PriceEventDropDoc {
+/**
+ * Sólo los campos que la fila de la tabla de bajas realmente pinta (o necesita para derivar
+ * `internalHref`) — final review M7: `PriceEventDropDoc` completo trae `listPrice`/`priorMax`/
+ * `priorMedian`/`priorPoints`/`classes`, que esta tabla nunca muestra (`topDrops` ya viene filtrado a
+ * puras `baja-real` desde `aggregate.ts`, así que `classes` no aporta nada acá). El `transform` de
+ * `useFetch` en la página recorta la respuesta cruda a esta forma ANTES de guardarla en el estado
+ * reactivo, así que el payload que de verdad viaja al cliente (y el que queda en el HTML hidratado)
+ * es más chico que lo que `GET /api/price-events` sirve. Un objeto `PriceEventDropDoc` completo
+ * sigue satisfaciendo este tipo sin cambios (subconjunto estructural), así que los tests existentes
+ * que arman filas con el fixture completo no se rompen.
+ */
+export type PriceEventDropRowFields = Pick<
+  PriceEventDropDoc,
+  | 'listingId'
+  | 'vertical'
+  | 'category'
+  | 'productKey'
+  | 'sellerKey'
+  | 'sellerName'
+  | 'title'
+  | 'url'
+  | 'currency'
+  | 'price'
+  | 'priorMin'
+  | 'dropPct'
+>
+
+export interface PriceEventDropRow extends PriceEventDropRowFields {
   /** Enlace propio del sitio cuando la oferta pertenece a un directorio publicado; si no, `null` y la
    * fila sólo enlaza afuera con `url`. */
   internalHref: string | null
@@ -357,7 +471,9 @@ function priceEventPhoneSlug(productKey: string | null): string | null {
  * tiene hub público (celulares, hasta que ese directorio se publique en otra rama) cambia acá sin
  * tocar el job que escribió el dato.
  */
-function priceEventInternalHref(doc: PriceEventDropDoc): string | null {
+function priceEventInternalHref(
+  doc: Pick<PriceEventDropRowFields, 'vertical' | 'category' | 'productKey'>
+): string | null {
   if (doc.vertical === 'equipar' && doc.category && isEquiparCategorySlug(doc.category)) {
     return `/equipar-casa-uruguay/${doc.category}`
   }
@@ -374,7 +490,7 @@ function priceEventInternalHref(doc: PriceEventDropDoc): string | null {
 }
 
 export function priceEventDropRows(
-  current: Pick<PriceEventSnapshotResponse, 'topDrops'> | null
+  current: { topDrops: readonly PriceEventDropRowFields[] } | null
 ): PriceEventDropRow[] {
   if (!current) return []
   return current.topDrops.map(doc => ({ ...doc, internalHref: priceEventInternalHref(doc) }))

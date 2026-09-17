@@ -30,7 +30,7 @@ describe("PRICE_EVENTS", () => {
         end: null,
         confirmed: false,
         source: "https://www.cedu.org.uy/ciberlunes/",
-        note: "La CEDU todavía no publicó la fecha.",
+        note: "Al 17 de setiembre de 2026 la CEDU no había publicado la fecha.",
       },
       {
         key: "black-friday-2026",

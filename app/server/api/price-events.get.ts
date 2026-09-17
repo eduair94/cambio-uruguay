@@ -1,11 +1,16 @@
 import { PriceEventSnapshotModel } from '../models/PriceEventSnapshot'
 import { connectDb } from '../utils/db'
-import { PRICE_EVENT_CALENDAR, type PriceEventApiResponse } from '../../utils/priceEvents'
+import type { PriceEventApiResponse } from '../../utils/priceEvents'
 
 /**
  * `/ciberlunes-y-black-friday-uruguay` en vivo: el snapshot `current` (bajas reales y tachados de
- * hoy) más la serie de los últimos 30 días para el gráfico, y el calendario de eventos para el bloque
- * de fechas. Escrito por `sync_price_events.ts` (Task 2, raíz) en APP DB `priceeventsnapshots`.
+ * hoy) más la serie de los últimos 30 días para el gráfico. Escrito por `sync_price_events.ts`
+ * (Task 2, raíz) en APP DB `priceeventsnapshots`.
+ *
+ * Final review M7: esta ruta YA NO sirve `events` — la página nunca lo leyó (siempre pintó el
+ * calendario desde el espejo estático `PRICE_EVENT_CALENDAR`, `app/utils/priceEvents.ts`), así que
+ * mandarlo por la red en cada visita era ~40 KB sin lector. Si algún día un consumidor SÍ necesita el
+ * calendario servido por la API, agregarlo de nuevo acá junto con `PriceEventApiResponse` y su test.
  */
 
 /** La vitrina de la página nunca pinta más de esto: recortar acá evita mandar por la red el resto del
@@ -18,7 +23,6 @@ const PRICE_EVENT_RESPONSE_MAX_DAYS = 30
 const PRICE_EVENT_EMPTY_RESPONSE: PriceEventApiResponse = {
   current: null,
   days: [],
-  events: PRICE_EVENT_CALENDAR,
 }
 
 interface PriceEventDayDocLean {
@@ -55,6 +59,8 @@ export default defineEventHandler(async (event): Promise<PriceEventApiResponse> 
           dropsCount: 1,
           inflatedCount: 1,
           sellers: 1,
+          bySource: 1,
+          suspect: 1,
         })
         .lean(),
       // Ordenado DESC para tomar los 30 más recientes con `.limit()`, y se da vuelta después para
@@ -88,7 +94,7 @@ export default defineEventHandler(async (event): Promise<PriceEventApiResponse> 
         } as PriceEventApiResponse['current'])
       : null
 
-    return { current, days, events: PRICE_EVENT_CALENDAR }
+    return { current, days }
   } catch {
     // Un problema de Mongo nunca puede tirar la página entera: el resto (cómo medimos, el marco
     // legal, los enlaces relacionados) vale la pena leerlo aunque hoy no haya datos.

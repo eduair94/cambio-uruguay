@@ -37,7 +37,7 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
       <h2 id="fechas-title" class="section-heading mb-3">Cuándo es</h2>
 
       <VCard v-if="countdown" variant="flat" class="countdown-card pa-4 pa-sm-5 mb-4">
-        <p class="countdown-headline mb-1">{{ priceEventCountdownHeadline(countdown) }}</p>
+        <p class="countdown-headline mb-1">{{ priceEventCountdownHeadline(countdown, today) }}</p>
         <p
           v-if="countdown.status === 'upcoming' || countdown.status === 'first-day'"
           class="text-body-2 text-medium-emphasis mb-2"
@@ -121,11 +121,11 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
       <ul class="method-list mb-3">
         <li>
           <strong>Baja real:</strong> el precio de venta de hoy es al menos 10 % más bajo que el
-          mínimo de esa oferta en los últimos 60 días.
+          mínimo que registramos para esa misma oferta.
         </li>
         <li>
           <strong>Tachado por encima del historial:</strong> el precio de lista (tachado) de hoy es
-          al menos 10 % más alto que el máximo precio de venta de esa oferta en los últimos 60 días.
+          al menos 10 % más alto que el máximo que registramos para esa misma oferta.
         </li>
       </ul>
       <p class="text-body-2 mb-3">
@@ -140,16 +140,27 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
         su historial y esta página no lo va a mostrar, simplemente porque no lo medimos.
       </p>
       <p v-if="current" class="text-body-2 text-medium-emphasis mb-0">
-        Hoy revisamos {{ current.analyzed.toLocaleString('es-UY') }} ofertas; de esas,
-        {{ current.eligible.toLocaleString('es-UY') }} tenían historial suficiente para
+        {{ isToday ? 'Hoy' : `El ${snapshotDayLabel}` }} revisamos
+        {{ current.analyzed.toLocaleString('es-UY') }}
+        {{ priceEventPlural(current.analyzed, 'oferta', 'ofertas') }}; de esas,
+        {{ current.eligible.toLocaleString('es-UY') }}
+        {{ priceEventPlural(current.eligible, 'tenía', 'tenían') }} historial suficiente para
         clasificarse.
         <span v-if="verticalStats.length">
           Por rubro:
           <template v-for="(stat, index) in verticalStats" :key="stat.vertical">
-            {{ index > 0 ? '; ' : '' }}{{ stat.label }}
-            {{ stat.eligible.toLocaleString('es-UY') }} ofertas ({{ stat.drops }} bajas,
-            {{ stat.inflated }} tachados por encima)</template
+            {{ index > 0 ? '; ' : '' }}{{ stat.label }} {{ stat.eligible.toLocaleString('es-UY') }}
+            {{ priceEventPlural(stat.eligible, 'oferta', 'ofertas') }} ({{ stat.drops }}
+            {{ priceEventPlural(stat.drops, 'baja', 'bajas') }},
+            {{ stat.inflated }}
+            {{
+              priceEventPlural(stat.inflated, 'tachado por encima', 'tachados por encima')
+            }})</template
           >.
+        </span>
+        <span v-if="mlSharePct !== null">
+          Alrededor de {{ priceEventPct(mlSharePct) }} de esas ofertas vienen de MercadoLibre; el
+          resto son tiendas propias.
         </span>
       </p>
     </section>
@@ -163,12 +174,16 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
     </section>
 
     <template v-else>
-      <!-- ── Bajas reales de hoy ────────────────────────────────────────── -->
+      <!-- ── Bajas reales de hoy (o del día del snapshot, si quedó viejo) ─── -->
       <section class="page-section" aria-labelledby="bajas-title">
-        <h2 id="bajas-title" class="section-heading mb-1">Bajas reales de hoy</h2>
+        <h2 id="bajas-title" class="section-heading mb-1">
+          Bajas reales {{ isToday ? 'de hoy' : `del ${snapshotDayLabel}` }}
+        </h2>
         <p class="text-body-2 text-medium-emphasis mb-3">
-          {{ todayDropsCount.toLocaleString('es-UY') }} ofertas bajaron al menos 10 % contra su
-          propio mínimo de 60 días. Mostramos hasta 50.
+          {{ todayDropsCount.toLocaleString('es-UY') }}
+          {{ priceEventPlural(todayDropsCount, 'oferta bajó', 'ofertas bajaron') }} al menos 10 %
+          contra su propio mínimo. Mostramos hasta 50, con un máximo de 3 bajas por vendedor para
+          que ninguno domine la lista.
         </p>
         <p v-if="!dropRows.length" class="empty-note">Hoy no encontramos ninguna baja real.</p>
         <VTable v-else class="cu-mobile-cards drops-table" density="compact">
@@ -195,12 +210,17 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
               <td data-label="Baja" class="text-right drop-pct">
                 <span v-if="row.dropPct !== null">−{{ priceEventPct(row.dropPct) }}</span>
               </td>
-              <td data-label="Enlace">
+              <!--
+                Final review M6: cuando hay ficha propia, mostramos LAS DOS — la ficha (para quedarse
+                en el sitio) Y la oferta externa (la prueba concreta del precio de hoy), no una en vez
+                de la otra.
+              -->
+              <td data-label="Enlace" class="drop-links">
                 <NuxtLink v-if="row.internalHref" :to="localePath(row.internalHref)">
                   Ficha
                 </NuxtLink>
                 <!-- Oferta de un tercero: nunca le pasamos "voto" de enlace, como equipar/sillas. -->
-                <a v-else :href="row.url" target="_blank" rel="nofollow noopener">Ver oferta</a>
+                <a :href="row.url" target="_blank" rel="nofollow noopener">Ver oferta</a>
               </td>
             </tr>
           </tbody>
@@ -209,16 +229,27 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
 
       <!-- ── Tachados por encima del historial ────────────────────────────── -->
       <section class="page-section" aria-labelledby="tachados-title">
+        <!--
+          I1 (final review): la primera versión ("Tiendas con precio tachado por encima de lo
+          registrado") sonaba a lista de sospechosas incluso para una tienda con un 0 limpio. El
+          título nuevo describe la MEDIDA ("cuántos quedan por encima"), no una acusación, y la bajada
+          dice explícito que un 0 es un 0.
+        -->
         <h2 id="tachados-title" class="section-heading mb-1">
-          Tiendas con precio tachado por encima de lo registrado
+          Precios tachados por tienda: cuántos quedan por encima de lo que registramos
         </h2>
         <p class="text-body-2 text-medium-emphasis mb-3">
-          Sólo tiendas con al menos 5 ofertas con precio tachado hoy. Es un conteo y una proporción
-          contra nuestro propio historial, no una acusación: puede haber una explicación que no
-          medimos, y esto no prueba que un precio anterior no haya existido.
+          Para cada tienda con al menos 5 ofertas que pudimos clasificar con precio tachado
+          {{ isToday ? 'hoy' : snapshotDayLabel }}, contamos cuántas de esas muestran un precio de
+          lista por encima de todo lo que le vimos en los últimos 60 días.
+          <strong>Un 0 es un 0</strong>: significa que ninguno de sus tachados superó ese máximo, no
+          que la tienda no tenga descuentos. Es un conteo y una proporción contra nuestro propio
+          historial, no una acusación: puede haber una explicación que no medimos, y esto no prueba
+          que un precio anterior no haya existido.
         </p>
         <p v-if="!sellerRows.length" class="empty-note">
-          Hoy ninguna tienda llegó a las 5 ofertas con precio tachado.
+          {{ isToday ? 'Hoy' : `El ${snapshotDayLabel}` }} ninguna tienda llegó a las 5 ofertas con
+          precio tachado.
         </p>
         <VTable v-else class="cu-mobile-cards sellers-table" density="compact">
           <thead>
@@ -266,6 +297,12 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
     <!-- ── Qué dice la ley ──────────────────────────────────────────────── -->
     <section v-if="legalScenario" class="page-section" aria-labelledby="ley-title">
       <h2 id="ley-title" class="section-heading mb-3">Qué dice la ley</h2>
+      <!-- M10 (final review): sin esta línea, la cita legal justo debajo de la tabla de tiendas lee
+           como un veredicto sobre ellas. Es el marco general, no una imputación. -->
+      <p class="text-body-2 text-medium-emphasis mb-2">
+        Esto es lo que dice la ley en general; la tabla de arriba no afirma que ninguna tienda la
+        haya incumplido.
+      </p>
       <p class="text-body-2 mb-3">{{ legalScenario.answer }}</p>
       <ul class="articles mb-3">
         <li v-for="(article, index) in legalScenario.articles" :key="index">{{ article }}</li>
@@ -315,29 +352,106 @@ import { formatCurrency } from '~/utils/format'
 import {
   priceEventCountdown,
   priceEventCountdownHeadline,
+  priceEventDayLabel,
   priceEventDropRows,
   priceEventFaq,
   priceEventFormatDate,
+  priceEventMlSharePct,
+  priceEventMontevideoToday,
   priceEventOtherUnconfirmed,
   priceEventPastEditions,
   priceEventPct,
+  priceEventPlural,
   type PriceEventApiResponse,
   type PriceEventCalendarEntry,
+  type PriceEventDayPoint,
+  type PriceEventDropRowFields,
+  type PriceEventSellerStat,
+  type PriceEventVerticalStats,
 } from '~/utils/priceEvents'
 
 const localePath = useLocalePath()
 
 // Calculado UNA vez por request (`useState` hidrata el mismo valor del servidor en el cliente): el
 // countdown de fechas nunca puede tickear en vivo, o SSR y cliente calculan un `today` distinto y
-// Vue reporta un mismatch de hidratación en el primer render.
-const today = useState('ciberlunes-today', () => new Date().toISOString().slice(0, 10))
+// Vue reporta un mismatch de hidratación en el primer render. Final review M4: "hoy" acá es la fecha
+// CALENDARIO en América/Montevideo, no la fecha UTC del servidor — a la 01:30 UTC del 27 de
+// noviembre en Montevideo todavía es 26.
+const today = useState('ciberlunes-today', () => priceEventMontevideoToday())
 
-const { data } = await useFetch<PriceEventApiResponse>('/api/price-events', { key: 'price-events' })
+// Final review M7: el `transform` recorta la respuesta cruda a sólo lo que esta página pinta ANTES de
+// guardarla en el estado reactivo — `topDrops` completo trae `listPrice`/`priorMax`/`priorMedian`/
+// `priorPoints`/`classes`, que ninguna fila de la tabla muestra (ver `PriceEventDropRowFields` en
+// `utils/priceEvents.ts`). El recorte corre tanto en SSR como en el cliente, así que también reduce
+// lo que queda embebido en el payload hidratado, no sólo lo que se pide de nuevo en el cliente.
+interface PriceEventPageCurrent {
+  day: string
+  generatedAt: string
+  trackingSince: string | null
+  analyzed: number
+  eligible: number
+  byVertical: Record<string, PriceEventVerticalStats>
+  dropsCount: number
+  inflatedCount: number
+  bySource: Record<string, number>
+  topDrops: PriceEventDropRowFields[]
+  sellers: PriceEventSellerStat[]
+}
+interface PriceEventPageData {
+  current: PriceEventPageCurrent | null
+  days: PriceEventDayPoint[]
+}
+
+const { data } = await useFetch('/api/price-events', {
+  key: 'price-events',
+  transform: (raw: PriceEventApiResponse): PriceEventPageData => ({
+    current: raw.current
+      ? {
+          day: raw.current.day,
+          generatedAt: raw.current.generatedAt,
+          trackingSince: raw.current.trackingSince,
+          analyzed: raw.current.analyzed,
+          eligible: raw.current.eligible,
+          byVertical: raw.current.byVertical,
+          dropsCount: raw.current.dropsCount,
+          inflatedCount: raw.current.inflatedCount,
+          bySource: raw.current.bySource,
+          sellers: raw.current.sellers,
+          topDrops: raw.current.topDrops.map(d => ({
+            listingId: d.listingId,
+            vertical: d.vertical,
+            category: d.category,
+            productKey: d.productKey,
+            sellerKey: d.sellerKey,
+            sellerName: d.sellerName,
+            title: d.title,
+            url: d.url,
+            currency: d.currency,
+            price: d.price,
+            priorMin: d.priorMin,
+            dropPct: d.dropPct,
+          })),
+        }
+      : null,
+    days: raw.days,
+  }),
+})
 
 const current = computed(() => data.value?.current ?? null)
 const days = computed(() => data.value?.days ?? [])
 
 const hasData = computed(() => !!current.value && current.value.eligible > 0)
+
+// Final review M2: un snapshot viejo (una corrida flaca conservó el anterior, una caída del cron)
+// nunca debe seguir diciendo "hoy" una vez que el calendario avanzó — las secciones de abajo usan
+// `isToday`/`snapshotDayLabel` en vez del literal "hoy".
+const snapshotDayLabel = computed(() =>
+  current.value ? priceEventDayLabel(current.value.day, today.value) : 'hoy'
+)
+const isToday = computed(() => snapshotDayLabel.value === 'hoy')
+
+// Final review M5: medido de `bySource`, nunca un porcentaje hardcodeado.
+const mlSharePct = computed(() => priceEventMlSharePct(current.value))
 
 const emptyStateMessage = computed(() => {
   if (current.value?.trackingSince) {
@@ -557,6 +671,12 @@ useHead(() => ({
 .empty-note {
   opacity: 0.7;
   font-size: 0.88rem;
+}
+
+.drop-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
 }
 
 .drops-table .price,

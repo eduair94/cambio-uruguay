@@ -50,7 +50,11 @@ export const PRICE_EVENTS: readonly PriceEvent[] = [
     end: null,
     confirmed: false,
     source: "https://www.cedu.org.uy/ciberlunes/",
-    note: "La CEDU todavía no publicó la fecha.",
+    // Final review I4: an undated claim like "todavía no publicó la fecha" silently becomes false the
+    // day CEDU announces it — dating the claim itself means a stale page reads as stale, not wrong.
+    // See docs/app/PRICE_EVENTS.md, "Cuándo revisar la fecha de noviembre" for the reminder to update
+    // this once CEDU publishes (or once the guessed window has clearly been missed).
+    note: "Al 17 de setiembre de 2026 la CEDU no había publicado la fecha.",
   },
   {
     key: "black-friday-2026",
