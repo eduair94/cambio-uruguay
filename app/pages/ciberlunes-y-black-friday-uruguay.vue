@@ -51,7 +51,7 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
           {{ countdown.event.note }}
         </p>
         <a
-          v-if="countdown.event.source"
+          v-if="countdown.event?.source"
           :href="countdown.event.source"
           target="_blank"
           rel="noopener noreferrer"
@@ -60,10 +60,12 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
           Fuente
         </a>
         <p
-          v-else-if="countdown.status !== 'undated' && countdown.event.note"
+          v-else-if="
+            countdown.status !== 'undated' && countdown.status !== 'none' && countdown.event?.note
+          "
           class="text-caption text-medium-emphasis mb-0"
         >
-          {{ countdown.event.note }}
+          {{ countdown.event?.note }}
         </p>
       </VCard>
 
@@ -355,7 +357,7 @@ const countdown = computed(() => priceEventCountdown(today.value))
 const pastEditions = computed(() => priceEventPastEditions(today.value))
 
 // La decisión de "¿hay una edición sin fecha que además haya que mostrar?" es pura y vive en
-// priceEvents.ts (priceEventOtherUnconfirmed), probada ahí con sus dos ramas — acá sólo se llama.
+// priceEvents.ts (priceEventOtherUnconfirmed), probada ahí con sus ramas — acá sólo se llama.
 const otherUnconfirmedEvent = computed(() => priceEventOtherUnconfirmed(today.value))
 
 /** "Del 3 de noviembre de 2025 al 5 de noviembre de 2025." Se llama para un `countdown.event` con
@@ -363,8 +365,8 @@ const otherUnconfirmedEvent = computed(() => priceEventOtherUnconfirmed(today.va
  * `start`/`end` no nulos (sólo la edición sin fecha confirmada los tiene en `null`, y esa nunca entra
  * acá) — pero el tipo sigue siendo `string | null`, así que esta función vive en el script (con un
  * `if` real) en vez de un `!` en el template. */
-function priceEventDateRangeLabel(entry: PriceEventCalendarEntry): string {
-  if (!entry.start || !entry.end) return ''
+function priceEventDateRangeLabel(entry: PriceEventCalendarEntry | null): string {
+  if (!entry?.start || !entry.end) return ''
   return `Del ${priceEventFormatDate(entry.start)} al ${priceEventFormatDate(entry.end)}.`
 }
 

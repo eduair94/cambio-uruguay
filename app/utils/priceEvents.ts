@@ -108,13 +108,25 @@ export function priceEventActiveEvent(today: string): PriceEventCalendarEntry | 
  * "en curso", no "primer día" (ese fue el bug: clamplear `daysUntilStart` a 0 con `Math.max(0, …)`
  * hacía que CUALQUIER día de un evento de varios días — 28, 29 y 30 de noviembre, no sólo el 27 —
  * mostrara "Hoy es el primer día de Black Friday").
- * `undated`: no hay ningún evento confirmado activo ni por venir; el que espera fecha (CyberLunes
- * noviembre 2026) es lo único que queda para mostrar.
+ * `undated`: no hay ningún evento confirmado activo ni por venir, pero la edición sin fecha
+ * (CyberLunes noviembre 2026) todavía puede razonablemente ser "la próxima" — `today` cae dentro de
+ * su ventana adivinada (ver `priceEventWindowOf`).
+ * `none`: no hay ningún evento confirmado Y la edición sin fecha ya pasó su ventana adivinada sin que
+ * nadie haya cargado la fecha real. Ese fue el segundo bug: sin este estado, la página seguía
+ * anunciando "CyberLunes noviembre 2026: a confirmar por la CEDU" en diciembre, cuando esa ventana
+ * (1 al 8 de noviembre) ya cerró — una afirmación falsa hasta que un humano cargue las próximas
+ * ediciones. Un evento vencido nunca es "la próxima".
  */
-export type PriceEventCountdownStatus = 'upcoming' | 'first-day' | 'in-progress' | 'undated'
+export type PriceEventCountdownStatus =
+  | 'upcoming'
+  | 'first-day'
+  | 'in-progress'
+  | 'undated'
+  | 'none'
 
 export interface PriceEventCountdown {
-  event: PriceEventCalendarEntry
+  /** `null` sólo cuando `status === 'none'`: no hay ningún evento, confirmado o no, que mostrar. */
+  event: PriceEventCalendarEntry | null
   status: PriceEventCountdownStatus
   /** Días de hoy al `start` del evento. Sólo tiene sentido cuando `status === 'upcoming'`; `null` en
    * cualquier otro estado (nunca 0 disfrazando un "hoy empieza" o un "sigue en curso"). */
@@ -133,12 +145,16 @@ function priceEventDaysBetween(fromIso: string, toIso: string): number {
 
 /**
  * La próxima edición a mostrar: el evento CONFIRMADO más próximo que todavía no terminó (por venir, o
- * ya en curso hoy), o —si no queda ninguno confirmado activo ni por venir— el que espera fecha.
+ * ya en curso hoy); si no queda ninguno, el que espera fecha PERO sólo mientras `today` siga dentro de
+ * su ventana adivinada (`priceEventWindowOf`) — pasada esa ventana, afirmar que sigue siendo "la
+ * próxima" ya no tiene base, así que se declara `'none'` en su lugar. Nunca devuelve `null`: siempre
+ * hay algo honesto que decir, aunque sea "todavía no hay fechas publicadas".
+ *
  * `today` es un parámetro (nunca `Date.now()` adentro): la página lo calcula una sola vez en el
  * servidor con `useState` y no abre un reloj que tickea en el cliente (ver el global constraint del
  * plan: el countdown no puede renderizar un reloj vivo).
  */
-export function priceEventCountdown(today: string): PriceEventCountdown | null {
+export function priceEventCountdown(today: string): PriceEventCountdown {
   const confirmedActiveOrUpcoming = PRICE_EVENT_CALENDAR.filter(
     (entry): entry is PriceEventCalendarEntry & { start: string; end: string } =>
       entry.confirmed && entry.start !== null && entry.end !== null && entry.end >= today
@@ -162,43 +178,51 @@ export function priceEventCountdown(today: string): PriceEventCountdown | null {
   }
 
   const unconfirmed = PRICE_EVENT_CALENDAR.find(entry => !entry.confirmed) ?? null
-  return unconfirmed
-    ? { event: unconfirmed, status: 'undated', daysUntilStart: null, endsOn: null }
-    : null
+  if (unconfirmed && today <= priceEventWindowOf(unconfirmed).end) {
+    return { event: unconfirmed, status: 'undated', daysUntilStart: null, endsOn: null }
+  }
+
+  return { event: null, status: 'none', daysUntilStart: null, endsOn: null }
 }
 
 /**
  * El texto principal del bloque de fechas para un `PriceEventCountdown` ya resuelto. Centralizado
- * acá (no en el template) para poder probar cada estado con un `toBe` exacto, incluido el que este
- * archivo existe para arreglar: ningún día del evento dice "primer día" salvo el primero.
+ * acá (no en el template) para poder probar cada estado con un `toBe` exacto, incluidos los dos que
+ * este archivo existe para arreglar: ningún día del evento dice "primer día" salvo el primero, y
+ * ninguna edición sin fecha sigue anunciándose "próxima" después de que su ventana adivinada cerró.
  */
 export function priceEventCountdownHeadline(countdown: PriceEventCountdown): string {
   switch (countdown.status) {
     case 'upcoming':
-      return `Faltan ${countdown.daysUntilStart} días para ${countdown.event.label}.`
+      return `Faltan ${countdown.daysUntilStart} días para ${countdown.event!.label}.`
     case 'first-day':
-      return `Hoy empieza ${countdown.event.label}.`
+      return `Hoy empieza ${countdown.event!.label}.`
     case 'in-progress':
-      return `${countdown.event.label}: en curso hasta el ${priceEventFormatDate(countdown.endsOn ?? '')}.`
+      return `${countdown.event!.label}: en curso hasta el ${priceEventFormatDate(countdown.endsOn ?? '')}.`
     case 'undated':
-      return `${countdown.event.label}: a confirmar por la CEDU.`
+      return `${countdown.event!.label}: a confirmar por la CEDU.`
+    case 'none':
+      return 'Todavía no hay fechas publicadas para la próxima edición de CyberLunes ni de Black Friday.'
   }
 }
 
 /**
  * La edición sin fecha confirmada (hoy, sólo puede haber una a la vez en `PRICE_EVENT_CALENDAR`),
- * cuando NO es ya el evento que `priceEventCountdown` eligió como titular — un evento con fecha fija
- * (Black Friday) puede ganar el titular aunque CyberLunes noviembre, todavía sin fecha, sea el que en
- * la práctica venga antes; sin esta segunda línea esa edición desaparecería de la página por completo
- * mientras dura la ventana de Black Friday. Devuelve `null` una vez que no queda ninguna edición sin
- * fecha (todas confirmadas) o cuando la sin fecha YA es el titular (evitar repetir la misma línea dos
- * veces el día en que la CEDU confirme la fecha real y ese evento pase a ganar el titular por sí solo).
+ * cuando NO es ya el evento que `priceEventCountdown` eligió como titular Y todavía sigue dentro de su
+ * ventana adivinada — un evento con fecha fija (Black Friday) puede ganar el titular aunque CyberLunes
+ * noviembre, todavía sin fecha, sea el que en la práctica venga antes; sin esta segunda línea esa
+ * edición desaparecería de la página por completo mientras dura la ventana de Black Friday. Devuelve
+ * `null` cuando no queda ninguna edición sin fecha (todas confirmadas), cuando la sin fecha YA es el
+ * titular (evitar repetir la misma línea dos veces el día en que la CEDU confirme la fecha real), o
+ * cuando su ventana adivinada ya venció — la misma regla que hace caer a `priceEventCountdown` en
+ * `'none'`: una edición vencida nunca es "la próxima", ni siquiera como nota aparte.
  */
 export function priceEventOtherUnconfirmed(today: string): PriceEventCalendarEntry | null {
   const unconfirmed = PRICE_EVENT_CALENDAR.find(entry => !entry.confirmed)
   if (!unconfirmed) return null
+  if (today > priceEventWindowOf(unconfirmed).end) return null
   const headline = priceEventCountdown(today)
-  if (headline?.event.key === unconfirmed.key) return null
+  if (headline.event?.key === unconfirmed.key) return null
   return unconfirmed
 }
 

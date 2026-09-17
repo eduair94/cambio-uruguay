@@ -65,23 +65,35 @@ describe('priceEventCountdown', () => {
     })
   })
 
-  it('el día después del fin: ya no hay evento confirmado activo, cae al que espera fecha', () => {
-    const result = priceEventCountdown('2026-12-01')
+  it('dentro de la ventana adivinada de CyberLunes noviembre (05), cae en undated sólo si NO hay confirmado activo — acá Black Friday todavía gana', () => {
+    // 2026-11-05 cae en la ventana [01, 08] que activeEvent() usa para la edición SIN fecha — pero
+    // priceEventCountdown no depende de esa ventana: Black Friday, confirmado, sigue siendo el
+    // evento a mostrar mientras no haya terminado.
+    const result = priceEventCountdown('2026-11-05')
+    expect(result.event?.key).toBe('black-friday-2026')
+    expect(result.status).toBe('upcoming')
+  })
+
+  // El segundo bug que esta fecha atrapa: el 9 de noviembre la ventana adivinada de CyberLunes
+  // [01, 08] YA CERRÓ, pero Black Friday (start 27) sigue sin empezar — el resultado tiene que
+  // seguir siendo Black Friday `upcoming`, nunca `undated` ni `none` por culpa de una ventana ajena
+  // que ya venció.
+  it('con la ventana de CyberLunes vencida (09) pero Black Friday por venir: upcoming BF, no undated ni none', () => {
+    const result = priceEventCountdown('2026-11-09')
     expect(result).toEqual({
-      event: expect.objectContaining({ key: 'ciberlunes-2026-11', confirmed: false }),
-      status: 'undated',
-      daysUntilStart: null,
+      event: expect.objectContaining({ key: 'black-friday-2026' }),
+      status: 'upcoming',
+      daysUntilStart: 18,
       endsOn: null,
     })
   })
 
-  it('dentro de la ventana adivinada de CyberLunes noviembre, Black Friday sigue ganando el titular si sigue confirmado y activo/por venir', () => {
-    // 2026-11-03 cae en la ventana [01, 08] que activeEvent() usa para la edición SIN fecha — pero
-    // priceEventCountdown no depende de esa ventana: Black Friday, confirmado, sigue siendo el
-    // evento a mostrar mientras no haya terminado.
-    const result = priceEventCountdown('2026-11-03')
-    expect(result?.event.key).toBe('black-friday-2026')
-    expect(result?.status).toBe('upcoming')
+  // El bug de fondo de esta ronda: sin la regla de vencimiento, esto seguía devolviendo `undated`
+  // con la edición de CyberLunes noviembre — una afirmación falsa en diciembre, con su ventana
+  // adivinada (1 al 8 de noviembre) cerrada hace semanas y ningún evento confirmado por delante.
+  it('el día después del fin de Black Friday, con la ventana de CyberLunes también vencida: none, sin evento', () => {
+    const result = priceEventCountdown('2026-12-01')
+    expect(result).toEqual({ event: null, status: 'none', daysUntilStart: null, endsOn: null })
   })
 })
 
@@ -128,6 +140,12 @@ describe('priceEventCountdownHeadline', () => {
       })
     ).toBe('CyberLunes noviembre 2026: a confirmar por la CEDU.')
   })
+
+  it('none: avisa que no hay fechas publicadas, sin nombrar un evento vencido', () => {
+    expect(priceEventCountdownHeadline({ ...base, event: null, status: 'none' })).toBe(
+      'Todavía no hay fechas publicadas para la próxima edición de CyberLunes ni de Black Friday.'
+    )
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -140,7 +158,16 @@ describe('priceEventOtherUnconfirmed', () => {
     expect(result?.key).toBe('ciberlunes-2026-11')
   })
 
-  it('después de Black Friday, la sin fecha YA es el titular: no se repite aparte', () => {
+  it('todavía dentro de su ventana adivinada (05 de noviembre): se muestra aparte igual', () => {
+    const result = priceEventOtherUnconfirmed('2026-11-05')
+    expect(result?.key).toBe('ciberlunes-2026-11')
+  })
+
+  it('con la ventana vencida (09 de noviembre) pero Black Friday por venir: ya no se muestra aparte', () => {
+    expect(priceEventOtherUnconfirmed('2026-11-09')).toBeNull()
+  })
+
+  it('después de Black Friday, con la ventana también vencida: ninguna razón para mostrarla aparte', () => {
     expect(priceEventOtherUnconfirmed('2026-12-01')).toBeNull()
   })
 })
