@@ -130,7 +130,7 @@ const DESCRIPTION_FLAGS: ReadonlyArray<[CarTextFlag, string]> = [
   // here on purpose: "sin chapa ni pintura" means original bodywork.
   // A stated debt with an amount ("Deuda 40mil pesos", "tiene una deuda total de 52000") and "solo
   // libreta" (no title yet) explained two and one of the first 64 live opportunities.
-  ["paperwork", "\\b(sin (?:papeles|titulo|libreta|documentos|matriculas?|placas?)|con deudas?|tiene (?:una |alguna )?deudas?|deudas? (?:total )?(?:de )?(?:u?\\$s?\\s?)?[1-9]\\w*|solo (?:con )?libreta|embargad[oa]s?|remate|leasing|sucesion|(?:matriculas?|placas?|chapas?) (?:entregad|retirad|depositad)[oa]s?)\\b"],
+  ["paperwork", "\\b(sin (?:papeles|titulo|libreta|documentos|matriculas?|placas?)|con deudas?|tiene (?:una |alguna )?deudas?|deudas? (?:total )?(?:de )?(?:u?\\$s?\\s?)?[1-9]\\w*|debe (?:u?\\$s?\\s?)?[1-9]\\w*|solo (?:con )?libreta|embargad[oa]s?|remate|leasing|sucesion|(?:matriculas?|placas?|chapas?) (?:entregad|retirad|depositad)[oa]s?)\\b"],
   ["foreign_plate", "\\b(?:chapa|placa|matricula|patente|empadronad[oa])s? (?:en |de )?(?:argentin[oa]|brasil(?:en[oa]|er[oa])?|paraguay[oa]?|extranjer[oa])\\b"],
 ];
 

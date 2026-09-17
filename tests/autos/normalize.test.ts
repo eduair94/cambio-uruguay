@@ -94,6 +94,9 @@ describe("text flags", () => {
     expect(descriptionFlags("Incluye dos puertas para repararla No tiene airbag de butaca chofer Andando impecable Al día y sin multas,Matrículas entregadas en rivera para no generar deuda")).toEqual(["damaged", "paperwork"]);
     expect(descriptionFlags("Airbags activados, se vende así")).toEqual(["damaged"]);
     expect(descriptionFlags("Vendo sin matrícula, para campo")).toEqual(["paperwork"]);
+    // "Debe N" is an amount owed (Facebook, 2026-09-17); "debe ver" or "debe solo la patente del año" is not.
+    expect(descriptionFlags("Debe 52 mil pesos con titulos pronto a transferir")).toEqual(["paperwork"]);
+    expect(descriptionFlags("Se debe ver, debe solo la patente de lo que va del año")).toEqual([]);
     expect(descriptionFlags("Excelente estado 161.000km Deuda 40mil pesos Servicio recién realizado")).toEqual(["paperwork"]);
     expect(descriptionFlags("Tiene una deuda total de 52000 pesos")).toEqual(["paperwork"]);
     expect(descriptionFlags("Único dueño 36mil km con service oficial Solo libreta Se puede transferir")).toEqual(["paperwork"]);

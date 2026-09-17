@@ -1,0 +1,48 @@
+{
+ "data": {
+  "viewer": {
+   "marketplace_product_details_page": {
+    "target": {
+     "__typename": "GroupCommerceProductItem",
+     "id": "1111111111111111",
+     "marketplace_listing_title": "Chevrolet Aveo 1.6",
+     "redacted_description": {
+      "text": "Muy buen estado de motor detalles son los que se ven en la foto. Debe 52 mil pesos con titulos pronto a transferir"
+     },
+     "creation_time": 1789656553,
+     "location_text": {
+      "text": "Montevideo, Uruguay"
+     },
+     "formatted_price": {
+      "text": "UYU4,000"
+     },
+     "listing_price": {
+      "amount_with_offset": "400000",
+      "currency": "UYU",
+      "amount": "4000.00"
+     },
+     "condition": "USED",
+     "custom_title": null,
+     "is_live": true,
+     "is_pending": false,
+     "is_sold": false,
+     "is_hidden": false,
+     "marketplace_listing_category_id": "807311116002614",
+     "marketplace_listing_seller": {
+      "__typename": "User",
+      "name": "SELLER NAME",
+      "id": "222222222222222",
+      "user_id": "222222222222222"
+     },
+     "vehicle_make_display_name": null,
+     "vehicle_model_display_name": null,
+     "vehicle_odometer_data": {
+      "unit": null,
+      "value": null
+     },
+     "vehicle_transmission_type": null
+    }
+   }
+  }
+ }
+}
