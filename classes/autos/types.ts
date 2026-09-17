@@ -6,10 +6,11 @@ export type CarFuel = "nafta" | "diesel" | "electrico" | "hibrido" | "gnc";
 export type CarSellerType = "dealer" | "private";
 export type CarKmQuality = "ok" | "placeholder" | "unknown";
 export type CarTextFlag = "damaged" | "financing" | "foreign_plate" | "paperwork" | "price_mismatch" | "recovered";
+export type CarSource = "mercadolibre" | "facebook" | "clasiautos" | "julio" | "shoppingdeautos" | "carper" | "fidocar" | "carone";
 
 export interface RawCarListing {
   id: string;
-  source: "mercadolibre";
+  source: CarSource;
   brandId: string;
   brand: string;
   modelId: string;
@@ -29,6 +30,12 @@ export interface RawCarListing {
   pictureCount: number | null;
   permalink: string;
   observedAt: string;
+  /** Private: version/engine words a structured source gives outside its title ("1.6 EXCLUSIVE"). */
+  specText?: string | null;
+  /** Commercial name of a dealer's own website (public). */
+  dealerName?: string | null;
+  /** The advert never states its currency; it was deduced against the same car's reference. */
+  currencyInferred?: boolean;
 }
 
 export interface CarModelVocabulary {
@@ -41,6 +48,20 @@ export interface CarHarvestGap {
   brandId: string;
   brand: string;
   missing: number;
+}
+
+export interface CarSourceResult {
+  source: CarSource;
+  ok: boolean;
+  /** The whole inventory was read without failures: only then may an unseen advert count as missing. */
+  complete: boolean;
+  listings: RawCarListing[];
+  /** Keyed by car key (`<prefix>-<id>`). */
+  details: Map<string, CarDetail>;
+  requests: number;
+  note: string | null;
+  startedAt: string;
+  finishedAt: string;
 }
 
 export interface CarHarvestResult {
@@ -99,8 +120,16 @@ export interface StoredCar {
   detail: CarDetail | null;
 }
 
+export interface CarReference {
+  priceUsd: number;
+  basis: "version" | "year";
+  updatedAt: string;
+}
+
 export interface CarListing extends RawCarListing {
   key: string;
+  sourceName: string;
+  reference: CarReference | null;
   brandSlug: string;
   modelSlug: string;
   marketSlug: string;

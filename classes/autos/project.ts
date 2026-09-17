@@ -2,35 +2,29 @@
 // history and the ML detail payload never cross it.
 import { CAR_OPPORTUNITY_POLICY, type CarAnalysis, type CarCandidate } from "./analyze";
 import { cleanPublicText } from "./normalize";
+import { safeSourcePermalink, safeSourcePicture } from "./sources/registry";
 import type {
   PublicCarCatalogMeta, PublicCarComparable, PublicCarListing, PublicCarOpportunityItem, PublicCarOpportunitySnapshot,
+  PublicCarSourceCoverage,
 } from "./publicTypes";
 import type { CarListing } from "./types";
 
 export const CAR_CATALOG_FRESH_DAYS = 4;
-const PERMALINK_PREFIX = "https://auto.mercadolibre.com.uy/MLU-";
 const round3 = (value: number): number => Math.round(value * 1000) / 1000;
 
-function safePicture(url: string | null): string | null {
-  try {
-    const parsed = new URL(String(url || ""));
-    return parsed.protocol === "https:" && parsed.host === "http2.mlstatic.com" && !parsed.username && !parsed.password
-      ? parsed.toString()
-      : null;
-  } catch {
-    return null;
-  }
-}
-
 function dealerNameOf(listing: CarListing): string | null {
+  // A dealer's own website names itself; ML names the dealer only on the advert's page.
+  if (listing.dealerName) return cleanPublicText(listing.dealerName) || null;
   if (listing.sellerType !== "dealer" || !listing.detail?.sellerName) return null;
   return cleanPublicText(listing.detail.sellerName) || null;
 }
 
 export function publicCarListing(listing: CarListing, opportunity: PublicCarListing["opportunity"]): PublicCarListing | null {
-  if (!listing.permalink.startsWith(PERMALINK_PREFIX)) return null;
+  if (!safeSourcePermalink(listing.source, listing.permalink)) return null;
   return {
     key: listing.key,
+    source: listing.source,
+    sourceName: listing.sourceName,
     brand: listing.brand,
     brandSlug: listing.brandSlug,
     model: listing.model,
@@ -43,6 +37,7 @@ export function publicCarListing(listing: CarListing, opportunity: PublicCarList
     currency: listing.currency,
     priceUsd: listing.priceUsd,
     priceConverted: listing.priceConverted,
+    currencyInferred: !!listing.currencyInferred,
     transmission: listing.transmission,
     fuel: listing.fuel,
     engine: listing.engine,
@@ -51,7 +46,7 @@ export function publicCarListing(listing: CarListing, opportunity: PublicCarList
     neighborhood: listing.neighborhood,
     sellerType: listing.sellerType,
     dealerName: dealerNameOf(listing),
-    picture: safePicture(listing.picture),
+    picture: safeSourcePicture(listing.source, listing.picture),
     pictureCount: listing.pictureCount,
     permalink: listing.permalink,
     firstSeen: listing.firstSeen,
@@ -59,6 +54,7 @@ export function publicCarListing(listing: CarListing, opportunity: PublicCarList
     priceDrop: listing.priceDrop ? { ...listing.priceDrop } : null,
     flags: [...listing.flags],
     opportunity,
+    reference: listing.reference ? { ...listing.reference } : null,
   };
 }
 
@@ -73,6 +69,7 @@ export interface CatalogContext {
   lastFullReadAt: string | null;
   lastReadAt: string | null;
   reportedTotal: number | null;
+  sources: PublicCarSourceCoverage[];
 }
 
 export function buildCarCatalog(listings: readonly CarListing[], analysis: CarAnalysis, context: CatalogContext): { listings: PublicCarListing[]; meta: PublicCarCatalogMeta } {
@@ -103,6 +100,7 @@ export function buildCarCatalog(listings: readonly CarListing[], analysis: CarAn
       reportedTotal: context.reportedTotal,
       opportunities: rows.filter(row => row.opportunity).length,
       models: [...models.values()].sort((a, b) => b.listings - a.listings || a.slug.localeCompare(b.slug)),
+      sources: context.sources.map(source => ({ ...source })),
     },
   };
 }
@@ -110,6 +108,8 @@ export function buildCarCatalog(listings: readonly CarListing[], analysis: CarAn
 function comparable(listing: CarListing): PublicCarComparable {
   return {
     key: listing.key,
+    source: listing.source,
+    sourceName: listing.sourceName,
     title: cleanPublicText(listing.title).slice(0, 160),
     year: listing.year,
     km: listing.km!,
@@ -140,13 +140,13 @@ export function buildOpportunitySnapshot(analysis: CarAnalysis, context: { gener
         p25: Math.round(sample.p25), median: Math.round(sample.median), p75: Math.round(sample.p75),
         spread: round3(sample.spread), kmMedian: Math.round(sample.kmMedian), kmP75: Math.round(sample.kmP75),
       },
-      comparables: candidate.comparables.filter(peer => peer.permalink.startsWith(PERMALINK_PREFIX)).map(comparable),
+      comparables: candidate.comparables.filter(peer => safeSourcePermalink(peer.source, peer.permalink)).map(comparable),
       detailReadAt: candidate.subject.detail.readAt,
     });
   }
   return {
     version: 1,
-    algorithm: "car-cohort-v1",
+    algorithm: "car-cohort-v2",
     generatedAt: context.generatedAt,
     usdUyu: context.usdUyu,
     policy: {

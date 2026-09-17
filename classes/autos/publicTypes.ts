@@ -6,9 +6,18 @@ export type PublicCarTransmission = "manual" | "automatica";
 export type PublicCarSeller = "dealer" | "private";
 export type PublicCarFlag = "damaged" | "financing" | "foreign_plate" | "paperwork" | "price_mismatch" | "recovered";
 export type PublicCarTier = "strict" | "exploratory";
+export type PublicCarSource = "mercadolibre" | "facebook" | "clasiautos" | "julio" | "shoppingdeautos" | "carper" | "fidocar" | "carone";
+
+export interface PublicCarReference {
+  priceUsd: number;
+  basis: "version" | "year";
+  updatedAt: string;
+}
 
 export interface PublicCarListing {
   key: string;
+  source: PublicCarSource;
+  sourceName: string;
   brand: string;
   brandSlug: string;
   model: string;
@@ -21,6 +30,7 @@ export interface PublicCarListing {
   currency: PublicCarCurrency;
   priceUsd: number;
   priceConverted: boolean;
+  currencyInferred: boolean;
   transmission: PublicCarTransmission | null;
   fuel: PublicCarFuel | null;
   engine: string | null;
@@ -37,6 +47,7 @@ export interface PublicCarListing {
   priceDrop: { from: number; currency: PublicCarCurrency; since: string } | null;
   flags: PublicCarFlag[];
   opportunity: { tier: PublicCarTier; gap: number; median: number; n: number } | null;
+  reference: PublicCarReference | null;
 }
 
 export interface PublicCarModelSummary {
@@ -44,6 +55,15 @@ export interface PublicCarModelSummary {
   brand: string;
   model: string;
   listings: number;
+}
+
+export interface PublicCarSourceCoverage {
+  source: PublicCarSource;
+  name: string;
+  listings: number;
+  duplicates: number;
+  lastReadAt: string | null;
+  ok: boolean;
 }
 
 export interface PublicCarCatalogMeta {
@@ -58,6 +78,7 @@ export interface PublicCarCatalogMeta {
   reportedTotal: number | null;
   opportunities: number;
   models: PublicCarModelSummary[];
+  sources: PublicCarSourceCoverage[];
 }
 
 export interface PublicCarMarketRow {
@@ -73,6 +94,17 @@ export interface PublicCarMarketRow {
   kmMedian: number;
 }
 
+export interface PublicCarGuideVersion {
+  name: string;
+  priceUsd: number;
+}
+
+export interface PublicCarGuideYear {
+  year: number;
+  averageUsd: number | null;
+  versions: PublicCarGuideVersion[];
+}
+
 export interface PublicCarMarketSnapshot {
   version: 1;
   slug: string;
@@ -84,10 +116,14 @@ export interface PublicCarMarketSnapshot {
   listings: number;
   years: PublicCarMarketRow[];
   rows: PublicCarMarketRow[];
+  guide: PublicCarGuideYear[];
+  guideUpdatedAt: string | null;
 }
 
 export interface PublicCarComparable {
   key: string;
+  source: PublicCarSource;
+  sourceName: string;
   title: string;
   year: number;
   km: number;
@@ -157,7 +193,7 @@ export interface PublicCarOpportunityStats {
 
 export interface PublicCarOpportunitySnapshot {
   version: 1;
-  algorithm: "car-cohort-v1";
+  algorithm: "car-cohort-v2";
   generatedAt: string;
   usdUyu: number;
   policy: PublicCarOpportunityPolicy;

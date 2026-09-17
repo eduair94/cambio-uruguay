@@ -13,7 +13,7 @@ function car(overrides: Partial<CarListing> = {}): CarListing {
     department: "Montevideo", sellerType: "private", sellerId: `s${serial}`, picture: null, pictureCount: 1,
     permalink: `https://auto.mercadolibre.com.uy/MLU-${id.slice(3)}-x-_JM`, observedAt: NOW.toISOString(), key: `ml-${id}`,
     brandSlug: "peugeot", modelSlug: "208", marketSlug: "peugeot-208", engine: "1.2", trim: "active", trimLabel: "Active",
-    kmQuality: "ok", flags: [], priceUsd: 9_000, priceConverted: false, firstSeen: NOW.toISOString(),
+    kmQuality: "ok", flags: [], priceUsd: 9_000, priceConverted: false, sourceName: "Mercado Libre", reference: null, firstSeen: NOW.toISOString(),
     lastSeen: NOW.toISOString(), priceDrop: null, detail: null, ...overrides,
   };
 }

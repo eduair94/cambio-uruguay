@@ -13,7 +13,7 @@ function car(overrides: Partial<CarListing> = {}): CarListing {
     permalink: "https://auto.mercadolibre.com.uy/MLU-1-peugeot-_JM", observedAt: NOW.toISOString(), key: "ml-MLU1",
     brandSlug: "peugeot", modelSlug: "208", marketSlug: "peugeot-208", engine: "1.5", trim: "allure", trimLabel: "Allure",
     kmQuality: "ok", flags: [], priceUsd: 7_900, priceConverted: false, firstSeen: NOW.toISOString(), lastSeen: NOW.toISOString(),
-    priceDrop: null,
+    priceDrop: null, sourceName: "Mercado Libre", reference: null,
     detail: { readAt: NOW.toISOString(), price: 7_900, currency: "USD", active: true, brand: "Peugeot", model: "208", year: 2017,
       km: 112_000, version: "1.5 Allure", engineText: null, sellerName: "Automotora X", bodyType: null, color: null, doors: null,
       flags: [], description: "PRIVATE DESCRIPTION TEXT" },
@@ -25,9 +25,10 @@ describe("publicCarListing", () => {
   it("projects only public fields and cleans contact data", () => {
     const row = publicCarListing(car(), null)!;
     expect(Object.keys(row).sort()).toEqual([
-      "brand", "brandSlug", "currency", "dealerName", "department", "engine", "firstSeen", "flags", "fuel", "key", "km",
-      "lastSeen", "marketSlug", "model", "modelSlug", "neighborhood", "opportunity", "permalink", "picture", "pictureCount",
-      "price", "priceConverted", "priceDrop", "priceUsd", "sellerType", "title", "transmission", "trim", "year",
+      "brand", "brandSlug", "currency", "currencyInferred", "dealerName", "department", "engine", "firstSeen", "flags", "fuel",
+      "key", "km", "lastSeen", "marketSlug", "model", "modelSlug", "neighborhood", "opportunity", "permalink", "picture",
+      "pictureCount", "price", "priceConverted", "priceDrop", "priceUsd", "reference", "sellerType", "source", "sourceName",
+      "title", "transmission", "trim", "year",
     ]);
     expect(row.title).toBe("Peugeot 208 1.5 Allure llamar");
     expect(row.dealerName).toBe("Automotora X");
@@ -42,6 +43,21 @@ describe("publicCarListing", () => {
   it("nulls a dealer name that cleans to nothing instead of publishing an empty string", () => {
     const row = publicCarListing(car({ detail: { ...car().detail!, sellerName: "099 123 456" } }), null)!;
     expect(row.dealerName).toBeNull();
+  });
+  it("publishes a web source's own permalink, picture and dealer name", () => {
+    const row = publicCarListing(car({
+      id: "15715", source: "clasiautos", key: "clasiautos-15715", sourceName: "Clasiautos",
+      permalink: "https://clasiautos.uy/avisos/toyota-corolla-le/", picture: "https://clasiautos.uy/wp-content/uploads/a.jpg",
+      dealerName: "Autos Pepe 099 123 456", detail: null,
+    }), null)!;
+    expect(row).toMatchObject({ source: "clasiautos", sourceName: "Clasiautos", dealerName: "Autos Pepe", picture: "https://clasiautos.uy/wp-content/uploads/a.jpg" });
+    expect(publicCarListing(car({ source: "clasiautos", permalink: "https://auto.mercadolibre.com.uy/MLU-1" }), null)).toBeNull();
+    expect(publicCarListing(car({ source: "facebook", picture: "https://http2.mlstatic.com/D_1.webp", permalink: "https://www.facebook.com/marketplace/item/1268374875382121/" }), null)!.picture).toBeNull();
+  });
+  it("carries the inferred-currency mark and the reference", () => {
+    const row = publicCarListing(car({ currencyInferred: true, reference: { priceUsd: 8_100, basis: "version", updatedAt: NOW.toISOString() } }), null)!;
+    expect(row.currencyInferred).toBe(true);
+    expect(row.reference).toEqual({ priceUsd: 8_100, basis: "version", updatedAt: NOW.toISOString() });
   });
   it("rejects a picture URL carrying a username or password", () => {
     expect(publicCarListing(car({ picture: "https://user:pass@http2.mlstatic.com/D_1.webp" }), null)!.picture).toBeNull();
@@ -64,6 +80,7 @@ describe("snapshots", () => {
     const stale = car({ id: "MLU2", key: "ml-MLU2", lastSeen: "2026-09-01T00:00:00.000Z", permalink: "https://auto.mercadolibre.com.uy/MLU-2-x-_JM" });
     const { listings, meta } = buildCarCatalog([car(), stale, ...peers], analysis(car(), peers), {
       now: NOW, generatedAt: NOW.toISOString(), usdUyu: 40.2, lastFullReadAt: NOW.toISOString(), lastReadAt: NOW.toISOString(), reportedTotal: 17_041,
+      sources: [{ source: "mercadolibre", name: "Mercado Libre", listings: 11, duplicates: 0, lastReadAt: NOW.toISOString(), ok: true }],
     });
     expect(listings).toHaveLength(11);
     expect(listings.find(row => row.key === "ml-MLU1")!.opportunity).toEqual({ tier: "strict", gap: 0.255, median: 10600, n: 10 });
@@ -72,7 +89,7 @@ describe("snapshots", () => {
   });
   it("publishes the policy, the sample and the comparables without private data", () => {
     const snapshot = buildOpportunitySnapshot(analysis(car(), peers), { generatedAt: NOW.toISOString(), usdUyu: 40.2 });
-    expect(snapshot).toMatchObject({ version: 1, algorithm: "car-cohort-v1", policy: { maximumGap: CAR_OPPORTUNITY_POLICY.maximumGap } });
+    expect(snapshot).toMatchObject({ version: 1, algorithm: "car-cohort-v2", policy: { maximumGap: CAR_OPPORTUNITY_POLICY.maximumGap } });
     expect(snapshot.items[0]).toMatchObject({ tier: "strict", gap: 0.255, sample: { n: 10, median: 10600 }, detailReadAt: NOW.toISOString() });
     expect(snapshot.items[0]!.comparables).toHaveLength(10);
     expect(JSON.stringify(snapshot)).not.toMatch(/PRIVATE|sellerId|SELLERID|description/);

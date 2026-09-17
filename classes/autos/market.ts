@@ -40,7 +40,7 @@ export function buildMarketSnapshots(
   const snapshots: PublicCarMarketSnapshot[] = [];
   for (const [slug, group] of groupBy(fresh, listing => listing.marketSlug)) {
     if (group.length < MIN_ROW) continue;
-    const clean = group.filter(listing => !listing.priceConverted && listing.priceUsd >= 1_000 && listing.priceUsd <= 500_000 &&
+    const clean = group.filter(listing => !listing.priceConverted && !listing.currencyInferred && listing.priceUsd >= 1_000 && listing.priceUsd <= 500_000 &&
       listing.kmQuality === "ok" && !listing.flags.some(flag => EXCLUDING_FLAGS.has(flag)));
     const years = [...groupBy(clean, listing => String(listing.year))]
       .filter(([, items]) => items.length >= MIN_ROW)
@@ -59,7 +59,7 @@ export function buildMarketSnapshots(
     const newest = [...group].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen))[0]!;
     snapshots.push({
       version: 1, slug, brand: newest.brand, model: newest.model, brandSlug: newest.brandSlug, modelSlug: newest.modelSlug,
-      generatedAt: options.generatedAt, listings: group.length, years, rows,
+      generatedAt: options.generatedAt, listings: group.length, years, rows, guide: [], guideUpdatedAt: null,
     });
   }
   return snapshots.sort((a, b) => b.listings - a.listings || a.slug.localeCompare(b.slug));

@@ -4,7 +4,7 @@ import fs from "fs";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { analyzeCars } from "./classes/autos/analyze";
 import { fetchCarDetails } from "./classes/autos/detail";
-import { enrichCarListing } from "./classes/autos/enrich";
+import { carKey, enrichCarListing } from "./classes/autos/enrich";
 import { buildMarketSnapshots } from "./classes/autos/market";
 import { buildCarCatalog, buildOpportunitySnapshot, CAR_CATALOG_FRESH_DAYS } from "./classes/autos/project";
 import { harvestMercadoLibreCars } from "./classes/autos/sources/mercadolibre";
@@ -21,7 +21,7 @@ const argument = (name: string): string | undefined =>
 
 function storedFromHarvest(harvest: CarHarvestResult): StoredCar[] {
   return harvest.listings.map(listing => ({
-    key: `ml-${listing.id}`, firstSeen: listing.observedAt, lastSeen: listing.observedAt, listing,
+    key: carKey(listing.id, listing.source), firstSeen: listing.observedAt, lastSeen: listing.observedAt, listing,
     priceHistory: [{ price: listing.price, currency: listing.currency, observedAt: listing.observedAt }],
     retiredAt: null, missedFullSweeps: 0, detail: null,
   }));
@@ -104,6 +104,7 @@ async function main(): Promise<void> {
     lastFullReadAt: (lastFull?.lastOkAt as string | undefined) ?? (harvest?.mode === "full" ? harvest.finishedAt : null),
     lastReadAt: (lastRun?.finishedAt as string | undefined) ?? harvest?.finishedAt ?? null,
     reportedTotal: (lastFull?.reportedTotal as number | undefined) ?? harvest?.reportedTotal ?? null,
+    sources: [],
   });
   const markets = buildMarketSnapshots(listings, { now, generatedAt, freshDays: CAR_CATALOG_FRESH_DAYS });
   const snapshot = buildOpportunitySnapshot(analysis, { generatedAt, usdUyu });

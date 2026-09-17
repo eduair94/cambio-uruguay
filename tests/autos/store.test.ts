@@ -13,6 +13,7 @@ function fakeCollection(docs: Doc[] = []) {
         if (filter.key?.$in) return filter.key.$in.includes(doc.key);
         if (filter.key?.$nin?.includes(doc.key)) return false;
         if (filter["listing.brandId"]?.$in && !filter["listing.brandId"].$in.includes(doc.listing.brandId)) return false;
+        if (filter["listing.source"] && filter["listing.source"] !== doc.listing.source) return false;
         if (filter.lastSeen?.$lt && !(String(doc.lastSeen) < filter.lastSeen.$lt)) return false;
         if (filter.lastSeen?.$gte && !(String(doc.lastSeen) >= filter.lastSeen.$gte)) return false;
         if ("retiredAt" in filter && doc.retiredAt) return false;
@@ -113,7 +114,7 @@ describe("saveRefusal", () => {
 describe("publish guards refuse to wipe the public collection", () => {
   const meta: PublicCarCatalogMeta = {
     key: "uy-cars", generatedAt: "2026-09-16T10:30:00.000Z", freshDays: 4, sourceCoverage: "partial", listings: 0,
-    usdUyu: 40, lastFullReadAt: null, lastReadAt: null, reportedTotal: null, opportunities: 0, models: [],
+    usdUyu: 40, lastFullReadAt: null, lastReadAt: null, reportedTotal: null, opportunities: 0, models: [], sources: [],
   };
   it("publishCarCatalog throws instead of publishing an empty array", async () => {
     collections.set("carcatalog", fakeCollection());
@@ -131,6 +132,8 @@ describe("saveCarHarvest", () => {
       { key: "ml-MLU1", priceHistory: [{ price: 11_000, currency: "USD", observedAt: "2026-09-10T00:00:00.000Z" }], listing: raw("MLU1"), lastSeen: "2026-09-15T00:00:00.000Z", retiredAt: null, missedFullSweeps: 0 },
       { key: "ml-MLU9", priceHistory: [], listing: raw("MLU9"), lastSeen: "2026-09-15T00:00:00.000Z", retiredAt: null, missedFullSweeps: 1 },
       { key: "ml-MLU8", priceHistory: [], listing: { ...raw("MLU8"), brandId: "other" }, lastSeen: "2026-09-15T00:00:00.000Z", retiredAt: null, missedFullSweeps: 1 },
+      // Same ML brand id, but a dealer website's advert: an ML sweep never retires it.
+      { key: "carone-5", priceHistory: [], listing: { ...raw("5"), source: "carone" }, lastSeen: "2026-09-15T00:00:00.000Z", retiredAt: null, missedFullSweeps: 1 },
     ]);
     collections.set("carlistings", listings);
     const result = await saveCarHarvest(harvest([raw("MLU1", 10_000)]));
@@ -140,6 +143,7 @@ describe("saveCarHarvest", () => {
     const retire = listings.writes.find(op => op.updateOne?.filter.key === "ml-MLU9")!;
     expect(retire.updateOne.update.$set).toEqual({ missedFullSweeps: 2, retiredAt: "2026-09-16T10:30:00.000Z" });
     expect(listings.writes.find(op => op.updateOne?.filter.key === "ml-MLU8")).toBeUndefined();
+    expect(listings.writes.find(op => op.updateOne?.filter.key === "carone-5")).toBeUndefined();
   });
   it("never counts misses in fast mode", async () => {
     const listings = fakeCollection([{ key: "ml-MLU9", priceHistory: [], listing: raw("MLU9"), lastSeen: "2026-09-15T00:00:00.000Z", retiredAt: null, missedFullSweeps: 1 }]);

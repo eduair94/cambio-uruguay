@@ -19,6 +19,7 @@ function car(overrides: Partial<CarListing> = {}): CarListing {
     observedAt: NOW.toISOString(), key: `ml-${id}`, brandSlug: "chevrolet", modelSlug: "onix", marketSlug: "chevrolet-onix",
     engine: "1.4", trim: "lt", trimLabel: "Lt", kmQuality: "ok", flags: [], priceUsd: overrides.priceUsd ?? price,
     priceConverted: false, firstSeen: NOW.toISOString(), lastSeen: NOW.toISOString(), priceDrop: null, detail: null,
+    sourceName: "Mercado Libre", reference: null,
     ...overrides,
   };
 }
@@ -40,6 +41,7 @@ describe("exclusionReason", () => {
     expect(exclusionReason(car({ lastSeen: "2026-09-13T00:00:00.000Z" }), NOW)).toBe("stale");
     expect(exclusionReason(car({ lastSeen: "not-a-date" }), NOW)).toBe("stale");
     expect(exclusionReason(car({ priceConverted: true }), NOW)).toBe("not_usd");
+    expect(exclusionReason(car({ currencyInferred: true }), NOW)).toBe("currency_inferred");
     expect(exclusionReason(car({ kmQuality: "placeholder" }), NOW)).toBe("km_placeholder");
     expect(exclusionReason(car({ flags: ["damaged"] }), NOW)).toBe("flag_damaged");
     expect(exclusionReason(car({ trim: null }), NOW)).toBe("no_trim");

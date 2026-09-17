@@ -1,5 +1,6 @@
 import { engineOf, kmQuality, slugify, titleFlags, trimLabel, trimOf } from "./normalize";
-import type { CarDetail, CarListing, CarPricePoint, RawCarListing } from "./types";
+import { CAR_SOURCES, carKeyFor } from "./sources/registry";
+import type { CarDetail, CarListing, CarPricePoint, CarSource, RawCarListing } from "./types";
 
 export interface EnrichContext {
   usdUyu: number;
@@ -10,8 +11,8 @@ export interface EnrichContext {
   detail: CarDetail | null;
 }
 
-export function carKey(id: string): string {
-  return `ml-${id}`;
+export function carKey(id: string, source: CarSource = "mercadolibre"): string {
+  return carKeyFor(source, id);
 }
 
 /** A drop we OBSERVED: the previous stored price was higher, in the same currency. */
@@ -25,17 +26,20 @@ export function priceDropOf(listing: Pick<RawCarListing, "price" | "currency">, 
 }
 
 export function enrichCarListing(raw: RawCarListing, context: EnrichContext): CarListing {
-  const trim = trimOf(raw.title, context.trims);
+  // Structured sources carry version/engine words outside the title; the same rules read both.
+  const identity = `${raw.title} ${raw.specText ?? ""}`.trim();
+  const trim = trimOf(identity, context.trims);
   const brandSlug = slugify(raw.brand);
   const modelSlug = slugify(raw.model);
   const flags = new Set([...titleFlags(raw.title, raw.price, raw.currency), ...(context.detail?.flags ?? [])]);
   return {
     ...raw,
-    key: carKey(raw.id),
+    key: carKey(raw.id, raw.source),
+    sourceName: CAR_SOURCES[raw.source].name,
     brandSlug,
     modelSlug,
     marketSlug: `${brandSlug}-${modelSlug}`,
-    engine: raw.fuel === "electrico" ? "EV" : engineOf(raw.title),
+    engine: raw.fuel === "electrico" ? "EV" : engineOf(identity),
     trim,
     trimLabel: trimLabel(trim, context.trims),
     kmQuality: kmQuality(raw.km),
@@ -46,5 +50,6 @@ export function enrichCarListing(raw: RawCarListing, context: EnrichContext): Ca
     lastSeen: context.lastSeen,
     priceDrop: priceDropOf(raw, context.priceHistory),
     detail: context.detail,
+    reference: null,
   };
 }

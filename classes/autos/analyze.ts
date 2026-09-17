@@ -63,6 +63,8 @@ export function exclusionReason(listing: CarListing, now: Date): string | null {
   // to "stale" here rather than silently passing as fresh.
   if (!(Date.parse(listing.lastSeen) >= cutoff)) return "stale";
   if (listing.priceConverted) return "not_usd";
+  // A deduced currency is good enough to list a car, never to call it cheap.
+  if (listing.currencyInferred) return "currency_inferred";
   if (listing.priceUsd < 1_000 || listing.priceUsd > 500_000) return "implausible_price";
   if (listing.kmQuality !== "ok") return `km_${listing.kmQuality}`;
   const flag = listing.flags.find(item => EXCLUDING_FLAGS.has(item));

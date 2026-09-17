@@ -108,11 +108,11 @@ export async function saveCarHarvest(harvest: CarHarvestResult): Promise<{ upser
   for (let index = 0; index < harvest.listings.length; index += CHUNK) {
     const chunk = harvest.listings.slice(index, index + CHUNK);
     const existing = new Map(
-      (await collection.find({ key: { $in: chunk.map(listing => carKey(listing.id)) } }, { projection: { key: 1, priceHistory: 1 } }).toArray())
+      (await collection.find({ key: { $in: chunk.map(listing => carKey(listing.id, listing.source)) } }, { projection: { key: 1, priceHistory: 1 } }).toArray())
         .map(doc => [String(doc.key), doc])
     );
     const operations = chunk.map(listing => {
-      const key = carKey(listing.id);
+      const key = carKey(listing.id, listing.source);
       const history = nextPriceHistory((existing.get(key)?.priceHistory as CarPricePoint[] | undefined) ?? [], listing);
       return {
         updateOne: {
@@ -135,8 +135,10 @@ export async function saveCarHarvest(harvest: CarHarvestResult): Promise<{ upser
     const missSince = new Date(Date.parse(harvest.startedAt) - 21 * 86_400_000).toISOString();
     const missing = await collection.find(
       {
+        // Web adverts share ML brand ids: an ML sweep must never retire them.
+        "listing.source": "mercadolibre",
         "listing.brandId": { $in: harvest.completeBrands },
-        key: { $nin: harvest.listings.map(listing => carKey(listing.id)) },
+        key: { $nin: harvest.listings.map(listing => carKey(listing.id, listing.source)) },
         lastSeen: { $lt: harvest.startedAt, $gte: missSince },
         retiredAt: null,
       },
