@@ -83,7 +83,7 @@
           v-if="data && data.total > data.perPage"
           :model-value="query.page"
           :length="Math.min(500, Math.ceil(data.total / data.perPage))"
-          :total-visible="5"
+          :total-visible="3"
           class="mt-6"
           @update:model-value="page => update({ ...query, page })"
         />
@@ -217,7 +217,7 @@ useHead({
 <style scoped>
 .cars-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 16px;
 }
 .cars-sort {

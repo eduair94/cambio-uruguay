@@ -1,6 +1,6 @@
 <template>
   <div class="market-table">
-    <VTable density="compact">
+    <VTable class="cu-mobile-cards" density="compact">
       <caption class="text-left text-body-2 text-medium-emphasis pb-2">
         {{
           caption
@@ -18,12 +18,14 @@
       </thead>
       <tbody>
         <tr v-for="row in rows" :key="`${row.year}-${row.trim}-${row.engine}-${row.transmission}`">
-          <td>{{ row.year }}</td>
-          <td v-if="showVersion">{{ versionOf(row) }}</td>
-          <td>{{ row.n }}</td>
-          <td>{{ formatCarUsd(row.p25) }} – {{ formatCarUsd(row.p75) }}</td>
-          <td class="font-weight-bold">{{ formatCarUsd(row.median) }}</td>
-          <td>{{ formatCarKm(row.kmMedian) }}</td>
+          <td data-label="">{{ row.year }}</td>
+          <td v-if="showVersion" data-label="Versión">{{ versionOf(row) }}</td>
+          <td data-label="Avisos">{{ row.n }}</td>
+          <td data-label="Rango central">
+            {{ formatCarUsd(row.p25) }} – {{ formatCarUsd(row.p75) }}
+          </td>
+          <td class="font-weight-bold" data-label="Mediana">{{ formatCarUsd(row.median) }}</td>
+          <td data-label="Km mediano">{{ formatCarKm(row.kmMedian) }}</td>
         </tr>
       </tbody>
     </VTable>

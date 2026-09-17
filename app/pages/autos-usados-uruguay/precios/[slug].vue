@@ -126,7 +126,11 @@ const name = computed(() =>
 )
 const heading = computed(() => `${name.value} usado: precios en Uruguay`)
 const canonical = computed(() => `https://cambio-uruguay.com${carMarketPath(slug.value)}`)
-const latest = computed(() => data.value?.market.years[0] ?? null)
+// The description quotes the best-sampled year, not the newest one (which often has a handful).
+const latest = computed(
+  () =>
+    [...(data.value?.market.years ?? [])].sort((a, b) => b.n - a.n || b.year - a.year)[0] ?? null
+)
 const description = computed(() =>
   latest.value
     ? `Cuánto se pide por un ${name.value} usado en Uruguay: un ${latest.value.year} tiene mediana de ${formatCarUsd(latest.value.median)} sobre ${latest.value.n} avisos. Precios por año y versión, actualizados todos los días.`
@@ -192,7 +196,7 @@ useHead(() => ({
 <style scoped>
 .cars-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 16px;
 }
 </style>

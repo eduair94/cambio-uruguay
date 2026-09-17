@@ -29,7 +29,7 @@
     <div class="car-filters__pair">
       <VTextField
         v-model="draft.yearMin"
-        label="Año desde"
+        label="Año mín."
         inputmode="numeric"
         density="comfortable"
         variant="outlined"
@@ -37,7 +37,7 @@
       />
       <VTextField
         v-model="draft.yearMax"
-        label="Año hasta"
+        label="Año máx."
         inputmode="numeric"
         density="comfortable"
         variant="outlined"
@@ -47,7 +47,7 @@
     <div class="car-filters__pair">
       <VTextField
         v-model="draft.priceMin"
-        label="US$ desde"
+        label="US$ mín."
         inputmode="numeric"
         density="comfortable"
         variant="outlined"
@@ -55,7 +55,7 @@
       />
       <VTextField
         v-model="draft.priceMax"
-        label="US$ hasta"
+        label="US$ máx."
         inputmode="numeric"
         density="comfortable"
         variant="outlined"

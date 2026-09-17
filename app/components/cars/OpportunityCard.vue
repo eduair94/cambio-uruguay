@@ -40,7 +40,7 @@
     <details class="deal-card__details">
       <summary>Ver los {{ item.comparables.length }} avisos comparables</summary>
       <div class="deal-card__table">
-        <VTable density="compact">
+        <VTable class="cu-mobile-cards" density="compact">
           <thead>
             <tr>
               <th scope="col">Aviso</th>
@@ -52,15 +52,17 @@
           </thead>
           <tbody>
             <tr v-for="peer in item.comparables" :key="peer.key">
-              <td>
+              <td data-label="">
                 <a :href="peer.permalink" target="_blank" rel="nofollow noopener">{{
                   peer.title
                 }}</a>
               </td>
-              <td>{{ peer.year }}</td>
-              <td>{{ formatCarKm(peer.km) }}</td>
-              <td>{{ formatCarUsd(peer.priceUsd) }}</td>
-              <td>{{ peer.sellerType ? CAR_SELLER_LABELS[peer.sellerType] : '—' }}</td>
+              <td data-label="Año">{{ peer.year }}</td>
+              <td data-label="Km">{{ formatCarKm(peer.km) }}</td>
+              <td data-label="Precio">{{ formatCarUsd(peer.priceUsd) }}</td>
+              <td data-label="Vende">
+                {{ peer.sellerType ? CAR_SELLER_LABELS[peer.sellerType] : '—' }}
+              </td>
             </tr>
           </tbody>
         </VTable>

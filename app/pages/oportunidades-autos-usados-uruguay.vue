@@ -85,7 +85,7 @@
             v-if="data.total > data.perPage"
             :model-value="query.page"
             :length="Math.ceil(data.total / data.perPage)"
-            :total-visible="5"
+            :total-visible="3"
             class="mt-6"
             @update:model-value="page => navigate({ ...query, page })"
           />
