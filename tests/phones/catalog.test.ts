@@ -424,7 +424,65 @@ describe("buildPhoneCatalog", () => {
     });
   });
 
-  describe("mediana de las demás ofertas (leave-one-out, fix round 1, ruling del controlador)", () => {
+  describe("mediana de las demás ofertas (leave-one-out iterativo, fix round 2, ruling del controlador)", () => {
+    it("[56000, 56500, 250000] nueva: 250000 es la única sospechosa; las otras dos sobreviven aunque una pasada única las marcaría a las tres", () => {
+      // El bug que corrige este fix round (encontrado revisando eb49d731): una sola pasada calcula
+      // la mediana de "las otras" de 56000 sobre {56500, 250000} = 153.250, y 56000/153.250 ≈ 36,5%
+      // — por debajo del piso, marcada, aunque 56000 es un precio perfectamente normal. Lo mismo le
+      // pasa a 56500. El algoritmo iterativo saca PRIMERO a la peor (250000, la de mayor desvío en
+      // escala logarítmica), recalcula sobre lo que queda, y ahí 56000 y 56500 se comparan entre sí
+      // y salen "ok".
+      const listings = [56_000, 56_500, 250_000].map((price, i) =>
+        listing({ title: `Celular Motorola Razr 70 Ultra 256gb Negro Vendedor ${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "motorola-razr-70-ultra-256gb")!;
+      expect(model.offers.map((o) => o.priceUyu).sort((a, b) => a - b)).toEqual([56_000, 56_500]);
+      expect(model.suspectDropped).toBe(1);
+      // Con sólo 2 sobrevivientes (por debajo de PHONE_MIN_BAND_SAMPLE) el bucle ya no puede seguir
+      // sacando ofertas de a una — se detiene ahí, y esos 2 quedan sin banda, no sin oferta.
+      expect(model.bands.new).toBeUndefined();
+    });
+
+    it("dos outliers [5000, 56000, 57000, 58000, 290000] nueva: los dos se sacan de a uno, las tres normales sobreviven", () => {
+      // 290000 queda DEBAJO de PHONE_NEW_CEILING_UYU (300.000) a propósito, para que el techo
+      // absoluto no lo saque antes de llegar a esta guarda — el punto de este test es precisamente
+      // que la guarda iterativa, no el techo, es la que tiene que sacar a los dos, uno por vez.
+      const listings = [5_000, 56_000, 57_000, 58_000, 290_000].map((price, i) =>
+        listing({ title: `Celular Nokia G60 256gb Negro Vendedor ${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "nokia-g60-256gb")!;
+      expect(model.offers.map((o) => o.priceUyu).sort((a, b) => a - b)).toEqual([56_000, 57_000, 58_000]);
+      expect(model.suspectDropped).toBe(2);
+      expect(model.bands.new!.n).toBe(3);
+    });
+
+    it("es determinístico: el mismo grupo con outliers, en otro orden de entrada, saca las mismas ofertas", () => {
+      const prices = [5_000, 56_000, 57_000, 58_000, 290_000];
+      // Title, url AND sellerKey keyed by price (not by array index or the module's own listing()
+      // counter) on purpose: the whole point of this test is that the SAME listing must produce the
+      // SAME offer regardless of where it sits in the input array, so nothing about a listing's own
+      // fields may depend on its position or on how many other listing() calls happened before it.
+      const build = (order: number[]) =>
+        byKey(
+          buildPhoneCatalog({
+            usdUyu: 40,
+            listings: order.map((price) =>
+              listing({
+                title: `Celular Nokia G60 256gb Negro Vendedor ${price}`,
+                price,
+                sellerKey: `store:${price}`,
+                sellerName: `Seller ${price}`,
+                url: `https://example.com.uy/p/nokia-g60-${price}`,
+              })
+            ),
+          }),
+          "nokia-g60-256gb"
+        )!;
+      const forward = build(prices);
+      const shuffled = build([...prices].reverse());
+      expect(shuffled).toEqual(forward);
+    });
+
     it("[30000, 60000, 61000] nueva: 30000 es sospechosa (49,5% de la mediana de las otras dos), las otras dos sobreviven", () => {
       const listings = [30_000, 60_000, 61_000].map((price, i) =>
         listing({ title: `Celular Samsung Galaxy A56 256gb Negro Vendedor ${i}`, price })
@@ -468,11 +526,15 @@ describe("buildPhoneCatalog", () => {
     });
 
     it("no-nuevo tolera un rango más ancho que nuevo: el mismo 278% sobrevive en reacondicionado y no en nuevo", () => {
-      // Four offers, not three: with only two "others" a leave-one-out median is a plain average of
-      // two numbers, so a single high outlier drags even the "normal" pair's OWN ratio down with it
-      // (documented trade-off #2 on leaveOneOutOk). With three "others" the median is the ODD ONE
-      // OUT among them, robust to the single outlier — isolating exactly the 57000/20500 ≈ 278% case
-      // this test is about, without also flagging the three normal prices as a side effect.
+      // Four offers, not three: with three offers ALL of them would actually get flagged in round
+      // one (20000 and 21000 too, since their own "others" median is one lone number — the
+      // 57000 — dragging their ratio down alongside the real outlier's), and only the worst-first
+      // pick (57000, the largest deviation) saves the other two from ever actually being removed —
+      // the iterative guard still gets the right answer, but by a less illustrative path for this
+      // test's purpose (which is to isolate the new-vs-refurbished THRESHOLD difference, not to
+      // re-demonstrate the multi-flag mechanic already covered by the two dedicated tests above).
+      // With four offers the median-of-three-others is robust enough that only 57000 is ever flagged
+      // at all, in every round, cleanly isolating the 57000/20500 ≈ 278% case.
       const prices = [20_000, 20_500, 21_000, 57_000]; // 57000 / mediana(20000, 20500, 21000) = 57000/20500 ≈ 278%
       const asCondition = (condition: "new" | "refurbished") =>
         prices.map((price, i) =>

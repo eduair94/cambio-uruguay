@@ -25,9 +25,10 @@
 // shape a phone model sees far more often than equipar's fridges/mattresses do, at a fraction of
 // the sample size: a case/funda whose title bundles a phone's model+storage (identify.ts's own
 // bundle rule), a seller who fat-fingered a decimal point, or a currency mislabel on one row rather
-// than a whole store. The guards below (absolute floor+ceiling, then percentile band, then a
-// leave-one-out ratio check) are what catches THAT — see the leave-one-out comment further down for
-// the specific small-sample trade-off it accepts.
+// than a whole store. The guards below — absolute floor+ceiling, then an ITERATIVE median-of-others
+// ratio check (screenByMedianOfOthers, worst offer removed one at a time), then the percentile band
+// on what is left — are what catches THAT. See screenByMedianOfOthers's own comment for why it has
+// to be iterative rather than a single pass, and why it runs before priceVerdict, not after.
 import { percentile, priceVerdict } from "../precios/plausibility";
 import type { PrecioBand } from "../precios/plausibility";
 import { identifyPhone, phoneConditionFromTitle } from "./identify";
@@ -232,37 +233,6 @@ const NEW_LOO_HIGH = 2.5;
 const OTHER_LOO_LOW = 0.35;
 const OTHER_LOO_HIGH = 3.0;
 
-/**
- * Is `price` a plausible multiple of what the REST of this (model, condition) group says, judged
- * one offer at a time?
- *
- * This exists because `screeningBand` above computes ONE band from the WHOLE group, INCLUDING the
- * very listing being judged against it — with the 3-6 offers a phone model typically has (far below
- * plausibility.ts's own tuning target of ~350 SIPC rows), a single bad listing can drag its own
- * band's percentiles down (or up) far enough to still read as "ok" against a band it helped shape.
- * [30000, 60000, 61000] is exactly this: the shared band alone judges all three "ok", but 30000 is
- * only ~50% of what the OTHER two say, which this catches and the shared band does not.
- *
- * Trade-offs accepted, not hidden: (1) below PHONE_MIN_BAND_SAMPLE "others" this never runs at all —
- * two offers cannot leave one out and still have two to compare against, so a two-offer group relies
- * on the absolute floor/ceiling alone, same as a one-offer group already does. (2) the "others" set
- * for one candidate is NOT itself pre-filtered to exclude an already-verdict-rejected peer, so a
- * genuinely bad peer can mildly skew a legitimate candidate's own comparison median — accepted for
- * the same reason `screeningBand` accepts it: with only a handful of points, filtering one out
- * before judging the others would spiral into deciding an order to evaluate them in. (3) if EVERY
- * offer in a group is wrong in the same direction (a whole model gets bundle-mispriced the same way
- * everywhere, or a genuine short-lived supply shock moves every real seller's price at once), this
- * has nothing honest to compare against and cannot catch it — a leave-one-out check only ever judges
- * a listing against its own peers, never an external ground truth.
- */
-function leaveOneOutOk(condition: PhoneCondition, price: number, othersUyu: readonly number[]): boolean {
-  const median = percentile([...othersUyu].sort((a, b) => a - b), 0.5);
-  if (!(median > 0)) return true; // shouldn't happen once the absolute floor already ran; never divide by zero
-  const ratio = price / median;
-  const [low, high] = condition === "new" ? [NEW_LOO_LOW, NEW_LOO_HIGH] : [OTHER_LOO_LOW, OTHER_LOO_HIGH];
-  return ratio >= low && ratio <= high;
-}
-
 /** One listing, already resolved to a model + condition + UYU price, before screening/dedupe. */
 interface Candidate {
   listing: RetailListing;
@@ -280,6 +250,73 @@ interface Candidate {
  */
 const byPriceSellerUrl = (a: Candidate, b: Candidate): number =>
   a.priceUyu - b.priceUyu || a.seller.localeCompare(b.seller) || a.listing.url.localeCompare(b.listing.url);
+
+/**
+ * Is `price` a plausible multiple of what `others` (every OTHER offer currently in the group) says,
+ * for this condition's thresholds?
+ */
+function medianRatioOk(condition: PhoneCondition, price: number, othersUyu: readonly number[]): { ok: boolean; deviation: number } {
+  const median = percentile([...othersUyu].sort((a, b) => a - b), 0.5);
+  if (!(median > 0)) return { ok: true, deviation: 0 }; // shouldn't happen once the absolute floor already ran
+  const ratio = price / median;
+  const [low, high] = condition === "new" ? [NEW_LOO_LOW, NEW_LOO_HIGH] : [OTHER_LOO_LOW, OTHER_LOO_HIGH];
+  // Measured on a LOG scale, not the raw ratio: a ratio of 0.4 (60% under) and a ratio of 2.5 (150%
+  // over) are symmetric distortions of the same relative size, and ln makes that literal
+  // (ln(0.4) ≈ -0.916, ln(2.5) ≈ 0.916) — comparing raw ratios would make a LOW outlier look
+  // artificially milder than an equally-extreme HIGH one and bias which one gets removed first when
+  // more than one offer is flagged in the same round (see {@link screenByMedianOfOthers}).
+  return { ok: ratio >= low && ratio <= high, deviation: Math.abs(Math.log(ratio)) };
+}
+
+/**
+ * Removes the single WORST offer — largest log-scale deviation from the median of its peers — one
+ * at a time, recomputing every remaining offer's ratio after each removal, until either nobody is
+ * flagged anymore or the group would drop below PHONE_MIN_BAND_SAMPLE.
+ *
+ * Why iterative, one offer at a time, rather than a single pass over the group AS FIRST SEEN (the
+ * bug this replaces, found reviewing eb49d731): a single pass computes every offer's "others"
+ * median from the group INCLUDING whichever outlier(s) are in it. One in-range currency-mislabel
+ * outlier — `[56000, 56500, 250000]` — then poisons the "others" set for the two NORMAL offers too
+ * (each one's own comparison median is dragged toward the outlier: 56000's peers are {56500,
+ * 250000}, whose median is 153250 — 56000 reads as only 36.5% of THAT, flagged, even though 56000
+ * is a perfectly ordinary price), so a single pass condemns the whole group, not just the outlier.
+ * Removing the WORST one, recomputing, and repeating fixes this: once 250000 is gone, 56000 and
+ * 56500 are judged against EACH OTHER and read as perfectly ordinary. The same mechanism handles
+ * MULTIPLE outliers too (see the two-outlier test) — each round removes only the currently-worst
+ * offender, so a milder second outlier gets re-evaluated (and, if genuinely bad, still eventually
+ * removed) only once judged against a cleaner reference, never in the same pass as the first.
+ *
+ * Trade-offs accepted, not hidden: (1) below PHONE_MIN_BAND_SAMPLE the loop never starts — two
+ * offers cannot leave one out and still have two to compare against, so a two-offer group relies on
+ * the absolute floor/ceiling alone, same as a one-offer group already does; the loop can also END
+ * with fewer than PHONE_MIN_BAND_SAMPLE survivors (this is expected, not a bug — see the
+ * `[56000, 56500, 250000]` test, which ends at 2). (2) if EVERY offer in a group is wrong in the
+ * same direction (a whole model gets bundle-mispriced the same way everywhere, or a genuine
+ * short-lived supply shock moves every real seller's price at once), this has nothing honest to
+ * compare against and cannot catch it — a leave-one-out check only ever judges a listing against
+ * its own peers, never an external ground truth.
+ */
+function screenByMedianOfOthers(condition: PhoneCondition, candidates: readonly Candidate[]): Candidate[] {
+  let remaining = [...candidates];
+
+  while (remaining.length >= PHONE_MIN_BAND_SAMPLE) {
+    let worst: { candidate: Candidate; deviation: number } | null = null;
+    for (let index = 0; index < remaining.length; index++) {
+      const candidate = remaining[index]!;
+      const others = remaining.filter((_, otherIndex) => otherIndex !== index).map((c) => c.priceUyu);
+      const { ok, deviation } = medianRatioOk(condition, candidate.priceUyu, others);
+      if (ok) continue;
+      if (!worst || deviation > worst.deviation || (deviation === worst.deviation && byPriceSellerUrl(candidate, worst.candidate) < 0)) {
+        worst = { candidate, deviation };
+      }
+    }
+    if (!worst) break; // nobody flagged this round: done
+    const removed = worst.candidate;
+    remaining = remaining.filter((c) => c !== removed);
+  }
+
+  return remaining;
+}
 
 function toOffer(candidate: Candidate): PhoneOffer {
   const { listing, condition, priceUyu, esimOnly } = candidate;
@@ -393,30 +430,30 @@ export function buildPhoneCatalog(input: BuildPhoneCatalogInput): PhoneModel[] {
         else inRange.push(candidate);
       }
 
-      // Step 2: the percentile band — reached only once there is enough of a sample
+      // Step 2: the median-of-others guard, iterative worst-first (screenByMedianOfOthers). This
+      // runs BEFORE priceVerdict on purpose, not after: priceVerdict's own band is computed from
+      // whatever set it is handed, INCLUDING any outlier(s) still in it, so a band built from the
+      // raw, uncleaned `inRange` set is largely blind to exactly the kind of outlier this guard
+      // targets (a `[56000, 56500, 250000]` band's own p10/p90 stretches wide enough around the
+      // 250000 to call all three "ok"). Running this guard first and computing priceVerdict's band
+      // from ITS survivors instead gives priceVerdict a clean, uncontaminated reference — a
+      // meaningful supplementary check instead of a mostly-redundant first pass.
+      const afterMedianGuard = screenByMedianOfOthers(condition, inRange);
+      suspectDropped += inRange.length - afterMedianGuard.length;
+
+      // Step 3: the percentile band — reached only once there is enough of a sample
       // (PHONE_MIN_BAND_SAMPLE) to say anything; null otherwise, in which case priceVerdict answers
-      // "ok" for everything that already cleared the floor/ceiling above (this is precisely the
+      // "ok" for everything that already cleared the two guards above (this is precisely the
       // "screening needs a minimum sample" case: with too few offers, only the absolute guards
       // apply — see the dedicated test with a 2-offer group at a 10x spread that survives).
-      const band = screeningBand(inRange.map((candidate) => candidate.priceUyu));
-      const rawPrices = inRange.map((candidate) => candidate.priceUyu);
-
-      // Step 3: the leave-one-out ratio check (see leaveOneOutOk's own comment for why this exists
-      // ALONGSIDE priceVerdict rather than instead of it — each catches a shape of bad price the
-      // other misses). Only attempted once there are at least PHONE_MIN_BAND_SAMPLE offers in the
-      // group to leave ONE out and still have others to compare against.
-      const survivors = inRange.filter((candidate, index) => {
-        if (priceVerdict(candidate.priceUyu, band) !== "ok") return false;
-        if (inRange.length < PHONE_MIN_BAND_SAMPLE) return true;
-        const others = rawPrices.filter((_, otherIndex) => otherIndex !== index);
-        return leaveOneOutOk(condition, candidate.priceUyu, others);
-      });
+      const band = screeningBand(afterMedianGuard.map((candidate) => candidate.priceUyu));
+      const survivors = afterMedianGuard.filter((candidate) => priceVerdict(candidate.priceUyu, band) === "ok");
       // Unlike classes/equipar/bands.ts (which only counts its own "suspect" bucket and silently
       // drops "reject" without counting it), a phone's suspectDropped counts EVERY offer this
-      // condition group lost — floor/ceiling failures and every non-"ok"/leave-one-out drop alike. A
-      // model here has far fewer offers to begin with, so every drop is worth surfacing, not just
-      // the merely-doubtful ones.
-      suspectDropped += inRange.length - survivors.length;
+      // condition group lost — floor/ceiling failures, every median-guard removal, and every
+      // non-"ok" priceVerdict alike. A model here has far fewer offers to begin with, so every drop
+      // is worth surfacing, not just the merely-doubtful ones.
+      suspectDropped += afterMedianGuard.length - survivors.length;
 
       allSurvivors.push(...survivors);
       if (condition === "new") newSurvivors = survivors;
