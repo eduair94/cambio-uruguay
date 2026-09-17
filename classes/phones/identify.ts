@@ -126,15 +126,70 @@ const ACCESSORY_PLURAL_TOLERANT = [
   "joystick",
   "lente",
   "camara para",
+  "camara trasera",
   "holder",
   "popsocket",
   "tv",
   "stick",
+  // Repair-part words with no legitimate use naming a PHONE's own spec — nobody advertises a
+  // handset by saying it comes with a "flex", a "housing" or a "chasis". "tapa" (back cover) and
+  // "placa" (board) are the same class. "bateria"/"pantalla" are NOT here: those two really are
+  // used both ways ("Batería 5000mah" is a spec, "Bateria Original Samsung S24…" is the product
+  // being sold) and get their own position-sensitive check in {@link hasAccessoryWord} instead.
+  "flex",
+  "tapa",
+  "placa",
+  "housing",
+  "chasis",
+  "pin de carga",
 ];
 const ACCESSORY_EXACT_WORDS = ["tab", "book"];
 const ACCESSORY_RE = new RegExp(
   `\\b(?:${ACCESSORY_PLURAL_TOLERANT.join("|")})s?\\b|\\b(?:${ACCESSORY_EXACT_WORDS.join("|")})\\b`,
 );
+
+// "bateria"/"pantalla" (accents already stripped by phoneNorm) are the two words in this whole
+// exclusion list that are used BOTH ways in real titles: "Batería 5000mah"/"Pantalla 6.7 Pulgadas"
+// AND "6500 mAh Batería Azul"/"6.59 120 Hz Pantalla…" (the figure can sit on EITHER side — both
+// orders are real, see the fixtures) are ordinary phone SPECS, while "Bateria Original Samsung S24
+// Ultra… + Instalacion" and "Pantalla iPhone 15 Pro Oled Repuesto" are REPLACEMENT-PART listings —
+// same word, opposite meaning. Every other word in ACCESSORY_PLURAL_TOLERANT names something that
+// is NEVER a phone's own spec ("flex", "housing"), so only these two need a second signal.
+//
+// The two directions are deliberately asymmetric, not just mirrored:
+//   - FORWARD only counts a figure sitting RIGHT NEXT to the word ("bateria 5000mah", "pantalla de
+//     6.7"). A part listing's own words right after ("Bateria Original SAMSUNG S24 Ultra…") contain
+//     a digit too — the model number — just not immediately: there is always a brand/"original"/
+//     "compatible" word first. Widening this to "any digit in the next few words" would read every
+//     "Bateria … S24 …" listing as a spec because S24 is nearby, exactly the bug this exists to fix.
+//   - BACKWARD tolerates a wider window ("6.59 120 Hz Pantalla", "6500 mAh Batería Azul": the unit
+//     word sits directly before, the number itself one more word back). Real part listings put the
+//     word FIRST ("Bateria Original…", "Pantalla iPhone 15…"), never after the brand/model, so there
+//     is normally nothing at all before it — a preceding model number is not a realistic listing
+//     shape the way a following one is, so the wider window does not reopen the S24 case.
+const AMBIGUOUS_PART_WORDS = new Set(["bateria", "pantalla"]);
+const SPEC_FOLLOWS_RE = /^(?:de\s+)?\d/;
+const SPEC_PRECEDES_RE = /\d/;
+
+/**
+ * The single accessory/part check every exclusion path in this module goes through — replaces a
+ * bare `ACCESSORY_RE.test(text)` wherever that used to be the whole check, so "bateria"/"pantalla"
+ * get their position-sensitive treatment everywhere an accessory word matters (the main exclusion
+ * in {@link isPhoneTitle}, and the bundle-marker lookahead in {@link accessoryCheckText} and
+ * {@link hasUnconsumedVariantMarker}), not just in one of them.
+ */
+function hasAccessoryWord(text: string): boolean {
+  if (ACCESSORY_RE.test(text)) return true;
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  for (let i = 0; i < words.length; i++) {
+    if (!AMBIGUOUS_PART_WORDS.has(words[i]!)) continue;
+    const after = words.slice(i + 1, i + 3).join(" ");
+    const before = words.slice(Math.max(0, i - 3), i).join(" ");
+    if (SPEC_FOLLOWS_RE.test(after) || SPEC_PRECEDES_RE.test(before)) continue;
+    return true;
+  }
+  return false;
+}
 
 function detectBrand(glued: string): PhoneBrand | null {
   for (const rule of BRAND_RULES) {
@@ -201,7 +256,7 @@ function accessoryCheckText(glued: string, familyEnd: number | null): string {
     // after "plus", past "Wallter" and "Y"), and once ANY accessory/gift word turns up anywhere
     // after this "plus" the whole rest of the title is bundle text, whichever word tripped it.
     const rest = tailWords.slice(i + 1).join(" ");
-    if (ACCESSORY_RE.test(rest) || GIFT_WORD_RE.test(rest)) {
+    if (hasAccessoryWord(rest) || GIFT_WORD_RE.test(rest)) {
       return `${head} ${tailWords.slice(0, i).join(" ")}`.trim();
     }
   }
@@ -219,7 +274,7 @@ export function isPhoneTitle(title: string): boolean {
   if (!brand) return false;
   const familyMatch = parseFamily(brand, glued);
   const checkText = accessoryCheckText(glued, familyMatch?.end ?? null);
-  return !ACCESSORY_RE.test(checkText);
+  return !hasAccessoryWord(checkText);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -556,7 +611,26 @@ function hasUnconsumedVariantMarker(glued: string, match: FamilyMatch): boolean 
   // weren't handled) surfaces here exactly like a separate word would ("400 Smart") — both are just
   // "the next run of letters/digits after where the match ended", whether or not there was a space.
   const next = /^\s*([a-z0-9]+)/.exec(glued.slice(match.end));
-  return next !== null && VARIANT_MARKER_RE.test(next[1]!);
+  if (next === null || !VARIANT_MARKER_RE.test(next[1]!)) return false;
+  // "plus" is the one marker that is ALSO how phoneNorm spells a bundle separator ("+"). A model
+  // whose own "+" is immediately followed by a SECOND, bundled "+" — "Redmi Note 14 Pro+ + Funda de
+  // regalo 512gb" glues to "...pro plus plus funda de regalo 512gb" — would otherwise read that
+  // second "plus" as an unrecognised suffix of the model itself and null the whole identity, when it
+  // is actually the start of "+ Funda de regalo": a gift, not a variant. Only "plus" gets this
+  // exception (every other marker here really does name an unknown VARIANT of the model, and must
+  // keep failing closed); and only when something later in the title actually NAMES a giveaway —
+  // "Redmi Note 14 Pro+ Ultra" (a genuine, unknown suffix) must still null, so this checks for a real
+  // accessory/gift signal, not just the bare word "plus".
+  if (next[1] === "plus") {
+    const rest = glued
+      .slice(match.end)
+      .trim()
+      .split(/\s+/)
+      .slice(1) // drop the "plus" itself — checking IT against hasAccessoryWord would be checking "plus"
+      .join(" ");
+    if (hasAccessoryWord(rest) || GIFT_WORD_RE.test(rest) || BUNDLE_CLAUSE_RE.test(rest)) return false;
+  }
+  return true;
 }
 
 function parseFamily(brand: PhoneBrand, glued: string): FamilyMatch | null {

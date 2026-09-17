@@ -267,6 +267,48 @@ export const IDENTIFY_FIXTURES: IdentifyFixture[] = [
     title: "Redmi Note 14 Pro+ 5G 512gb",
     key: "xiaomi-redmi-note-14-pro-plus-512gb",
   },
+
+  // --- Fix round 4 (Task 2 controller ruling, celulares fix round 2): the "double +" collision.
+  // A model whose OWN "+" is immediately followed by the BUNDLE's "+" — "Redmi Note 14 Pro+ + Funda
+  // de regalo 512gb" glues to "...pro plus plus funda de regalo 512gb", two adjacent "plus" tokens —
+  // used to null the whole identity: the family regex's "pro plus" suffix consumes the FIRST "plus"
+  // (the model's real one), so `match.end` lands right before the SECOND, and
+  // hasUnconsumedVariantMarker read that second "plus" as an unrecognised suffix of the model
+  // itself, same as it would "Redmi Note 14 Pro+ Ultra". The fix narrows that veto: "plus" only
+  // still nulls the match when nothing later in the title actually names a giveaway.
+  {
+    title: "Redmi Note 14 Pro+ + Funda de regalo 512gb",
+    key: "xiaomi-redmi-note-14-pro-plus-512gb",
+  },
+  {
+    // Same collision, storage stated BEFORE the bundle instead of after — already worked even
+    // before this fix-round (no adjacent "plus plus" here, "512gb" sits between them), kept as a
+    // fixture so a future change to the bundle logic cannot silently break this shape either.
+    title: "Redmi Note 14 Pro+ 512gb + Funda de regalo",
+    key: "xiaomi-redmi-note-14-pro-plus-512gb",
+  },
+  {
+    // Same collision on Samsung's OWN "+"-suffix suffix group (galaxy (s|a|m) — (ultra|plus|fe|edge)).
+    title: "Samsung Galaxy S25+ + Funda de regalo 256gb",
+    key: "samsung-galaxy-s25-plus-256gb",
+  },
+  {
+    title: "Samsung Galaxy S25+ 256gb + Funda de regalo",
+    key: "samsung-galaxy-s25-plus-256gb",
+  },
+
+  // --- Fix round 5 (Task 2 controller ruling, celulares fix round 2, item 2): "bateria"/"pantalla"
+  // are the two words in the whole accessory list that are also genuine phone SPECS. Both real
+  // orderings ("Pantalla 6.7 …" and "… 6.59 120 Hz Pantalla …", figure after or before the word)
+  // must still identify — hasAccessoryWord checks both directions for exactly this reason.
+  {
+    title: "Samsung Galaxy A56 5g 256gb 8gb Ram Pantalla 6.7 Pulgadas Amoled",
+    key: "samsung-galaxy-a56-256gb",
+  },
+  {
+    title: "Samsung Galaxy A56 5g 256gb 8gb Ram Bateria 5000mah Negro",
+    key: "samsung-galaxy-a56-256gb",
+  },
 ];
 
 /** Titles that must resolve to a specific PhoneCondition. Two-arg calls use "unknown" as the source. */
@@ -304,6 +346,11 @@ export const NULL_IDENTITY_TITLES = [
   "Apple iPhone 16 Pro  - Caja Abierta + Funda De Regalo",
   "iPhone 16 Pro Max  - Caja Abierta + Funda De Regalo",
   "Samsung Galaxy S26 Ultra - Caja Abierta + Funda De Regalo",
+  // Fix round 4 regression guard: the narrowed "plus" veto in hasUnconsumedVariantMarker must still
+  // fail closed on a GENUINE unknown suffix after the model's own "+" — "Ultra" names no giveaway
+  // anywhere in the title, so this is not a bundle and must still null exactly like "Pro+ Ultra"
+  // would without the "+ Funda de regalo" fixtures right above it.
+  "Redmi Note 14 Pro+ Ultra 512gb",
 ];
 
 /** Accessories, clones, unlisted brands and other non-phone-model titles: isPhoneTitle must be false. */
@@ -338,4 +385,19 @@ export const NOT_PHONE_TITLES: string[] = [
   // Regalo" — the bundle marker this fix-round looks for — so it is still inside the checked
   // region and the title still fails the accessory-word test, correctly.
   "Iphone 17 Pro Max En Caja, Con Fundas De Regalo. 80 Mil.",
+
+  // --- Fix round 5 (item 2): replacement-part listings. "Bateria"/"pantalla" standing alone (no
+  // spec figure right next to them) name the PART being sold, not the phone; the rest of this class
+  // ("flex", "tapa", "placa", "camara trasera", "pin de carga", "housing", "chasis") never doubles
+  // as a phone spec at all, so those are unconditional. The exact reported bug is first: a real
+  // battery listing that used to resolve to samsung-galaxy-s24-ultra-128gb.
+  "Bateria Original Samsung S24 Ultra 128gb Compatible + Instalacion",
+  "Pantalla iPhone 15 Pro Oled Repuesto",
+  "Flex De Carga Para iPhone 13",
+  "Tapa Trasera Samsung Galaxy A56",
+  "Placa Madre iPhone 12 128gb",
+  "Camara Trasera Para Samsung Galaxy S23",
+  "Pin De Carga iPhone 11",
+  "Housing Completo iPhone 14 Pro",
+  "Chasis iPhone 13 Pro Max",
 ];

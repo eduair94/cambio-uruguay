@@ -39,9 +39,11 @@ export const CHAIR_STORE_KEYS: readonly string[] = [
   "eldorado",
 ];
 
-export const CHAIR_STORES: ChairStore[] = RETAIL_STORES.map((store) => ({
-  ...store,
-  ...CHAIR_OVERRIDES[store.key],
-}));
+export const CHAIR_STORES: ChairStore[] = RETAIL_STORES.filter((store) => CHAIR_STORE_KEYS.includes(store.key)).map(
+  (store) => ({
+    ...store,
+    ...CHAIR_OVERRIDES[store.key],
+  })
+);
 
 export const enabledChairStores = (): ChairStore[] => retailStores(CHAIR_STORE_KEYS, CHAIR_OVERRIDES);
