@@ -1,24 +1,12 @@
 import mongoose, { Schema, type Model } from 'mongoose'
+import type { PhoneMetaDoc } from '../../utils/phones'
 
 // Companion of PhoneModel: one document describing the last celulares run — mirrors
 // app/server/models/EquiparMeta.ts / ChairCatalogMeta.ts. The page renders this so a silent source
 // outage is visible instead of looking like an empty market.
-export interface PhoneMetaDoc {
-  key: string
-  generatedAt: string
-  usdUyu: number
-  listings: number
-  models: number
-  runs: Array<{
-    key: string
-    label: string
-    adapter: string
-    listings: number
-    ok: boolean
-    note: string
-  }>
-}
-
+//
+// `PhoneMetaDoc` lives in `app/utils/phones.ts` (Task 6), not here — see PhoneModel.ts's own comment
+// for why.
 const PhoneMetaSchema = new Schema(
   {
     key: { type: String, required: true },
