@@ -411,9 +411,10 @@ describe('Plan Redondo: la ventana de compras sólo donde la categoría entra', 
 
   it('las que entran (calefón, aire, secarropas, cocina) sí la llevan; sin plan, tampoco aplica', () => {
     for (const key of ['calefon', 'aire-acondicionado', 'secarropas', 'cocina']) {
-      expect(equiparPlanRedondoWindowApplies(equiparCategoryPage(key) as EquiparCategoryPage), key).toBe(
-        true
-      )
+      expect(
+        equiparPlanRedondoWindowApplies(equiparCategoryPage(key) as EquiparCategoryPage),
+        key
+      ).toBe(true)
     }
     expect(
       equiparPlanRedondoWindowApplies(equiparCategoryPage('heladera') as EquiparCategoryPage)

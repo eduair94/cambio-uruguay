@@ -129,8 +129,8 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
         todos los días: confirmalo en el aviso antes de ir.
         <template v-if="suspectDropped">
           Dejamos afuera {{ suspectDropped }} {{ suspectDropped === 1 ? 'aviso' : 'avisos' }} con
-          precios muy por debajo del resto de su tamaño: no entran en las medianas, en esta lista
-          ni en la tabla de modelos.
+          precios muy por debajo del resto de su tamaño: no entran en las medianas, en esta lista ni
+          en la tabla de modelos.
         </template>
       </p>
 
