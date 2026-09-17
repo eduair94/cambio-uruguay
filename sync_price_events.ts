@@ -41,7 +41,7 @@ async function main(): Promise<void> {
   const result = await runPriceEvents({ today, dryRun, prune: !eventOnly, eventOnly });
 
   console.log(
-    `[price-events] ${result.today} evento=${result.event?.key ?? "ninguno"} ` +
+    `[price-events] ${result.today} evento=${result.event?.id ?? "ninguno"} ` +
       `verticales=${result.verticals.join(",") || "-"} leídas=${result.snapshot.analyzed} ` +
       `elegibles=${result.snapshot.eligible} trackingSince=${result.snapshot.trackingSince ?? "-"}`
   );

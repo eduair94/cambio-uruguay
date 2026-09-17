@@ -7,7 +7,7 @@
 // APP (`app/tests/unit/priceEventsCalendarParity.test.ts`, que importa este archivo directamente) —
 // un test de la raíz no puede importar un archivo de `app/` (rompió el deploy el 2026-09-17).
 export interface PriceEvent {
-  key: string;
+  id: string;
   label: string;
   start: string | null;
   end: string | null;
@@ -25,7 +25,7 @@ export interface PriceEvent {
  */
 export const PRICE_EVENTS: readonly PriceEvent[] = [
   {
-    key: "ciberlunes-2025-11",
+    id: "ciberlunes-2025-11",
     label: "CyberLunes noviembre 2025",
     start: "2025-11-03",
     end: "2025-11-05",
@@ -35,7 +35,7 @@ export const PRICE_EVENTS: readonly PriceEvent[] = [
     note: "",
   },
   {
-    key: "ciberlunes-2026-06",
+    id: "ciberlunes-2026-06",
     label: "CyberLunes junio 2026",
     start: "2026-06-01",
     end: "2026-06-03",
@@ -44,7 +44,7 @@ export const PRICE_EVENTS: readonly PriceEvent[] = [
     note: "",
   },
   {
-    key: "ciberlunes-2026-11",
+    id: "ciberlunes-2026-11",
     label: "CyberLunes noviembre 2026",
     start: null,
     end: null,
@@ -57,7 +57,7 @@ export const PRICE_EVENTS: readonly PriceEvent[] = [
     note: "Al 17 de setiembre de 2026 la CEDU no había publicado la fecha.",
   },
   {
-    key: "black-friday-2026",
+    id: "black-friday-2026",
     label: "Black Friday 2026",
     start: "2026-11-27",
     end: "2026-11-30",

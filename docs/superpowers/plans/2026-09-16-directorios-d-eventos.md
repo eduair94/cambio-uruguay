@@ -54,12 +54,12 @@
 **Interfaces:**
 - `calendar.ts`:
   ```ts
-  export interface PriceEvent { key: string; label: string; start: string | null; end: string | null; confirmed: boolean; source: string | null; note: string }
+  export interface PriceEvent { id: string; label: string; start: string | null; end: string | null; confirmed: boolean; source: string | null; note: string }
   export const PRICE_EVENTS: readonly PriceEvent[] = [
-    { key: 'ciberlunes-2025-11', label: 'CyberLunes noviembre 2025', start: '2025-11-03', end: '2025-11-05', confirmed: true, source: 'https://cuti.org.uy/en/destacados/noviembre-comienza-con-una-nueva-edicion-de-ciberlunes-con-hasta-70-off/', note: '' },
-    { key: 'ciberlunes-2026-06', label: 'CyberLunes junio 2026', start: '2026-06-01', end: '2026-06-03', confirmed: true, source: 'https://www.sodimac.com.uy/sodimac-uy/content/Ciberlunes/', note: '' },
-    { key: 'ciberlunes-2026-11', label: 'CyberLunes noviembre 2026', start: null, end: null, confirmed: false, source: 'https://www.cedu.org.uy/ciberlunes/', note: 'La CEDU todavía no publicó la fecha.' },
-    { key: 'black-friday-2026', label: 'Black Friday 2026', start: '2026-11-27', end: '2026-11-30', confirmed: true, source: null, note: 'Del viernes 27 al lunes 30 de noviembre (Cyber Monday de EE.UU.).' },
+    { id: 'ciberlunes-2025-11', label: 'CyberLunes noviembre 2025', start: '2025-11-03', end: '2025-11-05', confirmed: true, source: 'https://cuti.org.uy/en/destacados/noviembre-comienza-con-una-nueva-edicion-de-ciberlunes-con-hasta-70-off/', note: '' },
+    { id: 'ciberlunes-2026-06', label: 'CyberLunes junio 2026', start: '2026-06-01', end: '2026-06-03', confirmed: true, source: 'https://www.sodimac.com.uy/sodimac-uy/content/Ciberlunes/', note: '' },
+    { id: 'ciberlunes-2026-11', label: 'CyberLunes noviembre 2026', start: null, end: null, confirmed: false, source: 'https://www.cedu.org.uy/ciberlunes/', note: 'La CEDU todavía no publicó la fecha.' },
+    { id: 'black-friday-2026', label: 'Black Friday 2026', start: '2026-11-27', end: '2026-11-30', confirmed: true, source: null, note: 'Del viernes 27 al lunes 30 de noviembre (Cyber Monday de EE.UU.).' },
   ]
   export function activeEvent(today: string): PriceEvent | null   // dentro de [start, end]; un evento sin fecha activa la ventana amplia 2026-11-01..2026-11-08 con confirmed=false
   ```

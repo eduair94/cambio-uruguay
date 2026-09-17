@@ -207,7 +207,7 @@ siempre. Ver `tests/priceevents/dry_run.test.ts`, describe "M1".
 
 Verificado 16–17/9/2026:
 
-| key | fechas | confirmado | fuente |
+| id | fechas | confirmado | fuente |
 |---|---|---|---|
 | `ciberlunes-2025-11` | 2025-11-03 a 05 | sí | [cuti.org.uy](https://cuti.org.uy/en/destacados/noviembre-comienza-con-una-nueva-edicion-de-ciberlunes-con-hasta-70-off/) |
 | `ciberlunes-2026-06` | 2026-06-01 a 03 | sí | [sodimac.com.uy](https://www.sodimac.com.uy/sodimac-uy/content/Ciberlunes/) |
@@ -337,7 +337,7 @@ de nuevo en el cliente.
 ## Cómo cargar la fecha de noviembre cuando la CEDU la publique
 
 1. Editar el array `PRICE_EVENTS`/`PRICE_EVENT_CALENDAR` en **LOS DOS** archivos —
-   `classes/priceevents/calendar.ts` (raíz) y `app/utils/priceEvents.ts` (app) — con la MISMA key
+   `classes/priceevents/calendar.ts` (raíz) y `app/utils/priceEvents.ts` (app) — con el MISMO id
    (`ciberlunes-2026-11`), mismo `label`, mismo `start`/`end` (`YYYY-MM-DD`), `confirmed: true`, la
    URL real que anuncia la fecha en `source`, y `note: ''` (mismo patrón que las otras ediciones
    confirmadas).
@@ -387,7 +387,7 @@ cual sea el resultado:
   así que una corrida en seco que de verdad diga algo tiene que correr contra un `.env` copiado del VPS
   (sólo lectura) o directamente por SSH en el servidor.
 - **Líneas de log a buscar**:
-  - Corrida normal: `[price-events] <YYYY-MM-DD> evento=<key|ninguno> verticales=<lista|-> leídas=<analyzed> elegibles=<eligible> trackingSince=<fecha|->`.
+  - Corrida normal: `[price-events] <YYYY-MM-DD> evento=<id|ninguno> verticales=<lista|-> leídas=<analyzed> elegibles=<eligible> trackingSince=<fecha|->`.
   - Corrida flaca (exit 1): `[price-events] corrida flaca: <N> elegibles contra <M> ya publicadas — se conserva el snapshot anterior`.
   - `--event-only` sin evento (exit 0, sin conexión a Mongo): `[price-events] --event-only: sin evento activo hoy (<fecha>) — no se conecta a la base`.
   - `--event-only` con evento pero sin datos todavía (exit 0, revisión final M1): `[price-events] --event-only: 0 ofertas leídas para <fecha> todavía (equipar/sillas escriben más tarde en el día) — no es una corrida flaca, se sale sin escribir`.
@@ -420,3 +420,9 @@ cual sea el resultado:
 - `docs/app/PRICEWATCH.md` — de dónde sale `pricewatchoffers`, qué escribe y con qué guardas.
 - `docs/app/EQUIPAR.md` — el otro consumidor del mismo cosechador de retail (`classes/retail/`).
 - `AGENTS.md` — filas `currency-price-events`/`currency-price-events-hourly` en la tabla de pm2.
+
+**Por qué el campo del calendario se llama `id` y no `key`** (2026-09-17): el escaneo de secretos del
+CI (Gitleaks, regla `generic-api-key`) tomaba el campo viejo con el identificador de la edición como
+una clave de API —el nombre del campo era la palabra inglesa para "clave" y el valor lleva dígitos— y
+bloqueaba el despliegue. Un nombre neutro evita el falso
+positivo sin agregar huellas a `.gitleaksignore`, que dependen del número de línea.

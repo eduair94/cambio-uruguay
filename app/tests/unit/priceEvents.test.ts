@@ -32,7 +32,7 @@ describe('priceEventCountdown', () => {
   it('un día antes del inicio: upcoming, con daysUntilStart', () => {
     const result = priceEventCountdown('2026-11-26')
     expect(result).toEqual({
-      event: expect.objectContaining({ key: 'black-friday-2026' }),
+      event: expect.objectContaining({ id: 'black-friday-2026' }),
       status: 'upcoming',
       daysUntilStart: 1,
       endsOn: null,
@@ -42,7 +42,7 @@ describe('priceEventCountdown', () => {
   it('el día del inicio: first-day, nunca upcoming con daysUntilStart 0', () => {
     const result = priceEventCountdown('2026-11-27')
     expect(result).toEqual({
-      event: expect.objectContaining({ key: 'black-friday-2026' }),
+      event: expect.objectContaining({ id: 'black-friday-2026' }),
       status: 'first-day',
       daysUntilStart: null,
       endsOn: null,
@@ -52,7 +52,7 @@ describe('priceEventCountdown', () => {
   it('un día del medio de la ventana (29): in-progress, con endsOn', () => {
     const result = priceEventCountdown('2026-11-29')
     expect(result).toEqual({
-      event: expect.objectContaining({ key: 'black-friday-2026' }),
+      event: expect.objectContaining({ id: 'black-friday-2026' }),
       status: 'in-progress',
       daysUntilStart: null,
       endsOn: '2026-11-30',
@@ -62,7 +62,7 @@ describe('priceEventCountdown', () => {
   it('el último día de la ventana (30): sigue in-progress, no "primer día"', () => {
     const result = priceEventCountdown('2026-11-30')
     expect(result).toEqual({
-      event: expect.objectContaining({ key: 'black-friday-2026' }),
+      event: expect.objectContaining({ id: 'black-friday-2026' }),
       status: 'in-progress',
       daysUntilStart: null,
       endsOn: '2026-11-30',
@@ -74,7 +74,7 @@ describe('priceEventCountdown', () => {
     // priceEventCountdown no depende de esa ventana: Black Friday, confirmado, sigue siendo el
     // evento a mostrar mientras no haya terminado.
     const result = priceEventCountdown('2026-11-05')
-    expect(result.event?.key).toBe('black-friday-2026')
+    expect(result.event?.id).toBe('black-friday-2026')
     expect(result.status).toBe('upcoming')
   })
 
@@ -85,7 +85,7 @@ describe('priceEventCountdown', () => {
   it('con la ventana de CyberLunes vencida (09) pero Black Friday por venir: upcoming BF, no undated ni none', () => {
     const result = priceEventCountdown('2026-11-09')
     expect(result).toEqual({
-      event: expect.objectContaining({ key: 'black-friday-2026' }),
+      event: expect.objectContaining({ id: 'black-friday-2026' }),
       status: 'upcoming',
       daysUntilStart: 18,
       endsOn: null,
@@ -104,7 +104,7 @@ describe('priceEventCountdown', () => {
 describe('priceEventCountdownHeadline', () => {
   const base: PriceEventCountdown = {
     event: {
-      key: 'black-friday-2026',
+      id: 'black-friday-2026',
       label: 'Black Friday 2026',
       start: '2026-11-27',
       end: '2026-11-30',
@@ -147,7 +147,7 @@ describe('priceEventCountdownHeadline', () => {
     expect(
       priceEventCountdownHeadline({
         ...base,
-        event: { ...base.event, key: 'ciberlunes-2026-11', label: 'CyberLunes noviembre 2026' },
+        event: { ...base.event, id: 'ciberlunes-2026-11', label: 'CyberLunes noviembre 2026' },
         status: 'undated',
       })
     ).toBe('CyberLunes noviembre 2026: a confirmar por la CEDU.')
@@ -222,12 +222,12 @@ describe('priceEventDayLabel', () => {
 describe('priceEventOtherUnconfirmed', () => {
   it('Black Friday nearer (gana el titular): la edición sin fecha se muestra aparte', () => {
     const result = priceEventOtherUnconfirmed('2026-09-17')
-    expect(result?.key).toBe('ciberlunes-2026-11')
+    expect(result?.id).toBe('ciberlunes-2026-11')
   })
 
   it('todavía dentro de su ventana adivinada (05 de noviembre): se muestra aparte igual', () => {
     const result = priceEventOtherUnconfirmed('2026-11-05')
-    expect(result?.key).toBe('ciberlunes-2026-11')
+    expect(result?.id).toBe('ciberlunes-2026-11')
   })
 
   it('con la ventana vencida (09 de noviembre) pero Black Friday por venir: ya no se muestra aparte', () => {
@@ -250,12 +250,12 @@ describe('priceEventPastEditions', () => {
 
   it('en orden cronológico, y nunca incluye la edición sin fecha confirmada', () => {
     const result = priceEventPastEditions('2026-09-17')
-    expect(result.map(e => e.key)).toEqual(['ciberlunes-2025-11', 'ciberlunes-2026-06'])
+    expect(result.map(e => e.id)).toEqual(['ciberlunes-2025-11', 'ciberlunes-2026-06'])
   })
 
   it('Black Friday pasa a ser pasado después de su ventana', () => {
     const result = priceEventPastEditions('2026-12-01')
-    expect(result.map(e => e.key)).toEqual([
+    expect(result.map(e => e.id)).toEqual([
       'ciberlunes-2025-11',
       'ciberlunes-2026-06',
       'black-friday-2026',

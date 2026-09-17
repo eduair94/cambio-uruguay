@@ -889,18 +889,34 @@ describe("fetchRedditIncrement", () => {
     it("keeps whatever progress it made before the deadline hit, same shape as a budget cutoff", async () => {
       const { fetchRedditIncrement } = await freshReddit();
       let calls = 0;
-      // A deadline 30ms out lets a couple of (mocked, near-instant) calls through before it trips —
-      // long enough to be robust on a slow CI box, short enough not to make the suite wait.
-      const deadlineAt = Date.now() + 30;
+      // A fake wall clock that advances 10 ms per Arctic Shift call, so the deadline trips after a
+      // known number of calls no matter how fast the machine is. The first version used the real
+      // clock with a 30 ms budget and failed on a fast CI runner that finished all 24 calls in time.
+      // First measure how many calls an unbounded backfill makes, then cut at half of them so at
+      // least one whole window is done before the deadline trips.
+      let total = 0;
       fakeArctic(() => {
-        calls++;
+        total++;
         return jsonResponse({ data: [] });
       });
-      const result = await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, null, NOW, { calls: 900 }, deadlineAt);
-      expect(calls).toBeGreaterThan(0);
-      expect(calls).toBeLessThan(24); // fewer than the full unbounded backfill for this store
-      expect(result).toBeDefined();
-      expect(result!.complete).toBe(false);
+      await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, null, NOW, { calls: 900 });
+      let clock = 1_000_000;
+      const nowSpy = vi.spyOn(Date, "now").mockImplementation(() => clock);
+      const deadlineAt = clock + 10 * Math.ceil(total / 2) + 5;
+      fakeArctic(() => {
+        calls++;
+        clock += 10;
+        return jsonResponse({ data: [] });
+      });
+      try {
+        const result = await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, null, NOW, { calls: 900 }, deadlineAt);
+        expect(calls).toBeGreaterThan(0);
+        expect(calls).toBeLessThan(total); // fewer than the full unbounded backfill for this store
+        expect(result).toBeDefined();
+        expect(result!.complete).toBe(false);
+      } finally {
+        nowSpy.mockRestore();
+      }
     });
 
     it("does not check the deadline at all in full-run mode (no fifth argument)", async () => {

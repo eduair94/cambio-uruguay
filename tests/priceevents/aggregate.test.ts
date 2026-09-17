@@ -28,7 +28,7 @@ function analysis(overrides: Partial<PriceEventAnalysis> & { classes: PriceEvent
 }
 
 const EVENT: PriceEvent = {
-  key: "black-friday-2026",
+  id: "black-friday-2026",
   label: "Black Friday 2026",
   start: "2026-11-27",
   end: "2026-11-30",

@@ -19,7 +19,7 @@ import { dateLocale } from './format'
 // ---------------------------------------------------------------------------
 
 export interface PriceEventCalendarEntry {
-  key: string
+  id: string
   label: string
   start: string | null
   end: string | null
@@ -37,7 +37,7 @@ export interface PriceEventCalendarEntry {
  */
 export const PRICE_EVENT_CALENDAR: readonly PriceEventCalendarEntry[] = [
   {
-    key: 'ciberlunes-2025-11',
+    id: 'ciberlunes-2025-11',
     label: 'CyberLunes noviembre 2025',
     start: '2025-11-03',
     end: '2025-11-05',
@@ -47,7 +47,7 @@ export const PRICE_EVENT_CALENDAR: readonly PriceEventCalendarEntry[] = [
     note: '',
   },
   {
-    key: 'ciberlunes-2026-06',
+    id: 'ciberlunes-2026-06',
     label: 'CyberLunes junio 2026',
     start: '2026-06-01',
     end: '2026-06-03',
@@ -56,7 +56,7 @@ export const PRICE_EVENT_CALENDAR: readonly PriceEventCalendarEntry[] = [
     note: '',
   },
   {
-    key: 'ciberlunes-2026-11',
+    id: 'ciberlunes-2026-11',
     label: 'CyberLunes noviembre 2026',
     start: null,
     end: null,
@@ -67,7 +67,7 @@ export const PRICE_EVENT_CALENDAR: readonly PriceEventCalendarEntry[] = [
     note: 'Al 17 de setiembre de 2026 la CEDU no había publicado la fecha.',
   },
   {
-    key: 'black-friday-2026',
+    id: 'black-friday-2026',
     label: 'Black Friday 2026',
     start: '2026-11-27',
     end: '2026-11-30',
@@ -248,7 +248,7 @@ export function priceEventOtherUnconfirmed(today: string): PriceEventCalendarEnt
   if (!unconfirmed) return null
   if (today > priceEventWindowOf(unconfirmed).end) return null
   const headline = priceEventCountdown(today)
-  if (headline.event?.key === unconfirmed.key) return null
+  if (headline.event?.id === unconfirmed.id) return null
   return unconfirmed
 }
 

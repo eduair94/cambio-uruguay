@@ -5,7 +5,7 @@ describe("PRICE_EVENTS", () => {
   it("declares exactly the four verified editions, with sources for the confirmed ones", () => {
     expect(PRICE_EVENTS).toEqual([
       {
-        key: "ciberlunes-2025-11",
+        id: "ciberlunes-2025-11",
         label: "CyberLunes noviembre 2025",
         start: "2025-11-03",
         end: "2025-11-05",
@@ -15,7 +15,7 @@ describe("PRICE_EVENTS", () => {
         note: "",
       },
       {
-        key: "ciberlunes-2026-06",
+        id: "ciberlunes-2026-06",
         label: "CyberLunes junio 2026",
         start: "2026-06-01",
         end: "2026-06-03",
@@ -24,7 +24,7 @@ describe("PRICE_EVENTS", () => {
         note: "",
       },
       {
-        key: "ciberlunes-2026-11",
+        id: "ciberlunes-2026-11",
         label: "CyberLunes noviembre 2026",
         start: null,
         end: null,
@@ -33,7 +33,7 @@ describe("PRICE_EVENTS", () => {
         note: "Al 17 de setiembre de 2026 la CEDU no había publicado la fecha.",
       },
       {
-        key: "black-friday-2026",
+        id: "black-friday-2026",
         label: "Black Friday 2026",
         start: "2026-11-27",
         end: "2026-11-30",
@@ -45,7 +45,7 @@ describe("PRICE_EVENTS", () => {
   });
 
   it("never invents a date for the unconfirmed November 2026 edition", () => {
-    const november2026 = PRICE_EVENTS.find((event) => event.key === "ciberlunes-2026-11")!;
+    const november2026 = PRICE_EVENTS.find((event) => event.id === "ciberlunes-2026-11")!;
     expect(november2026.start).toBeNull();
     expect(november2026.end).toBeNull();
     expect(november2026.confirmed).toBe(false);
@@ -60,23 +60,23 @@ describe("activeEvent", () => {
 
   it("is active on the confirmed CyberLunes 2025-11 boundaries, inclusive", () => {
     expect(activeEvent("2025-11-02")).toBeNull();
-    expect(activeEvent("2025-11-03")?.key).toBe("ciberlunes-2025-11");
-    expect(activeEvent("2025-11-04")?.key).toBe("ciberlunes-2025-11");
-    expect(activeEvent("2025-11-05")?.key).toBe("ciberlunes-2025-11");
+    expect(activeEvent("2025-11-03")?.id).toBe("ciberlunes-2025-11");
+    expect(activeEvent("2025-11-04")?.id).toBe("ciberlunes-2025-11");
+    expect(activeEvent("2025-11-05")?.id).toBe("ciberlunes-2025-11");
     expect(activeEvent("2025-11-06")).toBeNull();
   });
 
   it("is active on the confirmed CyberLunes 2026-06 boundaries, inclusive", () => {
     expect(activeEvent("2026-05-31")).toBeNull();
-    expect(activeEvent("2026-06-01")?.key).toBe("ciberlunes-2026-06");
-    expect(activeEvent("2026-06-03")?.key).toBe("ciberlunes-2026-06");
+    expect(activeEvent("2026-06-01")?.id).toBe("ciberlunes-2026-06");
+    expect(activeEvent("2026-06-03")?.id).toBe("ciberlunes-2026-06");
     expect(activeEvent("2026-06-04")).toBeNull();
   });
 
   it("is active on the confirmed Black Friday 2026 boundaries, inclusive", () => {
     expect(activeEvent("2026-11-26")).toBeNull();
-    expect(activeEvent("2026-11-27")?.key).toBe("black-friday-2026");
-    expect(activeEvent("2026-11-30")?.key).toBe("black-friday-2026");
+    expect(activeEvent("2026-11-27")?.id).toBe("black-friday-2026");
+    expect(activeEvent("2026-11-30")?.id).toBe("black-friday-2026");
     expect(activeEvent("2026-12-01")).toBeNull();
   });
 
@@ -84,7 +84,7 @@ describe("activeEvent", () => {
     expect(activeEvent("2026-10-31")).toBeNull();
     for (const day of ["2026-11-01", "2026-11-04", "2026-11-08"]) {
       const result = activeEvent(day);
-      expect(result?.key).toBe("ciberlunes-2026-11");
+      expect(result?.id).toBe("ciberlunes-2026-11");
       // The returned event is the real calendar entry, not a copy with the guessed window baked
       // into start/end — the page must still say "a confirmar por la CEDU", never a fake date.
       expect(result?.start).toBeNull();
@@ -97,7 +97,7 @@ describe("activeEvent", () => {
 
 describe("resolveActiveEvent (overlap rule, synthetic data)", () => {
   const confirmed: PriceEvent = {
-    key: "confirmed",
+    id: "confirmed",
     label: "Confirmado",
     start: "2026-03-10",
     end: "2026-03-20",
@@ -106,7 +106,7 @@ describe("resolveActiveEvent (overlap rule, synthetic data)", () => {
     note: "",
   };
   const unconfirmedWide: PriceEvent = {
-    key: "unconfirmed",
+    id: "unconfirmed",
     label: "Sin confirmar",
     start: null,
     end: null,
@@ -121,18 +121,18 @@ describe("resolveActiveEvent (overlap rule, synthetic data)", () => {
     // picking a day inside BOTH: 2026-11-01..08 (unconfirmed guess) has no confirmed sibling in the
     // real calendar, so this test uses a synthetic confirmed event placed on top of that window
     // instead of relying on it ever happening for real.
-    const confirmedInNovember: PriceEvent = { ...confirmed, key: "confirmed-november", start: "2026-11-03", end: "2026-11-05" };
-    expect(resolveActiveEvent([unconfirmedWide, confirmedInNovember], "2026-11-04")?.key).toBe("confirmed-november");
+    const confirmedInNovember: PriceEvent = { ...confirmed, id: "confirmed-november", start: "2026-11-03", end: "2026-11-05" };
+    expect(resolveActiveEvent([unconfirmedWide, confirmedInNovember], "2026-11-04")?.id).toBe("confirmed-november");
     // Order in the array must not matter.
-    expect(resolveActiveEvent([confirmedInNovember, unconfirmedWide], "2026-11-04")?.key).toBe("confirmed-november");
+    expect(resolveActiveEvent([confirmedInNovember, unconfirmedWide], "2026-11-04")?.id).toBe("confirmed-november");
   });
 
   it("returns the confirmed event on its own when the unconfirmed window does not reach that day", () => {
-    expect(resolveActiveEvent([confirmed, unconfirmedWide], "2026-03-15")?.key).toBe("confirmed");
+    expect(resolveActiveEvent([confirmed, unconfirmedWide], "2026-03-15")?.id).toBe("confirmed");
   });
 
   it("falls back to the unconfirmed window when it is the only one covering the day", () => {
-    expect(resolveActiveEvent([confirmed, unconfirmedWide], "2026-11-05")?.key).toBe("unconfirmed");
+    expect(resolveActiveEvent([confirmed, unconfirmedWide], "2026-11-05")?.id).toBe("unconfirmed");
   });
 
   it("returns null when nothing covers the day", () => {

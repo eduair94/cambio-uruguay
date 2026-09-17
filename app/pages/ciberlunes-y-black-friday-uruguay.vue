@@ -91,7 +91,7 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
       <div v-if="pastEditions.length" class="past-editions">
         <p class="text-subtitle-2 font-weight-bold mb-2">Ediciones anteriores</p>
         <ul class="past-list">
-          <li v-for="edition in pastEditions" :key="edition.key">
+          <li v-for="edition in pastEditions" :key="edition.id">
             <span class="past-label">{{ edition.label }}</span>
             <span class="past-dates">{{ priceEventDateRangeLabel(edition) }}</span>
             <a
