@@ -18,6 +18,9 @@ import { EquiparItemModel } from "../../classes/models/EquiparItem";
 import { EquiparMetaModel } from "../../classes/models/EquiparMeta";
 import { CharruaTextModel } from "../../classes/models/CharruaText";
 import { CharruaSnapshotModel } from "../../classes/models/CharruaSnapshot";
+import { CarCatalogMetaModel } from "../../classes/models/CarCatalogMeta";
+import { CarMarketSnapshotModel } from "../../classes/models/CarMarketSnapshot";
+import { CarOpportunitySnapshotModel } from "../../classes/models/CarOpportunitySnapshot";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -134,6 +137,19 @@ describe("app-Mongo schema parity", () => {
     );
     expect(CharruaSnapshotModel.collection.name).toBe("charruadevssnapshots");
   });
+  it("the used-car public models declare exactly the app's fields", () => {
+    // El directorio de autos: un campo que el backend escribe y el app no declara es un dato que la
+    // página nunca muestra, sin error.
+    expect(Object.keys(CarCatalogMetaModel.schema.obj).sort()).toEqual(appFields(appModel("CarCatalogMeta")).sort());
+    expect(Object.keys(CarMarketSnapshotModel.schema.obj).sort()).toEqual(appFields(appModel("CarMarketSnapshot")).sort());
+    expect(Object.keys(CarOpportunitySnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("CarOpportunitySnapshot")).sort()
+    );
+    expect(CarCatalogMetaModel.collection.name).toBe("carcatalogmetas");
+    expect(CarMarketSnapshotModel.collection.name).toBe("carmarketsnapshots");
+    expect(CarOpportunitySnapshotModel.collection.name).toBe("caropportunitysnapshots");
+  });
+
   it("writes the collections the app already reads — not mongoose's guess", () => {
     expect(PricePredictionModel.collection.name).toBe("pricepredictions");
     expect(MoveExplanationModel.collection.name).toBe("moveexplanations");
