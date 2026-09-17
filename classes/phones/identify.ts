@@ -132,16 +132,25 @@ const ACCESSORY_PLURAL_TOLERANT = [
   "tv",
   "stick",
   // Repair-part words with no legitimate use naming a PHONE's own spec — nobody advertises a
-  // handset by saying it comes with a "flex", a "housing" or a "chasis". "tapa" (back cover) and
-  // "placa" (board) are the same class. "bateria"/"pantalla" are NOT here: those two really are
-  // used both ways ("Batería 5000mah" is a spec, "Bateria Original Samsung S24…" is the product
-  // being sold) and get their own position-sensitive check in {@link hasAccessoryWord} instead.
+  // handset by saying it comes with a "flex", a "housing" or a "chasis". "placa" (board) is the
+  // same class: no real listing says a working phone "tiene placa", only a repair one selling the
+  // board itself. Checked and kept bare on purpose — none of these four collides with an ordinary
+  // condition/spec phrase the way "tapa" below did. "bateria"/"pantalla" are NOT here: those two
+  // really are used both ways ("Batería 5000mah" is a spec, "Bateria Original Samsung S24…" is the
+  // product being sold) and get their own position-sensitive check in {@link hasAccessoryWord}
+  // instead.
   "flex",
-  "tapa",
   "placa",
   "housing",
   "chasis",
   "pin de carga",
+  // Bare "tapa" is NOT safe the way the four above are: "Samsung Galaxy S25 Ultra 512gb Nuevo
+  // Sellado Con Tapa" is a real, ordinary condition phrase — "con tapa" means the phone still has
+  // its original protective film/seal, not that a back-cover PART is being sold. Only the
+  // compound phrases a real back-cover/battery-door listing actually uses are excluded, mirroring
+  // "camara trasera" above (bare "camara" is not excluded either, for the same reason).
+  "tapa trasera",
+  "tapa de bateria",
 ];
 const ACCESSORY_EXACT_WORDS = ["tab", "book"];
 const ACCESSORY_RE = new RegExp(
@@ -239,6 +248,18 @@ const BUNDLE_CLAUSE_RE = /\b(?:con regalo|de regalo|incluye|obsequio)\b/;
  *     word or "regalo"/"obsequio" turns up SOMEWHERE later in the tail — "8gb plus 256gb azul"
  *     never finds one, so the spec combo is left alone and `extractStorageGb`/`extractRamGb`
  *     (further down) still see the full, untruncated title exactly as before this existed.
+ *
+ * DECIDED (controller ruling): an accessory word after "plus" counts as a bundle even with NO
+ * explicit gift word ("regalo"/"obsequio"/"incluye") anywhere — "Samsung Galaxy S25 256gb + Funda
+ * Silicona" is read as a phone bundled with a case, not a case listing, on purpose. A storage figure
+ * ALREADY found before the "+" is itself strong evidence this is a phone listing (a case/funda
+ * listing has no reason to state a phone's storage capacity), and real bundles routinely drop the
+ * word "regalo" entirely ("Samsung Galaxy S26 Ultra 5g (256 Gb) - Nuevos + Funda", measured in a
+ * live ML dry run). The trade-off this accepts: a genuine funda-only listing that happens to name a
+ * phone AND its storage right before a "+ [accessory]" would also slip through — but that shape does
+ * not occur in observed listings, and if one ever does, the catalogue's own price guard (Task 3) is
+ * the backstop: a funda's price does not belong anywhere near a phone's price band for that model,
+ * so it gets caught there, not here.
  */
 function accessoryCheckText(glued: string, familyEnd: number | null): string {
   if (familyEnd === null) return glued;

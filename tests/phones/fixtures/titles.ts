@@ -309,6 +309,22 @@ export const IDENTIFY_FIXTURES: IdentifyFixture[] = [
     title: "Samsung Galaxy A56 5g 256gb 8gb Ram Bateria 5000mah Negro",
     key: "samsung-galaxy-a56-256gb",
   },
+
+  // --- Fix round 6 (Task 2 controller ruling, celulares fix round 3).
+  {
+    // Item 1: bare "tapa" briefly excluded this — a REAL, ordinary condition phrase ("still has its
+    // original seal/film"), not a back-cover part listing. Narrowed to "tapa trasera"/"tapa de
+    // bateria" (mirrors "camara trasera": bare "camara" isn't excluded either).
+    title: "Samsung Galaxy S25 Ultra 512gb Nuevo Sellado Con Tapa",
+    key: "samsung-galaxy-s25-ultra-512gb",
+  },
+  {
+    // Item 2 (controller ruling, ACCEPTED as a bundle): an accessory word after "plus" with NO
+    // explicit gift word ("regalo"/"incluye"/"obsequio") still counts as a bundle, not a case
+    // listing — see the DECIDED note on accessoryCheckText for the reasoning and the trade-off.
+    title: "Samsung Galaxy S25 256gb + Funda Silicona",
+    key: "samsung-galaxy-s25-256gb",
+  },
 ];
 
 /** Titles that must resolve to a specific PhoneCondition. Two-arg calls use "unknown" as the source. */
@@ -387,10 +403,12 @@ export const NOT_PHONE_TITLES: string[] = [
   "Iphone 17 Pro Max En Caja, Con Fundas De Regalo. 80 Mil.",
 
   // --- Fix round 5 (item 2): replacement-part listings. "Bateria"/"pantalla" standing alone (no
-  // spec figure right next to them) name the PART being sold, not the phone; the rest of this class
-  // ("flex", "tapa", "placa", "camara trasera", "pin de carga", "housing", "chasis") never doubles
-  // as a phone spec at all, so those are unconditional. The exact reported bug is first: a real
-  // battery listing that used to resolve to samsung-galaxy-s24-ultra-128gb.
+  // spec figure right next to them) name the PART being sold, not the phone; "flex", "placa",
+  // "pin de carga", "housing" and "chasis" never double as a phone spec at all, so those are
+  // unconditional. "tapa"/"camara" are narrower — see fix round 6 below — only the compound
+  // "tapa trasera"/"tapa de bateria"/"camara trasera" phrases exclude, never the bare word. The
+  // exact reported bug is first: a real battery listing that used to resolve to
+  // samsung-galaxy-s24-ultra-128gb.
   "Bateria Original Samsung S24 Ultra 128gb Compatible + Instalacion",
   "Pantalla iPhone 15 Pro Oled Repuesto",
   "Flex De Carga Para iPhone 13",
@@ -400,4 +418,9 @@ export const NOT_PHONE_TITLES: string[] = [
   "Pin De Carga iPhone 11",
   "Housing Completo iPhone 14 Pro",
   "Chasis iPhone 13 Pro Max",
+
+  // --- Fix round 6 (item 1): "tapa trasera" again, the coordinator's own exact fixture — kept
+  // alongside "Tapa Trasera Samsung Galaxy A56" above rather than replacing it, since the two cover
+  // different brands' family parsers.
+  "Tapa Trasera iPhone 15 Pro 256gb",
 ];
