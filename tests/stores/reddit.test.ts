@@ -314,6 +314,7 @@ describe("fetchRedditIncrement", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     delete process.env.STORES_REDDIT_GAP_MS;
     delete process.env.STORES_REDDIT_RETRY_MS;
   });
@@ -469,12 +470,63 @@ describe("fetchRedditIncrement", () => {
       expect(calls).toHaveLength(4);
     });
 
-    it("does not retry an error that is not a timeout", async () => {
+    it("does not retry an error that is not a timeout, and logs which query was rejected", async () => {
       const { fetchRedditIncrement } = await freshReddit();
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
       const { calls } = fakeArctic(() => jsonResponse({ data: null, error: "Invalid parameter" }, 400));
       const result = await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, doneCursor(NOW - 7 * DAY), NOW, { calls: 100 });
       expect(result).toBeUndefined();
       expect(calls).toHaveLength(1);
+      expect(warn).toHaveBeenCalledTimes(1);
+      const line = String(warn.mock.calls[0]![0]);
+      expect(line).toContain('[tiendas] reddit tushop r/uruguay post "tushop": HTTP 400');
+      expect(line).toContain("Invalid parameter");
+    });
+
+    it("stops instead of splitting when a window keeps failing with something other than a timeout", async () => {
+      const { fetchRedditIncrement } = await freshReddit();
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const next = utc("2026-06-16T00:00:00Z");
+      const cursor: RedditCursor = { backfillStartUtc: START, backfillNextUtc: next, backfillDone: false, checkedUntilUtc: next };
+      const { calls } = fakeArctic((call) =>
+        call.kind === "comments" && call.sub === "uruguay" ? new Response("bad gateway", { status: 502 }) : jsonResponse({ data: [] })
+      );
+
+      const result = await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, cursor, NOW, { calls: 100 });
+
+      expect(result).toBeUndefined();
+      const uyComments = calls.filter((c) => c.kind === "comments" && c.sub === "uruguay");
+      expect(uyComments).toHaveLength(4);
+      for (const call of uyComments) expect([call.from, call.before]).toEqual([next, NOW]);
+      // Nothing after it for this store: r/montevideo comments are never asked.
+      expect(calls.some((c) => c.kind === "comments" && c.sub === "montevideo")).toBe(false);
+      expect(String(warn.mock.calls[0]![0])).toContain('[tiendas] reddit tushop r/uruguay comment "tushop": HTTP 502');
+    });
+
+    it("keeps the partial progress of the window's last query when it fails midway", async () => {
+      const { fetchRedditIncrement } = await freshReddit();
+      vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const next = utc("2026-06-16T00:00:00Z");
+      const cursor: RedditCursor = { backfillStartUtc: START, backfillNextUtc: next, backfillDone: false, checkedUntilUtc: next };
+      const page = Array.from({ length: 100 }, (_, i) => rawComment({ id: `c${i}`, created_utc: next + i * 3600, body: "compré en tushop" }));
+      const lastRow = next + 99 * 3600;
+      fakeArctic((call) => {
+        // r/montevideo comments is the window's last query: its first page answers, the next one fails
+        // for good after the retries.
+        if (call.kind === "comments" && call.sub === "montevideo") {
+          return call.from === next ? jsonResponse({ data: page }) : new Response("bad gateway", { status: 502 });
+        }
+        return jsonResponse({ data: [] });
+      });
+
+      const result = await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, cursor, NOW, { calls: 100 });
+
+      expect(result).toBeDefined();
+      expect(result!.complete).toBe(false);
+      expect(result!.cursor).toEqual({ backfillStartUtc: START, backfillNextUtc: lastRow, backfillDone: false, checkedUntilUtc: lastRow });
+      // Everything before the second that failed; the row AT that second is read again next run.
+      expect(result!.mentions).toHaveLength(99);
+      for (const mention of result!.mentions) expect(mention.createdUtc).toBeLessThan(lastRow);
     });
 
     it("splits a window that keeps timing out in halves, and remembers the size that failed", async () => {
@@ -562,6 +614,136 @@ describe("fetchRedditIncrement", () => {
       expect(spans).toEqual([...Array(4).fill(92 * DAY), ...Array(4).fill(46 * DAY), ...Array(4).fill(23 * DAY), ...Array(4).fill(11.5 * DAY)]);
       // Nothing after the failure: no later window of either kind.
       expect(calls.some((c) => c.from >= utc("2025-06-16T00:00:00Z"))).toBe(false);
+    });
+  });
+
+  describe("what one store teaches the next", () => {
+    it("does not learn a window size from a later page: a short page that timed out or answered never shrinks another store's windows", async () => {
+      // The review probe: store A's 2-hour second page timed out 4 times, store B's 1-hour second page
+      // answered, and store C's fresh backfill then spent 298 of 300 calls on 1-hour chunks of r/uruguay
+      // comments and returned undefined.
+      const { fetchRedditIncrement } = await freshReddit();
+      const windowStart = NOW - 8 * DAY;
+      const fullPageEndingAt = (end: number) =>
+        Array.from({ length: 100 }, (_, i) => rawComment({ id: `x${end}-${i}`, created_utc: end - (99 - i) * 60, body: "nada" }));
+
+      let store: "A" | "B" | "C" = "A";
+      const { calls } = fakeArctic((call) => {
+        if (call.kind !== "comments" || call.sub !== "uruguay") return jsonResponse({ data: [] });
+        if (store === "A") {
+          return call.from === windowStart ? jsonResponse({ data: fullPageEndingAt(NOW - 7200) }) : jsonResponse(TIMEOUT_BODY, 422);
+        }
+        if (store === "B") {
+          return call.from === windowStart ? jsonResponse({ data: fullPageEndingAt(NOW - 3600) }) : jsonResponse({ data: [] });
+        }
+        // Store C: what Arctic Shift really does with r/uruguay comments.
+        return call.before - call.from > 30 * DAY ? jsonResponse(TIMEOUT_BODY, 422) : jsonResponse({ data: [] });
+      });
+
+      await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, doneCursor(NOW - 7 * DAY), NOW, { calls: 100 });
+      store = "B";
+      await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, doneCursor(NOW - 7 * DAY), NOW, { calls: 100 });
+      store = "C";
+      const before = calls.length;
+      const budget = { calls: 300 };
+      const result = await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, null, NOW, budget);
+
+      expect(result).toBeDefined();
+      expect(result!.complete).toBe(true);
+      expect(result!.cursor.backfillDone).toBe(true);
+      const cComments = calls.slice(before).filter((c) => c.kind === "comments" && c.sub === "uruguay");
+      expect(Math.min(...cComments.map((c) => c.before - c.from))).toBeGreaterThanOrEqual(7 * DAY);
+      expect(budget.calls).toBeGreaterThan(200);
+    });
+
+    // Each guard on its own: the probe above is covered by several of them at once.
+    it("does not learn from a second page that timed out, even a long one", async () => {
+      const { fetchRedditIncrement } = await freshReddit();
+      vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const next = utc("2026-06-16T00:00:00Z");
+      const cursor: RedditCursor = { backfillStartUtc: START, backfillNextUtc: next, backfillDone: false, checkedUntilUtc: next };
+      const page = Array.from({ length: 100 }, (_, i) => rawComment({ id: `p${i}`, created_utc: next + 3600 - (99 - i) * 30, body: "nada" }));
+      let store: "A" | "B" = "A";
+      const { calls } = fakeArctic((call) => {
+        if (store === "A" && call.kind === "comments" && call.sub === "uruguay") {
+          if (call.from === next) return jsonResponse({ data: page });
+          // The 92-day remainder after the first 100 rows keeps timing out.
+          if (call.from === next + 3600 && call.before === NOW) return jsonResponse(TIMEOUT_BODY, 422);
+        }
+        return jsonResponse({ data: [] });
+      });
+
+      expect((await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, cursor, NOW, { calls: 100 }))!.complete).toBe(true);
+      store = "B";
+      const before = calls.length;
+      await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, cursor, NOW, { calls: 100 });
+
+      const first = calls.slice(before).find((c) => c.kind === "comments" && c.sub === "uruguay")!;
+      expect([first.from, first.before]).toEqual([next, NOW]);
+    });
+
+    it("does not learn from a timeout on a window shorter than 14 days (load, not size)", async () => {
+      const { fetchRedditIncrement } = await freshReddit();
+      const next = utc("2026-06-16T00:00:00Z");
+      const cursor: RedditCursor = { backfillStartUtc: START, backfillNextUtc: next, backfillDone: false, checkedUntilUtc: next };
+      let store: "A" | "B" = "A";
+      const { calls } = fakeArctic((call) =>
+        store === "A" && call.kind === "comments" && call.sub === "uruguay" ? jsonResponse(TIMEOUT_BODY, 422) : jsonResponse({ data: [] })
+      );
+
+      // Store A: its 8-day week times out on the first page.
+      expect(await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, doneCursor(NOW - 7 * DAY), NOW, { calls: 100 })).toBeUndefined();
+      store = "B";
+      const before = calls.length;
+      await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, cursor, NOW, { calls: 100 });
+
+      const first = calls.slice(before).find((c) => c.kind === "comments" && c.sub === "uruguay")!;
+      expect([first.from, first.before]).toEqual([next, NOW]);
+    });
+
+    it("does not learn from an answer on a window shorter than 7 days", async () => {
+      const { fetchRedditIncrement } = await freshReddit();
+      let store: "A" | "B" | "C" = "A";
+      const { calls } = fakeArctic((call) =>
+        store === "A" && call.kind === "comments" && call.sub === "uruguay" && call.before - call.from > 5 * DAY
+          ? jsonResponse(TIMEOUT_BODY, 422)
+          : jsonResponse({ data: [] })
+      );
+
+      // Store A: 20 days time out (learned), its 10-day halves too (not split again) — nothing answered.
+      expect(await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, doneCursor(NOW - 19 * DAY), NOW, { calls: 100 })).toBeUndefined();
+      // Store B: a 3-day window answers. Too short to say how long a window can be.
+      store = "B";
+      await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, doneCursor(NOW - 2 * DAY), NOW, { calls: 100 });
+      // Store C: a 36-day window is halved (what the 20-day timeout says), not cut as small as the floor
+      // allows (5 parts of 7.2 days) as a 3-day "answer" would ask.
+      store = "C";
+      const before = calls.length;
+      await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, doneCursor(NOW - 35 * DAY), NOW, { calls: 100 });
+
+      const uyComments = calls.slice(before).filter((c) => c.kind === "comments" && c.sub === "uruguay");
+      expect(uyComments.map((c) => c.before - c.from)).toEqual([18 * DAY, 18 * DAY]);
+    });
+
+    it("never cuts a window into parts shorter than 7 days, whatever span answered", async () => {
+      const { fetchRedditIncrement } = await freshReddit();
+      // r/uruguay comments answer only up to 8 days.
+      const { calls } = fakeArctic((call) =>
+        call.kind === "comments" && call.sub === "uruguay" && call.before - call.from > 8 * DAY
+          ? jsonResponse(TIMEOUT_BODY, 422)
+          : jsonResponse({ data: [] })
+      );
+
+      // Store 1: a 15-day window times out and its 7.5-day halves answer.
+      const first = await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, doneCursor(NOW - 14 * DAY), NOW, { calls: 100 });
+      expect(first!.complete).toBe(true);
+      // Store 2: a 16-day window. Chunks of at most 7.5 days would be 3 parts of 5.3 days; the floor
+      // asks it in 2 parts of 8 days instead.
+      const before = calls.length;
+      const second = await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, doneCursor(NOW - 15 * DAY), NOW, { calls: 100 });
+      expect(second!.complete).toBe(true);
+      const uyComments = calls.slice(before).filter((c) => c.kind === "comments" && c.sub === "uruguay");
+      expect(uyComments.map((c) => c.before - c.from)).toEqual([8 * DAY, 8 * DAY]);
     });
   });
 

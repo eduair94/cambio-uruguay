@@ -26,8 +26,10 @@
 // each store keeps a cursor (`RedditCursor`): the first runs backfill 24 months in windows (posts
 // every 6 months, comments every 3), paginating each window, and once that is done every run only
 // reads from a day before where the last one stopped. A window that keeps timing out is split in
-// halves down to 14 days, and what failed and what answered is remembered for the rest of the process
-// so the next window and the next store do not pay the same retries again. Every HTTP call spends one unit of the run's
+// halves down to 14 days, and the window sizes that timed out and answered are remembered for the rest
+// of the process so the next window and the next store do not pay the same retries again. Any other
+// failure that survives the retries (429, 5xx, network) or a rejected query stops that store's Reddit
+// reading for the run instead: splitting does not fix an outage. Every HTTP call spends one unit of the run's
 // budget; when it runs out the store keeps what it completed and continues next week.
 //
 // The delays are env knobs read at call time (not bare constants) purely so tests don't wait tens of
@@ -98,6 +100,8 @@ const DAY_SECONDS = 86_400;
 const INCREMENTAL_OVERLAP_SECONDS = DAY_SECONDS;
 /** A failing window shorter than this is not split again: the store stops and resumes next run. */
 const MIN_SPLIT_SECONDS = 14 * DAY_SECONDS;
+/** Nothing learned ever cuts a window into parts shorter than this. */
+const MIN_PART_SECONDS = MIN_SPLIT_SECONDS / 2;
 // 1 initial attempt + up to 3 retries ("se reintentan hasta 3 veces").
 const MAX_ATTEMPTS = 4;
 
@@ -349,22 +353,33 @@ interface FetchRun {
 
 type PageResult =
   | { ok: true; rows: unknown[] }
-  | { ok: false; reason: "budget" | "failed" | "fatal"; timeout: boolean };
+  | { ok: false; reason: "budget" | "failed" | "fatal"; timeout: boolean; detail: string };
 
 type RangeResult = { ok: true } | { ok: false; coveredUntil: number };
 
 /**
- * For the whole process, per kind and subreddit: the shortest span on which Arctic Shift timed out
- * after every retry, and the longest shorter span that then answered. Once a timeout is known, a
- * later window is cut BEFORE asking — into equal chunks no longer than the span that answered, or in
+ * For the whole process, per kind and subreddit: the shortest window on which Arctic Shift timed out
+ * after every retry, and the longest shorter window that then answered. Once a timeout is known, a
+ * later window is cut BEFORE asking — into equal chunks no longer than the window that answered, or in
  * halves while none has — instead of paying four failed calls and a minute of waits again for every
  * store. Equal chunks rather than halves because calendar windows differ by a day or two: halving a
  * 90-day window after a 91-day one failed at 22.8 days gives 22.5-day halves that fail all over again
  * (measured 2026-09-16).
+ *
+ * What it learns from is deliberately narrow, because a wrong lesson costs every later store:
+ *   * only a range's FIRST page says anything about the window size — a second page covers whatever
+ *     was left after 100 rows (an hour, a minute) and tells nothing about how long a window can be;
+ *   * a timeout counts only on a window of at least MIN_SPLIT_SECONDS: on anything shorter it is load,
+ *     not size;
+ *   * an answer counts only on a window of at least MIN_PART_SECONDS, and no plan ever cuts a window
+ *     into parts shorter than that.
+ * Without these, one store whose 2-hour second page timed out and another whose 1-hour second page
+ * answered made the next store spend 298 of 300 calls on 1-hour chunks (review probe, 2026-09-16).
  */
 const spanMemory = new Map<string, { failing: number; working: number }>();
 
 function rememberTimeout(key: string, span: number): void {
+  if (span < MIN_SPLIT_SECONDS) return;
   const memory = spanMemory.get(key) ?? { failing: Number.POSITIVE_INFINITY, working: 0 };
   memory.failing = Math.min(memory.failing, span);
   if (memory.working >= memory.failing) memory.working = 0;
@@ -372,6 +387,7 @@ function rememberTimeout(key: string, span: number): void {
 }
 
 function rememberAnswer(key: string, span: number): void {
+  if (span < MIN_PART_SECONDS) return;
   const memory = spanMemory.get(key);
   if (memory && span < memory.failing) memory.working = Math.max(memory.working, span);
 }
@@ -380,8 +396,11 @@ function rememberAnswer(key: string, span: number): void {
 function plannedParts(key: string, span: number): number {
   const memory = spanMemory.get(key);
   if (!memory || span < MIN_SPLIT_SECONDS) return 1;
-  if (memory.working > 0) return span > memory.working ? Math.ceil(span / memory.working) : 1;
-  return span >= memory.failing ? 2 : 1;
+  let parts = 1;
+  if (memory.working > 0) parts = span > memory.working ? Math.ceil(span / memory.working) : 1;
+  else if (span >= memory.failing) parts = 2;
+  // Never parts shorter than MIN_PART_SECONDS (a window of MIN_SPLIT_SECONDS or more allows at least 2).
+  return Math.min(parts, Math.floor(span / MIN_PART_SECONDS));
 }
 
 /** `[fromUtc, beforeUtc)` as Arctic Shift parameters: its `after` is exclusive, so it gets `fromUtc - 1`. */
@@ -397,12 +416,14 @@ function searchUrl(kind: RedditWindow["kind"], sub: string, term: string, fromUt
  * One Arctic Shift page, paced and retried. A network error, a 429/5xx, an unreadable body, or
  * Arctic Shift's own timeout error (whatever the status: it arrives as 422 and as 200) is retried up
  * to 3 times; any other error fails at once (`fatal`: the query itself is wrong, retrying or splitting
- * would not help). Every HTTP call spends one unit of `budget.calls`, retries included.
+ * would not help). Every HTTP call spends one unit of `budget.calls`, retries included. `timeout` says
+ * whether the LAST failed attempt was a timeout, and `detail` what it was, for the log.
  */
 async function fetchPage(run: FetchRun, url: string): Promise<PageResult> {
   let timeout = false;
+  let detail = "";
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    if (run.budget.calls <= 0) return { ok: false, reason: "budget", timeout };
+    if (run.budget.calls <= 0) return { ok: false, reason: "budget", timeout, detail: "sin presupuesto" };
     if (attempt > 1) await sleep(retryMs());
     else if (run.calls > 0) await sleep(gapMs());
     run.budget.calls--;
@@ -411,21 +432,25 @@ async function fetchPage(run: FetchRun, url: string): Promise<PageResult> {
     let res: Response | undefined;
     try {
       res = await fetch(url, { headers: { "User-Agent": UA } });
-    } catch {
+    } catch (fetchError) {
       res = undefined;
+      detail = `red: ${(fetchError as Error)?.message || fetchError}`;
     }
     if (!res) {
       timeout = false;
       continue;
     }
 
+    let text = "";
     let body: { data?: unknown; error?: unknown } | undefined;
     try {
-      body = ((await res.json()) ?? {}) as { data?: unknown; error?: unknown };
+      text = await res.text();
+      body = (JSON.parse(text) ?? {}) as { data?: unknown; error?: unknown };
     } catch {
       body = undefined;
     }
     const error = typeof body?.error === "string" ? body.error : null;
+    detail = `HTTP ${res.status} ${text.replace(/\s+/g, " ").slice(0, 160)}`.trim();
 
     if (error !== null && /timeout|slow down/i.test(error)) {
       timeout = true;
@@ -435,14 +460,14 @@ async function fetchPage(run: FetchRun, url: string): Promise<PageResult> {
       timeout = false;
       continue;
     }
-    if (!res.ok || error !== null) return { ok: false, reason: "fatal", timeout: false };
+    if (!res.ok || error !== null) return { ok: false, reason: "fatal", timeout: false, detail };
     if (!body) {
       timeout = false;
       continue;
     }
     return { ok: true, rows: Array.isArray(body.data) ? body.data : [] };
   }
-  return { ok: false, reason: "failed", timeout };
+  return { ok: false, reason: "failed", timeout, detail };
 }
 
 /** `[fromUtc, beforeUtc)` as `parts` contiguous equal ranges, read in order; stops at the first failure. */
@@ -490,15 +515,22 @@ async function fetchRange(
   let from = fromUtc;
   for (;;) {
     const page = await fetchPage(run, searchUrl(kind, sub, term, from, beforeUtc));
+    const firstPage = from === fromUtc;
     // `=== false`, not `!page.ok`: TypeScript 4.9 does not narrow the union on a negated boolean.
     if (page.ok === false) {
       const span = beforeUtc - from;
-      if (page.reason === "failed" && page.timeout) rememberTimeout(learnKey, span);
-      if (page.reason === "failed" && span >= MIN_SPLIT_SECONDS) return splitRange(run, kind, sub, term, from, beforeUtc, 2);
+      if (page.reason === "failed" && page.timeout) {
+        if (firstPage) rememberTimeout(learnKey, span);
+        if (span >= MIN_SPLIT_SECONDS) return splitRange(run, kind, sub, term, from, beforeUtc, 2);
+      } else if (page.reason !== "budget") {
+        // A rejected query, or an outage that outlasted the retries: this store stops reading Reddit
+        // for the run, and the log says which query it was so a bad term can be found.
+        console.warn(`[tiendas] reddit ${run.entry.key} r/${sub} ${kind} "${term}": ${page.detail}`);
+      }
       return { ok: false, coveredUntil: from };
     }
 
-    rememberAnswer(learnKey, beforeUtc - from);
+    if (firstPage) rememberAnswer(learnKey, beforeUtc - fromUtc);
     let fresh = 0;
     let lastCreated: number | null = null;
     for (const raw of page.rows) {
@@ -523,7 +555,8 @@ async function fetchRange(
  * up to `nowUtc`, spending `budget.calls` (shared by the whole run, decremented in place).
  *
  *   * `complete: true` — every planned window was read; the cursor ends at `nowUtc`.
- *   * `complete: false` — the budget ran out, or a window kept failing below the 14-day floor. The
+ *   * `complete: false` — the budget ran out, a window kept timing out below the 14-day floor, or a
+ *     query failed some other way after its retries (rejected, 429/5xx, network; logged). The
  *     cursor stops at the last point both kinds are complete (never beyond), and only mentions before
  *     it are returned; the rest is read again next run.
  *   * `undefined` — nothing got completed at all (Arctic Shift did not answer, or the budget was

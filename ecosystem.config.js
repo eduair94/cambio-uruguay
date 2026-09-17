@@ -428,9 +428,12 @@ module.exports = {
       // (classes/stores/registry.ts) lee su home, la antigüedad del dominio (crt.sh, Wayback),
       // Trustpilot (:3029), Google Maps (:2221, sólo si el sitio de la ficha ES el dominio), las
       // menciones en r/uruguay y r/montevideo (Arctic Shift) y la presencia en los catálogos propios
-      // → APP DB `storeprofiles`. Una fuente que falla conserva su último valor con su fecha vieja;
-      // si ya hay perfiles guardados, una corrida en la que menos del 40 % de las tiendas respondió
-      // no escribe y sale con 1.
+      // → APP DB `storeprofiles`. Una fuente que falla conserva su último valor con su fecha vieja.
+      // Cada tienda se guarda apenas se lee y sólo si alguna fuente externa contestó (un backfill de
+      // Reddit de horas no pierde lo hecho); si las primeras 10 tiendas no obtuvieron ninguna
+      // respuesta, las fuentes están caídas: corta sin escribir y sale con 1. Reddit se lee por
+      // ventanas con cursor por tienda y un presupuesto de llamadas por corrida
+      // (STORES_REDDIT_MAX_CALLS, 900 por defecto): el backfill de 24 meses lleva varias semanas.
       //
       // Domingos 07:17 UTC = 04:17 en Montevideo. Semanal porque reseñas y antigüedad se mueven en
       // semanas, y porque Arctic Shift pide ir despacio: recorrer las menciones de todo el registro
