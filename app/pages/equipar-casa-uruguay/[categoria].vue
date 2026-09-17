@@ -111,6 +111,7 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
                   <NuxtLink
                     v-if="storeKeyFor(offer.seller)"
                     :to="localePath(`/tiendas-online-uruguay/${storeKeyFor(offer.seller)}`)"
+                    :aria-label="`Ficha de ${offer.seller}`"
                     class="cat-link seller-ficha"
                   >
                     (ficha)

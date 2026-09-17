@@ -122,4 +122,15 @@ describe('equipar-casa-uruguay/[categoria].vue seller links', () => {
     expect(li).toContain('v-if="storeKeyFor(offer.seller)"')
     expect(li).toContain('localePath(`/tiendas-online-uruguay/${storeKeyFor(offer.seller)}`)')
   })
+
+  it('names the "(ficha)" link after its own store, not the same label for every row (a11y)', () => {
+    // The link text is the literal word "(ficha)" repeated once per offer, which reads identically
+    // to a screen reader on every row; the accessible name must carry the seller so each one is
+    // distinguishable — see storeLinks fold-in from Task 10's review.
+    const liMatch = equiparSource.match(
+      /<li v-for="\(offer, index\) in row\.product\.offers"[\s\S]*?<\/li>/
+    )
+    expect(liMatch).not.toBeNull()
+    expect(liMatch![0]).toContain(':aria-label="`Ficha de ${offer.seller}`"')
+  })
 })
