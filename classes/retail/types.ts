@@ -77,6 +77,20 @@ export interface RetailStore {
   expectCurrency?: "UYU" | "USD";
   /** Shopify only: restrict the scan to these collection handles instead of the whole catalogue. */
   collections?: string[];
+  /**
+   * Shopify only, default `false`. Some storefronts (voltbike, loopbikes — e-bike/e-scooter
+   * specialists) name the PRODUCT TYPE ("Bicicleta Eléctrica", "Motopatín Eléctrico") only in
+   * Shopify's own `product_type` field, never in the product's own title ("SuperVolt", "Loop
+   * Cruiser"). `matchesCategory()` (classes/equipar/classify.ts) tests `include` against the title
+   * only, by design, so those listings are invisible to any category spec no matter how the include
+   * regex is written. When this is `true`, `harvestShopifyStore` prepends a non-empty `product_type`
+   * to the title BEFORE classifying and publishing it ("Bicicleta Eléctrica SuperVolt") — unless the
+   * title already names the type. It is opt-in and per-store on purpose: `product_type` is exactly as
+   * trustworthy as the merchant typed it, so a store gets this only after being measured (see
+   * classes/movilidad/registry.ts and classes/retail/stores.ts) — a bare "Accesorio" or "Repuesto"
+   * product_type still has to clear `exclude`, same as any other listing.
+   */
+  productTypeInTitle?: boolean;
   enabled: boolean;
   note?: string;
 }

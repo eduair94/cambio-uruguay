@@ -33,7 +33,7 @@
 // retried — a retry against a rate limiter spends budget to earn another rejection.
 import { fetchJson, fetchText } from "../../classes/retail/net";
 import { parseWooProducts, wooPricing } from "../../classes/retail/sources/woocommerce";
-import { detectShopifyCurrency } from "../../classes/retail/sources/shopify";
+import { detectShopifyCurrency, titleWithType } from "../../classes/retail/sources/shopify";
 import { retailStores } from "../../classes/retail/stores";
 import { categoryFor, itemKey, variantFor } from "../../classes/equipar/classify";
 import { MOVILIDAD_CATEGORIES } from "../../classes/movilidad/registry";
@@ -176,8 +176,12 @@ async function runShopify(store: RetailStore, tally: Tally): Promise<void> {
     if (!products || !products.length) break;
     scanned += products.length;
     for (const product of products) {
-      const title = String(product.title || "").trim();
-      if (!title) continue;
+      const rawTitle = String(product.title || "").trim();
+      if (!rawTitle) continue;
+      // Same composition production uses (classes/retail/sources/shopify.ts): voltbike/loopbikes set
+      // productTypeInTitle, so a listing titled "SuperVolt" with product_type "Bicicleta Eléctrica" is
+      // classified (and would be published) as "Bicicleta Eléctrica SuperVolt".
+      const title = titleWithType(store, product, rawTitle);
       const tags = Array.isArray(product.tags) ? product.tags.join(" ") : String(product.tags || "");
       const context = `${product.product_type || ""} ${tags}`;
       const variant = (product.variants || []).find((entry) => Number(entry.price) > 0);

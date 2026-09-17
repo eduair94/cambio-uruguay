@@ -41,11 +41,49 @@ export async function detectShopifyCurrency(baseUrl: string): Promise<"UYU" | "U
   return null;
 }
 
-const claim = (product: ShopifyProduct, specs: readonly CategorySpec[]): CategorySpec | undefined => {
+const claim = (title: string, product: ShopifyProduct, specs: readonly CategorySpec[]): CategorySpec | undefined => {
   const tags = Array.isArray(product.tags) ? product.tags.join(" ") : String(product.tags || "");
   const context = `${product.product_type || ""} ${tags}`;
-  return specs.find((spec) => spec.accept(String(product.title || ""), context));
+  return specs.find((spec) => spec.accept(title, context));
 };
+
+/** Case/accent-insensitive "does this text already say that", so a store whose title already spells
+ * the product type out never gets it doubled. */
+function foldForCompare(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Some storefronts (see `RetailStore.productTypeInTitle`) only ever say what a product IS in
+ * Shopify's own `product_type` — never in the product's own title ("SuperVolt", not "Bicicleta
+ * Eléctrica SuperVolt"). `matchesCategory()` (classes/equipar/classify.ts) tests a category's
+ * `include` against the title alone, by design, so those listings are invisible to every category no
+ * matter how the regex is written. When the flag is on and `product_type` is non-empty, this joins
+ * the two — unless the title already names the type, which would otherwise double it ("Bicicleta
+ * Eléctrica Bicicleta Eléctrica Muche"). Every other store defaults to `false` and gets its title
+ * back unchanged.
+ */
+/**
+ * Exported (not just used internally) so `scripts/oneoff/movilidad_dry_run.ts` composes titles
+ * exactly the same way production does instead of maintaining a second copy of this logic that could
+ * drift. `product` only needs `product_type` — the dry run's own row shape is not `ShopifyProduct`.
+ */
+export function titleWithType(
+  store: Pick<RetailStore, "productTypeInTitle">,
+  product: Pick<ShopifyProduct, "product_type">,
+  rawTitle: string
+): string {
+  if (!store.productTypeInTitle) return rawTitle;
+  const productType = String(product.product_type || "").trim();
+  if (!productType) return rawTitle;
+  if (foldForCompare(rawTitle).includes(foldForCompare(productType))) return rawTitle;
+  return `${productType} ${rawTitle}`.trim();
+}
 
 export async function harvestShopifyStore(
   store: RetailStore,
@@ -77,15 +115,17 @@ export async function harvestShopifyStore(
       scanned += products.length;
 
       for (const product of products) {
-        const spec = claim(product, specs);
+        const rawTitle = String(product.title || "").trim();
+        if (!rawTitle) continue;
+        const title = titleWithType(store, product, rawTitle);
+        const spec = claim(title, product, specs);
         if (!spec) continue;
         const variant = (product.variants || []).find((entry) => Number(entry.price) > 0);
         const price = Number(variant?.price);
-        const title = String(product.title || "").trim();
-        if (!title || !Number.isFinite(price) || price <= 0) continue;
+        if (!Number.isFinite(price) || price <= 0) continue;
 
         listings.push({
-          listingId: `store:${store.key}:${product.handle || product.id || title}`,
+          listingId: `store:${store.key}:${product.handle || product.id || rawTitle}`,
           source: "store",
           sellerKey: store.key,
           sellerName: store.name,

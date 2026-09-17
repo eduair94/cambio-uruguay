@@ -7,9 +7,15 @@ import { describe, expect, it } from "vitest";
 import { categoryFor, itemKey, specsFor, variantFor } from "../../classes/equipar/classify";
 import { EQUIPAR_BY_KEY } from "../../classes/equipar/registry";
 import { MOVILIDAD_BY_KEY, MOVILIDAD_CATEGORIES, MOVILIDAD_STORE_KEYS } from "../../classes/movilidad/registry";
+import { titleWithType } from "../../classes/retail/sources/shopify";
 import { retailStores } from "../../classes/retail/stores";
 
 const classify = (title: string, context = "") => categoryFor(title, context, MOVILIDAD_CATEGORIES);
+
+/** How `harvestShopifyStore` builds the title it classifies AND publishes when a store sets
+ * `productTypeInTitle: true` (voltbike, loopbikes) — see classes/retail/sources/shopify.ts. */
+const composed = (productType: string, rawTitle: string) =>
+  titleWithType({ productTypeInTitle: true }, { product_type: productType }, rawTitle);
 
 describe("registro de movilidad: forma", () => {
   it("no repite claves entre sí", () => {
@@ -69,15 +75,49 @@ describe("registro de movilidad: forma", () => {
     expect(resolved.map((store) => store.key).sort()).toEqual([...MOVILIDAD_STORE_KEYS].sort());
   });
 
-  it("voltbike y loopbikes están registradas para otros consumidores, no en MOVILIDAD_STORE_KEYS", () => {
-    // Medido 2026-09-17 (ver classes/retail/stores.ts y classes/movilidad/registry.ts): sus modelos
-    // reales no llevan "bicicleta"/"eléctrica" en el título, sólo en tags de Shopify que el include
-    // no lee. `retailStores` las sigue resolviendo (existen, están enabled), pero el job de movilidad
-    // no las harvestea.
-    const bothRegistered = retailStores(["voltbike", "loopbikes"]);
-    expect(bothRegistered.map((store) => store.key).sort()).toEqual(["loopbikes", "voltbike"]);
-    expect(MOVILIDAD_STORE_KEYS).not.toContain("voltbike");
-    expect(MOVILIDAD_STORE_KEYS).not.toContain("loopbikes");
+  it("voltbike y loopbikes están en MOVILIDAD_STORE_KEYS con productTypeInTitle activo", () => {
+    // Fix round 1: medido 2026-09-17 sin el flag daba 0 aceptados en ambas (sus modelos reales no
+    // llevan "bicicleta"/"eléctrica" en el título, sólo en Shopify product_type). Con
+    // `productTypeInTitle: true` (classes/retail/stores.ts) sí aportan productos reales — ver
+    // scripts/oneoff/movilidad_dry_run.ts y classes/retail/sources/shopify.ts.
+    const both = retailStores(["voltbike", "loopbikes"]);
+    expect(both.map((store) => store.key).sort()).toEqual(["loopbikes", "voltbike"]);
+    for (const store of both) {
+      expect(store.productTypeInTitle, `${store.key} debería tener productTypeInTitle activo`).toBe(true);
+    }
+    expect(MOVILIDAD_STORE_KEYS).toContain("voltbike");
+    expect(MOVILIDAD_STORE_KEYS).toContain("loopbikes");
+  });
+});
+
+describe("productTypeInTitle + clasificación: positivos y negativos compuestos (fix round 1)", () => {
+  it.each([
+    ["Bicicleta Eléctrica", "SuperVolt", "bicicleta-electrica", "urbana"], // voltbike
+    ["Bicicleta Eléctrica", "Plegable R20", "bicicleta-electrica", "plegable"], // voltbike
+    ["Motopatín Eléctrico", "Monopatin Air", "monopatin-electrico", "urbano"], // voltbike
+    ["Bicicleta eléctrica", "Loop Cruiser", "bicicleta-electrica", "urbana"], // loopbikes
+    ["Bicicleta eléctrica", "Michael Blast Outsider Sport", "bicicleta-electrica", "urbana"], // loopbikes
+  ] as const)("%s + %s -> %s:%s", (productType, rawTitle, categoryKey, variantKey) => {
+    const title = composed(productType, rawTitle);
+    const category = classify(title);
+    expect(category?.key, title).toBe(categoryKey);
+    expect(variantFor(category!, title).key, title).toBe(variantKey);
+  });
+
+  it.each([
+    ["Bicicleta", 'Loop Craft Kids 24"'], // loopbikes: bici manual, product_type NUNCA dice "eléctrica"
+    ["Accesorio", "Cámara de Monopatin 8 1/2 x 2 Válvula Recta"], // voltbike
+    ["Accesorio", "Rele 36V"], // voltbike
+    ["Accesorio", "Cargador 60V Motopatin"], // voltbike
+    ["Accesorio de bicicleta eléctrica", "Canasto Central Michael Blast Outsider 5.0"], // loopbikes
+    ["Accesorio de bicicleta eléctrica", "Espejos Loop Bikes (juego)"], // loopbikes
+    ["Accesorio de bicicleta eléctrica", "Apoya pies VLKR"], // loopbikes
+    ["Bicicleta eléctrica", "CARGADOR Loop 36v 2ah"], // loopbikes: cargador mal tipeado como bicicleta
+    ["Repuesto", "BATERIA SLIM 36v 10.4ah EXTRAÍBLE"], // loopbikes
+    ["Repuesto", "MORDAZA DE FRENO TEKTRO"], // loopbikes
+    ["Ropa", "T-shirt Octans Skull Black"], // loopbikes
+  ] as const)("%s + %s -> rechazado", (productType, rawTitle) => {
+    expect(classify(composed(productType, rawTitle))).toBeNull();
   });
 });
 

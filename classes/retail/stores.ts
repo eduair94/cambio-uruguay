@@ -259,8 +259,12 @@ export const RETAIL_STORES: RetailStore[] = [
   // Four stores added for classes/movilidad/ (monopatines y bicicletas eléctricas). Measured
   // 2026-09-17 via the WooCommerce Store API / Shopify `products.json` directly, THEN re-measured
   // through the real `matchesCategory()` gate before deciding `MOVILIDAD_STORE_KEYS` — see
-  // classes/movilidad/registry.ts for why two of the four (marked below) are registered here but not
-  // in that list.
+  // classes/movilidad/registry.ts. Fix round 1 (controller ruling, same day): voltbike/loopbikes
+  // originally measured ZERO real accepted products because their real e-bikes/e-scooters are titled
+  // by bare brand/model ("SuperVolt", "Loop Cruiser") with the product type ONLY in Shopify's
+  // `product_type` field. Re-measured with `productTypeInTitle: true` (classes/retail/types.ts,
+  // classes/retail/sources/shopify.ts), which composes that field onto the title before classifying —
+  // both now clear the bar and are in `MOVILIDAD_STORE_KEYS`.
   {
     key: "delcar",
     name: "Delcar Motos",
@@ -291,9 +295,13 @@ export const RETAIL_STORES: RetailStore[] = [
     adapter: "shopify",
     channel: "local-store",
     expectCurrency: "USD",
+    // The four product_type values in its whole catalogue (measured 2026-09-17) are "Bicicleta
+    // Eléctrica", "Motopatín Eléctrico", "Accesorio" and blank — never a plain "Bicicleta"/"Monopatín"
+    // that would need telling apart from an electric one, so the flag is safe here.
+    productTypeInTitle: true,
     enabled: true,
     note:
-      "Medido 2026-09-17: 89 productos (Shopify, USD): 5 bicicletas eléctricas y 1 motopatín reales, pero SUS TÍTULOS son nombres de modelo puros ('SuperVolt', 'Muche', 'Monopatin Air') sin la palabra 'bicicleta'/'monopatín' NI 'eléctrica' — sólo lo dicen el product_type y los tags de Shopify, que matchesCategory() sólo lee para excluir, nunca para incluir (classes/movilidad/registry.ts). Con el filtro de título estricto que exige 'eléctrico' (necesario para rechazar un monopatín/bicicleta sin motor, ver el spec) esta tienda no aporta ningún producto real a la corrida — confirmado con classes/movilidad/registry.ts + scripts/oneoff/movilidad_dry_run.ts. Registrada para otros consumidores futuros; FUERA de MOVILIDAD_STORE_KEYS.",
+      "Medido 2026-09-17: 89 productos (Shopify, USD): 5 con product_type 'Bicicleta Eléctrica', 1 'Motopatín Eléctrico', 65 'Accesorio' (cámaras, cargadores, cascos, controladores), 18 sin product_type. Sin productTypeInTitle: 0 aceptados (títulos de marca/modelo puros: 'SuperVolt', 'Monopatin Air'). Con productTypeInTitle: 6 aceptados — las 5 bicicletas eléctricas (SuperVolt, Muche, SuperCross, Foldy, Plegable R20) y el monopatín eléctrico (Monopatin Air); ninguno de los 65 'Accesorio' se coló. En MOVILIDAD_STORE_KEYS.",
   },
   {
     key: "loopbikes",
@@ -302,9 +310,15 @@ export const RETAIL_STORES: RetailStore[] = [
     adapter: "shopify",
     channel: "local-store",
     expectCurrency: "USD",
+    // Ocho product_type distintos medidos 2026-09-17, incluido un "Bicicleta" LLANO (Loop Craft Kids
+    // 24", bici manual) junto a "Bicicleta eléctrica": la distinción vive en ese campo, por eso el
+    // include sigue exigiendo la palabra "eléctrica" adyacente incluso compuesto. "Accesorio de
+    // bicicleta eléctrica" (canastos, espejos, cargadores…) SÍ contiene esa frase adyacente una vez
+    // compuesto — de ahí el exclude de "accesorio"/"accesorios" en classes/movilidad/registry.ts.
+    productTypeInTitle: true,
     enabled: true,
     note:
-      "Medido 2026-09-17: 135 productos (Shopify, USD): 13 bicicletas eléctricas reales (Loop Cruiser, Michael Blast Outsider/Vacay/Soda Bike/Greaser, Loop Slim/Kids/X350/K1…), todas tituladas por marca y modelo, sin la palabra 'bicicleta' ni 'eléctrica' en el título — mismo caso que voltbike, misma nota. 89 de sus 135 productos son repuestos (ya cubiertos por NOT_A_PRODUCT). FUERA de MOVILIDAD_STORE_KEYS por la misma razón que voltbike.",
+      "Medido 2026-09-17: 135 productos (Shopify, USD): 13 con product_type 'Bicicleta eléctrica' (12 aceptados; el otro es un cargador mal tipeado, rechazado por 'cargador'), 2 'Bicicleta' llana (bici manual, correctamente afuera), 10 'Accesorio de bicicleta eléctrica', 5 'Accesorio', 89 'Repuesto', 8 'Ropa', 5 'Merchandising'. Sin productTypeInTitle: 0 aceptados. Con productTypeInTitle: 12 bicicletas eléctricas reales (Loop Cruiser, Michael Blast Outsider/Vacay/Soda Bike/Greaser/Outsider 5.0, Loop Enduro Pro X/Ponyboy/Slim/Kids/X350/K1) y 0 monopatines; ningún 'Accesorio'/'Accesorio de bicicleta eléctrica'/'Repuesto' se coló. En MOVILIDAD_STORE_KEYS.",
   },
 ];
 
