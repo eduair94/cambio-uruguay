@@ -232,6 +232,35 @@ module.exports = {
       script: "dist/sync_phones.js",
       args: "--fast",
       cron_restart: "37 * * * *",
+      // Daily monopatín/bicicleta-eléctrica market. Reuses the equipar catalog machinery end to end
+      // via an injected registry (classes/movilidad/registry.ts, two categories) instead of forking
+      // it — same shared retail harvester, same unit guard, same bands, same store-snapshot mechanics
+      // for the hourly refresh below. Own collections (movilidaditems/movilidadmeta/
+      // movilidadstoresnapshots), own budgets sized for two categories and five storefronts rather
+      // than equipar's thirty-eight/sixteen (see sync_movilidad.ts).
+      //
+      // The other consumers of the shared MercadoLibre bridge (104.234.204.107:9656), so a future
+      // schedule change here does not collide with them: sillas hourly :23, autos hourly :29 and its
+      // ~2h sequential daily sweep at 07:43, celulares (rama aparte) hourly :37 and daily 14:29,
+      // alquileres hourly :47, equipar hourly :53 and daily 12:47. 15:47 UTC daily / :07 hourly are
+      // both clear of that list.
+      name: "currency-movilidad",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_movilidad.js",
+      cron_restart: "47 15 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Hourly price-only refresh, on the smaller budget (sync_movilidad.ts). The daily run's store
+      // snapshot fills in whatever this run's smaller search budget did not re-scan, same mechanism
+      // as currency-equipar-hourly.
+      name: "currency-movilidad-hourly",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_movilidad.js",
+      args: "--fast",
+      cron_restart: "7 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {

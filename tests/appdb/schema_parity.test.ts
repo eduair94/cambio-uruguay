@@ -16,6 +16,8 @@ import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapsh
 import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
 import { EquiparItemModel } from "../../classes/models/EquiparItem";
 import { EquiparMetaModel } from "../../classes/models/EquiparMeta";
+import { MovilidadItemModel } from "../../classes/models/MovilidadItem";
+import { MovilidadMetaModel } from "../../classes/models/MovilidadMeta";
 import { CharruaTextModel } from "../../classes/models/CharruaText";
 import { CharruaSnapshotModel } from "../../classes/models/CharruaSnapshot";
 import { CarCatalogMetaModel } from "../../classes/models/CarCatalogMeta";
@@ -126,6 +128,19 @@ describe("app-Mongo schema parity", () => {
 
   it("EquiparMeta declares exactly the app's top-level fields", () => {
     expect(Object.keys(EquiparMetaModel.schema.obj).sort()).toEqual(appFields(appModel("EquiparMeta")).sort());
+  });
+
+  it("MovilidadItem declares exactly the app's top-level fields", () => {
+    // El directorio de monopatines/bicicletas eléctricas comparte forma con EquiparItem
+    // (buildEquiparCatalog produce EquiparItem sea cual sea el registro inyectado), pero vive en su
+    // propia colección — un campo que el backend agregue y el app no declare no llega a la ficha.
+    expect(Object.keys(MovilidadItemModel.schema.obj).sort()).toEqual(appFields(appModel("MovilidadItem")).sort());
+    expect(MovilidadItemModel.collection.name).toBe("movilidaditems");
+  });
+
+  it("MovilidadMeta declares exactly the app's top-level fields", () => {
+    expect(Object.keys(MovilidadMetaModel.schema.obj).sort()).toEqual(appFields(appModel("MovilidadMeta")).sort());
+    expect(MovilidadMetaModel.collection.name).toBe("movilidadmeta");
   });
 
   it("CharruaText declares exactly the app's top-level fields", () => {
