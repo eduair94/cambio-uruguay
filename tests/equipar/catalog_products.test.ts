@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildEquiparCatalog } from "../../classes/equipar/catalog";
+import { articleBand, priceVerdict } from "../../classes/precios/plausibility";
 import type { RetailListing } from "../../classes/retail/types";
 
 // Copied from tests/equipar/catalog.test.ts: the helper is not exported there, and Task 4's brief
@@ -227,5 +228,124 @@ describe("catálogo: productos agrupados por catalogId de MercadoLibre", () => {
     expect(item!.products).toHaveLength(0);
     // Pero los avisos no se pierden: siguen contando para el precio de la fila.
     expect(item!.offers.length).toBeGreaterThan(0);
+  });
+});
+
+describe("catálogo: un producto nunca sale de una fila que la banda descartó o marcó", () => {
+  // Medido en producción el 16/9/2026: los cuatro primeros "Modelos" de colchón eran yogures a
+  // $ 70–77 y el primero de aire acondicionado un convector a $ 2.773. La banda ya los sacaba de las
+  // medianas y de "los más baratos", pero los productos se armaban con TODOS los avisos del ítem, y
+  // la tabla ordena por el más barato: lo que la banda descartó encabezaba la tabla y el JSON-LD.
+  const legit = (index: number): RetailListing =>
+    listing({
+      title: `Heladera Marca${index} MOD-${index}00 338L`,
+      brand: `Marca${index}`,
+      model: `MOD-${index}00`,
+      sellerKey: `tienda-${index}`,
+      sellerName: `Tienda ${index}`,
+      price: 25_000 + index * 1_000,
+      attributes: { CATEGORY_SPEC: "heladera" },
+    });
+
+  it("un aviso de $ 70 dentro de una banda de 20 avisos no se vuelve producto, y uno sospechoso tampoco", () => {
+    const rows = Array.from({ length: 20 }, (_, index) => legit(index));
+    const yogur = listing({
+      title: "Heladera Yogurisimo Y-130 338L",
+      brand: "Yogurisimo",
+      model: "Y-130",
+      sellerKey: "super",
+      sellerName: "Super",
+      price: 70,
+      attributes: { CATEGORY_SPEC: "heladera" },
+    });
+    const dudoso = listing({
+      title: "Heladera Rebajada RB-1 338L",
+      brand: "Rebajada",
+      model: "RB-1",
+      sellerKey: "otra",
+      sellerName: "Otra",
+      price: 11_000,
+      attributes: { CATEGORY_SPEC: "heladera" },
+    });
+
+    // Precondición del escenario: la banda del propio ítem descarta el de $ 70 y marca el de $ 11.000.
+    const prices = [...rows, yogur, dudoso].map((row) => row.price);
+    const band = articleBand(prices);
+    expect(priceVerdict(70, band)).toBe("reject");
+    expect(priceVerdict(11_000, band)).toBe("suspect");
+
+    const [item] = buildEquiparCatalog({ listings: [...rows, yogur, dudoso], usdUyu: 40 });
+    expect(item!.key).toBe("heladera:grande");
+    expect(item!.products.length).toBeGreaterThan(0);
+    const brands = item!.products.map((product) => product.brand);
+    expect(brands).not.toContain("yogurisimo");
+    expect(brands).not.toContain("rebajada");
+    for (const product of item!.products) {
+      expect(product.bestPriceUyu).toBeGreaterThanOrEqual(25_000);
+      expect(product.offers.every((offer) => offer.priceUyu >= 25_000)).toBe(true);
+    }
+  });
+
+  it("un vendedor sospechoso no se cuela como oferta dentro de un producto que sí es real", () => {
+    const rows = Array.from({ length: 20 }, (_, index) => legit(index));
+    // Mismo marca+modelo que la fila 0, a un precio que la banda marca como sospechoso.
+    const colado = listing({
+      title: "Heladera Marca0 MOD-000 338L",
+      brand: "Marca0",
+      model: "MOD-000",
+      sellerKey: "colado",
+      sellerName: "Colado",
+      price: 11_000,
+      attributes: { CATEGORY_SPEC: "heladera" },
+    });
+    const [item] = buildEquiparCatalog({ listings: [...rows, colado], usdUyu: 40 });
+    const marca0 = item!.products.find((product) => product.brand === "marca0");
+    expect(marca0).toBeDefined();
+    expect(marca0!.sellers).toBe(1);
+    expect(marca0!.bestPriceUyu).toBe(25_000);
+    expect(marca0!.offers.map((offer) => offer.seller)).toEqual(["Tienda 0"]);
+  });
+});
+
+describe("catálogo: el nombre que se publica conserva mayúsculas y tildes del aviso", () => {
+  // En producción la tabla decía "grenno fr-kh200b": la clave normalizada sirve para agrupar, no
+  // para leer. El slug sigue saliendo de la clave, así que no cambia ninguna URL ni clave de fila.
+  it("marca y modelo con la grafía del aviso, slug igual que antes", () => {
+    const listings: RetailListing[] = [
+      listing({
+        title: "Heladera Grenno FR-KH200B 338L",
+        source: "mercadolibre",
+        sellerKey: "ml:seller-h",
+        sellerName: "Vendedor H",
+        channel: "marketplace",
+        brand: "Grenno",
+        model: "FR-KH200B",
+        catalogId: "MLU555555",
+        price: 30_000,
+        attributes: { CATEGORY_SPEC: "heladera" },
+      }),
+    ];
+    const [item] = buildEquiparCatalog({ listings, usdUyu: 40 });
+    const [product] = item!.products;
+    expect(product!.name).toBe("Grenno FR-KH200B");
+    expect(product!.slug).toBe("heladera-grenno-fr-kh200b");
+    expect(product!.brand).toBe("grenno");
+    expect(product!.model).toBe("fr-kh200b");
+  });
+
+  it("un modelo sacado del título conserva las tildes", () => {
+    const listings: RetailListing[] = [
+      listing({
+        title: "Heladera PANAVOX Nórdica 338L",
+        brand: "Panavox",
+        price: 30_000,
+        attributes: { CATEGORY_SPEC: "heladera" },
+      }),
+    ];
+    const [item] = buildEquiparCatalog({ listings, usdUyu: 40 });
+    const [product] = item!.products;
+    // La marca se lee del campo marca ("Panavox"), el modelo del título, donde está con tilde.
+    expect(product!.name).toBe("Panavox Nórdica 338L");
+    expect(product!.slug).toBe("heladera-panavox-nordica-338l");
   });
 });

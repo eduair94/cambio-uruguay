@@ -73,6 +73,68 @@ function identify(listing: RetailListing, category: EquiparCategory): { brand: s
   return model.length >= 2 ? { brand, model } : null;
 }
 
+/** A text normalised exactly like {@link norm}, remembering which original character each char came from. */
+interface IndexedText {
+  original: string;
+  text: string;
+  origin: number[];
+}
+
+const NORM_KEEPS = /[a-z0-9%"'.,+-]/;
+
+function indexNormalised(original: string): IndexedText {
+  let text = "";
+  const origin: number[] = [];
+  for (let index = 0; index < original.length; index++) {
+    const folded = original[index]!.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    for (const char of folded) {
+      const kept = NORM_KEEPS.test(char) ? char : " ";
+      if (kept === " " && (text === "" || text.endsWith(" "))) continue;
+      text += kept;
+      origin.push(index);
+    }
+  }
+  return { original, text, origin };
+}
+
+/** Where `token` sits in `source` as a whole word, spelled as the source spelled it; null if absent. */
+function findToken(source: IndexedText, token: string): string | null {
+  const isWordChar = (char: string | undefined): boolean => !!char && /[a-z0-9]/.test(char);
+  for (let at = source.text.indexOf(token); at >= 0; at = source.text.indexOf(token, at + 1)) {
+    const end = at + token.length;
+    if (isWordChar(source.text[at - 1]) || isWordChar(source.text[end])) continue;
+    return source.original.slice(source.origin[at]!, source.origin[end - 1]! + 1);
+  }
+  return null;
+}
+
+/**
+ * The published name of a product, in the spelling a seller actually used.
+ *
+ * Grouping needs the normalised key — "Grenno FR-KH200B" and "GRENNO fr-kh200b" are one product —
+ * but the key itself is lowercase with its accents stripped, and production printed it as the name:
+ * "grenno fr-kh200b". Each token of the key is looked up, as a whole word, in the cheapest listing's
+ * brand field, model field and title first (the offer the row leads with), then in the others; a
+ * token no listing spells is kept as it is. The slug keeps coming from the key, so no URL moves.
+ */
+function originalSpelling(key: string, listings: readonly RetailListing[], usdUyu: number): string {
+  const sources = [...listings]
+    .sort((a, b) => toUyu(a.price, a.currency, usdUyu) - toUyu(b.price, b.currency, usdUyu))
+    .flatMap((listing) => [listing.brand, listing.model, listing.title])
+    .filter((value): value is string => Boolean(value))
+    .map(indexNormalised);
+  return key
+    .split(" ")
+    .map((token) => {
+      for (const source of sources) {
+        const spelled = findToken(source, token);
+        if (spelled) return spelled;
+      }
+      return token;
+    })
+    .join(" ");
+}
+
 const slugify = (value: string): string =>
   norm(value)
     .replace(/[^a-z0-9]+/g, "-")
@@ -226,7 +288,7 @@ function buildProducts(
 
     products.push({
       slug,
-      name,
+      name: originalSpelling(name, group.listings, usdUyu),
       brand: group.brand,
       model: group.model,
       image: group.listings.find((listing) => listing.image)?.image ?? null,
@@ -331,6 +393,16 @@ export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
     const newScreen = screen(offers.filter((offer) => offer.condition === "new"));
     const usedScreen = screen(offers.filter((offer) => offer.condition === "used"));
 
+    // Products are built only from the NEW listings the band kept. Measured in production on
+    // 2026-09-16: building them from every listing put yogurts at $ 70 on top of "colchón" and a
+    // convector at $ 2.773 on top of "aire acondicionado" — the band had already dropped those rows
+    // from the medians and the cheapest list, but the product table sorts by price and leads with
+    // exactly what the band rejected or flagged, then publishes it as a schema.org Offer.
+    // `offers[i]` is `toOffer(bucket.listings[i])`, so identity of the offer object maps back to
+    // its listing without trusting urls to be unique.
+    const keptNew = new Set(newScreen.kept);
+    const productListings = bucket.listings.filter((_, index) => keptNew.has(offers[index]!));
+
     const newBand = bandOf(newScreen.kept.map((offer) => offer.priceUyu));
     const usedBand = bandOf(usedScreen.kept.map((offer) => offer.priceUyu), MIN_USED_BAND_SAMPLE);
 
@@ -365,7 +437,7 @@ export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
       newBand,
       usedBand,
       usedSavingPct: category.usedOk ? savingPct(newBand, usedBand) : null,
-      products: buildProducts(bucket.listings, category, usdUyu),
+      products: buildProducts(productListings, category, usdUyu),
       offers: cheapest,
       suspectDropped: newScreen.suspect.length + usedScreen.suspect.length,
       observedAt,
