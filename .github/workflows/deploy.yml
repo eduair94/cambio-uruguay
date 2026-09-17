@@ -136,6 +136,8 @@ jobs:
               - 'classes/origins.ts'
               - 'classes/cambios/**'
               - 'classes/rentals/guarantees.ts'
+              - 'classes/stores/**'
+              - 'classes/equipar/registry.ts'
             backendContracts:
               - 'app/utils/**'
               - 'app/server/**'
