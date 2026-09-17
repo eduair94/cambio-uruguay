@@ -53,7 +53,6 @@ const optionalNumber = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null
 
 /** Rebuilds a public row field by field: unknown fields in the collection never reach the wire. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function publicCarRow(row: Record<string, any>): PublicCarListing {
   return {
     key: String(row.key),

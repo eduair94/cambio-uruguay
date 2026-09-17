@@ -219,7 +219,10 @@ const ACCENTS: Record<string, string> = {
 }
 
 function accentInsensitive(value: string): string {
-  const folded = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  const folded = value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036F]/g, '')
+    .toLowerCase()
   return escapeRegex(folded).replace(/[aeioun]/g, letter => ACCENTS[letter]!)
 }
 
