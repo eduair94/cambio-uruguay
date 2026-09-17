@@ -252,4 +252,110 @@ describe("analyzeOffer", () => {
       listPrice: null,
     });
   });
+
+  describe("exact threshold boundaries (integer-cent comparison, not float ratios)", () => {
+    it("classifies tachado-por-encima exactly at 110% (priorMax 7000, lp 7700)", () => {
+      // priorMin 6500 keeps today's price (6500) from also tripping baja-real, isolating the
+      // tachado boundary. `7000 * 1.1` is 7700.000000000001 as a raw float — if the comparison
+      // used that float directly, `lp === 7700` would fail `>=` and this would wrongly miss.
+      const history: PricewatchPoint[] = [
+        ...flatPriorHistory(28, 6500),
+        { d: iso(29), p: 7000, lp: null },
+        { d: TODAY, p: 6500, lp: 7700 },
+      ];
+      const offer = makeOffer({ firstSeen: iso(29), history });
+      const result = analyzeOffer(offer, TODAY);
+      expect(result).not.toBeNull();
+      expect(result!.priorMax).toBe(7000);
+      expect(result!.classes).toEqual(["tachado-por-encima"]);
+    });
+
+    it("does not classify tachado-por-encima one unit below the 110% threshold (lp 7699)", () => {
+      const history: PricewatchPoint[] = [
+        ...flatPriorHistory(28, 6500),
+        { d: iso(29), p: 7000, lp: null },
+        { d: TODAY, p: 6500, lp: 7699 },
+      ];
+      const offer = makeOffer({ firstSeen: iso(29), history });
+      const result = analyzeOffer(offer, TODAY);
+      expect(result).not.toBeNull();
+      expect(result!.classes).toEqual(["precio-de-siempre"]);
+    });
+
+    it("classifies baja-real exactly at 90% (priorMin 10000, price 9000) with dropPct exactly 10", () => {
+      const offer = makeOffer({
+        firstSeen: iso(29),
+        history: [...flatPriorHistory(29, 10000), { d: TODAY, p: 9000, lp: null }],
+      });
+      const result = analyzeOffer(offer, TODAY);
+      expect(result).not.toBeNull();
+      expect(result!.classes).toEqual(["baja-real"]);
+      expect(result!.dropPct).toBe(10);
+    });
+
+    it("does not classify baja-real one unit above the 90% threshold (price 9001)", () => {
+      const offer = makeOffer({
+        firstSeen: iso(29),
+        history: [...flatPriorHistory(29, 10000), { d: TODAY, p: 9001, lp: null }],
+      });
+      const result = analyzeOffer(offer, TODAY);
+      expect(result).not.toBeNull();
+      expect(result!.classes).toEqual(["precio-de-siempre"]);
+    });
+
+    it("classifies baja-real at exactly 90% with cent prices (priorMin 3.3, price 2.97 in USD)", () => {
+      // 3.3 * 100 is 329.99999999999994 as a raw float, and 2.97 <= 0.9 * 3.3 fails under naive
+      // float comparison even though 2.97 / 3.3 is exactly 0.9. Rounding each price to integer
+      // cents before comparing sidesteps that.
+      const offer = makeOffer({
+        currency: "USD",
+        firstSeen: iso(29),
+        history: [...flatPriorHistory(29, 3.3), { d: TODAY, p: 2.97, lp: null }],
+      });
+      const result = analyzeOffer(offer, TODAY);
+      expect(result).not.toBeNull();
+      expect(result!.classes).toEqual(["baja-real"]);
+    });
+  });
+
+  describe("one point per calendar day", () => {
+    it("dedupes prior points by day before counting: 5 real days duplicated twice -> null", () => {
+      // 10 history entries, but only 5 distinct calendar days -> below PRICE_EVENT_MIN_POINTS (10)
+      // once deduped. Without dedupe, counting raw array entries would wrongly qualify this offer.
+      const history: PricewatchPoint[] = [];
+      for (let offset = 1; offset <= 5; offset++) {
+        const d = iso(offset);
+        history.push({ d, p: 10000, lp: null });
+        history.push({ d, p: 9990, lp: null });
+      }
+      history.push({ d: TODAY, p: 9000, lp: null });
+      const offer = makeOffer({ firstSeen: iso(29), history });
+      expect(analyzeOffer(offer, TODAY)).toBeNull();
+    });
+
+    it("qualifies with exactly 10 distinct prior days (the PRICE_EVENT_MIN_POINTS boundary)", () => {
+      const offer = makeOffer({
+        firstSeen: iso(29),
+        history: [...flatPriorHistory(10, 10000), { d: TODAY, p: 9500, lp: null }],
+      });
+      const result = analyzeOffer(offer, TODAY);
+      expect(result).not.toBeNull();
+      expect(result!.priorPoints).toBe(10);
+    });
+
+    it("keeps the LAST occurrence when the same day repeats, matching the writer's resync semantics", () => {
+      const history: PricewatchPoint[] = [
+        ...flatPriorHistory(10, 10000),
+        // A later entry for the same day (offset 5) as an earlier one already in the array above —
+        // this one must win.
+        { d: iso(5), p: 7000, lp: null },
+        { d: TODAY, p: 9500, lp: null },
+      ];
+      const offer = makeOffer({ firstSeen: iso(29), history });
+      const result = analyzeOffer(offer, TODAY);
+      expect(result).not.toBeNull();
+      expect(result!.priorPoints).toBe(10);
+      expect(result!.priorMin).toBe(7000);
+    });
+  });
 });

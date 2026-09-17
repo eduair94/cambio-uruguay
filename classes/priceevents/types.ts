@@ -26,12 +26,26 @@ export const PRICE_EVENT_MIN_POINTS = 10;
  * para la frontera exacta (inclusiva del lado de hace 60 días). */
 export const PRICE_EVENT_LOOKBACK_DAYS = 60;
 
-/** Precio de hoy ≤ `priorMin × PRICE_EVENT_DROP_RATIO` clasifica como `baja-real`. */
+/** Precio de hoy ≤ `priorMin × PRICE_EVENT_DROP_RATIO` clasifica como `baja-real`. Documentativa:
+ * la comparación real en `analyze.ts` usa la fracción exacta de abajo, no este float. */
 export const PRICE_EVENT_DROP_RATIO = 0.9;
 
 /** Precio de lista de hoy ≥ `priorMax × PRICE_EVENT_INFLATED_RATIO` clasifica como
- * `tachado-por-encima`. */
+ * `tachado-por-encima`. Documentativa, mismo motivo que la de arriba. */
 export const PRICE_EVENT_INFLATED_RATIO = 1.1;
+
+/**
+ * Misma regla de `baja-real` que `PRICE_EVENT_DROP_RATIO`, como fracción exacta de enteros
+ * (9/10) en vez de un float: `priorMax * 1.1` puede aterrizar en `7700.000000000001` y perder un
+ * umbral que cae justo en el borde (110 % exacto no clasificaría). `analyze.ts` compara
+ * `p * DEN <= priorMin * NUM` en centavos enteros, que no tiene ese problema.
+ */
+export const PRICE_EVENT_DROP_NUM = 9;
+export const PRICE_EVENT_DROP_DEN = 10;
+
+/** Misma regla de `tachado-por-encima` que `PRICE_EVENT_INFLATED_RATIO`, como fracción exacta. */
+export const PRICE_EVENT_INFLATED_NUM = 11;
+export const PRICE_EVENT_INFLATED_DEN = 10;
 
 /**
  * Forma estructural mínima que `analyzeOffer` lee de un documento de `pricewatchoffers`
