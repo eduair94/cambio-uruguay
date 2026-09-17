@@ -142,8 +142,15 @@ export function toRawCar(card: MLCarCard, context: CardContext): RawCarListing |
 
 type Task = () => Promise<Task[]>;
 
-/** A dynamic work queue: a task may enqueue more tasks; `concurrency` bridge calls at a time. */
-export async function drainTasks(initial: Task[], concurrency: number): Promise<void> {
+/**
+ * A dynamic work queue: a task may enqueue more tasks; `concurrency` bridge calls at a time.
+ * A task that throws (network is caught inside `read()`; this is for bugs downstream of a
+ * successful read — `accept`/`facetValues`/gap bookkeeping) is reported via `onError` and the
+ * rest of the queue keeps draining. Silently swallowing it would let a brand look "complete"
+ * (`completeBrands`) despite having lost data mid-walk, and `completeBrands` gates whether an
+ * unseen advert is later treated as retired.
+ */
+export async function drainTasks(initial: Task[], concurrency: number, onError?: (error: unknown) => void): Promise<void> {
   const queue = [...initial];
   let active = 0;
   await new Promise<void>(resolve => {
@@ -156,7 +163,7 @@ export async function drainTasks(initial: Task[], concurrency: number): Promise<
         const task = queue.shift()!;
         active++;
         task()
-          .then(more => { queue.push(...more); }, () => undefined)
+          .then(more => { queue.push(...more); }, error => { onError?.(error); })
           .finally(() => { active--; pump(); });
       }
     };
@@ -191,6 +198,7 @@ export async function harvestMercadoLibreCars(options: CarHarvestOptions): Promi
   let failedPages = 0;
   let rejectedCards = 0;
   let budgetCut = false;
+  let taskErrors = 0;
 
   async function read(filters: Record<string, string>, offset: number): Promise<MLCarPage | null> {
     if (requests >= options.maxRequests || Date.now() - started >= options.maxDurationMs) {
@@ -275,15 +283,19 @@ export async function harvestMercadoLibreCars(options: CarHarvestOptions): Promi
     const covered = brands.reduce((sum, brand) => sum + brand.results, 0);
     if (covered < reportedTotal) gaps.push({ brandId: "*", brand: "(sin marca)", missing: reportedTotal - covered });
   }
-  if (brands.length) await drainTasks(brands.map(brandTask), Math.max(1, options.concurrency));
+  if (brands.length) {
+    await drainTasks(brands.map(brandTask), Math.max(1, options.concurrency), () => { taskErrors++; });
+  }
 
   const note = !root
     ? "el puente de Mercado Libre no respondió"
     : budgetCut
       ? "presupuesto de pedidos o de tiempo agotado: cosecha parcial"
-      : failedPages
-        ? `${failedPages} páginas sin respuesta válida`
-        : null;
+      : taskErrors > 0
+        ? `${taskErrors} tareas fallaron por un error inesperado: cosecha parcial`
+        : failedPages
+          ? `${failedPages} páginas sin respuesta válida`
+          : null;
   return {
     mode: options.mode,
     startedAt,
@@ -299,7 +311,8 @@ export async function harvestMercadoLibreCars(options: CarHarvestOptions): Promi
     pages,
     failedPages,
     rejectedCards,
-    completeBrands: brands.map(brand => brand.id).filter(id => !failedBrands.has(id)).sort(),
+    // A task error means we cannot tell which brand lost data mid-walk, so none of them count as complete.
+    completeBrands: taskErrors > 0 ? [] : brands.map(brand => brand.id).filter(id => !failedBrands.has(id)).sort(),
     gaps,
     reportedTotal,
     note,

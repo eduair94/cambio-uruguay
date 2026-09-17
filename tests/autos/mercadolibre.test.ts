@@ -4,7 +4,7 @@ const fetchJson = vi.fn();
 vi.mock("../../classes/rentals/net", () => ({ fetchJson: (...args: unknown[]) => fetchJson(...args) }));
 
 import {
-  carSearchUrl, harvestMercadoLibreCars, pageMatches, toRawCar, type MLCarCard, type MLCarPage,
+  carSearchUrl, drainTasks, harvestMercadoLibreCars, pageMatches, toRawCar, type MLCarCard, type MLCarPage,
 } from "../../classes/autos/sources/mercadolibre";
 
 function card(id: string, overrides: Record<string, string> = {}): { polycard: MLCarCard } {
@@ -81,6 +81,24 @@ describe("pageMatches", () => {
   });
 });
 
+describe("drainTasks", () => {
+  it("keeps processing the queue after a task throws and reports it via onError", async () => {
+    const errors: unknown[] = [];
+    let secondRan = false;
+    await drainTasks(
+      [
+        async () => { throw new Error("boom"); },
+        async () => { secondRan = true; return []; },
+      ],
+      1,
+      error => { errors.push(error); },
+    );
+    expect(secondRan).toBe(true);
+    expect(errors).toHaveLength(1);
+    expect((errors[0] as Error).message).toBe("boom");
+  });
+});
+
 describe("harvestMercadoLibreCars", () => {
   // Block body on purpose: `mockReset()` returns the mock itself (chainable), and an arrow with an
   // implicit return hands that function BACK to Vitest's beforeEach — which treats a returned
@@ -142,5 +160,24 @@ describe("harvestMercadoLibreCars", () => {
     expect(result.listings).toEqual([]);
     expect(result.note).toMatch(/no respondió/);
     expect(fetchJson.mock.calls[0]![0]).toContain("since=today");
+  });
+
+  it("empties completeBrands and reports the error when a model task throws after a successful read", async () => {
+    fetchJson.mockImplementation(async (url: string) => {
+      const params = new URL(url).searchParams;
+      if (params.get("MODEL") === "999") {
+        // Spark's page reads fine (pageMatches only looks at paging/filters) but blows up the moment
+        // `accept()` reaches into `components` — the same shape a bad upstream payload could produce.
+        const brokenPage = route(url) as MLCarPage;
+        Object.defineProperty(brokenPage, "components", { get() { throw new Error("boom"); } });
+        return brokenPage;
+      }
+      return route(url);
+    });
+    const result = await harvestMercadoLibreCars({ mode: "full", maxRequests: 100, maxDurationMs: 60_000, concurrency: 1, apiBase: "http://bridge/mercadolibre" });
+    expect(result.completeBrands).toEqual([]);
+    expect(result.note).toMatch(/error inesperado/);
+    expect(result.listings.some(l => l.model === "Onix")).toBe(true);
+    expect(result.listings.some(l => l.model === "Spark")).toBe(false);
   });
 });
