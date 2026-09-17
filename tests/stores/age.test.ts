@@ -1,9 +1,13 @@
-// Signal 2 of 2 for /tiendas-online-uruguay: how old the domain is. crt.sh (earliest TLS
-// certificate) is the primary source; the Wayback Machine's first capture is the fallback when
-// crt.sh has nothing or cannot be reached. Both `earliestCertificate` and `waybackFirstCapture` are
-// pure parsers exercised with the tiny literal payloads from the task brief — no fixture files
-// needed for two-line arrays. `fetchAge` itself is exercised by mocking global `fetch`, per the
-// project convention (see tests/rentals/net.test.ts) — never a real network call.
+// Signal 2 of 2 for /tiendas-online-uruguay: how old the domain is. Both crt.sh (earliest TLS
+// certificate) and the Wayback Machine (first capture) are queried every time, but they are NOT
+// symmetric (item 1 follow-up, controller review of 34b5daf0): Wayback failing to answer — even
+// after its own retry — fails the whole signal closed, because crt.sh's date alone systematically
+// understates an established store and cannot be trusted to stand in for "first seen" without
+// Wayback's own check on it. Only once Wayback has actually answered (a date, or a confirmed "empty")
+// does crt.sh's date get to matter. Both `earliestCertificate` and `waybackFirstCapture` are pure
+// parsers exercised with the tiny literal payloads from the task brief — no fixture files needed for
+// two-line arrays. `fetchAge` itself is exercised by mocking global `fetch`, per the project
+// convention (see tests/rentals/net.test.ts) — never a real network call.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { earliestCertificate, waybackFirstCapture } from "../../classes/stores/signals/age";
 
@@ -39,9 +43,10 @@ describe("waybackFirstCapture", () => {
 });
 
 // Every fetchAge scenario below sets STORES_AGE_RETRY_MS to a few ms before importing a fresh copy
-// of the module: attemptCrt's one retry after a failure really does wait between attempts (10s in
-// production, per the brief), and this repo prefers a configurable knob (see classes/precios/net.ts
-// GAP_MS/RETRIES, classes/rentals/net.ts HOST_GAP_MS) over sinon fake timers faking AbortSignal too.
+// of the module: both attemptCrt's and attemptWayback's one retry after a failure really do wait
+// between attempts (10s in production, per the brief), and this repo prefers a configurable knob
+// (see classes/precios/net.ts GAP_MS/RETRIES, classes/rentals/net.ts HOST_GAP_MS) over sinon fake
+// timers faking AbortSignal too.
 async function freshFetchAge(retryMs = 5) {
   vi.resetModules();
   process.env.STORES_AGE_RETRY_MS = String(retryMs);
@@ -120,19 +125,50 @@ describe("fetchAge", () => {
 
   // Mirrors the live check done for this fix (2026-09-17): crt.sh answered tiendainglesa.com.uy
   // with 137 certificates (earliest 2019-09-30) while the same run's Wayback CDX call came back
-  // with its "Internet Archive: Temporarily Offline" HTML page — a resolved date from one source
-  // must not be thrown away just because the OTHER source failed to answer at all.
-  it("uses crt.sh's date even when Wayback fails outright", async () => {
+  // with its "Internet Archive: Temporarily Offline" HTML page. Item 1 follow-up (controller review
+  // of 34b5daf0): crt.sh's date alone systematically understates an established store — publishing
+  // it here would have republished 2019-09-30 as this chain's "en línea desde", which is almost
+  // certainly wrong — so Wayback failing (even after its own retry) now fails the WHOLE signal
+  // closed, regardless of what crt.sh found.
+  it("fails closed (undefined) when Wayback fails outright, even though crt.sh has a real date", async () => {
     const fetchAge = await freshFetchAge(5);
     vi.stubGlobal(
       "fetch",
       vi.fn(async (url: string) => {
         if (String(url).includes("crt.sh")) return jsonResponse([{ not_before: "2019-09-30T18:37:17" }]);
-        throw new TypeError("fetch failed"); // Wayback: network failure
+        throw new TypeError("fetch failed"); // Wayback: network failure, both attempts
       })
     );
-    const signal = await fetchAge("tiendainglesa.com.uy");
-    expect(signal).toMatchObject({ since: "2019-09-30", source: "crt.sh" });
+    await expect(fetchAge("tiendainglesa.com.uy")).resolves.toBeUndefined();
+  }, 10_000);
+
+  it("fails closed when Wayback answers its outage page, even though crt.sh has a real date", async () => {
+    const fetchAge = await freshFetchAge();
+    vi.stubGlobal(
+      "fetch",
+      urlFetch({
+        crt: () => jsonResponse([{ not_before: "2019-09-30T18:37:17" }]),
+        wayback: () => new Response("<html>Internet Archive: Temporarily Offline</html>", { status: 200 }),
+      })
+    );
+    await expect(fetchAge("tiendainglesa.com.uy")).resolves.toBeUndefined();
+  });
+
+  it("retries Wayback once after a transient failure before declaring it failed", async () => {
+    const fetchAge = await freshFetchAge(5);
+    let waybackCalls = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).includes("crt.sh")) return jsonResponse([{ not_before: "2020-01-01T00:00:00" }]);
+        waybackCalls++;
+        if (waybackCalls === 1) return new Response("bad gateway", { status: 502 });
+        return jsonResponse([["timestamp"], ["20150101000000"]]);
+      })
+    );
+    const signal = await fetchAge("ejemplo.com");
+    expect(waybackCalls).toBe(2);
+    expect(signal).toMatchObject({ since: "2015-01-01", source: "wayback" });
   }, 10_000);
 
   it("uses Wayback's date even when crt.sh fails outright", async () => {
@@ -160,7 +196,7 @@ describe("fetchAge", () => {
     expect(await fetchAge("ejemplo.com")).toBeNull();
   });
 
-  it("returns undefined when crt.sh fails twice (network) and Wayback also fails", async () => {
+  it("returns undefined when crt.sh fails twice (network) and Wayback also fails twice", async () => {
     const fetchAge = await freshFetchAge(5);
     const fetchMock = vi.fn(async () => {
       throw new TypeError("fetch failed");
@@ -168,8 +204,9 @@ describe("fetchAge", () => {
     vi.stubGlobal("fetch", fetchMock);
     const signal = await fetchAge("ejemplo.com");
     expect(signal).toBeUndefined();
-    // one crt.sh attempt + one retry + one wayback attempt, run concurrently
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    // crt.sh: one attempt + one retry; Wayback: one attempt + one retry (item 1 follow-up: Wayback
+    // now retries too) — both run concurrently.
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   }, 10_000);
 
   it("treats a non-200 crt.sh status as a failure; still uses Wayback's date when it has one", async () => {

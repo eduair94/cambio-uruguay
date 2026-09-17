@@ -3,19 +3,30 @@
 // querying crt.sh for mercadolibre.com.uy or amazon.com would return noise about a domain that
 // isn't the seller).
 //
-// BOTH sources are queried every time and the EARLIER date wins (fix round F1, item 1): crt.sh's
-// earliest TLS certificate can postdate a store's real online presence by years when a site ran on
-// plain HTTP for a while, switched hosting/CA (a new cert chain, an old one dropped from the CT
-// logs), or simply took time to bother with HTTPS at all — the Wayback Machine's first crawl is not
-// tied to any of that, so treating crt.sh as "primary" and only falling back to Wayback when crt.sh
-// had nothing meant an established store's real first capture was silently thrown away whenever
-// crt.sh happened to answer with SOME (later) date. Live-checked 2026-09-17 for
-// tiendainglesa.com.uy — one of Uruguay's oldest supermarket chains — crt.sh's earliest cert is
-// 2019-09-30 (137 certificates on file, oldest `not_before`); the Wayback CDX call that same run
-// answered its "Internet Archive: Temporarily Offline" HTML page instead of JSON (see item 8 below),
-// which is itself live proof of the failure mode `attemptWayback` now has to tell apart from "no
-// capture at all". `source` records which of the two produced the winning date, published in the
-// "Fuente:" line.
+// BOTH sources are queried every time (fix round F1, item 1): crt.sh's earliest TLS certificate can
+// postdate a store's real online presence by years when a site ran on plain HTTP for a while,
+// switched hosting/CA (a new cert chain, an old one dropped from the CT logs), or simply took time
+// to bother with HTTPS at all — the Wayback Machine's first crawl is not tied to any of that, so
+// treating crt.sh as "primary" and only falling back to Wayback when crt.sh had nothing meant an
+// established store's real first capture was silently thrown away whenever crt.sh happened to
+// answer with SOME (later) date. Live-checked 2026-09-17 for tiendainglesa.com.uy — one of Uruguay's
+// oldest supermarket chains — crt.sh's earliest cert is 2019-09-30 (137 certificates on file, oldest
+// `not_before`); the Wayback CDX call that same run answered its "Internet Archive: Temporarily
+// Offline" HTML page instead of JSON.
+//
+// Follow-up (item 1, controller review of 34b5daf0): that live case is exactly the failure mode a
+// crt.sh-can-stand-alone rule falls into — crt.sh systematically UNDERSTATES an older store's real
+// presence, so publishing its date whenever Wayback merely failed to answer would have republished
+// 2019-09-30 as Tienda Inglesa's "en línea desde", which is almost certainly wrong for a chain that
+// old. So the two sources are no longer symmetric: Wayback now RETRIES once, same as crt.sh, before
+// being declared failed, and if it still fails the whole signal fails closed (`undefined`) —
+// regardless of what crt.sh found — because there is no way to tell how badly a lone crt.sh date
+// understates reality without Wayback's own check on it. Only once Wayback has actually answered
+// (a date, or a confirmed "nothing on file") does crt.sh's date get to stand: earlier of the two
+// wins when both have dates, and crt.sh alone is trusted ("primer certificado HTTPS") only when
+// Wayback confirmed it has nothing. `source` records which of the two produced the winning date,
+// published in the "Fuente:" line. The stored `since` itself only ever moves earlier over time,
+// never later — see `classes/stores/profile.ts`'s `mergeAge`.
 import { httpText } from "../net";
 
 export interface AgeSignal {
@@ -24,12 +35,12 @@ export interface AgeSignal {
   checkedAt: string;
 }
 
-// crt.sh really does time out and 5xx under load; a single retry after a short pause absorbs a
-// transient blip without falling back to the (much weaker) Wayback signal for nothing. The delay is
+// Both crt.sh and (as of this follow-up) Wayback really do time out / 5xx / bounce under load; one
+// retry after a short pause absorbs a transient blip before either is declared failed. The delay is
 // an env knob rather than a bare 10_000 so tests don't have to wait 10 real seconds for it — the
 // same pattern classes/precios/net.ts (GAP_MS/RETRIES) and classes/rentals/net.ts (HOST_GAP_MS) use.
 const CRT_TIMEOUT_MS = Number(process.env.STORES_AGE_CRT_TIMEOUT_MS || 60_000);
-const CRT_RETRY_DELAY_MS = Number(process.env.STORES_AGE_RETRY_MS || 10_000);
+const RETRY_DELAY_MS = Number(process.env.STORES_AGE_RETRY_MS || 10_000);
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -76,59 +87,68 @@ async function attemptCrt(domain: string): Promise<Outcome> {
         // serving something other than its API (an edge error page), not an empty result.
       }
     }
-    if (attempt === 0) await sleep(CRT_RETRY_DELAY_MS);
+    if (attempt === 0) await sleep(RETRY_DELAY_MS);
   }
   return { kind: "failed" };
 }
 
+/**
+ * Retries once, same as crt.sh (item 1 follow-up) — the "Internet Archive: Temporarily Offline"
+ * page (item 8) is exactly the kind of transient blip a single retry absorbs, and Wayback failing
+ * now decides the WHOLE signal (see the module header), so it deserves the same one retry crt.sh
+ * already gets before that verdict is final.
+ */
 async function attemptWayback(domain: string): Promise<Outcome> {
   const url = `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(domain)}&output=json&limit=1&fl=timestamp`;
-  const res = await httpText(url);
-  if (!res || res.status !== 200) return { kind: "failed" };
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(res.body);
-  } catch {
-    // Item 8: a 200 whose body isn't the CDX JSON shape at all — the "Internet Archive: Temporarily
-    // Offline" HTML page is the observed case (live-checked 2026-09-17, see the module header) — is
-    // Wayback FAILING to answer, not Wayback answering "no capture on file". Treating it as `empty`
-    // would erase a previously stored date (`null` clears; only `undefined` keeps it), publishing a
-    // false "no data" for a domain whose age was already known.
-    return { kind: "failed" };
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const res = await httpText(url);
+    if (res && res.status === 200) {
+      try {
+        const parsed = JSON.parse(res.body);
+        const since = waybackFirstCapture(parsed);
+        return since ? { kind: "date", since } : { kind: "empty" };
+      } catch {
+        // Item 8: a 200 whose body isn't the CDX JSON shape at all (the "Temporarily Offline" HTML
+        // page is the observed case) is Wayback FAILING to answer, not answering "no capture on
+        // file" — falls through to the retry/failed path below, same as crt.sh's own non-JSON 200.
+      }
+    }
+    if (attempt === 0) await sleep(RETRY_DELAY_MS);
   }
-  const since = waybackFirstCapture(parsed);
-  return since ? { kind: "date", since } : { kind: "empty" };
+  return { kind: "failed" };
 }
 
 /**
- * Item 1: crt.sh and Wayback are queried every time (never one short-circuiting the other), and the
- * EARLIER date wins — a date from either source is real, dated evidence, so having one is enough to
- * publish even when the other source failed to answer at all; a tie prefers crt.sh, a hard
- * certificate-issuance event rather than a crawl that merely happened to visit that day.
+ * Item 1 follow-up: crt.sh and Wayback are queried every time, but they are no longer symmetric.
  *
- * `undefined` only when NEITHER source produced a date and at least one of them could not be
- * reached at all (network/status/unparseable-body failure) — a failure can't be told apart from "the
- * failed source might have had an even earlier date", so the previous value is kept rather than
- * asserting there is nothing. `null` only when both sources were queried successfully and neither
- * has anything on file.
+ *   * Wayback FAILED (after its own retry) → `undefined`, REGARDLESS of what crt.sh found. crt.sh's
+ *     date alone cannot be trusted to stand in for a real "first seen" — it systematically
+ *     understates an established store (see the module header) — so without Wayback's own check on
+ *     it the honest answer is "could not confirm this week", not "here is crt.sh's likely-wrong
+ *     date". The previous value (if any) is kept, with its old `checkedAt`.
+ *   * Wayback answered with a DATE → the earlier of the two wins when crt.sh also has a date (tying
+ *     favors crt.sh, a hard certificate-issuance event rather than a crawl that merely happened to
+ *     visit that day); crt.sh failing outright never discards a Wayback date that did come back.
+ *   * Wayback answered EMPTY (queried fine, nothing on file) → crt.sh's own date, if it has one, is
+ *     then trustworthy enough to stand alone ("primer certificado HTTPS"). If crt.sh has nothing
+ *     either, `null` (both sources confirmed no data). If crt.sh failed to answer at all, `undefined`
+ *     — one confirmed "nothing" and one outright failure still isn't enough to assert absence.
  */
 export async function fetchAge(domain: string): Promise<AgeSignal | null | undefined> {
   const checkedAt = new Date().toISOString();
   const [crt, wayback] = await Promise.all([attemptCrt(domain), attemptWayback(domain)]);
 
-  const dated: Array<{ since: string; source: AgeSignal["source"] }> = [];
-  if (crt.kind === "date") dated.push({ since: crt.since, source: "crt.sh" });
-  if (wayback.kind === "date") dated.push({ since: wayback.since, source: "wayback" });
+  if (wayback.kind === "failed") return undefined;
 
-  if (dated.length) {
-    dated.sort((a, b) => {
-      if (a.since !== b.since) return a.since < b.since ? -1 : 1;
-      return a.source === "crt.sh" ? -1 : 1;
-    });
-    const winner = dated[0]!;
-    return { since: winner.since, source: winner.source, checkedAt };
+  if (wayback.kind === "date") {
+    if (crt.kind === "date" && crt.since <= wayback.since) {
+      return { since: crt.since, source: "crt.sh", checkedAt };
+    }
+    return { since: wayback.since, source: "wayback", checkedAt };
   }
 
-  if (crt.kind === "failed" || wayback.kind === "failed") return undefined;
+  // wayback.kind === "empty": Wayback genuinely has nothing on file.
+  if (crt.kind === "date") return { since: crt.since, source: "crt.sh", checkedAt };
+  if (crt.kind === "failed") return undefined;
   return null;
 }

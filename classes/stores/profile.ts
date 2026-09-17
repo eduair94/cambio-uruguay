@@ -100,6 +100,29 @@ export function mergeSignal<T extends { checkedAt: string }>(
   return fetched;
 }
 
+/**
+ * `age` is the one signal `mergeSignal`'s generic rule doesn't fit (item 1 follow-up, controller
+ * review of 34b5daf0): crt.sh's earliest certificate can start a fresh chain years after a store
+ * first went online (a CA/hosting switch, an old cert dropped from the CT logs), so a later run's
+ * answer can look YOUNGER than an already-established date without the store having changed at all.
+ * Plainly replacing the old value with whatever this run found — `mergeSignal`'s rule — would let
+ * that happen. So once a domain's `since` is known, it may only move EARLIER over time, never later:
+ * `since`/`source` are `min(previous.since, fetched.since)` and whichever date wins keeps its own
+ * source, while `checkedAt` still advances to this run's — the domain WAS reverified, even when the
+ * claimed date didn't move. `undefined`/`null` fetched behave exactly like `mergeSignal` (kept /
+ * cleared): the ratchet only applies when there is an actual new date to compare against an old one.
+ */
+export function mergeAge(
+  previous: AgeSignal | null | undefined,
+  fetched: AgeSignal | null | undefined
+): AgeSignal | null {
+  if (fetched === undefined) return previous ?? null;
+  if (fetched === null || !previous) return fetched;
+  return previous.since <= fetched.since
+    ? { since: previous.since, source: previous.source, checkedAt: fetched.checkedAt }
+    : fetched;
+}
+
 const MAX_AGE_MS = STORE_SIGNAL_MAX_AGE_DAYS * 86_400_000;
 
 function isRecent(checkedAt: string, now: Date): boolean {
@@ -328,18 +351,23 @@ export function buildProfile(
   now: Date
 ): StoreProfileDoc {
   const carried = carriedSignals(entry, previous);
-  const signal = <K extends StoreSignalName>(name: K): StoreProfileDoc[K] => {
+  const signal = <K extends Exclude<StoreSignalName, "age">>(name: K): StoreProfileDoc[K] => {
     if (!storeSignalApplies(entry, name)) return null;
     return mergeSignal(
       carried[name] as { checkedAt: string } | null | undefined,
       asFetched(fetched[name])
     ) as StoreProfileDoc[K];
   };
+  // `age` goes through its own ratchet merge (`mergeAge`), not the generic `mergeSignal` every other
+  // signal above uses — see that function's header.
+  const age = storeSignalApplies(entry, "age")
+    ? mergeAge(carried.age, asFetched(fetched.age) as AgeSignal | null | undefined)
+    : null;
 
   const reddit = redditFields(entry, fetched.reddit, fetched.toneCache, previous, now);
   const signals: SignalFields = {
     site: signal("site"),
-    age: signal("age"),
+    age,
     trustpilot: signal("trustpilot"),
     google: signal("google"),
     reddit: reddit.reddit,

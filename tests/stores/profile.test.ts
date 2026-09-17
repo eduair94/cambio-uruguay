@@ -9,6 +9,7 @@ import {
   carriedReddit,
   countFreshSignals,
   formatStoreLogLine,
+  mergeAge,
   mergeSignal,
   shouldStopEarly,
   storeSignalApplies,
@@ -158,6 +159,50 @@ describe("mergeSignal", () => {
   });
 });
 
+// Item 1 follow-up (controller review of 34b5daf0): `age`'s `since` only ever moves EARLIER over
+// time, never later — the generic `mergeSignal` rule (fetched always wins) would let crt.sh's
+// systematically-later date silently overwrite an already-established earlier one.
+describe("mergeAge", () => {
+  it("keeps the previous value when the source could not be queried (undefined), old checkedAt included", () => {
+    const prev = age({ since: "2002-05-01", checkedAt: daysAgo(7) });
+    expect(mergeAge(prev, undefined)).toBe(prev);
+  });
+
+  it("clears the previous value when the source answered that there is nothing (null)", () => {
+    expect(mergeAge(age(), null)).toBeNull();
+  });
+
+  it("takes the fresh value when there was nothing before", () => {
+    const fresh = age({ since: "2019-09-30" });
+    expect(mergeAge(null, fresh)).toBe(fresh);
+    expect(mergeAge(undefined, fresh)).toBe(fresh);
+  });
+
+  it("keeps an earlier previous date over a later fresh one, but refreshes checkedAt (item 1 follow-up)", () => {
+    const previous = age({ since: "2002-01-01", source: "wayback", checkedAt: daysAgo(7) });
+    const fresh = age({ since: "2019-09-30", source: "crt.sh", checkedAt: daysAgo(0) });
+    const merged = mergeAge(previous, fresh);
+    expect(merged).toEqual({ since: "2002-01-01", source: "wayback", checkedAt: fresh.checkedAt });
+  });
+
+  it("takes a fresh date that is earlier than the previous one", () => {
+    const previous = age({ since: "2019-09-30", source: "crt.sh", checkedAt: daysAgo(7) });
+    const fresh = age({ since: "2002-01-01", source: "wayback", checkedAt: daysAgo(0) });
+    expect(mergeAge(previous, fresh)).toBe(fresh);
+  });
+
+  it("keeps the previous source and date on an exact tie, only refreshing checkedAt", () => {
+    const previous = age({ since: "2019-09-30", source: "wayback", checkedAt: daysAgo(7) });
+    const fresh = age({ since: "2019-09-30", source: "crt.sh", checkedAt: daysAgo(0) });
+    expect(mergeAge(previous, fresh)).toEqual({ since: "2019-09-30", source: "wayback", checkedAt: fresh.checkedAt });
+  });
+
+  it("never returns undefined: nothing before and nothing fetched is null", () => {
+    expect(mergeAge(undefined, undefined)).toBeNull();
+    expect(mergeAge(null, undefined)).toBeNull();
+  });
+});
+
 describe("countFreshSignals", () => {
   it("is 60 days", () => {
     expect(STORE_SIGNAL_MAX_AGE_DAYS).toBe(60);
@@ -281,6 +326,20 @@ describe("buildProfile", () => {
     const doc = buildProfile(entry(), {}, null, NOW);
     expect(doc.firstSeen).toBe("2026-09-16");
     expect(doc.lastSeen).toBe("2026-09-16");
+  });
+
+  it("never lets age.since move later end to end: previous 2002 + fetched 2019 stays 2002, checkedAt refreshed (item 1 follow-up)", () => {
+    const previous = previousDoc({ age: age({ since: "2002-01-01", source: "wayback", checkedAt: daysAgo(7) }) });
+    const fetchedAge = age({ since: "2019-09-30", source: "crt.sh", checkedAt: daysAgo(0) });
+    const doc = buildProfile(entry(), { age: fetchedAge }, previous, NOW);
+    expect(doc.age).toEqual({ since: "2002-01-01", source: "wayback", checkedAt: fetchedAge.checkedAt });
+  });
+
+  it("takes a fresh age.since that is earlier than the previous one", () => {
+    const previous = previousDoc({ age: age({ since: "2019-09-30", source: "crt.sh", checkedAt: daysAgo(7) }) });
+    const fetchedAge = age({ since: "2002-01-01", source: "wayback", checkedAt: daysAgo(0) });
+    const doc = buildProfile(entry(), { age: fetchedAge }, previous, NOW);
+    expect(doc.age).toEqual(fetchedAge);
   });
 
   it("keeps the last good value of a signal whose source failed, and clears one that answered nothing", () => {
