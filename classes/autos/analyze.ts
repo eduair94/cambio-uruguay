@@ -53,11 +53,15 @@ export interface CarAnalysis {
 }
 
 const DAY = 86_400_000;
-const EXCLUDING_FLAGS: ReadonlySet<CarTextFlag> = new Set<CarTextFlag>(["damaged", "financing", "foreign_plate", "paperwork", "price_mismatch", "recovered"]);
+export const EXCLUDING_FLAGS: ReadonlySet<CarTextFlag> = new Set<CarTextFlag>(["damaged", "financing", "foreign_plate", "paperwork", "price_mismatch", "recovered"]);
 const REFETCH = new Set(["detail_missing", "detail_stale", "detail_price_changed"]);
+const round6 = (value: number): number => Math.round(value * 1e6) / 1e6;
 
 export function exclusionReason(listing: CarListing, now: Date): string | null {
-  if (now.getTime() - Date.parse(listing.lastSeen) > CAR_OPPORTUNITY_POLICY.freshDays * DAY) return "stale";
+  const cutoff = now.getTime() - CAR_OPPORTUNITY_POLICY.freshDays * DAY;
+  // Date.parse returns NaN for an unparseable date; NaN >= cutoff is false, so it falls through
+  // to "stale" here rather than silently passing as fresh.
+  if (!(Date.parse(listing.lastSeen) >= cutoff)) return "stale";
   if (listing.priceConverted) return "not_usd";
   if (listing.priceUsd < 1_000 || listing.priceUsd > 500_000) return "implausible_price";
   if (listing.kmQuality !== "ok") return `km_${listing.kmQuality}`;
@@ -79,15 +83,33 @@ function possibleCopy(a: CarListing, b: CarListing): boolean {
     Math.abs(a.km! - b.km!) <= Math.max(1, a.km! * 0.01) && Math.abs(a.priceUsd - b.priceUsd) <= a.priceUsd * 0.01;
 }
 
+/**
+ * Collapses possibleCopy clusters among CANDIDATE peers (not just copies of the subject): when two
+ * peers are copies of each other, only the one with the lowest key survives. Processing candidates
+ * in ascending key order and greedily keeping an item unless it copies one already kept achieves
+ * this without needing a full union-find, since a repost pair is always directly close to itself.
+ */
+function dedupeCopies(peers: readonly CarListing[]): CarListing[] {
+  const sorted = [...peers].sort((a, b) => a.key.localeCompare(b.key));
+  const kept: CarListing[] = [];
+  for (const peer of sorted) {
+    if (!kept.some(existing => possibleCopy(existing, peer))) kept.push(peer);
+  }
+  return kept;
+}
+
 export function comparablesFor(subject: CarListing, pool: readonly CarListing[]): CarListing[] {
   const policy = CAR_OPPORTUNITY_POLICY;
   const tolerance = Math.max(policy.kmToleranceMin, subject.km! * policy.kmToleranceRatio);
+  const candidates = pool.filter(peer => peer.key !== subject.key &&
+    // No seller id means no leave-one-seller-out coverage and no repost detection: it cannot enter
+    // the sample (the subject itself may still lack one; only comparables are excluded here).
+    peer.sellerId !== null &&
+    (!peer.fuel || !subject.fuel || peer.fuel === subject.fuel) &&
+    Math.abs(peer.km! - subject.km!) <= tolerance &&
+    !possibleCopy(subject, peer));
   const perSeller = new Map<string, number>();
-  return pool
-    .filter(peer => peer.key !== subject.key &&
-      (!peer.fuel || !subject.fuel || peer.fuel === subject.fuel) &&
-      Math.abs(peer.km! - subject.km!) <= tolerance &&
-      !possibleCopy(subject, peer))
+  return dedupeCopies(candidates)
     .sort((a, b) => Math.abs(a.km! - subject.km!) - Math.abs(b.km! - subject.km!) || a.key.localeCompare(b.key))
     .filter(peer => {
       const seller = sellerOf(peer);
@@ -113,11 +135,11 @@ function measure(subject: CarListing, sample: readonly CarListing[]): Omit<CarSa
     p25,
     median,
     p75,
-    spread: (p75 - p25) / median,
+    spread: round6((p75 - p25) / median),
     kmMedian: quantile(kms, 0.5),
     kmP75: quantile(kms, 0.75),
-    gap: 1 - subject.priceUsd / median,
-    conservativeGap: 1 - subject.priceUsd / p25,
+    gap: round6(1 - subject.priceUsd / median),
+    conservativeGap: round6(1 - subject.priceUsd / p25),
   };
 }
 
@@ -150,9 +172,11 @@ export function tierFor(subject: CarListing, sample: CarSample): CarTier | "revi
 export function detailVerdict(subject: CarListing, detail: CarDetail | undefined, now: Date, trims: readonly string[]): string | null {
   const policy = CAR_OPPORTUNITY_POLICY;
   if (!detail) return "detail_missing";
-  if (now.getTime() - Date.parse(detail.readAt) > policy.detailMaxAgeHours * 3_600_000) return "detail_stale";
-  if (detail.price !== subject.price || detail.currency !== subject.currency) return "detail_price_changed";
+  const cutoff = now.getTime() - policy.detailMaxAgeHours * 3_600_000;
+  if (!(Date.parse(detail.readAt) >= cutoff)) return "detail_stale";
+  // An ended advert must not keep being re-fetched even if its last-seen price also drifted.
   if (!detail.active) return "detail_inactive";
+  if (detail.price !== subject.price || detail.currency !== subject.currency) return "detail_price_changed";
   if (!detail.brand || slugify(detail.brand) !== subject.brandSlug) return "detail_mismatch";
   if (!detail.model || slugify(detail.model) !== subject.modelSlug) return "detail_mismatch";
   if (detail.year !== subject.year) return "detail_mismatch";

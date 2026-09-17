@@ -38,6 +38,7 @@ describe("exclusionReason", () => {
   it("names why an advert cannot be analysed", () => {
     expect(exclusionReason(car(), NOW)).toBeNull();
     expect(exclusionReason(car({ lastSeen: "2026-09-13T00:00:00.000Z" }), NOW)).toBe("stale");
+    expect(exclusionReason(car({ lastSeen: "not-a-date" }), NOW)).toBe("stale");
     expect(exclusionReason(car({ priceConverted: true }), NOW)).toBe("not_usd");
     expect(exclusionReason(car({ kmQuality: "placeholder" }), NOW)).toBe("km_placeholder");
     expect(exclusionReason(car({ flags: ["damaged"] }), NOW)).toBe("flag_damaged");
@@ -51,7 +52,10 @@ describe("exclusionReason", () => {
 describe("comparablesFor", () => {
   it("keeps km-close peers, at most two per seller, nearest km first", () => {
     const subject = car({ km: 90_000 });
-    const shared = Array.from({ length: 4 }, (_, i) => car({ sellerId: "dealer-1", km: 90_000 + i }));
+    // Spaced 1,000 km apart (not just 1 km) so these four are genuinely distinct stock, not
+    // mutual reposts under possibleCopy's 1% km/price tolerance — the seller-cap test below covers
+    // the repost-collapse behaviour on its own.
+    const shared = Array.from({ length: 4 }, (_, i) => car({ sellerId: "dealer-1", km: 90_000 + i * 1_000 }));
     const far = car({ km: 200_000 });
     const picked = comparablesFor(subject, [subject, ...shared, far, ...market(3)]);
     expect(picked.filter(peer => peer.sellerId === "dealer-1")).toHaveLength(2);
@@ -62,6 +66,21 @@ describe("comparablesFor", () => {
     const subject = car({ sellerId: "s", km: 90_000, price: 9_000 });
     const copy = car({ sellerId: "s", km: 90_100, price: 9_050 });
     expect(comparablesFor(subject, [copy])).toEqual([]);
+  });
+  it("collapses reposts among the candidates themselves, keeping the lowest key", () => {
+    const subject = car({ km: 90_000 });
+    const posts = ["a", "b", "c", "d"].flatMap(sellerId => [
+      car({ sellerId, km: 90_000, price: 12_000 }),
+      car({ sellerId, km: 90_000, price: 12_000 }),
+    ]);
+    const picked = comparablesFor(subject, posts);
+    expect(picked).toHaveLength(4);
+    expect(new Set(picked.map(peer => peer.sellerId))).toEqual(new Set(["a", "b", "c", "d"]));
+  });
+  it("excludes peers with no seller id from the sample entirely", () => {
+    const subject = car({ km: 90_000 });
+    const anonymous = Array.from({ length: 3 }, () => car({ sellerId: null, km: 90_000 }));
+    expect(comparablesFor(subject, anonymous)).toEqual([]);
   });
 });
 
@@ -117,6 +136,74 @@ describe("analyzeCars", () => {
     expect(result.stats.review).toBe(1);
   });
 
+  it("does not let seller re-posts inflate a cohort into a false opportunity", () => {
+    const sellers = ["a", "b", "c", "d"];
+    const peers = sellers.flatMap(sellerId => [
+      car({ sellerId, km: 90_000, price: 12_000 }),
+      car({ sellerId, km: 90_000, price: 12_000 }),
+    ]);
+    const subject = car({ price: 9_500 });
+    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    // 8 posts from only 4 real sellers de-duplicate to 4 comparables — below the exploratory floor.
+    expect(result.accepted).toEqual([]);
+  });
+
+  it("never lets a seller with no id into the sample", () => {
+    const peers = Array.from({ length: 8 }, () => car({ sellerId: null, km: 90_000, price: 12_000 }));
+    const subject = car({ price: 9_500 });
+    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    expect(result.accepted).toEqual([]);
+  });
+
+  it("accepts an exploratory tier when the sample is smaller but still solid", () => {
+    const sellers = ["e1", "e2", "e3"];
+    const peers = sellers.flatMap((sellerId, i) => [
+      car({ sellerId, price: 10_000, km: 90_000 + i * 1_000 }),
+      car({ sellerId, price: 10_000, km: 90_000 + i * 1_000 + 3_000 }),
+    ]);
+    const subject = car({ price: 8_700 });
+    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    expect(result.accepted).toHaveLength(1);
+    expect(result.accepted[0]!.tier).toBe("exploratory");
+  });
+
+  it("rejects a cohort whose prices are too spread to compare", () => {
+    const prices = [8_000, 8_200, 8_400, 8_600, 13_000, 13_200, 13_400, 13_600];
+    const peers = prices.map(price => car({ price }));
+    const subject = car({ price: 7_000 });
+    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    expect(result.accepted).toEqual([]);
+  });
+
+  it("downgrades to exploratory (not strict) when the gap depends on one seller", () => {
+    const cheap = Array.from({ length: 4 }, () => car({ price: 10_000 }));
+    const midHigh = Array.from({ length: 2 }, () => car({ price: 13_000 }));
+    const big = [
+      car({ sellerId: "big", price: 13_000, km: 90_000 }),
+      car({ sellerId: "big", price: 13_000, km: 91_500 }),
+    ];
+    const subject = car({ price: 9_150 });
+    const result = analyzeCars([...cheap, ...midHigh, ...big, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    expect(result.accepted).toHaveLength(1);
+    expect(result.accepted[0]!.tier).toBe("exploratory");
+  });
+
+  it("only refetches recoverable detail failures, never a final verdict", () => {
+    const inactiveSubject = car({ price: 9_500, km: 88_000 });
+    const inactive = analyzeCars([...market(10), inactiveSubject], {
+      now: NOW, details: new Map([[inactiveSubject.key, detailFor(inactiveSubject, { active: false })]]), vocabularies,
+    });
+    expect(inactive.needsDetail).toEqual([]);
+    expect(inactive.stats.rejectedByDetail).toEqual({ detail_inactive: 1 });
+
+    const mismatchedSubject = car({ price: 9_500, km: 88_000 });
+    const mismatched = analyzeCars([...market(10), mismatchedSubject], {
+      now: NOW, details: new Map([[mismatchedSubject.key, detailFor(mismatchedSubject, { year: 2018 })]]), vocabularies,
+    });
+    expect(mismatched.needsDetail).toEqual([]);
+    expect(mismatched.stats.rejectedByDetail).toEqual({ detail_mismatch: 1 });
+  });
+
   it("is deterministic regardless of input order", () => {
     const peers = market(12);
     const a = car({ price: 9_400 });
@@ -159,6 +246,14 @@ describe("detailVerdict", () => {
   it("does not reject a version text that names no known trim", () => {
     const subject = car();
     expect(detailVerdict(subject, detailFor(subject, { version: "1.4 Mt" }), NOW, trims)).toBeNull();
+  });
+  it("treats an ended advert as inactive even when its price also changed", () => {
+    const subject = car();
+    expect(detailVerdict(subject, detailFor(subject, { active: false, price: 11_000 }), NOW, trims)).toBe("detail_inactive");
+  });
+  it("treats an unparseable read time as stale", () => {
+    const subject = car();
+    expect(detailVerdict(subject, detailFor(subject, { readAt: "not-a-date" }), NOW, trims)).toBe("detail_stale");
   });
   it("uses the documented policy numbers", () => {
     expect(CAR_OPPORTUNITY_POLICY.strict).toMatchObject({ minimumComparables: 8, minimumSellers: 4, maximumSpread: 0.3, minimumGap: 0.15 });

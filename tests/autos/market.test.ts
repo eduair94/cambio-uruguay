@@ -39,4 +39,14 @@ describe("buildMarketSnapshots", () => {
     const listings = [car(), car(), car(), car(), car({ lastSeen: "2026-09-01T00:00:00.000Z" })];
     expect(buildMarketSnapshots(listings, { now: NOW, generatedAt: NOW.toISOString(), freshDays: 4 })).toEqual([]);
   });
+  it("orders same-year, same-count rows consistently by engine and transmission, regardless of input order", () => {
+    const groupA = Array.from({ length: 5 }, (_, i) =>
+      car({ engine: "1.2", transmission: "manual", trim: "active", trimLabel: "Active", priceUsd: 9_000 + i, price: 9_000 + i }));
+    const groupB = Array.from({ length: 5 }, (_, i) =>
+      car({ engine: "1.6", transmission: "automatica", trim: "active", trimLabel: "Active", priceUsd: 9_000 + i, price: 9_000 + i }));
+    const forward = buildMarketSnapshots([...groupA, ...groupB], { now: NOW, generatedAt: NOW.toISOString(), freshDays: 4 });
+    const backward = buildMarketSnapshots([...groupB, ...groupA], { now: NOW, generatedAt: NOW.toISOString(), freshDays: 4 });
+    expect(forward[0]!.rows.map(r => r.engine)).toEqual(["1.2", "1.6"]);
+    expect(backward).toEqual(forward);
+  });
 });
