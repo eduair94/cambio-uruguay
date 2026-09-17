@@ -9,6 +9,12 @@ import type { StoreProfileDoc } from "../stores/profile";
 // Each signal is a Mixed subdocument that carries its own `checkedAt`. A signal whose source failed
 // this week keeps its previous value and its OLD date (classes/stores/profile.ts), which is why the
 // dates live inside each signal and not once at the top of the document.
+//
+// Reddit is read incrementally, so three more fields hold its state: `redditMentions` (what was read
+// so far, newest first, at most 500 — id, kind, subreddit, date, thread, title, permalink and score;
+// never a comment body, never an author), `redditCursor` (where reading stands) and `redditTermsKey`
+// (the terms they were searched with; a change starts the reading over). None of the three is for the
+// page: the app API must leave them out of its `.select`.
 const StoreProfileSchema = new Schema(
   {
     key: { type: String, required: true },
@@ -23,6 +29,9 @@ const StoreProfileSchema = new Schema(
     google: { type: Schema.Types.Mixed, default: null },
     reddit: { type: Schema.Types.Mixed, default: null },
     catalog: { type: Schema.Types.Mixed, default: null },
+    redditMentions: { type: [Schema.Types.Mixed], default: [] },
+    redditCursor: { type: Schema.Types.Mixed, default: null },
+    redditTermsKey: { type: String, default: null },
     signals: { type: Number, default: 0 },
     indexable: { type: Boolean, default: false },
     firstSeen: { type: String, required: true },

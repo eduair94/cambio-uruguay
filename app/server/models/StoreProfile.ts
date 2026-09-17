@@ -8,6 +8,11 @@ import mongoose, { Schema, type Model } from 'mongoose'
 // its previous value and its OLD date, so the page can say when each fact was last true.
 // `StoreProfileDoc` is declared here, not imported from the backend (the app cannot import from the
 // repo root); the typed shapes of each signal arrive with the app utilities (Task 8).
+//
+// `redditMentions`, `redditCursor` and `redditTermsKey` are the backend's working state for reading
+// Reddit incrementally (mention metadata without text or author, where reading stands, and the terms
+// used). They are declared so both schemas stay identical, and they are NOT for the page: every API
+// route must leave them out of its `.select`.
 export interface StoreProfileDoc {
   key: string
   name: string
@@ -21,6 +26,9 @@ export interface StoreProfileDoc {
   google: Record<string, unknown> | null
   reddit: Record<string, unknown> | null
   catalog: Record<string, unknown> | null
+  redditMentions: Array<Record<string, unknown>>
+  redditCursor: Record<string, unknown> | null
+  redditTermsKey: string | null
   signals: number
   indexable: boolean
   firstSeen: string
@@ -43,6 +51,9 @@ const StoreProfileSchema = new Schema(
     google: { type: Schema.Types.Mixed, default: null },
     reddit: { type: Schema.Types.Mixed, default: null },
     catalog: { type: Schema.Types.Mixed, default: null },
+    redditMentions: { type: [Schema.Types.Mixed], default: [] },
+    redditCursor: { type: Schema.Types.Mixed, default: null },
+    redditTermsKey: { type: String, default: null },
     signals: { type: Number, default: 0 },
     indexable: { type: Boolean, default: false },
     firstSeen: { type: String, required: true },

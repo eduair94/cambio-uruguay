@@ -6,10 +6,11 @@ import { describe, expect, it } from "vitest";
 import {
   STORE_SIGNAL_MAX_AGE_DAYS,
   buildProfile,
+  carriedReddit,
   countFreshSignals,
   formatStoreLogLine,
-  isThinRun,
   mergeSignal,
+  shouldStopEarly,
   storeSignalApplies,
   type StoreProfileDoc,
 } from "../../classes/stores/profile";
@@ -18,7 +19,13 @@ import type { SiteSignal } from "../../classes/stores/signals/site";
 import type { AgeSignal } from "../../classes/stores/signals/age";
 import type { TrustpilotSignal } from "../../classes/stores/signals/trustpilot";
 import type { GoogleSignal } from "../../classes/stores/signals/google";
-import type { RedditSignal } from "../../classes/stores/signals/reddit";
+import {
+  redditTermsKey,
+  type RedditCursor,
+  type RedditMention,
+  type RedditSignal,
+  type StoredRedditMention,
+} from "../../classes/stores/signals/reddit";
 import type { CatalogSignal } from "../../classes/stores/signals/catalog";
 
 const NOW = new Date("2026-09-16T12:00:00.000Z");
@@ -75,6 +82,7 @@ const reddit = (overrides: Partial<RedditSignal> = {}): RedditSignal => ({
   byYear: { "2025": 4, "2026": 3 },
   threads: [],
   tone: null,
+  capped: false,
   checkedAt: daysAgo(1),
   ...overrides,
 });
@@ -110,6 +118,9 @@ function previousDoc(overrides: Partial<StoreProfileDoc> = {}): StoreProfileDoc 
     rubros: ["hogar"],
     aliases: ["Tienda"],
     ...EMPTY_SIGNALS,
+    redditMentions: [],
+    redditCursor: null,
+    redditTermsKey: redditTermsKey(entry()),
     signals: 0,
     indexable: false,
     firstSeen: "2026-01-04",
@@ -381,31 +392,211 @@ describe("buildProfile", () => {
   });
 });
 
-describe("isThinRun", () => {
-  it("never blocks the first run (nothing stored to protect)", () => {
-    expect(isThinRun({ storesWithFreshSignal: 0, stores: 76, storedProfiles: 0 })).toBe(false);
+describe("shouldStopEarly", () => {
+  it("stops when the first 10 stores processed all got no fresh outside signal (sources down)", () => {
+    expect(shouldStopEarly({ processed: 10, withFreshSignal: 0 })).toBe(true);
   });
 
-  it("blocks when fewer than 40 % of the stores got at least one fresh signal and profiles exist", () => {
-    expect(isThinRun({ storesWithFreshSignal: 30, stores: 76, storedProfiles: 76 })).toBe(true);
-    expect(isThinRun({ storesWithFreshSignal: 1, stores: 3, storedProfiles: 76 })).toBe(true);
+  it("keeps going before 10 stores, or once any store got a fresh signal", () => {
+    expect(shouldStopEarly({ processed: 9, withFreshSignal: 0 })).toBe(false);
+    expect(shouldStopEarly({ processed: 10, withFreshSignal: 1 })).toBe(false);
+    expect(shouldStopEarly({ processed: 40, withFreshSignal: 1 })).toBe(false);
+  });
+});
+
+// Task 12: Reddit is fetched incrementally, so the profile stores what was read (metadata only) and a
+// cursor, and the signal is summarized over everything stored — not just this week's increment.
+const NOW_UTC = Math.floor(NOW.getTime() / 1000);
+const START_UTC = Math.floor(Date.parse("2024-09-16T12:00:00.000Z") / 1000);
+
+function storedMention(id: string, createdUtc: number, overrides: Partial<StoredRedditMention> = {}): StoredRedditMention {
+  return {
+    id,
+    kind: "post",
+    sub: "uruguay",
+    createdUtc,
+    threadId: id,
+    title: `Hilo ${id}`,
+    permalink: `/r/uruguay/comments/${id}/`,
+    score: 1,
+    ...overrides,
+  };
+}
+
+function freshMention(id: string, createdUtc: number): RedditMention {
+  return { ...storedMention(id, createdUtc), text: `texto crudo de ${id}` };
+}
+
+const cursorDone = (checkedUntilUtc: number): RedditCursor => ({
+  backfillStartUtc: START_UTC,
+  backfillNextUtc: checkedUntilUtc,
+  backfillDone: true,
+  checkedUntilUtc,
+});
+
+describe("buildProfile: Reddit", () => {
+  const storedThree = [
+    storedMention("a", NOW_UTC - 30 * 86_400),
+    storedMention("b", NOW_UTC - 20 * 86_400),
+    storedMention("c", NOW_UTC - 10 * 86_400),
+  ];
+
+  it("summarizes over the stored mentions plus the new ones, not only the new ones", () => {
+    const previous = previousDoc({ reddit: reddit({ mentions: 3 }), redditMentions: storedThree, redditCursor: cursorDone(NOW_UTC - 7 * 86_400) });
+    const increment = {
+      mentions: [freshMention("c", NOW_UTC - 10 * 86_400), freshMention("d", NOW_UTC - 86_400)],
+      cursor: cursorDone(NOW_UTC),
+      complete: true,
+    };
+
+    const doc = buildProfile(entry(), { reddit: increment }, previous, NOW);
+
+    expect(doc.reddit!.mentions).toBe(4);
+    expect(doc.reddit!.checkedAt).toBe(NOW.toISOString());
+    expect(doc.reddit!.capped).toBe(false);
+    expect(doc.redditMentions.map((m) => m.id)).toEqual(["d", "c", "b", "a"]);
+    expect(doc.redditCursor).toEqual(cursorDone(NOW_UTC));
+    expect(doc.redditTermsKey).toBe(redditTermsKey(entry()));
   });
 
-  it("lets exactly 40 % through", () => {
-    expect(isThinRun({ storesWithFreshSignal: 2, stores: 5, storedProfiles: 76 })).toBe(false);
+  it("keeps the signal, the stored mentions and the cursor untouched when Reddit could not be read (undefined)", () => {
+    const prevSignal = reddit({ mentions: 3, checkedAt: daysAgo(7) });
+    const prevCursor = cursorDone(NOW_UTC - 7 * 86_400);
+    const previous = previousDoc({ reddit: prevSignal, redditMentions: storedThree, redditCursor: prevCursor });
+
+    const doc = buildProfile(entry(), { reddit: undefined }, previous, NOW);
+
+    expect(doc.reddit).toEqual(prevSignal);
+    expect(doc.redditMentions).toEqual(storedThree);
+    expect(doc.redditCursor).toEqual(prevCursor);
+  });
+
+  it("dates a partial incremental run by how far it got, not by today", () => {
+    const threeDaysAgo = NOW_UTC - 3 * 86_400;
+    const previous = previousDoc({ reddit: reddit(), redditMentions: storedThree, redditCursor: cursorDone(NOW_UTC - 7 * 86_400) });
+    const doc = buildProfile(entry(), { reddit: { mentions: [], cursor: cursorDone(threeDaysAgo), complete: false } }, previous, NOW);
+    expect(doc.reddit!.checkedAt).toBe(new Date(threeDaysAgo * 1000).toISOString());
+    expect(doc.reddit!.mentions).toBe(3);
+  });
+
+  it("does not publish a count while the 24-month backfill is still running, but keeps what it read", () => {
+    const halfway: RedditCursor = {
+      backfillStartUtc: START_UTC,
+      backfillNextUtc: NOW_UTC - 200 * 86_400,
+      backfillDone: false,
+      checkedUntilUtc: NOW_UTC - 200 * 86_400,
+    };
+    const doc = buildProfile(
+      entry(),
+      { reddit: { mentions: [freshMention("x", NOW_UTC - 300 * 86_400)], cursor: halfway, complete: false } },
+      null,
+      NOW
+    );
+    expect(doc.reddit).toBeNull();
+    expect(doc.redditMentions.map((m) => m.id)).toEqual(["x"]);
+    expect(doc.redditCursor).toEqual(halfway);
+  });
+
+  it("marks the signal capped when the stored mentions reach 500", () => {
+    const many = Array.from({ length: 499 }, (_, i) => storedMention(`s${i}`, START_UTC + i));
+    const previous = previousDoc({ redditMentions: many, redditCursor: cursorDone(NOW_UTC - 7 * 86_400) });
+    const increment = {
+      mentions: [freshMention("n1", NOW_UTC - 2 * 86_400), freshMention("n2", NOW_UTC - 86_400)],
+      cursor: cursorDone(NOW_UTC),
+      complete: true,
+    };
+    const doc = buildProfile(entry(), { reddit: increment }, previous, NOW);
+    expect(doc.redditMentions).toHaveLength(500);
+    expect(doc.reddit!.mentions).toBe(500);
+    expect(doc.reddit!.capped).toBe(true);
+  });
+
+  it("never stores the raw text of a mention", () => {
+    const doc = buildProfile(
+      entry(),
+      { reddit: { mentions: [freshMention("x", NOW_UTC - 86_400)], cursor: cursorDone(NOW_UTC), complete: true } },
+      null,
+      NOW
+    );
+    const json = JSON.stringify(doc);
+    expect(json).not.toContain('"text"');
+    expect(json).not.toContain("texto crudo");
+  });
+
+  it("discards stored mentions, cursor and signal when the store's Reddit terms changed", () => {
+    const previous = previousDoc({
+      reddit: reddit(),
+      redditMentions: storedThree,
+      redditCursor: cursorDone(NOW_UTC - 7 * 86_400),
+      redditTermsKey: redditTermsKey({ redditTerms: ["un termino viejo"] }),
+    });
+    const store = entry();
+
+    // The job asks Arctic Shift from scratch...
+    expect(carriedReddit(store, previous)).toEqual({ signal: null, mentions: [], cursor: null });
+
+    // ...and a week in which Reddit did not answer does not bring the old terms' data back.
+    const doc = buildProfile(store, { reddit: undefined }, previous, NOW);
+    expect(doc.reddit).toBeNull();
+    expect(doc.redditMentions).toEqual([]);
+    expect(doc.redditCursor).toBeNull();
+    expect(doc.redditTermsKey).toBe(redditTermsKey(store));
+  });
+
+  it("treats a profile stored without a terms fingerprint as other terms", () => {
+    const previous = { ...previousDoc({ reddit: reddit(), redditMentions: storedThree }), redditTermsKey: undefined } as unknown as StoreProfileDoc;
+    expect(carriedReddit(entry(), previous)).toEqual({ signal: null, mentions: [], cursor: null });
+  });
+
+  it("hands the job the stored cursor when the terms are the same", () => {
+    const cursor = cursorDone(NOW_UTC - 7 * 86_400);
+    const prevSignal = reddit();
+    const previous = previousDoc({ reddit: prevSignal, redditMentions: storedThree, redditCursor: cursor });
+    expect(carriedReddit(entry(), previous)).toEqual({ signal: prevSignal, mentions: storedThree, cursor });
+  });
+
+  it("clears every Reddit field when the store no longer has terms to search", () => {
+    const previous = previousDoc({ reddit: reddit(), redditMentions: storedThree, redditCursor: cursorDone(NOW_UTC) });
+    const doc = buildProfile(entry({ redditTerms: [] }), { reddit: undefined }, previous, NOW);
+    expect(doc.reddit).toBeNull();
+    expect(doc.redditMentions).toEqual([]);
+    expect(doc.redditCursor).toBeNull();
+    expect(doc.redditTermsKey).toBeNull();
+    expect(carriedReddit(entry({ redditTerms: [] }), previous)).toEqual({ signal: null, mentions: [], cursor: null });
   });
 });
 
 describe("formatStoreLogLine", () => {
   it("prints each signal's headline value, and - for a missing one", () => {
+    const mentions = Array.from({ length: 12 }, (_, i) => freshMention(`m${i}`, NOW_UTC - (i + 1) * 86_400));
     const doc = buildProfile(
       entry({ key: "tiendamia" }),
-      { site: site(), trustpilot: trustpilot({ score: 4.1 }), google: null, reddit: reddit({ mentions: 12 }), catalog: null },
+      {
+        site: site(),
+        trustpilot: trustpilot({ score: 4.1 }),
+        google: null,
+        reddit: { mentions, cursor: cursorDone(NOW_UTC), complete: true },
+        catalog: null,
+      },
       null,
       NOW
     );
-    expect(formatStoreLogLine(doc)).toBe(
-      `[tiendas] tiendamia señales=${doc.signals} sitio=ok  tp=4.1  g=-  reddit=12  catálogo=-`
+    expect(formatStoreLogLine(doc, 12)).toBe(
+      `[tiendas] tiendamia señales=${doc.signals} sitio=ok  tp=4.1  g=-  reddit=12(+12)  catálogo=-`
+    );
+  });
+
+  it("shows how far a running backfill got", () => {
+    const march = Math.floor(Date.parse("2025-03-16T00:00:00Z") / 1000);
+    const halfway: RedditCursor = { backfillStartUtc: START_UTC, backfillNextUtc: march, backfillDone: false, checkedUntilUtc: march };
+    const doc = buildProfile(
+      entry({ key: "tushop" }),
+      { reddit: { mentions: [freshMention("x", START_UTC + 86_400)], cursor: halfway, complete: false } },
+      null,
+      NOW
+    );
+    expect(formatStoreLogLine(doc, 1)).toBe(
+      "[tiendas] tushop señales=0 sitio=-  tp=-  g=-  reddit=1(+1) backfill 2025-03-16  catálogo=-"
     );
   });
 

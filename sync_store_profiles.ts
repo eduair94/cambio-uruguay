@@ -6,16 +6,22 @@
 // r/montevideo, and whether it sells in our own price catalogues. The result is one profile per
 // store in APP DB `storeprofiles`.
 //
-// Three deliberate properties:
+// Four deliberate properties:
 //   * A source that fails keeps last week's value, with last week's date. Only a source that answers
 //     "there is nothing" clears a value (classes/stores/profile.ts `mergeSignal`).
-//   * A run in which the outside sources mostly did not answer is an outage, not a week: when fewer
-//     than 40 % of the stores got a single fresh answer and profiles already exist, nothing is
-//     written and the job exits 1.
+//   * Reddit is read incrementally from Arctic Shift (classes/stores/signals/reddit.ts): the first runs
+//     backfill 24 months window by window, later runs only read what is new. All stores share one
+//     budget of HTTP calls per run (`STORES_REDDIT_MAX_CALLS`, default 900); a store that runs out keeps
+//     its cursor and continues next week.
+//   * Each store is saved as soon as it is read, and only if at least one outside source (site, domain
+//     age, Trustpilot, Google, Reddit) answered: a backfill that takes hours never loses what it did, and
+//     a store nobody answered for keeps its stored profile untouched. If the first 10 stores all got no
+//     answer, the sources are down: the job stops without writing anything and exits 1.
 //   * `--dry-run` cannot write. The writer module is only loaded inside the non-dry branch, so a
 //     laptop whose `.env` points at production can run the whole thing safely. It still reads our
 //     own catalogues when an app database is configured (read-only); without one, that signal is
-//     simply reported as not queried.
+//     simply reported as not queried. It does not load the stored profiles either, so a dry run reads
+//     Reddit as if from scratch (bounded by the same budget).
 //
 // Flags: `--dry-run` (print, never write) and `--only=<key,key>` (a subset of the registry).
 import dotenv from "dotenv";
@@ -25,8 +31,9 @@ dotenv.config({ path: "app/.env" });
 import { appDbConfigured } from "./classes/appdb";
 import {
   buildProfile,
+  carriedReddit,
   formatStoreLogLine,
-  isThinRun,
+  shouldStopEarly,
   storeSignalApplies,
   type StoreProfileDoc,
   type StoreSignalName,
@@ -35,13 +42,13 @@ import { STORES, STORE_BY_KEY } from "./classes/stores/registry";
 import { fetchAge } from "./classes/stores/signals/age";
 import { loadCatalogPresence, type CatalogSignal } from "./classes/stores/signals/catalog";
 import { fetchGoogle } from "./classes/stores/signals/google";
-import { fetchRedditMentions, summarizeMentions } from "./classes/stores/signals/reddit";
+import { fetchRedditIncrement, type RedditMention } from "./classes/stores/signals/reddit";
 import { fetchSite } from "./classes/stores/signals/site";
 import { fetchTrustpilot } from "./classes/stores/signals/trustpilot";
 import type { StoreEntry } from "./classes/stores/types";
 
-/** How far back Reddit mentions are counted. */
-const REDDIT_WINDOW_DAYS = 3 * 365;
+/** HTTP calls to Arctic Shift for the whole run, retries included. */
+const REDDIT_MAX_CALLS = Number(process.env.STORES_REDDIT_MAX_CALLS || 900);
 
 /** The signals read from outside this process. The catalogue is our own database: it answers
  * whenever Mongo does, so counting it would make every run look healthy during a network outage. */
@@ -63,13 +70,23 @@ interface StoreRun {
   queried: StoreSignalName[];
   /** Outside signals that applied but could not be queried (`undefined`). */
   failed: StoreSignalName[];
+  /** At least one outside source answered: the only case in which the store is saved. */
+  fresh: boolean;
+  /** Reddit was not asked because the run's call budget was already spent. */
+  redditNoBudget: boolean;
+  /** Mentions read this run, WITH their text — kept in memory for the tone classifier (Task 7). */
+  redditFetched: RedditMention[];
+  /** How many of them were not stored before. */
+  redditNew: number | undefined;
 }
 
 async function readStore(
   entry: StoreEntry,
   catalog: Map<string, CatalogSignal> | undefined,
-  previous: StoreProfileDoc | null
+  previous: StoreProfileDoc | null,
+  redditBudget: { calls: number }
 ): Promise<StoreRun> {
+  const now = new Date();
   const fetched: Partial<Record<StoreSignalName, unknown>> = {};
   const queried: StoreSignalName[] = [];
   const failed: StoreSignalName[] = [];
@@ -98,10 +115,25 @@ async function readStore(
   await read("age", () => fetchAge(domain));
   await read("trustpilot", () => fetchTrustpilot(entry.trustpilotDomain ?? domain));
   await read("google", () => fetchGoogle(entry.name, domain));
+
+  // Reddit resumes from where the stored profile left it — or from scratch when the store's search
+  // terms changed (`carriedReddit` then hands no cursor and no mentions).
+  const stored = carriedReddit(entry, previous);
+  let redditNoBudget = false;
+  let redditFetched: RedditMention[] = [];
+  let redditNew: number | undefined;
   await read("reddit", async () => {
-    const sinceUtc = Math.floor(Date.now() / 1000) - REDDIT_WINDOW_DAYS * 86_400;
-    const mentions = await fetchRedditMentions(entry, sinceUtc);
-    return mentions === undefined ? undefined : summarizeMentions(mentions, new Date().toISOString());
+    if (redditBudget.calls <= 0) {
+      redditNoBudget = true;
+      return undefined;
+    }
+    const increment = await fetchRedditIncrement(entry, stored.cursor, Math.floor(now.getTime() / 1000), redditBudget);
+    if (increment) {
+      const storedIds = new Set(stored.mentions.map((mention) => mention.id));
+      redditFetched = increment.mentions;
+      redditNew = increment.mentions.filter((mention) => !storedIds.has(mention.id)).length;
+    }
+    return increment;
   });
 
   // Not an outside source: the map was loaded once for the whole run. A store absent from a loaded
@@ -112,7 +144,15 @@ async function readStore(
       : catalog.get(entry.key) ?? null
     : null;
 
-  return { doc: buildProfile(entry, fetched, previous, new Date()), queried, failed };
+  return {
+    doc: buildProfile(entry, fetched, previous, now),
+    queried,
+    failed,
+    fresh: failed.length < queried.length,
+    redditNoBudget,
+    redditFetched,
+    redditNew,
+  };
 }
 
 function detailLine(doc: StoreProfileDoc): string {
@@ -133,7 +173,16 @@ function detailLine(doc: StoreProfileDoc): string {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([year, n]) => `${year}:${n}`)
       .join(" ");
-    parts.push(`reddit ${doc.reddit.mentions}${years ? ` [${years}]` : ""}, ${doc.reddit.threads.length} hilos`);
+    parts.push(
+      `reddit ${doc.reddit.mentions}${doc.reddit.capped ? " o más" : ""}${years ? ` [${years}]` : ""}, ` +
+        `${doc.reddit.threads.length} hilos, al ${doc.reddit.checkedAt.slice(0, 10)}`
+    );
+  } else if (doc.redditCursor && !doc.redditCursor.backfillDone) {
+    const day = (utc: number): string => new Date(utc * 1000).toISOString().slice(0, 10);
+    parts.push(
+      `reddit leyendo ${day(doc.redditCursor.backfillStartUtc)}→${day(doc.redditCursor.backfillNextUtc)}, ` +
+        `${doc.redditMentions.length} menciones hasta ahora (sin publicar)`
+    );
   }
   if (doc.catalog) parts.push(`catálogo ${doc.catalog.verticals.map((v) => `${v.key}=${v.offers}`).join(" ")}`);
   return `           ${parts.join(" · ") || "sin datos"} → indexable=${doc.indexable}`;
@@ -164,7 +213,11 @@ async function main(): Promise<void> {
   }
 
   const startedAt = Date.now();
-  console.log(`[tiendas] ${stores.length} tiendas${dryRun ? " (dry run: no se escribe nada)" : ""}`);
+  const redditBudget = { calls: REDDIT_MAX_CALLS };
+  console.log(
+    `[tiendas] ${stores.length} tiendas, hasta ${REDDIT_MAX_CALLS} llamadas a Reddit` +
+      `${dryRun ? " (dry run: no se escribe nada)" : ""}`
+  );
 
   let previous = new Map<string, StoreProfileDoc>();
   let writer: typeof import("./classes/stores/store") | null = null;
@@ -186,36 +239,50 @@ async function main(): Promise<void> {
   }
 
   const runs: StoreRun[] = [];
+  let saved = 0;
   for (const entry of stores) {
-    const run = await readStore(entry, catalog, previous.get(entry.key) ?? null);
+    const run = await readStore(entry, catalog, previous.get(entry.key) ?? null, redditBudget);
     runs.push(run);
-    console.log(formatStoreLogLine(run.doc) + (run.failed.length ? `  sin respuesta: ${run.failed.join(",")}` : ""));
+
+    const unanswered = run.failed.map((name) => (name === "reddit" && run.redditNoBudget ? "reddit(sin presupuesto)" : name));
+    console.log(
+      formatStoreLogLine(run.doc, run.redditNew) +
+        (unanswered.length ? `  sin respuesta: ${unanswered.join(",")}` : "") +
+        (run.fresh ? "" : "  (nada nuevo: no se guarda)")
+    );
     if (dryRun) console.log(detailLine(run.doc));
-  }
 
-  const docs = runs.map((run) => run.doc);
-  const queriedStores = runs.filter((run) => run.queried.length > 0);
-  const storesWithFreshSignal = queriedStores.filter((run) => run.failed.length < run.queried.length).length;
-  const storedProfiles = stores.filter((store) => previous.has(store.key)).length;
-  const failures = Object.fromEntries(
-    OUTSIDE_SIGNALS.map((name) => [name, runs.filter((run) => run.failed.includes(name)).length])
-  );
-  console.log(
-    `[tiendas] ${storesWithFreshSignal}/${queriedStores.length} tiendas con al menos una señal nueva; ` +
-      `sin respuesta por fuente ${JSON.stringify(failures)}; ` +
-      `${docs.filter((doc) => doc.indexable).length} indexables; ${((Date.now() - startedAt) / 1000).toFixed(1)}s`
-  );
+    if (!dryRun) {
+      if (run.fresh) {
+        await writer!.saveStoreProfiles([run.doc]);
+        saved++;
+      }
+    }
 
-  if (!dryRun) {
-    if (isThinRun({ storesWithFreshSignal, stores: queriedStores.length, storedProfiles })) {
+    const withFreshSignal = runs.filter((r) => r.fresh).length;
+    if (shouldStopEarly({ processed: runs.length, withFreshSignal })) {
       console.error(
-        `[tiendas] corrida flaca: sólo ${storesWithFreshSignal} de ${queriedStores.length} tiendas respondieron — se conservan los ${storedProfiles} perfiles guardados`
+        `[tiendas] fuentes caídas: ninguna de las primeras ${runs.length} tiendas obtuvo una respuesta nueva — ` +
+          "se corta la corrida sin escribir nada"
       );
       process.exit(1);
     }
-    await writer!.saveStoreProfiles(docs);
-    console.log(`[tiendas] ${docs.length} perfiles guardados`);
   }
+
+  const queriedStores = runs.filter((run) => run.queried.length > 0);
+  const storesWithFreshSignal = runs.filter((run) => run.fresh).length;
+  const failures = Object.fromEntries(
+    OUTSIDE_SIGNALS.map((name) => [name, runs.filter((run) => run.failed.includes(name)).length])
+  );
+  const backfilling = runs.filter((run) => run.doc.redditCursor && !run.doc.redditCursor.backfillDone).length;
+  const newMentions = runs.reduce((sum, run) => sum + (run.redditNew ?? 0), 0);
+  console.log(
+    `[tiendas] ${storesWithFreshSignal}/${queriedStores.length} tiendas con al menos una señal nueva; ` +
+      `sin respuesta por fuente ${JSON.stringify(failures)}; ` +
+      `reddit: ${REDDIT_MAX_CALLS - redditBudget.calls} llamadas, ${newMentions} menciones nuevas, ${backfilling} tiendas con backfill pendiente; ` +
+      `${runs.filter((run) => run.doc.indexable).length} indexables; ${((Date.now() - startedAt) / 1000).toFixed(1)}s`
+  );
+  if (!dryRun) console.log(`[tiendas] ${saved} perfiles guardados`);
 
   process.exit(0);
 }

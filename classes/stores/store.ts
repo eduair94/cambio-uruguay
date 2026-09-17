@@ -5,7 +5,11 @@
 //     decides what to show by `lastSeen` and by each signal's own `checkedAt`.
 //   * Writes are an upsert per `key` with the WHOLE profile in `$set`: the carrying-over of old
 //     signals already happened in classes/stores/profile.ts, so what gets written is exactly what the
-//     page should show.
+//     page should show — plus the Reddit working state (`redditMentions`, `redditCursor`,
+//     `redditTermsKey`), which the app API must never select.
+//   * The job calls `saveStoreProfiles` once per store, right after reading it (and only when some
+//     outside source answered), so an interrupted run keeps every store it finished — above all the
+//     progress of a Reddit backfill that spans hours and several weekly runs.
 //
 // This module is the only writer. sync_store_profiles.ts loads it lazily and only outside
 // `--dry-run`, so a dry run from a laptop (whose `.env` points at production) cannot reach it.

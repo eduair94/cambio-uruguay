@@ -13,6 +13,12 @@
 // `indexable` by itself — no one has to remember to expire it. The app mirrors the same 60 days
 // (Task 8) so the page hides exactly what this stops counting.
 //
+// Reddit is the exception to "one value per signal": it is read incrementally (classes/stores/signals/
+// reddit.ts), so the profile also keeps the mentions read so far (metadata only, never text or author),
+// the cursor of where reading stands, and a fingerprint of the terms they were searched with. The signal
+// is summarized over ALL stored mentions, and only once the 24-month backfill is complete: a count
+// covering half the window would read as a fact about the store.
+//
 // No verdict lives here: `signals` is how many independent, dated facts we can show, never a score
 // of how trustworthy the store is. `indexable` only decides whether a page has enough to say.
 import type { StoreEntry, StoreKind, StoreRubro } from "./types";
@@ -20,7 +26,15 @@ import type { SiteSignal } from "./signals/site";
 import type { AgeSignal } from "./signals/age";
 import type { TrustpilotSignal } from "./signals/trustpilot";
 import type { GoogleSignal } from "./signals/google";
-import type { RedditSignal } from "./signals/reddit";
+import {
+  mergeStoredMentions,
+  redditTermsKey,
+  summarizeMentions,
+  type RedditCursor,
+  type RedditMention,
+  type RedditSignal,
+  type StoredRedditMention,
+} from "./signals/reddit";
 import type { CatalogSignal } from "./signals/catalog";
 
 export const STORE_SIGNAL_MAX_AGE_DAYS = 60;
@@ -28,8 +42,8 @@ export const STORE_SIGNAL_MAX_AGE_DAYS = 60;
 /** A page with fewer fresh signals than this has too little to say to be worth indexing. */
 const INDEXABLE_MIN_SIGNALS = 3;
 
-/** Below this share of stores with at least one fresh signal, a run is an outage, not a week. */
-const THIN_RUN_MIN_SHARE = 0.4;
+/** If this many stores in a row, from the start of a run, got no fresh outside answer, sources are down. */
+const EARLY_STOP_STORES = 10;
 
 export type StoreSignalName = "site" | "age" | "trustpilot" | "google" | "reddit" | "catalog";
 
@@ -48,6 +62,12 @@ export interface StoreProfileDoc {
   google: GoogleSignal | null;
   reddit: RedditSignal | null;
   catalog: CatalogSignal | null;
+  /** Everything read from Reddit so far, newest first, at most 500 — metadata only. Never published. */
+  redditMentions: StoredRedditMention[];
+  /** Where Reddit reading stands; null when it never started (or the terms changed). Never published. */
+  redditCursor: RedditCursor | null;
+  /** `redditTermsKey` of the terms the stored mentions were searched with; null when Reddit does not apply. */
+  redditTermsKey: string | null;
   signals: number;
   indexable: boolean;
   /** YYYY-MM-DD */
@@ -154,8 +174,9 @@ function trustpilotReviewedDomain(url: string | undefined): string | null {
  * describes another site, so none of it survives a week in which the new domain could not be read
  * (a fresh `undefined` then yields `null`, never the old domain's value). Trustpilot is also dropped
  * when its page reviews a different domain than the one now targeted (`trustpilotDomain ?? domain`),
- * or when the page does not say which domain it reviews. Reddit and our own catalogue are keyed by
- * the store, not by its domain, and carry over.
+ * or when the page does not say which domain it reviews. Our own catalogue is keyed by the store, not
+ * by its domain, and carries over; Reddit is keyed by the store too, and follows its own rule
+ * (`carriedReddit`: what changes it is the search terms, not the domain).
  */
 function carriedSignals(entry: StoreEntry, previous: StoreProfileDoc | null): Partial<SignalFields> {
   if (!previous) return {};
@@ -175,6 +196,89 @@ function carriedSignals(entry: StoreEntry, previous: StoreProfileDoc | null): Pa
   return carried;
 }
 
+/**
+ * What a store's previous profile may hand to this run for Reddit: the stored mentions, the cursor
+ * the job resumes reading from, and the last signal. All of it is discarded — the reading starts over
+ * — when the store's terms fingerprint (`redditTermsKey`) differs from the one they were stored with
+ * (a profile without a fingerprint counts as different), or when Reddit no longer applies.
+ */
+export function carriedReddit(
+  entry: StoreEntry,
+  previous: StoreProfileDoc | null
+): { signal: RedditSignal | null; mentions: StoredRedditMention[]; cursor: RedditCursor | null } {
+  if (!previous || !storeSignalApplies(entry, "reddit") || previous.redditTermsKey !== redditTermsKey(entry)) {
+    return { signal: null, mentions: [], cursor: null };
+  }
+  return {
+    signal: previous.reddit ?? null,
+    mentions: Array.isArray(previous.redditMentions) ? previous.redditMentions : [],
+    cursor: previous.redditCursor ?? null,
+  };
+}
+
+interface RedditIncrement {
+  mentions: RedditMention[];
+  cursor: RedditCursor;
+  complete: boolean;
+}
+
+/** `fetchRedditIncrement`'s result, `null` (nothing to read), or `undefined` for anything else. */
+function asRedditIncrement(value: unknown): RedditIncrement | null | undefined {
+  if (value === null) return null;
+  if (!value || typeof value !== "object") return undefined;
+  const increment = value as Partial<RedditIncrement>;
+  const cursor = increment.cursor as Partial<RedditCursor> | undefined;
+  if (
+    !Array.isArray(increment.mentions) ||
+    !cursor ||
+    typeof cursor.backfillDone !== "boolean" ||
+    typeof cursor.checkedUntilUtc !== "number" ||
+    typeof cursor.backfillNextUtc !== "number" ||
+    typeof cursor.backfillStartUtc !== "number"
+  ) {
+    return undefined;
+  }
+  return increment as RedditIncrement;
+}
+
+type RedditFields = Pick<StoreProfileDoc, "reddit" | "redditMentions" | "redditCursor" | "redditTermsKey">;
+
+/**
+ * The four Reddit fields of a profile:
+ *   * `undefined` fetched (could not read) — stored mentions, cursor and signal stay as they were;
+ *   * `null` fetched — cleared;
+ *   * an increment — merged into the stored mentions (text dropped, capped at 500) with its cursor. The
+ *     signal is summarized over everything stored, dated by how far the cursor got (`checkedUntilUtc`,
+ *     which is now for a complete run), and only once the backfill is done; until then the previous
+ *     signal, if any, stays.
+ */
+function redditFields(entry: StoreEntry, fetched: unknown, previous: StoreProfileDoc | null, now: Date): RedditFields {
+  if (!storeSignalApplies(entry, "reddit")) {
+    return { reddit: null, redditMentions: [], redditCursor: null, redditTermsKey: null };
+  }
+
+  const termsKey = redditTermsKey(entry);
+  const carried = carriedReddit(entry, previous);
+  const increment = asRedditIncrement(fetched);
+
+  if (increment === undefined) {
+    return { reddit: carried.signal, redditMentions: carried.mentions, redditCursor: carried.cursor, redditTermsKey: termsKey };
+  }
+  if (increment === null) {
+    return { reddit: null, redditMentions: [], redditCursor: null, redditTermsKey: termsKey };
+  }
+
+  const merged = mergeStoredMentions(carried.mentions, increment.mentions);
+  const reddit = increment.cursor.backfillDone
+    ? summarizeMentions(merged.mentions, new Date(increment.cursor.checkedUntilUtc * 1000).toISOString(), now, merged.capped)
+    : carried.signal;
+  return { reddit, redditMentions: merged.mentions, redditCursor: increment.cursor, redditTermsKey: termsKey };
+}
+
+/**
+ * `fetched.reddit` is what `fetchRedditIncrement` returned (see `redditFields`); every other signal is
+ * the value its module returned, merged with `mergeSignal`.
+ */
 export function buildProfile(
   entry: StoreEntry,
   fetched: Partial<Record<StoreSignalName, unknown>>,
@@ -190,12 +294,13 @@ export function buildProfile(
     ) as StoreProfileDoc[K];
   };
 
+  const reddit = redditFields(entry, fetched.reddit, previous, now);
   const signals: SignalFields = {
     site: signal("site"),
     age: signal("age"),
     trustpilot: signal("trustpilot"),
     google: signal("google"),
-    reddit: signal("reddit"),
+    reddit: reddit.reddit,
     catalog: signal("catalog"),
   };
 
@@ -210,6 +315,9 @@ export function buildProfile(
     rubros: [...entry.rubros],
     aliases: [...entry.aliases],
     ...signals,
+    redditMentions: reddit.redditMentions,
+    redditCursor: reddit.redditCursor,
+    redditTermsKey: reddit.redditTermsKey,
     signals: count,
     indexable: count >= INDEXABLE_MIN_SIGNALS,
     firstSeen: previous?.firstSeen || today,
@@ -218,24 +326,38 @@ export function buildProfile(
 }
 
 /**
- * The job refuses to write a run in which fewer than 40 % of the stores it covered got at least one
- * fresh answer (not `undefined`) from an outside source — that is the network or a service being
- * down, not a quiet week. The first run is exempt: with nothing stored there is nothing to protect.
+ * The job saves each store as soon as it is read (a long Reddit backfill must not lose what it did),
+ * so an outage cannot be judged at the end of the run anymore. Instead: if the first 10 stores all got
+ * no fresh answer from any outside source, the sources are down — the job stops there, having written
+ * nothing (a store is only saved with at least one fresh answer), and exits 1.
  */
-export function isThinRun(input: { storesWithFreshSignal: number; stores: number; storedProfiles: number }): boolean {
-  if (input.storedProfiles <= 0) return false;
-  return input.storesWithFreshSignal < input.stores * THIN_RUN_MIN_SHARE;
+export function shouldStopEarly(input: { processed: number; withFreshSignal: number }): boolean {
+  return input.processed >= EARLY_STOP_STORES && input.withFreshSignal === 0;
 }
 
-/** `[tiendas] <key> señales=<n> sitio=<ok|blocked|->  tp=<score|->  g=<rating|->  reddit=<n|->  catálogo=<n|->` */
-export function formatStoreLogLine(doc: StoreProfileDoc): string {
+/**
+ * `[tiendas] <key> señales=<n> sitio=<ok|blocked|->  tp=<score|->  g=<rating|->  reddit=<n|->[(+<new>)][ backfill <date>]  catálogo=<n|->`
+ *
+ * Reddit shows the published count, or while the backfill runs the mentions stored so far; `(+<new>)`
+ * is how many of them this run added, and `backfill <date>` how far the backfill has read.
+ */
+export function formatStoreLogLine(doc: StoreProfileDoc, redditNew?: number): string {
   const dash = (value: string | number | undefined): string => (value === undefined ? "-" : String(value));
+  const cursor = doc.redditCursor;
+  let reddit = "-";
+  if (doc.reddit || cursor) {
+    reddit = String(doc.reddit ? doc.reddit.mentions : (doc.redditMentions ?? []).length);
+    if (redditNew !== undefined) reddit += `(+${redditNew})`;
+    if (cursor && !cursor.backfillDone) {
+      reddit += ` backfill ${new Date(cursor.backfillNextUtc * 1000).toISOString().slice(0, 10)}`;
+    }
+  }
   return (
     `[tiendas] ${doc.key} señales=${doc.signals}` +
     ` sitio=${dash(doc.site?.status)}` +
     `  tp=${dash(doc.trustpilot?.score)}` +
     `  g=${dash(doc.google?.rating)}` +
-    `  reddit=${dash(doc.reddit?.mentions)}` +
+    `  reddit=${reddit}` +
     `  catálogo=${dash(doc.catalog?.offers)}`
   );
 }
