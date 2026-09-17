@@ -37,7 +37,18 @@ export interface PriceEventSnapshot {
   /** Cuántas de esas `analyzeOffer` no descartó (antigüedad + puntos previos + moneda soportada). */
   eligible: number;
   byVertical: Record<string, PriceEventVerticalStats>;
-  drops: PriceEventAnalysis[];
+  /**
+   * La vitrina: hasta `PRICE_EVENT_MAX_DROPS` bajas reales, máx `PRICE_EVENT_MAX_DROPS_PER_SELLER`
+   * por vendedor — NO el total del día. Antes se llamaba `drops`, que un total (`dropsCount` abajo)
+   * con el mismo nombre habría hecho ambiguo: "¿el array recortado o la cuenta completa?". El total
+   * del día para el titular/la serie de 30 días sale de `dropsCount`/`inflatedCount`, nunca de
+   * `topDrops.length` (que se achata en 200 apenas el día tiene más bajas que eso).
+   */
+  topDrops: PriceEventAnalysis[];
+  /** Total de ofertas `baja-real` del día, sin el recorte de la vitrina — suma de `byVertical[*].drops`. */
+  dropsCount: number;
+  /** Total de ofertas `tachado-por-encima` del día, sin recorte — suma de `byVertical[*].inflated`. */
+  inflatedCount: number;
   sellers: PriceEventSellerStat[];
 }
 
@@ -66,28 +77,56 @@ export function buildPriceEventSnapshot(
   const eligible = analyses.filter((analysis): analysis is PriceEventAnalysis => analysis !== null);
 
   const byVertical: Record<string, PriceEventVerticalStats> = {};
+  let dropsCount = 0;
+  let inflatedCount = 0;
   for (const analysis of eligible) {
     const stats = byVertical[analysis.vertical] ?? { eligible: 0, drops: 0, inflated: 0 };
     stats.eligible += 1;
-    if (analysis.classes.includes("baja-real")) stats.drops += 1;
-    if (analysis.classes.includes("tachado-por-encima")) stats.inflated += 1;
+    if (analysis.classes.includes("baja-real")) {
+      stats.drops += 1;
+      dropsCount += 1;
+    }
+    if (analysis.classes.includes("tachado-por-encima")) {
+      stats.inflated += 1;
+      inflatedCount += 1;
+    }
     byVertical[analysis.vertical] = stats;
   }
 
   // Ordenadas de la baja más grande a la más chica ANTES de aplicar el tope por vendedor, así el
   // resultado se queda ordenado igual: dentro de sus 3 lugares, cada vendedor entra con sus mejores
   // bajas primero, nunca con las últimas que sobraron.
+  //
+  // El orden tiene que ser el MISMO en cada corrida para el mismo conjunto de análisis, sin importar
+  // en qué orden el cursor de Mongo entregó los documentos — así que un empate en `dropPct` (que es
+  // un redondeo a 1 decimal: dos ofertas bien distintas rutinariamente empatan ahí) nunca se resuelve
+  // por "el orden en que llegaron". Tres claves, en orden:
+  //   1. `dropPct` desc — el criterio real, tal como se publica.
+  //   2. `price / priorMin` asc (SIN redondear) — el desempate elegido: es la versión de precisión
+  //      completa de la misma pregunta que hace `dropPct`, así que una baja apenas mayor (que redondeó
+  //      igual) sigue ganando en vez de decidirse por casualidad. Se descartó "baja absoluta"
+  //      (`priorMin - price`) porque compara ofertas de escalas de precio distintas sin que eso
+  //      signifique nada (un colchón y una heladera no comparten unidad de "cuánto bajó").
+  //   3. `listingId` asc — el desempate final, determinista, para el puñado de casos con precio Y
+  //      priorMin idénticos (dos ofertas del mismo precio antes y ahora).
   const droppedCandidates = eligible
     .filter((analysis) => analysis.classes.includes("baja-real") && analysis.dropPct !== null)
-    .sort((a, b) => (b.dropPct as number) - (a.dropPct as number));
+    .slice()
+    .sort((a, b) => {
+      if (b.dropPct !== a.dropPct) return (b.dropPct as number) - (a.dropPct as number);
+      const ratioA = a.price / a.priorMin;
+      const ratioB = b.price / b.priorMin;
+      if (ratioA !== ratioB) return ratioA - ratioB;
+      return a.listingId.localeCompare(b.listingId);
+    });
 
-  const drops: PriceEventAnalysis[] = [];
+  const topDrops: PriceEventAnalysis[] = [];
   const dropsPerSeller = new Map<string, number>();
   for (const candidate of droppedCandidates) {
-    if (drops.length >= PRICE_EVENT_MAX_DROPS) break;
+    if (topDrops.length >= PRICE_EVENT_MAX_DROPS) break;
     const count = dropsPerSeller.get(candidate.sellerKey) ?? 0;
     if (count >= PRICE_EVENT_MAX_DROPS_PER_SELLER) continue;
-    drops.push(candidate);
+    topDrops.push(candidate);
     dropsPerSeller.set(candidate.sellerKey, count + 1);
   }
 
@@ -124,7 +163,9 @@ export function buildPriceEventSnapshot(
     analyzed: analyses.length,
     eligible: eligible.length,
     byVertical,
-    drops,
+    topDrops,
+    dropsCount,
+    inflatedCount,
     sellers,
   };
 }

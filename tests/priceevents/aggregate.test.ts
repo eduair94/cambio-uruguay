@@ -72,14 +72,97 @@ describe("buildPriceEventSnapshot", () => {
     });
   });
 
-  it("sorts drops by dropPct descending", () => {
-    const analyses = [
-      analysis({ sellerKey: "s1", classes: ["baja-real"], dropPct: 11 }),
-      analysis({ sellerKey: "s2", classes: ["baja-real"], dropPct: 40 }),
-      analysis({ sellerKey: "s3", classes: ["baja-real"], dropPct: 25 }),
-    ];
-    const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
-    expect(snapshot.drops.map((d) => d.dropPct)).toEqual([40, 25, 11]);
+  describe("dropsCount/inflatedCount: full-day totals, independent of the topDrops showcase cap", () => {
+    it("counts every baja-real/tachado-por-encima offer, not just the ones that make the showcase", () => {
+      const analyses = Array.from({ length: 250 }, (_, i) =>
+        analysis({ listingId: `ml:${i}`, sellerKey: `seller-${i}`, classes: ["baja-real"], dropPct: i })
+      );
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      expect(snapshot.topDrops).toHaveLength(200);
+      expect(snapshot.dropsCount).toBe(250);
+    });
+
+    it("sums inflatedCount across every seller, including sellers below the 5-listing sellers-table floor", () => {
+      const analyses = [
+        analysis({ listingId: "1", sellerKey: "tiny", listPrice: 10000, classes: ["tachado-por-encima"] }),
+        analysis({ listingId: "2", sellerKey: "tiny", listPrice: 10000, classes: ["tachado-por-encima"] }),
+        ...Array.from({ length: 5 }, (_, i) =>
+          analysis({ listingId: `many:${i}`, sellerKey: "many", listPrice: 10000, classes: ["tachado-por-encima"] })
+        ),
+      ];
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      // "tiny" never appears in `sellers` (only 2 listings, below the floor of 5), but its 2 inflated
+      // offers still count towards the day's total — the scalar is not derived from the sellers table.
+      expect(snapshot.sellers.map((s) => s.sellerKey)).toEqual(["many"]);
+      expect(snapshot.inflatedCount).toBe(7);
+    });
+
+    it("matches the sum of byVertical drops/inflated", () => {
+      const analyses = [
+        analysis({ vertical: "equipar", classes: ["baja-real"], dropPct: 12 }),
+        analysis({ vertical: "sillas", classes: ["baja-real", "tachado-por-encima"], dropPct: 20, listPrice: 15000 }),
+        analysis({ vertical: "sillas", classes: ["tachado-por-encima"], listPrice: 15000 }),
+      ];
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      const vertTotals = Object.values(snapshot.byVertical).reduce(
+        (acc, v) => ({ drops: acc.drops + v.drops, inflated: acc.inflated + v.inflated }),
+        { drops: 0, inflated: 0 }
+      );
+      expect(snapshot.dropsCount).toBe(vertTotals.drops);
+      expect(snapshot.inflatedCount).toBe(vertTotals.inflated);
+    });
+  });
+
+  describe("topDrops ordering: deterministic regardless of input/cursor order", () => {
+    it("sorts by dropPct descending", () => {
+      const analyses = [
+        analysis({ sellerKey: "s1", classes: ["baja-real"], dropPct: 11 }),
+        analysis({ sellerKey: "s2", classes: ["baja-real"], dropPct: 40 }),
+        analysis({ sellerKey: "s3", classes: ["baja-real"], dropPct: 25 }),
+      ];
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      expect(snapshot.topDrops.map((d) => d.dropPct)).toEqual([40, 25, 11]);
+    });
+
+    it("breaks a dropPct tie with the unrounded price/priorMin ratio (the bigger real drop wins)", () => {
+      // Both round to dropPct 10, but b's actual ratio (0.899) is a bigger drop than a's (0.9005).
+      const a = analysis({ listingId: "a", sellerKey: "s1", price: 9005, priorMin: 10000, classes: ["baja-real"], dropPct: 10 });
+      const b = analysis({ listingId: "b", sellerKey: "s2", price: 8990, priorMin: 10000, classes: ["baja-real"], dropPct: 10 });
+      const snapshot = buildPriceEventSnapshot([a, b], TODAY, null, null);
+      expect(snapshot.topDrops.map((d) => d.listingId)).toEqual(["b", "a"]);
+    });
+
+    it("breaks a full tie (same dropPct AND same ratio) with listingId ascending", () => {
+      const a = analysis({ listingId: "zeta", sellerKey: "s1", price: 9000, priorMin: 10000, classes: ["baja-real"], dropPct: 10 });
+      const b = analysis({ listingId: "alfa", sellerKey: "s2", price: 9000, priorMin: 10000, classes: ["baja-real"], dropPct: 10 });
+      const snapshot = buildPriceEventSnapshot([a, b], TODAY, null, null);
+      expect(snapshot.topDrops.map((d) => d.listingId)).toEqual(["alfa", "zeta"]);
+    });
+
+    it("produces the identical topDrops array for the same analyses given in a different input order", () => {
+      // A deliberately tie-heavy set: several pairs share the same rounded dropPct, some of those
+      // also share the same exact ratio, forcing all three sort keys into play.
+      const pool: PriceEventAnalysis[] = [
+        analysis({ listingId: "l01", sellerKey: "s1", price: 9000, priorMin: 10000, classes: ["baja-real"], dropPct: 10 }),
+        analysis({ listingId: "l02", sellerKey: "s2", price: 9000, priorMin: 10000, classes: ["baja-real"], dropPct: 10 }),
+        analysis({ listingId: "l03", sellerKey: "s3", price: 9005, priorMin: 10000, classes: ["baja-real"], dropPct: 10 }),
+        analysis({ listingId: "l04", sellerKey: "s4", price: 8990, priorMin: 10000, classes: ["baja-real"], dropPct: 10 }),
+        analysis({ listingId: "l05", sellerKey: "s5", price: 8900, priorMin: 10000, classes: ["baja-real"], dropPct: 11 }),
+        analysis({ listingId: "l06", sellerKey: "s6", price: 7500, priorMin: 10000, classes: ["baja-real"], dropPct: 25 }),
+        analysis({ listingId: "l07", sellerKey: "s7", price: 6000, priorMin: 10000, classes: ["baja-real"], dropPct: 40 }),
+        analysis({ listingId: "l08", sellerKey: "s8", price: 9100, priorMin: 10000, classes: ["baja-real"], dropPct: 9 }),
+      ];
+      const forward = buildPriceEventSnapshot(pool, TODAY, null, null);
+      const shuffled = buildPriceEventSnapshot([...pool].reverse(), TODAY, null, null);
+      const reordered = buildPriceEventSnapshot(
+        [pool[3]!, pool[0]!, pool[7]!, pool[6]!, pool[1]!, pool[5]!, pool[2]!, pool[4]!],
+        TODAY,
+        null,
+        null
+      );
+      expect(shuffled.topDrops.map((d) => d.listingId)).toEqual(forward.topDrops.map((d) => d.listingId));
+      expect(reordered.topDrops.map((d) => d.listingId)).toEqual(forward.topDrops.map((d) => d.listingId));
+    });
   });
 
   it("never lists more than 3 drops from the same seller", () => {
@@ -87,9 +170,9 @@ describe("buildPriceEventSnapshot", () => {
       analysis({ listingId: `ml:${i}`, sellerKey: "same-seller", classes: ["baja-real"], dropPct })
     );
     const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
-    expect(snapshot.drops).toHaveLength(3);
+    expect(snapshot.topDrops).toHaveLength(3);
     // Keeps this seller's BEST three (highest dropPct), not the first three encountered.
-    expect(snapshot.drops.map((d) => d.dropPct)).toEqual([50, 40, 30]);
+    expect(snapshot.topDrops.map((d) => d.dropPct)).toEqual([50, 40, 30]);
   });
 
   it("keeps a seller's cap independent of another seller's own drops", () => {
@@ -99,19 +182,19 @@ describe("buildPriceEventSnapshot", () => {
     ];
     const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
     // seller-a contributes at most 3 (its top three: 40, 30, 20), seller-b contributes its own 1.
-    expect(snapshot.drops.filter((d) => d.sellerKey === "seller-a")).toHaveLength(3);
-    expect(snapshot.drops.filter((d) => d.sellerKey === "seller-b")).toHaveLength(1);
+    expect(snapshot.topDrops.filter((d) => d.sellerKey === "seller-a")).toHaveLength(3);
+    expect(snapshot.topDrops.filter((d) => d.sellerKey === "seller-b")).toHaveLength(1);
   });
 
-  it("caps the drops list at 200 overall", () => {
+  it("caps the topDrops showcase at 200 overall", () => {
     const analyses = Array.from({ length: 250 }, (_, i) =>
       analysis({ listingId: `ml:${i}`, sellerKey: `seller-${i}`, classes: ["baja-real"], dropPct: i })
     );
     const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
-    expect(snapshot.drops).toHaveLength(200);
+    expect(snapshot.topDrops).toHaveLength(200);
     // The 200 kept are the biggest drops (249 down to 50), the smallest 50 are cut.
-    expect(snapshot.drops[0]!.dropPct).toBe(249);
-    expect(snapshot.drops[snapshot.drops.length - 1]!.dropPct).toBe(50);
+    expect(snapshot.topDrops[0]!.dropPct).toBe(249);
+    expect(snapshot.topDrops[snapshot.topDrops.length - 1]!.dropPct).toBe(50);
   });
 
   it("excludes sellers with fewer than 5 offers carrying a visible list price", () => {
@@ -159,12 +242,14 @@ describe("buildPriceEventSnapshot", () => {
     expect(snapshot.sellers.map((s) => s.sellerName)).toEqual(["Alfa", "Medio", "Zeta"]);
   });
 
-  it("returns empty drops/sellers/byVertical for an empty day, without throwing", () => {
+  it("returns empty topDrops/sellers/byVertical and zero totals for an empty day, without throwing", () => {
     const snapshot = buildPriceEventSnapshot([], TODAY, null, null);
-    expect(snapshot.drops).toEqual([]);
+    expect(snapshot.topDrops).toEqual([]);
     expect(snapshot.sellers).toEqual([]);
     expect(snapshot.byVertical).toEqual({});
     expect(snapshot.analyzed).toBe(0);
     expect(snapshot.eligible).toBe(0);
+    expect(snapshot.dropsCount).toBe(0);
+    expect(snapshot.inflatedCount).toBe(0);
   });
 });

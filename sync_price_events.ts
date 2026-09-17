@@ -35,7 +35,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const result = await runPriceEvents({ today, dryRun });
+  // El horario de evento poda `day:` vencidos también, no lo diario: `--event-only` puede correr
+  // hasta 24 veces en un día de evento, y la corrida diaria ya barrió lo vencido esa mañana.
+  const result = await runPriceEvents({ today, dryRun, prune: !eventOnly });
 
   console.log(
     `[price-events] ${result.today} evento=${result.event?.key ?? "ninguno"} ` +
@@ -57,7 +59,11 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  console.log(`[price-events] publicado; ${result.pruned} instantáneas de más de 400 días borradas`);
+  console.log(
+    eventOnly
+      ? "[price-events] publicado (horario de evento; la poda de `day:` vencidos queda para la corrida diaria)"
+      : `[price-events] publicado; ${result.pruned} instantáneas de más de 400 días borradas`
+  );
   process.exit(0);
 }
 

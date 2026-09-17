@@ -57,7 +57,13 @@ export interface PriceEventSnapshotDoc {
   analyzed: number
   eligible: number
   byVertical: Record<string, PriceEventVerticalStatsDoc>
-  drops: PriceEventAnalysisDoc[]
+  /** The showcase: up to 200 real drops, max 3 per seller — NOT the day's total. Read `dropsCount`
+   * below for the headline/30-day series; `topDrops.length` flattens at 200. */
+  topDrops: PriceEventAnalysisDoc[]
+  /** Full-day total of `baja-real` offers, uncapped. */
+  dropsCount: number
+  /** Full-day total of `tachado-por-encima` offers, uncapped. */
+  inflatedCount: number
   sellers: PriceEventSellerStatDoc[]
 }
 
@@ -71,7 +77,9 @@ const PriceEventSnapshotSchema = new Schema(
     analyzed: { type: Number, default: 0 },
     eligible: { type: Number, default: 0 },
     byVertical: { type: Schema.Types.Mixed, default: {} },
-    drops: { type: [Schema.Types.Mixed], default: [] },
+    topDrops: { type: [Schema.Types.Mixed], default: [] },
+    dropsCount: { type: Number, default: 0 },
+    inflatedCount: { type: Number, default: 0 },
     sellers: { type: [Schema.Types.Mixed], default: [] },
   },
   { timestamps: true }

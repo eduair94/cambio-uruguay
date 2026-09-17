@@ -62,7 +62,7 @@ describe("runPriceEvents — dry run never writes", () => {
     expect(result.written).toBe(false);
     expect(result.snapshot.analyzed).toBe(1);
     expect(result.snapshot.eligible).toBe(1);
-    expect(result.snapshot.drops).toHaveLength(1);
+    expect(result.snapshot.topDrops).toHaveLength(1);
     expect(fake.saveSnapshot).not.toHaveBeenCalled();
     expect(fake.pruneOldDaySnapshots).not.toHaveBeenCalled();
   });
@@ -108,6 +108,35 @@ describe("runPriceEvents — real run: writing and the thin-run guard", () => {
     expect(result.thin).toBe(false);
     expect(result.written).toBe(true);
     expect(fake.saveSnapshot).toHaveBeenCalledTimes(1);
+    expect(fake.pruneOldDaySnapshots).toHaveBeenCalledWith(TODAY, 400);
+  });
+
+  it("skips pruneOldDaySnapshots when prune:false (the --event-only hourly job) but still writes", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue(null);
+    fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.offersSeenTodayByVertical.mockImplementation(() => []);
+    fake.saveSnapshot.mockResolvedValue(undefined);
+
+    const result = await runPriceEvents({ today: TODAY, prune: false });
+
+    expect(result.written).toBe(true);
+    expect(result.pruned).toBe(0);
+    expect(fake.saveSnapshot).toHaveBeenCalledTimes(1);
+    expect(fake.pruneOldDaySnapshots).not.toHaveBeenCalled();
+  });
+
+  it("defaults to pruning when the option is omitted (the plain daily job)", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue(null);
+    fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.offersSeenTodayByVertical.mockImplementation(() => []);
+    fake.saveSnapshot.mockResolvedValue(undefined);
+    fake.pruneOldDaySnapshots.mockResolvedValue(3);
+
+    const result = await runPriceEvents({ today: TODAY });
+
+    expect(result.pruned).toBe(3);
     expect(fake.pruneOldDaySnapshots).toHaveBeenCalledWith(TODAY, 400);
   });
 

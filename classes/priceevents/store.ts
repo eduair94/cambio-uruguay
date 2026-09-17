@@ -12,9 +12,13 @@ import type { PricewatchOfferLike } from "./types";
 const OFFER_FIELDS = "listingId vertical category productKey sellerKey sellerName title url currency firstSeen history";
 
 /** Toda vertical que hoy escribe en `pricewatchoffers` (equipar, sillas, la que se sume después) —
- * leído de los datos mismos, así que una vertical nueva no necesita tocar este archivo. */
+ * leído de los datos mismos, así que una vertical nueva no necesita tocar este archivo. Ordenado:
+ * Mongo no promete ningún orden particular para `distinct()`, y sin ordenar acá el orden en que
+ * `refresh.ts` recorre las verticales (y por lo tanto en que sus ofertas entran a `analyses`) podría
+ * cambiar de una corrida a la otra — la misma razón por la que `aggregate.ts` desempata su propio
+ * orden en vez de confiar en el orden de llegada. */
 export async function loadVerticals(): Promise<string[]> {
-  return PricewatchOfferModel.distinct("vertical");
+  return (await PricewatchOfferModel.distinct("vertical")).sort();
 }
 
 /**
@@ -57,6 +61,10 @@ export async function loadCurrentEligible(): Promise<number | null> {
  * `bulkWrite` tipado rechaza un `$set` de documento completo: sus overloads exigen rutas con punto).
  * `current` es una copia con `key` reemplazado, no una referencia al mismo objeto: cada documento de
  * Mongo necesita su propio `key`.
+ *
+ * Las dos escrituras NO son atómicas entre sí (sin transacción multi-documento) — mismo trade-off ya
+ * aceptado en `classes/chairs/store.ts` para su propio par catálogo/meta; si el proceso muere entre
+ * medio, la próxima corrida vuelve a poner ambas de acuerdo.
  */
 export async function saveSnapshot(snapshot: PriceEventSnapshot): Promise<void> {
   await Promise.all([

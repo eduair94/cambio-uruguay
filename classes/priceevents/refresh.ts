@@ -32,6 +32,11 @@ export interface PriceEventRunOptions {
   today?: string;
   /** Nunca escribe ni poda; sólo lee y agrega, para inspeccionar la corrida contra datos reales. */
   dryRun?: boolean;
+  /** Poda las filas `day:` de más de `PRICE_EVENT_SNAPSHOT_RETENTION_DAYS`. Default `true` (la
+   * corrida diaria). El horario de evento (`--event-only` en `sync_price_events.ts`) puede correr
+   * hasta 24 veces en un día de evento activo — hacer que cada una vuelva a mirar y borrar filas
+   * vencidas no suma nada sobre la corrida diaria que ya lo hizo, así que ese job pasa `prune: false`. */
+  prune?: boolean;
 }
 
 export interface PriceEventRunResult {
@@ -46,7 +51,8 @@ export interface PriceEventRunResult {
   thin: boolean;
   /** Se guardó `current`/`day:<today>` de verdad — nunca en `dryRun`, nunca si `thin`. */
   written: boolean;
-  /** Filas `day:` borradas por vencidas — `0` cuando no se escribió (dry-run o corrida flaca). */
+  /** Filas `day:` borradas por vencidas — `0` cuando no se escribió (dry-run o corrida flaca) o
+   * cuando `options.prune` fue `false` (el horario de evento). */
   pruned: number;
 }
 
@@ -59,6 +65,7 @@ export interface PriceEventRunResult {
 export async function runPriceEvents(options: PriceEventRunOptions = {}): Promise<PriceEventRunResult> {
   const today = options.today ?? new Date().toISOString().slice(0, 10);
   const dryRun = options.dryRun ?? false;
+  const prune = options.prune ?? true;
   const event = activeEvent(today);
 
   const [verticals, trackingSince, currentEligible] = await Promise.all([
@@ -86,7 +93,7 @@ export async function runPriceEvents(options: PriceEventRunOptions = {}): Promis
   let pruned = 0;
   if (!dryRun && !thin) {
     await saveSnapshot(snapshot);
-    pruned = await pruneOldDaySnapshots(today, PRICE_EVENT_SNAPSHOT_RETENTION_DAYS);
+    if (prune) pruned = await pruneOldDaySnapshots(today, PRICE_EVENT_SNAPSHOT_RETENTION_DAYS);
     written = true;
   }
 
