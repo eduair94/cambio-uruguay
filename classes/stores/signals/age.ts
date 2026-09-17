@@ -1,8 +1,21 @@
 // Signal 2/2 for /tiendas-online-uruguay: how old a store's domain is, read once a week by the sync
 // job (Task 6) and ONLY for kind === "tienda-uy" (that filter is the caller's job, not this one's —
 // querying crt.sh for mercadolibre.com.uy or amazon.com would return noise about a domain that
-// isn't the seller). crt.sh's earliest TLS certificate is the primary source; the Wayback Machine's
-// first capture is the fallback, used only when crt.sh could not answer or genuinely has nothing.
+// isn't the seller).
+//
+// BOTH sources are queried every time and the EARLIER date wins (fix round F1, item 1): crt.sh's
+// earliest TLS certificate can postdate a store's real online presence by years when a site ran on
+// plain HTTP for a while, switched hosting/CA (a new cert chain, an old one dropped from the CT
+// logs), or simply took time to bother with HTTPS at all — the Wayback Machine's first crawl is not
+// tied to any of that, so treating crt.sh as "primary" and only falling back to Wayback when crt.sh
+// had nothing meant an established store's real first capture was silently thrown away whenever
+// crt.sh happened to answer with SOME (later) date. Live-checked 2026-09-17 for
+// tiendainglesa.com.uy — one of Uruguay's oldest supermarket chains — crt.sh's earliest cert is
+// 2019-09-30 (137 certificates on file, oldest `not_before`); the Wayback CDX call that same run
+// answered its "Internet Archive: Temporarily Offline" HTML page instead of JSON (see item 8 below),
+// which is itself live proof of the failure mode `attemptWayback` now has to tell apart from "no
+// capture at all". `source` records which of the two produced the winning date, published in the
+// "Fuente:" line.
 import { httpText } from "../net";
 
 export interface AgeSignal {
@@ -76,25 +89,45 @@ async function attemptWayback(domain: string): Promise<Outcome> {
   try {
     parsed = JSON.parse(res.body);
   } catch {
-    // The "Temporarily Offline" HTML page: hand the raw text to the parser, which safely reads it
-    // as no data (it isn't an array) instead of this throwing.
-    parsed = res.body;
+    // Item 8: a 200 whose body isn't the CDX JSON shape at all — the "Internet Archive: Temporarily
+    // Offline" HTML page is the observed case (live-checked 2026-09-17, see the module header) — is
+    // Wayback FAILING to answer, not Wayback answering "no capture on file". Treating it as `empty`
+    // would erase a previously stored date (`null` clears; only `undefined` keeps it), publishing a
+    // false "no data" for a domain whose age was already known.
+    return { kind: "failed" };
   }
   const since = waybackFirstCapture(parsed);
   return since ? { kind: "date", since } : { kind: "empty" };
 }
 
 /**
- * `undefined` when neither source could be reached (network/status); `null` when both were queried
- * successfully and neither has a date; otherwise the earliest date found, preferring crt.sh.
+ * Item 1: crt.sh and Wayback are queried every time (never one short-circuiting the other), and the
+ * EARLIER date wins — a date from either source is real, dated evidence, so having one is enough to
+ * publish even when the other source failed to answer at all; a tie prefers crt.sh, a hard
+ * certificate-issuance event rather than a crawl that merely happened to visit that day.
+ *
+ * `undefined` only when NEITHER source produced a date and at least one of them could not be
+ * reached at all (network/status/unparseable-body failure) — a failure can't be told apart from "the
+ * failed source might have had an even earlier date", so the previous value is kept rather than
+ * asserting there is nothing. `null` only when both sources were queried successfully and neither
+ * has anything on file.
  */
 export async function fetchAge(domain: string): Promise<AgeSignal | null | undefined> {
   const checkedAt = new Date().toISOString();
-  const crt = await attemptCrt(domain);
-  if (crt.kind === "date") return { since: crt.since, source: "crt.sh", checkedAt };
+  const [crt, wayback] = await Promise.all([attemptCrt(domain), attemptWayback(domain)]);
 
-  const wayback = await attemptWayback(domain);
-  if (wayback.kind === "date") return { since: wayback.since, source: "wayback", checkedAt };
+  const dated: Array<{ since: string; source: AgeSignal["source"] }> = [];
+  if (crt.kind === "date") dated.push({ since: crt.since, source: "crt.sh" });
+  if (wayback.kind === "date") dated.push({ since: wayback.since, source: "wayback" });
+
+  if (dated.length) {
+    dated.sort((a, b) => {
+      if (a.since !== b.since) return a.since < b.since ? -1 : 1;
+      return a.source === "crt.sh" ? -1 : 1;
+    });
+    const winner = dated[0]!;
+    return { since: winner.since, source: winner.source, checkedAt };
+  }
 
   if (crt.kind === "failed" || wayback.kind === "failed") return undefined;
   return null;
