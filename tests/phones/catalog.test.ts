@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   buildPhoneCatalog,
   PHONE_MIN_BAND_SAMPLE,
+  PHONE_NEW_CEILING_UYU,
   PHONE_NEW_FLOOR_UYU,
+  PHONE_USED_CEILING_UYU,
   PHONE_USED_FLOOR_UYU,
   type PhoneModel,
 } from "../../classes/phones/catalog";
@@ -203,9 +205,11 @@ describe("buildPhoneCatalog", () => {
 
   it("image: de la oferta de precio mediano entre las que pasaron el screening, nunca de una sospechosa", () => {
     const listings = [
-      listing({ title: "Celular Xiaomi Redmi Note 15 256gb Negro Barato", price: 10_000, image: "cheap.jpg" }),
-      listing({ title: "Celular Xiaomi Redmi Note 15 256gb Negro Medio", price: 20_000, image: "mid.jpg" }),
-      listing({ title: "Celular Xiaomi Redmi Note 15 256gb Negro Caro", price: 90_000, image: "expensive.jpg" }),
+      // Close enough together that none trips the leave-one-out ratio guard (fix round 1) — this
+      // test is about the median PICK among survivors, not about the guard itself.
+      listing({ title: "Celular Xiaomi Redmi Note 15 256gb Negro Barato", price: 20_000, image: "cheap.jpg" }),
+      listing({ title: "Celular Xiaomi Redmi Note 15 256gb Negro Medio", price: 25_000, image: "mid.jpg" }),
+      listing({ title: "Celular Xiaomi Redmi Note 15 256gb Negro Caro", price: 30_000, image: "expensive.jpg" }),
       // Below PHONE_NEW_FLOOR_UYU: dropped before the image pick ever sees it, however striking its
       // own (fake) image would be.
       listing({ title: "Celular Xiaomi Redmi Note 15 256gb Negro Sospechoso", price: 500, image: "suspect.jpg" }),
@@ -213,6 +217,33 @@ describe("buildPhoneCatalog", () => {
     const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "xiaomi-redmi-note-15-256gb")!;
     expect(model.image).toBe("mid.jpg");
     expect(model.suspectDropped).toBe(1);
+  });
+
+  it("image: prefiere ofertas NUEVAS sobre otras condiciones; sólo recurre a otra condición si no sobrevivió ninguna nueva", () => {
+    const withNew = [
+      listing({ title: "Celular Honor X5c Plus 256gb Negro Nuevo", price: 20_000, image: "new.jpg" }),
+      listing({
+        title: "Celular Honor X5c Plus 256gb Negro Usado",
+        price: 10_000,
+        condition: "used",
+        image: "used.jpg",
+      }),
+    ];
+    const modelWithNew = byKey(buildPhoneCatalog({ listings: withNew, usdUyu: 40 }), "honor-x5c-plus-256gb")!;
+    // A single new survivor beats a single used one, even though the used one is a valid image too.
+    expect(modelWithNew.image).toBe("new.jpg");
+
+    const usedOnly = [
+      listing({
+        title: "Celular Honor X5c Plus 256gb Negro Usado",
+        price: 10_000,
+        condition: "used",
+        image: "used.jpg",
+      }),
+    ];
+    const modelUsedOnly = byKey(buildPhoneCatalog({ listings: usedOnly, usdUyu: 40 }), "honor-x5c-plus-256gb")!;
+    // No new offer survived at all (there wasn't one) -> falls back to the used pool.
+    expect(modelUsedOnly.image).toBe("used.jpg");
   });
 
   it("un aviso cuyo título no identifica almacenamiento no crea modelo", () => {
@@ -328,5 +359,174 @@ describe("buildPhoneCatalog", () => {
     const forward = buildPhoneCatalog({ listings, usdUyu: 40 });
     const shuffled = buildPhoneCatalog({ listings: [...listings].reverse(), usdUyu: 40 });
     expect(shuffled).toEqual(forward);
+  });
+
+  it("las bandas son pesos enteros: el percentil interpolado se redondea, nunca se publica una fracción de peso", () => {
+    const listings = [55_000, 55_001, 60_000].map((price, i) =>
+      listing({ title: `Celular Samsung Galaxy A36 256gb Negro Vendedor ${i}`, price })
+    );
+    const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "samsung-galaxy-a36-256gb")!;
+    const band = model.bands.new!;
+    expect(band.n).toBe(3);
+    // percentile() interpolates: p25 = 55000.5, p75 = 57500.5 — both land on a ".5" on purpose, so
+    // this test actually exercises Math.round and not a coincidentally-already-integer value.
+    expect(band.min).toBe(55_000);
+    expect(band.p25).toBe(55_001);
+    expect(band.median).toBe(55_001);
+    expect(band.p75).toBe(57_501);
+    for (const value of [band.min, band.p25, band.median, band.p75]) expect(Number.isInteger(value)).toBe(true);
+  });
+
+  describe("techo absoluto (fix round 1, ruling del controlador)", () => {
+    it("una oferta NUEVA por encima de PHONE_NEW_CEILING_UYU es sospechosa aunque sea la única del modelo", () => {
+      const models = buildPhoneCatalog({
+        usdUyu: 40,
+        listings: [listing({ title: "Celular Motorola Moto G06 256gb Azul", price: PHONE_NEW_CEILING_UYU + 1_000 })],
+      });
+      const model = byKey(models, "motorola-moto-g06-256gb")!;
+      expect(model).toBeDefined();
+      expect(model.offers).toHaveLength(0);
+      expect(model.bands.new).toBeUndefined();
+      expect(model.suspectDropped).toBe(1);
+    });
+
+    it("el caso de moneda mal etiquetada (USD ~2.200 leído como UYU 2.200.000) queda sospechoso por el techo", () => {
+      const models = buildPhoneCatalog({
+        usdUyu: 40,
+        listings: [
+          listing({ title: "Celular Apple iPhone 17 Pro 256gb Azul Profundo", price: 2_200_000, currency: "UYU" }),
+        ],
+      });
+      const model = byKey(models, "apple-iphone-17-pro-256gb")!;
+      expect(model.offers).toHaveLength(0);
+      expect(model.suspectDropped).toBe(1);
+    });
+
+    it("usado/reacondicionado/caja abierta tienen su PROPIO techo, más bajo que el de nuevo", () => {
+      expect(PHONE_USED_CEILING_UYU).toBeLessThan(PHONE_NEW_CEILING_UYU);
+      const price = PHONE_USED_CEILING_UYU + 1_000; // above the used ceiling, below the new one
+      expect(price).toBeLessThan(PHONE_NEW_CEILING_UYU);
+      const listings = [
+        listing({ title: "Celular Apple iPhone 16 Pro 256gb Negro", price, condition: "new", sellerKey: "store:a" }),
+        listing({
+          title: "Celular Apple iPhone 16 Pro 256gb Negro",
+          price,
+          condition: "refurbished",
+          sellerKey: "store:b",
+        }),
+      ];
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "apple-iphone-16-pro-256gb")!;
+      // The NEW one clears its (higher) ceiling; the REFURBISHED one, at the exact same price,
+      // fails its own (lower) ceiling — the two ceilings are genuinely different values.
+      expect(model.offers).toHaveLength(1);
+      expect(model.offers[0]!.condition).toBe("new");
+      expect(model.suspectDropped).toBe(1);
+    });
+  });
+
+  describe("mediana de las demás ofertas (leave-one-out, fix round 1, ruling del controlador)", () => {
+    it("[30000, 60000, 61000] nueva: 30000 es sospechosa (49,5% de la mediana de las otras dos), las otras dos sobreviven", () => {
+      const listings = [30_000, 60_000, 61_000].map((price, i) =>
+        listing({ title: `Celular Samsung Galaxy A56 256gb Negro Vendedor ${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "samsung-galaxy-a56-256gb")!;
+      expect(model.offers.map((o) => o.priceUyu).sort((a, b) => a - b)).toEqual([60_000, 61_000]);
+      expect(model.suspectDropped).toBe(1);
+      // The shared percentile band ALONE does not catch this (it judges all three "ok"): this case
+      // exists specifically to prove the leave-one-out guard adds real coverage on top of it.
+      expect(model.bands.new).toBeUndefined(); // only 2 survivors left, below PHONE_MIN_BAND_SAMPLE
+    });
+
+    it("[55000, 58000, 120000] nueva: las tres sobreviven — 212% de la mediana de las otras dos está permitido a propósito", () => {
+      const listings = [55_000, 58_000, 120_000].map((price, i) =>
+        listing({ title: `Celular Samsung Galaxy S26 Ultra 256gb Negro Vendedor ${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "samsung-galaxy-s26-ultra-256gb")!;
+      // 120000 / mediana(55000, 58000) = 120000 / 56500 ≈ 212%, por debajo del 250% de tope para
+      // "new" — una variante más cara (Ultra vs. base, o más almacenamiento) mezclada en el mismo
+      // grupo no debe gatillar el guardarraíl.
+      expect(model.offers).toHaveLength(3);
+      expect(model.suspectDropped).toBe(0);
+    });
+
+    it("[5500, 56000, 57000] nueva: 5500 queda sospechosa (la banda por percentiles o el leave-one-out, cualquiera de las dos alcanza)", () => {
+      const listings = [5_500, 56_000, 57_000].map((price, i) =>
+        listing({ title: `Celular Xiaomi Poco X8 Pro Max 256gb Negro Vendedor ${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "xiaomi-poco-x8-pro-max-256gb")!;
+      expect(model.offers.map((o) => o.priceUyu)).not.toContain(5_500);
+      expect(model.suspectDropped).toBe(1);
+    });
+
+    it("[30000, 31000, 60000] nueva: las tres sobreviven (196,7% de la mediana de las otras dos)", () => {
+      const listings = [30_000, 31_000, 60_000].map((price, i) =>
+        listing({ title: `Celular Honor Magic 8 Lite 256gb Negro Vendedor ${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "honor-magic-8-lite-256gb")!;
+      expect(model.offers).toHaveLength(3);
+      expect(model.suspectDropped).toBe(0);
+    });
+
+    it("no-nuevo tolera un rango más ancho que nuevo: el mismo 278% sobrevive en reacondicionado y no en nuevo", () => {
+      // Four offers, not three: with only two "others" a leave-one-out median is a plain average of
+      // two numbers, so a single high outlier drags even the "normal" pair's OWN ratio down with it
+      // (documented trade-off #2 on leaveOneOutOk). With three "others" the median is the ODD ONE
+      // OUT among them, robust to the single outlier — isolating exactly the 57000/20500 ≈ 278% case
+      // this test is about, without also flagging the three normal prices as a side effect.
+      const prices = [20_000, 20_500, 21_000, 57_000]; // 57000 / mediana(20000, 20500, 21000) = 57000/20500 ≈ 278%
+      const asCondition = (condition: "new" | "refurbished") =>
+        prices.map((price, i) =>
+          listing({
+            title: `Celular Xiaomi Redmi 15c 256gb Negro Vendedor ${condition}-${i}`,
+            price,
+            condition,
+          })
+        );
+
+      const newModel = byKey(buildPhoneCatalog({ listings: asCondition("new"), usdUyu: 40 }), "xiaomi-redmi-15c-256gb")!;
+      // 278% > 250% (new's own ceiling) -> the 57000 offer is suspect, the other three survive.
+      expect(newModel.offers.map((o) => o.priceUyu).sort((a, b) => a - b)).toEqual([20_000, 20_500, 21_000]);
+      expect(newModel.suspectDropped).toBe(1);
+
+      const refurbModel = byKey(
+        buildPhoneCatalog({ listings: asCondition("refurbished"), usdUyu: 40 }),
+        "xiaomi-redmi-15c-256gb"
+      )!;
+      // Same 278%, but refurbished's own ceiling is 300% -> all four survive.
+      expect(refurbModel.offers).toHaveLength(4);
+      expect(refurbModel.suspectDropped).toBe(0);
+    });
+
+    it("con menos de PHONE_MIN_BAND_SAMPLE ofertas, el leave-one-out no corre (ya cubierto por el piso/techo absoluto)", () => {
+      const listings = [
+        listing({ title: "Celular Motorola Edge 70 256gb Negro Uno", price: 30_000, sellerKey: "store:a" }),
+        listing({ title: "Celular Motorola Edge 70 256gb Negro Dos", price: 90_000, sellerKey: "store:b" }),
+      ];
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "motorola-edge-70-256gb")!;
+      expect(model.offers).toHaveLength(2);
+      expect(model.suspectDropped).toBe(0);
+    });
+  });
+
+  it("esimOnlySeen se calcula sobre las ofertas PUBLICADAS (recortadas a 30), no sobre todas las que sobrevivieron el screening", () => {
+    const cheap = Array.from({ length: 31 }, (_, i) =>
+      listing({
+        title: `Celular Apple iPhone 16e 128gb Negro Vendedor ${i}`,
+        price: 10_000 + i,
+        sellerKey: `store:cheap-${i}`,
+      })
+    );
+    // The priciest of the 32, tight enough to the rest to survive every screen (ratio ~1.003 of the
+    // group's leave-one-out median) but still the single most expensive -> sorts last and falls
+    // past the 30-offer cap.
+    const esimOffer = listing({
+      title: "Apple iPhone 16e Esim 128gb Negro Vendedor Esim",
+      price: 10_031,
+      sellerKey: "store:esim",
+    });
+    const model = byKey(buildPhoneCatalog({ listings: [...cheap, esimOffer], usdUyu: 40 }), "apple-iphone-16e-128gb")!;
+    expect(model.offers).toHaveLength(30);
+    expect(model.offers.some((o) => o.esimOnly)).toBe(false);
+    expect(model.esimOnlySeen).toBe(false);
   });
 });
