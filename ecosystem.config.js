@@ -249,6 +249,28 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Used-car directory + opportunities (/autos-usados-uruguay): brand -> model sweep of
+      // Mercado Libre through the :9656 bridge, after the rentals window that also uses it.
+      name: "currency-autos",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "scripts/run-autos.sh",
+      interpreter: "bash",
+      cron_restart: "43 7 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Hourly: only adverts published today, then re-analyse and republish. Never retires.
+      name: "currency-autos-hourly",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "scripts/run-autos.sh",
+      interpreter: "bash",
+      args: "--fast",
+      cron_restart: "29 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Weekly Uruguay OSM extract; services remain a local indexed snapshot between runs.
       name: "currency-property-services",
       autorestart: false,
