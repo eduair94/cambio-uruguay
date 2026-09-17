@@ -109,8 +109,12 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
                     offer.seller
                   }}</a>
                   <NuxtLink
-                    v-if="storeKeyFor(offer.seller)"
-                    :to="localePath(`/tiendas-online-uruguay/${storeKeyFor(offer.seller)}`)"
+                    v-if="storeKeyFor(offer.seller, offer.source)"
+                    :to="
+                      localePath(
+                        `/tiendas-online-uruguay/${storeKeyFor(offer.seller, offer.source)}`
+                      )
+                    "
                     :aria-label="`Ficha de ${offer.seller}`"
                     class="cat-link seller-ficha"
                   >
@@ -152,8 +156,12 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
               }}</a>
               <span class="offer-meta"
                 ><NuxtLink
-                  v-if="storeKeyFor(row.offer.seller)"
-                  :to="localePath(`/tiendas-online-uruguay/${storeKeyFor(row.offer.seller)}`)"
+                  v-if="storeKeyFor(row.offer.seller, row.offer.source)"
+                  :to="
+                    localePath(
+                      `/tiendas-online-uruguay/${storeKeyFor(row.offer.seller, row.offer.source)}`
+                    )
+                  "
                   class="cat-link"
                   >{{ row.offer.seller }}</NuxtLink
                 ><template v-else>{{ row.offer.seller }}</template> · {{ row.variantLabel }} ·
@@ -177,8 +185,12 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
               }}</a>
               <span class="offer-meta"
                 ><NuxtLink
-                  v-if="storeKeyFor(row.offer.seller)"
-                  :to="localePath(`/tiendas-online-uruguay/${storeKeyFor(row.offer.seller)}`)"
+                  v-if="storeKeyFor(row.offer.seller, row.offer.source)"
+                  :to="
+                    localePath(
+                      `/tiendas-online-uruguay/${storeKeyFor(row.offer.seller, row.offer.source)}`
+                    )
+                  "
                   class="cat-link"
                   >{{ row.offer.seller }}</NuxtLink
                 ><template v-else>{{ row.offer.seller }}</template> · {{ row.variantLabel }} ·
@@ -328,7 +340,11 @@ const page = computed(() => equiparCategoryPage(slug.value) ?? found)
 // tienda tiene ficha propia — la ruta 404s de verdad si no. `storeProfileKeys` es la lista compartida
 // con /sillas-escritorio-uruguay/[slug].vue (useStoreProfileKeys.ts).
 const storeProfileKeys = useStoreProfileKeys()
-const storeKeyFor = (seller: string): string | null => {
+// `source` is optional so every existing call site keeps compiling untouched; a facebook-sourced
+// offer never links, even when the seller name happens to resolve to a curated store — a private
+// Marketplace seller's display name is not a company identity (fix round F1, item 4).
+const storeKeyFor = (seller: string, source?: string): string | null => {
+  if (source === 'facebook') return null
   const key = storeSlugForSeller(seller)
   return key && storeProfileKeys.value.includes(key) ? key : null
 }

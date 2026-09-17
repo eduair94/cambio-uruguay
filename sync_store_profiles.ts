@@ -68,7 +68,7 @@ import { STORES, STORE_BY_KEY } from "./classes/stores/registry";
 import { fetchAge } from "./classes/stores/signals/age";
 import { loadCatalogPresence, type CatalogSignal } from "./classes/stores/signals/catalog";
 import { fetchGoogle } from "./classes/stores/signals/google";
-import { fetchRedditIncrement, type RedditMention } from "./classes/stores/signals/reddit";
+import { fetchRedditIncrement, verifyLiveThreads, type RedditMention } from "./classes/stores/signals/reddit";
 import { fetchSite } from "./classes/stores/signals/site";
 import { classifyMentions, freshMentionsToClassify } from "./classes/stores/signals/tone";
 import { fetchTrustpilot } from "./classes/stores/signals/trustpilot";
@@ -118,7 +118,11 @@ async function readStore(
   catalog: Map<string, CatalogSignal> | undefined,
   previous: StoreProfileDoc | null,
   redditBudget: { calls: number },
-  mode: StoreRunMode
+  mode: StoreRunMode,
+  /** Item 7: `--reddit-only`'s wall-clock cap, threaded all the way into `fetchRedditIncrement` so
+   * one slow store cannot itself run past it — `undefined` in `full` mode, which has no per-run
+   * minute cap. */
+  redditDeadlineAt?: number
 ): Promise<StoreRun> {
   const now = new Date();
   const fetched: FetchedSignals = {};
@@ -167,7 +171,13 @@ async function readStore(
       redditNoBudget = true;
       return undefined;
     }
-    const increment = await fetchRedditIncrement(entry, stored.cursor, Math.floor(now.getTime() / 1000), redditBudget);
+    const increment = await fetchRedditIncrement(
+      entry,
+      stored.cursor,
+      Math.floor(now.getTime() / 1000),
+      redditBudget,
+      redditDeadlineAt
+    );
     if (increment) {
       const storedIds = new Set(stored.mentions.map((mention) => mention.id));
       redditFetched = increment.mentions;
@@ -202,6 +212,15 @@ async function readStore(
     : null;
 
   const doc = buildProfile(entry, fetched, previous, now);
+
+  // Item 5: re-verify the up-to-5 published thread links against Reddit's own live API right before
+  // they are stored — see verifyLiveThreads's own header on why (Arctic Shift keeps what got
+  // deleted) and its fail-closed behaviour (Reddit unreachable -> no titles this run, counts kept).
+  if (doc.reddit && doc.reddit.threads.length) {
+    const liveThreads = await verifyLiveThreads(doc.reddit.threads);
+    doc.reddit = { ...doc.reddit, threads: liveThreads };
+  }
+
   const progressed = redditProgressed({ redditNew, previousCursor: stored.cursor, nextCursor: doc.redditCursor });
 
   return {
@@ -274,6 +293,9 @@ async function main(): Promise<void> {
   }
 
   const startedAt = Date.now();
+  // Item 7: the SAME wall-clock cap `--reddit-only` uses to stop BETWEEN stores, now also handed
+  // into fetchRedditIncrement so a single slow store's own retries/splits can't run past it either.
+  const redditDeadlineAt = mode === "reddit-only" ? startedAt + REDDIT_ONLY_MAX_MINUTES * 60_000 : undefined;
   const redditBudget = { calls: REDDIT_MAX_CALLS };
   console.log(
     `[tiendas] ${stores.length} tiendas, hasta ${REDDIT_MAX_CALLS} llamadas a Reddit` +
@@ -327,7 +349,7 @@ async function main(): Promise<void> {
       console.log(`[tiendas] --reddit-only: se cumplieron ${REDDIT_ONLY_MAX_MINUTES} minutos — se corta antes de la próxima tienda`);
       break;
     }
-    const run = await readStore(entry, catalog, previous.get(entry.key) ?? null, redditBudget, mode);
+    const run = await readStore(entry, catalog, previous.get(entry.key) ?? null, redditBudget, mode, redditDeadlineAt);
     runs.push(run);
 
     const unanswered = run.failed.map((name) => (name === "reddit" && run.redditNoBudget ? "reddit(sin presupuesto)" : name));

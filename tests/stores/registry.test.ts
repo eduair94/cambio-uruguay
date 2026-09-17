@@ -131,4 +131,51 @@ describe("redditMatch disambiguators", () => {
     expect(tata.redditMatch!.test(norm("TaTa tiene pedidos online"))).toBe(true);
     expect(tata.redditMatch!.test(norm("Mi tata me regaló un juguete"))).toBe(false);
   });
+
+  // Fix round F1, item 4: five terms the final review flagged as an everyday word/name/genre with
+  // no guard, plus one found sweeping the rest of the registry for the same categories.
+
+  it("dimm: matches the store, not the RAM module jargon", () => {
+    const dimm = STORE_BY_KEY.get("dimm")!;
+    expect(dimm.redditMatch!.test(norm("Compré en DIMM una notebook"))).toBe(true);
+    expect(dimm.redditMatch!.test(norm("Fui a DIMM a comprar una pc"))).toBe(true);
+    expect(dimm.redditMatch!.test(norm("Necesito un dimm de 16gb ddr4 para mi pc"))).toBe(false);
+  });
+
+  it("tech-house: matches the store, not the music genre", () => {
+    const techHouse = STORE_BY_KEY.get("tech-house")!;
+    expect(techHouse.redditMatch!.test(norm("Compré un cargador en Tech House ayer"))).toBe(true);
+    expect(techHouse.redditMatch!.test(norm("Tech House tiene buenos precios en notebooks"))).toBe(true);
+    expect(techHouse.redditMatch!.test(norm("Me gusta el tech house y el techno"))).toBe(false);
+  });
+
+  it("la-tentacion: matches the store, not the everyday phrase", () => {
+    const laTentacion = STORE_BY_KEY.get("la-tentacion")!;
+    expect(laTentacion.redditMatch!.test(norm("Vi ofertas en La Tentación"))).toBe(true);
+    expect(laTentacion.redditMatch!.test(norm("Fui a comprar a La Tentación una heladera"))).toBe(true);
+    expect(laTentacion.redditMatch!.test(norm("No pude resistir la tentación de comer torta"))).toBe(false);
+  });
+
+  it("carlos-gutierrez: matches the store, not the common person name", () => {
+    const carlosGutierrez = STORE_BY_KEY.get("carlos-gutierrez")!;
+    expect(carlosGutierrez.redditMatch!.test(norm("Compré la heladera en Carlos Gutiérrez"))).toBe(true);
+    expect(carlosGutierrez.redditMatch!.test(norm("Carlos Gutiérrez fue el ministro que dijo eso"))).toBe(false);
+  });
+
+  it("caribe-sur-store: matches the store, not the everyday geography phrase", () => {
+    const caribeSur = STORE_BY_KEY.get("caribe-sur-store")!;
+    expect(caribeSur.redditMatch!.test(norm("Compré un celular en Caribe Sur"))).toBe(true);
+    expect(caribeSur.redditMatch!.test(norm("Viaje al caribe sur"))).toBe(false);
+  });
+
+  it("mercado-libre: matches the marketplace, not the economic term for 'free market'", () => {
+    const mercadoLibre = STORE_BY_KEY.get("mercado-libre")!;
+    expect(mercadoLibre.redditMatch!.test(norm("Compré en mercadolibre ayer"))).toBe(true);
+    expect(mercadoLibre.redditMatch!.test(norm("Vendí mi bici en Mercado Libre"))).toBe(true);
+    expect(
+      mercadoLibre.redditMatch!.test(
+        norm("En un mercado libre los precios los pone la oferta y la demanda")
+      )
+    ).toBe(false);
+  });
 });

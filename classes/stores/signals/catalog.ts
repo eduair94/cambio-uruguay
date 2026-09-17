@@ -39,6 +39,11 @@ interface OfferLike {
   /** Chair offers carry it (classes/chairs/types.ts `ChairOffer.sellerKey`); equipar offers don't. */
   sellerKey?: string;
   url: string;
+  /** `"store" | "mercadolibre" | "facebook"` on both offer shapes. A Facebook Marketplace seller
+   * name is an arbitrary private-account display name, not a company identity — resolving it
+   * against the curated registry the same way a storefront/ML seller is resolved risks crediting a
+   * private seller's mention to a real store that merely shares a name (fix round F1, item 4). */
+  source?: string;
 }
 
 export interface EquiparLikeProduct {
@@ -136,6 +141,7 @@ function record(
   offer: OfferLike,
   vertical: { key: string; label: string; url: string }
 ): void {
+  if (offer.source === "facebook") return;
   const storeKey = storeKeyForSeller(offer.seller, offer.sellerKey);
   if (!storeKey || !offer.url) return;
   const store = ensureStore(byStore, storeKey);

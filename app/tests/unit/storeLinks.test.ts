@@ -74,10 +74,15 @@ describe('sillas-escritorio-uruguay/[slug].vue seller links', () => {
   })
 
   it('links the seller name to its ficha only when it resolves to a key', () => {
-    expect(sillasSource).toMatch(/<NuxtLink[^>]*v-if="storeKeyFor\(offer\.seller\)"/)
-    expect(sillasSource).toContain(
-      'localePath(`/tiendas-online-uruguay/${storeKeyFor(offer.seller)}`)'
+    expect(sillasSource).toMatch(/<NuxtLink[^>]*v-if="storeKeyFor\(offer\.seller, offer\.source\)"/)
+    // Whitespace-tolerant: prettier is free to wrap this call onto its own lines.
+    expect(sillasSource).toMatch(
+      /localePath\(\s*`\/tiendas-online-uruguay\/\$\{storeKeyFor\(offer\.seller, offer\.source\)\}`\s*\)/
     )
+  })
+
+  it('never links a facebook-sourced offer, even when the seller name resolves to a store (item 4)', () => {
+    expect(sillasSource).toContain("if (source === 'facebook') return null")
   })
 
   it('does not nest the store link inside the external listing anchor', () => {
@@ -99,13 +104,23 @@ describe('equipar-casa-uruguay/[categoria].vue seller links', () => {
 
   it('links the seller in the "los más baratos" lists to its ficha when it resolves', () => {
     const matches = [
-      ...equiparSource.matchAll(/<NuxtLink[^>]*v-if="storeKeyFor\(row\.offer\.seller\)"[^>]*>/g),
+      ...equiparSource.matchAll(
+        /<NuxtLink[^>]*v-if="storeKeyFor\(row\.offer\.seller, row\.offer\.source\)"[^>]*>/g
+      ),
     ]
     // Once for "Nuevos", once for "Usados".
     expect(matches.length).toBe(2)
-    expect(equiparSource).toContain(
-      'localePath(`/tiendas-online-uruguay/${storeKeyFor(row.offer.seller)}`)'
+    // Whitespace-tolerant: prettier is free to wrap this call onto its own lines.
+    expect(equiparSource).toMatch(
+      /localePath\(\s*`\/tiendas-online-uruguay\/\$\{storeKeyFor\(row\.offer\.seller, row\.offer\.source\)\}`\s*\)/
     )
+  })
+
+  it('never links a facebook-sourced offer, even when the seller name resolves to a store (item 4)', () => {
+    // "Usados" is where a Facebook Marketplace offer can actually appear (equiparCategoryPage.test.ts
+    // / classes/stores/signals/catalog.ts already keep FB out of catalogPresence and the modelo
+    // regime; this is the UI's own guard for the same risk).
+    expect(equiparSource).toContain("if (source === 'facebook') return null")
   })
 
   it('links the seller in the products table next to its external offer link, never inside it', () => {
@@ -119,8 +134,11 @@ describe('equipar-casa-uruguay/[categoria].vue seller links', () => {
     const storeLinkStart = li.indexOf('<NuxtLink')
     expect(externalAnchorEnd).toBeGreaterThan(-1)
     expect(storeLinkStart).toBeGreaterThan(externalAnchorEnd)
-    expect(li).toContain('v-if="storeKeyFor(offer.seller)"')
-    expect(li).toContain('localePath(`/tiendas-online-uruguay/${storeKeyFor(offer.seller)}`)')
+    expect(li).toContain('v-if="storeKeyFor(offer.seller, offer.source)"')
+    // Whitespace-tolerant: prettier is free to wrap this call onto its own lines.
+    expect(li).toMatch(
+      /localePath\(\s*`\/tiendas-online-uruguay\/\$\{storeKeyFor\(offer\.seller, offer\.source\)\}`\s*\)/
+    )
   })
 
   it('names the "(ficha)" link after its own store, not the same label for every row (a11y)', () => {

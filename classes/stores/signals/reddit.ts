@@ -36,6 +36,7 @@
 // real seconds — the same pattern classes/stores/signals/age.ts (`STORES_AGE_RETRY_MS`) uses.
 import type { StoreEntry } from "../types";
 import { storeNorm } from "../registry";
+import { fetchInfoLive } from "../../reddit";
 
 /** What is persisted per mention: no text, no author. */
 export interface StoredRedditMention {
@@ -431,7 +432,11 @@ async function fetchPage(run: FetchRun, url: string): Promise<PageResult> {
 
     let res: Response | undefined;
     try {
-      res = await fetch(url, { headers: { "User-Agent": UA } });
+      // Item 7: undici's own fetch has no default timeout (300s per its own docs), which meant a
+      // hung Arctic Shift request never counted against `MAX_ATTEMPTS`' own timing budget at all —
+      // it just sat there. 60s comfortably covers a real answer (attempts already retry on a slow
+      // 422 timeout response) while bounding how long ONE call can block the run.
+      res = await fetch(url, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(60_000) });
     } catch (fetchError) {
       res = undefined;
       detail = `red: ${(fetchError as Error)?.message || fetchError}`;
@@ -568,7 +573,15 @@ export async function fetchRedditIncrement(
   entry: StoreEntry,
   cursor: RedditCursor | null,
   nowUtc: number,
-  budget: { calls: number }
+  budget: { calls: number },
+  /** Wall-clock epoch ms (`Date.now()`), item 7: `--reddit-only`'s per-run minute cap
+   * (`STORES_REDDIT_MAX_MINUTES`) previously was only checked BETWEEN stores in
+   * sync_store_profiles.ts, so a single slow store — one that keeps timing out and splitting
+   * windows, each retry paying up to `MAX_ATTEMPTS` × (60s timeout + retry wait) — could run the
+   * whole mode well past its deadline before the caller ever got a chance to check it again.
+   * Checked before every query below; `undefined` means no deadline (the weekly `full` run, which
+   * has no per-run minute cap). */
+  deadlineAt?: number
 ): Promise<{ mentions: RedditMention[]; cursor: RedditCursor; complete: boolean } | undefined> {
   const backfilling = !cursor || !cursor.backfillDone;
   const backfillStartUtc = cursor ? cursor.backfillStartUtc : addMonthsUtc(nowUtc, -STORE_REDDIT_BACKFILL_MONTHS);
@@ -593,6 +606,14 @@ export async function fetchRedditIncrement(
   let complete = true;
   windows: for (const window of windows) {
     for (let i = 0; i < queries.length; i++) {
+      if (deadlineAt !== undefined && Date.now() >= deadlineAt) {
+        // The deadline is already past: stop before starting another query. Whatever call is
+        // already in flight (there is none here — this check runs BEFORE fetchRange) always
+        // finishes; this only stops the NEXT one.
+        doneUntil[window.kind] = window.afterUtc;
+        complete = false;
+        break windows;
+      }
       const { sub, term } = queries[i]!;
       const result = await fetchRange(run, window.kind, sub, term, window.afterUtc, window.beforeUtc);
       if (result.ok === false) {
@@ -611,4 +632,52 @@ export async function fetchRedditIncrement(
 
   const mentions = [...run.byId.values()].filter((mention) => complete || mention.createdUtc < coveredUntil);
   return { mentions, cursor: cursorAt(coveredUntil, complete), complete };
+}
+
+/** `/r/<sub>/comments/<id>/...` -> `<id>`, or null when a permalink doesn't look like a thread link. */
+function threadIdFromPermalink(url: string): string | null {
+  const match = /\/comments\/([a-z0-9]+)\//i.exec(url);
+  return match ? match[1]! : null;
+}
+
+/**
+ * Item 5 (final review): re-checks the handful of published thread links against Reddit's own live
+ * `/api/info` right before they are stored. Arctic Shift is an archive that keeps what got deleted,
+ * so a post `summarizeMentions` picked as one of the top 5 by score can be one a moderator removed —
+ * or the author deleted — long after it was archived; republishing its title points a reader at a
+ * dead/removed thread and prints a score Reddit itself no longer shows anyone.
+ *
+ * `classes/reddit.ts`'s `fetchInfoLive` is Reddit's own OAuth API (a different source from Arctic
+ * Shift entirely), and it returns `null` only when it could not be reached at all — no credentials
+ * configured, or every attempt failed — the same failure shape `fetchPostsByIdsOrNull` uses. On that
+ * `null` this fails CLOSED: no title is published this run (an empty list) rather than risk
+ * republishing a thread that may since have been removed; the mention COUNT
+ * (`RedditSignal.mentions`/`byYear`) is untouched by this — only these up-to-5 links are re-checked.
+ *
+ * A thread `/api/info` did not return at all, or returned with `removed_by_category` set or a
+ * `[removed]`/`[deleted]` body/selftext, is dropped. Every surviving thread's `score` is replaced
+ * with the CURRENT vote count `/api/info` just answered — never Arctic Shift's archived one, which
+ * can be years stale.
+ */
+export async function verifyLiveThreads(
+  threads: readonly RedditSignal["threads"][number][]
+): Promise<RedditSignal["threads"]> {
+  if (!threads.length) return [];
+
+  const withIds = threads
+    .map((thread) => ({ thread, id: threadIdFromPermalink(thread.url) }))
+    .filter((row): row is { thread: RedditSignal["threads"][number]; id: string } => Boolean(row.id));
+  if (!withIds.length) return [];
+
+  const fullnames = withIds.map((row) => `t3_${row.id}`);
+  const live = await fetchInfoLive(fullnames);
+  if (!live) return [];
+
+  const kept: RedditSignal["threads"] = [];
+  for (let i = 0; i < withIds.length; i++) {
+    const info = live.get(fullnames[i]!);
+    if (!info || info.gone) continue;
+    kept.push({ ...withIds[i]!.thread, score: info.score });
+  }
+  return kept;
 }

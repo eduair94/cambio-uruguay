@@ -75,6 +75,30 @@ describe("catalogPresence", () => {
     expect(result.size).toBe(0);
   });
 
+  // Fix round F1, item 4: a Facebook Marketplace seller name is a private account's display name,
+  // not a company identity — even when it happens to match a curated store's alias (someone selling
+  // a used sofa under the name "Divino"), it must never count toward that store's catalog presence.
+  it("skips a facebook-sourced offer even when its seller name resolves to a curated store", () => {
+    const equipar = [
+      equiparItem({
+        offers: [
+          { seller: "TuShopuy", url: "https://tushop.uy/aire-1", source: "store" },
+          { seller: "TuShopuy", url: "https://facebook.com/marketplace/item/1", source: "facebook" },
+        ],
+      }),
+    ];
+    const chairs = [
+      chairProduct({
+        offers: [
+          { seller: "Expansión UY", sellerKey: "expansionuy", url: "https://facebook.com/marketplace/item/2", source: "facebook" },
+        ],
+      }),
+    ];
+    const result = catalogPresence({ equipar, chairs }, CHECKED_AT);
+    expect(result.get("tushop")?.offers).toBe(1);
+    expect(result.has("expansion-uy")).toBe(false);
+  });
+
   it("counts an offer once when the same url appears in both offers[] and products[].offers[]", () => {
     const equipar = [
       equiparItem({

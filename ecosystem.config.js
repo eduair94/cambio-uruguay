@@ -461,9 +461,12 @@ module.exports = {
       // asks Reddit only; site/age/trustpilot/google and the catalogue keep exactly last week's
       // value. Measured on Task 12: a store's 24-month Arctic Shift backfill costs ~90 calls (~25
       // min), so the weekly job's 900-call budget would need ~8 weeks to finish backfilling all 76
-      // stores. Nightly at the same budget finishes it in ~8 nights instead — the other signals stay
-      // weekly on purpose: Google Places (fetchGoogle) charges per call, and re-reading a domain's
-      // age or Trustpilot every night would answer nothing new.
+      // stores. Nightly does NOT spend the full 900-call budget, though: its own wall-clock cap
+      // (STORES_REDDIT_MAX_MINUTES, 150 min) cuts it off first, and at ~16.7s/call (measured) that
+      // is only ~540 calls/night (150*60/16.7 ≈ 540) — so the 76-store backfill (~90 calls each,
+      // ~6,840 calls total) takes ~13 nights instead (6840/540 ≈ 12.7), not ~8. The other signals
+      // stay weekly on purpose: Google Places (fetchGoogle) charges per call, and re-reading a
+      // domain's age or Trustpilot every night would answer nothing new.
       //
       // 03:41 UTC = 00:41 in Montevideo, free of every other cron in this file. autorestart:false and
       // exec_mode:"fork" for the same reason as every other cron app here: pm2 must not turn "runs

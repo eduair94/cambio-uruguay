@@ -2,6 +2,13 @@
 // `planRedditWindows` and `mergeStoredMentions` are pure and tested directly; `fetchRedditIncrement`
 // is exercised against a fake Arctic Shift (see the section below).
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// vi.mock se eleva arriba de todo: fetchInfoLive es Reddit en vivo (OAuth), una fuente distinta de
+// Arctic Shift — sólo verifyLiveThreads (item 5) la llama, así que mockearla acá no toca ningún otro
+// test de este archivo.
+const { fetchInfoLive } = vi.hoisted(() => ({ fetchInfoLive: vi.fn() }));
+vi.mock("../../classes/reddit", () => ({ fetchInfoLive }));
+
 import { STORE_BY_KEY } from "../../classes/stores/registry";
 import {
   STORE_REDDIT_BACKFILL_MONTHS,
@@ -11,6 +18,7 @@ import {
   planRedditWindows,
   redditTermsKey,
   summarizeMentions,
+  verifyLiveThreads,
   type RedditCursor,
   type RedditMention,
   type StoredRedditMention,
@@ -778,6 +786,63 @@ describe("fetchRedditIncrement", () => {
       expect(result).toBeUndefined();
     });
   });
+
+  // Item 7: the nightly `--reddit-only` wall-clock cap (STORES_REDDIT_MAX_MINUTES) was previously
+  // only checked BETWEEN stores in sync_store_profiles.ts, so one store stuck in retries/splits
+  // could itself run well past the deadline before the caller got another chance to check it.
+  describe("deadline (item 7)", () => {
+    it("makes no call at all when the deadline has already passed", async () => {
+      const { fetchRedditIncrement } = await freshReddit();
+      const { fetchMock } = fakeArctic(() => jsonResponse({ data: [] }));
+      const result = await fetchRedditIncrement(
+        STORE_BY_KEY.get("tushop")!,
+        null,
+        NOW,
+        { calls: 900 },
+        Date.now() - 1_000
+      );
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+
+    it("keeps whatever progress it made before the deadline hit, same shape as a budget cutoff", async () => {
+      const { fetchRedditIncrement } = await freshReddit();
+      let calls = 0;
+      // A deadline 30ms out lets a couple of (mocked, near-instant) calls through before it trips —
+      // long enough to be robust on a slow CI box, short enough not to make the suite wait.
+      const deadlineAt = Date.now() + 30;
+      fakeArctic(() => {
+        calls++;
+        return jsonResponse({ data: [] });
+      });
+      const result = await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, null, NOW, { calls: 900 }, deadlineAt);
+      expect(calls).toBeGreaterThan(0);
+      expect(calls).toBeLessThan(24); // fewer than the full unbounded backfill for this store
+      expect(result).toBeDefined();
+      expect(result!.complete).toBe(false);
+    });
+
+    it("does not check the deadline at all in full-run mode (no fifth argument)", async () => {
+      const { fetchRedditIncrement } = await freshReddit();
+      const { calls } = fakeArctic(() => jsonResponse({ data: [] }));
+      const divino = STORE_BY_KEY.get("divino")!;
+      const result = await fetchRedditIncrement(divino, null, NOW, { calls: 1000 });
+      expect(result!.complete).toBe(true);
+      expect(calls.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("passes a bounded AbortSignal.timeout to every Arctic Shift request (item 7)", async () => {
+    const { fetchRedditIncrement } = await freshReddit();
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => jsonResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+    await fetchRedditIncrement(STORE_BY_KEY.get("tushop")!, doneCursor(utc("2026-09-15T00:00:00Z")), NOW, {
+      calls: 10,
+    });
+    expect(fetchMock).toHaveBeenCalled();
+    const [, options] = fetchMock.mock.calls[0]!;
+    expect(options?.signal).toBeInstanceOf(AbortSignal);
+  });
 });
 
 describe("mergeStoredMentions", () => {
@@ -840,5 +905,75 @@ describe("redditTermsKey", () => {
     expect(redditTermsKey(base)).toBe(redditTermsKey({ redditTerms: ["magiccenter", "magic center"] }));
     expect(redditTermsKey(base)).not.toBe(redditTermsKey({ redditTerms: ["magic center"] }));
     expect(redditTermsKey(base)).not.toBe(redditTermsKey({ ...base, redditMatch: /\bmagic center\b/ }));
+  });
+});
+
+// Item 5 (final review): Arctic Shift is an archive that keeps deleted posts, so a thread
+// `summarizeMentions` picked as one of the top 5 by score can be one that got removed or deleted
+// long after it was archived. `verifyLiveThreads` re-checks the surviving handful against Reddit's
+// own live `/api/info` (classes/reddit.ts's `fetchInfoLive`, mocked at the top of this file) right
+// before they are stored.
+describe("verifyLiveThreads", () => {
+  beforeEach(() => {
+    fetchInfoLive.mockReset();
+  });
+
+  function thread(overrides: Partial<{ title: string; date: string; url: string; score: number }> = {}) {
+    return {
+      title: "Un hilo sobre la tienda",
+      date: "2026-06-01",
+      url: "https://www.reddit.com/r/uruguay/comments/abc123/un_hilo/",
+      score: 4,
+      ...overrides,
+    };
+  }
+
+  it("returns an empty list without calling Reddit when there is nothing to verify", async () => {
+    expect(await verifyLiveThreads([])).toEqual([]);
+    expect(fetchInfoLive).not.toHaveBeenCalled();
+  });
+
+  it("drops a thread /api/info says is gone, keeps the rest with their CURRENT score", async () => {
+    fetchInfoLive.mockResolvedValue(
+      new Map([
+        ["t3_abc123", { score: 4, gone: false }],
+        ["t3_def456", { score: 0, gone: true }],
+      ])
+    );
+    const threads = [
+      thread({ url: "https://www.reddit.com/r/uruguay/comments/abc123/un_hilo/", score: 4 }),
+      thread({
+        title: "Hilo borrado",
+        url: "https://www.reddit.com/r/montevideo/comments/def456/otro_hilo/",
+        score: 30, // Arctic Shift's stale archived score
+      }),
+    ];
+    const result = await verifyLiveThreads(threads);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.title).toBe("Un hilo sobre la tienda");
+  });
+
+  it("replaces the archived score with the CURRENT one from /api/info, never Arctic Shift's", async () => {
+    fetchInfoLive.mockResolvedValue(new Map([["t3_abc123", { score: 41, gone: false }]]));
+    const result = await verifyLiveThreads([thread({ score: 4 })]);
+    expect(result[0]!.score).toBe(41);
+  });
+
+  it("drops a thread /api/info did not return at all, same as removed_by_category", async () => {
+    fetchInfoLive.mockResolvedValue(new Map()); // neither id came back
+    const result = await verifyLiveThreads([thread()]);
+    expect(result).toEqual([]);
+  });
+
+  it("fails CLOSED — publishes no titles at all — when Reddit's live API cannot be reached", async () => {
+    fetchInfoLive.mockResolvedValue(null);
+    const result = await verifyLiveThreads([thread(), thread({ url: "https://www.reddit.com/r/uruguay/comments/zzz999/x/" })]);
+    expect(result).toEqual([]);
+  });
+
+  it("queries fetchInfoLive with t3_ fullnames built from the thread permalink", async () => {
+    fetchInfoLive.mockResolvedValue(new Map([["t3_abc123", { score: 4, gone: false }]]));
+    await verifyLiveThreads([thread({ url: "https://www.reddit.com/r/uruguay/comments/abc123/un_hilo/" })]);
+    expect(fetchInfoLive).toHaveBeenCalledWith(["t3_abc123"]);
   });
 });

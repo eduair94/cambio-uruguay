@@ -90,7 +90,10 @@ export const STORES: readonly StoreEntry[] = [
     rubros: ["tecnologia", "muebles", "celulares"],
     aliases: ["DIMM"],
     retailStoreKey: "dimm",
+    // "DIMM" is also the generic hardware term for a RAM memory module (Dual In-line Memory
+    // Module) — "necesito un dimm de 16gb" is a plausible unrelated r/uruguay tech comment.
     redditTerms: ["dimm"],
+    redditMatch: /\bdimm\b.{0,40}(tienda|compr|pedido|envio|garantia|sucursal|uruguay)|(en|de|a) dimm\b/,
   },
   {
     key: "armo",
@@ -325,7 +328,10 @@ export const STORES: readonly StoreEntry[] = [
     kind: "tienda-uy",
     rubros: ["tecnologia"],
     aliases: ["Tech House"],
+    // "Tech house" is also an electronic-music genre — a music/genre-tag mention shares nothing
+    // with this store.
     redditTerms: ["tech house"],
+    redditMatch: /\btech house\b.{0,40}(tienda|compr|garantia|envio|local|sucursal|pedido|precio)|(en|de|a) tech house\b/,
   },
   {
     key: "narvaja",
@@ -343,7 +349,10 @@ export const STORES: readonly StoreEntry[] = [
     kind: "tienda-uy",
     rubros: ["electrodomesticos", "hogar"],
     aliases: ["La Tentación", "La Tentacion"],
+    // "La tentación" is everyday Spanish for "the temptation" ("no pude resistir la tentación de
+    // comer torta"), unrelated to this store.
     redditTerms: ["la tentacion", "la tentación"],
+    redditMatch: /\bla tentacion\b.{0,40}(tienda|compr|electrodom|hogar|garantia|envio|local|ofertas|precio)|(en|de|a) la tentacion\b/,
   },
   {
     key: "amv-store",
@@ -561,7 +570,9 @@ export const STORES: readonly StoreEntry[] = [
     kind: "tienda-uy",
     rubros: ["tecnologia", "celulares"],
     aliases: ["Caribe Sur Store", "CARIBE SUR STORE"],
+    // "Caribe sur" ("Caribbean south") is an everyday geography/travel phrase on its own.
     redditTerms: ["caribe sur"],
+    redditMatch: /\bcaribe sur\b.{0,40}(tienda|compr|celular|tecnologia|garantia|envio|local|sucursal|store)|(en|de|a) caribe sur\b/,
   },
   {
     key: "deceleste",
@@ -615,7 +626,10 @@ export const STORES: readonly StoreEntry[] = [
     kind: "tienda-uy",
     rubros: ["electrodomesticos"],
     aliases: ["Carlos Gutiérrez", "Carlos Gutierrez"],
+    // A common Spanish first+last name — plenty of unrelated people share it.
     redditTerms: ["carlos gutierrez", "carlos gutiérrez"],
+    redditMatch:
+      /\bcarlos gutierrez\b.{0,40}(tienda|compr|electrodom|garantia|envio|local|sucursal|heladera|lavarropa)|(en|de|a) carlos gutierrez\b/,
   },
   {
     key: "farmashop",
@@ -673,7 +687,12 @@ export const STORES: readonly StoreEntry[] = [
     kind: "marketplace",
     rubros: ["general"],
     aliases: ["Mercado Libre", "MercadoLibre"],
+    // "Mercado libre" is also the everyday economic term for "free market" ("en un mercado libre
+    // los precios..."), which comes up on r/uruguay in policy/economics threads with nothing to do
+    // with the marketplace.
     redditTerms: ["mercado libre", "mercadolibre"],
+    redditMatch:
+      /mercado ?libre\.com|(compr|vend|pedido|envio|paquete|reclamo|devoluc).{0,40}mercado ?libre|mercado ?libre.{0,40}(compr|vend|pedido|envio|paquete|reclamo|devoluc)/,
   },
   {
     key: "temu",

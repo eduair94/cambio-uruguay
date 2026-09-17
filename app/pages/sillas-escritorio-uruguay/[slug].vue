@@ -161,8 +161,12 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
               >
                 <td :data-label="t('chairDetail.seller')">
                   <NuxtLink
-                    v-if="storeKeyFor(offer.seller)"
-                    :to="localePath(`/tiendas-online-uruguay/${storeKeyFor(offer.seller)}`)"
+                    v-if="storeKeyFor(offer.seller, offer.source)"
+                    :to="
+                      localePath(
+                        `/tiendas-online-uruguay/${storeKeyFor(offer.seller, offer.source)}`
+                      )
+                    "
                     >{{ offer.seller }}</NuxtLink
                   >
                   <template v-else>{{ offer.seller }}</template>
@@ -482,7 +486,11 @@ const platforms = computed(() => (product.value ? offersByPlatform(product.value
 // tienda tiene ficha propia — la ruta 404s de verdad si no. `storeProfileKeys` es la lista compartida
 // con /equipar-casa-uruguay/[categoria].vue (useStoreProfileKeys.ts).
 const storeProfileKeys = useStoreProfileKeys()
-const storeKeyFor = (seller: string): string | null => {
+// `source` is optional so every existing call site keeps compiling untouched; a facebook-sourced
+// offer never links, even when the seller name happens to resolve to a curated store — a private
+// Marketplace seller's display name is not a company identity (fix round F1, item 4).
+const storeKeyFor = (seller: string, source?: string): string | null => {
+  if (source === 'facebook') return null
   const key = storeSlugForSeller(seller)
   return key && storeProfileKeys.value.includes(key) ? key : null
 }

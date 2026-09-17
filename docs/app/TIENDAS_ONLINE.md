@@ -139,6 +139,15 @@ Un cambio de `redditTerms`/`redditMatch` en el registro invalida todo lo guardad
 menciones y el `toneCache` de esa tienda arrancan de cero la próxima corrida
 (`redditTermsKey`/`carriedReddit`).
 
+**Los hasta 5 hilos publicados se re-verifican en vivo antes de guardarse** (`verifyLiveThreads`,
+fix round F1): Arctic Shift es un archivo que conserva lo borrado, así que un hilo que
+`summarizeMentions` eligió por puntaje puede llevar meses eliminado por un moderador o por su
+autor. Justo antes de guardar el perfil, esos hilos se chequean contra el `/api/info` **en vivo** de
+Reddit (`classes/reddit.ts`, OAuth — una fuente distinta de Arctic Shift): el que ya no existe se
+descarta, y al que sigue existiendo se le reemplaza el puntaje archivado por el actual. Si Reddit en
+vivo no contesta, la corrida no publica NINGÚN título ese hilo — la lista queda vacía —, pero el
+conteo de menciones (`mentions`/`byYear`) no se toca: sólo se cae la lista de hilos destacados.
+
 ### Tono automático (`toneCache`)
 
 Un tono agregado por tienda — cantidad de quejas/recomendaciones/neutrales — nunca un veredicto por
@@ -176,8 +185,11 @@ semanas. Por eso hay un segundo modo, sólo para Reddit, corriendo cada noche:
 
 `--reddit-only` sólo procesa tiendas cuyo backfill de 24 meses **no** terminó
 (`needsRedditBackfill`) — una tienda ya al día no le suma nada a este modo; de ahí en más su señal
-de Reddit la mantiene fresca la corrida semanal, día a día. Al mismo presupuesto de 900
-llamadas/noche, el backfill completo de las 76 tiendas termina en ~8 noches en vez de ~8 semanas.
+de Reddit la mantiene fresca la corrida semanal, día a día. Por noche NO se agotan las 900 llamadas
+del presupuesto: el tope de reloj de pared (`STORES_REDDIT_MAX_MINUTES`, 150 minutos) corta antes,
+y a ~16,7 s por llamada (medido en el Task 13) eso da ~540 llamadas antes de cortar (150×60/16,7 ≈
+540) — no las 900 completas. Con ~90 llamadas por tienda (arriba) y 76 tiendas (~6.840 llamadas en
+total), el backfill completo termina en ~13 noches (6.840/540 ≈ 12,7) en vez de ~8 semanas.
 
 La barra para guardar cambia en este modo: no alcanza con "Reddit contestó" (una llamada que sólo
 reconfirma una ventana ya cubierta no aporta nada), hace falta que Reddit **haya avanzado de
