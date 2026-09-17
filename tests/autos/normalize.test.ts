@@ -144,6 +144,24 @@ describe("text flags", () => {
     expect(cleanPublicText("Consultas a ventas.com o autos.com.uy")).toBe("Consultas a o");
     expect(cleanPublicText("Peugeot 208 1.6")).toBe("Peugeot 208 1.6");
   });
+  it("removes phones in every local format and messaging links", () => {
+    expect(cleanPublicText("Vendo auto, llamar al 099.123.456 urgente")).toBe("Vendo auto, llamar al urgente");
+    expect(cleanPublicText("Tel (099) 123-456 Pocitos")).toBe("Tel Pocitos");
+    expect(cleanPublicText("+598 99 123 456 whatsapp")).toBe("whatsapp");
+    expect(cleanPublicText("Fijo 2901 2345")).toBe("Fijo");
+    expect(cleanPublicText("Escribime wa.me/59899123456 ya")).toBe("Escribime ya");
+    expect(cleanPublicText("Info bit.ly/abc123")).toBe("Info");
+    expect(cleanPublicText("Autosdelsur.com.uy/oferta-123 Gol")).toBe("Gol");
+  });
+  it("keeps title idioms, years, prices and km", () => {
+    expect(cleanPublicText("Vw Gol 1.6 Full.Com Aire")).toBe("Vw Gol 1.6 Full.Com Aire");
+    expect(cleanPublicText("Toyota Hilux 2019 2020 Srv")).toBe("Toyota Hilux 2019 2020 Srv");
+    expect(cleanPublicText("Gol Trendline 101cv 111.111 Km")).toBe("Gol Trendline 101cv 111.111 Km");
+    expect(cleanPublicText("US$ 12.990 Contado")).toBe("US$ 12.990 Contado");
+    // Real titles: the gap before a decimal is the seller's, not ours to close.
+    expect(cleanPublicText("Fiat Mobi Like Plus .0 2022")).toBe("Fiat Mobi Like Plus .0 2022");
+    expect(cleanPublicText("Eclipse 1992 .1.8 Aspirado")).toBe("Eclipse 1992 .1.8 Aspirado");
+  });
 });
 
 describe("enrichment", () => {

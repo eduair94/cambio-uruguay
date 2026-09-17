@@ -185,12 +185,17 @@ export function cleanPublicText(text: string): string {
     .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, " ")
     .replace(/https?:\/\/\S+/gi, " ")
     .replace(/www\.\S+/gi, " ")
-    // Bare domain tokens ("autosusados.com", "miconcesionaria.com.uy"). Restricted to a known TLD
-    // suffix so a decimal like "1.6" or "111.111" is never mistaken for one.
-    .replace(/\b[a-z0-9-]+\.com(?:\.uy)?\b/gi, " ")
-    .replace(/\b0?9\d[\s-]?\d{3}[\s-]?\d{3}\b/g, " ")
-    .replace(/\b\d{4}[\s-]?\d{4}\b/g, " ")
+    // Messaging and short links carry a phone or a redirect: "wa.me/59899123456", "bit.ly/x".
+    .replace(/\b(?:wa\.me|api\.whatsapp\.com|bit\.ly|t\.me|linktr\.ee|tinyurl\.com)\/?\S*/gi, " ")
+    // Bare domain tokens with an optional path ("autosdelsur.com.uy/oferta-123"). A letter is required
+    // before the dot so "1.6" or "111.111" never match, and "Full.Com" (a title idiom) is kept.
+    .replace(/\b(?!full\.)[a-z0-9-]*[a-z][a-z0-9-]*\.(?:com\.uy|com|uy|net|org)\b(?:\/\S*)?/gi, " ")
+    // Phones: "099 123 456", "099.123.456", "(099) 123-456", "+598 99 123 456".
+    .replace(/(?:\+?598[\s.-]?)?\(?\b0?9\d\)?[\s.-]?\d{3}[\s.-]?\d{3}\b/g, " ")
+    // Landlines ("2901 2345", "4732 1234"), but never a pair of years ("2019 2020").
+    .replace(/(?:\+?598[\s.-]?)?\b(?!(?:19|20)\d{2}[\s.-]?(?:19|20)\d{2}\b)[24]\d{3}[\s.-]?\d{4}\b/g, " ")
     .replace(/\s+/g, " ")
-    .replace(/\s+([,.;:])/g, "$1")
+    // Close the gap a removed token leaves before punctuation, but never glue ".0" or ".1.8" to a word.
+    .replace(/\s+([,.;:])(?=\s|$)/g, "$1")
     .trim();
 }
