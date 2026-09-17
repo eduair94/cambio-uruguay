@@ -1,0 +1,764 @@
+[
+ {
+  "id": 153528,
+  "name": "NISSAN KICKS EXCLUSIVE 2023",
+  "slug": "nissan-kicks-exclusive-2023",
+  "parent": 0,
+  "type": "simple",
+  "variation": "",
+  "permalink": "https://shoppingdeautos.uy/producto/nissan-kicks-exclusive-2023/",
+  "sku": "",
+  "short_description": "",
+  "description": "",
+  "on_sale": false,
+  "prices": {
+   "price": "18990",
+   "regular_price": "18990",
+   "sale_price": "18990",
+   "price_range": null,
+   "currency_code": "USD",
+   "currency_symbol": "U$S ",
+   "currency_minor_unit": 0,
+   "currency_decimal_separator": ",",
+   "currency_thousand_separator": ".",
+   "currency_prefix": "U$S ",
+   "currency_suffix": ""
+  },
+  "average_rating": "0",
+  "review_count": 0,
+  "images": [
+   {
+    "id": 153529,
+    "src": "https://shoppingdeautos.uy/wp-content/uploads/2026/09/CAR562754-1-1.jpg",
+    "thumbnail": "https://shoppingdeautos.uy/wp-content/uploads/2026/09/CAR562754-1-1-300x300.jpg"
+   }
+  ],
+  "categories": [
+   {
+    "id": 1239,
+    "name": "SUV",
+    "slug": "suv",
+    "link": "https://shoppingdeautos.uy/categoria-producto/autos-suvs/suv/"
+   }
+  ],
+  "tags": [],
+  "brands": [],
+  "attributes": [
+   {
+    "id": 20,
+    "name": "Año",
+    "taxonomy": "pa_ano",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1355,
+      "name": "2023",
+      "slug": "2023"
+     }
+    ]
+   },
+   {
+    "id": 28,
+    "name": "Color",
+    "taxonomy": "pa_color",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1318,
+      "name": "GRIS PLATA",
+      "slug": "gris-plata"
+     }
+    ]
+   },
+   {
+    "id": 22,
+    "name": "Combustible",
+    "taxonomy": "pa_combustible",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1233,
+      "name": "Nafta",
+      "slug": "nafta"
+     }
+    ]
+   },
+   {
+    "id": 33,
+    "name": "Cilindrada",
+    "taxonomy": "pa_cilindrada",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1652,
+      "name": "1600cc",
+      "slug": "1600cc"
+     }
+    ]
+   },
+   {
+    "id": 32,
+    "name": "Dirección",
+    "taxonomy": "pa_direccion",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1381,
+      "name": "El&eacute;ctrica",
+      "slug": "elctrica"
+     }
+    ]
+   },
+   {
+    "id": 35,
+    "name": "Estado",
+    "taxonomy": "pa_estado",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1295,
+      "name": "Usado",
+      "slug": "usado"
+     }
+    ]
+   },
+   {
+    "id": 21,
+    "name": "Kilómetros",
+    "taxonomy": "pa_kilometros",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 4418,
+      "name": "73168",
+      "slug": "73168"
+     }
+    ]
+   },
+   {
+    "id": 23,
+    "name": "Motor (cc)",
+    "taxonomy": "pa_motor-cilindrada",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1363,
+      "name": "1.6",
+      "slug": "1-6"
+     }
+    ]
+   },
+   {
+    "id": 34,
+    "name": "Tipo de carrocería",
+    "taxonomy": "pa_tipo-de-carroceria",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1332,
+      "name": "SUV",
+      "slug": "suv"
+     }
+    ]
+   },
+   {
+    "id": 26,
+    "name": "Tracción",
+    "taxonomy": "pa_traccion",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1287,
+      "name": "Delantera",
+      "slug": "delantera"
+     }
+    ]
+   },
+   {
+    "id": 24,
+    "name": "Transmisión",
+    "taxonomy": "pa_transmision",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1368,
+      "name": "Autom&aacute;tica",
+      "slug": "automtica"
+     }
+    ]
+   },
+   {
+    "id": 27,
+    "name": "Puertas",
+    "taxonomy": "pa_puertas",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1313,
+      "name": "5",
+      "slug": "5"
+     }
+    ]
+   },
+   {
+    "id": 31,
+    "name": "Marca",
+    "taxonomy": "pa_marca",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1270,
+      "name": "Nissan",
+      "slug": "nissan"
+     }
+    ]
+   },
+   {
+    "id": 36,
+    "name": "Modelo",
+    "taxonomy": "pa_modelo",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1834,
+      "name": "KICKS",
+      "slug": "kicks"
+     }
+    ]
+   },
+   {
+    "id": 29,
+    "name": "Pasajeros",
+    "taxonomy": "pa_pasajeros",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 3127,
+      "name": "5",
+      "slug": "5"
+     }
+    ]
+   }
+  ],
+  "variations": [],
+  "grouped_products": [],
+  "has_options": false,
+  "is_purchasable": true,
+  "is_in_stock": true,
+  "is_on_backorder": false,
+  "low_stock_remaining": null,
+  "stock_availability": {
+   "text": "",
+   "class": "in-stock"
+  },
+  "sold_individually": false
+ },
+ {
+  "id": 153510,
+  "name": "RENAULT SANDERO ZEN 2023",
+  "slug": "renault-sandero-zen-2023-2",
+  "parent": 0,
+  "type": "simple",
+  "variation": "",
+  "permalink": "https://shoppingdeautos.uy/producto/renault-sandero-zen-2023-2/",
+  "sku": "",
+  "short_description": "",
+  "description": "",
+  "on_sale": false,
+  "prices": {
+   "price": "9900",
+   "regular_price": "9900",
+   "sale_price": "9900",
+   "price_range": null,
+   "currency_code": "USD",
+   "currency_symbol": "U$S ",
+   "currency_minor_unit": 0,
+   "currency_decimal_separator": ",",
+   "currency_thousand_separator": ".",
+   "currency_prefix": "U$S ",
+   "currency_suffix": ""
+  },
+  "average_rating": "0",
+  "review_count": 0,
+  "images": [
+   {
+    "id": 153511,
+    "src": "https://shoppingdeautos.uy/wp-content/uploads/2026/09/CAR572352-1-1.jpg",
+    "thumbnail": "https://shoppingdeautos.uy/wp-content/uploads/2026/09/CAR572352-1-1-300x300.jpg"
+   }
+  ],
+  "categories": [
+   {
+    "id": 1408,
+    "name": "AUTOS",
+    "slug": "autos",
+    "link": "https://shoppingdeautos.uy/categoria-producto/autos-suvs/autos/"
+   }
+  ],
+  "tags": [],
+  "brands": [],
+  "attributes": [
+   {
+    "id": 20,
+    "name": "Año",
+    "taxonomy": "pa_ano",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1355,
+      "name": "2023",
+      "slug": "2023"
+     }
+    ]
+   },
+   {
+    "id": 28,
+    "name": "Color",
+    "taxonomy": "pa_color",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1282,
+      "name": "Blanco",
+      "slug": "blanco"
+     }
+    ]
+   },
+   {
+    "id": 22,
+    "name": "Combustible",
+    "taxonomy": "pa_combustible",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1233,
+      "name": "Nafta",
+      "slug": "nafta"
+     }
+    ]
+   },
+   {
+    "id": 33,
+    "name": "Cilindrada",
+    "taxonomy": "pa_cilindrada",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1657,
+      "name": "1000cc",
+      "slug": "1000cc"
+     }
+    ]
+   },
+   {
+    "id": 32,
+    "name": "Dirección",
+    "taxonomy": "pa_direccion",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1389,
+      "name": "Hidr&aacute;ulica",
+      "slug": "hidrulica"
+     }
+    ]
+   },
+   {
+    "id": 35,
+    "name": "Estado",
+    "taxonomy": "pa_estado",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1295,
+      "name": "Usado",
+      "slug": "usado"
+     }
+    ]
+   },
+   {
+    "id": 21,
+    "name": "Kilómetros",
+    "taxonomy": "pa_kilometros",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 4417,
+      "name": "112558",
+      "slug": "112558"
+     }
+    ]
+   },
+   {
+    "id": 23,
+    "name": "Motor (cc)",
+    "taxonomy": "pa_motor-cilindrada",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1297,
+      "name": "1.0",
+      "slug": "1-0"
+     }
+    ]
+   },
+   {
+    "id": 34,
+    "name": "Tipo de carrocería",
+    "taxonomy": "pa_tipo-de-carroceria",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1323,
+      "name": "HATCHBACK",
+      "slug": "hatchback"
+     }
+    ]
+   },
+   {
+    "id": 26,
+    "name": "Tracción",
+    "taxonomy": "pa_traccion",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1287,
+      "name": "Delantera",
+      "slug": "delantera"
+     }
+    ]
+   },
+   {
+    "id": 24,
+    "name": "Transmisión",
+    "taxonomy": "pa_transmision",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1361,
+      "name": "Manual",
+      "slug": "manual"
+     }
+    ]
+   },
+   {
+    "id": 27,
+    "name": "Puertas",
+    "taxonomy": "pa_puertas",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1313,
+      "name": "5",
+      "slug": "5"
+     }
+    ]
+   },
+   {
+    "id": 31,
+    "name": "Marca",
+    "taxonomy": "pa_marca",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1393,
+      "name": "RENAULT",
+      "slug": "renault"
+     }
+    ]
+   },
+   {
+    "id": 36,
+    "name": "Modelo",
+    "taxonomy": "pa_modelo",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1590,
+      "name": "SANDERO",
+      "slug": "sandero"
+     }
+    ]
+   },
+   {
+    "id": 29,
+    "name": "Pasajeros",
+    "taxonomy": "pa_pasajeros",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 3127,
+      "name": "5",
+      "slug": "5"
+     }
+    ]
+   }
+  ],
+  "variations": [],
+  "grouped_products": [],
+  "has_options": false,
+  "is_purchasable": true,
+  "is_in_stock": true,
+  "is_on_backorder": false,
+  "low_stock_remaining": null,
+  "stock_availability": {
+   "text": "",
+   "class": "in-stock"
+  },
+  "sold_individually": false
+ },
+ {
+  "id": 153492,
+  "name": "RENAULT LOGAN 2019",
+  "slug": "renault-logan-2019",
+  "parent": 0,
+  "type": "simple",
+  "variation": "",
+  "permalink": "https://shoppingdeautos.uy/producto/renault-logan-2019/",
+  "sku": "",
+  "short_description": "",
+  "description": "",
+  "on_sale": false,
+  "prices": {
+   "price": "8900",
+   "regular_price": "8900",
+   "sale_price": "8900",
+   "price_range": null,
+   "currency_code": "USD",
+   "currency_symbol": "U$S ",
+   "currency_minor_unit": 0,
+   "currency_decimal_separator": ",",
+   "currency_thousand_separator": ".",
+   "currency_prefix": "U$S ",
+   "currency_suffix": ""
+  },
+  "average_rating": "0",
+  "review_count": 0,
+  "images": [
+   {
+    "id": 153493,
+    "src": "https://shoppingdeautos.uy/wp-content/uploads/2026/09/CAR562819-1-1.jpg",
+    "thumbnail": "https://shoppingdeautos.uy/wp-content/uploads/2026/09/CAR562819-1-1-300x300.jpg"
+   }
+  ],
+  "categories": [
+   {
+    "id": 1408,
+    "name": "AUTOS",
+    "slug": "autos",
+    "link": "https://shoppingdeautos.uy/categoria-producto/autos-suvs/autos/"
+   }
+  ],
+  "tags": [],
+  "brands": [],
+  "attributes": [
+   {
+    "id": 20,
+    "name": "Año",
+    "taxonomy": "pa_ano",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1351,
+      "name": "2019",
+      "slug": "2019"
+     }
+    ]
+   },
+   {
+    "id": 28,
+    "name": "Color",
+    "taxonomy": "pa_color",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1318,
+      "name": "GRIS PLATA",
+      "slug": "gris-plata"
+     }
+    ]
+   },
+   {
+    "id": 22,
+    "name": "Combustible",
+    "taxonomy": "pa_combustible",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1233,
+      "name": "Nafta",
+      "slug": "nafta"
+     }
+    ]
+   },
+   {
+    "id": 33,
+    "name": "Cilindrada",
+    "taxonomy": "pa_cilindrada",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1652,
+      "name": "1600cc",
+      "slug": "1600cc"
+     }
+    ]
+   },
+   {
+    "id": 32,
+    "name": "Dirección",
+    "taxonomy": "pa_direccion",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1389,
+      "name": "Hidr&aacute;ulica",
+      "slug": "hidrulica"
+     }
+    ]
+   },
+   {
+    "id": 35,
+    "name": "Estado",
+    "taxonomy": "pa_estado",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1295,
+      "name": "Usado",
+      "slug": "usado"
+     }
+    ]
+   },
+   {
+    "id": 21,
+    "name": "Kilómetros",
+    "taxonomy": "pa_kilometros",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1755,
+      "name": "133474",
+      "slug": "133474"
+     }
+    ]
+   },
+   {
+    "id": 23,
+    "name": "Motor (cc)",
+    "taxonomy": "pa_motor-cilindrada",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1363,
+      "name": "1.6",
+      "slug": "1-6"
+     }
+    ]
+   },
+   {
+    "id": 34,
+    "name": "Tipo de carrocería",
+    "taxonomy": "pa_tipo-de-carroceria",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1354,
+      "name": "Sed&aacute;n",
+      "slug": "sedn"
+     }
+    ]
+   },
+   {
+    "id": 26,
+    "name": "Tracción",
+    "taxonomy": "pa_traccion",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1287,
+      "name": "Delantera",
+      "slug": "delantera"
+     }
+    ]
+   },
+   {
+    "id": 24,
+    "name": "Transmisión",
+    "taxonomy": "pa_transmision",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1361,
+      "name": "Manual",
+      "slug": "manual"
+     }
+    ]
+   },
+   {
+    "id": 27,
+    "name": "Puertas",
+    "taxonomy": "pa_puertas",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1281,
+      "name": "4",
+      "slug": "4"
+     }
+    ]
+   },
+   {
+    "id": 31,
+    "name": "Marca",
+    "taxonomy": "pa_marca",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1393,
+      "name": "RENAULT",
+      "slug": "renault"
+     }
+    ]
+   },
+   {
+    "id": 36,
+    "name": "Modelo",
+    "taxonomy": "pa_modelo",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 1819,
+      "name": "LOGAN",
+      "slug": "logan"
+     }
+    ]
+   },
+   {
+    "id": 29,
+    "name": "Pasajeros",
+    "taxonomy": "pa_pasajeros",
+    "has_variations": false,
+    "terms": [
+     {
+      "id": 3127,
+      "name": "5",
+      "slug": "5"
+     }
+    ]
+   }
+  ],
+  "variations": [],
+  "grouped_products": [],
+  "has_options": false,
+  "is_purchasable": true,
+  "is_in_stock": true,
+  "is_on_backorder": false,
+  "low_stock_remaining": null,
+  "stock_availability": {
+   "text": "",
+   "class": "in-stock"
+  },
+  "sold_individually": false
+ }
+]
