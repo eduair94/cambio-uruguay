@@ -28,6 +28,7 @@ import {
   saveChairCatalog,
 } from "./classes/chairs/store";
 import type { ChairCatalogMeta } from "./classes/chairs/types";
+import { recordPricewatch } from "./classes/pricewatch/record";
 
 async function main(): Promise<void> {
   // The app's own env calls this MONGO_URI; the root bridge insists on APP_MONGO_URI so a job can
@@ -123,6 +124,16 @@ async function main(): Promise<void> {
     sources: harvest.runs,
   };
   await saveChairCatalog(products, meta);
+
+  // Own try/catch: a failure recording history must never cost the catalogue that was just saved.
+  // `harvest.listings` is the same set buildChairCatalog was given — chairs applies no unit/currency
+  // guard of its own (unlike equipar's applyUnitGuard) before cataloguing.
+  try {
+    const pw = await recordPricewatch(harvest.listings, "sillas");
+    console.log(`[chairs] pricewatch ${pw.written} ofertas, ${pw.pruned} vencidas borradas`);
+  } catch (error) {
+    console.error("[chairs] no se pudo registrar el historial de precios", error);
+  }
 
   // A healthy run is the only safe moment to re-check the rows an older, looser filter admitted.
   const pruned =

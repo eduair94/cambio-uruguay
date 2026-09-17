@@ -10,7 +10,8 @@
 //     the storefront declares in its own HTML, so it is read at run time and a store whose currency
 //     cannot be established is skipped rather than guessed: USD published as UYU is a 40x error.
 import { fetchJson, fetchText } from "../net";
-import type { CategorySpec, RetailListing, RetailSourceResult, RetailStore } from "../types";
+import { listPriceOf } from "../price";
+import type { CategorySpec, RetailListing, RetailSourceResult, RetailStore, StoreHarvestOptions } from "../types";
 
 /** The legacy catalogue API caps a page at 50 products, addressed through `_from`/`_to`. */
 const PAGE_SIZE = 50;
@@ -94,7 +95,7 @@ const specValues = (product: VtexProduct, name: string): string[] => {
 /** The first SKU with a real price, preferring the store's own listing over a marketplace seller. */
 export function vtexOffer(
   product: VtexProduct
-): { price: number; available: boolean; image: string | null } | null {
+): { price: number; available: boolean; image: string | null; listPrice: number | null } | null {
   for (const item of product.items || []) {
     const sellers = item.sellers || [];
     const seller =
@@ -108,6 +109,8 @@ export function vtexOffer(
         seller?.commertialOffer?.IsAvailable !== false &&
         Number(seller?.commertialOffer?.AvailableQuantity ?? 1) > 0,
       image: item.images?.find((image) => image.imageUrl)?.imageUrl || null,
+      // Same commertialOffer as the price above, never a different SKU's ListPrice.
+      listPrice: listPriceOf(price, seller?.commertialOffer?.ListPrice),
     };
   }
   return null;
@@ -141,10 +144,12 @@ export async function detectVtexCurrency(baseUrl: string): Promise<"UYU" | "USD"
 
 export async function harvestVtexStore(
   store: RetailStore,
-  specs: readonly CategorySpec[]
+  specs: readonly CategorySpec[],
+  options: StoreHarvestOptions = {}
 ): Promise<RetailSourceResult> {
   const observedAt = new Date().toISOString();
-  const queries = [...new Set(specs.flatMap((spec) => spec.storeQueries ?? []))].slice(0, MAX_QUERIES);
+  const maxQueries = options.maxQueries ?? MAX_QUERIES;
+  const queries = [...new Set(specs.flatMap((spec) => spec.storeQueries ?? []))].slice(0, maxQueries);
   if (!queries.length) {
     return { listings: [], ok: true, note: "sin terminos de busqueda para esta tienda" };
   }
@@ -207,6 +212,7 @@ export async function harvestVtexStore(
           location: null,
           freeShipping: null,
           officialStore: true,
+          listPrice: offer.listPrice,
           observedAt,
         });
       }

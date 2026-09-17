@@ -18,6 +18,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const PAGES = join(__dirname, '..', '..', 'pages')
+const COMPONENTS = join(__dirname, '..', '..', 'components')
 
 const CASOS = [
   {
@@ -37,6 +38,14 @@ const CASOS = [
     archivo: join(PAGES, 'sucursales', '[origin]', '[[location]].vue'),
     clave: 'branch-directory-',
     debe: 'branch.origin === origin',
+  },
+  {
+    // /api/equipar entero (ítems + productos, hasta 14 ofertas por fila) por un total de canasta:
+    // RentalJourney sólo lee meta.baskets en /alquilar-en-uruguay.
+    nombre: 'components/rentals/RentalJourney.vue',
+    archivo: join(COMPONENTS, 'rentals', 'RentalJourney.vue'),
+    clave: 'journey-equipar',
+    debe: 'meta.baskets',
   },
 ] as const
 

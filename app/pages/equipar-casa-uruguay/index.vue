@@ -94,7 +94,15 @@ planner is client state only and never persists.
 
             <div class="cat-body">
               <h4 class="cat-name">
-                {{ group.label }}
+                <!-- Sólo las categorías con página propia enlazan: una fila vieja de una categoría
+                     que salió del registro no puede apuntar a un 404. -->
+                <NuxtLink
+                  v-if="isEquiparCategorySlug(group.key)"
+                  :to="localePath(`/equipar-casa-uruguay/${group.key}`)"
+                  class="cat-name__link"
+                  >{{ group.label }}</NuxtLink
+                >
+                <template v-else>{{ group.label }}</template>
                 <span v-if="group.quantity > 1" class="cat-qty">{{
                   c.quantityLabel.replace('{n}', String(group.quantity))
                 }}</span>
@@ -146,6 +154,17 @@ planner is client state only and never persists.
                   </span>
                 </li>
               </ul>
+
+              <NuxtLink
+                v-if="isEquiparCategorySlug(group.key)"
+                :to="localePath(`/equipar-casa-uruguay/${group.key}`)"
+                class="cat-more"
+                >{{
+                  c.categoryLink
+                    .replace('{plural}', equiparCategoryPage(group.key)?.plural ?? group.label)
+                    .replace('{label}', group.label)
+                }}</NuxtLink
+              >
             </div>
           </article>
         </div>
@@ -272,6 +291,7 @@ planner is client state only and never persists.
 
 <script setup lang="ts">
 import { EQUIPAR_PATH, EQUIPAR_THREAD } from '~/utils/equiparCopy'
+import { equiparCategoryPage, isEquiparCategorySlug } from '~/utils/equiparCategoryPages'
 import { equiparEs } from '~/utils/equiparEs'
 import { equiparEn } from '~/utils/equiparEn'
 import { equiparPt } from '~/utils/equiparPt'
@@ -293,7 +313,17 @@ const c = computed(() =>
 
 // Server-rendered: the three totals have to exist in the HTML. They are the numbers a search engine
 // can quote and the answer most visitors came for, and a client-only fetch would hide both.
-const { data } = await useFetch<EquiparResponse>('/api/equipar', { key: 'equipar-casa' })
+//
+// The endpoint carries each row's offers (up to 8 new + 6 used) and its products, and this page
+// draws neither — the per-category pages do. Dropped in `transform`, before the
+// payload is written, or every one of them would travel inside this page's HTML for nothing.
+const { data } = await useFetch('/api/equipar', {
+  key: 'equipar-casa',
+  transform: (response: EquiparResponse): EquiparResponse => ({
+    meta: response?.meta ?? null,
+    items: (response?.items ?? []).map(item => ({ ...item, offers: [], products: [] })),
+  }),
+})
 
 const items = computed<EquiparItemDoc[]>(() => data.value?.items ?? [])
 const baskets = computed(() => data.value?.meta?.baskets ?? [])
@@ -712,6 +742,27 @@ useHead(() => ({
   margin: 0;
   font-size: 1.075rem;
   line-height: 1.3;
+}
+/* The title is the link to the category page: it keeps the heading's ink and says "link" with the
+   underline, so the card does not turn into a wall of blue. */
+.cat-name__link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.cat-name__link:hover {
+  text-decoration-thickness: 2px;
+}
+/* Small blue text: the theme's `link` token, which clears AA on both canvases (never primary). */
+.cat-more {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(var(--v-theme-link));
 }
 .cat-qty {
   font-size: 0.75rem;

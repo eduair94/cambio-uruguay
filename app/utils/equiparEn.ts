@@ -53,6 +53,7 @@ export const equiparEn: EquiparCopy = {
   usedNotAdvised: 'used not advised',
   quantityLabel: 'buy {n}',
   observations: '{n} prices observed',
+  categoryLink: '{label}: prices and history (in Spanish)',
 
   calcTitle: 'With what I have, how far do I get?',
   calcIntro:

@@ -173,6 +173,10 @@ module.exports = {
       // RETAIL_STORE_MAX_PDP is raised here and only here. The default of 260 product pages per
       // Fenicio store is right for one category and would truncate thirty-eight in sitemap order,
       // which silently biases every band toward whatever the store happens to list first.
+      //
+      // The WooCommerce/VTEX search cap is NOT set here: it is passed in code from sync_equipar.ts
+      // (classes/equipar/budget.ts), because deploy-backend.sh only recreates a registered app when
+      // its cron changes and a new env var would never reach the VPS.
       name: "currency-equipar",
       autorestart: false,
       exec_mode: "fork",

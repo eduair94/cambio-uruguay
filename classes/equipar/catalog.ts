@@ -73,19 +73,93 @@ function identify(listing: RetailListing, category: EquiparCategory): { brand: s
   return model.length >= 2 ? { brand, model } : null;
 }
 
+/** A text normalised exactly like {@link norm}, remembering which original character each char came from. */
+interface IndexedText {
+  original: string;
+  text: string;
+  origin: number[];
+}
+
+const NORM_KEEPS = /[a-z0-9%"'.,+-]/;
+
+function indexNormalised(original: string): IndexedText {
+  let text = "";
+  const origin: number[] = [];
+  for (let index = 0; index < original.length; index++) {
+    const folded = original[index]!.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    for (const char of folded) {
+      const kept = NORM_KEEPS.test(char) ? char : " ";
+      if (kept === " " && (text === "" || text.endsWith(" "))) continue;
+      text += kept;
+      origin.push(index);
+    }
+  }
+  return { original, text, origin };
+}
+
+/** Where `token` sits in `source` as a whole word, spelled as the source spelled it; null if absent. */
+function findToken(source: IndexedText, token: string): string | null {
+  const isWordChar = (char: string | undefined): boolean => !!char && /[a-z0-9]/.test(char);
+  for (let at = source.text.indexOf(token); at >= 0; at = source.text.indexOf(token, at + 1)) {
+    const end = at + token.length;
+    if (isWordChar(source.text[at - 1]) || isWordChar(source.text[end])) continue;
+    return source.original.slice(source.origin[at]!, source.origin[end - 1]! + 1);
+  }
+  return null;
+}
+
+/**
+ * The published name of a product, in the spelling a seller actually used.
+ *
+ * Grouping needs the normalised key — "Grenno FR-KH200B" and "GRENNO fr-kh200b" are one product —
+ * but the key itself is lowercase with its accents stripped, and production printed it as the name:
+ * "grenno fr-kh200b". Each token of the key is looked up, as a whole word, in the cheapest listing's
+ * brand field, model field and title first (the offer the row leads with), then in the others; a
+ * token no listing spells is kept as it is. The slug keeps coming from the key, so no URL moves.
+ */
+function originalSpelling(key: string, listings: readonly RetailListing[], usdUyu: number): string {
+  const sources = [...listings]
+    .sort((a, b) => toUyu(a.price, a.currency, usdUyu) - toUyu(b.price, b.currency, usdUyu))
+    .flatMap((listing) => [listing.brand, listing.model, listing.title])
+    .filter((value): value is string => Boolean(value))
+    .map(indexNormalised);
+  return key
+    .split(" ")
+    .map((token) => {
+      for (const source of sources) {
+        const spelled = findToken(source, token);
+        if (spelled) return spelled;
+      }
+      return token;
+    })
+    .join(" ");
+}
+
 const slugify = (value: string): string =>
   norm(value)
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 70);
 
+interface ProductGroup {
+  brand: string;
+  model: string;
+  listings: RetailListing[];
+}
+
 /**
  * Groups the new offers of a `modelo` category into products.
  *
- * Only listings that name BOTH a brand and a model take part. That is the rule the chair directory
- * learned: two listings merge when brand and model agree, and a description ("silla ergonómica
- * negra") is dropped rather than pooled. Everything dropped here still counts toward the band, so
- * nothing is lost from the price statistics — only from the product list.
+ * MercadoLibre stamps every seller's copy of the same catalogue page with the same
+ * `catalog_product_id` (`RetailListing.catalogId`) — ground truth this site never used before this
+ * function. Measured in production on 2026-09-16: 109 products, zero with two sellers, because
+ * `identify()` reading each seller's own title almost never agrees across sellers ("BC-450 338L" vs
+ * "Bc450 338 Litros" vs "BC-450 heladera frio seco" are the same product, three different strings).
+ * A `catalogId` is trusted first and unconditionally groups its listings. A storefront never has one
+ * (it isn't MercadoLibre), so it still has to earn its way in the old way — brand and model matching
+ * EXACTLY against the group's identity — which is now checked against catalogue groups too, not only
+ * against other catalogId-less listings. Facebook and used listings never take part; see the filter
+ * below, unchanged from before this task.
  */
 function buildProducts(
   listings: readonly RetailListing[],
@@ -93,31 +167,128 @@ function buildProducts(
   usdUyu: number
 ): EquiparProduct[] {
   if (category.regime !== "modelo") return [];
-  const groups = new Map<string, { brand: string; model: string; listings: RetailListing[] }>();
 
-  for (const listing of listings) {
-    // A Marketplace title cannot identify a product. It belongs in the used band and nowhere else.
-    if (listing.source === "facebook") continue;
-    if (conditionOf(listing) !== "new") continue;
-    const identity = identify(listing, category);
-    if (!identity) continue;
-    const key = `${identity.brand}|${identity.model}`;
-    const group = groups.get(key) ?? { ...identity, listings: [] };
+  // A Marketplace title cannot identify a product, and a used listing prices a different market —
+  // both belong only in the band, never in a product row.
+  const eligible = listings.filter(
+    (listing) => listing.source !== "facebook" && conditionOf(listing) === "new"
+  );
+
+  const catalogGroups = new Map<string, ProductGroup>();
+  const withoutCatalog: RetailListing[] = [];
+
+  // Pass 1: every listing that carries a `catalogId` joins the SAME group, whatever its own title
+  // says. Two different catalogue ids never merge even when their titles are identical — a seller
+  // typo or a genuinely split catalogue entry on MercadoLibre's side is not this code's call to undo.
+  for (const listing of eligible) {
+    if (!listing.catalogId) {
+      withoutCatalog.push(listing);
+      continue;
+    }
+    const key = `cat:${listing.catalogId}`;
+    const group = catalogGroups.get(key) ?? { brand: "", model: "", listings: [] };
     group.listings.push(listing);
-    groups.set(key, group);
+    catalogGroups.set(key, group);
   }
 
+  // Name each catalogue group off the identity its OWN sellers agree on most — a plurality vote, so
+  // one seller's oddly worded title cannot outvote two who agree. `catalogIndex` remembers only the
+  // WINNING brand+model, so a storefront can find its way into pass 2 below. A group whose sellers
+  // never named a brand at all is still a real product (the catalogue id says so) — it is named off
+  // whichever listing happened to arrive first, and simply cannot be joined by brand+model since it
+  // never had one to index.
+  const catalogIndex = new Map<string, string>();
+  for (const [key, group] of catalogGroups) {
+    const votes = new Map<string, { brand: string; model: string; count: number }>();
+    for (const listing of group.listings) {
+      const identity = identify(listing, category);
+      if (!identity) continue;
+      const voteKey = `${identity.brand}|${identity.model}`;
+      const vote = votes.get(voteKey);
+      if (vote) vote.count += 1;
+      else votes.set(voteKey, { ...identity, count: 1 });
+    }
+    let winner: { brand: string; model: string } | null = null;
+    let winnerVotes = 0;
+    for (const vote of votes.values()) {
+      if (vote.count > winnerVotes) {
+        winner = { brand: vote.brand, model: vote.model };
+        winnerVotes = vote.count;
+      }
+    }
+    if (winner) {
+      group.brand = winner.brand;
+      group.model = winner.model;
+      const voteKey = `${winner.brand}|${winner.model}`;
+      // First-wins: if a LATER catalogue group happens to vote the same identity (two catalogue ids
+      // MercadoLibre split for what is arguably one product), it must not steal a storefront listing
+      // away from the group that claimed this identity first.
+      if (!catalogIndex.has(voteKey)) catalogIndex.set(voteKey, key);
+    } else {
+      // No seller in this catalogue group named a recognisable brand at all. `identify()` runs every
+      // brand it reads through NOT_A_BRAND before trusting it (a `catalog_product_id` does not turn
+      // "Sin marca" into a real brand), so this fallback applies the same filter — otherwise a
+      // placeholder leaks straight into the published name and slug.
+      const first = group.listings[0]!;
+      const fallbackBrand = norm(first.brand);
+      group.brand = fallbackBrand && !NOT_A_BRAND.test(fallbackBrand) ? fallbackBrand : "";
+      group.model = norm(first.title)
+        .replace(category.include, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .split(" ")
+        .slice(0, 4)
+        .join(" ");
+    }
+  }
+
+  // Pass 2: unchanged from before this task, except the index it checks against now also holds
+  // catalogue identities. A listing with no `catalogId` (a storefront, or an ML listing the harvester
+  // never tagged) only merges when ITS OWN brand+model matches exactly; otherwise it starts its own
+  // single-listing group, same as it always has.
+  const identityGroups = new Map<string, ProductGroup>();
+  for (const listing of withoutCatalog) {
+    const identity = identify(listing, category);
+    if (!identity) continue;
+    const voteKey = `${identity.brand}|${identity.model}`;
+    const catalogKey = catalogIndex.get(voteKey);
+    if (catalogKey) {
+      catalogGroups.get(catalogKey)!.listings.push(listing);
+      continue;
+    }
+    const key = `id:${voteKey}`;
+    const group = identityGroups.get(key) ?? { ...identity, listings: [] };
+    group.listings.push(listing);
+    identityGroups.set(key, group);
+  }
+
+  const usedSlugs = new Set<string>();
   const products: EquiparProduct[] = [];
-  for (const [, group] of groups) {
-    // One seller alone does not corroborate a product; it corroborates a listing.
+
+  const publish = (group: ProductGroup, name: string, catalogId?: string): void => {
+    // One seller alone does not corroborate a product; it corroborates a listing. It is still
+    // published — as it always has been — because dropping it would lose the price, not just the row.
     const offers = group.listings
       .map((listing) => toOffer(listing, usdUyu))
       .sort((a, b) => a.priceUyu - b.priceUyu);
-    const sellers = new Set(offers.map((offer) => offer.seller)).size;
-    const name = `${group.brand} ${group.model}`.replace(/\s+/g, " ").trim();
+    // Two ML listings from the same seller under one catalogId (rare, but possible) must not count
+    // twice, so sellers are counted by normalised name, exactly like the rest of this module.
+    const sellers = new Set(offers.map((offer) => norm(offer.seller))).size;
+
+    // Two different catalogue ids can vote the same brand+model on purpose (MercadoLibre split what
+    // is arguably one product across two catalogue pages), and they stay separate products —
+    // catalogId is authoritative — but a later consumer keys rows and JSON-LD by slug, so a collision
+    // here would silently point two different products at one identifier. A short catalogue suffix on
+    // the later one is enough to break the tie without renaming the group MercadoLibre named first.
+    const base = slugify(`${category.key}-${name}`);
+    const slug = usedSlugs.has(base)
+      ? `${base}-${(catalogId ?? String(usedSlugs.size)).slice(-6).toLowerCase()}`
+      : base;
+    usedSlugs.add(slug);
+
     products.push({
-      slug: slugify(`${category.key}-${name}`),
-      name,
+      slug,
+      name: originalSpelling(name, group.listings, usdUyu),
       brand: group.brand,
       model: group.model,
       image: group.listings.find((listing) => listing.image)?.image ?? null,
@@ -125,8 +296,24 @@ function buildProducts(
       bestPriceUyu: offers[0]!.priceUyu,
       sellers,
     });
+  };
+
+  for (const [key, group] of catalogGroups) {
+    const name = `${group.brand} ${group.model}`.replace(/\s+/g, " ").trim();
+    // A catalogue group whose brand was a placeholder ("sin marca") and whose title left nothing
+    // behind after the category word is not a name — it is blank. The catalogId still groups its
+    // listings correctly for the price band (see buildEquiparCatalog); publishing an empty-named
+    // "product" card would only be worse than not publishing one at all.
+    if (name.length < 2) continue;
+    publish(group, name, key.slice("cat:".length));
+  }
+  for (const group of identityGroups.values()) {
+    const name = `${group.brand} ${group.model}`.replace(/\s+/g, " ").trim();
+    publish(group, name);
   }
 
+  // A product corroborated by more sellers is a stronger claim than a cheaper one from a single
+  // seller, so it leads — products the catalogue id pulled together now surface first on purpose.
   return products
     .sort((a, b) => b.sellers - a.sellers || a.bestPriceUyu - b.bestPriceUyu)
     .slice(0, 12);
@@ -148,6 +335,13 @@ function representativeImage(listings: readonly RetailListing[]): string | null 
   if (!usable.length) return null;
   return usable[Math.floor(usable.length / 2)]!.image;
 }
+
+/** How many of the cheapest screened offers each item keeps, per market. The app caps at their sum. */
+export const ITEM_NEW_OFFERS = 8;
+export const ITEM_USED_OFFERS = 6;
+
+const cheapestOffers = (offers: readonly EquiparOffer[], limit: number): EquiparOffer[] =>
+  [...offers].sort((a, b) => a.priceUyu - b.priceUyu).slice(0, limit);
 
 export interface BuildCatalogInput {
   listings: readonly RetailListing[];
@@ -199,12 +393,25 @@ export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
     const newScreen = screen(offers.filter((offer) => offer.condition === "new"));
     const usedScreen = screen(offers.filter((offer) => offer.condition === "used"));
 
+    // Products are built only from the NEW listings the band kept. Measured in production on
+    // 2026-09-16: building them from every listing put yogurts at $ 70 on top of "colchón" and a
+    // convector at $ 2.773 on top of "aire acondicionado" — the band had already dropped those rows
+    // from the medians and the cheapest list, but the product table sorts by price and leads with
+    // exactly what the band rejected or flagged, then publishes it as a schema.org Offer.
+    // `offers[i]` is `toOffer(bucket.listings[i])`, so identity of the offer object maps back to
+    // its listing without trusting urls to be unique.
+    const keptNew = new Set(newScreen.kept);
+    const productListings = bucket.listings.filter((_, index) => keptNew.has(offers[index]!));
+
     const newBand = bandOf(newScreen.kept.map((offer) => offer.priceUyu));
     const usedBand = bandOf(usedScreen.kept.map((offer) => offer.priceUyu), MIN_USED_BAND_SAMPLE);
 
-    const cheapest = [...newScreen.kept, ...usedScreen.kept]
-      .sort((a, b) => Number(a.condition === "used") - Number(b.condition === "used") || a.priceUyu - b.priceUyu)
-      .slice(0, 8);
+    // Each market gets its OWN cap. One new-first list cut at 8 left every variant priced new with
+    // zero used offers — a new band needs 8 new rows, so the used ones were always past the cut.
+    const cheapest = [
+      ...cheapestOffers(newScreen.kept, ITEM_NEW_OFFERS),
+      ...cheapestOffers(usedScreen.kept, ITEM_USED_OFFERS),
+    ];
 
     const observedAt = bucket.listings
       .map((listing) => listing.observedAt)
@@ -230,7 +437,7 @@ export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
       newBand,
       usedBand,
       usedSavingPct: category.usedOk ? savingPct(newBand, usedBand) : null,
-      products: buildProducts(bucket.listings, category, usdUyu),
+      products: buildProducts(productListings, category, usdUyu),
       offers: cheapest,
       suspectDropped: newScreen.suspect.length + usedScreen.suspect.length,
       observedAt,

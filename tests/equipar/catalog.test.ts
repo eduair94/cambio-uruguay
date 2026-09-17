@@ -69,6 +69,47 @@ describe("catálogo", () => {
     expect(item!.usedSavingPct).toBeGreaterThan(50);
   });
 
+  it("guarda los usados más baratos aunque la variante tenga ocho nuevos o más", () => {
+    // La lista era nuevo-primero con un único slice(0, 8). Una banda nueva exige 8 nuevos, así que
+    // toda variante con precio nuevo llegaba a la página sin un solo usado.
+    const [item] = buildEquiparCatalog({
+      listings: [...newFridges(), ...usedFridges().slice(0, 3)],
+      usdUyu: 40,
+    });
+    const conditions = item!.offers.map((offer) => offer.condition);
+    expect(conditions.filter((condition) => condition === "new")).toHaveLength(8);
+    expect(conditions.filter((condition) => condition === "used")).toHaveLength(3);
+    // Nuevos primero, y cada mercado ordenado del más barato al más caro.
+    expect(conditions.slice(0, 8).every((condition) => condition === "new")).toBe(true);
+    for (const condition of ["new", "used"] as const) {
+      const prices = item!.offers.filter((offer) => offer.condition === condition).map((offer) => offer.priceUyu);
+      expect(prices).toEqual([...prices].sort((a, b) => a - b));
+    }
+    // Los ocho nuevos son los ocho más baratos de los diez.
+    expect(Math.max(...item!.offers.filter((offer) => offer.condition === "new").map((offer) => offer.priceUyu))).toBe(
+      29_000 + 7 * 400
+    );
+  });
+
+  it("corta los usados en los seis más baratos", () => {
+    const manyUsed = Array.from({ length: 9 }, (_, index) =>
+      listing({
+        title: "Heladera funcionando impecable",
+        source: "facebook",
+        sellerKey: "facebook",
+        sellerName: "Facebook Marketplace",
+        channel: "classifieds",
+        condition: "used",
+        price: 12_000 + index * 300,
+        attributes: { CATEGORY_SPEC: "heladera" },
+      })
+    );
+    const [item] = buildEquiparCatalog({ listings: [...newFridges(), ...manyUsed], usdUyu: 40 });
+    const used = item!.offers.filter((offer) => offer.condition === "used").map((offer) => offer.priceUyu);
+    expect(used).toEqual([12_000, 12_300, 12_600, 12_900, 13_200, 13_500]);
+    expect(item!.offers).toHaveLength(14);
+  });
+
   it("no arma un producto con un aviso de Marketplace", () => {
     // "Heladera funcionando impecable" no identifica nada. Fusionar por ese texto pondría dos
     // heladeras distintas en la misma fila.

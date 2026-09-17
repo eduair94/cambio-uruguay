@@ -3,6 +3,7 @@
 // re-implement the MLU client here: that service already owns the device ids, headers and proxy
 // handling, and it is the same bridge other projects use.
 import { fetchJson } from "../net";
+import { listPriceOf } from "../price";
 import type { CategorySpec, RetailListing, RetailSourceResult } from "../types";
 
 const API_BASE = (
@@ -28,12 +29,36 @@ interface MlResult {
   price?: {
     amount?: number;
     currency?: string;
+    /** MercadoLibre's own crossed-out reference price ("antes"), when the listing carries one. */
+    original_amount?: number;
   };
   image?: string;
   seller?: { id?: number; name?: string; official_store?: boolean; city?: string };
   reviews?: { rating?: number; total?: number };
   free_shipping?: boolean;
   attributes?: Array<{ id?: string; name?: string; value?: string }>;
+}
+
+/** Lowercase, accent-free, dash-separated: "Estación hogar" -> "estacion-hogar". */
+function slugify(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * MercadoLibre only publishes a numeric seller id for some listings — plenty of storefronts show up
+ * with a name and no id. Falling back to a single `ml:unknown` for all of them used to merge every
+ * nameless-id seller into one "store", hiding real competition between distinct sellers. The name
+ * slug keeps them apart; only a listing with neither id nor name collapses into `ml:unknown`.
+ */
+export function mlSellerKey(seller: { id?: number; name?: string } | undefined): string {
+  if (typeof seller?.id === "number" && Number.isFinite(seller.id)) return `ml:${seller.id}`;
+  const slug = slugify(String(seller?.name || "").trim());
+  return slug ? `ml:n:${slug}` : "ml:unknown";
 }
 
 const conditionOf = (value: string | undefined): RetailListing["condition"] => {
@@ -44,7 +69,7 @@ const conditionOf = (value: string | undefined): RetailListing["condition"] => {
   return "unknown";
 };
 
-function toListing(result: MlResult, observedAt: string): RetailListing | null {
+export function mlToListing(result: MlResult, observedAt: string): RetailListing | null {
   const id = String(result.id || "").trim();
   const title = String(result.title || "").trim();
   const amount = Number(result.price?.amount);
@@ -63,7 +88,7 @@ function toListing(result: MlResult, observedAt: string): RetailListing | null {
   return {
     listingId: `ml:${id}`,
     source: "mercadolibre",
-    sellerKey: `ml:${result.seller?.id ?? "unknown"}`,
+    sellerKey: mlSellerKey(result.seller),
     sellerName: String(result.seller?.name || "Mercado Libre").trim(),
     channel: "marketplace",
     title,
@@ -82,6 +107,7 @@ function toListing(result: MlResult, observedAt: string): RetailListing | null {
     location: result.seller?.city || null,
     freeShipping: typeof result.free_shipping === "boolean" ? result.free_shipping : null,
     officialStore: Boolean(result.seller?.official_store),
+    listPrice: listPriceOf(amount, result.price?.original_amount),
     observedAt,
   };
 }
@@ -145,7 +171,7 @@ export async function harvestMercadoLibre(
       pages++;
       if (results.length) reachable = true;
       for (const result of results) {
-        const listing = toListing(result, observedAt);
+        const listing = mlToListing(result, observedAt);
         if (!listing) continue;
         const accept = scan.fromCategory
           ? scan.spec.acceptFromCategory ?? ((title: string) => scan.spec.accept(title))

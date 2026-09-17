@@ -69,6 +69,12 @@ const PROGRAMMATIC_PAGES: Array<{ file: string; sitemapMarker: string }> = [
     file: 'tarjetas-de-debito-uruguay/[tarjeta].vue',
     sitemapMarker: '`/tarjetas-de-debito-uruguay/${slug}`',
   },
+  // Una página por categoría del hub de equipar una casa: medianas, historia, modelos y FAQ.
+  { file: 'equipar-casa-uruguay/index.vue', sitemapMarker: '/equipar-casa-uruguay' },
+  {
+    file: 'equipar-casa-uruguay/[categoria].vue',
+    sitemapMarker: '`/equipar-casa-uruguay/${slug}`',
+  },
 ]
 
 describe('the programmatic families exist on disk', () => {

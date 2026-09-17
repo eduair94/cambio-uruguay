@@ -50,6 +50,7 @@ export const equiparPt: EquiparCopy = {
   usedNotAdvised: 'usado não recomendado',
   quantityLabel: 'compram-se {n}',
   observations: '{n} preços levantados',
+  categoryLink: '{label}: preços e histórico (em espanhol)',
 
   calcTitle: 'Com o que eu tenho, até onde chego?',
   calcIntro:

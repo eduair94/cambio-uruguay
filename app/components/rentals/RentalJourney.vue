@@ -137,6 +137,12 @@ const { data: analysis } = await useFetch<RentalAnalysis>('/api/rentals/analysis
 const { data: equipar } = await useFetch<EquiparPeek>('/api/equipar', {
   key: 'journey-equipar',
   default: () => ({}),
+  // `/api/equipar` ships every category's items and products (up to 14 offers per row); this
+  // component only reads meta.baskets, so drop the rest in transform, before it reaches the SSR
+  // payload — a computed here would still ship the whole thing to the browser.
+  transform: (payload: EquiparPeek): EquiparPeek => ({
+    meta: { baskets: payload?.meta?.baskets ?? [] },
+  }),
 })
 
 const minimalBasket = computed(() =>

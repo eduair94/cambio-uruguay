@@ -19,6 +19,7 @@ import type {
   RetailSourceResult,
   RetailStore,
   RetailStoreAdapter,
+  StoreHarvestOptions,
 } from "./types";
 
 export interface RetailSourceRun {
@@ -50,12 +51,21 @@ export interface HarvestOptions {
   maxMlScans?: number;
   /** Cap on Facebook Marketplace searches for this run. Unlimited when absent. */
   maxFbQueries?: number;
+  /**
+   * Cap on distinct search terms per storefront that searches server-side (WooCommerce, VTEX).
+   * Absent keeps each adapter's env default (24), which is what the chair directory runs on.
+   *
+   * It is a code-path option and not a pm2 env var on purpose: scripts/deploy-backend.sh only
+   * recreates a registered app when its cron changes, so an env added to ecosystem.config.js never
+   * reaches the VPS and the cap would silently stay at 24.
+   */
+  maxStoreQueries?: number;
 }
 
 /** A store's `adapter` is the only thing that decides how it is read. */
 const HARVESTERS: Record<
   RetailStoreAdapter,
-  (store: RetailStore, specs: readonly CategorySpec[]) => Promise<RetailSourceResult>
+  (store: RetailStore, specs: readonly CategorySpec[], options: StoreHarvestOptions) => Promise<RetailSourceResult>
 > = {
   fenicio: harvestFenicioStore,
   shopify: harvestShopifyStore,
@@ -113,7 +123,9 @@ export async function harvestRetail(options: HarvestOptions): Promise<RetailHarv
       });
       continue;
     }
-    const result = await safely(() => HARVESTERS[store.adapter](store, specs));
+    const result = await safely(() =>
+      HARVESTERS[store.adapter](store, specs, { maxQueries: options.maxStoreQueries })
+    );
     record(store.key, store.name, store.adapter, result);
   }
 

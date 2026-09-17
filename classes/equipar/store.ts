@@ -8,6 +8,9 @@
 //     turns a source outage into "nothing exists".
 import { EquiparItemModel } from "../models/EquiparItem";
 import { EquiparMetaModel } from "../models/EquiparMeta";
+import { EquiparStoreSnapshotModel } from "../models/EquiparStoreSnapshot";
+import type { RetailListing } from "../retail/types";
+import { EQUIPAR_STORE_SNAPSHOT_KEY, STORE_SNAPSHOT_MAX_BYTES, storeSnapshotBytes, storeSnapshotRows } from "./storeSnapshot";
 import type { EquiparItem, EquiparMeta } from "./types";
 
 export const EQUIPAR_META_KEY = "equipar-casa-uruguay";
@@ -79,4 +82,29 @@ export async function saveEquiparCatalog(
     { $set: { ...meta, key: EQUIPAR_META_KEY } },
     { upsert: true }
   );
+}
+
+/**
+ * Writes the daily run's store listings for the hourly run. Returns the measured size in bytes, or
+ * null when it refused: above {@link STORE_SNAPSHOT_MAX_BYTES} the previous snapshot is kept rather
+ * than risking a failed 16 MB write.
+ */
+export async function saveStoreSnapshot(listings: readonly RetailListing[], generatedAt: string): Promise<{ bytes: number; saved: boolean }> {
+  const rows = storeSnapshotRows(listings);
+  const bytes = storeSnapshotBytes(rows);
+  if (bytes > STORE_SNAPSHOT_MAX_BYTES) return { bytes, saved: false };
+  await EquiparStoreSnapshotModel.updateOne(
+    { key: EQUIPAR_STORE_SNAPSHOT_KEY },
+    { $set: { key: EQUIPAR_STORE_SNAPSHOT_KEY, generatedAt, listings: rows } },
+    { upsert: true }
+  );
+  return { bytes, saved: true };
+}
+
+/** The daily run's store listings, or null when there is none yet. */
+export async function loadStoreSnapshot(): Promise<{ generatedAt: string; listings: RetailListing[] } | null> {
+  const row = (await EquiparStoreSnapshotModel.findOne({ key: EQUIPAR_STORE_SNAPSHOT_KEY })
+    .select({ generatedAt: 1, listings: 1 })
+    .lean()) as unknown as { generatedAt: string; listings?: RetailListing[] } | null;
+  return row ? { generatedAt: row.generatedAt, listings: row.listings ?? [] } : null;
 }

@@ -154,6 +154,10 @@ export const RETAIL_STORES: RetailStore[] = [
     adapter: "woocommerce",
     channel: "local-store",
     expectCurrency: "UYU",
+    // No per-store price flag. TYT's minor unit is honest; its `currency_code` is not: it says "UYU"
+    // on every product while the storefront renders 149 of 515 in dollars ("15900" is USD 159,00,
+    // not $ 15.900 and not $ 159). The adapter reads the rendered currency from `price_html`; see
+    // wooPricing in sources/woocommerce.ts. Measured 2026-09-16.
     enabled: true,
   },
   {
