@@ -1,4 +1,4 @@
-// Weekly store profiles for /tiendas-online-uruguay.
+// Weekly store profiles for /tiendas-online-uruguay (plus a nightly `--reddit-only` mode, Task 13).
 //
 // For every store in the curated registry (classes/stores/registry.ts) this reads, one store at a
 // time: its own homepage, how old its domain is, its Trustpilot page, its Google Maps listing (only
@@ -22,8 +22,18 @@
 //     own catalogues when an app database is configured (read-only); without one, that signal is
 //     simply reported as not queried. It does not load the stored profiles either, so a dry run reads
 //     Reddit as if from scratch (bounded by the same budget).
+//   * `--reddit-only` (Task 13) narrows all of the above to Reddit alone: site/age/trustpilot/google
+//     and the catalogue are never queried (their fetch functions are not even called), and the "save
+//     only if something answered" rule tightens to "save only if Reddit itself progressed" — a
+//     completed call that only re-confirms an already-covered window earns no write
+//     (`classes/stores/profile.ts` `shouldQuerySignal`/`shouldLoadCatalog`/`shouldSaveStore`/
+//     `redditProgressed`). Meant to run nightly on the same call budget as the weekly job, so the
+//     24-month backfill finishes in ~8 nights instead of ~8 weeks (Task 12: ~90 calls/store, 900/week,
+//     76 stores).
 //
-// Flags: `--dry-run` (print, never write) and `--only=<key,key>` (a subset of the registry).
+// Flags: `--dry-run` (print, never write), `--only=<key,key>` (a subset of the registry), and
+// `--reddit-only` (Task 13: ask Reddit only — every other source keeps last week's value untouched —
+// meant to run nightly so the 24-month Reddit backfill finishes in ~8 nights instead of ~8 weeks).
 import dotenv from "dotenv";
 dotenv.config();
 dotenv.config({ path: "app/.env" });
@@ -33,9 +43,14 @@ import {
   buildProfile,
   carriedReddit,
   formatStoreLogLine,
+  redditProgressed,
+  shouldLoadCatalog,
+  shouldQuerySignal,
+  shouldSaveStore,
   shouldStopEarly,
   storeSignalApplies,
   type StoreProfileDoc,
+  type StoreRunMode,
   type StoreSignalName,
 } from "./classes/stores/profile";
 import { STORES, STORE_BY_KEY } from "./classes/stores/registry";
@@ -84,7 +99,8 @@ async function readStore(
   entry: StoreEntry,
   catalog: Map<string, CatalogSignal> | undefined,
   previous: StoreProfileDoc | null,
-  redditBudget: { calls: number }
+  redditBudget: { calls: number },
+  mode: StoreRunMode
 ): Promise<StoreRun> {
   const now = new Date();
   const fetched: Partial<Record<StoreSignalName, unknown>> = {};
@@ -94,6 +110,12 @@ async function readStore(
   const read = async (name: StoreSignalName, run: () => Promise<unknown>): Promise<void> => {
     if (!storeSignalApplies(entry, name)) {
       fetched[name] = null;
+      return;
+    }
+    if (!shouldQuerySignal(entry, name, mode)) {
+      // Applies to the store, but this run's mode does not ask it: not queried, not failed — the
+      // store simply was not tested against this source tonight. `undefined` keeps last week's value.
+      fetched[name] = undefined;
       return;
     }
     queried.push(name);
@@ -144,11 +166,14 @@ async function readStore(
       : catalog.get(entry.key) ?? null
     : null;
 
+  const doc = buildProfile(entry, fetched, previous, now);
+  const progressed = redditProgressed({ redditNew, previousCursor: stored.cursor, nextCursor: doc.redditCursor });
+
   return {
-    doc: buildProfile(entry, fetched, previous, now),
+    doc,
     queried,
     failed,
-    fresh: failed.length < queried.length,
+    fresh: shouldSaveStore({ mode, queried, failed, redditProgressed: progressed }),
     redditNoBudget,
     redditFetched,
     redditNew,
@@ -191,6 +216,7 @@ function detailLine(doc: StoreProfileDoc): string {
 async function main(): Promise<void> {
   const dryRun = process.argv.includes("--dry-run");
   const only = parseOnly(process.argv);
+  const mode: StoreRunMode = process.argv.includes("--reddit-only") ? "reddit-only" : "full";
 
   // The app's own env calls this MONGO_URI; the root bridge insists on APP_MONGO_URI so a job can
   // never write the backend database by accident. Map it explicitly, like sync_equipar — but only
@@ -216,6 +242,7 @@ async function main(): Promise<void> {
   const redditBudget = { calls: REDDIT_MAX_CALLS };
   console.log(
     `[tiendas] ${stores.length} tiendas, hasta ${REDDIT_MAX_CALLS} llamadas a Reddit` +
+      `${mode === "reddit-only" ? " (--reddit-only: sólo Reddit, el resto conserva su valor)" : ""}` +
       `${dryRun ? " (dry run: no se escribe nada)" : ""}`
   );
 
@@ -227,7 +254,9 @@ async function main(): Promise<void> {
   }
 
   let catalog: Map<string, CatalogSignal> | undefined;
-  if (appDbConfigured()) {
+  if (!shouldLoadCatalog(mode)) {
+    console.log("[tiendas] --reddit-only: catálogos propios sin consultar");
+  } else if (appDbConfigured()) {
     try {
       catalog = await loadCatalogPresence(new Date().toISOString());
       console.log(`[tiendas] catálogos propios: ${catalog.size} tiendas con ofertas`);
@@ -241,7 +270,7 @@ async function main(): Promise<void> {
   const runs: StoreRun[] = [];
   let saved = 0;
   for (const entry of stores) {
-    const run = await readStore(entry, catalog, previous.get(entry.key) ?? null, redditBudget);
+    const run = await readStore(entry, catalog, previous.get(entry.key) ?? null, redditBudget, mode);
     runs.push(run);
 
     const unanswered = run.failed.map((name) => (name === "reddit" && run.redditNoBudget ? "reddit(sin presupuesto)" : name));
@@ -262,7 +291,8 @@ async function main(): Promise<void> {
     const withFreshSignal = runs.filter((r) => r.fresh).length;
     if (shouldStopEarly({ processed: runs.length, withFreshSignal })) {
       console.error(
-        `[tiendas] fuentes caídas: ninguna de las primeras ${runs.length} tiendas obtuvo una respuesta nueva — ` +
+        `[tiendas] fuentes caídas: ninguna de las primeras ${runs.length} tiendas ` +
+          `${mode === "reddit-only" ? "avanzó en Reddit" : "obtuvo una respuesta nueva"} — ` +
           "se corta la corrida sin escribir nada"
       );
       process.exit(1);

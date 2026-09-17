@@ -449,6 +449,27 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Task 13: nightly `--reddit-only` — same script as currency-store-profiles, but it asks
+      // Reddit only; site/age/trustpilot/google and the catalogue keep exactly last week's value.
+      // Measured on Task 12: a store's 24-month Arctic Shift backfill costs ~90 calls (~25 min), so
+      // the weekly job's 900-call budget would need ~8 weeks to finish backfilling all 76 stores.
+      // Nightly at the same budget finishes it in ~8 nights instead — the other signals stay weekly
+      // on purpose: Google Places (fetchGoogle) charges per call, and re-reading a domain's age or
+      // Trustpilot every night would answer nothing new.
+      //
+      // 03:41 UTC = 00:41 in Montevideo, free of every other cron in this file. autorestart:false and
+      // exec_mode:"fork" for the same reason as every other cron app here: pm2 must not turn "runs
+      // once a night" into "runs forever". A store is only saved when Reddit itself progressed this
+      // run (a new mention or a moved cursor) — a night with nothing new for a store writes nothing.
+      name: "currency-store-reddit",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_store_profiles.js",
+      args: "--reddit-only",
+      cron_restart: "41 3 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Lender TEA refresh (bancos/financieras/cooperativas/fintech) for /prestamos-uruguay.
       // Fallback chain: regex parser first (oca/pronto/cash), Gemini-grounded lookup for the rest
       // (host-gated to the lender's own resolved domain). Daily 08:47 UTC ≈ 05:47

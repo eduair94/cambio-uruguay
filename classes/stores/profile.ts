@@ -335,6 +335,81 @@ export function shouldStopEarly(input: { processed: number; withFreshSignal: num
   return input.processed >= EARLY_STOP_STORES && input.withFreshSignal === 0;
 }
 
+// --- Task 13: `--reddit-only` ------------------------------------------------------------------
+//
+// A nightly mode so Reddit's 24-month backfill finishes in ~8 nights instead of ~8 weeks (Task 12
+// measured ~90 Arctic Shift calls per store, 900/week, 76 stores). Every other outside source must
+// stay on the weekly cadence — Google Places costs money per call — so a reddit-only run must not
+// touch them AT ALL, and a store is only worth writing again when Reddit itself moved.
+
+export type StoreRunMode = "full" | "reddit-only";
+
+/**
+ * Which outside signals `sync_store_profiles.ts` is allowed to actually ask for THIS RUN, for one
+ * store — narrower than `storeSignalApplies`, which is a fact about the store, not the run. In
+ * `"reddit-only"` mode the fetch functions for site/age/trustpilot/google must never even be called:
+ * their old value reaches `buildProfile` as `undefined` and is kept untouched, exactly like a source
+ * that failed to answer.
+ */
+export function shouldQuerySignal(entry: StoreEntry, name: StoreSignalName, mode: StoreRunMode): boolean {
+  if (!storeSignalApplies(entry, name)) return false;
+  return mode === "full" || name === "reddit";
+}
+
+/**
+ * The catalogue is not read through `storeSignalApplies`'s per-store loop — it is loaded once, for
+ * the whole run, from our own database (`classes/stores/signals/catalog.ts`) — but a reddit-only
+ * night must not touch it either: the mode exists only to let Reddit catch up, not to re-read
+ * anything else, however cheap.
+ */
+export function shouldLoadCatalog(mode: StoreRunMode): boolean {
+  return mode === "full";
+}
+
+/**
+ * True when a Reddit read actually moved the store forward this run: a mention that was not stored
+ * before, or the cursor landing somewhere it had not (a completed window, a day further into the
+ * backfill, the backfill finishing). Two absent cursors — Reddit does not apply to this store, or
+ * nothing was read this run — are not progress against each other.
+ */
+export function redditProgressed(input: {
+  redditNew: number | undefined;
+  previousCursor: RedditCursor | null;
+  nextCursor: RedditCursor | null;
+}): boolean {
+  if ((input.redditNew ?? 0) > 0) return true;
+  const { previousCursor: a, nextCursor: b } = input;
+  if (!a && !b) return false;
+  if (!a || !b) return true;
+  return (
+    a.backfillStartUtc !== b.backfillStartUtc ||
+    a.backfillNextUtc !== b.backfillNextUtc ||
+    a.backfillDone !== b.backfillDone ||
+    a.checkedUntilUtc !== b.checkedUntilUtc
+  );
+}
+
+export interface StoreSaveDecision {
+  mode: StoreRunMode;
+  queried: readonly StoreSignalName[];
+  failed: readonly StoreSignalName[];
+  redditProgressed: boolean;
+}
+
+/**
+ * Whether a store's run is worth writing.
+ *   * `"full"` — unchanged from Task 6: saved when at least one queried outside source answered
+ *     (`failed.length < queried.length`), so a long Reddit backfill never loses what it did even if
+ *     every other source that week was down.
+ *   * `"reddit-only"` — Reddit is the only thing this mode ever asks, so "it answered" is not a high
+ *     enough bar: a completed call that only re-confirms a window already covered would rewrite the
+ *     same document every night for no reason. Only real progress earns a write.
+ */
+export function shouldSaveStore(decision: StoreSaveDecision): boolean {
+  if (decision.mode === "reddit-only") return decision.redditProgressed;
+  return decision.failed.length < decision.queried.length;
+}
+
 /**
  * `[tiendas] <key> señales=<n> sitio=<ok|blocked|->  tp=<score|->  g=<rating|->  reddit=<n|->[(+<new>)][ backfill <date>]  catálogo=<n|->`
  *
