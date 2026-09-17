@@ -104,12 +104,23 @@ export async function harvestRetail(options: HarvestOptions): Promise<RetailHarv
     "mercadolibre",
     await safely(() => harvestMercadoLibre(specs, options.maxMlScans))
   );
-  record(
-    "facebook",
-    "Facebook Marketplace",
-    "facebook",
-    await safely(() => harvestFacebookMarketplace(specs, options.maxFbQueries))
-  );
+
+  // A caller whose every spec declares `fbQueries: []` (celulares: Marketplace titles almost never
+  // carry brand+family+storage, so nothing there could ever pass `accept` — see
+  // classes/phones/spec.ts's own comment) has nothing for this source to search. Calling it anyway
+  // would report a permanent `ok:false "no disponible"` line with no real search behind it, which
+  // reads as an outage on every single run forever. equipar and chairs are unaffected: every one of
+  // their categories/specs declares real `fbQueries`, so `wantsFacebook` is true for them exactly as
+  // it always was.
+  const wantsFacebook = specs.some((spec) => (spec.fbQueries?.length ?? 0) > 0);
+  if (wantsFacebook) {
+    record(
+      "facebook",
+      "Facebook Marketplace",
+      "facebook",
+      await safely(() => harvestFacebookMarketplace(specs, options.maxFbQueries))
+    );
+  }
 
   for (const store of stores) {
     if (fast && store.adapter === "fenicio") {

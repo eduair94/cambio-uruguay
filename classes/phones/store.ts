@@ -9,6 +9,9 @@
 //     the pre-catalogue listing count too), this file only ever upserts what it is handed.
 import { PhoneModelModel } from "../models/PhoneModel";
 import { PhoneMetaModel } from "../models/PhoneMeta";
+import { PhoneStoreSnapshotModel } from "../models/PhoneStoreSnapshot";
+import type { RetailListing } from "../retail/types";
+import { PHONE_STORE_SNAPSHOT_KEY, PHONE_STORE_SNAPSHOT_MAX_BYTES, phoneStoreSnapshotBytes, phoneStoreSnapshotRows } from "./storeSnapshot";
 import type { PhoneMeta, PhoneModel } from "./catalog";
 
 export const PHONE_META_KEY = "celulares-uruguay";
@@ -88,4 +91,33 @@ export async function savePhoneCatalog(
     );
   }
   await PhoneMetaModel.updateOne({ key: PHONE_META_KEY }, { $set: { ...meta, key: PHONE_META_KEY } }, { upsert: true });
+}
+
+/**
+ * Writes the daily run's store listings for the hourly run — mirrors classes/equipar/store.ts's
+ * `saveStoreSnapshot`. Returns the measured size in bytes, or null-saved when it refused: above
+ * {@link PHONE_STORE_SNAPSHOT_MAX_BYTES} the previous snapshot is kept rather than risking a failed
+ * 16 MB write.
+ */
+export async function savePhoneStoreSnapshot(
+  listings: readonly RetailListing[],
+  generatedAt: string
+): Promise<{ bytes: number; saved: boolean }> {
+  const rows = phoneStoreSnapshotRows(listings);
+  const bytes = phoneStoreSnapshotBytes(rows);
+  if (bytes > PHONE_STORE_SNAPSHOT_MAX_BYTES) return { bytes, saved: false };
+  await PhoneStoreSnapshotModel.updateOne(
+    { key: PHONE_STORE_SNAPSHOT_KEY },
+    { $set: { key: PHONE_STORE_SNAPSHOT_KEY, generatedAt, listings: rows } },
+    { upsert: true }
+  );
+  return { bytes, saved: true };
+}
+
+/** The daily run's store listings, or null when there is none yet. */
+export async function loadPhoneStoreSnapshot(): Promise<{ generatedAt: string; listings: RetailListing[] } | null> {
+  const row = (await PhoneStoreSnapshotModel.findOne({ key: PHONE_STORE_SNAPSHOT_KEY })
+    .select({ generatedAt: 1, listings: 1 })
+    .lean()) as unknown as { generatedAt: string; listings?: RetailListing[] } | null;
+  return row ? { generatedAt: row.generatedAt, listings: row.listings ?? [] } : null;
 }

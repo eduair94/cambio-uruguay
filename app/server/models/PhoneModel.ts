@@ -56,6 +56,9 @@ const PhoneModelSchema = new Schema(
     ambiguousDropped: { type: Number, default: 0 },
     ambiguousConditions: { type: [String], default: [] },
     observedAt: { type: String, default: null },
+    // Up to 365 daily points — real weight on a directory-list document. NOTE for Task 6: any LIST
+    // endpoint (the directory, a brand/family listing) must project this field OUT; only a single
+    // model's own page needs it.
     history: { type: [Schema.Types.Mixed], default: [] },
     firstSeen: { type: String, required: true },
     lastSeen: { type: String, required: true },

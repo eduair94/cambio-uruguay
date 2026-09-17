@@ -25,7 +25,15 @@ import { buildPhoneCatalog } from "./classes/phones/catalog";
 import type { PhoneMeta, PhoneModel } from "./classes/phones/catalog";
 import { identifyPhone } from "./classes/phones/identify";
 import { PHONE_SPEC, PHONE_STORE_KEYS } from "./classes/phones/spec";
-import { countStoredPhones, loadPreviousPhones, savePhoneCatalog, withPhoneHistory } from "./classes/phones/store";
+import {
+  countStoredPhones,
+  loadPhoneStoreSnapshot,
+  loadPreviousPhones,
+  savePhoneCatalog,
+  savePhoneStoreSnapshot,
+  withPhoneHistory,
+} from "./classes/phones/store";
+import { mergePhoneStoreSnapshot } from "./classes/phones/storeSnapshot";
 import { recordPricewatch } from "./classes/pricewatch/record";
 import { harvestRetail } from "./classes/retail/harvest";
 import { retailStores } from "./classes/retail/stores";
@@ -60,7 +68,7 @@ export async function main(): Promise<void> {
   const startedAt = Date.now();
   const stores = retailStores(PHONE_STORE_KEYS);
 
-  const [harvest, usdUyu, previous, storedCount] = await Promise.all([
+  const [harvest, usdUyu, previous, storedCount, storeSnapshot] = await Promise.all([
     harvestRetail({
       stores,
       specs: [PHONE_SPEC],
@@ -72,6 +80,15 @@ export async function main(): Promise<void> {
     fetchUsdUyuRate(),
     skipDb ? Promise.resolve(new Map()) : loadPreviousPhones(),
     skipDb ? Promise.resolve(null) : countStoredPhones(),
+    // Only the hourly run reads it, and only when it can reach the APP DB at all. A snapshot that
+    // cannot be read leaves the hourly run exactly as it was before the snapshot existed; it never
+    // fails the run — see classes/phones/storeSnapshot.ts for why this exists.
+    fast && !skipDb
+      ? loadPhoneStoreSnapshot().catch((error) => {
+          console.error("[phones] no se pudo leer la foto de tiendas de la diaria", error);
+          return null;
+        })
+      : Promise.resolve(null),
   ]);
 
   for (const run of harvest.runs) {
@@ -90,7 +107,24 @@ export async function main(): Promise<void> {
     );
   }
 
-  const models = buildPhoneCatalog({ listings: guarded.listings, usdUyu });
+  // The hourly run skips the Fenicio stores and searches half the ML terms, so on its own it would
+  // rebuild every model from a thinner market than the daily run just saw — the daily run's store
+  // offers/bands would vanish for 23 hours a day, and savePhoneCatalog's whole-document $set would
+  // overwrite yesterday's good bands with ones built from ML+Shopify+WooCommerce alone. The snapshot
+  // rows already passed the unit guard against the daily run's OWN larger ML sample, so they are
+  // merged in AFTER applyUnitGuard here, not re-guarded against this run's (thinner) ML sample.
+  let listings = guarded.listings;
+  if (fast && storeSnapshot) {
+    const merged = mergePhoneStoreSnapshot(listings, storeSnapshot.listings, Date.now());
+    console.log(
+      `[phones] foto de tiendas del ${storeSnapshot.generatedAt}: ${merged.fromSnapshot} avisos sumados, ${merged.stale} vencidos`
+    );
+    listings = merged.listings;
+  } else if (fast) {
+    console.log("[phones] sin foto de tiendas de la diaria: se publica sólo lo leído en esta corrida");
+  }
+
+  const models = buildPhoneCatalog({ listings, usdUyu });
   const publishable = models.filter(hasPublishableNewBand);
   const ambiguousModels = models.filter((model) => model.ambiguousConditions.length > 0).length;
   const suspectDropped = models.reduce((sum, model) => sum + model.suspectDropped, 0);
@@ -112,7 +146,7 @@ export async function main(): Promise<void> {
   const meta: PhoneMeta = {
     generatedAt: new Date().toISOString(),
     usdUyu,
-    listings: guarded.listings.length,
+    listings: listings.length,
     models: models.length,
     runs: harvest.runs,
   };
@@ -121,8 +155,11 @@ export async function main(): Promise<void> {
     await savePhoneCatalog(stored, meta);
 
     // Own try/catch, like sync_equipar.ts: a pricewatch failure must never cost the catalogue that
-    // was just saved. productKeyFor keys a phone's offers by its MODEL identity rather than the
-    // default ml:<catalogId> — most celulares listings, store or ML, never carry a catalog id at all.
+    // was just saved. Recorded over `guarded.listings` (pre-merge, unit-guarded) rather than the
+    // possibly snapshot-merged `listings` — a fast run's snapshot rows were not observed THIS run,
+    // and giving them today's date would fake a price point that was never actually seen today.
+    // productKeyFor keys a phone's offers by its MODEL identity rather than the default
+    // ml:<catalogId> — most celulares listings, store or ML, never carry a catalog id at all.
     try {
       const pw = await recordPricewatch(guarded.listings, "celulares", undefined, {
         productKeyFor: (listing) => {
@@ -134,14 +171,31 @@ export async function main(): Promise<void> {
     } catch (error) {
       console.error("[phones] no se pudo registrar el historial de precios", error);
     }
+
+    // Only the daily run writes the store snapshot, and only after it published: a thin run already
+    // threw above, so it can never overwrite a good snapshot either. Own try/catch, like pricewatch:
+    // the catalogue is already saved, and a failed snapshot write only costs the hourly runs their
+    // store side until tomorrow — it must not turn a published run into a failure.
+    if (!fast) {
+      const storeListings = guarded.listings.filter((listing) => listing.source === "store");
+      try {
+        const snapshot = await savePhoneStoreSnapshot(storeListings, meta.generatedAt);
+        console.log(
+          `[phones] foto de tiendas: ${storeListings.length} avisos, ${(snapshot.bytes / 1024 / 1024).toFixed(2)} MB` +
+            (snapshot.saved ? "" : " — supera el tope, se conserva la anterior")
+        );
+      } catch (error) {
+        console.error("[phones] no se pudo guardar la foto de tiendas; la horaria usa la anterior", error);
+      }
+    }
   } else {
-    console.log("[phones] --dry-run: no se guarda el catálogo ni el historial de precios");
+    console.log("[phones] --dry-run: no se guarda el catálogo, el historial de precios ni la foto de tiendas");
   }
 
   console.log(
     `[phones] ${models.length} modelos (${publishable.length} con banda nueva publicable, ${ambiguousModels} con alguna condición ambigua), ` +
       `${suspectDropped} ofertas sospechosas descartadas, ${ambiguousDropped} descartadas por ambigüedad, ` +
-      `${guarded.listings.length} avisos, ${((Date.now() - startedAt) / 1000).toFixed(1)}s`
+      `${listings.length} avisos, ${((Date.now() - startedAt) / 1000).toFixed(1)}s`
   );
 }
 
