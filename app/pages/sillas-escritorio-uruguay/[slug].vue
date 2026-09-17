@@ -160,7 +160,12 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
                 :class="{ 'is-best': offer.id === best?.id }"
               >
                 <td :data-label="t('chairDetail.seller')">
-                  {{ offer.seller }}
+                  <NuxtLink
+                    v-if="storeKeyFor(offer.seller)"
+                    :to="localePath(`/tiendas-online-uruguay/${storeKeyFor(offer.seller)}`)"
+                    >{{ offer.seller }}</NuxtLink
+                  >
+                  <template v-else>{{ offer.seller }}</template>
                   <span v-if="offer.location" class="offer-meta">{{ offer.location }}</span>
                 </td>
                 <td :data-label="t('chairDetail.listing')">
@@ -445,6 +450,7 @@ import {
   type ChairCatalogMeta,
   type ChairCatalogProduct,
 } from '~/utils/chairCatalog'
+import { storeSlugForSeller } from '~/utils/storeDirectory'
 
 interface ChairDetailResponse {
   product: ChairCatalogProduct | null
@@ -471,6 +477,15 @@ const activeImage = computed(
 )
 const best = computed(() => (product.value ? bestChairOffer(product.value) : null))
 const platforms = computed(() => (product.value ? offersByPlatform(product.value) : []))
+
+// Task 10: el nombre del vendedor enlaza a su ficha (/tiendas-online-uruguay/<key>) sólo cuando esa
+// tienda tiene ficha propia — la ruta 404s de verdad si no. `storeProfileKeys` es la lista compartida
+// con /equipar-casa-uruguay/[categoria].vue (useStoreProfileKeys.ts).
+const storeProfileKeys = useStoreProfileKeys()
+const storeKeyFor = (seller: string): string | null => {
+  const key = storeSlugForSeller(seller)
+  return key && storeProfileKeys.value.includes(key) ? key : null
+}
 const trend = computed(() => (product.value ? priceTrend(product.value) : null))
 
 const confidenceColor = computed(() =>

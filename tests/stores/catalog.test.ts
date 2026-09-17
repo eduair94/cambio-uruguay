@@ -51,7 +51,9 @@ describe("catalogPresence", () => {
 
     expect(result.get("tushop")).toEqual({
       offers: 1,
-      verticals: [{ key: "equipar:aire-acondicionado", label: "Aire acondicionado", url: "/equipar-casa-uruguay", offers: 1 }],
+      verticals: [
+        { key: "equipar:aire-acondicionado", label: "Aire acondicionado", url: "/equipar-casa-uruguay/aire-acondicionado", offers: 1 },
+      ],
       checkedAt: CHECKED_AT,
     });
     expect(result.get("expansion-uy")).toEqual({
@@ -153,9 +155,86 @@ describe("catalogPresence", () => {
     const signal = result.get("tushop")!;
     expect(signal.offers).toBe(2);
     expect(signal.verticals).toEqual([
-      { key: "equipar:aire-acondicionado", label: "Aire acondicionado", url: "/equipar-casa-uruguay", offers: 1 },
-      { key: "equipar:heladera", label: "Heladera", url: "/equipar-casa-uruguay", offers: 1 },
+      { key: "equipar:aire-acondicionado", label: "Aire acondicionado", url: "/equipar-casa-uruguay/aire-acondicionado", offers: 1 },
+      { key: "equipar:heladera", label: "Heladera", url: "/equipar-casa-uruguay/heladera", offers: 1 },
     ]);
+  });
+
+  it("falls back to the equipar hub URL for a category no longer in the registry", () => {
+    const equipar = [
+      equiparItem({
+        category: "categoria-retirada",
+        categoryLabel: "Categoría retirada",
+        offers: [{ seller: "TuShopuy", url: "https://tushop.uy/viejo" }],
+      }),
+    ];
+    const result = catalogPresence({ equipar, chairs: [] }, CHECKED_AT);
+    expect(result.get("tushop")!.verticals).toEqual([
+      { key: "equipar:categoria-retirada", label: "Categoría retirada", url: "/equipar-casa-uruguay", offers: 1 },
+    ]);
+  });
+
+  it("caps a store's equipar verticals at 6, keeping the ones with the most offers", () => {
+    // 8 real registry categories, each with a distinct offer count, chosen so the ranking is
+    // unambiguous: heladera(8) > lavarropas(7) > ... > microondas(1). Only the top 6 survive.
+    const counts: Array<[string, string, number]> = [
+      ["heladera", "Heladera", 8],
+      ["lavarropas", "Lavarropas", 7],
+      ["cocina", "Cocina o anafe", 6],
+      ["calefon", "Calefón", 5],
+      ["tv", "Televisor", 4],
+      ["aire-acondicionado", "Aire acondicionado", 3],
+      ["ropero", "Ropero o placard", 2],
+      ["microondas", "Microondas", 1],
+    ];
+    const equipar = counts.map(([category, categoryLabel, n]) =>
+      equiparItem({
+        category,
+        categoryLabel,
+        offers: Array.from({ length: n }, (_, i) => ({
+          seller: "TuShopuy",
+          url: `https://tushop.uy/${category}-${i}`,
+        })),
+      })
+    );
+    const result = catalogPresence({ equipar, chairs: [] }, CHECKED_AT);
+    const verticals = result.get("tushop")!.verticals;
+    expect(verticals).toHaveLength(6);
+    expect(verticals.map((v) => v.key)).toEqual([
+      "equipar:heladera",
+      "equipar:lavarropas",
+      "equipar:cocina",
+      "equipar:calefon",
+      "equipar:tv",
+      "equipar:aire-acondicionado",
+    ]);
+    // The two lowest by offer count (ropero, microondas) are dropped.
+    expect(verticals.map((v) => v.key)).not.toContain("equipar:ropero");
+    expect(verticals.map((v) => v.key)).not.toContain("equipar:microondas");
+  });
+
+  it("never counts the chairs vertical against the equipar cap", () => {
+    const equipar = Array.from({ length: 7 }, (_, i) =>
+      equiparItem({
+        category: [
+          "heladera",
+          "lavarropas",
+          "cocina",
+          "calefon",
+          "tv",
+          "aire-acondicionado",
+          "ropero",
+        ][i],
+        categoryLabel: `Categoria ${i}`,
+        offers: [{ seller: "TuShopuy", url: `https://tushop.uy/x${i}` }],
+      })
+    );
+    const chairs = [chairProduct({ offers: [{ seller: "TuShopuy", url: "https://tushop.uy/silla" }] })];
+    const result = catalogPresence({ equipar, chairs }, CHECKED_AT);
+    const verticals = result.get("tushop")!.verticals;
+    // 7 equipar categories capped to 6, plus the chairs vertical: 7 total.
+    expect(verticals).toHaveLength(7);
+    expect(verticals.some((v) => v.key === "sillas")).toBe(true);
   });
 
   it("resolves a chair offer by sellerKey when the seller display name has no matching alias", () => {

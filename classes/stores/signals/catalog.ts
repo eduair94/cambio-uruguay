@@ -12,13 +12,19 @@
 // label on Full/managed listings, not a real company) never counts here either, for the same reason
 // documented in classes/stores/match.ts.
 //
-// The equipar link is deliberately the SAME url for every category today (`/equipar-casa-uruguay`).
-// Task 10 is expected to point it at a per-category page once one exists, so verticals are already
-// keyed by `equipar:<category>` — that future split only touches EQUIPAR_CATALOG_URL below, not a
-// rewrite of this module.
+// The equipar link (Task 10) points at the category's OWN page, `/equipar-casa-uruguay/<category>`,
+// because every category in the registry has one (classes/equipar/registry.ts; the app-side mirror
+// that renders those pages is kept 1:1 with it by app/tests/unit/equiparMirrorParity.test.ts). A
+// category value read off a stale document that no longer matches a registry key falls back to the
+// hub URL rather than link to a page that doesn't exist. Verticals are keyed by `equipar:<category>`,
+// one per category a store appears in — but a store that shows up in a dozen categories (a general
+// appliance importer, say) would otherwise turn the "En nuestros relevamientos" block into a wall of
+// links, so the equipar verticals are capped at `EQUIPAR_VERTICAL_CAP`, keeping the ones with the
+// most offers. The chairs vertical is never part of that cap: there is only ever one.
 import { EquiparItemModel } from "../../models/EquiparItem";
 import { ChairCatalogProductModel } from "../../models/ChairCatalogProduct";
 import { storeKeyForSeller } from "../match";
+import { EQUIPAR_BY_KEY } from "../../equipar/registry";
 
 export interface CatalogSignal {
   offers: number;
@@ -61,6 +67,17 @@ const EQUIPAR_CATALOG_URL = "/equipar-casa-uruguay";
 const CHAIRS_VERTICAL = { key: "sillas", label: "Sillas de escritorio", url: "/sillas-escritorio-uruguay" } as const;
 
 const STALE_AFTER_DAYS = 7;
+
+/** Most equipar categories a single store's verticals list keeps, ordered by offer count. Chosen to
+ * fit the store page's "En nuestros relevamientos" list without it dominating the ficha — a store
+ * present in most of the ~38 equipar categories still reads as a short, scannable list. */
+const EQUIPAR_VERTICAL_CAP = 6;
+
+/** `/equipar-casa-uruguay/<category>` when the category still has a registry entry (and therefore a
+ * page), else the hub URL. */
+function equiparCategoryUrl(category: string): string {
+  return EQUIPAR_BY_KEY.has(category) ? `${EQUIPAR_CATALOG_URL}/${category}` : EQUIPAR_CATALOG_URL;
+}
 
 /** YYYY-MM-DD, `STALE_AFTER_DAYS` before `checkedAt`. Falls back to "now" if `checkedAt` doesn't
  * parse, so a malformed caller input degrades to "today's cutoff" rather than including everything. */
@@ -140,7 +157,11 @@ export function catalogPresence(
 
   for (const item of input.equipar) {
     if (!isFresh(item.lastSeen, cutoff)) continue;
-    const vertical = { key: `equipar:${item.category}`, label: item.categoryLabel, url: EQUIPAR_CATALOG_URL };
+    const vertical = {
+      key: `equipar:${item.category}`,
+      label: item.categoryLabel,
+      url: equiparCategoryUrl(item.category),
+    };
     for (const offer of item.offers ?? []) record(byStore, offer, vertical);
     for (const product of item.products ?? []) {
       for (const offer of product.offers ?? []) record(byStore, offer, vertical);
@@ -154,9 +175,22 @@ export function catalogPresence(
 
   const result = new Map<string, CatalogSignal>();
   for (const [storeKey, store] of byStore) {
-    const verticals = [...store.verticals.values()]
-      .map((v) => ({ key: v.key, label: v.label, url: v.url, offers: v.offerUrls.size }))
-      .sort((a, b) => a.key.localeCompare(b.key));
+    const all = [...store.verticals.values()].map((v) => ({
+      key: v.key,
+      label: v.label,
+      url: v.url,
+      offers: v.offerUrls.size,
+    }));
+    // Most-offers-first, key as a deterministic tiebreak. The equipar side is capped; "sillas" is
+    // its own vertical and always a single entry, so it is never subject to the cap.
+    const byOffersThenKey = (a: { offers: number; key: string }, b: { offers: number; key: string }) =>
+      b.offers - a.offers || a.key.localeCompare(b.key);
+    const equiparVerticals = all
+      .filter((v) => v.key.startsWith("equipar:"))
+      .sort(byOffersThenKey)
+      .slice(0, EQUIPAR_VERTICAL_CAP);
+    const otherVerticals = all.filter((v) => !v.key.startsWith("equipar:"));
+    const verticals = [...equiparVerticals, ...otherVerticals].sort(byOffersThenKey);
     result.set(storeKey, { offers: store.offerUrls.size, verticals, checkedAt });
   }
   return result;
