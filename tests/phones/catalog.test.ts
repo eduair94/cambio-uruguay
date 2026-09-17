@@ -591,4 +591,113 @@ describe("buildPhoneCatalog", () => {
     expect(model.offers.some((o) => o.esimOnly)).toBe(false);
     expect(model.esimOnlySeen).toBe(false);
   });
+
+  describe("dos poblaciones parejas se abstienen (fix round 3, ruling del controlador)", () => {
+    it("3 nuevas baratas + 3 nuevas caras (salto ≥1.8x): el grupo es ambiguo, sin banda ni ofertas nuevas", () => {
+      const prices = [40_000, 41_000, 42_000, 90_000, 91_000, 92_000];
+      const listings = prices.map((price, i) =>
+        listing({ title: `Celular Xiaomi Redmi Note 15 256gb Negro Vendedor ${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "xiaomi-redmi-note-15-256gb")!;
+      expect(model).toBeDefined();
+      expect(model.offers).toHaveLength(0);
+      expect(model.bands.new).toBeUndefined();
+      expect(model.ambiguousDropped).toBe(6);
+      // Nada acá fue juzgado individualmente malo — todo el grupo se abstuvo, no se rechazó oferta
+      // por oferta — así que nada de esto pasa por suspectDropped.
+      expect(model.suspectDropped).toBe(0);
+      expect(model.ambiguousConditions).toEqual(["new"]);
+    });
+
+    it("2 nuevas baratas + 3 nuevas caras: también ambiguo (alcanza con ≥2 ofertas de cada lado)", () => {
+      const prices = [40_000, 41_000, 90_000, 91_000, 92_000];
+      const listings = prices.map((price, i) =>
+        listing({ title: `Celular Xiaomi Poco X8 Pro Max 256gb Negro Vendedor ${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "xiaomi-poco-x8-pro-max-256gb")!;
+      expect(model.offers).toHaveLength(0);
+      expect(model.bands.new).toBeUndefined();
+      expect(model.ambiguousDropped).toBe(5);
+      expect(model.ambiguousConditions).toEqual(["new"]);
+    });
+
+    it("1 nueva barata + 3 nuevas caras: NO es ambiguo (un solo lado no es una población) — se screenea como siempre", () => {
+      const prices = [40_000, 90_000, 91_000, 92_000];
+      const listings = prices.map((price, i) =>
+        listing({ title: `Celular Honor X5c Plus 256gb Negro Vendedor ${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "honor-x5c-plus-256gb")!;
+      expect(model.ambiguousDropped).toBe(0);
+      expect(model.ambiguousConditions).toEqual([]);
+      // 40000 sigue siendo un outlier de la guarda de siempre (screenByMedianOfOthers), no de la
+      // guarda de ambigüedad: un solo outlier junto a un cluster real es exactamente el caso
+      // ordinario, no dos poblaciones.
+      expect(model.offers.map((o) => o.priceUyu).sort((a, b) => a - b)).toEqual([90_000, 91_000, 92_000]);
+      expect(model.suspectDropped).toBe(1);
+      expect(model.bands.new!.n).toBe(3);
+    });
+
+    it("es determinístico: el grupo ambiguo da el mismo resultado con la entrada en otro orden", () => {
+      const prices = [40_000, 41_000, 42_000, 90_000, 91_000, 92_000];
+      const build = (order: number[]) =>
+        byKey(
+          buildPhoneCatalog({
+            usdUyu: 40,
+            listings: order.map((price) =>
+              listing({
+                title: `Celular Xiaomi Redmi Note 15 256gb Negro Vendedor ${price}`,
+                price,
+                sellerKey: `store:${price}`,
+                sellerName: `Seller ${price}`,
+                url: `https://example.com.uy/p/redmi-note-15-${price}`,
+              })
+            ),
+          }),
+          "xiaomi-redmi-note-15-256gb"
+        )!;
+      const forward = build(prices);
+      const shuffled = build([...prices].reverse());
+      expect(shuffled).toEqual(forward);
+    });
+
+    // Regresión: estos dos casos del fix round 2 no deben verse afectados por la guarda de
+    // ambigüedad — ambos tienen un salto ≥1.8x en algún punto, pero el lado más chico de ese salto
+    // tiene sólo 1 oferta, así que nunca cuentan como dos poblaciones.
+    it("regresión: [55000, 58000, 120000] sigue sin ser ambiguo — las tres sobreviven", () => {
+      const listings = [55_000, 58_000, 120_000].map((price, i) =>
+        listing({ title: `Celular Samsung Galaxy S26 Ultra 256gb Negro Vendedor rr${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "samsung-galaxy-s26-ultra-256gb")!;
+      expect(model.ambiguousConditions).toEqual([]);
+      expect(model.offers).toHaveLength(3);
+      expect(model.suspectDropped).toBe(0);
+    });
+
+    it("regresión: [56000, 56500, 250000] sigue sin ser ambiguo — sólo 250000 se descarta", () => {
+      const listings = [56_000, 56_500, 250_000].map((price, i) =>
+        listing({ title: `Celular Motorola Razr 70 Ultra 256gb Negro Vendedor rr${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "motorola-razr-70-ultra-256gb")!;
+      expect(model.ambiguousConditions).toEqual([]);
+      expect(model.offers.map((o) => o.priceUyu).sort((a, b) => a - b)).toEqual([56_000, 56_500]);
+      expect(model.suspectDropped).toBe(1);
+    });
+
+    it("sesgo conocido y documentado: en un empate exacto entre dos outliers opuestos, la guarda saca al más barato", () => {
+      // A=50000, B=90000, C=210000: mediana(B,C)=150000, A/150000=1/3; mediana(A,B)=70000,
+      // C/70000=3 exacto. |ln(1/3)| y |ln(3)| difieren sólo por ruido de punto flotante (~2e-16,
+      // ver TIE_EPSILON) — un empate real. Con sólo 3 ofertas, sacar a la primera (A, la más
+      // barata, por el desempate de screenByMedianOfOthers) deja el grupo en 2, por debajo de
+      // PHONE_MIN_BAND_SAMPLE, así que el bucle se detiene ahí: C sobrevive sin haber sido "mejor"
+      // que A en ningún sentido real, sólo porque el desempate prefiere sacar la más barata.
+      const listings = [50_000, 90_000, 210_000].map((price, i) =>
+        listing({ title: `Celular Nokia Xr21 256gb Negro Vendedor ${i}`, price })
+      );
+      const model = byKey(buildPhoneCatalog({ listings, usdUyu: 40 }), "nokia-xr21-256gb")!;
+      expect(model.offers.map((o) => o.priceUyu).sort((a, b) => a - b)).toEqual([90_000, 210_000]);
+      expect(model.suspectDropped).toBe(1);
+      // Un split 1-contra-2 nunca llega al piso de ambigüedad (que exige ≥2 de cada lado).
+      expect(model.ambiguousDropped).toBe(0);
+    });
+  });
 });
