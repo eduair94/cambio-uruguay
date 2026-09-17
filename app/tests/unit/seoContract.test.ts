@@ -159,6 +159,11 @@ const NOINDEXED = [
   'alquileres/[key].vue',
   // Index the market analysis itself; user-selected filter combinations opt out.
   'analisis-alquileres-uruguay.vue',
+  // Autos usados: the directory and the model pages index at their own URL; filter combinations,
+  // thin models and single adverts (they expire within weeks) opt out.
+  'autos-usados-uruguay/[key].vue',
+  'autos-usados-uruguay/index.vue',
+  'autos-usados-uruguay/precios/[slug].vue',
   'buscar.vue',
   'cuenta/index.vue',
   // La herramienta "¿tengo descuento acá?": la respuesta depende de la ubicación de quien la abre.
@@ -172,6 +177,8 @@ const NOINDEXED = [
   'inmobiliarias-uruguay/index.vue',
   'newsletter/archivo.vue',
   'offline.vue',
+  // Index the used-car opportunity list itself; filter combinations opt out.
+  'oportunidades-autos-usados-uruguay.vue',
   // Index the opportunity directory itself; query combinations opt out like rental filters.
   'oportunidades-inmobiliarias-uruguay.vue',
   // La ficha por articulo del SIPC es INDEXABLE cuando la muestra alcanza; opta

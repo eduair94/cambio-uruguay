@@ -20,6 +20,7 @@ import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
 import { toolSlugs } from '../../../utils/tools'
 import { videoTopicSlugs } from '../../../utils/videoTopics'
 import { isEquiparCategorySlug } from '../../../utils/equiparCategoryPages'
+import { CarCatalogMetaModel } from '../../models/CarCatalogMeta'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
 import { EquiparItemModel } from '../../models/EquiparItem'
 import { listPosts } from '../../utils/blog'
@@ -320,6 +321,26 @@ export default defineEventHandler(async _event => {
     console.warn('Failed to connect for chair/equipar sitemap pages:', dbError)
   } finally {
     // The sitemap is prerendered: leaving the pool open hangs `nuxt build`.
+    await disconnectDbAfterPrerender()
+  }
+
+  // --- Used-car model pages: only models with enough live adverts to publish a range ---------
+  // Spanish only (the body is Uruguayan asking prices); single adverts are noindex and omitted.
+  try {
+    await connectDb()
+    const doc = await CarCatalogMetaModel.findOne({ key: 'uy-cars' }).select({ meta: 1 }).lean()
+    const models = (doc?.meta?.models ?? []).filter(model => model.listings >= 30)
+    models.forEach(model => {
+      urls.push({
+        loc: `/autos-usados-uruguay/precios/${model.slug}`,
+        changefreq: 'daily',
+        priority: 0.6,
+      })
+    })
+    if (models.length) console.log(`- Used-car model pages: ${models.length} routes`)
+  } catch (carError) {
+    console.warn('Failed to add used-car model pages to sitemap:', carError)
+  } finally {
     await disconnectDbAfterPrerender()
   }
 

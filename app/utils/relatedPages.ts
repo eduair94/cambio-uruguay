@@ -322,6 +322,26 @@ export const OPPORTUNITY_RELATED = {
  * `tests/unit/relatedPages.test.ts` fails if any target here stops existing.
  */
 export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freeze({
+  // Used cars: the buyer's next questions are debts, fines, running costs and the licence.
+  '/autos-usados-uruguay': [
+    '/oportunidades-autos-usados-uruguay',
+    '/comprar-auto-con-deuda-uruguay',
+    '/multas-de-transito-y-patente-uruguay',
+    '/precio-de-la-nafta-uruguay',
+    '/impuesto-autos-electricos-uruguay',
+    '/libreta-de-conducir-uruguay',
+  ],
+  '/oportunidades-autos-usados-uruguay': [
+    '/autos-usados-uruguay',
+    '/comprar-auto-con-deuda-uruguay',
+    '/multas-de-transito-y-patente-uruguay',
+    '/precio-de-la-nafta-uruguay',
+  ],
+  '/comprar-auto-con-deuda-uruguay': [
+    '/autos-usados-uruguay',
+    '/oportunidades-autos-usados-uruguay',
+    '/multas-de-transito-y-patente-uruguay',
+  ],
   '/tarjetas-de-credito-uruguay': [
     '/conviene-comprar-en-cuotas',
     '/pagar-cuentas-con-tarjeta',

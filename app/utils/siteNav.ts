@@ -2977,6 +2977,35 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/autos-usados-uruguay',
+        labelKey: 'nav.usedCars',
+        icon: 'mdi-car-search-outline',
+        priority: 0.8,
+        changefreq: 'daily',
+        keywords: [
+          'autos usados uruguay',
+          'autos usados en venta',
+          'precio auto usado',
+          'comprar auto usado',
+          'autos usados montevideo',
+          'cuanto vale mi auto',
+        ],
+      },
+      {
+        to: '/oportunidades-autos-usados-uruguay',
+        labelKey: 'nav.usedCarOpportunities',
+        icon: 'mdi-tag-arrow-down-outline',
+        priority: 0.8,
+        changefreq: 'daily',
+        keywords: [
+          'oportunidades autos usados',
+          'autos usados baratos uruguay',
+          'auto usado precio bajo',
+          'ganga auto usado',
+          'comparar precio auto usado',
+        ],
+      },
+      {
         // Trends UY 2026-09-15: «nafta» es el 23 % del volumen de «dólar», con picos cada fin de
         // mes («cuánto sube la nafta», «cuándo sube»). Era el único tema de costos sin página.
         to: '/precio-de-la-nafta-uruguay',
@@ -3385,6 +3414,8 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'alquileres/[key]': 'consumer',
   'precio/[slug]': 'consumer',
   'venta-viviendas-uruguay/[key]': 'consumer',
+  'autos-usados-uruguay/[key]': 'consumer',
+  'autos-usados-uruguay/precios/[slug]': 'consumer',
   'inmobiliarias-uruguay/[key]': 'consumer',
   'blog/[slug]': 'news',
   'casa/[origin]/index': 'houses',
