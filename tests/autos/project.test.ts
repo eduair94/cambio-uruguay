@@ -39,6 +39,14 @@ describe("publicCarListing", () => {
     expect(publicCarListing(car({ sellerType: "private" }), null)!.dealerName).toBeNull();
     expect(publicCarListing(car({ permalink: "https://evil.example/MLU-1" }), null)).toBeNull();
   });
+  it("nulls a dealer name that cleans to nothing instead of publishing an empty string", () => {
+    const row = publicCarListing(car({ detail: { ...car().detail!, sellerName: "099 123 456" } }), null)!;
+    expect(row.dealerName).toBeNull();
+  });
+  it("rejects a picture URL carrying a username or password", () => {
+    expect(publicCarListing(car({ picture: "https://user:pass@http2.mlstatic.com/D_1.webp" }), null)!.picture).toBeNull();
+    expect(publicCarListing(car({ picture: "https://user@http2.mlstatic.com/D_1.webp" }), null)!.picture).toBeNull();
+  });
 });
 
 const analysis = (subject: CarListing, peers: CarListing[]): CarAnalysis => ({

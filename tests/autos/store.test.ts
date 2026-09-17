@@ -14,6 +14,7 @@ function fakeCollection(docs: Doc[] = []) {
         if (filter.key?.$nin?.includes(doc.key)) return false;
         if (filter["listing.brandId"]?.$in && !filter["listing.brandId"].$in.includes(doc.listing.brandId)) return false;
         if (filter.lastSeen?.$lt && !(String(doc.lastSeen) < filter.lastSeen.$lt)) return false;
+        if (filter.lastSeen?.$gte && !(String(doc.lastSeen) >= filter.lastSeen.$gte)) return false;
         if ("retiredAt" in filter && doc.retiredAt) return false;
         return true;
       }),
@@ -26,13 +27,18 @@ function fakeCollection(docs: Doc[] = []) {
 }
 vi.mock("../../classes/appdb", () => ({
   appConnection: () => ({ collection: (name: string) => collections.get(name) }),
-  appModel: (_name: string, schema: unknown, collection: string) => ({ schema, collection: { name: collection } }),
+  appModel: (_name: string, schema: unknown, collection: string) => ({
+    schema, collection: { name: collection }, updateOne: vi.fn(async () => ({ acknowledged: true })),
+  }),
 }));
 
 import {
-  collapseRefusal, harvestMetaRecord, mergeVocabularies, nextPriceHistory, saveCarHarvest, sweepUpdate,
+  collapseRefusal, harvestMetaRecord, mergeVocabularies, nextPriceHistory, publishCarCatalog, publishCarMarkets,
+  saveCarHarvest, saveRefusal, sweepUpdate,
 } from "../../classes/autos/store";
+import { CarHarvestMetaModel } from "../../classes/models/CarHarvestMeta";
 import type { CarHarvestResult, RawCarListing } from "../../classes/autos/types";
+import type { PublicCarCatalogMeta, PublicCarListing, PublicCarMarketSnapshot } from "../../classes/autos/publicTypes";
 
 const raw = (id: string, price = 10_000): RawCarListing => ({
   id, source: "mercadolibre", brandId: "58955", brand: "Chevrolet", modelId: "1", model: "Onix", title: "Onix", year: 2019,
@@ -77,6 +83,46 @@ describe("pure store rules", () => {
     const ok = harvestMetaRecord(harvest([raw("MLU1")]), { lastOkAt: null, failingSince: "2026-09-15T10:00:00.000Z" });
     expect(ok).toMatchObject({ ok: true, lastOkAt: "2026-09-16T10:30:00.000Z", failingSince: null, listings: 1 });
   });
+  it("a fast run with zero adverts is still ok (an early since=today sweep can legitimately be empty)", () => {
+    const record = harvestMetaRecord(harvest([], { mode: "fast" }), null);
+    expect(record).toMatchObject({ ok: true, listings: 0 });
+  });
+  it("a full run with zero adverts is NOT ok (full mode still requires listings)", () => {
+    const record = harvestMetaRecord(harvest([], { mode: "full" }), null);
+    expect(record).toMatchObject({ ok: false, listings: 0 });
+  });
+});
+
+describe("saveRefusal", () => {
+  it("persists a refusal and can clear it with null", async () => {
+    await saveRefusal("catálogo: caída de más de 60 %", "2026-09-16T10:30:00.000Z");
+    expect(CarHarvestMetaModel.updateOne).toHaveBeenLastCalledWith(
+      { key: "uy-cars" },
+      { $set: { "data.publishRefusal": { reason: "catálogo: caída de más de 60 %", at: "2026-09-16T10:30:00.000Z" } } },
+      { upsert: true },
+    );
+    await saveRefusal(null, "2026-09-16T11:00:00.000Z");
+    expect(CarHarvestMetaModel.updateOne).toHaveBeenLastCalledWith(
+      { key: "uy-cars" },
+      { $set: { "data.publishRefusal": { reason: null, at: "2026-09-16T11:00:00.000Z" } } },
+      { upsert: true },
+    );
+  });
+});
+
+describe("publish guards refuse to wipe the public collection", () => {
+  const meta: PublicCarCatalogMeta = {
+    key: "uy-cars", generatedAt: "2026-09-16T10:30:00.000Z", freshDays: 4, sourceCoverage: "partial", listings: 0,
+    usdUyu: 40, lastFullReadAt: null, lastReadAt: null, reportedTotal: null, opportunities: 0, models: [],
+  };
+  it("publishCarCatalog throws instead of publishing an empty array", async () => {
+    collections.set("carcatalog", fakeCollection());
+    await expect(publishCarCatalog([] as PublicCarListing[], meta)).rejects.toThrow(/empty/);
+  });
+  it("publishCarMarkets throws instead of publishing an empty array", async () => {
+    collections.set("carmarketsnapshots", fakeCollection());
+    await expect(publishCarMarkets([] as PublicCarMarketSnapshot[])).rejects.toThrow(/empty/);
+  });
 });
 
 describe("saveCarHarvest", () => {
@@ -101,5 +147,16 @@ describe("saveCarHarvest", () => {
     const result = await saveCarHarvest(harvest([raw("MLU1")], { mode: "fast" }));
     expect(result.retired).toBe(0);
     expect(listings.writes.find(op => op.updateOne?.filter.key === "ml-MLU9")).toBeUndefined();
+  });
+  it("never scans past a 21-day lower bound for misses", async () => {
+    const listings = fakeCollection([
+      { key: "ml-MLU9", priceHistory: [], listing: raw("MLU9"), lastSeen: "2026-09-15T00:00:00.000Z", retiredAt: null, missedFullSweeps: 1 },
+      { key: "ml-MLU7", priceHistory: [], listing: raw("MLU7"), lastSeen: "2026-08-01T00:00:00.000Z", retiredAt: null, missedFullSweeps: 1 },
+    ]);
+    collections.set("carlistings", listings);
+    const result = await saveCarHarvest(harvest([raw("MLU1")]));
+    expect(result.retired).toBe(1);
+    expect(listings.writes.find(op => op.updateOne?.filter.key === "ml-MLU9")).toBeDefined();
+    expect(listings.writes.find(op => op.updateOne?.filter.key === "ml-MLU7")).toBeUndefined();
   });
 });

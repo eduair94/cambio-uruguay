@@ -171,10 +171,17 @@ export function titleFlags(title: string, price: number, currency: CarCurrency):
   return [...flags].sort();
 }
 
-/** Titles are seller prose: drop phone numbers and emails before anything is published. */
+/** Titles are seller prose: drop phone numbers, emails and links before anything is published. */
 export function cleanPublicText(text: string): string {
   return String(text || "")
+    // Emails first: a bare-domain strip below would otherwise eat "b.com" out of "a@b.com" and
+    // leave the dangling "a@" behind.
     .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, " ")
+    .replace(/https?:\/\/\S+/gi, " ")
+    .replace(/www\.\S+/gi, " ")
+    // Bare domain tokens ("autosusados.com", "miconcesionaria.com.uy"). Restricted to a known TLD
+    // suffix so a decimal like "1.6" or "111.111" is never mistaken for one.
+    .replace(/\b[a-z0-9-]+\.com(?:\.uy)?\b/gi, " ")
     .replace(/\b0?9\d[\s-]?\d{3}[\s-]?\d{3}\b/g, " ")
     .replace(/\b\d{4}[\s-]?\d{4}\b/g, " ")
     .replace(/\s+/g, " ")

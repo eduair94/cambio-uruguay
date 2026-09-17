@@ -67,7 +67,9 @@ export interface HarvestMetaRecord {
 }
 
 export function harvestMetaRecord(harvest: CarHarvestResult, previous: { lastOkAt?: string | null; failingSince?: string | null } | null): HarvestMetaRecord {
-  const ok = harvest.failedPages === 0 && !harvest.note && harvest.listings.length > 0;
+  // A fast (`since=today`) sweep can legitimately return zero adverts in the early morning hours,
+  // so only full sweeps require at least one listing to be called "ok".
+  const ok = harvest.failedPages === 0 && !harvest.note && (harvest.mode === "fast" || harvest.listings.length > 0);
   return {
     mode: harvest.mode,
     startedAt: harvest.startedAt,
@@ -125,11 +127,14 @@ export async function saveCarHarvest(harvest: CarHarvestResult): Promise<{ upser
   }
   let retired = 0;
   if (harvest.mode === "full" && harvest.completeBrands.length) {
+    // A lower bound too: a full run only needs to reconsider adverts it could plausibly have seen
+    // again, so this doesn't rescan the whole history on every run.
+    const missSince = new Date(Date.parse(harvest.startedAt) - 21 * 86_400_000).toISOString();
     const missing = await collection.find(
       {
         "listing.brandId": { $in: harvest.completeBrands },
         key: { $nin: harvest.listings.map(listing => carKey(listing.id)) },
-        lastSeen: { $lt: harvest.startedAt },
+        lastSeen: { $lt: harvest.startedAt, $gte: missSince },
         retiredAt: null,
       },
       { projection: { key: 1, missedFullSweeps: 1, retiredAt: 1 } }
@@ -184,7 +189,12 @@ export async function loadCatalogMeta(): Promise<PublicCarCatalogMeta | null> {
   return (doc?.meta as PublicCarCatalogMeta | undefined) ?? null;
 }
 
+export async function saveRefusal(reason: string | null, at: string): Promise<void> {
+  await CarHarvestMetaModel.updateOne({ key: "uy-cars" }, { $set: { "data.publishRefusal": { reason, at } } }, { upsert: true });
+}
+
 export async function publishCarCatalog(rows: readonly PublicCarListing[], meta: PublicCarCatalogMeta): Promise<void> {
+  if (!rows.length) throw new Error("refusing to publish an empty car catalog");
   const collection = appConnection().collection(CAR_CATALOG_COLLECTION);
   await collection.createIndex({ key: 1 }, { unique: true });
   await collection.createIndex({ marketSlug: 1, year: -1 });
@@ -201,6 +211,7 @@ export async function publishCarCatalog(rows: readonly PublicCarListing[], meta:
 }
 
 export async function publishCarMarkets(snapshots: readonly PublicCarMarketSnapshot[]): Promise<void> {
+  if (!snapshots.length) throw new Error("refusing to publish an empty car market snapshot list");
   const collection = appConnection().collection(CarMarketSnapshotModel.collection.name);
   await collection.createIndex({ key: 1 }, { unique: true });
   for (let index = 0; index < snapshots.length; index += CHUNK) {

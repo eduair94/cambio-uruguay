@@ -14,10 +14,17 @@ const round3 = (value: number): number => Math.round(value * 1000) / 1000;
 function safePicture(url: string | null): string | null {
   try {
     const parsed = new URL(String(url || ""));
-    return parsed.protocol === "https:" && parsed.host === "http2.mlstatic.com" ? parsed.toString() : null;
+    return parsed.protocol === "https:" && parsed.host === "http2.mlstatic.com" && !parsed.username && !parsed.password
+      ? parsed.toString()
+      : null;
   } catch {
     return null;
   }
+}
+
+function dealerNameOf(listing: CarListing): string | null {
+  if (listing.sellerType !== "dealer" || !listing.detail?.sellerName) return null;
+  return cleanPublicText(listing.detail.sellerName) || null;
 }
 
 export function publicCarListing(listing: CarListing, opportunity: PublicCarListing["opportunity"]): PublicCarListing | null {
@@ -43,7 +50,7 @@ export function publicCarListing(listing: CarListing, opportunity: PublicCarList
     department: listing.department,
     neighborhood: listing.neighborhood,
     sellerType: listing.sellerType,
-    dealerName: listing.sellerType === "dealer" && listing.detail?.sellerName ? cleanPublicText(listing.detail.sellerName) : null,
+    dealerName: dealerNameOf(listing),
     picture: safePicture(listing.picture),
     pictureCount: listing.pictureCount,
     permalink: listing.permalink,

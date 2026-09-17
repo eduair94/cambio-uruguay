@@ -115,6 +115,12 @@ describe("text flags", () => {
   it("removes contact data from public text", () => {
     expect(cleanPublicText("Gol 2015 llamar 099 123 456 o mail a@b.com")).toBe("Gol 2015 llamar o mail");
   });
+  it("removes URLs and bare domains but leaves plain titles untouched", () => {
+    expect(cleanPublicText("Visitar https://www.autosusados.com.uy/oferta para más fotos")).toBe("Visitar para más fotos");
+    expect(cleanPublicText("Mas info en www.miconcesionaria.com.uy")).toBe("Mas info en");
+    expect(cleanPublicText("Consultas a ventas.com o autos.com.uy")).toBe("Consultas a o");
+    expect(cleanPublicText("Peugeot 208 1.6")).toBe("Peugeot 208 1.6");
+  });
 });
 
 describe("enrichment", () => {
