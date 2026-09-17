@@ -2,9 +2,15 @@
 //
 // Mirrors classes/chairs/spec.ts and classes/equipar/registry.ts: this file is the whole of
 // "celular" as far as the plumbing is concerned. Everything else in `classes/retail` (sitemap
-// reading, the WooCommerce Store API client, the MercadoLibre bridge) is category-blind — the same
-// storefront sweep that feeds `classes/equipar` (household goods) or `classes/chairs` (desk chairs)
-// feeds this one, at the cost of one more `accept()` call per product, never a second fetch.
+// reading, the WooCommerce Store API client, the MercadoLibre bridge) is category-blind:
+// `harvestRetail` can classify one sweep of a storefront against SEVERAL specs at once, at the
+// cost of one more `accept()` call per product rather than a second fetch — but only within a
+// single call that is actually handed more than one spec. `sync_chairs.ts`, `sync_equipar.ts` and
+// the future `sync_phones.ts` each call it separately, with their OWN store allowlist
+// (`CHAIR_STORE_KEYS`, `EQUIPAR_STORE_KEYS`, `PHONE_STORE_KEYS` below — see the note on why each
+// consumer needs its own list, not "every enabled store"), so today no request is actually shared
+// between them: this file only describes what the plumbing is CAPABLE of, not what currently
+// happens.
 import { identifyPhone, isPhoneTitle } from "./identify";
 import type { CategorySpec } from "../retail/types";
 
@@ -15,7 +21,14 @@ import type { CategorySpec } from "../retail/types";
  * to avoid. It only needs to be permissive enough that no real phone URL is skipped; `accept()` is
  * what actually decides once the page is fetched.
  */
-const PHONE_URL_HINT = /(celular|iphone|galaxy-(s|a|z|m)\d|moto-g\d|motorola|redmi|poco-[xmcf]\d|honor-(x|magic|\d{3}|play))/i;
+// The last seven alternatives are bare brand words (oppo/realme/tcl/zte/nokia/infinix/tecno), with
+// no model-shape requirement the way iphone/galaxy/moto/redmi/poco/honor get one above them — those
+// six brands have no per-model URL convention pinned down yet. A bare brand word is looser than the
+// rest of this hint (TCL also sells TVs; Nokia used to sell everything), but that is exactly what a
+// urlHint is for: it only has to be permissive enough that no real phone URL is skipped, and
+// `accept()` — not this regex — is what actually excludes "tcl-smart-tv-55-pulgadas".
+const PHONE_URL_HINT =
+  /(celular|iphone|galaxy-(s|a|z|m)\d|moto-g\d|motorola|redmi|poco-[xmcf]\d|honor-(x|magic|\d{3}|play)|oppo|realme|tcl|zte|nokia|infinix|tecno)/i;
 
 /**
  * The whole contract with a storefront adapter, shared between `accept` and `acceptFromCategory`:

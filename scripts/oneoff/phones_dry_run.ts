@@ -20,15 +20,23 @@
 // one request at a time per host with a minimum gap, this cap just keeps the SWEEP itself small.
 //
 // The "ml" run does NOT reuse `harvestMercadoLibre` either, and for a stronger reason: that bridge
-// (104.234.204.107:9656) is SHARED with the production chairs/equipar/autos jobs, which hit it in
-// bursts of dozens of scans at :23/:47/:53 past the hour. A burst from this one-off script that
-// trips the bridge's rate limiter pushes EVERY job onto a 10-minute proxy fallback, not just this
-// one. So the ml run: at most 8 searches, strictly sequential (one in flight, ever), at least 2
-// seconds between requests, and it refuses to even start outside the two windows production does
-// not touch the bridge (UTC minute :00-:18 or :28-:43). A 403/429 from the bridge stops the run
-// immediately — it is never retried, on the same reasoning `classes/claude.ts` never retries a 429
-// against the shared Claude endpoint (see classes/AGENTS.md): a retry against a rate limiter spends
-// budget to earn another rejection.
+// (104.234.204.107:9656) is SHARED with every other production job that reads MercadoLibre. A burst
+// from this one-off script that trips the bridge's rate limiter pushes EVERY job onto a 10-minute
+// proxy fallback, not just this one. So the ml run: at most 8 searches, strictly sequential (one in
+// flight, ever), at least 2 seconds between requests, and it refuses to even start outside the
+// windows those jobs do not touch the bridge. Current consumers (ecosystem.config.js):
+//   - currency-chairs-hourly   :23 past the hour
+//   - currency-autos-hourly    :29 past the hour
+//   - currency-rentals-hourly  :47 past the hour
+//   - currency-equipar-hourly  :53 past the hour
+//   - currency-autos (daily)   07:43 UTC, then a ~2h SEQUENTIAL brand->model sweep — the bridge is
+//                              busy nearly the whole 07:43-09:43 window, not just at the top of it
+//   - the future currency-phones jobs will add their own minutes here once scheduled
+// Quiet minutes are :00-:18 and :33-:43 ONLY (clear of :19-:32 around :23/:29 and :44-:59 around
+// :47/:53), and NEVER between 07:35 and 10:00 UTC regardless of minute, because of the autos daily
+// sweep. A 403/429 from the bridge stops the run immediately — it is never retried, on the same
+// reasoning `classes/claude.ts` never retries a 429 against the shared Claude endpoint (see
+// classes/AGENTS.md): a retry against a rate limiter spends budget to earn another rejection.
 import { identifyPhone, isPhoneTitle, phoneConditionFromTitle } from "../../classes/phones/identify";
 import { fetchJson, fetchText, readSitemap } from "../../classes/retail/net";
 import { parseStructuredProduct } from "../../classes/retail/sources/structured";
@@ -115,13 +123,21 @@ async function runFenicio(store: RetailStore, tally: Tally): Promise<void> {
   const hint = PHONE_SPEC.urlHint;
   const candidates = urls.filter((url) => !hint || hint.test(url)).slice(0, limit);
   console.log(`${urls.length} URLs en el sitemap, ${candidates.length} candidatos por urlHint (--limit=${limit}).`);
+  let droppedCurrency = 0;
   for (const url of candidates) {
     const html = await fetchText(url, { retries: 1 });
     if (!html) continue;
     const product = parseStructuredProduct(html);
     if (!product) continue;
-    tally.classify(product.name, product.condition, product.currency || "?", product.price ?? 0, store.name);
+    // Mirrors harvestFenicioStore exactly: a currency that is not exactly "USD" or "UYU" is
+    // dropped, never classified — a PDP with no readable currency is not "accepted with '?'".
+    if (product.currency !== "USD" && product.currency !== "UYU") {
+      droppedCurrency++;
+      continue;
+    }
+    tally.classify(product.name, product.condition, product.currency, product.price ?? 0, store.name);
   }
+  if (droppedCurrency) console.log(`${droppedCurrency} PDP sin moneda USD/UYU legible, descartados (como en producción).`);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -146,6 +162,7 @@ async function runWoo(store: RetailStore, tally: Tally): Promise<void> {
   const queries = PHONE_SPEC.storeQueries ?? [];
   let scanned = 0;
   let pagesOpened = 0;
+  let droppedPricing = 0;
   for (const query of queries) {
     for (let page = 1; page <= 6 && pagesOpened < limit; page++) {
       const url = `${store.baseUrl}/wp-json/wc/store/v1/products?per_page=100&page=${page}&search=${encodeURIComponent(query)}`;
@@ -158,14 +175,22 @@ async function runWoo(store: RetailStore, tally: Tally): Promise<void> {
         const title = decodeWooEntities(String(product.name || ""));
         if (!title) continue;
         const pricing = wooPricing(product);
-        const currency = pricing && !("dropped" in pricing) ? pricing.currency : "?";
-        const price = pricing && !("dropped" in pricing) ? pricing.price : 0;
-        tally.classify(title, "new", currency, price, store.name);
+        // Mirrors harvestWooStore exactly: no readable price (`null`) or a currency conflict the
+        // adapter can't resolve (`{ dropped }`) both mean the row is skipped, never classified —
+        // never displayed as an "accepted" listing at "? 0".
+        if (!pricing || "dropped" in pricing) {
+          droppedPricing++;
+          continue;
+        }
+        tally.classify(title, "new", pricing.currency, pricing.price, store.name);
       }
       if (products.length < 100) break;
     }
   }
-  console.log(`${scanned} productos revisados en ${queries.length} búsquedas, ${pagesOpened} páginas (--limit=${limit}).`);
+  console.log(
+    `${scanned} productos revisados en ${queries.length} búsquedas, ${pagesOpened} páginas (--limit=${limit})` +
+      `${droppedPricing ? `, ${droppedPricing} descartados por precio/moneda sin resolver (como en producción)` : ""}.`
+  );
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -228,12 +253,19 @@ function mlConditionOf(value: string | undefined): SourceCondition {
 }
 
 /**
- * Production's scans hit the bridge at :23 (chairs-hourly), :47 (rentals-hourly) and :53
- * (equipar-hourly) past the hour (see ecosystem.config.js). Anywhere else in the hour is quiet.
+ * Production's hourly scans hit the bridge at :23 (chairs-hourly), :29 (autos-hourly), :47
+ * (rentals-hourly) and :53 (equipar-hourly) past the hour (see ecosystem.config.js) — quiet minutes
+ * are :00-:18 and :33-:43, clear of the buffer around each of those four. On top of that,
+ * currency-autos' DAILY run (07:43 UTC) is not a single scan but a ~2h sequential brand->model
+ * sweep of the same bridge, so it is busy for most of the 07:43-09:43 window regardless of minute —
+ * this refuses the whole 07:35-10:00 UTC span outright, minute check or not.
  */
 function isQuietMinute(date = new Date()): boolean {
+  const hour = date.getUTCHours();
   const minute = date.getUTCMinutes();
-  return (minute >= 0 && minute <= 18) || (minute >= 28 && minute <= 43);
+  const totalMinutes = hour * 60 + minute;
+  if (totalMinutes >= 7 * 60 + 35 && totalMinutes <= 10 * 60) return false;
+  return (minute >= 0 && minute <= 18) || (minute >= 33 && minute <= 43);
 }
 
 async function mlSearchOnce(params: Record<string, string>): Promise<{ status: number; rows: MlSearchRow[] } | null> {
@@ -255,10 +287,12 @@ async function mlSearchOnce(params: Record<string, string>): Promise<{ status: n
 
 async function runMl(tally: Tally): Promise<void> {
   if (!isQuietMinute()) {
-    const minute = new Date().getUTCMinutes();
+    const now = new Date();
     console.error(
-      `Minuto UTC actual :${String(minute).padStart(2, "0")} está fuera de la ventana segura (:00-:18 o :28-:43). ` +
-        "El puente de ML lo comparten los jobs de producción (chairs-hourly :23, rentals-hourly :47, equipar-hourly :53); " +
+      `Momento UTC actual ${String(now.getUTCHours()).padStart(2, "0")}:${String(now.getUTCMinutes()).padStart(2, "0")} ` +
+        "está fuera de la ventana segura (minutos :00-:18 o :33-:43, y nunca entre 07:35 y 10:00 UTC por el barrido " +
+        "diario de autos). El puente de ML lo comparten chairs-hourly (:23), autos-hourly (:29), rentals-hourly (:47), " +
+        "equipar-hourly (:53) y el barrido secuencial de ~2h de currency-autos (07:43 UTC); " +
         "correr ahora arriesga un 429/403 que le cuesta 10 minutos de proxy a TODOS los jobs. Abortando sin pedir nada."
     );
     process.exitCode = 1;

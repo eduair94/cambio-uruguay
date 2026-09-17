@@ -143,10 +143,83 @@ function detectBrand(glued: string): PhoneBrand | null {
   return null;
 }
 
+// ---------------------------------------------------------------------------------------------
+// Bundled extras ("+ Funda de regalo", "+ Magsafe Case", "incluye cargador") — a real phone with a
+// free accessory thrown in is still a phone. Real ML titles do this constantly ("iPhone 17 Pro Max
+// (256 Gb) - Nuevos + Funda De Regalo" is a genuine, fully-specified phone listing, not a case
+// listing), and blocking every title that so much as MENTIONS an accessory word anywhere punished
+// exactly the sellers who described their bonus item — 9 of 13 real titles rejected in one ML dry
+// run were phones like this. So the accessory exclusion only ever looks at the title BEFORE a
+// bundle marker, never after it.
+// ---------------------------------------------------------------------------------------------
+
+/** Nouns that name a freebie without themselves being one of the accessory-product words above. */
+const GIFT_WORD_RE = /\b(?:regalo|obsequio)\b/;
+
+/**
+ * Phrases that open a bundle clause on their own, no "+"/"plus" needed at all ("... incluye
+ * funda", "... con regalo cargador"). "de regalo"/"con regalo" are the two spellings real listings
+ * use interchangeably for "thrown in as a gift".
+ */
+const BUNDLE_CLAUSE_RE = /\b(?:con regalo|de regalo|incluye|obsequio)\b/;
+
+/**
+ * What to run {@link ACCESSORY_RE} against: `glued` unchanged, unless a BUNDLE marker sits after
+ * `familyEnd` (the end of the already-located phone identity), in which case only the text before
+ * that marker — the actual product being priced — counts.
+ *
+ * `familyEnd` is null whenever no family grammar matched at all (an unparseable title, or one
+ * `hasUnconsumedVariantMarker` already rejected): with no known identity boundary there is nothing
+ * safe to truncate, so the accessory check falls back to the WHOLE title, exactly as before this
+ * bundle handling existed.
+ *
+ * Two things must NOT be mistaken for a bundle marker, and both are handled by only ever searching
+ * `glued.slice(familyEnd)` — text that already sits at or after the end of the phone's own name:
+ *   - A "+" INSIDE the model name itself ("Redmi Note 14 Pro+", "Galaxy S25+"): `phoneNorm` turns
+ *     "+" into the word "plus" before any of this runs, and the family parsers for Xiaomi/Samsung
+ *     already consume that "plus" as part of their own suffix group ("pro plus", "...(ultra|plus|
+ *     fe|edge)"), so it sits BEFORE `familyEnd`, never in the tail this function scans.
+ *   - A "+" inside a spec combo ("8gb+256gb", "12gb+12gb Ram"): also normalises to a bare "plus"
+ *     between two number tokens. A standalone "plus" only counts as a bundle when an accessory
+ *     word or "regalo"/"obsequio" turns up SOMEWHERE later in the tail — "8gb plus 256gb azul"
+ *     never finds one, so the spec combo is left alone and `extractStorageGb`/`extractRamGb`
+ *     (further down) still see the full, untruncated title exactly as before this existed.
+ */
+function accessoryCheckText(glued: string, familyEnd: number | null): string {
+  if (familyEnd === null) return glued;
+  const head = glued.slice(0, familyEnd);
+  const tailWords = glued
+    .slice(familyEnd)
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  for (let i = 0; i < tailWords.length; i++) {
+    if (tailWords[i] !== "plus") continue;
+    // The rest of the tail, unbounded — not just the next word or two. Real titles bundle several
+    // items after one "+" ("+ Magsafe Wallter Y Magsafe Case": the accessory word is five words
+    // after "plus", past "Wallter" and "Y"), and once ANY accessory/gift word turns up anywhere
+    // after this "plus" the whole rest of the title is bundle text, whichever word tripped it.
+    const rest = tailWords.slice(i + 1).join(" ");
+    if (ACCESSORY_RE.test(rest) || GIFT_WORD_RE.test(rest)) {
+      return `${head} ${tailWords.slice(0, i).join(" ")}`.trim();
+    }
+  }
+
+  const tailJoined = tailWords.join(" ");
+  const clause = BUNDLE_CLAUSE_RE.exec(tailJoined);
+  if (clause) return `${head} ${tailJoined.slice(0, clause.index)}`.trim();
+
+  return glued;
+}
+
 export function isPhoneTitle(title: string): boolean {
   const glued = glueUnits(phoneNorm(title));
-  if (ACCESSORY_RE.test(glued)) return false;
-  return detectBrand(glued) !== null;
+  const brand = detectBrand(glued);
+  if (!brand) return false;
+  const familyMatch = parseFamily(brand, glued);
+  const checkText = accessoryCheckText(glued, familyMatch?.end ?? null);
+  return !ACCESSORY_RE.test(checkText);
 }
 
 // ---------------------------------------------------------------------------------------------

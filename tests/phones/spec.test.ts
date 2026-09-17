@@ -47,6 +47,18 @@ describe("PHONE_SPEC.urlHint", () => {
     ];
     for (const url of urls) expect(hint.test(url), url).toBe(false);
   });
+
+  it("acepta las siete marcas sin convención de URL propia (oppo/realme/tcl/zte/nokia/infinix/tecno)", () => {
+    const urls = [
+      "https://tienda.example.com.uy/catalogo/celular-oppo-a80-256gb_1_1",
+      "https://tienda.example.com.uy/catalogo/tcl-smart-tv-55-pulgadas-4k_7_7",
+    ];
+    for (const url of urls) expect(hint.test(url), url).toBe(true);
+    // El hint es un control de costo, no un filtro: acepta la URL de un TV TCL a propósito (ninguna
+    // convención de URL distingue "tcl-celular" de "tcl-tv"), pero PHONE_SPEC.accept() sigue
+    // rechazando el TÍTULO real, porque "tv" está en la lista de accesorios/no-celulares.
+    expect(PHONE_SPEC.accept("TCL Smart TV 55 Pulgadas 4K")).toBe(false);
+  });
 });
 
 describe("PHONE_STORE_KEYS", () => {

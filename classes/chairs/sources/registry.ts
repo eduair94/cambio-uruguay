@@ -12,9 +12,36 @@ const CHAIR_OVERRIDES: Record<string, Partial<RetailStore>> = {
   grassi: { collections: ["sillas-de-oficina"] },
 };
 
+/**
+ * Every store the chair directory read BEFORE `classes/retail/stores.ts` grew a second category
+ * (celulares, 2026-09-17). `retailStores()` with no keys returns every ENABLED store in the shared
+ * registry — fine while the registry only held furniture/appliance sellers, wrong the moment a
+ * phone-only store (claro, zonatecno, …) joins it: without this allowlist the chair job would start
+ * sweeping seven storefronts it has no chair spec that could ever accept, for nothing. New stores
+ * belong to the consumers that actually want them, never to "everyone by default".
+ */
+export const CHAIR_STORE_KEYS: readonly string[] = [
+  "bertoni",
+  "divino",
+  "electroventas",
+  "lacuevamuebles",
+  "clemur",
+  "soysantander",
+  "dimm",
+  "armo",
+  "grassi",
+  "covercompany",
+  "americanmesh",
+  "prontometal",
+  "puntounion",
+  "tyt",
+  "ufficio",
+  "eldorado",
+];
+
 export const CHAIR_STORES: ChairStore[] = RETAIL_STORES.map((store) => ({
   ...store,
   ...CHAIR_OVERRIDES[store.key],
 }));
 
-export const enabledChairStores = (): ChairStore[] => retailStores(undefined, CHAIR_OVERRIDES);
+export const enabledChairStores = (): ChairStore[] => retailStores(CHAIR_STORE_KEYS, CHAIR_OVERRIDES);

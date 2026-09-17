@@ -182,12 +182,15 @@ export const RETAIL_STORES: RetailStore[] = [
   },
   // Phone specialists and phone-carrying general electronics stores, added for
   // `classes/phones` (celulares). Same Fenicio/WooCommerce platforms as the furniture/appliance
-  // chains above — one sweep of each sitemap or Store API serves every category spec handed to
-  // `harvestRetail`, phones included, at no extra request. Verified 2026-09-17: platform reachable,
-  // currency read off a real product page/row, at least one real phone URL/listing found (not just
-  // an accessory). See the doc comment on `PHONE_STORE_KEYS` in `classes/phones/spec.ts` for the
-  // measurements, including the two candidates (`thotcomputacion`, and already-registered `tyt`)
-  // that were measured OUT for carrying zero phones despite answering every request cleanly.
+  // chains above, but NOT read by the same jobs: registering a store here only makes it available
+  // to `retailStores(keys)` — it does not enroll it in chairs' or equipar's daily sweep, which each
+  // pass their OWN explicit allowlist (`CHAIR_STORE_KEYS`, `EQUIPAR_STORE_KEYS`) precisely so a
+  // store added for one category never silently costs another category extra requests. Verified
+  // 2026-09-17: platform reachable, currency read off a real product page/row, at least one real
+  // phone URL/listing found (not just an accessory). See the doc comment on `PHONE_STORE_KEYS` in
+  // `classes/phones/spec.ts` for the measurements, including the two candidates (`thotcomputacion`,
+  // and already-registered `tyt`) that were measured OUT for carrying zero phones despite answering
+  // every request cleanly.
   {
     key: "claro",
     name: "Tienda Claro",

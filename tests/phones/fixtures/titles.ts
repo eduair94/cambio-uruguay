@@ -229,6 +229,44 @@ export const IDENTIFY_FIXTURES: IdentifyFixture[] = [
     key: "xiaomi-redmi-note-13-pro-256gb",
     ramGb: 8,
   },
+
+  // --- Fix round 3 (Task 2 controller ruling, celulares fix round 1): a real phone with a free
+  // accessory thrown in is still a phone. A live ML dry run measured 9 of 13 rejected titles as
+  // exactly this shape ("+ Funda De Regalo", "+ Magsafe Case…") — the accessory-word exclusion was
+  // firing on the BONUS item, not on the product actually being sold. Of those 9, these 5 also
+  // state a storage figure and so become fully identified once the bundle clause stops being read
+  // as part of the product; the other 4 (no storage at all, or the accessory word sits BEFORE the
+  // gift clause) stay unidentified/excluded — see NULL_IDENTITY_TITLES and NOT_PHONE_TITLES below,
+  // "nothing invented" applies here exactly as everywhere else in this module.
+  {
+    title: "Apple iPhone 17 Pro Max (256 Gb) - Nuevos + Funda De Regalo",
+    key: "apple-iphone-17-pro-max-256gb",
+  },
+  {
+    title: "iPhone 16 Pro 128 Gb + Magsafe Case Y Magsafe Wallet",
+    key: "apple-iphone-16-pro-128gb",
+  },
+  {
+    // The accessory word ("Case") sits FIVE words after "plus" ("Wallter Y Magsafe Case") — the
+    // lookahead has to scan the rest of the tail, not just the next word or two, or this stays null.
+    title: "iPhone 15 Pro (512 Gb) + Magsafe Wallter Y Magsafe Case",
+    key: "apple-iphone-15-pro-512gb",
+  },
+  {
+    title: "Samsung Galaxy S26 Ultra 5g (256 Gb) - Nuevos + Funda",
+    key: "samsung-galaxy-s26-ultra-256gb",
+  },
+  {
+    title: "Samsung Galaxy S26 Ultra 5g (256 Gb) - Sellados + Funda",
+    key: "samsung-galaxy-s26-ultra-256gb",
+  },
+  {
+    // Regression guard: a "+"/"plus" INSIDE the model name itself ("Pro+") must never be mistaken
+    // for a bundle separator — it is already fully consumed by parseXiaomi's own "pro plus" suffix,
+    // so it sits before the tail this fix-round's lookahead scans, and is untouched by it.
+    title: "Redmi Note 14 Pro+ 5G 512gb",
+    key: "xiaomi-redmi-note-14-pro-plus-512gb",
+  },
 ];
 
 /** Titles that must resolve to a specific PhoneCondition. Two-arg calls use "unknown" as the source. */
@@ -259,6 +297,13 @@ export const NULL_IDENTITY_TITLES = [
   "Samsung Galaxy A56 Neo 256gb 8gb Ram Negro",
   "Motorola Moto G85 Fusion 256gb 8gb Ram Negro",
   "Honor 200 Smart Max 256gb 8gb Ram Negro",
+  // Fix round 3: three of the nine real "+ Funda/Caja Abierta + Funda De Regalo" ML titles that
+  // moved OFF the accessory-word exclusion still resolve to null — not a bug, "nothing invented":
+  // none of the three states a storage figure anywhere, gift clause or not, so isPhoneTitle now
+  // correctly says "this is a phone" while identifyPhone still correctly refuses to guess a size.
+  "Apple iPhone 16 Pro  - Caja Abierta + Funda De Regalo",
+  "iPhone 16 Pro Max  - Caja Abierta + Funda De Regalo",
+  "Samsung Galaxy S26 Ultra - Caja Abierta + Funda De Regalo",
 ];
 
 /** Accessories, clones, unlisted brands and other non-phone-model titles: isPhoneTitle must be false. */
@@ -280,4 +325,17 @@ export const NOT_PHONE_TITLES: string[] = [
   "Control para iPhone Razer Kishi",
   "Apple iPad Air 256GB",
   "Motorola Moto Buds",
+  // Fix round 3: the accessory-word exclusion only stops looking AFTER a bundle marker ("+ Funda de
+  // regalo") that follows the phone's own identity — an accessory word BEFORE the identity, or
+  // before the gift clause even starts, still excludes the title, same as always.
+  "Funda iPhone 17 Pro",
+  "Cargador para Samsung Galaxy A56",
+  // The accessory word sits in the text BEFORE the "+" here ("Vidrio templado"), not after it — the
+  // fix only ever drops text AFTER a bundle marker, never text that came before one.
+  "Vidrio templado + Funda iPhone 16",
+  // A real ML title (measured in the dry run) that looks like the other 8 gift-bundle titles above
+  // but stays excluded: "Con Fundas De Regalo" puts the accessory word ("Fundas") BEFORE "De
+  // Regalo" — the bundle marker this fix-round looks for — so it is still inside the checked
+  // region and the title still fails the accessory-word test, correctly.
+  "Iphone 17 Pro Max En Caja, Con Fundas De Regalo. 80 Mil.",
 ];
