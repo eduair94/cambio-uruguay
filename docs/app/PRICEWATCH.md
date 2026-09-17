@@ -88,13 +88,15 @@ al final de cada `recordPricewatch`, **después** de escribir (así una oferta v
 año no alimenta ninguna comparación de 60 días, y sin poda la colección crecía para siempre con cada
 aviso que alguna vez pasó por un buscador. La corrida lo registra en el log ("N vencidas borradas").
 
-## Quién lo va a leer
+## Quién lo lee
 
-Nadie todavía. `pricewatchoffers` no tiene endpoint público ni página: es la materia prima para un
-job futuro (Plan D) que compare el precio de una oferta contra su propia serie para separar un
-descuento real de un precio de lista inflado antes de "rebajarlo". Ese trabajo necesita la serie ya
-escrita desde ANTES de la temporada que quiere explicar — por eso esto empieza a grabar ahora, sin
-esperar a que Plan D exista.
+`sync_price_events.ts` (`classes/priceevents/`, Plan D, `docs/app/PRICE_EVENTS.md`) — el consumidor
+para el que se empezó a grabar esta serie. Compara el precio de HOY de cada oferta contra su propio
+historial de hasta 60 días para separar una `baja-real` de un `precio-de-siempre`, y un precio de
+lista `tachado-por-encima` de uno normal, sin comparar nunca contra otra tienda ni contra la banda que
+ya publican `/equipar-casa-uruguay`/`/sillas-escritorio-uruguay`. Publica en APP DB
+`priceeventsnapshots`, que sirve `/ciberlunes-y-black-friday-uruguay`. No tiene endpoint ni página
+propia sobre `pricewatchoffers` en sí — sólo lo lee, nunca lo expone campo a campo.
 
 ## Tests
 

@@ -89,4 +89,8 @@ PriceEventSnapshotSchema.index({ key: 1 }, { unique: true })
 
 export const PriceEventSnapshotModel: Model<PriceEventSnapshotDoc> =
   (mongoose.models.PriceEventSnapshot as Model<PriceEventSnapshotDoc>) ||
-  mongoose.model<PriceEventSnapshotDoc>('PriceEventSnapshot', PriceEventSnapshotSchema, 'priceeventsnapshots')
+  mongoose.model<PriceEventSnapshotDoc>(
+    'PriceEventSnapshot',
+    PriceEventSnapshotSchema,
+    'priceeventsnapshots'
+  )
