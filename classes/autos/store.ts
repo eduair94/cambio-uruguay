@@ -394,10 +394,12 @@ export async function saveGuideEntries(entries: readonly CarGuideEntry[]): Promi
 /** The model-years the directory holds right now (any source), with how many adverts each has. */
 export async function loadGuideTargets(now: Date, days = 21): Promise<CarGuideTarget[]> {
   const cutoff = new Date(now.getTime() - days * 86_400_000).toISOString();
-  const rows = await listingsCollection().aggregate<{ _id: { brand: string; model: string; year: number }; count: number }>([
+  // Through the model, not the native collection: this is the first query of the guide job, and the
+  // native aggregate() throws when the connection is not open yet (mongoose buffers only model calls).
+  const rows = await CarListingModel.aggregate<{ _id: { brand: string; model: string; year: number }; count: number }>([
     { $match: { lastSeen: { $gte: cutoff }, retiredAt: null } },
     { $group: { _id: { brand: "$listing.brand", model: "$listing.model", year: "$listing.year" }, count: { $sum: 1 } } },
-  ]).toArray();
+  ]);
   const targets = new Map<string, CarGuideTarget>();
   for (const row of rows) {
     const brandSlug = slugify(String(row._id.brand || ""));
