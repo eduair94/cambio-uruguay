@@ -15,7 +15,15 @@ export type EquiparTier = "S" | "A" | "B" | "C";
  */
 export type EquiparRegime = "modelo" | "commodity";
 
-export type EquiparRoom = "cocina" | "dormitorio" | "bano" | "living" | "limpieza";
+/**
+ * `"movilidad"` is not a room in a house — it is the value another domain's registry (monopatines y
+ * bicicletas eléctricas, `classes/movilidad/`) puts here to satisfy this type when it reuses the
+ * catalog machinery via an injected registry (see `BuildCatalogInput.registry` in `catalog.ts`).
+ * Equipar's own categories never use it, and `classes/equipar/basket.ts` only ever iterates
+ * `EQUIPAR_CATEGORIES` — never the categories of an injected registry — so a foreign category can
+ * never reach the basket or the budget regardless of what it puts in `room`.
+ */
+export type EquiparRoom = "cocina" | "dormitorio" | "bano" | "living" | "limpieza" | "movilidad";
 
 export interface EquiparVariant {
   key: string;

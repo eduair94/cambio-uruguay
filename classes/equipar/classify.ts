@@ -69,9 +69,19 @@ export function variantFor(category: EquiparCategory, title: string): EquiparVar
   return fallback;
 }
 
-/** First category in registry order that accepts the title. Registry order is documented there. */
-export function categoryFor(title: string, context = ""): EquiparCategory | null {
-  return EQUIPAR_CATEGORIES.find((category) => matchesCategory(category, title, context)) ?? null;
+/**
+ * First category in registry order that accepts the title. Registry order is documented there.
+ *
+ * `registry` defaults to equipar's own so every existing caller is unaffected; a second domain
+ * (movilidad's monopatines/bicicletas) passes its own array here to classify against ITS categories
+ * only, never equipar's.
+ */
+export function categoryFor(
+  title: string,
+  context = "",
+  registry: readonly EquiparCategory[] = EQUIPAR_CATEGORIES
+): EquiparCategory | null {
+  return registry.find((category) => matchesCategory(category, title, context)) ?? null;
 }
 
 export const itemKey = (categoryKey: string, variantKey: string): string => `${categoryKey}:${variantKey}`;
@@ -79,9 +89,12 @@ export const itemKey = (categoryKey: string, variantKey: string): string => `${c
 /**
  * The specs handed to the shared harvester, in registry order — which is the budget order: a run
  * that runs out of MercadoLibre or Marketplace queries loses the tail of this list.
+ *
+ * Generic over any category registry, so the harvester stays shared machinery instead of something
+ * equipar owns: a second domain calls `specsFor(ITS_OWN_CATEGORIES)` instead of forking this.
  */
-export function equiparSpecs(): CategorySpec[] {
-  return EQUIPAR_CATEGORIES.map((category) => ({
+export function specsFor(registry: readonly EquiparCategory[]): CategorySpec[] {
+  return registry.map((category) => ({
     key: category.key,
     accept: (title: string, context?: string) => matchesCategory(category, title, context ?? ""),
     urlHint: category.urlHint,
@@ -91,3 +104,6 @@ export function equiparSpecs(): CategorySpec[] {
     fbQueries: category.fbQueries,
   }));
 }
+
+/** Equipar's own specs — unchanged from before `specsFor` existed. */
+export const equiparSpecs = (): CategorySpec[] => specsFor(EQUIPAR_CATEGORIES);

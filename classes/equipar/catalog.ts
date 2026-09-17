@@ -6,7 +6,7 @@
 // Pooling the second kind into a fake product would invent a thing that does not exist.
 import { bandOf, MIN_USED_BAND_SAMPLE, savingPct, screen } from "./bands";
 import { categoryFor, itemKey, norm, variantFor } from "./classify";
-import { EQUIPAR_BY_KEY, EQUIPAR_CATEGORIES, TIER_ORDER } from "./registry";
+import { EQUIPAR_CATEGORIES, TIER_ORDER } from "./registry";
 import type { RetailListing } from "../retail/types";
 import type { EquiparCategory, EquiparItem, EquiparOffer, EquiparProduct } from "./types";
 
@@ -346,11 +346,20 @@ const cheapestOffers = (offers: readonly EquiparOffer[], limit: number): Equipar
 export interface BuildCatalogInput {
   listings: readonly RetailListing[];
   usdUyu: number;
+  /**
+   * Which categories to classify against. Defaults to equipar's own so every existing caller is
+   * byte-for-byte unaffected; a second domain (movilidad's monopatines/bicicletas) passes its own
+   * registry here to reuse the two regimes, the variants, the bands and the new/used split without
+   * touching equipar's basket — `classes/equipar/basket.ts` never reads this input, it always
+   * iterates `EQUIPAR_CATEGORIES`, so an injected registry can never reach the equipar basket.
+   */
+  registry?: readonly EquiparCategory[];
 }
 
 export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
-  const { usdUyu } = input;
-  const categoryOrder = new Map(EQUIPAR_CATEGORIES.map((category, index) => [category.key, index]));
+  const { usdUyu, registry = EQUIPAR_CATEGORIES } = input;
+  const categoryOrder = new Map(registry.map((category, index) => [category.key, index]));
+  const byKey = new Map(registry.map((category) => [category.key, category]));
 
   // The harvester already tagged each listing with the spec that claimed it; re-deriving the
   // category here would let the two disagree, so the tag is trusted and only the variant is new.
@@ -367,7 +376,7 @@ export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
 
   for (const listing of input.listings) {
     const tagged = listing.attributes?.CATEGORY_SPEC;
-    const category = (tagged && EQUIPAR_BY_KEY.get(tagged)) || categoryFor(listing.title);
+    const category = (tagged && byKey.get(tagged)) || categoryFor(listing.title, "", registry);
     if (!category) continue;
     const variant = variantFor(category, listing.title);
     const key = itemKey(category.key, variant.key);
@@ -459,8 +468,14 @@ export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
   );
 }
 
-/** Categories that produced no usable row this run, so the page can say so instead of hiding them. */
-export function uncoveredCategories(items: readonly EquiparItem[]): string[] {
+/**
+ * Categories that produced no usable row this run, so the page can say so instead of hiding them.
+ * `registry` defaults to equipar's own, same as {@link buildEquiparCatalog}.
+ */
+export function uncoveredCategories(
+  items: readonly EquiparItem[],
+  registry: readonly EquiparCategory[] = EQUIPAR_CATEGORIES
+): string[] {
   const covered = new Set(items.filter((item) => item.newBand || item.usedBand).map((item) => item.category));
-  return EQUIPAR_CATEGORIES.filter((category) => !covered.has(category.key)).map((category) => category.key);
+  return registry.filter((category) => !covered.has(category.key)).map((category) => category.key);
 }
