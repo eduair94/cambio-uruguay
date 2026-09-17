@@ -178,6 +178,22 @@ describe("analyzeOffer", () => {
     expect(result!.priorPoints).toBe(15);
   });
 
+  it("picks the LAST occurrence of today's own point when it repeats, matching the writer's resync semantics", () => {
+    // Two entries dated TODAY: an earlier one at 10000 (as if a stale duplicate survived) and a
+    // later one at 8900 that must win, exactly like `dedupeByDay` already does for prior days.
+    const history: PricewatchPoint[] = [
+      ...flatPriorHistory(29, 10000),
+      { d: TODAY, p: 10000, lp: null },
+      { d: TODAY, p: 8900, lp: null },
+    ];
+    const offer = makeOffer({ firstSeen: iso(29), history });
+    const result = analyzeOffer(offer, TODAY);
+    expect(result).not.toBeNull();
+    expect(result!.price).toBe(8900);
+    expect(result!.classes).toEqual(["baja-real"]);
+    expect(result!.dropPct).toBe(11);
+  });
+
   it("never counts today's own point as a prior point", () => {
     // 10 prior points plus today's = 11 history entries; priorPoints must read 10, not 11, and
     // today's extreme price must not leak into priorMin/priorMax.

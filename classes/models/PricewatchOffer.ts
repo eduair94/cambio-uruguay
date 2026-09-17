@@ -49,5 +49,9 @@ const PricewatchOfferSchema = new Schema(
 PricewatchOfferSchema.index({ listingId: 1 }, { unique: true });
 PricewatchOfferSchema.index({ vertical: 1, lastSeen: 1 });
 PricewatchOfferSchema.index({ productKey: 1 });
+// `trackingSince` (Plan D, sync_price_events.ts) is the oldest `firstSeen` across the whole
+// collection: a sorted `limit(1)` query rides this index instead of scanning every document to find
+// its own minimum.
+PricewatchOfferSchema.index({ firstSeen: 1 });
 
 export const PricewatchOfferModel = appModel<PricewatchOffer>("PricewatchOffer", PricewatchOfferSchema, "pricewatchoffers");

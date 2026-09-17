@@ -22,6 +22,7 @@ import { CarCatalogMetaModel } from "../../classes/models/CarCatalogMeta";
 import { CarMarketSnapshotModel } from "../../classes/models/CarMarketSnapshot";
 import { CarOpportunitySnapshotModel } from "../../classes/models/CarOpportunitySnapshot";
 import { StoreProfileModel } from "../../classes/models/StoreProfile";
+import { PriceEventSnapshotModel } from "../../classes/models/PriceEventSnapshot";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -155,6 +156,14 @@ describe("app-Mongo schema parity", () => {
     // Las fichas de /tiendas-online-uruguay: una señal que el backend guarda y el app no declara es
     // un bloque de la ficha que desaparece sin error, y la ficha pasa a decir menos de lo que sabemos.
     expect(Object.keys(StoreProfileModel.schema.obj).sort()).toEqual(appFields(appModel("StoreProfile")).sort());
+  });
+  it("PriceEventSnapshot declares exactly the app's top-level fields", () => {
+    // El snapshot de CyberLunes/Black Friday: un campo que el backend deja de escribir es una
+    // columna que /ciberlunes-y-black-friday-uruguay deja de mostrar, sin error visible.
+    expect(Object.keys(PriceEventSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("PriceEventSnapshot")).sort()
+    );
+    expect(PriceEventSnapshotModel.collection.name).toBe("priceeventsnapshots");
   });
 
   it("writes the collections the app already reads — not mongoose's guess", () => {

@@ -790,5 +790,32 @@ module.exports = {
       cron_restart: "12 3 * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
+    {
+      // Plan D — /ciberlunes-y-black-friday-uruguay: ¿el descuento es real? Reads `pricewatchoffers`
+      // (written by equipar and sillas today; never written here), classifies each offer seen TODAY
+      // against its OWN last ~60 days, and publishes the day's snapshot to the NUXT APP's database
+      // (`priceeventsnapshots`). 15:13 UTC ≈ 12:13 America/Montevideo: after currency-equipar (12:47
+      // UTC) and the celulares harvest (14:29 UTC), so every vertical's point for today is already
+      // written before this reads it. Needs APP_MONGO_URI.
+      name: "currency-price-events",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_price_events.js",
+      cron_restart: "13 15 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Hourly recompute, but ONLY inside a CyberLunes/Black Friday window: `--event-only` checks
+      // `classes/priceevents/calendar.ts`'s `activeEvent()` and exits 0 immediately — no database
+      // connection at all — every hour of the year nothing is happening, and runs the same snapshot
+      // build as the daily job the handful of days something is.
+      name: "currency-price-events-hourly",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_price_events.js",
+      args: "--event-only",
+      cron_restart: "19 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
   ],
 };

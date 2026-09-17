@@ -83,7 +83,17 @@ function isTrackedCurrency(currency: string): currency is "UYU" | "USD" {
 export function analyzeOffer(doc: PricewatchOfferLike, today: string): PriceEventAnalysis | null {
   if (!isTrackedCurrency(doc.currency)) return null;
 
-  const todayPoint = doc.history.find((point) => point.d === today);
+  // Same "a repeat wins" rule as `dedupeByDay` below, applied to today's own point: a resync within
+  // the same run (or a doc assembled by hand) can carry two entries dated `today`, and the writer's
+  // own semantics (`applyHistory` in `classes/pricewatch/record.ts`) make the LAST one the current
+  // price. Scanning from the end picks that one instead of silently grading a stale first entry.
+  let todayPoint: PricewatchPoint | undefined;
+  for (let i = doc.history.length - 1; i >= 0; i--) {
+    if (doc.history[i]!.d === today) {
+      todayPoint = doc.history[i];
+      break;
+    }
+  }
   if (!todayPoint) return null;
 
   const age = daysBetween(doc.firstSeen, today);
