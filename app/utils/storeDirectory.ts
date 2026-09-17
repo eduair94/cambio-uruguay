@@ -2,8 +2,10 @@
 // own deploy, cannot import from the repo root — see AGENTS.md), so this file re-lists the fields
 // the frontend actually needs (no retailStoreKey/trustpilotDomain/redditTerms/redditMatch — those
 // stay backend-only) and re-implements `storeNorm`'s normalization rule rather than importing it.
-// tests/stores/mirror_parity.test.ts is what keeps the two in sync: it imports both this file and
-// the root registry directly and fails if a store, or any of its aliases, drifts between them.
+// app/tests/unit/storeDirectoryParity.test.ts is what keeps the two in sync: it imports both this
+// file and the root registry directly and fails if a store, or any of its aliases, drifts between
+// them. It lives in the app suite, not the root one, because a root test cannot load an app/ file
+// (Vite resolves app/tsconfig.json -> app/.nuxt/tsconfig.json, which the backend CI job never has).
 //
 // Every export here is prefixed `store`/`STORE_` because app/utils/ is a flat auto-import
 // namespace — an unprefixed name here would be one collision away from shadowing an unrelated util.

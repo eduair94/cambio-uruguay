@@ -42,7 +42,9 @@ export const STORE_SIGNAL_MAX_AGE_DAYS = 60;
 
 /** A page with fewer fresh signals than this has too little to say to be worth indexing. Exported
  * (Task 8 fix round 1) so the app's own `STORE_INDEXABLE_MIN_SIGNALS` can be checked for parity in
- * `tests/stores/constants_parity.test.ts` instead of drifting silently from this value. */
+ * `app/tests/unit/storeConstantsParity.test.ts` instead of drifting silently from this value (that
+ * test lives in the app suite, not the root one, because a root test cannot load an app/ file —
+ * Vite resolves app/tsconfig.json -> app/.nuxt/tsconfig.json, which the backend CI job never has). */
 export const INDEXABLE_MIN_SIGNALS = 3;
 
 /** If this many stores in a row, from the start of a run, got no fresh outside answer, sources are down. */

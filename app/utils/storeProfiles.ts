@@ -13,14 +13,16 @@
 // (a Trustpilot score, a Reddit mention count), not a rating this site computes.
 import { STORE_KIND_LABELS, type StoreKind } from './storeDirectory'
 
-/** Mirrors `classes/stores/profile.ts` `STORE_SIGNAL_MAX_AGE_DAYS`; parity checked in Task 11. A
- * signal older than this is not shown as if it were current, even though the field is still there
- * (the backend keeps a stale value with its OLD `checkedAt` rather than erase it — see the profile
- * module header). */
+/** Mirrors `classes/stores/profile.ts` `STORE_SIGNAL_MAX_AGE_DAYS`; parity checked alongside
+ * `STORE_INDEXABLE_MIN_SIGNALS` in `app/tests/unit/storeConstantsParity.test.ts`. A signal older
+ * than this is not shown as if it were current, even though the field is still there (the backend
+ * keeps a stale value with its OLD `checkedAt` rather than erase it — see the profile module
+ * header). */
 export const STORE_SIGNAL_MAX_AGE_DAYS = 60
 
 /** Mirrors `classes/stores/profile.ts` `INDEXABLE_MIN_SIGNALS`; parity checked alongside
- * `STORE_SIGNAL_MAX_AGE_DAYS` in `tests/stores/constants_parity.test.ts`. A page with fewer fresh
+ * `STORE_SIGNAL_MAX_AGE_DAYS` in `app/tests/unit/storeConstantsParity.test.ts` (lives in the app
+ * suite, not the root one — a root test cannot load an app/ file). A page with fewer fresh
  * signals than this has too little to say to be worth indexing — see {@link storeIndexable}. */
 export const STORE_INDEXABLE_MIN_SIGNALS = 3
 
