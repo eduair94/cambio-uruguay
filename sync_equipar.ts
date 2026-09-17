@@ -156,7 +156,7 @@ async function main(): Promise<void> {
   // them today's date would fake a price point that was never actually seen today.
   try {
     const pw = await recordPricewatch(guarded.listings, "equipar");
-    console.log(`[equipar] pricewatch ${pw.written} ofertas`);
+    console.log(`[equipar] pricewatch ${pw.written} ofertas, ${pw.pruned} vencidas borradas`);
   } catch (error) {
     console.error("[equipar] no se pudo registrar el historial de precios", error);
   }

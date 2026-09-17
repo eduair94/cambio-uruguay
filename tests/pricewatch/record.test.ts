@@ -1,5 +1,29 @@
-import { describe, expect, it } from "vitest";
-import { applyHistory, pricewatchEligible, pricewatchOperation } from "../../classes/pricewatch/record";
+import { describe, expect, it, vi } from "vitest";
+
+// recordPricewatch talks to the APP DB through this model; the calls are recorded, not executed.
+const modelCalls = vi.hoisted(() => [] as string[]);
+vi.mock("../../classes/models/PricewatchOffer", () => ({
+  PricewatchOfferModel: {
+    createIndexes: async () => {
+      modelCalls.push("createIndexes");
+    },
+    bulkWrite: async () => {
+      modelCalls.push("bulkWrite");
+    },
+    deleteMany: async (filter: unknown) => {
+      modelCalls.push(`deleteMany ${JSON.stringify(filter)}`);
+      return { deletedCount: 3 };
+    },
+  },
+}));
+
+import {
+  applyHistory,
+  pricewatchEligible,
+  pricewatchOperation,
+  pricewatchPruneFilter,
+  recordPricewatch,
+} from "../../classes/pricewatch/record";
 import type { PricewatchPoint } from "../../classes/pricewatch/types";
 import type { RetailListing } from "../../classes/retail/types";
 
@@ -173,5 +197,36 @@ describe("applyHistory", () => {
     expect(result).toHaveLength(120);
     expect(result[result.length - 1]).toEqual(point);
     expect(result[0]).toEqual(history[1]);
+  });
+});
+
+// Una oferta que nadie ve hace medio año no aporta a ninguna comparación de 60 días, y sin poda la
+// colección crece para siempre con cada aviso que alguna vez pasó por un buscador.
+describe("pricewatchPruneFilter", () => {
+  it("borra lo que no se vio en los últimos 180 días, sólo de esa vertical", () => {
+    expect(pricewatchPruneFilter("equipar", "2026-09-16")).toEqual({
+      vertical: "equipar",
+      lastSeen: { $lt: "2026-03-20" },
+    });
+  });
+
+  it("acepta otra ventana y cruza el cambio de año", () => {
+    expect(pricewatchPruneFilter("sillas", "2027-01-10", 30)).toEqual({
+      vertical: "sillas",
+      lastSeen: { $lt: "2026-12-11" },
+    });
+  });
+});
+
+describe("recordPricewatch", () => {
+  it("poda una vez por llamada, después de escribir, con el filtro de su vertical", async () => {
+    modelCalls.length = 0;
+    const result = await recordPricewatch([listing()], "equipar", "2026-09-16");
+    expect(modelCalls).toEqual([
+      "createIndexes",
+      "bulkWrite",
+      'deleteMany {"vertical":"equipar","lastSeen":{"$lt":"2026-03-20"}}',
+    ]);
+    expect(result).toEqual({ written: 1, skipped: 0, pruned: 3 });
   });
 });

@@ -130,7 +130,7 @@ async function main(): Promise<void> {
   // guard of its own (unlike equipar's applyUnitGuard) before cataloguing.
   try {
     const pw = await recordPricewatch(harvest.listings, "sillas");
-    console.log(`[chairs] pricewatch ${pw.written} ofertas`);
+    console.log(`[chairs] pricewatch ${pw.written} ofertas, ${pw.pruned} vencidas borradas`);
   } catch (error) {
     console.error("[chairs] no se pudo registrar el historial de precios", error);
   }

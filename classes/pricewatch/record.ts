@@ -100,6 +100,25 @@ export function pricewatchOperation(
   };
 }
 
+/** How long an offer nobody has seen again is kept. */
+export const PRICEWATCH_RETENTION_DAYS = 180;
+
+/**
+ * Which documents of one vertical to delete: those whose `lastSeen` is older than `days` before
+ * `today`. An offer unseen for half a year feeds no 60-day comparison, and without a prune the
+ * collection grows forever with every listing that ever crossed a search. `lastSeen` is a
+ * `YYYY-MM-DD` string, so a string `$lt` compares dates correctly and rides the
+ * `{ vertical, lastSeen }` index. Scoped to the vertical: one job never prunes another's rows.
+ */
+export function pricewatchPruneFilter(
+  vertical: string,
+  today: string,
+  days: number = PRICEWATCH_RETENTION_DAYS
+): { vertical: string; lastSeen: { $lt: string } } {
+  const cutoff = new Date(Date.parse(`${today}T00:00:00.000Z`) - days * 86_400_000).toISOString().slice(0, 10);
+  return { vertical, lastSeen: { $lt: cutoff } };
+}
+
 let indexesCreated = false;
 
 /**
@@ -116,7 +135,7 @@ export async function recordPricewatch(
   listings: readonly RetailListing[],
   vertical: string,
   today: string = new Date().toISOString().slice(0, 10)
-): Promise<{ written: number; skipped: number }> {
+): Promise<{ written: number; skipped: number; pruned: number }> {
   const eligible = listings.filter(pricewatchEligible);
 
   const byListingId = new Map<string, RetailListing>();
@@ -140,5 +159,9 @@ export async function recordPricewatch(
     await PricewatchOfferModel.bulkWrite(batch, { ordered: false });
   }
 
-  return { written: ops.length, skipped: listings.length - ops.length };
+  // After the writes, so an offer seen again today has already moved its `lastSeen` forward and can
+  // never be caught by its own prune.
+  const { deletedCount } = await PricewatchOfferModel.deleteMany(pricewatchPruneFilter(vertical, today));
+
+  return { written: ops.length, skipped: listings.length - ops.length, pruned: deletedCount ?? 0 };
 }

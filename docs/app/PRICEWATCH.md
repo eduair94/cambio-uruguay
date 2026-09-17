@@ -80,6 +80,14 @@ suficiente para ver una campaña estacional (CyberLunes, Navidad, rebajas de inv
 del año sin que el documento crezca sin límite. Un aviso que lleva más de 120 días observándose sigue
 existiendo (`firstSeen`/`lastSeen` no se recortan), sólo pierde los puntos de precio más viejos.
 
+**Poda a 180 días.** Lo que sí se borra es el documento entero de una oferta que nadie volvió a ver:
+al final de cada `recordPricewatch`, **después** de escribir (así una oferta vista hoy ya movió su
+`lastSeen` y nunca cae en su propia poda), un `deleteMany` sobre
+`{ vertical, lastSeen: { $lt: hoy − 180 días } }` (`pricewatchPruneFilter`), que usa el índice
+`{ vertical, lastSeen }` y sólo toca la vertical del job que llama. Una oferta sin verse hace medio
+año no alimenta ninguna comparación de 60 días, y sin poda la colección crecía para siempre con cada
+aviso que alguna vez pasó por un buscador. La corrida lo registra en el log ("N vencidas borradas").
+
 ## Quién lo va a leer
 
 Nadie todavía. `pricewatchoffers` no tiene endpoint público ni página: es la materia prima para un
@@ -90,7 +98,8 @@ esperar a que Plan D exista.
 
 ## Tests
 
-- `tests/pricewatch/record.test.ts` — 18 casos, sin base de datos: `pricewatchEligible` (Facebook y
+- `tests/pricewatch/record.test.ts` — 21 casos, sin base de datos (el modelo va simulado): `pricewatchEligible` (Facebook y
   usado excluidos, precio y `url` requeridos), `pricewatchOperation` (forma del pipeline, la trampa
   del `$literal` con un título que empieza con "$"), `applyHistory` (reemplaza el punto del mismo
-  día, no lo duplica; recorta a `maxPoints`).
+  día, no lo duplica; recorta a `maxPoints`), `pricewatchPruneFilter` (180 días, por vertical) y
+  el orden de `recordPricewatch` (escribe y recién después poda).
