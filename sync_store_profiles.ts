@@ -216,9 +216,17 @@ async function readStore(
   // Item 5: re-verify the up-to-5 published thread links against Reddit's own live API right before
   // they are stored — see verifyLiveThreads's own header on why (Arctic Shift keeps what got
   // deleted) and its fail-closed behaviour (Reddit unreachable -> no titles this run, counts kept).
+  // Item D (fix round F2): verifyLiveThreads itself is written not to throw, but this call site
+  // guards against it anyway, same as every other `read()` above — one store's Reddit verification
+  // must never cost the rest of the run, and a swallowed thread list must never pass silently.
   if (doc.reddit && doc.reddit.threads.length) {
-    const liveThreads = await verifyLiveThreads(doc.reddit.threads);
-    doc.reddit = { ...doc.reddit, threads: liveThreads };
+    try {
+      const liveThreads = await verifyLiveThreads(doc.reddit.threads);
+      doc.reddit = { ...doc.reddit, threads: liveThreads };
+    } catch (error) {
+      console.warn(`[tiendas] ${entry.key} verifyLiveThreads lanzó`, (error as Error)?.message || error);
+      doc.reddit = { ...doc.reddit, threads: [] };
+    }
   }
 
   const progressed = redditProgressed({ redditNew, previousCursor: stored.cursor, nextCursor: doc.redditCursor });

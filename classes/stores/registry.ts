@@ -92,8 +92,11 @@ export const STORES: readonly StoreEntry[] = [
     retailStoreKey: "dimm",
     // "DIMM" is also the generic hardware term for a RAM memory module (Dual In-line Memory
     // Module) — "necesito un dimm de 16gb" is a plausible unrelated r/uruguay tech comment.
+    // Fix round F2, item A: the old `(en|de|a) dimm\b` branch had no LEADING `\b`, so it matched
+    // after any word ending in "en"/"de"/"a" ("memoria DIMM", "una DIMM"...), not just the
+    // preposition — reviewer-probed replacement requires actual commerce context around the term.
     redditTerms: ["dimm"],
-    redditMatch: /\bdimm\b.{0,40}(tienda|compr|pedido|envio|garantia|sucursal|uruguay)|(en|de|a) dimm\b/,
+    redditMatch: /\bdimm\b.{0,40}\b(tienda|compr[eoa]|pedido|envio|garantia|sucursal|local)|\b(en|a) dimm\b/,
   },
   {
     key: "armo",
@@ -330,8 +333,12 @@ export const STORES: readonly StoreEntry[] = [
     aliases: ["Tech House"],
     // "Tech house" is also an electronic-music genre — a music/genre-tag mention shares nothing
     // with this store.
+    // Fix round F2, item A: same unbounded-preposition bug as `dimm` above ("me gusta la música
+    // tech house" matched via the "a"-ending of "música") — replaced with a commerce-context regex
+    // that requires an actual buying word next to the term, either side.
     redditTerms: ["tech house"],
-    redditMatch: /\btech house\b.{0,40}(tienda|compr|garantia|envio|local|sucursal|pedido|precio)|(en|de|a) tech house\b/,
+    redditMatch:
+      /\btech house\b.{0,40}\b(tienda|compr[eoa]|pedido|envio|garantia|sucursal|local)|\b(compr[eoa]|tienda|pedido)\b.{0,40}\btech house\b/,
   },
   {
     key: "narvaja",
@@ -351,8 +358,18 @@ export const STORES: readonly StoreEntry[] = [
     aliases: ["La Tentación", "La Tentacion"],
     // "La tentación" is everyday Spanish for "the temptation" ("no pude resistir la tentación de
     // comer torta"), unrelated to this store.
-    redditTerms: ["la tentacion", "la tentación"],
-    redditMatch: /\bla tentacion\b.{0,40}(tienda|compr|electrodom|hogar|garantia|envio|local|ofertas|precio)|(en|de|a) la tentacion\b/,
+    //
+    // Fix round F2, item A: no `redditMatch` — the commerce-context regex the reviewer probed
+    // (`\bla tentacion\b.{0,40}\b(tienda|compr[eoa]|...)|...`) still matched ordinary phrasing: this
+    // idiom's single most common construction IS "la tentación de comprar <algo>" ("sentí la
+    // tentación de comprar un auto nuevo", "cayó en la tentación de comprar el iPhone nuevo" — none
+    // about this store), so a regex built to require a nearby "compr[eoa]" is defeated by the
+    // idiom's own normal grammar, not just by an adversarial phrasing. Tightening the regex to
+    // exclude that construction in turn dropped real store mentions the reviewer's own probe wanted
+    // kept ("Vi ofertas en La Tentación", "Fui a comprar a La Tentación una heladera"). Per the
+    // registry's own rule for a name too ambiguous to search at all (see `Armo`/`Grassi`/`TYT`/...
+    // above), this store is simply never queried on Reddit.
+    redditTerms: [],
   },
   {
     key: "amv-store",
@@ -571,8 +588,12 @@ export const STORES: readonly StoreEntry[] = [
     rubros: ["tecnologia", "celulares"],
     aliases: ["Caribe Sur Store", "CARIBE SUR STORE"],
     // "Caribe sur" ("Caribbean south") is an everyday geography/travel phrase on its own.
+    // Fix round F2, item A: same unbounded-preposition bug as `dimm`, replaced with a
+    // commerce-context regex, plus a bare `\bcaribe sur store\b` (the store's own full name is
+    // unambiguous on its own, no nearby commerce word required).
     redditTerms: ["caribe sur"],
-    redditMatch: /\bcaribe sur\b.{0,40}(tienda|compr|celular|tecnologia|garantia|envio|local|sucursal|store)|(en|de|a) caribe sur\b/,
+    redditMatch:
+      /\bcaribe sur\b.{0,40}\b(tienda|compr[eoa]|celular|garantia|envio|sucursal|store)\b|\b(compr[eoa]|tienda|celular)\b.{0,40}\bcaribe sur\b|\bcaribe sur store\b/,
   },
   {
     key: "deceleste",
@@ -626,10 +647,14 @@ export const STORES: readonly StoreEntry[] = [
     kind: "tienda-uy",
     rubros: ["electrodomesticos"],
     aliases: ["Carlos Gutiérrez", "Carlos Gutierrez"],
-    // A common Spanish first+last name — plenty of unrelated people share it.
+    // A common Spanish first+last name — plenty of unrelated people share it (a minister,
+    // interview subjects, anyone who happens to share it — the reviewer's probe caught all three).
+    // Fix round F2, item A: same unbounded-preposition bug as `dimm`, replaced with a
+    // commerce-context regex; this one has no preposition branch at all (unlike dimm/tech-house),
+    // since a bare "en/a Carlos Gutiérrez" reads just as naturally as a person's name.
     redditTerms: ["carlos gutierrez", "carlos gutiérrez"],
     redditMatch:
-      /\bcarlos gutierrez\b.{0,40}(tienda|compr|electrodom|garantia|envio|local|sucursal|heladera|lavarropa)|(en|de|a) carlos gutierrez\b/,
+      /\bcarlos gutierrez\b.{0,30}\b(tienda|sucursal|electrodomesticos?|heladera|lavarropas?|garantia|envio)\b|\b(compr[eoa]|tienda|heladera|lavarropas?)\b.{0,30}\bcarlos gutierrez\b/,
   },
   {
     key: "farmashop",
@@ -690,9 +715,21 @@ export const STORES: readonly StoreEntry[] = [
     // "Mercado libre" is also the everyday economic term for "free market" ("en un mercado libre
     // los precios..."), which comes up on r/uruguay in policy/economics threads with nothing to do
     // with the marketplace.
+    // Fix round F2, item A: the old `mercado ?libre\.com` branch never matched a real listing URL
+    // (`storeNorm` turns "." into a space, so "mercadolibre.com.uy" normalizes to "mercadolibre com
+    // uy" with no dot left to match), and dropped plain mentions like "lo vi en mercadolibre" or "en
+    // mercado libre sale más barato" that have no commerce VERB nearby — while "comprender el
+    // mercado libre" still slipped through on "compr" alone. Replaced: the one-word spelling
+    // "mercadolibre" is unambiguous on its own (nobody spells the economic term as one word); the
+    // two-word spelling needs either a leading preposition (a plain "en/de/por/a mercado libre" is a
+    // marketplace mention almost always — the same reasoning the reviewer already accepted for
+    // "en"/"de"/"por" extends to "a": "reclamo A mercado libre" needs it, and the generic economic
+    // idiom almost always inserts an article, "hacia UN mercado libre"/"en UN mercado libre",
+    // between the preposition and the phrase, which this bare adjacency still excludes) or a real
+    // commerce verb nearby, word-bounded this time.
     redditTerms: ["mercado libre", "mercadolibre"],
     redditMatch:
-      /mercado ?libre\.com|(compr|vend|pedido|envio|paquete|reclamo|devoluc).{0,40}mercado ?libre|mercado ?libre.{0,40}(compr|vend|pedido|envio|paquete|reclamo|devoluc)/,
+      /\bmercadolibre\b|\b(en|de|por|a) mercado libre\b|\bmercado libre\b.{0,40}\b(compr[eoa]|vend[ioa]|pedido|envio|paquete|reclamo|devoluc)/,
   },
   {
     key: "temu",

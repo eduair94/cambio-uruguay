@@ -671,7 +671,16 @@ export async function verifyLiveThreads(
 
   const fullnames = withIds.map((row) => `t3_${row.id}`);
   const live = await fetchInfoLive(fullnames);
-  if (!live) return [];
+  if (!live) {
+    // Item D (fix round F2): this used to fail closed silently — a missing REDDIT_CLIENT_ID/
+    // REDDIT_CLIENT_SECRET, or Reddit's own API being down, produced the exact same empty list as
+    // "every thread turned out to be removed", with nothing in the log to tell the two apart.
+    console.warn(
+      "[tiendas] reddit verifyLiveThreads: fetchInfoLive no respondió (sin credenciales " +
+        "REDDIT_CLIENT_ID/REDDIT_CLIENT_SECRET, o Reddit caído) — no se publican hilos esta corrida"
+    );
+    return [];
+  }
 
   const kept: RedditSignal["threads"] = [];
   for (let i = 0; i < withIds.length; i++) {

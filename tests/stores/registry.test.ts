@@ -145,16 +145,21 @@ describe("redditMatch disambiguators", () => {
   it("tech-house: matches the store, not the music genre", () => {
     const techHouse = STORE_BY_KEY.get("tech-house")!;
     expect(techHouse.redditMatch!.test(norm("Compré un cargador en Tech House ayer"))).toBe(true);
-    expect(techHouse.redditMatch!.test(norm("Tech House tiene buenos precios en notebooks"))).toBe(true);
+    // Fix round F2, item A: the reviewer's own probe-validated phrasing (fixprobe.js) — the previous
+    // phrasing here ("Tech House tiene buenos precios en notebooks") only ever passed because of the
+    // bug this fix removes (an unbounded "(en|de|a) tech house" branch); the corrected regex needs
+    // an actual commerce word adjacent to the term, so the sentence spells one out explicitly.
+    expect(techHouse.redditMatch!.test(norm("Tech House tiene buenos precios, compré ahi"))).toBe(true);
     expect(techHouse.redditMatch!.test(norm("Me gusta el tech house y el techno"))).toBe(false);
   });
 
-  it("la-tentacion: matches the store, not the everyday phrase", () => {
-    const laTentacion = STORE_BY_KEY.get("la-tentacion")!;
-    expect(laTentacion.redditMatch!.test(norm("Vi ofertas en La Tentación"))).toBe(true);
-    expect(laTentacion.redditMatch!.test(norm("Fui a comprar a La Tentación una heladera"))).toBe(true);
-    expect(laTentacion.redditMatch!.test(norm("No pude resistir la tentación de comer torta"))).toBe(false);
-  });
+  // Fix round F2, item A: "la-tentacion" no longer carries a `redditMatch` at all — see the
+  // registry's own comment on that entry. The reviewer-probed commerce-context regex still matched
+  // this idiom's own normal grammar ("sentí la tentación de comprar un auto nuevo" — the idiom's
+  // MOST common construction is literally "la tentación de comprar <algo>"), and tightening it
+  // enough to exclude that construction dropped real store mentions in the same probe ("Vi ofertas
+  // en La Tentación"). `mentionMatches` (tests/stores/reddit.test.ts) covers the resulting
+  // `redditTerms: []` behaviour: this store is never queried on Reddit, full stop.
 
   it("carlos-gutierrez: matches the store, not the common person name", () => {
     const carlosGutierrez = STORE_BY_KEY.get("carlos-gutierrez")!;

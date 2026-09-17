@@ -56,6 +56,87 @@ describe("mentionMatches", () => {
   });
 });
 
+// Fix round F2, item A: the F1 re-review found the `(en|de|a) <term>\b` branch of six registry
+// guards had no LEADING `\b`, so it matched after any word merely ENDING in "en"/"de"/"a" — not the
+// standalone preposition — admitting "caer en la tentación", "memoria DIMM de 16gb", "la opinión de
+// Carlos Gutiérrez", "la costa caribe sur" and more, while the Mercado Libre guard separately missed
+// real listing URLs (`storeNorm` turns "." into a space, so "mercado ?libre\.com" never matches) and
+// let "comprender el mercado libre" through on a bare "compr" substring. Every case below goes
+// through the REAL `mentionMatches` (never a copy of the regex) against the actual registry entries,
+// so a future edit to a guard is caught here too.
+describe("mentionMatches — fix round F2, item A: commerce-context regex guards", () => {
+  it("dimm: none of the reviewer's RAM-jargon phrasings match (exact fragments and full sentences); a real store mention does", () => {
+    const dimm = STORE_BY_KEY.get("dimm")!;
+    expect(mentionMatches(dimm, "slots de DIMM")).toBe(false); // exact reviewer fragment
+    expect(mentionMatches(dimm, "memoria DIMM de 16gb")).toBe(false);
+    expect(mentionMatches(dimm, "la placa tiene 4 slots de DIMM")).toBe(false);
+    expect(mentionMatches(dimm, "compré una memoria dimm ddr4 en mercado libre")).toBe(false);
+    expect(mentionMatches(dimm, "una DIMM ECC")).toBe(false);
+    expect(mentionMatches(dimm, "compré en dimm")).toBe(true);
+    expect(mentionMatches(dimm, "Fui a DIMM a comprar una pc")).toBe(true);
+  });
+
+  it("tech house: none of the reviewer's music-genre phrasings match (exact fragments and full sentences); a real store mention does", () => {
+    const techHouse = STORE_BY_KEY.get("tech-house")!;
+    expect(mentionMatches(techHouse, "fiesta tech house")).toBe(false); // exact reviewer fragment
+    expect(mentionMatches(techHouse, "me gusta la música tech house")).toBe(false);
+    expect(mentionMatches(techHouse, "fiesta tech house en la playa")).toBe(false);
+    expect(mentionMatches(techHouse, "una noche de tech house en Punta")).toBe(false);
+    expect(mentionMatches(techHouse, "la tienda tech house de 18 de julio")).toBe(true);
+  });
+
+  it("carlos gutiérrez: none of the reviewer's common-name phrasings match (exact fragments and full sentences); a real store mention does", () => {
+    const carlosGutierrez = STORE_BY_KEY.get("carlos-gutierrez")!;
+    expect(mentionMatches(carlosGutierrez, "entrevista a Carlos Gutiérrez")).toBe(false); // exact reviewer fragment
+    expect(mentionMatches(carlosGutierrez, "la opinión de Carlos Gutiérrez")).toBe(false); // exact reviewer fragment
+    expect(mentionMatches(carlosGutierrez, "le hicieron una entrevista a Carlos Gutiérrez")).toBe(false);
+    expect(mentionMatches(carlosGutierrez, "la opinión de Carlos Gutiérrez sobre el tema")).toBe(false);
+    expect(mentionMatches(carlosGutierrez, "votaron a Carlos Gutiérrez")).toBe(false);
+    expect(mentionMatches(carlosGutierrez, "Compré la heladera en Carlos Gutiérrez")).toBe(true);
+  });
+
+  it("caribe sur: none of the reviewer's geography phrasings match (exact fragment and full sentences); a real store mention does", () => {
+    const caribeSur = STORE_BY_KEY.get("caribe-sur-store")!;
+    expect(mentionMatches(caribeSur, "la costa caribe sur")).toBe(false); // exact reviewer fragment
+    expect(mentionMatches(caribeSur, "la costa caribe sur de Costa Rica")).toBe(false);
+    expect(mentionMatches(caribeSur, "fui de vacaciones a caribe sur")).toBe(false);
+    expect(mentionMatches(caribeSur, "Compré un celular en Caribe Sur")).toBe(true);
+  });
+
+  it("la tentación: redditTerms is now [] — never matches, not even the reviewer's own fragments nor a text that reads as a real mention", () => {
+    // Item A follow-up: the commerce-context regex still matched this idiom's own normal grammar
+    // ("la tentación de comprar X"), so the store is queried on Reddit with zero terms instead —
+    // the registry's own rule for a name too ambiguous to disambiguate at all.
+    const laTentacion = STORE_BY_KEY.get("la-tentacion")!;
+    expect(laTentacion.redditTerms).toEqual([]);
+    expect(laTentacion.redditMatch).toBeUndefined();
+    expect(mentionMatches(laTentacion, "caer en la tentación")).toBe(false); // exact reviewer fragment
+    expect(mentionMatches(laTentacion, "ceder a la tentación")).toBe(false); // exact reviewer fragment
+    expect(mentionMatches(laTentacion, "el poder de la tentación")).toBe(false); // exact reviewer fragment
+    expect(mentionMatches(laTentacion, "Compré una heladera en La Tentación")).toBe(false);
+    expect(mentionMatches(laTentacion, "Vi ofertas en La Tentación")).toBe(false);
+  });
+
+  it("mercado libre: drops none of the realistic store mentions, admits none of the economics phrasings", () => {
+    const mercadoLibre = STORE_BY_KEY.get("mercado-libre")!;
+    // Realistic positive mentions (a listing URL, and every phrasing named in the fix instructions).
+    expect(mentionMatches(mercadoLibre, "https://articulo.mercadolibre.com.uy/MLU-123-algo")).toBe(true);
+    expect(mentionMatches(mercadoLibre, "pedido en mercadolibre")).toBe(true);
+    expect(mentionMatches(mercadoLibre, "lo vi en mercado libre")).toBe(true);
+    expect(mentionMatches(mercadoLibre, "envío de mercado libre tardó")).toBe(true);
+    expect(mentionMatches(mercadoLibre, "reclamo a mercado libre")).toBe(true);
+    // Negative economics phrasings — the free-market sense of the same two words.
+    expect(mentionMatches(mercadoLibre, "comprender el mercado libre es clave")).toBe(false);
+    expect(mentionMatches(mercadoLibre, "hay que comprar dólares, el mercado libre de cambios")).toBe(
+      false
+    );
+    expect(mentionMatches(mercadoLibre, "libre mercado")).toBe(false);
+    expect(
+      mentionMatches(mercadoLibre, "en un mercado libre los precios los pone la oferta y la demanda")
+    ).toBe(false);
+  });
+});
+
 function mention(overrides: Partial<RedditMention>): RedditMention {
   return {
     id: "abc123",
@@ -969,6 +1050,17 @@ describe("verifyLiveThreads", () => {
     fetchInfoLive.mockResolvedValue(null);
     const result = await verifyLiveThreads([thread(), thread({ url: "https://www.reddit.com/r/uruguay/comments/zzz999/x/" })]);
     expect(result).toEqual([]);
+  });
+
+  // Item D (fix round F2): the failure above used to be silent — indistinguishable in the log from
+  // every thread turning out removed. A missing REDDIT_CLIENT_ID/SECRET or a Reddit outage must warn.
+  it("warns when fetchInfoLive returns null, instead of failing closed silently (item D)", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    fetchInfoLive.mockResolvedValue(null);
+    await verifyLiveThreads([thread()]);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]![0]).toMatch(/verifyLiveThreads/);
+    warn.mockRestore();
   });
 
   it("queries fetchInfoLive with t3_ fullnames built from the thread permalink", async () => {
