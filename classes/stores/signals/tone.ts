@@ -10,19 +10,31 @@
 //
 // `toneCache` (a profile field, classes/stores/profile.ts — never published, Task 8 excludes it with
 // `.select`) remembers one tone per mention id so a mention is classified once, ever. A run only asks
-// about ids missing from the cache, in batches of STORE_TONE_BATCH_SIZE, capped at
-// STORE_TONE_MAX_PER_RUN per store per run: a 24-month backfill can bring thousands of mentions in one
-// go, and this budget spreads the classification cost over several runs instead of paying it all at
-// once. `pruneToneCache` drops any id no longer among the stored mentions — the 500-cap in
-// `mergeStoredMentions` (reddit.ts) can push an old one out — so the cache never outgrows what is
-// actually kept.
+// about ids missing from the cache, in batches of STORE_TONE_BATCH_SIZE. `pruneToneCache` drops any id
+// no longer among the stored mentions — the 500-cap in `mergeStoredMentions` (reddit.ts) can push an
+// old one out — so the cache never outgrows what is actually kept.
+//
+// Fix round 1: a mention's raw `text` exists ONLY in the memory of the run that fetched it — reddit.ts
+// never stores it, and a later run never re-fetches an already-read window (Reddit's own incremental
+// design). So classification cannot be "spread over several runs" the way the original version of this
+// module assumed: whatever is not classified in the run that fetched a mention is unclassifiable
+// forever after. `STORE_TONE_MAX_PER_RUN` is therefore set to `STORE_REDDIT_MAX_MENTIONS` (reddit.ts),
+// the same 500-mention ceiling the store's own stored-mentions list is capped at — batches of 25, so
+// at most 20 `askJSON` calls per store per run — not a smaller budget meant to ration cost over time.
+// `freshMentionsToClassify` is what makes that ceiling actually line up with what gets classified: it
+// hands `classifyMentions` exactly the mentions fetched THIS run that will actually survive being
+// merged into the stored list (`mergeStoredMentions`), newest first, so a mention this run is about to
+// evict from storage is never wastefully sent for classification, and one that DOES survive is asked
+// about in the very run its text is still available. The only mentions this can still leave
+// unclassified are the ones in a batch whose `askJSON` call fails — an accepted residual gap, not
+// retried, since there is nothing left to retry it with.
 //
 // `askJSON` (classes/gemini.ts) returns null with no API key or on any error it already gave up
 // retrying: `classifyMentions` then leaves that batch's ids unclassified and moves on to the next
 // batch, exactly like classes/charruadevs/classify.ts does for its own batches — nothing is ever
-// invented, and an unclassified id is simply retried whenever it comes up again in a future run.
+// invented.
 import { askJSON } from "../../gemini";
-import type { RedditMention, RedditSignal } from "./reddit";
+import { mergeStoredMentions, STORE_REDDIT_MAX_MENTIONS, type RedditMention, type RedditSignal, type StoredRedditMention } from "./reddit";
 
 export type MentionTone = "queja" | "recomendacion" | "neutral";
 
@@ -33,8 +45,10 @@ export const STORE_TONE_MODEL = "gemini-2.5-flash-lite";
 /** A mention's text is cut to this many characters before a prompt is ever built from it. */
 const STORE_TONE_TEXT_MAX_CHARS = 600;
 const STORE_TONE_BATCH_SIZE = 25;
-/** Classifications spent per store per run — the shared cost control the brief asks for. */
-export const STORE_TONE_MAX_PER_RUN = 100;
+/** Fix round 1: matches `STORE_REDDIT_MAX_MENTIONS` — a mention's text only exists in the run that
+ * fetched it, so this is a hard ceiling sized to the store's own stored-mentions cap, not a smaller
+ * budget meant to spread cost over several runs (see the module header). Batches of 25 → ≤20 calls. */
+export const STORE_TONE_MAX_PER_RUN = STORE_REDDIT_MAX_MENTIONS;
 
 const TONE_VALUES: readonly MentionTone[] = ["queja", "recomendacion", "neutral"];
 
@@ -126,14 +140,37 @@ export function pruneToneCache(
 }
 
 /**
+ * Fix round 1 (I2): which of the mentions fetched THIS run (`fresh`, with their in-memory `text`) are
+ * worth sending to `classifyMentions` — the ones that will actually end up in the stored list.
+ * Mirrors `mergeStoredMentions`'s own union-and-cap (`stored` + `fresh`, newest
+ * STORE_REDDIT_MAX_MENTIONS survive) and keeps only the FRESH ids among the survivors, in the same
+ * newest-first order: a fresh mention old enough to be evicted by the 500-cap is never sent for
+ * classification (its text is about to be dropped anyway, and it will never be fetched again), while
+ * every fresh mention that does survive is offered in the very run its text still exists. Does not
+ * consult `toneCache` at all — `classifyMentions` already skips whatever it is handed that is already
+ * a key of the cache.
+ */
+export function freshMentionsToClassify(
+  stored: readonly StoredRedditMention[],
+  fresh: readonly RedditMention[]
+): RedditMention[] {
+  if (!fresh.length) return [];
+  const byId = new Map(fresh.map((mention) => [mention.id, mention]));
+  const merged = mergeStoredMentions(stored, fresh);
+  return merged.mentions.filter((mention) => byId.has(mention.id)).map((mention) => byId.get(mention.id)!);
+}
+
+/**
  * Classifies whatever of `mentions` is not already a key of `cache`, in the order `mentions` arrives,
  * up to STORE_TONE_MAX_PER_RUN, in batches of STORE_TONE_BATCH_SIZE. Returns a NEW cache object
  * (never mutates `cache`; returns the same reference when there is nothing pending) with every
  * classification that came back merged in. A batch whose `askJSON` call returns null (no
  * GEMINI_API_KEY, or an error `askJSON` already gave up retrying) leaves its ids out of the result —
- * they are retried whenever they come up again in a future run — and the next batch is still asked.
- * An id the model answers that was not asked in THAT batch, or an unrecognised tone value, is
- * dropped: the response schema only shapes the JSON, it does not stop the model from inventing an id.
+ * an accepted residual gap (see the module header on why this can no longer be "retried next run") —
+ * and the next batch is still asked. An id the model answers that was not asked in THAT batch, or an
+ * unrecognised tone value, is dropped: the response schema only shapes the JSON, it does not stop the
+ * model from inventing an id. Callers should pass `freshMentionsToClassify`'s result, not a raw
+ * increment, so this function's own cap is a safety ceiling rather than the thing doing the choosing.
  */
 export async function classifyMentions(
   storeName: string,

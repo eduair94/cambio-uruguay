@@ -30,12 +30,14 @@
 //     `redditProgressed`). Meant to run nightly on the same call budget as the weekly job, so the
 //     24-month backfill finishes in ~8 nights instead of ~8 weeks (Task 12: ~90 calls/store, 900/week,
 //     76 stores).
-//   * Task 7: right after a Reddit read, whatever mentions it fetched this run (with their raw text,
-//     in memory only) go to `classifyMentions` (classes/stores/signals/tone.ts), which classifies
-//     only the ids not already in the profile's `toneCache` — capped, batched, never inventing a tone
-//     for a batch Gemini failed to answer. The published `RedditSignal.tone` is an aggregated count,
-//     never a per-mention verdict; `toneCache` itself is never queried in either mode's "answered?"
-//     bookkeeping and never published (Task 8 excludes it with `.select`).
+//   * Task 7: right after a Reddit read, `freshMentionsToClassify` narrows whatever mentions it fetched
+//     this run down to the ones that will actually survive being merged into the stored list (their
+//     raw text exists only in this run's memory — see classes/stores/signals/tone.ts's module header
+//     on why that means classifying them THIS run or never), and `classifyMentions` classifies
+//     whichever of those are not already in the profile's `toneCache` — batched, never inventing a
+//     tone for a batch Gemini failed to answer. The published `RedditSignal.tone` is an aggregated
+//     count, never a per-mention verdict; `toneCache` itself is never queried in either mode's
+//     "answered?" bookkeeping and never published (Task 8 excludes it with `.select`).
 //
 // Flags: `--dry-run` (print, never write), `--only=<key,key>` (a subset of the registry), and
 // `--reddit-only` (Task 13: ask Reddit only — every other source keeps last week's value untouched —
@@ -68,7 +70,7 @@ import { loadCatalogPresence, type CatalogSignal } from "./classes/stores/signal
 import { fetchGoogle } from "./classes/stores/signals/google";
 import { fetchRedditIncrement, type RedditMention } from "./classes/stores/signals/reddit";
 import { fetchSite } from "./classes/stores/signals/site";
-import { classifyMentions } from "./classes/stores/signals/tone";
+import { classifyMentions, freshMentionsToClassify } from "./classes/stores/signals/tone";
 import { fetchTrustpilot } from "./classes/stores/signals/trustpilot";
 import type { StoreEntry } from "./classes/stores/types";
 
@@ -174,13 +176,19 @@ async function readStore(
     return increment;
   });
 
-  // Task 7: an aggregated, automatic tone over Reddit mentions. Only the mentions fetched THIS run
-  // carry `text` (in memory only — reddit.ts never stores it), so classification can only ever look
-  // at `redditFetched`; `classifyMentions` itself skips whatever is already a key of `stored.toneCache`
-  // and does nothing (network or otherwise) when `redditFetched` is empty. A thrown error here is one
-  // store's one source, same as every other `read()` above — it must never cost the rest of the run.
+  // Task 7 (fix round 1, I2): an aggregated, automatic tone over Reddit mentions. Only the mentions
+  // fetched THIS run carry `text` (in memory only — reddit.ts never stores it, and an already-read
+  // window is never re-fetched), so a mention this run does not classify is unclassifiable forever
+  // after. `freshMentionsToClassify` narrows `redditFetched` down to exactly the fresh mentions that
+  // will actually survive being merged into the stored list (mirroring `mergeStoredMentions`'s own
+  // 500-cap), newest first — never a mention this run is about to evict from storage anyway.
+  // `classifyMentions` itself skips whatever is already a key of `stored.toneCache`, and both do
+  // nothing (no network call) when `redditFetched` is empty. Runs in both `full` and `--reddit-only`
+  // mode, right after the Reddit read and before `buildProfile`. A thrown error here is one store's
+  // one source, same as every other `read()` above — it must never cost the rest of the run.
   try {
-    fetched.toneCache = await classifyMentions(entry.name, redditFetched, stored.toneCache);
+    const toClassify = freshMentionsToClassify(stored.mentions, redditFetched);
+    fetched.toneCache = await classifyMentions(entry.name, toClassify, stored.toneCache);
   } catch (error) {
     console.warn(`[tiendas] ${entry.key} tono lanzó`, (error as Error)?.message || error);
   }

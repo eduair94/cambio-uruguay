@@ -237,6 +237,74 @@ describe("sync_store_profiles.ts wiring", () => {
   });
 });
 
+// Task 7 fix round 1 (I1): nothing locked the wiring of the tone classifier into the job itself — only
+// classes/stores/signals/tone.ts's own pure functions were tested. These are text-level checks in the
+// same style as the wiring block above, because `readStore` is otherwise only exercisable end to end
+// (network + Mongo). Sanity-checked by hand: moving the `classifyMentions(` call to after
+// `buildProfile(` fails the first test below; moving it back restores green.
+describe("sync_store_profiles.ts wiring: Task 7 tone classification", () => {
+  const classifyCall = SRC.indexOf("classifyMentions(");
+  const freshCall = SRC.indexOf("freshMentionsToClassify(");
+  const redditReadCall = SRC.indexOf('read("reddit"');
+  const buildProfileCall = SRC.indexOf("buildProfile(");
+
+  /** [open, close] offsets of every `try { ... }` block, matched by brace counting (same technique as
+   * `notDryRunBlocks` above, for `if (!dryRun) { ... }`). */
+  function tryBlocks(src: string): Array<[number, number]> {
+    const blocks: Array<[number, number]> = [];
+    const opener = /try\s*\{/g;
+    for (const match of src.matchAll(opener)) {
+      const open = match.index! + match[0].length - 1;
+      let depth = 0;
+      for (let i = open; i < src.length; i++) {
+        if (src[i] === "{") depth++;
+        else if (src[i] === "}") {
+          depth--;
+          if (depth === 0) {
+            blocks.push([open, i]);
+            break;
+          }
+        }
+      }
+    }
+    return blocks;
+  }
+
+  it("finds all four anchors", () => {
+    expect(classifyCall).toBeGreaterThan(-1);
+    expect(freshCall).toBeGreaterThan(-1);
+    expect(redditReadCall).toBeGreaterThan(-1);
+    expect(buildProfileCall).toBeGreaterThan(-1);
+  });
+
+  it("calls classifyMentions after the Reddit read and before buildProfile", () => {
+    expect(classifyCall).toBeGreaterThan(redditReadCall);
+    expect(classifyCall).toBeLessThan(buildProfileCall);
+  });
+
+  it("narrows to freshMentionsToClassify's result before classifying, not the raw increment", () => {
+    expect(freshCall).toBeGreaterThan(redditReadCall);
+    expect(freshCall).toBeLessThan(classifyCall);
+  });
+
+  it("wraps the classification call in its own try/catch", () => {
+    const blocks = tryBlocks(SRC);
+    const owning = blocks.find(([open, close]) => classifyCall > open && classifyCall < close);
+    expect(owning, "classifyMentions( must sit inside its own try { ... } block").toBeDefined();
+    const [, close] = owning!;
+    expect(SRC.slice(close, close + 20), "the try block around classifyMentions( must be followed by catch").toMatch(
+      /^\}\s*catch\s*\(/
+    );
+  });
+
+  it("classifies on the path shared by full and --reddit-only modes: no mode check gates it", () => {
+    // Nothing between the Reddit read and buildProfile( branches on `mode` — reddit-only already
+    // narrows the STORE LIST before the loop (needsRedditBackfill), not what happens inside readStore.
+    const between = SRC.slice(redditReadCall, buildProfileCall);
+    expect(between).not.toMatch(/if\s*\(\s*mode\s*===/);
+  });
+});
+
 // Fix round 1, ruling 1: both pm2 apps write the same APP DB documents, loading them once at start
 // and `$set`ting whole documents back — running at the same time lets whichever finishes first
 // silently erase the other's Reddit progress. A shared flock (modelled on scripts/run-rentals.sh)
