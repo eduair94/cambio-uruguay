@@ -339,7 +339,7 @@
   - `GET /api/stores/<slug>` → `{ profile: StorePublicProfile, bankosBrandSlug: string | null }`; **404** si la clave no está en el espejo o no hay documento.
   - `app/utils/storeProfiles.ts`: `storeFreshSignals(profile, now)` (misma regla de 60 días que el backend; test de paridad de la constante en la Task 11), `storeFaq(profile, bankosBrandSlug): Array<{ question: string; answer: string }>`, `storeBuyingAdvice(kind): { title: string; items: Array<{ text: string; to?: string }> }`, `storeSignalSummary(profile): string` (una frase con los datos, sin adjetivos).
 - [ ] **Step 1: tests que fallan** (`storeProfiles.test.ts`): `storeSignalSummary` para un perfil con Trustpilot 1,4 (104 reseñas) y Google 4,3 (812) contiene "1,4", "104", "4,3", "812" y NO contiene "confiable", "estafa", "recomendamos", "evitá"; con una señal de hace 61 días, esa señal no aparece; `storeFaq` incluye "¿<name> es confiable?" cuya respuesta enumera señales y termina con "No es una calificación nuestra: cada dato dice de dónde sale."; "¿<name> tiene local físico?" responde con la dirección de Google o del JSON-LD cuando existe y "No encontramos una dirección publicada" cuando no; "¿Cómo le reclamo a <name>?"; `storeBuyingAdvice("compra-exterior")` enlaza a `/franquicia-aduana-uruguay`, `/guias/impuesto-temu-uruguay` y `/problemas-con-la-aduana-uruguay`; `storeBuyingAdvice("tienda-uy")` enlaza a `/derechos-consumidor-compras-online` y `/defensa-al-consumidor-uruguay` y menciona el arrepentimiento de 5 días hábiles de la Ley 17.250 art. 16 (texto consistente con `app/utils/consumerRights.ts`; leerlo antes). Confirmar con `ls app/pages` que cada ruta enlazada existe (`guias/[slug]` cubre `/guias/impuesto-temu-uruguay` si esa guía existe en `app/utils/guidesImportacion.ts`).
-- [ ] **Step 2:** FAIL. **Step 3:** implementar las rutas copiando el patrón de `app/server/api/equipar/index.get.ts` (`.select` sin `toneCache`, `_id`, `__v`, timestamps); detalle: `bankosBrandSlug` = marca de Bankos cuyo slug coincide con `slugifyText(name)` o con el de algún alias; si el loader de marcas falla, `null`.
+- [ ] **Step 2:** FAIL. **Step 3:** implementar las rutas copiando el patrón de `app/server/api/equipar/index.get.ts` (`.select` sin `toneCache`, `redditMentions`, `redditCursor`, `redditTermsKey`, `_id`, `__v`, timestamps; una señal `null` se muestra como ausencia de dato, nunca como "no tiene perfil"); detalle: `bankosBrandSlug` = marca de Bankos cuyo slug coincide con `slugifyText(name)` o con el de algún alias; si el loader de marcas falla, `null`.
 - [ ] **Step 4:** PASS + lint. **Step 5: commit** — `feat(tiendas): API y utilidades de las fichas`.
 
 ---
@@ -425,3 +425,18 @@ Origen (medido por la Task 6 el 16/9/2026 contra Arctic Shift): el servicio cont
   - Modelos backend y app con los dos campos nuevos (paridad).
 - [ ] **Step 4:** `npx vitest run tests/stores tests/appdb tests/sync`; `npx tsc -p tsconfig.production.json --noEmit` con UN solo error (`sync_sheet.ts`/`sheet_key.json`); `cd app && npx eslint server/models/StoreProfile.ts` sin problemas; corrida en seco acotada `STORES_REDDIT_MAX_CALLS=40 npx ts-node sync_store_profiles.ts --dry-run --only=tiendamia,magic-center` (máximo 8 minutos, en primer plano) y pegar el log.
 - [ ] **Step 5: commit** — `fix(tiendas): Reddit incremental por ventanas, con paginación y reintentos`.
+
+---
+
+### Task 13: Modo `--reddit-only` diario (se ejecuta DESPUÉS de la Task 12 y ANTES de la Task 7)
+
+Origen: medido en la Task 12, completar 24 meses de Reddit cuesta ~90 llamadas (~25 min) por tienda; con el job semanal de 900 llamadas las 76 tiendas tardarían ~8 semanas. El resto de las señales no debe correr a diario (Google Places cobra por consulta).
+
+**Files:**
+- Modify: `sync_store_profiles.ts`, `ecosystem.config.js`, `scripts/deploy-backend.sh` (`OTHER_APPS`)
+- Test: `tests/stores/reddit_only.test.ts` (nuevo)
+
+- [ ] **Step 1: tests que fallan.** Con `--reddit-only`: no se llama a `fetchSite`, `fetchAge`, `fetchTrustpilot`, `fetchGoogle` ni `loadCatalogPresence` (esas señales llegan como `undefined` y se conservan); se guarda la tienda sólo si Reddit avanzó (menciones nuevas o cursor distinto); el corte temprano cuenta avance de Reddit en lugar de señales externas; `--reddit-only` combinado con `--dry-run` no escribe. Extraer la lógica de "qué señales se consultan" y "se guarda o no" a funciones puras exportadas para testearlas sin red.
+- [ ] **Step 2:** FAIL. **Step 3: implementación.** App pm2 nueva `currency-store-reddit`: `script: "dist/sync_store_profiles.js"`, `args: "--reddit-only"`, `cron_restart: "41 3 * * *"` (00:41 en Montevideo; comprobar en `ecosystem.config.js` que no haya otro job a esa hora que pegue a Arctic Shift), `autorestart: false`, `exec_mode: "fork"`, comentario con el costo medido; sumarla a `OTHER_APPS`. La semanal `currency-store-profiles` sigue igual (también avanza Reddit con su presupuesto).
+- [ ] **Step 4:** `npx vitest run tests/stores tests/sync`; `npx tsc -p tsconfig.production.json --noEmit` con UN solo error (`sync_sheet.ts`/`sheet_key.json`).
+- [ ] **Step 5: commit** — `feat(tiendas): Reddit diario nocturno para completar el historial en días, no semanas`.
