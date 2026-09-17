@@ -422,6 +422,36 @@ describe('storeFaq', () => {
     ).toBe(true)
   })
 
+  it('judges freshness against the passed `now` (servedAt), never a fresh internal new Date() (fix round F2, item B)', () => {
+    const servedAt = new Date('2026-01-10T00:00:00.000Z')
+    const checkedAt = new Date(servedAt.getTime() - 10 * 86_400_000).toISOString() // 10 days before servedAt
+    const profile = baseProfile({
+      trustpilot: {
+        score: 4,
+        reviews: 10,
+        reviewsLast12m: 5,
+        claimed: true,
+        alerts: 0,
+        url: 'x',
+        checkedAt,
+      },
+    })
+    // Same profile, same checkedAt, two different `now` instants: fresh 10 days after checkedAt,
+    // stale 130 days after it (past STORE_SIGNAL_MAX_AGE_DAYS). If storeFaq built its own
+    // `new Date()` instead of using the argument, both calls would agree with each other (whatever
+    // the real wall clock says) instead of disagreeing with each other as asserted here.
+    const freshAnswer = storeFaq(profile, null, servedAt).find(
+      f => f.question === `¿${profile.name} es confiable?`
+    )!.answer
+    const staleAnswer = storeFaq(
+      profile,
+      null,
+      new Date(servedAt.getTime() + 120 * 86_400_000)
+    ).find(f => f.question === `¿${profile.name} es confiable?`)!.answer
+    expect(freshAnswer).toContain('Trustpilot')
+    expect(staleAnswer).not.toContain('Trustpilot')
+  })
+
   it('answers "¿tiene local físico?" with the Google address when it exists', () => {
     const profile = baseProfile({
       google: {
@@ -459,8 +489,89 @@ describe('storeFaq', () => {
     expect(local!.answer).toContain('Bulevar Artigas 456, Montevideo')
   })
 
-  it('says there is no published address when neither source has one, naming both sources checked (item 3)', () => {
+  it('says there is no VERIFIED address when neither source was ever queried (fix round F2, item C)', () => {
+    // baseProfile() has google: null and site: null — neither source was ever asked, so the
+    // generic answer replaces the old blanket claim that always named both sources regardless.
     const profile = baseProfile()
+    const faqs = storeFaq(profile, null)
+    const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
+    expect(local!.answer).toBe('No tenemos una dirección verificada.')
+  })
+
+  it('names only Google Maps when it is the only source fresh AND answered, with no address (item C)', () => {
+    const profile = baseProfile({
+      google: { rating: 4, reviews: 5, address: null, url: 'x', checkedAt: daysAgo(1) },
+      // site is null: never queried, so it must never be named as a checked source.
+    })
+    const faqs = storeFaq(profile, null)
+    const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
+    expect(local!.answer).toBe('No encontramos una dirección publicada en Google Maps.')
+  })
+
+  it('names only the site when it is the only source fresh AND answered, with no address (item C)', () => {
+    const profile = baseProfile({
+      site: {
+        status: 'ok',
+        finalHost: 'tiendatest.com.uy',
+        https: true,
+        platform: 'shopify',
+        phone: false,
+        whatsapp: false,
+        email: false,
+        rut: null,
+        address: null,
+        policies: { returns: null, terms: null, privacy: null },
+        payments: [],
+        checkedAt: daysAgo(1),
+      },
+      // google is null: never queried, so it must never be named as a checked source.
+    })
+    const faqs = storeFaq(profile, null)
+    const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
+    expect(local!.answer).toBe('No encontramos una dirección publicada en el sitio de la tienda.')
+  })
+
+  it('names a blocked site scan as never checked, even though profile.site is not null (item C)', () => {
+    const profile = baseProfile({
+      google: { rating: 4, reviews: 5, address: null, url: 'x', checkedAt: daysAgo(1) },
+      site: {
+        status: 'blocked',
+        finalHost: 'tiendatest.com.uy',
+        https: true,
+        platform: 'otra',
+        phone: false,
+        whatsapp: false,
+        email: false,
+        rut: null,
+        address: null,
+        policies: { returns: null, terms: null, privacy: null },
+        payments: [],
+        checkedAt: daysAgo(1),
+      },
+    })
+    const faqs = storeFaq(profile, null)
+    const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
+    expect(local!.answer).toBe('No encontramos una dirección publicada en Google Maps.')
+  })
+
+  it('names both sources only when BOTH are fresh AND answered, with neither having an address (item C)', () => {
+    const profile = baseProfile({
+      google: { rating: 4, reviews: 5, address: null, url: 'x', checkedAt: daysAgo(1) },
+      site: {
+        status: 'ok',
+        finalHost: 'tiendatest.com.uy',
+        https: true,
+        platform: 'shopify',
+        phone: false,
+        whatsapp: false,
+        email: false,
+        rut: null,
+        address: null,
+        policies: { returns: null, terms: null, privacy: null },
+        payments: [],
+        checkedAt: daysAgo(1),
+      },
+    })
     const faqs = storeFaq(profile, null)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
     expect(local!.answer).toBe(
@@ -484,9 +595,11 @@ describe('storeFaq', () => {
     expect(local!.answer.startsWith('Sí:')).toBe(false)
   })
 
-  it('says there is no published address when both sources are stale (fix round 1, item 2)', () => {
+  it('says there is no VERIFIED address when both sources are stale (fix round 1, item 2; fix round F2, item C)', () => {
     // A far-past date is stale under any real "now" the test runs at, unlike `daysAgo` (which is
-    // relative to the file's fixed NOW and would drift fresh as real time passes it).
+    // relative to the file's fixed NOW and would drift fresh as real time passes it). Neither
+    // source is "fresh AND answered" here, so this is now the generic answer (item C) — the old
+    // copy named both sources even though neither had actually answered recently.
     const staleForever = '2000-01-01T00:00:00.000Z'
     const profile = baseProfile({
       google: {
@@ -513,9 +626,7 @@ describe('storeFaq', () => {
     })
     const faqs = storeFaq(profile, null)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
-    expect(local!.answer).toBe(
-      'No encontramos una dirección publicada en Google Maps ni en el sitio de la tienda.'
-    )
+    expect(local!.answer).toBe('No tenemos una dirección verificada.')
     expect(local!.answer).not.toContain('Montevideo')
   })
 

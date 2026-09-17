@@ -9,7 +9,7 @@
 // two-line arrays. `fetchAge` itself is exercised by mocking global `fetch`, per the project
 // convention (see tests/rentals/net.test.ts) — never a real network call.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { earliestCertificate, waybackFirstCapture } from "../../classes/stores/signals/age";
+import { earliestCertificate, parseWaybackAvailable, waybackFirstCapture } from "../../classes/stores/signals/age";
 
 describe("earliestCertificate", () => {
   it("returns the date (YYYY-MM-DD) of the oldest not_before across all rows", () => {
@@ -42,6 +42,75 @@ describe("waybackFirstCapture", () => {
   });
 });
 
+// Item H: the Availability API's own answer shape, live-verified 2026-09-17 for
+// tiendainglesa.com.uy (`{"url":"tiendainglesa.com.uy","archived_snapshots":{"closest":{"status":
+// "200","available":true,"url":"http://web.archive.org/web/20010201203000/...","timestamp":
+// "20010201203000"}},"timestamp":"19900101"}`) while the CDX endpoint answered 503 in the same run.
+describe("parseWaybackAvailable", () => {
+  it("reads the closest capture's date from the documented shape (the live 2026-09-17 response)", () => {
+    expect(
+      parseWaybackAvailable({
+        url: "tiendainglesa.com.uy",
+        archived_snapshots: {
+          closest: {
+            status: "200",
+            available: true,
+            url: "http://web.archive.org/web/20010201203000/http://www.tiendainglesa.com.uy:80/",
+            timestamp: "20010201203000",
+          },
+        },
+        timestamp: "19900101",
+      })
+    ).toEqual({ kind: "date", since: "2001-02-01" });
+  });
+
+  it("is 'empty' (never 'invalid') for the documented 'never captured' shape — no archived_snapshots, url still present", () => {
+    expect(parseWaybackAvailable({ url: "nunca-capturado.com.uy", timestamp: "19900101" })).toEqual({
+      kind: "empty",
+    });
+  });
+
+  it("is 'empty' when archived_snapshots has no closest at all", () => {
+    expect(parseWaybackAvailable({ url: "x.com.uy", archived_snapshots: {} })).toEqual({ kind: "empty" });
+  });
+
+  it("is 'invalid', never 'empty', for a body with no top-level url string", () => {
+    expect(parseWaybackAvailable({ archived_snapshots: {} })).toEqual({ kind: "invalid" });
+    expect(parseWaybackAvailable({ url: 123, archived_snapshots: {} })).toEqual({ kind: "invalid" });
+  });
+
+  it("is 'invalid' for an array, null, a primitive, or any other unrelated JSON shape (item E's rule, item H)", () => {
+    expect(parseWaybackAvailable([["timestamp"], ["20190305120000"]])).toEqual({ kind: "invalid" });
+    expect(parseWaybackAvailable(null)).toEqual({ kind: "invalid" });
+    expect(parseWaybackAvailable("no soy JSON útil")).toEqual({ kind: "invalid" });
+    expect(parseWaybackAvailable({ error: "bad request" })).toEqual({ kind: "invalid" });
+  });
+
+  it("is 'invalid' when closest.available isn't literally true, even with a timestamp present", () => {
+    expect(
+      parseWaybackAvailable({
+        url: "x.com.uy",
+        archived_snapshots: { closest: { available: false, timestamp: "20190305120000" } },
+      })
+    ).toEqual({ kind: "invalid" });
+  });
+
+  it("is 'invalid' when closest.timestamp isn't a real 8-digit-prefixed date string", () => {
+    expect(
+      parseWaybackAvailable({
+        url: "x.com.uy",
+        archived_snapshots: { closest: { available: true, timestamp: 20190305120000 } },
+      })
+    ).toEqual({ kind: "invalid" });
+    expect(
+      parseWaybackAvailable({
+        url: "x.com.uy",
+        archived_snapshots: { closest: { available: true, timestamp: "not-a-date" } },
+      })
+    ).toEqual({ kind: "invalid" });
+  });
+});
+
 // Every fetchAge scenario below sets STORES_AGE_RETRY_MS to a few ms before importing a fresh copy
 // of the module: both attemptCrt's and attemptWayback's one retry after a failure really do wait
 // between attempts (10s in production, per the brief), and this repo prefers a configurable knob
@@ -65,11 +134,18 @@ function jsonResponse(body: unknown, status = 200): Response {
  * `Response` instance), so a source retried more than once — crt.sh's one retry on failure — still
  * gets a body its own `.text()` hasn't already consumed.
  */
-function urlFetch(handlers: { crt: () => Response; wayback: () => Response }) {
+function urlFetch(handlers: { crt: () => Response; wayback: () => Response; available?: () => Response }) {
   return vi.fn(async (url: string) => {
     const href = String(url);
     if (href.includes("crt.sh")) return handlers.crt();
+    // `web.archive.org` (CDX) and `archive.org/wayback/available` (item H's fallback) are two
+    // different hosts on purpose (see the module header) — checked separately so a test can give
+    // each its own answer.
     if (href.includes("web.archive.org")) return handlers.wayback();
+    if (href.includes("archive.org/wayback/available")) {
+      if (handlers.available) return handlers.available();
+      throw new Error(`unexpected call to the Availability API in a test with no 'available' handler: ${href}`);
+    }
     throw new Error(`unexpected url in test: ${href}`);
   });
 }
@@ -196,7 +272,7 @@ describe("fetchAge", () => {
     expect(await fetchAge("ejemplo.com")).toBeNull();
   });
 
-  it("returns undefined when crt.sh fails twice (network) and Wayback also fails twice", async () => {
+  it("returns undefined when crt.sh fails twice (network) and both Wayback endpoints also fail twice", async () => {
     const fetchAge = await freshFetchAge(5);
     const fetchMock = vi.fn(async () => {
       throw new TypeError("fetch failed");
@@ -204,9 +280,10 @@ describe("fetchAge", () => {
     vi.stubGlobal("fetch", fetchMock);
     const signal = await fetchAge("ejemplo.com");
     expect(signal).toBeUndefined();
-    // crt.sh: one attempt + one retry; Wayback: one attempt + one retry (item 1 follow-up: Wayback
-    // now retries too) — both run concurrently.
-    expect(fetchMock).toHaveBeenCalledTimes(4);
+    // crt.sh: one attempt + one retry; Wayback CDX: one attempt + one retry (item 1 follow-up:
+    // Wayback now retries too); CDX failing outright then falls back to the Availability API (item
+    // H), itself one attempt + one retry — 2 + 2 + 2 = 6.
+    expect(fetchMock).toHaveBeenCalledTimes(6);
   }, 10_000);
 
   it("treats a non-200 crt.sh status as a failure; still uses Wayback's date when it has one", async () => {
@@ -234,5 +311,69 @@ describe("fetchAge", () => {
     // Previously asserted `null` here (a stored age would have been erased); now `undefined`, since
     // Wayback never actually answered "no capture on file" — it failed to answer at all.
     await expect(fetchAge("ejemplo.com")).resolves.toBeUndefined();
+  });
+
+  // Item H: the Availability API fallback, tried only once CDX has failed outright.
+  it("falls back to the Availability API when CDX fails outright, and uses its date as source 'wayback' (item H)", async () => {
+    const fetchAge = await freshFetchAge();
+    vi.stubGlobal(
+      "fetch",
+      urlFetch({
+        crt: () => jsonResponse([{ not_before: "2019-09-30T18:37:17" }]), // matches the live case
+        wayback: () => new Response("bad gateway", { status: 503 }), // the live 2026-09-17 CDX failure
+        available: () =>
+          jsonResponse({
+            url: "tiendainglesa.com.uy",
+            archived_snapshots: { closest: { available: true, timestamp: "20010201203000" } },
+          }),
+      })
+    );
+    const signal = await fetchAge("tiendainglesa.com.uy");
+    // The fallback's earlier date wins over crt.sh's, same "earlier of the two" rule as any other
+    // Wayback answer — this is still source "wayback", never a third value.
+    expect(signal).toMatchObject({ since: "2001-02-01", source: "wayback" });
+  }, 10_000);
+
+  it("still fails closed (undefined) when BOTH Wayback endpoints fail, even with a real crt.sh date (item H)", async () => {
+    const fetchAge = await freshFetchAge(5);
+    vi.stubGlobal(
+      "fetch",
+      urlFetch({
+        crt: () => jsonResponse([{ not_before: "2019-09-30T18:37:17" }]),
+        wayback: () => new Response("bad gateway", { status: 503 }),
+        available: () => new Response("bad gateway", { status: 503 }),
+      })
+    );
+    await expect(fetchAge("tiendainglesa.com.uy")).resolves.toBeUndefined();
+  }, 10_000);
+
+  it("treats a non-conforming Availability body as a failure too, never a confirmed empty (item H, item E's rule)", async () => {
+    const fetchAge = await freshFetchAge(5);
+    vi.stubGlobal(
+      "fetch",
+      urlFetch({
+        crt: () => jsonResponse([]),
+        wayback: () => new Response("bad gateway", { status: 503 }),
+        available: () => jsonResponse({ error: "bad request" }), // no top-level `url`: non-conforming
+      })
+    );
+    // If this were misread as "empty", the result would be `null` (both sources confirmed nothing).
+    // It must instead stay `undefined`: neither Wayback endpoint ever actually answered.
+    await expect(fetchAge("ejemplo.com")).resolves.toBeUndefined();
+  }, 10_000);
+
+  it("never calls the Availability API when CDX already answered — including CDX's own confirmed empty", async () => {
+    const fetchAge = await freshFetchAge();
+    const available = vi.fn(() => jsonResponse({ url: "x", archived_snapshots: { closest: { available: true, timestamp: "20190101000000" } } }));
+    vi.stubGlobal(
+      "fetch",
+      urlFetch({
+        crt: () => jsonResponse([]),
+        wayback: () => jsonResponse([["timestamp"]]), // CDX: queried fine, confirmed nothing on file
+        available,
+      })
+    );
+    expect(await fetchAge("ejemplo.com")).toBeNull();
+    expect(available).not.toHaveBeenCalled();
   });
 });

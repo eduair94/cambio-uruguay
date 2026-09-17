@@ -13,11 +13,12 @@ export interface FaqItem {
   id: string
   question: string
   answer: string
-  /** An optional link rendered by `FaqSection`/`FaqBlock` right after the answer text (fix round
-   * F1, item 14 of the tiendas-online-uruguay review): for an answer that would otherwise have to
-   * spell out a raw path as plain prose (schema.org's `Answer.text` and this codebase's own FAQ
-   * convention are plain text, never markup). Additive and optional — every existing FAQ across the
-   * site leaves this unset and renders exactly as it did before. */
+  /** An optional link rendered by `FaqSection` right after the answer text (fix round F1, item 14
+   * of the tiendas-online-uruguay review) — `FaqBlock` has no such rendering, so an item consumed
+   * through it never shows this link: for an answer that would otherwise have to spell out a raw
+   * path as plain prose (schema.org's `Answer.text` and this codebase's own FAQ convention are
+   * plain text, never markup). Additive and optional — every existing FAQ across the site leaves
+   * this unset and renders exactly as it did before. */
   link?: { label: string; to: string }
 }
 

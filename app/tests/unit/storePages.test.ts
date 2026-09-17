@@ -137,7 +137,11 @@ describe('tiendas-online-uruguay/[tienda].vue', () => {
   it("fetches the sibling list under its own useFetch key, not the hub's or a detail page's (item 10)", () => {
     expect(detailSource).toContain("key: 'store-siblings'")
     expect(detailSource).not.toContain("key: 'tiendas-online-index'")
-    expect(detailSource).toMatch(/transform:\s*response\s*=>/)
+    // Fix round F2, item F: the `transform` param is now typed directly (`(response:
+    // StoresIndexResponse): StoreSiblingEntry[] =>`) instead of relying on `useFetch`'s own
+    // generics (which were wrong — the 3rd/4th type params are request/method in Nuxt 4, not
+    // input/output types), so the bare `response =>` shape this regex used to require is gone.
+    expect(detailSource).toMatch(/transform:[^=]*response[^=]*=>/)
   })
 
   it('uses the server-provided servedAt for every freshness decision, never a client new Date() (item 11)', () => {

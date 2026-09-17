@@ -376,16 +376,42 @@ export function storeAddress(
 }
 
 /**
+ * The "no address" FAQ answer names only the sources this profile can actually vouch for having
+ * checked (fix round F2, item C): a source that was never queried (`profile.google`/`profile.site`
+ * null, or a blocked site scan) or whose last answer is older than {@link storeSignalFresh}'s
+ * cutoff never gets blamed for "not finding" an address it was never actually (or not recently)
+ * asked about — the previous copy always named both Google Maps and the store's site verbatim, even
+ * when one or both had never been queried at all or were stale for months. When nothing fresh
+ * answered, the generic "No tenemos una dirección verificada." replaces that blanket claim.
+ */
+function noAddressAnswer(profile: StorePublicProfile, now: Date): string {
+  const checked: string[] = []
+  if (profile.google && storeSignalFresh(profile.google.checkedAt, now)) checked.push('Google Maps')
+  if (
+    profile.site &&
+    profile.site.status === 'ok' &&
+    storeSignalFresh(profile.site.checkedAt, now)
+  ) {
+    checked.push('el sitio de la tienda')
+  }
+  if (!checked.length) return 'No tenemos una dirección verificada.'
+  return `No encontramos una dirección publicada en ${checked.join(' ni en ')}.`
+}
+
+/**
  * The three FAQs every store page asks, plus a fourth about card discounts when `bankosBrandSlug`
- * resolved one (Task 8's `GET /api/stores/<slug>` finds it by matching the store's name/aliases
- * against Bankos' own brand slugs — see the route). Every answer is built from `profile`, never
- * phrased as a verdict.
+ * resolved one (Task 8's `GET /api/stores/<slug>` finds it by matching only the store's own
+ * canonical NAME — never an alias — against Bankos' own brand slugs; see the route's
+ * `findBankosBrandSlug`, fix round F1 item 14, on why an alias is excluded). Every answer is built
+ * from `profile`, never phrased as a verdict. `now` is the page's own `servedAt` instant (fix round
+ * F2, item B) — never a fresh `new Date()` here, which would judge freshness against a different
+ * "now" than the one the page already rendered with.
  */
 export function storeFaq(
   profile: StorePublicProfile,
-  bankosBrandSlug: string | null
+  bankosBrandSlug: string | null,
+  now: Date = new Date()
 ): StoreFaqItem[] {
-  const now = new Date()
   const facts = signalFacts(profile, now)
   const confiableBody = facts.length
     ? `${facts.join('. ')}.`
@@ -403,10 +429,11 @@ export function storeFaq(
       question: `¿${profile.name} tiene local físico?`,
       // "Dirección publicada:", not "Sí:" (fix round F1, item 15) — this is a JSON-LD/Maps address,
       // which can be an office, a warehouse or a foreign HQ, not proof of a walk-in local; the
-      // negative case names its own scope (fix round F1, item 3) instead of a bare "no encontramos".
+      // negative case names only the sources actually fresh AND answered (fix round F2, item C),
+      // never a source that was never queried or hasn't answered in months.
       answer: address
         ? `Dirección publicada: ${address.address}, según ${addressSourceLabel}.`
-        : 'No encontramos una dirección publicada en Google Maps ni en el sitio de la tienda.',
+        : noAddressAnswer(profile, now),
     },
     {
       question: `¿Cómo le reclamo a ${profile.name}?`,

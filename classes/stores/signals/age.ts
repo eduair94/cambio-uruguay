@@ -27,6 +27,13 @@
 // Wayback confirmed it has nothing. `source` records which of the two produced the winning date,
 // published in the "Fuente:" line. The stored `since` itself only ever moves earlier over time,
 // never later — see `classes/stores/profile.ts`'s `mergeAge`.
+//
+// Item H (fix round F2): "Wayback" above really means two endpoints tried in order. The CDX search
+// (`web.archive.org/cdx/search/cdx`) goes first, exactly as described above; only when it fails
+// outright — the 503 measured live on 2026-09-17 while writing this fix, not merely "nothing on
+// file" — does the Availability API (`archive.org/wayback/available`, a different host, so a
+// CDX-specific outage does not necessarily take it down too) get a chance, still published as
+// `source: "wayback"` either way (see `attemptWayback`/`attemptWaybackAvailable` below).
 import { httpText } from "../net";
 
 export interface AgeSignal {
@@ -71,6 +78,55 @@ export function waybackFirstCapture(body: unknown): string | null {
 
 type Outcome = { kind: "date"; since: string } | { kind: "empty" } | { kind: "failed" };
 
+/**
+ * Item H: the Wayback Availability API's own answer shape, parsed independently of `Outcome` above
+ * because this endpoint can fail in a THIRD way `waybackFirstCapture`'s CDX shape cannot: a
+ * perfectly valid JSON object that simply isn't the documented `archived_snapshots` shape at all
+ * (`invalid`), as opposed to the documented shape confirming there is nothing on file (`empty`).
+ */
+export type WaybackAvailableResult = { kind: "date"; since: string } | { kind: "empty" } | { kind: "invalid" };
+
+/**
+ * `https://archive.org/wayback/available?url=<domain>&timestamp=19900101` — item H's second Wayback
+ * endpoint, tried only once the CDX search has failed outright. Requesting a capture "closest" to
+ * 1990-01-01 (years before any real Uruguayan store went online) makes `archived_snapshots.closest`
+ * degenerate to the EARLIEST capture on file: every real capture is closer in time to 1990-01-01
+ * than a later one is. Live-verified 2026-09-17 for tiendainglesa.com.uy while the CDX endpoint
+ * itself answered 503: this endpoint answered `20010201203000` (2001-02-01) — years before crt.sh's
+ * own earliest certificate (2019-09-30), the same understatement pattern the module header
+ * describes, and a plausible "first seen" for one of Uruguay's oldest supermarket chains.
+ *
+ * Pure, and exercised directly the same way `waybackFirstCapture` is. Any body that doesn't match
+ * the documented shape EXACTLY — not an object, missing the top-level `url` string, an
+ * `archived_snapshots`/`closest` that isn't itself a plain object, a `closest.available` that isn't
+ * literally `true`, or a `timestamp` that doesn't start with an 8-digit date — is `invalid`, never
+ * `empty`: the same rule item E applies to the CDX endpoint's own non-array body, applied here so a
+ * malformed or unrelated JSON response can never be mistaken for the documented "never captured"
+ * shape (no `archived_snapshots` at all, with the required top-level `url` still present).
+ */
+export function parseWaybackAvailable(body: unknown): WaybackAvailableResult {
+  if (!body || typeof body !== "object" || Array.isArray(body)) return { kind: "invalid" };
+  const root = body as Record<string, unknown>;
+  if (typeof root.url !== "string") return { kind: "invalid" };
+
+  const snapshots = root.archived_snapshots;
+  if (snapshots === undefined) return { kind: "empty" };
+  if (typeof snapshots !== "object" || snapshots === null || Array.isArray(snapshots)) {
+    return { kind: "invalid" };
+  }
+
+  const closest = (snapshots as Record<string, unknown>).closest;
+  if (closest === undefined) return { kind: "empty" };
+  if (typeof closest !== "object" || closest === null || Array.isArray(closest)) {
+    return { kind: "invalid" };
+  }
+
+  const c = closest as Record<string, unknown>;
+  if (c.available !== true || typeof c.timestamp !== "string") return { kind: "invalid" };
+  const match = /^(\d{4})(\d{2})(\d{2})/.exec(c.timestamp);
+  return match ? { kind: "date", since: `${match[1]}-${match[2]}-${match[3]}` } : { kind: "invalid" };
+}
+
 async function attemptCrt(domain: string): Promise<Outcome> {
   const url = `https://crt.sh/?q=${encodeURIComponent(domain)}&output=json&match==`;
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -98,13 +154,20 @@ async function attemptCrt(domain: string): Promise<Outcome> {
  * now decides the WHOLE signal (see the module header), so it deserves the same one retry crt.sh
  * already gets before that verdict is final.
  */
-async function attemptWayback(domain: string): Promise<Outcome> {
+async function attemptWaybackCdx(domain: string): Promise<Outcome> {
   const url = `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(domain)}&output=json&limit=1&fl=timestamp`;
   for (let attempt = 0; attempt < 2; attempt++) {
     const res = await httpText(url);
     if (res && res.status === 200) {
       try {
         const parsed = JSON.parse(res.body);
+        // Item E (fix round F2): a 200 that parses as JSON but isn't the CDX array shape at all
+        // (an object, a string, `null`, `{"error": "..."}`...) is Wayback FAILING to answer, same as
+        // item 8's non-JSON body — not "nothing on file". `waybackFirstCapture` already returns
+        // `null` for any non-array, which previously read here as a confirmed-empty result; a
+        // malformed or unrelated JSON 200 could erase a stored age this way. Only an actual array —
+        // even one whose single row is just the header, i.e. truly zero captures — is an answer.
+        if (!Array.isArray(parsed)) throw new Error("non-array Wayback CDX body");
         const since = waybackFirstCapture(parsed);
         return since ? { kind: "date", since } : { kind: "empty" };
       } catch {
@@ -116,6 +179,40 @@ async function attemptWayback(domain: string): Promise<Outcome> {
     if (attempt === 0) await sleep(RETRY_DELAY_MS);
   }
   return { kind: "failed" };
+}
+
+/** Item H: `attemptWaybackCdx`'s own retry loop, reused for the availability fallback — the only
+ * difference is the URL and the parser (`parseWaybackAvailable`'s three-way result folded into the
+ * same two-value `Outcome` every other attempt here returns: `invalid` degrades to `failed`, same as
+ * a non-JSON body, never to `empty`). */
+async function attemptWaybackAvailable(domain: string): Promise<Outcome> {
+  const url = `https://archive.org/wayback/available?url=${encodeURIComponent(domain)}&timestamp=19900101`;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const res = await httpText(url);
+    if (res && res.status === 200) {
+      try {
+        const parsed = parseWaybackAvailable(JSON.parse(res.body));
+        if (parsed.kind !== "invalid") return parsed;
+      } catch {
+        // A non-JSON 200 body gets the same retry/failed treatment as the CDX endpoint's own.
+      }
+    }
+    if (attempt === 0) await sleep(RETRY_DELAY_MS);
+  }
+  return { kind: "failed" };
+}
+
+/**
+ * Item H: CDX first, exactly as before this fix round; only when it FAILED outright (after its own
+ * retry above) does the availability API get a chance. A working CDX answer — including its own
+ * confirmed "nothing on file" — is never second-guessed by the fallback: the fallback exists for
+ * when Wayback could not be asked at all through the primary endpoint (the 503 measured live on
+ * 2026-09-17), not to overrule what CDX did answer.
+ */
+async function attemptWayback(domain: string): Promise<Outcome> {
+  const cdx = await attemptWaybackCdx(domain);
+  if (cdx.kind !== "failed") return cdx;
+  return attemptWaybackAvailable(domain);
 }
 
 /**

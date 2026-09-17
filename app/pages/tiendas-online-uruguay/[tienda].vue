@@ -335,14 +335,9 @@ interface StoreSiblingEntry {
 // (`store-siblings`, fix round F1, item 10) — nunca la del hub (`tiendas-online-index`, que trae
 // las 76 tiendas con TODOS sus campos) ni la de una ficha individual: recortar acá, antes de que
 // el payload SSR se escriba, es lo mismo que ya hace `useStoreProfileKeys.ts`.
-const { data: siblingsData } = await useFetch<
-  StoresIndexResponse,
-  unknown,
-  unknown,
-  StoreSiblingEntry[]
->('/api/stores', {
+const { data: siblingsData } = await useFetch('/api/stores', {
   key: 'store-siblings',
-  transform: response =>
+  transform: (response: StoresIndexResponse): StoreSiblingEntry[] =>
     (response?.stores ?? []).map(store => ({
       key: store.key,
       name: store.name,
@@ -435,7 +430,7 @@ const redditThreads = computed(() => profile.value.reddit?.threads.slice(0, 5) ?
 const buyingAdvice = computed(() => storeBuyingAdvice(entry.value.kind))
 
 const faqItems = computed(() =>
-  storeFaq(profile.value, bankosBrandSlug.value).map((item, index) => ({
+  storeFaq(profile.value, bankosBrandSlug.value, now).map((item, index) => ({
     id: `tienda-${key.value}-${index}`,
     question: item.question,
     answer: item.answer,
