@@ -68,12 +68,61 @@ export const PRICE_EVENT_PLAUSIBLE_MAX_RATIO = 5;
  * name) is just as unidentified for display purposes: it has no human-readable identity, only a
  * number nobody chose. Final review C1: neither case is a "store" — excluded from the sellers table,
  * relabeled in the drops table, and never sharing the per-seller cap with a real store.
+ *
+ * F2 (hallazgo 7): comparación insensible a mayúsculas/espacios (`.trim().toLowerCase()`) — un
+ * nombre real que MercadoLibre nos mande como `"MERCADO LIBRE "` o `" mercado libre"` es el mismo
+ * caso, no una tienda nueva. `sellerKey === "ml:unknown"` se chequea aparte del nombre porque ese
+ * caso es siempre no-identificado sin importar qué diga `sellerName` (no debería llegar con otro
+ * nombre, pero la función no depende de esa garantía).
  */
 export const ML_UNKNOWN_SELLER_NAME = "Mercado Libre";
 export const ML_UNKNOWN_SELLER_DISPLAY_NAME = "Vendedor sin identificar (Mercado Libre)";
 
 export function isUnidentifiedMlSeller(sellerKey: string, sellerName: string): boolean {
-  return sellerKey.startsWith("ml:") && sellerName === ML_UNKNOWN_SELLER_NAME;
+  if (sellerKey === "ml:unknown") return true;
+  return sellerKey.startsWith("ml:") && sellerName.trim().toLowerCase() === ML_UNKNOWN_SELLER_NAME.toLowerCase();
+}
+
+/** `ml:12345` -> `12345`; sólo tiene sentido llamarla con un `sellerKey` que ya empieza con `ml:`. */
+function mlNumericId(sellerKey: string): string {
+  return sellerKey.slice("ml:".length);
+}
+
+/**
+ * El nombre a MOSTRAR para un vendedor — distinto del `sellerName` crudo en dos casos, los dos de
+ * MercadoLibre (F2, hallazgo 7):
+ *
+ * - {@link isUnidentifiedMlSeller}: `ML_UNKNOWN_SELLER_DISPLAY_NAME` ("Vendedor sin identificar
+ *   (Mercado Libre)") — ni id ni nombre, o el nombre literal de respaldo.
+ * - `ml:<id>` con nombre VACÍO tras `.trim()` (un nombre de origen hecho sólo de espacios: no es el
+ *   caso de arriba porque no es literalmente "Mercado Libre", pero tampoco hay nada legible que
+ *   mostrar) — se sintetiza `"Vendedor de Mercado Libre #<id>"`. A diferencia del caso anterior, ESTE
+ *   vendedor SÍ es una identidad distinguible (un id numérico real) y por eso participa en `sellers`
+ *   y en el tope de 3 bajas por su PROPIO `sellerKey`, nunca por `listingId` — ver `aggregate.ts`.
+ *
+ * Cualquier otro vendedor (con nombre real, sea de MercadoLibre o de otra fuente) devuelve
+ * `sellerName` sin tocar.
+ */
+export function mlDisplaySellerName(sellerKey: string, sellerName: string): string {
+  if (isUnidentifiedMlSeller(sellerKey, sellerName)) return ML_UNKNOWN_SELLER_DISPLAY_NAME;
+  if (sellerKey.startsWith("ml:") && sellerKey !== "ml:unknown" && sellerName.trim() === "") {
+    return `Vendedor de Mercado Libre #${mlNumericId(sellerKey)}`;
+  }
+  return sellerName;
+}
+
+/**
+ * Clave de comparación insensible a mayúsculas y acentos para detectar nombres "iguales" entre dos
+ * vendedores (F2, hallazgo 8: antes la comparación era exacta y "PRONTOMETAL" vs. "Prontometal" no
+ * se detectaba como el mismo nombre). Sólo pliega acentos y caja, nunca espacios internos — "Pronto
+ * Metal" sigue siendo un nombre distinto de "Prontometal", no se adivina esa coincidencia.
+ */
+export function foldSellerName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
 /**

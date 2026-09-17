@@ -6,6 +6,7 @@ import { analyzeOfferOutcome } from "./analyze";
 import { buildPriceEventSnapshot, type PriceEventSnapshot } from "./aggregate";
 import { activeEvent, type PriceEvent } from "./calendar";
 import {
+  loadCurrentAnalyzed,
   loadCurrentEligible,
   loadTrackingSince,
   loadVerticals,
@@ -26,6 +27,20 @@ export const PRICE_EVENT_THIN_FLOOR = 20;
 export const PRICE_EVENT_THIN_RATIO = 0.4;
 /** Cuántos días de archivo (`day:YYYY-MM-DD`) se conservan antes de podarlos. */
 export const PRICE_EVENT_SNAPSHOT_RETENTION_DAYS = 400;
+
+/**
+ * F2 (hallazgo 9): distinto de `PRICE_EVENT_THIN_RATIO` — ese compara `eligible` (ofertas que
+ * calificaron) contra `current`, esto compara `analyzed` (ofertas LEÍDAS) contra `current`, y SÓLO
+ * para `--event-only`. Una corrida horaria puede caer con equipar ya escrito y sillas todavía no (o
+ * viceversa): `analyzed` sería la mitad de lo que la corrida diaria termina leyendo, sin que haya
+ * pasado nada malo — publicar ESE momento como si fuera el día completo fabricaría un salto o una
+ * caída que no existió. Ver `PriceEventRunResult.partialHourlyData`.
+ */
+export const PRICE_EVENT_PARTIAL_HOURLY_RATIO = 0.5;
+/** Mismo espíritu que `PRICE_EVENT_THIN_FLOOR`: por debajo de este `analyzed` en el `current`
+ * guardado, la comparación de datos parciales no tiene una base sólida contra qué medirse — no se
+ * activa mientras la serie recién esté empezando. */
+export const PRICE_EVENT_PARTIAL_HOURLY_FLOOR = 20;
 
 export interface PriceEventRunOptions {
   /** `YYYY-MM-DD`, UTC — por defecto el de hoy (mismo formato que graba `classes/pricewatch/record.ts`). */
@@ -50,6 +65,9 @@ export interface PriceEventRunResult {
   snapshot: PriceEventSnapshot;
   /** `eligible` de lo que YA estaba publicado como `current`, o `null` si nunca se publicó nada. */
   currentEligible: number | null;
+  /** `analyzed` de lo que YA estaba publicado como `current`, o `null` si nunca se publicó nada — F2,
+   * hallazgo 9: lo único que necesita {@link PriceEventRunResult.partialHourlyData}. */
+  currentAnalyzed: number | null;
   /** La corrida activó la guarda de corrida flaca (y por lo tanto no escribió, aunque no fuera
    * `dryRun`). */
   thin: boolean;
@@ -67,6 +85,14 @@ export interface PriceEventRunResult {
    * corrida diaria (`eventOnly` sin marcar) nunca activa esto — sigue usando la guarda de corrida
    * flaca de siempre, incluso con `analyzed === 0`. */
   noDataYet: boolean;
+  /** `true` cuando esta corrida (con `eventOnly: true`) leyó MENOS de `PRICE_EVENT_PARTIAL_HOURLY_RATIO`
+   * de lo que `current` ya tenía en `analyzed` — F2, hallazgo 9: distinto de `noDataYet` (analyzed
+   * es 0) y de `thin` (basado en `eligible`, y sólo se evalúa cuando esto es `false`). El caso real:
+   * una corrida horaria a media mañana, con equipar ya escrito y sillas todavía no — `analyzed` es
+   * una fracción real de datos, no cero, pero sigue siendo una FOTO PARCIAL del día, no el día
+   * completo. Tratado igual que `noDataYet`: no escribe, no marca `thin`, sale en 0. La corrida
+   * diaria nunca activa esto — sigue usando `thin` (basado en `eligible`) sin este freno adicional. */
+  partialHourlyData: boolean;
 }
 
 /**
@@ -82,10 +108,11 @@ export async function runPriceEvents(options: PriceEventRunOptions = {}): Promis
   const eventOnly = options.eventOnly ?? false;
   const event = activeEvent(today);
 
-  const [verticals, trackingSince, currentEligible] = await Promise.all([
+  const [verticals, trackingSince, currentEligible, currentAnalyzed] = await Promise.all([
     loadVerticals(),
     loadTrackingSince(),
     loadCurrentEligible(),
+    loadCurrentAnalyzed(),
   ]);
 
   const analyses: (PriceEventAnalysis | null)[] = [];
@@ -111,19 +138,41 @@ export async function runPriceEvents(options: PriceEventRunOptions = {}): Promis
   // not thin, and must never trip the thin-run guard below.
   const noDataYet = eventOnly && snapshot.analyzed === 0;
 
+  // F2, hallazgo 9: see `PriceEventRunResult.partialHourlyData` — evaluated only when there IS some
+  // data (noDataYet already covers the zero case) and only for --event-only.
+  const partialHourlyData =
+    eventOnly &&
+    !noDataYet &&
+    currentAnalyzed !== null &&
+    currentAnalyzed >= PRICE_EVENT_PARTIAL_HOURLY_FLOOR &&
+    snapshot.analyzed < currentAnalyzed * PRICE_EVENT_PARTIAL_HOURLY_RATIO;
+
   const thin =
     !noDataYet &&
+    !partialHourlyData &&
     currentEligible !== null &&
     currentEligible >= PRICE_EVENT_THIN_FLOOR &&
     snapshot.eligible < currentEligible * PRICE_EVENT_THIN_RATIO;
 
   let written = false;
   let pruned = 0;
-  if (!dryRun && !thin && !noDataYet) {
+  if (!dryRun && !thin && !noDataYet && !partialHourlyData) {
     await saveSnapshot(snapshot);
     if (prune) pruned = await pruneOldDaySnapshots(today, PRICE_EVENT_SNAPSHOT_RETENTION_DAYS);
     written = true;
   }
 
-  return { today, event, verticals, snapshot, currentEligible, thin, written, pruned, noDataYet };
+  return {
+    today,
+    event,
+    verticals,
+    snapshot,
+    currentEligible,
+    currentAnalyzed,
+    thin,
+    written,
+    pruned,
+    noDataYet,
+    partialHourlyData,
+  };
 }

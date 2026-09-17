@@ -63,6 +63,17 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
+  // F2, hallazgo 9: una corrida horaria puede leer una FOTO PARCIAL del día (equipar ya escribió su
+  // punto, sillas todavía no) — analyzed real pero muy por debajo de lo que la corrida anterior ya
+  // tenía, sin que haya pasado nada malo. Igual que noDataYet: sale limpio, sin marcar falla en pm2,
+  // y sin pisar el snapshot anterior con un recorte de mitad de mañana.
+  if (result.partialHourlyData) {
+    console.log(
+      `[price-events] --event-only: ${result.snapshot.analyzed} ofertas leídas contra ${result.currentAnalyzed} de la corrida anterior — datos parciales de esta hora, se sale sin escribir`
+    );
+    process.exit(0);
+  }
+
   if (result.thin) {
     console.error(
       `[price-events] corrida flaca: ${result.snapshot.eligible} elegibles contra ${result.currentEligible} ya publicadas — se conserva el snapshot anterior`

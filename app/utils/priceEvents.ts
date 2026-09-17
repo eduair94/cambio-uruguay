@@ -204,12 +204,15 @@ export function priceEventPlural(count: number, singular: string, plural: string
  * este archivo existe para arreglar: ningún día del evento dice "primer día" salvo el primero, y
  * ninguna edición sin fecha sigue anunciándose "próxima" después de que su ventana adivinada cerró.
  *
- * `today` sólo lo usa el caso `none` (final review I4): sin fecha que citar, la única forma honesta
- * de decir "todavía no sabemos" es fecharla — "no hay fechas publicadas" es una afirmación que se
- * vuelve falsa sola en cuanto se publica una, mientras que "al 17 de setiembre no había" sigue siendo
- * cierto para siempre, aunque la página quede vieja.
+ * F2 (revisión final, hallazgo 2): el caso `none` fechaba la afirmación con el `today` DEL
+ * VISITANTE ("Al 15 de diciembre de 2026 todavía no hay fechas publicadas…") — eso implica que
+ * revisamos la fuente el día de la visita, que no es cierto, y produce una fecha distinta en cada
+ * visita para la misma ausencia de datos. La frase nueva no necesita ninguna fecha para ser honesta:
+ * "todavía no cargamos fechas para la próxima edición" describe el ESTADO DE NUESTROS DATOS (el
+ * array no tiene una fila vigente), no un chequeo puntual contra la fuente — sigue siendo cierta sin
+ * importar cuándo se lea.
  */
-export function priceEventCountdownHeadline(countdown: PriceEventCountdown, today: string): string {
+export function priceEventCountdownHeadline(countdown: PriceEventCountdown): string {
   switch (countdown.status) {
     case 'upcoming': {
       const days = countdown.daysUntilStart!
@@ -225,10 +228,7 @@ export function priceEventCountdownHeadline(countdown: PriceEventCountdown, toda
     case 'undated':
       return `${countdown.event!.label}: a confirmar por la CEDU.`
     case 'none':
-      return (
-        `Al ${priceEventFormatDate(today)} todavía no hay fechas publicadas para la próxima edición ` +
-        'de CyberLunes ni de Black Friday.'
-      )
+      return 'Todavía no cargamos fechas para la próxima edición de CyberLunes ni de Black Friday.'
   }
 }
 
@@ -511,26 +511,34 @@ export interface PriceEventFaqItem {
  * "desde cuándo" sólo aparece si el snapshot trae `trackingSince` (nunca se inventa una fecha). Sin
  * adjetivos: describe la regla y nunca acusa a una tienda puntual — ver el global constraint "Sin
  * acusaciones" del plan.
+ *
+ * F2 (revisión final, hallazgo 5): "el mínimo/máximo que esa misma oferta tuvo en los últimos 60
+ * días" sonaba a que hay un dato por cada uno de esos 60 días — la regla real exige sólo 10 días de
+ * datos DENTRO de esa ventana (`PRICE_EVENT_MIN_POINTS`, `classes/priceevents/types.ts`). Esta FAQ
+ * alimenta el JSON-LD de la página (schema.org FAQPage), así que la precisión acá no es cosmética.
  */
-export function priceEventFaq(current: PriceEventSnapshotResponse | null): PriceEventFaqItem[] {
+export function priceEventFaq(
+  current: Pick<PriceEventSnapshotResponse, 'trackingSince'> | null
+): PriceEventFaqItem[] {
   const faq: PriceEventFaqItem[] = [
     {
       id: 'ciberlunes-que-es-baja-real',
       question: '¿Qué es una "baja real"?',
       answer:
-        'Que el precio de hoy de esa oferta puntual está al menos 10 % por debajo del precio más bajo ' +
-        'que esa misma oferta tuvo en los últimos 60 días. La comparación es siempre contra el propio ' +
-        'historial de la oferta, nunca contra otra tienda ni contra un precio de lista.',
+        'Que el precio de hoy de esa oferta puntual está al menos 10 % por debajo del mínimo que ' +
+        'registramos en los 60 días anteriores (con al menos 10 días de datos). La comparación es ' +
+        'siempre contra el propio historial de la oferta, nunca contra otra tienda ni contra un precio ' +
+        'de lista.',
     },
     {
       id: 'ciberlunes-que-es-tachado-por-encima',
       question: '¿Qué es un precio tachado por encima del historial?',
       answer:
         'Que el precio de lista (el que aparece tachado junto al precio con descuento) de hoy es al ' +
-        'menos 10 % más alto que el precio de venta más caro que esa misma oferta tuvo en los últimos ' +
-        '60 días. Es una comparación contra lo que nosotros vimos, no una prueba de que ese precio ' +
-        'anterior nunca existió: sólo relevamos las tiendas de nuestro directorio, desde la fecha que ' +
-        'decimos abajo.',
+        'menos 10 % más alto que el máximo que registramos en los 60 días anteriores (con al menos 10 ' +
+        'días de datos). Es una comparación contra lo que nosotros vimos, no una prueba de que ese ' +
+        'precio anterior nunca existió: sólo relevamos las tiendas de nuestro directorio, desde la ' +
+        'fecha que decimos abajo.',
     },
   ]
 

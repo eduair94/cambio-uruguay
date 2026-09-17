@@ -118,54 +118,48 @@ describe('priceEventCountdownHeadline', () => {
   }
 
   it('upcoming: "Faltan N días para <label>." (plural)', () => {
-    expect(
-      priceEventCountdownHeadline({ ...base, status: 'upcoming', daysUntilStart: 5 }, '2026-11-22')
-    ).toBe('Faltan 5 días para Black Friday 2026.')
+    expect(priceEventCountdownHeadline({ ...base, status: 'upcoming', daysUntilStart: 5 })).toBe(
+      'Faltan 5 días para Black Friday 2026.'
+    )
   })
 
   // M3 (final review): "Faltan 1 días" era uno de los tres bugs de plural — un solo día en curso
   // conjuga distinto tanto el verbo ("Falta", no "Faltan") como el sustantivo ("día", no "días").
   it('upcoming con 1 día: "Falta 1 día para <label>." (singular, verbo Y sustantivo)', () => {
-    expect(
-      priceEventCountdownHeadline({ ...base, status: 'upcoming', daysUntilStart: 1 }, '2026-11-26')
-    ).toBe('Falta 1 día para Black Friday 2026.')
+    expect(priceEventCountdownHeadline({ ...base, status: 'upcoming', daysUntilStart: 1 })).toBe(
+      'Falta 1 día para Black Friday 2026.'
+    )
   })
 
   it('first-day: "Hoy empieza <label>." — nunca "faltan 0 días"', () => {
-    expect(priceEventCountdownHeadline({ ...base, status: 'first-day' }, '2026-11-27')).toBe(
+    expect(priceEventCountdownHeadline({ ...base, status: 'first-day' })).toBe(
       'Hoy empieza Black Friday 2026.'
     )
   })
 
   it('in-progress: "<label>: en curso hasta el <fecha>."', () => {
     expect(
-      priceEventCountdownHeadline(
-        { ...base, status: 'in-progress', endsOn: '2026-11-30' },
-        '2026-11-29'
-      )
+      priceEventCountdownHeadline({ ...base, status: 'in-progress', endsOn: '2026-11-30' })
     ).toBe('Black Friday 2026: en curso hasta el 30 de noviembre de 2026.')
   })
 
   it('undated: "<label>: a confirmar por la CEDU."', () => {
     expect(
-      priceEventCountdownHeadline(
-        {
-          ...base,
-          event: { ...base.event, key: 'ciberlunes-2026-11', label: 'CyberLunes noviembre 2026' },
-          status: 'undated',
-        },
-        '2026-09-17'
-      )
+      priceEventCountdownHeadline({
+        ...base,
+        event: { ...base.event, key: 'ciberlunes-2026-11', label: 'CyberLunes noviembre 2026' },
+        status: 'undated',
+      })
     ).toBe('CyberLunes noviembre 2026: a confirmar por la CEDU.')
   })
 
-  // I4 (final review): "Todavía no hay fechas publicadas" es una afirmación que se vuelve falsa sola
-  // el día que se publique una fecha real — fecharla la mantiene honesta indefinidamente.
-  it('none: avisa la fecha en que se supo esto, sin nombrar un evento vencido', () => {
-    expect(
-      priceEventCountdownHeadline({ ...base, event: null, status: 'none' }, '2026-12-15')
-    ).toBe(
-      'Al 15 de diciembre de 2026 todavía no hay fechas publicadas para la próxima edición de CyberLunes ni de Black Friday.'
+  // F2 (revisión final, hallazgo 2): la versión anterior fechaba esto con el `today` DEL VISITANTE
+  // ("Al 15 de diciembre..."), que insinuaba una revisión puntual que nunca pasó y cambiaba de fecha
+  // en cada visita. La frase nueva describe el estado de NUESTROS datos (no cargamos ninguna fecha
+  // vigente), sin necesitar ninguna fecha para seguir siendo cierta.
+  it('none: describe el estado de los datos, sin fecha del visitante ni evento vencido', () => {
+    expect(priceEventCountdownHeadline({ ...base, event: null, status: 'none' })).toBe(
+      'Todavía no cargamos fechas para la próxima edición de CyberLunes ni de Black Friday.'
     )
   })
 })

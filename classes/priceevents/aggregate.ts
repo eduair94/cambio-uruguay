@@ -3,7 +3,7 @@
 // Sin Mongo, sin Date.now() salvo para `generatedAt` (el único campo que documenta CUÁNDO se corrió,
 // nunca usado para decidir nada dentro de esta función).
 import type { PriceEvent } from "./calendar";
-import { isUnidentifiedMlSeller, ML_UNKNOWN_SELLER_DISPLAY_NAME, type PriceEventAnalysis } from "./types";
+import { foldSellerName, isUnidentifiedMlSeller, mlDisplaySellerName, type PriceEventAnalysis } from "./types";
 
 /** Por vertical: cuántas ofertas calificaron hoy y cuántas de esas cayeron en cada regla. Una
  * oferta puede contar en `drops` Y en `inflated` a la vez (ver `PriceEventAnalysis.classes`). */
@@ -140,13 +140,44 @@ export function buildPriceEventSnapshot(
       return a.listingId.localeCompare(b.listingId);
     });
 
+  // F2 (hallazgo 8): el nombre a MOSTRAR de cada vendedor se resuelve UNA vez, sobre TODOS los
+  // vendedores elegibles del día (no sólo los que llegan a `sellers` o a `topDrops` por separado),
+  // para que la vitrina de bajas y la tabla de vendedores sufijen "(Mercado Libre)" con el MISMO
+  // criterio — antes sólo se sufijaba en `sellers`, así que una fila de `topDrops` del mismo vendedor
+  // ML podía mostrar el nombre sin desambiguar.
+  const sellerDisplayNames = new Map<string, string>();
+  for (const analysis of eligible) {
+    if (!sellerDisplayNames.has(analysis.sellerKey)) {
+      sellerDisplayNames.set(analysis.sellerKey, mlDisplaySellerName(analysis.sellerKey, analysis.sellerName));
+    }
+  }
+
+  // M9, insensible a mayúsculas/acentos (`foldSellerName`): dos vendedores con distinto `sellerKey`
+  // publicando bajo el mismo nombre (una tienda propia y su storefront en MercadoLibre) se
+  // desambiguan sufijando SÓLO el de MercadoLibre — un choque entre dos fuentes no-ML (que esta
+  // función nunca observó) se deja tal cual en vez de adivinar cuál sufijar.
+  const foldedNameOwners = new Map<string, Set<string>>();
+  for (const [sellerKey, displayName] of sellerDisplayNames) {
+    const folded = foldSellerName(displayName);
+    const owners = foldedNameOwners.get(folded) ?? new Set<string>();
+    owners.add(sellerKey);
+    foldedNameOwners.set(folded, owners);
+  }
+  for (const [sellerKey, displayName] of sellerDisplayNames) {
+    const owners = foldedNameOwners.get(foldSellerName(displayName));
+    if ((owners?.size ?? 0) > 1 && sellerKey.startsWith("ml:")) {
+      sellerDisplayNames.set(sellerKey, `${displayName} (Mercado Libre)`);
+    }
+  }
+
   // Final review C1: an unidentified MercadoLibre seller ("ml:unknown", or a real numeric id paired
   // with the literal fallback name) is not one store — it is however many distinct sellers ML
   // couldn't name for us. Sharing the 3-per-seller cap between all of them would let the loudest of
   // those anonymous listings crowd out real, named stores; instead each unidentified listing caps
-  // against ITSELF (keyed by `listingId`, so the cap of 3 never actually binds) and is relabeled so
-  // the table never claims "Mercado Libre" discounted something — MercadoLibre is a marketplace, not
-  // a single seller.
+  // against ITSELF (keyed by `listingId`, so the cap of 3 never actually binds). An `ml:<id>` seller
+  // with an EMPTY name (F2, hallazgo 7) is a DIFFERENT case — it has a real, distinguishable identity
+  // (a numeric id), so it caps normally by its own `sellerKey` like any other seller, it is just
+  // labelled "Vendedor de Mercado Libre #<id>" instead of a blank string.
   const topDrops: PriceEventAnalysis[] = [];
   const dropsPerSeller = new Map<string, number>();
   for (const candidate of droppedCandidates) {
@@ -155,7 +186,8 @@ export function buildPriceEventSnapshot(
     const capKey = unidentifiedMl ? `listing:${candidate.listingId}` : candidate.sellerKey;
     const count = dropsPerSeller.get(capKey) ?? 0;
     if (count >= PRICE_EVENT_MAX_DROPS_PER_SELLER) continue;
-    topDrops.push(unidentifiedMl ? { ...candidate, sellerName: ML_UNKNOWN_SELLER_DISPLAY_NAME } : candidate);
+    const displayName = sellerDisplayNames.get(candidate.sellerKey) ?? candidate.sellerName;
+    topDrops.push(displayName === candidate.sellerName ? candidate : { ...candidate, sellerName: displayName });
     dropsPerSeller.set(capKey, count + 1);
   }
 
@@ -164,9 +196,11 @@ export function buildPriceEventSnapshot(
     if (analysis.listPrice === null) continue;
     // C1: an unidentified MercadoLibre seller never enters the sellers table at all — "how many of
     // Mercado Libre's listings show an inflated crossed-out price" is not a statement about a store.
+    // An ml:<id> seller with an empty name (not "unidentified" — see mlDisplaySellerName) DOES enter,
+    // labelled by its id.
     if (isUnidentifiedMlSeller(analysis.sellerKey, analysis.sellerName)) continue;
     const entry = sellerTotals.get(analysis.sellerKey) ?? {
-      sellerName: analysis.sellerName,
+      sellerName: sellerDisplayNames.get(analysis.sellerKey) ?? analysis.sellerName,
       withListPrice: 0,
       inflated: 0,
     };
@@ -183,21 +217,8 @@ export function buildPriceEventSnapshot(
       withListPrice: totals.withListPrice,
       inflated: totals.inflated,
       share: Math.round((totals.inflated / totals.withListPrice) * 1000) / 10,
-    }));
-
-  // M9: a store's own site and its (differently-keyed) MercadoLibre storefront can publish under the
-  // exact same display name — without this, the table would show two identical-looking rows with no
-  // way to tell them apart. Only the MercadoLibre one gets the suffix, so a same-name collision
-  // between two non-ML sources (which this feature has never observed) is left alone rather than
-  // guessed at.
-  const nameCounts = new Map<string, number>();
-  for (const seller of sellers) nameCounts.set(seller.sellerName, (nameCounts.get(seller.sellerName) ?? 0) + 1);
-  for (const seller of sellers) {
-    if ((nameCounts.get(seller.sellerName) ?? 0) > 1 && seller.sellerKey.startsWith("ml:")) {
-      seller.sellerName = `${seller.sellerName} (Mercado Libre)`;
-    }
-  }
-  sellers.sort((a, b) => a.sellerName.localeCompare(b.sellerName));
+    }))
+    .sort((a, b) => a.sellerName.localeCompare(b.sellerName));
 
   return {
     key: `day:${today}`,

@@ -283,10 +283,12 @@ inventar una fecha** para completar esta lista mientras la CEDU no publique la d
   PROYECCIÓN de Mongo (recorta antes de que el documento cruce la red, no un `.slice()` de JS después
   de traerlo entero); como `applyHistory` siempre reemplaza el punto del día en su lugar y agrega los
   nuevos al final, el arreglo queda en orden cronológico ascendente, así que los últimos 61 SON los 61
-  días más recientes (60 previos + hoy). Sintaxis verificada con mongoose 6.4 (la versión de la raíz,
-  ver `package.json`) en `tests/priceevents/store.test.ts`, que fija el objeto de proyección exacto
-  (mezclar `$slice` en un campo con inclusiones planas en los demás es MongoDB estándar, no algo
-  específico de esta versión, pero vale pinearlo con una aserción real en vez de confiar a ojo).
+  días más recientes (60 previos + hoy). `tests/priceevents/store.test.ts` fija el OBJETO de
+  proyección exacto que recibe `.select()` (con el modelo mockeado, no una base real), lo cual prueba
+  que este código arma ese objeto, no que Mongo lo interpreta como se espera. Eso se verificó aparte,
+  a mano, contra mongoose 6.13.11 (la versión resuelta de `^6.4.6` en este repo) y MongoDB 8 el
+  2026-09-17: un `.select()` que mezcla `$slice` en un campo con inclusiones planas (`1`) en los demás
+  devuelve exactamente los últimos N elementos del array proyectado, sin afectar los demás campos.
 
 ## La cuenta regresiva (`app/utils/priceEvents.ts::priceEventCountdown`)
 

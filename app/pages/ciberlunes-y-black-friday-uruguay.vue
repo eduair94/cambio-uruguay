@@ -37,7 +37,7 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
       <h2 id="fechas-title" class="section-heading mb-3">Cuándo es</h2>
 
       <VCard v-if="countdown" variant="flat" class="countdown-card pa-4 pa-sm-5 mb-4">
-        <p class="countdown-headline mb-1">{{ priceEventCountdownHeadline(countdown, today) }}</p>
+        <p class="countdown-headline mb-1">{{ priceEventCountdownHeadline(countdown) }}</p>
         <p
           v-if="countdown.status === 'upcoming' || countdown.status === 'first-day'"
           class="text-body-2 text-medium-emphasis mb-2"
@@ -185,14 +185,18 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
           contra su propio mínimo. Mostramos hasta 50, con un máximo de 3 bajas por vendedor para
           que ninguno domine la lista.
         </p>
-        <p v-if="!dropRows.length" class="empty-note">Hoy no encontramos ninguna baja real.</p>
+        <p v-if="!dropRows.length" class="empty-note">
+          {{ isToday ? 'Hoy' : `El ${snapshotDayLabel}` }} no encontramos ninguna baja real.
+        </p>
         <VTable v-else class="cu-mobile-cards drops-table" density="compact">
           <thead>
             <tr>
               <th scope="col">Producto</th>
               <th scope="col">Tienda</th>
-              <th scope="col" class="text-right">Precio de hoy</th>
-              <th scope="col" class="text-right">Mínimo 60 días</th>
+              <th scope="col" class="text-right">
+                Precio {{ isToday ? 'de hoy' : `del ${snapshotDayLabel}` }}
+              </th>
+              <th scope="col" class="text-right">Mínimo registrado</th>
               <th scope="col" class="text-right">Baja</th>
               <th scope="col">Enlace</th>
             </tr>
@@ -201,10 +205,13 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
             <tr v-for="row in dropRows" :key="row.listingId">
               <td data-label="Producto">{{ row.title }}</td>
               <td data-label="Tienda">{{ row.sellerName }}</td>
-              <td data-label="Precio de hoy" class="text-right price">
+              <td
+                :data-label="isToday ? 'Precio de hoy' : `Precio del ${snapshotDayLabel}`"
+                class="text-right price"
+              >
                 {{ formatCurrency(row.price, row.currency, 0) }}
               </td>
-              <td data-label="Mínimo 60 días" class="text-right price">
+              <td data-label="Mínimo registrado" class="text-right price">
                 {{ formatCurrency(row.priorMin, row.currency, 0) }}
               </td>
               <td data-label="Baja" class="text-right drop-pct">
@@ -213,14 +220,17 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
               <!--
                 Final review M6: cuando hay ficha propia, mostramos LAS DOS — la ficha (para quedarse
                 en el sitio) Y la oferta externa (la prueba concreta del precio de hoy), no una en vez
-                de la otra.
+                de la otra. F2 (hallazgo 1): el flex va en un <span> ADENTRO de la celda, nunca en el
+                <td> mismo — un <td> con display:flex deja de comportarse como celda de tabla.
               -->
-              <td data-label="Enlace" class="drop-links">
-                <NuxtLink v-if="row.internalHref" :to="localePath(row.internalHref)">
-                  Ficha
-                </NuxtLink>
-                <!-- Oferta de un tercero: nunca le pasamos "voto" de enlace, como equipar/sillas. -->
-                <a :href="row.url" target="_blank" rel="nofollow noopener">Ver oferta</a>
+              <td data-label="Enlace">
+                <span class="drop-links">
+                  <NuxtLink v-if="row.internalHref" :to="localePath(row.internalHref)">
+                    Ficha
+                  </NuxtLink>
+                  <!-- Oferta de un tercero: nunca le pasamos "voto" de enlace, como equipar/sillas. -->
+                  <a :href="row.url" target="_blank" rel="nofollow noopener">Ver oferta</a>
+                </span>
               </td>
             </tr>
           </tbody>
@@ -240,12 +250,13 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
         </h2>
         <p class="text-body-2 text-medium-emphasis mb-3">
           Para cada tienda con al menos 5 ofertas que pudimos clasificar con precio tachado
-          {{ isToday ? 'hoy' : snapshotDayLabel }}, contamos cuántas de esas muestran un precio de
-          lista por encima de todo lo que le vimos en los últimos 60 días.
-          <strong>Un 0 es un 0</strong>: significa que ninguno de sus tachados superó ese máximo, no
-          que la tienda no tenga descuentos. Es un conteo y una proporción contra nuestro propio
-          historial, no una acusación: puede haber una explicación que no medimos, y esto no prueba
-          que un precio anterior no haya existido.
+          {{ isToday ? 'hoy' : `el ${snapshotDayLabel}` }}, contamos cuántas de esas muestran un
+          precio de lista al menos 10 % por encima del máximo que registramos en los 60 días
+          anteriores (con al menos 10 días de datos). <strong>Un 0 es un 0</strong>: significa que
+          ninguno de sus tachados quedó al menos 10 % por encima de ese máximo, no que la tienda no
+          tenga descuentos. Es un conteo y una proporción contra nuestro propio historial, no una
+          acusación: puede haber una explicación que no medimos, y esto no prueba que un precio
+          anterior no haya existido.
         </p>
         <p v-if="!sellerRows.length" class="empty-note">
           {{ isToday ? 'Hoy' : `El ${snapshotDayLabel}` }} ninguna tienda llegó a las 5 ofertas con
@@ -673,6 +684,8 @@ useHead(() => ({
   font-size: 0.88rem;
 }
 
+/* F2 (hallazgo 1): esta clase vive en un <span> DENTRO de la celda de "Enlace", nunca en el <td>
+   mismo — display:flex en el <td> le hacía perder su comportamiento de celda de tabla. */
 .drop-links {
   display: flex;
   flex-wrap: wrap;

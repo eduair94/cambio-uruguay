@@ -2,11 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 
 // Final review M7: `offersSeenTodayByVertical` used to `.select()` the whole `history` array (up to
 // 120 points, `classes/pricewatch/record.ts`) even though `analyzeOfferOutcome` only ever looks at
-// today plus the last 60 days. This locks down the actual projection object mongoose receives, since
-// mixing a `$slice` operator with plain field-inclusion in one `.select()` call is easy to get wrong
-// (a mongoose 6.x query silently drops an inclusion projection if it's mixed with an EXCLUSION one —
-// this is neither, both sides are inclusions, but the shape is worth pinning down with a real
-// assertion rather than trusting it by inspection).
+// today plus the last 60 days. This pins down the exact projection OBJECT our code builds and hands
+// to `.select()` — the model here is mocked, so this test proves what WE construct, not how Mongo
+// interprets it at runtime. That runtime behavior (mixing `$slice` on one field with plain `1`
+// inclusions on the rest) was checked by hand against mongoose 6.13.11 / MongoDB 8 on 2026-09-17 —
+// see docs/app/PRICE_EVENTS.md, "El contrato de la API".
 const modelCalls = vi.hoisted(() => ({
   selectArg: undefined as unknown,
   filterArg: undefined as unknown,

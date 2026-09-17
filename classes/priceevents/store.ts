@@ -71,6 +71,17 @@ export async function loadCurrentEligible(): Promise<number | null> {
   return row ? (row.eligible ?? 0) : null;
 }
 
+/** Sólo el `analyzed` del snapshot `current` publicado — F2, hallazgo 9: la guarda de datos
+ * parciales del horario de evento compara contra CUÁNTAS OFERTAS SE LEYERON la corrida anterior
+ * (`analyzed`), no contra cuántas calificaron (`eligible`) — ver `loadCurrentEligible` arriba, que
+ * sigue siendo lo único que usa la guarda de corrida flaca de siempre. `null` cuando todavía no se
+ * publicó ningún snapshot. */
+export async function loadCurrentAnalyzed(): Promise<number | null> {
+  const current = await PriceEventSnapshotModel.findOne({ key: "current" }, { analyzed: 1, _id: 0 }).lean();
+  const row = current as unknown as { analyzed?: number } | null;
+  return row ? (row.analyzed ?? 0) : null;
+}
+
 /**
  * Publica el día: el documento archivo (`key: "day:YYYY-MM-DD"`, nunca se vuelve a tocar salvo por
  * la poda) y el puntero `current` que lee la API — dos `updateOne` en paralelo, mismo patrón que

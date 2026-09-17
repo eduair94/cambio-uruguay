@@ -8,6 +8,7 @@ const fake = vi.hoisted(() => ({
   loadVerticals: vi.fn(),
   loadTrackingSince: vi.fn(),
   loadCurrentEligible: vi.fn(),
+  loadCurrentAnalyzed: vi.fn(),
   offersSeenTodayByVertical: vi.fn(),
   saveSnapshot: vi.fn(),
   pruneOldDaySnapshots: vi.fn(),
@@ -46,6 +47,12 @@ function qualifyingDrop(overrides: Partial<PricewatchOfferLike> = {}): Pricewatc
   };
 }
 
+// Default for every test that doesn't care about the F2 "partial hourly data" guard (hallazgo 9):
+// no previous `current.analyzed` to compare against, same neutral shape as a fresh install.
+// `clearAllMocks()` below only clears call history, not this implementation, so individual tests can
+// still override it with their own `mockResolvedValue(...)`.
+fake.loadCurrentAnalyzed.mockResolvedValue(null);
+
 afterEach(() => {
   vi.clearAllMocks();
 });
@@ -55,6 +62,7 @@ describe("runPriceEvents — dry run never writes", () => {
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue("2026-09-16");
     fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => [qualifyingDrop()]);
 
     const result = await runPriceEvents({ today: TODAY, dryRun: true });
@@ -71,6 +79,7 @@ describe("runPriceEvents — dry run never writes", () => {
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue(null);
     fake.loadCurrentEligible.mockResolvedValue(100);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => [qualifyingDrop()]); // eligible 1 << 40% of 100
 
     const result = await runPriceEvents({ today: TODAY, dryRun: true });
@@ -84,6 +93,7 @@ describe("runPriceEvents — dry run never writes", () => {
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue("2026-09-16");
     fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => []);
 
     const result = await runPriceEvents({ today: TODAY, dryRun: true });
@@ -99,6 +109,7 @@ describe("runPriceEvents — bySource/suspect flow from the raw cursor into the 
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue(null);
     fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     const tooNew = { ...qualifyingDrop({ listingId: "ml:2" }), firstSeen: iso(5), source: "mercadolibre" };
     fake.offersSeenTodayByVertical.mockImplementation(() => [
       { ...qualifyingDrop({ listingId: "ml:1" }), source: "mercadolibre" },
@@ -115,6 +126,7 @@ describe("runPriceEvents — bySource/suspect flow from the raw cursor into the 
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue(null);
     fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     const implausible = qualifyingDrop({
       listingId: "ml:suspect",
       history: [
@@ -137,6 +149,7 @@ describe("runPriceEvents — real run: writing and the thin-run guard", () => {
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue(null);
     fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => []);
     fake.saveSnapshot.mockResolvedValue(undefined);
     fake.pruneOldDaySnapshots.mockResolvedValue(0);
@@ -153,6 +166,7 @@ describe("runPriceEvents — real run: writing and the thin-run guard", () => {
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue(null);
     fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => []);
     fake.saveSnapshot.mockResolvedValue(undefined);
 
@@ -168,6 +182,7 @@ describe("runPriceEvents — real run: writing and the thin-run guard", () => {
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue(null);
     fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => []);
     fake.saveSnapshot.mockResolvedValue(undefined);
     fake.pruneOldDaySnapshots.mockResolvedValue(3);
@@ -182,6 +197,7 @@ describe("runPriceEvents — real run: writing and the thin-run guard", () => {
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue("2026-09-16");
     fake.loadCurrentEligible.mockResolvedValue(100);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => [qualifyingDrop()]); // eligible 1
 
     const result = await runPriceEvents({ today: TODAY });
@@ -196,6 +212,7 @@ describe("runPriceEvents — real run: writing and the thin-run guard", () => {
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue("2026-09-16");
     fake.loadCurrentEligible.mockResolvedValue(10); // below the 20-offer floor
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => [qualifyingDrop()]); // eligible 1, < 40% of 10
 
     const result = await runPriceEvents({ today: TODAY });
@@ -209,6 +226,7 @@ describe("runPriceEvents — real run: writing and the thin-run guard", () => {
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue("2026-09-16");
     fake.loadCurrentEligible.mockResolvedValue(50);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     // Exactly 20 qualifying offers = 40% of 50 -> must NOT be thin.
     fake.offersSeenTodayByVertical.mockImplementation(() =>
       Array.from({ length: 20 }, (_, i) => qualifyingDrop({ listingId: `ml:${i}`, sellerKey: `seller-${i}` }))
@@ -225,6 +243,7 @@ describe("runPriceEvents — real run: writing and the thin-run guard", () => {
     fake.loadVerticals.mockResolvedValue(["equipar", "sillas"]);
     fake.loadTrackingSince.mockResolvedValue(null);
     fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation((vertical: string) =>
       vertical === "equipar"
         ? [qualifyingDrop({ listingId: "eq:1", vertical: "equipar" })]
@@ -246,6 +265,7 @@ describe("runPriceEvents — real run: writing and the thin-run guard", () => {
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue(null);
     fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     const tooNew: PricewatchOfferLike = { ...qualifyingDrop(), firstSeen: iso(5) }; // only 5 days old
     fake.offersSeenTodayByVertical.mockImplementation(() => [tooNew]);
 
@@ -266,6 +286,7 @@ describe("runPriceEvents — --event-only reading zero offers is a clean no-op (
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue("2026-09-16");
     fake.loadCurrentEligible.mockResolvedValue(100); // would normally guarantee `thin` at eligible 0
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => []);
 
     const result = await runPriceEvents({ today: TODAY, eventOnly: true });
@@ -282,6 +303,7 @@ describe("runPriceEvents — --event-only reading zero offers is a clean no-op (
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue(null);
     fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => []);
 
     const result = await runPriceEvents({ today: TODAY, eventOnly: true });
@@ -294,6 +316,7 @@ describe("runPriceEvents — --event-only reading zero offers is a clean no-op (
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue("2026-09-16");
     fake.loadCurrentEligible.mockResolvedValue(100);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => [qualifyingDrop()]); // analyzed 1, eligible 1 << 40
 
     const result = await runPriceEvents({ today: TODAY, eventOnly: true });
@@ -307,6 +330,7 @@ describe("runPriceEvents — --event-only reading zero offers is a clean no-op (
     fake.loadVerticals.mockResolvedValue(["equipar"]);
     fake.loadTrackingSince.mockResolvedValue("2026-09-16");
     fake.loadCurrentEligible.mockResolvedValue(100);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
     fake.offersSeenTodayByVertical.mockImplementation(() => []);
 
     const result = await runPriceEvents({ today: TODAY });
@@ -314,5 +338,98 @@ describe("runPriceEvents — --event-only reading zero offers is a clean no-op (
     expect(result.noDataYet).toBe(false);
     expect(result.thin).toBe(true);
     expect(result.written).toBe(false);
+  });
+});
+
+// F2 (hallazgo 9): the hourly --event-only cron can also land with SOME data read but only a
+// fraction of what the daily run eventually sees (equipar's cron already wrote its point, sillas
+// hasn't yet) — that is real data, not zero, but still a partial photo of the day. Publishing it as
+// the day's snapshot would fabricate a swing that never happened.
+describe("runPriceEvents — --event-only reading a partial fraction of the day (F2, hallazgo 9)", () => {
+  it("skips writing when analyzed is below 50% of the stored current's analyzed, without tripping thin", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue("2026-09-16");
+    fake.loadCurrentEligible.mockResolvedValue(100); // would normally guarantee `thin` at eligible < 40
+    fake.loadCurrentAnalyzed.mockResolvedValue(100);
+    // 40 offers read, all eligible -> analyzed 40 < 50% of 100, but eligible 40 is NOT < 40% of 100 —
+    // isolates the new analyzed-based guard from the existing eligible-based thin guard.
+    fake.offersSeenTodayByVertical.mockImplementation(() =>
+      Array.from({ length: 40 }, (_, i) => qualifyingDrop({ listingId: `ml:${i}`, sellerKey: `seller-${i}` }))
+    );
+
+    const result = await runPriceEvents({ today: TODAY, eventOnly: true });
+
+    expect(result.snapshot.analyzed).toBe(40);
+    expect(result.noDataYet).toBe(false);
+    expect(result.partialHourlyData).toBe(true);
+    expect(result.thin).toBe(false);
+    expect(result.written).toBe(false);
+    expect(fake.saveSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("does not fire right at the 50% boundary (only strictly below trips the guard)", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue("2026-09-16");
+    fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(100);
+    // Exactly 50 analyzed = 50% of 100 -> must NOT be partial.
+    fake.offersSeenTodayByVertical.mockImplementation(() =>
+      Array.from({ length: 50 }, (_, i) => qualifyingDrop({ listingId: `ml:${i}`, sellerKey: `seller-${i}` }))
+    );
+    fake.saveSnapshot.mockResolvedValue(undefined);
+    fake.pruneOldDaySnapshots.mockResolvedValue(0);
+
+    const result = await runPriceEvents({ today: TODAY, eventOnly: true });
+
+    expect(result.snapshot.analyzed).toBe(50);
+    expect(result.partialHourlyData).toBe(false);
+    expect(result.written).toBe(true);
+  });
+
+  it("does not fire when the stored current's analyzed is itself below the floor (history just starting)", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue("2026-09-16");
+    fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(10); // below PRICE_EVENT_PARTIAL_HOURLY_FLOOR (20)
+    fake.offersSeenTodayByVertical.mockImplementation(() => [qualifyingDrop()]); // analyzed 1, well below 50% of 10
+    fake.saveSnapshot.mockResolvedValue(undefined);
+    fake.pruneOldDaySnapshots.mockResolvedValue(0);
+
+    const result = await runPriceEvents({ today: TODAY, eventOnly: true });
+
+    expect(result.partialHourlyData).toBe(false);
+    expect(result.written).toBe(true);
+  });
+
+  it("does not fire on the very first run either (no current snapshot yet)", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue(null);
+    fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(null);
+    fake.offersSeenTodayByVertical.mockImplementation(() => [qualifyingDrop()]);
+    fake.saveSnapshot.mockResolvedValue(undefined);
+    fake.pruneOldDaySnapshots.mockResolvedValue(0);
+
+    const result = await runPriceEvents({ today: TODAY, eventOnly: true });
+
+    expect(result.partialHourlyData).toBe(false);
+    expect(result.written).toBe(true);
+  });
+
+  it("never fires on the plain daily job (eventOnly not set), even with the same low ratio", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue("2026-09-16");
+    fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.loadCurrentAnalyzed.mockResolvedValue(100);
+    fake.offersSeenTodayByVertical.mockImplementation(() =>
+      Array.from({ length: 40 }, (_, i) => qualifyingDrop({ listingId: `ml:${i}`, sellerKey: `seller-${i}` }))
+    );
+    fake.saveSnapshot.mockResolvedValue(undefined);
+    fake.pruneOldDaySnapshots.mockResolvedValue(0);
+
+    const result = await runPriceEvents({ today: TODAY }); // no eventOnly
+
+    expect(result.partialHourlyData).toBe(false);
+    expect(result.written).toBe(true);
   });
 });

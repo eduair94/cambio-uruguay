@@ -357,6 +357,63 @@ describe("buildPriceEventSnapshot", () => {
       expect(snapshot.topDrops.filter((d) => d.sellerKey === "seller-a")).toHaveLength(3);
       expect(snapshot.topDrops.filter((d) => d.sellerKey === "ml:unknown")).toHaveLength(5);
     });
+
+    // F2 (hallazgo 7): tres casos de borde que la revisión pidió cubrir explícitamente.
+    describe("F2: comparación insensible a mayúsculas, y el caso ml:<id> con nombre vacío", () => {
+      it("edge case 1: 'MERCADO LIBRE ' (mayúsculas y espacio) cuenta igual que el literal exacto", () => {
+        const analyses = Array.from({ length: 6 }, (_, i) =>
+          analysis({
+            listingId: `ml:${i}`,
+            sellerKey: "ml:999",
+            sellerName: "MERCADO LIBRE ",
+            listPrice: 10000,
+            classes: ["tachado-por-encima"],
+          })
+        );
+        const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+        expect(snapshot.sellers).toEqual([]);
+      });
+
+      it("edge case 2: ml:unknown sigue siendo no-identificado sin importar qué diga sellerName", () => {
+        const analyses = Array.from({ length: 6 }, (_, i) =>
+          analysis({
+            listingId: `ml:${i}`,
+            sellerKey: "ml:unknown",
+            sellerName: "cualquier cosa",
+            listPrice: 10000,
+            classes: ["tachado-por-encima"],
+          })
+        );
+        const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+        expect(snapshot.sellers).toEqual([]);
+      });
+
+      it("edge case 3: ml:<id> con nombre vacío NO es 'no identificado' — entra a sellers con un nombre sintetizado por id", () => {
+        const analyses = Array.from({ length: 6 }, (_, i) =>
+          analysis({
+            listingId: `ml:${i}`,
+            sellerKey: "ml:777",
+            sellerName: "   ", // espacios -> "" tras trim
+            listPrice: 10000,
+            classes: ["tachado-por-encima"],
+          })
+        );
+        const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+        expect(snapshot.sellers).toHaveLength(1);
+        expect(snapshot.sellers[0]).toMatchObject({ sellerKey: "ml:777", sellerName: "Vendedor de Mercado Libre #777" });
+      });
+
+      it("edge case 3 (cap): el vendedor ml:<id> sin nombre topa por SU PROPIO sellerKey, no por listingId", () => {
+        const analyses = [10, 20, 30, 40, 50].map((dropPct, i) =>
+          analysis({ listingId: `ml:${i}`, sellerKey: "ml:777", sellerName: "", classes: ["baja-real"], dropPct })
+        );
+        const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+        // Capado como cualquier otro vendedor: sus mejores 3, no sus 5.
+        expect(snapshot.topDrops).toHaveLength(3);
+        expect(snapshot.topDrops.map((d) => d.dropPct)).toEqual([50, 40, 30]);
+        expect(snapshot.topDrops.every((d) => d.sellerName === "Vendedor de Mercado Libre #777")).toBe(true);
+      });
+    });
   });
 
   // -------------------------------------------------------------------------------------------
@@ -386,6 +443,52 @@ describe("buildPriceEventSnapshot", () => {
       );
       const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
       expect(snapshot.sellers[0]!.sellerName).toBe("Unique Store");
+    });
+
+    // F2 (hallazgo 8): la detección de "mismo nombre" ahora pliega mayúsculas y acentos. Ojo: el
+    // fold NO ignora espacios — "Prontométal" (una palabra, con acento) es el mismo nombre que
+    // "PRONTOMETAL" salvo caja/acento; "Pronto Metal" (dos palabras) NO lo es, ver el test siguiente.
+    it("detects a duplicate name across case AND accents ('PRONTOMETAL' vs 'Prontométal')", () => {
+      const own = Array.from({ length: 5 }, (_, i) =>
+        analysis({ listingId: `store:${i}`, sellerKey: "store:prontometal", sellerName: "PRONTOMETAL", listPrice: 10000, classes: ["precio-de-siempre"] })
+      );
+      const ml = Array.from({ length: 5 }, (_, i) =>
+        analysis({ listingId: `ml:${i}`, sellerKey: "ml:n:prontometal", sellerName: "Prontométal", listPrice: 10000, classes: ["precio-de-siempre"] })
+      );
+      const snapshot = buildPriceEventSnapshot([...own, ...ml], TODAY, null, null);
+      const mlRow = snapshot.sellers.find((s) => s.sellerKey === "ml:n:prontometal")!;
+      expect(mlRow.sellerName).toBe("Prontométal (Mercado Libre)");
+    });
+
+    it("does NOT treat 'Pronto Metal' (different spacing) as the same name as 'Prontometal'", () => {
+      const own = Array.from({ length: 5 }, (_, i) =>
+        analysis({ listingId: `store:${i}`, sellerKey: "store:prontometal", sellerName: "Prontometal", listPrice: 10000, classes: ["precio-de-siempre"] })
+      );
+      const ml = Array.from({ length: 5 }, (_, i) =>
+        analysis({ listingId: `ml:${i}`, sellerKey: "ml:n:pronto-metal", sellerName: "Pronto Metal", listPrice: 10000, classes: ["precio-de-siempre"] })
+      );
+      const snapshot = buildPriceEventSnapshot([...own, ...ml], TODAY, null, null);
+      const mlRow = snapshot.sellers.find((s) => s.sellerKey === "ml:n:pronto-metal")!;
+      expect(mlRow.sellerName).toBe("Pronto Metal"); // untouched — not a real collision
+    });
+
+    // F2 (hallazgo 8): el mismo sufijo tiene que aparecer en la vitrina de bajas, no sólo en la
+    // tabla de vendedores — antes el cálculo vivía sólo adentro de la sección `sellers`.
+    it("applies the same ' (Mercado Libre)' suffix to a topDrops row for the colliding seller", () => {
+      const analyses = [
+        // 5 offers give "store:prontometal" a place in the sellers table (so the name collision has
+        // two real sides), plus one baja-real from the SAME seller so it also appears in topDrops.
+        ...Array.from({ length: 5 }, (_, i) =>
+          analysis({ listingId: `store:${i}`, sellerKey: "store:prontometal", sellerName: "Prontometal", listPrice: 10000, classes: ["precio-de-siempre"] })
+        ),
+        ...Array.from({ length: 5 }, (_, i) =>
+          analysis({ listingId: `ml:price:${i}`, sellerKey: "ml:n:prontometal", sellerName: "Prontometal", listPrice: 10000, classes: ["precio-de-siempre"] })
+        ),
+        analysis({ listingId: "ml:drop:1", sellerKey: "ml:n:prontometal", sellerName: "Prontometal", classes: ["baja-real"], dropPct: 15 }),
+      ];
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      const dropRow = snapshot.topDrops.find((d) => d.listingId === "ml:drop:1")!;
+      expect(dropRow.sellerName).toBe("Prontometal (Mercado Libre)");
     });
   });
 });
