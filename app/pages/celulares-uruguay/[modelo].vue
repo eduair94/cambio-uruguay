@@ -27,7 +27,13 @@ hay un precio para hoy).
           }}<template v-if="headline.usdEquivalent">
             ({{ phoneUsd(headline.usdEquivalent) }})</template
           >
-          en {{ headline.seller }}, visto el {{ headline.date }}.
+          en
+          <NuxtLink
+            v-if="headline.sellerKey"
+            :to="localePath(`/tiendas-online-uruguay/${headline.sellerKey}`)"
+            >{{ headline.seller }}</NuxtLink
+          ><template v-else>{{ headline.seller }}</template
+          >, visto el {{ headline.date }}.
         </template>
         <template v-else>{{ reasonUnpublishable }}</template>
       </p>
@@ -61,7 +67,14 @@ hay un precio para hoy).
           </thead>
           <tbody>
             <tr v-for="(offer, index) in offerRows" :key="`${offer.condition}:${index}`">
-              <td data-label="Vendedor">{{ sellerLabel(offer) }}</td>
+              <td data-label="Vendedor">
+                <NuxtLink
+                  v-if="storeKeyFor(offer)"
+                  :to="localePath(`/tiendas-online-uruguay/${storeKeyFor(offer)}`)"
+                  >{{ sellerLabel(offer) }}</NuxtLink
+                >
+                <template v-else>{{ sellerLabel(offer) }}</template>
+              </td>
               <td data-label="Condición">{{ PHONE_CONDITION_LABEL[offer.condition] }}</td>
               <td data-label="Precio" class="text-right">
                 <s v-if="offer.listPrice && offer.listPrice > offer.price" class="muted">{{
@@ -289,6 +302,7 @@ hay un precio para hoy).
 import { LAST_RESEARCHED } from '~/utils/importRules'
 import { dateLocale } from '~/utils/format'
 import type { FaqItem } from '~/utils/faqAnswers'
+import { storeSlugForSeller } from '~/utils/storeDirectory'
 import {
   phoneImportEstimate,
   phoneImportTotals,
@@ -376,6 +390,18 @@ function sellerLabel(offer: Pick<PhoneOfferDoc, 'sellerKey' | 'seller'>): string
   return phoneSellerLabel(offer)
 }
 
+// Rebase C (post plan A): el nombre del vendedor enlaza a su ficha (/tiendas-online-uruguay/<key>)
+// sólo cuando esa tienda tiene ficha propia — mismo patrón que /sillas-escritorio-uruguay/[slug].vue
+// y /equipar-casa-uruguay/[categoria].vue (useStoreProfileKeys.ts). Un vendedor de MercadoLibre sin
+// identificar (bucket `ml:unknown`, ver phoneSellerLabel arriba) nunca enlaza: la ficha de "Vendedor
+// sin identificar (Mercado Libre)" no es una tienda real.
+const storeProfileKeys = useStoreProfileKeys()
+function storeKeyFor(offer: Pick<PhoneOfferDoc, 'seller' | 'sellerKey'>): string | null {
+  if (offer.sellerKey === 'ml:unknown') return null
+  const key = storeSlugForSeller(offer.seller)
+  return key && storeProfileKeys.value.includes(key) ? key : null
+}
+
 function formatOriginal(price: number, currency: 'UYU' | 'USD'): string {
   return currency === 'USD' ? phoneUsd(price) : phoneMoney(price)
 }
@@ -447,6 +473,7 @@ const headline = computed(() => {
     priceUyu: offer.priceUyu,
     usdEquivalent: detail.value.usdUyu ? offer.priceUyu / detail.value.usdUyu : null,
     seller: sellerLabel(offer),
+    sellerKey: storeKeyFor(offer),
     date: shortDate(offer.observedAt),
   }
 })

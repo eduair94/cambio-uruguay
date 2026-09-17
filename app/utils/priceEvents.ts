@@ -467,9 +467,8 @@ function priceEventPhoneSlug(productKey: string | null): string | null {
 
 /**
  * El enlace interno se deriva por vertical en el momento de servir la fila, nunca se guarda en el
- * análisis: así una categoría que gana o pierde página propia (equipar) o una vertical que todavía no
- * tiene hub público (celulares, hasta que ese directorio se publique en otra rama) cambia acá sin
- * tocar el job que escribió el dato.
+ * análisis: así una categoría que gana o pierde página propia (equipar), o una vertical nueva que
+ * todavía no tiene hub público, cambia acá sin tocar el job que escribió el dato.
  */
 function priceEventInternalHref(
   doc: Pick<PriceEventDropRowFields, 'vertical' | 'category' | 'productKey'>
@@ -477,8 +476,10 @@ function priceEventInternalHref(
   if (doc.vertical === 'equipar' && doc.category && isEquiparCategorySlug(doc.category)) {
     return `/equipar-casa-uruguay/${doc.category}`
   }
-  // El directorio de celulares todavía no está publicado (lo agrega otra rama que merge antes que
-  // ésta): la derivación queda lista y sin efecto porque hoy no hay filas de vertical `celulares`.
+  // Rebase C: /celulares-uruguay ya está publicado en esta rama. `productKey` para esta vertical es
+  // `phone:<key>`, y `<key>` es literalmente `PhoneModel.slug` (classes/phones/identify.ts,
+  // classes/phones/catalog.ts) — el mismo slug que arma la URL de la ficha en
+  // celulares-uruguay/[modelo].vue, así que no hace falta ninguna traducción entre los dos.
   const phoneSlug = priceEventPhoneSlug(doc.productKey)
   if (doc.vertical === 'celulares' && phoneSlug) {
     return `/celulares-uruguay/${phoneSlug}`
@@ -558,9 +559,9 @@ export function priceEventFaq(
     question: '¿Por qué no aparecen todas las tiendas de Uruguay?',
     answer:
       'Porque sólo podemos comparar el historial de las tiendas que relevamos todos los días para ' +
-      '/equipar-casa-uruguay y /sillas-escritorio-uruguay. Una tienda fuera de esa lista puede tener ' +
-      'una baja real o un precio tachado por encima de su historial y esta página no lo va a mostrar, ' +
-      'simplemente porque no lo medimos.',
+      '/equipar-casa-uruguay, /sillas-escritorio-uruguay y /celulares-uruguay. Una tienda fuera de ' +
+      'esa lista puede tener una baja real o un precio tachado por encima de su historial y esta ' +
+      'página no lo va a mostrar, simplemente porque no lo medimos.',
   })
 
   faq.push({
