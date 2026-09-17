@@ -101,10 +101,27 @@ export function priceEventActiveEvent(today: string): PriceEventCalendarEntry | 
 // Fechas: cuenta regresiva y ediciones pasadas
 // ---------------------------------------------------------------------------
 
+/**
+ * `upcoming`: todavía no empieza (`today < start`), `daysUntilStart` cuenta.
+ * `first-day`: `today === start` — el único día en que "hoy empieza" es cierto.
+ * `in-progress`: `start < today <= end` — incluye el ÚLTIMO día del evento, que sigue siendo hoy
+ * "en curso", no "primer día" (ese fue el bug: clamplear `daysUntilStart` a 0 con `Math.max(0, …)`
+ * hacía que CUALQUIER día de un evento de varios días — 28, 29 y 30 de noviembre, no sólo el 27 —
+ * mostrara "Hoy es el primer día de Black Friday").
+ * `undated`: no hay ningún evento confirmado activo ni por venir; el que espera fecha (CyberLunes
+ * noviembre 2026) es lo único que queda para mostrar.
+ */
+export type PriceEventCountdownStatus = 'upcoming' | 'first-day' | 'in-progress' | 'undated'
+
 export interface PriceEventCountdown {
   event: PriceEventCalendarEntry
-  /** Días de hoy al `start` del evento; `null` cuando el evento todavía no tiene fecha confirmada. */
+  status: PriceEventCountdownStatus
+  /** Días de hoy al `start` del evento. Sólo tiene sentido cuando `status === 'upcoming'`; `null` en
+   * cualquier otro estado (nunca 0 disfrazando un "hoy empieza" o un "sigue en curso"). */
   daysUntilStart: number | null
+  /** El `end` del evento en curso, para "en curso hasta el <fecha>". Sólo tiene sentido cuando
+   * `status === 'in-progress'`; `null` en cualquier otro estado. */
+  endsOn: string | null
 }
 
 function priceEventDaysBetween(fromIso: string, toIso: string): number {
@@ -115,25 +132,74 @@ function priceEventDaysBetween(fromIso: string, toIso: string): number {
 }
 
 /**
- * La próxima edición a mostrar: el evento CONFIRMADO más próximo que todavía no terminó, o —si no
- * queda ninguno confirmado por delante— el que espera fecha. `today` es un parámetro (nunca
- * `Date.now()` adentro): la página lo calcula una sola vez en el servidor con `useState` y no abre un
- * reloj que tickea en el cliente (ver el global constraint del plan: el countdown no puede renderizar
- * un reloj vivo).
+ * La próxima edición a mostrar: el evento CONFIRMADO más próximo que todavía no terminó (por venir, o
+ * ya en curso hoy), o —si no queda ninguno confirmado activo ni por venir— el que espera fecha.
+ * `today` es un parámetro (nunca `Date.now()` adentro): la página lo calcula una sola vez en el
+ * servidor con `useState` y no abre un reloj que tickea en el cliente (ver el global constraint del
+ * plan: el countdown no puede renderizar un reloj vivo).
  */
 export function priceEventCountdown(today: string): PriceEventCountdown | null {
-  const confirmedUpcoming = PRICE_EVENT_CALENDAR.filter(
+  const confirmedActiveOrUpcoming = PRICE_EVENT_CALENDAR.filter(
     (entry): entry is PriceEventCalendarEntry & { start: string; end: string } =>
       entry.confirmed && entry.start !== null && entry.end !== null && entry.end >= today
   ).sort((a, b) => a.start.localeCompare(b.start))
 
-  if (confirmedUpcoming.length) {
-    const event = confirmedUpcoming[0]!
-    return { event, daysUntilStart: Math.max(0, priceEventDaysBetween(today, event.start)) }
+  if (confirmedActiveOrUpcoming.length) {
+    const event = confirmedActiveOrUpcoming[0]!
+    if (today < event.start) {
+      return {
+        event,
+        status: 'upcoming',
+        daysUntilStart: priceEventDaysBetween(today, event.start),
+        endsOn: null,
+      }
+    }
+    if (today === event.start) {
+      return { event, status: 'first-day', daysUntilStart: null, endsOn: null }
+    }
+    // El filtro de arriba ya garantiza `event.start < today <= event.end` en esta rama.
+    return { event, status: 'in-progress', daysUntilStart: null, endsOn: event.end }
   }
 
   const unconfirmed = PRICE_EVENT_CALENDAR.find(entry => !entry.confirmed) ?? null
-  return unconfirmed ? { event: unconfirmed, daysUntilStart: null } : null
+  return unconfirmed
+    ? { event: unconfirmed, status: 'undated', daysUntilStart: null, endsOn: null }
+    : null
+}
+
+/**
+ * El texto principal del bloque de fechas para un `PriceEventCountdown` ya resuelto. Centralizado
+ * acá (no en el template) para poder probar cada estado con un `toBe` exacto, incluido el que este
+ * archivo existe para arreglar: ningún día del evento dice "primer día" salvo el primero.
+ */
+export function priceEventCountdownHeadline(countdown: PriceEventCountdown): string {
+  switch (countdown.status) {
+    case 'upcoming':
+      return `Faltan ${countdown.daysUntilStart} días para ${countdown.event.label}.`
+    case 'first-day':
+      return `Hoy empieza ${countdown.event.label}.`
+    case 'in-progress':
+      return `${countdown.event.label}: en curso hasta el ${priceEventFormatDate(countdown.endsOn ?? '')}.`
+    case 'undated':
+      return `${countdown.event.label}: a confirmar por la CEDU.`
+  }
+}
+
+/**
+ * La edición sin fecha confirmada (hoy, sólo puede haber una a la vez en `PRICE_EVENT_CALENDAR`),
+ * cuando NO es ya el evento que `priceEventCountdown` eligió como titular — un evento con fecha fija
+ * (Black Friday) puede ganar el titular aunque CyberLunes noviembre, todavía sin fecha, sea el que en
+ * la práctica venga antes; sin esta segunda línea esa edición desaparecería de la página por completo
+ * mientras dura la ventana de Black Friday. Devuelve `null` una vez que no queda ninguna edición sin
+ * fecha (todas confirmadas) o cuando la sin fecha YA es el titular (evitar repetir la misma línea dos
+ * veces el día en que la CEDU confirme la fecha real y ese evento pase a ganar el titular por sí solo).
+ */
+export function priceEventOtherUnconfirmed(today: string): PriceEventCalendarEntry | null {
+  const unconfirmed = PRICE_EVENT_CALENDAR.find(entry => !entry.confirmed)
+  if (!unconfirmed) return null
+  const headline = priceEventCountdown(today)
+  if (headline?.event.key === unconfirmed.key) return null
+  return unconfirmed
 }
 
 /** Ediciones ya cerradas (`end < today`), en orden cronológico — para el bloque "ediciones pasadas". */
@@ -163,6 +229,17 @@ export function priceEventFormatDate(iso: string): string {
     year: 'numeric',
     timeZone: isDateOnly ? 'UTC' : 'America/Montevideo',
   })
+}
+
+/**
+ * Formatea un porcentaje como lo escribe Uruguay: coma decimal, un decimal fijo, sin espacio antes
+ * del `%` — mismo criterio que `formatPctEs` (`utils/casaIntents.ts`) y el formateador de
+ * `utils/costOfLiving.ts`. `dropPct`/`share` ya vienen redondeados a 1 decimal desde
+ * `classes/priceevents/aggregate.ts`; esto sólo controla cómo se IMPRIME esa cifra (`11.3` -> `11,3%`),
+ * nunca la redondea de nuevo.
+ */
+export function priceEventPct(value: number): string {
+  return `${value.toLocaleString('es-UY', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
 }
 
 // ---------------------------------------------------------------------------

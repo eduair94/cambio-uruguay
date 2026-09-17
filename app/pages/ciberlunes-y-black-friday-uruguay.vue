@@ -37,26 +37,19 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
       <h2 id="fechas-title" class="section-heading mb-3">Cuándo es</h2>
 
       <VCard v-if="countdown" variant="flat" class="countdown-card pa-4 pa-sm-5 mb-4">
-        <template v-if="countdown.daysUntilStart !== null">
-          <p class="countdown-headline mb-1">
-            {{
-              countdown.daysUntilStart === 0
-                ? `Hoy es el primer día de ${countdown.event.label}.`
-                : `Faltan ${countdown.daysUntilStart} días para ${countdown.event.label}.`
-            }}
-          </p>
-          <p class="text-body-2 text-medium-emphasis mb-2">
-            {{ priceEventDateRangeLabel(countdown.event) }}
-          </p>
-        </template>
-        <template v-else>
-          <p class="countdown-headline mb-1">
-            {{ countdown.event.label }}: a confirmar por la CEDU.
-          </p>
-          <p v-if="countdown.event.note" class="text-body-2 text-medium-emphasis mb-2">
-            {{ countdown.event.note }}
-          </p>
-        </template>
+        <p class="countdown-headline mb-1">{{ priceEventCountdownHeadline(countdown) }}</p>
+        <p
+          v-if="countdown.status === 'upcoming' || countdown.status === 'first-day'"
+          class="text-body-2 text-medium-emphasis mb-2"
+        >
+          {{ priceEventDateRangeLabel(countdown.event) }}
+        </p>
+        <p
+          v-else-if="countdown.status === 'undated' && countdown.event.note"
+          class="text-body-2 text-medium-emphasis mb-2"
+        >
+          {{ countdown.event.note }}
+        </p>
         <a
           v-if="countdown.event.source"
           :href="countdown.event.source"
@@ -66,7 +59,10 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
         >
           Fuente
         </a>
-        <p v-else-if="countdown.event.note" class="text-caption text-medium-emphasis mb-0">
+        <p
+          v-else-if="countdown.status !== 'undated' && countdown.event.note"
+          class="text-caption text-medium-emphasis mb-0"
+        >
           {{ countdown.event.note }}
         </p>
       </VCard>
@@ -195,13 +191,14 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
                 {{ formatCurrency(row.priorMin, row.currency, 0) }}
               </td>
               <td data-label="Baja" class="text-right drop-pct">
-                <span v-if="row.dropPct !== null">−{{ row.dropPct }}%</span>
+                <span v-if="row.dropPct !== null">−{{ priceEventPct(row.dropPct) }}</span>
               </td>
               <td data-label="Enlace">
                 <NuxtLink v-if="row.internalHref" :to="localePath(row.internalHref)">
                   Ficha
                 </NuxtLink>
-                <a v-else :href="row.url" target="_blank" rel="noopener noreferrer">Ver oferta</a>
+                <!-- Oferta de un tercero: nunca le pasamos "voto" de enlace, como equipar/sillas. -->
+                <a v-else :href="row.url" target="_blank" rel="nofollow noopener">Ver oferta</a>
               </td>
             </tr>
           </tbody>
@@ -237,7 +234,7 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
               <td data-label="Por encima del historial" class="text-right">
                 {{ seller.inflated }}
               </td>
-              <td data-label="Proporción" class="text-right">{{ seller.share }}%</td>
+              <td data-label="Proporción" class="text-right">{{ priceEventPct(seller.share) }}</td>
             </tr>
           </tbody>
         </VTable>
@@ -314,12 +311,14 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
 import { scenarioById } from '~/utils/consumerRights'
 import { formatCurrency } from '~/utils/format'
 import {
-  PRICE_EVENT_CALENDAR,
   priceEventCountdown,
+  priceEventCountdownHeadline,
   priceEventDropRows,
   priceEventFaq,
   priceEventFormatDate,
+  priceEventOtherUnconfirmed,
   priceEventPastEditions,
+  priceEventPct,
   type PriceEventApiResponse,
   type PriceEventCalendarEntry,
 } from '~/utils/priceEvents'
@@ -355,21 +354,15 @@ const emptyStateMessage = computed(() => {
 const countdown = computed(() => priceEventCountdown(today.value))
 const pastEditions = computed(() => priceEventPastEditions(today.value))
 
-/** La edición sin fecha confirmada (hoy, `ciberlunes-2026-11`), sólo cuando NO es ya el titular de
- * `countdown` — evitaría repetir la misma línea dos veces el día en que la CEDU confirme su fecha y
- * ese evento pase a ganar el titular por tener fecha real. */
-const otherUnconfirmedEvent = computed(() => {
-  const unconfirmed = PRICE_EVENT_CALENDAR.find(entry => !entry.confirmed)
-  if (!unconfirmed) return null
-  if (countdown.value?.event.key === unconfirmed.key) return null
-  return unconfirmed
-})
+// La decisión de "¿hay una edición sin fecha que además haya que mostrar?" es pura y vive en
+// priceEvents.ts (priceEventOtherUnconfirmed), probada ahí con sus dos ramas — acá sólo se llama.
+const otherUnconfirmedEvent = computed(() => priceEventOtherUnconfirmed(today.value))
 
-/** "Del 3 de noviembre de 2025 al 5 de noviembre de 2025." Todas las entradas que llegan acá
- * (`countdown.value.event` con `daysUntilStart` no nulo, o una edición de `pastEditions`) tienen
- * `start`/`end` no nulos en la práctica — sólo la edición sin fecha confirmada los tiene en `null`, y
- * ninguno de esos dos casos la muestra — pero el tipo sigue siendo `string | null`, así que esta
- * función vive en el script (con `if` real) en vez de un `!` en el template. */
+/** "Del 3 de noviembre de 2025 al 5 de noviembre de 2025." Se llama para un `countdown.event` con
+ * `status` `upcoming`/`first-day` o para una edición de `pastEditions` — en la práctica siempre con
+ * `start`/`end` no nulos (sólo la edición sin fecha confirmada los tiene en `null`, y esa nunca entra
+ * acá) — pero el tipo sigue siendo `string | null`, así que esta función vive en el script (con un
+ * `if` real) en vez de un `!` en el template. */
 function priceEventDateRangeLabel(entry: PriceEventCalendarEntry): string {
   if (!entry.start || !entry.end) return ''
   return `Del ${priceEventFormatDate(entry.start)} al ${priceEventFormatDate(entry.end)}.`
@@ -566,7 +559,7 @@ useHead(() => ({
 
 .drops-table .price,
 .drops-table .drop-pct,
-.sellers-table td {
+.sellers-table td.text-right {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }

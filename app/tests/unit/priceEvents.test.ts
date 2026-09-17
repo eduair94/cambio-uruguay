@@ -3,45 +3,145 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   priceEventCountdown,
+  priceEventCountdownHeadline,
   priceEventDropRows,
   priceEventFaq,
   priceEventFormatDate,
+  priceEventOtherUnconfirmed,
   priceEventPastEditions,
+  priceEventPct,
+  type PriceEventCountdown,
   type PriceEventDropDoc,
   type PriceEventSnapshotResponse,
 } from '../../utils/priceEvents'
 
 // ---------------------------------------------------------------------------
 // priceEventCountdown
+//
+// El bug que este bloque existe para atrapar: `Math.max(0, …)` clampeaba `daysUntilStart` a 0
+// cualquier día DENTRO de la ventana de Black Friday (27 al 30 de noviembre), no sólo el primero, y
+// la página leía ese 0 como "hoy es el primer día" los cuatro días seguidos. Cada día de la ventana
+// tiene ahora su propio caso: el día antes, el primer día, un día del medio y el último día.
 // ---------------------------------------------------------------------------
 
 describe('priceEventCountdown', () => {
-  it('muestra el evento confirmado más próximo que todavía no terminó', () => {
-    const result = priceEventCountdown('2026-09-17')
-    expect(result?.event.key).toBe('black-friday-2026')
-    expect(result?.daysUntilStart).not.toBeNull()
+  it('un día antes del inicio: upcoming, con daysUntilStart', () => {
+    const result = priceEventCountdown('2026-11-26')
+    expect(result).toEqual({
+      event: expect.objectContaining({ key: 'black-friday-2026' }),
+      status: 'upcoming',
+      daysUntilStart: 1,
+      endsOn: null,
+    })
   })
 
-  it('daysUntilStart es 0 el mismo día del inicio', () => {
+  it('el día del inicio: first-day, nunca upcoming con daysUntilStart 0', () => {
     const result = priceEventCountdown('2026-11-27')
     expect(result).toEqual({
       event: expect.objectContaining({ key: 'black-friday-2026' }),
-      daysUntilStart: 0,
+      status: 'first-day',
+      daysUntilStart: null,
+      endsOn: null,
     })
   })
 
-  it('daysUntilStart es 1 un día antes del inicio', () => {
-    const result = priceEventCountdown('2026-11-26')
-    expect(result?.event.key).toBe('black-friday-2026')
-    expect(result?.daysUntilStart).toBe(1)
+  it('un día del medio de la ventana (29): in-progress, con endsOn', () => {
+    const result = priceEventCountdown('2026-11-29')
+    expect(result).toEqual({
+      event: expect.objectContaining({ key: 'black-friday-2026' }),
+      status: 'in-progress',
+      daysUntilStart: null,
+      endsOn: '2026-11-30',
+    })
   })
 
-  it('cuando no queda ningún evento confirmado por delante, cae al que espera fecha', () => {
+  it('el último día de la ventana (30): sigue in-progress, no "primer día"', () => {
+    const result = priceEventCountdown('2026-11-30')
+    expect(result).toEqual({
+      event: expect.objectContaining({ key: 'black-friday-2026' }),
+      status: 'in-progress',
+      daysUntilStart: null,
+      endsOn: '2026-11-30',
+    })
+  })
+
+  it('el día después del fin: ya no hay evento confirmado activo, cae al que espera fecha', () => {
     const result = priceEventCountdown('2026-12-01')
     expect(result).toEqual({
       event: expect.objectContaining({ key: 'ciberlunes-2026-11', confirmed: false }),
+      status: 'undated',
       daysUntilStart: null,
+      endsOn: null,
     })
+  })
+
+  it('dentro de la ventana adivinada de CyberLunes noviembre, Black Friday sigue ganando el titular si sigue confirmado y activo/por venir', () => {
+    // 2026-11-03 cae en la ventana [01, 08] que activeEvent() usa para la edición SIN fecha — pero
+    // priceEventCountdown no depende de esa ventana: Black Friday, confirmado, sigue siendo el
+    // evento a mostrar mientras no haya terminado.
+    const result = priceEventCountdown('2026-11-03')
+    expect(result?.event.key).toBe('black-friday-2026')
+    expect(result?.status).toBe('upcoming')
+  })
+})
+
+describe('priceEventCountdownHeadline', () => {
+  const base: PriceEventCountdown = {
+    event: {
+      key: 'black-friday-2026',
+      label: 'Black Friday 2026',
+      start: '2026-11-27',
+      end: '2026-11-30',
+      confirmed: true,
+      source: null,
+      note: '',
+    },
+    status: 'upcoming',
+    daysUntilStart: null,
+    endsOn: null,
+  }
+
+  it('upcoming: "Faltan N días para <label>."', () => {
+    expect(priceEventCountdownHeadline({ ...base, status: 'upcoming', daysUntilStart: 5 })).toBe(
+      'Faltan 5 días para Black Friday 2026.'
+    )
+  })
+
+  it('first-day: "Hoy empieza <label>." — nunca "faltan 0 días"', () => {
+    expect(priceEventCountdownHeadline({ ...base, status: 'first-day' })).toBe(
+      'Hoy empieza Black Friday 2026.'
+    )
+  })
+
+  it('in-progress: "<label>: en curso hasta el <fecha>."', () => {
+    expect(
+      priceEventCountdownHeadline({ ...base, status: 'in-progress', endsOn: '2026-11-30' })
+    ).toBe('Black Friday 2026: en curso hasta el 30 de noviembre de 2026.')
+  })
+
+  it('undated: "<label>: a confirmar por la CEDU."', () => {
+    expect(
+      priceEventCountdownHeadline({
+        ...base,
+        event: { ...base.event, key: 'ciberlunes-2026-11', label: 'CyberLunes noviembre 2026' },
+        status: 'undated',
+      })
+    ).toBe('CyberLunes noviembre 2026: a confirmar por la CEDU.')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// priceEventOtherUnconfirmed
+// ---------------------------------------------------------------------------
+
+describe('priceEventOtherUnconfirmed', () => {
+  it('Black Friday nearer (gana el titular): la edición sin fecha se muestra aparte', () => {
+    const result = priceEventOtherUnconfirmed('2026-09-17')
+    expect(result?.key).toBe('ciberlunes-2026-11')
+  })
+
+  it('después de Black Friday, la sin fecha YA es el titular: no se repite aparte', () => {
+    expect(priceEventOtherUnconfirmed('2026-12-01')).toBeNull()
   })
 })
 
@@ -155,6 +255,24 @@ describe('priceEventDropRows', () => {
 })
 
 // ---------------------------------------------------------------------------
+// priceEventPct
+// ---------------------------------------------------------------------------
+
+describe('priceEventPct', () => {
+  it('coma decimal, un decimal fijo, sin espacio antes del %', () => {
+    expect(priceEventPct(11.3)).toBe('11,3%')
+  })
+
+  it('completa el decimal que falta (11 -> "11,0%"), nunca lo trunca', () => {
+    expect(priceEventPct(11)).toBe('11,0%')
+  })
+
+  it('redondea a 1 decimal si le llega algo con más (no se espera de aggregate.ts, pero no truena)', () => {
+    expect(priceEventPct(11.36)).toBe('11,4%')
+  })
+})
+
+// ---------------------------------------------------------------------------
 // priceEventFaq
 // ---------------------------------------------------------------------------
 
@@ -260,6 +378,20 @@ describe('la página /ciberlunes-y-black-friday-uruguay cumple su propio contrat
       '/derechos-consumidor-compras-online',
     ]) {
       expect(source).toContain(path)
+    }
+  })
+
+  it('el enlace de "Ver oferta" (tienda de terceros) lleva rel="nofollow noopener", como equipar/sillas', () => {
+    expect(source).toMatch(/:href="row\.url"[^>]*rel="nofollow noopener"[^>]*>Ver oferta/)
+  })
+
+  it('los enlaces de fuente (CEDU/CUTI/Sodimac) conservan rel="noopener noreferrer"', () => {
+    // Tres citas de fuente en el bloque de fechas: la del titular, la de "otra edición sin fecha" y
+    // la de cada edición pasada — ninguna es un enlace de tienda y ninguna debe llevar `nofollow`.
+    const sourceLinks = source.match(/:href="[^"]*\.source"[^>]*rel="[^"]*"/g) ?? []
+    expect(sourceLinks.length).toBeGreaterThanOrEqual(3)
+    for (const link of sourceLinks) {
+      expect(link).toContain('rel="noopener noreferrer"')
     }
   })
 })
