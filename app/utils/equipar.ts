@@ -38,6 +38,13 @@ export interface EquiparProduct {
   sellers: number
 }
 
+/** One daily point of `EquiparItemDoc.history`: medians only, no offers — the item already has those. */
+export interface EquiparHistoryPoint {
+  date: string
+  newMedian: number | null
+  usedMedian: number | null
+}
+
 export interface EquiparItemDoc {
   key: string
   category: string
@@ -66,6 +73,12 @@ export interface EquiparItemDoc {
   observedAt: string | null
   firstSeen: string
   lastSeen: string
+  /**
+   * Daily medians, oldest first, kept by the backend for up to a year. Absent from the index
+   * endpoint's payload (the page draws none of it there); present on the per-category endpoint,
+   * which is what the price chart on `/equipar-casa-uruguay/<categoria>` reads (Task 8).
+   */
+  history?: EquiparHistoryPoint[]
 }
 
 export interface EquiparBasketLine {
@@ -113,6 +126,22 @@ export interface EquiparResponse {
   items: EquiparItemDoc[]
 }
 
+/** One harvester run, stripped of `key` and `note` — the API answers "did it work", not the detail. */
+export interface EquiparCategorySource {
+  label: string
+  ok: boolean
+  listings: number
+}
+
+/** `GET /api/equipar/<categoria>`: one category, all its variants, with daily price history. */
+export interface EquiparCategoryResponse {
+  category: string
+  generatedAt: string | null
+  usdUyu: number | null
+  sources: EquiparCategorySource[]
+  items: EquiparItemDoc[]
+}
+
 export const EQUIPAR_TIER_ORDER: Record<EquiparTier, number> = { S: 0, A: 1, B: 2, C: 3 }
 
 export const EQUIPAR_TIERS: EquiparTier[] = ['S', 'A', 'B', 'C']
@@ -137,6 +166,32 @@ export function equiparSortItems(items: EquiparItemDoc[]): EquiparItemDoc[] {
       (a.variantRank ?? 1) - (b.variantRank ?? 1) ||
       a.variant.localeCompare(b.variant)
   )
+}
+
+const EQUIPAR_CATEGORY_MAX_PRODUCTS = 12
+const EQUIPAR_CATEGORY_MAX_PRODUCT_OFFERS = 6
+const EQUIPAR_CATEGORY_MAX_ITEM_OFFERS = 8
+const EQUIPAR_CATEGORY_MAX_HISTORY = 180
+
+/**
+ * Trims one category's rows for `GET /api/equipar/<categoria>`: `products` (and each product's own
+ * `offers`), the item-level `offers`, and `history` all come back from Mongo effectively unbounded —
+ * a variant with 400 days of history and forty listed products would multiply the payload of the ONE
+ * endpoint that also has to carry that history, which the index endpoint drops entirely.
+ *
+ * `history` is stored oldest-first, so trimming it to a budget means keeping the TAIL (the most
+ * recent points), not the head — `slice(-N)`, not `slice(0, N)`.
+ */
+export function equiparCategoryProjection(items: EquiparItemDoc[]): EquiparItemDoc[] {
+  return items.map(item => ({
+    ...item,
+    products: item.products.slice(0, EQUIPAR_CATEGORY_MAX_PRODUCTS).map(product => ({
+      ...product,
+      offers: product.offers.slice(0, EQUIPAR_CATEGORY_MAX_PRODUCT_OFFERS),
+    })),
+    offers: item.offers.slice(0, EQUIPAR_CATEGORY_MAX_ITEM_OFFERS),
+    history: (item.history ?? []).slice(-EQUIPAR_CATEGORY_MAX_HISTORY),
+  }))
 }
 
 /** What the money actually buys for one item, given whether the reader accepts second-hand. */
