@@ -672,6 +672,22 @@ export const STORE_KIND_LABELS: Record<StoreKind, string> = {
   'compra-exterior': 'Compras al exterior',
 }
 
+/** Human labels for `StoreSiteSignal.platform` (classes/stores/signals/site.ts `SitePlatform`),
+ * hand-mirrored here for the same reason the rest of this file is (app/ can't import the repo
+ * root). `otra` — the scan's own catch-all for "none of the platforms it fingerprints" — has
+ * deliberately no entry: it says nothing useful to a shopper, so the caller omits the whole
+ * "Plataforma" row instead of printing the literal key `"otra"` (fix round F1, item 15). */
+export const STORE_PLATFORM_LABELS: Record<string, string> = {
+  fenicio: 'Fenicio',
+  shopify: 'Shopify',
+  vtex: 'VTEX',
+  woocommerce: 'WooCommerce',
+  tiendanube: 'Tiendanube',
+  wix: 'Wix',
+  magento: 'Magento',
+  nextjs: 'Next.js',
+}
+
 function storeDirectoryNorm(value: string): string {
   return String(value || '')
     .normalize('NFD')

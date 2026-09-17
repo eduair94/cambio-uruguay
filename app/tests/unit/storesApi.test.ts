@@ -13,9 +13,15 @@ vi.mock('../../server/models/StoreProfile', () => ({
 vi.mock('../../server/utils/db', () => ({ connectDb }))
 vi.mock('../../server/utils/bankos', () => ({ getRawCatalog }))
 
+const setResponseHeaderCalls: Array<[string, string]> = []
+
 vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
 vi.stubGlobal('getRouterParam', (event: any, key: string) => event[key])
-vi.stubGlobal('setResponseHeader', (_event: unknown, _name: string, _value: string) => {})
+// Records every call (not just the last) so a test can assert an OVERRIDE happened — item 13 sets
+// cache-control twice on the catch path (public first, then no-store) and both calls must be seen.
+vi.stubGlobal('setResponseHeader', (_event: unknown, name: string, value: string) => {
+  setResponseHeaderCalls.push([name, value])
+})
 vi.stubGlobal('createError', (options: Record<string, unknown>) =>
   Object.assign(new Error(String(options.statusMessage)), options)
 )
@@ -42,6 +48,7 @@ beforeEach(() => {
   findOne.mockReset()
   connectDb.mockReset().mockResolvedValue(undefined)
   getRawCatalog.mockReset()
+  setResponseHeaderCalls.length = 0
 })
 afterAll(() => vi.unstubAllGlobals())
 
@@ -285,6 +292,62 @@ describe('GET /api/stores', () => {
     const result = await (indexHandler as any)({})
     expect(result).toEqual({ stores: [], reviewedAt: null })
   })
+
+  it('overwrites the earlier public cache header with no-store on the catch path (item 13)', async () => {
+    connectDb.mockRejectedValue(new Error('mongo down'))
+    await (indexHandler as any)({})
+    // The route sets a public, hour-long cache header BEFORE the try block for the real response;
+    // left uncorrected on failure, a transient DB blip would get the empty fallback cached at an
+    // edge for up to an hour. The LAST call must be the override.
+    expect(setResponseHeaderCalls.length).toBeGreaterThanOrEqual(2)
+    const [name, value] = setResponseHeaderCalls[setResponseHeaderCalls.length - 1]!
+    expect(name).toBe('cache-control')
+    expect(value).toBe('no-store')
+  })
+
+  it('marks a capped reddit count and never a raw 500 (item 2)', async () => {
+    find.mockReturnValue(
+      chain([
+        {
+          key: 'temu',
+          name: 'Temu',
+          domain: 'temu.com',
+          kind: 'compra-exterior',
+          rubros: ['general'],
+          aliases: ['Temu'],
+          site: null,
+          age: null,
+          trustpilot: null,
+          google: null,
+          reddit: {
+            mentions: 500,
+            byYear: {},
+            threads: [],
+            tone: null,
+            capped: true,
+            checkedAt: freshAt(),
+          },
+          catalog: null,
+          signals: 1,
+          indexable: false,
+          firstSeen: '2026-01-01',
+          lastSeen: '2026-09-10',
+        },
+      ])
+    )
+    const result = await (indexHandler as any)({})
+    const temu = result.stores.find((s: any) => s.key === 'temu')
+    expect(temu.redditMentions).toBe(500)
+    expect(temu.redditMentionsCapped).toBe(true)
+  })
+
+  it('reports redditMentionsCapped as false when there is no fresh reddit count at all', async () => {
+    find.mockReturnValue(chain([]))
+    const result = await (indexHandler as any)({})
+    const bertoni = result.stores.find((s: any) => s.key === 'bertoni')
+    expect(bertoni.redditMentions).toBeNull()
+    expect(bertoni.redditMentionsCapped).toBe(false)
+  })
 })
 
 describe('GET /api/stores/<slug>', () => {
@@ -342,6 +405,50 @@ describe('GET /api/stores/<slug>', () => {
     const result = await (detailHandler as any)({ slug: 'temu' })
     expect(result.profile).toEqual(doc)
     expect(result.bankosBrandSlug).toBe('temu')
+    // Item 11: the same instant used to recompute signals/indexable is published as servedAt, so
+    // the page never has to fall back to a client-side `new Date()` for freshness decisions.
+    expect(typeof result.servedAt).toBe('string')
+    expect(Number.isNaN(Date.parse(result.servedAt))).toBe(false)
+  })
+
+  it("matches the Bankos brand only by the store's own canonical name, never a generic alias (item 14)", async () => {
+    // "Tienda Claro" carries the alias "Claro" for seller-name matching elsewhere; a Bankos brand
+    // that happens to ALSO be named "Claro" is very likely a different company entirely, and the
+    // old alias-matching behaviour would have cross-linked to it anyway.
+    const doc = {
+      key: 'tienda-claro',
+      name: 'Tienda Claro',
+      domain: 'tienda.claro.com.uy',
+      kind: 'tienda-uy',
+      rubros: ['celulares'],
+      aliases: ['Tienda Claro', 'Claro'],
+      site: null,
+      age: null,
+      trustpilot: null,
+      google: null,
+      reddit: null,
+      catalog: null,
+      signals: 0,
+      indexable: false,
+      firstSeen: '2026-01-01',
+      lastSeen: '2026-09-10',
+    }
+    findOne.mockReturnValue(chain(doc))
+    getRawCatalog.mockResolvedValue({
+      catalog: {
+        data: {
+          brands: { b1: { brandId: 'b1', name: 'Claro', categories: ['moda'] } },
+          bankBrands: { itau: { b1: { creditDescription: '10% off', debitDescription: null } } },
+          brandLocations: { b1: ['l1', 'l2', 'l3', 'l4'] },
+        },
+        baseSource: 'live',
+        generatedAt: '2026-09-16T00:00:00.000Z',
+      },
+      source: 'live',
+    })
+
+    const result = await (detailHandler as any)({ slug: 'tienda-claro' })
+    expect(result.bankosBrandSlug).toBeNull()
   })
 
   it('degrades to a null brand slug, never a 500, when the Bankos loader fails', async () => {

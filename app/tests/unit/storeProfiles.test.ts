@@ -3,12 +3,16 @@ import {
   storeAddress,
   storeBuyingAdvice,
   storeFaq,
+  storeFormatDate,
   storeFreshSignals,
   storeHubItemList,
   storeIndexable,
+  storeMentionsCount,
+  storePlatformLabel,
   storeSignalFresh,
   storeSignalSummary,
   STORE_INDEXABLE_MIN_SIGNALS,
+  STORE_REDDIT_MAX_MENTIONS,
   STORE_SIGNAL_MAX_AGE_DAYS,
   type StorePublicProfile,
 } from '../../utils/storeProfiles'
@@ -47,6 +51,42 @@ describe('STORE_SIGNAL_MAX_AGE_DAYS', () => {
 describe('STORE_INDEXABLE_MIN_SIGNALS', () => {
   it('mirrors the backend threshold (3 signals)', () => {
     expect(STORE_INDEXABLE_MIN_SIGNALS).toBe(3)
+  })
+})
+
+describe('STORE_REDDIT_MAX_MENTIONS', () => {
+  it('mirrors the backend cap (500 mentions)', () => {
+    expect(STORE_REDDIT_MAX_MENTIONS).toBe(500)
+  })
+})
+
+describe('storeMentionsCount', () => {
+  it('reports the exact count when not capped', () => {
+    expect(storeMentionsCount({ mentions: 42, capped: false })).toBe('42')
+  })
+
+  it('reports "500 o más" when capped, never a bare 500 (item 2)', () => {
+    expect(storeMentionsCount({ mentions: 500, capped: true })).toBe('500 o más')
+  })
+})
+
+describe('storePlatformLabel', () => {
+  it('maps every known platform key to a human label', () => {
+    expect(storePlatformLabel('fenicio')).toBe('Fenicio')
+    expect(storePlatformLabel('shopify')).toBe('Shopify')
+    expect(storePlatformLabel('vtex')).toBe('VTEX')
+    expect(storePlatformLabel('woocommerce')).toBe('WooCommerce')
+    expect(storePlatformLabel('tiendanube')).toBe('Tiendanube')
+    expect(storePlatformLabel('wix')).toBe('Wix')
+    expect(storePlatformLabel('magento')).toBe('Magento')
+    expect(storePlatformLabel('nextjs')).toBe('Next.js')
+  })
+
+  it('returns null for "otra" and for a missing/unknown value (fix round F1, item 15)', () => {
+    expect(storePlatformLabel('otra')).toBeNull()
+    expect(storePlatformLabel(null)).toBeNull()
+    expect(storePlatformLabel(undefined)).toBeNull()
+    expect(storePlatformLabel('')).toBeNull()
   })
 })
 
@@ -208,6 +248,59 @@ describe('storeSignalSummary', () => {
     expect(summary).not.toContain('12345')
     expect(summary).toContain('4,0')
   })
+
+  it('says "En línea desde" with a long es-UY date, not "dominio registrado" with a raw ISO date (item 1)', () => {
+    const profile = baseProfile({
+      age: { since: '2019-09-30', source: 'crt.sh', checkedAt: daysAgo(1) },
+    })
+    const summary = storeSignalSummary(profile, NOW)
+    expect(summary).toContain(`En línea desde ${storeFormatDate('2019-09-30')}`)
+    expect(summary).not.toContain('dominio registrado')
+    expect(summary).not.toContain('2019-09-30')
+  })
+
+  it('capitalizes every joined sentence, never a lowercase start after a period (item 1)', () => {
+    const profile = baseProfile({
+      age: { since: '2019-09-30', source: 'crt.sh', checkedAt: daysAgo(1) },
+      site: {
+        status: 'ok',
+        finalHost: 'tiendatest.com.uy',
+        https: true,
+        platform: 'shopify',
+        phone: false,
+        whatsapp: false,
+        email: false,
+        rut: null,
+        address: null,
+        policies: { returns: null, terms: null, privacy: null },
+        payments: [],
+        checkedAt: daysAgo(1),
+      },
+    })
+    const summary = storeSignalSummary(profile, NOW)
+    // Split on ". " (the join separator, with the trailing "." stripped by the split boundary) and
+    // check every fragment starts with an uppercase letter.
+    const sentences = summary.replace(/\.$/, '').split('. ')
+    expect(sentences.length).toBeGreaterThan(1)
+    for (const sentence of sentences) {
+      expect(sentence[0]).toBe(sentence[0]!.toUpperCase())
+    }
+  })
+
+  it('says "500 o más" for a capped Reddit count, never the bare cap number (item 2)', () => {
+    const profile = baseProfile({
+      reddit: {
+        mentions: 500,
+        byYear: {},
+        threads: [],
+        tone: null,
+        capped: true,
+        checkedAt: daysAgo(1),
+      },
+    })
+    const summary = storeSignalSummary(profile, NOW)
+    expect(summary).toContain('500 o más menciones')
+  })
 })
 
 describe('storeAddress', () => {
@@ -366,11 +459,29 @@ describe('storeFaq', () => {
     expect(local!.answer).toContain('Bulevar Artigas 456, Montevideo')
   })
 
-  it('says there is no published address when neither source has one', () => {
+  it('says there is no published address when neither source has one, naming both sources checked (item 3)', () => {
     const profile = baseProfile()
     const faqs = storeFaq(profile, null)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
-    expect(local!.answer).toBe('No encontramos una dirección publicada.')
+    expect(local!.answer).toBe(
+      'No encontramos una dirección publicada en Google Maps ni en el sitio de la tienda.'
+    )
+  })
+
+  it('says "Dirección publicada:", not "Sí:", for a physical address (item 15)', () => {
+    const profile = baseProfile({
+      google: {
+        rating: 4,
+        reviews: 5,
+        address: 'Av. Italia 123, Montevideo',
+        url: 'https://maps.google.com/x',
+        checkedAt: daysAgo(1),
+      },
+    })
+    const faqs = storeFaq(profile, null)
+    const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
+    expect(local!.answer.startsWith('Dirección publicada: Av. Italia 123, Montevideo')).toBe(true)
+    expect(local!.answer.startsWith('Sí:')).toBe(false)
   })
 
   it('says there is no published address when both sources are stale (fix round 1, item 2)', () => {
@@ -402,7 +513,9 @@ describe('storeFaq', () => {
     })
     const faqs = storeFaq(profile, null)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
-    expect(local!.answer).toBe('No encontramos una dirección publicada.')
+    expect(local!.answer).toBe(
+      'No encontramos una dirección publicada en Google Maps ni en el sitio de la tienda.'
+    )
     expect(local!.answer).not.toContain('Montevideo')
   })
 
@@ -412,20 +525,28 @@ describe('storeFaq', () => {
     expect(faqs.some(f => f.question === `¿Cómo le reclamo a ${profile.name}?`)).toBe(true)
   })
 
-  it('links to the Bankos brand page when a slug resolved, and says so plainly when it did not', () => {
+  it('links to the Bankos brand page via `link` (never a raw path in the answer text), and says so plainly when it did not resolve (item 14)', () => {
     const profile = baseProfile()
     const withBrand = storeFaq(profile, 'tienda-test')
     const withoutBrand = storeFaq(profile, null)
     const question = `¿${profile.name} tiene descuentos con tarjeta?`
-    expect(withBrand.find(f => f.question === question)!.answer).toContain(
-      '/descuentos-con-tarjeta-uruguay/marca/tienda-test'
-    )
-    const noBrandAnswer = withoutBrand.find(f => f.question === question)!.answer
-    expect(noBrandAnswer).not.toContain('/descuentos-con-tarjeta')
+
+    const withBrandAnswer = withBrand.find(f => f.question === question)!
+    expect(withBrandAnswer.answer).not.toContain('/descuentos-con-tarjeta')
+    expect(withBrandAnswer.link).toEqual({
+      label: expect.stringContaining(profile.name),
+      to: '/descuentos-con-tarjeta-uruguay/marca/tienda-test',
+    })
+
+    const withoutBrandAnswer = withoutBrand.find(f => f.question === question)!
+    expect(withoutBrandAnswer.link).toBeUndefined()
+    expect(withoutBrandAnswer.answer).not.toContain('/descuentos-con-tarjeta')
     // Must say the store has no page of its own — never claim it is absent from Bankos'
     // catalogue, which is a different (and unverified) fact (fix round 1, minor).
-    expect(noBrandAnswer).toContain('no tiene una página propia de descuentos con tarjeta')
-    expect(noBrandAnswer.toLowerCase()).not.toContain('catálogo')
+    expect(withoutBrandAnswer.answer).toContain(
+      'no tiene una página propia de descuentos con tarjeta'
+    )
+    expect(withoutBrandAnswer.answer.toLowerCase()).not.toContain('catálogo')
   })
 })
 

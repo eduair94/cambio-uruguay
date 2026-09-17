@@ -102,7 +102,7 @@ FORM: Read mode. Filters are client state only; the table itself is server-rende
               }}
             </td>
             <td data-label="Menciones en Reddit">
-              {{ store.redditMentions != null ? storeEsCount(store.redditMentions) : '—' }}
+              {{ redditCell(store) }}
             </td>
             <td data-label="Ofertas en nuestros catálogos">
               {{ store.catalogOffers != null ? storeEsCount(store.catalogOffers) : '—' }}
@@ -127,6 +127,7 @@ import {
   storeEsDecimal,
   storeFormatDate,
   storeHubItemList,
+  STORE_REDDIT_MAX_MENTIONS,
 } from '~/utils/storeProfiles'
 
 const localePath = useLocalePath()
@@ -150,6 +151,14 @@ const filteredStores = computed(() =>
 
 function rubroLabel(rubros: string[]): string {
   return rubros.map(rubro => STORE_RUBRO_LABELS[rubro as StoreRubro] ?? rubro).join(', ')
+}
+
+// "500 o más", never a bare "500" that reads as an exact tally (fix round F1, item 2).
+function redditCell(store: StoreCard): string {
+  if (store.redditMentions == null) return '—'
+  return store.redditMentionsCapped
+    ? `${STORE_REDDIT_MAX_MENTIONS} o más`
+    : storeEsCount(store.redditMentions)
 }
 
 const reviewedAtLabel = computed(() => (reviewedAt.value ? storeFormatDate(reviewedAt.value) : ''))

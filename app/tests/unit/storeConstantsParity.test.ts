@@ -6,8 +6,10 @@ import { describe, expect, it } from 'vitest'
 // the first case of this). App tests importing root modules is the established direction (see
 // aduanaFallback.test.ts, equiparMirrorParity.test.ts).
 import { INDEXABLE_MIN_SIGNALS, STORE_SIGNAL_MAX_AGE_DAYS } from '../../../classes/stores/profile'
+import { STORE_REDDIT_MAX_MENTIONS } from '../../../classes/stores/signals/reddit'
 import {
   STORE_INDEXABLE_MIN_SIGNALS,
+  STORE_REDDIT_MAX_MENTIONS as APP_STORE_REDDIT_MAX_MENTIONS,
   STORE_SIGNAL_MAX_AGE_DAYS as APP_STORE_SIGNAL_MAX_AGE_DAYS,
 } from '../../utils/storeProfiles'
 
@@ -24,5 +26,9 @@ describe('store profile constants stay in sync between backend and app', () => {
 
   it('the indexable threshold matches (classes/stores/profile.ts INDEXABLE_MIN_SIGNALS <-> app/utils/storeProfiles.ts STORE_INDEXABLE_MIN_SIGNALS)', () => {
     expect(STORE_INDEXABLE_MIN_SIGNALS).toBe(INDEXABLE_MIN_SIGNALS)
+  })
+
+  it('STORE_REDDIT_MAX_MENTIONS matches (fix round F1, item 2)', () => {
+    expect(APP_STORE_REDDIT_MAX_MENTIONS).toBe(STORE_REDDIT_MAX_MENTIONS)
   })
 })

@@ -46,6 +46,12 @@ describe('tiendas-online-uruguay/index.vue', () => {
     expect(indexSource).toContain('No es un ranking de confianza')
   })
 
+  it('shows "500 o más" for a capped Reddit count in its own column, never a raw 500 (item 2)', () => {
+    expect(indexSource).toContain('redditCell(store)')
+    expect(indexSource).toContain('store.redditMentionsCapped')
+    expect(indexSource).toContain('STORE_REDDIT_MAX_MENTIONS')
+  })
+
   it('builds its ItemList through the shared, testable helper (fix round 1, item 4)', () => {
     // The actual "only hasProfile, omit the node entirely when empty" behaviour is unit-tested
     // directly against `storeHubItemList` in storeProfiles.test.ts — this only checks the page
@@ -90,10 +96,53 @@ describe('tiendas-online-uruguay/[tienda].vue', () => {
     expect(detailSource).toContain('es confiable? Opiniones, reclamos y datos verificables')
   })
 
-  it('turns a missing or errored fetch into a real fatal 404, never an empty 200', () => {
-    expect(detailSource).toMatch(/if\s*\(\s*error\.value\s*\|\|\s*!data\.value\s*\)/)
+  it('turns a real 404 from the API into a fatal 404, never an empty 200 (fix round F1, item 12)', () => {
+    expect(detailSource).toMatch(/if\s*\(\s*error\.value\s*\)\s*\{/)
+    expect(detailSource).toMatch(/statusCode\s*===\s*404/)
     expect(detailSource).toMatch(/createError\(\{[^}]*statusCode:\s*404/)
     expect(detailSource).toMatch(/fatal:\s*true/)
+  })
+
+  it('turns any OTHER fetch failure into a 503, never a false 404 (fix round F1, item 12)', () => {
+    expect(detailSource).toMatch(
+      /createError\(\{\s*statusCode:\s*503,\s*statusMessage:\s*'Servicio no disponible',\s*fatal:\s*true\s*\}\)/
+    )
+    // Both the "not found" branch and the missing-data branch reach a fatal error, not a silent
+    // empty render — count every createError( call inside the fetch-error handling.
+    const errorHandling = detailSource.slice(
+      detailSource.indexOf('const { data, error } = await useFetch'),
+      detailSource.indexOf('const profile = computed')
+    )
+    expect([...errorHandling.matchAll(/createError\(/g)]).toHaveLength(3)
+  })
+
+  it('never shows a negative contact claim — the row is omitted, not "No publica..." (item 3)', () => {
+    expect(detailSource).not.toMatch(/no publica/i)
+    expect(detailSource).toMatch(/v-if="contactSummary"/)
+  })
+
+  it('shows "500 o más" for a capped Reddit count and hides the by-year list when capped (item 2)', () => {
+    expect(detailSource).toContain('storeMentionsCount(profile.reddit!)')
+    expect(detailSource).toMatch(/redditYears\.length\s*&&\s*!profile\.reddit!\.capped/)
+    expect(detailSource).toContain('profile.reddit!.capped')
+    expect(detailSource.toLowerCase()).toContain('sólo guardamos las')
+  })
+
+  it('maps the raw platform key to a human label and omits the row for "otra" (item 15)', () => {
+    expect(detailSource).toContain('storePlatformLabel(')
+    expect(detailSource).toMatch(/v-if="platformLabel"/)
+    expect(detailSource).not.toMatch(/\{\{\s*profile\.site!\.platform\s*\}\}/)
+  })
+
+  it("fetches the sibling list under its own useFetch key, not the hub's or a detail page's (item 10)", () => {
+    expect(detailSource).toContain("key: 'store-siblings'")
+    expect(detailSource).not.toContain("key: 'tiendas-online-index'")
+    expect(detailSource).toMatch(/transform:\s*response\s*=>/)
+  })
+
+  it('uses the server-provided servedAt for every freshness decision, never a client new Date() (item 11)', () => {
+    expect(detailSource).toContain('new Date(data.value!.servedAt)')
+    expect(detailSource).not.toMatch(/const now = new Date\(\)/)
   })
 
   it('declares its own SEO meta', () => {

@@ -11,7 +11,7 @@
 // NO VERDICT LIVES HERE EITHER. Every function below reports facts with their source and date —
 // never "confiable"/"estafa"/"recomendamos"/"evitá" — because a signal here is a dated observation
 // (a Trustpilot score, a Reddit mention count), not a rating this site computes.
-import { STORE_KIND_LABELS, type StoreKind } from './storeDirectory'
+import { STORE_KIND_LABELS, STORE_PLATFORM_LABELS, type StoreKind } from './storeDirectory'
 import { dateLocale } from './format'
 
 /** Mirrors `classes/stores/profile.ts` `STORE_SIGNAL_MAX_AGE_DAYS`; parity checked alongside
@@ -26,6 +26,12 @@ export const STORE_SIGNAL_MAX_AGE_DAYS = 60
  * suite, not the root one — a root test cannot load an app/ file). A page with fewer fresh
  * signals than this has too little to say to be worth indexing — see {@link storeIndexable}. */
 export const STORE_INDEXABLE_MIN_SIGNALS = 3
+
+/** Mirrors `classes/stores/signals/reddit.ts` `STORE_REDDIT_MAX_MENTIONS`; parity checked alongside
+ * the other two constants above in `app/tests/unit/storeConstantsParity.test.ts`. A stored count
+ * that reached this cap reads "500 o más", never a bare "500" that implies an exact tally (fix
+ * round F1, item 2) — see {@link storeMentionsCount}. */
+export const STORE_REDDIT_MAX_MENTIONS = 500
 
 export interface StoreSitePolicies {
   returns: string | null
@@ -207,6 +213,28 @@ export function storeEsCount(value: number): string {
 }
 
 /**
+ * A Reddit mention count, capped-aware (fix round F1, item 2): once stored mentions hit
+ * `STORE_REDDIT_MAX_MENTIONS` the true count is unknown — Arctic Shift keeps going, but
+ * `mergeStoredMentions` (backend) stops storing past the cap — so publishing the literal `500`
+ * reads as an exact tally instead of a floor. Every place that shows a mention count (the hub
+ * column, the ficha, the FAQ, the summary sentence, the meta description) goes through this
+ * instead of `storeEsCount(reddit.mentions)` directly.
+ */
+export function storeMentionsCount(reddit: { mentions: number; capped: boolean }): string {
+  return reddit.capped ? `${STORE_REDDIT_MAX_MENTIONS} o más` : storeEsCount(reddit.mentions)
+}
+
+/**
+ * Human label for `StoreSiteSignal.platform` (`STORE_PLATFORM_LABELS`, `storeDirectory.ts`), or
+ * `null` for `"otra"` / anything this scan doesn't recognize — the caller omits the whole
+ * "Plataforma" row rather than print a raw key like `"otra"` or `"nextjs"` (fix round F1, item 15).
+ */
+export function storePlatformLabel(platform: string | null | undefined): string | null {
+  if (!platform) return null
+  return STORE_PLATFORM_LABELS[platform] ?? null
+}
+
+/**
  * `YYYY-MM-DD` or a full ISO datetime -> a long es-UY date ("16 de setiembre de 2026" — the
  * Uruguayan spelling `dateLocale('es')` gives, not Spain's "septiembre"). A bare calendar date is
  * read as noon UTC so it never rolls back a day in Montevideo. Exported (fix round 1, item 3) so
@@ -226,11 +254,21 @@ export function storeFormatDate(value: string | null | undefined): string {
   })
 }
 
+/** Upper-cases the first character, leaving the rest untouched (an accented vowel or an existing
+ * capital stays exactly as written). Used only to give every joined sentence in
+ * {@link signalFacts} its own capital start (fix round F1, item 1) — the sentences are later
+ * joined with '. ', and a lowercase fragment after a period reads as broken prose. */
+function capitalizeSentence(text: string): string {
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : text
+}
+
 /**
  * The dated facts a profile can show right now, oldest logic shared by `storeSignalSummary` and the
  * "¿es confiable?" FAQ answer: only signals that pass {@link storeFreshSignals}'s own freshness rule
  * make the list, field by field, so a Trustpilot score from 61 days ago simply is not one of the
  * sentences — not relabelled, not marked "desactualizado", just absent, the same rule the count uses.
+ * Every date goes through {@link storeFormatDate} (fix round F1, item 1) — never a raw ISO slice —
+ * and the whole list is capitalized sentence by sentence before it is returned.
  */
 function signalFacts(profile: StorePublicProfile, now: Date): string[] {
   const facts: string[] = []
@@ -247,21 +285,25 @@ function signalFacts(profile: StorePublicProfile, now: Date): string[] {
     )
   }
   if (profile.age && storeSignalFresh(profile.age.checkedAt, now)) {
-    facts.push(`dominio registrado desde ${profile.age.since}`)
+    // "En línea desde", not "dominio registrado desde" (fix round F1, item 1): the date is the
+    // earlier of crt.sh's certificate and Wayback's first capture (classes/stores/signals/age.ts),
+    // which is evidence of the SITE being reachable, not of when the domain was registered — a
+    // domain can sit unused for years before anything is ever published on it.
+    facts.push(`En línea desde ${storeFormatDate(profile.age.since)}`)
   }
   if (
     profile.site &&
     profile.site.status === 'ok' &&
     storeSignalFresh(profile.site.checkedAt, now)
   ) {
-    facts.push(`sitio propio verificado el ${profile.site.checkedAt.slice(0, 10)}`)
+    facts.push(`Sitio propio verificado el ${storeFormatDate(profile.site.checkedAt)}`)
   }
   if (
     profile.reddit &&
     profile.reddit.mentions > 0 &&
     storeSignalFresh(profile.reddit.checkedAt, now)
   ) {
-    facts.push(`${storeEsCount(profile.reddit.mentions)} menciones en r/uruguay y r/montevideo`)
+    facts.push(`${storeMentionsCount(profile.reddit)} menciones en r/uruguay y r/montevideo`)
   }
   if (
     profile.catalog &&
@@ -272,7 +314,7 @@ function signalFacts(profile: StorePublicProfile, now: Date): string[] {
       `${storeEsCount(profile.catalog.offers)} ofertas relevadas en nuestro propio catálogo`
     )
   }
-  return facts
+  return facts.map(capitalizeSentence)
 }
 
 /**
@@ -290,6 +332,11 @@ export function storeSignalSummary(profile: StorePublicProfile, now: Date = new 
 interface StoreFaqItem {
   question: string
   answer: string
+  /** An optional link rendered after the answer text (fix round F1, item 14) — for an answer that
+   * would otherwise have to spell out a raw path (the Bankos discounts cross-link) as plain FAQ
+   * prose. Additive on `FaqItem`/`FaqSection`: every other FAQ across the site leaves this unset and
+   * renders exactly as before. */
+  link?: { label: string; to: string }
 }
 
 export interface StoreAddress {
@@ -354,9 +401,12 @@ export function storeFaq(
     },
     {
       question: `¿${profile.name} tiene local físico?`,
+      // "Dirección publicada:", not "Sí:" (fix round F1, item 15) — this is a JSON-LD/Maps address,
+      // which can be an office, a warehouse or a foreign HQ, not proof of a walk-in local; the
+      // negative case names its own scope (fix round F1, item 3) instead of a bare "no encontramos".
       answer: address
-        ? `Sí: ${address.address}, según ${addressSourceLabel}.`
-        : 'No encontramos una dirección publicada.',
+        ? `Dirección publicada: ${address.address}, según ${addressSourceLabel}.`
+        : 'No encontramos una dirección publicada en Google Maps ni en el sitio de la tienda.',
     },
     {
       question: `¿Cómo le reclamo a ${profile.name}?`,
@@ -369,9 +419,18 @@ export function storeFaq(
 
   faqs.push({
     question: `¿${profile.name} tiene descuentos con tarjeta?`,
+    // The raw path used to be spelled out in the answer text itself, which FaqSection renders as
+    // plain text — a reader saw the literal string "/descuentos-con-tarjeta-uruguay/marca/<slug>",
+    // not a link. It now goes in `link` instead, rendered as a real anchor (fix round F1, item 14).
     answer: bankosBrandSlug
-      ? `Sí, tiene descuentos publicados en /descuentos-con-tarjeta-uruguay/marca/${bankosBrandSlug}.`
+      ? 'Sí, tiene descuentos con tarjeta publicados.'
       : `${profile.name} no tiene una página propia de descuentos con tarjeta en el sitio.`,
+    link: bankosBrandSlug
+      ? {
+          label: `Ver los descuentos con tarjeta de ${profile.name}`,
+          to: `/descuentos-con-tarjeta-uruguay/marca/${bankosBrandSlug}`,
+        }
+      : undefined,
   })
 
   return faqs

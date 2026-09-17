@@ -29,17 +29,21 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
       </dl>
       <p v-if="ageFresh" class="source-note">
         Fuente:
-        {{ profile.age!.source === 'crt.sh' ? 'certificado del dominio' : 'Wayback Machine' }} ·
-        revisado el {{ storeFormatDate(profile.age!.checkedAt) }}
+        {{
+          profile.age!.source === 'crt.sh'
+            ? 'primer certificado HTTPS (crt.sh)'
+            : 'archivo web (Wayback Machine)'
+        }}
+        · revisado el {{ storeFormatDate(profile.age!.checkedAt) }}
       </p>
 
       <template v-if="siteFresh">
         <dl class="fact-list">
-          <div v-if="profile.site!.platform">
+          <div v-if="platformLabel">
             <dt>Plataforma</dt>
-            <dd>{{ profile.site!.platform }}</dd>
+            <dd>{{ platformLabel }}</dd>
           </div>
-          <div>
+          <div v-if="contactSummary">
             <dt>Publica contacto</dt>
             <dd>{{ contactSummary }}</dd>
           </div>
@@ -127,14 +131,16 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
     <section v-if="redditFresh" class="tienda-section" aria-labelledby="reddit-title">
       <h2 id="reddit-title">Reddit</h2>
       <p>
-        {{ storeEsCount(profile.reddit!.mentions) }} menciones encontradas en r/uruguay y
-        r/montevideo.
+        {{ storeMentionsCount(profile.reddit!) }} menciones encontradas en r/uruguay y r/montevideo.
       </p>
-      <ul v-if="redditYears.length" class="reddit-years">
+      <ul v-if="redditYears.length && !profile.reddit!.capped" class="reddit-years">
         <li v-for="row in redditYears" :key="row.year">
           {{ row.year }}: {{ storeEsCount(row.count) }}
         </li>
       </ul>
+      <p v-else-if="profile.reddit!.capped" class="reddit-years-capped">
+        Sólo guardamos las {{ storeEsCount(STORE_REDDIT_MAX_MENTIONS) }} menciones más recientes.
+      </p>
       <p v-if="profile.reddit!.tone" class="reddit-tone">
         De las menciones clasificadas: {{ storeEsCount(profile.reddit!.tone!.complaints) }} con
         reclamos, {{ storeEsCount(profile.reddit!.tone!.recommendations) }} con recomendaciones y
@@ -249,7 +255,7 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
 
 <script setup lang="ts">
 import type { StoreDetailResponse } from '~/server/api/stores/[slug].get'
-import type { StoreCard, StoresIndexResponse } from '~/server/api/stores/index.get'
+import type { StoresIndexResponse } from '~/server/api/stores/index.get'
 import {
   isStoreDirectoryKey,
   storeDirectoryEntry,
@@ -263,8 +269,11 @@ import {
   storeEsDecimal,
   storeFaq,
   storeFormatDate,
+  storeMentionsCount,
+  storePlatformLabel,
   storeSignalFresh,
   storeSignalSummary,
+  STORE_REDDIT_MAX_MENTIONS,
   type StorePublicProfile,
 } from '~/utils/storeProfiles'
 
@@ -292,25 +301,62 @@ const { data, error } = await useFetch<StoreDetailResponse>(() => `/api/stores/$
   key: `store-${key.value}`,
 })
 
-if (error.value || !data.value) {
-  throw createError({
-    statusCode: 404,
-    statusMessage: 'Todavía no hay ficha para esta tienda',
-    fatal: true,
-  })
+// Sólo un 404 real de la API (slug fuera del registro, o todavía sin ficha) es un 404 de esta
+// página: cualquier otro fallo — 5xx, timeout, Mongo caída — es la API misma no disponible, no
+// "esta tienda no existe" (fix round F1, item 12).
+if (error.value) {
+  const failure = error.value as { statusCode?: number; data?: { statusCode?: number } }
+  const notFound = failure.statusCode === 404 || failure.data?.statusCode === 404
+  if (notFound) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Todavía no hay ficha para esta tienda',
+      fatal: true,
+    })
+  }
+  throw createError({ statusCode: 503, statusMessage: 'Servicio no disponible', fatal: true })
+}
+if (!data.value) {
+  throw createError({ statusCode: 503, statusMessage: 'Servicio no disponible', fatal: true })
 }
 
 const profile = computed<StorePublicProfile>(() => data.value!.profile)
 const bankosBrandSlug = computed(() => data.value!.bankosBrandSlug)
 
-// Para "Otras tiendas de <rubro>": el hub ya sabe qué tiendas tienen ficha propia
-// (`hasProfile`), y enlazar una sin ficha sería enlazar a un 404.
-const { data: indexData } = await useFetch<StoresIndexResponse>('/api/stores', {
-  key: 'tiendas-online-index',
-})
-const siblingStores = computed<StoreCard[]>(() => indexData.value?.stores ?? [])
+interface StoreSiblingEntry {
+  key: string
+  name: string
+  rubros: string[]
+  hasProfile: boolean
+}
 
-const now = new Date()
+// Para "Otras tiendas de <rubro>": el hub ya sabe qué tiendas tienen ficha propia
+// (`hasProfile`), y enlazar una sin ficha sería enlazar a un 404. Clave y `transform` PROPIOS
+// (`store-siblings`, fix round F1, item 10) — nunca la del hub (`tiendas-online-index`, que trae
+// las 76 tiendas con TODOS sus campos) ni la de una ficha individual: recortar acá, antes de que
+// el payload SSR se escriba, es lo mismo que ya hace `useStoreProfileKeys.ts`.
+const { data: siblingsData } = await useFetch<
+  StoresIndexResponse,
+  unknown,
+  unknown,
+  StoreSiblingEntry[]
+>('/api/stores', {
+  key: 'store-siblings',
+  transform: response =>
+    (response?.stores ?? []).map(store => ({
+      key: store.key,
+      name: store.name,
+      rubros: store.rubros,
+      hasProfile: store.hasProfile,
+    })),
+})
+const siblingStores = computed<StoreSiblingEntry[]>(() => siblingsData.value ?? [])
+
+// Item 11: la misma instancia que el servidor usó para decidir qué está fresco — nunca un
+// `new Date()` del cliente, que podría hidratar mucho después (una conexión lenta, un caché de
+// borde sirviendo esta misma respuesta JSON) y juzgar frescura contra un "ahora" distinto del que
+// el propio servidor ya usó para renderizar la página.
+const now = new Date(data.value!.servedAt)
 
 const ageFresh = computed(() =>
   Boolean(profile.value.age && storeSignalFresh(profile.value.age.checkedAt, now))
@@ -349,6 +395,10 @@ const catalogFresh = computed(() =>
   )
 )
 
+// Vacío (nunca una frase que afirme la ausencia) cuando el escaneo de la home no encontró ningún
+// contacto — un escaneo previo-al-JS y sólo-de-la-portada no puede afirmar eso, y la fila entera
+// se omite en la plantilla (`v-if="contactSummary"`) en vez de mostrarla vacía (fix round F1, item
+// 3).
 const contactSummary = computed(() => {
   const site = profile.value.site
   if (!site) return ''
@@ -356,8 +406,10 @@ const contactSummary = computed(() => {
   if (site.phone) parts.push('teléfono')
   if (site.whatsapp) parts.push('WhatsApp')
   if (site.email) parts.push('correo')
-  return parts.length ? parts.join(', ') : 'No publica teléfono, WhatsApp ni correo directo.'
+  return parts.join(', ')
 })
+
+const platformLabel = computed(() => storePlatformLabel(profile.value.site?.platform))
 
 const policyLinks = computed(() => {
   if (!siteFresh.value || !profile.value.site) return []
@@ -387,6 +439,7 @@ const faqItems = computed(() =>
     id: `tienda-${key.value}-${index}`,
     question: item.question,
     answer: item.answer,
+    link: item.link,
   }))
 )
 
@@ -435,7 +488,7 @@ const seoDescription = computed(() => {
   if (googleFresh.value) facts.push(`Google ${storeEsDecimal(profile.value.google!.rating)}/5`)
   if (ageFresh.value) facts.push(`en línea desde ${storeFormatDate(profile.value.age!.since)}`)
   if (redditFresh.value)
-    facts.push(`${storeEsCount(profile.value.reddit!.mentions)} menciones en Reddit`)
+    facts.push(`${storeMentionsCount(profile.value.reddit!)} menciones en Reddit`)
   const chosen = facts.slice(0, 2).join(' y ')
   return chosen
     ? `${entry.value.name}: ${chosen}. Datos verificados, con fuente y fecha, no un ranking de confianza.`
@@ -593,6 +646,10 @@ useHead(() => ({
   gap: 6px 16px;
   font-size: 0.875rem;
   opacity: 0.85;
+}
+.reddit-years-capped {
+  font-size: 0.875rem;
+  opacity: 0.7;
 }
 .reddit-threads {
   margin: 8px 0 0;

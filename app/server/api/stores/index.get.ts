@@ -28,6 +28,10 @@ export interface StoreCard {
   trustpilot: { score: number; reviews: number } | null
   google: { rating: number; reviews: number } | null
   redditMentions: number | null
+  /** True when the stored mentions hit STORE_REDDIT_MAX_MENTIONS (fix round F1, item 2): the count
+   * reads "500 or more", never a bare "500" that implies an exact tally. Meaningless (and always
+   * `false`) when `redditMentions` is `null`. */
+  redditMentionsCapped: boolean
   catalogOffers: number | null
   signals: number
   indexable: boolean
@@ -104,6 +108,7 @@ export default defineEventHandler(async (event): Promise<StoresIndexResponse> =>
           ? { rating: profile!.google!.rating, reviews: profile!.google!.reviews }
           : null,
         redditMentions: freshReddit ? profile!.reddit!.mentions : null,
+        redditMentionsCapped: freshReddit ? profile!.reddit!.capped : false,
         catalogOffers: freshCatalog ? profile!.catalog!.offers : null,
         signals: profile ? storeFreshSignals(profile, now) : 0,
         indexable: profile ? storeIndexable(profile, now) : false,
@@ -117,7 +122,11 @@ export default defineEventHandler(async (event): Promise<StoresIndexResponse> =>
 
     return { stores, reviewedAt }
   } catch {
-    // A database hiccup renders the hub's empty state, never a 500.
+    // A database hiccup renders the hub's empty state, never a 500 — but the header set above this
+    // try block was for the REAL 76-store response and told any edge to cache it for an hour. Left
+    // as-is, a transient Mongo blip would get that empty fallback cached publicly for up to an hour
+    // (fix round F1, item 13): overwrite it with `no-store` so the empty state is never cached.
+    setResponseHeader(event, 'cache-control', 'no-store')
     return { stores: [], reviewedAt: null }
   }
 })
