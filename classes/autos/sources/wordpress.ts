@@ -8,7 +8,7 @@
 // A page past the last answers HTTP 400 `rest_post_invalid_page_number`: that is the end, not a failure.
 import { engineFromCc, versionTransmission } from "../catalog/match";
 import { fold, fuelOf, transmissionOf } from "../normalize";
-import type { CarSourceResult } from "../types";
+import type { CarSource, CarSourceResult } from "../types";
 import { addCar, autosFetchJson, buildWebCar, htmlText, moneyOf, sourceResult, type WebCarContext } from "./common";
 import { CAR_SOURCES } from "./registry";
 
@@ -20,8 +20,8 @@ const CLASIAUTOS = "https://clasiautos.uy/wp-json/wp/v2/listings";
 const JULIO = "https://julioautomoviles.com.uy/wp-json/wp/v2";
 const JULIO_USD = "_2316";
 
-async function defaultFetchPage(url: string): Promise<unknown[] | null> {
-  const fetched = await autosFetchJson<unknown>(url);
+async function defaultFetchPage(url: string, source: CarSource): Promise<unknown[] | null> {
+  const fetched = await autosFetchJson<unknown>(url, 30_000, source);
   if (Array.isArray(fetched.body)) return fetched.body;
   if (fetched.failure === "HTTP 400" && !/[?&]page=1(?:&|$)/.test(url)) return [];
   return null;
@@ -33,7 +33,7 @@ async function readPages(
   options: { fetchPage?: FetchPage; maxPages?: number; perPage?: number },
   onPage: (items: unknown[]) => void,
 ): Promise<boolean> {
-  const fetchPage = options.fetchPage ?? defaultFetchPage;
+  const fetchPage = options.fetchPage ?? ((url: string) => defaultFetchPage(url, result.source));
   const perPage = options.perPage ?? 100;
   const maxPages = options.maxPages ?? 30;
   for (let page = 1; page <= maxPages; page++) {

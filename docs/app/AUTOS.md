@@ -75,10 +75,21 @@ desarrollo (anda) y desde el 104 (no):
   navegador también da 503).
 - **Car One**: 405 a cualquier pedido, incluso a la home.
 
-No se esquiva: **nada de proxies ni de UA falsa** para entrar donde nos bloquean. Las dos fuentes
-quedan encendidas y reintentan una vez por día (una lectura cada una, anotada en
-`uy-cars-source-<fuente>`); si el bloqueo era temporal vuelven solas. Para incluirlas de verdad hay
-que pedirle a cada sitio que habilite el bot —la UA lleva el contacto— o leerlas desde otra IP.
+Las dos permiten esas rutas en su `robots.txt` y las dos contestan 200 desde otra red, así que el
+bloqueo es de la IP del datacenter, no una decisión sobre nosotros. Esas dos fuentes —y sólo esas—
+salen por proxy (`classes/autos/sources/proxy.ts`): **cambia la red, nunca la identidad**. Viaja el
+mismo `CambioUruguayBot` con el contacto, una página cada 1,5 s, y sólo las rutas que robots permite.
+
+- `AUTOS_PROXY_SOURCES` (default `clasiautos,carone`) decide quién usa proxy; vaciarlo lo apaga.
+- Proxy: `AUTOS_PROXY_LIST` (los alquilados, `host:port` separados por comas, credenciales en
+  `AUTOS_PROXY_AUTH=usuario:clave`, ambos en el `.env` del servidor) → `AUTOS_PROXY_URL` (uno fijo) →
+  el pool de proxyscrape que ya usan los scrapers de casas (`PROXY_SCRAPE_API_KEY`).
+- El proxy que funciona se conserva para el resto de la corrida; se rota ante un 403/405/429/503 o un
+  error de red, nunca ante un 404 (eso es la respuesta del sitio). En el log va `host:port`, jamás la
+  clave.
+
+**Si un sitio nos bloquea a nosotros** —por UA, por una regla que nos nombre o porque lo pidan— la
+fuente sale (`AUTOS_<FUENTE>_ENABLED=0`) y no se insiste.
 
 ## Duplicados entre fuentes
 

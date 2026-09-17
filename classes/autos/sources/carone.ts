@@ -85,7 +85,7 @@ export async function harvestCarOne(
   options: { fetchPage?: (url: string) => Promise<string | null>; maxPages?: number } = {},
 ): Promise<CarSourceResult> {
   const result = sourceResult("carone", new Date().toISOString());
-  const fetchPage = options.fetchPage ?? (async (url: string) => (await autosFetchText(url)).body);
+  const fetchPage = options.fetchPage ?? (async (url: string) => (await autosFetchText(url, 30_000, "carone")).body);
   const maxPages = options.maxPages ?? 40;
   const seen = new Set<string>();
   let total: number | null = null;

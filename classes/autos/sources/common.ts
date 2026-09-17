@@ -6,6 +6,7 @@ import { kmFromText, matchCar, yearFromText } from "../catalog/match";
 import { AUTOS_USER_AGENT } from "../detail";
 import { descriptionFlags, fold, slugify } from "../normalize";
 import type { CarCurrency, CarDetail, CarFuel, CarSellerType, CarSource, CarSourceResult, CarTransmission, RawCarListing } from "../types";
+import { proxiedFetch, sourceUsesProxy } from "./proxy";
 import { CAR_SOURCES } from "./registry";
 
 export interface WebCarContext {
@@ -22,13 +23,15 @@ export interface Fetched<T> {
 
 const autosHeaders = { "user-agent": AUTOS_USER_AGENT };
 
-export async function autosFetchText(url: string, timeoutMs = 30_000): Promise<Fetched<string>> {
+export async function autosFetchText(url: string, timeoutMs = 30_000, source?: CarSource): Promise<Fetched<string>> {
+  if (source && sourceUsesProxy(source)) return proxiedFetch<string>(url, "text", timeoutMs);
   let failure: string | null = null;
   const body = await fetchText(url, { timeoutMs, headers: autosHeaders, onFailure: reason => { failure = reason; } });
   return { body, failure: body === null ? failure ?? "sin respuesta" : null };
 }
 
-export async function autosFetchJson<T>(url: string, timeoutMs = 30_000): Promise<Fetched<T>> {
+export async function autosFetchJson<T>(url: string, timeoutMs = 30_000, source?: CarSource): Promise<Fetched<T>> {
+  if (source && sourceUsesProxy(source)) return proxiedFetch<T>(url, "json", timeoutMs);
   let failure: string | null = null;
   const body = await fetchJson<T>(url, {
     timeoutMs, headers: { ...autosHeaders, accept: "application/json" }, onFailure: reason => { failure = reason; },
