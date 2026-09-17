@@ -45,6 +45,7 @@ import type { PrecioBand } from "../precios/plausibility";
 import { identifyPhone, phoneConditionFromTitle } from "./identify";
 import type { PhoneBrand, PhoneCondition, PhoneIdentity } from "./types";
 import type { RetailListing } from "../retail/types";
+import type { RetailSourceRun } from "../retail/harvest";
 
 export interface PhoneOffer {
   seller: string;
@@ -485,6 +486,22 @@ function pickImage(newSurvivors: readonly Candidate[], allSurvivors: readonly Ca
 export interface BuildPhoneCatalogInput {
   listings: readonly RetailListing[];
   usdUyu: number;
+}
+
+/**
+ * Single document describing the last celulares run — mirrors `classes/equipar/types.ts`'s
+ * `EquiparMeta` / `classes/chairs/types.ts`'s `ChairCatalogMeta`. `runs` is `harvest.runs` itself
+ * (the exact per-source result `harvestRetail` already produces), not a re-shaped copy: every other
+ * directory that reuses the shared retail harvester duplicates this shape as its own named type
+ * (`EquiparSourceRun`, …) even though it is structurally identical — this one just reuses
+ * {@link RetailSourceRun} directly instead of adding a fourth copy of the same six fields.
+ */
+export interface PhoneMeta {
+  generatedAt: string;
+  usdUyu: number;
+  listings: number;
+  models: number;
+  runs: RetailSourceRun[];
 }
 
 export function buildPhoneCatalog(input: BuildPhoneCatalogInput): PhoneModel[] {

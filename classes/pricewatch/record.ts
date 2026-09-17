@@ -48,6 +48,15 @@ export interface PricewatchUpdateOp {
  * survive across runs (`$ifNull` against the existing field, only defaulted to `today` on insert)
  * and `history` is recomputed from the existing array via {@link applyHistory}'s Mongo-side twin.
  *
+ * `productKeyOverride` is additive, for callers whose listings rarely carry an ML `catalogId` at all
+ * (most celulares listings, store or ML, never do) but do have their own way to name the underlying
+ * product — see {@link recordPricewatch}'s own `productKeyFor` option, which is what actually
+ * computes this value; this function just writes whatever it is handed. `undefined` (every existing
+ * caller, which never passes a 5th argument) means "no override", preserving today's
+ * `ml:<catalogId>`-or-`null` behaviour exactly. Passing `null` explicitly writes `productKey: null`
+ * rather than falling back to the catalogId — a caller whose own identifier lookup failed for this
+ * listing means "no product key", not "use the default one instead".
+ *
  * Every literal value is wrapped in `$literal`. Mongo update-pipeline `$set` reads any string
  * starting with "$" as a field path, not a value — and real titles start with a dollar sign
  * ("$ 4.500 Colchón 2 plazas"). Without the wrapper that row would silently write `undefined`.
@@ -56,7 +65,8 @@ export function pricewatchOperation(
   listing: RetailListing,
   vertical: string,
   today: string,
-  maxPoints = 120
+  maxPoints = 120,
+  productKeyOverride?: string | null
 ): PricewatchUpdateOp {
   return {
     updateOne: {
@@ -67,7 +77,9 @@ export function pricewatchOperation(
             listingId: lit(listing.listingId),
             vertical: lit(vertical),
             category: lit(listing.attributes.CATEGORY_SPEC ?? null),
-            productKey: lit(listing.catalogId ? `ml:${listing.catalogId}` : null),
+            productKey: lit(
+              productKeyOverride !== undefined ? productKeyOverride : listing.catalogId ? `ml:${listing.catalogId}` : null
+            ),
             source: lit(listing.source),
             sellerKey: lit(listing.sellerKey),
             sellerName: lit(listing.sellerName),
@@ -131,6 +143,19 @@ export function pricewatchPruneFilter(
 
 let indexesCreated = false;
 
+export interface RecordPricewatchOptions {
+  /**
+   * Overrides how `productKey` is computed, per listing, instead of the default `ml:<catalogId>`-or-
+   * `null` — additive, and unused by any existing caller (equipar, chairs), whose listings are left
+   * exactly as before. `sync_phones.ts` is the first consumer: a phone's identity comes from parsing
+   * its title (`identifyPhone`), not from an ML catalog id most celulares listings never carry, so it
+   * passes `(listing) => { const id = identifyPhone(...); return id ? \`phone:${id.key}\` : null; }`.
+   * Returning `null` for a listing writes `productKey: null` for it, same as having no override at
+   * all for a listing with no `catalogId` — it does NOT fall back to the catalogId-based default.
+   */
+  productKeyFor?: (listing: RetailListing) => string | null;
+}
+
 /**
  * Records one price point per eligible listing for `today` (default: today, UTC date-only, matching
  * every other job's `today`). A listingId that repeats within the same harvest (the same offer
@@ -144,7 +169,8 @@ let indexesCreated = false;
 export async function recordPricewatch(
   listings: readonly RetailListing[],
   vertical: string,
-  today: string = new Date().toISOString().slice(0, 10)
+  today: string = new Date().toISOString().slice(0, 10),
+  options?: RecordPricewatchOptions
 ): Promise<{ written: number; skipped: number; pruned: number }> {
   const eligible = listings.filter(pricewatchEligible);
 
@@ -162,7 +188,9 @@ export async function recordPricewatch(
     indexesCreated = true;
   }
 
-  const ops = deduped.map((listing) => pricewatchOperation(listing, vertical, today));
+  const ops = deduped.map((listing) =>
+    pricewatchOperation(listing, vertical, today, 120, options?.productKeyFor ? options.productKeyFor(listing) : undefined)
+  );
   const BATCH = 1000;
   for (let i = 0; i < ops.length; i += BATCH) {
     const batch = ops.slice(i, i + BATCH);
