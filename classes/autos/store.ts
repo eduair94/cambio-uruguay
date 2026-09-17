@@ -1,11 +1,14 @@
 // APP DB boundary of the used-car job. Pure rules first (tested without Mongo), then I/O.
 import { appConnection } from "../appdb";
 import { CarCatalogMetaModel } from "../models/CarCatalogMeta";
+import { CarGuideEntryModel } from "../models/CarGuideEntry";
 import { CarHarvestMetaModel } from "../models/CarHarvestMeta";
 import { CarListingModel } from "../models/CarListing";
 import { CarMarketSnapshotModel } from "../models/CarMarketSnapshot";
 import { CarOpportunitySnapshotModel } from "../models/CarOpportunitySnapshot";
+import { guideKey, type CarGuideEntry, type CarGuideTarget } from "./catalog/guide";
 import { carKey } from "./enrich";
+import { slugify } from "./normalize";
 import type { DetailFetchResult } from "./detail";
 import type { PublicCarCatalogMeta, PublicCarListing, PublicCarMarketSnapshot, PublicCarOpportunitySnapshot } from "./publicTypes";
 import type { CarHarvestResult, CarModelVocabulary, CarPricePoint, RawCarListing, StoredCar } from "./types";
@@ -240,4 +243,43 @@ export async function saveCarOpportunitySnapshot(snapshot: PublicCarOpportunityS
     bounded = { ...bounded, items: bounded.items.slice(0, Math.floor(bounded.items.length * 0.8)) };
   }
   await CarOpportunitySnapshotModel.updateOne({ key: "used" }, { $set: { generatedAt: bounded.generatedAt, snapshot: bounded } }, { upsert: true });
+}
+
+const guideCollection = () => appConnection().collection(CarGuideEntryModel.collection.name);
+
+export async function loadGuideEntries(): Promise<Map<string, CarGuideEntry>> {
+  const rows = (await guideCollection().find({}, { projection: { _id: 0 } }).toArray()) as unknown as CarGuideEntry[];
+  return new Map(rows.map(row => [row.key, row]));
+}
+
+export async function saveGuideEntries(entries: readonly CarGuideEntry[]): Promise<void> {
+  if (!entries.length) return;
+  const collection = guideCollection();
+  await collection.createIndex({ key: 1 }, { unique: true });
+  for (let index = 0; index < entries.length; index += CHUNK) {
+    await collection.bulkWrite(entries.slice(index, index + CHUNK).map(entry => ({
+      replaceOne: { filter: { key: entry.key }, replacement: { ...entry }, upsert: true },
+    })), { ordered: false });
+  }
+}
+
+/** The model-years the directory holds right now (any source), with how many adverts each has. */
+export async function loadGuideTargets(now: Date, days = 21): Promise<CarGuideTarget[]> {
+  const cutoff = new Date(now.getTime() - days * 86_400_000).toISOString();
+  const rows = await listingsCollection().aggregate<{ _id: { brand: string; model: string; year: number }; count: number }>([
+    { $match: { lastSeen: { $gte: cutoff }, retiredAt: null } },
+    { $group: { _id: { brand: "$listing.brand", model: "$listing.model", year: "$listing.year" }, count: { $sum: 1 } } },
+  ]).toArray();
+  const targets = new Map<string, CarGuideTarget>();
+  for (const row of rows) {
+    const brandSlug = slugify(String(row._id.brand || ""));
+    const modelSlug = slugify(String(row._id.model || ""));
+    const year = Number(row._id.year);
+    if (!brandSlug || !modelSlug || !Number.isInteger(year)) continue;
+    const key = guideKey(brandSlug, modelSlug, year);
+    const target = targets.get(key) ?? { brandSlug, modelSlug, year, listings: 0 };
+    target.listings += row.count;
+    targets.set(key, target);
+  }
+  return [...targets.values()];
 }

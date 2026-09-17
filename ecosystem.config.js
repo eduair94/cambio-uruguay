@@ -272,6 +272,16 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Mercado Libre's price guide for the model-years the directory holds: the version catalogue
+      // and a second opinion where our own sample is thin (it is ML's median, not a valuation).
+      name: "currency-autos-guide",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_autos_guide.js",
+      cron_restart: "13 5 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Weekly Uruguay OSM extract; services remain a local indexed snapshot between runs.
       name: "currency-property-services",
       autorestart: false,
