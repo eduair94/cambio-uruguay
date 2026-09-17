@@ -4,7 +4,7 @@ const fetchJson = vi.fn();
 vi.mock("../../classes/rentals/net", () => ({ fetchJson: (...args: unknown[]) => fetchJson(...args) }));
 
 import {
-  carSearchUrl, drainTasks, harvestMercadoLibreCars, pageMatches, toRawCar, type MLCarCard, type MLCarPage,
+  CAR_HARVEST_RETRY, carSearchUrl, drainTasks, harvestMercadoLibreCars, pageMatches, toRawCar, type MLCarCard, type MLCarPage,
 } from "../../classes/autos/sources/mercadolibre";
 
 function card(id: string, overrides: Record<string, string> = {}): { polycard: MLCarCard } {
@@ -134,16 +134,56 @@ describe("harvestMercadoLibreCars", () => {
     expect(result).toMatchObject({ failedPages: 0, completeBrands: ["58955"], reportedTotal: 25, gaps: [], note: null, requests: 5 });
   });
 
-  it("marks the brand incomplete when a page comes back reset", async () => {
+  it("marks the brand incomplete when a page comes back reset, after re-reading it", async () => {
+    const sleep = vi.fn(async () => undefined);
     fetchJson.mockImplementation(async (url: string) => {
       const params = new URL(url).searchParams;
       if (params.get("MODEL") === "123123" && params.get("offset") === "20") return route(url.replace("offset=20", "offset=0"));
       return route(url);
     });
-    const result = await harvestMercadoLibreCars({ mode: "full", maxRequests: 100, maxDurationMs: 60_000, concurrency: 1, apiBase: "http://bridge/mercadolibre" });
+    const result = await harvestMercadoLibreCars({ mode: "full", maxRequests: 100, maxDurationMs: 60_000, concurrency: 1, apiBase: "http://bridge/mercadolibre", sleep });
     expect(result.failedPages).toBe(1);
+    expect(result.requests).toBe(5 + CAR_HARVEST_RETRY.pageAttempts - 1);
     expect(result.completeBrands).toEqual([]);
-    expect(result.note).toMatch(/páginas sin respuesta/);
+    expect(result.note).toMatch(/1 páginas sin respuesta válida \(página desfasada\)/);
+    // Three failures of ONE page are that page's problem, not a bridge outage.
+    expect(sleep).not.toHaveBeenCalled();
+  });
+
+  // Measured 2026-09-17 in the live dry-run: ~6 min into a 4-way sweep ML blocked the bridge's direct
+  // search, the bridge switched to its residential proxy for 10 minutes, and that proxy answered
+  // HTTP 502 in ~2.5 s — 700 of 1,517 pages were thrown away and the harvest kept 9,907 of 17,112.
+  it("waits out a bridge outage and re-reads the pages it lost instead of dropping them", async () => {
+    const sleep = vi.fn(async () => undefined);
+    let call = 0;
+    fetchJson.mockImplementation(async (url: string, options: { onFailure?: (reason: string) => void }) => {
+      call++;
+      if (call >= 3 && call <= 2 + CAR_HARVEST_RETRY.failureStreak) {
+        options.onFailure?.("HTTP 502");
+        return null;
+      }
+      return route(url);
+    });
+    const result = await harvestMercadoLibreCars({ mode: "full", maxRequests: 100, maxDurationMs: 60 * 60_000, concurrency: 2, apiBase: "http://bridge/mercadolibre", sleep });
+    expect(sleep).toHaveBeenCalledTimes(1);
+    expect(sleep).toHaveBeenCalledWith(CAR_HARVEST_RETRY.cooldownMs);
+    expect(result.listings).toHaveLength(25);
+    expect(result).toMatchObject({ failedPages: 0, completeBrands: ["58955"], note: null, cooldowns: 1 });
+    // The bridge's own retries are never stacked on top of the proxy's.
+    for (const [, options] of fetchJson.mock.calls as unknown as Array<[string, { retries?: number }]>) expect(options.retries).toBe(0);
+  });
+
+  it("never waits past the time budget", async () => {
+    const sleep = vi.fn(async () => undefined);
+    fetchJson.mockImplementation(async (url: string, options: { onFailure?: (reason: string) => void }) => {
+      if (new URL(url).searchParams.get("BRAND")) {
+        options.onFailure?.("HTTP 502");
+        return null;
+      }
+      return route(url);
+    });
+    await harvestMercadoLibreCars({ mode: "fast", maxRequests: 100, maxDurationMs: 60_000, concurrency: 4, apiBase: "http://bridge/mercadolibre", sleep });
+    for (const [ms] of sleep.mock.calls as unknown as Array<[number]>) expect(ms).toBeLessThanOrEqual(60_000);
   });
 
   it("stops at the request budget and says so", async () => {
@@ -155,11 +195,25 @@ describe("harvestMercadoLibreCars", () => {
   });
 
   it("reports an unreachable bridge", async () => {
+    const sleep = vi.fn(async () => undefined);
     fetchJson.mockResolvedValue(null);
-    const result = await harvestMercadoLibreCars({ mode: "fast", maxRequests: 10, maxDurationMs: 60_000, concurrency: 2, apiBase: "http://bridge/mercadolibre" });
+    const result = await harvestMercadoLibreCars({ mode: "fast", maxRequests: 10, maxDurationMs: 60_000, concurrency: 2, apiBase: "http://bridge/mercadolibre", sleep });
     expect(result.listings).toEqual([]);
     expect(result.note).toMatch(/no respondió/);
+    expect(fetchJson).toHaveBeenCalledTimes(CAR_HARVEST_RETRY.pageAttempts);
     expect(fetchJson.mock.calls[0]![0]).toContain("since=today");
+  });
+
+  it("spaces the start of consecutive requests by gapMs", async () => {
+    const starts: number[] = [];
+    fetchJson.mockImplementation(async (url: string) => {
+      starts.push(Date.now());
+      return route(url);
+    });
+    await harvestMercadoLibreCars({ mode: "full", maxRequests: 100, maxDurationMs: 60_000, concurrency: 3, gapMs: 100, apiBase: "http://bridge/mercadolibre" });
+    expect(starts).toHaveLength(5);
+    // Date.now() ticks in ~16 ms steps on Windows: allow one tick of slack.
+    for (let i = 1; i < starts.length; i++) expect(starts[i]! - starts[i - 1]!).toBeGreaterThanOrEqual(80);
   });
 
   it("empties completeBrands and reports the error when a model task throws after a successful read", async () => {

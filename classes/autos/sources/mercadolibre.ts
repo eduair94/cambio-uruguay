@@ -171,15 +171,36 @@ export async function drainTasks(initial: Task[], concurrency: number, onError?:
   });
 }
 
+/**
+ * Measured 2026-09-17: a sweep of 4 unthrottled requests at a time kept 9,907 of 17,112 adverts.
+ * Mercado Libre answered the bridge with a 429 after ~6 minutes, and the bridge then serves search
+ * through its residential proxy for 10 minutes FOR EVERY JOB THAT USES IT (rentals, chairs, equipar),
+ * with up to 12 proxy attempts per request — which answered HTTP 502. So the sweep is sequential and
+ * spaced (`gapMs`), never retries inside `fetchJson` (a retry multiplies those proxy attempts), and
+ * when the bridge fails several times in a row it waits the window out once and re-reads what it lost.
+ */
+export const CAR_HARVEST_RETRY = {
+  pageAttempts: 3,
+  failureStreak: 3,
+  cooldownMs: 11 * 60_000,
+  maxCooldowns: 6,
+} as const;
+
 export interface CarHarvestOptions {
   mode: "full" | "fast";
   maxRequests: number;
   maxDurationMs: number;
   concurrency: number;
   apiBase?: string;
+  /** Minimum time between the starts of two bridge requests. */
+  gapMs?: number;
+  /** Only used for the outage cooldown (injectable so tests never wait). */
+  sleep?: (ms: number) => Promise<void>;
   now?: () => Date;
   onProgress?: (message: string) => void;
 }
+
+const delay = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
 interface Named { id: string; name: string }
 
@@ -199,22 +220,70 @@ export async function harvestMercadoLibreCars(options: CarHarvestOptions): Promi
   let rejectedCards = 0;
   let budgetCut = false;
   let taskErrors = 0;
+  const sleep = options.sleep ?? delay;
+  const gapMs = Math.max(0, options.gapMs ?? 0);
+  const failureReasons = new Set<string>();
+  let nextStart = 0;
+  let streak = 0;
+  let cooldowns = 0;
+  let cooldown: Promise<void> | null = null;
+
+  const remainingMs = (): number => options.maxDurationMs - (Date.now() - started);
+
+  async function pace(): Promise<void> {
+    if (!gapMs) return;
+    const now = Date.now();
+    const wait = nextStart - now;
+    nextStart = Math.max(now, nextStart) + gapMs;
+    if (wait > 0) await delay(wait);
+  }
+
+  /** One shared wait for the bridge's fallback window; every read queues behind it. */
+  function startCooldown(): void {
+    if (cooldown || cooldowns >= CAR_HARVEST_RETRY.maxCooldowns) return;
+    const remaining = remainingMs();
+    if (remaining < 30_000) return;
+    cooldowns++;
+    streak = 0;
+    options.onProgress?.(`[autos] el puente falló ${CAR_HARVEST_RETRY.failureStreak} veces seguidas: se espera antes de releer`);
+    cooldown = sleep(Math.min(CAR_HARVEST_RETRY.cooldownMs, remaining)).then(() => { cooldown = null; });
+  }
 
   async function read(filters: Record<string, string>, offset: number): Promise<MLCarPage | null> {
-    if (requests >= options.maxRequests || Date.now() - started >= options.maxDurationMs) {
-      budgetCut = true;
-      return null;
+    let reason: string | null = null;
+    for (let attempt = 0; attempt < CAR_HARVEST_RETRY.pageAttempts; attempt++) {
+      if (cooldown) await cooldown;
+      if (requests >= options.maxRequests || remainingMs() <= 0) {
+        budgetCut = true;
+        return null;
+      }
+      await pace();
+      requests++;
+      let failure = "";
+      const page = await fetchJson<MLCarPage>(carSearchUrl({ ...base, ...filters }, offset, options.apiBase), {
+        timeoutMs: 45_000,
+        retries: 0,
+        unthrottled: true,
+        onFailure: detail => { failure = detail; },
+      });
+      if (!page || typeof page !== "object") {
+        reason = failure ? `puente caído: ${failure}` : "puente caído";
+        streak++;
+        if (streak >= CAR_HARVEST_RETRY.failureStreak) startCooldown();
+        continue;
+      }
+      if (!pageMatches(page, filters, offset)) {
+        // A reset offset or a dropped filter is this page's problem, not a bridge outage.
+        reason = "página desfasada";
+        continue;
+      }
+      streak = 0;
+      pages++;
+      return page;
     }
-    requests++;
-    const page = await fetchJson<MLCarPage>(carSearchUrl({ ...base, ...filters }, offset, options.apiBase), {
-      timeoutMs: 45_000, retries: 1, unthrottled: true,
-    });
-    if (!page || typeof page !== "object" || !pageMatches(page, filters, offset)) {
-      failedPages++;
-      return null;
-    }
-    pages++;
-    return page;
+    failedPages++;
+    if (reason) failureReasons.add(reason);
+    return null;
   }
 
   function accept(page: MLCarPage, brand: Named, model: Named): void {
@@ -294,7 +363,10 @@ export async function harvestMercadoLibreCars(options: CarHarvestOptions): Promi
       : taskErrors > 0
         ? `${taskErrors} tareas fallaron por un error inesperado: cosecha parcial`
         : failedPages
-          ? `${failedPages} páginas sin respuesta válida`
+          ? `${failedPages} páginas sin respuesta válida (${[
+            ...failureReasons,
+            ...(cooldowns ? [`${cooldowns} esperas por caída del puente`] : []),
+          ].join(", ")})`
           : null;
   return {
     mode: options.mode,
@@ -311,6 +383,7 @@ export async function harvestMercadoLibreCars(options: CarHarvestOptions): Promi
     pages,
     failedPages,
     rejectedCards,
+    cooldowns,
     // A task error means we cannot tell which brand lost data mid-walk, so none of them count as complete.
     completeBrands: taskErrors > 0 ? [] : brands.map(brand => brand.id).filter(id => !failedBrands.has(id)).sort(),
     gaps,

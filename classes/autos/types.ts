@@ -53,6 +53,8 @@ export interface CarHarvestResult {
   pages: number;
   failedPages: number;
   rejectedCards: number;
+  /** Times the harvest waited out a bridge outage before re-reading. */
+  cooldowns: number;
   /** Brands whose every page answered. Only these may count an unseen advert as missing. */
   completeBrands: string[];
   gaps: CarHarvestGap[];

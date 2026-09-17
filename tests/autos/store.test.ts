@@ -49,7 +49,7 @@ const raw = (id: string, price = 10_000): RawCarListing => ({
 
 const harvest = (listings: RawCarListing[], overrides: Partial<CarHarvestResult> = {}): CarHarvestResult => ({
   mode: "full", startedAt: "2026-09-16T09:00:00.000Z", finishedAt: "2026-09-16T10:30:00.000Z", listings, vocabularies: [],
-  requests: 10, pages: 10, failedPages: 0, rejectedCards: 0, completeBrands: ["58955"], gaps: [], reportedTotal: listings.length,
+  requests: 10, pages: 10, failedPages: 0, rejectedCards: 0, cooldowns: 0, completeBrands: ["58955"], gaps: [], reportedTotal: listings.length,
   note: null, ...overrides,
 });
 

@@ -57,6 +57,7 @@ export interface HarvestMetaRecord {
   pages: number;
   failedPages: number;
   rejectedCards: number;
+  cooldowns: number;
   completeBrands: number;
   gaps: CarHarvestResult["gaps"];
   reportedTotal: number | null;
@@ -79,6 +80,8 @@ export function harvestMetaRecord(harvest: CarHarvestResult, previous: { lastOkA
     pages: harvest.pages,
     failedPages: harvest.failedPages,
     rejectedCards: harvest.rejectedCards,
+    // Captures written before the outage retry existed have no counter.
+    cooldowns: harvest.cooldowns ?? 0,
     completeBrands: harvest.completeBrands.length,
     gaps: harvest.gaps.slice(0, 50),
     reportedTotal: harvest.reportedTotal,

@@ -52,12 +52,15 @@ async function main(): Promise<void> {
   else if (!analyzeOnly) {
     harvest = await harvestMercadoLibreCars({
       mode: fast ? "fast" : "full",
-      maxRequests: Number(process.env.AUTOS_ML_MAX_REQUESTS || (fast ? 600 : 3_500)),
-      maxDurationMs: (fast ? 12 : 75) * 60_000,
-      concurrency: Number(process.env.AUTOS_ML_CONCURRENCY || 4),
+      // Sequential and spaced on purpose: a burst makes the shared bridge fall back to its proxy for
+      // 10 minutes for every job (see CAR_HARVEST_RETRY). ~1,750 pages take about two hours.
+      maxRequests: Number(process.env.AUTOS_ML_MAX_REQUESTS || (fast ? 800 : 4_000)),
+      maxDurationMs: (fast ? 20 : 150) * 60_000,
+      concurrency: Number(process.env.AUTOS_ML_CONCURRENCY || 1),
+      gapMs: Number(process.env.AUTOS_ML_GAP_MS || 1_500),
       onProgress: message => console.log(message),
     });
-    console.log(`[autos] harvest ${harvest.mode}: ${harvest.listings.length} adverts, ${harvest.requests} requests, ${harvest.failedPages} failed pages${harvest.note ? `, ${harvest.note}` : ""}`);
+    console.log(`[autos] harvest ${harvest.mode}: ${harvest.listings.length} adverts, ${harvest.requests} requests, ${harvest.failedPages} failed pages, ${harvest.cooldowns} outage waits${harvest.note ? `, ${harvest.note}` : ""}`);
   }
   if (harvest && saveHarvestFile) fs.writeFileSync(saveHarvestFile, JSON.stringify(harvest));
 
