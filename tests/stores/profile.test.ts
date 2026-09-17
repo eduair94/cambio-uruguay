@@ -27,6 +27,7 @@ import {
   type StoredRedditMention,
 } from "../../classes/stores/signals/reddit";
 import type { CatalogSignal } from "../../classes/stores/signals/catalog";
+import type { MentionTone } from "../../classes/stores/signals/tone";
 
 const NOW = new Date("2026-09-16T12:00:00.000Z");
 const DAY = 86_400_000;
@@ -121,6 +122,7 @@ function previousDoc(overrides: Partial<StoreProfileDoc> = {}): StoreProfileDoc 
     redditMentions: [],
     redditCursor: null,
     redditTermsKey: redditTermsKey(entry()),
+    toneCache: {},
     signals: 0,
     indexable: false,
     firstSeen: "2026-01-04",
@@ -523,17 +525,18 @@ describe("buildProfile: Reddit", () => {
     expect(json).not.toContain("texto crudo");
   });
 
-  it("discards stored mentions, cursor and signal when the store's Reddit terms changed", () => {
+  it("discards stored mentions, cursor, signal AND the tone cache when the store's Reddit terms changed", () => {
     const previous = previousDoc({
       reddit: reddit(),
       redditMentions: storedThree,
       redditCursor: cursorDone(NOW_UTC - 7 * 86_400),
       redditTermsKey: redditTermsKey({ redditTerms: ["un termino viejo"] }),
+      toneCache: { a: "queja" },
     });
     const store = entry();
 
     // The job asks Arctic Shift from scratch...
-    expect(carriedReddit(store, previous)).toEqual({ signal: null, mentions: [], cursor: null });
+    expect(carriedReddit(store, previous)).toEqual({ signal: null, mentions: [], cursor: null, toneCache: {} });
 
     // ...and a week in which Reddit did not answer does not bring the old terms' data back.
     const doc = buildProfile(store, { reddit: undefined }, previous, NOW);
@@ -541,28 +544,110 @@ describe("buildProfile: Reddit", () => {
     expect(doc.redditMentions).toEqual([]);
     expect(doc.redditCursor).toBeNull();
     expect(doc.redditTermsKey).toBe(redditTermsKey(store));
+    expect(doc.toneCache).toEqual({});
   });
 
   it("treats a profile stored without a terms fingerprint as other terms", () => {
     const previous = { ...previousDoc({ reddit: reddit(), redditMentions: storedThree }), redditTermsKey: undefined } as unknown as StoreProfileDoc;
-    expect(carriedReddit(entry(), previous)).toEqual({ signal: null, mentions: [], cursor: null });
+    expect(carriedReddit(entry(), previous)).toEqual({ signal: null, mentions: [], cursor: null, toneCache: {} });
   });
 
-  it("hands the job the stored cursor when the terms are the same", () => {
+  it("hands the job the stored cursor and tone cache when the terms are the same", () => {
     const cursor = cursorDone(NOW_UTC - 7 * 86_400);
     const prevSignal = reddit();
-    const previous = previousDoc({ reddit: prevSignal, redditMentions: storedThree, redditCursor: cursor });
-    expect(carriedReddit(entry(), previous)).toEqual({ signal: prevSignal, mentions: storedThree, cursor });
+    const toneCache: Record<string, MentionTone> = { a: "queja", b: "recomendacion" };
+    const previous = previousDoc({ reddit: prevSignal, redditMentions: storedThree, redditCursor: cursor, toneCache });
+    expect(carriedReddit(entry(), previous)).toEqual({ signal: prevSignal, mentions: storedThree, cursor, toneCache });
   });
 
-  it("clears every Reddit field when the store no longer has terms to search", () => {
-    const previous = previousDoc({ reddit: reddit(), redditMentions: storedThree, redditCursor: cursorDone(NOW_UTC) });
+  it("clears every Reddit field, including the tone cache, when the store no longer has terms to search", () => {
+    const previous = previousDoc({
+      reddit: reddit(),
+      redditMentions: storedThree,
+      redditCursor: cursorDone(NOW_UTC),
+      toneCache: { a: "queja" },
+    });
     const doc = buildProfile(entry({ redditTerms: [] }), { reddit: undefined }, previous, NOW);
     expect(doc.reddit).toBeNull();
     expect(doc.redditMentions).toEqual([]);
     expect(doc.redditCursor).toBeNull();
     expect(doc.redditTermsKey).toBeNull();
-    expect(carriedReddit(entry({ redditTerms: [] }), previous)).toEqual({ signal: null, mentions: [], cursor: null });
+    expect(doc.toneCache).toEqual({});
+    expect(carriedReddit(entry({ redditTerms: [] }), previous)).toEqual({
+      signal: null,
+      mentions: [],
+      cursor: null,
+      toneCache: {},
+    });
+  });
+});
+
+// Task 7: an aggregated, automatic tone over the store's Reddit mentions. `classifyMentions` (network,
+// classes/stores/signals/tone.ts) runs in sync_store_profiles.ts, not here — `buildProfile` only ever
+// receives its RESULT as `fetched.toneCache`, merges it with what carried over, prunes it against the
+// final stored mentions, and folds it into `RedditSignal.tone` via `applyTone`.
+describe("buildProfile: tone (Task 7)", () => {
+  const fiveClassified: Record<string, MentionTone> = {
+    a: "queja",
+    b: "queja",
+    c: "queja",
+    d: "recomendacion",
+    e: "neutral",
+  };
+  const fiveMentions = [
+    storedMention("a", NOW_UTC - 50 * 86_400),
+    storedMention("b", NOW_UTC - 40 * 86_400),
+    storedMention("c", NOW_UTC - 30 * 86_400),
+    storedMention("d", NOW_UTC - 20 * 86_400),
+    storedMention("e", NOW_UTC - 10 * 86_400),
+  ];
+
+  it("publishes RedditSignal.tone from fetched.toneCache once the cache has 5+ classified mentions", () => {
+    const previous = previousDoc({ redditMentions: fiveMentions, redditCursor: cursorDone(NOW_UTC - 7 * 86_400) });
+    const increment = { mentions: [], cursor: cursorDone(NOW_UTC), complete: true };
+    const doc = buildProfile(entry(), { reddit: increment, toneCache: fiveClassified }, previous, NOW);
+    expect(doc.reddit!.tone).toEqual({ complaints: 3, recommendations: 1, neutral: 1, classified: 5 });
+    expect(doc.toneCache).toEqual(fiveClassified);
+  });
+
+  it("keeps tone null under 5 classified mentions", () => {
+    const previous = previousDoc({ redditMentions: fiveMentions, redditCursor: cursorDone(NOW_UTC - 7 * 86_400) });
+    const increment = { mentions: [], cursor: cursorDone(NOW_UTC), complete: true };
+    const doc = buildProfile(entry(), { reddit: increment, toneCache: { a: "queja" } }, previous, NOW);
+    expect(doc.reddit!.tone).toBeNull();
+  });
+
+  it("prunes a cached id that fell out of the stored mentions (the 500-cap dropped it)", () => {
+    const previous = previousDoc({ redditMentions: fiveMentions, redditCursor: cursorDone(NOW_UTC - 7 * 86_400) });
+    // "a" is classified but no longer among the stored mentions this run.
+    const stillStored = fiveMentions.filter((m) => m.id !== "a");
+    const increment = { mentions: [], cursor: cursorDone(NOW_UTC), complete: true };
+    const doc = buildProfile(
+      entry(),
+      { reddit: { ...increment, mentions: [] }, toneCache: fiveClassified },
+      { ...previous, redditMentions: stillStored },
+      NOW
+    );
+    expect(doc.toneCache).toEqual({ b: "queja", c: "queja", d: "recomendacion", e: "neutral" });
+    // Only 4 classified ids remain among the stored mentions: below the 5-mention floor.
+    expect(doc.reddit!.tone).toBeNull();
+  });
+
+  it("carries the tone cache over untouched when Reddit could not be read this run", () => {
+    const previous = previousDoc({
+      reddit: reddit({ tone: { complaints: 3, recommendations: 1, neutral: 1, classified: 5 } }),
+      redditMentions: fiveMentions,
+      redditCursor: cursorDone(NOW_UTC - 7 * 86_400),
+      toneCache: fiveClassified,
+    });
+    const doc = buildProfile(entry(), { reddit: undefined }, previous, NOW);
+    expect(doc.toneCache).toEqual(fiveClassified);
+    expect(doc.reddit!.tone).toEqual({ complaints: 3, recommendations: 1, neutral: 1, classified: 5 });
+  });
+
+  it("starts empty for a store seen for the first time", () => {
+    const doc = buildProfile(entry(), {}, null, NOW);
+    expect(doc.toneCache).toEqual({});
   });
 });
 

@@ -11,8 +11,10 @@ import mongoose, { Schema, type Model } from 'mongoose'
 //
 // `redditMentions`, `redditCursor` and `redditTermsKey` are the backend's working state for reading
 // Reddit incrementally (mention metadata without text or author, where reading stands, and the terms
-// used). They are declared so both schemas stay identical, and they are NOT for the page: every API
-// route must leave them out of its `.select`.
+// used). `toneCache` (Task 7) is the backend's working state for the automatic Reddit tone: one
+// classification per mention id, keyed by id, that `RedditSignal.tone` (an aggregated count, never
+// per-mention) is folded from. All four are declared so both schemas stay identical, and none of them
+// is for the page: every API route must leave them out of its `.select`.
 export interface StoreProfileDoc {
   key: string
   name: string
@@ -29,6 +31,7 @@ export interface StoreProfileDoc {
   redditMentions: Array<Record<string, unknown>>
   redditCursor: Record<string, unknown> | null
   redditTermsKey: string | null
+  toneCache: Record<string, string>
   signals: number
   indexable: boolean
   firstSeen: string
@@ -54,6 +57,7 @@ const StoreProfileSchema = new Schema(
     redditMentions: { type: [Schema.Types.Mixed], default: [] },
     redditCursor: { type: Schema.Types.Mixed, default: null },
     redditTermsKey: { type: String, default: null },
+    toneCache: { type: Schema.Types.Mixed, default: {} },
     signals: { type: Number, default: 0 },
     indexable: { type: Boolean, default: false },
     firstSeen: { type: String, required: true },

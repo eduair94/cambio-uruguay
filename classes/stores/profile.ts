@@ -36,6 +36,7 @@ import {
   type StoredRedditMention,
 } from "./signals/reddit";
 import type { CatalogSignal } from "./signals/catalog";
+import { applyTone, pruneToneCache, type MentionTone } from "./signals/tone";
 
 export const STORE_SIGNAL_MAX_AGE_DAYS = 60;
 
@@ -68,6 +69,10 @@ export interface StoreProfileDoc {
   redditCursor: RedditCursor | null;
   /** `redditTermsKey` of the terms the stored mentions were searched with; null when Reddit does not apply. */
   redditTermsKey: string | null;
+  /** Task 7: one automatic tone per classified mention id, by id — never published (Task 8 excludes
+   * it with `.select`). Resets with the Reddit terms fingerprint, and is pruned to the ids still
+   * among `redditMentions` (see `classes/stores/signals/tone.ts`). */
+  toneCache: Record<string, MentionTone>;
   signals: number;
   indexable: boolean;
   /** YYYY-MM-DD */
@@ -198,21 +203,28 @@ function carriedSignals(entry: StoreEntry, previous: StoreProfileDoc | null): Pa
 
 /**
  * What a store's previous profile may hand to this run for Reddit: the stored mentions, the cursor
- * the job resumes reading from, and the last signal. All of it is discarded — the reading starts over
- * — when the store's terms fingerprint (`redditTermsKey`) differs from the one they were stored with
- * (a profile without a fingerprint counts as different), or when Reddit no longer applies.
+ * the job resumes reading from, the last signal, and (Task 7) the tone cache. All of it is discarded
+ * — the reading starts over, and the tone cache resets to empty — when the store's terms fingerprint
+ * (`redditTermsKey`) differs from the one they were stored with (a profile without a fingerprint
+ * counts as different), or when Reddit no longer applies.
  */
 export function carriedReddit(
   entry: StoreEntry,
   previous: StoreProfileDoc | null
-): { signal: RedditSignal | null; mentions: StoredRedditMention[]; cursor: RedditCursor | null } {
+): {
+  signal: RedditSignal | null;
+  mentions: StoredRedditMention[];
+  cursor: RedditCursor | null;
+  toneCache: Record<string, MentionTone>;
+} {
   if (!previous || !storeSignalApplies(entry, "reddit") || previous.redditTermsKey !== redditTermsKey(entry)) {
-    return { signal: null, mentions: [], cursor: null };
+    return { signal: null, mentions: [], cursor: null, toneCache: {} };
   }
   return {
     signal: previous.reddit ?? null,
     mentions: Array.isArray(previous.redditMentions) ? previous.redditMentions : [],
     cursor: previous.redditCursor ?? null,
+    toneCache: previous.toneCache && typeof previous.toneCache === "object" ? previous.toneCache : {},
   };
 }
 
@@ -241,20 +253,30 @@ function asRedditIncrement(value: unknown): RedditIncrement | null | undefined {
   return increment as RedditIncrement;
 }
 
-type RedditFields = Pick<StoreProfileDoc, "reddit" | "redditMentions" | "redditCursor" | "redditTermsKey">;
+type RedditFields = Pick<StoreProfileDoc, "reddit" | "redditMentions" | "redditCursor" | "redditTermsKey" | "toneCache">;
 
 /**
- * The four Reddit fields of a profile:
- *   * `undefined` fetched (could not read) — stored mentions, cursor and signal stay as they were;
- *   * `null` fetched — cleared;
+ * The five Reddit fields of a profile:
+ *   * `undefined` fetched (could not read) — stored mentions, cursor, signal AND the tone cache stay
+ *     exactly as they were (`toneCacheFetched` is not even consulted: nothing changed this run);
+ *   * `null` fetched — cleared, tone cache included;
  *   * an increment — merged into the stored mentions (text dropped, capped at 500) with its cursor. The
  *     signal is summarized over everything stored, dated by how far the cursor got (`checkedUntilUtc`,
  *     which is now for a complete run), and only once the backfill is done; until then the previous
- *     signal, if any, stays.
+ *     signal, if any, stays. The tone cache is `toneCacheFetched` (Task 7: `classifyMentions`'s result,
+ *     computed by the caller against the mentions fetched THIS run — see sync_store_profiles.ts) or,
+ *     failing that, whatever carried over, pruned to the ids still among the final stored mentions
+ *     (`pruneToneCache`); whatever `RedditSignal` ends up published gets its `tone` filled in from it.
  */
-function redditFields(entry: StoreEntry, fetched: unknown, previous: StoreProfileDoc | null, now: Date): RedditFields {
+function redditFields(
+  entry: StoreEntry,
+  fetched: unknown,
+  toneCacheFetched: Record<string, MentionTone> | undefined,
+  previous: StoreProfileDoc | null,
+  now: Date
+): RedditFields {
   if (!storeSignalApplies(entry, "reddit")) {
-    return { reddit: null, redditMentions: [], redditCursor: null, redditTermsKey: null };
+    return { reddit: null, redditMentions: [], redditCursor: null, redditTermsKey: null, toneCache: {} };
   }
 
   const termsKey = redditTermsKey(entry);
@@ -262,26 +284,42 @@ function redditFields(entry: StoreEntry, fetched: unknown, previous: StoreProfil
   const increment = asRedditIncrement(fetched);
 
   if (increment === undefined) {
-    return { reddit: carried.signal, redditMentions: carried.mentions, redditCursor: carried.cursor, redditTermsKey: termsKey };
+    return {
+      reddit: carried.signal,
+      redditMentions: carried.mentions,
+      redditCursor: carried.cursor,
+      redditTermsKey: termsKey,
+      toneCache: carried.toneCache,
+    };
   }
   if (increment === null) {
-    return { reddit: null, redditMentions: [], redditCursor: null, redditTermsKey: termsKey };
+    return { reddit: null, redditMentions: [], redditCursor: null, redditTermsKey: termsKey, toneCache: {} };
   }
 
   const merged = mergeStoredMentions(carried.mentions, increment.mentions);
-  const reddit = increment.cursor.backfillDone
+  const toneCache = pruneToneCache(toneCacheFetched ?? carried.toneCache, merged.mentions);
+  let reddit = increment.cursor.backfillDone
     ? summarizeMentions(merged.mentions, new Date(increment.cursor.checkedUntilUtc * 1000).toISOString(), now, merged.capped)
     : carried.signal;
-  return { reddit, redditMentions: merged.mentions, redditCursor: increment.cursor, redditTermsKey: termsKey };
+  if (reddit) reddit = { ...reddit, tone: applyTone(toneCache, merged.mentions) };
+  return { reddit, redditMentions: merged.mentions, redditCursor: increment.cursor, redditTermsKey: termsKey, toneCache };
+}
+
+/** What `buildProfile` accepts per signal, plus (Task 7) `classifyMentions`'s result for this run —
+ * not itself a `StoreSignalName`: it never goes through `storeSignalApplies`/`mergeSignal`, only
+ * through `redditFields`. */
+export interface FetchedSignals extends Partial<Record<StoreSignalName, unknown>> {
+  toneCache?: Record<string, MentionTone>;
 }
 
 /**
- * `fetched.reddit` is what `fetchRedditIncrement` returned (see `redditFields`); every other signal is
- * the value its module returned, merged with `mergeSignal`.
+ * `fetched.reddit` is what `fetchRedditIncrement` returned and `fetched.toneCache` is what
+ * `classifyMentions` returned (both network calls the caller already made — see `redditFields`);
+ * every other signal is the value its module returned, merged with `mergeSignal`.
  */
 export function buildProfile(
   entry: StoreEntry,
-  fetched: Partial<Record<StoreSignalName, unknown>>,
+  fetched: FetchedSignals,
   previous: StoreProfileDoc | null,
   now: Date
 ): StoreProfileDoc {
@@ -294,7 +332,7 @@ export function buildProfile(
     ) as StoreProfileDoc[K];
   };
 
-  const reddit = redditFields(entry, fetched.reddit, previous, now);
+  const reddit = redditFields(entry, fetched.reddit, fetched.toneCache, previous, now);
   const signals: SignalFields = {
     site: signal("site"),
     age: signal("age"),
@@ -318,6 +356,7 @@ export function buildProfile(
     redditMentions: reddit.redditMentions,
     redditCursor: reddit.redditCursor,
     redditTermsKey: reddit.redditTermsKey,
+    toneCache: reddit.toneCache,
     signals: count,
     indexable: count >= INDEXABLE_MIN_SIGNALS,
     firstSeen: previous?.firstSeen || today,

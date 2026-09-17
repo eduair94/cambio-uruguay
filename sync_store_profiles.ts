@@ -30,6 +30,12 @@
 //     `redditProgressed`). Meant to run nightly on the same call budget as the weekly job, so the
 //     24-month backfill finishes in ~8 nights instead of ~8 weeks (Task 12: ~90 calls/store, 900/week,
 //     76 stores).
+//   * Task 7: right after a Reddit read, whatever mentions it fetched this run (with their raw text,
+//     in memory only) go to `classifyMentions` (classes/stores/signals/tone.ts), which classifies
+//     only the ids not already in the profile's `toneCache` — capped, batched, never inventing a tone
+//     for a batch Gemini failed to answer. The published `RedditSignal.tone` is an aggregated count,
+//     never a per-mention verdict; `toneCache` itself is never queried in either mode's "answered?"
+//     bookkeeping and never published (Task 8 excludes it with `.select`).
 //
 // Flags: `--dry-run` (print, never write), `--only=<key,key>` (a subset of the registry), and
 // `--reddit-only` (Task 13: ask Reddit only — every other source keeps last week's value untouched —
@@ -51,6 +57,7 @@ import {
   shouldStopEarly,
   shouldStopForDeadline,
   storeSignalApplies,
+  type FetchedSignals,
   type StoreProfileDoc,
   type StoreRunMode,
   type StoreSignalName,
@@ -61,6 +68,7 @@ import { loadCatalogPresence, type CatalogSignal } from "./classes/stores/signal
 import { fetchGoogle } from "./classes/stores/signals/google";
 import { fetchRedditIncrement, type RedditMention } from "./classes/stores/signals/reddit";
 import { fetchSite } from "./classes/stores/signals/site";
+import { classifyMentions } from "./classes/stores/signals/tone";
 import { fetchTrustpilot } from "./classes/stores/signals/trustpilot";
 import type { StoreEntry } from "./classes/stores/types";
 
@@ -111,7 +119,7 @@ async function readStore(
   mode: StoreRunMode
 ): Promise<StoreRun> {
   const now = new Date();
-  const fetched: Partial<Record<StoreSignalName, unknown>> = {};
+  const fetched: FetchedSignals = {};
   const queried: StoreSignalName[] = [];
   const failed: StoreSignalName[] = [];
 
@@ -165,6 +173,17 @@ async function readStore(
     }
     return increment;
   });
+
+  // Task 7: an aggregated, automatic tone over Reddit mentions. Only the mentions fetched THIS run
+  // carry `text` (in memory only — reddit.ts never stores it), so classification can only ever look
+  // at `redditFetched`; `classifyMentions` itself skips whatever is already a key of `stored.toneCache`
+  // and does nothing (network or otherwise) when `redditFetched` is empty. A thrown error here is one
+  // store's one source, same as every other `read()` above — it must never cost the rest of the run.
+  try {
+    fetched.toneCache = await classifyMentions(entry.name, redditFetched, stored.toneCache);
+  } catch (error) {
+    console.warn(`[tiendas] ${entry.key} tono lanzó`, (error as Error)?.message || error);
+  }
 
   // Not an outside source: the map was loaded once for the whole run. A store absent from a loaded
   // map sells nothing in our catalogues (`null`); no map at all means we could not look (`undefined`).
