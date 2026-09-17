@@ -488,7 +488,8 @@ export const STORES: readonly StoreEntry[] = [
     kind: "tienda-uy",
     rubros: ["tecnologia", "celulares"],
     aliases: ["Zonatecno", "Zona Tecno"],
-    redditTerms: ["zonatecno", "zona tecno"],
+    // "zona tecno" (spaced) also names any event tech area; only the joined brand token is searched.
+    redditTerms: ["zonatecno"],
   },
   {
     key: "iplace",
@@ -524,7 +525,8 @@ export const STORES: readonly StoreEntry[] = [
     kind: "tienda-uy",
     rubros: ["electrodomesticos"],
     aliases: ["Mundo Electro", "Mundoelectro"],
-    redditTerms: ["mundo electro", "mundoelectro"],
+    // "mundo electro" (spaced) is also the electronic-music scene; only the joined brand token is searched.
+    redditTerms: ["mundoelectro"],
   },
   {
     key: "barraca-europa",
