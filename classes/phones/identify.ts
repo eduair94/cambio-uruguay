@@ -268,12 +268,13 @@ function parseMotorola(glued: string): FamilyMatch | null {
   }
   // Motorola's other budget line, alongside G: E13/E14/E15/E22/E32… "moto" is required here (unlike
   // the bare "g\d{2}" above) because a lone letter "e" is far more likely to appear by coincidence
-  // once storage/spec words are in play. "E22i" is a real, cheaper regional variant of the E22 sold
-  // with the letter glued directly onto the number, no space.
-  const motoE = /\bmoto\s?e(\d{1,2})(i)?(?:\s+(plus|power))?\b/.exec(glued);
+  // once storage/spec words are in play. "E22i" is a real, cheaper regional variant of the E22, and
+  // "E32s" a real refreshed one — both glue the letter directly onto the number, no space, and both
+  // stay lower-case in the label (same convention as "iPhone 16e"/"Honor X7e").
+  const motoE = /\bmoto\s?e(\d{1,2})(i|s)?(?:\s+(plus|power))?\b/.exec(glued);
   if (motoE) {
-    const [full, num, iSuffix, suffix] = motoE;
-    const base = `${num}${iSuffix ?? ""}`;
+    const [full, num, letterSuffix, suffix] = motoE;
+    const base = `${num}${letterSuffix ?? ""}`;
     return {
       family: suffix ? `moto-e${base}-${suffix}` : `moto-e${base}`,
       familyLabel: `Moto E${base}${suffix ? ` ${titleCaseWord(suffix)}` : ""}`,
@@ -322,16 +323,16 @@ function parseXiaomi(glued: string): FamilyMatch | null {
       end: poco.index + full.length,
     };
   }
-  // Redmi A: a bare number alone collapsed "Redmi A3" and "Redmi A3+"/"Redmi A3x" onto one key —
-  // both the "+"-upgraded and the "x"-cheaper variant are real, recurring Redmi A naming
-  // (A1+/A2+; A3x), and neither was captured before.
-  const redmiA = /\bredmi a(\d)(x)?(?:\s+(plus))?\b/.exec(glued);
+  // Redmi A: a bare number alone collapsed "Redmi A3", "Redmi A3+"/"Redmi A3x" and "Redmi A3 Pro"
+  // onto one key — the "+"-upgraded and "x"-cheaper variants are real, recurring Redmi A naming
+  // (A1+/A2+; A3x), and "Pro" is a real distinct SKU too; none of the three was captured before.
+  const redmiA = /\bredmi a(\d)(x)?(?:\s+(plus|pro))?\b/.exec(glued);
   if (redmiA) {
-    const [full, num, xSuffix, plusSuffix] = redmiA;
+    const [full, num, xSuffix, wordSuffix] = redmiA;
     const base = `${num}${xSuffix ?? ""}`;
     return {
-      family: plusSuffix ? `redmi-a${base}-plus` : `redmi-a${base}`,
-      familyLabel: `Redmi A${base}${plusSuffix ? " Plus" : ""}`,
+      family: wordSuffix ? `redmi-a${base}-${wordSuffix}` : `redmi-a${base}`,
+      familyLabel: `Redmi A${base}${wordSuffix ? ` ${titleCaseWord(wordSuffix)}` : ""}`,
       start: redmiA.index,
       end: redmiA.index + full.length,
     };
@@ -400,7 +401,8 @@ function parseHonor(glued: string): FamilyMatch | null {
   // slugs do this consistently), others space it out — both spellings appear in real data.
   // "pro" was missing here (only lite/e), so "Honor 200 Pro" and plain "Honor 200" collapsed onto
   // the same key — real, different phones (mirrors the "magic" branch above, which already has it).
-  const threeDigit = /\b(\d{3})(?:\s?(pro|lite|e))?\b/.exec(glued);
+  // "smart" (Honor 400 Smart, a real distinct SKU) is the same class of gap.
+  const threeDigit = /\b(\d{3})(?:\s?(pro|smart|lite|e))?\b/.exec(glued);
   if (threeDigit) {
     const [full, num, suffix] = threeDigit;
     return {
@@ -461,21 +463,48 @@ function parseGeneric(brand: PhoneBrand, glued: string): FamilyMatch | null {
   };
 }
 
+// Variant markers a family parser's own grammar doesn't know about. "Honor 400 Smart" vs plain
+// "Honor 400", "Redmi A3 Pro" vs plain "Redmi A3", "Moto G85 Fusion" (not a real Motorola line, but
+// the parser has no way to know that) — every numbered family is exposed to a real suffix its own
+// regex never anticipated, and the fix isn't "add one more suffix per bug report", it's structural:
+// if the token immediately after a family match is one of these words and the parser did NOT
+// already consume it as part of its own match (a suffix a parser DOES know about, like Honor's own
+// "pro", ends up fully inside `match.end` and never reaches this check), the title names a variant
+// this identifier can't yet tell apart from the base model. Returning the base model's key anyway
+// would be worse than returning nothing: a missed listing only costs recall, but a merged pair —
+// two different real phones publishing the same key — corrupts the price comparison itself.
+// Connectivity/radio words (5G, 4G, LTE, NFC, Dual, Sim) are deliberately absent: those describe
+// the network, not the model, and must never block an otherwise-good match. This runs once, here,
+// in the single shared path every brand's parser returns through — not duplicated per parser.
+const VARIANT_MARKER_RE = /^(pro|plus|max|ultra|lite|mini|smart|neo|prime|power|play|fusion|edge|fe|s|x|t|e|i|c|g)$/;
+
+function hasUnconsumedVariantMarker(glued: string, match: FamilyMatch): boolean {
+  // A residual single letter glued straight onto a consumed digit ("e32S" if the "s" alternative
+  // weren't handled) surfaces here exactly like a separate word would ("400 Smart") — both are just
+  // "the next run of letters/digits after where the match ended", whether or not there was a space.
+  const next = /^\s*([a-z0-9]+)/.exec(glued.slice(match.end));
+  return next !== null && VARIANT_MARKER_RE.test(next[1]!);
+}
+
 function parseFamily(brand: PhoneBrand, glued: string): FamilyMatch | null {
-  switch (brand) {
-    case "apple":
-      return parseApple(glued);
-    case "samsung":
-      return parseSamsung(glued);
-    case "motorola":
-      return parseMotorola(glued);
-    case "xiaomi":
-      return parseXiaomi(glued);
-    case "honor":
-      return parseHonor(glued);
-    default:
-      return parseGeneric(brand, glued);
-  }
+  const match = ((): FamilyMatch | null => {
+    switch (brand) {
+      case "apple":
+        return parseApple(glued);
+      case "samsung":
+        return parseSamsung(glued);
+      case "motorola":
+        return parseMotorola(glued);
+      case "xiaomi":
+        return parseXiaomi(glued);
+      case "honor":
+        return parseHonor(glued);
+      default:
+        return parseGeneric(brand, glued);
+    }
+  })();
+  if (match && hasUnconsumedVariantMarker(glued, match)) return null;
+  return match;
 }
 
 // ---------------------------------------------------------------------------------------------

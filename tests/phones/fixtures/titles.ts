@@ -193,6 +193,42 @@ export const IDENTIFY_FIXTURES: IdentifyFixture[] = [
     key: "xiaomi-redmi-note-12s-128gb",
     ramGb: 8,
   },
+
+  // --- Fix round 2 (re-review, "close the class not the instances"): the sweep in round 1 added
+  // three specific suffixes but left the underlying gap open — any numbered family exposed to a
+  // real suffix its own grammar doesn't know about still silently collapsed onto the base model's
+  // key. Round 2 adds a structural guard (hasUnconsumedVariantMarker, in parseFamily) that fails
+  // closed whenever a match is immediately followed by an unconsumed variant word, plus the three
+  // real suffixes the reviewer named so those phones are identified rather than just nulled.
+  { title: "Honor 400 Smart 256gb 8gb Ram Negro", key: "honor-400-smart-256gb", ramGb: 8 },
+  // Same number, no suffix — must NOT collapse onto "400 Smart" above.
+  { title: "Honor 400 256gb 8gb Ram Negro", key: "honor-400-256gb", ramGb: 8 },
+  {
+    title: "Celular Xiaomi Redmi A3 Pro 4g 64gb 3gb Ram Negro",
+    key: "xiaomi-redmi-a3-pro-64gb",
+    ramGb: 3,
+  },
+  {
+    // "E32s" is a real refreshed variant of the E32, letter glued straight onto the digits (same
+    // shape as "E22i" above) — lower-cased in the label like every other glued model letter.
+    title: "Motorola Moto E32s 4g 64gb 3gb Ram Negro",
+    key: "motorola-moto-e32s-64gb",
+    ramGb: 3,
+  },
+  {
+    // Connectivity words are not variants and must never trip the guard: "5G" immediately after a
+    // resolved Samsung family is the radio, not a model suffix the parser failed to consume.
+    title: "Samsung Galaxy A56 5G 256gb 8gb Ram Negro",
+    key: "samsung-galaxy-a56-256gb",
+    ramGb: 8,
+  },
+  {
+    // Same connectivity guard, on a family whose own match already ends in a real, consumed suffix
+    // ("Pro") — "4G" right after it must still pass.
+    title: "Xiaomi Redmi Note 13 Pro 4G 256gb 8gb Ram Negro",
+    key: "xiaomi-redmi-note-13-pro-256gb",
+    ramGb: 8,
+  },
 ];
 
 /** Titles that must resolve to a specific PhoneCondition. Two-arg calls use "unknown" as the source. */
@@ -204,14 +240,26 @@ export const CONDITION_FIXTURES: Array<{ title: string; source: "new" | "refurbi
 ];
 
 /**
- * Titles where brand and family resolve fine but identifyPhone must still return null.
+ * Titles where brand detection succeeds but identifyPhone must still return null.
  * - A56: no storage figure anywhere in the title.
  * - "Redmi A5 … 64 mp": a real bug the reviewer caught — the bare-number storage branch (added for
  *   "6gb+256", see the X7e fixture above) also accepted "64" here purely because it sat right
  *   after a gb-labelled number, with no check on what followed. "64" is a camera megapixel count,
  *   not gigabytes, and there is no actual storage figure in this title at all.
+ * - The last three (round 2): a made-up, plausible-looking variant word right after an otherwise
+ *   valid family match, on three different brands' parsers — "Neo"/"Fusion"/"Smart Max" are none
+ *   of them real for THAT particular family, but the point of hasUnconsumedVariantMarker is that it
+ *   doesn't need to know that: it fails closed on ANY unconsumed marker from the shared list, real
+ *   or not, because a parser has no way to distinguish "a real variant I don't know" from "not a
+ *   real variant at all" — both look identical (an unconsumed word from the marker list).
  */
-export const NULL_IDENTITY_TITLES = ["Celular Samsung Galaxy A56 5g Como Nuevo", "Xiaomi Redmi A5 8gb 64 mp Camara Azul"];
+export const NULL_IDENTITY_TITLES = [
+  "Celular Samsung Galaxy A56 5g Como Nuevo",
+  "Xiaomi Redmi A5 8gb 64 mp Camara Azul",
+  "Samsung Galaxy A56 Neo 256gb 8gb Ram Negro",
+  "Motorola Moto G85 Fusion 256gb 8gb Ram Negro",
+  "Honor 200 Smart Max 256gb 8gb Ram Negro",
+];
 
 /** Accessories, clones, unlisted brands and other non-phone-model titles: isPhoneTitle must be false. */
 export const NOT_PHONE_TITLES: string[] = [
