@@ -274,6 +274,13 @@ function representativeImage(listings: readonly RetailListing[]): string | null 
   return usable[Math.floor(usable.length / 2)]!.image;
 }
 
+/** How many of the cheapest screened offers each item keeps, per market. The app caps at their sum. */
+export const ITEM_NEW_OFFERS = 8;
+export const ITEM_USED_OFFERS = 6;
+
+const cheapestOffers = (offers: readonly EquiparOffer[], limit: number): EquiparOffer[] =>
+  [...offers].sort((a, b) => a.priceUyu - b.priceUyu).slice(0, limit);
+
 export interface BuildCatalogInput {
   listings: readonly RetailListing[];
   usdUyu: number;
@@ -327,9 +334,12 @@ export function buildEquiparCatalog(input: BuildCatalogInput): EquiparItem[] {
     const newBand = bandOf(newScreen.kept.map((offer) => offer.priceUyu));
     const usedBand = bandOf(usedScreen.kept.map((offer) => offer.priceUyu), MIN_USED_BAND_SAMPLE);
 
-    const cheapest = [...newScreen.kept, ...usedScreen.kept]
-      .sort((a, b) => Number(a.condition === "used") - Number(b.condition === "used") || a.priceUyu - b.priceUyu)
-      .slice(0, 8);
+    // Each market gets its OWN cap. One new-first list cut at 8 left every variant priced new with
+    // zero used offers — a new band needs 8 new rows, so the used ones were always past the cut.
+    const cheapest = [
+      ...cheapestOffers(newScreen.kept, ITEM_NEW_OFFERS),
+      ...cheapestOffers(usedScreen.kept, ITEM_USED_OFFERS),
+    ];
 
     const observedAt = bucket.listings
       .map((listing) => listing.observedAt)

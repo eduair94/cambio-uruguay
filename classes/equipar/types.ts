@@ -133,7 +133,7 @@ export interface EquiparItem {
   usedSavingPct: number | null;
   /** `modelo` categories only. */
   products: EquiparProduct[];
-  /** Cheapest honest offers, new first. */
+  /** Cheapest honest offers: up to 8 new (cheapest first), then up to 6 used (cheapest first). */
   offers: EquiparOffer[];
   /** Rows below p10/2 of their own category: shown, explained, never at the top. */
   suspectDropped: number;

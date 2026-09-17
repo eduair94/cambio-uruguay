@@ -95,6 +95,27 @@ describe('[categoria].vue', () => {
     expect(tpl).toContain('rel="nofollow noopener"')
   })
 
+  it('no vuelve a tipear lo que ya vive en equiparCategoryPages.ts', () => {
+    // La ventana del Plan Redondo y la concordancia de género tenían dos copias: la del FAQ y la
+    // de la página. Una se iba a actualizar sin la otra.
+    expect(src).toContain('EQUIPAR_PLAN_REDONDO_WINDOW')
+    expect(src).not.toMatch(/\b\d{1,2}\/\d{1,2}\/20\d\d\b/)
+    expect(src).toContain('equiparGrammarFor(')
+    expect(src).not.toContain('FEMININE_WATTS')
+  })
+
+  it('conserva la foto del producto y la declara en el Product', () => {
+    const at = src.indexOf('transform:')
+    expect(src.slice(at, at + 900)).not.toMatch(/products:[\s\S]*image:\s*null/)
+    expect(src).toMatch(/image:\s*row\.product\.image/)
+  })
+
+  it('no anuncia usados donde el usado no se recomienda', () => {
+    const at = src.indexOf('const usedCount')
+    expect(at).toBeGreaterThan(-1)
+    expect(src.slice(at, at + 300)).toContain('usedOk')
+  })
+
   it('escribe las fechas con la grafía uruguaya', () => {
     expect(src).not.toMatch(/septiembre/i)
     expect(src).toContain('dateLocale(')
@@ -104,5 +125,12 @@ describe('[categoria].vue', () => {
 describe('index.vue enlaza cada tarjeta de categoría', () => {
   it('arma el enlace con localePath a la página de la categoría', () => {
     expect(read(INDEX_FILE)).toContain('localePath(`/equipar-casa-uruguay/${')
+  })
+
+  it('el texto del enlace usa el plural de la categoría ("Ver precios de heladeras")', () => {
+    expect(read(INDEX_FILE)).toContain("'{plural}'")
+    expect(read(join(__dirname, '..', '..', 'utils', 'equiparEs.ts'))).toContain(
+      "categoryLink: 'Ver precios de {plural}'"
+    )
   })
 })

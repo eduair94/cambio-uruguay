@@ -76,10 +76,24 @@ describe('equiparCategoryProjection', () => {
     }
   })
 
-  it('trims item-level offers to 8', () => {
-    const offers = Array.from({ length: 15 }, (_, i) => offer(1000 + i))
+  it('trims item-level offers to 14', () => {
+    const offers = Array.from({ length: 20 }, (_, i) => offer(1000 + i))
     const [result] = equiparCategoryProjection([item({ offers })])
-    expect(result.offers).toHaveLength(8)
+    expect(result.offers).toHaveLength(14)
+  })
+
+  // The backend stores up to 8 new offers and then up to 6 used ones. A cap of 8 cut every used
+  // offer off any variant priced new, and the page's "Usados" list was always empty.
+  it('keeps the used offers that follow eight new ones', () => {
+    const newOffers = Array.from({ length: 8 }, (_, i) => offer(20_000 + i))
+    const usedOffers = Array.from({ length: 6 }, (_, i) => ({
+      ...offer(5_000 + i),
+      condition: 'used' as const,
+      source: 'facebook' as const,
+    }))
+    const [result] = equiparCategoryProjection([item({ offers: [...newOffers, ...usedOffers] })])
+    expect(result.offers.filter(o => o.condition === 'new')).toHaveLength(8)
+    expect(result.offers.filter(o => o.condition === 'used')).toHaveLength(6)
   })
 
   it('keeps the most recent 180 history points (the tail), not the oldest', () => {

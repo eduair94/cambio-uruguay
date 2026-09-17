@@ -161,7 +161,7 @@ planner is client state only and never persists.
                 class="cat-more"
                 >{{
                   c.categoryLink
-                    .replace('{labelLower}', group.label.toLowerCase())
+                    .replace('{plural}', equiparCategoryPage(group.key)?.plural ?? group.label)
                     .replace('{label}', group.label)
                 }}</NuxtLink
               >
@@ -291,7 +291,7 @@ planner is client state only and never persists.
 
 <script setup lang="ts">
 import { EQUIPAR_PATH, EQUIPAR_THREAD } from '~/utils/equiparCopy'
-import { isEquiparCategorySlug } from '~/utils/equiparCategoryPages'
+import { equiparCategoryPage, isEquiparCategorySlug } from '~/utils/equiparCategoryPages'
 import { equiparEs } from '~/utils/equiparEs'
 import { equiparEn } from '~/utils/equiparEn'
 import { equiparPt } from '~/utils/equiparPt'
@@ -313,7 +313,17 @@ const c = computed(() =>
 
 // Server-rendered: the three totals have to exist in the HTML. They are the numbers a search engine
 // can quote and the answer most visitors came for, and a client-only fetch would hide both.
-const { data } = await useFetch<EquiparResponse>('/api/equipar', { key: 'equipar-casa' })
+//
+// The endpoint carries each row's offers (up to 8 new + 6 used) and its products, and this page
+// draws neither — the per-category pages do. Dropped in `transform`, before the
+// payload is written, or every one of them would travel inside this page's HTML for nothing.
+const { data } = await useFetch('/api/equipar', {
+  key: 'equipar-casa',
+  transform: (response: EquiparResponse): EquiparResponse => ({
+    meta: response?.meta ?? null,
+    items: (response?.items ?? []).map(item => ({ ...item, offers: [], products: [] })),
+  }),
+})
 
 const items = computed<EquiparItemDoc[]>(() => data.value?.items ?? [])
 const baskets = computed(() => data.value?.meta?.baskets ?? [])

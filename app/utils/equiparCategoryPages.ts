@@ -45,6 +45,17 @@ export const EQUIPAR_PLAN_REDONDO_SOURCE =
   'https://www.ute.com.uy/clientes/soluciones-para-el-hogar/planredondo'
 
 /**
+ * Ventana de compras del Plan Redondo y fecha en que se verificó en la fuente, ya escritas como las
+ * lee la página (d/m/aaaa). Una sola copia: la usan el FAQ de abajo y la sección de
+ * `pages/equipar-casa-uruguay/[categoria].vue`. Revisar después del 31/3/2027.
+ */
+export const EQUIPAR_PLAN_REDONDO_WINDOW = {
+  from: '1/9/2026',
+  to: '31/3/2027',
+  verifiedAt: '16/9/2026',
+} as const
+
+/**
  * El orden de este array es el mismo que `classes/equipar/registry.ts::EQUIPAR_CATEGORIES`: la
  * prueba de paridad de la raíz compara claves, orden, `tier`, `room` y `label` uno a uno.
  */
@@ -748,8 +759,8 @@ export function equiparCategoryTitle(
 // FAQ
 // ---------------------------------------------------------------------------
 
-/** Género y número del sustantivo que manda en `label`, sólo para concordar los textos del FAQ. */
-interface EquiparGrammar {
+/** Género y número del sustantivo que manda en `label`, para concordar los textos de la categoría. */
+export interface EquiparGrammar {
   gender: 'm' | 'f'
   plural: boolean
 }
@@ -795,7 +806,7 @@ const EQUIPAR_GRAMMAR: Record<string, EquiparGrammar> = {
   impresora: { gender: 'f', plural: false },
 }
 
-const grammarFor = (key: string): EquiparGrammar =>
+export const equiparGrammarFor = (key: string): EquiparGrammar =>
   EQUIPAR_GRAMMAR[key] ?? { gender: 'm', plural: false }
 
 const indefiniteArticle = (g: EquiparGrammar): string =>
@@ -854,7 +865,7 @@ export function equiparCategoryFaq(
   generatedAt: string | null
 ): Array<{ question: string; answer: string }> {
   const catItems = items.filter(item => item.category === page.key)
-  const grammar = grammarFor(page.key)
+  const grammar = equiparGrammarFor(page.key)
   const labelLower = page.label.toLowerCase()
   const dateStr = formatFaqDate(generatedAt)
   const faq: Array<{ question: string; answer: string }> = []
@@ -933,7 +944,7 @@ export function equiparCategoryFaq(
   if (page.planRedondo) {
     faq.push({
       question: '¿Entra en el Plan Redondo de UTE?',
-      answer: `${page.planRedondo} Rige para compras hechas entre el 1/9/2026 y el 31/3/2027: el descuento se acredita en la factura de UTE, hasta 6 equipos por cliente, con potencia contratada de hasta 40 kW, registrando la factura electrónica, y el equipo tiene que quedar instalado en ese servicio (fuente: ${EQUIPAR_PLAN_REDONDO_SOURCE}, verificado el 16/9/2026).`,
+      answer: `${page.planRedondo} Rige para compras hechas entre el ${EQUIPAR_PLAN_REDONDO_WINDOW.from} y el ${EQUIPAR_PLAN_REDONDO_WINDOW.to}: el descuento se acredita en la factura de UTE, hasta 6 equipos por cliente, con potencia contratada de hasta 40 kW, registrando la factura electrónica, y el equipo tiene que quedar instalado en ese servicio (fuente: ${EQUIPAR_PLAN_REDONDO_SOURCE}, verificado el ${EQUIPAR_PLAN_REDONDO_WINDOW.verifiedAt}).`,
     })
   }
 

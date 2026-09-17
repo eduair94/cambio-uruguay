@@ -4,9 +4,11 @@ import type { EquiparBand, EquiparItemDoc, EquiparOffer, EquiparTier } from '../
 import {
   EQUIPAR_CATEGORY_PAGES,
   EQUIPAR_PLAN_REDONDO_SOURCE,
+  EQUIPAR_PLAN_REDONDO_WINDOW,
   equiparCategoryFaq,
   equiparCategoryPage,
   equiparCategoryTitle,
+  equiparGrammarFor,
   equiparHourlyCostUyu,
   isEquiparCategorySlug,
   type EquiparCategoryPage,
@@ -252,6 +254,43 @@ describe('equiparCategoryFaq', () => {
     const faq = equiparCategoryFaq(page, items, '2026-09-10T00:00:00.000Z')
     const dondeQA = faq.find(qa => qa.question.startsWith('¿Dónde'))
     expect(dondeQA?.answer).toContain('TYT')
+  })
+
+  // Los items ahora traen hasta 6 usados detrás de los nuevos: un usado más barato no puede
+  // contestar "¿dónde está más barata?", que habla de la oferta nueva.
+  it('no nombra a un vendedor de usado aunque sea más barato', () => {
+    const page = equiparCategoryPage('heladera') as EquiparCategoryPage
+    const items = [
+      item('heladera', 'media', 'Media (130 a 330 L)', 'S', {
+        newBand: band(24000, 30),
+        offers: [offer('ElDorado', 23000), offer('Marketplace', 9000, 'used')],
+      }),
+    ]
+    const dondeQA = equiparCategoryFaq(page, items, null).find(qa =>
+      qa.question.startsWith('¿Dónde')
+    )
+    expect(dondeQA?.answer).toContain('ElDorado')
+    expect(dondeQA?.answer).not.toContain('Marketplace')
+  })
+
+  it('la respuesta del Plan Redondo usa la ventana exportada', () => {
+    const calefon = equiparCategoryPage('calefon') as EquiparCategoryPage
+    const answer =
+      equiparCategoryFaq(calefon, [], null).find(qa => qa.question.includes('Plan Redondo'))
+        ?.answer ?? ''
+    expect(answer).toContain(
+      `entre el ${EQUIPAR_PLAN_REDONDO_WINDOW.from} y el ${EQUIPAR_PLAN_REDONDO_WINDOW.to}`
+    )
+    expect(answer).toContain(`verificado el ${EQUIPAR_PLAN_REDONDO_WINDOW.verifiedAt}`)
+  })
+})
+
+describe('equiparGrammarFor', () => {
+  it('devuelve el género de la categoría y masculino singular para una desconocida', () => {
+    expect(equiparGrammarFor('estufa')).toEqual({ gender: 'f', plural: false })
+    expect(equiparGrammarFor('ventilador')).toEqual({ gender: 'm', plural: false })
+    expect(equiparGrammarFor('toallas')).toEqual({ gender: 'f', plural: true })
+    expect(equiparGrammarFor('no-existe')).toEqual({ gender: 'm', plural: false })
   })
 })
 

@@ -202,8 +202,10 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
     <section v-if="page.planRedondo" class="cat-section" aria-labelledby="plan-title">
       <h2 id="plan-title">Plan Redondo de UTE</h2>
       <p class="section-intro">
-        {{ page.planRedondo }} Rige para compras hechas entre el 1/9/2026 y el 31/3/2027 y el
-        descuento se acredita en la factura (verificado el 16/9/2026).
+        {{ page.planRedondo }} Rige para compras hechas entre el
+        {{ EQUIPAR_PLAN_REDONDO_WINDOW.from }} y el {{ EQUIPAR_PLAN_REDONDO_WINDOW.to }} y el
+        descuento se acredita en la factura (verificado el
+        {{ EQUIPAR_PLAN_REDONDO_WINDOW.verifiedAt }}).
       </p>
       <p class="section-intro">
         <a
@@ -260,9 +262,11 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
 import {
   EQUIPAR_CATEGORY_PAGES,
   EQUIPAR_PLAN_REDONDO_SOURCE,
+  EQUIPAR_PLAN_REDONDO_WINDOW,
   equiparCategoryFaq,
   equiparCategoryPage,
   equiparCategoryTitle,
+  equiparGrammarFor,
   equiparHourlyCostUyu,
   isEquiparCategorySlug,
 } from '~/utils/equiparCategoryPages'
@@ -313,7 +317,6 @@ const { data } = await useFetch(() => `/api/equipar/${slug.value}`, {
       image: null,
       products: (item.products ?? []).map(product => ({
         ...product,
-        image: null,
         offers: (product.offers ?? []).slice(0, PRODUCT_OFFERS_SHOWN),
       })),
       // El gráfico dibuja sólo la mediana nueva; la usada no se manda al navegador.
@@ -369,14 +372,18 @@ function shortDate(value: string | null | undefined): string {
 }
 
 const newCount = computed(() => items.value.reduce((sum, item) => sum + (item.newBand?.n ?? 0), 0))
+// Donde el usado no se recomienda (colchón, toallas…) la página no lo cuenta ni lo anuncia.
 const usedCount = computed(() =>
-  items.value.reduce((sum, item) => sum + (item.usedBand?.n ?? 0), 0)
+  page.value.usedOk ? items.value.reduce((sum, item) => sum + (item.usedBand?.n ?? 0), 0) : 0
 )
 
 const summary = computed(() => {
   if (!newCount.value && !usedCount.value) return page.value.description
   const updated = longDate(generatedAt.value)
-  return `Relevamos ${newCount.value} avisos nuevos y ${usedCount.value} usados de ${page.value.plural} en tiendas uruguayas, MercadoLibre y Marketplace.${updated ? ` Actualizado el ${updated}.` : ''}`
+  const counted = usedCount.value
+    ? `${newCount.value} avisos nuevos y ${usedCount.value} usados de ${page.value.plural} en tiendas uruguayas, MercadoLibre y Marketplace`
+    : `${newCount.value} avisos nuevos de ${page.value.plural} en tiendas uruguayas y MercadoLibre`
+  return `Relevamos ${counted}.${updated ? ` Actualizado el ${updated}.` : ''}`
 })
 
 // ── Gráfico ────────────────────────────────────────────────────────────────
@@ -494,14 +501,15 @@ const siblings = computed(() =>
   )
 )
 
-/** Sólo estufa y ventilador declaran potencia de ejemplo; el artículo concuerda con cada una. */
-const FEMININE_WATTS = new Set(['estufa'])
+/** Sólo estufa y ventilador declaran potencia de ejemplo; artículo, participio y verbo concuerdan. */
 const hourlyCost = computed(() => {
   const watts = page.value.wattsExample
   if (!watts) return ''
-  const feminine = FEMININE_WATTS.has(page.value.key)
+  const { gender, plural } = equiparGrammarFor(page.value.key)
+  const article = `${gender === 'f' ? 'Una' : 'Un'}${plural ? (gender === 'f' ? 's' : 'os') : ''}`
+  const lit = `prendid${gender === 'f' ? 'a' : 'o'}${plural ? 's' : ''}`
   const cost = equiparHourlyCostUyu(watts).toLocaleString('es-UY', { maximumFractionDigits: 1 })
-  return `${feminine ? 'Una' : 'Un'} ${page.value.label.toLowerCase()} de ${watts.toLocaleString('es-UY')} W ${feminine ? 'prendida' : 'prendido'} una hora cuesta unos $ ${cost} con IVA, si tu casa está en el escalón de 101 a 600 kWh de la tarifa residencial simple.`
+  return `${article} ${page.value.label.toLowerCase()} de ${watts.toLocaleString('es-UY')} W ${lit} una hora ${plural ? 'cuestan' : 'cuesta'} unos $ ${cost} con IVA, si tu casa está en el escalón de 101 a 600 kWh de la tarifa residencial simple.`
 })
 
 const faq = computed(() =>
@@ -553,6 +561,7 @@ const productsLd = computed(() =>
       return {
         '@type': 'Product',
         name: row.product.name,
+        ...(row.product.image ? { image: row.product.image } : {}),
         ...(row.product.brand ? { brand: { '@type': 'Brand', name: row.product.brand } } : {}),
         offers: {
           '@type': 'Offer',

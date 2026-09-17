@@ -68,6 +68,7 @@ export interface EquiparItemDoc {
   usedBand: EquiparBand | null
   usedSavingPct: number | null
   products: EquiparProduct[]
+  /** Up to 8 cheapest new offers, then up to 6 cheapest used ones. */
   offers: EquiparOffer[]
   suspectDropped: number
   observedAt: string | null
@@ -170,7 +171,12 @@ export function equiparSortItems(items: EquiparItemDoc[]): EquiparItemDoc[] {
 
 const EQUIPAR_CATEGORY_MAX_PRODUCTS = 12
 const EQUIPAR_CATEGORY_MAX_PRODUCT_OFFERS = 6
-const EQUIPAR_CATEGORY_MAX_ITEM_OFFERS = 8
+/**
+ * The backend stores up to 8 new offers followed by up to 6 used ones (`classes/equipar/catalog.ts`,
+ * `ITEM_NEW_OFFERS` + `ITEM_USED_OFFERS`). The cap is their sum: at 8 it cut every used offer off any
+ * variant priced new.
+ */
+const EQUIPAR_CATEGORY_MAX_ITEM_OFFERS = 14
 const EQUIPAR_CATEGORY_MAX_HISTORY = 180
 
 /**
