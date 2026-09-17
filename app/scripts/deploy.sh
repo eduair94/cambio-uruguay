@@ -76,6 +76,31 @@ wait_healthy() {
   return 1
 }
 
+# El build pesa hasta 8 GB de heap y satura CPU (ver memoria de deploy). Si el box ya esta caliente
+# -por ejemplo resucitando pm2 despues de un reboot, load average 40+ con 260 apps- sumarle un build
+# encima es lo que motivo esta guarda. No aborta el deploy: espera con un tope y sigue igual, porque
+# un deploy mas lento es mejor que dejar el prod sirviendo un build viejo (ver "CI deploy broken" en
+# la memoria de deploy.md).
+wait_for_load() {
+  local cores threshold load1 waited=0 max_wait=600
+  cores="$(nproc 2>/dev/null || echo 1)"
+  threshold="$(awk -v c="$cores" 'BEGIN{printf "%.2f", c*1.5}')"
+  while :; do
+    load1="$(cut -d' ' -f1 /proc/loadavg 2>/dev/null || echo 0)"
+    if ! awk -v l="$load1" -v t="$threshold" 'BEGIN{exit !(l>t)}'; then
+      [ "$waited" -gt 0 ] && log "Load back to $load1 (threshold $threshold) — proceeding with the build."
+      return 0
+    fi
+    if [ "$waited" -ge "$max_wait" ]; then
+      log "Load still $load1 (threshold $threshold, ${cores} cores) after ${max_wait}s — building anyway."
+      return 0
+    fi
+    log "Load $load1 over threshold $threshold (${cores} cores) — waiting before the build (${waited}s so far)…"
+    sleep 30
+    waited=$((waited + 30))
+  done
+}
+
 # 1. Serialize deploys — fail fast if one is already running.
 #
 # El lock se toma SIEMPRE, tambien en la segunda pasada. Medido en el box: un segundo `exec 9>`
@@ -146,6 +171,7 @@ else
 fi
 
 timed "Clear staging and generated build files" rm -rf "$STAGING" "$APP_DIR/.nuxt"
+wait_for_load
 # 8192 heap: 4096 OOM'd after firebase-auth landed (see memory/deploy notes).
 timed "Build staging output" env NODE_OPTIONS="--max-old-space-size=8192" NITRO_OUTPUT_DIR="$STAGING" npx nuxt build
 
