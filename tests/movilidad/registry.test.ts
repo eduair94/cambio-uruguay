@@ -199,6 +199,57 @@ describe("negativos: nunca deben publicarse como monopatín o bicicleta", () => 
   });
 });
 
+describe("fix round 2: un kit o motor de conversión nunca es un vehículo completo", () => {
+  // Reproducido por la revisión: el exclude exigía la palabra "de" ("kit de conversion", "motor de
+  // conversion", "convertir (tu|la) bicicleta", "con matricula"), y una frase rígida que sólo
+  // matchea con un conector exacto es el mismo bug dos veces — la forma sin "de" es al menos tan común
+  // en los títulos reales. Las primeras cuatro son las que reprodujo la revisión tal cual.
+  const rejected = [
+    "Kit Conversión Bicicleta Eléctrica 36v 350w",
+    "Motor Conversión Bicicleta Eléctrica 350w",
+    "Bicicleta Eléctrica Kit Conversión 350w Rodado 26",
+    "Kit Conversión Monopatín Eléctrico 250w",
+    // variantes con "de", que ya funcionaban, para que una futura reversión rompa las dos formas
+    "Kit de Conversión Bicicleta Eléctrica 36v 350w",
+    "Motor de Conversión Bicicleta Eléctrica 350w",
+    "Kit de Conversión Monopatín Eléctrico 250w",
+    // "convertir" sin "tu"/"la" delante de "bicicleta" (y ni siquiera con la palabra completa
+    // "bicicleta": el original exigía "convertir (tu|la) bicicleta" y "convertir tu bici" ya se le
+    // escapaba). Se arman con "Bicicleta/Monopatín Eléctrico" al frente para que include() pase y sea
+    // realmente el exclude quien decida — si include ya rechazara la frase, la prueba no probaría nada.
+    "Bicicleta Eléctrica: Kit Para Convertir Tu Bici Común 350w",
+    "Monopatín Eléctrico: Kit Para Convertir Patineta Común En Eléctrica",
+    // "matricula" sin la palabra "con" por delante
+    "Monopatín Eléctrico con matrícula incluida",
+    "Monopatín Eléctrico, ya viene con la matrícula gestionada",
+  ];
+  it.each(rejected)("%s -> rechazado", (title) => {
+    expect(classify(title)).toBeNull();
+  });
+
+  it("control positivo: una bicicleta eléctrica completa sigue aceptándose", () => {
+    const title = "Bicicleta Eléctrica Rodado 26 350w";
+    const category = classify(title);
+    expect(category?.key, title).toBe("bicicleta-electrica");
+    expect(variantFor(category!, title).key, title).toBe("urbana");
+  });
+});
+
+describe("umbral de alto rendimiento (monopatín): 350w/500w quedan urbano, 800w/1000w suben", () => {
+  it.each([
+    ["Monopatín Eléctrico Urbano 350w", "urbano"],
+    ["Monopatín Eléctrico Urbano 500w", "urbano"],
+    ["Monopatín Eléctrico Urbano 799w", "urbano"],
+    ["Monopatín Eléctrico Urbano 800w", "alto-rendimiento"],
+    ["Monopatín Eléctrico Urbano 999w", "alto-rendimiento"],
+    ["Monopatín Eléctrico Urbano 1000w", "alto-rendimiento"],
+  ] as const)("%s -> %s", (title, variantKey) => {
+    const category = classify(title);
+    expect(category?.key, title).toBe("monopatin-electrico");
+    expect(variantFor(category!, title).key, title).toBe(variantKey);
+  });
+});
+
 describe("clasificación completa: category + variant vía itemKey", () => {
   it("arma la misma clave que usaría el catálogo", () => {
     const category = classify("Bicicleta Eléctrica Plegable Rodado 20 Gyroor Eb033 Gris")!;

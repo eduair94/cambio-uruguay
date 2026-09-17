@@ -1,12 +1,14 @@
 // Dry run for MOVILIDAD_CATEGORIES (monopatines y bicicletas eléctricas): harvests one store (or
 // MercadoLibre) and prints how every candidate title was classified — accepted (category, variant)
 // or rejected, with the most frequent rejected titles. Writes NOTHING — no appdb import, no dotenv,
-// no Mongo. Follows the shape of `scripts/oneoff/phones_dry_run.ts`: it does NOT call
-// `harvestRetail`/the adapters in `classes/retail/sources/*` directly, because those adapters
-// classify with `spec.accept()` INTERNALLY and only ever return what passed — a rejected title never
-// reaches the caller, so there would be no way to report "top rejected titles". This script
-// reimplements each adapter's own request shape (same Store-API/`products.json` contracts, same
-// shared `classes/retail/net` throttling) but classifies every candidate itself via the SAME
+// no Mongo. Mirrors the shape of `scripts/oneoff/equipar_dry_run.ts` (this branch) and, more closely,
+// the `phones_dry_run.ts` one written for the celulares directory — that script lives on
+// `feat/directorios-c-celulares`, not here, so it is described rather than referenced. Like it, this
+// does NOT call `harvestRetail`/the adapters in `classes/retail/sources/*` directly, because those
+// adapters classify with `spec.accept()` INTERNALLY and only ever return what passed — a rejected
+// title never reaches the caller, so there would be no way to report "top rejected titles". This
+// script reimplements each adapter's own request shape (same Store-API/`products.json` contracts,
+// same shared `classes/retail/net` throttling) but classifies every candidate itself via the SAME
 // `categoryFor`/`variantFor` production code path (`classes/equipar/classify.ts` against
 // `MOVILIDAD_CATEGORIES`), so nothing is thrown away before it can be counted, and nothing here can
 // silently drift from what `sync_movilidad.ts` (Task 3) will actually do.
@@ -20,9 +22,9 @@
 //   npx ts-node scripts/oneoff/movilidad_dry_run.ts ml
 //
 // A store run is capped with `--limit` (default 150) to the number of product pages/entries it reads
-// — "be gentle", same budget phones_dry_run.ts uses.
+// — "be gentle", the same budget the celulares dry run uses.
 //
-// The "ml" run does NOT reuse `harvestMercadoLibre`, and for the same reason phones_dry_run.ts does
+// The "ml" run does NOT reuse `harvestMercadoLibre`, for the same reason the celulares dry run does
 // not: the bridge (104.234.204.107:9656) is SHARED with every other production job that reads
 // MercadoLibre (chairs-hourly :23, autos-hourly :29, rentals-hourly :47, equipar-hourly :53, the ~2h
 // sequential currency-autos daily sweep at 07:43 UTC). A burst from this one-off script that trips the

@@ -62,9 +62,17 @@ const MONOPATIN_INCLUDE =
  * research notes, sells under "Moto Eléctrica", never "Monopatín"). Triciclos y cuatriciclos eléctricos
  * son otro vehículo, no un monopatín, y la Intendencia de San José ya los regula aparte (decreto 3278
  * vs. 3279).
+ *
+ * Fix round 2 (reproduced by review): a rigid multi-word phrase that only matches with one exact
+ * connector word is the same bug shape twice over — "kit de conversión" missed the far more common
+ * "Kit Conversión Bicicleta Eléctrica 36v 350w" (no "de") and "convertir tu bicicleta" missed
+ * "convertir bicicleta" (no "tu"/"la") — so both are replaced by the BARE word underneath the phrase
+ * (`conversion`, `convertir`, and `matricula` for the same reason `con matricula` missed "matrícula
+ * incluida"): a complete factory e-bike/e-scooter title essentially never says any of the three,
+ * connector present or not, so there is nothing a bare match costs here.
  */
 const MONOPATIN_EXCLUDE =
-  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|kit de conversion|convertir (tu|la) bicicleta|accesorio|accesorios|moto|motos|motoneta|ciclomotor|triciclo|triciclos|cuatriciclo|cuatriciclos|yumbo|homologad\w*|empadronable|con matricula|hoverboard|guante|guantes)\b/;
+  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|conversion|convertir|accesorio|accesorios|moto|motos|motoneta|ciclomotor|triciclo|triciclos|cuatriciclo|cuatriciclos|yumbo|homologad\w*|empadronable|matricula|hoverboard|guante|guantes)\b/;
 
 /** `"bicicleta electrica"`/`"bicicletas electricas"`, `"bici electrica"`, `"e-bike"`/`"ebike"`. Never
  * a bare "bicicleta": a normal pedal bike is not this category, and Loop's own catalogue tags a plain
@@ -82,9 +90,15 @@ const BICICLETA_INCLUDE = /\b(bicicletas? electric[oa]s?|bici electric[oa]|e-?bi
  * mirrors, footrests, phone mounts, racks) `product_type: "Accesorio de bicicleta eléctrica"`, which
  * `productTypeInTitle` composes onto the title as "Accesorio de bicicleta eléctrica Canasto Central…"
  * — that phrase contains "bicicleta eléctrica" adjacent and would otherwise pass `include` outright.
+ *
+ * Fix round 2: `kit de conversion`/`motor de conversion`/`convertir (tu|la) bicicleta` all missed the
+ * connector-free phrasing a real listing is at least as likely to use ("Kit Conversión Bicicleta
+ * Eléctrica 36v 350w", "Motor Conversión Bicicleta Eléctrica 350w") — see {@link MONOPATIN_EXCLUDE}
+ * for the full reasoning. Replaced by the bare `conversion`/`convertir`; `convertidor` was already
+ * bare and stays.
  */
 const BICICLETA_EXCLUDE =
-  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|kit de conversion|motor de conversion|convertidor|convertir (tu|la) bicicleta|accesorio|accesorios|triciclo|triciclos|cuatriciclo|cuatriciclos|lubricante)\b/;
+  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|conversion|convertidor|convertir|accesorio|accesorios|triciclo|triciclos|cuatriciclo|cuatriciclos|lubricante)\b/;
 
 /** Explicit power/speed language, or an unambiguous off-road/dual-motor claim. Kept as `match` (a
  * plain regex over the title), not `numeric`, because `EquiparUnit` has no watts/km-per-hour unit and
