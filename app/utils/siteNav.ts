@@ -2432,6 +2432,26 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/celulares-uruguay',
+        labelKey: 'nav.celulares',
+        icon: 'mdi-cellphone',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'precio celular uruguay',
+          'cuanto sale un iphone en uruguay',
+          'precio iphone uruguay',
+          'precio samsung uruguay',
+          'traer celular de estados unidos',
+          'conviene traer iphone de eeuu',
+          'celular mas barato uruguay',
+          'comparar precios celulares uruguay',
+          'motorola uruguay precio',
+          'xiaomi uruguay precio',
+        ],
+      },
+      {
         to: '/fletes-mudanzas-uruguay',
         labelKey: 'nav.mudanzas',
         icon: 'mdi-truck-outline',
@@ -3469,6 +3489,10 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   // Una ficha por tienda de /tiendas-online-uruguay. Los slugs son el registro curado de
   // utils/storeDirectory.ts; misma sección que el hub.
   'tiendas-online-uruguay/[tienda]': 'consumer',
+  // Una página por modelo de celular (marca+familia+almacenamiento) de /celulares-uruguay. El slug
+  // es la propia `key` del modelo (classes/phones/identify.ts) y GET /api/phones/<slug> es la
+  // misma fuente que decide si existe.
+  'celulares-uruguay/[modelo]': 'consumer',
   // Las páginas individuales de descuentos: una por emisor y una por rubro, ambas alimentadas por
   // el mismo catálogo de Bankos que el mapa de /descuentos-con-tarjeta-uruguay.
   'descuentos-con-tarjeta-uruguay/[banco]': 'banking',

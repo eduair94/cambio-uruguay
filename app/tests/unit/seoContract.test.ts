@@ -81,6 +81,11 @@ const PROGRAMMATIC_PAGES: Array<{ file: string; sitemapMarker: string }> = [
   {
     file: 'tiendas-online-uruguay/[tienda].vue',
     sitemapMarker: '`/tiendas-online-uruguay/${slug}`',
+  // El directorio de celulares y la ficha por modelo (marca+familia+almacenamiento).
+  { file: 'celulares-uruguay/index.vue', sitemapMarker: '/celulares-uruguay' },
+  {
+    file: 'celulares-uruguay/[modelo].vue',
+    sitemapMarker: '`/celulares-uruguay/${slug}`',
   },
 ]
 

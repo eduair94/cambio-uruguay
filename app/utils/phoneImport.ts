@@ -42,10 +42,19 @@ const URSEC_FAQ_ID = 'celular-router-drone'
  * Costo en pesos del certificado URSEC (trámite VUCE) para traer un celular, leído de la propia
  * ficha `celular-router-drone` de `aduanaFaq.ts` con una regex en vez de repetir el número a mano:
  * si alguien actualiza esa ficha, este valor se actualiza solo con ella. Si el texto cambiara de
- * forma que la regex ya no matchea, esto tira al importar el módulo en vez de publicar un número
- * viejo sin avisar — mismo criterio que "no se inventa un número" del resto del calculador.
+ * forma que la regex ya no matchea, esto tira en vez de publicar un número viejo sin avisar —
+ * mismo criterio que "no se inventa un número" del resto del calculador.
+ *
+ * Memoizada y perezosa (llamada desde ADENTRO de `phoneImportEstimate`, no a nivel de módulo):
+ * un `throw` a nivel de módulo tira abajo cualquier página que importe este archivo con sólo
+ * mencionarlo, aunque esa página nunca llame a `phoneImportEstimate` — el mismo motivo por el que
+ * `travelerBaggageRules.ts` resuelve sus reglas por fecha en vez de a nivel de módulo. Memoizada
+ * para no repetir el `find`+regex en cada cálculo dentro de una misma carga de página.
  */
+let ursecCertUyuCache: number | null = null
+
 function readUrsecCertUyu(): number {
+  if (ursecCertUyuCache != null) return ursecCertUyuCache
   const faq = ADUANA_FAQS.find(f => f.id === URSEC_FAQ_ID)
   if (!faq) {
     throw new Error(`phoneImport: no se encontró la ficha '${URSEC_FAQ_ID}' en aduanaFaq.ts`)
@@ -56,10 +65,9 @@ function readUrsecCertUyu(): number {
       `phoneImport: no se pudo leer el costo del certificado URSEC de la ficha '${URSEC_FAQ_ID}' (¿cambió el texto?)`
     )
   }
-  return Number(match[1])
+  ursecCertUyuCache = Number(match[1])
+  return ursecCertUyuCache
 }
-
-const URSEC_CERT_UYU = readUrsecCertUyu()
 
 export interface PhoneImportEstimate {
   /** Precio de lista de EE.UU., sin impuestos (`PHONE_US_PRICES`). */
@@ -201,7 +209,7 @@ export function phoneImportEstimate(input: {
       totalUyu: courierTotalUyu,
       reasons: courierResult.reasons ?? [],
     },
-    ursecUyu: URSEC_CERT_UYU,
+    ursecUyu: readUrsecCertUyu(),
     localBestUyu,
     savingTravelerUyu,
     savingCourierUyu,

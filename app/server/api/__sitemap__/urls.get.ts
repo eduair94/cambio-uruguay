@@ -26,6 +26,8 @@ import { storeIndexable, type StorePublicProfile } from '../../../utils/storePro
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
 import { EquiparItemModel } from '../../models/EquiparItem'
 import { StoreProfileModel } from '../../models/StoreProfile'
+import { PhoneModelModel } from '../../models/PhoneModel'
+import { phoneFreshFloor, phonePublishable, type PhoneModelDoc } from '../../../utils/phones'
 import { listPosts } from '../../utils/blog'
 import { listIssueDates } from '../../utils/newsletterArchive'
 import { loadPropertySaleSitemapUrls } from '../../utils/propertySales'
@@ -369,6 +371,38 @@ export default defineEventHandler(async _event => {
     if (models.length) console.log(`- Used-car model pages: ${models.length} routes`)
   } catch (carError) {
     console.warn('Failed to add used-car model pages to sitemap:', carError)
+  } finally {
+    await disconnectDbAfterPrerender()
+  }
+
+  // --- Phone model pages: only models a reader can trust as "today's price" -----------------
+  // Spanish only (the body is Uruguayan asking prices, same reasoning as the used-car block above).
+  // `phonePublishable` is the SAME gate `/celulares-uruguay` itself uses to decide whether a model's
+  // NEW price may headline a page (a band exists, "new" was not abstained on as ambiguous, and
+  // `lastSeen` is not stale) — never submit a URL the directory itself would not list. `newSellers
+  // >= 2` on top: a model that only clears the band's own minimum sample is still one or two sellers
+  // away from a price this sitemap should advertise as comparison-worthy.
+  try {
+    await connectDb()
+    const today = new Date().toISOString().slice(0, 10)
+    const phoneModels = await PhoneModelModel.find({ lastSeen: { $gte: phoneFreshFloor(today) } })
+      .select({ slug: 1, lastSeen: 1, newSellers: 1, bands: 1, ambiguousConditions: 1 })
+      .lean()
+    const publishablePhones = phoneModels.filter(
+      model => phonePublishable(model as unknown as PhoneModelDoc, today) && model.newSellers >= 2
+    )
+    publishablePhones.forEach(({ slug, lastSeen }) => {
+      urls.push({
+        loc: `/celulares-uruguay/${slug}`,
+        lastmod: lastSeen,
+        changefreq: 'daily',
+        priority: 0.6,
+      })
+    })
+    if (publishablePhones.length)
+      console.log(`- Phone model pages: ${publishablePhones.length} routes`)
+  } catch (phoneError) {
+    console.warn('Failed to add phone model pages to sitemap:', phoneError)
   } finally {
     await disconnectDbAfterPrerender()
   }
