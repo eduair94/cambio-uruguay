@@ -127,6 +127,72 @@ export const IDENTIFY_FIXTURES: IdentifyFixture[] = [
     key: "oppo-a79-256gb",
     ramGb: 8,
   },
+  {
+    // The exact real title that requires keeping the bare-number storage branch at all: "6gb+256"
+    // has no unit on the "256" — it's storage only because it's glued through an explicit "+" to a
+    // preceding unit-bearing number. Removing the branch outright (rather than narrowing it, see
+    // the "64 mp" null fixture below) drops this real title to null.
+    title: "Celular Honor X7e 6gb+256 Naranja",
+    key: "honor-x7e-256gb",
+    ramGb: 6,
+  },
+
+  // --- Fix round 1 (reviewer-caught): Honor's 3-digit branch had no "pro", several other
+  // numbered-family parsers had gaps in the same "missing suffix" class, and the bare-number
+  // storage branch was too permissive. Each row below is a real, distinct phone that would have
+  // collapsed onto another one's key (or, for the last one, been assigned a camera-megapixel count
+  // as if it were storage) before this round's fix.
+  {
+    // CRITICAL: the 3-digit branch only had (lite|e) — no "pro" — so "Honor 200" and
+    // "Honor 200 Pro" (two different, real phones) produced the same key.
+    title: "Honor 200 256gb 8gb Ram Negro",
+    key: "honor-200-256gb",
+    ramGb: 8,
+  },
+  { title: "Honor 200 Pro 256gb 12gb Ram Negro", key: "honor-200-pro-256gb", ramGb: 12 },
+  { title: "Honor 400 Lite 256gb 8gb Ram Negro", key: "honor-400-lite-256gb", ramGb: 8 },
+  {
+    // Moto E line had no family rule at all (only Moto G/Edge/Razr existed) — every Moto E title
+    // fell through to null regardless of brand/storage being perfectly readable.
+    title: "Motorola Moto E22 4g 64gb 4gb Ram Negro",
+    key: "motorola-moto-e22-64gb",
+    ramGb: 4,
+  },
+  {
+    // "E22i" is a real, cheaper regional variant of the E22 — must not collapse onto plain E22.
+    title: "Motorola Moto E22i 4g 64gb 4gb Ram Negro",
+    key: "motorola-moto-e22i-64gb",
+    ramGb: 4,
+  },
+  { title: "Motorola Moto E15 4g 32gb 2gb Ram Azul", key: "motorola-moto-e15-32gb", ramGb: 2 },
+  {
+    // POCO's F line added "Ultra" (POCO F7 Ultra) above "Pro" — the suffix alternation only had
+    // "pro max"/"pro" and would have dropped "Ultra" as unmatched trailing text.
+    title: "Celular Xiaomi Poco F7 Ultra 5g 512gb 16gb Ram Negro",
+    key: "xiaomi-poco-f7-ultra-512gb",
+    ramGb: 16,
+  },
+  { title: "Celular Xiaomi Redmi A3 4g 64gb 3gb Ram Negro", key: "xiaomi-redmi-a3-64gb", ramGb: 3 },
+  {
+    // "A3x" is a real, cheaper Redmi A variant sold alongside the base A3 — the old `redmi a(\d)`
+    // regex had no suffix group at all, so A3 and A3x collapsed onto the same key.
+    title: "Celular Xiaomi Redmi A3x 4g 64gb 3gb Ram Negro",
+    key: "xiaomi-redmi-a3x-64gb",
+    ramGb: 3,
+  },
+  {
+    // "+" is Redmi A's recurring upgraded-variant suffix across generations (A1+, A2+).
+    title: "Celular Xiaomi Redmi A3 Plus 4g 64gb 3gb Ram Negro",
+    key: "xiaomi-redmi-a3-plus-64gb",
+    ramGb: 3,
+  },
+  {
+    // Redmi Note's "S" refresh (9S/10S/12S are all real, distinct SKUs across generations) glues
+    // straight onto the number — the note regex had no suffix slot for it at all.
+    title: "Xiaomi Redmi Note 12S 5g 128gb 8gb Ram Negro",
+    key: "xiaomi-redmi-note-12s-128gb",
+    ramGb: 8,
+  },
 ];
 
 /** Titles that must resolve to a specific PhoneCondition. Two-arg calls use "unknown" as the source. */
@@ -137,8 +203,15 @@ export const CONDITION_FIXTURES: Array<{ title: string; source: "new" | "refurbi
   { title: "Celular Samsung Galaxy A56 5g Como Nuevo", source: "unknown", expected: "used" },
 ];
 
-/** A56 with no storage figure at all: brand + family resolve, but identifyPhone must still be null. */
-export const NO_STORAGE_TITLE = "Celular Samsung Galaxy A56 5g Como Nuevo";
+/**
+ * Titles where brand and family resolve fine but identifyPhone must still return null.
+ * - A56: no storage figure anywhere in the title.
+ * - "Redmi A5 … 64 mp": a real bug the reviewer caught — the bare-number storage branch (added for
+ *   "6gb+256", see the X7e fixture above) also accepted "64" here purely because it sat right
+ *   after a gb-labelled number, with no check on what followed. "64" is a camera megapixel count,
+ *   not gigabytes, and there is no actual storage figure in this title at all.
+ */
+export const NULL_IDENTITY_TITLES = ["Celular Samsung Galaxy A56 5g Como Nuevo", "Xiaomi Redmi A5 8gb 64 mp Camara Azul"];
 
 /** Accessories, clones, unlisted brands and other non-phone-model titles: isPhoneTitle must be false. */
 export const NOT_PHONE_TITLES: string[] = [

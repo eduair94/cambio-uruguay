@@ -266,6 +266,21 @@ function parseMotorola(glued: string): FamilyMatch | null {
       end: bareG.index + full.length,
     };
   }
+  // Motorola's other budget line, alongside G: E13/E14/E15/E22/E32… "moto" is required here (unlike
+  // the bare "g\d{2}" above) because a lone letter "e" is far more likely to appear by coincidence
+  // once storage/spec words are in play. "E22i" is a real, cheaper regional variant of the E22 sold
+  // with the letter glued directly onto the number, no space.
+  const motoE = /\bmoto\s?e(\d{1,2})(i)?(?:\s+(plus|power))?\b/.exec(glued);
+  if (motoE) {
+    const [full, num, iSuffix, suffix] = motoE;
+    const base = `${num}${iSuffix ?? ""}`;
+    return {
+      family: suffix ? `moto-e${base}-${suffix}` : `moto-e${base}`,
+      familyLabel: `Moto E${base}${suffix ? ` ${titleCaseWord(suffix)}` : ""}`,
+      start: motoE.index,
+      end: motoE.index + full.length,
+    };
+  }
   return null;
 }
 
@@ -273,24 +288,33 @@ function parseXiaomi(glued: string): FamilyMatch | null {
   // The "redmi "/"redm " prefix is optional: several real titles just say "Xiaomi Note 15…" (the
   // seller dropped "Redmi"), and "Xiaomi Redm Note 15…" is a plain typo (missing the final "i") —
   // both are the same Redmi Note line, and the brand word "xiaomi" is already confirmed by then.
-  const note = /\b(?:redmi\s+|redm\s+)?note\s+(\d{2})(?:\s+(pro plus|pro))?\b/.exec(glued);
+  // "s" is glued straight onto the number, no space (Redmi Note 9S/10S/12S are all real,
+  // multi-generation devices distinct from the base number) — checked before the "pro"/"pro plus"
+  // group, which stays space-separated.
+  const note = /\b(?:redmi\s+|redm\s+)?note\s+(\d{2})(s)?(?:\s+(pro plus|pro))?\b/.exec(glued);
   if (note) {
-    const [full, num, suffix] = note;
+    const [full, num, sSuffix, suffix] = note;
+    const base = `${num}${sSuffix ?? ""}`;
+    // Label capitalises the S ("Redmi Note 12S", the real convention across 9S/10S/12S); the slug
+    // stays lower-case like every other family key.
+    const labelBase = `${num}${sSuffix ? "S" : ""}`;
     // "Pro+" is Redmi Note's own convention (ML titles literally print it that way); every other
     // brand spells the plus suffix out as the word "Plus".
-    const label = suffix === "pro plus" ? `Redmi Note ${num} Pro+` : suffix === "pro" ? `Redmi Note ${num} Pro` : `Redmi Note ${num}`;
-    const family = suffix ? `redmi-note-${num}-${suffix.replace(/\s+/g, "-")}` : `redmi-note-${num}`;
+    const label =
+      suffix === "pro plus" ? `Redmi Note ${labelBase} Pro+` : suffix === "pro" ? `Redmi Note ${labelBase} Pro` : `Redmi Note ${labelBase}`;
+    const family = suffix ? `redmi-note-${base}-${suffix.replace(/\s+/g, "-")}` : `redmi-note-${base}`;
     return { family, familyLabel: label, start: note.index, end: note.index + full.length };
   }
   // "poco c85"/"poco x7 pro" — the brief's own regex only allows a single digit, but real
   // storefronts sell two-digit Poco models (C85, C71, M8s…), so this is widened to \d{1,2}, plus
   // an optional trailing letter glued straight onto the digits ("M8s") the brief didn't cover.
-  const poco = /\bpoco\s+([xmcf])(\d{1,2})([a-z])?(?:\s+(pro max|pro))?\b/.exec(glued);
+  // "ultra" (POCO F7 Ultra, a step above Pro on the F line) sits alongside "pro max"/"pro".
+  const poco = /\bpoco\s+([xmcf])(\d{1,2})([a-z])?(?:\s+(pro max|pro|ultra))?\b/.exec(glued);
   if (poco) {
     const [full, letter, num, trailingLetter, suffix] = poco;
     const base = `${letter}${num}${trailingLetter ?? ""}`;
     const suffixSlug = suffix ? `-${suffix.replace(/\s+/g, "-")}` : "";
-    const suffixLabel = suffix ? ` ${suffix === "pro max" ? "Pro Max" : "Pro"}` : "";
+    const suffixLabel = suffix ? ` ${suffix === "pro max" ? "Pro Max" : suffix === "ultra" ? "Ultra" : "Pro"}` : "";
     return {
       family: `poco-${base}${suffixSlug}`,
       familyLabel: `Poco ${base.toUpperCase().replace(/^([XMCF]\d+)([A-Z])$/, (_m, d, l) => `${d}${l.toLowerCase()}`)}${suffixLabel}`,
@@ -298,10 +322,19 @@ function parseXiaomi(glued: string): FamilyMatch | null {
       end: poco.index + full.length,
     };
   }
-  const redmiA = /\bredmi a(\d)\b/.exec(glued);
+  // Redmi A: a bare number alone collapsed "Redmi A3" and "Redmi A3+"/"Redmi A3x" onto one key —
+  // both the "+"-upgraded and the "x"-cheaper variant are real, recurring Redmi A naming
+  // (A1+/A2+; A3x), and neither was captured before.
+  const redmiA = /\bredmi a(\d)(x)?(?:\s+(plus))?\b/.exec(glued);
   if (redmiA) {
-    const [full, num] = redmiA;
-    return { family: `redmi-a${num}`, familyLabel: `Redmi A${num}`, start: redmiA.index, end: redmiA.index + full.length };
+    const [full, num, xSuffix, plusSuffix] = redmiA;
+    const base = `${num}${xSuffix ?? ""}`;
+    return {
+      family: plusSuffix ? `redmi-a${base}-plus` : `redmi-a${base}`,
+      familyLabel: `Redmi A${base}${plusSuffix ? " Plus" : ""}`,
+      start: redmiA.index,
+      end: redmiA.index + full.length,
+    };
   }
   const redmi = /\bredmi\s+(\d{2})(c)?\b/.exec(glued);
   if (redmi) {
@@ -365,7 +398,9 @@ function parseHonor(glued: string): FamilyMatch | null {
   }
   // "600e"/"600 e": some titles glue the trailing letter straight onto the number (store URL
   // slugs do this consistently), others space it out — both spellings appear in real data.
-  const threeDigit = /\b(\d{3})(?:\s?(lite|e))?\b/.exec(glued);
+  // "pro" was missing here (only lite/e), so "Honor 200 Pro" and plain "Honor 200" collapsed onto
+  // the same key — real, different phones (mirrors the "magic" branch above, which already has it).
+  const threeDigit = /\b(\d{3})(?:\s?(pro|lite|e))?\b/.exec(glued);
   if (threeDigit) {
     const [full, num, suffix] = threeDigit;
     return {
@@ -530,6 +565,12 @@ function extractRamGb(words: string[], numWords: NumWord[]): number | null {
   return candidates.length ? Math.min(...candidates) : null;
 }
 
+// A bare number right after it is never storage: "8gb 64 MP" (RAM, then a camera's megapixel
+// count) is not "8gb 64" with an implied unit — it just happens to share the storage-set value 64
+// with the real storage size {32,64,128,...}. Every spec class that writes a bare number in real
+// titles goes here so the bare-number storage branch below can't mistake one for gigabytes.
+const NON_STORAGE_FOLLOWER_RE = /^(mp|mpx|mah|hz|w|pulgadas|pulg)$/;
+
 /**
  * Storage = the largest value that is actually a real storage size (32/64/…/2048 after TB→GB),
  * excluding anything tagged as RAM/virtual/boost by itself. A "N+N ram" combo never needs its own
@@ -539,6 +580,15 @@ function extractRamGb(words: string[], numWords: NumWord[]): number | null {
  * a storage candidate whenever it was "+"-glued to a ram-tagged number — that broke titles like
  * "Memoria 256GB + 16GB RAM", where the "+" is an ordinary "and" joining two separate specs, not a
  * combo, and 256 is real storage that must not be thrown out because 16 happens to sit next to it.)
+ *
+ * The bare-number branch (a storage value written with no "gb"/"tb" of its own, like the "256" in
+ * "6gb+256") is intentionally narrow: it only fires when the number is glued through an explicit
+ * "+" to a preceding unit-bearing number ("Celular Honor X7e 6gb+256 Naranja" needs exactly this —
+ * removing the branch outright drops that real title to null). Plain adjacency ("8gb 64 mp") is
+ * NOT accepted here — two numbers sitting next to each other with nothing joining them is far more
+ * often two unrelated specs (RAM, then a camera/battery/screen figure) than an implied unit, as
+ * "8gb 64 mp Camara" demonstrates. The follower veto is a second, independent guard for the one
+ * case that survives the "+"-only restriction.
  */
 function extractStorageGb(words: string[], numWords: NumWord[]): number | null {
   const candidates: number[] = [];
@@ -548,7 +598,9 @@ function extractStorageGb(words: string[], numWords: NumWord[]): number | null {
     if (!STORAGE_SET.has(gbValue)) continue;
     if (n.unit === null) {
       const prev = numWords[i - 1];
-      if (!prev || !prev.unit || isGluedPair(words, prev, n) === null) continue;
+      if (!prev || !prev.unit || isGluedPair(words, prev, n) !== "plus") continue;
+      const follower = words[n.wordIndex + 1];
+      if (follower && NON_STORAGE_FOLLOWER_RE.test(follower)) continue;
     }
     if (isRamAssociated(words, n.wordIndex) || isVirtualTainted(words, n.wordIndex)) continue;
     candidates.push(gbValue);

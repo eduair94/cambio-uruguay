@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { identifyPhone, isPhoneTitle, phoneConditionFromTitle, phoneNorm } from "../../classes/phones/identify";
-import { CONDITION_FIXTURES, IDENTIFY_FIXTURES, NOT_PHONE_TITLES, NO_STORAGE_TITLE } from "./fixtures/titles";
+import { CONDITION_FIXTURES, IDENTIFY_FIXTURES, NOT_PHONE_TITLES, NULL_IDENTITY_TITLES } from "./fixtures/titles";
 
 describe("phoneNorm", () => {
   it("lower-cases, strips accents and spells out plus", () => {
@@ -48,9 +48,11 @@ describe("identifyPhone", () => {
     });
   }
 
-  it("returns null when no storage figure is present at all", () => {
-    expect(identifyPhone(NO_STORAGE_TITLE)).toBeNull();
-  });
+  for (const title of NULL_IDENTITY_TITLES) {
+    it(`returns null even though brand/family resolve: ${title}`, () => {
+      expect(identifyPhone(title)).toBeNull();
+    });
+  }
 
   it("builds a human-readable name", () => {
     const identity = identifyPhone("Apple iPhone 17 Pro (256 GB) - Azul profundo");
