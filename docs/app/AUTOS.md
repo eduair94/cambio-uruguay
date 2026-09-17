@@ -65,6 +65,21 @@ sólo para candidatas a oportunidad.
   ficha vendida o no disponible la retira.
 - `AUTOS_FB_ENABLED=0` lo apaga sin desplegar.
 
+## Bloqueos desde el VPS (2026-09-17)
+
+Dos webs contestan distinto según desde dónde se pida. Medido el mismo minuto desde la máquina de
+desarrollo (anda) y desde el 104 (no):
+
+- **Clasiautos**: 503 de Wordfence con "Access from your area has been temporarily limited for
+  security reasons" en `/wp-json/…`; la home sigue en 200. Es por IP, no por UA (con UA de
+  navegador también da 503).
+- **Car One**: 405 a cualquier pedido, incluso a la home.
+
+No se esquiva: **nada de proxies ni de UA falsa** para entrar donde nos bloquean. Las dos fuentes
+quedan encendidas y reintentan una vez por día (una lectura cada una, anotada en
+`uy-cars-source-<fuente>`); si el bloqueo era temporal vuelven solas. Para incluirlas de verdad hay
+que pedirle a cada sitio que habilite el bot —la UA lleva el contacto— o leerlas desde otra IP.
+
 ## Duplicados entre fuentes
 
 Las automotoras publican el mismo auto en su web, en ML y en Facebook (multiaviso lo hace en un clic).
