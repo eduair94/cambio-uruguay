@@ -180,6 +180,84 @@ export const RETAIL_STORES: RetailStore[] = [
     expectCurrency: "UYU",
     enabled: true,
   },
+  // Phone specialists and phone-carrying general electronics stores, added for
+  // `classes/phones` (celulares). Same Fenicio/WooCommerce platforms as the furniture/appliance
+  // chains above — one sweep of each sitemap or Store API serves every category spec handed to
+  // `harvestRetail`, phones included, at no extra request. Verified 2026-09-17: platform reachable,
+  // currency read off a real product page/row, at least one real phone URL/listing found (not just
+  // an accessory). See the doc comment on `PHONE_STORE_KEYS` in `classes/phones/spec.ts` for the
+  // measurements, including the two candidates (`thotcomputacion`, and already-registered `tyt`)
+  // that were measured OUT for carrying zero phones despite answering every request cleanly.
+  {
+    key: "claro",
+    name: "Tienda Claro",
+    baseUrl: "https://tienda.claro.com.uy",
+    adapter: "fenicio",
+    channel: "local-store",
+    expectCurrency: "UYU",
+    enabled: true,
+    note: "85 URLs de celular en el sitemap (2026-09-17); PDP de muestra en UYU.",
+  },
+  {
+    key: "zonatecno",
+    name: "Zonatecno",
+    baseUrl: "https://www.zonatecno.com.uy",
+    adapter: "fenicio",
+    channel: "local-store",
+    expectCurrency: "USD",
+    enabled: true,
+    note: "245 URLs de celular en el sitemap (2026-09-17); PDP de muestra en USD.",
+  },
+  {
+    key: "nstore",
+    name: "nStore",
+    baseUrl: "https://nstore.com.uy",
+    adapter: "fenicio",
+    channel: "local-store",
+    expectCurrency: "USD",
+    enabled: true,
+    note: "76 URLs de celular en el sitemap (2026-09-17), varios accesorios Samsung mezclados; PDP de muestra en USD.",
+  },
+  {
+    key: "zonalaptop",
+    name: "Zonalaptop",
+    baseUrl: "https://zonalaptop.com.uy",
+    adapter: "fenicio",
+    channel: "local-store",
+    expectCurrency: "USD",
+    enabled: true,
+    note: "Sobre todo notebooks; 4 URLs de celular en el sitemap (2026-09-17). PDP de muestra en USD.",
+  },
+  {
+    key: "market",
+    name: "Market",
+    baseUrl: "https://www.market.com.uy",
+    adapter: "fenicio",
+    channel: "local-store",
+    expectCurrency: "UYU",
+    enabled: true,
+    note: "233 URLs de celular en el sitemap (2026-09-17); PDP de muestra en UYU.",
+  },
+  {
+    key: "magiccenter",
+    name: "Magic Center",
+    baseUrl: "https://magiccenter.com.uy",
+    adapter: "fenicio",
+    channel: "local-store",
+    expectCurrency: "USD",
+    enabled: true,
+    note: "Vende también electrodomésticos (equipar lo aprovecha); 9 URLs de celular en el sitemap (2026-09-17). PDP de muestra en USD.",
+  },
+  {
+    key: "digitalworld",
+    name: "Digital World",
+    baseUrl: "https://digitalworld.com.uy",
+    adapter: "woocommerce",
+    channel: "local-store",
+    expectCurrency: "USD",
+    enabled: true,
+    note: "Store API con currency_minor_unit: 2; search=iphone devuelve iPhone 16/16 Plus reales (2026-09-17).",
+  },
 ];
 
 const BY_KEY = new Map(RETAIL_STORES.map((store) => [store.key, store]));
