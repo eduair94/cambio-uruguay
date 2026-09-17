@@ -3,7 +3,7 @@
 // Sin Mongo, sin Date.now() salvo para `generatedAt` (el único campo que documenta CUÁNDO se corrió,
 // nunca usado para decidir nada dentro de esta función).
 import type { PriceEvent } from "./calendar";
-import type { PriceEventAnalysis } from "./types";
+import { isUnidentifiedMlSeller, ML_UNKNOWN_SELLER_DISPLAY_NAME, type PriceEventAnalysis } from "./types";
 
 /** Por vertical: cuántas ofertas calificaron hoy y cuántas de esas cayeron en cada regla. Una
  * oferta puede contar en `drops` Y en `inflated` a la vez (ver `PriceEventAnalysis.classes`). */
@@ -50,6 +50,25 @@ export interface PriceEventSnapshot {
   /** Total de ofertas `tachado-por-encima` del día, sin recorte — suma de `byVertical[*].inflated`. */
   inflatedCount: number;
   sellers: PriceEventSellerStat[];
+  /** Cuántas ofertas elegibles vinieron de cada `source` (`mercadolibre`, `fenicio`, `shopify`, …) —
+   * final review M5: la página mide qué fracción del día es MercadoLibre en vez de imprimir un
+   * porcentaje adivinado. Cuenta sobre lo QUE SE CLASIFICÓ (`eligible`, `suspect` incluido no —
+   * ver `refresh.ts`), nunca sobre `analyzed`, así que sigue siendo comparable con `eligible`. */
+  bySource: Record<string, number>;
+  /** Ofertas descartadas por la guarda de plausibilidad (I2a) — precio o precio de lista de hoy fuera
+   * de `[1/5, 5]` veces su propia `priorMedian`, casi siempre un problema de datos (mezcla de
+   * monedas, un precio sin parsear) y no un dato real. Contadas aparte de `analyzed - eligible`
+   * porque esa resta ya mezcla "todavía no tiene historial" con esto. */
+  suspect: number;
+}
+
+/** Parámetros opcionales de {@link buildPriceEventSnapshot} calculados por el llamador (`refresh.ts`)
+ * mientras recorre el cursor de Mongo — no se pueden derivar de `analyses` porque `PriceEventAnalysis`
+ * no lleva `source` (ver el comentario de `OFFER_FIELDS` en `store.ts`: ese campo no lo necesita el
+ * análisis en sí, sólo este conteo). */
+export interface PriceEventSnapshotExtra {
+  bySource?: Record<string, number>;
+  suspect?: number;
 }
 
 /** Techo de la lista de bajas publicadas — una vitrina, no el dataset completo. */
@@ -72,7 +91,8 @@ export function buildPriceEventSnapshot(
   analyses: readonly (PriceEventAnalysis | null)[],
   today: string,
   event: PriceEvent | null,
-  trackingSince: string | null
+  trackingSince: string | null,
+  extra: PriceEventSnapshotExtra = {}
 ): PriceEventSnapshot {
   const eligible = analyses.filter((analysis): analysis is PriceEventAnalysis => analysis !== null);
 
@@ -120,19 +140,31 @@ export function buildPriceEventSnapshot(
       return a.listingId.localeCompare(b.listingId);
     });
 
+  // Final review C1: an unidentified MercadoLibre seller ("ml:unknown", or a real numeric id paired
+  // with the literal fallback name) is not one store — it is however many distinct sellers ML
+  // couldn't name for us. Sharing the 3-per-seller cap between all of them would let the loudest of
+  // those anonymous listings crowd out real, named stores; instead each unidentified listing caps
+  // against ITSELF (keyed by `listingId`, so the cap of 3 never actually binds) and is relabeled so
+  // the table never claims "Mercado Libre" discounted something — MercadoLibre is a marketplace, not
+  // a single seller.
   const topDrops: PriceEventAnalysis[] = [];
   const dropsPerSeller = new Map<string, number>();
   for (const candidate of droppedCandidates) {
     if (topDrops.length >= PRICE_EVENT_MAX_DROPS) break;
-    const count = dropsPerSeller.get(candidate.sellerKey) ?? 0;
+    const unidentifiedMl = isUnidentifiedMlSeller(candidate.sellerKey, candidate.sellerName);
+    const capKey = unidentifiedMl ? `listing:${candidate.listingId}` : candidate.sellerKey;
+    const count = dropsPerSeller.get(capKey) ?? 0;
     if (count >= PRICE_EVENT_MAX_DROPS_PER_SELLER) continue;
-    topDrops.push(candidate);
-    dropsPerSeller.set(candidate.sellerKey, count + 1);
+    topDrops.push(unidentifiedMl ? { ...candidate, sellerName: ML_UNKNOWN_SELLER_DISPLAY_NAME } : candidate);
+    dropsPerSeller.set(capKey, count + 1);
   }
 
   const sellerTotals = new Map<string, { sellerName: string; withListPrice: number; inflated: number }>();
   for (const analysis of eligible) {
     if (analysis.listPrice === null) continue;
+    // C1: an unidentified MercadoLibre seller never enters the sellers table at all — "how many of
+    // Mercado Libre's listings show an inflated crossed-out price" is not a statement about a store.
+    if (isUnidentifiedMlSeller(analysis.sellerKey, analysis.sellerName)) continue;
     const entry = sellerTotals.get(analysis.sellerKey) ?? {
       sellerName: analysis.sellerName,
       withListPrice: 0,
@@ -151,8 +183,21 @@ export function buildPriceEventSnapshot(
       withListPrice: totals.withListPrice,
       inflated: totals.inflated,
       share: Math.round((totals.inflated / totals.withListPrice) * 1000) / 10,
-    }))
-    .sort((a, b) => a.sellerName.localeCompare(b.sellerName));
+    }));
+
+  // M9: a store's own site and its (differently-keyed) MercadoLibre storefront can publish under the
+  // exact same display name — without this, the table would show two identical-looking rows with no
+  // way to tell them apart. Only the MercadoLibre one gets the suffix, so a same-name collision
+  // between two non-ML sources (which this feature has never observed) is left alone rather than
+  // guessed at.
+  const nameCounts = new Map<string, number>();
+  for (const seller of sellers) nameCounts.set(seller.sellerName, (nameCounts.get(seller.sellerName) ?? 0) + 1);
+  for (const seller of sellers) {
+    if ((nameCounts.get(seller.sellerName) ?? 0) > 1 && seller.sellerKey.startsWith("ml:")) {
+      seller.sellerName = `${seller.sellerName} (Mercado Libre)`;
+    }
+  }
+  sellers.sort((a, b) => a.sellerName.localeCompare(b.sellerName));
 
   return {
     key: `day:${today}`,
@@ -167,5 +212,7 @@ export function buildPriceEventSnapshot(
     dropsCount,
     inflatedCount,
     sellers,
+    bySource: extra.bySource ?? {},
+    suspect: extra.suspect ?? 0,
   };
 }

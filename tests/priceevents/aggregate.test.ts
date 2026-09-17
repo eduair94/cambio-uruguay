@@ -252,4 +252,140 @@ describe("buildPriceEventSnapshot", () => {
     expect(snapshot.dropsCount).toBe(0);
     expect(snapshot.inflatedCount).toBe(0);
   });
+
+  it("defaults bySource to {} and suspect to 0 when the caller passes no `extra`", () => {
+    const snapshot = buildPriceEventSnapshot([], TODAY, null, null);
+    expect(snapshot.bySource).toEqual({});
+    expect(snapshot.suspect).toBe(0);
+  });
+
+  it("carries bySource and suspect straight through from `extra`", () => {
+    const snapshot = buildPriceEventSnapshot([], TODAY, null, null, {
+      bySource: { mercadolibre: 12, fenicio: 3 },
+      suspect: 2,
+    });
+    expect(snapshot.bySource).toEqual({ mercadolibre: 12, fenicio: 3 });
+    expect(snapshot.suspect).toBe(2);
+  });
+
+  // -------------------------------------------------------------------------------------------
+  // C1 (final review): "Mercado Libre" is a marketplace, not a store — a listing with no seller id
+  // AND no name gets sellerKey `ml:unknown`, and a listing with an id but no name still gets the
+  // literal fallback sellerName "Mercado Libre" (see `classes/retail/sources/mercadolibre.ts`).
+  // Neither should be listed as if it were one named store.
+  // -------------------------------------------------------------------------------------------
+  describe("C1: an unidentified MercadoLibre seller is never a 'store'", () => {
+    it("excludes ml:unknown entirely from the sellers table, even past the 5-listing floor", () => {
+      const analyses = Array.from({ length: 8 }, (_, i) =>
+        analysis({
+          listingId: `ml:${i}`,
+          sellerKey: "ml:unknown",
+          sellerName: "Mercado Libre",
+          listPrice: 10000,
+          classes: ["tachado-por-encima"],
+        })
+      );
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      expect(snapshot.sellers).toEqual([]);
+      // The day's real total is untouched by the exclusion — only the sellers TABLE drops them.
+      expect(snapshot.inflatedCount).toBe(8);
+    });
+
+    it("also excludes a numeric ml:<id> seller whose name is the bare 'Mercado Libre' fallback", () => {
+      const analyses = Array.from({ length: 6 }, (_, i) =>
+        analysis({
+          listingId: `ml:${i}`,
+          sellerKey: "ml:555",
+          sellerName: "Mercado Libre",
+          listPrice: 10000,
+          classes: ["tachado-por-encima"],
+        })
+      );
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      expect(snapshot.sellers).toEqual([]);
+    });
+
+    it("still lists a NAMED MercadoLibre seller normally (only the literal fallback name is excluded)", () => {
+      const analyses = Array.from({ length: 6 }, (_, i) =>
+        analysis({
+          listingId: `ml:${i}`,
+          sellerKey: "ml:n:tienda-real",
+          sellerName: "Tienda Real",
+          listPrice: 10000,
+          classes: ["tachado-por-encima"],
+        })
+      );
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      expect(snapshot.sellers.map((s) => s.sellerKey)).toEqual(["ml:n:tienda-real"]);
+    });
+
+    it("relabels ml:unknown drops in topDrops as 'Vendedor sin identificar (Mercado Libre)'", () => {
+      const analyses = [
+        analysis({ listingId: "ml:1", sellerKey: "ml:unknown", sellerName: "Mercado Libre", classes: ["baja-real"], dropPct: 20 }),
+      ];
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      expect(snapshot.topDrops[0]!.sellerName).toBe("Vendedor sin identificar (Mercado Libre)");
+      expect(snapshot.topDrops[0]!.sellerKey).toBe("ml:unknown"); // the key itself is untouched
+    });
+
+    it("gives every unidentified ML listing its own slot instead of sharing one seller's 3-row cap", () => {
+      // 5 different ml:unknown LISTINGS with real drops must all make the showcase, unlike 5 drops
+      // from one real seller (capped at 3, see "never lists more than 3 drops from the same seller").
+      const analyses = Array.from({ length: 5 }, (_, i) =>
+        analysis({
+          listingId: `ml:${i}`,
+          sellerKey: "ml:unknown",
+          sellerName: "Mercado Libre",
+          classes: ["baja-real"],
+          dropPct: 10 + i,
+        })
+      );
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      expect(snapshot.topDrops).toHaveLength(5);
+    });
+
+    it("does not let unidentified ML listings crowd out a real seller's own 3-drop allowance", () => {
+      const analyses = [
+        ...Array.from({ length: 5 }, (_, i) =>
+          analysis({ listingId: `ml:${i}`, sellerKey: "ml:unknown", sellerName: "Mercado Libre", classes: ["baja-real"], dropPct: 50 })
+        ),
+        ...[10, 20, 30, 40].map((dropPct, i) =>
+          analysis({ listingId: `real:${i}`, sellerKey: "seller-a", classes: ["baja-real"], dropPct })
+        ),
+      ];
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      expect(snapshot.topDrops.filter((d) => d.sellerKey === "seller-a")).toHaveLength(3);
+      expect(snapshot.topDrops.filter((d) => d.sellerKey === "ml:unknown")).toHaveLength(5);
+    });
+  });
+
+  // -------------------------------------------------------------------------------------------
+  // M9 (final review): a store's own site and its MercadoLibre storefront can publish under the
+  // same display name — disambiguate the ML one in the sellers table.
+  // -------------------------------------------------------------------------------------------
+  describe("M9: sellers sharing a display name — the ML one gets suffixed", () => {
+    it("suffixes only the ml:-keyed seller when two sellers share a display name", () => {
+      const own = Array.from({ length: 5 }, (_, i) =>
+        analysis({ listingId: `store:${i}`, sellerKey: "store:prontometal", sellerName: "Prontometal", listPrice: 10000, classes: ["precio-de-siempre"] })
+      );
+      const ml = Array.from({ length: 5 }, (_, i) =>
+        analysis({ listingId: `ml:${i}`, sellerKey: "ml:n:prontometal", sellerName: "Prontometal", listPrice: 10000, classes: ["precio-de-siempre"] })
+      );
+      const snapshot = buildPriceEventSnapshot([...own, ...ml], TODAY, null, null);
+      const names = snapshot.sellers.map((s) => ({ sellerKey: s.sellerKey, sellerName: s.sellerName }));
+      // "Prontometal" sorts before "Prontometal (Mercado Libre)" (a prefix sorts first).
+      expect(names).toEqual([
+        { sellerKey: "store:prontometal", sellerName: "Prontometal" },
+        { sellerKey: "ml:n:prontometal", sellerName: "Prontometal (Mercado Libre)" },
+      ]);
+    });
+
+    it("leaves sellerName untouched when no other seller shares its name", () => {
+      const analyses = Array.from({ length: 5 }, (_, i) =>
+        analysis({ listingId: `ml:${i}`, sellerKey: "ml:n:unique-store", sellerName: "Unique Store", listPrice: 10000, classes: ["precio-de-siempre"] })
+      );
+      const snapshot = buildPriceEventSnapshot(analyses, TODAY, null, null);
+      expect(snapshot.sellers[0]!.sellerName).toBe("Unique Store");
+    });
+  });
 });

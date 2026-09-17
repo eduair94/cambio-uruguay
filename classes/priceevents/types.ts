@@ -48,6 +48,22 @@ export const PRICE_EVENT_INFLATED_NUM = 11;
 export const PRICE_EVENT_INFLATED_DEN = 10;
 
 /**
+ * `classes/retail/sources/mercadolibre.ts::mlToListing` falls back to the literal name "Mercado
+ * Libre" whenever a listing's own seller has no usable name (`String(result.seller?.name ||
+ * "Mercado Libre")`) — the same branch that produces `sellerKey: "ml:unknown"` when there is also no
+ * numeric seller id (`mlSellerKey`). A seller id WITHOUT a name (`ml:<id>` paired with this literal
+ * name) is just as unidentified for display purposes: it has no human-readable identity, only a
+ * number nobody chose. Final review C1: neither case is a "store" — excluded from the sellers table,
+ * relabeled in the drops table, and never sharing the per-seller cap with a real store.
+ */
+export const ML_UNKNOWN_SELLER_NAME = "Mercado Libre";
+export const ML_UNKNOWN_SELLER_DISPLAY_NAME = "Vendedor sin identificar (Mercado Libre)";
+
+export function isUnidentifiedMlSeller(sellerKey: string, sellerName: string): boolean {
+  return sellerKey.startsWith("ml:") && sellerName === ML_UNKNOWN_SELLER_NAME;
+}
+
+/**
  * Forma estructural mínima que `analyzeOffer` lee de un documento de `pricewatchoffers`
  * (`classes/models/PricewatchOffer.ts`) — sólo los campos que de verdad usa, no el documento
  * entero, así una tarea futura (el job de Task 2) puede pasarle un doc `.lean()` de Mongo con
