@@ -10,7 +10,7 @@ import { EquiparItemModel } from "../models/EquiparItem";
 import { EquiparMetaModel } from "../models/EquiparMeta";
 import { EquiparStoreSnapshotModel } from "../models/EquiparStoreSnapshot";
 import type { RetailListing } from "../retail/types";
-import { EQUIPAR_STORE_SNAPSHOT_KEY, STORE_SNAPSHOT_MAX_BYTES, storeSnapshotBytes } from "./storeSnapshot";
+import { EQUIPAR_STORE_SNAPSHOT_KEY, STORE_SNAPSHOT_MAX_BYTES, storeSnapshotBytes, storeSnapshotRows } from "./storeSnapshot";
 import type { EquiparItem, EquiparMeta } from "./types";
 
 export const EQUIPAR_META_KEY = "equipar-casa-uruguay";
@@ -90,11 +90,12 @@ export async function saveEquiparCatalog(
  * than risking a failed 16 MB write.
  */
 export async function saveStoreSnapshot(listings: readonly RetailListing[], generatedAt: string): Promise<{ bytes: number; saved: boolean }> {
-  const bytes = storeSnapshotBytes(listings);
+  const rows = storeSnapshotRows(listings);
+  const bytes = storeSnapshotBytes(rows);
   if (bytes > STORE_SNAPSHOT_MAX_BYTES) return { bytes, saved: false };
   await EquiparStoreSnapshotModel.updateOne(
     { key: EQUIPAR_STORE_SNAPSHOT_KEY },
-    { $set: { key: EQUIPAR_STORE_SNAPSHOT_KEY, generatedAt, listings } },
+    { $set: { key: EQUIPAR_STORE_SNAPSHOT_KEY, generatedAt, listings: rows } },
     { upsert: true }
   );
   return { bytes, saved: true };

@@ -162,14 +162,20 @@ async function main(): Promise<void> {
   }
 
   // Only the daily run writes the store snapshot, and only after it published: a thin run already
-  // exited above, so it can never overwrite a good snapshot either.
+  // exited above, so it can never overwrite a good snapshot either. Own try/catch, like pricewatch:
+  // the catalogue is already saved, and a failed snapshot write only costs the hourly runs their
+  // store side until tomorrow — it must not turn a published run into exit 1.
   if (!fast) {
     const storeListings = guarded.listings.filter((listing) => listing.source === "store");
-    const snapshot = await saveStoreSnapshot(storeListings, meta.generatedAt);
-    console.log(
-      `[equipar] foto de tiendas: ${storeListings.length} avisos, ${(snapshot.bytes / 1024 / 1024).toFixed(2)} MB` +
-        (snapshot.saved ? "" : " — supera el tope, se conserva la anterior")
-    );
+    try {
+      const snapshot = await saveStoreSnapshot(storeListings, meta.generatedAt);
+      console.log(
+        `[equipar] foto de tiendas: ${storeListings.length} avisos, ${(snapshot.bytes / 1024 / 1024).toFixed(2)} MB` +
+          (snapshot.saved ? "" : " — supera el tope, se conserva la anterior")
+      );
+    } catch (error) {
+      console.error("[equipar] no se pudo guardar la foto de tiendas; la horaria usa la anterior", error);
+    }
   }
 
   for (const basket of baskets) {

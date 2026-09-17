@@ -24,6 +24,22 @@ export const STORE_SNAPSHOT_MAX_BYTES = 12 * 1024 * 1024;
 export const storeSnapshotBytes = (listings: readonly RetailListing[]): number =>
   Buffer.byteLength(JSON.stringify(listings));
 
+/**
+ * The listings as the snapshot stores them: without `attributes.DESCRIPTION`.
+ *
+ * Fenicio copies each product's whole description into that attribute, and it is most of what a
+ * store listing weighs. Nothing downstream of the harvest reads it — the catalogue, the unit guard
+ * and pricewatch read `CATEGORY_SPEC` only — so keeping it only brought the one document closer to
+ * its size ceiling. New objects: the caller's listings are not mutated.
+ */
+export function storeSnapshotRows(listings: readonly RetailListing[]): RetailListing[] {
+  return listings.map((listing) => {
+    if (!listing.attributes || !("DESCRIPTION" in listing.attributes)) return listing;
+    const { DESCRIPTION: _description, ...attributes } = listing.attributes;
+    return { ...listing, attributes };
+  });
+}
+
 export interface StoreSnapshotMerge {
   listings: RetailListing[];
   /** Snapshot rows added because the fresh run did not read them. */

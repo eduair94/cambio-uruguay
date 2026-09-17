@@ -5,6 +5,7 @@ import {
   STORE_SNAPSHOT_MAX_BYTES,
   mergeStoreSnapshot,
   storeSnapshotBytes,
+  storeSnapshotRows,
 } from "../../classes/equipar/storeSnapshot";
 import { EquiparStoreSnapshotModel } from "../../classes/models/EquiparStoreSnapshot";
 import type { RetailListing } from "../../classes/retail/types";
@@ -75,6 +76,19 @@ describe("foto de avisos de tienda para la corrida horaria", () => {
     const listings = [row("a"), row("b")];
     expect(storeSnapshotBytes(listings)).toBe(Buffer.byteLength(JSON.stringify(listings)));
     expect(STORE_SNAPSHOT_MAX_BYTES).toBeLessThanOrEqual(12 * 1024 * 1024);
+  });
+
+  // Fenicio guarda la descripción entera de cada producto en attributes.DESCRIPTION. Equipar nunca la
+  // lee (sólo CATEGORY_SPEC), y era el grueso del documento que tiene que quedar bajo 12 MB.
+  it("guarda los avisos sin attributes.DESCRIPTION y sin tocar el resto ni el aviso original", () => {
+    const original = row("store:fenicio:1", {
+      attributes: { CATEGORY_SPEC: "heladera", PRODUCT_TYPE: "Heladeras", DESCRIPTION: "x".repeat(5000) },
+    });
+    const [stored] = storeSnapshotRows([original]);
+    expect(stored!.attributes).toEqual({ CATEGORY_SPEC: "heladera", PRODUCT_TYPE: "Heladeras" });
+    expect({ ...stored, attributes: undefined }).toEqual({ ...original, attributes: undefined });
+    expect(original.attributes.DESCRIPTION).toHaveLength(5000);
+    expect(storeSnapshotBytes([stored!])).toBeLessThan(storeSnapshotBytes([original]) - 4000);
   });
 
   it("vive en un único documento de la base de la app, colección equiparstoresnapshots", () => {
