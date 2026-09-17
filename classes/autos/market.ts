@@ -2,6 +2,7 @@
 // quality gates as the opportunity engine, and a row needs five adverts.
 import { quantile } from "./stats";
 import { EXCLUDING_FLAGS } from "./analyze";
+import { guideYearsFor, type CarGuideEntry } from "./catalog/guide";
 import type { PublicCarMarketRow, PublicCarMarketSnapshot } from "./publicTypes";
 import type { CarListing } from "./types";
 
@@ -33,7 +34,7 @@ function groupBy<T>(items: readonly T[], key: (item: T) => string): Map<string, 
 
 export function buildMarketSnapshots(
   listings: readonly CarListing[],
-  options: { now: Date; generatedAt: string; freshDays: number },
+  options: { now: Date; generatedAt: string; freshDays: number; guide?: ReadonlyMap<string, CarGuideEntry> },
 ): PublicCarMarketSnapshot[] {
   const cutoff = options.now.getTime() - options.freshDays * 86_400_000;
   const fresh = listings.filter(listing => Date.parse(listing.lastSeen) >= cutoff);
@@ -59,7 +60,8 @@ export function buildMarketSnapshots(
     const newest = [...group].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen))[0]!;
     snapshots.push({
       version: 1, slug, brand: newest.brand, model: newest.model, brandSlug: newest.brandSlug, modelSlug: newest.modelSlug,
-      generatedAt: options.generatedAt, listings: group.length, years, rows, guide: [], guideUpdatedAt: null,
+      generatedAt: options.generatedAt, listings: group.length, years, rows,
+      ...guideYearsFor(newest.brandSlug, newest.modelSlug, options.guide ?? new Map()),
     });
   }
   return snapshots.sort((a, b) => b.listings - a.listings || a.slug.localeCompare(b.slug));

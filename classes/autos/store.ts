@@ -1,6 +1,7 @@
 // APP DB boundary of the used-car job. Pure rules first (tested without Mongo), then I/O.
 import { appConnection } from "../appdb";
 import { CarCatalogMetaModel } from "../models/CarCatalogMeta";
+import { CarFbCardModel } from "../models/CarFbCard";
 import { CarGuideEntryModel } from "../models/CarGuideEntry";
 import { CarHarvestMetaModel } from "../models/CarHarvestMeta";
 import { CarListingModel } from "../models/CarListing";
@@ -11,7 +12,8 @@ import { carKey } from "./enrich";
 import { slugify } from "./normalize";
 import type { DetailFetchResult } from "./detail";
 import type { PublicCarCatalogMeta, PublicCarListing, PublicCarMarketSnapshot, PublicCarOpportunitySnapshot } from "./publicTypes";
-import type { CarHarvestResult, CarModelVocabulary, CarPricePoint, RawCarListing, StoredCar } from "./types";
+import type { FbCard, FbItem } from "./sources/facebook";
+import type { CarDetail, CarHarvestResult, CarModelVocabulary, CarPricePoint, CarSource, CarSourceResult, RawCarListing, StoredCar } from "./types";
 
 export const CAR_CATALOG_COLLECTION = "carcatalog";
 const CHUNK = 300;
@@ -103,13 +105,13 @@ export async function loadStoredCars(now: Date, days = 21): Promise<StoredCar[]>
   return rows as unknown as StoredCar[];
 }
 
-export async function saveCarHarvest(harvest: CarHarvestResult): Promise<{ upserted: number; retired: number }> {
+async function upsertListings(listings: readonly RawCarListing[], details: ReadonlyMap<string, CarDetail> | null): Promise<number> {
   const collection = listingsCollection();
   await collection.createIndex({ key: 1 }, { unique: true });
   await collection.createIndex({ lastSeen: 1 });
   let upserted = 0;
-  for (let index = 0; index < harvest.listings.length; index += CHUNK) {
-    const chunk = harvest.listings.slice(index, index + CHUNK);
+  for (let index = 0; index < listings.length; index += CHUNK) {
+    const chunk = listings.slice(index, index + CHUNK);
     const existing = new Map(
       (await collection.find({ key: { $in: chunk.map(listing => carKey(listing.id, listing.source)) } }, { projection: { key: 1, priceHistory: 1 } }).toArray())
         .map(doc => [String(doc.key), doc])
@@ -117,12 +119,13 @@ export async function saveCarHarvest(harvest: CarHarvestResult): Promise<{ upser
     const operations = chunk.map(listing => {
       const key = carKey(listing.id, listing.source);
       const history = nextPriceHistory((existing.get(key)?.priceHistory as CarPricePoint[] | undefined) ?? [], listing);
+      const detail = details?.get(key);
       return {
         updateOne: {
           filter: { key },
           update: {
-            $set: { listing, lastSeen: listing.observedAt, priceHistory: history, missedFullSweeps: 0, retiredAt: null },
-            $setOnInsert: { key, firstSeen: listing.observedAt, detail: null },
+            $set: { listing, lastSeen: listing.observedAt, priceHistory: history, missedFullSweeps: 0, retiredAt: null, ...(detail ? { detail } : {}) },
+            $setOnInsert: { key, firstSeen: listing.observedAt, ...(detail ? {} : { detail: null }) },
           },
           upsert: true,
         },
@@ -131,32 +134,156 @@ export async function saveCarHarvest(harvest: CarHarvestResult): Promise<{ upser
     const result = await collection.bulkWrite(operations, { ordered: false });
     upserted += result.upsertedCount + result.modifiedCount;
   }
+  return upserted;
+}
+
+async function countMisses(filter: Record<string, unknown>, finishedAt: string): Promise<number> {
+  const collection = listingsCollection();
+  const missing = await collection.find(filter, { projection: { key: 1, missedFullSweeps: 1, retiredAt: 1 } }).toArray();
+  let retired = 0;
+  const operations = missing.map(doc => {
+    const update = sweepUpdate(doc as { missedFullSweeps?: number; retiredAt?: string | null }, finishedAt);
+    if (update.retiredAt) retired++;
+    return { updateOne: { filter: { key: doc.key }, update: { $set: update } } };
+  });
+  for (let index = 0; index < operations.length; index += CHUNK) {
+    await collection.bulkWrite(operations.slice(index, index + CHUNK), { ordered: false });
+  }
+  return retired;
+}
+
+export async function saveCarHarvest(harvest: CarHarvestResult): Promise<{ upserted: number; retired: number }> {
+  const upserted = await upsertListings(harvest.listings, null);
   let retired = 0;
   if (harvest.mode === "full" && harvest.completeBrands.length) {
     // A lower bound too: a full run only needs to reconsider adverts it could plausibly have seen
     // again, so this doesn't rescan the whole history on every run.
     const missSince = new Date(Date.parse(harvest.startedAt) - 21 * 86_400_000).toISOString();
-    const missing = await collection.find(
-      {
-        // Web adverts share ML brand ids: an ML sweep must never retire them.
-        "listing.source": "mercadolibre",
-        "listing.brandId": { $in: harvest.completeBrands },
-        key: { $nin: harvest.listings.map(listing => carKey(listing.id, listing.source)) },
-        lastSeen: { $lt: harvest.startedAt, $gte: missSince },
-        retiredAt: null,
-      },
-      { projection: { key: 1, missedFullSweeps: 1, retiredAt: 1 } }
-    ).toArray();
-    const operations = missing.map(doc => {
-      const update = sweepUpdate(doc as { missedFullSweeps?: number; retiredAt?: string | null }, harvest.finishedAt);
-      if (update.retiredAt) retired++;
-      return { updateOne: { filter: { key: doc.key }, update: { $set: update } } };
-    });
-    for (let index = 0; index < operations.length; index += CHUNK) {
-      await collection.bulkWrite(operations.slice(index, index + CHUNK), { ordered: false });
-    }
+    retired = await countMisses({
+      // Web adverts share ML brand ids: an ML sweep must never retire them.
+      "listing.source": "mercadolibre",
+      "listing.brandId": { $in: harvest.completeBrands },
+      key: { $nin: harvest.listings.map(listing => carKey(listing.id, listing.source)) },
+      lastSeen: { $lt: harvest.startedAt, $gte: missSince },
+      retiredAt: null,
+    }, harvest.finishedAt);
   }
   return { upserted, retired };
+}
+
+/** Only this source's adverts, unseen by a COMPLETE read, last seen within 21 days. */
+export function sourceRetirementFilter(result: Pick<CarSourceResult, "source" | "startedAt" | "listings">): Record<string, unknown> {
+  return {
+    "listing.source": result.source,
+    key: { $nin: result.listings.map(listing => carKey(listing.id, listing.source)) },
+    lastSeen: { $lt: result.startedAt, $gte: new Date(Date.parse(result.startedAt) - 21 * 86_400_000).toISOString() },
+    retiredAt: null,
+  };
+}
+
+export async function saveSourceHarvest(result: CarSourceResult, options: { retireKeys?: readonly string[] } = {}): Promise<{ upserted: number; retired: number }> {
+  const upserted = await upsertListings(result.listings, result.details);
+  let retired = 0;
+  if (result.complete) retired += await countMisses(sourceRetirementFilter(result), result.finishedAt);
+  const retireKeys = [...(options.retireKeys ?? [])];
+  for (const [key, detail] of result.details) if (!detail.active) retireKeys.push(key);
+  if (retireKeys.length) {
+    const outcome = await listingsCollection().updateMany({ key: { $in: retireKeys }, retiredAt: null }, { $set: { retiredAt: result.finishedAt } });
+    retired += outcome.modifiedCount;
+  }
+  return { upserted, retired };
+}
+
+export interface SourceMetaRecord {
+  source: CarSource;
+  ok: boolean;
+  complete: boolean;
+  listings: number;
+  requests: number;
+  note: string | null;
+  startedAt: string;
+  finishedAt: string;
+  lastOkAt: string | null;
+  failingSince: string | null;
+}
+
+export function sourceMetaRecord(result: CarSourceResult, previous: { lastOkAt?: string | null; failingSince?: string | null } | null): SourceMetaRecord {
+  return {
+    source: result.source,
+    ok: result.ok,
+    complete: result.complete,
+    listings: result.listings.length,
+    requests: result.requests,
+    note: result.note,
+    startedAt: result.startedAt,
+    finishedAt: result.finishedAt,
+    lastOkAt: result.ok ? result.finishedAt : previous?.lastOkAt ?? null,
+    failingSince: result.ok ? null : previous?.failingSince ?? result.finishedAt,
+  };
+}
+
+const sourceMetaKey = (source: CarSource): string => `uy-cars-source-${source}`;
+
+export async function saveSourceMeta(result: CarSourceResult): Promise<SourceMetaRecord> {
+  const key = sourceMetaKey(result.source);
+  const previous = (await loadHarvestMeta(key)) as { lastOkAt?: string | null; failingSince?: string | null } | null;
+  const record = sourceMetaRecord(result, previous);
+  await CarHarvestMetaModel.updateOne({ key }, { $set: { updatedAt: result.finishedAt, data: record } }, { upsert: true });
+  return record;
+}
+
+export async function loadSourceMetas(): Promise<Map<CarSource, { lastOkAt: string | null; ok: boolean }>> {
+  const docs = await CarHarvestMetaModel.find({ key: { $regex: "^uy-cars-source-" } }).lean();
+  const metas = new Map<CarSource, { lastOkAt: string | null; ok: boolean }>();
+  for (const doc of docs) {
+    const data = doc.data as Partial<SourceMetaRecord> | undefined;
+    if (data?.source) metas.set(data.source, { lastOkAt: data.lastOkAt ?? null, ok: data.ok === true });
+  }
+  return metas;
+}
+
+const fbCollection = () => appConnection().collection(CarFbCardModel.collection.name);
+
+export async function upsertFbCards(cards: readonly FbCard[], observedAt: string): Promise<void> {
+  if (!cards.length) return;
+  const collection = fbCollection();
+  await collection.createIndex({ key: 1 }, { unique: true });
+  await collection.createIndex({ lastSeen: 1 });
+  for (let index = 0; index < cards.length; index += CHUNK) {
+    await collection.bulkWrite(cards.slice(index, index + CHUNK).map(card => ({
+      updateOne: {
+        filter: { key: `fb-${card.id}` },
+        update: { $set: { card, lastSeen: observedAt }, $setOnInsert: { key: `fb-${card.id}`, firstSeen: observedAt, item: null } },
+        upsert: true,
+      },
+    })), { ordered: false });
+  }
+}
+
+export async function saveFbItems(items: readonly FbItem[]): Promise<void> {
+  if (!items.length) return;
+  await fbCollection().bulkWrite(items.map(item => ({
+    updateOne: { filter: { key: `fb-${item.id}` }, update: { $set: { item } } },
+  })), { ordered: false });
+}
+
+export async function loadFbCards(since: string): Promise<Array<FbCard & { lastSeen: string; item: FbItem | null }>> {
+  const docs = await fbCollection().find(
+    { $or: [{ lastSeen: { $gte: since } }, { "item.readAt": { $gte: since } }] },
+    { projection: { _id: 0 } },
+  ).toArray();
+  return docs.map(doc => ({ ...(doc.card as FbCard), lastSeen: String(doc.lastSeen), item: (doc.item as FbItem | null) ?? null }));
+}
+
+const FB_WANTED_KEY = "uy-cars-fb-wanted";
+
+export async function loadFbWanted(): Promise<Set<string>> {
+  const data = await loadHarvestMeta(FB_WANTED_KEY);
+  return new Set(Array.isArray(data?.ids) ? (data!.ids as string[]) : []);
+}
+
+export async function saveFbWanted(ids: readonly string[], at: string): Promise<void> {
+  await CarHarvestMetaModel.updateOne({ key: FB_WANTED_KEY }, { $set: { updatedAt: at, data: { ids: ids.slice(0, 500) } } }, { upsert: true });
 }
 
 export async function saveCarDetails(result: DetailFetchResult, now: string): Promise<void> {
@@ -211,6 +338,7 @@ export async function publishCarCatalog(rows: readonly PublicCarListing[], meta:
   await collection.createIndex({ brandSlug: 1, lastSeen: -1 });
   await collection.createIndex({ lastSeen: -1, firstSeen: -1 });
   await collection.createIndex({ priceUsd: 1 });
+  await collection.createIndex({ source: 1, lastSeen: -1 });
   for (let index = 0; index < rows.length; index += CHUNK) {
     await collection.bulkWrite(rows.slice(index, index + CHUNK).map(row => ({
       replaceOne: { filter: { key: row.key }, replacement: row, upsert: true },

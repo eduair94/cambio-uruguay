@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildMarketSnapshots } from "../../classes/autos/market";
+import { guideKey } from "../../classes/autos/catalog/guide";
 import type { CarListing } from "../../classes/autos/types";
 
 const NOW = new Date("2026-09-16T12:00:00.000Z");
@@ -48,5 +49,18 @@ describe("buildMarketSnapshots", () => {
     const backward = buildMarketSnapshots([...groupB, ...groupA], { now: NOW, generatedAt: NOW.toISOString(), freshDays: 4 });
     expect(forward[0]!.rows.map(r => r.engine)).toEqual(["1.2", "1.6"]);
     expect(backward).toEqual(forward);
+  });
+});
+
+describe("guide rows", () => {
+  it("adds the ML guide of the model, newest year first", () => {
+    const key = guideKey("peugeot", "208", 2016);
+    const guide = new Map([[key, {
+      key, brandSlug: "peugeot", modelSlug: "208", year: 2016, status: "ok" as const, averageUsd: 9_500, updatedLabel: null,
+      fetchedAt: NOW.toISOString(), versions: [{ name: "Peugeot 208 2016 Active", slug: "active", priceUsd: 9_100 }],
+    }]]);
+    const [snapshot] = buildMarketSnapshots(Array.from({ length: 5 }, () => car()), { now: NOW, generatedAt: NOW.toISOString(), freshDays: 4, guide });
+    expect(snapshot!.guide).toEqual([{ year: 2016, averageUsd: 9_500, versions: [{ name: "Active", priceUsd: 9_100 }] }]);
+    expect(snapshot!.guideUpdatedAt).toBe(NOW.toISOString());
   });
 });

@@ -24,6 +24,10 @@ function fakeCollection(docs: Doc[] = []) {
       writes.push(...operations);
       return { upsertedCount: operations.length, modifiedCount: 0 };
     }),
+    updateMany: vi.fn(async (filter: Doc, update: Doc) => {
+      writes.push({ updateMany: { filter, update } });
+      return { modifiedCount: filter.key.$in.length };
+    }),
   };
 }
 vi.mock("../../classes/appdb", () => ({
@@ -35,10 +39,10 @@ vi.mock("../../classes/appdb", () => ({
 
 import {
   collapseRefusal, harvestMetaRecord, mergeVocabularies, nextPriceHistory, publishCarCatalog, publishCarMarkets,
-  saveCarHarvest, saveRefusal, sweepUpdate,
+  saveCarHarvest, saveRefusal, saveSourceHarvest, sourceMetaRecord, sweepUpdate,
 } from "../../classes/autos/store";
 import { CarHarvestMetaModel } from "../../classes/models/CarHarvestMeta";
-import type { CarHarvestResult, RawCarListing } from "../../classes/autos/types";
+import type { CarDetail, CarHarvestResult, CarSourceResult, RawCarListing } from "../../classes/autos/types";
 import type { PublicCarCatalogMeta, PublicCarListing, PublicCarMarketSnapshot } from "../../classes/autos/publicTypes";
 
 const raw = (id: string, price = 10_000): RawCarListing => ({
@@ -162,5 +166,45 @@ describe("saveCarHarvest", () => {
     expect(result.retired).toBe(1);
     expect(listings.writes.find(op => op.updateOne?.filter.key === "ml-MLU9")).toBeDefined();
     expect(listings.writes.find(op => op.updateOne?.filter.key === "ml-MLU7")).toBeUndefined();
+  });
+});
+
+describe("saveSourceHarvest", () => {
+  const web = (id: string): RawCarListing => ({ ...raw(id), source: "carone" });
+  const detail = (active: boolean): CarDetail => ({
+    readAt: "2026-09-16T10:30:00.000Z", price: 10_000, currency: "USD", active, brand: "Chevrolet", model: "Onix", year: 2019,
+    km: 90_000, version: null, engineText: null, sellerName: "Car One", bodyType: null, color: null, doors: null, flags: [], description: "",
+  });
+  const result = (overrides: Partial<CarSourceResult>): CarSourceResult => ({
+    source: "carone", ok: true, complete: true, listings: [web("1")], details: new Map([["carone-1", detail(true)]]), requests: 3,
+    note: null, startedAt: "2026-09-16T10:00:00.000Z", finishedAt: "2026-09-16T10:30:00.000Z", ...overrides,
+  });
+  it("stores the synthesized detail and counts misses only of its own source after a complete read", async () => {
+    const listings = fakeCollection([
+      { key: "carone-7", priceHistory: [], listing: web("7"), lastSeen: "2026-09-15T00:00:00.000Z", retiredAt: null, missedFullSweeps: 1 },
+      { key: "ml-MLU7", priceHistory: [], listing: raw("MLU7"), lastSeen: "2026-09-15T00:00:00.000Z", retiredAt: null, missedFullSweeps: 1 },
+    ]);
+    collections.set("carlistings", listings);
+    const saved = await saveSourceHarvest(result({}));
+    expect(saved.retired).toBe(1);
+    const upsert = listings.writes.find(op => op.updateOne?.filter.key === "carone-1")!;
+    expect(upsert.updateOne.update.$set.detail).toMatchObject({ sellerName: "Car One", active: true });
+    expect(listings.writes.find(op => op.updateOne?.filter.key === "carone-7")!.updateOne.update.$set.retiredAt).toBe("2026-09-16T10:30:00.000Z");
+    expect(listings.writes.find(op => op.updateOne?.filter.key === "ml-MLU7")).toBeUndefined();
+  });
+  it("never counts misses after a partial read, but retires what it was told and inactive details", async () => {
+    const listings = fakeCollection([
+      { key: "carone-7", priceHistory: [], listing: web("7"), lastSeen: "2026-09-15T00:00:00.000Z", retiredAt: null, missedFullSweeps: 1 },
+    ]);
+    collections.set("carlistings", listings);
+    const saved = await saveSourceHarvest(result({ complete: false, details: new Map([["carone-1", detail(false)]]) }), { retireKeys: ["carone-9"] });
+    expect(listings.writes.find(op => op.updateOne?.filter.key === "carone-7")).toBeUndefined();
+    const retire = listings.writes.find(op => op.updateMany)!;
+    expect(retire.updateMany.filter.key.$in).toEqual(["carone-9", "carone-1"]);
+    expect(saved.retired).toBe(2);
+  });
+  it("keeps the last good read of a failing source", () => {
+    const record = sourceMetaRecord(result({ ok: false, complete: false, note: "página 1 sin respuesta" }), { lastOkAt: "2026-09-15T10:00:00.000Z", failingSince: null });
+    expect(record).toMatchObject({ ok: false, lastOkAt: "2026-09-15T10:00:00.000Z", failingSince: "2026-09-16T10:30:00.000Z", source: "carone" });
   });
 });
