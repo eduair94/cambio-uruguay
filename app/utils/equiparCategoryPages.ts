@@ -3,8 +3,8 @@
 // `app/utils` es un namespace de auto-import PLANO: cada export lleva el prefijo `equipar`/`EQUIPAR_`
 // para no chocar con otra página. Este archivo es el ESPEJO A MANO de `classes/equipar/registry.ts`
 // (mismas claves, mismo orden, mismo `tier`/`room`/`label`) — los dos paquetes compilan bajo
-// tsconfigs separados y no pueden compartir un módulo. `tests/equipar/app_mirror_parity.test.ts`
-// (raíz) vigila que no se desincronicen. Cambiá los dos juntos.
+// tsconfigs separados y no pueden compartir un módulo. `app/tests/unit/equiparMirrorParity.test.ts`
+// (suite del app) vigila que no se desincronicen. Cambiá los dos juntos.
 //
 // Lo que agrega este archivo sobre el registro (que sólo sabe scrapear y tildear necesidad) es
 // copy editorial: título SEO, guía "qué mirar al comprar" (afirmaciones generales, sin cifras
