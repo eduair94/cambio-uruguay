@@ -30,7 +30,7 @@ describe("identifyPhone", () => {
     it(`identifies: ${fixture.title}`, () => {
       const identity = identifyPhone(fixture.title);
       expect(identity).not.toBeNull();
-      expect(identity!.key).toBe(fixture.key);
+      expect(identity!.key).toBe(fixture.id);
       if (fixture.esimOnly !== undefined) {
         expect(identity!.esimOnly).toBe(fixture.esimOnly);
       }
