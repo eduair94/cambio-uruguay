@@ -441,30 +441,47 @@ module.exports = {
       // currency-property-services (domingos 07:33) y currency-property-opportunities-hourly (minuto
       // :17 de cada hora); ninguno usa los mismos servicios externos. Arctic Shift también lo lee
       // currency-charruadevs, pero a las 12:14. Minuto 17: no es múltiplo de 5. Necesita APP_MONGO_URI.
+      //
+      // Fix round 1 (I1): shares scripts/run-store-profiles.sh with currency-store-reddit — the two
+      // load and rewrite the SAME APP DB `storeprofiles` documents, and a --reddit-only run can take
+      // up to ~4h on the full call budget (measured ~16.7s/call × 900), long enough to still be
+      // running when this weekly run starts. The wrapper's shared flock (STORES_LOCK_FILE) keeps
+      // them from ever running together: this job WAITS (up to STORES_FULL_LOCK_WAIT_SECONDS,
+      // 7200s) instead of racing or canceling the nightly job.
       name: "currency-store-profiles",
       autorestart: false,
       exec_mode: "fork",
-      script: "dist/sync_store_profiles.js",
+      script: "scripts/run-store-profiles.sh",
+      interpreter: "bash",
       cron_restart: "17 7 * * 0",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
-      // Task 13: nightly `--reddit-only` — same script as currency-store-profiles, but it asks
-      // Reddit only; site/age/trustpilot/google and the catalogue keep exactly last week's value.
-      // Measured on Task 12: a store's 24-month Arctic Shift backfill costs ~90 calls (~25 min), so
-      // the weekly job's 900-call budget would need ~8 weeks to finish backfilling all 76 stores.
-      // Nightly at the same budget finishes it in ~8 nights instead — the other signals stay weekly
-      // on purpose: Google Places (fetchGoogle) charges per call, and re-reading a domain's age or
-      // Trustpilot every night would answer nothing new.
+      // Task 13: nightly `--reddit-only` — same wrapper/script as currency-store-profiles, but it
+      // asks Reddit only; site/age/trustpilot/google and the catalogue keep exactly last week's
+      // value. Measured on Task 12: a store's 24-month Arctic Shift backfill costs ~90 calls (~25
+      // min), so the weekly job's 900-call budget would need ~8 weeks to finish backfilling all 76
+      // stores. Nightly at the same budget finishes it in ~8 nights instead — the other signals stay
+      // weekly on purpose: Google Places (fetchGoogle) charges per call, and re-reading a domain's
+      // age or Trustpilot every night would answer nothing new.
       //
       // 03:41 UTC = 00:41 in Montevideo, free of every other cron in this file. autorestart:false and
       // exec_mode:"fork" for the same reason as every other cron app here: pm2 must not turn "runs
       // once a night" into "runs forever". A store is only saved when Reddit itself progressed this
       // run (a new mention or a moved cursor) — a night with nothing new for a store writes nothing.
+      //
+      // Fix round 1 (I1, and rulings 2-3): shares the lock above with currency-store-profiles as the
+      // NON-blocking side (`flock -n`) — if the weekly full run holds it, this job prints and exits 0
+      // instead of waiting or racing it. It also skips a store whose 24-month backfill already
+      // finished (`needsRedditBackfill` — the weekly job keeps that store's signal fresh from there)
+      // and caps its own wall clock at STORES_REDDIT_MAX_MINUTES (default 150), independent of the
+      // call budget, so retries/backoff on an unusually slow night cannot run it into the Sunday
+      // weekly job's start.
       name: "currency-store-reddit",
       autorestart: false,
       exec_mode: "fork",
-      script: "dist/sync_store_profiles.js",
+      script: "scripts/run-store-profiles.sh",
+      interpreter: "bash",
       args: "--reddit-only",
       cron_restart: "41 3 * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",

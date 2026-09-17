@@ -43,11 +43,13 @@ import {
   buildProfile,
   carriedReddit,
   formatStoreLogLine,
+  needsRedditBackfill,
   redditProgressed,
   shouldLoadCatalog,
   shouldQuerySignal,
   shouldSaveStore,
   shouldStopEarly,
+  shouldStopForDeadline,
   storeSignalApplies,
   type StoreProfileDoc,
   type StoreRunMode,
@@ -64,6 +66,12 @@ import type { StoreEntry } from "./classes/stores/types";
 
 /** HTTP calls to Arctic Shift for the whole run, retries included. */
 const REDDIT_MAX_CALLS = Number(process.env.STORES_REDDIT_MAX_CALLS || 900);
+
+/** Fix round 1, ruling 2: wall-clock cap for `--reddit-only`, independent of the call budget above —
+ * a night of retries and backoff can run long even within budget, and this run must still end before
+ * the Sunday weekly job (07:17 UTC) might start. Only stops STARTING a new store; see
+ * `shouldStopForDeadline`. */
+const REDDIT_ONLY_MAX_MINUTES = Number(process.env.STORES_REDDIT_MAX_MINUTES || 150);
 
 /** The signals read from outside this process. The catalogue is our own database: it answers
  * whenever Mongo does, so counting it would make every run look healthy during a network outage. */
@@ -253,6 +261,21 @@ async function main(): Promise<void> {
     previous = await writer.loadStoreProfiles();
   }
 
+  if (mode === "reddit-only") {
+    // Fix round 1, ruling 3: a store whose 24-month backfill already finished has nothing left for
+    // this mode to add — the weekly job keeps its signal fresh from there day by day. Filtering here
+    // (not inside the loop) means a finished store never counts against the early-stop or wall-clock
+    // budgets below either.
+    const pending = stores.filter((entry) =>
+      needsRedditBackfill(entry, carriedReddit(entry, previous.get(entry.key) ?? null).cursor)
+    );
+    console.log(
+      `[tiendas] --reddit-only: ${pending.length}/${stores.length} tiendas con backfill pendiente` +
+        " (el resto ya está al día y lo retoma la corrida semanal)"
+    );
+    stores = pending;
+  }
+
   let catalog: Map<string, CatalogSignal> | undefined;
   if (!shouldLoadCatalog(mode)) {
     console.log("[tiendas] --reddit-only: catálogos propios sin consultar");
@@ -270,6 +293,13 @@ async function main(): Promise<void> {
   const runs: StoreRun[] = [];
   let saved = 0;
   for (const entry of stores) {
+    if (mode === "reddit-only" && shouldStopForDeadline(Date.now() - startedAt, REDDIT_ONLY_MAX_MINUTES)) {
+      // Fix round 1, ruling 2: wall-clock cap, independent of the call budget. The store already
+      // under way (if any — there is none: this check runs BETWEEN stores) always finishes; this
+      // only stops the NEXT one from starting, and the run ends normally right after the loop.
+      console.log(`[tiendas] --reddit-only: se cumplieron ${REDDIT_ONLY_MAX_MINUTES} minutos — se corta antes de la próxima tienda`);
+      break;
+    }
     const run = await readStore(entry, catalog, previous.get(entry.key) ?? null, redditBudget, mode);
     runs.push(run);
 

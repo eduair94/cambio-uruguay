@@ -47,7 +47,12 @@ describe("pm2 fleet registration", () => {
 
   it("registers every scheduled sync job in the deploy script", () => {
     const missing = apps
-      .filter((app) => /^dist\/sync_[a-z0-9_]+\.js$/.test(app.script) || app.script === "scripts/run-rentals.sh")
+      .filter(
+        (app) =>
+          /^dist\/sync_[a-z0-9_]+\.js$/.test(app.script) ||
+          app.script === "scripts/run-rentals.sh" ||
+          app.script === "scripts/run-store-profiles.sh"
+      )
       .filter((app) => !registered.has(app.name))
       .map((app) => app.name);
     expect(missing, `add these to OTHER_APPS in scripts/deploy-backend.sh: ${missing.join(", ")}`).toEqual([]);

@@ -10,10 +10,12 @@ import fs from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import {
+  needsRedditBackfill,
   redditProgressed,
   shouldLoadCatalog,
   shouldQuerySignal,
   shouldSaveStore,
+  shouldStopForDeadline,
 } from "../../classes/stores/profile";
 import type { StoreEntry } from "../../classes/stores/types";
 import type { RedditCursor } from "../../classes/stores/signals/reddit";
@@ -111,10 +113,58 @@ describe("shouldSaveStore", () => {
     expect(shouldSaveStore({ mode: "reddit-only", queried: ["reddit"], failed: [], redditProgressed: false })).toBe(
       false
     );
-    // Even a "successful" Reddit call (no failure at all) does not earn a write on its own.
-    expect(
-      shouldSaveStore({ mode: "reddit-only", queried: ["reddit"], failed: [], redditProgressed: false })
-    ).toBe(false);
+    // full mode with nothing queried at all (e.g. a store with no domain and no Reddit terms) still
+    // never saves: 0 failed < 0 queried is false, not vacuously true.
+    expect(shouldSaveStore({ mode: "full", queried: [], failed: [], redditProgressed: false })).toBe(false);
+  });
+});
+
+// Fix round 1, ruling 3: a nightly reddit-only run must stop asking Arctic Shift about a store once
+// its 24-month backfill is complete — that store's Reddit signal moves on from then on only through
+// the weekly incremental refresh, so hitting it again every night would be pure cost for no new data.
+describe("needsRedditBackfill", () => {
+  const cursor = (backfillDone: boolean): RedditCursor => ({
+    backfillStartUtc: 0,
+    backfillNextUtc: 1,
+    backfillDone,
+    checkedUntilUtc: 1,
+  });
+
+  it("processes a store that never started (no cursor)", () => {
+    expect(needsRedditBackfill(entry(), null)).toBe(true);
+  });
+
+  it("processes a store whose backfill is still running", () => {
+    expect(needsRedditBackfill(entry(), cursor(false))).toBe(true);
+  });
+
+  it("skips a store whose backfill already finished — the weekly job keeps it fresh from here", () => {
+    expect(needsRedditBackfill(entry(), cursor(true))).toBe(false);
+  });
+
+  it("skips a store too ambiguous to search at all, cursor or not", () => {
+    expect(needsRedditBackfill(entry({ redditTerms: [] }), null)).toBe(false);
+    expect(needsRedditBackfill(entry({ redditTerms: [] }), cursor(false))).toBe(false);
+  });
+});
+
+// Fix round 1, ruling 2: a wall-clock cap independent of the call budget — retries and backoffs can
+// make a night unusually slow even within STORES_REDDIT_MAX_CALLS, and the nightly run must still end
+// before the Sunday weekly job (07:17 UTC) might start.
+describe("shouldStopForDeadline", () => {
+  const MAX_MINUTES = 150;
+
+  it("keeps going before the deadline", () => {
+    expect(shouldStopForDeadline((MAX_MINUTES - 1) * 60_000, MAX_MINUTES)).toBe(false);
+  });
+
+  it("stops once the deadline is reached or passed", () => {
+    expect(shouldStopForDeadline(MAX_MINUTES * 60_000, MAX_MINUTES)).toBe(true);
+    expect(shouldStopForDeadline((MAX_MINUTES + 1) * 60_000, MAX_MINUTES)).toBe(true);
+  });
+
+  it("never stops at zero elapsed time", () => {
+    expect(shouldStopForDeadline(0, MAX_MINUTES)).toBe(false);
   });
 });
 
@@ -175,5 +225,84 @@ describe("sync_store_profiles.ts wiring", () => {
     for (const call of calls) {
       expect(blocks.some(([open, close]) => call > open && call < close)).toBe(true);
     }
+  });
+
+  it("reads STORES_REDDIT_MAX_MINUTES and gates the loop through shouldStopForDeadline", () => {
+    expect(SRC).toMatch(/STORES_REDDIT_MAX_MINUTES/);
+    expect(SRC).toMatch(/shouldStopForDeadline\(/);
+  });
+
+  it("filters stores in reddit-only mode through needsRedditBackfill before the main loop", () => {
+    expect(SRC).toMatch(/needsRedditBackfill\(/);
+  });
+});
+
+// Fix round 1, ruling 1: both pm2 apps write the same APP DB documents, loading them once at start
+// and `$set`ting whole documents back — running at the same time lets whichever finishes first
+// silently erase the other's Reddit progress. A shared flock (modelled on scripts/run-rentals.sh)
+// makes that structurally impossible: the nightly reddit-only run never blocks the weekly full run
+// for long (it just skips itself), and the weekly full run waits out a nightly run in progress
+// instead of racing it.
+describe("scripts/run-store-profiles.sh", () => {
+  const WRAPPER = fs.readFileSync(path.join(__dirname, "..", "..", "scripts", "run-store-profiles.sh"), "utf8");
+  const apps = require(path.join(__dirname, "..", "..", "ecosystem.config.js")).apps.filter((app: { name: string }) =>
+    ["currency-store-profiles", "currency-store-reddit"].includes(app.name)
+  );
+
+  it("routes both store-profile schedules through the same Bash wrapper", () => {
+    expect(apps).toHaveLength(2);
+    for (const app of apps) {
+      expect(app.script).toBe("scripts/run-store-profiles.sh");
+      expect(app.interpreter).toBe("bash");
+      expect(app.autorestart).toBe(false);
+      expect(app.exec_mode).toBe("fork");
+    }
+    expect(apps.find((app: any) => app.name === "currency-store-profiles").cron_restart).toBe("17 7 * * 0");
+    expect(apps.find((app: any) => app.name === "currency-store-reddit")).toMatchObject({
+      cron_restart: "41 3 * * *",
+      args: "--reddit-only",
+    });
+  });
+
+  it("holds the same descriptor through exec and distinguishes contention from lock errors", () => {
+    expect(WRAPPER).toContain('exec 9>"$STORES_LOCK"');
+    expect(WRAPPER).toContain("flock -n -E 75 9");
+    expect(WRAPPER).toContain('flock -w "$FULL_LOCK_WAIT_SECONDS" -E 75 9');
+    expect(WRAPPER).toContain('FULL_LOCK_WAIT_SECONDS="${STORES_FULL_LOCK_WAIT_SECONDS:-7200}"');
+    expect(WRAPPER).toContain('STORES_LOCK="${STORES_LOCK_FILE:-/tmp/cambio-uruguay-store-profiles.lock}"');
+    expect(WRAPPER).toContain('if [[ "$argument" == "--reddit-only" ]]');
+    expect(WRAPPER).toContain('exec node dist/sync_store_profiles.js "$@"');
+    expect(WRAPPER).toContain("otra sincronización está en curso; se saltea la corrida de Reddit.");
+    expect(WRAPPER).toContain('[[ "$status" -eq 75 ]]');
+    expect(WRAPPER).toContain("exit 75");
+    expect(WRAPPER).toContain('exit "$status"');
+    expect(WRAPPER).not.toMatch(/flock\s+-u|exec\s+9>&-|\brm\b/);
+    expect(WRAPPER.indexOf('cd "$REPO_DIR"')).toBeLessThan(WRAPPER.indexOf("exec node"));
+  });
+
+  it("is valid Bash with LF line endings", () => {
+    expect(WRAPPER).not.toContain("\r");
+    const { spawnSync } = require("child_process");
+    const result = spawnSync("bash", ["-n", path.join(__dirname, "..", "..", "scripts", "run-store-profiles.sh")], {
+      encoding: "utf8",
+    });
+    expect(result.stderr, result.stderr).toBe("");
+    expect(result.status).toBe(0);
+  });
+
+  it("keeps both jobs in the OTHER_APPS registration fleet", () => {
+    const deploy = fs.readFileSync(path.join(__dirname, "..", "..", "scripts", "deploy-backend.sh"), "utf8");
+    const registered = deploy.match(/OTHER_APPS=\(([^)]*)\)/)![1]!.split(/\s+/);
+    expect(registered).toContain("currency-store-profiles");
+    expect(registered).toContain("currency-store-reddit");
+  });
+
+  it("deploys wrapper-only changes — a commit touching only the shell script must still trigger a backend deploy", () => {
+    // Same trap as app/**: `deploy.yml`'s `backend` path filter lists individual wrapper scripts by
+    // name (scripts/run-rentals.sh, scripts/run-property-opportunities.sh) rather than `scripts/**`,
+    // so a new wrapper that forgets this line deploys nothing when it changes on its own.
+    const workflow = fs.readFileSync(path.join(__dirname, "..", "..", ".github", "workflows", "deploy.yml"), "utf8");
+    const backendFilter = workflow.split("            backend:")[1]?.split("\n  backend-test:")[0];
+    expect(backendFilter).toContain("- 'scripts/run-store-profiles.sh'");
   });
 });

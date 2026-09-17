@@ -410,6 +410,35 @@ export function shouldSaveStore(decision: StoreSaveDecision): boolean {
   return decision.failed.length < decision.queried.length;
 }
 
+// --- Fix round 1 (code review) ------------------------------------------------------------------
+
+/**
+ * Whether the nightly `--reddit-only` run should still hit Arctic Shift for this store, given the
+ * cursor `carriedReddit` handed it (already resolved for terms changes and applicability — see
+ * `carriedReddit`). A store whose 24-month backfill already finished has nothing left for THIS mode
+ * to add: from there its Reddit signal only moves through the weekly job's day-by-day incremental
+ * read, so asking again every night would spend the shared call budget for zero new data and take a
+ * slot away from a store still catching up.
+ */
+export function needsRedditBackfill(entry: StoreEntry, cursor: RedditCursor | null): boolean {
+  if (!storeSignalApplies(entry, "reddit")) return false;
+  if (!cursor) return true;
+  return !cursor.backfillDone;
+}
+
+/**
+ * Whether the nightly `--reddit-only` run has been going long enough that it should stop STARTING
+ * new stores. Independent of `STORES_REDDIT_MAX_CALLS`: that budget bounds cost per call, not how
+ * long a night of retries and backoff can run (Arctic Shift's own timeout retries sleep for tens of
+ * seconds each — see `classes/stores/signals/reddit.ts`). Checked BETWEEN stores, never mid-store, so
+ * the one already under way always finishes and is saved normally; this only keeps the next one from
+ * starting, and the run then ends the same way it always does (summary log, `process.exit(0)`) —
+ * never a hard cutoff.
+ */
+export function shouldStopForDeadline(elapsedMs: number, maxMinutes: number): boolean {
+  return elapsedMs >= maxMinutes * 60_000;
+}
+
 /**
  * `[tiendas] <key> señales=<n> sitio=<ok|blocked|->  tp=<score|->  g=<rating|->  reddit=<n|->[(+<new>)][ backfill <date>]  catálogo=<n|->`
  *
