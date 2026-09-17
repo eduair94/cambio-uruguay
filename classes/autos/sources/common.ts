@@ -106,11 +106,19 @@ export interface WebCarInput {
   dealerName: string | null;
   department: string | null;
   description: string;
+  /** The site's own vehicle type ("Sedán", "Camión"), when it has one. */
+  category?: string | null;
   context: WebCarContext;
 }
 
+/** Trucks, motorbikes and the like share some sites with cars; the directory is cars and pickups. */
+export const NOT_A_CAR = /\b(camion|camiones|moto|motos|motocicletas?|scooter|cuatriciclos?|tractor(?:es)?|omnibus|microbus|lancha|casa rodante|motorhome)\b/;
+
+const plausibleModel = (model: string): boolean => /[a-z]/i.test(model) && model.length <= 30 && !/[,;:]/.test(model);
+
 export function buildWebCar(input: WebCarInput): { listing: RawCarListing; detail: CarDetail } | null {
   const { context } = input;
+  if (NOT_A_CAR.test(fold(`${input.title} ${input.category ?? ""}`))) return null;
   const text = `${input.title} ${input.specText}`.trim();
   const match = matchCar(text, context.dictionary, { brand: input.brand, model: input.model, year: input.year, km: input.km }, context.maxYear);
   let identity: Pick<RawCarListing, "brandId" | "brand" | "modelId" | "model">;
@@ -120,7 +128,7 @@ export function buildWebCar(input: WebCarInput): { listing: RawCarListing; detai
     identity = { brandId: match.brandId, brand: match.brand, modelId: match.modelId, model: match.model };
     year = match.year;
     km = match.km;
-  } else if (input.brand && input.model && slugify(input.brand) && slugify(input.model)) {
+  } else if (input.brand && input.model && slugify(input.brand) && plausibleModel(input.model)) {
     // A car the ML dictionary does not know is still listed, but never joins an ML cohort.
     identity = {
       brandId: `x-${slugify(input.brand)}`, brand: titleCase(input.brand),

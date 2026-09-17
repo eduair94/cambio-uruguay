@@ -39,6 +39,7 @@ const BRAND_ALIASES: Readonly<Record<string, readonly string[]>> = {
   hyundai: ["hyunday", "hiunday"],
   "land-rover": ["landrover"],
   citroen: ["citroen"],
+  brilliance: ["brillance", "brilliance"],
 };
 const MODEL_ALIASES: Readonly<Record<string, readonly string[]>> = {
   corolla: ["corola"],

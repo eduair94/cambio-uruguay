@@ -8,7 +8,7 @@ import type { CarDictionary } from "../catalog/dictionary";
 import { declaredCurrencyFor, matchCar } from "../catalog/match";
 import { CAR_DEPARTMENTS, descriptionFlags, fold } from "../normalize";
 import type { CarCurrency, CarDetail, RawCarListing } from "../types";
-import type { WebCarContext } from "./common";
+import { NOT_A_CAR, type WebCarContext } from "./common";
 
 export const FB_VEHICLES_CATEGORY = "807311116002614";
 
@@ -154,6 +154,8 @@ export interface FbContext extends WebCarContext {
 
 export function fbCardToCar(card: FbCard, item: FbItem | null, context: FbContext): { listing: RawCarListing; detail: CarDetail | null } | null {
   if (card.isSold || item?.isSold || item?.isLive === false) return null;
+  // The title only: descriptions say "acepto moto" or "cambio por camión".
+  if (NOT_A_CAR.test(fold(card.title))) return null;
   const text = `${card.title} ${item?.description ?? ""}`;
   const match = matchCar(text, context.dictionary, {}, context.maxYear);
   if (!match || !match.year || match.isNew) return null;

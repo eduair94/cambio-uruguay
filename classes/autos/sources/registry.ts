@@ -35,7 +35,9 @@ export const CAR_SOURCES: Readonly<Record<CarSource, CarSourceInfo>> = {
   },
   carper: {
     source: "carper", name: "Carper", prefix: "carper",
-    permalink: /^https:\/\/usados\.carper\.com\.uy\/[\w%/-]+$/, pictureHost: /^usados\.carper\.com\.uy$/, priority: 1, dealerName: "Carper",
+    permalink: /^https:\/\/usados\.carper\.com\.uy\/[\w%/-]+$/,
+    // Carper serves its photos from its dealer-management CDN.
+    pictureHost: /^(?:usados\.carper\.com\.uy|cdn\.pilotsolution\.net)$/, priority: 1, dealerName: "Carper",
   },
   fidocar: {
     source: "fidocar", name: "Usados Fidocar", prefix: "fidocar",

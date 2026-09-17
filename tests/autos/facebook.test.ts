@@ -76,6 +76,7 @@ describe("fbCardToCar", () => {
   });
   it("skips cards that name no car or are sold", () => {
     expect(fbCardToCar(permuto!, null, CONTEXT)).toBeNull();
+    expect(fbCardToCar({ ...aveo!, title: "Moto Chevrolet Aveo 2012" }, null, CONTEXT)).toBeNull();
     expect(fbCardToCar({ ...aveo!, title: "Chevrolet Aveo 2012", isSold: true }, null, CONTEXT)).toBeNull();
     expect(fbCardToCar({ ...aveo!, title: "Chevrolet Aveo 2012" }, { ...item!, isLive: false }, CONTEXT)).toBeNull();
   });

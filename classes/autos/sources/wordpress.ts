@@ -90,6 +90,7 @@ export function listivoToCar(post: WpPost, context: WebCarContext): ReturnType<t
     dealerName: null,
     department: null,
     description: htmlText(post.content?.rendered ?? ""),
+    category: firstOf(post, "listivo_14") || null,
     context,
   });
 }

@@ -9,7 +9,7 @@ const DICT = buildCarDictionary([
   ml("60297", "Toyota", "60315", "Corolla"), ml("60297", "Toyota", "60318", "Corolla Cross"), ml("60297", "Toyota", "60320", "Hilux"),
   ml("67781", "Chevrolet", "67800", "Aveo"), ml("67781", "Chevrolet", "67801", "Onix"), ml("60249", "Volkswagen", "60260", "Golf"),
   ml("60249", "Volkswagen", "60261", "Gol"), ml("60279", "Peugeot", "60280", "208"), ml("60279", "Peugeot", "60281", "2008"),
-  ml("60300", "Hyundai", "60301", "Creta"), ml("60310", "Fiat", "60311", "Uno"), ml("60330", "Honda", "60331", "CR-V"),
+  ml("60300", "Hyundai", "60301", "Creta"), ml("60310", "Fiat", "60311", "Uno"), ml("60330", "Honda", "60331", "CR-V"), ml("60600", "FAW", "60601", "V5"),
   { source: "facebook" as const, brandId: "x-foo", brand: "Foo", modelId: "x-bar", model: "Bar" },
 ], [{ brandId: "60297", modelId: "60315", trims: ["LE", "XEI"] }]);
 const MAX = 2027;
@@ -39,6 +39,12 @@ describe("matchCar", () => {
   it("matches numeric models only with their brand", () => {
     expect(matchCar("Peugeot 2008 Allure 2019", DICT, {}, MAX)).toMatchObject({ modelId: "60281", year: 2019 });
     expect(matchCar("vendo 208 impecable", DICT, {}, MAX)).toBeNull();
+  });
+  it("never borrows another brand's model", () => {
+    // Fidocar wrote "Brillance": unknown brand, so FAW's V5 must not be picked.
+    expect(matchCar("Brillance V5 1.6 Comfort MT - 2013", DICT, { brand: "Brillance" }, MAX)).toBeNull();
+    expect(matchCar("vendo v5 2013", DICT, {}, MAX)).toBeNull();
+    expect(matchCar("FAW V5 2013", DICT, {}, MAX)).toMatchObject({ modelId: "60601" });
   });
   it("gives up on titles that name no car", () => {
     expect(matchCar("Vendo o permuto", DICT, {}, MAX)).toBeNull();

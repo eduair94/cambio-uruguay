@@ -52,6 +52,12 @@ describe("wooProductToCar", () => {
     expect(wooProductToCar(renamed, SDA, CONTEXT)).toBeNull();
     expect(wooProductToCar({ ...kicks, is_in_stock: false }, SDA, CONTEXT)).toBeNull();
   });
+  it("drops trucks and junk model names", () => {
+    const [, , logan] = read("woo-shoppingdeautos.json");
+    expect(wooProductToCar({ ...logan, name: "CAMIÓN KIA K2500 2019" }, SDA, CONTEXT)).toBeNull();
+    const junk = { ...logan, attributes: logan.attributes.map((a: { name: string; terms: unknown[] }) => a.name === "Modelo" ? { ...a, terms: [{ name: "2004" }] } : a) };
+    expect(wooProductToCar(junk, SDA, { ...CONTEXT, dictionary: buildCarDictionary([], []) })).toBeNull();
+  });
   it("keeps a car of a brand the dictionary does not know, outside ML cohorts", () => {
     const [, , logan] = read("woo-shoppingdeautos.json");
     const { listing } = wooProductToCar(logan, SDA, { ...CONTEXT, dictionary: buildCarDictionary([], []) })!;

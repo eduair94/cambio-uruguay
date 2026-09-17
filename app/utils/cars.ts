@@ -97,7 +97,7 @@ export const CAR_SOURCE_RULES: Record<
   carper: {
     name: 'Carper',
     permalink: /^https:\/\/usados\.carper\.com\.uy\/[\w%/-]+$/,
-    pictureHost: /^usados\.carper\.com\.uy$/,
+    pictureHost: /^(?:usados\.carper\.com\.uy|cdn\.pilotsolution\.net)$/,
   },
   fidocar: {
     name: 'Usados Fidocar',

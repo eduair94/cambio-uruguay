@@ -25,5 +25,6 @@ describe("car source registry", () => {
     expect(safeSourcePicture("carone", "https://cdn.impel.io/swipetospin-viewers/carone/1/thumb-lg.jpg")).not.toBeNull();
     expect(safeSourcePicture("mercadolibre", "https://user:pw@http2.mlstatic.com/D_1.webp")).toBeNull();
     expect(safeSourcePicture("julio", null)).toBeNull();
+    expect(safeSourcePicture("carper", "https://cdn.pilotsolution.net/crm/stock/carper/15794/15794_47699_desktop.jpeg")).not.toBeNull();
   });
 });

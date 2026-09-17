@@ -30,6 +30,9 @@ export interface CarMatchHints {
 const NEEDS_BRAND = new Set(["uno", "up", "ka", "punto", "idea", "city", "fit", "one", "move", "life", "sol", "linea", "classic", "master"]);
 
 const has = (text: string, name: string): boolean => !!name && text.includes(` ${name} `);
+// "v5", "c3", "x1", "i30": short names with a digit belong to several brands (FAW V5, Brilliance V5).
+const needsBrand = (name: string): boolean =>
+  NEEDS_BRAND.has(name) || /^\d+$/.test(name.replace(/ /g, "")) || (name.length <= 3 && /\d/.test(name));
 
 function findBrand(text: string, dictionary: CarDictionary, hint: string | null | undefined): CarDictionaryBrand | null {
   if (hint) {
@@ -58,7 +61,7 @@ function findModel(text: string, models: readonly CarDictionaryModel[], brandKno
   let bestLength = 0;
   for (const model of models) {
     for (const name of model.names) {
-      if (!brandKnown && (/^\d+$/.test(name.replace(/ /g, "")) || NEEDS_BRAND.has(name))) continue;
+      if (!brandKnown && needsBrand(name)) continue;
       const index = name ? text.indexOf(` ${name} `) : -1;
       if (index < 0 || index > bestIndex || (index === bestIndex && name.length < bestLength)) continue;
       if (index < bestIndex || name.length > bestLength) {
@@ -173,6 +176,8 @@ export function engineFromCc(value: string): string | null {
 export function matchCar(text: string, dictionary: CarDictionary, hints: CarMatchHints, maxYear: number): CarMatch | null {
   const words = wordText(text);
   const brand = findBrand(words, dictionary, hints.brand);
+  // A source that names a brand the dictionary does not know must not borrow another brand's model.
+  if (hints.brand && slugify(hints.brand) && !brand) return null;
   const candidates = brand ? dictionary.models.filter(model => model.brandId === brand.brandId) : dictionary.models;
   let hit: { model: CarDictionaryModel; name: string | null } | null = null;
   if (hints.model) {
