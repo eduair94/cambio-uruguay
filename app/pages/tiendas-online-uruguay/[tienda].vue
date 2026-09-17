@@ -24,13 +24,13 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
         </div>
         <div v-if="ageFresh">
           <dt>En línea desde</dt>
-          <dd>{{ formatDate(profile.age!.since) }}</dd>
+          <dd>{{ storeFormatDate(profile.age!.since) }}</dd>
         </div>
       </dl>
       <p v-if="ageFresh" class="source-note">
         Fuente:
         {{ profile.age!.source === 'crt.sh' ? 'certificado del dominio' : 'Wayback Machine' }} ·
-        revisado el {{ formatDate(profile.age!.checkedAt) }}
+        revisado el {{ storeFormatDate(profile.age!.checkedAt) }}
       </p>
 
       <template v-if="siteFresh">
@@ -48,10 +48,6 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
             <dd>{{ profile.site!.rut }}</dd>
           </div>
         </dl>
-        <p v-if="address" class="identity-address">
-          Dirección: {{ address.address }}
-          <span class="source-note-inline">({{ address.source }})</span>
-        </p>
         <ul v-if="policyLinks.length" class="policy-links">
           <li v-for="link in policyLinks" :key="link.label">
             <a :href="link.url" target="_blank" rel="nofollow noopener" class="tienda-link">{{
@@ -60,13 +56,21 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
           </li>
         </ul>
         <p class="source-note">
-          Fuente: sitio de {{ entry.name }} · revisado el {{ formatDate(profile.site!.checkedAt) }}
+          Fuente: sitio de {{ entry.name }} · revisado el
+          {{ storeFormatDate(profile.site!.checkedAt) }}
         </p>
       </template>
-      <p v-else-if="address" class="identity-address">
-        Dirección: {{ address.address }}
-        <span class="source-note-inline">({{ address.source }})</span>
-      </p>
+
+      <!-- La dirección tiene su propia frescura (Google o el sitio, cada uno con su checkedAt),
+           así que se muestra y se fecha aparte del resto del bloque del sitio: puede estar fresca
+           cuando el resto del escaneo del sitio no lo está, o al revés. -->
+      <template v-if="address">
+        <p class="identity-address">Dirección: {{ address.address }}</p>
+        <p class="source-note">
+          Fuente: {{ address.source === 'google' ? 'Google Maps' : 'sitio de la tienda' }} ·
+          revisado el {{ storeFormatDate(address.checkedAt) }}
+        </p>
+      </template>
     </section>
 
     <!-- ── Reseñas ────────────────────────────────────────────────────────── -->
@@ -80,9 +84,9 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
         <article v-if="trustpilotFresh">
           <h3>Trustpilot</h3>
           <p>
-            {{ esDecimal(profile.trustpilot!.score) }} sobre 5 en
-            {{ esCount(profile.trustpilot!.reviews) }} reseñas ({{
-              esCount(profile.trustpilot!.reviewsLast12m)
+            {{ storeEsDecimal(profile.trustpilot!.score) }} sobre 5 en
+            {{ storeEsCount(profile.trustpilot!.reviews) }} reseñas ({{
+              storeEsCount(profile.trustpilot!.reviewsLast12m)
             }}
             en los últimos 12 meses).
           </p>
@@ -95,14 +99,14 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
             Ver en Trustpilot
           </a>
           <p class="source-note">
-            Fuente: Trustpilot · revisado el {{ formatDate(profile.trustpilot!.checkedAt) }}
+            Fuente: Trustpilot · revisado el {{ storeFormatDate(profile.trustpilot!.checkedAt) }}
           </p>
         </article>
         <article v-if="googleFresh">
           <h3>Google</h3>
           <p>
-            {{ esDecimal(profile.google!.rating) }} sobre 5 en
-            {{ esCount(profile.google!.reviews) }} reseñas.
+            {{ storeEsDecimal(profile.google!.rating) }} sobre 5 en
+            {{ storeEsCount(profile.google!.reviews) }} reseñas.
           </p>
           <a
             :href="profile.google!.url"
@@ -113,7 +117,7 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
             Ver en Google Maps
           </a>
           <p class="source-note">
-            Fuente: Google Maps · revisado el {{ formatDate(profile.google!.checkedAt) }}
+            Fuente: Google Maps · revisado el {{ storeFormatDate(profile.google!.checkedAt) }}
           </p>
         </article>
       </div>
@@ -123,27 +127,32 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
     <section v-if="redditFresh" class="tienda-section" aria-labelledby="reddit-title">
       <h2 id="reddit-title">Reddit</h2>
       <p>
-        {{ esCount(profile.reddit!.mentions) }} menciones encontradas en r/uruguay y r/montevideo.
+        {{ storeEsCount(profile.reddit!.mentions) }} menciones encontradas en r/uruguay y
+        r/montevideo.
       </p>
       <ul v-if="redditYears.length" class="reddit-years">
-        <li v-for="row in redditYears" :key="row.year">{{ row.year }}: {{ esCount(row.count) }}</li>
+        <li v-for="row in redditYears" :key="row.year">
+          {{ row.year }}: {{ storeEsCount(row.count) }}
+        </li>
       </ul>
       <p v-if="profile.reddit!.tone" class="reddit-tone">
-        De las menciones clasificadas: {{ esCount(profile.reddit!.tone!.complaints) }} con reclamos,
-        {{ esCount(profile.reddit!.tone!.recommendations) }} con recomendaciones y
-        {{ esCount(profile.reddit!.tone!.neutral) }} neutras (clasificación automática de
-        {{ esCount(profile.reddit!.tone!.classified) }} menciones).
+        De las menciones clasificadas: {{ storeEsCount(profile.reddit!.tone!.complaints) }} con
+        reclamos, {{ storeEsCount(profile.reddit!.tone!.recommendations) }} con recomendaciones y
+        {{ storeEsCount(profile.reddit!.tone!.neutral) }} neutras (clasificación automática de
+        {{ storeEsCount(profile.reddit!.tone!.classified) }} menciones).
       </p>
       <ul v-if="redditThreads.length" class="reddit-threads">
         <li v-for="thread in redditThreads" :key="thread.url">
           <a :href="thread.url" target="_blank" rel="nofollow noopener" class="tienda-link">{{
             thread.title
           }}</a>
-          <span class="thread-meta">{{ formatDate(thread.date) }} · {{ thread.score }} puntos</span>
+          <span class="thread-meta"
+            >{{ storeFormatDate(thread.date) }} · {{ thread.score }} puntos</span
+          >
         </li>
       </ul>
       <p class="source-note">
-        Fuente: Reddit · revisado el {{ formatDate(profile.reddit!.checkedAt) }}
+        Fuente: Reddit · revisado el {{ storeFormatDate(profile.reddit!.checkedAt) }}
       </p>
     </section>
 
@@ -151,19 +160,19 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
     <section v-if="catalogFresh" class="tienda-section" aria-labelledby="relevamientos-title">
       <h2 id="relevamientos-title">En nuestros relevamientos</h2>
       <p>
-        {{ esCount(profile.catalog!.offers) }} ofertas encontradas en nuestros propios catálogos de
-        precios.
+        {{ storeEsCount(profile.catalog!.offers) }} ofertas encontradas en nuestros propios
+        catálogos de precios.
       </p>
       <ul class="catalog-verticals">
         <li v-for="vertical in profile.catalog!.verticals" :key="vertical.key">
           <NuxtLink :to="localePath(vertical.url)" class="tienda-link">{{
             vertical.label
           }}</NuxtLink>
-          ({{ esCount(vertical.offers) }} {{ vertical.offers === 1 ? 'oferta' : 'ofertas' }})
+          ({{ storeEsCount(vertical.offers) }} {{ vertical.offers === 1 ? 'oferta' : 'ofertas' }})
         </li>
       </ul>
       <p class="source-note">
-        Fuente: catálogos propios · revisado el {{ formatDate(profile.catalog!.checkedAt) }}
+        Fuente: catálogos propios · revisado el {{ storeFormatDate(profile.catalog!.checkedAt) }}
       </p>
     </section>
 
@@ -250,12 +259,14 @@ import {
 import {
   storeAddress,
   storeBuyingAdvice,
+  storeEsCount,
+  storeEsDecimal,
   storeFaq,
+  storeFormatDate,
   storeSignalFresh,
   storeSignalSummary,
   type StorePublicProfile,
 } from '~/utils/storeProfiles'
-import { dateLocale } from '~/utils/format'
 
 // Un slug fuera del registro curado es 404 de verdad. `validate` se extrae en build, así que solo
 // puede usar una función importada, nunca una closure sobre estado del componente.
@@ -311,7 +322,11 @@ const siteFresh = computed(() =>
       storeSignalFresh(profile.value.site.checkedAt, now)
   )
 )
-const showIdentity = computed(() => ageFresh.value || siteFresh.value)
+// `storeAddress` already gates Google/site on their OWN freshness (fix round 1, item 2), so a
+// truthy `address` here is itself a reason to show the "Identidad" section even when neither
+// `ageFresh` nor `siteFresh` is — e.g. a fresh Google listing on an otherwise stale site scan.
+const address = computed(() => storeAddress(profile.value, now))
+const showIdentity = computed(() => ageFresh.value || siteFresh.value || Boolean(address.value))
 
 const trustpilotFresh = computed(() =>
   Boolean(profile.value.trustpilot && storeSignalFresh(profile.value.trustpilot.checkedAt, now))
@@ -343,8 +358,6 @@ const contactSummary = computed(() => {
   if (site.email) parts.push('correo')
   return parts.length ? parts.join(', ') : 'No publica teléfono, WhatsApp ni correo directo.'
 })
-
-const address = computed(() => storeAddress(profile.value))
 
 const policyLinks = computed(() => {
   if (!siteFresh.value || !profile.value.site) return []
@@ -396,32 +409,6 @@ const siblingLinks = computed(() => {
     .slice(0, SIBLING_LIMIT)
 })
 
-function esDecimal(value: number): string {
-  return value.toFixed(1).replace('.', ',')
-}
-function esCount(value: number): string {
-  return value.toLocaleString('es-UY')
-}
-
-/** `YYYY-MM-DD` reads as noon UTC so it never rolls back a day in Montevideo. */
-function toDate(value: string | null | undefined): Date | null {
-  if (!value) return null
-  const iso = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value
-  const time = Date.parse(iso)
-  return Number.isNaN(time) ? null : new Date(time)
-}
-function formatDate(value: string | null | undefined): string {
-  const date = toDate(value)
-  return date
-    ? date.toLocaleDateString(dateLocale('es'), {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        timeZone: 'America/Montevideo',
-      })
-    : ''
-}
-
 const headingText = computed(
   () => `¿${entry.value.name} es confiable? Opiniones, reclamos y datos verificables`
 )
@@ -444,11 +431,11 @@ const seoTitle = computed(() => {
 const seoDescription = computed(() => {
   const facts: string[] = []
   if (trustpilotFresh.value)
-    facts.push(`Trustpilot ${esDecimal(profile.value.trustpilot!.score)}/5`)
-  if (googleFresh.value) facts.push(`Google ${esDecimal(profile.value.google!.rating)}/5`)
-  if (ageFresh.value) facts.push(`en línea desde ${formatDate(profile.value.age!.since)}`)
+    facts.push(`Trustpilot ${storeEsDecimal(profile.value.trustpilot!.score)}/5`)
+  if (googleFresh.value) facts.push(`Google ${storeEsDecimal(profile.value.google!.rating)}/5`)
+  if (ageFresh.value) facts.push(`en línea desde ${storeFormatDate(profile.value.age!.since)}`)
   if (redditFresh.value)
-    facts.push(`${esCount(profile.value.reddit!.mentions)} menciones en Reddit`)
+    facts.push(`${storeEsCount(profile.value.reddit!.mentions)} menciones en Reddit`)
   const chosen = facts.slice(0, 2).join(' y ')
   return chosen
     ? `${entry.value.name}: ${chosen}. Datos verificados, con fuente y fecha, no un ranking de confianza.`
@@ -487,13 +474,13 @@ useHead(() => ({
                 '@type': 'ListItem',
                 position: 1,
                 name: 'Cambio Uruguay',
-                item: `https://cambio-uruguay.com${localePath('/')}`,
+                item: 'https://cambio-uruguay.com/',
               },
               {
                 '@type': 'ListItem',
                 position: 2,
                 name: 'Tiendas online',
-                item: `https://cambio-uruguay.com${localePath('/tiendas-online-uruguay')}`,
+                item: 'https://cambio-uruguay.com/tiendas-online-uruguay',
               },
               { '@type': 'ListItem', position: 3, name: entry.value.name, item: canonical.value },
             ],
@@ -571,10 +558,6 @@ useHead(() => ({
 }
 .identity-address {
   font-size: 0.95rem;
-}
-.source-note-inline {
-  font-size: 0.85rem;
-  opacity: 0.7;
 }
 .source-note {
   margin-top: 8px !important;

@@ -46,8 +46,12 @@ describe('tiendas-online-uruguay/index.vue', () => {
     expect(indexSource).toContain('No es un ranking de confianza')
   })
 
-  it('emits an ItemList of only the stores that actually have a page', () => {
-    expect(indexSource).toContain('filter(store => store.hasProfile)')
+  it('builds its ItemList through the shared, testable helper (fix round 1, item 4)', () => {
+    // The actual "only hasProfile, omit the node entirely when empty" behaviour is unit-tested
+    // directly against `storeHubItemList` in storeProfiles.test.ts — this only checks the page
+    // wires that helper into its `@graph` instead of re-deriving the filter inline.
+    expect(indexSource).toContain('storeHubItemList')
+    expect(indexSource).toMatch(/\.\.\.storeHubItemList\(stores\.value\)/)
   })
 
   it('ships a FaqSection', () => {
@@ -56,6 +60,15 @@ describe('tiendas-online-uruguay/index.vue', () => {
 
   it('is never noindexed', () => {
     expect(indexSource).not.toMatch(/noindex/i)
+  })
+
+  it('never builds an absolute URL from localePath (fix round 1, item 1)', () => {
+    // A `localePath`-built absolute url reads correctly in Spanish (the default, unprefixed
+    // locale) but carries the locale prefix on /en/ and /pt/ — real routes under
+    // `prefix_except_default` — turning the canonical/JSON-LD urls into three self-canonical
+    // URLs instead of one. `localePath` alone (for on-page NuxtLink navigation) is fine; only the
+    // combination with the absolute host literal is banned.
+    expect(indexSource).not.toMatch(/https:\/\/cambio-uruguay\.com\$\{localePath/)
   })
 })
 
@@ -132,5 +145,15 @@ describe('tiendas-online-uruguay/[tienda].vue', () => {
 
   it('is never noindexed', () => {
     expect(detailSource).not.toMatch(/noindex/i)
+  })
+
+  it('never builds an absolute URL from localePath (fix round 1, item 1)', () => {
+    expect(detailSource).not.toMatch(/https:\/\/cambio-uruguay\.com\$\{localePath/)
+  })
+
+  it('shows the address dated and sourced through storeAddress, never raw (fix round 1, item 2)', () => {
+    expect(detailSource).toContain('storeAddress(profile.value, now)')
+    expect(detailSource).toMatch(/address\.source === 'google'/)
+    expect(detailSource).toContain('storeFormatDate(address.checkedAt)')
   })
 })

@@ -84,26 +84,28 @@ FORM: Read mode. Filters are client state only; the table itself is server-rende
               <template v-else>{{ store.name }}</template>
             </td>
             <td data-label="Rubros">{{ rubroLabel(store.rubros) }}</td>
-            <td data-label="En línea desde">{{ store.since ? formatDate(store.since) : '—' }}</td>
+            <td data-label="En línea desde">
+              {{ store.since ? storeFormatDate(store.since) : '—' }}
+            </td>
             <td data-label="Trustpilot">
               {{
                 store.trustpilot
-                  ? `${esDecimal(store.trustpilot.score)}/5 (${esCount(store.trustpilot.reviews)})`
+                  ? `${storeEsDecimal(store.trustpilot.score)}/5 (${storeEsCount(store.trustpilot.reviews)})`
                   : '—'
               }}
             </td>
             <td data-label="Google">
               {{
                 store.google
-                  ? `${esDecimal(store.google.rating)}/5 (${esCount(store.google.reviews)})`
+                  ? `${storeEsDecimal(store.google.rating)}/5 (${storeEsCount(store.google.reviews)})`
                   : '—'
               }}
             </td>
             <td data-label="Menciones en Reddit">
-              {{ store.redditMentions != null ? esCount(store.redditMentions) : '—' }}
+              {{ store.redditMentions != null ? storeEsCount(store.redditMentions) : '—' }}
             </td>
             <td data-label="Ofertas en nuestros catálogos">
-              {{ store.catalogOffers != null ? esCount(store.catalogOffers) : '—' }}
+              {{ store.catalogOffers != null ? storeEsCount(store.catalogOffers) : '—' }}
             </td>
           </tr>
         </tbody>
@@ -120,7 +122,12 @@ FORM: Read mode. Filters are client state only; the table itself is server-rende
 <script setup lang="ts">
 import type { StoreCard, StoresIndexResponse } from '~/server/api/stores/index.get'
 import { STORE_KIND_LABELS, STORE_RUBRO_LABELS, type StoreRubro } from '~/utils/storeDirectory'
-import { dateLocale } from '~/utils/format'
+import {
+  storeEsCount,
+  storeEsDecimal,
+  storeFormatDate,
+  storeHubItemList,
+} from '~/utils/storeProfiles'
 
 const localePath = useLocalePath()
 
@@ -141,42 +148,16 @@ const filteredStores = computed(() =>
   })
 )
 
-function esDecimal(value: number): string {
-  return value.toFixed(1).replace('.', ',')
-}
-function esCount(value: number): string {
-  return value.toLocaleString('es-UY')
-}
-
-/** `YYYY-MM-DD` reads as noon UTC so it never rolls back a day in Montevideo. */
-function toDate(value: string | null | undefined): Date | null {
-  if (!value) return null
-  const iso = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value
-  const time = Date.parse(iso)
-  return Number.isNaN(time) ? null : new Date(time)
-}
-function formatDate(value: string | null | undefined): string {
-  const date = toDate(value)
-  return date
-    ? date.toLocaleDateString(dateLocale('es'), {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        timeZone: 'America/Montevideo',
-      })
-    : ''
-}
-
 function rubroLabel(rubros: string[]): string {
   return rubros.map(rubro => STORE_RUBRO_LABELS[rubro as StoreRubro] ?? rubro).join(', ')
 }
 
-const reviewedAtLabel = computed(() => (reviewedAt.value ? formatDate(reviewedAt.value) : ''))
+const reviewedAtLabel = computed(() => (reviewedAt.value ? storeFormatDate(reviewedAt.value) : ''))
 
 const introText = computed(() => {
   const count = stores.value.length
   const base = count
-    ? `Relevamos ${esCount(count)} tiendas online que operan en Uruguay o le venden al país desde el exterior.`
+    ? `Relevamos ${storeEsCount(count)} tiendas online que operan en Uruguay o le venden al país desde el exterior.`
     : 'Estamos armando el relevamiento de tiendas online que operan en Uruguay o le venden al país desde el exterior.'
   return reviewedAtLabel.value ? `${base} Última revisión: ${reviewedAtLabel.value}.` : base
 })
@@ -204,9 +185,14 @@ const faqItems = [
   },
 ]
 
-const canonical = computed(
-  () => `https://cambio-uruguay.com${localePath('/tiendas-online-uruguay')}`
-)
+// Absolute and LITERAL, never built from `localePath` (fix round 1, item 1): this family is
+// Spanish-only and the canonical/JSON-LD urls must stay the same string on /en/ and /pt/ too — a
+// `localePath`-built absolute url would carry the locale prefix on those routes (real routes under
+// `prefix_except_default`, linked by the sitewide hreflang alternates) and turn into three
+// self-canonical URLs instead of one. `localePath` stays reserved for on-page NuxtLink navigation
+// targets, which SHOULD follow the visitor's locale. Same pattern as
+// equipar-casa-uruguay/[categoria].vue.
+const CANONICAL = 'https://cambio-uruguay.com/tiendas-online-uruguay'
 
 defineOgImageComponent('Cambio', {
   title: 'Tiendas online de Uruguay',
@@ -226,7 +212,7 @@ useSeoMeta({
   ogTitle: 'Tiendas online de Uruguay: opiniones y datos verificables',
   ogDescription: seoDescription,
   ogType: 'website',
-  ogUrl: () => canonical.value,
+  ogUrl: CANONICAL,
   twitterCard: 'summary_large_image',
   twitterTitle: 'Tiendas online de Uruguay',
   twitterDescription: seoDescription,
@@ -234,7 +220,7 @@ useSeoMeta({
 
 // FAQPage schema is emitted by FaqSection, so it is deliberately not repeated here.
 useHead(() => ({
-  link: [{ rel: 'canonical', href: canonical.value }],
+  link: [{ rel: 'canonical', href: CANONICAL }],
   script: [
     {
       type: 'application/ld+json',
@@ -248,30 +234,21 @@ useHead(() => ({
                 '@type': 'ListItem',
                 position: 1,
                 name: 'Cambio Uruguay',
-                item: `https://cambio-uruguay.com${localePath('/')}`,
+                item: 'https://cambio-uruguay.com/',
               },
               {
                 '@type': 'ListItem',
                 position: 2,
                 name: 'Tiendas online',
-                item: canonical.value,
+                item: CANONICAL,
               },
             ],
           },
-          {
-            // Only rows with a real page of their own — a store with no written profile has no
-            // URL for this list to point at (`GET /api/stores/<slug>` 404s without one).
-            '@type': 'ItemList',
-            name: 'Tiendas online de Uruguay con ficha propia',
-            itemListElement: stores.value
-              .filter(store => store.hasProfile)
-              .map((store, index) => ({
-                '@type': 'ListItem',
-                position: index + 1,
-                name: store.name,
-                url: `https://cambio-uruguay.com/tiendas-online-uruguay/${store.key}`,
-              })),
-          },
+          // Only rows with a real page of their own — a store with no written profile has no URL
+          // for this list to point at (`GET /api/stores/<slug>` 404s without one). Omitted
+          // entirely, not emitted with zero items, when nothing in the registry has a profile yet
+          // (fix round 1, item 4).
+          ...storeHubItemList(stores.value),
         ],
       }),
     },

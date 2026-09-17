@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  storeAddress,
   storeBuyingAdvice,
   storeFaq,
   storeFreshSignals,
+  storeHubItemList,
   storeIndexable,
   storeSignalFresh,
   storeSignalSummary,
@@ -208,6 +210,103 @@ describe('storeSignalSummary', () => {
   })
 })
 
+describe('storeAddress', () => {
+  it('prefers a fresh Google address over a fresh site address', () => {
+    const profile = baseProfile({
+      google: {
+        rating: 4,
+        reviews: 5,
+        address: 'Av. Italia 123, Montevideo',
+        url: 'x',
+        checkedAt: daysAgo(1),
+      },
+      site: {
+        status: 'ok',
+        finalHost: 'tiendatest.com.uy',
+        https: true,
+        platform: 'shopify',
+        phone: false,
+        whatsapp: false,
+        email: false,
+        rut: null,
+        address: 'Bulevar Artigas 456, Montevideo',
+        policies: { returns: null, terms: null, privacy: null },
+        payments: [],
+        checkedAt: daysAgo(1),
+      },
+    })
+    const address = storeAddress(profile, NOW)
+    expect(address).toEqual({
+      address: 'Av. Italia 123, Montevideo',
+      source: 'google',
+      checkedAt: daysAgo(1),
+    })
+  })
+
+  it('falls back to a fresh site address when Google is stale (fix round 1, item 2)', () => {
+    const profile = baseProfile({
+      google: {
+        rating: 4,
+        reviews: 5,
+        address: 'Av. Italia 123, Montevideo',
+        url: 'x',
+        checkedAt: daysAgo(61), // stale
+      },
+      site: {
+        status: 'ok',
+        finalHost: 'tiendatest.com.uy',
+        https: true,
+        platform: 'shopify',
+        phone: false,
+        whatsapp: false,
+        email: false,
+        rut: null,
+        address: 'Bulevar Artigas 456, Montevideo',
+        policies: { returns: null, terms: null, privacy: null },
+        payments: [],
+        checkedAt: daysAgo(1), // fresh
+      },
+    })
+    const address = storeAddress(profile, NOW)
+    expect(address).toEqual({
+      address: 'Bulevar Artigas 456, Montevideo',
+      source: 'site',
+      checkedAt: daysAgo(1),
+    })
+  })
+
+  it('returns null when both sources are stale, not a guessed-current address', () => {
+    const profile = baseProfile({
+      google: {
+        rating: 4,
+        reviews: 5,
+        address: 'Av. Italia 123, Montevideo',
+        url: 'x',
+        checkedAt: daysAgo(61),
+      },
+      site: {
+        status: 'ok',
+        finalHost: 'tiendatest.com.uy',
+        https: true,
+        platform: 'shopify',
+        phone: false,
+        whatsapp: false,
+        email: false,
+        rut: null,
+        address: 'Bulevar Artigas 456, Montevideo',
+        policies: { returns: null, terms: null, privacy: null },
+        payments: [],
+        checkedAt: daysAgo(90),
+      },
+    })
+    expect(storeAddress(profile, NOW)).toBeNull()
+  })
+
+  it('returns null when neither source has ever published an address', () => {
+    expect(storeAddress(baseProfile(), NOW)).toBeNull()
+  })
+})
+
 describe('storeFaq', () => {
   it('answers "¿es confiable?" with the enumerated signals, ending with the disclaimer', () => {
     const profile = baseProfile({
@@ -274,6 +373,39 @@ describe('storeFaq', () => {
     expect(local!.answer).toBe('No encontramos una dirección publicada.')
   })
 
+  it('says there is no published address when both sources are stale (fix round 1, item 2)', () => {
+    // A far-past date is stale under any real "now" the test runs at, unlike `daysAgo` (which is
+    // relative to the file's fixed NOW and would drift fresh as real time passes it).
+    const staleForever = '2000-01-01T00:00:00.000Z'
+    const profile = baseProfile({
+      google: {
+        rating: 4,
+        reviews: 5,
+        address: 'Av. Italia 123, Montevideo',
+        url: 'x',
+        checkedAt: staleForever,
+      },
+      site: {
+        status: 'ok',
+        finalHost: 'tiendatest.com.uy',
+        https: true,
+        platform: 'shopify',
+        phone: false,
+        whatsapp: false,
+        email: false,
+        rut: null,
+        address: 'Bulevar Artigas 456, Montevideo',
+        policies: { returns: null, terms: null, privacy: null },
+        payments: [],
+        checkedAt: staleForever,
+      },
+    })
+    const faqs = storeFaq(profile, null)
+    const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
+    expect(local!.answer).toBe('No encontramos una dirección publicada.')
+    expect(local!.answer).not.toContain('Montevideo')
+  })
+
   it('includes "¿Cómo le reclamo a <name>?"', () => {
     const profile = baseProfile()
     const faqs = storeFaq(profile, null)
@@ -314,5 +446,36 @@ describe('storeBuyingAdvice', () => {
     const text = advice.items.map(i => i.text).join(' ')
     expect(text).toContain('5 días hábiles')
     expect(text).toContain('17.250')
+  })
+})
+
+describe('storeHubItemList', () => {
+  it('lists only the stores with a profile, in the order given, as absolute-URL ListItems', () => {
+    const graph = storeHubItemList([
+      { key: 'temu', name: 'Temu', hasProfile: true },
+      { key: 'sin-ficha', name: 'Sin Ficha', hasProfile: false },
+      { key: 'shein', name: 'Shein', hasProfile: true },
+    ])
+    expect(graph).toHaveLength(1)
+    const [itemList] = graph as Array<{ itemListElement: Array<Record<string, unknown>> }>
+    expect(itemList!.itemListElement).toEqual([
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Temu',
+        url: 'https://cambio-uruguay.com/tiendas-online-uruguay/temu',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Shein',
+        url: 'https://cambio-uruguay.com/tiendas-online-uruguay/shein',
+      },
+    ])
+  })
+
+  it('omits the node entirely, not a zero-item ItemList, when nothing has a profile yet (fix round 1, item 4)', () => {
+    expect(storeHubItemList([{ key: 'temu', name: 'Temu', hasProfile: false }])).toEqual([])
+    expect(storeHubItemList([])).toEqual([])
   })
 })

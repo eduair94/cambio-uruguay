@@ -12,6 +12,7 @@
 // never "confiable"/"estafa"/"recomendamos"/"evitá" — because a signal here is a dated observation
 // (a Trustpilot score, a Reddit mention count), not a rating this site computes.
 import { STORE_KIND_LABELS, type StoreKind } from './storeDirectory'
+import { dateLocale } from './format'
 
 /** Mirrors `classes/stores/profile.ts` `STORE_SIGNAL_MAX_AGE_DAYS`; parity checked alongside
  * `STORE_INDEXABLE_MIN_SIGNALS` in `app/tests/unit/storeConstantsParity.test.ts`. A signal older
@@ -190,16 +191,39 @@ export function storeIndexable(profile: StorePublicProfile, now: Date = new Date
 }
 
 /** `1.4` -> `"1,4"`. Deliberately not `toLocaleString`: a score out of 5 always fits one decimal
- * digit, and fixing it avoids any ICU-driven rounding surprise on a number this small. */
-function esDecimal(value: number): string {
+ * digit, and fixing it avoids any ICU-driven rounding surprise on a number this small. Exported
+ * (fix round 1, item 3) so `index.vue` and `[tienda].vue` share this instead of each keeping its
+ * own copy — app/utils is a flat namespace, hence the `store` prefix. */
+export function storeEsDecimal(value: number): string {
   return value.toFixed(1).replace('.', ',')
 }
 
 /** `12345` -> `"12.345"` — the codebase's own grouping convention (`equiparMoney`,
  * `app/utils/equipar.ts`) for an integer count: a review/mention/offer total can run into the
- * thousands (Trustpilot, Google Maps), and an ungrouped run of digits reads as a typo. */
-function esCount(value: number): string {
+ * thousands (Trustpilot, Google Maps), and an ungrouped run of digits reads as a typo. Exported
+ * for the same reason as {@link storeEsDecimal}. */
+export function storeEsCount(value: number): string {
   return value.toLocaleString('es-UY')
+}
+
+/**
+ * `YYYY-MM-DD` or a full ISO datetime -> a long es-UY date ("16 de setiembre de 2026" — the
+ * Uruguayan spelling `dateLocale('es')` gives, not Spain's "septiembre"). A bare calendar date is
+ * read as noon UTC so it never rolls back a day in Montevideo. Exported (fix round 1, item 3) so
+ * both pages of this family share one "revisado el <fecha>" formatter instead of each keeping its
+ * own `toDate`/`formatDate` pair.
+ */
+export function storeFormatDate(value: string | null | undefined): string {
+  if (!value) return ''
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value
+  const time = Date.parse(iso)
+  if (Number.isNaN(time)) return ''
+  return new Date(time).toLocaleDateString(dateLocale('es'), {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'America/Montevideo',
+  })
 }
 
 /**
@@ -212,11 +236,15 @@ function signalFacts(profile: StorePublicProfile, now: Date): string[] {
   const facts: string[] = []
   if (profile.trustpilot && storeSignalFresh(profile.trustpilot.checkedAt, now)) {
     const t = profile.trustpilot
-    facts.push(`Trustpilot: ${esDecimal(t.score)} sobre 5 en ${esCount(t.reviews)} reseñas`)
+    facts.push(
+      `Trustpilot: ${storeEsDecimal(t.score)} sobre 5 en ${storeEsCount(t.reviews)} reseñas`
+    )
   }
   if (profile.google && storeSignalFresh(profile.google.checkedAt, now)) {
     const g = profile.google
-    facts.push(`Google Maps: ${esDecimal(g.rating)} sobre 5 en ${esCount(g.reviews)} reseñas`)
+    facts.push(
+      `Google Maps: ${storeEsDecimal(g.rating)} sobre 5 en ${storeEsCount(g.reviews)} reseñas`
+    )
   }
   if (profile.age && storeSignalFresh(profile.age.checkedAt, now)) {
     facts.push(`dominio registrado desde ${profile.age.since}`)
@@ -233,14 +261,16 @@ function signalFacts(profile: StorePublicProfile, now: Date): string[] {
     profile.reddit.mentions > 0 &&
     storeSignalFresh(profile.reddit.checkedAt, now)
   ) {
-    facts.push(`${esCount(profile.reddit.mentions)} menciones en r/uruguay y r/montevideo`)
+    facts.push(`${storeEsCount(profile.reddit.mentions)} menciones en r/uruguay y r/montevideo`)
   }
   if (
     profile.catalog &&
     profile.catalog.offers > 0 &&
     storeSignalFresh(profile.catalog.checkedAt, now)
   ) {
-    facts.push(`${esCount(profile.catalog.offers)} ofertas relevadas en nuestro propio catálogo`)
+    facts.push(
+      `${storeEsCount(profile.catalog.offers)} ofertas relevadas en nuestro propio catálogo`
+    )
   }
   return facts
 }
@@ -262,16 +292,39 @@ interface StoreFaqItem {
   answer: string
 }
 
-/** Google's listing first (it is checked against the store's own domain — see
- * `classes/stores/signals/google.ts`'s `sameSite`), the site's own JSON-LD `PostalAddress` second.
+export interface StoreAddress {
+  address: string
+  source: 'google' | 'site'
+  /** The underlying signal's own `checkedAt` — Google's or the site scan's — so the caller can
+   * print "revisado el <fecha>" next to the address instead of leaving it undated. */
+  checkedAt: string
+}
+
+/**
+ * Google's listing first (it is checked against the store's own domain — see
+ * `classes/stores/signals/google.ts`'s `sameSite`), the site's own JSON-LD `PostalAddress` second,
+ * and ONLY among sources still within {@link storeSignalFresh} of `now` (fix round 1, item 2): an
+ * address is itself a dated fact like a Trustpilot score, and a Google listing from months ago that
+ * has since moved or closed must not be shown as if it were current just because the field is still
+ * on the document. Neither source fresh -> `null`, and the caller shows nothing, not a guess.
+ *
  * Exported (Task 9) so the store detail page's own "Identidad" block shows the exact same address,
- * from the exact same priority, as the "¿tiene local físico?" FAQ answer below. */
+ * from the exact same priority, as the "¿tiene local físico?" FAQ answer below.
+ */
 export function storeAddress(
-  profile: StorePublicProfile
-): { address: string; source: string } | null {
-  if (profile.google?.address) return { address: profile.google.address, source: 'Google Maps' }
-  if (profile.site?.address)
-    return { address: profile.site.address, source: 'el sitio de la tienda' }
+  profile: StorePublicProfile,
+  now: Date = new Date()
+): StoreAddress | null {
+  if (profile.google?.address && storeSignalFresh(profile.google.checkedAt, now)) {
+    return {
+      address: profile.google.address,
+      source: 'google',
+      checkedAt: profile.google.checkedAt,
+    }
+  }
+  if (profile.site?.address && storeSignalFresh(profile.site.checkedAt, now)) {
+    return { address: profile.site.address, source: 'site', checkedAt: profile.site.checkedAt }
+  }
   return null
 }
 
@@ -291,7 +344,8 @@ export function storeFaq(
     ? `${facts.join('. ')}.`
     : `Todavía no hay señales verificadas de ${profile.name}.`
 
-  const address = storeAddress(profile)
+  const address = storeAddress(profile, now)
+  const addressSourceLabel = address?.source === 'google' ? 'Google Maps' : 'el sitio de la tienda'
 
   const faqs: StoreFaqItem[] = [
     {
@@ -301,7 +355,7 @@ export function storeFaq(
     {
       question: `¿${profile.name} tiene local físico?`,
       answer: address
-        ? `Sí: ${address.address}, según ${address.source}.`
+        ? `Sí: ${address.address}, según ${addressSourceLabel}.`
         : 'No encontramos una dirección publicada.',
     },
     {
@@ -379,4 +433,37 @@ export function storeBuyingAdvice(kind: StoreKind): StoreBuyingAdvice {
       },
     ],
   }
+}
+
+export interface StoreHubListEntry {
+  key: string
+  name: string
+  hasProfile: boolean
+}
+
+/**
+ * The hub's `ItemList` JSON-LD node — one `ListItem` per curated store that actually has a page of
+ * its own (`hasProfile: true`; `GET /api/stores/<slug>` 404s without a document). Returns an empty
+ * array, not a node with zero items, when nothing in the registry has a profile yet (fix round 1,
+ * item 4): an `ItemList` that lists nothing is not useful structured data, and the caller spreads
+ * this into its own `@graph` array so the empty case simply contributes no node, keeping
+ * `BreadcrumbList` on its own.
+ */
+export function storeHubItemList(
+  stores: readonly StoreHubListEntry[]
+): Array<Record<string, unknown>> {
+  const withProfile = stores.filter(store => store.hasProfile)
+  if (!withProfile.length) return []
+  return [
+    {
+      '@type': 'ItemList',
+      name: 'Tiendas online de Uruguay con ficha propia',
+      itemListElement: withProfile.map((store, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: store.name,
+        url: `https://cambio-uruguay.com/tiendas-online-uruguay/${store.key}`,
+      })),
+    },
+  ]
 }
