@@ -1,10 +1,11 @@
-// Toda capa de tiles tiene que pedir su propia política de Referer.
+// Los tiles de OpenStreetMap tienen que salir con Referer.
 //
-// nuxt.config.ts declara `<meta name="referrer" content="no-referrer">` para
-// todo el sitio. Un tile sin `referrerPolicy` sale sin Referer y OpenStreetMap
-// contesta con la imagen "403 Access blocked" en cada casilla: el mapa se ve
-// entero, cubierto de carteles, y ninguna prueba se entera (visto en
-// /descuentos-con-tarjeta-uruguay el 2026-09-16). Ver utils/mapTiles.ts.
+// Un tile sin Referer recibe la imagen "403 Access blocked" en cada casilla: el
+// mapa se ve entero, cubierto de carteles, y ninguna prueba se entera (visto en
+// /descuentos-con-tarjeta-uruguay el 2026-09-16, cuando nuxt.config.ts declaraba
+// `<meta name="referrer" content="no-referrer">` para todo el sitio). Dos
+// guardas: el meta global manda el origen, y cada capa pide su política igual.
+// Ver utils/mapTiles.ts.
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -29,6 +30,13 @@ function lineOf(source: string, index: number): number {
 }
 
 describe('capas de tiles con Referer', () => {
+  it('el meta referrer del sitio manda el origen, igual que la cabecera', () => {
+    const config = readFileSync(join(ROOT, 'nuxt.config.ts'), 'utf8')
+    const metas = [...config.matchAll(/name:\s*'referrer',\s*content:\s*'([^']+)'/g)]
+    expect(metas.map(m => m[1])).toEqual(['strict-origin-when-cross-origin'])
+    expect(config).toContain("'Referrer-Policy': 'strict-origin-when-cross-origin'")
+  })
+
   it('encuentra archivos (guarda de vacuidad)', () => {
     expect(files.length).toBeGreaterThan(100)
   })

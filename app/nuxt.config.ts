@@ -143,7 +143,13 @@ export default defineNuxtConfig({
         },
         { name: 'googlebot', content: 'index, follow' },
         { name: 'bingbot', content: 'index, follow' },
-        { name: 'referrer', content: 'no-referrer' },
+        // Same value as the Referrer-Policy header on '/': other sites see only the
+        // origin, never the path or query. Was 'no-referrer' until 2026-09-17, which
+        // got every OSM map tile replaced by an "Access blocked" image. Checked
+        // before switching: every external image host the site shows (ML, Fenicio,
+        // Shopify, VTEX, WooCommerce stores, InfoCasas, Casasweb, fbcdn, YouTube)
+        // serves identical bytes with or without a Referer.
+        { name: 'referrer', content: 'strict-origin-when-cross-origin' },
 
         // Open Graph / Facebook. og:image and twitter:image are generated PER PAGE
         // by nuxt-og-image (see `ogImage` config + defineOgImageComponent), so they
@@ -1018,8 +1024,9 @@ export default defineNuxtConfig({
       // Leaflet tile source. Default = public OSM tiles (fine for low traffic).
       // Switch to a tile-provider/CDN URL via NUXT_PUBLIC_TILE_URL before heavy traffic
       // (OSM's tile usage policy forbids heavy use of its public tiles).
-      // Every tile layer must set referrerPolicy (utils/mapTiles.ts): the global
-      // no-referrer meta above otherwise gets OSM tiles replaced by "Access blocked".
+      // OSM refuses tiles requested without a Referer. Every tile layer also sets
+      // referrerPolicy itself (utils/mapTiles.ts), so the maps keep working if the
+      // page-wide referrer meta above ever changes again.
       tileUrl: process.env.NUXT_PUBLIC_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       // Public at runtime, but sourced from the environment so it is never
       // committed to Git.
