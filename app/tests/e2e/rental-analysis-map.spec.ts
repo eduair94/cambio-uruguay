@@ -155,7 +155,7 @@ async function prepare(
     await route.fulfill(options.contextFails?.() ? { status: 503, json: {} } : { json: context() })
   })
   // The polygons and controls work without external tile servers.
-  await page.route('**/*.tile.openstreetmap.org/**', route => route.abort())
+  await page.route(/https:\/\/[^/]*tile\.openstreetmap\.org\//, route => route.abort())
   await page.goto(path, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(
     () => (document.getElementById('__nuxt') as any)?.__vue_app__?.$nuxt?.isHydrating === false,

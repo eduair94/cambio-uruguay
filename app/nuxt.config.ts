@@ -1018,8 +1018,9 @@ export default defineNuxtConfig({
       // Leaflet tile source. Default = public OSM tiles (fine for low traffic).
       // Switch to a tile-provider/CDN URL via NUXT_PUBLIC_TILE_URL before heavy traffic
       // (OSM's tile usage policy forbids heavy use of its public tiles).
-      tileUrl:
-        process.env.NUXT_PUBLIC_TILE_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      // Every tile layer must set referrerPolicy (utils/mapTiles.ts): the global
+      // no-referrer meta above otherwise gets OSM tiles replaced by "Access blocked".
+      tileUrl: process.env.NUXT_PUBLIC_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       // Public at runtime, but sourced from the environment so it is never
       // committed to Git.
       maptilerApiKey: process.env.NUXT_PUBLIC_MAPTILER_API_KEY || '',

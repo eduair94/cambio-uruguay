@@ -35,7 +35,10 @@
           <div class="location_map">
             <client-only>
               <LMap ref="map" :zoom="13" :center="[latitude, longitude]" @click="changeMarker">
-                <LTileLayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
+                <LTileLayer
+                  :url="MAP_TILE_URL_FALLBACK"
+                  :options="{ referrerPolicy: MAP_TILE_REFERRER_POLICY }"
+                />
                 <LCircle v-if="radius" :lat-lng="[latitude, longitude]" :radius="radius * 1000" />
                 <LMarker :lat-lng="[latitude, longitude]" />
               </LMap>
@@ -66,6 +69,7 @@
 // that render this component, instead of every page — see nuxt.config.ts.
 import { LCircle, LMap, LMarker, LTileLayer } from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
+import { MAP_TILE_REFERRER_POLICY, MAP_TILE_URL_FALLBACK } from '~/utils/mapTiles'
 
 const { $i18n } = useNuxtApp()
 const apiService = useApiService()
@@ -182,6 +186,7 @@ const setMap = async () => {
         '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a>, ' +
         '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">&copy; OpenStreetMap contributors</a>',
       crossOrigin: true,
+      referrerPolicy: MAP_TILE_REFERRER_POLICY,
     }).addTo(mapInstance)
 
     searchAddress()
@@ -200,6 +205,7 @@ const setMap = async () => {
             '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a>, ' +
             '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">&copy; OpenStreetMap contributors</a>',
           crossOrigin: true,
+          referrerPolicy: MAP_TILE_REFERRER_POLICY,
         }).addTo(mapInstance)
         searchAddress()
       } else {

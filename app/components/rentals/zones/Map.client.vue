@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import type { Map as LeafletMap, GeoJSON, Path, Layer } from 'leaflet'
 import type { GeoJsonObject, Feature } from 'geojson'
+import { MAP_TILE_REFERRER_POLICY, MAP_TILE_URL_FALLBACK } from '~/utils/mapTiles'
 import type { RentalZoneBoundaryCollection } from '~/utils/rentalZoneTypes'
 import { rentalZoneMessages } from '~/utils/rentalZoneMessages'
 
@@ -77,13 +78,11 @@ onMounted(async () => {
     if (disposed || !element.value) return
     map = leaflet.map(element.value, { scrollWheelZoom: false }).setView([-34.86, -56.17], 11)
     leaflet
-      .tileLayer(
-        (config.public.tileUrl as string) || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          maxZoom: 19,
-        }
-      )
+      .tileLayer((config.public.tileUrl as string) || MAP_TILE_URL_FALLBACK, {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+        referrerPolicy: MAP_TILE_REFERRER_POLICY,
+      })
       .addTo(map)
     render()
     observer = new ResizeObserver(() => map?.invalidateSize())

@@ -14,6 +14,7 @@
 </template>
 <script setup lang="ts">
 import type { Map as LeafletMap, CircleMarker } from 'leaflet'
+import { MAP_TILE_REFERRER_POLICY, MAP_TILE_URL_FALLBACK } from '~/utils/mapTiles'
 import { rentalFitMessages } from '~/utils/rentalFitMessages'
 import { parseRentalReferencePoint } from '~/utils/rentalDistance'
 const props = defineProps<{ initial?: { lat: number; lng: number } | null }>()
@@ -60,13 +61,11 @@ onMounted(async () => {
       scrollWheelZoom: false,
     })
     leaflet
-      .tileLayer(
-        (config.public.tileUrl as string) || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          maxZoom: 19,
-        }
-      )
+      .tileLayer((config.public.tileUrl as string) || MAP_TILE_URL_FALLBACK, {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+        referrerPolicy: MAP_TILE_REFERRER_POLICY,
+      })
       .addTo(map)
     map.on('click', event => select(event.latlng.lat, event.latlng.lng))
     if (point.value) select(point.value.lat, point.value.lng)

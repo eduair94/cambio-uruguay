@@ -12,6 +12,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import type { BranchFieldSources } from '~/utils/branchCorrections'
+import { MAP_TILE_REFERRER_POLICY, MAP_TILE_URL_FALLBACK } from '~/utils/mapTiles'
 
 interface Branch {
   origin: string
@@ -109,8 +110,7 @@ const emit = defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
-const tileUrl =
-  (config.public as any).tileUrl || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+const tileUrl = (config.public as any).tileUrl || MAP_TILE_URL_FALLBACK
 
 const el = ref<HTMLElement | null>(null)
 let L: any = null
@@ -205,6 +205,7 @@ async function init() {
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
+    referrerPolicy: MAP_TILE_REFERRER_POLICY,
   }).addTo(map)
 
   cluster = (L as any).markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 50 })
