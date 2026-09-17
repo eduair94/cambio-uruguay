@@ -1,0 +1,555 @@
+// Shapes and pure helpers for /tiendas-online-uruguay, the store-by-store directory.
+//
+// `app/utils` is a FLAT auto-import namespace, so every export here is prefixed `store`/`STORE_` —
+// a bare `faq()` or `buyingAdvice()` would be one collision away from shadowing another page's util.
+//
+// The types below mirror `classes/stores/profile.ts` and `classes/stores/signals/*.ts` field by
+// field: app/ is a separate package that cannot import from the repo root (see AGENTS.md), so this
+// is a hand-kept copy, not a re-export. `tests/stores/*` and this app's own tests are what keep the
+// shapes honest; nothing here talks to Mongo.
+//
+// NO VERDICT LIVES HERE EITHER. Every function below reports facts with their source and date —
+// never "confiable"/"estafa"/"recomendamos"/"evitá" — because a signal here is a dated observation
+// (a Trustpilot score, a Reddit mention count), not a rating this site computes.
+import { STORE_KIND_LABELS, STORE_PLATFORM_LABELS, type StoreKind } from './storeDirectory'
+import { dateLocale } from './format'
+
+/** Mirrors `classes/stores/profile.ts` `STORE_SIGNAL_MAX_AGE_DAYS`; parity checked alongside
+ * `STORE_INDEXABLE_MIN_SIGNALS` in `app/tests/unit/storeConstantsParity.test.ts`. A signal older
+ * than this is not shown as if it were current, even though the field is still there (the backend
+ * keeps a stale value with its OLD `checkedAt` rather than erase it — see the profile module
+ * header). */
+export const STORE_SIGNAL_MAX_AGE_DAYS = 60
+
+/** Mirrors `classes/stores/profile.ts` `INDEXABLE_MIN_SIGNALS`; parity checked alongside
+ * `STORE_SIGNAL_MAX_AGE_DAYS` in `app/tests/unit/storeConstantsParity.test.ts` (lives in the app
+ * suite, not the root one — a root test cannot load an app/ file). A page with fewer fresh
+ * signals than this has too little to say to be worth indexing — see {@link storeIndexable}. */
+export const STORE_INDEXABLE_MIN_SIGNALS = 3
+
+/** Mirrors `classes/stores/signals/reddit.ts` `STORE_REDDIT_MAX_MENTIONS`; parity checked alongside
+ * the other two constants above in `app/tests/unit/storeConstantsParity.test.ts`. A stored count
+ * that reached this cap reads "500 o más", never a bare "500" that implies an exact tally (fix
+ * round F1, item 2) — see {@link storeMentionsCount}. */
+export const STORE_REDDIT_MAX_MENTIONS = 500
+
+export interface StoreSitePolicies {
+  returns: string | null
+  terms: string | null
+  privacy: string | null
+}
+
+export interface StoreSiteSignal {
+  status: 'ok' | 'blocked'
+  finalHost: string
+  https: boolean
+  platform: string
+  phone: boolean
+  whatsapp: boolean
+  email: boolean
+  rut: string | null
+  address: string | null
+  policies: StoreSitePolicies
+  payments: string[]
+  checkedAt: string
+}
+
+export interface StoreAgeSignal {
+  since: string
+  source: 'crt.sh' | 'wayback'
+  checkedAt: string
+}
+
+export interface StoreTrustpilotSignal {
+  score: number
+  reviews: number
+  reviewsLast12m: number
+  claimed: boolean
+  alerts: number
+  url: string
+  checkedAt: string
+}
+
+export interface StoreGoogleSignal {
+  rating: number
+  reviews: number
+  address: string | null
+  url: string
+  checkedAt: string
+}
+
+export interface StoreRedditTone {
+  complaints: number
+  recommendations: number
+  neutral: number
+  classified: number
+}
+
+export interface StoreRedditThread {
+  title: string
+  date: string
+  url: string
+  score: number
+}
+
+export interface StoreRedditSignal {
+  mentions: number
+  byYear: Record<string, number>
+  threads: StoreRedditThread[]
+  tone: StoreRedditTone | null
+  capped: boolean
+  checkedAt: string
+}
+
+export interface StoreCatalogVertical {
+  key: string
+  label: string
+  url: string
+  offers: number
+}
+
+export interface StoreCatalogSignal {
+  offers: number
+  verticals: StoreCatalogVertical[]
+  checkedAt: string
+}
+
+/** The shape `GET /api/stores/<slug>` publishes — the backend document minus its working state
+ * (`toneCache`, `redditMentions`, `redditCursor`, `redditTermsKey`) and Mongo bookkeeping, which no
+ * route ever selects (see the model file header on why those exist at all). */
+export interface StorePublicProfile {
+  key: string
+  name: string
+  domain: string | null
+  kind: StoreKind
+  rubros: string[]
+  aliases: string[]
+  site: StoreSiteSignal | null
+  age: StoreAgeSignal | null
+  trustpilot: StoreTrustpilotSignal | null
+  google: StoreGoogleSignal | null
+  reddit: StoreRedditSignal | null
+  catalog: StoreCatalogSignal | null
+  signals: number
+  indexable: boolean
+  firstSeen: string
+  lastSeen: string
+}
+
+/**
+ * Whether a single signal's own `checkedAt` is still within `STORE_SIGNAL_MAX_AGE_DAYS` of `now`.
+ * Exported (fix round 1) so every place that publishes a raw signal field — the hub's `StoreCard`
+ * included — gates it through the exact same rule `storeFreshSignals`/`storeSignalSummary` use,
+ * instead of re-deriving (or forgetting) the cutoff locally.
+ */
+export function storeSignalFresh(
+  checkedAt: string | null | undefined,
+  now: Date = new Date()
+): boolean {
+  if (!checkedAt) return false
+  const at = Date.parse(checkedAt)
+  if (Number.isNaN(at)) return false
+  return now.getTime() - at <= STORE_SIGNAL_MAX_AGE_DAYS * 86_400_000
+}
+
+/**
+ * How many of a profile's signals are both present and no older than `STORE_SIGNAL_MAX_AGE_DAYS`,
+ * mirroring `classes/stores/profile.ts` `countFreshSignals` field by field (a signal that exists but
+ * says nothing — a site read as blocked, a Reddit search with zero mentions, a catalogue presence
+ * with zero offers — does not count there either). The backend recomputes this at write time, but a
+ * profile is only rewritten when at least one outside source answered that week; if every source was
+ * down, the stored `signals`/`indexable` fields keep aging past what is actually still true. Calling
+ * this instead of trusting `profile.signals` is what makes the page's own "señales" honest against
+ * `now`, not against whenever the document last happened to be saved.
+ */
+export function storeFreshSignals(profile: StorePublicProfile, now: Date = new Date()): number {
+  let count = 0
+  if (profile.site && profile.site.status === 'ok' && storeSignalFresh(profile.site.checkedAt, now))
+    count++
+  if (profile.age && storeSignalFresh(profile.age.checkedAt, now)) count++
+  if (profile.trustpilot && storeSignalFresh(profile.trustpilot.checkedAt, now)) count++
+  if (profile.google && storeSignalFresh(profile.google.checkedAt, now)) count++
+  if (
+    profile.reddit &&
+    profile.reddit.mentions > 0 &&
+    storeSignalFresh(profile.reddit.checkedAt, now)
+  )
+    count++
+  if (
+    profile.catalog &&
+    profile.catalog.offers > 0 &&
+    storeSignalFresh(profile.catalog.checkedAt, now)
+  )
+    count++
+  return count
+}
+
+/**
+ * Whether a store page currently has enough to say to be worth indexing, mirroring
+ * `classes/stores/profile.ts`'s `count >= INDEXABLE_MIN_SIGNALS` at write time — recomputed against
+ * `now` for the same reason {@link storeFreshSignals} is: the stored `indexable` field is a snapshot
+ * from whenever the backend last wrote the document, and a store that has since gone stale (every
+ * outside source down for two months, nothing to trigger a rewrite) must not keep reading as
+ * indexable just because nobody wrote it down again.
+ */
+export function storeIndexable(profile: StorePublicProfile, now: Date = new Date()): boolean {
+  return storeFreshSignals(profile, now) >= STORE_INDEXABLE_MIN_SIGNALS
+}
+
+/** `1.4` -> `"1,4"`. Deliberately not `toLocaleString`: a score out of 5 always fits one decimal
+ * digit, and fixing it avoids any ICU-driven rounding surprise on a number this small. Exported
+ * (fix round 1, item 3) so `index.vue` and `[tienda].vue` share this instead of each keeping its
+ * own copy — app/utils is a flat namespace, hence the `store` prefix. */
+export function storeEsDecimal(value: number): string {
+  return value.toFixed(1).replace('.', ',')
+}
+
+/** `12345` -> `"12.345"` — the codebase's own grouping convention (`equiparMoney`,
+ * `app/utils/equipar.ts`) for an integer count: a review/mention/offer total can run into the
+ * thousands (Trustpilot, Google Maps), and an ungrouped run of digits reads as a typo. Exported
+ * for the same reason as {@link storeEsDecimal}. */
+export function storeEsCount(value: number): string {
+  return value.toLocaleString('es-UY')
+}
+
+/**
+ * A Reddit mention count, capped-aware (fix round F1, item 2): once stored mentions hit
+ * `STORE_REDDIT_MAX_MENTIONS` the true count is unknown — Arctic Shift keeps going, but
+ * `mergeStoredMentions` (backend) stops storing past the cap — so publishing the literal `500`
+ * reads as an exact tally instead of a floor. Every place that shows a mention count (the hub
+ * column, the ficha, the FAQ, the summary sentence, the meta description) goes through this
+ * instead of `storeEsCount(reddit.mentions)` directly.
+ */
+export function storeMentionsCount(reddit: { mentions: number; capped: boolean }): string {
+  return reddit.capped ? `${STORE_REDDIT_MAX_MENTIONS} o más` : storeEsCount(reddit.mentions)
+}
+
+/**
+ * Human label for `StoreSiteSignal.platform` (`STORE_PLATFORM_LABELS`, `storeDirectory.ts`), or
+ * `null` for `"otra"` / anything this scan doesn't recognize — the caller omits the whole
+ * "Plataforma" row rather than print a raw key like `"otra"` or `"nextjs"` (fix round F1, item 15).
+ */
+export function storePlatformLabel(platform: string | null | undefined): string | null {
+  if (!platform) return null
+  return STORE_PLATFORM_LABELS[platform] ?? null
+}
+
+/**
+ * `YYYY-MM-DD` or a full ISO datetime -> a long es-UY date ("16 de setiembre de 2026" — the
+ * Uruguayan spelling `dateLocale('es')` gives, not Spain's "septiembre"). A bare calendar date is
+ * read as noon UTC so it never rolls back a day in Montevideo. Exported (fix round 1, item 3) so
+ * both pages of this family share one "revisado el <fecha>" formatter instead of each keeping its
+ * own `toDate`/`formatDate` pair.
+ */
+export function storeFormatDate(value: string | null | undefined): string {
+  if (!value) return ''
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value
+  const time = Date.parse(iso)
+  if (Number.isNaN(time)) return ''
+  return new Date(time).toLocaleDateString(dateLocale('es'), {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'America/Montevideo',
+  })
+}
+
+/** Upper-cases the first character, leaving the rest untouched (an accented vowel or an existing
+ * capital stays exactly as written). Used only to give every joined sentence in
+ * {@link signalFacts} its own capital start (fix round F1, item 1) — the sentences are later
+ * joined with '. ', and a lowercase fragment after a period reads as broken prose. */
+function capitalizeSentence(text: string): string {
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : text
+}
+
+/**
+ * The dated facts a profile can show right now, oldest logic shared by `storeSignalSummary` and the
+ * "¿es confiable?" FAQ answer: only signals that pass {@link storeFreshSignals}'s own freshness rule
+ * make the list, field by field, so a Trustpilot score from 61 days ago simply is not one of the
+ * sentences — not relabelled, not marked "desactualizado", just absent, the same rule the count uses.
+ * Every date goes through {@link storeFormatDate} (fix round F1, item 1) — never a raw ISO slice —
+ * and the whole list is capitalized sentence by sentence before it is returned.
+ */
+function signalFacts(profile: StorePublicProfile, now: Date): string[] {
+  const facts: string[] = []
+  if (profile.trustpilot && storeSignalFresh(profile.trustpilot.checkedAt, now)) {
+    const t = profile.trustpilot
+    facts.push(
+      `Trustpilot: ${storeEsDecimal(t.score)} sobre 5 en ${storeEsCount(t.reviews)} reseñas`
+    )
+  }
+  if (profile.google && storeSignalFresh(profile.google.checkedAt, now)) {
+    const g = profile.google
+    facts.push(
+      `Google Maps: ${storeEsDecimal(g.rating)} sobre 5 en ${storeEsCount(g.reviews)} reseñas`
+    )
+  }
+  if (profile.age && storeSignalFresh(profile.age.checkedAt, now)) {
+    // "En línea desde", not "dominio registrado desde" (fix round F1, item 1): the date is the
+    // earlier of crt.sh's certificate and Wayback's first capture (classes/stores/signals/age.ts),
+    // which is evidence of the SITE being reachable, not of when the domain was registered — a
+    // domain can sit unused for years before anything is ever published on it.
+    facts.push(`En línea desde ${storeFormatDate(profile.age.since)}`)
+  }
+  if (
+    profile.site &&
+    profile.site.status === 'ok' &&
+    storeSignalFresh(profile.site.checkedAt, now)
+  ) {
+    facts.push(`Sitio propio verificado el ${storeFormatDate(profile.site.checkedAt)}`)
+  }
+  if (
+    profile.reddit &&
+    profile.reddit.mentions > 0 &&
+    storeSignalFresh(profile.reddit.checkedAt, now)
+  ) {
+    facts.push(`${storeMentionsCount(profile.reddit)} menciones en r/uruguay y r/montevideo`)
+  }
+  if (
+    profile.catalog &&
+    profile.catalog.offers > 0 &&
+    storeSignalFresh(profile.catalog.checkedAt, now)
+  ) {
+    facts.push(
+      `${storeEsCount(profile.catalog.offers)} ofertas relevadas en nuestro propio catálogo`
+    )
+  }
+  return facts.map(capitalizeSentence)
+}
+
+/**
+ * One factual sentence, no adjectives, built only from signals {@link storeFreshSignals} still
+ * counts as fresh. Never contains a verdict word ("confiable", "estafa", "recomendamos", "evitá") —
+ * `tests/unit/storeProfiles.test.ts` checks this directly, and it is the whole point of the page: a
+ * number and where it comes from, not a score this site invented.
+ */
+export function storeSignalSummary(profile: StorePublicProfile, now: Date = new Date()): string {
+  const facts = signalFacts(profile, now)
+  if (!facts.length) return `Todavía no hay señales verificadas de ${profile.name}.`
+  return `${facts.join('. ')}.`
+}
+
+interface StoreFaqItem {
+  question: string
+  answer: string
+  /** An optional link rendered after the answer text (fix round F1, item 14) — for an answer that
+   * would otherwise have to spell out a raw path (the Bankos discounts cross-link) as plain FAQ
+   * prose. Additive on `FaqItem`/`FaqSection`: every other FAQ across the site leaves this unset and
+   * renders exactly as before. */
+  link?: { label: string; to: string }
+}
+
+export interface StoreAddress {
+  address: string
+  source: 'google' | 'site'
+  /** The underlying signal's own `checkedAt` — Google's or the site scan's — so the caller can
+   * print "revisado el <fecha>" next to the address instead of leaving it undated. */
+  checkedAt: string
+}
+
+/**
+ * Google's listing first (it is checked against the store's own domain — see
+ * `classes/stores/signals/google.ts`'s `sameSite`), the site's own JSON-LD `PostalAddress` second,
+ * and ONLY among sources still within {@link storeSignalFresh} of `now` (fix round 1, item 2): an
+ * address is itself a dated fact like a Trustpilot score, and a Google listing from months ago that
+ * has since moved or closed must not be shown as if it were current just because the field is still
+ * on the document. Neither source fresh -> `null`, and the caller shows nothing, not a guess.
+ *
+ * Exported (Task 9) so the store detail page's own "Identidad" block shows the exact same address,
+ * from the exact same priority, as the "¿tiene local físico?" FAQ answer below.
+ */
+export function storeAddress(
+  profile: StorePublicProfile,
+  now: Date = new Date()
+): StoreAddress | null {
+  if (profile.google?.address && storeSignalFresh(profile.google.checkedAt, now)) {
+    return {
+      address: profile.google.address,
+      source: 'google',
+      checkedAt: profile.google.checkedAt,
+    }
+  }
+  if (profile.site?.address && storeSignalFresh(profile.site.checkedAt, now)) {
+    return { address: profile.site.address, source: 'site', checkedAt: profile.site.checkedAt }
+  }
+  return null
+}
+
+/**
+ * The "no address" FAQ answer names only the sources this profile can actually vouch for having
+ * checked (fix round F2, item C): a source that was never queried (`profile.google`/`profile.site`
+ * null, or a blocked site scan) or whose last answer is older than {@link storeSignalFresh}'s
+ * cutoff never gets blamed for "not finding" an address it was never actually (or not recently)
+ * asked about — the previous copy always named both Google Maps and the store's site verbatim, even
+ * when one or both had never been queried at all or were stale for months. When nothing fresh
+ * answered, the generic "No tenemos una dirección verificada." replaces that blanket claim.
+ */
+function noAddressAnswer(profile: StorePublicProfile, now: Date): string {
+  const checked: string[] = []
+  if (profile.google && storeSignalFresh(profile.google.checkedAt, now)) checked.push('Google Maps')
+  if (
+    profile.site &&
+    profile.site.status === 'ok' &&
+    storeSignalFresh(profile.site.checkedAt, now)
+  ) {
+    checked.push('el sitio de la tienda')
+  }
+  if (!checked.length) return 'No tenemos una dirección verificada.'
+  return `No encontramos una dirección publicada en ${checked.join(' ni en ')}.`
+}
+
+/**
+ * The three FAQs every store page asks, plus a fourth about card discounts when `bankosBrandSlug`
+ * resolved one (Task 8's `GET /api/stores/<slug>` finds it by matching only the store's own
+ * canonical NAME — never an alias — against Bankos' own brand slugs; see the route's
+ * `findBankosBrandSlug`, fix round F1 item 14, on why an alias is excluded). Every answer is built
+ * from `profile`, never phrased as a verdict. `now` is the page's own `servedAt` instant (fix round
+ * F2, item B) — never a fresh `new Date()` here, which would judge freshness against a different
+ * "now" than the one the page already rendered with.
+ */
+export function storeFaq(
+  profile: StorePublicProfile,
+  bankosBrandSlug: string | null,
+  now: Date = new Date()
+): StoreFaqItem[] {
+  const facts = signalFacts(profile, now)
+  const confiableBody = facts.length
+    ? `${facts.join('. ')}.`
+    : `Todavía no hay señales verificadas de ${profile.name}.`
+
+  const address = storeAddress(profile, now)
+  const addressSourceLabel = address?.source === 'google' ? 'Google Maps' : 'el sitio de la tienda'
+
+  const faqs: StoreFaqItem[] = [
+    {
+      question: `¿${profile.name} es confiable?`,
+      answer: `${confiableBody} No es una calificación nuestra: cada dato dice de dónde sale.`,
+    },
+    {
+      question: `¿${profile.name} tiene local físico?`,
+      // "Dirección publicada:", not "Sí:" (fix round F1, item 15) — this is a JSON-LD/Maps address,
+      // which can be an office, a warehouse or a foreign HQ, not proof of a walk-in local; the
+      // negative case names only the sources actually fresh AND answered (fix round F2, item C),
+      // never a source that was never queried or hasn't answered in months.
+      answer: address
+        ? `Dirección publicada: ${address.address}, según ${addressSourceLabel}.`
+        : noAddressAnswer(profile, now),
+    },
+    {
+      question: `¿Cómo le reclamo a ${profile.name}?`,
+      answer:
+        `Reclamale primero directo a ${profile.name}, por escrito y con fecha (mail, WhatsApp o el ` +
+        'canal que publique en su sitio). Si no responde o no resuelve, el reclamo es gratis ante el ' +
+        'Área de Defensa del Consumidor del Ministerio de Economía y Finanzas (0800 7005).',
+    },
+  ]
+
+  faqs.push({
+    question: `¿${profile.name} tiene descuentos con tarjeta?`,
+    // The raw path used to be spelled out in the answer text itself, which FaqSection renders as
+    // plain text — a reader saw the literal string "/descuentos-con-tarjeta-uruguay/marca/<slug>",
+    // not a link. It now goes in `link` instead, rendered as a real anchor (fix round F1, item 14).
+    answer: bankosBrandSlug
+      ? 'Sí, tiene descuentos con tarjeta publicados.'
+      : `${profile.name} no tiene una página propia de descuentos con tarjeta en el sitio.`,
+    link: bankosBrandSlug
+      ? {
+          label: `Ver los descuentos con tarjeta de ${profile.name}`,
+          to: `/descuentos-con-tarjeta-uruguay/marca/${bankosBrandSlug}`,
+        }
+      : undefined,
+  })
+
+  return faqs
+}
+
+export interface StoreBuyingAdviceItem {
+  text: string
+  to?: string
+}
+
+export interface StoreBuyingAdvice {
+  title: string
+  items: StoreBuyingAdviceItem[]
+}
+
+/**
+ * What to check before buying, by store kind — links only, never a verdict on the store itself. A
+ * `compra-exterior` store (Temu, Shein, AliExpress, Amazon, eBay, Tiendamia) is bought under the
+ * customs regime, so the advice is about the franchise/IVA/customs, not consumer law; everything
+ * bought in Uruguay (`tienda-uy` and `marketplace`, i.e. Mercado Libre) falls under the Ley 17.250
+ * consumer-rights regime instead. Text kept consistent with `app/utils/consumerRights.ts`'s own
+ * wording of the art. 16 arrepentimiento (5 días hábiles).
+ */
+export function storeBuyingAdvice(kind: StoreKind): StoreBuyingAdvice {
+  if (kind === 'compra-exterior') {
+    return {
+      title: 'Antes de comprar en el exterior',
+      items: [
+        {
+          text: 'Revisá la franquicia de aduana vigente y cuánto de tu cupo anual de US$ 800 ya usaste.',
+          to: '/franquicia-aduana-uruguay',
+        },
+        {
+          text: 'Mirá cuánto IVA pagás y cuándo te lo cobran, con la guía del impuesto Temu.',
+          to: '/guias/impuesto-temu-uruguay',
+        },
+        {
+          text: 'Si el paquete queda retenido o la liquidación no cierra, así se resuelve un problema con la Aduana.',
+          to: '/problemas-con-la-aduana-uruguay',
+        },
+      ],
+    }
+  }
+
+  return {
+    title: `Tus derechos al comprar en ${STORE_KIND_LABELS[kind].toLowerCase()}`,
+    items: [
+      {
+        text:
+          'Tenés derecho de arrepentimiento de 5 días hábiles en las compras a distancia, sin dar ' +
+          'motivo (Ley 17.250 art. 16).',
+        to: '/derechos-consumidor-compras-online',
+      },
+      {
+        text:
+          'Si no cumplen o no te responden, el reclamo es gratis ante el Área de Defensa del ' +
+          'Consumidor del Ministerio de Economía y Finanzas.',
+        to: '/defensa-al-consumidor-uruguay',
+      },
+    ],
+  }
+}
+
+export interface StoreHubListEntry {
+  key: string
+  name: string
+  hasProfile: boolean
+}
+
+/**
+ * The hub's `ItemList` JSON-LD node — one `ListItem` per curated store that actually has a page of
+ * its own (`hasProfile: true`; `GET /api/stores/<slug>` 404s without a document). Returns an empty
+ * array, not a node with zero items, when nothing in the registry has a profile yet (fix round 1,
+ * item 4): an `ItemList` that lists nothing is not useful structured data, and the caller spreads
+ * this into its own `@graph` array so the empty case simply contributes no node, keeping
+ * `BreadcrumbList` on its own.
+ */
+export function storeHubItemList(
+  stores: readonly StoreHubListEntry[]
+): Array<Record<string, unknown>> {
+  const withProfile = stores.filter(store => store.hasProfile)
+  if (!withProfile.length) return []
+  return [
+    {
+      '@type': 'ItemList',
+      name: 'Tiendas online de Uruguay con ficha propia',
+      itemListElement: withProfile.map((store, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: store.name,
+        url: `https://cambio-uruguay.com/tiendas-online-uruguay/${store.key}`,
+      })),
+    },
+  ]
+}

@@ -108,6 +108,18 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
                   <a :href="offer.url" target="_blank" rel="nofollow noopener" class="cat-link">{{
                     offer.seller
                   }}</a>
+                  <NuxtLink
+                    v-if="storeKeyFor(offer.seller, offer.source)"
+                    :to="
+                      localePath(
+                        `/tiendas-online-uruguay/${storeKeyFor(offer.seller, offer.source)}`
+                      )
+                    "
+                    :aria-label="`Ficha de ${offer.seller}`"
+                    class="cat-link seller-ficha"
+                  >
+                    (ficha)
+                  </NuxtLink>
                   {{ money(offer.priceUyu) }} · {{ shortDate(offer.observedAt) }}
                 </li>
               </ul>
@@ -143,7 +155,16 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
                 row.offer.title
               }}</a>
               <span class="offer-meta"
-                >{{ row.offer.seller }} · {{ row.variantLabel }} ·
+                ><NuxtLink
+                  v-if="storeKeyFor(row.offer.seller, row.offer.source)"
+                  :to="
+                    localePath(
+                      `/tiendas-online-uruguay/${storeKeyFor(row.offer.seller, row.offer.source)}`
+                    )
+                  "
+                  class="cat-link"
+                  >{{ row.offer.seller }}</NuxtLink
+                ><template v-else>{{ row.offer.seller }}</template> · {{ row.variantLabel }} ·
                 {{ shortDate(row.offer.observedAt) }}</span
               >
               <span class="offer-price"
@@ -163,7 +184,16 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
                 row.offer.title
               }}</a>
               <span class="offer-meta"
-                >{{ row.offer.seller }} · {{ row.variantLabel }} ·
+                ><NuxtLink
+                  v-if="storeKeyFor(row.offer.seller, row.offer.source)"
+                  :to="
+                    localePath(
+                      `/tiendas-online-uruguay/${storeKeyFor(row.offer.seller, row.offer.source)}`
+                    )
+                  "
+                  class="cat-link"
+                  >{{ row.offer.seller }}</NuxtLink
+                ><template v-else>{{ row.offer.seller }}</template> · {{ row.variantLabel }} ·
                 {{ shortDate(row.offer.observedAt) }}</span
               >
               <span class="offer-price"
@@ -287,6 +317,7 @@ import {
 } from '~/utils/equipar'
 import { equiparEs } from '~/utils/equiparEs'
 import { dateLocale } from '~/utils/format'
+import { storeSlugForSeller } from '~/utils/storeDirectory'
 
 // 404 real para un slug inventado: `validate` corre antes del setup (un createError después de un
 // await respondería 200). Es una macro, así que sólo puede usar la función importada.
@@ -304,6 +335,19 @@ if (!found) {
   throw createError({ statusCode: 404, statusMessage: 'Categoría no encontrada', fatal: true })
 }
 const page = computed(() => equiparCategoryPage(slug.value) ?? found)
+
+// Task 10: el nombre del vendedor enlaza a su ficha (/tiendas-online-uruguay/<key>) sólo cuando esa
+// tienda tiene ficha propia — la ruta 404s de verdad si no. `storeProfileKeys` es la lista compartida
+// con /sillas-escritorio-uruguay/[slug].vue (useStoreProfileKeys.ts).
+const storeProfileKeys = useStoreProfileKeys()
+// `source` is optional so every existing call site keeps compiling untouched; a facebook-sourced
+// offer never links, even when the seller name happens to resolve to a curated store — a private
+// Marketplace seller's display name is not a company identity (fix round F1, item 4).
+const storeKeyFor = (seller: string, source?: string): string | null => {
+  if (source === 'facebook') return null
+  const key = storeSlugForSeller(seller)
+  return key && storeProfileKeys.value.includes(key) ? key : null
+}
 
 interface EquiparCategoryView {
   generatedAt: string | null
@@ -751,6 +795,11 @@ useHead(() => ({
 }
 .offer-mini li {
   padding: 2px 0;
+}
+.seller-ficha {
+  font-size: 0.72rem;
+  font-weight: 400;
+  opacity: 0.85;
 }
 
 /* Más baratos */

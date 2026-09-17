@@ -18,7 +18,12 @@
     <dl v-if="expanded" class="faq-dl">
       <div v-for="item in items" :key="item.id" :data-faq-id="item.id" class="faq-dl-item">
         <dt class="text-subtitle-1 font-weight-bold mb-1">{{ item.question }}</dt>
-        <dd class="text-body-2 mb-5">{{ item.answer }}</dd>
+        <dd class="text-body-2 mb-5">
+          {{ item.answer }}
+          <NuxtLink v-if="item.link" :to="localePath(item.link.to)" class="faq-link">{{
+            item.link.label
+          }}</NuxtLink>
+        </dd>
       </div>
     </dl>
 
@@ -26,7 +31,12 @@
     <VExpansionPanels v-else variant="accordion">
       <VExpansionPanel v-for="item in items" :key="item.id" :data-faq-id="item.id">
         <VExpansionPanelTitle>{{ item.question }}</VExpansionPanelTitle>
-        <VExpansionPanelText>{{ item.answer }}</VExpansionPanelText>
+        <VExpansionPanelText>
+          {{ item.answer }}
+          <NuxtLink v-if="item.link" :to="localePath(item.link.to)" class="faq-link">{{
+            item.link.label
+          }}</NuxtLink>
+        </VExpansionPanelText>
       </VExpansionPanel>
     </VExpansionPanels>
   </section>
@@ -34,6 +44,8 @@
 
 <script setup lang="ts">
 import type { FaqItem } from '~/utils/faqAnswers'
+
+const localePath = useLocalePath()
 
 const props = withDefaults(
   defineProps<{ items: FaqItem[]; heading?: string; emitSchema?: boolean; expanded?: boolean }>(),
@@ -70,5 +82,14 @@ useFaqSchema(
 .faq-dl-item dd {
   margin-inline-start: 0;
   color: rgba(var(--v-theme-on-surface), 0.75);
+}
+
+/* The optional per-answer link (fix round F1, item 14): inline after the answer text, same
+   semantic blue every other in-page link in this family uses (see .tienda-link). */
+.faq-link {
+  display: inline-block;
+  margin-inline-start: 4px;
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
 }
 </style>

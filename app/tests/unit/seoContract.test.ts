@@ -75,6 +75,13 @@ const PROGRAMMATIC_PAGES: Array<{ file: string; sitemapMarker: string }> = [
     file: 'equipar-casa-uruguay/[categoria].vue',
     sitemapMarker: '`/equipar-casa-uruguay/${slug}`',
   },
+  // Una página por tienda de /tiendas-online-uruguay: el índice es una URL fija (sin datos), la
+  // ficha depende de que el backend haya escrito un perfil (Task 9).
+  { file: 'tiendas-online-uruguay/index.vue', sitemapMarker: '/tiendas-online-uruguay' },
+  {
+    file: 'tiendas-online-uruguay/[tienda].vue',
+    sitemapMarker: '`/tiendas-online-uruguay/${slug}`',
+  },
 ]
 
 describe('the programmatic families exist on disk', () => {

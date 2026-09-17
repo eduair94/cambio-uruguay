@@ -424,6 +424,72 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Fichas de /tiendas-online-uruguay: por cada tienda del registro curado
+      // (classes/stores/registry.ts) lee su home, la antigüedad del dominio (crt.sh, Wayback),
+      // Trustpilot (:3029), Google Maps (:2221, sólo si el sitio de la ficha ES el dominio), las
+      // menciones en r/uruguay y r/montevideo (Arctic Shift) y la presencia en los catálogos propios
+      // → APP DB `storeprofiles`. Una fuente que falla conserva su último valor con su fecha vieja.
+      // Cada tienda se guarda apenas se lee y sólo si alguna fuente externa contestó (un backfill de
+      // Reddit de horas no pierde lo hecho); si las primeras 10 tiendas no obtuvieron ninguna
+      // respuesta, las fuentes están caídas: corta sin escribir y sale con 1. Reddit se lee por
+      // ventanas con cursor por tienda y un presupuesto de llamadas por corrida
+      // (STORES_REDDIT_MAX_CALLS, 900 por defecto): el backfill de 24 meses lleva varias semanas.
+      //
+      // Domingos 07:17 UTC = 04:17 en Montevideo. Semanal porque reseñas y antigüedad se mueven en
+      // semanas, y porque Arctic Shift pide ir despacio: recorrer las menciones de todo el registro
+      // lleva su rato. Vecinos reales: currency-loan-tiers (domingos 07:23),
+      // currency-property-services (domingos 07:33) y currency-property-opportunities-hourly (minuto
+      // :17 de cada hora); ninguno usa los mismos servicios externos. Arctic Shift también lo lee
+      // currency-charruadevs, pero a las 12:14. Minuto 17: no es múltiplo de 5. Necesita APP_MONGO_URI.
+      //
+      // Fix round 1 (I1): shares scripts/run-store-profiles.sh with currency-store-reddit — the two
+      // load and rewrite the SAME APP DB `storeprofiles` documents, and a --reddit-only run can take
+      // up to ~4h on the full call budget (measured ~16.7s/call × 900), long enough to still be
+      // running when this weekly run starts. The wrapper's shared flock (STORES_LOCK_FILE) keeps
+      // them from ever running together: this job WAITS (up to STORES_FULL_LOCK_WAIT_SECONDS,
+      // 7200s) instead of racing or canceling the nightly job.
+      name: "currency-store-profiles",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "scripts/run-store-profiles.sh",
+      interpreter: "bash",
+      cron_restart: "17 7 * * 0",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Task 13: nightly `--reddit-only` — same wrapper/script as currency-store-profiles, but it
+      // asks Reddit only; site/age/trustpilot/google and the catalogue keep exactly last week's
+      // value. Measured on Task 12: a store's 24-month Arctic Shift backfill costs ~90 calls (~25
+      // min), so the weekly job's 900-call budget would need ~8 weeks to finish backfilling all 76
+      // stores. Nightly does NOT spend the full 900-call budget, though: its own wall-clock cap
+      // (STORES_REDDIT_MAX_MINUTES, 150 min) cuts it off first, and at ~16.7s/call (measured) that
+      // is only ~540 calls/night (150*60/16.7 ≈ 540) — so the 76-store backfill (~90 calls each,
+      // ~6,840 calls total) takes ~13 nights instead (6840/540 ≈ 12.7), not ~8. The other signals
+      // stay weekly on purpose: Google Places (fetchGoogle) charges per call, and re-reading a
+      // domain's age or Trustpilot every night would answer nothing new.
+      //
+      // 03:41 UTC = 00:41 in Montevideo, free of every other cron in this file. autorestart:false and
+      // exec_mode:"fork" for the same reason as every other cron app here: pm2 must not turn "runs
+      // once a night" into "runs forever". A store is only saved when Reddit itself progressed this
+      // run (a new mention or a moved cursor) — a night with nothing new for a store writes nothing.
+      //
+      // Fix round 1 (I1, and rulings 2-3): shares the lock above with currency-store-profiles as the
+      // NON-blocking side (`flock -n`) — if the weekly full run holds it, this job prints and exits 0
+      // instead of waiting or racing it. It also skips a store whose 24-month backfill already
+      // finished (`needsRedditBackfill` — the weekly job keeps that store's signal fresh from there)
+      // and caps its own wall clock at STORES_REDDIT_MAX_MINUTES (default 150), independent of the
+      // call budget, so retries/backoff on an unusually slow night cannot run it into the Sunday
+      // weekly job's start.
+      name: "currency-store-reddit",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "scripts/run-store-profiles.sh",
+      interpreter: "bash",
+      args: "--reddit-only",
+      cron_restart: "41 3 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Lender TEA refresh (bancos/financieras/cooperativas/fintech) for /prestamos-uruguay.
       // Fallback chain: regex parser first (oca/pronto/cash), Gemini-grounded lookup for the rest
       // (host-gated to the lender's own resolved domain). Daily 08:47 UTC ≈ 05:47

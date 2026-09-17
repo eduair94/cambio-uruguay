@@ -21,8 +21,11 @@ import { toolSlugs } from '../../../utils/tools'
 import { videoTopicSlugs } from '../../../utils/videoTopics'
 import { isEquiparCategorySlug } from '../../../utils/equiparCategoryPages'
 import { CarCatalogMetaModel } from '../../models/CarCatalogMeta'
+import { isStoreDirectoryKey } from '../../../utils/storeDirectory'
+import { storeIndexable, type StorePublicProfile } from '../../../utils/storeProfiles'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
 import { EquiparItemModel } from '../../models/EquiparItem'
+import { StoreProfileModel } from '../../models/StoreProfile'
 import { listPosts } from '../../utils/blog'
 import { listIssueDates } from '../../utils/newsletterArchive'
 import { loadPropertySaleSitemapUrls } from '../../utils/propertySales'
@@ -184,6 +187,10 @@ export default defineEventHandler(async _event => {
   entityPageSlugs('tarjetas-de-debito').forEach(slug =>
     urls.push({ loc: `/tarjetas-de-debito-uruguay/${slug}`, changefreq: 'monthly', priority: 0.7 })
   )
+  // El índice de tiendas online: una URL fija, español solamente (como comparativas/sucursal), que
+  // no depende de Mongo — a diferencia de sus fichas por tienda, que sí (más abajo, junto a chairs
+  // y equipar). Sobrevive a un corte de la base igual que el resto de este bloque.
+  urls.push({ loc: '/tiendas-online-uruguay', changefreq: 'weekly', priority: 0.7 })
   convertSlugs().forEach(slug => addUrlsForAllLocales(`/convertir/${slug}`, 0.6, 'weekly'))
   // Curated border-department pages (real/peso argentino at the frontier). A
   // hand-picked allowlist, so — unlike the per-casa history — it is emitted from
@@ -316,6 +323,28 @@ export default defineEventHandler(async _event => {
       })
     } catch (equiparError) {
       console.warn('Failed to add equipar category pages to sitemap:', equiparError)
+    }
+
+    // --- /tiendas-online-uruguay/<slug>: one page per store profile the backend HAS written ---
+    // The stored `indexable` flag is a write-time snapshot (see storeProfiles.ts's own header on
+    // why the API routes never trust it either): recomputed here against `now` via `storeIndexable`,
+    // so a profile that has since gone stale stops being submitted even though nobody rewrote it.
+    // `isStoreDirectoryKey` guards a profile whose store fell out of the curated registry after it
+    // was written — its document can still exist, but the route it would resolve to no longer does.
+    // Own try: a failed store query must not also drop the chair/equipar URLs above.
+    try {
+      const docs = await StoreProfileModel.find({})
+        .select({ key: 1, site: 1, age: 1, trustpilot: 1, google: 1, reddit: 1, catalog: 1 })
+        .lean()
+      const now = new Date()
+      for (const doc of docs as unknown as StorePublicProfile[]) {
+        const slug = doc.key
+        if (!isStoreDirectoryKey(slug)) continue
+        if (!storeIndexable(doc, now)) continue
+        urls.push({ loc: `/tiendas-online-uruguay/${slug}`, changefreq: 'weekly', priority: 0.6 })
+      }
+    } catch (storeError) {
+      console.warn('Failed to add store profile pages to sitemap:', storeError)
     }
   } catch (dbError) {
     console.warn('Failed to connect for chair/equipar sitemap pages:', dbError)

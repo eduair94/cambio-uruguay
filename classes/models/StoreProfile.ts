@@ -1,0 +1,48 @@
+import { Schema } from "mongoose";
+import { appModel } from "../appdb";
+import type { StoreProfileDoc } from "../stores/profile";
+
+// One document per curated store (classes/stores/registry.ts), in the APP database, which the Nuxt
+// pages of /tiendas-online-uruguay read directly. Written weekly by sync_store_profiles.ts with an
+// upsert by `key`; a store dropped from the registry is never deleted here.
+//
+// Each signal is a Mixed subdocument that carries its own `checkedAt`. A signal whose source failed
+// this week keeps its previous value and its OLD date (classes/stores/profile.ts), which is why the
+// dates live inside each signal and not once at the top of the document.
+//
+// Reddit is read incrementally, so four more fields hold its state: `redditMentions` (what was read
+// so far, newest first, at most 500 — id, kind, subreddit, date, thread, title, permalink and score;
+// never a comment body, never an author), `redditCursor` (where reading stands), `redditTermsKey`
+// (the terms they were searched with; a change starts the reading over) and `toneCache` (Task 7: one
+// automatic tone per classified mention id, from `classes/stores/signals/tone.ts` — resets with
+// `redditTermsKey` and is pruned to the ids still in `redditMentions`). None of the four is for the
+// page: the app API must leave them out of its `.select`.
+const StoreProfileSchema = new Schema(
+  {
+    key: { type: String, required: true },
+    name: { type: String, required: true },
+    domain: { type: String, default: null },
+    kind: { type: String, required: true },
+    rubros: { type: [String], default: [] },
+    aliases: { type: [String], default: [] },
+    site: { type: Schema.Types.Mixed, default: null },
+    age: { type: Schema.Types.Mixed, default: null },
+    trustpilot: { type: Schema.Types.Mixed, default: null },
+    google: { type: Schema.Types.Mixed, default: null },
+    reddit: { type: Schema.Types.Mixed, default: null },
+    catalog: { type: Schema.Types.Mixed, default: null },
+    redditMentions: { type: [Schema.Types.Mixed], default: [] },
+    redditCursor: { type: Schema.Types.Mixed, default: null },
+    redditTermsKey: { type: String, default: null },
+    toneCache: { type: Schema.Types.Mixed, default: {} },
+    signals: { type: Number, default: 0 },
+    indexable: { type: Boolean, default: false },
+    firstSeen: { type: String, required: true },
+    lastSeen: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+
+StoreProfileSchema.index({ key: 1 }, { unique: true });
+
+export const StoreProfileModel = appModel<StoreProfileDoc>("StoreProfile", StoreProfileSchema, "storeprofiles");

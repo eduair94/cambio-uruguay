@@ -1,0 +1,804 @@
+// Curated registry of online stores for /tiendas-online-uruguay, one page per store with
+// verifiable, dated signals (Trustpilot, Reddit sentiment, retail-catalog presence...).
+//
+// Why curated and not derived from Mercado Libre seller names: a seller display name on ML does
+// NOT reliably identify a real company. Sellers rebrand mid-listing, resell under a generic label
+// ("Mercado Libre" itself shows up as the seller of record on Full/managed listings, and plenty of
+// small accounts trade as "Vendedor Oficial" or a first name with no business behind it), and the
+// same real store can appear under several spellings. So this file is hand-verified — domain,
+// kind, rubros and the exact seller-name spellings a person actually confirmed — rather than
+// harvested, and `storeKeyForSeller` (classes/stores/match.ts) resolves a seller name against this
+// list instead of inventing an entry for anything that merely looks like a store name.
+//
+// Why `redditTerms: []` for some stores: several brand names are common Spanish words or short
+// generic tokens ("Armo", "Grassi", "Cosmos", "Claro", "Strada", "Cartoons", "Bike Store",
+// "Albanés"...) that collide constantly with unrelated Reddit chatter with no cheap way to tell
+// the two apart. Rather than publish sentiment pulled from noise, those stores are simply never
+// queried on Reddit (`redditTerms: []`). A handful of equally common names (`Divino`, `El Dorado`,
+// `LOi`, `Ta-Ta`) DO get queried, but only alongside a `redditMatch` regex that re-checks the
+// normalized title+text for store context (a nearby "tienda"/"super"/"compré"/"envío"...) before
+// a hit counts — see the disambiguator tests in tests/stores/registry.test.ts.
+import type { StoreEntry } from "./types";
+
+export const STORES: readonly StoreEntry[] = [
+  {
+    key: "bertoni",
+    name: "Bertoni",
+    domain: "bertoni.com.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles"],
+    aliases: ["Bertoni"],
+    retailStoreKey: "bertoni",
+    redditTerms: ["bertoni"],
+  },
+  {
+    key: "divino",
+    name: "Divino",
+    domain: "divino.com.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles", "electrodomesticos", "colchones", "hogar"],
+    aliases: ["Divino"],
+    retailStoreKey: "divino",
+    redditTerms: ["divino"],
+    redditMatch: /\b(en|de|tienda|local) divino\b|divino (muebles|tienda|online)/,
+  },
+  {
+    key: "electroventas",
+    name: "Electroventas",
+    domain: "electroventas.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos", "muebles"],
+    aliases: ["Electroventas"],
+    retailStoreKey: "electroventas",
+    redditTerms: ["electroventas"],
+  },
+  {
+    key: "la-cueva-muebles",
+    name: "La Cueva Muebles",
+    domain: "lacuevamuebles.com.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles", "colchones"],
+    aliases: ["La Cueva Muebles", "LaCuevaMuebles"],
+    retailStoreKey: "lacuevamuebles",
+    redditTerms: ["la cueva muebles"],
+  },
+  {
+    key: "clemur",
+    name: "Clemur",
+    domain: "clemur.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles"],
+    aliases: ["Clemur"],
+    retailStoreKey: "clemur",
+    redditTerms: ["clemur"],
+  },
+  {
+    key: "tienda-santander",
+    name: "Tienda Santander",
+    domain: "tienda.soysantander.com.uy",
+    kind: "tienda-uy",
+    rubros: ["general"],
+    aliases: ["Tienda Santander", "Soy Santander"],
+    retailStoreKey: "soysantander",
+    redditTerms: [],
+  },
+  {
+    key: "dimm",
+    name: "DIMM",
+    domain: "dimm.com.uy",
+    kind: "tienda-uy",
+    rubros: ["tecnologia", "muebles", "celulares"],
+    aliases: ["DIMM"],
+    retailStoreKey: "dimm",
+    // "DIMM" is also the generic hardware term for a RAM memory module (Dual In-line Memory
+    // Module) — "necesito un dimm de 16gb" is a plausible unrelated r/uruguay tech comment.
+    // Fix round F2, item A: the old `(en|de|a) dimm\b` branch had no LEADING `\b`, so it matched
+    // after any word ending in "en"/"de"/"a" ("memoria DIMM", "una DIMM"...), not just the
+    // preposition — reviewer-probed replacement requires actual commerce context around the term.
+    redditTerms: ["dimm"],
+    redditMatch: /\bdimm\b.{0,40}\b(tienda|compr[eoa]|pedido|envio|garantia|sucursal|local)|\b(en|a) dimm\b/,
+  },
+  {
+    key: "armo",
+    name: "Armo",
+    domain: "armo.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles"],
+    aliases: ["Armo"],
+    retailStoreKey: "armo",
+    redditTerms: [],
+  },
+  {
+    key: "grassi",
+    name: "Grassi",
+    domain: "grassi.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles"],
+    aliases: ["Grassi"],
+    retailStoreKey: "grassi",
+    redditTerms: [],
+  },
+  {
+    key: "cover-company",
+    name: "Cover Company",
+    domain: "covercompany.com.uy",
+    kind: "tienda-uy",
+    rubros: ["tecnologia", "celulares", "hogar"],
+    aliases: ["Cover Company"],
+    retailStoreKey: "covercompany",
+    redditTerms: ["cover company"],
+  },
+  {
+    key: "american-mesh",
+    name: "American Mesh",
+    domain: "americanmesh.com.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles"],
+    aliases: ["American Mesh"],
+    retailStoreKey: "americanmesh",
+    redditTerms: ["american mesh"],
+  },
+  {
+    key: "prontometal",
+    name: "Prontometal",
+    domain: "prontometal.com.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles"],
+    aliases: ["Prontometal"],
+    retailStoreKey: "prontometal",
+    redditTerms: ["prontometal"],
+  },
+  {
+    key: "punto-union",
+    name: "Punto Unión",
+    domain: "puntounion.com.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles", "colchones", "hogar"],
+    aliases: ["Punto Unión", "Punto Union"],
+    retailStoreKey: "puntounion",
+    redditTerms: ["punto union", "punto unión"],
+  },
+  {
+    key: "tyt",
+    name: "TYT",
+    domain: "tyt.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos", "tecnologia", "hogar"],
+    aliases: ["TYT", "TYT IMPORTAMOS SOLUCIONES"],
+    retailStoreKey: "tyt",
+    redditTerms: [],
+  },
+  {
+    key: "ufficio",
+    name: "Ufficio Equipamientos",
+    domain: "ufficio.com.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles"],
+    aliases: ["Ufficio Equipamientos", "Ufficio"],
+    retailStoreKey: "ufficio",
+    redditTerms: [],
+  },
+  {
+    key: "el-dorado",
+    name: "El Dorado",
+    domain: "eldorado.com.uy",
+    kind: "tienda-uy",
+    rubros: ["supermercado", "electrodomesticos", "hogar"],
+    aliases: ["El Dorado"],
+    retailStoreKey: "eldorado",
+    redditTerms: ["el dorado"],
+    redditMatch: /\bel dorado\b.{0,40}(super|supermercado|tienda|compr)|(super|supermercado) el dorado/,
+  },
+  {
+    key: "expansion-uy",
+    name: "Expansión UY",
+    domain: "expansionuy.com",
+    kind: "tienda-uy",
+    rubros: ["muebles", "colchones"],
+    aliases: ["Expansión UY", "Expansion UY", "Expansionuy"],
+    redditTerms: ["expansion uy", "expansionuy"],
+  },
+  {
+    key: "universo-hobby",
+    name: "Universo Hobby",
+    domain: "universohobby.uy",
+    kind: "tienda-uy",
+    rubros: ["hogar", "general"],
+    aliases: ["Universo Hobby"],
+    redditTerms: ["universo hobby"],
+  },
+  {
+    key: "carolinas-home",
+    name: "Carolina's Home",
+    domain: "carolinashome.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles", "hogar"],
+    aliases: ["Carolina's Home", "Carolinas Home"],
+    redditTerms: ["carolinas home"],
+  },
+  {
+    key: "ultrashop",
+    name: "Ultrashop",
+    domain: "ultrashopuy.com.uy",
+    kind: "tienda-uy",
+    rubros: ["general"],
+    aliases: ["Ultrashop", "ultrashopuy", "UltraShopUy"],
+    redditTerms: ["ultrashop"],
+  },
+  {
+    key: "lg-amoblamientos",
+    name: "LG Amoblamientos",
+    domain: "lgamoblamientos.com",
+    kind: "tienda-uy",
+    rubros: ["muebles"],
+    aliases: ["LG Amoblamientos"],
+    redditTerms: ["lg amoblamientos"],
+  },
+  {
+    key: "tushop",
+    name: "Tushop",
+    domain: "tushop.uy",
+    kind: "tienda-uy",
+    rubros: ["general", "electrodomesticos"],
+    aliases: ["Tushop", "TuShopuy", "TuShop"],
+    redditTerms: ["tushop"],
+  },
+  {
+    key: "silverled",
+    name: "Silverled",
+    domain: "silverled.com.uy",
+    kind: "tienda-uy",
+    rubros: ["hogar", "muebles"],
+    aliases: ["Silverled", "Uruguay Silverled"],
+    redditTerms: ["silverled"],
+  },
+  {
+    key: "muebles-web",
+    name: "Muebles Web",
+    domain: "mueblesweb.com.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles"],
+    aliases: ["Muebles Web"],
+    redditTerms: ["muebles web", "mueblesweb"],
+  },
+  {
+    key: "strada",
+    name: "Strada",
+    domain: "strada.com.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles"],
+    aliases: ["Strada"],
+    redditTerms: [],
+  },
+  {
+    key: "boxbit",
+    name: "Boxbit",
+    domain: "boxbit.com.uy",
+    kind: "tienda-uy",
+    rubros: ["muebles", "tecnologia"],
+    aliases: ["Boxbit"],
+    redditTerms: ["boxbit"],
+  },
+  {
+    key: "world-vigo",
+    name: "World Vigo",
+    domain: "worldvigo.com",
+    kind: "tienda-uy",
+    rubros: ["muebles"],
+    aliases: ["World Vigo", "Vigo"],
+    redditTerms: ["world vigo", "sillas vigo"],
+  },
+  {
+    key: "estacion-hogar",
+    name: "Estación Hogar",
+    domain: "estacionhogar.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos", "hogar"],
+    aliases: ["Estación Hogar", "Estacion Hogar"],
+    redditTerms: ["estacion hogar", "estación hogar"],
+  },
+  {
+    key: "fama",
+    name: "Fama Electrodomésticos",
+    domain: "fama.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos"],
+    aliases: ["Fama Electrodomésticos", "Fama"],
+    redditTerms: ["fama electrodomesticos"],
+  },
+  {
+    key: "cartoons",
+    name: "Cartoons",
+    domain: "cartoons.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos", "tecnologia"],
+    aliases: ["Cartoons"],
+    redditTerms: [],
+  },
+  {
+    key: "cosmos",
+    name: "Cosmos",
+    domain: "cosmos.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos", "tecnologia"],
+    aliases: ["Cosmos", "COSMOS"],
+    redditTerms: [],
+  },
+  {
+    key: "tech-house",
+    name: "Tech House",
+    domain: "techhouse.uy",
+    kind: "tienda-uy",
+    rubros: ["tecnologia"],
+    aliases: ["Tech House"],
+    // "Tech house" is also an electronic-music genre — a music/genre-tag mention shares nothing
+    // with this store.
+    // Fix round F2, item A: same unbounded-preposition bug as `dimm` above ("me gusta la música
+    // tech house" matched via the "a"-ending of "música") — replaced with a commerce-context regex
+    // that requires an actual buying word next to the term, either side.
+    redditTerms: ["tech house"],
+    redditMatch:
+      /\btech house\b.{0,40}\b(tienda|compr[eoa]|pedido|envio|garantia|sucursal|local)|\b(compr[eoa]|tienda|pedido)\b.{0,40}\btech house\b/,
+  },
+  {
+    key: "narvaja",
+    name: "Narvaja",
+    domain: "narvaja.online",
+    kind: "tienda-uy",
+    rubros: ["hogar", "colchones"],
+    aliases: ["Narvaja"],
+    redditTerms: [],
+  },
+  {
+    key: "la-tentacion",
+    name: "La Tentación",
+    domain: "latentacion.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos", "hogar"],
+    aliases: ["La Tentación", "La Tentacion"],
+    // "La tentación" is everyday Spanish for "the temptation" ("no pude resistir la tentación de
+    // comer torta"), unrelated to this store.
+    //
+    // Fix round F2, item A: no `redditMatch` — the commerce-context regex the reviewer probed
+    // (`\bla tentacion\b.{0,40}\b(tienda|compr[eoa]|...)|...`) still matched ordinary phrasing: this
+    // idiom's single most common construction IS "la tentación de comprar <algo>" ("sentí la
+    // tentación de comprar un auto nuevo", "cayó en la tentación de comprar el iPhone nuevo" — none
+    // about this store), so a regex built to require a nearby "compr[eoa]" is defeated by the
+    // idiom's own normal grammar, not just by an adversarial phrasing. Tightening the regex to
+    // exclude that construction in turn dropped real store mentions the reviewer's own probe wanted
+    // kept ("Vi ofertas en La Tentación", "Fui a comprar a La Tentación una heladera"). Per the
+    // registry's own rule for a name too ambiguous to search at all (see `Armo`/`Grassi`/`TYT`/...
+    // above), this store is simply never queried on Reddit.
+    redditTerms: [],
+  },
+  {
+    key: "amv-store",
+    name: "AMV Store",
+    domain: "amvstore.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos", "tecnologia", "celulares"],
+    aliases: ["AMV Store", "AMV"],
+    redditTerms: ["amv store", "amvstore"],
+  },
+  {
+    key: "sep-importaciones",
+    name: "SEP Importaciones",
+    domain: "sepimportaciones.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos"],
+    aliases: ["SEP Importaciones"],
+    redditTerms: ["sep importaciones"],
+  },
+  {
+    key: "goldsky",
+    name: "Goldsky",
+    domain: "goldsky.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos"],
+    aliases: ["Goldsky", "GOLDSKY SA"],
+    redditTerms: [],
+  },
+  {
+    key: "el-rey-de-las-ofertas",
+    name: "El Rey de las Ofertas",
+    domain: "elreydelasofertas.com.uy",
+    kind: "tienda-uy",
+    rubros: ["general"],
+    aliases: ["El Rey de las Ofertas"],
+    redditTerms: ["el rey de las ofertas"],
+  },
+  {
+    key: "tienda-max",
+    name: "Tienda Max",
+    domain: "tiendamax.uy",
+    kind: "tienda-uy",
+    rubros: ["general"],
+    aliases: ["Tienda Max"],
+    redditTerms: ["tienda max"],
+  },
+  {
+    key: "aiwa",
+    name: "Aiwa Uruguay",
+    domain: "aiwa.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos", "tecnologia"],
+    aliases: ["Aiwa Uruguay", "Aiwa"],
+    redditTerms: [],
+  },
+  {
+    key: "magic-center",
+    name: "Magic Center",
+    domain: "magiccenter.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos", "tecnologia", "celulares"],
+    aliases: ["Magic Center"],
+    redditTerms: ["magic center"],
+  },
+  {
+    key: "loi",
+    name: "LOi",
+    domain: "loi.com.uy",
+    kind: "tienda-uy",
+    rubros: ["tecnologia", "electrodomesticos", "celulares"],
+    aliases: ["LOi", "LOI"],
+    redditTerms: ["loi"],
+    redditMatch: /\bloi\b.{0,40}(compr|tienda|envio|pedido|web)|(en|de|a) loi\b/,
+  },
+  {
+    key: "tienda-inglesa",
+    name: "Tienda Inglesa",
+    domain: "tiendainglesa.com.uy",
+    kind: "tienda-uy",
+    rubros: ["supermercado", "electrodomesticos", "hogar"],
+    aliases: ["Tienda Inglesa"],
+    redditTerms: ["tienda inglesa"],
+  },
+  {
+    key: "sodimac",
+    name: "Sodimac",
+    domain: "sodimac.com.uy",
+    kind: "tienda-uy",
+    rubros: ["ferreteria", "hogar"],
+    aliases: ["Sodimac"],
+    redditTerms: ["sodimac"],
+  },
+  {
+    key: "tata",
+    name: "Ta-Ta",
+    domain: "tata.com.uy",
+    kind: "tienda-uy",
+    rubros: ["supermercado", "electrodomesticos"],
+    aliases: ["Ta-Ta", "TaTa", "Tata"],
+    redditTerms: ["ta-ta", "tata online"],
+    redditMatch: /\bta ?-?ta\b.{0,40}(super|supermercado|compr|online|pedido)/,
+  },
+  {
+    key: "geant",
+    name: "Géant",
+    domain: "geant.com.uy",
+    kind: "tienda-uy",
+    rubros: ["supermercado", "electrodomesticos"],
+    aliases: ["Géant", "Geant"],
+    redditTerms: ["geant", "géant"],
+  },
+  {
+    key: "zonatecno",
+    name: "Zonatecno",
+    domain: "zonatecno.com.uy",
+    kind: "tienda-uy",
+    rubros: ["tecnologia", "celulares"],
+    aliases: ["Zonatecno", "Zona Tecno"],
+    // "zona tecno" (spaced) also names any event tech area; only the joined brand token is searched.
+    redditTerms: ["zonatecno"],
+  },
+  {
+    key: "iplace",
+    name: "iPlace",
+    domain: "iplace.com.uy",
+    kind: "tienda-uy",
+    rubros: ["celulares", "tecnologia"],
+    aliases: ["iPlace"],
+    redditTerms: ["iplace"],
+  },
+  {
+    key: "cellular-center",
+    name: "Cellular Center",
+    domain: "cellularcenter.com.uy",
+    kind: "tienda-uy",
+    rubros: ["celulares"],
+    aliases: ["Cellular Center"],
+    redditTerms: ["cellular center"],
+  },
+  {
+    key: "nstore",
+    name: "nStore",
+    domain: "nstore.com.uy",
+    kind: "tienda-uy",
+    rubros: ["tecnologia", "celulares"],
+    aliases: ["nStore"],
+    redditTerms: ["nstore"],
+  },
+  {
+    key: "mundo-electro",
+    name: "Mundo Electro",
+    domain: "mundoelectro.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos"],
+    aliases: ["Mundo Electro", "Mundoelectro"],
+    // "mundo electro" (spaced) is also the electronic-music scene; only the joined brand token is searched.
+    redditTerms: ["mundoelectro"],
+  },
+  {
+    key: "barraca-europa",
+    name: "Barraca Europa",
+    domain: "barracaeuropa.com.uy",
+    kind: "tienda-uy",
+    rubros: ["ferreteria", "electrodomesticos"],
+    aliases: ["Barraca Europa"],
+    redditTerms: ["barraca europa"],
+  },
+  {
+    key: "rosas-hermanos",
+    name: "Rosas Hermanos",
+    domain: "rosashermanos.com.uy",
+    kind: "tienda-uy",
+    rubros: ["hogar", "electrodomesticos"],
+    aliases: ["Rosas Hermanos"],
+    redditTerms: ["rosas hermanos"],
+  },
+  {
+    key: "via-confort",
+    name: "Vía Confort",
+    domain: "viaconfort.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos", "muebles"],
+    aliases: ["Vía Confort", "Via Confort"],
+    redditTerms: ["via confort"],
+  },
+  {
+    key: "dormimundo",
+    name: "Dormimundo",
+    domain: "dormimundo.com.uy",
+    kind: "tienda-uy",
+    rubros: ["colchones"],
+    aliases: ["Dormimundo"],
+    redditTerms: ["dormimundo"],
+  },
+  {
+    key: "thot",
+    name: "Thot Computación",
+    domain: "thotcomputacion.com.uy",
+    kind: "tienda-uy",
+    rubros: ["tecnologia"],
+    aliases: ["Thot Computación", "Thot"],
+    redditTerms: ["thot computacion"],
+  },
+  {
+    key: "pc-compu",
+    name: "PC Compu",
+    domain: "pccompu.com.uy",
+    kind: "tienda-uy",
+    rubros: ["tecnologia"],
+    aliases: ["PC Compu", "PcCompu"],
+    redditTerms: ["pccompu", "pc compu"],
+  },
+  {
+    key: "caribe-sur-store",
+    name: "Caribe Sur Store",
+    domain: "caribesurstore.uy",
+    kind: "tienda-uy",
+    rubros: ["tecnologia", "celulares"],
+    aliases: ["Caribe Sur Store", "CARIBE SUR STORE"],
+    // "Caribe sur" ("Caribbean south") is an everyday geography/travel phrase on its own.
+    // Fix round F2, item A: same unbounded-preposition bug as `dimm`, replaced with a
+    // commerce-context regex, plus a bare `\bcaribe sur store\b` (the store's own full name is
+    // unambiguous on its own, no nearby commerce word required).
+    redditTerms: ["caribe sur"],
+    redditMatch:
+      /\bcaribe sur\b.{0,40}\b(tienda|compr[eoa]|celular|garantia|envio|sucursal|store)\b|\b(compr[eoa]|tienda|celular)\b.{0,40}\bcaribe sur\b|\bcaribe sur store\b/,
+  },
+  {
+    key: "deceleste",
+    name: "Deceleste",
+    domain: "deceleste.com.uy",
+    kind: "tienda-uy",
+    rubros: ["motos", "bicicletas"],
+    aliases: ["Deceleste", "De Celeste"],
+    redditTerms: ["deceleste"],
+  },
+  {
+    key: "albanes",
+    name: "Albanés",
+    domain: "albanes.com.uy",
+    kind: "tienda-uy",
+    rubros: ["motos"],
+    aliases: ["Albanés", "Albanes"],
+    redditTerms: [],
+  },
+  {
+    key: "epicbike",
+    name: "Epic Bike",
+    domain: "epicbike.uy",
+    kind: "tienda-uy",
+    rubros: ["bicicletas"],
+    aliases: ["Epic Bike", "Epicbike"],
+    redditTerms: ["epic bike", "epicbike"],
+  },
+  {
+    key: "bikestore",
+    name: "Bike Store",
+    domain: "bikestore.com.uy",
+    kind: "tienda-uy",
+    rubros: ["bicicletas"],
+    aliases: ["Bike Store"],
+    redditTerms: [],
+  },
+  {
+    key: "decathlon",
+    name: "Decathlon Uruguay",
+    domain: "decathlon.com.uy",
+    kind: "tienda-uy",
+    rubros: ["deportes", "bicicletas"],
+    aliases: ["Decathlon Uruguay", "Decathlon"],
+    redditTerms: ["decathlon"],
+  },
+  {
+    key: "carlos-gutierrez",
+    name: "Carlos Gutiérrez",
+    domain: "carlosgutierrez.com.uy",
+    kind: "tienda-uy",
+    rubros: ["electrodomesticos"],
+    aliases: ["Carlos Gutiérrez", "Carlos Gutierrez"],
+    // A common Spanish first+last name — plenty of unrelated people share it (a minister,
+    // interview subjects, anyone who happens to share it — the reviewer's probe caught all three).
+    // Fix round F2, item A: same unbounded-preposition bug as `dimm`, replaced with a
+    // commerce-context regex; this one has no preposition branch at all (unlike dimm/tech-house),
+    // since a bare "en/a Carlos Gutiérrez" reads just as naturally as a person's name.
+    redditTerms: ["carlos gutierrez", "carlos gutiérrez"],
+    redditMatch:
+      /\bcarlos gutierrez\b.{0,30}\b(tienda|sucursal|electrodomesticos?|heladera|lavarropas?|garantia|envio)\b|\b(compr[eoa]|tienda|heladera|lavarropas?)\b.{0,30}\bcarlos gutierrez\b/,
+  },
+  {
+    key: "farmashop",
+    name: "Farmashop",
+    domain: "farmashop.com.uy",
+    kind: "tienda-uy",
+    rubros: ["farmacia"],
+    aliases: ["Farmashop"],
+    redditTerms: ["farmashop"],
+  },
+  {
+    key: "san-roque",
+    name: "San Roque",
+    domain: "sanroque.com.uy",
+    kind: "tienda-uy",
+    rubros: ["farmacia"],
+    aliases: ["San Roque"],
+    redditTerms: ["farmacia san roque"],
+  },
+  {
+    key: "tienda-claro",
+    name: "Tienda Claro",
+    domain: "tienda.claro.com.uy",
+    kind: "tienda-uy",
+    rubros: ["celulares"],
+    aliases: ["Tienda Claro", "Claro"],
+    trustpilotDomain: "claro.com.uy",
+    redditTerms: [],
+  },
+  {
+    key: "tienda-antel",
+    name: "Tienda Antel",
+    domain: "tienda.antel.com.uy",
+    kind: "tienda-uy",
+    rubros: ["celulares", "tecnologia"],
+    aliases: ["Tienda Antel", "Antel"],
+    trustpilotDomain: "antel.com.uy",
+    redditTerms: ["tienda antel"],
+  },
+  // Movistar Uruguay became Tigo on 2026-04-13 after Millicom's acquisition (May 2025); sellers
+  // still named Movistar are the same company.
+  {
+    key: "tigo",
+    name: "Tigo Uruguay",
+    domain: "tigo.com.uy",
+    kind: "tienda-uy",
+    rubros: ["celulares"],
+    aliases: ["Tigo Uruguay", "Tigo", "Movistar"],
+    redditTerms: ["tigo"],
+  },
+  {
+    key: "mercado-libre",
+    name: "Mercado Libre",
+    domain: "mercadolibre.com.uy",
+    kind: "marketplace",
+    rubros: ["general"],
+    aliases: ["Mercado Libre", "MercadoLibre"],
+    // "Mercado libre" is also the everyday economic term for "free market" ("en un mercado libre
+    // los precios..."), which comes up on r/uruguay in policy/economics threads with nothing to do
+    // with the marketplace.
+    // Fix round F2, item A: the old `mercado ?libre\.com` branch never matched a real listing URL
+    // (`storeNorm` turns "." into a space, so "mercadolibre.com.uy" normalizes to "mercadolibre com
+    // uy" with no dot left to match), and dropped plain mentions like "lo vi en mercadolibre" or "en
+    // mercado libre sale más barato" that have no commerce VERB nearby — while "comprender el
+    // mercado libre" still slipped through on "compr" alone. Replaced: the one-word spelling
+    // "mercadolibre" is unambiguous on its own (nobody spells the economic term as one word); the
+    // two-word spelling needs either a leading preposition (a plain "en/de/por/a mercado libre" is a
+    // marketplace mention almost always — the same reasoning the reviewer already accepted for
+    // "en"/"de"/"por" extends to "a": "reclamo A mercado libre" needs it, and the generic economic
+    // idiom almost always inserts an article, "hacia UN mercado libre"/"en UN mercado libre",
+    // between the preposition and the phrase, which this bare adjacency still excludes) or a real
+    // commerce verb nearby, word-bounded this time.
+    redditTerms: ["mercado libre", "mercadolibre"],
+    redditMatch:
+      /\bmercadolibre\b|\b(en|de|por|a) mercado libre\b|\bmercado libre\b.{0,40}\b(compr[eoa]|vend[ioa]|pedido|envio|paquete|reclamo|devoluc)/,
+  },
+  {
+    key: "temu",
+    name: "Temu",
+    domain: "temu.com",
+    kind: "compra-exterior",
+    rubros: ["general", "moda"],
+    aliases: ["Temu"],
+    redditTerms: ["temu"],
+  },
+  {
+    key: "shein",
+    name: "Shein",
+    domain: "shein.com",
+    kind: "compra-exterior",
+    rubros: ["moda"],
+    aliases: ["Shein"],
+    redditTerms: ["shein"],
+  },
+  {
+    key: "aliexpress",
+    name: "AliExpress",
+    domain: "aliexpress.com",
+    kind: "compra-exterior",
+    rubros: ["general", "tecnologia"],
+    aliases: ["AliExpress"],
+    redditTerms: ["aliexpress"],
+  },
+  {
+    key: "amazon",
+    name: "Amazon",
+    domain: "amazon.com",
+    kind: "compra-exterior",
+    rubros: ["general", "tecnologia"],
+    aliases: ["Amazon"],
+    redditTerms: ["amazon"],
+  },
+  {
+    key: "ebay",
+    name: "eBay",
+    domain: "ebay.com",
+    kind: "compra-exterior",
+    rubros: ["general", "tecnologia"],
+    aliases: ["eBay"],
+    redditTerms: ["ebay"],
+  },
+  {
+    key: "tiendamia",
+    name: "Tiendamia",
+    domain: "tiendamia.com",
+    kind: "compra-exterior",
+    rubros: ["general", "tecnologia"],
+    aliases: ["Tiendamia"],
+    redditTerms: ["tiendamia"],
+  },
+];
+
+export const STORE_BY_KEY: ReadonlyMap<string, StoreEntry> = new Map(
+  STORES.map((store) => [store.key, store] as const)
+);
+
+/** lowercase, unaccented, non-alphanumerics collapsed to single spaces, trimmed. */
+export function storeNorm(value: string): string {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}

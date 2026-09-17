@@ -136,6 +136,8 @@ jobs:
               - 'classes/origins.ts'
               - 'classes/cambios/**'
               - 'classes/rentals/guarantees.ts'
+              - 'classes/stores/**'
+              - 'classes/equipar/registry.ts'
             backendContracts:
               - 'app/utils/**'
               - 'app/server/**'
@@ -157,6 +159,7 @@ jobs:
               - 'scripts/run-rentals.sh'
               - 'scripts/run-property-opportunities.sh'
               - 'scripts/run-autos.sh'
+              - 'scripts/run-store-profiles.sh'
               - '.github/workflows/deploy.yml'
 
   backend-test:
