@@ -108,7 +108,7 @@ export function parseCarLocation(text: string): { neighborhood: string | null; d
   return { neighborhood, department, sellerType };
 }
 
-const NEGATION = /\b(no|nunca|sin|jamas|cero|libre de|ni|tampoco)\s+(?:[a-z]+\s+){0,2}$/;
+const NEGATION = /\b(no|nunca|sin|jamas|cero|libre de|ni|tampoco|nada)\s+(?:[a-z]+\s+){0,2}$/;
 
 function affirmed(text: string, source: string): boolean {
   const pattern = new RegExp(source, "g");
@@ -122,9 +122,15 @@ function affirmed(text: string, source: string): boolean {
 
 // Plural/gender tolerant on purpose: `rueda\b` never matched "Ruedas" in the chair directory.
 const DESCRIPTION_FLAGS: ReadonlyArray<[CarTextFlag, string]> = [
-  ["damaged", "\\b(chocad[oa]s?|accidentad[oa]s?|a reparar|para reparar|a arreglar|para repuestos?|por partes|no arranca|siniestrad[oa]s?|incendiad[oa]s?|inundad[oa]s?|para desarme|(?:motor|caja) (?:fundid[oa]|rot[oa]|trancad[oa]|a reparar))\\b"],
+  // 2026-09-17: the largest gaps of the first live run were damaged cars this used to miss —
+  // "SIN AIRBAGS POR SINIESTRO. El choque fue de atras", "NO tiene los airbags", "puertas para repararla".
+  ["damaged", "\\b(chocad[oa]s?|choques?|chocamos|siniestros?|accidentad[oa]s?|a reparar\\w*|para reparar\\w*|a arreglar|para repuestos?|por partes|no arranca|siniestrad[oa]s?|incendiad[oa]s?|inundad[oa]s?|para desarme|(?:motor|caja) (?:fundid[oa]|rot[oa]|trancad[oa]|a reparar)|sin (?:los |el |las )?airbags?|no tiene (?:los |el |las )?airbags?|airbags? (?:reventad|activad|disparad|explotad)[oa]s?)\\b"],
   ["recovered", "\\b(recuperad[oa]s? (?:de|por|del) (?:robo|hurto|seguro|aseguradora)|de aseguradora|ex seguro)\\b"],
-  ["paperwork", "\\b(sin (?:papeles|titulo|libreta|documentos)|con deudas?|tiene deudas?|embargad[oa]s?|remate|leasing|sucesion)\\b"],
+  // "Matrículas entregadas": the plates were surrendered, the car cannot circulate. "Sin chapa" is NOT
+  // here on purpose: "sin chapa ni pintura" means original bodywork.
+  // A stated debt with an amount ("Deuda 40mil pesos", "tiene una deuda total de 52000") and "solo
+  // libreta" (no title yet) explained two and one of the first 64 live opportunities.
+  ["paperwork", "\\b(sin (?:papeles|titulo|libreta|documentos|matriculas?|placas?)|con deudas?|tiene (?:una |alguna )?deudas?|deudas? (?:total )?(?:de )?(?:u?\\$s?\\s?)?[1-9]\\w*|solo (?:con )?libreta|embargad[oa]s?|remate|leasing|sucesion|(?:matriculas?|placas?|chapas?) (?:entregad|retirad|depositad)[oa]s?)\\b"],
   ["foreign_plate", "\\b(?:chapa|placa|matricula|patente|empadronad[oa])s? (?:en |de )?(?:argentin[oa]|brasil(?:en[oa]|er[oa])?|paraguay[oa]?|extranjer[oa])\\b"],
 ];
 

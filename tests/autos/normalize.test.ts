@@ -88,6 +88,29 @@ describe("card labels", () => {
 });
 
 describe("text flags", () => {
+  it("catches the damage and plate phrases of the first live run (real fragments)", () => {
+    expect(descriptionFlags("Fiat Uno 2016, usado, 140000 km. SIN AIRBAGS POR SINIESTRO. Funciona impecable. El choque fue de atras, no afectó al motor")).toEqual(["damaged"]);
+    expect(descriptionFlags("el precio se debe a que NO tiene los airbags y los detalles estéticos que se ven")).toEqual(["damaged"]);
+    expect(descriptionFlags("Incluye dos puertas para repararla No tiene airbag de butaca chofer Andando impecable Al día y sin multas,Matrículas entregadas en rivera para no generar deuda")).toEqual(["damaged", "paperwork"]);
+    expect(descriptionFlags("Airbags activados, se vende así")).toEqual(["damaged"]);
+    expect(descriptionFlags("Vendo sin matrícula, para campo")).toEqual(["paperwork"]);
+    expect(descriptionFlags("Excelente estado 161.000km Deuda 40mil pesos Servicio recién realizado")).toEqual(["paperwork"]);
+    expect(descriptionFlags("Tiene una deuda total de 52000 pesos")).toEqual(["paperwork"]);
+    expect(descriptionFlags("Único dueño 36mil km con service oficial Solo libreta Se puede transferir")).toEqual(["paperwork"]);
+  });
+  it("leaves healthy descriptions alone", () => {
+    expect(descriptionFlags("Nunca tuvo choques, airbags originales, service al día")).toEqual([]);
+    expect(descriptionFlags("Sin choques ni siniestros. Doble airbag, ABS")).toEqual([]);
+    expect(descriptionFlags("Tiene airbags frontales y laterales")).toEqual([]);
+    expect(descriptionFlags("Excelente estado Luces Led Estribos Lona cubre caja Cámara marcha atrás Enganche para tráiler")).toEqual([]);
+    expect(descriptionFlags("Matrícula al día, patente paga")).toEqual([]);
+    expect(descriptionFlags("Sin chapa ni pintura, todo original")).toEqual([]);
+    expect(descriptionFlags("Impecable, nada a reparar")).toEqual([]);
+    expect(descriptionFlags("Al día sin deudas, deuda 0, patente paga")).toEqual([]);
+    expect(descriptionFlags("No tiene deudas ni multas")).toEqual([]);
+    // Real title from the harvest: "choco" is a colour, not "chocó".
+    expect(descriptionFlags("Camioneta Muy Bien Cuidada, Con Service Al Día Y Color Choco")).toEqual([]);
+  });
   it("flags damage but honours negation", () => {
     expect(descriptionFlags("Jac J2 Chocado Entero O Por Partes")).toEqual(["damaged"]);
     expect(descriptionFlags("Nunca fue chocado, sin deudas, impecable")).toEqual([]);
