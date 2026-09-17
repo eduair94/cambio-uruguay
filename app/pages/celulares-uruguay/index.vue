@@ -162,7 +162,8 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
           {{ usPricesVerifiedAtLabel }} en
           <a :href="phoneUsPricesSource" target="_blank" rel="noopener noreferrer" class="cel-link">
             apple.com</a
-          >; el mejor precio local es el de esta misma lectura.
+          >; el mejor precio local es el de esta misma lectura. Las columnas "Traído" ya incluyen el
+          certificado URSEC ({{ phoneMoney(URSEC_CERT_UYU) }}) sumado al costo de cada camino.
         </p>
         <div class="table-wrap">
           <VTable class="cu-mobile-cards import-table" density="compact">
@@ -188,12 +189,15 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
                 <td data-label="Factura EE.UU. (7 %)" class="text-right">
                   {{ phoneUsd(row.estimate.invoiceUsd) }}
                 </td>
+                <!-- `row.totals` = phoneImportTotals(row.estimate): total del camino + certificado
+                     URSEC. `row.estimate.traveler.totalUyu`/`courier.totalUyu` NO lo incluyen (ver
+                     el doc comment de phoneImportEstimate) y nunca deben mostrarse como "el total". -->
                 <td data-label="Traído (viajero)" class="text-right">
-                  {{ phoneMoney(row.estimate.traveler.totalUyu) }}
+                  {{ phoneMoney(row.totals.travelerTotalUyu) }}
                 </td>
                 <td data-label="Traído (courier)" class="text-right">
-                  <template v-if="row.estimate.courier.totalUyu != null">
-                    {{ phoneMoney(row.estimate.courier.totalUyu) }}
+                  <template v-if="row.totals.courierTotalUyu != null">
+                    {{ phoneMoney(row.totals.courierTotalUyu) }}
                   </template>
                   <span v-else class="muted">Régimen general (no calculado)</span>
                 </td>
@@ -243,7 +247,7 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
 import { ADUANA_FAQS } from '~/utils/aduanaFaq'
 import { dateLocale } from '~/utils/format'
 import type { FaqItem } from '~/utils/faqAnswers'
-import { phoneImportEstimate } from '~/utils/phoneImport'
+import { phoneImportEstimate, phoneImportTotals } from '~/utils/phoneImport'
 import { phoneMoney, phoneUsd, type PhoneHubCard, type PhoneHubResponse } from '~/utils/phones'
 import {
   PHONE_US_PRICES,
@@ -336,20 +340,24 @@ const URSEC_CERT_UYU = (() => {
 
 const SALES_TAX_MIAMI_PCT = 7
 
+// `totals` = `phoneImportTotals(estimate)`: el total de cada camino CON el certificado URSEC ya
+// sumado. `estimate.traveler.totalUyu`/`estimate.courier.totalUyu` no lo incluyen a propósito (ver
+// el doc comment de `phoneImportEstimate`) y esta tabla nunca debe leerlos directamente — hacerlo
+// favorecería sistemáticamente "conviene traerlo" por los $239 del trámite.
 const importRows = computed(() => {
   const usdUyu = data.value?.usdUyu || 0
   if (!usdUyu) return []
   return cards.value
     .filter(card => card.slug in PHONE_US_PRICES)
-    .map(card => ({
-      card,
-      estimate: phoneImportEstimate({
+    .map(card => {
+      const estimate = phoneImportEstimate({
         usPriceUsd: PHONE_US_PRICES[card.slug]!,
         salesTaxPct: SALES_TAX_MIAMI_PCT,
         usdUyu,
         localBestUyu: card.bestNewUyu,
-      }),
-    }))
+      })
+      return { card, estimate, totals: phoneImportTotals(estimate) }
+    })
 })
 
 const faq = computed<FaqItem[]>(() => {
@@ -391,6 +399,12 @@ const CANONICAL = 'https://cambio-uruguay.com/celulares-uruguay'
 const TITLE = 'Precio de celulares en Uruguay'
 const DESCRIPTION =
   'Comparamos el precio nuevo de iPhone, Samsung, Motorola y Xiaomi en tiendas uruguayas y Mercado Libre, con la cuenta de si conviene traerlo de Estados Unidos.'
+
+defineOgImageComponent('Cambio', {
+  title: TITLE,
+  subtitle: 'iPhone, Samsung, Motorola y Xiaomi',
+  tag: 'CELULARES · PRECIOS',
+})
 
 useSeoMeta({
   title: `${TITLE} | Cambio Uruguay`,

@@ -18,7 +18,7 @@ import { describe, expect, it } from 'vitest'
 import { ADUANA_FAQS } from '../../utils/aduanaFaq'
 import { round } from '../../utils/calculators'
 import { ESTIMATOR_COURIERS, courierParcelQuote } from '../../utils/courierShipping'
-import { phoneImportEstimate } from '../../utils/phoneImport'
+import { phoneImportEstimate, phoneImportTotals } from '../../utils/phoneImport'
 import { PHONE_US_PRICES, PHONE_US_SALES_TAX } from '../../utils/phoneUsPrices'
 
 describe('PHONE_US_PRICES', () => {
@@ -222,5 +222,66 @@ describe('phoneImportEstimate', () => {
 
     expect(after.courier.regime).toBe('franquicia')
     expect(after.courier.taxUsd).toBe(39.6)
+  })
+})
+
+// Fix round 1 (2026-09-17): el total y el ahorro que una página publica tienen que incluir el
+// certificado URSEC — `phoneImportEstimate` lo deja separado a propósito (ver su propio comment),
+// así que `traveler.totalUyu`/`courier.totalUyu`/`savingTravelerUyu`/`savingCourierUyu` NUNCA son
+// el número correcto para mostrar. Antes de este helper, la ficha imprimía `traveler.totalUyu` con
+// un "+ URSEC" puramente decorativo (nunca sumado) y calculaba el ahorro sin el certificado,
+// favoreciendo sistemáticamente "conviene traerlo" por los $239 del trámite.
+describe('phoneImportTotals', () => {
+  it('suma ursecUyu a los dos totales y recalcula el ahorro contra ESE total, no el de phoneImportEstimate', () => {
+    const r = phoneImportEstimate({
+      usPriceUsd: 699,
+      salesTaxPct: 7,
+      usdUyu: 40,
+      localBestUyu: 40000,
+    })
+    const totals = phoneImportTotals(r)
+
+    expect(totals.travelerTotalUyu).toBe(round(r.traveler.totalUyu + r.ursecUyu))
+    expect(totals.courierTotalUyu).toBe(round(r.courier.totalUyu! + r.ursecUyu))
+    // Los totales CON URSEC son más caros que los de phoneImportEstimate SIN URSEC.
+    expect(totals.travelerTotalUyu).toBeGreaterThan(r.traveler.totalUyu)
+    expect(totals.courierTotalUyu!).toBeGreaterThan(r.courier.totalUyu!)
+
+    expect(totals.savingTravelerUyu).toBe(round(40000 - totals.travelerTotalUyu))
+    expect(totals.savingCourierUyu).toBe(round(40000 - totals.courierTotalUyu!))
+    // El ahorro con URSEC nunca puede ser mayor que el ahorro (buggy) sin URSEC: sumar un costo
+    // sólo puede empeorar o mantener la cuenta de "conviene traerlo", nunca mejorarla.
+    expect(totals.savingTravelerUyu!).toBeLessThan(r.savingTravelerUyu!)
+    expect(totals.savingCourierUyu!).toBeLessThan(r.savingCourierUyu!)
+  })
+
+  it('sin localBestUyu, los dos ahorros son null aunque los totales existan', () => {
+    const r = phoneImportEstimate({
+      usPriceUsd: 699,
+      salesTaxPct: 7,
+      usdUyu: 40,
+      localBestUyu: null,
+    })
+    const totals = phoneImportTotals(r)
+    expect(totals.travelerTotalUyu).toBeGreaterThan(0)
+    expect(totals.courierTotalUyu).toBeGreaterThan(0)
+    expect(totals.savingTravelerUyu).toBeNull()
+    expect(totals.savingCourierUyu).toBeNull()
+  })
+
+  it('régimen general: courierTotalUyu y su ahorro quedan null (nunca ursecUyu solo)', () => {
+    const r = phoneImportEstimate({
+      usPriceUsd: 899,
+      salesTaxPct: 7,
+      usdUyu: 40,
+      localBestUyu: 50000,
+    })
+    expect(r.courier.totalUyu).toBeNull()
+    const totals = phoneImportTotals(r)
+    expect(totals.courierTotalUyu).toBeNull()
+    expect(totals.savingCourierUyu).toBeNull()
+    // El viajero sí se calcula siempre, con URSEC incluido.
+    expect(totals.travelerTotalUyu).toBe(round(r.traveler.totalUyu + r.ursecUyu))
+    expect(totals.savingTravelerUyu).toBe(round(50000 - totals.travelerTotalUyu))
   })
 })

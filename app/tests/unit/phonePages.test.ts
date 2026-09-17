@@ -31,6 +31,39 @@ function h1Count(source: string): number {
   return (template.match(/<h1[\s>]/g) ?? []).length
 }
 
+/**
+ * Strips template comments, block comments and line comments so a source-text check for a banned
+ * pattern isn't tripped up by an explanatory comment that mentions the pattern ON PURPOSE (both
+ * pages document the URSEC bug this guards against). Mirrors `componentResolution.test.ts`'s own
+ * `scriptOf`.
+ */
+function stripComments(source: string): string {
+  return source
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ')
+}
+
+/**
+ * Fix round 1 (2026-09-17): `phoneImportEstimate` leaves `ursecUyu` deliberately separate from
+ * `traveler.totalUyu`/`courier.totalUyu` (and the `savingTravelerUyu`/`savingCourierUyu` derived
+ * from them) — a page that reads those raw fields as "the total" or "the saving" silently drops the
+ * $239 URSEC certificate and systematically favours "conviene traerlo". `phoneImportTotals()` is the
+ * one place that adds it back in, on a DIFFERENT object (`importTotals`/`totals`, with its own
+ * `travelerTotalUyu`/`courierTotalUyu`/`savingTravelerUyu`/`savingCourierUyu`) — so this can't be a
+ * bare "does the property name appear anywhere" check (that would also flag the FIX). It has to be
+ * rooted at the known raw-estimate variable names both pages actually use (`estimate`/
+ * `importEstimate`, optionally `.value`), which is exactly what a stray `estimate.traveler.totalUyu`
+ * or `estimate.savingTravelerUyu` looks like and what `totals.travelerTotalUyu` never does.
+ */
+function usesRawEstimateTotals(source: string): boolean {
+  const code = stripComments(source)
+  return (
+    /\b(?:importEstimate|estimate)(?:\.value)?\.(?:traveler|courier)\.totalUyu\b/.test(code) ||
+    /\b(?:importEstimate|estimate)(?:\.value)?\.saving(?:Traveler|Courier)Uyu\b/.test(code)
+  )
+}
+
 describe('celulares-uruguay/[modelo].vue', () => {
   it('valida la forma del slug y lo confirma contra la API antes de renderizar (patrón de descuentos-con-tarjeta-uruguay/marca/[marca].vue)', () => {
     expect(detailSrc).toMatch(/definePageMeta\s*\(\s*\{/)
@@ -123,6 +156,33 @@ describe('celulares-uruguay/[modelo].vue', () => {
     expect(detailSrc).toMatch(/franquicia-viajero-uruguay/)
     expect(detailSrc).toMatch(/franquicia-aduana-uruguay/)
   })
+
+  it('todo total y ahorro pasa por phoneImportTotals, nunca el totalUyu/saving crudo de phoneImportEstimate', () => {
+    expect(detailSrc).toContain('phoneImportTotals')
+    expect(usesRawEstimateTotals(detailSrc)).toBe(false)
+  })
+
+  it('declara la imagen social con defineOgImageComponent', () => {
+    expect(detailSrc).toMatch(/defineOgImageComponent\(\s*'Cambio'/)
+  })
+
+  it('el enlace "Ver oferta" de cada fila tiene un nombre accesible que distingue vendedor y condición', () => {
+    expect(detailSrc).toMatch(
+      /aria-label="`Ver oferta[^`]*sellerLabel\(offer\)[^`]*condition[^`]*`"/
+    )
+  })
+
+  it('si un modelo está a la vez ambiguo y viejo, reasonUnpublishable dice las dos cosas (no sólo la primera)', () => {
+    const script = detailSrc.split('<script setup')[1] ?? ''
+    const reasonFn = script.slice(
+      script.indexOf('reasonUnpublishable'),
+      script.indexOf('reasonUnpublishable') + 900
+    )
+    // Un array acumulado (`reasons.push` dos veces + `reasons.join`), no dos `return` tempranos
+    // mutuamente excluyentes: esa es la forma que permite que las dos razones convivan.
+    expect(reasonFn.match(/reasons\.push/g)?.length ?? 0).toBeGreaterThanOrEqual(2)
+    expect(reasonFn).toMatch(/reasons\.join/)
+  })
 })
 
 describe('celulares-uruguay/index.vue', () => {
@@ -164,5 +224,14 @@ describe('celulares-uruguay/index.vue', () => {
 
   it('usa FaqSection', () => {
     expect(indexSrc).toContain('<FaqSection')
+  })
+
+  it('la tabla de traer de EE.UU. usa phoneImportTotals, nunca el totalUyu crudo de phoneImportEstimate', () => {
+    expect(indexSrc).toContain('phoneImportTotals')
+    expect(usesRawEstimateTotals(indexSrc)).toBe(false)
+  })
+
+  it('declara la imagen social con defineOgImageComponent', () => {
+    expect(indexSrc).toMatch(/defineOgImageComponent\(\s*'Cambio'/)
   })
 })

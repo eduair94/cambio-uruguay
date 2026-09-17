@@ -79,6 +79,7 @@ hay un precio para hoy).
                   target="_blank"
                   rel="nofollow noopener"
                   class="cel-link"
+                  :aria-label="`Ver oferta de ${sellerLabel(offer)} (${PHONE_CONDITION_LABEL[offer.condition]})`"
                 >
                   Ver oferta
                 </a>
@@ -187,7 +188,7 @@ hay un precio para hoy).
         />
       </VRadioGroup>
 
-      <template v-if="importEstimate">
+      <template v-if="importEstimate && importTotals">
         <div class="import-grid">
           <article>
             <h3>En la valija (equipaje de viajero)</h3>
@@ -196,11 +197,11 @@ hay un precio para hoy).
               <li>Franquicia: {{ phoneUsd(importEstimate.traveler.franchiseUsd) }}</li>
               <li>Impuesto (50 % del excedente): {{ phoneUsd(importEstimate.traveler.taxUsd) }}</li>
               <li>Certificado URSEC: {{ phoneMoney(importEstimate.ursecUyu) }}</li>
+              <!-- UYU únicamente: el total en dólares no incluiría URSEC (un trámite en pesos) sin
+                   convertirlo con la cotización del día, y esta cifra es la que se compara contra
+                   el mejor precio local, que también está en pesos. -->
               <li class="total">
-                Total puesto en Uruguay: {{ phoneUsd(importEstimate.traveler.totalUsd) }} ({{
-                  phoneMoney(importEstimate.traveler.totalUyu)
-                }}
-                + URSEC)
+                Total puesto en Uruguay: {{ phoneMoney(importTotals.travelerTotalUyu) }}
               </li>
             </ul>
             <NuxtLink :to="localePath('/franquicia-viajero-uruguay')" class="cel-link">
@@ -209,7 +210,7 @@ hay un precio para hoy).
           </article>
           <article>
             <h3>Por courier (puerta a puerta)</h3>
-            <template v-if="importEstimate.courier.totalUyu != null">
+            <template v-if="importTotals.courierTotalUyu != null">
               <ul class="breakdown">
                 <li>Factura de compra: {{ phoneUsd(importEstimate.invoiceUsd) }}</li>
                 <li v-if="importEstimate.courier.taxUsd">
@@ -221,10 +222,7 @@ hay un precio para hoy).
                 </li>
                 <li>Certificado URSEC: {{ phoneMoney(importEstimate.ursecUyu) }}</li>
                 <li class="total">
-                  Total puesto en Uruguay: {{ phoneUsd(importEstimate.courier.totalUsd!) }} ({{
-                    phoneMoney(importEstimate.courier.totalUyu)
-                  }}
-                  + URSEC)
+                  Total puesto en Uruguay: {{ phoneMoney(importTotals.courierTotalUyu) }}
                 </li>
               </ul>
             </template>
@@ -249,9 +247,10 @@ hay un precio para hoy).
           No tenemos un precio local confiable para comparar contra el costo de traerlo.
         </p>
         <p class="section-intro fine-print">
-          Es una estimación con las reglas de importación vigentes al {{ rulesVerifiedAtLabel }} y
-          el certificado URSEC ($ {{ importEstimate.ursecUyu }}) sumado en los dos caminos. No
-          calcula el régimen general (compras por encima de la franquicia de courier).
+          Es una estimación con las reglas de importación vigentes al {{ rulesVerifiedAtLabel }}. El
+          total de cada camino, arriba, ya incluye el certificado URSEC ($
+          {{ importEstimate.ursecUyu }}). No calcula el régimen general (compras por encima de la
+          franquicia de courier).
         </p>
       </template>
     </section>
@@ -290,7 +289,11 @@ hay un precio para hoy).
 import { LAST_RESEARCHED } from '~/utils/importRules'
 import { dateLocale } from '~/utils/format'
 import type { FaqItem } from '~/utils/faqAnswers'
-import { phoneImportEstimate, type PhoneImportEstimate } from '~/utils/phoneImport'
+import {
+  phoneImportEstimate,
+  phoneImportTotals,
+  type PhoneImportEstimate,
+} from '~/utils/phoneImport'
 import {
   PHONE_SLUG_RE,
   PHONE_STALE_DAYS,
@@ -450,12 +453,20 @@ const headline = computed(() => {
 
 const reasonUnpublishable = computed(() => {
   if (detail.value.publishable) return ''
+  // Las dos señales son independientes (una banda ambigua puede además estar vieja): si las dos
+  // aplican, el lector necesita las dos razones, no sólo la primera que matchee.
+  const reasons: string[] = []
   if (model.value.ambiguousConditions.includes('new')) {
-    return 'Encontramos ofertas nuevas con precios muy distintos entre sí y todavía no podemos armar un precio único para este modelo.'
+    reasons.push(
+      'Encontramos ofertas nuevas con precios muy distintos entre sí y todavía no podemos armar un precio único para este modelo.'
+    )
   }
   if (detail.value.stale) {
-    return `La última lectura con precio nuevo es del ${longDate(model.value.lastSeen)} y quedó vieja: no la mostramos como el precio de hoy.`
+    reasons.push(
+      `La última lectura con precio nuevo es del ${longDate(model.value.lastSeen)} y quedó vieja: no la mostramos como el precio de hoy.`
+    )
   }
+  if (reasons.length) return reasons.join(' ')
   return 'Todavía no juntamos suficientes ofertas nuevas para armar un precio de este modelo.'
 })
 
@@ -527,16 +538,24 @@ const importEstimate = computed<PhoneImportEstimate | null>(() => {
   })
 })
 
+// El total y el ahorro que la página publica SIEMPRE pasan por `phoneImportTotals`: `importEstimate`
+// deja `ursecUyu` separado a propósito (ver su propio doc comment en phoneImport.ts), así que ni
+// `traveler.totalUyu`/`courier.totalUyu` ni `savingTravelerUyu`/`savingCourierUyu` de `importEstimate`
+// son el número que se muestra — ese leía el certificado como si fuera gratis.
+const importTotals = computed(() =>
+  importEstimate.value ? phoneImportTotals(importEstimate.value) : null
+)
+
 const savingsNote = computed(() => {
-  const estimate = importEstimate.value
-  if (!estimate || estimate.localBestUyu == null) return ''
-  const traveler = estimate.savingTravelerUyu
-  const courier = estimate.savingCourierUyu
+  const totals = importTotals.value
+  if (!totals || totals.savingTravelerUyu == null) return ''
+  const traveler = totals.savingTravelerUyu
+  const courier = totals.savingCourierUyu
   const best = courier != null && (traveler == null || courier > traveler) ? courier : traveler
   if (best == null) return ''
   return best > 0
-    ? `Traerlo sale ${phoneMoney(best)} más barato que comprarlo en Uruguay, según el camino más conveniente.`
-    : `Comprarlo en Uruguay sale ${phoneMoney(Math.abs(best))} más barato que traerlo, según esta cuenta.`
+    ? `Traerlo sale ${phoneMoney(best)} más barato que comprarlo en Uruguay, certificado URSEC incluido, según el camino más conveniente.`
+    : `Comprarlo en Uruguay sale ${phoneMoney(Math.abs(best))} más barato que traerlo, certificado URSEC incluido, según esta cuenta.`
 })
 
 // ── FAQ ──────────────────────────────────────────────────────────────────
@@ -584,6 +603,12 @@ const description = computed(() =>
     ? `${model.value.name} nuevo desde ${phoneMoney(headline.value.priceUyu)} en ${model.value.newSellers} ${model.value.newSellers === 1 ? 'vendedor' : 'vendedores'} de Uruguay. Ofertas por condición y la cuenta de traerlo de Estados Unidos.`
     : `Precio de ${model.value.name} en Uruguay: ofertas por condición y la cuenta de traerlo de Estados Unidos.`
 )
+
+defineOgImageComponent('Cambio', {
+  title: () => title.value,
+  subtitle: 'Celulares en Uruguay',
+  tag: 'CELULARES · PRECIOS',
+})
 
 useSeoMeta({
   title: () => `${title.value} | Cambio Uruguay`,

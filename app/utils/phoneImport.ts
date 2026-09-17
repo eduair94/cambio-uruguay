@@ -101,10 +101,52 @@ export interface PhoneImportEstimate {
   /** Costo del certificado URSEC (trámite VUCE), en pesos — ver `readUrsecCertUyu`. */
   ursecUyu: number
   localBestUyu: number | null
-  /** `localBestUyu - traveler.totalUyu`; positivo = conviene traerlo. `null` si falta `localBestUyu`. */
+  /**
+   * `localBestUyu - traveler.totalUyu`, SIN el certificado URSEC — `ursecUyu` queda separado a
+   * propósito (ver el comment de ese campo) y este ahorro NUNCA es el que se publica en una página:
+   * el número que un lector necesita es el de `phoneImportTotals()`, más abajo, que sí lo suma.
+   * Pinneado así por `phoneImport.test.ts` desde la Task 5; se conserva para no romper esos tests,
+   * pero ninguna pantalla debe leerlo directamente. `null` si falta `localBestUyu`.
+   */
   savingTravelerUyu: number | null
-  /** `localBestUyu - courier.totalUyu`; `null` si falta `localBestUyu` o el courier no cotiza. */
+  /** Igual que `savingTravelerUyu` (sin URSEC, no publicable) — usar `phoneImportTotals()`. `null`
+   *  si falta `localBestUyu` o el courier no cotiza. */
   savingCourierUyu: number | null
+}
+
+/**
+ * Los totales que una página puede mostrar: `phoneImportEstimate` deja `ursecUyu` deliberadamente
+ * SEPARADO de `traveler.totalUyu`/`courier.totalUyu` (no es un tributo aduanero, es el trámite VUCE
+ * que igual hay que pagar para que el paquete entre), así que ninguno de esos dos campos —ni
+ * `savingTravelerUyu`/`savingCourierUyu`, calculados a partir de ellos— es "cuánto sale puesto en
+ * Uruguay". Esta función arma, en un solo lugar, el total y el ahorro REALES: total = total del
+ * camino + `ursecUyu`, ahorro = mejor precio local - ESE total. Toda pantalla que muestre un total o
+ * un ahorro de `phoneImportEstimate` tiene que pasar por acá — nunca leer `traveler.totalUyu`,
+ * `courier.totalUyu`, `savingTravelerUyu` o `savingCourierUyu` directamente.
+ */
+export interface PhoneImportTotals {
+  /** `traveler.totalUyu + ursecUyu`: lo que termina costando traerlo en la valija, todo incluido. */
+  travelerTotalUyu: number
+  /** `courier.totalUyu + ursecUyu`, o `null` cuando `courier.totalUyu` ya era `null` (régimen
+   *  general, o ningún courier cotiza el flete). */
+  courierTotalUyu: number | null
+  /** `localBestUyu - travelerTotalUyu`; positivo = conviene traerlo. `null` si falta `localBestUyu`. */
+  savingTravelerUyu: number | null
+  /** `localBestUyu - courierTotalUyu`; `null` si falta `localBestUyu` o `courierTotalUyu`. */
+  savingCourierUyu: number | null
+}
+
+export function phoneImportTotals(estimate: PhoneImportEstimate): PhoneImportTotals {
+  const travelerTotalUyu = round(estimate.traveler.totalUyu + estimate.ursecUyu)
+  const courierTotalUyu =
+    estimate.courier.totalUyu != null ? round(estimate.courier.totalUyu + estimate.ursecUyu) : null
+  const savingTravelerUyu =
+    estimate.localBestUyu != null ? round(estimate.localBestUyu - travelerTotalUyu) : null
+  const savingCourierUyu =
+    estimate.localBestUyu != null && courierTotalUyu != null
+      ? round(estimate.localBestUyu - courierTotalUyu)
+      : null
+  return { travelerTotalUyu, courierTotalUyu, savingTravelerUyu, savingCourierUyu }
 }
 
 /** El `totalUsd` más barato de `courierParcelQuote` entre `ESTIMATOR_COURIERS`, con su nombre. */
