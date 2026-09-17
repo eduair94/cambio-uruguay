@@ -3398,6 +3398,9 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'tarjetas-de-debito-uruguay/[tarjeta]': 'banking',
   'casas-de-cambio/[tipo]': 'houses',
   'convertir/[slug]': 'tools',
+  // Una página por categoría de /equipar-casa-uruguay (heladera, colchón, aire acondicionado…). Los
+  // slugs son el espejo del registro en utils/equiparCategoryPages.ts; misma sección que el hub.
+  'equipar-casa-uruguay/[categoria]': 'consumer',
   // Las páginas individuales de descuentos: una por emisor y una por rubro, ambas alimentadas por
   // el mismo catálogo de Bankos que el mapa de /descuentos-con-tarjeta-uruguay.
   'descuentos-con-tarjeta-uruguay/[banco]': 'banking',

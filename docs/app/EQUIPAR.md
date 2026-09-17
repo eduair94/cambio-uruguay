@@ -157,7 +157,7 @@ la única categoría del catálogo donde la opción barata es el mal consejo, y 
 
 ## La página
 
-`app/pages/equipar-casa-uruguay.vue`, SSR, ES/EN/PT (`app/utils/equipar{Es,En,Pt}.ts`). Los tres
+`app/pages/equipar-casa-uruguay/index.vue`, SSR, ES/EN/PT (`app/utils/equipar{Es,En,Pt}.ts`). Los tres
 totales se renderizan en el servidor: son la cifra que Google puede citar y la respuesta que la
 mayoría vino a buscar.
 
@@ -185,6 +185,22 @@ planificador estaría eligiendo en silencio qué imprescindible sacrificar.
 `GET /api/equipar` devuelve todo en un payload (menos de cien filas) sin la historia diaria, que la
 página no dibuja.
 
+### Una página por categoría
+
+`app/pages/equipar-casa-uruguay/[categoria].vue` (`/equipar-casa-uruguay/heladera`, `/aire-acondicionado`…),
+**sólo en español** como comparativas y sucursal: canonical sin prefijo de idioma y una sola URL por
+categoría en el sitemap. Lee `GET /api/equipar/<categoria>` (con la historia diaria) y el copy editorial
+de `app/utils/equiparCategoryPages.ts`, espejo a mano del registro. Un slug que no está en esa lista es
+**404 real** vía `definePageMeta({ validate })`. Muestra la mediana nueva por tamaño con su banda
+p25–p75, la usada con su ahorro, el gráfico de la mediana diaria (desde tres días relevados), los
+modelos con sus ofertas, los avisos más baratos, el motivo del tier, la guía de compra, el Plan Redondo
+de UTE y el costo por hora donde aplican, y el FAQ generado con los datos del día. JSON-LD: migas + hasta
+10 `Product` con `Offer`, **nunca** `AggregateRating` (el sitio no mide calificaciones).
+
+El sitemap sólo declara las categorías con alguna banda vista en los últimos 4 días —la misma ventana
+que sirve la API—, así que nunca manda a Google una página que sólo puede decir "todavía no hay
+avisos". Cada tarjeta del índice enlaza a su categoría.
+
 ## Tests
 
 - `tests/retail/spec_injection.test.ts` — una barrida sirve a varias specs; el presupuesto de FB
@@ -196,12 +212,12 @@ página no dibuja.
 - `tests/equipar/basket.test.ts` — **la guarda central**: total parcial + faltantes.
 - `tests/equipar/catalog.test.ts` — nuevo y usado separados; FB no arma productos.
 - `app/tests/unit/equiparPlan.test.ts` — el plan compra en el orden publicado.
+- `app/tests/unit/equiparCategoryPage.test.ts` — la página por categoría: 404 real, `transform`, un H1,
+  canonical sin idioma, `Product`/`Offer` sin calificaciones, y el índice enlazando cada tarjeta.
 - `tests/appdb/schema_parity.test.ts` — los dos lados declaran los mismos campos.
 
 ## Pendiente
 
-- Subpáginas por categoría (`/equipar-casa-uruguay/heladera`). Salen casi gratis del mismo dato y son
-  la familia programática natural.
 - Facebook fuera de Montevideo (hoy `location=montevideo`; ampliar es más fan-out de consultas).
 - La primera corrida real todavía no ocurrió: los números de cobertura por categoría hay que medirlos
   contra producción antes de citarlos afuera.

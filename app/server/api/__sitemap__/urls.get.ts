@@ -19,7 +19,9 @@ import { PRECIOS_MIN_OBSERVATIONS, preciosSlug } from '../../../utils/preciosCat
 import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
 import { toolSlugs } from '../../../utils/tools'
 import { videoTopicSlugs } from '../../../utils/videoTopics'
+import { isEquiparCategorySlug } from '../../../utils/equiparCategoryPages'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
+import { EquiparItemModel } from '../../models/EquiparItem'
 import { listPosts } from '../../utils/blog'
 import { listIssueDates } from '../../utils/newsletterArchive'
 import { loadPropertySaleSitemapUrls } from '../../utils/propertySales'
@@ -269,20 +271,53 @@ export default defineEventHandler(async _event => {
   // sitemap never advertises a page that says "sin ofertas".
   try {
     await connectDb()
-    const cutoff = new Date(Date.now() - 7 * 86_400_000).toISOString().slice(0, 10)
-    const chairs = await ChairCatalogProductModel.find({ lastSeen: { $gte: cutoff } })
-      .select({ slug: 1, lastSeen: 1 })
-      .lean()
-    chairs.forEach(chair => {
-      addUrlsForAllLocales(
-        `/sillas-escritorio-uruguay/${chair.slug}`,
-        0.6,
-        'weekly',
-        chair.lastSeen
-      )
-    })
-  } catch (chairError) {
-    console.warn('Failed to add chair pages to sitemap:', chairError)
+    try {
+      const cutoff = new Date(Date.now() - 7 * 86_400_000).toISOString().slice(0, 10)
+      const chairs = await ChairCatalogProductModel.find({ lastSeen: { $gte: cutoff } })
+        .select({ slug: 1, lastSeen: 1 })
+        .lean()
+      chairs.forEach(chair => {
+        addUrlsForAllLocales(
+          `/sillas-escritorio-uruguay/${chair.slug}`,
+          0.6,
+          'weekly',
+          chair.lastSeen
+        )
+      })
+    } catch (chairError) {
+      console.warn('Failed to add chair pages to sitemap:', chairError)
+    }
+
+    // --- /equipar-casa-uruguay/<categoria>: one page per household category ---
+    // Only categories with a band seen in the last 4 days — the same window `/api/equipar/<categoria>`
+    // serves — so the sitemap never submits a page that can only say "todavía no hay avisos".
+    // Spanish only, like comparativas and sucursal: the body is Spanish prose about Uruguayan
+    // listings. Own try: a failed chair query must not also drop these URLs.
+    try {
+      const equiparCutoff = new Date(Date.now() - 4 * 86_400_000).toISOString().slice(0, 10)
+      const rows = await EquiparItemModel.find({ lastSeen: { $gte: equiparCutoff } })
+        .select({ category: 1, lastSeen: 1, newBand: 1, usedBand: 1 })
+        .lean()
+      const lastmodBySlug = new Map<string, string>()
+      for (const row of rows) {
+        if (!row.newBand && !row.usedBand) continue
+        if (!isEquiparCategorySlug(row.category)) continue
+        const previous = lastmodBySlug.get(row.category)
+        if (!previous || row.lastSeen > previous) lastmodBySlug.set(row.category, row.lastSeen)
+      }
+      lastmodBySlug.forEach((lastmod, slug) => {
+        urls.push({
+          loc: `/equipar-casa-uruguay/${slug}`,
+          lastmod,
+          changefreq: 'daily',
+          priority: 0.6,
+        })
+      })
+    } catch (equiparError) {
+      console.warn('Failed to add equipar category pages to sitemap:', equiparError)
+    }
+  } catch (dbError) {
+    console.warn('Failed to connect for chair/equipar sitemap pages:', dbError)
   } finally {
     // The sitemap is prerendered: leaving the pool open hangs `nuxt build`.
     await disconnectDbAfterPrerender()

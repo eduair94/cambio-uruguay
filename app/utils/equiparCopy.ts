@@ -42,6 +42,8 @@ export interface EquiparCopy {
   usedNotAdvised: string
   quantityLabel: string
   observations: string
+  /** Link under each category card to its own page: `{label}` as written, `{labelLower}` lowercased for mid-sentence use. */
+  categoryLink: string
 
   calcTitle: string
   calcIntro: string
