@@ -255,11 +255,56 @@ export const RETAIL_STORES: RetailStore[] = [
     key: "digitalworld",
     name: "Digital World",
     baseUrl: "https://digitalworld.com.uy",
+  // ---------------------------------------------------------------- movilidad eléctrica
+  // Four stores added for classes/movilidad/ (monopatines y bicicletas eléctricas). Measured
+  // 2026-09-17 via the WooCommerce Store API / Shopify `products.json` directly, THEN re-measured
+  // through the real `matchesCategory()` gate before deciding `MOVILIDAD_STORE_KEYS` — see
+  // classes/movilidad/registry.ts for why two of the four (marked below) are registered here but not
+  // in that list.
+  {
+    key: "delcar",
+    name: "Delcar Motos",
+    baseUrl: "https://delcar.com.uy",
     adapter: "woocommerce",
     channel: "local-store",
     expectCurrency: "USD",
     enabled: true,
     note: "Store API con currency_minor_unit: 2; search=iphone devuelve iPhone 16/16 Plus reales (2026-09-17).",
+    note:
+      "Medido 2026-09-17: 205 productos (WooCommerce, USD), de los cuales 88 motos, 9 bicicletas eléctricas (S-PRO) y 3 monopatines eléctricos (XIAOMI, MISTYLE) — todos titulados '… Eléctric[oa] …', así que pasan el filtro de título tal cual está. En MOVILIDAD_STORE_KEYS.",
+  },
+  {
+    key: "superbikers",
+    name: "Super Bikers",
+    baseUrl: "https://superbikers.uy",
+    adapter: "woocommerce",
+    channel: "local-store",
+    expectCurrency: "USD",
+    enabled: true,
+    note:
+      "Medido 2026-09-17: 99 productos (WooCommerce, USD), 2 monopatines eléctricos (Go-Green Concept/Zero, categoría propia 'Eléctricas'), el resto motos a nafta. Sin bicicletas eléctricas. En MOVILIDAD_STORE_KEYS.",
+  },
+  {
+    key: "voltbike",
+    name: "Voltbike",
+    baseUrl: "https://voltbike.uy",
+    adapter: "shopify",
+    channel: "local-store",
+    expectCurrency: "USD",
+    enabled: true,
+    note:
+      "Medido 2026-09-17: 89 productos (Shopify, USD): 5 bicicletas eléctricas y 1 motopatín reales, pero SUS TÍTULOS son nombres de modelo puros ('SuperVolt', 'Muche', 'Monopatin Air') sin la palabra 'bicicleta'/'monopatín' NI 'eléctrica' — sólo lo dicen el product_type y los tags de Shopify, que matchesCategory() sólo lee para excluir, nunca para incluir (classes/movilidad/registry.ts). Con el filtro de título estricto que exige 'eléctrico' (necesario para rechazar un monopatín/bicicleta sin motor, ver el spec) esta tienda no aporta ningún producto real a la corrida — confirmado con classes/movilidad/registry.ts + scripts/oneoff/movilidad_dry_run.ts. Registrada para otros consumidores futuros; FUERA de MOVILIDAD_STORE_KEYS.",
+  },
+  {
+    key: "loopbikes",
+    name: "Loop",
+    baseUrl: "https://shop.loop-bikes.com",
+    adapter: "shopify",
+    channel: "local-store",
+    expectCurrency: "USD",
+    enabled: true,
+    note:
+      "Medido 2026-09-17: 135 productos (Shopify, USD): 13 bicicletas eléctricas reales (Loop Cruiser, Michael Blast Outsider/Vacay/Soda Bike/Greaser, Loop Slim/Kids/X350/K1…), todas tituladas por marca y modelo, sin la palabra 'bicicleta' ni 'eléctrica' en el título — mismo caso que voltbike, misma nota. 89 de sus 135 productos son repuestos (ya cubiertos por NOT_A_PRODUCT). FUERA de MOVILIDAD_STORE_KEYS por la misma razón que voltbike.",
   },
 ];
 
