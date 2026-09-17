@@ -1,10 +1,10 @@
 # Historial de precio por oferta (`classes/pricewatch/`)
 
 Un punto de precio por día, por aviso individual (`listingId`), escrito por los jobs que ya leen un
-mercado — hoy `currency-equipar` y `currency-chairs` (diaria y horaria de ambos) — y guardado en la
-APP DB, colección `pricewatchoffers`. No tiene página propia ni endpoint público todavía: es materia
-prima para un trabajo futuro (Plan D), documentado acá porque empieza a grabarse ahora, antes de que
-haga falta.
+mercado — hoy `currency-equipar`, `currency-chairs` (diaria y horaria de los dos) y `currency-phones`
+(diaria y horaria) — y guardado en la APP DB, colección `pricewatchoffers`. No tiene página propia ni
+endpoint público todavía: es materia prima para un trabajo futuro (Plan D), documentado acá porque
+empieza a grabarse ahora, antes de que haga falta.
 
 ## Por qué por OFERTA y no por producto
 
@@ -21,8 +21,9 @@ producto ni por categoría.
 
 Un documento por `listingId` (índice único), con:
 
-- `vertical` ("equipar" | "sillas"), `category` (el `CATEGORY_SPEC` del aviso, o `null`),
-  `productKey` (`ml:<catalogId>` si el aviso tiene uno, si no `null`).
+- `vertical` ("equipar" | "sillas" | "celulares"), `category` (el `CATEGORY_SPEC` del aviso, o
+  `null`), `productKey` (`ml:<catalogId>` si el aviso tiene uno, si no `null` — salvo que el llamador
+  pase su propia identidad, ver `productKeyFor` más abajo).
 - `source`, `sellerKey`, `sellerName`, `title`, `url`, `currency` — identidad del aviso, tal como la
   vio la corrida más reciente que lo escribió.
 - `firstSeen` / `lastSeen` (fechas `YYYY-MM-DD`, UTC): `firstSeen` sólo se fija al insertar y nunca
@@ -53,6 +54,12 @@ No hay modelo espejo en `app/`: la colección es sólo del backend, así que
   que el propio relevamiento de sillas trajo (sillas no tiene una guarda de unidad propia — reusa el
   mismo adaptador de retail que equipar, así que un aviso de TYT en dólares llega aquí también en
   dólares).
+- `sync_phones.ts` llama `recordPricewatch(guarded.listings, "celulares", undefined, { productKeyFor })`
+  después de guardar el catálogo del día, en su propio `try/catch` igual que los otros dos. Se
+  registra sobre `guarded.listings` (los avisos post-guarda-de-unidad de ESTA corrida), no sobre la
+  lista ya mezclada con la foto de tiendas del día anterior (`classes/phones/storeSnapshot.ts`): una
+  fila que vino de esa foto no se vio HOY, y anotarle la fecha de hoy fabricaría una observación que
+  nunca ocurrió.
 - Corre en **las dos** frecuencias de cada job (diaria y horaria/`--fast`), no sólo en la diaria: más
   observaciones por día, y un resync dentro del mismo día UTC no duplica el punto (ver `history`
   arriba). No hay una decisión de restringirlo a una sola corrida diaria; si Plan D necesita
@@ -77,6 +84,21 @@ plazas"). Sin envolver cada valor en `{ $literal: ... }`, esa fila escribiría `
 silencio, sin error. `pricewatchOperation` (`classes/pricewatch/record.ts`) envuelve **todo** literal
 —`listingId`, `title`, `price`, `listPrice`, etc.— con el helper `lit()`, y el test
 `tests/pricewatch/record.test.ts` fija un título con "$" al frente como caso explícito.
+
+## `productKeyFor`: cuando el aviso no trae `catalogId`
+
+`recordPricewatch(listings, vertical, today?, options?)` acepta un cuarto argumento opcional,
+`options.productKeyFor?: (listing: RetailListing) => string | null`. Por defecto (equipar, sillas)
+`productKey` sale de `ml:<catalogId>` cuando el aviso lo tiene, si no `null` — pero casi ningún aviso
+de celular, de tienda o de MercadoLibre, trae un `catalogId` de ML: los teléfonos no se agrupan por
+catálogo de ML como sí lo hace, por ejemplo, un producto de línea blanca. `sync_phones.ts` pasa su
+propia identidad en su lugar: `productKeyFor` reidentifica el título con `identifyPhone` y devuelve
+`phone:<identity.key>` (o `null` si el título ya no se puede identificar, aunque haya pasado el
+harvest). Cuando `productKeyFor` está presente, su resultado GANA siempre — incluyendo `null`
+explícito, que significa "esta identidad no tiene product key", no "usá el `catalogId` por defecto
+en su lugar" (`pricewatchOperation`'s propio `productKeyOverride`, con la misma distinción entre
+`undefined` — sin override — y `null` — override explícito a nada). Aditivo: todo llamador existente,
+que nunca pasa un cuarto argumento, se comporta exactamente igual que antes.
 
 ## Los 120 días
 
