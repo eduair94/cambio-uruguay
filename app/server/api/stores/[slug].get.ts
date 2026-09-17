@@ -5,7 +5,11 @@ import { isStoreDirectoryKey, storeDirectoryEntry } from '../../../utils/storeDi
 import { reduceBrands, type BrandsRawData } from '../../../utils/bankosBrands'
 import { buildBrandPageIndex, findBrandBySlug } from '../../../utils/bankosBrandPage'
 import { slugifyText } from '../../../utils/longform'
-import type { StorePublicProfile } from '../../../utils/storeProfiles'
+import {
+  storeFreshSignals,
+  storeIndexable,
+  type StorePublicProfile,
+} from '../../../utils/storeProfiles'
 
 export interface StoreDetailResponse {
   profile: StorePublicProfile
@@ -80,5 +84,14 @@ export default defineEventHandler(async (event): Promise<StoreDetailResponse> =>
   const entry = storeDirectoryEntry(key)!
   const bankosBrandSlug = await findBankosBrandSlug(entry.name, entry.aliases)
 
-  return { profile: doc, bankosBrandSlug }
+  // `signals`/`indexable` are the same write-time snapshot the list route no longer trusts (fix
+  // round 1, I2): recomputed against now, not against whenever the backend last wrote this doc.
+  const now = new Date()
+  const profile: StorePublicProfile = {
+    ...doc,
+    signals: storeFreshSignals(doc, now),
+    indexable: storeIndexable(doc, now),
+  }
+
+  return { profile, bankosBrandSlug }
 })

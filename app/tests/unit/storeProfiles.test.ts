@@ -3,7 +3,10 @@ import {
   storeBuyingAdvice,
   storeFaq,
   storeFreshSignals,
+  storeIndexable,
+  storeSignalFresh,
   storeSignalSummary,
+  STORE_INDEXABLE_MIN_SIGNALS,
   STORE_SIGNAL_MAX_AGE_DAYS,
   type StorePublicProfile,
 } from '../../utils/storeProfiles'
@@ -36,6 +39,57 @@ function baseProfile(overrides: Partial<StorePublicProfile> = {}): StorePublicPr
 describe('STORE_SIGNAL_MAX_AGE_DAYS', () => {
   it('mirrors the backend cutoff (60 days)', () => {
     expect(STORE_SIGNAL_MAX_AGE_DAYS).toBe(60)
+  })
+})
+
+describe('STORE_INDEXABLE_MIN_SIGNALS', () => {
+  it('mirrors the backend threshold (3 signals)', () => {
+    expect(STORE_INDEXABLE_MIN_SIGNALS).toBe(3)
+  })
+})
+
+describe('storeSignalFresh', () => {
+  it('is true within the cutoff and false past it, and false for a missing date', () => {
+    expect(storeSignalFresh(daysAgo(1), NOW)).toBe(true)
+    expect(storeSignalFresh(daysAgo(60), NOW)).toBe(true)
+    expect(storeSignalFresh(daysAgo(61), NOW)).toBe(false)
+    expect(storeSignalFresh(null, NOW)).toBe(false)
+    expect(storeSignalFresh(undefined, NOW)).toBe(false)
+  })
+})
+
+describe('storeIndexable', () => {
+  it('is true only once fresh signals reach STORE_INDEXABLE_MIN_SIGNALS, ignoring the stored field', () => {
+    const twoFresh = baseProfile({
+      indexable: true, // stored value is deliberately wrong; the function must not trust it
+      age: { since: '2020-01-01', source: 'crt.sh', checkedAt: daysAgo(1) },
+      trustpilot: {
+        score: 4,
+        reviews: 10,
+        reviewsLast12m: 5,
+        claimed: true,
+        alerts: 0,
+        url: 'x',
+        checkedAt: daysAgo(1),
+      },
+    })
+    expect(storeIndexable(twoFresh, NOW)).toBe(false)
+
+    const threeFresh = baseProfile({
+      indexable: false, // stored value is deliberately wrong the other way
+      age: { since: '2020-01-01', source: 'crt.sh', checkedAt: daysAgo(1) },
+      trustpilot: {
+        score: 4,
+        reviews: 10,
+        reviewsLast12m: 5,
+        claimed: true,
+        alerts: 0,
+        url: 'x',
+        checkedAt: daysAgo(1),
+      },
+      google: { rating: 4, reviews: 5, address: null, url: 'x', checkedAt: daysAgo(1) },
+    })
+    expect(storeIndexable(threeFresh, NOW)).toBe(true)
   })
 })
 
@@ -134,6 +188,24 @@ describe('storeSignalSummary', () => {
     expect(summary).toContain('Tienda Test')
     expect(summary.toLowerCase()).not.toContain('confiable')
   })
+
+  it('groups a four-digit review count es-UY style, keeping the score as a plain decimal', () => {
+    const profile = baseProfile({
+      trustpilot: {
+        score: 4,
+        reviews: 12345,
+        reviewsLast12m: 500,
+        claimed: true,
+        alerts: 0,
+        url: 'https://trustpilot.com/review/tiendatest.com.uy',
+        checkedAt: daysAgo(1),
+      },
+    })
+    const summary = storeSignalSummary(profile, NOW)
+    expect(summary).toContain('12.345')
+    expect(summary).not.toContain('12345')
+    expect(summary).toContain('4,0')
+  })
 })
 
 describe('storeFaq', () => {
@@ -216,9 +288,12 @@ describe('storeFaq', () => {
     expect(withBrand.find(f => f.question === question)!.answer).toContain(
       '/descuentos-con-tarjeta-uruguay/marca/tienda-test'
     )
-    expect(withoutBrand.find(f => f.question === question)!.answer).not.toContain(
-      '/descuentos-con-tarjeta'
-    )
+    const noBrandAnswer = withoutBrand.find(f => f.question === question)!.answer
+    expect(noBrandAnswer).not.toContain('/descuentos-con-tarjeta')
+    // Must say the store has no page of its own — never claim it is absent from Bankos'
+    // catalogue, which is a different (and unverified) fact (fix round 1, minor).
+    expect(noBrandAnswer).toContain('no tiene una página propia de descuentos con tarjeta')
+    expect(noBrandAnswer.toLowerCase()).not.toContain('catálogo')
   })
 })
 

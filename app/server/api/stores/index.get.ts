@@ -1,15 +1,22 @@
 import { StoreProfileModel } from '../../models/StoreProfile'
 import { connectDb } from '../../utils/db'
 import { STORE_DIRECTORY } from '../../../utils/storeDirectory'
-import { storeFreshSignals, type StorePublicProfile } from '../../../utils/storeProfiles'
+import {
+  storeFreshSignals,
+  storeIndexable,
+  storeSignalFresh,
+  type StorePublicProfile,
+} from '../../../utils/storeProfiles'
 
 /**
  * The hub card for /tiendas-online-uruguay: one row per curated store, whether or not the weekly
  * backend job (`sync_store_profiles.ts`) has written a profile for it yet. `since`/`trustpilot`/
- * `google`/`redditMentions`/`catalogOffers` come straight off the document's own signals — a `null`
- * here means "no data", never "no perfil en Trustpilot"; that distinction is the profile's job
- * (`undefined` vs `null` at write time, see `classes/stores/profile.ts`), and by the time a signal
- * reaches this route it is already collapsed to one or the other.
+ * `google`/`redditMentions`/`catalogOffers` are only filled when their OWN signal is still within
+ * `STORE_SIGNAL_MAX_AGE_DAYS` of now (fix round 1, C1) — a Trustpilot score the backend hasn't been
+ * able to refresh in months must not sit on the hub looking current just because the field is still
+ * there. A `null` here means "no fresh data", never "no perfil en Trustpilot"; that distinction is
+ * the profile's job (`undefined` vs `null` at write time, see `classes/stores/profile.ts`), and by
+ * the time a signal reaches this route it is already collapsed to one or the other.
  */
 export interface StoreCard {
   key: string
@@ -60,23 +67,29 @@ export default defineEventHandler(async (event): Promise<StoresIndexResponse> =>
 
     const stores: StoreCard[] = STORE_DIRECTORY.map(entry => {
       const profile = byKey.get(entry.key) ?? null
+      const freshAge = profile?.age && storeSignalFresh(profile.age.checkedAt, now)
+      const freshTrustpilot =
+        profile?.trustpilot && storeSignalFresh(profile.trustpilot.checkedAt, now)
+      const freshGoogle = profile?.google && storeSignalFresh(profile.google.checkedAt, now)
+      const freshReddit = profile?.reddit && storeSignalFresh(profile.reddit.checkedAt, now)
+      const freshCatalog = profile?.catalog && storeSignalFresh(profile.catalog.checkedAt, now)
       return {
         key: entry.key,
         name: entry.name,
         domain: entry.domain,
         kind: entry.kind,
         rubros: entry.rubros,
-        since: profile?.age?.since ?? null,
-        trustpilot: profile?.trustpilot
-          ? { score: profile.trustpilot.score, reviews: profile.trustpilot.reviews }
+        since: freshAge ? profile!.age!.since : null,
+        trustpilot: freshTrustpilot
+          ? { score: profile!.trustpilot!.score, reviews: profile!.trustpilot!.reviews }
           : null,
-        google: profile?.google
-          ? { rating: profile.google.rating, reviews: profile.google.reviews }
+        google: freshGoogle
+          ? { rating: profile!.google!.rating, reviews: profile!.google!.reviews }
           : null,
-        redditMentions: profile?.reddit ? profile.reddit.mentions : null,
-        catalogOffers: profile?.catalog ? profile.catalog.offers : null,
+        redditMentions: freshReddit ? profile!.reddit!.mentions : null,
+        catalogOffers: freshCatalog ? profile!.catalog!.offers : null,
         signals: profile ? storeFreshSignals(profile, now) : 0,
-        indexable: profile?.indexable ?? false,
+        indexable: profile ? storeIndexable(profile, now) : false,
       }
     })
 

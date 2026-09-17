@@ -19,6 +19,11 @@ import { STORE_KIND_LABELS, type StoreKind } from './storeDirectory'
  * module header). */
 export const STORE_SIGNAL_MAX_AGE_DAYS = 60
 
+/** Mirrors `classes/stores/profile.ts` `INDEXABLE_MIN_SIGNALS`; parity checked alongside
+ * `STORE_SIGNAL_MAX_AGE_DAYS` in `tests/stores/constants_parity.test.ts`. A page with fewer fresh
+ * signals than this has too little to say to be worth indexing — see {@link storeIndexable}. */
+export const STORE_INDEXABLE_MIN_SIGNALS = 3
+
 export interface StoreSitePolicies {
   returns: string | null
   terms: string | null
@@ -122,7 +127,16 @@ export interface StorePublicProfile {
   lastSeen: string
 }
 
-function isSignalFresh(checkedAt: string | null | undefined, now: Date): boolean {
+/**
+ * Whether a single signal's own `checkedAt` is still within `STORE_SIGNAL_MAX_AGE_DAYS` of `now`.
+ * Exported (fix round 1) so every place that publishes a raw signal field — the hub's `StoreCard`
+ * included — gates it through the exact same rule `storeFreshSignals`/`storeSignalSummary` use,
+ * instead of re-deriving (or forgetting) the cutoff locally.
+ */
+export function storeSignalFresh(
+  checkedAt: string | null | undefined,
+  now: Date = new Date()
+): boolean {
   if (!checkedAt) return false
   const at = Date.parse(checkedAt)
   if (Number.isNaN(at)) return false
@@ -141,26 +155,49 @@ function isSignalFresh(checkedAt: string | null | undefined, now: Date): boolean
  */
 export function storeFreshSignals(profile: StorePublicProfile, now: Date = new Date()): number {
   let count = 0
-  if (profile.site && profile.site.status === 'ok' && isSignalFresh(profile.site.checkedAt, now))
+  if (profile.site && profile.site.status === 'ok' && storeSignalFresh(profile.site.checkedAt, now))
     count++
-  if (profile.age && isSignalFresh(profile.age.checkedAt, now)) count++
-  if (profile.trustpilot && isSignalFresh(profile.trustpilot.checkedAt, now)) count++
-  if (profile.google && isSignalFresh(profile.google.checkedAt, now)) count++
-  if (profile.reddit && profile.reddit.mentions > 0 && isSignalFresh(profile.reddit.checkedAt, now))
+  if (profile.age && storeSignalFresh(profile.age.checkedAt, now)) count++
+  if (profile.trustpilot && storeSignalFresh(profile.trustpilot.checkedAt, now)) count++
+  if (profile.google && storeSignalFresh(profile.google.checkedAt, now)) count++
+  if (
+    profile.reddit &&
+    profile.reddit.mentions > 0 &&
+    storeSignalFresh(profile.reddit.checkedAt, now)
+  )
     count++
   if (
     profile.catalog &&
     profile.catalog.offers > 0 &&
-    isSignalFresh(profile.catalog.checkedAt, now)
+    storeSignalFresh(profile.catalog.checkedAt, now)
   )
     count++
   return count
 }
 
-/** `1.4` -> `"1,4"`. Deliberately not `toLocaleString`: ICU data availability varies by runtime, and
- * every number this page ever prints (a score out of 5) fits one decimal digit. */
+/**
+ * Whether a store page currently has enough to say to be worth indexing, mirroring
+ * `classes/stores/profile.ts`'s `count >= INDEXABLE_MIN_SIGNALS` at write time — recomputed against
+ * `now` for the same reason {@link storeFreshSignals} is: the stored `indexable` field is a snapshot
+ * from whenever the backend last wrote the document, and a store that has since gone stale (every
+ * outside source down for two months, nothing to trigger a rewrite) must not keep reading as
+ * indexable just because nobody wrote it down again.
+ */
+export function storeIndexable(profile: StorePublicProfile, now: Date = new Date()): boolean {
+  return storeFreshSignals(profile, now) >= STORE_INDEXABLE_MIN_SIGNALS
+}
+
+/** `1.4` -> `"1,4"`. Deliberately not `toLocaleString`: a score out of 5 always fits one decimal
+ * digit, and fixing it avoids any ICU-driven rounding surprise on a number this small. */
 function esDecimal(value: number): string {
   return value.toFixed(1).replace('.', ',')
+}
+
+/** `12345` -> `"12.345"` — the codebase's own grouping convention (`equiparMoney`,
+ * `app/utils/equipar.ts`) for an integer count: a review/mention/offer total can run into the
+ * thousands (Trustpilot, Google Maps), and an ungrouped run of digits reads as a typo. */
+function esCount(value: number): string {
+  return value.toLocaleString('es-UY')
 }
 
 /**
@@ -171,33 +208,37 @@ function esDecimal(value: number): string {
  */
 function signalFacts(profile: StorePublicProfile, now: Date): string[] {
   const facts: string[] = []
-  if (profile.trustpilot && isSignalFresh(profile.trustpilot.checkedAt, now)) {
+  if (profile.trustpilot && storeSignalFresh(profile.trustpilot.checkedAt, now)) {
     const t = profile.trustpilot
-    facts.push(`Trustpilot: ${esDecimal(t.score)} sobre 5 en ${t.reviews} reseñas`)
+    facts.push(`Trustpilot: ${esDecimal(t.score)} sobre 5 en ${esCount(t.reviews)} reseñas`)
   }
-  if (profile.google && isSignalFresh(profile.google.checkedAt, now)) {
+  if (profile.google && storeSignalFresh(profile.google.checkedAt, now)) {
     const g = profile.google
-    facts.push(`Google Maps: ${esDecimal(g.rating)} sobre 5 en ${g.reviews} reseñas`)
+    facts.push(`Google Maps: ${esDecimal(g.rating)} sobre 5 en ${esCount(g.reviews)} reseñas`)
   }
-  if (profile.age && isSignalFresh(profile.age.checkedAt, now)) {
+  if (profile.age && storeSignalFresh(profile.age.checkedAt, now)) {
     facts.push(`dominio registrado desde ${profile.age.since}`)
   }
-  if (profile.site && profile.site.status === 'ok' && isSignalFresh(profile.site.checkedAt, now)) {
+  if (
+    profile.site &&
+    profile.site.status === 'ok' &&
+    storeSignalFresh(profile.site.checkedAt, now)
+  ) {
     facts.push(`sitio propio verificado el ${profile.site.checkedAt.slice(0, 10)}`)
   }
   if (
     profile.reddit &&
     profile.reddit.mentions > 0 &&
-    isSignalFresh(profile.reddit.checkedAt, now)
+    storeSignalFresh(profile.reddit.checkedAt, now)
   ) {
-    facts.push(`${profile.reddit.mentions} menciones en r/uruguay y r/montevideo`)
+    facts.push(`${esCount(profile.reddit.mentions)} menciones en r/uruguay y r/montevideo`)
   }
   if (
     profile.catalog &&
     profile.catalog.offers > 0 &&
-    isSignalFresh(profile.catalog.checkedAt, now)
+    storeSignalFresh(profile.catalog.checkedAt, now)
   ) {
-    facts.push(`${profile.catalog.offers} ofertas relevadas en nuestro propio catálogo`)
+    facts.push(`${esCount(profile.catalog.offers)} ofertas relevadas en nuestro propio catálogo`)
   }
   return facts
 }
@@ -270,7 +311,7 @@ export function storeFaq(
     question: `¿${profile.name} tiene descuentos con tarjeta?`,
     answer: bankosBrandSlug
       ? `Sí, tiene descuentos publicados en /descuentos-con-tarjeta-uruguay/marca/${bankosBrandSlug}.`
-      : 'No encontramos esta tienda en el catálogo de descuentos con tarjeta que releva Bankos.',
+      : `${profile.name} no tiene una página propia de descuentos con tarjeta en el sitio.`,
   })
 
   return faqs

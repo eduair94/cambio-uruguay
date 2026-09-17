@@ -40,8 +40,10 @@ import { applyTone, pruneToneCache, type MentionTone } from "./signals/tone";
 
 export const STORE_SIGNAL_MAX_AGE_DAYS = 60;
 
-/** A page with fewer fresh signals than this has too little to say to be worth indexing. */
-const INDEXABLE_MIN_SIGNALS = 3;
+/** A page with fewer fresh signals than this has too little to say to be worth indexing. Exported
+ * (Task 8 fix round 1) so the app's own `STORE_INDEXABLE_MIN_SIGNALS` can be checked for parity in
+ * `tests/stores/constants_parity.test.ts` instead of drifting silently from this value. */
+export const INDEXABLE_MIN_SIGNALS = 3;
 
 /** If this many stores in a row, from the start of a run, got no fresh outside answer, sources are down. */
 const EARLY_STOP_STORES = 10;
