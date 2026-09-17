@@ -25,6 +25,11 @@ const PriceEventSnapshotSchema = new Schema(
     dropsCount: { type: Number, default: 0 },
     inflatedCount: { type: Number, default: 0 },
     sellers: { type: [Schema.Types.Mixed], default: [] },
+    // Final review M5/I2a: qué fracción del día vino de cada `source` (mercadolibre/fenicio/…) y
+    // cuántas ofertas la guarda de plausibilidad descartó por implausibles — ver
+    // `classes/priceevents/aggregate.ts`.
+    bySource: { type: Schema.Types.Mixed, default: {} },
+    suspect: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

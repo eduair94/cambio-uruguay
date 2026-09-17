@@ -86,7 +86,17 @@ export function pricewatchOperation(
                         cond: { $ne: ["$$this.d", today] },
                       },
                     },
-                    [{ d: lit(today), p: lit(listing.price), lp: lit(listing.listPrice ?? null) }],
+                    [
+                      {
+                        d: lit(today),
+                        p: lit(listing.price),
+                        lp: lit(listing.listPrice ?? null),
+                        // Plan D (analyze.ts) needs to know a point's own currency to refuse comparing
+                        // a UYU price against a USD one from the same "offer" — a peso price recorded
+                        // against a dollar history is not a discount, it's a unit mismatch.
+                        c: lit(listing.currency),
+                      },
+                    ],
                   ],
                 },
                 -maxPoints,

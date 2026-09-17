@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyzeOffer } from "../../classes/priceevents/analyze";
+import { analyzeOffer, analyzeOfferOutcome } from "../../classes/priceevents/analyze";
 import type { PricewatchOfferLike } from "../../classes/priceevents/types";
 import type { PricewatchPoint } from "../../classes/pricewatch/types";
 
@@ -19,6 +19,16 @@ function flatPriorHistory(count: number, price: number, today: string = TODAY): 
     points.push({ d: iso(offset, today), p: price, lp: null });
   }
   return points;
+}
+
+/** Same as {@link flatPriorHistory}, but every point carries an explicit currency `c`. */
+function flatPriorHistoryWithCurrency(
+  count: number,
+  price: number,
+  currency: "UYU" | "USD",
+  today: string = TODAY
+): PricewatchPoint[] {
+  return flatPriorHistory(count, price, today).map((point) => ({ ...point, c: currency }));
 }
 
 function makeOffer(overrides: Partial<PricewatchOfferLike>): PricewatchOfferLike {
@@ -196,8 +206,11 @@ describe("analyzeOffer", () => {
 
   it("never counts today's own point as a prior point", () => {
     // 10 prior points plus today's = 11 history entries; priorPoints must read 10, not 11, and
-    // today's extreme price must not leak into priorMin/priorMax.
-    const history: PricewatchPoint[] = [...flatPriorHistory(10, 10000), { d: TODAY, p: 1, lp: null }];
+    // today's different price must not leak into priorMin/priorMax. 5000 (half the prior flat price,
+    // ratio 0.5) stays inside the [1/5, 5] plausibility band added by I2a — an even more extreme price
+    // (e.g. 1) would now be correctly rejected as `suspect` before this assertion, which is a
+    // different behavior covered separately (see the "plausibility guard" describe block below).
+    const history: PricewatchPoint[] = [...flatPriorHistory(10, 10000), { d: TODAY, p: 5000, lp: null }];
     const offer = makeOffer({ firstSeen: iso(29), history });
     const result = analyzeOffer(offer, TODAY);
     expect(result).not.toBeNull();
@@ -372,6 +385,150 @@ describe("analyzeOffer", () => {
       expect(result).not.toBeNull();
       expect(result!.priorPoints).toBe(10);
       expect(result!.priorMin).toBe(7000);
+    });
+  });
+
+  // -------------------------------------------------------------------------------------------
+  // I2a: plausibility guard — final review finding. Neither `history` points (until this change)
+  // nor most retail adapters guarantee a single currency per offer over time (Fenicio mixes
+  // currencies per item, Shopify reads the first variant's price). Without a sanity check, a
+  // currency mix-up reads as an enormous "real" discount instead of the data problem it is.
+  // -------------------------------------------------------------------------------------------
+  describe("I2a: plausibility guard (today's price/lp vs priorMedian, outside [1/5, 5] -> suspect)", () => {
+    it("the reviewer's exact scenario: 30 days UYU 20000, then USD 500 today -> not a real drop", () => {
+      // None of these points carry `c` (pre-existing history, written before that field existed), so
+      // I2b's currency filter does not apply here at all — this is exactly the case that guard (a) is
+      // the backstop for: without a per-point currency to filter on, only the plausibility ratio
+      // catches a peso price masquerading as a "97.5% drop" against a dollar-denominated median.
+      const offer = makeOffer({
+        currency: "USD",
+        firstSeen: iso(29),
+        history: [...flatPriorHistory(29, 20000), { d: TODAY, p: 500, lp: null }],
+      });
+      expect(analyzeOffer(offer, TODAY)).toBeNull();
+      const outcome = analyzeOfferOutcome(offer, TODAY);
+      expect(outcome.analysis).toBeNull();
+      expect(outcome.suspect).toBe(true);
+    });
+
+    it("flags today's price as suspect just below the 1/5 floor (median 10000, price 1999)", () => {
+      const offer = makeOffer({
+        firstSeen: iso(29),
+        history: [...flatPriorHistory(29, 10000), { d: TODAY, p: 1999, lp: null }],
+      });
+      const outcome = analyzeOfferOutcome(offer, TODAY);
+      expect(outcome.analysis).toBeNull();
+      expect(outcome.suspect).toBe(true);
+    });
+
+    it("does not flag today's price exactly at the 1/5 floor (median 10000, price 2000)", () => {
+      const offer = makeOffer({
+        firstSeen: iso(29),
+        history: [...flatPriorHistory(29, 10000), { d: TODAY, p: 2000, lp: null }],
+      });
+      const outcome = analyzeOfferOutcome(offer, TODAY);
+      expect(outcome.suspect).toBe(false);
+      expect(outcome.analysis).not.toBeNull();
+      expect(outcome.analysis!.classes).toEqual(["baja-real"]);
+    });
+
+    it("flags today's list price as suspect above the 5x ceiling, even when today's own price is plausible", () => {
+      const offer = makeOffer({
+        firstSeen: iso(29),
+        history: [...flatPriorHistory(29, 10000), { d: TODAY, p: 9500, lp: 50001 }],
+      });
+      const outcome = analyzeOfferOutcome(offer, TODAY);
+      expect(outcome.analysis).toBeNull();
+      expect(outcome.suspect).toBe(true);
+    });
+
+    it("does not flag a list price exactly at the 5x ceiling (median 10000, lp 50000)", () => {
+      const offer = makeOffer({
+        firstSeen: iso(29),
+        history: [...flatPriorHistory(29, 10000), { d: TODAY, p: 9500, lp: 50000 }],
+      });
+      const outcome = analyzeOfferOutcome(offer, TODAY);
+      expect(outcome.suspect).toBe(false);
+      expect(outcome.analysis).not.toBeNull();
+    });
+
+    it("never marks a normally-classified offer as suspect", () => {
+      const offer = makeOffer({
+        firstSeen: iso(29),
+        history: [...flatPriorHistory(29, 10000), { d: TODAY, p: 8900, lp: null }],
+      });
+      const outcome = analyzeOfferOutcome(offer, TODAY);
+      expect(outcome.suspect).toBe(false);
+    });
+
+    it("never marks an offer discarded for a mundane reason (too young) as suspect", () => {
+      const offer = makeOffer({
+        firstSeen: iso(20),
+        history: [...flatPriorHistory(15, 10000), { d: TODAY, p: 9000, lp: null }],
+      });
+      const outcome = analyzeOfferOutcome(offer, TODAY);
+      expect(outcome.analysis).toBeNull();
+      expect(outcome.suspect).toBe(false);
+    });
+  });
+
+  // -------------------------------------------------------------------------------------------
+  // I2b: per-point currency (`PricewatchPoint.c`). Additive and optional: points written before
+  // this field existed simply omit it and are never filtered by this rule (they still go through
+  // the I2a plausibility guard above).
+  // -------------------------------------------------------------------------------------------
+  describe("I2b: prior points whose own currency differs from today's are ignored", () => {
+    it("drops a prior point recorded in a different currency from priorMin/Max/Median and the point count", () => {
+      const history: PricewatchPoint[] = [
+        // One stray USD point sitting among 10 UYU ones. If it were not filtered, its extreme value
+        // would corrupt priorMin (or would be caught by the I2a guard some other way) — pin the
+        // currency filter down directly by keeping the stray value inside the plausible band, so a
+        // regression here fails on priorMin/priorPoints rather than accidentally passing via I2a.
+        { d: iso(11), p: 8000, lp: null, c: "USD" },
+        ...flatPriorHistoryWithCurrency(10, 10000, "UYU"),
+        { d: TODAY, p: 9500, lp: null, c: "UYU" },
+      ];
+      const offer = makeOffer({ firstSeen: iso(29), history });
+      const result = analyzeOffer(offer, TODAY);
+      expect(result).not.toBeNull();
+      expect(result!.priorPoints).toBe(10);
+      expect(result!.priorMin).toBe(10000);
+    });
+
+    it("never filters a prior point missing `c` (pre-existing history written before this field existed)", () => {
+      const history: PricewatchPoint[] = [
+        ...flatPriorHistory(10, 10000), // no `c` on any of these
+        { d: TODAY, p: 9500, lp: null, c: "UYU" },
+      ];
+      const offer = makeOffer({ firstSeen: iso(29), history });
+      const result = analyzeOffer(offer, TODAY);
+      expect(result).not.toBeNull();
+      expect(result!.priorPoints).toBe(10);
+      expect(result!.priorMin).toBe(10000);
+    });
+
+    it("never filters priors when today's own point is missing `c` (nothing to compare against)", () => {
+      const history: PricewatchPoint[] = [
+        ...flatPriorHistoryWithCurrency(10, 10000, "USD"),
+        { d: TODAY, p: 9500, lp: null }, // today has no `c`
+      ];
+      const offer = makeOffer({ firstSeen: iso(29), history, currency: "USD" });
+      const result = analyzeOffer(offer, TODAY);
+      expect(result).not.toBeNull();
+      expect(result!.priorPoints).toBe(10);
+      expect(result!.priorMin).toBe(10000);
+    });
+
+    it("does not qualify when the currency filter drops the count below the 10-point minimum", () => {
+      // 9 UYU points plus 1 USD point = 10 raw entries, but only 9 count once the USD one is
+      // dropped -> below PRICE_EVENT_MIN_POINTS (10), so this must be null.
+      const history: PricewatchPoint[] = [
+        { d: iso(10), p: 9000, lp: null, c: "USD" },
+        ...flatPriorHistoryWithCurrency(9, 10000, "UYU"),
+        { d: TODAY, p: 9200, lp: null, c: "UYU" },
+      ];
+      const offer = makeOffer({ firstSeen: iso(29), history });
+      expect(analyzeOffer(offer, TODAY)).toBeNull();
     });
   });
 });

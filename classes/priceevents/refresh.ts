@@ -2,7 +2,7 @@
 // seco o corrida flaca) publica. `today` es siempre un parámetro, nunca `Date.now()` adentro, así el
 // mismo código sirve al job diario, al horario de evento (`--event-only`) y a este archivo probado
 // con `classes/priceevents/store.ts` mockeado (mismo criterio que `classes/propertyzones/refresh.ts`).
-import { analyzeOffer } from "./analyze";
+import { analyzeOfferOutcome } from "./analyze";
 import { buildPriceEventSnapshot, type PriceEventSnapshot } from "./aggregate";
 import { activeEvent, type PriceEvent } from "./calendar";
 import {
@@ -37,6 +37,10 @@ export interface PriceEventRunOptions {
    * hasta 24 veces en un día de evento activo — hacer que cada una vuelva a mirar y borrar filas
    * vencidas no suma nada sobre la corrida diaria que ya lo hizo, así que ese job pasa `prune: false`. */
   prune?: boolean;
+  /** `--event-only`: el cron horario dentro de una ventana activa. Cambia UNA sola cosa acá — ver
+   * `PriceEventRunResult.noDataYet` — todo lo demás (guarda de corrida flaca, escritura, poda) es
+   * idéntico a la corrida diaria. */
+  eventOnly?: boolean;
 }
 
 export interface PriceEventRunResult {
@@ -54,6 +58,15 @@ export interface PriceEventRunResult {
   /** Filas `day:` borradas por vencidas — `0` cuando no se escribió (dry-run o corrida flaca) o
    * cuando `options.prune` fue `false` (el horario de evento). */
   pruned: number;
+  /** `true` cuando esta corrida (con `eventOnly: true`) leyó CERO ofertas para `today`
+   * (`snapshot.analyzed === 0`) — hallazgo M1: el cron horario puede caer a las 00:19 UTC, antes de
+   * que `sync_equipar.ts`/`sync_chairs.ts` (~12:xx UTC) escriban el primer punto del día nuevo. Eso
+   * no es una corrida flaca (no hay nada malo con los datos, todavía no existen) y pasaba todas las
+   * horas antes del mediodía de cada día de evento — activar `thin` ahí disparaba una "falla" en pm2
+   * cada vez. Tratado como un no-op limpio: no escribe, `thin` queda en `false`, sale en 0. La
+   * corrida diaria (`eventOnly` sin marcar) nunca activa esto — sigue usando la guarda de corrida
+   * flaca de siempre, incluso con `analyzed === 0`. */
+  noDataYet: boolean;
 }
 
 /**
@@ -66,6 +79,7 @@ export async function runPriceEvents(options: PriceEventRunOptions = {}): Promis
   const today = options.today ?? new Date().toISOString().slice(0, 10);
   const dryRun = options.dryRun ?? false;
   const prune = options.prune ?? true;
+  const eventOnly = options.eventOnly ?? false;
   const event = activeEvent(today);
 
   const [verticals, trackingSince, currentEligible] = await Promise.all([
@@ -75,27 +89,41 @@ export async function runPriceEvents(options: PriceEventRunOptions = {}): Promis
   ]);
 
   const analyses: (PriceEventAnalysis | null)[] = [];
+  const bySource: Record<string, number> = {};
+  let suspect = 0;
   for (const vertical of verticals) {
     const cursor = offersSeenTodayByVertical(vertical, today);
     for await (const raw of cursor) {
-      analyses.push(analyzeOffer(raw as unknown as PricewatchOfferLike, today));
+      const offer = raw as unknown as PricewatchOfferLike & { source?: string };
+      const outcome = analyzeOfferOutcome(offer, today);
+      analyses.push(outcome.analysis);
+      if (outcome.suspect) suspect += 1;
+      if (outcome.analysis) {
+        const source = offer.source || "desconocida";
+        bySource[source] = (bySource[source] ?? 0) + 1;
+      }
     }
   }
 
-  const snapshot = buildPriceEventSnapshot(analyses, today, event, trackingSince);
+  const snapshot = buildPriceEventSnapshot(analyses, today, event, trackingSince, { bySource, suspect });
+
+  // M1: see `PriceEventRunResult.noDataYet` — an --event-only run that read zero offers is too early,
+  // not thin, and must never trip the thin-run guard below.
+  const noDataYet = eventOnly && snapshot.analyzed === 0;
 
   const thin =
+    !noDataYet &&
     currentEligible !== null &&
     currentEligible >= PRICE_EVENT_THIN_FLOOR &&
     snapshot.eligible < currentEligible * PRICE_EVENT_THIN_RATIO;
 
   let written = false;
   let pruned = 0;
-  if (!dryRun && !thin) {
+  if (!dryRun && !thin && !noDataYet) {
     await saveSnapshot(snapshot);
     if (prune) pruned = await pruneOldDaySnapshots(today, PRICE_EVENT_SNAPSHOT_RETENTION_DAYS);
     written = true;
   }
 
-  return { today, event, verticals, snapshot, currentEligible, thin, written, pruned };
+  return { today, event, verticals, snapshot, currentEligible, thin, written, pruned, noDataYet };
 }

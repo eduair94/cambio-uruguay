@@ -6,7 +6,7 @@
 // Dos flags:
 //   --dry-run     lee y agrega, nunca escribe ni poda (ver classes/priceevents/refresh.ts).
 //   --event-only  para el cron horario: si el calendario (classes/priceevents/calendar.ts) no marca
-//                 un evento activo HOY, sale en 0 SIN CONECTAR A LA BASE — 24 corridas por hora, 365
+//                 un evento activo HOY, sale en 0 SIN CONECTAR A LA BASE — 24 corridas por día, 365
 //                 días al año, casi todas sin nada que hacer, no deben costar ni una conexión.
 import dotenv from "dotenv";
 dotenv.config();
@@ -35,9 +35,10 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // El horario de evento poda `day:` vencidos también, no lo diario: `--event-only` puede correr
-  // hasta 24 veces en un día de evento, y la corrida diaria ya barrió lo vencido esa mañana.
-  const result = await runPriceEvents({ today, dryRun, prune: !eventOnly });
+  // La corrida DIARIA poda `day:` vencidos; el horario de evento no — `--event-only` puede correr
+  // hasta 24 veces en un día de evento y la corrida diaria de esa misma mañana ya barrió lo vencido,
+  // así que repetir la poda en cada corrida horaria no suma nada.
+  const result = await runPriceEvents({ today, dryRun, prune: !eventOnly, eventOnly });
 
   console.log(
     `[price-events] ${result.today} evento=${result.event?.key ?? "ninguno"} ` +
@@ -48,6 +49,16 @@ async function main(): Promise<void> {
   if (dryRun) {
     console.log(
       `[price-events] --dry-run: no se escribió nada (current publicado: ${result.currentEligible ?? "ninguno"} elegibles)`
+    );
+    process.exit(0);
+  }
+
+  // M1: el horario de evento puede caer antes de que equipar/sillas escriban el primer punto del día
+  // (ver `PriceEventRunResult.noDataYet`) — eso no es una corrida flaca, es demasiado temprano, y
+  // pasaba todas las horas de la mañana en cada día de evento. Sale limpio, sin marcar falla en pm2.
+  if (result.noDataYet) {
+    console.log(
+      `[price-events] --event-only: 0 ofertas leídas para ${result.today} todavía (equipar/sillas escriben más tarde en el día) — no es una corrida flaca, se sale sin escribir`
     );
     process.exit(0);
   }

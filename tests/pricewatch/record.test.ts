@@ -132,7 +132,7 @@ describe("pricewatchOperation", () => {
   });
 
   it("la expresión de history filtra el punto de hoy, agrega el nuevo y recorta a maxPoints", () => {
-    const op = pricewatchOperation(listing({ price: 25000, listPrice: 30000 }), "equipar", today) as {
+    const op = pricewatchOperation(listing({ price: 25000, listPrice: 30000, currency: "UYU" }), "equipar", today) as {
       updateOne: {
         update: Array<{
           $set: {
@@ -147,7 +147,19 @@ describe("pricewatchOperation", () => {
     expect(historyExpr.$slice[1]).toBe(-120);
     const [filterStage, appended] = historyExpr.$slice[0].$concatArrays;
     expect(filterStage.$filter.cond).toEqual({ $ne: ["$$this.d", today] });
-    expect(appended).toEqual([{ d: { $literal: today }, p: { $literal: 25000 }, lp: { $literal: 30000 } }]);
+    expect(appended).toEqual([
+      { d: { $literal: today }, p: { $literal: 25000 }, lp: { $literal: 30000 }, c: { $literal: "UYU" } },
+    ]);
+  });
+
+  it("el punto de hoy lleva su propia moneda (c), envuelta en $literal — USD también", () => {
+    const op = pricewatchOperation(listing({ price: 300, listPrice: null, currency: "USD" }), "equipar", today) as {
+      updateOne: {
+        update: Array<{ $set: { history: { $slice: [{ $concatArrays: [unknown, Array<{ c: unknown }>] }, number] } } }>;
+      };
+    };
+    const [, appended] = op.updateOne.update[0].$set.history.$slice[0].$concatArrays;
+    expect(appended[0]!.c).toEqual({ $literal: "USD" });
   });
 
   it("respeta un maxPoints distinto al default", () => {

@@ -65,6 +65,11 @@ export interface PriceEventSnapshotDoc {
   /** Full-day total of `tachado-por-encima` offers, uncapped. */
   inflatedCount: number
   sellers: PriceEventSellerStatDoc[]
+  /** Eligible offers today, grouped by `source` (`mercadolibre`, `fenicio`, …) — final review M5. */
+  bySource: Record<string, number>
+  /** Offers the plausibility guard (I2a) discarded — price or list price too far from the offer's
+   * own priorMedian to be a real currency/unit, not a discount. */
+  suspect: number
 }
 
 const PriceEventSnapshotSchema = new Schema(
@@ -81,6 +86,8 @@ const PriceEventSnapshotSchema = new Schema(
     dropsCount: { type: Number, default: 0 },
     inflatedCount: { type: Number, default: 0 },
     sellers: { type: [Schema.Types.Mixed], default: [] },
+    bySource: { type: Schema.Types.Mixed, default: {} },
+    suspect: { type: Number, default: 0 },
   },
   { timestamps: true }
 )

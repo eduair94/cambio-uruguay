@@ -48,6 +48,19 @@ export const PRICE_EVENT_INFLATED_NUM = 11;
 export const PRICE_EVENT_INFLATED_DEN = 10;
 
 /**
+ * Guarda de plausibilidad (revisión final, hallazgo I2a): `history` no tiene moneda propia por punto
+ * hasta que este mismo cambio la agrega (`PricewatchPoint.c`, opcional para compatibilidad), y ni
+ * Fenicio ni Shopify garantizan una sola moneda por aviso a lo largo del tiempo — 1.730 ofertas UYU
+ * conviven con avisos en USD en la misma colección. Sin este freno, 30 días a UYU 20.000 y hoy USD 500
+ * clasificarían como una "baja real" del 97,5 %, que es una confusión de unidades, no un CyberLunes.
+ * Si el precio de hoy (o su precio de lista) queda fuera de `[1/5, 5]` veces `priorMedian`, la oferta
+ * NO se clasifica — ver `analyzeOfferOutcome` en `analyze.ts`, que la cuenta aparte como `suspect` en
+ * vez de simplemente "sin historial suficiente".
+ */
+export const PRICE_EVENT_PLAUSIBLE_MIN_RATIO = 1 / 5;
+export const PRICE_EVENT_PLAUSIBLE_MAX_RATIO = 5;
+
+/**
  * `classes/retail/sources/mercadolibre.ts::mlToListing` falls back to the literal name "Mercado
  * Libre" whenever a listing's own seller has no usable name (`String(result.seller?.name ||
  * "Mercado Libre")`) — the same branch that produces `sellerKey: "ml:unknown"` when there is also no

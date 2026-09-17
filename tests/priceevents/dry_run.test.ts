@@ -94,6 +94,44 @@ describe("runPriceEvents — dry run never writes", () => {
   });
 });
 
+describe("runPriceEvents — bySource/suspect flow from the raw cursor into the snapshot", () => {
+  it("tallies bySource only for offers analyzeOfferOutcome actually classified", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue(null);
+    fake.loadCurrentEligible.mockResolvedValue(null);
+    const tooNew = { ...qualifyingDrop({ listingId: "ml:2" }), firstSeen: iso(5), source: "mercadolibre" };
+    fake.offersSeenTodayByVertical.mockImplementation(() => [
+      { ...qualifyingDrop({ listingId: "ml:1" }), source: "mercadolibre" },
+      { ...qualifyingDrop({ listingId: "store:1" }), source: "fenicio" },
+      tooNew, // discarded for age -> must NOT count towards bySource
+    ]);
+
+    const result = await runPriceEvents({ today: TODAY, dryRun: true });
+
+    expect(result.snapshot.bySource).toEqual({ mercadolibre: 1, fenicio: 1 });
+  });
+
+  it("counts a plausibility-guard rejection as suspect, separate from analyzed - eligible", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue(null);
+    fake.loadCurrentEligible.mockResolvedValue(null);
+    const implausible = qualifyingDrop({
+      listingId: "ml:suspect",
+      history: [
+        ...Array.from({ length: 29 }, (_, i) => ({ d: iso(i + 1), p: 10000, lp: null })),
+        { d: TODAY, p: 1, lp: null }, // ratio 0.0001, far outside [1/5, 5]
+      ],
+    });
+    fake.offersSeenTodayByVertical.mockImplementation(() => [implausible]);
+
+    const result = await runPriceEvents({ today: TODAY, dryRun: true });
+
+    expect(result.snapshot.analyzed).toBe(1);
+    expect(result.snapshot.eligible).toBe(0);
+    expect(result.snapshot.suspect).toBe(1);
+  });
+});
+
 describe("runPriceEvents — real run: writing and the thin-run guard", () => {
   it("publishes on the very first run (no current snapshot yet) even with zero eligible offers", async () => {
     fake.loadVerticals.mockResolvedValue(["equipar"]);
@@ -216,5 +254,65 @@ describe("runPriceEvents — real run: writing and the thin-run guard", () => {
     expect(result.snapshot.analyzed).toBe(1);
     expect(result.snapshot.eligible).toBe(0);
     expect(fake.saveSnapshot).toHaveBeenCalledTimes(1);
+  });
+});
+
+// M1 (final review): the hourly --event-only cron can land before equipar/sillas have written a
+// single point for the new UTC day (e.g. 00:19 UTC, well before their ~12:xx UTC daily runs). That
+// read zero offers, not a thin one — it must never trip the thin-run guard, which used to fire a
+// pm2-visible "failure" every hour, every active event day, until noon.
+describe("runPriceEvents — --event-only reading zero offers is a clean no-op (M1)", () => {
+  it("skips writing without tripping `thin`, even against a substantial current snapshot", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue("2026-09-16");
+    fake.loadCurrentEligible.mockResolvedValue(100); // would normally guarantee `thin` at eligible 0
+    fake.offersSeenTodayByVertical.mockImplementation(() => []);
+
+    const result = await runPriceEvents({ today: TODAY, eventOnly: true });
+
+    expect(result.snapshot.analyzed).toBe(0);
+    expect(result.noDataYet).toBe(true);
+    expect(result.thin).toBe(false);
+    expect(result.written).toBe(false);
+    expect(fake.saveSnapshot).not.toHaveBeenCalled();
+    expect(fake.pruneOldDaySnapshots).not.toHaveBeenCalled();
+  });
+
+  it("does not fire on the very first run either (no current snapshot yet)", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue(null);
+    fake.loadCurrentEligible.mockResolvedValue(null);
+    fake.offersSeenTodayByVertical.mockImplementation(() => []);
+
+    const result = await runPriceEvents({ today: TODAY, eventOnly: true });
+
+    expect(result.noDataYet).toBe(true);
+    expect(result.written).toBe(false);
+  });
+
+  it("does not fire once at least one offer was actually read (real thin-run guard still applies)", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue("2026-09-16");
+    fake.loadCurrentEligible.mockResolvedValue(100);
+    fake.offersSeenTodayByVertical.mockImplementation(() => [qualifyingDrop()]); // analyzed 1, eligible 1 << 40
+
+    const result = await runPriceEvents({ today: TODAY, eventOnly: true });
+
+    expect(result.noDataYet).toBe(false);
+    expect(result.thin).toBe(true);
+    expect(result.written).toBe(false);
+  });
+
+  it("never fires on the plain daily job (eventOnly not set) — zero offers still uses the thin guard as before", async () => {
+    fake.loadVerticals.mockResolvedValue(["equipar"]);
+    fake.loadTrackingSince.mockResolvedValue("2026-09-16");
+    fake.loadCurrentEligible.mockResolvedValue(100);
+    fake.offersSeenTodayByVertical.mockImplementation(() => []);
+
+    const result = await runPriceEvents({ today: TODAY });
+
+    expect(result.noDataYet).toBe(false);
+    expect(result.thin).toBe(true);
+    expect(result.written).toBe(false);
   });
 });

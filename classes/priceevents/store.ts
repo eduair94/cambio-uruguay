@@ -5,11 +5,26 @@
 import { PricewatchOfferModel } from "../models/PricewatchOffer";
 import { PriceEventSnapshotModel } from "../models/PriceEventSnapshot";
 import type { PriceEventSnapshot } from "./aggregate";
-import type { PricewatchOfferLike } from "./types";
+import { PRICE_EVENT_LOOKBACK_DAYS, type PricewatchOfferLike } from "./types";
 
-/** Sólo los campos que {@link PricewatchOfferLike} lee — no el documento entero (que además trae
- * `source`/`lastSeen`, que este feature no necesita una vez que ya filtró por ellos). */
-const OFFER_FIELDS = "listingId vertical category productKey sellerKey sellerName title url currency firstSeen history";
+/** Los campos que {@link PricewatchOfferLike} lee, más `source` — no el documento entero (que además
+ * trae `lastSeen`, que este feature no necesita una vez que ya filtró por él). `source` no lo usa
+ * `analyzeOfferOutcome` (no forma parte de `PricewatchOfferLike`): lo lee `refresh.ts` aparte, sólo
+ * para el conteo `bySource` del snapshot (final review M5, "qué fracción del día es MercadoLibre"). */
+const OFFER_FIELDS = ["listingId", "vertical", "category", "productKey", "sellerKey", "sellerName", "title", "url", "currency", "firstSeen", "source"];
+
+/**
+ * Final review M7: `history` guarda hasta 120 puntos (`classes/pricewatch/record.ts`), pero
+ * `analyzeOfferOutcome` sólo mira hoy más los `PRICE_EVENT_LOOKBACK_DAYS` (60) días previos — un doc
+ * con 120 puntos manda por la red el DOBLE de lo que este job puede llegar a usar, todos los días,
+ * por cada oferta. `$slice: -N` es una proyección de Mongo (recorta ANTES de que el documento cruce
+ * la red, no un `.slice()` de JS después de traerlo entero); como `applyHistory` siempre reemplaza el
+ * punto del día en su lugar y agrega los nuevos al final, el arreglo queda en orden cronológico
+ * ascendente, así que los últimos `N` elementos SON los `N` días más recientes. `+1` es por HOY mismo
+ * (60 previos + hoy = 61) — de sobra para el filtro de moneda/edad de `analyzeOfferOutcome`, que igual
+ * descarta lo que quede fuera de la ventana.
+ */
+const HISTORY_PROJECTION_POINTS = PRICE_EVENT_LOOKBACK_DAYS + 1;
 
 /** Toda vertical que hoy escribe en `pricewatchoffers` (equipar, sillas, la que se sume después) —
  * leído de los datos mismos, así que una vertical nueva no necesita tocar este archivo. Ordenado:
@@ -43,7 +58,9 @@ export async function loadTrackingSince(): Promise<string | null> {
  * {@link PricewatchOfferLike} necesita antes de que el documento cruce la red.
  */
 export function offersSeenTodayByVertical(vertical: string, today: string) {
-  return PricewatchOfferModel.find({ vertical, lastSeen: today }).select(OFFER_FIELDS).lean().cursor();
+  const projection: Record<string, unknown> = { history: { $slice: -HISTORY_PROJECTION_POINTS } };
+  for (const field of OFFER_FIELDS) projection[field] = 1;
+  return PricewatchOfferModel.find({ vertical, lastSeen: today }).select(projection).lean().cursor();
 }
 
 /** Sólo el `eligible` del snapshot `current` publicado — lo único que necesita la guarda de corrida
