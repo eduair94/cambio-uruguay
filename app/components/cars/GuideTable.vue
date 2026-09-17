@@ -20,7 +20,16 @@
           <td data-label="Promedio">
             {{ row.averageUsd === null ? '—' : formatCarUsd(row.averageUsd) }}
           </td>
-          <td data-label="Por versión">{{ versionsOf(row) }}</td>
+          <td data-label="Por versión">
+            <span class="guide-versions">
+              <template v-if="row.versions.length">
+                <span v-for="version in row.versions" :key="version.name" class="guide-version">
+                  {{ version.name }} {{ formatCarUsd(version.priceUsd) }}
+                </span>
+              </template>
+              <template v-else>—</template>
+            </span>
+          </td>
         </tr>
       </tbody>
     </VTable>
@@ -32,13 +41,21 @@ import { formatCarDate, formatCarUsd } from '~/utils/cars'
 import type { PublicCarGuideYear } from '~/utils/carsPublic'
 
 defineProps<{ rows: PublicCarGuideYear[]; updatedAt: string | null }>()
-const versionsOf = (row: PublicCarGuideYear): string =>
-  row.versions.map(version => `${version.name} ${formatCarUsd(version.priceUsd)}`).join(' · ') ||
-  '—'
 </script>
 
 <style scoped>
 .guide-table {
   overflow-x: auto;
+}
+/* One box for all versions: the mobile card layout spreads every direct child of a cell. */
+.guide-versions {
+  text-align: right;
+}
+/* One version and its price never break apart ("US$" alone at the end of a line). */
+.guide-version {
+  white-space: nowrap;
+}
+.guide-version + .guide-version::before {
+  content: ' · ';
 }
 </style>

@@ -96,6 +96,8 @@ const place = computed(() =>
 .car-card__photo {
   display: block;
   aspect-ratio: 3 / 2;
+  /* Without it a tall photo (web sources send portrait shots) grows the box past 3:2. */
+  overflow: hidden;
   background: rgba(var(--v-theme-on-surface), 0.06);
 }
 .car-card__photo img {
