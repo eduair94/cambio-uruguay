@@ -116,6 +116,22 @@ describe('[categoria].vue', () => {
     expect(src.slice(at, at + 300)).toContain('usedOk')
   })
 
+  it('la tabla de modelos (y su JSON-LD) filtra productos por debajo de la banda', () => {
+    // Documentos viejos traen productos armados con avisos que la banda descartaba; la página se
+    // despliega antes que el backend que deja de escribirlos.
+    const at = script.indexOf('const productRows')
+    expect(at).toBeGreaterThan(-1)
+    expect(script.slice(at, at + 400)).toContain('equiparPlausibleProducts(item)')
+    expect(script).toMatch(
+      /import\s*\{[^}]*\bequiparPlausibleProducts\b[^}]*\}\s*from '~\/utils\/equipar'/
+    )
+  })
+
+  it('el aviso de sospechosos no promete sólo por una lista', () => {
+    // Con los productos filtrados, lo sospechoso no encabeza ninguna lista de la página.
+    expect(template(src)).not.toContain('no encabezan esta lista')
+  })
+
   it('escribe las fechas con la grafía uruguaya', () => {
     expect(src).not.toMatch(/septiembre/i)
     expect(src).toContain('dateLocale(')

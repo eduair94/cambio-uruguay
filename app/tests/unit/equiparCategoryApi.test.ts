@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   equiparCategoryProjection,
+  equiparPlausibleProducts,
   type EquiparHistoryPoint,
   type EquiparItemDoc,
   type EquiparOffer,
@@ -129,5 +130,46 @@ describe('equiparCategoryProjection', () => {
     expect(original.products).toHaveLength(20)
     expect(original.offers).toHaveLength(15)
     expect(original.history).toHaveLength(400)
+  })
+})
+
+// Documentos escritos por el backend anterior al arreglo: los productos salían de TODOS los avisos del
+// ítem, y en producción colchón abría "Modelos" con yogures a $ 70–77 y aire acondicionado con un
+// convector a $ 2.773. El app se despliega antes que el backend, así que la API los filtra al leer.
+describe('equiparPlausibleProducts', () => {
+  const priced = (slug: string, bestPriceUyu: number): EquiparProduct => ({
+    ...product(1),
+    slug,
+    bestPriceUyu,
+  })
+  const band = { p25: 9_000, median: 11_000, p75: 14_000, min: 70, n: 20 }
+
+  it('saca un producto de $ 70 cuando la banda nueva arranca en $ 9.000', () => {
+    const products = [priced('yogur', 70), priced('yogur-2', 77), priced('colchon', 9_500)]
+    expect(equiparPlausibleProducts(item({ newBand: band, products })).map(p => p.slug)).toEqual([
+      'colchon',
+    ])
+  })
+
+  it('el corte es la mitad del p25: justo en el borde se queda', () => {
+    const products = [priced('borde', 4_500), priced('abajo', 4_499)]
+    expect(equiparPlausibleProducts(item({ newBand: band, products })).map(p => p.slug)).toEqual([
+      'borde',
+    ])
+  })
+
+  it('sin banda nueva no hay contra qué medir: no saca nada', () => {
+    const products = [priced('solo', 70)]
+    expect(equiparPlausibleProducts(item({ newBand: null, products }))).toEqual(products)
+  })
+
+  it('la proyección de la API aplica el filtro antes del tope de 12', () => {
+    const yogures = Array.from({ length: 4 }, (_, i) => priced(`yogur-${i}`, 70 + i))
+    const reales = Array.from({ length: 12 }, (_, i) => priced(`real-${i}`, 10_000 + i))
+    const [result] = equiparCategoryProjection([
+      item({ newBand: band, products: [...yogures, ...reales] }),
+    ])
+    expect(result.products).toHaveLength(12)
+    expect(result.products.every(p => p.slug.startsWith('real-'))).toBe(true)
   })
 })

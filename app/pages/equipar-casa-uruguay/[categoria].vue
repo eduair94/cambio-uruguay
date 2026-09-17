@@ -129,8 +129,8 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
         todos los días: confirmalo en el aviso antes de ir.
         <template v-if="suspectDropped">
           Dejamos afuera {{ suspectDropped }} {{ suspectDropped === 1 ? 'aviso' : 'avisos' }} con
-          precios muy por debajo del resto de su tamaño: esos no encabezan esta lista ni entran en
-          las medianas.
+          precios muy por debajo del resto de su tamaño: no entran en las medianas, en esta lista
+          ni en la tabla de modelos.
         </template>
       </p>
 
@@ -272,6 +272,7 @@ import {
 } from '~/utils/equiparCategoryPages'
 import {
   equiparMoney,
+  equiparPlausibleProducts,
   type EquiparCategoryResponse,
   type EquiparItemDoc,
   type EquiparOffer,
@@ -441,12 +442,14 @@ const seriesStart = computed(() => {
 
 // ── Modelos y ofertas ──────────────────────────────────────────────────────
 // El slug de un producto es único dentro de su item (categoría+variante), no dentro de la
-// categoría: la clave de fila lleva los dos.
+// categoría: la clave de fila lleva los dos. `equiparPlausibleProducts` saca los productos por debajo
+// de la mitad del p25 nuevo: documentos escritos antes del arreglo del backend los armaban con avisos
+// que la banda descartaba (yogures a $ 70 en colchón), y esta tabla alimenta el JSON-LD de Offer.
 const productRows = computed(() =>
   variants.value
     .filter(item => item.regime === 'modelo')
     .flatMap(item =>
-      (item.products ?? []).map((product: EquiparProduct) => ({
+      equiparPlausibleProducts(item).map((product: EquiparProduct) => ({
         key: `${item.key}:${product.slug}`,
         variantLabel: item.variantLabel,
         product,

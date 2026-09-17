@@ -169,6 +169,28 @@ export function equiparSortItems(items: EquiparItemDoc[]): EquiparItemDoc[] {
   )
 }
 
+/**
+ * The products of one item that can be listed: none priced under half the new band's p25.
+ *
+ * The backend now builds products only from listings its band kept, but documents written before
+ * that fix built them from EVERY listing of the item — in production "colchón" opened its model table
+ * with yogurts at $ 70–77 and "aire acondicionado" with a convector at $ 2.773, and the page publishes
+ * that price as a schema.org Offer. The app deploys before the backend, so this read-side floor keeps
+ * those rows off the page until the job rewrites the documents. Half of p25 sits at or above the
+ * backend's own suspect line (p10/2), so it catches every row that line flags — and, rarely, also
+ * hides a genuinely cheap product the fixed backend would publish: a price accepted on purpose,
+ * since the next run can bring it back while a yogurt in a Product Offer cannot be taken back.
+ * Without a new band there is nothing to measure against.
+ */
+export function equiparPlausibleProducts(
+  item: Pick<EquiparItemDoc, 'products' | 'newBand'>
+): EquiparProduct[] {
+  const products = item.products ?? []
+  if (!item.newBand) return products
+  const floor = item.newBand.p25 / 2
+  return products.filter(product => product.bestPriceUyu >= floor)
+}
+
 const EQUIPAR_CATEGORY_MAX_PRODUCTS = 12
 const EQUIPAR_CATEGORY_MAX_PRODUCT_OFFERS = 6
 /**
@@ -191,10 +213,12 @@ const EQUIPAR_CATEGORY_MAX_HISTORY = 180
 export function equiparCategoryProjection(items: EquiparItemDoc[]): EquiparItemDoc[] {
   return items.map(item => ({
     ...item,
-    products: item.products.slice(0, EQUIPAR_CATEGORY_MAX_PRODUCTS).map(product => ({
-      ...product,
-      offers: product.offers.slice(0, EQUIPAR_CATEGORY_MAX_PRODUCT_OFFERS),
-    })),
+    products: equiparPlausibleProducts(item)
+      .slice(0, EQUIPAR_CATEGORY_MAX_PRODUCTS)
+      .map(product => ({
+        ...product,
+        offers: product.offers.slice(0, EQUIPAR_CATEGORY_MAX_PRODUCT_OFFERS),
+      })),
     offers: item.offers.slice(0, EQUIPAR_CATEGORY_MAX_ITEM_OFFERS),
     history: (item.history ?? []).slice(-EQUIPAR_CATEGORY_MAX_HISTORY),
   }))
