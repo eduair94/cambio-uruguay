@@ -47,7 +47,7 @@ export function offersSeenTodayByVertical(vertical: string, today: string) {
 }
 
 /** Sólo el `eligible` del snapshot `current` publicado — lo único que necesita la guarda de corrida
- * flaca, sin hidratar `drops`/`sellers`. `null` cuando todavía no se publicó ningún snapshot. */
+ * flaca, sin hidratar `topDrops`/`sellers`. `null` cuando todavía no se publicó ningún snapshot. */
 export async function loadCurrentEligible(): Promise<number | null> {
   const current = await PriceEventSnapshotModel.findOne({ key: "current" }, { eligible: 1, _id: 0 }).lean();
   const row = current as unknown as { eligible?: number } | null;
