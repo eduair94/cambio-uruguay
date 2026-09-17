@@ -192,14 +192,23 @@ export interface PhoneDetailResponse {
  * `lastSeen < cutoff` is stale. Pure and deterministic on purpose: no reliance on the system clock, so
  * a test can pin an exact "today" instead of racing real time.
  */
+/**
+ * The oldest `lastSeen` a model may have and still count as fresh, as a YYYY-MM-DD string. The hub
+ * query uses it as a floor so a directory that only grows does not read every discontinued model on
+ * every cache refresh; `phoneIsStale` stays the authority for what the page publishes.
+ */
+export function phoneFreshFloor(today: string, staleDays: number = PHONE_STALE_DAYS): string {
+  const cutoff = new Date(`${today}T00:00:00.000Z`)
+  cutoff.setUTCDate(cutoff.getUTCDate() - staleDays)
+  return cutoff.toISOString().slice(0, 10)
+}
+
 export function phoneIsStale(
   lastSeen: string,
   today: string,
   staleDays: number = PHONE_STALE_DAYS
 ): boolean {
-  const cutoff = new Date(`${today}T00:00:00.000Z`)
-  cutoff.setUTCDate(cutoff.getUTCDate() - staleDays)
-  return lastSeen < cutoff.toISOString().slice(0, 10)
+  return lastSeen < phoneFreshFloor(today, staleDays)
 }
 
 /**

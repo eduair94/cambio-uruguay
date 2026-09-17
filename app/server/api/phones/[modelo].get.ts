@@ -23,12 +23,12 @@ import {
  * .get.ts` already follow: a request shape that could never match a document should never spend a
  * database round trip finding that out.
  *
- * Unlike the hub (`./index.get.ts`), this route has no honest "empty" shape to fall back to — `model`
- * is not optional in `PhoneDetailResponse` — so a database failure collapses onto the SAME response as
- * "no such model": a 404 with `cache-control: no-store`, never cached as a false negative. The route
- * still SERVES a model whose current NEW price is not publishable (an ambiguous split, a stale run,
- * too few offers) — the page decides what to show for that — but reports it via `publishable`/`stale`
- * rather than pretending the model does not exist.
+ * A database failure is NOT the same as "no such model" — mirrors `app/server/api/cars/ficha/
+ * [key].get.ts` and `app/server/api/rentals/ficha/[key].get.ts`: it answers 503 with
+ * `cache-control: no-store` (never cached as a false negative), while only a well-formed slug with no
+ * matching document is a genuine 404. The route still SERVES a model whose current NEW price is not
+ * publishable (an ambiguous split, a stale run, too few offers) — the page decides what to show for
+ * that — but reports it via `publishable`/`stale` rather than pretending the model does not exist.
  */
 export default defineEventHandler(async (event): Promise<PhoneDetailResponse> => {
   const slug = String(getRouterParam(event, 'modelo') || '')
@@ -53,9 +53,13 @@ export default defineEventHandler(async (event): Promise<PhoneDetailResponse> =>
           .select(PHONE_LIST_PROJECTION)
           .lean()) as unknown as PhoneModelDoc[])
       : []
-  } catch {
+  } catch (error) {
     setResponseHeader(event, 'cache-control', 'no-store')
-    throw createError({ statusCode: 404, statusMessage: 'Model not found' })
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Modelo no disponible por ahora',
+      cause: error,
+    })
   }
 
   if (!model) {

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { installNitroGlobals } from './helpers/nitro'
+import { phoneFreshFloor } from '../../utils/phones'
 import type { PhoneBandDoc, PhoneModelDoc, PhoneOfferDoc } from '../../utils/phones'
 
 const connectDb = vi.fn()
@@ -18,9 +19,13 @@ const chain = (lean: () => unknown) => {
 }
 
 vi.mock('../../server/utils/db', () => ({ connectDb }))
+const modelFindFilters: unknown[] = []
 vi.mock('../../server/models/PhoneModel', () => ({
   PhoneModelModel: {
-    find: () => chain(modelFindLean),
+    find: (filter: unknown) => {
+      modelFindFilters.push(filter)
+      return chain(modelFindLean)
+    },
     findOne: () => chain(modelFindOneLean),
   },
 }))
@@ -111,6 +116,16 @@ beforeEach(() => {
 })
 
 describe('GET /api/phones (hub)', () => {
+  it('sólo lee modelos frescos: la consulta lleva el piso de lastSeen', async () => {
+    modelFindFilters.length = 0
+    modelFindLean.mockResolvedValue([])
+    metaFindOneLean.mockResolvedValue({ generatedAt: '', usdUyu: 40 })
+    await hubHandler({} as never)
+    // El directorio nunca borra un modelo, así que sin este piso cada refresco leería todo el
+    // histórico de modelos discontinuados para descartarlos después en memoria.
+    expect(modelFindFilters.at(-1)).toEqual({ lastSeen: { $gte: phoneFreshFloor(TODAY) } })
+  })
+
   it('groups publishable models by brand and answers with a public cache header', async () => {
     modelFindLean.mockResolvedValue([
       phoneDoc('samsung-galaxy-s26-256gb', {
@@ -178,10 +193,10 @@ describe('GET /api/phones/<modelo> (detail)', () => {
     expect(headers.at(-1)).toEqual(['cache-control', 'no-store'])
   })
 
-  it('a database failure also 404s with no-store, never a cached false negative', async () => {
+  it('a database failure answers 503 with no-store, never a 404 that de-indexes a real page', async () => {
     getRouterParam.mockReturnValue('apple-iphone-17-pro-256gb')
     modelFindOneLean.mockRejectedValue(new Error('down'))
-    await expect(detailHandler({} as never)).rejects.toMatchObject({ statusCode: 404 })
+    await expect(detailHandler({} as never)).rejects.toMatchObject({ statusCode: 503 })
     expect(headers.at(-1)).toEqual(['cache-control', 'no-store'])
   })
 

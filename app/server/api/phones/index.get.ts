@@ -5,6 +5,7 @@ import {
   PHONE_LIST_PROJECTION,
   PHONE_META_KEY,
   phoneHubGroups,
+  phoneFreshFloor,
   type PhoneHubResponse,
   type PhoneMetaDoc,
   type PhoneModelDoc,
@@ -30,14 +31,16 @@ export default defineEventHandler(async (event): Promise<PhoneHubResponse> => {
     'cache-control',
     'public, max-age=900, s-maxage=900, stale-while-revalidate=86400'
   )
+  const today = new Date().toISOString().slice(0, 10)
   try {
     await connectDb()
     const [meta, rows] = await Promise.all([
       PhoneMetaModel.findOne({ key: PHONE_META_KEY }).select({ generatedAt: 1, usdUyu: 1 }).lean(),
-      PhoneModelModel.find({}).select(PHONE_LIST_PROJECTION).lean(),
+      PhoneModelModel.find({ lastSeen: { $gte: phoneFreshFloor(today) } })
+        .select(PHONE_LIST_PROJECTION)
+        .lean(),
     ])
     const metaDoc = meta as unknown as Pick<PhoneMetaDoc, 'generatedAt' | 'usdUyu'> | null
-    const today = new Date().toISOString().slice(0, 10)
     return {
       generatedAt: metaDoc?.generatedAt ?? '',
       usdUyu: metaDoc?.usdUyu ?? 0,
