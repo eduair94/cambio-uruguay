@@ -61,6 +61,49 @@ const row = {
   description: 'SECRET',
 }
 
+describe('publicCarRow', () => {
+  it('keeps each source on its own permalink and picture hosts', async () => {
+    const { publicCarRow } = await import('../../server/utils/cars')
+    const facebook = publicCarRow({
+      ...row,
+      key: 'fb-1',
+      source: 'facebook',
+      permalink: 'https://www.facebook.com/marketplace/item/1268374875382121/',
+      picture: 'https://scontent-yyz1-1.xx.fbcdn.net/v/x.jpg',
+      currencyInferred: true,
+      reference: { priceUsd: 5000, basis: 'year', updatedAt: '2026-09-17', extra: 'SECRET' },
+    })
+    expect(facebook).toMatchObject({
+      source: 'facebook',
+      sourceName: 'Facebook Marketplace',
+      currencyInferred: true,
+      reference: { priceUsd: 5000, basis: 'year', updatedAt: '2026-09-17' },
+    })
+    expect(facebook.picture).toBe('https://scontent-yyz1-1.xx.fbcdn.net/v/x.jpg')
+    expect(JSON.stringify(facebook)).not.toContain('SECRET')
+    expect(
+      publicCarRow({
+        ...row,
+        source: 'facebook',
+        permalink: 'https://auto.mercadolibre.com.uy/MLU-1',
+      }).permalink
+    ).toBe('')
+    expect(
+      publicCarRow({ ...row, source: 'clasiautos', picture: 'https://http2.mlstatic.com/x.jpg' })
+        .picture
+    ).toBeNull()
+    const legacy = publicCarRow({ ...row, source: undefined })
+    expect(legacy).toMatchObject({
+      source: 'mercadolibre',
+      sourceName: 'Mercado Libre',
+      reference: null,
+      currencyInferred: false,
+    })
+    expect(legacy.permalink).toBe('https://auto.mercadolibre.com.uy/MLU-700355317-x-_JM')
+    expect(publicCarRow({ ...row, source: 'nope' }).source).toBe('mercadolibre')
+  })
+})
+
 describe('used-car APIs', () => {
   beforeEach(() => {
     vi.clearAllMocks()

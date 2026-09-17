@@ -8,9 +8,10 @@
       <h1 class="text-h4 font-weight-bold mb-2">Oportunidades en autos usados en Uruguay</h1>
       <p class="text-body-1 mb-3">
         Autos que piden bastante menos que otros avisos del
-        <strong>mismo modelo, año, versión, motor y caja</strong>, con kilómetros parecidos. Cada
-        uno pasó por su propia ficha: sigue activo, con el mismo precio y sin menciones de choque,
-        airbags faltantes, recupero de seguro, deudas, matrículas entregadas o chapa extranjera.
+        <strong>mismo modelo, año, versión, motor y caja</strong>, con kilómetros parecidos, en
+        Mercado Libre, Facebook Marketplace y webs de automotoras. Cada uno pasó por su propia
+        ficha: sigue activo, con el mismo precio y sin menciones de choque, airbags faltantes,
+        recupero de seguro, deudas, matrículas entregadas o chapa extranjera.
       </p>
       <VAlert type="warning" variant="outlined" density="comfortable">
         No es una tasación ni una garantía. Un precio bajo puede tener una explicación que el aviso
@@ -129,6 +130,10 @@
           entregadas o chapa extranjera en el título o la descripción.
         </li>
         <li>Máximo {{ data.policy.maximumPerSeller }} avisos por vendedor en cada muestra.</li>
+        <li>
+          Un mismo auto publicado en varias fuentes cuenta una sola vez. Los avisos de Facebook
+          Marketplace cuya moneda dedujimos nunca cuentan como oportunidad ni entran a la muestra.
+        </li>
       </ul>
     </section>
   </VContainer>

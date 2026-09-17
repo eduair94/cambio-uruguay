@@ -45,6 +45,7 @@ describe('normalizeCarsQuery', () => {
       transmission: '',
       department: 'Montevideo',
       seller: 'private',
+      source: '',
       sort: 'price_asc',
       page: 2,
     })
@@ -76,6 +77,12 @@ describe('normalizeCarsQuery', () => {
 })
 
 describe('carsMatch / carsSort', () => {
+  it('filters by source', () => {
+    const query = normalizeCarsQuery({ source: 'facebook' })
+    expect(query.source).toBe('facebook')
+    expect(carsMatch(query, new Date('2026-09-17T00:00:00Z'), 4).source).toBe('facebook')
+    expect(normalizeCarsQuery({ source: 'olx' }).source).toBe('')
+  })
   it('builds a bounded Mongo filter', () => {
     const match = carsMatch(
       normalizeCarsQuery({
@@ -111,6 +118,18 @@ describe('keys and formatting', () => {
   it('validates keys and slugs', () => {
     expect(carKeyValid('ml-MLU700355317')).toBe(true)
     expect(carKeyValid('ml-MLU1; drop')).toBe(false)
+    for (const key of [
+      'fb-1268374875382121',
+      'clasiautos-15715',
+      'sda-153528',
+      'carone-717444',
+      'julio-49408',
+      'carper-1',
+      'fidocar-418633',
+    ])
+      expect(carKeyValid(key)).toBe(true)
+    for (const key of ['fb-abc', 'x-1', 'ml-1', 'clasiautos-../x', 'sda-1-2'])
+      expect(carKeyValid(key)).toBe(false)
     expect(carMarketSlugValid('mercedes-benz-clase-c')).toBe(true)
     expect(carMarketSlugValid('Mercedes Benz')).toBe(false)
   })

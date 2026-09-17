@@ -8,6 +8,7 @@ import type {
   PublicCarOpportunityItem,
   PublicCarOpportunitySnapshot,
   PublicCarSeller,
+  PublicCarSource,
   PublicCarTransmission,
 } from './carsPublic'
 
@@ -67,6 +68,74 @@ export const CAR_SELLER_LABELS: Record<PublicCarSeller, string> = {
   dealer: 'Automotora',
   private: 'Dueño',
 }
+// Mirror of classes/autos/sources/registry.ts (app/tests/unit/carSourcesParity.test.ts compares them):
+// which URLs of each source a public row may carry.
+export const CAR_SOURCE_RULES: Record<
+  PublicCarSource,
+  { name: string; permalink: RegExp; pictureHost: RegExp }
+> = {
+  mercadolibre: {
+    name: 'Mercado Libre',
+    permalink: /^https:\/\/auto\.mercadolibre\.com\.uy\/MLU-/,
+    pictureHost: /^http2\.mlstatic\.com$/,
+  },
+  clasiautos: {
+    name: 'Clasiautos',
+    permalink: /^https:\/\/clasiautos\.uy\/avisos\/[\w%-]+\/?$/,
+    pictureHost: /^clasiautos\.uy$/,
+  },
+  julio: {
+    name: 'Julio Automóviles',
+    permalink: /^https:\/\/julioautomoviles\.com\.uy\/vehiculo\/[\w%-]+\/?$/,
+    pictureHost: /^julioautomoviles\.com\.uy$/,
+  },
+  shoppingdeautos: {
+    name: 'Shopping de Autos',
+    permalink: /^https:\/\/shoppingdeautos\.uy\/producto\/[\w%-]+\/?$/,
+    pictureHost: /^shoppingdeautos\.uy$/,
+  },
+  carper: {
+    name: 'Carper',
+    permalink: /^https:\/\/usados\.carper\.com\.uy\/[\w%/-]+$/,
+    pictureHost: /^usados\.carper\.com\.uy$/,
+  },
+  fidocar: {
+    name: 'Usados Fidocar',
+    permalink: /^https:\/\/www\.usadosfidocar\.com\.uy\/modelo\/[\w%-]+$/,
+    pictureHost: /^f\.fcdn\.app$/,
+  },
+  carone: {
+    name: 'Car One',
+    permalink: /^https:\/\/carone\.com\.uy\/[\w%-]+$/,
+    pictureHost: /^cdn\.impel\.io$/,
+  },
+  facebook: {
+    name: 'Facebook Marketplace',
+    permalink: /^https:\/\/www\.facebook\.com\/marketplace\/item\/\d{6,20}\/$/,
+    pictureHost: /^scontent[\w.-]*\.fbcdn\.net$/,
+  },
+}
+export const CAR_SOURCES_PUBLIC = Object.keys(CAR_SOURCE_RULES) as PublicCarSource[]
+
+export function carSafePermalink(source: PublicCarSource, url: unknown): string {
+  return typeof url === 'string' && CAR_SOURCE_RULES[source].permalink.test(url) ? url : ''
+}
+
+export function carSafePicture(source: PublicCarSource, url: unknown): string | null {
+  if (typeof url !== 'string') return null
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'https:' &&
+      !parsed.username &&
+      !parsed.password &&
+      CAR_SOURCE_RULES[source].pictureHost.test(parsed.host)
+      ? url
+      : null
+  } catch {
+    return null
+  }
+}
+
 export const CAR_FLAG_LABELS: Record<PublicCarFlag, string> = {
   financing: 'El título habla de entrega o cuotas',
   price_mismatch: 'El título menciona otro precio',
@@ -89,6 +158,7 @@ export interface CarsQuery {
   transmission: PublicCarTransmission | ''
   department: string
   seller: PublicCarSeller | ''
+  source: PublicCarSource | ''
   sort: CarSort
   page: number
 }
@@ -106,10 +176,16 @@ export interface CarsResponse {
   page: number
   perPage: number
   items: PublicCarListing[]
-  facets: { brands: CarFacet[]; models: CarFacet[]; departments: CarFacet[] }
+  facets: { brands: CarFacet[]; models: CarFacet[]; departments: CarFacet[]; sources: CarFacet[] }
   coverage: Pick<
     PublicCarCatalogMeta,
-    'listings' | 'lastReadAt' | 'lastFullReadAt' | 'reportedTotal' | 'opportunities' | 'models'
+    | 'listings'
+    | 'lastReadAt'
+    | 'lastFullReadAt'
+    | 'reportedTotal'
+    | 'opportunities'
+    | 'models'
+    | 'sources'
   >
 }
 
@@ -188,6 +264,7 @@ export function normalizeCarsQuery(input: Record<string, unknown>): CarsQuery {
     transmission: oneOf(input.transmission, CAR_TRANSMISSIONS),
     department: oneOf(input.department, CAR_DEPARTMENTS),
     seller: oneOf(input.seller, CAR_SELLERS),
+    source: oneOf(input.source, CAR_SOURCES_PUBLIC),
     sort: oneOf(input.sort, CAR_SORTS) || 'recent',
     page: integer(input.page, 1, 500) ?? 1,
   }
@@ -249,6 +326,7 @@ export function carsMatch(query: CarsQuery, now: Date, freshDays: number): Recor
   if (query.transmission) match.transmission = query.transmission
   if (query.department) match.department = query.department
   if (query.seller) match.sellerType = query.seller
+  if (query.source) match.source = query.source
   if (query.q) match.title = { $regex: accentInsensitive(query.q), $options: 'i' }
   return match
 }
@@ -261,7 +339,10 @@ export function carsSort(sort: CarSort): Record<string, 1 | -1> {
   return { firstSeen: -1, key: 1 }
 }
 
-export const carKeyValid = (key: string): boolean => /^ml-MLU\d{6,14}$/.test(key)
+export const carKeyValid = (key: string): boolean =>
+  /^(?:ml-MLU\d{6,14}|fb-\d{6,20}|(?:clasiautos|julio|sda|carper|fidocar|carone)-\d{1,12})$/.test(
+    key
+  )
 export const carMarketSlugValid = (value: string): boolean => value.length <= 80 && SLUG.test(value)
 export const carPath = (key: string): string => `${CARS_PATH}/${key}`
 export const carMarketPath = (marketSlug: string): string => `${CARS_PATH}/precios/${marketSlug}`

@@ -34,9 +34,13 @@
         <span v-if="car.priceConverted" class="text-caption text-medium-emphasis">
           (≈ {{ formatCarUsd(car.priceUsd) }})
         </span>
+        <span v-if="car.currencyInferred" class="text-caption text-medium-emphasis">
+          (moneda estimada)
+        </span>
       </p>
       <p class="car-card__facts">{{ facts }}</p>
       <p v-if="place" class="car-card__place">{{ place }}</p>
+      <p class="car-card__source">{{ car.sourceName }}</p>
     </div>
   </article>
 </template>
@@ -151,7 +155,8 @@ const place = computed(() =>
   margin: 0;
 }
 .car-card__facts,
-.car-card__place {
+.car-card__place,
+.car-card__source {
   font-size: 0.875rem;
   margin: 0;
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));

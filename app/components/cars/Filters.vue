@@ -102,6 +102,15 @@
       variant="outlined"
       hide-details
     />
+    <VSelect
+      v-if="facets.sources.length > 1"
+      v-model="draft.source"
+      :items="sourceItems"
+      label="Fuente"
+      density="comfortable"
+      variant="outlined"
+      hide-details
+    />
     <div class="car-filters__actions">
       <VBtn type="submit" color="primary" block>Aplicar</VBtn>
       <VBtn variant="text" block @click="clear">Limpiar filtros</VBtn>
@@ -125,7 +134,7 @@ import {
 
 const props = defineProps<{
   query: CarsQuery
-  facets: { brands: CarFacet[]; models: CarFacet[]; departments: CarFacet[] }
+  facets: { brands: CarFacet[]; models: CarFacet[]; departments: CarFacet[]; sources: CarFacet[] }
 }>()
 const emit = defineEmits<{ apply: [query: CarsQuery] }>()
 
@@ -142,6 +151,7 @@ const toDraft = (query: CarsQuery) => ({
   transmission: query.transmission as string,
   department: query.department,
   seller: query.seller as string,
+  source: query.source as string,
 })
 const draft = reactive(toDraft(props.query))
 watch(
@@ -179,6 +189,14 @@ const sellerItems = [
   { title: 'Dueño o automotora', value: '' },
   ...CAR_SELLERS.map(value => ({ title: CAR_SELLER_LABELS[value], value })),
 ]
+
+const sourceItems = computed(() => [
+  { title: 'Todas las fuentes', value: '' },
+  ...props.facets.sources.map(source => ({
+    title: `${source.name} (${source.count})`,
+    value: source.slug,
+  })),
+])
 
 function apply() {
   // VTextField `clearable` sets the model to null; the query normalizer only accepts strings.

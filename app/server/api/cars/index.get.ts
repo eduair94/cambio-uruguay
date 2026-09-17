@@ -1,4 +1,5 @@
 import {
+  CAR_SOURCE_RULES,
   CARS_PER_PAGE,
   carsMatch,
   carsSort,
@@ -37,7 +38,7 @@ export default defineEventHandler(async event => {
     const match = carsMatch(query, now, meta.freshDays)
     // "Menos kilómetros" must not lead with adverts whose km we refused to publish.
     if (query.sort === 'km_asc') match.km = { ...((match.km as object) || {}), $ne: null }
-    const [total, rows, brands, models, departments] = await Promise.all([
+    const [total, rows, brands, models, departments, sources] = await Promise.all([
       CarCatalogModel.countDocuments(match).maxTimeMS(10_000),
       CarCatalogModel.find(match)
         .select(carListingProjection)
@@ -61,6 +62,7 @@ export default defineEventHandler(async event => {
         'department',
         19
       ),
+      facet(carsMatch({ ...query, source: '' }, now, meta.freshDays), 'source', 'source', 10),
     ])
     setResponseHeader(event, 'cache-control', 'public, max-age=60, s-maxage=120')
     const response: CarsResponse = {
@@ -70,7 +72,17 @@ export default defineEventHandler(async event => {
       page: query.page,
       perPage: CARS_PER_PAGE,
       items: rows.map(row => publicCarRow(row as Record<string, unknown>)),
-      facets: { brands, models, departments },
+      facets: {
+        brands,
+        models,
+        departments,
+        sources: sources
+          .filter(item => item.slug in CAR_SOURCE_RULES)
+          .map(item => ({
+            ...item,
+            name: CAR_SOURCE_RULES[item.slug as keyof typeof CAR_SOURCE_RULES].name,
+          })),
+      },
       coverage: {
         listings: meta.listings,
         lastReadAt: meta.lastReadAt,
@@ -78,6 +90,7 @@ export default defineEventHandler(async event => {
         reportedTotal: meta.reportedTotal,
         opportunities: meta.opportunities,
         models: meta.models.slice(0, 60),
+        sources: meta.sources ?? [],
       },
     }
     return response

@@ -24,9 +24,9 @@
         <h1 class="text-h4 font-weight-bold mb-2">{{ heading }}</h1>
         <p class="text-body-1">
           {{ data.market.listings }} avisos vigentes de {{ data.market.brand }}
-          {{ data.market.model }} usado en Mercado Libre, leídos el
-          {{ formatCarDate(data.market.generatedAt) }}. Son precios pedidos, agrupados por año y por
-          versión; no es una tasación.
+          {{ data.market.model }} usado en Mercado Libre, Facebook Marketplace y webs de
+          automotoras, leídos el {{ formatCarDate(data.market.generatedAt) }}. Son precios pedidos,
+          agrupados por año y por versión; no es una tasación.
         </p>
         <VAlert
           v-if="!data.indexable"
@@ -55,6 +55,11 @@
           show-version
           caption="Misma versión, motor y caja; sólo combinaciones con 5 avisos o más."
         />
+      </section>
+
+      <section v-if="data.market.guide.length" class="mb-8">
+        <h2 class="text-h6 mb-2">Guía de precios de Mercado Libre</h2>
+        <CarsGuideTable :rows="data.market.guide" :updated-at="data.market.guideUpdatedAt" />
       </section>
 
       <section v-if="data.opportunities.length" class="mb-8">

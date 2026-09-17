@@ -1,16 +1,26 @@
 import { CarCatalogMetaModel } from '../models/CarCatalogMeta'
 import { CarMarketSnapshotModel } from '../models/CarMarketSnapshot'
 import { CarOpportunitySnapshotModel } from '../models/CarOpportunitySnapshot'
+import {
+  CAR_SOURCE_RULES,
+  CAR_SOURCES_PUBLIC,
+  carSafePermalink,
+  carSafePicture,
+} from '../../utils/cars'
 import type {
   PublicCarCatalogMeta,
   PublicCarListing,
   PublicCarMarketSnapshot,
   PublicCarOpportunitySnapshot,
+  PublicCarReference,
+  PublicCarSource,
 } from '../../utils/carsPublic'
 import { connectDb } from './db'
 
 const CAR_FIELDS = [
   'key',
+  'source',
+  'sourceName',
   'brand',
   'brandSlug',
   'model',
@@ -23,6 +33,7 @@ const CAR_FIELDS = [
   'currency',
   'priceUsd',
   'priceConverted',
+  'currencyInferred',
   'transmission',
   'fuel',
   'engine',
@@ -39,6 +50,7 @@ const CAR_FIELDS = [
   'priceDrop',
   'flags',
   'opportunity',
+  'reference',
 ] as const
 
 export const carListingProjection: Record<string, 0 | 1> = Object.fromEntries([
@@ -46,16 +58,30 @@ export const carListingProjection: Record<string, 0 | 1> = Object.fromEntries([
   ...CAR_FIELDS.map(field => [field, 1]),
 ])
 
-const prefixed = (value: unknown, prefix: string): string | null =>
-  typeof value === 'string' && value.startsWith(prefix) ? value : null
+const sourceOf = (value: unknown): PublicCarSource =>
+  CAR_SOURCES_PUBLIC.includes(value as PublicCarSource)
+    ? (value as PublicCarSource)
+    : 'mercadolibre'
+
+function referenceOf(value: any): PublicCarReference | null {
+  if (!value || !(Number(value.priceUsd) > 0)) return null
+  return {
+    priceUsd: Number(value.priceUsd),
+    basis: value.basis === 'version' ? 'version' : 'year',
+    updatedAt: String(value.updatedAt ?? ''),
+  }
+}
 const optionalText = (value: unknown): string | null => (typeof value === 'string' ? value : null)
 const optionalNumber = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null
 
 /** Rebuilds a public row field by field: unknown fields in the collection never reach the wire. */
 export function publicCarRow(row: Record<string, any>): PublicCarListing {
+  const source = sourceOf(row.source)
   return {
     key: String(row.key),
+    source,
+    sourceName: CAR_SOURCE_RULES[source].name,
     brand: String(row.brand),
     brandSlug: String(row.brandSlug),
     model: String(row.model),
@@ -68,6 +94,7 @@ export function publicCarRow(row: Record<string, any>): PublicCarListing {
     currency: row.currency === 'UYU' ? 'UYU' : 'USD',
     priceUsd: Number(row.priceUsd),
     priceConverted: row.priceConverted === true,
+    currencyInferred: row.currencyInferred === true,
     transmission: row.transmission ?? null,
     fuel: row.fuel ?? null,
     engine: optionalText(row.engine),
@@ -76,9 +103,9 @@ export function publicCarRow(row: Record<string, any>): PublicCarListing {
     neighborhood: optionalText(row.neighborhood),
     sellerType: row.sellerType ?? null,
     dealerName: optionalText(row.dealerName),
-    picture: prefixed(row.picture, 'https://http2.mlstatic.com/'),
+    picture: carSafePicture(source, row.picture),
     pictureCount: optionalNumber(row.pictureCount),
-    permalink: prefixed(row.permalink, 'https://auto.mercadolibre.com.uy/MLU-') ?? '',
+    permalink: carSafePermalink(source, row.permalink),
     firstSeen: String(row.firstSeen),
     lastSeen: String(row.lastSeen),
     priceDrop: row.priceDrop
@@ -99,6 +126,7 @@ export function publicCarRow(row: Record<string, any>): PublicCarListing {
           n: Number(row.opportunity.n),
         }
       : null,
+    reference: referenceOf(row.reference),
   }
 }
 
@@ -133,6 +161,8 @@ export async function loadCarOpportunities(): Promise<PublicCarOpportunitySnapsh
       subject: publicCarRow(entry.subject),
       comparables: entry.comparables.map(peer => ({
         key: String(peer.key),
+        source: sourceOf(peer.source),
+        sourceName: CAR_SOURCE_RULES[sourceOf(peer.source)].name,
         title: String(peer.title),
         year: Number(peer.year),
         km: Number(peer.km),
@@ -140,7 +170,7 @@ export async function loadCarOpportunities(): Promise<PublicCarOpportunitySnapsh
         trim: optionalText(peer.trim),
         engine: optionalText(peer.engine),
         sellerType: peer.sellerType ?? null,
-        permalink: prefixed(peer.permalink, 'https://auto.mercadolibre.com.uy/MLU-') ?? '',
+        permalink: carSafePermalink(sourceOf(peer.source), peer.permalink),
         lastSeen: String(peer.lastSeen),
       })),
     })),
@@ -158,7 +188,15 @@ export async function loadCarMarket(slug: string): Promise<PublicCarMarketSnapsh
     .select({ _id: 0, snapshot: 1 })
     .maxTimeMS(5_000)
     .lean()
-  const snapshot = doc?.snapshot?.version === 1 ? doc.snapshot : null
+  const raw = doc?.snapshot?.version === 1 ? doc.snapshot : null
+  // Snapshots written before the ML guide existed have no guide fields.
+  const snapshot = raw
+    ? {
+        ...raw,
+        guide: Array.isArray(raw.guide) ? raw.guide : [],
+        guideUpdatedAt: raw.guideUpdatedAt ?? null,
+      }
+    : null
   if (marketCache.size > 500) marketCache.clear()
   marketCache.set(slug, { snapshot, expires: Date.now() + 300_000 })
   return snapshot

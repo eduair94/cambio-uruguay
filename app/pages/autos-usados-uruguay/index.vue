@@ -7,8 +7,9 @@
     <header class="mb-6">
       <h1 class="text-h4 font-weight-bold mb-2">Autos usados en venta en Uruguay</h1>
       <p class="text-body-1 mb-2">
-        Los avisos de autos usados de Mercado Libre en un solo buscador, con el precio en dólares,
-        los kilómetros y la comparación contra autos iguales.
+        Los avisos de autos usados de Mercado Libre, Facebook Marketplace, Clasiautos y las webs de
+        automotoras en un solo buscador, con el precio en dólares, los kilómetros y la comparación
+        contra autos iguales.
         <template v-if="data">
           Hoy hay {{ data.coverage.listings.toLocaleString('es-UY') }} avisos vigentes; última
           lectura el {{ formatCarDate(data.coverage.lastReadAt) }}.
@@ -114,8 +115,21 @@
       <ul class="text-body-1 pl-5">
         <li>Son precios <strong>pedidos</strong> en avisos, no precios de venta cerrados.</li>
         <li>
-          La fuente es Mercado Libre, que concentra la gran mayoría de los avisos de autos del país;
-          el conteo es de avisos vistos, no de autos en venta en Uruguay.
+          Las fuentes son Mercado Libre, que concentra la gran mayoría de los avisos del país,
+          Facebook Marketplace, Clasiautos y las webs de Car One, Carper, Julio Automóviles,
+          Shopping de Autos y Usados Fidocar. El conteo es de avisos vistos, no de autos en venta en
+          Uruguay.
+        </li>
+        <li v-if="sourceLine">
+          Avisos vigentes por fuente: {{ sourceLine }}.
+          <template v-if="duplicateCount">
+            {{ duplicateCount.toLocaleString('es-UY') }} avisos repetidos entre fuentes (el mismo
+            auto publicado por la automotora en su web y en Mercado Libre) se muestran una sola vez.
+          </template>
+        </li>
+        <li>
+          En Facebook Marketplace la moneda a veces no está escrita: la deducimos comparando con
+          autos iguales y lo marcamos como "moneda estimada".
         </li>
         <li>"Visto por primera vez" es la fecha en que leímos el aviso, no la de publicación.</li>
         <li>
@@ -148,7 +162,7 @@ const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
 const filtersOpen = ref(false)
-const emptyFacets = { brands: [], models: [], departments: [] }
+const emptyFacets = { brands: [], models: [], departments: [], sources: [] }
 const sortItems: Array<{ title: string; value: CarSort }> = [
   { title: 'Vistos más recientemente', value: 'recent' },
   { title: 'Menor precio', value: 'price_asc' },
@@ -164,6 +178,16 @@ const { data, error } = await useAsyncData(
   { watch: [query] }
 )
 
+const sourceLine = computed(() =>
+  (data.value?.coverage.sources ?? [])
+    .filter(source => source.listings > 0)
+    .map(source => `${source.name} ${source.listings.toLocaleString('es-UY')}`)
+    .join(' · ')
+)
+const duplicateCount = computed(() =>
+  (data.value?.coverage.sources ?? []).reduce((sum, source) => sum + source.duplicates, 0)
+)
+
 function update(next: CarsQuery) {
   filtersOpen.value = false
   router.replace({ query: carsQueryParams(next) })
@@ -172,7 +196,7 @@ function update(next: CarsQuery) {
 const canonical = `https://cambio-uruguay.com${CARS_PATH}`
 const title = 'Autos usados en venta en Uruguay'
 const description =
-  'Buscador de autos usados en venta en Uruguay: precio en dólares, kilómetros, versión y comparación contra autos iguales. Avisos de Mercado Libre actualizados todos los días.'
+  'Buscador de autos usados en venta en Uruguay: precio en dólares, kilómetros, versión y comparación contra autos iguales. Avisos de Mercado Libre, Facebook Marketplace y automotoras, actualizados todos los días.'
 
 useSeoMeta({
   title: `${title} | Cambio Uruguay`,

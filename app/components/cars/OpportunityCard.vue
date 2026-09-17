@@ -48,6 +48,7 @@
               <th scope="col">Km</th>
               <th scope="col">Precio</th>
               <th scope="col">Vende</th>
+              <th scope="col">Fuente</th>
             </tr>
           </thead>
           <tbody>
@@ -63,6 +64,7 @@
               <td data-label="Vende">
                 {{ peer.sellerType ? CAR_SELLER_LABELS[peer.sellerType] : '—' }}
               </td>
+              <td data-label="Fuente">{{ peer.sourceName }}</td>
             </tr>
           </tbody>
         </VTable>
@@ -82,7 +84,7 @@
         rel="nofollow noopener"
         append-icon="mdi-open-in-new"
       >
-        Ver aviso
+        Ver en {{ item.subject.sourceName }}
       </VBtn>
       <VBtn size="small" variant="outlined" :to="localePath('/comprar-auto-con-deuda-uruguay')">
         Revisar deudas

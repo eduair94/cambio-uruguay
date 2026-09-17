@@ -41,6 +41,15 @@
           <p v-if="car.priceConverted" class="text-body-2 text-medium-emphasis">
             ≈ {{ formatCarUsd(car.priceUsd) }} a la cotización del día
           </p>
+          <VAlert
+            v-if="car.currencyInferred"
+            type="info"
+            variant="outlined"
+            density="compact"
+            class="mb-2"
+          >
+            El aviso no dice la moneda: la dedujimos comparando con autos iguales.
+          </VAlert>
           <p v-if="car.priceDrop" class="text-body-2 mb-2">
             Bajó de
             {{ formatCarPrice({ price: car.priceDrop.from, currency: car.priceDrop.currency }) }}
@@ -76,6 +85,19 @@
                 <th scope="row">Vende</th>
                 <td>{{ car.dealerName || CAR_SELLER_LABELS[car.sellerType] }}</td>
               </tr>
+              <tr v-if="car.reference">
+                <th scope="row">Referencia (guía de Mercado Libre)</th>
+                <td>
+                  {{ formatCarUsd(car.reference.priceUsd) }}
+                  <span v-if="car.reference.basis === 'year'" class="text-medium-emphasis">
+                    (promedio del año, todas las versiones)
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Fuente</th>
+                <td>{{ car.sourceName }}</td>
+              </tr>
               <tr>
                 <th scope="row">Visto por primera vez</th>
                 <td>{{ formatCarDate(car.firstSeen) }}</td>
@@ -105,7 +127,7 @@
               rel="nofollow noopener"
               append-icon="mdi-open-in-new"
             >
-              Ver aviso en Mercado Libre
+              Ver aviso en {{ car.sourceName }}
             </VBtn>
             <VBtn variant="outlined" :to="localePath('/comprar-auto-con-deuda-uruguay')">
               Revisar deudas antes de señar
@@ -139,8 +161,8 @@
       </section>
 
       <p class="text-body-2 text-medium-emphasis mt-8">
-        Datos del aviso publicado en Mercado Libre. Es un precio pedido, no una tasación; confirmá
-        estado, papeles y deudas del vehículo antes de pagar.
+        Datos del aviso publicado en {{ car.sourceName }}. Es un precio pedido, no una tasación;
+        confirmá estado, papeles y deudas del vehículo antes de pagar.
       </p>
     </template>
   </VContainer>
