@@ -10,6 +10,7 @@ import {
   equiparCategoryTitle,
   equiparGrammarFor,
   equiparHourlyCostUyu,
+  equiparPlanRedondoWindowApplies,
   isEquiparCategorySlug,
   type EquiparCategoryPage,
 } from '../../utils/equiparCategoryPages'
@@ -208,7 +209,11 @@ describe('equiparCategoryFaq', () => {
       const faq = equiparCategoryFaq(page, [], null)
       const usadoQA = faq.find(qa => qa.question.toLowerCase().includes('usad'))
       if (page.usedOk) {
-        expect(usadoQA?.answer.startsWith('Sí'), page.key).toBe(true)
+        // Sin nota del registro la respuesta es neutral (I3: no afirma que sea segura), pero nunca
+        // dice que no conviene.
+        expect(usadoQA?.answer.startsWith('No'), page.key).toBe(false)
+        expect(usadoQA?.answer.toLowerCase(), page.key).not.toContain('no conviene')
+        if (page.usedNote) expect(usadoQA?.answer.startsWith('Sí'), page.key).toBe(true)
       } else {
         expect(usadoQA?.answer.startsWith('No'), page.key).toBe(true)
       }
@@ -282,6 +287,137 @@ describe('equiparCategoryFaq', () => {
       `entre el ${EQUIPAR_PLAN_REDONDO_WINDOW.from} y el ${EQUIPAR_PLAN_REDONDO_WINDOW.to}`
     )
     expect(answer).toContain(`verificado el ${EQUIPAR_PLAN_REDONDO_WINDOW.verifiedAt}`)
+  })
+})
+
+describe('I2: el FAQ nombra la variante y no mezcla datos de dos variantes', () => {
+  const heladera = (): EquiparCategoryPage => equiparCategoryPage('heladera') as EquiparCategoryPage
+  const usadoDe = (items: EquiparItemDoc[]): string =>
+    equiparCategoryFaq(heladera(), items, '2026-09-10T00:00:00.000Z').find(qa =>
+      qa.question.toLowerCase().includes('usad')
+    )?.answer ?? ''
+  const dondeDe = (items: EquiparItemDoc[]): string =>
+    equiparCategoryFaq(heladera(), items, '2026-09-10T00:00:00.000Z').find(qa =>
+      qa.question.startsWith('¿Dónde')
+    )?.answer ?? ''
+
+  it('la mediana usada y el ahorro salen del MISMO item, con su variante', () => {
+    // Antes: la mediana usada salía de la primera variante con banda usada (media, sin ahorro) y el
+    // ahorro de la primera con ahorro (grande): "$ 14.000 ... ahorra 50 %", dos variantes pegadas.
+    const items = [
+      item('heladera', 'media', 'Media (130 a 330 L)', 'S', {
+        usedBand: band(14000, 8),
+        usedSavingPct: null,
+      }),
+      item('heladera', 'grande', 'Grande (más de 330 L)', 'S', {
+        newBand: band(40000, 20),
+        usedBand: band(20000, 6),
+        usedSavingPct: 50,
+      }),
+    ]
+    const answer = usadoDe(items)
+    expect(answer).toContain('Media (130 a 330 L): $ 14.000 (8 ofertas)')
+    expect(answer).toContain('Grande (más de 330 L): $ 20.000 (6 ofertas), alrededor de 50 % menos')
+    // Ningún ahorro queda pegado a la mediana de la variante que no lo tiene.
+    const media = answer.slice(answer.indexOf('Media ('), answer.indexOf('Grande ('))
+    expect(media).not.toContain('%')
+  })
+
+  it('"¿dónde está más barata?" dice en qué variante, y compara variantes cuando hay varias', () => {
+    const items = [
+      item('heladera', 'frigobar', 'Frigobar (hasta 120 L)', 'S', {
+        newBand: band(12000, 9),
+        offers: [offer('TiendaChica', 11500)],
+      }),
+      item('heladera', 'media', 'Media (130 a 330 L)', 'S', {
+        newBand: band(24000, 30),
+        offers: [offer('ElDorado', 23000), offer('TYT', 22500)],
+      }),
+    ]
+    const answer = dondeDe(items)
+    expect(answer).toContain('Media (130 a 330 L), TYT a $ 22.500')
+    expect(answer).toContain('Frigobar (hasta 120 L), TiendaChica a $ 11.500')
+    expect(answer).not.toContain('ElDorado')
+  })
+
+  it('con una sola variante la nombra igual', () => {
+    const items = [
+      item('heladera', 'media', 'Media (130 a 330 L)', 'S', {
+        newBand: band(24000, 30),
+        offers: [offer('TYT', 22500)],
+      }),
+    ]
+    expect(dondeDe(items)).toContain('en Media (130 a 330 L) la tenía TYT a $ 22.500')
+  })
+})
+
+describe('I3: el FAQ no afirma que una compra usada sea segura', () => {
+  it('ninguna respuesta de ninguna categoría dice "segura", con o sin datos', () => {
+    for (const page of EQUIPAR_CATEGORY_PAGES) {
+      const withData = [
+        item(page.key, 'x', 'Variante', page.tier, {
+          newBand: band(20000),
+          usedBand: band(12000, 6),
+          usedSavingPct: 40,
+          offers: [offer('Tienda', 19000)],
+        }),
+      ]
+      for (const items of [[], withData]) {
+        for (const qa of equiparCategoryFaq(page, items, null)) {
+          expect(qa.answer.toLowerCase(), `${page.key}: ${qa.answer}`).not.toContain('segur')
+        }
+      }
+    }
+  })
+
+  it('sin nota de usado (estufa, a gas incluida) sólo dice que el usado se mide aparte', () => {
+    const estufa = equiparCategoryPage('estufa') as EquiparCategoryPage
+    expect(estufa.usedOk).toBe(true)
+    expect(estufa.usedNote).toBeNull()
+    const answer =
+      equiparCategoryFaq(estufa, [], null).find(qa => qa.question.toLowerCase().includes('usad'))
+        ?.answer ?? ''
+    expect(answer.startsWith('Sí')).toBe(false)
+    expect(answer.startsWith('No')).toBe(false)
+    expect(answer).toContain('segunda mano')
+    expect(answer).toContain('aparte')
+  })
+
+  it('con nota de usado la conserva', () => {
+    const heladera = equiparCategoryPage('heladera') as EquiparCategoryPage
+    const answer =
+      equiparCategoryFaq(heladera, [], null).find(qa => qa.question.toLowerCase().includes('usad'))
+        ?.answer ?? ''
+    expect(answer).toContain(heladera.usedNote as string)
+  })
+})
+
+describe('Plan Redondo: la ventana de compras sólo donde la categoría entra', () => {
+  const EXCLUIDAS = ['microondas', 'horno-electrico', 'lavarropas']
+
+  it('las tres categorías que el plan excluye no llevan la ventana ni "se acredita"', () => {
+    for (const key of EXCLUIDAS) {
+      const page = equiparCategoryPage(key) as EquiparCategoryPage
+      expect(equiparPlanRedondoWindowApplies(page), key).toBe(false)
+      const answer =
+        equiparCategoryFaq(page, [], null).find(qa => qa.question.includes('Plan Redondo'))
+          ?.answer ?? ''
+      expect(answer, key).toContain(page.planRedondo as string)
+      expect(answer, key).not.toContain('Rige para compras')
+      expect(answer, key).not.toContain('se acredita')
+      expect(answer, key).toContain(`verificado el ${EQUIPAR_PLAN_REDONDO_WINDOW.verifiedAt}`)
+    }
+  })
+
+  it('las que entran (calefón, aire, secarropas, cocina) sí la llevan; sin plan, tampoco aplica', () => {
+    for (const key of ['calefon', 'aire-acondicionado', 'secarropas', 'cocina']) {
+      expect(equiparPlanRedondoWindowApplies(equiparCategoryPage(key) as EquiparCategoryPage), key).toBe(
+        true
+      )
+    }
+    expect(
+      equiparPlanRedondoWindowApplies(equiparCategoryPage('heladera') as EquiparCategoryPage)
+    ).toBe(false)
   })
 })
 

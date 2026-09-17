@@ -56,6 +56,22 @@ export const EQUIPAR_PLAN_REDONDO_WINDOW = {
 } as const
 
 /**
+ * Categorías con texto de Plan Redondo que dice que NO entran (el microondas, el horno de mesa y el
+ * lavarropas común): ahí la ventana de compras y "el descuento se acredita en la factura" se leerían
+ * como que sí entran. Verificado en la misma fuente y fecha que `EQUIPAR_PLAN_REDONDO_WINDOW`.
+ */
+const EQUIPAR_PLAN_REDONDO_EXCLUDED: readonly string[] = [
+  'microondas',
+  'horno-electrico',
+  'lavarropas',
+]
+
+/** Si la página tiene que decir la ventana de compras del Plan Redondo: declara el plan y entra. */
+export function equiparPlanRedondoWindowApplies(page: EquiparCategoryPage): boolean {
+  return page.planRedondo !== null && !EQUIPAR_PLAN_REDONDO_EXCLUDED.includes(page.key)
+}
+
+/**
  * El orden de este array es el mismo que `classes/equipar/registry.ts::EQUIPAR_CATEGORIES`: la
  * prueba de paridad de la raíz compara claves, orden, `tier`, `room` y `label` uno a uno.
  */
@@ -839,13 +855,8 @@ function formatFaqDate(iso: string | null): string | null {
   })
 }
 
+/** Observaciones nuevas + usadas: la variante con más datos encabeza "¿dónde está más barato?". */
 const dataScore = (item: EquiparItemDoc): number => (item.newBand?.n ?? 0) + (item.usedBand?.n ?? 0)
-
-/** La variante con más observaciones (nuevas + usadas), para responder "¿dónde está más barato?". */
-function pickRepresentativeItem(items: readonly EquiparItemDoc[]): EquiparItemDoc | null {
-  if (!items.length) return null
-  return [...items].sort((a, b) => dataScore(b) - dataScore(a))[0] ?? null
-}
 
 /** La oferta nueva más barata de un item. `item.offers` ya son "ofertas honestas" (ver `equipar.ts`). */
 function cheapestNewOffer(item: EquiparItemDoc): EquiparOffer | null {
@@ -856,8 +867,9 @@ function cheapestNewOffer(item: EquiparItemDoc): EquiparOffer | null {
 
 /**
  * Arma el FAQ de una categoría con los datos que trajo esa corrida: cuánto sale nuevo (por
- * variante, con n y fecha), si conviene usado (con la nota y el ahorro del registro), dónde está
- * más barato hoy, y —sólo si `planRedondo` no es null— si entra en el Plan Redondo de UTE.
+ * variante, con n y fecha), si conviene usado (la nota del registro y, por variante, la mediana
+ * usada con su ahorro), dónde está más barato hoy (por variante) y —sólo si `planRedondo` no es
+ * null— si entra en el Plan Redondo de UTE.
  */
 export function equiparCategoryFaq(
   page: EquiparCategoryPage,
@@ -894,26 +906,35 @@ export function equiparCategoryFaq(
 
   // ¿Conviene comprar usado? `usedOk`/`usedNote` son un juicio de la CATEGORÍA (`page`, espejo del
   // registro), no de la corrida: una categoría sin items todavía no es una categoría donde el usado
-  // no convenga. Sólo la mediana/el ahorro salen de `items`, y si no hay banda usada la respuesta lo
-  // dice en vez de callarlo.
-  const usedBandItem = catItems.find(
-    (item): item is EquiparItemDoc & { usedBand: EquiparBand } => item.usedBand !== null
-  )
-  const savingItem = catItems.find(item => typeof item.usedSavingPct === 'number')
+  // no convenga. Sólo las medianas y el ahorro salen de `items`, y si no hay banda usada la respuesta
+  // lo dice en vez de callarlo.
   let usadoAnswer: string
   if (!page.usedOk) {
     usadoAnswer = page.usedNote
       ? `No: ${page.usedNote}`
       : `No: comprar${objectPronoun(grammar)} ${agree('usad', grammar)} no conviene.`
   } else {
+    // Sin nota del registro no hay nada que afirmar sobre el estado de un usado (hay estufas a gas en
+    // esta categoría): sólo que el mercado existe y se mide aparte.
     usadoAnswer = page.usedNote
       ? `Sí. ${page.usedNote}`
-      : 'Sí, es una compra segura de segunda mano.'
-    if (usedBandItem) {
-      usadoAnswer += ` La mediana de las ofertas usadas relevadas es ${money(usedBandItem.usedBand.median)}.`
-      if (savingItem && typeof savingItem.usedSavingPct === 'number') {
-        usadoAnswer += ` Eso ahorra alrededor de ${Math.round(savingItem.usedSavingPct)} % frente al precio nuevo.`
-      }
+      : `Hay oferta de segunda mano de ${page.plural} y la medimos aparte de la nueva: los dos precios nunca se mezclan.`
+    // Una entrada por variante, con su mediana y su ahorro del MISMO item: tomar la mediana de una
+    // variante y el ahorro de otra publicaba un porcentaje que no describía a ninguna de las dos.
+    const withUsedBand = catItems
+      .filter((item): item is EquiparItemDoc & { usedBand: EquiparBand } => item.usedBand !== null)
+      .sort((a, b) => b.usedBand.n - a.usedBand.n)
+    if (withUsedBand.length) {
+      const porVariante = withUsedBand
+        .map(item => {
+          const saving =
+            typeof item.usedSavingPct === 'number'
+              ? `, alrededor de ${Math.round(item.usedSavingPct)} % menos que la mediana nueva`
+              : ''
+          return `${item.variantLabel}: ${money(item.usedBand.median)} (${item.usedBand.n} ofertas)${saving}`
+        })
+        .join('; ')
+      usadoAnswer += ` Mediana de las ofertas usadas relevadas: ${porVariante}.`
     } else {
       usadoAnswer +=
         ' Todavía no relevamos suficientes ofertas usadas como para publicar una mediana.'
@@ -924,14 +945,22 @@ export function equiparCategoryFaq(
     answer: usadoAnswer,
   })
 
-  // ¿Dónde está más barato?
-  const repItem = pickRepresentativeItem(catItems)
-  const cheapest = repItem ? cheapestNewOffer(repItem) : null
+  // ¿Dónde está más barato? La oferta más barata de una variante no es la de la categoría: un
+  // frigobar y una heladera grande no compiten. Cada respuesta dice de qué variante habla.
+  const cheapestByVariant = [...catItems]
+    .sort((a, b) => dataScore(b) - dataScore(a))
+    .map(item => ({ item, offer: cheapestNewOffer(item) }))
+    .filter((entry): entry is { item: EquiparItemDoc; offer: EquiparOffer } => entry.offer !== null)
+  const reference = `El precio cambia todos los días: es una referencia${dateStr ? ` del ${dateStr}` : ''}, no un precio fijo.`
   let dondeAnswer: string
-  if (cheapest) {
-    dondeAnswer = `En el último relevamiento, la oferta nueva más barata la tenía ${cheapest.seller} a ${money(
-      cheapest.priceUyu
-    )}. El precio cambia todos los días: es una referencia${dateStr ? ` del ${dateStr}` : ''}, no un precio fijo.`
+  if (cheapestByVariant.length === 1) {
+    const [{ item, offer }] = cheapestByVariant as [{ item: EquiparItemDoc; offer: EquiparOffer }]
+    dondeAnswer = `En el último relevamiento, la oferta nueva más barata en ${item.variantLabel} la tenía ${offer.seller} a ${money(offer.priceUyu)}. ${reference}`
+  } else if (cheapestByVariant.length > 1) {
+    const porVariante = cheapestByVariant
+      .map(({ item, offer }) => `${item.variantLabel}, ${offer.seller} a ${money(offer.priceUyu)}`)
+      .join('; ')
+    dondeAnswer = `Depende del tamaño o tipo. En el último relevamiento, la oferta nueva más barata de cada uno: ${porVariante}. ${reference}`
   } else {
     dondeAnswer = `Todavía no relevamos suficientes ofertas nuevas de ${labelLower} como para decir dónde ${verbForm('está', 'están', grammar)} más ${agree('barat', grammar)}.`
   }
@@ -940,11 +969,15 @@ export function equiparCategoryFaq(
     answer: dondeAnswer,
   })
 
-  // ¿Entra en el Plan Redondo de UTE?
+  // ¿Entra en el Plan Redondo de UTE? Donde el plan excluye la categoría, la ventana de compras y
+  // "el descuento se acredita" no se agregan: contradirían la frase que dice que no entra.
   if (page.planRedondo) {
+    const source = `${EQUIPAR_PLAN_REDONDO_SOURCE}, verificado el ${EQUIPAR_PLAN_REDONDO_WINDOW.verifiedAt}`
     faq.push({
       question: '¿Entra en el Plan Redondo de UTE?',
-      answer: `${page.planRedondo} Rige para compras hechas entre el ${EQUIPAR_PLAN_REDONDO_WINDOW.from} y el ${EQUIPAR_PLAN_REDONDO_WINDOW.to}: el descuento se acredita en la factura de UTE, hasta 6 equipos por cliente, con potencia contratada de hasta 40 kW, registrando la factura electrónica, y el equipo tiene que quedar instalado en ese servicio (fuente: ${EQUIPAR_PLAN_REDONDO_SOURCE}, verificado el ${EQUIPAR_PLAN_REDONDO_WINDOW.verifiedAt}).`,
+      answer: equiparPlanRedondoWindowApplies(page)
+        ? `${page.planRedondo} Rige para compras hechas entre el ${EQUIPAR_PLAN_REDONDO_WINDOW.from} y el ${EQUIPAR_PLAN_REDONDO_WINDOW.to}: el descuento se acredita en la factura de UTE, hasta 6 equipos por cliente, con potencia contratada de hasta 40 kW, registrando la factura electrónica, y el equipo tiene que quedar instalado en ese servicio (fuente: ${source}).`
+        : `${page.planRedondo} Fuente: ${source}.`,
     })
   }
 

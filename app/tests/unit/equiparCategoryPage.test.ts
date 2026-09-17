@@ -132,6 +132,17 @@ describe('[categoria].vue', () => {
     expect(template(src)).not.toContain('no encabezan esta lista')
   })
 
+  it('la ventana del Plan Redondo sólo se dice donde la categoría entra', () => {
+    // "Los microondas están excluidos del plan. Rige para compras… el descuento se acredita…" se
+    // leía como que sí entraban.
+    expect(script).toContain('equiparPlanRedondoWindowApplies(page.value)')
+    const tpl = template(src)
+    const at = tpl.indexOf('Rige para compras')
+    expect(at).toBeGreaterThan(-1)
+    const opening = tpl.lastIndexOf('<p', at)
+    expect(tpl.slice(opening, at)).toContain('v-if="planRedondoWindow"')
+  })
+
   it('escribe las fechas con la grafía uruguaya', () => {
     expect(src).not.toMatch(/septiembre/i)
     expect(src).toContain('dateLocale(')

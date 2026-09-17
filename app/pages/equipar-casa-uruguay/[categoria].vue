@@ -201,11 +201,16 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
     <!-- ── Plan Redondo de UTE ────────────────────────────────────────────── -->
     <section v-if="page.planRedondo" class="cat-section" aria-labelledby="plan-title">
       <h2 id="plan-title">Plan Redondo de UTE</h2>
-      <p class="section-intro">
+      <!-- Donde la categoría no entra (microondas, horno de mesa, lavarropas común), la ventana y
+      "se acredita" contradirían la frase que dice que no entra. -->
+      <p v-if="planRedondoWindow" class="section-intro">
         {{ page.planRedondo }} Rige para compras hechas entre el
         {{ EQUIPAR_PLAN_REDONDO_WINDOW.from }} y el {{ EQUIPAR_PLAN_REDONDO_WINDOW.to }} y el
         descuento se acredita en la factura (verificado el
         {{ EQUIPAR_PLAN_REDONDO_WINDOW.verifiedAt }}).
+      </p>
+      <p v-else class="section-intro">
+        {{ page.planRedondo }} Verificado el {{ EQUIPAR_PLAN_REDONDO_WINDOW.verifiedAt }}.
       </p>
       <p class="section-intro">
         <a
@@ -268,6 +273,7 @@ import {
   equiparCategoryTitle,
   equiparGrammarFor,
   equiparHourlyCostUyu,
+  equiparPlanRedondoWindowApplies,
   isEquiparCategorySlug,
 } from '~/utils/equiparCategoryPages'
 import {
@@ -485,6 +491,7 @@ const suspectDropped = computed(() =>
 )
 
 // ── Contexto ───────────────────────────────────────────────────────────────
+const planRedondoWindow = computed(() => equiparPlanRedondoWindowApplies(page.value))
 const tierName = computed(() => equiparEs.tierNames[page.value.tier].name)
 const reason = computed(() => items.value[0]?.reason ?? '')
 
