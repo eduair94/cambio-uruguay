@@ -196,6 +196,23 @@ export function queryCarRisks(
   }
 }
 
-/** "−21 %" para un descuento medido; nunca un número cuando no se pudo medir. */
-export const formatCarRiskGap = (gap: number | null): string =>
-  gap === null ? 'sin comparables' : `−${Math.round(gap * 100)} %`
+/**
+ * "23 % más barato" / "2 % más caro", nunca un número cuando no se pudo medir.
+ *
+ * La primera versión escribía `−${gap}` dando por hecho que declarar algo abarata. No siempre: los
+ * avisos que declaran papeles pendientes piden ~2 % MÁS que los que no declaran nada, y el signo
+ * fijo imprimía "−-2 %" en la página.
+ */
+export const formatCarRiskGap = (gap: number | null): string => {
+  if (gap === null) return 'sin comparables'
+  const percent = Math.round(Math.abs(gap) * 100)
+  if (percent === 0) return 'igual precio'
+  return gap > 0 ? `${percent} % más barato` : `${percent} % más caro`
+}
+
+/** El 50 % central de la categoría, y si cruza el cero la diferencia no es clara. */
+export const formatCarRiskRange = (p25: number | null, p75: number | null): string => {
+  if (p25 === null || p75 === null) return 'sin comparables'
+  if (p25 <= 0 && p75 >= 0) return 'sin diferencia clara'
+  return `de ${formatCarRiskGap(p25)} a ${formatCarRiskGap(p75)}`
+}

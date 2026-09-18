@@ -19,7 +19,8 @@ import { harvestWebSource, sourceEnabled, WEB_SOURCES } from "./classes/autos/so
 import type { WebCarContext } from "./classes/autos/sources/common";
 import { harvestMercadoLibreCars } from "./classes/autos/sources/mercadolibre";
 import {
-  collapseRefusal, loadCatalogMeta, loadGuideEntries, loadHarvestMeta, loadOpportunityStats, loadSourceMetas, loadStoredCars,
+  collapseRefusal, loadCatalogMeta, loadGuideEntries, loadHarvestMeta, loadOpportunityStats, loadRetiredCarSpans, loadSourceMetas,
+  loadStoredCars,
   loadVocabularies, mergeVocabularies, publishCarCatalog, publishCarMarkets, saveCarDetails, saveCarHarvest,
   saveCarOpportunitySnapshot, saveCarReportSnapshot, saveCarRiskSnapshot, saveFbWanted, saveHarvestMeta, saveRefusal, saveSourceHarvest, saveSourceMeta,
   saveVocabularies,
@@ -236,7 +237,19 @@ async function main(): Promise<void> {
   const riskAnalysis = analyzeCarRisk(listings, { now });
   const riskSnapshot = buildRiskSnapshot(riskAnalysis, { generatedAt, usdUyu });
   // El informe del mercado: agregados sobre los mismos avisos (classes/autos/report.ts).
-  const report = buildCarReport(listings, stored, { now, maxYear });
+  // Los retirados se piden aparte: `loadStoredCars` filtra `retiredAt: null`, y sin ellos la rotación
+  // mediría sobre cero avisos. El bloque de riesgo sale del análisis para no publicar dos cifras.
+  const retiredSpans = dryRun ? [] : await loadRetiredCarSpans(now);
+  const report = buildCarReport(listings, stored, {
+    now,
+    maxYear,
+    retired: retiredSpans,
+    risk: {
+      adverts: riskAnalysis.stats.declared,
+      share: riskAnalysis.stats.input ? Math.round((riskAnalysis.stats.declared / riskAnalysis.stats.input) * 1000) / 1000 : 0,
+      byCategory: riskAnalysis.categories.map(category => ({ category: category.category, adverts: category.adverts })),
+    },
+  });
   const reportSnapshot = { version: 1 as const, generatedAt, usdUyu, data: report };
   console.log(`[autos] catalog ${catalog.listings.length}, models ${markets.length}, opportunities ${snapshot.items.length}, duplicates ${JSON.stringify(duplicates)}`, JSON.stringify(analysis.stats));
   console.log(`[autos] informe: ${report.models.length} modelos con ${CAR_REPORT_POLICY.minimumAdverts}+ avisos, ` +

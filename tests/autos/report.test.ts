@@ -119,20 +119,30 @@ describe("negotiationOf", () => {
 });
 
 describe("rotationOf", () => {
+  const span = (firstSeen: string, retiredAt: string) => ({ firstSeen, retiredAt });
+  const live = (firstSeen: string) => stored({ firstSeen });
+
   it("refuses to publish a number the series is too young to support", () => {
-    const docs = Array.from({ length: 200 }, () =>
-      stored({ firstSeen: "2026-09-17T00:00:00.000Z", retiredAt: "2026-09-18T00:00:00.000Z" }));
-    const rotation = rotationOf(docs, NOW);
+    const retired = Array.from({ length: 200 }, () => span("2026-09-17T00:00:00.000Z", "2026-09-18T00:00:00.000Z"));
+    const rotation = rotationOf([live("2026-09-17T00:00:00.000Z")], retired, NOW);
     expect(rotation.measurable).toBe(false);
     expect(rotation.medianDays).toBeNull();
     expect(rotation.note).toContain("14");
   });
-  it("publishes once there is a window and enough adverts that left", () => {
-    const docs = Array.from({ length: 200 }, () =>
-      stored({ firstSeen: "2026-08-01T00:00:00.000Z", retiredAt: "2026-08-21T00:00:00.000Z" }));
-    const rotation = rotationOf(docs, NOW);
+  it("only counts the adverts it saw APPEAR: the ones already published are cut short", () => {
+    // La serie arranca el 1/8. Los del 1/8 ya estaban publicados vaya a saber desde cuándo.
+    const older = Array.from({ length: 300 }, () => span("2026-08-01T00:00:00.000Z", "2026-08-06T00:00:00.000Z"));
+    const born = Array.from({ length: 200 }, () => span("2026-08-20T00:00:00.000Z", "2026-09-09T00:00:00.000Z"));
+    const rotation = rotationOf([live("2026-08-01T00:00:00.000Z")], [...older, ...born], NOW);
     expect(rotation.measurable).toBe(true);
+    expect(rotation.retired).toBe(200);
+    // Si contara los 300 truncados, la mediana caería a 5 días.
     expect(rotation.medianDays).toBeCloseTo(20, 0);
+  });
+  it("says nothing when the retired adverts were never loaded", () => {
+    const rotation = rotationOf(Array.from({ length: 50 }, () => live("2026-08-01T00:00:00.000Z")), [], NOW);
+    expect(rotation.measurable).toBe(false);
+    expect(rotation.retired).toBe(0);
   });
 });
 
@@ -164,5 +174,13 @@ describe("buildCarReport", () => {
     const report = buildCarReport(market(), [], { now: NOW, maxYear: 2026 });
     expect(report.rotation.measurable).toBe(false);
     expect(report.rotation.medianDays).toBeNull();
+  });
+  it("publishes the risk count the caller gives it, so the site never shows two numbers", () => {
+    const report = buildCarReport(market(), [], {
+      now: NOW, maxYear: 2026,
+      risk: { adverts: 117, share: 0.006, byCategory: [{ category: "deuda", adverts: 39 }] },
+    });
+    expect(report.risk).toMatchObject({ adverts: 117, share: 0.006 });
+    expect(report.risk.byCategory[0]).toMatchObject({ category: "deuda", adverts: 39 });
   });
 });

@@ -4,6 +4,7 @@ import {
   CAR_RISK_GUIDE,
   carRiskQueryParams,
   formatCarRiskGap,
+  formatCarRiskRange,
   normalizeCarRiskQuery,
   queryCarRisks,
 } from '../../utils/carsRisk'
@@ -113,7 +114,14 @@ describe('queryCarRisks', () => {
     const result = queryCarRisks(snapshot([unmeasured, item()]), {}, NOW)
     expect(result.items[0]!.subject.key).toBe('ml-MLU1')
     expect(formatCarRiskGap(result.items[1]!.gap)).toBe('sin comparables')
-    expect(formatCarRiskGap(0.21)).toBe('−21 %')
+    expect(formatCarRiskGap(0.21)).toBe('21 % más barato')
+    // Declarar algo no siempre abarata: los papeles pendientes se piden ~2 % MÁS caros, y el signo
+    // fijo de la primera versión imprimía "−-2 %" en la página.
+    expect(formatCarRiskGap(-0.02)).toBe('2 % más caro')
+    expect(formatCarRiskGap(0.001)).toBe('igual precio')
+    expect(formatCarRiskRange(0.19, 0.3)).toBe('de 19 % más barato a 30 % más barato')
+    expect(formatCarRiskRange(-0.04, 0.05)).toBe('sin diferencia clara')
+    expect(formatCarRiskRange(null, 0.3)).toBe('sin comparables')
   })
 })
 

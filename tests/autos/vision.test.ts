@@ -36,8 +36,10 @@ describe("photoRejection", () => {
     expect(photoRejection(verdict({ damage: "no_se_ve", matchesAdvert: null }))).toBeNull();
     expect(photoRejection(verdict({ damage: "leve" }))).toBeNull();
     expect(photoRejection(verdict({ damage: "grave" }))).toBe("photo_damage");
-    expect(photoRejection(verdict({ matchesAdvert: false }))).toBe("photo_mismatch");
     expect(photoRejection(verdict({ catalogPhotos: true }))).toBe("photo_catalog");
+    // Medido en producción: los dos rechazos por "no concuerda" fueron falsos (uno juzgaba el AÑO
+    // por una foto, el otro decía no poder confirmarlo y contestaba que no). Ya no descalifica.
+    expect(photoRejection(verdict({ matchesAdvert: false }))).toBeNull();
   });
 });
 

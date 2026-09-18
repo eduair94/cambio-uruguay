@@ -251,7 +251,8 @@
         <p class="text-body-1 mb-2">
           En los últimos {{ negotiation.windowDays }} días vimos cambiar el precio a
           <strong>{{ negotiation.changed.toLocaleString('es-UY') }} avisos</strong>
-          ({{ carReportPercent(negotiation.shareOfMarket, 1) }} del mercado).
+          ({{ carReportPercent(negotiation.shareOfMarket, 1) }} de los que seguimos día a día,
+          incluidos los que no entran a las tablas de arriba).
           {{ negotiation.cut.toLocaleString('es-UY') }} bajaron y
           {{ negotiation.raised.toLocaleString('es-UY') }} subieron; el recorte mediano fue de
           <strong>{{ carReportPercent(negotiation.medianCut, 1) }}</strong

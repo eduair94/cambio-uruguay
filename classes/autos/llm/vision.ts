@@ -54,6 +54,9 @@ const SCHEMA = {
 const SYSTEM = [
   "Sos un perito que mira SOLO las fotos de un aviso de auto usado en Uruguay y contesta en JSON.",
   "Reglas: si la foto no alcanza para afirmar algo, contestá 'no_se' o 'no_se_ve'. No adivines.",
+  "El AÑO de un auto NO se puede leer en una foto: nunca contestes 'no' por el año. 'matchesAdvert'",
+  "es 'no' sólo si la carrocería o el modelo son visiblemente otros (dice pick-up y es un sedán).",
+  "Si tu propia nota va a decir que no podés confirmarlo, la respuesta es 'no_se'.",
   "Daño 'grave' es el que se ve: golpe estructural, frente hundido, airbags disparados, óxido pasante,",
   "auto desarmado o sin partes. 'leve' es chapa y pintura menor. Si el auto se ve entero y sano: 'ninguno'.",
   "'catalogPhotos' es true sólo si son imágenes de catálogo o renders del fabricante, no fotos del auto real.",
@@ -129,8 +132,13 @@ export async function inspectCarPhotos(
 export function photoRejection(verdict: CarPhotoVerdict | null | undefined): string | null {
   if (!verdict) return null;
   if (verdict.damage === "grave") return "photo_damage";
-  if (verdict.matchesAdvert === false) return "photo_mismatch";
   if (verdict.catalogPhotos) return "photo_catalog";
+  // `matchesAdvert: false` NO descalifica, y esto se aprendió en producción: los dos únicos rechazos
+  // por ese motivo (2026-09-18) fueron falsos. Uno decía "el aviso indica un modelo 2019 y las fotos
+  // muestran un 2018" —el año no se ve en una foto— y el otro se contradecía solo: "no se puede
+  // confirmar el modelo ni el kilometraje" y aun así contestó que no concuerda. Un rechazo falso
+  // cuesta una oportunidad real, así que sólo descalifica lo que una foto puede mostrar de verdad:
+  // el daño grave y las fotos de catálogo. El veredicto se guarda igual, para poder auditarlo.
   return null;
 }
 

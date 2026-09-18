@@ -210,33 +210,75 @@ log "Ensuring other backend pm2 apps are registered…"
 # they don't need a rolling reload — only "start it if pm2 doesn't know about it
 # yet". Apps already running pick up the fresh dist/ on their own next
 # cron/restart cycle, exactly as before this script existed.
-# …with ONE exception: the schedule itself. pm2 keeps the cron expression it was
-# started with, so editing `cron_restart` in ecosystem.config.js and pushing does
-# NOT change when the job runs on the VPS — the file says one thing, the box does
-# another, and nothing anywhere reports the difference. That bit once, moving a
-# job from */20 to */10: the deploy went green and the job kept its old schedule.
-# So each registered app's live cron is compared against the file, and only the
-# ones that drifted are re-created.
+# …with ONE exception: what pm2 froze when the app was first started. pm2 keeps the
+# cron expression, the script path, the interpreter and the args it was started
+# with, so editing any of those in ecosystem.config.js and pushing does NOT change
+# what runs on the VPS — the file says one thing, the box does another, and nothing
+# anywhere reports the difference. Bit twice: moving a job from */20 to */10 (the
+# deploy went green and the job kept its old schedule) and putting
+# currency-autos-detail behind a flock wrapper (the file said
+# scripts/run-autos-detail.sh, the box kept running dist/sync_autos_detail.js, so
+# the lock simply did not exist). So each registered app's live signature — cron,
+# script, interpreter and args — is compared against the file, and only the ones
+# that drifted are re-created.
 for app in "${OTHER_APPS[@]}"; do
+  # Los dos lanzadores de alquileres tienen su propia migración más arriba, que espera a que la
+  # corrida en curso termine antes de recrear. No se tocan acá.
+  if [[ "$app" == "currency-rentals" || "$app" == "currency-rentals-hourly" ]]; then
+    continue
+  fi
   if pm2 describe "$app" >/dev/null 2>&1; then
     wanted="$(node -e '
+      const path = require("path");
       const apps = require(process.argv[1] + "/ecosystem.config.js").apps;
       const app = apps.find((entry) => entry.name === process.argv[2]);
-      process.stdout.write(String(app && app.cron_restart ? app.cron_restart : ""));
+      if (!app) { process.stdout.write(""); process.exit(0); }
+      const args = Array.isArray(app.args) ? app.args.join(" ") : String(app.args || "");
+      process.stdout.write([
+        String(app.cron_restart || ""),
+        path.posix.normalize(String(app.script || "")),
+        String(app.interpreter || "node"),
+        args.trim(),
+      ].join("|"));
     ' "$REPO_DIR" "$app" 2>/dev/null || true)"
     live="$(pm2 jlist 2>/dev/null | node -e '
       let raw = "";
       process.stdin.on("data", (chunk) => (raw += chunk)).on("end", () => {
+        const path = require("path");
         const list = JSON.parse(raw || "[]");
         const app = list.find((entry) => entry.name === process.argv[1]);
-        process.stdout.write(String((app && app.pm2_env && app.pm2_env.cron_restart) || ""));
+        if (!app || !app.pm2_env) { process.stdout.write(""); return; }
+        const env = app.pm2_env;
+        // pm2 stores the script as an absolute path; the file declares it relative to the repo.
+        const script = path.posix.relative(process.argv[2], String(env.pm_exec_path || ""));
+        const interpreter = path.posix.basename(String(env.exec_interpreter || "node"));
+        const args = Array.isArray(env.args) ? env.args.join(" ") : String(env.args || "");
+        process.stdout.write([
+          String(env.cron_restart || ""),
+          script,
+          interpreter === "none" ? "bash" : interpreter,
+          args.trim(),
+        ].join("|"));
       });
-    ' "$app" 2>/dev/null || true)"
+    ' "$app" "$REPO_DIR" 2>/dev/null || true)"
 
     if [[ -n "$wanted" && "$wanted" != "$live" ]]; then
-      log "  $app: cron cambió ('$live' -> '$wanted') — recreando…"
-      pm2 delete "$app" >/dev/null 2>&1 || true
-      pm2 start ecosystem.config.js --only "$app"
+      status="$(pm2 jlist 2>/dev/null | node -e '
+        let raw = "";
+        process.stdin.on("data", (chunk) => (raw += chunk)).on("end", () => {
+          const app = JSON.parse(raw || "[]").find((entry) => entry.name === process.argv[1]);
+          process.stdout.write(String((app && app.pm2_env && app.pm2_env.status) || ""));
+        });
+      ' "$app" 2>/dev/null || true)"
+      # Recrear mata la corrida en curso, y estos jobs guardan al final: si está trabajando, espera
+      # al próximo deploy. Lo peor que pasa es que siga una hora con lo viejo, dicho en voz alta.
+      if [[ "$status" == "online" || "$status" == "launching" ]]; then
+        log "  $app: cambió lo que pm2 congeló pero está corriendo ($status) — se recrea en el próximo deploy."
+      else
+        log "  $app: cambió lo que pm2 congeló ('$live' -> '$wanted') — recreando…"
+        pm2 delete "$app" >/dev/null 2>&1 || true
+        pm2 start ecosystem.config.js --only "$app"
+      fi
     else
       log "  $app: already registered, leaving as-is."
     fi

@@ -126,6 +126,22 @@ export async function loadStoredCars(now: Date, days = 21): Promise<StoredCar[]>
   return rows as unknown as StoredCar[];
 }
 
+/**
+ * Cuánto duró publicado cada aviso que ya salió del mercado. Va aparte porque `loadStoredCars` filtra
+ * `retiredAt: null` —y por eso el informe medía la rotación sobre CERO avisos retirados, o sea que la
+ * sección "cuánto tarda en venderse" no se iba a encender nunca—.
+ */
+export async function loadRetiredCarSpans(now: Date, days = 120): Promise<Array<{ firstSeen: string; retiredAt: string }>> {
+  await nativeReady();
+  const cutoff = new Date(now.getTime() - days * 86_400_000).toISOString();
+  const rows = await listingsCollection()
+    .find({ retiredAt: { $gte: cutoff } }, { projection: { _id: 0, firstSeen: 1, retiredAt: 1 } })
+    .toArray();
+  return rows
+    .filter(row => typeof row.firstSeen === "string" && typeof row.retiredAt === "string")
+    .map(row => ({ firstSeen: row.firstSeen as string, retiredAt: row.retiredAt as string }));
+}
+
 async function upsertListings(listings: readonly RawCarListing[], details: ReadonlyMap<string, CarDetail> | null): Promise<number> {
   await nativeReady();
   const collection = listingsCollection();

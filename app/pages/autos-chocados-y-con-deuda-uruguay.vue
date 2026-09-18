@@ -14,8 +14,8 @@
       <p class="text-body-1 mb-3">
         Avisos de Uruguay cuyo propio vendedor dice que el auto tiene algo: deuda de patente o
         prenda, papeles que faltan, choque, recupero de seguro, mecánica rota, chapa extranjera o
-        uso de taxi. Al lado de cada uno va <strong>la frase del aviso</strong> y cuánto menos pide
-        que los mismos autos que no declaran nada.
+        uso de taxi. Al lado de cada uno va <strong>la frase del aviso</strong> y cuánto pide de más
+        o de menos que los mismos autos que no declaran nada.
       </p>
       <VAlert type="warning" variant="outlined" density="comfortable">
         Esto no es una lista de oportunidades. Es un precio con una condición adentro: el descuento
@@ -24,15 +24,15 @@
     </header>
 
     <section v-if="measured.length" class="mb-8">
-      <h2 class="text-h5 mb-3">Cuánto descuenta el mercado uruguayo, medido en estos avisos</h2>
+      <h2 class="text-h5 mb-3">Cuánto cambia el precio lo que el aviso declara</h2>
       <VTable class="cu-mobile-cards" density="comfortable">
         <thead>
           <tr>
             <th scope="col">Lo que declara el aviso</th>
             <th scope="col">Avisos</th>
             <th scope="col">Con descuento medido</th>
-            <th scope="col">Descuento mediano</th>
-            <th scope="col">Entre p25 y p75</th>
+            <th scope="col">Diferencia mediana</th>
+            <th scope="col">El 50 % central</th>
           </tr>
         </thead>
         <tbody>
@@ -40,12 +40,10 @@
             <td data-label="Lo que declara el aviso">{{ CAR_RISK_GUIDE[row.category].label }}</td>
             <td data-label="Avisos">{{ row.adverts }}</td>
             <td data-label="Con descuento medido">{{ row.measured }}</td>
-            <td data-label="Descuento mediano">
+            <td data-label="Diferencia mediana">
               <strong>{{ formatCarRiskGap(row.medianGap) }}</strong>
             </td>
-            <td data-label="Entre p25 y p75">
-              {{ formatCarRiskGap(row.p25Gap) }} a {{ formatCarRiskGap(row.p75Gap) }}
-            </td>
+            <td data-label="El 50 % central">{{ formatCarRiskRange(row.p25Gap, row.p75Gap) }}</td>
           </tr>
         </tbody>
       </VTable>
@@ -199,6 +197,7 @@ import {
   CAR_RISK_GUIDE,
   carRiskQueryParams,
   formatCarRiskGap,
+  formatCarRiskRange,
   normalizeCarRiskQuery,
   type CarRiskQuery,
   type CarRisksResponse,

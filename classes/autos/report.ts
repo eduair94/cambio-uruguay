@@ -48,6 +48,8 @@ export const CAR_REPORT_POLICY = {
   /** Días de historia que hace falta acumular antes de publicar rotación. */
   rotationMinimumDays: 14,
   rotationMinimumRetired: 150,
+  /** Un aviso cuenta sólo si apareció al menos esto después del arranque de la serie. */
+  rotationCensorDays: 2,
   topBrands: 20,
   topModels: 40,
 } as const;
@@ -188,19 +190,42 @@ export function negotiationOf(docs: readonly StoredCar[], now: Date, windowDays 
   };
 }
 
+export interface CarRetirementSpan {
+  firstSeen: string;
+  retiredAt: string;
+}
+
 /**
- * Cuánto tarda un aviso en irse. Se calcula siempre y se publica sólo cuando la serie es más larga
- * que la ventana que se quiere medir: con día y medio de historia, "los avisos duran 1,1 días" es un
- * artefacto de cuándo empezamos a mirar, no un dato del mercado.
+ * Cuánto tarda un aviso en irse. Dos cosas la hacen honesta y las dos costaron un defecto:
+ *
+ * 1. Los avisos retirados hay que PEDIRLOS: `loadStoredCars` filtra `retiredAt: null`, así que la
+ *    primera versión medía la rotación sobre cero retirados y la sección no se iba a encender nunca.
+ * 2. Sólo cuentan los avisos que vimos APARECER. Todo aviso que ya estaba publicado cuando
+ *    empezamos a mirar lleva un tiempo previo que no conocemos, y medir desde que lo vimos por
+ *    primera vez da una vida más corta que la real. Ese sesgo no se corrige con más datos: se
+ *    corrige descartando a los que ya estaban.
  */
-export function rotationOf(docs: readonly StoredCar[], now: Date): CarReportRotation {
-  const firstSeens = docs.map(doc => Date.parse(doc.firstSeen)).filter(Number.isFinite);
-  const historyDays = firstSeens.length ? round3((now.getTime() - Math.min(...firstSeens)) / DAY) : 0;
-  const lifespans = docs
-    .filter(doc => doc.retiredAt)
-    .map(doc => (Date.parse(doc.retiredAt!) - Date.parse(doc.firstSeen)) / DAY)
+export function rotationOf(
+  live: readonly StoredCar[],
+  retired: readonly CarRetirementSpan[],
+  now: Date,
+): CarReportRotation {
+  const firstSeens = [...live.map(doc => doc.firstSeen), ...retired.map(span => span.firstSeen)]
+    .map(value => Date.parse(value))
+    .filter(Number.isFinite);
+  if (!firstSeens.length) {
+    return { measurable: false, historyDays: 0, retired: 0, medianDays: null, note: "todavía no hay serie propia." };
+  }
+  const seriesStart = Math.min(...firstSeens);
+  const historyDays = round3((now.getTime() - seriesStart) / DAY);
+  const censorCutoff = seriesStart + CAR_REPORT_POLICY.rotationCensorDays * DAY;
+  const lifespans = retired
+    .filter(span => Date.parse(span.firstSeen) >= censorCutoff)
+    .map(span => (Date.parse(span.retiredAt) - Date.parse(span.firstSeen)) / DAY)
     .filter(value => Number.isFinite(value) && value >= 0);
-  const measurable = historyDays >= CAR_REPORT_POLICY.rotationMinimumDays && lifespans.length >= CAR_REPORT_POLICY.rotationMinimumRetired;
+  const measurable =
+    historyDays >= CAR_REPORT_POLICY.rotationMinimumDays && lifespans.length >= CAR_REPORT_POLICY.rotationMinimumRetired;
+  const days = Math.floor(historyDays);
   return {
     measurable,
     historyDays,
@@ -208,14 +233,22 @@ export function rotationOf(docs: readonly StoredCar[], now: Date): CarReportRota
     medianDays: measurable ? round3(quantile(lifespans, 0.5)) : null,
     note: measurable
       ? ""
-      : `La serie propia arrancó hace ${Math.floor(historyDays)} día${Math.floor(historyDays) === 1 ? "" : "s"} y hacen falta ${CAR_REPORT_POLICY.rotationMinimumDays} para que "cuánto tarda en venderse" signifique algo.`,
+      : `La serie propia arrancó hace ${days} día${days === 1 ? "" : "s"} y hacen falta ${CAR_REPORT_POLICY.rotationMinimumDays}, ` +
+        `contando sólo los avisos que vimos aparecer (${lifespans.length} de ${retired.length} retirados hasta ahora), ` +
+        `para que "cuánto tarda en venderse" signifique algo.`,
   };
+}
+
+export interface CarReportRiskInput {
+  adverts: number;
+  share: number;
+  byCategory: Array<{ category: CarRiskCategory; adverts: number }>;
 }
 
 export function buildCarReport(
   listings: readonly CarListing[],
   docs: readonly StoredCar[],
-  options: { now: Date; maxYear: number },
+  options: { now: Date; maxYear: number; retired?: readonly CarRetirementSpan[]; risk?: CarReportRiskInput },
 ): CarReportSnapshotData {
   const rows = listings.filter(reportable);
   const total = rows.length;
@@ -369,8 +402,10 @@ export function buildCarReport(
       models: sellerGapModels,
     },
     negotiation: negotiationOf(docs, options.now),
-    rotation: rotationOf(docs, options.now),
-    risk: {
+    rotation: rotationOf(docs, options.retired ?? [], options.now),
+    // El mismo número que publica /autos-chocados-y-con-deuda-uruguay. Calcularlo de nuevo acá, sobre
+    // el subconjunto comparable, daba 99 donde la otra página decía 117: dos cifras para lo mismo.
+    risk: options.risk ?? {
       adverts: riskAdverts,
       share: total ? round3(riskAdverts / total) : 0,
       byCategory: [...riskByCategory.entries()]
