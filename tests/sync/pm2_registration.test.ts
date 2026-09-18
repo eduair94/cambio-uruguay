@@ -68,15 +68,20 @@ describe("pm2 fleet registration", () => {
     expect(registered.has("currency-server")).toBe(false);
   });
 
-  it("keeps the cron-drift check in the deploy script", () => {
-    // pm2 guarda la expresión cron con la que se arrancó el proceso: editar
-    // `cron_restart` y desplegar NO cambia cuándo corre el job en el VPS. El
-    // archivo dice una cosa y la máquina hace otra, y nada lo reporta. El script
-    // compara el cron vivo contra el del archivo y recrea sólo lo que difiere;
-    // si alguien saca esa comparación, esto falla.
+  it("keeps the drift check over everything pm2 freezes at registration", () => {
+    // pm2 guarda con qué se arrancó el proceso: el cron, el script, el intérprete
+    // y los argumentos. Editar cualquiera de esos en ecosystem.config.js y
+    // desplegar NO cambia lo que corre en el VPS; el archivo dice una cosa y la
+    // máquina hace otra, y nada lo reporta. Pasó dos veces: un job que quedó con
+    // su cron viejo, y currency-autos-detail, que siguió corriendo el script sin
+    // `flock` durante horas mientras el archivo decía lo contrario.
+    //
+    // Por eso la comparación es sobre los cuatro campos, no sobre el cron solo.
     const script = fs.readFileSync(path.join(ROOT, "scripts", "deploy-backend.sh"), "utf8");
-    expect(script).toContain("cron_restart");
-    expect(script).toMatch(/cron cambió/);
+    for (const field of ["cron_restart", "pm_exec_path", "exec_interpreter", "args"]) {
+      expect(script, `la comparación de deriva de pm2 dejó de mirar ${field}`).toContain(field);
+    }
+    expect(script).toMatch(/pm2 delete/);
   });
 
   it("never lets a cron app autorestart", () => {
