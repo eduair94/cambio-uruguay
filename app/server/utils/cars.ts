@@ -1,6 +1,7 @@
 import { CarCatalogMetaModel } from '../models/CarCatalogMeta'
 import { CarMarketSnapshotModel } from '../models/CarMarketSnapshot'
 import { CarOpportunitySnapshotModel } from '../models/CarOpportunitySnapshot'
+import { CarReportSnapshotModel } from '../models/CarReportSnapshot'
 import { CarRiskSnapshotModel } from '../models/CarRiskSnapshot'
 import {
   CAR_SOURCE_RULES,
@@ -14,6 +15,7 @@ import type {
   PublicCarMarketSnapshot,
   PublicCarOpportunitySnapshot,
   PublicCarReference,
+  PublicCarReportSnapshot,
   PublicCarRisk,
   PublicCarRiskSnapshot,
   PublicCarSource,
@@ -236,6 +238,21 @@ export async function loadCarRisks(): Promise<PublicCarRiskSnapshot | null> {
   }
   riskCache = { snapshot, expires: Date.now() + 180_000 }
   return snapshot
+}
+
+let reportCache: { expires: number; snapshot: PublicCarReportSnapshot } | null = null
+export async function loadCarReport(): Promise<PublicCarReportSnapshot | null> {
+  if (reportCache && reportCache.expires > Date.now()) return reportCache.snapshot
+  await connectDb()
+  const doc = await CarReportSnapshotModel.findOne({ key: 'used' })
+    .select({ _id: 0, snapshot: 1 })
+    .maxTimeMS(10_000)
+    .lean()
+  const raw = doc?.snapshot
+  // Son agregados: no hay fila de aviso que revalidar, sólo que el documento sea el que esperamos.
+  if (!raw || raw.version !== 1 || !raw.data?.market) return null
+  reportCache = { snapshot: raw, expires: Date.now() + 600_000 }
+  return raw
 }
 
 const marketCache = new Map<string, { expires: number; snapshot: PublicCarMarketSnapshot | null }>()

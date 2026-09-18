@@ -38,10 +38,13 @@ export const CAR_REPORT_POLICY = {
   minimumPerYear: 3,
   /** Años hacia atrás que mira la curva. */
   depreciationYears: 12,
-  /** Mínimo de pares de años consecutivos para publicar una caída anual. */
-  minimumYearPairs: 4,
+  /** Puntos y tramo mínimos de la curva para publicar una caída anual. */
+  minimumCurvePoints: 6,
+  minimumCurveSpan: 5,
   /** Cada lado del mostrador necesita esto para comparar automotora contra dueño. */
   minimumPerSeller: 5,
+  /** Y hacen falta estos años comparables para que el promedio del modelo no sea ruido. */
+  minimumSellerCohorts: 3,
   /** Días de historia que hace falta acumular antes de publicar rotación. */
   rotationMinimumDays: 14,
   rotationMinimumRetired: 150,
@@ -74,22 +77,37 @@ const countBy = <T extends string>(rows: readonly CarListing[], pick: (listing: 
 };
 
 /**
- * Cuánto pierde el modelo por año. No es una regresión: es la MEDIANA de las razones entre años
- * consecutivos, que aguanta que un año suelto salga más caro que el anterior —pasa, y pasa seguido,
- * porque el mix de versiones cambia de año a año y porque un año con pocos avisos se mueve solo—.
+ * Cuánto pierde el modelo por año de antigüedad: pendiente de una recta ajustada por mínimos
+ * cuadrados sobre el LOGARITMO de la mediana de cada año, ponderada por la raíz de los avisos.
+ *
+ * La primera versión tomaba la mediana de las razones entre años consecutivos y daba 1,8 % anual
+ * para la Fiat Strada, que no es creíble: los años recientes están casi planos y son los que más
+ * avisos tienen, así que la mediana se paraba ahí y no veía que de 2025 (US$ 18.500) a 2019
+ * (US$ 11.995) hay un 35 % en seis años. La recta usa TODO el tramo, que es donde está la caída.
  */
 export function annualDropOf(points: readonly CarReportDepreciationPoint[]): number | null {
-  const byYear = new Map(points.map(point => [point.year, point.medianUsd]));
-  const ratios: number[] = [];
-  for (const point of points) {
-    const older = byYear.get(point.year - 1);
-    if (older && older > 0 && point.medianUsd > 0) ratios.push(older / point.medianUsd);
+  const usable = points.filter(point => point.medianUsd > 0);
+  if (usable.length < CAR_REPORT_POLICY.minimumCurvePoints) return null;
+  const years = usable.map(point => point.year);
+  if (Math.max(...years) - Math.min(...years) < CAR_REPORT_POLICY.minimumCurveSpan) return null;
+  let sumW = 0, sumX = 0, sumY = 0, sumXX = 0, sumXY = 0;
+  for (const point of usable) {
+    // La raíz amortigua: un año con 200 avisos informa más que uno con 3, pero no sesenta veces más.
+    const weight = Math.sqrt(point.adverts);
+    const x = point.year;
+    const y = Math.log(point.medianUsd);
+    sumW += weight;
+    sumX += weight * x;
+    sumY += weight * y;
+    sumXX += weight * x * x;
+    sumXY += weight * x * y;
   }
-  if (ratios.length < CAR_REPORT_POLICY.minimumYearPairs) return null;
-  const retention = quantile(ratios, 0.5);
-  const drop = 1 - retention;
-  // Un "modelo" que gana valor con la edad no existe: eso es mezcla de versiones, no depreciación.
-  return drop > 0 && drop < 0.5 ? round3(drop) : null;
+  const denominator = sumW * sumXX - sumX * sumX;
+  if (!denominator) return null;
+  const slope = (sumW * sumXY - sumX * sumY) / denominator;
+  // La recta sube con el año de fabricación; un año MÁS viejo multiplica el precio por exp(-slope).
+  const drop = 1 - Math.exp(-slope);
+  return drop > 0.005 && drop < 0.5 ? round3(drop) : null;
 }
 
 export function depreciationOf(rows: readonly CarListing[], maxYear: number): CarReportDepreciationPoint[] {
@@ -131,7 +149,8 @@ export function sellerGapOf(rows: readonly CarListing[]): { gap: number; cohorts
     dealerPrices.push(dealer);
     privatePrices.push(owner);
   }
-  if (!gaps.length) return null;
+  // Con uno o dos años comparados el "premio del mostrador" es ruido: el VW Vento daba −22 %.
+  if (gaps.length < CAR_REPORT_POLICY.minimumSellerCohorts) return null;
   return {
     gap: round3(quantile(gaps, 0.5)),
     cohorts: gaps.length,
@@ -263,17 +282,21 @@ export function buildCarReport(
     .filter(entry => entry.annualDrop !== null)
     .sort((a, b) => (a.annualDrop ?? 1) - (b.annualDrop ?? 1));
 
+  // "Con US$ 30.000, ¿qué compro?" La primera versión contestaba "un Gol", porque listaba los modelos
+  // con más avisos POR DEBAJO del tope y abajo de 30.000 entra casi todo el mercado. La pregunta real
+  // es qué se compra GASTANDO ese presupuesto, así que la franja es de 80 % a 100 % del tope y lo que
+  // se muestra es el AÑO que ese dinero paga en cada modelo.
   const budgets: CarReportBudget[] = BUDGETS.map(maxUsd => {
-    const affordable = rows.filter(row => row.priceUsd <= maxUsd);
+    const band = rows.filter(row => row.priceUsd <= maxUsd && row.priceUsd >= maxUsd * 0.8);
     const groups = new Map<string, CarListing[]>();
-    for (const row of affordable) {
+    for (const row of band) {
       const group = groups.get(row.marketSlug) ?? [];
       group.push(row);
       groups.set(row.marketSlug, group);
     }
     return {
       maxUsd,
-      adverts: affordable.length,
+      adverts: band.length,
       models: [...groups.entries()]
         .filter(([, group]) => group.length >= 8)
         .map(([marketSlug, group]) => {

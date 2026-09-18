@@ -78,16 +78,25 @@ describe("depreciationOf", () => {
 });
 
 describe("sellerGapOf", () => {
+  const counter = (year: number, dealer: number, owner: number) => [
+    ...Array.from({ length: 6 }, () => car({ year, price: dealer, sellerType: "dealer" as const })),
+    ...Array.from({ length: 6 }, () => car({ year, price: owner, sellerType: "private" as const })),
+  ];
   it("compares the two sides of the counter within the SAME year", () => {
     const rows = [
-      ...Array.from({ length: 6 }, () => car({ year: 2019, price: 13_000, sellerType: "dealer" })),
-      ...Array.from({ length: 6 }, () => car({ year: 2019, price: 11_700, sellerType: "private" })),
+      ...counter(2019, 13_000, 11_700),
+      ...counter(2020, 14_000, 12_600),
+      ...counter(2021, 15_000, 13_500),
       // Un año con datos de un solo lado no aporta nada y no puede inventar una diferencia.
       ...Array.from({ length: 6 }, () => car({ year: 2024, price: 18_000, sellerType: "dealer" })),
     ];
     const gap = sellerGapOf(rows)!;
-    expect(gap.cohorts).toBe(1);
+    expect(gap.cohorts).toBe(3);
     expect(gap.gap).toBeCloseTo(0.111, 2);
+  });
+  it("abstains with one or two years comparables: ahí el premio del mostrador es ruido", () => {
+    expect(sellerGapOf(counter(2019, 13_000, 11_700))).toBeNull();
+    expect(sellerGapOf([...counter(2019, 13_000, 11_700), ...counter(2020, 14_000, 12_600)])).toBeNull();
   });
   it("says nothing when no year has both sides", () => {
     expect(sellerGapOf(Array.from({ length: 9 }, () => car({ sellerType: "dealer" })))).toBeNull();
@@ -132,7 +141,7 @@ describe("buildCarReport", () => {
     ...Array.from({ length: 34 }, (_, index) =>
       car({ year: 2024 - (index % 6), price: 15_000 - (index % 6) * 1_200, sellerType: index % 2 ? "dealer" : "private" })),
     ...Array.from({ length: 12 }, () =>
-      car({ brand: "Fiat", model: "Uno", brandSlug: "fiat", modelSlug: "uno", marketSlug: "fiat-uno", price: 7_000, year: 2015 })),
+      car({ brand: "Fiat", model: "Uno", brandSlug: "fiat", modelSlug: "uno", marketSlug: "fiat-uno", price: 5_500, year: 2015 })),
   ];
 
   it("describes the market and only names models with enough adverts", () => {
@@ -143,11 +152,13 @@ describe("buildCarReport", () => {
     expect(report.market.sellers.dealer + report.market.sellers.private).toBe(46);
     expect(report.market.priceBands.reduce((total, band) => total + band.adverts, 0)).toBe(46);
   });
-  it("answers what a budget buys, model by model", () => {
+  it("answers what a budget BUYS, not what is cheaper than it", () => {
     const report = buildCarReport(market(), [], { now: NOW, maxYear: 2026 });
     const budget = report.budgets.find(entry => entry.maxUsd === 10_000)!;
-    expect(budget.models.map(model => model.marketSlug)).toContain("fiat-uno");
-    expect(budget.models.every(model => model.medianUsd <= 10_000)).toBe(true);
+    // El Uno de US$ 5.500 no es lo que se compra con 10.000: está en la franja de 6.000.
+    expect(budget.models.map(model => model.marketSlug)).not.toContain("fiat-uno");
+    expect(report.budgets.find(entry => entry.maxUsd === 6_000)!.models.map(model => model.marketSlug)).toContain("fiat-uno");
+    expect(budget.models.every(model => model.medianUsd <= 10_000 && model.medianUsd >= 7_500)).toBe(true);
   });
   it("carries the rotation caveat instead of a made-up number", () => {
     const report = buildCarReport(market(), [], { now: NOW, maxYear: 2026 });
