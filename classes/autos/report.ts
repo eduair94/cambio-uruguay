@@ -12,6 +12,7 @@
 // serie arrancó el 2026-09-17 y con día y medio de historia cualquier número de rotación sería una
 // invención. El informe dice que falta y por qué, y el día que haya historia aparece solo.
 import { quantile } from "./stats";
+import { buildValuationCoefficients } from "./valuation";
 import { declaredRisks, type CarRiskCategory } from "./risk";
 import type { CarFuel, CarListing, CarSellerType, CarTransmission, StoredCar } from "./types";
 import type {
@@ -405,6 +406,10 @@ export function buildCarReport(
     },
     negotiation: negotiationOf(docs, options.now),
     rotation: rotationOf(docs, options.retired ?? [], options.now),
+    // Lo que mueve el precio dentro del mismo modelo y año (classes/autos/valuation.ts): es lo que el
+    // tasador necesita para corregir por kilómetros y caja, y lo que quien vende necesita para saber
+    // qué suma y qué resta en su propio auto.
+    valuation: buildValuationCoefficients(rows),
     // El mismo número que publica /autos-chocados-y-con-deuda-uruguay. Calcularlo de nuevo acá, sobre
     // el subconjunto comparable, daba 99 donde la otra página decía 117: dos cifras para lo mismo.
     risk: options.risk ?? {

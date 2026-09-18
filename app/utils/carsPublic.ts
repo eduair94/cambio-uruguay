@@ -355,6 +355,26 @@ export interface PublicCarReportRotation {
   medianDays: number | null
 }
 
+export interface PublicCarCoefficient {
+  /** Fraction of the price: 0.04 is 4 %. Null when there are not enough cohorts. */
+  value: number | null
+  cohorts: number
+  p25: number | null
+  p75: number | null
+}
+
+export interface PublicCarPriceEnding {
+  ending: string
+  adverts: number
+}
+
+export interface PublicCarValuation {
+  km: PublicCarCoefficient
+  automatic: PublicCarCoefficient
+  diesel: PublicCarCoefficient
+  endings: PublicCarPriceEnding[]
+}
+
 export interface PublicCarReportSnapshotData {
   market: {
     adverts: number
@@ -377,6 +397,8 @@ export interface PublicCarReportSnapshotData {
   negotiation: PublicCarReportNegotiation
   rotation: PublicCarReportRotation
   risk: { adverts: number share: number byCategory: Array<{ category: PublicCarRiskCategory adverts: number }> }
+  /** Lo que mueve el precio dentro del mismo modelo y año: km, caja, combustible. */
+  valuation: PublicCarValuation
 }
 
 export interface PublicCarReportSnapshot {
