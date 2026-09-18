@@ -254,3 +254,115 @@ export interface PublicCarRiskSnapshot {
   categories: PublicCarRiskCategoryStat[];
   stats: PublicCarRiskStats;
 }
+
+export interface PublicCarReportRange {
+  p25: number;
+  median: number;
+  p75: number;
+}
+
+export interface PublicCarReportModel {
+  marketSlug: string;
+  brand: string;
+  model: string;
+  adverts: number;
+  share: number;
+  price: PublicCarReportRange;
+  medianYear: number;
+  medianKm: number | null;
+  /** Cuánto pierde por año, del promedio de años consecutivos. Null si la curva no alcanza. */
+  annualDrop: number | null;
+  /** Qué tan abierto está el abanico de precios del mismo modelo: (p75-p25)/mediana. */
+  spread: number;
+  dealerShare: number;
+  automaticShare: number;
+  declaredRiskShare: number;
+}
+
+export interface PublicCarReportDepreciationPoint {
+  year: number;
+  adverts: number;
+  medianUsd: number;
+}
+
+export interface PublicCarReportDepreciation {
+  marketSlug: string;
+  brand: string;
+  model: string;
+  annualDrop: number | null;
+  points: PublicCarReportDepreciationPoint[];
+}
+
+export interface PublicCarReportBudgetModel {
+  marketSlug: string;
+  brand: string;
+  model: string;
+  adverts: number;
+  medianUsd: number;
+  medianYear: number;
+  medianKm: number | null;
+}
+
+export interface PublicCarReportBudget {
+  maxUsd: number;
+  adverts: number;
+  models: PublicCarReportBudgetModel[];
+}
+
+export interface PublicCarReportSellerGap {
+  marketSlug: string;
+  brand: string;
+  model: string;
+  dealerMedian: number;
+  privateMedian: number;
+  gap: number;
+  cohorts: number;
+}
+
+export interface PublicCarReportNegotiation {
+  windowDays: number;
+  changed: number;
+  cut: number;
+  raised: number;
+  medianCut: number | null;
+  shareOfMarket: number;
+}
+
+export interface PublicCarReportRotation {
+  measurable: boolean;
+  historyDays: number;
+  retired: number;
+  note: string;
+  medianDays: number | null;
+}
+
+export interface PublicCarReportSnapshotData {
+  market: {
+    adverts: number;
+    brands: number;
+    models: number;
+    price: PublicCarReportRange;
+    year: PublicCarReportRange;
+    km: PublicCarReportRange | null;
+    sellers: Record<PublicCarSeller | "unknown", number>;
+    fuels: Array<{ fuel: PublicCarFuel | "unknown"; adverts: number }>;
+    transmissions: Array<{ transmission: PublicCarTransmission | "unknown"; adverts: number }>;
+    departments: Array<{ department: string; adverts: number }>;
+    priceBands: Array<{ from: number; to: number | null; adverts: number }>;
+  };
+  brands: Array<{ slug: string; name: string; adverts: number; share: number; medianUsd: number; medianYear: number }>;
+  models: PublicCarReportModel[];
+  depreciation: PublicCarReportDepreciation[];
+  budgets: PublicCarReportBudget[];
+  sellerGaps: { median: number | null; models: PublicCarReportSellerGap[] };
+  negotiation: PublicCarReportNegotiation;
+  rotation: PublicCarReportRotation;
+  risk: { adverts: number; share: number; byCategory: Array<{ category: PublicCarRiskCategory; adverts: number }> };
+}
+
+export interface PublicCarReportSnapshot {
+  version: 1;
+  generatedAt: string;
+  usdUyu: number;
+  data: PublicCarReportSnapshotData;
+}

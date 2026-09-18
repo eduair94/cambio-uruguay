@@ -7,6 +7,7 @@ import { CarHarvestMetaModel } from "../models/CarHarvestMeta";
 import { CarListingModel } from "../models/CarListing";
 import { CarMarketSnapshotModel } from "../models/CarMarketSnapshot";
 import { CarOpportunitySnapshotModel } from "../models/CarOpportunitySnapshot";
+import { CarReportSnapshotModel } from "../models/CarReportSnapshot";
 import { CarRiskSnapshotModel } from "../models/CarRiskSnapshot";
 import type { CarPhotoVerdict } from "./llm/vision";
 import { guideKey, type CarGuideEntry, type CarGuideTarget } from "./catalog/guide";
@@ -14,7 +15,7 @@ import { carKey } from "./enrich";
 import { slugify } from "./normalize";
 import type { DetailFetchResult } from "./detail";
 import type {
-  PublicCarCatalogMeta, PublicCarListing, PublicCarMarketSnapshot, PublicCarOpportunitySnapshot, PublicCarRiskSnapshot,
+  PublicCarCatalogMeta, PublicCarListing, PublicCarMarketSnapshot, PublicCarOpportunitySnapshot, PublicCarReportSnapshot, PublicCarRiskSnapshot,
 } from "./publicTypes";
 import type { FbCard, FbItem } from "./sources/facebook";
 import type { CarDetail, CarHarvestResult, CarModelVocabulary, CarPricePoint, CarSource, CarSourceResult, RawCarListing, StoredCar } from "./types";
@@ -395,6 +396,15 @@ export async function publishCarMarkets(snapshots: readonly PublicCarMarketSnaps
 export async function loadOpportunityStats(): Promise<PublicCarOpportunitySnapshot["stats"] | null> {
   const doc = await CarOpportunitySnapshotModel.findOne({ key: "used" }).lean();
   return (doc?.snapshot as PublicCarOpportunitySnapshot | undefined)?.stats ?? null;
+}
+
+/** El informe del mercado: agregados, sin una sola fila de aviso adentro. */
+export async function saveCarReportSnapshot(snapshot: PublicCarReportSnapshot): Promise<void> {
+  await CarReportSnapshotModel.updateOne(
+    { key: "used" },
+    { $set: { generatedAt: snapshot.generatedAt, snapshot } },
+    { upsert: true },
+  );
 }
 
 /** El tablero de precios con motivo. Se poda igual que el de oportunidades si no entra. */
