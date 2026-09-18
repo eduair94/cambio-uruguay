@@ -79,6 +79,13 @@ const medianOf = (values: readonly number[]): number | null => {
   return sorted.length % 2 ? sorted[middle]! : (sorted[middle - 1]! + sorted[middle]!) / 2
 }
 
+/**
+ * Cuánto pierde un auto típico por año de antigüedad: la mediana de la caída de los modelos con
+ * curva. Una sola función para el informe y la guía de venta, que antes lo calculaban distinto.
+ */
+export const carReportTypicalDrop = (report: CarReportResponse['data']): number | null =>
+  medianOf(report.models.filter(model => model.annualDrop !== null).map(model => model.annualDrop!))
+
 export interface CarReportDebtEvidence {
   medianGap: number | null
   p25Gap: number | null
@@ -165,7 +172,7 @@ export function carReportFindings(
     const fifty = 1 - (1 - valuation.km.value) ** 5
     // Un año típico en Uruguay son unos 15.000 km: la comparación sólo se afirma si los datos la dan.
     const perYearOfKm = 1 - (1 - valuation.km.value) ** 1.5
-    const typicalDrop = medianOf(withDrop.map(model => model.annualDrop!))
+    const typicalDrop = carReportTypicalDrop(report)
     const ageWins = typicalDrop !== null && typicalDrop > perYearOfKm * 1.5
     findings.push({
       title: ageWins ? 'Los kilómetros pesan menos que el año' : 'Cuánto pesan los kilómetros',

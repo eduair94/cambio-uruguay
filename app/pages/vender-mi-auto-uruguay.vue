@@ -266,6 +266,7 @@ import { CARS_PATH, formatCarDate } from '~/utils/cars'
 import {
   CAR_REPORT_PATH,
   carReportPercent,
+  carReportTypicalDrop,
   carReportUsd,
   type CarReportResponse,
 } from '~/utils/carsReport'
@@ -333,11 +334,8 @@ const levers = computed(() => {
       basis: `${valuation.automaticWithTrim.cohorts} cohortes de modelo y año`,
     },
   ]
-  const typicalDrop = report.value.depreciation.length
-    ? [...report.value.depreciation].map(entry => entry.annualDrop ?? 0).sort((a, b) => a - b)[
-        Math.floor(report.value.depreciation.length / 2)
-      ]!
-    : null
+  // El mismo cálculo que usa el informe: con dos fórmulas, una página decía 5,3 % y la otra 5,4 %.
+  const typicalDrop = carReportTypicalDrop(report.value)
   rows.push({
     label: 'Un año más de antigüedad',
     effect: signed(typicalDrop === null ? null : -typicalDrop, 'más', 'menos'),
