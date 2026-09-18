@@ -909,5 +909,17 @@ module.exports = {
       cron_restart: "19 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
+    {
+      // Seguimiento de precios: una serie diaria por cohorte de alquileres, viviendas en venta y autos
+      // usados, más la variación de la misma oferta (docs/app/MARKET_SERIES.md). Sólo LEE los catálogos
+      // públicos de la APP DB, así que corre después de todas las cosechas completas (alquileres 04:52,
+      // oportunidades 06:21, autos 07:43) y no toca el puente de ML. Needs APP_MONGO_URI.
+      name: "currency-market-series",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_market_series.js",
+      cron_restart: "3 13 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
   ],
 };

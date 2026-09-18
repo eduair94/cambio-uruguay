@@ -1,0 +1,117 @@
+// Las tres colecciones del seguimiento de precios, en la APP DB. `marketpricelogs` es privada: la app
+// nunca la lee. `marketseries` (una por cohorte) y `marketseriesmetas` (`index:<mercado>` y `run`)
+// son las que sirve /api/market-series.
+import { appConnection } from "../appdb";
+import { marketLogPruneFilter } from "./log";
+import type { MarketPriceLog, MarketSeriesEntry, MarketSeriesIndex, MarketVertical } from "./types";
+
+export const MARKET_LOG_COLLECTION = "marketpricelogs";
+export const MARKET_SERIES_COLLECTION = "marketseries";
+export const MARKET_META_COLLECTION = "marketseriesmetas";
+/** Three years of daily points per cohort. */
+export const MARKET_SERIES_MAX_POINTS = 1100;
+const BATCH = 1000;
+
+const lit = (value: unknown): { $literal: unknown } => ({ $literal: value });
+
+/**
+ * One cohort's upsert as an update PIPELINE: `points` is recomputed from the stored array, so today's
+ * point replaces an earlier one of the same day instead of duplicating it. Every value goes through
+ * `$literal`: in a pipeline `$set` a string starting with "$" is read as a field path and would write
+ * `undefined` in silence (the trap documented in docs/app/PRICEWATCH.md).
+ */
+export function seriesOperation(entry: MarketSeriesEntry, today: string, maxPoints: number = MARKET_SERIES_MAX_POINTS) {
+  return {
+    updateOne: {
+      filter: { key: entry.cohort.key },
+      update: [
+        {
+          $set: {
+            key: lit(entry.cohort.key),
+            vertical: lit(entry.cohort.dims.vertical),
+            dims: lit(entry.cohort.dims),
+            labels: lit(entry.labels),
+            label: lit(entry.label),
+            latest: lit(entry.point),
+            updatedAt: lit(today),
+            points: {
+              $slice: [
+                {
+                  $concatArrays: [
+                    { $filter: { input: { $ifNull: ["$points", []] }, cond: { $ne: ["$$this.d", lit(today)] } } },
+                    [lit(entry.point)],
+                  ],
+                },
+                -maxPoints,
+              ],
+            },
+          },
+        },
+      ],
+      upsert: true as const,
+    },
+  };
+}
+
+export async function ensureMarketIndexes(): Promise<void> {
+  const db = appConnection();
+  await db.collection(MARKET_LOG_COLLECTION).createIndex({ key: 1 }, { unique: true });
+  await db.collection(MARKET_LOG_COLLECTION).createIndex({ vertical: 1, lastSeen: 1 });
+  await db.collection(MARKET_SERIES_COLLECTION).createIndex({ key: 1 }, { unique: true });
+  await db.collection(MARKET_SERIES_COLLECTION).createIndex({ vertical: 1 });
+  await db.collection(MARKET_META_COLLECTION).createIndex({ key: 1 }, { unique: true });
+}
+
+export async function loadMarketLogs(vertical: MarketVertical): Promise<Map<string, MarketPriceLog>> {
+  const logs = new Map<string, MarketPriceLog>();
+  const cursor = appConnection()
+    .collection(MARKET_LOG_COLLECTION)
+    .find({ vertical }, { projection: { _id: 0 }, batchSize: 2000, maxTimeMS: 120_000 });
+  try {
+    for await (const row of cursor) {
+      const log = row as unknown as MarketPriceLog;
+      logs.set(log.key, log);
+    }
+  } finally {
+    await cursor.close();
+  }
+  return logs;
+}
+
+export async function writeMarketLogs(logs: readonly MarketPriceLog[]): Promise<void> {
+  const collection = appConnection().collection(MARKET_LOG_COLLECTION);
+  for (let i = 0; i < logs.length; i += BATCH)
+    await collection.bulkWrite(
+      logs.slice(i, i + BATCH).map(log => ({ replaceOne: { filter: { key: log.key }, replacement: log, upsert: true } })),
+      { ordered: false },
+    );
+}
+
+export async function pruneMarketLogs(vertical: MarketVertical, today: string): Promise<number> {
+  const { deletedCount } = await appConnection().collection(MARKET_LOG_COLLECTION).deleteMany(marketLogPruneFilter(vertical, today));
+  return deletedCount ?? 0;
+}
+
+export async function writeMarketSeries(entries: readonly MarketSeriesEntry[], today: string): Promise<void> {
+  const collection = appConnection().collection(MARKET_SERIES_COLLECTION);
+  for (let i = 0; i < entries.length; i += BATCH)
+    // Pipeline updates are not in the driver's bulk-op typings.
+    await collection.bulkWrite(entries.slice(i, i + BATCH).map(entry => seriesOperation(entry, today)) as any, { ordered: false });
+}
+
+export async function readMarketIndex(vertical: MarketVertical): Promise<MarketSeriesIndex | null> {
+  const doc = await appConnection()
+    .collection(MARKET_META_COLLECTION)
+    .findOne({ key: `index:${vertical}` }, { projection: { _id: 0 }, maxTimeMS: 5000 });
+  return doc as unknown as MarketSeriesIndex | null;
+}
+
+export async function writeMarketIndex(index: MarketSeriesIndex): Promise<void> {
+  await appConnection().collection(MARKET_META_COLLECTION).replaceOne({ key: index.key }, index, { upsert: true });
+}
+
+export async function writeMarketRun(vertical: MarketVertical, run: Record<string, unknown>): Promise<void> {
+  await appConnection()
+    .collection(MARKET_META_COLLECTION)
+    .updateOne({ key: "run" }, { $set: { key: "run", [`verticals.${vertical}`]: run, updatedAt: new Date().toISOString() } }, { upsert: true });
+}
