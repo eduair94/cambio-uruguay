@@ -309,15 +309,33 @@
     <VCard id="calculadora" variant="flat" class="calc-card pa-4 pa-sm-5 mb-5">
       <div class="d-flex align-center ga-2 mb-1">
         <VIcon size="20" color="primary">mdi-calculator-variant-outline</VIcon>
-        <h2 class="text-h6 font-weight-bold mb-0">¿Cuánto rinde de verdad tu saldo quieto?</h2>
+        <h2 class="text-h6 font-weight-bold mb-0">¿Cuánto rinde de verdad tu saldo?</h2>
       </div>
-      <p class="text-caption text-medium-emphasis mb-4">
+
+      <VBtnToggle
+        v-model="mode"
+        mandatory
+        divided
+        density="comfortable"
+        variant="outlined"
+        class="calc-modes mt-3 mb-3"
+      >
+        <VBtn value="quieto" size="small">Un monto quieto</VBtn>
+        <VBtn value="promedio" size="small">Mi saldo promedio</VBtn>
+      </VBtnToggle>
+
+      <p v-if="mode === 'quieto'" class="text-caption text-medium-emphasis mb-4">
         Poné cuánta plata dejás parada y por cuántos días. La calculadora descuenta primero la
         comisión del fondo y después la inflación, que es lo único que dice si ganaste poder de
         compra o solo números.
       </p>
+      <p v-else class="text-caption text-medium-emphasis mb-4">
+        El fondo devenga sobre el saldo de <strong>cada día</strong>, así que lo que rinde es tu
+        promedio y no el pico del día que cobrás. Si cobrás y gastás parecido, tu promedio ronda la
+        mitad de tu sueldo: poner el sueldo entero acá duplica el resultado.
+      </p>
 
-      <VRow dense>
+      <VRow v-if="mode === 'quieto'" dense>
         <VCol cols="12" sm="6" md="3">
           <VTextField
             v-model.number="amount"
@@ -371,6 +389,150 @@
         </VCol>
       </VRow>
 
+      <template v-else>
+        <VRow dense>
+          <VCol cols="12" sm="6" md="4">
+            <VTextField
+              v-model.number="avgBalance"
+              type="number"
+              min="0"
+              step="1000"
+              label="Saldo promedio mensual"
+              prefix="$"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+            />
+          </VCol>
+          <VCol cols="6" sm="6" md="4">
+            <VTextField
+              v-model.number="ratePct"
+              type="number"
+              min="0"
+              step="0.25"
+              label="Tasa bruta anual"
+              suffix="%"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+            />
+          </VCol>
+          <VCol cols="6" sm="6" md="4">
+            <VTextField
+              v-model.number="feePct"
+              type="number"
+              min="0"
+              step="0.1"
+              label="Comisión anual (con IVA)"
+              suffix="%"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+            />
+          </VCol>
+        </VRow>
+
+        <div class="mt-2">
+          <VBtn
+            variant="text"
+            size="small"
+            class="cu-btn-flush"
+            @click="showEstimator = !showEstimator"
+          >
+            <VIcon start size="small">
+              {{ showEstimator ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+            </VIcon>
+            ¿No sabés tu promedio? Estimalo con tu sueldo
+          </VBtn>
+          <VExpandTransition>
+            <div v-show="showEstimator" class="estimator pa-3 pa-sm-4 mt-2">
+              <VRow dense>
+                <VCol cols="6" md="3">
+                  <VTextField
+                    v-model.number="sueldo"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    label="Lo que cobrás"
+                    prefix="$"
+                    density="comfortable"
+                    variant="outlined"
+                    hide-details
+                  />
+                </VCol>
+                <VCol cols="6" md="3">
+                  <VTextField
+                    v-model.number="paydayDay"
+                    type="number"
+                    min="1"
+                    max="30"
+                    step="1"
+                    label="Día que cobrás"
+                    density="comfortable"
+                    variant="outlined"
+                    hide-details
+                  />
+                </VCol>
+                <VCol cols="6" md="3">
+                  <VTextField
+                    v-model.number="gastoMensual"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    label="Gasto del mes"
+                    prefix="$"
+                    density="comfortable"
+                    variant="outlined"
+                    hide-details
+                  />
+                </VCol>
+                <VCol cols="6" md="3">
+                  <VTextField
+                    v-model.number="startBalance"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    label="Saldo al arrancar el mes"
+                    prefix="$"
+                    density="comfortable"
+                    variant="outlined"
+                    hide-details
+                  />
+                </VCol>
+              </VRow>
+
+              <div class="estimator-out mt-3">
+                <div class="estimator-cell">
+                  <span class="estimator-lbl">Tu pico</span>
+                  <span class="estimator-num">$ {{ fmtPesos(estimate.peakUyu) }}</span>
+                </div>
+                <VIcon size="18" class="estimator-arrow">mdi-arrow-right</VIcon>
+                <div class="estimator-cell">
+                  <span class="estimator-lbl">Sobre esto rinde</span>
+                  <span class="estimator-num estimator-num--key">
+                    $ {{ fmtPesos(estimate.averageUyu) }}
+                  </span>
+                </div>
+                <VBtn size="small" variant="flat" color="primary" @click="useEstimate">
+                  Usar este promedio
+                </VBtn>
+              </div>
+
+              <p class="text-caption text-medium-emphasis mt-3 mb-0">
+                Mes de 30 días: el sueldo entra el día {{ fmtPlain(paydayUsed) }} y el gasto sale
+                parejo. El día de cobro cambia el promedio de verdad: con el mismo sueldo y el mismo
+                gasto, cobrar temprano deja más plata rindiendo que cobrar a fin de mes.
+              </p>
+              <p v-if="estimate.surplusUyu > 0" class="text-caption text-medium-emphasis mt-1 mb-0">
+                Te sobran <strong>$ {{ fmtPesos(estimate.surplusUyu) }}</strong> al cierre del mes:
+                el mes que viene arrancás más arriba y el promedio sube. No lo sumamos acá porque
+                ese mes todavía no pasó.
+              </p>
+            </div>
+          </VExpandTransition>
+        </div>
+      </template>
+
       <div class="d-flex flex-wrap ga-2 mt-3">
         <VBtn variant="tonal" size="small" @click="loadScenario('sin')">
           <VIcon start size="small">mdi-percent-outline</VIcon>Sin comisión
@@ -383,7 +545,7 @@
         </VBtn>
       </div>
 
-      <div class="calc-result mt-4">
+      <div v-if="mode === 'quieto'" class="calc-result mt-4">
         <table class="breakdown">
           <tbody>
             <tr>
@@ -428,6 +590,67 @@
           </p>
         </div>
       </div>
+
+      <div v-else class="calc-result mt-4">
+        <table class="breakdown">
+          <tbody>
+            <tr>
+              <td>Rendimiento bruto del mes</td>
+              <td class="num">$ {{ fmtPesos(monthResult.grossUyu) }}</td>
+            </tr>
+            <tr>
+              <td>
+                Comisión del fondo <span class="muted">({{ fmtNum(feePct) }}% anual)</span>
+              </td>
+              <td class="num neg">− $ {{ fmtPesos(monthResult.feeUyu) }}</td>
+            </tr>
+            <tr class="subtotal">
+              <td>Te queda acreditado en el mes</td>
+              <td class="num">$ {{ fmtPesos(monthResult.netUyu) }}</td>
+            </tr>
+            <tr>
+              <td>
+                Lo que hacía falta solo para empatar
+                <span class="muted">(inflación {{ fmtNum(IPC_INTERANUAL_PCT) }}%)</span>
+              </td>
+              <td class="num">$ {{ fmtPesos(monthResult.breakEvenUyu) }}</td>
+            </tr>
+            <tr class="total">
+              <td>Poder de compra ganado en el mes</td>
+              <td class="num" :class="monthResult.realUyu >= 0 ? 'pos' : 'neg'">
+                {{ monthResult.realUyu >= 0 ? '+' : '−' }} $
+                {{ fmtPesos(Math.abs(monthResult.realUyu)) }}
+              </td>
+            </tr>
+            <tr class="year-row">
+              <td>Un año entero con el mismo promedio</td>
+              <td class="num">$ {{ fmtPesos(yearResult.netUyu) }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="calc-headline mt-3">
+          <div class="calc-pill" :class="{ 'calc-pill--neg': monthResult.realRatePct < 0 }">
+            <span class="calc-pill-num">{{ fmtNum(monthResult.realRatePct) }}%</span>
+            <span class="calc-pill-lbl">de tasa real anual</span>
+          </div>
+          <p class="text-caption text-medium-emphasis mb-0">
+            Sobre un promedio de $ {{ fmtPesos(avgBalance || 0) }}. El rendimiento es proporcional
+            al saldo: si tu promedio es la mitad de tu pico, tu rendimiento también. El cálculo no
+            capitaliza el rendimiento del mes sobre sí mismo, que a esta tasa son centavos.
+          </p>
+        </div>
+      </div>
+
+      <VAlert
+        v-if="mode === 'promedio' && belowPrexMin"
+        type="info"
+        variant="tonal"
+        density="comfortable"
+        class="mt-4"
+        border="start"
+      >
+        {{ PREX_MIN_IS_FIRST_SUBSCRIPTION }} Mercado Pago no pide mínimo.
+      </VAlert>
 
       <VAlert
         v-if="result.realRatePct < 0"
@@ -587,6 +810,7 @@
 
 <script setup lang="ts">
 import {
+  AVG_MONTH_DAYS,
   BENCHMARKS,
   COPOM_MEETINGS_2026,
   IPC_INTERANUAL_PCT,
@@ -594,14 +818,17 @@ import {
   LEGAL_FACTS,
   NO_CUT_ANNOUNCED_AS_OF,
   PICK_CRITERIA,
+  PREX_MIN_IS_FIRST_SUBSCRIPTION,
   RATE_MYTHS,
   TPM_PCT,
   TPM_CONFIRMED,
   YIELD_DRIVERS,
   YIELD_LAST_REVIEWED,
   YIELD_SOURCES,
+  estimateAverageBalance,
   estimateYield,
   feeWithIva,
+  getYieldProduct,
   liveProducts,
   type YieldCurrency,
 } from '~/utils/yieldAccounts'
@@ -631,6 +858,65 @@ const result = computed(() =>
     inflationPct: IPC_INTERANUAL_PCT,
   })
 )
+
+// ── Calculator, modo "saldo promedio" ──
+//
+// El fondo devenga sobre el saldo de cada día, así que el número que manda es el
+// promedio del mes y no el pico del día de cobro. Pedirle el promedio a alguien
+// que no lo tiene a mano es pedirle que ponga el sueldo, que sobreestima cerca
+// del doble: de ahí el estimador de al lado.
+const mode = ref<'quieto' | 'promedio'>('quieto')
+const avgBalance = ref<number>(25000)
+const showEstimator = ref(false)
+const sueldo = ref<number>(50000)
+const paydayDay = ref<number>(5)
+const gastoMensual = ref<number>(45000)
+const startBalance = ref<number>(5000)
+
+const estimate = computed(() =>
+  estimateAverageBalance({
+    startBalanceUyu: startBalance.value || 0,
+    sueldoUyu: sueldo.value || 0,
+    gastoMensualUyu: gastoMensual.value || 0,
+    paydayDay: paydayDay.value || 1,
+  })
+)
+
+/** El día que el modelo usó de verdad, ya acotado al mes de 30 días. */
+const paydayUsed = computed(() =>
+  Math.min(AVG_MONTH_DAYS, Math.max(1, Math.floor(paydayDay.value || 1)))
+)
+
+function useEstimate() {
+  avgBalance.value = Math.round(estimate.value.averageUyu)
+}
+
+const monthResult = computed(() =>
+  estimateYield({
+    amountUyu: avgBalance.value || 0,
+    annualRatePct: ratePct.value || 0,
+    days: AVG_MONTH_DAYS,
+    feeAnnualPct: feePct.value || 0,
+    inflationPct: IPC_INTERANUAL_PCT,
+  })
+)
+
+const yearResult = computed(() =>
+  estimateYield({
+    amountUyu: avgBalance.value || 0,
+    annualRatePct: ratePct.value || 0,
+    days: 365,
+    feeAnnualPct: feePct.value || 0,
+    inflationPct: IPC_INTERANUAL_PCT,
+  })
+)
+
+/**
+ * Los $4.000 de Prex son la primera suscripción, no un piso a mantener: el
+ * cartel aclara eso en vez de decirle a alguien que no califica.
+ */
+const prexMinUyu = getYieldProduct('prex-inversion-violeta')?.minFirstUyu ?? 0
+const belowPrexMin = computed(() => prexMinUyu > 0 && (avgBalance.value || 0) < prexMinUyu)
 
 /**
  * Three presets, all at the policy rate, differing only in the commission — the
@@ -1042,6 +1328,55 @@ function fmtDate(iso: string): string {
 .calc-pill-lbl {
   font-size: 0.8rem;
   opacity: 0.8;
+}
+
+/* Calculator — modo saldo promedio */
+.calc-modes {
+  border-radius: 999px;
+  overflow: hidden;
+}
+.breakdown .year-row td {
+  border-bottom: none;
+  border-top: 1px dashed rgba(var(--v-border-color), 0.4);
+  padding-top: 0.7rem;
+  opacity: 0.85;
+}
+.estimator {
+  border: 1px dashed rgba(var(--v-border-color), 0.35);
+  border-radius: 12px;
+  background: rgba(var(--v-theme-surface-variant), 0.06);
+}
+.estimator-out {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.1rem;
+}
+.estimator-cell {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.estimator-lbl {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+.estimator-num {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: 0.75;
+}
+.estimator-num--key {
+  font-size: 1.35rem;
+  opacity: 1;
+  color: rgb(var(--v-theme-primary));
+}
+.estimator-arrow {
+  opacity: 0.45;
 }
 
 /* Benchmarks */

@@ -624,6 +624,84 @@ export function estimateYield(input: YieldInput): YieldResult {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Saldo promedio del mes
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Días del mes que usa el modelo de saldo promedio. */
+export const AVG_MONTH_DAYS = 30
+
+/**
+ * Los $4.000 de Prex se publican mal seguido. Es el monto de la PRIMERA
+ * suscripción, no un piso que haya que mantener después.
+ */
+export const PREX_MIN_IS_FIRST_SUBSCRIPTION =
+  'Los $4.000 de Prex son el monto de la primera suscripción: la plata que hay que poner una vez para activar Inversión Violeta. Después no hay un piso que mantener, así que un promedio más bajo que eso no te deja afuera del producto.'
+
+export interface AverageBalanceInput {
+  /** Saldo con el que arranca el mes. El modelo lo deja gastar: si el mes se pone corto, esa plata se usa como cualquier otra. */
+  startBalanceUyu: number
+  /** Lo que entra una vez al mes, en pesos. */
+  sueldoUyu: number
+  /** Lo que sale a lo largo del mes, en pesos. */
+  gastoMensualUyu: number
+  /** Día del mes en que entra el sueldo, 1 a 30. */
+  paydayDay: number
+}
+
+export interface AverageBalanceResult {
+  /** Promedio de los saldos de cierre de los 30 días: sobre esto rinde. */
+  averageUyu: number
+  /** El saldo más alto del mes, que es el número que la gente pone en la calculadora. */
+  peakUyu: number
+  /** Con cuánto cierra el mes. */
+  endUyu: number
+  /** Lo que queda por encima del saldo inicial al cierre. */
+  surplusUyu: number
+}
+
+/**
+ * Promedio de saldo diario de un mes de 30 días: entra el sueldo un día y el
+ * gasto sale parejo.
+ *
+ * Se simula día por día en vez de resolverlo con una fórmula porque el día de
+ * cobro cambia el resultado de verdad —el mismo sueldo y el mismo gasto dan
+ * promedios que no se parecen si cobrás el 5 o el 25— y una fórmula cerrada lo
+ * esconde. El saldo se acota en cero: no se puede gastar lo que no hay, y
+ * dejarlo ir a negativo inventaría un rendimiento sobre plata que no existió.
+ *
+ * El excedente del mes se devuelve aparte y NO se promedia: si sobra plata, el
+ * mes que viene arranca más arriba, y meter ese régimen futuro en el promedio de
+ * este mes sería contestar otra pregunta.
+ */
+export function estimateAverageBalance(input: AverageBalanceInput): AverageBalanceResult {
+  const startBalance = nonNegative(input.startBalanceUyu)
+  const sueldo = nonNegative(input.sueldoUyu)
+  const gasto = nonNegative(input.gastoMensualUyu)
+  const payday = clampDay(input.paydayDay)
+  const perDay = gasto / AVG_MONTH_DAYS
+
+  let balance = startBalance
+  let sum = 0
+  let peak = 0
+
+  for (let day = 1; day <= AVG_MONTH_DAYS; day++) {
+    if (day === payday) balance += sueldo
+    balance = Math.max(0, balance - perDay)
+    sum += balance
+    if (balance > peak) peak = balance
+  }
+
+  const endUyu = round2(balance)
+
+  return {
+    averageUyu: round2(sum / AVG_MONTH_DAYS),
+    peakUyu: round2(peak),
+    endUyu,
+    surplusUyu: round2(Math.max(0, endUyu - startBalance)),
+  }
+}
+
 /**
  * Exact real rate: how much purchasing power a nominal rate actually buys once
  * inflation is taken out. `nominal − inflation` is the shortcut everyone uses
@@ -663,4 +741,16 @@ function signedPow(base: number, exp: number): number {
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100
+}
+
+/** Plata negativa o mal tipeada es cero, no un signo menos que se propaga. */
+function nonNegative(n: number): number {
+  if (!Number.isFinite(n)) return 0
+  return Math.max(0, n)
+}
+
+/** El día de cobro vive dentro del mes que el modelo simula. */
+function clampDay(n: number): number {
+  if (!Number.isFinite(n)) return 1
+  return Math.min(AVG_MONTH_DAYS, Math.max(1, Math.floor(n)))
 }

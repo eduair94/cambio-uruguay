@@ -7,6 +7,7 @@ import {
   LEGAL_FACTS,
   NO_CUT_ANNOUNCED_AS_OF,
   PICK_CRITERIA,
+  PREX_MIN_IS_FIRST_SUBSCRIPTION,
   RATE_MYTHS,
   TPM_CONFIRMED,
   TPM_PCT,
@@ -14,6 +15,7 @@ import {
   YIELD_LAST_REVIEWED,
   YIELD_PRODUCTS,
   YIELD_SOURCES,
+  estimateAverageBalance,
   estimateYield,
   feeWithIva,
   getYieldProduct,
@@ -362,5 +364,136 @@ describe('yieldAccounts - ¿va a bajar el rendimiento?', () => {
     for (const d of COPOM_MEETINGS_2026) expect(d).toMatch(/^2026-\d{2}-\d{2}$/)
     // La fecha del último comunicado que leímos tiene que ser una reunión real.
     expect(COPOM_MEETINGS_2026).toContain(TPM_CONFIRMED)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Saldo promedio — la pregunta que la calculadora no contestaba
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// La calculadora pedía "saldo quieto" y días. Nadie tiene saldo quieto: cobrás
+// el 5 y gastás durante el mes. El fondo devenga sobre el saldo de CADA día, así
+// que lo que rinde es el promedio y no el pico. Poner el sueldo entero
+// sobreestima el resultado cerca del doble, que sobre un rendimiento de pesos
+// por mes es la diferencia entre "me sirve" y "no me mueve la aguja".
+
+describe('yieldAccounts - saldo promedio del mes', () => {
+  it('un sueldo que se gasta entero promedia la mitad, no el pico', () => {
+    const r = estimateAverageBalance({
+      startBalanceUyu: 0,
+      sueldoUyu: 30000,
+      gastoMensualUyu: 30000,
+      paydayDay: 1,
+    })
+    // Cobra 30.000 el día 1 y gasta 1.000 por día: la media de la rampa es
+    // S/2 menos el gasto del propio día de cobro.
+    expect(r.averageUyu).toBeCloseTo(14500, 0)
+    expect(r.peakUyu).toBeCloseTo(29000, 0)
+    expect(r.averageUyu).toBeLessThan(r.peakUyu / 1.9)
+  })
+
+  it('un saldo que nadie gasta entra completo al promedio', () => {
+    const r = estimateAverageBalance({
+      startBalanceUyu: 10000,
+      sueldoUyu: 0,
+      gastoMensualUyu: 0,
+      paydayDay: 1,
+    })
+    expect(r.averageUyu).toBe(10000)
+    expect(r.peakUyu).toBe(10000)
+    expect(r.endUyu).toBe(10000)
+    expect(r.surplusUyu).toBe(0)
+  })
+
+  it('cobrar temprano rinde más que cobrar tarde, con el mismo sueldo y gasto', () => {
+    const base = { startBalanceUyu: 0, sueldoUyu: 30000, gastoMensualUyu: 30000 }
+    const early = estimateAverageBalance({ ...base, paydayDay: 5 })
+    const late = estimateAverageBalance({ ...base, paydayDay: 25 })
+    // Por esto el estimador pregunta el día de cobro en vez de usar una fórmula
+    // cerrada: el mismo sueldo y el mismo gasto dan promedios que no se parecen.
+    expect(early.averageUyu).toBeGreaterThan(late.averageUyu * 2)
+  })
+
+  it('gastar más de lo que entra no da promedio negativo', () => {
+    const r = estimateAverageBalance({
+      startBalanceUyu: 0,
+      sueldoUyu: 10000,
+      gastoMensualUyu: 50000,
+      paydayDay: 1,
+    })
+    expect(r.averageUyu).toBeGreaterThanOrEqual(0)
+    expect(r.endUyu).toBe(0)
+    expect(r.surplusUyu).toBe(0)
+  })
+
+  it('reporta el excedente del mes aparte en vez de promediarlo', () => {
+    const r = estimateAverageBalance({
+      startBalanceUyu: 5000,
+      sueldoUyu: 50000,
+      gastoMensualUyu: 40000,
+      paydayDay: 1,
+    })
+    // Si sobra plata, el mes que viene arranca más arriba y el promedio sube.
+    // Promediar un régimen que todavía no existe sería inventar el dato.
+    expect(r.endUyu).toBeCloseTo(15000, 0)
+    expect(r.surplusUyu).toBeCloseTo(10000, 0)
+  })
+
+  it('acota el día de cobro al mes en vez de salirse del calendario', () => {
+    const low = estimateAverageBalance({
+      startBalanceUyu: 0,
+      sueldoUyu: 30000,
+      gastoMensualUyu: 30000,
+      paydayDay: 0,
+    })
+    const first = estimateAverageBalance({
+      startBalanceUyu: 0,
+      sueldoUyu: 30000,
+      gastoMensualUyu: 30000,
+      paydayDay: 1,
+    })
+    const high = estimateAverageBalance({
+      startBalanceUyu: 0,
+      sueldoUyu: 30000,
+      gastoMensualUyu: 30000,
+      paydayDay: 99,
+    })
+    const last = estimateAverageBalance({
+      startBalanceUyu: 0,
+      sueldoUyu: 30000,
+      gastoMensualUyu: 30000,
+      paydayDay: 30,
+    })
+    expect(low.averageUyu).toBe(first.averageUyu)
+    expect(high.averageUyu).toBe(last.averageUyu)
+  })
+
+  it('clampea los typos en vez de devolver NaN', () => {
+    const r = estimateAverageBalance({
+      startBalanceUyu: -5000,
+      sueldoUyu: Number.NaN,
+      gastoMensualUyu: -1,
+      paydayDay: Number.NaN,
+    })
+    expect(Number.isFinite(r.averageUyu)).toBe(true)
+    expect(r.averageUyu).toBe(0)
+    expect(r.peakUyu).toBe(0)
+  })
+
+  it('el rendimiento es proporcional al promedio: el pico paga el doble que la mitad', () => {
+    // La afirmación que la página necesita poder hacer: si tu promedio es la
+    // mitad de tu pico, tu rendimiento también.
+    const onPeak = estimateYield({ amountUyu: 50000, annualRatePct: TPM_PCT, days: 30 })
+    const onAverage = estimateYield({ amountUyu: 25000, annualRatePct: TPM_PCT, days: 30 })
+    expect(onAverage.netUyu).toBeCloseTo(onPeak.netUyu / 2, 2)
+  })
+
+  it('el mínimo de Prex es de la primera suscripción, no un promedio mínimo', () => {
+    // Distinción que es fácil de publicar mal: $4.000 es lo que hay que poner de
+    // una vez para activarlo, no el promedio que hay que mantener.
+    const prex = getYieldProduct('prex-inversion-violeta')
+    expect(prex!.minFirstUyu).toBe(4000)
+    expect(PREX_MIN_IS_FIRST_SUBSCRIPTION).toContain('primera')
+    expect(PREX_MIN_IS_FIRST_SUBSCRIPTION).not.toContain('promedio mínimo')
   })
 })
