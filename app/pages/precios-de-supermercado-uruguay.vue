@@ -1,5 +1,13 @@
 <template>
   <VContainer class="page py-6 py-md-10">
+    <VBreadcrumbs
+      :items="[
+        { title: 'Inicio', to: localePath('/') },
+        { title: DIRECTORIOS_HUB.label, to: localePath(DIRECTORIOS_HUB.path) },
+        { title: 'Precios de supermercado', disabled: true },
+      ]"
+      class="px-0 pb-2"
+    />
     <header class="hero on-dark mb-8">
       <p class="eyebrow">Precios de góndola · {{ freshnessLabel }}</p>
       <h1 class="text-h4 text-md-h3 font-weight-bold mb-3">Precios de supermercado en Uruguay</h1>
@@ -253,6 +261,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import type { FaqItem } from '~/utils/faqAnswers'
 import { preciosSlug, preciosSpread, type PreciosArticleRow } from '~/utils/preciosCatalog'
 
@@ -478,6 +487,23 @@ useHead(() => ({
             encodingFormat: 'application/json',
             contentUrl: 'https://api.cambio-uruguay.com/precios/basket',
           },
+        ],
+      }),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Inicio',
+            item: 'https://cambio-uruguay.com/',
+          },
+          directoriosHubListItem(2),
+          { '@type': 'ListItem', position: 3, name: 'Precios de supermercado', item: canonicalUrl },
         ],
       }),
     },

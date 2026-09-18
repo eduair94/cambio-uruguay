@@ -46,13 +46,40 @@ escrito). Equipar y movilidad no hacen ninguna de las dos y van `sin-cifra`; la 
 **Un cero nunca se publica** (`directorioCifra`): ninguno de estos directorios está vacío de verdad,
 así que un cero siempre es "no lo pudimos leer", y la tarjeta sale sin número.
 
+## Migas: Inicio › Directorios › el directorio
+
+Las catorce páginas de directorio (las trece más bicicletas, la segunda página de movilidad) ponen el
+hub entre "Inicio" y su propio nombre, visible y en el `BreadcrumbList`. Ruta, etiqueta y URL salen
+de `DIRECTORIOS_HUB` / `directoriosHubListItem()` en `app/utils/directorios.ts`; las páginas
+trilingües (alquileres, venta, inmobiliarias, casas, equipar, sillas) usan la clave global
+`nav.directorios` y la URL localizada. Sillas y precios no tenían migas: ahora tienen las dos.
+
+Dos excepciones a propósito:
+
+- **Couriers y tarjetas** sólo lo llevan en JSON-LD. Su "migas" visible es un botón de volver a
+  otro padre (← Herramientas, ← Salud financiera) y cambiarlo les quitaba ese enlace.
+- **Las fichas no lo llevan** (un modelo, una casa, una sucursal): mueven más de mil páginas
+  programáticas y es otra decisión.
+
+`directorios.test.ts` exige que cada página de directorio tenga el eslabón, así un directorio nuevo
+no se lo olvida.
+
+## Caché
+
+Dos capas, y la segunda no es redundante: el borde (Cloudflare, 15 min) y la memoria del proceso
+(`defineCachedFunction`, 15 min, `swr`). La página hace su SSR pidiéndole `/api/directorios` al
+propio Nitro, y ese pedido interno nunca pasa por Cloudflare: sin la capa de memoria, cada render
+sin caché disparaba las ocho consultas (~5 s medidos en frío). Una lectura sin ninguna cifra
+relevada no se guarda (`validate`).
+
 ## Agregar un directorio
 
 1. Una entrada en `DIRECTORIOS` con la palabra EXACTA que usa su página para su total.
 2. Si imprime un total: un adaptador en `RELEVADOS` que llame a la ruta que usa la página y lea ese
    campo, con un comentario que cite la línea. Si es una lista a mano: su largo en `CURADOS`, con la
    fecha de revisión de la lista. Si no imprime un total: `fuente: 'sin-cifra'`.
-3. Medir en producción que la tarjeta y la página digan el mismo número. El test no lo prueba.
+3. Migas: `DIRECTORIOS_HUB` en la visible y `directoriosHubListItem()` en el JSON-LD.
+4. Medir en producción que la tarjeta y la página digan el mismo número. El test no lo prueba.
 
 `app/tests/unit/directorios.test.ts` exige que cada ruta exista, esté en la nav y tenga adaptador;
 `directoriosApi.test.ts` fija el campo que lee cada adaptador y los casos de falla.

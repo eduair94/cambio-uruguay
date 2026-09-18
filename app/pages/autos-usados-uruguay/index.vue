@@ -1,7 +1,11 @@
 <template>
   <VContainer class="py-6 py-md-10">
     <VBreadcrumbs
-      :items="[{ title: 'Inicio', to: localePath('/') }, { title: 'Autos usados' }]"
+      :items="[
+        { title: 'Inicio', to: localePath('/') },
+        { title: DIRECTORIOS_HUB.label, to: localePath(DIRECTORIOS_HUB.path) },
+        { title: 'Autos usados' },
+      ]"
       class="px-0 mb-2"
     />
     <header class="mb-6">
@@ -161,6 +165,7 @@
 
 <script setup lang="ts">
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
+import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { CAR_REPORT_PATH } from '~/utils/carsReport'
 import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
 import {
@@ -246,7 +251,8 @@ useHead({
                 name: 'Inicio',
                 item: 'https://cambio-uruguay.com/',
               },
-              { '@type': 'ListItem', position: 2, name: 'Autos usados', item: canonical },
+              directoriosHubListItem(2),
+              { '@type': 'ListItem', position: 3, name: 'Autos usados', item: canonical },
             ],
           },
         ],

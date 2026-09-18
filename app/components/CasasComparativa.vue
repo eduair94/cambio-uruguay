@@ -6,6 +6,10 @@
         <VIcon start size="small">mdi-arrow-left</VIcon>
         Cambio Uruguay
       </VBtn>
+      <VIcon size="small" color="grey">mdi-chevron-right</VIcon>
+      <VBtn :to="localePath(DIRECTORIOS_HUB.path)" variant="text" size="small">
+        {{ t('nav.directorios') }}
+      </VBtn>
       <template v-if="lockedCategory">
         <VIcon size="small" color="grey">mdi-chevron-right</VIcon>
         <!-- Not flush: it follows the chevron, so it keeps its own padding
@@ -668,6 +672,7 @@ import {
 } from '~/utils/casasDirectory'
 import type { StoredTrustpilot } from '~/utils/casasReviews'
 import { dedupeDepartmentNames, slugifyDepartment } from '~/utils/departments'
+import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { servesDepartment } from '~/utils/exchangeChannel'
 import { starParts } from '~/utils/reviews'
 
@@ -678,7 +683,7 @@ import { starParts } from '~/utils/reviews'
  */
 const props = defineProps<{ lockedCategory?: CasaCategory | null }>()
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
 const router = useRouter()
@@ -1270,17 +1275,22 @@ useHead(() => ({
                 name: 'Cambio Uruguay',
                 item: 'https://cambio-uruguay.com',
               },
+              directoriosHubListItem(
+                2,
+                t('nav.directorios'),
+                `https://cambio-uruguay.com${localePath(DIRECTORIOS_HUB.path)}`
+              ),
               ...(props.lockedCategory
                 ? [
                     {
                       '@type': 'ListItem',
-                      position: 2,
+                      position: 3,
                       name: c.value.title,
                       item: `https://cambio-uruguay.com${localePath(CASAS_PATH)}`,
                     },
                     {
                       '@type': 'ListItem',
-                      position: 3,
+                      position: 4,
                       name: pageTitle.value,
                       item: canonicalUrl.value,
                     },
@@ -1288,7 +1298,7 @@ useHead(() => ({
                 : [
                     {
                       '@type': 'ListItem',
-                      position: 2,
+                      position: 3,
                       name: pageTitle.value,
                       item: canonicalUrl.value,
                     },

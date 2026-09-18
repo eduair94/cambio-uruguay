@@ -239,6 +239,7 @@ import {
   type MovilidadOffer,
 } from '~/utils/movilidad'
 import { storeSlugForSeller } from '~/utils/storeDirectory'
+import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 
 const localePath = useLocalePath()
 
@@ -295,6 +296,7 @@ const intro =
 
 const crumbs = [
   { title: 'Inicio', to: localePath('/') },
+  { title: DIRECTORIOS_HUB.label, to: localePath(DIRECTORIOS_HUB.path) },
   { title: 'Bicicletas eléctricas', disabled: true },
 ]
 
@@ -382,9 +384,10 @@ useHead(() => ({
                 name: 'Cambio Uruguay',
                 item: 'https://cambio-uruguay.com/',
               },
+              directoriosHubListItem(2),
               {
                 '@type': 'ListItem',
-                position: 2,
+                position: 3,
                 name: 'Bicicletas eléctricas',
                 item: CANONICAL,
               },

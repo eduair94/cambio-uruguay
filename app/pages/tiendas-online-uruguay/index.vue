@@ -6,6 +6,14 @@ FORM: Read mode. Filters are client state only; the table itself is server-rende
 -->
 <template>
   <VContainer class="tiendas-index py-6 py-md-10">
+    <VBreadcrumbs
+      :items="[
+        { title: 'Inicio', to: localePath('/') },
+        { title: DIRECTORIOS_HUB.label, to: localePath(DIRECTORIOS_HUB.path) },
+        { title: 'Tiendas online', disabled: true },
+      ]"
+      class="px-0 pb-2"
+    />
     <header class="tiendas-header">
       <h1>Tiendas online de Uruguay: opiniones, reclamos y datos verificables</h1>
       <p class="lead">{{ introText }}</p>
@@ -121,6 +129,7 @@ FORM: Read mode. Filters are client state only; the table itself is server-rende
 
 <script setup lang="ts">
 import type { StoreCard, StoresIndexResponse } from '~/server/api/stores/index.get'
+import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { STORE_KIND_LABELS, STORE_RUBRO_LABELS, type StoreRubro } from '~/utils/storeDirectory'
 import {
   storeEsCount,
@@ -245,9 +254,10 @@ useHead(() => ({
                 name: 'Cambio Uruguay',
                 item: 'https://cambio-uruguay.com/',
               },
+              directoriosHubListItem(2),
               {
                 '@type': 'ListItem',
-                position: 2,
+                position: 3,
                 name: 'Tiendas online',
                 item: CANONICAL,
               },

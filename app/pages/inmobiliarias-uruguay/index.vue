@@ -1,5 +1,13 @@
 <template>
   <VContainer class="agencies-page">
+    <VBreadcrumbs
+      :items="[
+        { title: t('home'), to: localePath('/') },
+        { title: globalT('nav.directorios'), to: localePath(DIRECTORIOS_HUB.path) },
+        { title: globalT('nav.realEstateAgencies'), disabled: true },
+      ]"
+      class="px-0 pb-2"
+    />
     <header>
       <h1>{{ t('title') }}</h1>
       <p>{{ t('intro') }}</p>
@@ -81,6 +89,7 @@
 <script setup lang="ts">
 import { normalizeAgencyQuery, agencyPath, type AgenciesResponse } from '../../utils/agencies'
 import { agencyMessage } from '../../utils/agencyMessages'
+import { DIRECTORIOS_HUB, directoriosHubListItem } from '../../utils/directorios'
 const { locale, t: globalT } = useI18n(),
   localePath = useLocalePath(),
   route = useRoute()
@@ -173,7 +182,12 @@ useHead(() => ({
                 name: t('home'),
                 item: `https://cambio-uruguay.com${localePath('/')}`,
               },
-              { '@type': 'ListItem', position: 2, name: t('title'), item: canonical.value },
+              directoriosHubListItem(
+                2,
+                globalT('nav.directorios'),
+                `https://cambio-uruguay.com${localePath(DIRECTORIOS_HUB.path)}`
+              ),
+              { '@type': 'ListItem', position: 3, name: t('title'), item: canonical.value },
             ],
           },
           {

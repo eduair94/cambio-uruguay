@@ -351,6 +351,7 @@ import {
   POSTAL_SURCHARGE,
   type Courier,
 } from '~/utils/courierShipping'
+import { directoriosHubListItem } from '~/utils/directorios'
 import { courierPagePath } from '~/utils/entityPageSlugs'
 import { starParts } from '~/utils/reviews'
 
@@ -574,7 +575,8 @@ useHead(() => ({
                 name: 'Cambio Uruguay',
                 item: 'https://cambio-uruguay.com',
               },
-              { '@type': 'ListItem', position: 2, name: 'Couriers en Uruguay', item: canonicalUrl },
+              directoriosHubListItem(2),
+              { '@type': 'ListItem', position: 3, name: 'Couriers en Uruguay', item: canonicalUrl },
             ],
           },
         ],

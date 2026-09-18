@@ -9,7 +9,11 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
 <template>
   <VContainer class="phones-hub py-6 py-md-10">
     <VBreadcrumbs
-      :items="[{ title: 'Inicio', to: localePath('/') }, { title: 'Celulares' }]"
+      :items="[
+        { title: 'Inicio', to: localePath('/') },
+        { title: DIRECTORIOS_HUB.label, to: localePath(DIRECTORIOS_HUB.path) },
+        { title: 'Celulares' },
+      ]"
       class="px-0 mb-2"
     />
 
@@ -245,6 +249,7 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
 
 <script setup lang="ts">
 import { ADUANA_FAQS } from '~/utils/aduanaFaq'
+import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { dateLocale } from '~/utils/format'
 import type { FaqItem } from '~/utils/faqAnswers'
 import { phoneImportEstimate, phoneImportTotals } from '~/utils/phoneImport'
@@ -453,7 +458,8 @@ useHead(() => ({
                 name: 'Inicio',
                 item: 'https://cambio-uruguay.com/',
               },
-              { '@type': 'ListItem', position: 2, name: 'Celulares', item: CANONICAL },
+              directoriosHubListItem(2),
+              { '@type': 'ListItem', position: 3, name: 'Celulares', item: CANONICAL },
             ],
           },
           ...(itemListLd.value.length

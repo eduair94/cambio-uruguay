@@ -87,6 +87,30 @@ describe('el registro de directorios', () => {
     expect(DIRECTORIOS_CON_CIFRA).toHaveLength(DIRECTORIOS.length - sinCifra.length)
   })
 
+  // Las migas de cada directorio pasan por el hub: Inicio › Directorios › Celulares. Dos páginas
+  // delegan todo su contenido a un componente, y es el componente el que arma las migas.
+  it('cada página de directorio lleva el eslabón del hub en sus migas', () => {
+    const delegated: Record<string, string> = {
+      '/venta-viviendas-uruguay': join(
+        __dirname,
+        '..',
+        '..',
+        'components',
+        'property-sales',
+        'Directory.vue'
+      ),
+      '/casas-de-cambio': join(__dirname, '..', '..', 'components', 'CasasComparativa.vue'),
+    }
+    const routes = [...DIRECTORIOS.map(entry => entry.to), '/bicicletas-electricas-uruguay']
+    for (const route of routes) {
+      const base = join(PAGES_DIR, ...route.split('/').filter(Boolean))
+      const file =
+        delegated[route] ?? (existsSync(`${base}.vue`) ? `${base}.vue` : join(base, 'index.vue'))
+      const source = readFileSync(file, 'utf8')
+      expect(source, route).toMatch(/directoriosHubListItem\(|DIRECTORIOS_HUB\.path/)
+    }
+  })
+
   // La ruta no se importa acá (necesitaría los modelos de Mongo): se lee su fuente. El test de la
   // ruta (`directoriosApi.test.ts`) prueba los adaptadores; éste sólo garantiza que ninguno falte.
   it('la API tiene un adaptador para cada directorio que declara cifra', () => {

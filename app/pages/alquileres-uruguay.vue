@@ -742,6 +742,7 @@ import {
 } from '~/utils/rentals'
 import { portalPriceGap, rentalListedFor, type PortalPriceGap } from '~/utils/rentalPortals'
 import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
+import { DIRECTORIOS_HUB } from '~/utils/directorios'
 import { rentalPricePerM2 } from '~/utils/rentalPricePerM2'
 import {
   RENTAL_SAVED_STORAGE_ID,
@@ -1516,6 +1517,7 @@ onBeforeUnmount(() => {
 })
 const breadcrumbs = computed(() => [
   { title: t('country'), to: localePath('/') },
+  { title: globalT('nav.directorios'), to: localePath(DIRECTORIOS_HUB.path) },
   { title: t('search'), disabled: true },
 ])
 const externalPortals = [
@@ -1599,6 +1601,10 @@ useSchemaOrg([
   defineBreadcrumb({
     itemListElement: () => [
       { name: t('country'), item: `https://cambio-uruguay.com${localePath('/')}` },
+      {
+        name: globalT('nav.directorios'),
+        item: `https://cambio-uruguay.com${localePath(DIRECTORIOS_HUB.path)}`,
+      },
       { name: t('search'), item: canonicalUrl.value },
     ],
   }),

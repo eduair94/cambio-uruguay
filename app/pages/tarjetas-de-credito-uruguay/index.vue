@@ -439,6 +439,7 @@ import {
 } from '~/utils/cardRewards'
 import { BANKOS_BANK_BY_CREDIT_PROGRAM, bankosBankName, bankosMapPath } from '~/utils/bankos'
 import { bankPageForBankId } from '~/utils/bankosPages'
+import { directoriosHubListItem } from '~/utils/directorios'
 import { cardProgramPagePath } from '~/utils/entityPageSlugs'
 import { growthEntryMessages } from '~/utils/growthEntryMessages'
 
@@ -561,9 +562,10 @@ useHead(() => ({
                 name: 'Cambio Uruguay',
                 item: 'https://cambio-uruguay.com',
               },
+              directoriosHubListItem(2),
               {
                 '@type': 'ListItem',
-                position: 2,
+                position: 3,
                 name: 'Tarjetas de crédito en Uruguay',
                 item: canonicalUrl,
               },

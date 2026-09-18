@@ -121,13 +121,13 @@ const CURADOS: Readonly<Record<string, DirectorioCifra>> = {
   tarjetas: cifra(CARD_PROGRAMS.length, CARD_REWARDS_LAST_REVIEWED),
 }
 
-export default defineEventHandler(async (event): Promise<DirectoriosResponse> => {
-  setResponseHeader(
-    event,
-    'cache-control',
-    'public, max-age=900, s-maxage=900, stale-while-revalidate=86400'
-  )
+interface CifrasLeidas {
+  cifras: Record<string, DirectorioCifra>
+  /** Cuántas cifras relevadas se pudieron leer: cero quiere decir que falló todo lo que pregunta. */
+  relevadosLeidos: number
+}
 
+async function leerCifras(): Promise<CifrasLeidas> {
   const cifras: Record<string, DirectorioCifra> = {}
   for (const id of DIRECTORIOS_CON_CIFRA) if (CURADOS[id]) cifras[id] = CURADOS[id]!
 
@@ -142,14 +142,42 @@ export default defineEventHandler(async (event): Promise<DirectoriosResponse> =>
     })
   )
 
-  let read = 0
+  let relevadosLeidos = 0
   for (const [id, value] of results) {
     if (value && value.count != null && value.count > 0) {
       cifras[id] = value
-      read += 1
+      relevadosLeidos += 1
     }
   }
+  return { cifras, relevadosLeidos }
+}
 
-  if (relevados.length > 0 && read === 0) setResponseHeader(event, 'cache-control', 'no-store')
+/**
+ * Caché en la memoria del proceso, además del de borde. No es redundante: la página hace su SSR
+ * pidiéndole esta ruta al propio Nitro, y ese pedido interno nunca pasa por Cloudflare — sin esto,
+ * cada render de la página sin caché disparaba las ocho consultas de arriba (medido: ~5 s en frío).
+ * `swr` sirve lo guardado mientras refresca en segundo plano. Una lectura sin NINGUNA cifra relevada
+ * no se guarda (`validate`): el próximo pedido vuelve a intentar en vez de heredar el hueco.
+ */
+export const cifrasCacheOptions = {
+  name: 'directorios-cifras',
+  maxAge: 15 * 60,
+  swr: true,
+  staleMaxAge: 6 * 60 * 60,
+  getKey: () => 'v1',
+  validate: (entry: { value?: CifrasLeidas }) => (entry.value?.relevadosLeidos ?? 0) > 0,
+}
+
+const cifrasCacheadas = defineCachedFunction(leerCifras, cifrasCacheOptions)
+
+export default defineEventHandler(async (event): Promise<DirectoriosResponse> => {
+  setResponseHeader(
+    event,
+    'cache-control',
+    'public, max-age=900, s-maxage=900, stale-while-revalidate=86400'
+  )
+
+  const { cifras, relevadosLeidos } = await cifrasCacheadas()
+  if (relevadosLeidos === 0) setResponseHeader(event, 'cache-control', 'no-store')
   return { cifras }
 })

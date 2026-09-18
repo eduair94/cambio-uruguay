@@ -13,6 +13,9 @@ const m = vi.hoisted(() => ({
 }))
 
 vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
+// El caché de Nitro se prueba por su criterio (`cifrasCacheOptions.validate`), no por su mecánica:
+// acá la función cacheada es la función misma, y cada test lee de cero.
+vi.stubGlobal('defineCachedFunction', (fn: unknown) => fn)
 vi.stubGlobal('setResponseHeader', (_event: unknown, name: string, value: string) =>
   m.headers.push([name, value])
 )
@@ -23,7 +26,8 @@ vi.stubGlobal('$fetch', async (url: string, options?: { query?: Record<string, s
   return m.responses.get(url)
 })
 
-const handler = (await import('../../server/api/directorios.get')).default as (
+const route = await import('../../server/api/directorios.get')
+const handler = route.default as (
   event: unknown
 ) => Promise<{ cifras: Record<string, { count: number | null; asOf: string | null }> }>
 
@@ -150,6 +154,16 @@ describe('GET /api/directorios', () => {
     })
     const { cifras } = await handler({})
     expect(cifras.ventas).toEqual({ count: 16753, asOf: null })
+  })
+
+  it('el caché en memoria no guarda una lectura sin ninguna cifra relevada', () => {
+    const { validate, maxAge, swr } = route.cifrasCacheOptions
+    expect(validate({ value: { cifras: {}, relevadosLeidos: 0 } })).toBe(false)
+    expect(validate({})).toBe(false)
+    expect(validate({ value: { cifras: {}, relevadosLeidos: 1 } })).toBe(true)
+    // El mismo cuarto de hora que el borde, y sirviendo lo guardado mientras refresca.
+    expect(maxAge).toBe(900)
+    expect(swr).toBe(true)
   })
 
   it('si no se pudo leer NINGUNA cifra relevada, la respuesta no se cachea', async () => {

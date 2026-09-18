@@ -6,6 +6,7 @@
     <VBreadcrumbs
       :items="[
         { title: t('home'), to: localePath('/') },
+        { title: globalT('nav.directorios'), to: localePath(DIRECTORIOS_HUB.path) },
         { title: t('sales'), disabled: true },
       ]"
       density="compact"
@@ -276,6 +277,7 @@ import {
   type PropertySalesResponse,
 } from '~/utils/propertySales'
 import { propertySaleSourceName, propertySalesMessages } from '~/utils/propertySalesMessages'
+import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import type { PropertyPreviewRequest } from '~/utils/photoViewer'
 const { t, locale } = useI18n({ useScope: 'local', messages: propertySalesMessages })
 const { t: globalT } = useI18n({ useScope: 'global' })
@@ -565,9 +567,14 @@ useHead(() => ({
                 name: t('home'),
                 item: `https://cambio-uruguay.com${localePath('/')}`,
               },
+              directoriosHubListItem(
+                2,
+                globalT('nav.directorios'),
+                `https://cambio-uruguay.com${localePath(DIRECTORIOS_HUB.path)}`
+              ),
               {
                 '@type': 'ListItem',
-                position: 2,
+                position: 3,
                 name: t('sales'),
                 item: `https://cambio-uruguay.com${localePath('/venta-viviendas-uruguay')}`,
               },

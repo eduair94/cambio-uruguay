@@ -8,6 +8,7 @@ planner is client state only and never persists.
 -->
 <template>
   <VContainer class="equipar py-6 py-md-10">
+    <VBreadcrumbs :items="crumbs" class="px-0 pb-2" />
     <header class="equipar-header">
       <p class="eyebrow">{{ c.eyebrow }}</p>
       <h1>{{ c.title }}</h1>
@@ -290,6 +291,7 @@ planner is client state only and never persists.
 </template>
 
 <script setup lang="ts">
+import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { EQUIPAR_PATH, EQUIPAR_THREAD } from '~/utils/equiparCopy'
 import { equiparCategoryPage, isEquiparCategorySlug } from '~/utils/equiparCategoryPages'
 import { equiparEs } from '~/utils/equiparEs'
@@ -305,11 +307,17 @@ import {
   type EquiparTier,
 } from '~/utils/equipar'
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 const localePath = useLocalePath()
 const c = computed(() =>
   locale.value === 'en' ? equiparEn : locale.value === 'pt' ? equiparPt : equiparEs
 )
+
+const crumbs = computed(() => [
+  { title: t('inicio'), to: localePath('/') },
+  { title: t('nav.directorios'), to: localePath(DIRECTORIOS_HUB.path) },
+  { title: c.value.shortTitle, disabled: true },
+])
 
 // Server-rendered: the three totals have to exist in the HTML. They are the numbers a search engine
 // can quote and the answer most visitors came for, and a client-only fetch would hide both.
@@ -500,7 +508,12 @@ useHead(() => ({
                 name: 'Cambio Uruguay',
                 item: `https://cambio-uruguay.com${localePath('/')}`,
               },
-              { '@type': 'ListItem', position: 2, name: c.value.title, item: canonical.value },
+              directoriosHubListItem(
+                2,
+                t('nav.directorios'),
+                `https://cambio-uruguay.com${localePath(DIRECTORIOS_HUB.path)}`
+              ),
+              { '@type': 'ListItem', position: 3, name: c.value.title, item: canonical.value },
             ],
           },
         ],

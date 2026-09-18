@@ -300,3 +300,28 @@ export function directorioRoutes(): string[] {
   }
   return out
 }
+
+/**
+ * El eslabón que cada página de directorio pone en sus migas entre "Inicio" y su propio nombre:
+ * Inicio › Directorios › Celulares. Sale de acá y no de un literal por página para que la ruta y la
+ * etiqueta sean las mismas en las catorce, visibles y en JSON-LD. Las fichas (un modelo, una casa,
+ * una sucursal) no lo llevan: sus migas mueven más de mil páginas programáticas y son otra decisión.
+ */
+export const DIRECTORIOS_HUB = Object.freeze({
+  path: '/directorios-uruguay',
+  label: 'Directorios',
+  url: 'https://cambio-uruguay.com/directorios-uruguay',
+})
+
+/**
+ * El mismo eslabón como `ListItem` de un `BreadcrumbList`, en la posición que le toque. Las páginas
+ * trilingües pasan su etiqueta (`nav.directorios`) y su URL localizada; las que sólo existen en
+ * español usan los valores por defecto.
+ */
+export function directoriosHubListItem(
+  position: number,
+  label: string = DIRECTORIOS_HUB.label,
+  url: string = DIRECTORIOS_HUB.url
+): Record<string, unknown> {
+  return { '@type': 'ListItem', position, name: label, item: url }
+}

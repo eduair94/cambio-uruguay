@@ -7,6 +7,7 @@ FORM: Grounded structure 5, diagnosis-before-doctrine staging, surface seed aa73
 -->
 <template>
   <VContainer tag="main" class="chair-page pb-10">
+    <VBreadcrumbs :items="crumbs" class="px-0 pt-4 pb-2" />
     <section class="chair-hero on-dark" aria-labelledby="chair-title">
       <div class="hero-copy">
         <div class="source-mark">
@@ -748,9 +749,16 @@ import {
   type ChairTierSnapshot,
 } from '~/utils/chairTiers'
 import type { ChairCatalogResponse } from '~/utils/chairCatalog'
+import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
+
+const crumbs = computed(() => [
+  { title: t('inicio'), to: localePath('/') },
+  { title: t('nav.directorios'), to: localePath(DIRECTORIOS_HUB.path) },
+  { title: t('nav.chairTiers'), disabled: true },
+])
 const { bestSell: bestLiveSell } = useExchangeRates()
 const selectedPriority = ref<ChairPriority>('overall')
 const budgetCurrency = ref<'UYU' | 'USD'>('UYU')
@@ -950,6 +958,28 @@ useHead(() => ({
           innerHTML: JSON.stringify({
             '@context': 'https://schema.org',
             '@graph': [
+              {
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                  {
+                    '@type': 'ListItem',
+                    position: 1,
+                    name: t('inicio'),
+                    item: `https://cambio-uruguay.com${localePath('/')}`,
+                  },
+                  directoriosHubListItem(
+                    2,
+                    t('nav.directorios'),
+                    `https://cambio-uruguay.com${localePath(DIRECTORIOS_HUB.path)}`
+                  ),
+                  {
+                    '@type': 'ListItem',
+                    position: 3,
+                    name: t('nav.chairTiers'),
+                    item: canonicalUrl.value,
+                  },
+                ],
+              },
               {
                 '@type': 'Dataset',
                 name: t('chairTiers.metaTitle'),
