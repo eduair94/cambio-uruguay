@@ -123,6 +123,15 @@ describe('San José — sin fecha de vigencia', () => {
     const sanJose = movilidadNormativaDe('San José')
     expect(sanJose?.nota ?? '').toMatch(/no está confirmada/i)
   })
+
+  // La revisión final de la rama marcó que el matiz vivía SÓLO en la nota: quien barre los badges
+  // lee "Vigente" a secas como "rige hoy". El matiz es un dato de la fila (`estadoDetalle`), que el
+  // componente pega al badge, y no una condición escrita sobre el nombre del departamento.
+  it('el matiz del badge es un dato de la fila, y sólo San José lo lleva', () => {
+    expect(movilidadNormativaDe('San José')?.estadoDetalle).toMatch(/sin confirmar/i)
+    const conDetalle = MOVILIDAD_NORMATIVA.filter(fila => fila.estadoDetalle != null)
+    expect(conDetalle.map(fila => fila.departamento)).toEqual(['San José'])
+  })
 })
 
 describe('sin veredictos genéricos', () => {

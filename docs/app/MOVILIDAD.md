@@ -95,6 +95,15 @@ en su título, con o sin conector, así que la palabra desnuda no tiene costo de
 misma razón vale para `matricula` (reemplazó a la frase "con matricula", que se perdía "matrícula
 incluida") y para `convertir`/`conversion` en las dos categorías.
 
+**Lo que esa lista se lleva puesto, y no está medido:** el `exclude` corre contra título+contexto, así
+que un vehículo real cuyo título anuncia un accesorio incluido ("Monopatín eléctrico X + casco de
+regalo", "incluye cargador extra") queda afuera por la palabra del regalo. Es el mismo canje que la
+rama ya hizo a propósito con `conversion`/`convertir`/`matricula` —precisión antes que recall— pero
+a diferencia de aquél no salió de un caso observado: ninguna de las cinco tiendas tituló así en el
+relevamiento del 17/9/2026. Queda anotado acá para que el día que una lo haga se vea como lo que es
+(un falso negativo conocido) y no como un bug nuevo; la salida sería exigir adyacencia del accesorio
+al sustantivo, no borrar la palabra del `exclude`.
+
 **`accesorio`/`accesorios` entró por el mismo motivo que existe `productTypeInTitle`** (ver más
 abajo): al componer el `product_type` de Shopify sobre el título, "Accesorio de bicicleta eléctrica
 Canasto Central…" (loopbikes) o "Accesorio Cargador 60V Motopatin" (voltbike) pasan a contener la
@@ -163,8 +172,13 @@ su cron, así que un env agregado después nunca llegaría a una app ya registra
 **Los horarios evitan pisar a todos los demás consumidores del mismo puente** (comentario de
 `ecosystem.config.js`, junto a los dos jobs): sillas horaria `:23`, autos horaria `:29` y su barrida
 diaria secuencial `07:43`, celulares (rama aparte) horaria `:37` y diaria `14:29`, alquileres horaria
-`:47`, equipar horaria `:53` y diaria `12:47`. `currency-movilidad` diaria corre a **`47 15 * * *`**
-(15:47 UTC) y `currency-movilidad-hourly` al minuto **`:07`** — los dos huecos libres de esa lista. Un
+`:47`, equipar horaria `:53` y diaria `12:47`. `currency-movilidad` diaria corre a **`33 15 * * *`**
+(15:33 UTC) y `currency-movilidad-hourly` al minuto **`:07`** — los dos huecos libres de esa lista.
+**Un horario diario también se compara contra los minutos horarios**, no sólo contra las otras
+diarias: un job horario corre ese minuto de TODAS las horas, así que la diaria a las 15:47 se habría
+cruzado con la de alquileres una vez por día, todos los días (lo encontró la revisión final de la
+rama, con el minuto ya elegido y el comentario del `ecosystem.config.js` listando `:47` dos líneas
+más arriba). Un
 429 de MercadoLibre dejaría al puente 10 minutos respondiendo por su proxy residencial **para todos
 los jobs que lo usan**, no sólo el que lo disparó (medido y documentado en `docs/app/AUTOS.md`), así
 que agregar un consumidor sin revisar los minutos de los demás arriesgaría gatillar esa penalidad
@@ -174,7 +188,7 @@ para el resto.
 
 | app pm2 | script | cron UTC | qué hace |
 |---|---|---|---|
-| `currency-movilidad` | `dist/sync_movilidad.js` | `47 15 * * *` | corrida completa: presupuesto diario de las tres fuentes, guarda catálogo + foto de tiendas |
+| `currency-movilidad` | `dist/sync_movilidad.js` | `33 15 * * *` | corrida completa: presupuesto diario de las tres fuentes, guarda catálogo + foto de tiendas |
 | `currency-movilidad-hourly` | `dist/sync_movilidad.js --fast` | `7 * * * *` | sólo precio: presupuesto horario, sin Fenicio (esta lista de tiendas no tiene ninguna), mezcla la foto de tiendas de la diaria |
 
 `main()` nunca llama `process.exit`: cada refusal es un `Error` lanzado, y `main` está exportado y

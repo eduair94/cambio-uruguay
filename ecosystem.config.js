@@ -244,14 +244,15 @@ module.exports = {
       //
       // The other consumers of the shared MercadoLibre bridge (104.234.204.107:9656), so a future
       // schedule change here does not collide with them: sillas hourly :23, autos hourly :29 and its
-      // ~2h sequential daily sweep at 07:43, celulares (rama aparte) hourly :37 and daily 14:29,
-      // alquileres hourly :47, equipar hourly :53 and daily 12:47. 15:47 UTC daily / :07 hourly are
-      // both clear of that list.
+      // ~2h sequential daily sweep at 07:43, celulares hourly :37 and daily 14:29, alquileres hourly
+      // :47, equipar hourly :53 and daily 12:47. An hourly job is a minute of EVERY hour, so a daily
+      // run at HH:47 would meet the rentals top-up once a day, every day: the daily sweep goes at
+      // 15:33 (a minute no hourly job uses) and the hourly one at :07.
       name: "currency-movilidad",
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync_movilidad.js",
-      cron_restart: "47 15 * * *",
+      cron_restart: "33 15 * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {

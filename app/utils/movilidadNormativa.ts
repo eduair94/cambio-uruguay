@@ -65,6 +65,13 @@ export interface MovilidadNormativaReglas {
 export interface MovilidadNormativaDepartamento {
   readonly departamento: string
   readonly estado: MovilidadNormativaEstado
+  /**
+   * Matiz del estado, para mostrar PEGADO al badge y no sólo en la nota de abajo: un decreto
+   * promulgado cuya fecha de entrada en vigencia no confirma ninguna fuente oficial sigue siendo
+   * `vigente` (existe, está promulgado), pero un lector que sólo barre los badges leería "Vigente"
+   * como "rige hoy", que es justo lo que el dato no prueba. `undefined` = el badge se basta solo.
+   */
+  readonly estadoDetalle?: string
   /** Identificación de la norma (decreto y artículos), o `null` si no hay norma que citar. */
   readonly norma: string | null
   readonly reglas: MovilidadNormativaReglas
@@ -275,6 +282,7 @@ export const MOVILIDAD_NORMATIVA: ReadonlyArray<MovilidadNormativaDepartamento> 
   Object.freeze({
     departamento: 'San José',
     estado: 'vigente',
+    estadoDetalle: 'fecha de inicio sin confirmar',
     norma:
       'Decreto de la Junta Departamental de San José Nº 3279 (vehículos de movilidad personal), aprobado por unanimidad en junio de 2026 y promulgado por la Intendencia',
     reglas: Object.freeze({

@@ -24,7 +24,7 @@
       >
         <h3>
           {{ fila.departamento }}
-          <span class="estado-badge">{{ ESTADO_LABEL[fila.estado] }}</span>
+          <span class="estado-badge">{{ estadoLabel(fila) }}</span>
         </h3>
         <p v-if="fila.norma" class="normativa-cita">{{ fila.norma }}</p>
 
@@ -90,6 +90,7 @@ import {
   MOVILIDAD_NORMATIVA,
   MOVILIDAD_NORMATIVA_NOTA_NACIONAL,
   MOVILIDAD_NORMATIVA_REVISADA,
+  type MovilidadNormativaDepartamento,
   type MovilidadNormativaEstado,
 } from '~/utils/movilidadNormativa'
 import { movilidadLongDate } from '~/utils/movilidad'
@@ -99,6 +100,15 @@ const ESTADO_LABEL: Record<MovilidadNormativaEstado, string> = {
   'en-estudio': 'En estudio',
   'sin-norma-encontrada': 'Sin norma encontrada',
 }
+
+// El matiz del estado viaja EN EL BADGE, no sólo en la nota: San José tiene un decreto promulgado
+// cuya fecha de entrada en vigencia no confirma ninguna fuente oficial, y un lector que barre los
+// badges leería "Vigente" a secas como "rige hoy". El texto sale del dato (`estadoDetalle`), nunca
+// de una condición escrita acá sobre el nombre del departamento.
+const estadoLabel = (fila: MovilidadNormativaDepartamento): string =>
+  fila.estadoDetalle
+    ? `${ESTADO_LABEL[fila.estado]} (${fila.estadoDetalle})`
+    : ESTADO_LABEL[fila.estado]
 
 const conNorma = computed(() =>
   MOVILIDAD_NORMATIVA.filter(fila => fila.estado !== 'sin-norma-encontrada')
