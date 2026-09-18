@@ -61,6 +61,8 @@ export interface PublicCarListing {
   lastSeen: string
   priceDrop: { from: number; currency: PublicCarCurrency; since: string } | null
   flags: PublicCarFlag[]
+  /** What the advert itself declares about the car, quoted. Empty for almost every row. */
+  risks: PublicCarRisk[]
   opportunity: { tier: PublicCarTier; gap: number; median: number; n: number } | null
   reference: PublicCarReference | null
 }

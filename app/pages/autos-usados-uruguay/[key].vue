@@ -118,6 +118,29 @@
           >
             {{ CAR_FLAG_LABELS[flag] }}.
           </VAlert>
+          <section v-if="car.risks?.length" class="car-declared mb-4">
+            <h2 class="text-subtitle-1 font-weight-bold mb-2">Lo que declara este aviso</h2>
+            <div v-for="risk in car.risks" :key="risk.category" class="mb-3">
+              <p class="text-body-2 font-weight-bold mb-1">
+                {{ CAR_RISK_GUIDE[risk.category].label }}
+              </p>
+              <blockquote class="car-declared__quote mb-1">
+                <q>{{ risk.quote }}</q>
+                <span class="text-caption text-medium-emphasis">
+                  — {{ risk.from === 'title' ? 'título del aviso' : 'descripción del aviso' }}
+                </span>
+              </blockquote>
+              <p class="text-body-2 mb-0">
+                {{ CAR_RISK_GUIDE[risk.category].meaning }}
+                <strong>{{ CAR_RISK_GUIDE[risk.category].check }}</strong>
+              </p>
+            </div>
+            <p class="text-body-2 mb-0">
+              Lo dice el vendedor, no nosotros. Más avisos así, y cuánto descuenta el mercado por
+              cada motivo, en
+              <NuxtLink :to="localePath(CAR_RISKS_PATH)">autos con deuda o chocados</NuxtLink>.
+            </p>
+          </section>
           <div class="d-flex flex-wrap ga-2">
             <VBtn
               v-if="car.permalink"
@@ -169,6 +192,7 @@
 </template>
 
 <script setup lang="ts">
+import { CAR_RISKS_PATH, CAR_RISK_GUIDE } from '~/utils/carsRisk'
 import {
   CAR_FLAG_LABELS,
   CAR_FUEL_LABELS,
@@ -278,6 +302,16 @@ useHead(() => ({
 </script>
 
 <style scoped>
+.car-declared {
+  border-left: 3px solid rgb(var(--v-theme-warning));
+  padding-left: 12px;
+}
+.car-declared__quote {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
 .car-photo {
   aspect-ratio: 3 / 2;
   border-radius: 12px;

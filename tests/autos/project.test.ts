@@ -27,7 +27,8 @@ describe("publicCarListing", () => {
     expect(Object.keys(row).sort()).toEqual([
       "brand", "brandSlug", "currency", "currencyInferred", "dealerName", "department", "engine", "firstSeen", "flags", "fuel",
       "key", "km", "lastSeen", "marketSlug", "model", "modelSlug", "neighborhood", "opportunity", "permalink", "picture",
-      "pictureCount", "price", "priceConverted", "priceDrop", "priceUsd", "reference", "sellerType", "source", "sourceName",
+      "pictureCount", "price", "priceConverted", "priceDrop", "priceUsd", "reference", "risks", "sellerType", "source",
+      "sourceName",
       "title", "transmission", "trim", "year",
     ]);
     expect(row.title).toBe("Peugeot 208 1.5 Allure llamar");

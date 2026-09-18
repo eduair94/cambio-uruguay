@@ -52,6 +52,7 @@ const CAR_FIELDS = [
   'lastSeen',
   'priceDrop',
   'flags',
+  'risks',
   'opportunity',
   'reference',
 ] as const
@@ -77,6 +78,30 @@ function referenceOf(value: any): PublicCarReference | null {
 const optionalText = (value: unknown): string | null => (typeof value === 'string' ? value : null)
 const optionalNumber = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null
+
+const RISK_CATEGORIES = [
+  'deuda',
+  'papeles',
+  'siniestro',
+  'recupero',
+  'mecanica',
+  'chapa_extranjera',
+  'uso_intensivo',
+] as const
+
+// La cita es texto del vendedor y se vuelve a acotar al leer: la frontera pública se revalida de
+// este lado, no se confía en lo que quedó escrito en la base.
+const riskOf = (raw: Record<string, unknown>): PublicCarRisk | null => {
+  const category = RISK_CATEGORIES.find(name => name === raw.category)
+  const quote = typeof raw.quote === 'string' ? raw.quote.slice(0, 200).trim() : ''
+  if (!category || !quote) return null
+  return {
+    category,
+    severity: raw.severity === 'media' ? 'media' : 'alta',
+    quote,
+    from: raw.from === 'title' ? 'title' : 'description',
+  }
+}
 
 /** Rebuilds a public row field by field: unknown fields in the collection never reach the wire. */
 export function publicCarRow(row: Record<string, any>): PublicCarListing {
@@ -121,6 +146,10 @@ export function publicCarRow(row: Record<string, any>): PublicCarListing {
     flags: Array.isArray(row.flags)
       ? row.flags.filter((flag: unknown) => typeof flag === 'string')
       : [],
+    // La cita del vendedor se revalida acá también: sin cita legible no se publica el riesgo.
+    risks: (Array.isArray(row.risks) ? row.risks : [])
+      .map((item: Record<string, unknown>) => riskOf(item))
+      .filter((item: PublicCarRisk | null): item is PublicCarRisk => !!item),
     opportunity: row.opportunity
       ? {
           tier: row.opportunity.tier === 'strict' ? 'strict' : 'exploratory',
@@ -180,30 +209,6 @@ export async function loadCarOpportunities(): Promise<PublicCarOpportunitySnapsh
   }
   opportunityCache = { snapshot, expires: Date.now() + 180_000 }
   return snapshot
-}
-
-const RISK_CATEGORIES = [
-  'deuda',
-  'papeles',
-  'siniestro',
-  'recupero',
-  'mecanica',
-  'chapa_extranjera',
-  'uso_intensivo',
-] as const
-
-// La cita es texto del vendedor y se vuelve a acotar al leer: la frontera pública se revalida de
-// este lado, no se confía en lo que quedó escrito en la base.
-const riskOf = (raw: Record<string, unknown>): PublicCarRisk | null => {
-  const category = RISK_CATEGORIES.find(name => name === raw.category)
-  const quote = typeof raw.quote === 'string' ? raw.quote.slice(0, 200).trim() : ''
-  if (!category || !quote) return null
-  return {
-    category,
-    severity: raw.severity === 'media' ? 'media' : 'alta',
-    quote,
-    from: raw.from === 'title' ? 'title' : 'description',
-  }
 }
 
 let riskCache: { expires: number; snapshot: PublicCarRiskSnapshot } | null = null

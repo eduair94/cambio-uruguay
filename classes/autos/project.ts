@@ -3,7 +3,7 @@
 import { CAR_OPPORTUNITY_POLICY, type CarAnalysis, type CarCandidate } from "./analyze";
 import { cleanPublicText } from "./normalize";
 import { safeSourcePermalink, safeSourcePicture } from "./sources/registry";
-import type { CarRiskItem } from "./riskAnalyze";
+import { risksOf, type CarRiskItem } from "./riskAnalyze";
 import type {
   PublicCarCatalogMeta, PublicCarComparable, PublicCarListing, PublicCarOpportunityItem, PublicCarOpportunitySnapshot,
   PublicCarRiskCategoryStat, PublicCarRiskItem, PublicCarRiskSnapshot, PublicCarRiskStats, PublicCarSourceCoverage,
@@ -54,6 +54,7 @@ export function publicCarListing(listing: CarListing, opportunity: PublicCarList
     lastSeen: listing.lastSeen,
     priceDrop: listing.priceDrop ? { ...listing.priceDrop } : null,
     flags: [...listing.flags],
+    risks: risksOf(listing).map(risk => ({ category: risk.category, severity: risk.severity, quote: risk.quote, from: risk.from })),
     opportunity,
     reference: listing.reference ? { ...listing.reference } : null,
   };
