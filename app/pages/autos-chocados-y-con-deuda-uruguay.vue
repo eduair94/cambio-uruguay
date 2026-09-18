@@ -30,7 +30,7 @@
           <tr>
             <th scope="col">Lo que declara el aviso</th>
             <th scope="col">Avisos</th>
-            <th scope="col">Con descuento medido</th>
+            <th scope="col">Con diferencia medida</th>
             <th scope="col">Diferencia mediana</th>
             <th scope="col">El 50 % central</th>
           </tr>
@@ -39,7 +39,7 @@
           <tr v-for="row in measured" :key="row.category">
             <td data-label="Lo que declara el aviso">{{ CAR_RISK_GUIDE[row.category].label }}</td>
             <td data-label="Avisos">{{ row.adverts }}</td>
-            <td data-label="Con descuento medido">{{ row.measured }}</td>
+            <td data-label="Con diferencia medida">{{ row.measured }}</td>
             <td data-label="Diferencia mediana">
               <strong>{{ formatCarRiskGap(row.medianGap) }}</strong>
             </td>
