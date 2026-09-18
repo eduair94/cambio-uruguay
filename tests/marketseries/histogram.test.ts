@@ -54,6 +54,31 @@ describe("buildHistogram", () => {
     expect(hist.counts.reduce((a, b) => a + b, 0) + hist.below + hist.above).toBe(200);
   });
 
+  it("fewer observations, fewer bins: about the square root of n, between 6 and 20", () => {
+    expect(buildHistogram(range(10000, 40, 25))!.counts.length).toBeLessThanOrEqual(8);
+    expect(buildHistogram(range(10000, 1000, 1))!.counts.length).toBeLessThanOrEqual(21);
+    expect(buildHistogram(range(10000, 1000, 1))!.counts.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it("asks cluster on round numbers: the step is a multiple of the rounding most prices use", () => {
+    // Measured in Pocitos, 2 bedrooms: $45.000 had 127 asks and $42.500 had 18. With $2.500 bins the
+    // bars zigzag from anchoring alone; every bin has to hold the same round numbers.
+    // 30.000..57.500 over 20 bins is a raw step of ~1.375: plain rounding would pick $2.000.
+    const prices = [
+      ...range(30000, 6, 5000).flatMap(price => Array(50).fill(price)),
+      ...range(32500, 6, 5000).flatMap(price => Array(17).fill(price)),
+    ];
+    const hist = buildHistogram(prices)!;
+    const step = hist.edges[1]! - hist.edges[0]!;
+    expect(hist.log).toBe(false);
+    expect(step % 5000).toBe(0);
+  });
+
+  it("a coarse rounding never collapses the axis into a couple of bars", () => {
+    const prices = range(100000, 100, 1500).map(price => Math.round(price / 50000) * 50000);
+    expect(buildHistogram(prices)!.counts.length).toBeGreaterThanOrEqual(3);
+  });
+
   it("edges strictly increase even after rounding", () => {
     const prices = range(0, 60).map(i => 99_000 + i * 70);
     const hist = buildHistogram(prices)!;
