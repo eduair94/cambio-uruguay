@@ -33,7 +33,7 @@ function detailFor(subject: CarListing, overrides: Partial<CarDetail> = {}): Car
   };
 }
 
-const vocabularies = new Map([["58955|123123", ["Lt", "Ltz", "Joy"]]]);
+const trimIndexes = new Map([["58955|123123", buildTrimIndex(["Lt", "Ltz", "Joy"], ["Lt", "Ltz", "Joy"])]]);
 const market = (count = 10) => Array.from({ length: count }, (_, i) => car({ price: 12_000 + i * 100, km: 85_000 + i * 1_000 }));
 
 describe("exclusionReason", () => {
@@ -90,7 +90,7 @@ describe("comparablesFor", () => {
 describe("analyzeCars", () => {
   it("publishes a verified strict opportunity", () => {
     const subject = car({ price: 9_500, km: 88_000 });
-    const result = analyzeCars([...market(10), subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    const result = analyzeCars([...market(10), subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), trimIndexes });
     expect(result.accepted).toHaveLength(1);
     expect(result.accepted[0]).toMatchObject({ tier: "strict", subject: { key: subject.key } });
     expect(result.accepted[0]!.sample.n).toBe(10);
@@ -100,7 +100,7 @@ describe("analyzeCars", () => {
 
   it("asks for the advert page before publishing", () => {
     const subject = car({ price: 9_500, km: 88_000 });
-    const result = analyzeCars([...market(10), subject], { now: NOW, details: new Map(), vocabularies });
+    const result = analyzeCars([...market(10), subject], { now: NOW, details: new Map(), trimIndexes });
     expect(result.accepted).toEqual([]);
     expect(result.needsDetail).toEqual([subject.key]);
     expect(result.stats.rejectedByDetail).toEqual({ detail_missing: 1 });
@@ -114,27 +114,27 @@ describe("analyzeCars", () => {
       ...Array.from({ length: 6 }, () => car({ year: 2020 })),
     ];
     const subject = car({ price: 9_500 });
-    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), trimIndexes });
     expect(result.accepted).toEqual([]);
   });
 
   it("does not call a car cheap when it simply has more km than the sample", () => {
     const peers = Array.from({ length: 10 }, (_, i) => car({ price: 12_000 + i * 100, km: 60_000 + i * 1_000 }));
     const subject = car({ price: 9_500, km: 78_000 });
-    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), trimIndexes });
     expect(result.accepted).toEqual([]);
   });
 
   it("requires independent sellers", () => {
     const peers = Array.from({ length: 10 }, (_, i) => car({ sellerId: `dealer-${i % 2}`, price: 12_000 + i * 100 }));
     const subject = car({ price: 9_500 });
-    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), trimIndexes });
     expect(result.accepted).toEqual([]);
   });
 
   it("holds a too-good-to-be-true gap for review", () => {
     const subject = car({ price: 5_000 });
-    const result = analyzeCars([...market(10), subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    const result = analyzeCars([...market(10), subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), trimIndexes });
     expect(result.accepted).toEqual([]);
     expect(result.stats.review).toBe(1);
   });
@@ -146,7 +146,7 @@ describe("analyzeCars", () => {
       car({ sellerId, km: 90_000, price: 12_000 }),
     ]);
     const subject = car({ price: 9_500 });
-    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), trimIndexes });
     // 8 posts from only 4 real sellers de-duplicate to 4 comparables — below the exploratory floor.
     expect(result.accepted).toEqual([]);
   });
@@ -154,7 +154,7 @@ describe("analyzeCars", () => {
   it("never lets a seller with no id into the sample", () => {
     const peers = Array.from({ length: 8 }, () => car({ sellerId: null, km: 90_000, price: 12_000 }));
     const subject = car({ price: 9_500 });
-    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), trimIndexes });
     expect(result.accepted).toEqual([]);
   });
 
@@ -165,7 +165,7 @@ describe("analyzeCars", () => {
       car({ sellerId, price: 10_000, km: 90_000 + i * 1_000 + 3_000 }),
     ]);
     const subject = car({ price: 8_700 });
-    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), trimIndexes });
     expect(result.accepted).toHaveLength(1);
     expect(result.accepted[0]!.tier).toBe("exploratory");
   });
@@ -174,7 +174,7 @@ describe("analyzeCars", () => {
     const prices = [8_000, 8_200, 8_400, 8_600, 13_000, 13_200, 13_400, 13_600];
     const peers = prices.map(price => car({ price }));
     const subject = car({ price: 7_000 });
-    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    const result = analyzeCars([...peers, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), trimIndexes });
     expect(result.accepted).toEqual([]);
   });
 
@@ -186,7 +186,7 @@ describe("analyzeCars", () => {
       car({ sellerId: "big", price: 13_000, km: 91_500 }),
     ];
     const subject = car({ price: 9_150 });
-    const result = analyzeCars([...cheap, ...midHigh, ...big, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), vocabularies });
+    const result = analyzeCars([...cheap, ...midHigh, ...big, subject], { now: NOW, details: new Map([[subject.key, detailFor(subject)]]), trimIndexes });
     expect(result.accepted).toHaveLength(1);
     expect(result.accepted[0]!.tier).toBe("exploratory");
   });
@@ -194,14 +194,14 @@ describe("analyzeCars", () => {
   it("only refetches recoverable detail failures, never a final verdict", () => {
     const inactiveSubject = car({ price: 9_500, km: 88_000 });
     const inactive = analyzeCars([...market(10), inactiveSubject], {
-      now: NOW, details: new Map([[inactiveSubject.key, detailFor(inactiveSubject, { active: false })]]), vocabularies,
+      now: NOW, details: new Map([[inactiveSubject.key, detailFor(inactiveSubject, { active: false })]]), trimIndexes,
     });
     expect(inactive.needsDetail).toEqual([]);
     expect(inactive.stats.rejectedByDetail).toEqual({ detail_inactive: 1 });
 
     const mismatchedSubject = car({ price: 9_500, km: 88_000 });
     const mismatched = analyzeCars([...market(10), mismatchedSubject], {
-      now: NOW, details: new Map([[mismatchedSubject.key, detailFor(mismatchedSubject, { year: 2018 })]]), vocabularies,
+      now: NOW, details: new Map([[mismatchedSubject.key, detailFor(mismatchedSubject, { year: 2018 })]]), trimIndexes,
     });
     expect(mismatched.needsDetail).toEqual([]);
     expect(mismatched.stats.rejectedByDetail).toEqual({ detail_mismatch: 1 });
@@ -212,8 +212,8 @@ describe("analyzeCars", () => {
     const a = car({ price: 9_400 });
     const b = car({ price: 9_600 });
     const details = new Map([[a.key, detailFor(a)], [b.key, detailFor(b)]]);
-    const one = analyzeCars([...peers, a, b], { now: NOW, details, vocabularies });
-    const two = analyzeCars([b, ...[...peers].reverse(), a], { now: NOW, details, vocabularies });
+    const one = analyzeCars([...peers, a, b], { now: NOW, details, trimIndexes });
+    const two = analyzeCars([b, ...[...peers].reverse(), a], { now: NOW, details, trimIndexes });
     expect(two.accepted.map(item => item.subject.key)).toEqual(one.accepted.map(item => item.subject.key));
   });
 });

@@ -201,7 +201,7 @@ const bump = (bag: Record<string, number>, key: string): void => {
 
 export function analyzeCars(
   listings: readonly CarListing[],
-  options: { now: Date; details: ReadonlyMap<string, CarDetail>; vocabularies: ReadonlyMap<string, readonly string[]> },
+  options: { now: Date; details: ReadonlyMap<string, CarDetail>; trimIndexes: ReadonlyMap<string, TrimIndex> },
 ): CarAnalysis {
   const stats: PublicCarOpportunityStats = {
     input: listings.length, eligible: 0, analyzed: 0, candidates: 0, verified: 0, strict: 0, exploratory: 0, review: 0,
@@ -222,16 +222,12 @@ export function analyzeCars(
     if (group) group.push(listing);
     else groups.set(key, [listing]);
   }
-  const indexes = new Map<string, TrimIndex>();
-  const trimIndexFor = (listing: CarListing): TrimIndex => {
-    const key = `${listing.brandId}|${listing.modelId}`;
-    let index = indexes.get(key);
-    if (!index) {
-      index = buildTrimIndex(options.vocabularies.get(key) ?? []);
-      indexes.set(key, index);
-    }
-    return index;
-  };
+  // El MISMO lector de versiones que usó el enriquecido. Con un índice distinto acá, la versión del
+  // título y la de la ficha se canonizan por reglas distintas y la comparación final rechaza avisos
+  // sanos por "detail_trim_mismatch" (11 en la corrida del 2026-09-18).
+  const empty = buildTrimIndex([]);
+  const trimIndexFor = (listing: CarListing): TrimIndex =>
+    options.trimIndexes.get(`${listing.brandId}|${listing.modelId}`) ?? empty;
   const accepted: CarCandidate[] = [];
   const refetch: CarCandidate[] = [];
   for (const subject of eligible) {

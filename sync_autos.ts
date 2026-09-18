@@ -187,7 +187,7 @@ async function main(): Promise<void> {
     attachReferences(docs.map(doc => enrich(doc, extra.get(doc.key) ?? doc.detail)), guide);
   let { kept: listings, duplicates } = dedupeAcrossSources(enrichAll(stored, new Map()));
   const details = new Map(listings.filter(listing => listing.detail).map(listing => [listing.key, listing.detail!] as [string, CarDetail]));
-  let analysis = analyzeCars(listings, { now, details, vocabularies: trimsByModel });
+  let analysis = analyzeCars(listings, { now, details, trimIndexes });
 
   const wantedMl = analysis.needsDetail.filter(key => key.startsWith("ml-"));
   if (!dryRun) {
@@ -205,7 +205,7 @@ async function main(): Promise<void> {
     const gone = new Set(fetched.gone);
     ({ kept: listings, duplicates } = dedupeAcrossSources(enrichAll(stored.filter(doc => !gone.has(doc.key)), fetched.details)));
     for (const [key, detail] of fetched.details) details.set(key, detail);
-    analysis = analyzeCars(listings, { now, details, vocabularies: trimsByModel });
+    analysis = analyzeCars(listings, { now, details, trimIndexes });
   }
 
   // 5. Publication.
