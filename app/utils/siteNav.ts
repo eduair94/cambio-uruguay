@@ -1078,6 +1078,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/conviene-pagar-todo-con-credito-uruguay',
+        labelKey: 'nav.pagarTodoConCredito',
+        icon: 'mdi-credit-card-clock-outline',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'pagar todo con tarjeta de credito uruguay',
+          'dejar la plata rindiendo y pagar la tarjeta',
+          'float tarjeta de credito',
+          'descuento iva debito o credito',
+          'transferencia prex itau gratis',
+          'inversion violeta pagar tarjeta',
+          'rendimientos mercado pago pagar tarjeta',
+          'conviene pagar con credito o debito uruguay',
+        ],
+      },
+      {
         to: '/comparativas',
         labelKey: 'nav.comparativas',
         icon: 'mdi-compare-horizontal',

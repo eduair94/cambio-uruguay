@@ -192,6 +192,10 @@ describe('the navigation model has no dead links', () => {
       // What the same account pays you for leaving money in it — the other side
       // of the card comparison, and where the debit ranking sends the reader.
       '/cuenta-remunerada-uruguay',
+      // Y la maniobra que esas dos entradas invitan a hacer: dejar el saldo rindiendo y pagar
+      // todo con la tarjeta de crédito. Va pegada a ellas porque la decide lo que ya está acá:
+      // el rendimiento del saldo contra los dos puntos de IVA que sólo da el débito.
+      '/conviene-pagar-todo-con-credito-uruguay',
       // The head-to-head hub belongs here: every pair it lists is built from
       // the three rankings above (plus the couriers one).
       '/comparativas',

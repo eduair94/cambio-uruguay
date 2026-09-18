@@ -1668,6 +1668,7 @@
     "limiteEfectivo": "Cash payment limit (Law 19,210)",
     "cheques": "Cheques: deadlines and bounces",
     "cuentaRemunerada": "Interest-bearing accounts (idle balance yield)",
+    "pagarTodoConCredito": "Should you put everything on the credit card?",
     "adelantoEfectivo": "Credit-card cash advance",
     "salaVipAeropuerto": "Airport VIP lounge",
     "cuotasOContado": "Installments or cash?",
