@@ -18,8 +18,8 @@ avisos) y `/oportunidades-autos-usados-uruguay`. Diseño y mediciones:
 | Carper | `carper-` | ídem en `usados.carper.com.uy` (precios en centavos) | 378 | completa |
 | Usados Fidocar | `fidocar-` | sitemap + microdatos de cada ficha (Fenicio) | 105 | completa |
 | Car One | `carone-` | HTML del listado con `carone_estado=96` | 218 | parcial (el orden cambia entre páginas) |
-| Motorlider | `motorlider-` | sitemap + ficha (Fenicio, igual que Fidocar) | 67 | completa |
-| Dueño Directo | `duenodirecto-` | listado paginado + ficha de cada aviso | 35 | parcial (hay avisos sin ficha propia) |
+| Motorlider | `motorlider-` | sitemap + ficha (Fenicio, igual que Fidocar) | 50 | completa |
+| Dueño Directo | `duenodirecto-` | listado paginado + ficha de cada aviso | 22 | parcial (hay avisos sin ficha propia) |
 
 Descartadas y por qué: Gallito (el permiso de El País cubre sólo inmuebles), AG Automóviles y Go Select
 (el mismo stock que publican en ML), clasificados.st (spam), heiwork y Trovit (agregadores),
@@ -31,6 +31,10 @@ sólo está en la ficha técnica (`data-codigo="precio-ficha"`) y en el precio t
 usa la ficha cuando existe y descarta cualquier auto por debajo de USD 1.000 / $U 40.000, que es una
 seña y no un usado. También vende motos (10 de 77): sus marcas —KTM, Bajaj, Aprilia, Kymco, Piaggio—
 no están en el diccionario de autos de ML, así que no se identifican y no entran.
+
+Medido en la primera corrida (2026-09-18): de los 50 usados de Motorlider, **41 ya estaban en ML** y
+quedan 9 propios; de los 22 de Dueño Directo, **ninguno** repite. Es la diferencia entre una
+automotora y un clasificado de particulares, y es la razón de sumar el segundo.
 
 **Dueño Directo** es el otro extremo: avisos de particulares, `sellerType: "private"`. Su paginador
 sigue contestando pasado el último aviso (la página 5 y la 6 devuelven tarjetas repetidas), así que la
