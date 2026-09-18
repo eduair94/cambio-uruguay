@@ -3,7 +3,8 @@
 // Measured on 2,279 real adverts (2026-09-16): without version+engine the rule "found" 125 bargains
 // that were a cheaper trim or a 4x2; with them, 11, all defensible by eye.
 import { quantile } from "./stats";
-import { engineOf, slugify, trimOf } from "./normalize";
+import { buildTrimIndex, matchTrim, type TrimIndex } from "./catalog/trims";
+import { engineOf, slugify } from "./normalize";
 import type { PublicCarOpportunityStats } from "./publicTypes";
 import type { CarDetail, CarListing, CarTextFlag } from "./types";
 
@@ -171,7 +172,7 @@ export function tierFor(subject: CarListing, sample: CarSample): CarTier | "revi
 }
 
 /** The advert's own page must still describe the same car, price and km, and nothing disqualifying. */
-export function detailVerdict(subject: CarListing, detail: CarDetail | undefined, now: Date, trims: readonly string[]): string | null {
+export function detailVerdict(subject: CarListing, detail: CarDetail | undefined, now: Date, trims: TrimIndex): string | null {
   const policy = CAR_OPPORTUNITY_POLICY;
   if (!detail) return "detail_missing";
   const cutoff = now.getTime() - policy.detailMaxAgeHours * 3_600_000;
@@ -184,7 +185,7 @@ export function detailVerdict(subject: CarListing, detail: CarDetail | undefined
   if (detail.year !== subject.year) return "detail_mismatch";
   if (detail.km === null || Math.abs(detail.km - subject.km!) > Math.max(1, subject.km! * policy.detailKmTolerance)) return "detail_mismatch";
   if (detail.version) {
-    const pageTrim = trimOf(detail.version, trims);
+    const pageTrim = matchTrim(detail.version, trims);
     if (pageTrim && pageTrim !== subject.trim) return "detail_trim_mismatch";
     const pageEngine = engineOf(detail.version);
     if (pageEngine && subject.engine && pageEngine.replace("T", "") !== subject.engine.replace("T", "")) return "detail_engine_mismatch";
@@ -220,6 +221,16 @@ export function analyzeCars(
     if (group) group.push(listing);
     else groups.set(key, [listing]);
   }
+  const indexes = new Map<string, TrimIndex>();
+  const trimIndexFor = (listing: CarListing): TrimIndex => {
+    const key = `${listing.brandId}|${listing.modelId}`;
+    let index = indexes.get(key);
+    if (!index) {
+      index = buildTrimIndex(options.vocabularies.get(key) ?? []);
+      indexes.set(key, index);
+    }
+    return index;
+  };
   const accepted: CarCandidate[] = [];
   const refetch: CarCandidate[] = [];
   for (const subject of eligible) {
@@ -234,8 +245,7 @@ export function analyzeCars(
     }
     if (!tier) continue;
     stats.candidates++;
-    const trims = options.vocabularies.get(`${subject.brandId}|${subject.modelId}`) ?? [];
-    const verdict = detailVerdict(subject, options.details.get(subject.key), options.now, trims);
+    const verdict = detailVerdict(subject, options.details.get(subject.key), options.now, trimIndexFor(subject));
     if (verdict) {
       bump(stats.rejectedByDetail, verdict);
       if (REFETCH.has(verdict)) refetch.push({ subject, tier, sample, comparables });

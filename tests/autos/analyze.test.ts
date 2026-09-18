@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { buildTrimIndex } from "../../classes/autos/catalog/trims";
 import {
   CAR_OPPORTUNITY_POLICY, analyzeCars, comparablesFor, detailVerdict, exclusionReason, sampleFor,
 } from "../../classes/autos/analyze";
@@ -229,7 +230,7 @@ describe("sampleFor", () => {
 });
 
 describe("detailVerdict", () => {
-  const trims = ["Lt", "Ltz", "Joy"];
+  const trims = buildTrimIndex(["Lt", "Ltz", "Joy"]);
   it("accepts a matching page", () => {
     const subject = car();
     expect(detailVerdict(subject, detailFor(subject), NOW, trims)).toBeNull();

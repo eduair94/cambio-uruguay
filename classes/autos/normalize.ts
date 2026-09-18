@@ -110,14 +110,39 @@ export function parseCarLocation(text: string): { neighborhood: string | null; d
 
 const NEGATION = /\b(no|nunca|sin|jamas|cero|libre de|ni|tampoco|nada)\s+(?:[a-z]+\s+){0,2}$/;
 
-function affirmed(text: string, source: string): boolean {
+/**
+ * Lowercased and unaccented WITHOUT moving a single offset: every code unit maps to exactly one, so
+ * a match index here is an index in `text` and the seller's own sentence can be quoted back from it.
+ * A character whose lowercase or decomposition is not one code unit is left as it is rather than
+ * shifting everything after it.
+ */
+export function foldOffsets(text: string): string {
+  const source = String(text || "");
+  let out = "";
+  for (let index = 0; index < source.length; index++) {
+    const char = source[index]!;
+    const lower = char.toLowerCase();
+    const plain = (lower.length === 1 ? lower : char).normalize("NFD").replace(/[̀-ͯ]/g, "");
+    out += plain.length === 1 ? plain : char;
+  }
+  return out.replace(/[^a-z0-9$.,]/g, " ");
+}
+
+/** Every occurrence of `source` that is not negated ("sin deuda", "nunca chocado" never count). */
+export function affirmedMatches(text: string, source: string): Array<{ index: number; length: number }> {
   const pattern = new RegExp(source, "g");
+  const found: Array<{ index: number; length: number }> = [];
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(text))) {
     const before = text.slice(Math.max(0, match.index - 40), match.index);
-    if (!NEGATION.test(before)) return true;
+    if (!NEGATION.test(before)) found.push({ index: match.index, length: match[0].length });
+    if (match.index === pattern.lastIndex) pattern.lastIndex++;
   }
-  return false;
+  return found;
+}
+
+function affirmed(text: string, source: string): boolean {
+  return affirmedMatches(text, source).length > 0;
 }
 
 // Plural/gender tolerant on purpose: `rueda\b` never matched "Ruedas" in the chair directory.

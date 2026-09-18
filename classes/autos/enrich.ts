@@ -1,10 +1,13 @@
-import { engineOf, kmQuality, slugify, titleFlags, trimLabel, trimOf } from "./normalize";
+import { buildTrimIndex, matchTrim, trimLabelFor, type TrimIndex } from "./catalog/trims";
+import { engineOf, kmQuality, slugify, titleFlags } from "./normalize";
 import { CAR_SOURCES, carKeyFor } from "./sources/registry";
 import type { CarDetail, CarListing, CarPricePoint, CarSource, RawCarListing } from "./types";
 
 export interface EnrichContext {
   usdUyu: number;
   trims: readonly string[];
+  /** Built once per model by the caller: the alias-aware reader of this model's versions. */
+  trimIndex?: TrimIndex;
   firstSeen: string;
   lastSeen: string;
   priceHistory: readonly CarPricePoint[];
@@ -28,7 +31,7 @@ export function priceDropOf(listing: Pick<RawCarListing, "price" | "currency">, 
 export function enrichCarListing(raw: RawCarListing, context: EnrichContext): CarListing {
   // Structured sources carry version/engine words outside the title; the same rules read both.
   const identity = `${raw.title} ${raw.specText ?? ""}`.trim();
-  const trim = trimOf(identity, context.trims);
+  const trim = matchTrim(identity, context.trimIndex ?? buildTrimIndex(context.trims));
   const brandSlug = slugify(raw.brand);
   const modelSlug = slugify(raw.model);
   const flags = new Set([...titleFlags(raw.title, raw.price, raw.currency), ...(context.detail?.flags ?? [])]);
@@ -41,7 +44,7 @@ export function enrichCarListing(raw: RawCarListing, context: EnrichContext): Ca
     marketSlug: `${brandSlug}-${modelSlug}`,
     engine: raw.fuel === "electrico" ? "EV" : engineOf(identity),
     trim,
-    trimLabel: trimLabel(trim, context.trims),
+    trimLabel: trimLabelFor(trim, context.trims),
     kmQuality: kmQuality(raw.km),
     flags: [...flags].sort(),
     priceUsd: raw.currency === "USD" ? raw.price : Math.round(raw.price / context.usdUyu),

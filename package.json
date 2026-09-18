@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "cars_risk_report": "ts-node scripts/oneoff/cars_risk_report.ts",
+    "cars_trim_report": "ts-node scripts/oneoff/cars_trim_report.ts",
     "bcu_single": "ts-node scripts/oneoff/sync_bcu_single.ts",
     "bcu_backfill": "ts-node scripts/oneoff/bcu_backfill.ts",
     "dolarahora_backfill": "ts-node scripts/oneoff/dolarahora_backfill.ts",

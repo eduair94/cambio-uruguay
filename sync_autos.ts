@@ -7,6 +7,7 @@ import { buildCarDictionary } from "./classes/autos/catalog/dictionary";
 import { guideKey, type CarGuideEntry } from "./classes/autos/catalog/guide";
 import { attachReferences, dedupeAcrossSources, referenceMedians, sourceCoverage } from "./classes/autos/dedupe";
 import { fetchCarDetails } from "./classes/autos/detail";
+import { buildTrimIndex, mineTrims, type TrimCorpusRow } from "./classes/autos/catalog/trims";
 import { carKey, enrichCarListing } from "./classes/autos/enrich";
 import { runFacebook } from "./classes/autos/facebookRun";
 import { buildMarketSnapshots } from "./classes/autos/market";
@@ -47,6 +48,12 @@ function failedSource(source: CarSource, startedAt: string, error: unknown): Car
     note: `falla del lector: ${String((error as Error)?.name || "Error")}`, startedAt, finishedAt: new Date().toISOString(),
   };
 }
+
+/** What the version miner reads from a stored advert: the seller's words plus ML's own "Versión". */
+const trimRowOf = (doc: StoredCar): TrimCorpusRow => ({
+  brandId: doc.listing.brandId, modelId: doc.listing.modelId, brand: doc.listing.brand, model: doc.listing.model,
+  title: doc.listing.title, specText: doc.listing.specText ?? null, version: doc.detail?.version ?? null,
+});
 
 async function main(): Promise<void> {
   const dryRun = process.argv.includes("--dry-run");
@@ -90,22 +97,34 @@ async function main(): Promise<void> {
 
   let vocabularies: CarModelVocabulary[] = dryRun ? [] : await loadVocabularies();
   if (harvest) vocabularies = mergeVocabularies(vocabularies, harvest.vocabularies);
+  // What Mercado Libre itself publishes, kept apart: its names beat a mined one when both match.
+  const mlVocabularies = vocabularies.map(vocabulary => ({ ...vocabulary, trims: [...vocabulary.trims] }));
   if (harvest && !dryRun) {
     const saved = await saveCarHarvest(harvest);
     await saveVocabularies(vocabularies, harvest.finishedAt);
     await saveHarvestMeta(harvest);
     console.log(`[autos] stored ${saved.upserted} adverts, retired ${saved.retired}`);
   }
-  const trimsByModel = new Map(vocabularies.map(vocabulary => [`${vocabulary.brandId}|${vocabulary.modelId}`, vocabulary.trims]));
-  const enrich = (doc: StoredCar, detail: CarDetail | null): CarListing => enrichCarListing(doc.listing, {
-    usdUyu, trims: trimsByModel.get(`${doc.listing.brandId}|${doc.listing.modelId}`) ?? [],
-    firstSeen: doc.firstSeen, lastSeen: doc.lastSeen, priceHistory: doc.priceHistory ?? [], detail,
-  });
   const dryDocs: StoredCar[] = dryRun && harvest ? storedFrom(harvest.listings) : [];
   const loadDocs = async (): Promise<StoredCar[]> => (dryRun ? dryDocs : loadStoredCars(now));
 
   // 2. Every source is identified against the ML dictionary, so its cars join ML's cohorts.
   let stored = await loadDocs();
+  // Mercado Libre's own facet leaves 515 of 932 models without a single version name, so the rest of
+  // the vocabulary is mined from the corpus we already hold (classes/autos/catalog/trims.ts).
+  vocabularies = mineTrims(stored.map(doc => trimRowOf(doc)), vocabularies);
+  const trimsByModel = new Map(vocabularies.map(vocabulary => [`${vocabulary.brandId}|${vocabulary.modelId}`, vocabulary.trims]));
+  const officialTrims = new Map(mlVocabularies.map(vocabulary => [`${vocabulary.brandId}|${vocabulary.modelId}`, vocabulary.trims]));
+  const trimIndexes = new Map(
+    [...trimsByModel].map(([key, trims]) => [key, buildTrimIndex(trims, officialTrims.get(key) ?? [])] as const),
+  );
+  const enrich = (doc: StoredCar, detail: CarDetail | null): CarListing => {
+    const key = `${doc.listing.brandId}|${doc.listing.modelId}`;
+    return enrichCarListing(doc.listing, {
+      usdUyu, trims: trimsByModel.get(key) ?? [], trimIndex: trimIndexes.get(key),
+      firstSeen: doc.firstSeen, lastSeen: doc.lastSeen, priceHistory: doc.priceHistory ?? [], detail,
+    });
+  };
   const dictionary = buildCarDictionary(stored.map(doc => doc.listing), vocabularies);
   const guide: Map<string, CarGuideEntry> = dryRun ? new Map() : await loadGuideEntries();
   const sourceResults: CarSourceResult[] = [];
