@@ -33,7 +33,7 @@ import type { EquiparMeta } from "./classes/equipar/types";
 import { harvestRetail } from "./classes/retail/harvest";
 import { retailStores } from "./classes/retail/stores";
 import { applyUnitGuard } from "./classes/retail/unitGuard";
-import { EQUIPAR_STORE_QUERIES } from "./classes/equipar/budget";
+import { EQUIPAR_STORE_KEYS, EQUIPAR_STORE_QUERIES } from "./classes/equipar/budget";
 import { mergeStoreSnapshot } from "./classes/equipar/storeSnapshot";
 import { recordPricewatch } from "./classes/pricewatch/record";
 
@@ -63,7 +63,7 @@ async function main(): Promise<void> {
 
   const startedAt = Date.now();
   const specs = equiparSpecs();
-  const stores = retailStores();
+  const stores = retailStores(EQUIPAR_STORE_KEYS);
 
   const [harvest, usdUyu, previous, storedCount, storeSnapshot] = await Promise.all([
     harvestRetail({

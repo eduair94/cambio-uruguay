@@ -6,6 +6,13 @@
 // courierPages.test.ts do: by what the file itself contains. The shared "does this key have a
 // ficha" list is `useStoreProfileKeys()`, fetched under its OWN `useFetch` key so it never collides
 // with the hub's `tiendas-online-index` or a detail page's `store-<key>` cache entry.
+//
+// Rebase C (post plan A/D, 2026-09-17): /celulares-uruguay/[modelo].vue picks up the same pattern
+// once storeDirectory.ts/useStoreProfileKeys.ts exist on this branch — its own describe block below
+// mirrors the sillas/equipar ones. Its guard differs from the "facebook never links" one those two
+// pages use (celulares has no `source: 'facebook'` — see `PhoneOfferDoc`, `app/utils/phones.ts`):
+// the un-linkable case here is an unidentified MercadoLibre seller (`sellerKey === 'ml:unknown'`,
+// the same bucket `phoneSellerLabel` renders as "Vendedor sin identificar (Mercado Libre)").
 
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -19,6 +26,10 @@ const sillasSource = readFileSync(
 )
 const equiparSource = readFileSync(
   join(__dirname, '..', '..', 'pages', 'equipar-casa-uruguay', '[categoria].vue'),
+  'utf8'
+)
+const celularesSource = readFileSync(
+  join(__dirname, '..', '..', 'pages', 'celulares-uruguay', '[modelo].vue'),
   'utf8'
 )
 
@@ -150,5 +161,42 @@ describe('equipar-casa-uruguay/[categoria].vue seller links', () => {
     )
     expect(liMatch).not.toBeNull()
     expect(liMatch![0]).toContain(':aria-label="`Ficha de ${offer.seller}`"')
+  })
+})
+
+describe('celulares-uruguay/[modelo].vue seller links', () => {
+  it('resolves the seller through storeSlugForSeller and the shared profile-keys composable', () => {
+    expect(celularesSource).toContain('storeSlugForSeller')
+    expect(celularesSource).toContain('useStoreProfileKeys()')
+  })
+
+  it('links the seller name in the offers table to its ficha only when it resolves to a key', () => {
+    expect(celularesSource).toMatch(/<NuxtLink[^>]*v-if="storeKeyFor\(offer\)"/)
+    // Whitespace-tolerant: prettier is free to wrap this call onto its own lines.
+    expect(celularesSource).toMatch(
+      /localePath\(\s*`\/tiendas-online-uruguay\/\$\{storeKeyFor\(offer\)\}`\s*\)/
+    )
+  })
+
+  it('never links an unidentified MercadoLibre seller, even if its label happened to resolve to a store', () => {
+    // celulares has no `source: 'facebook'` (see PhoneOfferDoc) — the never-link case here is the
+    // shared ML "no real seller" bucket (`sellerKey === 'ml:unknown'`), the same one
+    // `phoneSellerLabel` renders as "Vendedor sin identificar (Mercado Libre)".
+    expect(celularesSource).toContain("if (offer.sellerKey === 'ml:unknown') return null")
+  })
+
+  it('does not nest the store link inside the external "Ver oferta" anchor', () => {
+    const sellerCellMatch = celularesSource.match(/<td data-label="Vendedor">([\s\S]*?)<\/td>/)
+    expect(sellerCellMatch).not.toBeNull()
+    expect(sellerCellMatch![1]).toContain('<NuxtLink')
+    expect(sellerCellMatch![1]).not.toMatch(/<a\s/)
+  })
+
+  it('also links the seller named in the H1 lead ("el más barato está en <seller>")', () => {
+    expect(celularesSource).toMatch(/<NuxtLink[^>]*v-if="headline\.sellerKey"/)
+    expect(celularesSource).toMatch(
+      /localePath\(\s*`\/tiendas-online-uruguay\/\$\{headline\.sellerKey\}`\s*\)/
+    )
+    expect(celularesSource).toContain('sellerKey: storeKeyFor(offer)')
   })
 })

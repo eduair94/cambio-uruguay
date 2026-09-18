@@ -2,10 +2,11 @@
 
 Plan D, escrito 2026-09-17. Compara el precio de HOY de cada oferta propia (`pricewatchoffers`,
 `docs/app/PRICEWATCH.md`) contra su PROPIO historial de hasta 60 días — nunca contra otra tienda ni
-contra una banda de mercado, que es lo que ya publican `/equipar-casa-uruguay` y
-`/sillas-escritorio-uruguay`. `sync_price_events.ts` (raíz) sólo LEE `pricewatchoffers` (lo escriben
-`sync_equipar.ts`/`sync_chairs.ts`) y publica en APP DB `priceeventsnapshots`, que sirve
-`GET /api/price-events` (Nuxt) a la página del mismo nombre. El código puro vive en
+contra una banda de mercado, que es lo que ya publican `/equipar-casa-uruguay`,
+`/sillas-escritorio-uruguay` y (desde el rebase de plan C, 2026-09-17) `/celulares-uruguay`.
+`sync_price_events.ts` (raíz) sólo LEE `pricewatchoffers` (lo escriben
+`sync_equipar.ts`/`sync_chairs.ts`/`sync_phones.ts`) y publica en APP DB `priceeventsnapshots`, que
+sirve `GET /api/price-events` (Nuxt) a la página del mismo nombre. El código puro vive en
 `classes/priceevents/` (`types.ts`, `analyze.ts`, `aggregate.ts`, `calendar.ts`, `refresh.ts`,
 `store.ts`); el mismo calendario se replica a mano en `app/utils/priceEvents.ts` porque un test de la
 raíz no puede importar `app/` (ver AGENTS.md, "Dos build surfaces").
@@ -133,8 +134,9 @@ sobreescrito cada corrida — mismo patrón `current`/`day:` que `RegionalSnapsh
   bajo el mismo `sellerName` (una tienda con sitio propio Y storefront en MercadoLibre, cada uno con
   su propio `sellerKey`), el de MercadoLibre (`sellerKey` que empieza con `ml:`) se sufija
   `" (Mercado Libre)"` para que la tabla no muestre dos filas idénticas sin forma de distinguirlas.
-- **`byVertical`**: `{ eligible, drops, inflated }` por vertical (equipar/sillas hoy; una vertical
-  nueva no toca este código porque `loadVerticals()` lee `distinct("vertical")` de los datos mismos).
+- **`byVertical`**: `{ eligible, drops, inflated }` por vertical (equipar/sillas/celulares hoy; una
+  vertical nueva no toca este código porque `loadVerticals()` lee `distinct("vertical")` de los
+  datos mismos).
 - **`bySource`** (revisión final, hallazgo M5): cuántas ofertas elegibles de hoy vinieron de cada
   `source` (`mercadolibre`, `fenicio`, …) — `refresh.ts` lo tabula mientras recorre el cursor (no lo
   necesita `analyzeOfferOutcome`, así que no viaja en `PriceEventAnalysis`). La página lo usa para decir
@@ -182,9 +184,10 @@ hoy, loggea y sale con código 0 **sin conectarse a la base** — son 24 corrida
 año, casi todas sin nada que hacer, y no deben costar ni una conexión. Cuando SÍ hay un evento activo
 corre el mismo pipeline que la diaria (mismo `runPriceEvents`), sin podar. La corrida diaria
 (`13 15 * * *` = 15:13 UTC ≈ 12:13 America/Montevideo) va después de `currency-equipar` (12:47 UTC) y
-de la cosecha de celulares (14:29 UTC, otra rama/plan — el detector de verticales es automático, así
-que en cuanto ese job empiece a escribir `pricewatchoffers` con `vertical: "celulares"` este feature lo
-suma sin tocar código) para que el punto de hoy de cada vertical ya esté escrito cuando esto lee.
+de `currency-phones` (14:29 UTC, `sync_phones.ts` — el detector de verticales es automático: en
+cuanto ese job escribe `pricewatchoffers` con `vertical: "celulares"` este feature lo suma sin tocar
+código, y desde el rebase de plan C ese job ya vive en esta rama) para que el punto de hoy de cada
+vertical ya esté escrito cuando esto lee.
 
 Un evento "activo" es una fila del calendario cuyo rango cubre `today` — incluida la edición de
 noviembre 2026 SIN fecha publicada, que activa una **ventana adivinada 2026-11-01..2026-11-08**
@@ -231,10 +234,11 @@ inventar una fecha** para completar esta lista mientras la CEDU no publique la d
   error sobre el precio) y **art. 26** (probar el precio publicitado es responsabilidad de quien
   anuncia, no del comprador) — citados así, sin agregar un umbral que la ley uruguaya no tiene.
 - **Historial sólo desde lo que observamos, y se dice desde cuándo.** El "tachado por encima" es
-  contra lo que ESTE sitio vio, con las tiendas que releva para `/equipar-casa-uruguay` y
-  `/sillas-escritorio-uruguay` — nunca una afirmación sobre el mercado completo. La FAQ "¿desde cuándo
-  tienen este historial?" (sólo aparece si `trackingSince` no es `null`) y "¿por qué no aparecen todas
-  las tiendas?" existen para que esa limitación quede explícita, no implícita.
+  contra lo que ESTE sitio vio, con las tiendas que releva para `/equipar-casa-uruguay`,
+  `/sillas-escritorio-uruguay` y `/celulares-uruguay` — nunca una afirmación sobre el mercado
+  completo. La FAQ "¿desde cuándo tienen este historial?" (sólo aparece si `trackingSince` no es
+  `null`) y "¿por qué no aparecen todas las tiendas?" existen para que esa limitación quede
+  explícita, no implícita.
 - **Ningún enlace de "voto" a una oferta de tercero.** TODA fila de la tabla de bajas enlaza afuera con
   `rel="nofollow noopener"` (no `noreferrer`, que sí llevaban los enlaces del calendario) — mismo
   criterio que equipar/sillas: nunca se le regala autoridad de enlace a un vendedor externo por
@@ -349,13 +353,25 @@ de nuevo en el cliente.
 3. Correr `npm test` en la raíz y en `app/` antes de pushear (el CI ya lo hace, pero conviene verlo en
    verde localmente primero) y pushear a `main` — el filtro de deploy despliega raíz y app en el mismo
    push si ambos archivos cambiaron juntos (ver AGENTS.md, "Deploy").
-4. **Cuando el directorio de celulares se publique** (otra rama/plan), agregar el enlace estático a
-   `/celulares-uruguay` en la sección "Seguí comparando" de
-   `app/pages/ciberlunes-y-black-friday-uruguay.vue`. Se dejó afuera a propósito en esta tarea porque
-   esa página no existe todavía en este branch; `priceEventInternalHref()`
-   (`app/utils/priceEvents.ts`) YA sabe derivar `/celulares-uruguay/<slug>` para una fila de vertical
-   `celulares` con `productKey: 'phone:<slug>'` — no hace falta tocar esa función, sólo el enlace fijo
-   de la lista de relacionados.
+4. ~~Cuando el directorio de celulares se publique, agregar el enlace estático a `/celulares-uruguay`
+   en "Seguí comparando".~~ **Hecho** (rebase de plan C sobre plan A/D, 2026-09-17): el directorio de
+   celulares (`sync_phones.ts`, `/celulares-uruguay`) ya está publicado en esta rama, así que
+   `app/pages/ciberlunes-y-black-friday-uruguay.vue` suma el enlace fijo a `/celulares-uruguay` en
+   "Seguí comparando" y menciona el directorio junto a equipar/sillas en la bajada y en "Cómo
+   medimos"; la FAQ "¿por qué no aparecen todas las tiendas?" (`app/utils/priceEvents.ts`) también
+   nombra las tres. `priceEventInternalHref()` no necesitó ningún cambio de lógica — ya derivaba
+   `/celulares-uruguay/<slug>` para una fila de vertical `celulares` con `productKey: 'phone:<slug>'`
+   — pero sí se le sacó el comentario "todavía no publicado" que ya no describe la realidad, y
+   `app/tests/unit/priceEvents.test.ts` suma un test que llama a `identifyPhone()` (raíz,
+   `classes/phones/identify.ts`) con un título real para probar la derivación contra la clave que
+   ese módulo arma de verdad, no sólo contra un slug escrito a mano: `identity.key` es exactamente
+   `PhoneModel.slug` (`classes/phones/catalog.ts`: `slug: key`, sin transformación), que es el mismo
+   slug que valida `PHONE_SLUG_RE` y sirve `/celulares-uruguay/[modelo].vue`. La vertical `celulares`
+   ya corría en `sync_price_events.ts` sin cambios (el detector de verticales lee `distinct("vertical")`
+   de `pricewatchoffers`), así que esto era estrictamente el enlace y la copia pendientes, más el
+   Task 10 de enlazar cada vendedor de la ficha de celulares a su propia tienda
+   (`/tiendas-online-uruguay/<key>`, mismo patrón que sillas/equipar) que esta misma rama diferí hasta
+   tener `storeDirectory.ts`/`useStoreProfileKeys.ts` disponibles después del rebase.
 
 ### Recordatorio fechado (revisión final, hallazgo M11)
 

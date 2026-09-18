@@ -23,6 +23,8 @@ import { CarMarketSnapshotModel } from "../../classes/models/CarMarketSnapshot";
 import { CarOpportunitySnapshotModel } from "../../classes/models/CarOpportunitySnapshot";
 import { StoreProfileModel } from "../../classes/models/StoreProfile";
 import { PriceEventSnapshotModel } from "../../classes/models/PriceEventSnapshot";
+import { PhoneModelModel } from "../../classes/models/PhoneModel";
+import { PhoneMetaModel } from "../../classes/models/PhoneMeta";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -139,6 +141,20 @@ describe("app-Mongo schema parity", () => {
     );
     expect(CharruaSnapshotModel.collection.name).toBe("charruadevssnapshots");
   });
+
+  it("PhoneModel declares exactly the app's top-level fields", () => {
+    // El directorio de celulares: un campo que el backend escribe y el app no declara es un dato que
+    // la ficha nunca muestra, sin error — y `ambiguousConditions`/`ambiguousDropped` son justo el
+    // campo que decide si una página se publica (ver classes/phones/catalog.ts).
+    expect(Object.keys(PhoneModelModel.schema.obj).sort()).toEqual(appFields(appModel("PhoneModel")).sort());
+    expect(PhoneModelModel.collection.name).toBe("phonemodels");
+  });
+
+  it("PhoneMeta declares exactly the app's top-level fields", () => {
+    expect(Object.keys(PhoneMetaModel.schema.obj).sort()).toEqual(appFields(appModel("PhoneMeta")).sort());
+    expect(PhoneMetaModel.collection.name).toBe("phonemeta");
+  });
+
   it("the used-car public models declare exactly the app's fields", () => {
     // El directorio de autos: un campo que el backend escribe y el app no declara es un dato que la
     // página nunca muestra, sin error.
@@ -181,5 +197,7 @@ describe("app-Mongo schema parity", () => {
     expect(EquiparItemModel.collection.name).toBe("equiparitems");
     expect(EquiparMetaModel.collection.name).toBe("equiparmeta");
     expect(StoreProfileModel.collection.name).toBe("storeprofiles");
+    expect(PhoneModelModel.collection.name).toBe("phonemodels");
+    expect(PhoneMetaModel.collection.name).toBe("phonemeta");
   });
 });

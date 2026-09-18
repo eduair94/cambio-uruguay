@@ -2,13 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 
 // recordPricewatch talks to the APP DB through this model; the calls are recorded, not executed.
 const modelCalls = vi.hoisted(() => [] as string[]);
+const bulkWriteCalls = vi.hoisted(() => [] as unknown[]);
 vi.mock("../../classes/models/PricewatchOffer", () => ({
   PricewatchOfferModel: {
     createIndexes: async () => {
       modelCalls.push("createIndexes");
     },
-    bulkWrite: async () => {
+    bulkWrite: async (ops: unknown) => {
       modelCalls.push("bulkWrite");
+      bulkWriteCalls.push(ops);
     },
     deleteMany: async (filter: unknown) => {
       modelCalls.push(`deleteMany ${JSON.stringify(filter)}`);
@@ -168,6 +170,27 @@ describe("pricewatchOperation", () => {
     };
     expect(op.updateOne.update[0].$set.history.$slice[1]).toBe(-30);
   });
+
+  it("un 5to argumento reemplaza productKey, en vez del ml:<catalogId> por defecto", () => {
+    const op = pricewatchOperation(listing({ catalogId: "MLU123" }), "celulares", today, 120, "phone:apple-iphone-17-256gb") as {
+      updateOne: { update: Array<{ $set: Record<string, unknown> }> };
+    };
+    expect(op.updateOne.update[0].$set.productKey).toEqual({ $literal: "phone:apple-iphone-17-256gb" });
+  });
+
+  it("el override en null también reemplaza — no cae de vuelta al ml:<catalogId>", () => {
+    const op = pricewatchOperation(listing({ catalogId: "MLU123" }), "celulares", today, 120, null) as {
+      updateOne: { update: Array<{ $set: Record<string, unknown> }> };
+    };
+    expect(op.updateOne.update[0].$set.productKey).toEqual({ $literal: null });
+  });
+
+  it("sin 5to argumento (undefined), el comportamiento de siempre no cambia", () => {
+    const op = pricewatchOperation(listing({ catalogId: "MLU123" }), "equipar", today, 120, undefined) as {
+      updateOne: { update: Array<{ $set: Record<string, unknown> }> };
+    };
+    expect(op.updateOne.update[0].$set.productKey).toEqual({ $literal: "ml:MLU123" });
+  });
 });
 
 describe("applyHistory", () => {
@@ -240,5 +263,46 @@ describe("recordPricewatch", () => {
       'deleteMany {"vertical":"equipar","lastSeen":{"$lt":"2026-03-20"}}',
     ]);
     expect(result).toEqual({ written: 1, skipped: 0, pruned: 3 });
+  });
+
+  it("sin options, sigue usando ml:<catalogId> como siempre — sync_equipar.ts/sync_chairs.ts no cambian", async () => {
+    modelCalls.length = 0;
+    bulkWriteCalls.length = 0;
+    await recordPricewatch([listing({ catalogId: "MLU999" })], "equipar", "2026-09-16");
+    const ops = bulkWriteCalls[0] as Array<{ updateOne: { update: Array<{ $set: Record<string, unknown> }> } }>;
+    expect(ops[0]!.updateOne.update[0]!.$set.productKey).toEqual({ $literal: "ml:MLU999" });
+  });
+
+  it("con options.productKeyFor, usa la clave que devuelve el callback en vez de ml:<catalogId>", async () => {
+    modelCalls.length = 0;
+    bulkWriteCalls.length = 0;
+    await recordPricewatch([listing({ catalogId: "MLU999" })], "celulares", "2026-09-16", {
+      productKeyFor: () => "phone:apple-iphone-17-256gb",
+    });
+    const ops = bulkWriteCalls[0] as Array<{ updateOne: { update: Array<{ $set: Record<string, unknown> }> } }>;
+    expect(ops[0]!.updateOne.update[0]!.$set.productKey).toEqual({ $literal: "phone:apple-iphone-17-256gb" });
+  });
+
+  it("un callback que devuelve null escribe productKey null — no cae a ml:<catalogId>", async () => {
+    modelCalls.length = 0;
+    bulkWriteCalls.length = 0;
+    await recordPricewatch([listing({ catalogId: "MLU999" })], "celulares", "2026-09-16", {
+      productKeyFor: () => null,
+    });
+    const ops = bulkWriteCalls[0] as Array<{ updateOne: { update: Array<{ $set: Record<string, unknown> }> } }>;
+    expect(ops[0]!.updateOne.update[0]!.$set.productKey).toEqual({ $literal: null });
+  });
+
+  it("productKeyFor recibe el listing deduplicado (el más barato de un listingId repetido)", async () => {
+    modelCalls.length = 0;
+    bulkWriteCalls.length = 0;
+    const seen: number[] = [];
+    await recordPricewatch(
+      [listing({ listingId: "dup", price: 500 }), listing({ listingId: "dup", price: 300 })],
+      "celulares",
+      "2026-09-16",
+      { productKeyFor: (l) => { seen.push(l.price); return "phone:x"; } }
+    );
+    expect(seen).toEqual([300]);
   });
 });

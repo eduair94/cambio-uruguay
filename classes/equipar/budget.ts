@@ -18,3 +18,33 @@ export const EQUIPAR_STORE_QUERIES = {
    */
   fast: 24,
 } as const;
+
+/**
+ * The storefronts this directory actually reads. `retailStores()` with no keys returns every
+ * ENABLED store in the shared `classes/retail` registry — fine while that registry only held
+ * furniture/appliance sellers, wrong the moment a phone-only store (claro, zonatecno, nstore,
+ * zonalaptop, market, digitalworld — added 2026-09-17 for `classes/phones`) joins it: without this
+ * allowlist `sync_equipar.ts` would start sweeping storefronts no household-goods category could
+ * ever accept, for nothing. Same 16 stores the chair directory reads
+ * (`classes/chairs/sources/registry.ts`'s `CHAIR_STORE_KEYS`) plus `magiccenter`, which the
+ * directorios-de-producto plan calls out by name: it carries appliances alongside its phones.
+ */
+export const EQUIPAR_STORE_KEYS: readonly string[] = [
+  "bertoni",
+  "divino",
+  "electroventas",
+  "lacuevamuebles",
+  "clemur",
+  "soysantander",
+  "dimm",
+  "armo",
+  "grassi",
+  "covercompany",
+  "americanmesh",
+  "prontometal",
+  "puntounion",
+  "tyt",
+  "ufficio",
+  "eldorado",
+  "magiccenter",
+];

@@ -1,6 +1,11 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+// Un test del APP sí puede importar la raíz (sólo el RUNTIME de producción de cada paquete no
+// puede cruzar el límite) — mismo patrón que priceEventsCalendarParity.test.ts, usado acá para
+// probar la derivación de enlace de celulares contra una clave REAL de identifyPhone, no un slug
+// inventado a mano.
+import { identifyPhone } from '../../../classes/phones/identify'
 import {
   priceEventCountdown,
   priceEventCountdownHeadline,
@@ -332,6 +337,26 @@ describe('priceEventDropRows', () => {
     expect(row!.internalHref).toBe('/celulares-uruguay/iphone-15-pro')
   })
 
+  it('la clave real de identifyPhone (== PhoneModel.slug, classes/phones/catalog.ts: `slug: key`) es la que /celulares-uruguay/[modelo].vue sirve', () => {
+    // `sync_phones.ts`'s `productKeyFor` arma `phone:${identity.key}` para cada oferta, y
+    // `buildPhoneCatalog` (classes/phones/catalog.ts) publica el modelo con `slug: key` — el MISMO
+    // `identity.key`, sin ninguna transformación entre medio. El test de arriba ya prueba la forma
+    // de la derivación con un slug escrito a mano; éste la prueba contra la clave que identifyPhone
+    // arma de verdad para un título real, para que un cambio en identify.ts (un guion de más, un
+    // sufijo distinto) que rompiera esta cadena lo note acá, no en producción.
+    const identity = identifyPhone('Apple iPhone 15 Pro 256GB')
+    expect(identity).not.toBeNull()
+    const [row] = priceEventDropRows({
+      topDrops: [
+        drop({ vertical: 'celulares', category: null, productKey: `phone:${identity!.key}` }),
+      ],
+    })
+    expect(row!.internalHref).toBe(`/celulares-uruguay/${identity!.key}`)
+    // Y esa clave tiene forma de slug de ruta de verdad (minúsculas, dígitos, guiones) — el mismo
+    // patrón que valida `PHONE_SLUG_RE` (app/utils/phones.ts) antes de renderizar la ficha.
+    expect(identity!.key).toMatch(/^[a-z0-9][a-z0-9-]{3,80}$/)
+  })
+
   it('sillas siempre enlaza al hub, sin depender de category/productKey', () => {
     const [row] = priceEventDropRows({
       topDrops: [drop({ vertical: 'sillas', category: null, productKey: null })],
@@ -494,18 +519,33 @@ describe('la página /ciberlunes-y-black-friday-uruguay cumple su propio contrat
     }
   })
 
-  it('no enlaza a /celulares-uruguay todavía (esa página no existe hasta que otra rama la publique)', () => {
-    expect(source).not.toContain('/celulares-uruguay')
+  it('enlaza a /celulares-uruguay (rebase de plan C, 2026-09-17: esa página ya existe en esta rama)', () => {
+    expect(source).toContain('/celulares-uruguay')
   })
 
-  it('enlaza a los cuatro hubs relacionados que sí existen', () => {
+  it('enlaza a los cinco hubs relacionados que sí existen', () => {
     for (const path of [
       '/descuentos-con-tarjeta-uruguay',
       '/equipar-casa-uruguay',
       '/sillas-escritorio-uruguay',
+      '/celulares-uruguay',
       '/derechos-consumidor-compras-online',
     ]) {
       expect(source).toContain(path)
+    }
+  })
+
+  it('la bajada y "cómo medimos" nombran las tres verticales que releva, no sólo equipar/sillas', () => {
+    // Estas dos menciones son las que la FAQ "¿por qué no aparecen todas las tiendas?" respalda
+    // (app/utils/priceEvents.ts) — las tres tienen que aparecer juntas o la limitación queda
+    // implícita para dos de cada tres verticales que el job en realidad lee.
+    const heroAndMethod = source.split('<!-- ── Sin datos suficientes')[0] ?? source
+    for (const path of [
+      '/equipar-casa-uruguay',
+      '/sillas-escritorio-uruguay',
+      '/celulares-uruguay',
+    ]) {
+      expect(heroAndMethod).toContain(path)
     }
   })
 

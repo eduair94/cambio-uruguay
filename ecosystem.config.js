@@ -199,6 +199,42 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Daily phone-market harvest: MercadoLibre + the celulares storefronts in
+      // classes/phones/spec.ts's PHONE_STORE_KEYS, turned into one row per phone MODEL
+      // (brand+family+storage) with a price band per condition.
+      //
+      // 14:29 UTC = 11:29 Montevideo, clear of currency-chairs (11:41) and currency-equipar (12:47) —
+      // both hit the same hosts and the same two bridges on :9656/:9657, and overlapping them would
+      // double the load on somebody else's small shop for no gain.
+      name: "currency-phones",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_phones.js",
+      cron_restart: "29 14 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Hourly price-only refresh: MercadoLibre only, 8 searches instead of the daily's 40, no
+      // storefront sweep (a Fenicio store is read one product page at a time — fine once a day,
+      // abusive every hour, same reasoning as currency-chairs-hourly/currency-equipar-hourly).
+      //
+      // Minute 37 is clear of every other hourly consumer of the shared ML bridge (:9656):
+      // currency-chairs-hourly :23, currency-autos-hourly :29, currency-rentals-hourly :47,
+      // currency-equipar-hourly :53. currency-autos is now on main too, and its DAILY run (07:43 UTC)
+      // is not a single scan but a ~2h SEQUENTIAL brand->model sweep of the same bridge — a burst
+      // against it makes the bridge fall back to its residential proxy for 10 MINUTES, for every job
+      // that reads it, not just this one (measured 2026-09-17, docs/app/AUTOS.md). That is also why
+      // this hourly run searches 8 terms and not 16: half the daily budget, same shared-bridge
+      // caution as the daily's own 40-vs-full-catalogue restraint.
+      name: "currency-phones-hourly",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_phones.js",
+      args: "--fast",
+      cron_restart: "37 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Daily rental sweep for /alquileres-uruguay. Reads MercadoLibre (scraper service on :9656),
       // InfoCasas (its own server-rendered payload) and Facebook Marketplace (browser service on
       // :9657), merges the adverts into one row per PROPERTY and writes them to the NUXT APP's

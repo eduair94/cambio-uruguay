@@ -21,11 +21,12 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
         "Hasta 70 % OFF" es fácil de anunciar. Acá no lo damos por sentado en general: comparamos,
         oferta por oferta, el precio de hoy contra el propio historial de precios de las tiendas que
         ya relevamos todos los días para
-        <NuxtLink :to="localePath('/equipar-casa-uruguay')">/equipar-casa-uruguay</NuxtLink>
-        y
+        <NuxtLink :to="localePath('/equipar-casa-uruguay')">/equipar-casa-uruguay</NuxtLink>,
         <NuxtLink :to="localePath('/sillas-escritorio-uruguay')"
           >/sillas-escritorio-uruguay</NuxtLink
-        >.
+        >
+        y
+        <NuxtLink :to="localePath('/celulares-uruguay')">/celulares-uruguay</NuxtLink>.
       </p>
       <p v-if="current?.generatedAt" class="as-of text-caption text-medium-emphasis">
         Actualizado el {{ priceEventFormatDate(current.generatedAt) }}.
@@ -132,12 +133,14 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
         Una oferta recién entra a esta comparación cuando lleva al menos 21 días en nuestro
         historial y tiene al menos 10 días con precio dentro de esos 60. Y una salvedad que vale
         para toda la página: <strong>sólo vemos las tiendas que relevamos</strong> para {{ ' '
-        }}<NuxtLink :to="localePath('/equipar-casa-uruguay')">/equipar-casa-uruguay</NuxtLink>
-        y
+        }}<NuxtLink :to="localePath('/equipar-casa-uruguay')">/equipar-casa-uruguay</NuxtLink>,
         <NuxtLink :to="localePath('/sillas-escritorio-uruguay')"
           >/sillas-escritorio-uruguay</NuxtLink
-        >; una tienda fuera de esa lista puede tener una baja real o un precio tachado por encima de
-        su historial y esta página no lo va a mostrar, simplemente porque no lo medimos.
+        >
+        y
+        <NuxtLink :to="localePath('/celulares-uruguay')">/celulares-uruguay</NuxtLink>; una tienda
+        fuera de esa lista puede tener una baja real o un precio tachado por encima de su historial
+        y esta página no lo va a mostrar, simplemente porque no lo medimos.
       </p>
       <p v-if="current" class="text-body-2 text-medium-emphasis mb-0">
         {{ isToday ? 'Hoy' : `El ${snapshotDayLabel}` }} revisamos
@@ -343,6 +346,13 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
         <li>
           <NuxtLink :to="localePath('/sillas-escritorio-uruguay')">Sillas de escritorio</NuxtLink>
           <span>Precios y tier list de sillas de oficina en Uruguay.</span>
+        </li>
+        <li>
+          <NuxtLink :to="localePath('/celulares-uruguay')">Celulares</NuxtLink>
+          <span
+            >Precio de iPhone, Samsung, Motorola y Xiaomi por modelo, con la cuenta de traerlo de
+            Estados Unidos.</span
+          >
         </li>
         <li>
           <NuxtLink :to="localePath('/derechos-consumidor-compras-online')"
