@@ -109,6 +109,16 @@ export const CAR_SOURCE_RULES: Record<
     permalink: /^https:\/\/carone\.com\.uy\/[\w%-]+$/,
     pictureHost: /^cdn\.impel\.io$/,
   },
+  motorlider: {
+    name: 'Motorlider',
+    permalink: /^https:\/\/motorlider\.com\.uy\/catalogo\/[\w%-]+$/,
+    pictureHost: /^f\.fcdn\.app$/,
+  },
+  duenodirecto: {
+    name: 'Dueño Directo',
+    permalink: /^https:\/\/vehiculos\.xn--dueodirecto-3db\.com\.uy\/vehiculos\/[\w%-]+$/,
+    pictureHost: /^vehiculos\.xn--dueodirecto-3db\.com\.uy$/,
+  },
   facebook: {
     name: 'Facebook Marketplace',
     permalink: /^https:\/\/www\.facebook\.com\/marketplace\/item\/\d{6,20}\/$/,
@@ -340,7 +350,7 @@ export function carsSort(sort: CarSort): Record<string, 1 | -1> {
 }
 
 export const carKeyValid = (key: string): boolean =>
-  /^(?:ml-MLU\d{6,14}|fb-\d{6,20}|(?:clasiautos|julio|sda|carper|fidocar|carone)-\d{1,12})$/.test(
+  /^(?:ml-MLU\d{6,14}|fb-\d{6,20}|(?:clasiautos|julio|sda|carper|fidocar|carone|motorlider|duenodirecto)-\d{1,12})$/.test(
     key
   )
 export const carMarketSlugValid = (value: string): boolean => value.length <= 80 && SLUG.test(value)

@@ -67,6 +67,6 @@ describe("sourceCoverage", () => {
     const coverage = sourceCoverage(rows, { facebook: 3 }, new Map([["clasiautos", { lastOkAt: NOW, ok: true }]]));
     expect(coverage.find(item => item.source === "clasiautos")).toEqual({ source: "clasiautos", name: "Clasiautos", listings: 2, duplicates: 0, lastReadAt: NOW, ok: true });
     expect(coverage.find(item => item.source === "facebook")).toMatchObject({ listings: 0, duplicates: 3, lastReadAt: null, ok: false });
-    expect(coverage).toHaveLength(8);
+    expect(coverage).toHaveLength(10);
   });
 });

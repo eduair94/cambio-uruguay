@@ -6,7 +6,9 @@ export type PublicCarTransmission = "manual" | "automatica";
 export type PublicCarSeller = "dealer" | "private";
 export type PublicCarFlag = "damaged" | "financing" | "foreign_plate" | "paperwork" | "price_mismatch" | "recovered";
 export type PublicCarTier = "strict" | "exploratory";
-export type PublicCarSource = "mercadolibre" | "facebook" | "clasiautos" | "julio" | "shoppingdeautos" | "carper" | "fidocar" | "carone";
+export type PublicCarSource =
+  | "mercadolibre" | "facebook" | "clasiautos" | "julio" | "shoppingdeautos" | "carper" | "fidocar" | "carone"
+  | "motorlider" | "duenodirecto";
 
 export interface PublicCarReference {
   priceUsd: number;

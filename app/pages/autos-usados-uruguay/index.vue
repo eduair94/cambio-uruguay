@@ -116,9 +116,9 @@
         <li>Son precios <strong>pedidos</strong> en avisos, no precios de venta cerrados.</li>
         <li>
           Las fuentes son Mercado Libre, que concentra la gran mayoría de los avisos del país,
-          Facebook Marketplace, Clasiautos y las webs de Car One, Carper, Julio Automóviles,
-          Shopping de Autos y Usados Fidocar. El conteo es de avisos vistos, no de autos en venta en
-          Uruguay.
+          Facebook Marketplace, los clasificados Clasiautos y Dueño Directo, y las webs de Car One,
+          Carper, Julio Automóviles, Shopping de Autos, Usados Fidocar y Motorlider. El conteo es de
+          avisos vistos, no de autos en venta en Uruguay.
         </li>
         <li v-if="sourceLine">
           Avisos vigentes por fuente: {{ sourceLine }}.

@@ -20,6 +20,8 @@ export type PublicCarSource =
   | 'carper'
   | 'fidocar'
   | 'carone'
+  | 'motorlider'
+  | 'duenodirecto'
 
 export interface PublicCarReference {
   priceUsd: number

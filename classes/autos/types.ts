@@ -6,7 +6,9 @@ export type CarFuel = "nafta" | "diesel" | "electrico" | "hibrido" | "gnc";
 export type CarSellerType = "dealer" | "private";
 export type CarKmQuality = "ok" | "placeholder" | "unknown";
 export type CarTextFlag = "damaged" | "financing" | "foreign_plate" | "paperwork" | "price_mismatch" | "recovered";
-export type CarSource = "mercadolibre" | "facebook" | "clasiautos" | "julio" | "shoppingdeautos" | "carper" | "fidocar" | "carone";
+export type CarSource =
+  | "mercadolibre" | "facebook" | "clasiautos" | "julio" | "shoppingdeautos" | "carper" | "fidocar" | "carone"
+  | "motorlider" | "duenodirecto";
 
 export interface RawCarListing {
   id: string;

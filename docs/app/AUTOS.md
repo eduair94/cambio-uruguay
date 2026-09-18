@@ -18,10 +18,27 @@ avisos) y `/oportunidades-autos-usados-uruguay`. Diseño y mediciones:
 | Carper | `carper-` | ídem en `usados.carper.com.uy` (precios en centavos) | 378 | completa |
 | Usados Fidocar | `fidocar-` | sitemap + microdatos de cada ficha (Fenicio) | 105 | completa |
 | Car One | `carone-` | HTML del listado con `carone_estado=96` | 218 | parcial (el orden cambia entre páginas) |
+| Motorlider | `motorlider-` | sitemap + ficha (Fenicio, igual que Fidocar) | 67 | completa |
+| Dueño Directo | `duenodirecto-` | listado paginado + ficha de cada aviso | 35 | parcial (hay avisos sin ficha propia) |
 
-Descartadas y por qué: Gallito (el permiso de El País cubre sólo inmuebles), AG Automóviles, Go Select
-y Motorlider (130 entre las tres, el mismo stock que publican en ML), clasificados.st (spam), heiwork y
-Trovit (agregadores), Autodata/URUTAX (pago).
+Descartadas y por qué: Gallito (el permiso de El País cubre sólo inmuebles), AG Automóviles y Go Select
+(el mismo stock que publican en ML), clasificados.st (spam), heiwork y Trovit (agregadores),
+Autodata/URUTAX (pago).
+
+**Motorlider vende la seña, no el auto.** Su vidriera Fenicio publica como producto la reserva: el
+`itemprop="price"` de los microdatos dice USD 500 en las 77 fichas y el precio del auto (USD 13.990)
+sólo está en la ficha técnica (`data-codigo="precio-ficha"`) y en el precio tachado. El lector Fenicio
+usa la ficha cuando existe y descarta cualquier auto por debajo de USD 1.000 / $U 40.000, que es una
+seña y no un usado. También vende motos (10 de 77): sus marcas —KTM, Bajaj, Aprilia, Kymco, Piaggio—
+no están en el diccionario de autos de ML, así que no se identifican y no entran.
+
+**Dueño Directo** es el otro extremo: avisos de particulares, `sellerType: "private"`. Su paginador
+sigue contestando pasado el último aviso (la página 5 y la 6 devuelven tarjetas repetidas), así que la
+barrida corta cuando una página no agrega nada nuevo. Las tarjetas cuyo enlace no tiene slug —el sitio
+las renderiza sin ficha propia— se cuentan en la nota y se descartan: sin permalink no hay fila
+publicable. El host es IDN y todas las URLs, las suyas y las nuestras, van en punycode
+(`vehiculos.xn--dueodirecto-3db.com.uy`); los nombres de sus fotos traen espacios y se guardan
+codificados.
 
 Todas las fuentes que no son ML se **identifican contra el diccionario** (`classes/autos/catalog/`):
 marcas y modelos con los ids de ML, así un auto de Clasiautos cae en la misma cohorte que los de ML.

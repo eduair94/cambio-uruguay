@@ -48,6 +48,17 @@ export const CAR_SOURCES: Readonly<Record<CarSource, CarSourceInfo>> = {
     source: "carone", name: "Car One", prefix: "carone",
     permalink: /^https:\/\/carone\.com\.uy\/[\w%-]+$/, pictureHost: /^cdn\.impel\.io$/, priority: 1, dealerName: "Car One",
   },
+  motorlider: {
+    source: "motorlider", name: "Motorlider", prefix: "motorlider",
+    permalink: /^https:\/\/motorlider\.com\.uy\/catalogo\/[\w%-]+$/, pictureHost: /^f\.fcdn\.app$/, priority: 1,
+    dealerName: "Motorlider",
+  },
+  duenodirecto: {
+    // The host is IDN ("dueñodirecto"); its own links are already punycode, and so are ours.
+    source: "duenodirecto", name: "Dueño Directo", prefix: "duenodirecto",
+    permalink: /^https:\/\/vehiculos\.xn--dueodirecto-3db\.com\.uy\/vehiculos\/[\w%-]+$/,
+    pictureHost: /^vehiculos\.xn--dueodirecto-3db\.com\.uy$/, priority: 1, dealerName: null,
+  },
   facebook: {
     source: "facebook", name: "Facebook Marketplace", prefix: "fb",
     permalink: /^https:\/\/www\.facebook\.com\/marketplace\/item\/\d{6,20}\/$/, pictureHost: /^scontent[\w.-]*\.fbcdn\.net$/, priority: 2,

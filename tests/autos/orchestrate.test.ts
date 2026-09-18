@@ -10,7 +10,7 @@ import { sourceRetirementFilter } from "../../classes/autos/store";
 
 describe("sourceEnabled", () => {
   it("defaults to every source and honours both switches", () => {
-    expect(WEB_SOURCES).toEqual(["clasiautos", "julio", "shoppingdeautos", "carper", "fidocar", "carone"]);
+    expect(WEB_SOURCES).toEqual(["clasiautos", "julio", "shoppingdeautos", "carper", "fidocar", "carone", "motorlider", "duenodirecto"]);
     expect(sourceEnabled("carone", {})).toBe(true);
     expect(sourceEnabled("carone", { AUTOS_SOURCES: "clasiautos,facebook" })).toBe(false);
     expect(sourceEnabled("facebook", { AUTOS_SOURCES: "clasiautos,facebook" })).toBe(true);
