@@ -121,6 +121,11 @@
           avisos vistos, no de autos en venta en Uruguay.
         </li>
         <li>
+          Cómo está el mercado hoy —precios, qué modelo pierde más valor por año, qué se compra con
+          cada presupuesto— está en el
+          <NuxtLink :to="localePath(CAR_REPORT_PATH)">informe del mercado</NuxtLink>.
+        </li>
+        <li>
           Los avisos cuyo vendedor declara deuda, choque, recupero de seguro o papeles pendientes
           tienen su propia lista:
           <NuxtLink :to="localePath(CAR_RISKS_PATH)">autos con deuda o chocados</NuxtLink>, con la
@@ -152,6 +157,7 @@
 
 <script setup lang="ts">
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
+import { CAR_REPORT_PATH } from '~/utils/carsReport'
 import {
   CAR_OPPORTUNITIES_PATH,
   CARS_PATH,

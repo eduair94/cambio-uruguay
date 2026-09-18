@@ -256,3 +256,38 @@ pública y por unificar variantes, no como palanca de oportunidades.
 
 Las dos mediciones se reproducen con `npm run cars_trim_report` y `npm run cars_risk_report` sobre un
 volcado del corpus (`CARS_CORPUS=`, `CARS_VOCAB=`).
+
+## El informe del mercado
+
+`/mercado-de-autos-usados-uruguay`, desde `classes/autos/report.ts` → `carreportsnapshots`. Agregados
+sobre los mismos avisos: composición del mercado, oferta por marca y modelo, depreciación por modelo,
+margen de negociación observado, automotora contra dueño y qué se compra con cada presupuesto.
+
+**Lo primero es lo que el informe no puede decir**, porque es lo primero que alguien busca en un
+informe así: cuáles son los más vendidos. En Uruguay las transferencias de usados no se publican
+abiertas por modelo; lo que tenemos son AVISOS, y un modelo con mucha oferta puede ser el más vendido
+o el que nadie se saca de encima. La medición que más se le parece es la **rotación** —cuánto tarda un
+aviso en desaparecer—, que se calcula todos los días y **no se publica** hasta tener 14 días de serie
+y 150 avisos retirados. La serie propia arrancó el 2026-09-17: con día y medio, "los avisos duran 1,1
+días" mide cuándo empezamos a mirar, no el mercado.
+
+Tres defectos que sólo aparecieron mirando el informe ya calculado, y que valen como advertencia para
+el próximo agregado:
+
+1. **La caída anual daba 1,8 % para la Fiat Strada.** Era la mediana de las razones entre años
+   consecutivos, y los años recientes —que son los que más avisos tienen— están casi planos, así que
+   la mediana se paraba ahí y no veía que de 2025 (US$ 18.500) a 2019 (US$ 11.995) hay 35 % en seis
+   años. Ahora es una recta por mínimos cuadrados sobre el log de la mediana de cada año, ponderada
+   por la raíz de los avisos. El rango pasó de 1,8–14,8 % a 2,5–12,8 %, que es un mercado creíble:
+   los chicos populares aguantan (Prisma 2,5 %, Celerio 4,1 %) y las SUV y pick-ups grandes caen
+   (Amarok 12,8 %, Tiguan 11,2 %).
+2. **"Con US$ 30.000, ¿qué compro?" contestaba "un Gol".** Listaba los modelos con más avisos POR
+   DEBAJO del tope, y abajo de 30.000 entra casi todo el mercado. La franja ahora es 80–100 % del
+   presupuesto y lo que se muestra es el AÑO que ese dinero paga: con 30.000, Hilux 2013 o Compass
+   2023; con 10.000, Kwid 2020 o Gol 2013.
+3. **La diferencia automotora/dueño publicaba −22 % para el VW Vento** con dos años comparados. Con
+   tres años mínimos queda en 2,7 % mediano sobre 30 modelos, y los negativos que sobreviven son
+   hallazgo y no ruido: en SUV y pick-ups grandes la automotora no es más cara.
+
+Medido el 2026-09-18: 17.684 avisos comparables, 80 marcas, 942 modelos; mediana US$ 13.000, año 2018,
+107.000 km; 83 % nafta, 65 % manual, 51 % automotora; Montevideo 48 %.

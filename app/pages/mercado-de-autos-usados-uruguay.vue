@@ -31,7 +31,7 @@
 
     <template v-else-if="data">
       <section class="mb-10">
-        <h2 class="text-h5 mb-3">El mercado en cinco números</h2>
+        <h2 class="text-h5 mb-3">El mercado en seis números</h2>
         <VRow>
           <VCol v-for="card in headline" :key="card.label" cols="6" md="4" lg="2">
             <div class="report-card">
