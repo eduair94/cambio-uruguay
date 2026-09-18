@@ -192,9 +192,15 @@ Medido el 2026-09-18 sobre 18.796 avisos vigentes, y estas tres cifras explican 
   `currency-autos-detail`.
 - Corrido contra las 647 descripciones que sí teníamos, el extractor encuentra algo en **57 avisos, el
   8,8 %** de los que tienen descripción.
-- El descuento es real y medible: papeles/deuda **−21 %** mediana contra la cohorte limpia (n=11, 91 %
-  por debajo), chocado **−35 %** (n=3). `financing` y `price_mismatch` dan **≈0 %** (n=38): no son
-  riesgo, son truco de aviso, y por eso no entran a la taxonomía.
+- El descuento es real y medible. Con la taxonomía separada y 3.100 fichas leídas (18/9 a la noche):
+  **deuda −25 %** (n=5 medidos de 34 avisos) y **papeles −2 %** (n=7 de 28). Que la deuda se descuente
+  diez veces más que un papel faltante tiene sentido y no se sabía: una deuda es un número que el
+  comprador puede calcular y restar, un título que falta no tiene precio de lista. `financing` y
+  `price_mismatch` dan **≈0 %** (n=38): no son riesgo, son truco de aviso, y por eso no entran a la
+  taxonomía.
+- **La tasa real es ~3 %**, no 8,8 %: las primeras 647 descripciones eran de candidatas a oportunidad
+  (avisos baratos), y ahí el riesgo está sobrerrepresentado. De las 1.500 fichas siguientes, leídas por
+  la cola normal, 44 declaran algo. Sobre los 16.900 avisos de ML eso proyecta ~500.
 
 Reglas, todas en `classes/autos/risk.ts` y `riskAnalyze.ts`:
 
