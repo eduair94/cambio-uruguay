@@ -215,3 +215,57 @@ export interface PublicCarOpportunitySnapshot {
   items: PublicCarOpportunityItem[]
   stats: PublicCarOpportunityStats
 }
+
+export type PublicCarRiskCategory =
+  | 'deuda'
+  | 'papeles'
+  | 'siniestro'
+  | 'recupero'
+  | 'mecanica'
+  | 'chapa_extranjera'
+  | 'uso_intensivo'
+export type PublicCarRiskSeverity = 'alta' | 'media'
+
+export interface PublicCarRisk {
+  category: PublicCarRiskCategory
+  severity: PublicCarRiskSeverity
+  /** The seller's own words. The site quotes, it does not conclude. */
+  quote: string
+  from: 'title' | 'description'
+}
+
+export interface PublicCarRiskItem {
+  subject: PublicCarListing
+  risks: PublicCarRisk[]
+  severity: PublicCarRiskSeverity
+  /** Discount against the SAME car without a declared risk null when there is nothing to compare. */
+  gap: number | null
+  median: number | null
+  n: number | null
+  sellers: number | null
+}
+
+export interface PublicCarRiskCategoryStat {
+  category: PublicCarRiskCategory
+  adverts: number
+  measured: number
+  medianGap: number | null
+  p25Gap: number | null
+  p75Gap: number | null
+}
+
+export interface PublicCarRiskStats {
+  input: number
+  declared: number
+  measured: number
+  withoutDescription: number
+}
+
+export interface PublicCarRiskSnapshot {
+  version: 1
+  generatedAt: string
+  usdUyu: number
+  items: PublicCarRiskItem[]
+  categories: PublicCarRiskCategoryStat[]
+  stats: PublicCarRiskStats
+}

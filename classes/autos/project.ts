@@ -3,9 +3,10 @@
 import { CAR_OPPORTUNITY_POLICY, type CarAnalysis, type CarCandidate } from "./analyze";
 import { cleanPublicText } from "./normalize";
 import { safeSourcePermalink, safeSourcePicture } from "./sources/registry";
+import type { CarRiskItem } from "./riskAnalyze";
 import type {
   PublicCarCatalogMeta, PublicCarComparable, PublicCarListing, PublicCarOpportunityItem, PublicCarOpportunitySnapshot,
-  PublicCarSourceCoverage,
+  PublicCarRiskCategoryStat, PublicCarRiskItem, PublicCarRiskSnapshot, PublicCarRiskStats, PublicCarSourceCoverage,
 } from "./publicTypes";
 import type { CarListing } from "./types";
 
@@ -160,5 +161,37 @@ export function buildOpportunitySnapshot(analysis: CarAnalysis, context: { gener
     },
     items,
     stats: { ...analysis.stats, excluded: { ...analysis.stats.excluded }, rejectedByDetail: { ...analysis.stats.rejectedByDetail } },
+  };
+}
+
+/**
+ * El tablero de precios con motivo. La cita del vendedor cruza la frontera pública ya limpia por
+ * `risk.ts`; la descripción entera, nunca. Un aviso sin permalink publicable no entra.
+ */
+export function buildRiskSnapshot(
+  analysis: { items: readonly CarRiskItem[]; categories: readonly PublicCarRiskCategoryStat[]; stats: PublicCarRiskStats },
+  context: { generatedAt: string; usdUyu: number },
+): PublicCarRiskSnapshot {
+  const items: PublicCarRiskItem[] = [];
+  for (const item of analysis.items) {
+    const subject = publicCarListing(item.subject, null);
+    if (!subject) continue;
+    items.push({
+      subject,
+      risks: item.risks.map(risk => ({ category: risk.category, severity: risk.severity, quote: risk.quote, from: risk.from })),
+      severity: item.severity,
+      gap: item.gap,
+      median: item.sample ? Math.round(item.sample.median) : null,
+      n: item.sample ? item.sample.n : null,
+      sellers: item.sample ? item.sample.sellers : null,
+    });
+  }
+  return {
+    version: 1,
+    generatedAt: context.generatedAt,
+    usdUyu: context.usdUyu,
+    items,
+    categories: analysis.categories.map(category => ({ ...category })),
+    stats: { ...analysis.stats },
   };
 }

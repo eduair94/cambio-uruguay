@@ -7,11 +7,14 @@ import { CarHarvestMetaModel } from "../models/CarHarvestMeta";
 import { CarListingModel } from "../models/CarListing";
 import { CarMarketSnapshotModel } from "../models/CarMarketSnapshot";
 import { CarOpportunitySnapshotModel } from "../models/CarOpportunitySnapshot";
+import { CarRiskSnapshotModel } from "../models/CarRiskSnapshot";
 import { guideKey, type CarGuideEntry, type CarGuideTarget } from "./catalog/guide";
 import { carKey } from "./enrich";
 import { slugify } from "./normalize";
 import type { DetailFetchResult } from "./detail";
-import type { PublicCarCatalogMeta, PublicCarListing, PublicCarMarketSnapshot, PublicCarOpportunitySnapshot } from "./publicTypes";
+import type {
+  PublicCarCatalogMeta, PublicCarListing, PublicCarMarketSnapshot, PublicCarOpportunitySnapshot, PublicCarRiskSnapshot,
+} from "./publicTypes";
 import type { FbCard, FbItem } from "./sources/facebook";
 import type { CarDetail, CarHarvestResult, CarModelVocabulary, CarPricePoint, CarSource, CarSourceResult, RawCarListing, StoredCar } from "./types";
 
@@ -363,6 +366,15 @@ export async function publishCarMarkets(snapshots: readonly PublicCarMarketSnaps
 export async function loadOpportunityStats(): Promise<PublicCarOpportunitySnapshot["stats"] | null> {
   const doc = await CarOpportunitySnapshotModel.findOne({ key: "used" }).lean();
   return (doc?.snapshot as PublicCarOpportunitySnapshot | undefined)?.stats ?? null;
+}
+
+/** El tablero de precios con motivo. Se poda igual que el de oportunidades si no entra. */
+export async function saveCarRiskSnapshot(snapshot: PublicCarRiskSnapshot): Promise<void> {
+  let bounded = snapshot;
+  while (Buffer.byteLength(JSON.stringify(bounded)) > MAX_SNAPSHOT_BYTES && bounded.items.length) {
+    bounded = { ...bounded, items: bounded.items.slice(0, Math.floor(bounded.items.length * 0.8)) };
+  }
+  await CarRiskSnapshotModel.updateOne({ key: "used" }, { $set: { generatedAt: bounded.generatedAt, snapshot: bounded } }, { upsert: true });
 }
 
 export async function saveCarOpportunitySnapshot(snapshot: PublicCarOpportunitySnapshot): Promise<void> {

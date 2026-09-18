@@ -12,14 +12,16 @@ import { carKey, enrichCarListing } from "./classes/autos/enrich";
 import { runFacebook } from "./classes/autos/facebookRun";
 import { buildMarketSnapshots } from "./classes/autos/market";
 import { slugify } from "./classes/autos/normalize";
-import { buildCarCatalog, buildOpportunitySnapshot, CAR_CATALOG_FRESH_DAYS } from "./classes/autos/project";
+import { buildCarCatalog, buildOpportunitySnapshot, buildRiskSnapshot, CAR_CATALOG_FRESH_DAYS } from "./classes/autos/project";
+import { analyzeCarRisk } from "./classes/autos/riskAnalyze";
 import { harvestWebSource, sourceEnabled, WEB_SOURCES } from "./classes/autos/sources";
 import type { WebCarContext } from "./classes/autos/sources/common";
 import { harvestMercadoLibreCars } from "./classes/autos/sources/mercadolibre";
 import {
   collapseRefusal, loadCatalogMeta, loadGuideEntries, loadHarvestMeta, loadOpportunityStats, loadSourceMetas, loadStoredCars,
   loadVocabularies, mergeVocabularies, publishCarCatalog, publishCarMarkets, saveCarDetails, saveCarHarvest,
-  saveCarOpportunitySnapshot, saveFbWanted, saveHarvestMeta, saveRefusal, saveSourceHarvest, saveSourceMeta, saveVocabularies,
+  saveCarOpportunitySnapshot, saveCarRiskSnapshot, saveFbWanted, saveHarvestMeta, saveRefusal, saveSourceHarvest, saveSourceMeta,
+  saveVocabularies,
   sourceMetaRecord,
 } from "./classes/autos/store";
 import type {
@@ -227,14 +229,20 @@ async function main(): Promise<void> {
   catalog.meta.sources = sourceCoverage(catalog.listings, duplicates, metas);
   const markets = buildMarketSnapshots(listings, { now, generatedAt, freshDays: CAR_CATALOG_FRESH_DAYS, guide });
   const snapshot = buildOpportunitySnapshot(analysis, { generatedAt, usdUyu });
+  // Los que están baratos CON motivo declarado: otro tablero, otra cohorte (la limpia) y ninguna
+  // pretensión de que sean oportunidades. Ver classes/autos/riskAnalyze.ts.
+  const riskAnalysis = analyzeCarRisk(listings, { now });
+  const riskSnapshot = buildRiskSnapshot(riskAnalysis, { generatedAt, usdUyu });
   console.log(`[autos] catalog ${catalog.listings.length}, models ${markets.length}, opportunities ${snapshot.items.length}, duplicates ${JSON.stringify(duplicates)}`, JSON.stringify(analysis.stats));
+  console.log(`[autos] riesgo declarado ${riskAnalysis.stats.declared} avisos, ${riskAnalysis.stats.measured} con descuento medido`,
+    JSON.stringify(riskAnalysis.categories.map(category => `${category.category}:${category.adverts}${category.medianGap === null ? "" : `/${Math.round(category.medianGap * 100)}%`}`)));
   console.log(`[autos] sources ${catalog.meta.sources.map(item => `${item.source}=${item.listings}`).join(" ")}`);
 
   if (reportFile) {
     const bySource = new Map<string, typeof catalog.listings>();
     for (const row of catalog.listings) bySource.set(row.source, [...(bySource.get(row.source) ?? []), row]);
     fs.writeFileSync(reportFile, JSON.stringify({
-      dryRun, catalogMeta: catalog.meta, duplicates, markets: markets.slice(0, 30), snapshot,
+      dryRun, catalogMeta: catalog.meta, duplicates, markets: markets.slice(0, 30), snapshot, riskSnapshot,
       samples: Object.fromEntries([...bySource].map(([source, rows]) => [source, rows.filter((_, index) => index % Math.max(1, Math.floor(rows.length / 20)) === 0).slice(0, 20)])),
     }, null, 2));
   }
@@ -252,6 +260,7 @@ async function main(): Promise<void> {
   const snapshotRefusal = collapseRefusal(previousStats?.input, snapshot.stats.input, "oportunidades");
   if (snapshotRefusal) console.warn(`[autos] ${snapshotRefusal}`);
   else await saveCarOpportunitySnapshot(snapshot);
+  await saveCarRiskSnapshot(riskSnapshot);
 
   const refusalText = [catalogRefusal, snapshotRefusal].filter((reason): reason is string => !!reason).join(" · ") || null;
   await saveRefusal(refusalText, generatedAt);
