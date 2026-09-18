@@ -98,6 +98,7 @@ const LIGHT = [
   '/historico',
   '/indicadores',
   '/herramientas',
+  '/directorios-uruguay',
   '/avanzado',
   '/buscar',
   '/mi-lista',

@@ -18,6 +18,12 @@ import { dateLocale } from './format'
 export type MovilidadCategory = 'monopatin-electrico' | 'bicicleta-electrica'
 export type MovilidadRegime = 'modelo' | 'commodity'
 
+/**
+ * `key` of the single `movilidadmeta` document `sync_movilidad.ts` upserts. Exported so every reader
+ * (the category route and `/api/directorios`) names the same document instead of each spelling it.
+ */
+export const MOVILIDAD_META_KEY = 'movilidad-electrica-uruguay'
+
 const MOVILIDAD_CATEGORY_SET: ReadonlySet<string> = new Set<MovilidadCategory>([
   'monopatin-electrico',
   'bicicleta-electrica',

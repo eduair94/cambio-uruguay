@@ -513,6 +513,25 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['herramientas', 'calculadoras', 'calcular', 'simulador'],
       },
       {
+        // El índice de los directorios (app/utils/directorios.ts), al lado del de herramientas:
+        // son las dos páginas del sitio que existen para llevar a otras.
+        to: '/directorios-uruguay',
+        labelKey: 'nav.directorios',
+        icon: 'mdi-view-grid-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'directorios',
+          'directorio',
+          'comparadores',
+          'comparador de precios uruguay',
+          'que comparan',
+          'todos los directorios',
+          'casas autos celulares sillas alquileres tiendas',
+        ],
+      },
+      {
         to: '/mi-lista',
         labelKey: 'nav.miLista',
         icon: 'mdi-playlist-star',

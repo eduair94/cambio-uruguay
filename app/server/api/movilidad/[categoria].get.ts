@@ -2,6 +2,7 @@ import { MovilidadItemModel } from '../../models/MovilidadItem'
 import { MovilidadMetaModel } from '../../models/MovilidadMeta'
 import { connectDb } from '../../utils/db'
 import {
+  MOVILIDAD_META_KEY,
   isMovilidadCategorySlug,
   movilidadCategoryProjection,
   movilidadSortItems,
@@ -28,7 +29,6 @@ import {
  * a cached error: the CDN must not keep serving an empty page once Mongo recovers.
  */
 const STALE_DAYS = 4
-const MOVILIDAD_META_KEY = 'movilidad-electrica-uruguay'
 
 export default defineEventHandler(async (event): Promise<MovilidadCategoryResponse> => {
   const slug = String(getRouterParam(event, 'categoria') || '')

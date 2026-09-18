@@ -1,0 +1,296 @@
+/**
+ * El registro de los directorios del sitio, para `/directorios-uruguay`.
+ *
+ * Un "directorio" acá es una página que lista entidades que RELEVAMOS nosotros —una casa de cambio,
+ * un aviso de alquiler, un modelo de celular, una tienda— y que casi siempre tiene una ficha propia
+ * por entidad. No entra una guía, por más que compare cosas adentro: la diferencia práctica es que
+ * un directorio tiene una cifra que crece y una fecha de actualización, y una guía no.
+ *
+ * Este archivo es DATO PURO: no importa modelos, no toca la red y no sabe contar. La cifra de cada
+ * tarjeta la trae `/api/directorios`, que tiene un adaptador por directorio porque cada job guarda
+ * su meta con nombres distintos (`items`, `models`, `products`, `properties`, `total`). Acá vive lo
+ * que no cambia: qué compara cada uno, dónde vive y **qué sustantivo lleva su cifra**.
+ *
+ * El sustantivo importa más de lo que parece. Alquileres tiene propiedades Y avisos, y no son lo
+ * mismo (una propiedad publicada en tres portales son tres avisos); autos cuenta avisos y celulares
+ * cuenta modelos, que es una unidad completamente distinta. Una tarjeta que dijera "12.480
+ * resultados" estaría escondiendo justo eso.
+ *
+ * Esta página no va a rankear y no se construyó para eso: en este sitio rankea la ficha, no el hub
+ * (ver `docs/seo/2026-09-16-directorios-de-producto-plan.md`). Su valor es que un lector que llegó
+ * por una sola ficha vea que hay otras trece, y que los directorios queden enlazados entre sí.
+ */
+
+/** Las cuatro familias, en el orden en que se muestran. */
+export type DirectorioFamilia = 'vivienda' | 'vehiculos' | 'compras' | 'dinero'
+
+export const DIRECTORIO_FAMILIAS: readonly DirectorioFamilia[] = Object.freeze([
+  'vivienda',
+  'vehiculos',
+  'compras',
+  'dinero',
+])
+
+export const DIRECTORIO_FAMILIA_LABEL: Readonly<Record<DirectorioFamilia, string>> = Object.freeze({
+  vivienda: 'Vivienda',
+  vehiculos: 'Vehículos',
+  compras: 'Compras',
+  dinero: 'Dinero y servicios',
+})
+
+/** De dónde sale la cifra de un directorio. */
+export type DirectorioFuente =
+  /** Un job propio la recalcula sola, todos los días. */
+  | 'relevado'
+  /** Una lista que mantenemos a mano, con su fecha de revisión. */
+  | 'curado'
+  /** No publicamos cifra: leerla costaría más que lo que aporta. */
+  | 'sin-cifra'
+
+export interface DirectorioEnlace {
+  readonly to: string
+  readonly label: string
+}
+
+export interface DirectorioEntry {
+  /** Clave estable; es la misma que devuelve `/api/directorios`. */
+  readonly id: string
+  /** Ruta principal del directorio. */
+  readonly to: string
+  readonly familia: DirectorioFamilia
+  readonly titulo: string
+  /** Qué compara, en una línea, sin superlativos ni promesas. */
+  readonly queCompara: string
+  readonly icon: string
+  /**
+   * Sustantivo de la cifra, en plural. Se muestra pegado al número, así que dice exactamente qué se
+   * contó: "avisos" y "propiedades" son cifras distintas del mismo directorio.
+   */
+  readonly unidad: string
+  readonly fuente: DirectorioFuente
+  /** Otras páginas del MISMO directorio (la segunda categoría, las oportunidades, la ficha). */
+  readonly tambien?: readonly DirectorioEnlace[]
+}
+
+export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
+  {
+    id: 'alquileres',
+    to: '/alquileres-uruguay',
+    familia: 'vivienda',
+    titulo: 'Alquileres',
+    queCompara:
+      'Avisos de alquiler de cuatro portales unidos por propiedad, con la garantía que acepta cada uno como dato.',
+    icon: 'mdi-home-city-outline',
+    unidad: 'propiedades',
+    fuente: 'relevado',
+    tambien: Object.freeze([
+      { to: '/oportunidades-inmobiliarias-uruguay', label: 'Oportunidades' },
+      { to: '/barrios-alquileres-uruguay', label: 'Comparar barrios' },
+    ]),
+  },
+  {
+    id: 'ventas',
+    to: '/venta-viviendas-uruguay',
+    familia: 'vivienda',
+    titulo: 'Venta de viviendas',
+    queCompara:
+      'Viviendas en venta publicadas, una ficha por anuncio: nunca una unión inferida entre dos avisos.',
+    icon: 'mdi-home-search-outline',
+    unidad: 'viviendas',
+    fuente: 'relevado',
+  },
+  {
+    id: 'inmobiliarias',
+    to: '/inmobiliarias-uruguay',
+    familia: 'vivienda',
+    titulo: 'Inmobiliarias',
+    queCompara:
+      'Qué publica cada inmobiliaria, con su nombre público cruzado desde sus propios avisos.',
+    icon: 'mdi-account-tie-outline',
+    unidad: 'inmobiliarias',
+    fuente: 'sin-cifra',
+  },
+  {
+    id: 'autos',
+    to: '/autos-usados-uruguay',
+    familia: 'vehiculos',
+    titulo: 'Autos usados',
+    queCompara:
+      'Precios por modelo, año, versión y caja — la cohorte fija sin la cual una "ganga" suele ser otra versión.',
+    icon: 'mdi-car-outline',
+    unidad: 'avisos',
+    fuente: 'relevado',
+    tambien: Object.freeze([
+      { to: '/oportunidades-autos-usados-uruguay', label: 'Oportunidades' },
+      { to: '/mercado-de-autos-usados-uruguay', label: 'El mercado' },
+    ]),
+  },
+  {
+    id: 'movilidad',
+    to: '/monopatines-electricos-uruguay',
+    familia: 'vehiculos',
+    titulo: 'Monopatines y bicicletas eléctricas',
+    queCompara:
+      'Precio nuevo y usado, con la normativa de cada departamento al lado y la fuente de cada regla.',
+    icon: 'mdi-scooter-electric',
+    unidad: 'productos',
+    fuente: 'relevado',
+    tambien: Object.freeze([
+      { to: '/bicicletas-electricas-uruguay', label: 'Bicicletas eléctricas' },
+    ]),
+  },
+  {
+    id: 'celulares',
+    to: '/celulares-uruguay',
+    familia: 'compras',
+    titulo: 'Celulares',
+    queCompara:
+      'Precio por modelo y almacenamiento, y cuánto costaría el mismo equipo traído de Estados Unidos.',
+    icon: 'mdi-cellphone',
+    // El job sigue más de cien modelos, pero la página sólo publica los que tienen banda de precio
+    // vigente, y lo dice con estas mismas palabras: la tarjeta cuenta lo que el lector va a ver.
+    unidad: 'modelos con precio',
+    fuente: 'relevado',
+  },
+  {
+    id: 'sillas',
+    to: '/sillas-escritorio-uruguay',
+    familia: 'compras',
+    titulo: 'Sillas de escritorio',
+    queCompara:
+      'Precios por modelo en tiendas uruguayas, con lo que dice r/CharruaDevs de cada una.',
+    icon: 'mdi-seat-outline',
+    unidad: 'productos',
+    fuente: 'relevado',
+  },
+  {
+    id: 'equipar',
+    to: '/equipar-casa-uruguay',
+    familia: 'compras',
+    titulo: 'Equipar una casa',
+    queCompara:
+      'Qué sale llenar una vivienda vacía, categoría por categoría, con la canasta emparejada y lo que falta.',
+    icon: 'mdi-sofa-outline',
+    unidad: 'productos',
+    fuente: 'relevado',
+  },
+  {
+    id: 'tiendas',
+    to: '/tiendas-online-uruguay',
+    familia: 'compras',
+    titulo: 'Tiendas online',
+    queCompara:
+      'Seis señales por tienda —sitio, antigüedad, reseñas, menciones— cada una con su fuente y su fecha.',
+    icon: 'mdi-storefront-outline',
+    unidad: 'fichas',
+    fuente: 'relevado',
+    tambien: Object.freeze([
+      { to: '/ciberlunes-y-black-friday-uruguay', label: '¿El descuento es real?' },
+    ]),
+  },
+  {
+    id: 'precios',
+    to: '/precios-de-supermercado-uruguay',
+    familia: 'compras',
+    titulo: 'Precios de supermercado',
+    queCompara:
+      'Los precios oficiales del SIPC, comparados por canasta emparejada y no por el total del local.',
+    icon: 'mdi-cart-outline',
+    unidad: 'artículos',
+    fuente: 'relevado',
+  },
+  {
+    id: 'casas',
+    to: '/casas-de-cambio',
+    familia: 'dinero',
+    titulo: 'Casas de cambio',
+    queCompara:
+      'Cotización, sucursales y reputación de cada casa — el directorio con el que empezó el sitio.',
+    icon: 'mdi-bank-outline',
+    unidad: 'casas',
+    // La cotización es en vivo, pero la LISTA de casas que muestra la comparativa es la investigada a
+    // mano (`CASAS_REPUTATION`), y la cifra cuenta lo que el lector va a encontrar al hacer clic.
+    fuente: 'curado',
+    tambien: Object.freeze([
+      { to: '/casa-de-cambio-cerca-de-mi', label: 'Cerca de mí' },
+      { to: '/mapa', label: 'En el mapa' },
+    ]),
+  },
+  {
+    id: 'couriers',
+    to: '/couriers-uruguay',
+    familia: 'dinero',
+    titulo: 'Couriers',
+    queCompara: 'Qué cobra cada courier por traer un paquete, con el recargo postal y los plazos.',
+    icon: 'mdi-package-variant-closed',
+    unidad: 'couriers',
+    fuente: 'curado',
+  },
+  {
+    id: 'tarjetas',
+    to: '/tarjetas-de-credito-uruguay',
+    familia: 'dinero',
+    titulo: 'Tarjetas de crédito',
+    queCompara: 'Qué devuelve cada programa de puntos, medido en pesos y no en puntos.',
+    icon: 'mdi-credit-card-outline',
+    unidad: 'programas',
+    fuente: 'curado',
+    tambien: Object.freeze([
+      { to: '/descuentos-con-tarjeta-uruguay', label: 'Descuentos vigentes' },
+    ]),
+  },
+])
+
+/** Las claves que `/api/directorios` puede devolver: las que declaran tener cifra. */
+export const DIRECTORIOS_CON_CIFRA: readonly string[] = Object.freeze(
+  DIRECTORIOS.filter(entry => entry.fuente !== 'sin-cifra').map(entry => entry.id)
+)
+
+/** Una cifra ya resuelta para una tarjeta. `count` nulo = no la pudimos leer; nunca un cero. */
+export interface DirectorioCifra {
+  readonly count: number | null
+  /** Fecha ISO (`YYYY-MM-DD`) del dato, o `null` si la fuente no la declara. */
+  readonly asOf: string | null
+}
+
+export type DirectorioCifras = Readonly<Record<string, DirectorioCifra>>
+
+/**
+ * La cifra publicable de un directorio, o `null`.
+ *
+ * Un cero NO es una cifra publicable: los directorios de este sitio no están nunca vacíos de verdad,
+ * así que un cero siempre significa "no lo pudimos leer" y publicarlo diría algo falso sobre el
+ * directorio. La tarjeta se dibuja igual, sin número.
+ */
+export function directorioCifra(
+  cifras: DirectorioCifras | null | undefined,
+  id: string
+): DirectorioCifra | null {
+  const row = cifras?.[id]
+  if (!row) return null
+  if (row.count == null || !Number.isFinite(row.count) || row.count <= 0) return null
+  return row
+}
+
+/** Agrupa el registro por familia, conservando el orden declarado en las dos dimensiones. */
+export function directoriosPorFamilia(): ReadonlyArray<{
+  familia: DirectorioFamilia
+  label: string
+  entries: readonly DirectorioEntry[]
+}> {
+  return DIRECTORIO_FAMILIAS.map(familia => ({
+    familia,
+    label: DIRECTORIO_FAMILIA_LABEL[familia],
+    entries: DIRECTORIOS.filter(entry => entry.familia === familia),
+  })).filter(group => group.entries.length > 0)
+}
+
+/** Todas las rutas que este hub enlaza, principales y secundarias, sin repetir. */
+export function directorioRoutes(): string[] {
+  const out: string[] = []
+  for (const entry of DIRECTORIOS) {
+    if (!out.includes(entry.to)) out.push(entry.to)
+    for (const link of entry.tambien ?? []) if (!out.includes(link.to)) out.push(link.to)
+  }
+  return out
+}
