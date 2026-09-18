@@ -83,7 +83,7 @@
           />
           <VCheckbox
             v-model="draft.measured"
-            label="Sólo con descuento medido"
+            label="Sólo con diferencia medida"
             density="comfortable"
             hide-details
           />

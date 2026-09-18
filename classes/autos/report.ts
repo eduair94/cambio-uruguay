@@ -266,14 +266,16 @@ export function buildCarReport(
   const prices = rows.map(row => row.priceUsd);
   const years = rows.map(row => row.year);
   const kms = rows.filter(row => row.kmQuality === "ok" && row.km !== null).map(row => row.km!);
+  // Una sola pasada por las descripciones: el total y la columna por modelo salen del mismo recuento.
   const riskByCategory = new Map<CarRiskCategory, number>();
-  let riskAdverts = 0;
+  const declaring = new Set<string>();
   for (const row of rows) {
     const risks = declaredRisks(row.title, row.detail?.description ?? "");
     if (!risks.length) continue;
-    riskAdverts++;
+    declaring.add(row.key);
     for (const risk of risks) riskByCategory.set(risk.category, (riskByCategory.get(risk.category) ?? 0) + 1);
   }
+  const riskAdverts = declaring.size;
 
   const models: CarReportModel[] = [...byModel.entries()]
     .filter(([, group]) => group.length >= CAR_REPORT_POLICY.minimumAdverts)
@@ -281,7 +283,7 @@ export function buildCarReport(
       const groupPrices = group.map(row => row.priceUsd);
       const range = rangeOf(groupPrices)!;
       const groupKms = group.filter(row => row.kmQuality === "ok" && row.km !== null).map(row => row.km!);
-      const riskCount = group.filter(row => declaredRisks(row.title, row.detail?.description ?? "").length).length;
+      const riskCount = group.filter(row => declaring.has(row.key)).length;
       return {
         marketSlug,
         brand: group[0]!.brand,
