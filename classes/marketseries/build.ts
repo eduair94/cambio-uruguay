@@ -26,20 +26,33 @@ interface Accumulator {
 const newer = (a: MarketObservation, b: MarketObservation): boolean =>
   a.seenAt > b.seenAt || (a.seenAt === b.seenAt && a.advertId < b.advertId);
 
-/** Most frequent spelling; a tie goes to the accented one ("Paysandú" over "Paysandu"), then A-Z. */
+const SMALL_WORDS = new Set(["de", "del", "la", "las", "los", "el", "y"]);
+
+/** A name the portals only ever wrote in lowercase ("carrasco", "golf") still reads as a proper noun. */
+export function displayName(name: string): string {
+  if (/\p{Lu}/u.test(name)) return name;
+  return name
+    .split(" ")
+    .map((word, i) => (i > 0 && SMALL_WORDS.has(word) ? word : word.charAt(0).toUpperCase() + word.slice(1)))
+    .join(" ");
+}
+
+/**
+ * Most frequent spelling; a tie goes to the capitalized one, then the accented one ("Paysandú" over
+ * "Paysandu"), then A-Z.
+ */
 export function preferredName(counts: ReadonlyMap<string, number>): string | null {
   let best: string | null = null;
-  let bestCount = -1;
-  let bestMarks = -1;
+  let bestRank: [number, number, number] = [-1, -1, -1];
   for (const [name, count] of counts) {
-    const marks = name.normalize("NFD").length - name.normalize("NFC").length;
-    if (count > bestCount || (count === bestCount && (marks > bestMarks || (marks === bestMarks && best !== null && name < best)))) {
+    const rank: [number, number, number] = [count, /\p{Lu}/u.test(name) ? 1 : 0, name.normalize("NFD").length - name.normalize("NFC").length];
+    const cmp = rank[0] - bestRank[0] || rank[1] - bestRank[1] || rank[2] - bestRank[2];
+    if (cmp > 0 || (cmp === 0 && best !== null && name < best)) {
       best = name;
-      bestCount = count;
-      bestMarks = marks;
+      bestRank = rank;
     }
   }
-  return best;
+  return best === null ? null : displayName(best);
 }
 
 export interface MarketDayInput {

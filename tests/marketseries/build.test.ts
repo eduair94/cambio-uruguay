@@ -99,4 +99,10 @@ describe("preferredName", () => {
     expect(preferredName(new Map([["Paysandu", 3], ["Paysandú", 1]]))).toBe("Paysandu");
     expect(preferredName(new Map())).toBeNull();
   });
+  it("a tie goes to the capitalized spelling; an all-lowercase name is capitalized", () => {
+    expect(preferredName(new Map([["pocitos", 1], ["Pocitos", 1]]))).toBe("Pocitos");
+    expect(preferredName(new Map([["carrasco", 4]]))).toBe("Carrasco");
+    expect(preferredName(new Map([["barra de carrasco", 4]]))).toBe("Barra de Carrasco");
+    expect(preferredName(new Map([["Barra De Carrasco", 1]]))).toBe("Barra De Carrasco");
+  });
 });

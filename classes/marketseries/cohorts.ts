@@ -27,7 +27,7 @@ export function bedroomBucket(value: number | null): Exclude<MarketBedrooms, "an
 }
 
 export const MARKET_SERIES_KEY_PATTERN =
-  /^(?:(?:alquiler|venta)\|(?:UYU|USD)\|(?:apartamento|casa|todas)\|(?:any|0|1|2|3|4plus)\|(?:uy|d:[a-z0-9-]{1,80}|b:[a-z0-9-]{1,80}:[a-z0-9-]{1,80})|autos\|USD\|(?:all|m:[a-z0-9-]{1,80}(?:\|y:\d{4})?))$/;
+  /^(?:(?:alquiler|venta)\|(?:UYU|USD)\|(?:apartamento|casa|todas)\|(?:any|[0-3]|4plus)\|(?:uy|d:[a-z0-9-]{1,80}|b:[a-z0-9-]{1,80}:[a-z0-9-]{1,80})|autos\|USD\|(?:all|m:[a-z0-9-]{1,80}(?:\|y:\d{4})?))$/;
 
 const EMPTY = { propertyType: null, bedrooms: null, departmentSlug: null, neighborhoodSlug: null, marketSlug: null, year: null };
 
