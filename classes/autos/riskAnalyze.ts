@@ -8,6 +8,7 @@
 // Un auto con riesgo declarado NO es una oportunidad. Es un precio con una condición adentro, y la
 // condición se publica con la frase del vendedor al lado.
 import { comparablesFor, sampleFor, type CarSample } from "./analyze";
+import { photoCorroborates } from "./llm/vision";
 import { declaredRisks, riskCategories, worstSeverity, type CarRisk, type CarRiskCategory, type CarRiskSeverity } from "./risk";
 import { quantile } from "./stats";
 import type { CarListing } from "./types";
@@ -32,6 +33,8 @@ export interface CarRiskItem {
   /** Nulo cuando el auto no tiene con qué compararse: se publica igual, sin número. */
   sample: CarSample | null;
   gap: number | null;
+  /** Las fotos del propio aviso muestran el daño que el propio aviso declara. */
+  photoConfirms: boolean;
 }
 
 export interface CarRiskCategoryStat {
@@ -104,6 +107,7 @@ export function analyzeCarRisk(listings: readonly CarListing[], options: { now: 
       severity: worstSeverity(risks)!,
       sample,
       gap: sample ? round3(sample.gap) : null,
+      photoConfirms: photoCorroborates(listing.photoCheck, risks.some(risk => risk.category === "siniestro")),
     });
   }
   const gapsByCategory = new Map<CarRiskCategory, number[]>();

@@ -4,6 +4,7 @@
 // that were a cheaper trim or a 4x2; with them, 11, all defensible by eye.
 import { quantile } from "./stats";
 import { buildTrimIndex, matchTrim, type TrimIndex } from "./catalog/trims";
+import { photoRejection } from "./llm/vision";
 import { engineOf, slugify } from "./normalize";
 import type { PublicCarOpportunityStats } from "./publicTypes";
 import type { CarDetail, CarListing, CarTextFlag } from "./types";
@@ -249,6 +250,12 @@ export function analyzeCars(
     if (verdict) {
       bump(stats.rejectedByDetail, verdict);
       if (REFETCH.has(verdict)) refetch.push({ subject, tier, sample, comparables });
+      continue;
+    }
+    // Lo que las propias fotos del aviso contradicen no se publica como oportunidad.
+    const photoVerdict = photoRejection(subject.photoCheck);
+    if (photoVerdict) {
+      bump(stats.rejectedByDetail, photoVerdict);
       continue;
     }
     stats.verified++;

@@ -8,6 +8,7 @@ import { CarListingModel } from "../models/CarListing";
 import { CarMarketSnapshotModel } from "../models/CarMarketSnapshot";
 import { CarOpportunitySnapshotModel } from "../models/CarOpportunitySnapshot";
 import { CarRiskSnapshotModel } from "../models/CarRiskSnapshot";
+import type { CarPhotoVerdict } from "./llm/vision";
 import { guideKey, type CarGuideEntry, type CarGuideTarget } from "./catalog/guide";
 import { carKey } from "./enrich";
 import { slugify } from "./normalize";
@@ -287,6 +288,15 @@ export async function loadFbWanted(): Promise<Set<string>> {
 
 export async function saveFbWanted(ids: readonly string[], at: string): Promise<void> {
   await CarHarvestMetaModel.updateOne({ key: FB_WANTED_KEY }, { $set: { updatedAt: at, data: { ids: ids.slice(0, 500) } } }, { upsert: true });
+}
+
+/** Los veredictos de fotos, que son privados y viven al lado del aviso. */
+export async function saveCarPhotoChecks(checks: ReadonlyMap<string, CarPhotoVerdict>): Promise<void> {
+  if (!checks.size) return;
+  await listingsCollection().bulkWrite(
+    [...checks].map(([key, photoCheck]) => ({ updateOne: { filter: { key }, update: { $set: { photoCheck } } } })),
+    { ordered: false },
+  );
 }
 
 export async function saveCarDetails(result: DetailFetchResult, now: string): Promise<void> {

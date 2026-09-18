@@ -184,6 +184,7 @@ export function buildRiskSnapshot(
       median: item.sample ? Math.round(item.sample.median) : null,
       n: item.sample ? item.sample.n : null,
       sellers: item.sample ? item.sample.sellers : null,
+      photoConfirms: item.photoConfirms,
     });
   }
   return {

@@ -48,14 +48,14 @@ describe("parseCarDetail", () => {
     expect(parseCarDetail(realPage(), READ_AT)).toEqual({
       readAt: READ_AT, price: 9500, currency: "USD", active: true, brand: "BYD", model: "F3", year: 2017, km: 111111,
       version: "1.5 Mt", engineText: "1.5", sellerName: "Olivera Automotores", bodyType: "Sedán", color: "Azul", doors: 5,
-      flags: [], description: REAL_DESCRIPTION,
+      pictures: [], flags: [], description: REAL_DESCRIPTION,
     });
   });
   it("reads price, specs, seller and description from the vehicle page", () => {
     expect(parseCarDetail(page(), READ_AT)).toEqual({
       readAt: READ_AT, price: 9500, currency: "USD", active: true, brand: "BYD", model: "F3", year: 2017, km: 111111,
       version: "1.5 Mt", engineText: "1.5", sellerName: "Olivera Automotores", bodyType: "Sedán", color: "Azul", doors: 5,
-      flags: [], description: "Equipamiento completo.\nNunca chocado.",
+      pictures: [], flags: [], description: "Equipamiento completo.\nNunca chocado.",
     });
   });
   it("flags a damaged car and a closed advert", () => {

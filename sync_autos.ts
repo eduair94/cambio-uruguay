@@ -125,6 +125,7 @@ async function main(): Promise<void> {
     return enrichCarListing(doc.listing, {
       usdUyu, trims: trimsByModel.get(key) ?? [], trimIndex: trimIndexes.get(key),
       firstSeen: doc.firstSeen, lastSeen: doc.lastSeen, priceHistory: doc.priceHistory ?? [], detail,
+      photoCheck: doc.photoCheck ?? null,
     });
   };
   const dictionary = buildCarDictionary(stored.map(doc => doc.listing), vocabularies);

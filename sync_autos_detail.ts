@@ -12,13 +12,62 @@ import { fetchUsdUyuRate } from "./classes/chairs/catalog";
 import { detailTargets, queueSummary } from "./classes/autos/detailQueue";
 import { fetchCarDetails } from "./classes/autos/detail";
 import { declaredRisks } from "./classes/autos/risk";
-import { loadStoredCars, saveCarDetails } from "./classes/autos/store";
+import { inspectCarPhotos, visionConfigured, type CarPhotoVerdict } from "./classes/autos/llm/vision";
+import { looseMedians } from "./classes/autos/detailQueue";
+import { loadStoredCars, saveCarDetails, saveCarPhotoChecks } from "./classes/autos/store";
 import { CarHarvestMetaModel } from "./classes/models/CarHarvestMeta";
+import type { CarDetail, StoredCar } from "./classes/autos/types";
 
 const number = (name: string, fallback: number): number => {
   const raw = Number(process.env[name]);
   return Number.isFinite(raw) && raw > 0 ? raw : fallback;
 };
+
+/**
+ * A cuáles les miramos las fotos: los baratos contra su marca+modelo+año y los que declaran algo, que
+ * son los dos casos donde una foto cambia la conclusión. Tope por corrida, y si Gemini no está
+ * configurado no pasa nada: el veredicto es opcional en todo el pipeline.
+ */
+async function runVision(
+  stored: readonly StoredCar[],
+  fresh: ReadonlyMap<string, CarDetail>,
+  usdUyu: number,
+): Promise<{ asked: number; rejected: number; skipped: string }> {
+  const max = number("AUTOS_VISION_MAX", 30);
+  if (!visionConfigured()) return { asked: 0, rejected: 0, skipped: "sin GEMINI_API_KEY" };
+  const medians = looseMedians(stored, usdUyu);
+  const candidates = stored
+    .map(doc => ({ doc, detail: fresh.get(doc.key) ?? doc.detail }))
+    .filter(({ doc, detail }) => {
+      if (doc.photoCheck || !detail?.pictures?.length) return false;
+      const group = medians.get(`${doc.listing.brandId}|${doc.listing.modelId}|${doc.listing.year}`);
+      const priceUsd = doc.listing.currency === "USD" ? doc.listing.price : doc.listing.price / Math.max(1, usdUyu);
+      const cheap = !!group && priceUsd > 0 && 1 - priceUsd / group.price >= 0.12;
+      return cheap || declaredRisks(doc.listing.title, detail.description).length > 0;
+    })
+    .slice(0, max);
+  const checks = new Map<string, CarPhotoVerdict>();
+  let rejected = 0;
+  for (const { doc, detail } of candidates) {
+    const verdict = await inspectCarPhotos({
+      key: doc.key,
+      title: doc.listing.title,
+      brand: doc.listing.brand,
+      model: doc.listing.model,
+      year: doc.listing.year,
+      trim: null,
+      km: doc.listing.km,
+      description: detail!.description,
+      pictures: detail!.pictures ?? [],
+    });
+    if (!verdict) continue;
+    checks.set(doc.key, verdict);
+    if (verdict.damage === "grave" || verdict.matchesAdvert === false || verdict.catalogPhotos) rejected++;
+  }
+  await saveCarPhotoChecks(checks);
+  console.log(`[autos-detail] fotos revisadas ${checks.size} de ${candidates.length} candidatos, ${rejected} no pasan`);
+  return { asked: checks.size, rejected, skipped: "" };
+}
 
 async function main(): Promise<void> {
   const dryRun = process.argv.includes("--dry-run");
@@ -48,6 +97,10 @@ async function main(): Promise<void> {
     if (declaredRisks("", detail.description).length) withRisk++;
   }
   console.log(`[autos-detail] ${result.details.size} fichas leídas (${withVersion} con versión, ${withRisk} declaran algo), ${result.gone.length} caídas, ${result.failed} fallidas`);
+  // 2. Mirar las fotos de los dudosos: los que están baratos contra su marca+modelo+año y los que
+  // declaran algo. La IA acá no publica, filtra (classes/autos/llm/vision.ts).
+  const vision = await runVision(stored, result.details, usdUyu);
+
   const finishedAt = new Date().toISOString();
   await CarHarvestMetaModel.updateOne(
     { key: "uy-cars-detail" },
@@ -57,6 +110,7 @@ async function main(): Promise<void> {
         data: {
           finishedAt, listings: stored.length, withDetail, queued: targets.length, queue: summary,
           read: result.details.size, withVersion, withRisk, gone: result.gone.length, failed: result.failed,
+          vision,
           ok: result.details.size > 0 || targets.length === 0,
         },
       },

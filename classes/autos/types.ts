@@ -1,5 +1,6 @@
 // Internal shapes of the used-car directory (/autos-usados-uruguay). Public wire shapes live in
 // ./publicTypes.ts; nothing here is served as-is.
+import type { CarPhotoVerdict } from "./llm/vision";
 export type CarCurrency = "USD" | "UYU";
 export type CarTransmission = "manual" | "automatica";
 export type CarFuel = "nafta" | "diesel" | "electrico" | "hibrido" | "gnc";
@@ -106,6 +107,8 @@ export interface CarDetail {
   bodyType: string | null;
   color: string | null;
   doors: number | null;
+  /** Private: the advert's own photos, for the checks that need to look at them. */
+  pictures?: string[];
   flags: CarTextFlag[];
   /** Private: never projected to a public collection. */
   description: string;
@@ -120,6 +123,8 @@ export interface StoredCar {
   retiredAt: string | null;
   missedFullSweeps: number;
   detail: CarDetail | null;
+  /** Privado: qué se vio en las fotos del propio aviso (classes/autos/llm/vision.ts). */
+  photoCheck?: CarPhotoVerdict | null;
 }
 
 export interface CarReference {
@@ -146,4 +151,5 @@ export interface CarListing extends RawCarListing {
   lastSeen: string;
   priceDrop: { from: number; currency: CarCurrency; since: string } | null;
   detail: CarDetail | null;
+  photoCheck?: CarPhotoVerdict | null;
 }

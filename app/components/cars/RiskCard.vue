@@ -55,6 +55,9 @@
         </li>
       </ul>
     </details>
+    <p v-if="item.photoConfirms" class="text-body-2 mb-0">
+      Las fotos del aviso muestran el daño que el aviso declara.
+    </p>
     <p class="text-body-2 mb-0">
       <a :href="item.subject.permalink" target="_blank" rel="nofollow noopener">
         Ver el aviso en {{ item.subject.sourceName }}

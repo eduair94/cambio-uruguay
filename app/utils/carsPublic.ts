@@ -243,6 +243,8 @@ export interface PublicCarRiskItem {
   median: number | null
   n: number | null
   sellers: number | null
+  /** The advert's own photos show the damage the advert itself declares. */
+  photoConfirms: boolean
 }
 
 export interface PublicCarRiskCategoryStat {

@@ -1,6 +1,7 @@
 import { buildTrimIndex, matchTrim, trimLabelFor, type TrimIndex } from "./catalog/trims";
 import { engineOf, kmQuality, slugify, titleFlags } from "./normalize";
 import { CAR_SOURCES, carKeyFor } from "./sources/registry";
+import type { CarPhotoVerdict } from "./llm/vision";
 import type { CarDetail, CarListing, CarPricePoint, CarSource, RawCarListing } from "./types";
 
 export interface EnrichContext {
@@ -12,6 +13,7 @@ export interface EnrichContext {
   lastSeen: string;
   priceHistory: readonly CarPricePoint[];
   detail: CarDetail | null;
+  photoCheck?: CarPhotoVerdict | null;
 }
 
 export function carKey(id: string, source: CarSource = "mercadolibre"): string {
@@ -53,6 +55,7 @@ export function enrichCarListing(raw: RawCarListing, context: EnrichContext): Ca
     lastSeen: context.lastSeen,
     priceDrop: priceDropOf(raw, context.priceHistory),
     detail: context.detail,
+    photoCheck: context.photoCheck ?? null,
     reference: null,
   };
 }

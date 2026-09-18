@@ -153,3 +153,8 @@ export async function fetchText(url: string, options: FetchOptions = {}): Promis
 export async function fetchJson<T>(url: string, options: FetchOptions = {}): Promise<T | null> {
   return run(url, options, (response) => response.json() as Promise<T>);
 }
+
+/** Bytes, for the few callers that read an image instead of a page (car photo checks). */
+export async function fetchBuffer(url: string, options: FetchOptions = {}): Promise<Buffer | null> {
+  return run(url, options, async (response) => Buffer.from(await response.arrayBuffer()));
+}

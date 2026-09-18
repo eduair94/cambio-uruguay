@@ -353,6 +353,57 @@ export async function askWithImage(
 }
 
 /**
+ * One NON-grounded question about SEVERAL images whose answer must be JSON matching `schema`.
+ *
+ * {@link askWithImage} plus {@link askJSON}: the used-car directory asks it whether an advert's own
+ * photos show the car its own text describes. Images travel base64, so the caller keeps them small
+ * and few — a handful of thumbnails, never a full gallery at full size.
+ */
+export async function askJSONWithImages<T>(
+  prompt: string,
+  images: ReadonlyArray<{ data: Buffer; mimeType: string }>,
+  schema: unknown,
+  opts: { system?: string; model?: string; temperature?: number; maxOutputTokens?: number; timeoutMs?: number } = {}
+): Promise<T | null> {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.NUXT_GEMINI_API_KEY;
+  if (!apiKey || !images.length) return null;
+  const model = (opts.model || GEMINI_MODEL).trim();
+  try {
+    const res = await postGemini(
+      {
+        ...(opts.system ? { systemInstruction: { parts: [{ text: opts.system }] } } : {}),
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: prompt },
+              ...images.map((image) => ({
+                inline_data: { mime_type: image.mimeType, data: image.data.toString("base64") },
+              })),
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: opts.temperature ?? 0.1,
+          maxOutputTokens: opts.maxOutputTokens ?? 2048,
+          responseMimeType: "application/json",
+          responseSchema: schema,
+        },
+      },
+      opts.timeoutMs ?? 90000,
+      apiKey,
+      `${MODELS_BASE}/${model}:generateContent`
+    );
+    const text = (res.data?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("").trim();
+    if (!text) return null;
+    return JSON.parse(text) as T;
+  } catch (error: any) {
+    console.warn("[gemini] json+images call failed:", error?.message || error);
+    return null;
+  }
+}
+
+/**
  * Keys the embedding endpoint may use, in order of preference.
  *
  * More than one is not redundancy, it is CAPACITY. The embedding quota is

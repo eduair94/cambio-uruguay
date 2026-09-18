@@ -52,6 +52,18 @@ function vehicleLd(html: string): any | null {
   return null;
 }
 
+/**
+ * The advert's OWN gallery. `data-zoom` is what the page hands the zoom viewer, one per photo and at
+ * the size Mercado Libre itself serves; anything not on its image host is somebody else's picture.
+ */
+export function detailPictures(html: string, max = 6): string[] {
+  const pictures = new Set<string>();
+  const pattern = /data-zoom="(https:\/\/http2\.mlstatic\.com\/[^"]+)"/g;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(html)) && pictures.size < max) pictures.add(match[1]!);
+  return [...pictures];
+}
+
 export function parseCarDetail(html: string, readAt: string): CarDetail | null {
   const vehicle = vehicleLd(html);
   const price = Number(vehicle?.offers?.price);
@@ -89,6 +101,7 @@ export function parseCarDetail(html: string, readAt: string): CarDetail | null {
     bodyType: typeof vehicle.bodyType === "string" ? vehicle.bodyType : null,
     color: typeof vehicle.color === "string" ? vehicle.color : null,
     doors: Number.isInteger(doors) && doors > 0 && doors < 10 ? doors : null,
+    pictures: detailPictures(html),
     flags: descriptionFlags(description),
     description: description.slice(0, 5_000),
   };
