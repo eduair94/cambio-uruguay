@@ -138,6 +138,10 @@ como último recurso para deducir la moneda de Facebook.
   `AUTOS_<FUENTE>_ENABLED=0` (`AUTOS_ML_ENABLED`, `AUTOS_FB_ENABLED`, `AUTOS_CARONE_ENABLED`…) apaga
   una fuente. Una fuente que falla conserva sus avisos y queda anotada.
 - `currency-autos-guide` (05:13 UTC): la guía de ML.
+- `currency-autos-detail` (:11 de cada hora): lee la ficha propia de los avisos de ML que ya tenemos
+  guardados, con presupuesto (`AUTOS_DETAIL_MAX`, 400; `AUTOS_DETAIL_MINUTES`, 25) y por orden de
+  utilidad. No publica nada. Después de leer, mira las fotos de los dudosos (`AUTOS_VISION_MAX`, 30).
+  `AUTOS_DETAIL_REFRESH_DAYS=<n>` vuelve a leer fichas viejas (por defecto no relee ninguna).
 
 ## Colecciones (APP DB)
 
@@ -146,7 +150,9 @@ Privadas: `carlistings` (observación de cualquier fuente, historial de precio, 
 (`uy-cars`, `uy-cars-last-full`, `uy-cars-last-fast`, `uy-cars-vocabulary`, `uy-cars-publish`,
 `uy-cars-source-<fuente>`, `uy-cars-fb-wanted`, `uy-cars-guide`).
 Públicas: `carcatalog`, `carcatalogmetas` (`uy-cars`, con cobertura por fuente), `carmarketsnapshots`
-(con la guía), `caropportunitysnapshots` (`used`, `car-cohort-v2`).
+(con la guía), `caropportunitysnapshots` (`used`, `car-cohort-v2`) y `carrisksnapshots` (`used`).
+El veredicto de fotos vive en `carlistings.photoCheck` y **no cruza la frontera pública**: de él sólo
+sale un booleano, y sólo cuando corrobora lo que el aviso ya declaraba.
 
 Un aviso se retira si su ficha da 404/410 o está inactiva, o si dos lecturas completas de su fuente
 (en ML: de su marca) no lo vieron. Una caída del universo mayor a 60 % conserva lo publicado.
@@ -172,3 +178,75 @@ Cohorte fijada antes de mirar precios: misma marca+modelo (ids de ML), año, ver
 dentro del snapshot. Toda oportunidad publicada pasó por su ficha (en las webs, la lectura del día; en
 ML y Facebook, la página del aviso): activa, mismo precio/año/km, sin menciones de choque, recupero,
 deuda/leasing o chapa extranjera. Monedas deducidas fuera. No es tasación.
+
+## Precio con motivo: el riesgo declarado
+
+`/autos-chocados-y-con-deuda-uruguay`. Lo que el aviso DICE del auto —deuda o prenda, papeles que
+faltan, choque, recupero de seguro, mecánica rota, chapa extranjera, ex taxi— con la frase textual del
+vendedor al lado y cuánto menos pide que los mismos autos que no declaran nada.
+
+Medido el 2026-09-18 sobre 18.796 avisos vigentes, y estas tres cifras explican el diseño entero:
+
+- **185 avisos (1 %) traían bandera de riesgo**, porque las banderas salían del título y la descripción
+  sólo se bajaba para candidatas: de Mercado Libre había 122 fichas de 16.865 avisos. De ahí nace
+  `currency-autos-detail`.
+- Corrido contra las 647 descripciones que sí teníamos, el extractor encuentra algo en **57 avisos, el
+  8,8 %** de los que tienen descripción.
+- El descuento es real y medible: papeles/deuda **−21 %** mediana contra la cohorte limpia (n=11, 91 %
+  por debajo), chocado **−35 %** (n=3). `financing` y `price_mismatch` dan **≈0 %** (n=38): no son
+  riesgo, son truco de aviso, y por eso no entran a la taxonomía.
+
+Reglas, todas en `classes/autos/risk.ts` y `riskAnalyze.ts`:
+
+- **El que afirma es el vendedor.** Se publica su frase, nunca una conclusión nuestra. Para poder citar
+  sin desalinear los índices existe `foldOffsets` (baja acentos y mayúsculas sin mover un carácter).
+- **Lo negado no cuenta.** "Sin deuda" y "nunca chocado" son argumentos de venta. De 43 coincidencias
+  crudas de "deuda" en las descripciones reales, la mayoría eran "sin deuda".
+- **La cohorte de referencia es la limpia.** Comparar un chocado contra otros chocados no dice nada, y
+  meter chocados en la mediana del modelo abarata a todos. Un aviso sin ficha propia puede estar en la
+  referencia: lo que se afirma de él es "no dice", no "no tiene".
+- **Sin comparables no hay número.** El aviso se publica igual, diciendo que no se pudo medir. Una
+  categoría muestra mediana recién con cinco avisos medidos.
+- **La ausencia no es una afirmación**: que un aviso no declare nada no quiere decir que el auto esté
+  limpio. La página lo dice y enlaza las verificaciones (SUCIVE para la patente, certificado registral
+  en la Dirección General de Registros para prenda y embargo; las dos fuentes se abrieron el
+  2026-09-18).
+
+## Las fotos, y qué se hace con la IA
+
+`classes/autos/llm/vision.ts` le pasa a Gemini hasta cuatro fotos del propio aviso con lo que ese aviso
+afirma y pregunta tres cosas: si el auto concuerda, si se ve daño, si son fotos de catálogo. Existe
+porque **tres de las cuatro brechas más grandes de la primera corrida en vivo eran autos chocados que
+el título no decía** y las fotos sí mostraban.
+
+**La IA no publica, filtra.** Dos usos y ninguno más:
+
+1. Retirar en silencio una oportunidad que sus propias fotos contradicen (`photo_damage`,
+   `photo_mismatch`, `photo_catalog` en `rejectedByDetail`).
+2. Corroborar lo que el vendedor YA declaró (`photoConfirms`).
+
+El sitio **nunca** publica "este auto está chocado" sobre un aviso que no lo dice: equivocarse de un
+lado cuesta una oportunidad; del otro, difama a una persona cuyo nombre y teléfono están en el aviso.
+Sólo lo inequívoco descalifica: "no se ve" no retira nada y el daño leve tampoco. Sin `GEMINI_API_KEY`
+el módulo es inerte y el resto del pipeline no cambia.
+
+## Versiones: el vocabulario se mina del corpus
+
+7.056 avisos no tenían versión, y no por falta de inteligencia sino de vocabulario: la faceta de ML
+lista **cero versiones en 515 de 932 modelos**, y donde lista algo el aviso usa otra palabra (lista
+"Privilegio", el título dice "Privilege"; lista "Trendline", el título dice "Trend").
+
+`classes/autos/catalog/trims.ts` mina candidatos del propio corpus. Sin filtros el minado **empeora** la
+lectura (61,7 % → 60,3 %), porque publica como versión el nombre de la automotora ("Fullcars",
+"Barriola") y "buen" de "Muy Buen Estado", y esa basura genera ambigüedad, que hace abstenerse. Tres
+reglas lo dan vuelta: un candidato bajo más de dos modelos es un vendedor y no una versión; la firma
+después de " - " en el título es un nombre; y ante dos aciertos, el nombre que publica Mercado Libre le
+gana al minado. Medido: **61,7 % → 66,1 %** (+834 avisos), y "Confort" y "Comfort" pasan a ser una sola
+cohorte.
+
+Lo que NO hizo: sumó apenas **+121 avisos a cohortes de ≥5**. El cuello de botella no era el
+vocabulario sino la fragmentación del mercado (año × versión × motor × caja). Vale por la etiqueta
+pública y por unificar variantes, no como palanca de oportunidades.
+
+Las dos mediciones se reproducen con `npm run cars_trim_report` y `npm run cars_risk_report` sobre un
+volcado del corpus (`CARS_CORPUS=`, `CARS_VOCAB=`).
