@@ -82,11 +82,13 @@ directorios está vacío de verdad y un cero diría algo falso sobre él.
         <strong>mantenemos a mano</strong> —casas de cambio, couriers y tarjetas— cambian cuando
         revisamos la lista, y la fecha es la de esa revisión.
       </p>
-      <p class="text-body-2 lead mb-0">
-        Cada cifra dice qué cuenta, porque no todas cuentan lo mismo: una propiedad publicada en
-        tres portales es una propiedad y tres avisos. Si una tarjeta sale sin número es que esta vez
-        no pudimos leerlo, no que el directorio esté vacío.
+      <p class="text-body-2 lead mb-2">
+        Cada cifra es la misma que vas a ver al entrar, con la misma palabra: no todas cuentan lo
+        mismo, y una propiedad publicada en tres portales es una propiedad y tres avisos. Si una
+        tarjeta que suele tener número sale sin él, es que esta vez no pudimos leerlo, no que el
+        directorio esté vacío.
       </p>
+      <p v-if="sinCifraTexto" class="text-body-2 lead mb-0">{{ sinCifraTexto }}</p>
     </section>
   </VContainer>
 </template>
@@ -121,6 +123,20 @@ function cifraTexto(entry: DirectorioEntry): { count: string; asOf: string } | n
     asOf: cifra.asOf ? asOfLabel(entry, cifra.asOf) : '',
   }
 }
+
+// Sale del registro, no de una lista escrita acá: si un directorio empieza a publicar su total, la
+// frase deja de nombrarlo sola.
+// Entre comillas porque los títulos ya traen su propia "y" ("Monopatines y bicicletas eléctricas").
+const sinCifraTexto = (() => {
+  const titulos = DIRECTORIOS.filter(entry => entry.fuente === 'sin-cifra').map(
+    entry => `“${entry.titulo}”`
+  )
+  if (!titulos.length) return ''
+  if (titulos.length === 1)
+    return `${titulos[0]} no lleva número: su página no publica un total —habla por categoría o por tipo—, y acá no inventamos uno.`
+  const lista = `${titulos.slice(0, -1).join(', ')} y ${titulos[titulos.length - 1]}`
+  return `${lista} no llevan número: sus páginas no publican un total —hablan por categoría o por tipo—, y acá no inventamos uno.`
+})()
 
 const grupos = computed(() =>
   directoriosPorFamilia().map(group => ({

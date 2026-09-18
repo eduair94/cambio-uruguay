@@ -7,9 +7,9 @@
  * un directorio tiene una cifra que crece y una fecha de actualización, y una guía no.
  *
  * Este archivo es DATO PURO: no importa modelos, no toca la red y no sabe contar. La cifra de cada
- * tarjeta la trae `/api/directorios`, que tiene un adaptador por directorio porque cada job guarda
- * su meta con nombres distintos (`items`, `models`, `products`, `properties`, `total`). Acá vive lo
- * que no cambia: qué compara cada uno, dónde vive y **qué sustantivo lleva su cifra**.
+ * tarjeta la trae `/api/directorios`, que le pregunta a la misma ruta que usa la página de cada
+ * directorio y lee el mismo campo que esa página imprime. Acá vive lo que no cambia: qué compara
+ * cada uno, dónde vive y **qué sustantivo lleva su cifra** — que es la palabra que usa su página.
  *
  * El sustantivo importa más de lo que parece. Alquileres tiene propiedades Y avisos, y no son lo
  * mismo (una propiedad publicada en tres portales son tres avisos); autos cuenta avisos y celulares
@@ -44,7 +44,10 @@ export type DirectorioFuente =
   | 'relevado'
   /** Una lista que mantenemos a mano, con su fecha de revisión. */
   | 'curado'
-  /** No publicamos cifra: leerla costaría más que lo que aporta. */
+  /**
+   * Su página no imprime un total (habla por categoría o por banda), así que el hub tampoco: una
+   * cifra que el lector no puede encontrar al hacer clic no se publica.
+   */
   | 'sin-cifra'
 
 export interface DirectorioEnlace {
@@ -96,7 +99,7 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     queCompara:
       'Viviendas en venta publicadas, una ficha por anuncio: nunca una unión inferida entre dos avisos.',
     icon: 'mdi-home-search-outline',
-    unidad: 'viviendas',
+    unidad: 'avisos',
     fuente: 'relevado',
   },
   {
@@ -108,7 +111,7 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
       'Qué publica cada inmobiliaria, con su nombre público cruzado desde sus propios avisos.',
     icon: 'mdi-account-tie-outline',
     unidad: 'inmobiliarias',
-    fuente: 'sin-cifra',
+    fuente: 'relevado',
   },
   {
     id: 'autos',
@@ -133,8 +136,9 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     queCompara:
       'Precio nuevo y usado, con la normativa de cada departamento al lado y la fuente de cada regla.',
     icon: 'mdi-scooter-electric',
-    unidad: 'productos',
-    fuente: 'relevado',
+    // Sus dos páginas hablan por banda ("N avisos" por tipo) y no imprimen un total.
+    unidad: 'avisos',
+    fuente: 'sin-cifra',
     tambien: Object.freeze([
       { to: '/bicicletas-electricas-uruguay', label: 'Bicicletas eléctricas' },
     ]),
@@ -160,7 +164,7 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     queCompara:
       'Precios por modelo en tiendas uruguayas, con lo que dice r/CharruaDevs de cada una.',
     icon: 'mdi-seat-outline',
-    unidad: 'productos',
+    unidad: 'sillas',
     fuente: 'relevado',
   },
   {
@@ -171,8 +175,10 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     queCompara:
       'Qué sale llenar una vivienda vacía, categoría por categoría, con la canasta emparejada y lo que falta.',
     icon: 'mdi-sofa-outline',
-    unidad: 'productos',
-    fuente: 'relevado',
+    // Habla por categoría; el "38 categorías" de su descripción es el tamaño del registro, no una
+    // cifra que el job recalcule.
+    unidad: 'categorías',
+    fuente: 'sin-cifra',
   },
   {
     id: 'tiendas',
@@ -182,7 +188,7 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     queCompara:
       'Seis señales por tienda —sitio, antigüedad, reseñas, menciones— cada una con su fuente y su fecha.',
     icon: 'mdi-storefront-outline',
-    unidad: 'fichas',
+    unidad: 'tiendas',
     fuente: 'relevado',
     tambien: Object.freeze([
       { to: '/ciberlunes-y-black-friday-uruguay', label: '¿El descuento es real?' },

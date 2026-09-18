@@ -1,42 +1,30 @@
-import { CarCatalogMetaModel } from '../models/CarCatalogMeta'
-import { ChairCatalogMetaModel } from '../models/ChairCatalogMeta'
-import { EquiparMetaModel } from '../models/EquiparMeta'
-import { MovilidadMetaModel } from '../models/MovilidadMeta'
-import { PhoneMetaModel } from '../models/PhoneMeta'
-import { PhoneModelModel } from '../models/PhoneModel'
-import { PropertySaleCatalogMetaModel } from '../models/PropertySaleCatalog'
-import { RentalMetaModel } from '../models/RentalMeta'
-import { StoreProfileModel } from '../models/StoreProfile'
-import { connectDb } from '../utils/db'
 import { CARD_PROGRAMS, CARD_REWARDS_LAST_REVIEWED } from '../../utils/cardRewards'
 import { CASAS_LAST_RESEARCHED, CASAS_REPUTATION } from '../../utils/casasDirectory'
 import { COURIERS, COURIER_RATES_VERIFIED_AT } from '../../utils/courierShipping'
 import { DIRECTORIOS_CON_CIFRA, type DirectorioCifra } from '../../utils/directorios'
-import { MOVILIDAD_META_KEY } from '../../utils/movilidad'
-import {
-  PHONE_LIST_PROJECTION,
-  PHONE_META_KEY,
-  phoneFreshFloor,
-  phonePublishable,
-  type PhoneModelDoc,
-} from '../../utils/phones'
 
 /**
  * Las cifras de `/directorios-uruguay`: una por directorio, cada una con la fecha de SU dato.
  *
- * Cada job guarda su meta con nombres distintos (`items`, `models`, `products`, `properties`,
- * `total`, `meta.listings`; `generatedAt` o `asOf`), así que hay un adaptador por directorio en vez
- * de una lectura genérica que tendría que adivinar el campo. Cada adaptador cuenta **lo que el
- * lector va a encontrar al hacer clic**, no lo que el job guardó: celulares sigue más de cien
- * modelos pero su página publica sólo los que tienen precio vigente, y la tarjeta dice ese número.
+ * **Cada tarjeta le pregunta a la misma ruta que usa la página a la que lleva**, y lee el mismo
+ * campo que esa página imprime. No hay un atajo por la meta del job, y no es por prolijidad: la
+ * primera versión leía las metas y, medida contra producción el 18/9/2026, cinco de nueve cifras
+ * contaban otra cosa que su página —alquileres 66.388 contra las 60.454 que muestra (la ruta filtra
+ * por frescura y elegibilidad), sillas 81 contra 191 (la ruta recuenta con `lastSeen`), tiendas 76
+ * perfiles contra 80 tiendas del registro—. Una cifra que el lector no puede encontrar al hacer clic
+ * es la cifra equivocada, por más que sea la que guardó el job.
  *
- * Los tres directorios curados a mano (casas, couriers, tarjetas) no tocan la base: su cifra es el
- * largo de la misma lista que dibuja su página, y su fecha es la de la última revisión de esa lista.
+ * De esa misma medición sale la otra regla: **el hub sólo publica una cifra que su página también
+ * dice**. Equipar y movilidad no imprimen un total (hablan por categoría y por banda), así que su
+ * tarjeta va sin número en vez de con uno que no está en ningún lado (ver `fuente: 'sin-cifra'`).
  *
- * Cada adaptador corre en paralelo y falla solo: una meta ilegible deja esa tarjeta SIN número
- * (nunca un cero, ver `directorioCifra`) y no le quita la cifra a las demás. Si no se pudo leer
- * NINGUNA cifra relevada, la respuesta no se cachea: un Mongo caído un segundo no puede dejar el hub
- * sin números durante todo el `max-age`.
+ * Los tres directorios curados a mano (casas, couriers, tarjetas) no hacen pedidos: su cifra es el
+ * largo de la misma lista que dibuja su página, y su fecha la de la última revisión de esa lista.
+ *
+ * Cada pedido corre en paralelo, con tope de tiempo, y falla solo: una ruta caída deja esa tarjeta
+ * SIN número (nunca un cero, ver `directorioCifra`) y no le quita la cifra a las demás. Si no se pudo
+ * leer NINGUNA cifra relevada, la respuesta no se cachea: un segundo de base caída no puede dejar el
+ * hub sin números durante todo el `max-age`.
  */
 export interface DirectoriosResponse {
   cifras: Record<string, DirectorioCifra>
@@ -44,11 +32,12 @@ export interface DirectoriosResponse {
 
 type Adapter = () => Promise<DirectorioCifra | null>
 
-/** `YYYY-MM-DD` de una fecha ISO guardada por un job, o `null` si no parece una fecha. */
+/** Tope por pedido: la ruta más pesada (alquileres) agrega sobre todo el catálogo. */
+const FETCH_TIMEOUT_MS = 12_000
+
+/** `YYYY-MM-DD` de una fecha ISO, o `null` si no parece una fecha. */
 function day(value: unknown): string | null {
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10)
-  if (value instanceof Date && Number.isFinite(value.getTime()))
-    return value.toISOString().slice(0, 10)
   return null
 }
 
@@ -59,76 +48,67 @@ function cifra(count: unknown, asOf: unknown): DirectorioCifra {
   }
 }
 
-/** Los directorios que un job recalcula: una lectura a la base cada uno. */
+function get<T>(url: string, query?: Record<string, string>): Promise<T> {
+  return $fetch<T>(url, { query, timeout: FETCH_TIMEOUT_MS })
+}
+
+/**
+ * Un adaptador por directorio relevado. Cada comentario nombra la línea de la página que imprime
+ * la misma cifra, para que un cambio en la página se note acá.
+ */
 const RELEVADOS: Readonly<Record<string, Adapter>> = {
   async alquileres() {
-    const doc = (await RentalMetaModel.findOne({ key: 'uy-rentals' })
-      .select({ properties: 1, generatedAt: 1 })
-      .lean()) as { properties?: number; generatedAt?: string } | null
-    return doc ? cifra(doc.properties, doc.generatedAt) : null
+    // pages/alquileres-uruguay.vue: `t('results', { n: numberFormat(total) })`.
+    const data = await get<{ total?: number; meta?: { generatedAt?: string } | null }>(
+      '/api/rentals'
+    )
+    return cifra(data?.total, data?.meta?.generatedAt)
   },
   async ventas() {
-    const doc = (await PropertySaleCatalogMetaModel.findOne({ key: 'uy-sales' })
-      .select({ total: 1, generatedAt: 1 })
-      .lean()) as { total?: number; generatedAt?: string } | null
-    return doc ? cifra(doc.total, doc.generatedAt) : null
+    // components/property-sales/Directory.vue: `coverageCount` con `data.coverage.listings`.
+    const data = await get<{
+      coverage?: { listings?: number }
+      meta?: { generatedAt?: string } | null
+    }>('/api/property-sales')
+    return cifra(data?.coverage?.listings, data?.meta?.generatedAt)
+  },
+  async inmobiliarias() {
+    // pages/inmobiliarias-uruguay/index.vue: "{{ data.total }} inmobiliarias".
+    const data = await get<{ total?: number; coverage?: { computedAt?: string } }>('/api/agencies')
+    return cifra(data?.total, data?.coverage?.computedAt)
   },
   async autos() {
-    const doc = (await CarCatalogMetaModel.findOne({ key: 'uy-cars' })
-      .select({ 'meta.listings': 1, generatedAt: 1 })
-      .lean()) as { meta?: { listings?: number }; generatedAt?: string } | null
-    return doc ? cifra(doc.meta?.listings, doc.generatedAt) : null
-  },
-  async movilidad() {
-    const doc = (await MovilidadMetaModel.findOne({ key: MOVILIDAD_META_KEY })
-      .select({ items: 1, generatedAt: 1 })
-      .lean()) as { items?: number; generatedAt?: string } | null
-    return doc ? cifra(doc.items, doc.generatedAt) : null
+    // pages/autos-usados-uruguay/index.vue: "Hoy hay {{ data.coverage.listings }} avisos vigentes".
+    const data = await get<{ coverage?: { listings?: number; lastReadAt?: string | null } }>(
+      '/api/cars'
+    )
+    return cifra(data?.coverage?.listings, data?.coverage?.lastReadAt)
   },
   async celulares() {
-    // La misma regla que el hub de celulares (`phonePublishable`), no `PhoneMeta.models`: la
-    // página dice "N modelos con precio" y esta tarjeta tiene que decir el mismo N.
-    const today = new Date().toISOString().slice(0, 10)
-    const [meta, rows] = await Promise.all([
-      PhoneMetaModel.findOne({ key: PHONE_META_KEY }).select({ generatedAt: 1 }).lean(),
-      PhoneModelModel.find({ lastSeen: { $gte: phoneFreshFloor(today) } })
-        .select(PHONE_LIST_PROJECTION)
-        .lean(),
-    ])
-    if (!meta) return null
-    const publishable = ((rows ?? []) as unknown as PhoneModelDoc[]).filter(model =>
-      phonePublishable(model, today)
-    ).length
-    return cifra(publishable, (meta as { generatedAt?: string }).generatedAt)
+    // pages/celulares-uruguay/index.vue: "Hoy hay {{ cards.length }} modelos con precio vigente".
+    const data = await get<{
+      generatedAt?: string
+      brands?: Array<{ models?: unknown[] }>
+    }>('/api/phones')
+    const models = (data?.brands ?? []).reduce((sum, brand) => sum + (brand.models?.length ?? 0), 0)
+    return cifra(models, data?.generatedAt)
   },
   async sillas() {
-    const doc = (await ChairCatalogMetaModel.findOne({ key: 'uy-desk-chairs' })
-      .select({ products: 1, asOf: 1 })
-      .lean()) as { products?: number; asOf?: string } | null
-    return doc ? cifra(doc.products, doc.asOf) : null
-  },
-  async equipar() {
-    const doc = (await EquiparMetaModel.findOne({ key: 'equipar-casa-uruguay' })
-      .select({ items: 1, generatedAt: 1 })
-      .lean()) as { items?: number; generatedAt?: string } | null
-    return doc ? cifra(doc.items, doc.generatedAt) : null
+    // pages/sillas-escritorio-uruguay/index.vue: `catalogMeta.products`, del mismo `?summary=1`.
+    const data = await get<{ meta?: { products?: number; asOf?: string } | null }>('/api/chairs', {
+      summary: '1',
+    })
+    return cifra(data?.meta?.products, data?.meta?.asOf)
   },
   async tiendas() {
-    // Toda tienda del registro tiene su ficha (las que todavía no juntan tres señales frescas quedan
-    // fuera del sitemap, no fuera del sitio), así que la cifra es el total de perfiles.
-    const [count, latest] = await Promise.all([
-      StoreProfileModel.countDocuments({}),
-      StoreProfileModel.findOne({}).sort({ updatedAt: -1 }).select({ updatedAt: 1 }).lean(),
-    ])
-    return cifra(count, (latest as { updatedAt?: Date } | null)?.updatedAt)
+    // pages/tiendas-online-uruguay/index.vue: "Relevamos {{ stores.length }} tiendas online".
+    const data = await get<{ stores?: unknown[]; reviewedAt?: string | null }>('/api/stores')
+    return cifra(data?.stores?.length, data?.reviewedAt)
   },
   async precios() {
-    // La ruta del propio sitio, que ya está cacheada media hora: pedirle el catálogo entero al
-    // backend otra vez sólo para contarlo sería el doble de tráfico por la misma cifra.
-    const data = await $fetch<{ day?: string | null; count?: number }>('/api/precios', {
-      timeout: 9000,
-    })
-    return data?.count ? cifra(data.count, data.day) : null
+    // pages/precios-de-supermercado-uruguay.vue: "{{ count }} artículos".
+    const data = await get<{ day?: string | null; count?: number }>('/api/precios')
+    return cifra(data?.count, data?.day)
   },
 }
 
@@ -150,17 +130,8 @@ export default defineEventHandler(async (event): Promise<DirectoriosResponse> =>
   for (const id of DIRECTORIOS_CON_CIFRA) if (CURADOS[id]) cifras[id] = CURADOS[id]!
 
   const relevados = DIRECTORIOS_CON_CIFRA.filter(id => RELEVADOS[id])
-  let connected = true
-  try {
-    await connectDb()
-  } catch {
-    connected = false
-  }
-
   const results = await Promise.all(
     relevados.map(async id => {
-      // Precios no toca Mongo: se lee aunque la base esté caída.
-      if (!connected && id !== 'precios') return [id, null] as const
       try {
         return [id, await RELEVADOS[id]!()] as const
       } catch {
@@ -171,7 +142,7 @@ export default defineEventHandler(async (event): Promise<DirectoriosResponse> =>
 
   let read = 0
   for (const [id, value] of results) {
-    if (value) {
+    if (value && value.count != null && value.count > 0) {
       cifras[id] = value
       read += 1
     }
