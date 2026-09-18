@@ -94,9 +94,11 @@ export function kmEffectOf(listings: readonly CarListing[]): CarCoefficient {
 export function matchedPremiumOf(
   listings: readonly CarListing[],
   side: (listing: CarListing) => "with" | "without" | null,
+  cohortKey: (listing: CarListing) => string | null = listing => `${listing.marketSlug}|${listing.year}`,
 ): CarCoefficient {
   const premiums: number[] = [];
-  for (const cohort of groupBy(listings.filter(usable), listing => `${listing.marketSlug}|${listing.year}`).values()) {
+  const keyed = listings.filter(usable).filter(listing => cohortKey(listing) !== null);
+  for (const cohort of groupBy(keyed, listing => cohortKey(listing)!).values()) {
     const withIt = cohort.filter(listing => side(listing) === "with").map(listing => listing.priceUsd);
     const without = cohort.filter(listing => side(listing) === "without").map(listing => listing.priceUsd);
     if (withIt.length < CAR_VALUATION_POLICY.minimumPerSide || without.length < CAR_VALUATION_POLICY.minimumPerSide) continue;
@@ -133,18 +135,32 @@ export function priceEndingsOf(listings: readonly CarListing[]): CarPriceEnding[
 export interface CarValuationCoefficients {
   /** Cuánto pierde el precio por cada 10.000 km dentro del mismo modelo y año. */
   km: CarCoefficient;
-  /** Cuánto suma la caja automática contra la manual del mismo modelo y año. */
+  /**
+   * Cuánto se pide de más por la caja automática, emparejando modelo, año y VERSIÓN. Emparejando sólo
+   * modelo y año el número mezcla la caja con el equipamiento: la automática suele venir en la
+   * versión más completa, y el comprador paga las dos cosas juntas.
+   */
   automatic: CarCoefficient;
-  /** Cuánto suma el diésel contra la nafta del mismo modelo y año. */
+  /** Lo mismo pero sólo por modelo y año: caja más la versión con la que suele venir. */
+  automaticWithTrim: CarCoefficient;
+  /**
+   * Diésel contra nafta del mismo modelo y año. Se calcula y NO se usa como consejo: medido el
+   * 2026-09-19 dio +48,5 % sobre 17 cohortes, que no es el combustible sino la versión —en los modelos
+   * que se venden con las dos, el diésel es la 4x4 o la cabina doble—.
+   */
   diesel: CarCoefficient;
   endings: CarPriceEnding[];
 }
 
+const gearbox = (listing: CarListing): "with" | "without" | null =>
+  listing.transmission === "automatica" ? "with" : listing.transmission === "manual" ? "without" : null;
+
 export function buildValuationCoefficients(listings: readonly CarListing[]): CarValuationCoefficients {
   return {
     km: kmEffectOf(listings),
-    automatic: matchedPremiumOf(listings, listing =>
-      listing.transmission === "automatica" ? "with" : listing.transmission === "manual" ? "without" : null),
+    automatic: matchedPremiumOf(listings, gearbox, listing =>
+      listing.trim && listing.engine ? `${listing.marketSlug}|${listing.year}|${listing.trim}|${listing.engine}` : null),
+    automaticWithTrim: matchedPremiumOf(listings, gearbox),
     diesel: matchedPremiumOf(listings, listing =>
       listing.fuel === "diesel" ? "with" : listing.fuel === "nafta" ? "without" : null),
     endings: priceEndingsOf(listings.filter(listing => !listing.priceConverted && !listing.currencyInferred)),

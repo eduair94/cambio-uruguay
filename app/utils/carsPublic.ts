@@ -371,6 +371,7 @@ export interface PublicCarPriceEnding {
 export interface PublicCarValuation {
   km: PublicCarCoefficient
   automatic: PublicCarCoefficient
+  automaticWithTrim: PublicCarCoefficient
   diesel: PublicCarCoefficient
   endings: PublicCarPriceEnding[]
 }
