@@ -55,8 +55,11 @@ describe("wooProductToCar", () => {
   it("drops trucks and junk model names", () => {
     const [, , logan] = read("woo-shoppingdeautos.json");
     expect(wooProductToCar({ ...logan, name: "CAMIÓN KIA K2500 2019" }, SDA, CONTEXT)).toBeNull();
-    const junk = { ...logan, attributes: logan.attributes.map((a: { name: string; terms: unknown[] }) => a.name === "Modelo" ? { ...a, terms: [{ name: "2004" }] } : a) };
-    expect(wooProductToCar(junk, SDA, { ...CONTEXT, dictionary: buildCarDictionary([], []) })).toBeNull();
+    const model = (name: string) => ({ ...logan, attributes: logan.attributes.map((a: { name: string; terms: unknown[] }) => a.name === "Modelo" ? { ...a, terms: [{ name }] } : a) });
+    const empty = { ...CONTEXT, dictionary: buildCarDictionary([], []) };
+    expect(wooProductToCar(model("2004"), SDA, empty)).toBeNull();
+    // A number that is not a year is a model name: the Alfa Romeo 155 and the Mercedes 190 are cars.
+    expect(wooProductToCar(model("155"), SDA, empty)!.listing).toMatchObject({ modelId: "x-155", model: "155" });
   });
   it("keeps a car of a brand the dictionary does not know, outside ML cohorts", () => {
     const [, , logan] = read("woo-shoppingdeautos.json");

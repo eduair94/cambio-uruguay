@@ -117,7 +117,14 @@ export interface WebCarInput {
 /** Trucks, motorbikes and the like share some sites with cars; the directory is cars and pickups. */
 export const NOT_A_CAR = /\b(camion|camiones|moto|motos|motocicletas?|scooter|cuatriciclos?|tractor(?:es)?|omnibus|microbus|lancha|casa rodante|motorhome)\b/;
 
-const plausibleModel = (model: string): boolean => /[a-z]/i.test(model) && model.length <= 30 && !/[,;:]/.test(model);
+// A model name of digits only is a real one ("155", "190", "147") unless it reads as a year: sites do
+// put the year in the model field, and "CAMIÓN KIA" once reached the directory as a "2004".
+const plausibleModel = (model: string, maxYear: number): boolean => {
+  if (!model || model.length > 30 || /[,;:]/.test(model)) return false;
+  if (/[a-z]/i.test(model)) return true;
+  const number = Number(model);
+  return Number.isInteger(number) && number > 0 && !(number >= 1950 && number <= maxYear + 1);
+};
 
 export function buildWebCar(input: WebCarInput): { listing: RawCarListing; detail: CarDetail } | null {
   const { context } = input;
@@ -131,7 +138,7 @@ export function buildWebCar(input: WebCarInput): { listing: RawCarListing; detai
     identity = { brandId: match.brandId, brand: match.brand, modelId: match.modelId, model: match.model };
     year = match.year;
     km = match.km;
-  } else if (input.brand && input.model && slugify(input.brand) && plausibleModel(input.model)) {
+  } else if (input.brand && input.model && slugify(input.brand) && plausibleModel(input.model, context.maxYear)) {
     // A car the ML dictionary does not know is still listed, but never joins an ML cohort.
     identity = {
       brandId: `x-${slugify(input.brand)}`, brand: titleCase(input.brand),
