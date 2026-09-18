@@ -642,6 +642,74 @@ export const STORES: readonly StoreEntry[] = [
     aliases: ["Decathlon Uruguay", "Decathlon"],
     redditTerms: ["decathlon"],
   },
+  // ---------------------------------------------------------------- movilidad eléctrica
+  // The four stores classes/retail/stores.ts added for classes/movilidad/ (monopatines y
+  // bicicletas eléctricas) get their own ficha too. `StoreRubro` has no e-mobility tag (a monopatín
+  // eléctrico isn't a "moto" — no engine, no plate — and it isn't a "bicicleta" either), and four
+  // stores don't clearly justify a new one when the two closest existing tags already describe the
+  // bulk of each catalogue: `delcar`/`superbikers` are primarily motorcycle dealers (88/205 and
+  // "the rest" of their catalogues respectively are nafta motos — see classes/retail/stores.ts'
+  // notes), so `motos` fits; `voltbike`/`loopbikes` are bike-branded storefronts whose accepted
+  // movilidad products are bicycles (voltbike also has one accepted monopatín, which fits neither
+  // tag any better than `bicicletas` does). `retailStoreKey` matches the curated `key` for all four
+  // (same string) because each one IS the corresponding classes/retail/stores.ts entry, not a
+  // separate identity — that is also what lets `storeKeyForSeller`/`storeSlugForSeller` resolve the
+  // exact `sellerName` those adapters publish (`store.name`, see sources/woocommerce.ts and
+  // sources/shopify.ts): "Delcar Motos", "Super Bikers", "Voltbike", "Loop".
+  {
+    key: "delcar",
+    name: "Delcar Motos",
+    domain: "delcar.com.uy",
+    kind: "tienda-uy",
+    rubros: ["motos", "bicicletas"],
+    aliases: ["Delcar Motos"],
+    retailStoreKey: "delcar",
+    redditTerms: ["delcar motos"],
+  },
+  {
+    key: "superbikers",
+    name: "Super Bikers",
+    domain: "superbikers.uy",
+    kind: "tienda-uy",
+    rubros: ["motos"],
+    aliases: ["Super Bikers"],
+    retailStoreKey: "superbikers",
+    redditTerms: ["superbikers"],
+  },
+  {
+    key: "voltbike",
+    name: "Voltbike",
+    domain: "voltbike.uy",
+    kind: "tienda-uy",
+    rubros: ["bicicletas"],
+    aliases: ["Voltbike"],
+    retailStoreKey: "voltbike",
+    redditTerms: ["voltbike"],
+  },
+  {
+    key: "loopbikes",
+    name: "Loop",
+    // The scrape target (classes/retail/stores.ts `baseUrl`) is `shop.loop-bikes.com`; the bare
+    // apex 301s straight there (verified 2026-09-17) with no separate content of its own — the same
+    // shape as `eldorado.com.uy` standing in for `www.eldorado.com.uy` above, not the
+    // `tienda.antel.com.uy` shape (a subdomain with genuinely different content from the parent
+    // site). The shorter, brand-facing form is what a person would recognize and what Trustpilot
+    // would list the company under, so the ficha's domain is the apex, not the scrape subdomain.
+    domain: "loop-bikes.com",
+    kind: "tienda-uy",
+    rubros: ["bicicletas"],
+    aliases: ["Loop"],
+    retailStoreKey: "loopbikes",
+    // "Loop" alone is an everyday word — "for loop"/"game loop"/"quedó en loop" are constant
+    // r/CharruaDevs chatter — so it is never queried bare, and there is no `divino`-style guard to
+    // rescue a bare "loop" hit: `mentionMatches` (classes/stores/signals/reddit.ts) requires each
+    // `redditTerms` entry to match as a whole, word-bounded PHRASE on the normalized text before a
+    // `redditMatch` disambiguator even runs, so querying "loop bikes" instead of "loop" already does
+    // the disambiguating work — same shape as `epicbike`/`la-cueva-muebles` above, two ordinary
+    // words that read as generic apart but are not a phrase anyone uses outside naming this store,
+    // so neither carries a `redditMatch` either.
+    redditTerms: ["loop bikes"],
+  },
   {
     key: "carlos-gutierrez",
     name: "Carlos Gutiérrez",

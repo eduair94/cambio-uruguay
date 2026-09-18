@@ -87,6 +87,25 @@ describe("storeKeyForSeller", () => {
   it("returns null for a seller that matches nothing in the registry", () => {
     expect(storeKeyForSeller("Vendedor desconocido")).toBeNull();
   });
+
+  // Movilidad eléctrica (classes/movilidad/registry.ts): the four stores classes/retail/stores.ts
+  // added for monopatines/bicicletas eléctricas resolve from the EXACT `name` those adapters publish
+  // as `sellerName` (`store.name`, see classes/retail/sources/{woocommerce,shopify}.ts) — not from
+  // the retail `key`, which for three of the four differs from the curated key only in that they
+  // happen to be spelled the same (`delcar`, `superbikers`, `voltbike`) and for the fourth does not
+  // (`loopbikes` retail key vs. `Loop` seller name / `loopbikes` curated key).
+  it("resolves the four movilidad stores from their real retail seller name", () => {
+    expect(storeKeyForSeller("Delcar Motos")).toBe("delcar");
+    expect(storeKeyForSeller("Super Bikers")).toBe("superbikers");
+    expect(storeKeyForSeller("Voltbike")).toBe("voltbike");
+    expect(storeKeyForSeller("Loop")).toBe("loopbikes");
+  });
+
+  // Already curated before this round (Task 2's registry only added the RETAIL entry); confirming
+  // it still resolves is the controller's item 3 — it does, via the existing `cover-company` alias.
+  it("cover-company already resolves from the retail seller name it publishes", () => {
+    expect(storeKeyForSeller("Cover Company")).toBe("cover-company");
+  });
 });
 
 describe("storeNorm", () => {

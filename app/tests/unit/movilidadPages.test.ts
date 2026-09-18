@@ -134,12 +134,13 @@ describe.each(PAGES_UNDER_TEST)(
       expect(src.toLowerCase()).toMatch(/por dónde puedo circular/)
     })
 
-    // Controller ruling (2026-09-17): las fichas de /tiendas-online-uruguay no cubren todavía a las
-    // tiendas de movilidad en esta rama; esta página nunca inventa ese enlace. El vendedor se rotula
-    // en texto plano vía `movilidadSellerLabel`, nunca como NuxtLink a una ficha.
-    it('nunca enlaza a una ficha de /tiendas-online-uruguay/<tienda>', () => {
-      expect(src).not.toContain('/tiendas-online-uruguay/')
-      expect(src).not.toContain('useStoreProfileKeys')
+    // Controller correction (2026-09-17): plan A (fichas de tienda) SÍ es ancestro de esta rama —
+    // ver movilidadStoreLinks.test.ts para el contrato completo (mismo patrón que
+    // sillas-escritorio-uruguay/[slug].vue y equipar-casa-uruguay/[categoria].vue).
+    it('resuelve la ficha del vendedor con storeSlugForSeller + useStoreProfileKeys()', () => {
+      expect(src).toContain('storeSlugForSeller')
+      expect(src).toContain('useStoreProfileKeys()')
+      expect(src).toContain('/tiendas-online-uruguay/')
     })
 
     it('rotula al vendedor sin identificar de Mercado Libre vía movilidadSellerLabel', () => {

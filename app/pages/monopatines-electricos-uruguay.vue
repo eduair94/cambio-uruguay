@@ -87,6 +87,18 @@
                   <a :href="offer.url" target="_blank" rel="nofollow noopener" class="cat-link">{{
                     sellerLabel(offer)
                   }}</a>
+                  <NuxtLink
+                    v-if="storeKeyFor(offer.seller, offer.source)"
+                    :to="
+                      localePath(
+                        `/tiendas-online-uruguay/${storeKeyFor(offer.seller, offer.source)}`
+                      )
+                    "
+                    :aria-label="`Ficha de ${offer.seller}`"
+                    class="cat-link seller-ficha"
+                  >
+                    (ficha)
+                  </NuxtLink>
                   {{ movilidadMoney(offer.priceUyu) }} · {{ movilidadShortDate(offer.observedAt) }}
                 </li>
               </ul>
@@ -122,7 +134,16 @@
                 row.offer.title
               }}</a>
               <span class="offer-meta"
-                >{{ sellerLabel(row.offer) }} · {{ row.variantLabel }} ·
+                ><NuxtLink
+                  v-if="storeKeyFor(row.offer.seller, row.offer.source)"
+                  :to="
+                    localePath(
+                      `/tiendas-online-uruguay/${storeKeyFor(row.offer.seller, row.offer.source)}`
+                    )
+                  "
+                  class="cat-link"
+                  >{{ sellerLabel(row.offer) }}</NuxtLink
+                ><template v-else>{{ sellerLabel(row.offer) }}</template> · {{ row.variantLabel }} ·
                 {{ movilidadShortDate(row.offer.observedAt) }}</span
               >
               <span class="offer-price"
@@ -142,7 +163,16 @@
                 row.offer.title
               }}</a>
               <span class="offer-meta"
-                >{{ sellerLabel(row.offer) }} · {{ row.variantLabel }} ·
+                ><NuxtLink
+                  v-if="storeKeyFor(row.offer.seller, row.offer.source)"
+                  :to="
+                    localePath(
+                      `/tiendas-online-uruguay/${storeKeyFor(row.offer.seller, row.offer.source)}`
+                    )
+                  "
+                  class="cat-link"
+                  >{{ sellerLabel(row.offer) }}</NuxtLink
+                ><template v-else>{{ sellerLabel(row.offer) }}</template> · {{ row.variantLabel }} ·
                 {{ movilidadShortDate(row.offer.observedAt) }}</span
               >
               <span class="offer-price"
@@ -263,8 +293,25 @@ import {
   type MovilidadOffer,
   type MovilidadProduct,
 } from '~/utils/movilidad'
+import { storeSlugForSeller } from '~/utils/storeDirectory'
 
 const localePath = useLocalePath()
+
+// El nombre del vendedor enlaza a su ficha (/tiendas-online-uruguay/<key>) sólo cuando esa tienda
+// tiene ficha propia — la ruta 404s de verdad si no. `storeProfileKeys` es la lista compartida con
+// /sillas-escritorio-uruguay/[slug].vue y /equipar-casa-uruguay/[categoria].vue (useStoreProfileKeys.ts).
+const storeProfileKeys = useStoreProfileKeys()
+// `source` es opcional para que cualquier llamada siga compilando; una oferta de Facebook nunca
+// enlaza, aunque el nombre del vendedor resuelva a una tienda curada: el nombre visible de un
+// vendedor particular de Marketplace no es la identidad de una empresa (mismo motivo que en las
+// páginas hermanas). `storeSlugForSeller` además nunca resuelve "Mercado Libre" a la ficha de
+// Mercado Libre (`classes/stores/match.ts`/`storeDirectory.ts`, `EXCLUDED_ALIAS_NORMS`), así que un
+// vendedor sin identificar de ML tampoco enlaza aunque no hiciera falta este guard para eso.
+const storeKeyFor = (seller: string, source?: string): string | null => {
+  if (source === 'facebook') return null
+  const key = storeSlugForSeller(seller)
+  return key && storeProfileKeys.value.includes(key) ? key : null
+}
 
 const PRODUCT_OFFERS_SHOWN = 3
 
@@ -292,9 +339,8 @@ const variants = computed(() =>
   [...items.value].sort((a, b) => (a.variantRank ?? 1) - (b.variantRank ?? 1))
 )
 
-/** El vendedor sin identificar de Mercado Libre se rotula; nunca hay enlace a una ficha de tienda
- * en esta página: las fichas de /tiendas-online-uruguay no cubren todavía a las tiendas de
- * movilidad y esta página no inventa un enlace que hoy no existe. */
+/** El vendedor sin identificar de Mercado Libre se rotula; el nombre real de una tienda enlaza a
+ * su ficha por separado, vía `storeKeyFor` (nunca a partir de este texto rotulado). */
 function sellerLabel(offer: MovilidadOffer): string {
   return movilidadSellerLabel(offer.seller, offer.source)
 }
@@ -581,6 +627,12 @@ useHead(() => ({
 }
 .offer-mini li {
   padding: 2px 0;
+}
+.seller-ficha {
+  /* Label step (DESIGN.md): 0.75rem es el piso del ramp, nada renderiza por debajo. */
+  font-size: 0.75rem;
+  font-weight: 400;
+  opacity: 0.85;
 }
 
 /* Más baratos */

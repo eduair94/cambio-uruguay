@@ -541,6 +541,42 @@ export const STORE_DIRECTORY: readonly StoreDirectoryEntry[] = [
     rubros: ['deportes', 'bicicletas'],
     aliases: ['Decathlon Uruguay', 'Decathlon'],
   },
+  // Movilidad eléctrica: mirrors classes/stores/registry.ts (retailStoreKey/redditTerms/redditMatch
+  // stay backend-only, per this file's own header). See that file's comment for the rubro decision
+  // (no e-mobility tag exists; `motos`/`bicicletas` are the closest fits) and for why Loop's ficha
+  // uses the apex `loop-bikes.com`, not the scrape subdomain `shop.loop-bikes.com`.
+  {
+    key: 'delcar',
+    name: 'Delcar Motos',
+    domain: 'delcar.com.uy',
+    kind: 'tienda-uy',
+    rubros: ['motos', 'bicicletas'],
+    aliases: ['Delcar Motos'],
+  },
+  {
+    key: 'superbikers',
+    name: 'Super Bikers',
+    domain: 'superbikers.uy',
+    kind: 'tienda-uy',
+    rubros: ['motos'],
+    aliases: ['Super Bikers'],
+  },
+  {
+    key: 'voltbike',
+    name: 'Voltbike',
+    domain: 'voltbike.uy',
+    kind: 'tienda-uy',
+    rubros: ['bicicletas'],
+    aliases: ['Voltbike'],
+  },
+  {
+    key: 'loopbikes',
+    name: 'Loop',
+    domain: 'loop-bikes.com',
+    kind: 'tienda-uy',
+    rubros: ['bicicletas'],
+    aliases: ['Loop'],
+  },
   {
     key: 'carlos-gutierrez',
     name: 'Carlos Gutiérrez',
