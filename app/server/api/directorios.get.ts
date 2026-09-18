@@ -14,9 +14,11 @@ import { DIRECTORIOS_CON_CIFRA, type DirectorioCifra } from '../../utils/directo
  * perfiles contra 80 tiendas del registro—. Una cifra que el lector no puede encontrar al hacer clic
  * es la cifra equivocada, por más que sea la que guardó el job.
  *
- * De esa misma medición sale la otra regla: **el hub sólo publica una cifra que su página también
- * dice**. Equipar y movilidad no imprimen un total (hablan por categoría y por banda), así que su
- * tarjeta va sin número en vez de con uno que no está en ningún lado (ver `fuente: 'sin-cifra'`).
+ * De esa misma medición sale la otra regla: **el hub sólo publica una cifra que el lector puede
+ * verificar en la página**: la que la página imprime, o el largo de la lista que dibuja entera
+ * (couriers: quince filas, sin total escrito). Equipar y movilidad no hacen ninguna de las dos
+ * —hablan por categoría y por banda—, así que su tarjeta va sin número en vez de con uno que no está
+ * en ningún lado (ver `fuente: 'sin-cifra'`).
  *
  * Los tres directorios curados a mano (casas, couriers, tarjetas) no hacen pedidos: su cifra es el
  * largo de la misma lista que dibuja su página, y su fecha la de la última revisión de esa lista.
