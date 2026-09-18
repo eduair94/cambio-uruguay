@@ -1714,7 +1714,9 @@
     "licenciasEspeciales": "Licencias especiales",
     "horasExtras": "Horas extras",
     "usedCarRisks": "Autos con deuda o chocados",
-    "usedCarMarketReport": "Informe del mercado de autos"
+    "usedCarMarketReport": "Informe del mercado de autos",
+    "usedCarValuation": "¿Cuánto vale mi auto?",
+    "sellUsedCar": "Vender tu auto"
   },
   "sitemapPage": {
     "h1": "Mapa del sitio de Cambio Uruguay",

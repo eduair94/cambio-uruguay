@@ -297,6 +297,12 @@
 
       <section class="mb-10">
         <h2 class="text-h5 mb-3">Cómo usar esto para elegir</h2>
+        <p class="text-body-1 mb-3">
+          ¿Estás del otro lado? La
+          <NuxtLink :to="localePath(CAR_SELL_PATH)">guía para vender tu auto</NuxtLink> usa estos
+          mismos datos para decir cuánto pedir, y el
+          <NuxtLink :to="localePath(CAR_VALUATION_PATH)">tasador</NuxtLink> calcula el tuyo.
+        </p>
         <ol class="text-body-1 pl-5">
           <li class="mb-2">
             <strong>Fijá el presupuesto y mirá qué año paga.</strong> El mismo dinero compra un
@@ -358,6 +364,7 @@
 <script setup lang="ts">
 import { CAR_OPPORTUNITIES_PATH, CARS_PATH, carMarketPath, formatCarDate } from '~/utils/cars'
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
+import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
 import {
   CAR_REPORT_FUEL_LABELS,
   CAR_REPORT_PATH,

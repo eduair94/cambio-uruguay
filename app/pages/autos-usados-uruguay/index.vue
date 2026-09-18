@@ -123,7 +123,11 @@
         <li>
           Cómo está el mercado hoy —precios, qué modelo pierde más valor por año, qué se compra con
           cada presupuesto— está en el
-          <NuxtLink :to="localePath(CAR_REPORT_PATH)">informe del mercado</NuxtLink>.
+          <NuxtLink :to="localePath(CAR_REPORT_PATH)">informe del mercado</NuxtLink>. Si vas a
+          vender, el <NuxtLink :to="localePath(CAR_VALUATION_PATH)">tasador</NuxtLink> te dice
+          cuánto se pide hoy por el tuyo y la
+          <NuxtLink :to="localePath(CAR_SELL_PATH)">guía para vender</NuxtLink>, qué suma y qué
+          resta en el precio.
         </li>
         <li>
           Los avisos cuyo vendedor declara deuda, choque, recupero de seguro o papeles pendientes
@@ -158,6 +162,7 @@
 <script setup lang="ts">
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import { CAR_REPORT_PATH } from '~/utils/carsReport'
+import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
 import {
   CAR_OPPORTUNITIES_PATH,
   CARS_PATH,

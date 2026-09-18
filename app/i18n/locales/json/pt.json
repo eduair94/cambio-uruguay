@@ -1696,7 +1696,9 @@
     "licenciasEspeciales": "Licenças especiais",
     "horasExtras": "Horas extras",
     "usedCarRisks": "Carros com dívida ou batidos",
-    "usedCarMarketReport": "Relatório do mercado de carros"
+    "usedCarMarketReport": "Relatório do mercado de carros",
+    "usedCarValuation": "Quanto vale meu carro?",
+    "sellUsedCar": "Vender seu carro"
   },
   "sitemapPage": {
     "h1": "Mapa do site Cambio Uruguay",

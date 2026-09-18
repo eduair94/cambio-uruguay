@@ -180,6 +180,8 @@ const NOINDEXED = [
   'autos-usados-uruguay/index.vue',
   'autos-usados-uruguay/precios/[slug].vue',
   'buscar.vue',
+  // El tasador se indexa en su URL; cada combinación de marca, modelo y año se sale.
+  'cuanto-vale-mi-auto-uruguay.vue',
   'cuenta/index.vue',
   // La herramienta "¿tengo descuento acá?": la respuesta depende de la ubicación de quien la abre.
   'descuentos-con-tarjeta-uruguay/cerca-de-mi.vue',

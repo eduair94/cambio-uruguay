@@ -28,6 +28,21 @@
           automotoras, leídos el {{ formatCarDate(data.market.generatedAt) }}. Son precios pedidos,
           agrupados por año y por versión; no es una tasación.
         </p>
+        <p class="text-body-1 mb-0">
+          ¿Tenés uno y querés saber cuánto pedir?
+          <NuxtLink
+            :to="
+              localePath({
+                path: CAR_VALUATION_PATH,
+                query: { marca: data.market.brandSlug, modelo: data.market.slug },
+              })
+            "
+          >
+            Calculalo con tus kilómetros
+          </NuxtLink>
+          ·
+          <NuxtLink :to="localePath(CAR_SELL_PATH)">guía para vender</NuxtLink>
+        </p>
         <VAlert
           v-if="!data.indexable"
           type="info"
@@ -87,6 +102,7 @@
 </template>
 
 <script setup lang="ts">
+import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
 import {
   CAR_MARKET_INDEX_MIN,
   CARS_PATH,

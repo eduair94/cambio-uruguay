@@ -1703,7 +1703,9 @@
     "licenciasEspeciales": "Special leave (Uruguay)",
     "horasExtras": "Overtime pay (Uruguay)",
     "usedCarRisks": "Cars with debt or crash damage",
-    "usedCarMarketReport": "Used-car market report"
+    "usedCarMarketReport": "Used-car market report",
+    "usedCarValuation": "What is my car worth?",
+    "sellUsedCar": "Sell your car"
   },
   "sitemapPage": {
     "h1": "Cambio Uruguay sitemap",
