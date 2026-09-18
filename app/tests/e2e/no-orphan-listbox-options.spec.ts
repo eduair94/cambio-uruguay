@@ -24,7 +24,16 @@ test.use({ locale: 'es-UY' })
  * point of the guard is to fail on that too.
  */
 test('no element claims role="option" outside a listbox', async ({ page }) => {
+  // The drawer is where the orphan options lived, and it now mounts its items only when it opens
+  // (the closed SSR drawer ships empty to keep the first HTML light). A test that waits for its
+  // section headers on a closed drawer waits forever — so it opens the menu, like a person does.
+  await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
+  const menu = page.locator('.v-app-bar [aria-controls="mobile-navigation"]')
+  await expect(async () => {
+    await menu.click()
+    await expect(page.locator('#mobile-navigation')).toBeVisible({ timeout: 3_000 })
+  }).toPass({ timeout: 60_000 })
 
   // Gate on the drawer headers themselves, NOT on `[role="option"]`.
   //
@@ -32,8 +41,8 @@ test('no element claims role="option" outside a listbox', async ({ page }) => {
   // to be attached, and that is unsatisfiable on a healthy page: once the drawer
   // stops emitting orphan options there are no options left, and the palette's
   // listbox only exists while the palette is open. It timed out for exactly the
-  // reason the fix worked. Anchor on an element that is always present instead.
-  const headers = page.locator('.v-list-group__header')
+  // reason the fix worked. Anchor on an element that is present once the drawer is open.
+  const headers = page.locator('#mobile-navigation .v-list-group__header')
   await expect(headers.first()).toBeAttached({ timeout: 30_000 })
 
   // Guard the guard: if the drawer ever stops rendering, the orphan check below

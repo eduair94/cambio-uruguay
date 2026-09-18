@@ -5,10 +5,10 @@ name: E2E
 # 5). This workflow runs the Playwright suite on every PR that touches the app
 # and once a night on main, so that can't happen again.
 #
-# Deliberately NOT in the `deploy` job's `needs`: the suite drives a real dev
+# Deliberately NOT in the `deploy` job's `needs`: the suite drives a real app
 # server against the live public API, so a network hiccup upstream must not be
 # able to block a production deploy. It reports red and gets fixed; it does not
-# gate the release train.
+# gate the release train. (It drives a production build since 2026-09-18.)
 
 on:
   pull_request:
@@ -49,8 +49,18 @@ jobs:
       # playwright.config.ts uses `channel: 'chrome'`; the runner image ships
       # Google Chrome stable, so only the driver needs fetching.
       - run: npx playwright install-deps chromium
+      # Against a production build, not `npm run dev` (see playwright.config.ts): the dev server
+      # compiles each route on first visit and on this runner that no longer fits vite-node's 10 s
+      # request timeout — half-rendered pages, 50 red tests, site healthy. Same build flags as
+      # app/scripts/deploy.sh.
+      - name: Build
+        run: npx nuxt build
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
       - name: Run e2e suite
         run: npm run test:e2e
+        env:
+          E2E_PROD_SERVER: '1'
       - name: Upload report on failure
         if: failure()
         uses: actions/upload-artifact@v4
