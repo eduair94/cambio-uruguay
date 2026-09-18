@@ -341,6 +341,18 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // The advert's own page for the cars the directory already holds, by usefulness and on a budget:
+      // the page is the only source of the VERSION (which decides what compares with what) and of the
+      // DESCRIPTION (where the seller writes "tiene deuda de 52.000" or "chocado de atrás"). Minute 11
+      // keeps it away from currency-autos-hourly (:29) and the other users of the ML bridge.
+      name: "currency-autos-detail",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_autos_detail.js",
+      cron_restart: "11 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Mercado Libre's price guide for the model-years the directory holds: the version catalogue
       // and a second opinion where our own sample is thin (it is ML's median, not a valuation).
       name: "currency-autos-guide",
