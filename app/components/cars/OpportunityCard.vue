@@ -28,6 +28,7 @@
         </h3>
         <p class="text-body-2 mb-1">{{ facts }}</p>
         <p class="text-h6 font-weight-bold mb-1">{{ formatCarUsd(item.subject.priceUsd) }}</p>
+        <p v-if="negotiation" class="text-body-2 mb-1">{{ negotiation }}.</p>
         <p class="text-body-1 mb-0">
           <strong>{{ carPercent(item.gap) }} menos</strong> que la mediana ({{
             formatCarUsd(item.sample.median)
@@ -100,12 +101,31 @@ import {
   carPercent,
   formatCarDate,
   formatCarKm,
+  formatCarPrice,
   formatCarUsd,
 } from '~/utils/cars'
 import type { PublicCarOpportunityItem } from '~/utils/carsPublic'
 
 const props = defineProps<{ item: PublicCarOpportunityItem; hideSubjectLink?: boolean }>()
 const localePath = useLocalePath()
+/**
+ * Las dos señales que ya teníamos guardadas y no mostrábamos, y que son justo las que usa quien va a
+ * negociar: que el precio YA bajó —lo vimos nosotros, no lo dice el aviso— y cuánto lleva publicado.
+ */
+const negotiation = computed(() => {
+  const subject = props.item.subject
+  const parts: string[] = []
+  if (subject.priceDrop) {
+    const cut = subject.priceDrop.from - subject.price
+    parts.push(
+      `Bajó ${formatCarPrice({ price: cut, currency: subject.currency })} desde que lo vemos`
+    )
+  }
+  const days = Math.floor((Date.now() - Date.parse(subject.firstSeen)) / 86_400_000)
+  if (days >= 21) parts.push(`${parts.length ? 'y l' : 'L'}leva ${days} días publicado`)
+  return parts.join(' ')
+})
+
 const facts = computed(() =>
   [
     String(props.item.subject.year),
