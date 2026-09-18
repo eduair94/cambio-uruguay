@@ -16,7 +16,7 @@ export const MARKET_SAMPLE_MINIMUM = 8
 export const MARKET_PAIR_MINIMUM = 8
 export const MARKET_WINDOWS = [7, 30, 90] as const
 export const MARKET_SERIES_KEY_PATTERN =
-  /^(?:(?:alquiler|venta)\|(?:UYU|USD)\|(?:apartamento|casa|todas)\|(?:any|0|1|2|3|4plus)\|(?:uy|d:[a-z0-9-]{1,80}|b:[a-z0-9-]{1,80}:[a-z0-9-]{1,80})|autos\|USD\|(?:all|m:[a-z0-9-]{1,80}(?:\|y:\d{4})?))$/
+  /^(?:(?:alquiler|venta)\|(?:UYU|USD)\|(?:apartamento|casa|todas)\|(?:any|[0-3]|4plus)\|(?:uy|d:[a-z0-9-]{1,80}|b:[a-z0-9-]{1,80}:[a-z0-9-]{1,80})|autos\|USD\|(?:all|m:[a-z0-9-]{1,80}(?:\|y:\d{4})?))$/
 
 export interface MarketPairStats {
   n: number
@@ -52,7 +52,12 @@ export interface MarketSeriesDoc {
   key: string
   vertical: MarketVertical
   dims: MarketCohortDims
-  labels: { department: string | null; neighborhood: string | null; brand: string | null; model: string | null }
+  labels: {
+    department: string | null
+    neighborhood: string | null
+    brand: string | null
+    model: string | null
+  }
   label: string
   latest: MarketSeriesPoint
   updatedAt: string
@@ -210,7 +215,10 @@ const NOUN: Record<MarketVertical, string> = {
   autos: 'autos usados',
 }
 
-export function marketSeriesFaq(vertical: MarketVertical, trackingSince?: string | null): FaqItem[] {
+export function marketSeriesFaq(
+  vertical: MarketVertical,
+  trackingSince?: string | null
+): FaqItem[] {
   const unit = vertical === 'alquiler' ? 'vivienda' : 'aviso'
   const since = trackingSince ? `el ${marketDay(trackingSince)}` : 'en septiembre de 2026'
   return [

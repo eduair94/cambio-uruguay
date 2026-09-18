@@ -16,7 +16,8 @@ import { connectDb } from '../../utils/db'
  */
 export default defineEventHandler(async (event): Promise<MarketSeriesResponse> => {
   const key = getQuery(event).key
-  if (!isMarketSeriesKey(key)) throw createError({ statusCode: 400, statusMessage: 'Invalid series key' })
+  if (!isMarketSeriesKey(key))
+    throw createError({ statusCode: 400, statusMessage: 'Invalid series key' })
   try {
     await connectDb()
     const model = carModelOfKey(key)

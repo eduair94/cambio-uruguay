@@ -72,6 +72,18 @@
         />
       </section>
 
+      <section class="mb-8">
+        <h2 class="text-h6 mb-1">Cómo se mueve el precio</h2>
+        <p class="text-body-2 text-medium-emphasis mb-3">
+          La mediana de cada día y cuánto cambió el mismo aviso contra su propio precio. Todos los
+          modelos en
+          <NuxtLink :to="localePath('/evolucion-precio-autos-usados-uruguay')"
+            >evolución del precio de autos usados</NuxtLink
+          >.
+        </p>
+        <MarketSeriesExplorer vertical="autos" :fixed-model="slug" compact />
+      </section>
+
       <section v-if="data.market.guide.length" class="mb-8">
         <h2 class="text-h6 mb-2">Guía de precios de Mercado Libre</h2>
         <CarsGuideTable :rows="data.market.guide" :updated-at="data.market.guideUpdatedAt" />

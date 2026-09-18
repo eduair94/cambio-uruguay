@@ -6,7 +6,11 @@ import type { MarketSeriesDoc, MarketSeriesIndex } from '../../utils/marketSerie
 const options = { autoCreate: false, autoIndex: false, strict: false }
 export const MarketSeriesModel =
   (mongoose.models.MarketSeries as mongoose.Model<MarketSeriesDoc>) ||
-  mongoose.model<MarketSeriesDoc>('MarketSeries', new Schema({ key: String }, options), 'marketseries')
+  mongoose.model<MarketSeriesDoc>(
+    'MarketSeries',
+    new Schema({ key: String }, options),
+    'marketseries'
+  )
 export const MarketSeriesMetaModel =
   (mongoose.models.MarketSeriesMeta as mongoose.Model<MarketSeriesIndex>) ||
   mongoose.model<MarketSeriesIndex>(

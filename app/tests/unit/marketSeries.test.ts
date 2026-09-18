@@ -83,7 +83,9 @@ describe('marketWindowState', () => {
     })
   })
   it('thin, then ok', () => {
-    expect(marketWindowState({ ...stats, n: 3, chg: null }, 30, '2026-08-01', '2026-09-20')).toEqual({
+    expect(
+      marketWindowState({ ...stats, n: 3, chg: null }, 30, '2026-08-01', '2026-09-20')
+    ).toEqual({
       kind: 'thin',
       n: 3,
     })
@@ -96,7 +98,17 @@ describe('marketChart', () => {
   it('labels and the three lines, with gaps kept as null', () => {
     const chart = marketChart([
       { d: '2026-09-18', n: 8, p25: 1, med: 2, p75: 3, m2: null, w7: null, w30: null, w90: null },
-      { d: '2026-09-19', n: 5, p25: null, med: null, p75: null, m2: null, w7: null, w30: null, w90: null },
+      {
+        d: '2026-09-19',
+        n: 5,
+        p25: null,
+        med: null,
+        p75: null,
+        m2: null,
+        w7: null,
+        w30: null,
+        w90: null,
+      },
     ])
     expect(chart.labels).toEqual(['18/9', '19/9'])
     expect(chart.med).toEqual([2, null])

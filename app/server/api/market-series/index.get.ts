@@ -16,7 +16,9 @@ export default defineEventHandler(async (event): Promise<{ index: MarketSeriesIn
     throw createError({ statusCode: 400, statusMessage: 'Unknown market' })
   try {
     await connectDb()
-    const index = await MarketSeriesMetaModel.findOne({ key: `index:${vertical as MarketVertical}` })
+    const index = await MarketSeriesMetaModel.findOne({
+      key: `index:${vertical as MarketVertical}`,
+    })
       .select({ _id: 0, __v: 0 })
       .maxTimeMS(5_000)
       .lean()
