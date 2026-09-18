@@ -36,6 +36,9 @@ async function runVision(
   const max = number("AUTOS_VISION_MAX", 30);
   if (!visionConfigured()) return { asked: 0, rejected: 0, skipped: "sin GEMINI_API_KEY" };
   const medians = looseMedians(stored, usdUyu);
+  // Presupuesto propio: el job es HORARIO y una tanda de visión sin techo lo hace solaparse consigo
+  // mismo (medido: 25 llamadas con cuatro fotos se fueron a 25 minutos).
+  const deadline = Date.now() + number("AUTOS_VISION_MINUTES", 8) * 60_000;
   const candidates = stored
     .map(doc => ({ doc, detail: fresh.get(doc.key) ?? doc.detail }))
     .filter(({ doc, detail }) => {
@@ -49,6 +52,7 @@ async function runVision(
   const checks = new Map<string, CarPhotoVerdict>();
   let rejected = 0;
   for (const { doc, detail } of candidates) {
+    if (Date.now() >= deadline) break;
     const verdict = await inspectCarPhotos({
       key: doc.key,
       title: doc.listing.title,
