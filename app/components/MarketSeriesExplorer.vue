@@ -129,10 +129,13 @@
             </p>
             <p class="text-body-2 text-medium-emphasis mb-1">
               La mitad pide entre {{ marketMoney(latest.p25, seriesCurrency) }} y
-              {{ marketMoney(latest.p75, seriesCurrency) }}. {{ latest.n }} {{ unitPlural }}.
+              {{ marketMoney(latest.p75, seriesCurrency) }}. {{ marketCount(latest.n) }}
+              {{ unitPlural }}.
             </p>
             <p v-if="latest.m2 && latest.m2.med !== null" class="text-body-2 mb-0">
-              Por m² construido: {{ marketMoney(latest.m2.med, seriesCurrency) }} ({{ latest.m2.n }}
+              Por m² construido: {{ marketMoney(latest.m2.med, seriesCurrency) }} ({{
+                marketCount(latest.m2.n)
+              }}
               con superficie).
             </p>
           </template>
@@ -147,8 +150,10 @@
           <template v-if="card.state.kind === 'ok'">
             <p class="text-h5 font-weight-bold mb-1">{{ marketPct(card.state.stats.chg) }}</p>
             <p class="text-body-2 text-medium-emphasis mb-0">
-              {{ card.state.stats.n }} avisos que ya seguíamos: {{ card.state.stats.down }} bajaron,
-              {{ card.state.stats.up }} subieron y {{ card.state.stats.same }} quedaron igual.
+              {{ marketCount(card.state.stats.n) }} avisos que ya seguíamos:
+              {{ marketCount(card.state.stats.down) }} bajaron,
+              {{ marketCount(card.state.stats.up) }} subieron y
+              {{ marketCount(card.state.stats.same) }} quedaron igual.
             </p>
           </template>
           <p v-else-if="card.state.kind === 'waiting'" class="text-body-2 mb-0">
@@ -165,6 +170,7 @@
       <div v-if="chart" class="chart-wrap mb-2">
         <ClientOnly>
           <ChartsLineChart
+            v-if="laidOut"
             :chart-data="chart.data"
             :options="chartOptions"
             :aria-label="chart.label"
@@ -174,18 +180,19 @@
           </template>
         </ClientOnly>
       </div>
-      <p class="text-caption text-medium-emphasis mb-3">
+      <p v-if="chart" class="text-caption text-medium-emphasis mb-3">
         La línea es la mediana del precio pedido y la banda va del percentil 25 al 75. Se mueve
         también cuando cambia qué avisos hay publicados; la "misma oferta" no.
+      </p>
+      <p v-else class="text-caption text-medium-emphasis mb-3">
+        El gráfico aparece con el segundo día de datos.
       </p>
 
       <VTable class="cu-mobile-cards mb-6" density="compact">
         <caption class="text-caption text-medium-emphasis text-left pb-2">
-          Últimos
           {{
-            historyRows.length
+            historyCaption
           }}
-          días con dato
         </caption>
         <thead>
           <tr>
@@ -199,7 +206,7 @@
         <tbody>
           <tr v-for="row in historyRows" :key="row.d">
             <td data-label="Día">{{ marketDay(row.d) }}</td>
-            <td data-label="Avisos" class="text-right">{{ row.n }}</td>
+            <td data-label="Avisos" class="text-right">{{ marketCount(row.n) }}</td>
             <td data-label="Mediana" class="text-right">
               {{ marketMoney(row.med, seriesCurrency) }}
             </td>
@@ -229,7 +236,7 @@
           <tbody>
             <tr v-for="row in siblingRows" :key="row.key">
               <td data-label="Vivienda">{{ row.label }}</td>
-              <td data-label="Viviendas" class="text-right">{{ row.n }}</td>
+              <td data-label="Viviendas" class="text-right">{{ marketCount(row.n) }}</td>
               <td data-label="Mediana" class="text-right">
                 {{ marketMoney(row.med, seriesCurrency) }}
               </td>
@@ -270,7 +277,7 @@
               </VBtn>
               <span class="mover-pct">{{ marketPct(mover.chg) }}</span>
               <span class="text-caption text-medium-emphasis"
-                >&nbsp;· {{ mover.pairs }} avisos</span
+                >&nbsp;· {{ marketCount(mover.pairs) }} avisos</span
               >
             </li>
           </ul>
@@ -295,14 +302,17 @@ import {
   carSeriesKey,
   housingSeriesKey,
   marketChart,
+  marketCount,
   marketDay,
   marketMoney,
   marketPct,
   marketWindowState,
   MARKET_BEDROOM_LABELS,
+  MARKET_BEDROOM_ORDER,
   MARKET_PAIR_MINIMUM,
   MARKET_SAMPLE_MINIMUM,
   MARKET_TYPE_LABELS,
+  MARKET_TYPE_ORDER,
   MARKET_WINDOWS,
   type MarketBedrooms,
   type MarketCurrency,
@@ -324,8 +334,8 @@ const router = useRouter()
 const isHousing = computed(() => props.vertical !== 'autos')
 const syncUrl = !props.fixedModel && !props.compact
 
-const TYPES = Object.keys(MARKET_TYPE_LABELS) as MarketTypeBucket[]
-const BEDS = Object.keys(MARKET_BEDROOM_LABELS) as MarketBedrooms[]
+const TYPES = MARKET_TYPE_ORDER
+const BEDS = MARKET_BEDROOM_ORDER
 const SCOPE_TOKEN = /^(?:uy|d:[a-z0-9-]{1,80}|b:[a-z0-9-]{1,80}:[a-z0-9-]{1,80})$/
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
@@ -549,6 +559,11 @@ const windowCards = computed(() =>
 const historyRows = computed(() =>
   [...(series.value?.points ?? [])].reverse().slice(0, props.compact ? 7 : 14)
 )
+const historyCaption = computed(() =>
+  historyRows.value.length === 1
+    ? 'El único día con dato por ahora'
+    : `Últimos ${historyRows.value.length} días con dato`
+)
 
 const siblingRows = computed(() =>
   TYPES.flatMap(option =>
@@ -621,6 +636,12 @@ const chart = computed(() => {
   }
 })
 
+// Chart.js measures its container once, when it is created. Mounted during hydration it read a
+// width of 0 and its resize observer never corrected it (measured: canvas 0 px inside a 768 px box).
+// Creating it one frame after mount, once the layout exists, draws it at its real width.
+const laidOut = ref(false)
+onMounted(() => requestAnimationFrame(() => (laidOut.value = true)))
+
 const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
@@ -639,7 +660,7 @@ const chartOptions = computed(() => ({
 <style scoped>
 .market-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 12px;
 }
 .scope-select {

@@ -128,6 +128,10 @@ export const MARKET_BEDROOM_LABELS: Record<MarketBedrooms, string> = {
   '4plus': '4 o más',
 }
 
+/** Display order. Never `Object.keys` of the label maps: JS lists "0".."3" before "any". */
+export const MARKET_TYPE_ORDER: readonly MarketTypeBucket[] = ['todas', 'apartamento', 'casa']
+export const MARKET_BEDROOM_ORDER: readonly MarketBedrooms[] = ['any', '0', '1', '2', '3', '4plus']
+
 export const housingSeriesKey = (
   vertical: 'alquiler' | 'venta',
   currency: MarketCurrency,
@@ -146,10 +150,10 @@ export const isMarketSeriesKey = (value: unknown): value is string =>
 export function housingSiblingKeys(key: string): string[] {
   const [vertical, currency, , , scope] = key.split('|')
   if ((vertical !== 'alquiler' && vertical !== 'venta') || !scope) return []
-  const types: MarketTypeBucket[] = ['todas', 'apartamento', 'casa']
-  const beds: MarketBedrooms[] = ['any', '0', '1', '2', '3', '4plus']
-  return types.flatMap(type =>
-    beds.map(bed => housingSeriesKey(vertical, currency as MarketCurrency, type, bed, scope))
+  return MARKET_TYPE_ORDER.flatMap(type =>
+    MARKET_BEDROOM_ORDER.map(bed =>
+      housingSeriesKey(vertical, currency as MarketCurrency, type, bed, scope)
+    )
   )
 }
 
@@ -159,6 +163,9 @@ export function carModelOfKey(key: string): string | null {
 
 export const marketMoney = (value: number | null | undefined, currency: MarketCurrency): string =>
   typeof value === 'number' ? formatCurrency(value, currency, 0) : '—'
+
+export const marketCount = (value: number | null | undefined): string =>
+  typeof value === 'number' ? value.toLocaleString('es-UY') : '—'
 
 export function marketPct(value: number | null | undefined, digits = 1): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) return '—'
