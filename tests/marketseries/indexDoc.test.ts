@@ -26,6 +26,7 @@ function housing(neighborhood: string, n: number, w30: MarketPairStats | null = 
       labels: { department: "Montevideo", neighborhood, brand: null, model: null },
       label: cohort.dims.scope === "neighborhood" ? `${neighborhood}, Montevideo` : cohort.dims.scope === "department" ? "Montevideo" : "Uruguay",
       point: point(n, w30, w7),
+      hist: null,
     }));
 }
 
@@ -76,6 +77,7 @@ describe("buildMarketIndex", () => {
       labels: { department: null, neighborhood: null, brand: "Toyota", model: "Hilux" },
       label: "Toyota Hilux",
       point: point(30),
+      hist: null,
     }));
     const index = buildMarketIndex({ ...base, vertical: "autos", entries });
     expect(index.models).toEqual([{ slug: "toyota-hilux", brand: "Toyota", model: "Hilux", n: 30, med: 2, w30: null }]);

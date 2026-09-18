@@ -82,6 +82,19 @@ export interface MarketSeriesPoint {
   w90: MarketPairStats | null;
 }
 
+/** The shape of a cohort's prices that day (classes/marketseries/histogram.ts). */
+export interface MarketHistogram {
+  n: number;
+  /** Log-spaced bins (the page draws them at equal width, which is a log axis). */
+  log: boolean;
+  /** `counts.length + 1` strictly increasing edges; the last bin includes its right edge. */
+  edges: number[];
+  counts: number[];
+  /** Observations under the first edge / over the last one (the p1..p99 cut). */
+  below: number;
+  above: number;
+}
+
 export interface MarketCohortDims {
   vertical: MarketVertical;
   currency: MarketCurrency;
@@ -111,6 +124,8 @@ export interface MarketSeriesEntry {
   labels: MarketCohortLabels;
   label: string;
   point: MarketSeriesPoint;
+  /** Null under MARKET_HISTOGRAM_MINIMUM or when every price is the same. */
+  hist: MarketHistogram | null;
 }
 
 /** Stored in `marketseries`, one per cohort. */
@@ -123,6 +138,8 @@ export interface MarketSeriesDoc {
   latest: MarketSeriesPoint;
   updatedAt: string;
   points: MarketSeriesPoint[];
+  /** Daily shapes, newest last, kept for MARKET_HIST_MAX_DAYS (the page overlays today on ~30 days ago). */
+  hists?: Array<MarketHistogram & { d: string }>;
 }
 
 export interface MarketIndexScope {

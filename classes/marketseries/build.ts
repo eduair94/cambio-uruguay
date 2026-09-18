@@ -1,6 +1,7 @@
 // El día de un mercado: nivel por cohorte (una observación por vivienda o aviso) y "misma oferta"
 // (cada aviso contra su propio log de ANTES de hoy). Puro: sin base, testeable.
 import { cohortLabel, cohortsOf } from "./cohorts";
+import { buildHistogram } from "./histogram";
 import { marketLogKey, nextLog, priceAt, shiftDay } from "./log";
 import { levelStats, medianStats, pairStats, MARKET_PAIR_MINIMUM, MARKET_SAMPLE_MINIMUM, MARKET_WINDOWS } from "./stats";
 import type {
@@ -154,6 +155,7 @@ export function buildMarketDay(input: MarketDayInput): MarketDay {
         w30: windows[30],
         w90: windows[90],
       },
+      hist: buildHistogram(acc.prices),
     });
   }
   return { entries, logs: changed, adverts: adverts.size, groups: groups.size };

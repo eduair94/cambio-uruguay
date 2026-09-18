@@ -10,6 +10,12 @@ export const MARKET_SERIES_COLLECTION = "marketseries";
 export const MARKET_META_COLLECTION = "marketseriesmetas";
 /** Three years of daily points per cohort. */
 export const MARKET_SERIES_MAX_POINTS = 1100;
+/**
+ * Daily shapes kept per cohort. A shape is ~40 numbers, a point ~20: three years of shapes for every
+ * cohort would weigh more than all the series together, and the page only compares today against
+ * about a month ago.
+ */
+export const MARKET_HIST_MAX_DAYS = 100;
 const BATCH = 1000;
 
 const lit = (value: unknown): { $literal: unknown } => ({ $literal: value });
@@ -21,6 +27,7 @@ const lit = (value: unknown): { $literal: unknown } => ({ $literal: value });
  * `undefined` in silence (the trap documented in docs/app/PRICEWATCH.md).
  */
 export function seriesOperation(entry: MarketSeriesEntry, today: string, maxPoints: number = MARKET_SERIES_MAX_POINTS) {
+  const notToday = (field: string) => ({ $filter: { input: { $ifNull: [field, []] }, cond: { $ne: ["$$this.d", lit(today)] } } });
   return {
     updateOne: {
       filter: { key: entry.cohort.key },
@@ -34,15 +41,12 @@ export function seriesOperation(entry: MarketSeriesEntry, today: string, maxPoin
             label: lit(entry.label),
             latest: lit(entry.point),
             updatedAt: lit(today),
-            points: {
+            points: { $slice: [{ $concatArrays: [notToday("$points"), [lit(entry.point)]] }, -maxPoints] },
+            // A re-run the same day that no longer reaches 30 units drops the stale shape it left.
+            hists: {
               $slice: [
-                {
-                  $concatArrays: [
-                    { $filter: { input: { $ifNull: ["$points", []] }, cond: { $ne: ["$$this.d", lit(today)] } } },
-                    [lit(entry.point)],
-                  ],
-                },
-                -maxPoints,
+                { $concatArrays: [notToday("$hists"), entry.hist ? [lit({ d: today, ...entry.hist })] : []] },
+                -MARKET_HIST_MAX_DAYS,
               ],
             },
           },

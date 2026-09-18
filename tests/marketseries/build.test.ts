@@ -92,6 +92,15 @@ describe("buildMarketDay: misma oferta", () => {
   });
 });
 
+describe("buildMarketDay: histogram", () => {
+  it("draws the shape from 30 homes on, from the same units as the level", () => {
+    const day = buildMarketDay({ vertical: "alquiler", today: TODAY, observations: flats(30), logs: new Map() });
+    expect(entry(day, "alquiler|UYU|todas|any|uy")!.hist).toMatchObject({ n: 30 });
+    const small = buildMarketDay({ vertical: "alquiler", today: TODAY, observations: flats(8), logs: new Map() });
+    expect(entry(small, "alquiler|UYU|todas|any|uy")!.hist).toBeNull();
+  });
+});
+
 describe("preferredName", () => {
   it("most frequent spelling; a tie goes to the accented one", () => {
     expect(preferredName(new Map([["Paysandu", 1], ["Paysandú", 1]]))).toBe("Paysandú");
