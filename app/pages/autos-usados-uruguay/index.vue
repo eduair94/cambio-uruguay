@@ -120,6 +120,12 @@
           Carper, Julio Automóviles, Shopping de Autos, Usados Fidocar y Motorlider. El conteo es de
           avisos vistos, no de autos en venta en Uruguay.
         </li>
+        <li>
+          Los avisos cuyo vendedor declara deuda, choque, recupero de seguro o papeles pendientes
+          tienen su propia lista:
+          <NuxtLink :to="localePath(CAR_RISKS_PATH)">autos con deuda o chocados</NuxtLink>, con la
+          cita del aviso y cuánto menos piden que el mismo auto sin declarar nada.
+        </li>
         <li v-if="sourceLine">
           Avisos vigentes por fuente: {{ sourceLine }}.
           <template v-if="duplicateCount">
@@ -145,6 +151,7 @@
 </template>
 
 <script setup lang="ts">
+import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import {
   CAR_OPPORTUNITIES_PATH,
   CARS_PATH,

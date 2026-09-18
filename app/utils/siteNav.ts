@@ -3043,6 +3043,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/autos-chocados-y-con-deuda-uruguay',
+        labelKey: 'nav.usedCarRisks',
+        icon: 'mdi-car-wrench',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'autos chocados uruguay',
+          'autos con deuda',
+          'auto con prenda',
+          'autos para repuestos uruguay',
+          'recuperado de seguro auto',
+          'auto sin libreta',
+        ],
+      },
+      {
         // Trends UY 2026-09-15: «nafta» es el 23 % del volumen de «dólar», con picos cada fin de
         // mes («cuánto sube la nafta», «cuándo sube»). Era el único tema de costos sin página.
         to: '/precio-de-la-nafta-uruguay',

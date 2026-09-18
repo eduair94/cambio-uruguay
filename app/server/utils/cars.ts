@@ -1,6 +1,7 @@
 import { CarCatalogMetaModel } from '../models/CarCatalogMeta'
 import { CarMarketSnapshotModel } from '../models/CarMarketSnapshot'
 import { CarOpportunitySnapshotModel } from '../models/CarOpportunitySnapshot'
+import { CarRiskSnapshotModel } from '../models/CarRiskSnapshot'
 import {
   CAR_SOURCE_RULES,
   CAR_SOURCES_PUBLIC,
@@ -13,6 +14,8 @@ import type {
   PublicCarMarketSnapshot,
   PublicCarOpportunitySnapshot,
   PublicCarReference,
+  PublicCarRisk,
+  PublicCarRiskSnapshot,
   PublicCarSource,
 } from '../../utils/carsPublic'
 import { connectDb } from './db'
@@ -176,6 +179,57 @@ export async function loadCarOpportunities(): Promise<PublicCarOpportunitySnapsh
     })),
   }
   opportunityCache = { snapshot, expires: Date.now() + 180_000 }
+  return snapshot
+}
+
+const RISK_CATEGORIES = [
+  'deuda',
+  'papeles',
+  'siniestro',
+  'recupero',
+  'mecanica',
+  'chapa_extranjera',
+  'uso_intensivo',
+] as const
+
+// La cita es texto del vendedor y se vuelve a acotar al leer: la frontera pública se revalida de
+// este lado, no se confía en lo que quedó escrito en la base.
+const riskOf = (raw: Record<string, unknown>): PublicCarRisk | null => {
+  const category = RISK_CATEGORIES.find(name => name === raw.category)
+  const quote = typeof raw.quote === 'string' ? raw.quote.slice(0, 200).trim() : ''
+  if (!category || !quote) return null
+  return {
+    category,
+    severity: raw.severity === 'media' ? 'media' : 'alta',
+    quote,
+    from: raw.from === 'title' ? 'title' : 'description',
+  }
+}
+
+let riskCache: { expires: number; snapshot: PublicCarRiskSnapshot } | null = null
+export async function loadCarRisks(): Promise<PublicCarRiskSnapshot | null> {
+  if (riskCache && riskCache.expires > Date.now()) return riskCache.snapshot
+  await connectDb()
+  const doc = await CarRiskSnapshotModel.findOne({ key: 'used' })
+    .select({ _id: 0, snapshot: 1 })
+    .maxTimeMS(10_000)
+    .lean()
+  const raw = doc?.snapshot
+  if (!raw || raw.version !== 1 || !Array.isArray(raw.items)) return null
+  const snapshot: PublicCarRiskSnapshot = {
+    ...raw,
+    items: raw.items
+      .map(entry => ({
+        ...entry,
+        subject: publicCarRow(entry.subject),
+        risks: (Array.isArray(entry.risks) ? entry.risks : [])
+          .map(item => riskOf(item as Record<string, unknown>))
+          .filter((item): item is PublicCarRisk => !!item),
+      }))
+      // Un aviso sin ninguna cita legible no se publica: sin evidencia no hay afirmación.
+      .filter(entry => entry.risks.length > 0),
+  }
+  riskCache = { snapshot, expires: Date.now() + 180_000 }
   return snapshot
 }
 

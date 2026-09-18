@@ -17,6 +17,11 @@
         No es una tasación ni una garantía. Un precio bajo puede tener una explicación que el aviso
         no dice: pedí el Certificado SUCIVE, revisá el título y hacé revisar el auto antes de señar.
       </VAlert>
+      <p class="text-body-2 mt-3 mb-0">
+        Los avisos que sí dicen por qué están baratos —deuda, choque, recupero, papeles— están en
+        <NuxtLink :to="localePath(CAR_RISKS_PATH)">autos con deuda o chocados</NuxtLink>, con la
+        frase del vendedor y cuánto descuenta el mercado por cada motivo.
+      </p>
     </header>
 
     <VRow>
@@ -140,6 +145,7 @@
 </template>
 
 <script setup lang="ts">
+import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import {
   CAR_OPPORTUNITIES_PATH,
   CAR_SELLERS,

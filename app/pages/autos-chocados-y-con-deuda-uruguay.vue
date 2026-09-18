@@ -1,0 +1,308 @@
+<template>
+  <VContainer class="py-6 py-md-10">
+    <VBreadcrumbs
+      :items="[
+        { title: 'Autos usados', to: localePath(CARS_PATH) },
+        { title: 'Con deuda o chocados' },
+      ]"
+      class="px-0 mb-2"
+    />
+    <header class="mb-6">
+      <h1 class="text-h4 font-weight-bold mb-2">
+        Autos con deuda, chocados o con papeles pendientes
+      </h1>
+      <p class="text-body-1 mb-3">
+        Avisos de Uruguay cuyo propio vendedor dice que el auto tiene algo: deuda de patente o
+        prenda, papeles que faltan, choque, recupero de seguro, mecánica rota, chapa extranjera o
+        uso de taxi. Al lado de cada uno va <strong>la frase del aviso</strong> y cuánto menos pide
+        que los mismos autos que no declaran nada.
+      </p>
+      <VAlert type="warning" variant="outlined" density="comfortable">
+        Esto no es una lista de oportunidades. Es un precio con una condición adentro: el descuento
+        existe porque alguien va a tener que resolver eso. Acá abajo está qué pedir antes de señar.
+      </VAlert>
+    </header>
+
+    <section v-if="measured.length" class="mb-8">
+      <h2 class="text-h5 mb-3">Cuánto descuenta el mercado uruguayo, medido en estos avisos</h2>
+      <VTable class="cu-mobile-cards" density="comfortable">
+        <thead>
+          <tr>
+            <th scope="col">Lo que declara el aviso</th>
+            <th scope="col">Avisos</th>
+            <th scope="col">Con descuento medido</th>
+            <th scope="col">Descuento mediano</th>
+            <th scope="col">Entre p25 y p75</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in measured" :key="row.category">
+            <td data-label="Lo que declara el aviso">{{ CAR_RISK_GUIDE[row.category].label }}</td>
+            <td data-label="Avisos">{{ row.adverts }}</td>
+            <td data-label="Con descuento medido">{{ row.measured }}</td>
+            <td data-label="Descuento mediano">
+              <strong>{{ formatCarRiskGap(row.medianGap) }}</strong>
+            </td>
+            <td data-label="Entre p25 y p75">
+              {{ formatCarRiskGap(row.p25Gap) }} a {{ formatCarRiskGap(row.p75Gap) }}
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+      <p class="text-body-2 text-medium-emphasis mt-2">
+        Cada descuento se mide contra avisos del mismo modelo, año, versión, motor y caja
+        <strong>que no declaran nada</strong>, con kilómetros parecidos. Una categoría muestra
+        mediana recién con cinco avisos medidos.
+      </p>
+    </section>
+
+    <VRow>
+      <VCol cols="12" md="3">
+        <form class="risk-filters" @submit.prevent="apply">
+          <VSelect
+            v-model="draft.category"
+            :items="categoryItems"
+            label="Qué declara"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+          />
+          <VSelect
+            v-model="draft.brand"
+            :items="brandItems"
+            label="Marca"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+          />
+          <VTextField
+            v-model="draft.priceMax"
+            label="Presupuesto máximo (US$)"
+            inputmode="numeric"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+          />
+          <VCheckbox
+            v-model="draft.measured"
+            label="Sólo con descuento medido"
+            density="comfortable"
+            hide-details
+          />
+          <VBtn type="submit" color="primary" block>Aplicar</VBtn>
+        </form>
+      </VCol>
+      <VCol cols="12" md="9">
+        <VAlert v-if="error" type="info" variant="outlined" class="mb-4">
+          El tablero se está calculando. Volvé en unos minutos.
+        </VAlert>
+        <template v-else-if="data">
+          <p class="text-body-2 text-medium-emphasis mb-4">
+            {{ data.total }} avisos · cálculo del {{ formatCarDate(data.generatedAt) }} sobre
+            {{ data.stats.input.toLocaleString('es-UY') }} avisos vigentes, de los cuales
+            {{ data.stats.declared.toLocaleString('es-UY') }} declaran algo y
+            {{ data.stats.measured.toLocaleString('es-UY') }} tienen con qué compararse.
+          </p>
+          <p v-if="!data.items.length" class="text-body-1">
+            No hay avisos que declaren esto con esos filtros. Que un auto no declare nada no quiere
+            decir que esté limpio: quiere decir que su aviso no lo dice.
+          </p>
+          <div class="d-flex flex-column ga-4">
+            <CarsRiskCard v-for="item in data.items" :key="item.subject.key" :item="item" />
+          </div>
+          <VPagination
+            v-if="data.total > data.perPage"
+            :model-value="query.page"
+            :length="Math.ceil(data.total / data.perPage)"
+            :total-visible="3"
+            class="mt-6"
+            @update:model-value="page => navigate({ ...query, page })"
+          />
+        </template>
+      </VCol>
+    </VRow>
+
+    <section class="mt-10">
+      <h2 class="text-h5 mb-3">Qué pedir antes de señar, según lo que diga el aviso</h2>
+      <VTable class="cu-mobile-cards" density="comfortable">
+        <thead>
+          <tr>
+            <th scope="col">Lo que declara</th>
+            <th scope="col">Qué significa para vos</th>
+            <th scope="col">Qué pedir</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="category in CAR_RISK_CATEGORIES" :key="category">
+            <td data-label="Lo que declara">
+              <strong>{{ CAR_RISK_GUIDE[category].label }}</strong>
+            </td>
+            <td data-label="Qué significa para vos">{{ CAR_RISK_GUIDE[category].meaning }}</td>
+            <td data-label="Qué pedir">{{ CAR_RISK_GUIDE[category].check }}</td>
+          </tr>
+        </tbody>
+      </VTable>
+      <p class="text-body-2 text-medium-emphasis mt-3">
+        La deuda de patente se consulta en
+        <a href="https://www.sucive.gub.uy/" target="_blank" rel="noopener">SUCIVE</a> con la
+        matrícula, y el certificado registral que muestra prendas y embargos lo pide la escribanía
+        en la
+        <a
+          href="https://www.gub.uy/ministerio-educacion-cultura/direccion-general-registros"
+          target="_blank"
+          rel="noopener"
+        >
+          Dirección General de Registros </a
+        >. Verificado el 18/9/2026.
+      </p>
+    </section>
+
+    <section class="mt-10">
+      <h2 class="text-h5 mb-3">Cómo se arma esta lista</h2>
+      <ul class="text-body-1 pl-5">
+        <li>
+          Todo lo que dice esta página de un auto lo dice su propio aviso, y va con la cita al lado.
+          El sitio no revisa autos ni dictamina que uno esté chocado.
+        </li>
+        <li>
+          Lo negado no cuenta: "sin deuda" y "nunca chocado" son argumentos de venta, no riesgos.
+        </li>
+        <li>
+          El descuento se mide contra la cohorte <strong>limpia</strong>: meter chocados en la
+          mediana del modelo abarataría a todos y taparía justamente lo que queremos medir.
+        </li>
+        <li>
+          Cuando un auto no tiene con qué compararse se publica igual, sin número. Preferimos decir
+          "no se pudo medir" antes que inventar un porcentaje.
+        </li>
+        <li>
+          Un aviso que no declara nada puede igual tener deuda o un choque sin contar:
+          <strong>la ausencia no es una afirmación</strong>. Por eso la lista de al lado, la de
+          <NuxtLink :to="localePath(CAR_OPPORTUNITIES_PATH)">oportunidades</NuxtLink>, tampoco
+          garantiza nada y pide las mismas verificaciones.
+        </li>
+        <li>
+          Todavía no leímos la descripción de todos los avisos, así que esta lista crece cada día.
+          Lo que falta se lee por orden de utilidad, empezando por los que están baratos sin
+          explicación.
+        </li>
+      </ul>
+    </section>
+  </VContainer>
+</template>
+
+<script setup lang="ts">
+import { CAR_OPPORTUNITIES_PATH, CARS_PATH, formatCarDate } from '~/utils/cars'
+import {
+  CAR_RISKS_PATH,
+  CAR_RISK_CATEGORIES,
+  CAR_RISK_GUIDE,
+  carRiskQueryParams,
+  formatCarRiskGap,
+  normalizeCarRiskQuery,
+  type CarRiskQuery,
+  type CarRisksResponse,
+} from '~/utils/carsRisk'
+
+const route = useRoute()
+const router = useRouter()
+const localePath = useLocalePath()
+
+const query = computed(() => normalizeCarRiskQuery(route.query as Record<string, unknown>))
+const { data, error } = await useAsyncData(
+  'car-risks',
+  () => $fetch<CarRisksResponse>('/api/car-risks', { query: carRiskQueryParams(query.value) }),
+  { watch: [query] }
+)
+
+const measured = computed(() =>
+  (data.value?.categories ?? []).filter(row => row.medianGap !== null)
+)
+const categoryItems = computed(() => [
+  { title: 'Todo lo declarado', value: '' },
+  ...CAR_RISK_CATEGORIES.map(category => ({
+    title: CAR_RISK_GUIDE[category].label,
+    value: category,
+  })),
+])
+const brandItems = computed(() => [
+  { title: 'Todas las marcas', value: '' },
+  ...(data.value?.brands ?? []).map(brand => ({
+    title: `${brand.name} (${brand.count})`,
+    value: brand.slug,
+  })),
+])
+
+const toDraft = (value: CarRiskQuery) => ({
+  category: value.category as string,
+  brand: value.brand,
+  priceMax: value.priceMax?.toString() ?? '',
+  measured: value.measured,
+})
+const draft = reactive(toDraft(query.value))
+watch(query, next => Object.assign(draft, toDraft(next)))
+
+function navigate(next: CarRiskQuery) {
+  router.replace({ query: carRiskQueryParams(next) })
+}
+function apply() {
+  navigate(normalizeCarRiskQuery({ ...draft, measured: draft.measured ? '1' : '' }))
+}
+
+const canonical = `https://cambio-uruguay.com${CAR_RISKS_PATH}`
+const title = 'Autos con deuda o chocados en Uruguay'
+const description =
+  'Avisos de autos usados cuyo vendedor declara deuda, choque, recupero de seguro o papeles pendientes, con la frase del aviso y cuánto menos piden que el mismo auto sin declarar nada.'
+
+useSeoMeta({
+  title: `${title} | Cambio Uruguay`,
+  description,
+  ogTitle: title,
+  ogDescription: description,
+  ogUrl: canonical,
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+  robots: () => (Object.keys(route.query).length ? 'noindex, follow' : 'index, follow'),
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: canonical }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          { '@type': 'CollectionPage', name: title, description, url: canonical },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Autos usados',
+                item: `https://cambio-uruguay.com${CARS_PATH}`,
+              },
+              { '@type': 'ListItem', position: 2, name: 'Con deuda o chocados', item: canonical },
+            ],
+          },
+        ],
+      }),
+    },
+  ],
+})
+</script>
+
+<style scoped>
+.risk-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+@media (min-width: 960px) {
+  .risk-filters {
+    position: sticky;
+    top: 80px;
+  }
+}
+</style>

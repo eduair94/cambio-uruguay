@@ -172,6 +172,8 @@ const NOINDEXED = [
   'alquileres/[key].vue',
   // Index the market analysis itself; user-selected filter combinations opt out.
   'analisis-alquileres-uruguay.vue',
+  // Se indexa la lista de autos con riesgo declarado; las combinaciones de filtros se salen.
+  'autos-chocados-y-con-deuda-uruguay.vue',
   // Autos usados: the directory and the model pages index at their own URL; filter combinations,
   // thin models and single adverts (they expire within weeks) opt out.
   'autos-usados-uruguay/[key].vue',
