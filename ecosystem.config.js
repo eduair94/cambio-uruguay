@@ -232,6 +232,9 @@ module.exports = {
       script: "dist/sync_phones.js",
       args: "--fast",
       cron_restart: "37 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Daily monopatín/bicicleta-eléctrica market. Reuses the equipar catalog machinery end to end
       // via an injected registry (classes/movilidad/registry.ts, two categories) instead of forking
       // it — same shared retail harvester, same unit guard, same bands, same store-snapshot mechanics

@@ -1,6 +1,6 @@
 # Tiendas online de Uruguay (`/tiendas-online-uruguay`)
 
-Un directorio de 76 tiendas curadas a mano (`classes/stores/registry.ts`), cada una con hasta seis
+Un directorio de 80 tiendas curadas a mano (`classes/stores/registry.ts`), cada una con hasta seis
 señales verificables — sitio propio, antigüedad de dominio, Trustpilot, Google Maps, menciones en
 Reddit y presencia en los catálogos propios del sitio — fechadas y con su fuente. **No hay puntaje
 ni veredicto en ningún lugar de esta feature**: nunca "confiable"/"estafa"/"recomendamos"/"evitá",

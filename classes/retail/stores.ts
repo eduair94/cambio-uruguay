@@ -255,6 +255,12 @@ export const RETAIL_STORES: RetailStore[] = [
     key: "digitalworld",
     name: "Digital World",
     baseUrl: "https://digitalworld.com.uy",
+    adapter: "woocommerce",
+    channel: "local-store",
+    expectCurrency: "USD",
+    enabled: true,
+    note: "Store API con currency_minor_unit: 2; search=iphone devuelve iPhone 16/16 Plus reales (2026-09-17).",
+  },
   // ---------------------------------------------------------------- movilidad eléctrica
   // Four stores added for classes/movilidad/ (monopatines y bicicletas eléctricas). Measured
   // 2026-09-17 via the WooCommerce Store API / Shopify `products.json` directly, THEN re-measured
@@ -273,7 +279,6 @@ export const RETAIL_STORES: RetailStore[] = [
     channel: "local-store",
     expectCurrency: "USD",
     enabled: true,
-    note: "Store API con currency_minor_unit: 2; search=iphone devuelve iPhone 16/16 Plus reales (2026-09-17).",
     note:
       "Medido 2026-09-17: 205 productos (WooCommerce, USD), de los cuales 88 motos, 9 bicicletas eléctricas (S-PRO) y 3 monopatines eléctricos (XIAOMI, MISTYLE) — todos titulados '… Eléctric[oa] …', así que pasan el filtro de título tal cual está. En MOVILIDAD_STORE_KEYS.",
   },

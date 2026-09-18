@@ -62,6 +62,22 @@ que la horaria mezcla — ver "Errores encontrados en producción", abajo) y, la
 `pricewatchoffers` (historial diario por oferta, compartido con sillas — ver
 [PRICEWATCH.md](PRICEWATCH.md)).
 
+## El registro es inyectable
+
+`buildEquiparCatalog`, `categoryFor`/`matchesCategory`, `specsFor` y `uncoveredCategories`
+(`classes/equipar/catalog.ts`, `classes/equipar/classify.ts`) reciben un `registry: EquiparCategory[]`
+opcional que por defecto es `EQUIPAR_CATEGORIES` — así que cualquier llamador existente sigue
+funcionando sin tocarlo. `classes/movilidad/` (monopatines y bicicletas eléctricas,
+`docs/app/MOVILIDAD.md`) es el segundo consumidor: inyecta su propio registro de dos categorías
+para reutilizar los dos regímenes, las bandas, la separación nuevo/usado, la guarda de unidad y la
+foto de tienda **sin** forkearlos. `room: "movilidad"` existe en `EquiparRoom` sólo para que ese
+registro no tenga que mentir sobre en qué ambiente de una casa vive un monopatín.
+
+**`classes/equipar/basket.ts` (las tres canastas) se queda hardcodeado a `EQUIPAR_CATEGORIES` a
+propósito**: nunca itera un registro inyectado, así que ninguna categoría de un consumidor externo
+—monopatines, bicicletas, o el que siga— puede alcanzar la canasta de llenar una casa ni su
+presupuesto, sin importar qué valores de relleno (`tier`, `quantity`) declare en su propio registro.
+
 ## Dos regímenes, y por qué
 
 `classes/equipar/registry.ts` declara, por categoría, cómo se puede publicar:

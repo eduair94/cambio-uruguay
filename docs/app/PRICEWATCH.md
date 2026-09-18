@@ -1,8 +1,8 @@
 # Historial de precio por oferta (`classes/pricewatch/`)
 
 Un punto de precio por día, por aviso individual (`listingId`), escrito por los jobs que ya leen un
-mercado — hoy `currency-equipar`, `currency-chairs` (diaria y horaria de los dos) y `currency-phones`
-(diaria y horaria) — y guardado en la APP DB, colección `pricewatchoffers`. No tiene página propia ni
+mercado — hoy `currency-equipar`, `currency-chairs`, `currency-phones` y `currency-movilidad`
+(diaria y horaria de los cuatro) — y guardado en la APP DB, colección `pricewatchoffers`. No tiene página propia ni
 endpoint público todavía: es materia prima para un trabajo futuro (Plan D), documentado acá porque
 empieza a grabarse ahora, antes de que haga falta.
 
@@ -21,7 +21,7 @@ producto ni por categoría.
 
 Un documento por `listingId` (índice único), con:
 
-- `vertical` ("equipar" | "sillas" | "celulares"), `category` (el `CATEGORY_SPEC` del aviso, o
+- `vertical` ("equipar" | "sillas" | "celulares" | "movilidad"), `category` (el `CATEGORY_SPEC` del aviso, o
   `null`), `productKey` (`ml:<catalogId>` si el aviso tiene uno, si no `null` — salvo que el llamador
   pase su propia identidad, ver `productKeyFor` más abajo).
 - `source`, `sellerKey`, `sellerName`, `title`, `url`, `currency` — identidad del aviso, tal como la
@@ -60,6 +60,12 @@ No hay modelo espejo en `app/`: la colección es sólo del backend, así que
   lista ya mezclada con la foto de tiendas del día anterior (`classes/phones/storeSnapshot.ts`): una
   fila que vino de esa foto no se vio HOY, y anotarle la fecha de hoy fabricaría una observación que
   nunca ocurrió.
+- `sync_movilidad.ts` llama `recordPricewatch(guarded.listings, "movilidad")` de la misma forma que
+  `sync_equipar.ts` — después de guardar el catálogo, en su propio `try/catch`, sobre
+  `guarded.listings` (post-guarda-de-unidad de ESTA corrida, antes de que la horaria le sume la foto
+  de tienda del día anterior). Es el mismo mecanismo porque es el mismo consumidor de
+  `classes/retail/`, con un registro inyectado (`classes/movilidad/registry.ts`, dos categorías) en
+  vez de uno propio — ver `docs/app/MOVILIDAD.md`.
 - Corre en **las dos** frecuencias de cada job (diaria y horaria/`--fast`), no sólo en la diaria: más
   observaciones por día, y un resync dentro del mismo día UTC no duplica el punto (ver `history`
   arriba). No hay una decisión de restringirlo a una sola corrida diaria; si Plan D necesita
