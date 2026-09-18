@@ -28,7 +28,13 @@ jobs:
   e2e:
     name: Playwright
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 60, no 30: la suite se quedó sin presupuesto y con eso perdió la voz. Corrió en 10-14 min hasta
+    # el 2026-09-05 y desde el 06-09 pegó contra el techo en 16 corridas seguidas — 13 días sin un
+    # solo resultado, ni verde ni rojo. No se colgaba: llegaba al test 162 de 160-y-pico corriendo en
+    # serie (`workers: 1`, un único dev server), y cada test en rojo se lleva su timeout completo.
+    # Subir el techo devuelve el reporte; bajar el tiempo es otro trabajo (paralelizar contra un dev
+    # server que compila a demanda es fácil de volver inestable).
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: app
