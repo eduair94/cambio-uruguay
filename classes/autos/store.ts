@@ -103,13 +103,30 @@ export function harvestMetaRecord(harvest: CarHarvestResult, previous: { lastOkA
 
 const listingsCollection = () => appConnection().collection(CarListingModel.collection.name);
 
+/**
+ * La colección NATIVA de mongoose no encola nada: llamarla antes de que la conexión abra tira
+ * "Collection method find is synchronous". Los modelos sí encolan, así que un job que empieza por una
+ * consulta nativa —como currency-autos-detail, que arranca leyendo los avisos guardados— se caía en
+ * su primera corrida en el VPS. Esperar la conexión acá lo arregla para todos los que vengan.
+ */
+async function nativeReady(): Promise<void> {
+  // Escrito contra la forma, no contra el tipo: los tests cambian `appConnection` por un doble que
+  // sólo tiene `collection`, y esperar la conexión no puede ser motivo para que fallen.
+  const connection = appConnection() as { readyState?: number; asPromise?: () => Promise<unknown> };
+  if (connection.readyState !== 1 && typeof connection.asPromise === "function") await connection.asPromise();
+}
+
 export async function loadStoredCars(now: Date, days = 21): Promise<StoredCar[]> {
   const cutoff = new Date(now.getTime() - days * 86_400_000).toISOString();
-  const rows = await listingsCollection().find({ lastSeen: { $gte: cutoff }, retiredAt: null }, { projection: { _id: 0 } }).toArray();
+  await nativeReady();
+  const rows = await listingsCollection()
+    .find({ lastSeen: { $gte: cutoff }, retiredAt: null }, { projection: { _id: 0 } })
+    .toArray();
   return rows as unknown as StoredCar[];
 }
 
 async function upsertListings(listings: readonly RawCarListing[], details: ReadonlyMap<string, CarDetail> | null): Promise<number> {
+  await nativeReady();
   const collection = listingsCollection();
   await collection.createIndex({ key: 1 }, { unique: true });
   await collection.createIndex({ lastSeen: 1 });
@@ -293,6 +310,7 @@ export async function saveFbWanted(ids: readonly string[], at: string): Promise<
 /** Los veredictos de fotos, que son privados y viven al lado del aviso. */
 export async function saveCarPhotoChecks(checks: ReadonlyMap<string, CarPhotoVerdict>): Promise<void> {
   if (!checks.size) return;
+  await nativeReady();
   await listingsCollection().bulkWrite(
     [...checks].map(([key, photoCheck]) => ({ updateOne: { filter: { key }, update: { $set: { photoCheck } } } })),
     { ordered: false },
@@ -300,6 +318,7 @@ export async function saveCarPhotoChecks(checks: ReadonlyMap<string, CarPhotoVer
 }
 
 export async function saveCarDetails(result: DetailFetchResult, now: string): Promise<void> {
+  await nativeReady();
   const operations = [
     ...[...result.details].map(([key, detail]) => ({ updateOne: { filter: { key }, update: { $set: { detail } } } })),
     ...result.gone.map(key => ({ updateOne: { filter: { key }, update: { $set: { retiredAt: now } } } })),
