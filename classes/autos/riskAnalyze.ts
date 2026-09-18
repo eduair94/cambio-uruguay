@@ -21,8 +21,12 @@ export const CAR_RISK_POLICY = {
   /** Más barato que esto contra la cohorte limpia no es un descuento, es otro auto. */
   maximumGap: 0.85,
   maxItems: 400,
-  /** Mínimo de avisos con descuento medido para publicar la mediana de una categoría. */
-  minimumCategorySample: 5,
+  /**
+   * Mínimo de avisos con diferencia medida para publicar la mediana de una categoría. Era 5 y no
+   * alcanzaba: con 6-7 avisos la deuda dio −21 %, y con 13 dio −2 % con el rango cruzando el cero
+   * (2026-09-19). Papeles cambió de signo dos veces en un día. Una mediana de cinco no es un dato.
+   */
+  minimumCategorySample: 10,
 } as const;
 
 export interface CarRiskItem {

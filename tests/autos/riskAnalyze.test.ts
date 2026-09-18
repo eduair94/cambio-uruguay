@@ -59,16 +59,25 @@ describe("analyzeCarRisk", () => {
     expect(item.categories).toEqual(["papeles"]);
   });
   it("only reports a category median once there are enough measured adverts", () => {
-    const risky = Array.from({ length: 5 }, (_, index) =>
-      car({ price: 9_000 + index * 100, detail: detail("Tiene una deuda de 30000 pesos") }));
+    const risky = Array.from({ length: 10 }, (_, index) =>
+      car({ price: 9_000 + index * 50, detail: detail("Tiene una deuda de 30000 pesos") }));
     const thin = car({ price: 8_000, detail: detail("Ex taxi") });
     const analysis = analyzeCarRisk([...clean(), ...risky, thin], { now: NOW });
     const deuda = analysis.categories.find(category => category.category === "deuda")!;
     const uso = analysis.categories.find(category => category.category === "uso_intensivo")!;
-    expect(deuda.measured).toBe(5);
+    expect(deuda.measured).toBe(10);
     expect(deuda.medianGap).toBeGreaterThan(0.2);
     expect(uso.adverts).toBe(1);
     expect(uso.medianGap).toBeNull();
+  });
+  it("keeps quiet with five or six measured adverts: that is how −21 % became −2 %", () => {
+    // Medido en producción el 2026-09-19: la deuda dio −21 % con 6-7 avisos y −2 % con 13.
+    const risky = Array.from({ length: 6 }, (_, index) =>
+      car({ price: 9_000 + index * 100, detail: detail("Tiene una deuda de 30000 pesos") }));
+    const analysis = analyzeCarRisk([...clean(), ...risky], { now: NOW });
+    const deuda = analysis.categories.find(category => category.category === "deuda")!;
+    expect(deuda.measured).toBe(6);
+    expect(deuda.medianGap).toBeNull();
   });
   it("ignores an advert nobody has seen for days", () => {
     const old = car({ price: 9_000, lastSeen: "2026-09-01T00:00:00.000Z", detail: detail("Chocado") });

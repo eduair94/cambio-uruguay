@@ -43,6 +43,19 @@
         </VRow>
       </section>
 
+      <section v-if="findings.length" class="mb-10">
+        <h2 class="text-h5 mb-3">Lo que dicen los datos</h2>
+        <div class="report-findings">
+          <article v-for="finding in findings" :key="finding.title" class="report-finding">
+            <p class="text-caption text-medium-emphasis mb-1">
+              {{ FINDING_AUDIENCE[finding.audience] }}
+            </p>
+            <h3 class="text-subtitle-1 font-weight-bold mb-1">{{ finding.title }}</h3>
+            <p class="text-body-2 mb-0">{{ finding.body }}</p>
+          </article>
+        </div>
+      </section>
+
       <section class="mb-10">
         <h2 class="text-h5 mb-3">Cuántos autos hay en cada franja de precio</h2>
         <VTable class="cu-mobile-cards" density="comfortable">
@@ -363,7 +376,7 @@
 
 <script setup lang="ts">
 import { CAR_OPPORTUNITIES_PATH, CARS_PATH, carMarketPath, formatCarDate } from '~/utils/cars'
-import { CAR_RISKS_PATH } from '~/utils/carsRisk'
+import { CAR_RISKS_PATH, type CarRisksResponse } from '~/utils/carsRisk'
 import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
 import {
   CAR_REPORT_FUEL_LABELS,
@@ -371,6 +384,7 @@ import {
   CAR_REPORT_SELLER_LABELS,
   CAR_REPORT_TRANSMISSION_LABELS,
   carReportBandLabel,
+  carReportFindings,
   carReportKm,
   carReportPercent,
   carReportSavingPerYear,
@@ -383,6 +397,22 @@ const { data, error } = await useAsyncData('car-report', () =>
   $fetch<CarReportResponse>('/api/car-report')
 )
 
+const { data: riskData } = await useAsyncData('car-risks-summary', () =>
+  $fetch<CarRisksResponse>('/api/car-risks', { query: { page: 1 } }).catch(() => null)
+)
+const FINDING_AUDIENCE = {
+  compra: 'Si comprás',
+  vende: 'Si vendés',
+  ambos: 'Para los dos lados',
+} as const
+const findings = computed(() =>
+  data.value
+    ? carReportFindings(
+        data.value.data,
+        riskData.value?.categories.find(row => row.category === 'deuda') ?? null
+      )
+    : []
+)
 const market = computed(() => data.value!.data.market)
 const negotiation = computed(() => data.value!.data.negotiation)
 const rotation = computed(() => data.value!.data.rotation)
@@ -484,6 +514,17 @@ useHead({
 </script>
 
 <style scoped>
+.report-findings {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.report-finding {
+  border: 1px solid rgba(var(--v-border-color), 0.2);
+  border-left: 4px solid rgb(var(--v-theme-primary));
+  border-radius: 12px;
+  padding: 14px 16px;
+}
 .report-card {
   border: 1px solid rgba(var(--v-border-color), 0.2);
   border-radius: 12px;

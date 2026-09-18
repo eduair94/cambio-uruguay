@@ -192,15 +192,14 @@ Medido el 2026-09-18 sobre 18.796 avisos vigentes, y estas tres cifras explican 
   `currency-autos-detail`.
 - Corrido contra las 647 descripciones que sí teníamos, el extractor encuentra algo en **57 avisos, el
   8,8 %** de los que tienen descripción.
-- El descuento es real y medible, pero **sólo en una categoría**: con la taxonomía separada y 3.500
-  fichas leídas, **deuda −23 %** (6 medidos de 39 avisos) y **papeles sin diferencia clara** (12 de 37,
-  con la mediana cruzando el cero entre corridas: dio +2 % y −2 % en el mismo día). Tiene sentido y no
-  se sabía: una deuda es un número que el comprador calcula y resta; un título que falta no tiene
-  precio de lista, y el vendedor no lo concede. `financing` y `price_mismatch` dan **≈0 %** (n=38): no
-  son riesgo, son truco de aviso, y por eso no entran a la taxonomía.
-  **Y de ahí salió un defecto de presentación**: la página escribía el signo menos fijo delante del
-  número, así que una diferencia negativa salía impresa como `−-2 %`. Ahora dice "23 % más barato" o
-  "2 % más caro", y cuando el 50 % central cruza el cero dice "sin diferencia clara".
+- **Las medianas por categoría con pocos avisos no son datos**, y esto se aprendió publicándolas.
+  Con 6-7 avisos medidos la deuda dio **−21 %** y con 13, **−2 % con el rango cruzando el cero**; papeles
+  cambió de signo dos veces el mismo día. El chocado da −34 % pero sobre 5 avisos. Por eso una categoría
+  publica mediana recién con **10** avisos medidos, y toda afirmación ("la deuda se descuenta") exige
+  además que el 50 % central entero esté del mismo lado del cero. `financing` y `price_mismatch` dan
+  **≈0 %** (n=38): no son riesgo, son truco de aviso, y por eso no entran a la taxonomía.
+  El formateador escribía el signo menos fijo delante del número y publicó `−-2 %`; ahora dice
+  "21 % más barato" o "2 % más caro", y si el 50 % central cruza el cero, "sin diferencia clara".
 - **La tasa real es ~3 %**, no 8,8 %: las primeras 647 descripciones eran de candidatas a oportunidad
   (avisos baratos), y ahí el riesgo está sobrerrepresentado. De las 1.500 fichas siguientes, leídas por
   la cola normal, 44 declaran algo. Sobre los 16.900 avisos de ML eso proyecta ~500.
@@ -294,3 +293,38 @@ el próximo agregado:
 
 Medido el 2026-09-18: 17.684 avisos comparables, 80 marcas, 942 modelos; mediana US$ 13.000, año 2018,
 107.000 km; 83 % nafta, 65 % manual, 51 % automotora; Montevideo 48 %.
+
+## El tasador y la guía para vender
+
+`/cuanto-vale-mi-auto-uruguay` (matemática pura en `app/utils/carsValuation.ts`) toma la cohorte del
+mismo modelo y año de `carmarketsnapshots` —o la de la misma versión, motor y caja si la persona la elige
+y tiene 5 avisos— y devuelve tres precios de publicación: para vender rápido (p25), de mercado
+(mediana) y tope realista (p75), corregidos por kilómetros y redondeados a las terminaciones que usa el
+mercado (900 23 %, 500 20 %, 990 18 %). La corrección por kilómetros nunca pasa del 25 %; con menos de 5
+avisos no da número. La elección vive en la URL: un resultado se comparte y abre calculado desde el
+servidor, y cada combinación es `noindex`.
+
+`/vender-mi-auto-uruguay` dice lo mismo para quien vende, y sus coeficientes salen de
+`classes/autos/valuation.ts`, medidos **emparejados** (mismo modelo y año) y como mediana de cohortes.
+Lo que dieron el 2026-09-19:
+
+| palanca | efecto | sobre |
+|---|---|---|
+| 10.000 km más | −1,6 % | 359 cohortes de modelo y año |
+| caja automática, misma versión | +5,1 % | 28 cohortes de modelo, año, versión y motor |
+| caja automática, sin fijar versión | +10,2 % | 104 cohortes de modelo y año |
+| un año más de antigüedad | −5,4 % | mediana de 34 modelos |
+| automotora en vez de dueño | +2,2 % | 30 modelos |
+
+Dos confusiones que la medición emparejada sacó a la luz: **la mitad del "premio" de la caja automática
+es el equipamiento** con el que suele venir (5,1 % contra 10,2 %), y **el diésel no se puede medir así**:
+dio +48,5 % sobre 17 cohortes, pero en los modelos que se venden con los dos combustibles el diésel es
+la 4x4 o la cabina doble. Se calcula y no se usa como consejo.
+
+Lo que la guía NO puede decir, y lo dice: el precio al que se cierra (sólo hay precios pedidos), cuánto
+tarda en venderse (la rotación todavía no tiene serie) y cuánto paga una automotora por un auto que toma
+en parte de pago (ninguna lo publica).
+
+El informe gana arriba una sección **"Lo que dicen los datos"** (`carReportFindings`): conclusiones
+calculadas, cada una aparece sólo si la medición que la sostiene está y dice su número. Ninguna es texto
+fijo, porque un hallazgo escrito a mano sigue diciéndose el día que deja de ser cierto.

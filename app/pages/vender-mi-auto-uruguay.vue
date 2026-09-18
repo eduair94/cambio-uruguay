@@ -157,8 +157,10 @@
         <p v-if="report.sellerGaps.median !== null" class="text-body-1 mb-2">
           Por el mismo modelo y año, una automotora pide
           <strong>{{ carReportPercent(report.sellerGaps.median, 1) }} más</strong> que un dueño,
-          mediana de {{ report.sellerGaps.models.length }} modelos comparables. En SUV y pick-ups
-          grandes la diferencia se da vuelta: la automotora no es más cara.
+          mediana de {{ report.sellerGaps.models.length }} modelos comparables.
+          <template v-if="dealerCheaper">
+            En {{ dealerCheaper }} se da vuelta: la automotora pide menos que el dueño.
+          </template>
         </p>
         <p class="text-body-1 mb-2">
           Eso es lo que <strong>pide</strong> la automotora cuando vende. Lo que te
@@ -207,15 +209,13 @@
           </li>
           <li class="mb-2">
             <strong>Lo que tiene el auto, dicho.</strong>
+            Una deuda o un choque no desaparecen por no nombrarlos: aparecen en el certificado del
+            SUCIVE y en el registral que pide la escribanía, y la venta se cae ahí, con el comprador
+            ya en la mesa.
             <template v-if="debtGap !== null">
-              Declarar una deuda baja lo que se pide
-              {{ formatCarRiskGap(debtGap).replace(' más barato', '') }}, pero esconderla no la
-              borra: aparece en el certificado del SUCIVE y en el registral que pide la escribanía,
-              y la venta se cae ahí, con el comprador ya en la mesa.
-            </template>
-            <template v-else>
-              Una deuda o un choque no desaparecen por no nombrarlos: aparecen en los certificados
-              que pide la escribanía.
+              Y declararla te cuesta: los avisos que la declaran se piden
+              {{ formatCarRiskGap(debtGap).replace(' más barato', '') }} menos que el mismo auto sin
+              nada.
             </template>
           </li>
           <li class="mb-0">
@@ -294,7 +294,18 @@ const riskGap = (category: string): number | null =>
   risks.value?.categories.find(row => row.category === category)?.medianGap ?? null
 const riskRange = (category: string) =>
   risks.value?.categories.find(row => row.category === category)
-const debtGap = computed(() => riskGap('deuda'))
+// Sólo con un descuento claro y medido sobre diez avisos o más: con 6-7 avisos la deuda dio −21 % y
+// con 13, −2 % con el rango cruzando el cero (2026-09-19). Un número que se da vuelta no se cita.
+const debtGap = computed(() => {
+  const row = riskRange('deuda')
+  return row &&
+    row.medianGap !== null &&
+    row.p25Gap !== null &&
+    row.p25Gap > 0 &&
+    row.measured >= 10
+    ? row.medianGap
+    : null
+})
 
 const signed = (value: number | null, up: string, down: string): string => {
   if (value === null) return 'sin datos suficientes'
@@ -392,6 +403,15 @@ const waiting = computed(() => {
     }))
 })
 const crowded = computed(() => (report.value?.models ?? []).slice(0, 12))
+// Los modelos donde la automotora pide MENOS que el dueño, desde los datos y no escritos a mano.
+const dealerCheaper = computed(() => {
+  const names = (report.value?.sellerGaps.models ?? [])
+    .filter(model => model.gap < 0)
+    .map(model => `${model.brand} ${model.model}`)
+  if (!names.length) return ''
+  if (names.length === 1) return names[0]!
+  return `${names.slice(0, 3).slice(0, -1).join(', ')} y ${names.slice(0, 3).at(-1)}`
+})
 const placeholderKm = computed(() => opportunities.value?.stats.excluded.km_placeholder ?? 0)
 const withoutTrim = computed(() => opportunities.value?.stats.excluded.no_trim ?? 0)
 
