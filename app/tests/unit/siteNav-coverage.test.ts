@@ -196,6 +196,10 @@ describe('the navigation model has no dead links', () => {
       // todo con la tarjeta de crédito. Va pegada a ellas porque la decide lo que ya está acá:
       // el rendimiento del saldo contra los dos puntos de IVA que sólo da el débito.
       '/conviene-pagar-todo-con-credito-uruguay',
+      // La variante que sí puede dejar plata, y el número que la decide: Itaú no publica cuánto
+      // vale una milla Volar, así que la página despeja cuánto tendría que valer. Va acá porque
+      // se apoya en las mismas dos piezas: el rendimiento del saldo y los dos puntos de IVA.
+      '/cuanto-vale-una-milla-itau-uruguay',
       // The head-to-head hub belongs here: every pair it lists is built from
       // the three rankings above (plus the couriers one).
       '/comparativas',

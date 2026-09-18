@@ -1114,6 +1114,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/cuanto-vale-una-milla-itau-uruguay',
+        labelKey: 'nav.millaItau',
+        icon: 'mdi-airplane-search',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'cuanto vale una milla itau',
+          'millas volar itau uruguay',
+          'itau volar debito millas',
+          'canjear millas itau pasajes',
+          'acumular millas con debito uruguay',
+          'anualidad itau volar',
+          'prex itau millas',
+        ],
+      },
+      {
         to: '/comparativas',
         labelKey: 'nav.comparativas',
         icon: 'mdi-compare-horizontal',
