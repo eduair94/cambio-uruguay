@@ -285,8 +285,8 @@
         <p class="text-body-1 mb-2">
           {{ data.data.risk.adverts }} avisos ({{ carReportPercent(data.data.risk.share, 1) }})
           dicen algo del auto que cambia lo que estás comprando: deuda, papeles pendientes, choque,
-          recupero de seguro, mecánica rota. Están todos, con la frase del vendedor y cuánto
-          descuenta el mercado por cada motivo, en
+          recupero de seguro, mecánica rota. Están todos, con la frase del vendedor y cuánto cambia
+          el precio cada motivo —la deuda abarata; los papeles pendientes, no—, en
           <NuxtLink :to="localePath(CAR_RISKS_PATH)">autos con deuda o chocados</NuxtLink>.
         </p>
         <p class="text-body-2 text-medium-emphasis mb-0">
