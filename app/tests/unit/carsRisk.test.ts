@@ -119,7 +119,8 @@ describe('queryCarRisks', () => {
     // fijo de la primera versión imprimía "−-2 %" en la página.
     expect(formatCarRiskGap(-0.02)).toBe('2 % más caro')
     expect(formatCarRiskGap(0.001)).toBe('igual precio')
-    expect(formatCarRiskRange(0.19, 0.3)).toBe('de 19 % más barato a 30 % más barato')
+    expect(formatCarRiskRange(0.19, 0.3)).toBe('de 19 % a 30 % más barato')
+    expect(formatCarRiskRange(-0.3, -0.19)).toBe('de 19 % a 30 % más caro')
     expect(formatCarRiskRange(-0.04, 0.05)).toBe('sin diferencia clara')
     expect(formatCarRiskRange(null, 0.3)).toBe('sin comparables')
   })

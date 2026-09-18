@@ -214,5 +214,8 @@ export const formatCarRiskGap = (gap: number | null): string => {
 export const formatCarRiskRange = (p25: number | null, p75: number | null): string => {
   if (p25 === null || p75 === null) return 'sin comparables'
   if (p25 <= 0 && p75 >= 0) return 'sin diferencia clara'
-  return `de ${formatCarRiskGap(p25)} a ${formatCarRiskGap(p75)}`
+  const direction = p25 > 0 ? 'más barato' : 'más caro'
+  const low = Math.round(Math.abs(p25) * 100)
+  const high = Math.round(Math.abs(p75) * 100)
+  return `de ${Math.min(low, high)} % a ${Math.max(low, high)} % ${direction}`
 }
