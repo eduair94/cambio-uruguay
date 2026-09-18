@@ -1700,7 +1700,8 @@
     "trabajoMenores": "Work for under-18s",
     "licenciasEspeciales": "Special leave (Uruguay)",
     "horasExtras": "Overtime pay (Uruguay)",
-    "usedCarRisks": "Cars with debt or crash damage"
+    "usedCarRisks": "Cars with debt or crash damage",
+    "usedCarMarketReport": "Used-car market report"
   },
   "sitemapPage": {
     "h1": "Cambio Uruguay sitemap",

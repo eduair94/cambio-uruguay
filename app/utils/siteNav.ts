@@ -3043,6 +3043,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/mercado-de-autos-usados-uruguay',
+        labelKey: 'nav.usedCarMarketReport',
+        icon: 'mdi-chart-box-outline',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'mercado de autos usados uruguay',
+          'precios autos usados uruguay',
+          'que auto comprar uruguay',
+          'depreciacion autos uruguay',
+          'autos que mas se venden uruguay',
+          'informe mercado automotor',
+        ],
+      },
+      {
         to: '/autos-chocados-y-con-deuda-uruguay',
         labelKey: 'nav.usedCarRisks',
         icon: 'mdi-car-wrench',

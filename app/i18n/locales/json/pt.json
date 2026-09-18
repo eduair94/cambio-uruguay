@@ -1693,7 +1693,8 @@
     "trabajoMenores": "Trabalho para menores de idade",
     "licenciasEspeciales": "Licenças especiais",
     "horasExtras": "Horas extras",
-    "usedCarRisks": "Carros com dívida ou batidos"
+    "usedCarRisks": "Carros com dívida ou batidos",
+    "usedCarMarketReport": "Relatório do mercado de carros"
   },
   "sitemapPage": {
     "h1": "Mapa do site Cambio Uruguay",
