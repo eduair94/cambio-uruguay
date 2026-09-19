@@ -24,6 +24,10 @@ El mapa dispone de los 62 barrios de Montevideo definidos por INE 2011, compatib
 
 Las denuncias corresponden a doce meses completos, incluyen tentativas y cinco categorías: hurto, rapiña, lesiones, violencia doméstica y abigeato. No incluyen homicidios, cuyo conjunto tiene otra unidad de observación y no identifica barrio. Para otras zonas sólo puede presentarse contexto departamental expresamente rotulado; no se colorean barrios con un total departamental. No hay tasas por población sin un denominador compatible verificado, ni puntaje de seguridad, ni predicción de riesgo personal. Ausencia de dato nunca significa cero. Fechas, licencias, cobertura y validación de las fuentes: [PROPERTY_ZONES_SOURCES.md](PROPERTY_ZONES_SOURCES.md).
 
+## Luz, agua y reclamos
+
+Capas propias de cortes de luz (libro de UTE que guardamos cada 10 minutos), cortes de agua programados de OSE y reclamos a la Intendencia de Montevideo, el barrio oficial de cada vivienda (`officialZone`), el filtro «Datos del barrio» del directorio y el análisis «¿Se paga en el alquiler?»: [PROPERTY_ZONE_SERVICES.md](PROPERTY_ZONE_SERVICES.md). A diferencia de los precios por barrio publicado, estas capas se vinculan también por alias medidos desde las coordenadas propias de los avisos, y lo dicen en cada zona.
+
 ## Actualización y publicación
 
 Job `currency-property-zones`, `dist/sync_property_zones.js`, diario 06:53 UTC, un proceso con heap de 512 MiB y límite total de 25 minutos. Está registrado en `OTHER_APPS`. Nunca se ejecuta desde el servidor Express en cluster ni durante una visita.
