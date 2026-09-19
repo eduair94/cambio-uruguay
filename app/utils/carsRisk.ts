@@ -3,6 +3,12 @@
 // Todo lo que se afirma acá de un auto lo afirma su propio aviso, y se publica con la cita al lado.
 // El sitio no dictamina que un auto esté chocado ni que tenga deuda: muestra dónde lo dice el
 // vendedor y cuánto menos pide que los mismos autos que no dicen nada.
+import {
+  carSubjectMatches,
+  carSubjectOrder,
+  normalizeCarSubjectFilters,
+  type CarSubjectFilters,
+} from './cars'
 import type {
   PublicCarRiskCategory,
   PublicCarRiskItem,
@@ -91,12 +97,23 @@ export const CAR_RISK_SEVERITY_LABELS: Record<PublicCarRiskSeverity, string> = {
   media: 'Para tener en cuenta',
 }
 
-export interface CarRiskQuery {
+/** Orden de la lista: por defecto, la diferencia contra los mismos autos que no declaran nada. */
+export const CAR_RISK_SORTS = [
+  'gap',
+  'price_asc',
+  'year_desc',
+  'km_asc',
+  'consumption_asc',
+] as const
+export type CarRiskSort = (typeof CAR_RISK_SORTS)[number]
+
+/** Los mismos filtros sobre el aviso que oportunidades (`CarSubjectFilters`), más los propios. */
+export interface CarRiskQuery extends CarSubjectFilters {
   category: PublicCarRiskCategory | ''
   brand: string
-  priceMax: number | null
   /** Sólo los que tienen descuento medido contra la cohorte limpia. */
   measured: boolean
+  sort: CarRiskSort
   page: number
 }
 
@@ -132,23 +149,33 @@ const slug = (value: unknown): string =>
 
 export function normalizeCarRiskQuery(input: Record<string, unknown>): CarRiskQuery {
   const category = CAR_RISK_CATEGORIES.find(name => name === input.category)
+  const sort = CAR_RISK_SORTS.find(name => name === input.sort)
   return {
     category: category ?? '',
     brand: slug(input.brand),
-    priceMax: integer(input.priceMax, 500, 500_000),
+    ...normalizeCarSubjectFilters(input),
     measured: input.measured === '1' || input.measured === true || input.measured === 'true',
+    sort: sort ?? 'gap',
     page: integer(input.page, 1, 200) ?? 1,
   }
 }
 
 export function carRiskQueryParams(query: CarRiskQuery): Record<string, string> {
   const params: Record<string, string> = {}
-  if (query.category) params.category = query.category
-  if (query.brand) params.brand = query.brand
-  if (query.priceMax) params.priceMax = String(query.priceMax)
-  if (query.measured) params.measured = '1'
-  if (query.page > 1) params.page = String(query.page)
+  for (const [key, value] of Object.entries(query)) {
+    if (value === '' || value === null || value === false) continue
+    if ((key === 'page' && value === 1) || (key === 'sort' && value === 'gap')) continue
+    params[key] = value === true ? '1' : String(value)
+  }
   return params
+}
+
+function riskOrder(sort: CarRiskSort, a: PublicCarRiskItem, b: PublicCarRiskItem): number {
+  const byGap =
+    (b.gap ?? -1) - (a.gap ?? -1) ||
+    (a.severity === b.severity ? 0 : a.severity === 'alta' ? -1 : 1)
+  if (sort === 'gap') return byGap
+  return carSubjectOrder(sort, a.subject, b.subject) || byGap
 }
 
 export function queryCarRisks(
@@ -174,14 +201,9 @@ export function queryCarRisks(
   const filtered = fresh
     .filter(entry => !query.category || entry.risks.some(risk => risk.category === query.category))
     .filter(entry => !query.brand || entry.subject.brandSlug === query.brand)
-    .filter(entry => query.priceMax === null || entry.subject.priceUsd <= query.priceMax)
     .filter(entry => !query.measured || entry.gap !== null)
-    .sort(
-      (a, b) =>
-        (b.gap ?? -1) - (a.gap ?? -1) ||
-        (a.severity === b.severity ? 0 : a.severity === 'alta' ? -1 : 1) ||
-        a.subject.key.localeCompare(b.subject.key)
-    )
+    .filter(entry => carSubjectMatches(entry.subject, query))
+    .sort((a, b) => riskOrder(query.sort, a, b) || a.subject.key.localeCompare(b.subject.key))
   const start = (query.page - 1) * CAR_RISKS_PER_PAGE
   return {
     generatedAt: snapshot.generatedAt,

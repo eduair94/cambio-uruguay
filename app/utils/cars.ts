@@ -235,17 +235,29 @@ export interface CarMarketResponse {
   indexable: boolean
 }
 
-export interface CarOpportunityQuery {
-  tier: 'strict' | 'exploratory' | ''
-  brand: string
+/**
+ * Los filtros sobre el aviso mismo que comparten las listas de oportunidades y de autos con deuda:
+ * las dos son listas de avisos (`subject`) con algo encima, y una persona que filtra por consumo en
+ * una espera poder hacerlo en la otra.
+ */
+export interface CarSubjectFilters {
   priceMax: number | null
   yearMin: number | null
   kmMax: number | null
   fuel: PublicCarFuel | ''
   transmission: PublicCarTransmission | ''
+  /** Consumo máximo en litros cada 100 km, del aviso o estimado por modelo. */
   l100Max: number | null
   department: string
   seller: PublicCarSeller | ''
+}
+
+/** Los mismos filtros como los tiene un formulario: todo texto. */
+export type CarSubjectDraft = { [K in keyof CarSubjectFilters]: string }
+
+export interface CarOpportunityQuery extends CarSubjectFilters {
+  tier: 'strict' | 'exploratory' | ''
+  brand: string
   sort: CarOpportunitySort
   page: number
 }
@@ -271,7 +283,11 @@ function text(value: unknown, max = 60): string {
 }
 
 function integer(value: unknown, min: number, max: number): number | null {
-  const raw = text(value, 12)
+  // "15.000", "US$ 15.000" and "15 000" are how people write an amount here; a strict digits-only
+  // parse silently ignored the budget of anyone who typed the thousands separator.
+  const raw = text(value, 20)
+    .replace(/u\$s|us\$|usd|\$/gi, '')
+    .replace(/[.,\s]/g, '')
   if (!/^\d+$/.test(raw)) return null
   const number = Number(raw)
   return number >= min && number <= max ? number : null
@@ -388,10 +404,8 @@ export const carMarketSlugValid = (value: string): boolean => value.length <= 80
 export const carPath = (key: string): string => `${CARS_PATH}/${key}`
 export const carMarketPath = (marketSlug: string): string => `${CARS_PATH}/precios/${marketSlug}`
 
-export function normalizeCarOpportunityQuery(input: Record<string, unknown>): CarOpportunityQuery {
+export function normalizeCarSubjectFilters(input: Record<string, unknown>): CarSubjectFilters {
   return {
-    tier: oneOf(input.tier, ['strict', 'exploratory'] as const),
-    brand: slugParam(input.brand),
     priceMax: integer(input.priceMax, 1, 1_000_000),
     yearMin: integer(input.yearMin, 1950, 2100),
     kmMax: integer(input.kmMax, 1, 1_000_000),
@@ -400,6 +414,62 @@ export function normalizeCarOpportunityQuery(input: Record<string, unknown>): Ca
     l100Max: integer(input.l100Max, 1, 30),
     department: oneOf(input.department, CAR_DEPARTMENTS),
     seller: oneOf(input.seller, CAR_SELLERS),
+  }
+}
+
+export const carSubjectDraft = (filters: CarSubjectFilters): CarSubjectDraft => ({
+  priceMax: filters.priceMax?.toString() ?? '',
+  yearMin: filters.yearMin?.toString() ?? '',
+  kmMax: filters.kmMax?.toString() ?? '',
+  fuel: filters.fuel,
+  transmission: filters.transmission,
+  l100Max: filters.l100Max?.toString() ?? '',
+  department: filters.department,
+  seller: filters.seller,
+})
+
+/** Si un aviso pasa los filtros. Sin el dato (km, consumo) nunca cumple un tope. */
+export function carSubjectMatches(subject: PublicCarListing, filters: CarSubjectFilters): boolean {
+  if (filters.priceMax !== null && subject.priceUsd > filters.priceMax) return false
+  if (filters.yearMin !== null && subject.year < filters.yearMin) return false
+  if (filters.kmMax !== null && (subject.km === null || subject.km > filters.kmMax)) return false
+  if (filters.fuel && subject.fuel !== filters.fuel) return false
+  if (filters.transmission && subject.transmission !== filters.transmission) return false
+  if (
+    filters.l100Max !== null &&
+    (subject.fuelEconomy == null || subject.fuelEconomy.litersPer100Km > filters.l100Max)
+  )
+    return false
+  if (filters.department && subject.department !== filters.department) return false
+  if (filters.seller && subject.sellerType !== filters.seller) return false
+  return true
+}
+
+/** Lo que no tiene el dato (km, consumo) va al final en cualquier orden. */
+const lastIfMissing = (a: number | null | undefined, b: number | null | undefined): number =>
+  a == null ? (b == null ? 0 : 1) : b == null ? -1 : 0
+
+/**
+ * El orden por un dato del aviso. Devuelve 0 para el orden propio de cada lista ("gap"), que lo
+ * resuelve quien llama.
+ */
+export function carSubjectOrder(sort: string, a: PublicCarListing, b: PublicCarListing): number {
+  if (sort === 'price_asc') return a.priceUsd - b.priceUsd
+  if (sort === 'year_desc') return b.year - a.year
+  if (sort === 'km_asc') return lastIfMissing(a.km, b.km) || (a.km ?? 0) - (b.km ?? 0)
+  if (sort === 'consumption_asc') {
+    const left = a.fuelEconomy?.litersPer100Km
+    const right = b.fuelEconomy?.litersPer100Km
+    return lastIfMissing(left, right) || (left ?? 0) - (right ?? 0)
+  }
+  return 0
+}
+
+export function normalizeCarOpportunityQuery(input: Record<string, unknown>): CarOpportunityQuery {
+  return {
+    tier: oneOf(input.tier, ['strict', 'exploratory'] as const),
+    brand: slugParam(input.brand),
+    ...normalizeCarSubjectFilters(input),
     sort: oneOf(input.sort, CAR_OPPORTUNITY_SORTS) || 'gap',
     page: integer(input.page, 1, 200) ?? 1,
   }
@@ -415,24 +485,12 @@ export function carOpportunityQueryParams(query: CarOpportunityQuery): Record<st
   return params
 }
 
-/** Lo que no tiene el dato (km, rendimiento) va al final en cualquier orden. */
-const lastIfMissing = (a: number | null | undefined, b: number | null | undefined): number =>
-  a == null ? (b == null ? 0 : 1) : b == null ? -1 : 0
-
 function opportunityOrder(
   sort: CarOpportunitySort,
   a: PublicCarOpportunityItem,
   b: PublicCarOpportunityItem
 ): number {
-  if (sort === 'price_asc') return a.subject.priceUsd - b.subject.priceUsd
-  if (sort === 'year_desc') return b.subject.year - a.subject.year || b.gap - a.gap
-  if (sort === 'km_asc')
-    return lastIfMissing(a.subject.km, b.subject.km) || (a.subject.km ?? 0) - (b.subject.km ?? 0)
-  if (sort === 'consumption_asc') {
-    const left = a.subject.fuelEconomy?.litersPer100Km
-    const right = b.subject.fuelEconomy?.litersPer100Km
-    return lastIfMissing(left, right) || (left ?? 0) - (right ?? 0) || b.gap - a.gap
-  }
+  if (sort !== 'gap') return carSubjectOrder(sort, a.subject, b.subject) || b.gap - a.gap
   return (a.tier === b.tier ? 0 : a.tier === 'strict' ? -1 : 1) || b.gap - a.gap
 }
 
@@ -458,22 +516,7 @@ export function queryCarOpportunities(
   const filtered = fresh
     .filter(entry => !query.tier || entry.tier === query.tier)
     .filter(entry => !query.brand || entry.subject.brandSlug === query.brand)
-    .filter(entry => query.priceMax === null || entry.subject.priceUsd <= query.priceMax)
-    .filter(entry => !query.department || entry.subject.department === query.department)
-    .filter(entry => !query.seller || entry.subject.sellerType === query.seller)
-    .filter(entry => query.yearMin === null || entry.subject.year >= query.yearMin)
-    .filter(
-      entry =>
-        query.kmMax === null || (entry.subject.km !== null && entry.subject.km <= query.kmMax)
-    )
-    .filter(entry => !query.fuel || entry.subject.fuel === query.fuel)
-    .filter(entry => !query.transmission || entry.subject.transmission === query.transmission)
-    .filter(
-      entry =>
-        query.l100Max === null ||
-        (entry.subject.fuelEconomy != null &&
-          entry.subject.fuelEconomy.litersPer100Km <= query.l100Max)
-    )
+    .filter(entry => carSubjectMatches(entry.subject, query))
     .sort(
       (a, b) => opportunityOrder(query.sort, a, b) || a.subject.key.localeCompare(b.subject.key)
     )

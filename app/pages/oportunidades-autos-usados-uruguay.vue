@@ -43,73 +43,7 @@
             variant="outlined"
             hide-details
           />
-          <VTextField
-            v-model="draft.priceMax"
-            label="Presupuesto máximo (US$)"
-            inputmode="numeric"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-          />
-          <div class="deal-filters__pair">
-            <VTextField
-              v-model="draft.yearMin"
-              label="Año desde"
-              inputmode="numeric"
-              density="comfortable"
-              variant="outlined"
-              hide-details
-            />
-            <VTextField
-              v-model="draft.kmMax"
-              label="Km máximo"
-              inputmode="numeric"
-              density="comfortable"
-              variant="outlined"
-              hide-details
-            />
-          </div>
-          <VSelect
-            v-model="draft.fuel"
-            :items="fuelItems"
-            label="Combustible"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-          />
-          <VSelect
-            v-model="draft.transmission"
-            :items="transmissionItems"
-            label="Caja"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-          />
-          <VSelect
-            v-model="draft.l100Max"
-            :items="consumptionItems"
-            label="Consumo máximo"
-            hint="Del aviso o estimado por modelo"
-            persistent-hint
-            density="comfortable"
-            variant="outlined"
-          />
-          <VSelect
-            v-model="draft.department"
-            :items="departmentItems"
-            label="Departamento"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-          />
-          <VSelect
-            v-model="draft.seller"
-            :items="sellerItems"
-            label="Vende"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-          />
+          <CarsSubjectFilterFields v-model="subject" />
           <VBtn type="submit" color="primary" block>Aplicar</VBtn>
           <VBtn variant="text" block @click="clear">Limpiar filtros</VBtn>
         </form>
@@ -208,16 +142,10 @@
 <script setup lang="ts">
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import {
-  CAR_FUELS,
-  CAR_FUEL_LABELS,
-  CAR_CONSUMPTION_STEPS,
   CAR_OPPORTUNITIES_PATH,
-  CAR_SELLERS,
-  CAR_SELLER_LABELS,
-  CAR_TRANSMISSIONS,
-  CAR_TRANSMISSION_LABELS,
   CARS_PATH,
   carOpportunityQueryParams,
+  carSubjectDraft,
   carPercent,
   formatCarDate,
   formatCarKm,
@@ -234,25 +162,6 @@ const tierItems = [
   { title: 'Sólida y exploratoria', value: '' },
   { title: 'Sólo comparación sólida', value: 'strict' },
   { title: 'Sólo exploratoria', value: 'exploratory' },
-]
-const sellerItems = [
-  { title: 'Dueño o automotora', value: '' },
-  ...CAR_SELLERS.map(value => ({ title: CAR_SELLER_LABELS[value], value })),
-]
-const fuelItems = [
-  { title: 'Cualquier combustible', value: '' },
-  ...CAR_FUELS.map(value => ({ title: CAR_FUEL_LABELS[value], value })),
-]
-const transmissionItems = [
-  { title: 'Cualquier caja', value: '' },
-  ...CAR_TRANSMISSIONS.map(value => ({ title: CAR_TRANSMISSION_LABELS[value], value })),
-]
-const consumptionItems = [
-  { title: 'Cualquier consumo', value: '' },
-  ...CAR_CONSUMPTION_STEPS.map(value => ({
-    title: `Hasta ${value} L/100 km`,
-    value: String(value),
-  })),
 ]
 const sortItems: Array<{ title: string; value: CarOpportunitySort }> = [
   { title: 'Mayor diferencia', value: 'gap' },
@@ -278,32 +187,25 @@ const brandItems = computed(() => [
     value: brand.slug,
   })),
 ])
-const departmentItems = computed(() => [
-  { title: 'Todo el país', value: '' },
-  ...(data.value?.departments ?? []).map(value => ({ title: value, value })),
-])
 
 const toDraft = (value: CarOpportunityQuery) => ({
   tier: value.tier as string,
   brand: value.brand,
-  priceMax: value.priceMax?.toString() ?? '',
-  yearMin: value.yearMin?.toString() ?? '',
-  kmMax: value.kmMax?.toString() ?? '',
-  fuel: value.fuel as string,
-  transmission: value.transmission as string,
-  l100Max: value.l100Max?.toString() ?? '',
-  department: value.department,
-  seller: value.seller as string,
 })
 const draft = reactive(toDraft(query.value))
-watch(query, next => Object.assign(draft, toDraft(next)))
+// The filters on the advert itself are the same form as on /autos-chocados-y-con-deuda-uruguay.
+const subject = ref(carSubjectDraft(query.value))
+watch(query, next => {
+  Object.assign(draft, toDraft(next))
+  subject.value = carSubjectDraft(next)
+})
 
 function navigate(next: CarOpportunityQuery) {
   router.replace({ query: carOpportunityQueryParams(next) })
 }
 function apply() {
   // The order is chosen next to the results, not in the form: applying filters keeps it.
-  navigate(normalizeCarOpportunityQuery({ ...draft, sort: query.value.sort }))
+  navigate(normalizeCarOpportunityQuery({ ...draft, ...subject.value, sort: query.value.sort }))
 }
 function clear() {
   navigate(normalizeCarOpportunityQuery({ sort: query.value.sort }))
@@ -359,11 +261,6 @@ useHead({
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-.deal-filters__pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
 }
 .deal-sort {
   max-width: 260px;

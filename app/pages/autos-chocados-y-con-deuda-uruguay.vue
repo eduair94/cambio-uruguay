@@ -73,14 +73,8 @@
             variant="outlined"
             hide-details
           />
-          <VTextField
-            v-model="draft.priceMax"
-            label="Presupuesto máximo (US$)"
-            inputmode="numeric"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-          />
+          <!-- Los mismos filtros sobre el aviso que /oportunidades-autos-usados-uruguay. -->
+          <CarsSubjectFilterFields v-model="subject" />
           <VCheckbox
             v-model="draft.measured"
             label="Sólo con diferencia medida"
@@ -88,6 +82,7 @@
             hide-details
           />
           <VBtn type="submit" color="primary" block>Aplicar</VBtn>
+          <VBtn variant="text" block @click="clear">Limpiar filtros</VBtn>
         </form>
       </VCol>
       <VCol cols="12" md="9">
@@ -95,8 +90,24 @@
           El tablero se está calculando. Volvé en unos minutos.
         </VAlert>
         <template v-else-if="data">
+          <div class="d-flex flex-wrap align-center justify-space-between ga-3 mb-2">
+            <h2 class="text-h6 mb-0">
+              {{ data.total.toLocaleString('es-UY') }} {{ data.total === 1 ? 'aviso' : 'avisos' }}
+            </h2>
+            <VSelect
+              :model-value="query.sort"
+              :items="sortItems"
+              label="Ordenar"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="risk-sort"
+              data-testid="risk-sort"
+              @update:model-value="value => navigate({ ...query, sort: value, page: 1 })"
+            />
+          </div>
           <p class="text-body-2 text-medium-emphasis mb-4">
-            {{ data.total }} avisos · cálculo del {{ formatCarDate(data.generatedAt) }} sobre
+            Cálculo del {{ formatCarDate(data.generatedAt) }} sobre
             {{ data.stats.input.toLocaleString('es-UY') }} avisos vigentes, de los cuales
             {{ data.stats.declared.toLocaleString('es-UY') }} declaran algo y
             {{ data.stats.measured.toLocaleString('es-UY') }} tienen con qué compararse.
@@ -190,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { CAR_OPPORTUNITIES_PATH, CARS_PATH, formatCarDate } from '~/utils/cars'
+import { CAR_OPPORTUNITIES_PATH, CARS_PATH, carSubjectDraft, formatCarDate } from '~/utils/cars'
 import {
   CAR_RISKS_PATH,
   CAR_RISK_CATEGORIES,
@@ -200,6 +211,7 @@ import {
   formatCarRiskRange,
   normalizeCarRiskQuery,
   type CarRiskQuery,
+  type CarRiskSort,
   type CarRisksResponse,
 } from '~/utils/carsRisk'
 
@@ -232,20 +244,42 @@ const brandItems = computed(() => [
   })),
 ])
 
+const sortItems: Array<{ title: string; value: CarRiskSort }> = [
+  { title: 'Mayor diferencia', value: 'gap' },
+  { title: 'Menor precio', value: 'price_asc' },
+  { title: 'Más nuevos', value: 'year_desc' },
+  { title: 'Menos kilómetros', value: 'km_asc' },
+  { title: 'Menor consumo', value: 'consumption_asc' },
+]
+
 const toDraft = (value: CarRiskQuery) => ({
   category: value.category as string,
   brand: value.brand,
-  priceMax: value.priceMax?.toString() ?? '',
   measured: value.measured,
 })
 const draft = reactive(toDraft(query.value))
-watch(query, next => Object.assign(draft, toDraft(next)))
+const subject = ref(carSubjectDraft(query.value))
+watch(query, next => {
+  Object.assign(draft, toDraft(next))
+  subject.value = carSubjectDraft(next)
+})
 
 function navigate(next: CarRiskQuery) {
   router.replace({ query: carRiskQueryParams(next) })
 }
 function apply() {
-  navigate(normalizeCarRiskQuery({ ...draft, measured: draft.measured ? '1' : '' }))
+  // The order is chosen next to the results: applying filters keeps it.
+  navigate(
+    normalizeCarRiskQuery({
+      ...draft,
+      ...subject.value,
+      measured: draft.measured ? '1' : '',
+      sort: query.value.sort,
+    })
+  )
+}
+function clear() {
+  navigate(normalizeCarRiskQuery({ sort: query.value.sort }))
 }
 
 const canonical = `https://cambio-uruguay.com${CAR_RISKS_PATH}`
@@ -297,6 +331,9 @@ useHead({
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+.risk-sort {
+  max-width: 260px;
 }
 @media (min-width: 960px) {
   .risk-filters {

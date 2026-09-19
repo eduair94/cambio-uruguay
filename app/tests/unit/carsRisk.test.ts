@@ -139,6 +139,77 @@ describe('the risk query string', () => {
   })
 })
 
+describe('the same filters and orders as the opportunities', () => {
+  const economy = (litersPer100Km: number) =>
+    ({
+      litersPer100Km,
+      city: null,
+      highway: null,
+      combined: null,
+      basis: 'model',
+      sellers: 4,
+    }) as const
+  const list = snapshot([
+    item({
+      subject: {
+        ...item().subject,
+        key: 'ml-A',
+        year: 2015,
+        km: 150_000,
+        priceUsd: 6_000,
+        fuelEconomy: economy(7.7),
+      },
+    } as never),
+    item({
+      subject: {
+        ...item().subject,
+        key: 'ml-B',
+        year: 2021,
+        km: 40_000,
+        priceUsd: 14_000,
+        fuel: 'diesel',
+        fuelEconomy: economy(6.1),
+      },
+      gap: 0.1,
+    } as never),
+    item({
+      subject: {
+        ...item().subject,
+        key: 'ml-C',
+        year: 2018,
+        km: null,
+        priceUsd: 9_500,
+        transmission: 'automatica',
+        fuelEconomy: null,
+      },
+      gap: null,
+    } as never),
+  ])
+  const keys = (input: Record<string, unknown>) =>
+    queryCarRisks(list, input, NOW).items.map(entry => entry.subject.key)
+
+  it('filters by year, km, fuel, gearbox and consumption', () => {
+    expect(keys({ yearMin: '2018' })).toEqual(['ml-B', 'ml-C'])
+    expect(keys({ kmMax: '100.000' })).toEqual(['ml-B'])
+    expect(keys({ fuel: 'diesel' })).toEqual(['ml-B'])
+    expect(keys({ transmission: 'automatica' })).toEqual(['ml-C'])
+    expect(keys({ l100Max: '7' })).toEqual(['ml-B'])
+    // A budget typed the way people write it.
+    expect(keys({ priceMax: '10.000' })).toEqual(['ml-A', 'ml-C'])
+  })
+
+  it('orders by the declared gap by default, and by price, year, km or consumption on request', () => {
+    expect(keys({})).toEqual(['ml-A', 'ml-B', 'ml-C'])
+    expect(keys({ sort: 'price_asc' })).toEqual(['ml-A', 'ml-C', 'ml-B'])
+    expect(keys({ sort: 'year_desc' })).toEqual(['ml-B', 'ml-C', 'ml-A'])
+    expect(keys({ sort: 'km_asc' })).toEqual(['ml-B', 'ml-A', 'ml-C'])
+    expect(keys({ sort: 'consumption_asc' })).toEqual(['ml-B', 'ml-A', 'ml-C'])
+    expect(carRiskQueryParams(normalizeCarRiskQuery({ sort: 'gap', measured: '1' }))).toEqual({
+      measured: '1',
+    })
+  })
+})
+
 describe('the buyer guide', () => {
   it('covers every category the backend can publish, with what to ask for', () => {
     for (const category of CAR_RISK_CATEGORIES) {

@@ -24,6 +24,11 @@
           <NuxtLink :to="localePath(carPath(item.subject.key))">{{ item.subject.title }}</NuxtLink>
         </h3>
         <p class="text-body-2 mb-1">{{ facts }}</p>
+        <p v-if="fuelEconomy" class="text-body-2 mb-1" data-testid="car-fuel-economy">
+          <VIcon size="16" aria-hidden="true">mdi-gas-station-outline</VIcon>
+          Consumo <strong>{{ fuelEconomy }}</strong>
+          <span class="text-medium-emphasis"> · {{ fuelEconomySource }}</span>
+        </p>
         <p class="text-h6 font-weight-bold mb-1">{{ formatCarUsd(item.subject.priceUsd) }}</p>
         <p v-if="item.gap !== null && item.median !== null" class="text-body-1 mb-0">
           <strong>{{ formatCarRiskGap(item.gap) }}</strong> que la mediana de
@@ -69,10 +74,18 @@
 <script setup lang="ts">
 import type { PublicCarRiskItem } from '~/utils/carsPublic'
 import { CAR_RISK_GUIDE, CAR_RISK_SEVERITY_LABELS, formatCarRiskGap } from '~/utils/carsRisk'
-import { carPath, formatCarKm, formatCarUsd } from '~/utils/cars'
+import {
+  carFuelEconomySource,
+  carPath,
+  formatCarFuelEconomy,
+  formatCarKm,
+  formatCarUsd,
+} from '~/utils/cars'
 
 const props = defineProps<{ item: PublicCarRiskItem }>()
 const localePath = useLocalePath()
+const fuelEconomy = computed(() => formatCarFuelEconomy(props.item.subject.fuelEconomy))
+const fuelEconomySource = computed(() => carFuelEconomySource(props.item.subject.fuelEconomy))
 
 const facts = computed(() => {
   const subject = props.item.subject
