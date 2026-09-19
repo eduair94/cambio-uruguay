@@ -1,5 +1,5 @@
 <template>
-  <VContainer v-if="familia" class="familia-nav-wrap py-0">
+  <div v-if="familia" class="familia-nav-wrap">
     <nav class="familia-nav" :aria-label="t('familiaNav.aria')" data-testid="familia-nav">
       <ul class="familia-nav__list">
         <li v-for="item in familia.items" :key="item.to">
@@ -21,7 +21,7 @@
         </li>
       </ul>
     </nav>
-  </VContainer>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -50,11 +50,14 @@ function trackClick(destination: string) {
 </script>
 
 <style scoped>
+/* Una franja de navegación de sección, siempre en el mismo lugar, separada del contenido por un
+   borde: medido a 1280 px, el título de estas páginas arranca en x=24, 28, 48, 88, 97, 124, 148,
+   172 o 356 según la página (cada una tiene su propio contenedor), así que alinear la barra "con la
+   página" no existe; un contenedor centrado la dejaba desalineada en la mayoría. */
 .familia-nav-wrap {
-  padding-inline: 16px;
-}
-.familia-nav {
-  margin: 4px 0 8px;
+  padding: 4px 16px 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.15);
 }
 .familia-nav__list {
   display: flex;
