@@ -4,6 +4,7 @@ import {
   normalizeRentalZoneQuery,
   projectRentalZoneSnapshots,
   rentalZoneBoundaries,
+  rentalZoneLabel,
 } from '../../utils/rentalZones'
 
 const NOW = Date.parse('2026-09-08T12:00:00Z')
@@ -198,6 +199,39 @@ describe('public zone projection and geography', () => {
     expect(result.zones[0]!.boundaryAvailable).toBe(false)
     expect(result.zones[0]!.services).toBeNull()
     expect(result.boundaryUrl).toBeNull()
+  })
+  it('labels a zone with its best spelling, never the last portal bucket read', () => {
+    const market = zoneMarketFixture()
+    const bucket = market.buckets[0]!
+    market.buckets = [
+      { ...bucket, neighborhood: 'POCITOS' },
+      { ...bucket, neighborhood: 'Cordón', bedrooms: '1' },
+      { ...bucket, neighborhood: 'CORDON', bedrooms: '2' },
+      { ...bucket, neighborhood: 'PEÑAROL' },
+      { ...bucket, department: 'Maldonado', neighborhood: 'barrio de la barra' },
+    ]
+    const result = response(market)
+    const byId = (id: string) => result.zones.find(zone => zone.id === id)!
+    // Official polygon "Pocitos" beats a portal's all-caps spelling; the accented one beats both.
+    expect(byId('uy-mo-barrio-8').ref.neighborhood).toBe('Pocitos')
+    expect(cordon(result).ref.neighborhood).toBe('Cordón')
+    expect(cordon(result).crime?.geographyName).toBe('Cordón')
+    const penarol = result.zones.find(zone => zone.id.endsWith('-penarol'))!
+    expect(penarol.ref).toEqual({ department: 'Montevideo', neighborhood: 'Peñarol' })
+    expect(result.zones.find(zone => zone.ref.department === 'Maldonado')!.ref.neighborhood).toBe(
+      'Barrio de la Barra'
+    )
+    // The key that joins the spellings is unchanged: still one zone per place.
+    expect(result.zones.filter(zone => /pocitos|cord/i.test(zone.ref.neighborhood))).toHaveLength(2)
+  })
+  it('capitalizes a single-case label without touching a mixed-case one', () => {
+    expect(rentalZoneLabel(['NUEVO PARIS'])).toBe('Nuevo Paris')
+    expect(rentalZoneLabel(['NUEVO PARIS', 'Nuevo Paris'])).toBe('Nuevo Paris')
+    expect(rentalZoneLabel(['Nuevo Paris', 'NUEVO PARÍS'])).toBe('Nuevo París')
+    expect(rentalZoneLabel(['B. DE CARRASCO'])).toBe('B. de Carrasco')
+    expect(rentalZoneLabel(['20 DE FEBRERO 2600'])).toBe('20 de Febrero 2600')
+    expect(rentalZoneLabel(['Pque. Batlle, V. Dolores'])).toBe('Pque. Batlle, V. Dolores')
+    expect(rentalZoneLabel(['Barra De Carrasco'])).toBe('Barra De Carrasco')
   })
   it('returns no source-cache fields, event rows, advert identities, private points or arbitrary source URLs', () => {
     const projected = projectRentalZoneSnapshots(zoneMarketFixture(), zoneContextFixture())

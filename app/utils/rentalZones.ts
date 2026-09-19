@@ -67,6 +67,29 @@ const clean = (value: unknown, maximum = 100): string | null => {
     return null
   return value.normalize('NFC').trim().replace(/\s+/g, ' ') || null
 }
+const SMALL_WORDS = new Set(['de', 'del', 'la', 'las', 'los', 'el', 'y', 'e'])
+const mixedCase = (name: string) => /\p{Lu}/u.test(name) && /\p{Ll}/u.test(name)
+const accents = (name: string) => name.normalize('NFD').length - name.normalize('NFC').length
+/**
+ * The spelling a zone is shown with. Portals and the INE file write one place as "NUEVO PARIS",
+ * "Nuevo Paris", "Cordon" or "Cordón": all fold to the same key, so only the label is chosen here —
+ * the most accented spelling, then one in mixed case; a label left in a single case ("PEÑAROL",
+ * "carrasco") is capitalized. Filters keep matching: listings are read with an accent- and
+ * case-insensitive collation and the planner folds names.
+ */
+export function rentalZoneLabel(spellings: readonly string[]): string {
+  let best = spellings[0]!
+  for (const name of spellings.slice(1)) {
+    const more = accents(name) - accents(best)
+    if (more > 0 || (more === 0 && mixedCase(name) && !mixedCase(best))) best = name
+  }
+  if (mixedCase(best)) return best
+  return best
+    .toLocaleLowerCase('es')
+    .replace(/\p{L}+/gu, (word, offset: number) =>
+      offset > 0 && SMALL_WORDS.has(word) ? word : word[0]!.toLocaleUpperCase('es') + word.slice(1)
+    )
+}
 export const rentalZoneName = (value: string): string =>
   value
     .normalize('NFD')
@@ -556,26 +579,41 @@ export function buildRentalZoneResponse(
           : null,
     }
   }
-  if (!filters.department || filters.department === 'Montevideo') {
-    for (const feature of features) {
-      const { zoneId, name, officialCode } = feature.properties
-      result.set(zoneId, attach(zoneId, 'Montevideo', name, officialCode, emptyRentalZonePrices()))
-    }
-  }
-  for (const bucket of market?.buckets || []) {
-    if (filters.department && bucket.department !== filters.department) continue
+  const mapped = !filters.department || filters.department === 'Montevideo'
+  const placed = (market?.buckets || []).flatMap(bucket => {
+    if (filters.department && bucket.department !== filters.department) return []
     const area =
       bucket.department === 'Montevideo' ? official.get(rentalZoneName(bucket.neighborhood)) : null
     const id =
       area?.zoneId ||
       `advertised-${encodeURIComponent(rentalZoneName(bucket.department))}-${encodeURIComponent(rentalZoneName(bucket.neighborhood))}`
+    return [{ bucket, area, id }]
+  })
+  // Every spelling of a zone competes for its label; before this the last bucket read won, so an
+  // official "Nuevo Paris" was published as a portal's "NUEVO PARIS".
+  const spellings = new Map<string, string[]>()
+  const spell = (id: string, name: string) =>
+    spellings.set(id, [...(spellings.get(id) || []), name])
+  if (mapped) for (const { properties } of features) spell(properties.zoneId, properties.name)
+  for (const { bucket, id } of placed) spell(id, bucket.neighborhood)
+  const label = (id: string) => rentalZoneLabel(spellings.get(id)!)
+  if (mapped) {
+    for (const feature of features) {
+      const { zoneId, officialCode } = feature.properties
+      result.set(
+        zoneId,
+        attach(zoneId, 'Montevideo', label(zoneId), officialCode, emptyRentalZonePrices())
+      )
+    }
+  }
+  for (const { bucket, area, id } of placed) {
     if (!result.has(id))
       result.set(
         id,
         attach(
           id,
           bucket.department,
-          bucket.neighborhood,
+          label(id),
           area?.officialCode || null,
           emptyRentalZonePrices()
         )
@@ -586,7 +624,7 @@ export function buildRentalZoneResponse(
         attach(
           id,
           bucket.department,
-          bucket.neighborhood,
+          label(id),
           area?.officialCode || null,
           priceStatus === 'unavailable' ? emptyRentalZonePrices() : bucket.prices
         )

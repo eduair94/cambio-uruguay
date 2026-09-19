@@ -871,7 +871,10 @@ onBeforeUnmount(() => boundaryRequest?.abort())
   margin-top: 4px;
   color: rgba(var(--v-theme-on-surface), 0.76);
 }
+/* The figure keeps its width and the name wraps: a long left column ("Sin mapa oficial
+   disponible") used to squeeze "12 avisos comparables" onto two lines. */
 .row-value {
+  flex: 0 0 auto;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
