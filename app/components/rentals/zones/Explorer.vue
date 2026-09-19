@@ -151,8 +151,8 @@
                 <ul>
                   <li v-for="(bin, index) in bins" :key="index">
                     <i :style="{ background: palette[index] }" aria-hidden="true" />{{
-                      valueLabel(bin.from)
-                    }}<span v-if="bin.to !== bin.from"> – {{ valueLabel(bin.to) }}</span>
+                      legendLabel(bin.from)
+                    }}<span v-if="bin.to !== bin.from"> – {{ legendLabel(bin.to) }}</span>
                   </li>
                   <li><i class="no-data-swatch" aria-hidden="true" />{{ t('noData') }}</li>
                 </ul>
@@ -583,6 +583,13 @@ const valueLabel = (value: number | null) =>
         : layer.value === 'claims'
           ? decimal(value)
           : number(value)
+/** Legend steps: the unit is already in the legend title. */
+const legendLabel = (value: number) =>
+  layer.value === 'prices'
+    ? `$ ${number(value)}`
+    : layer.value === 'power' || layer.value === 'claims'
+      ? decimal(value)
+      : number(value)
 const metricLabel = computed(() =>
   layer.value === 'prices'
     ? `${t(priceStatistic.value === 'mean' ? 'mean' : 'rent')} · UYU`

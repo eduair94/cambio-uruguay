@@ -324,8 +324,9 @@ function sentence(item: RentalZoneImpact['attributes'][number]) {
     low: decimal(item.xLow, 1),
     high: decimal(item.xHigh, 1),
     pct: decimal(Math.abs(item.pct), 1),
-    pctLow: decimal(item.verdict === 'lower' ? -item.pctHigh : item.pctLow, 1),
-    pctHigh: decimal(item.verdict === 'lower' ? -item.pctLow : item.pctHigh, 1),
+    // The interval keeps its signs: "−15,9 % a +3 %" says the magnitude is uncertain.
+    pctLow: signed(item.pctLow),
+    pctHigh: signed(item.pctHigh),
   }
   return t(item.verdict, values)
 }

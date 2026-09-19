@@ -167,6 +167,19 @@ describe('attachRentalZoneUtilities', () => {
     ).toBeNull()
   })
 
+  it('never shows a department total for an unlinked Montevideo barrio', () => {
+    const unlinked = attachRentalZoneUtilities(
+      projectRentalZoneServices(
+        { ...raw, water: { ...raw.water, departments: { Montevideo: { notices: 300, hours: 900 } } } },
+        aliases
+      ),
+      { department: 'Montevideo', neighborhood: 'Prado' },
+      null,
+      now
+    )
+    expect(unlinked).toBeNull()
+  })
+
   it('hides a layer once it is too old and never shows power while it is still collecting', () => {
     const late = Date.parse('2026-11-05T00:00:00Z')
     const zone = attachRentalZoneUtilities(

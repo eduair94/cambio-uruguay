@@ -1,5 +1,7 @@
 export const rentalZoneMessages = {
   es: {
+    noOfficial:
+      'Este nombre de barrio no coincide con un barrio oficial y los avisos que lo usan caen en varios. Buscá el barrio oficial en la lista o en el mapa.',
     panelTitle: 'Datos del barrio: {name}',
     evidence_coordinate: 'Ubicado por la coordenada que publica el aviso.',
     evidence_name: 'Ubicado por el barrio que declara el aviso.',
@@ -201,6 +203,8 @@ export const rentalZoneMessages = {
     excludeShort: 'Excluir',
   },
   en: {
+    noOfficial:
+      'This neighbourhood name matches no official neighbourhood, and the adverts that use it fall in several. Look for the official neighbourhood in the list or on the map.',
     panelTitle: 'Neighbourhood data: {name}',
     evidence_coordinate: 'Placed by the coordinate the advert publishes.',
     evidence_name: 'Placed by the neighbourhood the advert declares.',
@@ -400,6 +404,8 @@ export const rentalZoneMessages = {
     excludeShort: 'Exclude',
   },
   pt: {
+    noOfficial:
+      'Este nome de bairro não coincide com um bairro oficial e os anúncios que o usam caem em vários. Procure o bairro oficial na lista ou no mapa.',
     panelTitle: 'Dados do bairro: {name}',
     evidence_coordinate: 'Localizado pela coordenada que o anúncio publica.',
     evidence_name: 'Localizado pelo bairro que o anúncio declara.',

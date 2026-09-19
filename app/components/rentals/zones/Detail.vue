@@ -46,6 +46,7 @@
     </template>
     <template v-else-if="layer === 'power'">
       <p v-if="officialNote" class="meta">{{ officialNote }}</p>
+      <p v-if="unlinked" class="notice">{{ t('noOfficial') }}</p>
       <p v-if="meta?.power?.status === 'collecting'" class="notice">
         {{
           t('powerCollecting', {
@@ -54,7 +55,9 @@
           })
         }}
       </p>
-      <p v-else-if="!zone.utilities?.power" class="notice">{{ t('unavailableSnapshot') }}</p>
+      <p v-else-if="!zone.utilities?.power && !unlinked" class="notice">
+        {{ t('unavailableSnapshot') }}
+      </p>
       <template v-else>
         <p v-if="meta?.power?.status === 'stale'" class="notice">{{ t('stale') }}</p>
         <p v-if="zone.utilities.power.geography === 'department'" class="notice">
@@ -90,7 +93,8 @@
     </template>
     <template v-else-if="layer === 'water'">
       <p v-if="officialNote" class="meta">{{ officialNote }}</p>
-      <p v-if="!zone.utilities?.water" class="notice">{{ t('unavailableSnapshot') }}</p>
+      <p v-if="unlinked" class="notice">{{ t('noOfficial') }}</p>
+      <p v-else-if="!zone.utilities?.water" class="notice">{{ t('unavailableSnapshot') }}</p>
       <template v-else>
         <p v-if="meta?.water?.status === 'stale'" class="notice">{{ t('stale') }}</p>
         <p v-if="zone.utilities.water.geography === 'department'" class="notice">
@@ -103,7 +107,9 @@
         <p v-if="level('agua')" class="level" :class="`level--${level('agua')}`">
           {{ t(levelKey(level('agua')!)) }}
         </p>
-        <p class="meta">{{ t('waterHours', { n: number(zone.utilities.water.hours) }) }}</p>
+        <p class="meta">
+          {{ t('waterHours', { n: number(Math.round(zone.utilities.water.hours)) }) }}
+        </p>
       </template>
       <p class="hint">{{ t('waterShort') }}</p>
     </template>
@@ -111,7 +117,11 @@
       <p v-if="officialNote" class="meta">{{ officialNote }}</p>
       <p v-if="!zone.utilities?.claims" class="notice">
         {{
-          zone.ref.department === 'Montevideo' ? t('unavailableSnapshot') : t('claimsMontevideo')
+          zone.ref.department !== 'Montevideo'
+            ? t('claimsMontevideo')
+            : unlinked
+              ? t('noOfficial')
+              : t('unavailableSnapshot')
         }}
       </p>
       <template v-else>
@@ -292,6 +302,10 @@ const level = (attribute: RentalServiceAttribute): RentalServiceLevel | null =>
   props.zone.utilities?.levels[attribute] ?? null
 const levelKey = (value: RentalServiceLevel) =>
   value === 'low' ? 'levelLow' : value === 'mid' ? 'levelMid' : 'levelHigh'
+/** A Montevideo name that maps to no single official barrio (exactly or by measured alias). */
+const unlinked = computed(
+  () => props.zone.ref.department === 'Montevideo' && !props.zone.utilities?.official
+)
 const officialNote = computed(() => {
   const official = props.zone.utilities?.official
   if (!official) return ''

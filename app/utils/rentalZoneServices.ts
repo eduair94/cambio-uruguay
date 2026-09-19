@@ -417,10 +417,13 @@ export function attachRentalZoneUtilities(
   const statuses = rentalServiceStatuses(snapshot, now)
   const official = rentalZoneOfficial(snapshot, ref, officialCode)
   const id = official?.id
+  // Department totals are context for towns only: next to Montevideo barrios they would read as a
+  // barrio figure many times larger than any real one.
+  const departmentContext = ref.department !== 'Montevideo'
   let power: RentalZoneUtilities['power'] = null
   if (usable(statuses.power) && snapshot.power) {
     const zone = id ? snapshot.power.zones[id] : undefined
-    const department = snapshot.power.departments[ref.department]
+    const department = departmentContext ? snapshot.power.departments[ref.department] : undefined
     const metric = zone || department
     if (metric)
       power = {
@@ -436,7 +439,7 @@ export function attachRentalZoneUtilities(
   let water: RentalZoneUtilities['water'] = null
   if (usable(statuses.water) && snapshot.water) {
     const zone = id ? snapshot.water.zones[id] : undefined
-    const department = snapshot.water.departments[ref.department]
+    const department = departmentContext ? snapshot.water.departments[ref.department] : undefined
     const metric = zone || department
     if (metric)
       water = {

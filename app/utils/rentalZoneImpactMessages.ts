@@ -7,9 +7,9 @@ export const rentalZoneImpactMessages = {
     choose: 'Dato del barrio',
     yAxis: 'Alquiler por m² (UYU, mediana)',
     lower:
-      'Los barrios con más {label} piden menos por m²: de un barrio del cuartil con menos ({low}) a uno del cuartil con más ({high}), el alquiler por m² baja {pct} % (entre {pctLow} % y {pctHigh} %).',
+      'Los barrios con más {label} piden menos por m²: de un barrio del cuartil con menos ({low}) a uno del cuartil con más ({high}), el alquiler por m² baja {pct} % (intervalo del 95 %: {pctLow} % a {pctHigh} %).',
     higher:
-      'Los barrios con más {label} piden más por m²: de un barrio del cuartil con menos ({low}) a uno del cuartil con más ({high}), el alquiler por m² sube {pct} % (entre {pctLow} % y {pctHigh} %).',
+      'Los barrios con más {label} piden más por m²: de un barrio del cuartil con menos ({low}) a uno del cuartil con más ({high}), el alquiler por m² sube {pct} % (intervalo del 95 %: {pctLow} % a {pctHigh} %).',
     inconclusive:
       'Con {label} no aparece una diferencia clara en el alquiler por m²: el intervalo incluye tanto subas como bajas.',
     rho: 'Correlación de rangos {rho} (95 %: {low} a {high}) · {zones} barrios',
@@ -66,9 +66,9 @@ export const rentalZoneImpactMessages = {
     choose: 'Neighbourhood figure',
     yAxis: 'Rent per m² (UYU, median)',
     lower:
-      'Areas with more {label} ask less per m²: from an area in the lowest quartile ({low}) to one in the highest ({high}), rent per m² falls {pct} % (between {pctLow} % and {pctHigh} %).',
+      'Areas with more {label} ask less per m²: from an area in the lowest quartile ({low}) to one in the highest ({high}), rent per m² falls {pct} % (95 % interval: {pctLow} % to {pctHigh} %).',
     higher:
-      'Areas with more {label} ask more per m²: from an area in the lowest quartile ({low}) to one in the highest ({high}), rent per m² rises {pct} % (between {pctLow} % and {pctHigh} %).',
+      'Areas with more {label} ask more per m²: from an area in the lowest quartile ({low}) to one in the highest ({high}), rent per m² rises {pct} % (95 % interval: {pctLow} % to {pctHigh} %).',
     inconclusive:
       'With {label} there is no clear difference in rent per m²: the interval includes both rises and falls.',
     rho: 'Rank correlation {rho} (95 %: {low} to {high}) · {zones} areas',
@@ -125,9 +125,9 @@ export const rentalZoneImpactMessages = {
     choose: 'Dado do bairro',
     yAxis: 'Aluguel por m² (UYU, mediana)',
     lower:
-      'Bairros com mais {label} pedem menos por m²: de um bairro do quartil com menos ({low}) a um do quartil com mais ({high}), o aluguel por m² cai {pct} % (entre {pctLow} % e {pctHigh} %).',
+      'Bairros com mais {label} pedem menos por m²: de um bairro do quartil com menos ({low}) a um do quartil com mais ({high}), o aluguel por m² cai {pct} % (intervalo de 95 %: {pctLow} % a {pctHigh} %).',
     higher:
-      'Bairros com mais {label} pedem mais por m²: de um bairro do quartil com menos ({low}) a um do quartil com mais ({high}), o aluguel por m² sobe {pct} % (entre {pctLow} % e {pctHigh} %).',
+      'Bairros com mais {label} pedem mais por m²: de um bairro do quartil com menos ({low}) a um do quartil com mais ({high}), o aluguel por m² sobe {pct} % (intervalo de 95 %: {pctLow} % a {pctHigh} %).',
     inconclusive:
       'Com {label} não aparece uma diferença clara no aluguel por m²: o intervalo inclui altas e baixas.',
     rho: 'Correlação de postos {rho} (95 %: {low} a {high}) · {zones} bairros',
