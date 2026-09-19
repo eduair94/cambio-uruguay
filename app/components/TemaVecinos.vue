@@ -20,7 +20,7 @@
       </h2>
 
       <ul v-if="grupo.links.length" class="tema-vecinos__list">
-        <li v-for="link in grupo.links" :key="link.to">
+        <li v-for="link in grupo.links.slice(0, VISIBLE)" :key="link.to">
           <NuxtLink
             :to="localePath(link.to)"
             class="tema-vecinos__link"
@@ -30,6 +30,25 @@
           </NuxtLink>
         </li>
       </ul>
+      <!-- El resto del tema va plegado: en el HTML (lo lee un buscador y el vínculo sigue siendo
+           recíproco), pero sin ocupar dos pantallas en un celular — con todas abiertas, una página
+           en dos temas medía 1.629 px a 390 de ancho. -->
+      <details v-if="grupo.links.length > VISIBLE" class="tema-vecinos__more">
+        <summary class="tema-vecinos__summary">
+          {{ t('temaVecinos.verMas', { n: grupo.links.length - VISIBLE }) }}
+        </summary>
+        <ul class="tema-vecinos__list">
+          <li v-for="link in grupo.links.slice(VISIBLE)" :key="link.to">
+            <NuxtLink
+              :to="localePath(link.to)"
+              class="tema-vecinos__link"
+              @click="trackClick(link.to)"
+            >
+              {{ link.labelKey ? t(link.labelKey) : link.label }}
+            </NuxtLink>
+          </li>
+        </ul>
+      </details>
 
       <p v-if="grupo.terms.length" class="tema-vecinos__terms">
         <span class="tema-vecinos__terms-label">{{ t('temaVecinos.terminos') }}</span>
@@ -64,6 +83,9 @@
 // buscador. No repite lo que ya mostró el bloque de directorios.
 import { directorioAnalisisParaRuta } from '~/utils/directorioAnalisis'
 import { temaVecinosParaRuta } from '~/utils/temaVecinos'
+
+/** Páginas visibles por tema; las demás quedan en un desplegable (las de datos van primero). */
+const VISIBLE = 6
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -130,6 +152,25 @@ function trackClick(destination: string) {
 .tema-vecinos__all:focus-visible {
   outline: 2px solid rgb(var(--v-theme-link));
   outline-offset: 2px;
+}
+.tema-vecinos__more {
+  margin-top: 8px;
+}
+.tema-vecinos__summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: rgb(var(--v-theme-link));
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tema-vecinos__summary:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 2px;
+}
+.tema-vecinos__more[open] .tema-vecinos__summary {
+  margin-bottom: 8px;
 }
 .tema-vecinos__terms {
   margin: 0.875rem 0 0 !important;

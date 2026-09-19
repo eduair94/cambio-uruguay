@@ -1489,7 +1489,8 @@
     "aria": "More on this topic",
     "titulo": "More on: {tema}",
     "terminos": "Terms:",
-    "verTema": "Everything on: {tema}"
+    "verTema": "Everything on: {tema}",
+    "verMas": "See {n} more pages on this topic"
   },
   "directorioAnalisis": {
     "tituloDirectorio": "Analysis and statistics from this directory",

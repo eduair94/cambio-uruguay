@@ -1500,7 +1500,8 @@
     "aria": "Más sobre este tema",
     "titulo": "Más sobre {tema}",
     "terminos": "Términos:",
-    "verTema": "Todo sobre {tema}"
+    "verTema": "Todo sobre {tema}",
+    "verMas": "Ver {n} páginas más del tema"
   },
   "directorioAnalisis": {
     "tituloDirectorio": "Análisis y estadísticas de este directorio",

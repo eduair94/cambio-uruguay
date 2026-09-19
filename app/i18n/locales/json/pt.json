@@ -1482,7 +1482,8 @@
     "aria": "Mais sobre este tema",
     "titulo": "Mais sobre: {tema}",
     "terminos": "Termos:",
-    "verTema": "Tudo sobre: {tema}"
+    "verTema": "Tudo sobre: {tema}",
+    "verMas": "Ver mais {n} páginas do tema"
   },
   "directorioAnalisis": {
     "tituloDirectorio": "Análises e estatísticas deste diretório",
