@@ -81,15 +81,32 @@ const DATA_ROUTES: ReadonlySet<string> = new Set(
   ])
 )
 
-/** Los temas de los que `route` es parte: recurso, guía o término. */
+/** Los directorios de cuyos datos sale `route` (como directorio, página `tambien` o análisis). */
+function directoriosDe(route: string): string[] {
+  return DIRECTORIOS.filter(
+    entry =>
+      entry.to === route ||
+      (entry.tambien ?? []).some(link => link.to === route) ||
+      (entry.analisis ?? []).includes(route)
+  ).map(entry => entry.to)
+}
+
+/**
+ * Los temas de los que `route` es parte: recurso, guía o término. Primero el tema donde está el
+ * directorio del que salen sus datos: la evolución del alquiler es de "Alquilar" antes que de
+ * "Economía y mercado", aunque "Economía" venga antes en `guideHubs.ts`.
+ */
 export function temasDeRuta(route: string): TemaIndexHub[] {
   const clean = normalizeRelatedPath(route)
+  const sources = directoriosDe(clean)
+  const own = (hub: TemaIndexHub) =>
+    Number(hub.resources.some(resource => sources.includes(resource.to)))
   return TEMA_HUBS.filter(
     hub =>
       hub.resources.some(resource => resource.to === clean) ||
       hub.guides.some(slug => `/guias/${slug}` === clean) ||
       hub.terms.some(term => `/glosario/${term.slug}` === clean)
-  )
+  ).sort((a, b) => own(b) - own(a))
 }
 
 /**

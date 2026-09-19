@@ -67,6 +67,15 @@ describe('"Más sobre este tema"', () => {
     expect(grupo?.links.map(link => link.to)).toContain('/mercado-de-autos-usados-uruguay')
   })
 
+  it('primero el tema del propio mercado, después "economía y mercado"', () => {
+    expect(
+      temaVecinosParaRuta('/evolucion-precio-alquileres-uruguay').map(g => g.hub.slug)
+    ).toEqual(['alquiler-y-vivienda-uruguay', 'economia-y-mercado-uruguay'])
+    expect(
+      temaVecinosParaRuta('/evolucion-precio-autos-usados-uruguay').map(g => g.hub.slug)[0]
+    ).toBe('comprar-y-mantener-auto-uruguay')
+  })
+
   it('las páginas de datos van primero dentro del tema', () => {
     const [grupo] = temaVecinosParaRuta('/alquilar-en-uruguay')
     expect(grupo?.links[0]?.to).toBe('/alquileres-uruguay')
