@@ -35,7 +35,7 @@ const now = new Date("2026-09-19T15:00:00Z");
 describe("decodeEcseBody", () => {
   it("unwraps the doubly encoded array ECSE sends to JSON clients", () => {
     expect(decodeEcseBody(JSON.stringify(JSON.stringify([{ a: 1 }])))).toEqual([{ a: 1 }]);
-    expect(decodeEcseBody("FEFF[1]")).toEqual([1]);
+    expect(decodeEcseBody(String.fromCharCode(0xfeff) + "[1]")).toEqual([1]);
   });
 });
 
