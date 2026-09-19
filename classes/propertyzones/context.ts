@@ -1,6 +1,8 @@
 import type { PropertyZoneGeometry, PropertyZoneSources } from "./sources/types";
 import type { ServiceMeta, ServicePoint } from "../propertyservices/types";
 import { SERVICE_CATEGORIES } from "../propertyservices/types";
+import type { ZoneUtilityContext } from "./utilities";
+import type { ZoneAlias } from "./assign";
 
 export interface ZoneServiceContext {
   dataAsOf: string;
@@ -15,6 +17,10 @@ export interface PropertyZoneContextSnapshot {
   geometry: PropertyZoneSources["geometry"];
   crime: PropertyZoneSources["crime"] | null;
   services: ZoneServiceContext | null;
+  /** Power, water and complaint layers with their levels; absent on snapshots before 2026-09-19. */
+  utilities?: ZoneUtilityContext | null;
+  /** Measured advertised-name aliases ("montevideo|parque batlle" → "mvd:10"). */
+  aliases?: Record<string, ZoneAlias>;
 }
 
 function inRing(point: readonly number[], ring: number[][]): boolean {

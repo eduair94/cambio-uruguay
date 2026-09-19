@@ -8,6 +8,11 @@ const fake = vi.hoisted(() => ({
   loadSources: vi.fn(),
   geometry: vi.fn(),
   project: vi.fn(),
+  assign: vi.fn(),
+  utilities: vi.fn(),
+  impact: vi.fn(),
+  publishImpact: vi.fn(),
+  publishClaims: vi.fn(),
   realProject: null as
     | null
     | typeof import("../../classes/propertyzones/project").projectZoneObservations,
@@ -20,6 +25,13 @@ vi.mock("../../classes/propertyzones/store", async (original) => ({
   readZoneSnapshot: fake.readSnapshot,
   publishZoneMarket: fake.publishMarket,
   publishZoneContext: fake.publishContext,
+  publishZoneImpact: fake.publishImpact,
+  publishClaimsCache: fake.publishClaims,
+}));
+vi.mock("../../classes/propertyzones/services", () => ({
+  assignListingZones: fake.assign,
+  buildUtilityContext: fake.utilities,
+  buildZoneImpact: fake.impact,
 }));
 vi.mock("../../classes/propertyzones/sources", () => ({
   loadOfficialPropertyZoneGeometry: fake.geometry,
@@ -108,12 +120,15 @@ const previousServices = {
   snapshotId: "old-services",
   countsByOfficialCode: {},
 };
+const previousUtilities = { version: 1, generatedAt: "2026-09-02T12:00:00Z", power: null, water: null, claims: null, levels: { thresholds: {}, byZone: {} } };
+const utilitiesNow = { ...previousUtilities, generatedAt: stamp };
 const previous = {
   version: 1,
   generatedAt: "2026-09-02T12:00:00Z",
   geometry,
   crime: previousCrime,
   services: previousServices,
+  utilities: previousUtilities,
 };
 
 let currentRows: Iterable<any>;
@@ -186,6 +201,12 @@ beforeEach(() => {
     },
   });
   fake.project.mockReset().mockImplementation(fake.realProject!);
+  fake.assign.mockReset().mockResolvedValue({ zoneOf: new Map([["property-1", "mvd:8"]]), written: 3, assigned: 4, total: 5,
+    byEvidence: { coordinate: 4 }, aliases: { "montevideo|parque batlle": { zone: "mvd:10", n: 12, share: 0.9 } } });
+  fake.utilities.mockReset().mockResolvedValue({ utilities: utilitiesNow, claims: { periodTo: "2026-08-31" }, customers: { "mvd:8": 47000 }, errors: [] });
+  fake.impact.mockReset().mockReturnValue({ version: 1, generatedAt: stamp, zones: [], attributes: [], joint: null });
+  fake.publishImpact.mockReset().mockResolvedValue(undefined);
+  fake.publishClaims.mockReset().mockResolvedValue(undefined);
 });
 afterEach(() => {
   vi.restoreAllMocks();
@@ -357,5 +378,47 @@ describe("independent offline layer refresh", () => {
     const result = await refreshPropertyZones({ dryRun: true });
     expect(result.errors).toHaveLength(3);
     expect(JSON.stringify(result.errors)).not.toContain("PRIVATE_");
+  });
+
+  it("adds the service layers, the aliases and the stored price analysis", async () => {
+    const result = await refreshPropertyZones();
+    expect(result.errors).toEqual([]);
+    expect(result.context?.utilities).toBe(utilitiesNow);
+    expect(result.context?.aliases).toEqual({ "montevideo|parque batlle": { zone: "mvd:10", n: 12, share: 0.9 } });
+    expect(result.assignment).toEqual({ written: 3, assigned: 4, total: 5, byEvidence: { coordinate: 4 }, aliases: 1 });
+    expect(fake.publishClaims).toHaveBeenCalledWith({ periodTo: "2026-08-31" });
+    expect(fake.impact).toHaveBeenCalledWith(expect.objectContaining({ usdUyu: 40, customers: { "mvd:8": 47000 } }));
+    expect(fake.publishImpact).toHaveBeenCalledOnce();
+    expect(fake.assign).toHaveBeenCalledWith(expect.objectContaining({ dryRun: undefined }));
+  });
+
+  it("keeps the previous service layers when they cannot be rebuilt, and still publishes crime", async () => {
+    fake.utilities.mockRejectedValue(new Error("PRIVATE_LEDGER"));
+    const result = await refreshPropertyZones();
+    expect(result.context?.utilities).toEqual(previousUtilities);
+    expect(result.context?.crime?.source.fetchedAt).toBe(stamp);
+    expect(result.errors).toEqual(["utilities: layers could not be built; previous layers retained"]);
+    expect(fake.publishContext).toHaveBeenCalledOnce();
+  });
+
+  it("skips the price analysis without a fresh market and never publishes it in a dry run", async () => {
+    cursorError = new Error("capture unavailable");
+    await refreshPropertyZones();
+    expect(fake.publishImpact).not.toHaveBeenCalled();
+    cursorError = null;
+    fake.publishClaims.mockClear();
+    await refreshPropertyZones({ dryRun: true });
+    expect(fake.publishImpact).not.toHaveBeenCalled();
+    expect(fake.publishClaims).not.toHaveBeenCalled();
+    expect(fake.assign).toHaveBeenLastCalledWith(expect.objectContaining({ dryRun: true }));
+  });
+
+  it("assign-only touches listings and nothing else", async () => {
+    const result = await refreshPropertyZones({ assignOnly: true });
+    expect(result).toMatchObject({ market: null, context: null, errors: [], assignment: { written: 3 } });
+    expect(rentalFind).not.toHaveBeenCalled();
+    expect(fake.readSnapshot).not.toHaveBeenCalled();
+    expect(fake.publishContext).not.toHaveBeenCalled();
+    expect(fake.utilities).not.toHaveBeenCalled();
   });
 });

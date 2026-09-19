@@ -400,8 +400,21 @@ module.exports = {
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync_property_zones.js",
-      node_args: "--max-old-space-size=512",
+      node_args: "--max-old-space-size=768",
       cron_restart: "53 6 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Barrio oficial (officialZone) de las viviendas que llegaron en la hora, para el filtro de
+      // servicios del directorio. Minuto 57: despues de currency-rentals-hourly (:47). Cede ante la
+      // corrida diaria, que asigna todo. Ver docs/app/PROPERTY_ZONE_SERVICES.md.
+      name: "currency-property-zones-hourly",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_property_zones.js",
+      args: "--assign-only",
+      node_args: "--max-old-space-size=384",
+      cron_restart: "57 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {

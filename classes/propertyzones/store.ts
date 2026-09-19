@@ -3,6 +3,8 @@ import { appConnection } from "../appdb";
 import type { PropertyZoneSources } from "./sources/types";
 import type { PropertyZoneContextSnapshot } from "./context";
 import type { RentalZoneMarketBucket } from "./market";
+import type { PriceImpact } from "./impact";
+import type { ClaimsSnapshot } from "../utilities/claims/source";
 
 export const PROPERTY_ZONE_COLLECTION = "propertyzonesnapshots";
 export interface PropertyZoneMarketSnapshot {
@@ -31,7 +33,7 @@ export async function withZoneRefreshLease<T>(run: () => Promise<T>): Promise<T>
   try { return await run(); }
   finally { await collection.deleteOne({ _id: "refresh-lock" as any, owner }); }
 }
-export async function readZoneSnapshot<T>(id: "market" | "context" | "source-cache"): Promise<T | null> {
+export async function readZoneSnapshot<T>(id: "market" | "context" | "source-cache" | "impact" | "claims-cache"): Promise<T | null> {
   return await zoneCollection().findOne({ _id: id as any }, { projection: { _id: 0 }, maxTimeMS: 5000 }) as T | null;
 }
 function bounded(snapshot: unknown): void {
@@ -63,4 +65,15 @@ export async function publishZoneContext(snapshot: PropertyZoneContextSnapshot, 
     bounded(sources);
     await zoneCollection().replaceOne({ _id: "source-cache" as any }, { _id: "source-cache" as any, ...sources }, { upsert: true });
   }
+}
+/** The stored price analysis. Replaced whole; never mixed with the public context document. */
+export async function publishZoneImpact(snapshot: PriceImpact): Promise<void> {
+  if (snapshot.version !== 1 || !Number.isFinite(Date.parse(snapshot.generatedAt))) throw new Error("Invalid zone impact");
+  bounded(snapshot);
+  await zoneCollection().replaceOne({ _id: "impact" as any }, { _id: "impact" as any, ...snapshot }, { upsert: true });
+}
+/** The last SUR aggregate, reused while the archive does not change. */
+export async function publishClaimsCache(snapshot: ClaimsSnapshot): Promise<void> {
+  bounded(snapshot);
+  await zoneCollection().replaceOne({ _id: "claims-cache" as any }, { _id: "claims-cache" as any, ...snapshot }, { upsert: true });
 }

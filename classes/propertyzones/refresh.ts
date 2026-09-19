@@ -6,7 +6,9 @@ import { projectZoneObservations, ZONE_RENTAL_PROJECTION } from "./project";
 import { buildZoneServiceContext, type PropertyZoneContextSnapshot } from "./context";
 import { loadOfficialPropertyZoneGeometry, loadPropertyZoneSources } from "./sources";
 import type { PropertyZoneSources } from "./sources/types";
-import { readZoneSnapshot, publishZoneMarket, publishZoneContext, zoneMarketProblem, type PropertyZoneMarketSnapshot } from "./store";
+import { readZoneSnapshot, publishZoneMarket, publishZoneContext, publishZoneImpact, publishClaimsCache, zoneMarketProblem, type PropertyZoneMarketSnapshot } from "./store";
+import { assignListingZones, buildUtilityContext, buildZoneImpact } from "./services";
+import type { ClaimsSnapshot } from "../utilities/claims/source";
 
 const MAX_ROWS = 100_000;
 const MAX_OBSERVATIONS = 200_000;
@@ -14,6 +16,11 @@ const MAX_PROJECTED_BYTES = 128 * 1024 * 1024;
 
 /** A complete bounded read, not an arbitrary sample of the catalog's first rows. */
 export async function captureZoneMarket(now = new Date()): Promise<PropertyZoneMarketSnapshot> {
+  return (await captureZoneMarketWithObservations(now)).snapshot;
+}
+
+/** The same capture, keeping the raw observations for the neighbourhood price analysis. */
+export async function captureZoneMarketWithObservations(now = new Date()): Promise<{ snapshot: PropertyZoneMarketSnapshot; observations: RentalZoneMarketObservation[] }> {
   const connection = appConnection();
   const meta = await connection.collection("rentalmetas").findOne({ key: "uy-rentals" },
     { projection: { _id: 0, generatedAt: 1, usdUyu: 1 }, maxTimeMS: 5000 });
@@ -41,7 +48,7 @@ export async function captureZoneMarket(now = new Date()): Promise<PropertyZoneM
     rentalDataAsOf: new Date(generated).toISOString(), usdUyu: meta!.usdUyu, scannedRows, ...aggregate };
   const problem = zoneMarketProblem(snapshot, await readZoneSnapshot<PropertyZoneMarketSnapshot>("market"));
   if (problem) throw new Error(problem);
-  return snapshot;
+  return { snapshot, observations };
 }
 
 async function captureServices(geometry: PropertyZoneSources["geometry"]): Promise<PropertyZoneContextSnapshot["services"]> {
@@ -55,19 +62,30 @@ async function captureServices(geometry: PropertyZoneSources["geometry"]): Promi
 }
 
 /** Independent layers preserve their own timestamps when another source fails. */
-export async function refreshPropertyZones(options: { dryRun?: boolean; forceSources?: boolean } = {}): Promise<{
-  market: PropertyZoneMarketSnapshot | null; context: PropertyZoneContextSnapshot; errors: string[];
+export async function refreshPropertyZones(options: { dryRun?: boolean; forceSources?: boolean; assignOnly?: boolean } = {}): Promise<{
+  market: PropertyZoneMarketSnapshot | null; context: PropertyZoneContextSnapshot | null; errors: string[];
+  assignment: { written: number; assigned: number; total: number; byEvidence: Record<string, number>; aliases: number } | null;
 }> {
   await appConnection().asPromise();
   const errors: string[] = [];
+  const now = new Date();
+  const geometry = loadOfficialPropertyZoneGeometry();
+  let assignment: Awaited<ReturnType<typeof assignListingZones>> | null = null;
+  const summary = () => assignment && { written: assignment.written, assigned: assignment.assigned, total: assignment.total,
+    byEvidence: assignment.byEvidence, aliases: Object.keys(assignment.aliases).length };
+  if (options.assignOnly) {
+    try { assignment = await assignListingZones({ ine: geometry.zones, now, dryRun: options.dryRun }); }
+    catch { errors.push("assignment: listing locations unavailable"); }
+    return { market: null, context: null, errors, assignment: summary() };
+  }
   let market: PropertyZoneMarketSnapshot | null = null;
+  let observations: RentalZoneMarketObservation[] = [];
   try {
-    market = await captureZoneMarket();
+    ({ snapshot: market, observations } = await captureZoneMarketWithObservations(now));
     if (!options.dryRun) await publishZoneMarket(market);
   } catch { market = null; errors.push("market: capture or publication failed; previous snapshot retained"); }
   const previous = await readZoneSnapshot<PropertyZoneContextSnapshot>("context");
   const cachedSources = await readZoneSnapshot<PropertyZoneSources>("source-cache");
-  const geometry = loadOfficialPropertyZoneGeometry();
   let sources: PropertyZoneSources | undefined;
   let crime = previous?.crime || null;
   // Only reuse counts when their polygon version agrees with this build's boundaries.
@@ -79,7 +97,25 @@ export async function refreshPropertyZones(options: { dryRun?: boolean; forceSou
   } catch { errors.push("crime: official source unavailable or invalid; previous period retained when compatible"); }
   try { services = await captureServices(geometry); }
   catch { errors.push("services: snapshot unavailable or incomplete; previous snapshot retained when compatible"); }
-  const context: PropertyZoneContextSnapshot = { version: 1, generatedAt: new Date().toISOString(), geometry, crime, services };
+  try { assignment = await assignListingZones({ ine: geometry.zones, now, dryRun: options.dryRun }); }
+  catch { errors.push("assignment: listing locations unavailable; previous assignments retained"); }
+  let utilities = previous?.utilities ?? null;
+  let customers: Record<string, number> = {};
+  try {
+    const built = await buildUtilityContext({ previous: utilities, claimsCache: await readZoneSnapshot<ClaimsSnapshot>("claims-cache"),
+      ine: geometry.zones, now, forceSources: options.forceSources });
+    utilities = built.utilities; customers = built.customers; errors.push(...built.errors);
+    if (!options.dryRun && built.claims) await publishClaimsCache(built.claims);
+  } catch { errors.push("utilities: layers could not be built; previous layers retained"); }
+  const context: PropertyZoneContextSnapshot = { version: 1, generatedAt: new Date().toISOString(), geometry, crime, services,
+    utilities, aliases: assignment?.aliases ?? previous?.aliases ?? {} };
   if (!options.dryRun) await publishZoneContext(context, sources);
-  return { market, context, errors };
+  if (market && assignment && utilities) {
+    try {
+      const impact = buildZoneImpact({ observations, zoneOf: assignment.zoneOf, utilities, crime, customers, usdUyu: market.usdUyu, now,
+        rentalDataAsOf: market.rentalDataAsOf });
+      if (!options.dryRun) await publishZoneImpact(impact);
+    } catch { errors.push("impact: analysis failed; previous analysis retained"); }
+  }
+  return { market, context, errors, assignment: summary() };
 }
