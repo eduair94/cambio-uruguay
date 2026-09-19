@@ -4,6 +4,20 @@ export type PublicCarCurrency = "USD" | "UYU";
 export type PublicCarFuel = "nafta" | "diesel" | "electrico" | "hibrido" | "gnc";
 export type PublicCarTransmission = "manual" | "automatica";
 export type PublicCarSeller = "dealer" | "private";
+/**
+ * Km per litre. `basis` says where the figure comes from: "advert" = this advert states it; the rest
+ * are estimates from what OTHER sellers state, one figure per seller — same model and engine, same
+ * model, or (coarse) same fuel and displacement. `sellers` = how many sellers stand behind an estimate.
+ */
+export interface PublicCarFuelEconomy {
+  kmPerLiter: number;
+  city: number | null;
+  highway: number | null;
+  combined: number | null;
+  basis: "advert" | "model_engine" | "model" | "engine_class";
+  sellers: number | null;
+}
+
 export type PublicCarFlag = "damaged" | "financing" | "foreign_plate" | "paperwork" | "price_mismatch" | "recovered";
 export type PublicCarTier = "strict" | "exploratory";
 export type PublicCarSource =
@@ -40,6 +54,7 @@ export interface PublicCarListing {
   currencyInferred: boolean;
   transmission: PublicCarTransmission | null;
   fuel: PublicCarFuel | null;
+  fuelEconomy: PublicCarFuelEconomy | null;
   engine: string | null;
   trim: string | null;
   department: string | null;

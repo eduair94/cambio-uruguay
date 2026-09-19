@@ -6,6 +6,7 @@ import { analyzeCars } from "./classes/autos/analyze";
 import { buildCarDictionary } from "./classes/autos/catalog/dictionary";
 import { guideKey, type CarGuideEntry } from "./classes/autos/catalog/guide";
 import { attachReferences, dedupeAcrossSources, referenceMedians, sourceCoverage } from "./classes/autos/dedupe";
+import { attachFuelEconomy } from "./classes/autos/fuelEconomy";
 import { fetchCarDetails } from "./classes/autos/detail";
 import { buildTrimIndex, mineTrims, type TrimCorpusRow } from "./classes/autos/catalog/trims";
 import { carKey, enrichCarListing } from "./classes/autos/enrich";
@@ -185,8 +186,10 @@ async function main(): Promise<void> {
 
   // 4. Analysis over every source, one row per car.
   stored = await loadDocs();
+  // Fuel economy last: an advert that states none takes what sellers of the same model state, so it
+  // needs the whole catalogue (classes/autos/fuelEconomy.ts).
   const enrichAll = (docs: readonly StoredCar[], extra: ReadonlyMap<string, CarDetail>): CarListing[] =>
-    attachReferences(docs.map(doc => enrich(doc, extra.get(doc.key) ?? doc.detail)), guide);
+    attachFuelEconomy(attachReferences(docs.map(doc => enrich(doc, extra.get(doc.key) ?? doc.detail)), guide));
   let { kept: listings, duplicates } = dedupeAcrossSources(enrichAll(stored, new Map()));
   const details = new Map(listings.filter(listing => listing.detail).map(listing => [listing.key, listing.detail!] as [string, CarDetail]));
   let analysis = analyzeCars(listings, { now, details, trimIndexes });

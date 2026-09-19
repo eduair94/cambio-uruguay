@@ -42,6 +42,7 @@ export function publicCarListing(listing: CarListing, opportunity: PublicCarList
     currencyInferred: !!listing.currencyInferred,
     transmission: listing.transmission,
     fuel: listing.fuel,
+    fuelEconomy: listing.fuelEconomy ? { ...listing.fuelEconomy } : null,
     engine: listing.engine,
     trim: listing.trimLabel,
     department: listing.department,

@@ -1,5 +1,6 @@
 // Internal shapes of the used-car directory (/autos-usados-uruguay). Public wire shapes live in
 // ./publicTypes.ts; nothing here is served as-is.
+import type { CarFuelEconomy } from "./fuelEconomy";
 import type { CarPhotoVerdict } from "./llm/vision";
 export type CarCurrency = "USD" | "UYU";
 export type CarTransmission = "manual" | "automatica";
@@ -152,6 +153,8 @@ export interface CarListing extends RawCarListing {
    * price ("US$12990 Contado") and `price` holds that one. Null when the listed number is the price.
    */
   listedPrice?: number | null;
+  /** Km per litre: what the advert states, else what sellers of the same model state (./fuelEconomy.ts). */
+  fuelEconomy?: CarFuelEconomy | null;
   firstSeen: string;
   lastSeen: string;
   priceDrop: { from: number; currency: CarCurrency; since: string } | null;

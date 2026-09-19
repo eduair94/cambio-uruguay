@@ -207,6 +207,33 @@ la entrega sin decir el contado).
 
 Los casos reales están en `tests/autos/cashPrice.test.ts`.
 
+## Rendimiento (km/l) (2026-09-19)
+
+Ningún portal da el consumo como campo: la tabla "Rendimiento y dimensiones" de Mercado Libre trae
+potencia, tanque y medidas, nunca el consumo. Vive en la descripción, sobre todo en plantillas de
+automotora ("Consumo medio en ruta: 19 km/l. Consumo medio en ciudad: 17 km/l.") y en una docena de
+formas de particulares ("16km Por litro", "En ciudad 11km x lt / En Ruta 14km x lt", "6,5 l/100 km").
+`classes/autos/fuelEconomy.ts`:
+
+- **`readFuelEconomy`** separa ciudad / ruta / combinado según la palabra que precede a cada cifra, y
+  la cifra única para comparar es el combinado, si no el promedio de ciudad y ruta, si no la que haya.
+  Descarta `km/h`, lo que queda fuera de 5–35 km/l y un número pegado a una letra (un enlace
+  `…/a7w3w7kl` se leía como 7 km/l). Una plantilla con la ruta por debajo de la ciudad y valores
+  chicos son litros cada 100 km mal rotulados (Yaris "ruta 5,09 / ciudad 7,9"): se convierten.
+- **`attachFuelEconomy`**: si el aviso no lo dice, la mediana de lo que declaran OTROS vendedores del
+  mismo modelo y motor; si no alcanza, del mismo modelo; si tampoco, del mismo combustible y cilindrada
+  (estimación gruesa, mínimo 10 vendedores). **Un valor por vendedor**: una automotora pega la misma
+  plantilla en todos sus autos de un modelo, y diez copias de una suposición siguen siendo una. Mínimo
+  3 vendedores. Agrupa por nombre de modelo (`marketSlug`), no por id: una web cuyo modelo no se
+  identificó contra ML lleva un id sintético. Sin combustible conocido se usa el modelo con cualquier
+  combustible; con combustible conocido nunca se mezclan. Los eléctricos no tienen km/l.
+- Medido el 2026-09-19 sobre 19.206 avisos: 1.287 lo declaran (7 %), 6.591 por modelo y motor, 4.307
+  por modelo, 3.059 por cilindrada, 3.962 sin dato (sobre todo pick-ups diésel, casi nadie lo escribe,
+  y eléctricos).
+- Público como `fuelEconomy` (catálogo y oportunidades) con `basis` y `sellers`: la página siempre dice
+  si es del aviso o una estimación y cuántos vendedores la sostienen. Filtro "rendimiento mínimo" y
+  orden "menor consumo" en el directorio (índice `fuelEconomy.kmPerLiter`) y en oportunidades.
+
 ## Precio con motivo: el riesgo declarado
 
 `/autos-chocados-y-con-deuda-uruguay`. Lo que el aviso DICE del auto —deuda o prenda, papeles que
