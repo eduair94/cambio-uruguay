@@ -214,6 +214,38 @@ upsert por documento serían 75.600 idas y vueltas.
 El **ledger es lo único irreconstruible**: la fila diaria se sobrescribe, así que
 un movimiento sólo existe si se escribió cuando pasó.
 
+### Filtros, orden y "cerca de mí" (2026-09-19)
+
+Las tablas del hub y de la ficha se filtran y ordenan; la lógica es pura y está en
+`app/utils/preciosTable.ts` (tests en `app/tests/unit/preciosTable.test.ts`).
+
+- **Rubro**: el SIPC no lo publica. Se deriva con reglas ordenadas sobre el grupo
+  (siete rubros); el test exige que ningún artículo del catálogo real caiga en
+  "otros". Si el catálogo suma un producto nuevo que ninguna regla cubre, ese
+  test lo dice.
+- **Por litro o kilo** usa la mediana. **Ahorro buscando** = (mediana − p10) /
+  mediana, con p10 y **no** con el mínimo: el mínimo crudo puede ser la góndola
+  quieta o sospechosa que las guardas no dejan encabezar.
+- Ordenar por precio por litro subía primero a artículos que declaran 13 locales
+  con la mitad de la mediana de los que declaran 300. Por eso los atajos de
+  comparación exigen 30+ locales, la celda dice "muestra chica" y el chip
+  "mejor precio por litro" sólo compara variantes con muestra amplia, la misma
+  unidad y sin empate.
+- `rankedStores`: el documento diario de la canasta guarda **todos** los locales
+  calificados por ratio (sin `cost`), además de los 25 de `cheapestStores`. Sin
+  eso, filtrar "los 25 más baratos del país" por Maldonado devolvía cero filas.
+  La ruta del app lo recorta a los 15 más baratos de cada departamento
+  (`app/server/utils/preciosHubProjection.ts`) para no mandar 356 filas en cada
+  HTML. Los documentos anteriores no lo traen y la página cae a `cheapestStores`
+  diciéndolo.
+- El resumen "más barato con estos filtros" de la ficha usa la regla del backend
+  (`verdict === 'ok'` y no `stale`), así que un filtro nunca corona a la góndola
+  que la ficha se niega a coronar.
+- El estado va a la query string con `history.replaceState`, no con
+  `router.replace`: el scrollBehavior de Nuxt salta al ancla o al tope en cada
+  cambio de query, o sea en cada tecla. La ubicación y el radio **nunca** van a
+  la URL.
+
 ## 8. Lo que NO tenemos medido (habilita los subproyectos B y C)
 
 Todo esto está hoy **hardcodeado** en `app/utils/costOfLiving.ts` como estimación
