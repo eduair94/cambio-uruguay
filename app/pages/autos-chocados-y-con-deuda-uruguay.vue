@@ -54,8 +54,8 @@
       </p>
     </section>
 
-    <VRow>
-      <VCol cols="12" md="3">
+    <CarsSidebarLayout>
+      <template #filters>
         <form class="risk-filters" @submit.prevent="apply">
           <VSelect
             v-model="draft.category"
@@ -84,8 +84,8 @@
           <VBtn type="submit" color="primary" block>Aplicar</VBtn>
           <VBtn variant="text" block @click="clear">Limpiar filtros</VBtn>
         </form>
-      </VCol>
-      <VCol cols="12" md="9">
+      </template>
+      <template #default>
         <VAlert v-if="error" type="info" variant="outlined" class="mb-4">
           El tablero se está calculando. Volvé en unos minutos.
         </VAlert>
@@ -128,8 +128,8 @@
             @update:model-value="page => navigate({ ...query, page })"
           />
         </template>
-      </VCol>
-    </VRow>
+      </template>
+    </CarsSidebarLayout>
 
     <section class="mt-10">
       <h2 class="text-h5 mb-3">Qué pedir antes de señar, según lo que diga el aviso</h2>

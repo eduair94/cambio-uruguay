@@ -40,8 +40,8 @@
       </div>
     </header>
 
-    <VRow>
-      <VCol cols="12" md="3">
+    <CarsSidebarLayout>
+      <template #filters>
         <VBtn
           class="d-md-none mb-3"
           variant="outlined"
@@ -55,8 +55,8 @@
         <div class="cars-filters" :class="{ 'cars-filters--open': filtersOpen }">
           <CarsFilters :query="query" :facets="data?.facets ?? emptyFacets" @apply="update" />
         </div>
-      </VCol>
-      <VCol cols="12" md="9">
+      </template>
+      <template #default>
         <div class="d-flex flex-wrap align-center justify-space-between ga-3 mb-4">
           <h2 class="text-h6 mb-0">
             {{ data ? `${data.total.toLocaleString('es-UY')} avisos` : 'Avisos' }}
@@ -92,8 +92,8 @@
           class="mt-6"
           @update:model-value="page => update({ ...query, page })"
         />
-      </VCol>
-    </VRow>
+      </template>
+    </CarsSidebarLayout>
 
     <section v-if="data?.coverage.models.length" class="mt-10">
       <h2 class="text-h5 mb-3">Precios por modelo</h2>
