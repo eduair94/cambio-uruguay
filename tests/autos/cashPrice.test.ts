@@ -130,6 +130,14 @@ describe("the cash price an advert states", () => {
     expect(readCashPrice("Entrega de U$S 15.000 y saldo hasta en 36 cuotas", 15000, "USD").listedIsDownPayment).toBe(true);
   });
 
+  it("a first instalment listed as the price is a down payment too", () => {
+    expect(readCashPrice("Precio contado U$S 14.900. Primera cuota de U$S 2.500 y 35 cuotas en pesos", 2500, "USD")).toEqual({
+      cash: 14900, listedIsDownPayment: true, ambiguous: false,
+    });
+    // The yearly car tax also has a "primera cuota", in pesos: never the price of a car listed in dollars.
+    expect(readCashPrice("pago total dentro del plazo de la primera cuota: $ 36.891", 12000, "USD").listedIsDownPayment).toBe(false);
+  });
+
   it("a down payment that is NOT the listed number says nothing about the listed price", () => {
     expect(readCashPrice("Entrega de U$S 5.000 y saldo en cuotas", 12990, "USD").listedIsDownPayment).toBe(false);
   });

@@ -40,8 +40,9 @@ const KEYWORD_FIRST = new RegExp(String.raw`\b(?:precio|valor)\s+(?:de\s+|al\s+|
 const CONTADO_FIRST = new RegExp(String.raw`\bcontado\s+${MARKED_AMOUNT}`, "g");
 const AMOUNT_FIRST = new RegExp(String.raw`${MARKED_AMOUNT}\s+(?:al\s+)?contado\b`, "g");
 
-// A down payment: "entrega de U$S 15.000", "retirá con 4.000 dólares", "U$S 5.500 y facilidades".
-const DOWN_KEYWORD = new RegExp(String.raw`\b(?:entrega\w*|anticipo|retira\w*|llevatelo|llevalo|lleva)\s+(?:(?:con|de|minima|inicial|solo|una)\s+)*${MARKED_AMOUNT}`, "g");
+// A down payment or first instalment listed as the price: "entrega de U$S 15.000", "retirá con 4.000
+// dólares", "primera cuota de U$S 2.500", "U$S 5.500 y facilidades".
+const DOWN_KEYWORD = new RegExp(String.raw`\b(?:entrega\w*|anticipo|retira\w*|llevatelo|llevalo|lleva|primera\s+cuota|cuota\s+inicial|pago\s+inicial)\s+(?:(?:con|de|minima|inicial|solo|una)\s+)*${MARKED_AMOUNT}`, "g");
 const DOWN_CONTINUATION = new RegExp(String.raw`${MARKED_AMOUNT}\s+(?:y|mas|\+)\s+(?:(?:el|un|en|hasta|\d{1,2})\s+)*(?:cuotas?|facilidades|saldo|financ\w*|credito)`, "g");
 
 // What is also paid "contado" in a car advert, and is not the car.
@@ -56,6 +57,9 @@ const PLAUSIBLE: Record<CarCurrency, { min: number; max: number }> = {
 // clearly under the listed one is another number (the price "con permuta", a monthly instalment).
 const MIN_RATIO = 0.8;
 const MAX_RATIO = 4;
+// Once the text itself says the listed number is a down payment or a first instalment, how far below
+// the price it sits says nothing: "Primera cuota de U$S 2.500" under "Precio contado U$S 14.900".
+const MAX_RATIO_OVER_DOWN_PAYMENT = 20;
 const SAME = 0.01;
 
 interface Reading {
@@ -114,6 +118,7 @@ export function readCashPrice(text: string, listed: number, currency: CarCurrenc
   const listedIsDownPayment = downs.some(reading => near(reading.amount, listed));
 
   const range = PLAUSIBLE[currency];
+  const maxRatio = listedIsDownPayment ? MAX_RATIO_OVER_DOWN_PAYMENT : MAX_RATIO;
   const candidates = [
     ...collect(flat, KEYWORD_FIRST, currency, always).map(reading => ({ ...reading, marked: true })),
     ...collect(flat, CONTADO_FIRST, currency, notTaxNorKm),
@@ -121,7 +126,7 @@ export function readCashPrice(text: string, listed: number, currency: CarCurrenc
   ].filter(reading =>
     inCurrency(reading) &&
     reading.amount >= range.min && reading.amount <= range.max &&
-    reading.amount / listed >= MIN_RATIO && reading.amount / listed <= MAX_RATIO &&
+    reading.amount / listed >= MIN_RATIO && reading.amount / listed <= maxRatio &&
     // A real cash price never equals a down payment stated in the same text ("16.500 contado 13.000
     // y cuotas" also reads "contado 13.000").
     !downs.some(down => near(down.amount, reading.amount)));
