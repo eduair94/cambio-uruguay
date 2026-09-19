@@ -384,6 +384,17 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Agua por barrio: los avisos de cortes programados de OSE (ose.com.uy/interrupciones) a
+      // waterinterruptions de la APP DB. Diario 08:29 UTC, las 30 paginas mas nuevas; el archivo
+      // completo se baja una vez con --backfill. Ver docs/app/PROPERTY_ZONE_SERVICES.md.
+      name: "currency-water-interruptions",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_water_interruptions.js",
+      cron_restart: "29 8 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Precomputed rental cohorts and official neighborhood context, independent of the API.
       name: "currency-property-zones",
       autorestart: false,

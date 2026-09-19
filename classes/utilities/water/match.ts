@@ -39,11 +39,18 @@ const STREET_CONTEXT = /(?:^|[^a-z0-9])(?:calles?|entre|desde|hasta|frentistas?|
 export function ineCodesInText(zoneText: string): string[] {
   const found = new Set<string>();
   for (const rawClause of zoneText.split(/[\n;|]+/)) {
-    let clause = ` ${foldText(rawClause)} `;
-    const street = STREET_CONTEXT.exec(clause);
-    if (street) clause = clause.slice(0, street.index + 1);
+    const full = ` ${foldText(rawClause)} `;
+    // "(Barrio Peñarol)" names a barrio even after the streets started.
+    let explicit = full;
+    for (const { code, name } of ENTRIES)
+      explicit = explicit.replace(new RegExp(`(^|[^a-z0-9#])barrios? (?:de |del )?${name}(?=[^a-z0-9]|$)`, "g"), (whole, before: string) => {
+        found.add(code);
+        return before + "#".repeat(whole.length - before.length);
+      });
+    const street = STREET_CONTEXT.exec(explicit);
+    let clause = street ? explicit.slice(0, street.index + 1) : explicit;
     for (const { code, name } of ENTRIES) {
-      const pattern = new RegExp(`(^|[^a-z0-9#])${name.replace(/ /g, " ")}(?=[^a-z0-9]|$)`, "g");
+      const pattern = new RegExp(`(^|[^a-z0-9#])${name}(?=[^a-z0-9]|$)`, "g");
       clause = clause.replace(pattern, (whole, before: string) => {
         found.add(code);
         return before + "#".repeat(whole.length - before.length);

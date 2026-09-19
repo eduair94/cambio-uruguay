@@ -56,6 +56,11 @@ describe("OSE barrio matcher", () => {
     expect(ineCodesInText("Barrios Colón y Lezica, en calles Cno. Aymará, Av. César Mayo Gutiérrez")).toEqual(["60"]);
   });
 
+  it("keeps an explicit 'barrio' mention even inside a street clause", () => {
+    expect(ineCodesInText("Camino Casavalle, Garzón, La Vía (Barrio Peñarol)")).toEqual(["34"]);
+    expect(ineCodesInText("Barrio Belvedere en calles Tomás Texera entre Garzón")).toEqual(["54"]);
+  });
+
   it("does not assign a name that spans two INE barrios", () => {
     expect(ineCodesInText("Barrio Colón")).toEqual([]);
   });
