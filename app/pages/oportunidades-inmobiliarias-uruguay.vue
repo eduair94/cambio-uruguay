@@ -709,6 +709,16 @@ useHead(() => ({
   width: 44px;
   height: 44px;
 }
+/* The budget header keeps share on the links' row. With "Comparar zonas" next to the directory
+   link the three items ran 7 px past a 320 px screen and the button wrapped onto a row of its own;
+   now the links give up width and wrap their own text instead. */
+.opportunities__intro-links--budget {
+  flex-wrap: nowrap;
+}
+.opportunities__intro-links--budget > a,
+.opportunities__intro-links--budget > .opportunities__related-options {
+  min-width: 0;
+}
 .opportunities__workspace {
   display: grid;
   grid-template-columns: 282px minmax(0, 1fr);
