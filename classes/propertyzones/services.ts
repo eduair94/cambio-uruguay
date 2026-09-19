@@ -8,7 +8,9 @@ import type { RentalZoneMarketObservation } from "./market";
 import { areaLocator } from "./geo";
 import { loadClaims, type ClaimsSnapshot } from "../utilities/claims/source";
 import { readPowerDays } from "../utilities/power/store";
-import { uteLocalities } from "../utilities/power/zones";
+import { publicZoneForEcse, uteLocalities } from "../utilities/power/zones";
+import { ECSE_URBAN_URL, parseEcseRows } from "../utilities/power/ecse";
+import { fetchEcseJson } from "../utilities/power/run";
 import { readWaterNotices } from "../utilities/water/store";
 import { montevideoDay } from "../utilities/power/ledger";
 import { WATER_WINDOW_MONTHS } from "./utilities";
@@ -97,6 +99,10 @@ export async function buildUtilityContext({ previous, claimsCache, ine, now, for
     power = buildPowerLayer(days);
     customers = customersByZone(days);
   } catch { errors.push("power: ledger unavailable; previous layer retained"); }
+  if (!Object.keys(customers).length) {
+    // The customer count is only a denominator: before the ledger has a day, read it from UTE directly.
+    try { customers = await liveCustomers(); } catch { /* claims rates stay unpublished */ }
+  }
   try {
     const since = new Date(now); since.setUTCMonth(since.getUTCMonth() - WATER_WINDOW_MONTHS - 1);
     const notices = await readWaterNotices(since.toISOString());
@@ -140,3 +146,14 @@ export function buildZoneImpact({ observations, zoneOf, utilities, crime, custom
   return buildPriceImpact({ observations, zoneOf: key => zoneOf.get(key) ?? null, names, attributes: values, usdUyu, now, rentalDataAsOf });
 }
 
+
+/** UTE customers per public zone from one live ECSE snapshot. */
+export async function liveCustomers(fetchJson = fetchEcseJson): Promise<Record<string, number>> {
+  const sample = parseEcseRows(await fetchJson(ECSE_URBAN_URL), "urban");
+  const result: Record<string, number> = {};
+  for (const zone of sample.zones) {
+    const target = publicZoneForEcse(zone.zone);
+    if (target) result[target] = (result[target] || 0) + zone.customers;
+  }
+  return result;
+}
