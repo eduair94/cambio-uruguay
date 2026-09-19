@@ -112,6 +112,21 @@ describe('rental subscription criteria', () => {
     ).toBe('aire,sauna')
   })
 
+  // The directory's alert button hands over `{ ...query }` — the NORMALIZED query, whose field
+  // names are not all URL names: amenities arrive as `amenities: []`, not `comodidades`. From
+  // 2026-09-13 (amenity filter) until 2026-09-18 every "Crear alerta" click in the directory died
+  // on `unsupported_filter`, because the tests above only ever fed URL-shaped input.
+  it('accepts the normalized directory query the alert button actually sends', () => {
+    for (const url of [
+      { department: 'Montevideo', neighborhoods: 'Cordón,Pocitos', monthlyMax: '30000' },
+      { department: 'Montevideo', bedrooms: '2', bedroomsExact: '1', comodidades: 'piscina' },
+    ]) {
+      expect(
+        normalizeRentalAlertFilters('rental-search', { ...normalizeRentalQuery(url) })
+      ).toEqual(normalizeRentalAlertFilters('rental-search', url))
+    }
+  })
+
   it.each([
     ['rental-search', { priceMax: { $gt: 1 } }],
     ['rental-search', { keys: 'known-house' }],

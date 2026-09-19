@@ -115,6 +115,8 @@ const searchKeys = new Set([
   'radio',
   'radioKm',
   'comodidades',
+  // The normalized query's name for `comodidades`; the directory's alert button sends that shape.
+  'amenities',
 ])
 const opportunityKeys = new Set([
   'availability',
@@ -135,6 +137,7 @@ const arrayKeys = new Set([
   'guarantees',
   'sedes',
   'comodidades',
+  'amenities',
 ])
 const searchBooleans = new Set([
   'bedroomsExact',
@@ -166,7 +169,12 @@ export function rentalAlertRecord(input: unknown): input is Record<string, unkno
 }
 
 function populated(value: unknown): boolean {
-  return value !== undefined && value !== null && value !== ''
+  return (
+    value !== undefined &&
+    value !== null &&
+    value !== '' &&
+    !(Array.isArray(value) && value.length === 0)
+  )
 }
 
 /** Reject unsupported criteria instead of turning a narrow subscription into a broad one. */
@@ -231,7 +239,8 @@ export function normalizeRentalAlertFilters(
     if (guarantees.some(v => !RENTAL_GUARANTEE_PUBLISHED.includes(v as never)))
       throw new RentalAlertValidationError('unsupported_filter')
     // An amenity the directory cannot filter would be dropped by normalisation: a wider alert.
-    const amenities = (Array.isArray(input.comodidades) ? input.comodidades : [input.comodidades])
+    const amenity = input.comodidades ?? input.amenities
+    const amenities = (Array.isArray(amenity) ? amenity : [amenity])
       .flatMap(v => String(v ?? '').split(','))
       .map(v => v.trim())
       .filter(Boolean)
