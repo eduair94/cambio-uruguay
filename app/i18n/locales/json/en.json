@@ -1492,6 +1492,9 @@
     "verTema": "Everything on: {tema}",
     "verMas": "See {n} more pages on this topic"
   },
+  "familiaNav": {
+    "aria": "Pages in this directory"
+  },
   "directorioAnalisis": {
     "tituloDirectorio": "Analysis and statistics from this directory",
     "leadDirectorio": "What we measure with this same data.",

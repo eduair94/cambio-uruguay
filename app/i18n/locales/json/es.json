@@ -1503,6 +1503,9 @@
     "verTema": "Todo sobre {tema}",
     "verMas": "Ver {n} páginas más del tema"
   },
+  "familiaNav": {
+    "aria": "Páginas de este directorio"
+  },
   "directorioAnalisis": {
     "tituloDirectorio": "Análisis y estadísticas de este directorio",
     "leadDirectorio": "Lo que medimos con estos mismos datos.",

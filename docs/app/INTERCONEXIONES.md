@@ -1,15 +1,33 @@
 # Interconexiones entre páginas
 
-Cómo se enlazan las páginas del sitio entre sí, además del menú. Hay cuatro capas, y cada una
+Cómo se enlazan las páginas del sitio entre sí, además del menú. Hay cinco capas, y cada una
 resuelve algo distinto; todas se dibujan desde el layout (`app/layouts/default.vue`), en este orden,
 así ninguna página tiene que pegarlas a mano:
 
 | capa | fuente de datos | qué enlaza |
 |---|---|---|
 | Menú, pie y buscador | `utils/siteNav.ts` | todo el sitio, sin relación entre páginas |
+| **Barra de la familia** (ARRIBA) | `utils/directorios.ts` → `utils/familiaNav.ts` → `components/FamiliaNav.vue` | el directorio, sus páginas y sus análisis, con la actual marcada |
 | Directorio ↔ análisis | `utils/directorios.ts` (`tambien`, `analisis`) → `components/DirectorioAnalisis.vue` | un directorio con los análisis de sus datos, y cada análisis con su directorio |
 | **Más sobre este tema** | `utils/guideHubs.ts` (`resources`, `guideSlugs`, `terms`) → `utils/temaIndex.json` → `components/TemaVecinos.vue` | cada página de un tema con el tema, las demás páginas del tema y sus términos del glosario |
 | Seguí leyendo | `utils/relatedPages.ts` (`CURATED` + puntaje IDF) → `components/RelatedPages.vue` | lo que queda: vecinos curados y calculados, sin repetir lo de los dos bloques de arriba |
+
+## Enlazado no es visible: por qué hay una barra arriba
+
+Después del bloque del tema, las cinco familias medidas quedaron enlazadas al 100 %, y aun así el
+usuario no veía la evolución del precio del alquiler desde el directorio de alquileres. Tenía razón:
+el enlace estaba, pero en el bloque del pie, a **11.341 px de una página de 15.868** (después de
+todos los avisos); desde el análisis, a 10.545 px de 15.074. Medido a 1280 px en toda la familia de
+autos, las hermanas aparecían a partir de 2.000–11.000 px, y en venta de viviendas la evolución a
+8.679 px. Un rastreo que cuenta enlaces no ve esto: hay que medir **dónde** están.
+
+La barra de la familia va arriba, antes de la página, y sale del registro de directorios (orden:
+directorio, sus páginas `tambien`, sus análisis). Un análisis que comparten varios directorios
+(CyberLunes sale de cinco) no es de ninguna familia, las rutas fuera del sitemap no entran, y una
+familia de una sola página no dibuja barra. En un celular la fila se desplaza de costado.
+
+Para medirlo de nuevo: posición vertical del primer enlace a cada hermana, en las páginas de la
+familia, a 1280 px; "arriba" es antes de ~1.400 px.
 
 ## Por qué existe "Más sobre este tema" (medido el 2026-09-19)
 

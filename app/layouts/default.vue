@@ -273,6 +273,9 @@
     <VMain id="main" tabindex="-1" :class="formatNameRoute()">
       <CookieConsent />
       <div class="container_custom">
+        <!-- La familia de la página (directorio, sus páginas y sus análisis), ARRIBA: el bloque del
+             pie no alcanzaba en páginas de 15.000 px. Sale de utils/directorios.ts. -->
+        <FamiliaNav />
         <slot />
         <!-- Lo que el layout agrega después de la página va en una columna propia: las rutas
              que liberan el tope global (directorios, mapas) lo liberan para su grilla, no para
