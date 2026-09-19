@@ -1,3 +1,4 @@
+import { loadRentalServiceZoneIds } from '../../utils/rentalZoneServices'
 import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
@@ -59,7 +60,10 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
     const excluded = availability.excludedAdvertIds(query.availability)
     const meta = await RentalMetaModel.findOne({ key: 'uy-rentals' }).select({ usdUyu: 1 }).lean()
     const usdUyu = Number(meta?.usdUyu) || 0
-    const { filter } = buildRentalFilter(query, STALE_DAYS, usdUyu)
+    const serviceZones = query.servicios?.length
+      ? await loadRentalServiceZoneIds(query.servicios)
+      : undefined
+    const { filter } = buildRentalFilter(query, STALE_DAYS, usdUyu, serviceZones)
 
     // `$type: 'number'` y no `$ne: null`: los documentos viejos traen la coordenada ausente, no
     // nula, y un `$ne: null` los cuenta como si la tuvieran.

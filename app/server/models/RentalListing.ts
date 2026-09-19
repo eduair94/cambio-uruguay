@@ -40,6 +40,8 @@ const RentalListingSchema = new Schema(
      */
     guarantees: { type: [String], default: [] },
     offers: { type: [Schema.Types.Mixed], default: [] },
+    /** Written by the backend zone job; the app only reads it. */
+    officialZone: { type: Schema.Types.Mixed, default: undefined },
     sources: { type: [String], default: [] },
     freshAt: { type: String, default: '' },
     firstSeen: { type: String, required: true },
@@ -53,6 +55,8 @@ RentalListingSchema.index({ freshAt: -1, key: 1 })
 RentalListingSchema.index({ lastSeen: -1, priceUyu: 1 })
 RentalListingSchema.index({ department: 1, neighborhood: 1, priceUyu: 1 })
 RentalListingSchema.index({ department: 1, propertyType: 1, bedrooms: 1, priceUyu: 1 })
+// Directory filter by neighbourhood services: `officialZone` is written by currency-property-zones.
+RentalListingSchema.index({ 'officialZone.zone': 1, lastSeen: -1 })
 
 export const RentalListingModel: Model<RentalProperty> =
   (mongoose.models.RentalListing as Model<RentalProperty>) ||

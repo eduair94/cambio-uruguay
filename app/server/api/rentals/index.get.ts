@@ -1,3 +1,4 @@
+import { loadRentalServiceZoneIds } from '../../utils/rentalZoneServices'
 import { publicRentalAdvertisers, rentalPublicPropertyProjection } from '../../utils/rentalDetail'
 import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
@@ -64,10 +65,14 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
     // y dos copias del mismo filtro terminan divergiendo — un mapa que muestra propiedades que la
     // lista no lista es la misma clase de contradicción que el sitio ya tuvo entre su meta
     // description y su propio FAQ.
+    const serviceZones = query.servicios?.length
+      ? await loadRentalServiceZoneIds(query.servicios)
+      : undefined
     const { filter, nonLocation, withoutNeighborhood } = buildRentalFilter(
       query,
       STALE_DAYS,
-      usdUyu
+      usdUyu,
+      serviceZones
     )
     const sort = rentalMongoSort(query.sort)
     const offerStages = rentalOfferStages(query, usdUyu)

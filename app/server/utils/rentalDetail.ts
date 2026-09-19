@@ -34,6 +34,7 @@ const propertyFields: Array<keyof RentalPublicProperty> = [
   'freshAt',
   'firstSeen',
   'lastSeen',
+  'officialZone',
 ]
 
 const offerFields: Array<keyof RentalOffer> = [

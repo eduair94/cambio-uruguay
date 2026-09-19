@@ -1,6 +1,6 @@
 import mongoose, { Schema, type Model } from 'mongoose'
 
-// Written by the separate backend job. This app only reads the market/context IDs.
+// Written by the separate backend job. This app only reads the market/context/impact IDs.
 // No TTL, automatic collection creation, timestamps or indexes are owned by the app.
 const PropertyZoneSnapshotSchema = new Schema(
   {
@@ -13,6 +13,14 @@ const PropertyZoneSnapshotSchema = new Schema(
     geometry: Schema.Types.Mixed,
     crime: Schema.Types.Mixed,
     services: Schema.Types.Mixed,
+    utilities: Schema.Types.Mixed,
+    aliases: Schema.Types.Mixed,
+    // `impact` document: the stored neighbourhood price analysis.
+    outcome: String,
+    minimumListings: Number,
+    zones: [Schema.Types.Mixed],
+    attributes: [Schema.Types.Mixed],
+    joint: Schema.Types.Mixed,
   },
   { versionKey: false, timestamps: false, autoCreate: false, autoIndex: false }
 )

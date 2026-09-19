@@ -9,6 +9,8 @@
 // and a bare `SOURCES` or `formatPrice` here would silently collide with another page's helper.
 
 import { MUTUALISTA_SEDES, type MutualistaSede } from './mutualistaSedes'
+import { parseRentalServiceAttributes } from './rentalZoneServices'
+import type { RentalServiceAttribute } from './rentalZoneTypes'
 import { normalizeRentalReferenceLabel, parseRentalReferencePoint } from './rentalDistance'
 import {
   normalizeRentalAmenities,
@@ -195,9 +197,19 @@ export const RENTAL_GUARANTEE_PUBLISHED: readonly RentalGuarantee[] = Object.fre
   'aseguradora',
 ])
 
+/** Official area of a property, written by the backend zone job (coordinate, name or measured alias). */
+export interface RentalOfficialZone {
+  zone: string
+  name: string
+  department: string
+  evidence: 'coordinate' | 'name' | 'alias'
+}
+
 export interface RentalProperty {
   /** Distinct accounts reporting the adverts currently displayed in this group. */
   availability?: RentalAvailabilitySummary
+  /** Absent until the zone job has seen the property; null = no official area could be established. */
+  officialZone?: RentalOfficialZone | null
   key: string
   title: string
   propertyType: RentalPropertyType
@@ -391,6 +403,11 @@ export interface RentalQuery {
   owner: boolean
   /** Stable source agency identifier, never a name-derived identity. */
   agency: string
+  /**
+   * Neighbourhood services: the property's official area must be in the third with the fewest
+   * problems for every attribute (see rentalZoneServices.ts). Optional for hand-built queries.
+   */
+  servicios?: RentalServiceAttribute[]
   /** Ids de OSM de las sedes elegidas como punto de referencia. Vacío = sin filtro de distancia. */
   sedes: number[]
   /** Radio en km alrededor de cada sede elegida. */
@@ -491,6 +508,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     withExpenses: enabled(input.gc ?? input.withExpenses),
     owner: enabled(input.dueno ?? input.owner),
     agency: agencyKey(scalar(input.agency)),
+    servicios: parseRentalServiceAttributes(input.servicios),
     sedes: parseSedes(input.sedes),
     radioKm: parseRadio(input.radio ?? input.radioKm),
     refLat: reference?.lat ?? null,
@@ -534,6 +552,7 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   if (query.withExpenses) params.gc = '1'
   if (query.owner) params.dueno = '1'
   if (query.agency) params.agency = query.agency
+  if (query.servicios?.length) params.servicios = query.servicios.join(',')
   if (query.sedes.length) params.sedes = query.sedes.join(',')
   if (query.radioKm !== RADIO_KM_DEFAULT) params.radio = String(query.radioKm)
   const reference = parseRentalReferencePoint(query)
@@ -830,7 +849,13 @@ function sedesPorId(ids: readonly number[]): MutualistaSede[] {
 export function buildRentalFilter(
   query: RentalQuery,
   staleDays: number,
-  usdUyu = 0
+  usdUyu = 0,
+  /**
+   * Official areas allowed by `query.servicios`, resolved by the caller from the zone snapshot.
+   * `undefined`: this caller does not apply the service filter (detail, alerts, landing pages).
+   * `null`: the snapshot cannot evaluate it, so nothing matches rather than the filter vanishing.
+   */
+  serviceZones?: readonly string[] | null
 ): {
   filter: Record<string, unknown>
   nonLocation: Record<string, unknown>
@@ -863,6 +888,8 @@ export function buildRentalFilter(
     }
   }
   if (query.multi) nonLocation['sources.1'] = { $exists: true }
+  if (query.servicios?.length && serviceZones !== undefined)
+    nonLocation['officialZone.zone'] = { $in: [...(serviceZones ?? [])] }
   // `true` o nada: ningún portal publica la negativa, así que no existe el filtro "no acepta".
   if (query.pets) nonLocation.petsAllowed = true
   if (query.parking) nonLocation.parkingSpaces = { $gte: 1 }

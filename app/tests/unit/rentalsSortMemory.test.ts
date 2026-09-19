@@ -50,6 +50,7 @@ async function capture(query: Record<string, string> = {}, total = 240) {
       },
     },
     '../../utils/db': { connectDb: async () => {} },
+    '../../utils/rentalZoneServices': { loadRentalServiceZoneIds: async () => [] },
     '../../utils/rentalCoverage': { getRentalCoverage: async () => [] },
     '../../utils/rentalDetail': { rentalPublicPropertyProjection },
     '../../utils/rentalAvailability': {
