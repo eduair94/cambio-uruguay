@@ -112,6 +112,9 @@ export interface MarketSibling {
 export interface MarketSeriesResponse {
   series: MarketSeriesDoc | null
   siblings: MarketSibling[]
+  /** Today's shape of the cohort's prices, and one from about a month earlier to compare. */
+  hist: MarketDatedHistogram | null
+  histThen: MarketDatedHistogram | null
 }
 
 export const MARKET_TYPE_LABELS: Record<MarketTypeBucket, string> = {
@@ -214,6 +217,104 @@ export function marketChart(points: readonly MarketSeriesPoint[]): {
     p25: points.map(point => point.p25),
     p75: points.map(point => point.p75),
   }
+}
+
+// ── Forma de los precios (histograma) ─────────────────────────────────────────
+// Espejo de classes/marketseries/histogram.ts: la forma REAL de los precios de una cohorte, no una
+// campana ajustada encima. Eje de p1 a p99 (lo de afuera en `below`/`above`), tramos logarítmicos
+// cuando p99 es 4 veces p1 o más.
+
+export const MARKET_HISTOGRAM_MINIMUM = 30
+
+export interface MarketHistogram {
+  n: number
+  log: boolean
+  edges: number[]
+  counts: number[]
+  below: number
+  above: number
+}
+export type MarketDatedHistogram = MarketHistogram & { d: string }
+
+const histScale = (hist: MarketHistogram, value: number): number =>
+  hist.log ? Math.log(value) : value
+
+/** Share of observations asking less than `price`, interpolated inside its bin. */
+export function marketHistogramCdf(hist: MarketHistogram, price: number): number {
+  const { edges, counts, n } = hist
+  if (price <= edges[0]!) return hist.below / n
+  if (price >= edges[edges.length - 1]!) return (n - hist.above) / n
+  let before = hist.below
+  for (let i = 0; i < counts.length; i++) {
+    const low = edges[i]!
+    const high = edges[i + 1]!
+    if (price < high) {
+      const fraction =
+        (histScale(hist, price) - histScale(hist, low)) /
+        (histScale(hist, high) - histScale(hist, low))
+      return (before + counts[i]! * fraction) / n
+    }
+    before += counts[i]!
+  }
+  return (n - hist.above) / n
+}
+
+export function marketPositionSentence(share: number): string {
+  if (share < 0.01) return 'Es más bajo que casi todos los avisos.'
+  if (share > 0.99) return 'Es más alto que casi todos los avisos.'
+  const pct = Math.round(share * 100)
+  return `Pide más que el ${pct} % de los avisos y menos que el ${100 - pct} %.`
+}
+
+export const marketHistogramShares = (hist: MarketHistogram): number[] =>
+  hist.counts.map(count => count / hist.n)
+
+/** Which bins touch the p25..p75 band (the page draws them darker). */
+export function marketHistogramInBand(
+  hist: MarketHistogram,
+  p25: number | null,
+  p75: number | null
+): boolean[] {
+  return hist.counts.map(
+    (_, i) => p25 !== null && p75 !== null && hist.edges[i]! < p75 && hist.edges[i + 1]! > p25
+  )
+}
+
+/** The bin a price falls in; -1 outside the drawn axis. The last bin includes its right edge. */
+export function marketHistogramBinOf(hist: MarketHistogram, price: number): number {
+  const { edges } = hist
+  if (!(price >= edges[0]!) || price > edges[edges.length - 1]!) return -1
+  const index = edges.findIndex((edge, i) => i > 0 && price < edge)
+  return index === -1 ? hist.counts.length - 1 : index - 1
+}
+
+/** An older shape redrawn on today's bins, as shares: its bins may not match today's. */
+export function marketHistogramShift(now: MarketHistogram, then: MarketHistogram): number[] {
+  return now.counts.map(
+    (_, i) => marketHistogramCdf(then, now.edges[i + 1]!) - marketHistogramCdf(then, now.edges[i]!)
+  )
+}
+
+/** Today's shape (only if the cohort has one today) and the newest one at least 28 days older. */
+export function marketPickHistograms(
+  hists: readonly MarketDatedHistogram[],
+  day: string
+): { hist: MarketDatedHistogram | null; histThen: MarketDatedHistogram | null } {
+  const hist = hists.find(entry => entry.d === day) ?? null
+  if (!hist) return { hist: null, histThen: null }
+  const cutoff = shiftDay(day, -28)
+  const older = hists.filter(entry => entry.d <= cutoff)
+  return { hist, histThen: older.length ? older[older.length - 1]! : null }
+}
+
+/** "$ 28 mil", "US$ 1,25 M": axis labels. ICU's compact form mixes "k" and "K" in es-UY. */
+export function marketMoneyShort(value: number, currency: MarketCurrency): string {
+  const prefix = currency === 'USD' ? 'US$ ' : '$ '
+  const format = (amount: number, digits: number) =>
+    amount.toLocaleString('es-UY', { maximumFractionDigits: digits })
+  if (value >= 1_000_000) return `${prefix}${format(value / 1_000_000, 2)} M`
+  if (value >= 1_000) return `${prefix}${format(value / 1_000, value < 10_000 ? 1 : 0)} mil`
+  return `${prefix}${format(value, 0)}`
 }
 
 const NOUN: Record<MarketVertical, string> = {

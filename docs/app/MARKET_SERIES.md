@@ -38,6 +38,30 @@ Reglas (constantes con paridad raíz/app en `app/tests/unit/marketSeries.test.ts
   es una seña), y sin ninguna bandera pública (choque, deuda, recupero, chapa extranjera...), igual que
   la página de cada modelo.
 
+## Cómo se reparten los precios (histograma, no campana)
+
+Cada cohorte con 30 unidades o más guarda también la **forma** de sus precios del día
+(`classes/marketseries/histogram.ts`): un histograma de los precios reales. No se ajusta una campana
+de Gauss: los precios pedidos no son simétricos (venta, todo el país: p25 US$ 139.800, mediana
+195.000, p75 346.000, el tramo de arriba mide 2,7 veces el de abajo) y una normal pondría el centro
+donde no está y probabilidad en precios negativos.
+
+- **Eje de p1 a p99**; lo de afuera se cuenta en `below`/`above` y la página lo dice. En esas colas
+  viven los errores de carga.
+- **Tramos logarítmicos** cuando p99 es 4 veces p1 o más (venta y alquiler a nivel país); si no,
+  lineales.
+- **Unas √n barras, entre 6 y 20**: 20 barras para los 71 Onix 2018 dibujaban ruido.
+- **Un tramo lineal es múltiplo del redondeo que usa la mayoría de los precios** (el más grueso que
+  todavía deja 3 barras). La gente pide números redondos: en Pocitos, 2 dormitorios, $45.000 tenía
+  127 avisos y $42.500 18; con tramos de $2.500 las barras serpenteaban por ese anclaje y no por el
+  mercado. Con tramos de $5.000 cada barra lleva los mismos redondos.
+- Se guardan las últimas **100 formas** por cohorte (`hists`). `GET /api/market-series/series`
+  devuelve la de hoy (`hist`, sólo si la cohorte tiene forma hoy) y la más nueva con 28 días o más
+  (`histThen`); la página la dibuja como línea punteada sobre las barras de hoy, redistribuida en los
+  tramos de hoy con su propia acumulada (los tramos de dos días no coinciden).
+- El campo **"Tu precio"** ubica un precio en la acumulada del histograma (interpolada dentro del
+  tramo; en escala log si los tramos lo son): "pide más que el 63 % de los avisos".
+
 ## De dónde lee
 
 Sólo los catálogos **públicos** de la APP DB, nunca una cosecha: `rentallistings` (con

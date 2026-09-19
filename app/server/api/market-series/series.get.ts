@@ -2,6 +2,8 @@ import {
   carModelOfKey,
   housingSiblingKeys,
   isMarketSeriesKey,
+  marketPickHistograms,
+  type MarketDatedHistogram,
   type MarketSeriesDoc,
   type MarketSeriesResponse,
   type MarketSibling,
@@ -26,7 +28,10 @@ export default defineEventHandler(async (event): Promise<MarketSeriesResponse> =
       ? { key: { $regex: `^autos\\|USD\\|m:${model}\\|y:` } }
       : { key: { $in: housingSiblingKeys(key) } }
     const [series, siblings] = await Promise.all([
-      MarketSeriesModel.findOne({ key }).select({ _id: 0, __v: 0 }).maxTimeMS(5_000).lean(),
+      // 40 shapes reach back past the 28 days the comparison needs; the rest never leaves Mongo.
+      MarketSeriesModel.findOne({ key }, { _id: 0, __v: 0, hists: { $slice: -40 } })
+        .maxTimeMS(5_000)
+        .lean(),
       MarketSeriesModel.find(siblingFilter)
         .select({ _id: 0, key: 1, dims: 1, latest: 1, updatedAt: 1 })
         .limit(200)
@@ -38,12 +43,17 @@ export default defineEventHandler(async (event): Promise<MarketSeriesResponse> =
       'cache-control',
       'public, max-age=600, s-maxage=600, stale-while-revalidate=86400'
     )
+    const { hists, ...doc } = (series ?? {}) as MarketSeriesDoc & { hists?: MarketDatedHistogram[] }
+    const shapes = series
+      ? marketPickHistograms(hists ?? [], doc.latest.d)
+      : { hist: null, histThen: null }
     return {
-      series: (series as unknown as MarketSeriesDoc | null) ?? null,
+      series: series ? (doc as MarketSeriesDoc) : null,
       siblings: siblings as unknown as MarketSibling[],
+      ...shapes,
     }
   } catch {
     setResponseHeader(event, 'cache-control', 'no-store')
-    return { series: null, siblings: [] }
+    return { series: null, siblings: [], hist: null, histThen: null }
   }
 })

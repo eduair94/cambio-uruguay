@@ -166,6 +166,70 @@
         </VCard>
       </div>
 
+      <!-- ── Cómo se reparten los precios ──────────────────────────────────── -->
+      <h3 class="text-subtitle-1 font-weight-bold mb-1">Cómo se reparten los precios</h3>
+      <template v-if="hist && histChart">
+        <p class="text-body-2 text-medium-emphasis mb-2">
+          Cada barra es un tramo de precio y su alto, qué parte de {{ unitWithArticle }} pide eso.
+          En azul oscuro, la mitad central.<template v-if="hist.log">
+            Los tramos se agrandan hacia la derecha (escala logarítmica) para que los pocos precios
+            muy altos no aplasten al resto.</template
+          >
+        </p>
+        <div class="hist-wrap mb-1" role="img" :aria-label="histChart.label">
+          <ClientOnly>
+            <ChartsBarChart v-if="laidOut" :chart-data="histChart.data" :options="histOptions" />
+            <template #fallback>
+              <VSkeletonLoader type="image" />
+            </template>
+          </ClientOnly>
+        </div>
+        <p v-if="histThen" class="text-caption text-medium-emphasis mb-1">
+          Línea punteada: cómo se repartían los precios el {{ marketDay(histThen.d) }}, en los
+          mismos tramos.
+        </p>
+        <p v-if="tailNote" class="text-caption text-medium-emphasis mb-3">{{ tailNote }}</p>
+        <div class="d-flex flex-wrap ga-3 align-center mb-3">
+          <VTextField
+            v-model="yourPrice"
+            inputmode="numeric"
+            :label="`Tu precio, en ${seriesCurrency === 'UYU' ? 'pesos' : 'dólares'}`"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+            clearable
+            class="price-input"
+          />
+          <p v-if="positionText" class="text-body-2 font-weight-medium mb-0" aria-live="polite">
+            {{ positionText }}
+          </p>
+        </div>
+        <VExpansionPanels variant="accordion" class="mb-6">
+          <VExpansionPanel>
+            <VExpansionPanelTitle>Ver los tramos en una tabla</VExpansionPanelTitle>
+            <VExpansionPanelText>
+              <VTable class="cu-mobile-cards" density="compact">
+                <thead>
+                  <tr>
+                    <th scope="col">Tramo</th>
+                    <th scope="col" class="text-right">{{ unitCapitalized }}</th>
+                    <th scope="col" class="text-right">Del total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in histRows" :key="row.key">
+                    <td data-label="Tramo">{{ row.range }}</td>
+                    <td data-label="Avisos" class="text-right">{{ marketCount(row.count) }}</td>
+                    <td data-label="Del total" class="text-right">{{ row.pct }} %</td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </VExpansionPanelText>
+          </VExpansionPanel>
+        </VExpansionPanels>
+      </template>
+      <p v-else class="text-body-2 text-medium-emphasis mb-6">{{ histMissingText }}</p>
+
       <!-- ── Serie ────────────────────────────────────────────────────────── -->
       <div v-if="chart" class="chart-wrap mb-2">
         <ClientOnly>
@@ -298,17 +362,26 @@
 </template>
 
 <script setup lang="ts">
+import { Chart, LineController, LineElement, PointElement } from 'chart.js'
 import {
   carSeriesKey,
   housingSeriesKey,
   marketChart,
   marketCount,
   marketDay,
+  marketHistogramBinOf,
+  marketHistogramCdf,
+  marketHistogramInBand,
+  marketHistogramShares,
+  marketHistogramShift,
   marketMoney,
+  marketMoneyShort,
   marketPct,
+  marketPositionSentence,
   marketWindowState,
   MARKET_BEDROOM_LABELS,
   MARKET_BEDROOM_ORDER,
+  MARKET_HISTOGRAM_MINIMUM,
   MARKET_PAIR_MINIMUM,
   MARKET_SAMPLE_MINIMUM,
   MARKET_TYPE_LABELS,
@@ -405,6 +478,9 @@ const staleDay = computed(() =>
 
 const unitPlural = computed(() => (props.vertical === 'alquiler' ? 'viviendas' : 'avisos'))
 const unitCapitalized = computed(() => (props.vertical === 'alquiler' ? 'Viviendas' : 'Avisos'))
+const unitWithArticle = computed(() =>
+  props.vertical === 'alquiler' ? 'las viviendas' : 'los avisos'
+)
 
 const cohortSuffix = computed(() => {
   if (!isHousing.value || !series.value) return ''
@@ -655,6 +731,132 @@ const chartOptions = computed(() => ({
     },
   },
 }))
+
+// ── Cómo se reparten los precios ───────────────────────────────────────────
+// The real shape, never a fitted bell: asking prices are skewed (see classes/marketseries/histogram.ts).
+// The overlay line is a bar chart's second dataset, so the line pieces must be registered here too.
+Chart.register(LineController, LineElement, PointElement)
+
+const hist = computed(() => seriesData.value?.hist ?? null)
+const histThen = computed(() => seriesData.value?.histThen ?? null)
+/** Free text: "32.000" must read as 32000, so only digits count. */
+const yourPrice = ref('')
+const yourPriceValue = computed(() => {
+  const value = Number(String(yourPrice.value).replace(/\D/g, ''))
+  return Number.isFinite(value) && value > 0 ? value : null
+})
+const positionText = computed(() =>
+  hist.value && yourPriceValue.value !== null
+    ? marketPositionSentence(marketHistogramCdf(hist.value, yourPriceValue.value))
+    : ''
+)
+const toPct = (share: number): number => Math.round(share * 1000) / 10
+
+const histChart = computed(() => {
+  const shape = hist.value
+  if (!shape) return null
+  const band = marketHistogramInBand(shape, latest.value?.p25 ?? null, latest.value?.p75 ?? null)
+  const mine =
+    yourPriceValue.value !== null ? marketHistogramBinOf(shape, yourPriceValue.value) : -1
+  const datasets: Record<string, unknown>[] = [
+    {
+      type: 'bar',
+      label: `Hoy (${marketDay(shape.d)})`,
+      data: marketHistogramShares(shape).map(toPct),
+      backgroundColor: shape.counts.map((_, i) =>
+        i === mine ? '#ef6c00' : band[i] ? '#1565c0' : '#90caf9'
+      ),
+      borderWidth: 0,
+      barPercentage: 1,
+      categoryPercentage: 0.94,
+      order: 2,
+    },
+  ]
+  if (histThen.value)
+    datasets.push({
+      type: 'line',
+      label: `El ${marketDay(histThen.value.d)}`,
+      data: marketHistogramShift(shape, histThen.value).map(toPct),
+      borderColor: '#455a64',
+      borderDash: [5, 4],
+      pointRadius: 0,
+      // The older shape as bar tops, not a smoothed curve: a spline overshoots between points and
+      // draws a smoothness the data does not have.
+      stepped: 'middle',
+      fill: false,
+      order: 1,
+    })
+  return {
+    data: {
+      labels: shape.counts.map((_, i) => marketMoneyShort(shape.edges[i]!, seriesCurrency.value)),
+      datasets,
+    },
+    label:
+      `Cómo se reparten ${marketCount(shape.n)} precios pedidos de ${series.value?.label ?? ''}: ` +
+      `la mitad central va de ${marketMoney(latest.value?.p25, seriesCurrency.value)} a ` +
+      `${marketMoney(latest.value?.p75, seriesCurrency.value)}.`,
+  }
+})
+
+const histOptions = computed(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    // BarChart never re-reads options after mount: a legend toggled here would stay frozen at the
+    // first cohort's value. The dashed line is named in the text under the chart instead.
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        title: (items: Array<{ dataIndex: number }>) => {
+          const shape = hist.value
+          const i = items[0]?.dataIndex ?? 0
+          return shape
+            ? `${marketMoney(shape.edges[i], seriesCurrency.value)} a ${marketMoney(shape.edges[i + 1], seriesCurrency.value)}`
+            : ''
+        },
+        label: (item: { formattedValue: string }) =>
+          `${item.formattedValue} % de ${unitWithArticle.value}`,
+      },
+    },
+  },
+  scales: {
+    x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkipPadding: 8 } },
+    y: { ticks: { callback: (value: number | string) => `${value} %` } },
+  },
+}))
+
+const histRows = computed(() => {
+  const shape = hist.value
+  if (!shape) return []
+  return shape.counts.map((count, i) => ({
+    key: i,
+    range: `${marketMoney(shape.edges[i], seriesCurrency.value)} a ${marketMoney(shape.edges[i + 1], seriesCurrency.value)}`,
+    count,
+    pct: toPct(count / shape.n),
+  }))
+})
+
+/** The p1..p99 cut, said out loud: those tails are also where the typos live. */
+const tailNote = computed(() => {
+  const shape = hist.value
+  if (!shape || shape.below + shape.above === 0) return ''
+  const parts: string[] = []
+  if (shape.below)
+    parts.push(
+      `${marketCount(shape.below)} piden menos de ${marketMoney(shape.edges[0], seriesCurrency.value)}`
+    )
+  if (shape.above)
+    parts.push(
+      `${marketCount(shape.above)} piden más de ${marketMoney(shape.edges[shape.edges.length - 1], seriesCurrency.value)}`
+    )
+  return `Fuera del gráfico, que va del percentil 1 al 99: ${parts.join(' y ')}.`
+})
+
+const histMissingText = computed(() =>
+  (latest.value?.n ?? 0) >= MARKET_HISTOGRAM_MINIMUM
+    ? 'La forma de los precios se dibuja desde la próxima lectura diaria.'
+    : `Hacen falta ${MARKET_HISTOGRAM_MINIMUM} ${unitPlural.value} para dibujar la forma (hay ${marketCount(latest.value?.n ?? 0)}); con menos, es ruido.`
+)
 </script>
 
 <style scoped>
@@ -671,6 +873,14 @@ const chartOptions = computed(() => ({
 .chart-wrap {
   position: relative;
   height: 280px;
+}
+.hist-wrap {
+  position: relative;
+  height: 240px;
+}
+.price-input {
+  max-width: 260px;
+  flex: 0 1 260px;
 }
 .mover-list {
   list-style: none;

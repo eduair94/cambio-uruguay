@@ -17,6 +17,7 @@ import {
   Title,
   Tooltip,
 } from 'chart.js'
+import { markRaw, toRaw } from 'vue'
 
 ChartJS.register(
   CategoryScale,
@@ -86,18 +87,22 @@ export default {
       if (!canvas) return
       const ctx = canvas.getContext('2d')
       if (!ctx) return
-      this.chart = new ChartJS(ctx, {
-        type: 'line',
-        data: this.chartData,
-        options: this.options,
-      })
+      // markRaw: a reactive proxy of the chart makes every update() walk Chart.js's internals
+      // through Vue (stack overflow on the first update; see tests/unit/chartsRawInstance.test.ts).
+      this.chart = markRaw(
+        new ChartJS(ctx, {
+          type: 'line',
+          data: toRaw(this.chartData),
+          options: this.options,
+        })
+      )
     },
     updateChart() {
       // Skip if the chart was torn down (or its canvas context is gone): drawing
       // against a destroyed chart dereferences a null ctx and throws.
       if (this.chart && this.chart.ctx) {
         // Update data without triggering watchers
-        this.chart.data = this.chartData
+        this.chart.data = toRaw(this.chartData)
         this.chart.update('none') // Use 'none' mode to prevent animations and reduce triggers
       }
     },
