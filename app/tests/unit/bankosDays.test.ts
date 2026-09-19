@@ -21,10 +21,18 @@ describe('Bankos weekday mapping (1 = lunes … 7 = domingo)', () => {
   })
 
   it('derives ISO weekday from a Date (Sunday is 7, not 0)', () => {
-    // 2026-08-17 is a Monday; 2026-08-23 a Sunday.
-    expect(isoWeekdayToday(new Date(2026, 7, 17))).toBe(1)
-    expect(isoWeekdayToday(new Date(2026, 7, 22))).toBe(6)
-    expect(isoWeekdayToday(new Date(2026, 7, 23))).toBe(7)
+    // 2026-08-17 is a Monday; 2026-08-23 a Sunday. Noon in Montevideo.
+    expect(isoWeekdayToday(new Date('2026-08-17T15:00:00Z'))).toBe(1)
+    expect(isoWeekdayToday(new Date('2026-08-22T15:00:00Z'))).toBe(6)
+    expect(isoWeekdayToday(new Date('2026-08-23T15:00:00Z'))).toBe(7)
+  })
+
+  it("is Montevideo's weekday, not the server's: 22:30 on Monday is still Monday", () => {
+    // 01:30 UTC on Tuesday; a server in UTC read Tuesday and served Tuesday's discounts as "hoy".
+    expect(isoWeekdayToday(new Date('2026-08-18T01:30:00Z'))).toBe(1)
+    // And Sunday night rolls into Monday only at Montevideo's midnight.
+    expect(isoWeekdayToday(new Date('2026-08-24T02:59:00Z'))).toBe(7)
+    expect(isoWeekdayToday(new Date('2026-08-24T03:00:00Z'))).toBe(1)
   })
 
   it('applies on the listed days only', () => {

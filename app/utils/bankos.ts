@@ -112,11 +112,21 @@ export const BANKOS_DAY_LABELS: Record<number, string> = {
   7: 'domingos',
 }
 
-/** Today's ISO weekday (1 = lunes … 7 = domingo) in Montevideo. */
+const ISO_WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+/**
+ * Today's ISO weekday (1 = lunes … 7 = domingo) in Montevideo.
+ *
+ * Read in Montevideo's zone, not the runtime's: `getDay()` is the server's (UTC) weekday, so from
+ * 21:00 in Uruguay the server already served tomorrow's discounts as "hoy" and the browser swapped
+ * them on hydration.
+ */
 export function isoWeekdayToday(now: Date = new Date()): number {
-  // getDay(): 0 = Sunday … 6 = Saturday → ISO 1 = Monday … 7 = Sunday.
-  const d = now.getDay()
-  return d === 0 ? 7 : d
+  const name = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Montevideo',
+    weekday: 'short',
+  }).format(now)
+  return ISO_WEEKDAYS.indexOf(name) + 1
 }
 
 /** Does this bank's benefit apply on `day`? A null/empty `availableDays` means every day. */
