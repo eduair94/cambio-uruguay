@@ -38,6 +38,9 @@
           (moneda estimada)
         </span>
       </p>
+      <p v-if="listedNote" class="car-card__listed" data-testid="car-listed-price">
+        {{ listedNote }}
+      </p>
       <p class="car-card__facts">{{ facts }}</p>
       <p v-if="place" class="car-card__place">{{ place }}</p>
       <p class="car-card__source">{{ car.sourceName }}</p>
@@ -47,6 +50,7 @@
 
 <script setup lang="ts">
 import {
+  carListedPriceNote,
   CAR_FLAG_LABELS,
   CAR_FUEL_LABELS,
   CAR_SELLER_LABELS,
@@ -60,6 +64,7 @@ import {
 import type { PublicCarListing } from '~/utils/carsPublic'
 
 const props = defineProps<{ car: PublicCarListing }>()
+const listedNote = computed(() => carListedPriceNote(props.car))
 const localePath = useLocalePath()
 const failed = ref(false)
 const facts = computed(() =>
@@ -155,6 +160,11 @@ const place = computed(() =>
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
+}
+.car-card__listed {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 .car-card__facts,
 .car-card__place,

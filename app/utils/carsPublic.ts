@@ -42,6 +42,11 @@ export interface PublicCarListing {
   year: number
   km: number | null
   price: number
+  /**
+   * What the portal lists when it is NOT the car's price: the advert states a cash price ("US$12990
+   * Contado") and `price` is that one; the listed number was the down payment. Null otherwise.
+   */
+  listedPrice: number | null
   currency: PublicCarCurrency
   priceUsd: number
   priceConverted: boolean
@@ -385,19 +390,30 @@ export interface PublicCarReportSnapshotData {
     year: PublicCarReportRange
     km: PublicCarReportRange | null
     sellers: Record<PublicCarSeller | 'unknown', number>
-    fuels: Array<{ fuel: PublicCarFuel | 'unknown' adverts: number }>
-    transmissions: Array<{ transmission: PublicCarTransmission | 'unknown' adverts: number }>
-    departments: Array<{ department: string adverts: number }>
-    priceBands: Array<{ from: number to: number | null adverts: number }>
+    fuels: Array<{ fuel: PublicCarFuel | 'unknown'; adverts: number }>
+    transmissions: Array<{ transmission: PublicCarTransmission | 'unknown'; adverts: number }>
+    departments: Array<{ department: string; adverts: number }>
+    priceBands: Array<{ from: number; to: number | null; adverts: number }>
   }
-  brands: Array<{ slug: string name: string adverts: number share: number medianUsd: number medianYear: number }>
+  brands: Array<{
+    slug: string
+    name: string
+    adverts: number
+    share: number
+    medianUsd: number
+    medianYear: number
+  }>
   models: PublicCarReportModel[]
   depreciation: PublicCarReportDepreciation[]
   budgets: PublicCarReportBudget[]
-  sellerGaps: { median: number | null models: PublicCarReportSellerGap[] }
+  sellerGaps: { median: number | null; models: PublicCarReportSellerGap[] }
   negotiation: PublicCarReportNegotiation
   rotation: PublicCarReportRotation
-  risk: { adverts: number share: number byCategory: Array<{ category: PublicCarRiskCategory adverts: number }> }
+  risk: {
+    adverts: number
+    share: number
+    byCategory: Array<{ category: PublicCarRiskCategory; adverts: number }>
+  }
   /** Lo que mueve el precio dentro del mismo modelo y año: km, caja, combustible. */
   valuation: PublicCarValuation
 }

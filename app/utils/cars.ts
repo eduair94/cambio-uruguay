@@ -147,7 +147,7 @@ export function carSafePicture(source: PublicCarSource, url: unknown): string | 
 }
 
 export const CAR_FLAG_LABELS: Record<PublicCarFlag, string> = {
-  financing: 'El título habla de entrega o cuotas',
+  financing: 'El precio publicado puede ser una entrega, no el precio del auto',
   price_mismatch: 'El título menciona otro precio',
   damaged: 'Menciona choque, airbags o reparaciones',
   recovered: 'Menciona recupero de seguro o robo',
@@ -434,6 +434,17 @@ export const formatCarKm = (km: number | null): string =>
   km === null ? 'km no informado' : `${grouped(km)} km`
 export const formatCarPrice = (car: Pick<PublicCarListing, 'price' | 'currency'>): string =>
   car.currency === 'USD' ? formatCarUsd(car.price) : `$ ${grouped(car.price)}`
+/**
+ * When the advert states a cash price different from the number the portal lists, `price` is the
+ * cash price and this says what the portal shows. The listed number is often the down payment
+ * ("US$8990 y cuotas" under "US$12990 Contado"), and showing only it would sell a false bargain.
+ */
+export const carListedPriceNote = (
+  car: Pick<PublicCarListing, 'listedPrice' | 'currency'>
+): string | null =>
+  car.listedPrice == null
+    ? null
+    : `Precio de contado que indica el aviso. En el portal figura ${formatCarPrice({ price: car.listedPrice, currency: car.currency })}.`
 export const carPercent = (gap: number): string => `${Math.round(gap * 100)} %`
 export const formatCarDate = (iso: string | null | undefined): string =>
   iso

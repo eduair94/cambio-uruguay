@@ -28,6 +28,9 @@
         </h3>
         <p class="text-body-2 mb-1">{{ facts }}</p>
         <p class="text-h6 font-weight-bold mb-1">{{ formatCarUsd(item.subject.priceUsd) }}</p>
+        <p v-if="listedNote" class="text-body-2 mb-1" data-testid="car-listed-price">
+          {{ listedNote }}
+        </p>
         <p v-if="negotiation" class="text-body-2 mb-1">{{ negotiation }}.</p>
         <p class="text-body-1 mb-0">
           <strong>{{ carPercent(item.gap) }} menos</strong> que la mediana ({{
@@ -97,6 +100,7 @@
 <script setup lang="ts">
 import {
   CAR_SELLER_LABELS,
+  carListedPriceNote,
   carPath,
   carPercent,
   formatCarDate,
@@ -108,6 +112,9 @@ import type { PublicCarOpportunityItem } from '~/utils/carsPublic'
 
 const props = defineProps<{ item: PublicCarOpportunityItem; hideSubjectLink?: boolean }>()
 const localePath = useLocalePath()
+// El precio de la oportunidad es el de contado que dice el aviso; si el portal muestra otro número
+// (casi siempre la entrega), se dice cuál, para que nadie llegue al aviso esperando ese precio.
+const listedNote = computed(() => carListedPriceNote(props.item.subject))
 /**
  * Las dos señales que ya teníamos guardadas y no mostrábamos, y que son justo las que usa quien va a
  * negociar: que el precio YA bajó —lo vimos nosotros, no lo dice el aviso— y cuánto lleva publicado.

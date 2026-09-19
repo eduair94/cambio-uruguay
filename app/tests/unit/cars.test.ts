@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  carListedPriceNote,
   carKeyValid,
   carMarketSlugValid,
   carsFiltered,
@@ -198,6 +199,18 @@ function item(
     detailReadAt: NOW.toISOString(),
   }
 }
+
+// MLU700552753: listed at the down payment (US$ 8.990), the car costs US$ 12.990 cash.
+describe('carListedPriceNote', () => {
+  it('says what the portal shows when the price is the stated cash price', () => {
+    expect(carListedPriceNote({ listedPrice: 8990, currency: 'USD' })).toBe(
+      'Precio de contado que indica el aviso. En el portal figura US$ 8.990.'
+    )
+  })
+  it('says nothing when the listed number is the price', () => {
+    expect(carListedPriceNote({ listedPrice: null, currency: 'USD' })).toBeNull()
+  })
+})
 
 describe('queryCarOpportunities', () => {
   const snapshot = {

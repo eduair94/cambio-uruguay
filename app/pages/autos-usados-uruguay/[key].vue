@@ -38,6 +38,9 @@
         <VCol cols="12" md="6">
           <h1 class="text-h5 font-weight-bold mb-2">{{ car.title }}</h1>
           <p class="text-h4 font-weight-bold mb-1">{{ formatCarPrice(car) }}</p>
+          <p v-if="carListedPriceNote(car)" class="text-body-2 mb-2" data-testid="car-listed-price">
+            {{ carListedPriceNote(car) }}
+          </p>
           <p v-if="car.priceConverted" class="text-body-2 text-medium-emphasis">
             ≈ {{ formatCarUsd(car.priceUsd) }} a la cotización del día
           </p>
@@ -205,6 +208,7 @@ import {
   formatCarDate,
   formatCarKm,
   formatCarPrice,
+  carListedPriceNote,
   formatCarUsd,
   type CarDetailResponse,
 } from '~/utils/cars'
