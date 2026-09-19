@@ -1,5 +1,14 @@
 export const rentalZoneMessages = {
   es: {
+    panelTitle: 'Datos del barrio: {name}',
+    evidence_coordinate: 'Ubicado por la coordenada que publica el aviso.',
+    evidence_name: 'Ubicado por el barrio que declara el aviso.',
+    evidence_alias:
+      'Ubicado por el barrio que declara el aviso, que en los avisos con coordenada cae casi siempre en este barrio oficial.',
+    panelHint:
+      'Luz: mapa público de UTE. Agua: avisos de corte programado de OSE en 24 meses. Reclamos: Intendencia de Montevideo, 12 meses, cada 1.000 clientes de UTE. El nivel compara con los demás barrios.',
+    panelLink: 'Comparar barrios',
+    perThousand: '{n} cada 1.000',
     power: 'Cortes de luz',
     water: 'Cortes de agua',
     claims: 'Reclamos a la Intendencia',
@@ -192,6 +201,15 @@ export const rentalZoneMessages = {
     excludeShort: 'Excluir',
   },
   en: {
+    panelTitle: 'Neighbourhood data: {name}',
+    evidence_coordinate: 'Placed by the coordinate the advert publishes.',
+    evidence_name: 'Placed by the neighbourhood the advert declares.',
+    evidence_alias:
+      'Placed by the neighbourhood the advert declares, which in located adverts almost always falls in this official neighbourhood.',
+    panelHint:
+      'Power: UTE public map. Water: OSE scheduled-cut notices over 24 months. Complaints: Montevideo city government, 12 months, per 1,000 UTE customers. The level compares with other neighbourhoods.',
+    panelLink: 'Compare neighbourhoods',
+    perThousand: '{n} per 1,000',
     power: 'Power cuts',
     water: 'Water cuts',
     claims: 'Complaints to the city',
@@ -382,6 +400,15 @@ export const rentalZoneMessages = {
     excludeShort: 'Exclude',
   },
   pt: {
+    panelTitle: 'Dados do bairro: {name}',
+    evidence_coordinate: 'Localizado pela coordenada que o anúncio publica.',
+    evidence_name: 'Localizado pelo bairro que o anúncio declara.',
+    evidence_alias:
+      'Localizado pelo bairro que o anúncio declara, que nos anúncios com coordenada cai quase sempre neste bairro oficial.',
+    panelHint:
+      'Energia: mapa público da UTE. Água: avisos de corte programado da OSE em 24 meses. Reclamações: prefeitura de Montevidéu, 12 meses, a cada 1.000 clientes da UTE. O nível compara com os demais bairros.',
+    panelLink: 'Comparar bairros',
+    perThousand: '{n} a cada 1.000',
     power: 'Quedas de energia',
     water: 'Cortes de água',
     claims: 'Reclamações à prefeitura',

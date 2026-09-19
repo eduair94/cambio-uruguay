@@ -1,6 +1,18 @@
 /** Route-local messages shared by the rental search and its controls. */
 export const rentalMessages = {
   es: {
+    neighborhoodServices: 'Datos del barrio',
+    'service-luz': 'Pocos cortes de luz',
+    'service-agua': 'Pocos cortes de agua programados',
+    'service-alumbrado': 'Pocos reclamos de alumbrado',
+    'service-saneamiento': 'Pocos reclamos de saneamiento',
+    'service-limpieza': 'Pocos reclamos de limpieza',
+    servicesHint:
+      'Cada opción deja sólo viviendas del tercio de barrios con menos problemas de ese tipo, según UTE, OSE y la Intendencia de Montevideo. Las viviendas sin barrio oficial identificado quedan fuera.',
+    servicesCollecting:
+      'Cortes de luz: midiendo desde el {date}. La opción se habilita con 14 días de datos.',
+    servicesMap: 'Ver luz, agua y reclamos por barrio',
+    servicesUnavailable: 'Los datos del barrio no están disponibles en este momento.',
     positiveMaximum: 'El máximo debe ser mayor que cero. Dejá vacío para no limitar.',
     totalSortHint:
       'Primero los avisos con gastos publicados; los de total desconocido quedan al final.',
@@ -270,6 +282,18 @@ export const rentalMessages = {
     aseguradora: 'Aseguradora',
   },
   en: {
+    neighborhoodServices: 'Neighbourhood data',
+    'service-luz': 'Few power cuts',
+    'service-agua': 'Few scheduled water cuts',
+    'service-alumbrado': 'Few street-lighting complaints',
+    'service-saneamiento': 'Few sewerage complaints',
+    'service-limpieza': 'Few cleaning complaints',
+    servicesHint:
+      'Each option keeps only homes in the third of neighbourhoods with the fewest problems of that kind, according to UTE, OSE and the Montevideo city government. Homes without an identified official neighbourhood are left out.',
+    servicesCollecting:
+      'Power cuts: measuring since {date}. The option unlocks with 14 days of data.',
+    servicesMap: 'See power, water and complaints by neighbourhood',
+    servicesUnavailable: 'Neighbourhood data is not available right now.',
     positiveMaximum: 'The maximum must be greater than zero. Leave blank for no limit.',
     totalSortHint: 'Listings with published expenses first; unknown monthly totals appear last.',
     whereSearch: 'Location',
@@ -532,6 +556,18 @@ export const rentalMessages = {
     aseguradora: 'Insurance company',
   },
   pt: {
+    neighborhoodServices: 'Dados do bairro',
+    'service-luz': 'Poucas quedas de energia',
+    'service-agua': 'Poucos cortes de água programados',
+    'service-alumbrado': 'Poucas reclamações de iluminação',
+    'service-saneamiento': 'Poucas reclamações de saneamento',
+    'service-limpieza': 'Poucas reclamações de limpeza',
+    servicesHint:
+      'Cada opção deixa só imóveis do terço de bairros com menos problemas desse tipo, segundo UTE, OSE e a prefeitura de Montevidéu. Imóveis sem bairro oficial identificado ficam de fora.',
+    servicesCollecting:
+      'Quedas de energia: medindo desde {date}. A opção é liberada com 14 dias de dados.',
+    servicesMap: 'Ver energia, água e reclamações por bairro',
+    servicesUnavailable: 'Os dados do bairro não estão disponíveis agora.',
     positiveMaximum: 'O máximo deve ser maior que zero. Deixe vazio para não limitar.',
     totalSortHint:
       'Primeiro anúncios com condomínio informado; totais desconhecidos ficam no final.',

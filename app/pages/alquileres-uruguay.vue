@@ -1069,6 +1069,11 @@ const filterChips = computed(() => {
       `${t('amenities')}: ${q.amenities.map(value => t(`amenity-${value}`)).join(', ')}`
     )
   if (q.sedes.length) add('sedes', `${t('nearby')} · ${q.radioKm} km`, ['sedes', 'radio'])
+  if (q.servicios?.length)
+    add(
+      'servicios',
+      `${t('neighborhoodServices')}: ${q.servicios.map(value => t(`service-${value}`)).join(', ')}`
+    )
   return chips
 })
 

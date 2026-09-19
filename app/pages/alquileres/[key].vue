@@ -707,6 +707,7 @@ useHead(() => ({
             </div>
           </template>
           <PropertyNearbyServices operation="rent" :property-key="property.key" />
+          <RentalsZoneServicesPanel v-if="property.officialZone" :zone="property.officialZone" />
         </section>
         <section
           v-if="market?.status !== 'not_comparable'"

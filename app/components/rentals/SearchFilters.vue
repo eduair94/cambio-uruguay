@@ -287,6 +287,39 @@
         </details>
         <details
           class="rental-search__group"
+          :open="servicesOpen"
+          @toggle="servicesOpen = ($event.target as HTMLDetailsElement).open"
+        >
+          <summary data-testid="rental-services-toggle">
+            {{ t('neighborhoodServices') }}
+            <span v-if="serviceSummary" class="rental-search__selected">{{ serviceSummary }}</span>
+          </summary>
+          <div class="rental-search__checks" data-testid="rental-filter-services">
+            <VCheckbox
+              v-for="option in serviceOptions"
+              :key="option.attribute"
+              v-model="draft.servicios"
+              :value="option.attribute"
+              :label="t(`service-${option.attribute}`)"
+              :disabled="!option.available && !draft.servicios?.includes(option.attribute)"
+              hide-details
+              density="compact"
+              color="primary"
+            />
+          </div>
+          <p class="rental-search__hint">{{ t('servicesHint') }}</p>
+          <p v-if="serviceFilters.error.value" class="rental-search__hint">
+            {{ t('servicesUnavailable') }}
+          </p>
+          <p v-else-if="powerCollecting" class="rental-search__hint">
+            {{ t('servicesCollecting', { date: powerCollecting }) }}
+          </p>
+          <NuxtLink :to="localePath('/barrios-alquileres-uruguay')" class="rental-search__link">{{
+            t('servicesMap')
+          }}</NuxtLink>
+        </details>
+        <details
+          class="rental-search__group"
           :open="sourceOpen"
           @toggle="sourceOpen = ($event.target as HTMLDetailsElement).open"
         >
@@ -401,7 +434,12 @@ import {
 import { MUTUALISTA_SEDES, mutualistasConSede } from '~/utils/mutualistaSedes'
 import { RENTAL_AMENITIES } from '~/utils/rentalAmenities'
 import ZonesPicker from './zones/Picker.vue'
-import type { RentalZonePreferences } from '~/utils/rentalZoneTypes'
+import type {
+  RentalServiceAttribute,
+  RentalZonePreferences,
+  RentalZoneUtilitiesMeta,
+} from '~/utils/rentalZoneTypes'
+import { RENTAL_SERVICE_FILTERS } from '~/utils/rentalZoneServices'
 
 const props = withDefaults(
   defineProps<{
@@ -463,6 +501,30 @@ const sourceOpen = ref(
     )
 )
 const nearbyOpen = ref(!props.mobile && Boolean(props.query.sedes.length))
+const servicesOpen = ref(!props.mobile && Boolean(props.query.servicios?.length))
+const localePath = useLocalePath()
+// Which neighbourhood-service filters exist right now; loaded on the client, never blocks the form.
+const serviceFilters = useFetch<{
+  options: Array<{ attribute: RentalServiceAttribute; available: boolean; status: string }>
+  meta: RentalZoneUtilitiesMeta | null
+}>('/api/rentals/service-filters', { key: 'rental-service-filters', server: false, lazy: true })
+const serviceOptions = computed(
+  () =>
+    serviceFilters.data.value?.options ??
+    RENTAL_SERVICE_FILTERS.map(attribute => ({
+      attribute,
+      available: false,
+      status: 'unavailable',
+    }))
+)
+const powerCollecting = computed(() => {
+  const power = serviceFilters.data.value?.meta?.power
+  return power?.status === 'collecting' && power.observedFrom
+    ? new Intl.DateTimeFormat(locale.value, { dateStyle: 'long', timeZone: 'UTC' }).format(
+        new Date(power.observedFrom)
+      )
+    : ''
+})
 const viewportHeight = ref<number | null>(null)
 const viewportTop = ref(0)
 const dialogProps = computed(() =>
@@ -510,6 +572,7 @@ const copy = (query: RentalQuery): RentalQuery => ({
   guarantees: [...query.guarantees],
   amenities: [...query.amenities],
   sedes: [...query.sedes],
+  servicios: [...(query.servicios ?? [])],
 })
 const draft = ref(copy(props.query))
 const directoryZones = computed<RentalZonePreferences>(() => ({
@@ -708,6 +771,9 @@ const sourceSummary = computed(() =>
     draft.value.multi && t('multi'),
   ])
 )
+const serviceSummary = computed(() =>
+  summary((draft.value.servicios ?? []).map(value => t(`service-${value}`)))
+)
 const nearbySummary = computed(() =>
   draft.value.sedes.length
     ? `${t('branches')}: ${draft.value.sedes.length} · ${t('radius', { n: draft.value.radioKm })}`
@@ -743,6 +809,7 @@ function reset() {
   advancedOpen.value =
     costsOpen.value =
     conditionsOpen.value =
+    servicesOpen.value =
     sourceOpen.value =
     nearbyOpen.value =
       false
@@ -802,6 +869,13 @@ function clearNeighborhoods() {
 }
 .rental-search--sidebar {
   max-height: calc(100dvh - 160px);
+}
+.rental-search__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: rgb(var(--v-theme-link));
+  font-size: 0.875rem;
 }
 .rental-search__hint {
   margin: 12px 0 0;
