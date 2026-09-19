@@ -52,35 +52,123 @@
       <!-- Buscador -->
       <section id="buscador" class="mb-10">
         <h2 class="text-h5 font-weight-bold mb-2">Buscá un producto</h2>
-        <p class="text-body-2 text-medium-emphasis mb-4">
+        <p class="text-body-2 text-medium-emphasis mb-3">
           {{ articleCount }} artículos con precio mínimo, mediana y máximo del país. La diferencia
           entre el más barato y el más caro del mismo producto llega a
           <strong>{{ maxSpreadLabel }}</strong
-          >, así que la mediana dice más que el promedio.
+          >, así que la mediana dice más que el promedio. Tocá cualquier columna para ordenar.
         </p>
 
-        <VTextField
-          v-model="search"
-          label="Aceite, yerba, pañales, shampoo…"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          density="comfortable"
-          clearable
+        <div class="d-flex flex-wrap align-center ga-2 mb-4">
+          <span class="text-caption text-medium-emphasis mr-1">Atajos:</span>
+          <VBtn
+            v-for="preset in articlePresets"
+            :key="preset.label"
+            size="small"
+            variant="tonal"
+            color="primary"
+            :prepend-icon="preset.icon"
+            @click="applyPreset(preset.state)"
+          >
+            {{ preset.label }}
+          </VBtn>
+        </div>
+
+        <div class="precios-toolbar mb-3">
+          <VTextField
+            v-model="articleTable.q"
+            label="Aceite, yerba, pañales, shampoo…"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            density="comfortable"
+            clearable
+            hide-details
+            class="precios-toolbar__search"
+            @click:clear="articleTable.q = ''"
+          />
+          <div class="precios-toolbar__sort">
+            <VSelect
+              :model-value="articleTable.orden"
+              :items="articleSortItems"
+              label="Ordenar por"
+              variant="outlined"
+              density="comfortable"
+              hide-details
+              @update:model-value="selectArticleSort"
+            />
+            <VBtn
+              variant="outlined"
+              :icon="articleTable.dir === 'asc' ? 'mdi-sort-ascending' : 'mdi-sort-descending'"
+              :aria-label="
+                articleTable.dir === 'asc'
+                  ? 'De menor a mayor. Tocá para invertir.'
+                  : 'De mayor a menor. Tocá para invertir.'
+              "
+              @click="articleTable.dir = articleTable.dir === 'asc' ? 'desc' : 'asc'"
+            />
+          </div>
+        </div>
+
+        <VChipGroup
+          :model-value="articleTable.rubro || undefined"
+          column
+          filter
+          selected-class="text-primary"
+          aria-label="Filtrar por rubro"
+          class="mb-1"
+          @update:model-value="setRubro"
+        >
+          <VChip
+            v-for="category in categoryChips"
+            :key="category.id"
+            :value="category.id"
+            size="small"
+            variant="outlined"
+          >
+            {{ category.label }} · {{ category.count }}
+          </VChip>
+        </VChipGroup>
+
+        <VSwitch
+          v-model="articleTable.muestra"
+          color="primary"
+          density="compact"
           hide-details
-          class="mb-4"
-          style="max-width: 520px"
+          inset
+          class="mb-2"
+          :label="`Sólo artículos que declaran ${PRECIOS_MIN_OBSERVATIONS} locales o más`"
         />
 
+        <p class="text-body-2 mb-3 d-flex flex-wrap align-center ga-2" aria-live="polite">
+          <span>
+            <strong>{{ filteredArticles.length }}</strong> de {{ articleCount }} artículos ·
+            ordenados por {{ articleSortSummary }}
+          </span>
+          <VBtn
+            v-if="articleFiltersActive"
+            variant="text"
+            size="small"
+            prepend-icon="mdi-filter-remove-outline"
+            @click="resetArticleTable"
+          >
+            Limpiar filtros
+          </VBtn>
+        </p>
+
         <div class="table-scroll">
-          <VTable density="comfortable" class="cu-mobile-cards">
+          <VTable density="comfortable" class="cu-mobile-cards cu-roomy">
             <thead>
               <tr>
-                <th>Artículo</th>
-                <th class="text-right">Más barato</th>
-                <th class="text-right">Mediana</th>
-                <th class="text-right">Más caro</th>
-                <th class="text-right">Se abre</th>
-                <th class="text-right">Locales</th>
+                <PreciosSortTh
+                  v-for="column in articleColumns"
+                  :key="column.key"
+                  :label="column.label"
+                  :sort-key="column.key"
+                  :current="articleTable.orden"
+                  :dir="articleTable.dir"
+                  :align="column.key === 'nombre' ? 'left' : 'right'"
+                  @sort="headerArticleSort"
+                />
               </tr>
             </thead>
             <tbody>
@@ -89,17 +177,49 @@
                   <NuxtLink :to="localePath(`/precio/${preciosSlug(row.name)}`)">
                     {{ row.name }}
                   </NuxtLink>
-                  <span v-if="row.unitRaw" class="d-block text-caption text-medium-emphasis">
-                    {{ row.unitRaw }}
+                  <span class="d-block text-caption text-medium-emphasis">
+                    {{
+                      [row.unitRaw, preciosCategoryLabel(preciosCategory(row))]
+                        .filter(Boolean)
+                        .join(' · ')
+                    }}
                   </span>
+                  <VChip
+                    v-if="bestInGroup.has(row.articleId)"
+                    size="x-small"
+                    color="success"
+                    variant="tonal"
+                    prepend-icon="mdi-trophy-outline"
+                    class="mt-1"
+                  >
+                    mejor precio por {{ perUnitShort(row) }} de {{ bestInGroup.get(row.articleId) }}
+                    marcas
+                  </VChip>
                 </td>
                 <td data-label="Más barato" class="text-right">{{ money(row.min) }}</td>
                 <td data-label="Mediana" class="text-right font-weight-medium">
                   {{ money(row.p50) }}
                 </td>
                 <td data-label="Más caro" class="text-right">{{ money(row.max) }}</td>
-                <td data-label="Se abre" class="text-right">{{ spreadLabel(row) }}</td>
-                <td data-label="Locales" class="text-right">{{ row.n }}</td>
+                <td data-label="Por litro o kilo" class="text-right">{{ perUnitLabel(row) }}</td>
+                <td data-label="Ahorro buscando" class="text-right">
+                  {{ savingsLabel(row) }}
+                  <span
+                    v-if="row.p10 && hasSavings(row)"
+                    class="d-block text-caption text-medium-emphasis"
+                  >
+                    {{ money(row.p10) }} en el 10 % más barato
+                  </span>
+                </td>
+                <td data-label="Locales" class="text-right">
+                  {{ row.n }}
+                  <span
+                    v-if="(row.n ?? 0) < PRECIOS_MIN_OBSERVATIONS"
+                    class="d-block text-caption text-medium-emphasis"
+                  >
+                    muestra chica
+                  </span>
+                </td>
               </tr>
             </tbody>
           </VTable>
@@ -111,7 +231,14 @@
           </VBtn>
         </p>
         <p v-if="!filteredArticles.length" class="text-body-2 text-medium-emphasis mt-3">
-          Ningún artículo del catálogo oficial coincide con esa búsqueda.
+          Ningún artículo del catálogo oficial coincide con esos filtros.
+          <a href="#buscador" @click.prevent="resetArticleTable">Ver todos</a>.
+        </p>
+        <p class="text-caption text-medium-emphasis mt-3 mb-0" style="max-width: 75ch">
+          <strong>Por litro o kilo</strong>: la mediana llevada a la misma unidad, para comparar
+          envases distintos. <strong>Ahorro buscando</strong>: cuánto menos que la mediana paga
+          quien compra en el 10 % de locales más baratos. Se mide contra ese 10 % y no contra el
+          mínimo, porque el mínimo puede ser una góndola quieta o un error de carga.
         </p>
       </section>
 
@@ -145,20 +272,67 @@
           </p>
         </VAlert>
 
-        <h3 class="text-subtitle-1 font-weight-bold mb-2">Dónde la canasta sale más barata</h3>
-        <div class="table-scroll mb-6">
-          <VTable density="comfortable" class="cu-mobile-cards">
+        <h3 id="locales-canasta" class="text-subtitle-1 font-weight-bold mb-2">
+          Dónde la canasta sale más barata
+        </h3>
+        <div class="precios-toolbar mb-3">
+          <VSelect
+            v-model="storeDept"
+            :items="storeDeptItems"
+            label="Departamento"
+            prepend-inner-icon="mdi-map-marker-outline"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+            class="precios-toolbar__search"
+          />
+          <div class="precios-toolbar__sort">
+            <VSelect
+              :model-value="storeSort.orden"
+              :items="storeSortItems"
+              label="Ordenar por"
+              variant="outlined"
+              density="comfortable"
+              hide-details
+              @update:model-value="selectStoreSort"
+            />
+            <VBtn
+              variant="outlined"
+              :icon="storeSort.dir === 'asc' ? 'mdi-sort-ascending' : 'mdi-sort-descending'"
+              :aria-label="
+                storeSort.dir === 'asc'
+                  ? 'De menor a mayor. Tocá para invertir.'
+                  : 'De mayor a menor. Tocá para invertir.'
+              "
+              @click="storeSort.dir = storeSort.dir === 'asc' ? 'desc' : 'asc'"
+            />
+          </div>
+        </div>
+        <p class="text-body-2 text-medium-emphasis mb-3" aria-live="polite">{{ storeListNote }}</p>
+        <div class="table-scroll mb-2">
+          <VTable density="comfortable" class="cu-mobile-cards cu-roomy">
             <thead>
               <tr>
-                <th>Local</th>
-                <th>Departamento</th>
-                <th class="text-right">Nivel de precios</th>
-                <th class="text-right">Cobertura</th>
+                <PreciosSortTh
+                  v-for="column in storeColumns"
+                  :key="column.key"
+                  :label="column.label"
+                  :sort-key="column.key"
+                  :current="storeSort.orden"
+                  :dir="storeSort.dir"
+                  :align="column.align"
+                  @sort="headerStoreSort"
+                />
               </tr>
             </thead>
             <tbody>
-              <tr v-for="store in basket.cheapestStores.slice(0, 12)" :key="store.storeId">
-                <td data-label="Local">{{ store.storeName }}</td>
+              <tr v-for="store in visibleStores" :key="store.storeId">
+                <td data-label="Local">
+                  {{ store.storeName }}
+                  <span v-if="store.address" class="d-block text-caption text-medium-emphasis">
+                    {{ store.address }}
+                  </span>
+                </td>
                 <td data-label="Departamento">{{ store.department || '—' }}</td>
                 <td data-label="Nivel de precios" class="text-right">
                   <strong>{{ levelLabel(store.ratio) }}</strong>
@@ -170,6 +344,15 @@
             </tbody>
           </VTable>
         </div>
+        <p v-if="sortedStores.length > visibleStores.length" class="mb-6">
+          <VBtn variant="text" size="small" @click="showAllStores = true">
+            Ver los {{ sortedStores.length }} locales
+          </VBtn>
+        </p>
+        <p v-else-if="!sortedStores.length" class="text-body-2 text-medium-emphasis mb-6">
+          Ningún local de {{ storeDept }} declara hoy el 70 % de la canasta.
+        </p>
+        <div v-else class="mb-6" />
 
         <h3 class="text-subtitle-1 font-weight-bold mb-2">Por departamento</h3>
         <p class="text-body-2 text-medium-emphasis mb-3">
@@ -178,12 +361,20 @@
           {{ thinnestDepartmentNote }}, y con eso no hay ranking honesto.
         </p>
         <div class="table-scroll mb-4">
-          <VTable density="comfortable" class="cu-mobile-cards">
+          <VTable density="comfortable" class="cu-mobile-cards cu-roomy">
             <thead>
               <tr>
-                <th>Departamento</th>
-                <th class="text-right">Nivel de precios</th>
-                <th class="text-right">Locales</th>
+                <PreciosSortTh
+                  v-for="column in scopeColumns('Departamento')"
+                  :key="column.key"
+                  :label="column.label"
+                  :sort-key="column.key"
+                  :current="deptSort.orden"
+                  :dir="deptSort.dir"
+                  :align="column.align"
+                  @sort="sortDepts"
+                />
+                <th v-if="hasRankedStores">Local más barato</th>
               </tr>
             </thead>
             <tbody>
@@ -193,6 +384,24 @@
                   {{ levelLabel(scope.median) }}
                 </td>
                 <td data-label="Locales" class="text-right">{{ scope.stores }}</td>
+                <td v-if="hasRankedStores" data-label="Local más barato">
+                  <template v-if="cheapestByDept.get(scopeName(scope.scope))">
+                    {{ cheapestByDept.get(scopeName(scope.scope))?.storeName }}
+                    <span class="d-block text-caption text-medium-emphasis">
+                      {{ levelLabel(cheapestByDept.get(scopeName(scope.scope))?.ratio) }}
+                    </span>
+                  </template>
+                  <VBtn
+                    variant="text"
+                    size="small"
+                    density="comfortable"
+                    append-icon="mdi-arrow-right"
+                    class="cu-btn-flush"
+                    @click="showDeptStores(scopeName(scope.scope))"
+                  >
+                    Ver locales
+                  </VBtn>
+                </td>
               </tr>
             </tbody>
           </VTable>
@@ -211,9 +420,16 @@
           <VTable density="comfortable" class="cu-mobile-cards">
             <thead>
               <tr>
-                <th>Cadena</th>
-                <th class="text-right">Nivel de precios</th>
-                <th class="text-right">Locales</th>
+                <PreciosSortTh
+                  v-for="column in scopeColumns('Cadena')"
+                  :key="column.key"
+                  :label="column.label"
+                  :sort-key="column.key"
+                  :current="chainSort.orden"
+                  :dir="chainSort.dir"
+                  :align="column.align"
+                  @sort="sortChains"
+                />
               </tr>
             </thead>
             <tbody>
@@ -260,12 +476,42 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import type { FaqItem } from '~/utils/faqAnswers'
-import { preciosSlug, preciosSpread, type PreciosArticleRow } from '~/utils/preciosCatalog'
+import {
+  PRECIOS_MIN_OBSERVATIONS,
+  preciosSlug,
+  preciosSpread,
+  type PreciosArticleRow,
+} from '~/utils/preciosCatalog'
+import {
+  PRECIOS_ARTICLE_SORTS,
+  PRECIOS_ARTICLE_TABLE_DEFAULTS,
+  PRECIOS_CATEGORIES,
+  PRECIOS_RANKED_SORTS,
+  preciosArticleQueryFromState,
+  preciosArticleStateFromQuery,
+  preciosBestPerUnitInGroup,
+  preciosCategory,
+  preciosCategoryCounts,
+  preciosCategoryLabel,
+  preciosFilterArticles,
+  preciosMedianPerUnit,
+  preciosSavings,
+  preciosSortArticles,
+  preciosSortBy,
+  preciosSortRankedStores,
+  type PreciosArticleSortKey,
+  type PreciosArticleTableState,
+  type PreciosCategoryId,
+  type PreciosRankedSortKey,
+  type PreciosRankedStore,
+  type PreciosSortDir,
+} from '~/utils/preciosTable'
 
 const localePath = useLocalePath()
+const route = useRoute()
 
 // Server-rendered: los números SON la página. Un crawler y alguien con mala
 // conexión tienen que recibirlos en el HTML, no después de un round trip.
@@ -277,9 +523,6 @@ const { data } = await useFetch<any>('/api/precios', {
 const articles = computed<PreciosArticleRow[]>(() => data.value?.articles ?? [])
 const basket = computed<any>(() => data.value?.basket ?? null)
 const hasData = computed(() => articles.value.length > 0)
-
-const search = ref('')
-const showAll = ref(false)
 
 const articleCount = computed(() => articles.value.length)
 const storeCount = computed(() => {
@@ -294,15 +537,142 @@ const freshnessLabel = computed(() =>
   data.value?.day ? `lectura del ${data.value.day}` : 'sin lectura'
 )
 
-const filteredArticles = computed(() => {
-  const needle = (search.value || '').trim().toLowerCase()
-  if (!needle) return articles.value
-  return articles.value.filter(row => row.name.toLowerCase().includes(needle))
+// ---------------------------------------------------------------------------
+// Tabla de artículos
+// ---------------------------------------------------------------------------
+
+// El estado sale de la URL también en el servidor: un enlace compartido
+// ("?q=aceite&orden=unidad") llega ya filtrado y ordenado en el HTML, no se
+// reordena delante de quien lo abre después de hidratar.
+const articleTable = reactive<PreciosArticleTableState>(preciosArticleStateFromQuery(route.query))
+const showAll = ref(false)
+
+const articleSortItems = Object.entries(PRECIOS_ARTICLE_SORTS).map(([value, sort]) => ({
+  title: sort.label,
+  value,
+}))
+
+const articleColumns: Array<{ key: PreciosArticleSortKey; label: string }> = [
+  { key: 'nombre', label: 'Artículo' },
+  { key: 'barato', label: 'Más barato' },
+  { key: 'mediana', label: 'Mediana' },
+  { key: 'caro', label: 'Más caro' },
+  { key: 'unidad', label: 'Por litro o kilo' },
+  { key: 'ahorro', label: 'Ahorro buscando' },
+  { key: 'locales', label: 'Locales' },
+]
+
+/** El encabezado alterna: la misma columna invierte, otra columna arranca en su orden natural. */
+function headerArticleSort(key: string) {
+  const next = key as PreciosArticleSortKey
+  if (!(next in PRECIOS_ARTICLE_SORTS)) return
+  if (articleTable.orden === next) {
+    articleTable.dir = articleTable.dir === 'asc' ? 'desc' : 'asc'
+    return
+  }
+  articleTable.orden = next
+  articleTable.dir = PRECIOS_ARTICLE_SORTS[next].defaultDir
+}
+
+/**
+ * El selector NO alterna. Vuetify re-emite el valor mientras monta, y un toggle
+ * acá invertiría el orden de una URL compartida sin que nadie tocara nada.
+ */
+function selectArticleSort(key: unknown) {
+  const next = key as PreciosArticleSortKey
+  if (!(next in PRECIOS_ARTICLE_SORTS) || next === articleTable.orden) return
+  articleTable.orden = next
+  articleTable.dir = PRECIOS_ARTICLE_SORTS[next].defaultDir
+}
+
+function setRubro(value: unknown) {
+  articleTable.rubro =
+    typeof value === 'string' && PRECIOS_CATEGORIES.some(category => category.id === value)
+      ? (value as PreciosCategoryId)
+      : ''
+}
+
+const articleFiltersActive = computed(
+  () => Object.keys(preciosArticleQueryFromState(articleTable)).length > 0
+)
+
+function resetArticleTable() {
+  Object.assign(articleTable, PRECIOS_ARTICLE_TABLE_DEFAULTS)
+  showAll.value = false
+}
+
+const articlePresets: Array<{
+  label: string
+  icon: string
+  state: Partial<PreciosArticleTableState>
+}> = [
+  {
+    label: 'Aceites por litro',
+    icon: 'mdi-bottle-tonic-outline',
+    // Con muestra amplia: por litro, un artículo que declaran 13 locales encabezaba
+    // con la mitad de la mediana de los que declaran 300.
+    state: { q: 'aceite', orden: 'unidad', dir: 'asc', muestra: true },
+  },
+  {
+    label: 'Yerbas por kilo',
+    icon: 'mdi-leaf',
+    state: { q: 'yerba', orden: 'unidad', dir: 'asc', muestra: true },
+  },
+  {
+    label: 'Dónde conviene buscar precio',
+    icon: 'mdi-cash-fast',
+    state: { orden: 'ahorro', dir: 'desc', muestra: true },
+  },
+  {
+    label: 'Lo que más locales declaran',
+    icon: 'mdi-store-outline',
+    state: { orden: 'locales', dir: 'desc' },
+  },
+]
+
+function applyPreset(state: Partial<PreciosArticleTableState>) {
+  Object.assign(articleTable, PRECIOS_ARTICLE_TABLE_DEFAULTS, state)
+  showAll.value = false
+}
+
+const filteredArticles = computed(() =>
+  preciosSortArticles(
+    preciosFilterArticles(articles.value, articleTable),
+    articleTable.orden,
+    articleTable.dir
+  )
+)
+
+// Con una búsqueda escrita se muestra todo lo que coincide: nadie busca
+// "aceite" para ver 25 de 30 aceites.
+const visibleArticles = computed(() =>
+  showAll.value || articleTable.q.trim()
+    ? filteredArticles.value
+    : filteredArticles.value.slice(0, 25)
+)
+
+const categoryCounts = computed(() => preciosCategoryCounts(articles.value))
+const categoryChips = computed(() =>
+  PRECIOS_CATEGORIES.map(category => ({
+    ...category,
+    count: categoryCounts.value[category.id] || 0,
+  })).filter(category => category.count > 0)
+)
+
+const articleSortSummary = computed(() => {
+  const asc = articleTable.dir === 'asc'
+  const direction =
+    articleTable.orden === 'nombre'
+      ? asc
+        ? 'de la A a la Z'
+        : 'de la Z a la A'
+      : asc
+        ? 'de menor a mayor'
+        : 'de mayor a menor'
+  return `${PRECIOS_ARTICLE_SORTS[articleTable.orden].label.toLowerCase()}, ${direction}`
 })
 
-const visibleArticles = computed(() =>
-  showAll.value || search.value ? filteredArticles.value : filteredArticles.value.slice(0, 25)
-)
+const bestInGroup = computed(() => preciosBestPerUnitInGroup(articles.value))
 
 const maxSpreadLabel = computed(() => {
   let best = 0
@@ -313,20 +683,218 @@ const maxSpreadLabel = computed(() => {
   return best ? `${best.toFixed(1)} veces` : '—'
 })
 
+const perUnitLabel = (row: PreciosArticleRow): string => {
+  const perUnit = preciosMedianPerUnit(row)
+  return perUnit ? `${money(perUnit.value)} / ${perUnit.label}` : '—'
+}
+const perUnitShort = (row: PreciosArticleRow): string =>
+  preciosMedianPerUnit(row)?.label ?? 'unidad'
+
+/** Por debajo de medio punto no hay nada que ganar recorriendo locales. */
+const hasSavings = (row: PreciosArticleRow): boolean => (preciosSavings(row) ?? 0) >= 0.005
+const savingsLabel = (row: PreciosArticleRow): string => {
+  const savings = preciosSavings(row)
+  if (savings === null) return '—'
+  return hasSavings(row) ? `${Math.round(savings * 100)} %` : 'casi nada'
+}
+
+// ---------------------------------------------------------------------------
+// Canasta: locales, departamentos y cadenas
+// ---------------------------------------------------------------------------
+
+const rankedStores = computed<PreciosRankedStore[]>(() => basket.value?.rankedStores ?? [])
+// Un documento de canasta anterior al 2026-09-19 no trae la lista por
+// departamento: la tabla cae a los 25 más baratos del país y lo dice.
+const hasRankedStores = computed(() => rankedStores.value.length > 0)
+
+const storeDept = ref(typeof route.query.depto === 'string' ? route.query.depto.slice(0, 40) : '')
+const showAllStores = ref(false)
+const storeSort = reactive<{ orden: PreciosRankedSortKey; dir: PreciosSortDir }>({
+  orden: 'nivel',
+  dir: 'asc',
+})
+
+const deptScopes = computed<any[]>(() =>
+  (basket.value?.scopes ?? []).filter((s: any) => s.scope.startsWith('dept:'))
+)
+
+const storeDeptOptions = computed(() => {
+  const pool = hasRankedStores.value ? rankedStores.value : (basket.value?.cheapestStores ?? [])
+  const names = new Set<string>()
+  for (const store of pool) if (store.department) names.add(store.department)
+  return [...names].sort((a, b) => a.localeCompare(b, 'es'))
+})
+
+const storeDeptItems = computed(() => [
+  { title: 'Todo el país', value: '' },
+  ...storeDeptOptions.value.map(name => {
+    const scope = deptScopes.value.find(s => scopeName(s.scope) === name)
+    return {
+      title: scope ? `${name} (${scope.stores} ${scope.stores === 1 ? 'local' : 'locales'})` : name,
+      value: name,
+    }
+  }),
+])
+
+// Un departamento de la URL que hoy no tiene locales comparables se ignora en
+// vez de dejar la tabla vacía sin explicación.
+watch(
+  storeDeptOptions,
+  options => {
+    if (storeDept.value && options.length && !options.includes(storeDept.value)) {
+      storeDept.value = ''
+    }
+  },
+  { immediate: true }
+)
+
+watch(storeDept, () => {
+  showAllStores.value = false
+})
+
+const storeColumns: Array<{ key: PreciosRankedSortKey; label: string; align: 'left' | 'right' }> = [
+  { key: 'local', label: 'Local', align: 'left' },
+  { key: 'departamento', label: 'Departamento', align: 'left' },
+  { key: 'nivel', label: 'Nivel de precios', align: 'right' },
+  { key: 'cobertura', label: 'Cobertura', align: 'right' },
+]
+
+const storeSortItems = Object.entries(PRECIOS_RANKED_SORTS).map(([value, sort]) => ({
+  title: sort.label,
+  value,
+}))
+
+function headerStoreSort(key: string) {
+  const next = key as PreciosRankedSortKey
+  if (!(next in PRECIOS_RANKED_SORTS)) return
+  if (storeSort.orden === next) {
+    storeSort.dir = storeSort.dir === 'asc' ? 'desc' : 'asc'
+    return
+  }
+  storeSort.orden = next
+  storeSort.dir = PRECIOS_RANKED_SORTS[next].defaultDir
+}
+
+function selectStoreSort(key: unknown) {
+  const next = key as PreciosRankedSortKey
+  if (!(next in PRECIOS_RANKED_SORTS) || next === storeSort.orden) return
+  storeSort.orden = next
+  storeSort.dir = PRECIOS_RANKED_SORTS[next].defaultDir
+}
+
+const addressById = computed(
+  () => new Map(rankedStores.value.map(store => [store.storeId, store.address || '']))
+)
+
+const storePool = computed<PreciosRankedStore[]>(() => {
+  // Todo el país: los 25 más baratos de verdad. La lista por departamento viene
+  // recortada a los primeros de CADA uno, así que en Montevideo le faltarían
+  // locales que sí están entre los más baratos del país.
+  if (!storeDept.value || !hasRankedStores.value) {
+    const national: PreciosRankedStore[] = (basket.value?.cheapestStores ?? []).map(
+      (store: any) => ({ ...store, address: addressById.value.get(store.storeId) || '' })
+    )
+    return storeDept.value
+      ? national.filter(store => store.department === storeDept.value)
+      : national
+  }
+  return rankedStores.value.filter(store => store.department === storeDept.value)
+})
+
+const sortedStores = computed(() =>
+  preciosSortRankedStores(storePool.value, storeSort.orden, storeSort.dir)
+)
+const visibleStores = computed(() =>
+  showAllStores.value ? sortedStores.value : sortedStores.value.slice(0, 12)
+)
+
+const storeListNote = computed(() => {
+  if (!storeDept.value) {
+    return `Los ${storePool.value.length} locales con la canasta más barata del país. Elegí un departamento para ver los del tuyo.`
+  }
+  const scope = deptScopes.value.find(s => scopeName(s.scope) === storeDept.value)
+  const total = scope?.stores ?? storePool.value.length
+  if (!hasRankedStores.value) {
+    return `Sólo los de ${storeDept.value} que están entre los 25 más baratos del país: la lista completa por departamento se publica desde la próxima lectura.`
+  }
+  if (storePool.value.length < total) {
+    return `Los ${storePool.value.length} locales con la canasta más barata de ${storeDept.value}, de ${total} comparables.`
+  }
+  return `${total === 1 ? 'El único local' : `Los ${total} locales`} de ${storeDept.value} con canasta comparable.`
+})
+
+const cheapestByDept = computed(() => {
+  const out = new Map<string, PreciosRankedStore>()
+  for (const store of rankedStores.value) {
+    const current = out.get(store.department)
+    if (!current || store.ratio < current.ratio) out.set(store.department, store)
+  }
+  return out
+})
+
+function showDeptStores(dept: string) {
+  storeDept.value = dept
+  storeSort.orden = 'nivel'
+  storeSort.dir = 'asc'
+  if (import.meta.client) {
+    document
+      .getElementById('locales-canasta')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+type ScopeSortKey = 'nombre' | 'nivel' | 'locales'
+const SCOPE_SORTS: Record<ScopeSortKey, { defaultDir: PreciosSortDir; value: (s: any) => any }> = {
+  nombre: { defaultDir: 'asc', value: s => scopeName(s.scope) },
+  nivel: { defaultDir: 'asc', value: s => s.median },
+  locales: { defaultDir: 'desc', value: s => s.stores },
+}
+
+const scopeColumns = (first: string) => [
+  { key: 'nombre', label: first, align: 'left' as const },
+  { key: 'nivel', label: 'Nivel de precios', align: 'right' as const },
+  { key: 'locales', label: 'Locales', align: 'right' as const },
+]
+
+const deptSort = reactive<{ orden: ScopeSortKey; dir: PreciosSortDir }>({
+  orden: 'nivel',
+  dir: 'asc',
+})
+const chainSort = reactive<{ orden: ScopeSortKey; dir: PreciosSortDir }>({
+  orden: 'nivel',
+  dir: 'asc',
+})
+
+function toggleScopeSort(state: { orden: ScopeSortKey; dir: PreciosSortDir }, key: string) {
+  const next = key as ScopeSortKey
+  if (!(next in SCOPE_SORTS)) return
+  if (state.orden === next) {
+    state.dir = state.dir === 'asc' ? 'desc' : 'asc'
+    return
+  }
+  state.orden = next
+  state.dir = SCOPE_SORTS[next].defaultDir
+}
+const sortDepts = (key: string) => toggleScopeSort(deptSort, key)
+const sortChains = (key: string) => toggleScopeSort(chainSort, key)
+
+const sortScopes = (rows: any[], state: { orden: ScopeSortKey; dir: PreciosSortDir }) =>
+  preciosSortBy(rows, SCOPE_SORTS[state.orden].value, state.dir, s => scopeName(s.scope))
+
 const rankedDepartments = computed(() =>
-  (basket.value?.scopes ?? [])
-    .filter((s: any) => s.scope.startsWith('dept:') && s.qualified)
-    .sort((a: any, b: any) => a.median - b.median)
+  sortScopes(
+    deptScopes.value.filter((s: any) => s.qualified),
+    deptSort
+  )
 )
 const unrankedDepartments = computed(() =>
-  (basket.value?.scopes ?? [])
-    .filter((s: any) => s.scope.startsWith('dept:') && !s.qualified)
-    .sort((a: any, b: any) => b.stores - a.stores)
+  deptScopes.value.filter((s: any) => !s.qualified).sort((a: any, b: any) => b.stores - a.stores)
 )
 const rankedChains = computed(() =>
-  (basket.value?.scopes ?? [])
-    .filter((s: any) => s.scope.startsWith('chain:') && s.qualified)
-    .sort((a: any, b: any) => a.median - b.median)
+  sortScopes(
+    (basket.value?.scopes ?? []).filter((s: any) => s.scope.startsWith('chain:') && s.qualified),
+    chainSort
+  )
 )
 
 const thinnestDepartmentNote = computed(() => {
@@ -335,15 +903,15 @@ const thinnestDepartmentNote = computed(() => {
   return `${thin.stores} ${thin.stores === 1 ? 'boca' : 'bocas'} con canasta comparable en ${scopeName(thin.scope)}`
 })
 
+usePreciosQuerySync(() => ({
+  ...preciosArticleQueryFromState(articleTable),
+  ...(storeDept.value ? { depto: storeDept.value } : {}),
+}))
+
 const money = (value?: number): string =>
   value === undefined || value === null
     ? '—'
     : `$ ${value.toLocaleString('es-UY', { maximumFractionDigits: 2 })}`
-
-const spreadLabel = (row: PreciosArticleRow): string => {
-  const spread = preciosSpread(row)
-  return spread ? `${spread.toFixed(2)}×` : '—'
-}
 
 const scopeName = (scope: string): string => scope.replace(/^(dept|chain):/, '')
 
@@ -435,6 +1003,18 @@ const faqItems: FaqItem[] = [
       'Porque el catálogo oficial tiene muy pocas bocas ahí. Con dos o tres locales, un "más barato del departamento" diría más sobre quién carga precios que sobre los precios. Cuando no hay muestra suficiente se dice, en vez de publicar el número igual.',
   },
   {
+    id: 'comparar-marcas',
+    question: '¿Cómo comparo marcas que vienen en envases distintos?',
+    answer:
+      'Con la columna "Por litro o kilo": lleva el precio mediano de cada artículo a la misma unidad, así un aceite de 900 ml y uno de 1,5 litros se comparan directo. Buscá el producto (por ejemplo "aceite") y ordená por esa columna. Cuando dos o más marcas del mismo producto tienen muestra amplia, la que sale menos por unidad lleva la marca "mejor precio".',
+  },
+  {
+    id: 'ahorro-buscando',
+    question: '¿En qué productos conviene recorrer supermercados?',
+    answer:
+      'En los que tienen el "ahorro buscando" más alto: es cuánto menos que la mediana paga quien compra en el 10 % de locales más baratos de ese artículo. Hay productos donde casi no hay diferencia entre locales y otros donde pasa del 40 %. Se mide contra ese 10 % y no contra el precio mínimo, porque el mínimo puede ser una góndola que no se actualiza o un error de carga.',
+  },
+  {
     id: 'no-es-ipc',
     question: '¿Es el mismo dato que el índice de precios del INE?',
     answer:
@@ -514,5 +1094,36 @@ useHead(() => ({
 <style scoped>
 .table-scroll {
   overflow-x: auto;
+}
+/* "Ver locales" desplaza hasta acá: sin margen, el título queda bajo la barra fija. */
+#locales-canasta {
+  scroll-margin-top: 88px;
+}
+.precios-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.precios-toolbar__search {
+  flex: 1 1 280px;
+  max-width: 520px;
+}
+.precios-toolbar__sort {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 0 1 300px;
+  min-width: 0;
+}
+.precios-toolbar__sort :deep(.v-select) {
+  min-width: 0;
+}
+@media (max-width: 599px) {
+  .precios-toolbar__search,
+  .precios-toolbar__sort {
+    flex-basis: 100%;
+    max-width: none;
+  }
 }
 </style>

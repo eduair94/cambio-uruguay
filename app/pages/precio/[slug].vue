@@ -83,21 +83,191 @@
       </p>
 
       <!-- Tabla local por local -->
-      <section class="mb-10">
+      <section id="locales" class="mb-10">
         <h2 class="text-h5 font-weight-bold mb-2">Local por local</h2>
         <p class="text-body-2 text-medium-emphasis mb-4">
-          Ordenado de más barato a más caro, con la fecha que declaró cada local. Las filas marcadas
-          se muestran igual pero no encabezan el ranking.
+          Con la fecha que declaró cada local. Filtrá por departamento o buscá tu supermercado; las
+          filas marcadas se muestran igual pero no encabezan el ranking.
         </p>
+
+        <div class="precios-toolbar mb-3">
+          <VSelect
+            v-model="storeTable.depto"
+            :items="deptItems"
+            label="Departamento"
+            prepend-inner-icon="mdi-map-marker-outline"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+            class="precios-toolbar__field"
+          />
+          <VTextField
+            v-model="storeTable.q"
+            label="Local, cadena o dirección"
+            prepend-inner-icon="mdi-store-search-outline"
+            variant="outlined"
+            density="comfortable"
+            clearable
+            hide-details
+            class="precios-toolbar__field"
+            @click:clear="storeTable.q = ''"
+          />
+          <div class="precios-toolbar__sort">
+            <VSelect
+              :model-value="storeTable.orden"
+              :items="storeSortItems"
+              label="Ordenar por"
+              variant="outlined"
+              density="comfortable"
+              hide-details
+              @update:model-value="selectStoreSort"
+            />
+            <VBtn
+              variant="outlined"
+              :icon="storeTable.dir === 'asc' ? 'mdi-sort-ascending' : 'mdi-sort-descending'"
+              :aria-label="
+                storeTable.dir === 'asc'
+                  ? 'De menor a mayor. Tocá para invertir.'
+                  : 'De mayor a menor. Tocá para invertir.'
+              "
+              @click="storeTable.dir = storeTable.dir === 'asc' ? 'desc' : 'asc'"
+            />
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap align-center ga-2 mb-1">
+          <VBtn
+            size="small"
+            variant="tonal"
+            :color="origin ? 'success' : 'primary'"
+            :loading="locating"
+            prepend-icon="mdi-crosshairs-gps"
+            @click="locate"
+          >
+            {{ origin ? 'Ubicación activa' : 'Cerca de mí' }}
+          </VBtn>
+          <VChipGroup
+            v-if="origin"
+            :model-value="radioKm ?? undefined"
+            filter
+            selected-class="text-primary"
+            aria-label="Radio de búsqueda"
+            @update:model-value="setRadius"
+          >
+            <VChip
+              v-for="km in PRECIOS_RADIUS_OPTIONS"
+              :key="km"
+              :value="km"
+              size="small"
+              variant="outlined"
+            >
+              a {{ km }} km
+            </VChip>
+          </VChipGroup>
+          <VBtn
+            v-if="origin"
+            size="small"
+            variant="text"
+            prepend-icon="mdi-close"
+            @click="clearLocation"
+          >
+            Quitar ubicación
+          </VBtn>
+        </div>
+        <p class="text-caption text-medium-emphasis mb-2">
+          <template v-if="geoError">{{ geoError }}</template>
+          <template v-else>Tu ubicación se usa sólo en tu navegador y no se guarda.</template>
+        </p>
+
+        <div class="d-flex flex-wrap column-gap-6 mb-3">
+          <VSwitch
+            v-model="storeTable.ocultarViejos"
+            color="primary"
+            density="compact"
+            hide-details
+            inset
+            label="Ocultar datos de más de dos semanas"
+          />
+          <VSwitch
+            v-model="storeTable.soloOfertas"
+            color="primary"
+            density="compact"
+            hide-details
+            inset
+            label="Sólo ofertas"
+          />
+        </div>
+
+        <VAlert
+          v-if="rows.length"
+          :type="filteredCheapest ? 'success' : 'info'"
+          variant="tonal"
+          density="comfortable"
+          :icon="filteredCheapest ? 'mdi-tag-check-outline' : 'mdi-filter-outline'"
+          class="mb-4"
+          aria-live="polite"
+        >
+          <p class="mb-1">
+            <strong>{{ filteredRows.length }}</strong>
+            {{ filteredRows.length === 1 ? 'local' : 'locales' }} con estos filtros<template
+              v-if="filteredMedian !== null"
+            >
+              · mediana {{ money(filteredMedian) }}</template
+            >.
+          </p>
+          <p v-if="filteredCheapest" class="mb-0 text-body-2">
+            El más barato que puede encabezar:
+            <strong>{{ money(filteredCheapest.price) }}</strong> en {{ filteredCheapest.storeName
+            }}<template v-if="filteredCheapest.distanceKm !== null">
+              (a {{ kmLabel(filteredCheapest.distanceKm) }})</template
+            >.
+          </p>
+          <p v-else-if="filteredRows.length" class="mb-0 text-body-2">
+            Ninguno de estos locales puede encabezar: son datos viejos o marcados.
+          </p>
+          <p v-else class="mb-0 text-body-2">
+            Ningún local coincide.
+            <a href="#locales" @click.prevent="resetStoreTable">Quitar filtros</a>.
+          </p>
+        </VAlert>
+
         <div class="table-scroll">
-          <VTable density="comfortable" class="cu-mobile-cards">
+          <VTable density="comfortable" class="cu-mobile-cards cu-roomy">
             <thead>
               <tr>
-                <th>Local</th>
-                <th>Departamento</th>
-                <th class="text-right">Precio</th>
-                <th>Dato del</th>
-                <th />
+                <PreciosSortTh
+                  label="Local"
+                  sort-key="local"
+                  :current="storeTable.orden"
+                  :dir="storeTable.dir"
+                  @sort="headerStoreSort"
+                />
+                <th scope="col">Departamento</th>
+                <PreciosSortTh
+                  label="Precio"
+                  sort-key="precio"
+                  :current="storeTable.orden"
+                  :dir="storeTable.dir"
+                  align="right"
+                  @sort="headerStoreSort"
+                />
+                <PreciosSortTh
+                  label="Dato del"
+                  sort-key="fecha"
+                  :current="storeTable.orden"
+                  :dir="storeTable.dir"
+                  @sort="headerStoreSort"
+                />
+                <PreciosSortTh
+                  v-if="origin"
+                  label="Distancia"
+                  sort-key="distancia"
+                  :current="storeTable.orden"
+                  :dir="storeTable.dir"
+                  align="right"
+                  @sort="headerStoreSort"
+                />
+                <th scope="col"><span class="d-sr-only">Nota</span></th>
               </tr>
             </thead>
             <tbody>
@@ -130,6 +300,9 @@
                     {{ row.sourceDay }}
                   </VChip>
                 </td>
+                <td v-if="origin" data-label="Distancia" class="text-right">
+                  {{ row.distanceKm === null ? '—' : kmLabel(row.distanceKm) }}
+                </td>
                 <td data-label="Nota">
                   <span v-if="row.blockedReason" class="text-caption text-medium-emphasis">
                     {{ row.blockedReason }}
@@ -139,9 +312,9 @@
             </tbody>
           </VTable>
         </div>
-        <p v-if="rows.length > visibleRows.length" class="mt-3">
+        <p v-if="sortedRows.length > visibleRows.length" class="mt-3">
           <VBtn variant="text" size="small" @click="showAllRows = true">
-            Ver los {{ rows.length }} locales
+            Ver los {{ sortedRows.length }} locales
           </VBtn>
         </p>
       </section>
@@ -183,6 +356,10 @@
       <!-- Del mismo grupo -->
       <section v-if="sameGroup.length" class="mb-10">
         <h2 class="text-h5 font-weight-bold mb-2">Otras marcas de {{ article.group }}</h2>
+        <p v-if="perUnit" class="text-body-2 text-medium-emphasis mb-4">
+          Ordenadas por precio por {{ perUnit.label }} a precio mediano, para comparar envases
+          distintos. Esta sale {{ money(perUnit.value) }} por {{ perUnit.label }}.
+        </p>
         <VRow>
           <VCol v-for="other in sameGroup" :key="other.articleId" cols="12" sm="6" md="4">
             <VCard
@@ -192,7 +369,9 @@
             >
               <p class="text-subtitle-2 font-weight-bold mb-1">{{ other.name }}</p>
               <p class="text-body-2 text-medium-emphasis mb-0">
-                mediana {{ money(other.p50) }} · {{ other.n }} locales
+                mediana {{ money(other.p50)
+                }}<template v-if="otherPerUnit(other)"> · {{ otherPerUnit(other) }}</template> ·
+                {{ other.n }} locales
               </p>
             </VCard>
           </VCol>
@@ -221,7 +400,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import {
   PRECIOS_FRESHNESS_COLOR,
   preciosArticleFromSlug,
@@ -232,6 +411,21 @@ import {
   type PreciosArticleRow,
   type PreciosStoreRow,
 } from '~/utils/preciosCatalog'
+import {
+  PRECIOS_RADIUS_OPTIONS,
+  PRECIOS_STORE_SORTS,
+  preciosCheapestRankable,
+  preciosFilterStoreRows,
+  preciosGroupKey,
+  preciosMedianPerUnit,
+  preciosSortBy,
+  preciosSortStoreRows,
+  preciosStoreQueryFromState,
+  preciosStoreStateFromQuery,
+  preciosWithDistance,
+  type PreciosSortDir,
+  type PreciosStoreSortKey,
+} from '~/utils/preciosTable'
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -265,8 +459,214 @@ const cheapest = computed<PreciosStoreRow | null>(() => detail.value?.cheapest ?
 // fuera del titular y por qué. Ocultarla sería tan malo como publicarla.
 const rawCheapest = computed<PreciosStoreRow | null>(() => rows.value[0] ?? null)
 
+// ---------------------------------------------------------------------------
+// Tabla local por local: filtros, orden y "cerca de mí"
+// ---------------------------------------------------------------------------
+
+// Departamento, texto, switches y orden salen de la URL también en el servidor.
+// La ubicación y el radio no: nunca se escriben en una dirección compartible.
+const initialStoreState = preciosStoreStateFromQuery(route.query)
+const storeTable = reactive<{
+  depto: string
+  q: string
+  ocultarViejos: boolean
+  soloOfertas: boolean
+  orden: PreciosStoreSortKey
+  dir: PreciosSortDir
+}>({ ...initialStoreState })
+
+const origin = ref<{ lat: number; lng: number } | null>(null)
+const radioKm = ref<number | null>(null)
+const locating = ref(false)
+const geoError = ref('')
+
 const showAllRows = ref(false)
-const visibleRows = computed(() => (showAllRows.value ? rows.value : rows.value.slice(0, 30)))
+
+const deptItems = computed(() => {
+  const counts = new Map<string, number>()
+  for (const row of rows.value) {
+    if (row.department) counts.set(row.department, (counts.get(row.department) || 0) + 1)
+  }
+  return [
+    { title: 'Todo el país', value: '' },
+    ...[...counts.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0], 'es'))
+      .map(([name, count]) => ({ title: `${name} (${count})`, value: name })),
+  ]
+})
+
+// Un departamento de la URL que no vende este artículo se ignora: la tabla
+// vacía sin explicación es peor que mostrar el país.
+watch(
+  deptItems,
+  items => {
+    if (
+      storeTable.depto &&
+      items.length > 1 &&
+      !items.some(item => item.value === storeTable.depto)
+    ) {
+      storeTable.depto = ''
+    }
+  },
+  { immediate: true }
+)
+
+const storeSortItems = computed(() =>
+  Object.entries(PRECIOS_STORE_SORTS)
+    .filter(([key]) => key !== 'distancia' || origin.value)
+    .map(([value, sort]) => ({ title: sort.label, value }))
+)
+
+function headerStoreSort(key: string) {
+  const next = key as PreciosStoreSortKey
+  if (!(next in PRECIOS_STORE_SORTS)) return
+  if (storeTable.orden === next) {
+    storeTable.dir = storeTable.dir === 'asc' ? 'desc' : 'asc'
+    return
+  }
+  storeTable.orden = next
+  storeTable.dir = PRECIOS_STORE_SORTS[next].defaultDir
+}
+
+// No alterna: Vuetify re-emite el valor al montar (ver el hub).
+function selectStoreSort(key: unknown) {
+  const next = key as PreciosStoreSortKey
+  if (!(next in PRECIOS_STORE_SORTS) || next === storeTable.orden) return
+  storeTable.orden = next
+  storeTable.dir = PRECIOS_STORE_SORTS[next].defaultDir
+}
+
+const rowsWithDistance = computed(() => preciosWithDistance(rows.value, origin.value))
+
+const filteredRows = computed(() =>
+  preciosFilterStoreRows(rowsWithDistance.value, {
+    depto: storeTable.depto,
+    q: storeTable.q || '',
+    ocultarViejos: storeTable.ocultarViejos,
+    soloOfertas: storeTable.soloOfertas,
+    radioKm: origin.value ? radioKm.value : null,
+  })
+)
+
+const sortedRows = computed(() =>
+  preciosSortStoreRows(filteredRows.value, storeTable.orden, storeTable.dir)
+)
+const visibleRows = computed(() =>
+  showAllRows.value ? sortedRows.value : sortedRows.value.slice(0, 30)
+)
+
+const filteredCheapest = computed(() => preciosCheapestRankable(filteredRows.value))
+
+const filteredMedian = computed<number | null>(() => {
+  const prices = filteredRows.value.map(row => row.price).sort((a, b) => a - b)
+  if (!prices.length) return null
+  const mid = Math.floor(prices.length / 2)
+  return prices.length % 2 ? prices[mid] : (prices[mid - 1] + prices[mid]) / 2
+})
+
+watch(
+  () => [
+    storeTable.depto,
+    storeTable.q,
+    storeTable.ocultarViejos,
+    storeTable.soloOfertas,
+    radioKm.value,
+  ],
+  () => {
+    showAllRows.value = false
+  }
+)
+
+function resetStoreTable() {
+  Object.assign(storeTable, {
+    depto: '',
+    q: '',
+    ocultarViejos: false,
+    soloOfertas: false,
+    orden: 'precio',
+    dir: 'asc',
+  })
+  radioKm.value = null
+}
+
+/**
+ * El radio más chico con al menos 3 locales: "cerca de mí" que devuelve una
+ * tabla vacía no le sirve a nadie, y uno de 25 km en Montevideo es todo el
+ * departamento.
+ */
+function pickRadius(from: { lat: number; lng: number }): number | null {
+  const withDistance = preciosWithDistance(rows.value, from)
+  for (const km of PRECIOS_RADIUS_OPTIONS) {
+    const inside = withDistance.filter(row => row.distanceKm !== null && row.distanceKm <= km)
+    if (inside.length >= 3) return km
+  }
+  return null
+}
+
+function locate() {
+  if (!import.meta.client) return
+  if (!('geolocation' in navigator)) {
+    geoError.value = 'Tu navegador no comparte la ubicación.'
+    return
+  }
+  locating.value = true
+  geoError.value = ''
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const from = { lat: position.coords.latitude, lng: position.coords.longitude }
+      origin.value = from
+      radioKm.value = pickRadius(from)
+      // Hay un departamento elegido que puede no ser donde estás: cerca de mí manda.
+      storeTable.depto = ''
+      if (radioKm.value === null) {
+        storeTable.orden = 'distancia'
+        storeTable.dir = 'asc'
+      } else if (storeTable.orden === 'distancia') {
+        storeTable.orden = 'precio'
+        storeTable.dir = 'asc'
+      }
+      locating.value = false
+    },
+    error => {
+      locating.value = false
+      geoError.value =
+        error.code === error.PERMISSION_DENIED
+          ? 'No diste permiso para usar tu ubicación. Podés filtrar por departamento.'
+          : 'No se pudo obtener tu ubicación. Probá de nuevo o filtrá por departamento.'
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 }
+  )
+}
+
+function setRadius(value: unknown) {
+  radioKm.value = typeof value === 'number' && PRECIOS_RADIUS_OPTIONS.includes(value) ? value : null
+}
+
+function clearLocation() {
+  origin.value = null
+  radioKm.value = null
+  if (storeTable.orden === 'distancia') {
+    storeTable.orden = 'precio'
+    storeTable.dir = 'asc'
+  }
+}
+
+usePreciosQuerySync(() =>
+  preciosStoreQueryFromState({
+    ...storeTable,
+    q: storeTable.q || '',
+    // La distancia depende de una ubicación que no va a la URL: quien abra el
+    // enlace no la tiene, así que se comparte como el orden por precio.
+    orden: storeTable.orden === 'distancia' ? 'precio' : storeTable.orden,
+    dir: storeTable.orden === 'distancia' ? 'asc' : storeTable.dir,
+  })
+)
+
+const kmLabel = (km: number): string =>
+  km < 1
+    ? `${Math.round(km * 1000)} m`
+    : `${km.toLocaleString('es-UY', { maximumFractionDigits: 1 })} km`
+
 const recentSeries = computed(() => series.value.slice(-30).reverse())
 
 const indexable = computed(() => preciosIndexable(stats.value))
@@ -286,13 +686,27 @@ const perUnitNote = computed(() =>
     : 'el envase declarado no permite calcularlo'
 )
 
+// Por clave normalizada: el SIPC escribe "Arroz Blanco" y "Arroz blanco", y
+// "Gaseosa Pepsi" y "Gaseosa Pepsi.", como grupos distintos del mismo producto.
+// Ordenadas por precio por unidad, que es lo que hace comparables dos envases.
 const sameGroup = computed(() => {
-  const group = article.value?.group
+  const group = preciosGroupKey(article.value?.group)
   if (!group) return []
-  return articles.value
-    .filter(row => row.group === group && row.articleId !== article.value?.articleId)
-    .slice(0, 6)
+  const others = articles.value.filter(
+    row => preciosGroupKey(row.group) === group && row.articleId !== article.value?.articleId
+  )
+  return preciosSortBy(
+    others,
+    row => preciosMedianPerUnit(row)?.value,
+    'asc',
+    row => row.name
+  ).slice(0, 6)
 })
+
+const otherPerUnit = (row: PreciosArticleRow): string => {
+  const value = preciosMedianPerUnit(row)
+  return value ? `${money(value.value)} / ${value.label}` : ''
+}
 
 function money(value?: number | null): string {
   return value === undefined || value === null
@@ -362,5 +776,32 @@ useHead(() => ({
 <style scoped>
 .table-scroll {
   overflow-x: auto;
+}
+.precios-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.precios-toolbar__field {
+  flex: 1 1 220px;
+  max-width: 360px;
+}
+.precios-toolbar__sort {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 0 1 280px;
+  min-width: 0;
+}
+.precios-toolbar__sort :deep(.v-select) {
+  min-width: 0;
+}
+@media (max-width: 599px) {
+  .precios-toolbar__field,
+  .precios-toolbar__sort {
+    flex-basis: 100%;
+    max-width: none;
+  }
 }
 </style>
