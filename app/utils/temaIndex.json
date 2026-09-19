@@ -72,6 +72,10 @@
         {
           "to": "/ultimos-cambios",
           "label": "Últimos cambios de cotización"
+        },
+        {
+          "to": "/por-que-sube-el-dolar",
+          "label": "Por qué sube el dólar"
         }
       ],
       "guides": [

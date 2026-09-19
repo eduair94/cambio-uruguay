@@ -152,6 +152,11 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Qué casa movió su precio, en vivo.',
         to: '/ultimos-cambios',
       },
+      {
+        label: 'Por qué sube el dólar',
+        description: 'Las razones detrás del precio.',
+        to: '/por-que-sube-el-dolar',
+      },
     ],
     terms: [
       'cotizacion',
