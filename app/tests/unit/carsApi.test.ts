@@ -62,6 +62,19 @@ const row = {
 }
 
 describe('publicCarRow', () => {
+  // MLU700552753: priced at the stated cash price, the portal's number kept aside. The first deploy
+  // wrote it to the catalogue and this projection dropped it: the card never said "figura US$ 8.990".
+  it('carries the listed number when the price is the stated cash price', async () => {
+    const { publicCarRow } = await import('../../server/utils/cars')
+    expect(
+      publicCarRow({ ...row, source: 'mercadolibre', price: 12990, listedPrice: 8990 })?.listedPrice
+    ).toBe(8990)
+    expect(publicCarRow({ ...row, source: 'mercadolibre' })?.listedPrice).toBeNull()
+    expect(
+      publicCarRow({ ...row, source: 'mercadolibre', listedPrice: 'x' })?.listedPrice
+    ).toBeNull()
+  })
+
   it('keeps each source on its own permalink and picture hosts', async () => {
     const { publicCarRow } = await import('../../server/utils/cars')
     const facebook = publicCarRow({

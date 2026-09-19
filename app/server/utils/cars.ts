@@ -35,6 +35,7 @@ const CAR_FIELDS = [
   'year',
   'km',
   'price',
+  'listedPrice',
   'currency',
   'priceUsd',
   'priceConverted',
@@ -121,6 +122,12 @@ export function publicCarRow(row: Record<string, any>): PublicCarListing {
     year: Number(row.year),
     km: optionalNumber(row.km),
     price: Number(row.price),
+    // What the portal lists when the price is the cash price the advert states (often the down
+    // payment). A missing or non-positive value means the listed number IS the price.
+    listedPrice:
+      optionalNumber(row.listedPrice) !== null && Number(row.listedPrice) > 0
+        ? Number(row.listedPrice)
+        : null,
     currency: row.currency === 'UYU' ? 'UYU' : 'USD',
     priceUsd: Number(row.priceUsd),
     priceConverted: row.priceConverted === true,
