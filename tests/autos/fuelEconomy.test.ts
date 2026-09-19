@@ -129,6 +129,19 @@ describe("the fuel consumption of an advert that states none", () => {
     expect(attachFuelEconomy([...others.slice(0, 9), bmw]).at(-1)!.fuelEconomy).toBeNull();
   });
 
+  it("does not take a claim no car that only burns fuel can do, and keeps it for hybrids", () => {
+    const others = [described(12), described(14), described(13)];
+    // "25 km/l" is 4 L/100 km: not a Clio 0.9 on petrol.
+    const clio = described(25);
+    expect(attachFuelEconomy([...others, clio]).at(-1)!.fuelEconomy).toMatchObject({ litersPer100Km: 7.7, basis: "model_engine" });
+    // The same figure on a Prius (named so, fuel missing) is the advert's.
+    const prius = described(25, { fuel: null, title: "Toyota Prius 1.8", marketSlug: "toyota-prius" });
+    expect(attachFuelEconomy([prius]).at(-1)!.fuelEconomy).toMatchObject({ litersPer100Km: 4, basis: "advert" });
+    // "hev" inside "Chevrolet" is not a hybrid.
+    const onix = described(25, { title: "Chevrolet Onix 1.0 Turbo" });
+    expect(attachFuelEconomy([...others, onix]).at(-1)!.fuelEconomy).toMatchObject({ basis: "model_engine" });
+  });
+
   it("never mixes fuels, and gives electric cars no km per litre", () => {
     const out = attachFuelEconomy([described(12), described(14), described(13), car({ fuel: "diesel" }), car({ fuel: "electrico" })]);
     expect(out[3]!.fuelEconomy).toBeNull();

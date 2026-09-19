@@ -105,6 +105,11 @@ export function readFuelEconomy(text: string): FuelEconomyReading | null {
 }
 
 const MIN_SELLERS = 3;
+// A car that only burns fuel does not do under 4,5 L/100 km (22 km/l) in real use; below that only
+// hybrids go, and the claims that did were "25 km/l" on a Clio 0.9, an Alto and a diesel Fiat Premio.
+// Such a claim is not taken: the advert gets its model's estimate, like one that states nothing.
+const MIN_L100_COMBUSTION = 4.5;
+const HYBRID = /h[iy]brid|\bprius\b|\be-?tech\b|\bp?hev\b/i;
 // Across models a displacement says less, so it needs a wider base.
 const MIN_SELLERS_ENGINE_CLASS = 10;
 
@@ -127,7 +132,13 @@ export function statedFuelEconomy(listing: Pick<CarListing, "title" | "specText"
  * still one guess. Electric cars burn no fuel and get none.
  */
 export function attachFuelEconomy<T extends CarListing>(listings: readonly T[]): Array<T & { fuelEconomy: CarFuelEconomy | null }> {
-  const stated = listings.map(listing => (listing.fuel === "electrico" ? null : statedFuelEconomy(listing)));
+  const stated = listings.map(listing => {
+    if (listing.fuel === "electrico") return null;
+    const reading = statedFuelEconomy(listing);
+    // Hybrid by fuel OR by name: "Swift Hybrid" and "Prius" arrive with the fuel missing or as nafta.
+    const hybrid = listing.fuel === "hibrido" || HYBRID.test(`${listing.title} ${listing.specText ?? ""}`);
+    return reading && !hybrid && reading.litersPer100Km < MIN_L100_COMBUSTION ? null : reading;
+  });
   const groups = new Map<string, Map<string, number[]>>();
   const add = (key: string, seller: string, value: number): void => {
     const bySeller = groups.get(key) ?? new Map<string, number[]>();
