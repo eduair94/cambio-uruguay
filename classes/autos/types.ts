@@ -153,7 +153,7 @@ export interface CarListing extends RawCarListing {
    * price ("US$12990 Contado") and `price` holds that one. Null when the listed number is the price.
    */
   listedPrice?: number | null;
-  /** Km per litre: what the advert states, else what sellers of the same model state (./fuelEconomy.ts). */
+  /** Litres per 100 km: what the advert states, else what sellers of the same model state (./fuelEconomy.ts). */
   fuelEconomy?: CarFuelEconomy | null;
   firstSeen: string;
   lastSeen: string;

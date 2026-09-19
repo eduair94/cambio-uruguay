@@ -49,7 +49,7 @@
         data-testid="car-fuel-economy"
       >
         <VIcon size="16" aria-hidden="true">mdi-gas-station-outline</VIcon>
-        <span>{{ fuelEconomy }}</span>
+        <span>Consumo {{ fuelEconomy }}</span>
         <span v-if="car.fuelEconomy?.basis !== 'advert'" class="car-card__kml-note">estimado</span>
       </p>
       <p v-if="place" class="car-card__place">{{ place }}</p>

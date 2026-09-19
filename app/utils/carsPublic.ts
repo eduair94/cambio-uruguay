@@ -4,12 +4,13 @@ export type PublicCarFuel = 'nafta' | 'diesel' | 'electrico' | 'hibrido' | 'gnc'
 export type PublicCarTransmission = 'manual' | 'automatica'
 export type PublicCarSeller = 'dealer' | 'private'
 /**
- * Km per litre. `basis` says where the figure comes from: "advert" = this advert states it; the rest
- * are estimates from what OTHER sellers state, one figure per seller — same model and engine, same
- * model, or (coarse) same fuel and displacement. `sellers` = how many sellers stand behind an estimate.
+ * Fuel consumption in litres per 100 km. `basis` says where the figure comes from: "advert" = this
+ * advert states it; the rest are estimates from what OTHER sellers state, one figure per seller — same
+ * model and engine, same model, or (coarse) same fuel and displacement. `sellers` = how many sellers
+ * stand behind an estimate.
  */
 export interface PublicCarFuelEconomy {
-  kmPerLiter: number
+  litersPer100Km: number
   city: number | null
   highway: number | null
   combined: number | null

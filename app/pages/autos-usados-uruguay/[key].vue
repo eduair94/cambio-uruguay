@@ -81,7 +81,7 @@
                 <td>{{ CAR_FUEL_LABELS[car.fuel] }}</td>
               </tr>
               <tr v-if="car.fuelEconomy" data-testid="car-fuel-economy">
-                <th scope="row">Rendimiento</th>
+                <th scope="row">Consumo</th>
                 <td>
                   <strong>{{ formatCarFuelEconomy(car.fuelEconomy) }}</strong>
                   <span class="d-block text-body-2 text-medium-emphasis">

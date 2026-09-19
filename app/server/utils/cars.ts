@@ -86,15 +86,15 @@ const optionalNumber = (value: unknown): number | null =>
 
 const FUEL_ECONOMY_BASES = ['advert', 'model_engine', 'model', 'engine_class'] as const
 
-/** Km per litre, rebuilt field by field; anything malformed is no figure rather than a wrong one. */
+/** Litres per 100 km, rebuilt field by field; anything malformed is no figure rather than a wrong one. */
 function fuelEconomyOf(value: unknown): PublicCarFuelEconomy | null {
   if (!value || typeof value !== 'object') return null
   const row = value as Record<string, unknown>
-  const kmPerLiter = optionalNumber(row.kmPerLiter)
+  const litersPer100Km = optionalNumber(row.litersPer100Km)
   const basis = FUEL_ECONOMY_BASES.find(item => item === row.basis)
-  if (kmPerLiter === null || kmPerLiter <= 0 || !basis) return null
+  if (litersPer100Km === null || litersPer100Km <= 0 || !basis) return null
   return {
-    kmPerLiter,
+    litersPer100Km,
     city: optionalNumber(row.city),
     highway: optionalNumber(row.highway),
     combined: optionalNumber(row.combined),

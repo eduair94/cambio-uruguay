@@ -27,7 +27,7 @@ export const CAR_SORTS = [
   'price_desc',
   'km_asc',
   'year_desc',
-  'kml_desc',
+  'consumption_asc',
 ] as const
 export type CarSort = (typeof CAR_SORTS)[number]
 /** Orden de las oportunidades: por defecto, la diferencia contra la mediana. */
@@ -36,11 +36,11 @@ export const CAR_OPPORTUNITY_SORTS = [
   'price_asc',
   'year_desc',
   'km_asc',
-  'kml_desc',
+  'consumption_asc',
 ] as const
 export type CarOpportunitySort = (typeof CAR_OPPORTUNITY_SORTS)[number]
-/** Los escalones del filtro de rendimiento, en km por litro. */
-export const CAR_KML_STEPS = [10, 12, 14, 16, 18] as const
+/** Los escalones del filtro de consumo máximo, en litros cada 100 km. */
+export const CAR_CONSUMPTION_STEPS = [5, 6, 7, 8, 10] as const
 export const CAR_FUELS: readonly PublicCarFuel[] = [
   'nafta',
   'diesel',
@@ -181,8 +181,8 @@ export interface CarsQuery {
   yearMin: number | null
   yearMax: number | null
   kmMax: number | null
-  /** Rendimiento mínimo en km por litro, del aviso o estimado por modelo. */
-  kmlMin: number | null
+  /** Consumo máximo en litros cada 100 km, del aviso o estimado por modelo. */
+  l100Max: number | null
   priceMin: number | null
   priceMax: number | null
   fuel: PublicCarFuel | ''
@@ -243,7 +243,7 @@ export interface CarOpportunityQuery {
   kmMax: number | null
   fuel: PublicCarFuel | ''
   transmission: PublicCarTransmission | ''
-  kmlMin: number | null
+  l100Max: number | null
   department: string
   seller: PublicCarSeller | ''
   sort: CarOpportunitySort
@@ -295,7 +295,7 @@ export function normalizeCarsQuery(input: Record<string, unknown>): CarsQuery {
     yearMin: integer(input.yearMin, 1950, 2100),
     yearMax: integer(input.yearMax, 1950, 2100),
     kmMax: integer(input.kmMax, 1, 1_000_000),
-    kmlMin: integer(input.kmlMin, 1, 40),
+    l100Max: integer(input.l100Max, 1, 30),
     priceMin: integer(input.priceMin, 1, 1_000_000),
     priceMax: integer(input.priceMax, 1, 1_000_000),
     fuel: oneOf(input.fuel, CAR_FUELS),
@@ -354,7 +354,7 @@ export function carsMatch(query: CarsQuery, now: Date, freshDays: number): Recor
     }
   }
   if (query.kmMax !== null) match.km = { $ne: null, $lte: query.kmMax }
-  if (query.kmlMin !== null) match['fuelEconomy.kmPerLiter'] = { $gte: query.kmlMin }
+  if (query.l100Max !== null) match['fuelEconomy.litersPer100Km'] = { $lte: query.l100Max }
   if (query.priceMin !== null || query.priceMax !== null) {
     match.priceUsd = {
       ...(query.priceMin !== null ? { $gte: query.priceMin } : {}),
@@ -375,8 +375,8 @@ export function carsSort(sort: CarSort): Record<string, 1 | -1> {
   if (sort === 'price_desc') return { priceUsd: -1, key: 1 }
   if (sort === 'km_asc') return { km: 1, key: 1 }
   if (sort === 'year_desc') return { year: -1, priceUsd: 1, key: 1 }
-  // Sin dato de rendimiento queda al final: en Mongo un campo ausente ordena como el menor.
-  if (sort === 'kml_desc') return { 'fuelEconomy.kmPerLiter': -1, priceUsd: 1, key: 1 }
+  // La API deja afuera los avisos sin dato cuando se ordena así (ver server/api/cars/index.get.ts).
+  if (sort === 'consumption_asc') return { 'fuelEconomy.litersPer100Km': 1, priceUsd: 1, key: 1 }
   return { firstSeen: -1, key: 1 }
 }
 
@@ -397,7 +397,7 @@ export function normalizeCarOpportunityQuery(input: Record<string, unknown>): Ca
     kmMax: integer(input.kmMax, 1, 1_000_000),
     fuel: oneOf(input.fuel, CAR_FUELS),
     transmission: oneOf(input.transmission, CAR_TRANSMISSIONS),
-    kmlMin: integer(input.kmlMin, 1, 40),
+    l100Max: integer(input.l100Max, 1, 30),
     department: oneOf(input.department, CAR_DEPARTMENTS),
     seller: oneOf(input.seller, CAR_SELLERS),
     sort: oneOf(input.sort, CAR_OPPORTUNITY_SORTS) || 'gap',
@@ -428,10 +428,10 @@ function opportunityOrder(
   if (sort === 'year_desc') return b.subject.year - a.subject.year || b.gap - a.gap
   if (sort === 'km_asc')
     return lastIfMissing(a.subject.km, b.subject.km) || (a.subject.km ?? 0) - (b.subject.km ?? 0)
-  if (sort === 'kml_desc') {
-    const left = a.subject.fuelEconomy?.kmPerLiter
-    const right = b.subject.fuelEconomy?.kmPerLiter
-    return lastIfMissing(left, right) || (right ?? 0) - (left ?? 0) || b.gap - a.gap
+  if (sort === 'consumption_asc') {
+    const left = a.subject.fuelEconomy?.litersPer100Km
+    const right = b.subject.fuelEconomy?.litersPer100Km
+    return lastIfMissing(left, right) || (left ?? 0) - (right ?? 0) || b.gap - a.gap
   }
   return (a.tier === b.tier ? 0 : a.tier === 'strict' ? -1 : 1) || b.gap - a.gap
 }
@@ -469,7 +469,10 @@ export function queryCarOpportunities(
     .filter(entry => !query.fuel || entry.subject.fuel === query.fuel)
     .filter(entry => !query.transmission || entry.subject.transmission === query.transmission)
     .filter(
-      entry => query.kmlMin === null || (entry.subject.fuelEconomy?.kmPerLiter ?? 0) >= query.kmlMin
+      entry =>
+        query.l100Max === null ||
+        (entry.subject.fuelEconomy != null &&
+          entry.subject.fuelEconomy.litersPer100Km <= query.l100Max)
     )
     .sort(
       (a, b) => opportunityOrder(query.sort, a, b) || a.subject.key.localeCompare(b.subject.key)
@@ -515,12 +518,12 @@ export const carPercent = (gap: number): string => `${Math.round(gap * 100)} %`
 
 const oneDecimal = (value: number): string => String(Math.round(value * 10) / 10).replace('.', ',')
 
-/** "16 km/l" si lo dice el aviso; "≈ 16 km/l" si es una estimación. */
+/** "6,3 L/100 km" si lo dice el aviso; "≈ 6,3 L/100 km" si es una estimación. */
 export function formatCarFuelEconomy(
   economy: PublicCarFuelEconomy | null | undefined
 ): string | null {
   if (!economy) return null
-  return `${economy.basis === 'advert' ? '' : '≈ '}${oneDecimal(economy.kmPerLiter)} km/l`
+  return `${economy.basis === 'advert' ? '' : '≈ '}${oneDecimal(economy.litersPer100Km)} L/100 km`
 }
 
 /**
@@ -533,8 +536,8 @@ export function carFuelEconomySource(
   if (!economy) return null
   if (economy.basis === 'advert') {
     const parts = [
-      economy.city !== null ? `ciudad ${oneDecimal(economy.city)} km/l` : null,
-      economy.highway !== null ? `ruta ${oneDecimal(economy.highway)} km/l` : null,
+      economy.city !== null ? `ciudad ${oneDecimal(economy.city)} L/100 km` : null,
+      economy.highway !== null ? `ruta ${oneDecimal(economy.highway)} L/100 km` : null,
     ].filter(Boolean)
     return parts.length ? `Según el aviso: ${parts.join(', ')}.` : 'Según el aviso.'
   }

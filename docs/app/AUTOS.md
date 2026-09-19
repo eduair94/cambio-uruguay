@@ -207,7 +207,7 @@ la entrega sin decir el contado).
 
 Los casos reales están en `tests/autos/cashPrice.test.ts`.
 
-## Rendimiento (km/l) (2026-09-19)
+## Consumo en L/100 km (2026-09-19)
 
 Ningún portal da el consumo como campo: la tabla "Rendimiento y dimensiones" de Mercado Libre trae
 potencia, tanque y medidas, nunca el consumo. Vive en la descripción, sobre todo en plantillas de
@@ -215,11 +215,13 @@ automotora ("Consumo medio en ruta: 19 km/l. Consumo medio en ciudad: 17 km/l.")
 formas de particulares ("16km Por litro", "En ciudad 11km x lt / En Ruta 14km x lt", "6,5 l/100 km").
 `classes/autos/fuelEconomy.ts`:
 
+- **Se mide y se muestra en litros cada 100 km** (pedido del usuario). Los vendedores escriben km/l
+  casi siempre: cada cifra se convierte una sola vez, en el lector, y se redondea al final.
 - **`readFuelEconomy`** separa ciudad / ruta / combinado según la palabra que precede a cada cifra, y
   la cifra única para comparar es el combinado, si no el promedio de ciudad y ruta, si no la que haya.
   Descarta `km/h`, lo que queda fuera de 5–35 km/l y un número pegado a una letra (un enlace
   `…/a7w3w7kl` se leía como 7 km/l). Una plantilla con la ruta por debajo de la ciudad y valores
-  chicos son litros cada 100 km mal rotulados (Yaris "ruta 5,09 / ciudad 7,9"): se convierten.
+  chicos son litros cada 100 km mal rotulados (Yaris "ruta 5,09 / ciudad 7,9"): se toman como litros.
 - **`attachFuelEconomy`**: si el aviso no lo dice, la mediana de lo que declaran OTROS vendedores del
   mismo modelo y motor; si no alcanza, del mismo modelo; si tampoco, del mismo combustible y cilindrada
   (estimación gruesa, mínimo 10 vendedores). **Un valor por vendedor**: una automotora pega la misma
@@ -231,8 +233,9 @@ formas de particulares ("16km Por litro", "En ciudad 11km x lt / En Ruta 14km x 
   por modelo, 3.059 por cilindrada, 3.962 sin dato (sobre todo pick-ups diésel, casi nadie lo escribe,
   y eléctricos).
 - Público como `fuelEconomy` (catálogo y oportunidades) con `basis` y `sellers`: la página siempre dice
-  si es del aviso o una estimación y cuántos vendedores la sostienen. Filtro "rendimiento mínimo" y
-  orden "menor consumo" en el directorio (índice `fuelEconomy.kmPerLiter`) y en oportunidades.
+  si es del aviso o una estimación y cuántos vendedores la sostienen. Filtro "consumo máximo" y orden
+  "menor consumo" en el directorio (índice `fuelEconomy.litersPer100Km`) y en oportunidades; como
+  "menos kilómetros", ese orden deja afuera los avisos sin el dato.
 
 ## Precio con motivo: el riesgo declarado
 

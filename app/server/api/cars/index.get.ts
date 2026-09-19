@@ -38,6 +38,13 @@ export default defineEventHandler(async event => {
     const match = carsMatch(query, now, meta.freshDays)
     // "Menos kilómetros" must not lead with adverts whose km we refused to publish.
     if (query.sort === 'km_asc') match.km = { ...((match.km as object) || {}), $ne: null }
+    // Same rule as km: ordering by consumption lists the cars that have a figure (a missing one would
+    // sort first in an ascending order).
+    if (query.sort === 'consumption_asc')
+      match['fuelEconomy.litersPer100Km'] = {
+        ...((match['fuelEconomy.litersPer100Km'] as object) || {}),
+        $ne: null,
+      }
     const [total, rows, brands, models, departments, sources] = await Promise.all([
       CarCatalogModel.countDocuments(match).maxTimeMS(10_000),
       CarCatalogModel.find(match)

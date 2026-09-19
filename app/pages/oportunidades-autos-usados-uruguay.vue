@@ -86,9 +86,9 @@
             hide-details
           />
           <VSelect
-            v-model="draft.kmlMin"
-            :items="kmlItems"
-            label="Rendimiento mínimo"
+            v-model="draft.l100Max"
+            :items="consumptionItems"
+            label="Consumo máximo"
             hint="Del aviso o estimado por modelo"
             persistent-hint
             density="comfortable"
@@ -210,7 +210,7 @@ import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import {
   CAR_FUELS,
   CAR_FUEL_LABELS,
-  CAR_KML_STEPS,
+  CAR_CONSUMPTION_STEPS,
   CAR_OPPORTUNITIES_PATH,
   CAR_SELLERS,
   CAR_SELLER_LABELS,
@@ -247,16 +247,19 @@ const transmissionItems = [
   { title: 'Cualquier caja', value: '' },
   ...CAR_TRANSMISSIONS.map(value => ({ title: CAR_TRANSMISSION_LABELS[value], value })),
 ]
-const kmlItems = [
-  { title: 'Cualquier rendimiento', value: '' },
-  ...CAR_KML_STEPS.map(value => ({ title: `${value} km/l o más`, value: String(value) })),
+const consumptionItems = [
+  { title: 'Cualquier consumo', value: '' },
+  ...CAR_CONSUMPTION_STEPS.map(value => ({
+    title: `Hasta ${value} L/100 km`,
+    value: String(value),
+  })),
 ]
 const sortItems: Array<{ title: string; value: CarOpportunitySort }> = [
   { title: 'Mayor diferencia', value: 'gap' },
   { title: 'Menor precio', value: 'price_asc' },
   { title: 'Más nuevos', value: 'year_desc' },
   { title: 'Menos kilómetros', value: 'km_asc' },
-  { title: 'Menor consumo (más km/l)', value: 'kml_desc' },
+  { title: 'Menor consumo', value: 'consumption_asc' },
 ]
 
 const query = computed(() => normalizeCarOpportunityQuery(route.query as Record<string, unknown>))
@@ -288,7 +291,7 @@ const toDraft = (value: CarOpportunityQuery) => ({
   kmMax: value.kmMax?.toString() ?? '',
   fuel: value.fuel as string,
   transmission: value.transmission as string,
-  kmlMin: value.kmlMin?.toString() ?? '',
+  l100Max: value.l100Max?.toString() ?? '',
   department: value.department,
   seller: value.seller as string,
 })

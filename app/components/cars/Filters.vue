@@ -79,9 +79,9 @@
       hide-details
     />
     <VSelect
-      v-model="draft.kmlMin"
-      :items="kmlItems"
-      label="Rendimiento mínimo"
+      v-model="draft.l100Max"
+      :items="consumptionItems"
+      label="Consumo máximo"
       hint="Del aviso o estimado por modelo"
       persistent-hint
       density="comfortable"
@@ -132,7 +132,7 @@ import {
   CAR_DEPARTMENTS,
   CAR_FUELS,
   CAR_FUEL_LABELS,
-  CAR_KML_STEPS,
+  CAR_CONSUMPTION_STEPS,
   CAR_SELLERS,
   CAR_SELLER_LABELS,
   CAR_TRANSMISSIONS,
@@ -157,7 +157,7 @@ const toDraft = (query: CarsQuery) => ({
   priceMin: query.priceMin?.toString() ?? '',
   priceMax: query.priceMax?.toString() ?? '',
   kmMax: query.kmMax?.toString() ?? '',
-  kmlMin: query.kmlMin?.toString() ?? '',
+  l100Max: query.l100Max?.toString() ?? '',
   fuel: query.fuel as string,
   transmission: query.transmission as string,
   department: query.department,
@@ -188,9 +188,12 @@ const fuelItems = [
   { title: 'Cualquier combustible', value: '' },
   ...CAR_FUELS.map(value => ({ title: CAR_FUEL_LABELS[value], value })),
 ]
-const kmlItems = [
-  { title: 'Cualquier rendimiento', value: '' },
-  ...CAR_KML_STEPS.map(value => ({ title: `${value} km/l o más`, value: String(value) })),
+const consumptionItems = [
+  { title: 'Cualquier consumo', value: '' },
+  ...CAR_CONSUMPTION_STEPS.map(value => ({
+    title: `Hasta ${value} L/100 km`,
+    value: String(value),
+  })),
 ]
 const transmissionItems = [
   { title: 'Cualquier caja', value: '' },

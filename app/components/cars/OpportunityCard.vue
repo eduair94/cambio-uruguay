@@ -29,7 +29,7 @@
         <p class="text-body-2 mb-1">{{ facts }}</p>
         <p v-if="fuelEconomy" class="text-body-2 mb-1" data-testid="car-fuel-economy">
           <VIcon size="16" aria-hidden="true">mdi-gas-station-outline</VIcon>
-          <strong>{{ fuelEconomy }}</strong>
+          Consumo <strong>{{ fuelEconomy }}</strong>
           <span class="text-medium-emphasis"> · {{ fuelEconomySource }}</span>
         </p>
         <p class="text-h6 font-weight-bold mb-1">{{ formatCarUsd(item.subject.priceUsd) }}</p>
