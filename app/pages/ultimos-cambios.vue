@@ -312,6 +312,7 @@ const numberFormatter = computed(
 const dateFormatter = computed(
   () =>
     new Intl.DateTimeFormat(dateLocale(locale.value), {
+      hourCycle: 'h23',
       dateStyle: 'short',
       timeStyle: 'short',
       timeZone: 'America/Montevideo',
@@ -320,6 +321,7 @@ const dateFormatter = computed(
 const timeFormatter = computed(
   () =>
     new Intl.DateTimeFormat(dateLocale(locale.value), {
+      hourCycle: 'h23',
       timeStyle: 'medium',
       timeZone: 'America/Montevideo',
     })

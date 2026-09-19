@@ -483,6 +483,7 @@ const updatedLabel = computed(() => {
   return Number.isNaN(at.getTime())
     ? '—'
     : new Intl.DateTimeFormat(dateLocale(locale.value), {
+        hourCycle: 'h23',
         day: 'numeric',
         month: 'short',
         hour: '2-digit',

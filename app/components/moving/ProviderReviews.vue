@@ -209,6 +209,7 @@ function number(value: number, decimals = 0) {
 }
 function checkedDate(value: string) {
   return new Intl.DateTimeFormat(dateLocale(locale.value), {
+    hourCycle: 'h23',
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone: 'America/Montevideo',

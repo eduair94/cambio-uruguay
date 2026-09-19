@@ -146,6 +146,7 @@ const error = ref('')
 const removing = ref<RentalAlertSubscription | null>(null)
 const date = (value: string) =>
   new Intl.DateTimeFormat(dateLocale(locale.value), {
+    hourCycle: 'h23',
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone: 'America/Montevideo',

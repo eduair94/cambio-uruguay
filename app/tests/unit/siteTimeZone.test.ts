@@ -123,6 +123,34 @@ describe('toda fecha formateada fija su zona', () => {
     ).toEqual([])
   })
 
+  // Con reloj de 12 h el ICU del VPS (76) escribe "4:20 p.[U+00A0]m." y Chrome (78) "4:20 p. m.":
+  // el mismo texto con otro espacio, y un mismatch en /alquileres-uruguay, /ultimos-cambios,
+  // /analiticas… En 24 h no hay "p. m." y los dos escriben byte a byte lo mismo (medido
+  // 2026-09-19 en es-UY, en-US y pt-BR).
+  it('toda hora formateada fija el reloj de 24 h (hourCycle: h23 o hour12: false)', () => {
+    const hits: string[] = []
+    const any =
+      /\.(toLocaleString|toLocaleDateString|toLocaleTimeString)\(|new Intl\.DateTimeFormat\(/g
+    for (const file of files) {
+      const source = fs.readFileSync(file, 'utf8')
+      for (const match of source.matchAll(any)) {
+        const lineStart = source.lastIndexOf('\n', match.index) + 1
+        if (/^\s*(?:\*|\/\/)/.test(source.slice(lineStart, match.index))) continue
+        const call = callAt(source, match.index! + match[0].length - 1)
+        const time = match[1] === 'toLocaleTimeString' || /\b(?:hour|timeStyle)\s*:/.test(call)
+        if (time && !/hour12\s*:\s*false|hourCycle\s*:/.test(call))
+          hits.push(
+            `${path.relative(APP_ROOT, file)}:${source.slice(0, match.index).split('\n').length}`
+          )
+      }
+    }
+    expect(
+      hits,
+      `Hora sin reloj fijado: el "p. m." de ICU cambia de espacio entre el servidor y el ` +
+        `navegador. Agregá hourCycle: 'h23':\n${hits.join('\n')}`
+    ).toEqual([])
+  })
+
   it('ningún formato junta el mes largo con la hora (usá formatSiteDateTime)', () => {
     const hits: string[] = []
     const any =

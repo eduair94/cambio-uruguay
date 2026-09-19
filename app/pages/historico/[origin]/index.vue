@@ -326,6 +326,7 @@ const items = computed<CambioItem[]>(() => {
 // Last update timestamp
 const _lastUpdate = computed(() => {
   return new Date().toLocaleString('es-UY', {
+    hourCycle: 'h23',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
