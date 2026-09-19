@@ -308,7 +308,7 @@
             />
           </div>
           <p class="rental-search__hint">{{ t('servicesHint') }}</p>
-          <p v-if="serviceFilters.error.value" class="rental-search__hint">
+          <p v-if="servicesMounted && serviceFilters.error.value" class="rental-search__hint">
             {{ t('servicesUnavailable') }}
           </p>
           <p v-else-if="powerCollecting" class="rental-search__hint">
@@ -508,9 +508,15 @@ const serviceFilters = useFetch<{
   options: Array<{ attribute: RentalServiceAttribute; available: boolean; status: string }>
   meta: RentalZoneUtilitiesMeta | null
 }>('/api/rentals/service-filters', { key: 'rental-service-filters', server: false, lazy: true })
+// SSR renders every option disabled; the fetched state only applies after mount, or a response
+// that lands before this subtree hydrates would flip `disabled` under Vue's feet.
+const servicesMounted = ref(false)
+onMounted(() => {
+  servicesMounted.value = true
+})
 const serviceOptions = computed(
   () =>
-    serviceFilters.data.value?.options ??
+    (servicesMounted.value ? serviceFilters.data.value?.options : undefined) ??
     RENTAL_SERVICE_FILTERS.map(attribute => ({
       attribute,
       available: false,
@@ -518,7 +524,7 @@ const serviceOptions = computed(
     }))
 )
 const powerCollecting = computed(() => {
-  const power = serviceFilters.data.value?.meta?.power
+  const power = servicesMounted.value ? serviceFilters.data.value?.meta?.power : undefined
   return power?.status === 'collecting' && power.observedFrom
     ? new Intl.DateTimeFormat(locale.value, { dateStyle: 'long', timeZone: 'UTC' }).format(
         new Date(power.observedFrom)

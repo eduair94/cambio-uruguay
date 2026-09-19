@@ -3,49 +3,55 @@
   <section class="zone-services" data-testid="rental-zone-services">
     <h3>{{ t('panelTitle', { name: zone.name }) }}</h3>
     <p class="meta">{{ t(`evidence_${zone.evidence}`) }}</p>
-    <p v-if="pending" class="meta" role="status">{{ t('loading') }}</p>
-    <p v-else-if="error || !profile" class="meta">{{ t('unavailableSnapshot') }}</p>
-    <dl v-else class="rows">
-      <div>
-        <dt>{{ t('power') }}</dt>
-        <dd v-if="profile.utilities.power && profile.utilities.power.geography === 'zone'">
-          {{ t('powerMinutes', { n: decimal(profile.utilities.power.unplannedMinutes) }) }}
-          <span v-if="levels.luz" class="level" :class="`level--${levels.luz}`">{{
-            t(levelKey(levels.luz))
-          }}</span>
-        </dd>
-        <dd v-else-if="profile.meta?.power?.status === 'collecting'" class="muted">
-          {{ t('powerCollectingShort', { date: date(profile.meta.power.observedFrom) }) }}
-        </dd>
-        <dd v-else class="muted">{{ t('noData') }}</dd>
-      </div>
-      <div>
-        <dt>{{ t('waterStat') }}</dt>
-        <dd v-if="profile.utilities.water && profile.utilities.water.geography === 'zone'">
-          {{ t('waterNotices', { n: number(profile.utilities.water.notices) }) }}
-          <span v-if="levels.agua" class="level" :class="`level--${levels.agua}`">{{
-            t(levelKey(levels.agua))
-          }}</span>
-        </dd>
-        <dd v-else class="muted">{{ t('noData') }}</dd>
-      </div>
-      <div v-for="category in claimCategories" :key="category">
-        <dt>{{ t(`claim_${category}`) }}</dt>
-        <dd v-if="profile.utilities.claims?.perThousand">
-          {{ t('perThousand', { n: decimal(profile.utilities.claims.perThousand[category]) }) }}
-          <span v-if="levels[category]" class="level" :class="`level--${levels[category]}`">{{
-            t(levelKey(levels[category]!))
-          }}</span>
-        </dd>
-        <dd v-else class="muted">
-          {{ profile.department === 'Montevideo' ? t('noData') : t('claimsMontevideo') }}
-        </dd>
-      </div>
-      <div v-if="profile.crime">
-        <dt>{{ t('crime') }}</dt>
-        <dd>{{ t('complaints', { n: number(profile.crime.total) }) }}</dd>
-      </div>
-    </dl>
+    <!-- The profile is fetched only in the browser: its loading state must not be part of the SSR HTML. -->
+    <ClientOnly>
+      <p v-if="pending" class="meta" role="status">{{ t('loading') }}</p>
+      <p v-else-if="error || !profile" class="meta">{{ t('unavailableSnapshot') }}</p>
+      <dl v-else class="rows">
+        <div>
+          <dt>{{ t('power') }}</dt>
+          <dd v-if="profile.utilities.power && profile.utilities.power.geography === 'zone'">
+            {{ t('powerMinutes', { n: decimal(profile.utilities.power.unplannedMinutes) }) }}
+            <span v-if="levels.luz" class="level" :class="`level--${levels.luz}`">{{
+              t(levelKey(levels.luz))
+            }}</span>
+          </dd>
+          <dd v-else-if="profile.meta?.power?.status === 'collecting'" class="muted">
+            {{ t('powerCollectingShort', { date: date(profile.meta.power.observedFrom) }) }}
+          </dd>
+          <dd v-else class="muted">{{ t('noData') }}</dd>
+        </div>
+        <div>
+          <dt>{{ t('waterStat') }}</dt>
+          <dd v-if="profile.utilities.water && profile.utilities.water.geography === 'zone'">
+            {{ t('waterNotices', { n: number(profile.utilities.water.notices) }) }}
+            <span v-if="levels.agua" class="level" :class="`level--${levels.agua}`">{{
+              t(levelKey(levels.agua))
+            }}</span>
+          </dd>
+          <dd v-else class="muted">{{ t('noData') }}</dd>
+        </div>
+        <div v-for="category in claimCategories" :key="category">
+          <dt>{{ t(`claim_${category}`) }}</dt>
+          <dd v-if="profile.utilities.claims?.perThousand">
+            {{ t('perThousand', { n: decimal(profile.utilities.claims.perThousand[category]) }) }}
+            <span v-if="levels[category]" class="level" :class="`level--${levels[category]}`">{{
+              t(levelKey(levels[category]!))
+            }}</span>
+          </dd>
+          <dd v-else class="muted">
+            {{ profile.department === 'Montevideo' ? t('noData') : t('claimsMontevideo') }}
+          </dd>
+        </div>
+        <div v-if="profile.crime">
+          <dt>{{ t('crime') }}</dt>
+          <dd>{{ t('complaints', { n: number(profile.crime.total) }) }}</dd>
+        </div>
+      </dl>
+      <template #fallback>
+        <p class="meta" role="status">{{ t('loading') }}</p>
+      </template>
+    </ClientOnly>
     <p class="meta">{{ t('panelHint') }}</p>
     <NuxtLink :to="localePath('/barrios-alquileres-uruguay')" class="link">{{
       t('panelLink')
