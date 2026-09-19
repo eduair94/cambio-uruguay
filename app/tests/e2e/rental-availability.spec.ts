@@ -351,6 +351,9 @@ async function select(page: Page, parent: Locator, label: string, option: string
     .locator('.v-field__input')
     .click()
   await page.getByRole('option', { name: option }).click()
+  // Wait for the menu to close: an Escape pressed while it is still animating out closes the
+  // menu, not the filters dialog the next step is about.
+  await expect(page.getByRole('option', { name: option })).toBeHidden()
 }
 // The availability filter lives in the collapsed "Portal y disponibilidad" group. Open it only if it
 // is closed: the drawer can keep a group's state between openings, and a blind click would close it.

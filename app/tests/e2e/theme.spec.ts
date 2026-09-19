@@ -183,23 +183,53 @@ test.describe('theme switcher', () => {
 
       // Vuetify keeps the model closed while the edge swipe is in progress.
       // The panel must already follow the finger, before touchend opens it.
+      //
+      // Vuetify only drags on a CANCELABLE touchmove, and Chrome sends touchmove uncancelable
+      // while the main thread is busy (its responsiveness intervention) — on a CI runner right
+      // after hydration that is often, and the gesture then does nothing on any site. So the
+      // gesture waits for an idle main thread and is retried whole; the touchmoves' cancelable
+      // flags travel in the failure message, so a red here still says whether the drawer
+      // ignored a finger or the browser never offered it one.
+      await page.evaluate(() => {
+        ;(window as any).__touchmoves = []
+        addEventListener(
+          'touchmove',
+          event => (window as any).__touchmoves.push(event.cancelable),
+          {
+            capture: true,
+            passive: true,
+          }
+        )
+      })
       const touch = await page.context().newCDPSession(page)
       try {
         await touch.send('Emulation.setTouchEmulationEnabled', { enabled: true })
-        await touch.send('Input.dispatchTouchEvent', {
-          type: 'touchStart',
-          touchPoints: [{ x: 2, y: 200 }],
-        })
-        for (const x of [35, 110]) {
+        await expect(async () => {
+          await page.evaluate(
+            () => new Promise(resolve => requestIdleCallback(resolve, { timeout: 2000 }))
+          )
           await touch.send('Input.dispatchTouchEvent', {
-            type: 'touchMove',
-            touchPoints: [{ x, y: 200 }],
+            type: 'touchStart',
+            touchPoints: [{ x: 2, y: 200 }],
           })
-        }
-        await expect(drawer).toBeInViewport()
-        await expect(menu).toHaveAttribute('aria-expanded', 'false')
+          try {
+            for (const x of [35, 110]) {
+              await touch.send('Input.dispatchTouchEvent', {
+                type: 'touchMove',
+                touchPoints: [{ x, y: 200 }],
+              })
+            }
+            const cancelable = await page.evaluate(() => (window as any).__touchmoves.splice(0))
+            await expect(
+              drawer,
+              `touchmove cancelable: ${JSON.stringify(cancelable)}`
+            ).toBeInViewport({ timeout: 2_000 })
+            await expect(menu).toHaveAttribute('aria-expanded', 'false', { timeout: 500 })
+          } finally {
+            await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+          }
+        }).toPass({ timeout: 30_000 })
       } finally {
-        await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
         await touch.detach()
       }
       if ((await menu.getAttribute('aria-expanded')) === 'true') {

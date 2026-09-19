@@ -152,6 +152,19 @@ const viewButton = (page: Page, name: 'Mosaico' | 'Lista' | 'Mapa') =>
   page
     .getByLabel('Cómo ver los resultados', { exact: true })
     .getByRole('button', { name, exact: true })
+// A full reload renders on the server, which the browser fixtures cannot reach. Without a
+// catalogue database (CI) that read fails and the page offers "Volver a intentar", which reads on
+// the client and gets the fixtures. The saved view has to survive the reload either way.
+async function reloadDirectory(page: Page) {
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await expect(async () => {
+    if (!(await grid(page).count())) {
+      const retry = page.getByRole('button', { name: 'Volver a intentar', exact: true })
+      if (await retry.count()) await retry.first().click({ timeout: 2_000 })
+    }
+    await expect(grid(page)).toBeVisible({ timeout: 3_000 })
+  }).toPass({ timeout: 60_000 })
+}
 const columns = async (page: Page, selector: string) =>
   (
     await page
@@ -221,7 +234,7 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   expect(await stored(page)).toBe('lista')
 
   // Recarga completa: el servidor sigue mandando mosaico y el cliente aplica lo guardado.
-  await page.reload({ waitUntil: 'domcontentloaded' })
+  await reloadDirectory(page)
   await expect(grid(page)).toHaveClass(/rentals-grid--lista/)
   expect(await stored(page)).toBe('lista')
 
@@ -230,7 +243,7 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   await expect(grid(page)).toHaveClass(/rentals-grid--mosaico/)
   expect(await columns(page, '.rentals-grid')).toBeGreaterThan(1)
   expect(await stored(page)).toBe('mosaico')
-  await page.reload({ waitUntil: 'domcontentloaded' })
+  await reloadDirectory(page)
   await expect(grid(page)).toHaveClass(/rentals-grid--mosaico/)
 })
 

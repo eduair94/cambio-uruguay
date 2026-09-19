@@ -20,10 +20,17 @@ export async function usePublicCatalogue(page: Page) {
       const request = route.request()
       const source = new URL(request.url())
       if (request.method() !== 'GET' || source.origin === catalogueOrigin) return route.fallback()
-      const response = await route.fetch({
-        url: new URL(source.pathname + source.search, catalogueOrigin).toString(),
-      })
-      return route.fulfill({ response })
+      // A read still in flight when the test ends (a map tile of results, a prefetch) rejects with
+      // "Test ended"; that is not a failure of the page. A catalogue that is really unreachable
+      // still shows up: the page renders its error state and the spec's own assertions go red.
+      try {
+        const response = await route.fetch({
+          url: new URL(source.pathname + source.search, catalogueOrigin).toString(),
+        })
+        await route.fulfill({ response })
+      } catch {
+        await route.abort().catch(() => {})
+      }
     }
   )
 }

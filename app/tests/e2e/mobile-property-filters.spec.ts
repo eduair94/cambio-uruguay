@@ -41,7 +41,7 @@ const directories = [
     parameter: 'maxPrice',
     original: '65000',
     next: '55000',
-    advanced: 'Tipo de evidencia',
+    advanced: 'Más filtros',
     apply: 'Ver resultados',
     hasMap: false,
     cheapest: 'Menor precio',
@@ -60,16 +60,40 @@ async function clearConsentByChoice(page: Page) {
   }).toPass({ timeout: 60000 })
 }
 
+// On mobile the rental budget lives in the collapsed "Total y gastos comunes" group (its summary
+// shows the value); open it if closed, as a person does. Directories without a group are a no-op.
+async function revealBudget(page: Page, dialog: Locator, label: string) {
+  await expect(dialog).toBeVisible()
+  const group = dialog
+    .locator('details')
+    .filter({ has: page.getByLabel(label, { exact: true }) })
+    .first()
+  if (
+    (await group.count()) &&
+    !(await group.evaluate(element => (element as HTMLDetailsElement).open))
+  )
+    await group.locator(':scope > summary').click()
+}
+
 async function expectReachable(button: Locator) {
   await expect(button).toBeInViewport()
-  const state = await button.evaluate(element => {
-    const box = element.getBoundingClientRect()
-    const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)
-    return { width: box.width, height: box.height, clear: hit === element || element.contains(hit) }
-  })
-  expect(state.width).toBeGreaterThanOrEqual(44)
-  expect(state.height).toBeGreaterThanOrEqual(44)
-  expect(state.clear).toBe(true)
+  // Hit-tested until the layout settles: right after a viewport resize the dialog is still being
+  // repositioned and the centre point can land on its old place. Something really on top of the
+  // button keeps this red.
+  await expect(async () => {
+    const state = await button.evaluate(element => {
+      const box = element.getBoundingClientRect()
+      const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)
+      return {
+        width: box.width,
+        height: box.height,
+        clear: hit === element || element.contains(hit),
+      }
+    })
+    expect(state.width).toBeGreaterThanOrEqual(44)
+    expect(state.height).toBeGreaterThanOrEqual(44)
+    expect(state.clear).toBe(true)
+  }).toPass({ timeout: 5_000 })
 }
 
 for (const width of [320, 390]) {
@@ -107,6 +131,7 @@ for (const width of [320, 390]) {
         .filter({ has: page.locator('summary').filter({ hasText: directory.advanced }) })
       await expect(advanced).not.toHaveAttribute('open', '')
       const budget = dialog.getByRole('spinbutton', { name: directory.budget, exact: true })
+      await revealBudget(page, dialog, directory.budget)
       await expect(budget).toHaveValue(directory.original)
       await budget.fill(directory.next)
       expect(page.url()).toBe(url)
@@ -117,6 +142,7 @@ for (const width of [320, 390]) {
       expect(page.url()).toBe(url)
 
       await trigger.click()
+      await revealBudget(page, dialog, directory.budget)
       await expect(budget).toHaveValue(directory.original)
       const summary = dialog.locator('summary').filter({ hasText: directory.advanced })
       await summary.click()
@@ -136,6 +162,7 @@ for (const width of [320, 390]) {
         await expectReachable(trigger)
       }
       await trigger.click()
+      await revealBudget(page, dialog, directory.budget)
       await expect(budget).toHaveValue(directory.next)
       await budget.focus()
       await page.setViewportSize({ width, height: 360 })

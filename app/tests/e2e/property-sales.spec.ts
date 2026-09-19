@@ -388,12 +388,14 @@ test('individual page keeps own photos, costs and canonical; no catalogue mounte
     'href',
     'https://cambio-uruguay.com/venta-viviendas-uruguay/infocasas-990000001'
   )
+  // The shared property gallery (3cb6ee2c) names itself after the listing.
   await page.getByRole('button', { name: 'Ampliar fotos' }).click()
-  const gallery = page.getByRole('dialog', { name: 'Con fotos' })
+  const gallery = page.getByRole('dialog', { name: `Galería de fotos de ${properties[0]!.title}` })
   await expect(gallery).toBeVisible()
-  await gallery.getByRole('button', { name: 'Siguiente' }).click()
+  await gallery.getByRole('button', { name: 'Foto siguiente', exact: true }).click()
   await expect(gallery).toContainText('Foto 2 de 2')
-  await gallery.getByRole('button', { name: 'Cerrar', exact: true }).click()
+  await gallery.getByRole('button', { name: 'Cerrar galería', exact: true }).click()
+  await expect(gallery).toBeHidden()
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
   ).toBeTruthy()

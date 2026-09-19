@@ -153,7 +153,12 @@ for (const width of [320, 390])
     test.setTimeout(180000)
     await page.setViewportSize({ width, height: 844 })
     const state = await setup(page)
-    await page.evaluate(() => window.scrollTo(0, 1200))
+    // As deep as the results go, at most 1200 px: the bar is sticky within the results, and this
+    // fixture has none, so a fixed 1200 px scrolled past them and the bar left with its container.
+    await page.evaluate(() => {
+      const content = document.querySelector('.rentals-content')!.getBoundingClientRect()
+      window.scrollTo(0, Math.min(1200, window.scrollY + content.bottom - 200))
+    })
     const trigger = page.getByTestId('rental-alert-trigger').first()
     await expect(trigger).toBeInViewport()
     const box = await trigger.boundingBox()
@@ -371,7 +376,11 @@ test('mobile opportunities retain the evidence filters and offer alerts only for
     animations: 'disabled',
   })
   await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click()
-  await page.getByRole('button', { name: 'Compra', exact: true }).click()
+  // The operation switch is a set of links (each mode has its own URL).
+  await page
+    .locator('.opportunities__modes')
+    .getByRole('link', { name: 'Compra', exact: true })
+    .click()
   await expect(trigger).toHaveCount(0)
   expect(state.writes).toEqual([])
 })

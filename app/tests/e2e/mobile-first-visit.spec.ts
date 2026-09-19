@@ -62,12 +62,15 @@ for (const width of [320, 390]) {
     await page.clock.fastForward(85000)
     await expect(page.locator('[role="dialog"]:visible')).toHaveCount(1)
     await expect(dialog.getByTestId('rental-filters-apply')).toBeInViewport()
-    const unobstructed = await dialog.getByTestId('rental-filters-apply').evaluate(button => {
-      const box = button.getBoundingClientRect()
-      const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)
-      return hit === button || button.contains(hit)
-    })
-    expect(unobstructed).toBe(true)
+    // Hit-tested until the dialog settles; a popup really on top of the button keeps this red.
+    await expect(async () => {
+      const unobstructed = await dialog.getByTestId('rental-filters-apply').evaluate(button => {
+        const box = button.getBoundingClientRect()
+        const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)
+        return hit === button || button.contains(hit)
+      })
+      expect(unobstructed).toBe(true)
+    }).toPass({ timeout: 5_000 })
     expect(await page.evaluate(() => (window as any).__installPrompts)).toBe(0)
     await page.keyboard.press('Escape')
     await expect(dialog).toBeHidden()

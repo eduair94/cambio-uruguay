@@ -185,7 +185,10 @@ async function fit(page: Page, dialog: Locator) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   for (const button of await dialog.locator('footer button').all()) {
     await expect(button).toBeInViewport()
-    expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    // Re-measure until VDialog's opening scale settles (a 44 px button reads 42.9 mid-way).
+    await expect(async () => {
+      expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    }).toPass({ timeout: 5_000 })
   }
   expect(
     await dialog
