@@ -458,9 +458,13 @@ const draft = reactive({ ...query.value })
 watch(query, value => Object.assign(draft, value))
 const apiQuery = computed(() => ({ ...query.value, bedrooms: query.value.bedrooms ?? '' }))
 const analysisUrl = computed(() => withQuery('/api/rentals/analysis', apiQuery.value))
+// Server-rendered: the medians have to be in the HTML, not arrive after hydration. This used to be
+// `server: false` because a cold analysis could re-read the whole catalogue (9.78 s measured) and the
+// HTML could not wait for it; since 2026-09-19 the analysis reads a stored weekly snapshot
+// (server/utils/rentalAnalysisCache.ts), so the SSR call costs an in-memory aggregation at most.
 const { data, pending, error, status, refresh } = await useFetch<RentalAnalysisResponse>(
   analysisUrl,
-  { server: false, retry: 0 }
+  { retry: 0 }
 )
 const mapVisible = ref(false)
 async function openMap() {
