@@ -110,6 +110,7 @@ const localePath = useLocalePath()
 const LAST_UPDATED = '2026-06-20'
 const lastUpdatedDisplay = computed(() =>
   new Date(LAST_UPDATED).toLocaleDateString(dateLocale(locale.value), {
+    timeZone: siteTimeZone(LAST_UPDATED),
     year: 'numeric',
     month: 'long',
     day: 'numeric',

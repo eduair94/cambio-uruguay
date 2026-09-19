@@ -33,7 +33,8 @@ export function useLongformSeo(
 
   const updatedDisplay = computed(() =>
     doc.value
-      ? new Date(doc.value.updatedAt).toLocaleDateString(locale.value, {
+      ? new Date(doc.value.updatedAt).toLocaleDateString(dateLocale(locale.value), {
+          timeZone: siteTimeZone(doc.value.updatedAt),
           year: 'numeric',
           month: 'long',
           day: 'numeric',

@@ -437,6 +437,7 @@ const sendActions = computed<SendAction[]>(() => [
 
 const verifiedDisplay = computed(() =>
   new Date(NOISE_VERIFIED_AT).toLocaleDateString('es-UY', {
+    timeZone: siteTimeZone(NOISE_VERIFIED_AT),
     year: 'numeric',
     month: 'long',
     day: 'numeric',

@@ -64,6 +64,7 @@ const localePath = useLocalePath()
 
 const formatDate = (iso: string): string =>
   new Date(iso).toLocaleDateString(dateLocale(locale.value), {
+    timeZone: siteTimeZone(iso),
     year: 'numeric',
     month: 'long',
     day: 'numeric',

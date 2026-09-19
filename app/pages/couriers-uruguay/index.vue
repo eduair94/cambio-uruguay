@@ -395,6 +395,7 @@ const updatedAt = computed(() => couriersData.value?.updatedAt ?? null)
 const updatedLabel = computed(() =>
   updatedAt.value
     ? new Date(updatedAt.value).toLocaleDateString('es-UY', {
+        timeZone: siteTimeZone(updatedAt.value),
         day: 'numeric',
         month: 'long',
         year: 'numeric',

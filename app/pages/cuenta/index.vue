@@ -124,7 +124,7 @@ const saved = ref<any[]>([])
 const favoriteIds = computed(() => Array.from(favorites))
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString()
+  return new Date(d).toLocaleDateString(undefined, { timeZone: siteTimeZone(d) })
 }
 
 async function load() {

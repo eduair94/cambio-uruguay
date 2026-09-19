@@ -964,7 +964,8 @@ const T7_URL = 'https://www.impo.com.uy/bases/todgi-2023/7-2024'
 const DGI_URL =
   'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/irpf-rendimientos-capital-mobiliario'
 
-const verifiedOnLabel = new Date(`${VERIFIED_ON}T00:00:00`).toLocaleDateString('es-UY', {
+const verifiedOnLabel = new Date(VERIFIED_ON).toLocaleDateString('es-UY', {
+  timeZone: siteTimeZone(VERIFIED_ON),
   day: 'numeric',
   month: 'long',
   year: 'numeric',

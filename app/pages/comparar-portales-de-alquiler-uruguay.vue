@@ -223,7 +223,10 @@ const numberFormat = (value: number) => new Intl.NumberFormat(locale.value).form
 const readAt = computed(() => {
   const value = stats.value?.generatedAt
   if (!value) return ''
-  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'long' }).format(new Date(value))
+  return new Intl.DateTimeFormat(dateLocale(locale.value), {
+    dateStyle: 'long',
+    timeZone: siteTimeZone(value),
+  }).format(new Date(value))
 })
 
 const shares = computed(() => {

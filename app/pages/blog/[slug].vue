@@ -160,7 +160,8 @@ const bodyHtml = computed(() => {
 })
 
 const formatDate = (iso: string) =>
-  new Date(iso + 'T12:00:00').toLocaleDateString('es-UY', {
+  new Date(iso).toLocaleDateString('es-UY', {
+    timeZone: siteTimeZone(iso),
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -174,7 +175,8 @@ const canonicalUrl = computed(() => `https://cambio-uruguay.com/blog/${slug.valu
 // post's date so every SEO title is unique; the <h1> stays clean (post.title).
 const seoDate = computed(() =>
   post.value
-    ? new Date(post.value.date + 'T12:00:00').toLocaleDateString('es-UY', {
+    ? new Date(post.value.date).toLocaleDateString('es-UY', {
+        timeZone: siteTimeZone(post.value.date),
         day: 'numeric',
         month: 'short',
         year: 'numeric',

@@ -207,6 +207,7 @@ const LAST_REVIEWED = '2026-06-16'
 
 const lastUpdatedDisplay = computed(() =>
   new Date(LAST_REVIEWED).toLocaleDateString(dateLocale(locale.value), {
+    timeZone: siteTimeZone(LAST_REVIEWED),
     year: 'numeric',
     month: 'long',
     day: 'numeric',

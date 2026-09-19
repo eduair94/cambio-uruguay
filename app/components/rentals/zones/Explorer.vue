@@ -565,9 +565,10 @@ const number = (value: number) =>
   new Intl.NumberFormat(locale.value, { maximumFractionDigits: 0 }).format(value)
 const date = (value: string) =>
   Number.isFinite(Date.parse(value))
-    ? new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeZone: 'UTC' }).format(
-        new Date(value)
-      )
+    ? new Intl.DateTimeFormat(dateLocale(locale.value), {
+        dateStyle: 'medium',
+        timeZone: 'UTC',
+      }).format(new Date(value))
     : t('noData')
 function metric(zone: RentalZone): number | null {
   if (layer.value === 'prices') return zone.prices.rent[priceStatistic.value]

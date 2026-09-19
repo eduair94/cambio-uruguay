@@ -336,7 +336,12 @@ const radarAsOf = computed(() => {
   const d = new Date(iso)
   return isNaN(d.getTime())
     ? ''
-    : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
+    : d.toLocaleDateString('es-UY', {
+        timeZone: siteTimeZone(iso),
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
 })
 
 const WHO_LABEL: Record<WhoPays, string> = {

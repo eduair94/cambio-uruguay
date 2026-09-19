@@ -367,6 +367,7 @@ const canonicalUrl = computed(() => `https://cambio-uruguay.com/importar/${slug.
 const verifiedDisplay = computed(() =>
   category.value
     ? new Date(category.value.verifiedAt).toLocaleDateString(dateLocale(locale.value), {
+        timeZone: siteTimeZone(category.value.verifiedAt),
         year: 'numeric',
         month: 'long',
         day: 'numeric',

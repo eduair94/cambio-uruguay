@@ -44,10 +44,17 @@ describe('dateLocale', () => {
 const APP_ROOT = path.resolve(__dirname, '..', '..')
 const PAGES_ROOT = path.join(APP_ROOT, 'pages')
 
-const BANNED: RegExp[] = [
+// `Intl.DateTimeFormat` spells the month the same way and was not on this list: 22 calls in pages
+// and components kept writing "septiembre" through it until 2026-09-19.
+const BANNED_DATES: RegExp[] = [
   /toLocaleDateString\(\s*locale\.value/,
-  /toLocaleString\(\s*locale\.value/,
   /toLocaleDateString\(\s*c\.value\.lang/,
+  /DateTimeFormat\(\s*locale\.value/,
+  /DateTimeFormat\(\s*c\.value\.lang/,
+]
+const BANNED: RegExp[] = [
+  ...BANNED_DATES,
+  /toLocaleString\(\s*locale\.value/,
   /toLocaleString\(\s*c\.value\.lang/,
 ]
 
@@ -86,6 +93,30 @@ describe('no page formats a date/number with the raw i18n locale', () => {
       hits,
       `Found a raw locale.value/c.value.lang date/number format -- wrap it with dateLocale() ` +
         `from utils/format.ts (or add a documented exception above):\n${hits.join('\n')}`
+    ).toEqual([])
+  })
+
+  it('neither does any component or composable, for dates', () => {
+    const hits: string[] = []
+    for (const dir of ['components', 'composables']) {
+      const files: string[] = []
+      const walk = (at: string): void => {
+        for (const entry of fs.readdirSync(at, { withFileTypes: true })) {
+          const full = path.join(at, entry.name)
+          if (entry.isDirectory()) walk(full)
+          else if (/\.(?:vue|ts)$/.test(entry.name)) files.push(full)
+        }
+      }
+      walk(path.join(APP_ROOT, dir))
+      for (const file of files) {
+        const src = fs.readFileSync(file, 'utf8')
+        for (const re of BANNED_DATES)
+          if (re.test(src)) hits.push(`${path.relative(APP_ROOT, file)} — matches ${re}`)
+      }
+    }
+    expect(
+      hits,
+      `Wrap the locale with dateLocale() from utils/format.ts:\n${hits.join('\n')}`
     ).toEqual([])
   })
 

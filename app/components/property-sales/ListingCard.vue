@@ -130,7 +130,7 @@ const localePath = useLocalePath()
 const favorites = usePropertySaleFavorites()
 const failed = ref(false)
 const readDate = computed(() =>
-  new Intl.DateTimeFormat(locale.value, {
+  new Intl.DateTimeFormat(dateLocale(locale.value), {
     dateStyle: 'medium',
     timeZone: 'America/Montevideo',
   }).format(new Date(props.property.lastSeen))

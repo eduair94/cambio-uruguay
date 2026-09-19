@@ -1118,6 +1118,7 @@ function popupFor(b: any): string {
 function formatDate(iso: string): string {
   try {
     return new Intl.DateTimeFormat('es-UY', {
+      timeZone: siteTimeZone(iso),
       day: '2-digit',
       month: 'short',
       hour: '2-digit',

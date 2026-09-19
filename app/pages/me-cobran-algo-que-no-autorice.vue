@@ -279,6 +279,7 @@ const related = [
 
 const verifiedDisplay = computed(() =>
   new Date(UNAUTHORIZED_CHARGE_VERIFIED_AT).toLocaleDateString(dateLocale(locale.value), {
+    timeZone: siteTimeZone(UNAUTHORIZED_CHARGE_VERIFIED_AT),
     year: 'numeric',
     month: 'long',
     day: 'numeric',

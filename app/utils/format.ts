@@ -51,6 +51,32 @@ export function dateLocale(locale: string): string {
   return locale
 }
 
+/** Uruguay: UTC-3, without daylight saving since 2015. */
+export const SITE_TIME_ZONE = 'America/Montevideo'
+
+/**
+ * The `timeZone` to format a date with, so the server and the reader's browser print the same.
+ *
+ * Without one, `toLocaleDateString` uses the zone of whoever runs it: the server (UTC) and the
+ * browser (Uruguay, UTC-3). `new Date('2026-06-20')` is midnight UTC, so the server printed
+ * "20 de junio" and the browser re-rendered it as "19 de junio" on hydration — a wrong date for
+ * every reader in Uruguay plus a hydration mismatch (measured 2026-09-19 on 23 page families,
+ * /terminos and /guias among them).
+ *
+ * A bare `YYYY-MM-DD` is a calendar day and is formatted in UTC, the zone `new Date` read it in:
+ * the same day for every reader. So is exact midnight UTC (`…T00:00:00.000Z`, or a Date at it),
+ * which is how a day comes back once it went through Mongo or JSON. Anything else is an instant
+ * and is formatted in Uruguay's time.
+ */
+export function siteTimeZone(value: unknown): string {
+  if (typeof value === 'string')
+    return /^\d{4}-\d{2}-\d{2}(?:T00:00(?::00(?:\.0+)?)?(?:Z|\+00:00))?$/.test(value.trim())
+      ? 'UTC'
+      : SITE_TIME_ZONE
+  if (value instanceof Date) return value.getTime() % 86_400_000 === 0 ? 'UTC' : SITE_TIME_ZONE
+  return SITE_TIME_ZONE
+}
+
 /** Format an ISO currency amount generically (any 3-letter code). */
 export function formatCurrency(
   value: number | null | undefined,

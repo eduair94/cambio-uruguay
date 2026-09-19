@@ -943,10 +943,12 @@ const usd = (v: number, decimals = 2) => formatUSD(v, decimals)
 const pct = (n: number) => `${n.toLocaleString('es-UY', { maximumFractionDigits: 2 })}%`
 const formatInt = (n: number) => n.toLocaleString('es-UY')
 const stageLabel = (s: CostStage) => STAGE_LABELS[s]
-const readOnLabel = new Date(`${FOREIGN_INVESTING_VERIFIED_ON}T00:00:00`).toLocaleDateString(
-  'es-UY',
-  { day: 'numeric', month: 'long', year: 'numeric' }
-)
+const readOnLabel = new Date(FOREIGN_INVESTING_VERIFIED_ON).toLocaleDateString('es-UY', {
+  timeZone: siteTimeZone(FOREIGN_INVESTING_VERIFIED_ON),
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
 
 /** Números no negativos y finitos, o 0: nada llega al módulo sin pasar por acá. */
 const safe = (v: unknown): number =>

@@ -602,10 +602,15 @@ const feeText = (fee: FeeResult): string => {
 }
 
 const dateText = (iso: string): string => {
-  const d = new Date(`${iso}T12:00:00`)
+  const d = new Date(iso)
   return Number.isNaN(d.getTime())
     ? iso
-    : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
+    : d.toLocaleDateString('es-UY', {
+        timeZone: siteTimeZone(iso),
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
 }
 
 const reviewedLabel = `tarifarios al ${dateText(TRANSFER_FEES_LAST_REVIEWED)}`

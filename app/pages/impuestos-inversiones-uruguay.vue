@@ -1025,7 +1025,8 @@ const bpcToPesos = (units: number) => units * bpc.value
 const usdSuffix = (uyu: number) =>
   usdRate.value && usdRate.value > 0 ? ` ≈ ${formatUSD(uyu / usdRate.value, 0)}` : ''
 
-const verifiedOnLabel = new Date(`${VERIFIED_ON}T00:00:00`).toLocaleDateString('es-UY', {
+const verifiedOnLabel = new Date(VERIFIED_ON).toLocaleDateString('es-UY', {
+  timeZone: siteTimeZone(VERIFIED_ON),
   day: 'numeric',
   month: 'long',
   year: 'numeric',

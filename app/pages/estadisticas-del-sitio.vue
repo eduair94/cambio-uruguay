@@ -456,7 +456,12 @@ const metrics = computed<SummaryMetric[]>(() =>
 )
 
 const dateFormatter = computed(
-  () => new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short', timeZone: 'UTC' })
+  () =>
+    new Intl.DateTimeFormat(dateLocale(locale.value), {
+      day: 'numeric',
+      month: 'short',
+      timeZone: 'UTC',
+    })
 )
 const formatIsoDay = (day: string) => {
   const [y, m, d] = (day || '').split('-').map(Number)
@@ -477,7 +482,7 @@ const updatedLabel = computed(() => {
   const at = new Date(asOf)
   return Number.isNaN(at.getTime())
     ? '—'
-    : new Intl.DateTimeFormat(locale.value, {
+    : new Intl.DateTimeFormat(dateLocale(locale.value), {
         day: 'numeric',
         month: 'short',
         hour: '2-digit',

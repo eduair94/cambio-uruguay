@@ -487,6 +487,7 @@ const related = [
 
 const verifiedDisplay = computed(() =>
   new Date(SHIPPING_ROUTES_VERIFIED_AT).toLocaleDateString(dateLocale(locale.value), {
+    timeZone: siteTimeZone(SHIPPING_ROUTES_VERIFIED_AT),
     year: 'numeric',
     month: 'long',
     day: 'numeric',

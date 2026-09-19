@@ -832,6 +832,7 @@ const peorPlanTotal = Math.max(...PLANES_ANTEL.map(p => p.total))
 const fechaAsOf = computed(() =>
   rates.value.asOf
     ? new Date(rates.value.asOf).toLocaleDateString('es-UY', {
+        timeZone: siteTimeZone(rates.value.asOf),
         day: 'numeric',
         month: 'long',
         year: 'numeric',

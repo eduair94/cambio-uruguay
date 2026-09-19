@@ -302,7 +302,7 @@ const decimal = (value: number, digits = 1) =>
   new Intl.NumberFormat(locale.value, { maximumFractionDigits: digits }).format(value)
 const signed = (value: number) => `${value > 0 ? '+' : ''}${decimal(value, 1)}`
 const date = (value: string) =>
-  new Intl.DateTimeFormat(locale.value, {
+  new Intl.DateTimeFormat(dateLocale(locale.value), {
     dateStyle: 'long',
     timeZone: 'America/Montevideo',
   }).format(new Date(value))

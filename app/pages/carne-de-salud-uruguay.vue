@@ -291,6 +291,7 @@ const assePesos = computed(() => {
 
 const verifiedDisplay = computed(() =>
   new Date(HEALTH_CARD_VERIFIED_AT).toLocaleDateString('es-UY', {
+    timeZone: siteTimeZone(HEALTH_CARD_VERIFIED_AT),
     year: 'numeric',
     month: 'long',
     day: 'numeric',

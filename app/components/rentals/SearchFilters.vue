@@ -552,9 +552,10 @@ function serviceLimit(option: {
 const powerCollecting = computed(() => {
   const power = servicesMounted.value ? serviceFilters.data.value?.meta?.power : undefined
   return power?.status === 'collecting' && power.observedFrom
-    ? new Intl.DateTimeFormat(locale.value, { dateStyle: 'long', timeZone: 'UTC' }).format(
-        new Date(power.observedFrom)
-      )
+    ? new Intl.DateTimeFormat(dateLocale(locale.value), {
+        dateStyle: 'long',
+        timeZone: 'UTC',
+      }).format(new Date(power.observedFrom))
     : ''
 })
 const viewportHeight = ref<number | null>(null)

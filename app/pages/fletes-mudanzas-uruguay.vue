@@ -383,10 +383,10 @@ async function shareSearch() {
   }
 }
 const reviewed = computed(() =>
-  new Intl.DateTimeFormat(
-    locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY',
-    { dateStyle: 'medium', timeZone: 'UTC' }
-  ).format(new Date(`${MOVING_REVIEWED}T12:00:00Z`))
+  new Intl.DateTimeFormat(dateLocale(locale.value), {
+    dateStyle: 'medium',
+    timeZone: 'UTC',
+  }).format(new Date(`${MOVING_REVIEWED}T12:00:00Z`))
 )
 // Keep SSR and hydration on the same date, including around midnight.
 const today = useState('moving-directory-date', () => new Date().toISOString().slice(0, 10))

@@ -286,6 +286,7 @@ const related = [
 
 const verifiedDisplay = computed(() =>
   new Date(PARCEL_DELIVERY_VERIFIED_AT).toLocaleDateString(dateLocale(locale.value), {
+    timeZone: siteTimeZone(PARCEL_DELIVERY_VERIFIED_AT),
     year: 'numeric',
     month: 'long',
     day: 'numeric',

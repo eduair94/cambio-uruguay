@@ -311,7 +311,7 @@ const numberFormatter = computed(
 )
 const dateFormatter = computed(
   () =>
-    new Intl.DateTimeFormat(locale.value, {
+    new Intl.DateTimeFormat(dateLocale(locale.value), {
       dateStyle: 'short',
       timeStyle: 'short',
       timeZone: 'America/Montevideo',
@@ -319,7 +319,7 @@ const dateFormatter = computed(
 )
 const timeFormatter = computed(
   () =>
-    new Intl.DateTimeFormat(locale.value, {
+    new Intl.DateTimeFormat(dateLocale(locale.value), {
       timeStyle: 'medium',
       timeZone: 'America/Montevideo',
     })

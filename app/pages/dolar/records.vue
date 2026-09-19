@@ -59,6 +59,7 @@ const { records, pending } = useDollarTrend()
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('es-UY', {
+    timeZone: siteTimeZone(d),
     day: '2-digit',
     month: 'short',
     year: 'numeric',

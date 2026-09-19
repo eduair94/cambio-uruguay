@@ -229,6 +229,7 @@ const canonicalUrl = computed(() => `https://cambio-uruguay.com/guias/${slug.val
 const updatedDisplay = computed(() =>
   guide.value
     ? new Date(guide.value.updatedAt).toLocaleDateString(dateLocale(locale.value), {
+        timeZone: siteTimeZone(guide.value.updatedAt),
         year: 'numeric',
         month: 'long',
         day: 'numeric',

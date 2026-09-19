@@ -113,7 +113,7 @@ const source = computed(
   () => RENTAL_SOURCE_LABEL[data.value?.agency.key.split(':')[0] as RentalSource] || ''
 )
 const date = (value: string) =>
-  new Intl.DateTimeFormat(locale.value, {
+  new Intl.DateTimeFormat(dateLocale(locale.value), {
     dateStyle: 'long',
     timeZone: /^\d{4}-\d{2}-\d{2}$/.test(value) ? 'UTC' : 'America/Montevideo',
   }).format(new Date(value))

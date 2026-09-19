@@ -97,9 +97,10 @@ const decimal = (value: number) =>
   new Intl.NumberFormat(locale.value, { maximumFractionDigits: 1 }).format(value)
 const date = (value: string | null) =>
   value
-    ? new Intl.DateTimeFormat(locale.value, { dateStyle: 'long', timeZone: 'UTC' }).format(
-        new Date(value)
-      )
+    ? new Intl.DateTimeFormat(dateLocale(locale.value), {
+        dateStyle: 'long',
+        timeZone: 'UTC',
+      }).format(new Date(value))
     : ''
 </script>
 

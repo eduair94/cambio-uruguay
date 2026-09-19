@@ -606,7 +606,12 @@ const nextRefreshDays = computed(() => {
 
 function fmtDate(iso: string): string {
   const d = new Date(iso)
-  return d.toLocaleDateString('es-UY', { day: 'numeric', month: 'short', year: 'numeric' })
+  return d.toLocaleDateString('es-UY', {
+    timeZone: siteTimeZone(iso),
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 function trendColor(v: TopicView): string {
   return v.trend === 'up' ? '#ff7a45' : v.trend === 'down' ? '#4fd1c5' : '#93a4c2'

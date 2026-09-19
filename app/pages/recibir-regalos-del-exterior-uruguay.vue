@@ -499,7 +499,8 @@ import type { SendAction } from '~/utils/messageChannels'
 
 const localePath = useLocalePath()
 
-const verifiedLabel = new Date(`${GIFT_RULES_VERIFIED_AT}T12:00:00Z`).toLocaleDateString('es-UY', {
+const verifiedLabel = new Date(GIFT_RULES_VERIFIED_AT).toLocaleDateString('es-UY', {
+  timeZone: siteTimeZone(GIFT_RULES_VERIFIED_AT),
   day: 'numeric',
   month: 'long',
   year: 'numeric',

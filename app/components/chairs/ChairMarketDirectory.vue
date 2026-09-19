@@ -473,7 +473,8 @@ watch(
 )
 
 const formatDate = (value: string): string =>
-  new Date(value).toLocaleDateString(locale.value, {
+  new Date(value).toLocaleDateString(dateLocale(locale.value), {
+    timeZone: siteTimeZone(value),
     day: '2-digit',
     month: 'short',
     year: 'numeric',

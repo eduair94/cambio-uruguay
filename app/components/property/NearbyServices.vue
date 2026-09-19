@@ -33,7 +33,10 @@ const icons: Record<string, string> = {
 const dataDate = computed(() => {
   const date = new Date(data.value?.dataAsOf || '')
   return Number.isFinite(date.getTime())
-    ? new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeZone: 'UTC' }).format(date)
+    ? new Intl.DateTimeFormat(dateLocale(locale.value), {
+        dateStyle: 'medium',
+        timeZone: 'UTC',
+      }).format(date)
     : ''
 })
 // Do not imply metre-level precision from an approximate source point.

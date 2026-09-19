@@ -150,7 +150,8 @@ const posts = computed<BlogPostSummary[]>(() =>
 )
 
 const formatDate = (iso: string) =>
-  new Date(iso + 'T12:00:00').toLocaleDateString('es-UY', {
+  new Date(iso).toLocaleDateString('es-UY', {
+    timeZone: siteTimeZone(iso),
     year: 'numeric',
     month: 'long',
     day: 'numeric',

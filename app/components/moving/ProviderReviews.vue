@@ -208,7 +208,7 @@ function number(value: number, decimals = 0) {
   }).format(value)
 }
 function checkedDate(value: string) {
-  return new Intl.DateTimeFormat(locale.value, {
+  return new Intl.DateTimeFormat(dateLocale(locale.value), {
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone: 'America/Montevideo',

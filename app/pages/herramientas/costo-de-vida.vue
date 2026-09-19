@@ -734,7 +734,9 @@ const updatedLabel = computed(() => {
   const iso = live.value?.asOf
   if (!iso) return ''
   const d = new Date(iso)
-  return isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
+  return isNaN(d.getTime())
+    ? ''
+    : d.toLocaleDateString('es-UY', { timeZone: siteTimeZone(iso), day: 'numeric', month: 'long' })
 })
 
 // Live USD rate from the site's exchange infrastructure (best price to sell your dollars).

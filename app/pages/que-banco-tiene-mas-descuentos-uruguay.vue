@@ -386,9 +386,11 @@ function pct(n: number): string {
 }
 function formatDate(iso: string): string {
   try {
-    return new Intl.DateTimeFormat('es-UY', { day: '2-digit', month: 'short' }).format(
-      new Date(iso)
-    )
+    return new Intl.DateTimeFormat('es-UY', {
+      timeZone: siteTimeZone(iso),
+      day: '2-digit',
+      month: 'short',
+    }).format(new Date(iso))
   } catch {
     return iso
   }

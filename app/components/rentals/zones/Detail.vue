@@ -340,9 +340,10 @@ const money = (value: number | null | undefined) =>
   value == null ? t('noData') : `$ ${number(Math.round(value))}`
 const date = (value: string | null) =>
   value && Number.isFinite(Date.parse(value))
-    ? new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeZone: 'UTC' }).format(
-        new Date(value)
-      )
+    ? new Intl.DateTimeFormat(dateLocale(locale.value), {
+        dateStyle: 'medium',
+        timeZone: 'UTC',
+      }).format(new Date(value))
     : t('noData')
 const safe = (url: string) => /^https:\/\//.test(url)
 const offenseKeys: Record<string, string> = {

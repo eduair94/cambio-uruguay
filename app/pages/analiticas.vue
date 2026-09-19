@@ -798,7 +798,7 @@ const displayCurrency = computed(() => analytics.value?.code || selectedCurrency
 
 const dateFormatter = computed(
   () =>
-    new Intl.DateTimeFormat(locale.value, {
+    new Intl.DateTimeFormat(dateLocale(locale.value), {
       day: '2-digit',
       month: '2-digit',
       ...(analytics.value?.interval === 'hour'
@@ -1034,7 +1034,7 @@ const formatPct = (value: number) =>
     maximumFractionDigits: 2,
   }).format(value)}%`
 const formatDateTime = (value: string) =>
-  new Intl.DateTimeFormat(locale.value, {
+  new Intl.DateTimeFormat(dateLocale(locale.value), {
     dateStyle: 'short',
     timeStyle: 'short',
     timeZone: 'America/Montevideo',

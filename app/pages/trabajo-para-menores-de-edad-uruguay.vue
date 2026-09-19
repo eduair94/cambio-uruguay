@@ -253,6 +253,7 @@ const sources = TEEN_WORK_SOURCES
 
 const verifiedDisplay = computed(() =>
   new Date(TEEN_WORK_VERIFIED_AT).toLocaleDateString('es-UY', {
+    timeZone: siteTimeZone(TEEN_WORK_VERIFIED_AT),
     year: 'numeric',
     month: 'long',
     day: 'numeric',

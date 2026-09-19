@@ -696,7 +696,7 @@ const c = computed(() => getCasasContent(locale.value))
 // research snapshot. See `resolveReviewDate` for why it is not just the store.
 const effectiveReviewDate = computed(() => resolveReviewDate(refreshed.value?.updatedAt))
 const fmtResearchDate = computed(() =>
-  new Date(`${effectiveReviewDate.value}T00:00:00Z`).toLocaleDateString(c.value.lang, {
+  new Date(`${effectiveReviewDate.value}T00:00:00Z`).toLocaleDateString(dateLocale(c.value.lang), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

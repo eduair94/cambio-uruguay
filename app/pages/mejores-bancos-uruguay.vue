@@ -781,7 +781,12 @@ const newsAsOf = computed(() => {
   const d = new Date(iso)
   return isNaN(d.getTime())
     ? ''
-    : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
+    : d.toLocaleDateString('es-UY', {
+        timeZone: siteTimeZone(iso),
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
 })
 
 // "Ver más" opens a reading-friendly dialog with the full news for one entity.

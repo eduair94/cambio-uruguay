@@ -334,6 +334,7 @@ const dateLabel = (value: string | Date | null): string => {
   return Number.isNaN(d.getTime())
     ? ''
     : d.toLocaleDateString(dateLocale(locale.value), {
+        timeZone: siteTimeZone(value),
         day: 'numeric',
         month: 'short',
         year: 'numeric',

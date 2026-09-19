@@ -479,7 +479,7 @@ async function loadFacets(next: PropertySalesQuery) {
   }
 }
 const date = (value: string) =>
-  new Intl.DateTimeFormat(locale.value, {
+  new Intl.DateTimeFormat(dateLocale(locale.value), {
     dateStyle: 'medium',
     timeZone: 'America/Montevideo',
   }).format(new Date(value))

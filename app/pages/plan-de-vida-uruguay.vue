@@ -469,7 +469,12 @@ const dateText = (iso: string | null): string => {
   const d = new Date(iso)
   return Number.isNaN(d.getTime())
     ? 'sin fecha'
-    : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
+    : d.toLocaleDateString('es-UY', {
+        timeZone: siteTimeZone(iso),
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
 }
 
 const ratesLabel = computed(() =>

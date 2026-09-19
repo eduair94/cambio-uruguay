@@ -856,7 +856,8 @@ const bestBudgetOption = computed(() => affordableOptions.value[0] ?? null)
 
 const asOfLabel = computed(() => {
   if (!snapshot.value?.asOf) return ''
-  return new Intl.DateTimeFormat(locale.value, {
+  return new Intl.DateTimeFormat(dateLocale(locale.value), {
+    timeZone: siteTimeZone(snapshot.value.asOf),
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -864,10 +865,11 @@ const asOfLabel = computed(() => {
 })
 
 const formatDate = (date: string) =>
-  new Intl.DateTimeFormat(locale.value, {
+  new Intl.DateTimeFormat(dateLocale(locale.value), {
+    timeZone: siteTimeZone(date),
     month: 'short',
     year: 'numeric',
-  }).format(new Date(`${date}T12:00:00`))
+  }).format(new Date(date))
 
 const formatPrice = (price: number, currency: 'UYU' | 'USD') =>
   new Intl.NumberFormat(locale.value, {

@@ -332,7 +332,12 @@ const ageRows = computed(() =>
 )
 
 const longDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('es-UY', { year: 'numeric', month: 'long', day: 'numeric' })
+  new Date(iso).toLocaleDateString('es-UY', {
+    timeZone: siteTimeZone(iso),
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 
 const verifiedDisplay = computed(() => longDate(DRIVING_LICENCE_VERIFIED_AT))
 const unifiedSinceDisplay = longDate(DRIVING_LICENCE_UNIFIED_SINCE)

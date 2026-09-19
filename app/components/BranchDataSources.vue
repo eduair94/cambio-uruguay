@@ -51,7 +51,7 @@ const entries = computed(() =>
   })
 )
 const formatDate = (date: string) =>
-  new Intl.DateTimeFormat(locale.value, {
+  new Intl.DateTimeFormat(dateLocale(locale.value), {
     day: 'numeric',
     month: 'numeric',
     year: 'numeric',

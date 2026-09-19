@@ -389,7 +389,9 @@ const figuresUpdated = computed(() => {
   const iso = figures.value?.asOf
   if (!iso) return ''
   const d = new Date(iso)
-  return isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
+  return isNaN(d.getTime())
+    ? ''
+    : d.toLocaleDateString('es-UY', { timeZone: siteTimeZone(iso), day: 'numeric', month: 'long' })
 })
 
 // Interactive checklist state (client-side, private — never persisted).

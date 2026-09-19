@@ -145,7 +145,7 @@ const busy = ref('')
 const error = ref('')
 const removing = ref<RentalAlertSubscription | null>(null)
 const date = (value: string) =>
-  new Intl.DateTimeFormat(locale.value, {
+  new Intl.DateTimeFormat(dateLocale(locale.value), {
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone: 'America/Montevideo',

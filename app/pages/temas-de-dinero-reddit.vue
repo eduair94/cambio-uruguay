@@ -180,7 +180,11 @@ const { data, pending } = await useFetch<TopicsPayload>('/api/reddit-topics', {
 const topics = computed(() => data.value?.topics ?? [])
 const asOfLabel = computed(() =>
   data.value?.asOf
-    ? new Date(data.value.asOf).toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
+    ? new Date(data.value.asOf).toLocaleDateString('es-UY', {
+        timeZone: siteTimeZone(data.value.asOf),
+        day: 'numeric',
+        month: 'long',
+      })
     : ''
 )
 
