@@ -170,17 +170,13 @@ function distribution(values: number[]): RentalZoneDistribution {
 
 /**
  * One representative per property, selected by recency and stable advert identity, never price.
- * Duplicate source adverts cannot multiply the sample. Selection precedes every cohort; no
- * median-of-medians, inferred identity matching, output cap, or coordinate-based neighborhood.
+ * Duplicate source adverts cannot multiply the sample. Shared by the market cohorts and the
+ * neighbourhood price analysis so both count the same listings.
  */
-export function buildRentalZoneMarket(
+export function selectRentalZoneRepresentatives(
   observations: Iterable<RentalZoneMarketObservation>,
   options: { usdUyu: number; now: number },
-): {
-  sampleMinimum: number;
-  observations: number;
-  buckets: RentalZoneMarketBucket[];
-} {
+): RentalZoneMarketObservation[] {
   if (!positive(options.usdUyu) || !Number.isFinite(options.now))
     throw new Error("Invalid rental zone market context");
   const normalized: RentalZoneMarketObservation[] = [];
@@ -224,6 +220,29 @@ export function buildRentalZoneMarket(
     } else adverts.set(advert, row.propertyKey);
   }
   const properties = new Set<string>();
+  const representatives: RentalZoneMarketObservation[] = [];
+  for (const row of normalized) {
+    const property = root(row.propertyKey);
+    if (properties.has(property)) continue;
+    properties.add(property);
+    representatives.push(row);
+  }
+  return representatives;
+}
+
+/**
+ * Cohorts from the representatives. Selection precedes every cohort; no median-of-medians,
+ * inferred identity matching, output cap, or coordinate-based neighborhood.
+ */
+export function buildRentalZoneMarket(
+  observations: Iterable<RentalZoneMarketObservation>,
+  options: { usdUyu: number; now: number },
+): {
+  sampleMinimum: number;
+  observations: number;
+  buckets: RentalZoneMarketBucket[];
+} {
+  const representatives = selectRentalZoneRepresentatives(observations, options);
   const groups = new Map<
     string,
     {
@@ -232,12 +251,8 @@ export function buildRentalZoneMarket(
       values: RentalZoneMarketObservation[];
     }
   >();
-  let count = 0;
-  for (const row of normalized) {
-    const property = root(row.propertyKey);
-    if (properties.has(property)) continue;
-    properties.add(property);
-    count++;
+  const count = representatives.length;
+  for (const row of representatives) {
     const bedrooms: RentalZoneMarketBedrooms[] = ["any"];
     if (row.bedrooms !== null)
       bedrooms.push(
