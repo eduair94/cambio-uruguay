@@ -61,12 +61,20 @@ export interface ClaimsLayer {
   unassigned: number;
   zones: Record<string, ClaimsMetric>;
 }
-export const SERVICE_ATTRIBUTES = ["luz", "agua", "alumbrado", "saneamiento", "limpieza", "calles"] as const;
+/** "denuncias" = crime reports per 1,000 UTE customers: a registered count, never a risk estimate. */
+export const SERVICE_ATTRIBUTES = ["luz", "agua", "alumbrado", "saneamiento", "limpieza", "calles", "denuncias"] as const;
 export type ServiceAttribute = typeof SERVICE_ATTRIBUTES[number];
 export type ServiceLevel = "low" | "mid" | "high";
 export interface ServiceLevels {
   thresholds: Partial<Record<ServiceAttribute, { low: number; high: number; zones: number }>>;
   byZone: Partial<Record<ServiceAttribute, Record<string, ServiceLevel>>>;
+  /** The value each zone is ranked by, so readers can place a zone among the others. */
+  values: Partial<Record<ServiceAttribute, Record<string, number>>>;
+}
+/** Mapped everyday services (OSM index) per km² of each INE barrio: more is better. */
+export interface AmenityDensity {
+  dataAsOf: string;
+  perKm2: Record<string, number>;
 }
 export interface ZoneUtilityContext {
   version: 1;
@@ -78,6 +86,9 @@ export interface ZoneUtilityContext {
   water: WaterLayer | null;
   claims: ClaimsLayer | null;
   levels: ServiceLevels;
+  /** Last day of the crime period the "denuncias" values come from. */
+  crimePeriodTo?: string | null;
+  amenities?: AmenityDensity | null;
 }
 
 const round = (value: number, digits = 2) => Math.round(value * 10 ** digits) / 10 ** digits;
@@ -190,10 +201,11 @@ export function quantile(sorted: readonly number[], p: number): number {
 
 /** Terciles among the zones that have the value; "low" is always the third with the fewest problems. */
 export function buildLevels(values: Partial<Record<ServiceAttribute, Record<string, number>>>): ServiceLevels {
-  const levels: ServiceLevels = { thresholds: {}, byZone: {} };
+  const levels: ServiceLevels = { thresholds: {}, byZone: {}, values: {} };
   for (const attribute of SERVICE_ATTRIBUTES) {
     const entries = Object.entries(values[attribute] || {}).filter(([, value]) => Number.isFinite(value));
     if (entries.length < 9) continue;
+    levels.values[attribute] = Object.fromEntries(entries.map(([zone, value]) => [zone, round(value, 2)]));
     const sorted = entries.map(([, value]) => value).sort((a, b) => a - b);
     const low = round(quantile(sorted, 1 / 3), 3), high = round(quantile(sorted, 2 / 3), 3);
     levels.thresholds[attribute] = { low, high, zones: entries.length };
@@ -203,8 +215,10 @@ export function buildLevels(values: Partial<Record<ServiceAttribute, Record<stri
 }
 
 /** The value each attribute is ranked by, per zone. */
-export function levelValues(power: PowerLayer | null, water: WaterLayer | null, claims: ClaimsLayer | null): Partial<Record<ServiceAttribute, Record<string, number>>> {
+export function levelValues(power: PowerLayer | null, water: WaterLayer | null, claims: ClaimsLayer | null,
+  crimeRates?: Record<string, number> | null): Partial<Record<ServiceAttribute, Record<string, number>>> {
   const values: Partial<Record<ServiceAttribute, Record<string, number>>> = {};
+  if (crimeRates && Object.keys(crimeRates).length) values.denuncias = { ...crimeRates };
   if (power?.status === "ready") values.luz = Object.fromEntries(Object.entries(power.zones).map(([zone, metric]) => [zone, metric.unplannedMinutes]));
   if (water) values.agua = Object.fromEntries(Object.entries(water.zones).map(([zone, metric]) => [zone, metric.notices]));
   if (claims) for (const category of CLAIM_CATEGORIES) {
@@ -240,4 +254,51 @@ export function zoneLabels(): Pick<ZoneUtilityContext, "names" | "localities"> {
     localities[`ute:${locality.id}`] = { name: locality.name, department: locality.department, aliases: [...locality.aliases] };
   }
   return { names, localities };
+}
+
+/** Crime reports per 1,000 UTE customers of the same INE barrio (12 months, attempts included). */
+export function crimeRates(countsByOfficialCode: Readonly<Record<string, { total: number }>> | null | undefined,
+  customers: Readonly<Record<string, number>>): Record<string, number> {
+  const rates: Record<string, number> = {};
+  for (const [code, counts] of Object.entries(countsByOfficialCode || {})) {
+    const total = customers[`mvd:${code}`];
+    if (typeof total === "number" && total >= 100 && Number.isFinite(counts?.total)) rates[`mvd:${code}`] = round(counts.total / total * 1000, 1);
+  }
+  return rates;
+}
+
+/** Area of a lon/lat polygon in km², projected at its own latitude (barrio-sized, error well under 1 %). */
+export function polygonAreaKm2(geometry: { type: "Polygon"; coordinates: number[][][] } | { type: "MultiPolygon"; coordinates: number[][][][] }): number {
+  const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
+  const ringArea = (ring: number[][], cos: number) => {
+    let sum = 0;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++)
+      sum += (ring[j][0] * cos * 111.32) * (ring[i][1] * 110.574) - (ring[i][0] * cos * 111.32) * (ring[j][1] * 110.574);
+    return Math.abs(sum) / 2;
+  };
+  let area = 0;
+  for (const rings of polygons) {
+    if (!rings[0]?.length) continue;
+    const lat = rings[0].reduce((s, point) => s + point[1], 0) / rings[0].length;
+    const cos = Math.cos((lat * Math.PI) / 180);
+    area += ringArea(rings[0], cos) - rings.slice(1).reduce((s, hole) => s + ringArea(hole, cos), 0);
+  }
+  return area;
+}
+
+/** OSM service points per km² of each INE barrio (all mapped categories together). */
+export function buildAmenityDensity(
+  services: { dataAsOf: string; countsByOfficialCode: Record<string, Record<string, number>> } | null | undefined,
+  zones: ReadonlyArray<{ officialCode: string; geometry: Parameters<typeof polygonAreaKm2>[0] }>,
+): AmenityDensity | null {
+  if (!services) return null;
+  const perKm2: Record<string, number> = {};
+  for (const zone of zones) {
+    const counts = services.countsByOfficialCode[zone.officialCode];
+    const area = polygonAreaKm2(zone.geometry);
+    if (!counts || !(area > 0.05)) continue;
+    const total = Object.values(counts).reduce((s, value) => s + (Number.isFinite(value) ? value : 0), 0);
+    perKm2[`mvd:${zone.officialCode}`] = round(total / area, 1);
+  }
+  return Object.keys(perKm2).length ? { dataAsOf: services.dataAsOf, perKm2 } : null;
 }

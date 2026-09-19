@@ -1,7 +1,8 @@
 import { appConnection } from "../appdb";
 import { buildZoneAssigner, type ListingLocation, type OfficialZone, type ZoneAlias } from "./assign";
 import type { OfficialPropertyZone, PropertyZoneCrime } from "./sources/types";
-import { buildClaimsLayer, buildLevels, buildPowerLayer, buildWaterLayer, customersByZone, levelValues, zoneLabels, type ZoneUtilityContext } from "./utilities";
+import { buildAmenityDensity, buildClaimsLayer, buildLevels, buildPowerLayer, buildWaterLayer, crimeRates, customersByZone, levelValues, zoneLabels, type ZoneUtilityContext } from "./utilities";
+import type { ZoneServiceContext } from "./context";
 import { buildPriceImpact, type ImpactAttribute, type PriceImpact } from "./impact";
 import type { RentalZoneMarketObservation } from "./market";
 import { areaLocator } from "./geo";
@@ -83,12 +84,15 @@ export async function assignListingZones({ ine, now, dryRun }: { ine: readonly O
 }
 
 /** Power, water and complaint layers. A failing source keeps its previous layer; the others still refresh. */
-export async function buildUtilityContext({ previous, claimsCache, ine, now, forceSources }: {
+export async function buildUtilityContext({ previous, claimsCache, ine, now, forceSources, crime, services }: {
   previous: ZoneUtilityContext | null;
   claimsCache: ClaimsSnapshot | null;
   ine: readonly OfficialPropertyZone[];
   now: Date;
   forceSources?: boolean;
+  /** Registered crime of the same refresh, ranked per 1,000 UTE customers like the complaints. */
+  crime?: PropertyZoneCrime | null;
+  services?: ZoneServiceContext | null;
 }): Promise<{ utilities: ZoneUtilityContext; claims: ClaimsSnapshot | null; customers: Record<string, number>; errors: string[] }> {
   const errors: string[] = [];
   let power = previous?.power ?? null, water = previous?.water ?? null, claimsLayer = previous?.claims ?? null;
@@ -115,8 +119,12 @@ export async function buildUtilityContext({ previous, claimsCache, ine, now, for
   } catch { errors.push("claims: SUR archive unavailable; previous aggregate retained"); }
   if (claims) claimsLayer = buildClaimsLayer(claims, Object.keys(customers).length ? customers : Object.fromEntries(
     Object.entries(previous?.claims?.zones || {}).filter(([, metric]) => metric.customers).map(([zone, metric]) => [zone, metric.customers!])));
+  const rateCustomers = Object.keys(customers).length ? customers : Object.fromEntries(
+    Object.entries(claimsLayer?.zones || {}).filter(([, metric]) => metric.customers).map(([zone, metric]) => [zone, metric.customers!]));
+  const rates = crime ? crimeRates(crime.countsByOfficialCode, rateCustomers) : null;
   const utilities: ZoneUtilityContext = { version: 1, generatedAt: now.toISOString(), ...zoneLabels(), power, water, claims: claimsLayer,
-    levels: buildLevels(levelValues(power, water, claimsLayer)) };
+    levels: buildLevels(levelValues(power, water, claimsLayer, rates)), crimePeriodTo: crime?.periodTo ?? null,
+    amenities: buildAmenityDensity(services, ine) ?? previous?.amenities ?? null };
   return { utilities, claims, customers, errors };
 }
 
@@ -132,14 +140,8 @@ export function buildZoneImpact({ observations, zoneOf, utilities, crime, custom
   rentalDataAsOf: string;
 }): PriceImpact {
   const values = levelValues(utilities.power, utilities.water, utilities.claims) as Partial<Record<ImpactAttribute, Record<string, number>>>;
-  if (crime) {
-    const rates: Record<string, number> = {};
-    for (const [code, counts] of Object.entries(crime.countsByOfficialCode)) {
-      const total = customers[`mvd:${code}`] ?? utilities.claims?.zones[`mvd:${code}`]?.customers;
-      if (total && total >= 100) rates[`mvd:${code}`] = Math.round(counts.total / total * 1000 * 10) / 10;
-    }
-    values.denuncias = rates;
-  }
+  const rates = utilities.levels.values?.denuncias ?? (crime ? crimeRates(crime.countsByOfficialCode, customers) : null);
+  if (rates && Object.keys(rates).length) values.denuncias = rates;
   return buildPriceImpact({ observations, zoneOf: key => zoneOf.get(key) ?? null, names: utilities.names, attributes: values, usdUyu, now, rentalDataAsOf });
 }
 

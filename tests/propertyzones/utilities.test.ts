@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildClaimsLayer, buildLevels, buildPowerLayer, buildWaterLayer, customersByZone, levelValues, quantile } from "../../classes/propertyzones/utilities";
+import { buildAmenityDensity, buildClaimsLayer, buildLevels, buildPowerLayer, buildWaterLayer, crimeRates, customersByZone, levelValues, polygonAreaKm2, quantile } from "../../classes/propertyzones/utilities";
 import type { PowerDayDoc } from "../../classes/utilities/power/store";
 import type { WaterNoticeDoc } from "../../classes/utilities/water/store";
 
@@ -87,5 +87,27 @@ describe("claims, levels", () => {
 
   it("averages customers per public zone", () => {
     expect(customersByZone(ledger(2))).toMatchObject({ "mvd:8": 47_000, "mvd:1": 10_000, "ute:3210": 20_000 });
+  });
+});
+
+describe("crime rates and amenity density", () => {
+  it("rates registered crime per 1,000 UTE customers and ranks it like the other attributes", () => {
+    const rates = crimeRates({ "8": { total: 470 }, "2": { total: 10 } }, { "mvd:8": 47_000, "mvd:2": 50 });
+    expect(rates).toEqual({ "mvd:8": 10 });
+    const values = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`mvd:${i + 1}`, i * 10]));
+    const levels = buildLevels(levelValues(null, null, null, values));
+    expect(levels.byZone.denuncias!["mvd:1"]).toBe("low");
+    expect(levels.values.denuncias!["mvd:12"]).toBe(110);
+  });
+
+  it("measures polygon areas in km² and service density per barrio", () => {
+    // 0.01° × 0.01° at the latitude of Montevideo ≈ 1.113 km × 0.912 km.
+    const square = { type: "Polygon" as const, coordinates: [[[-56.2, -34.9], [-56.19, -34.9], [-56.19, -34.89], [-56.2, -34.89], [-56.2, -34.9]]] };
+    expect(polygonAreaKm2(square)).toBeCloseTo(1.0097, 2);
+    const density = buildAmenityDensity({ dataAsOf: "2026-09-12", countsByOfficialCode: { "8": { supermarket: 5, pharmacy: 5 } } },
+      [{ officialCode: "8", geometry: square }, { officialCode: "9", geometry: square }]);
+    expect(density?.perKm2["mvd:8"]).toBeCloseTo(9.9, 1);
+    expect(density?.perKm2["mvd:9"]).toBeUndefined();
+    expect(buildAmenityDensity(null, [])).toBeNull();
   });
 });

@@ -103,7 +103,7 @@ export async function refreshPropertyZones(options: { dryRun?: boolean; forceSou
   let customers: Record<string, number> = {};
   try {
     const built = await buildUtilityContext({ previous: utilities, claimsCache: await readZoneSnapshot<ClaimsSnapshot>("claims-cache"),
-      ine: geometry.zones, now, forceSources: options.forceSources });
+      ine: geometry.zones, now, forceSources: options.forceSources, crime, services });
     utilities = built.utilities; customers = built.customers; errors.push(...built.errors);
     if (!options.dryRun && built.claims) await publishClaimsCache(built.claims);
   } catch { errors.push("utilities: layers could not be built; previous layers retained"); }
