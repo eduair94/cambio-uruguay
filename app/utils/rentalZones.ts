@@ -12,6 +12,12 @@ import type {
   RentalZoneServiceCategory,
   RentalZoneSource,
 } from './rentalZoneTypes'
+import {
+  attachRentalZoneUtilities,
+  projectRentalZoneServices,
+  rentalZoneUtilitiesMeta,
+  type RentalZoneServiceSnapshot,
+} from './rentalZoneServices'
 
 export const RENTAL_ZONE_SAMPLE_MINIMUM = 8
 export const RENTAL_ZONE_DEPARTMENTS = [
@@ -257,6 +263,8 @@ export interface RentalZoneSnapshots {
     boundaries: RentalZoneBoundaryCollection | null
     crime: PublicCrime | null
     services: PublicServices | null
+    /** Power, water and complaint layers (see rentalZoneServices.ts). */
+    utilities: RentalZoneServiceSnapshot | null
   } | null
 }
 
@@ -462,6 +470,7 @@ export function projectRentalZoneSnapshots(
           boundaries: boundaries(rawContext.geometry),
           crime: crime(rawContext.crime),
           services: services(rawContext.services),
+          utilities: projectRentalZoneServices(rawContext.utilities, rawContext.aliases),
         }
       : null
   return { market, context }
@@ -530,6 +539,12 @@ export function buildRentalZoneResponse(
       prices: value,
       boundaryAvailable: code !== null,
       crime: reported,
+      utilities: attachRentalZoneUtilities(
+        context?.utilities ?? null,
+        { department: scoped, neighborhood },
+        code,
+        now
+      ),
       services:
         context?.services && serviceCounts
           ? {
@@ -588,6 +603,9 @@ export function buildRentalZoneResponse(
   if (context?.boundaries) sources.push({ ...context.boundaries.source })
   if (context?.crime) sources.push({ ...context.crime.source })
   if (context?.services) sources.push({ ...context.services.source })
+  const utilities = rentalZoneUtilitiesMeta(context?.utilities ?? null, now)
+  for (const layer of [utilities?.power, utilities?.water, utilities?.claims])
+    if (layer && layer.status !== 'unavailable') sources.push({ ...layer.source })
   const availableDepartments = new Set<string>(
     market?.buckets.map(bucket => bucket.department) || []
   )
@@ -618,5 +636,6 @@ export function buildRentalZoneResponse(
         ? '/api/rentals/zone-boundaries'
         : null,
     sources,
+    utilities,
   }
 }

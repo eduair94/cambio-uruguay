@@ -44,6 +44,8 @@ export const RENTAL_ZONE_SNAPSHOT_PROJECTION = {
   'services.dataAsOf': 1,
   'services.fetchedAt': 1,
   'services.countsByOfficialCode': 1,
+  utilities: 1,
+  aliases: 1,
 } as const
 
 async function readSnapshots(): Promise<unknown[]> {
