@@ -65,6 +65,8 @@ export interface RentalZone {
   prices: RentalZonePrices
   services: RentalZoneServices | null
   crime: RentalZoneCrime | null
+  /** Power, water and complaint layers of the official area this zone maps to. */
+  utilities: RentalZoneUtilities | null
   boundaryAvailable: boolean
 }
 export interface RentalZoneResponse {
@@ -82,6 +84,7 @@ export interface RentalZoneResponse {
   zones: RentalZone[]
   boundaryUrl: string | null
   sources: RentalZoneSource[]
+  utilities: RentalZoneUtilitiesMeta | null
 }
 export type RentalZoneGeometry =
   | { type: 'Polygon'; coordinates: number[][][] }
@@ -94,4 +97,100 @@ export interface RentalZoneBoundaryCollection {
     properties: { zoneId: string; name: string; department: string; officialCode: string }
     geometry: RentalZoneGeometry
   }>
+}
+
+/** Neighbourhood service attributes the directory can filter by ("the third with the fewest problems"). */
+export type RentalServiceAttribute = 'luz' | 'agua' | 'alumbrado' | 'saneamiento' | 'limpieza' | 'calles'
+export type RentalServiceLevel = 'low' | 'mid' | 'high'
+export type RentalClaimCategory = 'alumbrado' | 'saneamiento' | 'limpieza' | 'calles'
+/** Status of a service layer; `collecting` = the power ledger has not observed enough days yet. */
+export type RentalServiceStatus = RentalZoneDataStatus | 'collecting'
+export interface RentalZoneOfficial {
+  /** "mvd:<INE code>" or "ute:<UTE locality id>". */
+  id: string
+  name: string
+  /** exact: same official name; alias: measured from the listings' own coordinates. */
+  match: 'exact' | 'alias'
+  share: number | null
+}
+export interface RentalZonePower {
+  geography: 'zone' | 'department'
+  geographyName: string
+  customers: number
+  /** Minutes per customer per 30 days without power, unplanned cuts. */
+  unplannedMinutes: number
+  plannedMinutes: number
+  cutsPerMonth: number
+  cutsPerThousand: number
+}
+export interface RentalZoneWater {
+  geography: 'zone' | 'department'
+  geographyName: string
+  notices: number
+  hours: number
+}
+export interface RentalZoneClaims {
+  counts: Record<RentalClaimCategory, number>
+  perThousand: Record<RentalClaimCategory, number> | null
+  customers: number | null
+}
+export interface RentalZoneUtilities {
+  official: RentalZoneOfficial | null
+  power: RentalZonePower | null
+  water: RentalZoneWater | null
+  claims: RentalZoneClaims | null
+  levels: Partial<Record<RentalServiceAttribute, RentalServiceLevel>>
+}
+export interface RentalZoneUtilitiesMeta {
+  power: {
+    status: RentalServiceStatus
+    observedFrom: string | null
+    observedTo: string | null
+    observedDays: number
+    coverage: number
+    source: RentalZoneSource
+  } | null
+  water: {
+    status: RentalZoneDataStatus
+    periodFrom: string
+    periodTo: string
+    notices: number
+    montevideoNotices: number
+    montevideoMatched: number
+    source: RentalZoneSource
+  } | null
+  claims: {
+    status: RentalZoneDataStatus
+    periodFrom: string
+    periodTo: string
+    source: RentalZoneSource
+  } | null
+  thresholds: Partial<Record<RentalServiceAttribute, { low: number; high: number; zones: number }>>
+}
+export type RentalImpactAttribute = RentalServiceAttribute | 'denuncias'
+export interface RentalZoneImpact {
+  status: RentalZoneDataStatus
+  generatedAt: string
+  rentalDataAsOf: string
+  minimumListings: number
+  zones: Array<{ zone: string; name: string; n: number; rentM2: number }>
+  attributes: Array<{
+    attribute: RentalImpactAttribute
+    zones: number
+    rho: number
+    rhoLow: number
+    rhoHigh: number
+    xLow: number
+    xHigh: number
+    pct: number
+    pctLow: number
+    pctHigh: number
+    verdict: 'lower' | 'higher' | 'inconclusive'
+    points: Array<{ zone: string; x: number; y: number }>
+  }>
+  joint: {
+    zones: number
+    r2: number
+    coefficients: Array<{ attribute: RentalImpactAttribute; pctPerSd: number; low: number; high: number }>
+  } | null
 }

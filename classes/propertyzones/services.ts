@@ -1,8 +1,7 @@
 import { appConnection } from "../appdb";
 import { buildZoneAssigner, type ListingLocation, type OfficialZone, type ZoneAlias } from "./assign";
-import { INE_DISPLAY_NAMES } from "./names";
 import type { OfficialPropertyZone, PropertyZoneCrime } from "./sources/types";
-import { buildClaimsLayer, buildLevels, buildPowerLayer, buildWaterLayer, customersByZone, levelValues, type ZoneUtilityContext } from "./utilities";
+import { buildClaimsLayer, buildLevels, buildPowerLayer, buildWaterLayer, customersByZone, levelValues, zoneLabels, type ZoneUtilityContext } from "./utilities";
 import { buildPriceImpact, type ImpactAttribute, type PriceImpact } from "./impact";
 import type { RentalZoneMarketObservation } from "./market";
 import { areaLocator } from "./geo";
@@ -116,7 +115,7 @@ export async function buildUtilityContext({ previous, claimsCache, ine, now, for
   } catch { errors.push("claims: SUR archive unavailable; previous aggregate retained"); }
   if (claims) claimsLayer = buildClaimsLayer(claims, Object.keys(customers).length ? customers : Object.fromEntries(
     Object.entries(previous?.claims?.zones || {}).filter(([, metric]) => metric.customers).map(([zone, metric]) => [zone, metric.customers!])));
-  const utilities: ZoneUtilityContext = { version: 1, generatedAt: now.toISOString(), power, water, claims: claimsLayer,
+  const utilities: ZoneUtilityContext = { version: 1, generatedAt: now.toISOString(), ...zoneLabels(), power, water, claims: claimsLayer,
     levels: buildLevels(levelValues(power, water, claimsLayer)) };
   return { utilities, claims, customers, errors };
 }
@@ -141,9 +140,7 @@ export function buildZoneImpact({ observations, zoneOf, utilities, crime, custom
     }
     values.denuncias = rates;
   }
-  const names: Record<string, string> = Object.fromEntries(Object.entries(INE_DISPLAY_NAMES).map(([code, name]) => [`mvd:${code}`, name]));
-  for (const locality of uteLocalities()) names[`ute:${locality.id}`] = locality.name;
-  return buildPriceImpact({ observations, zoneOf: key => zoneOf.get(key) ?? null, names, attributes: values, usdUyu, now, rentalDataAsOf });
+  return buildPriceImpact({ observations, zoneOf: key => zoneOf.get(key) ?? null, names: utilities.names, attributes: values, usdUyu, now, rentalDataAsOf });
 }
 
 

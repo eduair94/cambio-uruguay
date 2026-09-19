@@ -120,7 +120,7 @@ const previousServices = {
   snapshotId: "old-services",
   countsByOfficialCode: {},
 };
-const previousUtilities = { version: 1, generatedAt: "2026-09-02T12:00:00Z", power: null, water: null, claims: null, levels: { thresholds: {}, byZone: {} } };
+const previousUtilities = { version: 1, generatedAt: "2026-09-02T12:00:00Z", names: {}, localities: {}, power: null, water: null, claims: null, levels: { thresholds: {}, byZone: {} } };
 const utilitiesNow = { ...previousUtilities, generatedAt: stamp };
 const previous = {
   version: 1,

@@ -71,6 +71,9 @@ export interface ServiceLevels {
 export interface ZoneUtilityContext {
   version: 1;
   generatedAt: string;
+  /** Display name per public zone id, and the interior localities UTE reports (for name matching). */
+  names: Record<string, string>;
+  localities: Record<string, { name: string; department: string; aliases: string[] }>;
   power: PowerLayer | null;
   water: WaterLayer | null;
   claims: ClaimsLayer | null;
@@ -225,4 +228,16 @@ export function customersByZone(days: readonly PowerDayDoc[]): Record<string, nu
     if (target) result[target] = (result[target] || 0) + item.sum / item.n;
   }
   return result;
+}
+
+/** Labels of every public zone id: INE barrios ("mvd:<code>") and UTE localities ("ute:<id>"). */
+export function zoneLabels(): Pick<ZoneUtilityContext, "names" | "localities"> {
+  const names: Record<string, string> = {};
+  for (const [code, name] of Object.entries(INE_DISPLAY_NAMES)) names[`mvd:${code}`] = name;
+  const localities: ZoneUtilityContext["localities"] = {};
+  for (const locality of uteLocalities()) {
+    names[`ute:${locality.id}`] = locality.name;
+    localities[`ute:${locality.id}`] = { name: locality.name, department: locality.department, aliases: [...locality.aliases] };
+  }
+  return { names, localities };
 }
