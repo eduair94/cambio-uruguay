@@ -285,6 +285,10 @@
                y la página no contestaba. Vive acá y no en cada página para que un job automático
                nunca tenga que parchear un .vue escrito a mano. Ver utils/generated/addenda.ts. -->
           <PageAddenda />
+          <!-- Un directorio lleva a los análisis que se hacen con sus datos, y cada análisis lleva de
+               vuelta a su directorio. Sale del registro (utils/directorios.ts → `analisis`), así
+               que ninguna página lo pega a mano. "Seguí leyendo" no repite lo que muestra. -->
+          <DirectorioAnalisis />
           <RelatedPages />
           <!-- The end-of-article ask. Long reads only (`utils/capture.ts`), and it
                sits after the recirculation block: giving the reader somewhere to go

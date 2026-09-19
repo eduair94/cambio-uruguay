@@ -181,6 +181,12 @@ export interface RelatedPage {
 export interface RelatedContext {
   operation?: unknown
   mode?: unknown
+  /**
+   * Routes another block on the same page already links (the directory/analysis block right above
+   * this one, `utils/directorioAnalisis.ts`). They are dropped before picking, so the block fills
+   * with other pages instead of repeating a card the reader just walked past.
+   */
+  exclude?: readonly string[]
 }
 
 interface Candidate extends RelatedPage {
@@ -604,11 +610,13 @@ export function relatedFor(path: string, limit = 6, context: RelatedContext = {}
 
   // Curated first, computed for the rest. Keeps the pages that actually carry
   // traffic hand-quality without anyone having to maintain 1.255 lists.
-  const pinned = curatedFor(clean, context)
+  const excluded = new Set(context.exclude ?? [])
+  const pinned = curatedFor(clean, context).filter(c => !excluded.has(c.to))
   const pinnedSet = new Set(pinned.map(c => c.to))
 
   const scored = CANDIDATES.filter(
-    c => c.to !== clean && !clean.startsWith(`${c.to}/`) && !pinnedSet.has(c.to)
+    c =>
+      c.to !== clean && !clean.startsWith(`${c.to}/`) && !pinnedSet.has(c.to) && !excluded.has(c.to)
   )
     .map(candidate => {
       let signal = 0
@@ -643,7 +651,9 @@ export function relatedFor(path: string, limit = 6, context: RelatedContext = {}
   if (picked.length < MIN_RELATED) {
     const taken = new Set(picked.map(c => c.to))
     const theme = source?.section ?? picked[0]?.section
-    const filler = CANDIDATES.filter(c => !taken.has(c.to) && c.to !== clean).sort(
+    const filler = CANDIDATES.filter(
+      c => !taken.has(c.to) && c.to !== clean && !excluded.has(c.to)
+    ).sort(
       (a, b) =>
         Number(b.section === theme) - Number(a.section === theme) ||
         b.priority - a.priority ||

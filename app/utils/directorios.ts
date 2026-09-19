@@ -73,6 +73,16 @@ export interface DirectorioEntry {
   readonly fuente: DirectorioFuente
   /** Otras páginas del MISMO directorio (la segunda categoría, las oportunidades, la ficha). */
   readonly tambien?: readonly DirectorioEnlace[]
+  /**
+   * Los análisis y estadísticas que se calculan con los datos de ESTE directorio: el informe, la
+   * evolución de precios, el tasador. Sólo la ruta: la etiqueta sale del menú (`siteNav`), que ya la
+   * tiene en los tres idiomas, así que un análisis tiene que estar en el menú para figurar acá.
+   *
+   * Con esto se arma el vínculo en los dos sentidos (`utils/directorioAnalisis.ts`): el directorio
+   * lista sus análisis y cada análisis lleva de vuelta a su directorio. Un análisis que sale de
+   * varios directorios (CyberLunes lee las ofertas de cuatro) figura en cada uno.
+   */
+  readonly analisis?: readonly string[]
 }
 
 export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
@@ -88,7 +98,12 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     fuente: 'relevado',
     tambien: Object.freeze([
       { to: '/oportunidades-inmobiliarias-uruguay', label: 'Oportunidades' },
-      { to: '/barrios-alquileres-uruguay', label: 'Comparar barrios' },
+    ]),
+    analisis: Object.freeze([
+      '/analisis-alquileres-uruguay',
+      '/evolucion-precio-alquileres-uruguay',
+      '/barrios-alquileres-uruguay',
+      '/comparar-portales-de-alquiler-uruguay',
     ]),
   },
   {
@@ -101,6 +116,7 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     icon: 'mdi-home-search-outline',
     unidad: 'avisos',
     fuente: 'relevado',
+    analisis: Object.freeze(['/evolucion-precio-viviendas-uruguay']),
   },
   {
     id: 'inmobiliarias',
@@ -123,9 +139,13 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     icon: 'mdi-car-outline',
     unidad: 'avisos',
     fuente: 'relevado',
-    tambien: Object.freeze([
-      { to: '/oportunidades-autos-usados-uruguay', label: 'Oportunidades' },
-      { to: '/mercado-de-autos-usados-uruguay', label: 'El mercado' },
+    tambien: Object.freeze([{ to: '/oportunidades-autos-usados-uruguay', label: 'Oportunidades' }]),
+    analisis: Object.freeze([
+      '/mercado-de-autos-usados-uruguay',
+      '/evolucion-precio-autos-usados-uruguay',
+      '/autos-chocados-y-con-deuda-uruguay',
+      '/cuanto-vale-mi-auto-uruguay',
+      '/vender-mi-auto-uruguay',
     ]),
   },
   {
@@ -142,6 +162,9 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     tambien: Object.freeze([
       { to: '/bicicletas-electricas-uruguay', label: 'Bicicletas eléctricas' },
     ]),
+    // CyberLunes lee el historial de precio por oferta que escriben equipar, sillas, celulares y
+    // movilidad (`pricewatchoffers`): es un análisis de los cuatro.
+    analisis: Object.freeze(['/ciberlunes-y-black-friday-uruguay']),
   },
   {
     id: 'celulares',
@@ -155,6 +178,7 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     // vigente, y lo dice con estas mismas palabras: la tarjeta cuenta lo que el lector va a ver.
     unidad: 'modelos con precio',
     fuente: 'relevado',
+    analisis: Object.freeze(['/ciberlunes-y-black-friday-uruguay']),
   },
   {
     id: 'sillas',
@@ -166,6 +190,7 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     icon: 'mdi-seat-outline',
     unidad: 'sillas',
     fuente: 'relevado',
+    analisis: Object.freeze(['/ciberlunes-y-black-friday-uruguay']),
   },
   {
     id: 'equipar',
@@ -179,6 +204,7 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     // cifra que el job recalcule.
     unidad: 'categorías',
     fuente: 'sin-cifra',
+    analisis: Object.freeze(['/ciberlunes-y-black-friday-uruguay']),
   },
   {
     id: 'tiendas',
@@ -190,9 +216,9 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     icon: 'mdi-storefront-outline',
     unidad: 'tiendas',
     fuente: 'relevado',
-    tambien: Object.freeze([
-      { to: '/ciberlunes-y-black-friday-uruguay', label: '¿El descuento es real?' },
-    ]),
+    // Las ofertas que CyberLunes compara son de estas tiendas: "¿el descuento es real?" es la
+    // pregunta que el lector le hace a una tienda.
+    analisis: Object.freeze(['/ciberlunes-y-black-friday-uruguay']),
   },
   {
     id: 'precios',
@@ -221,6 +247,14 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
       { to: '/casa-de-cambio-cerca-de-mi', label: 'Cerca de mí' },
       { to: '/mapa', label: 'En el mapa' },
     ]),
+    // Todo lo que se calcula con las pizarras que relevamos cada cinco minutos.
+    analisis: Object.freeze([
+      '/historico',
+      '/analiticas',
+      '/ultimos-cambios',
+      '/mejor-casa-de-cambio',
+      '/estado',
+    ]),
   },
   {
     id: 'couriers',
@@ -243,6 +277,10 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     fuente: 'curado',
     tambien: Object.freeze([
       { to: '/descuentos-con-tarjeta-uruguay', label: 'Descuentos vigentes' },
+    ]),
+    analisis: Object.freeze([
+      '/cuanto-vale-una-milla-itau-uruguay',
+      '/que-banco-tiene-mas-descuentos-uruguay',
     ]),
   },
 ])
@@ -291,12 +329,13 @@ export function directoriosPorFamilia(): ReadonlyArray<{
   })).filter(group => group.entries.length > 0)
 }
 
-/** Todas las rutas que este hub enlaza, principales y secundarias, sin repetir. */
+/** Todas las rutas que este hub enlaza, principales, secundarias y análisis, sin repetir. */
 export function directorioRoutes(): string[] {
   const out: string[] = []
   for (const entry of DIRECTORIOS) {
     if (!out.includes(entry.to)) out.push(entry.to)
     for (const link of entry.tambien ?? []) if (!out.includes(link.to)) out.push(link.to)
+    for (const route of entry.analisis ?? []) if (!out.includes(route)) out.push(route)
   }
   return out
 }

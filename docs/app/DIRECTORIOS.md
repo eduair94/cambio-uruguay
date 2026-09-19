@@ -64,6 +64,32 @@ Dos excepciones a propósito:
 `directorios.test.ts` exige que cada página de directorio tenga el eslabón, así un directorio nuevo
 no se lo olvida.
 
+## Análisis y estadísticas de cada directorio
+
+Cada entrada declara `analisis`: las rutas que se calculan con los datos de ESE directorio (el
+informe del mercado, la evolución de precios, el tasador, el histórico de las pizarras…). Con eso se
+arma el vínculo en los dos sentidos, sin editar las páginas una por una
+(`app/utils/directorioAnalisis.ts`, dibujado por `components/DirectorioAnalisis.vue` desde el layout,
+arriba de "Seguí leyendo"):
+
+- **En el directorio** (y en sus páginas `tambien`): "Análisis y estadísticas de este directorio".
+- **En cada análisis**: "De dónde salen estos datos" → primero el directorio (o los directorios, si
+  sale de varios: CyberLunes lee las ofertas de cuatro), después los análisis hermanos.
+- **En el hub**: cada tarjeta lista los suyos; los que comparten dos o más tarjetas de una familia se
+  dicen una vez sobre la familia.
+
+Reglas que el test (`directorioAnalisis.test.ts`) hace cumplir:
+
+- **Sólo la ruta en el registro.** La etiqueta sale de la entrada del menú (`siteNav`), que ya la
+  tiene en español, inglés y portugués; por eso un análisis tiene que estar en el menú. El hub, que
+  está escrito en español en los tres idiomas, las fuerza en español.
+- **Una ruta es página del directorio (`tambien`) o análisis, nunca las dos.** "El mercado",
+  "Comparar barrios" y "¿El descuento es real?" pasaron de `tambien` a `analisis` al separarlos.
+- **"Seguí leyendo" no repite** lo que el bloque ya mostró (`RelatedContext.exclude`).
+- Sólo rutas exactas: las fichas no llevan el bloque, como con las migas.
+
+Agregar un análisis nuevo = una línea en el `analisis` de su directorio (y su entrada en el menú).
+
 ## Caché
 
 Dos capas, y la segunda no es redundante: el borde (Cloudflare, 15 min) y la memoria del proceso

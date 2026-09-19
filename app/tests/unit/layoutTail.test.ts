@@ -19,7 +19,7 @@ type TemplateNode = {
 
 const ELEMENT = 1
 const ATTRIBUTE = 6
-const TAIL = ['PageAddenda', 'RelatedPages', 'NewsletterCapture']
+const TAIL = ['PageAddenda', 'DirectorioAnalisis', 'RelatedPages', 'NewsletterCapture']
 
 const filename = resolve(__dirname, '../../layouts/default.vue')
 const { descriptor } = parse(readFileSync(filename, 'utf8'), { filename })

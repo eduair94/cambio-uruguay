@@ -1478,6 +1478,16 @@
     "lead": "Outras páginas do site que respondem o que costuma vir depois desta.",
     "aria": "Páginas relacionadas"
   },
+  "directorioAnalisis": {
+    "tituloDirectorio": "Análises e estatísticas deste diretório",
+    "leadDirectorio": "O que medimos com estes mesmos dados.",
+    "tituloAnalisis": "De onde vêm estes dados",
+    "leadAnalisis": "O diretório que levantamos para esta página, e o que mais medimos com ele.",
+    "leadAnalisisVarios": "Os diretórios que levantamos para esta página, e o que mais medimos com eles.",
+    "directorio": "Diretório",
+    "analisis": "Análise",
+    "todos": "Ver todos os diretórios"
+  },
   "search": {
     "triggerLabel": "Buscar",
     "triggerHint": "Ctrl K",

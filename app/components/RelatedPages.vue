@@ -46,6 +46,7 @@
 // in the server-rendered HTML, where a crawler can follow them into the long
 // tail. Housing uses the explicit search operation/mode too: route.query is
 // available to both SSR and the client, with no saved browser state involved.
+import { directorioAnalisisParaRuta } from '~/utils/directorioAnalisis'
 import { relatedEnabledForPath, relatedFor } from '~/utils/relatedPages'
 
 const route = useRoute()
@@ -56,7 +57,12 @@ const track = useTrack()
 const sourcePath = computed(() => route.path)
 const items = computed(() =>
   relatedEnabledForPath(route.path)
-    ? relatedFor(route.path, 6, { operation: route.query.operation, mode: route.query.mode })
+    ? relatedFor(route.path, 6, {
+        operation: route.query.operation,
+        mode: route.query.mode,
+        // The directory/analysis block renders right above this one: don't repeat its links.
+        exclude: directorioAnalisisParaRuta(route.path)?.links.map(link => link.to),
+      })
     : []
 )
 

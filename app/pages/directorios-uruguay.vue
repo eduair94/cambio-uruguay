@@ -35,6 +35,15 @@ directorios está vacío de verdad y un cero diría algo falso sobre él.
       <h2 :id="`familia-${group.familia}`" class="text-h6 font-weight-bold mb-4">
         {{ group.label }}
       </h2>
+      <p v-if="group.compartidos.length" class="familia__analisis" data-testid="familia-analisis">
+        <span class="familia__analisis-label"
+          >Análisis con datos de varios de estos directorios:</span
+        >
+        <template v-for="(to, index) in group.compartidos" :key="to">
+          <NuxtLink :to="localePath(to)" class="directorio-link">{{ analisisLabel(to) }}</NuxtLink
+          ><span v-if="index < group.compartidos.length - 1" aria-hidden="true"> · </span>
+        </template>
+      </p>
 
       <div class="directorio-grid">
         <article
@@ -70,6 +79,21 @@ directorios está vacío de verdad y un cero diría algo falso sobre él.
               }}</NuxtLink>
             </li>
           </ul>
+
+          <div
+            v-if="entry.analisisPropios.length"
+            class="directorio-card__analisis"
+            data-testid="directorio-card-analisis"
+          >
+            <span class="directorio-card__analisis-label">Análisis y estadísticas</span>
+            <ul class="directorio-card__also">
+              <li v-for="to in entry.analisisPropios" :key="to">
+                <NuxtLink :to="localePath(to)" class="directorio-link">{{
+                  analisisLabel(to)
+                }}</NuxtLink>
+              </li>
+            </ul>
+          </div>
         </article>
       </div>
     </section>
@@ -94,6 +118,7 @@ directorios está vacío de verdad y un cero diría algo falso sobre él.
 </template>
 
 <script setup lang="ts">
+import { analisisDeFamilia, navEntryForPath } from '~/utils/directorioAnalisis'
 import { dateLocale } from '~/utils/format'
 import {
   DIRECTORIOS,
@@ -104,6 +129,17 @@ import {
 } from '~/utils/directorios'
 
 const localePath = useLocalePath()
+const { t } = useI18n()
+
+/**
+ * La etiqueta de un análisis es la de su entrada del menú, en español: esta página está escrita en
+ * español en todos los idiomas, y una etiqueta en inglés en medio de las tarjetas se leería como un
+ * error. El español es el `fallbackLocale`, así que sus mensajes siempre están cargados.
+ */
+function analisisLabel(to: string): string {
+  const nav = navEntryForPath(to)
+  return nav ? t(nav.labelKey, {}, { locale: 'es' }) : to
+}
 
 // Server-rendered: las cifras tienen que estar en el HTML, no llegar después. Un fallo de la ruta
 // deja todas las tarjetas sin número, que es exactamente lo que la página promete en ese caso.
@@ -139,10 +175,20 @@ const sinCifraTexto = (() => {
 })()
 
 const grupos = computed(() =>
-  directoriosPorFamilia().map(group => ({
-    ...group,
-    entries: group.entries.map(entry => ({ ...entry, cifra: cifraTexto(entry) })),
-  }))
+  directoriosPorFamilia().map(group => {
+    // Un análisis que sale de dos o más directorios de la familia (CyberLunes, de cuatro de
+    // Compras) se dice una vez sobre la familia y no en cada tarjeta.
+    const { compartidos, propios } = analisisDeFamilia(group.entries)
+    return {
+      ...group,
+      compartidos,
+      entries: group.entries.map(entry => ({
+        ...entry,
+        cifra: cifraTexto(entry),
+        analisisPropios: propios[entry.id] ?? [],
+      })),
+    }
+  })
 )
 
 function longDate(iso: string): string {
@@ -280,6 +326,28 @@ useHead(() => ({
 }
 .directorio-card__asof {
   opacity: 0.7;
+}
+.familia__analisis {
+  margin: -6px 0 16px !important;
+  font-size: 0.875rem;
+}
+.familia__analisis-label {
+  margin-right: 6px;
+  opacity: 0.85;
+}
+.directorio-card__analisis {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(var(--v-border-color), 0.15);
+}
+.directorio-card__analisis-label {
+  /* Label (DESIGN.md): metadata. */
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.0333em;
+  opacity: 0.8;
 }
 .directorio-card__also {
   display: flex;

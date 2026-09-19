@@ -1496,6 +1496,16 @@
     "lead": "Otras páginas del sitio que responden lo que suele venir después de esta.",
     "aria": "Páginas relacionadas"
   },
+  "directorioAnalisis": {
+    "tituloDirectorio": "Análisis y estadísticas de este directorio",
+    "leadDirectorio": "Lo que medimos con estos mismos datos.",
+    "tituloAnalisis": "De dónde salen estos datos",
+    "leadAnalisis": "El directorio que relevamos para esta página, y lo demás que medimos con él.",
+    "leadAnalisisVarios": "Los directorios que relevamos para esta página, y lo demás que medimos con ellos.",
+    "directorio": "Directorio",
+    "analisis": "Análisis",
+    "todos": "Ver todos los directorios"
+  },
   "search": {
     "triggerLabel": "Buscar",
     "triggerHint": "Ctrl K",

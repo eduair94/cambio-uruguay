@@ -1485,6 +1485,16 @@
     "lead": "Other pages on the site that answer what usually comes after this one.",
     "aria": "Related pages"
   },
+  "directorioAnalisis": {
+    "tituloDirectorio": "Analysis and statistics from this directory",
+    "leadDirectorio": "What we measure with this same data.",
+    "tituloAnalisis": "Where this data comes from",
+    "leadAnalisis": "The directory we collect for this page, and what else we measure with it.",
+    "leadAnalisisVarios": "The directories we collect for this page, and what else we measure with them.",
+    "directorio": "Directory",
+    "analisis": "Analysis",
+    "todos": "See all directories"
+  },
   "search": {
     "triggerLabel": "Search",
     "triggerHint": "Ctrl K",
