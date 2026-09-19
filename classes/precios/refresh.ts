@@ -17,6 +17,7 @@ import {
 } from "./basket";
 import { chainKey, fetchCatalog } from "./catalog";
 import { articleBand, percentile, priceVerdict } from "./plausibility";
+import { rankStoresByRatio } from "./present";
 import { freshnessOf } from "./staleness";
 import {
   detectPriceChanges,
@@ -255,6 +256,7 @@ export async function refreshPrecios(options: { limit?: number; day?: string } =
         cost: entry.cost,
         coverage: entry.coverage,
       })),
+    rankedStores: rankStoresByRatio(qualified),
     shelfVerdicts: shelfVerdicts
       .filter((entry) => entry.severity !== "ok")
       .map(({ storeId, storeName, ratio, severity, note }) => ({ storeId, storeName, ratio, severity, note })),

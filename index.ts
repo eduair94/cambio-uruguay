@@ -1034,6 +1034,10 @@ const main = async () => {
    *       Un local con menos del 70 % de la canasta no se rankea, y un
    *       departamento o cadena con menos de 5 locales calificados tampoco:
    *       dice `qualified: false`. No se publica ningun total completado.
+   *
+   *       `cheapestStores` son los 25 locales mas baratos del pais;
+   *       `rankedStores` son TODOS los calificados en el mismo orden, con
+   *       departamento, cadena y direccion, para filtrar por departamento.
    *     responses:
    *       200:
    *         description: Canasta del ultimo dia, con ambitos y veredictos de gondola

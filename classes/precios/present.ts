@@ -10,6 +10,7 @@
 import { MIN_COVERAGE } from "./basket";
 import { rankable } from "./plausibility";
 import type { PrecioFreshness } from "./staleness";
+import type { PrecioStore } from "./types";
 
 export interface PresentableRow {
   storeId: number;
@@ -19,6 +20,48 @@ export interface PresentableRow {
   freshness: PrecioFreshness;
   verdict: "ok" | "suspect" | "reject";
   promo?: boolean;
+}
+
+export interface RankedStore {
+  storeId: number;
+  storeName: string;
+  department: string;
+  chain: string;
+  address: string;
+  ratio: number;
+  coverage: number;
+}
+
+/**
+ * Todos los locales calificados, del nivel de precios más bajo al más alto.
+ *
+ * Existe porque los 25 más baratos del país son casi todos de Montevideo y
+ * Canelones: filtrar esa lista por Maldonado o Salto devolvía cero filas, y la
+ * pregunta real es "dónde sale más barato en MI departamento". Sin `cost` a
+ * propósito: el total parcial baja por faltarle artículos al local, y publicarlo
+ * al lado del ratio invita a leerlo como precio de la canasta.
+ */
+export function rankStoresByRatio(
+  entries: Array<{
+    storeId: number;
+    store?: Partial<PrecioStore>;
+    ratio: number | null;
+    coverage: number;
+    qualified: boolean;
+  }>
+): RankedStore[] {
+  return (entries || [])
+    .filter((entry) => entry.qualified && entry.ratio !== null && Number.isFinite(entry.ratio))
+    .sort((a, b) => (a.ratio as number) - (b.ratio as number) || a.storeId - b.storeId)
+    .map((entry) => ({
+      storeId: entry.storeId,
+      storeName: entry.store?.name || "",
+      department: entry.store?.department || "",
+      chain: entry.store?.chain || "",
+      address: entry.store?.address || "",
+      ratio: entry.ratio as number,
+      coverage: entry.coverage,
+    }));
 }
 
 /** La fila más barata que puede encabezar, o null si no queda ninguna. */

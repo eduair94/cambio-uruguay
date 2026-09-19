@@ -20,6 +20,7 @@
 // lo que pasó entre corridas sólo existe si se escribió cuando pasó.
 import { MongooseServer, Schema } from "../database";
 import type { PrecioScoredRow } from "./audit";
+import type { RankedStore } from "./present";
 import type { PrecioArticle, PrecioStore } from "./types";
 
 export const COLLECTIONS = Object.freeze({
@@ -88,6 +89,11 @@ export interface PrecioBasketDaily {
     cost: number;
     coverage: number;
   }>;
+  /**
+   * Todos los calificados por ratio, para filtrar por departamento. Opcional:
+   * los documentos guardados antes del 2026-09-19 no lo traen.
+   */
+  rankedStores?: RankedStore[];
   shelfVerdicts: Array<{ storeId: number; storeName: string; ratio: number; severity: string; note: string }>;
 }
 
