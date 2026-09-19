@@ -42,6 +42,16 @@
         {{ listedNote }}
       </p>
       <p class="car-card__facts">{{ facts }}</p>
+      <p
+        v-if="fuelEconomy"
+        class="car-card__kml"
+        :title="fuelEconomySource ?? undefined"
+        data-testid="car-fuel-economy"
+      >
+        <VIcon size="16" aria-hidden="true">mdi-gas-station-outline</VIcon>
+        <span>{{ fuelEconomy }}</span>
+        <span v-if="car.fuelEconomy?.basis !== 'advert'" class="car-card__kml-note">estimado</span>
+      </p>
       <p v-if="place" class="car-card__place">{{ place }}</p>
       <p class="car-card__source">{{ car.sourceName }}</p>
     </div>
@@ -50,6 +60,7 @@
 
 <script setup lang="ts">
 import {
+  carFuelEconomySource,
   carListedPriceNote,
   CAR_FLAG_LABELS,
   CAR_FUEL_LABELS,
@@ -57,6 +68,7 @@ import {
   CAR_TRANSMISSION_LABELS,
   carPath,
   carPercent,
+  formatCarFuelEconomy,
   formatCarKm,
   formatCarPrice,
   formatCarUsd,
@@ -65,6 +77,8 @@ import type { PublicCarListing } from '~/utils/carsPublic'
 
 const props = defineProps<{ car: PublicCarListing }>()
 const listedNote = computed(() => carListedPriceNote(props.car))
+const fuelEconomy = computed(() => formatCarFuelEconomy(props.car.fuelEconomy))
+const fuelEconomySource = computed(() => carFuelEconomySource(props.car.fuelEconomy))
 const localePath = useLocalePath()
 const failed = ref(false)
 const facts = computed(() =>
@@ -160,6 +174,19 @@ const place = computed(() =>
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
+}
+.car-card__kml {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.car-card__kml-note {
+  font-size: 0.75rem;
+  font-weight: 400;
+  opacity: 0.8;
 }
 .car-card__listed {
   margin: 0;

@@ -192,6 +192,7 @@ const sortItems: Array<{ title: string; value: CarSort }> = [
   { title: 'Mayor precio', value: 'price_desc' },
   { title: 'Menos kilómetros', value: 'km_asc' },
   { title: 'Más nuevos', value: 'year_desc' },
+  { title: 'Menor consumo (más km/l)', value: 'kml_desc' },
 ]
 
 const query = computed(() => normalizeCarsQuery(route.query as Record<string, unknown>))

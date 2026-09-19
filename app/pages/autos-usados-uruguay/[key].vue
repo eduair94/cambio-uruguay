@@ -80,6 +80,15 @@
                 <th scope="row">Combustible</th>
                 <td>{{ CAR_FUEL_LABELS[car.fuel] }}</td>
               </tr>
+              <tr v-if="car.fuelEconomy" data-testid="car-fuel-economy">
+                <th scope="row">Rendimiento</th>
+                <td>
+                  <strong>{{ formatCarFuelEconomy(car.fuelEconomy) }}</strong>
+                  <span class="d-block text-body-2 text-medium-emphasis">
+                    {{ carFuelEconomySource(car.fuelEconomy) }}
+                  </span>
+                </td>
+              </tr>
               <tr>
                 <th scope="row">Ubicación</th>
                 <td>{{ [car.neighborhood, car.department].filter(Boolean).join(', ') || '—' }}</td>
@@ -209,6 +218,8 @@ import {
   formatCarKm,
   formatCarPrice,
   carListedPriceNote,
+  formatCarFuelEconomy,
+  carFuelEconomySource,
   formatCarUsd,
   type CarDetailResponse,
 } from '~/utils/cars'

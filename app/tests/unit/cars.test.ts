@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  carFuelEconomySource,
   carListedPriceNote,
+  carOpportunityQueryParams,
+  formatCarFuelEconomy,
+  normalizeCarOpportunityQuery,
   carKeyValid,
   carMarketSlugValid,
   carsFiltered,
@@ -25,6 +29,7 @@ describe('normalizeCarsQuery', () => {
       yearMin: '2015',
       yearMax: '3000',
       kmMax: '120000',
+      kmlMin: '14',
       priceMax: '15000',
       fuel: 'nafta',
       transmission: 'robot',
@@ -40,6 +45,7 @@ describe('normalizeCarsQuery', () => {
       yearMin: 2015,
       yearMax: null,
       kmMax: 120000,
+      kmlMin: 14,
       priceMin: null,
       priceMax: 15000,
       fuel: 'nafta',
@@ -212,6 +218,40 @@ describe('carListedPriceNote', () => {
   })
 })
 
+describe('fuel economy', () => {
+  it('filters and sorts the directory by km per litre, cars without the figure last', () => {
+    const query = normalizeCarsQuery({ kmlMin: '14', sort: 'kml_desc' })
+    expect(carsMatch(query, NOW, 3)['fuelEconomy.kmPerLiter']).toEqual({ $gte: 14 })
+    expect(carsSort('kml_desc')).toEqual({ 'fuelEconomy.kmPerLiter': -1, priceUsd: 1, key: 1 })
+  })
+
+  it('says whether the figure is the advert or an estimate, and from how many sellers', () => {
+    const advert = {
+      kmPerLiter: 16,
+      city: 14,
+      highway: 18,
+      combined: null,
+      basis: 'advert',
+      sellers: null,
+    } as const
+    expect(formatCarFuelEconomy(advert)).toBe('16 km/l')
+    expect(carFuelEconomySource(advert)).toBe('Según el aviso: ciudad 14 km/l, ruta 18 km/l.')
+    const estimate = {
+      kmPerLiter: 13.5,
+      city: null,
+      highway: null,
+      combined: null,
+      basis: 'model_engine',
+      sellers: 7,
+    } as const
+    expect(formatCarFuelEconomy(estimate)).toBe('≈ 13,5 km/l')
+    expect(carFuelEconomySource(estimate)).toBe(
+      'Estimado: lo que declaran 7 vendedores del mismo modelo y motor.'
+    )
+    expect(formatCarFuelEconomy(null)).toBeNull()
+  })
+})
+
 describe('queryCarOpportunities', () => {
   const snapshot = {
     version: 1,
@@ -245,5 +285,44 @@ describe('queryCarOpportunities', () => {
       { slug: 'peugeot', name: 'Peugeot', count: 2 },
       { slug: 'chevrolet', name: 'Chevrolet', count: 1 },
     ])
+  })
+
+  const economy = (kmPerLiter: number) =>
+    ({ kmPerLiter, city: null, highway: null, combined: null, basis: 'model', sellers: 5 }) as const
+  const rich = {
+    ...snapshot,
+    items: [
+      item('ml-A', { year: 2015, km: 150000, priceUsd: 6000, fuelEconomy: economy(13) }),
+      item('ml-B', {
+        year: 2020,
+        km: 40000,
+        priceUsd: 12000,
+        fuel: 'diesel',
+        fuelEconomy: economy(17),
+      }),
+      item('ml-C', { year: 2018, km: null, priceUsd: 9000, transmission: 'automatica' }),
+    ],
+  } as unknown as PublicCarOpportunitySnapshot
+  const keys = (input: Record<string, unknown>) =>
+    queryCarOpportunities(rich, input, NOW).items.map(entry => entry.subject.key)
+
+  it('filters by year, km, fuel, gearbox and km per litre', () => {
+    expect(keys({ yearMin: '2018' })).toEqual(['ml-B', 'ml-C'])
+    // Unknown km never passes a km ceiling.
+    expect(keys({ kmMax: '100000' })).toEqual(['ml-B'])
+    expect(keys({ fuel: 'diesel' })).toEqual(['ml-B'])
+    expect(keys({ transmission: 'automatica' })).toEqual(['ml-C'])
+    // Without a figure, a car cannot promise a minimum.
+    expect(keys({ kmlMin: '14' })).toEqual(['ml-B'])
+  })
+
+  it('sorts by price, year, km and km per litre, with missing figures last', () => {
+    expect(keys({ sort: 'price_asc' })).toEqual(['ml-A', 'ml-C', 'ml-B'])
+    expect(keys({ sort: 'year_desc' })).toEqual(['ml-B', 'ml-C', 'ml-A'])
+    expect(keys({ sort: 'km_asc' })).toEqual(['ml-B', 'ml-A', 'ml-C'])
+    expect(keys({ sort: 'kml_desc' })).toEqual(['ml-B', 'ml-A', 'ml-C'])
+    // The default order leaves the URL clean.
+    expect(carOpportunityQueryParams(normalizeCarOpportunityQuery({ sort: 'gap' }))).toEqual({})
+    expect(carOpportunityQueryParams(normalizeCarOpportunityQuery({ sort: 'nope' }))).toEqual({})
   })
 })

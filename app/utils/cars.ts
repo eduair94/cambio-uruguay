@@ -2,6 +2,7 @@ import type {
   PublicCarCatalogMeta,
   PublicCarFlag,
   PublicCarFuel,
+  PublicCarFuelEconomy,
   PublicCarListing,
   PublicCarMarketRow,
   PublicCarMarketSnapshot,
@@ -20,8 +21,26 @@ export const CAR_OPPORTUNITIES_PER_PAGE = 20
 export const CAR_MARKET_INDEX_MIN = 30
 export const CAR_OPPORTUNITY_FRESH_DAYS = 2
 
-export const CAR_SORTS = ['recent', 'price_asc', 'price_desc', 'km_asc', 'year_desc'] as const
+export const CAR_SORTS = [
+  'recent',
+  'price_asc',
+  'price_desc',
+  'km_asc',
+  'year_desc',
+  'kml_desc',
+] as const
 export type CarSort = (typeof CAR_SORTS)[number]
+/** Orden de las oportunidades: por defecto, la diferencia contra la mediana. */
+export const CAR_OPPORTUNITY_SORTS = [
+  'gap',
+  'price_asc',
+  'year_desc',
+  'km_asc',
+  'kml_desc',
+] as const
+export type CarOpportunitySort = (typeof CAR_OPPORTUNITY_SORTS)[number]
+/** Los escalones del filtro de rendimiento, en km por litro. */
+export const CAR_KML_STEPS = [10, 12, 14, 16, 18] as const
 export const CAR_FUELS: readonly PublicCarFuel[] = [
   'nafta',
   'diesel',
@@ -162,6 +181,8 @@ export interface CarsQuery {
   yearMin: number | null
   yearMax: number | null
   kmMax: number | null
+  /** Rendimiento mínimo en km por litro, del aviso o estimado por modelo. */
+  kmlMin: number | null
   priceMin: number | null
   priceMax: number | null
   fuel: PublicCarFuel | ''
@@ -218,8 +239,14 @@ export interface CarOpportunityQuery {
   tier: 'strict' | 'exploratory' | ''
   brand: string
   priceMax: number | null
+  yearMin: number | null
+  kmMax: number | null
+  fuel: PublicCarFuel | ''
+  transmission: PublicCarTransmission | ''
+  kmlMin: number | null
   department: string
   seller: PublicCarSeller | ''
+  sort: CarOpportunitySort
   page: number
 }
 
@@ -268,6 +295,7 @@ export function normalizeCarsQuery(input: Record<string, unknown>): CarsQuery {
     yearMin: integer(input.yearMin, 1950, 2100),
     yearMax: integer(input.yearMax, 1950, 2100),
     kmMax: integer(input.kmMax, 1, 1_000_000),
+    kmlMin: integer(input.kmlMin, 1, 40),
     priceMin: integer(input.priceMin, 1, 1_000_000),
     priceMax: integer(input.priceMax, 1, 1_000_000),
     fuel: oneOf(input.fuel, CAR_FUELS),
@@ -326,6 +354,7 @@ export function carsMatch(query: CarsQuery, now: Date, freshDays: number): Recor
     }
   }
   if (query.kmMax !== null) match.km = { $ne: null, $lte: query.kmMax }
+  if (query.kmlMin !== null) match['fuelEconomy.kmPerLiter'] = { $gte: query.kmlMin }
   if (query.priceMin !== null || query.priceMax !== null) {
     match.priceUsd = {
       ...(query.priceMin !== null ? { $gte: query.priceMin } : {}),
@@ -346,6 +375,8 @@ export function carsSort(sort: CarSort): Record<string, 1 | -1> {
   if (sort === 'price_desc') return { priceUsd: -1, key: 1 }
   if (sort === 'km_asc') return { km: 1, key: 1 }
   if (sort === 'year_desc') return { year: -1, priceUsd: 1, key: 1 }
+  // Sin dato de rendimiento queda al final: en Mongo un campo ausente ordena como el menor.
+  if (sort === 'kml_desc') return { 'fuelEconomy.kmPerLiter': -1, priceUsd: 1, key: 1 }
   return { firstSeen: -1, key: 1 }
 }
 
@@ -362,8 +393,14 @@ export function normalizeCarOpportunityQuery(input: Record<string, unknown>): Ca
     tier: oneOf(input.tier, ['strict', 'exploratory'] as const),
     brand: slugParam(input.brand),
     priceMax: integer(input.priceMax, 1, 1_000_000),
+    yearMin: integer(input.yearMin, 1950, 2100),
+    kmMax: integer(input.kmMax, 1, 1_000_000),
+    fuel: oneOf(input.fuel, CAR_FUELS),
+    transmission: oneOf(input.transmission, CAR_TRANSMISSIONS),
+    kmlMin: integer(input.kmlMin, 1, 40),
     department: oneOf(input.department, CAR_DEPARTMENTS),
     seller: oneOf(input.seller, CAR_SELLERS),
+    sort: oneOf(input.sort, CAR_OPPORTUNITY_SORTS) || 'gap',
     page: integer(input.page, 1, 200) ?? 1,
   }
 }
@@ -372,9 +409,31 @@ export function carOpportunityQueryParams(query: CarOpportunityQuery): Record<st
   const params: Record<string, string> = {}
   for (const [key, value] of Object.entries(query)) {
     if (value === '' || value === null || (key === 'page' && value === 1)) continue
+    if (key === 'sort' && value === 'gap') continue
     params[key] = String(value)
   }
   return params
+}
+
+/** Lo que no tiene el dato (km, rendimiento) va al final en cualquier orden. */
+const lastIfMissing = (a: number | null | undefined, b: number | null | undefined): number =>
+  a == null ? (b == null ? 0 : 1) : b == null ? -1 : 0
+
+function opportunityOrder(
+  sort: CarOpportunitySort,
+  a: PublicCarOpportunityItem,
+  b: PublicCarOpportunityItem
+): number {
+  if (sort === 'price_asc') return a.subject.priceUsd - b.subject.priceUsd
+  if (sort === 'year_desc') return b.subject.year - a.subject.year || b.gap - a.gap
+  if (sort === 'km_asc')
+    return lastIfMissing(a.subject.km, b.subject.km) || (a.subject.km ?? 0) - (b.subject.km ?? 0)
+  if (sort === 'kml_desc') {
+    const left = a.subject.fuelEconomy?.kmPerLiter
+    const right = b.subject.fuelEconomy?.kmPerLiter
+    return lastIfMissing(left, right) || (right ?? 0) - (left ?? 0) || b.gap - a.gap
+  }
+  return (a.tier === b.tier ? 0 : a.tier === 'strict' ? -1 : 1) || b.gap - a.gap
 }
 
 export function queryCarOpportunities(
@@ -402,11 +461,18 @@ export function queryCarOpportunities(
     .filter(entry => query.priceMax === null || entry.subject.priceUsd <= query.priceMax)
     .filter(entry => !query.department || entry.subject.department === query.department)
     .filter(entry => !query.seller || entry.subject.sellerType === query.seller)
+    .filter(entry => query.yearMin === null || entry.subject.year >= query.yearMin)
+    .filter(
+      entry =>
+        query.kmMax === null || (entry.subject.km !== null && entry.subject.km <= query.kmMax)
+    )
+    .filter(entry => !query.fuel || entry.subject.fuel === query.fuel)
+    .filter(entry => !query.transmission || entry.subject.transmission === query.transmission)
+    .filter(
+      entry => query.kmlMin === null || (entry.subject.fuelEconomy?.kmPerLiter ?? 0) >= query.kmlMin
+    )
     .sort(
-      (a, b) =>
-        (a.tier === b.tier ? 0 : a.tier === 'strict' ? -1 : 1) ||
-        b.gap - a.gap ||
-        a.subject.key.localeCompare(b.subject.key)
+      (a, b) => opportunityOrder(query.sort, a, b) || a.subject.key.localeCompare(b.subject.key)
     )
   const start = (query.page - 1) * CAR_OPPORTUNITIES_PER_PAGE
   return {
@@ -446,6 +512,39 @@ export const carListedPriceNote = (
     ? null
     : `Precio de contado que indica el aviso. En el portal figura ${formatCarPrice({ price: car.listedPrice, currency: car.currency })}.`
 export const carPercent = (gap: number): string => `${Math.round(gap * 100)} %`
+
+const oneDecimal = (value: number): string => String(Math.round(value * 10) / 10).replace('.', ',')
+
+/** "16 km/l" si lo dice el aviso; "≈ 16 km/l" si es una estimación. */
+export function formatCarFuelEconomy(
+  economy: PublicCarFuelEconomy | null | undefined
+): string | null {
+  if (!economy) return null
+  return `${economy.basis === 'advert' ? '' : '≈ '}${oneDecimal(economy.kmPerLiter)} km/l`
+}
+
+/**
+ * De dónde sale el número, dicho entero. Una estimación nunca se presenta como dato del aviso: dice
+ * cuántos vendedores la sostienen y de qué autos.
+ */
+export function carFuelEconomySource(
+  economy: PublicCarFuelEconomy | null | undefined
+): string | null {
+  if (!economy) return null
+  if (economy.basis === 'advert') {
+    const parts = [
+      economy.city !== null ? `ciudad ${oneDecimal(economy.city)} km/l` : null,
+      economy.highway !== null ? `ruta ${oneDecimal(economy.highway)} km/l` : null,
+    ].filter(Boolean)
+    return parts.length ? `Según el aviso: ${parts.join(', ')}.` : 'Según el aviso.'
+  }
+  const sellers = economy.sellers ?? 0
+  if (economy.basis === 'model_engine')
+    return `Estimado: lo que declaran ${sellers} vendedores del mismo modelo y motor.`
+  if (economy.basis === 'model')
+    return `Estimado: lo que declaran ${sellers} vendedores del mismo modelo.`
+  return `Estimación gruesa: lo que declaran ${sellers} vendedores de autos con el mismo motor y combustible.`
+}
 export const formatCarDate = (iso: string | null | undefined): string =>
   iso
     ? new Intl.DateTimeFormat('es-UY', {

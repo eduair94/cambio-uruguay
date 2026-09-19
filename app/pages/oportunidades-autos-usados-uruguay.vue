@@ -51,6 +51,49 @@
             variant="outlined"
             hide-details
           />
+          <div class="deal-filters__pair">
+            <VTextField
+              v-model="draft.yearMin"
+              label="Año desde"
+              inputmode="numeric"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+            />
+            <VTextField
+              v-model="draft.kmMax"
+              label="Km máximo"
+              inputmode="numeric"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+            />
+          </div>
+          <VSelect
+            v-model="draft.fuel"
+            :items="fuelItems"
+            label="Combustible"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+          />
+          <VSelect
+            v-model="draft.transmission"
+            :items="transmissionItems"
+            label="Caja"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+          />
+          <VSelect
+            v-model="draft.kmlMin"
+            :items="kmlItems"
+            label="Rendimiento mínimo"
+            hint="Del aviso o estimado por modelo"
+            persistent-hint
+            density="comfortable"
+            variant="outlined"
+          />
           <VSelect
             v-model="draft.department"
             :items="departmentItems"
@@ -68,6 +111,7 @@
             hide-details
           />
           <VBtn type="submit" color="primary" block>Aplicar</VBtn>
+          <VBtn variant="text" block @click="clear">Limpiar filtros</VBtn>
         </form>
       </VCol>
       <VCol cols="12" md="9">
@@ -75,8 +119,25 @@
           La comparación se está calculando. Volvé en unos minutos.
         </VAlert>
         <template v-else-if="data">
+          <div class="d-flex flex-wrap align-center justify-space-between ga-3 mb-2">
+            <h2 class="text-h6 mb-0">
+              {{ data.total.toLocaleString('es-UY') }}
+              {{ data.total === 1 ? 'oportunidad' : 'oportunidades' }}
+            </h2>
+            <VSelect
+              :model-value="query.sort"
+              :items="sortItems"
+              label="Ordenar"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="deal-sort"
+              data-testid="deal-sort"
+              @update:model-value="value => navigate({ ...query, sort: value, page: 1 })"
+            />
+          </div>
           <p class="text-body-2 text-medium-emphasis mb-4">
-            {{ data.total }} resultados · cálculo del {{ formatCarDate(data.generatedAt) }} sobre
+            Cálculo del {{ formatCarDate(data.generatedAt) }} sobre
             {{ data.stats.input.toLocaleString('es-UY') }} avisos, de los cuales
             {{ data.stats.analyzed.toLocaleString('es-UY') }} tenían suficientes comparables.
           </p>
@@ -147,9 +208,14 @@
 <script setup lang="ts">
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import {
+  CAR_FUELS,
+  CAR_FUEL_LABELS,
+  CAR_KML_STEPS,
   CAR_OPPORTUNITIES_PATH,
   CAR_SELLERS,
   CAR_SELLER_LABELS,
+  CAR_TRANSMISSIONS,
+  CAR_TRANSMISSION_LABELS,
   CARS_PATH,
   carOpportunityQueryParams,
   carPercent,
@@ -158,6 +224,7 @@ import {
   normalizeCarOpportunityQuery,
   type CarOpportunitiesResponse,
   type CarOpportunityQuery,
+  type CarOpportunitySort,
 } from '~/utils/cars'
 
 const route = useRoute()
@@ -171,6 +238,25 @@ const tierItems = [
 const sellerItems = [
   { title: 'Dueño o automotora', value: '' },
   ...CAR_SELLERS.map(value => ({ title: CAR_SELLER_LABELS[value], value })),
+]
+const fuelItems = [
+  { title: 'Cualquier combustible', value: '' },
+  ...CAR_FUELS.map(value => ({ title: CAR_FUEL_LABELS[value], value })),
+]
+const transmissionItems = [
+  { title: 'Cualquier caja', value: '' },
+  ...CAR_TRANSMISSIONS.map(value => ({ title: CAR_TRANSMISSION_LABELS[value], value })),
+]
+const kmlItems = [
+  { title: 'Cualquier rendimiento', value: '' },
+  ...CAR_KML_STEPS.map(value => ({ title: `${value} km/l o más`, value: String(value) })),
+]
+const sortItems: Array<{ title: string; value: CarOpportunitySort }> = [
+  { title: 'Mayor diferencia', value: 'gap' },
+  { title: 'Menor precio', value: 'price_asc' },
+  { title: 'Más nuevos', value: 'year_desc' },
+  { title: 'Menos kilómetros', value: 'km_asc' },
+  { title: 'Menor consumo (más km/l)', value: 'kml_desc' },
 ]
 
 const query = computed(() => normalizeCarOpportunityQuery(route.query as Record<string, unknown>))
@@ -198,6 +284,11 @@ const toDraft = (value: CarOpportunityQuery) => ({
   tier: value.tier as string,
   brand: value.brand,
   priceMax: value.priceMax?.toString() ?? '',
+  yearMin: value.yearMin?.toString() ?? '',
+  kmMax: value.kmMax?.toString() ?? '',
+  fuel: value.fuel as string,
+  transmission: value.transmission as string,
+  kmlMin: value.kmlMin?.toString() ?? '',
   department: value.department,
   seller: value.seller as string,
 })
@@ -208,7 +299,11 @@ function navigate(next: CarOpportunityQuery) {
   router.replace({ query: carOpportunityQueryParams(next) })
 }
 function apply() {
-  navigate(normalizeCarOpportunityQuery({ ...draft }))
+  // The order is chosen next to the results, not in the form: applying filters keeps it.
+  navigate(normalizeCarOpportunityQuery({ ...draft, sort: query.value.sort }))
+}
+function clear() {
+  navigate(normalizeCarOpportunityQuery({ sort: query.value.sort }))
 }
 
 const canonical = `https://cambio-uruguay.com${CAR_OPPORTUNITIES_PATH}`
@@ -261,6 +356,14 @@ useHead({
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+.deal-filters__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.deal-sort {
+  max-width: 260px;
 }
 @media (min-width: 960px) {
   .deal-filters {

@@ -27,6 +27,11 @@
           <template v-else>{{ item.subject.title }}</template>
         </h3>
         <p class="text-body-2 mb-1">{{ facts }}</p>
+        <p v-if="fuelEconomy" class="text-body-2 mb-1" data-testid="car-fuel-economy">
+          <VIcon size="16" aria-hidden="true">mdi-gas-station-outline</VIcon>
+          <strong>{{ fuelEconomy }}</strong>
+          <span class="text-medium-emphasis"> · {{ fuelEconomySource }}</span>
+        </p>
         <p class="text-h6 font-weight-bold mb-1">{{ formatCarUsd(item.subject.priceUsd) }}</p>
         <p v-if="listedNote" class="text-body-2 mb-1" data-testid="car-listed-price">
           {{ listedNote }}
@@ -100,10 +105,12 @@
 <script setup lang="ts">
 import {
   CAR_SELLER_LABELS,
+  carFuelEconomySource,
   carListedPriceNote,
   carPath,
   carPercent,
   formatCarDate,
+  formatCarFuelEconomy,
   formatCarKm,
   formatCarPrice,
   formatCarUsd,
@@ -115,6 +122,8 @@ const localePath = useLocalePath()
 // El precio de la oportunidad es el de contado que dice el aviso; si el portal muestra otro número
 // (casi siempre la entrega), se dice cuál, para que nadie llegue al aviso esperando ese precio.
 const listedNote = computed(() => carListedPriceNote(props.item.subject))
+const fuelEconomy = computed(() => formatCarFuelEconomy(props.item.subject.fuelEconomy))
+const fuelEconomySource = computed(() => carFuelEconomySource(props.item.subject.fuelEconomy))
 /**
  * Las dos señales que ya teníamos guardadas y no mostrábamos, y que son justo las que usa quien va a
  * negociar: que el precio YA bajó —lo vimos nosotros, no lo dice el aviso— y cuánto lleva publicado.

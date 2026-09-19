@@ -79,6 +79,15 @@
       hide-details
     />
     <VSelect
+      v-model="draft.kmlMin"
+      :items="kmlItems"
+      label="Rendimiento mínimo"
+      hint="Del aviso o estimado por modelo"
+      persistent-hint
+      density="comfortable"
+      variant="outlined"
+    />
+    <VSelect
       v-model="draft.transmission"
       :items="transmissionItems"
       label="Caja"
@@ -123,6 +132,7 @@ import {
   CAR_DEPARTMENTS,
   CAR_FUELS,
   CAR_FUEL_LABELS,
+  CAR_KML_STEPS,
   CAR_SELLERS,
   CAR_SELLER_LABELS,
   CAR_TRANSMISSIONS,
@@ -147,6 +157,7 @@ const toDraft = (query: CarsQuery) => ({
   priceMin: query.priceMin?.toString() ?? '',
   priceMax: query.priceMax?.toString() ?? '',
   kmMax: query.kmMax?.toString() ?? '',
+  kmlMin: query.kmlMin?.toString() ?? '',
   fuel: query.fuel as string,
   transmission: query.transmission as string,
   department: query.department,
@@ -176,6 +187,10 @@ const modelItems = computed(() => [
 const fuelItems = [
   { title: 'Cualquier combustible', value: '' },
   ...CAR_FUELS.map(value => ({ title: CAR_FUEL_LABELS[value], value })),
+]
+const kmlItems = [
+  { title: 'Cualquier rendimiento', value: '' },
+  ...CAR_KML_STEPS.map(value => ({ title: `${value} km/l o más`, value: String(value) })),
 ]
 const transmissionItems = [
   { title: 'Cualquier caja', value: '' },

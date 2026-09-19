@@ -64,6 +64,37 @@ const row = {
 describe('publicCarRow', () => {
   // MLU700552753: priced at the stated cash price, the portal's number kept aside. The first deploy
   // wrote it to the catalogue and this projection dropped it: the card never said "figura US$ 8.990".
+  it('carries the fuel economy, rebuilt, and drops a malformed one', async () => {
+    const { publicCarRow } = await import('../../server/utils/cars')
+    const economy = {
+      kmPerLiter: 15,
+      city: 13,
+      highway: 17,
+      combined: null,
+      basis: 'advert',
+      sellers: null,
+      extra: 'SECRET',
+    }
+    expect(
+      publicCarRow({ ...row, source: 'mercadolibre', fuelEconomy: economy })?.fuelEconomy
+    ).toEqual({
+      kmPerLiter: 15,
+      city: 13,
+      highway: 17,
+      combined: null,
+      basis: 'advert',
+      sellers: null,
+    })
+    expect(
+      publicCarRow({
+        ...row,
+        source: 'mercadolibre',
+        fuelEconomy: { kmPerLiter: 15, basis: 'guess' },
+      })?.fuelEconomy
+    ).toBeNull()
+    expect(publicCarRow({ ...row, source: 'mercadolibre' })?.fuelEconomy).toBeNull()
+  })
+
   it('carries the listed number when the price is the stated cash price', async () => {
     const { publicCarRow } = await import('../../server/utils/cars')
     expect(

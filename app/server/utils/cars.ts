@@ -11,6 +11,7 @@ import {
 } from '../../utils/cars'
 import type {
   PublicCarCatalogMeta,
+  PublicCarFuelEconomy,
   PublicCarListing,
   PublicCarMarketSnapshot,
   PublicCarOpportunitySnapshot,
@@ -42,6 +43,7 @@ const CAR_FIELDS = [
   'currencyInferred',
   'transmission',
   'fuel',
+  'fuelEconomy',
   'engine',
   'trim',
   'department',
@@ -81,6 +83,25 @@ function referenceOf(value: any): PublicCarReference | null {
 const optionalText = (value: unknown): string | null => (typeof value === 'string' ? value : null)
 const optionalNumber = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null
+
+const FUEL_ECONOMY_BASES = ['advert', 'model_engine', 'model', 'engine_class'] as const
+
+/** Km per litre, rebuilt field by field; anything malformed is no figure rather than a wrong one. */
+function fuelEconomyOf(value: unknown): PublicCarFuelEconomy | null {
+  if (!value || typeof value !== 'object') return null
+  const row = value as Record<string, unknown>
+  const kmPerLiter = optionalNumber(row.kmPerLiter)
+  const basis = FUEL_ECONOMY_BASES.find(item => item === row.basis)
+  if (kmPerLiter === null || kmPerLiter <= 0 || !basis) return null
+  return {
+    kmPerLiter,
+    city: optionalNumber(row.city),
+    highway: optionalNumber(row.highway),
+    combined: optionalNumber(row.combined),
+    basis,
+    sellers: optionalNumber(row.sellers),
+  }
+}
 
 const RISK_CATEGORIES = [
   'deuda',
@@ -134,6 +155,7 @@ export function publicCarRow(row: Record<string, any>): PublicCarListing {
     currencyInferred: row.currencyInferred === true,
     transmission: row.transmission ?? null,
     fuel: row.fuel ?? null,
+    fuelEconomy: fuelEconomyOf(row.fuelEconomy),
     engine: optionalText(row.engine),
     trim: optionalText(row.trim),
     department: optionalText(row.department),
