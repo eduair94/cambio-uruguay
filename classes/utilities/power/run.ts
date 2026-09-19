@@ -7,7 +7,7 @@ export const BOT_USER_AGENT = "CambioUruguayBot/1.0 (+https://cambio-uruguay.com
 
 /** ECSE answers `Accept: application/json` with the JSON array encoded AGAIN as a JSON string. */
 export function decodeEcseBody(text: string): unknown {
-  const value = JSON.parse(text.replace(/^﻿/, ""));
+  const value = JSON.parse(text.replace(/^FEFF/, ""));
   return typeof value === "string" ? JSON.parse(value) : value;
 }
 
