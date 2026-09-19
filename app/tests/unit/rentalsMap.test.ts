@@ -20,10 +20,14 @@ const lista = readFileSync(join(APP, 'server', 'api', 'rentals', 'index.get.ts')
 describe('el filtro es uno solo', () => {
   it('las dos rutas lo piden a la misma función', () => {
     for (const route of [mapa, lista])
-      expect(route).toMatch(/buildRentalFilter\(\s*query,\s*STALE_DAYS,\s*usdUyu,\s*serviceZones\s*\)/)
+      expect(route).toMatch(
+        /buildRentalFilter\(\s*query,\s*STALE_DAYS,\s*usdUyu,\s*serviceZones\s*\)/
+      )
     // The neighbourhood-service filter is resolved the same way in both, or map and list diverge.
     for (const route of [mapa, lista])
-      expect(route).toMatch(/serviceZones = query\.servicios\?\.length\s*\?\s*await loadRentalServiceZoneIds\(query\.servicios\)\s*:\s*undefined/)
+      expect(route).toMatch(
+        /serviceZones = query\.servicios\?\.length\s*\?\s*await loadRentalServiceZoneIds\(query\.servicios\)\s*:\s*undefined/
+      )
   })
 
   it('lista, mapa, conteos y facetas comparan barrios sin distinguir mayúsculas ni tildes', () => {

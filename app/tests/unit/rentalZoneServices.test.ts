@@ -170,7 +170,10 @@ describe('attachRentalZoneUtilities', () => {
   it('never shows a department total for an unlinked Montevideo barrio', () => {
     const unlinked = attachRentalZoneUtilities(
       projectRentalZoneServices(
-        { ...raw, water: { ...raw.water, departments: { Montevideo: { notices: 300, hours: 900 } } } },
+        {
+          ...raw,
+          water: { ...raw.water, departments: { Montevideo: { notices: 300, hours: 900 } } },
+        },
         aliases
       ),
       { department: 'Montevideo', neighborhood: 'Prado' },
