@@ -84,7 +84,7 @@
 import { directorioAnalisisParaRuta } from '~/utils/directorioAnalisis'
 import { temaVecinosParaRuta } from '~/utils/temaVecinos'
 
-/** Páginas visibles por tema; las demás quedan en un desplegable (las de datos van primero). */
+/** Páginas visibles por tema, en el orden del tema; las demás quedan en un desplegable. */
 const VISIBLE = 6
 
 const route = useRoute()

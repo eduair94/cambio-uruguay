@@ -6,16 +6,40 @@
       "icon": "mdi-cash-multiple",
       "resources": [
         {
-          "to": "/comparar",
-          "label": "Comparador de cotizaciones"
-        },
-        {
           "to": "/dolar-hoy",
           "label": "Dólar hoy"
         },
         {
           "to": "/casas-de-cambio",
           "label": "Casas de cambio"
+        },
+        {
+          "to": "/comparar",
+          "label": "Comparador de cotizaciones"
+        },
+        {
+          "to": "/mejor-casa-de-cambio",
+          "label": "La mejor casa de cambio"
+        },
+        {
+          "to": "/historico",
+          "label": "Histórico del dólar"
+        },
+        {
+          "to": "/cotizaciones-de-la-region",
+          "label": "Cotizaciones de la región"
+        },
+        {
+          "to": "/analiticas",
+          "label": "Analíticas del dólar"
+        },
+        {
+          "to": "/ultimos-cambios",
+          "label": "Últimos cambios de cotización"
+        },
+        {
+          "to": "/por-que-sube-el-dolar",
+          "label": "Por qué sube el dólar"
         },
         {
           "to": "/casa-de-cambio-cerca-de-mi",
@@ -26,36 +50,20 @@
           "label": "Mapa de sucursales"
         },
         {
-          "to": "/herramientas/conversor-de-monedas",
-          "label": "Conversor de monedas"
-        },
-        {
-          "to": "/herramientas/calculadora-spread",
-          "label": "Calculadora de spread"
-        },
-        {
-          "to": "/historico",
-          "label": "Histórico del dólar"
-        },
-        {
-          "to": "/mejor-casa-de-cambio",
-          "label": "La mejor casa de cambio"
-        },
-        {
-          "to": "/analiticas",
-          "label": "Analíticas del dólar"
-        },
-        {
-          "to": "/cotizaciones-de-la-region",
-          "label": "Cotizaciones de la región"
+          "to": "/banco-o-casa-de-cambio-uruguay",
+          "label": "¿Banco o casa de cambio?"
         },
         {
           "to": "/dolar-blue-hoy",
           "label": "Dólar blue hoy"
         },
         {
-          "to": "/banco-o-casa-de-cambio-uruguay",
-          "label": "¿Banco o casa de cambio?"
+          "to": "/herramientas/conversor-de-monedas",
+          "label": "Conversor de monedas"
+        },
+        {
+          "to": "/herramientas/calculadora-spread",
+          "label": "Calculadora de spread"
         },
         {
           "to": "/casas-de-cambio-abiertas-fin-de-semana",
@@ -68,14 +76,6 @@
         {
           "to": "/llevar-dolares-o-reales-a-brasil",
           "label": "¿Dólares o reales para Brasil?"
-        },
-        {
-          "to": "/ultimos-cambios",
-          "label": "Últimos cambios de cotización"
-        },
-        {
-          "to": "/por-que-sube-el-dolar",
-          "label": "Por qué sube el dólar"
         }
       ],
       "guides": [
@@ -267,30 +267,6 @@
       "icon": "mdi-chart-areaspline",
       "resources": [
         {
-          "to": "/economia-uruguay",
-          "label": "Economía de Uruguay"
-        },
-        {
-          "to": "/por-que-sube-el-dolar",
-          "label": "Por qué sube el dólar"
-        },
-        {
-          "to": "/indicadores",
-          "label": "Indicadores (UI, UR, BPC)"
-        },
-        {
-          "to": "/noticias",
-          "label": "Noticias"
-        },
-        {
-          "to": "/advertencias-bcu",
-          "label": "Advertencias del BCU"
-        },
-        {
-          "to": "/herramientas/conversor-unidad-indexada",
-          "label": "Conversor de Unidad Indexada"
-        },
-        {
           "to": "/evolucion-precio-alquileres-uruguay",
           "label": "Evolución del alquiler"
         },
@@ -315,8 +291,20 @@
           "label": "Precios de supermercado"
         },
         {
+          "to": "/indicadores",
+          "label": "Indicadores (UI, UR, BPC)"
+        },
+        {
           "to": "/cotizaciones-de-la-region",
           "label": "Cotizaciones de la región"
+        },
+        {
+          "to": "/economia-uruguay",
+          "label": "Economía de Uruguay"
+        },
+        {
+          "to": "/por-que-sube-el-dolar",
+          "label": "Por qué sube el dólar"
         },
         {
           "to": "/cotizacion-del-bcu",
@@ -325,6 +313,18 @@
         {
           "to": "/por-que-el-bcu-quiere-mas-pesos",
           "label": "¿Por qué el BCU quiere más pesos?"
+        },
+        {
+          "to": "/noticias",
+          "label": "Noticias"
+        },
+        {
+          "to": "/advertencias-bcu",
+          "label": "Advertencias del BCU"
+        },
+        {
+          "to": "/herramientas/conversor-unidad-indexada",
+          "label": "Conversor de Unidad Indexada"
         }
       ],
       "guides": [
@@ -406,22 +406,6 @@
       "icon": "mdi-home-city-outline",
       "resources": [
         {
-          "to": "/alquilar-en-uruguay",
-          "label": "Guía para alquilar"
-        },
-        {
-          "to": "/primer-alquiler-uruguay",
-          "label": "Primer alquiler: gastos y trámites"
-        },
-        {
-          "to": "/alquilar-estando-en-clearing",
-          "label": "Alquilar estando en el Clearing"
-        },
-        {
-          "to": "/herramientas/costo-de-vida",
-          "label": "Costo de vida"
-        },
-        {
           "to": "/alquileres-uruguay",
           "label": "Alquileres"
         },
@@ -442,6 +426,22 @@
           "label": "Tu alquiler ideal"
         },
         {
+          "to": "/alquilar-en-uruguay",
+          "label": "Guía para alquilar"
+        },
+        {
+          "to": "/primer-alquiler-uruguay",
+          "label": "Primer alquiler: gastos y trámites"
+        },
+        {
+          "to": "/alquilar-sin-recibo-de-sueldo",
+          "label": "Alquilar sin recibo de sueldo"
+        },
+        {
+          "to": "/alquilar-estando-en-clearing",
+          "label": "Alquilar estando en el Clearing"
+        },
+        {
           "to": "/comparar-portales-de-alquiler-uruguay",
           "label": "Comparar portales"
         },
@@ -454,12 +454,12 @@
           "label": "Inmobiliarias"
         },
         {
-          "to": "/alquilar-sin-recibo-de-sueldo",
-          "label": "Alquilar sin recibo de sueldo"
-        },
-        {
           "to": "/por-que-no-baja-el-alquiler-uruguay",
           "label": "¿Por qué no baja el alquiler?"
+        },
+        {
+          "to": "/herramientas/costo-de-vida",
+          "label": "Costo de vida"
         },
         {
           "to": "/fletes-mudanzas-uruguay",
@@ -508,18 +508,6 @@
       "icon": "mdi-home-search-outline",
       "resources": [
         {
-          "to": "/herramientas/conversor-unidad-indexada",
-          "label": "Conversor de Unidad Indexada"
-        },
-        {
-          "to": "/mejores-bancos-uruguay",
-          "label": "Mejores bancos de Uruguay"
-        },
-        {
-          "to": "/herramientas/calculadora-prestamo",
-          "label": "Calculadora de préstamo"
-        },
-        {
           "to": "/venta-viviendas-uruguay",
           "label": "Venta de viviendas"
         },
@@ -528,16 +516,28 @@
           "label": "Evolución del precio de las viviendas"
         },
         {
+          "to": "/comprar-o-alquilar-uruguay",
+          "label": "¿Comprar o alquilar?"
+        },
+        {
           "to": "/oportunidades-inmobiliarias-uruguay",
           "label": "Oportunidades"
         },
         {
-          "to": "/inmobiliarias-uruguay",
-          "label": "Inmobiliarias"
+          "to": "/herramientas/calculadora-prestamo",
+          "label": "Calculadora de préstamo"
         },
         {
-          "to": "/comprar-o-alquilar-uruguay",
-          "label": "¿Comprar o alquilar?"
+          "to": "/herramientas/conversor-unidad-indexada",
+          "label": "Conversor de Unidad Indexada"
+        },
+        {
+          "to": "/mejores-bancos-uruguay",
+          "label": "Mejores bancos de Uruguay"
+        },
+        {
+          "to": "/inmobiliarias-uruguay",
+          "label": "Inmobiliarias"
         },
         {
           "to": "/deuda-de-gastos-comunes-uruguay",
@@ -666,18 +666,6 @@
       "icon": "mdi-car-outline",
       "resources": [
         {
-          "to": "/herramientas/calculadora-prestamo",
-          "label": "Calculadora de préstamo"
-        },
-        {
-          "to": "/prestamos-uruguay",
-          "label": "Préstamos en Uruguay"
-        },
-        {
-          "to": "/estafas-uruguay",
-          "label": "Estafas en Uruguay"
-        },
-        {
           "to": "/autos-usados-uruguay",
           "label": "Autos usados"
         },
@@ -686,16 +674,12 @@
           "label": "El mercado de autos usados"
         },
         {
-          "to": "/evolucion-precio-autos-usados-uruguay",
-          "label": "Evolución del precio de los autos"
-        },
-        {
           "to": "/cuanto-vale-mi-auto-uruguay",
           "label": "¿Cuánto vale mi auto?"
         },
         {
-          "to": "/vender-mi-auto-uruguay",
-          "label": "Vender mi auto"
+          "to": "/evolucion-precio-autos-usados-uruguay",
+          "label": "Evolución del precio de los autos"
         },
         {
           "to": "/oportunidades-autos-usados-uruguay",
@@ -708,6 +692,10 @@
         {
           "to": "/comprar-auto-con-deuda-uruguay",
           "label": "Comprar un auto con deuda"
+        },
+        {
+          "to": "/vender-mi-auto-uruguay",
+          "label": "Vender mi auto"
         },
         {
           "to": "/multas-de-transito-y-patente-uruguay",
@@ -724,6 +712,18 @@
         {
           "to": "/libreta-de-conducir-uruguay",
           "label": "Libreta de conducir"
+        },
+        {
+          "to": "/herramientas/calculadora-prestamo",
+          "label": "Calculadora de préstamo"
+        },
+        {
+          "to": "/prestamos-uruguay",
+          "label": "Préstamos en Uruguay"
+        },
+        {
+          "to": "/estafas-uruguay",
+          "label": "Estafas en Uruguay"
         },
         {
           "to": "/monopatines-electricos-uruguay",

@@ -72,15 +72,6 @@ export interface TemaVecinoGrupo {
   readonly terms: readonly TemaVecinoTerm[]
 }
 
-/** Las páginas con datos propios (directorios y sus análisis) van primero en cada tema. */
-const DATA_ROUTES: ReadonlySet<string> = new Set(
-  DIRECTORIOS.flatMap(entry => [
-    entry.to,
-    ...(entry.tambien ?? []).map(link => link.to),
-    ...(entry.analisis ?? []),
-  ])
-)
-
 /** Los directorios de cuyos datos sale `route` (como directorio, página `tambien` o análisis). */
 function directoriosDe(route: string): string[] {
   return DIRECTORIOS.filter(
@@ -122,11 +113,10 @@ export function temaVecinosParaRuta(
   const seen = new Set<string>([route, ...exclude])
   const grupos: TemaVecinoGrupo[] = []
   for (const hub of temasDeRuta(route).slice(0, TEMA_VECINOS_MAX_GRUPOS)) {
-    const resources = [...hub.resources].sort(
-      (a, b) => Number(DATA_ROUTES.has(b.to)) - Number(DATA_ROUTES.has(a.to))
-    )
+    // El orden es el del tema (editorial, en utils/guideHubs.ts), no "datos primero": con esa regla,
+    // en autos usados salían monopatines y bicicletas antes que "comprar un auto con deuda".
     const links: TemaVecinoLink[] = []
-    for (const resource of resources) {
+    for (const resource of hub.resources) {
       if (seen.has(resource.to) || links.length >= TEMA_VECINOS_MAX_LINKS) continue
       seen.add(resource.to)
       links.push({

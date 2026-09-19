@@ -70,11 +70,6 @@ export const guideHubs: readonly GuideHub[] = [
     ],
     resources: [
       {
-        label: 'Comparador de cotizaciones',
-        description: 'El dólar en más de 40 casas de cambio, en vivo.',
-        to: '/comparar',
-      },
-      {
         label: 'Dólar hoy',
         description: 'La cotización del día y su evolución.',
         to: '/dolar-hoy',
@@ -85,11 +80,58 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/casas-de-cambio',
       },
       {
+        label: 'Comparador de cotizaciones',
+        description: 'El dólar en más de 40 casas de cambio, en vivo.',
+        to: '/comparar',
+      },
+      {
+        label: 'La mejor casa de cambio',
+        description:
+          'Qué casa paga mejor hoy según lo que quieras hacer: comprar, vender, billete o transferencia.',
+        to: '/mejor-casa-de-cambio',
+      },
+      {
+        label: 'Histórico del dólar',
+        description: 'La cotización de cada día desde 2022, casa por casa, para ver cómo se movió.',
+        to: '/historico',
+      },
+      {
+        label: 'Cotizaciones de la región',
+        description:
+          'El dólar en Argentina, Brasil, Paraguay, Chile y Bolivia al lado del uruguayo.',
+        to: '/cotizaciones-de-la-region',
+      },
+      {
+        label: 'Analíticas del dólar',
+        description: 'Cómo se mueve el dólar en el día y entre casas, con los datos que relevamos.',
+        to: '/analiticas',
+      },
+      {
+        label: 'Últimos cambios de cotización',
+        description: 'Qué casa movió su precio, en vivo.',
+        to: '/ultimos-cambios',
+      },
+      {
+        label: 'Por qué sube el dólar',
+        description: 'Las razones detrás del precio.',
+        to: '/por-que-sube-el-dolar',
+      },
+      {
         label: 'Casa de cambio cerca de mí',
         description: 'La mejor opción según dónde estás.',
         to: '/casa-de-cambio-cerca-de-mi',
       },
       { label: 'Mapa de sucursales', description: 'Dónde cambiar, en el mapa.', to: '/mapa' },
+      {
+        label: '¿Banco o casa de cambio?',
+        description: 'Dónde conviene cambiar según el monto y la operación.',
+        to: '/banco-o-casa-de-cambio-uruguay',
+      },
+      {
+        label: 'Dólar blue hoy',
+        description: 'El dólar paralelo argentino y la brecha con el oficial.',
+        to: '/dolar-blue-hoy',
+      },
       {
         label: 'Conversor de monedas',
         description: 'Convertí montos al instante.',
@@ -99,38 +141,6 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Calculadora de spread',
         description: 'Cuánto te cuesta el diferencial.',
         to: '/herramientas/calculadora-spread',
-      },
-      {
-        label: 'Histórico del dólar',
-        description: 'La cotización de cada día desde 2022, casa por casa, para ver cómo se movió.',
-        to: '/historico',
-      },
-      {
-        label: 'La mejor casa de cambio',
-        description:
-          'Qué casa paga mejor hoy según lo que quieras hacer: comprar, vender, billete o transferencia.',
-        to: '/mejor-casa-de-cambio',
-      },
-      {
-        label: 'Analíticas del dólar',
-        description: 'Cómo se mueve el dólar en el día y entre casas, con los datos que relevamos.',
-        to: '/analiticas',
-      },
-      {
-        label: 'Cotizaciones de la región',
-        description:
-          'El dólar en Argentina, Brasil, Paraguay, Chile y Bolivia al lado del uruguayo.',
-        to: '/cotizaciones-de-la-region',
-      },
-      {
-        label: 'Dólar blue hoy',
-        description: 'El dólar paralelo argentino y la brecha con el oficial.',
-        to: '/dolar-blue-hoy',
-      },
-      {
-        label: '¿Banco o casa de cambio?',
-        description: 'Dónde conviene cambiar según el monto y la operación.',
-        to: '/banco-o-casa-de-cambio-uruguay',
       },
       {
         label: 'Casas abiertas el fin de semana',
@@ -146,16 +156,6 @@ export const guideHubs: readonly GuideHub[] = [
         label: '¿Dólares o reales para Brasil?',
         description: 'Qué moneda conviene llevar a Brasil y dónde cambiarla.',
         to: '/llevar-dolares-o-reales-a-brasil',
-      },
-      {
-        label: 'Últimos cambios de cotización',
-        description: 'Qué casa movió su precio, en vivo.',
-        to: '/ultimos-cambios',
-      },
-      {
-        label: 'Por qué sube el dólar',
-        description: 'Las razones detrás del precio.',
-        to: '/por-que-sube-el-dolar',
       },
     ],
     terms: [
@@ -298,32 +298,6 @@ export const guideHubs: readonly GuideHub[] = [
     ],
     resources: [
       {
-        label: 'Economía de Uruguay',
-        description: 'Noticias económicas por tema, con IA.',
-        to: '/economia-uruguay',
-      },
-      {
-        label: 'Por qué sube el dólar',
-        description: 'Las razones detrás del precio.',
-        to: '/por-que-sube-el-dolar',
-      },
-      {
-        label: 'Indicadores (UI, UR, BPC)',
-        description: 'Los valores que indexan todo.',
-        to: '/indicadores',
-      },
-      { label: 'Noticias', description: 'Actualidad del dólar y la economía.', to: '/noticias' },
-      {
-        label: 'Advertencias del BCU',
-        description: 'Entidades no autorizadas.',
-        to: '/advertencias-bcu',
-      },
-      {
-        label: 'Conversor de Unidad Indexada',
-        description: 'Pasá de UI a pesos y viceversa.',
-        to: '/herramientas/conversor-unidad-indexada',
-      },
-      {
         label: 'Evolución del alquiler',
         description: 'Cómo cambia lo que se pide por alquilar, por zona y dormitorios.',
         to: '/evolucion-precio-alquileres-uruguay',
@@ -354,9 +328,24 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/precios-de-supermercado-uruguay',
       },
       {
+        label: 'Indicadores (UI, UR, BPC)',
+        description: 'Los valores que indexan todo.',
+        to: '/indicadores',
+      },
+      {
         label: 'Cotizaciones de la región',
         description: 'El dólar en los países vecinos, al lado del uruguayo.',
         to: '/cotizaciones-de-la-region',
+      },
+      {
+        label: 'Economía de Uruguay',
+        description: 'Noticias económicas por tema, con IA.',
+        to: '/economia-uruguay',
+      },
+      {
+        label: 'Por qué sube el dólar',
+        description: 'Las razones detrás del precio.',
+        to: '/por-que-sube-el-dolar',
       },
       {
         label: 'Cotización del BCU',
@@ -367,6 +356,17 @@ export const guideHubs: readonly GuideHub[] = [
         label: '¿Por qué el BCU quiere más pesos?',
         description: 'La política monetaria explicada con los datos del Banco Central.',
         to: '/por-que-el-bcu-quiere-mas-pesos',
+      },
+      { label: 'Noticias', description: 'Actualidad del dólar y la economía.', to: '/noticias' },
+      {
+        label: 'Advertencias del BCU',
+        description: 'Entidades no autorizadas.',
+        to: '/advertencias-bcu',
+      },
+      {
+        label: 'Conversor de Unidad Indexada',
+        description: 'Pasá de UI a pesos y viceversa.',
+        to: '/herramientas/conversor-unidad-indexada',
       },
     ],
     terms: [
@@ -410,26 +410,6 @@ export const guideHubs: readonly GuideHub[] = [
     ],
     resources: [
       {
-        label: 'Guía para alquilar',
-        description: 'Desde conseguir techo hasta firmar.',
-        to: '/alquilar-en-uruguay',
-      },
-      {
-        label: 'Primer alquiler: gastos y trámites',
-        description: 'Presupuesto de entrada, garantía CGN, UTE, OSE y tributos.',
-        to: '/primer-alquiler-uruguay',
-      },
-      {
-        label: 'Alquilar estando en el Clearing',
-        description: 'Sí se puede: cómo hacerlo.',
-        to: '/alquilar-estando-en-clearing',
-      },
-      {
-        label: 'Costo de vida',
-        description: 'Cuánto necesitás para vivir donde querés.',
-        to: '/herramientas/costo-de-vida',
-      },
-      {
         label: 'Alquileres',
         description:
           'Los avisos de varios portales unidos por propiedad, con la garantía que acepta cada uno.',
@@ -456,6 +436,26 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/alquiler-ideal-uruguay',
       },
       {
+        label: 'Guía para alquilar',
+        description: 'Desde conseguir techo hasta firmar.',
+        to: '/alquilar-en-uruguay',
+      },
+      {
+        label: 'Primer alquiler: gastos y trámites',
+        description: 'Presupuesto de entrada, garantía CGN, UTE, OSE y tributos.',
+        to: '/primer-alquiler-uruguay',
+      },
+      {
+        label: 'Alquilar sin recibo de sueldo',
+        description: 'Qué garantías aceptan a independientes y cómo presentarte.',
+        to: '/alquilar-sin-recibo-de-sueldo',
+      },
+      {
+        label: 'Alquilar estando en el Clearing',
+        description: 'Sí se puede: cómo hacerlo.',
+        to: '/alquilar-estando-en-clearing',
+      },
+      {
         label: 'Comparar portales',
         description: 'Qué portal publica qué, y cuánto se superponen.',
         to: '/comparar-portales-de-alquiler-uruguay',
@@ -471,14 +471,14 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/inmobiliarias-uruguay',
       },
       {
-        label: 'Alquilar sin recibo de sueldo',
-        description: 'Qué garantías aceptan a independientes y cómo presentarte.',
-        to: '/alquilar-sin-recibo-de-sueldo',
-      },
-      {
         label: '¿Por qué no baja el alquiler?',
         description: 'Qué sostiene el precio del alquiler, con los datos del mercado.',
         to: '/por-que-no-baja-el-alquiler-uruguay',
+      },
+      {
+        label: 'Costo de vida',
+        description: 'Cuánto necesitás para vivir donde querés.',
+        to: '/herramientas/costo-de-vida',
       },
       {
         label: 'Fletes y mudanzas',
@@ -523,21 +523,6 @@ export const guideHubs: readonly GuideHub[] = [
     ],
     resources: [
       {
-        label: 'Conversor de Unidad Indexada',
-        description: 'La UI/UR de tu crédito, en pesos.',
-        to: '/herramientas/conversor-unidad-indexada',
-      },
-      {
-        label: 'Mejores bancos de Uruguay',
-        description: 'Dónde buscar tu hipoteca.',
-        to: '/mejores-bancos-uruguay',
-      },
-      {
-        label: 'Calculadora de préstamo',
-        description: 'Simulá la cuota mensual.',
-        to: '/herramientas/calculadora-prestamo',
-      },
-      {
         label: 'Venta de viviendas',
         description: 'Las viviendas en venta publicadas, una ficha por anuncio.',
         to: '/venta-viviendas-uruguay',
@@ -548,19 +533,34 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/evolucion-precio-viviendas-uruguay',
       },
       {
+        label: '¿Comprar o alquilar?',
+        description: 'La cuenta completa para decidir, con precios de hoy.',
+        to: '/comprar-o-alquilar-uruguay',
+      },
+      {
         label: 'Oportunidades',
         description: 'Viviendas pedidas por debajo de otras comparables.',
         to: '/oportunidades-inmobiliarias-uruguay',
       },
       {
+        label: 'Calculadora de préstamo',
+        description: 'Simulá la cuota mensual.',
+        to: '/herramientas/calculadora-prestamo',
+      },
+      {
+        label: 'Conversor de Unidad Indexada',
+        description: 'La UI/UR de tu crédito, en pesos.',
+        to: '/herramientas/conversor-unidad-indexada',
+      },
+      {
+        label: 'Mejores bancos de Uruguay',
+        description: 'Dónde buscar tu hipoteca.',
+        to: '/mejores-bancos-uruguay',
+      },
+      {
         label: 'Inmobiliarias',
         description: 'Qué publica cada inmobiliaria, desde sus propios avisos.',
         to: '/inmobiliarias-uruguay',
-      },
-      {
-        label: '¿Comprar o alquilar?',
-        description: 'La cuenta completa para decidir, con precios de hoy.',
-        to: '/comprar-o-alquilar-uruguay',
       },
       {
         label: 'Deuda de gastos comunes',
@@ -702,21 +702,6 @@ export const guideHubs: readonly GuideHub[] = [
     ],
     resources: [
       {
-        label: 'Calculadora de préstamo',
-        description: 'Simulá el crédito prendario.',
-        to: '/herramientas/calculadora-prestamo',
-      },
-      {
-        label: 'Préstamos en Uruguay',
-        description: 'Comparar opciones de financiación.',
-        to: '/prestamos-uruguay',
-      },
-      {
-        label: 'Estafas en Uruguay',
-        description: 'Evitar fraudes al comprar de particular.',
-        to: '/estafas-uruguay',
-      },
-      {
         label: 'Autos usados',
         description: 'Los avisos de diez fuentes, con el precio comparado contra autos iguales.',
         to: '/autos-usados-uruguay',
@@ -728,19 +713,14 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/mercado-de-autos-usados-uruguay',
       },
       {
-        label: 'Evolución del precio de los autos',
-        description: 'Cómo cambia lo que se pide por cada modelo.',
-        to: '/evolucion-precio-autos-usados-uruguay',
-      },
-      {
         label: '¿Cuánto vale mi auto?',
         description: 'El precio de mercado de tu auto, con los avisos de hoy.',
         to: '/cuanto-vale-mi-auto-uruguay',
       },
       {
-        label: 'Vender mi auto',
-        description: 'Cómo fijar el precio y qué pide el comprador.',
-        to: '/vender-mi-auto-uruguay',
+        label: 'Evolución del precio de los autos',
+        description: 'Cómo cambia lo que se pide por cada modelo.',
+        to: '/evolucion-precio-autos-usados-uruguay',
       },
       {
         label: 'Oportunidades en autos usados',
@@ -756,6 +736,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Comprar un auto con deuda',
         description: 'Qué revisar antes de comprar un auto con deudas o multas.',
         to: '/comprar-auto-con-deuda-uruguay',
+      },
+      {
+        label: 'Vender mi auto',
+        description: 'Cómo fijar el precio y qué pide el comprador.',
+        to: '/vender-mi-auto-uruguay',
       },
       {
         label: 'Multas y patente',
@@ -776,6 +761,21 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Libreta de conducir',
         description: 'Cuánto sale y qué trámite lleva sacarla o renovarla.',
         to: '/libreta-de-conducir-uruguay',
+      },
+      {
+        label: 'Calculadora de préstamo',
+        description: 'Simulá el crédito prendario.',
+        to: '/herramientas/calculadora-prestamo',
+      },
+      {
+        label: 'Préstamos en Uruguay',
+        description: 'Comparar opciones de financiación.',
+        to: '/prestamos-uruguay',
+      },
+      {
+        label: 'Estafas en Uruguay',
+        description: 'Evitar fraudes al comprar de particular.',
+        to: '/estafas-uruguay',
       },
       {
         label: 'Monopatines eléctricos',

@@ -76,9 +76,14 @@ describe('"Más sobre este tema"', () => {
     ).toBe('comprar-y-mantener-auto-uruguay')
   })
 
-  it('las páginas de datos van primero dentro del tema', () => {
+  it('respeta el orden editorial del tema', () => {
     const [grupo] = temaVecinosParaRuta('/alquilar-en-uruguay')
     expect(grupo?.links[0]?.to).toBe('/alquileres-uruguay')
+    // En autos, lo que un comprador pregunta después va antes que monopatines y bicicletas.
+    const autos = temaVecinosParaRuta('/comprar-auto-con-deuda-uruguay')[0]!.links.map(l => l.to)
+    expect(autos.indexOf('/multas-de-transito-y-patente-uruguay')).toBeLessThan(
+      autos.indexOf('/monopatines-electricos-uruguay')
+    )
   })
 
   it('una guía y un término encuentran su tema y las páginas del tema', () => {

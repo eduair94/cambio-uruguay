@@ -39,7 +39,11 @@ término).
 los demás miembros, así que el vínculo es **recíproco por construcción** (`temaVecinos.test.ts` lo
 exige), y sumar una página a un tema la conecta con todo el tema sin tocar ninguna otra página.
 
-- Dentro de cada tema las páginas con datos propios (directorios y análisis) van primero.
+- El orden es el del tema en `guideHubs.ts`, que es editorial: primero lo que se pregunta después
+  de esa página. Una regla mecánica ("datos primero") ponía en autos usados monopatines y bicicletas
+  antes que "comprar un auto con deuda". Cada tema muestra seis páginas y pliega el resto en un
+  `<details>` (sigue en el HTML): con todas abiertas, una página en dos temas medía 1.629 px en un
+  celular.
 - Una página puede estar en dos temas (una evolución es de su mercado y de "economía y mercado");
   el bloque muestra hasta dos. Una página de DATOS nunca puede estar en más (lo exige el test), para
   que no pierda el vínculo con ninguno.
