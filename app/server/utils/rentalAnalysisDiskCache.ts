@@ -188,6 +188,15 @@ export function createRentalAnalysisDiskCache({
     }
   }
   return {
+    // The file's mtime: lets a worker notice the other worker's weekly rebuild without parsing
+    // the whole catalogue every ten minutes.
+    async revision() {
+      try {
+        return (await fs.stat(filename)).mtimeMs
+      } catch {
+        return null
+      }
+    },
     async read() {
       try {
         const handle = await fs.open(filename, 'r')

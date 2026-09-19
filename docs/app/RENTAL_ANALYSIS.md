@@ -236,18 +236,39 @@ El POST y los errores usan `Cache-Control: no-store`. El GET correcto usa
 
 ## Presupuesto operativo
 
-La caché normalizada tiene una entrada por proceso y comparte el snapshot privado
-`.data/rental-analysis/catalogue-v1.json` entre workers y reinicios. Revalida el metadato
-cada 60 segundos; normaliza de nuevo cuando cambia su generación o el día UTC, y como
-máximo cada 10 minutos para incorporar reparaciones fuera del ciclo. Valida vigencia
-también en las lecturas calientes, vuelve a leer el metadato al terminar el cursor y
-reintenta una sola vez si cambió durante el barrido. El archivo versionado se escribe
-atómicamente con proyección explícita, sin textos crudos ni contactos. El bloqueo dura
-lo que dura la normalización, espera hasta 25 segundos y recupera archivos abandonados;
-un proceso vivo nunca pierde su bloqueo por tardar. Un fallo de escritura no invalida
-una lectura actual completa. No se sirve un snapshot vencido si falla su reemplazo.
+**Desde el 2026-09-19 el análisis es semanal y ningún pedido lee el catálogo.** Antes, la foto
+normalizada quedaba atada al `generatedAt` del job de alquileres —que el job horario cambia cada
+hora—, vencía a los 10 minutos y a cada medianoche UTC, y el pedido que la encontraba vencida
+releía hasta 100.000 propiedades bajo el bloqueo: se midió 1,7 s en la primera consulta de la
+página. Las medianas que describe no se mueven por hora, así que ahora:
 
-Hay además hasta 16 respuestas GET durante 30 segundos, con clave de revisión,
+- **Se construye sólo en la tarea `rentals:analysis-weekly`** (Nitro, lunes 07:13 UTC, después del
+  barrido completo de las 04:52 y lejos del horario de :47). Corre en las dos instancias del
+  cluster: el bloqueo de disco deja construir a una y la otra devuelve `busy`, o `fresh` si la foto
+  tiene menos de 12 horas. Ese umbral es corto a propósito: uno de días haría que una foto de
+  arranque en frío a mitad de semana saltee el lunes.
+- **Arranque en frío** (`server/plugins/rental-analysis-bootstrap.ts`): sin foto servible en disco
+  —primer deploy, versión nueva o dos lunes perdidos— la construye una vez, 20 s después de
+  arrancar y bajo el mismo bloqueo. Con foto en disco no hace nada. Nunca en dev, prerender ni
+  tests (el `.env` local apunta a la base de producción).
+- **Los pedidos sólo leen**: la memoria del proceso y, una vez por proceso, el disco
+  (`.data/rental-analysis/catalogue-v1.json`, que sobrevive a los deploys). Cada 10 minutos
+  un `stat` barato (`revision()`) detecta la foto nueva que escribió la otra instancia sin
+  re-parsear 17 MB.
+- **Vieja** = más de 14 días (dos lunes perdidos): 503 con la fecha del catálogo, el mismo
+  aviso que la página ya mostraba. **Sin foto**: 503 sin fecha, mientras el arranque la construye.
+- **Una lectura fina no pisa una buena**: menos del 60 % de las filas de la foto vigente se
+  rechaza (`thin`) y se sigue sirviendo la anterior, salvo que la anterior ya esté vieja.
+- La construcción conserva las garantías de antes: valida la vigencia del metadato, vuelve a
+  leerlo al terminar el cursor y reintenta una sola vez si cambió durante el barrido; el archivo
+  se escribe atómicamente con proyección explícita, sin textos crudos ni contactos. Ahora un
+  fallo de escritura SÍ falla la tarea: el archivo es el producto.
+
+**Lo que sigue en vivo a propósito:** el índice de disponibilidad de la comunidad. Un aviso
+reportado deja de contar en segundos, no el lunes.
+
+Hay además hasta 128 respuestas GET durante 6 horas (antes 16 durante 30 s: la foto cambiaba
+cada hora), con clave de revisión,
 consulta normalizada, día UTC y hash de exclusiones. Antes de consultar esta caché se
 lee siempre el índice de disponibilidad `hide_any`. El POST no guarda respuestas ni
 atributos ingresados por la persona. La lectura normalizada admite 200.000 ofertas y
@@ -263,8 +284,9 @@ lectura completa y cerrada se incorpora a la caché; los errores permiten reinte
 La agregación admite 15 segundos y la lectura de metadatos 10 segundos. El servicio de
 disponibilidad conserva sus propios límites y vuelve a consultarse antes de cada cálculo.
 
-No hay colección nueva, scheduler en el API, scraping por visitante ni llamadas a IA.
-Despliega con los cambios de `app/`; no requiere desplegar el backend raíz.
+No hay colección nueva, scheduler en el API, scraping por visitante ni llamadas a IA. La
+única tarea programada es la semanal de Nitro, dentro del app. Despliega con los cambios de
+`app/`; no requiere desplegar el backend raíz.
 
 ## Límites de interpretación
 

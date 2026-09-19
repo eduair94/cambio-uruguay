@@ -492,6 +492,12 @@ export default defineNuxtConfig({
       // 08:00 UTC Mondays ≈ 05:00 Uruguay: refresh the BCU's list of entities it has warned
       // about (~1 new entry a month, so weekly is plenty).
       '0 8 * * 1': ['bcu:warnings'],
+      // 07:13 UTC Mondays ≈ 04:13 Uruguay: rebuild the weekly rental analysis snapshot — the ONLY
+      // time /analisis-alquileres-uruguay reads the whole catalogue (requests read the stored
+      // snapshot). After the daily full rental sweep (04:52 UTC) and away from the hourly one (:47),
+      // whose new generation mid-scan would force a retry. Both workers fire; the disk lock and the
+      // 6-day freshness check make it run once.
+      '13 7 * * 1': ['rentals:analysis-weekly'],
     },
   },
 

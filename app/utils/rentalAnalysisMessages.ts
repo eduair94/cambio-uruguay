@@ -51,7 +51,7 @@ export const rentalAnalysisMessages = {
     emptyHint:
       'Probá otra zona, moneda o cantidad de dormitorios. Sólo mostramos cálculos respaldados por avisos con datos propios suficientes.',
     sample: '{n} viviendas en la muestra',
-    updated: 'Última actualización del catálogo: {date}',
+    updated: 'Análisis semanal, calculado con el catálogo del {date}',
     observed: 'Precios pedidos en avisos. No son contratos firmados ni una medición de la demanda.',
     rentMedian: 'Alquiler mediano',
     middle: 'Mitad central: {low} – {high}',
@@ -100,7 +100,7 @@ export const rentalAnalysisMessages = {
       'Ingresá un ingreso mayor que cero, un porcentaje entre 1 y 100 y gastos adicionales no negativos.',
     methodTitle: 'Qué te dicen estos datos y qué queda afuera',
     methodSample:
-      'La muestra usa los avisos del catálogo con datos propios del anuncio y lecturas de hasta {days} días. Una vivienda aporta una observación por moneda. Puede haber duplicados entre portales que no logramos identificar; no cubrimos todo el mercado.',
+      'La muestra usa los avisos del catálogo con datos propios del anuncio y lecturas de hasta {days} días. Una vivienda aporta una observación por moneda. Puede haber duplicados entre portales que no logramos identificar; no cubrimos todo el mercado. El análisis se recalcula una vez por semana; un aviso que la comunidad reporta como no disponible deja de contar en el momento.',
     methodStats:
       'La mediana deja la mitad de los precios por debajo y la mitad por encima. La franja entre los percentiles 25 y 75 muestra la mitad central de la oferta; no es un intervalo de confianza ni un precio mínimo y máximo.',
     methodCosts:
@@ -170,7 +170,7 @@ export const rentalAnalysisMessages = {
     emptyHint:
       'Try another area, currency or bedroom count. Calculations require listings with sufficient advert-specific evidence.',
     sample: '{n} homes in the sample',
-    updated: 'Catalogue last updated: {date}',
+    updated: 'Weekly analysis, computed from the catalogue of {date}',
     observed: 'Asking rents in listings. These are not signed contracts or a measure of demand.',
     rentMedian: 'Median asking rent',
     middle: 'Middle half: {low} – {high}',
@@ -219,7 +219,7 @@ export const rentalAnalysisMessages = {
       'Enter income greater than zero, a percentage between 1 and 100, and non-negative extra expenses.',
     methodTitle: 'What these data tell you, and what they leave out',
     methodSample:
-      'The sample uses catalogue listings with advert-specific evidence, read within {days} days. Each home contributes one observation per currency. Some cross-portal duplicates may remain; coverage is not exhaustive.',
+      'The sample uses catalogue listings with advert-specific evidence, read within {days} days. Each home contributes one observation per currency. Some cross-portal duplicates may remain; coverage is not exhaustive. The analysis is recomputed once a week; a listing the community reports as unavailable stops counting right away.',
     methodStats:
       'Half the asking rents fall below the median and half above. The 25th–75th percentile band shows the middle half of supply; it is not a confidence interval or a minimum-to-maximum range.',
     methodCosts:
@@ -288,7 +288,7 @@ export const rentalAnalysisMessages = {
     emptyHint:
       'Tente outra região, moeda ou número de quartos. Os cálculos exigem anúncios com dados próprios suficientes.',
     sample: '{n} imóveis na amostra',
-    updated: 'Última atualização do catálogo: {date}',
+    updated: 'Análise semanal, calculada com o catálogo de {date}',
     observed:
       'Preços pedidos nos anúncios. Não são contratos assinados nem uma medição da demanda.',
     rentMedian: 'Aluguel mediano',
@@ -338,7 +338,7 @@ export const rentalAnalysisMessages = {
       'Informe uma renda maior que zero, uma porcentagem entre 1 e 100 e despesas adicionais não negativas.',
     methodTitle: 'O que estes dados mostram e o que fica de fora',
     methodSample:
-      'A amostra usa anúncios do catálogo com dados próprios, lidos há até {days} dias. Cada imóvel contribui com uma observação por moeda. Algumas duplicatas entre portais podem permanecer; a cobertura não é completa.',
+      'A amostra usa anúncios do catálogo com dados próprios, lidos há até {days} dias. Cada imóvel contribui com uma observação por moeda. Algumas duplicatas entre portais podem permanecer; a cobertura não é completa. A análise é recalculada uma vez por semana; um anúncio que a comunidade informa como indisponível deixa de contar na hora.',
     methodStats:
       'Metade dos preços fica abaixo da mediana e metade acima. A faixa entre os percentis 25 e 75 mostra a metade central da oferta; não é um intervalo de confiança nem de mínimo e máximo.',
     methodCosts:

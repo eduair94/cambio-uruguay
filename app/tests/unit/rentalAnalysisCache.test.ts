@@ -1,30 +1,42 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
-  createRentalAnalysisCatalogueCache,
   createRentalAnalysisResponseCache,
+  createRentalAnalysisSnapshotStore,
   RENTAL_ANALYSIS_CACHE_VERSION,
+  RENTAL_ANALYSIS_MAX_AGE,
+  RENTAL_ANALYSIS_REBUILD_AFTER,
+  RENTAL_ANALYSIS_RECHECK,
   rentalAnalysisCutoff,
   type RentalAnalysisSharedCache,
   type RentalAnalysisSnapshot,
 } from '../../server/utils/rentalAnalysisCache'
+import type { RentalAnalysisListing } from '../../utils/rentalAnalysis'
 
 const initial = Date.parse('2026-09-08T12:00:00Z')
+const DAY = 86_400_000
+const rows = (n: number) => Array.from({ length: n }, () => ({}) as RentalAnalysisListing)
+
+/** One shared disk (with an mtime-like revision) and any number of workers reading it. */
 function fixture() {
   let at = initial
   let generatedAt = '2026-09-08T10:00:00Z'
+  let size = 100
   let disk: RentalAnalysisSnapshot | null = null
+  let revision = 0
   let queue = Promise.resolve()
   const readMeta = vi.fn(async () => ({ generatedAt }))
   const readCatalogue = vi.fn(async (generation: string) => ({
     generatedAt: generation,
-    catalogueProperties: 0,
-    listings: [],
+    catalogueProperties: size,
+    listings: rows(size),
   }))
   const shared: RentalAnalysisSharedCache = {
     read: vi.fn(async () => disk),
     write: vi.fn(async value => {
       disk = value
+      revision++
     }),
+    revision: vi.fn(async () => (disk ? revision : null)),
     async withLock(work) {
       const previous = queue
       let release!: () => void
@@ -39,10 +51,10 @@ function fixture() {
       }
     },
   }
-  const loader = () =>
-    createRentalAnalysisCatalogueCache({ readMeta, readCatalogue, shared, now: () => at })
+  const worker = () =>
+    createRentalAnalysisSnapshotStore({ readMeta, readCatalogue, shared, now: () => at })
   return {
-    loader,
+    worker,
     readMeta,
     readCatalogue,
     shared,
@@ -52,93 +64,140 @@ function fixture() {
     generation(value: string) {
       generatedAt = value
     },
+    size(value: number) {
+      size = value
+    },
     seed(value: RentalAnalysisSnapshot) {
       disk = value
+      revision++
     },
   }
 }
 
-describe('rental analysis generation cache', () => {
-  it('checks metadata every minute while reusing normalization for up to ten minutes', async () => {
+describe('weekly rental analysis snapshot', () => {
+  it('never builds on a request: without a snapshot, load fails and reads no catalogue', async () => {
+    const f = fixture()
+    await expect(f.worker().load()).rejects.toMatchObject({ code: 'RENTAL_ANALYSIS_UNAVAILABLE' })
+    expect(f.readMeta).not.toHaveBeenCalled()
+    expect(f.readCatalogue).not.toHaveBeenCalled()
+  })
+
+  it('serves one weekly build for days, through hourly harvests and UTC midnights', async () => {
     const f = fixture(),
-      load = f.loader()
-    const first = await load()
-    expect(await load()).toBe(first)
-    expect(f.readMeta).toHaveBeenCalledTimes(2)
-    expect(f.readCatalogue).toHaveBeenCalledOnce()
-    f.clock(initial + 60_001)
-    expect(await load()).toBe(first)
-    expect(f.readMeta).toHaveBeenCalledTimes(3)
-    expect(f.readCatalogue).toHaveBeenCalledOnce()
-    f.clock(initial + 600_001)
-    expect(await load()).not.toBe(first)
-    expect(f.readCatalogue).toHaveBeenCalledTimes(2)
-  })
-
-  it('coalesces initial normalization across workers and reuses disk after a restart', async () => {
-    const f = fixture()
-    const [first, second] = await Promise.all([f.loader()(), f.loader()()])
-    expect(second).toBe(first)
-    expect(f.readCatalogue).toHaveBeenCalledOnce()
-    expect(await f.loader()()).toBe(first)
-    expect(f.readCatalogue).toHaveBeenCalledOnce()
-  })
-
-  it('loads a new source generation after metadata revalidation', async () => {
-    const f = fixture(),
-      load = f.loader()
-    const first = await load()
-    f.generation('2026-09-08T11:00:00Z')
-    f.clock(initial + 60_001)
-    const second = await load()
-    expect(second.value.generatedAt).toBe('2026-09-08T11:00:00Z')
-    expect(second).not.toBe(first)
-    expect(f.readCatalogue).toHaveBeenCalledTimes(2)
-  })
-
-  it('checks metadata freshness at midnight even while the minute cache remains warm', async () => {
-    const f = fixture()
-    f.clock(Date.parse('2026-09-08T23:59:59Z'))
-    f.generation('2026-08-29T10:00:00Z')
-    const load = f.loader()
-    await load()
-    f.clock(Date.parse('2026-09-09T00:00:00Z'))
-    await expect(load()).rejects.toMatchObject({ code: 'RENTAL_ANALYSIS_STALE' })
-    f.generation('2026-09-09T00:00:00Z')
-    expect((await load()).cutoff).toBe('2026-08-30')
-  })
-
-  it('rebuilds the UTC observation cutoff and refuses future cache timestamps after clock rollback', async () => {
-    const f = fixture()
-    f.clock(Date.parse('2026-09-08T23:59:59Z'))
-    const load = f.loader()
-    const first = await load()
-    f.clock(Date.parse('2026-09-09T00:00:00Z'))
-    expect((await load()).cutoff).not.toBe(first.cutoff)
-    expect(f.readCatalogue).toHaveBeenCalledTimes(2)
-    f.clock(Date.parse('2026-09-08T09:00:00Z'))
-    await expect(load()).rejects.toThrow('metadata unavailable')
-  })
-
-  it('does not use an expired, mismatched or future shared snapshot', async () => {
-    for (const change of [
-      { loadedAt: initial - 600_001 },
-      { loadedAt: initial + 1 },
-      { cutoff: '2026-08-28' },
-      { version: 99 },
-      { value: { generatedAt: '2026-09-08T09:00:00Z', catalogueProperties: 0, listings: [] } },
-    ]) {
-      const f = fixture()
-      f.seed({
-        version: RENTAL_ANALYSIS_CACHE_VERSION,
-        loadedAt: initial,
-        cutoff: rentalAnalysisCutoff(initial),
-        value: { generatedAt: '2026-09-08T10:00:00Z', catalogueProperties: 0, listings: [] },
-        ...change,
-      } as RentalAnalysisSnapshot)
-      await f.loader()()
-      expect(f.readCatalogue).toHaveBeenCalledOnce()
+      store = f.worker()
+    expect(await store.rebuild()).toMatchObject({ status: 'built', rows: 100, previousRows: null })
+    const first = await store.load()
+    for (const hours of [1, 2, 24, 72, 6 * 24]) {
+      f.clock(initial + hours * 3_600_000)
+      // The hourly rental job moves the harvest generation; the analysis does not follow it.
+      f.generation(new Date(initial + hours * 3_600_000 - 600_000).toISOString())
+      expect(await store.load()).toBe(first)
     }
+    expect(f.readCatalogue).toHaveBeenCalledOnce()
+    expect(f.readMeta).toHaveBeenCalledTimes(2)
+  })
+
+  it('absorbs the double fire: a snapshot younger than twelve hours is left alone', async () => {
+    const f = fixture(),
+      store = f.worker()
+    await store.rebuild()
+    f.clock(initial + RENTAL_ANALYSIS_REBUILD_AFTER - 1)
+    expect(await store.rebuild()).toEqual({ status: 'fresh', builtAt: initial })
+    expect(f.readCatalogue).toHaveBeenCalledOnce()
+    f.clock(initial + RENTAL_ANALYSIS_REBUILD_AFTER)
+    f.generation(new Date(initial + RENTAL_ANALYSIS_REBUILD_AFTER - 3_600_000).toISOString())
+    expect(await store.rebuild()).toMatchObject({ status: 'built', previousRows: 100 })
+    expect(f.readCatalogue).toHaveBeenCalledTimes(2)
+  })
+
+  it('lets only one of the two cluster workers build when both fire the task', async () => {
+    const f = fixture()
+    const [a, b] = await Promise.all([f.worker().rebuild(), f.worker().rebuild()])
+    expect([a.status, b.status].sort()).toEqual(['built', 'fresh'])
+    expect(f.readCatalogue).toHaveBeenCalledOnce()
+  })
+
+  it('reports a worker waiting on the lock as busy instead of failing the task', async () => {
+    const f = fixture()
+    f.shared.withLock = async () => {
+      throw new Error('Rental analysis normalization is already running')
+    }
+    expect(await f.worker().rebuild()).toEqual({ status: 'busy' })
+  })
+
+  it('lets the other worker see a new build through the cheap revision check', async () => {
+    const f = fixture(),
+      builder = f.worker(),
+      reader = f.worker()
+    await builder.rebuild()
+    const first = await reader.load()
+    const t0 = initial + RENTAL_ANALYSIS_REBUILD_AFTER
+    f.clock(t0)
+    expect(await reader.load()).toBe(first)
+    f.generation(new Date(t0 - 3_600_000).toISOString())
+    await builder.rebuild()
+    // Within the recheck window the reader keeps its copy without touching the disk…
+    f.clock(t0 + RENTAL_ANALYSIS_RECHECK - 1)
+    expect(await reader.load()).toBe(first)
+    f.clock(t0 + RENTAL_ANALYSIS_RECHECK)
+    const reads = vi.mocked(f.shared.read).mock.calls.length
+    const second = await reader.load()
+    expect(second).not.toBe(first)
+    expect(vi.mocked(f.shared.read).mock.calls.length).toBe(reads + 1)
+    // …and an unchanged revision does not re-parse the file.
+    f.clock(t0 + 2 * RENTAL_ANALYSIS_RECHECK)
+    expect(await reader.load()).toBe(second)
+    expect(vi.mocked(f.shared.read).mock.calls.length).toBe(reads + 1)
+  })
+
+  it('declares a snapshot stale after two missed weeks, and the bootstrap rebuilds it', async () => {
+    const f = fixture(),
+      store = f.worker()
+    await store.rebuild()
+    f.clock(initial + RENTAL_ANALYSIS_MAX_AGE + 1)
+    await expect(store.load()).rejects.toMatchObject({
+      code: 'RENTAL_ANALYSIS_STALE',
+      generatedAt: '2026-09-08T10:00:00Z',
+    })
+    f.generation(new Date(initial + RENTAL_ANALYSIS_MAX_AGE - 3_600_000).toISOString())
+    expect(await store.ensure()).toMatchObject({ status: 'built' })
+    expect((await store.load()).loadedAt).toBe(initial + RENTAL_ANALYSIS_MAX_AGE + 1)
+  })
+
+  it('does nothing at boot when a servable snapshot is already on disk', async () => {
+    const f = fixture()
+    await f.worker().rebuild()
+    expect(await f.worker().ensure()).toBeNull()
+    expect(f.readCatalogue).toHaveBeenCalledOnce()
+  })
+
+  it('refuses to replace a snapshot with a much thinner read, until the old one is too old', async () => {
+    const f = fixture(),
+      store = f.worker()
+    await store.rebuild()
+    f.clock(initial + RENTAL_ANALYSIS_REBUILD_AFTER)
+    f.generation(new Date(initial + RENTAL_ANALYSIS_REBUILD_AFTER - 3_600_000).toISOString())
+    f.size(59)
+    expect(await store.rebuild()).toEqual({ status: 'thin', rows: 59, previousRows: 100 })
+    expect((await store.load()).value.listings).toHaveLength(100)
+    f.size(60)
+    expect(await store.rebuild()).toMatchObject({ status: 'built', rows: 60 })
+    // Past the stale limit the old snapshot is no longer servable, so a thin read still wins.
+    const late = initial + RENTAL_ANALYSIS_REBUILD_AFTER + RENTAL_ANALYSIS_MAX_AGE + 1
+    f.clock(late)
+    f.generation(new Date(late - 3_600_000).toISOString())
+    f.size(10)
+    expect(await store.rebuild()).toMatchObject({ status: 'built', rows: 10 })
+  })
+
+  it('does not build from a stale harvest, and keeps serving the previous snapshot', async () => {
+    const f = fixture(),
+      store = f.worker()
+    await store.rebuild()
+    f.clock(initial + 11 * DAY)
+    // The rental job stopped: its last generation is older than the 10-day observation window.
+    await expect(store.rebuild()).rejects.toMatchObject({ code: 'RENTAL_ANALYSIS_STALE' })
+    expect(await store.load()).toMatchObject({ loadedAt: initial })
   })
 
   it('retries once when a generation changes mid-scan and never publishes the discarded scan', async () => {
@@ -147,8 +206,10 @@ describe('rental analysis generation cache', () => {
       f.generation('2026-09-08T11:00:00Z')
       return { generatedAt: generation, catalogueProperties: 0, listings: [] }
     })
-    const result = await f.loader()()
-    expect(result.value.generatedAt).toBe('2026-09-08T11:00:00Z')
+    expect(await f.worker().rebuild()).toMatchObject({
+      status: 'built',
+      generatedAt: '2026-09-08T11:00:00Z',
+    })
     expect(f.readCatalogue).toHaveBeenCalledTimes(2)
     expect(f.shared.write).toHaveBeenCalledOnce()
   })
@@ -160,32 +221,32 @@ describe('rental analysis generation cache', () => {
       f.generation(`2026-09-08T11:0${minute++}:00Z`)
       return { generatedAt: generation, catalogueProperties: 0, listings: [] }
     })
-    await expect(f.loader()()).rejects.toThrow('source changed')
-    expect(f.readCatalogue).toHaveBeenCalledTimes(2)
+    await expect(f.worker().rebuild()).rejects.toThrow('source changed')
     expect(f.shared.write).not.toHaveBeenCalled()
   })
 
-  it('keeps complete reads usable after persistence failure but does not fall back after failed refresh', async () => {
+  it('reports a failed write, while the building worker still serves what it read', async () => {
     const f = fixture(),
-      load = f.loader()
+      store = f.worker()
     vi.mocked(f.shared.write).mockRejectedValue(new Error('disk full'))
-    const first = await load()
-    expect(await load()).toBe(first)
-    f.clock(initial + 600_001)
-    f.readCatalogue.mockRejectedValueOnce(new Error('stream failed'))
-    await expect(load()).rejects.toThrow('stream failed')
-    expect(f.readCatalogue).toHaveBeenCalledTimes(2)
-    expect(await load()).not.toBe(first)
+    await expect(store.rebuild()).rejects.toThrow('disk full')
+    expect((await store.load()).value.listings).toHaveLength(100)
   })
 
-  it('shares in-flight work in one worker and recovers after metadata failure', async () => {
-    const f = fixture(),
-      load = f.loader()
-    f.readMeta.mockRejectedValueOnce(new Error('metadata offline'))
-    await expect(load()).rejects.toThrow('metadata offline')
-    const [first, second] = await Promise.all([load(), load()])
-    expect(second).toBe(first)
-    expect(f.readCatalogue).toHaveBeenCalledOnce()
+  it('ignores a snapshot from another version or from the future', async () => {
+    for (const change of [{ version: 99 }, { loadedAt: initial + 1 }]) {
+      const f = fixture()
+      f.seed({
+        version: RENTAL_ANALYSIS_CACHE_VERSION,
+        loadedAt: initial,
+        cutoff: rentalAnalysisCutoff(initial),
+        value: { generatedAt: '2026-09-08T10:00:00Z', catalogueProperties: 0, listings: [] },
+        ...change,
+      } as RentalAnalysisSnapshot)
+      await expect(f.worker().load()).rejects.toMatchObject({
+        code: 'RENTAL_ANALYSIS_UNAVAILABLE',
+      })
+    }
   })
 })
 

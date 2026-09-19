@@ -22,8 +22,8 @@ import { connectDb } from './db'
 import { rentalBudgetOwnExpenses } from './rentalBudget'
 import { loadRentalAvailabilityIndex } from './rentalAvailability'
 import {
-  createRentalAnalysisCatalogueCache,
   createRentalAnalysisResponseCache,
+  createRentalAnalysisSnapshotStore,
   rentalAnalysisSnapshotRevision,
 } from './rentalAnalysisCache'
 import {
@@ -31,7 +31,7 @@ import {
   RENTAL_ANALYSIS_CACHE_BYTES,
   RENTAL_ANALYSIS_CACHE_ROWS,
 } from './rentalAnalysisDiskCache'
-export { RentalAnalysisStaleError } from './rentalAnalysisCache'
+export { RentalAnalysisStaleError, RentalAnalysisUnavailableError } from './rentalAnalysisCache'
 
 interface AnalysisIdentity {
   version?: number
@@ -216,16 +216,27 @@ async function readAnalysisCatalogue(
   }
   return { generatedAt, catalogueProperties, listings }
 }
-const loadAnalysisSnapshot = createRentalAnalysisCatalogueCache({
+// The catalogue is read from the database ONLY here, by the weekly task (`rentals:analysis-weekly`)
+// or the cold-start bootstrap (`server/plugins/rental-analysis-bootstrap.ts`). Requests only read the
+// stored snapshot — see `createRentalAnalysisSnapshotStore`.
+const store = createRentalAnalysisSnapshotStore({
   readMeta: readAnalysisMeta,
   readCatalogue: readAnalysisCatalogue,
   // Unit tests use injected stores; they must never share production/local fixture state.
   shared: process.env.NODE_ENV === 'test' ? undefined : createRentalAnalysisDiskCache(),
 })
+const loadAnalysisSnapshot = store.load
+export const rebuildRentalAnalysisSnapshot = store.rebuild
+export const ensureRentalAnalysisSnapshot = store.ensure
 export async function loadRentalAnalysisCatalogue(): Promise<RentalAnalysisCatalogue> {
   return (await loadAnalysisSnapshot()).value
 }
-const responseCache = createRentalAnalysisResponseCache<RentalAnalysisResponse>()
+// The snapshot changes once a week and community exclusions are part of every key, so a result can
+// live for hours; ~128 entries of 16-70 KB each stay under ~9 MB per worker.
+const responseCache = createRentalAnalysisResponseCache<RentalAnalysisResponse>({
+  maxEntries: 128,
+  ttl: 6 * 60 * 60_000,
+})
 
 async function currentAnalysis() {
   const [snapshot, availability] = await Promise.all([

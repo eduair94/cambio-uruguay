@@ -112,6 +112,18 @@ describe('private shared rental analysis snapshot', () => {
     expect((await second.read())?.value.listings[0]?.price).toBe(22000)
   })
 
+  // The other worker notices the weekly rebuild through this, without parsing ~17 MB every check.
+  it('exposes a cheap revision that is null without a file and changes on every write', async () => {
+    const cache = createRentalAnalysisDiskCache({ directory })
+    expect(await cache.revision!()).toBeNull()
+    await cache.write(snapshot())
+    const first = await cache.revision!()
+    expect(first).toEqual(expect.any(Number))
+    await new Promise(resolve => setTimeout(resolve, 20))
+    await cache.write(snapshot())
+    expect(await cache.revision!()).not.toBe(first)
+  })
+
   it('strips private additions before persistence and after reading', async () => {
     const data = snapshot()
     Object.assign(data.value.listings[0]!, {
