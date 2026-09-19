@@ -54,6 +54,13 @@ describe('la barra de la familia', () => {
     expect(familiaNavParaRuta('/privacidad')).toBeNull()
   })
 
+  // El menú del celular es una lista vertical: cada fila lleva su ícono.
+  it('cada página de una barra tiene ícono', () => {
+    for (const entry of DIRECTORIOS)
+      for (const item of familiaNavParaRuta(entry.to)?.items ?? [])
+        expect(item.icon, `${entry.id} → ${item.to}`).toMatch(/^mdi-[a-z0-9-]+$/)
+  })
+
   // La etiqueta sale del menú para que la barra esté en los tres idiomas.
   it('toda ruta de una barra está en el menú', () => {
     for (const entry of DIRECTORIOS) {

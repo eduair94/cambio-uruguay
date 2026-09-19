@@ -1486,7 +1486,8 @@
     "verMas": "Ver mais {n} páginas do tema"
   },
   "familiaNav": {
-    "aria": "Páginas deste diretório"
+    "aria": "Páginas deste diretório",
+    "resumen": "Nesta seção · {n} páginas"
   },
   "directorioAnalisis": {
     "tituloDirectorio": "Análises e estatísticas deste diretório",

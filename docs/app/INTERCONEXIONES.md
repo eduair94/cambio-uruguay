@@ -24,7 +24,18 @@ autos, las hermanas aparecían a partir de 2.000–11.000 px, y en venta de vivi
 La barra de la familia va arriba, antes de la página, y sale del registro de directorios (orden:
 directorio, sus páginas `tambien`, sus análisis). Un análisis que comparten varios directorios
 (CyberLunes sale de cinco) no es de ninguna familia, las rutas fuera del sitemap no entran, y una
-familia de una sola página no dibuja barra. En un celular la fila se desplaza de costado.
+familia de una sola página no dibuja barra.
+
+En pantalla ancha (≥ 960 px) es una fila de chips con ícono. En un celular fue primero la misma fila
+con scroll lateral, y no servía: a 390 px se veían una hermana y media, nada avisaba que había cuatro
+más a la derecha, y deslizar de costado dentro de una página que se desliza hacia abajo es incómodo.
+Debajo de 960 px ahora es el patrón de navegación local de siempre: un botón de 56 px con la página
+actual ("En esta sección · 6 páginas / Análisis de alquileres") que despliega la lista entera en
+vertical, con filas de 48 px, ícono y la actual marcada. Es un `<details>` nativo: abre antes de
+que la página hidrate y sin JavaScript, y los enlaces están en el HTML aunque esté cerrado. Se cierra
+al navegar (el layout no se desmonta) y con Esc. Se descartó un cajón lateral: esconde la lista
+detrás de un gesto más y compite con el menú del sitio, que ya es un cajón. Los clics del menú se
+miden aparte (`placement: family_nav_menu`) de los de la fila (`family_nav`).
 
 Para medirlo de nuevo: posición vertical del primer enlace a cada hermana, en las páginas de la
 familia, a 1280 px; "arriba" es antes de ~1.400 px.

@@ -1493,7 +1493,8 @@
     "verMas": "See {n} more pages on this topic"
   },
   "familiaNav": {
-    "aria": "Pages in this directory"
+    "aria": "Pages in this directory",
+    "resumen": "In this section · {n} pages"
   },
   "directorioAnalisis": {
     "tituloDirectorio": "Analysis and statistics from this directory",

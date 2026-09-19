@@ -1504,7 +1504,8 @@
     "verMas": "Ver {n} páginas más del tema"
   },
   "familiaNav": {
-    "aria": "Páginas de este directorio"
+    "aria": "Páginas de este directorio",
+    "resumen": "En esta sección · {n} páginas"
   },
   "directorioAnalisis": {
     "tituloDirectorio": "Análisis y estadísticas de este directorio",

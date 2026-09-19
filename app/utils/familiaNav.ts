@@ -28,6 +28,8 @@ export interface FamiliaNavItem {
   readonly labelKey: string | null
   /** Etiqueta en español, para una ruta que no está en el menú. */
   readonly label: string
+  /** Ícono MDI del menú; el del registro para el directorio. */
+  readonly icon: string
   readonly current: boolean
 }
 
@@ -72,11 +74,15 @@ export function familiaNavParaRuta(path: string): FamiliaNav | null {
   const tambienLabel = new Map((entry.tambien ?? []).map(link => [link.to, link.label]))
   return {
     directorio: entry.id,
-    items: routes.map(to => ({
-      to,
-      labelKey: navEntryForPath(to)?.labelKey ?? null,
-      label: to === entry.to ? entry.titulo : (tambienLabel.get(to) ?? to),
-      current: to === route,
-    })),
+    items: routes.map(to => {
+      const nav = navEntryForPath(to)
+      return {
+        to,
+        labelKey: nav?.labelKey ?? null,
+        label: to === entry.to ? entry.titulo : (tambienLabel.get(to) ?? to),
+        icon: nav?.icon ?? (to === entry.to ? entry.icon : 'mdi-file-document-outline'),
+        current: to === route,
+      }
+    }),
   }
 }
