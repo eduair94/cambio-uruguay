@@ -63,9 +63,11 @@ const sameName = computed(
 const decimal = (value: number) =>
   new Intl.NumberFormat(locale.value, { maximumFractionDigits: 1 }).format(value)
 const date = (value: string) =>
-  new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
-    new Date(value)
-  )
+  new Intl.DateTimeFormat(dateLocale(locale.value), {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(value))
 
 interface Row {
   attribute: RentalZoneScoreAttribute
