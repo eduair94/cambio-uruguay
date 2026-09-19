@@ -14,7 +14,7 @@
       </span>
     </VBtn>
     <p v-if="mismatched" class="selection-summary" role="alert">{{ t('mismatch') }}</p>
-    <VDialog v-model="open" :fullscreen="xs" max-width="1160" class="zone-picker-dialog">
+    <VDialog v-model="open" :fullscreen="fullscreen" max-width="1160" class="zone-picker-dialog">
       <VCard class="picker-card" data-clarity-mask="true">
         <header class="picker-header">
           <h2>{{ t('choose') }}</h2>
@@ -51,7 +51,9 @@ const emit = defineEmits<{
   validity: [valid: boolean]
 }>()
 const { t } = useI18n({ useScope: 'local', messages: rentalZoneMessages })
-const { xs } = useDisplay()
+const { xs, smAndDown, height } = useDisplay()
+// A phone on its side is short, not wide: a floating card there left ~220px for the list.
+const fullscreen = computed(() => xs.value || (smAndDown.value && height.value < 560))
 const open = ref(false)
 const count = computed(() => props.modelValue.include.length + props.modelValue.exclude.length)
 const selectionSummary = computed(() => {
@@ -143,13 +145,14 @@ function apply(value: RentalZonePreferences) {
 }
 .picker-header h2 {
   margin: 0;
-  font-size: 1.25rem;
+  /* One line down to 320px: two lines pushed the whole list 26px lower on the smallest phones. */
+  font-size: clamp(1.125rem, 5.2vw, 1.25rem);
   line-height: 1.3;
 }
 .picker-card > .zone-explorer {
   flex: 1;
 }
-@media (max-width: 599px) {
+@media (max-width: 599px), (max-width: 959px) and (max-height: 559px) {
   .picker-card {
     height: 100dvh;
   }

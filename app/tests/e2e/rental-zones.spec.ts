@@ -341,6 +341,49 @@ test('390px: planner zones cancel, apply and remain private in the household req
   expect(state.errors).toEqual([])
 })
 
+test('390px: zone picker pins its tab bar flush under the header and opens the panel in place', async ({
+  page,
+}, info) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  const state = await setup(page, '/alquiler-ideal-uruguay')
+  await page.getByTestId('fit-next').click()
+  await page.getByTestId('fit-next').click()
+  await page.getByRole('button', { name: 'Elegir y comparar zonas', exact: true }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog
+    .getByRole('button', { name: 'Ver información de Cordón, Montevideo', exact: true })
+    .click()
+  // The panel belongs to the tapped row, not to the end of a list up to 50 rows long.
+  await expect(
+    dialog.locator('.zone-list > li').filter({ has: page.getByTestId('rental-zone-detail') })
+  ).toContainText('Cordón')
+  const layout = await dialog.evaluate(element => {
+    const scroller = element.querySelector('.explorer-scroll')!
+    const bar = element.querySelector('.zone-toolbar')!
+    const resting = bar.getBoundingClientRect().top
+    scroller.scrollTop = scroller.scrollHeight
+    const list = element.querySelector('.zone-list')!
+    return {
+      travelled: resting - element.querySelector('.picker-header')!.getBoundingClientRect().bottom,
+      scrolled: scroller.scrollTop,
+      gap:
+        bar.getBoundingClientRect().top -
+        element.querySelector('.picker-header')!.getBoundingClientRect().bottom,
+      barWidth: bar.getBoundingClientRect().width,
+      cardWidth: element.querySelector('.picker-card')!.getBoundingClientRect().width,
+      nestedScroll: list.scrollHeight > list.clientHeight + 1,
+    }
+  })
+  // Scrolled past the bar's resting place, so it is pinned: no strip of list above it.
+  expect(layout.scrolled).toBeGreaterThan(layout.travelled)
+  expect(Math.abs(layout.gap)).toBeLessThanOrEqual(1)
+  expect(layout.barWidth).toBeGreaterThanOrEqual(layout.cardWidth - 1)
+  expect(layout.nestedScroll).toBe(false)
+  await shot(page, info, 'picker-pinned-390')
+  await noOverflow(page)
+  expect(state.errors).toEqual([])
+})
+
 test('390px: directory comparison applies to the draft before applying rental filters', async ({
   page,
 }, info) => {

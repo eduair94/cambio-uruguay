@@ -1,5 +1,10 @@
 <template>
-  <div class="zone-explorer" data-testid="rental-zone-explorer">
+  <div
+    ref="root"
+    class="zone-explorer"
+    :class="{ 'is-standalone': standalone }"
+    data-testid="rental-zone-explorer"
+  >
     <div class="explorer-scroll">
       <VTextField
         v-model="search"
@@ -129,7 +134,7 @@
       </div>
       <template v-else>
         <p v-if="data.status === 'stale'" class="notice" role="status">{{ t('stale') }}</p>
-        <div class="zone-layout" :class="{ 'has-detail': selectedZone }">
+        <div class="zone-layout" :class="{ 'has-detail': selectedZone && !inlineDetail }">
           <div class="zone-browser">
             <template v-if="view === 'map'">
               <p class="map-caption">{{ t('mapShort') }}</p>
@@ -207,6 +212,14 @@
                     :disabled="!included(zone.ref) && !canAdd(zone.ref)"
                     @click="toggleZone(zone.ref, 'include')"
                   />
+                  <!-- On a phone the panel opens under its own row: after the list it
+                       would land up to 50 rows away from the tap. -->
+                  <ZoneDetail
+                    v-if="inlineDetail && selectedId === zone.id"
+                    v-bind="detailProps(zone)"
+                    @toggle="kind => toggleZone(zone.ref, kind)"
+                    @close="closeDetail"
+                  />
                 </li>
               </ul>
               <VBtn
@@ -218,33 +231,11 @@
             </details>
           </div>
           <ZoneDetail
-            v-if="selectedZone"
-            ref="detail"
-            :zone="selectedZone"
-            :layer="layer"
-            :price-statistic="priceStatistic"
-            :rental-date="data.rentalDataAsOf"
-            :price-sources="data.sources"
-            :meta="data.utilities"
+            v-if="selectedZone && !inlineDetail"
+            v-bind="detailProps(selectedZone)"
+            @toggle="kind => toggleZone(selectedZone!.ref, kind)"
             @close="closeDetail"
-          >
-            <div class="detail-actions">
-              <VBtn
-                :variant="included(selectedZone.ref) ? 'tonal' : 'flat'"
-                color="primary"
-                :disabled="!included(selectedZone.ref) && !canAdd(selectedZone.ref)"
-                @click="toggleZone(selectedZone.ref, 'include')"
-                >{{ t(included(selectedZone.ref) ? 'remove' : 'add') }}</VBtn
-              >
-              <VBtn
-                v-if="!directory"
-                variant="text"
-                :disabled="!excluded(selectedZone.ref) && !canAdd(selectedZone.ref)"
-                @click="toggleZone(selectedZone.ref, 'exclude')"
-                >{{ t(excluded(selectedZone.ref) ? 'undoExclude' : 'exclude') }}</VBtn
-              >
-            </div>
-          </ZoneDetail>
+          />
         </div>
       </template>
       <details v-if="selectionCount" class="selected-zones" open>
@@ -315,6 +306,7 @@ import type {
   RentalZoneServiceCategory,
   RentalClaimCategory,
 } from '~/utils/rentalZoneTypes'
+import { useDisplay } from 'vuetify'
 import { rentalZoneMessages } from '~/utils/rentalZoneMessages'
 import ZoneMap from './Map.client.vue'
 import ZoneDetail from './Detail.vue'
@@ -357,7 +349,11 @@ const view = ref<'list' | 'map'>('list')
 const serviceCategory = ref<RentalZoneServiceCategory>('supermarket')
 const search = ref('')
 const selectedId = ref<string | null>(null)
-const detail = ref<InstanceType<typeof ZoneDetail>>()
+const root = ref<HTMLElement>()
+// Below `md` the panel stacks instead of sitting beside the list, so in the list view it opens
+// under the tapped row. On the map it still follows the map.
+const { mdAndUp } = useDisplay()
+const inlineDetail = computed(() => view.value === 'list' && !mdAndUp.value)
 const visibleCount = ref(50)
 const query = computed(() => ({
   department: department.value,
@@ -525,24 +521,45 @@ watch(data, result => {
   )
     view.value = 'list'
 })
+const detailProps = (zone: RentalZone) => ({
+  zone,
+  layer: layer.value,
+  priceStatistic: priceStatistic.value,
+  rentalDate: data.value?.rentalDataAsOf ?? null,
+  priceSources: data.value?.sources ?? [],
+  meta: data.value?.utilities,
+  choice: {
+    included: included(zone.ref),
+    excluded: excluded(zone.ref),
+    canAdd: canAdd(zone.ref),
+    canExclude: !props.directory,
+  },
+})
 async function selectDetail(id: string) {
   if (!data.value?.zones.some(zone => zone.id === id)) return
   selectedId.value = id
   await nextTick()
-  detail.value?.focus()
-  if (window.innerWidth < 960)
-    document
-      .querySelector('[data-testid="rental-zone-detail"]')
-      ?.scrollIntoView({ block: 'nearest', behavior: 'instant' })
+  const panel = root.value?.querySelector<HTMLElement>('[data-testid="rental-zone-detail"]')
+  panel?.focus({ preventScroll: true })
+  // Inline, bring the row and its panel into view together so the tapped name stays on screen.
+  if (!mdAndUp.value)
+    (inlineDetail.value ? panel?.closest('li') : panel)?.scrollIntoView({
+      block: 'nearest',
+      behavior: 'instant',
+    })
 }
 async function closeDetail() {
   const previous = selectedId.value
+  const wasInline = inlineDetail.value
   selectedId.value = null
   if (!previous) return
   await nextTick()
-  const origin = document.querySelector(`[data-zone-id="${CSS.escape(previous)}"]`)
-  if (origin instanceof HTMLElement || origin instanceof SVGElement)
+  const origin = root.value?.querySelector(`[data-zone-id="${CSS.escape(previous)}"]`)
+  if (origin instanceof HTMLElement || origin instanceof SVGElement) {
     origin.focus({ preventScroll: true })
+    // A long panel collapses from under the reader: put its row back in view.
+    if (wasInline) origin.scrollIntoView({ block: 'nearest', behavior: 'instant' })
+  }
 }
 const number = (value: number) =>
   new Intl.NumberFormat(locale.value, { maximumFractionDigits: 0 }).format(value)
@@ -695,16 +712,45 @@ onBeforeUnmount(() => boundaryRequest?.abort())
 
 <style scoped>
 .zone-explorer {
+  --zone-gutter: 20px;
+  /* Where the sticky toolbar pins: the dialog's own scroller, or under the app bar on the page. */
+  --zone-pin: 0px;
+  --zone-bar: 0px;
+  --zone-offset: calc(var(--zone-pin) + var(--zone-bar) + 8px);
   display: flex;
   flex-direction: column;
   min-height: 0;
   height: 100%;
 }
+.zone-explorer.is-standalone {
+  --zone-pin: var(--v-layout-top, 0px);
+}
+/* No top padding: a sticky child pins to the scroller's content edge, so a padded top left a
+   strip above the toolbar where the list showed through. The search field carries the offset. */
 .explorer-scroll {
   min-height: 0;
   overflow-y: auto;
-  padding: 20px;
+  padding: 0 var(--zone-gutter) var(--zone-gutter);
+  scroll-padding-top: var(--zone-offset);
   overscroll-behavior: contain;
+}
+.zone-search {
+  margin-top: var(--zone-gutter);
+}
+/* On its own page the explorer scrolls with the document (the container already pads it). */
+.is-standalone .explorer-scroll {
+  overflow: visible;
+  padding: 0;
+}
+.is-standalone .zone-search {
+  margin-top: 0;
+}
+.is-standalone :is(.zone-list > li, .zone-options) {
+  scroll-margin-top: var(--zone-offset);
+}
+/* On the page the toolbar sits on the canvas, inside the container's own padding. */
+.is-standalone .zone-toolbar {
+  background: rgb(var(--v-theme-background));
 }
 :where(.zone-explorer) :where(p, ul) {
   margin: 0;
@@ -909,15 +955,6 @@ details[open] > summary::before {
   flex: 1;
   min-width: 0;
 }
-.detail-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-}
-.detail-actions .v-btn {
-  min-height: 44px;
-}
 .explorer-footer {
   flex: 0 0 auto;
   display: grid;
@@ -937,14 +974,43 @@ details[open] > summary::before {
   font-size: 16px;
 }
 @media (max-width: 959px) {
+  .zone-explorer {
+    --zone-gutter: 16px;
+    --zone-bar: 48px;
+  }
   .zone-layout.has-detail {
     grid-template-columns: minmax(0, 1fr);
   }
-  .explorer-scroll {
-    padding: 16px;
+  /* Full-bleed with a hairline so rows visibly slide under it instead of being cut off. */
+  .zone-toolbar {
+    position: sticky;
+    top: var(--zone-pin);
+    z-index: 5;
+    margin-inline: calc(-1 * var(--zone-gutter));
+    padding: 4px var(--zone-gutter);
+    border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+  .is-standalone .zone-toolbar {
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+  /* One scroller: a list with its own 420px scroll box inside the dialog's trapped the thumb
+     at its end (overscroll-behavior: contain) and cut the last row in half. */
+  .zone-list {
+    max-height: none;
+    overflow: visible;
+  }
+  .zone-list > li {
+    flex-wrap: wrap;
+  }
+  .zone-list > li > .zone-detail {
+    flex: 1 0 100%;
+    margin: 0 8px 12px;
   }
 }
-@media (max-width: 599px) {
+/* Phones, and phones on their side: the toolbar becomes a full-bleed tab bar and the
+   comparison criteria fold behind it. */
+@media (max-width: 599px), (max-width: 959px) and (max-height: 559px) {
   .zone-controls {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -958,21 +1024,32 @@ details[open] > summary::before {
     padding-block: 8px;
   }
   .zone-toolbar {
-    position: sticky;
-    top: 0;
-    z-index: 5;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
     gap: 0;
-    margin-block: 4px;
-    border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    margin-block: 8px 0;
+    padding: 0;
   }
   .zone-toolbar .v-btn {
     min-width: 0;
+    height: var(--zone-bar);
+    min-height: var(--zone-bar);
     padding-inline: 8px;
-    min-height: 44px;
+    border-radius: 0;
     letter-spacing: normal;
     font-size: 0.75rem;
+    color: rgba(var(--v-theme-on-surface), 0.76);
+  }
+  /* The current view reads as a tab: link ink and an underline, not a grey block. */
+  .zone-toolbar .v-btn[aria-pressed='true'] {
+    color: rgb(var(--v-theme-link));
+    box-shadow: inset 0 -2px 0 rgb(var(--v-theme-primary));
+  }
+  .zone-toolbar .v-btn[aria-pressed='true'] :deep(.v-btn__underlay) {
+    opacity: 0;
+  }
+  .zone-toolbar .zone-filter-toggle[aria-expanded='true'] {
+    color: rgb(var(--v-theme-link));
   }
   .zone-filter-toggle,
   .close-filters {
@@ -983,7 +1060,15 @@ details[open] > summary::before {
     margin-top: 8px;
   }
   .view-buttons {
+    position: relative;
     gap: 0;
+  }
+  .view-buttons::before {
+    content: '';
+    position: absolute;
+    inset-block: 12px;
+    inset-inline-start: 0;
+    border-inline-start: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   }
   .criteria-summary {
     display: flex;
@@ -1005,8 +1090,10 @@ details[open] > summary::before {
   .explorer-footer {
     padding-inline: 12px;
   }
+  /* Wide enough for "12 avisos comparables" on one line from 390px, so a row is two lines
+     tall instead of four. */
   .row-value {
-    max-width: 112px;
+    max-width: min(9.5rem, 38vw);
   }
 }
 </style>

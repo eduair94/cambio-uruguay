@@ -1,6 +1,5 @@
 <template>
   <section
-    ref="section"
     class="zone-detail"
     tabindex="-1"
     :aria-label="zone.ref.neighborhood"
@@ -167,7 +166,22 @@
       <p v-if="!zone.crime || zone.crime.total === null" class="hint">{{ t('notZero') }}</p>
     </template>
     <p v-if="dataAsOf" class="meta">{{ t('dataDate', { date: date(dataAsOf) }) }}</p>
-    <slot />
+    <div v-if="choice" class="detail-actions">
+      <VBtn
+        :variant="choice.included ? 'tonal' : 'flat'"
+        color="primary"
+        :disabled="!choice.included && !choice.canAdd"
+        @click="emit('toggle', 'include')"
+        >{{ t(choice.included ? 'remove' : 'add') }}</VBtn
+      >
+      <VBtn
+        v-if="choice.canExclude"
+        variant="text"
+        :disabled="!choice.excluded && !choice.canAdd"
+        @click="emit('toggle', 'exclude')"
+        >{{ t(choice.excluded ? 'undoExclude' : 'exclude') }}</VBtn
+      >
+    </div>
     <NuxtLink
       :to="rentalsLink"
       :aria-label="t('rentalsInZone')"
@@ -280,11 +294,12 @@ const props = defineProps<{
   rentalDate: string | null
   priceSources: RentalZoneSource[]
   meta?: RentalZoneUtilitiesMeta | null
+  /** The zone's state in the draft selection; omitted, the panel only informs. */
+  choice?: { included: boolean; excluded: boolean; canAdd: boolean; canExclude: boolean }
 }>()
-const emit = defineEmits<{ close: [] }>()
+const emit = defineEmits<{ close: []; toggle: [kind: 'include' | 'exclude'] }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalZoneMessages })
 const localePath = useLocalePath()
-const section = ref<HTMLElement>()
 const serviceCategories: RentalZoneServiceCategory[] = [
   'supermarket',
   'grocery',
@@ -389,7 +404,6 @@ const rentalsLink = computed(() => ({
     type: 'vivienda',
   },
 }))
-defineExpose({ focus: () => section.value?.focus({ preventScroll: true }) })
 </script>
 
 <style scoped>
@@ -504,6 +518,15 @@ details {
 }
 .evidence li + li {
   margin-top: 8px;
+}
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.detail-actions .v-btn {
+  min-height: 44px;
 }
 .rental-link {
   display: inline-flex;
