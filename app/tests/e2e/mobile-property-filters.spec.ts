@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
+import { usePublicCatalogue } from './support/publicCatalogue'
 
 test.use({ extraHTTPHeaders: { 'Accept-Language': 'es-UY,es;q=0.9' } })
 
@@ -80,6 +81,7 @@ for (const width of [320, 390]) {
       await page.setViewportSize({ width, height: 844 })
       const errors: string[] = []
       page.on('pageerror', error => errors.push(error.message))
+      await usePublicCatalogue(page)
       await page.goto(directory.path, { waitUntil: 'domcontentloaded' })
       await clearConsentByChoice(page)
       // Real client navigation also supports review previews whose SSR database

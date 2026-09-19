@@ -852,6 +852,9 @@ test.describe('rental directory', () => {
     await expect(multiple.locator('.rental-card__expenses')).toContainText('$ 22.000')
     await expect(multiple.locator('.rental-card__expenses')).toContainText('$ 1.000')
 
+    // "Admite mascotas" lives in the collapsed "Características" group since the filters were
+    // grouped; a person opens it first, and so does the test (again after Back, if it closed).
+    await openAdvanced(page)
     await page.getByRole('checkbox', { name: 'Admite mascotas', exact: true }).check()
     await submitFilters(page)
     await expect(page).toHaveURL(/pets=1/)
@@ -859,6 +862,7 @@ test.describe('rental directory', () => {
     await page.goBack()
     await expect(page).toHaveURL(/monthlyMax=25000$/)
     await expect(page.locator('.rental-card')).toHaveCount(16)
+    await openAdvanced(page)
     await expect(
       page.getByRole('checkbox', { name: 'Admite mascotas', exact: true })
     ).not.toBeChecked()
@@ -1434,7 +1438,8 @@ test.describe('rental directory', () => {
         const url = new URL(response.url())
         return url.pathname === '/api/rentals' && url.searchParams.get('page') === String(nextPage)
       })
-      await page.locator('.v-pagination__next button').click()
+      // Crawlable pagination since 9ce78f9b: prev/next/pages render as links with a real href.
+      await page.locator('.v-pagination__next').getByRole('link').click()
       await nextResponse
       await expect(page).toHaveURL(new RegExp(`page=${nextPage}`))
       await expect(page.getByText(`Página ${nextPage} de 100`, { exact: true })).toBeVisible()

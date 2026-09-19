@@ -209,7 +209,7 @@ for (const width of [320, 390]) {
     await expect(page.getByTestId('rental-alert-trigger')).toHaveCount(0)
     expect(state.comparisonReads).toHaveLength(0)
     const share = page.getByRole('button', { name: 'Compartir búsqueda', exact: true })
-    const introLink = page.locator('.opportunities__intro-links a')
+    const introLink = page.getByTestId('opportunity-explore-directory')
     const shareBox = await share.boundingBox(),
       linkBox = await introLink.boundingBox()
     expect(shareBox!.height).toBeGreaterThanOrEqual(44)

@@ -352,6 +352,14 @@ async function select(page: Page, parent: Locator, label: string, option: string
     .click()
   await page.getByRole('option', { name: option }).click()
 }
+// The availability filter lives in the collapsed "Portal y disponibilidad" group. Open it only if it
+// is closed: the drawer can keep a group's state between openings, and a blind click would close it.
+async function openFilterGroup(drawer: Locator, toggle: string) {
+  const group = drawer.getByTestId(toggle).locator('xpath=..')
+  if (!(await group.evaluate(element => (element as HTMLDetailsElement).open)))
+    await drawer.getByTestId(toggle).click()
+  await expect(group).toHaveAttribute('open', '')
+}
 async function closeReport(page: Page) {
   await reportDialog(page).getByRole('button', { name: 'Cerrar', exact: true }).last().click()
   await expect(reportDialog(page)).toBeHidden()
@@ -360,8 +368,11 @@ async function mobileFit(page: Page, dialog: Locator) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   for (const button of await dialog.locator('footer button').all()) {
     await expect(button).toBeInViewport()
-    const box = await button.boundingBox()
-    expect(box!.height).toBeGreaterThanOrEqual(44)
+    // VDialog opens with a scale transition: measured mid-animation a 44 px button reads 43.1
+    // (44 x 0.98). Re-measure until it settles; a button that is really short never gets there.
+    await expect(async () => {
+      expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    }).toPass({ timeout: 5_000 })
   }
 }
 
@@ -473,14 +484,14 @@ test('320px: availability filter remains draft until applied and appears in aler
   const trigger = page.getByTestId('rental-mobile-filters-trigger')
   await trigger.click()
   const drawer = page.getByTestId('rental-mobile-filters-dialog')
-  await drawer.getByTestId('rental-advanced-toggle').click()
+  await openFilterGroup(drawer, 'rental-source-toggle')
   await select(page, drawer, 'Reportes de disponibilidad', 'Ocultar anuncios con algún reporte')
   expect(new URL(page.url()).searchParams.has('availability')).toBe(false)
   await page.keyboard.press('Escape')
   await expect(drawer).toBeHidden()
   await expect(page.locator('.rental-card')).toHaveCount(1)
   await trigger.click()
-  await drawer.getByTestId('rental-advanced-toggle').click()
+  await openFilterGroup(drawer, 'rental-source-toggle')
   await expect(
     drawer
       .locator('.v-select')
@@ -617,6 +628,8 @@ test('320px: rental opportunities expose reports and filter; sale does not', asy
   await closeReport(page)
   await page.getByTestId('opportunity-filter-trigger').click()
   const drawer = page.getByRole('dialog', { name: 'Filtros', exact: true })
+  // On mobile the filter sits in the collapsed "Más filtros" group, whose summary names it.
+  await openFilterGroup(drawer, 'opportunity-advanced-toggle')
   await expect(drawer.getByLabel('Reportes de disponibilidad', { exact: true })).toBeVisible()
   await page.keyboard.press('Escape')
   await navigate(page, '/oportunidades-inmobiliarias-uruguay?operation=sale')
@@ -669,7 +682,7 @@ test('local preview: fresh small screens show real seeded reports without writes
     await expect(trigger).toBeInViewport()
     await trigger.click()
     const drawer = page.getByTestId('rental-mobile-filters-dialog')
-    await drawer.getByTestId('rental-advanced-toggle').click()
+    await openFilterGroup(drawer, 'rental-source-toggle')
     const filter = drawer
       .locator('.v-select')
       .filter({ has: page.getByLabel('Reportes de disponibilidad', { exact: true }) })

@@ -178,11 +178,18 @@ async function setup(page: Page, theme = 'dark') {
   if ((page.viewportSize()?.width ?? 1440) < 960)
     await page.getByTestId('sale-filter-trigger').click()
   await page.getByTestId('sale-filter-apply').click()
-  if (!(await page.locator('[data-sale-key]').count())) {
-    const retry = page.getByRole('button', { name: 'Reintentar', exact: true })
-    if (await retry.count()) await retry.first().click()
-  }
-  await expect(page.locator('[data-sale-key]')).toHaveCount(8)
+  // Where the preview has no database the SSR read lands on the error state, and the apply above
+  // refetches on the client. Retry only while no row has arrived: checked once, right after apply,
+  // the retry button was caught mid-render, detached when the fixture rows landed, and the click
+  // waited out the whole action timeout on a page that already showed "8 avisos".
+  const rows = page.locator('[data-sale-key]')
+  await expect(async () => {
+    if (!(await rows.count())) {
+      const retry = page.getByRole('button', { name: 'Reintentar', exact: true })
+      if (await retry.count()) await retry.first().click({ timeout: 2_000 })
+    }
+    await expect(rows).toHaveCount(8, { timeout: 3_000 })
+  }).toPass({ timeout: 30_000 })
 }
 for (const width of [320, 390])
   test(`mobile ${width}: persistent drawer, cancel, range validation and apply`, async ({

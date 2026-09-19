@@ -22,11 +22,15 @@ test.describe('property navigation before hydration', () => {
     await expect(related.getByRole('button')).toBeVisible()
     await expect(related.getByRole('button')).toHaveAttribute('aria-expanded', 'false')
     await expect(page.locator('#rental-related-links')).toBeHidden()
-    await expect(page.locator('#rental-related-links a')).toHaveCount(6)
+    // Seven since the moving-services directory joined the list (2026-09-14), and first.
+    await expect(page.locator('#rental-related-links a')).toHaveCount(7)
     await expect(page.locator('#rental-related-links a').first()).toHaveAttribute(
       'href',
-      '/analisis-alquileres-uruguay'
+      '/fletes-mudanzas-uruguay'
     )
+    await expect(
+      page.locator('#rental-related-links a[href="/analisis-alquileres-uruguay"]')
+    ).toHaveCount(1)
     expect((await related.getByRole('button').boundingBox())!.height).toBeGreaterThanOrEqual(44)
     await page.setViewportSize({ width: 1366, height: 900 })
     await expect(related.getByRole('button')).toBeHidden()
@@ -889,7 +893,7 @@ for (const viewport of [
     await expect(related.getByRole('button')).toHaveAttribute('aria-expanded', 'false')
     await reachable(related.getByRole('button'))
     await related.getByRole('button').click()
-    await expect(related.getByRole('link')).toHaveCount(6)
+    await expect(related.getByRole('link')).toHaveCount(7)
     await expect(related.getByRole('link', { name: 'Analizar precios' })).toHaveAttribute(
       'href',
       '/analisis-alquileres-uruguay'

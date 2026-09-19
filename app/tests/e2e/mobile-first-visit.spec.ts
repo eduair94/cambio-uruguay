@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { usePublicCatalogue } from './support/publicCatalogue'
 
 test.use({
   extraHTTPHeaders: { 'Accept-Language': 'es-UY,es;q=0.9' },
@@ -15,6 +16,7 @@ for (const width of [320, 390]) {
     page.on('request', request => {
       if (/tawk\.(?:to|link)/i.test(request.url())) chatRequests.push(request.url())
     })
+    await usePublicCatalogue(page)
     await page.goto('/alquileres-uruguay', { waitUntil: 'domcontentloaded' })
     const consent = page.getByTestId('cookie-consent-inline')
     await expect(consent).toBeVisible()

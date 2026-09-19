@@ -146,6 +146,12 @@ async function gotoDirectory(page: Page) {
 }
 
 const grid = (page: Page) => page.getByTestId('rental-results-grid')
+// The view switch, not any "Lista" button: the map view carries its own "Lista" to go back, and
+// with both on screen a page-wide role query is ambiguous.
+const viewButton = (page: Page, name: 'Mosaico' | 'Lista' | 'Mapa') =>
+  page
+    .getByLabel('Cómo ver los resultados', { exact: true })
+    .getByRole('button', { name, exact: true })
 const columns = async (page: Page, selector: string) =>
   (
     await page
@@ -199,9 +205,14 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   // Zona, precio, titulo y ficha arrancan en el mismo borde, como en Mercado
   // Libre. Centrado se reporto dos veces y ninguna prueba lo habria visto.
   expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
+  // "Informar posible alquiler" arranca en la misma columna que el anunciante:
+  // el boton conserva su padding y la bandera cuelga en el margen. Se mide en el
+  // mosaico, donde el pie va apilado; en filas es un solo renglon a proposito y
+  // el anunciante y el boton quedan uno al lado del otro.
+  expect(await labelOffsets(page)).toEqual({ anunciante: 19, informe: 19 })
 
   // Filas: una sola columna de tarjetas y tres zonas dentro de cada una.
-  await page.getByRole('button', { name: 'Lista', exact: true }).click()
+  await viewButton(page, 'Lista').click()
   await expect(grid(page)).toHaveClass(/rentals-grid--lista/)
   expect(await columns(page, '.rentals-grid')).toBe(1)
   expect(await columns(page, '.rental-card')).toBe(3)
@@ -209,17 +220,13 @@ test('el mosaico es lo que se sirve y la elección de vista sobrevive a la recar
   expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
   expect(await stored(page)).toBe('lista')
 
-  // "Informar posible alquiler" arranca en la misma columna que el anunciante:
-  // el boton conserva su padding y la bandera cuelga en el margen.
-  expect(await labelOffsets(page)).toEqual({ anunciante: 19, informe: 19 })
-
   // Recarga completa: el servidor sigue mandando mosaico y el cliente aplica lo guardado.
   await page.reload({ waitUntil: 'domcontentloaded' })
   await expect(grid(page)).toHaveClass(/rentals-grid--lista/)
   expect(await stored(page)).toBe('lista')
 
   // Volver al mosaico también se recuerda.
-  await page.getByRole('button', { name: 'Mosaico', exact: true }).click()
+  await viewButton(page, 'Mosaico').click()
   await expect(grid(page)).toHaveClass(/rentals-grid--mosaico/)
   expect(await columns(page, '.rentals-grid')).toBeGreaterThan(1)
   expect(await stored(page)).toBe('mosaico')
@@ -285,7 +292,7 @@ test('un contenedor de auto ads no puede centrar la ficha', async ({ page }) => 
     )
   ).toEqual(['start', 'start', 'start'])
 
-  await page.getByRole('button', { name: 'Lista', exact: true }).click()
+  await viewButton(page, 'Lista').click()
   await expect(grid(page)).toHaveClass(/rentals-grid--lista/)
   expect(await alignments(page)).toEqual(['start', 'start', 'start', 'start'])
 })
@@ -294,15 +301,15 @@ test('la vista elegida no viaja en la URL y sobrevive a ir y volver del mapa', a
   await page.setViewportSize({ width: 1600, height: 950 })
   await setup(page)
 
-  await page.getByRole('button', { name: 'Lista', exact: true }).click()
+  await viewButton(page, 'Lista').click()
   await expect(grid(page)).toHaveClass(/rentals-grid--lista/)
   expect(new URL(page.url()).search).toBe('')
 
-  await page.getByRole('button', { name: 'Mapa', exact: true }).click()
+  await viewButton(page, 'Mapa').click()
   await expect(page).toHaveURL(/view=mapa/)
   await expect(grid(page)).toHaveCount(0)
 
-  await page.getByRole('button', { name: 'Lista', exact: true }).click()
+  await viewButton(page, 'Lista').click()
   await expect(grid(page)).toHaveClass(/rentals-grid--lista/)
   expect(new URL(page.url()).search).toBe('')
 })
@@ -310,7 +317,7 @@ test('la vista elegida no viaja en la URL y sobrevive a ir y volver del mapa', a
 test('entre 960 y 1280 la fila deja los portales y el enlace al pie', async ({ page }) => {
   await page.setViewportSize({ width: 1100, height: 950 })
   await setup(page)
-  await page.getByRole('button', { name: 'Lista', exact: true }).click()
+  await viewButton(page, 'Lista').click()
   await expect(grid(page)).toHaveClass(/rentals-grid--lista/)
 
   // Dos zonas: la foto a la izquierda, y el riel bajo la ficha, no como tercera columna.
