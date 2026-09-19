@@ -8,6 +8,8 @@ import {
   rentalServiceZoneIds,
   rentalServiceZoneFold,
   rentalZoneUtilitiesMeta,
+  buildRentalZoneScores,
+  rentalZoneScoreId,
 } from '../../utils/rentalZoneServices'
 import { buildRentalZoneResponse, projectRentalZoneSnapshots } from '../../utils/rentalZones'
 
@@ -212,9 +214,10 @@ describe('attachRentalZoneUtilities', () => {
 describe('service filter', () => {
   it('parses only the offered attributes', () => {
     expect(parseRentalServiceAttributes('luz,agua,calles,nada')).toEqual(['luz', 'agua'])
-    expect(parseRentalServiceAttributes(['limpieza', 'alumbrado'])).toEqual([
-      'alumbrado',
+    expect(parseRentalServiceAttributes(['limpieza', 'alumbrado', 'denuncias'])).toEqual([
+      'denuncias',
       'limpieza',
+      'alumbrado',
     ])
     expect(parseRentalServiceAttributes(undefined)).toEqual([])
   })
@@ -303,5 +306,61 @@ describe('projectRentalZoneImpact', () => {
     expect(impact.attributes.map(item => item.attribute)).toEqual(['limpieza'])
     expect(impact.joint?.coefficients).toHaveLength(1)
     expect(projectRentalZoneImpact({ version: 1 }, now)).toBeNull()
+  })
+})
+
+describe('zone scores for listing cards', () => {
+  const values = (f: (i: number) => number) =>
+    Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`mvd:${i + 1}`, f(i)]))
+  const names = Object.fromEntries(
+    Array.from({ length: 12 }, (_, i) => [`mvd:${i + 1}`, `Barrio ${i + 1}`])
+  )
+  const withRanks = projectRentalZoneServices(
+    {
+      ...raw,
+      names: { ...names, 'ute:3210': 'Punta Del Este' },
+      crimePeriodTo: '2026-06-30',
+      levels: {
+        ...raw.levels,
+        values: { denuncias: values(i => i * 10), limpieza: values(i => 100 - i) },
+      },
+      amenities: { dataAsOf: '2026-10-10', perKm2: values(i => i) },
+    },
+    { 'montevideo|barrio del alias': { zone: 'mvd:3', share: 0.9, n: 20 } }
+  )!
+
+  it('places each zone among the others, fuller always meaning better', () => {
+    const scores = buildRentalZoneScores(withRanks, now)!
+    const first = scores.zones['mvd:1']!.rows
+    expect(first.map(row => row.attribute)).toEqual(['denuncias', 'limpieza', 'servicios'])
+    expect(first.find(row => row.attribute === 'denuncias')).toMatchObject({
+      value: 0,
+      betterThan: 1,
+      zones: 12,
+    })
+    expect(first.find(row => row.attribute === 'limpieza')?.betterThan).toBe(0)
+    expect(first.find(row => row.attribute === 'servicios')?.betterThan).toBe(0)
+    expect(scores.zones['mvd:12']!.rows.find(r => r.attribute === 'servicios')?.betterThan).toBe(1)
+    expect(scores.periods.power?.status).toBe('ready')
+  })
+
+  it('drops crime once its period is too old', () => {
+    const scores = buildRentalZoneScores(withRanks, Date.parse('2027-09-01T00:00:00Z'))
+    expect(scores?.zones['mvd:1']?.rows.some(row => row.attribute === 'denuncias')).toBeFalsy()
+  })
+
+  it('resolves a listing by its own zone, an official name, a town or a measured alias', () => {
+    const scores = buildRentalZoneScores(withRanks, now)!
+    expect(rentalZoneScoreId(scores, { zone: 'mvd:5' })).toBe('mvd:5')
+    expect(rentalZoneScoreId(scores, { department: 'Montevideo', neighborhood: 'BARRIO 7' })).toBe(
+      'mvd:7'
+    )
+    expect(
+      rentalZoneScoreId(scores, { department: 'Montevideo', neighborhood: 'Barrio del alias' })
+    ).toBe('mvd:3')
+    expect(rentalZoneScoreId(scores, { department: 'Canelones', neighborhood: 'Barrio 7' })).toBe(
+      null
+    )
+    expect(rentalZoneScoreId(null, { zone: 'mvd:5' })).toBeNull()
   })
 })

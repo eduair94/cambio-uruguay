@@ -1,4 +1,6 @@
 import type {
+  RentalZoneScoreAttribute,
+  RentalZoneScores,
   RentalClaimCategory,
   RentalServiceAttribute,
   RentalServiceLevel,
@@ -23,14 +25,16 @@ export const RENTAL_SERVICE_ATTRIBUTES: readonly RentalServiceAttribute[] = [
   'saneamiento',
   'limpieza',
   'calles',
+  'denuncias',
 ]
 /** What the directory filters by. Potholes stay a map layer: a weak, noisy signal for a renter. */
 export const RENTAL_SERVICE_FILTERS: readonly RentalServiceAttribute[] = [
+  'denuncias',
   'luz',
   'agua',
-  'alumbrado',
   'saneamiento',
   'limpieza',
+  'alumbrado',
 ]
 export const RENTAL_CLAIM_CATEGORIES: readonly RentalClaimCategory[] = [
   'alumbrado',
@@ -120,6 +124,11 @@ export interface RentalZoneServiceSnapshot {
   } | null
   thresholds: RentalZoneUtilitiesMeta['thresholds']
   byZone: Partial<Record<RentalServiceAttribute, Record<string, RentalServiceLevel>>>
+  /** The ranked value per zone and attribute (complaints and crime per 1,000 UTE customers). */
+  values: Partial<Record<RentalServiceAttribute, Record<string, number>>>
+  crimePeriodTo: string | null
+  /** OSM service points per km² of each INE barrio, with the index date. */
+  amenities: { dataAsOf: string; perKm2: Record<string, number> } | null
 }
 
 function powerMetric(input: unknown): PowerMetricRaw | null {
@@ -250,6 +259,7 @@ export function projectRentalZoneServices(
   const levels = record(raw.levels)
   const thresholds: RentalZoneServiceSnapshot['thresholds'] = {}
   const byZone: RentalZoneServiceSnapshot['byZone'] = {}
+  const values: RentalZoneServiceSnapshot['values'] = {}
   for (const attribute of RENTAL_SERVICE_ATTRIBUTES) {
     const threshold = record(record(levels.thresholds)[attribute])
     const low = num(threshold.low, 1e9),
@@ -261,8 +271,26 @@ export function projectRentalZoneServices(
       LEVELS.includes(value as RentalServiceLevel) ? (value as RentalServiceLevel) : null
     )
     if (Object.keys(entries).length) byZone[attribute] = entries
+    const ranked = metrics(record(levels.values)[attribute], value => num(value, 1e9))
+    if (Object.keys(ranked).length) values[attribute] = ranked
   }
-  return { generatedAt, names, localities, aliases, power, water, claims, thresholds, byZone }
+  const amenityRaw = record(raw.amenities)
+  const amenityDate = day(amenityRaw.dataAsOf)
+  const perKm2 = metrics(amenityRaw.perKm2, value => num(value, 1e6))
+  return {
+    generatedAt,
+    names,
+    localities,
+    aliases,
+    power,
+    water,
+    claims,
+    thresholds,
+    byZone,
+    values,
+    crimePeriodTo: day(raw.crimePeriodTo),
+    amenities: amenityDate && Object.keys(perKm2).length ? { dataAsOf: amenityDate, perKm2 } : null,
+  }
 }
 
 const age = (value: string | null, now: number) => (value ? now - Date.parse(value) : NaN)
@@ -291,14 +319,22 @@ export function rentalServiceStatuses(
       : freshness(snapshot.power.observedTo, now, 2 * DAY, 7 * DAY)
   const water = freshness(snapshot?.water?.fetchedAt ?? null, now, 7 * DAY, 21 * DAY)
   const claims = freshness(snapshot?.claims?.periodTo ?? null, now, 75 * DAY, 120 * DAY)
-  return { power, water, claims }
+  // Same windows as the crime layer of the zone page: a period that ended ≤180 days ago is current.
+  const crime = freshness(snapshot?.crimePeriodTo ?? null, now, 180 * DAY, 365 * DAY)
+  return { power, water, claims, crime }
 }
 const usable = (status: RentalServiceStatus) => status === 'ready' || status === 'stale'
 const attributeStatus = (
   statuses: ReturnType<typeof rentalServiceStatuses>,
   attribute: RentalServiceAttribute
 ): RentalServiceStatus =>
-  attribute === 'luz' ? statuses.power : attribute === 'agua' ? statuses.water : statuses.claims
+  attribute === 'luz'
+    ? statuses.power
+    : attribute === 'agua'
+      ? statuses.water
+      : attribute === 'denuncias'
+        ? statuses.crime
+        : statuses.claims
 
 const source = (
   name: string,
@@ -549,7 +585,7 @@ export function projectRentalZoneImpact(input: unknown, now = Date.now()): Renta
   const attributes = raw.attributes.slice(0, 20).flatMap(value => {
     const item = record(value)
     const attribute = item.attribute as RentalZoneImpact['attributes'][number]['attribute']
-    if (![...RENTAL_SERVICE_ATTRIBUTES, 'denuncias'].includes(attribute)) return []
+    if (!RENTAL_SERVICE_ATTRIBUTES.includes(attribute)) return []
     const fields = [
       'rho',
       'rhoLow',
@@ -602,7 +638,7 @@ export function projectRentalZoneImpact(input: unknown, now = Date.now()): Renta
             const item = record(value)
             const attribute = item.attribute as RentalZoneImpact['attributes'][number]['attribute']
             const values = [item.pctPerSd, item.low, item.high]
-            return [...RENTAL_SERVICE_ATTRIBUTES, 'denuncias'].includes(attribute) &&
+            return RENTAL_SERVICE_ATTRIBUTES.includes(attribute) &&
               values.every(v => typeof v === 'number' && Number.isFinite(v))
               ? [
                   {
@@ -625,4 +661,146 @@ export function projectRentalZoneImpact(input: unknown, now = Date.now()): Renta
     attributes,
     joint,
   }
+}
+
+/**
+ * Where each zone stands among the zones that have the same figure: the neighbourhood bars of the
+ * listing cards. Computed from the stored snapshot (a few hundred numbers), never from listings.
+ * `betterThan` is the share of the OTHER zones that fare worse, so a full bar always means better,
+ * whether the figure is a problem (fewer is better) or a service (more is better).
+ */
+export function buildRentalZoneScores(
+  snapshot: RentalZoneServiceSnapshot | null,
+  now = Date.now()
+): RentalZoneScores | null {
+  if (!snapshot) return null
+  const statuses = rentalServiceStatuses(snapshot, now)
+  const series: Array<{
+    attribute: RentalZoneScoreAttribute
+    values: Record<string, number>
+    higherIsBetter: boolean
+  }> = []
+  if (usable(statuses.power) && snapshot.power)
+    series.push({
+      attribute: 'luz',
+      values: Object.fromEntries(
+        Object.entries(snapshot.power.zones).map(([id, metric]) => [id, metric.unplannedMinutes])
+      ),
+      higherIsBetter: false,
+    })
+  if (usable(statuses.water) && snapshot.water)
+    series.push({
+      attribute: 'agua',
+      values: Object.fromEntries(
+        Object.entries(snapshot.water.zones).map(([id, metric]) => [id, metric.notices])
+      ),
+      higherIsBetter: false,
+    })
+  for (const attribute of ['alumbrado', 'saneamiento', 'limpieza'] as const)
+    if (usable(statuses.claims) && snapshot.values[attribute])
+      series.push({ attribute, values: snapshot.values[attribute]!, higherIsBetter: false })
+  if (usable(statuses.crime) && snapshot.values.denuncias)
+    series.push({
+      attribute: 'denuncias',
+      values: snapshot.values.denuncias,
+      higherIsBetter: false,
+    })
+  const servicesAge = snapshot.amenities ? now - Date.parse(snapshot.amenities.dataAsOf) : NaN
+  if (snapshot.amenities && Number.isFinite(servicesAge) && servicesAge <= 45 * DAY)
+    series.push({ attribute: 'servicios', values: snapshot.amenities.perKm2, higherIsBetter: true })
+  const zones: RentalZoneScores['zones'] = {}
+  const order: RentalZoneScoreAttribute[] = [
+    'denuncias',
+    'luz',
+    'agua',
+    'saneamiento',
+    'limpieza',
+    'alumbrado',
+    'servicios',
+  ]
+  for (const { attribute, values, higherIsBetter } of series.sort(
+    (a, b) => order.indexOf(a.attribute) - order.indexOf(b.attribute)
+  )) {
+    const entries = Object.entries(values).filter(([, value]) => Number.isFinite(value))
+    if (entries.length < 9) continue
+    for (const [id, value] of entries) {
+      const worse = entries.filter(([, other]) =>
+        higherIsBetter ? other < value : other > value
+      ).length
+      const name = snapshot.names[id]
+      if (!name) continue
+      const zone = (zones[id] ||= {
+        name,
+        department: snapshot.localities[id]?.department || 'Montevideo',
+        rows: [],
+      })
+      zone.rows.push({
+        attribute,
+        value,
+        betterThan: Math.round((worse / (entries.length - 1)) * 1000) / 1000,
+        zones: entries.length,
+      })
+    }
+  }
+  const ine: Record<string, string> = {}
+  for (const [id, name] of Object.entries(snapshot.names))
+    if (id.startsWith('mvd:')) ine[rentalServiceZoneFold(name)] = id
+  const localities: Record<string, string> = {}
+  for (const [id, locality] of Object.entries(snapshot.localities))
+    for (const name of [locality.name, ...locality.aliases])
+      localities[`${rentalServiceZoneFold(locality.department)}|${rentalServiceZoneFold(name)}`] =
+        id
+  return {
+    generatedAt: snapshot.generatedAt,
+    zones,
+    resolver: {
+      ine,
+      aliases: Object.fromEntries(
+        Object.entries(snapshot.aliases).map(([key, alias]) => [key, alias.zone])
+      ),
+      localities,
+    },
+    periods: {
+      power: snapshot.power
+        ? {
+            from: snapshot.power.observedFrom,
+            to: snapshot.power.observedTo,
+            status: statuses.power,
+          }
+        : null,
+      water: snapshot.water
+        ? { from: snapshot.water.periodFrom, to: snapshot.water.periodTo }
+        : null,
+      claims: snapshot.claims
+        ? { from: snapshot.claims.periodFrom, to: snapshot.claims.periodTo }
+        : null,
+      crimeTo: snapshot.crimePeriodTo,
+      servicesAsOf: snapshot.amenities?.dataAsOf ?? null,
+    },
+  }
+}
+
+/** The zone id of a listing: its own official zone, else its advertised barrio resolved by name. */
+export function rentalZoneScoreId(
+  scores: RentalZoneScores | null,
+  place: {
+    zone?: string | null
+    department?: string | null
+    neighborhood?: string | null
+    locality?: string | null
+  }
+): string | null {
+  if (!scores) return null
+  if (place.zone && scores.zones[place.zone]) return place.zone
+  const department = rentalServiceZoneFold(place.department || '')
+  for (const name of [place.neighborhood, place.locality]) {
+    if (!name) continue
+    const folded = rentalServiceZoneFold(name)
+    const id =
+      (department === 'montevideo' ? scores.resolver.ine[folded] : undefined) ||
+      scores.resolver.localities[`${department}|${folded}`] ||
+      scores.resolver.aliases[`${department}|${folded}`]
+    if (id && scores.zones[id]) return id
+  }
+  return null
 }

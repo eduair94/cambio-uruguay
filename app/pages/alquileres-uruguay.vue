@@ -546,6 +546,13 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                       >{{ t(guarantee) }}</VChip
                     >
                   </div>
+                  <RentalsZoneBars
+                    :place="{
+                      zone: property.officialZone?.zone,
+                      department: property.department,
+                      neighborhood: property.neighborhood,
+                    }"
+                  />
                   <div class="rental-card__footnote">
                     <p class="rental-card__meta">{{ sellerLabel(property) }}</p>
                     <RentalsAvailabilityReport
@@ -1072,7 +1079,7 @@ const filterChips = computed(() => {
   if (q.servicios?.length)
     add(
       'servicios',
-      `${t('neighborhoodServices')}: ${q.servicios.map(value => t(`service-${value}`)).join(', ')}`
+      t('serviceChips', { items: q.servicios.map(value => t(`serviceChip-${value}`)).join(', ') })
     )
   return chips
 })
@@ -2246,7 +2253,9 @@ button.rental-card__media {
 @media (min-width: 960px) {
   .rentals-workspace {
     display: grid;
-    grid-template-columns: 304px minmax(0, 1fr);
+    /* The rail grows with the screen: at 304px everywhere a 2400px screen left the filters with
+       two-line labels next to five columns of cards. */
+    grid-template-columns: clamp(304px, 20vw, 400px) minmax(0, 1fr);
     grid-template-areas:
       'filters heading'
       'filters results';
@@ -2268,9 +2277,9 @@ button.rental-card__media {
   }
 }
 /* Más columnas a medida que hay ancho, con saltos medidos y no auto-fill: la
-   grilla vive al lado de un sidebar de 304px, así que el ancho de columna no
-   se deduce del viewport. Cada salto entra cuando la tarjeta queda >= 320px
-   (a 2560 son 5 de 349px; a 1920, 4 de 362px; a 1440, 3 de 325px). */
+   grilla vive al lado de un sidebar de 304 a 400px (20vw), así que el ancho de
+   columna no se deduce del viewport. Cada salto entra cuando la tarjeta queda
+   >= 320px (a 2560 son 5 de ~344px; a 1920, 4 de ~364px; a 1440, 3 de ~352px). */
 @media (min-width: 1400px) {
   .rentals-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));

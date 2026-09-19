@@ -93,6 +93,29 @@ mediana del alquiler por m². Por atributo con ≥ 20 zonas: ρ de Spearman con 
 −8,9 %; saneamiento ρ −0,36 (IC cruza 0); alumbrado y calles sin diferencia. Son asociaciones: todo se
 mueve con el nivel del barrio.
 
+## Denuncias, comercios y tarjetas (2026-09-19, segunda iteración)
+
+A pedido del usuario las tarjetas de `/alquileres-uruguay` y `/oportunidades-inmobiliarias-uruguay`
+muestran **"Frente a los demás barrios"** (`components/rentals/ZoneBars.vue`): una fila por dato con
+una barra donde **llena siempre es mejor** (menos denuncias, cortes o reclamos; más comercios) y el
+texto "mejor que X %": la parte de las demás zonas con dato que está peor. El valor exacto, su unidad
+y su período van en el `title` y en texto para lectores de pantalla. **No hay puntaje combinado**:
+cada fila conserva su fuente. Los datos vienen de `GET /api/rentals/zone-scores` (una vez por
+página, sólo en el navegador, calculado desde la foto guardada; nunca desde los avisos).
+
+- **Denuncias** = denuncias registradas del Ministerio del Interior (12 meses, con tentativas) cada
+  1.000 clientes de UTE del mismo barrio INE. Es un denominador de suministros, no de habitantes, y
+  la página lo dice; mide hechos registrados, no riesgo personal. Entra también al filtro
+  «Datos del barrio» (tercio con menos), decisión del usuario del 2026-09-19.
+- **Comercios** = puntos de servicios cotidianos de OpenStreetMap (supermercados, almacenes,
+  farmacias, salud, paradas, educación) por km² del polígono INE. Cobertura parcial de OSM.
+- Una vivienda se ubica por su `officialZone`; una oportunidad, por su barrio publicado (nombre
+  oficial exacto, localidad de UTE o alias medido). Sin vínculo, la tarjeta no muestra el bloque.
+
+El filtro enumera el límite exacto de cada opción ("Hasta 102 cada 1.000 clientes en 12 meses",
+"Hasta 2 en 24 meses") en vez de "pocos". El riel de filtros crece con la pantalla
+(`clamp(304px, 20vw, 400px)`).
+
 ## Vigencia
 
 Luz vence a los 2 días sin datos nuevos (7 con aviso), agua a los 7 (21), reclamos a los 75 días desde el

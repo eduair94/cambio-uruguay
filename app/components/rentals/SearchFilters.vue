@@ -294,25 +294,30 @@
             {{ t('neighborhoodServices') }}
             <span v-if="serviceSummary" class="rental-search__selected">{{ serviceSummary }}</span>
           </summary>
-          <div class="rental-search__checks" data-testid="rental-filter-services">
-            <VCheckbox
-              v-for="option in serviceOptions"
-              :key="option.attribute"
-              v-model="draft.servicios"
-              :value="option.attribute"
-              :label="t(`service-${option.attribute}`)"
-              :disabled="!option.available && !draft.servicios?.includes(option.attribute)"
-              hide-details
-              density="compact"
-              color="primary"
-            />
-          </div>
-          <p class="rental-search__hint">{{ t('servicesHint') }}</p>
+          <p class="rental-search__hint rental-search__hint--lead">{{ t('servicesHint') }}</p>
+          <ul class="rental-search__services" data-testid="rental-filter-services">
+            <li v-for="option in serviceOptions" :key="option.attribute">
+              <VCheckbox
+                v-model="draft.servicios"
+                :value="option.attribute"
+                :disabled="!option.available && !draft.servicios?.includes(option.attribute)"
+                hide-details
+                density="compact"
+                color="primary"
+              >
+                <template #label>
+                  <span class="rental-search__service">
+                    <span class="rental-search__service-name">{{
+                      t(`service-${option.attribute}`)
+                    }}</span>
+                    <span class="rental-search__service-limit">{{ serviceLimit(option) }}</span>
+                  </span>
+                </template>
+              </VCheckbox>
+            </li>
+          </ul>
           <p v-if="servicesMounted && serviceFilters.error.value" class="rental-search__hint">
             {{ t('servicesUnavailable') }}
-          </p>
-          <p v-else-if="powerCollecting" class="rental-search__hint">
-            {{ t('servicesCollecting', { date: powerCollecting }) }}
           </p>
           <NuxtLink :to="localePath('/barrios-alquileres-uruguay')" class="rental-search__link">{{
             t('servicesMap')
@@ -505,7 +510,12 @@ const servicesOpen = ref(!props.mobile && Boolean(props.query.servicios?.length)
 const localePath = useLocalePath()
 // Which neighbourhood-service filters exist right now; loaded on the client, never blocks the form.
 const serviceFilters = useFetch<{
-  options: Array<{ attribute: RentalServiceAttribute; available: boolean; status: string }>
+  options: Array<{
+    attribute: RentalServiceAttribute
+    available: boolean
+    status: string
+    low: number | null
+  }>
   meta: RentalZoneUtilitiesMeta | null
 }>('/api/rentals/service-filters', { key: 'rental-service-filters', server: false, lazy: true })
 // SSR renders every option disabled; the fetched state only applies after mount, or a response
@@ -521,8 +531,24 @@ const serviceOptions = computed(
       attribute,
       available: false,
       status: 'unavailable',
+      low: null,
     }))
 )
+const serviceNumber = (value: number) =>
+  new Intl.NumberFormat(locale.value, { maximumFractionDigits: value < 10 ? 1 : 0 }).format(value)
+/** The exact bound of "the third with the fewest", so the option says what it keeps. */
+function serviceLimit(option: {
+  attribute: RentalServiceAttribute
+  available: boolean
+  status: string
+  low?: number | null
+}) {
+  if (option.attribute === 'luz' && option.status === 'collecting' && powerCollecting.value)
+    return t('serviceMeasuring', { date: powerCollecting.value })
+  if (!option.available || option.low === null || option.low === undefined)
+    return t('serviceNoData')
+  return t(`serviceLimit-${option.attribute}`, { n: serviceNumber(option.low) })
+}
 const powerCollecting = computed(() => {
   const power = servicesMounted.value ? serviceFilters.data.value?.meta?.power : undefined
   return power?.status === 'collecting' && power.observedFrom
@@ -778,7 +804,11 @@ const sourceSummary = computed(() =>
   ])
 )
 const serviceSummary = computed(() =>
-  summary((draft.value.servicios ?? []).map(value => t(`service-${value}`)))
+  draft.value.servicios?.length
+    ? t('serviceChips', {
+        items: draft.value.servicios.map(value => t(`serviceChip-${value}`)).join(', '),
+      })
+    : ''
 )
 const nearbySummary = computed(() =>
   draft.value.sedes.length
@@ -888,6 +918,39 @@ function clearNeighborhoods() {
   color: rgba(var(--v-theme-on-surface), 0.78);
   font-size: 0.8rem;
   line-height: 1.5;
+}
+.rental-search__hint--lead {
+  margin: 0 0 8px;
+}
+.rental-search__services {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.rental-search__services :deep(.v-selection-control) {
+  align-items: flex-start;
+  min-height: 48px;
+}
+.rental-search__services :deep(.v-selection-control__wrapper) {
+  margin-top: 2px;
+}
+.rental-search__service {
+  display: grid;
+  gap: 1px;
+  padding-block: 8px;
+  line-height: 1.35;
+}
+.rental-search__service-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
+}
+.rental-search__service-limit {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: rgba(var(--v-theme-on-surface), 0.72);
 }
 .rental-search__checks {
   display: flex;

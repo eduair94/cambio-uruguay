@@ -107,6 +107,7 @@ export type RentalServiceAttribute =
   | 'saneamiento'
   | 'limpieza'
   | 'calles'
+  | 'denuncias'
 export type RentalServiceLevel = 'low' | 'mid' | 'high'
 export type RentalClaimCategory = 'alumbrado' | 'saneamiento' | 'limpieza' | 'calles'
 /** Status of a service layer; `collecting` = the power ledger has not observed enough days yet. */
@@ -173,7 +174,7 @@ export interface RentalZoneUtilitiesMeta {
   } | null
   thresholds: Partial<Record<RentalServiceAttribute, { low: number; high: number; zones: number }>>
 }
-export type RentalImpactAttribute = RentalServiceAttribute | 'denuncias'
+export type RentalImpactAttribute = RentalServiceAttribute
 export interface RentalZoneImpact {
   status: RentalZoneDataStatus
   generatedAt: string
@@ -204,4 +205,32 @@ export interface RentalZoneImpact {
       high: number
     }>
   } | null
+}
+
+/** One row of the neighbourhood bars on a listing card. */
+export type RentalZoneScoreAttribute = RentalServiceAttribute | 'servicios'
+export interface RentalZoneScoreRow {
+  attribute: RentalZoneScoreAttribute
+  value: number
+  /** Share of the other zones with data that fare worse (fewer services, or more problems). */
+  betterThan: number
+  /** Zones this one is compared with (itself included). */
+  zones: number
+}
+export interface RentalZoneScores {
+  generatedAt: string
+  zones: Record<string, { name: string; department: string; rows: RentalZoneScoreRow[] }>
+  /** Resolve an advertised barrio to a zone id when the listing carries none. */
+  resolver: {
+    ine: Record<string, string>
+    aliases: Record<string, string>
+    localities: Record<string, string>
+  }
+  periods: {
+    power: { from: string | null; to: string | null; status: RentalServiceStatus } | null
+    water: { from: string; to: string } | null
+    claims: { from: string; to: string } | null
+    crimeTo: string | null
+    servicesAsOf: string | null
+  }
 }

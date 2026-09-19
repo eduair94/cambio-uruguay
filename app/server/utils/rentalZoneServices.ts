@@ -1,5 +1,6 @@
 import type { RentalServiceAttribute, RentalZoneImpact } from '../../utils/rentalZoneTypes'
 import {
+  buildRentalZoneScores,
   attachRentalZoneUtilities,
   projectRentalZoneImpact,
   rentalServiceFilterOptions,
@@ -99,4 +100,10 @@ export async function loadRentalZoneServiceProfile(zone: unknown, department: un
           }
         : null,
   }
+}
+
+/** Every zone's position among the others, for the neighbourhood bars of the listing cards. */
+export async function loadRentalZoneScores() {
+  const snapshots = await loadRentalZoneSnapshots()
+  return buildRentalZoneScores(snapshots.context?.utilities ?? null)
 }

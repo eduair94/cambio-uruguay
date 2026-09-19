@@ -26,7 +26,7 @@ Las denuncias corresponden a doce meses completos, incluyen tentativas y cinco c
 
 ## Luz, agua y reclamos
 
-Capas propias de cortes de luz (libro de UTE que guardamos cada 10 minutos), cortes de agua programados de OSE y reclamos a la Intendencia de Montevideo, el barrio oficial de cada vivienda (`officialZone`), el filtro «Datos del barrio» del directorio y el análisis «¿Se paga en el alquiler?»: [PROPERTY_ZONE_SERVICES.md](PROPERTY_ZONE_SERVICES.md). A diferencia de los precios por barrio publicado, estas capas se vinculan también por alias medidos desde las coordenadas propias de los avisos, y lo dicen en cada zona.
+Las denuncias también se publican cada 1.000 clientes de UTE del mismo barrio (denominador de suministros, no de población) en las tarjetas y el filtro del directorio, por decisión del usuario del 2026-09-19; sigue sin haber puntaje de seguridad combinado. Capas propias de cortes de luz (libro de UTE que guardamos cada 10 minutos), cortes de agua programados de OSE y reclamos a la Intendencia de Montevideo, el barrio oficial de cada vivienda (`officialZone`), el filtro «Datos del barrio» del directorio y el análisis «¿Se paga en el alquiler?»: [PROPERTY_ZONE_SERVICES.md](PROPERTY_ZONE_SERVICES.md). A diferencia de los precios por barrio publicado, estas capas se vinculan también por alias medidos desde las coordenadas propias de los avisos, y lo dicen en cada zona.
 
 ## Actualización y publicación
 

@@ -106,6 +106,13 @@
         :summary="subject.availability"
         :title="subject.title"
       />
+      <RentalsZoneBars
+        :place="{
+          department: subject.department,
+          neighborhood: subject.neighborhood,
+          locality: subject.locality,
+        }"
+      />
       <div class="opportunity-card__actions">
         <VBtn v-if="propertyPath" :to="localePath(propertyPath)" variant="flat" color="primary">{{
           t(subject.operation === 'sale' ? 'saleDetail' : 'detail')

@@ -91,3 +91,13 @@ Los rangos se validan antes de normalizar. Un máximo cero no se descarta silenc
 se pide un importe positivo o dejar vacío. Gastos comunes cero conserva su significado expreso.
 Limpiar en los paneles móviles de alquiler, venta, oportunidades y presupuesto sólo modifica el
 borrador hasta aplicar. Cerrar y Escape conservan resultados, URL, foco y posición.
+
+## Datos del barrio — 2026-09-19
+
+Grupo de filtros con el límite exacto de cada opción (nombre + "Hasta N …" en dos líneas), nunca
+"pocos". El riel crece con la pantalla (304–400 px) para que esas dos líneas no se partan en tres.
+Cada tarjeta suma "Frente a los demás barrios": filas de etiqueta, barra fina de un solo tono y
+"mejor que X %", con columnas fijas para que todas las barras empiecen y terminen en la misma x.
+Barra llena = mejor en todas las filas; valor exacto y fuente en `title`/lector de pantalla; sin
+puntaje combinado. Sólo se pinta en el navegador, después de montar.
+
