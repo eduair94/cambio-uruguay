@@ -289,6 +289,9 @@
                vuelta a su directorio. Sale del registro (utils/directorios.ts → `analisis`), así
                que ninguna página lo pega a mano. "Seguí leyendo" no repite lo que muestra. -->
           <DirectorioAnalisis />
+          <!-- "Más sobre este tema": el tema de la página y las demás páginas y términos del mismo
+               tema, desde utils/guideHubs.ts. Recíproco por construcción. -->
+          <TemaVecinos />
           <RelatedPages />
           <!-- The end-of-article ask. Long reads only (`utils/capture.ts`), and it
                sits after the recirculation block: giving the reader somewhere to go

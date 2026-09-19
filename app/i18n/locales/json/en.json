@@ -1485,6 +1485,12 @@
     "lead": "Other pages on the site that answer what usually comes after this one.",
     "aria": "Related pages"
   },
+  "temaVecinos": {
+    "aria": "More on this topic",
+    "titulo": "More on: {tema}",
+    "terminos": "Terms:",
+    "verTema": "Everything on: {tema}"
+  },
   "directorioAnalisis": {
     "tituloDirectorio": "Analysis and statistics from this directory",
     "leadDirectorio": "What we measure with this same data.",

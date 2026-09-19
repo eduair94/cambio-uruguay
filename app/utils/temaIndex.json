@@ -1,0 +1,1423 @@
+{
+  "hubs": [
+    {
+      "slug": "dolar-y-casas-de-cambio-uruguay",
+      "title": "Dólar y casas de cambio en Uruguay",
+      "icon": "mdi-cash-multiple",
+      "resources": [
+        {
+          "to": "/comparar",
+          "label": "Comparador de cotizaciones"
+        },
+        {
+          "to": "/dolar-hoy",
+          "label": "Dólar hoy"
+        },
+        {
+          "to": "/casas-de-cambio",
+          "label": "Casas de cambio"
+        },
+        {
+          "to": "/casa-de-cambio-cerca-de-mi",
+          "label": "Casa de cambio cerca de mí"
+        },
+        {
+          "to": "/mapa",
+          "label": "Mapa de sucursales"
+        },
+        {
+          "to": "/herramientas/conversor-de-monedas",
+          "label": "Conversor de monedas"
+        },
+        {
+          "to": "/herramientas/calculadora-spread",
+          "label": "Calculadora de spread"
+        },
+        {
+          "to": "/historico",
+          "label": "Histórico del dólar"
+        },
+        {
+          "to": "/mejor-casa-de-cambio",
+          "label": "La mejor casa de cambio"
+        },
+        {
+          "to": "/analiticas",
+          "label": "Analíticas del dólar"
+        },
+        {
+          "to": "/cotizaciones-de-la-region",
+          "label": "Cotizaciones de la región"
+        },
+        {
+          "to": "/dolar-blue-hoy",
+          "label": "Dólar blue hoy"
+        },
+        {
+          "to": "/banco-o-casa-de-cambio-uruguay",
+          "label": "¿Banco o casa de cambio?"
+        },
+        {
+          "to": "/casas-de-cambio-abiertas-fin-de-semana",
+          "label": "Casas abiertas el fin de semana"
+        },
+        {
+          "to": "/donde-conseguir-monedas-uruguay",
+          "label": "Dónde conseguir monedas"
+        },
+        {
+          "to": "/llevar-dolares-o-reales-a-brasil",
+          "label": "¿Dólares o reales para Brasil?"
+        },
+        {
+          "to": "/ultimos-cambios",
+          "label": "Últimos cambios de cotización"
+        }
+      ],
+      "guides": [
+        "conviene-comprar-dolares-hoy",
+        "comprar-dolares-mejor-precio",
+        "billete-cable-transferencia",
+        "mejor-momento-cambiar-divisas",
+        "como-leer-cotizacion-dolar",
+        "casas-de-cambio-vs-bancos",
+        "evitar-comisiones-cambio"
+      ],
+      "terms": [
+        {
+          "slug": "cotizacion",
+          "term": "Cotización"
+        },
+        {
+          "slug": "tipo-de-cambio",
+          "term": "Tipo de cambio"
+        },
+        {
+          "slug": "spread-cambiario",
+          "term": "Spread cambiario"
+        },
+        {
+          "slug": "casa-de-cambio",
+          "term": "Casa de cambio"
+        },
+        {
+          "slug": "dolar-billete",
+          "term": "Dólar billete"
+        },
+        {
+          "slug": "dolar-transferencia",
+          "term": "Dólar transferencia"
+        },
+        {
+          "slug": "dolar-cable",
+          "term": "Dólar cable"
+        },
+        {
+          "slug": "dolar-interbancario",
+          "term": "Dólar interbancario"
+        },
+        {
+          "slug": "dolar-ebrou",
+          "term": "Dólar eBROU"
+        },
+        {
+          "slug": "divisa",
+          "term": "Divisa"
+        },
+        {
+          "slug": "arbitraje",
+          "term": "Arbitraje (cambiario)"
+        },
+        {
+          "slug": "mercado-cambiario",
+          "term": "Mercado cambiario"
+        },
+        {
+          "slug": "brecha-cambiaria",
+          "term": "Brecha cambiaria"
+        },
+        {
+          "slug": "dolar-blue",
+          "term": "Dólar blue"
+        },
+        {
+          "slug": "dolar-mep",
+          "term": "Dólar MEP"
+        },
+        {
+          "slug": "peso-argentino",
+          "term": "Peso argentino (ARS)"
+        },
+        {
+          "slug": "peso-uruguayo",
+          "term": "Peso uruguayo"
+        }
+      ]
+    },
+    {
+      "slug": "importaciones-y-aduana-uruguay",
+      "title": "Importar y aduana en Uruguay",
+      "icon": "mdi-package-variant-closed",
+      "resources": [
+        {
+          "to": "/declarar-compra-exterior-uruguay",
+          "label": "Cómo declarar una compra del exterior"
+        },
+        {
+          "to": "/couriers-uruguay",
+          "label": "Couriers de Uruguay"
+        },
+        {
+          "to": "/franquicia-aduana-uruguay",
+          "label": "Franquicia de aduana"
+        },
+        {
+          "to": "/recibir-regalos-del-exterior-uruguay",
+          "label": "Recibir regalos del exterior"
+        },
+        {
+          "to": "/franquicia-viajero-uruguay",
+          "label": "Franquicia del viajero"
+        },
+        {
+          "to": "/problemas-con-la-aduana-uruguay",
+          "label": "Problemas con la aduana"
+        },
+        {
+          "to": "/herramientas/calculadora-impuestos-importacion",
+          "label": "Calculadora de impuestos de importación"
+        },
+        {
+          "to": "/herramientas/carrito-importacion",
+          "label": "Carrito de importación"
+        },
+        {
+          "to": "/celulares-uruguay",
+          "label": "Precio de celulares"
+        },
+        {
+          "to": "/tiendas-online-uruguay",
+          "label": "Tiendas online"
+        },
+        {
+          "to": "/envio-directo-o-casillero-uruguay",
+          "label": "¿Envío directo o casillero?"
+        },
+        {
+          "to": "/importar-para-revender-uruguay",
+          "label": "Importar para revender"
+        },
+        {
+          "to": "/donde-te-entregan-el-paquete-uruguay",
+          "label": "Dónde te entregan el paquete"
+        },
+        {
+          "to": "/preguntas-frecuentes-aduana-uruguay",
+          "label": "Preguntas frecuentes de aduana"
+        }
+      ],
+      "guides": [
+        "comprar-online-exterior-impuestos",
+        "impuesto-temu-uruguay",
+        "importar-de-aliexpress-a-uruguay",
+        "comprar-en-amazon-desde-uruguay"
+      ],
+      "terms": [
+        {
+          "slug": "franquicia-courier",
+          "term": "Franquicia courier (encomiendas)"
+        },
+        {
+          "slug": "impuestos-importacion",
+          "term": "Impuestos de importación"
+        },
+        {
+          "slug": "arancel-aduanero",
+          "term": "Arancel aduanero (TGA)"
+        },
+        {
+          "slug": "tasa-consular",
+          "term": "Tasa consular"
+        },
+        {
+          "slug": "despachante-de-aduana",
+          "term": "Despachante de aduana"
+        },
+        {
+          "slug": "tax-free",
+          "term": "Tax Free"
+        },
+        {
+          "slug": "iva",
+          "term": "IVA (Impuesto al Valor Agregado)"
+        },
+        {
+          "slug": "imesi",
+          "term": "IMESI (Impuesto Específico Interno)"
+        }
+      ]
+    },
+    {
+      "slug": "economia-y-mercado-uruguay",
+      "title": "Economía y mercado en Uruguay",
+      "icon": "mdi-chart-areaspline",
+      "resources": [
+        {
+          "to": "/economia-uruguay",
+          "label": "Economía de Uruguay"
+        },
+        {
+          "to": "/por-que-sube-el-dolar",
+          "label": "Por qué sube el dólar"
+        },
+        {
+          "to": "/indicadores",
+          "label": "Indicadores (UI, UR, BPC)"
+        },
+        {
+          "to": "/noticias",
+          "label": "Noticias"
+        },
+        {
+          "to": "/advertencias-bcu",
+          "label": "Advertencias del BCU"
+        },
+        {
+          "to": "/herramientas/conversor-unidad-indexada",
+          "label": "Conversor de Unidad Indexada"
+        },
+        {
+          "to": "/evolucion-precio-alquileres-uruguay",
+          "label": "Evolución del alquiler"
+        },
+        {
+          "to": "/evolucion-precio-viviendas-uruguay",
+          "label": "Evolución del precio de las viviendas"
+        },
+        {
+          "to": "/evolucion-precio-autos-usados-uruguay",
+          "label": "Evolución del precio de los autos"
+        },
+        {
+          "to": "/historico",
+          "label": "Histórico del dólar"
+        },
+        {
+          "to": "/precio-de-la-nafta-uruguay",
+          "label": "Precio de la nafta"
+        },
+        {
+          "to": "/precios-de-supermercado-uruguay",
+          "label": "Precios de supermercado"
+        },
+        {
+          "to": "/cotizaciones-de-la-region",
+          "label": "Cotizaciones de la región"
+        },
+        {
+          "to": "/cotizacion-del-bcu",
+          "label": "Cotización del BCU"
+        },
+        {
+          "to": "/por-que-el-bcu-quiere-mas-pesos",
+          "label": "¿Por qué el BCU quiere más pesos?"
+        }
+      ],
+      "guides": [
+        "inflacion-y-dolar-uruguay",
+        "como-afecta-la-fed-al-dolar",
+        "proteger-ahorros-de-la-inflacion",
+        "unidad-indexada-explicada"
+      ],
+      "terms": [
+        {
+          "slug": "bcu",
+          "term": "BCU (Banco Central del Uruguay)"
+        },
+        {
+          "slug": "inflacion",
+          "term": "Inflación"
+        },
+        {
+          "slug": "ipc",
+          "term": "IPC (Índice de Precios al Consumo)"
+        },
+        {
+          "slug": "tasa-de-politica-monetaria",
+          "term": "Tasa de política monetaria (TPM)"
+        },
+        {
+          "slug": "base-monetaria",
+          "term": "Base monetaria"
+        },
+        {
+          "slug": "letras-regulacion-monetaria",
+          "term": "Letras de Regulación Monetaria (LRM)"
+        },
+        {
+          "slug": "riesgo-pais",
+          "term": "Riesgo país"
+        },
+        {
+          "slug": "grado-inversor",
+          "term": "Grado inversor"
+        },
+        {
+          "slug": "devaluacion",
+          "term": "Devaluación"
+        },
+        {
+          "slug": "apreciacion",
+          "term": "Apreciación"
+        },
+        {
+          "slug": "flotacion-cambiaria",
+          "term": "Flotación cambiaria"
+        },
+        {
+          "slug": "dolarizacion",
+          "term": "Dolarización (del ahorro)"
+        },
+        {
+          "slug": "encaje-bancario",
+          "term": "Encaje bancario"
+        },
+        {
+          "slug": "indice-medio-de-salarios",
+          "term": "Índice Medio de Salarios"
+        },
+        {
+          "slug": "mercado-spot",
+          "term": "Mercado spot (contado)"
+        },
+        {
+          "slug": "mercado-forward",
+          "term": "Mercado forward (a término)"
+        }
+      ]
+    },
+    {
+      "slug": "alquiler-y-vivienda-uruguay",
+      "title": "Alquilar en Uruguay",
+      "icon": "mdi-home-city-outline",
+      "resources": [
+        {
+          "to": "/alquilar-en-uruguay",
+          "label": "Guía para alquilar"
+        },
+        {
+          "to": "/primer-alquiler-uruguay",
+          "label": "Primer alquiler: gastos y trámites"
+        },
+        {
+          "to": "/alquilar-estando-en-clearing",
+          "label": "Alquilar estando en el Clearing"
+        },
+        {
+          "to": "/herramientas/costo-de-vida",
+          "label": "Costo de vida"
+        },
+        {
+          "to": "/alquileres-uruguay",
+          "label": "Alquileres"
+        },
+        {
+          "to": "/analisis-alquileres-uruguay",
+          "label": "Análisis del alquiler"
+        },
+        {
+          "to": "/evolucion-precio-alquileres-uruguay",
+          "label": "Evolución del alquiler"
+        },
+        {
+          "to": "/barrios-alquileres-uruguay",
+          "label": "Comparar barrios"
+        },
+        {
+          "to": "/alquiler-ideal-uruguay",
+          "label": "Tu alquiler ideal"
+        },
+        {
+          "to": "/comparar-portales-de-alquiler-uruguay",
+          "label": "Comparar portales"
+        },
+        {
+          "to": "/oportunidades-inmobiliarias-uruguay",
+          "label": "Oportunidades"
+        },
+        {
+          "to": "/inmobiliarias-uruguay",
+          "label": "Inmobiliarias"
+        },
+        {
+          "to": "/alquilar-sin-recibo-de-sueldo",
+          "label": "Alquilar sin recibo de sueldo"
+        },
+        {
+          "to": "/por-que-no-baja-el-alquiler-uruguay",
+          "label": "¿Por qué no baja el alquiler?"
+        },
+        {
+          "to": "/fletes-mudanzas-uruguay",
+          "label": "Fletes y mudanzas"
+        },
+        {
+          "to": "/equipar-casa-uruguay",
+          "label": "Equipar una casa"
+        },
+        {
+          "to": "/pensiones-estudiantiles-uruguay",
+          "label": "Pensiones estudiantiles"
+        }
+      ],
+      "guides": [
+        "como-rescindir-contrato-alquiler-uruguay",
+        "garantias-de-alquiler-uruguay",
+        "deposito-de-alquiler-uruguay",
+        "alquilar-sin-garantia-uruguay",
+        "derechos-del-inquilino-uruguay",
+        "que-revisar-antes-de-firmar-alquiler",
+        "alquiler-temporario-uruguay"
+      ],
+      "terms": [
+        {
+          "slug": "ipc",
+          "term": "IPC (Índice de Precios al Consumo)"
+        },
+        {
+          "slug": "unidad-reajustable",
+          "term": "UR (Unidad Reajustable)"
+        },
+        {
+          "slug": "ui",
+          "term": "UI (Unidad Indexada)"
+        },
+        {
+          "slug": "inflacion",
+          "term": "Inflación"
+        }
+      ]
+    },
+    {
+      "slug": "comprar-vivienda-uruguay",
+      "title": "Comprar vivienda en Uruguay",
+      "icon": "mdi-home-search-outline",
+      "resources": [
+        {
+          "to": "/herramientas/conversor-unidad-indexada",
+          "label": "Conversor de Unidad Indexada"
+        },
+        {
+          "to": "/mejores-bancos-uruguay",
+          "label": "Mejores bancos de Uruguay"
+        },
+        {
+          "to": "/herramientas/calculadora-prestamo",
+          "label": "Calculadora de préstamo"
+        },
+        {
+          "to": "/venta-viviendas-uruguay",
+          "label": "Venta de viviendas"
+        },
+        {
+          "to": "/evolucion-precio-viviendas-uruguay",
+          "label": "Evolución del precio de las viviendas"
+        },
+        {
+          "to": "/oportunidades-inmobiliarias-uruguay",
+          "label": "Oportunidades"
+        },
+        {
+          "to": "/inmobiliarias-uruguay",
+          "label": "Inmobiliarias"
+        },
+        {
+          "to": "/comprar-o-alquilar-uruguay",
+          "label": "¿Comprar o alquilar?"
+        },
+        {
+          "to": "/deuda-de-gastos-comunes-uruguay",
+          "label": "Deuda de gastos comunes"
+        },
+        {
+          "to": "/impuesto-de-primaria-uruguay",
+          "label": "Impuesto de Primaria"
+        }
+      ],
+      "guides": [
+        "comprar-primera-vivienda-uruguay",
+        "credito-hipotecario-uruguay",
+        "costos-de-escrituracion-uruguay",
+        "bhu-como-funciona",
+        "comprar-un-terreno-uruguay",
+        "promesa-de-compraventa-uruguay",
+        "comision-inmobiliaria-uruguay",
+        "comprar-en-remate-uruguay",
+        "derechos-posesorios-uruguay",
+        "certificado-unico-departamental-uruguay"
+      ],
+      "terms": [
+        {
+          "slug": "ui",
+          "term": "UI (Unidad Indexada)"
+        },
+        {
+          "slug": "unidad-reajustable",
+          "term": "UR (Unidad Reajustable)"
+        },
+        {
+          "slug": "tasa-efectiva-anual",
+          "term": "Tasa Efectiva Anual (TEA)"
+        },
+        {
+          "slug": "tasa-de-interes",
+          "term": "Tasa de interés"
+        },
+        {
+          "slug": "incremento-patrimonial",
+          "term": "Incremento patrimonial"
+        }
+      ]
+    },
+    {
+      "slug": "herencias-y-sucesiones-uruguay",
+      "title": "Herencias y sucesiones en Uruguay",
+      "icon": "mdi-file-document-multiple-outline",
+      "resources": [
+        {
+          "to": "/guias/costos-de-escrituracion-uruguay",
+          "label": "Costos de escrituración"
+        },
+        {
+          "to": "/saldar-deudas-uruguay",
+          "label": "Saldar deudas"
+        },
+        {
+          "to": "/salir-del-clearing",
+          "label": "Salir del Clearing"
+        }
+      ],
+      "guides": [
+        "como-funciona-una-sucesion-uruguay",
+        "las-deudas-se-heredan-uruguay",
+        "hacer-un-testamento-uruguay",
+        "legitima-y-herederos-forzosos-uruguay",
+        "hay-impuesto-a-la-herencia-uruguay"
+      ],
+      "terms": []
+    },
+    {
+      "slug": "pareja-familia-y-dinero-uruguay",
+      "title": "Pareja, familia y dinero en Uruguay",
+      "icon": "mdi-account-heart-outline",
+      "resources": [
+        {
+          "to": "/guias/hacer-un-testamento-uruguay",
+          "label": "Hacer un testamento"
+        },
+        {
+          "to": "/guias/armar-un-presupuesto-personal-uruguay",
+          "label": "Armar un presupuesto"
+        },
+        {
+          "to": "/guias/abrir-una-cuenta-bancaria-uruguay",
+          "label": "Abrir una cuenta bancaria"
+        },
+        {
+          "to": "/salud-financiera",
+          "label": "Salud financiera"
+        },
+        {
+          "to": "/mejores-bancos-uruguay",
+          "label": "Mejores bancos de Uruguay"
+        },
+        {
+          "to": "/pension-alimenticia-uruguay",
+          "label": "Pensión alimenticia"
+        },
+        {
+          "to": "/asignacion-familiar-uruguay",
+          "label": "Asignación familiar"
+        },
+        {
+          "to": "/licencia-por-maternidad-y-paternidad-uruguay",
+          "label": "Licencia por maternidad y paternidad"
+        }
+      ],
+      "guides": [
+        "regimen-patrimonial-matrimonio-uruguay",
+        "separacion-de-bienes-uruguay",
+        "union-concubinaria-uruguay",
+        "como-dividir-gastos-en-pareja-uruguay",
+        "cuenta-conjunta-o-separada-pareja-uruguay",
+        "hablar-de-dinero-en-pareja-uruguay",
+        "division-de-bienes-en-el-divorcio-uruguay",
+        "proteger-tu-patrimonio-en-pareja-uruguay"
+      ],
+      "terms": []
+    },
+    {
+      "slug": "comprar-y-mantener-auto-uruguay",
+      "title": "Comprar y mantener un auto en Uruguay",
+      "icon": "mdi-car-outline",
+      "resources": [
+        {
+          "to": "/herramientas/calculadora-prestamo",
+          "label": "Calculadora de préstamo"
+        },
+        {
+          "to": "/prestamos-uruguay",
+          "label": "Préstamos en Uruguay"
+        },
+        {
+          "to": "/estafas-uruguay",
+          "label": "Estafas en Uruguay"
+        },
+        {
+          "to": "/autos-usados-uruguay",
+          "label": "Autos usados"
+        },
+        {
+          "to": "/mercado-de-autos-usados-uruguay",
+          "label": "El mercado de autos usados"
+        },
+        {
+          "to": "/evolucion-precio-autos-usados-uruguay",
+          "label": "Evolución del precio de los autos"
+        },
+        {
+          "to": "/cuanto-vale-mi-auto-uruguay",
+          "label": "¿Cuánto vale mi auto?"
+        },
+        {
+          "to": "/vender-mi-auto-uruguay",
+          "label": "Vender mi auto"
+        },
+        {
+          "to": "/oportunidades-autos-usados-uruguay",
+          "label": "Oportunidades en autos usados"
+        },
+        {
+          "to": "/autos-chocados-y-con-deuda-uruguay",
+          "label": "Autos chocados y con deuda"
+        },
+        {
+          "to": "/comprar-auto-con-deuda-uruguay",
+          "label": "Comprar un auto con deuda"
+        },
+        {
+          "to": "/multas-de-transito-y-patente-uruguay",
+          "label": "Multas y patente"
+        },
+        {
+          "to": "/precio-de-la-nafta-uruguay",
+          "label": "Precio de la nafta"
+        },
+        {
+          "to": "/impuesto-autos-electricos-uruguay",
+          "label": "IMESI a los autos eléctricos"
+        },
+        {
+          "to": "/libreta-de-conducir-uruguay",
+          "label": "Libreta de conducir"
+        },
+        {
+          "to": "/monopatines-electricos-uruguay",
+          "label": "Monopatines eléctricos"
+        },
+        {
+          "to": "/bicicletas-electricas-uruguay",
+          "label": "Bicicletas eléctricas"
+        }
+      ],
+      "guides": [
+        "comprar-auto-0km-o-usado-uruguay",
+        "credito-prendario-auto-uruguay",
+        "costos-de-tener-auto-uruguay",
+        "transferir-un-auto-uruguay",
+        "pagar-patente-sucive-uruguay",
+        "titulo-del-auto-uruguay"
+      ],
+      "terms": [
+        {
+          "slug": "imesi",
+          "term": "IMESI (Impuesto Específico Interno)"
+        },
+        {
+          "slug": "tasa-efectiva-anual",
+          "term": "Tasa Efectiva Anual (TEA)"
+        },
+        {
+          "slug": "arancel-aduanero",
+          "term": "Arancel aduanero (TGA)"
+        }
+      ]
+    },
+    {
+      "slug": "deudas-y-credito-uruguay",
+      "title": "Deudas y crédito en Uruguay",
+      "icon": "mdi-credit-card-clock-outline",
+      "resources": [
+        {
+          "to": "/salir-del-clearing",
+          "label": "Salir del Clearing"
+        },
+        {
+          "to": "/saldar-deudas-uruguay",
+          "label": "Saldar deudas"
+        },
+        {
+          "to": "/prestamos-uruguay",
+          "label": "Préstamos en Uruguay"
+        },
+        {
+          "to": "/tarjetas-de-credito-uruguay",
+          "label": "Tarjetas de crédito"
+        },
+        {
+          "to": "/herramientas/calculadora-prestamo",
+          "label": "Calculadora de préstamo"
+        },
+        {
+          "to": "/mejores-prestamos-uruguay",
+          "label": "Mejores préstamos"
+        },
+        {
+          "to": "/prestamo-sin-recibo-de-sueldo-uruguay",
+          "label": "Préstamo sin recibo de sueldo"
+        },
+        {
+          "to": "/ley-de-usura-uruguay",
+          "label": "Ley de usura"
+        },
+        {
+          "to": "/adelanto-de-efectivo-tarjeta-de-credito",
+          "label": "Adelanto de efectivo con tarjeta"
+        },
+        {
+          "to": "/embargo-de-sueldo-uruguay",
+          "label": "Embargo de sueldo"
+        },
+        {
+          "to": "/prescripcion-de-deudas-con-el-estado-uruguay",
+          "label": "Deudas con el Estado"
+        }
+      ],
+      "guides": [
+        "prestamo-a-sola-firma-uruguay",
+        "entender-tea-tna-y-cft",
+        "refinanciar-deudas-uruguay",
+        "mejorar-historial-crediticio-uruguay",
+        "ser-garante-o-codeudor-riesgos-uruguay",
+        "salir-de-deudas-de-tarjeta-uruguay",
+        "no-pagar-prestamo-e-irse-del-pais-uruguay",
+        "elegir-tarjeta-credito-beneficios-uruguay",
+        "cashback-millas-o-puntos-uruguay",
+        "tarjeta-debito-vs-credito-uruguay",
+        "cuando-prescribe-una-deuda-uruguay",
+        "cancelar-prestamo-antes-de-tiempo-uruguay",
+        "me-compraron-la-deuda-uruguay",
+        "saldo-a-favor-tarjeta-de-credito-uruguay"
+      ],
+      "terms": [
+        {
+          "slug": "tasa-efectiva-anual",
+          "term": "Tasa Efectiva Anual (TEA)"
+        },
+        {
+          "slug": "tasa-de-interes",
+          "term": "Tasa de interés"
+        },
+        {
+          "slug": "interes-compuesto",
+          "term": "Interés compuesto"
+        }
+      ]
+    },
+    {
+      "slug": "sueldo-trabajo-e-impuestos-uruguay",
+      "title": "Sueldo, trabajo e impuestos en Uruguay",
+      "icon": "mdi-briefcase-outline",
+      "resources": [
+        {
+          "to": "/herramientas/calculadora-sueldo-liquido",
+          "label": "Calculadora de sueldo líquido"
+        },
+        {
+          "to": "/herramientas/calculadora-irpf",
+          "label": "Calculadora de IRPF"
+        },
+        {
+          "to": "/herramientas/calculadora-aguinaldo",
+          "label": "Calculadora de aguinaldo"
+        },
+        {
+          "to": "/seguro-de-paro-uruguay",
+          "label": "Seguro de paro"
+        },
+        {
+          "to": "/denunciar-trabajo-en-negro-uruguay",
+          "label": "Denunciar trabajo en negro"
+        },
+        {
+          "to": "/que-empresa-abrir-uruguay",
+          "label": "Qué empresa abrir"
+        },
+        {
+          "to": "/horas-extras-uruguay",
+          "label": "Horas extras"
+        },
+        {
+          "to": "/cuando-se-cobra-el-aguinaldo-uruguay",
+          "label": "Cuándo se cobra el aguinaldo"
+        },
+        {
+          "to": "/salario-vacacional-uruguay",
+          "label": "Salario vacacional"
+        },
+        {
+          "to": "/indemnizacion-por-despido-uruguay",
+          "label": "Indemnización por despido"
+        },
+        {
+          "to": "/renunciar-al-trabajo-uruguay",
+          "label": "Renunciar al trabajo"
+        },
+        {
+          "to": "/licencias-especiales-uruguay",
+          "label": "Licencias especiales"
+        },
+        {
+          "to": "/mercado-it-uruguay",
+          "label": "Mercado IT"
+        }
+      ],
+      "guides": [
+        "entender-tu-recibo-de-sueldo-uruguay",
+        "horas-extra-en-uruguay",
+        "feriados-en-uruguay-como-se-pagan",
+        "llegar-tarde-tolerancia-y-sanciones-uruguay",
+        "como-se-calcula-el-aguinaldo-uruguay",
+        "licencia-y-salario-vacacional-uruguay",
+        "me-certifique-subsidio-por-enfermedad-uruguay",
+        "despido-y-liquidacion-uruguay",
+        "trabajo-en-negro-uruguay",
+        "como-funciona-el-irpf-uruguay",
+        "trabajar-para-el-exterior-desde-uruguay",
+        "salario-minimo-uruguay-cuanto-es",
+        "me-quede-sin-trabajo-mutualista-fonasa-uruguay",
+        "como-pedir-un-aumento-de-sueldo-uruguay",
+        "pedir-que-me-despidan-uruguay"
+      ],
+      "terms": [
+        {
+          "slug": "irpf",
+          "term": "IRPF (Impuesto a la Renta de las Personas Físicas)"
+        },
+        {
+          "slug": "irpf-categoria-i",
+          "term": "IRPF Categoría I (rentas de capital)"
+        },
+        {
+          "slug": "irpf-categoria-ii",
+          "term": "IRPF Categoría II (rentas del trabajo)"
+        },
+        {
+          "slug": "iass",
+          "term": "IASS (Impuesto de Asistencia a la Seguridad Social)"
+        },
+        {
+          "slug": "bpc",
+          "term": "BPC (Base de Prestaciones y Contribuciones)"
+        },
+        {
+          "slug": "dgi",
+          "term": "DGI (Dirección General Impositiva)"
+        },
+        {
+          "slug": "irnr",
+          "term": "IRNR (Impuesto a la Renta de los No Residentes)"
+        },
+        {
+          "slug": "residencia-fiscal",
+          "term": "Residencia fiscal"
+        },
+        {
+          "slug": "indice-medio-de-salarios",
+          "term": "Índice Medio de Salarios"
+        }
+      ]
+    },
+    {
+      "slug": "derechos-y-reclamos-uruguay",
+      "title": "Derechos y reclamos en Uruguay",
+      "icon": "mdi-scale-balance",
+      "resources": [
+        {
+          "to": "/a-quien-le-reclamo-uruguay",
+          "label": "A quién le reclamo"
+        },
+        {
+          "to": "/defensa-al-consumidor-uruguay",
+          "label": "Defensa del Consumidor"
+        },
+        {
+          "to": "/derechos-consumidor-compras-online",
+          "label": "Derechos en compras online"
+        },
+        {
+          "to": "/estafas-uruguay",
+          "label": "Estafas en Uruguay"
+        },
+        {
+          "to": "/preguntas-economia-personal",
+          "label": "Preguntas verificadas"
+        },
+        {
+          "to": "/tiendas-online-uruguay",
+          "label": "Tiendas online"
+        },
+        {
+          "to": "/ciberlunes-y-black-friday-uruguay",
+          "label": "¿El descuento es real?"
+        },
+        {
+          "to": "/me-cobran-algo-que-no-autorice",
+          "label": "Me cobran algo que no autoricé"
+        },
+        {
+          "to": "/reclamo-sodimac-compra-cancelada",
+          "label": "Sodimac canceló tu compra"
+        },
+        {
+          "to": "/denunciar-ruidos-molestos-uruguay",
+          "label": "Denunciar ruidos molestos"
+        }
+      ],
+      "guides": [
+        "me-deben-el-sueldo-uruguay",
+        "abogado-gratis-uruguay",
+        "estudio-de-cobranza-uruguay",
+        "devoluciones-y-cambios-en-tiendas-uruguay"
+      ],
+      "terms": []
+    },
+    {
+      "slug": "ahorrar-e-invertir-uruguay",
+      "title": "Ahorrar e invertir en Uruguay",
+      "icon": "mdi-chart-line",
+      "resources": [
+        {
+          "to": "/inversiones-uruguay",
+          "label": "Dónde invertir en Uruguay"
+        },
+        {
+          "to": "/impuestos-inversiones-uruguay",
+          "label": "Impuestos a las inversiones"
+        },
+        {
+          "to": "/invertir-en-proyectos-uruguayos",
+          "label": "Invertir en proyectos uruguayos"
+        },
+        {
+          "to": "/herramientas/calculadora-plazo-fijo",
+          "label": "Calculadora de plazo fijo"
+        },
+        {
+          "to": "/herramientas/calculadora-impuestos-inversiones",
+          "label": "Calculadora de impuestos a inversiones"
+        },
+        {
+          "to": "/cuenta-remunerada-uruguay",
+          "label": "Cuenta remunerada"
+        },
+        {
+          "to": "/prestamos-p2p-uruguay",
+          "label": "Préstamos P2P"
+        },
+        {
+          "to": "/indicadores",
+          "label": "Indicadores"
+        }
+      ],
+      "guides": [
+        "como-empezar-a-invertir-uruguay",
+        "fondo-de-emergencia-como-armarlo-uruguay",
+        "plazo-fijo-en-uruguay-conviene",
+        "invertir-en-la-bolsa-de-usa-desde-uruguay",
+        "bonos-y-renta-fija-uruguay",
+        "conviene-ahorrar-en-dolares-uruguay",
+        "interes-compuesto-explicado-uruguay",
+        "errores-y-estafas-al-invertir-uruguay",
+        "comprar-criptomonedas-en-uruguay"
+      ],
+      "terms": [
+        {
+          "slug": "plazo-fijo",
+          "term": "Plazo fijo"
+        },
+        {
+          "slug": "interes-compuesto",
+          "term": "Interés compuesto"
+        },
+        {
+          "slug": "tasa-efectiva-anual",
+          "term": "Tasa Efectiva Anual (TEA)"
+        },
+        {
+          "slug": "tasa-de-interes",
+          "term": "Tasa de interés"
+        },
+        {
+          "slug": "liquidez",
+          "term": "Liquidez"
+        },
+        {
+          "slug": "moneda-refugio",
+          "term": "Moneda refugio"
+        },
+        {
+          "slug": "oro",
+          "term": "Oro"
+        },
+        {
+          "slug": "onza-troy",
+          "term": "Onza troy"
+        },
+        {
+          "slug": "quilate",
+          "term": "Quilate"
+        },
+        {
+          "slug": "criptomoneda",
+          "term": "Criptomoneda"
+        },
+        {
+          "slug": "stablecoin",
+          "term": "Stablecoin"
+        },
+        {
+          "slug": "usdt",
+          "term": "USDT (Tether)"
+        },
+        {
+          "slug": "cobertura-cambiaria",
+          "term": "Cobertura cambiaria (hedge)"
+        },
+        {
+          "slug": "renta-de-fuente-extranjera",
+          "term": "Renta de fuente extranjera"
+        },
+        {
+          "slug": "incremento-patrimonial",
+          "term": "Incremento patrimonial"
+        },
+        {
+          "slug": "step-up-2025",
+          "term": "Step-up al 31/12/2025"
+        },
+        {
+          "slug": "crs",
+          "term": "CRS (intercambio automático de información financiera)"
+        }
+      ]
+    },
+    {
+      "slug": "finanzas-personales-y-jubilacion-uruguay",
+      "title": "Finanzas personales y jubilación en Uruguay",
+      "icon": "mdi-heart-pulse",
+      "resources": [
+        {
+          "to": "/salud-financiera",
+          "label": "Salud financiera"
+        },
+        {
+          "to": "/mejores-bancos-uruguay",
+          "label": "Mejores bancos de Uruguay"
+        },
+        {
+          "to": "/apps-economia-uruguay",
+          "label": "Apps de economía"
+        },
+        {
+          "to": "/preguntas-economia-personal",
+          "label": "Preguntas de finanzas personales"
+        },
+        {
+          "to": "/estafas-uruguay",
+          "label": "Estafas en Uruguay"
+        },
+        {
+          "to": "/plan-de-vida-uruguay",
+          "label": "Plan de vida por ingreso"
+        },
+        {
+          "to": "/vivir-con-25000-pesos-uruguay",
+          "label": "Vivir con $25.000"
+        },
+        {
+          "to": "/precios-de-supermercado-uruguay",
+          "label": "Precios de supermercado"
+        },
+        {
+          "to": "/meal-prep-uruguay",
+          "label": "Meal prep"
+        },
+        {
+          "to": "/sillas-escritorio-uruguay",
+          "label": "Sillas de escritorio"
+        }
+      ],
+      "guides": [
+        "armar-un-presupuesto-personal-uruguay",
+        "que-seguros-conviene-tener-uruguay",
+        "jubilacion-y-afap-como-funciona-uruguay",
+        "reforma-jubilatoria-uruguay-que-cambia",
+        "elegir-o-cambiar-de-afap-uruguay",
+        "planificar-tu-retiro-uruguay",
+        "abrir-una-cuenta-bancaria-uruguay",
+        "billeteras-digitales-uruguay-como-funcionan",
+        "como-evitar-estafas-financieras-uruguay",
+        "educacion-financiera-para-jovenes-uruguay",
+        "subsidio-expensas-funerarias-bps-uruguay",
+        "cobrar-jubilacion-uruguaya-desde-el-exterior",
+        "canasta-fin-de-ano-bps-uruguay",
+        "precio-supergas-garrafa-uruguay"
+      ],
+      "terms": [
+        {
+          "slug": "iass",
+          "term": "IASS (Impuesto de Asistencia a la Seguridad Social)"
+        },
+        {
+          "slug": "bpc",
+          "term": "BPC (Base de Prestaciones y Contribuciones)"
+        },
+        {
+          "slug": "ui",
+          "term": "UI (Unidad Indexada)"
+        },
+        {
+          "slug": "unidad-reajustable",
+          "term": "UR (Unidad Reajustable)"
+        },
+        {
+          "slug": "interes-compuesto",
+          "term": "Interés compuesto"
+        },
+        {
+          "slug": "inflacion",
+          "term": "Inflación"
+        }
+      ]
+    },
+    {
+      "slug": "emprender-y-empresa-uruguay",
+      "title": "Emprender y tener una empresa en Uruguay",
+      "icon": "mdi-rocket-launch-outline",
+      "resources": [
+        {
+          "to": "/que-empresa-abrir-uruguay",
+          "label": "Qué empresa abrir"
+        },
+        {
+          "to": "/facturar-en-monotributo-uruguay",
+          "label": "Facturar en monotributo"
+        },
+        {
+          "to": "/guias/trabajar-para-el-exterior-desde-uruguay",
+          "label": "Trabajar para el exterior"
+        },
+        {
+          "to": "/mejores-bancos-uruguay",
+          "label": "Mejores bancos de Uruguay"
+        },
+        {
+          "to": "/herramientas/calculadora-sueldo-liquido",
+          "label": "Calculadora de sueldo líquido"
+        },
+        {
+          "to": "/contractor-en-uruguay",
+          "label": "Contractor desde Uruguay"
+        },
+        {
+          "to": "/cobrar-en-dolares-gastar-en-pesos",
+          "label": "Cobrar en dólares, gastar en pesos"
+        }
+      ],
+      "guides": [
+        "monotributo-uruguay-que-es-y-cuando-conviene",
+        "abrir-empresa-unipersonal-uruguay",
+        "facturar-como-freelancer-uruguay",
+        "vender-por-mercado-libre-uruguay"
+      ],
+      "terms": [
+        {
+          "slug": "irae",
+          "term": "IRAE (Impuesto a las Rentas de las Actividades Económicas)"
+        },
+        {
+          "slug": "iva",
+          "term": "IVA (Impuesto al Valor Agregado)"
+        },
+        {
+          "slug": "dgi",
+          "term": "DGI (Dirección General Impositiva)"
+        },
+        {
+          "slug": "dividendo-ficto",
+          "term": "Dividendo ficto"
+        },
+        {
+          "slug": "ficto-20",
+          "term": "Ficto del 20%"
+        },
+        {
+          "slug": "bpc",
+          "term": "BPC (Base de Prestaciones y Contribuciones)"
+        }
+      ]
+    },
+    {
+      "slug": "bancos-y-pagos-uruguay",
+      "title": "Bancos, tarjetas y pagos en Uruguay",
+      "icon": "mdi-bank-transfer",
+      "resources": [
+        {
+          "to": "/comisiones-de-transferencia-uruguay",
+          "label": "Comisiones de transferencia"
+        },
+        {
+          "to": "/mejores-bancos-uruguay",
+          "label": "Mejores bancos de Uruguay"
+        },
+        {
+          "to": "/tarjetas-de-debito-uruguay",
+          "label": "Tarjetas de débito"
+        },
+        {
+          "to": "/tarjetas-de-credito-uruguay",
+          "label": "Tarjetas de crédito"
+        },
+        {
+          "to": "/me-cobran-algo-que-no-autorice",
+          "label": "Me cobran algo que no autoricé"
+        },
+        {
+          "to": "/descuentos-con-tarjeta-uruguay",
+          "label": "Descuentos con tarjeta"
+        },
+        {
+          "to": "/que-banco-tiene-mas-descuentos-uruguay",
+          "label": "¿Qué banco tiene más descuentos?"
+        },
+        {
+          "to": "/cobrar-giro-del-exterior-uruguay",
+          "label": "Cobrar un giro del exterior"
+        },
+        {
+          "to": "/cheques-uruguay",
+          "label": "Cheques"
+        },
+        {
+          "to": "/retirar-efectivo-uruguay",
+          "label": "Retirar efectivo"
+        },
+        {
+          "to": "/alternativa-a-bankos-uruguay",
+          "label": "Alternativa a Bankos"
+        },
+        {
+          "to": "/cuanto-vale-una-milla-itau-uruguay",
+          "label": "¿Cuánto vale una milla de Itaú?"
+        }
+      ],
+      "guides": [
+        "comercio-no-acepta-debito-uruguay",
+        "saldo-retenido-tarjeta-debito-uruguay",
+        "transferencia-a-cuenta-equivocada-uruguay",
+        "recibir-transferencia-del-exterior-uruguay",
+        "enviar-recibir-dinero-exterior",
+        "alias-para-transferir-uruguay",
+        "usar-tarjeta-uruguaya-en-argentina"
+      ],
+      "terms": [
+        {
+          "slug": "caja-de-ahorro",
+          "term": "Caja de ahorro"
+        },
+        {
+          "slug": "transferencia-internacional",
+          "term": "Transferencia internacional (SWIFT)"
+        },
+        {
+          "slug": "remesa",
+          "term": "Remesa"
+        },
+        {
+          "slug": "declaracion-jurada-origen-de-fondos",
+          "term": "Declaración jurada de origen de fondos"
+        },
+        {
+          "slug": "crs",
+          "term": "CRS (intercambio automático de información financiera)"
+        },
+        {
+          "slug": "liquidez",
+          "term": "Liquidez"
+        }
+      ]
+    },
+    {
+      "slug": "tramites-y-documentos-uruguay",
+      "title": "Trámites y documentos en Uruguay",
+      "icon": "mdi-file-document-outline",
+      "resources": [
+        {
+          "to": "/certificado-de-antecedentes-judiciales-uruguay",
+          "label": "Certificado de antecedentes judiciales"
+        },
+        {
+          "to": "/cuanto-sale-la-cedula-de-identidad-uruguaya",
+          "label": "Cuánto sale la cédula"
+        },
+        {
+          "to": "/cuanto-sale-el-pasaporte-uruguayo",
+          "label": "Cuánto sale el pasaporte"
+        },
+        {
+          "to": "/mudarme-a-uruguay-residencia",
+          "label": "Mudarse a Uruguay"
+        },
+        {
+          "to": "/libreta-de-conducir-uruguay",
+          "label": "Libreta de conducir"
+        },
+        {
+          "to": "/carne-de-salud-uruguay",
+          "label": "Carné de salud"
+        },
+        {
+          "to": "/a-quien-le-reclamo-uruguay",
+          "label": "A quién le reclamo"
+        }
+      ],
+      "guides": [
+        "ciudadania-legal-uruguaya",
+        "cedula-uruguaya-para-argentinos",
+        "casarse-por-civil-uruguay",
+        "cuanto-tiempo-guardar-recibos-y-facturas-uruguay"
+      ],
+      "terms": [
+        {
+          "slug": "residencia-fiscal",
+          "term": "Residencia fiscal"
+        },
+        {
+          "slug": "dgi",
+          "term": "DGI (Dirección General Impositiva)"
+        }
+      ]
+    }
+  ]
+}

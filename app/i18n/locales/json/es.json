@@ -1496,6 +1496,12 @@
     "lead": "Otras páginas del sitio que responden lo que suele venir después de esta.",
     "aria": "Páginas relacionadas"
   },
+  "temaVecinos": {
+    "aria": "Más sobre este tema",
+    "titulo": "Más sobre {tema}",
+    "terminos": "Términos:",
+    "verTema": "Todo sobre {tema}"
+  },
   "directorioAnalisis": {
     "tituloDirectorio": "Análisis y estadísticas de este directorio",
     "leadDirectorio": "Lo que medimos con estos mismos datos.",

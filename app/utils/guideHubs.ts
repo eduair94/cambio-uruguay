@@ -41,6 +41,11 @@ export interface GuideHub {
   resources?: readonly HubResource[]
   /** Sibling hub slugs, for cross-hub navigation. */
   relatedHubs?: readonly string[]
+  /**
+   * Glossary slugs (`utils/glossary.ts`) that belong to this theme. The hub page lists them, and
+   * `utils/temaVecinos.ts` links each term back to the theme and its pages.
+   */
+  terms?: readonly string[]
 }
 
 export const guideHubs: readonly GuideHub[] = [
@@ -95,6 +100,77 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Cuánto te cuesta el diferencial.',
         to: '/herramientas/calculadora-spread',
       },
+      {
+        label: 'Histórico del dólar',
+        description: 'La cotización de cada día desde 2022, casa por casa, para ver cómo se movió.',
+        to: '/historico',
+      },
+      {
+        label: 'La mejor casa de cambio',
+        description:
+          'Qué casa paga mejor hoy según lo que quieras hacer: comprar, vender, billete o transferencia.',
+        to: '/mejor-casa-de-cambio',
+      },
+      {
+        label: 'Analíticas del dólar',
+        description: 'Cómo se mueve el dólar en el día y entre casas, con los datos que relevamos.',
+        to: '/analiticas',
+      },
+      {
+        label: 'Cotizaciones de la región',
+        description:
+          'El dólar en Argentina, Brasil, Paraguay, Chile y Bolivia al lado del uruguayo.',
+        to: '/cotizaciones-de-la-region',
+      },
+      {
+        label: 'Dólar blue hoy',
+        description: 'El dólar paralelo argentino y la brecha con el oficial.',
+        to: '/dolar-blue-hoy',
+      },
+      {
+        label: '¿Banco o casa de cambio?',
+        description: 'Dónde conviene cambiar según el monto y la operación.',
+        to: '/banco-o-casa-de-cambio-uruguay',
+      },
+      {
+        label: 'Casas abiertas el fin de semana',
+        description: 'Qué casas de cambio atienden sábado y domingo.',
+        to: '/casas-de-cambio-abiertas-fin-de-semana',
+      },
+      {
+        label: 'Dónde conseguir monedas',
+        description: 'Dónde cambiar billetes por monedas y qué cobran.',
+        to: '/donde-conseguir-monedas-uruguay',
+      },
+      {
+        label: '¿Dólares o reales para Brasil?',
+        description: 'Qué moneda conviene llevar a Brasil y dónde cambiarla.',
+        to: '/llevar-dolares-o-reales-a-brasil',
+      },
+      {
+        label: 'Últimos cambios de cotización',
+        description: 'Qué casa movió su precio, en vivo.',
+        to: '/ultimos-cambios',
+      },
+    ],
+    terms: [
+      'cotizacion',
+      'tipo-de-cambio',
+      'spread-cambiario',
+      'casa-de-cambio',
+      'dolar-billete',
+      'dolar-transferencia',
+      'dolar-cable',
+      'dolar-interbancario',
+      'dolar-ebrou',
+      'divisa',
+      'arbitraje',
+      'mercado-cambiario',
+      'brecha-cambiaria',
+      'dolar-blue',
+      'dolar-mep',
+      'peso-argentino',
+      'peso-uruguayo',
     ],
     relatedHubs: ['economia-y-mercado-uruguay', 'ahorrar-e-invertir-uruguay'],
   },
@@ -155,6 +231,47 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Estimá el costo puesto en Uruguay.',
         to: '/herramientas/carrito-importacion',
       },
+      {
+        label: 'Precio de celulares',
+        description:
+          'Cuánto sale cada modelo en Uruguay y cuánto costaría traerlo de Estados Unidos.',
+        to: '/celulares-uruguay',
+      },
+      {
+        label: 'Tiendas online',
+        description: 'Señales fechadas de cada tienda que vende a Uruguay, antes de comprarle.',
+        to: '/tiendas-online-uruguay',
+      },
+      {
+        label: '¿Envío directo o casillero?',
+        description: 'Qué conviene según el peso, la tienda y la franquicia.',
+        to: '/envio-directo-o-casillero-uruguay',
+      },
+      {
+        label: 'Importar para revender',
+        description: 'Qué cambia cuando lo que traés no es para vos.',
+        to: '/importar-para-revender-uruguay',
+      },
+      {
+        label: 'Dónde te entregan el paquete',
+        description: 'Qué pasa con el envío cuando llega a Uruguay y dónde retirarlo.',
+        to: '/donde-te-entregan-el-paquete-uruguay',
+      },
+      {
+        label: 'Preguntas frecuentes de aduana',
+        description: 'Las dudas más comunes sobre franquicias, impuestos y envíos.',
+        to: '/preguntas-frecuentes-aduana-uruguay',
+      },
+    ],
+    terms: [
+      'franquicia-courier',
+      'impuestos-importacion',
+      'arancel-aduanero',
+      'tasa-consular',
+      'despachante-de-aduana',
+      'tax-free',
+      'iva',
+      'imesi',
     ],
     relatedHubs: ['dolar-y-casas-de-cambio-uruguay', 'economia-y-mercado-uruguay'],
   },
@@ -201,6 +318,69 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Pasá de UI a pesos y viceversa.',
         to: '/herramientas/conversor-unidad-indexada',
       },
+      {
+        label: 'Evolución del alquiler',
+        description: 'Cómo cambia lo que se pide por alquilar, por zona y dormitorios.',
+        to: '/evolucion-precio-alquileres-uruguay',
+      },
+      {
+        label: 'Evolución del precio de las viviendas',
+        description: 'Cómo cambia lo que se pide por comprar una vivienda.',
+        to: '/evolucion-precio-viviendas-uruguay',
+      },
+      {
+        label: 'Evolución del precio de los autos',
+        description: 'Cómo cambia lo que se pide por un auto usado, por modelo.',
+        to: '/evolucion-precio-autos-usados-uruguay',
+      },
+      {
+        label: 'Histórico del dólar',
+        description: 'La cotización de cada día, casa por casa, desde 2022.',
+        to: '/historico',
+      },
+      {
+        label: 'Precio de la nafta',
+        description: 'El precio de los combustibles de ANCAP y cómo cambió.',
+        to: '/precio-de-la-nafta-uruguay',
+      },
+      {
+        label: 'Precios de supermercado',
+        description: 'Los precios oficiales del SIPC, comparados local por local.',
+        to: '/precios-de-supermercado-uruguay',
+      },
+      {
+        label: 'Cotizaciones de la región',
+        description: 'El dólar en los países vecinos, al lado del uruguayo.',
+        to: '/cotizaciones-de-la-region',
+      },
+      {
+        label: 'Cotización del BCU',
+        description: 'Por qué la cotización oficial no es la que te dan al cambiar.',
+        to: '/cotizacion-del-bcu',
+      },
+      {
+        label: '¿Por qué el BCU quiere más pesos?',
+        description: 'La política monetaria explicada con los datos del Banco Central.',
+        to: '/por-que-el-bcu-quiere-mas-pesos',
+      },
+    ],
+    terms: [
+      'bcu',
+      'inflacion',
+      'ipc',
+      'tasa-de-politica-monetaria',
+      'base-monetaria',
+      'letras-regulacion-monetaria',
+      'riesgo-pais',
+      'grado-inversor',
+      'devaluacion',
+      'apreciacion',
+      'flotacion-cambiaria',
+      'dolarizacion',
+      'encaje-bancario',
+      'indice-medio-de-salarios',
+      'mercado-spot',
+      'mercado-forward',
     ],
     relatedHubs: ['dolar-y-casas-de-cambio-uruguay', 'ahorrar-e-invertir-uruguay'],
   },
@@ -244,7 +424,74 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Cuánto necesitás para vivir donde querés.',
         to: '/herramientas/costo-de-vida',
       },
+      {
+        label: 'Alquileres',
+        description:
+          'Los avisos de varios portales unidos por propiedad, con la garantía que acepta cada uno.',
+        to: '/alquileres-uruguay',
+      },
+      {
+        label: 'Análisis del alquiler',
+        description: 'Cuánto se pide por zona, tipo y dormitorios, calculado cada semana.',
+        to: '/analisis-alquileres-uruguay',
+      },
+      {
+        label: 'Evolución del alquiler',
+        description: 'Cómo cambia el precio pedido y cómo se reparte, con tu precio al lado.',
+        to: '/evolucion-precio-alquileres-uruguay',
+      },
+      {
+        label: 'Comparar barrios',
+        description: 'Precio, servicios y denuncias de cada barrio de Montevideo.',
+        to: '/barrios-alquileres-uruguay',
+      },
+      {
+        label: 'Tu alquiler ideal',
+        description: 'Qué zonas encajan con tu presupuesto y lo que necesitás.',
+        to: '/alquiler-ideal-uruguay',
+      },
+      {
+        label: 'Comparar portales',
+        description: 'Qué portal publica qué, y cuánto se superponen.',
+        to: '/comparar-portales-de-alquiler-uruguay',
+      },
+      {
+        label: 'Oportunidades',
+        description: 'Avisos pedidos por debajo de viviendas comparables.',
+        to: '/oportunidades-inmobiliarias-uruguay',
+      },
+      {
+        label: 'Inmobiliarias',
+        description: 'Qué publica cada inmobiliaria, desde sus propios avisos.',
+        to: '/inmobiliarias-uruguay',
+      },
+      {
+        label: 'Alquilar sin recibo de sueldo',
+        description: 'Qué garantías aceptan a independientes y cómo presentarte.',
+        to: '/alquilar-sin-recibo-de-sueldo',
+      },
+      {
+        label: '¿Por qué no baja el alquiler?',
+        description: 'Qué sostiene el precio del alquiler, con los datos del mercado.',
+        to: '/por-que-no-baja-el-alquiler-uruguay',
+      },
+      {
+        label: 'Fletes y mudanzas',
+        description: 'Cuánto sale mudarse y a quién contratar.',
+        to: '/fletes-mudanzas-uruguay',
+      },
+      {
+        label: 'Equipar una casa',
+        description: 'Qué sale llenar una vivienda vacía, categoría por categoría.',
+        to: '/equipar-casa-uruguay',
+      },
+      {
+        label: 'Pensiones estudiantiles',
+        description: 'Alternativas de alojamiento para estudiantes y cuánto cuestan.',
+        to: '/pensiones-estudiantiles-uruguay',
+      },
     ],
+    terms: ['ipc', 'unidad-reajustable', 'ui', 'inflacion'],
     relatedHubs: ['comprar-vivienda-uruguay', 'deudas-y-credito-uruguay'],
   },
   {
@@ -285,6 +532,48 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Simulá la cuota mensual.',
         to: '/herramientas/calculadora-prestamo',
       },
+      {
+        label: 'Venta de viviendas',
+        description: 'Las viviendas en venta publicadas, una ficha por anuncio.',
+        to: '/venta-viviendas-uruguay',
+      },
+      {
+        label: 'Evolución del precio de las viviendas',
+        description: 'Cómo cambia lo que se pide y cómo se reparte, con tu precio al lado.',
+        to: '/evolucion-precio-viviendas-uruguay',
+      },
+      {
+        label: 'Oportunidades',
+        description: 'Viviendas pedidas por debajo de otras comparables.',
+        to: '/oportunidades-inmobiliarias-uruguay',
+      },
+      {
+        label: 'Inmobiliarias',
+        description: 'Qué publica cada inmobiliaria, desde sus propios avisos.',
+        to: '/inmobiliarias-uruguay',
+      },
+      {
+        label: '¿Comprar o alquilar?',
+        description: 'La cuenta completa para decidir, con precios de hoy.',
+        to: '/comprar-o-alquilar-uruguay',
+      },
+      {
+        label: 'Deuda de gastos comunes',
+        description: 'Qué pasa con los gastos comunes impagos al comprar.',
+        to: '/deuda-de-gastos-comunes-uruguay',
+      },
+      {
+        label: 'Impuesto de Primaria',
+        description: 'Quién lo paga, cuánto es y cómo se calcula.',
+        to: '/impuesto-de-primaria-uruguay',
+      },
+    ],
+    terms: [
+      'ui',
+      'unidad-reajustable',
+      'tasa-efectiva-anual',
+      'tasa-de-interes',
+      'incremento-patrimonial',
     ],
     relatedHubs: ['alquiler-y-vivienda-uruguay', 'herencias-y-sucesiones-uruguay'],
   },
@@ -370,6 +659,21 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Elegir dónde tener las cuentas.',
         to: '/mejores-bancos-uruguay',
       },
+      {
+        label: 'Pensión alimenticia',
+        description: 'Cuánto corresponde y cómo se fija.',
+        to: '/pension-alimenticia-uruguay',
+      },
+      {
+        label: 'Asignación familiar',
+        description: 'Quién la cobra y de cuánto es.',
+        to: '/asignacion-familiar-uruguay',
+      },
+      {
+        label: 'Licencia por maternidad y paternidad',
+        description: 'Cuántos días corresponden y quién los paga.',
+        to: '/licencia-por-maternidad-y-paternidad-uruguay',
+      },
     ],
     relatedHubs: ['herencias-y-sucesiones-uruguay', 'finanzas-personales-y-jubilacion-uruguay'],
   },
@@ -407,7 +711,79 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Evitar fraudes al comprar de particular.',
         to: '/estafas-uruguay',
       },
+      {
+        label: 'Autos usados',
+        description: 'Los avisos de diez fuentes, con el precio comparado contra autos iguales.',
+        to: '/autos-usados-uruguay',
+      },
+      {
+        label: 'El mercado de autos usados',
+        description:
+          'Qué se ofrece, cuánto pierde cada modelo por año y qué comprás con cada presupuesto.',
+        to: '/mercado-de-autos-usados-uruguay',
+      },
+      {
+        label: 'Evolución del precio de los autos',
+        description: 'Cómo cambia lo que se pide por cada modelo.',
+        to: '/evolucion-precio-autos-usados-uruguay',
+      },
+      {
+        label: '¿Cuánto vale mi auto?',
+        description: 'El precio de mercado de tu auto, con los avisos de hoy.',
+        to: '/cuanto-vale-mi-auto-uruguay',
+      },
+      {
+        label: 'Vender mi auto',
+        description: 'Cómo fijar el precio y qué pide el comprador.',
+        to: '/vender-mi-auto-uruguay',
+      },
+      {
+        label: 'Oportunidades en autos usados',
+        description: 'Autos pedidos por debajo de otros iguales, revisados en su ficha.',
+        to: '/oportunidades-autos-usados-uruguay',
+      },
+      {
+        label: 'Autos chocados y con deuda',
+        description: 'Lo que el aviso declara y cuánto menos se pide por eso.',
+        to: '/autos-chocados-y-con-deuda-uruguay',
+      },
+      {
+        label: 'Comprar un auto con deuda',
+        description: 'Qué revisar antes de comprar un auto con deudas o multas.',
+        to: '/comprar-auto-con-deuda-uruguay',
+      },
+      {
+        label: 'Multas y patente',
+        description: 'Cómo consultar multas y deuda de patente de un auto.',
+        to: '/multas-de-transito-y-patente-uruguay',
+      },
+      {
+        label: 'Precio de la nafta',
+        description: 'Lo que cuesta cargar combustible y cómo cambió.',
+        to: '/precio-de-la-nafta-uruguay',
+      },
+      {
+        label: 'IMESI a los autos eléctricos',
+        description: 'Cómo cambia el impuesto a los autos eléctricos.',
+        to: '/impuesto-autos-electricos-uruguay',
+      },
+      {
+        label: 'Libreta de conducir',
+        description: 'Cuánto sale y qué trámite lleva sacarla o renovarla.',
+        to: '/libreta-de-conducir-uruguay',
+      },
+      {
+        label: 'Monopatines eléctricos',
+        description: 'Precio nuevo y usado, con la normativa de cada departamento.',
+        to: '/monopatines-electricos-uruguay',
+      },
+      {
+        label: 'Bicicletas eléctricas',
+        description: 'Precio nuevo y usado, con la normativa de cada departamento.',
+        to: '/bicicletas-electricas-uruguay',
+      },
     ],
+    terms: ['imesi', 'tasa-efectiva-anual', 'arancel-aduanero'],
     relatedHubs: ['deudas-y-credito-uruguay', 'finanzas-personales-y-jubilacion-uruguay'],
   },
   {
@@ -462,7 +838,38 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Cuota, TEA y costo total.',
         to: '/herramientas/calculadora-prestamo',
       },
+      {
+        label: 'Mejores préstamos',
+        description: 'Qué préstamo cuesta menos según el monto y el plazo.',
+        to: '/mejores-prestamos-uruguay',
+      },
+      {
+        label: 'Préstamo sin recibo de sueldo',
+        description: 'Qué opciones hay para independientes y cuánto cuestan.',
+        to: '/prestamo-sin-recibo-de-sueldo-uruguay',
+      },
+      {
+        label: 'Ley de usura',
+        description: 'Los topes de interés que fija la ley y cómo se calculan.',
+        to: '/ley-de-usura-uruguay',
+      },
+      {
+        label: 'Adelanto de efectivo con tarjeta',
+        description: 'Cuánto cobra cada emisor y el tope legal.',
+        to: '/adelanto-de-efectivo-tarjeta-de-credito',
+      },
+      {
+        label: 'Embargo de sueldo',
+        description: 'Cuánto te pueden retener y qué hacer.',
+        to: '/embargo-de-sueldo-uruguay',
+      },
+      {
+        label: 'Deudas con el Estado',
+        description: 'Cuándo prescriben las deudas con organismos públicos.',
+        to: '/prescripcion-de-deudas-con-el-estado-uruguay',
+      },
     ],
+    terms: ['tasa-efectiva-anual', 'tasa-de-interes', 'interes-compuesto'],
     relatedHubs: [
       'sueldo-trabajo-e-impuestos-uruguay',
       'finanzas-personales-y-jubilacion-uruguay',
@@ -523,15 +930,56 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/denunciar-trabajo-en-negro-uruguay',
       },
       {
-        label: 'Trabajo en negro',
-        description: 'Las tres puertas: MTSS, BPS y conciliación.',
-        to: '/denunciar-trabajo-en-negro-uruguay',
-      },
-      {
         label: 'Qué empresa abrir',
         description: 'Para facturar como unipersonal o empresa.',
         to: '/que-empresa-abrir-uruguay',
       },
+      {
+        label: 'Horas extras',
+        description: 'Cuánto se pagan y cómo se calculan.',
+        to: '/horas-extras-uruguay',
+      },
+      {
+        label: 'Cuándo se cobra el aguinaldo',
+        description: 'Fechas y cuenta del medio aguinaldo.',
+        to: '/cuando-se-cobra-el-aguinaldo-uruguay',
+      },
+      {
+        label: 'Salario vacacional',
+        description: 'Cuánto es y cuándo se cobra.',
+        to: '/salario-vacacional-uruguay',
+      },
+      {
+        label: 'Indemnización por despido',
+        description: 'Cuánto corresponde y cómo se calcula.',
+        to: '/indemnizacion-por-despido-uruguay',
+      },
+      {
+        label: 'Renunciar al trabajo',
+        description: 'Qué cobrás y qué tenés que avisar.',
+        to: '/renunciar-al-trabajo-uruguay',
+      },
+      {
+        label: 'Licencias especiales',
+        description: 'Qué licencias pagas existen y cuántos días dan.',
+        to: '/licencias-especiales-uruguay',
+      },
+      {
+        label: 'Mercado IT',
+        description: 'Cómo ven el trabajo en software en r/CharruaDevs.',
+        to: '/mercado-it-uruguay',
+      },
+    ],
+    terms: [
+      'irpf',
+      'irpf-categoria-i',
+      'irpf-categoria-ii',
+      'iass',
+      'bpc',
+      'dgi',
+      'irnr',
+      'residencia-fiscal',
+      'indice-medio-de-salarios',
     ],
     relatedHubs: [
       'deudas-y-credito-uruguay',
@@ -581,6 +1029,31 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Preguntas verificadas',
         description: 'Respuestas con la fuente oficial al lado.',
         to: '/preguntas-economia-personal',
+      },
+      {
+        label: 'Tiendas online',
+        description: 'Señales fechadas de cada tienda antes de comprarle.',
+        to: '/tiendas-online-uruguay',
+      },
+      {
+        label: '¿El descuento es real?',
+        description: 'Cada oferta de CyberLunes y Black Friday contra su propio historial.',
+        to: '/ciberlunes-y-black-friday-uruguay',
+      },
+      {
+        label: 'Me cobran algo que no autoricé',
+        description: 'Cómo desconocer un cargo en la tarjeta.',
+        to: '/me-cobran-algo-que-no-autorice',
+      },
+      {
+        label: 'Sodimac canceló tu compra',
+        description: 'Cómo reclamar si Sodimac canceló una compra que ya pagaste.',
+        to: '/reclamo-sodimac-compra-cancelada',
+      },
+      {
+        label: 'Denunciar ruidos molestos',
+        description: 'Dónde y cómo denunciar ruidos en tu barrio.',
+        to: '/denunciar-ruidos-molestos-uruguay',
       },
     ],
     relatedHubs: [
@@ -636,6 +1109,40 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'El IRPF de tus rentas de capital.',
         to: '/herramientas/calculadora-impuestos-inversiones',
       },
+      {
+        label: 'Cuenta remunerada',
+        description: 'Qué cuentas pagan interés y cuánto.',
+        to: '/cuenta-remunerada-uruguay',
+      },
+      {
+        label: 'Préstamos P2P',
+        description: 'Prestar a personas por plataformas: rendimiento y riesgo.',
+        to: '/prestamos-p2p-uruguay',
+      },
+      {
+        label: 'Indicadores',
+        description: 'Inflación, UI, UR y las tasas que mueven tus ahorros.',
+        to: '/indicadores',
+      },
+    ],
+    terms: [
+      'plazo-fijo',
+      'interes-compuesto',
+      'tasa-efectiva-anual',
+      'tasa-de-interes',
+      'liquidez',
+      'moneda-refugio',
+      'oro',
+      'onza-troy',
+      'quilate',
+      'criptomoneda',
+      'stablecoin',
+      'usdt',
+      'cobertura-cambiaria',
+      'renta-de-fuente-extranjera',
+      'incremento-patrimonial',
+      'step-up-2025',
+      'crs',
     ],
     relatedHubs: ['finanzas-personales-y-jubilacion-uruguay', 'economia-y-mercado-uruguay'],
   },
@@ -691,7 +1198,33 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Reconocer y evitar fraudes.',
         to: '/estafas-uruguay',
       },
+      {
+        label: 'Plan de vida por ingreso',
+        description: 'El orden de cada peso según lo que ganás.',
+        to: '/plan-de-vida-uruguay',
+      },
+      {
+        label: 'Vivir con $25.000',
+        description: 'Cómo se reparte un sueldo chico, con precios de hoy.',
+        to: '/vivir-con-25000-pesos-uruguay',
+      },
+      {
+        label: 'Precios de supermercado',
+        description: 'Dónde sale menos la misma canasta.',
+        to: '/precios-de-supermercado-uruguay',
+      },
+      {
+        label: 'Meal prep',
+        description: 'Una semana de comidas en un día de cocina, con precios del SIPC.',
+        to: '/meal-prep-uruguay',
+      },
+      {
+        label: 'Sillas de escritorio',
+        description: 'Precios por modelo en tiendas uruguayas, y qué opina r/CharruaDevs.',
+        to: '/sillas-escritorio-uruguay',
+      },
     ],
+    terms: ['iass', 'bpc', 'ui', 'unidad-reajustable', 'interes-compuesto', 'inflacion'],
     relatedHubs: [
       'ahorrar-e-invertir-uruguay',
       'deudas-y-credito-uruguay',
@@ -741,7 +1274,18 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Del nominal al líquido, con aportes.',
         to: '/herramientas/calculadora-sueldo-liquido',
       },
+      {
+        label: 'Contractor desde Uruguay',
+        description: 'Trabajar para afuera como contractor: impuestos y cobro.',
+        to: '/contractor-en-uruguay',
+      },
+      {
+        label: 'Cobrar en dólares, gastar en pesos',
+        description: 'Cómo conviene mover la plata si cobrás en dólares.',
+        to: '/cobrar-en-dolares-gastar-en-pesos',
+      },
     ],
+    terms: ['irae', 'iva', 'dgi', 'dividendo-ficto', 'ficto-20', 'bpc'],
     relatedHubs: ['sueldo-trabajo-e-impuestos-uruguay', 'ahorrar-e-invertir-uruguay'],
   },
   // Los dos hubs de la tanda del 2026-09-13: no había dónde poner las guías de pagos ni las de
@@ -791,6 +1335,49 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Cómo frenar un cargo y a quién reclamar.',
         to: '/me-cobran-algo-que-no-autorice',
       },
+      {
+        label: 'Descuentos con tarjeta',
+        description: 'Los descuentos vigentes de cada banco, por rubro y comercio.',
+        to: '/descuentos-con-tarjeta-uruguay',
+      },
+      {
+        label: '¿Qué banco tiene más descuentos?',
+        description: 'Los descuentos de cada banco comparados.',
+        to: '/que-banco-tiene-mas-descuentos-uruguay',
+      },
+      {
+        label: 'Cobrar un giro del exterior',
+        description: 'Qué cobra cada vía por recibir plata de afuera.',
+        to: '/cobrar-giro-del-exterior-uruguay',
+      },
+      {
+        label: 'Cheques',
+        description: 'Cómo funcionan, cuánto tardan y qué pasa si rebotan.',
+        to: '/cheques-uruguay',
+      },
+      {
+        label: 'Retirar efectivo',
+        description: 'Dónde y cuánto cuesta sacar efectivo.',
+        to: '/retirar-efectivo-uruguay',
+      },
+      {
+        label: 'Alternativa a Bankos',
+        description: 'Los descuentos de tus tarjetas sin instalar la app.',
+        to: '/alternativa-a-bankos-uruguay',
+      },
+      {
+        label: '¿Cuánto vale una milla de Itaú?',
+        description: 'Lo que rinde en pesos cada milla del programa.',
+        to: '/cuanto-vale-una-milla-itau-uruguay',
+      },
+    ],
+    terms: [
+      'caja-de-ahorro',
+      'transferencia-internacional',
+      'remesa',
+      'declaracion-jurada-origen-de-fondos',
+      'crs',
+      'liquidez',
     ],
     relatedHubs: [
       'deudas-y-credito-uruguay',
@@ -853,6 +1440,7 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/a-quien-le-reclamo-uruguay',
       },
     ],
+    terms: ['residencia-fiscal', 'dgi'],
     relatedHubs: ['derechos-y-reclamos-uruguay', 'pareja-familia-y-dinero-uruguay'],
   },
 ]

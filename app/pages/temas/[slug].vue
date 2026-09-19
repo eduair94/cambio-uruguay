@@ -67,6 +67,19 @@
             </VRow>
           </template>
 
+          <!-- Glossary terms of this theme (utils/guideHubs.ts → `terms`). Each term page links
+               back here through the layout's "Más sobre este tema" block. -->
+          <template v-if="terms.length">
+            <h2 class="text-h6 font-weight-bold mb-3 mt-2">Términos del tema</h2>
+            <ul class="hub-terms mb-6" data-testid="hub-terms">
+              <li v-for="term in terms" :key="term.slug">
+                <NuxtLink :to="localePath(`/glosario/${term.slug}`)" class="hub-term">
+                  {{ term.term }}
+                </NuxtLink>
+              </li>
+            </ul>
+          </template>
+
           <!-- Other hubs -->
           <VCard v-if="relatedHubs.length" variant="flat" class="hub-related pa-5 mb-4">
             <h2 class="text-subtitle-1 font-weight-bold mb-3">Otros temas para explorar</h2>
@@ -113,6 +126,7 @@
 </template>
 
 <script setup lang="ts">
+import { getTerm } from '~/utils/glossary'
 import { getHub, hubGuides } from '~/utils/guideHubs'
 
 // Reject unknown slugs at the route guard so they 404 without partially
@@ -135,6 +149,11 @@ if (!hub.value) {
 }
 
 const guides = computed(() => (hub.value ? hubGuides(hub.value) : []))
+const terms = computed(() =>
+  (hub.value?.terms ?? [])
+    .map(slug => getTerm(slug))
+    .filter((term): term is NonNullable<typeof term> => Boolean(term))
+)
 const relatedHubs = computed(() =>
   (hub.value?.relatedHubs ?? []).map(getHub).filter((h): h is NonNullable<typeof h> => Boolean(h))
 )
@@ -233,6 +252,33 @@ useHead({
 }
 .hub-guide-card:hover {
   border-color: rgba(33, 150, 243, 0.4);
+}
+.hub-terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hub-term {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid rgba(var(--v-border-color), 0.25);
+  border-radius: 12px;
+  color: rgb(var(--v-theme-link));
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.hub-term:hover {
+  border-color: rgba(var(--v-theme-primary), 0.5);
+}
+.hub-term:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 2px;
 }
 .hub-resource-card {
   background: rgba(255, 255, 255, 0.03);
