@@ -77,6 +77,33 @@ export function siteTimeZone(value: unknown): string {
   return SITE_TIME_ZONE
 }
 
+/**
+ * A date and a time in one label that reads the same on the server and in the browser:
+ * "19 de setiembre, 15:26", in Uruguay's time unless `date.timeZone` says otherwise.
+ *
+ * One Intl call with both parts lets ICU choose the words between them, and ICU changed them: the
+ * VPS's Node (ICU 76) writes "19 de setiembre, 15:26" and Chrome (ICU 78) "19 de setiembre a las
+ * 15:26" — a hydration mismatch on every page that showed it (measured 2026-09-19 on
+ * /videos-de-economia-uruguay, /tendencias-uruguay, /descuentos-con-tarjeta-uruguay/<banco>). Only
+ * long month names are affected; each part alone formats the same in both versions.
+ */
+export function formatSiteDateTime(
+  value: string | number | Date,
+  locale: string,
+  date: Intl.DateTimeFormatOptions
+): string {
+  const at = value instanceof Date ? value : new Date(value)
+  const timeZone = date.timeZone ?? SITE_TIME_ZONE
+  const day = at.toLocaleDateString(locale, { ...date, timeZone })
+  const time = at.toLocaleTimeString(locale, {
+    timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+  return `${day}, ${time}`
+}
+
 /** Format an ISO currency amount generically (any 3-letter code). */
 export function formatCurrency(
   value: number | null | undefined,

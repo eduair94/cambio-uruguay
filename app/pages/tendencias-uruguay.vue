@@ -321,14 +321,7 @@ const capturedLabel = computed(() => {
   // Pinned to Montevideo, not to whoever is rendering. Without it the server (UTC) and the
   // browser (the reader's zone) format the same instant differently, which is both a wrong hour
   // for a Uruguayan page — 00:12 UTC is 21:12 here — and a hydration mismatch.
-  return new Date(at).toLocaleString('es-UY', {
-    timeZone: 'America/Montevideo',
-    day: 'numeric',
-    month: 'long',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
+  return formatSiteDateTime(at, 'es-UY', { day: 'numeric', month: 'long' })
 })
 
 function moneyLabel(verdict: MoneyVerdict): string {

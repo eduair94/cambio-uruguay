@@ -346,14 +346,7 @@ const faqItems = computed<FaqItem[]>(() => [...(page.value?.faq ?? []), ...BANKO
 const generatedLabel = computed(() => {
   const at = data.value?.generatedAt
   if (!at) return ''
-  return new Date(at).toLocaleString('es-UY', {
-    timeZone: 'America/Montevideo',
-    day: 'numeric',
-    month: 'long',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
+  return formatSiteDateTime(at, 'es-UY', { day: 'numeric', month: 'long' })
 })
 
 function fmt(n: number): string {

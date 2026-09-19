@@ -198,14 +198,7 @@ const siblingTopics = computed(() =>
 const capturedLabel = computed(() => {
   const at = snapshot.value?.capturedAt
   if (!at) return ''
-  return new Date(at).toLocaleString('es-UY', {
-    timeZone: 'America/Montevideo',
-    day: 'numeric',
-    month: 'long',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
+  return formatSiteDateTime(at, 'es-UY', { day: 'numeric', month: 'long' })
 })
 
 const canonicalUrl = computed(() => `${SITE_URL}/videos-de-economia-uruguay/${slug.value}`)

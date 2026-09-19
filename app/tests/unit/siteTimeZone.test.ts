@@ -7,7 +7,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { SITE_TIME_ZONE, siteTimeZone } from '../../utils/format'
+import { SITE_TIME_ZONE, formatSiteDateTime, siteTimeZone } from '../../utils/format'
 
 describe('siteTimeZone', () => {
   it('un día de calendario se formatea en UTC, la zona en la que new Date lo leyó', () => {
@@ -41,6 +41,26 @@ describe('siteTimeZone', () => {
       month: 'long',
     })
     expect(label).toBe('19 de setiembre')
+  })
+})
+
+// El ICU del VPS (76) escribe "19 de setiembre, 15:26" y el de Chrome (78) "19 de setiembre a las
+// 15:26" para la MISMA llamada: fecha y hora van por separado.
+describe('formatSiteDateTime', () => {
+  it('une fecha y hora sin dejarle el conector a ICU, en hora de Uruguay', () => {
+    expect(
+      formatSiteDateTime('2026-09-19T18:26:00Z', 'es-UY', { day: 'numeric', month: 'long' })
+    ).toBe('19 de setiembre, 15:26')
+  })
+
+  it('respeta otra zona si se la pasa', () => {
+    expect(
+      formatSiteDateTime('2026-09-19T18:26:00Z', 'es-UY', {
+        day: 'numeric',
+        month: 'long',
+        timeZone: 'UTC',
+      })
+    ).toBe('19 de setiembre, 18:26')
   })
 })
 
@@ -100,6 +120,30 @@ describe('toda fecha formateada fija su zona', () => {
       hits,
       `Fecha formateada sin timeZone: el servidor (UTC) y el lector (UTC-3) escriben días distintos. ` +
         `Agregá \`timeZone: siteTimeZone(<valor>)\` de utils/format.ts:\n${hits.join('\n')}`
+    ).toEqual([])
+  })
+
+  it('ningún formato junta el mes largo con la hora (usá formatSiteDateTime)', () => {
+    const hits: string[] = []
+    const any =
+      /\.(?:toLocaleString|toLocaleDateString|toLocaleTimeString)\(|new Intl\.DateTimeFormat\(/g
+    for (const file of files) {
+      if (file.endsWith(path.join('utils', 'format.ts'))) continue
+      const source = fs.readFileSync(file, 'utf8')
+      for (const match of source.matchAll(any)) {
+        const call = callAt(source, match.index! + match[0].length - 1)
+        const longDate = /month\s*:\s*'long'|dateStyle\s*:\s*'(?:long|full)'/.test(call)
+        const time = /\b(?:hour|timeStyle)\s*:/.test(call)
+        if (longDate && time)
+          hits.push(
+            `${path.relative(APP_ROOT, file)}:${source.slice(0, match.index).split('\n').length}`
+          )
+      }
+    }
+    expect(
+      hits,
+      `Mes largo + hora en una sola llamada: el conector cambia entre el ICU del servidor y el del ` +
+        `navegador ("," / "a las"). Usá formatSiteDateTime de utils/format.ts:\n${hits.join('\n')}`
     ).toEqual([])
   })
 })
