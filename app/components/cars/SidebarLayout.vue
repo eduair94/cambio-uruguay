@@ -17,7 +17,8 @@
 // caían debajo de los filtros y la columna de filtros quedaba sola, angosta, con las etiquetas
 // cortadas (medido el 2026-09-19 en /oportunidades-autos-usados-uruguay y
 // /autos-chocados-y-con-deuda-uruguay). Con cada columna en su celda, lo que se inserte en el medio
-// cae en una fila nueva y no mueve nada. No se toca el anuncio: se lo deja donde quede.
+// cae en una fila nueva, a lo ancho, y no mueve nada. Es la misma regla que `critical.css` aplica a
+// todo VRow de varias columnas: la unidad queda entera y visible al final de la fila.
 </script>
 
 <style scoped>
@@ -37,6 +38,10 @@
   .cars-layout__results {
     grid-column: 2;
     grid-row: 1;
+  }
+  /* Lo insertado cae en una fila nueva; sin esto ocuparía sólo la celda angosta de los filtros. */
+  .cars-layout > :deep(.google-auto-placed) {
+    grid-column: 1 / -1;
   }
 }
 </style>

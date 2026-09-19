@@ -53,6 +53,23 @@ ins.adsbygoogle {
   text-align: center;
 }
 
+/* Y a veces mete la unidad ENTRE dos columnas de un VRow. Es un hijo de ancho
+   completo en una fila flex que envuelve, así que la parte en dos: una columna
+   queda sola y angosta —filtros con las etiquetas cortadas— y la otra cae debajo.
+   En una sola pasada por las 228 plantillas del sitio (2026-09-19) pasó en /mapa,
+   /mapa-de-temas, /suplemento-solidario-bps, /que-empresa-abrir-uruguay y
+   /salir-del-clearing, y Google elige otro lugar en cada carga: cualquier fila de
+   varias columnas está expuesta.
+
+   La unidad pasa al final de su fila, entera, a lo ancho y visible, y las columnas
+   vuelven a quedar juntas. Sólo en filas de dos columnas o más: en una fila de una
+   sola columna no parte nada, y moverla la alejaría de donde la puso Google.
+   99 le gana a los `order-*` de Vuetify (llegan a 13), que algunas filas usan para
+   invertir las columnas en escritorio. */
+.v-row:has(> .v-col ~ .v-col) > .google-auto-placed {
+  order: 99;
+}
+
 /* Segunda capa, que no depende de cómo llame Google a su contenedor: el envoltorio
    cae POR ENCIMA del .v-container y arrastra a la página entera. Cada página vive
    dentro de un .v-container, así que declarar ahí la alineación corta cualquier

@@ -10,9 +10,9 @@
           :aria-label="t('capture.dismiss')"
           @click="dismiss"
         />
-        <div class="d-flex align-start ga-3 mb-3">
+        <div class="nl-capture-head d-flex align-start ga-3 mb-3">
           <VIcon color="primary" size="28">mdi-email-fast-outline</VIcon>
-          <div>
+          <div class="nl-capture-text">
             <h2 class="text-subtitle-1 font-weight-bold mb-1">{{ t('capture.title') }}</h2>
             <p class="text-body-2 text-medium-emphasis mb-0">{{ t('capture.lead') }}</p>
           </div>
@@ -146,5 +146,16 @@ onBeforeUnmount(() => stopObserving?.())
 }
 .nl-capture-form {
   max-width: 26rem;
+}
+/* Auto Ads llegó a meter su unidad como primer hijo de esta fila (medido el 2026-09-19 en /acerca,
+   /privacidad, /terminos, /pensiones-estudiantiles-uruguay…): sin envolver, la unidad le quitaba
+   656 px y el ícono y el texto quedaban apretados a la derecha. Con wrap la unidad ocupa su propia
+   línea, entera, y el ícono y el texto siguen juntos debajo. */
+.nl-capture-head {
+  flex-wrap: wrap;
+}
+.nl-capture-text {
+  flex: 1 1 0;
+  min-width: 0;
 }
 </style>
