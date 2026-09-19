@@ -187,6 +187,41 @@ describe("enrichment", () => {
     });
     expect(slugify("Citroën C3 Aircross")).toBe("citroen-c3-aircross");
   });
+  // MLU700552753: listed at the down payment, the real price in the description.
+  it("prices the car at the cash price its description states, and keeps the listed number aside", () => {
+    const detail = {
+      readAt: raw.observedAt, price: 8990, currency: "USD" as const, active: true, brand: "Hyundai", model: "HB20", year: 2023,
+      km: 30000, version: null, engineText: null, sellerName: null, bodyType: null, color: null, doors: null, flags: [],
+      description: "US$12990 Contado\nUS$8990 y cuotas\nHyundai New hb20\n1.0 nafta",
+    };
+    const car = enrichCarListing({ ...raw, title: "Hyundai Hb20 1.0 Comfort Mt", price: 8990 }, {
+      usdUyu: 40, trims: [], firstSeen: raw.observedAt, lastSeen: raw.observedAt, detail,
+      priceHistory: [
+        { price: 9990, currency: "USD", observedAt: "2026-09-01T00:00:00.000Z" },
+        { price: 8990, currency: "USD", observedAt: raw.observedAt },
+      ],
+    });
+    expect(car).toMatchObject({ price: 12990, listedPrice: 8990, priceUsd: 12990, flags: [] });
+    // A smaller down payment is not a cheaper car.
+    expect(car.priceDrop).toBeNull();
+  });
+  it("marks a listed down payment with no stated cash price as financing", () => {
+    const detail = {
+      readAt: raw.observedAt, price: 5000, currency: "USD" as const, active: true, brand: "Chevrolet", model: "Onix", year: 2019,
+      km: 90000, version: null, engineText: null, sellerName: null, bodyType: null, color: null, doors: null, flags: [],
+      description: "Retirá con U$S 5.000 y el saldo en cuotas a sola firma",
+    };
+    const car = enrichCarListing({ ...raw, price: 5000 }, {
+      usdUyu: 40, trims: [], firstSeen: raw.observedAt, lastSeen: raw.observedAt, priceHistory: [], detail,
+    });
+    expect(car).toMatchObject({ price: 5000, listedPrice: null, flags: ["financing"] });
+  });
+  it("a title that states the cash price is not a second, mismatching price", () => {
+    const car = enrichCarListing({ ...raw, title: "Onix 2019 U$S 12.990 contado", price: 6500 }, {
+      usdUyu: 40, trims: [], firstSeen: raw.observedAt, lastSeen: raw.observedAt, priceHistory: [], detail: null,
+    });
+    expect(car).toMatchObject({ price: 12990, listedPrice: 6500, flags: [] });
+  });
   it("converts pesos with the cycle rate and marks it", () => {
     const car = enrichCarListing({ ...raw, price: 1115000, currency: "UYU" }, {
       usdUyu: 40, trims: [], firstSeen: raw.observedAt, lastSeen: raw.observedAt, priceHistory: [], detail: null,

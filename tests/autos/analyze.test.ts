@@ -246,6 +246,12 @@ describe("detailVerdict", () => {
     expect(detailVerdict(subject, detailFor(subject, { version: "1.0 Lt" }), NOW, trims)).toBe("detail_engine_mismatch");
     expect(detailVerdict(subject, detailFor(subject, { flags: ["damaged"] }), NOW, trims)).toBe("detail_flag_damaged");
   });
+  // The page shows the listed number; the subject may be priced at the cash price its text states.
+  it("checks the page against the LISTED number when the price is the stated cash price", () => {
+    const subject = car({ price: 12_990, priceUsd: 12_990, listedPrice: 8_990 });
+    expect(detailVerdict(subject, detailFor(subject, { price: 8_990 }), NOW, trims)).toBeNull();
+    expect(detailVerdict(subject, detailFor(subject, { price: 12_990 }), NOW, trims)).toBe("detail_price_changed");
+  });
   it("does not reject a version text that names no known trim", () => {
     const subject = car();
     expect(detailVerdict(subject, detailFor(subject, { version: "1.4 Mt" }), NOW, trims)).toBeNull();

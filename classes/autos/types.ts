@@ -147,6 +147,11 @@ export interface CarListing extends RawCarListing {
   flags: CarTextFlag[];
   priceUsd: number;
   priceConverted: boolean;
+  /**
+   * The number the portal lists, when it is NOT the car's price: the advert states a different cash
+   * price ("US$12990 Contado") and `price` holds that one. Null when the listed number is the price.
+   */
+  listedPrice?: number | null;
   firstSeen: string;
   lastSeen: string;
   priceDrop: { from: number; currency: CarCurrency; since: string } | null;

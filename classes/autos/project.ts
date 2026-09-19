@@ -35,6 +35,7 @@ export function publicCarListing(listing: CarListing, opportunity: PublicCarList
     year: listing.year,
     km: listing.kmQuality === "ok" ? listing.km : null,
     price: listing.price,
+    listedPrice: listing.listedPrice ?? null,
     currency: listing.currency,
     priceUsd: listing.priceUsd,
     priceConverted: listing.priceConverted,

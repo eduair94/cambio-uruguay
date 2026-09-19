@@ -26,7 +26,7 @@ describe("publicCarListing", () => {
     const row = publicCarListing(car(), null)!;
     expect(Object.keys(row).sort()).toEqual([
       "brand", "brandSlug", "currency", "currencyInferred", "dealerName", "department", "engine", "firstSeen", "flags", "fuel",
-      "key", "km", "lastSeen", "marketSlug", "model", "modelSlug", "neighborhood", "opportunity", "permalink", "picture",
+      "key", "km", "lastSeen", "listedPrice", "marketSlug", "model", "modelSlug", "neighborhood", "opportunity", "permalink", "picture",
       "pictureCount", "price", "priceConverted", "priceDrop", "priceUsd", "reference", "risks", "sellerType", "source",
       "sourceName",
       "title", "transmission", "trim", "year",

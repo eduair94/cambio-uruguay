@@ -179,6 +179,34 @@ dentro del snapshot. Toda oportunidad publicada pasó por su ficha (en las webs,
 ML y Facebook, la página del aviso): activa, mismo precio/año/km, sin menciones de choque, recupero,
 deuda/leasing o chapa extranjera. Monedas deducidas fuera. No es tasación.
 
+### El precio es el de contado que dice el aviso (2026-09-19)
+
+Las automotoras publican la **entrega** como precio y ponen el precio real en la descripción:
+MLU700552753 (Hyundai HB20 2023) figuraba a US$ 8.990 con "US$12990 Contado / US$8990 y cuotas" en la
+descripción, y la página lo daba 30 % más barato que el mismo auto. Medido ese día: 2.015 de 10.515
+descripciones mencionan "contado"; 640 declaran un precio de contado; en 34 difiere del publicado; y
+3 de las 89 oportunidades publicadas eran esto (HB20 +44 %, Nissan March +73 %, un Spark que publicaba
+la entrega sin decir el contado).
+
+`classes/autos/cashPrice.ts` lee título + descripción y decide el precio (`priceBasisOf`):
+
+- **Si el aviso dice un precio de contado, ése es el precio** del auto (`price`, `priceUsd`: cohortes,
+  medianas, informe, tasador y la tarjeta). El número del portal queda en `listedPrice` y la tarjeta
+  dice "En el portal figura US$ 8.990". La ficha se verifica contra el publicado (`listedPrice`).
+- **Si el publicado aparece como entrega** ("US$8990 y cuotas", "retirá con", "entrega de") **y no hay
+  contado**, el precio es desconocido: bandera `financing`, fuera de oportunidades.
+- **Dos contados distintos** en el mismo texto: ninguno se usa, `financing`.
+- **Descripción vieja:** si el contado que dice el texto es un precio al que ESTE aviso estuvo
+  publicado antes ("U$S12.900 contado" en un aviso bajado a 12.300), manda el publicado. No aplica si
+  el publicado es la entrega.
+- Se ignora lo que también se paga "contado" y no es el auto: la patente ("Patente Anual Contado es
+  de $ 38.019", el caso más común), el seguro, "50 % contado", "contador". Un monto sólo cuenta en la
+  moneda del aviso, entre 0,8× y 4× el publicado, y nunca si es la misma cifra que una entrega del texto.
+- Con el contado como precio, una baja del publicado (una entrega más chica) no es una baja del auto:
+  `priceDrop` se apaga.
+
+Los casos reales están en `tests/autos/cashPrice.test.ts`.
+
 ## Precio con motivo: el riesgo declarado
 
 `/autos-chocados-y-con-deuda-uruguay`. Lo que el aviso DICE del auto —deuda o prenda, papeles que

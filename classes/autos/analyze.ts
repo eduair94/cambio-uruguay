@@ -180,7 +180,8 @@ export function detailVerdict(subject: CarListing, detail: CarDetail | undefined
   if (!(Date.parse(detail.readAt) >= cutoff)) return "detail_stale";
   // An ended advert must not keep being re-fetched even if its last-seen price also drifted.
   if (!detail.active) return "detail_inactive";
-  if (detail.price !== subject.price || detail.currency !== subject.currency) return "detail_price_changed";
+  // The page shows the LISTED number; `price` may be the cash price its text states.
+  if (detail.price !== (subject.listedPrice ?? subject.price) || detail.currency !== subject.currency) return "detail_price_changed";
   if (!detail.brand || slugify(detail.brand) !== subject.brandSlug) return "detail_mismatch";
   if (!detail.model || slugify(detail.model) !== subject.modelSlug) return "detail_mismatch";
   if (detail.year !== subject.year) return "detail_mismatch";

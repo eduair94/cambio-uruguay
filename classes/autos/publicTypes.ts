@@ -29,6 +29,11 @@ export interface PublicCarListing {
   year: number;
   km: number | null;
   price: number;
+  /**
+   * What the portal lists when it is NOT the car's price: the advert states a cash price ("US$12990
+   * Contado") and `price` is that one; the listed number was the down payment. Null otherwise.
+   */
+  listedPrice: number | null;
   currency: PublicCarCurrency;
   priceUsd: number;
   priceConverted: boolean;

@@ -1,3 +1,4 @@
+import { priceBasisOf } from "./cashPrice";
 import { buildTrimIndex, matchTrim, trimLabelFor, type TrimIndex } from "./catalog/trims";
 import { engineOf, kmQuality, slugify, titleFlags } from "./normalize";
 import { CAR_SOURCES, carKeyFor } from "./sources/registry";
@@ -36,7 +37,15 @@ export function enrichCarListing(raw: RawCarListing, context: EnrichContext): Ca
   const trim = matchTrim(identity, context.trimIndex ?? buildTrimIndex(context.trims));
   const brandSlug = slugify(raw.brand);
   const modelSlug = slugify(raw.model);
-  const flags = new Set([...titleFlags(raw.title, raw.price, raw.currency), ...(context.detail?.flags ?? [])]);
+  // The car's price is the cash price the advert states, not the listed number: dealers list the down
+  // payment ("US$8990 y cuotas") and write "US$12990 Contado" in the description (./cashPrice.ts).
+  const basis = priceBasisOf(raw, context.detail?.description, context.priceHistory);
+  // The title is checked against the car's price, so a title that states the cash price is not a
+  // second, mismatching price.
+  const flags = new Set([...titleFlags(raw.title, basis.price, raw.currency), ...(context.detail?.flags ?? [])]);
+  // A stated cash price settles what the car costs; a listed down payment without one leaves it unknown.
+  if (basis.cashKnown) flags.delete("financing");
+  if (basis.financing) flags.add("financing");
   return {
     ...raw,
     key: carKey(raw.id, raw.source),
@@ -49,11 +58,15 @@ export function enrichCarListing(raw: RawCarListing, context: EnrichContext): Ca
     trimLabel: trimLabelFor(trim, context.trims),
     kmQuality: kmQuality(raw.km),
     flags: [...flags].sort(),
-    priceUsd: raw.currency === "USD" ? raw.price : Math.round(raw.price / context.usdUyu),
+    price: basis.price,
+    listedPrice: basis.listedPrice,
+    priceUsd: raw.currency === "USD" ? basis.price : Math.round(basis.price / context.usdUyu),
     priceConverted: raw.currency !== "USD",
     firstSeen: context.firstSeen,
     lastSeen: context.lastSeen,
-    priceDrop: priceDropOf(raw, context.priceHistory),
+    // The history is of LISTED numbers: once the cash price is the price, a drop in the listed number
+    // (a smaller down payment) is not a drop in what the car costs.
+    priceDrop: basis.listedPrice === null ? priceDropOf(raw, context.priceHistory) : null,
     detail: context.detail,
     photoCheck: context.photoCheck ?? null,
     reference: null,
