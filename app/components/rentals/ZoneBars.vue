@@ -129,6 +129,8 @@ const rows = computed<Row[]>(() => {
   color: rgba(var(--v-theme-on-surface), 0.76);
 }
 .zone-bars__rows {
+  /* On a wide card (opportunities) a full-width track stops reading as a comparison. */
+  max-inline-size: 34rem;
   list-style: none;
   display: grid;
   gap: 6px;
