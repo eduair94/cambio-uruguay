@@ -12,7 +12,10 @@ describe('servicios filter in the rental directory', () => {
 
   it('restricts to the official areas the caller resolved', () => {
     const query = normalizeRentalQuery({ servicios: 'luz' })
-    const { filter, nonLocation, withoutNeighborhood } = buildRentalFilter(query, 10, 40, ['mvd:8', 'ute:3210'])
+    const { filter, nonLocation, withoutNeighborhood } = buildRentalFilter(query, 10, 40, [
+      'mvd:8',
+      'ute:3210',
+    ])
     expect(filter['officialZone.zone']).toEqual({ $in: ['mvd:8', 'ute:3210'] })
     expect(nonLocation['officialZone.zone']).toEqual({ $in: ['mvd:8', 'ute:3210'] })
     expect(withoutNeighborhood['officialZone.zone']).toEqual({ $in: ['mvd:8', 'ute:3210'] })
@@ -24,7 +27,13 @@ describe('servicios filter in the rental directory', () => {
   })
 
   it('is ignored by callers that do not resolve it (detail pages, alerts) and without a request', () => {
-    expect(buildRentalFilter(normalizeRentalQuery({ servicios: 'luz' }), 10, 40).filter['officialZone.zone']).toBeUndefined()
-    expect(buildRentalFilter(normalizeRentalQuery({}), 10, 40, ['mvd:8']).filter['officialZone.zone']).toBeUndefined()
+    expect(
+      buildRentalFilter(normalizeRentalQuery({ servicios: 'luz' }), 10, 40).filter[
+        'officialZone.zone'
+      ]
+    ).toBeUndefined()
+    expect(
+      buildRentalFilter(normalizeRentalQuery({}), 10, 40, ['mvd:8']).filter['officialZone.zone']
+    ).toBeUndefined()
   })
 })

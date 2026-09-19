@@ -44,6 +44,98 @@
       </template>
       <p class="hint">{{ t('servicesShort') }}</p>
     </template>
+    <template v-else-if="layer === 'power'">
+      <p v-if="officialNote" class="meta">{{ officialNote }}</p>
+      <p v-if="meta?.power?.status === 'collecting'" class="notice">
+        {{
+          t('powerCollecting', {
+            date: date(meta.power.observedFrom),
+            days: number(Math.floor(meta.power.observedDays)),
+          })
+        }}
+      </p>
+      <p v-else-if="!zone.utilities?.power" class="notice">{{ t('unavailableSnapshot') }}</p>
+      <template v-else>
+        <p v-if="meta?.power?.status === 'stale'" class="notice">{{ t('stale') }}</p>
+        <p v-if="zone.utilities.power.geography === 'department'" class="notice">
+          {{ t('powerDepartment') }}
+        </p>
+        <p class="stat-label">{{ t('powerStat') }}</p>
+        <strong class="stat">{{
+          t('powerMinutes', { n: decimal(zone.utilities.power.unplannedMinutes) })
+        }}</strong>
+        <p v-if="level('luz')" class="level" :class="`level--${level('luz')}`">
+          {{ t(levelKey(level('luz')!)) }}
+        </p>
+        <dl class="facts">
+          <div>
+            <dt>{{ t('powerCuts', { n: decimal(zone.utilities.power.cutsPerMonth) }) }}</dt>
+          </div>
+          <div>
+            <dt>
+              {{
+                t('powerCutsPerThousand', { n: decimal(zone.utilities.power.cutsPerThousand, 2) })
+              }}
+            </dt>
+          </div>
+          <div>
+            <dt>{{ t('powerPlanned', { n: decimal(zone.utilities.power.plannedMinutes) }) }}</dt>
+          </div>
+          <div>
+            <dt>{{ t('powerCustomers', { n: number(zone.utilities.power.customers) }) }}</dt>
+          </div>
+        </dl>
+      </template>
+      <p class="hint">{{ t('powerShort') }}</p>
+    </template>
+    <template v-else-if="layer === 'water'">
+      <p v-if="officialNote" class="meta">{{ officialNote }}</p>
+      <p v-if="!zone.utilities?.water" class="notice">{{ t('unavailableSnapshot') }}</p>
+      <template v-else>
+        <p v-if="meta?.water?.status === 'stale'" class="notice">{{ t('stale') }}</p>
+        <p v-if="zone.utilities.water.geography === 'department'" class="notice">
+          {{ t('waterDepartment') }}
+        </p>
+        <p class="stat-label">{{ t('waterStat') }}</p>
+        <strong class="stat">{{
+          t('waterNotices', { n: number(zone.utilities.water.notices) })
+        }}</strong>
+        <p v-if="level('agua')" class="level" :class="`level--${level('agua')}`">
+          {{ t(levelKey(level('agua')!)) }}
+        </p>
+        <p class="meta">{{ t('waterHours', { n: number(zone.utilities.water.hours) }) }}</p>
+      </template>
+      <p class="hint">{{ t('waterShort') }}</p>
+    </template>
+    <template v-else-if="layer === 'claims'">
+      <p v-if="officialNote" class="meta">{{ officialNote }}</p>
+      <p v-if="!zone.utilities?.claims" class="notice">
+        {{
+          zone.ref.department === 'Montevideo' ? t('unavailableSnapshot') : t('claimsMontevideo')
+        }}
+      </p>
+      <template v-else>
+        <p v-if="meta?.claims?.status === 'stale'" class="notice">{{ t('stale') }}</p>
+        <p class="stat-label">{{ t('claimsStat') }}</p>
+        <dl class="facts claim-facts">
+          <div v-for="category in claimCategories" :key="category">
+            <dt>{{ t(`claim_${category}`) }}</dt>
+            <dd>
+              {{
+                zone.utilities.claims.perThousand
+                  ? decimal(zone.utilities.claims.perThousand[category])
+                  : t('noData')
+              }}
+            </dd>
+            <small>
+              {{ t('claimsCount', { n: number(zone.utilities.claims.counts[category]) })
+              }}<template v-if="level(category)"> · {{ t(levelKey(level(category)!)) }}</template>
+            </small>
+          </div>
+        </dl>
+      </template>
+      <p class="hint">{{ t('claimsShort') }}</p>
+    </template>
     <template v-else>
       <p v-if="!zone.crime || zone.crime.status === 'unavailable'" class="notice">
         {{ t('unavailableSnapshot') }}
@@ -100,6 +192,41 @@
         <p class="hint">{{ t('servicesHint') }}</p>
         <p class="hint">{{ t('nearbyHint') }}</p>
       </template>
+      <template v-else-if="layer === 'power'">
+        <p class="hint">{{ t('powerHint') }}</p>
+        <p v-if="meta?.power?.observedFrom" class="hint">
+          {{
+            t('observed', {
+              from: date(meta.power.observedFrom),
+              to: date(meta.power.observedTo),
+              days: number(Math.floor(meta.power.observedDays)),
+              coverage: number(Math.round(meta.power.coverage * 100)),
+            })
+          }}
+        </p>
+        <p class="hint">{{ t('levelHint') }}</p>
+      </template>
+      <template v-else-if="layer === 'water'">
+        <p v-if="meta?.water" class="hint">
+          {{
+            t('waterHint', {
+              matched: number(meta.water.montevideoMatched),
+              total: number(meta.water.montevideoNotices),
+            })
+          }}
+        </p>
+        <p v-if="meta?.water" class="hint">
+          {{ t('period', { from: date(meta.water.periodFrom), to: date(meta.water.periodTo) }) }}
+        </p>
+        <p class="hint">{{ t('servicesLayerHint') }}</p>
+      </template>
+      <template v-else-if="layer === 'claims'">
+        <p class="hint">{{ t('claimsHint') }}</p>
+        <p v-if="meta?.claims" class="hint">
+          {{ t('period', { from: date(meta.claims.periodFrom), to: date(meta.claims.periodTo) }) }}
+        </p>
+        <p class="hint">{{ t('levelHint') }}</p>
+      </template>
       <template v-else>
         <dl v-if="zone.crime && zone.crime.status !== 'unavailable'" class="facts">
           <div v-for="(count, offense) in zone.crime.byOffense" :key="offense">
@@ -127,17 +254,22 @@
 
 <script setup lang="ts">
 import type {
+  RentalClaimCategory,
+  RentalServiceAttribute,
+  RentalServiceLevel,
   RentalZone,
   RentalZoneSource,
   RentalZoneServiceCategory,
+  RentalZoneUtilitiesMeta,
 } from '~/utils/rentalZoneTypes'
 import { rentalZoneMessages } from '~/utils/rentalZoneMessages'
 const props = defineProps<{
   zone: RentalZone
-  layer: 'prices' | 'services' | 'crime'
+  layer: 'prices' | 'services' | 'crime' | 'power' | 'water' | 'claims'
   priceStatistic: 'median' | 'mean'
   rentalDate: string | null
   priceSources: RentalZoneSource[]
+  meta?: RentalZoneUtilitiesMeta | null
 }>()
 const emit = defineEmits<{ close: [] }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalZoneMessages })
@@ -151,6 +283,28 @@ const serviceCategories: RentalZoneServiceCategory[] = [
   'transit',
   'education',
 ]
+const claimCategories: RentalClaimCategory[] = ['alumbrado', 'saneamiento', 'limpieza', 'calles']
+const decimal = (value: number | null | undefined, digits = 1) =>
+  value == null
+    ? t('noData')
+    : new Intl.NumberFormat(locale.value, { maximumFractionDigits: digits }).format(value)
+const level = (attribute: RentalServiceAttribute): RentalServiceLevel | null =>
+  props.zone.utilities?.levels[attribute] ?? null
+const levelKey = (value: RentalServiceLevel) =>
+  value === 'low' ? 'levelLow' : value === 'mid' ? 'levelMid' : 'levelHigh'
+const officialNote = computed(() => {
+  const official = props.zone.utilities?.official
+  if (!official) return ''
+  if (official.match === 'alias')
+    return t('aliasNote', {
+      name: official.name,
+      share: Math.round((official.share ?? 0) * 100),
+      zone: props.zone.ref.neighborhood,
+    })
+  return official.name.toLowerCase() !== props.zone.ref.neighborhood.toLowerCase()
+    ? t('officialArea', { name: official.name })
+    : ''
+})
 const number = (value: number | null | undefined) =>
   value == null ? t('noData') : new Intl.NumberFormat(locale.value).format(value)
 const money = (value: number | null | undefined) =>
@@ -186,16 +340,29 @@ const additionalPrices = computed(() => [
   { key: 'monthlyTotal', value: props.zone.prices.monthlyTotal },
   { key: 'builtSquareMeter', value: props.zone.prices.builtSquareMeter },
 ])
+const layerSource = computed(() =>
+  props.layer === 'power'
+    ? props.meta?.power?.source
+    : props.layer === 'water'
+      ? props.meta?.water?.source
+      : props.layer === 'claims'
+        ? props.meta?.claims?.source
+        : undefined
+)
 const sources = computed(() =>
-  props.layer === 'services'
-    ? props.zone.services
-      ? [props.zone.services.source]
+  ['power', 'water', 'claims'].includes(props.layer)
+    ? layerSource.value
+      ? [layerSource.value]
       : []
-    : props.layer === 'crime'
-      ? props.zone.crime
-        ? [props.zone.crime.source]
+    : props.layer === 'services'
+      ? props.zone.services
+        ? [props.zone.services.source]
         : []
-      : props.priceSources
+      : props.layer === 'crime'
+        ? props.zone.crime
+          ? [props.zone.crime.source]
+          : []
+        : props.priceSources
 )
 const dataAsOf = computed(() =>
   props.layer === 'prices' ? props.rentalDate : sources.value[0]?.dataAsOf
@@ -331,6 +498,24 @@ details {
   min-height: 44px;
   margin-top: 4px;
   color: rgb(var(--v-theme-link));
+}
+.level {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(var(--v-theme-on-surface), 0.08);
+}
+.level--low {
+  background: rgba(var(--v-theme-success), 0.16);
+}
+.level--high {
+  background: rgba(var(--v-theme-error), 0.14);
+}
+.claim-facts small {
+  color: rgba(var(--v-theme-on-surface), 0.76);
 }
 @media (max-width: 599px) {
   .facts > div {

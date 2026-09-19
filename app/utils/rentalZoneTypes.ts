@@ -100,7 +100,13 @@ export interface RentalZoneBoundaryCollection {
 }
 
 /** Neighbourhood service attributes the directory can filter by ("the third with the fewest problems"). */
-export type RentalServiceAttribute = 'luz' | 'agua' | 'alumbrado' | 'saneamiento' | 'limpieza' | 'calles'
+export type RentalServiceAttribute =
+  | 'luz'
+  | 'agua'
+  | 'alumbrado'
+  | 'saneamiento'
+  | 'limpieza'
+  | 'calles'
 export type RentalServiceLevel = 'low' | 'mid' | 'high'
 export type RentalClaimCategory = 'alumbrado' | 'saneamiento' | 'limpieza' | 'calles'
 /** Status of a service layer; `collecting` = the power ledger has not observed enough days yet. */
@@ -191,6 +197,11 @@ export interface RentalZoneImpact {
   joint: {
     zones: number
     r2: number
-    coefficients: Array<{ attribute: RentalImpactAttribute; pctPerSd: number; low: number; high: number }>
+    coefficients: Array<{
+      attribute: RentalImpactAttribute
+      pctPerSd: number
+      low: number
+      high: number
+    }>
   } | null
 }

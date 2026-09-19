@@ -384,6 +384,10 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
       </div>
     </section>
 
+    <div id="servicios-del-barrio" class="rental-analysis__impact">
+      <RentalsZonesPriceImpact />
+    </div>
+
     <div id="estimar-alquiler" class="rental-analysis__estimator">
       <RentalsPriceEstimator
         :department="query.department"

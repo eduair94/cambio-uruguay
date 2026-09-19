@@ -21,11 +21,21 @@ const power = (minutes: number, name = 'Pocitos', department = 'Montevideo') => 
   cutsPerMonth: 3,
   cutsPerThousand: 0.064,
 })
-const counts = (value: number) => ({ alumbrado: value, saneamiento: value, limpieza: value, calles: value })
+const counts = (value: number) => ({
+  alumbrado: value,
+  saneamiento: value,
+  limpieza: value,
+  calles: value,
+})
 const raw = {
   version: 1,
   generatedAt: '2026-10-20T06:53:00.000Z',
-  names: { 'mvd:8': 'Pocitos', 'mvd:10': 'Parque Batlle, Villa Dolores', 'ute:3210': 'Punta Del Este', bad: 'x' },
+  names: {
+    'mvd:8': 'Pocitos',
+    'mvd:10': 'Parque Batlle, Villa Dolores',
+    'ute:3210': 'Punta Del Este',
+    bad: 'x',
+  },
   localities: {
     'ute:3210': { name: 'Punta Del Este', department: 'Maldonado', aliases: [] },
     'ute:3205': { name: 'Maldonado Urbano', department: 'Maldonado', aliases: ['Maldonado'] },
@@ -36,7 +46,11 @@ const raw = {
     observedTo: '2026-10-19',
     observedDays: 30,
     coverage: 0.97,
-    zones: { 'mvd:8': power(12), 'mvd:10': power(40, 'Parque Batlle, Villa Dolores'), 'ute:3210': power(90, 'Punta Del Este', 'Maldonado') },
+    zones: {
+      'mvd:8': power(12),
+      'mvd:10': power(40, 'Parque Batlle, Villa Dolores'),
+      'ute:3210': power(90, 'Punta Del Este', 'Maldonado'),
+    },
     departments: { Canelones: power(55, 'Canelones', 'Canelones') },
   },
   water: {
@@ -67,7 +81,10 @@ const raw = {
     },
   },
 }
-const aliases = { 'montevideo|parque batlle': { zone: 'mvd:10', share: 0.92, n: 40 }, bad: { zone: 'nope', share: 1, n: 1 } }
+const aliases = {
+  'montevideo|parque batlle': { zone: 'mvd:10', share: 0.92, n: 40 },
+  bad: { zone: 'nope', share: 1, n: 1 },
+}
 const snapshot = projectRentalZoneServices(raw, aliases)!
 
 describe('projectRentalZoneServices', () => {
@@ -82,40 +99,96 @@ describe('projectRentalZoneServices', () => {
 
 describe('attachRentalZoneUtilities', () => {
   it('uses the INE area of an exact official name', () => {
-    const zone = attachRentalZoneUtilities(snapshot, { department: 'Montevideo', neighborhood: 'Pocitos' }, '8', now)!
+    const zone = attachRentalZoneUtilities(
+      snapshot,
+      { department: 'Montevideo', neighborhood: 'Pocitos' },
+      '8',
+      now
+    )!
     expect(zone.official).toEqual({ id: 'mvd:8', name: 'Pocitos', match: 'exact', share: null })
     expect(zone.power).toMatchObject({ geography: 'zone', unplannedMinutes: 12 })
-    expect(zone.water).toEqual({ geography: 'zone', geographyName: 'Pocitos', notices: 2, hours: 9 })
+    expect(zone.water).toEqual({
+      geography: 'zone',
+      geographyName: 'Pocitos',
+      notices: 2,
+      hours: 9,
+    })
     expect(zone.claims?.perThousand?.alumbrado).toBe(2.1)
     expect(zone.levels).toEqual({ luz: 'low', agua: 'low', alumbrado: 'low' })
   })
 
   it('reaches the INE area through a measured alias, saying so', () => {
-    const zone = attachRentalZoneUtilities(snapshot, { department: 'Montevideo', neighborhood: 'PARQUE BATLLE' }, null, now)!
-    expect(zone.official).toEqual({ id: 'mvd:10', name: 'Parque Batlle, Villa Dolores', match: 'alias', share: 0.92 })
+    const zone = attachRentalZoneUtilities(
+      snapshot,
+      { department: 'Montevideo', neighborhood: 'PARQUE BATLLE' },
+      null,
+      now
+    )!
+    expect(zone.official).toEqual({
+      id: 'mvd:10',
+      name: 'Parque Batlle, Villa Dolores',
+      match: 'alias',
+      share: 0.92,
+    })
     expect(zone.levels.agua).toBe('high')
   })
 
   it('matches interior towns by UTE name and falls back to department context', () => {
-    const pde = attachRentalZoneUtilities(snapshot, { department: 'Maldonado', neighborhood: 'Punta del Este' }, null, now)!
+    const pde = attachRentalZoneUtilities(
+      snapshot,
+      { department: 'Maldonado', neighborhood: 'Punta del Este' },
+      null,
+      now
+    )!
     expect(pde.official?.id).toBe('ute:3210')
     expect(pde.power?.geography).toBe('zone')
     expect(pde.water).toMatchObject({ geography: 'department', notices: 40 })
-    const town = attachRentalZoneUtilities(snapshot, { department: 'Maldonado', neighborhood: 'Maldonado' }, null, now)!
+    const town = attachRentalZoneUtilities(
+      snapshot,
+      { department: 'Maldonado', neighborhood: 'Maldonado' },
+      null,
+      now
+    )!
     expect(town.official?.id).toBe('ute:3205')
-    const canelones = attachRentalZoneUtilities(snapshot, { department: 'Canelones', neighborhood: 'Solymar' }, null, now)!
+    const canelones = attachRentalZoneUtilities(
+      snapshot,
+      { department: 'Canelones', neighborhood: 'Solymar' },
+      null,
+      now
+    )!
     expect(canelones.official).toBeNull()
-    expect(canelones.power).toMatchObject({ geography: 'department', geographyName: 'Canelones', unplannedMinutes: 55 })
-    expect(attachRentalZoneUtilities(snapshot, { department: 'Rocha', neighborhood: 'x' }, null, now)).toBeNull()
+    expect(canelones.power).toMatchObject({
+      geography: 'department',
+      geographyName: 'Canelones',
+      unplannedMinutes: 55,
+    })
+    expect(
+      attachRentalZoneUtilities(snapshot, { department: 'Rocha', neighborhood: 'x' }, null, now)
+    ).toBeNull()
   })
 
   it('hides a layer once it is too old and never shows power while it is still collecting', () => {
     const late = Date.parse('2026-11-05T00:00:00Z')
-    const zone = attachRentalZoneUtilities(snapshot, { department: 'Montevideo', neighborhood: 'Pocitos' }, '8', late)!
+    const zone = attachRentalZoneUtilities(
+      snapshot,
+      { department: 'Montevideo', neighborhood: 'Pocitos' },
+      '8',
+      late
+    )!
     expect(zone.power).toBeNull()
     expect(zone.levels.luz).toBeUndefined()
-    const collecting = projectRentalZoneServices({ ...raw, power: { ...raw.power, status: 'collecting' } }, aliases)
-    expect(attachRentalZoneUtilities(collecting, { department: 'Montevideo', neighborhood: 'Pocitos' }, '8', now)!.power).toBeNull()
+    const collecting = projectRentalZoneServices(
+      { ...raw, power: { ...raw.power, status: 'collecting' } },
+      aliases
+    )
+    expect(
+      attachRentalZoneUtilities(
+        collecting,
+        { department: 'Montevideo', neighborhood: 'Pocitos' },
+        '8',
+        now
+      )!.power
+    ).toBeNull()
     expect(rentalZoneUtilitiesMeta(collecting, now)?.power?.status).toBe('collecting')
   })
 })
@@ -123,7 +196,10 @@ describe('attachRentalZoneUtilities', () => {
 describe('service filter', () => {
   it('parses only the offered attributes', () => {
     expect(parseRentalServiceAttributes('luz,agua,calles,nada')).toEqual(['luz', 'agua'])
-    expect(parseRentalServiceAttributes(['limpieza', 'alumbrado'])).toEqual(['alumbrado', 'limpieza'])
+    expect(parseRentalServiceAttributes(['limpieza', 'alumbrado'])).toEqual([
+      'alumbrado',
+      'limpieza',
+    ])
     expect(parseRentalServiceAttributes(undefined)).toEqual([])
   })
 
@@ -137,7 +213,10 @@ describe('service filter', () => {
     expect(rentalServiceZoneIds(snapshot, ['saneamiento'], now)).toBeNull()
     expect(rentalServiceZoneIds(null, ['luz'], now)).toBeNull()
     const options = rentalServiceFilterOptions(snapshot, now)
-    expect(options.find(option => option.attribute === 'luz')).toMatchObject({ available: true, low: 20 })
+    expect(options.find(option => option.attribute === 'luz')).toMatchObject({
+      available: true,
+      low: 20,
+    })
     expect(options.find(option => option.attribute === 'saneamiento')?.available).toBe(false)
   })
 
@@ -148,27 +227,61 @@ describe('service filter', () => {
 
 describe('zone response', () => {
   it('carries the layers and their sources through the existing response', () => {
-    const snapshots = projectRentalZoneSnapshots(null, { version: 1, generatedAt: '2026-10-20', utilities: raw, aliases })
-    const response = buildRentalZoneResponse(snapshots, { department: 'Maldonado', propertyType: 'apartamento', bedrooms: 'any' }, now)
+    const snapshots = projectRentalZoneSnapshots(null, {
+      version: 1,
+      generatedAt: '2026-10-20',
+      utilities: raw,
+      aliases,
+    })
+    const response = buildRentalZoneResponse(
+      snapshots,
+      { department: 'Maldonado', propertyType: 'apartamento', bedrooms: 'any' },
+      now
+    )
     expect(response.utilities?.power?.status).toBe('ready')
-    expect(response.sources.map(source => source.url)).toContain('https://www.ose.com.uy/interrupciones/programados')
+    expect(response.sources.map(source => source.url)).toContain(
+      'https://www.ose.com.uy/interrupciones/programados'
+    )
   })
 })
 
 describe('projectRentalZoneImpact', () => {
   it('validates the stored analysis and dates it', () => {
-    const impact = projectRentalZoneImpact({
-      version: 1,
-      generatedAt: '2026-10-20T06:53:00.000Z',
-      rentalDataAsOf: '2026-10-20T04:52:00.000Z',
-      minimumListings: 15,
-      zones: [{ zone: 'mvd:8', name: 'Pocitos', n: 300, rentM2: 690 }, { zone: 'x', name: 'x', n: 1, rentM2: 1 }],
-      attributes: [
-        { attribute: 'limpieza', zones: 31, rho: -0.42, rhoLow: -0.7, rhoHigh: -0.09, xLow: 18, xHigh: 38, pct: -7.9, pctLow: -16, pctHigh: 1.9, verdict: 'lower', points: [{ zone: 'mvd:8', x: 20, y: 690 }] },
-        { attribute: 'otro', zones: 31 },
-      ],
-      joint: { zones: 31, r2: 0.6, coefficients: [{ attribute: 'limpieza', pctPerSd: -4, low: -12, high: 5 }] },
-    }, now)!
+    const impact = projectRentalZoneImpact(
+      {
+        version: 1,
+        generatedAt: '2026-10-20T06:53:00.000Z',
+        rentalDataAsOf: '2026-10-20T04:52:00.000Z',
+        minimumListings: 15,
+        zones: [
+          { zone: 'mvd:8', name: 'Pocitos', n: 300, rentM2: 690 },
+          { zone: 'x', name: 'x', n: 1, rentM2: 1 },
+        ],
+        attributes: [
+          {
+            attribute: 'limpieza',
+            zones: 31,
+            rho: -0.42,
+            rhoLow: -0.7,
+            rhoHigh: -0.09,
+            xLow: 18,
+            xHigh: 38,
+            pct: -7.9,
+            pctLow: -16,
+            pctHigh: 1.9,
+            verdict: 'lower',
+            points: [{ zone: 'mvd:8', x: 20, y: 690 }],
+          },
+          { attribute: 'otro', zones: 31 },
+        ],
+        joint: {
+          zones: 31,
+          r2: 0.6,
+          coefficients: [{ attribute: 'limpieza', pctPerSd: -4, low: -12, high: 5 }],
+        },
+      },
+      now
+    )!
     expect(impact.status).toBe('ready')
     expect(impact.zones).toHaveLength(1)
     expect(impact.attributes.map(item => item.attribute)).toEqual(['limpieza'])

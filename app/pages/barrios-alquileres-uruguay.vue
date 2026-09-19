@@ -15,6 +15,7 @@
       @apply="apply"
       @cancel="navigateTo(localePath('/alquileres-uruguay'))"
     />
+    <ZonePriceImpact id="servicios-y-alquiler" />
   </VContainer>
 </template>
 <script setup lang="ts">
@@ -22,6 +23,7 @@ import type { RentalZonePreferences } from '~/utils/rentalZoneTypes'
 import { rentalZoneMessages } from '~/utils/rentalZoneMessages'
 import { normalizeRentalQuery, rentalQueryToParams } from '~/utils/rentals'
 import ZoneExplorer from '~/components/rentals/zones/Explorer.vue'
+import ZonePriceImpact from '~/components/rentals/zones/PriceImpact.vue'
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalZoneMessages })
 const localePath = useLocalePath()
 const initial: RentalZonePreferences = { mode: 'only', include: [], exclude: [] }
@@ -36,7 +38,7 @@ useSeoMeta({
 })
 defineOgImageComponent('Cambio', {
   title: 'Compará barrios para alquilar',
-  subtitle: 'Precios, servicios y fuentes · Uruguay',
+  subtitle: 'Precios, luz, agua y servicios · Uruguay',
 })
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonical.value }],

@@ -133,7 +133,7 @@ function powerMetric(input: unknown): PowerMetricRaw | null {
   }
   const name = text(raw.name),
     department = text(raw.department, 40)
-  if (!name || !department || Object.values(values).some(value => value === null)) return null
+  if (!name || !department || Object.values(values).includes(null)) return null
   return { name, department, ...(values as Record<keyof typeof values, number>) }
 }
 function claimCounts(input: unknown): Record<RentalClaimCategory, number> | null {
@@ -146,7 +146,11 @@ function claimCounts(input: unknown): Record<RentalClaimCategory, number> | null
   }
   return out
 }
-function metrics<T>(input: unknown, read: (value: unknown) => T | null, ids = true): Record<string, T> {
+function metrics<T>(
+  input: unknown,
+  read: (value: unknown) => T | null,
+  ids = true
+): Record<string, T> {
   const out: Record<string, T> = {}
   for (const [id, value] of Object.entries(record(input)).slice(0, 500)) {
     if (ids && !ZONE_ID.test(id)) continue
@@ -165,24 +169,30 @@ export function projectRentalZoneServices(
   const generatedAt = day(raw.generatedAt)
   if (raw.version !== 1 || !generatedAt) return null
   const names = metrics(raw.names, value => text(value))
-  const localities = metrics(
-    raw.localities,
-    value => {
-      const item = record(value)
-      const name = text(item.name),
-        department = text(item.department, 40)
-      const aliases = Array.isArray(item.aliases)
-        ? item.aliases.map(alias => text(alias)).filter((alias): alias is string => !!alias).slice(0, 10)
-        : []
-      return name && department ? { name, department, aliases } : null
-    }
-  )
+  const localities = metrics(raw.localities, value => {
+    const item = record(value)
+    const name = text(item.name),
+      department = text(item.department, 40)
+    const aliases = Array.isArray(item.aliases)
+      ? item.aliases
+          .map(alias => text(alias))
+          .filter((alias): alias is string => !!alias)
+          .slice(0, 10)
+      : []
+    return name && department ? { name, department, aliases } : null
+  })
   const aliases: RentalZoneServiceSnapshot['aliases'] = {}
   for (const [key, value] of Object.entries(record(aliasesInput)).slice(0, 2000)) {
     const item = record(value)
     const share = num(item.share, 1),
       n = num(item.n)
-    if (key.length <= 120 && typeof item.zone === 'string' && ZONE_ID.test(item.zone) && share !== null && n !== null)
+    if (
+      key.length <= 120 &&
+      typeof item.zone === 'string' &&
+      ZONE_ID.test(item.zone) &&
+      share !== null &&
+      n !== null
+    )
       aliases[key] = { zone: item.zone, share, n }
   }
   const powerRaw = record(raw.power)
@@ -245,7 +255,8 @@ export function projectRentalZoneServices(
     const low = num(threshold.low, 1e9),
       high = num(threshold.high, 1e9),
       zones = num(threshold.zones, 1000)
-    if (low !== null && high !== null && zones !== null) thresholds[attribute] = { low, high, zones }
+    if (low !== null && high !== null && zones !== null)
+      thresholds[attribute] = { low, high, zones }
     const entries = metrics(record(levels.byZone)[attribute], value =>
       LEVELS.includes(value as RentalServiceLevel) ? (value as RentalServiceLevel) : null
     )
@@ -255,7 +266,12 @@ export function projectRentalZoneServices(
 }
 
 const age = (value: string | null, now: number) => (value ? now - Date.parse(value) : NaN)
-const freshness = (value: string | null, now: number, ready: number, maximum: number): RentalZoneDataStatus => {
+const freshness = (
+  value: string | null,
+  now: number,
+  ready: number,
+  maximum: number
+): RentalZoneDataStatus => {
   const elapsed = age(value, now)
   return !Number.isFinite(elapsed) || elapsed < -DAY || elapsed > maximum
     ? 'unavailable'
@@ -264,7 +280,10 @@ const freshness = (value: string | null, now: number, ready: number, maximum: nu
       : 'ready'
 }
 /** Power: the ledger's last day. Water: the last harvest. Complaints: the end of the counted period. */
-export function rentalServiceStatuses(snapshot: RentalZoneServiceSnapshot | null, now = Date.now()) {
+export function rentalServiceStatuses(
+  snapshot: RentalZoneServiceSnapshot | null,
+  now = Date.now()
+) {
   const power: RentalServiceStatus = !snapshot?.power
     ? 'unavailable'
     : snapshot.power.status === 'collecting'
@@ -281,7 +300,12 @@ const attributeStatus = (
 ): RentalServiceStatus =>
   attribute === 'luz' ? statuses.power : attribute === 'agua' ? statuses.water : statuses.claims
 
-const source = (name: string, url: string, dataAsOf: string | null, fetchedAt: string | null): RentalZoneSource => ({
+const source = (
+  name: string,
+  url: string,
+  dataAsOf: string | null,
+  fetchedAt: string | null
+): RentalZoneSource => ({
   name,
   url,
   licenseUrl: url === UTE_ECSE_URL ? undefined : DATA_LICENSE,
@@ -296,7 +320,9 @@ export function rentalZoneUtilitiesMeta(
   if (!snapshot) return null
   const statuses = rentalServiceStatuses(snapshot, now)
   const thresholds: RentalZoneUtilitiesMeta['thresholds'] = {}
-  for (const [attribute, value] of Object.entries(snapshot.thresholds) as Array<[RentalServiceAttribute, { low: number; high: number; zones: number }]>)
+  for (const [attribute, value] of Object.entries(snapshot.thresholds) as Array<
+    [RentalServiceAttribute, { low: number; high: number; zones: number }]
+  >)
     if (usable(attributeStatus(statuses, attribute))) thresholds[attribute] = { ...value }
   return {
     power: snapshot.power
@@ -306,7 +332,12 @@ export function rentalZoneUtilitiesMeta(
           observedTo: snapshot.power.observedTo,
           observedDays: snapshot.power.observedDays,
           coverage: snapshot.power.coverage,
-          source: source('UTE · Mapa de la situación del servicio eléctrico (UTEi)', UTE_ECSE_URL, snapshot.power.observedTo, snapshot.generatedAt),
+          source: source(
+            'UTE · Mapa de la situación del servicio eléctrico (UTEi)',
+            UTE_ECSE_URL,
+            snapshot.power.observedTo,
+            snapshot.generatedAt
+          ),
         }
       : null,
     water: snapshot.water
@@ -317,7 +348,12 @@ export function rentalZoneUtilitiesMeta(
           notices: snapshot.water.notices,
           montevideoNotices: snapshot.water.montevideoNotices,
           montevideoMatched: snapshot.water.montevideoMatched,
-          source: source('OSE · Interrupciones programadas de agua potable', OSE_NOTICES_URL, snapshot.water.periodTo, snapshot.water.fetchedAt),
+          source: source(
+            'OSE · Interrupciones programadas de agua potable',
+            OSE_NOTICES_URL,
+            snapshot.water.periodTo,
+            snapshot.water.fetchedAt
+          ),
         }
       : null,
     claims: snapshot.claims
@@ -325,7 +361,12 @@ export function rentalZoneUtilitiesMeta(
           status: statuses.claims,
           periodFrom: snapshot.claims.periodFrom,
           periodTo: snapshot.claims.periodTo,
-          source: source('Intendencia de Montevideo · Sistema Único de Reclamos', IM_CLAIMS_URL, snapshot.claims.periodTo, snapshot.claims.fetchedAt),
+          source: source(
+            'Intendencia de Montevideo · Sistema Único de Reclamos',
+            IM_CLAIMS_URL,
+            snapshot.claims.periodTo,
+            snapshot.claims.fetchedAt
+          ),
         }
       : null,
     thresholds,
@@ -348,13 +389,20 @@ export function rentalZoneOfficial(
     for (const [id, locality] of Object.entries(snapshot.localities))
       if (
         rentalServiceZoneFold(locality.department) === department &&
-        [locality.name, ...locality.aliases].some(name => rentalServiceZoneFold(name) === neighborhood)
+        [locality.name, ...locality.aliases].some(
+          name => rentalServiceZoneFold(name) === neighborhood
+        )
       )
         return { id, name: locality.name, match: 'exact', share: null }
   }
   const alias = snapshot.aliases[`${department}|${neighborhood}`]
   return alias
-    ? { id: alias.zone, name: snapshot.names[alias.zone] || alias.zone, match: 'alias', share: alias.share }
+    ? {
+        id: alias.zone,
+        name: snapshot.names[alias.zone] || alias.zone,
+        match: 'alias',
+        share: alias.share,
+      }
     : null
 }
 
@@ -433,20 +481,35 @@ export function rentalServiceZoneIds(
   for (const attribute of attributes) {
     const levels = snapshot.byZone[attribute]
     if (!levels || !usable(attributeStatus(statuses, attribute))) return null
-    const low = new Set(Object.entries(levels).filter(([, level]) => level === 'low').map(([id]) => id))
+    const low = new Set(
+      Object.entries(levels)
+        .filter(([, level]) => level === 'low')
+        .map(([id]) => id)
+    )
     selected = selected ? new Set([...selected].filter(id => low.has(id))) : low
   }
   return [...(selected || [])].sort()
 }
 
 /** Which filter attributes can be offered right now, with the value that bounds the best third. */
-export function rentalServiceFilterOptions(snapshot: RentalZoneServiceSnapshot | null, now = Date.now()) {
+export function rentalServiceFilterOptions(
+  snapshot: RentalZoneServiceSnapshot | null,
+  now = Date.now()
+) {
   const statuses = snapshot ? rentalServiceStatuses(snapshot, now) : null
   return RENTAL_SERVICE_FILTERS.map(attribute => {
-    const status: RentalServiceStatus = statuses ? attributeStatus(statuses, attribute) : 'unavailable'
+    const status: RentalServiceStatus = statuses
+      ? attributeStatus(statuses, attribute)
+      : 'unavailable'
     const threshold = snapshot?.thresholds[attribute]
     const available = !!snapshot?.byZone[attribute] && usable(status)
-    return { attribute, status, available, low: available && threshold ? threshold.low : null, zones: threshold?.zones ?? 0 }
+    return {
+      attribute,
+      status,
+      available,
+      low: available && threshold ? threshold.low : null,
+      zones: threshold?.zones ?? 0,
+    }
   })
 }
 
@@ -454,7 +517,9 @@ export function parseRentalServiceAttributes(input: unknown): RentalServiceAttri
   const values = (Array.isArray(input) ? input : [input]).flatMap(value =>
     typeof value === 'string' ? value.slice(0, 200).split(',') : []
   )
-  return RENTAL_SERVICE_FILTERS.filter(attribute => values.map(value => value.trim()).includes(attribute))
+  return RENTAL_SERVICE_FILTERS.filter(attribute =>
+    values.map(value => value.trim()).includes(attribute)
+  )
 }
 
 /** First boundary for the stored price analysis. */
@@ -462,7 +527,13 @@ export function projectRentalZoneImpact(input: unknown, now = Date.now()): Renta
   const raw = record(input)
   const generatedAt = day(raw.generatedAt),
     rentalDataAsOf = day(raw.rentalDataAsOf)
-  if (raw.version !== 1 || !generatedAt || !rentalDataAsOf || !Array.isArray(raw.zones) || !Array.isArray(raw.attributes))
+  if (
+    raw.version !== 1 ||
+    !generatedAt ||
+    !rentalDataAsOf ||
+    !Array.isArray(raw.zones) ||
+    !Array.isArray(raw.attributes)
+  )
     return null
   const zones = raw.zones.slice(0, 300).flatMap(value => {
     const item = record(value)
@@ -476,7 +547,16 @@ export function projectRentalZoneImpact(input: unknown, now = Date.now()): Renta
     const item = record(value)
     const attribute = item.attribute as RentalZoneImpact['attributes'][number]['attribute']
     if (![...RENTAL_SERVICE_ATTRIBUTES, 'denuncias'].includes(attribute)) return []
-    const fields = ['rho', 'rhoLow', 'rhoHigh', 'xLow', 'xHigh', 'pct', 'pctLow', 'pctHigh'] as const
+    const fields = [
+      'rho',
+      'rhoLow',
+      'rhoHigh',
+      'xLow',
+      'xHigh',
+      'pct',
+      'pctLow',
+      'pctHigh',
+    ] as const
     const numbers = {} as Record<(typeof fields)[number], number>
     for (const field of fields) {
       const v = item[field]
@@ -484,7 +564,12 @@ export function projectRentalZoneImpact(input: unknown, now = Date.now()): Renta
       numbers[field] = v
     }
     const count = num(item.zones, 1000)
-    if (count === null || !['lower', 'higher', 'inconclusive'].includes(item.verdict as string) || !Array.isArray(item.points)) return []
+    if (
+      count === null ||
+      !['lower', 'higher', 'inconclusive'].includes(item.verdict as string) ||
+      !Array.isArray(item.points)
+    )
+      return []
     const points = item.points.slice(0, 300).flatMap(point => {
       const p = record(point)
       const zone = typeof p.zone === 'string' && ZONE_ID.test(p.zone) ? p.zone : null
@@ -492,11 +577,21 @@ export function projectRentalZoneImpact(input: unknown, now = Date.now()): Renta
         y = num(p.y, 1e6)
       return zone && x !== null && y !== null ? [{ zone, x, y }] : []
     })
-    return [{ attribute, zones: count, ...numbers, verdict: item.verdict as 'lower' | 'higher' | 'inconclusive', points }]
+    return [
+      {
+        attribute,
+        zones: count,
+        ...numbers,
+        verdict: item.verdict as 'lower' | 'higher' | 'inconclusive',
+        points,
+      },
+    ]
   })
   const jointRaw = record(raw.joint)
   const joint =
-    Array.isArray(jointRaw.coefficients) && num(jointRaw.zones, 1000) !== null && num(jointRaw.r2, 1) !== null
+    Array.isArray(jointRaw.coefficients) &&
+    num(jointRaw.zones, 1000) !== null &&
+    num(jointRaw.r2, 1) !== null
       ? {
           zones: jointRaw.zones as number,
           r2: jointRaw.r2 as number,
@@ -506,7 +601,14 @@ export function projectRentalZoneImpact(input: unknown, now = Date.now()): Renta
             const values = [item.pctPerSd, item.low, item.high]
             return [...RENTAL_SERVICE_ATTRIBUTES, 'denuncias'].includes(attribute) &&
               values.every(v => typeof v === 'number' && Number.isFinite(v))
-              ? [{ attribute, pctPerSd: item.pctPerSd as number, low: item.low as number, high: item.high as number }]
+              ? [
+                  {
+                    attribute,
+                    pctPerSd: item.pctPerSd as number,
+                    low: item.low as number,
+                    high: item.high as number,
+                  },
+                ]
               : []
           }),
         }

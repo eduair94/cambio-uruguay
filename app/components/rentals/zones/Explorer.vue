@@ -89,6 +89,14 @@
           v-bind="field"
           class="service-filter"
         />
+        <VSelect
+          v-if="layer === 'claims'"
+          v-model="claimCategory"
+          :items="claimItems"
+          :label="t('claimCategory')"
+          v-bind="field"
+          class="service-filter"
+        />
         <div v-if="layer !== 'prices'" class="context-order">
           <VSelect v-model="sortOrder" :items="sortItems" :label="t('order')" v-bind="field" />
         </div>
@@ -97,6 +105,21 @@
         }}</VBtn>
       </div>
       <p v-if="layer === 'crime'" class="hint">{{ t('crimeShort') }}</p>
+      <p v-else-if="layer === 'power'" class="hint">{{ t('powerShort') }}</p>
+      <p v-else-if="layer === 'water'" class="hint">{{ t('waterShort') }}</p>
+      <p v-else-if="layer === 'claims'" class="hint">{{ t('claimsShort') }}</p>
+      <p
+        v-if="layer === 'power' && data?.utilities?.power?.status === 'collecting'"
+        class="notice collecting"
+        role="status"
+      >
+        {{
+          t('powerCollecting', {
+            date: date(data.utilities.power.observedFrom || ''),
+            days: number(Math.floor(data.utilities.power.observedDays)),
+          })
+        }}
+      </p>
       <p v-if="status === 'pending' || status === 'idle'" class="notice" role="status">
         {{ t('loading') }}
       </p>
@@ -202,6 +225,7 @@
             :price-statistic="priceStatistic"
             :rental-date="data.rentalDataAsOf"
             :price-sources="data.sources"
+            :meta="data.utilities"
             @close="closeDetail"
           >
             <div class="detail-actions">
@@ -289,6 +313,7 @@ import type {
   RentalZonePropertyType,
   RentalZoneBedrooms,
   RentalZoneServiceCategory,
+  RentalClaimCategory,
 } from '~/utils/rentalZoneTypes'
 import { rentalZoneMessages } from '~/utils/rentalZoneMessages'
 import ZoneMap from './Map.client.vue'
@@ -314,7 +339,8 @@ const department = ref(
 )
 const propertyType = ref<RentalZonePropertyType>('apartamento')
 const bedrooms = ref<RentalZoneBedrooms>('1')
-const layer = ref<'prices' | 'services' | 'crime'>('prices')
+const layer = ref<'prices' | 'services' | 'crime' | 'power' | 'water' | 'claims'>('prices')
+const claimCategory = ref<RentalClaimCategory>('alumbrado')
 const priceStatistic = ref<'median' | 'mean'>('median')
 const sortOrder = ref<'name' | 'low' | 'high'>('low')
 const filtersOpen = ref(false)
@@ -356,7 +382,16 @@ const services: RentalZoneServiceCategory[] = [
 ]
 const serviceItems = computed(() => services.map(value => ({ value, title: t(value) })))
 const layers = computed(() =>
-  ['prices', 'services', 'crime'].map(value => ({ value, title: t(value) }))
+  ['prices', 'power', 'water', 'claims', 'services', 'crime'].map(value => ({
+    value,
+    title: t(value),
+  }))
+)
+const claimItems = computed(() =>
+  (['alumbrado', 'saneamiento', 'limpieza', 'calles'] as const).map(value => ({
+    value,
+    title: t(`claim_${value}`),
+  }))
 )
 const types = computed(() => ['apartamento', 'casa'].map(value => ({ value, title: t(value) })))
 const priceStatistics = computed(() => [
@@ -397,6 +432,7 @@ const criteriaSummary = computed(() =>
     department.value || t('country'),
     layer.value === 'prices' ? comparisonSummary.value : t(layer.value),
     ...(layer.value === 'services' ? [t(serviceCategory.value)] : []),
+    ...(layer.value === 'claims' ? [t(`claim_${claimCategory.value}`)] : []),
     ...(layer.value !== 'prices'
       ? [sortItems.value.find(item => item.value === sortOrder.value)!.title]
       : []),
@@ -518,6 +554,15 @@ const date = (value: string) =>
     : t('noData')
 function metric(zone: RentalZone): number | null {
   if (layer.value === 'prices') return zone.prices.rent[priceStatistic.value]
+  // Rankings and the map only use figures of the zone itself, never a department fallback.
+  if (layer.value === 'power')
+    return zone.utilities?.power?.geography === 'zone'
+      ? zone.utilities.power.unplannedMinutes
+      : null
+  if (layer.value === 'water')
+    return zone.utilities?.water?.geography === 'zone' ? zone.utilities.water.notices : null
+  if (layer.value === 'claims')
+    return zone.utilities?.claims?.perThousand?.[claimCategory.value] ?? null
   if (layer.value === 'services')
     return zone.services?.status === 'unavailable'
       ? null
@@ -526,18 +571,30 @@ function metric(zone: RentalZone): number | null {
     ? zone.crime.total
     : null
 }
+const decimal = (value: number) =>
+  new Intl.NumberFormat(locale.value, { maximumFractionDigits: 1 }).format(value)
 const valueLabel = (value: number | null) =>
   value === null
     ? t(layer.value === 'prices' ? 'insufficient' : 'noData')
     : layer.value === 'prices'
       ? `$ ${number(value)}`
-      : number(value)
+      : layer.value === 'power'
+        ? t('powerMinutes', { n: decimal(value) })
+        : layer.value === 'claims'
+          ? decimal(value)
+          : number(value)
 const metricLabel = computed(() =>
   layer.value === 'prices'
     ? `${t(priceStatistic.value === 'mean' ? 'mean' : 'rent')} · UYU`
     : layer.value === 'services'
       ? t(serviceCategory.value)
-      : t('crime')
+      : layer.value === 'power'
+        ? t('powerStat')
+        : layer.value === 'water'
+          ? t('waterStat')
+          : layer.value === 'claims'
+            ? `${t(`claim_${claimCategory.value}`)} · ${t('claimsStat')}`
+            : t('crime')
 )
 const crimePeriods = computed(() =>
   Array.from(
@@ -565,9 +622,11 @@ const bins = computed(() => {
   const min = Math.min(...values.value),
     max = Math.max(...values.value)
   if (min === max) return [{ from: min, to: max }]
+  // Small ranges (minutes per month, complaints per 1,000) keep one decimal instead of collapsing.
+  const step = max - min < 50 ? 10 : 1
   return palette.map((_, index) => ({
-    from: Math.round(min + ((max - min) * index) / 5),
-    to: Math.round(min + ((max - min) * (index + 1)) / 5),
+    from: Math.round((min + ((max - min) * index) / 5) * step) / step,
+    to: Math.round((min + ((max - min) * (index + 1)) / 5) * step) / step,
   }))
 })
 function color(value: number | null) {

@@ -11,7 +11,10 @@ export default defineEventHandler(async event => {
     impact = null
   }
   if (!impact || impact.status === 'unavailable')
-    throw createError({ statusCode: 503, statusMessage: 'Zone price analysis temporarily unavailable' })
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Zone price analysis temporarily unavailable',
+    })
   setResponseHeader(event, 'cache-control', 'public, max-age=300, s-maxage=600')
   return impact
 })
