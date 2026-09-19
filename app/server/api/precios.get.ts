@@ -3,7 +3,9 @@
 //
 // Anyone integrating should call the public API directly: `GET /precios/articles`
 // y `GET /precios/basket`. Esta ruta es la de lectura del sitio, no una segunda
-// API.
+// API: por eso recorta la canasta (ver `preciosHubProjection.ts`).
+import { preciosHubPayload } from '../utils/preciosHubProjection'
+
 export default defineCachedEventHandler(
   async () => {
     const base = useRuntimeConfig().apiBaseServer
@@ -15,13 +17,7 @@ export default defineCachedEventHandler(
 
     // Un catálogo vacío de la forma correcta le gana a un 500: la página
     // renderiza su estado "sin datos" en vez de no renderizar.
-    return {
-      day: catalogue?.day ?? null,
-      count: catalogue?.count ?? 0,
-      articles: catalogue?.articles ?? [],
-      basketMeta: catalogue?.basket ?? null,
-      basket: basket?.day ? basket : null,
-    }
+    return preciosHubPayload(catalogue, basket)
   },
   {
     // El job corre una vez al día: media hora es corta al lado de eso y
