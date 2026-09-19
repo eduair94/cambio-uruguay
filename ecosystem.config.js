@@ -373,6 +373,17 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Luz por barrio: una foto del mapa UTEi (ECSE) cada 10 minutos al libro poweroutagedays de
+      // la APP DB. UTE no guarda la historia; si nadie guarda las fotos, la frecuencia de cortes no
+      // existe. Minuto 3: UTE refresca en los múltiplos de 10. Ver docs/app/PROPERTY_ZONE_SERVICES.md.
+      name: "currency-power-outages",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_power_outages.js",
+      cron_restart: "3-59/10 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Precomputed rental cohorts and official neighborhood context, independent of the API.
       name: "currency-property-zones",
       autorestart: false,
