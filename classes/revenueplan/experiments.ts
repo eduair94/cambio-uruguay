@@ -74,38 +74,98 @@ interface WindowSum {
 const EMPTY: WindowSum = { clicks: 0, impressions: 0, days: 0, siteClicks: 0, siteImpressions: 0 };
 
 /**
- * Suma el sujeto y el sitio sobre los días archivados de un rango.
+ * Suma UN día del archivo dentro de un acumulador.
  *
- * Los dos salen del MISMO documento por día, que es lo que hace que la porción sea comparable: si
- * el archivo no tiene el 14 de septiembre, ese día no está ni arriba ni abajo de la fracción.
+ * El sujeto y el sitio salen del MISMO documento, que es lo que hace comparable la porción: si el
+ * archivo no tiene el 14 de septiembre, ese día no está ni arriba ni abajo de la fracción.
  */
+function foldDay(sum: WindowSum, day: GscDay, routes: string[], queries: Set<string>): void {
+  sum.days += 1;
+  sum.siteClicks += day.totals?.clicks || 0;
+  sum.siteImpressions += day.totals?.impressions || 0;
+
+  if (routes.length) {
+    for (const page of day.pages || []) {
+      if (!routeMatches(routes, page.key)) continue;
+      sum.clicks += page.clicks;
+      sum.impressions += page.impressions;
+    }
+  }
+  if (queries.size) {
+    for (const q of day.queries || []) {
+      if (!queries.has(q.key.toLowerCase())) continue;
+      sum.clicks += q.clicks;
+      sum.impressions += q.impressions;
+    }
+  }
+}
+
+const normalisedQueries = (spec: ExperimentSpec) =>
+  new Set((spec.queries || []).map((q) => q.trim().toLowerCase()).filter(Boolean));
+
+/** Suma el sujeto y el sitio sobre los días archivados de un rango. */
 export function sumWindow(days: GscDay[], spec: ExperimentSpec, from: string, to: string): WindowSum {
   const out: WindowSum = { ...EMPTY };
-  const queries = new Set((spec.queries || []).map((q) => q.trim().toLowerCase()).filter(Boolean));
-  const hasRoutes = spec.routes.length > 0;
-
+  const queries = normalisedQueries(spec);
   for (const day of days) {
     if (day.day < from || day.day > to) continue;
-    out.days += 1;
-    out.siteClicks += day.totals?.clicks || 0;
-    out.siteImpressions += day.totals?.impressions || 0;
+    foldDay(out, day, spec.routes, queries);
+  }
+  return out;
+}
 
-    if (hasRoutes) {
-      for (const page of day.pages || []) {
-        if (!routeMatches(spec.routes, page.key)) continue;
-        out.clicks += page.clicks;
-        out.impressions += page.impressions;
-      }
-    }
-    if (queries.size) {
-      for (const q of day.queries || []) {
-        if (!queries.has(q.key.toLowerCase())) continue;
-        out.clicks += q.clicks;
-        out.impressions += q.impressions;
+// ---------------------------------------------------------------------------------------------
+// Medición por tandas
+//
+// POR QUÉ NO SE MIDE CON EL ARCHIVO ENTERO EN MEMORIA. Cada documento del archivo lleva hasta 5.000
+// consultas y 3.000 páginas. Mientras hay tres experimentos el rango es de un mes y no se nota;
+// cuando el libro de cambios tenga un año, el tope de 90 días serían cientos de megabytes en un
+// proceso que comparte un VPS con veinte jobs. Y el modo de fallar es feo: el job muere por OOM un
+// martes cualquiera y lo único que queda es un plan que dejó de actualizarse.
+//
+// La medición es una suma, así que no hace falta tener todo junto: se abre un acumulador por
+// experimento, se le pasan los días en tandas y se cierra al final. El resultado es idéntico al de
+// medir con todo en memoria — `measureExperiment` está reimplementado sobre estas tres funciones
+// justamente para que no puedan divergir.
+// ---------------------------------------------------------------------------------------------
+
+export interface ExperimentAccumulator {
+  spec: ExperimentSpec;
+  queries: Set<string>;
+  beforeFrom: string;
+  beforeTo: string;
+  afterFrom: string;
+  afterTo: string;
+  before: WindowSum;
+  after: WindowSum;
+}
+
+export function startExperiments(specs: ExperimentSpec[]): ExperimentAccumulator[] {
+  return specs.map((spec) => ({
+    spec,
+    queries: normalisedQueries(spec),
+    beforeFrom: dayShift(spec.shippedOn, -EXPERIMENT_WINDOW_DAYS),
+    beforeTo: dayShift(spec.shippedOn, -1),
+    // El día del despliegue no entra en ninguna de las dos puntas: media jornada con el cambio y
+    // media sin él no pertenece a ninguna.
+    afterFrom: dayShift(spec.shippedOn, 1),
+    afterTo: dayShift(spec.shippedOn, EXPERIMENT_WINDOW_DAYS),
+    before: { ...EMPTY },
+    after: { ...EMPTY },
+  }));
+}
+
+/** Pasa una tanda de días por todos los acumuladores. Los días pueden venir en cualquier orden. */
+export function feedExperiments(accumulators: ExperimentAccumulator[], days: GscDay[]): void {
+  for (const day of days) {
+    for (const acc of accumulators) {
+      if (day.day >= acc.beforeFrom && day.day <= acc.beforeTo) {
+        foldDay(acc.before, day, acc.spec.routes, acc.queries);
+      } else if (day.day >= acc.afterFrom && day.day <= acc.afterTo) {
+        foldDay(acc.after, day, acc.spec.routes, acc.queries);
       }
     }
   }
-  return out;
 }
 
 function verdictOf(before: WindowSum, after: WindowSum, lift: number | null, daysMissing: number): ExperimentVerdict {
@@ -128,17 +188,9 @@ function verdictOf(before: WindowSum, after: WindowSum, lift: number | null, day
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-/** Mide un experimento contra el archivo. `today` es `YYYY-MM-DD`. */
-export function measureExperiment(spec: ExperimentSpec, days: GscDay[], today: string): ExperimentResult {
-  const beforeFrom = dayShift(spec.shippedOn, -EXPERIMENT_WINDOW_DAYS);
-  const beforeTo = dayShift(spec.shippedOn, -1);
-  // El día del despliegue no entra en ninguna de las dos puntas: media jornada con el cambio y
-  // media sin él no pertenece a ninguna ventana.
-  const afterFrom = dayShift(spec.shippedOn, 1);
-  const afterTo = dayShift(spec.shippedOn, EXPERIMENT_WINDOW_DAYS);
-
-  const before = sumWindow(days, spec, beforeFrom, beforeTo);
-  const after = sumWindow(days, spec, afterFrom, afterTo);
+/** Cierra un acumulador y dictamina. `today` es `YYYY-MM-DD`. */
+export function finishExperiment(acc: ExperimentAccumulator, today: string): ExperimentResult {
+  const { spec, before, after, afterFrom, afterTo } = acc;
 
   // Lo que falta se mide contra el ARCHIVO, no contra el calendario: Search Console cierra cada día
   // con unos tres de atraso, así que "ya pasaron 28 días" y "ya hay 28 días medidos" no son lo
@@ -195,11 +247,29 @@ export function measureExperiment(spec: ExperimentSpec, days: GscDay[], today: s
   };
 }
 
-export function measureExperiments(specs: ExperimentSpec[], days: GscDay[], today: string): ExperimentResult[] {
+/**
+ * Mide un experimento con todo el archivo en memoria.
+ *
+ * Reimplementado sobre los acumuladores a propósito: la ruta por tandas que usa el job y la que
+ * usan los tests tienen que ser la MISMA aritmética, no dos copias que se separen con el tiempo.
+ */
+export function measureExperiment(spec: ExperimentSpec, days: GscDay[], today: string): ExperimentResult {
+  const [acc] = startExperiments([spec]);
+  feedExperiments([acc], days);
+  return finishExperiment(acc, today);
+}
+
+export function sortExperiments(results: ExperimentResult[]): ExperimentResult[] {
   const order: Record<ExperimentVerdict, number> = { empeoró: 0, mejoró: 1, "sin cambio": 2, esperando: 3, "sin datos": 4 };
-  return specs
-    .map((spec) => measureExperiment(spec, days, today))
+  return results
+    .slice()
     .sort((a, b) => order[a.verdict] - order[b.verdict] || b.shippedOn.localeCompare(a.shippedOn));
+}
+
+export function measureExperiments(specs: ExperimentSpec[], days: GscDay[], today: string): ExperimentResult[] {
+  const accumulators = startExperiments(specs);
+  feedExperiments(accumulators, days);
+  return sortExperiments(accumulators.map((acc) => finishExperiment(acc, today)));
 }
 
 // ---------------------------------------------------------------------------------------------

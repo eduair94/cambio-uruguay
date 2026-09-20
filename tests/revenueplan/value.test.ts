@@ -128,3 +128,33 @@ describe("buildValueTable", () => {
     expect(importar.usdPerClick).toBeCloseTo((0.2 * TIER_CONTENIDO.multiplier) / 1000, 8);
   });
 });
+
+describe("lo que encontró la primera corrida contra producción (2026-09-20)", () => {
+  it("un espejo de una RUTA suelta hereda su tramo, no sólo el de una familia", () => {
+    // `/en/alquileres-uruguay/*` replica `/alquileres-uruguay`, que es una ruta suelta y no una
+    // familia `/x/*`. Caía en "otro" y un directorio quedaba valuado 5 veces por encima.
+    expect(tierOf("/en/alquileres-uruguay/*")).toBe(TIER_DIRECTORIO);
+    expect(tierOf("/en/alquileres/*")).toBe(TIER_DIRECTORIO);
+    expect(tierOf("/pt/guias/*")).toBe(TIER_CONTENIDO);
+  });
+
+  it("la portada de cada espejo es una portada", () => {
+    expect(tierOf("/en")).toBe(TIER_DATO_VIVO);
+    expect(tierOf("/pt")).toBe(TIER_DATO_VIVO);
+  });
+
+  it("las páginas de problema sueltas que la alerta encontró ya están clasificadas", () => {
+    for (const path of [
+      "/tarjetas-de-credito-uruguay",
+      "/sala-vip-aeropuerto-uruguay",
+      "/alquilar-estando-en-clearing",
+      "/mejores-bancos-uruguay",
+    ]) {
+      expect(tierOf(path)).toBe(TIER_CONTENIDO);
+    }
+  });
+
+  it("y un directorio sigue siendo directorio aunque se parezca a una de ellas", () => {
+    expect(tierOf("/alquileres-uruguay")).toBe(TIER_DIRECTORIO);
+  });
+});

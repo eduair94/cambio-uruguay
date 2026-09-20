@@ -1,6 +1,7 @@
 // La guarda de corrida flaca y el reuso de veredictos cerrados.
 import { describe, expect, it } from "vitest";
-import { planExperimentWork } from "../../classes/revenueplan/refresh";
+import { chunkRange, planExperimentWork } from "../../classes/revenueplan/refresh";
+import { feedExperiments, finishExperiment, measureExperiment, startExperiments } from "../../classes/revenueplan/experiments";
 import { planIsThin } from "../../classes/revenueplan/store";
 import type { ExperimentResult, ExperimentSpec, PricedAction, RevenuePlanSnapshot } from "../../classes/revenueplan/types";
 
@@ -102,5 +103,53 @@ describe("planExperimentWork", () => {
     const work = planExperimentWork([spec("uno", "2026-09-16")], null);
     expect(work.from).toBe("2026-08-19");
     expect(work.to).toBe("2026-10-14");
+  });
+});
+
+describe("chunkRange", () => {
+  it("parte el rango en tramos inclusivos que no se pisan ni dejan huecos", () => {
+    expect(chunkRange("2026-09-01", "2026-09-25", 10)).toEqual([
+      ["2026-09-01", "2026-09-10"],
+      ["2026-09-11", "2026-09-20"],
+      ["2026-09-21", "2026-09-25"],
+    ]);
+  });
+
+  it("un rango de un día es una tanda", () => {
+    expect(chunkRange("2026-09-01", "2026-09-01", 10)).toEqual([["2026-09-01", "2026-09-01"]]);
+  });
+
+  it("una fecha ilegible no devuelve un bucle infinito", () => {
+    expect(chunkRange("no-es-fecha", "2026-09-01", 10)).toEqual([]);
+  });
+});
+
+describe("medir por tandas da lo mismo que medir con todo en memoria", () => {
+  // Es la única garantía de que la ruta que usa el job y la que usan los tests no se separen.
+  const spec: ExperimentSpec = { id: "x", shippedOn: "2026-06-01", routes: ["/guias/x"], hypothesis: "h" };
+  const days = Array.from({ length: 57 }, (_, i) => {
+    const day = new Date(Date.parse("2026-05-04T00:00:00Z") + i * 86400000).toISOString().slice(0, 10);
+    const clicks = i > 28 ? 4 : 1;
+    return {
+      day,
+      totals: { clicks: 100, impressions: 10000, ctr: 0.01, position: 8 },
+      queries: [],
+      pages: [{ key: "https://cambio-uruguay.com/guias/x", clicks, impressions: clicks * 100, ctr: 0.01, position: 6 }],
+      countries: [],
+      devices: [],
+      queryRowsSeen: 0,
+      pageRowsSeen: 1,
+    };
+  });
+
+  it("mismo veredicto y mismo lift", () => {
+    const whole = measureExperiment(spec, days, "2026-07-02");
+    const accs = startExperiments([spec]);
+    for (const [from, to] of chunkRange("2026-05-04", "2026-06-29", 10)) {
+      feedExperiments(accs, days.filter(d => d.day >= from && d.day <= to));
+    }
+    const chunked = finishExperiment(accs[0], "2026-07-02");
+    expect(chunked).toEqual(whole);
+    expect(whole.verdict).toBe("mejoró");
   });
 });

@@ -8,7 +8,13 @@ import { loadDays, loadSnapshot } from "../gsc/store";
 import type { GscDay, GscSnapshot } from "../gsc/types";
 import { loadSiteRevenue } from "../site-analytics/store";
 import type { RevenueSnapshot } from "../site-analytics/revenue";
-import { EXPERIMENT_WINDOW_DAYS, loadSpecs, measureExperiments } from "./experiments";
+import {
+  EXPERIMENT_WINDOW_DAYS,
+  feedExperiments,
+  finishExperiment,
+  loadSpecs,
+  startExperiments,
+} from "./experiments";
 import { DEFEND_KINDS, MAX_ACTIONS, MAX_DEFEND, UPSIDE_KINDS, buildPlanAlerts, familyLedger, priceActions, totalUpside } from "./plan";
 import { REVENUE_PLAN_KEY } from "./types";
 import type { ExperimentResult, ExperimentSpec, RevenuePlanSnapshot } from "./types";
@@ -23,6 +29,23 @@ import { buildValueTable } from "./value";
  * martes cualquiera.
  */
 export const MAX_ARCHIVE_DAYS = 90;
+
+/** Días de archivo por lectura. Chico a propósito: el pico de memoria es una tanda, no el rango. */
+export const ARCHIVE_CHUNK_DAYS = 10;
+
+/** Parte `[from, to]` en tramos de `size` días, inclusive. */
+export function chunkRange(from: string, to: string, size: number): Array<[string, string]> {
+  const out: Array<[string, string]> = [];
+  const stop = Date.parse(`${to}T00:00:00Z`);
+  let cursor = Date.parse(`${from}T00:00:00Z`);
+  if (!Number.isFinite(cursor) || !Number.isFinite(stop) || size < 1) return out;
+  while (cursor <= stop) {
+    const end = Math.min(cursor + (size - 1) * 86400000, stop);
+    out.push([new Date(cursor).toISOString().slice(0, 10), new Date(end).toISOString().slice(0, 10)]);
+    cursor = end + 86400000;
+  }
+  return out;
+}
 
 /** Veredictos que ya no pueden cambiar: la ventana cerró con los días que tenía. */
 const FINAL_VERDICTS = new Set(["mejoró", "sin cambio", "empeoró"]);
@@ -115,13 +138,20 @@ export async function refreshRevenuePlan(options: RefreshOptions = {}): Promise<
   // ---- el ledger de cambios ----
   const { specs, problems, file } = loadSpecs();
   const work = planExperimentWork(specs, previous);
-  let days: GscDay[] = [];
+  const accumulators = startExperiments(work.measure);
+  let archiveDaysRead = 0;
   if (work.measure.length && work.from && work.to) {
-    // Sólo los campos que el ledger mira. `countries`/`devices` son chicos pero se piden igual en
-    // todas las filas y no los usa nadie acá.
-    days = await loadDays(work.from, work.to);
+    // Por tandas: cada documento del archivo lleva hasta 5.000 consultas y 3.000 páginas, así que
+    // traer el rango entero de una es lo que convertiría "el libro de cambios creció" en "el job
+    // muere por OOM". La medición es una suma; no necesita tener todo junto.
+    for (const [from, to] of chunkRange(work.from, work.to, ARCHIVE_CHUNK_DAYS)) {
+      const chunk: GscDay[] = await loadDays(from, to);
+      archiveDaysRead += chunk.length;
+      feedExperiments(accumulators, chunk);
+    }
   }
-  const measured = measureExperiments(work.measure, days, today);
+  const measured = accumulators.map((acc) => finishExperiment(acc, today));
+  // Por fecha de despliegue: lo último que se publicó es lo que alguien está esperando ver.
   const experiments = [...measured, ...work.reuse].sort(
     (a, b) => b.shippedOn.localeCompare(a.shippedOn) || a.id.localeCompare(b.id)
   );
@@ -177,5 +207,5 @@ export async function refreshRevenuePlan(options: RefreshOptions = {}): Promise<
     alerts,
   };
 
-  return { snapshot, archiveDaysRead: days.length };
+  return { snapshot, archiveDaysRead };
 }

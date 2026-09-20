@@ -184,15 +184,45 @@ const DIRECTORIO_PATHS = new Set([
 /** Prefijos de ruta suelta que son directorios (las secciones que cuelgan de uno). */
 const DIRECTORIO_PREFIXES = ["/alquileres/", "/alquiler-", "/autos/", "/celulares/", "/equipar/", "/tiendas/"];
 
+/**
+ * Páginas de problema sueltas: una guía que se ganó su propia ruta en vez de vivir en `/guias/*`.
+ *
+ * Se agregan a mano y la alerta `unclassified-families` es la que las va encontrando: lista las
+ * familias con tráfico que todavía valen 1× por no estar clasificadas. Estas ocho salieron de la
+ * primera corrida real contra producción (2026-09-20), y las ocho eran contenido.
+ */
+const CONTENIDO_PATHS = new Set([
+  "/tarjetas-de-credito-uruguay",
+  "/mejores-bancos-uruguay",
+  "/inversiones-uruguay",
+  "/comisiones-de-transferencia-uruguay",
+  "/alquilar-estando-en-clearing",
+  "/denunciar-ruidos-molestos-uruguay",
+  "/trabajo-para-menores-de-edad-uruguay",
+  "/sala-vip-aeropuerto-uruguay",
+  "/comprar-auto-con-deuda-uruguay",
+  "/multas-de-transito-y-patente-uruguay",
+]);
+
 export function tierOf(bucket: string): Tier {
-  if (CONTENIDO_BUCKETS.has(bucket)) return TIER_CONTENIDO;
+  if (CONTENIDO_BUCKETS.has(bucket) || CONTENIDO_PATHS.has(bucket)) return TIER_CONTENIDO;
   if (DATO_VIVO_BUCKETS.has(bucket)) return TIER_DATO_VIVO;
   if (DIRECTORIO_PATHS.has(bucket)) return TIER_DIRECTORIO;
   if (DIRECTORIO_PREFIXES.some((p) => bucket.startsWith(p))) return TIER_DIRECTORIO;
   // Los espejos en inglés y portugués heredan el tramo de la sección que replican, que es lo que
-  // `bucketOf` deja en el segundo segmento (`/en/guias/*`).
+  // `bucketOf` deja en el segundo segmento. Hay que probar las DOS formas: `/en/guias/*` replica la
+  // familia `/guias/*`, pero `/en/alquileres-uruguay/*` replica la ruta suelta
+  // `/alquileres-uruguay` — medido contra producción el 2026-09-20, esa segunda forma caía en
+  // "otro" y un directorio quedaba valuado 5 veces por encima de su tramo.
   const mirror = /^\/(?:en|pt)\/([^/]+)/.exec(bucket);
-  if (mirror) return tierOf(`/${mirror[1]}/*`);
+  if (mirror) {
+    const asFamily = tierOf(`/${mirror[1]}/*`);
+    if (asFamily !== TIER_OTRO) return asFamily;
+    const asPath = tierOf(`/${mirror[1]}`);
+    if (asPath !== TIER_OTRO) return asPath;
+  }
+  // La portada de cada espejo es una portada.
+  if (bucket === "/en" || bucket === "/pt") return TIER_DATO_VIVO;
   return TIER_OTRO;
 }
 

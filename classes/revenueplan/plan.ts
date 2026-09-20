@@ -104,8 +104,19 @@ export function familyLedger(
     });
   }
   // Por tráfico: la fila que más importa leer es la que más gente recibe, tenga o no ingreso.
-  return rows.sort((a, b) => b.views - a.views || b.searchClicks - a.searchClicks);
+  rows.sort((a, b) => b.views - a.views || b.searchClicks - a.searchClicks);
+
+  // Y se recorta. `bucketOf` deja cada página suelta con su path entero, así que la primera corrida
+  // real contra producción devolvió 830 "familias": una cola larguísima de páginas con dos
+  // impresiones que nadie va a leer y que se guardaría entera en Mongo todos los días. Se conservan
+  // las que tienen tráfico o plata, y el resto se cae.
+  const kept = rows.slice(0, MAX_FAMILIES);
+  const extra = rows.slice(MAX_FAMILIES).filter((r) => r.adRevenue > 0 || r.searchClicks > 0);
+  return kept.concat(extra).slice(0, MAX_FAMILIES * 2);
 }
+
+/** Filas de la tabla de familias que el snapshot guarda. Ver el comentario en `familyLedger`. */
+export const MAX_FAMILIES = 120;
 
 export interface PlanAlertInput {
   table: ValueTable;
