@@ -179,7 +179,7 @@ const verifiedAt = new Date(ROUTING_VERIFIED_AT).toLocaleDateString('es-UY', {
 const canonicalUrl = 'https://cambio-uruguay.com/a-quien-le-reclamo-uruguay'
 const title = '¿A quién le reclamo en Uruguay?'
 const description =
-  'Defensa del Consumidor no es competente para todo: la luz y el agua son URSEA, el celular e internet URSEC, los bancos y aseguradoras el Banco Central, y lo laboral el MTSS. Con los plazos de cada uno (URSEA 15 días hábiles, BCU 15 días corridos), el paso previo de reclamar a la empresa y guardar el número, y las cuatro cosas que el BCU dice expresamente que no puede hacer.'
+  'Luz y agua son URSEA, celular e internet URSEC, bancos y seguros el BCU, lo laboral el MTSS. Plazos: 15 días hábiles en URSEA, 15 corridos en el BCU.'
 
 defineOgImageComponent('Cambio', {
   title: '¿A quién le reclamo?',

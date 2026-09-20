@@ -454,7 +454,7 @@ defineOgImageComponent('Cambio', {
 const seoTitle = 'Precio de monopatines eléctricos en Uruguay | Cambio Uruguay'
 const seoDescription =
   'Mediana de precio por tipo de monopatín eléctrico en Uruguay, nuevo y usado, las ofertas más ' +
-  'baratas por tienda y la normativa vigente por departamento, cada dato con su fuente y su fecha.'
+  'baratas y la normativa de cada departamento, con su fecha.'
 
 useSeoMeta({
   title: seoTitle,

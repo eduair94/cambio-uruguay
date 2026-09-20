@@ -537,7 +537,7 @@ const canonicalUrl = 'https://cambio-uruguay.com/apps-de-beneficios-uruguay'
 useSeoMeta({
   title: 'Apps y clubes de beneficios en Uruguay',
   description:
-    'Guía de los programas de fidelidad y clubes de beneficios uruguayos: Ta-Ta PLUS, Puntos de Tienda Inglesa, Tarjeta Más, Farmacard, ANCAPuntos, PedidosYa Plus, Socio Espectacular, Club Movistar, Beneficios Antel y Club El País. Cuánto devuelve cada uno, cuándo vencen los puntos y qué cuesta cada club.',
+    'Ta-Ta PLUS, Tienda Inglesa, Tarjeta Más, Farmacard, ANCAPuntos y PedidosYa Plus: cuánto devuelve cada club, qué cuesta y cuándo vencen los puntos.',
   ogTitle: 'Apps y programas de beneficios en Uruguay: cuánto devuelve cada uno',
   ogDescription:
     'Puntos de supermercado, farmacia, combustible y clubes con cuota, con las reglas leídas de las bases oficiales.',

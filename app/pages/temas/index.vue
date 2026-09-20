@@ -79,7 +79,7 @@ const localePath = useLocalePath()
 const canonicalUrl = 'https://cambio-uruguay.com/temas'
 const metaTitle = 'Temas de educación financiera en Uruguay | Cambio Uruguay'
 const metaDescription =
-  'Guías de economía y finanzas para Uruguay organizadas por tema: alquiler y vivienda, herencias, deudas y crédito, sueldo e impuestos, ahorro e inversión y más.'
+  'Guías de economía para Uruguay por tema: alquiler y vivienda, herencias, deudas y crédito, sueldo e impuestos, ahorro e inversión y más.'
 
 defineOgImageComponent('Cambio', {
   title: 'Temas de educación financiera',

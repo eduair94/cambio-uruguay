@@ -437,7 +437,7 @@ defineOgImageComponent('Cambio', {
 useSeoMeta({
   title: 'Portales de alquiler en Uruguay comparados',
   description:
-    'Comparativa de los portales de alquiler uruguayos (Mercado Libre, InfoCasas, Inmuebles El País, Casasweb y Facebook Marketplace) con cifras del catálogo en vivo: cuánto ve cada uno, qué hacen mejor y qué agrega buscarlos juntos.',
+    'Mercado Libre, InfoCasas, Inmuebles El País, Casasweb y Facebook Marketplace: cuántos alquileres ve cada portal en el catálogo en vivo, y qué hace mejor.',
   ogTitle: 'Dónde buscar alquiler en Uruguay: los portales, comparados',
   ogDescription:
     'Los inventarios casi no se superponen: buscar en un solo portal deja afuera la mayor parte de lo publicado. Las cifras salen del catálogo en vivo.',

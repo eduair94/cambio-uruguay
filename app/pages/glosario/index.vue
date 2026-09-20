@@ -75,7 +75,7 @@ defineOgImageComponent('Cambio', {
 useSeoMeta({
   title: 'Glosario financiero y cambiario de Uruguay | Cambio Uruguay',
   description:
-    'Diccionario de términos del dólar, el cambio de divisas y los impuestos en Uruguay: spread, cotización, billete, cable, IVA, IRPF, UI, BCU y más, explicados en simple.',
+    'Spread, cotización, billete, cable, IVA, IRPF, UI y BCU explicados en simple: el diccionario del dólar, el cambio de divisas y los impuestos en Uruguay.',
   ogTitle: 'Glosario financiero y cambiario de Uruguay',
   ogDescription:
     'Definiciones claras de los términos del dólar, las divisas y los impuestos en Uruguay, con ejemplos locales.',

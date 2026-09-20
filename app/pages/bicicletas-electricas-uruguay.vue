@@ -351,8 +351,8 @@ defineOgImageComponent('Cambio', {
 
 const seoTitle = 'Precio de bicicletas eléctricas en Uruguay | Cambio Uruguay'
 const seoDescription =
-  'Banda de precio por tipo de bicicleta eléctrica en Uruguay, nuevo y usado, las ofertas más ' +
-  'baratas por tienda y la normativa vigente por departamento, cada dato con su fuente y su fecha.'
+  'Banda de precio por tipo de bicicleta eléctrica en Uruguay, nueva y usada, las ofertas más ' +
+  'baratas y la normativa de cada departamento, con su fecha.'
 
 useSeoMeta({
   title: seoTitle,

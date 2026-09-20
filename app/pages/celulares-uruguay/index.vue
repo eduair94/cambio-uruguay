@@ -403,7 +403,7 @@ const faq = computed<FaqItem[]>(() => {
 const CANONICAL = 'https://cambio-uruguay.com/celulares-uruguay'
 const TITLE = 'Precio de celulares en Uruguay'
 const DESCRIPTION =
-  'Comparamos el precio nuevo de iPhone, Samsung, Motorola y Xiaomi en tiendas uruguayas y Mercado Libre, con la cuenta de si conviene traerlo de Estados Unidos.'
+  'Precio nuevo de iPhone, Samsung, Motorola y Xiaomi en tiendas uruguayas y Mercado Libre, con la cuenta de si conviene traerlo de Estados Unidos.'
 
 defineOgImageComponent('Cambio', {
   title: TITLE,

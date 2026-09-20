@@ -1145,7 +1145,7 @@ defineOgImageComponent('Cambio', {
 useSeoMeta({
   title: 'Descuentos con tarjeta en Uruguay por banco',
   description:
-    'Mapa interactivo de descuentos por banco y tarjeta en Uruguay: Itaú, BROU, Santander, BBVA, Scotiabank, OCA, Prex, Mercado Pago, ANDA y Club El País. Agregá tus tarjetas y encontrá comercios con beneficio cerca tuyo.',
+    'Mapa de descuentos por banco y tarjeta en Uruguay: Itaú, BROU, Santander, BBVA, Scotiabank, OCA, Prex, Mercado Pago y ANDA. Buscá beneficios cerca tuyo.',
   ogTitle: 'Descuentos con tarjeta en Uruguay: el mapa por banco',
   ogDescription:
     'Elegí tus tarjetas y mirá qué comercios tienen descuento con cada banco, en un mapa por cercanía.',

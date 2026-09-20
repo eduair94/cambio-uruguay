@@ -233,7 +233,7 @@ defineOgImageComponent('Cambio', {
 // below is written for the SERP: what you get, in what shape, at what price.
 const SEO_TITLE = 'API pública del dólar en Uruguay: sin key'
 const SEO_DESCRIPTION =
-  'Cotizaciones de las casas de cambio uruguayas por REST, gratis y sin autenticación: base api.cambio-uruguay.com, documento OpenAPI 3.1 para importar a Postman o Insomnia, servidor MCP para agentes y todo el código en GitHub.'
+  'API REST gratis y sin autenticación con las cotizaciones uruguayas: api.cambio-uruguay.com, OpenAPI 3.1, servidor MCP y el código en GitHub.'
 
 // The page answers at two URLs — `/desarrolladores` and the `/developers` alias
 // declared above — plus one per locale. Without a canonical they were four

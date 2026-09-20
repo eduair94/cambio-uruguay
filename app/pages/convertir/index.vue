@@ -91,7 +91,7 @@ defineOgImageComponent('Cambio', {
 useSeoMeta({
   title: 'Conversiones de monedas a pesos uruguayos | Cambio Uruguay',
   description:
-    'Cuánto es en pesos uruguayos: convertí dólares, euros, reales y pesos argentinos con la cotización en vivo de más de 40 casas de cambio. Montos frecuentes listos para consultar.',
+    'Convertí dólares, euros, reales y pesos argentinos a pesos uruguayos con la cotización en vivo de más de 40 casas de cambio. Montos frecuentes listos.',
   ogTitle: 'Conversiones de monedas a pesos uruguayos',
   ogDescription:
     'Convertí dólares, euros, reales y pesos argentinos a pesos uruguayos con cotización en vivo.',

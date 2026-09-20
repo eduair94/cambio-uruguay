@@ -2038,6 +2038,28 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // «bps cobro» es la consulta más grande de todo el racimo del BPS (índice 100 en el
+        // barrido de Trends del 15/9/2026, con «fecha de cobro bps» en 37) y no la contestaba
+        // ninguna página del sitio. No publica el calendario del mes —envejece el 1.º— sino el
+        // mecanismo y las cuatro vías para consultar la fecha propia.
+        to: '/fecha-de-cobro-bps-uruguay',
+        labelKey: 'nav.fechaCobroBps',
+        icon: 'mdi-calendar-clock',
+        priority: 0.7,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'fecha de cobro bps',
+          'bps cobro',
+          'cuando cobro bps',
+          'bps fecha y lugar de cobro',
+          'calendario de cobros bps',
+          'donde cobro bps',
+          'pago de prestaciones bps',
+          'sms 1997 bps',
+        ],
+      },
+      {
         // «carne de salud» se busca como un precio y la respuesta está en el
         // Decreto 274/017: en el prestador propio no se paga. Las consultas de
         // costo y vigencia no las contestaba ninguna página del sitio.

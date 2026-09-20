@@ -456,7 +456,7 @@ defineOgImageComponent('Cambio', {
 useSeoMeta({
   title: '¿Qué banco tiene más descuentos en Uruguay?',
   description:
-    'Comparativa con gráficas de los descuentos por banco en Uruguay: cuántas marcas y locales cubre Itaú, BROU, Santander, BBVA, Scotiabank, OCA y ANDA, en cuántas sirve el débito, marcas exclusivas y qué banco lidera cada rubro.',
+    'Cuántas marcas y locales cubre cada banco en Uruguay: Itaú, BROU, Santander, BBVA, Scotiabank, OCA y ANDA, con gráficas y quién lidera cada rubro.',
   ogTitle: '¿Qué banco tiene más descuentos en Uruguay?',
   ogDescription:
     'Marcas, locales, crédito vs débito y exclusividad por emisor, contados del mapa de descuentos.',

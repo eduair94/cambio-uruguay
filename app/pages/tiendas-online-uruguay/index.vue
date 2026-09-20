@@ -220,9 +220,8 @@ defineOgImageComponent('Cambio', {
 
 const seoTitle = 'Tiendas online de Uruguay: opiniones y datos verificables | Cambio Uruguay'
 const seoDescription =
-  'Antigüedad del dominio, reseñas de Trustpilot y Google, menciones en Reddit y catálogos ' +
-  'propios de decenas de tiendas online que operan en Uruguay o le venden al país desde el ' +
-  'exterior, cada dato con su fuente y su fecha. No es un ranking de confianza.'
+  'Antigüedad del dominio, Trustpilot, Google, menciones en Reddit y catálogos propios de las ' +
+  'tiendas online que venden en Uruguay, con fuente y fecha.'
 
 useSeoMeta({
   title: seoTitle,

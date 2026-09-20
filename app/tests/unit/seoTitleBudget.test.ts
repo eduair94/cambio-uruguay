@@ -234,7 +234,10 @@ function staticTitle(source: string): string | null {
 // 111 → 120 el 2026-09-12: nueve páginas nuevas de las últimas corridas ya se leían y nadie había
 // subido el piso, así que el bound tenía nueve de sobra — sobrante suficiente para que volver
 // dinámico un título medido pasara inadvertido, que es lo único que este número existe para evitar.
-const MEASURABLE = 120
+// 120 → 144 el 2026-09-20: el bound volvía a tener veinticuatro de sobra, que es el mismo
+// sobrante que la nota de arriba describe como el único accidente que este número existe para
+// evitar. Queda otra vez en el conteo real.
+const MEASURABLE = 144
 // 44 → 33 el 2026-09-07: once de los títulos más largos reescritos a 43 caracteres o menos. Los
 // once perdían la cola en el SERP, y la cola era el dato — «2 puntos o 9», «mora y 72 h», «1 mes
 // por año», «6 países», «13 temas», «ChauDeudas o MiDeuda» —, así que en cada uno se conservó la
@@ -296,6 +299,21 @@ describe('los títulos escritos en las páginas entran en el SERP', () => {
     // El contrapeso de la deuda de abajo: si alguien vuelve dinámico un título
     // para sacarlo de la cuenta, este número baja y el test lo dice.
     expect(measured.length).toBeGreaterThanOrEqual(MEASURABLE)
+  })
+
+  // Dos páginas con el mismo `<title>` se disputan la misma consulta y Google reparte las
+  // impresiones entre las dos, que es el defecto que el bloque de canibalización del final de
+  // `seoContract.test.ts` mide para una familia concreta. Acá se mide para todo el directorio.
+  it('ningún título se repite entre dos páginas', () => {
+    const byTitle = new Map<string, string[]>()
+    for (const page of measured) {
+      const key = page.rendered.trim()
+      byTitle.set(key, [...(byTitle.get(key) ?? []), page.file])
+    }
+    const repeated = [...byTitle.entries()]
+      .filter(([, pages]) => pages.length > 1)
+      .map(([title, pages]) => `${pages.join(' + ')}: ${title}`)
+    expect(repeated, repeated.join('\n')).toEqual([])
   })
 
   it(`tiene como mucho ${OVER_BUDGET} títulos pasados de ${MAX_TITLE} caracteres`, () => {

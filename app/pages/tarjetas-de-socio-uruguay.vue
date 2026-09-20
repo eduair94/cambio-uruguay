@@ -289,7 +289,7 @@ defineOgImageComponent('Cambio', {
 useSeoMeta({
   title: 'Tarjetas de socio y beneficios en Uruguay',
   description:
-    'Lista verificada de tarjetas de socio y programas de beneficios uruguayos que no son de crédito ni de débito: Club El País, clubes de shoppings, fidelidad de supermercados y combustible, abonos de cine y teatro. Cuánto cuestan, cómo sacarlas y qué descuentos dan, con fuentes oficiales.',
+    'Tarjetas de socio que no son de crédito ni débito: Club El País, shoppings, supermercados, combustible, cine y teatro. Qué cuestan y qué descuentan.',
   ogTitle: 'Tarjetas de socio y beneficios en Uruguay',
   ogDescription:
     'Cuánto cuestan de verdad, cómo se sacan y qué descuento dan — con la fuente oficial al lado.',

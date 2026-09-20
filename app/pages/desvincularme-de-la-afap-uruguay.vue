@@ -623,7 +623,7 @@ const totalMillones = Math.round(AFAP_PORTFOLIO_TOTALS.totalMilesDePesos / 1000)
 const canonicalUrl = 'https://cambio-uruguay.com/desvincularme-de-la-afap-uruguay'
 const title = 'Desvincularme de una AFAP: el artículo 8'
 const description =
-  'Revocar la opción del artículo 8 no es lo mismo que desafiliarse de la AFAP. Las condiciones exactas de la revocación (40 a 49 años, Régimen Mixto, haber optado sin estar obligado, causal antes de 2043), el asesoramiento obligatorio de BPS y los 90 días corridos para decidir. Más: desde qué sueldo va plata a la AFAP (tope A $ 96.279), en qué está invertida y por qué la ley casi no la deja ir al exterior, y sobre qué te cobran la comisión y la prima del seguro.'
+  'Revocar la opción del artículo 8 no es desafiliarse: entre los 40 y los 49 años, con asesoramiento obligatorio del BPS y 90 días corridos para decidir.'
 
 defineOgImageComponent('Cambio', {
   title: '¿Cómo me desvinculo de una AFAP?',

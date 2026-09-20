@@ -213,7 +213,7 @@ function asOfLabel(entry: DirectorioEntry, iso: string): string {
 const CANONICAL = 'https://cambio-uruguay.com/directorios-uruguay'
 const TITLE = 'Directorios: lo que comparamos en Uruguay'
 const DESCRIPTION =
-  'Casas de cambio, alquileres, autos usados, celulares, sillas, tiendas online, precios de supermercado y más: los directorios de Cambio Uruguay, con cuántos hay en cada uno y la fecha del dato.'
+  'Casas de cambio, alquileres, autos usados, celulares, sillas, tiendas online y precios de supermercado: cuántos hay en cada directorio y la fecha del dato.'
 
 defineOgImageComponent('Cambio', {
   title: 'Directorios',

@@ -446,7 +446,7 @@ watch(boardRows, rows => {
 useSeoMeta({
   title: 'Mi lista: cambios y tarjetas cerca tuyo',
   description:
-    'Armá tu lista personal: tu zona (tu barrio, tu ciudad o todo tu departamento), las casas de cambio que usás y las tarjetas que tenés. Mirá solo tus precios, cuánto se movieron y cuál de tus tarjetas te conviene. Sin registro.',
+    'Tu zona, tus casas de cambio y tus tarjetas en una pantalla: mirá solo tus precios, cuánto se movieron y cuál de tus tarjetas conviene. Sin registro.',
   ogTitle: 'Mi lista de seguimiento — Cambio Uruguay',
   ogDescription:
     'Tu zona, tus casas de cambio y tus tarjetas en un solo tablero. Funciona en todo el país y sin crear cuenta.',
