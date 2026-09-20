@@ -4,6 +4,8 @@ export const rentalZoneBarsMessages = {
     headingNamed: '{name} frente a los demás barrios',
     region: 'Datos del barrio {name}',
     better: 'mejor que {n} %',
+    digest: 'Mejor en {best} · peor en {worst}',
+    digestOne: 'Mejor que el {n} % en {label}',
     measuring: 'midiendo',
     method: 'Fuentes y cálculo',
     methodHint:
@@ -30,6 +32,8 @@ export const rentalZoneBarsMessages = {
     headingNamed: '{name} compared with other neighbourhoods',
     region: 'Neighbourhood data for {name}',
     better: 'better than {n} %',
+    digest: 'Best at {best} · worst at {worst}',
+    digestOne: 'Better than {n} % at {label}',
     measuring: 'measuring',
     method: 'Sources and method',
     methodHint:
@@ -56,6 +60,8 @@ export const rentalZoneBarsMessages = {
     headingNamed: '{name} comparado com os demais bairros',
     region: 'Dados do bairro {name}',
     better: 'melhor que {n} %',
+    digest: 'Melhor em {best} · pior em {worst}',
+    digestOne: 'Melhor que {n} % em {label}',
     measuring: 'medindo',
     method: 'Fontes e cálculo',
     methodHint:

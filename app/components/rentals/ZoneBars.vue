@@ -3,6 +3,13 @@
   A fuller bar is always better (fewer reports, cuts or complaints; more mapped shops), so the rows
   read the same way; the exact value and its source ride along for hover and screen readers.
   Deliberately no combined score: each row keeps its own source, period and meaning.
+
+  Inside a results card the seven rows doubled the card's height and pushed the price out of view,
+  so the block is a native disclosure: closed it costs two lines and still names the best and the
+  worst figure, which is what a reader comparing cards actually uses. Native <details> keeps it
+  keyboard-operable and printable without a modal, which would interrupt a scan that needs no
+  protected focus. The open/closed choice is shared by every card on the page and remembered: a
+  reader who opens one card wants the same rows on the next one, not seven more clicks.
 -->
 <template>
   <section
@@ -11,28 +18,36 @@
     :aria-label="t('region', { name: zone.name })"
     data-testid="rental-zone-bars"
   >
-    <p class="zone-bars__heading">
-      {{ sameName ? t('heading') : t('headingNamed', { name: zone.name }) }}
-    </p>
-    <ul class="zone-bars__rows">
-      <li
-        v-for="row in rows"
-        :key="row.attribute"
-        class="zone-bars__row"
-        :class="{ 'is-measuring': row.measuring }"
-        :title="row.detail"
-      >
-        <span class="zone-bars__label">{{ row.label }}</span>
-        <span class="zone-bars__track" aria-hidden="true">
-          <span class="zone-bars__fill" :style="{ inlineSize: `${row.percent}%` }" />
+    <details class="zone-bars__disclosure" :open="open" @toggle="onToggle">
+      <summary class="zone-bars__summary" data-testid="rental-zone-bars-toggle">
+        <span class="zone-bars__summary-text">
+          <span class="zone-bars__heading">
+            {{ sameName ? t('heading') : t('headingNamed', { name: zone.name }) }}
+          </span>
+          <span v-if="digest" class="zone-bars__digest">{{ digest }}</span>
         </span>
-        <span class="zone-bars__value">{{ row.text }}</span>
-        <span class="d-sr-only">{{ row.aria }}</span>
-      </li>
-    </ul>
-    <details class="zone-bars__method">
-      <summary>{{ t('method') }}</summary>
-      <p>{{ t('methodHint') }}</p>
+        <VIcon class="zone-bars__chevron" size="18" aria-hidden="true">mdi-chevron-down</VIcon>
+      </summary>
+      <ul class="zone-bars__rows">
+        <li
+          v-for="row in rows"
+          :key="row.attribute"
+          class="zone-bars__row"
+          :class="{ 'is-measuring': row.measuring }"
+          :title="row.detail"
+        >
+          <span class="zone-bars__label">{{ row.label }}</span>
+          <span class="zone-bars__track" aria-hidden="true">
+            <span class="zone-bars__fill" :style="{ inlineSize: `${row.percent}%` }" />
+          </span>
+          <span class="zone-bars__value">{{ row.text }}</span>
+          <span class="d-sr-only">{{ row.aria }}</span>
+        </li>
+      </ul>
+      <details class="zone-bars__method">
+        <summary>{{ t('method') }}</summary>
+        <p>{{ t('methodHint') }}</p>
+      </details>
     </details>
   </section>
 </template>
@@ -69,9 +84,31 @@ const date = (value: string) =>
     timeZone: 'UTC',
   }).format(new Date(value))
 
+// One choice for the whole page, kept across visits: the rows are worth the height or they are not.
+const OPEN_KEY = 'cu_zone_bars_open'
+const open = useState<boolean>('rental-zone-bars-open', () => false)
+onMounted(() => {
+  try {
+    if (localStorage.getItem(OPEN_KEY) === '1') open.value = true
+  } catch {
+    // Storage blocked: the default still works.
+  }
+})
+const onToggle = (event: Event) => {
+  const next = (event.target as HTMLDetailsElement).open
+  if (next === open.value) return
+  open.value = next
+  try {
+    localStorage.setItem(OPEN_KEY, next ? '1' : '0')
+  } catch {
+    // Not remembering the choice is better than not honouring it.
+  }
+}
+
 interface Row {
   attribute: RentalZoneScoreAttribute
   label: string
+  n: number
   percent: number
   text: string
   detail: string
@@ -87,6 +124,7 @@ const rows = computed<Row[]>(() => {
     return {
       attribute: row.attribute,
       label,
+      n,
       percent: Math.max(2, n),
       text: t('better', { n }),
       detail,
@@ -102,6 +140,7 @@ const rows = computed<Row[]>(() => {
     list.splice(Math.min(1, list.length), 0, {
       attribute: 'luz',
       label,
+      n: 0,
       percent: 0,
       text,
       detail: t('rowMeasuring', { label, date: date(power.from) }),
@@ -111,17 +150,51 @@ const rows = computed<Row[]>(() => {
   }
   return list
 })
+// The closed line quotes two real rows instead of averaging them: the block has no combined score on
+// purpose, and a reader comparing cards still learns where this area stands out and where it does not.
+const digest = computed(() => {
+  const ranked = rows.value.filter(row => !row.measuring)
+  if (!ranked.length) return ''
+  const best = ranked.reduce((a, b) => (b.n > a.n ? b : a))
+  const worst = ranked.reduce((a, b) => (b.n < a.n ? b : a))
+  return best === worst
+    ? t('digestOne', { label: best.label, n: best.n })
+    : t('digest', { best: best.label, worst: worst.label })
+})
 </script>
 
 <style scoped>
 .zone-bars {
   min-width: 0;
-  padding-top: 12px;
+  padding-top: 4px;
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 :where(.zone-bars) :where(p, ul) {
   margin: 0;
   padding: 0;
+}
+.zone-bars__summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding-block: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  list-style: none;
+}
+.zone-bars__summary::-webkit-details-marker {
+  display: none;
+}
+.zone-bars__summary:hover .zone-bars__heading,
+.zone-bars__summary:hover .zone-bars__chevron {
+  color: rgb(var(--v-theme-link));
+}
+.zone-bars__summary-text {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
 }
 .zone-bars__heading {
   font-size: 0.75rem;
@@ -130,13 +203,29 @@ const rows = computed<Row[]>(() => {
   line-height: 1.4;
   color: rgba(var(--v-theme-on-surface), 0.76);
 }
+.zone-bars__digest {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgba(var(--v-theme-on-surface), 0.76);
+}
+.zone-bars__chevron {
+  color: rgba(var(--v-theme-on-surface), 0.76);
+  transition: transform 150ms ease;
+}
+.zone-bars__disclosure[open] .zone-bars__chevron {
+  transform: rotate(180deg);
+}
 .zone-bars__rows {
   /* On a wide card (opportunities) a full-width track stops reading as a comparison. */
   max-inline-size: 34rem;
   list-style: none;
   display: grid;
   gap: 6px;
-  margin-top: 8px !important;
+  margin-top: 4px !important;
 }
 .zone-bars__row {
   display: grid;
@@ -197,5 +286,10 @@ const rows = computed<Row[]>(() => {
 .zone-bars__method p {
   margin-top: 4px;
   color: rgba(var(--v-theme-on-surface), 0.76);
+}
+@media (max-width: 599px) {
+  .zone-bars__summary {
+    min-height: 44px;
+  }
 }
 </style>
