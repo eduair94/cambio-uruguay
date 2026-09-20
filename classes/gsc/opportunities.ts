@@ -460,6 +460,34 @@ export function buildAlerts(daily: DailyPoint[]): GscAlert[] {
 }
 
 /**
+ * Attaches the URL that actually ranks to the opportunities keyed by QUERY.
+ *
+ * WHY. `strikingDistance`, `movers` and `newQueries` all work on the query table, which has no
+ * page in it — so their rows say "subí «cambio gales horario» de la 7 a la 3" without saying which
+ * of the site's 2.000 URLs would get the clicks. That was survivable while the only consumer was a
+ * human reading the dashboard. It stopped being survivable when the revenue plan (classes/
+ * revenueplan/) started pricing each opportunity, because the price of a click is a property of the
+ * page FAMILY: the same 200 clicks are worth ~30× more landing on a guide than on a converter.
+ * Without the URL every query opportunity would have to be valued at the site average, which is the
+ * average of the thing whose spread is the entire point.
+ *
+ * The attributed page is the one with most impressions for that query — the same rule
+ * `cannibalisation` already uses to pick a winner. Rows that already carry `urls` are left alone.
+ */
+export function attachPages(opportunities: Opportunity[], pairs: GscPageQuery[]): Opportunity[] {
+  const best = new Map<string, GscPageQuery>();
+  for (const row of pairs) {
+    const current = best.get(row.query);
+    if (!current || row.impressions > current.impressions) best.set(row.query, row);
+  }
+  return opportunities.map((o) => {
+    if (o.urls && o.urls.length) return o;
+    const hit = best.get(o.subject);
+    return hit ? { ...o, urls: [hit.page] } : o;
+  });
+}
+
+/**
  * The ranked list the dashboard shows. Interleaves the kinds rather than concatenating them: a list
  * sorted purely by potential clicks is 40 striking-distance rows before the first cannibalisation,
  * and the reader stops at 10.

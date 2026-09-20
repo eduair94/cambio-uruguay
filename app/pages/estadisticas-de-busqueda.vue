@@ -66,6 +66,205 @@
         </div>
       </VCard>
 
+      <!-- El plan de ingreso. Va antes que la cola de oportunidades porque la REORDENA: las mismas
+           filas de Search Console, valuadas por lo que paga la familia de página que recibiría el
+           clic. Con un RPM que va de 0,02 a 6,1 USD por mil vistas según la plantilla, ordenar por
+           clics y ordenar por plata no son la misma lista. -->
+      <h2 class="text-h6 mb-2">Qué hacer, ordenado por plata</h2>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        Las oportunidades de abajo, multiplicadas por lo que vale un clic en la familia de página
+        que lo recibiría. Lo escribe el job <code>currency-revenue-plan</code> todos los días a las
+        11:50 UTC, después de Search Console y de GA4, y no sale a ninguna API: cruza los dos
+        snapshots que ya están. <strong>No ejecuta nada</strong>: es una lista para leer y decidir.
+      </p>
+
+      <VAlert v-if="!plan" type="info" variant="tonal" density="compact" class="mb-8">
+        Todavía no hay plan. {{ planHint }}
+      </VAlert>
+
+      <template v-else>
+        <VAlert
+          v-for="alert in plan.alerts"
+          :key="alert.code + alert.message"
+          :type="alert.level === 'critical' ? 'error' : alert.level === 'warn' ? 'warning' : 'info'"
+          variant="tonal"
+          density="compact"
+          class="mb-2"
+        >
+          {{ alert.message }}
+        </VAlert>
+
+        <VRow class="mb-2 mt-2">
+          <VCol cols="6" md="4">
+            <VCard variant="outlined" class="pa-4 h-100">
+              <div class="text-caption text-medium-emphasis">RPM del sitio</div>
+              <div class="text-h6 font-weight-bold">
+                {{ rpMoney(plan.siteRpm, plan.currency) }}
+              </div>
+              <div class="text-caption text-medium-emphasis">por cada 1.000 vistas</div>
+            </VCard>
+          </VCol>
+          <VCol cols="6" md="4">
+            <VCard variant="outlined" class="pa-4 h-100">
+              <div class="text-caption text-medium-emphasis">Un clic promedio</div>
+              <div class="text-h6 font-weight-bold">
+                {{ rpMoney(plan.siteUsdPerClick, plan.currency) }}
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                en una guía vale varias veces eso; en un conversor, una fracción
+              </div>
+            </VCard>
+          </VCol>
+          <VCol cols="12" md="4">
+            <VCard variant="outlined" class="pa-4 h-100">
+              <div class="text-caption text-medium-emphasis">Techo de la cola entera</div>
+              <div class="text-h6 font-weight-bold">
+                {{ rpMoney(plan.totalUpsideUsd, plan.currency) }}
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                por 28 días si TODO saliera bien. Suma de estimaciones, no una previsión.
+              </div>
+            </VCard>
+          </VCol>
+        </VRow>
+
+        <VTable v-if="plan.actions.length" density="compact" class="mb-6 cu-mobile-cards">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Sujeto</th>
+              <th>Familia</th>
+              <th class="text-right">Clics pot.</th>
+              <th class="text-right">Vale</th>
+              <th class="text-right">{{ plan.currency }} / 28 d</th>
+              <th class="text-right">Por clics</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(row, i) in plan.actions.slice(0, 30)" :key="row.kind + row.subject">
+              <td data-label="Tipo">
+                <VChip
+                  size="x-small"
+                  :color="kindColor(row.kind as ScOpportunity['kind'])"
+                  variant="tonal"
+                >
+                  {{ SC_OPPORTUNITY_LABELS[row.kind as ScOpportunity['kind']] || row.kind }}
+                </VChip>
+              </td>
+              <td data-label="Sujeto" class="gsc-subject">
+                <div>{{ row.subject }}</div>
+                <div v-if="row.url" class="text-caption text-medium-emphasis">
+                  {{ shortUrl(row.url) }}
+                </div>
+                <div class="text-caption text-medium-emphasis">{{ row.note }}</div>
+              </td>
+              <td data-label="Familia" class="text-caption">
+                {{ row.bucket || '—' }}
+                <div class="text-medium-emphasis">{{ rpBasisLabel(row.basis) }}</div>
+              </td>
+              <td data-label="Clics pot." class="text-right">
+                {{ formatNumber(row.potentialClicks) }}
+              </td>
+              <td data-label="Vale" class="text-right">×{{ familyMultiplier(row.bucket) }}</td>
+              <td data-label="Ingreso" class="text-right font-weight-bold">
+                {{ rpMoney(row.expectedUsd, plan.currency) }}
+              </td>
+              <td
+                data-label="Por clics"
+                class="text-right text-caption"
+                :class="i + 1 < row.rankByClicks ? 'text-success' : ''"
+              >
+                #{{ row.rankByClicks }}
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+
+        <template v-if="plan.defend.length">
+          <h3 class="text-subtitle-1 font-weight-bold mb-1">Lo que se está yendo</h3>
+          <p class="text-body-2 text-medium-emphasis mb-2">
+            Clics que el sitio YA tenía y perdió contra la ventana anterior, valuados igual. Dejar
+            de perder un peso sale más barato que ganarlo.
+          </p>
+          <VTable density="compact" class="mb-8 cu-mobile-cards">
+            <thead>
+              <tr>
+                <th>Sujeto</th>
+                <th>Familia</th>
+                <th class="text-right">Clics perdidos</th>
+                <th class="text-right">{{ plan.currency }} / 28 d</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in plan.defend.slice(0, 15)" :key="row.subject">
+                <td data-label="Sujeto" class="gsc-subject">
+                  <div>{{ row.subject }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ row.note }}</div>
+                </td>
+                <td data-label="Familia" class="text-caption">{{ row.bucket || '—' }}</td>
+                <td data-label="Clics perdidos" class="text-right">
+                  {{ formatNumber(row.potentialClicks) }}
+                </td>
+                <td data-label="Ingreso" class="text-right font-weight-bold text-error">
+                  {{ rpMoney(row.expectedUsd, plan.currency) }}
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </template>
+
+        <!-- El libro de cambios. Es la parte que convierte el tablero en un bucle: sin veredicto,
+             la décima iteración se elige igual que la primera. -->
+        <h3 class="text-subtitle-1 font-weight-bold mb-1">Libro de cambios</h3>
+        <p class="text-body-2 text-medium-emphasis mb-2">
+          Cada cambio declarado en <code>docs/seo/experiments.json</code>, medido 28 días después
+          contra los 28 anteriores — pero como <strong>porción de los clics del sitio</strong>, no
+          en clics absolutos: sobre una serie que se multiplicó por seis entre marzo y agosto, un
+          antes/después crudo declara ganador hasta a no tocar nada.
+        </p>
+        <VTable v-if="plan.experiments.length" density="compact" class="mb-8 cu-mobile-cards">
+          <thead>
+            <tr>
+              <th>Veredicto</th>
+              <th>Cambio</th>
+              <th class="text-right">Clics antes</th>
+              <th class="text-right">Clics después</th>
+              <th class="text-right">Contra el sitio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in plan.experiments" :key="row.id">
+              <td data-label="Veredicto">
+                <VChip size="x-small" :color="rpVerdictColor(row.verdict)" variant="tonal">
+                  {{ row.verdict }}
+                </VChip>
+              </td>
+              <td data-label="Cambio" class="gsc-subject">
+                <div class="font-weight-medium">{{ row.id }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ row.shippedOn }} · {{ row.hypothesis }}
+                </div>
+                <div class="text-caption text-medium-emphasis">{{ row.note }}</div>
+              </td>
+              <td data-label="Clics antes" class="text-right">
+                {{ formatNumber(row.before.clicks) }}
+              </td>
+              <td data-label="Clics después" class="text-right">
+                {{ formatNumber(row.after.clicks) }}
+              </td>
+              <td data-label="Contra el sitio" class="text-right font-weight-bold">
+                {{ row.relativeLift === null ? '—' : '×' + row.relativeLift.toFixed(2) }}
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+        <VAlert v-else type="info" variant="tonal" density="compact" class="mb-8">
+          No hay cambios declarados todavía. Agregá una fila en
+          <code>docs/seo/experiments.json</code>
+          en el mismo commit que publica el cambio.
+        </VAlert>
+      </template>
+
       <!-- La cola de qué escribir. Va JUSTO DESPUÉS del pozo de cero clics porque es su respuesta:
            si el 43 % de las impresiones no puede convertirse en clic, crecer es entrar donde el
            sitio hoy no aparece, y eso no lo puede ver Search Console. -->
@@ -167,6 +366,8 @@
             <th class="text-right">Vistas</th>
             <th class="text-right">RPM</th>
             <th class="text-right">Ingreso</th>
+            <th class="text-right">Vale</th>
+            <th class="text-right">Δ tráfico↔plata</th>
           </tr>
         </thead>
         <tbody>
@@ -184,9 +385,24 @@
             <td data-label="Ingreso" class="text-right font-weight-bold">
               {{ row.adRevenue ? formatRevenue(row.adRevenue, revenueCurrency) : '—' }}
             </td>
+            <td data-label="Vale" class="text-right">×{{ familyMultiplier(row.bucket) }}</td>
+            <td
+              data-label="Δ tráfico↔plata"
+              class="text-right"
+              :class="familyGapClass(row.bucket)"
+            >
+              {{ familyGap(row.bucket) }}
+            </td>
           </tr>
         </tbody>
       </VTable>
+      <p class="text-caption text-medium-emphasis mb-8">
+        <strong>Vale</strong> es cuánto paga un clic de esa familia en múltiplos del clic promedio
+        del sitio: medido cuando la familia tiene muestra propia, estimado por tramo mientras no.
+        <strong>Δ</strong> es la porción del ingreso menos la porción del tráfico. Una familia muy
+        negativa no es una familia para apagar — es una desde la cual conviene que el lector siga a
+        otra cosa.
+      </p>
 
       <h2 class="text-h6 mb-2">Rendimiento por familia de página</h2>
       <p class="text-body-2 text-medium-emphasis mb-3">
@@ -351,6 +567,12 @@ import {
 } from '~/utils/searchConsole'
 import { scDemandColor, scDemandLabel, type SearchDemandQueue } from '~/utils/searchDemand'
 import { formatRevenue, type SiteRevenueSnapshot } from '~/utils/siteRevenue'
+import {
+  rpBasisLabel,
+  rpMoney,
+  rpVerdictColor,
+  type RevenuePlanSnapshot,
+} from '~/utils/revenuePlan'
 
 // Login is required to get a bearer token at all; the server route re-checks the allowlist, which
 // is the check that actually protects the data.
@@ -371,6 +593,8 @@ const kindFilter = ref<string>('')
 const revenue = ref<SiteRevenueSnapshot | null>(null)
 const demand = ref<SearchDemandQueue | null>(null)
 const demandHint = ref('')
+const plan = ref<RevenuePlanSnapshot | null>(null)
+const planHint = ref('')
 
 try {
   const res = await authFetch<{ snapshot: SearchConsoleSnapshot | null; hint?: string }>(
@@ -408,7 +632,40 @@ try {
   demandHint.value = 'La ruta de la cola no respondió.'
 }
 
+// Y el plan en la suya. Depende de los otros dos snapshots, así que es el primero que se queda sin
+// datos cuando alguno falla — y eso no puede vaciar el tablero entero.
+try {
+  const res = await authFetch<{ snapshot: RevenuePlanSnapshot | null; hint?: string }>(
+    '/api/revenue-plan'
+  )
+  plan.value = res.snapshot
+  planHint.value = res.hint || ''
+} catch {
+  plan.value = null
+  planHint.value = 'La ruta del plan no respondió.'
+}
+
 const formatNumber = (n: number) => new Intl.NumberFormat('es-UY').format(Math.round(n || 0))
+
+/** Cuánto vale un clic en esa familia, en múltiplos del clic promedio del sitio. */
+const planFamilies = computed(() => new Map((plan.value?.families || []).map(f => [f.bucket, f])))
+const familyMultiplier = (bucket: string | null) =>
+  bucket ? (planFamilies.value.get(bucket)?.multiplier ?? 1).toFixed(2) : '1.00'
+
+/** Porción del ingreso menos porción del tráfico, en puntos porcentuales. */
+const familyGap = (bucket: string) => {
+  const row = planFamilies.value.get(bucket)
+  if (!row || !plan.value || plan.value.revenuePending) return '—'
+  const points = row.gap * 100
+  return `${points >= 0 ? '+' : ''}${points.toFixed(1)} pp`
+}
+const familyGapClass = (bucket: string) => {
+  const row = planFamilies.value.get(bucket)
+  if (!row || !plan.value || plan.value.revenuePending) return ''
+  if (row.gap <= -0.1) return 'text-error'
+  if (row.gap >= 0.1) return 'text-success font-weight-bold'
+  return ''
+}
 
 const summary = computed(() => {
   const s = snapshot.value
