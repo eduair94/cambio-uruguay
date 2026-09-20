@@ -21,39 +21,96 @@
     {
       "id": "irpf-anios-anteriores",
       "shippedOn": "2026-09-14",
-      "routes": ["/declaracion-de-irpf-uruguay"],
+      "routes": [
+        "/declaracion-de-irpf-uruguay"
+      ],
       "hypothesis": "La seccion de ejercicios anteriores cubre una intencion de la cola de demanda que la guia no resolvia."
     },
     {
       "id": "bcu-historico-referencia",
       "shippedOn": "2026-09-14",
-      "routes": ["/historico/bcu", "/cotizacion-del-bcu"],
+      "routes": [
+        "/historico/bcu",
+        "/cotizacion-del-bcu"
+      ],
       "hypothesis": "Presentar el BCU como referencia oficial y no como casa de cambio responde mejor la intencion de consultar su serie."
     },
     {
       "id": "casa-fichas-accesos",
       "shippedOn": "2026-09-14",
-      "routes": ["/casa/*"],
+      "routes": [
+        "/casa/*"
+      ],
       "hypothesis": "Accesos a horarios, telefonos y opiniones desde la ficha de cada casa resuelven la busqueda de marca sin salir del sitio."
     },
     {
       "id": "indicadores-ur-ui-valor-vivo",
       "shippedOn": "2026-09-16",
-      "routes": ["/indicadores/"],
-      "queries": ["valor de la ur hoy", "unidad reajustable", "ui a pesos uruguayos"],
+      "routes": [
+        "/indicadores/"
+      ],
+      "queries": [
+        "valor de la ur hoy",
+        "unidad reajustable",
+        "ui a pesos uruguayos"
+      ],
       "hypothesis": "Publicar el valor vivo en titulo y descripcion, con tabla de equivalencias, gana el cluster UR/UI a los dos sitios de datos que hoy lo muestran."
     },
     {
       "id": "prestamo-sin-recibo-de-sueldo",
       "shippedOn": "2026-09-16",
-      "routes": ["/prestamo-sin-recibo-de-sueldo-uruguay"],
+      "routes": [
+        "/prestamo-sin-recibo-de-sueldo-uruguay"
+      ],
       "hypothesis": "Pagina nueva sobre un hueco detectado en Trends, en la categoria de mayor rendimiento por vista del sitio."
     },
     {
       "id": "titulos-que-responden",
       "shippedOn": "2026-09-16",
-      "routes": ["/guias/salario-minimo-uruguay-cuanto-es", "/guias/propinas-en-uruguay", "/cambiar-de-mutualista-uruguay"],
+      "routes": [
+        "/guias/salario-minimo-uruguay-cuanto-es",
+        "/guias/propinas-en-uruguay",
+        "/cambiar-de-mutualista-uruguay"
+      ],
       "hypothesis": "Un titulo con la cifra vigente adelante gana el clic a un primer resultado oficial que todavia muestra la cifra de enero."
+    },
+    {
+      "id": "descripciones-que-no-pierden-el-dato",
+      "shippedOn": "2026-09-20",
+      "routes": [
+        "/a-quien-le-reclamo-uruguay",
+        "/alternativa-a-bankos-uruguay",
+        "/apps-de-beneficios-uruguay",
+        "/bicicletas-electricas-uruguay",
+        "/celulares-uruguay",
+        "/contractor-en-uruguay",
+        "/convertir",
+        "/cotizacion",
+        "/desarrolladores",
+        "/descuentos-con-tarjeta-uruguay",
+        "/desvincularme-de-la-afap-uruguay",
+        "/directorios-uruguay",
+        "/dolar-blue-hoy",
+        "/factura-de-ose-uruguay",
+        "/glosario",
+        "/herramientas",
+        "/mapa-de-temas",
+        "/mi-lista",
+        "/monopatines-electricos-uruguay",
+        "/salir-del-clearing",
+        "/tarjetas-de-socio-uruguay",
+        "/temas",
+        "/tiendas-online-uruguay"
+      ],
+      "hypothesis": "Google corta la descripcion cerca de 155 caracteres y la cola desaparece; mover la cifra o el nombre propio al frente gana el clic desde la misma posicion."
+    },
+    {
+      "id": "fecha-de-cobro-bps",
+      "shippedOn": "2026-09-20",
+      "routes": [
+        "/fecha-de-cobro-bps-uruguay"
+      ],
+      "hypothesis": "Pagina nueva para la consulta mas grande del racimo del BPS (indice 100 en el barrido de Trends del 15/9) que el sitio no contestaba."
     }
   ]
 }
