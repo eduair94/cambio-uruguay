@@ -44,6 +44,25 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             </VBtn>
           </nav>
         </div>
+        <!--
+          Las tres preguntas que frenan un alquiler, arriba y no al pie.
+          Las guías ya estaban enlazadas desde esta página, pero medido en producción el 2026-09-20
+          a 390 px aparecían recién a y=13.000 de una página de 22.717: quince pantallas de scroll.
+          El lector que llega acá se queda 349 s de media leyendo avisos y nunca ve la respuesta a
+          "¿qué garantía me van a pedir?". La etiqueta es la PREGUNTA y no el título de la guía,
+          porque el que está mirando avisos no está buscando un artículo.
+        -->
+        <nav class="rentals-guides" :aria-label="t('guidesLead')">
+          <span class="rentals-guides__lead">{{ t('guidesLead') }}</span>
+          <NuxtLink
+            v-for="link in headerGuides"
+            :key="link.to"
+            :to="localePath(link.to)"
+            class="rentals-guides__link"
+          >
+            {{ link.label }}
+          </NuxtLink>
+        </nav>
         <div class="rentals-provenance">
           <a href="#rental-coverage" :title="activeSourceLabels">{{ t('coverage') }}</a>
           <span v-if="meta?.generatedAt" class="rentals-provenance__sep" aria-hidden="true">·</span>
@@ -1544,6 +1563,22 @@ const relatedLinks = [
   { to: '/alquilar-sin-recibo-de-sueldo', label: 'independent' },
   { to: '/alquilar-estando-en-clearing', label: 'clearing' },
 ]
+/**
+ * Las mismas tres guías del pie, pero arriba y tituladas con la pregunta en vez del nombre de la
+ * página. Mismo destino, otra intención: abajo el lector ya terminó de mirar avisos; acá todavía
+ * está eligiendo, y "¿qué garantía te piden?" es la pregunta que tiene en la cabeza mientras filtra.
+ *
+ * Las claves van LITERALES y no armadas en un `.map`: `tests/unit/rentalMessagesKeys.test.ts` sólo
+ * ve las que están escritas enteras dentro de la llamada, y una clave que ese test no ve es una
+ * etiqueta que vue-i18n imprime cruda en las tres traducciones sin que falle nada (ya pasó, y
+ * estuvo nueve días en producción). Por lo mismo, no escribir un ejemplo de llamada en este
+ * comentario: el detector no distingue comentario de código y contaría la clave del ejemplo.
+ */
+const headerGuides = computed(() => [
+  { to: '/alquilar-en-uruguay', label: t('guideQ') },
+  { to: '/alquilar-sin-recibo-de-sueldo', label: t('independentQ') },
+  { to: '/alquilar-estando-en-clearing', label: t('clearingQ') },
+])
 const catalogBaseUrl = computed(
   () => `https://cambio-uruguay.com${localePath('/alquileres-uruguay')}`
 )
@@ -1769,6 +1804,28 @@ useSchemaOrg([
 .rentals-provenance__sep {
   padding-inline: 8px;
   color: rgba(var(--v-theme-on-surface), 0.55);
+}
+/* Las tres preguntas que frenan un alquiler. Texto y no botones a propósito: arriba ya hay una
+   fila de botones (las otras búsquedas) y dos filas seguidas compiten entre sí; además una fila
+   de texto que envuelve mide ~40 px en el celular contra los ~100 px de tres botones apilados, y
+   lo que el lector vino a ver son los avisos. */
+.rentals-guides {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin-top: 12px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.rentals-guides__lead {
+  color: rgba(var(--v-theme-on-surface), 0.76);
+}
+.rentals-guides__link {
+  color: rgb(var(--v-theme-link));
+  text-underline-offset: 3px;
+  /* 44 px de área táctil sin empujar la fila: el alto lo pone el padding, no la línea. */
+  padding-block: 6px;
 }
 .rentals-provenance a,
 .rentals-external a,

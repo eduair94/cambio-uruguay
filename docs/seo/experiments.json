@@ -111,6 +111,14 @@
         "/fecha-de-cobro-bps-uruguay"
       ],
       "hypothesis": "Pagina nueva para la consulta mas grande del racimo del BPS (indice 100 en el barrido de Trends del 15/9) que el sitio no contestaba."
+    },
+    {
+      "id": "guias-de-alquiler-en-el-encabezado",
+      "shippedOn": "2026-09-20",
+      "routes": [
+        "/alquileres-uruguay"
+      ],
+      "hypothesis": "Las tres guias que frenan un alquiler estaban a y=13.000 de 22.717; subirlas al encabezado con la pregunta del lector como etiqueta deberia mandar parte de esos 563 lectores al tramo que paga."
     }
   ]
 }
