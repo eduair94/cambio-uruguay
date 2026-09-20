@@ -1824,8 +1824,11 @@ useSchemaOrg([
 .rentals-guides__link {
   color: rgb(var(--v-theme-link));
   text-underline-offset: 3px;
-  /* 44 px de área táctil sin empujar la fila: el alto lo pone el padding, no la línea. */
-  padding-block: 6px;
+  /* 44 px de área táctil. Medido en producción con 6px de padding daba 32: 0,85rem × 1,5 son
+     ~20 px de línea, así que hacen falta 12 arriba y 12 abajo, no 6. El comentario decía 44 y el
+     código daba 32 — el número hay que medirlo en el navegador, no deducirlo. */
+  padding-block: 12px;
+  display: inline-block;
 }
 .rentals-provenance a,
 .rentals-external a,
