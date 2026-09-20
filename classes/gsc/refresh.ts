@@ -12,6 +12,7 @@ import {
   siteUrl,
 } from "./client";
 import {
+  attachPages,
   buildAlerts,
   cannibalisation,
   ctrBelowCurve,
@@ -222,16 +223,21 @@ export async function refreshSearchConsole(options: RefreshOptions = {}): Promis
     note: `${o.note} (página)`,
   }));
 
-  const opportunities = rankOpportunities([
-    strikingDistance(queries, curve),
-    ctrBelowCurve(pages, curve),
-    cannibalisation(pairs),
-    pageFalling,
-    falling,
-    newQueries(queries, prevQueries),
-    rising,
-    deadWeight(pages),
-  ]);
+  // `attachPages` antes de rankear: las oportunidades por CONSULTA no traen URL y sin URL no hay
+  // familia, y sin familia el plan de ingreso tiene que valuar todo al promedio del sitio — o sea
+  // borrar justo la diferencia de 30× entre una guía y un conversor, que es el dato que decide.
+  const opportunities = rankOpportunities(
+    [
+      strikingDistance(queries, curve),
+      ctrBelowCurve(pages, curve),
+      cannibalisation(pairs),
+      pageFalling,
+      falling,
+      newQueries(queries, prevQueries),
+      rising,
+      deadWeight(pages),
+    ].map((group) => attachPages(group, pairs))
+  );
 
   const daily = toKeyed(dateRows)
     .map((d) => ({ day: d.key, clicks: d.clicks, impressions: d.impressions, ctr: d.ctr, position: d.position }))

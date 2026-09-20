@@ -1,0 +1,59 @@
+{
+  "_comment": [
+    "El libro de cambios que el job `currency-revenue-plan` mide todos los días.",
+    "",
+    "REGLA: el commit que publica un cambio pensado para mover tráfico agrega acá su fila, en el",
+    "mismo commit. Veintiocho días después el job dictamina solo, y el veredicto aparece en",
+    "/estadisticas-de-busqueda. Sin esta fila el cambio no se mide nunca: es exactamente lo que",
+    "venía pasando — nueve iteraciones seguidas del registro de crecimiento terminan diciendo",
+    "'evaluar con 28 dias finales posteriores' y ninguna vuelve.",
+    "",
+    "CAMPOS: `id` unico y estable; `shippedOn` la fecha del deploy (YYYY-MM-DD); `routes` rutas",
+    "exactas, o terminadas en `/` o `*` para tomar la familia entera; `queries` consultas exactas",
+    "cuando el cambio apuntaba a consultas; `hypothesis` una linea de que se esperaba.",
+    "",
+    "QUE NO PONER: un cambio que toca TODO el sitio (una barra de navegacion en el layout, por",
+    "ejemplo). El veredicto se calcula como porcion de los clics del sitio, asi que un cambio sin",
+    "paginas de control se mide contra si mismo y siempre da 'sin cambio'. Esos hay que medirlos de",
+    "otra forma y este libro no sabe hacerlo."
+  ],
+  "experiments": [
+    {
+      "id": "irpf-anios-anteriores",
+      "shippedOn": "2026-09-14",
+      "routes": ["/declaracion-de-irpf-uruguay"],
+      "hypothesis": "La seccion de ejercicios anteriores cubre una intencion de la cola de demanda que la guia no resolvia."
+    },
+    {
+      "id": "bcu-historico-referencia",
+      "shippedOn": "2026-09-14",
+      "routes": ["/historico/bcu", "/cotizacion-del-bcu"],
+      "hypothesis": "Presentar el BCU como referencia oficial y no como casa de cambio responde mejor la intencion de consultar su serie."
+    },
+    {
+      "id": "casa-fichas-accesos",
+      "shippedOn": "2026-09-14",
+      "routes": ["/casa/*"],
+      "hypothesis": "Accesos a horarios, telefonos y opiniones desde la ficha de cada casa resuelven la busqueda de marca sin salir del sitio."
+    },
+    {
+      "id": "indicadores-ur-ui-valor-vivo",
+      "shippedOn": "2026-09-16",
+      "routes": ["/indicadores/"],
+      "queries": ["valor de la ur hoy", "unidad reajustable", "ui a pesos uruguayos"],
+      "hypothesis": "Publicar el valor vivo en titulo y descripcion, con tabla de equivalencias, gana el cluster UR/UI a los dos sitios de datos que hoy lo muestran."
+    },
+    {
+      "id": "prestamo-sin-recibo-de-sueldo",
+      "shippedOn": "2026-09-16",
+      "routes": ["/prestamo-sin-recibo-de-sueldo-uruguay"],
+      "hypothesis": "Pagina nueva sobre un hueco detectado en Trends, en la categoria de mayor rendimiento por vista del sitio."
+    },
+    {
+      "id": "titulos-que-responden",
+      "shippedOn": "2026-09-16",
+      "routes": ["/guias/salario-minimo-uruguay-cuanto-es", "/guias/propinas-en-uruguay", "/cambiar-de-mutualista-uruguay"],
+      "hypothesis": "Un titulo con la cifra vigente adelante gana el clic a un primer resultado oficial que todavia muestra la cifra de enero."
+    }
+  ]
+}

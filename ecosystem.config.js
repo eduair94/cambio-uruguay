@@ -551,6 +551,33 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // El plan de ingreso: las oportunidades de Search Console, valuadas por lo que paga la
+      // familia de página que recibiría el clic.
+      //
+      // POR QUÉ. `currency-gsc` ordena el trabajo por CLICS POTENCIALES y `currency-site-analytics`
+      // mide el RPM por FAMILIA — con el mismo `bucketOf`, a propósito, "para que las dos tablas se
+      // puedan cruzar fila a fila". Nadie las cruzaba, y entre las familias hay un factor de
+      // trescientos (una guía de préstamos midió 6,1 USD por mil vistas y `/alquileres` 0,02, GA4
+      // 3–15/9/2026). Con ese spread una cola ordenada por clics manda a trabajar justo donde el
+      // clic no paga. Este job hace esa cuenta y además mide el libro de cambios
+      // (`docs/seo/experiments.json`): cada cambio declarado, 28 días después, como PORCIÓN de los
+      // clics del sitio — sobre una serie que se multiplicó por seis, un antes/después crudo
+      // declara ganador hasta a no tocar nada.
+      //
+      // NO PUBLICA NADA ni toca ningún catálogo: escribe un documento privado que una persona lee
+      // en /estadisticas-de-busqueda.
+      //
+      // 11:50 UTC: después de currency-site-analytics (10:51) y de currency-gsc (11:20), que son
+      // los dos snapshots que lee. NO sale a ninguna API — sin credenciales nuevas y sin cuota que
+      // agotar. Necesita APP_MONGO_URI.
+      name: "currency-revenue-plan",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_revenue_plan.js",
+      cron_restart: "50 11 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Fichas de /tiendas-online-uruguay: por cada tienda del registro curado
       // (classes/stores/registry.ts) lee su home, la antigüedad del dominio (crt.sh, Wayback),
       // Trustpilot (:3029), Google Maps (:2221, sólo si el sitio de la ficha ES el dominio), las

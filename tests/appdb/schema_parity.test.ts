@@ -14,6 +14,7 @@ import { PropertyOpportunitySnapshotModel } from "../../classes/models/PropertyO
 import { SearchConsoleSnapshotModel } from "../../classes/models/SearchConsoleSnapshot";
 import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapshot";
 import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
+import { RevenuePlanSnapshotModel } from "../../classes/models/RevenuePlanSnapshot";
 import { EquiparItemModel } from "../../classes/models/EquiparItem";
 import { EquiparMetaModel } from "../../classes/models/EquiparMeta";
 import { MovilidadItemModel } from "../../classes/models/MovilidadItem";
@@ -113,6 +114,15 @@ describe("app-Mongo schema parity", () => {
     // no llega a la pantalla, y esta cola sólo existe para que alguien la lea.
     expect(Object.keys(SearchDemandQueueModel.schema.obj).sort()).toEqual(
       appFields(appModel("SearchDemandQueue")).sort()
+    );
+  });
+
+  it("RevenuePlanSnapshot declares exactly the app's top-level fields", () => {
+    // El plan de ingreso. Mismo riesgo que sus dos vecinos y uno propio: si el app no declara
+    // `families`, la tabla que dice qué familia consume tráfico sin pagarlo se renderiza vacía y
+    // parece que no hay brecha.
+    expect(Object.keys(RevenuePlanSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("RevenuePlanSnapshot")).sort()
     );
   });
 
