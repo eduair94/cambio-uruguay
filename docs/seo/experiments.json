@@ -119,6 +119,33 @@
         "/alquileres-uruguay"
       ],
       "hypothesis": "Las tres guias que frenan un alquiler estaban a y=13.000 de 22.717; subirlas al encabezado con la pregunta del lector como etiqueta deberia mandar parte de esos 563 lectores al tramo que paga."
+    },
+    {
+      "id": "descripciones-del-tramo-contenido",
+      "shippedOn": "2026-09-20",
+      "routes": [
+        "/cheques-uruguay",
+        "/cobrar-en-dolares-gastar-en-pesos",
+        "/comprar-auto-con-deuda-uruguay",
+        "/conviene-comprar-en-cuotas",
+        "/cuanto-me-tienen-que-pagar-uruguay",
+        "/defensa-al-consumidor-uruguay",
+        "/denunciar-trabajo-en-negro-uruguay",
+        "/franquicia-aduana-uruguay",
+        "/impuestos-inversiones-uruguay",
+        "/indemnizacion-por-despido-uruguay",
+        "/invertir-en-proyectos-uruguayos",
+        "/ley-de-usura-uruguay",
+        "/libreta-de-conducir-uruguay",
+        "/mudarme-a-uruguay-residencia",
+        "/por-que-no-baja-el-alquiler-uruguay",
+        "/prescripcion-de-deudas-con-el-estado-uruguay",
+        "/prestamos-p2p-uruguay",
+        "/recibir-regalos-del-exterior-uruguay",
+        "/renunciar-al-trabajo-uruguay",
+        "/salario-vacacional-uruguay"
+      ],
+      "hypothesis": "Las veinte descripciones mas largas de guias y paginas de problema perdian su dato en el corte de 155 caracteres; con la cifra adelante el mismo ranking deberia rendir mas clics."
     }
   ]
 }

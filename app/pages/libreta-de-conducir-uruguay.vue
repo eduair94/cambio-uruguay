@@ -347,7 +347,7 @@ const canonicalUrl = 'https://cambio-uruguay.com/libreta-de-conducir-uruguay'
 // lo corta. El H1 puede ser más largo; el <title> no.
 const title = 'Libreta de conducir: sale de 0,25 a 1,25 UR'
 const description =
-  'La emisión del Permiso Único Nacional de Conducir cuesta UR 1,25 en todo el país desde setiembre de 2023, pero se cobra por tramos: 0,25 UR si te habilitan menos de 2 años, 0,50 hasta 4, 0,75 hasta 6, 1 hasta 8 y 1,25 de ahí en adelante. A los 55 te dan 10 años; a los 80, uno. El examen médico y los timbres van aparte.'
+  'La libreta cuesta hasta UR 1,25 en todo el país y se cobra por tramos: 0,25 UR si te habilitan menos de 2 años, 0,50 hasta 4, 0,75 hasta 6 y 1 hasta 8.'
 
 defineOgImageComponent('Cambio', { title, subtitle: description, tag: 'TRÁMITES' })
 

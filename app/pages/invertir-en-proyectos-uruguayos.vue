@@ -298,7 +298,7 @@ function groupIcon(category: LocalProjectCategory): string {
 const canonicalUrl = 'https://cambio-uruguay.com/invertir-en-proyectos-uruguayos'
 const title = 'Invertir en proyectos uruguayos (2026)'
 const description =
-  'Guía de las formas de invertir en proyectos y empresas de Uruguay: crowdfunding (Crowder), obligaciones negociables, fideicomisos de forestación e infraestructura, agro, inmobiliario al costo, startups y cooperativas. Regulación BCU, riesgos, liquidez e impuestos, con advertencia sobre los pooles ganaderos.'
+  'Crowdfunding (Crowder), obligaciones negociables, fideicomisos de forestación e infraestructura, agro y startups: regulación BCU, riesgo e impuestos.'
 
 defineOgImageComponent('Cambio', {
   title: 'Invertir en proyectos uruguayos',

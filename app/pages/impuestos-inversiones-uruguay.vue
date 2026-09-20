@@ -1263,7 +1263,7 @@ const officialSources = [
 const canonicalUrl = 'https://cambio-uruguay.com/impuestos-inversiones-uruguay'
 const title = 'Impuestos de inversiones en Uruguay: IRPF'
 const description =
-  'El «impuesto a las ganancias» no existe en Uruguay: las rentas de tus inversiones pagan IRPF Categoría I. Tasas por instrumento verificadas contra la norma: depósitos, dividendos, alquileres, ganancias de capital, deuda pública, brókers del exterior desde 2026, residencia fiscal, Impuesto al Patrimonio e IASS.'
+  'En Uruguay no existe el «impuesto a las ganancias»: tus inversiones pagan IRPF Categoría I. Tasas por instrumento, brókers del exterior desde 2026 e IASS.'
 
 defineOgImageComponent('Cambio', {
   title: 'Impuestos sobre inversiones',

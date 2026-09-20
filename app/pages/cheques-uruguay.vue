@@ -317,7 +317,7 @@ const verifiedAt = new Date(`${CHEQUE_VERIFIED_AT}T00:00:00Z`).toLocaleDateStrin
 const canonicalUrl = 'https://cambio-uruguay.com/cheques-uruguay'
 const title = 'Cheque en Uruguay: 15 días para cobrarlo'
 const description =
-  'Un cheque común se paga a la vista aunque le pongas fecha futura (art. 28). Tenés 15 días corridos para presentarlo en la misma plaza, 30 en otra, 60 si se libró en el exterior y 120 si es en moneda extranjera; el diferido admite hasta 180 entre creación y pago. Si rebota, el librador tiene 5 días hábiles antes de quedarse 6 meses sin cuentas corrientes.'
+  '15 días corridos para presentar un cheque en la misma plaza, 30 en otra, 60 si se libró en el exterior y 120 en moneda extranjera; el diferido, hasta 180.'
 
 defineOgImageComponent('Cambio', {
   title: 'Cheques en Uruguay',
