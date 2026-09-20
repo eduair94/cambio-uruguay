@@ -5,11 +5,11 @@ mitad: un agente programado que una vez por día toma un ítem y lo entrega como
 
 ## Estado
 
-**Pendiente de un paso manual del dueño.** La API rechaza crear la routine con
+**Creada y activa** desde el 2026-09-20 (`trig_01GMv1wqDRRux2tLhCWYTsJU`), después de conectar la
+cuenta de GitHub — hasta entonces la API la rechazaba con
 `401 · "Connect your GitHub account before saving a routine that uses a GitHub repository."`
 
-Para habilitarla: `/web-setup` en Claude Code, o conectar en <https://claude.ai/connect-github>.
-Después se crea con la configuración de abajo.
+Se administra en <https://claude.ai/code/routines>. Para pausarla, deshabilitarla ahí.
 
 ## Lo que este agente NO puede ver
 
