@@ -107,8 +107,8 @@ export function rpBasisLabel(basis: RpValueBasis): string {
 }
 
 /**
- * Una cifra de plata chica no se puede redondear a dos decimales sin desaparecer: con USD 0,10 por
- * día, la mitad de la tabla imprimiría "0,00" y parecería un error.
+ * Una cifra de plata chica no se puede redondear a dos decimales sin desaparecer: con el ingreso
+ * diario actual, la mitad de la tabla imprimiría "0,00" y parecería un error.
  */
 export function rpMoney(value: number, currency = 'USD'): string {
   if (!value) return '—'

@@ -21,19 +21,24 @@ comentario de cabecera de `classes/site-analytics/revenue.ts` dice, textual, que
 las dos tablas se puedan cruzar fila a fila". Nadie las cruzaba.
 
 Importa porque el RPM de este sitio **no es parejo entre familias — varía por un factor de
-trescientos**. Medición del 2026-09-16 sobre GA4 (3–15/9), muestras chicas pero patrón consistente:
+trescientos**. Medición del 2026-09-16 sobre GA4 (3–15/9), muestras chicas pero patrón consistente,
+expresada en múltiplos del promedio del sitio:
 
-| familia | RPM (USD / 1.000 vistas) |
+| familia | RPM relativo al promedio del sitio |
 |---|---|
-| guía de préstamo a sola firma | 6,1 |
-| rescindir alquiler | 2,5 |
-| sala VIP | 1,4 |
-| clearing | 1,2 |
-| históricos | ~0,3 |
-| portada | 0,14 |
-| `/oportunidades` | 0,04 |
-| `/alquileres` | 0,02 |
-| **sitio entero** | **~0,22** |
+| guía de préstamo a sola firma | ~28× |
+| rescindir alquiler | ~11× |
+| sala VIP | ~6× |
+| clearing | ~5× |
+| históricos | ~1,4× |
+| portada | ~0,6× |
+| `/oportunidades` | ~0,18× |
+| `/alquileres` | ~0,09× |
+
+> **Los montos absolutos no van en este archivo.** Convención del repo, que es público: el registro
+> de crecimiento (`docs/seo/adsense-growth-loop.md`) es "público sin cifras" y los montos viven sólo
+> en `docs/seo/data/` (gitignored) y en el snapshot privado. Lo que sí vive acá es la FORMA, que es
+> lo que hace falta para entender el código y además envejece bien.
 
 Con ese spread, **una cola ordenada por clics no está ordenada por nada que tenga que ver con el
 ingreso**: manda a trabajar donde hay impresiones, que es exactamente donde el clic no paga. 200
@@ -85,8 +90,8 @@ multiplicador medido al lado del que el tramo asume, y si se separan más de 3×
 
 ### Por qué el orden sobrevive a que no haya plata medida
 
-El sitio facturaba ~USD 0,10/día cuando esto se escribió, y el enlace AdSense↔GA4 es del 2026-09-02.
-La columna en USD puede quedar en cero días enteros. Por eso lo que **ordena** la cola es
+El enlace AdSense↔GA4 es del 2026-09-02 y el ingreso diario del sitio, cuando esto se escribió,
+era de centavos. La columna en USD puede quedar en cero días enteros. Por eso lo que **ordena** la cola es
 `weightedClicks = clics potenciales × multiplicador` — proporcional al USD esperado siempre que haya
 RPM, y perfectamente definido cuando no lo hay.
 

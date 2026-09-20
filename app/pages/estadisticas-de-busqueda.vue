@@ -68,7 +68,7 @@
 
       <!-- El plan de ingreso. Va antes que la cola de oportunidades porque la REORDENA: las mismas
            filas de Search Console, valuadas por lo que paga la familia de página que recibiría el
-           clic. Con un RPM que va de 0,02 a 6,1 USD por mil vistas según la plantilla, ordenar por
+           clic. Con un RPM que varía por un factor de trescientos según la plantilla, ordenar por
            clics y ordenar por plata no son la misma lista. -->
       <h2 class="text-h6 mb-2">Qué hacer, ordenado por plata</h2>
       <p class="text-body-2 text-medium-emphasis mb-3">

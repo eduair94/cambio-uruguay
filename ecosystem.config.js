@@ -557,8 +557,8 @@ module.exports = {
       // POR QUÉ. `currency-gsc` ordena el trabajo por CLICS POTENCIALES y `currency-site-analytics`
       // mide el RPM por FAMILIA — con el mismo `bucketOf`, a propósito, "para que las dos tablas se
       // puedan cruzar fila a fila". Nadie las cruzaba, y entre las familias hay un factor de
-      // trescientos (una guía de préstamos midió 6,1 USD por mil vistas y `/alquileres` 0,02, GA4
-      // 3–15/9/2026). Con ese spread una cola ordenada por clics manda a trabajar justo donde el
+      // trescientos (GA4 3–15/9/2026; las cifras sólo en `docs/seo/data/`, gitignored, porque este
+      // repo es público). Con ese spread una cola ordenada por clics manda a trabajar justo donde el
       // clic no paga. Este job hace esa cuenta y además mide el libro de cambios
       // (`docs/seo/experiments.json`): cada cambio declarado, 28 días después, como PORCIÓN de los
       // clics del sitio — sobre una serie que se multiplicó por seis, un antes/después crudo

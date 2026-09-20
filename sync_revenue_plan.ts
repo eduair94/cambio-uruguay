@@ -3,10 +3,11 @@
 // POR QUÉ EXISTE. Hay dos tableros privados que se construyeron para cruzarse y nunca se cruzaron.
 // `currency-gsc` ordena el trabajo de SEO por CLICS POTENCIALES. `currency-site-analytics` mide el
 // RPM por FAMILIA de página y su propio archivo dice, textual, que usa el mismo `bucketOf` "para
-// que las dos tablas se puedan cruzar fila a fila". Entre una y otra hay un factor de trescientos:
-// una guía de préstamos midió 6,1 USD por mil vistas y `/alquileres` 0,02 (GA4, 3–15/9/2026). Con
-// ese spread, una cola ordenada por clics no está ordenada por nada que tenga que ver con el
-// ingreso — manda a trabajar donde hay impresiones, que es justamente donde el clic no paga.
+// que las dos tablas se puedan cruzar fila a fila". Entre una y otra hay un factor de TRESCIENTOS
+// (GA4, 3–15/9/2026; las cifras viven sólo en `docs/seo/data/`, gitignored, porque este repo es
+// público). Con ese spread, una cola ordenada por clics no está ordenada por nada que tenga que
+// ver con el ingreso — manda a trabajar donde hay impresiones, que es justamente donde el clic
+// no paga.
 //
 // Este job hace UNA cuenta: le pone precio a cada clic según la familia de la página que lo
 // recibiría, reordena la cola, y publica la tabla de "qué porción del tráfico se lleva cada familia

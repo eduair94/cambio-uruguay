@@ -3,10 +3,15 @@
 // LA IDEA, EN UNA LÍNEA: el RPM de este sitio varía por un factor de trescientos entre familias, así
 // que "clics" no es una unidad con la que se pueda priorizar trabajo.
 //
-// Medido el 2026-09-16 sobre GA4 3–15/9 (ventana chica, patrón consistente): guías de plata,
-// vivienda, deudas e importación rinden 1,2 a 6,1 USD por mil vistas; la home 0,14; los históricos
-// ~0,3; `/alquileres` 0,02 y `/oportunidades` 0,04. El sitio entero promediaba ~0,22. O sea: mil
-// visitas a una guía de préstamos pagan lo que pagarían trescientas mil a la portada de alquileres.
+// Medido el 2026-09-16 sobre GA4 3–15/9 (ventana chica, patrón consistente): las guías de plata,
+// vivienda, deudas e importación rinden un orden de magnitud más por vista que la portada o los
+// históricos, y dos órdenes más que los directorios de producto. Mil visitas a una guía de
+// préstamos pagan lo que pagarían cientos de miles a la portada de alquileres.
+//
+// LAS CIFRAS NO VAN ACÁ. Convención del repo (ver `docs/seo/adsense-growth-loop.md`): este
+// repositorio es PÚBLICO, así que los montos medidos viven sólo en `docs/seo/data/` (gitignored) y
+// en el snapshot privado. Acá quedan las RAZONES y los multiplicadores relativos, que es lo que
+// hace falta para leer el código.
 //
 // DE DÓNDE SALE EL PRECIO DE CADA FAMILIA, EN ORDEN:
 //   1. Si la familia tiene muestra propia suficiente en la ventana de ingreso, su RPM MEDIDO manda.
@@ -45,8 +50,9 @@ export const MIN_FAMILY_AD_IMPRESSIONS = 100;
 /**
  * Ingreso del sitio en la ventana por debajo del cual TODA medición por familia es provisional.
  *
- * Con USD 0,10 por día, 28 días son USD 2,8 repartidos entre veinte familias: la que más factura se
- * lleva centavos y su RPM tiene el intervalo de confianza de una moneda al aire. El plan igual
+ * Con el ingreso diario que tenía el sitio cuando esto se escribió, 28 días repartidos entre veinte
+ * familias dejan a la que más factura con centavos, y su RPM con el intervalo de confianza de una
+ * moneda al aire. El plan igual
  * sirve —el orden lo da el multiplicador, no el peso— pero la pantalla tiene que decirlo.
  */
 export const PROVISIONAL_REVENUE_USD = 10;
@@ -67,7 +73,7 @@ export interface Tier {
 /**
  * Contenido largo: guías, notas, explicativos, páginas de problema.
  *
- * 8× y no 25×, que es lo que daría la guía de préstamo a sola firma (6,1 contra 0,22 del sitio):
+ * 8× y no el ~25× que daría la mejor guía medida contra el promedio del sitio:
  * esta lista tiene que sobrevivir a que la revisen en noventa días, y el extremo de una muestra de
  * doce días no es el valor esperado de la familia. Además admiten dos unidades de anuncio contra
  * una de las páginas de cotización (`utils/ads.ts`), que es media razón por la que rinden más.
@@ -75,27 +81,27 @@ export interface Tier {
 export const TIER_CONTENIDO: Tier = {
   name: "contenido",
   multiplier: 8,
-  why: "guías y páginas de problema: 1,2–6,1 USD/1.000 vistas medido el 2026-09-16, contra 0,22 del sitio",
+  why: "guías y páginas de problema: un orden de magnitud sobre el promedio del sitio (medido 2026-09-16)",
 };
 
 /**
  * Páginas con un dato en vivo: cotizaciones, conversores, históricos, fichas de casa y sucursal.
  *
- * 1×, o sea el promedio del sitio. Los históricos midieron ~0,3 y la portada 0,14; el promedio de
- * su propio tramo es la respuesta menos comprometida. Ojo: esta familia es la que más IMPRESIONES
+ * 1×, o sea el promedio del sitio. Los históricos midieron algo por encima de ese promedio y la
+ * portada algo por debajo; el promedio de su propio tramo es la respuesta menos comprometida. Ojo: esta familia es la que más IMPRESIONES
  * tiene y la que menos clic gana, y buena parte de su demanda está en el pozo de cero clic que el
  * pipeline de Search Console ya excluye antes.
  */
 export const TIER_DATO_VIVO: Tier = {
   name: "dato-vivo",
   multiplier: 1,
-  why: "cotización, conversor, histórico, sucursal: 0,14–0,3 USD/1.000 vistas, y una sola unidad de anuncio",
+  why: "cotización, conversor, histórico, sucursal: alrededor del promedio del sitio, y una sola unidad de anuncio",
 };
 
 /**
  * Directorios de producto: alquileres, autos, tiendas, celulares, equipar, oportunidades.
  *
- * 0,2×. `/alquileres` midió 0,02 y `/oportunidades` 0,04, o sea 0,09× y 0,18× del sitio. Son las
+ * 0,2×. `/alquileres` midió 0,09× el promedio del sitio y `/oportunidades` 0,18×. Son las
  * páginas más caras de producir de todo el repo y las que menos pagan por vista — lo cual no es un
  * argumento para apagarlas (traen enlaces, marca y lectores que después leen otra cosa), sino para
  * no gastar el próximo turno de trabajo de SEO en ellas creyendo que es donde está la plata.
@@ -103,7 +109,7 @@ export const TIER_DATO_VIVO: Tier = {
 export const TIER_DIRECTORIO: Tier = {
   name: "directorio",
   multiplier: 0.2,
-  why: "directorios de producto: 0,02–0,04 USD/1.000 vistas medido el 2026-09-16",
+  why: "directorios de producto: una fracción del promedio del sitio (medido 2026-09-16)",
 };
 
 /** Lo que todavía no se clasificó. Vale el promedio y sale en una alerta. */
@@ -230,7 +236,7 @@ function blank(bucket: string, siteRpm: number): FamilyValue {
  * `revenue` puede ser `null` (el job de GA4 todavía no corrió) o `pending` (el enlace AdSense↔GA4
  * contesta ceros). En los dos casos la tabla se construye igual con los tramos, porque el ORDEN de
  * la cola no depende de que haya plata medida — depende de que unas páginas valgan más que otras,
- * que es cierto tanto con USD 0,10 por día como con USD 30.
+ * que es cierto con el ingreso de hoy y con el de la meta.
  */
 export function buildValueTable(revenue: RevenueSnapshot | null): ValueTable {
   const measured = revenue && !revenue.pending;

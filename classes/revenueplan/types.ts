@@ -4,8 +4,8 @@
 // `currency-gsc` ordena las oportunidades por `potentialClicks`, y el de `currency-site-analytics`
 // mide el RPM por FAMILIA de página usando a propósito el MISMO `bucketOf` "para que las dos tablas
 // se puedan cruzar fila a fila". Nadie las cruzaba. Mientras tanto la medición del 2026-09-16 dice
-// que el rendimiento por vista va de 0,02 USD/1.000 en `/alquileres` a 6,1 USD/1.000 en una guía de
-// préstamos: un factor de trescientos. Una cola ordenada por clics, sobre un sitio con ese spread,
+// que entre el rendimiento por vista de `/alquileres` y el de una guía de préstamos hay un factor
+// de trescientos (las cifras viven en `docs/seo/data/`, gitignored: este repo es público). Una cola ordenada por clics, sobre un sitio con ese spread,
 // no está ordenada — manda a trabajar donde hay impresiones, que es exactamente donde el clic no
 // vale nada.
 //
