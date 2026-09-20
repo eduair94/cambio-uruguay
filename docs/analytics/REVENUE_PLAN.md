@@ -149,8 +149,12 @@ En el **mismo commit** que publica el cambio:
 ```
 
 Una ruta que termina en `/` o `*` toma la familia entera; el resto exige coincidencia exacta.
-`tests/revenueplan/experiments.test.ts` falla si el archivo que se despliega no parsea: un JSON roto
-desactivaría el ledger en silencio.
+
+Dos tripwires cuidan el archivo, porque sus dos modos de fallar son **silenciosos**:
+`tests/revenueplan/experiments.test.ts` falla si el JSON que se despliega no parsea (un JSON roto
+desactiva el ledger entero sin decir nada), y `tests/revenueplan/experiments_routes.test.ts` falla si
+una ruta declarada no existe en `app/pages` — una ruta mal tipeada publica "sin datos" para siempre,
+que es el mismo síntoma que "todavía no hay suficiente historia" y por eso nadie lo notaría.
 
 ---
 

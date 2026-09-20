@@ -104,6 +104,25 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
 - **Backend**: `changes` path-filter (root `*.ts`, `classes/**`, `ecosystem.config.js`, `tests/**`…) → `backend-test` → `backend-deploy` SSHes and runs `scripts/deploy-backend.sh`. **Builds ON the server** (needs gitignored `sheet_key.json`), stages into `dist_staging`, atomic swap, rolling `pm2 reload currency-server`. Sequenced after app deploy so SSH sessions don't share the git tree.
 - New non-server pm2 app must be added to `OTHER_APPS` in `deploy-backend.sh` or it never starts on the VPS.
 
+## Dos reglas al publicar (se aplican a TODO commit, no sólo a los de SEO)
+
+- **Un cambio pensado para mover tráfico agrega su fila en `docs/seo/experiments.json` EN EL MISMO
+  COMMIT.** `currency-revenue-plan` dictamina solo a los 28 días, midiendo la PORCIÓN de los clics
+  del sitio y no los clics (entre marzo y agosto de 2026 las impresiones se multiplicaron por seis:
+  un antes/después crudo declara ganador hasta a no tocar nada). Sin esa fila el cambio **no se mide
+  nunca** — que es exactamente lo que venía pasando: el registro de crecimiento cierra nueve
+  iteraciones seguidas con "evaluar con 28 días finales posteriores" y ninguna vuelve. Un cambio que
+  toca TODAS las páginas (layout, navegación) NO se declara: sin control, el sujeto es también el
+  denominador y el veredicto siempre da "sin cambio". `tests/revenueplan/experiments_routes.test.ts`
+  verifica que cada ruta declarada exista — una ruta mal tipeada no rompe nada, publica "sin datos"
+  para siempre y tiene el mismo síntoma que "todavía no hay historia". Ver `docs/analytics/REVENUE_PLAN.md`.
+- **Este repositorio es PÚBLICO: cero cifras de ingreso en nada versionado.** Ni en código, ni en
+  comentarios, ni en este archivo, ni en un mensaje de commit. La convención ya existía para los
+  documentos (`docs/seo/adsense-growth-loop.md` es "público sin cifras"; los montos viven en
+  `docs/seo/data/`, gitignored) y se rompió igual el 2026-09-20 porque se leía como si aplicara
+  sólo a `docs/`. Publicar la FORMA — multiplicadores relativos al promedio del sitio, factores entre
+  familias, órdenes de magnitud — dice lo mismo, no expone facturación y además envejece bien.
+
 ## Non-obvious gotchas
 - **currency-server is pm2 cluster ×2 → NO recurring scheduler may live in the API process** (`setInterval`/cron would run once per instance). Guard with `classes/cluster.ts` `isPrimaryInstance()` or (preferred) a separate single-instance pm2 cron app. Tripwire: `tests/no_scheduler_in_api.test.ts`.
 - Root vs app use different Mongo hosts/DBs; jobs writing app collections refuse to run without `APP_MONGO_URI`.
