@@ -137,6 +137,7 @@ describe('the navigation model has no dead links', () => {
     expect([...EXCLUDED_ROUTES].sort()).toEqual([
       '/cuenta',
       '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
+      '/equipar-casa-uruguay/mi-lista',
       '/estadisticas-de-busqueda',
       '/offline',
       '/ranking-usuarios-charruadevs',

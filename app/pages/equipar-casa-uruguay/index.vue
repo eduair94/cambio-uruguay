@@ -14,6 +14,11 @@ planner is client state only and never persists.
       <h1>{{ c.title }}</h1>
       <p class="lead">{{ c.intro }}</p>
       <p v-if="asOf" class="as-of">{{ c.updated.replace('{date}', asOf) }}</p>
+      <p class="header-cta">
+        <NuxtLink :to="localePath(EQUIPAR_PRODUCTOS_PATH)" class="cat-more">{{
+          c.listingsCta
+        }}</NuxtLink>
+      </p>
     </header>
 
     <nav class="section-nav" :aria-label="c.navLabel">
@@ -166,6 +171,12 @@ planner is client state only and never persists.
                     .replace('{label}', group.label)
                 }}</NuxtLink
               >
+              <NuxtLink
+                v-if="isEquiparCategorySlug(group.key)"
+                :to="localePath(equiparProductoPath(group.key))"
+                class="cat-more cat-more--avisos"
+                >{{ c.listingsLink }}</NuxtLink
+              >
             </div>
           </article>
         </div>
@@ -294,6 +305,7 @@ planner is client state only and never persists.
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { EQUIPAR_PATH, EQUIPAR_THREAD } from '~/utils/equiparCopy'
 import { equiparCategoryPage, isEquiparCategorySlug } from '~/utils/equiparCategoryPages'
+import { EQUIPAR_PRODUCTOS_PATH, equiparProductoPath } from '~/utils/equiparProductos'
 import { equiparEs } from '~/utils/equiparEs'
 import { equiparEn } from '~/utils/equiparEn'
 import { equiparPt } from '~/utils/equiparPt'
@@ -1061,5 +1073,13 @@ useHead(() => ({
   .why {
     max-width: none;
   }
+}
+
+/* El enlace al buscador de avisos, debajo del "ver precios" de cada tarjeta y en el encabezado. */
+.cat-more--avisos {
+  margin-left: 12px;
+}
+.header-cta {
+  margin: 8px 0 0;
 }
 </style>

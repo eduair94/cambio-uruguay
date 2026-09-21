@@ -321,6 +321,41 @@ El sitemap sólo declara las categorías con alguna banda vista en los últimos 
 que sirve la API—, así que nunca manda a Google una página que sólo puede decir "todavía no hay
 avisos". Cada tarjeta del índice enlaza a su categoría.
 
+## El directorio de avisos y la lista del lector (2026-09-21)
+
+`equiparitems` guarda por variante sólo las 8 ofertas nuevas y 6 usadas más baratas: la cifra
+correcta para "cuánto sale una heladera" y ninguna para "mostrame todas las heladeras usadas de
+Samsung por debajo de $ 15.000". Para eso el job escribe además **`equiparlistings`** (APP DB): una
+fila por aviso que la banda aceptó (`classes/equipar/listings.ts`, `buildEquiparListings`), con la
+MISMA clasificación del catálogo —`CATEGORY_SPEC`, `variantFor`, `conditionOf`, `screen()` por ítem
+y condición—, así que una fila que está acá es una que `buildEquiparCatalog` contó. Lo rechazado por
+la banda no se guarda; lo **sospechoso** (bajo p10/2) se guarda con `suspect: true` y la API nunca lo
+sirve: un directorio ordenado por "menor precio" lo pondría en el titular. `firstSeen` sólo se
+escribe al insertar; `lastSeen` es la fecha del `observedAt` de cada aviso (una fila de la foto de
+tiendas conserva la suya, la horaria no inventa una observación de hoy). Poda a 30 días. Se escribe
+en su propio `try/catch` después del catálogo y en las dos corridas.
+
+`GET /api/equipar/productos` (patrón `/api/cars`): paginado en Mongo, 24 por página, ventana de 4
+días, cada faceta contada con la consulta SIN su propio filtro. `?ids=` devuelve las filas de la
+lista guardada sin ventana y con `private, no-store`.
+
+Páginas, sólo en español:
+
+- `/equipar-casa-uruguay/productos` — todas las categorías, filtros al estilo Mercado Libre
+  (categoría, tamaño, condición, precio, marca, fuente, vendedor, texto), `noindex` con filtros.
+- `/equipar-casa-uruguay/productos/<categoria>` — la misma grilla con la categoría fijada por la
+  ruta; es la superficie que puede rankear por "heladera usada uruguay" o marca+modelo (la ficha
+  rankea, el hub enlaza). JSON-LD `ItemList` de hasta 10 `Product`/`Offer` con `itemCondition`, sin
+  `AggregateRating`. En el sitemap junto a la página de precios de la misma categoría.
+- `/equipar-casa-uruguay/mi-lista` — `noindex`, en `EXCLUDED_ROUTES`. La lista vive en
+  `localStorage` (`cu_equipar_lista`, hasta 60) como **snapshot** de cada aviso al agregarlo, así
+  sigue leyéndose cuando el aviso desaparece; se ordena por necesidad (tier → rank), suma en pesos y
+  dólares, nombra las categorías del tier S que faltan (cada una enlaza a su buscador) y "Actualizar
+  precios" pide `?ids=` para marcar vigente / cambió de precio / ya no está publicado.
+
+Reusa de autos `CarsSidebarLayout`, `CarsFilterPanel` y `CarsToolbar`; lo propio vive en
+`app/components/equipar/` y `app/composables/useEquiparProductosDirectorio.ts`.
+
 ## Tests
 
 - `tests/retail/spec_injection.test.ts` — una barrida sirve a varias specs; el presupuesto de FB
@@ -349,6 +384,10 @@ avisos". Cada tarjeta del índice enlaza a su categoría.
 - `app/tests/unit/equiparCategoryPages.test.ts` — copy y FAQ por categoría: variantes nombradas, nada
   de "segura", Plan Redondo excluido sin ventana.
 - `app/tests/unit/equiparCategoryApi.test.ts` — recortes de la API y `equiparPlausibleProducts`.
+- `tests/equipar/listings.test.ts` + `listings_store.test.ts` — una fila por aviso aceptado, sospechoso
+  marcado, rechazado fuera, `firstSeen` sólo al insertar, poda a 30 días.
+- `app/tests/unit/equiparProductos.test.ts` / `equiparProductosApi.test.ts` / `equiparProductosPage.test.ts`
+  — consulta normalizada y chips, match/facetas/`ids` de la API, contrato de las tres páginas.
 - `tests/appdb/schema_parity.test.ts` — los dos lados declaran los mismos campos.
 - `tests/pricewatch/record.test.ts` — historial diario por oferta (ver [PRICEWATCH.md](PRICEWATCH.md)).
 

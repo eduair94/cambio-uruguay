@@ -51,6 +51,9 @@ export const equiparPt: EquiparCopy = {
   quantityLabel: 'compram-se {n}',
   observations: '{n} preços levantados',
   categoryLink: '{label}: preços e histórico (em espanhol)',
+  listingsLink: 'Ver anúncios',
+  listingsCta:
+    'Buscar anúncios do Mercado Livre, Marketplace e lojas, e montar minha lista (em espanhol)',
 
   calcTitle: 'Com o que eu tenho, até onde chego?',
   calcIntro:

@@ -161,6 +161,14 @@
         "aliexpress uruguay aduana"
       ],
       "hypothesis": "El regimen de envios postales ya estaba explicado en /franquicia-aduana-uruguay con el nombre de la norma, pero la consulta usa el nombre popular y la frase no estaba en ningun archivo del repo. Una pagina con el nombre con el que se pregunta, y con el minimo legal de IVA como dato del snippet (US$ 19 de compra pagan US$ 20), deberia capturar una demanda de marca que hoy no toca ninguna URL propia."
+    },
+    {
+      "id": "equipar-productos-directorio",
+      "shippedOn": "2026-09-21",
+      "routes": [
+        "/equipar-casa-uruguay/productos/"
+      ],
+      "hypothesis": "Una pagina de avisos por categoria (heladera, lavarropas, colchon...) con nuevo y usado de ML, Marketplace y tiendas gana la cola 'heladera usada uruguay' / marca+modelo que la comparativa de precios sola no cubre; la ficha rankea, el hub enlaza."
     }
   ]
 }

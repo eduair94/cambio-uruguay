@@ -42,11 +42,12 @@ export const EQUIPAR_FUENTE_LABELS: Readonly<Record<EquiparProductoFuente, strin
   tienda: 'Tiendas',
 }
 /** The stored `source` of each query-side `fuente`. */
-export const EQUIPAR_FUENTE_SOURCE: Readonly<Record<EquiparProductoFuente, EquiparProductoSource>> = {
-  mercadolibre: 'mercadolibre',
-  facebook: 'facebook',
-  tienda: 'store',
-}
+export const EQUIPAR_FUENTE_SOURCE: Readonly<Record<EquiparProductoFuente, EquiparProductoSource>> =
+  {
+    mercadolibre: 'mercadolibre',
+    facebook: 'facebook',
+    tienda: 'store',
+  }
 export const EQUIPAR_SOURCE_LABELS: Readonly<Record<EquiparProductoSource, string>> = {
   mercadolibre: 'Mercado Libre',
   facebook: 'Facebook Marketplace',
@@ -320,7 +321,11 @@ export function equiparProductosChips(
     chips.push({ key: 'fuente', label: EQUIPAR_FUENTE_LABELS[query.fuente], keys: ['fuente'] })
   }
   if (query.marca) {
-    chips.push({ key: 'marca', label: facetName(facets?.marcas, query.marca, query.marca), keys: ['marca'] })
+    chips.push({
+      key: 'marca',
+      label: facetName(facets?.marcas, query.marca, query.marca),
+      keys: ['marca'],
+    })
   }
   if (query.vendedor) {
     chips.push({
@@ -330,10 +335,18 @@ export function equiparProductosChips(
     })
   }
   if (query.precioMin !== null) {
-    chips.push({ key: 'precioMin', label: `Desde ${equiparMoneyNbsp(query.precioMin)}`, keys: ['precioMin'] })
+    chips.push({
+      key: 'precioMin',
+      label: `Desde ${equiparMoneyNbsp(query.precioMin)}`,
+      keys: ['precioMin'],
+    })
   }
   if (query.precioMax !== null) {
-    chips.push({ key: 'precioMax', label: `Hasta ${equiparMoneyNbsp(query.precioMax)}`, keys: ['precioMax'] })
+    chips.push({
+      key: 'precioMax',
+      label: `Hasta ${equiparMoneyNbsp(query.precioMax)}`,
+      keys: ['precioMax'],
+    })
   }
   if (query.q) chips.push({ key: 'q', label: `“${query.q}”`, keys: ['q'] })
   return chips
@@ -343,14 +356,14 @@ export function equiparProductosChips(
 // Money
 
 /** `$ 30.000` with a hard space, so "$" and the figure never split across lines on a phone. */
-export const equiparMoneyNbsp = (value: number): string => `$ ${equiparMoney(value).slice(1)}`
+export const equiparMoneyNbsp = (value: number): string => `$\u00A0${equiparMoney(value).slice(1)}`
 
 /** The seller's own price, in the seller's own currency. */
 export function equiparProductoPrecio(
   producto: Pick<EquiparProductoPublic, 'price' | 'currency'>
 ): string {
   return producto.currency === 'USD'
-    ? `US$ ${Math.round(producto.price).toLocaleString('es-UY')}`
+    ? `US$\u00A0${Math.round(producto.price).toLocaleString('es-UY')}`
     : equiparMoneyNbsp(producto.price)
 }
 
@@ -463,7 +476,7 @@ export function equiparListaTexto(
   )
   const usd =
     usdUyu && usdUyu > 0
-      ? ` (≈ US$ ${Math.round(total / usdUyu).toLocaleString('es-UY')})`
+      ? ` (≈ US$\u00A0${Math.round(total / usdUyu).toLocaleString('es-UY')})`
       : ''
   return [
     `Mi lista para equipar la casa — cambio-uruguay.com${EQUIPAR_PRODUCTOS_PATH}`,

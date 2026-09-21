@@ -185,6 +185,11 @@ const NOINDEXED = [
   'cuenta/index.vue',
   // La herramienta "¿tengo descuento acá?": la respuesta depende de la ubicación de quien la abre.
   'descuentos-con-tarjeta-uruguay/cerca-de-mi.vue',
+  // La lista del lector vive en su navegador: nada que indexar. Los dos directorios de avisos de
+  // equipar se indexan en su URL limpia; cada combinación de filtros se sale, como autos.
+  'equipar-casa-uruguay/mi-lista.vue',
+  'equipar-casa-uruguay/productos/[categoria].vue',
+  'equipar-casa-uruguay/productos/index.vue',
   // The Search Console dashboard: private, gated server-side, and noindexed so a stray link can
   // never put the site's own keyword list into the index.
   'estadisticas-de-busqueda.vue',

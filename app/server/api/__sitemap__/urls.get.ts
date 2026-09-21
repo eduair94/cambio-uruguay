@@ -322,6 +322,15 @@ export default defineEventHandler(async _event => {
           changefreq: 'daily',
           priority: 0.6,
         })
+        // The listing directory of the same category (/equipar-casa-uruguay/productos/<slug>): it
+        // reads equiparlistings, but a category with a band in the window has listings in it by
+        // construction (the band is computed over them), so the same gate applies.
+        urls.push({
+          loc: `/equipar-casa-uruguay/productos/${slug}`,
+          lastmod,
+          changefreq: 'daily',
+          priority: 0.5,
+        })
       })
     } catch (equiparError) {
       console.warn('Failed to add equipar category pages to sitemap:', equiparError)

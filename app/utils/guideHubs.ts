@@ -491,6 +491,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/equipar-casa-uruguay',
       },
       {
+        label: 'Avisos para equipar la casa',
+        description:
+          'Heladeras, colchones, lavarropas y más, nuevos y usados, con filtros y tu lista.',
+        to: '/equipar-casa-uruguay/productos',
+      },
+      {
         label: 'Pensiones estudiantiles',
         description: 'Alternativas de alojamiento para estudiantes y cuánto cuestan.',
         to: '/pensiones-estudiantiles-uruguay',

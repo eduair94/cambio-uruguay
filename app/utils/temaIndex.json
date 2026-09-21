@@ -470,6 +470,10 @@
           "label": "Equipar una casa"
         },
         {
+          "to": "/equipar-casa-uruguay/productos",
+          "label": "Avisos para equipar la casa"
+        },
+        {
           "to": "/pensiones-estudiantiles-uruguay",
           "label": "Pensiones estudiantiles"
         }

@@ -204,6 +204,9 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     // cifra que el job recalcule.
     unidad: 'categorías',
     fuente: 'sin-cifra',
+    tambien: Object.freeze([
+      { to: '/equipar-casa-uruguay/productos', label: 'Buscar avisos y armar mi lista' },
+    ]),
     analisis: Object.freeze(['/ciberlunes-y-black-friday-uruguay']),
   },
   {

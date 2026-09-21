@@ -12,6 +12,11 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
     <header class="cat-header">
       <h1>{{ page.h1 }}</h1>
       <p class="lead">{{ summary }}</p>
+      <p class="header-cta">
+        <NuxtLink :to="localePath(equiparProductoPath(slug))" class="cat-link header-cta__link">
+          Ver todos los avisos de {{ page.plural }}: nuevo y usado, con filtros
+        </NuxtLink>
+      </p>
     </header>
 
     <!-- ── Cuánto sale, por tamaño ────────────────────────────────────────── -->
@@ -306,6 +311,7 @@ import {
   equiparPlanRedondoWindowApplies,
   isEquiparCategorySlug,
 } from '~/utils/equiparCategoryPages'
+import { equiparProductoPath } from '~/utils/equiparProductos'
 import {
   equiparMoney,
   equiparPlausibleProducts,
@@ -870,5 +876,9 @@ useHead(() => ({
   align-items: center;
   min-height: 44px;
   font-size: 0.95rem;
+}
+
+.header-cta {
+  margin: 8px 0 0;
 }
 </style>

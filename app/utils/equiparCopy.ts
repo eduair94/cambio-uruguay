@@ -44,6 +44,10 @@ export interface EquiparCopy {
   observations: string
   /** Link under each category card to its own page: `{label}` is the category name, `{plural}` its page's plural ("heladeras"). */
   categoryLink: string
+  /** Tarjeta: enlace al buscador de avisos de la categoría. */
+  listingsLink: string
+  /** Encabezado: enlace al buscador de avisos de todas las categorías. */
+  listingsCta: string
 
   calcTitle: string
   calcIntro: string

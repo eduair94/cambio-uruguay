@@ -2529,6 +2529,24 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El directorio de avisos detrás de equipar: una fila por aviso de ML, Marketplace y
+        // tiendas, con filtros. Las 38 páginas por categoría cuelgan de él (DYNAMIC_ROUTE_KEYS).
+        to: '/equipar-casa-uruguay/productos',
+        labelKey: 'nav.equiparProductos',
+        icon: 'mdi-view-grid-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'heladera usada uruguay',
+          'lavarropas usado marketplace',
+          'colchon precio mercadolibre uruguay',
+          'avisos electrodomesticos uruguay',
+          'muebles usados montevideo',
+          'lista para amueblar la casa',
+        ],
+      },
+      {
         to: '/celulares-uruguay',
         labelKey: 'nav.celulares',
         icon: 'mdi-cellphone',
@@ -3693,6 +3711,8 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
  */
 export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   '/offline',
+  // La lista del lector para equipar la casa: vive en su navegador, noindex, sin nada que indexar.
+  '/equipar-casa-uruguay/mi-lista',
   '/widget',
   '/cuenta',
   // The owner's Search Console dashboard: not content, not for readers, and its whole point is that
@@ -3745,6 +3765,9 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   // Una página por categoría de /equipar-casa-uruguay (heladera, colchón, aire acondicionado…). Los
   // slugs son el espejo del registro en utils/equiparCategoryPages.ts; misma sección que el hub.
   'equipar-casa-uruguay/[categoria]': 'consumer',
+  // Una página de avisos por categoría (/equipar-casa-uruguay/productos/heladera…): mismos slugs
+  // que la de precios, misma sección.
+  'equipar-casa-uruguay/productos/[categoria]': 'consumer',
   // Una ficha por tienda de /tiendas-online-uruguay. Los slugs son el registro curado de
   // utils/storeDirectory.ts; misma sección que el hub.
   'tiendas-online-uruguay/[tienda]': 'consumer',
