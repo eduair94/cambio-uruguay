@@ -10,6 +10,8 @@ import { CarOpportunitySnapshotModel } from "../models/CarOpportunitySnapshot";
 import { CarReportSnapshotModel } from "../models/CarReportSnapshot";
 import { CarRiskSnapshotModel } from "../models/CarRiskSnapshot";
 import type { CarPhotoVerdict } from "./llm/vision";
+import type { CarContactRecord } from "./contacts/build";
+import type { DealerContactRecord } from "./contacts/dealers";
 import { guideKey, type CarGuideEntry, type CarGuideTarget } from "./catalog/guide";
 import { carKey } from "./enrich";
 import { slugify } from "./normalize";
@@ -441,6 +443,55 @@ export async function saveCarOpportunitySnapshot(snapshot: PublicCarOpportunityS
     bounded = { ...bounded, items: bounded.items.slice(0, Math.floor(bounded.items.length * 0.8)) };
   }
   await CarOpportunitySnapshotModel.updateOne({ key: "used" }, { $set: { generatedAt: bounded.generatedAt, snapshot: bounded } }, { upsert: true });
+}
+
+export const CAR_CONTACTS_COLLECTION = "carcontacts";
+export const CAR_CONTACT_OPTOUTS_COLLECTION = "carcontactoptouts";
+const dealerContactKey = (source: CarSource): string => `uy-cars-dealer-contact-${source}`;
+
+/**
+ * La base de teléfonos se reescribe ENTERA con cada catálogo publicado: lo que salió del catálogo
+ * (vendido, retirado, no visto en 4 días) se borra acá, así la base nunca guarda el número de un
+ * aviso que ya no existe. Ver classes/autos/contacts/build.ts.
+ */
+export async function publishCarContacts(records: readonly CarContactRecord[], updatedAt: string): Promise<{ written: number; removed: number }> {
+  await nativeReady();
+  const collection = appConnection().collection(CAR_CONTACTS_COLLECTION);
+  await collection.createIndex({ key: 1 }, { unique: true });
+  for (let index = 0; index < records.length; index += CHUNK) {
+    await collection.bulkWrite(records.slice(index, index + CHUNK).map(record => ({
+      replaceOne: { filter: { key: record.key }, replacement: { ...record, updatedAt }, upsert: true },
+    })), { ordered: false });
+  }
+  const removed = await collection.deleteMany({ key: { $nin: records.map(record => record.key) } });
+  return { written: records.length, removed: removed.deletedCount ?? 0 };
+}
+
+/** Los hashes de los números cuya baja se pidió desde la ficha (los escribe la app). */
+export async function loadContactOptOuts(): Promise<Set<string>> {
+  await nativeReady();
+  const rows = await appConnection().collection(CAR_CONTACT_OPTOUTS_COLLECTION).find({}, { projection: { _id: 1 } }).toArray();
+  return new Set(rows.map(row => String(row._id)));
+}
+
+export async function loadDealerContacts(): Promise<Map<CarSource, DealerContactRecord>> {
+  const docs = await CarHarvestMetaModel.find({ key: { $regex: "^uy-cars-dealer-contact-" } }).lean();
+  const records = new Map<CarSource, DealerContactRecord>();
+  for (const doc of docs) {
+    const data = doc.data as unknown as DealerContactRecord | undefined;
+    if (data?.source && Array.isArray(data.phones)) records.set(data.source, data);
+  }
+  return records;
+}
+
+export async function saveDealerContacts(records: readonly DealerContactRecord[]): Promise<void> {
+  for (const record of records) {
+    await CarHarvestMetaModel.updateOne(
+      { key: dealerContactKey(record.source) },
+      { $set: { updatedAt: record.lastAttemptAt, data: record } },
+      { upsert: true },
+    );
+  }
 }
 
 const guideCollection = () => appConnection().collection(CarGuideEntryModel.collection.name);

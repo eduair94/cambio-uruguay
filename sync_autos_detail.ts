@@ -79,7 +79,11 @@ async function main(): Promise<void> {
   const now = new Date();
   const usdUyu = await fetchUsdUyuRate();
   const stored = await loadStoredCars(now);
-  const targets = detailTargets(stored, { now, usdUyu, refreshDays: number("AUTOS_DETAIL_REFRESH_DAYS", 0) });
+  // Relee las fichas de más de 14 días. La ficha es la lectura PROPIA del teléfono que el vendedor
+  // escribió en la descripción, y ese teléfono se deja de publicar a los 21 días de leído
+  // (classes/autos/contacts/build.ts); también es donde un aviso vendido dice que ya no está activo.
+  // ~1.400 fichas por día sobre 20.000 avisos, contra una capacidad de 400 por hora.
+  const targets = detailTargets(stored, { now, usdUyu, refreshDays: number("AUTOS_DETAIL_REFRESH_DAYS", 14) });
   const summary = queueSummary(targets);
   const withDetail = stored.filter(doc => doc.detail).length;
   console.log(`[autos-detail] ${stored.length} avisos vigentes, ${withDetail} con ficha; cola ${targets.length} ${JSON.stringify(summary)}`);

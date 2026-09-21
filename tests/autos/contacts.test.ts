@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCarContacts, carContactFor, CAR_CONTACT_MAX_AGE_DAYS, type ContactOptions } from "../../classes/autos/contacts/build";
+import { buildCarContacts, carContactFor, CAR_CONTACT_MAX_AGE_DAYS, contactSummary, type ContactOptions } from "../../classes/autos/contacts/build";
 import { nextDealerContact, type DealerContactRecord } from "../../classes/autos/contacts/dealers";
 import { carContactHash } from "../../classes/autos/contacts/optout";
 import type { CarListing, CarSource } from "../../classes/autos/types";
@@ -89,5 +89,13 @@ describe("buildCarContacts", () => {
   it("keeps one record per advert with a number, sorted by key", () => {
     const records = buildCarContacts([car({ key: "ml-MLU2" }), car({ key: "ml-MLU3", detail: null }), car()], options());
     expect(records.map(record => record.key)).toEqual(["ml-MLU1", "ml-MLU2"]);
+  });
+});
+
+describe("contactSummary", () => {
+  it("counts by origin and source and never carries a number", () => {
+    const summary = contactSummary(buildCarContacts([car(), car({ key: "ml-MLU2" })], options()));
+    expect(summary).toEqual({ total: 2, byOrigin: { advert_text: 2 }, bySource: { mercadolibre: 2 } });
+    expect(JSON.stringify(summary)).not.toMatch(/\d{6}/);
   });
 });

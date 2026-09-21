@@ -57,6 +57,12 @@ describe("dealer contact pages", () => {
     expect(records.every(record => record.ok && record.phones[0]!.value === "+59829012345" && record.observedAt === AT)).toBe(true);
   });
 
+  it("a disabled source is not asked for its contact page either", async () => {
+    const asked: string[] = [];
+    await readDealerContacts(new Map(), { fetchPage: async url => { asked.push(url); return null; }, gapMs: 0, sources: ["julio", "mercadolibre"] });
+    expect(asked).toEqual([CAR_SOURCES.julio.contactPage]);
+  });
+
   it("a page that does not answer keeps what was there", async () => {
     const previous = nextDealerContact(null, { phones: [{ value: "+59891000111", mobile: true }], failure: null }, "julio", AT);
     const records = await readDealerContacts(new Map([["julio", previous]]), { fetchPage: async () => null, now: () => new Date(AT), gapMs: 0 });

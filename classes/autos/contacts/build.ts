@@ -61,3 +61,14 @@ export function buildCarContacts(listings: readonly CarListing[], options: Conta
     .filter((record): record is CarContactRecord => !!record)
     .sort((a, b) => a.key.localeCompare(b.key));
 }
+
+/** Para el log y el --report: cuántos, de dónde; nunca un número. */
+export function contactSummary(records: readonly CarContactRecord[]): { total: number; byOrigin: Record<string, number>; bySource: Record<string, number> } {
+  const byOrigin: Record<string, number> = {};
+  const bySource: Record<string, number> = {};
+  for (const record of records) {
+    byOrigin[record.origin] = (byOrigin[record.origin] ?? 0) + 1;
+    bySource[record.source] = (bySource[record.source] ?? 0) + 1;
+  }
+  return { total: records.length, byOrigin, bySource };
+}

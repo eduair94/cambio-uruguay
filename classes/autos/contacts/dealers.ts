@@ -55,12 +55,19 @@ export function nextDealerContact(
 
 export async function readDealerContacts(
   previous: ReadonlyMap<CarSource, DealerContactRecord>,
-  options: { fetchPage?: (url: string, source: CarSource) => Promise<string | null>; now?: () => Date; gapMs?: number } = {},
+  options: {
+    fetchPage?: (url: string, source: CarSource) => Promise<string | null>;
+    now?: () => Date;
+    gapMs?: number;
+    /** Una fuente apagada (AUTOS_<FUENTE>_ENABLED=0) tampoco se consulta por su contacto. */
+    sources?: readonly CarSource[];
+  } = {},
 ): Promise<DealerContactRecord[]> {
   const clock = options.now ?? (() => new Date());
   const gapMs = options.gapMs ?? 1_500;
   const records: DealerContactRecord[] = [];
-  for (const [index, source] of DEALER_CONTACT_SOURCES.entries()) {
+  const sources = (options.sources ?? DEALER_CONTACT_SOURCES).filter(source => DEALER_CONTACT_SOURCES.includes(source));
+  for (const [index, source] of sources.entries()) {
     if (index && gapMs) await new Promise(resolve => setTimeout(resolve, gapMs));
     const url = CAR_SOURCES[source].contactPage!;
     let html: string | null;

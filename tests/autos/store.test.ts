@@ -38,7 +38,7 @@ vi.mock("../../classes/appdb", () => ({
 }));
 
 import {
-  collapseRefusal, harvestMetaRecord, mergeVocabularies, nextPriceHistory, publishCarCatalog, publishCarMarkets,
+  collapseRefusal, harvestMetaRecord, mergeVocabularies, nextPriceHistory, publishCarCatalog, publishCarContacts, publishCarMarkets,
   saveCarHarvest, saveRefusal, saveSourceHarvest, sourceMetaRecord, sweepUpdate,
 } from "../../classes/autos/store";
 import { CarHarvestMetaModel } from "../../classes/models/CarHarvestMeta";
@@ -206,5 +206,32 @@ describe("saveSourceHarvest", () => {
   it("keeps the last good read of a failing source", () => {
     const record = sourceMetaRecord(result({ ok: false, complete: false, note: "página 1 sin respuesta" }), { lastOkAt: "2026-09-15T10:00:00.000Z", failingSince: null });
     expect(record).toMatchObject({ ok: false, lastOkAt: "2026-09-15T10:00:00.000Z", failingSince: "2026-09-16T10:30:00.000Z", source: "carone" });
+  });
+});
+
+describe("publishCarContacts", () => {
+  const record = {
+    key: "ml-MLU1", source: "mercadolibre", sellerType: "private", origin: "advert_text",
+    phones: [{ value: "+59899123456", mobile: true }], sourceUrl: "https://auto.mercadolibre.com.uy/MLU-1-x-_JM",
+    observedAt: "2026-09-20T00:00:00.000Z",
+  } as const;
+
+  it("rewrites the whole base: one replace per advert, every other advert deleted", async () => {
+    const collection = { ...fakeCollection(), deleteMany: vi.fn(async () => ({ deletedCount: 4 })) };
+    collections.set("carcontacts", collection);
+    const result = await publishCarContacts([{ ...record, phones: [...record.phones] }], "2026-09-21T00:00:00.000Z");
+    expect(result).toEqual({ written: 1, removed: 4 });
+    expect(collection.writes).toEqual([{
+      replaceOne: { filter: { key: "ml-MLU1" }, replacement: { ...record, updatedAt: "2026-09-21T00:00:00.000Z" }, upsert: true },
+    }]);
+    expect(collection.deleteMany).toHaveBeenCalledWith({ key: { $nin: ["ml-MLU1"] } });
+  });
+
+  it("with no adverts left it empties the base instead of keeping stale numbers", async () => {
+    const collection = { ...fakeCollection(), deleteMany: vi.fn(async () => ({ deletedCount: 7 })) };
+    collections.set("carcontacts", collection);
+    expect(await publishCarContacts([], "2026-09-21T00:00:00.000Z")).toEqual({ written: 0, removed: 7 });
+    expect(collection.bulkWrite).not.toHaveBeenCalled();
+    expect(collection.deleteMany).toHaveBeenCalledWith({ key: { $nin: [] } });
   });
 });

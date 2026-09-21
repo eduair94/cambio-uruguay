@@ -9,6 +9,8 @@ import { attachReferences, dedupeAcrossSources, referenceMedians, sourceCoverage
 import { attachBodyType } from "./classes/autos/bodyType";
 import { dropImplausiblePrices, priceDropSummary } from "./classes/autos/priceSanity";
 import { attachFuelEconomy } from "./classes/autos/fuelEconomy";
+import { buildCarContacts, contactSummary } from "./classes/autos/contacts/build";
+import { DEALER_CONTACT_SOURCES, readDealerContacts, type DealerContactRecord } from "./classes/autos/contacts/dealers";
 import { fetchCarDetails } from "./classes/autos/detail";
 import { buildTrimIndex, mineTrims, type TrimCorpusRow } from "./classes/autos/catalog/trims";
 import { carKey, enrichCarListing } from "./classes/autos/enrich";
@@ -23,11 +25,11 @@ import { harvestWebSource, sourceEnabled, WEB_SOURCES } from "./classes/autos/so
 import type { WebCarContext } from "./classes/autos/sources/common";
 import { harvestMercadoLibreCars } from "./classes/autos/sources/mercadolibre";
 import {
-  collapseRefusal, loadCatalogMeta, loadGuideEntries, loadHarvestMeta, loadOpportunityStats, loadRetiredCarSpans, loadSourceMetas,
-  loadStoredCars,
-  loadVocabularies, mergeVocabularies, publishCarCatalog, publishCarMarkets, saveCarDetails, saveCarHarvest,
-  saveCarOpportunitySnapshot, saveCarReportSnapshot, saveCarRiskSnapshot, saveFbWanted, saveHarvestMeta, saveRefusal, saveSourceHarvest, saveSourceMeta,
-  saveVocabularies,
+  collapseRefusal, loadCatalogMeta, loadContactOptOuts, loadDealerContacts, loadGuideEntries, loadHarvestMeta, loadOpportunityStats,
+  loadRetiredCarSpans, loadSourceMetas, loadStoredCars,
+  loadVocabularies, mergeVocabularies, publishCarCatalog, publishCarContacts, publishCarMarkets, saveCarDetails, saveCarHarvest,
+  saveCarOpportunitySnapshot, saveCarReportSnapshot, saveCarRiskSnapshot, saveDealerContacts, saveFbWanted, saveHarvestMeta, saveRefusal,
+  saveSourceHarvest, saveSourceMeta, saveVocabularies,
   sourceMetaRecord,
 } from "./classes/autos/store";
 import type {
@@ -137,6 +139,7 @@ async function main(): Promise<void> {
   const dictionary = buildCarDictionary(stored.map(doc => doc.listing), vocabularies);
   const guide: Map<string, CarGuideEntry> = dryRun ? new Map() : await loadGuideEntries();
   const sourceResults: CarSourceResult[] = [];
+  let dealerRecords: DealerContactRecord[] = [];
   if (!analyzeOnly && !fast) {
     for (const source of WEB_SOURCES) {
       if (!sourceEnabled(source)) continue;
@@ -156,6 +159,13 @@ async function main(): Promise<void> {
         console.log(`[autos] ${source}: stored ${saved.upserted}, retired ${saved.retired}`);
       }
     }
+    // El número comercial de cada automotora sale de la página de contacto de su propia web: una
+    // lectura por corrida diaria (classes/autos/contacts/dealers.ts). La horaria usa lo guardado.
+    dealerRecords = await readDealerContacts(dryRun ? new Map() : await loadDealerContacts(), {
+      sources: DEALER_CONTACT_SOURCES.filter(source => sourceEnabled(source)),
+    });
+    console.log(`[autos] contacto de automotoras: ${dealerRecords.map(record => `${record.source}=${record.ok ? record.phones.length : `0 (${record.note})`}`).join(" ")}`);
+    if (!dryRun) await saveDealerContacts(dealerRecords);
   }
 
   // 3. Facebook: its currency is deduced against the other sources' medians (then the ML guide).
@@ -245,8 +255,17 @@ async function main(): Promise<void> {
     : [...(await loadSourceMetas())]);
   const mlMeta = (lastRun ?? (harvest ? { ok: harvest.failedPages === 0, lastOkAt: harvest.finishedAt } : null)) as { ok?: boolean; lastOkAt?: string | null } | null;
   if (mlMeta) metas.set("mercadolibre", { ok: mlMeta.ok === true, lastOkAt: mlMeta.lastOkAt ?? null });
+  // Los teléfonos (classes/autos/contacts/build.ts): sólo de avisos que entran al catálogo. El catálogo
+  // lleva la bandera; el número va a su propia colección, que se publica junto con el catálogo.
+  const dealers = dryRun ? new Map(dealerRecords.map(record => [record.source, record] as const)) : await loadDealerContacts();
+  const optOuts = dryRun ? new Set<string>() : await loadContactOptOuts();
+  const freshCutoff = now.getTime() - CAR_CATALOG_FRESH_DAYS * 86_400_000;
+  const contacts = buildCarContacts(listings.filter(listing => Date.parse(listing.lastSeen) >= freshCutoff), { now, dealers, optOuts });
+  const contactKeys = new Set(contacts.map(contact => contact.key));
+  const contactStats = contactSummary(contacts);
+  console.log(`[autos] teléfonos: ${JSON.stringify(contactStats)}`);
   const catalog = buildCarCatalog(listings, analysis, {
-    now, generatedAt, usdUyu,
+    now, generatedAt, usdUyu, contactKeys,
     lastFullReadAt: (lastFull?.lastOkAt as string | undefined) ?? (harvest?.mode === "full" ? harvest.finishedAt : null),
     lastReadAt: (lastRun?.finishedAt as string | undefined) ?? harvest?.finishedAt ?? null,
     reportedTotal: (lastFull?.reportedTotal as number | undefined) ?? harvest?.reportedTotal ?? null,
@@ -287,7 +306,7 @@ async function main(): Promise<void> {
     const bySource = new Map<string, typeof catalog.listings>();
     for (const row of catalog.listings) bySource.set(row.source, [...(bySource.get(row.source) ?? []), row]);
     fs.writeFileSync(reportFile, JSON.stringify({
-      dryRun, catalogMeta: catalog.meta, duplicates, markets: markets.slice(0, 30), snapshot, riskSnapshot, reportSnapshot,
+      dryRun, catalogMeta: catalog.meta, duplicates, contacts: contactStats, markets: markets.slice(0, 30), snapshot, riskSnapshot, reportSnapshot,
       samples: Object.fromEntries([...bySource].map(([source, rows]) => [source, rows.filter((_, index) => index % Math.max(1, Math.floor(rows.length / 20)) === 0).slice(0, 20)])),
     }, null, 2));
   }
@@ -298,6 +317,9 @@ async function main(): Promise<void> {
   if (catalogRefusal) console.warn(`[autos] ${catalogRefusal}`);
   else {
     await publishCarCatalog(catalog.listings, catalog.meta);
+    const catalogKeys = new Set(catalog.listings.map(row => row.key));
+    const published = await publishCarContacts(contacts.filter(contact => catalogKeys.has(contact.key)), generatedAt);
+    console.log(`[autos] teléfonos publicados ${published.written}, borrados ${published.removed}`);
     if (markets.length) await publishCarMarkets(markets);
     else console.log("[autos] sin modelos con avisos frescos suficientes; se saltea la publicación de mercados");
   }
