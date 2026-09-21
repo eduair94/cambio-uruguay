@@ -220,6 +220,7 @@ export async function refreshSearchConsole(options: RefreshOptions = {}): Promis
   // a deploy, a canonical, a de-indexation — and it is the regression worth chasing first.
   const pageFalling = movers(pages, prevPages, 8).falling.map((o) => ({
     ...o,
+    urls: [o.subject],
     note: `${o.note} (página)`,
   }));
 

@@ -24,10 +24,12 @@
 // fila a fila.
 import { bucketOf } from "../gsc/opportunities";
 import { runReports } from "./ga4";
-import type { Ga4Report } from "./ga4";
+import type { Ga4Report, Ga4ReportRequest } from "./ga4";
 
-/** Cuántas URLs se piden antes de agrupar. Muy por encima de las que tienen ingreso. */
+/** Tamaño de página, NO un límite de cobertura: las URLs sin ingreso también cuentan vistas. */
 const PAGE_LIMIT = 2000;
+/** Como máximo 50 peticiones de páginas. Si no alcanza, no se guarda una foto recortada. */
+const MAX_PAGE_ROWS = 100000;
 
 export interface RevenueTotals {
   /** En la moneda de la propiedad (la informa GA4 en `metadata.currencyCode`). */
@@ -90,10 +92,43 @@ function rows(report: Ga4Report | undefined) {
 }
 
 /**
+ * Completa el desglose antes de calcular cualquier RPM. Ordenar sólo por ingreso y tomar las
+ * primeras URLs quitaba del denominador miles de páginas sin anuncios. `rowCount` describe el
+ * informe entero, no esta página; un corte o un cambio de informe conserva el snapshot anterior.
+ */
+async function allPageRows(request: Ga4ReportRequest, first: Ga4Report | undefined) {
+  const count = first?.rowCount ?? (first && !rows(first).length ? 0 : NaN);
+  if (!Number.isInteger(count) || count < 0 || count > MAX_PAGE_ROWS) {
+    throw new Error("GA4 revenue: page report has missing or out-of-budget rowCount");
+  }
+  const complete: NonNullable<Ga4Report["rows"]> = [];
+  const seen = new Set<string>();
+  let page = first;
+  do {
+    const chunk = rows(page);
+    const pageCount = page?.rowCount ?? (page && !chunk.length ? 0 : NaN);
+    if (pageCount !== count || chunk.length !== Math.min(PAGE_LIMIT, count - complete.length)) {
+      throw new Error("GA4 revenue: incomplete or changing page report");
+    }
+    for (const row of chunk) {
+      const path = row.dimensionValues?.[0]?.value;
+      if (typeof path !== "string" || seen.has(path)) {
+        throw new Error("GA4 revenue: missing or repeated page path");
+      }
+      seen.add(path);
+      complete.push(row);
+    }
+    if (complete.length === count) return complete;
+    [page] = await runReports([{ ...request, offset: complete.length }]);
+  } while (complete.length < count);
+  return complete;
+}
+
+/**
  * Trae el ingreso publicitario de la ventana pedida y lo agrupa por familia.
  *
  * Tres reportes en una sola llamada (`batchRunReports` acepta hasta cinco): totales, por página y
- * por día.
+ * por día. Después se pagina el desglose por URL hasta completarlo.
  */
 export async function fetchRevenue(
   start: string,
@@ -102,19 +137,21 @@ export async function fetchRevenue(
 ): Promise<RevenueSnapshot> {
   const dateRanges = [{ startDate: start, endDate: end }];
   const adMetrics = [{ name: "totalAdRevenue" }, { name: "publisherAdImpressions" }, { name: "publisherAdClicks" }];
+  const pageRequest: Ga4ReportRequest = {
+    dateRanges,
+    dimensions: [{ name: "pagePath" }],
+    metrics: [...adMetrics, { name: "screenPageViews" }],
+    limit: PAGE_LIMIT,
+    // Cada URL tiene un lugar estable, incluso cuando miles empatan con ingreso cero.
+    orderBys: [{ dimension: { dimensionName: "pagePath", orderType: "ALPHANUMERIC" } }],
+  };
 
   const reports = await runReports([
     {
       dateRanges,
       metrics: [...adMetrics, { name: "screenPageViews" }, { name: "sessions" }],
     },
-    {
-      dateRanges,
-      dimensions: [{ name: "pagePath" }],
-      metrics: [...adMetrics, { name: "screenPageViews" }],
-      limit: PAGE_LIMIT,
-      orderBys: [{ metric: { metricName: "totalAdRevenue" }, desc: true }],
-    },
+    pageRequest,
     {
       dateRanges,
       dimensions: [{ name: "date" }],
@@ -122,6 +159,7 @@ export async function fetchRevenue(
       limit: 400,
     },
   ]);
+  const completePages = await allPageRows(pageRequest, reports[1]);
 
   const currency = reports[0]?.metadata?.currencyCode || "USD";
   const totalRow = rows(reports[0])[0];
@@ -134,12 +172,15 @@ export async function fetchRevenue(
     rpm: 0,
   };
   totals.rpm = rpmOf(totals.adRevenue, totals.screenPageViews);
+  if (!completePages.length && (totals.screenPageViews > 0 || totals.adRevenue > 0 || totals.adImpressions > 0 || totals.adClicks > 0)) {
+    throw new Error("GA4 revenue: empty page report contradicts totals");
+  }
 
   // ---- por página, y de ahí por familia ----
   const pageRows: RevenuePageRow[] = [];
   const families = new Map<string, RevenueFamilyRow>();
 
-  for (const row of rows(reports[1])) {
+  for (const row of completePages) {
     // El query string se descarta igual que en el snapshot público: `/buscar?q=...` no debe quedar
     // guardado en ningún lado.
     const path = (row.dimensionValues?.[0]?.value || "").split("?")[0] || "/";
@@ -198,7 +239,10 @@ export async function fetchRevenue(
     range: { start, end },
     totals,
     families: familyRows,
-    topPages: pageRows.filter((p) => p.adRevenue > 0).slice(0, 40),
+    topPages: pageRows
+      .filter((p) => p.adRevenue > 0)
+      .sort((a, b) => b.adRevenue - a.adRevenue || b.screenPageViews - a.screenPageViews || a.path.localeCompare(b.path))
+      .slice(0, 40),
     daily,
     // Se calcula abajo con `revenueIsEmpty` y no acá: cuando `pending` tenía su propia copia de la
     // regla, las dos se separaron y la lectura de una impresión salió publicada como definitiva.
@@ -236,7 +280,7 @@ export const MIN_IMPRESSIONS_PER_VIEW = 0.01;
  *
  * Empezó preguntando por el cero exacto, que es lo que contesta un enlace AdSense↔GA4 inexistente.
  * No es lo que contesta un enlace RECIÉN creado: el del 2026-09-02 no rellena hacia atrás y devolvió
- * 1 impresión y USD 0,000122 sobre 4.131 vistas de página — un cero disfrazado que pasaba las tres
+ * una sola impresión sobre miles de vistas de página — un cero disfrazado que pasaba las tres
  * puertas y quedaba guardado como "el sitio no factura nada". El guardarraíl estaba escrito para el
  * cero y no atajaba el casi-cero.
  */

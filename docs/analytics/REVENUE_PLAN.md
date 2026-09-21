@@ -182,6 +182,20 @@ que es el mismo síntoma que "todavía no hay suficiente historia" y por eso nad
 | veredictos cerrados se reusan | una ventana cerrada no cambia; releerla todos los días es leer el archivo entero para nada. `sin datos` y `esperando` sí se recalculan, porque un `--backfill` puede haber agregado justo los días que faltaban. |
 | pisos de muestra por familia | una familia con 40 vistas y una impresión da un RPM espectacular y falso que encabezaría la cola para siempre. |
 | `PROVISIONAL_REVENUE_USD` | con centavos en la ventana, todo RPM por familia es provisional y la pantalla lo dice. |
+| desglose completo de ingreso | `fetchRevenue` pagina por `pagePath` hasta `rowCount`, con presupuesto de 100.000 filas. Las páginas sin anuncios también aportan vistas al RPM. Una página incompleta, repetida, un total cambiante o un error conserva el snapshot privado anterior; la actualización pública sigue independiente. |
+
+La lectura del 21/9 detectó que el límite anterior de 2.000 URLs dejaba fuera gran parte de las
+vistas, aunque los ingresos y las impresiones publicitarias sí cerraban. Por eso las familias se
+calculan después de completar el desglose y las páginas más rentables se ordenan al final. Los
+totales originales se conservan: la paginación no excluye países ni decide qué tráfico es humano.
+Un aumento de vistas sin interacción ni anuncios exige investigar su procedencia antes de usarlo
+para reajustar los multiplicadores. Las cifras y el diagnóstico detallado quedan en
+`docs/seo/data/revenue-2026-09-21/`, fuera del repositorio público.
+
+Las caídas de una página conservan su URL desde `pageFalling`, antes de atribuir destinos a las
+consultas. Así una caída del histórico se valora como histórico y una de una guía como guía. Una
+consulta que parece una URL sigue necesitando evidencia en el informe página × consulta; su
+texto no se usa para inventar un destino.
 
 ## Privacidad
 
