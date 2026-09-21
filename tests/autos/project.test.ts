@@ -25,7 +25,8 @@ describe("publicCarListing", () => {
   it("projects only public fields and cleans contact data", () => {
     const row = publicCarListing(car(), null)!;
     expect(Object.keys(row).sort()).toEqual([
-      "brand", "brandSlug", "currency", "currencyInferred", "dealerName", "department", "engine", "firstSeen", "flags", "fuel", "fuelEconomy",
+      "body", "brand", "brandSlug", "color", "currency", "currencyInferred", "dealerName", "department", "doors", "engine", "firstSeen",
+      "flags", "fuel", "fuelEconomy",
       "key", "km", "lastSeen", "listedPrice", "marketSlug", "model", "modelSlug", "neighborhood", "opportunity", "permalink", "picture",
       "pictureCount", "price", "priceConverted", "priceDrop", "priceUsd", "reference", "risks", "sellerType", "source",
       "sourceName",

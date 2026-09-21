@@ -237,6 +237,71 @@ formas de particulares ("16km Por litro", "En ciudad 11km x lt / En Ruta 14km x 
   "menor consumo" en el directorio (índice `fuelEconomy.litersPer100Km`) y en oportunidades; como
   "menos kilómetros", ese orden deja afuera los avisos sin el dato.
 
+## Carrocería, puertas y color (2026-09-20)
+
+El filtro por carrocería (sedán, SUV, pick-up…) y los filtros avanzados del directorio.
+`classes/autos/bodyType.ts`.
+
+**No hubo que raspar nada**: `detail.ts` lee `bodyType`, `color` y `numberOfDoors` del `ld+json`
+`Vehicle` de la ficha de Mercado Libre desde el primer día, y esos tres campos nunca habían cruzado
+la frontera pública. Medido contra producción el 2026-09-20: de 20.601 avisos vigentes, 19.460
+tienen ficha leída, 16.746 declaran carrocería (81,3 %), 17.651 puertas y 17.612 color.
+
+**Lo que se descartó, y por qué** — las dos opciones "obvias" del lado de Mercado Libre:
+
+- *Partir el barrido por `VEHICLE_BODY_TYPE`*, como se parte por marca y modelo. La tarjeta de
+  búsqueda no trae la carrocería (sólo km, caja y combustible), así que sería la única forma de
+  tenerla por aviso desde la búsqueda. Medido: ~83 % de los avisos están en modelos con más de una
+  carrocería, o sea casi el doble de páginas — y un 429 de ML deja al puente `:9656` diez minutos en
+  su proxy residencial **para todos los jobs**. Además no alcanzaría: entre el 2 y el 8 % de los
+  avisos no tiene el atributo (Peugeot 208: 427 avisos, 416 en la faceta), así que el barrido por
+  carrocería tampoco reemplaza al de modelo.
+- *La faceta `VEHICLE_BODY_TYPE` de la página de cada modelo*, que viene gratis en la página 0 que el
+  barrido ya pide (es donde se lee `SHORT_VERSION`). Es la distribución del modelo, no el dato del
+  aviso, y **Mercado Libre omite la faceta cuando el modelo tiene una sola carrocería**: Nissan Kicks
+  (157 avisos, todos SUV) no devuelve ninguna, indistinguible de "no sé". Nuestras propias fichas
+  dicen lo mismo y mejor.
+
+**El orden de evidencia**, de la más firme a la más floja:
+
+1. La **ficha propia** del aviso (`detail.bodyType`), agrupada en las nueve familias que un comprador
+   distingue: las 16 carrocerías de ML se reducen a `sedan hatchback suv pickup rural furgon
+   monovolumen coupe cabriolet`. Crossover y Off-Road van con SUV porque acá son la misma compra;
+   Rural queda aparte de SUV porque una familiar no lo es; furgón y monovolumen **no** se mezclan (una
+   Fiorino de reparto y una Spin de siete plazas no son el mismo auto). `basis: "advert"`.
+2. La **carrocería dominante de su modelo** entre nuestras fichas (`marketSlug`, ≥ 8 fichas y ≥ 90 %
+   de acuerdo). `basis: "model"`. El diccionario se arma **sólo con fichas**: si lo alimentara también
+   lo leído del título, ocho avisos de Facebook que dicen "sedán" le enseñarían al modelo una
+   carrocería que nadie corroboró, y esa adivinanza volvería multiplicada sobre los demás.
+3. La **palabra del título** ("Corsa Wagon", "Gol Sedán", "Berlingo Van"), sólo para los avisos sin
+   ficha — Facebook y las webs de automotora nunca la tienen. Va **después** del diccionario, no
+   antes: en "Chevrolet Tracker Ltz **Rural** 5 Puertas" el vendedor usa "rural" con el sentido
+   uruguayo de "cinco puertas" y el auto es un SUV, cosa que las 153 fichas de Tracker dicen sin
+   ambigüedad. Así el título manda exactamente donde el diccionario se abstiene, que es donde el
+   modelo tiene de verdad más de una carrocería y el título es lo único que las distingue.
+4. Nada. **Un aviso sin carrocería nunca cumple un filtro de carrocería**, igual que pasa con los
+   kilómetros y con el consumo.
+
+Medido con el módulo real sobre los 20.601 avisos de producción: **93,6 % con carrocería** (16.886
+del aviso, 2.391 del modelo, 1.324 sin dato). Por fuente: ML 97 %, Facebook 72 %, Car One 77 %,
+Carper 75 %, Motorlider 80 %, Clasiautos 57 %, Dueño Directo 41 %.
+
+Público como `body: { type, basis }`, `doors` y `color` (índice `{ "body.type": 1, priceUsd: 1 }`).
+La tarjeta imprime la carrocería estimada con un "≈" delante — la misma convención que el consumo
+estimado— y la ficha dice de dónde sale. El color se normaliza a 15 familias ("Gris oscuro" → gris,
+"Plateado" → plata, "Bordeaux" → bordó); un color que no está en la lista no se publica.
+
+**Filtros avanzados** del directorio, todos sobre datos que ya existían: puertas, color, publicado en
+los últimos N días (`firstSeen`), bajó de precio (`priceDrop`), sólo oportunidades (`opportunity`) y
+**sin deuda ni choque declarados** (`risks.0` no existe). Ese último dice "declarados" a propósito:
+la ausencia no es una afirmación de que el auto esté limpio, sólo de que el vendedor no dijo nada
+— la misma regla del tablero de riesgo. Los interruptores viajan por la URL como `=1` y cualquier
+otra cosa los apaga, así que `?priceDrop=0` no filtra.
+
+La carrocería entra además en `CarSubjectFilters`, o sea también en `/oportunidades-autos-usados-uruguay`
+y en `/autos-chocados-y-con-deuda-uruguay`: las tres son listas de avisos y quien filtra por
+carrocería en una espera poder hacerlo en las otras.
+
 ## Precio con motivo: el riesgo declarado
 
 `/autos-chocados-y-con-deuda-uruguay`. Lo que el aviso DICE del auto —deuda o prenda, papeles que

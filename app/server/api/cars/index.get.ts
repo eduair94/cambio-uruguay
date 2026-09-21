@@ -1,4 +1,5 @@
 import {
+  CAR_BODY_LABELS,
   CAR_SOURCE_RULES,
   CARS_PER_PAGE,
   carsMatch,
@@ -45,7 +46,7 @@ export default defineEventHandler(async event => {
         ...((match['fuelEconomy.litersPer100Km'] as object) || {}),
         $ne: null,
       }
-    const [total, rows, brands, models, departments, sources] = await Promise.all([
+    const [total, rows, brands, models, departments, sources, bodies] = await Promise.all([
       CarCatalogModel.countDocuments(match).maxTimeMS(10_000),
       CarCatalogModel.find(match)
         .select(carListingProjection)
@@ -70,6 +71,7 @@ export default defineEventHandler(async event => {
         19
       ),
       facet(carsMatch({ ...query, source: '' }, now, meta.freshDays), 'source', 'source', 10),
+      facet(carsMatch({ ...query, body: '' }, now, meta.freshDays), 'body.type', 'body.type', 12),
     ])
     setResponseHeader(event, 'cache-control', 'public, max-age=60, s-maxage=120')
     const response: CarsResponse = {
@@ -88,6 +90,12 @@ export default defineEventHandler(async event => {
           .map(item => ({
             ...item,
             name: CAR_SOURCE_RULES[item.slug as keyof typeof CAR_SOURCE_RULES].name,
+          })),
+        bodies: bodies
+          .filter(item => item.slug in CAR_BODY_LABELS)
+          .map(item => ({
+            ...item,
+            name: CAR_BODY_LABELS[item.slug as keyof typeof CAR_BODY_LABELS],
           })),
       },
       coverage: {

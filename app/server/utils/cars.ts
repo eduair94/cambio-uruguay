@@ -4,12 +4,15 @@ import { CarOpportunitySnapshotModel } from '../models/CarOpportunitySnapshot'
 import { CarReportSnapshotModel } from '../models/CarReportSnapshot'
 import { CarRiskSnapshotModel } from '../models/CarRiskSnapshot'
 import {
+  CAR_BODY_TYPES,
+  CAR_COLORS,
   CAR_SOURCE_RULES,
   CAR_SOURCES_PUBLIC,
   carSafePermalink,
   carSafePicture,
 } from '../../utils/cars'
 import type {
+  PublicCarBody,
   PublicCarCatalogMeta,
   PublicCarFuelEconomy,
   PublicCarListing,
@@ -44,6 +47,9 @@ const CAR_FIELDS = [
   'transmission',
   'fuel',
   'fuelEconomy',
+  'body',
+  'doors',
+  'color',
   'engine',
   'trim',
   'department',
@@ -103,6 +109,15 @@ function fuelEconomyOf(value: unknown): PublicCarFuelEconomy | null {
   }
 }
 
+/** La carrocería, rearmada de cero: un valor que no está en la lista no se publica. */
+function bodyOf(value: unknown): PublicCarBody | null {
+  if (!value || typeof value !== 'object') return null
+  const row = value as Record<string, unknown>
+  const type = CAR_BODY_TYPES.find(item => item === row.type)
+  if (!type) return null
+  return { type, basis: row.basis === 'model' ? 'model' : 'advert' }
+}
+
 const RISK_CATEGORIES = [
   'deuda',
   'papeles',
@@ -156,6 +171,12 @@ export function publicCarRow(row: Record<string, any>): PublicCarListing {
     transmission: row.transmission ?? null,
     fuel: row.fuel ?? null,
     fuelEconomy: fuelEconomyOf(row.fuelEconomy),
+    body: bodyOf(row.body),
+    doors:
+      Number.isInteger(row.doors) && Number(row.doors) > 0 && Number(row.doors) < 10
+        ? Number(row.doors)
+        : null,
+    color: CAR_COLORS.find(item => item === row.color) ?? null,
     engine: optionalText(row.engine),
     trim: optionalText(row.trim),
     department: optionalText(row.department),

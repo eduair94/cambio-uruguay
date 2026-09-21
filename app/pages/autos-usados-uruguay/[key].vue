@@ -72,6 +72,28 @@
                 <th scope="row">Versión</th>
                 <td>{{ [car.trim, car.engine].filter(Boolean).join(' · ') }}</td>
               </tr>
+              <tr v-if="car.body" data-testid="car-body">
+                <th scope="row">Carrocería</th>
+                <td>
+                  <strong>{{ formatCarBody(car.body) }}</strong>
+                  <span class="d-block text-body-2 text-medium-emphasis">
+                    {{ carBodySource(car.body) }}
+                  </span>
+                </td>
+              </tr>
+              <tr v-if="car.doors || car.color">
+                <th scope="row">Puertas y color</th>
+                <td>
+                  {{
+                    [
+                      car.doors ? `${car.doors} puertas` : null,
+                      car.color ? (CAR_COLOR_LABELS[car.color] ?? car.color) : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')
+                  }}
+                </td>
+              </tr>
               <tr v-if="car.transmission">
                 <th scope="row">Caja</th>
                 <td>{{ CAR_TRANSMISSION_LABELS[car.transmission] }}</td>
@@ -206,6 +228,7 @@
 <script setup lang="ts">
 import { CAR_RISKS_PATH, CAR_RISK_GUIDE } from '~/utils/carsRisk'
 import {
+  CAR_COLOR_LABELS,
   CAR_FLAG_LABELS,
   CAR_FUEL_LABELS,
   CAR_SELLER_LABELS,
@@ -218,6 +241,8 @@ import {
   formatCarKm,
   formatCarPrice,
   carListedPriceNote,
+  formatCarBody,
+  carBodySource,
   formatCarFuelEconomy,
   carFuelEconomySource,
   formatCarUsd,

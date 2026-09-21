@@ -39,6 +39,15 @@
       @update:model-value="value => set('fuel', value)"
     />
     <VSelect
+      :model-value="model.body"
+      :items="bodyItems"
+      label="Carrocería"
+      density="comfortable"
+      variant="outlined"
+      hide-details
+      @update:model-value="value => set('body', value)"
+    />
+    <VSelect
       :model-value="model.transmission"
       :items="transmissionItems"
       label="Caja"
@@ -83,6 +92,8 @@
 // Un solo formulario para las dos listas: si una suma un filtro, la otra también, y quien filtra por
 // consumo en una no descubre que la otra no lo tiene.
 import {
+  CAR_BODY_LABELS,
+  CAR_BODY_TYPES,
   CAR_CONSUMPTION_STEPS,
   CAR_DEPARTMENTS,
   CAR_FUELS,
@@ -104,6 +115,10 @@ function set(key: keyof CarSubjectDraft, value: string | null): void {
 const fuelItems = [
   { title: 'Cualquier combustible', value: '' },
   ...CAR_FUELS.map(value => ({ title: CAR_FUEL_LABELS[value], value })),
+]
+const bodyItems = [
+  { title: 'Cualquier carrocería', value: '' },
+  ...CAR_BODY_TYPES.map(value => ({ title: CAR_BODY_LABELS[value], value })),
 ]
 const transmissionItems = [
   { title: 'Cualquier caja', value: '' },

@@ -40,28 +40,57 @@
       </div>
     </header>
 
+    <!--
+      En mobile los filtros son un cajón que se teletransporta al body, así que vive FUERA
+      de la grilla: adentro de la celda del layout, el vnode del diálogo se parcheaba contra
+      una celda que en mobile no se renderiza y Vue moría en `shouldUpdateComponent`
+      ("Cannot read properties of null (reading 'emitsOptions')"), con el botón sin abrir nada.
+      Nunca hay dos: o está el cajón, o está la columna.
+    -->
+    <CarsFilters
+      v-if="smAndDown"
+      v-model:open="filtersOpen"
+      :query="query"
+      :facets="data?.facets ?? emptyFacets"
+      mobile
+      :total="data?.total ?? null"
+      @apply="update"
+    />
+
     <CarsSidebarLayout>
       <template #filters>
-        <VBtn
-          class="d-md-none mb-3"
-          variant="outlined"
-          block
-          prepend-icon="mdi-filter-variant"
-          :aria-expanded="filtersOpen"
-          @click="filtersOpen = !filtersOpen"
-        >
-          {{ filtersOpen ? 'Ocultar filtros' : 'Filtros' }}
-        </VBtn>
-        <div class="cars-filters" :class="{ 'cars-filters--open': filtersOpen }">
-          <CarsFilters :query="query" :facets="data?.facets ?? emptyFacets" @apply="update" />
-        </div>
+        <CarsFilters
+          v-if="!smAndDown"
+          :query="query"
+          :facets="data?.facets ?? emptyFacets"
+          :total="data?.total ?? null"
+          @apply="update"
+        />
       </template>
       <template #default>
-        <div class="d-flex flex-wrap align-center justify-space-between ga-3 mb-4">
+        <CarsToolbar
+          v-if="smAndDown"
+          :sort="query.sort"
+          :items="sortItems"
+          :active-count="filterChips.length"
+          :open="filtersOpen"
+          @open="filtersOpen = true"
+          @update:sort="value => update({ ...query, sort: value as CarSort, page: 1 })"
+        />
+        <CarsActiveFilters
+          :chips="filterChips"
+          @remove="keys => update(carsQueryWithout(query, keys))"
+          @clear="update(normalizeCarsQuery({ sort: query.sort }))"
+        />
+        <div
+          class="d-flex flex-wrap align-center justify-space-between ga-3 mb-4"
+          :class="smAndDown ? 'mt-2' : ''"
+        >
           <h2 class="text-h6 mb-0">
             {{ data ? `${data.total.toLocaleString('es-UY')} avisos` : 'Avisos' }}
           </h2>
           <VSelect
+            v-if="!smAndDown"
             :model-value="query.sort"
             :items="sortItems"
             label="Ordenar"
@@ -164,6 +193,7 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify'
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { CAR_REPORT_PATH } from '~/utils/carsReport'
@@ -173,7 +203,9 @@ import {
   CARS_PATH,
   carMarketPath,
   carsFiltered,
+  carsFilterChips,
   carsQueryParams,
+  carsQueryWithout,
   formatCarDate,
   normalizeCarsQuery,
   type CarSort,
@@ -184,15 +216,22 @@ import {
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
+const { smAndDown } = useDisplay()
 const filtersOpen = ref(false)
-const emptyFacets = { brands: [], models: [], departments: [], sources: [] }
-const sortItems: Array<{ title: string; value: CarSort }> = [
-  { title: 'Vistos más recientemente', value: 'recent' },
-  { title: 'Menor precio', value: 'price_asc' },
-  { title: 'Mayor precio', value: 'price_desc' },
-  { title: 'Menos kilómetros', value: 'km_asc' },
-  { title: 'Más nuevos', value: 'year_desc' },
-  { title: 'Menor consumo', value: 'consumption_asc' },
+// El cajón es sólo de mobile: si la ventana crece con él abierto, los filtros ya están
+// a la vista en la columna y un diálogo encima no tendría a qué volver.
+watch(smAndDown, mobile => {
+  if (!mobile) filtersOpen.value = false
+})
+const emptyFacets = { brands: [], models: [], departments: [], sources: [], bodies: [] }
+// `short` es lo que dice el boton de la barra en mobile; `title`, lo que dice el menu.
+const sortItems: Array<{ title: string; value: CarSort; short: string }> = [
+  { title: 'Vistos más recientemente', value: 'recent', short: 'Más recientes' },
+  { title: 'Menor precio', value: 'price_asc', short: 'Menor precio' },
+  { title: 'Mayor precio', value: 'price_desc', short: 'Mayor precio' },
+  { title: 'Menos kilómetros', value: 'km_asc', short: 'Menos km' },
+  { title: 'Más nuevos', value: 'year_desc', short: 'Más nuevos' },
+  { title: 'Menor consumo', value: 'consumption_asc', short: 'Menor consumo' },
 ]
 
 const query = computed(() => normalizeCarsQuery(route.query as Record<string, unknown>))
@@ -201,6 +240,9 @@ const { data, error } = await useAsyncData(
   () => $fetch<CarsResponse>('/api/cars', { query: carsQueryParams(query.value) }),
   { watch: [query] }
 )
+
+/** Los filtros puestos, uno por chip, para poder sacarlos de a uno sin abrir el cajón. */
+const filterChips = computed(() => carsFilterChips(query.value, data.value?.facets))
 
 const sourceLine = computed(() =>
   (data.value?.coverage.sources ?? [])
@@ -266,21 +308,22 @@ useHead({
 <style scoped>
 .cars-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 16px;
+  /* En mobile la ficha es una fila a todo el ancho; el minmax recien parte en columnas
+     cuando la tarjeta con foto vuelve a tener sentido (ver components/cars/ListingCard.vue). */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+@media (min-width: 600px) {
+  .cars-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+  }
 }
 .cars-sort {
   max-width: 240px;
 }
-.cars-filters {
-  display: none;
-}
-.cars-filters--open {
-  display: block;
-}
 @media (min-width: 960px) {
-  .cars-filters {
-    display: block;
+  .cars-layout__filters :deep(.car-panel--sidebar) {
     position: sticky;
     top: 80px;
   }

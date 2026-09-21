@@ -24,9 +24,52 @@
       </p>
     </header>
 
+    <!--
+      En mobile el panel es un cajón que se teletransporta al body: va FUERA de la grilla.
+      Adentro de la celda del layout, su vnode se parcheaba contra una celda que en mobile no
+      se renderiza y Vue moría en `shouldUpdateComponent`; el botón no abría nada y no había
+      error al tocarlo. Ver `pages/autos-usados-uruguay/index.vue`.
+    -->
+    <CarsFilterPanel
+      v-if="smAndDown"
+      v-model:open="filtersOpen"
+      mobile
+      :total="data?.total ?? null"
+      noun="oportunidad"
+      noun-plural="oportunidades"
+      @apply="apply"
+      @clear="clear"
+    >
+      <VSelect
+        v-model="draft.tier"
+        :items="tierItems"
+        label="Evidencia"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+      />
+      <VSelect
+        v-model="draft.brand"
+        :items="brandItems"
+        label="Marca"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+      />
+      <CarsSubjectFilterFields v-model="subject" />
+    </CarsFilterPanel>
+
     <CarsSidebarLayout>
       <template #filters>
-        <form class="deal-filters" @submit.prevent="apply">
+        <CarsFilterPanel
+          v-if="!smAndDown"
+          :mobile="false"
+          :total="data?.total ?? null"
+          noun="oportunidad"
+          noun-plural="oportunidades"
+          @apply="apply"
+          @clear="clear"
+        >
           <VSelect
             v-model="draft.tier"
             :items="tierItems"
@@ -44,21 +87,32 @@
             hide-details
           />
           <CarsSubjectFilterFields v-model="subject" />
-          <VBtn type="submit" color="primary" block>Aplicar</VBtn>
-          <VBtn variant="text" block @click="clear">Limpiar filtros</VBtn>
-        </form>
+        </CarsFilterPanel>
       </template>
       <template #default>
+        <CarsToolbar
+          v-if="smAndDown"
+          :sort="query.sort"
+          :items="sortItems"
+          :active-count="activeCount"
+          :open="filtersOpen"
+          @open="filtersOpen = true"
+          @update:sort="value => navigate({ ...query, sort: value as CarOpportunitySort, page: 1 })"
+        />
         <VAlert v-if="error" type="info" variant="outlined" class="mb-4">
           La comparación se está calculando. Volvé en unos minutos.
         </VAlert>
         <template v-else-if="data">
-          <div class="d-flex flex-wrap align-center justify-space-between ga-3 mb-2">
+          <div
+            class="d-flex flex-wrap align-center justify-space-between ga-3 mb-2"
+            :class="smAndDown ? 'mt-3' : ''"
+          >
             <h2 class="text-h6 mb-0">
               {{ data.total.toLocaleString('es-UY') }}
               {{ data.total === 1 ? 'oportunidad' : 'oportunidades' }}
             </h2>
             <VSelect
+              v-if="!smAndDown"
               :model-value="query.sort"
               :items="sortItems"
               label="Ordenar"
@@ -140,6 +194,7 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify'
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import {
   CAR_OPPORTUNITIES_PATH,
@@ -158,6 +213,11 @@ import {
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
+const { smAndDown } = useDisplay()
+const filtersOpen = ref(false)
+watch(smAndDown, mobile => {
+  if (!mobile) filtersOpen.value = false
+})
 const tierItems = [
   { title: 'Sólida y exploratoria', value: '' },
   { title: 'Sólo comparación sólida', value: 'strict' },
@@ -200,7 +260,18 @@ watch(query, next => {
   subject.value = carSubjectDraft(next)
 })
 
+/**
+ * Cuántos filtros están puestos, para el contador del botón. Se cuenta sobre la consulta
+ * aplicada, no sobre el borrador: el número tiene que describir lo que hay en pantalla.
+ */
+const activeCount = computed(
+  () =>
+    [query.value.tier, query.value.brand].filter(Boolean).length +
+    Object.values(carSubjectDraft(query.value)).filter(Boolean).length
+)
+
 function navigate(next: CarOpportunityQuery) {
+  filtersOpen.value = false
   router.replace({ query: carOpportunityQueryParams(next) })
 }
 function apply() {

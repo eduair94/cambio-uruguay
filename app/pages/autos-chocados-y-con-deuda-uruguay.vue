@@ -54,9 +54,49 @@
       </p>
     </section>
 
+    <!-- Fuera de la grilla en mobile, por lo mismo que `pages/autos-usados-uruguay/index.vue`. -->
+    <CarsFilterPanel
+      v-if="smAndDown"
+      v-model:open="filtersOpen"
+      mobile
+      :total="data?.total ?? null"
+      @apply="apply"
+      @clear="clear"
+    >
+      <VSelect
+        v-model="draft.category"
+        :items="categoryItems"
+        label="Qué declara"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+      />
+      <VSelect
+        v-model="draft.brand"
+        :items="brandItems"
+        label="Marca"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+      />
+      <CarsSubjectFilterFields v-model="subject" />
+      <VCheckbox
+        v-model="draft.measured"
+        label="Sólo con diferencia medida"
+        density="comfortable"
+        hide-details
+      />
+    </CarsFilterPanel>
+
     <CarsSidebarLayout>
       <template #filters>
-        <form class="risk-filters" @submit.prevent="apply">
+        <CarsFilterPanel
+          v-if="!smAndDown"
+          :mobile="false"
+          :total="data?.total ?? null"
+          @apply="apply"
+          @clear="clear"
+        >
           <VSelect
             v-model="draft.category"
             :items="categoryItems"
@@ -81,20 +121,31 @@
             density="comfortable"
             hide-details
           />
-          <VBtn type="submit" color="primary" block>Aplicar</VBtn>
-          <VBtn variant="text" block @click="clear">Limpiar filtros</VBtn>
-        </form>
+        </CarsFilterPanel>
       </template>
       <template #default>
+        <CarsToolbar
+          v-if="smAndDown"
+          :sort="query.sort"
+          :items="sortItems"
+          :active-count="activeCount"
+          :open="filtersOpen"
+          @open="filtersOpen = true"
+          @update:sort="value => navigate({ ...query, sort: value as CarRiskSort, page: 1 })"
+        />
         <VAlert v-if="error" type="info" variant="outlined" class="mb-4">
           El tablero se está calculando. Volvé en unos minutos.
         </VAlert>
         <template v-else-if="data">
-          <div class="d-flex flex-wrap align-center justify-space-between ga-3 mb-2">
+          <div
+            class="d-flex flex-wrap align-center justify-space-between ga-3 mb-2"
+            :class="smAndDown ? 'mt-3' : ''"
+          >
             <h2 class="text-h6 mb-0">
               {{ data.total.toLocaleString('es-UY') }} {{ data.total === 1 ? 'aviso' : 'avisos' }}
             </h2>
             <VSelect
+              v-if="!smAndDown"
               :model-value="query.sort"
               :items="sortItems"
               label="Ordenar"
@@ -201,6 +252,7 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify'
 import { CAR_OPPORTUNITIES_PATH, CARS_PATH, carSubjectDraft, formatCarDate } from '~/utils/cars'
 import {
   CAR_RISKS_PATH,
@@ -218,6 +270,11 @@ import {
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
+const { smAndDown } = useDisplay()
+const filtersOpen = ref(false)
+watch(smAndDown, mobile => {
+  if (!mobile) filtersOpen.value = false
+})
 
 const query = computed(() => normalizeCarRiskQuery(route.query as Record<string, unknown>))
 const { data, error } = await useAsyncData(
@@ -264,7 +321,18 @@ watch(query, next => {
   subject.value = carSubjectDraft(next)
 })
 
+/**
+ * Cuántos filtros están puestos, para el contador del botón. Se cuenta sobre la consulta
+ * aplicada, no sobre el borrador: el número describe lo que hay en pantalla.
+ */
+const activeCount = computed(
+  () =>
+    [query.value.category, query.value.brand, query.value.measured].filter(Boolean).length +
+    Object.values(carSubjectDraft(query.value)).filter(Boolean).length
+)
+
 function navigate(next: CarRiskQuery) {
+  filtersOpen.value = false
   router.replace({ query: carRiskQueryParams(next) })
 }
 function apply() {

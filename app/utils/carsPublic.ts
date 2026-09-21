@@ -18,6 +18,27 @@ export interface PublicCarFuelEconomy {
   sellers: number | null
 }
 
+/**
+ * La carrocería del auto. `basis` dice de dónde sale: "advert" = lo declara ESTE aviso (su ficha
+ * propia, o la palabra que el vendedor escribió en el título); "model" = no lo declara, y es la
+ * carrocería que muestran las fichas de los demás avisos de su mismo modelo. Un auto sin carrocería
+ * no lleva este campo y nunca cumple un filtro de carrocería.
+ */
+export type PublicCarBodyType =
+  | 'sedan'
+  | 'hatchback'
+  | 'suv'
+  | 'pickup'
+  | 'rural'
+  | 'furgon'
+  | 'monovolumen'
+  | 'coupe'
+  | 'cabriolet'
+export interface PublicCarBody {
+  type: PublicCarBodyType
+  basis: 'advert' | 'model'
+}
+
 export type PublicCarFlag =
   | 'damaged'
   | 'financing'
@@ -69,6 +90,10 @@ export interface PublicCarListing {
   transmission: PublicCarTransmission | null
   fuel: PublicCarFuel | null
   fuelEconomy: PublicCarFuelEconomy | null
+  body: PublicCarBody | null
+  /** Puertas y color: sólo si los declara la ficha propia del aviso. */
+  doors: number | null
+  color: string | null
   engine: string | null
   trim: string | null
   department: string | null

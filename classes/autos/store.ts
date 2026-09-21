@@ -390,6 +390,7 @@ export async function publishCarCatalog(rows: readonly PublicCarListing[], meta:
   await collection.createIndex({ source: 1, lastSeen: -1 });
   // "Menor consumo" sorts the whole catalogue by litres per 100 km.
   await collection.createIndex({ "fuelEconomy.litersPer100Km": 1 });
+  await collection.createIndex({ "body.type": 1, priceUsd: 1 });
   for (let index = 0; index < rows.length; index += CHUNK) {
     await collection.bulkWrite(rows.slice(index, index + CHUNK).map(row => ({
       replaceOne: { filter: { key: row.key }, replacement: row, upsert: true },
