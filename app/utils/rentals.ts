@@ -270,6 +270,34 @@ export interface RentalSourceRun {
   access?: 'external_only'
   listings: number
   note: string
+  /** Last run that read this source; the job carries it over the runs that could not. */
+  lastOkAt?: string
+  failingSince?: string
+}
+
+/**
+ * How long a source may go without a good read before the directory says so. One missed hourly
+ * pass is not news for a visitor: the hourly run never expires an advert, so the page shows the
+ * source's adverts exactly as read an hour before. On 2026-09-21 a one-pass Casasweb blip (1 of
+ * 130 hourly runs that week) still printed a warning for the whole hour. 90 minutes lets one pass
+ * go by and warns on the second in a row.
+ */
+export const RENTAL_SOURCE_GRACE_MS = 90 * 60 * 1000
+
+/**
+ * Sources whose adverts are older than the grace period. Measured from the run's own time, never
+ * the clock, so the server render and the hydrated page agree on whether to warn.
+ */
+export function staleRentalSources(
+  meta: Pick<RentalMeta, 'generatedAt' | 'sources'> | null | undefined
+): RentalSourceRun[] {
+  if (!meta) return []
+  const at = Date.parse(meta.generatedAt)
+  return (meta.sources ?? []).filter(source => {
+    if (source.ok || source.access === 'external_only') return false
+    const lastOk = source.lastOkAt ? Date.parse(source.lastOkAt) : Number.NaN
+    return !(Number.isFinite(at) && Number.isFinite(lastOk) && at - lastOk < RENTAL_SOURCE_GRACE_MS)
+  })
 }
 
 export interface RentalMeta {

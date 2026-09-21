@@ -53,9 +53,12 @@ describe("Casasweb's public monthly-rental cards", () => {
   });
 
   it("stops after three failed responses and cannot expire previous offers", async () => {
+    vi.stubEnv("RENTALS_CW_PAUSE_MS", "0");
     vi.mocked(fetchText).mockResolvedValue(null);
     const run = await harvestCasasweb("full", 40);
-    expect(fetchText).toHaveBeenCalledTimes(3);
+    vi.unstubAllEnvs();
+    // Three failures, one pause, the same three once more.
+    expect(fetchText).toHaveBeenCalledTimes(6);
     expect(run).toMatchObject({ ok: false, complete: false, listings: [] });
     expect(run.note).toContain("departamentos consultados: 1");
   });

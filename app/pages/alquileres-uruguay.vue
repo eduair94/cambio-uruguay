@@ -26,8 +26,9 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
           }}</time>
         </div>
         <VAlert v-if="downSources.length" type="warning" variant="tonal" class="mt-3">{{
-          t('sourceWarning', {
+          t(downSince ? 'sourceWarning' : 'sourceWarningUndated', {
             sources: downSources.map(source => sourceLabel(source.key)).join(', '),
+            date: downSince ? dateLabel(downSince) : '',
           })
         }}</VAlert>
       </header>
@@ -712,6 +713,7 @@ import {
   normalizeRentalQuery,
   rentalQueryToParams,
   rentalPriceLabel,
+  staleRentalSources,
   totalMonthlyUyu,
   type RentalQuery,
   type RentalProperty,
@@ -831,9 +833,14 @@ const externalSourceKeys = computed(
         .map(source => source.key)
     )
 )
-const downSources = computed(() =>
-  (meta.value?.sources ?? []).filter(source => !source.ok && source.access !== 'external_only')
-)
+const downSources = computed(() => staleRentalSources(meta.value))
+/** The oldest good read among them, or null when one was never read at all. */
+const downSince = computed(() => {
+  const reads = downSources.value.map(source => Date.parse(source.lastOkAt ?? ''))
+  return reads.length && reads.every(Number.isFinite)
+    ? new Date(Math.min(...reads)).toISOString()
+    : null
+})
 const activeSourceLabels = computed(() =>
   (coverage.value?.sources ?? [])
     .filter(source => source.properties > 0 && !externalSourceKeys.value.has(source.key))

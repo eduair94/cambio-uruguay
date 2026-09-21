@@ -326,14 +326,21 @@ Las fuentes habilitadas admiten degradación independiente. Sólo la marca inter
 permite expirar ofertas por ausencia; ML y Facebook declaran cobertura parcial por sus límites
 de búsqueda, y el modo horario aplica esa misma protección a todas las fuentes. InfoCasas también
 conserva cobertura parcial por la inestabilidad del paginador (auditoría del 6 de septiembre);
-Casasweb exige terminar sin cortes ni fallas. Tres respuestas
-consecutivas fallidas detienen el barrido de Casasweb; cada pedido tiene antes los reintentos por
-defecto de `net.ts` (el 2026-09-21 a las 10:48 UTC, con `retries: 0`, un corte de un instante se
-llevó las tres únicas búsquedas de Montevideo del repaso horario y la fuente quedó caída una hora;
-fue 1 de 130 horarias de esa semana). La nota dice por qué falló cada búsqueda
+Casasweb exige terminar sin cortes ni fallas. El 2026-09-21 a las 10:48 UTC un corte breve se
+llevó las tres únicas búsquedas de Montevideo del repaso horario, disparó el corte por tres fallas
+seguidas y la fuente quedó marcada caída una hora (1 de 130 horarias de esa semana; ninguna diaria).
+Desde entonces hay tres escalones: cada pedido tiene los reintentos por defecto de `net.ts` (antes
+`retries: 0`); cada búsqueda que igual falla tiene **una** segunda lectura, después de **una sola
+pausa por corrida** (`RENTALS_CW_PAUSE_MS`, 60 s), que llega apenas fallan tres seguidas o al final
+del barrido para las aisladas; y sólo tres fallas seguidas **después** de la pausa detienen el
+barrido. Una búsqueda recuperada cuenta como leída entera, así que no le quita `complete` a la
+corrida. La nota dice cuántas se leyeron tras la pausa y por qué falló cada una de las que no
 (`3 búsquedas fallidas: HTTP 503 ×3`, `tiempo agotado (25000 ms)`, `página irreconocible`,
 `búsqueda distinta a la pedida`), para separar un portal que no contesta de uno que cambió la
-página. El País sólo se declara completo si abrió
+página. El aviso del directorio ("No pudimos actualizar … desde …") ya no sale por una sola
+horaria perdida: `staleRentalSources` (`app/utils/rentals.ts`) espera 90 min sin lectura buena,
+medidos contra el `generatedAt` de la corrida y no contra el reloj (SSR e hidratación coinciden),
+porque la horaria nunca caduca avisos y la página muestra los de la lectura anterior. El País sólo se declara completo si abrió
 las 19 búsquedas y leyó todas sus páginas: una búsqueda que no abrió es un **agujero del barrido**,
 no un departamento vacío, y con el interruptor apagado vuelve a `access: external_only` sin red.
 No se cambia la guarda global de colapso ni la poda de propiedades después de 21 días sin verse.
@@ -711,6 +718,7 @@ Lo que pasó ese día, y lo que cambió por eso:
 | `RENTALS_ML_REQUEST_BUDGET` | 1600 / 100 | solicitudes globales en full / fast, incluidos reintentos y enriquecimiento |
 | `RENTALS_ML_TIME_BUDGET_MS` | 2400000 / 240000 | tiempo global de ML en full / fast; conserva los avisos aceptados al cortar |
 | `RENTALS_CW_MAX_PAGES` | 60 | tope de páginas por departamento/tipo en Casasweb; la rápida toma una página por búsqueda |
+| `RENTALS_CW_PAUSE_MS` | 60000 | pausa única por corrida antes de la segunda lectura de las búsquedas de Casasweb que fallaron |
 | `RENTALS_FB_ENABLED` | — | `0` apaga Marketplace |
 | `RENTALS_FB_LOCATIONS` | montevideo,ciudad-de-la-costa,maldonado,salto,paysandu,colonia-del-sacramento | anclas de búsqueda en Marketplace; las sugerencias pueden estar en otras zonas |
 | `RENTALS_HOST_GAP_MS` | 1200 | separación mínima entre dos requests al mismo host |

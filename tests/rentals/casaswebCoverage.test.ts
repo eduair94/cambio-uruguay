@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchText } from "../../classes/rentals/net";
 import { harvestCasasweb, parseCasaswebPage } from "../../classes/rentals/sources/casasweb";
 import { sourcesAllowingExpiry } from "../../classes/rentals/sources/types";
@@ -55,6 +55,10 @@ function serve(target?: (page: number) => SearchPage | null): { department: numb
   });
   return requests;
 }
+
+beforeEach(() => {
+  vi.stubEnv("RENTALS_CW_PAUSE_MS", "0");
+});
 
 afterEach(() => {
   vi.resetAllMocks();
@@ -204,6 +208,53 @@ describe("Casasweb transient failures", () => {
     const result = await harvestCasasweb("fast", 40);
     expect(result.ok).toBe(false);
     expect(result.note).toContain("3 búsquedas fallidas: HTTP 403 ×3");
+  });
+
+  it("pauses and reads again when an outage outlasts the per-request retries", async () => {
+    const answered = new Set<string>();
+    vi.mocked(fetchText).mockImplementation(async (url) => {
+      const { department, type } = searchOf(url);
+      // Every first ask for Montevideo goes unanswered: the stop trips before any other search.
+      if (department === 1 && !answered.has(url)) {
+        answered.add(url);
+        return null;
+      }
+      return searchHtml({ department, type, total: 1, cards: [{ id: department * 100 + type.charCodeAt(0) }] });
+    });
+    const result = await harvestCasasweb("fast", 40);
+    expect(vi.mocked(fetchText)).toHaveBeenCalledTimes(12);
+    expect(result.ok).toBe(true);
+    expect(result.listings.map(row => row.listingId)).toContain(`casasweb:CW${100 + "a".charCodeAt(0)}`);
+    expect(result.note).not.toMatch(/fallid/);
+    expect(result.note).toContain("3 búsquedas leídas tras una pausa");
+  });
+
+  it("still stops, once, when the portal is really down", async () => {
+    vi.mocked(fetchText).mockResolvedValue(null);
+    const result = await harvestCasasweb("fast", 40);
+    // Three searches, one pause, the same three again — never the whole sample twice.
+    expect(vi.mocked(fetchText)).toHaveBeenCalledTimes(6);
+    expect(result).toMatchObject({ ok: false, complete: false });
+    expect(result.note).toContain("3 búsquedas fallidas: sin respuesta ×3");
+  });
+
+  it("gives an isolated failure of the full sweep a second read without losing completeness", async () => {
+    let dropped = false;
+    const requests = serve();
+    const answer = vi.mocked(fetchText).getMockImplementation()!;
+    vi.mocked(fetchText).mockImplementation(async (url, options) => {
+      const { department, type } = searchOf(url);
+      if (department === 7 && type === "c" && !dropped) {
+        dropped = true;
+        return null;
+      }
+      return answer(url, options);
+    });
+    const result = await harvestCasasweb("full", 40);
+    expect(requests.filter(request => request.department === 7 && request.type === "c")).toHaveLength(1);
+    expect(result).toMatchObject({ ok: true, complete: true });
+    expect(result.note).toContain("1 búsqueda leída tras una pausa");
+    expect([...sourcesAllowingExpiry([result], "full")]).toEqual(["casasweb"]);
   });
 
   it("tells an unrecognisable page apart from a missing answer", async () => {

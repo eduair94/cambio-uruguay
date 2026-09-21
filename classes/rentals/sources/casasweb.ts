@@ -2,6 +2,7 @@ import { advertiserClassification, ownerDirectDeclaration } from "../advertiser"
 // Public Casasweb search cards. Pagination submits the exact search form served by the site;
 // no browser challenges, private APIs, contact data, or advert descriptions are collected.
 import * as cheerio from "cheerio";
+import { setTimeout as sleep } from "timers/promises";
 import { fetchText } from "../net";
 import { canonicalDepartment, inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, parseCurrency, parseMoney } from "../normalize";
 import type { RawRental } from "../types";
@@ -126,70 +127,107 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
   };
 }
 
+interface CasaswebSearch { department: number; type: string; retry: boolean }
+/** `failure` is why the search could not be read to its end; `incomplete` says it was read, but not all of it. */
+interface CasaswebSearchRead { failure: string | null; incomplete: boolean }
+
+const count = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
+
 export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Promise<RentalSourceResult> {
   const maxPages = Math.max(1, Number(process.env.RENTALS_CW_MAX_PAGES || 60));
   const pageBudget = mode === "fast" ? 1 : maxPages;
+  const pauseMs = Math.max(0, Number(process.env.RENTALS_CW_PAUSE_MS || 60_000));
   const byId = new Map<string, RawRental>();
   let pages = 0;
   let incomplete = mode === "fast";
-  let failed = 0;
-  let consecutiveFailures = 0;
   const departments = mode === "fast" ? [1, 3, 10] : Array.from({ length: 19 }, (_, index) => index + 1);
   // Garages have their own search category; housing pages do not discover standalone spaces.
   const types = mode === "fast" ? ["a", "c", "g"] : PROPERTY_TYPES;
   const attemptedDepartments = new Set<number>();
   // Why each search failed, so a run note tells "the portal did not answer" from "the page changed".
   const reasons = new Map<string, number>();
-  sweep: for (const department of departments) {
-    attemptedDepartments.add(department);
-    for (const type of types) {
-      const url = casaswebSearchUrl(department, type);
-      let body: string | null = null;
-      let initialTotal: number | null = null;
-      const advertIds = new Set<string>();
-      const seen = new Set<string>();
-      for (let page = 1; page <= pageBudget; page++) {
-        let transport = "sin respuesta";
-        const onFailure = (reason: string) => { transport = reason; };
-        // Default retries on purpose: the hourly pass opens with the only three Montevideo searches,
-        // so without them one dropped connection trips the stop below and the whole source is down
-        // for an hour (2026-09-21). Resubmitting the pagination form just asks for the same page.
-        const html = await fetchText(url, body === null ? { onFailure } : {
-          method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" }, onFailure,
-        });
-        const parsed = html ? parseCasaswebPage(html) : null;
-        if (!parsed || parsed.department !== department || parsed.propertyType !== type || parsed.currentPage !== page) {
-          const reason = !html ? transport : !parsed ? "página irreconocible" : "búsqueda distinta a la pedida";
-          reasons.set(reason, (reasons.get(reason) ?? 0) + 1);
-          failed++; incomplete = true;
-          if (++consecutiveFailures >= 3) break sweep;
-          break;
-        }
-        consecutiveFailures = 0;
-        pages++;
-        if (initialTotal === null) initialTotal = parsed.total;
-        // A live search is not a snapshot. Do not expire absent adverts if its inventory changes.
-        if (parsed.total !== initialTotal || parsed.advertIds.length !== parsed.cardCount) incomplete = true;
-        const fingerprint = [...new Set(parsed.advertIds)].sort().join("|");
-        if (fingerprint && seen.has(fingerprint)) { incomplete = true; break; }
-        seen.add(fingerprint);
-        for (const id of parsed.advertIds) advertIds.add(id);
-        for (const row of parsed.listings) {
-          if (isPlausibleRent(row.price * (row.currency === "USD" ? usdUyu : 1), row.propertyType)) byId.set(row.listingId, row);
-        }
-        body = parsed.nextBody;
-        if (!body) {
-          if (advertIds.size !== parsed.total) incomplete = true;
-          break;
-        }
-        if (page === pageBudget) incomplete = true;
+  let failed = 0;
+  let recovered = 0;
+
+  async function readSearch(department: number, type: string): Promise<CasaswebSearchRead> {
+    const url = casaswebSearchUrl(department, type);
+    let body: string | null = null;
+    let initialTotal: number | null = null;
+    let partial = false;
+    const advertIds = new Set<string>();
+    const seen = new Set<string>();
+    for (let page = 1; page <= pageBudget; page++) {
+      let transport = "sin respuesta";
+      const onFailure = (reason: string) => { transport = reason; };
+      // Default retries on purpose: the hourly pass opens with the only three Montevideo searches,
+      // so without them one dropped connection trips the stop below and the whole source is down
+      // for an hour (2026-09-21). Resubmitting the pagination form just asks for the same page.
+      const html = await fetchText(url, body === null ? { onFailure } : {
+        method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" }, onFailure,
+      });
+      const parsed = html ? parseCasaswebPage(html) : null;
+      if (!parsed || parsed.department !== department || parsed.propertyType !== type || parsed.currentPage !== page) {
+        return { failure: !html ? transport : !parsed ? "página irreconocible" : "búsqueda distinta a la pedida", incomplete: true };
       }
+      pages++;
+      if (initialTotal === null) initialTotal = parsed.total;
+      // A live search is not a snapshot. Do not expire absent adverts if its inventory changes.
+      if (parsed.total !== initialTotal || parsed.advertIds.length !== parsed.cardCount) partial = true;
+      const fingerprint = [...new Set(parsed.advertIds)].sort().join("|");
+      if (fingerprint && seen.has(fingerprint)) return { failure: null, incomplete: true };
+      seen.add(fingerprint);
+      for (const id of parsed.advertIds) advertIds.add(id);
+      for (const row of parsed.listings) {
+        if (isPlausibleRent(row.price * (row.currency === "USD" ? usdUyu : 1), row.propertyType)) byId.set(row.listingId, row);
+      }
+      body = parsed.nextBody;
+      if (!body) return { failure: null, incomplete: partial || advertIds.size !== parsed.total };
+      if (page === pageBudget) partial = true;
+    }
+    return { failure: null, incomplete: partial };
+  }
+
+  // Every search that fails gets ONE more read, after a single pause per run: the per-request
+  // retries only span a couple of seconds, and a portal that is restarting needs longer. The pause
+  // comes as soon as three searches fail in a row — the hourly pass opens with its only three
+  // Montevideo searches — or at the end of the sweep for isolated failures. Three failures in a
+  // row after the pause mean the portal is down, and the run says so.
+  const queue: CasaswebSearch[] = departments.flatMap((department) => types.map((type) => ({ department, type, retry: false })));
+  const secondChance: CasaswebSearch[] = [];
+  let paused = false;
+  let consecutiveFailures = 0;
+  const pause = async () => {
+    paused = true;
+    consecutiveFailures = 0;
+    await sleep(pauseMs);
+    queue.unshift(...secondChance.splice(0));
+  };
+  while (queue.length || (secondChance.length && !paused)) {
+    if (!queue.length) { await pause(); continue; }
+    const search = queue.shift()!;
+    attemptedDepartments.add(search.department);
+    const read = await readSearch(search.department, search.type);
+    if (read.failure === null) {
+      consecutiveFailures = 0;
+      if (read.incomplete) incomplete = true;
+      if (search.retry) recovered++;
+      continue;
+    }
+    if (!paused) secondChance.push({ ...search, retry: true });
+    else {
+      failed++; incomplete = true;
+      reasons.set(read.failure, (reasons.get(read.failure) ?? 0) + 1);
+    }
+    if (++consecutiveFailures >= 3) {
+      if (paused) { incomplete = true; break; }
+      await pause();
     }
   }
   return {
     key: "casasweb", ok: byId.size > 0, complete: !incomplete, listings: [...byId.values()],
     note: `${pages} páginas, ${byId.size} avisos únicos; departamentos consultados: ${attemptedDepartments.size}` +
       (incomplete ? " — cobertura parcial; se conservan avisos no vistos" : "") +
-      (failed ? `; ${failed} búsquedas fallidas: ${[...reasons].map(([reason, n]) => `${reason} ×${n}`).join(", ")}` : ""),
+      (recovered ? `; ${count(recovered, "búsqueda leída", "búsquedas leídas")} tras una pausa` : "") +
+      (failed ? `; ${count(failed, "búsqueda fallida", "búsquedas fallidas")}: ${[...reasons].map(([reason, n]) => `${reason} ×${n}`).join(", ")}` : ""),
   };
 }

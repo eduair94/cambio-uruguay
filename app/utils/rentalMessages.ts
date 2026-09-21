@@ -245,7 +245,9 @@ export const rentalMessages = {
     coverage: 'Fuentes y cobertura',
     opportunities: 'Ver oportunidades por precio comparable',
     sales: 'Buscar viviendas en venta',
-    sourceWarning: 'No pudimos actualizar {sources} en el último repaso.',
+    sourceWarning:
+      'No pudimos actualizar {sources} desde {date}. Mostramos los avisos de la última lectura.',
+    sourceWarningUndated: 'No pudimos actualizar {sources} en los últimos repasos.',
     rate: 'Conversión: U$S 1 = $ {rate}',
     methodology: 'Cómo reunimos los alquileres',
     methodText:
@@ -256,7 +258,7 @@ export const rentalMessages = {
     coverageProperties: '{n} resultado | {n} resultados',
     coverageScope:
       'Contamos los resultados visibles de todo el índice y de cada fuente, sin aplicar tus filtros. Sólo agrupamos avisos con la misma dirección exacta y unidad explícitamente identificada. Un mismo inmueble puede quedar en resultados separados si faltan datos. Un resultado presente en varios portales cuenta en cada fuente, por eso la suma puede superar el total.',
-    coverageReadFailed: 'No se pudo actualizar en el último repaso.',
+    coverageReadFailed: 'No se pudo actualizar en los últimos repasos.',
     externalOnly: 'Consulta externa',
     externalOnlyHint:
       'Consultá los avisos en el portal. Su actualización automática aquí no está habilitada.',
@@ -530,7 +532,9 @@ export const rentalMessages = {
     coverage: 'Sources and coverage',
     opportunities: 'Find opportunities against comparable prices',
     sales: 'Find homes for sale',
-    sourceWarning: 'We could not update {sources} during the latest check.',
+    sourceWarning:
+      'We have not been able to update {sources} since {date}. Showing the listings from the latest read.',
+    sourceWarningUndated: 'We could not update {sources} during the latest checks.',
     rate: 'Conversion: US$ 1 = UYU {rate}',
     methodology: 'How we collect rentals',
     methodText:
@@ -541,7 +545,7 @@ export const rentalMessages = {
     coverageProperties: '{n} result | {n} results',
     coverageScope:
       'We count visible results across the entire index and for each source, independently of your filters. Listings are grouped only when they identify the same exact address and explicit unit. The same property may remain in separate results if details are missing. A result listed on multiple portals counts under each source, so source counts may add up to more than the total.',
-    coverageReadFailed: 'Could not be updated during the latest check.',
+    coverageReadFailed: 'Could not be updated during the latest checks.',
     externalOnly: 'External search',
     externalOnlyHint: 'Browse listings on the portal. Automatic updates here are not enabled.',
     coverageCounted: 'Coverage calculated on {date} (Uruguay time).',
@@ -820,7 +824,9 @@ export const rentalMessages = {
     coverage: 'Fontes e cobertura',
     opportunities: 'Ver oportunidades por preços comparáveis',
     sales: 'Buscar imóveis à venda',
-    sourceWarning: 'Não foi possível atualizar {sources} na última consulta.',
+    sourceWarning:
+      'Não conseguimos atualizar {sources} desde {date}. Mostramos os anúncios da última leitura.',
+    sourceWarningUndated: 'Não foi possível atualizar {sources} nas últimas consultas.',
     rate: 'Conversão: US$ 1 = UYU {rate}',
     methodology: 'Como reunimos os aluguéis',
     methodText:
@@ -831,7 +837,7 @@ export const rentalMessages = {
     coverageProperties: '{n} resultado | {n} resultados',
     coverageScope:
       'Contamos os resultados visíveis de todo o índice e de cada fonte, sem aplicar seus filtros. Agrupamos anúncios apenas com o mesmo endereço exato e unidade explicitamente identificada. Um mesmo imóvel pode ficar em resultados separados se faltarem dados. Um resultado presente em vários portais conta em cada fonte, por isso a soma pode superar o total.',
-    coverageReadFailed: 'Não foi possível atualizar na última consulta.',
+    coverageReadFailed: 'Não foi possível atualizar nas últimas consultas.',
     externalOnly: 'Consulta externa',
     externalOnlyHint:
       'Consulte os anúncios no portal. A atualização automática aqui não está habilitada.',
