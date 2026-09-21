@@ -55,16 +55,22 @@ const emit = defineEmits<{ remove: [keys: CarFilterChip['keys']]; clear: [] }>()
 .car-active :deep(.v-chip__close) {
   position: relative;
 }
-/* 44 x 44 exactos y centrados sobre el icono, sin depender de cuanto mida el icono:
-   con `inset` negativo el numero salia de restarle el tamano del glifo a 44 y quedaba
-   un 13 que no es multiplo de 4 ni explica nada. */
+/*
+ * 24 x 24 centrados sobre el icono de 18: el minimo de WCAG 2.2 (AA) para un objetivo
+ * tactil. NO 44, aunque sea la cifra que se cita de memoria: una cruz de 18 px adentro de
+ * un chip de 28 px no puede crecer a 44 sin meterse ADENTRO del chip de al lado, y ahi el
+ * area de uno le roba los toques al otro. Medido con `elementFromPoint` a 20 px del centro:
+ * con 44 respondia de un solo lado, porque el chip vecino se pinta encima igual. Con 24
+ * entra entera adentro del chip y los 8 px de separacion entre chips quedan libres, que es
+ * justamente lo que la norma pide cuando los objetivos son chicos.
+ */
 .car-active :deep(.v-chip__close)::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 44px;
-  height: 44px;
+  width: 24px;
+  height: 24px;
   transform: translate(-50%, -50%);
 }
 </style>

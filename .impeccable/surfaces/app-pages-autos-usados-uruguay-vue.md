@@ -100,9 +100,15 @@ Adentro de la ficha: 12 px de padding a los cuatro lados y 4 px entre líneas. L
 "Consumo" está oculta a la vista en todos los anchos (el ícono de surtidor ya lo dice) y
 sigue en el árbol de accesibilidad; restituirla partía la línea en dos renglones.
 
-El área táctil de la cruz de un chip son 44×44 exactos, centrados sobre el ícono con
-`translate(-50%, -50%)` — no un `inset` negativo calculado contra el tamaño del glifo,
-que es de dónde salía un 13 px que no explicaba nada.
+El área táctil de la cruz de un chip son **24×24** centrados sobre el ícono de 18, que es
+el mínimo de WCAG 2.2 (AA), **no 44**. Una cruz de 18 px adentro de un chip de 28 px no
+puede crecer a 44 sin meterse adentro del chip vecino, y ahí un área le roba los toques a
+la otra: medido con `elementFromPoint` a 20 px del centro, con 44 respondía de un solo
+lado porque el chip de al lado se pinta encima igual. Con 24 entra entera adentro del chip
+y los 8 px de separación entre chips quedan libres. Los 44 px sí rigen para la barra de
+filtros y el orden, que son objetivos aislados.
+
+La barra de filtros y el selector de orden sí miden 44 de alto (121×44 y 158×44 medidos).
 
 ## Límites
 
