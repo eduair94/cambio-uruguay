@@ -810,7 +810,9 @@ export default defineNuxtConfig({
           'cohere-ai',
         ],
         allow: ['/'],
-        disallow: ['/admin/', '/server/'],
+        // Un grupo propio NO hereda el disallow general: el teléfono del vendedor de un auto va
+        // repetido acá, o Bingbot y los rastreadores de IA quedan habilitados a pedirlo.
+        disallow: ['/admin/', '/server/', '/api/cars/contact/'],
       },
     ],
     // El índice, no /sitemap.xml.
