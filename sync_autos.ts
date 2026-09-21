@@ -7,6 +7,7 @@ import { buildCarDictionary } from "./classes/autos/catalog/dictionary";
 import { guideKey, type CarGuideEntry } from "./classes/autos/catalog/guide";
 import { attachReferences, dedupeAcrossSources, referenceMedians, sourceCoverage } from "./classes/autos/dedupe";
 import { attachBodyType } from "./classes/autos/bodyType";
+import { dropImplausiblePrices, priceDropSummary } from "./classes/autos/priceSanity";
 import { attachFuelEconomy } from "./classes/autos/fuelEconomy";
 import { fetchCarDetails } from "./classes/autos/detail";
 import { buildTrimIndex, mineTrims, type TrimCorpusRow } from "./classes/autos/catalog/trims";
@@ -189,8 +190,20 @@ async function main(): Promise<void> {
   stored = await loadDocs();
   // Fuel economy and body type last: an advert that states neither takes what the OTHER adverts of
   // its model state, so both need the whole catalogue (classes/autos/fuelEconomy.ts, ./bodyType.ts).
-  const enrichAll = (docs: readonly StoredCar[], extra: ReadonlyMap<string, CarDetail>): CarListing[] =>
-    attachBodyType(attachFuelEconomy(attachReferences(docs.map(doc => enrich(doc, extra.get(doc.key) ?? doc.detail)), guide)));
+  // Y el ultimo paso saca los avisos cuyo precio no puede ser el de ese auto, ANTES del analisis,
+  // para que el mismo veredicto valga para el catalogo, las oportunidades, el riesgo y el informe
+  // (classes/autos/priceSanity.ts). Un precio que no es un precio tampoco es una cohorte ni un
+  // comparable.
+  const enrichAll = (docs: readonly StoredCar[], extra: ReadonlyMap<string, CarDetail>): CarListing[] => {
+    const enriched = attachBodyType(attachFuelEconomy(attachReferences(docs.map(doc => enrich(doc, extra.get(doc.key) ?? doc.detail)), guide)));
+    const { kept, dropped } = dropImplausiblePrices(enriched);
+    if (dropped.length) {
+      console.log(`[autos] precios imposibles: ${dropped.length} avisos retirados ${JSON.stringify(priceDropSummary(dropped))}`);
+      for (const item of dropped.slice(0, 10))
+        console.log(`  ${item.key} US$${item.priceUsd}${item.median === null ? " (piso absoluto)" : ` vs mediana ${Math.round(item.median)} de su ${item.basis}`}`);
+    }
+    return kept;
+  };
   let { kept: listings, duplicates } = dedupeAcrossSources(enrichAll(stored, new Map()));
   const details = new Map(listings.filter(listing => listing.detail).map(listing => [listing.key, listing.detail!] as [string, CarDetail]));
   let analysis = analyzeCars(listings, { now, details, trimIndexes });

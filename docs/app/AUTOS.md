@@ -237,6 +237,57 @@ formas de particulares ("16km Por litro", "En ciudad 11km x lt / En Ruta 14km x 
   "menor consumo" en el directorio (índice `fuelEconomy.litersPer100Km`) y en oportunidades; como
   "menos kilómetros", ese orden deja afuera los avisos sin el dato.
 
+## Precios imposibles (2026-09-21)
+
+`classes/autos/priceSanity.ts`. Un Chevrolet Spark 2008 se publicó a $ 6.990 —US$ 169— desde
+Facebook Marketplace. En Facebook `listing_price.currency` siempre dice "UYU" aunque el precio esté
+en dólares, así que un aviso cuyo texto nombra pesos cerca del monto entra como pesos sin que nadie
+lo discuta.
+
+**Pero al medir, el problema resultó más ancho que Facebook y más ancho que la moneda.** De los 17
+avisos que hoy se retiran, 11 son de Mercado Libre con la moneda declarada en un campo estructurado
+—señas publicadas como precio, precios de atracción—, 3 son placeholders de Clasiautos (avisos a
+US$ 9 y US$ 17) y uno es un **alquiler** listado entre las ventas.
+
+**Lo que NO se hizo: un piso fijo en dólares.** Medido el 2026-09-21 sobre los 19.036 avisos
+publicados, debajo de US$ 1.000 hay 36 y la mayoría son PRECIOS REALES: autos que se venden para
+repuestos y lo dicen en su propia descripción ("vendo para repuestos, está completo", "vendo por
+partes", "está sin andar solo para repuestos"). Un piso global borraría esos avisos legítimos y,
+peor, dejaría pasar lo que de verdad está mal: una Toyota Hilux SRV 2015 "inmaculada" a $ 35.500
+(US$ 857) sobrevive a cualquier piso razonable. **El monto no distingue; lo que distingue es el
+auto.** Un Fiat Duna del 99 a US$ 483 es chatarra a precio de chatarra; una Hilux del 2015 al mismo
+precio es un error.
+
+Así que cada aviso se compara contra su propia cohorte —la lección de `classes/precios/` y de
+`rate_audit.ts`: la banda sale del grupo, no de un factor inventado— en cascada, de la cohorte más
+parecida a la más gruesa. La primera que existe manda:
+
+| cohorte | mínimo | se retira si | por qué ese umbral |
+|---|---|---|---|
+| modelo + año | 5 avisos | < 15 % de la mediana | autos iguales: un 15 % de sus pares ya es imposible |
+| marca + año | 20 avisos | < 8 % | Mercado Libre parte "Hilux" de "Hilux Pick-up" y fragmenta la cohorte del modelo |
+| año | 20 avisos | < 7 % | mezcla un Lada con una Hilux, así que sólo un umbral muy bajo prueba algo |
+| ninguna | — | < US$ 200 | debajo de eso no hay auto, ni para repuestos |
+
+**El umbral se AFLOJA cuanto más parecida es la cohorte**, que es al revés de lo que parece: cuanto
+más homogéneo el grupo, más dice una desviación chica. Y la cascada corta en la primera cohorte que
+existe: si el modelo+año aprueba el precio no se le pregunta a grupos más gruesos, porque un modelo
+barato dentro de una marca cara (un Starlet entre Land Cruisers) no es un error.
+
+**No se corrige el precio, se retira el aviso entero.** No sabemos cuál es: que el vendedor quiso
+decir dólares, que publicó la seña o que se le fue un dígito son tres historias distintas y ninguna
+se puede adivinar desde acá. El descarte corre en `sync_autos.ts` **antes del análisis**, así que el
+mismo veredicto vale para el catálogo, las oportunidades, el riesgo y el informe: un precio que no
+es un precio tampoco es una cohorte ni un comparable.
+
+Medido con el módulo real contra producción: **17 de 19.036** (5 por modelo+año, 7 por marca+año,
+5 por año), y ninguno de los que se venden para repuestos. El job lo registra por motivo.
+
+**Lo que este guardarraíl NO arregla**, visto en los mismos datos y pendiente: hay repuestos
+listados en la categoría de autos ("Techo De Chevrolet S10 Doble Cabina Nuevo Original", "Butacas
+Fiat 147", "Motor Echo"), que tienen precio coherente con un repuesto y pasan la banda. Eso es un
+problema de identificación, no de precio.
+
 ## Carrocería, puertas y color (2026-09-20)
 
 El filtro por carrocería (sedán, SUV, pick-up…) y los filtros avanzados del directorio.
