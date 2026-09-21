@@ -11,7 +11,7 @@ import type { RetailListing } from "../retail/types";
 import type { EquiparCategory, EquiparItem, EquiparOffer, EquiparProduct } from "./types";
 
 /** Words that are never a brand, however confidently a catalogue prints them in that field. */
-const NOT_A_BRAND = /^(generico|sin marca|otras marcas|varios|importado|nacional|oferta|n\/a|-)$/;
+export const NOT_A_BRAND = /^(generico|sin marca|otras marcas|varios|importado|nacional|oferta|n\/a|-)$/;
 
 const toUyu = (price: number, currency: "UYU" | "USD", usdUyu: number): number =>
   currency === "USD" ? Math.round(price * usdUyu) : Math.round(price);
@@ -20,7 +20,7 @@ const toUyu = (price: number, currency: "UYU" | "USD", usdUyu: number): number =
  * Marketplace is used unless the seller says otherwise; a storefront is new unless it says
  * otherwise. Refurbished counts as used: it is priced like the used market, not like retail.
  */
-const conditionOf = (listing: RetailListing): "new" | "used" =>
+export const conditionOf = (listing: RetailListing): "new" | "used" =>
   listing.source === "facebook"
     ? listing.condition === "new"
       ? "new"
@@ -29,7 +29,7 @@ const conditionOf = (listing: RetailListing): "new" | "used" =>
       ? "used"
       : "new";
 
-function toOffer(listing: RetailListing, usdUyu: number): EquiparOffer {
+export function toOffer(listing: RetailListing, usdUyu: number): EquiparOffer {
   return {
     seller: listing.sellerName,
     title: listing.title,
