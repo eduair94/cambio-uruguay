@@ -71,6 +71,39 @@ grande que hay. La foto conserva su propio enlace por encima.
 - El contador del botón de filtros cuenta la consulta aplicada, no el borrador: el número
   describe lo que hay en pantalla.
 
+## Espaciado
+
+Toda medida es múltiplo de 4 (la escala de Vuetify) y, salvo motivo, uno de los pasos
+nombrados de DESIGN.md: 4 / 8 / 16 / 24 / 40. Ver las reglas *The Four-Pixel Grid*,
+*The Neighbour Owns The Gap* y *The Columns Share A First Line*.
+
+El ritmo vertical de la columna de resultados, medido y verificado en las dos variantes
+(con filtros activos y sin ellos), es el mismo en mobile y en desktop:
+
+| de | a | px |
+|---|---|---|
+| barra fija de filtros (sólo mobile) | lo que siga | 12 |
+| chips de filtros activos | encabezado del listado | 12 |
+| encabezado del listado | grilla de fichas | 16 |
+| ficha | ficha | 12 mobile · 16 desktop |
+| columna de filtros | columna de resultados | 24 |
+
+Quien pone el aire debajo de la barra es **la barra**, no los chips: los chips son
+condicionales y cuando eran ellos los dueños, el encabezado quedaba pegado al borde de la
+barra en cuanto no había ningún filtro puesto.
+
+Los chips **no llevan margen superior en desktop** (≥960 px) a propósito: arrancan en la
+misma línea que el primer campo de la columna de filtros. Medido: los dos a 471 px. En
+mobile, donde no hay con qué alinear, el aire lo pone la barra.
+
+Adentro de la ficha: 12 px de padding a los cuatro lados y 4 px entre líneas. La palabra
+"Consumo" está oculta a la vista en todos los anchos (el ícono de surtidor ya lo dice) y
+sigue en el árbol de accesibilidad; restituirla partía la línea en dos renglones.
+
+El área táctil de la cruz de un chip son 44×44 exactos, centrados sobre el ícono con
+`translate(-50%, -50%)` — no un `inset` negativo calculado contra el tamaño del glifo,
+que es de dónde salía un 13 px que no explicaba nada.
+
 ## Límites
 
 - Sacar un filtro vuelve a la página 1 y conserva el orden elegido: el orden se elige al lado de

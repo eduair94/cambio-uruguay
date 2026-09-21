@@ -126,7 +126,7 @@ const place = computed(() =>
   border-radius: 12px;
   overflow: hidden;
   background: rgb(var(--v-theme-surface));
-  padding: 10px;
+  padding: 12px;
 }
 .car-card__photo {
   position: relative;
@@ -154,21 +154,21 @@ const place = computed(() =>
 .car-card__body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
   padding: 0;
 }
 .car-card__badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 2px;
+  gap: 4px;
+  margin-bottom: 4px;
 }
 .car-badge {
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: 999px;
-  padding: 2px 8px;
+  padding: 4px 8px;
   border: 1px solid currentColor;
 }
 .car-badge--deal {
@@ -210,7 +210,7 @@ const place = computed(() =>
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.25;
-  margin: 2px 0 0;
+  margin: 4px 0 0;
 }
 .car-card__kml {
   display: flex;
@@ -289,7 +289,7 @@ const place = computed(() =>
     border-radius: 0;
   }
   .car-card__body {
-    padding: 12px 14px 14px;
+    padding: 12px;
     gap: 4px;
   }
   .car-card__title {

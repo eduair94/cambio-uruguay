@@ -41,8 +41,10 @@ const emit = defineEmits<{ remove: [keys: CarFilterChip['keys']]; clear: [] }>()
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  margin: 10px 0 4px;
+  gap: 8px;
+  /* Arranca a la misma altura que el primer campo de la columna de filtros (sin margen
+     arriba) y deja un escalon de 12 px antes del encabezado del listado. */
+  margin: 0 0 12px;
   min-width: 0;
 }
 .car-active :deep(.v-chip) {
@@ -53,10 +55,16 @@ const emit = defineEmits<{ remove: [keys: CarFilterChip['keys']]; clear: [] }>()
 .car-active :deep(.v-chip__close) {
   position: relative;
 }
+/* 44 x 44 exactos y centrados sobre el icono, sin depender de cuanto mida el icono:
+   con `inset` negativo el numero salia de restarle el tamano del glifo a 44 y quedaba
+   un 13 que no es multiplo de 4 ni explica nada. */
 .car-active :deep(.v-chip__close)::after {
   content: '';
   position: absolute;
-  /* El icono mide 18 px; 13 px por lado lo llevan a los 44 del objetivo tactil. */
-  inset: -13px;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
 }
 </style>

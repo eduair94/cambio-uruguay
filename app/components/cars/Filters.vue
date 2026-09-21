@@ -397,7 +397,7 @@ function clear() {
   min-height: 48px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding-block: 12px;
   cursor: pointer;
   font-weight: 700;

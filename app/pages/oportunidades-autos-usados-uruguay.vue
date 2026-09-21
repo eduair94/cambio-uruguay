@@ -103,10 +103,7 @@
           La comparación se está calculando. Volvé en unos minutos.
         </VAlert>
         <template v-else-if="data">
-          <div
-            class="d-flex flex-wrap align-center justify-space-between ga-3 mb-2"
-            :class="smAndDown ? 'mt-3' : ''"
-          >
+          <div class="d-flex flex-wrap align-center justify-space-between ga-3 mb-2">
             <h2 id="deal-results" class="text-h6 mb-0 cars-anchor">
               {{ data.total.toLocaleString('es-UY') }}
               {{ data.total === 1 ? 'oportunidad' : 'oportunidades' }}

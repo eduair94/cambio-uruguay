@@ -69,9 +69,14 @@ const sortLabel = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 0;
+  padding: 8px 0;
   background: rgb(var(--v-theme-background));
   border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  /* La barra se hace cargo del aire que va DEBAJO suyo. Asi lo que la siga —los chips de
+     filtros activos o directamente el encabezado del listado— arranca siempre a la misma
+     distancia, en vez de que cada pagina se lo ponga con una clase distinta (habia `mt-2`
+     en una y `mt-3` en las otras dos) y los chips quedaran pegados al borde. */
+  margin-bottom: 12px;
 }
 .car-toolbar :deep(.v-btn) {
   min-height: 44px;
@@ -88,13 +93,13 @@ const sortLabel = computed(() => {
 }
 .car-toolbar__count {
   /* El espacio del template lo come el compilador y quedaba "Filtros(1)". */
-  margin-left: 5px;
+  margin-left: 4px;
 }
 .car-toolbar__sort {
   /* Empuja el orden contra el borde derecho; los filtros quedan bajo el pulgar. */
   margin-left: auto;
   min-width: 0;
-  padding-inline: 10px;
+  padding-inline: 8px;
   letter-spacing: 0;
   font-size: 0.875rem;
 }

@@ -414,6 +414,32 @@ declares each gap (see `pages/recibir-regalos-del-exterior-uruguay.vue`). Never 
 screen and assume the CSS asked for it — `npm run audit:margins` reports every element still spaced
 by the browser rather than by us.
 
+**The Four-Pixel Grid Rule.** Vuetify's own spacing scale is multiples of four — `pa-1` is 4px,
+`pa-2` is 8px, `ga-3` is 12px — so every gap, padding and margin we author by hand must land on that
+same grid, and preferably on the named steps (4/8/16/24/40). Anything in between reads as a mistake
+next to a Vuetify control that is exactly on it. The values that slip in are always the ones typed to
+make one thing look right in isolation: a card body shipped `12px 14px 14px`, a chip row `gap: 6px`
+with `margin: 10px 0 4px`, a toolbar `padding: 6px 0` and a count badge `margin-left: 5px`. None is
+visible on its own; together they are why a dense grid looks hand-placed. The exceptions are values
+that are not spacing at all — a 44px touch target, a 1px border, an optical nudge on an icon — and
+those state their arithmetic in a comment instead of hiding a 13 in an `inset`.
+
+**The Neighbour Owns The Gap Rule.** Exactly one element declares the space between two siblings,
+and it is the one that is always present. A conditional element cannot own it: the filter chips
+render only when a filter is set, so when they owned their top margin the results heading sat 12px
+below the sticky bar with chips and flush against its border without them — and each of the three
+autos pages had patched around it with a different utility class (`mt-2` on one, `mt-3` on the other
+two). Give the permanent element — here the sticky toolbar — a `margin-bottom`, and everything that
+can follow it inherits the same rhythm for free. Two neighbours that both declare the gap are worse
+than neither: the larger silently wins and the smaller becomes a lie in the stylesheet.
+
+**The Columns Share A First Line Rule.** In a two-column layout the reader's eye sets a horizontal
+baseline from whatever ink appears first on each side, so the filter rail's first field and the
+results column's first element must share a `top`. They drift apart for reasons that look unrelated
+to alignment: a chip row's own `margin-top` pushed the right column 10px down while the left column
+started at the container edge. Measure both columns' first child, not the grid cells — the cells
+were already aligned in the case that shipped.
+
 ## Elevation & Depth
 
 Depth is a hybrid of tonal layering and restrained Material 2 elevation. Most surfaces separate
@@ -544,3 +570,5 @@ the closing call to action rather than floating over the content.
 - **Don't** hide a ranking's sample size or present AI prose as the underlying measurement.
 - **Don't** use `--v-theme-primary` for small blue text, or a raw sentiment hue for any text.
 - **Don't** invent a sixth radius step or a fifth micro type size for one surface.
+- **Don't** author a spacing value off the 4px grid (no 6px, 10px, 14px), and don't let two
+  neighbouring elements each declare the gap between them.

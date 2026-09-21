@@ -82,10 +82,7 @@
           @remove="keys => update(carsQueryWithout(query, keys))"
           @clear="update(normalizeCarsQuery({ sort: query.sort }))"
         />
-        <div
-          class="d-flex flex-wrap align-center justify-space-between ga-3 mb-4"
-          :class="smAndDown ? 'mt-2' : ''"
-        >
+        <div class="d-flex flex-wrap align-center justify-space-between ga-3 mb-4">
           <h2 id="cars-results" class="text-h6 mb-0 cars-anchor">
             {{ data ? `${data.total.toLocaleString('es-UY')} avisos` : 'Avisos' }}
           </h2>
@@ -317,7 +314,7 @@ useHead({
   /* En mobile la ficha es una fila a todo el ancho; el minmax recien parte en columnas
      cuando la tarjeta con foto vuelve a tener sentido (ver components/cars/ListingCard.vue). */
   grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 @media (min-width: 600px) {
   .cars-grid {

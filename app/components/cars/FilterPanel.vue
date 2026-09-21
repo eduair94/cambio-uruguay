@@ -191,9 +191,10 @@ onBeforeUnmount(() => {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    /* El foco de un campo dibuja su anillo 2 px afuera: sin este aire, el scroll lo corta. */
-    padding: 2px;
-    margin: -2px;
+    /* El foco de un campo dibuja su anillo afuera del borde: sin este aire el scroll lo
+       corta. Se compensa con el margen negativo, asi que no mueve nada de lugar. */
+    padding: 4px;
+    margin: -4px;
   }
 }
 .car-panel--dialog {
