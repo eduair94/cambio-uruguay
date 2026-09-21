@@ -54,7 +54,9 @@
         <span v-if="car.fuelEconomy?.basis !== 'advert'" class="car-card__kml-note">estimado</span>
       </p>
       <p v-if="place" class="car-card__place">{{ place }}</p>
-      <p class="car-card__source">{{ car.sourceName }}</p>
+      <p class="car-card__source">
+        {{ car.sourceName }}<template v-if="car.hasContact"> · con teléfono</template>
+      </p>
     </div>
   </article>
 </template>

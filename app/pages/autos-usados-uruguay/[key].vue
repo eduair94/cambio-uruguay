@@ -190,6 +190,7 @@
               Revisar deudas antes de señar
             </VBtn>
           </div>
+          <CarsSellerPhone :car="car" />
         </VCol>
       </VRow>
 

@@ -120,6 +120,14 @@
               publicidad) y de nuestro interés legítimo en operar el sitio. Conservamos los datos
               solo el tiempo necesario para los fines descritos o el que exija la ley.
             </p>
+            <p class="legal-prose text-body-1 text-grey-lighten-1 mt-3">
+              En el directorio de autos usados mostramos, junto a un aviso y sólo a quien lo pide
+              con un clic, el teléfono que el vendedor escribió en el texto público de ese mismo
+              aviso o el número comercial que una automotora publica en su propia web, con su
+              procedencia y la fecha en que lo leímos. No lo tomamos de lo que un portal reserva a
+              usuarios con cuenta, no lo dejamos disponible para buscadores y lo borramos cuando el
+              aviso deja de estar publicado o a los 21 días de haberlo leído.
+            </p>
           </section>
 
           <section class="mb-8">
@@ -133,6 +141,11 @@
                 <a class="legal-link" href="mailto:admin@cambio-uruguay.com"
                   >admin@cambio-uruguay.com</a
                 >.
+              </li>
+              <li>
+                Si junto a un aviso de auto aparece tu número, podés sacarlo con «Sacalo de este
+                sitio» en ese mismo aviso o escribiéndonos: no se vuelve a mostrar en ningún aviso
+                del sitio.
               </li>
             </ul>
           </section>
