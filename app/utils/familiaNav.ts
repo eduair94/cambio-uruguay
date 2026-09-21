@@ -16,6 +16,15 @@
  *   familia: en la barra de celulares sería una hermana que también es de sillas, tiendas…
  * - Las rutas fuera del sitemap (el tablero de `/estado`) no van en una barra de lectura.
  * - Una familia de una sola página no dibuja barra.
+ *
+ * Además de las hermanas, una familia puede llevar GRUPOS (`GRUPOS`, más abajo): enlaces de la
+ * sección que no son páginas del directorio — las guías de antes de alquilar, la venta, las
+ * mudanzas. Van adentro de la misma barra porque el directorio de alquileres llegó a tener TRES
+ * bloques de enlaces seguidos arriba del título (esta barra, "Otras búsquedas de vivienda" y "Antes
+ * de alquilar"), con tres de los siete botones repitiendo hermanas de la barra. El usuario lo
+ * describió como "extremadamente confuso" (2026-09-21): la sección es una sola, y la barra también.
+ * Un grupo NO da pertenencia: la barra no aparece en la página de una guía, y así `/venta-viviendas`
+ * puede seguir teniendo su propia familia.
  */
 import { navEntryForPath } from './directorioAnalisis'
 import { DIRECTORIOS, type DirectorioEntry } from './directorios'
@@ -33,9 +42,54 @@ export interface FamiliaNavItem {
   readonly current: boolean
 }
 
+export interface FamiliaNavGrupo {
+  /** Título del grupo (clave global de i18n). */
+  readonly labelKey: string
+  readonly items: readonly FamiliaNavItem[]
+}
+
 export interface FamiliaNav {
   readonly directorio: string
   readonly items: readonly FamiliaNavItem[]
+  /** Enlaces de la sección que no son del directorio; nunca repiten una ruta de `items`. */
+  readonly grupos: readonly FamiliaNavGrupo[]
+}
+
+interface GrupoDef {
+  readonly labelKey: string
+  /** `labelKey` propio sólo cuando la etiqueta del menú no sirve acá. */
+  readonly links: readonly { readonly to: string; readonly labelKey?: string }[]
+}
+
+/**
+ * Los grupos de cada familia, por `id` del directorio. Se muestran en TODAS las páginas de la
+ * familia, igual que las hermanas: una barra de sección que cambia de una página a otra deja de ser
+ * la barra de la sección.
+ *
+ * Las guías de alquiler llevan la PREGUNTA del lector y no el título de la guía: el que está mirando
+ * avisos no busca un artículo, busca saber qué garantía le van a pedir. Estaban arriba del
+ * directorio desde el 2026-09-20 porque al pie aparecían a y=13.000 de una página de 22.717 px.
+ */
+const GRUPOS: Readonly<Record<string, readonly GrupoDef[]>> = {
+  alquileres: [
+    {
+      labelKey: 'familiaNav.grupos.vivienda',
+      links: [
+        { to: '/venta-viviendas-uruguay' },
+        { to: '/inmobiliarias-uruguay' },
+        { to: '/alquiler-ideal-uruguay' },
+        { to: '/fletes-mudanzas-uruguay' },
+      ],
+    },
+    {
+      labelKey: 'familiaNav.grupos.antesDeAlquilar',
+      links: [
+        { to: '/alquilar-en-uruguay', labelKey: 'familiaNav.preguntas.garantia' },
+        { to: '/alquilar-sin-recibo-de-sueldo', labelKey: 'familiaNav.preguntas.sinRecibo' },
+        { to: '/alquilar-estando-en-clearing', labelKey: 'familiaNav.preguntas.clearing' },
+      ],
+    },
+  ],
 }
 
 /** Análisis que salen de dos o más directorios: no pertenecen a ninguna familia. */
@@ -72,6 +126,30 @@ export function familiaNavParaRuta(path: string): FamiliaNav | null {
   const routes = familiaDe(entry)
   if (routes.length < 2) return null
   const tambienLabel = new Map((entry.tambien ?? []).map(link => [link.to, link.label]))
+  // Una ruta aparece UNA vez en toda la barra: la hermana gana sobre el grupo, y el primer grupo
+  // sobre los siguientes. Repetirla fue exactamente lo que volvió confusa la cabecera de alquileres.
+  const seen = new Set(routes)
+  const grupos = (GRUPOS[entry.id] ?? [])
+    .map(grupo => ({
+      labelKey: grupo.labelKey,
+      items: grupo.links
+        .filter(link => {
+          if (INTERNAL.has(link.to) || seen.has(link.to)) return false
+          seen.add(link.to)
+          return true
+        })
+        .map(link => {
+          const nav = navEntryForPath(link.to)
+          return {
+            to: link.to,
+            labelKey: link.labelKey ?? nav?.labelKey ?? null,
+            label: link.to,
+            icon: nav?.icon ?? 'mdi-file-document-outline',
+            current: link.to === route,
+          }
+        }),
+    }))
+    .filter(grupo => grupo.items.length > 0)
   return {
     directorio: entry.id,
     items: routes.map(to => {
@@ -84,5 +162,11 @@ export function familiaNavParaRuta(path: string): FamiliaNav | null {
         current: to === route,
       }
     }),
+    grupos,
   }
+}
+
+/** Cuántos enlaces tiene la barra entera: las hermanas más los grupos. */
+export function familiaNavTotal(nav: FamiliaNav): number {
+  return nav.items.length + nav.grupos.reduce((n, grupo) => n + grupo.items.length, 0)
 }

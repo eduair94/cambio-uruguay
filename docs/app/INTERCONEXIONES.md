@@ -37,6 +37,19 @@ al navegar (el layout no se desmonta) y con Esc. Se descartó un cajón lateral:
 detrás de un gesto más y compite con el menú del sitio, que ya es un cajón. Los clics del menú se
 miden aparte (`placement: family_nav_menu`) de los de la fila (`family_nav`).
 
+**Grupos (2026-09-21).** Una familia puede llevar además grupos de enlaces que no son páginas del
+directorio (`GRUPOS` en `utils/familiaNav.ts`). Nació en alquileres: arriba del título había tres
+bloques seguidos — esta barra, "Otras búsquedas de vivienda" (siete botones, tres de ellos hermanas
+que la barra ya tenía) y "Antes de alquilar" (las tres guías) — y el usuario lo describió como
+"extremadamente confuso". Ahora la página no tiene lista propia y la barra lleva dos grupos: otras
+búsquedas de vivienda (venta, inmobiliarias, planificar, mudanzas) y antes de alquilar (las guías,
+etiquetadas con la pregunta del lector). En pantalla ancha van en texto debajo de los chips, un
+escalón por debajo de las hermanas; en el celular, como secciones con título dentro del mismo menú
+("En esta sección · 13 páginas"). Reglas: una ruta aparece una sola vez en toda la barra (la
+hermana gana), los grupos son iguales en todas las páginas de la familia, y un grupo **no da
+pertenencia** — la guía no dibuja la barra de alquileres y la venta de viviendas conserva la suya.
+Clics: `family_nav_group` y `family_nav_menu_group`.
+
 Para medirlo de nuevo: posición vertical del primer enlace a cada hermana, en las páginas de la
 familia, a 1280 px; "arriba" es antes de ~1.400 px.
 

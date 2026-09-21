@@ -13,56 +13,11 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
       <header class="rentals-head">
         <h1>{{ t('title') }}</h1>
         <p class="rentals-lead">{{ t('subtitle') }}</p>
-        <div
-          class="rentals-related-disclosure"
-          :class="{ 'rentals-related-disclosure--expanded': relatedSearchesOpen }"
-          data-testid="rental-related-searches"
-        >
-          <VBtn
-            type="button"
-            class="rentals-related-toggle text-none"
-            variant="outlined"
-            color="link"
-            :append-icon="relatedSearchesOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-            :aria-expanded="relatedSearchesOpen"
-            aria-controls="rental-related-links"
-            @click="relatedSearchesOpen = !relatedSearchesOpen"
-          >
-            {{ t('relatedSearches') }}
-          </VBtn>
-          <nav id="rental-related-links" class="rentals-related" :aria-label="t('relatedSearches')">
-            <VBtn
-              v-for="search in relatedSearches"
-              :key="search.path"
-              :to="localePath(search.path)"
-              variant="outlined"
-              color="link"
-              class="rentals-related-action text-none"
-            >
-              <VIcon :icon="search.icon" size="20" aria-hidden="true" />
-              <span>{{ search.label }}</span>
-            </VBtn>
-          </nav>
-        </div>
         <!--
-          Las tres preguntas que frenan un alquiler, arriba y no al pie.
-          Las guías ya estaban enlazadas desde esta página, pero medido en producción el 2026-09-20
-          a 390 px aparecían recién a y=13.000 de una página de 22.717: quince pantallas de scroll.
-          El lector que llega acá se queda 349 s de media leyendo avisos y nunca ve la respuesta a
-          "¿qué garantía me van a pedir?". La etiqueta es la PREGUNTA y no el título de la guía,
-          porque el que está mirando avisos no está buscando un artículo.
+          Sin enlaces propios acá: las otras búsquedas de vivienda y las guías de antes de alquilar
+          viven en la barra "En esta sección" del layout (utils/familiaNav.ts). Llegó a haber tres
+          bloques seguidos arriba del título, con tres enlaces repetidos entre ellos.
         -->
-        <nav class="rentals-guides" :aria-label="t('guidesLead')">
-          <span class="rentals-guides__lead">{{ t('guidesLead') }}</span>
-          <NuxtLink
-            v-for="link in headerGuides"
-            :key="link.to"
-            :to="localePath(link.to)"
-            class="rentals-guides__link"
-          >
-            {{ link.label }}
-          </NuxtLink>
-        </nav>
         <div class="rentals-provenance">
           <a href="#rental-coverage" :title="activeSourceLabels">{{ t('coverage') }}</a>
           <span v-if="meta?.generatedAt" class="rentals-provenance__sep" aria-hidden="true">·</span>
@@ -800,36 +755,6 @@ const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
 const mobileFiltersOpen = ref(false)
-const relatedSearchesOpen = ref(false)
-const relatedSearches = computed(() => [
-  {
-    path: '/fletes-mudanzas-uruguay',
-    icon: 'mdi-truck-outline',
-    label: globalT('nav.mudanzas'),
-  },
-  { path: '/analisis-alquileres-uruguay', icon: 'mdi-chart-line', label: t('analysisShort') },
-  {
-    path: '/barrios-alquileres-uruguay',
-    icon: 'mdi-map-search-outline',
-    label: globalT('nav.rentalZones'),
-  },
-  {
-    path: '/oportunidades-inmobiliarias-uruguay',
-    icon: 'mdi-tag-outline',
-    label: t('opportunitiesShort'),
-  },
-  { path: '/venta-viviendas-uruguay', icon: 'mdi-home-outline', label: t('salesShort') },
-  {
-    path: '/inmobiliarias-uruguay',
-    icon: 'mdi-office-building-outline',
-    label: t('agenciesShort'),
-  },
-  {
-    path: '/alquiler-ideal-uruguay',
-    icon: 'mdi-home-search-outline',
-    label: globalT('nav.rentalFit'),
-  },
-])
 let filterActivator: HTMLElement | null = null
 let filterReturnScroll = 0
 let filtersApplied = false
@@ -1560,22 +1485,6 @@ const relatedLinks = [
   { to: '/alquilar-sin-recibo-de-sueldo', label: 'independent' },
   { to: '/alquilar-estando-en-clearing', label: 'clearing' },
 ]
-/**
- * Las mismas tres guías del pie, pero arriba y tituladas con la pregunta en vez del nombre de la
- * página. Mismo destino, otra intención: abajo el lector ya terminó de mirar avisos; acá todavía
- * está eligiendo, y "¿qué garantía te piden?" es la pregunta que tiene en la cabeza mientras filtra.
- *
- * Las claves van LITERALES y no armadas en un `.map`: `tests/unit/rentalMessagesKeys.test.ts` sólo
- * ve las que están escritas enteras dentro de la llamada, y una clave que ese test no ve es una
- * etiqueta que vue-i18n imprime cruda en las tres traducciones sin que falle nada (ya pasó, y
- * estuvo nueve días en producción). Por lo mismo, no escribir un ejemplo de llamada en este
- * comentario: el detector no distingue comentario de código y contaría la clave del ejemplo.
- */
-const headerGuides = computed(() => [
-  { to: '/alquilar-en-uruguay', label: t('guideQ') },
-  { to: '/alquilar-sin-recibo-de-sueldo', label: t('independentQ') },
-  { to: '/alquilar-estando-en-clearing', label: t('clearingQ') },
-])
 const catalogBaseUrl = computed(
   () => `https://cambio-uruguay.com${localePath('/alquileres-uruguay')}`
 )
@@ -1657,42 +1566,6 @@ useSchemaOrg([
 </script>
 
 <style scoped>
-.rentals-related {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-.rentals-related .rentals-related-action {
-  display: flex;
-  justify-content: flex-start;
-  min-width: 0;
-  min-height: 44px;
-  height: auto;
-  padding: 8px 12px;
-  font-size: 0.875rem;
-  line-height: 1.4;
-  letter-spacing: 0;
-  text-align: left;
-  white-space: normal;
-}
-.rentals-related-action :deep(.v-btn__content) {
-  min-width: 0;
-  justify-content: flex-start;
-  gap: 8px;
-  white-space: normal;
-}
-.rentals-related-action .v-icon {
-  flex-shrink: 0;
-}
-.rentals-related-action span {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-.rentals-related-action:focus-visible {
-  outline: 2px solid rgb(var(--v-theme-link));
-  outline-offset: 2px;
-}
 .rental-card__overview {
   display: flex;
   flex-direction: column;
@@ -1801,31 +1674,6 @@ useSchemaOrg([
 .rentals-provenance__sep {
   padding-inline: 8px;
   color: rgba(var(--v-theme-on-surface), 0.55);
-}
-/* Las tres preguntas que frenan un alquiler. Texto y no botones a propósito: arriba ya hay una
-   fila de botones (las otras búsquedas) y dos filas seguidas compiten entre sí; además una fila
-   de texto que envuelve mide ~40 px en el celular contra los ~100 px de tres botones apilados, y
-   lo que el lector vino a ver son los avisos. */
-.rentals-guides {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 14px;
-  margin-top: 12px;
-  font-size: 0.85rem;
-  line-height: 1.5;
-}
-.rentals-guides__lead {
-  color: rgba(var(--v-theme-on-surface), 0.76);
-}
-.rentals-guides__link {
-  color: rgb(var(--v-theme-link));
-  text-underline-offset: 3px;
-  /* 44 px de área táctil. Medido en producción con 6px de padding daba 32: 0,85rem × 1,5 son
-     ~20 px de línea, así que hacen falta 12 arriba y 12 abajo, no 6. El comentario decía 44 y el
-     código daba 32 — el número hay que medirlo en el navegador, no deducirlo. */
-  padding-block: 12px;
-  display: inline-block;
 }
 .rentals-provenance a,
 .rentals-external a,
@@ -2378,55 +2226,12 @@ button.rental-card__media {
   }
 }
 
-.rentals-related-toggle {
-  display: none;
-}
-.rentals-related-toggle:focus-visible {
-  outline: 2px solid rgb(var(--v-theme-link));
-  outline-offset: 2px;
-}
 @media (max-width: 959px) {
   .rentals-head {
     margin: 8px 0 24px;
   }
-  .rentals-related-disclosure {
-    margin-top: 16px;
-  }
-  .rentals-related-toggle {
-    display: inline-flex;
-    justify-content: space-between;
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    min-height: 48px;
-    height: auto;
-    padding: 12px 16px;
-    border-color: rgba(var(--v-border-color), var(--v-border-opacity));
-    font-size: 0.875rem;
-    line-height: 1.5;
-    letter-spacing: 0;
-    text-align: left;
-  }
-  .rentals-related-toggle :deep(.v-btn__content) {
-    flex: 1;
-    justify-content: flex-start;
-    white-space: normal;
-  }
-  /* CSS closes the mobile links in the first HTML, before viewport hydration. */
-  .rentals-related-disclosure:not(.rentals-related-disclosure--expanded) .rentals-related {
-    display: none;
-  }
   .rentals-breadcrumbs {
     display: none;
-  }
-  .rentals-related {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: 1fr;
-    margin-top: 8px;
-  }
-  .rentals-related .rentals-related-action {
-    min-height: 56px;
   }
   .rentals-provenance {
     margin-top: 8px;
@@ -2555,15 +2360,6 @@ button.rental-card__media {
   }
   /* En columna el punto separaría dos renglones, no dos textos. */
   .rentals-provenance__sep {
-    display: none;
-  }
-}
-@media (max-width: 359px) {
-  /* Give full words room in two columns on the narrowest phones. */
-  .rentals-related .rentals-related-action {
-    padding-inline: 10px;
-  }
-  .rentals-related-action .v-icon {
     display: none;
   }
 }

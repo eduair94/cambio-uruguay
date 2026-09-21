@@ -23,6 +23,29 @@
           </NuxtLink>
         </li>
       </ul>
+      <!-- Los grupos, debajo y en texto: son de la sección, no hermanas del directorio. -->
+      <div v-if="familia.grupos.length" class="familia-nav__grupos">
+        <div
+          v-for="(grupo, index) in familia.grupos"
+          :key="grupo.labelKey"
+          class="familia-nav__grupo"
+        >
+          <span :id="`familia-grupo-${index}`" class="familia-nav__grupo-titulo">
+            {{ t(grupo.labelKey) }}
+          </span>
+          <ul class="familia-nav__grupo-list" :aria-labelledby="`familia-grupo-${index}`">
+            <li v-for="item in grupo.items" :key="item.to">
+              <NuxtLink
+                :to="localePath(item.to)"
+                class="familia-nav__link"
+                @click="trackClick(item.to, 'family_nav_group')"
+              >
+                {{ etiqueta(item) }}
+              </NuxtLink>
+            </li>
+          </ul>
+        </div>
+      </div>
 
       <!-- Celular: la página actual y un menú que se despliega hacia abajo. -->
       <details ref="menu" class="familia-nav__menu" @keydown.esc="cerrar(true)">
@@ -32,7 +55,7 @@
           </VIcon>
           <span class="familia-nav__summary-text">
             <span class="familia-nav__overline">
-              {{ t('familiaNav.resumen', { n: familia.items.length }) }}
+              {{ t('familiaNav.resumen', { n: familiaNavTotal(familia) }) }}
             </span>
             <span class="familia-nav__summary-current">{{ etiqueta(actual) }}</span>
           </span>
@@ -63,6 +86,23 @@
             </NuxtLink>
           </li>
         </ul>
+        <template v-for="(grupo, index) in familia.grupos" :key="grupo.labelKey">
+          <p :id="`familia-grupo-menu-${index}`" class="familia-nav__menu-titulo">
+            {{ t(grupo.labelKey) }}
+          </p>
+          <ul class="familia-nav__menu-list" :aria-labelledby="`familia-grupo-menu-${index}`">
+            <li v-for="item in grupo.items" :key="item.to">
+              <NuxtLink
+                :to="localePath(item.to)"
+                class="familia-nav__row"
+                @click="trackClick(item.to, 'family_nav_menu_group')"
+              >
+                <VIcon size="20" aria-hidden="true">{{ item.icon }}</VIcon>
+                <span class="familia-nav__row-label">{{ etiqueta(item) }}</span>
+              </NuxtLink>
+            </li>
+          </ul>
+        </template>
       </details>
     </nav>
   </div>
@@ -82,7 +122,7 @@
 // están en el HTML aunque esté cerrado.
 //
 // Server-rendered, sin <ClientOnly>: es navegación, tiene que estar en el HTML.
-import { familiaNavParaRuta, type FamiliaNavItem } from '~/utils/familiaNav'
+import { familiaNavParaRuta, familiaNavTotal, type FamiliaNavItem } from '~/utils/familiaNav'
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -168,6 +208,52 @@ function trackClick(destination: string, placement: string) {
   color: rgb(var(--v-theme-on-surface));
 }
 
+/* Los grupos: una línea de texto por grupo, un escalón por debajo de las hermanas. Como chips eran
+   trece píldoras iguales y no se distinguía qué era el directorio y qué una guía. */
+/* Dos columnas compartidas por todos los grupos: los títulos a la izquierda y los enlaces de cada
+   grupo arrancando en la misma x, así se leen como una lista y no como dos frases sueltas. */
+.familia-nav__grupos {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 0 16px;
+  margin-top: 8px;
+}
+.familia-nav__grupo {
+  display: contents;
+}
+.familia-nav__grupo-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.familia-nav__grupo-titulo {
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.familia-nav__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: rgb(var(--v-theme-link));
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.familia-nav__link:hover {
+  text-decoration-thickness: 2px;
+}
+.familia-nav__link:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 2px;
+}
+
 /* El menú del celular. */
 .familia-nav__menu {
   display: none;
@@ -228,6 +314,18 @@ function trackClick(destination: string, placement: string) {
 .familia-nav__menu-list > li + li {
   border-top: 1px solid rgba(var(--v-border-color), 0.1);
 }
+.familia-nav__menu-titulo {
+  margin: 0;
+  padding: 14px 14px 6px;
+  border-top: 1px solid rgba(var(--v-border-color), 0.15);
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.familia-nav__menu-titulo + .familia-nav__menu-list {
+  border-top: 0;
+}
 .familia-nav__row {
   display: flex;
   align-items: center;
@@ -266,7 +364,8 @@ function trackClick(destination: string, placement: string) {
     padding-bottom: 0;
     border-bottom: 0;
   }
-  .familia-nav__list {
+  .familia-nav__list,
+  .familia-nav__grupos {
     display: none;
   }
   .familia-nav__menu {

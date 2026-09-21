@@ -1,8 +1,16 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import en from '../../i18n/locales/json/en.json'
+import es from '../../i18n/locales/json/es.json'
+import pt from '../../i18n/locales/json/pt.json'
 import { DIRECTORIOS } from '../../utils/directorios'
-import { familiaDe, familiaNavParaRuta } from '../../utils/familiaNav'
+import {
+  familiaDe,
+  familiaNavParaRuta,
+  familiaNavTotal,
+  type FamiliaNav,
+} from '../../utils/familiaNav'
 
 const rutas = (path: string) => familiaNavParaRuta(path)?.items.map(item => item.to) ?? []
 
@@ -68,7 +76,8 @@ describe('la barra de la familia', () => {
     for (const entry of DIRECTORIOS) {
       const family = familiaDe(entry)
       if (family.length < 2) continue
-      for (const item of familiaNavParaRuta(entry.to)?.items ?? [])
+      const nav = familiaNavParaRuta(entry.to)!
+      for (const item of [...nav.items, ...nav.grupos.flatMap(grupo => grupo.items)])
         expect(item.labelKey, `${entry.id} → ${item.to}`).toBeTruthy()
     }
   })
@@ -88,5 +97,70 @@ describe('el aire debajo de la barra', () => {
     expect(global).toMatch(
       /\.v-container > \.v-breadcrumbs:first-child[^{]*\{\s*padding-top: 0 !important;/
     )
+  })
+})
+
+describe('los grupos de la barra', () => {
+  const todas = (nav: FamiliaNav) => [
+    ...nav.items.map(item => item.to),
+    ...nav.grupos.flatMap(grupo => grupo.items.map(item => item.to)),
+  ]
+
+  // El motivo de los grupos: el directorio de alquileres tenía tres bloques de enlaces arriba del
+  // título y tres enlaces aparecían dos veces. Una ruta, una vez, en toda la barra.
+  it('ninguna ruta aparece dos veces en una barra', () => {
+    for (const entry of DIRECTORIOS) {
+      const nav = familiaNavParaRuta(entry.to)
+      if (!nav) continue
+      const routes = todas(nav)
+      expect(routes, entry.id).toEqual([...new Set(routes)])
+    }
+  })
+
+  it('alquileres lleva las otras búsquedas de vivienda y las guías de antes de alquilar', () => {
+    const nav = familiaNavParaRuta('/alquileres-uruguay')!
+    expect(nav.grupos.map(grupo => grupo.labelKey)).toEqual([
+      'familiaNav.grupos.vivienda',
+      'familiaNav.grupos.antesDeAlquilar',
+    ])
+    expect(todas(nav)).toEqual(
+      expect.arrayContaining([
+        '/venta-viviendas-uruguay',
+        '/inmobiliarias-uruguay',
+        '/alquiler-ideal-uruguay',
+        '/fletes-mudanzas-uruguay',
+        '/alquilar-en-uruguay',
+      ])
+    )
+    expect(familiaNavTotal(nav)).toBe(todas(nav).length)
+  })
+
+  it('los grupos son los mismos en cada página de la familia', () => {
+    const grupos = familiaNavParaRuta('/alquileres-uruguay')!.grupos
+    for (const page of rutas('/alquileres-uruguay'))
+      expect(familiaNavParaRuta(page)!.grupos, page).toEqual(grupos)
+  })
+
+  // Un grupo enlaza, no da pertenencia: la venta de viviendas conserva su propia barra y la guía
+  // no dibuja la de alquileres.
+  it('una ruta de un grupo no pasa a ser de la familia', () => {
+    expect(rutas('/venta-viviendas-uruguay')[0]).toBe('/venta-viviendas-uruguay')
+    expect(familiaNavParaRuta('/alquilar-en-uruguay')).toBeNull()
+  })
+
+  it('cada título y cada etiqueta propia existe en los tres idiomas', () => {
+    const keys = new Set<string>()
+    for (const entry of DIRECTORIOS)
+      for (const grupo of familiaNavParaRuta(entry.to)?.grupos ?? []) {
+        keys.add(grupo.labelKey)
+        for (const item of grupo.items) if (item.labelKey) keys.add(item.labelKey)
+      }
+    for (const [locale, messages] of Object.entries({ es, en, pt }))
+      for (const key of keys) {
+        let node: unknown = messages
+        for (const part of key.split('.'))
+          node = (node as Record<string, unknown> | undefined)?.[part]
+        expect(typeof node, `${locale} ${key}`).toBe('string')
+      }
   })
 })

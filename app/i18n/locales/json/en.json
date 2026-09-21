@@ -1493,8 +1493,17 @@
     "verMas": "See {n} more pages on this topic"
   },
   "familiaNav": {
-    "aria": "Pages in this directory",
-    "resumen": "In this section · {n} pages"
+    "aria": "Pages in this section",
+    "resumen": "In this section · {n} pages",
+    "grupos": {
+      "vivienda": "Related home searches",
+      "antesDeAlquilar": "Before you rent"
+    },
+    "preguntas": {
+      "garantia": "Which guarantee will they ask for?",
+      "sinRecibo": "No payslip?",
+      "clearing": "Listed on the credit registry?"
+    }
   },
   "directorioAnalisis": {
     "tituloDirectorio": "Analysis and statistics from this directory",

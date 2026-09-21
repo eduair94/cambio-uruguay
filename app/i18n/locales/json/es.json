@@ -1504,8 +1504,17 @@
     "verMas": "Ver {n} páginas más del tema"
   },
   "familiaNav": {
-    "aria": "Páginas de este directorio",
-    "resumen": "En esta sección · {n} páginas"
+    "aria": "Páginas de esta sección",
+    "resumen": "En esta sección · {n} páginas",
+    "grupos": {
+      "vivienda": "Otras búsquedas de vivienda",
+      "antesDeAlquilar": "Antes de alquilar"
+    },
+    "preguntas": {
+      "garantia": "¿Qué garantía te piden?",
+      "sinRecibo": "¿Sin recibo de sueldo?",
+      "clearing": "¿Estás en el clearing?"
+    }
   },
   "directorioAnalisis": {
     "tituloDirectorio": "Análisis y estadísticas de este directorio",

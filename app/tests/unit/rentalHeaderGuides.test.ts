@@ -1,20 +1,24 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { rentalMessages } from '../../utils/rentalMessages'
+import en from '../../i18n/locales/json/en.json'
+import es from '../../i18n/locales/json/es.json'
+import pt from '../../i18n/locales/json/pt.json'
+import { familiaNavParaRuta } from '../../utils/familiaNav'
 
 // Las tres guías que contestan lo que frena un alquiler tienen que estar ARRIBA, no enlazadas y ya.
 //
 // Estaban enlazadas desde el directorio desde hacía meses. Medido en producción el 2026-09-20 a
 // 390 px: el primer enlace a una guía aparecía a y=13.000 de una página de 22.717 px — quince
-// pantallas de scroll. El lector se queda 349 s de media mirando avisos y nunca ve la respuesta a
-// "¿qué garantía me van a pedir?".
+// pantallas de scroll. Se subieron al encabezado de la página, al lado de un bloque de "Otras
+// búsquedas de vivienda" y debajo de la barra de la sección: tres bloques de enlaces seguidos, con
+// tres enlaces repetidos entre ellos. El usuario lo llamó "extremadamente confuso" (2026-09-21) y
+// las dos listas de la página pasaron a ser grupos de la barra "En esta sección".
 //
-// Por eso este test NO comprueba que los enlaces existan (eso ya era cierto y no alcanzaba):
-// comprueba que estén dentro del `<header>`, antes del panel de filtros y de los resultados. Es la
-// única propiedad que se puede romper sin que nada más se entere — mover el bloque treinta líneas
-// abajo no rompe ningún otro test y deshace el cambio entero.
+// Así que este test cuida las dos mitades: que las guías sigan arriba (en la barra, que va antes
+// que todo el contenido) y que la página no vuelva a tener su propia lista al lado.
 const source = readFileSync(resolve(__dirname, '../../pages/alquileres-uruguay.vue'), 'utf8')
+const messages = { es, en, pt } as const
 
 const GUIDES = [
   '/alquilar-en-uruguay',
@@ -22,49 +26,46 @@ const GUIDES = [
   '/alquilar-estando-en-clearing',
 ]
 
-describe('guías del encabezado del directorio de alquileres', () => {
-  const headerStart = source.indexOf('<header class="rentals-head">')
-  const headerEnd = source.indexOf('</header>')
-  const navStart = source.indexOf('<nav class="rentals-guides"')
+function message(locale: keyof typeof messages, key: string): unknown {
+  let node: unknown = messages[locale]
+  for (const part of key.split('.')) node = (node as Record<string, unknown> | undefined)?.[part]
+  return node
+}
 
-  it('el encabezado existe y el bloque está adentro', () => {
-    expect(headerStart).toBeGreaterThan(-1)
-    expect(navStart).toBeGreaterThan(headerStart)
-    expect(navStart).toBeLessThan(headerEnd)
-  })
+describe('guías de antes de alquilar, en la barra de la sección', () => {
+  const nav = familiaNavParaRuta('/alquileres-uruguay')!
+  const grupoItems = nav.grupos.flatMap(grupo => grupo.items)
 
-  it('el bloque va antes del panel de filtros y de los resultados', () => {
-    const sidebar = source.indexOf('<aside class="rentals-sidebar"')
-    expect(sidebar).toBeGreaterThan(-1)
-    expect(navStart).toBeLessThan(sidebar)
-  })
-
-  it('apunta a las tres guías, por `headerGuides`', () => {
-    const block = source.slice(
-      source.indexOf('const headerGuides'),
-      source.indexOf('const catalogBaseUrl')
-    )
-    for (const route of GUIDES) expect(block).toContain(route)
+  it('las tres guías están en un grupo de la barra del directorio', () => {
+    for (const route of GUIDES) expect(grupoItems.map(item => item.to)).toContain(route)
   })
 
   it('la etiqueta es la pregunta del lector, no el título de la guía', () => {
-    // Si alguien reemplaza las preguntas por los títulos, el bloque se vuelve una segunda copia
-    // del que ya estaba al pie y pierde el motivo por el que se subió.
-    for (const locale of ['es', 'en', 'pt'] as const) {
-      const m = rentalMessages[locale] as Record<string, string>
-      for (const key of ['guideQ', 'independentQ', 'clearingQ']) {
-        expect(typeof m[key]).toBe('string')
-        expect(m[key]!.length).toBeGreaterThan(3)
+    // Si alguien reemplaza las preguntas por los títulos, el grupo se vuelve una segunda copia
+    // del bloque del pie y pierde el motivo por el que se subió.
+    for (const route of GUIDES) {
+      const item = grupoItems.find(candidate => candidate.to === route)!
+      expect(item.labelKey, route).toMatch(/^familiaNav\.preguntas\./)
+      for (const locale of ['es', 'en', 'pt'] as const) {
+        const label = message(locale, item.labelKey!)
+        expect(typeof label, `${locale} ${item.labelKey}`).toBe('string')
+        expect(String(label)).toMatch(/\?$/)
       }
-      expect(m.guideQ).not.toBe(m.guide)
-      expect(m.independentQ).not.toBe(m.independent)
-      expect(m.clearingQ).not.toBe(m.clearing)
-      expect(typeof m.guidesLead).toBe('string')
     }
   })
 
-  it('el bloque del pie sigue estando: esto suma un punto de entrada, no mueve el que había', () => {
+  it('la página no vuelve a tener su propia lista de enlaces arriba', () => {
+    const header = source.slice(
+      source.indexOf('<header class="rentals-head">'),
+      source.indexOf('</header>')
+    )
+    expect(header.length).toBeGreaterThan(0)
+    expect(header).not.toMatch(/<nav\b/)
+    for (const route of GUIDES) expect(header).not.toContain(route)
+  })
+
+  it('el bloque del pie sigue estando: el lector que terminó de mirar avisos también las ve', () => {
     const footer = source.indexOf('v-for="link in relatedLinks"')
-    expect(footer).toBeGreaterThan(headerEnd)
+    expect(footer).toBeGreaterThan(source.indexOf('</header>'))
   })
 })

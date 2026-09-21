@@ -13,28 +13,33 @@ test.setTimeout(120000)
 
 test.describe('property navigation before hydration', () => {
   test.use({ javaScriptEnabled: false })
-  test('mobile related links are closed in the first HTML without hiding the main directory link', async ({
+  test('mobile section links are closed in the first HTML without hiding the main directory link', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 320, height: 844 })
     await page.goto('/alquileres-uruguay', { waitUntil: 'domcontentloaded' })
-    const related = page.getByTestId('rental-related-searches')
-    await expect(related.getByRole('button')).toBeVisible()
-    await expect(related.getByRole('button')).toHaveAttribute('aria-expanded', 'false')
-    await expect(page.locator('#rental-related-links')).toBeHidden()
-    // Seven since the moving-services directory joined the list (2026-09-14), and first.
-    await expect(page.locator('#rental-related-links a')).toHaveCount(7)
-    await expect(page.locator('#rental-related-links a').first()).toHaveAttribute(
-      'href',
-      '/fletes-mudanzas-uruguay'
-    )
-    await expect(
-      page.locator('#rental-related-links a[href="/analisis-alquileres-uruguay"]')
-    ).toHaveCount(1)
-    expect((await related.getByRole('button').boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    // One block of links above the title, not three (2026-09-21): the other home searches and the
+    // before-you-rent guides are groups of the section bar, and the page carries no list of its own.
+    const section = page.getByTestId('familia-nav')
+    const summary = section.locator('summary')
+    await expect(summary).toBeVisible()
+    await expect(section.locator('details')).not.toHaveAttribute('open')
+    await expect(section.locator('.familia-nav__menu-list a').first()).toBeHidden()
+    // 5 sibling pages (the current one is not a link) + 4 home searches + 3 guides, each once.
+    await expect(section.locator('.familia-nav__menu a')).toHaveCount(12)
+    for (const href of [
+      '/analisis-alquileres-uruguay',
+      '/fletes-mudanzas-uruguay',
+      '/alquilar-en-uruguay',
+    ])
+      await expect(section.locator(`.familia-nav__menu a[href="${href}"]`)).toHaveCount(1)
+    await expect(page.locator('.rentals-head nav')).toHaveCount(0)
+    expect((await summary.boundingBox())!.height).toBeGreaterThanOrEqual(44)
     await page.setViewportSize({ width: 1366, height: 900 })
-    await expect(related.getByRole('button')).toBeHidden()
-    await expect(page.locator('#rental-related-links')).toBeVisible()
+    await expect(summary).toBeHidden()
+    await expect(
+      section.locator('.familia-nav__grupos a[href="/alquilar-en-uruguay"]')
+    ).toBeVisible()
     await page.setViewportSize({ width: 320, height: 844 })
     await page.goto('/oportunidades-inmobiliarias-uruguay?operation=rent', {
       waitUntil: 'domcontentloaded',
@@ -889,17 +894,23 @@ for (const viewport of [
     const state = await setup(page)
     await expect(page.locator('.rental-card__price').first()).toBeInViewport({ ratio: 1 })
     await expect(page.locator('.rental-card__price').first()).toContainText('$ 20.000')
-    const related = page.getByTestId('rental-related-searches')
-    await expect(related.getByRole('button')).toHaveAttribute('aria-expanded', 'false')
-    await reachable(related.getByRole('button'))
-    await related.getByRole('button').click()
-    await expect(related.getByRole('link')).toHaveCount(7)
-    await expect(related.getByRole('link', { name: 'Analizar precios' })).toHaveAttribute(
+    const section = page.getByTestId('familia-nav')
+    const summary = section.locator('summary')
+    await expect(section.locator('details')).not.toHaveAttribute('open')
+    await reachable(summary)
+    await summary.click()
+    await expect(section.locator('.familia-nav__menu a')).toHaveCount(12)
+    await expect(section.getByRole('link', { name: 'Análisis de alquileres' })).toHaveAttribute(
       'href',
       '/analisis-alquileres-uruguay'
     )
-    for (const link of await related.getByRole('link').all()) await expect(link).toBeVisible()
-    await related.getByRole('button').click()
+    await expect(section.getByRole('link', { name: '¿Qué garantía te piden?' })).toHaveAttribute(
+      'href',
+      '/alquilar-en-uruguay'
+    )
+    for (const link of await section.locator('.familia-nav__menu a').all())
+      await expect(link).toBeVisible()
+    await summary.click()
     await page.screenshot({
       path: resolve(artifactRoot, `.sdd-rentals-filter-${viewport.width}.png`),
     })

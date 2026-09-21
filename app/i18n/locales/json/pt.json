@@ -1486,8 +1486,17 @@
     "verMas": "Ver mais {n} páginas do tema"
   },
   "familiaNav": {
-    "aria": "Páginas deste diretório",
-    "resumen": "Nesta seção · {n} páginas"
+    "aria": "Páginas desta seção",
+    "resumen": "Nesta seção · {n} páginas",
+    "grupos": {
+      "vivienda": "Outras buscas de imóveis",
+      "antesDeAlquilar": "Antes de alugar"
+    },
+    "preguntas": {
+      "garantia": "Qual garantia vão exigir?",
+      "sinRecibo": "Sem comprovante de renda?",
+      "clearing": "Com restrição de crédito?"
+    }
   },
   "directorioAnalisis": {
     "tituloDirectorio": "Análises e estatísticas deste diretório",
