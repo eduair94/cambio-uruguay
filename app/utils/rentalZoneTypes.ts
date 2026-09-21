@@ -132,8 +132,11 @@ export interface RentalServiceFilterOption {
   values: number[]
 }
 export type RentalClaimCategory = 'alumbrado' | 'saneamiento' | 'limpieza' | 'calles'
-/** Status of a service layer; `collecting` = the power ledger has not observed enough days yet. */
-export type RentalServiceStatus = RentalZoneDataStatus | 'collecting'
+/**
+ * Status of a service layer. Power only: `collecting` = the ledger has not observed enough days for
+ * any figure; `preliminary` = published from a few days with that label, final after two weeks.
+ */
+export type RentalServiceStatus = RentalZoneDataStatus | 'collecting' | 'preliminary'
 export interface RentalZoneOfficial {
   /** "mvd:<INE code>" or "ute:<UTE locality id>". */
   id: string

@@ -348,6 +348,13 @@
                     {{ t('serviceThird', { n: serviceNumber(Math.floor(option.low)) }) }}
                   </button>
                 </p>
+                <p
+                  v-if="serviceFootnote(option)"
+                  class="rental-search__service-note rental-search__service-note--foot"
+                  :data-testid="`rental-service-${option.attribute}-foot`"
+                >
+                  {{ serviceFootnote(option) }}
+                </p>
               </template>
             </li>
           </ul>
@@ -479,7 +486,11 @@ import type {
   RentalZonePreferences,
   RentalZoneUtilitiesMeta,
 } from '~/utils/rentalZoneTypes'
-import { RENTAL_POWER_MIN_DAYS, RENTAL_SERVICE_FILTERS } from '~/utils/rentalZoneServices'
+import {
+  RENTAL_POWER_MIN_DAYS,
+  RENTAL_SERVICE_FILTERS,
+  URSEA_URBAN_DENSE_MINUTES_PER_MONTH,
+} from '~/utils/rentalZoneServices'
 
 const props = withDefaults(
   defineProps<{
@@ -646,6 +657,26 @@ function serviceKeeps(option: RentalServiceFilterOption) {
     kept: values.filter(value => value <= max).length,
     zones: values.length,
   })
+}
+/**
+ * Power is the one layer with a provisional stage (our own ledger, published from a few days with a
+ * label) and the one with a public benchmark: URSEA's semester target for dense urban areas, so the
+ * reader can tell whether "12 min a month" is a lot. Nobody publishes cuts per barrio (2026-09-21).
+ */
+function serviceFootnote(option: RentalServiceFilterOption) {
+  if (option.attribute !== 'luz') return ''
+  const power = servicesMounted.value ? serviceFilters.data.value?.meta?.power : undefined
+  return [
+    option.status === 'preliminary' && power
+      ? t('serviceProvisional', {
+          days: serviceNumber(Math.floor(power.observedDays)),
+          min: RENTAL_POWER_MIN_DAYS,
+        })
+      : '',
+    t('serviceLuzBenchmark', { n: URSEA_URBAN_DENSE_MINUTES_PER_MONTH }),
+  ]
+    .filter(Boolean)
+    .join(' · ')
 }
 const powerCollecting = computed(() => {
   const power = servicesMounted.value ? serviceFilters.data.value?.meta?.power : undefined
@@ -1081,6 +1112,10 @@ function clearNeighborhoods() {
   line-height: 1.4;
   font-variant-numeric: tabular-nums;
   color: rgba(var(--v-theme-on-surface), 0.72);
+}
+.rental-search__service-note--foot {
+  margin-top: 2px;
+  color: rgba(var(--v-theme-on-surface), 0.6);
 }
 .rental-search__service-third {
   padding: 0;

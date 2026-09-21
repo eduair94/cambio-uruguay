@@ -38,8 +38,16 @@ export const RENTAL_SERVICE_FILTERS: readonly RentalServiceAttribute[] = [
   'limpieza',
   'alumbrado',
 ]
-/** Days the UTE ledger must observe before power publishes; mirrors POWER_MIN_DAYS in the backend. */
+/** Days the UTE ledger must observe before power is final; mirrors POWER_MIN_DAYS in the backend. */
 export const RENTAL_POWER_MIN_DAYS = 14
+/** Days from which power publishes as provisional; mirrors POWER_PRELIMINARY_DAYS in the backend. */
+export const RENTAL_POWER_PRELIMINARY_DAYS = 3
+/**
+ * URSEA's semester target for dense urban low-voltage groupings (Tca 3.6 h, all interruptions ≥ 3 min
+ * bar force majeure), as minutes per 30 days: the only public benchmark a barrio figure can be read
+ * against. Informe de Calidad 2016-2025, Tabla 1.
+ */
+export const URSEA_URBAN_DENSE_MINUTES_PER_MONTH = 36
 export const RENTAL_CLAIM_CATEGORIES: readonly RentalClaimCategory[] = [
   'alumbrado',
   'saneamiento',
@@ -102,7 +110,7 @@ export interface RentalZoneServiceSnapshot {
   localities: Record<string, { name: string; department: string; aliases: string[] }>
   aliases: Record<string, { zone: string; share: number; n: number }>
   power: {
-    status: 'ready' | 'collecting'
+    status: 'ready' | 'preliminary' | 'collecting'
     observedFrom: string | null
     observedTo: string | null
     observedDays: number
@@ -210,9 +218,11 @@ export function projectRentalZoneServices(
   }
   const powerRaw = record(raw.power)
   const power =
-    powerRaw.status === 'ready' || powerRaw.status === 'collecting'
+    powerRaw.status === 'ready' ||
+    powerRaw.status === 'preliminary' ||
+    powerRaw.status === 'collecting'
       ? {
-          status: powerRaw.status as 'ready' | 'collecting',
+          status: powerRaw.status as 'ready' | 'preliminary' | 'collecting',
           observedFrom: day(powerRaw.observedFrom),
           observedTo: day(powerRaw.observedTo),
           observedDays: num(powerRaw.observedDays, 1000) ?? 0,
@@ -316,18 +326,25 @@ export function rentalServiceStatuses(
   snapshot: RentalZoneServiceSnapshot | null,
   now = Date.now()
 ) {
+  // A provisional layer ages like a final one: once the ledger stops it is stale, not provisional.
+  const powerFresh = snapshot?.power
+    ? freshness(snapshot.power.observedTo, now, 2 * DAY, 7 * DAY)
+    : 'unavailable'
   const power: RentalServiceStatus = !snapshot?.power
     ? 'unavailable'
     : snapshot.power.status === 'collecting'
       ? 'collecting'
-      : freshness(snapshot.power.observedTo, now, 2 * DAY, 7 * DAY)
+      : snapshot.power.status === 'preliminary' && powerFresh === 'ready'
+        ? 'preliminary'
+        : powerFresh
   const water = freshness(snapshot?.water?.fetchedAt ?? null, now, 7 * DAY, 21 * DAY)
   const claims = freshness(snapshot?.claims?.periodTo ?? null, now, 75 * DAY, 120 * DAY)
   // Same windows as the crime layer of the zone page: a period that ended ≤180 days ago is current.
   const crime = freshness(snapshot?.crimePeriodTo ?? null, now, 180 * DAY, 365 * DAY)
   return { power, water, claims, crime }
 }
-const usable = (status: RentalServiceStatus) => status === 'ready' || status === 'stale'
+const usable = (status: RentalServiceStatus) =>
+  status === 'ready' || status === 'stale' || status === 'preliminary'
 const attributeStatus = (
   statuses: ReturnType<typeof rentalServiceStatuses>,
   attribute: RentalServiceAttribute

@@ -114,6 +114,18 @@
       <p v-else-if="layer === 'water'" class="hint">{{ t('waterShort') }}</p>
       <p v-else-if="layer === 'claims'" class="hint">{{ t('claimsShort') }}</p>
       <p
+        v-if="layer === 'power' && data?.utilities?.power?.status === 'preliminary'"
+        class="notice collecting"
+        role="status"
+      >
+        {{
+          t('powerPreliminary', {
+            date: date(data.utilities.power.observedFrom || ''),
+            days: number(Math.floor(data.utilities.power.observedDays)),
+          })
+        }}
+      </p>
+      <p
         v-if="layer === 'power' && data?.utilities?.power?.status === 'collecting'"
         class="notice collecting"
         role="status"

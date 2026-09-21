@@ -120,25 +120,33 @@ interface Row {
 }
 const rows = computed<Row[]>(() => {
   if (!zone.value) return []
+  const power = scores.value?.periods.power
   const list: Row[] = zone.value.rows.map(row => {
     const n = Math.round(row.betterThan * 100)
     const label = t(`label-${row.attribute}`)
-    const detail = t(`detail-${row.attribute}`, { v: decimal(row.value) })
+    // A provisional power figure carries its day count in the row itself, not only on hover: a
+    // rate from four days is a real measurement of a short window, and the reader should see which.
+    const provisional = row.attribute === 'luz' && power?.status === 'preliminary'
+    const days = Math.floor(power?.observedDays ?? 0)
+    const detail =
+      t(`detail-${row.attribute}`, { v: decimal(row.value) }) +
+      (provisional ? ` ${t('provisional', { days, min: power?.minDays ?? 14 })}` : '')
     return {
       attribute: row.attribute,
       label,
       n,
       percent: Math.max(2, n),
-      measure: t(`measure-${row.attribute}`, { v: decimal(row.value) }),
+      measure: provisional
+        ? t('measureLuzProvisional', { v: decimal(row.value), days })
+        : t(`measure-${row.attribute}`, { v: decimal(row.value) }),
       text: t('better', { n }),
       detail,
       aria: t('row', { label, n, zones: row.zones, detail }),
       measuring: false,
     }
   })
-  // Power has no history anywhere: until two weeks of our own ledger exist, say so instead of
+  // Power has no history anywhere: until three days of our own ledger exist, say so instead of
   // hiding it, and say how far along the ledger is so the reader knows when the row will fill.
-  const power = scores.value?.periods.power
   if (power?.status === 'collecting' && power.from && !list.some(row => row.attribute === 'luz')) {
     const label = t('label-luz')
     const progress = {

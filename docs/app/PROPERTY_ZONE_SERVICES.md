@@ -38,8 +38,41 @@ incrementos: un corte entre las dos escrituras pierde un intervalo, nunca lo cue
 400 días.
 
 Métrica (ventana 90 días): minutos sin luz por cliente cada 30 días (imprevistos) y cortes nuevos por
-mes cada 1.000 clientes. Se publica con ≥ 14 días observados y ≥ 85 % de cobertura; antes la capa dice
-«midiendo desde…» y el filtro de luz queda deshabilitado.
+mes cada 1.000 clientes. Con ≥ 3 días observados y ≥ 85 % de cobertura la capa se publica como
+**`preliminary`** (2026-09-21, a pedido del usuario: "incluir la frecuencia de cortes en los filtros"):
+entra a `levels.values.luz`, al filtro y a las tarjetas, siempre con la etiqueta "provisorio · N días
+medidos" (`POWER_PRELIMINARY_DAYS`, espejado en `RENTAL_POWER_PRELIMINARY_DAYS`). Con ≥ 14 días pasa a
+`ready` y la etiqueta desaparece. Antes de los 3 días la capa dice «midiendo desde…» y el filtro de luz
+queda deshabilitado. Una capa provisoria envejece igual que una definitiva: 2 días sin datos nuevos la
+vuelven `stale`, 7 la sacan.
+
+### Lo que se buscó afuera antes de publicar provisorio (2026-09-21)
+
+Nadie publica frecuencia de cortes por barrio; por eso la provisoria sale de nuestro libro y no de una
+fuente externa:
+
+- **URSEA, Informe de Calidad 2016-2025** (`gub.uy/unidad-reguladora-servicios-energia-agua/…/2026-07/Informe de Calidad 2016-2025.pdf`,
+  60 páginas): los consumidores de baja tensión se agrupan en **42 agrupamientos por distrito de UTE
+  × densidad** (ADT1 urbano alta densidad, ADT3 urbano baja densidad, ADT4/5 rural); **Montevideo son
+  dos agrupamientos**, no 62 barrios. Los valores por agrupamiento están sólo en gráficos (figuras 1-10,
+  país y urbano/rural); el texto sólo trae las **metas** por tipo (Tabla 1: urbano alta densidad BT
+  Tca 3,6 h y Fca 1,8 por semestre; media densidad 9,9 h / 4,5; baja densidad 18 h / 8; rural 36 h /
+  14) y los incumplimientos narrados (2018-II: ADT1 y ADT3 de Montevideo incumplieron Tca por el
+  incendio de la estación Montevideo G). La meta urbana densa, 3,6 h por semestre, equivale a **≈ 36
+  min por mes**: es la referencia que el filtro imprime al lado del tope de luz
+  (`URSEA_URBAN_DENSE_MINUTES_PER_MONTH`). Ojo con la comparación: Tca cuenta todas las
+  interrupciones ≥ 3 min salvo fuerza mayor; nuestra cifra es sólo imprevistos.
+- **RCSDEE** (reglamento compilado 2013, Anexo II): confirma que los agrupamientos T3 son por distrito
+  administrativo de UTE y ADT; no hay geografía menor.
+- **UTE**: la "consulta geográfica por barrios de Montevideo" del mapa del sitio es el mismo mapa ECSE
+  en vivo que ya leemos, sin historia. Cifras nacionales publicadas: 2006 FC 7 cortes / TC 10 h por
+  cliente y año; 2017 FC ≈ 7 / TC 12 h; 2018 (proyección) FC 4 / TC 8 h; el interior rural tiene un TC
+  5× y una FC 3× la urbana (`portal.ute.com.uy/noticias/los-cortes-de-luz-mitos-y-realidades`, 2018).
+  El Observador (2022-09, datos de UTE): 2021 4,9 cortes y 7,6 h por cliente; ene-ago 2022 3,5 cortes y
+  6 h; metas 2022 5,5 cortes y 9,8 h.
+- **Catálogo Nacional de Datos Abiertos**: ningún dataset de UTE sobre interrupciones o calidad
+  (`package_search` por "UTE", "interrupciones", "calidad servicio eléctrico").
+- Pedido de informes parlamentario 11127 (2024): PDF escaneado, sin texto extraíble.
 
 ## Agua — `currency-water-interruptions` (diario 08:29 UTC)
 

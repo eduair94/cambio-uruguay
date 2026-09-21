@@ -46,6 +46,14 @@
     <template v-else-if="layer === 'power'">
       <p v-if="officialNote" class="meta">{{ officialNote }}</p>
       <p v-if="unlinked" class="notice">{{ t('noOfficial') }}</p>
+      <p v-if="meta?.power?.status === 'preliminary'" class="notice">
+        {{
+          t('powerPreliminary', {
+            date: date(meta.power.observedFrom),
+            days: number(Math.floor(meta.power.observedDays)),
+          })
+        }}
+      </p>
       <p v-if="meta?.power?.status === 'collecting'" class="notice">
         {{
           t('powerCollecting', {

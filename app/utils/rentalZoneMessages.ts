@@ -29,6 +29,9 @@ export const rentalZoneMessages = {
     powerCollecting:
       'Estamos midiendo los cortes de luz desde el {date}. UTE muestra sólo la situación del momento y no publica la historia, así que la guardamos nosotros cada 10 minutos. Las cifras aparecen con al menos 14 días observados (van {days}).',
     powerCollectingShort: 'Midiendo desde el {date}',
+    powerPreliminary:
+      'Cifras provisorias: {days} de 14 días medidos desde el {date}. Nadie publica cortes por barrio (URSEA agrupa por distrito y densidad), así que mostramos nuestro propio registro apenas junta tres días; se vuelve definitivo a los 14.',
+    powerPreliminaryShort: 'provisorio · {days} días medidos',
     powerHint:
       'Guardamos cada 10 minutos el mapa público de UTE (UTEi) y sumamos cuántos clientes quedaron sin luz y durante cuánto tiempo. Un corte nuevo se cuenta cuando sube la cantidad de incidencias abiertas en la zona, así que es un mínimo. Ventana: últimos 90 días.',
     powerDepartment: 'Cifra del departamento completo: UTE no informa esta zona por separado.',
@@ -230,6 +233,9 @@ export const rentalZoneMessages = {
     powerCollecting:
       'We have been measuring power cuts since {date}. UTE only shows the current situation and publishes no history, so we store it every 10 minutes. Figures appear after at least 14 observed days ({days} so far).',
     powerCollectingShort: 'Measuring since {date}',
+    powerPreliminary:
+      'Provisional figures: {days} of 14 days measured since {date}. Nobody publishes cuts per neighbourhood (URSEA groups by district and density), so we show our own ledger as soon as it has three days; it becomes final at 14.',
+    powerPreliminaryShort: 'provisional · {days} days measured',
     powerHint:
       "Every 10 minutes we store UTE's public map (UTEi) and add up how many customers were without power and for how long. A new cut is counted when the number of open incidents in the area rises, so it is a lower bound. Window: last 90 days.",
     powerDepartment: 'Whole-department figure: UTE does not report this area separately.',
@@ -429,6 +435,9 @@ export const rentalZoneMessages = {
     powerCollecting:
       'Medimos as quedas de energia desde {date}. A UTE só mostra a situação do momento e não publica o histórico, então nós o guardamos a cada 10 minutos. Os números aparecem com pelo menos 14 dias observados (até agora {days}).',
     powerCollectingShort: 'Medindo desde {date}',
+    powerPreliminary:
+      'Números provisórios: {days} de 14 dias medidos desde {date}. Ninguém publica quedas por bairro (a URSEA agrupa por distrito e densidade), então mostramos nosso próprio registro assim que junta três dias; fica definitivo aos 14.',
+    powerPreliminaryShort: 'provisório · {days} dias medidos',
     powerHint:
       'A cada 10 minutos guardamos o mapa público da UTE (UTEi) e somamos quantos clientes ficaram sem energia e por quanto tempo. Um novo corte é contado quando sobe o número de incidências abertas na área, então é um mínimo. Janela: últimos 90 dias.',
     powerDepartment: 'Número do departamento inteiro: a UTE não informa esta área separadamente.',

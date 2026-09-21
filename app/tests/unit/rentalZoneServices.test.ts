@@ -7,6 +7,7 @@ import {
   projectRentalZoneImpact,
   projectRentalZoneServices,
   rentalServiceFilterOptions,
+  rentalServiceStatuses,
   rentalServiceZoneIds,
   rentalServiceZoneFold,
   rentalZoneUtilitiesMeta,
@@ -354,6 +355,32 @@ describe('projectRentalZoneImpact', () => {
     expect(impact.attributes.map(item => item.attribute)).toEqual(['limpieza'])
     expect(impact.joint?.coefficients).toHaveLength(1)
     expect(projectRentalZoneImpact({ version: 1 }, now)).toBeNull()
+  })
+})
+
+describe('preliminary power', () => {
+  const provisional = projectRentalZoneServices(
+    { ...raw, power: { ...raw.power, status: 'preliminary', observedDays: 4 } },
+    aliases
+  )!
+
+  it('is usable and filterable, and says it is provisional', () => {
+    expect(rentalServiceStatuses(provisional, now).power).toBe('preliminary')
+    expect(
+      rentalServiceFilterOptions(provisional, now).find(option => option.attribute === 'luz')
+    ).toMatchObject({ available: true, status: 'preliminary', low: 20 })
+    expect(rentalServiceZoneIds(provisional, ['luz'], now)).toEqual(['mvd:8'])
+    expect(buildRentalZoneScores(provisional, now)?.periods.power).toMatchObject({
+      status: 'preliminary',
+      observedDays: 4,
+      minDays: 14,
+    })
+    expect(rentalZoneUtilitiesMeta(provisional, now)?.power?.status).toBe('preliminary')
+  })
+
+  it('goes stale like a final layer once the ledger stops', () => {
+    expect(rentalServiceStatuses(provisional, now + 3 * 86_400_000).power).toBe('stale')
+    expect(rentalServiceStatuses(provisional, now + 9 * 86_400_000).power).toBe('unavailable')
   })
 })
 

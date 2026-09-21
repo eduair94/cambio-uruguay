@@ -14,10 +14,15 @@ function ledger(days: number, covered = 1440, extra: (zone: string, i: number) =
 }
 
 describe("buildPowerLayer", () => {
-  it("keeps collecting until two weeks were observed", () => {
-    const layer = buildPowerLayer(ledger(10));
-    expect(layer).toMatchObject({ status: "collecting", observedFrom: "2026-09-01", observedTo: "2026-09-10", observedDays: 10 });
-    expect(layer.zones).toEqual({});
+  it("collects for two days, publishes provisional figures from three and final ones from two weeks", () => {
+    const early = buildPowerLayer(ledger(2));
+    expect(early).toMatchObject({ status: "collecting", observedFrom: "2026-09-01", observedTo: "2026-09-02", observedDays: 2 });
+    expect(early.zones).toEqual({});
+    const provisional = buildPowerLayer(ledger(10, 1440, zone => zone === "b:PO" ? { unplannedCustomerMinutes: 47_000 } : {}));
+    expect(provisional).toMatchObject({ status: "preliminary", observedFrom: "2026-09-01", observedTo: "2026-09-10", observedDays: 10 });
+    expect(provisional.zones["mvd:8"]).toMatchObject({ name: "Pocitos", unplannedMinutes: 30 });
+    expect(levelValues(provisional, null, null).luz?.["mvd:8"]).toBe(30);
+    expect(buildPowerLayer(ledger(14)).status).toBe("ready");
   });
 
   it("does not publish a ledger with too many gaps", () => {

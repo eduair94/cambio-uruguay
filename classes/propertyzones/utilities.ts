@@ -13,6 +13,12 @@ import { INE_DISPLAY_NAMES } from "./names";
  */
 export const POWER_WINDOW_DAYS = 90;
 export const POWER_MIN_DAYS = 14;
+/**
+ * From this many observed days the layer publishes as `preliminary`: nobody else measures cuts per
+ * barrio (URSEA aggregates by district × density and prints charts; UTE's map has no history), so a
+ * labelled early figure beats an empty row, but it stays marked until POWER_MIN_DAYS make it final.
+ */
+export const POWER_PRELIMINARY_DAYS = 3;
 export const POWER_MIN_COVERAGE = 0.85;
 export const WATER_WINDOW_MONTHS = 24;
 export const WATER_MAX_HOURS = 72;
@@ -32,7 +38,8 @@ export interface PowerMetric {
   cutsPerMonth: number;
 }
 export interface PowerLayer {
-  status: "ready" | "collecting";
+  /** ready = POWER_MIN_DAYS observed; preliminary = POWER_PRELIMINARY_DAYS, published with that label. */
+  status: "ready" | "preliminary" | "collecting";
   observedFrom: string | null;
   observedTo: string | null;
   observedDays: number;
@@ -132,9 +139,12 @@ export function buildPowerLayer(days: readonly PowerDayDoc[], now = new Date()):
   const elapsed = observableMinutes(days, referenceKey, observedFrom, latest, now);
   const observedDays = round(reference.covered / 1440, 1);
   const coverage = round(Math.min(1, reference.covered / elapsed), 3);
-  const layer: PowerLayer = { status: observedDays >= POWER_MIN_DAYS && coverage >= POWER_MIN_COVERAGE ? "ready" : "collecting",
-    observedFrom, observedTo: latest, observedDays, coverage, zones: {}, departments: {} };
-  if (layer.status !== "ready") return layer;
+  const enough = coverage >= POWER_MIN_COVERAGE;
+  const status: PowerLayer["status"] = enough && observedDays >= POWER_MIN_DAYS ? "ready"
+    : enough && observedDays >= POWER_PRELIMINARY_DAYS ? "preliminary" : "collecting";
+  const layer: PowerLayer = { status, observedFrom, observedTo: latest, observedDays, coverage, zones: {}, departments: {} };
+  if (layer.status === "collecting") return layer;
+  const minCovered = (layer.status === "ready" ? POWER_MIN_DAYS : POWER_PRELIMINARY_DAYS) * 1440 * POWER_MIN_COVERAGE;
   const localities = new Map(uteLocalities().map(item => [`ute:${item.id}`, item]));
   const grouped = new Map<string, { covered: number; unplanned: number; planned: number; incidents: number; customers: number }>();
   for (const [ecse, item] of perEcse) {
@@ -147,7 +157,7 @@ export function buildPowerLayer(days: readonly PowerDayDoc[], now = new Date()):
     grouped.set(target, group);
   }
   for (const [target, group] of grouped) {
-    if (group.customers < 100 || group.covered < POWER_MIN_DAYS * 1440 * POWER_MIN_COVERAGE) continue;
+    if (group.customers < 100 || group.covered < minCovered) continue;
     const metric = (name: string, department: string): PowerMetric => ({
       name, department, customers: Math.round(group.customers),
       unplannedMinutes: round(group.unplanned / group.customers / group.covered * MONTH_MINUTES),
@@ -235,7 +245,7 @@ export function levelValues(power: PowerLayer | null, water: WaterLayer | null, 
   crimeRates?: Record<string, number> | null): Partial<Record<ServiceAttribute, Record<string, number>>> {
   const values: Partial<Record<ServiceAttribute, Record<string, number>>> = {};
   if (crimeRates && Object.keys(crimeRates).length) values.denuncias = { ...crimeRates };
-  if (power?.status === "ready") values.luz = Object.fromEntries(Object.entries(power.zones).map(([zone, metric]) => [zone, metric.unplannedMinutes]));
+  if (power && power.status !== "collecting") values.luz = Object.fromEntries(Object.entries(power.zones).map(([zone, metric]) => [zone, metric.unplannedMinutes]));
   if (water) values.agua = Object.fromEntries(Object.entries(water.zones).map(([zone, metric]) => [zone, metric.notices]));
   if (claims) for (const category of CLAIM_CATEGORIES) {
     const entries = Object.entries(claims.zones).filter(([, metric]) => metric.perThousand).map(([zone, metric]) => [zone, metric.perThousand![category]]);

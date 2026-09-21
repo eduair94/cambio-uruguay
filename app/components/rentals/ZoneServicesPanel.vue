@@ -15,6 +15,12 @@
             <span v-if="levels.luz" class="level" :class="`level--${levels.luz}`">{{
               t(levelKey(levels.luz))
             }}</span>
+            <span v-if="profile.meta?.power?.status === 'preliminary'" class="muted">
+              ·
+              {{
+                t('powerPreliminaryShort', { days: Math.floor(profile.meta.power.observedDays) })
+              }}
+            </span>
           </dd>
           <dd v-else-if="profile.meta?.power?.status === 'collecting'" class="muted">
             {{ t('powerCollectingShort', { date: date(profile.meta.power.observedFrom) }) }}

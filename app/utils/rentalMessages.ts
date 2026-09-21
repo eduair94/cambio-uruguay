@@ -32,6 +32,9 @@ export const rentalMessages = {
     serviceRange: 'Los {zones} barrios van de {min} a {max}',
     serviceKeeps: 'Deja {kept} de {zones} barrios',
     serviceMeasuring: 'Midiendo desde el {date} · {days} de {min} días',
+    serviceProvisional: 'Provisorio: {days} de {min} días medidos',
+    serviceLuzBenchmark:
+      'Referencia URSEA: la meta para zona urbana densa equivale a {n} min por mes',
     serviceNoData: 'Sin datos por ahora',
     servicesHint:
       'Cada control fija un máximo para el barrio oficial de la vivienda: corré el tope a la izquierda para exigir menos denuncias, cortes o reclamos. Mover varios exige todos. Las viviendas sin barrio oficial identificado quedan fuera.',
@@ -335,6 +338,8 @@ export const rentalMessages = {
     serviceRange: 'The {zones} neighbourhoods range from {min} to {max}',
     serviceKeeps: 'Keeps {kept} of {zones} neighbourhoods',
     serviceMeasuring: 'Measuring since {date} · {days} of {min} days',
+    serviceProvisional: 'Provisional: {days} of {min} days measured',
+    serviceLuzBenchmark: 'URSEA benchmark: the target for dense urban areas equals {n} min a month',
     serviceNoData: 'No data yet',
     servicesHint:
       'Each control sets a maximum for the home’s official neighbourhood: drag the cap left to demand fewer crime reports, cuts or complaints. Moving several requires all of them. Homes without an identified official neighbourhood are left out.',
@@ -631,6 +636,9 @@ export const rentalMessages = {
     serviceRange: 'Os {zones} bairros vão de {min} a {max}',
     serviceKeeps: 'Deixa {kept} de {zones} bairros',
     serviceMeasuring: 'Medindo desde {date} · {days} de {min} dias',
+    serviceProvisional: 'Provisório: {days} de {min} dias medidos',
+    serviceLuzBenchmark:
+      'Referência URSEA: a meta para zona urbana densa equivale a {n} min por mês',
     serviceNoData: 'Sem dados por enquanto',
     servicesHint:
       'Cada controle fixa um máximo para o bairro oficial do imóvel: arraste o teto para a esquerda para exigir menos denúncias, cortes ou reclamações. Mover vários exige todos. Imóveis sem bairro oficial identificado ficam de fora.',
