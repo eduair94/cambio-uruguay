@@ -46,7 +46,7 @@ export function pct(ratio: number | null | undefined, digits = 0): string {
 export function fold(s: string): string {
   return String(s ?? "")
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
     .replace(/\s+/g, " ");
