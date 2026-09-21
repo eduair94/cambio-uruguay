@@ -51,19 +51,7 @@ FORM: página de lectura con un explorador; el estado vive en la URL.
     <section class="page-section" aria-labelledby="seguir-title">
       <h2 id="seguir-title" class="section-heading mb-3">Para seguir</h2>
       <ul class="method-list">
-        <li>
-          <NuxtLink :to="localePath('/venta-viviendas-uruguay')"
-            >Todas las viviendas en venta</NuxtLink
-          >, con mapa y filtros.
-        </li>
-        <li>
-          <NuxtLink :to="localePath('/oportunidades-inmobiliarias-uruguay')"
-            >Oportunidades inmobiliarias</NuxtLink
-          >: avisos que piden menos que sus comparables.
-        </li>
-        <li>
-          <NuxtLink :to="localePath('/comprar-o-alquilar-uruguay')">¿Comprar o alquilar?</NuxtLink>
-        </li>
+        <!-- El directorio y sus páginas están en la barra "En esta sección": acá sólo lo que no. -->
         <li>
           La misma medida para
           <NuxtLink :to="localePath('/evolucion-precio-alquileres-uruguay')">alquileres</NuxtLink> y

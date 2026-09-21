@@ -52,21 +52,7 @@ FORM: página de lectura con un explorador; el estado vive en la URL.
     <section class="page-section" aria-labelledby="seguir-title">
       <h2 id="seguir-title" class="section-heading mb-3">Para seguir</h2>
       <ul class="method-list">
-        <li>
-          <NuxtLink :to="localePath('/autos-usados-uruguay')"
-            >Todos los autos usados publicados</NuxtLink
-          >, con la página de precios de cada modelo.
-        </li>
-        <li>
-          <NuxtLink :to="localePath('/mercado-de-autos-usados-uruguay')"
-            >Informe del mercado de autos usados</NuxtLink
-          >: depreciación por modelo y qué se compra con cada presupuesto.
-        </li>
-        <li>
-          <NuxtLink :to="localePath('/oportunidades-autos-usados-uruguay')"
-            >Oportunidades en autos usados</NuxtLink
-          >.
-        </li>
+        <!-- El directorio y sus páginas están en la barra "En esta sección": acá sólo lo que no. -->
         <li>
           La misma medida para
           <NuxtLink :to="localePath('/evolucion-precio-alquileres-uruguay')">alquileres</NuxtLink> y

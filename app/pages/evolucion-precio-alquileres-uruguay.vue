@@ -52,16 +52,7 @@ FORM: página de lectura con un explorador; el estado vive en la URL.
     <section class="page-section" aria-labelledby="seguir-title">
       <h2 id="seguir-title" class="section-heading mb-3">Para seguir</h2>
       <ul class="method-list">
-        <li>
-          <NuxtLink :to="localePath('/alquileres-uruguay')"
-            >Todos los alquileres publicados</NuxtLink
-          >, con filtros por barrio, precio y garantía.
-        </li>
-        <li>
-          <NuxtLink :to="localePath('/analisis-alquileres-uruguay')"
-            >Análisis de alquileres</NuxtLink
-          >: percentiles, precio por m² y mapa por barrio de hoy.
-        </li>
+        <!-- El directorio y sus páginas están en la barra "En esta sección": acá sólo lo que no. -->
         <li>
           <NuxtLink :to="localePath('/por-que-no-baja-el-alquiler-uruguay')"
             >Por qué no baja el alquiler</NuxtLink
