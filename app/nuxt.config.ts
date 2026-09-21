@@ -765,6 +765,9 @@ export default defineNuxtConfig({
       // Lista de autores de r/CharruaDevs con nombre propio: noindex en la pagina y fuera del
       // rastreo. Los mismos datos, agregados y sin nombres, estan en /mercado-it-uruguay.
       '/ranking-usuarios-charruadevs',
+      // El teléfono del vendedor de un auto: se pide con un clic, con noindex y sin caché. Ningún
+      // rastreador tiene nada que hacer ahí (docs/app/AUTOS_CONTACTOS.md).
+      '/api/cars/contact/',
     ],
     allow: [
       '/',

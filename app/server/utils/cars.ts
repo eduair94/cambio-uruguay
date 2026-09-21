@@ -66,6 +66,8 @@ const CAR_FIELDS = [
   'risks',
   'opportunity',
   'reference',
+  // Only the flag: the phone itself lives in `carcontacts` and is served by /api/cars/contact/[key].
+  'hasContact',
 ] as const
 
 export const carListingProjection: Record<string, 0 | 1> = Object.fromEntries([
@@ -211,6 +213,7 @@ export function publicCarRow(row: Record<string, any>): PublicCarListing {
         }
       : null,
     reference: referenceOf(row.reference),
+    hasContact: row.hasContact === true,
   }
 }
 
