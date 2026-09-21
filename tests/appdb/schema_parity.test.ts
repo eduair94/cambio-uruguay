@@ -17,6 +17,7 @@ import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
 import { RevenuePlanSnapshotModel } from "../../classes/models/RevenuePlanSnapshot";
 import { EquiparItemModel } from "../../classes/models/EquiparItem";
 import { EquiparMetaModel } from "../../classes/models/EquiparMeta";
+import { EquiparListingModel } from "../../classes/models/EquiparListing";
 import { MovilidadItemModel } from "../../classes/models/MovilidadItem";
 import { MovilidadMetaModel } from "../../classes/models/MovilidadMeta";
 import { CharruaTextModel } from "../../classes/models/CharruaText";
@@ -225,4 +226,12 @@ describe("app-Mongo schema parity", () => {
     expect(PhoneModelModel.collection.name).toBe("phonemodels");
     expect(PhoneMetaModel.collection.name).toBe("phonemeta");
   });
+  it("EquiparListing declares exactly the app's top-level fields", () => {
+    // Una fila por aviso para /equipar-casa-uruguay/productos. Un campo que el backend deja de
+    // escribir es un filtro del directorio que se vacía en silencio.
+    expect(Object.keys(EquiparListingModel.schema.obj).sort()).toEqual(
+      appFields(appModel("EquiparListing")).sort()
+    );
+  });
+
 });

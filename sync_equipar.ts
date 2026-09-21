@@ -19,6 +19,7 @@ import { appDbConfigured } from "./classes/appdb";
 import { fetchUsdUyuRate } from "./classes/chairs/catalog";
 import { buildBaskets } from "./classes/equipar/basket";
 import { buildEquiparCatalog, uncoveredCategories } from "./classes/equipar/catalog";
+import { buildEquiparListings } from "./classes/equipar/listings";
 import { equiparSpecs } from "./classes/equipar/classify";
 import { EQUIPAR_CATEGORIES } from "./classes/equipar/registry";
 import {
@@ -26,6 +27,7 @@ import {
   loadPreviousItems,
   loadStoreSnapshot,
   saveEquiparCatalog,
+  saveEquiparListings,
   saveStoreSnapshot,
   withHistory,
 } from "./classes/equipar/store";
@@ -149,6 +151,20 @@ async function main(): Promise<void> {
   };
 
   await saveEquiparCatalog(stored, meta);
+
+  // The directory behind /equipar-casa-uruguay/productos: one row per listing the band kept, over
+  // the SAME merged `listings` the catalogue was built from — a snapshot row keeps the day it was
+  // really observed (its own `observedAt`), so the hourly run never fakes a sighting of a store
+  // listing it did not read. Own try/catch: a failure here never costs the catalogue just saved.
+  try {
+    const built = buildEquiparListings({ listings, usdUyu });
+    const saved = await saveEquiparListings(built.rows, today);
+    console.log(
+      `[equipar] avisos: ${saved.written} escritos, ${saved.pruned} podados, ${built.rejected} rechazados por la banda, ${built.suspect} sospechosos`
+    );
+  } catch (error) {
+    console.error("[equipar] no se pudo guardar el directorio de avisos", error);
+  }
 
   // Own try/catch: a failure recording history must never cost the catalogue that was just saved.
   // Recorded over `guarded.listings` (pre-merge, unit-guarded) rather than the possibly
