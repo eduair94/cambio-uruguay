@@ -241,7 +241,7 @@ async function copy(text: string, key: string) {
 const canonicalUrl = 'https://cambio-uruguay.com/buscar-con-ia'
 const title = 'Buscá alquiler, auto o productos con tu IA'
 const description =
-  'Conectá Claude, ChatGPT o tu editor a los alquileres, autos usados y precios de Uruguay: ranking por presupuesto y traslados, oportunidades y comparación de barrios. Gratis y sin cuenta.'
+  'Conectá Claude o ChatGPT a los alquileres, autos usados y precios de Uruguay: ranking por presupuesto y traslados, barrios y oportunidades. Gratis.'
 
 defineOgImageComponent('Cambio', {
   title: 'Buscar con IA',
