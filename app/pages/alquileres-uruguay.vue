@@ -672,13 +672,6 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
         </div>
       </details>
     </section>
-    <nav class="rentals-help" :aria-label="t('help')">
-      <h2>{{ t('help') }}</h2>
-      <NuxtLink v-for="link in relatedLinks" :key="link.to" :to="localePath(link.to)">
-        {{ t(link.label) }}
-        <VIcon size="16">mdi-arrow-right</VIcon>
-      </NuxtLink>
-    </nav>
     <VSnackbar v-model="snackbar" :timeout="4500" role="status">{{ feedback }}</VSnackbar>
     <RentalAlertDialog />
   </VContainer>
@@ -1487,11 +1480,6 @@ const externalPortals = [
   { name: 'Casasweb', url: 'https://casasweb.com/' },
   { name: 'Inmuebles El País', url: 'https://inmuebles.elpais.com.uy/' },
 ]
-const relatedLinks = [
-  { to: '/alquilar-en-uruguay', label: 'guide' },
-  { to: '/alquilar-sin-recibo-de-sueldo', label: 'independent' },
-  { to: '/alquilar-estando-en-clearing', label: 'clearing' },
-]
 const catalogBaseUrl = computed(
   () => `https://cambio-uruguay.com${localePath('/alquileres-uruguay')}`
 )
@@ -1683,8 +1671,7 @@ useSchemaOrg([
   color: rgba(var(--v-theme-on-surface), 0.55);
 }
 .rentals-provenance a,
-.rentals-external a,
-.rentals-help a {
+.rentals-external a {
   color: rgb(var(--v-theme-link));
   text-underline-offset: 3px;
 }
@@ -2087,8 +2074,7 @@ button.rental-card__media {
   margin-top: 56px;
   max-width: 78ch;
 }
-.rentals-notes h2,
-.rentals-help h2 {
+.rentals-notes h2 {
   margin: 0 0 16px;
   font-size: 1.25rem;
 }
@@ -2147,16 +2133,6 @@ button.rental-card__media {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-}
-.rentals-help {
-  margin-top: 40px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 24px;
-}
-.rentals-help h2 {
-  width: 100%;
-  margin-bottom: 0;
 }
 .rentals :deep(a:focus-visible),
 .rentals summary:focus-visible {

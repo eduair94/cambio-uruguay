@@ -59,6 +59,7 @@
 // un buscador, que es la mitad del motivo de vincular.
 import { directorioAnalisisParaRuta } from '~/utils/directorioAnalisis'
 import { DIRECTORIOS_HUB } from '~/utils/directorios'
+import { familiaNavRutas } from '~/utils/familiaNav'
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -66,7 +67,16 @@ const { t } = useI18n()
 const track = useTrack()
 
 const headingId = 'directorio-analisis-title'
-const bloque = computed(() => directorioAnalisisParaRuta(route.path))
+// Sin lo que ya enlaza la barra "En esta sección": en una página de una familia este bloque era la
+// barra entera repetida al pie, así que ahí queda vacío y no se dibuja. Sigue en los análisis que no
+// son de una sola familia (CyberLunes), que no tienen barra.
+const bloque = computed(() => {
+  const found = directorioAnalisisParaRuta(route.path)
+  if (!found) return null
+  const enLaBarra = new Set(familiaNavRutas(route.path))
+  const links = found.links.filter(link => !enLaBarra.has(link.to))
+  return links.length ? { ...found, links } : null
+})
 
 const lead = computed(() => {
   const current = bloque.value

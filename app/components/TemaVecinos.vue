@@ -82,6 +82,7 @@
 // Server-rendered a propósito (sin <ClientOnly>): los enlaces tienen que estar en el HTML que lee un
 // buscador. No repite lo que ya mostró el bloque de directorios.
 import { directorioAnalisisParaRuta } from '~/utils/directorioAnalisis'
+import { familiaNavRutas } from '~/utils/familiaNav'
 import { temaVecinosParaRuta } from '~/utils/temaVecinos'
 
 /** Páginas visibles por tema, en el orden del tema; las demás quedan en un desplegable. */
@@ -92,11 +93,12 @@ const localePath = useLocalePath()
 const { t } = useI18n()
 const track = useTrack()
 
+// Sin lo que ya enlazan la barra "En esta sección" (arriba) y el bloque directorio ↔ análisis.
 const grupos = computed(() =>
-  temaVecinosParaRuta(
-    route.path,
-    directorioAnalisisParaRuta(route.path)?.links.map(link => link.to) ?? []
-  )
+  temaVecinosParaRuta(route.path, [
+    ...familiaNavRutas(route.path),
+    ...(directorioAnalisisParaRuta(route.path)?.links.map(link => link.to) ?? []),
+  ])
 )
 
 function trackClick(destination: string) {

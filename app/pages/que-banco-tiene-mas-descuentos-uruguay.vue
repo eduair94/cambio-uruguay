@@ -8,41 +8,7 @@
       estimaciones ni porcentajes de ahorro.
     </p>
 
-    <div class="d-flex flex-wrap ga-2 mb-4">
-      <v-chip
-        size="small"
-        variant="tonal"
-        color="primary"
-        prepend-icon="mdi-map-search-outline"
-        :to="localePath('/descuentos-con-tarjeta-uruguay')"
-      >
-        Mapa de descuentos
-      </v-chip>
-      <v-chip
-        size="small"
-        variant="tonal"
-        prepend-icon="mdi-credit-card-multiple-outline"
-        :to="localePath('/tarjetas-de-credito-uruguay')"
-      >
-        Tarjetas de crédito (tier list)
-      </v-chip>
-      <v-chip
-        size="small"
-        variant="tonal"
-        prepend-icon="mdi-bank-outline"
-        :to="localePath('/mejores-bancos-uruguay')"
-      >
-        Mejores bancos (tier list)
-      </v-chip>
-      <v-chip
-        size="small"
-        variant="tonal"
-        prepend-icon="mdi-credit-card-outline"
-        :to="localePath('/tarjetas-de-debito-uruguay')"
-      >
-        Tarjetas de débito
-      </v-chip>
-    </div>
+    <!-- Las páginas de tarjetas y bancos están en la barra "En esta sección" (utils/familiaNav.ts). -->
 
     <v-alert v-if="error" type="warning" variant="tonal" density="comfortable" class="mb-4">
       No pudimos leer los descuentos en este momento. Probá de nuevo en unos minutos.

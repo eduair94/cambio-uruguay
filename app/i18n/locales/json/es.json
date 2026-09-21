@@ -1508,12 +1508,18 @@
     "resumen": "En esta sección · {n} páginas",
     "grupos": {
       "vivienda": "Otras búsquedas de vivienda",
-      "antesDeAlquilar": "Antes de alquilar"
+      "antesDeAlquilar": "Antes de alquilar",
+      "antesDeComprar": "Antes de comprar",
+      "tarjetasYBancos": "Otras tarjetas y bancos"
     },
     "preguntas": {
       "garantia": "¿Qué garantía te piden?",
       "sinRecibo": "¿Sin recibo de sueldo?",
-      "clearing": "¿Estás en el clearing?"
+      "clearing": "¿Estás en el clearing?",
+      "antesDeSenar": "¿El auto tiene deudas?"
+    },
+    "enlaces": {
+      "oportunidadesCompra": "Oportunidades de compra"
     }
   },
   "directorioAnalisis": {

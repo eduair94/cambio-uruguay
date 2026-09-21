@@ -36,7 +36,7 @@
           <ul class="familia-nav__grupo-list" :aria-labelledby="`familia-grupo-${index}`">
             <li v-for="item in grupo.items" :key="item.to">
               <NuxtLink
-                :to="localePath(item.to)"
+                :to="destino(item)"
                 class="familia-nav__link"
                 @click="trackClick(item.to, 'family_nav_group')"
               >
@@ -93,7 +93,7 @@
           <ul class="familia-nav__menu-list" :aria-labelledby="`familia-grupo-menu-${index}`">
             <li v-for="item in grupo.items" :key="item.to">
               <NuxtLink
-                :to="localePath(item.to)"
+                :to="destino(item)"
                 class="familia-nav__row"
                 @click="trackClick(item.to, 'family_nav_menu_group')"
               >
@@ -137,6 +137,10 @@ const actual = computed(
 
 function etiqueta(item: FamiliaNavItem) {
   return item.labelKey ? t(item.labelKey) : item.label
+}
+
+function destino(item: FamiliaNavItem) {
+  return item.query ? { path: localePath(item.to), query: item.query } : localePath(item.to)
 }
 
 // El layout no se desmonta al navegar: sin esto el menú seguiría abierto en la página nueva.

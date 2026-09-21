@@ -50,6 +50,20 @@ hermana gana), los grupos son iguales en todas las páginas de la familia, y un 
 pertenencia** — la guía no dibuja la barra de alquileres y la venta de viviendas conserva la suya.
 Clics: `family_nav_group` y `family_nav_menu_group`.
 
+**En todas las páginas con barra (2026-09-21, mismo día).** Un rastreo de producción de las 29
+páginas con barra encontró once con listas propias arriba del contenido que repetían la barra (31
+enlaces): "Más opciones" en oportunidades, filas de botones en autos, vender, portales y análisis,
+filas de chips en descuentos y qué banco, la nav de barrios y de venta de viviendas, el botón
+"Analíticas" de últimos cambios. Se fueron todas; lo que no estaba en la barra pasó a ser grupo
+(venta: otras búsquedas de vivienda, con las oportunidades de COMPRA vía `query`; autos: "¿El auto
+tiene deudas?"; tarjetas: débito, bancos, socio, pagar cuentas). Quedan los saltos dentro de la
+misma página (#metodologia), las migas, los filtros de tipo de `/casas-de-cambio` y los enlaces
+dentro de un párrafo. Tripwire: `tests/unit/familiaSinListasPropias.test.ts`.
+
+Y el pie dejó de repetir la barra: `familiaNavRutas(path)` es lo primero que excluyen el bloque
+directorio ↔ análisis (en una página de familia era la barra entera otra vez, así que ahí ya no se
+dibuja; sigue en CyberLunes, que no tiene barra), "Más sobre este tema" y "Seguí leyendo".
+
 Para medirlo de nuevo: posición vertical del primer enlace a cada hermana, en las páginas de la
 familia, a 1280 px; "arriba" es antes de ~1.400 px.
 

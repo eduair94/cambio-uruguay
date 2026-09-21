@@ -40,6 +40,8 @@ export interface FamiliaNavItem {
   /** Ícono MDI del menú; el del registro para el directorio. */
   readonly icon: string
   readonly current: boolean
+  /** Sólo en un grupo: la misma página con un modo elegido (las oportunidades de COMPRA). */
+  readonly query?: Readonly<Record<string, string>>
 }
 
 export interface FamiliaNavGrupo {
@@ -58,13 +60,22 @@ export interface FamiliaNav {
 interface GrupoDef {
   readonly labelKey: string
   /** `labelKey` propio sólo cuando la etiqueta del menú no sirve acá. */
-  readonly links: readonly { readonly to: string; readonly labelKey?: string }[]
+  readonly links: readonly {
+    readonly to: string
+    readonly labelKey?: string
+    readonly query?: Readonly<Record<string, string>>
+  }[]
 }
 
 /**
  * Los grupos de cada familia, por `id` del directorio. Se muestran en TODAS las páginas de la
  * familia, igual que las hermanas: una barra de sección que cambia de una página a otra deja de ser
  * la barra de la sección.
+ *
+ * Cada grupo reemplaza una lista que la página tenía arriba, al lado de la barra (medido en
+ * producción el 2026-09-21: once páginas, 31 enlaces que repetían una ruta de la barra). Regla: una
+ * página con barra no dibuja su propia lista de enlaces a otras páginas cerca del título; si hace
+ * falta un enlace más, va acá. Los saltos dentro de la misma página (#metodologia) no son de esto.
  *
  * Las guías de alquiler llevan la PREGUNTA del lector y no el título de la guía: el que está mirando
  * avisos no busca un artículo, busca saber qué garantía le van a pedir. Estaban arriba del
@@ -87,6 +98,40 @@ const GRUPOS: Readonly<Record<string, readonly GrupoDef[]>> = {
         { to: '/alquilar-en-uruguay', labelKey: 'familiaNav.preguntas.garantia' },
         { to: '/alquilar-sin-recibo-de-sueldo', labelKey: 'familiaNav.preguntas.sinRecibo' },
         { to: '/alquilar-estando-en-clearing', labelKey: 'familiaNav.preguntas.clearing' },
+      ],
+    },
+  ],
+  ventas: [
+    {
+      labelKey: 'familiaNav.grupos.vivienda',
+      links: [
+        { to: '/alquileres-uruguay' },
+        {
+          to: '/oportunidades-inmobiliarias-uruguay',
+          labelKey: 'familiaNav.enlaces.oportunidadesCompra',
+          query: { operation: 'sale' },
+        },
+        { to: '/comprar-o-alquilar-uruguay' },
+        { to: '/barrios-alquileres-uruguay' },
+      ],
+    },
+  ],
+  autos: [
+    {
+      labelKey: 'familiaNav.grupos.antesDeComprar',
+      links: [
+        { to: '/comprar-auto-con-deuda-uruguay', labelKey: 'familiaNav.preguntas.antesDeSenar' },
+      ],
+    },
+  ],
+  tarjetas: [
+    {
+      labelKey: 'familiaNav.grupos.tarjetasYBancos',
+      links: [
+        { to: '/tarjetas-de-debito-uruguay' },
+        { to: '/mejores-bancos-uruguay' },
+        { to: '/tarjetas-de-socio-uruguay' },
+        { to: '/pagar-cuentas-con-tarjeta' },
       ],
     },
   ],
@@ -146,6 +191,7 @@ export function familiaNavParaRuta(path: string): FamiliaNav | null {
             label: link.to,
             icon: nav?.icon ?? 'mdi-file-document-outline',
             current: link.to === route,
+            ...(link.query ? { query: link.query } : {}),
           }
         }),
     }))
@@ -169,4 +215,20 @@ export function familiaNavParaRuta(path: string): FamiliaNav | null {
 /** Cuántos enlaces tiene la barra entera: las hermanas más los grupos. */
 export function familiaNavTotal(nav: FamiliaNav): number {
   return nav.items.length + nav.grupos.reduce((n, grupo) => n + grupo.items.length, 0)
+}
+
+/**
+ * Todas las rutas que la barra de `path` ya enlaza, o ninguna si la página no tiene barra.
+ *
+ * Los bloques del pie del layout (directorio ↔ análisis, "Más sobre este tema", "Seguí leyendo") la
+ * usan para no repetirla: el de directorio ↔ análisis era, en cada página de una familia, la barra
+ * entera otra vez al final, y el de tema volvía a listar las guías que ya están en un grupo.
+ */
+export function familiaNavRutas(path: string): string[] {
+  const nav = familiaNavParaRuta(path)
+  if (!nav) return []
+  return [
+    ...nav.items.map(item => item.to),
+    ...nav.grupos.flatMap(grupo => grupo.items.map(item => item.to)),
+  ]
 }

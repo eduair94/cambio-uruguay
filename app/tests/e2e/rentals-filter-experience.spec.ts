@@ -44,18 +44,12 @@ test.describe('property navigation before hydration', () => {
     await page.goto('/oportunidades-inmobiliarias-uruguay?operation=rent', {
       waitUntil: 'domcontentloaded',
     })
-    const toggle = page.locator('.opportunities__related-toggle')
-    await expect(toggle).toBeVisible()
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false')
-    await expect(page.locator('#opportunity-related-options')).toBeHidden()
-    await expect(page.locator('#opportunity-related-options a')).toHaveCount(2)
-    const directory = page.getByTestId('opportunity-explore-directory')
-    await expect(directory).toBeVisible()
-    await expect(directory).toHaveAttribute('href', '/alquileres-uruguay')
-    expect((await toggle.boundingBox())!.height).toBeGreaterThanOrEqual(44)
-    await page.setViewportSize({ width: 1366, height: 900 })
-    await expect(toggle).toBeHidden()
-    await expect(page.locator('#opportunity-related-options')).toBeVisible()
+    // Same rule on the opportunities page: its "more options" disclosure repeated the directory and
+    // the zones page, which the section bar already carries. Only the in-page method jump remains.
+    await expect(page.locator('.opportunities__header a[href^="/"]')).toHaveCount(0)
+    await expect(page.locator('.opportunities__header a[href="#opportunity-method"]')).toBeVisible()
+    await expect(section.locator('.familia-nav__menu a[href="/alquileres-uruguay"]')).toHaveCount(1)
+    await expect(section.locator('summary')).toBeVisible()
   })
 })
 

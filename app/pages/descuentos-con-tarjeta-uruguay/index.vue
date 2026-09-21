@@ -8,66 +8,7 @@
       agregar todas las tarjetas que quieras y se combinan en un solo mapa.
     </p>
 
-    <!-- Cross-links to the card / bank family -->
-    <div class="d-flex flex-wrap ga-2 mb-4">
-      <v-chip
-        size="small"
-        variant="tonal"
-        color="primary"
-        prepend-icon="mdi-bank-outline"
-        :to="localePath('/mejores-bancos-uruguay')"
-      >
-        Mejores bancos (tier list)
-      </v-chip>
-      <v-chip
-        size="small"
-        variant="tonal"
-        prepend-icon="mdi-chart-bar"
-        :to="localePath('/que-banco-tiene-mas-descuentos-uruguay')"
-      >
-        ¿Qué banco tiene más descuentos?
-      </v-chip>
-      <v-chip
-        size="small"
-        variant="tonal"
-        prepend-icon="mdi-card-account-details-outline"
-        :to="localePath('/tarjetas-de-socio-uruguay')"
-      >
-        Tarjetas de socio
-      </v-chip>
-      <v-chip
-        size="small"
-        variant="tonal"
-        prepend-icon="mdi-credit-card-multiple-outline"
-        :to="localePath('/tarjetas-de-credito-uruguay')"
-      >
-        Tarjetas de crédito
-      </v-chip>
-      <v-chip
-        size="small"
-        variant="tonal"
-        prepend-icon="mdi-credit-card-outline"
-        :to="localePath('/tarjetas-de-debito-uruguay')"
-      >
-        Tarjetas de débito
-      </v-chip>
-      <v-chip
-        size="small"
-        variant="tonal"
-        prepend-icon="mdi-receipt-text-outline"
-        :to="localePath('/pagar-cuentas-con-tarjeta')"
-      >
-        Pagar cuentas con tarjeta
-      </v-chip>
-      <v-chip
-        size="small"
-        variant="tonal"
-        prepend-icon="mdi-star-outline"
-        :to="localePath('/mi-lista')"
-      >
-        Mi lista
-      </v-chip>
-    </div>
+    <!-- Las páginas de tarjetas y bancos están en la barra "En esta sección" (utils/familiaNav.ts). -->
 
     <!-- Card selector -->
     <v-card variant="outlined" class="mb-4">

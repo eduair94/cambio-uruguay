@@ -41,14 +41,6 @@
                 {{ t('rateChanges.exploreSubtitle') }}
               </p>
             </div>
-            <VBtn
-              :to="localePath('/analiticas')"
-              color="primary"
-              variant="tonal"
-              prepend-icon="mdi-chart-timeline-variant-shimmer"
-            >
-              {{ t('rateAnalytics.nav') }}
-            </VBtn>
           </div>
 
           <VRow density="comfortable">

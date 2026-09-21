@@ -37,11 +37,7 @@
       <p class="text-body-2 text-medium-emphasis mb-2">{{ t('cards.answer') }}</p>
       <ContentTaskLinks
         :label="t('cards.navigation')"
-        :items="[
-          { label: t('cards.ranking'), to: '#credit-tier-title' },
-          { label: t('cards.discounts'), to: localePath('/descuentos-con-tarjeta-uruguay') },
-          { label: t('cards.debit'), to: localePath('/tarjetas-de-debito-uruguay') },
-        ]"
+        :items="[{ label: t('cards.ranking'), to: '#credit-tier-title' }]"
       />
     </section>
 

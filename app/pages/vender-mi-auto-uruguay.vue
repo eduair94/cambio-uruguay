@@ -14,14 +14,7 @@
         precio, cuánto vas a terminar bajando y cuánto te cuesta esperar. Medido sobre el mercado
         real, no sobre una tabla.
       </p>
-      <div class="d-flex flex-wrap ga-3">
-        <VBtn color="primary" size="large" :to="localePath(CAR_VALUATION_PATH)">
-          Calcular cuánto vale mi auto
-        </VBtn>
-        <VBtn variant="outlined" size="large" :to="localePath(CAR_REPORT_PATH)">
-          Ver el informe del mercado
-        </VBtn>
-      </div>
+      <!-- El tasador y el informe del mercado están en la barra "En esta sección". -->
     </header>
 
     <VAlert v-if="error" type="info" variant="outlined" class="mb-4">

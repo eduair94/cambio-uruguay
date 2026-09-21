@@ -1490,12 +1490,18 @@
     "resumen": "Nesta seção · {n} páginas",
     "grupos": {
       "vivienda": "Outras buscas de imóveis",
-      "antesDeAlquilar": "Antes de alugar"
+      "antesDeAlquilar": "Antes de alugar",
+      "antesDeComprar": "Antes de comprar",
+      "tarjetasYBancos": "Outros cartões e bancos"
     },
     "preguntas": {
       "garantia": "Qual garantia vão exigir?",
       "sinRecibo": "Sem comprovante de renda?",
-      "clearing": "Com restrição de crédito?"
+      "clearing": "Com restrição de crédito?",
+      "antesDeSenar": "O carro tem dívidas?"
+    },
+    "enlaces": {
+      "oportunidadesCompra": "Oportunidades de compra"
     }
   },
   "directorioAnalisis": {

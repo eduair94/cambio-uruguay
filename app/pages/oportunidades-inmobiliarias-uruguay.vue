@@ -24,40 +24,12 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
         class="opportunities__intro-links"
         :class="{ 'opportunities__intro-links--budget': budgetMode }"
       >
-        <NuxtLink
-          data-testid="opportunity-explore-directory"
-          :to="
-            localePath(
-              query.operation === 'sale' ? '/venta-viviendas-uruguay' : '/alquileres-uruguay'
-            )
-          "
-          >{{ t(query.operation === 'sale' ? 'sales' : 'rentals') }}</NuxtLink
-        >
-        <button
-          v-if="!budgetMode"
-          type="button"
-          class="opportunities__related-toggle"
-          :aria-expanded="relatedOptionsOpen"
-          aria-controls="opportunity-related-options"
-          @click="relatedOptionsOpen = !relatedOptionsOpen"
-        >
-          {{ t('moreTools') }}
-          <VIcon
-            :icon="relatedOptionsOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-            size="18"
-            aria-hidden="true"
-          />
-        </button>
-        <div
-          id="opportunity-related-options"
-          class="opportunities__related-options"
-          :class="{ 'opportunities__related-options--expanded': relatedOptionsOpen }"
-        >
-          <NuxtLink :to="localePath('/barrios-alquileres-uruguay')">{{
-            globalT('nav.rentalZones')
-          }}</NuxtLink>
-          <a v-if="!budgetMode" href="#opportunity-method">{{ t('methodShort') }}</a>
-        </div>
+        <!--
+          Sin enlaces a otras páginas: el directorio, la venta y las zonas están en la barra
+          "En esta sección" del layout (utils/familiaNav.ts), justo arriba. Queda el salto a la
+          metodología, que es de esta misma página.
+        -->
+        <a v-if="!budgetMode" href="#opportunity-method">{{ t('methodShort') }}</a>
         <VBtn
           v-if="budgetMode && smAndDown"
           class="opportunities__share-mobile"
@@ -347,7 +319,6 @@ import {
 import type { OpportunitySource } from '~/utils/propertyOpportunities'
 
 const { t, locale } = useI18n({ useScope: 'local', messages: propertyOpportunityMessages })
-const { t: globalT } = useI18n({ useScope: 'global' })
 const availability = useRentalAvailability()
 const availabilityCopy = computed(() => rentalAvailabilityCopy(locale.value))
 const localePath = useLocalePath()
@@ -422,7 +393,6 @@ const breadcrumbs = computed(() => [
 ])
 const resultsElement = ref<HTMLElement | null>(null)
 const filtersOpen = ref(false)
-const relatedOptionsOpen = ref(false)
 const neighborhoodOverride = ref<string[] | null>(null)
 let facetRequest = 0
 let filterActivator: HTMLElement | null = null
@@ -683,41 +653,14 @@ useHead(() => ({
   min-height: 44px;
   font-size: 0.85rem;
 }
-.opportunities__related-toggle {
-  display: none;
-  align-items: center;
-  gap: 4px;
-  min-height: 44px;
-  padding-block: 10px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  line-height: 24px;
-  color: rgb(var(--v-theme-link));
-}
-.opportunities__related-toggle:focus-visible {
-  outline: 2px solid rgb(var(--v-theme-link));
-  outline-offset: 2px;
-}
-.opportunities__related-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 16px;
-}
 .opportunities__share-mobile {
   margin-left: auto;
   flex: 0 0 44px;
   width: 44px;
   height: 44px;
 }
-/* The budget header keeps share on the links' row. With "Comparar zonas" next to the directory
-   link the three items ran 7 px past a 320 px screen and the button wrapped onto a row of its own;
-   now the links give up width and wrap their own text instead. */
 .opportunities__intro-links--budget {
   flex-wrap: nowrap;
-}
-.opportunities__intro-links--budget > a,
-.opportunities__intro-links--budget > .opportunities__related-options {
-  min-width: 0;
 }
 .opportunities__workspace {
   display: grid;
@@ -922,22 +865,6 @@ useHead(() => ({
   color: rgba(var(--v-theme-on-surface), 0.8);
 }
 @media (max-width: 959px) {
-  .opportunities__intro-links:not(.opportunities__intro-links--budget) {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0 12px;
-  }
-  .opportunities__related-toggle {
-    display: flex;
-  }
-  .opportunities__related-options {
-    grid-column: 1 / -1;
-  }
-  /* The first mobile HTML is compact even before Vue knows the viewport width. */
-  .opportunities__intro-links:not(.opportunities__intro-links--budget)
-    .opportunities__related-options:not(.opportunities__related-options--expanded) {
-    display: none;
-  }
   .opportunities__header {
     margin-bottom: 12px;
   }

@@ -28,8 +28,8 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
         </VBtn>
       </div>
     </header>
+    <!-- Sólo saltos dentro de esta página: el directorio está en la barra "En esta sección". -->
     <nav class="rental-analysis__links" :aria-label="t('breadcrumb')">
-      <NuxtLink :to="directoryLink">{{ t('directory') }}</NuxtLink>
       <a href="#mapa-alquileres" @click.prevent="openMap">{{ t('mapLayers') }}</a>
       <a href="#detalle-mercado">{{ t('detailLink') }}</a>
       <a href="#presupuesto-alquiler">{{ t('incomeLink') }}</a>

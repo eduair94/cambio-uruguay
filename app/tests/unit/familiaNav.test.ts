@@ -8,6 +8,7 @@ import { DIRECTORIOS } from '../../utils/directorios'
 import {
   familiaDe,
   familiaNavParaRuta,
+  familiaNavRutas,
   familiaNavTotal,
   type FamiliaNav,
 } from '../../utils/familiaNav'
@@ -135,10 +136,49 @@ describe('los grupos de la barra', () => {
     expect(familiaNavTotal(nav)).toBe(todas(nav).length)
   })
 
-  it('los grupos son los mismos en cada página de la familia', () => {
-    const grupos = familiaNavParaRuta('/alquileres-uruguay')!.grupos
-    for (const page of rutas('/alquileres-uruguay'))
-      expect(familiaNavParaRuta(page)!.grupos, page).toEqual(grupos)
+  it('los grupos son los mismos en cada página de cada familia', () => {
+    for (const entry of DIRECTORIOS) {
+      const grupos = familiaNavParaRuta(entry.to)?.grupos
+      if (!grupos) continue
+      for (const page of rutas(entry.to))
+        expect(familiaNavParaRuta(page)!.grupos, page).toEqual(grupos)
+    }
+  })
+
+  // Lo que venta, autos y tarjetas listaban arriba del título, cada una por su cuenta (2026-09-21).
+  it('venta, autos y tarjetas llevan como grupo lo que sus páginas listaban arriba', () => {
+    const venta = familiaNavParaRuta('/venta-viviendas-uruguay')!
+    expect(todas(venta)).toEqual(
+      expect.arrayContaining([
+        '/alquileres-uruguay',
+        '/oportunidades-inmobiliarias-uruguay',
+        '/comprar-o-alquilar-uruguay',
+        '/barrios-alquileres-uruguay',
+      ])
+    )
+    // Desde la venta, las oportunidades son las de COMPRA.
+    const oportunidades = venta.grupos
+      .flatMap(grupo => grupo.items)
+      .find(item => item.to === '/oportunidades-inmobiliarias-uruguay')!
+    expect(oportunidades.query).toEqual({ operation: 'sale' })
+
+    expect(todas(familiaNavParaRuta('/autos-usados-uruguay')!)).toContain(
+      '/comprar-auto-con-deuda-uruguay'
+    )
+    expect(todas(familiaNavParaRuta('/tarjetas-de-credito-uruguay')!)).toEqual(
+      expect.arrayContaining([
+        '/tarjetas-de-debito-uruguay',
+        '/mejores-bancos-uruguay',
+        '/tarjetas-de-socio-uruguay',
+        '/pagar-cuentas-con-tarjeta',
+      ])
+    )
+  })
+
+  it('familiaNavRutas devuelve todo lo que enlaza la barra, o nada si no hay barra', () => {
+    const nav = familiaNavParaRuta('/alquileres-uruguay')!
+    expect(familiaNavRutas('/alquileres-uruguay')).toEqual(todas(nav))
+    expect(familiaNavRutas('/privacidad')).toEqual([])
   })
 
   // Un grupo enlaza, no da pertenencia: la venta de viviendas conserva su propia barra y la guía

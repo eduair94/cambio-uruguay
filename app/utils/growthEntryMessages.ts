@@ -11,8 +11,6 @@ export const growthEntryMessages = {
         'Revisá el costo anual, cómo podés canjear los puntos y si los descuentos están en los comercios que usás.',
       navigation: 'Explorar tarjetas y beneficios',
       ranking: 'Comparar el ranking',
-      discounts: 'Buscar descuentos por banco',
-      debit: 'Comparar tarjetas de débito',
       bankDiscounts: 'Ver descuentos de {bank}',
     },
     clearing: {
@@ -42,8 +40,6 @@ export const growthEntryMessages = {
         'Check the annual fee, how you can redeem points and whether discounts apply at the shops you use.',
       navigation: 'Explore cards and benefits',
       ranking: 'Compare the rankings',
-      discounts: 'Find discounts by bank',
-      debit: 'Compare debit cards',
       bankDiscounts: 'See {bank} discounts',
     },
     clearing: {
@@ -73,8 +69,6 @@ export const growthEntryMessages = {
         'Confira a anuidade, como resgatar os pontos e se os descontos valem nos estabelecimentos que você usa.',
       navigation: 'Explorar cartões e benefícios',
       ranking: 'Comparar o ranking',
-      discounts: 'Buscar descontos por banco',
-      debit: 'Comparar cartões de débito',
       bankDiscounts: 'Ver descontos do {bank}',
     },
     clearing: {

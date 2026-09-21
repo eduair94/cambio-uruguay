@@ -19,25 +19,7 @@
           lectura el {{ formatCarDate(data.coverage.lastReadAt) }}.
         </template>
       </p>
-      <div class="d-flex flex-wrap ga-2">
-        <VBtn
-          color="primary"
-          :to="localePath(CAR_OPPORTUNITIES_PATH)"
-          prepend-icon="mdi-tag-arrow-down-outline"
-        >
-          Ver oportunidades
-          <template v-if="data?.coverage.opportunities">
-            ({{ data.coverage.opportunities }})
-          </template>
-        </VBtn>
-        <VBtn
-          variant="outlined"
-          :to="localePath('/comprar-auto-con-deuda-uruguay')"
-          prepend-icon="mdi-file-document-check-outline"
-        >
-          Antes de señar: deudas y SUCIVE
-        </VBtn>
-      </div>
+      <!-- Las oportunidades y "¿el auto tiene deudas?" están en la barra "En esta sección". -->
     </header>
 
     <!--
@@ -196,7 +178,6 @@ import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { CAR_REPORT_PATH } from '~/utils/carsReport'
 import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
 import {
-  CAR_OPPORTUNITIES_PATH,
   CARS_PATH,
   carMarketPath,
   carsFiltered,

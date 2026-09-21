@@ -19,15 +19,6 @@ de vigencia que la búsqueda. Si la lectura falla, el bloque no se muestra — n
       directo al portal.
     </p>
 
-    <div class="d-flex flex-wrap ga-2 mb-6">
-      <VBtn color="primary" :to="localePath('/alquileres-uruguay')">
-        <VIcon start>mdi-home-search-outline</VIcon>Buscar en los cinco a la vez
-      </VBtn>
-      <VBtn variant="tonal" :to="localePath('/analisis-alquileres-uruguay')">
-        <VIcon start>mdi-chart-line</VIcon>Ver precios por barrio
-      </VBtn>
-    </div>
-
     <!-- El bloque en vivo. Es el argumento entero de la página, así que va antes de la tabla. -->
     <VCard v-if="stats" variant="outlined" class="mb-6">
       <VCardItem class="pb-0">

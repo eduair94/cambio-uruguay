@@ -15,22 +15,10 @@
     <header class="sales-directory__header">
       <h1>{{ t('title') }}</h1>
       <p>{{ t(smAndDown ? 'introShort' : 'intro') }}</p>
-      <nav>
-        <NuxtLink :to="localePath('/barrios-alquileres-uruguay')">{{
-          globalT('nav.rentalZones')
-        }}</NuxtLink>
-        <NuxtLink :to="localePath('/alquileres-uruguay')">{{ t('rentals') }}</NuxtLink>
-        <NuxtLink
-          :to="{
-            path: localePath('/oportunidades-inmobiliarias-uruguay'),
-            query: { operation: 'sale' },
-          }"
-        >
-          {{ t('opportunities') }}
-        </NuxtLink>
-        <NuxtLink :to="localePath('/comprar-o-alquilar-uruguay')">{{ t('buyOrRent') }}</NuxtLink>
+      <!-- Alquileres, oportunidades, zonas y comprar o alquilar están en la barra "En esta sección". -->
+      <div class="sales-directory__coverage-link">
         <a href="#sales-coverage">{{ t('coverage') }}</a>
-      </nav>
+      </div>
     </header>
     <div class="sales-directory__workspace">
       <aside class="sales-directory__sidebar" :aria-label="t('filters')">
@@ -610,20 +598,17 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
   line-height: 1.65;
   color: rgba(var(--v-theme-on-surface), 0.75);
 }
-.sales-directory__header nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 20px;
+.sales-directory__coverage-link {
   margin-top: 8px;
 }
 .sales-directory a {
   color: rgb(var(--v-theme-link));
 }
-.sales-directory__header nav a {
-  font-size: 0.83rem;
-  min-height: 36px;
-  display: flex;
+.sales-directory__coverage-link a {
+  display: inline-flex;
   align-items: center;
+  min-height: 36px;
+  font-size: 0.83rem;
 }
 .sales-directory__workspace {
   display: grid;
@@ -782,7 +767,7 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
     margin-top: 6px;
     line-height: 1.45;
   }
-  .sales-directory__header nav {
+  .sales-directory__coverage-link {
     margin-top: 4px;
   }
   .sales-directory__workspace {
@@ -868,9 +853,6 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
   .sales-directory__saved-label {
     display: none;
   }
-  .sales-directory__header nav > a:nth-child(n + 3) {
-    display: none;
-  }
   .sales-directory__grid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -889,9 +871,6 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
   }
   .sales-directory__toolbar :deep(.v-btn__prepend) {
     margin-inline-end: 4px;
-  }
-  .sales-directory__header nav {
-    column-gap: 14px;
   }
   .sales-directory__compare {
     align-items: flex-start;

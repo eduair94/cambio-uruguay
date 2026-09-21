@@ -266,11 +266,11 @@ for (const width of [320, 390, 1440]) {
     await expect(page).toHaveURL(/operation=sale/)
     expect(new URL(page.url()).searchParams.has('maxPrice')).toBe(false)
     await expect(card).toContainText('USD 160.000')
-    await expect(page.getByTestId('opportunity-explore-directory')).toBeVisible()
-    await expect(page.getByTestId('opportunity-explore-directory')).toHaveAttribute(
-      'href',
-      '/venta-viviendas-uruguay'
-    )
+    // The way back to the sales directory is the section bar's, not a second link in the header.
+    await expect(page.locator('.opportunities__header a[href^="/"]')).toHaveCount(0)
+    await expect(
+      page.getByTestId('familia-nav').locator('a[href="/venta-viviendas-uruguay"]').first()
+    ).toBeAttached()
     await expect(card.getByRole('link', { name: 'Ver ficha del alquiler' })).toHaveCount(0)
     await expect(card.getByRole('link', { name: 'Ver aviso original' })).toHaveAttribute(
       'href',
@@ -309,10 +309,13 @@ test('mobile first viewport shows price and evidence with readable light control
     await setup(page, 'light')
     await expect(page.locator('.v-application')).toHaveCSS('background-color', 'rgb(246, 247, 249)')
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
-    const directory = page.getByTestId('opportunity-explore-directory')
-    await expect(directory).toBeInViewport({ ratio: 1 })
-    await expect(directory).toHaveAttribute('href', '/alquileres-uruguay')
-    expect((await directory.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    // The directory link lives in the section menu above the title, one tap away.
+    const section = page.getByTestId('familia-nav').locator('summary')
+    await expect(section).toBeInViewport({ ratio: 1 })
+    expect((await section.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    await expect(
+      page.getByTestId('familia-nav').locator('.familia-nav__menu a[href="/alquileres-uruguay"]')
+    ).toHaveCount(1)
     const card = page.getByTestId('opportunity-card')
     await expect(card.locator('.opportunity-card__asking')).toBeInViewport({ ratio: 1 })
     await expect(card.locator('.opportunity-card__comparison')).toBeInViewport({ ratio: 1 })

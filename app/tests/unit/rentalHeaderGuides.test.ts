@@ -16,7 +16,7 @@ import { familiaNavParaRuta } from '../../utils/familiaNav'
 // las dos listas de la página pasaron a ser grupos de la barra "En esta sección".
 //
 // Así que este test cuida las dos mitades: que las guías sigan arriba (en la barra, que va antes
-// que todo el contenido) y que la página no vuelva a tener su propia lista al lado.
+// que todo el contenido) y que la página no vuelva a tener su propia lista, ni arriba ni al pie.
 const source = readFileSync(resolve(__dirname, '../../pages/alquileres-uruguay.vue'), 'utf8')
 const messages = { es, en, pt } as const
 
@@ -64,8 +64,11 @@ describe('guías de antes de alquilar, en la barra de la sección', () => {
     for (const route of GUIDES) expect(header).not.toContain(route)
   })
 
-  it('el bloque del pie sigue estando: el lector que terminó de mirar avisos también las ve', () => {
-    const footer = source.indexOf('v-for="link in relatedLinks"')
-    expect(footer).toBeGreaterThan(source.indexOf('</header>'))
+  // El pie tenía su propia lista con las mismas tres guías ("Antes de alquilar"). Con las guías en
+  // la barra era la cuarta copia en la página (barra, pie, "Más sobre este tema"): se fue, y el
+  // bloque de tema del layout ahora excluye lo que la barra ya enlaza (`familiaNavRutas`).
+  it('el pie no repite las guías: están en la barra', () => {
+    expect(source).not.toContain('rentals-help')
+    expect(source).not.toContain('relatedLinks')
   })
 })

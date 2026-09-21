@@ -47,6 +47,7 @@
 // tail. Housing uses the explicit search operation/mode too: route.query is
 // available to both SSR and the client, with no saved browser state involved.
 import { directorioAnalisisParaRuta } from '~/utils/directorioAnalisis'
+import { familiaNavRutas } from '~/utils/familiaNav'
 import { temaVecinosRutas } from '~/utils/temaVecinos'
 import { relatedEnabledForPath, relatedFor } from '~/utils/relatedPages'
 
@@ -57,8 +58,11 @@ const track = useTrack()
 
 const sourcePath = computed(() => route.path)
 const relatedExclusions = computed(() => {
-  const directory = directorioAnalisisParaRuta(route.path)?.links.map(link => link.to) ?? []
-  return [...directory, ...temaVecinosRutas(route.path, directory)]
+  const above = [
+    ...familiaNavRutas(route.path),
+    ...(directorioAnalisisParaRuta(route.path)?.links.map(link => link.to) ?? []),
+  ]
+  return [...above, ...temaVecinosRutas(route.path, above)]
 })
 const items = computed(() =>
   relatedEnabledForPath(route.path)
