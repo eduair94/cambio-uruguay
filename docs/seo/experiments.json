@@ -161,6 +161,33 @@
         "aliexpress uruguay aduana"
       ],
       "hypothesis": "El regimen de envios postales ya estaba explicado en /franquicia-aduana-uruguay con el nombre de la norma, pero la consulta usa el nombre popular y la frase no estaba en ningun archivo del repo. Una pagina con el nombre con el que se pregunta, y con el minimo legal de IVA como dato del snippet (US$ 19 de compra pagan US$ 20), deberia capturar una demanda de marca que hoy no toca ninguna URL propia."
+    },
+    {
+      "id": "descripciones-del-tramo-contenido-2",
+      "shippedOn": "2026-09-21",
+      "routes": [
+        "/adelanto-de-efectivo-tarjeta-de-credito",
+        "/apps-economia-uruguay",
+        "/carne-de-salud-uruguay",
+        "/comprar-o-alquilar-uruguay",
+        "/cuenta-remunerada-uruguay",
+        "/descuento-de-iva-con-tarjeta-uruguay",
+        "/deuda-de-gastos-comunes-uruguay",
+        "/feriados-que-se-corren-uruguay",
+        "/horas-extras-uruguay",
+        "/importar-para-revender-uruguay",
+        "/impuesto-de-primaria-uruguay",
+        "/inversiones-uruguay",
+        "/licencias-especiales-uruguay",
+        "/limite-de-efectivo-uruguay",
+        "/meal-prep-uruguay",
+        "/pensiones-estudiantiles-uruguay",
+        "/que-pasa-si-no-pago-antel",
+        "/sala-vip-aeropuerto-uruguay",
+        "/salud-financiera",
+        "/temas-de-dinero-reddit"
+      ],
+      "hypothesis": "Las veinte descripciones mas largas que quedaban, de 298 a 247 caracteres, perdian su dato en el corte de 155; con la cifra adelante el mismo ranking deberia rendir mas clics."
     }
   ]
 }

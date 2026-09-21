@@ -148,8 +148,15 @@ const RESOLVED = 133
 // —«Guía de…», «La cuenta completa…»— pasó al final o se fue. Ninguna cifra es nueva: todas ya
 // estaban en la descripción vieja y en el cuerpo de su página.
 //
-// Quedan 76 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 76
+// 76 → 56 el 2026-09-21, tercera corrida: las veinte más largas que quedaban, de 298 a 247
+// caracteres, otra vez todas del tramo `contenido`. Mismo criterio y ninguna cifra nueva: adelante
+// queda el dato que decide el clic (los $ 282.612 de valor imponible que exoneran Primaria, los 2 y
+// 9 puntos de IVA y los 5 desde octubre, las 200.000 UI del límite de efectivo, los 3 días hábiles
+// por duelo, el 100 % y el 150 % de la hora extra, los 4 años y el 12 % de los gastos comunes) y se
+// fue lo genérico que la página ya dice entera.
+//
+// Quedan 56 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
+const OVER_BUDGET = 56
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {

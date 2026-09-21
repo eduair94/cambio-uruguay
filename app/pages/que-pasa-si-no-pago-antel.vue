@@ -171,7 +171,7 @@ const faq = ANTEL_DEUDA_FAQ as unknown as FaqItem[]
 const canonicalUrl = 'https://cambio-uruguay.com/que-pasa-si-no-pago-antel'
 const title = 'Qué pasa si no pagás Antel: mora y 72 h'
 const description =
-  'La mora corre el día del vencimiento y sin aviso. Después viene el bloqueo parcial o total, y la supresión definitiva si la deuda sigue. Al pagar, la reconexión tarda 48 horas hábiles en el fijo y 72 en internet. El plazo hasta el corte Antel no lo publica, y acá se dice.'
+  'La mora corre el día del vencimiento, sin aviso. Después, bloqueo y supresión definitiva. Al pagar, la reconexión tarda 48 h en el fijo y 72 en internet.'
 
 defineOgImageComponent('Cambio', {
   title: 'Deuda con Antel',

@@ -165,7 +165,7 @@ const faq = LICENCIAS_FAQ as unknown as FaqItem[]
 const canonicalUrl = 'https://cambio-uruguay.com/licencias-especiales-uruguay'
 const title = 'Licencias especiales: 3 días por duelo'
 const description =
-  'Por fallecimiento de padre, madre, hijo, cónyuge, concubino o hermano son 3 días hábiles pagos (Ley 18.345, art. 7). Por abuelo, tío o suegro la ley no da ninguno. Matrimonio 3 días, estudio 6, 9 o 12 al año. No se descuentan de la licencia anual ni se cambian por plata.'
+  'Por duelo de padre, madre, hijo, cónyuge, concubino o hermano son 3 días hábiles pagos (Ley 18.345, art. 7). Por abuelo, tío o suegro la ley no da ninguno.'
 
 defineOgImageComponent('Cambio', {
   title: 'Licencias especiales en Uruguay',

@@ -1039,7 +1039,7 @@ const faq: FaqItem[] = [
 
 const title = 'Meal prep Uruguay: viandas para la semana'
 const description =
-  'Cociná un día y comé siete: desayuno, almuerzo, merienda y cena de lunes a domingo según tu altura, peso y objetivo, con recetas fáciles en airfryer, microondas y anafe, reglas de conservación y la lista de compras con precios de supermercado medidos.'
+  'Cociná un día y comé siete: menú de lunes a domingo según tu altura, peso y objetivo, con recetas de airfryer y la lista de compras con precios medidos.'
 const canonicalUrl = 'https://cambio-uruguay.com/meal-prep-uruguay'
 
 useSeoMeta({
