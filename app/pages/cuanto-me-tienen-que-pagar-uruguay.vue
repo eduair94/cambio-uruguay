@@ -188,7 +188,7 @@ const verifiedAt = new Date(WAGE_VERIFIED_AT).toLocaleDateString('es-UY', {
 const canonicalUrl = 'https://cambio-uruguay.com/cuanto-me-tienen-que-pagar-uruguay'
 const title = '¿Cuánto me tienen que pagar como mínimo?'
 const description =
-  'El Salario Mínimo Nacional no es tu mínimo: si tu actividad tiene Consejo de Salarios, el laudo de tu grupo, subgrupo y categoría fija uno más alto y es exigible. Cómo identificar tu grupo (lo define la actividad de la empresa, no tu tarea), cómo encontrar el acta vigente, qué más te da el laudo además del sueldo, y el servicio gratuito del MTSS para consultarlo.'
+  'Tu mínimo no es el Salario Mínimo Nacional: es el laudo de tu grupo, subgrupo y categoría, y es exigible. Cómo ubicarlo y consultarlo gratis en el MTSS.'
 
 defineOgImageComponent('Cambio', {
   title: '¿Cuánto me tienen que pagar?',

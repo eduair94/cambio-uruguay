@@ -232,7 +232,7 @@ const verifiedAt = new Date(`${SALARIO_VACACIONAL_VERIFIED_AT}T12:00:00Z`).toLoc
 const canonicalUrl = 'https://cambio-uruguay.com/salario-vacacional-uruguay'
 const title = 'Salario vacacional: cuánto es y cuándo'
 const description =
-  'El salario vacacional se paga antes de que empiece la licencia y en proporción a sus días, con un mínimo del 100 % del jornal líquido de vacaciones (Ley 16.101). La licencia son 20 días, más 1 a los 5 años de antigüedad y 1 más cada 4. Se calcula sobre el líquido, no sobre el nominal, y la DGI lo grava por IRPF aparte del resto del sueldo.'
+  'El salario vacacional se paga antes de la licencia y mínimo el 100 % del jornal líquido (Ley 16.101). Licencia: 20 días, más 1 a los 5 años y 1 cada 4.'
 
 defineOgImageComponent('Cambio', {
   title: 'Salario vacacional en Uruguay',

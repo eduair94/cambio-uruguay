@@ -798,7 +798,7 @@ const sendActions: SendAction[] = [
 const canonicalUrl = 'https://cambio-uruguay.com/recibir-regalos-del-exterior-uruguay'
 const title = 'Recibir regalos del exterior en Uruguay'
 const description =
-  'Un regalo de tu pareja, amigo o familiar desde afuera no paga IVA si es un obsequio familiar genuino (Decreto 50/026, art. 3). Qué puede hacer que te lo retengan, cómo tiene que venir declarado el CN22, qué no puede ir adentro, por qué podés incluir una carta personal y qué hacer si igual queda retenido.'
+  'Un regalo familiar genuino desde el exterior no paga IVA (Decreto 50/026, art. 3). Cómo tiene que venir declarado el CN22 y qué hace que te lo retengan.'
 
 defineOgImageComponent('Cambio', {
   title: 'Recibir regalos del exterior',

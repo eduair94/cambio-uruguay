@@ -137,9 +137,19 @@ const RESOLVED = 133
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente
 // ($ 464,55 de cargos fijos de OSE, los 5 años de la Ley 18.331, los trece sueldos del
-// dependiente), que es justo la parte que el SERP sí muestra. Quedan 96 para las próximas
-// corridas, y este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 96
+// dependiente), que es justo la parte que el SERP sí muestra.
+//
+// 96 → 76 el mismo 2026-09-20, segunda corrida: las veinte más largas que quedaban, de 371 a 305
+// caracteres, TODAS del tramo `contenido` (guías y páginas de problema), que es el que más rinde
+// por vista — ver `classes/revenueplan/value.ts`. Mismo criterio que la primera tanda y no un
+// recorte a ciegas: lo que ahora entra en el SERP es el dato que decide el clic (los 5 años de
+// prescripción de DGI, los 15/30/60/120 días para presentar un cheque, el 9,6 % de vivienda vacía
+// de Montevideo en el Censo 2023, UR 1,25 de la libreta, el tope de usura de 55 %), y lo genérico
+// —«Guía de…», «La cuenta completa…»— pasó al final o se fue. Ninguna cifra es nueva: todas ya
+// estaban en la descripción vieja y en el cuerpo de su página.
+//
+// Quedan 76 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
+const OVER_BUDGET = 76
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {

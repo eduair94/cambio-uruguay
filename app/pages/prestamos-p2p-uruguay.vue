@@ -835,7 +835,7 @@ const uiLabel = dateLabel(UI_VALUE_DATE)
 const canonicalUrl = 'https://cambio-uruguay.com/prestamos-p2p-uruguay'
 const title = 'Préstamos peer to peer (P2P) en Uruguay'
 const description =
-  'Guía de los préstamos entre personas regulados por el BCU: qué dice la Circular 2.307 artículo por artículo, los topes de UI 100.000 y UI 25.000, quién asume la mora, cuánto queda después de comisiones e IRPF, la historia de las plataformas uruguayas que no prosperaron y la comparación con plazo fijo, Notas del Tesoro, bancos y financieras.'
+  'Los préstamos entre personas los regula la Circular 2.307 del BCU: topes de UI 100.000 y UI 25.000, quién asume la mora y qué queda tras comisiones e IRPF.'
 
 defineOgImageComponent('Cambio', {
   title: 'Préstamos peer to peer',
