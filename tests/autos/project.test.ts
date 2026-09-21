@@ -26,7 +26,7 @@ describe("publicCarListing", () => {
     const row = publicCarListing(car(), null)!;
     expect(Object.keys(row).sort()).toEqual([
       "body", "brand", "brandSlug", "color", "currency", "currencyInferred", "dealerName", "department", "doors", "engine", "firstSeen",
-      "flags", "fuel", "fuelEconomy",
+      "flags", "fuel", "fuelEconomy", "hasContact",
       "key", "km", "lastSeen", "listedPrice", "marketSlug", "model", "modelSlug", "neighborhood", "opportunity", "permalink", "picture",
       "pictureCount", "price", "priceConverted", "priceDrop", "priceUsd", "reference", "risks", "sellerType", "source",
       "sourceName",
@@ -88,6 +88,15 @@ describe("snapshots", () => {
     expect(listings.find(row => row.key === "ml-MLU1")!.opportunity).toEqual({ tier: "strict", gap: 0.255, median: 10600, n: 10 });
     expect(meta).toMatchObject({ key: "uy-cars", freshDays: 4, sourceCoverage: "partial", listings: 11, opportunities: 1,
       models: [{ slug: "peugeot-208", brand: "Peugeot", model: "208", listings: 11 }] });
+    expect(listings.every(row => row.hasContact === false)).toBe(true);
+  });
+  it("flags the adverts that have a phone, and carries nothing else about it", () => {
+    const { listings } = buildCarCatalog([car(), ...peers], analysis(car(), peers), {
+      now: NOW, generatedAt: NOW.toISOString(), usdUyu: 40.2, lastFullReadAt: null, lastReadAt: null, reportedTotal: null, sources: [],
+      contactKeys: new Set(["ml-MLU1"]),
+    });
+    expect(listings.filter(row => row.hasContact).map(row => row.key)).toEqual(["ml-MLU1"]);
+    expect(JSON.stringify(listings)).not.toMatch(/099|\+598/);
   });
   it("publishes the policy, the sample and the comparables without private data", () => {
     const snapshot = buildOpportunitySnapshot(analysis(car(), peers), { generatedAt: NOW.toISOString(), usdUyu: 40.2 });

@@ -20,7 +20,8 @@ function dealerNameOf(listing: CarListing): string | null {
   return cleanPublicText(listing.detail.sellerName) || null;
 }
 
-export function publicCarListing(listing: CarListing, opportunity: PublicCarListing["opportunity"]): PublicCarListing | null {
+/** `hasContact`: the advert has a phone in `carcontacts` (classes/autos/contacts/build.ts); never the phone itself. */
+export function publicCarListing(listing: CarListing, opportunity: PublicCarListing["opportunity"], hasContact = false): PublicCarListing | null {
   if (!safeSourcePermalink(listing.source, listing.permalink)) return null;
   return {
     key: listing.key,
@@ -62,6 +63,7 @@ export function publicCarListing(listing: CarListing, opportunity: PublicCarList
     risks: risksOf(listing).map(risk => ({ category: risk.category, severity: risk.severity, quote: risk.quote, from: risk.from })),
     opportunity,
     reference: listing.reference ? { ...listing.reference } : null,
+    hasContact,
   };
 }
 
@@ -77,6 +79,8 @@ export interface CatalogContext {
   lastReadAt: string | null;
   reportedTotal: number | null;
   sources: PublicCarSourceCoverage[];
+  /** Adverts with a publishable phone (only the flag reaches the catalogue). */
+  contactKeys?: ReadonlySet<string>;
 }
 
 export function buildCarCatalog(listings: readonly CarListing[], analysis: CarAnalysis, context: CatalogContext): { listings: PublicCarListing[]; meta: PublicCarCatalogMeta } {
@@ -84,7 +88,7 @@ export function buildCarCatalog(listings: readonly CarListing[], analysis: CarAn
   const cutoff = context.now.getTime() - CAR_CATALOG_FRESH_DAYS * 86_400_000;
   const rows = listings
     .filter(listing => Date.parse(listing.lastSeen) >= cutoff)
-    .map(listing => publicCarListing(listing, badges.get(listing.key) ?? null))
+    .map(listing => publicCarListing(listing, badges.get(listing.key) ?? null, !!context.contactKeys?.has(listing.key)))
     .filter((row): row is PublicCarListing => !!row)
     .sort((a, b) => a.key.localeCompare(b.key));
   const models = new Map<string, { slug: string; brand: string; model: string; listings: number }>();

@@ -90,6 +90,28 @@ export interface PublicCarListing {
   risks: PublicCarRisk[];
   opportunity: { tier: PublicCarTier; gap: number; median: number; n: number } | null;
   reference: PublicCarReference | null;
+  /** Hay un teléfono publicable para este aviso; se pide aparte, a /api/cars/contact/<key>. */
+  hasContact?: boolean;
+}
+
+/** Un teléfono del vendedor: `value` se marca ("+59899123456", "08002525"), `display` se lee. */
+export interface PublicCarContactPhone {
+  value: string;
+  display: string;
+  mobile: boolean;
+}
+
+/**
+ * Cómo contactar al vendedor de UN aviso, pedido aparte y con un clic: nunca viaja con el catálogo.
+ * "advert_text" = lo escribió el vendedor en el texto público de su aviso (`sourceUrl` es el aviso);
+ * "dealer_site" = el número comercial de la automotora en su propia web (`sourceUrl` es esa página).
+ */
+export interface PublicCarContact {
+  key: string;
+  origin: "advert_text" | "dealer_site";
+  phones: PublicCarContactPhone[];
+  sourceUrl: string;
+  observedAt: string;
 }
 
 export interface PublicCarModelSummary {
