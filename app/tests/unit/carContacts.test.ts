@@ -37,6 +37,8 @@ describe('publicCarContact', () => {
       ],
       sourceUrl: row.permalink,
       observedAt: doc.observedAt,
+      dealerName: null,
+      accountTwins: null,
     })
   })
 
@@ -87,6 +89,33 @@ describe('publicCarContact', () => {
       publicCarContact({ ...dealerDoc, sourceUrl: dealerRow.permalink }, dealerRow, options)
     ).toBeNull()
     expect(publicCarContact({ ...dealerDoc, key: 'ml-MLU1' }, row, options)).toBeNull()
+    expect(publicCarContact(dealerDoc, dealerRow, options)).toMatchObject({
+      dealerName: 'Julio Automóviles',
+      accountTwins: null,
+    })
+  })
+
+  it("gives a Mercado Libre advert a dealer's number only with the account evidence", () => {
+    const carperDoc = {
+      ...doc,
+      origin: 'dealer_site',
+      sourceUrl: 'https://usados.carper.com.uy/contacto/',
+      accountTwins: 61,
+    }
+    expect(publicCarContact(carperDoc, row, options)).toMatchObject({
+      dealerName: 'Carper',
+      accountTwins: 61,
+      sourceUrl: 'https://usados.carper.com.uy/contacto/',
+    })
+    expect(publicCarContact({ ...carperDoc, accountTwins: null }, row, options)).toBeNull()
+    expect(publicCarContact({ ...carperDoc, accountTwins: -3 }, row, options)).toBeNull()
+    // A dealer page is never valid for another dealer's own adverts.
+    const julioRow = {
+      key: 'ml-MLU1',
+      source: 'julio',
+      permalink: 'https://julioautomoviles.com.uy/vehiculo/x/',
+    }
+    expect(publicCarContact(carperDoc, julioRow, options)).toBeNull()
   })
 
   it('never offers WhatsApp for a landline or a toll-free number', () => {

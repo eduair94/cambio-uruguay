@@ -1,10 +1,12 @@
 // La base de teléfonos: un registro por AVISO publicado, nunca por persona. Qué entra:
 //   * "advert_text": lo que el vendedor escribió en el título o la descripción pública de SU aviso;
-//   * "dealer_site": el número comercial de la automotora, sólo si el aviso no trae uno propio.
+//   * "dealer_site": el número comercial de la automotora, sólo si el aviso no trae uno propio: los
+//     avisos de su web, y los de las cuentas de Mercado Libre que ./accounts.ts reconoce como suyas.
 // Facebook nunca (su texto se lee con sesión). Vence a los 21 días de su propia lectura, como en
 // viviendas (docs/app/PROPERTY_ADVERTISERS.md). Ver docs/app/AUTOS_CONTACTOS.md.
 import { CAR_SOURCES, safeSourcePermalink } from "../sources/registry";
 import type { CarListing, CarSellerType, CarSource } from "../types";
+import type { DealerAccount } from "./accounts";
 import type { DealerContactRecord } from "./dealers";
 import { carContactHash } from "./optout";
 import { phonesInText, type CarPhone } from "./phones";
@@ -20,6 +22,10 @@ export interface CarContactRecord {
   phones: CarPhone[];
   sourceUrl: string;
   observedAt: string;
+  /** "dealer_site": de qué automotora es el número. */
+  dealer: CarSource | null;
+  /** Aviso de ML de una cuenta reconocida: cuántos autos comparte con la web de la automotora. */
+  accountTwins: number | null;
 }
 
 export interface ContactOptions {
@@ -27,6 +33,8 @@ export interface ContactOptions {
   dealers: ReadonlyMap<CarSource, DealerContactRecord>;
   /** Hashes de los números cuya baja se pidió (./optout.ts). */
   optOuts: ReadonlySet<string>;
+  /** Cuentas de Mercado Libre reconocidas como de una automotora, por id de vendedor (./accounts.ts). */
+  accounts?: ReadonlyMap<string, DealerAccount>;
 }
 
 const fresh = (at: string | null | undefined, now: Date): at is string =>
@@ -46,13 +54,20 @@ export function carContactFor(listing: CarListing, options: ContactOptions): Car
     .slice(0, MAX_ADVERT_PHONES);
   if (own.length) {
     const observedAt = fromDescription.length ? detail!.readAt : listing.observedAt;
-    return { ...base, origin: "advert_text", phones: own, sourceUrl: permalink, observedAt };
+    return { ...base, origin: "advert_text", phones: own, sourceUrl: permalink, observedAt, dealer: null, accountTwins: null };
   }
-  const contactPage = CAR_SOURCES[listing.source].contactPage;
-  const dealer = options.dealers.get(listing.source);
-  if (listing.sellerType !== "dealer" || !contactPage || dealer?.sourceUrl !== contactPage || !fresh(dealer.observedAt, options.now)) return null;
+  if (listing.sellerType !== "dealer") return null;
+  const account = listing.source === "mercadolibre" && listing.sellerId ? options.accounts?.get(listing.sellerId) : undefined;
+  const dealerSource: CarSource | undefined = CAR_SOURCES[listing.source].contactPage ? listing.source : account?.source;
+  const contactPage = dealerSource ? CAR_SOURCES[dealerSource].contactPage : null;
+  const dealer = dealerSource ? options.dealers.get(dealerSource) : undefined;
+  if (!dealerSource || !contactPage || dealer?.sourceUrl !== contactPage || !fresh(dealer.observedAt, options.now)) return null;
   const phones = allowed(dealer.phones);
-  return phones.length ? { ...base, origin: "dealer_site", phones, sourceUrl: contactPage, observedAt: dealer.observedAt } : null;
+  if (!phones.length) return null;
+  return {
+    ...base, origin: "dealer_site", phones, sourceUrl: contactPage, observedAt: dealer.observedAt,
+    dealer: dealerSource, accountTwins: account ? account.twins : null,
+  };
 }
 
 export function buildCarContacts(listings: readonly CarListing[], options: ContactOptions): CarContactRecord[] {

@@ -43,10 +43,29 @@ export function publicCarContact(
     doc.origin === 'advert_text' || doc.origin === 'dealer_site'
       ? (doc.origin as PublicCarContact['origin'])
       : null
+  // "dealer_site": la página de contacto de la automotora dueña del número. Vale para los avisos de su
+  // propia web y para los de Mercado Libre de una cuenta reconocida por los autos que comparte con esa
+  // web, que tienen que traer esa evidencia (classes/autos/contacts/accounts.ts).
+  const dealer =
+    origin === 'dealer_site'
+      ? CAR_SOURCES_PUBLIC.find(
+          item =>
+            !!CAR_SOURCE_RULES[item].contactPage &&
+            CAR_SOURCE_RULES[item].contactPage === doc.sourceUrl
+        )
+      : undefined
+  const accountTwins =
+    Number.isInteger(doc.accountTwins) && doc.accountTwins > 0 ? Number(doc.accountTwins) : null
+  if (origin === 'dealer_site') {
+    if (!dealer) return null
+    if (source !== dealer && !(source === 'mercadolibre' && accountTwins)) return null
+  }
   const expectedUrl =
     origin === 'advert_text'
       ? carSafePermalink(source, row.permalink)
-      : CAR_SOURCE_RULES[source].contactPage
+      : dealer
+        ? CAR_SOURCE_RULES[dealer].contactPage
+        : null
   if (!origin || !expectedUrl || doc.sourceUrl !== expectedUrl) return null
   const phones = (Array.isArray(doc.phones) ? doc.phones : [])
     .map((phone: Loose) => String(phone?.value ?? ''))
@@ -65,6 +84,8 @@ export function publicCarContact(
     phones,
     sourceUrl: expectedUrl,
     observedAt: new Date(observed).toISOString(),
+    dealerName: dealer ? CAR_SOURCE_RULES[dealer].name : null,
+    accountTwins: dealer && source === 'mercadolibre' ? accountTwins : null,
   }
 }
 

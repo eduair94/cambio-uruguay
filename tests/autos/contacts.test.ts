@@ -35,6 +35,7 @@ describe("carContactFor", () => {
       key: "ml-MLU1", source: "mercadolibre", sellerType: "private", origin: "advert_text",
       phones: [{ value: "+59899123456", mobile: true }],
       sourceUrl: "https://auto.mercadolibre.com.uy/MLU-1-peugeot-_JM", observedAt: daysAgo(1),
+      dealer: null, accountTwins: null,
     });
   });
 
@@ -65,6 +66,18 @@ describe("carContactFor", () => {
     // A portal has no dealer page even if a record somehow exists for it.
     const mlDealer = car({ detail: null, sellerType: "dealer" });
     expect(carContactFor(mlDealer, options({ dealers: new Map([["mercadolibre", dealer("julio", daysAgo(1))]] as const) }))).toBeNull();
+  });
+
+  it("gives a recognised Mercado Libre account its dealer's number, with the evidence", () => {
+    const account = { sellerId: "535", source: "carper" as const, twins: 61, adverts: 120 };
+    const carper = new Map([["carper", dealer("carper", daysAgo(1))]] as const);
+    const ml = car({ sellerType: "dealer", sellerId: "535", detail: { ...car().detail!, description: "Impecable" } });
+    expect(carContactFor(ml, options({ dealers: carper, accounts: new Map([["535", account]]) }))).toMatchObject({
+      origin: "dealer_site", dealer: "carper", accountTwins: 61, sourceUrl: "https://usados.carper.com.uy/contacto/",
+    });
+    // Another account, or a private seller with the same id, gets nothing.
+    expect(carContactFor({ ...ml, sellerId: "999" }, options({ dealers: carper, accounts: new Map([["535", account]]) }))).toBeNull();
+    expect(carContactFor({ ...ml, sellerType: "private" }, options({ dealers: carper, accounts: new Map([["535", account]]) }))).toBeNull();
   });
 
   it("the advert's own number wins over the dealer's", () => {

@@ -11,6 +11,13 @@ import type { CarListing, CarSource } from "./types";
 
 const DUPLICATE = { kmAbsolute: 500, kmRatio: 0.01, priceRatio: 0.03 } as const;
 
+/** The same car in two adverts: same brand, model and year, km within max(500, 1 %), price within 3 %. */
+export function carTwins(a: CarListing, b: CarListing): boolean {
+  return a.brandId === b.brandId && a.modelId === b.modelId && a.year === b.year && a.km !== null && b.km !== null &&
+    Math.abs(a.km - b.km) <= Math.max(DUPLICATE.kmAbsolute, a.km * DUPLICATE.kmRatio) &&
+    Math.abs(a.priceUsd - b.priceUsd) <= a.priceUsd * DUPLICATE.priceRatio;
+}
+
 export function dedupeAcrossSources(listings: readonly CarListing[]): { kept: CarListing[]; duplicates: Partial<Record<CarSource, number>> } {
   const sorted = [...listings].sort((a, b) => CAR_SOURCES[a.source].priority - CAR_SOURCES[b.source].priority || a.key.localeCompare(b.key));
   const keptByCar = new Map<string, CarListing[]>();
@@ -19,9 +26,7 @@ export function dedupeAcrossSources(listings: readonly CarListing[]): { kept: Ca
   for (const listing of sorted) {
     const car = `${listing.brandId}|${listing.modelId}|${listing.year}`;
     const peers = keptByCar.get(car) ?? [];
-    const copy = listing.km !== null && peers.some(peer => peer.source !== listing.source && peer.km !== null &&
-      Math.abs(peer.km - listing.km!) <= Math.max(DUPLICATE.kmAbsolute, peer.km * DUPLICATE.kmRatio) &&
-      Math.abs(peer.priceUsd - listing.priceUsd) <= peer.priceUsd * DUPLICATE.priceRatio);
+    const copy = peers.some(peer => peer.source !== listing.source && carTwins(peer, listing));
     if (copy) {
       duplicates[listing.source] = (duplicates[listing.source] ?? 0) + 1;
       continue;

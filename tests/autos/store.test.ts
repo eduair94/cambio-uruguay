@@ -213,7 +213,7 @@ describe("publishCarContacts", () => {
   const record = {
     key: "ml-MLU1", source: "mercadolibre", sellerType: "private", origin: "advert_text",
     phones: [{ value: "+59899123456", mobile: true }], sourceUrl: "https://auto.mercadolibre.com.uy/MLU-1-x-_JM",
-    observedAt: "2026-09-20T00:00:00.000Z",
+    observedAt: "2026-09-20T00:00:00.000Z", dealer: null, accountTwins: null,
   } as const;
 
   it("rewrites the whole base: one replace per advert, every other advert deleted", async () => {

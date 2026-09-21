@@ -9,6 +9,7 @@ import { attachReferences, dedupeAcrossSources, referenceMedians, sourceCoverage
 import { attachBodyType } from "./classes/autos/bodyType";
 import { dropImplausiblePrices, priceDropSummary } from "./classes/autos/priceSanity";
 import { attachFuelEconomy } from "./classes/autos/fuelEconomy";
+import { inferDealerAccounts } from "./classes/autos/contacts/accounts";
 import { buildCarContacts, contactSummary } from "./classes/autos/contacts/build";
 import { DEALER_CONTACT_SOURCES, readDealerContacts, type DealerContactRecord } from "./classes/autos/contacts/dealers";
 import { fetchCarDetails } from "./classes/autos/detail";
@@ -220,7 +221,14 @@ async function main(): Promise<void> {
     }
     return kept;
   };
-  let { kept: listings, duplicates } = dedupeAcrossSources(enrichAll(stored, new Map()));
+  const enrichedAll = enrichAll(stored, new Map());
+  // Qué cuentas de Mercado Libre son de qué automotora, por los autos que comparten con su web: se
+  // mide ANTES del dedupe, que justamente descarta a esos gemelos (classes/autos/contacts/accounts.ts).
+  const dealerAccounts = inferDealerAccounts(enrichedAll);
+  const accountSummary = new Map<string, number[]>();
+  for (const account of dealerAccounts.values()) accountSummary.set(account.source, [...(accountSummary.get(account.source) ?? []), account.twins]);
+  console.log(`[autos] cuentas de ML de automotoras: ${[...accountSummary].map(([source, twins]) => `${source}=${twins.length} (${twins.join("+")} gemelos)`).join(" ") || "ninguna"}`);
+  let { kept: listings, duplicates } = dedupeAcrossSources(enrichedAll);
   const details = new Map(listings.filter(listing => listing.detail).map(listing => [listing.key, listing.detail!] as [string, CarDetail]));
   let analysis = analyzeCars(listings, { now, details, trimIndexes });
 
@@ -260,7 +268,7 @@ async function main(): Promise<void> {
   const dealers = dryRun ? new Map(dealerRecords.map(record => [record.source, record] as const)) : await loadDealerContacts();
   const optOuts = dryRun ? new Set<string>() : await loadContactOptOuts();
   const freshCutoff = now.getTime() - CAR_CATALOG_FRESH_DAYS * 86_400_000;
-  const contacts = buildCarContacts(listings.filter(listing => Date.parse(listing.lastSeen) >= freshCutoff), { now, dealers, optOuts });
+  const contacts = buildCarContacts(listings.filter(listing => Date.parse(listing.lastSeen) >= freshCutoff), { now, dealers, optOuts, accounts: dealerAccounts });
   const contactKeys = new Set(contacts.map(contact => contact.key));
   const contactStats = contactSummary(contacts);
   console.log(`[autos] teléfonos: ${JSON.stringify(contactStats)}`);

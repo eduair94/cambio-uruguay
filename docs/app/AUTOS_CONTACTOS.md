@@ -26,7 +26,23 @@ es el número de las automotoras y el que algunos vendedores escriben igual en s
   leído sin sesión. Cualquier fuente menos Facebook.
 - `dealer_site`: el número de la página de contacto de la automotora en **su** web (`contactPage` en
   `classes/autos/sources/registry.ts`, espejado en `app/utils/cars.ts`). Sólo para avisos de esa
-  automotora y sólo si el aviso no trae número propio.
+  automotora y sólo si el aviso no trae número propio. Incluye los avisos de **Mercado Libre** de las
+  cuentas que son de esa automotora (ver abajo).
+
+## Cuentas de Mercado Libre de las automotoras (`classes/autos/contacts/accounts.ts`)
+
+Una cuenta de ML se reconoce como de una automotora por su **inventario**, nunca por el nombre: si
+publica al menos 10 autos idénticos (`carTwins`, el mismo criterio del dedupe) a los de la web de la
+automotora, esos son al menos el 30 % de sus avisos de automotora, y ninguna otra web le disputa
+la mitad de esa cifra, sus avisos llevan el número de la `contactPage` de esa automotora. Se
+recalcula en cada corrida, antes del dedupe (que descarta justamente a esos gemelos). La respuesta
+pública trae `accountTwins` y la ficha lo explica ("ofrece 61 de los mismos autos que la web de
+Carper"); la API rechaza un número de automotora en un aviso de ML que no trae esa evidencia.
+
+Medido el 2026-09-21: Shopping de Autos publica desde 3 cuentas (44, 25 y 19 gemelos), Carper
+desde 2 (61 y 33), Fidocar y Motorlider desde una (47 y 35). Cualquier otra cuenta comparte entre
+1 y 4 autos con esas webs, que es el azar de un mercado chico. Julio y Car One no tienen una cuenta
+dominante. Son ~450 avisos de ML con número comercial.
 
 **Nunca**
 - Nada detrás de login, captcha, "Ver teléfono", botones de WhatsApp del portal, formularios, chat
@@ -88,9 +104,10 @@ se atiende por correo (`/privacidad`).
 
 ## Para ampliar sin cruzar el límite
 
-- **Automotoras de Mercado Libre** (8.008 avisos, 48 % de ML): una tabla VERIFICADA por una persona
-  que una el id de vendedor de ML con la `contactPage` de la web propia de esa automotora le daría
-  su número comercial a cada uno de sus avisos. Nunca por parecido de nombre.
+- **Más automotoras**: los avisos de automotoras en ML son 8.009 y vienen de 422 cuentas (las 100
+  más grandes suman 4.383; las 200, 6.400). Cada automotora que se sume como fuente con su web
+  (stock + `contactPage`) se reconoce sola en ML por los autos que comparte. La alternativa, una
+  tabla cuenta → web, tiene que salir de evidencia verificable, nunca de un nombre parecido.
 - **Más clasificados** donde el número está en el aviso y a la vista sin cuenta.
 - Mercado Libre o Meta sólo con su autorización escrita (como El País en alquileres).
 

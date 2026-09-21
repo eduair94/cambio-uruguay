@@ -49,6 +49,11 @@
         }}</a
         >. Leído el {{ formatCarDate(contact.observedAt) }}.
       </p>
+      <p v-if="contact.accountTwins" class="text-body-2 mb-2" data-testid="car-seller-account">
+        La cuenta que publica este aviso en {{ car.sourceName }} ofrece
+        {{ contact.accountTwins }} de los mismos autos que la web de {{ contact.dealerName }}: por
+        eso sabemos que es la misma automotora.
+      </p>
       <p class="text-body-2 mb-2">
         No señes ni transfieras plata sin ver el auto, la libreta y las deudas de la matrícula.
         <NuxtLink :to="localePath('/comprar-auto-con-deuda-uruguay')">Qué revisar antes</NuxtLink>.
@@ -168,7 +173,7 @@ const whatsappHref = (value: string): string =>
 
 const provenance = computed(() =>
   contact.value?.origin === 'dealer_site'
-    ? `Número comercial que ${props.car.sourceName} publica en`
+    ? `Número comercial que ${contact.value.dealerName ?? props.car.sourceName} publica en`
     : `Lo escribió el vendedor en`
 )
 const provenanceLink = computed(() =>

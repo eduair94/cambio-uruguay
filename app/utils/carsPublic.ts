@@ -133,6 +133,10 @@ export interface PublicCarContact {
   phones: PublicCarContactPhone[]
   sourceUrl: string
   observedAt: string
+  /** "dealer_site": el nombre de la automotora dueña del número. */
+  dealerName: string | null
+  /** Aviso de Mercado Libre: cuántos autos de la web de la automotora publica también esa cuenta. */
+  accountTwins: number | null
 }
 
 export interface PublicCarModelSummary {
