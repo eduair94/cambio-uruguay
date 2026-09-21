@@ -24,8 +24,16 @@ pm2 save
 Verify locally on the box:
 
 ```bash
-curl -s http://localhost:8788/health      # → {"status":"ok",...}
+curl -s http://localhost:8788/health      # → {"status":"ok","toolsets":[...]}
+# tools per toolset (26 at /mcp, 8 at /mcp/alquileres, 6 at /mcp/autos, 5 at /mcp/productos):
+curl -s -X POST http://localhost:8788/mcp/alquileres \
+  -H "content-type: application/json" -H "accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | grep -o '"name":"[a-z_]*"' | sort -u
 ```
+
+The site toolsets read `SITE_BASE_URL` (default `https://cambio-uruguay.com`). On the VPS it can
+point at the local Nuxt server to skip Cloudflare, but the rental household ranking is rate-limited
+per client IP, so keep the public URL unless that limit becomes the bottleneck.
 
 ## 3. DNS
 

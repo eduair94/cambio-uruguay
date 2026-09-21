@@ -1,6 +1,6 @@
 # mcp/ — AGENTS
 
-Open-source MCP server (`cambio-uruguay-mcp`, published to npm) wrapping the public cambio-uruguay API as read-only tools; isolated package with its own build and deploy surface.
+Open-source MCP server (`cambio-uruguay-mcp`, published to npm) wrapping the public cambio-uruguay rates API AND the site API (rentals, used cars, products) as 26 read-only tools in 4 toolsets, plus a Claude skill; isolated package with its own build and deploy surface.
 
 Start with `mcp/README.md` (client configs, tool list, env table) and `mcp/DEPLOY.md` (hosted endpoint, nginx). This file = only what's beyond them.
 
@@ -8,15 +8,50 @@ Start with `mcp/README.md` (client configs, tool list, env table) and `mcp/DEPLO
 | file | role |
 |---|---|
 | `index.ts` | entrypoint (`bin`). Picks transport from `MCP_TRANSPORT`: `stdio` (default) or `http`. HTTP server exposes only `/mcp` + `/health`. |
-| `server.ts` | `buildServer(api)` — registers the 7 tools + 1 prompt on `McpServer`. Tool titles/descriptions/`zod` input schemas live here. |
+| `server.ts` | `buildServer(api, { site, toolsets })` — registers each toolset from `src/register/` (exchange = the original 7 tools + prompt) and sends `instructions.ts`. |
 | `tools.ts` | PURE handlers over the `CambioApi` seam (data in → structured data out, no MCP types, no network). Rate/retail-filter logic. |
 | `api.ts` | `CambioApi` interface + `httpCambioApi(base)` live client (global `fetch`). Types: `RateRow`, `HouseInfo`, `InsightResult`. |
 | `news.ts` | Google News RSS feeds + parse/merge/dedupe (news comes straight from RSS, NOT the API). |
 | `lib.ts` | library entry — package `main`/`exports` (`.`, `./api`, `./tools`, `./news`) for programmatic use. |
-| `test/*.test.ts` | vitest, pure handlers against a FAKE `CambioApi` — no network. |
+| `test/*.test.ts` | vitest, pure handlers against a FAKE `CambioApi` / `fakeSite()` — no network. `server.test.ts` drives the real server through `InMemoryTransport`. |
+
+## Site toolsets: alquileres, autos, productos (v0.2.0)
+
+19 more tools read the **site** API (`SITE_BASE_URL`, default `https://cambio-uruguay.com`, the Nuxt
+`app/server/api/*` routes over the APP DB), not the rates API. Same pattern as `tools.ts`: pure
+handlers `(site: SiteApi, input) => Promise<ToolOutput>` in `src/rentals/`, `src/cars/`,
+`src/products/`; zod + descriptions in `src/register/*.ts`; `safe()` turns failures into MCP tool
+errors. `buildServer(api, { site, toolsets })`; HTTP picks toolsets by path (`/mcp`, `/mcp/alquileres`,
+`/mcp/autos`, `/mcp/productos`, `/mcp/cambio`), stdio by `MCP_TOOLSETS`. `src/instructions.ts` is sent
+at initialisation; `src/register/prompts.ts` holds 6 guided workflows.
+
+| dir | role |
+|---|---|
+| `src/site.ts` | `SiteApi` + `httpSiteApi()`: TTL cache (60 s searches, 10 min catalogues), in-flight dedupe, 25 s timeout (90 s for `/api/rentals/fit`), one retry on 502/503/504, Spanish `SiteError`s |
+| `src/format.ts` | money/percent formatting, `fold`, `slugify`, `toQuery`, `siteUrl` (links always to the public site) |
+| `src/rentals/` | search + geocode, household ranking (`POST /api/rentals/fit`), ficha + zone profile, analysis, estimate, zones, opportunities |
+| `src/cars/` | directory, opportunities, ficha, model market, declared risks, report |
+| `src/products/` | unified search (phones, chairs, equipar, movilidad), home basket, stores, SIPC prices, directories |
+| `skills/buscador-uruguay/` | Agent Skill; `npm run pack-skill` writes `app/public/descargas/buscador-uruguay-skill.zip` (test fails on drift) |
+| `scripts/smoke.mjs` | `npm run smoke`: every site handler against production. Run it after touching a handler: it found 4 real defects the unit tests could not |
+
+### Gotchas measured against production (2026-09-21)
+- **Rental price filters are ALWAYS pesos** (`priceMin`/`priceMax` compare `priceUyu`); the site `currency`
+  param only keeps adverts published in that currency. Hence `priceMinUyu`/`priceMaxUyu` + `listedCurrency`.
+- **`refLat`/`refLng` only SORT by distance**, they never filter; the radius is applied in the handler over a
+  48-row page, and the text says how many fall inside, not the catalogue total.
+- **The IDE geocoder** misses "Avenida Italia 2500" (finds "Italia 2500"), reads "Julio Herrera y Reissig" as an
+  intersection and sometimes answers 503. `geocodeItems` retries without the street type; errors advise lat/lng.
+- **Category offer lists are not curated** (a 20-peso fridge, a paring knife under "chef knife"): an offer only
+  counts when it reaches 60 % of the p25 of the band for its condition (`plausibleOffers`).
+- **`/api/rentals/fit`** is 10 req/min per IP and 30/min per worker, and a cold worker needs 30–60 s to load the
+  catalogue (Cloudflare can 502 once): the hosted server shares one IP, so heavy use hits 429.
+- The car valuation `diesel` coefficient is computed but not advice (it measures the version); it is not shown.
+- Never log request bodies: household incomes and addresses travel in `rank_rentals_for_household`.
+
 
 ## Build / run / test (cwd = `mcp/`)
-- `npm ci && npm run build` → `dist/` (`tsc -p tsconfig.json`, `rootDir src`, `outDir dist`, declarations).
+- `npm install && npm run build` → `dist/` (`tsc -p tsconfig.json`, `rootDir src`, `outDir dist`, declarations).
 - `npm test` (`vitest run`) · `npm run dev` (`tsx src/index.ts`) · `npm run inspect` (MCP Inspector on source).
 - Node ≥18. Deps: only `@modelcontextprotocol/sdk` + `zod`.
 
