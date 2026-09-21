@@ -3,7 +3,7 @@
 
 import { fmt, money, siteUrl, type QueryValue } from "../format.js";
 import { UserInputError, type ToolOutput } from "../output.js";
-import { TTL, type SiteApi } from "../site.js";
+import { SiteError, TTL, type SiteApi } from "../site.js";
 import { compactRental, rentalLine, type CompactRental } from "./compact.js";
 import type { RawFacet, RawRental } from "./types.js";
 
@@ -73,21 +73,36 @@ export async function geocodeAddress(site: SiteApi, input: GeocodeInput): Promis
   const items = await geocodeItems(site, input);
   if (!items.length)
     throw new UserInputError(
-      `No se encontró "${input.address}". Probá con calle y número de puerta, o con una esquina ("Bulevar Artigas y Rivera"), y el departamento. Para un lugar conocido (facultad, shopping) usá su dirección.`
+      `No se encontró "${input.address}". ${GEOCODE_ADVICE}`
     );
   const lines = items.map((i, n) => `${n + 1}. ${i.label} → ${i.lat}, ${i.lng}`);
   lines.push("Fuente: IDE Uruguay (geocodificador oficial).");
   return { text: lines.join("\n"), data: { items, source: "IDE Uruguay" } };
 }
 
+const STREET_TYPE = /^(avenida|av\.?|bulevar|boulevard|bv\.?|bvar\.?|calle|camino|rambla)\s+/i;
+
+/** Advice appended when the official geocoder cannot place an address. */
+export const GEOCODE_ADVICE =
+  "Probá con calle y número de puerta o una esquina, sin \"Avenida\"/\"Bulevar\". Si la calle tiene una \"y\" en el nombre (Julio Herrera y Reissig) el geocodificador la toma como esquina: usá una calle vecina. " +
+  "Para un lugar conocido (facultad, hospital, shopping, oficina) también podés pasar lat/lng aproximadas: las distancias son en línea recta y 3 decimales alcanzan.";
+
 export async function geocodeItems(site: SiteApi, input: GeocodeInput) {
-  // Addresses are personal input: never cached.
-  const res = await site.get<GeocodeResponse>(
-    "/api/rentals/geocode",
-    { q: input.address.slice(0, 180), department: input.department },
-    { ttlMs: 0 }
-  );
-  return (res.items ?? []).slice(0, 5);
+  const first = input.address.trim().slice(0, 180);
+  const variants = [first];
+  const stripped = first.replace(STREET_TYPE, "");
+  if (stripped !== first && stripped.length >= 4) variants.push(stripped);
+  for (const q of variants) {
+    try {
+      // Addresses are personal input: never cached.
+      const res = await site.get<GeocodeResponse>("/api/rentals/geocode", { q, department: input.department }, { ttlMs: 0 });
+      if (res.items?.length) return res.items.slice(0, 5);
+    } catch (error) {
+      // The limit is worth surfacing as is; any other failure just means "not found here".
+      if (error instanceof SiteError && error.status === 429) throw error;
+    }
+  }
+  return [];
 }
 
 /** Resolve a `near` input to a point, geocoding the address when needed. */
@@ -99,7 +114,7 @@ export async function resolveNear(site: SiteApi, near: NearInput | undefined, de
   const [first] = await geocodeItems(site, { address: near.address, department });
   if (!first)
     throw new UserInputError(
-      `No se pudo ubicar "${near.address}". Probá con calle y número o una esquina, o pasá lat/lng.`
+      `No se pudo ubicar "${near.address}". ${GEOCODE_ADVICE}`
     );
   return { lat: first.lat, lng: first.lng, label: near.label ?? first.label, radiusKm: near.radiusKm };
 }
@@ -157,7 +172,8 @@ const SORT_LABEL: Record<string, string> = {
 
 export async function searchRentals(site: SiteApi, input: RentalSearchInput): Promise<ToolOutput> {
   const point = await resolveNear(site, input.near, input.department);
-  const params = rentalSearchParams(input, point);
+  // The site only SORTS by distance; the radius is applied here, so read the widest page.
+  const params = rentalSearchParams(point?.radiusKm ? { ...input, perPage: 48 } : input, point);
   const res = await site.get<RentalsResponse>("/api/rentals", params, { ttlMs: TTL.search });
   const usdUyu = Number(res.meta?.usdUyu) || 0;
   const want = Math.max(1, Math.min(48, Math.round(input.perPage ?? 10)));
@@ -166,12 +182,14 @@ export async function searchRentals(site: SiteApi, input: RentalSearchInput): Pr
     "El total mensual (alquiler + gastos comunes) sólo aparece cuando el mismo aviso publica sus gastos comunes; la mayoría no lo hace.",
     "Se muestran avisos vistos en los últimos 10 días; confirmá disponibilidad con el anunciante.",
   ];
+  let withinRadius: number | undefined;
   if (point?.radiusKm) {
     const radius = point.radiusKm;
-    const before = items.length;
     items = items.filter((i) => i.distanceKm !== undefined && i.distanceKm <= radius);
+    withinRadius = items.length;
     notes.push(
-      `Filtrado a ${fmt(radius, 1)} km en línea recta de ${point.label || "el punto"}: ${before - items.length} resultados de esta página quedaron fuera o no tienen ubicación exacta.`
+      `Radio de ${fmt(radius, 1)} km en línea recta desde ${point.label || "el punto"}: sólo cuentan avisos con ubicación propia (muchos no la publican).` +
+        (withinRadius === (res.items ?? []).length ? " Puede haber más: pedí page=2." : "")
     );
   }
   items = items.slice(0, want);
@@ -185,7 +203,12 @@ export async function searchRentals(site: SiteApi, input: RentalSearchInput): Pr
   const asOf = res.meta?.generatedAt?.slice(0, 10);
   const sortLabel = SORT_LABEL[String(params.sort ?? "recientes")] ?? String(params.sort);
 
+  const head =
+    withinRadius !== undefined
+      ? `${withinRadius === (res.items ?? []).length ? "Al menos " : ""}${fmt(withinRadius)} viviendas a menos de ${fmt(point!.radiusKm!, 1)} km de ${point!.label || "el punto"} (de ${fmt(total)} que cumplen los demás filtros), de la más cercana a la más lejana.`
+      : "";
   const lines = [
+    head ||
     `${fmt(total)} viviendas coinciden${total ? ` (desde la ${fmt(from)}, orden: ${sortLabel})` : ""}.` +
       (res.medianUyu ? ` Mediana del alquiler para esta búsqueda: ${money(res.medianUyu)}.` : ""),
     ...items.map((r, n) => `${n + 1}. ${rentalLine(r)}`),
@@ -201,6 +224,7 @@ export async function searchRentals(site: SiteApi, input: RentalSearchInput): Pr
     text: lines.join("\n"),
     data: {
       total,
+      withinRadius: withinRadius ?? null,
       page,
       medianRentUyu: res.medianUyu ?? null,
       usdUyu: usdUyu || null,

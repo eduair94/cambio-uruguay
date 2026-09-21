@@ -137,3 +137,20 @@ describe("getRental", () => {
     expect(out.data.neighborhood).toBeNull();
   });
 });
+
+describe("geocoding fallbacks", () => {
+  it("retries without the street type and ignores a failing first attempt", async () => {
+    const { site, calls } = fakeSite({
+      "/api/rentals/geocode": (call: { query?: Record<string, unknown> }) =>
+        call.query?.q === "Italia 2500" ? { items: [{ label: "AV ITALIA 2500", lat: -34.89, lng: -56.15 }] } : new SiteError(503, "x"),
+    });
+    const out = await geocodeAddress(site, { address: "Avenida Italia 2500" });
+    expect(calls.map((c) => c.query?.q)).toEqual(["Avenida Italia 2500", "Italia 2500"]);
+    expect(out.text).toContain("AV ITALIA 2500");
+  });
+
+  it("suggests passing coordinates when nothing matches", async () => {
+    const { site } = fakeSite({ "/api/rentals/geocode": { items: [] } });
+    await expect(geocodeAddress(site, { address: "Julio Herrera y Reissig 565" })).rejects.toThrow(/lat\/lng aproximadas/);
+  });
+});

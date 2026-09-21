@@ -57,6 +57,7 @@ export interface ProductRow {
   usedSavingPct?: number;
   sellers?: number;
   bestOffer?: { seller?: string; priceUyu?: number; url?: string; condition?: string };
+  bestUsedOffer?: { seller?: string; priceUyu?: number; url?: string; condition?: string };
   rating?: string;
   tier?: string;
   note?: string;
@@ -69,6 +70,18 @@ const cheapest = (offers: ProductOffer[] | undefined, condition?: string) =>
   (offers ?? [])
     .filter((o) => o.available !== false && typeof o.priceUyu === "number" && (!condition || o.condition === condition))
     .sort((a, b) => a.priceUyu! - b.priceUyu!)[0];
+
+/**
+ * The raw offer list of a category is not curated: it holds a 20-peso fridge ad and a paring knife
+ * under "chef knife". The site bands are. An offer only counts when it is at least 60 % of the
+ * p25 of the band for its own condition.
+ */
+export function plausibleOffers(offers: ProductOffer[] | undefined, bands: { newBand?: Band | null; usedBand?: Band | null }) {
+  return (offers ?? []).filter((o) => {
+    const band = o.condition === "used" ? bands.usedBand : bands.newBand;
+    return !band?.p25 || (typeof o.priceUyu === "number" && o.priceUyu >= band.p25 * 0.6);
+  });
+}
 
 const offerOf = (o: ProductOffer | undefined) =>
   o ? compact({ seller: o.seller, priceUyu: o.priceUyu, url: o.url, condition: o.condition === "used" ? "usado" : o.condition === "new" ? "nuevo" : o.condition }) : undefined;
@@ -99,7 +112,9 @@ const MOVILIDAD: Record<string, { api: string; page: string }> = {
 
 export function categoryRows(vertical: ProductVertical, items: CategoryItem[], pagePath: (item: CategoryItem) => string): ProductRow[] {
   return items.map((it) => {
-    const best = cheapest(it.offers) ?? cheapest(it.products?.flatMap((p) => p.offers ?? []));
+    const offers = plausibleOffers([...(it.offers ?? []), ...(it.products?.flatMap((p) => p.offers ?? []) ?? [])], it);
+    const best = cheapest(offers, "new") ?? cheapest(offers);
+    const bestUsed = cheapest(offers, "used");
     return compact({
       vertical,
       name: [it.categoryLabel, it.variantLabel].filter(Boolean).join(" — "),
@@ -111,6 +126,7 @@ export function categoryRows(vertical: ProductVertical, items: CategoryItem[], p
       usedSavingPct: it.usedSavingPct ?? undefined,
       sellers: new Set((it.offers ?? []).map((o) => o.seller)).size || undefined,
       bestOffer: offerOf(best),
+      bestUsedOffer: offerOf(bestUsed),
       tier: it.tier,
       note: it.usedNote,
       keywords: (it.products ?? []).map((p) => [p.brand, p.name].filter(Boolean).join(" ")).join(" | "),
@@ -185,7 +201,7 @@ export async function searchProducts(site: SiteApi, input: ProductSearchInput): 
     .filter((r) => matchesWords([r.name, r.brand, r.category, r.variant, r.keywords].filter(Boolean).join(" "), input.text))
     .filter((r) => !brand || fold(`${r.brand ?? ""} ${r.name} ${r.keywords ?? ""}`).includes(brand))
     .filter((r) => input.condition !== "used" || !!r.usedBand)
-    .map((r) => (input.condition === "used" && r.usedBand?.median ? { ...r, bestPriceUyu: r.usedBand.min ?? r.usedBand.median } : r))
+    .map((r) => (input.condition === "used" && r.usedBand?.median ? { ...r, bestPriceUyu: r.bestUsedOffer?.priceUyu ?? r.usedBand.p25 ?? r.usedBand.median, bestOffer: r.bestUsedOffer ?? r.bestOffer } : r))
     .filter((r) => !input.maxPriceUyu || (r.bestPriceUyu ?? Infinity) <= input.maxPriceUyu)
     .sort((a, b) => (a.bestPriceUyu ?? Infinity) - (b.bestPriceUyu ?? Infinity));
   const limit = Math.max(1, Math.min(30, input.limit ?? 12));
@@ -196,6 +212,7 @@ export async function searchProducts(site: SiteApi, input: ProductSearchInput): 
       r.newBand?.median ? `nuevo típico ${money(r.newBand.median)}${r.newBand.p25 ? ` (${money(r.newBand.p25)}–${money(r.newBand.p75)})` : ""}` : "",
       r.usedBand?.median ? `usado típico ${money(r.usedBand.median)}` : "",
       r.usedSavingPct ? `usado ahorra ~${r.usedSavingPct} %` : "",
+      r.bestUsedOffer?.priceUyu && input.condition !== "used" ? `usado desde ${money(r.bestUsedOffer.priceUyu)}${r.bestUsedOffer.seller ? ` (${r.bestUsedOffer.seller})` : ""}` : "",
     ].filter(Boolean);
     lines.push(
       `${n + 1}. ${r.name}${r.brand && !r.name.includes(r.brand) ? ` (${r.brand})` : ""} — desde ${money(r.bestPriceUyu)}` +

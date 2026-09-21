@@ -7,7 +7,7 @@ import { compact, fmt, money, pct, siteUrl } from "../format.js";
 import { UserInputError, type ToolOutput } from "../output.js";
 import type { SiteApi } from "../site.js";
 import { compactRental, type CompactRental } from "./compact.js";
-import { geocodeItems } from "./search.js";
+import { GEOCODE_ADVICE, geocodeItems } from "./search.js";
 import type { RawOffer, RawRental } from "./types.js";
 
 export type TravelMode = "walking" | "bicycling" | "transit" | "driving";
@@ -167,7 +167,7 @@ async function resolveDestinations(site: SiteApi, input: HouseholdInput) {
       const [first] = await geocodeItems(site, { address: d.address, department });
       if (!first)
         throw new UserInputError(
-          `No se pudo ubicar "${d.address}" (${d.label} de ${person.label}). Pasá calle y número o una esquina, o lat/lng.`
+          `No se pudo ubicar "${d.address}" (${d.label} de ${person.label}). ${GEOCODE_ADVICE}`
         );
       points.set(`${i}:${j}`, { lat: first.lat, lng: first.lng });
     }

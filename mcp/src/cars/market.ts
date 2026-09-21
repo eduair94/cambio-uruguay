@@ -223,7 +223,7 @@ export async function carDeclaredRisks(site: SiteApi, input: CarRiskInput): Prom
   );
   const lines = [
     `${fmt(res.stats?.declared ?? 0)} avisos declaran algún riesgo. Por categoría: ` +
-      categories.map((c) => `${c.what} ${fmt(c.adverts ?? 0)}${c.medianDiscountPct !== undefined ? ` (diferencia mediana vs. autos iguales sin declarar: ${c.medianDiscountPct} %)` : ""}`).join(" · "),
+      categories.map((c) => `${c.what} ${fmt(c.adverts ?? 0)}${c.medianDiscountPct !== undefined ? ` (piden en mediana ${Math.abs(c.medianDiscountPct)} % ${c.medianDiscountPct >= 0 ? "menos" : "más"} que los mismos autos sin declarar)` : ""}`).join(" · "),
   ];
   items.forEach((i, n) => {
     lines.push(
@@ -289,7 +289,8 @@ export async function carMarketReport(
   } else if (section === "depreciation") {
     const rows = d.depreciation ?? [];
     const wanted = input.model ? fold(input.model) : "";
-    const hits = wanted ? rows.filter((r) => fold(`${r.brand} ${r.model}`).includes(wanted) || fold(r.model ?? "") === wanted) : rows;
+    const exact = rows.filter((r) => fold(r.model ?? "") === wanted || fold(`${r.brand} ${r.model}`) === wanted);
+    const hits = !wanted ? rows : exact.length ? exact : rows.filter((r) => fold(`${r.brand} ${r.model}`).includes(wanted));
     if (!hits.length && wanted) lines.push(`Sin serie de depreciación para "${input.model}" (hace falta oferta en varios años).`);
     for (const r of hits.slice(0, wanted ? 3 : 15))
       lines.push(`${r.brand} ${r.model}: pierde ~${pct(r.annualDrop)} por año` + (r.points?.length ? ` (${r.points.map((p) => `${p.year} ${money(p.medianUsd, "USD")}`).join(", ")})` : ""));

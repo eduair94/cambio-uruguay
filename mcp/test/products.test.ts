@@ -149,3 +149,14 @@ describe("listDirectories and supermarketPrices", () => {
     expect(out.text).toContain("8 % más barato");
   });
 });
+
+describe("plausible offers", () => {
+  it("ignores junk offers far below the band of their condition", async () => {
+    const junk = { ...heladera, offers: [...heladera.offers, { seller: "Facebook Marketplace", priceUyu: 20, condition: "used", url: "https://fb/junk" }] };
+    const { site } = fakeSite({ ...routes, "/api/equipar": { items: [junk] } });
+    const out = await searchProducts(site, { vertical: "hogar", condition: "used" });
+    const [row] = out.data.items as Array<{ bestPriceUyu: number; bestOffer: { url: string } }>;
+    expect(row!.bestPriceUyu).toBe(1500);
+    expect(row!.bestOffer.url).toBe("https://fb/x");
+  });
+});
