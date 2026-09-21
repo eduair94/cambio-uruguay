@@ -10,10 +10,12 @@ import { httpCambioApi } from "./api.js";
 import { buildServer } from "./server.js";
 import { DEFAULT_SITE_BASE_URL, httpSiteApi } from "./site.js";
 import { parseToolsets, toolsetsFromUrl } from "./toolsets.js";
+import { allowedOrigins, corsHeaders } from "./cors.js";
 
 const API_BASE_URL = process.env.API_BASE_URL || "https://api.cambio-uruguay.com";
 const TRANSPORT = (process.env.MCP_TRANSPORT || "stdio").toLowerCase();
 const PORT = Number(process.env.MCP_HTTP_PORT || 8788);
+const ORIGINS = allowedOrigins();
 
 const SITE_BASE_URL = process.env.SITE_BASE_URL || DEFAULT_SITE_BASE_URL;
 
@@ -35,6 +37,8 @@ async function runHttp(): Promise<void> {
   // stateless Streamable-HTTP recipe. Read-only, so no session affinity needed.
   const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     const url = req.url || "/";
+    const cors = corsHeaders(req.headers.origin, ORIGINS);
+    if (cors) for (const [name, value] of Object.entries(cors)) res.setHeader(name, value);
     if (url === "/health") {
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify({ status: "ok", api: API_BASE_URL, site: SITE_BASE_URL, toolsets: parseToolsets("") }));
@@ -44,6 +48,11 @@ async function runHttp(): Promise<void> {
     const toolsets = toolsetsFromUrl(url);
     if (!toolsets) {
       res.writeHead(404).end("Not found");
+      return;
+    }
+    // Browser preflight for the site chat; the SDK transport would answer 405.
+    if (req.method === "OPTIONS") {
+      res.writeHead(cors ? 204 : 403).end();
       return;
     }
 
