@@ -86,7 +86,7 @@
           class="d-flex flex-wrap align-center justify-space-between ga-3 mb-4"
           :class="smAndDown ? 'mt-2' : ''"
         >
-          <h2 class="text-h6 mb-0">
+          <h2 id="cars-results" class="text-h6 mb-0 cars-anchor">
             {{ data ? `${data.total.toLocaleString('es-UY')} avisos` : 'Avisos' }}
           </h2>
           <VSelect
@@ -119,7 +119,7 @@
           :length="Math.min(500, Math.ceil(data.total / data.perPage))"
           :total-visible="3"
           class="mt-6"
-          @update:model-value="page => update({ ...query, page })"
+          @update:model-value="page => changePage(page)"
         />
       </template>
     </CarsSidebarLayout>
@@ -254,6 +254,12 @@ const duplicateCount = computed(() =>
   (data.value?.coverage.sources ?? []).reduce((sum, source) => sum + source.duplicates, 0)
 )
 
+/** Cambiar de página además sube al comienzo de la lista; ver utils/paginationScroll.ts. */
+function changePage(page: number) {
+  update({ ...query.value, page })
+  scrollToPageTop('cars-results')
+}
+
 function update(next: CarsQuery) {
   filtersOpen.value = false
   router.replace({ query: carsQueryParams(next) })
@@ -322,10 +328,9 @@ useHead({
 .cars-sort {
   max-width: 240px;
 }
-@media (min-width: 960px) {
-  .cars-layout__filters :deep(.car-panel--sidebar) {
-    position: sticky;
-    top: 80px;
-  }
+.cars-anchor {
+  /* La barra del sitio es fixed (65 px): sin este margen el encabezado de la lista
+     queda tapado justo despues de paginar. */
+  scroll-margin-top: 84px;
 }
 </style>

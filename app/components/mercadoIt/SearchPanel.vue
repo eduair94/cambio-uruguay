@@ -311,7 +311,7 @@ function reset() {
 
 async function goPage(p: number) {
   await apply({ page: p })
-  document.getElementById('buscador')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  scrollToPageTop('buscador')
 }
 
 const terms = computed(() => queryTerms(query.value.q))

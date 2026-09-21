@@ -307,16 +307,28 @@ const place = computed(() =>
     font-size: 0.875rem;
     white-space: normal;
   }
+  /*
+   * La linea de consumo queda igual de ancha que en mobile y en UN renglon. La palabra
+   * "Consumo" sigue oculta a la vista tambien aca: el icono de surtidor ya lo dice, y
+   * restituirla partia la linea en dos renglones desalineados ("≈ 7,1" arriba, "Consumo
+   * L/100 km" abajo). Sigue estando para el lector de pantalla.
+   */
   .car-card__kml {
-    white-space: normal;
-  }
-  .car-card__kml-label {
-    position: static;
-    width: auto;
-    height: auto;
-    margin: 0;
+    flex-wrap: wrap;
     overflow: visible;
-    clip-path: none;
+  }
+  .car-card__kml-value {
+    white-space: nowrap;
+    overflow: visible;
+  }
+  /*
+   * Las tarjetas de una fila miden todas lo mismo (grilla), asi que la que tiene menos
+   * texto dejaba un hueco suelto abajo. Anclando la fuente al pie, ese aire queda ARRIBA
+   * de una linea que siempre esta, y la fila lee pareja en vez de rota.
+   */
+  .car-card__source {
+    margin-top: auto;
+    padding-top: 4px;
   }
   .car-card__listed {
     display: block;

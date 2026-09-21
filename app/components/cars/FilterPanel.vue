@@ -101,7 +101,11 @@ const dialogProps = computed(() =>
           },
         },
       }
-    : {}
+    : // El envoltorio de desktop necesita clase propia: `position: sticky` se mide contra el
+      // BLOQUE CONTENEDOR, y ese envoltorio mide lo mismo que el formulario (535 px), así que
+      // pegar el formulario a él no alcanzaba — se despegaba a los 535 px y desaparecía. El
+      // que se pega es el envoltorio, que sí vive en la celda entera de la grilla.
+      { class: 'car-panel-shell' }
 )
 
 /**
@@ -157,6 +161,40 @@ onBeforeUnmount(() => {
 }
 .car-panel--sidebar {
   gap: 12px;
+}
+/*
+ * En desktop la columna ACOMPAÑA el scroll. Antes no: la regla vivía en el `<style scoped>`
+ * de la página como `.cars-layout__filters :deep(.car-panel--sidebar)`, y el compilador la
+ * emite como `.cars-layout__filters[data-v-pagina] .car-panel--sidebar` — pero esa celda es
+ * de `CarsSidebarLayout`, no de la página, así que no lleva ese atributo y la regla no
+ * enganchaba con nada: el panel quedaba `static` y a las dos filas de autos los filtros ya
+ * no estaban. La regla vive acá, donde la clase es propia y no hace falta `:deep`.
+ */
+@media (min-width: 960px) {
+  .car-panel-shell {
+    position: sticky;
+    /* 65 px de barra fija + aire. */
+    top: 80px;
+    /* Nunca más alto que la ventana: con "Más filtros" abierto el panel pasa los 1.000 px
+       y sin esto el botón de aplicar queda debajo del borde, inalcanzable sin cerrar el
+       grupo. Con tope, la lista de campos scrollea por dentro y el pie no se mueve. */
+    max-height: calc(100vh - 96px);
+    display: flex;
+    flex-direction: column;
+  }
+  .car-panel--sidebar {
+    /* Hijo de un flex con tope: sin esto no se deja achicar y el scroll interno no existe. */
+    min-height: 0;
+  }
+  .car-panel--sidebar .car-panel__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* El foco de un campo dibuja su anillo 2 px afuera: sin este aire, el scroll lo corta. */
+    padding: 2px;
+    margin: -2px;
+  }
 }
 .car-panel--dialog {
   height: 100%;

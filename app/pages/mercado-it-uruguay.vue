@@ -1489,6 +1489,11 @@ useHead(() => ({
   line-height: 1.35;
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
+/* La barra del sitio es fixed (65 px): sin esto, paginar dejaba el encabezado del
+   buscador justo debajo de la barra, tapado. Medido: aterrizaba en 0. */
+#buscador {
+  scroll-margin-top: 84px;
+}
 .block {
   margin-top: 48px;
 }

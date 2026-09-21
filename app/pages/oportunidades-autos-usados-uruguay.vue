@@ -107,7 +107,7 @@
             class="d-flex flex-wrap align-center justify-space-between ga-3 mb-2"
             :class="smAndDown ? 'mt-3' : ''"
           >
-            <h2 class="text-h6 mb-0">
+            <h2 id="deal-results" class="text-h6 mb-0 cars-anchor">
               {{ data.total.toLocaleString('es-UY') }}
               {{ data.total === 1 ? 'oportunidad' : 'oportunidades' }}
             </h2>
@@ -142,7 +142,7 @@
             :length="Math.ceil(data.total / data.perPage)"
             :total-visible="3"
             class="mt-6"
-            @update:model-value="page => navigate({ ...query, page })"
+            @update:model-value="page => changePage(page)"
           />
         </template>
       </template>
@@ -270,6 +270,12 @@ const activeCount = computed(
     Object.values(carSubjectDraft(query.value)).filter(Boolean).length
 )
 
+/** Cambiar de página además sube al comienzo de la lista; ver utils/paginationScroll.ts. */
+function changePage(page: number) {
+  navigate({ ...query.value, page })
+  scrollToPageTop('deal-results')
+}
+
 function navigate(next: CarOpportunityQuery) {
   filtersOpen.value = false
   router.replace({ query: carOpportunityQueryParams(next) })
@@ -332,6 +338,11 @@ useHead({
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+.cars-anchor {
+  /* La barra del sitio es fixed (65 px): sin este margen el encabezado de la lista
+     queda tapado justo despues de paginar. */
+  scroll-margin-top: 84px;
 }
 .deal-sort {
   max-width: 260px;

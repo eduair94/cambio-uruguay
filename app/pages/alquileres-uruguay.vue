@@ -988,10 +988,7 @@ function changeViewMode(next: string) {
 }
 async function onPageChange(page: number) {
   await navigate(rentalQueryToParams({ ...query.value, page }))
-  document.getElementById('rental-results')?.scrollIntoView({
-    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-    block: 'start',
-  })
+  scrollToPageTop('rental-results')
 }
 function paginationLinkProps(props: Record<string, unknown>, page: number | null) {
   const enabled = page !== null && page >= 1 && page <= pageCount.value && !props.disabled
