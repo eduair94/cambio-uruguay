@@ -98,7 +98,11 @@ describe('equiparProductosNormalize', () => {
 
 describe('equiparProductosParams / Filtered / Without', () => {
   it('serialises only what is set', () => {
-    const query = equiparProductosNormalize({ categoria: 'heladera', precioMax: '40000', page: '3' })
+    const query = equiparProductosNormalize({
+      categoria: 'heladera',
+      precioMax: '40000',
+      page: '3',
+    })
     expect(equiparProductosParams(query)).toEqual({
       categoria: 'heladera',
       precioMax: '40000',
@@ -108,9 +112,9 @@ describe('equiparProductosParams / Filtered / Without', () => {
   })
 
   it('page and order are not filters; anything else is', () => {
-    expect(equiparProductosFiltered(equiparProductosNormalize({ page: '2', orden: 'reciente' }))).toBe(
-      false
-    )
+    expect(
+      equiparProductosFiltered(equiparProductosNormalize({ page: '2', orden: 'reciente' }))
+    ).toBe(false)
     expect(equiparProductosFiltered(equiparProductosNormalize({ marca: 'samsung' }))).toBe(true)
   })
 
@@ -152,10 +156,10 @@ describe('equiparProductosChips', () => {
     expect(labels).toContain('Usado')
     expect(labels).toContain('Facebook Marketplace')
     expect(labels).toContain('Samsung')
-    expect(labels).toContain('Desde $ 1.000')
-    expect(labels).toContain('Hasta $ 50.000')
+    expect(labels).toContain('Desde $\u00A01.000')
+    expect(labels).toContain('Hasta $\u00A050.000')
     expect(labels).toContain('“inverter”')
-    expect(chips.find(chip => chip.label === 'Desde $ 1.000')?.keys).toEqual(['precioMin'])
+    expect(chips.find(chip => chip.label === 'Desde $\u00A01.000')?.keys).toEqual(['precioMin'])
   })
 
   it('a category fixed by the route is not a chip', () => {
@@ -171,18 +175,32 @@ describe('paths and money', () => {
   })
 
   it('prints the price in its own currency', () => {
-    expect(equiparProductoPrecio(producto())).toBe('$ 30.000')
-    expect(equiparProductoPrecio(producto({ currency: 'USD', price: 750 }))).toBe('US$ 750')
+    expect(equiparProductoPrecio(producto())).toBe('$\u00A030.000')
+    expect(equiparProductoPrecio(producto({ currency: 'USD', price: 750 }))).toBe('US$\u00A0750')
   })
 })
 
 describe('la lista', () => {
   const lines: EquiparListaLine[] = [
     equiparListaFromProducto(
-      producto({ listingId: 'b', category: 'olla', categoryLabel: 'Olla', tier: 'S', rank: 11, priceUyu: 2_000 })
+      producto({
+        listingId: 'b',
+        category: 'olla',
+        categoryLabel: 'Olla',
+        tier: 'S',
+        rank: 11,
+        priceUyu: 2_000,
+      })
     ),
     equiparListaFromProducto(
-      producto({ listingId: 'c', category: 'tv', categoryLabel: 'Televisor', tier: 'B', rank: 6, priceUyu: 15_000 })
+      producto({
+        listingId: 'c',
+        category: 'tv',
+        categoryLabel: 'Televisor',
+        tier: 'B',
+        rank: 6,
+        priceUyu: 15_000,
+      })
     ),
     equiparListaFromProducto(producto({ listingId: 'a', priceUyu: 30_000 })),
   ]
@@ -221,9 +239,9 @@ describe('la lista', () => {
   it('writes the list as plain text, one line per item, with the total', () => {
     const text = equiparListaTexto(lines, 40)
     expect(text).toContain(
-      'Heladera — Heladera Samsung 300 L — $ 30.000 — https://articulo.mercadolibre.com.uy/MLU-1'
+      'Heladera — Heladera Samsung 300 L — $\u00A030.000 — https://articulo.mercadolibre.com.uy/MLU-1'
     )
-    expect(text).toContain('Total: $ 47.000 (≈ US$ 1.175)')
+    expect(text).toContain('Total: $\u00A047.000 (≈ US$\u00A01.175)')
     expect(text.split('\n')[0]).toMatch(/^Mi lista para equipar la casa/)
   })
 

@@ -51,10 +51,14 @@ async function facet(
 const idsOf = (raw: unknown): string[] => {
   const value = Array.isArray(raw) ? raw[0] : raw
   if (typeof value !== 'string' || !value.trim()) return []
-  return [...new Set(value.split(',').map(id => id.trim()).filter(id => /^[\w:.-]{1,120}$/.test(id)))].slice(
-    0,
-    IDS_MAX
-  )
+  return [
+    ...new Set(
+      value
+        .split(',')
+        .map(id => id.trim())
+        .filter(id => /^[\w:.-]{1,120}$/.test(id))
+    ),
+  ].slice(0, IDS_MAX)
 }
 
 export default defineEventHandler(async (event): Promise<EquiparProductosResponse> => {
@@ -102,7 +106,12 @@ export default defineEventHandler(async (event): Promise<EquiparProductosRespons
           .maxTimeMS(FACET_MS)
           .lean(),
         EquiparListingModel.countDocuments({ ...match, suspect: true }).maxTimeMS(FACET_MS),
-        facet(equiparProductosMatch(query, cutoff, ['categoria', 'variante']), 'category', 'categoryLabel', 40),
+        facet(
+          equiparProductosMatch(query, cutoff, ['categoria', 'variante']),
+          'category',
+          'categoryLabel',
+          40
+        ),
         query.categoria
           ? facet(equiparProductosMatch(query, cutoff, ['variante']), 'variant', 'variantLabel', 12)
           : Promise.resolve([]),

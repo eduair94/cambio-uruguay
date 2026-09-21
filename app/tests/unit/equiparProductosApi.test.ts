@@ -105,7 +105,9 @@ const { connectDb, listingModel, metaModel, headers } = vi.hoisted(() => {
     aggregate: vi.fn(),
     _chain: chain,
   }
-  const metaModel = { findOne: vi.fn(() => chain({ generatedAt: '2026-09-21T10:00:00.000Z', usdUyu: 40 })) }
+  const metaModel = {
+    findOne: vi.fn(() => chain({ generatedAt: '2026-09-21T10:00:00.000Z', usdUyu: 40 })),
+  }
   return { connectDb: vi.fn(), listingModel, metaModel, headers: [] as unknown[][] }
 })
 
@@ -163,7 +165,9 @@ beforeEach(() => {
     const group = pipeline[1]!.$group as { _id: string }
     const field = group._id.slice(1)
     const value = field === 'source' ? 'store' : field === 'condition' ? 'used' : 'heladera'
-    return listingModel._chain([{ _id: value, name: value === 'store' ? 'store' : 'Heladera', count: 3 }])
+    return listingModel._chain([
+      { _id: value, name: value === 'store' ? 'store' : 'Heladera', count: 3 },
+    ])
   })
 })
 
@@ -175,7 +179,10 @@ describe('GET /api/equipar/productos', () => {
     expect(response.perPage).toBe(24)
     expect(response.items[0]!.listingId).toBe('ml:1')
     expect(response.usdUyu).toBe(40)
-    const chain = listingModel.find.mock.results[0]!.value as Record<string, ReturnType<typeof vi.fn>>
+    const chain = listingModel.find.mock.results[0]!.value as Record<
+      string,
+      ReturnType<typeof vi.fn>
+    >
     expect(chain.skip).toHaveBeenCalledWith(48)
     expect(chain.limit).toHaveBeenCalledWith(24)
     expect(response.facets.fuentes).toEqual([{ slug: 'tienda', name: 'Tienda', count: 3 }])
