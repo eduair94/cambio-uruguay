@@ -159,57 +159,67 @@ export const CAR_SELLER_LABELS: Record<PublicCarSeller, string> = {
 // which URLs of each source a public row may carry.
 export const CAR_SOURCE_RULES: Record<
   PublicCarSource,
-  { name: string; permalink: RegExp; pictureHost: RegExp }
+  { name: string; permalink: RegExp; pictureHost: RegExp; contactPage: string | null }
 > = {
   mercadolibre: {
     name: 'Mercado Libre',
     permalink: /^https:\/\/auto\.mercadolibre\.com\.uy\/MLU-/,
     pictureHost: /^http2\.mlstatic\.com$/,
+    contactPage: null,
   },
   clasiautos: {
     name: 'Clasiautos',
     permalink: /^https:\/\/clasiautos\.uy\/avisos\/[\w%-]+\/?$/,
     pictureHost: /^clasiautos\.uy$/,
+    contactPage: null,
   },
   julio: {
     name: 'Julio Automóviles',
     permalink: /^https:\/\/julioautomoviles\.com\.uy\/vehiculo\/[\w%-]+\/?$/,
     pictureHost: /^julioautomoviles\.com\.uy$/,
+    contactPage: 'https://julioautomoviles.com.uy/contacto/',
   },
   shoppingdeautos: {
     name: 'Shopping de Autos',
     permalink: /^https:\/\/shoppingdeautos\.uy\/producto\/[\w%-]+\/?$/,
     pictureHost: /^shoppingdeautos\.uy$/,
+    contactPage: 'https://shoppingdeautos.uy/contacto/',
   },
   carper: {
     name: 'Carper',
     permalink: /^https:\/\/usados\.carper\.com\.uy\/[\w%/-]+$/,
     pictureHost: /^(?:usados\.carper\.com\.uy|cdn\.pilotsolution\.net)$/,
+    contactPage: 'https://usados.carper.com.uy/contacto/',
   },
   fidocar: {
     name: 'Usados Fidocar',
     permalink: /^https:\/\/www\.usadosfidocar\.com\.uy\/modelo\/[\w%-]+$/,
     pictureHost: /^f\.fcdn\.app$/,
+    contactPage: 'https://www.usadosfidocar.com.uy/contacto',
   },
   carone: {
     name: 'Car One',
     permalink: /^https:\/\/carone\.com\.uy\/[\w%-]+$/,
     pictureHost: /^cdn\.impel\.io$/,
+    contactPage: 'https://carone.com.uy/contacto',
   },
   motorlider: {
     name: 'Motorlider',
     permalink: /^https:\/\/motorlider\.com\.uy\/catalogo\/[\w%-]+$/,
     pictureHost: /^f\.fcdn\.app$/,
+    contactPage: 'https://motorlider.com.uy/contacto',
   },
   duenodirecto: {
     name: 'Dueño Directo',
     permalink: /^https:\/\/vehiculos\.xn--dueodirecto-3db\.com\.uy\/vehiculos\/[\w%-]+$/,
     pictureHost: /^vehiculos\.xn--dueodirecto-3db\.com\.uy$/,
+    contactPage: null,
   },
   facebook: {
     name: 'Facebook Marketplace',
     permalink: /^https:\/\/www\.facebook\.com\/marketplace\/item\/\d{6,20}\/$/,
     pictureHost: /^scontent[\w.-]*\.fbcdn\.net$/,
+    contactPage: null,
   },
 }
 export const CAR_SOURCES_PUBLIC = Object.keys(CAR_SOURCE_RULES) as PublicCarSource[]

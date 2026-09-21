@@ -13,6 +13,8 @@ describe('used-car source rules', () => {
       expect(CAR_SOURCE_RULES[source].pictureHost.source).toBe(
         CAR_SOURCES[source].pictureHost.source
       )
+      // The contact API accepts a dealer's number only if it came from exactly this page.
+      expect(CAR_SOURCE_RULES[source].contactPage).toBe(CAR_SOURCES[source].contactPage)
     }
   })
 })
