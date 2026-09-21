@@ -2266,6 +2266,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La gente no busca "franquicia aduanera": busca "impuesto Temu". Trends UY (15/9/2026)
+        // midió "impuesto temu" +450 % a 12 meses y la frase estaba en cero archivos del repo,
+        // mientras /franquicia-aduana-uruguay explicaba el régimen con el nombre de la norma.
+        // Esta página contesta la misma mecánica con el nombre con el que se pregunta, y su
+        // gancho es el mínimo legal de IVA: un paquete de US$ 19 paga US$ 20.
+        to: '/impuesto-temu-uruguay',
+        labelKey: 'nav.impuestoTemu',
+        icon: 'mdi-shopping-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'impuesto temu',
+          'impuesto temu uruguay',
+          'temu impuestos',
+          'comprar en temu desde uruguay',
+          'shein uruguay impuestos',
+          'aliexpress uruguay aduana',
+          'cuanto se paga por comprar en temu',
+          'minimo de iva envio postal',
+        ],
+      },
+      {
         to: '/mudarme-a-uruguay-residencia',
         labelKey: 'nav.mudarmeAUruguay',
         icon: 'mdi-airplane-landing',

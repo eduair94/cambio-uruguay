@@ -146,6 +146,21 @@
         "/salario-vacacional-uruguay"
       ],
       "hypothesis": "Las veinte descripciones mas largas de guias y paginas de problema perdian su dato en el corte de 155 caracteres; con la cifra adelante el mismo ranking deberia rendir mas clics."
+    },
+    {
+      "id": "impuesto-temu-nombre-popular",
+      "shippedOn": "2026-09-21",
+      "routes": [
+        "/impuesto-temu-uruguay"
+      ],
+      "queries": [
+        "impuesto temu",
+        "impuesto temu uruguay",
+        "temu impuestos",
+        "shein uruguay impuestos",
+        "aliexpress uruguay aduana"
+      ],
+      "hypothesis": "El regimen de envios postales ya estaba explicado en /franquicia-aduana-uruguay con el nombre de la norma, pero la consulta usa el nombre popular y la frase no estaba en ningun archivo del repo. Una pagina con el nombre con el que se pregunta, y con el minimo legal de IVA como dato del snippet (US$ 19 de compra pagan US$ 20), deberia capturar una demanda de marca que hoy no toca ninguna URL propia."
     }
   ]
 }

@@ -40,7 +40,10 @@ describe('guías del encabezado del directorio de alquileres', () => {
   })
 
   it('apunta a las tres guías, por `headerGuides`', () => {
-    const block = source.slice(source.indexOf('const headerGuides'), source.indexOf('const catalogBaseUrl'))
+    const block = source.slice(
+      source.indexOf('const headerGuides'),
+      source.indexOf('const catalogBaseUrl')
+    )
     for (const route of GUIDES) expect(block).toContain(route)
   })
 
