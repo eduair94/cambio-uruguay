@@ -1236,7 +1236,8 @@
     "mcpTitle": "For AI assistants (MCP server)",
     "mcpText": "Use Claude, Cursor or another AI assistant? Our free, open-source MCP server gives them live access to the exchange market: rates, best house, conversions, history and news. Add it via the hosted URL or run it with npx.",
     "mcpNpm": "View on npm",
-    "mcpSource": "Source code"
+    "mcpSource": "Source code",
+    "mcpSearch": "Search rentals, cars or products with your AI"
   },
   "widget": {
     "live": "Live",
@@ -1686,6 +1687,7 @@
     "dondeEntreganPaquete": "Where your parcel is delivered",
     "importarCategorias": "Importing by category (what each item pays)",
     "impuestoTemu": "Temu tax (overseas purchases)",
+    "buscarConIa": "Search rentals, cars or products with AI",
     "franquiciaAduana": "Customs allowance (do I pay VAT?)",
     "recibirRegalos": "Receiving gifts from abroad",
     "importarRevender": "Importing to resell",

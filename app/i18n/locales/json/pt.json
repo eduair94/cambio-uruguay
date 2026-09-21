@@ -1229,7 +1229,8 @@
     "mcpTitle": "Para assistentes de IA (servidor MCP)",
     "mcpText": "Usa o Claude, Cursor ou outro assistente de IA? Nosso servidor MCP, open source e gratuito, dá acesso ao vivo às cotações: taxas, melhor casa de câmbio, conversões, histórico e notícias. Adicione com a URL hospedada ou rode com npx.",
     "mcpNpm": "Ver no npm",
-    "mcpSource": "Código-fonte"
+    "mcpSource": "Código-fonte",
+    "mcpSearch": "Buscar aluguel, carro ou produtos com sua IA"
   },
   "widget": {
     "live": "Ao vivo",
@@ -1679,6 +1680,7 @@
     "dondeEntreganPaquete": "Onde entregam a sua encomenda",
     "importarCategorias": "Importar por categoria (o que cada item paga)",
     "impuestoTemu": "Imposto Temu (compras do exterior)",
+    "buscarConIa": "Buscar aluguel, carro ou produtos com IA",
     "franquiciaAduana": "Franquia e alfândega (pago IVA?)",
     "recibirRegalos": "Receber presentes do exterior",
     "importarRevender": "Importar para revender",

@@ -34,6 +34,7 @@ const NO_ADS = [
   '/alquiler-ideal-uruguay',
   '/cuenta',
   '/conectar',
+  '/buscar-con-ia',
   '/contacto',
   '/offline',
   '/estado',

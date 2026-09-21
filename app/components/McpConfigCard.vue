@@ -27,6 +27,15 @@
       >
         {{ t('acerca.mcpSource') }}
       </VBtn>
+      <VBtn
+        :to="localePath('/buscar-con-ia')"
+        size="small"
+        variant="tonal"
+        color="primary"
+        prepend-icon="mdi-home-search-outline"
+      >
+        {{ t('acerca.mcpSearch') }}
+      </VBtn>
     </div>
     <VTextarea
       :model-value="mcpConfig"
@@ -51,6 +60,7 @@
 
 <script setup lang="ts">
 const { t } = useI18n()
+const localePath = useLocalePath()
 
 // MCP client config for AI assistants (Claude Desktop, Cursor, …). Points at the
 // hosted Streamable-HTTP endpoint; the package is also on npm (cambio-uruguay-mcp).

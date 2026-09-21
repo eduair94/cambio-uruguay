@@ -3479,6 +3479,24 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['conectar', 'telegram', 'discord', 'bot', 'mcp', 'asistente'],
       },
       {
+        // El MCP de alquileres, autos y productos: cómo conectarlo a Claude, ChatGPT o un editor, la
+        // skill descargable y prompts de ejemplo. Los datos y la lista de tools viven en utils/aiSearch.ts.
+        to: '/buscar-con-ia',
+        labelKey: 'nav.buscarConIa',
+        icon: 'mdi-robot-happy-outline',
+        priority: 0.6,
+        changefreq: 'monthly',
+        keywords: [
+          'buscar alquiler con ia',
+          'chatgpt alquiler uruguay',
+          'claude mcp uruguay',
+          'mcp alquileres',
+          'asistente ia autos usados',
+          'inteligencia artificial buscar apartamento',
+          'skill claude',
+        ],
+      },
+      {
         to: '/desarrolladores',
         labelKey: 'dev.nav',
         icon: 'mdi-api',
