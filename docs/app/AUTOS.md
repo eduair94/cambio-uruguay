@@ -81,6 +81,7 @@ sólo para candidatas a oportunidad.
   promedio de la guía de ML). Si caen las dos o ninguna, el aviso no se publica. Una moneda deducida
   se muestra como "moneda estimada" y **nunca** cuenta para oportunidades.
 - Nunca se guarda el nombre del vendedor; su id queda privado (tope de 2 comparables por vendedor).
+  El teléfono tampoco: Facebook nunca aporta números a la base de contactos ([AUTOS_CONTACTOS.md](AUTOS_CONTACTOS.md)).
   Las tarjetas viven en `carfbcards`; sólo las que nombran un auto con año pasan a `carlistings`.
 - Nunca se retira por ausencia: sale de la ventana pública de 4 días si no se la vuelve a ver. Una
   ficha vendida o no disponible la retira.
@@ -540,3 +541,9 @@ en parte de pago (ninguna lo publica).
 El informe gana arriba una sección **"Lo que dicen los datos"** (`carReportFindings`): conclusiones
 calculadas, cada una aparece sólo si la medición que la sostiene está y dice su número. Ninguna es texto
 fijo, porque un hallazgo escrito a mano sigue diciéndose el día que deja de ser cierto.
+
+## Teléfonos de vendedores
+
+Desde el 2026-09-21 la ficha muestra, con un clic, el teléfono que el vendedor escribió en el texto
+público de su aviso o el número comercial de la automotora. Política, fuentes medidas, vencimiento y
+bajas en [AUTOS_CONTACTOS.md](AUTOS_CONTACTOS.md).

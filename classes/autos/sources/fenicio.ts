@@ -1,7 +1,8 @@
 // Fenicio storefronts (Usados Fidocar, Motorlider): the published sitemap lists every car page
 // (<base>/<path>/<slug>_<id>_<id>) and each page carries schema.org microdata (price, currency,
 // availability, brand, name) plus a spec sheet. The page's own description quotes the dealer's
-// phone numbers, so it is never read.
+// phone numbers and is not read here: the dealer's number comes from its contact page
+// (classes/autos/contacts/dealers.ts).
 //
 // The microdata price is NOT always the car's: Motorlider sells the booking deposit as the product
 // (USD 500 for a USD 13.990 car), and only its spec sheet ("precio-ficha") states the car's price.

@@ -163,5 +163,8 @@ export async function harvestDuenoDirecto(
   return result;
 }
 
-/** Kept for the flags a description carries; the site publishes seller phones, which are never read. */
+/**
+ * Kept for the flags a description carries. The site's own contact block needs an account and is never
+ * read; a phone the seller wrote in the public description is (classes/autos/contacts/build.ts).
+ */
 export const duenoDirectoFlags = (description: string): ReturnType<typeof descriptionFlags> => descriptionFlags(description);
