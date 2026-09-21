@@ -26,9 +26,10 @@ export interface RentalSearchInput {
   bathrooms?: number;
   areaMin?: number;
   areaMax?: number;
-  currency?: "UYU" | "USD";
-  priceMin?: number;
-  priceMax?: number;
+  /** Only adverts published in this currency (prices are still filtered in pesos). */
+  listedCurrency?: "UYU" | "USD";
+  priceMinUyu?: number;
+  priceMaxUyu?: number;
   monthlyMaxUyu?: number;
   expensesMaxUyu?: number;
   pets?: boolean;
@@ -121,9 +122,9 @@ export function rentalSearchParams(
     bathrooms: input.bathrooms,
     areaMin: input.areaMin,
     areaMax: input.areaMax,
-    currency: input.currency,
-    priceMin: input.priceMin,
-    priceMax: input.priceMax,
+    currency: input.listedCurrency,
+    priceMin: input.priceMinUyu,
+    priceMax: input.priceMaxUyu,
     monthlyMax: input.monthlyMaxUyu,
     expensesMax: input.expensesMaxUyu,
     pets: input.pets,
