@@ -138,6 +138,8 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
   // Garages have their own search category; housing pages do not discover standalone spaces.
   const types = mode === "fast" ? ["a", "c", "g"] : PROPERTY_TYPES;
   const attemptedDepartments = new Set<number>();
+  // Why each search failed, so a run note tells "the portal did not answer" from "the page changed".
+  const reasons = new Map<string, number>();
   sweep: for (const department of departments) {
     attemptedDepartments.add(department);
     for (const type of types) {
@@ -147,11 +149,18 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
       const advertIds = new Set<string>();
       const seen = new Set<string>();
       for (let page = 1; page <= pageBudget; page++) {
-        const html = await fetchText(url, body === null ? { retries: 0 } : {
-          method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" }, retries: 0,
+        let transport = "sin respuesta";
+        const onFailure = (reason: string) => { transport = reason; };
+        // Default retries on purpose: the hourly pass opens with the only three Montevideo searches,
+        // so without them one dropped connection trips the stop below and the whole source is down
+        // for an hour (2026-09-21). Resubmitting the pagination form just asks for the same page.
+        const html = await fetchText(url, body === null ? { onFailure } : {
+          method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" }, onFailure,
         });
         const parsed = html ? parseCasaswebPage(html) : null;
         if (!parsed || parsed.department !== department || parsed.propertyType !== type || parsed.currentPage !== page) {
+          const reason = !html ? transport : !parsed ? "página irreconocible" : "búsqueda distinta a la pedida";
+          reasons.set(reason, (reasons.get(reason) ?? 0) + 1);
           failed++; incomplete = true;
           if (++consecutiveFailures >= 3) break sweep;
           break;
@@ -180,6 +189,7 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
   return {
     key: "casasweb", ok: byId.size > 0, complete: !incomplete, listings: [...byId.values()],
     note: `${pages} páginas, ${byId.size} avisos únicos; departamentos consultados: ${attemptedDepartments.size}` +
-      (incomplete ? " — cobertura parcial; se conservan avisos no vistos" : "") + (failed ? `; ${failed} búsquedas sin respuesta` : ""),
+      (incomplete ? " — cobertura parcial; se conservan avisos no vistos" : "") +
+      (failed ? `; ${failed} búsquedas fallidas: ${[...reasons].map(([reason, n]) => `${reason} ×${n}`).join(", ")}` : ""),
   };
 }

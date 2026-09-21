@@ -4,6 +4,8 @@ import { harvestCasasweb, parseCasaswebPage } from "../../classes/rentals/source
 import { sourcesAllowingExpiry } from "../../classes/rentals/sources/types";
 
 vi.mock("../../classes/rentals/net", () => ({ fetchText: vi.fn() }));
+// The transient-failure tests go through the real fetch layer; its per-host gap is read at load.
+vi.hoisted(() => { process.env.RENTALS_HOST_GAP_MS = "0"; });
 
 interface Card { id: number | null; title?: string }
 interface SearchPage {
@@ -152,5 +154,64 @@ describe("Casasweb coverage and absence safety", () => {
     const result = await harvestCasasweb("full", 40);
     expect(result).toMatchObject({ ok: true, complete: false });
     expect(result.listings.map(row => row.listingId)).toEqual(["casasweb:CW1", "casasweb:CW221797"]);
+  });
+});
+
+// 2026-09-21 10:48 UTC: the hourly pass lost its three Montevideo searches in a row, tripped the
+// three-consecutive-failures stop and published Casasweb as down for an hour. The run before and
+// the one after read the same URLs fine (129 of 130 hourly runs that week), and the note could
+// not say whether the portal had timed out, errored or changed its page.
+describe("Casasweb transient failures", () => {
+  async function throughRealNet(respond: (url: string, init: RequestInit) => Promise<Response>) {
+    const actual = await vi.importActual<typeof import("../../classes/rentals/net")>("../../classes/rentals/net");
+    vi.mocked(fetchText).mockImplementation(actual.fetchText);
+    const fetchMock = vi.fn(respond);
+    vi.stubGlobal("fetch", fetchMock);
+    return fetchMock;
+  }
+  const searchOf = (url: string) => {
+    const query = new URL(url).searchParams;
+    return { department: Number(query.get("x")), type: query.get("t")! };
+  };
+  const reset = () => Object.assign(new TypeError("fetch failed"), { cause: { code: "ECONNRESET" } });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("retries a dropped request instead of losing the hourly update", async () => {
+    const dropped = new Set<string>();
+    const fetchMock = await throughRealNet(async (url) => {
+      const { department, type } = searchOf(url);
+      if (department === 1 && !dropped.has(url)) {
+        dropped.add(url);
+        throw reset();
+      }
+      return new Response(searchHtml({ department, type, total: 1, cards: [{ id: department * 100 + type.charCodeAt(0) }] }));
+    });
+    const result = await harvestCasasweb("fast", 40);
+    expect(fetchMock).toHaveBeenCalledTimes(12);
+    expect(result.ok).toBe(true);
+    expect(result.listings.map(row => row.listingId)).toContain(`casasweb:CW${100 + "a".charCodeAt(0)}`);
+    expect(result.note).not.toMatch(/fallid/);
+  });
+
+  it("says why a search failed when the portal refuses it", async () => {
+    await throughRealNet(async (url) => {
+      const { department, type } = searchOf(url);
+      return department === 1
+        ? new Response("denied", { status: 403 })
+        : new Response(searchHtml({ department, type }));
+    });
+    const result = await harvestCasasweb("fast", 40);
+    expect(result.ok).toBe(false);
+    expect(result.note).toContain("3 búsquedas fallidas: HTTP 403 ×3");
+  });
+
+  it("tells an unrecognisable page apart from a missing answer", async () => {
+    vi.mocked(fetchText).mockImplementation(async (url) => {
+      const { department, type } = searchOf(url);
+      return department === 1 ? "<h1>Server Error in '/' Application.</h1>" : searchHtml({ department, type });
+    });
+    const result = await harvestCasasweb("fast", 40);
+    expect(result.note).toContain("3 búsquedas fallidas: página irreconocible ×3");
   });
 });

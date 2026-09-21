@@ -327,7 +327,13 @@ permite expirar ofertas por ausencia; ML y Facebook declaran cobertura parcial p
 de búsqueda, y el modo horario aplica esa misma protección a todas las fuentes. InfoCasas también
 conserva cobertura parcial por la inestabilidad del paginador (auditoría del 6 de septiembre);
 Casasweb exige terminar sin cortes ni fallas. Tres respuestas
-consecutivas fallidas detienen el barrido de Casasweb. El País sólo se declara completo si abrió
+consecutivas fallidas detienen el barrido de Casasweb; cada pedido tiene antes los reintentos por
+defecto de `net.ts` (el 2026-09-21 a las 10:48 UTC, con `retries: 0`, un corte de un instante se
+llevó las tres únicas búsquedas de Montevideo del repaso horario y la fuente quedó caída una hora;
+fue 1 de 130 horarias de esa semana). La nota dice por qué falló cada búsqueda
+(`3 búsquedas fallidas: HTTP 503 ×3`, `tiempo agotado (25000 ms)`, `página irreconocible`,
+`búsqueda distinta a la pedida`), para separar un portal que no contesta de uno que cambió la
+página. El País sólo se declara completo si abrió
 las 19 búsquedas y leyó todas sus páginas: una búsqueda que no abrió es un **agujero del barrido**,
 no un departamento vacío, y con el interruptor apagado vuelve a `access: external_only` sin red.
 No se cambia la guarda global de colapso ni la poda de propiedades después de 21 días sin verse.
