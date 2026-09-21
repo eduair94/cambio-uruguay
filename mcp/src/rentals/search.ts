@@ -1,5 +1,5 @@
 // search_rentals + geocode_uy_address: the rental directory with every filter the
-// site offers, and address → coordinates through the IDE Uruguay lookup of the site.
+// site offers, and address/place → coordinates (Google Maps, IDE Uruguay as fallback).
 
 import { fmt, money, siteUrl, type QueryValue } from "../format.js";
 import { UserInputError, type ToolOutput } from "../output.js";
@@ -69,32 +69,74 @@ export interface GeocodeInput {
   department?: string;
 }
 
-export async function geocodeAddress(site: SiteApi, input: GeocodeInput): Promise<ToolOutput> {
-  const items = await geocodeItems(site, input);
-  if (!items.length)
-    throw new UserInputError(
-      `No se encontró "${input.address}". ${GEOCODE_ADVICE}`
-    );
-  const lines = items.map((i, n) => `${n + 1}. ${i.label} → ${i.lat}, ${i.lng}`);
-  lines.push("Fuente: IDE Uruguay (geocodificador oficial).");
-  return { text: lines.join("\n"), data: { items, source: "IDE Uruguay" } };
+export interface GeocodeItem {
+  label: string;
+  lat: number;
+  lng: number;
+  /** "exacta" (street number / building) or "aproximada" (street range, neighbourhood, area). */
+  precision?: "exacta" | "aproximada";
 }
+
+export async function geocodeAddress(site: SiteApi, input: GeocodeInput): Promise<ToolOutput> {
+  const { items, source } = await geocodeWithSource(site, input);
+  if (!items.length) throw new UserInputError(`No se encontró "${input.address}". ${GEOCODE_ADVICE}`);
+  const lines = items.map((i, n) => `${n + 1}. ${i.label} → ${i.lat}, ${i.lng}${i.precision ? ` (${i.precision})` : ""}`);
+  lines.push(`Fuente: ${source}.`);
+  return { text: lines.join("\n"), data: { items, source } };
+}
+
+/** Public Google Maps proxy (no key): places by name, neighbourhoods and addresses, ~0.4 s. */
+export const GEOCODER_URL = (process.env.GEOCODER_URL || "https://google-maps-proxy.checkleaked.cc").replace(/\/$/, "");
 
 const STREET_TYPE = /^(avenida|av\.?|bulevar|boulevard|bv\.?|bvar\.?|calle|camino|rambla)\s+/i;
 
-/** Advice appended when the official geocoder cannot place an address. */
+/** Advice appended when no geocoder can place an address. */
 export const GEOCODE_ADVICE =
-  "Probá con calle y número de puerta o una esquina, sin \"Avenida\"/\"Bulevar\". Si la calle tiene una \"y\" en el nombre (Julio Herrera y Reissig) el geocodificador la toma como esquina: usá una calle vecina. " +
-  "Para un lugar conocido (facultad, hospital, shopping, oficina) NO reintentes con otras variantes de la dirección: pasá lat/lng aproximadas del lugar, que las distancias son en línea recta y 3 decimales alcanzan.";
+  "Probá con calle y número de puerta, una esquina o el nombre del lugar (\"Facultad de Ingeniería\", \"Tres Cruces\") y el departamento. " +
+  "Si igual no aparece, NO reintentes con variantes: pasá lat/lng aproximadas, que las distancias son en línea recta y 3 decimales alcanzan.";
 
-export async function geocodeItems(site: SiteApi, input: GeocodeInput) {
+interface GoogleGeocode {
+  status?: string;
+  results?: Array<{
+    formatted_address?: string;
+    types?: string[];
+    geometry?: { location?: { lat: number; lng: number }; location_type?: string };
+  }>;
+}
+
+const inUruguay = (lat: number, lng: number) => lat >= -35.5 && lat <= -30 && lng >= -58.6 && lng <= -53;
+
+async function googleGeocode(site: SiteApi, input: GeocodeInput): Promise<GeocodeItem[]> {
+  const address = input.address.trim().slice(0, 180);
+  const withDepartment =
+    input.department && !address.toLowerCase().includes(input.department.toLowerCase())
+      ? `${address}, ${input.department}`
+      : address;
+  // Addresses are personal input: never cached.
+  const res = await site.get<GoogleGeocode>(
+    `${GEOCODER_URL}/geocode`,
+    { address: withDepartment, components: "country:UY", language: "es", region: "uy" },
+    { ttlMs: 0, timeoutMs: 10_000, retry: false }
+  );
+  return (res.results ?? [])
+    .map((r) => ({ r, loc: r.geometry?.location }))
+    .filter((x): x is { r: (typeof x)["r"]; loc: { lat: number; lng: number } } => !!x.loc && inUruguay(x.loc.lat, x.loc.lng))
+    .slice(0, 5)
+    .map(({ r, loc }) => ({
+      label: r.formatted_address ?? address,
+      lat: Math.round(loc.lat * 1e5) / 1e5,
+      lng: Math.round(loc.lng * 1e5) / 1e5,
+      precision: r.geometry?.location_type === "ROOFTOP" ? "exacta" : "aproximada",
+    }));
+}
+
+async function ideGeocode(site: SiteApi, input: GeocodeInput): Promise<GeocodeItem[]> {
   const first = input.address.trim().slice(0, 180);
   const variants = [first];
   const stripped = first.replace(STREET_TYPE, "");
   if (stripped !== first && stripped.length >= 4) variants.push(stripped);
   for (const q of variants) {
     try {
-      // Addresses are personal input: never cached.
       const res = await site.get<GeocodeResponse>("/api/rentals/geocode", { q, department: input.department }, { ttlMs: 0 });
       if (res.items?.length) return res.items.slice(0, 5);
     } catch (error) {
@@ -103,6 +145,23 @@ export async function geocodeItems(site: SiteApi, input: GeocodeInput) {
     }
   }
   return [];
+}
+
+/**
+ * Google first: it knows places by name ("Facultad de Ingeniería"), neighbourhoods and addresses in
+ * about 0.4 s. The official IDE geocoder (through the site) is only a fallback when Google is down:
+ * it misses places and names with a "y", and took 25-50 s per lookup when it struggled.
+ */
+export async function geocodeWithSource(site: SiteApi, input: GeocodeInput): Promise<{ items: GeocodeItem[]; source: string }> {
+  try {
+    return { items: await googleGeocode(site, input), source: "Google Maps" };
+  } catch {
+    return { items: await ideGeocode(site, input), source: "IDE Uruguay (geocodificador oficial)" };
+  }
+}
+
+export async function geocodeItems(site: SiteApi, input: GeocodeInput): Promise<GeocodeItem[]> {
+  return (await geocodeWithSource(site, input)).items;
 }
 
 /** Resolve a `near` input to a point, geocoding the address when needed. */

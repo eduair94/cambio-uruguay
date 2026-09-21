@@ -29,7 +29,7 @@ const money = (what: string) => z.number().positive().describe(what);
 
 const near = z
   .object({
-    address: z.string().max(180).optional().describe('Dirección o esquina en Uruguay: "Bulevar Artigas 1234" o "18 de Julio y Ejido". Para un lugar conocido (facultad, hospital, shopping) usá su dirección.'),
+    address: z.string().max(180).optional().describe('Dirección, esquina, barrio o nombre de lugar en Uruguay: "Bulevar Artigas 1234", "18 de Julio y Ejido", "Montevideo Shopping".'),
     lat: z.number().min(-35.5).max(-30).optional(),
     lng: z.number().min(-58.6).max(-53).optional(),
     label: z.string().max(60).optional().describe('Nombre del punto, p. ej. "Trabajo".'),
@@ -43,9 +43,9 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
     {
       title: "Ubicar una dirección en Uruguay",
       description:
-        "Convierte una dirección o esquina de Uruguay en coordenadas usando el geocodificador oficial (IDE Uruguay). Usalo para ubicar el trabajo, la facultad o cualquier destino antes de buscar cerca. No reconoce nombres de lugares: pasá calle y número o una esquina. search_rentals y rank_rentals_for_household ya geocodifican solas si les pasás address.",
+        "Convierte una dirección, esquina, barrio o nombre de lugar de Uruguay («Facultad de Ingeniería», «Tres Cruces», «Pocitos») en coordenadas con Google Maps. search_rentals y rank_rentals_for_household ya geocodifican solas si les pasás address: no hace falta llamar a esta antes.",
       inputSchema: {
-        address: z.string().min(4).max(180).describe('Calle y número ("Av. Italia 2500") o esquina ("Rivera y Soca").'),
+        address: z.string().min(4).max(180).describe('Calle y número ("Av. Italia 2500"), esquina ("Rivera y Soca"), barrio o nombre del lugar ("Hospital de Clínicas").'),
         department: department.optional(),
       },
       annotations: READ_ONLY,
@@ -99,7 +99,7 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
   const destination = z.object({
     label: z.string().max(40).describe('Nombre corto: "Trabajo", "Facultad", "Colegio de los chicos".'),
     kind: z.enum(["work", "study", "other"]).optional(),
-    address: z.string().max(180).optional().describe("Dirección o esquina; se geocodifica sola. Alternativa: lat/lng."),
+    address: z.string().max(180).optional().describe("Dirección, esquina o nombre del lugar (\"Facultad de Ingeniería\", \"el Centro\"); se geocodifica sola. Alternativa: lat/lng."),
     lat: z.number().min(-35.5).max(-30).optional(),
     lng: z.number().min(-58.6).max(-53).optional(),
     daysPerWeek: z.number().int().min(0).max(7).optional().describe("Días por semana que va (default 5)."),

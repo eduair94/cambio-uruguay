@@ -21,8 +21,8 @@
   aparecen locales y oficinas). `monthlyMaxUyu` filtra por total con GC pero descarta los que no
   publican GC; para no perderlos usá `priceMaxUyu` y explicá el riesgo.
 - **Cerca de un punto → `near`**: `address` o `lat`/`lng` + `radiusKm`. Sólo cuentan avisos con
-  ubicación propia. El geocodificador oficial (IDE) no reconoce nombres de lugares ni calles con "y"
-  en el nombre: en ese caso pasá coordenadas aproximadas conocidas.
+  ubicación propia. `address` acepta dirección, esquina, barrio o nombre del lugar («Facultad de
+  Ingeniería»); si no aparece, pasá coordenadas aproximadas en vez de reintentar variantes.
 - **Referencia de precio → `rental_market_stats`** (zona) o **`estimate_fair_rent`** (una vivienda
   concreta, con `askingPrice`).
 - **Elegir barrio → `compare_neighborhoods`** (precio, denuncias, cortes de agua, reclamos, servicios).

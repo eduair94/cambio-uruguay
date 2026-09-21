@@ -91,11 +91,12 @@ describe("searchRentals", () => {
 
   it("geocodes an address and filters by radius", async () => {
     const { site, calls } = fakeSite({
-      "/api/rentals/geocode": { items: [{ label: "AV 18 DE JULIO 1234", lat: -34.9, lng: -56.18 }] },
+      "https://google-maps-proxy.checkleaked.cc/geocode": { status: "OK", results: [{ formatted_address: "Av. 18 de Julio 1234, Montevideo", geometry: { location: { lat: -34.9, lng: -56.18 }, location_type: "ROOFTOP" } }] },
       "/api/rentals": { ...response, items: [rental({ key: "near", distanceKm: 0.8 }), rental({ key: "far", distanceKm: 4 })] },
     });
     const out = await searchRentals(site, { near: { address: "18 de Julio 1234", radiusKm: 2 } });
-    expect(calls[0]!.path).toBe("/api/rentals/geocode");
+    expect(calls[0]!.path).toBe("https://google-maps-proxy.checkleaked.cc/geocode");
+    expect(calls[0]!.query).toMatchObject({ components: "country:UY" });
     expect(calls[1]!.query).toMatchObject({ refLat: -34.9, sort: "distancia" });
     expect((out.data.items as Array<{ key: string }>).map((i) => i.key)).toEqual(["near"]);
   });
@@ -103,8 +104,8 @@ describe("searchRentals", () => {
 
 describe("geocodeAddress", () => {
   it("explains how to retry when nothing matches", async () => {
-    const { site } = fakeSite({ "/api/rentals/geocode": { items: [] } });
-    await expect(geocodeAddress(site, { address: "Facultad" })).rejects.toThrow(/esquina/);
+    const { site } = fakeSite({ "https://google-maps-proxy.checkleaked.cc/geocode": { status: "ZERO_RESULTS", results: [] } });
+    await expect(geocodeAddress(site, { address: "Lugar inexistente" })).rejects.toThrow(/nombre del lugar/);
   });
 });
 
@@ -139,18 +140,35 @@ describe("getRental", () => {
 });
 
 describe("geocoding fallbacks", () => {
-  it("retries without the street type and ignores a failing first attempt", async () => {
+  it("finds places by name with Google and drops results outside Uruguay", async () => {
+    const { site } = fakeSite({
+      "https://google-maps-proxy.checkleaked.cc/geocode": {
+        status: "OK",
+        results: [
+          { formatted_address: "Facultad de Ingeniería, Montevideo", geometry: { location: { lat: -34.91827, lng: -56.16627 }, location_type: "ROOFTOP" } },
+          { formatted_address: "Madrid", geometry: { location: { lat: 40.42, lng: -3.7 } } },
+        ],
+      },
+    });
+    const out = await geocodeAddress(site, { address: "Facultad de Ingeniería", department: "Montevideo" });
+    expect(out.data.items).toEqual([{ label: "Facultad de Ingeniería, Montevideo", lat: -34.91827, lng: -56.16627, precision: "exacta" }]);
+    expect(out.text).toContain("Fuente: Google Maps");
+  });
+
+  it("falls back to IDE when Google is down, retrying without the street type", async () => {
     const { site, calls } = fakeSite({
+      "https://google-maps-proxy.checkleaked.cc/geocode": new SiteError(503, "down"),
       "/api/rentals/geocode": (call: { query?: Record<string, unknown> }) =>
         call.query?.q === "Italia 2500" ? { items: [{ label: "AV ITALIA 2500", lat: -34.89, lng: -56.15 }] } : new SiteError(503, "x"),
     });
     const out = await geocodeAddress(site, { address: "Avenida Italia 2500" });
-    expect(calls.map((c) => c.query?.q)).toEqual(["Avenida Italia 2500", "Italia 2500"]);
+    expect(calls.slice(1).map((c) => c.query?.q)).toEqual(["Avenida Italia 2500", "Italia 2500"]);
+    expect(out.text).toContain("IDE Uruguay");
     expect(out.text).toContain("AV ITALIA 2500");
   });
 
   it("suggests passing coordinates when nothing matches", async () => {
-    const { site } = fakeSite({ "/api/rentals/geocode": { items: [] } });
+    const { site } = fakeSite({ "https://google-maps-proxy.checkleaked.cc/geocode": { status: "ZERO_RESULTS", results: [] } });
     await expect(geocodeAddress(site, { address: "Julio Herrera y Reissig 565" })).rejects.toThrow(/lat\/lng aproximadas/);
   });
 });

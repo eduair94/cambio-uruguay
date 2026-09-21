@@ -70,4 +70,11 @@ describe("httpSiteApi", () => {
     });
     await expect(site.get("/api/h", undefined, { retry: false })).rejects.toMatchObject({ status: 503 });
   });
+
+  it("sends absolute URLs to that host instead of the site", async () => {
+    const fetch = vi.fn(async () => response(200, { ok: 1 }));
+    const site = httpSiteApi("https://x.test", { fetch });
+    await site.get("https://geo.test/geocode", { address: "a b" });
+    expect(fetch.mock.calls[0]![0]).toBe("https://geo.test/geocode?address=a+b");
+  });
 });

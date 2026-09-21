@@ -17,7 +17,8 @@ el ranking por hogar admite ~10 consultas por minuto.
   Respuesta: `items[]` (con `offers[]`, `matchingOffer`), `total`, `medianUyu`, `facets`, `meta.usdUyu`.
 - `GET /api/rentals/ficha/<key>` — una vivienda: `property`, `market`, `similar`.
 - `GET /api/rentals/zone-profile?zone=<officialZone.zone>&department=…` — servicios del barrio.
-- `GET /api/rentals/geocode?q=<dirección>&department=…` — coordenadas (IDE Uruguay).
+- `GET https://google-maps-proxy.checkleaked.cc/geocode?address=<dirección o lugar>&components=country:UY` —
+  coordenadas (Google Maps; reconoce lugares por nombre). Respaldo: `GET /api/rentals/geocode?q=…` (IDE Uruguay).
 - `POST /api/rentals/fit` (JSON) — ranking por hogar. Cuerpo: `people[]` (`id`, `label`,
   `incomeUyu`, `remoteDays`, `destinations[]` con `id`, `label`, `kind` work|study|other, `lat`,
   `lng`, `days`, `mode` walking|bicycling|transit|driving, `targetKm`), `housingBudgetUyu`,

@@ -201,8 +201,8 @@
         otros parecidos, no una tasación: visitá, revisá y confirmá antes de pagar nada.
       </li>
       <li class="text-body-2">
-        Las distancias son en línea recta. El geocodificador oficial (IDE Uruguay) necesita calle y
-        número o una esquina; no reconoce nombres de lugares.
+        Las distancias son en línea recta. Los destinos se ubican con Google Maps: sirve una
+        dirección, una esquina o el nombre del lugar («Facultad de Ingeniería»).
       </li>
       <li class="text-body-2">
         El ranking por hogar admite unas diez consultas por minuto y la primera puede tardar hasta

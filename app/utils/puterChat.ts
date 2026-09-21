@@ -23,6 +23,8 @@ export interface OpenAiToolCall {
   id: string
   type?: 'function'
   function: { name: string; arguments: string }
+  /** Gemini 3 through the OpenAI-compatible API: `{ google: { thought_signature } }`. */
+  extra_content?: { google?: { thought_signature?: string } }
 }
 export interface OpenAiMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
@@ -105,6 +107,11 @@ export function puterError(error: unknown): PuterChatError {
     )
   if (/not.?signed|unauthori[sz]ed|\b401\b|sign.?in|session/.test(text))
     return new PuterChatError('Tu sesión de Puter se cerró. Tocá «Empezar» para volver a entrar.')
+  if (/upstream|all ai providers|provider/.test(text))
+    return new PuterChatError(
+      'La IA no pudo responder esta vez. Probá de nuevo en un momento.',
+      true
+    )
   if (/model|not.?found|unsupported|unavailable/.test(text))
     return new PuterChatError('Ese modelo no está disponible en Puter en este momento.', true)
   return new PuterChatError(
@@ -161,16 +168,46 @@ export interface PuterTurnResult {
   tools: string[]
 }
 
+/**
+ * Gemini 3 rejects a function call sent back without its thought signature (HTTP 400), and on the
+ * way through Puter the signature does not survive: the first call worked, the one carrying the
+ * tool results failed with `upstream_failed` (reproduced against Google's OpenAI-compatible
+ * endpoint, which is what Puter's Gemini provider calls). Google documents a placeholder signature
+ * for exactly this case. Other vendors get the history without the Google-only field.
+ */
+export const PLACEHOLDER_SIGNATURE = 'skip_thought_signature_validator'
+
+export function prepareForModel(conversation: OpenAiMessage[], model: string): OpenAiMessage[] {
+  const gemini = /gemini/i.test(model)
+  return conversation.map(message => {
+    if (!message.tool_calls?.length) return message
+    const toolCalls = message.tool_calls.map((call, index) => {
+      const { extra_content: extra, ...plain } = call
+      if (!gemini) return plain
+      const signature = extra?.google?.thought_signature
+      if (signature)
+        return { ...plain, extra_content: { google: { thought_signature: signature } } }
+      // Only the first call of a parallel batch carries a signature.
+      return index === 0
+        ? { ...plain, extra_content: { google: { thought_signature: PLACEHOLDER_SIGNATURE } } }
+        : plain
+    })
+    return { ...message, tool_calls: toolCalls }
+  })
+}
+
 async function chat(opts: PuterTurnOptions, conversation: OpenAiMessage[], allowTools: boolean) {
   while (opts.models.length) {
     const model = opts.models[0]!
     try {
-      const response = await opts.puter.ai.chat(conversation, false, {
+      const response = await opts.puter.ai.chat(prepareForModel(conversation, model), false, {
         model,
         ...(allowTools ? { tools: opts.tools } : {}),
       })
       return { message: response?.message, model }
     } catch (error) {
+      // Puter explains which providers it tried and why; keep it in the console for diagnosis.
+      console.warn('[asistente] Puter', model, (error as { fields?: unknown })?.fields ?? error)
       const failure = error instanceof PuterChatError ? error : puterError(error)
       if (!failure.modelUnavailable || opts.models.length === 1) throw failure
       opts.models.shift()

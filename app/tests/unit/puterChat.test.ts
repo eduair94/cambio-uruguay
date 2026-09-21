@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ROUND_LIMIT_TEXT } from '../../utils/geminiChat'
 import {
+  PLACEHOLDER_SIGNATURE,
   messageText,
+  prepareForModel,
   puterError,
   runPuterTurn,
   toOpenAiTools,
@@ -129,5 +131,60 @@ describe('helpers', () => {
     expect(puterError({ error: { message: 'User not signed in' } }).message).toContain(
       'volver a entrar'
     )
+  })
+})
+
+describe('Gemini thought signatures through Puter', () => {
+  const withCall = (extra?: object): OpenAiMessage => ({
+    role: 'assistant',
+    content: null,
+    tool_calls: [
+      {
+        id: 'a',
+        type: 'function',
+        function: { name: 'x', arguments: '{}' },
+        ...(extra ? { extra_content: extra } : {}),
+      },
+      { id: 'b', type: 'function', function: { name: 'y', arguments: '{}' } },
+    ],
+  })
+
+  it('adds the documented placeholder when the signature was lost, only on the first call', () => {
+    const [msg] = prepareForModel([withCall()], 'gemini-3.5-flash-lite')
+    expect(msg!.tool_calls![0]!.extra_content).toEqual({
+      google: { thought_signature: PLACEHOLDER_SIGNATURE },
+    })
+    expect(msg!.tool_calls![1]!.extra_content).toBeUndefined()
+  })
+
+  it('keeps a real signature and strips the field for other vendors', () => {
+    const real = { google: { thought_signature: 'sig' } }
+    expect(
+      prepareForModel([withCall(real)], 'gemini-3.8-flash')[0]!.tool_calls![0]!.extra_content
+    ).toEqual(real)
+    expect(
+      prepareForModel([withCall(real)], 'gpt-5-nano')[0]!.tool_calls![0]!.extra_content
+    ).toBeUndefined()
+  })
+
+  it('sends the tool results back with a signature, and retries another model on upstream_failed', async () => {
+    const { puter, seen, chat } = fakePuter([
+      {
+        message: {
+          role: 'assistant',
+          content: null,
+          tool_calls: [{ id: 'c1', function: { name: 'search_used_cars', arguments: '{}' } }],
+        },
+      },
+      Object.assign(new Error('All AI providers failed'), { code: 'upstream_failed' }),
+      { message: { role: 'assistant', content: 'listo' } },
+    ])
+    const out = await runPuterTurn(opts(puter, { models: ['gemini-3.5-flash-lite', 'gpt-5-nano'] }))
+    expect(seen[1]![2]!.tool_calls![0]!.extra_content).toEqual({
+      google: { thought_signature: PLACEHOLDER_SIGNATURE },
+    })
+    expect((chat.mock.calls[2]![2] as { model: string }).model).toBe('gpt-5-nano')
+    expect(seen[2]![2]!.tool_calls![0]!.extra_content).toBeUndefined()
+    expect(out.text).toBe('listo')
   })
 })

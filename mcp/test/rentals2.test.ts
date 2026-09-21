@@ -35,7 +35,7 @@ describe("householdBody", () => {
 describe("rankRentalsForHousehold", () => {
   it("geocodes address destinations, posts the household and names the trips", async () => {
     const { site, calls } = fakeSite({
-      "/api/rentals/geocode": { items: [{ label: "JULIO HERRERA Y RESSIG 565", lat: -34.918, lng: -56.166 }] },
+      "https://google-maps-proxy.checkleaked.cc/geocode": { status: "OK", results: [{ formatted_address: "Av. Julio Herrera y Reissig 565, Montevideo", geometry: { location: { lat: -34.918, lng: -56.166 }, location_type: "ROOFTOP" } }] },
       "/api/rentals/fit": {
         generatedAt: "2026-09-21T10:00:00Z",
         scanned: 28000,
@@ -63,7 +63,7 @@ describe("rankRentalsForHousehold", () => {
       people: [{ label: "Ana", incomeUyu: 90000, destinations: [{ label: "Facultad de Ingeniería", address: "Julio Herrera y Reissig 565", kind: "study" }] }],
       housingBudgetUyu: 36000,
     });
-    expect(calls[0]!.path).toBe("/api/rentals/geocode");
+    expect(calls[0]!.path).toBe("https://google-maps-proxy.checkleaked.cc/geocode");
     const body = calls[1]!.body as { people: Array<{ destinations: Array<{ lat: number }> }> };
     expect(body.people[0]!.destinations[0]!.lat).toBe(-34.918);
     expect(out.text).toContain("[81/100]");

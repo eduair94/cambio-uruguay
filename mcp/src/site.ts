@@ -97,7 +97,8 @@ export function httpSiteApi(baseUrl: string = DEFAULT_SITE_BASE_URL, deps: Deps 
 
   return {
     async get<T>(path: string, query?: Record<string, QueryValue>, opts: SiteRequestOptions = {}): Promise<T> {
-      const url = `${base}${path}${toQuery(query)}`;
+      // An absolute URL reaches another public service (the geocoder) through the same cache/timeout.
+      const url = `${/^https?:/.test(path) ? path : base + path}${toQuery(query)}`;
       const ttl = opts.ttlMs ?? 0;
       const hit = ttl > 0 ? cache.get(url) : undefined;
       if (hit && hit.until > now()) return hit.value as T;
