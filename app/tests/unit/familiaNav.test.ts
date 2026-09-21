@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { DIRECTORIOS } from '../../utils/directorios'
 import { familiaDe, familiaNavParaRuta } from '../../utils/familiaNav'
@@ -69,5 +71,22 @@ describe('la barra de la familia', () => {
       for (const item of familiaNavParaRuta(entry.to)?.items ?? [])
         expect(item.labelKey, `${entry.id} → ${item.to}`).toBeTruthy()
     }
+  })
+})
+
+// El hueco entre la barra y la página iba de 11 a 61 px según el padding-top del <VContainer> de
+// cada página (medido 2026-09-21). La barra lo anula en el contenedor que la sigue y pone el suyo;
+// depende de que toda página arranque con un <VContainer>, que es lo que vigila pageContainer.test.ts.
+describe('el aire debajo de la barra', () => {
+  const src = readFileSync(join(__dirname, '..', '..', 'components', 'FamiliaNav.vue'), 'utf8')
+  const global = src.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
+
+  it('lo pone la barra: anula el padding-top del contenedor y de las migas que la siguen', () => {
+    expect(global).toMatch(
+      /\.familia-nav-wrap \+ \.v-container,[^{]*\{\s*padding-top: 0 !important;/
+    )
+    expect(global).toMatch(
+      /\.v-container > \.v-breadcrumbs:first-child[^{]*\{\s*padding-top: 0 !important;/
+    )
   })
 })

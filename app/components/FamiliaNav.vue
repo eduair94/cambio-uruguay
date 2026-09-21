@@ -125,8 +125,8 @@ function trackClick(destination: string, placement: string) {
    172 o 356 según la página (cada una tiene su propio contenedor), así que alinear la barra "con la
    página" no existe; un contenedor centrado la dejaba desalineada en la mayoría. */
 .familia-nav-wrap {
-  padding: 4px 16px 10px;
-  margin-bottom: 8px;
+  padding: 4px 16px 12px;
+  margin-bottom: 16px;
   border-bottom: 1px solid rgba(var(--v-border-color), 0.15);
 }
 .familia-nav__list {
@@ -263,7 +263,7 @@ function trackClick(destination: string, placement: string) {
    sin avisar) sirven. */
 @media (max-width: 959px) {
   .familia-nav-wrap {
-    padding-bottom: 12px;
+    padding-bottom: 0;
     border-bottom: 0;
   }
   .familia-nav__list {
@@ -272,5 +272,22 @@ function trackClick(destination: string, placement: string) {
   .familia-nav__menu {
     display: block;
   }
+}
+</style>
+
+<style>
+/* El aire entre la barra y la página lo pone la barra (su margin-bottom), no la página. Cada página
+   arranca con su propio <VContainer> y su padding-top era de 4, 8, 12, 16, 20 o 24 px, más 4 o 16 de
+   las migas si abren la página: medido el 2026-09-21 en las 28 páginas con barra, el contenido
+   quedaba de 11 a 61 px debajo del menú en el celular y de 31 a 76 debajo del borde en escritorio.
+   Con esto, 13–17 y 25–30 (el resto es el interlineado de la primera línea). Sin scope porque el
+   contenedor es de la página, y con !important porque py-6/pa-2/pt-1 de Vuetify lo llevan. */
+.familia-nav-wrap + .v-container,
+.familia-nav-wrap + * > .v-container:first-child {
+  padding-top: 0 !important;
+}
+.familia-nav-wrap + .v-container > .v-breadcrumbs:first-child,
+.familia-nav-wrap + * > .v-container:first-child > .v-breadcrumbs:first-child {
+  padding-top: 0 !important;
 }
 </style>
