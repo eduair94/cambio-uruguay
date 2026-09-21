@@ -118,8 +118,14 @@ export function kmFromText(text: string): number | null {
   return candidates.sort((a, b) => a.index - b.index)[0]!.km;
 }
 
-const USD_MARKER = /(u\$s|us\$|u\$d|\busd\b|\bdolares?\b)/;
-const UYU_MARKER = /(\$u\b|\buyu\b|\bpesos?\b)/;
+// "U$U" es una forma uruguaya de escribir dólares, y es una trampa: en "u$u6990" el marcador "u$s"
+// no engancha en la posición 0, el motor avanza una letra y ahí "$u" —que es el marcador de PESOS—
+// matchea el medio de la palabra. Medido el 2026-09-21: un Chevrolet Spark 2008 cuya descripción
+// decía "Precio contado U$U6990 (bonificado)" se publicó a $ 6.990, o sea US$ 169. Por eso "u$u" va
+// PRIMERO en toda alternancia, para ganar en la posición 0, y el "$u" de pesos exige que no venga
+// una letra pegada adelante.
+const USD_MARKER = /(u\$u|u\$s|us\$|u\$d|\busd\b|\bdolares?\b)/;
+const UYU_MARKER = /((?<![a-z])\$u\b|\buyu\b|\bpesos?\b)/;
 
 export function declaredCurrencyOf(text: string): CarCurrency | null {
   const folded = fold(text);
@@ -128,7 +134,7 @@ export function declaredCurrencyOf(text: string): CarCurrency | null {
   return usd === uyu ? null : usd ? "USD" : "UYU";
 }
 
-const currencyOfMarker = (marker: string): CarCurrency => (/^(u\$s|us\$|u\$d|usd|dolar)/.test(marker) ? "USD" : "UYU");
+const currencyOfMarker = (marker: string): CarCurrency => (/^(u\$u|u\$s|us\$|u\$d|usd|dolar)/.test(marker) ? "USD" : "UYU");
 
 function amountOfPhrase(raw: string): number {
   const text = raw.trim();
@@ -141,8 +147,8 @@ export function declaredCurrencyFor(text: string, amount: number): CarCurrency |
   const folded = fold(text);
   const found = new Set<CarCurrency>();
   const number = "(\\d[\\d.,]*\\d|\\d)(\\s*mil)?";
-  const before = new RegExp(`(u\\$s|us\\$|u\\$d|\\busd|\\$u|\\buyu)\\s*${number}`, "g");
-  const after = new RegExp(`${number}\\s*(dolares?|usd|u\\$s|pesos?|uyu)\\b`, "g");
+  const before = new RegExp(`(u\\$u|u\\$s|us\\$|u\\$d|\\busd|(?<![a-z])\\$u|\\buyu)\\s*${number}`, "g");
+  const after = new RegExp(`${number}\\s*(dolares?|usd|u\\$u|u\\$s|pesos?|uyu)\\b`, "g");
   const near = (value: number): boolean => Number.isFinite(value) && Math.abs(value - amount) <= amount * 0.01;
   let match: RegExpExecArray | null;
   while ((match = before.exec(folded))) {

@@ -70,7 +70,8 @@ export function htmlText(html: string): string {
 /** "U$S 15,000" | "US$ 11.990" | "USD 54.890,00" | "$U 450.000" | "$ 450.000" (pesos). */
 export function moneyOf(text: string): { amount: number; currency: CarCurrency } | null {
   const folded = fold(text);
-  const currency: CarCurrency | null = /(u\$s|us\$|u\$d|usd|dolar)/.test(folded) ? "USD" : /(\$u|uyu|peso|\$)/.test(folded) ? "UYU" : null;
+  // "u$u" primero y antes del "$u" de pesos: ver el comentario de los marcadores en catalog/match.ts.
+  const currency: CarCurrency | null = /(u\$u|u\$s|us\$|u\$d|usd|dolar)/.test(folded) ? "USD" : /((?<![a-z])\$u|uyu|peso|\$)/.test(folded) ? "UYU" : null;
   const number = /\d[\d.,]*/.exec(folded);
   if (!currency || !number) return null;
   let raw = number[0].replace(/[.,]$/, "");
@@ -116,6 +117,19 @@ export interface WebCarInput {
 
 /** Trucks, motorbikes and the like share some sites with cars; the directory is cars and pickups. */
 export const NOT_A_CAR = /\b(camion|camiones|moto|motos|motocicletas?|scooter|cuatriciclos?|tractor(?:es)?|omnibus|microbus|lancha|casa rodante|motorhome)\b/;
+
+/**
+ * Un REPUESTO publicado en la categoría de autos ("Techo De Chevrolet S10 Doble Cabina Nuevo
+ * Original", "Butacas Fiat 147"). Sólo cuenta cuando la pieza es el SUJETO del título, o sea que lo
+ * abre: buscar la palabra en cualquier posición es inservible y está medido: de 19.026 títulos, 556
+ * contienen "techo", "turbo", "cuero" o "volante", y los más caros son un Jeep Wrangler, un Porsche
+ * Macan y un Kia Carnival — ahí esas palabras son equipamiento, no lo que se vende. Anclado al
+ * principio son 2 títulos y los 2 son repuestos.
+ *
+ * "Motor" NO está en la lista, a propósito: "Motor Echo Ase 2 Años Libreta Títulos Tiene Deuda" es un
+ * Toyota Echo con el motor rehecho, con libreta y con deuda — un auto, no un motor.
+ */
+export const IS_A_PART = /^(butacas?|asientos?|techo|capot|paragolpes?|parachoques?|guardabarros?|tapizados?|llantas?|cubiertas?|parabrisas|opticas?|far(?:o|ol)(?:es)?|alternador|radiador|inyector(?:es)?|culata|embrague|amortiguador(?:es)?|caja de cambios?|tren delantero|diferencial|bomba|tablero|paragolpe)\b/;
 
 // A model name of digits only is a real one ("155", "190", "147") unless it reads as a year: sites do
 // put the year in the model field, and "CAMIÓN KIA" once reached the directory as a "2004".

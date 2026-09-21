@@ -14,7 +14,8 @@ import { buildTrimIndex, mineTrims, type TrimCorpusRow } from "./classes/autos/c
 import { carKey, enrichCarListing } from "./classes/autos/enrich";
 import { runFacebook } from "./classes/autos/facebookRun";
 import { buildMarketSnapshots } from "./classes/autos/market";
-import { slugify } from "./classes/autos/normalize";
+import { fold, slugify } from "./classes/autos/normalize";
+import { IS_A_PART } from "./classes/autos/sources/common";
 import { buildCarCatalog, buildOpportunitySnapshot, buildRiskSnapshot, CAR_CATALOG_FRESH_DAYS } from "./classes/autos/project";
 import { buildCarReport, CAR_REPORT_POLICY } from "./classes/autos/report";
 import { analyzeCarRisk } from "./classes/autos/riskAnalyze";
@@ -196,7 +197,12 @@ async function main(): Promise<void> {
   // comparable.
   const enrichAll = (docs: readonly StoredCar[], extra: ReadonlyMap<string, CarDetail>): CarListing[] => {
     const enriched = attachBodyType(attachFuelEconomy(attachReferences(docs.map(doc => enrich(doc, extra.get(doc.key) ?? doc.detail)), guide)));
-    const { kept, dropped } = dropImplausiblePrices(enriched);
+    // Un repuesto publicado en la categoría de autos tiene precio de repuesto, así que ninguna banda
+    // de precios lo va a agarrar: se va por lo que dice ser (classes/autos/sources/common.ts).
+    const parts = enriched.filter(listing => IS_A_PART.test(fold(listing.title).trim()));
+    if (parts.length) console.log(`[autos] repuestos publicados como autos: ${parts.length} retirados (${parts.map(p => p.title.slice(0, 40)).join(" | ")})`);
+    const partKeys = new Set(parts.map(listing => listing.key));
+    const { kept, dropped } = dropImplausiblePrices(enriched.filter(listing => !partKeys.has(listing.key)));
     if (dropped.length) {
       console.log(`[autos] precios imposibles: ${dropped.length} avisos retirados ${JSON.stringify(priceDropSummary(dropped))}`);
       for (const item of dropped.slice(0, 10))

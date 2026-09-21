@@ -90,6 +90,18 @@ describe("text helpers", () => {
     expect(declaredCurrencyFor("$U 180.000 negociable", 180_000)).toBe("UYU");
     expect(declaredCurrencyFor("4000 pesos de deuda, pido 4000 dolares", 4_000)).toBeNull();
   });
+  it("lee U$U como dolares y no como el '$U' de adentro", () => {
+    // Medido 2026-09-21: un Chevrolet Spark 2008 de Facebook decia "Precio contado U$U6990
+    // (bonificado)" y se publico a $ 6.990, o sea US$ 169. "u$s" no engancha en la posicion 0, el
+    // motor avanza una letra y ahi "$u" -marcador de PESOS- matchea el medio de "u$u".
+    expect(declaredCurrencyFor("Precio contado U$U6990 (bonificado)", 6_990)).toBe("USD");
+    expect(declaredCurrencyFor("entrega U$U 3750 y saldo en cuotas", 3_750)).toBe("USD");
+    expect(declaredCurrencyOf("Precio contado U$U6990")).toBe("USD");
+    expect(declaredCurrencyOf("U$U 15.000")).toBe("USD");
+    // Y el marcador de pesos de verdad sigue leyendose como pesos.
+    expect(declaredCurrencyOf("$U 450.000")).toBe("UYU");
+    expect(declaredCurrencyFor("$U 180.000 negociable", 180_000)).toBe("UYU");
+  });
   it("reads dealer version gearboxes and engine sizes", () => {
     expect(versionTransmission("NUEVO ONIX 1.0 JOY MT")).toBe("manual");
     expect(versionTransmission("NEW CS35 PLUS 1.4T 5P AT")).toBe("automatica");

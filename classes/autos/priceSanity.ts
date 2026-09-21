@@ -36,7 +36,11 @@ export const PRICE_ABSOLUTE_FLOOR_USD = 200;
  */
 export const PRICE_COHORTS = [
   { level: "model_year", min: 5, ratio: 0.15 },
-  { level: "brand_year", min: 20, ratio: 0.08 },
+  // Veinte avisos de la marca en el año era demasiado pedir y dejaba pasar justo lo que más se nota:
+  // una Toyota Hilux SRV 2007 a $ 27.500 (US$ 664) caía al escalón del año, donde compite con Ladas
+  // y sobrevive. Con ocho, Toyota 2007 tiene mediana y la retira. Medido: bajar de 20 a 8 retira ese
+  // aviso y ninguno más.
+  { level: "brand_year", min: 8, ratio: 0.08 },
   { level: "year", min: 20, ratio: 0.07 },
 ] as const;
 export type PriceCohortLevel = (typeof PRICE_COHORTS)[number]["level"];

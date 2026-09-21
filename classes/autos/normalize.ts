@@ -174,9 +174,9 @@ function amountOf(text: string): number {
 // counts when an amount sits right next to it (at most one connector word and an optional
 // currency marker in between). Runs against the UNSTRIPPED text: `stripped` eats "7.990" as if
 // it were an engine displacement ("\d\.\d\w*"), which would hide the very amount we're looking for.
-const FINANCING_KEYWORD_AMOUNT = /\b(?:entrega|anticipo|retira\w*)\b(?:\s+(?:de|con|minima|solo|y)\b)?(?:\s+(?:u\$s|u\$d|us\$|usd|\$))?\s+(?:\d[\d.,]*\d|\d{2,})\b/;
+const FINANCING_KEYWORD_AMOUNT = /\b(?:entrega|anticipo|retira\w*)\b(?:\s+(?:de|con|minima|solo|y)\b)?(?:\s+(?:u\$u|u\$s|u\$d|us\$|usd|\$))?\s+(?:\d[\d.,]*\d|\d{2,})\b/;
 // "Usd 5500 Cuotas En Pesos": a currency amount landing directly on "cuotas" (or one word away).
-const FINANCING_CURRENCY_BEFORE_CUOTAS = /\b(?:u\$s|u\$d|us\$|usd)\s+(?:\d[\d.,]*\d|\d{2,})\b(?:\s+\S+)?\s+(?:cuotas?|cuot)\b/;
+const FINANCING_CURRENCY_BEFORE_CUOTAS = /\b(?:u\$u|u\$s|u\$d|us\$|usd)\s+(?:\d[\d.,]*\d|\d{2,})\b(?:\s+\S+)?\s+(?:cuotas?|cuot)\b/;
 
 /** Title-only signals: a down payment in the headline, or a second price that is not the listed one. */
 export function titleFlags(title: string, price: number, currency: CarCurrency): CarTextFlag[] {

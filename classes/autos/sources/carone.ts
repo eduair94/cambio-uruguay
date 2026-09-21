@@ -53,7 +53,7 @@ export function caroneCards(html: string, context: WebCarContext): Array<NonNull
       permalink,
       picture: text(card, /<img src="(https:\/\/cdn\.impel\.io\/[^"]+)"/),
       price: amount,
-      currency: /u\$s|us\$|usd/i.test(shown) ? "USD" : "UYU",
+      currency: /u\$u|u\$s|us\$|usd/i.test(shown) ? "USD" : "UYU",
       brand: null,
       model: null,
       year: Number.isInteger(year) && year > 1900 ? year : null,

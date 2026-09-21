@@ -265,7 +265,7 @@ parecida a la más gruesa. La primera que existe manda:
 | cohorte | mínimo | se retira si | por qué ese umbral |
 |---|---|---|---|
 | modelo + año | 5 avisos | < 15 % de la mediana | autos iguales: un 15 % de sus pares ya es imposible |
-| marca + año | 20 avisos | < 8 % | Mercado Libre parte "Hilux" de "Hilux Pick-up" y fragmenta la cohorte del modelo |
+| marca + año | 8 avisos | < 8 % | Mercado Libre parte "Hilux" de "Hilux Pick-up" y fragmenta la cohorte del modelo |
 | año | 20 avisos | < 7 % | mezcla un Lada con una Hilux, así que sólo un umbral muy bajo prueba algo |
 | ninguna | — | < US$ 200 | debajo de eso no hay auto, ni para repuestos |
 
@@ -283,10 +283,48 @@ es un precio tampoco es una cohorte ni un comparable.
 Medido con el módulo real contra producción: **17 de 19.036** (5 por modelo+año, 7 por marca+año,
 5 por año), y ninguno de los que se venden para repuestos. El job lo registra por motivo.
 
-**Lo que este guardarraíl NO arregla**, visto en los mismos datos y pendiente: hay repuestos
-listados en la categoría de autos ("Techo De Chevrolet S10 Doble Cabina Nuevo Original", "Butacas
-Fiat 147", "Motor Echo"), que tienen precio coherente con un repuesto y pasan la banda. Eso es un
-problema de identificación, no de precio.
+**El mínimo de marca+año bajó de 20 a 8 avisos (2026-09-21).** Con 20 no existía la cohorte de
+Toyota 2007 y una **Hilux SRV 2007 a $ 27.500 (US$ 664)** caía al escalón del año, donde compite con
+Ladas y sobrevive con r = 0,095 contra un umbral de 0,07. Con 8 la cohorte existe, r = 0,031 y se
+retira. Medido: bajar el mínimo retira ese aviso y **ninguno más**.
+
+### Repuestos publicados como autos (2026-09-21)
+
+Un repuesto listado en la categoría de autos tiene precio de repuesto, así que **ninguna banda de
+precios lo va a agarrar**: se va por lo que dice ser. `IS_A_PART` en `sources/common.ts`, al lado de
+`NOT_A_CAR`.
+
+Sólo cuenta cuando la pieza es el **sujeto** del título, o sea que lo abre. Buscar la palabra en
+cualquier posición es inservible y está medido: de 19.026 títulos, **556** contienen "techo",
+"turbo", "cuero" o "volante", y los más caros de esa lista son un Jeep Wrangler, un Porsche Macan y
+un Kia Carnival — ahí esas palabras son equipamiento, no lo que se vende. Anclado al principio son
+**2 títulos y los 2 son repuestos** ("Techo De Chevrolet S10 Doble Cabina Nuevo Original", "Butacas
+Fiat 147").
+
+**"Motor" quedó afuera de la lista a propósito**: "Motor Echo Ase 2 Años Libreta Títulos Tiene Deuda"
+no es un motor, es un Toyota Echo con el motor rehecho, con libreta y con deuda. Un auto.
+
+### La moneda: "U$U" leía pesos (2026-09-21)
+
+**El Spark no era una ambigüedad, era un bug del parser.** Su descripción decía "💵 Precio contado
+**U$U6990** (bonificado)", que en Uruguay es una forma de escribir dólares. La lista de marcadores
+era `(u\$s|us\$|u\$d|\busd|\$u|\buyu)`: en "u$u6990" ninguna alternativa dólar engancha en la
+posición 0, el motor avanza una letra y ahí **`$u` —el marcador de PESOS— matchea el medio de la
+palabra**. Un marcador de dólares leído como pesos, y de ahí US$ 169.
+
+El arreglo es del vocabulario, no una heurística: `u$u` va **primero** en toda alternancia (así gana
+en la posición 0) y el `$u` de pesos exige que no venga una letra pegada adelante. Faltaba en cinco
+lugares: `catalog/match.ts` (los dos marcadores, `currencyOfMarker` y `declaredCurrencyFor`),
+`sources/common.ts`, `sources/carone.ts` y las dos expresiones de financiación de `normalize.ts`.
+`cashPrice.ts` ya lo trataba bien, con el mismo comentario sobre el orden de la alternancia.
+
+Medido: `u$u` aparece en 2 avisos de 20.601 y 1 estaba mal cotizado. Poco volumen, pero es un parser
+de moneda devolviendo lo contrario.
+
+**Por eso NO se agregó el rescate heurístico** que se había considerado —reinterpretar como dólares
+un precio en pesos absurdo cuando cae en la banda de su modelo—: medido sobre las 28 filas de
+Facebook en pesos, los avisos rescatables son **cero**, porque el único caso real era este bug.
+Inventar un precio donde el vendedor escribió otro no se hace sin un caso que lo pida.
 
 ## Carrocería, puertas y color (2026-09-20)
 
