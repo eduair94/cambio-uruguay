@@ -85,7 +85,7 @@ const STREET_TYPE = /^(avenida|av\.?|bulevar|boulevard|bv\.?|bvar\.?|calle|camin
 /** Advice appended when the official geocoder cannot place an address. */
 export const GEOCODE_ADVICE =
   "Probá con calle y número de puerta o una esquina, sin \"Avenida\"/\"Bulevar\". Si la calle tiene una \"y\" en el nombre (Julio Herrera y Reissig) el geocodificador la toma como esquina: usá una calle vecina. " +
-  "Para un lugar conocido (facultad, hospital, shopping, oficina) también podés pasar lat/lng aproximadas: las distancias son en línea recta y 3 decimales alcanzan.";
+  "Para un lugar conocido (facultad, hospital, shopping, oficina) NO reintentes con otras variantes de la dirección: pasá lat/lng aproximadas del lugar, que las distancias son en línea recta y 3 decimales alcanzan.";
 
 export async function geocodeItems(site: SiteApi, input: GeocodeInput) {
   const first = input.address.trim().slice(0, 180);

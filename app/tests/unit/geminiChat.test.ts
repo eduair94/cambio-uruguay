@@ -225,3 +225,18 @@ describe('browser fetch binding', () => {
     expect(out.text).toBe('ok')
   })
 })
+
+describe('round limit', () => {
+  it('answers instead of failing and drops the dangling function call', async () => {
+    const call = () =>
+      json(200, {
+        candidates: [
+          { content: { role: 'model', parts: [{ functionCall: { name: 'search_rentals' } }] } },
+        ],
+      })
+    const fetch = vi.fn(async () => call())
+    const out = await runChatTurn(turnOptions(fetch, { maxRounds: 1 }))
+    expect(out.text).toContain('varias búsquedas')
+    expect(out.history.at(-1)!.parts[0]!.functionResponse).toBeDefined()
+  })
+})

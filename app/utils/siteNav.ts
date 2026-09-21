@@ -3515,8 +3515,9 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
-        // Chat en el navegador con la clave GRATUITA de Gemini del visitante: los tokens corren por su
-        // cuota, no la del sitio. La clave va directo a Google; las tools salen del MCP (CORS).
+        // Chat en el navegador: un botón y el visitante entra a Puter con Google/Microsoft/Apple; la IA
+        // se cobra a SU cuenta (cupo gratis mensual), nunca al sitio. Alternativa: su clave de Gemini.
+        // Las tools salen del MCP (CORS).
         to: '/asistente-ia',
         labelKey: 'nav.asistenteIa',
         icon: 'mdi-chat-processing-outline',

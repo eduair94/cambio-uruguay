@@ -22,8 +22,8 @@
     </p>
     <VAlert type="success" variant="tonal" density="comfortable" class="mb-4 on-dark">
       <p class="text-body-2 mb-2">
-        ¿No usás Claude ni ChatGPT? Probá el <strong>asistente con Gemini</strong> acá mismo: es
-        gratis con tu cuenta de Google y no tenés que instalar nada.
+        ¿No usás Claude ni ChatGPT? Probá el <strong>asistente con IA</strong> acá mismo: tocás un
+        botón, entrás con tu cuenta de Google y listo. Gratis y sin instalar nada.
       </p>
       <VBtn
         :to="localePath('/asistente-ia')"

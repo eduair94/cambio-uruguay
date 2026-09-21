@@ -4,9 +4,15 @@
 // Pure functions over an injected fetch, so the loop is testable without a network.
 
 export const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta'
-export const CHAT_MCP_URL = 'https://mcp.cambio-uruguay.com/mcp'
+// Only the search toolsets: every declaration is resent on each model call and the visitor pays those
+// tokens from their own free quota, so the 7 exchange-rate tools stay out.
+export const CHAT_MCP_URL = 'https://mcp.cambio-uruguay.com/mcp?toolsets=alquileres,autos,productos'
 export const GEMINI_KEY_STORAGE = 'cu_gemini_key'
-export const MAX_TOOL_ROUNDS = 6
+export const MAX_TOOL_ROUNDS = 8
+
+/** Said instead of failing when the model is still calling tools at the round limit. */
+export const ROUND_LIMIT_TEXT =
+  'Hice varias búsquedas y no llegué a cerrar una respuesta. Probá con un pedido más concreto: un barrio, una dirección con número de puerta o un presupuesto.'
 
 type Fetch = typeof fetch
 
@@ -295,6 +301,16 @@ export async function runChatTurn(opts: ChatTurnOptions): Promise<ChatTurnResult
     }
     contents.push({ role: 'model', parts: content.parts })
     const calls = content.parts.filter(part => part.functionCall)
+    if (calls.length && round === maxRounds) {
+      // A function call left without its response would poison the next turn: drop it.
+      contents.pop()
+      const said = content.parts
+        .filter(part => part.text && !part.thought)
+        .map(part => part.text)
+        .join('')
+        .trim()
+      return { history: contents, text: said || ROUND_LIMIT_TEXT, model, tools }
+    }
     if (!calls.length) {
       const text = content.parts
         .filter(part => part.text && !part.thought)
