@@ -25,6 +25,13 @@ const BANNED: Array<[RegExp, string]> = [
   [/google_search/, 'a Gemini grounding tool declaration'],
 ]
 
+// The ONE exception: the /asistente-ia chat runs Gemini in the VISITOR's browser with the key the
+// visitor types into the page (their free Google AI Studio key). It never holds, reads or needs the
+// site key, and routing it through our backend would only send someone else's key through our
+// servers. So that file may name the endpoint, and in exchange it may not read ANY configuration.
+const VISITOR_KEY_CHAT = new Set(['utils/geminiChat.ts'])
+const CONFIG_READ = /useRuntimeConfig|process\.env|import\.meta\.env/
+
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (SKIP.has(entry.name)) continue
@@ -42,8 +49,13 @@ describe('no Gemini in the Nuxt app', () => {
     for (const file of walk(APP_ROOT)) {
       if (path.resolve(file) === self) continue // this test names the patterns it bans
       const src = fs.readFileSync(file, 'utf8')
+      const rel = path.relative(APP_ROOT, file).split(path.sep).join('/')
+      const visitorChat = VISITOR_KEY_CHAT.has(rel)
+      if (visitorChat && CONFIG_READ.test(src))
+        hits.push(`${rel} — the visitor-key chat reads configuration`)
       for (const [re, why] of BANNED) {
-        if (re.test(src)) hits.push(`${path.relative(APP_ROOT, file)} — ${why}`)
+        if (visitorChat && re.source.startsWith('generativelanguage')) continue
+        if (re.test(src)) hits.push(`${rel} — ${why}`)
       }
     }
     expect(

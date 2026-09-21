@@ -20,7 +20,7 @@
         </li>
         <li class="text-body-2">Copiala y pegala acá abajo.</li>
       </ol>
-      <form class="d-flex flex-column ga-2" @submit.prevent="connect">
+      <form class="d-flex flex-column ga-2" @submit.prevent="connect()">
         <VTextField
           v-model="keyInput"
           label="Clave de Gemini"
