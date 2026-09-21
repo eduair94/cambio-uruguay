@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   attachRentalZoneUtilities,
+  formatRentalServiceSelections,
   parseRentalServiceAttributes,
+  parseRentalServiceSelections,
   projectRentalZoneImpact,
   projectRentalZoneServices,
   rentalServiceFilterOptions,
@@ -80,6 +82,10 @@ const raw = {
       luz: { 'mvd:8': 'low', 'mvd:10': 'mid', 'ute:3210': 'high' },
       agua: { 'mvd:8': 'low', 'mvd:10': 'high' },
       alumbrado: { 'mvd:8': 'low', 'mvd:10': 'bad' },
+    },
+    values: {
+      luz: { 'mvd:8': 12, 'mvd:10': 40, 'ute:3210': 90, bad: 1 },
+      agua: { 'mvd:8': 2, 'mvd:10': 5 },
     },
   },
 }
@@ -222,21 +228,63 @@ describe('service filter', () => {
     expect(parseRentalServiceAttributes(undefined)).toEqual([])
   })
 
+  it('reads a bound per attribute and writes it back the same way', () => {
+    expect(parseRentalServiceSelections('luz:15,agua,calles:1,nada,limpieza:x')).toEqual([
+      { attribute: 'luz', max: 15 },
+      { attribute: 'agua', max: null },
+      { attribute: 'limpieza', max: null },
+    ])
+    expect(
+      formatRentalServiceSelections([
+        { attribute: 'luz', max: 15 },
+        { attribute: 'agua', max: null },
+      ])
+    ).toBe('luz:15,agua')
+  })
+
   it('intersects the best third of every requested attribute', () => {
     expect(rentalServiceZoneIds(snapshot, ['luz'], now)).toEqual(['mvd:8'])
     expect(rentalServiceZoneIds(snapshot, ['luz', 'agua'], now)).toEqual(['mvd:8'])
     expect(rentalServiceZoneIds(snapshot, [], now)).toEqual([])
   })
 
+  it('keeps the areas at or under an explicit bound, intersected with the rest', () => {
+    expect(rentalServiceZoneIds(snapshot, [{ attribute: 'luz', max: 50 }], now)).toEqual([
+      'mvd:10',
+      'mvd:8',
+    ])
+    expect(rentalServiceZoneIds(snapshot, [{ attribute: 'luz', max: 40 }], now)).toEqual([
+      'mvd:10',
+      'mvd:8',
+    ])
+    expect(
+      rentalServiceZoneIds(
+        snapshot,
+        [
+          { attribute: 'luz', max: 50 },
+          { attribute: 'agua', max: 2 },
+        ],
+        now
+      )
+    ).toEqual(['mvd:8'])
+    expect(rentalServiceZoneIds(snapshot, [{ attribute: 'luz', max: 1 }], now)).toEqual([])
+  })
+
   it('refuses rather than ignores an attribute it cannot evaluate', () => {
     expect(rentalServiceZoneIds(snapshot, ['saneamiento'], now)).toBeNull()
+    expect(rentalServiceZoneIds(snapshot, [{ attribute: 'saneamiento', max: 5 }], now)).toBeNull()
     expect(rentalServiceZoneIds(null, ['luz'], now)).toBeNull()
     const options = rentalServiceFilterOptions(snapshot, now)
     expect(options.find(option => option.attribute === 'luz')).toMatchObject({
       available: true,
       low: 20,
+      high: 60,
+      values: [12, 40, 90],
     })
-    expect(options.find(option => option.attribute === 'saneamiento')?.available).toBe(false)
+    expect(options.find(option => option.attribute === 'saneamiento')).toMatchObject({
+      available: false,
+      values: [],
+    })
   })
 
   it('folds names like the backend', () => {
@@ -341,7 +389,7 @@ describe('zone scores for listing cards', () => {
     expect(first.find(row => row.attribute === 'limpieza')?.betterThan).toBe(0)
     expect(first.find(row => row.attribute === 'servicios')?.betterThan).toBe(0)
     expect(scores.zones['mvd:12']!.rows.find(r => r.attribute === 'servicios')?.betterThan).toBe(1)
-    expect(scores.periods.power?.status).toBe('ready')
+    expect(scores.periods.power).toMatchObject({ status: 'ready', observedDays: 30, minDays: 14 })
   })
 
   it('drops crime once its period is too old', () => {

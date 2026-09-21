@@ -3,7 +3,9 @@ import type {
   RentalZoneScores,
   RentalClaimCategory,
   RentalServiceAttribute,
+  RentalServiceFilterOption,
   RentalServiceLevel,
+  RentalServiceSelection,
   RentalServiceStatus,
   RentalZoneDataStatus,
   RentalZoneImpact,
@@ -36,6 +38,8 @@ export const RENTAL_SERVICE_FILTERS: readonly RentalServiceAttribute[] = [
   'limpieza',
   'alumbrado',
 ]
+/** Days the UTE ledger must observe before power publishes; mirrors POWER_MIN_DAYS in the backend. */
+export const RENTAL_POWER_MIN_DAYS = 14
 export const RENTAL_CLAIM_CATEGORIES: readonly RentalClaimCategory[] = [
   'alumbrado',
   'saneamiento',
@@ -504,37 +508,51 @@ export function attachRentalZoneUtilities(
 }
 
 /**
- * Official areas in the third with the fewest problems for EVERY requested attribute, or null when
- * any requested layer cannot be used right now (the caller must then return no listings rather
- * than silently ignoring the filter).
+ * Official areas that satisfy EVERY requested selection — at most `max` for a bounded one, the
+ * third with the fewest problems for a bare one — or null when any requested layer cannot be used
+ * right now (the caller must then return no listings rather than silently ignoring the filter).
+ * A bounded selection needs the ranked values; an older snapshot without them refuses too.
  */
 export function rentalServiceZoneIds(
   snapshot: RentalZoneServiceSnapshot | null,
-  attributes: readonly RentalServiceAttribute[],
+  selections: readonly (RentalServiceSelection | RentalServiceAttribute)[],
   now = Date.now()
 ): string[] | null {
-  if (!attributes.length) return []
+  if (!selections.length) return []
   if (!snapshot) return null
   const statuses = rentalServiceStatuses(snapshot, now)
   let selected: Set<string> | null = null
-  for (const attribute of attributes) {
-    const levels = snapshot.byZone[attribute]
-    if (!levels || !usable(attributeStatus(statuses, attribute))) return null
-    const low = new Set(
-      Object.entries(levels)
-        .filter(([, level]) => level === 'low')
-        .map(([id]) => id)
-    )
-    selected = selected ? new Set([...selected].filter(id => low.has(id))) : low
+  for (const item of selections) {
+    const { attribute, max } = typeof item === 'string' ? { attribute: item, max: null } : item
+    if (!usable(attributeStatus(statuses, attribute))) return null
+    let passing: Set<string>
+    if (max === null) {
+      const levels = snapshot.byZone[attribute]
+      if (!levels) return null
+      passing = new Set(
+        Object.entries(levels)
+          .filter(([, level]) => level === 'low')
+          .map(([id]) => id)
+      )
+    } else {
+      const values = snapshot.values[attribute]
+      if (!values) return null
+      passing = new Set(
+        Object.entries(values)
+          .filter(([, value]) => value <= max)
+          .map(([id]) => id)
+      )
+    }
+    selected = selected ? new Set([...selected].filter(id => passing.has(id))) : passing
   }
   return [...(selected || [])].sort()
 }
 
-/** Which filter attributes can be offered right now, with the value that bounds the best third. */
+/** Which filter attributes can be offered right now, their tercile bounds and the ranked values. */
 export function rentalServiceFilterOptions(
   snapshot: RentalZoneServiceSnapshot | null,
   now = Date.now()
-) {
+): RentalServiceFilterOption[] {
   const statuses = snapshot ? rentalServiceStatuses(snapshot, now) : null
   return RENTAL_SERVICE_FILTERS.map(attribute => {
     const status: RentalServiceStatus = statuses
@@ -542,23 +560,56 @@ export function rentalServiceFilterOptions(
       : 'unavailable'
     const threshold = snapshot?.thresholds[attribute]
     const available = !!snapshot?.byZone[attribute] && usable(status)
+    const values = available
+      ? Object.values(snapshot?.values[attribute] ?? {}).sort((a, b) => a - b)
+      : []
     return {
       attribute,
       status,
       available,
       low: available && threshold ? threshold.low : null,
+      high: available && threshold ? threshold.high : null,
       zones: threshold?.zones ?? 0,
+      values,
     }
   })
 }
 
 export function parseRentalServiceAttributes(input: unknown): RentalServiceAttribute[] {
-  const values = (Array.isArray(input) ? input : [input]).flatMap(value =>
-    typeof value === 'string' ? value.slice(0, 200).split(',') : []
+  return parseRentalServiceSelections(input).map(selection => selection.attribute)
+}
+
+const SELECTION_MAX = 1_000_000
+/**
+ * `?servicios=denuncias:120,agua` → one selection per offered attribute, in the offered order:
+ * `attribute:max` bounds the area's value, a bare attribute asks for the best third, and a bound
+ * that is not a non-negative number falls back to the bare form rather than dropping the filter.
+ */
+export function parseRentalServiceSelections(input: unknown): RentalServiceSelection[] {
+  const parts = (Array.isArray(input) ? input : [input]).flatMap(value =>
+    typeof value === 'string' ? value.slice(0, 400).split(',') : []
   )
-  return RENTAL_SERVICE_FILTERS.filter(attribute =>
-    values.map(value => value.trim()).includes(attribute)
-  )
+  const found = new Map<RentalServiceAttribute, number | null>()
+  for (const part of parts) {
+    const [name = '', bound] = part.trim().split(':', 2)
+    const attribute = RENTAL_SERVICE_FILTERS.find(candidate => candidate === name.trim())
+    if (!attribute || found.has(attribute)) continue
+    const max = bound !== undefined && /^\d+(?:\.\d+)?$/.test(bound.trim()) ? Number(bound) : null
+    found.set(attribute, max !== null && max <= SELECTION_MAX ? max : null)
+  }
+  return RENTAL_SERVICE_FILTERS.filter(attribute => found.has(attribute)).map(attribute => ({
+    attribute,
+    max: found.get(attribute)!,
+  }))
+}
+
+/** The inverse of parseRentalServiceSelections, for URLs and API calls. */
+export function formatRentalServiceSelections(
+  selections: readonly RentalServiceSelection[]
+): string {
+  return selections
+    .map(({ attribute, max }) => (max === null ? attribute : `${attribute}:${max}`))
+    .join(',')
 }
 
 /** First boundary for the stored price analysis. */
@@ -766,6 +817,8 @@ export function buildRentalZoneScores(
             from: snapshot.power.observedFrom,
             to: snapshot.power.observedTo,
             status: statuses.power,
+            observedDays: snapshot.power.observedDays,
+            minDays: RENTAL_POWER_MIN_DAYS,
           }
         : null,
       water: snapshot.water

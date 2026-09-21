@@ -81,9 +81,20 @@ asigna lo que llegó en la hora y cede ante la corrida diaria. Índice `{ 'offic
 ## Niveles, filtro e impacto
 
 Terciles por atributo entre las zonas con dato (`low` = el tercio con menos problemas). El filtro
-`servicios=luz,agua,alumbrado,saneamiento,limpieza` exige `low` en cada marcado; el servidor lo
-traduce a `officialZone.zone ∈ …`. Si la capa pedida no se puede evaluar, responde **sin resultados**
-en vez de ignorar el filtro. La ficha y las alertas no lo aplican. Sin filtro de denuncias.
+`servicios=` lleva una selección por atributo, en dos formas que conviven: `denuncias:120` exige
+que el valor del barrio sea **como máximo** ese número (es lo que mueve el slider, 2026-09-21), y
+el atributo a secas (`luz,agua`) sigue exigiendo `low`, que es lo que mandan los enlaces viejos y el
+MCP (`neighborhoodQuality`). Varias selecciones se intersecan. El servidor lo traduce a
+`officialZone.zone ∈ …` leyendo `levels.values` (los mismos valores de los que salen los terciles);
+un snapshot sin `values` no puede evaluar un tope y **responde sin resultados**, igual que una capa
+que no se puede usar, en vez de ignorar el filtro. La ficha y las alertas no lo aplican.
+
+`GET /api/rentals/service-filters` publica por atributo `low`/`high` (bordes de los terciles) y
+`values` (los 62 valores ordenados), para que el slider diga en vivo "deja X de 62 barrios" con la
+misma cuenta que va a hacer el servidor. Parado en el máximo, el control no filtra y sale de la URL;
+un enlace viejo con el atributo a secas aparece con el tope en el borde del tercio. El tope de luz
+queda deshabilitado mientras el libro dice `collecting`, con "N de 14 días" (`RENTAL_POWER_MIN_DAYS`
+espeja `POWER_MIN_DAYS`).
 
 Impacto (`classes/propertyzones/impact.ts`, documento `impact`): zonas con ≥ 15 apartamentos con
 superficie construida explícita (los mismos representantes que el motor de mercado); y = log de la
@@ -114,7 +125,23 @@ página, sólo en el navegador, calculado desde la foto guardada; nunca desde lo
 
 El filtro enumera el límite exacto de cada opción ("Hasta 102 cada 1.000 clientes en 12 meses",
 "Hasta 2 en 24 meses") en vez de "pocos". El riel de filtros crece con la pantalla
-(`clamp(304px, 20vw, 400px)`).
+(`clamp(304px, 20vw, 400px)`). Desde el 2026-09-21 las opciones son **sliders** (un máximo por
+atributo, ver arriba) y cada fila de la tarjeta muestra **el valor medido con su unidad** ("96,9
+cada 1.000 clientes · 12 meses") además de "mejor que X %": el porcentaje dice dónde queda el barrio
+y el valor dice qué se midió, que es lo único que un lector puede contrastar con su experiencia. La
+fila de luz, mientras el libro junta días, dice "N de 14 días".
+
+**Por qué el bloque "desaparece" fuera de Montevideo.** Las series del ranking exigen ≥ 9 zonas con
+dato y hoy sólo las tienen los 62 barrios INE (denuncias, reclamos, agua por barrio); una localidad
+del interior (`ute:*`) no tiene filas y la tarjeta no muestra nada. `?departamento=montevideo` (la
+clave en español, sin mayúscula ni tilde, que se escribe a mano) se ignoraba y listaba todo el país:
+desde el 2026-09-21 `normalizeRentalQuery` acepta `departamento` y mapea cualquier grafía a los 19
+nombres canónicos (`RENTAL_DEPARTMENTS`).
+
+**Cobertura del libro de luz.** `buildPowerLayer` medía la cobertura sobre días calendario enteros,
+así que el primer día (arrancó a las 14:00) y el día en curso contaban como 1.440 min cada uno: 53 %
+con un poller que no había perdido una muestra. Ahora el primer día cuenta lo que cubrió, los
+intermedios enteros y el último hasta `now`; un poller muerto ayer sigue mostrando el hueco.
 
 ## Vigencia
 

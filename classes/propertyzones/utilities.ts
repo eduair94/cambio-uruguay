@@ -95,8 +95,23 @@ const round = (value: number, digits = 2) => Math.round(value * 10 ** digits) / 
 const dayOf = (iso: string) => iso.slice(0, 10);
 const shiftDay = (day: string, days: number) => new Date(Date.parse(`${day}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
 
+/**
+ * Minutes the reference zone could have been observed between its first ledger day and `now`: the
+ * first day counts what it covered (the poller began some time that day), every day in between
+ * counts in full, and the latest day counts up to `now` only. Treating the two partial days as whole
+ * days reported 53 % coverage over a weekend in which the poller had not missed a sample.
+ */
+function observableMinutes(days: readonly PowerDayDoc[], zone: string, from: string, latest: string, now: Date): number {
+  const first = Math.min(1440, days.find(doc => doc.zone === zone && doc.day === from)?.coveredMinutes ?? 1440);
+  if (from === latest) return Math.max(first, 1);
+  const between = Math.max(0, (Date.parse(`${latest}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000 - 1);
+  // A Montevideo day (UTC-3) starts at 03:00 UTC, the same clock `montevideoDay` uses to file samples.
+  const sinceLatestStart = (now.getTime() - Date.parse(`${latest}T03:00:00Z`)) / 60_000;
+  return first + between * 1440 + Math.min(1440, Math.max(10, sinceLatestStart));
+}
+
 /** Aggregates the ledger over the last POWER_WINDOW_DAYS; publishes figures only once enough was observed. */
-export function buildPowerLayer(days: readonly PowerDayDoc[]): PowerLayer {
+export function buildPowerLayer(days: readonly PowerDayDoc[], now = new Date()): PowerLayer {
   const latest = days.reduce((max, doc) => (doc.day > max ? doc.day : max), "");
   const empty: PowerLayer = { status: "collecting", observedFrom: null, observedTo: null, observedDays: 0, coverage: 0, zones: {}, departments: {} };
   if (!latest) return empty;
@@ -110,10 +125,11 @@ export function buildPowerLayer(days: readonly PowerDayDoc[]): PowerLayer {
     item.incidents += doc.newIncidents; item.customerDays++; item.customerSum += doc.customers;
     if (doc.day < item.first) item.first = doc.day;
   }
-  const reference = perEcse.get("d:1") || [...perEcse.values()].sort((a, b) => b.covered - a.covered)[0];
-  if (!reference) return empty;
+  const referenceKey = perEcse.has("d:1") ? "d:1" : [...perEcse.entries()].sort((a, b) => b[1].covered - a[1].covered)[0]?.[0];
+  const reference = referenceKey ? perEcse.get(referenceKey) : undefined;
+  if (!reference || !referenceKey) return empty;
   const observedFrom = reference.first;
-  const elapsed = (Date.parse(`${latest}T00:00:00Z`) - Date.parse(`${observedFrom}T00:00:00Z`)) / 60_000 + 1440;
+  const elapsed = observableMinutes(days, referenceKey, observedFrom, latest, now);
   const observedDays = round(reference.covered / 1440, 1);
   const coverage = round(Math.min(1, reference.covered / elapsed), 3);
   const layer: PowerLayer = { status: observedDays >= POWER_MIN_DAYS && coverage >= POWER_MIN_COVERAGE ? "ready" : "collecting",

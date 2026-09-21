@@ -36,11 +36,12 @@
           :class="{ 'is-measuring': row.measuring }"
           :title="row.detail"
         >
-          <span class="zone-bars__label">{{ row.label }}</span>
+          <span class="zone-bars__label" aria-hidden="true">{{ row.label }}</span>
+          <span class="zone-bars__measure" aria-hidden="true">{{ row.measure }}</span>
           <span class="zone-bars__track" aria-hidden="true">
             <span class="zone-bars__fill" :style="{ inlineSize: `${row.percent}%` }" />
           </span>
-          <span class="zone-bars__value">{{ row.text }}</span>
+          <span class="zone-bars__value" aria-hidden="true">{{ row.text }}</span>
           <span class="d-sr-only">{{ row.aria }}</span>
         </li>
       </ul>
@@ -110,6 +111,8 @@ interface Row {
   label: string
   n: number
   percent: number
+  /** The measured figure with its unit and period: what the bar is a rank OF. */
+  measure: string
   text: string
   detail: string
   aria: string
@@ -126,25 +129,33 @@ const rows = computed<Row[]>(() => {
       label,
       n,
       percent: Math.max(2, n),
+      measure: t(`measure-${row.attribute}`, { v: decimal(row.value) }),
       text: t('better', { n }),
       detail,
       aria: t('row', { label, n, zones: row.zones, detail }),
       measuring: false,
     }
   })
-  // Power has no history anywhere: until two weeks of our own ledger exist, say so instead of hiding it.
+  // Power has no history anywhere: until two weeks of our own ledger exist, say so instead of
+  // hiding it, and say how far along the ledger is so the reader knows when the row will fill.
   const power = scores.value?.periods.power
   if (power?.status === 'collecting' && power.from && !list.some(row => row.attribute === 'luz')) {
     const label = t('label-luz')
-    const text = t('measuring')
+    const progress = {
+      label,
+      date: date(power.from),
+      days: Math.floor(power.observedDays ?? 0),
+      min: power.minDays ?? 14,
+    }
     list.splice(Math.min(1, list.length), 0, {
       attribute: 'luz',
       label,
       n: 0,
       percent: 0,
-      text,
-      detail: t('rowMeasuring', { label, date: date(power.from) }),
-      aria: t('rowMeasuring', { label, date: date(power.from) }),
+      measure: t('measureMeasuring', progress),
+      text: t('measuring'),
+      detail: t('rowMeasuring', progress),
+      aria: t('rowMeasuring', progress),
       measuring: true,
     })
   }
@@ -224,23 +235,45 @@ const digest = computed(() => {
   max-inline-size: 34rem;
   list-style: none;
   display: grid;
-  gap: 6px;
+  gap: 8px;
   margin-top: 4px !important;
 }
+/*
+ * Two lines per figure: the name and the MEASURED value first, then the bar and its rank. The rank
+ * alone ("mejor que 74 %") said where the area stands but not what was measured; the value with its
+ * unit is the part a reader can check against their own experience of the barrio.
+ */
 .zone-bars__row {
   display: grid;
-  /* Fixed outer columns so every track starts and ends at the same x down the list. */
-  grid-template-columns: 6.5rem minmax(40px, 1fr) 6.25rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'label measure'
+    'track value';
   align-items: center;
-  gap: 10px;
+  column-gap: 10px;
+  row-gap: 3px;
   font-size: 0.75rem;
   line-height: 1.4;
 }
 .zone-bars__label {
+  grid-area: label;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 600;
+}
+.zone-bars__measure {
+  grid-area: measure;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  white-space: nowrap;
+}
+.zone-bars__track {
+  grid-area: track;
+}
+.zone-bars__value {
+  grid-area: value;
 }
 .zone-bars__track {
   position: relative;

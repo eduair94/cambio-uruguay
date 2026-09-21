@@ -296,24 +296,59 @@
           </summary>
           <p class="rental-search__hint rental-search__hint--lead">{{ t('servicesHint') }}</p>
           <ul class="rental-search__services" data-testid="rental-filter-services">
-            <li v-for="option in serviceOptions" :key="option.attribute">
-              <VCheckbox
-                v-model="draft.servicios"
-                :value="option.attribute"
-                :disabled="!option.available && !draft.servicios?.includes(option.attribute)"
-                hide-details
-                density="compact"
-                color="primary"
-              >
-                <template #label>
-                  <span class="rental-search__service">
-                    <span class="rental-search__service-name">{{
-                      t(`service-${option.attribute}`)
-                    }}</span>
-                    <span class="rental-search__service-limit">{{ serviceLimit(option) }}</span>
-                  </span>
-                </template>
-              </VCheckbox>
+            <li
+              v-for="option in serviceOptions"
+              :key="option.attribute"
+              class="rental-search__service"
+              :class="{ 'rental-search__service--off': !serviceRange(option) }"
+              :data-testid="`rental-service-${option.attribute}`"
+            >
+              <div class="rental-search__service-head">
+                <span
+                  :id="`rental-service-${option.attribute}-name`"
+                  class="rental-search__service-name"
+                  >{{ t(`service-${option.attribute}`) }}</span
+                >
+                <span
+                  class="rental-search__service-limit"
+                  :data-testid="`rental-service-${option.attribute}-limit`"
+                  >{{ serviceLimit(option) }}</span
+                >
+              </div>
+              <template v-if="serviceRange(option)">
+                <VSlider
+                  :model-value="serviceValue(option)"
+                  :min="serviceRange(option)!.min"
+                  :max="serviceRange(option)!.max"
+                  :step="1"
+                  :ticks="serviceTicks(option)"
+                  show-ticks="always"
+                  tick-size="3"
+                  track-size="3"
+                  thumb-size="16"
+                  hide-details
+                  density="compact"
+                  color="primary"
+                  class="rental-search__service-slider"
+                  :aria-labelledby="`rental-service-${option.attribute}-name`"
+                  :data-testid="`rental-service-${option.attribute}-slider`"
+                  @update:model-value="setServiceMax(option, $event)"
+                />
+                <p class="rental-search__service-note">
+                  <span :data-testid="`rental-service-${option.attribute}-keeps`">{{
+                    serviceKeeps(option)
+                  }}</span>
+                  <button
+                    v-if="option.low !== null"
+                    type="button"
+                    class="rental-search__service-third"
+                    :data-testid="`rental-service-${option.attribute}-third`"
+                    @click="setServiceMax(option, Math.floor(option.low))"
+                  >
+                    {{ t('serviceThird', { n: serviceNumber(Math.floor(option.low)) }) }}
+                  </button>
+                </p>
+              </template>
             </li>
           </ul>
           <p v-if="servicesMounted && serviceFilters.error.value" class="rental-search__hint">
@@ -440,11 +475,11 @@ import { MUTUALISTA_SEDES, mutualistasConSede } from '~/utils/mutualistaSedes'
 import { RENTAL_AMENITIES } from '~/utils/rentalAmenities'
 import ZonesPicker from './zones/Picker.vue'
 import type {
-  RentalServiceAttribute,
+  RentalServiceFilterOption,
   RentalZonePreferences,
   RentalZoneUtilitiesMeta,
 } from '~/utils/rentalZoneTypes'
-import { RENTAL_SERVICE_FILTERS } from '~/utils/rentalZoneServices'
+import { RENTAL_POWER_MIN_DAYS, RENTAL_SERVICE_FILTERS } from '~/utils/rentalZoneServices'
 
 const props = withDefaults(
   defineProps<{
@@ -510,53 +545,120 @@ const servicesOpen = ref(!props.mobile && Boolean(props.query.servicios?.length)
 const localePath = useLocalePath()
 // Which neighbourhood-service filters exist right now; loaded on the client, never blocks the form.
 const serviceFilters = useFetch<{
-  options: Array<{
-    attribute: RentalServiceAttribute
-    available: boolean
-    status: string
-    low: number | null
-  }>
+  options: RentalServiceFilterOption[]
   meta: RentalZoneUtilitiesMeta | null
 }>('/api/rentals/service-filters', { key: 'rental-service-filters', server: false, lazy: true })
-// SSR renders every option disabled; the fetched state only applies after mount, or a response
-// that lands before this subtree hydrates would flip `disabled` under Vue's feet.
+// SSR renders every option without its slider; the fetched state only applies after mount, or a
+// response that lands before this subtree hydrates would add controls under Vue's feet.
 const servicesMounted = ref(false)
 onMounted(() => {
   servicesMounted.value = true
 })
-const serviceOptions = computed(
+const serviceOptions = computed<RentalServiceFilterOption[]>(
   () =>
     (servicesMounted.value ? serviceFilters.data.value?.options : undefined) ??
     RENTAL_SERVICE_FILTERS.map(attribute => ({
       attribute,
       available: false,
-      status: 'unavailable',
+      status: 'unavailable' as const,
       low: null,
+      high: null,
+      zones: 0,
+      values: [],
     }))
 )
 const serviceNumber = (value: number) =>
   new Intl.NumberFormat(locale.value, { maximumFractionDigits: value < 10 ? 1 : 0 }).format(value)
-/** The exact bound of "the third with the fewest", so the option says what it keeps. */
-function serviceLimit(option: {
-  attribute: RentalServiceAttribute
-  available: boolean
-  status: string
-  low?: number | null
-}) {
+/**
+ * Each attribute is a maximum the listing's official area must stay under, moved on a slider that
+ * spans the real spread between areas; parked at the top it means "no limit" and leaves the URL. A
+ * checkbox could only offer the best third, which is a bound someone else chose.
+ */
+// The edge caches /service-filters for minutes: right after a deploy the new page can still get a
+// payload without `values`, and that must read as "no slider yet", never as a render error.
+const serviceValues = (option: RentalServiceFilterOption): number[] =>
+  Array.isArray(option.values) ? option.values : []
+const serviceRange = (option: RentalServiceFilterOption) => {
+  const values = serviceValues(option)
+  return option.available && values.length
+    ? { min: Math.floor(values[0]!), max: Math.ceil(values[values.length - 1]!) }
+    : null
+}
+const serviceSelection = (option: RentalServiceFilterOption) =>
+  draft.value.servicios?.find(selection => selection.attribute === option.attribute)
+/** A bare selection (older link, MCP) sits at the best third's bound, which is what it means. */
+const serviceMax = (option: RentalServiceFilterOption) => {
+  const selection = serviceSelection(option)
+  if (!selection) return null
+  if (selection.max !== null) return selection.max
+  return option.low !== null ? Math.floor(option.low) : null
+}
+const serviceValue = (option: RentalServiceFilterOption) => {
+  const range = serviceRange(option)
+  const max = serviceMax(option)
+  if (!range) return 0
+  return max === null ? range.max : Math.min(range.max, Math.max(range.min, max))
+}
+/** Tick marks at the tercile bounds, so the slider still shows where "the best third" ends. */
+const serviceTicks = (option: RentalServiceFilterOption) =>
+  [option.low, option.high]
+    .filter((value): value is number => value !== null)
+    .map(value => Math.round(value))
+function setServiceMax(option: RentalServiceFilterOption, value: number) {
+  const range = serviceRange(option)
+  if (!range) return
+  const rest = (draft.value.servicios ?? []).filter(
+    selection => selection.attribute !== option.attribute
+  )
+  const bounded = Math.round(value)
+  draft.value.servicios =
+    bounded >= range.max
+      ? rest
+      : RENTAL_SERVICE_FILTERS.flatMap(attribute =>
+          attribute === option.attribute
+            ? [{ attribute, max: Math.max(range.min, bounded) }]
+            : rest.filter(selection => selection.attribute === attribute)
+        )
+}
+/** What the current bound reads as: the exact limit with its unit, or that there is none. */
+function serviceLimit(option: RentalServiceFilterOption) {
   if (option.attribute === 'luz' && option.status === 'collecting' && powerCollecting.value)
-    return t('serviceMeasuring', { date: powerCollecting.value })
-  if (!option.available || option.low === null || option.low === undefined)
-    return t('serviceNoData')
-  return t(`serviceLimit-${option.attribute}`, { n: serviceNumber(option.low) })
+    return t('serviceMeasuring', powerCollecting.value)
+  if (!serviceRange(option)) return t('serviceNoData')
+  const max = serviceMax(option)
+  return max === null
+    ? t('serviceUnlimited')
+    : t(`serviceLimit-${option.attribute}`, { n: serviceNumber(max) })
+}
+/** How many areas the bound keeps, counted on the same values the server filters by. */
+function serviceKeeps(option: RentalServiceFilterOption) {
+  const range = serviceRange(option)
+  const max = serviceMax(option)
+  const values = serviceValues(option)
+  if (!range) return ''
+  if (max === null)
+    return t('serviceRange', {
+      min: serviceNumber(values[0]!),
+      max: serviceNumber(values[values.length - 1]!),
+      zones: values.length,
+    })
+  return t('serviceKeeps', {
+    kept: values.filter(value => value <= max).length,
+    zones: values.length,
+  })
 }
 const powerCollecting = computed(() => {
   const power = servicesMounted.value ? serviceFilters.data.value?.meta?.power : undefined
   return power?.status === 'collecting' && power.observedFrom
-    ? new Intl.DateTimeFormat(dateLocale(locale.value), {
-        dateStyle: 'long',
-        timeZone: 'UTC',
-      }).format(new Date(power.observedFrom))
-    : ''
+    ? {
+        date: new Intl.DateTimeFormat(dateLocale(locale.value), {
+          dateStyle: 'long',
+          timeZone: 'UTC',
+        }).format(new Date(power.observedFrom)),
+        days: serviceNumber(Math.floor(power.observedDays)),
+        min: RENTAL_POWER_MIN_DAYS,
+      }
+    : null
 })
 const viewportHeight = ref<number | null>(null)
 const viewportTop = ref(0)
@@ -605,7 +707,7 @@ const copy = (query: RentalQuery): RentalQuery => ({
   guarantees: [...query.guarantees],
   amenities: [...query.amenities],
   sedes: [...query.sedes],
-  servicios: [...(query.servicios ?? [])],
+  servicios: (query.servicios ?? []).map(selection => ({ ...selection })),
 })
 const draft = ref(copy(props.query))
 const directoryZones = computed<RentalZonePreferences>(() => ({
@@ -805,11 +907,13 @@ const sourceSummary = computed(() =>
   ])
 )
 const serviceSummary = computed(() =>
-  draft.value.servicios?.length
-    ? t('serviceChips', {
-        items: draft.value.servicios.map(value => t(`serviceChip-${value}`)).join(', '),
-      })
-    : ''
+  summary(
+    (draft.value.servicios ?? []).map(({ attribute, max }) =>
+      max === null
+        ? t('serviceThirdChip', { item: t(`serviceChip-${attribute}`) })
+        : t(`serviceMax-${attribute}`, { n: serviceNumber(max) })
+    )
+  )
 )
 const nearbySummary = computed(() =>
   draft.value.sedes.length
@@ -928,30 +1032,66 @@ function clearNeighborhoods() {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 2px;
-}
-.rental-search__services :deep(.v-selection-control) {
-  align-items: flex-start;
-  min-height: 48px;
-}
-.rental-search__services :deep(.v-selection-control__wrapper) {
-  margin-top: 2px;
+  gap: 4px;
 }
 .rental-search__service {
   display: grid;
-  gap: 1px;
-  padding-block: 8px;
+  gap: 0;
+  padding-block: 8px 4px;
   line-height: 1.35;
+}
+.rental-search__service--off {
+  padding-block: 8px;
+}
+.rental-search__service-head {
+  display: grid;
+  gap: 1px;
 }
 .rental-search__service-name {
   font-size: 0.875rem;
   font-weight: 600;
   color: rgb(var(--v-theme-on-surface));
 }
+.rental-search__service--off .rental-search__service-name {
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
 .rental-search__service-limit {
   font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
   color: rgba(var(--v-theme-on-surface), 0.72);
+}
+.rental-search__service-slider {
+  /* The label lives in the head above; the control only needs its 44 px touch band. */
+  margin-inline: 4px;
+}
+.rental-search__service-slider :deep(.v-slider-track__tick) {
+  background: rgba(var(--v-theme-on-surface), 0.42);
+}
+/* The marks show where the terciles end; their numbers would sit on top of the note below. */
+.rental-search__service-slider :deep(.v-slider-track__tick-label) {
+  display: none;
+}
+.rental-search__service-note {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  color: rgba(var(--v-theme-on-surface), 0.72);
+}
+.rental-search__service-third {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: rgb(var(--v-theme-link));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  min-height: 24px;
 }
 .rental-search__checks {
   display: flex;

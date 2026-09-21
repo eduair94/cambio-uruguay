@@ -24,6 +24,17 @@ describe("buildPowerLayer", () => {
     expect(buildPowerLayer(ledger(30, 1000)).status).toBe("collecting");
   });
 
+  it("measures coverage from the first sample to now, not over whole calendar days", () => {
+    // Poller started 14:00 Montevideo on day 1; the zone job runs 03:53 Montevideo on day 3.
+    const partial = ledger(3, 1440, (_zone, i) => ({ coveredMinutes: [600, 1440, 233][i]! }));
+    const now = new Date(Date.UTC(2026, 8, 3, 6, 53));
+    expect(buildPowerLayer(partial, now)).toMatchObject({ observedDays: 1.6, coverage: 1 });
+    const gap = ledger(3, 1440, (_zone, i) => ({ coveredMinutes: [600, 1000, 233][i]! }));
+    expect(buildPowerLayer(gap, now).coverage).toBeCloseTo(1833 / 2273, 3);
+    // A poller that died yesterday still shows the hole: the latest day is charged in full.
+    expect(buildPowerLayer(partial, new Date(Date.UTC(2026, 8, 4, 12))).coverage).toBeCloseTo(2273 / 3480, 3);
+  });
+
   it("turns customer-minutes into minutes per customer per 30 days, summing Puerto into Ciudad Vieja", () => {
     const docs = ledger(30, 1440, (zone, i) => zone === "b:PO" ? { unplannedCustomerMinutes: 47_000, newIncidents: i % 3 === 0 ? 1 : 0 }
       : zone === "b:PU" ? { unplannedCustomerMinutes: 10_000 } : {});

@@ -1,4 +1,4 @@
-import type { RentalServiceAttribute, RentalZoneImpact } from '../../utils/rentalZoneTypes'
+import type { RentalServiceSelection, RentalZoneImpact } from '../../utils/rentalZoneTypes'
 import {
   buildRentalZoneScores,
   attachRentalZoneUtilities,
@@ -45,12 +45,12 @@ export async function loadRentalZoneImpactSnapshot(
  * layer is unavailable: the directory then answers with no listings instead of ignoring the filter.
  */
 export async function loadRentalServiceZoneIds(
-  attributes: readonly RentalServiceAttribute[]
+  selections: readonly RentalServiceSelection[]
 ): Promise<string[] | null> {
-  if (!attributes.length) return []
+  if (!selections.length) return []
   try {
     const snapshots = await loadRentalZoneSnapshots()
-    return rentalServiceZoneIds(snapshots.context?.utilities ?? null, attributes)
+    return rentalServiceZoneIds(snapshots.context?.utilities ?? null, selections)
   } catch {
     return null
   }

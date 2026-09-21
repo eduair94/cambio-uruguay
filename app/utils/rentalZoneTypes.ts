@@ -109,6 +109,28 @@ export type RentalServiceAttribute =
   | 'calles'
   | 'denuncias'
 export type RentalServiceLevel = 'low' | 'mid' | 'high'
+/**
+ * One requested bound on the listing's official area: `max` keeps areas whose value is at most
+ * that number (the slider); `null` keeps the third with the fewest problems (the bare `?servicios=`
+ * form older links and the MCP still send).
+ */
+export interface RentalServiceSelection {
+  attribute: RentalServiceAttribute
+  max: number | null
+}
+/** What the directory can offer for one attribute right now, and the range its slider spans. */
+export interface RentalServiceFilterOption {
+  attribute: RentalServiceAttribute
+  status: RentalServiceStatus
+  available: boolean
+  /** Upper bound of the best third (inclusive), when the layer is usable. */
+  low: number | null
+  /** Upper bound of the middle third (inclusive). */
+  high: number | null
+  zones: number
+  /** Every ranked value, ascending, so a slider can say how many areas a bound keeps. */
+  values: number[]
+}
 export type RentalClaimCategory = 'alumbrado' | 'saneamiento' | 'limpieza' | 'calles'
 /** Status of a service layer; `collecting` = the power ledger has not observed enough days yet. */
 export type RentalServiceStatus = RentalZoneDataStatus | 'collecting'
@@ -227,7 +249,14 @@ export interface RentalZoneScores {
     localities: Record<string, string>
   }
   periods: {
-    power: { from: string | null; to: string | null; status: RentalServiceStatus } | null
+    power: {
+      from: string | null
+      to: string | null
+      status: RentalServiceStatus
+      /** Days the ledger has observed so far, and how many it needs before it publishes. */
+      observedDays: number
+      minDays: number
+    } | null
     water: { from: string; to: string } | null
     claims: { from: string; to: string } | null
     crimeTo: string | null

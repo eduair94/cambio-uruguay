@@ -1017,11 +1017,28 @@ const filterChips = computed(() => {
       `${t('amenities')}: ${q.amenities.map(value => t(`amenity-${value}`)).join(', ')}`
     )
   if (q.sedes.length) add('sedes', `${t('nearby')} · ${q.radioKm} km`, ['sedes', 'radio'])
-  if (q.servicios?.length)
+  if (q.servicios?.length) {
+    // Bare selections (older links, the MCP) still read as "the best third"; bounded ones say the bound.
+    const third = q.servicios.filter(selection => selection.max === null)
+    const bounded = q.servicios.filter(selection => selection.max !== null)
     add(
       'servicios',
-      t('serviceChips', { items: q.servicios.map(value => t(`serviceChip-${value}`)).join(', ') })
+      [
+        third.length
+          ? t('serviceChips', {
+              items: third.map(({ attribute }) => t(`serviceChip-${attribute}`)).join(', '),
+            })
+          : '',
+        ...bounded.map(({ attribute, max }) =>
+          t(`serviceMax-${attribute}`, {
+            n: new Intl.NumberFormat(locale.value, { maximumFractionDigits: 1 }).format(max!),
+          })
+        ),
+      ]
+        .filter(Boolean)
+        .join(' · ')
     )
+  }
   return chips
 })
 

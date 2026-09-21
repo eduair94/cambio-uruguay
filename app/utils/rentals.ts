@@ -9,8 +9,8 @@
 // and a bare `SOURCES` or `formatPrice` here would silently collide with another page's helper.
 
 import { MUTUALISTA_SEDES, type MutualistaSede } from './mutualistaSedes'
-import { parseRentalServiceAttributes } from './rentalZoneServices'
-import type { RentalServiceAttribute } from './rentalZoneTypes'
+import { formatRentalServiceSelections, parseRentalServiceSelections } from './rentalZoneServices'
+import type { RentalServiceSelection } from './rentalZoneTypes'
 import { normalizeRentalReferenceLabel, parseRentalReferencePoint } from './rentalDistance'
 import {
   normalizeRentalAmenities,
@@ -432,10 +432,11 @@ export interface RentalQuery {
   /** Stable source agency identifier, never a name-derived identity. */
   agency: string
   /**
-   * Neighbourhood services: the property's official area must be in the third with the fewest
-   * problems for every attribute (see rentalZoneServices.ts). Optional for hand-built queries.
+   * Neighbourhood services: the property's official area must satisfy every selection — at most
+   * `max` (the slider) or, bare, the third with the fewest problems (see rentalZoneServices.ts).
+   * Optional for hand-built queries.
    */
-  servicios?: RentalServiceAttribute[]
+  servicios?: RentalServiceSelection[]
   /** Ids de OSM de las sedes elegidas como punto de referencia. Vacío = sin filtro de distancia. */
   sedes: number[]
   /** Radio en km alrededor de cada sede elegida. */
@@ -454,6 +455,40 @@ const scalar = (value: unknown): unknown => (Array.isArray(value) ? value[0] : v
 const clean = (value: unknown, max = 60): string => {
   const raw = scalar(value)
   return typeof raw === 'string' || typeof raw === 'number' ? String(raw).trim().slice(0, max) : ''
+}
+
+/** The 19 departments as the listings store them; the query maps any spelling onto these. */
+export const RENTAL_DEPARTMENTS: readonly string[] = Object.freeze([
+  'Artigas',
+  'Canelones',
+  'Cerro Largo',
+  'Colonia',
+  'Durazno',
+  'Flores',
+  'Florida',
+  'Lavalleja',
+  'Maldonado',
+  'Montevideo',
+  'Paysandú',
+  'Río Negro',
+  'Rivera',
+  'Rocha',
+  'Salto',
+  'San José',
+  'Soriano',
+  'Tacuarembó',
+  'Treinta y Tres',
+])
+const foldDepartment = (value: string) =>
+  value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim()
+const DEPARTMENT_BY_FOLD = new Map(RENTAL_DEPARTMENTS.map(name => [foldDepartment(name), name]))
+/**
+ * `?departamento=montevideo` (the Spanish key people type by hand, lower case, no accent) must
+ * mean the same as `?department=Montevideo`: an unknown spelling used to be passed to Mongo as-is,
+ * match nothing in the department facet and silently list the whole country.
+ */
+export function canonicalRentalDepartment(value: string): string {
+  return DEPARTMENT_BY_FOLD.get(foldDepartment(value)) ?? value
 }
 
 const toNumber = (value: unknown): number | null => {
@@ -511,7 +546,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
   return {
     availability: normalizeRentalAvailabilityFilter(input.availability),
     q: clean(input.q, 80),
-    department: clean(input.department),
+    department: canonicalRentalDepartment(clean(input.department) || clean(input.departamento)),
     neighborhood: neighborhoods.length === 1 ? neighborhoods[0]! : '',
     neighborhoods,
     type: types.length === 1 ? types[0]! : '',
@@ -536,7 +571,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     withExpenses: enabled(input.gc ?? input.withExpenses),
     owner: enabled(input.dueno ?? input.owner),
     agency: agencyKey(scalar(input.agency)),
-    servicios: parseRentalServiceAttributes(input.servicios),
+    servicios: parseRentalServiceSelections(input.servicios),
     sedes: parseSedes(input.sedes),
     radioKm: parseRadio(input.radio ?? input.radioKm),
     refLat: reference?.lat ?? null,
@@ -580,7 +615,7 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   if (query.withExpenses) params.gc = '1'
   if (query.owner) params.dueno = '1'
   if (query.agency) params.agency = query.agency
-  if (query.servicios?.length) params.servicios = query.servicios.join(',')
+  if (query.servicios?.length) params.servicios = formatRentalServiceSelections(query.servicios)
   if (query.sedes.length) params.sedes = query.sedes.join(',')
   if (query.radioKm !== RADIO_KM_DEFAULT) params.radio = String(query.radioKm)
   const reference = parseRentalReferencePoint(query)
