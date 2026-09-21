@@ -160,3 +160,11 @@ describe("plausible offers", () => {
     expect(row!.bestOffer.url).toBe("https://fb/x");
   });
 });
+
+describe("planHomeSetup synonyms", () => {
+  it("understands that a bed covers the mattress", async () => {
+    const { site } = fakeSite(routes);
+    const out = await planHomeSetup(site, { have: ["Cama"] });
+    expect(out.data.skipped).toEqual(["Colchón"]);
+  });
+});

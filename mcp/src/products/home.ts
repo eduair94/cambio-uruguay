@@ -39,12 +39,27 @@ export interface HomeSetupInput {
   condition?: "cheapest" | "new";
 }
 
+/** How people name what they own vs. how the basket names it (folded). */
+const HAVE_SYNONYMS: Record<string, string[]> = {
+  cama: ["colchon"],
+  refrigerador: ["heladera"],
+  anafe: ["cocina"],
+  horno: ["cocina"],
+  lavadora: ["lavarropas"],
+  tele: ["tv"],
+  televisor: ["tv"],
+  television: ["tv"],
+  sillon: ["sofa"],
+  termotanque: ["calefon"],
+  aire: ["aire-acondicionado"],
+};
+
 export async function planHomeSetup(site: SiteApi, input: HomeSetupInput): Promise<ToolOutput> {
   const res = await site.get<EquiparResponse>("/api/equipar", undefined, { ttlMs: TTL.catalog });
   const baskets = res.meta?.baskets ?? [];
   const basket = baskets.find((b) => b.key === (input.level ?? "minima")) ?? baskets[0];
   if (!basket) throw new Error("La canasta de equipamiento no está disponible todavía.");
-  const have = (input.have ?? []).map(fold).filter(Boolean);
+  const have = (input.have ?? []).map(fold).filter(Boolean).flatMap((h) => [h, ...(HAVE_SYNONYMS[h] ?? [])]);
   const owned = (line: BasketLine) => {
     const category = line.itemKey.split(":")[0]!;
     const label = fold(line.label);
