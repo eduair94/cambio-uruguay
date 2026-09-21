@@ -54,5 +54,15 @@ describe('/buscar-con-ia', () => {
   it('is reachable from the site navigation', () => {
     const routes = NAV_SECTIONS.flatMap(section => section.entries.map(entry => entry.to))
     expect(routes).toContain('/buscar-con-ia')
+    expect(routes).toContain('/asistente-ia')
+  })
+})
+
+describe('Antigravity CLI', () => {
+  it('uses serverUrl, the only remote field Antigravity accepts', () => {
+    const client = AI_CONNECTORS.find(c => c.id === 'antigravity')!
+    expect(JSON.parse(client.snippet!)).toEqual({
+      mcpServers: { 'cambio-uruguay': { serverUrl: MCP_ENDPOINT } },
+    })
   })
 })

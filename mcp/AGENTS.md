@@ -48,6 +48,7 @@ at initialisation; `src/register/prompts.ts` holds 6 guided workflows.
   catalogue (Cloudflare can 502 once): the hosted server shares one IP, so heavy use hits 429.
 - The car valuation `diesel` coefficient is computed but not advice (it measures the version); it is not shown.
 - Never log request bodies: household incomes and addresses travel in `rank_rentals_for_household`.
+- **CORS** (`src/cors.ts`): only the site origins (+ `MCP_CORS_ORIGINS`) get headers, for the browser chat at `/asistente-ia` (Gemini with the VISITOR key, `app/utils/geminiChat.ts`). The preflight is answered before the SDK transport, which would 405. Removing the site origin breaks that page silently.
 
 
 ## Build / run / test (cwd = `mcp/`)

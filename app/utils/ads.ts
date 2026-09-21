@@ -35,6 +35,7 @@ const NO_ADS = [
   '/cuenta',
   '/conectar',
   '/buscar-con-ia',
+  '/asistente-ia',
   '/contacto',
   '/offline',
   '/estado',

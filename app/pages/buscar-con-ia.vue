@@ -20,6 +20,20 @@
       viviendas, los autos y los precios que relevamos cada día, y te devuelve una lista corta con
       los links a cada aviso.
     </p>
+    <VAlert type="success" variant="tonal" density="comfortable" class="mb-4 on-dark">
+      <p class="text-body-2 mb-2">
+        ¿No usás Claude ni ChatGPT? Probá el <strong>asistente con Gemini</strong> acá mismo: es
+        gratis con tu cuenta de Google y no tenés que instalar nada.
+      </p>
+      <VBtn
+        :to="localePath('/asistente-ia')"
+        color="primary"
+        size="small"
+        prepend-icon="mdi-chat-processing-outline"
+      >
+        Abrir el asistente
+      </VBtn>
+    </VAlert>
     <div class="d-flex flex-wrap ga-2 mb-8">
       <VBtn color="primary" prepend-icon="mdi-connection" href="#conectar">Conectar mi IA</VBtn>
       <VBtn variant="tonal" prepend-icon="mdi-download" :href="SKILL_ZIP_PATH" download>

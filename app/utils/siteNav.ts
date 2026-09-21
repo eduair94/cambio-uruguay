@@ -3515,6 +3515,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // Chat en el navegador con la clave GRATUITA de Gemini del visitante: los tokens corren por su
+        // cuota, no la del sitio. La clave va directo a Google; las tools salen del MCP (CORS).
+        to: '/asistente-ia',
+        labelKey: 'nav.asistenteIa',
+        icon: 'mdi-chat-processing-outline',
+        priority: 0.6,
+        changefreq: 'monthly',
+        keywords: [
+          'asistente ia alquiler',
+          'chat gemini alquileres uruguay',
+          'gemini buscar apartamento',
+          'ia para buscar auto usado',
+          'chatbot alquileres montevideo',
+        ],
+      },
+      {
         to: '/desarrolladores',
         labelKey: 'dev.nav',
         icon: 'mdi-api',

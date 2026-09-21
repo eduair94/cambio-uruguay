@@ -122,6 +122,11 @@ const VSCODE_CONFIG = JSON.stringify(
   null,
   2
 )
+const ANTIGRAVITY_CONFIG = JSON.stringify(
+  { mcpServers: { 'cambio-uruguay': { serverUrl: MCP_ENDPOINT } } },
+  null,
+  2
+)
 const BRIDGE_CONFIG = JSON.stringify(
   {
     mcpServers: { 'cambio-uruguay': { command: 'npx', args: ['-y', 'mcp-remote', MCP_ENDPOINT] } },
@@ -173,6 +178,15 @@ export const AI_CONNECTORS: readonly AiConnector[] = Object.freeze([
     icon: 'mdi-microsoft-visual-studio-code',
     steps: ['Creá .vscode/mcp.json con:'],
     snippet: VSCODE_CONFIG,
+  },
+  {
+    id: 'antigravity',
+    title: 'Antigravity CLI (antes Gemini CLI)',
+    icon: 'mdi-google',
+    steps: [
+      'Agregá el servidor en ~/.gemini/config/mcp_config.json (Antigravity usa serverUrl, no url):',
+    ],
+    snippet: ANTIGRAVITY_CONFIG,
   },
   {
     id: 'stdio',
