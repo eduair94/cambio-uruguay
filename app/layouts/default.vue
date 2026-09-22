@@ -1028,3 +1028,29 @@ useSchemaOrg([
   padding-inline: 16px;
 }
 </style>
+
+<style>
+/* El aire ARRIBA de la página lo pone el layout, no la página. Cada página arranca con su propio
+   <VContainer> y su padding-top era 16, 24, 32, 40 o 48 según la clase que le tocó (py-6 py-md-10
+   en 56 páginas, py-8 py-md-12 en 43), más los 16 de las migas cuando abren la página: medido en
+   producción el 2026-09-22, el texto de las migas de /celulares-uruguay quedaba a 67 px de la
+   barra y el H1 a 115, y la miga estaba más lejos de la barra que del título al que pertenece.
+   Ahora el primer contenedor lleva 16 y las migas que lo abren 0: 12 del layout + 16 = 28, el
+   mismo margen que el contenido tiene a los costados (DESIGN.md → "The Layout Owns The Top Rule").
+   Es el mismo mecanismo con el que FamiliaNav.vue anula el padding del contenedor que la sigue;
+   cuando la barra está, ella es la primera hija y esta regla no toca nada. En un bloque SIN scope
+   porque el contenedor es de la página y no lleva el atributo del layout (con scope la regla
+   compila muerta, sin error), y con !important porque py-6/py-md-10 de Vuetify lo llevan.
+   `tests/unit/layoutTop.test.ts` lo vigila. */
+.container_custom > .v-container:first-child,
+.container_custom > :first-child:not(.v-container) > .v-container:first-child {
+  padding-top: 16px !important;
+}
+.container_custom > .v-container:first-child > .v-breadcrumbs:first-child,
+.container_custom
+  > :first-child:not(.v-container)
+  > .v-container:first-child
+  > .v-breadcrumbs:first-child {
+  padding-top: 0 !important;
+}
+</style>

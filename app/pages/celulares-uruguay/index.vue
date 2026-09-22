@@ -14,7 +14,7 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
         { title: DIRECTORIOS_HUB.label, to: localePath(DIRECTORIOS_HUB.path) },
         { title: 'Celulares' },
       ]"
-      class="px-0 mb-2"
+      class="px-0 pb-2"
     />
 
     <header class="mb-6">
