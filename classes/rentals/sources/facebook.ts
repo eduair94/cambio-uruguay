@@ -19,6 +19,7 @@ import {
   parseAttributes,
   parseLocationLine,
 } from "../normalize";
+import { neighborhoodFromText } from "../neighborhoods";
 import type { RawRental, RentalCurrency } from "../types";
 import type { RentalSourceResult } from "./types";
 
@@ -73,6 +74,13 @@ export function toRawRental(item: FbListing, _locationHint: string): RawRental |
   // The card's location is a city ("Montevideo", "Ciudad de la Costa"), never a street.
   // The search anchor is not evidence of where an individual suggested advert is located.
   const location = parseLocationLine(String(item.location || ""));
+  // The barrio is in the TITLE or nowhere: the bridge returns no description, and the item page's
+  // pin is a ~1 km grid point 3–6 km from the property (see neighborhoods.ts). A title naming a
+  // barrio of the card's department refines the card's town; one naming a unique locality names
+  // the department when the card gave none. Anything less stays "sin informar".
+  const named = neighborhoodFromText(title, location.department);
+  const department = location.department || named?.department || "";
+  const neighborhood = named?.neighborhood || location.neighborhood;
   const attributes = parseAttributes([title]);
 
   return {
@@ -93,8 +101,8 @@ export function toRawRental(item: FbListing, _locationHint: string): RawRental |
     image: String(item.image || "").trim() || null,
     publishedAt: null,
     propertyType: inferPropertyType(title),
-    department: location.department,
-    neighborhood: location.neighborhood,
+    department,
+    neighborhood,
     address: "",
     street: "",
     streetNumber: "",

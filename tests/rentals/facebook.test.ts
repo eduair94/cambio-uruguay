@@ -25,6 +25,29 @@ describe("Facebook partial coverage and source-owned location", () => {
     expect(toRawRental(advert("4"), "montevideo")?.department).toBe("Colonia");
   });
 
+  it("reads the barrio from the advert's own title; the card only ever names a city", () => {
+    // Measured 2026-09-22: 3.067 Marketplace offers, 93 % without a barrio, 100 % without a
+    // coordinate, while 46 % of their titles name a known barrio or town.
+    const buceo = toRawRental({ ...advert("1", "Montevideo, Uruguay"), title: "Alquiler de Apartamento en Buceo ( 1 Dormitorio)" }, "montevideo");
+    expect(buceo).toMatchObject({ department: "Montevideo", neighborhood: "Buceo", latitude: null, longitude: null, address: "" });
+    expect(toRawRental({ ...advert("2", "Montevideo, Uruguay"), title: "ALQUILER APARTAMENTO 3 DORMITORIOS, 2 BAÑOS EN TRES CRUCES" }, "montevideo")?.neighborhood).toBe("Tres Cruces");
+    // A title with no known name leaves the barrio empty rather than guessing from the search anchor.
+    expect(toRawRental({ ...advert("3", "Montevideo, Uruguay"), title: "Alquiler apartamento 2 dormitorios" }, "montevideo")?.neighborhood).toBe("");
+    // A name that only exists in another department is not attributed to the card's city.
+    expect(toRawRental({ ...advert("4", "Montevideo, Uruguay"), title: "Monoambiente en alquiler en Paso Carrasco" }, "montevideo"))
+      .toMatchObject({ department: "Montevideo", neighborhood: "" });
+  });
+
+  it("lets a more specific title refine the card's town, and names a department only from a unique locality", () => {
+    const solymar = toRawRental({ ...advert("1", "Ciudad De La Costa, Canelones, Uruguay"), title: "Alquiler apartamento en Solymar Sur" }, "montevideo");
+    expect(solymar).toMatchObject({ department: "Canelones", neighborhood: "Solymar" });
+    const kept = toRawRental({ ...advert("2", "Ciudad De La Costa, Canelones, Uruguay"), title: "Alquiler apartamento 2 dormitorios" }, "montevideo");
+    expect(kept).toMatchObject({ department: "Canelones", neighborhood: "Ciudad De La Costa" });
+    const piriapolis = toRawRental({ ...advert("3", null), title: "Alquiler anual casa 2 dormitorios Piriápolis" }, "maldonado");
+    expect(piriapolis).toMatchObject({ department: "Maldonado", neighborhood: "Piriápolis" });
+    expect(toRawRental({ ...advert("4", null), title: "Alquiler en Centro" }, "montevideo")).toMatchObject({ department: "", neighborhood: "" });
+  });
+
   it("adds the corroborated Colonia anchor only to the full sample; never claims completeness", async () => {
     vi.mocked(fetchJson).mockResolvedValue({ ok: true, results: [advert("1")] });
     const result = await harvestFacebookMarketplace("full", 41.5);

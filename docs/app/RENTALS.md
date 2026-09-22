@@ -96,6 +96,30 @@ esa ciudad; nunca se atribuye la ciudad solicitada a una sugerencia sin ubicaci�
 Las nuevas lecturas de Marketplace exigen evidencia de alquiler en el título: la consulta
 por sí sola no prueba la operación. Las notas distinguen límites, descartes y consultas fallidas.
 
+**El barrio de Marketplace sale del título, y el pin de su ficha no se publica** (medido
+2026-09-22). La tarjeta trae sólo la ciudad ("Montevideo, Uruguay"): de 3.067 ofertas guardadas,
+el 93 % no tenía barrio y el 100 % no tenía coordenada, mientras que el 46 % de los títulos
+nombra un barrio o una localidad ("Alquiler de Apartamento en Buceo", "ALQUILER BUCEO", "Casa en
+alquiler ZONA BUCEO"). La ficha del aviso sí trae `location.latitude/longitude`, pero no es el
+inmueble: los valores saltan de a 0,010986° exactos (una grilla de ~1 km) y las cuatro muestras de
+Montevideo cayeron a 3–6 km de la esquina que el vendedor escribe en la descripción (Maroñas →
+Centro, Piedras Blancas → La Comercial, Cerrito de la Victoria → La Comercial), con
+`is_map_eligible: false` en todas. Fuera de Montevideo el pin sí cae en la localidad (Las Piedras,
+El Pinar), pero el título ya la nombra. Así que `classes/rentals/neighborhoods.ts` lee el barrio del
+propio título contra un diccionario de los 62 barrios INE más los nombres que anuncian los otros
+portales, con precisión por delante de la cobertura: sólo palabras enteras, gana el nombre más largo
+("Pocitos Nuevo" y no "Pocitos"), una palabra genérica ("Centro", "Colón", "Unión", "Manga") sólo
+detrás de "en"/"zona"/"barrio", un nombre seguido de "y <calle>" es una esquina, y un nombre que
+sólo existe en OTRO departamento que el de la tarjeta se rechaza en vez de mudarse ("Paso Carrasco"
+en una tarjeta de Montevideo). Sin departamento en la tarjeta, sólo una localidad única a un
+departamento lo nombra. Sobre las 3.067 ofertas guardadas resuelve 1.364 (44 %): 1.277 llenan un barrio vacío, 53 afinan la ciudad de la tarjeta y 116 nombran un departamento que la tarjeta no traía. El título más
+específico refina la ciudad de la tarjeta ("Ciudad De La Costa" + "Alquiler en Solymar Sur" →
+Solymar). Lo ya guardado se completó una vez con
+`scripts/oneoff/backfill-rental-fb-neighborhoods.sh` (sólo propiedades de un único aviso, sólo el
+campo vacío, compare-and-set, sin renovar fechas); el asignador de zonas horario les pone
+`officialZone` por nombre en la hora siguiente. Con barrio y sin coordenada la ficha entra al
+filtro de barrio y a «Datos del barrio», pero no al mapa: un centroide no es una ubicación.
+
 El último barrido guardado de alcance `full` se conserva en `rentalmetas`, clave
 `uy-rentals-last-full`, separado del estado horario público. La auditoría de sólo lectura es
 `npx ts-node scripts/oneoff/rentals_coverage_audit.ts`; permite cotejar una muestra con
@@ -244,7 +268,7 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 |---|---|---|---|
 | **Mercado Libre** | bridge propio en `:9656` (`pm2 mercadolibre`), `?raw=true` | dirección con calle+número, barrio, dormitorios/baños/m², precio, foto | gastos comunes, fecha de publicación, lat/lon, nombre del vendedor |
 | **InfoCasas** | `__NEXT_DATA__` de sus páginas de listado | todo lo anterior **más** lat/lon, gastos comunes, inmobiliaria y fecha de publicación | — |
-| **Facebook Marketplace** | bridge propio en `:9657` (`pm2 facebook_marketplace`) | precio, título, ciudad, foto | dirección, barrio, m², dormitorios (salvo que estén en el título) |
+| **Facebook Marketplace** | bridge propio en `:9657` (`pm2 facebook_marketplace`) | precio, título, ciudad, foto; **el barrio cuando el propio título lo nombra** (`classes/rentals/neighborhoods.ts`) | dirección, coordenadas (ver abajo: el pin de la ficha no es el inmueble), m², dormitorios (salvo que estén en el título) |
 | **Casasweb** | HTML público de `resultados.aspx`; paginación mediante el formulario de búsqueda que entrega el servidor | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
 | **Inmuebles El País** | los dos endpoints de su propio buscador: `POST /api/chat/init` (una búsqueda guardada por departamento) y `GET /api/chat/<id>/results?page&limit=500`; UA de navegador y cabecera `x-cambio-uruguay-bot`, con puppeteer de respaldo cuando Cloudflare desafía | dirección, barrio, lat/lon, dormitorios/baños/m², gastos comunes, inmobiliaria, foto y **la garantía como dato estructurado** | fecha de publicación original; teléfono y correo de la inmobiliaria (existen en la respuesta y **no se copian**); garaje y amueblado |
 
