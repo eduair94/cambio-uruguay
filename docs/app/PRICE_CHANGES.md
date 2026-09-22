@@ -136,6 +136,17 @@ base de datos por su gemelo en JS (`applyMarketPoints`, `tests/pricehistory/mark
 La cosecha no poda nada: la poda de `marketpricelogs` sigue siendo de `currency-market-series`, por
 vertical y a 120 días.
 
+Queda una ventana conocida, y es del otro lado: `currency-market-series` sí hace leer-modificar-
+escribir (carga todos los logs de la vertical al empezar y los reemplaza al terminar), así que un
+punto que la cosecha horaria escriba **mientras ese job corre** puede perderse. Son los pocos minutos
+de su corrida diaria, y el punto vuelve en la hora siguiente si el precio sigue ahí; arreglarlo sería
+reescribir ese job para que también use el pipeline atómico, y no vale el riesgo por esa ventana.
+
+Medido el 2026-09-22, primera corrida horaria con esto puesto: 2.058 avisos registrados, y la
+colección pasó de 29.196 a 30.649 filas de alquiler — o sea que además hay 1.453 avisos que el
+seguimiento diario no veía (los que la proyección de zonas descarta por elegibilidad) y que ahora sí
+tienen historia propia.
+
 ## Lo que todavía no mide
 
 - **Venta sigue con resolución diaria**, y no por una decisión de este job: su catálogo se cosecha una
