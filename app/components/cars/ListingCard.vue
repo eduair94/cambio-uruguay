@@ -166,11 +166,19 @@ const place = computed(() =>
   gap: 4px;
   margin-bottom: 4px;
 }
+/*
+ * No es una píldora a propósito. Con border-radius 999px el radio es la mitad del alto de la caja,
+ * y la bandera de financiación ("El precio publicado puede ser una entrega, no el precio del
+ * auto") envuelve en tres líneas en la fila angosta de mobile: la curva se comía el texto en las
+ * cuatro esquinas. Un radio fijo, menor que el alto de una línea, más aire a los costados,
+ * aguanta una línea o tres. carsListingCardBadge.test.ts lo vigila.
+ */
 .car-badge {
   font-size: 0.75rem;
   font-weight: 600;
-  border-radius: 999px;
-  padding: 4px 8px;
+  line-height: 1.3;
+  border-radius: 8px;
+  padding: 3px 10px;
   border: 1px solid currentColor;
 }
 .car-badge--deal {
