@@ -54,6 +54,10 @@ async function run(): Promise<void> {
     console.error("[backfill-ids] falta APP_MONGO_URI/MONGO_URI");
     process.exit(1);
   }
+  // `collection().find()` del driver es SÍNCRONO y mongoose lo rechaza hasta que la conexión está
+  // abierta ("Collection method find is synchronous"). Los jobs no lo notan porque su primera lectura
+  // va por un Model, que sí espera; acá la primera es cruda.
+  await appConnection().asPromise();
 
   for (const target of TARGETS) {
     const index = await urlIndex(target.vertical);
