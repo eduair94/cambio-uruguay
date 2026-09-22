@@ -109,7 +109,7 @@ export const CARD_PROGRAM_HEADLINES: Readonly<Record<string, string>> = Object.f
   'scotia-connectmiles': '1 milla por cada US$ 1 y cargo anual de UI 1.000 a UI 2.100',
   'itau-latam-pass-internacional':
     '1 milla LATAM Pass cada US$ 2 y UI 864 al año después del primer año',
-  'oca-oca-blue': '1 Metro cada $U 104 con OCA Blue y $U 0,20 por Metro al canjear',
+  'oca-oca-blue': '1 Metro cada $U 120 con OCA Blue y $U 0,20 por Metro al canjear',
   'scotia-club-card-tienda-inglesa': '30 puntos cada $900 en Tienda Inglesa y el punto vale $1 ahí',
   'pronto-visa': '1 punto cada $30 de compra y 1.000 puntos de bienvenida',
   'mas-grupo-disco-sumaclub': '2 puntos cada $420 en Disco, Devoto y Géant y 1 cada $650 afuera',
@@ -120,7 +120,7 @@ export const CARD_PROGRAM_HEADLINES: Readonly<Record<string, string>> = Object.f
   'tarjeta-anda': 'sin costo anual y 1 punto cada $U 40 gastados con la tarjeta',
   'cabal-uruguay': '50% en cine y 40% en medicamentos con receta, sin programa de puntos publicado',
   'tarjeta-lider': 'hasta 30% en supermercados y 25% en combustible (nivel Platino)',
-  'btg-uruguay-tdc': 'Visa Internacional US$ 85 al año + IVA y sin programa de puntos',
+  'btg-uruguay-tdc': 'Visa Classic US$ 85 al año + IVA y sin programa de puntos',
 })
 
 /** What the programme pays back in, read off its own programme name. */

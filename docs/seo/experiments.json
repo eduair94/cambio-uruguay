@@ -271,6 +271,22 @@
         "como saber si estoy en el clearing"
       ],
       "hypothesis": "Responder 'que pasa si estoy en clearing' con casos fechados, el telefono gratuito de Equifax, el precio del informe y las 7 categorias del BCU convierte impresiones de posicion media en clics para la consulta que la pagina ya recibia."
+    },
+    {
+      "id": "tarjetas-2026-refresh",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/tarjetas-de-credito-uruguay"
+      ],
+      "queries": [
+        "tarjetas de credito uruguay",
+        "mejores tarjetas de credito uruguay",
+        "anualidad tarjeta de credito uruguay",
+        "costo anual tarjeta de credito",
+        "tarjeta de credito sin costo anual uruguay",
+        "mejor tarjeta para puntos uruguay"
+      ],
+      "hypothesis": "La pagina decia 'reverificado 17/8/2026' y publicaba cifras que los emisores ya habian cambiado (Santander no publicaba la anualidad y ahora si; PassCard subio el mantenimiento un 70%; OCA Blue paso a 1 Metro cada $120; ANDA cobra 27,30%). Quien busca 'tarjetas de credito uruguay' compara anualidad y puntos, no definiciones (r/uruguay 2026). Hipotesis: un titulo con el anio y el angulo 'anualidad', mas una FAQ con las preguntas reales (cuanto cuesta por anio, descuenta IVA, mas barata para financiar, sin costo anual) y un registro de cambios fechado con el documento de cada emisor, suben la porcion de clics del cluster sin tocar el ranking (los puntajes cambian en 2 fichas: Santander costo 58→62, PassCard costo 52→48, y el orden general no se mueve)."
     }
   ]
 }
