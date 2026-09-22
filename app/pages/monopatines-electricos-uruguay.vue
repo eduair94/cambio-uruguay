@@ -100,6 +100,12 @@
                     (ficha)
                   </NuxtLink>
                   {{ movilidadMoney(offer.priceUyu) }} · {{ movilidadShortDate(offer.observedAt) }}
+                  <span
+                    v-if="offerMove(offer)"
+                    class="offer-move"
+                    :class="offerMove(offer)!.down ? 'is-down' : 'is-up'"
+                    >· {{ offerMove(offer)!.text }}</span
+                  >
                 </li>
               </ul>
             </td>
@@ -515,6 +521,17 @@ useHead(() => ({
     },
   ],
 }))
+
+/** "bajó 9 %": la variación del propio aviso, cuando tenemos dos lecturas suyas. */
+function offerMove(offer: { priceHistory?: { changePct: number | null; points: unknown[] } }): {
+  text: string
+  down: boolean
+} | null {
+  const series = offer.priceHistory
+  const label = priceChangeLabel(series?.changePct ?? null)
+  if (!series || !label || series.points.length < 2) return null
+  return { text: label, down: (series.changePct ?? 0) < 0 }
+}
 </script>
 
 <style scoped>
@@ -702,5 +719,15 @@ useHead(() => ({
   margin: 16px 0 0;
   padding: 0;
   list-style: none;
+}
+
+.offer-move {
+  font-weight: 600;
+}
+.offer-move.is-down {
+  color: rgb(var(--v-theme-success));
+}
+.offer-move.is-up {
+  color: rgb(var(--v-theme-error));
 }
 </style>

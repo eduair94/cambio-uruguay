@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { publicSeries, rentalAdvertId, PRICE_HISTORY_ID_MAX } from '../../server/utils/priceHistory'
+import {
+  publicSeries,
+  rentalAdvertId,
+  PRICE_HISTORY_ID_MAX,
+  PRICE_HISTORY_TOTAL_MAX,
+} from '../../server/utils/priceHistory'
 import type { PriceHistorySeries } from '../../utils/priceHistory'
 
 // `carlistings` y `marketpricelogs` son colecciones PRIVADAS: la primera guarda descripciones,
@@ -73,8 +78,9 @@ describe('rentalAdvertId', () => {
   })
 })
 
-describe('PRICE_HISTORY_ID_MAX', () => {
-  it('es el tamaño de una página, no una descarga de la base', () => {
+describe('los topes de ids', () => {
+  it('piden por tandas, y el total sigue siendo el de una página', () => {
     expect(PRICE_HISTORY_ID_MAX).toBe(60)
+    expect(PRICE_HISTORY_TOTAL_MAX).toBe(300)
   })
 })

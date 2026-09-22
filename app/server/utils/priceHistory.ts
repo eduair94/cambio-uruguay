@@ -17,8 +17,16 @@ import {
  * arma lo que cruza la red, y `app/tests/unit/priceHistoryPrivacy.test.ts` lo vigila.
  */
 
-/** Tope de ids por consulta: el tamaño de una página del directorio, no una descarga de la base. */
+/** Cuántos ids entran en UNA consulta. Se pide por tandas, no de a uno. */
 export const PRICE_HISTORY_ID_MAX = 60
+
+/**
+ * Cuántos ids puede pedir una página en total (5 tandas). Una ficha de categoría de equipar muestra
+ * varias decenas de productos con hasta ocho ofertas cada uno: con un tope único de 60 la mitad de
+ * las tarjetas se quedaba sin variación, y cuál se quedaba dependía del orden. Sigue siendo un tope:
+ * esto es la página que el lector tiene delante, no la colección entera.
+ */
+export const PRICE_HISTORY_TOTAL_MAX = 300
 
 const ID = /^[\w:.-]{1,160}$/
 
@@ -30,7 +38,14 @@ const ID = /^[\w:.-]{1,160}$/
 const collection = (name: string) =>
   mongoose.connection.readyState === 1 ? mongoose.connection.collection(name) : null
 
-const cleanIds = (ids: readonly string[]): string[] => [...new Set(ids.filter(id => typeof id === 'string' && ID.test(id)))].slice(0, PRICE_HISTORY_ID_MAX)
+const cleanIds = (ids: readonly string[]): string[] =>
+  [...new Set(ids.filter(id => typeof id === 'string' && ID.test(id)))].slice(0, PRICE_HISTORY_TOTAL_MAX)
+
+const chunks = (ids: readonly string[]): string[][] => {
+  const out: string[][] = []
+  for (let i = 0; i < ids.length; i += PRICE_HISTORY_ID_MAX) out.push(ids.slice(i, i + PRICE_HISTORY_ID_MAX))
+  return out
+}
 
 /** Lo ÚNICO que sale por la red. Cualquier campo nuevo del documento privado se queda adentro. */
 export function publicSeries(series: PriceHistorySeries): PriceHistorySeries {
@@ -53,15 +68,17 @@ export async function pricewatchHistory(ids: readonly string[]): Promise<Map<str
   if (!wanted.length) return found
   const offers = collection('pricewatchoffers')
   if (!offers) return found
-  const rows = await offers
-    .find(
-      { listingId: { $in: wanted } },
-      { projection: { _id: 0, listingId: 1, currency: 1, firstSeen: 1, lastSeen: 1, history: 1 }, maxTimeMS: 4000 }
-    )
-    .toArray()
-  for (const row of rows) {
-    const series = seriesFromPricewatch(row)
-    if (series) found.set(series.id, publicSeries(series))
+  for (const chunk of chunks(wanted)) {
+    const rows = await offers
+      .find(
+        { listingId: { $in: chunk } },
+        { projection: { _id: 0, listingId: 1, currency: 1, firstSeen: 1, lastSeen: 1, history: 1 }, maxTimeMS: 4000 }
+      )
+      .toArray()
+    for (const row of rows) {
+      const series = seriesFromPricewatch(row)
+      if (series) found.set(series.id, publicSeries(series))
+    }
   }
   return found
 }
@@ -89,15 +106,17 @@ export async function marketHistory(
   if (!wanted.length) return found
   const logs = collection('marketpricelogs')
   if (!logs) return found
-  const rows = await logs
-    .find(
-      { key: { $in: wanted.map(id => `${vertical}:${id}`) } },
-      { projection: { _id: 0, advertId: 1, firstSeen: 1, lastSeen: 1, points: 1 }, maxTimeMS: 4000 }
-    )
-    .toArray()
-  for (const row of rows) {
-    const series = seriesFromMarketLog(row)
-    if (series) found.set(series.id, publicSeries(series))
+  for (const chunk of chunks(wanted)) {
+    const rows = await logs
+      .find(
+        { key: { $in: chunk.map(id => `${vertical}:${id}`) } },
+        { projection: { _id: 0, advertId: 1, firstSeen: 1, lastSeen: 1, points: 1 }, maxTimeMS: 4000 }
+      )
+      .toArray()
+    for (const row of rows) {
+      const series = seriesFromMarketLog(row)
+      if (series) found.set(series.id, publicSeries(series))
+    }
   }
   return found
 }

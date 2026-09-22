@@ -1,6 +1,7 @@
 import { MovilidadItemModel } from '../../models/MovilidadItem'
 import { MovilidadMetaModel } from '../../models/MovilidadMeta'
 import { connectDb } from '../../utils/db'
+import { pricewatchHistory } from '../../utils/priceHistory'
 import {
   MOVILIDAD_META_KEY,
   isMovilidadCategorySlug,
@@ -29,6 +30,31 @@ import {
  * a cached error: the CDN must not keep serving an empty page once Mongo recovers.
  */
 const STALE_DAYS = 4
+
+
+/** Igual que en `/api/equipar/<categoria>`: la variación del propio aviso, por oferta mostrada. */
+async function attachOfferHistory<T extends { offers: any[]; products?: { offers: any[] }[] }>(
+  items: T[]
+): Promise<T[]> {
+  const ids: string[] = []
+  for (const item of items) {
+    for (const offer of item.offers ?? []) if (offer?.listingId) ids.push(offer.listingId)
+    for (const product of item.products ?? [])
+      for (const offer of product.offers ?? []) if (offer?.listingId) ids.push(offer.listingId)
+  }
+  if (!ids.length) return items
+  const history = await pricewatchHistory(ids).catch(() => new Map())
+  if (!history.size) return items
+  const withSeries = (offer: any) =>
+    offer?.listingId && history.has(offer.listingId)
+      ? { ...offer, priceHistory: history.get(offer.listingId) }
+      : offer
+  return items.map(item => ({
+    ...item,
+    offers: (item.offers ?? []).map(withSeries),
+    ...(item.products ? { products: item.products.map(p => ({ ...p, offers: (p.offers ?? []).map(withSeries) })) } : {}),
+  }))
+}
 
 export default defineEventHandler(async (event): Promise<MovilidadCategoryResponse> => {
   const slug = String(getRouterParam(event, 'categoria') || '')
@@ -70,8 +96,8 @@ export default defineEventHandler(async (event): Promise<MovilidadCategoryRespon
         ok: run.ok,
         listings: run.listings,
       })),
-      items: movilidadCategoryProjection(
-        movilidadSortItems((rows as unknown as MovilidadItemDoc[]) ?? [])
+      items: await attachOfferHistory(
+        movilidadCategoryProjection(movilidadSortItems((rows as unknown as MovilidadItemDoc[]) ?? []))
       ),
     }
   } catch {

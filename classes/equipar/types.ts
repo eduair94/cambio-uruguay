@@ -67,6 +67,11 @@ export interface EquiparCategory {
 
 /** One price observation kept for display: the cheapest offers behind a row. */
 export interface EquiparOffer {
+  /** El id del aviso, el mismo con el que `pricewatchoffers` guarda su historial de precio: sin esto
+   * la tarjeta de un producto no puede decir que ESE vendedor bajó su propio precio. Aditivo: las
+   * filas escritas antes del 2026-09-22 no lo tienen. Nunca se publica para Facebook Marketplace,
+   * que no entra a `pricewatchoffers`. */
+  listingId?: string;
   seller: string;
   title: string;
   url: string;

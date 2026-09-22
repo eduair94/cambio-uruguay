@@ -31,6 +31,7 @@ export const conditionOf = (listing: RetailListing): "new" | "used" =>
 
 export function toOffer(listing: RetailListing, usdUyu: number): EquiparOffer {
   return {
+    listingId: listing.listingId,
     seller: listing.sellerName,
     title: listing.title,
     url: listing.url,

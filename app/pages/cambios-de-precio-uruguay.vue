@@ -217,10 +217,11 @@ const groups = computed(() =>
 )
 
 const title = 'Qué bajó y qué subió de precio en Uruguay'
+// <= 155 caracteres: lo que pasa de ahi no se acorta en el SERP, desaparece
+// (app/tests/unit/seoDescriptionBudget.test.ts).
 const description =
-  'Los cambios de precio que registramos aviso por aviso en autos usados, alquileres, viviendas en ' +
-  'venta, cosas para la casa, celulares, sillas y movilidad eléctrica: cada uno contra su propio ' +
-  'precio anterior, con fecha.'
+  'Qué avisos bajaron y cuáles subieron de precio en Uruguay: autos, alquileres, viviendas, ' +
+  'celulares y más, cada uno contra su propio precio anterior.'
 const canonicalUrl = `https://cambio-uruguay.com${PRICE_CHANGES_PATH}`
 
 defineOgImageComponent('Cambio', {
