@@ -76,6 +76,11 @@ Freno"): un falso negativo es una fila de más en el directorio, un falso positi
 reales de la banda. Los doce títulos y los seis vehículos-control están fijados en
 `tests/movilidad/registry.test.ts`.
 
+El único falso negativo que dejaba esa regla —"Y&trefen Ebike - Juego De Palanca De Freno", que
+antepone la marca— lo cubre una SEGUNDA regla, `JUEGO_DE_PIEZAS`: "juego de <pieza>" en cualquier
+posición. No afloja el ancla (eso ya está medido que borra vehículos reales); es una frase que por
+sí sola nunca describe un vehículo. Sobre los mismos 622 avisos marca ese aviso y ninguno más.
+
 Una fila ya guardada que deja de clasificar no se vuelve a escribir: sale de la ventana que sirve
 la API a los 4 días y de la colección a los 30. Para no esperar, `npm run movilidad_prune_listings`
 (`--apply` para borrar; sin eso sólo informa) relee lo guardado contra el registro de hoy.

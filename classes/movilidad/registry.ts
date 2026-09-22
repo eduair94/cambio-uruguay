@@ -131,9 +131,25 @@ const BICICLETA_EXCLUDE_WORDS =
 const ALTO_RENDIMIENTO_MATCH =
   /\b([89]\d{2}|\d{4,5}) ?w(?:atts?)?\b|\b(4[5-9]|[5-9]\d) ?km\/?h\b|\btodo ?terreno\b|\bcross\b|\boff-?road\b|\bdoble motor\b|\bdual drive\b|\bfat ?tire\b/;
 
-/** Las dos listas de palabras, cada una con la regla de la pieza que abre el título. */
-const MONOPATIN_EXCLUDE = new RegExp(`${PIEZA_ABRE_EL_TITULO.source}|${MONOPATIN_EXCLUDE_WORDS.source}`);
-const BICICLETA_EXCLUDE = new RegExp(`${PIEZA_ABRE_EL_TITULO.source}|${BICICLETA_EXCLUDE_WORDS.source}`);
+/**
+ * "Juego de <pieza>" en CUALQUIER posición del título.
+ *
+ * Es el único falso negativo que dejaba {@link PIEZA_ABRE_EL_TITULO}: "Y&trefen Ebike - Juego De
+ * Palanca De Freno Macho De 2 Pines" antepone la marca, así que la pieza no abre nada. No se
+ * arregla aflojando el ancla —ya está medido que "abre un segmento" borra vehículos reales— sino
+ * con una frase que por sí sola nunca describe un vehículo: un "juego de" seguido de una pieza es
+ * un repuesto, esté donde esté. Medido sobre los mismos 622 avisos: marca ese aviso y ninguno más.
+ */
+const JUEGO_DE_PIEZAS =
+  /\bjuego de (palanca|palancas|biela|bielas|llanta|llantas|camara|camaras|pastilla|pastillas|luces|luz|tornillo|tornillos|puno|punos|cable|cables|freno|frenos|pedal|pedales|guardabarro|guardabarros|espejo|espejos)\b/;
+
+/** Las dos listas de palabras, cada una con las dos reglas de pieza. */
+const MONOPATIN_EXCLUDE = new RegExp(
+  `${PIEZA_ABRE_EL_TITULO.source}|${JUEGO_DE_PIEZAS.source}|${MONOPATIN_EXCLUDE_WORDS.source}`
+);
+const BICICLETA_EXCLUDE = new RegExp(
+  `${PIEZA_ABRE_EL_TITULO.source}|${JUEGO_DE_PIEZAS.source}|${BICICLETA_EXCLUDE_WORDS.source}`
+);
 
 export const MOVILIDAD_CATEGORIES: EquiparCategory[] = [
   {

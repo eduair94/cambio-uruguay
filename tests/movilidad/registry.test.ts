@@ -275,6 +275,11 @@ describe("una pieza que abre el título no es un vehículo", () => {
     "Juego De 2 Bielas Praxis E-bike 172,5 Mm. Excelente Estado",
     "Kit bicicleta electrica 1000watts",
     "Kit Bicicleta Eléctrica Lionel Ebikes 1000w 48v Completo",
+    // Antepone la marca, así que la pieza no abre el título: lo agarra `JUEGO_DE_PIEZAS`, la frase
+    // que por sí sola nunca describe un vehículo. Único falso negativo que dejaba el ancla.
+    "Y&trefen Ebike - Juego De Palanca De Freno Macho De 2 Pines.",
+    // Del inventario del día siguiente, misma forma: una pieza que abre el título.
+    "Acelerador Para Bicicleta Eléctrica Con Puños Incluídos",
   ];
   it.each(piezas)("%s -> rechazado", (title) => {
     expect(classify(title)).toBeNull();
