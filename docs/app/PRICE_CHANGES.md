@@ -66,8 +66,15 @@ no la reemplaza: la del producto se mueve también cuando entra o sale un vended
 cuando ese vendedor cambió su precio.
 
 `app/utils/phones.ts` y `classes/phones/catalog.ts` ganaron un `listingId` por oferta (aditivo) porque
-sin él la ficha de celulares no podía cruzar sus ofertas con el historial. Las filas guardadas antes
-del 2026-09-22 no lo traen y simplemente no muestran variación.
+sin él la ficha de celulares no podía cruzar sus ofertas con el historial; lo mismo
+`classes/equipar/catalog.ts`, que es el que arma las ofertas de equipar y de movilidad.
+
+Las filas guardadas ANTES del 2026-09-22 no lo traen, y su catálogo sólo se reescribe en la próxima
+corrida diaria de cada job. Para no esperar hasta ahí está `npm run backfill_offer_listing_ids`
+(`scripts/oneoff/`), que le pone el id a las ofertas ya publicadas cruzándolas **por URL** contra
+`pricewatchoffers` —la misma URL que esa colección ya guarda junto al id— sin volver a raspar nada y
+sin tocar ningún precio. Una URL que aparece en dos avisos distintos se deja sin id: no hay forma de
+decidir cuál es, y ponerle el del otro sería peor que no ponerle ninguno.
 
 ## Lo que se publica de una colección privada
 
@@ -110,11 +117,30 @@ pregunta "¿es un descuento real?" la contesta `/ciberlunes-y-black-friday-urugu
 el propio mínimo de 60 días y exige antigüedad; el nivel del mercado lo cuentan las páginas
 `/evolucion-precio-*`.
 
+## La resolución de cada vertical
+
+| vertical | quién escribe el punto | cada cuánto |
+|---|---|---|
+| equipar, sillas, celulares, movilidad | `recordPricewatch` en cada job | diaria + horaria |
+| autos | `classes/autos/store.ts` | diaria + horaria |
+| **alquiler** | `currency-market-series` (13:03) **y la propia cosecha** (`recordRentalPriceLogs`, `classes/pricehistory/marketLog.ts`) | **diaria + horaria** desde el 2026-09-22 |
+| venta | `currency-market-series` | 1×/día |
+
+El registro de alquiler lo escriben **dos** jobs sobre las mismas filas, y por eso la cosecha escribe
+con un **pipeline de update atómico** (`marketLogOperation`) en vez de leer-modificar-escribir: si
+leyera primero, perdería los puntos que el otro acabara de agregar. Las reglas del punto son las
+mismas que las de `classes/marketseries/log.ts` —mismo precio y moneda que el último punto no agrega
+nada, un cambio dentro del MISMO día reemplaza el punto de ese día, tope de 40— y están fijadas sin
+base de datos por su gemelo en JS (`applyMarketPoints`, `tests/pricehistory/marketLog.test.ts`).
+
+La cosecha no poda nada: la poda de `marketpricelogs` sigue siendo de `currency-market-series`, por
+vertical y a 120 días.
+
 ## Lo que todavía no mide
 
-- **Alquiler y venta tienen resolución diaria** porque `currency-market-series` corre una vez por día:
-  un cambio que dura unas horas puede no quedar registrado. Mover esa escritura a la cosecha horaria
-  de alquileres es otro trabajo, con su propio riesgo.
+- **Venta sigue con resolución diaria**, y no por una decisión de este job: su catálogo se cosecha una
+  vez por día (`currency-property-opportunities`, 06:21), así que no hay nada intradía que registrar.
+  La corrida horaria de ese job (`--analyze-only`) no consulta los portales.
 - **No hay historia hacia atrás**: las series arrancan entre el 6 y el 18 de setiembre de 2026 según
   la vertical, y no se puede reconstruir.
 - **Facebook Marketplace no aporta historial publicado** (nunca entró a `pricewatchoffers`; en autos y
