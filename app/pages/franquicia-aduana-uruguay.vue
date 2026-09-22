@@ -393,6 +393,211 @@
       </VCard>
     </section>
 
+    <!-- How to check the franquicias you have left: the official screen, the calendar-year reset and
+         the date that counts. Read against the DNA, IMPO and the MEF on 2026-09-22. What we could not
+         see first-hand (the screen behind the personal ID Uruguay login) is said as such. -->
+    <section class="mb-8" aria-labelledby="consulta-franquicias">
+      <h2 id="consulta-franquicias" class="section-heading mb-1">
+        Cómo consultar cuántas franquicias te quedan
+      </h2>
+      <p class="text-body-2 text-medium-emphasis mb-4">
+        La consulta oficial es la misma pantalla del registro de identidad de la Aduana:
+        <a
+          href="https://luciakit.aduanas.gub.uy/LuciaKit/encomiendaspostales.aspx"
+          target="_blank"
+          rel="noopener noreferrer"
+          >luciakit.aduanas.gub.uy</a
+        >, con <strong>ID Uruguay de nivel intermedio o superior</strong>. Muestra los envíos que
+        tenés registrados bajo franquicia en el año. El cupo —<strong>3 envíos y US$ 800</strong>—
+        se cuenta por año civil y vuelve a cargarse el <strong>1.º de enero</strong>; y lo que
+        cuenta es la fecha en que la Aduana <strong>libera</strong> el paquete, no la de la compra.
+      </p>
+
+      <VCard variant="flat" class="traps pa-5 mb-4">
+        <p class="text-subtitle-2 font-weight-bold mb-2">Paso a paso</p>
+        <ol class="trap-list">
+          <li>
+            <strong>Usuario gub.uy de nivel intermedio.</strong> El básico (autorregistrado) no
+            alcanza: la Resolución General 10/2026 de la Aduana (num. 3) exige "un nivel mínimo
+            intermedio o superior". Se sube por videollamada, con firma digital (cédula con chip y
+            lector) o de forma presencial, según el
+            <a
+              href="https://www.aduanas.gub.uy/innovaportal/v/28449/1/innova.front/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >formulario de identidad digital de la DNA</a
+            >
+            (27/4/2026).
+          </li>
+          <li>
+            <strong>Entrá al formulario.</strong>
+            <a
+              href="https://luciakit.aduanas.gub.uy/LuciaKit/encomiendaspostales.aspx"
+              target="_blank"
+              rel="noopener noreferrer"
+              >luciakit.aduanas.gub.uy/LuciaKit/encomiendaspostales.aspx</a
+            >
+            te manda al login "Sign in with agesic", o sea ID Uruguay. Es el enlace que publica la
+            DNA en
+            <a
+              href="https://www.aduanas.gub.uy/innovaportal/v/28224/1/innova.front/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >"Consulte franquicias utilizadas"</a
+            >, el Comunicado COMEX 11/2026 y el pie de la página del Correo.
+          </li>
+          <li>
+            <strong>La primera vez, registrate.</strong> Nombre, nacimiento, mail, celular,
+            direcciones y tus medios de pago (banco o plataforma, sello, últimos cuatro dígitos,
+            tipo y vencimiento). Si sólo recibís obsequios familiares, los medios de pago se pueden
+            omitir (Comunicado 11/2026).
+          </li>
+          <li>
+            <strong>Ahí mismo ves tus envíos en uso de franquicia.</strong> Lo dice el chatbot Sara
+            de la DNA: "accedé al formulario de registro por única vez; si ya lo hiciste podés
+            consultar aquí mismo tus envíos en uso de franquicia". El atajo desde aduanas.gub.uy es
+            Sara → "Compras WEB" → "Identidad Digital Franquicias", botón que se titula "Formulario
+            de Identidad Digital - Consulta cantidad de Franquicias".
+          </li>
+        </ol>
+        <p class="text-caption text-medium-emphasis mt-3 mb-0">
+          Qué muestra exactamente la pantalla no lo pudimos ver: exige tu propia ID Uruguay. La DNA
+          dice "cuántos envíos tiene registrados bajo el régimen de franquicia"; el Correo habla de
+          tu "saldo anual de franquicias"; un blog de ayuda de mayo de 2025 describe un listado con
+          cada pedido. Con lo que te muestre llenás los dos campos de la calculadora de arriba.
+        </p>
+      </VCard>
+
+      <VAlert type="warning" variant="tonal" density="comfortable" class="mb-4" icon="mdi-alert">
+        <p class="mb-2"><strong>Tres cosas que parecen la consulta y no lo son.</strong></p>
+        <ul class="regime-list">
+          <li>
+            La "Consulta por CI" del chatbot de la DNA sólo dice si tenés encomiendas
+            <em>retenidas</em> a disposición de la Aduana (cédula sin puntos ni guiones). No muestra
+            franquicias.
+          </li>
+          <li>
+            La página "Consultas Franquicias" de la DNA es un cubo estadístico de todo el país desde
+            2016, con filtros por categoría, fecha y país de procedencia. No tiene tu saldo.
+          </li>
+          <li>
+            El "Verificar franquicia DNA" de Gripper y los formularios parecidos de otros couriers
+            son un servicio de la empresa, no la consulta oficial.
+          </li>
+        </ul>
+        <p class="mb-0 mt-2">
+          Y el enlace viejo
+          <code>aplicaciones.aduanas.gub.uy/LuciapubX/…HWCantEncPostales.aspx</code> —que el paso 3
+          de la página del Correo todavía publica, y que esta página también enlazaba— responde
+          <strong>401</strong> y pide usuario y contraseña, medido el 22 de setiembre de 2026.
+        </p>
+      </VAlert>
+
+      <VAlert
+        type="info"
+        variant="tonal"
+        density="comfortable"
+        class="mb-4"
+        icon="mdi-email-alert-outline"
+      >
+        <strong>Registrarse hoy es voluntario.</strong> La RG 10/2026 (num. 7) rige "en forma
+        facultativa" desde el 27/4/2026 hasta que la DNA comunique que es obligatoria; al 22 de
+        setiembre de 2026 no hay fecha publicada. Dos consecuencias de registrarte: el mail que
+        cargás recibe <strong>alertas de la DNA sobre el uso de tu franquicia</strong> y la vigencia
+        de tus medios de pago (num. 6 lit. b); y si un envío no coincide con lo que declaraste —una
+        tarjeta o una dirección que no cargaste— <strong>no se libera</strong> hasta que corrijas el
+        registro (num. 6 lit. a; preguntas frecuentes de la DNA). Mantenerlo al día es obligación
+        tuya (num. 5).
+      </VAlert>
+
+      <h3 class="text-subtitle-1 font-weight-bold mt-6 mb-2">
+        Cuándo cambian las franquicias y qué fecha cuenta
+      </h3>
+      <div class="table-scroll">
+        <table class="channel-table cu-mobile-cards">
+          <thead>
+            <tr>
+              <th>Situación</th>
+              <th>Qué pasa</th>
+              <th>Dónde está escrito</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Llega el 1.º de enero</td>
+              <td class="cu-cell-prose" data-label="Qué pasa">
+                Volvés a tener 3 envíos y US$ 800. El saldo que no usaste no se acumula.
+              </td>
+              <td class="cu-cell-prose" data-label="Dónde está escrito">
+                Decreto 50/026, art. 4 lit. c ("por año civil"); guía del MEF del 24/4/2026: "Al
+                otro año se resetea en tres compras y 800 dólares".
+              </td>
+            </tr>
+            <tr>
+              <td>Cambió el régimen el 1.º de mayo de 2026</td>
+              <td class="cu-cell-prose" data-label="Qué pasa">
+                El contador no se reinició: para 2026 cuentan también los envíos hechos antes de
+                mayo con el régimen viejo. Quien usó los 3 antes de mayo no tiene franquicia hasta
+                enero de 2027.
+              </td>
+              <td class="cu-cell-prose" data-label="Dónde está escrito">
+                Decreto 50/026, art. 18; guía del MEF: "No, el contador no se resetea en mayo".
+              </td>
+            </tr>
+            <tr>
+              <td>Compraste en diciembre y el paquete se libera en enero</td>
+              <td class="cu-cell-prose" data-label="Qué pasa">
+                Gasta una franquicia del año nuevo. Cuenta la fecha de desaduanamiento,
+                "independientemente de la fecha en que realiza la compra". Si te quedaba una y el
+                envío no se libera antes de fin de año, esa se pierde.
+              </td>
+              <td class="cu-cell-prose" data-label="Dónde está escrito">
+                DNA, "Consulte franquicias utilizadas" y
+                <a
+                  href="https://www.aduanas.gub.uy/innovaportal/v/28227/1/innova.front/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >"Tips para tus compras web"</a
+                >.
+              </td>
+            </tr>
+            <tr>
+              <td>Usaste los 3 envíos sin llegar a US$ 800</td>
+              <td class="cu-cell-prose" data-label="Qué pasa">
+                Esperás al año siguiente. El cuarto envío pasa solo a la prestación única (60 %,
+                mínimo US$ 20).
+              </td>
+              <td class="cu-cell-prose" data-label="Dónde está escrito">
+                Guía del MEF: "Tendrás que esperar hasta el próximo año para utilizar el beneficio".
+              </td>
+            </tr>
+            <tr>
+              <td>La Aduana te rechazó la franquicia en un envío</td>
+              <td class="cu-cell-prose" data-label="Qué pasa">
+                Ese envío paga el 60 %, pero no te gasta uno de los 3 ni descuenta de los US$ 800.
+              </td>
+              <td class="cu-cell-prose" data-label="Dónde está escrito">
+                Decreto 50/026, art. 15: "la operación no computará".
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="text-caption text-medium-emphasis mt-3 mb-0">
+        <VIcon size="14" class="mr-1">mdi-calendar-alert</VIcon>
+        Si consultás en octubre o noviembre de 2026 y la compra es de EE.UU., hay dos fechas más en
+        juego, y salen de dos resoluciones distintas: desde el <strong>1/10/2026</strong> el
+        vendedor que emite la factura tiene que estar registrado ante la Aduana para que el envío de
+        hasta US$ 200 no pague IVA (RG 21/2026, que prorrogó hasta ahí la exigibilidad de la RG
+        09/2026); desde el <strong>3/11/2026</strong> rige además lo que la RG 26/2026 (num. 10)
+        difirió del numeral 13 del Anexo I de la RG 09/2026. La página "Régimen de Franquicia" de la
+        DNA redacta el 3 de noviembre como si fuera la fecha del requisito: es una imprecisión de
+        redacción de la DNA, no una contradicción entre normas. Todo lo de este bloque fue leído en
+        la DNA, IMPO y el MEF el 22 de setiembre de 2026.
+      </p>
+    </section>
+
     <!-- FAQ: coupons / discounts and the USD 200 line -->
     <section class="mb-8">
       <h2 class="section-heading mb-1">Preguntas frecuentes</h2>
@@ -766,9 +971,38 @@ const sources = [
     label: 'Correo Uruguayo — declarar el envío (plataforma Ahíva)',
     url: 'https://ahiva.correo.com.uy/aduanas-web/login',
   },
+  // The former entry here (aplicaciones.aduanas.gub.uy/LuciapubX/…HWCantEncPostales.aspx) answers
+  // HTTP 401 with Basic auth since at least 2026-09-22; the Correo's step 3 still links it. Replaced by
+  // the page the DNA itself publishes for the query plus the LuciaKit form it points to.
   {
-    label: 'DNA — consultá cuánta franquicia te queda este año (requiere usuario gub.uy)',
-    url: 'https://aplicaciones.aduanas.gub.uy/LuciapubX/DECLARACIONES.Cargas.HWCantEncPostales.aspx',
+    label:
+      'DNA — «Consulte franquicias utilizadas»: la consulta oficial de cuántos envíos tenés registrados bajo franquicia (requiere ID Uruguay de nivel intermedio)',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28224/1/innova.front/',
+  },
+  {
+    label:
+      'LuciaKit (Aduana) — registro de identidad y consulta de envíos en uso de franquicia, login «Sign in with agesic»',
+    url: 'https://luciakit.aduanas.gub.uy/LuciaKit/encomiendaspostales.aspx',
+  },
+  {
+    label:
+      'Resolución General 10/2026 (Aduana) — registro de identidad: nivel intermedio (num. 3), alertas por mail (num. 6 lit. b), vigencia facultativa desde el 27/4/2026 (num. 7)',
+    url: 'https://impo.com.uy/bases/resoluciones-generales-aduanas-nd/10-2026',
+  },
+  {
+    label:
+      'DNA — «Tips para tus compras web»: la franquicia se computa el día en que la Aduana libera el envío, no el de la compra',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28227/1/innova.front/',
+  },
+  {
+    label:
+      'DNA — formulario de identidad digital: cómo pasar de usuario gub.uy básico a intermedio',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28449/1/innova.front/',
+  },
+  {
+    label:
+      'DNA — preguntas frecuentes del régimen de encomiendas: qué pasa si los datos del registro no coinciden, abandono a los 30 y 90 días',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28231/1/innova.front/',
   },
 ]
 
@@ -842,6 +1076,27 @@ const faqs = [
     aText:
       'Si no declarás, el envío queda retenido por la Aduana y se acumulan demoras y costos de depósito. Pasados 30 días de retenido el Correo avisa que el envío se declara en abandono; la Ley 20.446 art. 631 fija 30 días desde el ingreso cuando hubo incumplimiento y no se pagaron los tributos, y 90 días si simplemente no se retiró. Vencido el plazo se pierde la mercadería.',
   },
+  // The three questions people type when they want to know how many franquicias they have left and
+  // when they come back. Sources: DNA 28224/28227/28449, RG 10/2026, Decreto 50/026 arts. 4, 15 y 18,
+  // guía del MEF del 24/4/2026 — all read on 2026-09-22.
+  {
+    q: '¿Cuántas franquicias me quedan? ¿Dónde lo consulto?',
+    a: 'En la consulta oficial de la Aduana: <a href="https://luciakit.aduanas.gub.uy/LuciaKit/encomiendaspostales.aspx" target="_blank" rel="noopener noreferrer">luciakit.aduanas.gub.uy</a>, con <strong>ID Uruguay de nivel intermedio o superior</strong> (el usuario gub.uy básico no alcanza). Es la misma pantalla del registro de identidad: la primera vez completás el formulario y desde entonces ahí mismo ves tus envíos en uso de franquicia. La DNA la explica en <a href="https://www.aduanas.gub.uy/innovaportal/v/28224/1/innova.front/" target="_blank" rel="noopener noreferrer">"Consulte franquicias utilizadas"</a> y se llega también desde su chatbot Sara (botón "Identidad Digital Franquicias"). No se puede consultar sólo con la cédula: la "Consulta por CI" del chatbot es para encomiendas retenidas, la página "Consultas Franquicias" es un cubo estadístico y el formulario de Gripper es un servicio del courier. Las <strong>franquicias de 2026</strong> son 3 envíos y US$ 800 acumulados por año civil, 20 kg por envío: cada paquete liberado bajo franquicia gasta un envío sin importar el monto, también los obsequios familiares y las compras de EE.UU. que no pagan IVA.',
+    aText:
+      'En la consulta oficial de la Aduana, luciakit.aduanas.gub.uy, con ID Uruguay de nivel intermedio o superior; el usuario gub.uy básico no alcanza. Es la misma pantalla del registro de identidad: la primera vez completás el formulario y desde entonces ahí mismo ves tus envíos en uso de franquicia. La DNA la explica en "Consulte franquicias utilizadas" y se llega también desde su chatbot Sara, botón "Identidad Digital Franquicias". No se puede consultar sólo con la cédula: la "Consulta por CI" del chatbot es para encomiendas retenidas, la página "Consultas Franquicias" es un cubo estadístico y el formulario de Gripper es un servicio del courier. Las franquicias de 2026 son 3 envíos y US$ 800 acumulados por año civil, 20 kg por envío: cada paquete liberado bajo franquicia gasta un envío sin importar el monto, también los obsequios familiares y las compras de EE.UU. que no pagan IVA.',
+  },
+  {
+    q: '¿Cuándo cambian las franquicias? ¿Se renuevan el 1.º de enero o el 1.º de mayo?',
+    a: 'El <strong>1.º de enero</strong>. Se cuentan por año civil (Decreto 50/026, art. 4 lit. c) y al año siguiente volvés a tener 3 envíos y US$ 800; el saldo que no usaste no se acumula (guía del MEF del 24/4/2026: "Al otro año se resetea en tres compras y 800 dólares"). <strong>No</strong> se reiniciaron el 1.º de mayo de 2026 cuando cambió el régimen: el art. 18 manda contar "todos los envíos realizados en el año civil, tanto con el régimen anterior como con el que se reglamenta", y el MEF lo dice textual: "el contador no se resetea en mayo". Tampoco se renuevan a los 12 meses de cada compra.',
+    aText:
+      'El 1.º de enero. Se cuentan por año civil (Decreto 50/026, art. 4 lit. c) y al año siguiente volvés a tener 3 envíos y US$ 800; el saldo que no usaste no se acumula, según la guía del MEF del 24/4/2026. No se reiniciaron el 1.º de mayo de 2026 cuando cambió el régimen: el art. 18 manda contar todos los envíos realizados en el año civil, tanto con el régimen anterior como con el nuevo, y el MEF lo dice textual: el contador no se resetea en mayo. Tampoco se renuevan a los 12 meses de cada compra.',
+  },
+  {
+    q: 'Compré en diciembre y el paquete llega en enero: ¿de qué año es la franquicia?',
+    a: 'Del año en que la Aduana <strong>libera</strong> (desaduana) el paquete, no del año de la compra ni del de arribo. La DNA lo escribe en dos páginas: "la fecha que debe tener en cuenta es la de desaduanamiento de la encomienda" (<a href="https://www.aduanas.gub.uy/innovaportal/v/28224/1/innova.front/" target="_blank" rel="noopener noreferrer">Consulte franquicias utilizadas</a>) y "la franquicia se computa el día en que el envío es liberado por Aduana, independientemente de la fecha en que realiza la compra" (<a href="https://www.aduanas.gub.uy/innovaportal/v/28227/1/innova.front/" target="_blank" rel="noopener noreferrer">Tips para tus compras web</a>). Dos consecuencias: una compra del 29 de diciembre liberada en enero gasta una franquicia del año nuevo, y si te quedaba una franquicia y el envío no se libera antes del 31 de diciembre, esa se pierde. Si querés usar la del año que termina, comprá con margen para que el paquete llegue y se libere antes.',
+    aText:
+      'Del año en que la Aduana libera (desaduana) el paquete, no del año de la compra ni del de arribo. La DNA lo escribe en dos páginas: la fecha que debe tenerse en cuenta es la de desaduanamiento de la encomienda, y la franquicia se computa el día en que el envío es liberado por Aduana, independientemente de la fecha de la compra. Dos consecuencias: una compra del 29 de diciembre liberada en enero gasta una franquicia del año nuevo, y si te quedaba una franquicia y el envío no se libera antes del 31 de diciembre, esa se pierde. Si querés usar la del año que termina, comprá con margen para que el paquete llegue y se libere antes.',
+  },
 ]
 
 // --- SEO ---
@@ -872,7 +1127,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'franquicia aduana uruguay, comprar en el exterior uruguay, iva compras exterior, courier uruguay impuestos, decreto 50/026, us$ 800 franquicia, tiendamia iva, aduana 1 de octubre 2026, cupon descuento aduana, descuento valor factura aduana, us 200 iva ee.uu., envio no expreso correo uruguayo, franquicia 50 dolares correo, ems casilla mia franquicia, declarar compra correo uruguayo, obsequio familiar aduana uruguay',
+        'franquicia aduana uruguay, comprar en el exterior uruguay, iva compras exterior, courier uruguay impuestos, decreto 50/026, us$ 800 franquicia, tiendamia iva, aduana 1 de octubre 2026, cupon descuento aduana, descuento valor factura aduana, us 200 iva ee.uu., envio no expreso correo uruguayo, franquicia 50 dolares correo, ems casilla mia franquicia, declarar compra correo uruguayo, obsequio familiar aduana uruguay, cuantas franquicias me quedan, consultar franquicias aduana, franquicias uruguay consulta, cuando cambian las franquicias, franquicias uruguay 2026, luciakit aduanas',
     },
   ],
   script: [

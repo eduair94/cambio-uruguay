@@ -314,6 +314,20 @@
         "/sucursales/*"
       ],
       "hypothesis": "Un h1 con casa, departamento y 'horarios' (lo que la consulta trae) alinea el encabezado con el titulo y sube el CTR de la familia."
+    },
+    {
+      "id": "franquicias-consulta-y-renovacion",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/franquicia-aduana-uruguay"
+      ],
+      "queries": [
+        "franquicias uruguay consulta",
+        "cuantas franquicias me quedan",
+        "cuando cambian las franquicias",
+        "franquicias uruguay 2026"
+      ],
+      "hypothesis": "La pagina explicaba el regimen pero no donde consultar el saldo (su unico enlace daba 401) ni que fecha cuenta: una seccion con la pantalla oficial de LuciaKit, el reinicio del 1.º de enero y la regla de liberacion, mas tres FAQ con las frases exactas, deberia sumar clics en consultas donde hoy mandan Gripper y blogs."
     }
   ]
 }
