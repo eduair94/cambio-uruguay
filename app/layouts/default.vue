@@ -1053,4 +1053,24 @@ useSchemaOrg([
   > .v-breadcrumbs:first-child {
   padding-top: 0 !important;
 }
+
+/* Y el aire DEBAJO de la miga que abre la página también es del layout. VBreadcrumbs es un <ul> y
+   conserva los 16 px de margin-bottom del navegador, más los 16 de padding de Vuetify o el pb-* que
+   la página eligió, y lo que sigue a veces trae su propio margin-top (un <h1> directo, 22,8 px que
+   colapsan con el margen del <ul>; un header con 16 o 20 propios). Medido en producción el
+   2026-09-22 en las 47 páginas que abren con migas: del texto de la miga al bloque siguiente había
+   20, 24, 31, 32 o 40 px según la página. Ahora 8 en todas, con o sin barra de la familia (por eso
+   acá el contenedor no lleva :first-child): la miga es la que siempre está, así que ella pone el
+   hueco y el vecino no suma (DESIGN.md → "The Neighbour Owns The Gap Rule"). Lo que no alcanza es un
+   margen que colapsa A TRAVÉS del vecino (el eyebrow de equipar, primer hijo de su header): eso lo
+   anula la página. */
+.container_custom > .v-container > .v-breadcrumbs:first-child,
+.container_custom > :not(.v-container) > .v-container:first-child > .v-breadcrumbs:first-child {
+  padding-bottom: 8px !important;
+  margin-bottom: 0 !important;
+}
+.container_custom > .v-container > .v-breadcrumbs:first-child + *,
+.container_custom > :not(.v-container) > .v-container:first-child > .v-breadcrumbs:first-child + * {
+  margin-top: 0 !important;
+}
 </style>

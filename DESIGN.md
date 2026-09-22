@@ -371,9 +371,14 @@ page's own `py-*` no longer reaches the top — each page had chosen 16, 24, 32,
 shipped `py-6 py-md-10`, 43 shipped `py-8 py-md-12`) and a breadcrumb added Vuetify's 16 on top,
 so on 2026-09-22 the crumbs of `/celulares-uruguay` sat 67px under the bar and the H1 at 115: the
 breadcrumb was farther from the bar than from the title it belongs to. A breadcrumb that opens the
-page carries no top padding; its bottom stays the page's. Measure it before trusting the class:
-`VBreadcrumbs` renders a `<ul>`, so it keeps the browser's 16px `margin-bottom` (The Text Block
-Owns Its Top Margin Rule) and the hubs' `pb-2` lands 24px above the title, not 8.
+page is the layout's on both sides: no top padding, 8px below it, the `<ul>`'s browser margin
+zeroed and the next block's `margin-top` zeroed, with or without the family bar. Measured the same
+day across the 47 pages that open with one, the crumb-to-title gap was 20, 24, 31, 32 or 40px:
+`VBreadcrumbs` renders a `<ul>` that keeps its 16px `margin-bottom` (The Text Block Owns Its Top
+Margin Rule), a direct `<h1>` adds 22.8 that collapse with it, and two headers brought 16–20 of
+their own. The one thing the rule cannot reach is a margin that collapses *through* the next
+block — equipar's eyebrow carried 12px from `.equipar p` and surfaced above its `<header>` — and
+that is the page's to zero.
 The rule lives in `layouts/default.vue` next to `.container_custom` and is the sibling of the one
 `FamiliaNav.vue` applies after the family bar: when the bar renders it is the first child and owns
 the gap; when it does not, the layout does. `tests/unit/layoutTop.test.ts` reads the source.

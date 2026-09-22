@@ -544,6 +544,13 @@ useHead(() => ({
 .equipar p {
   margin: 12px 0 0;
 }
+/* El eyebrow es el primer hijo del header y `.equipar p` le gana a `.eyebrow` por especificidad:
+   12 px arriba que, sin borde ni padding en el header, colapsan hacia afuera y aparecen entre las
+   migas y el header (20 px medidos donde el resto del sitio da 8). El hueco lo pone la miga
+   (layouts/default.vue); acá se anula el que se le colaba. */
+.equipar-header > .eyebrow {
+  margin-top: 0;
+}
 /*
  * NOT `--v-theme-primary`. That token is #1976d2, which measures 4.29:1 on the paper canvas and
  * 4.18:1 on the midnight one — both under AA for text this size, and axe flagged six nodes of it

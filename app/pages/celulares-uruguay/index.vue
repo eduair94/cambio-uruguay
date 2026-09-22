@@ -18,7 +18,7 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
     />
 
     <header class="mb-6">
-      <h1 class="text-h4 font-weight-bold mb-2">
+      <h1 class="phones-title">
         Precio de celulares en Uruguay: iPhone, Samsung, Motorola y Xiaomi
       </h1>
       <p class="text-body-1 lead">
@@ -483,6 +483,16 @@ useHead(() => ({
 <style scoped>
 .phones-hub {
   max-width: 1120px;
+}
+/* Rol Display de DESIGN.md (el idiom .hero-title), no text-h4: a 34 px fijos el título de 63
+   caracteres ocupaba cinco líneas y 200 px a 390 px de ancho (medido 2026-09-22). */
+.phones-title {
+  margin: 0 0 8px;
+  font-size: clamp(1.55rem, 4.4vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 .lead {
   max-width: 68ch;

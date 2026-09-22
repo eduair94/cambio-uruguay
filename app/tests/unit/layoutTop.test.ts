@@ -107,3 +107,37 @@ describe('el aire arriba de la página', () => {
     }
   })
 })
+
+// Y debajo de la miga: medido el 2026-09-22 en las 47 páginas que abren con migas, del texto de la
+// miga al bloque siguiente había 20, 24, 31, 32 o 40 px (el <ul> conserva el margin-bottom del
+// navegador, un <h1> directo suma 22,8 que colapsan con él, dos headers traían 16 y 20 propios).
+// La miga es la que siempre está, así que ella pone el hueco y el vecino no suma.
+const OPENING_CRUMBS = [
+  '.container_custom > .v-container > .v-breadcrumbs:first-child',
+  '.container_custom > :not(.v-container) > .v-container:first-child > .v-breadcrumbs:first-child',
+]
+
+describe('el aire debajo de la miga que abre la página', () => {
+  it('lo pone la miga: 8 px de padding y sin el margen del <ul>, sin scope', () => {
+    for (const selector of OPENING_CRUMBS) {
+      const rule = ruleOf(selector)
+      expect(rule.scoped, selector).toBe(false)
+      expect(rule.body, selector).toMatch(/padding-bottom\s*:\s*8px\s*!important/)
+      expect(rule.body, selector).toMatch(/margin-bottom\s*:\s*0\s*!important/)
+    }
+  })
+
+  // Con la barra de la familia el contenedor es el SEGUNDO hijo de `.container_custom`: la regla
+  // del fondo vale también ahí, así que su compuesto de contenedor no puede exigir :first-child.
+  it('alcanza a las páginas con barra de la familia', () => {
+    expect(OPENING_CRUMBS[0]).toMatch(/^\.container_custom > \.v-container > /)
+  })
+
+  it('el vecino no suma: lo que sigue a la miga arranca sin margin-top', () => {
+    for (const selector of OPENING_CRUMBS) {
+      const rule = ruleOf(`${selector} + *`)
+      expect(rule.scoped, selector).toBe(false)
+      expect(rule.body, selector).toMatch(/margin-top\s*:\s*0\s*!important/)
+    }
+  })
+})
