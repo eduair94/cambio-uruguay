@@ -135,7 +135,15 @@ export function filterApexUrls(urls, host = INDEXNOW_HOST) {
  * exactamente lo que el receptor castiga. Ahora se anuncia sólo lo que no se anunció antes, de a
  * lo sumo esta cantidad; el resto sale en los deploys siguientes.
  */
-export const INDEXNOW_MAX_NEW_PER_RUN = 500
+export const INDEXNOW_MAX_NEW_PER_RUN = 100
+
+/**
+ * Cuánto callar después de un 429. Medido el 22/9/2026: tras dos envíos de 3.691 URLs, el tercero
+ * (ya de 500) también volvió 429 media hora después — el receptor castiga al host, no al lote. Un
+ * deploy más no lo arregla; un día de silencio sí puede. El estado guarda `blockedUntil` y hasta
+ * esa hora no hay POST.
+ */
+export const INDEXNOW_BACKOFF_MS = 24 * 60 * 60 * 1000
 
 /**
  * Qué mandar en esta corrida: las URLs del sitemap que no figuran en el estado guardado (lo que ya
@@ -153,14 +161,25 @@ export function planSubmission(urls, previous = [], cap = INDEXNOW_MAX_NEW_PER_R
   return { toSend, pending: fresh.length - toSend.length, nextState }
 }
 
-/** El archivo de estado: `{ submittedAt, urls: [...] }`. Cualquier cosa ilegible vale "nunca se anunció nada". */
+/**
+ * El archivo de estado: `{ submittedAt, urls: [...], blockedUntil? }`. Cualquier cosa ilegible
+ * vale "nunca se anunció nada y no hay castigo vigente".
+ */
 export function parseState(text) {
+  const empty = { urls: [], blockedUntil: null }
   try {
     const parsed = JSON.parse(text)
-    if (!parsed || !Array.isArray(parsed.urls)) return []
-    return parsed.urls.filter(url => typeof url === 'string')
+    if (!parsed || typeof parsed !== 'object') return empty
+    const urls = Array.isArray(parsed.urls)
+      ? parsed.urls.filter(url => typeof url === 'string')
+      : []
+    const blockedUntil =
+      typeof parsed.blockedUntil === 'string' && !Number.isNaN(Date.parse(parsed.blockedUntil))
+        ? parsed.blockedUntil
+        : null
+    return { urls, blockedUntil }
   } catch {
-    return []
+    return empty
   }
 }
 
@@ -327,13 +346,20 @@ export async function runIndexNow({
       return { status: 'aborted', reason: collected.reason, ...EMPTY }
     }
     let previous = []
+    let blockedUntil = null
     try {
       const text = state && typeof state.read === 'function' ? state.read() : null
-      previous = text ? parseState(text) : []
+      const saved = text ? parseState(text) : parseState('')
+      previous = saved.urls
+      blockedUntil = saved.blockedUntil
     } catch (error) {
       log(
         `indexnow: state unreadable, treating everything as new: ${String(error?.message || error)}`
       )
+    }
+    if (blockedUntil && Date.parse(blockedUntil) > Date.parse(now())) {
+      log(`indexnow: backing off after a 429 until ${blockedUntil}; no POST.`)
+      return { status: 'backoff', urls: 0, chunks: 0, responses: [] }
     }
     const plan = planSubmission(collected.urls, previous, maxNewPerRun)
     log(
@@ -367,10 +393,19 @@ export async function runIndexNow({
       )
     }
     const allOk = responses.every(response => response.ok)
-    if (allOk && state && typeof state.write === 'function') {
-      // Sólo un envío aceptado marca URLs como anunciadas: un 429 de hoy se reintenta mañana.
+    const throttled = responses.some(response => response.status === 429)
+    if (state && typeof state.write === 'function' && (allOk || throttled)) {
+      // Sólo un envío aceptado marca URLs como anunciadas; un 429 no marca nada pero sí deja
+      // escrito hasta cuándo callar, para que el deploy siguiente no vuelva a pegar.
       try {
-        state.write(JSON.stringify({ submittedAt: now(), urls: plan.nextState }))
+        const next = allOk
+          ? { submittedAt: now(), urls: plan.nextState }
+          : {
+              submittedAt: null,
+              urls: previous,
+              blockedUntil: new Date(Date.parse(now()) + INDEXNOW_BACKOFF_MS).toISOString(),
+            }
+        state.write(JSON.stringify(next))
       } catch (error) {
         log(`indexnow: could not persist state: ${String(error?.message || error)}`)
       }

@@ -145,7 +145,7 @@ describe('GET /llms-full.txt (Nitro route)', () => {
     installNitroGlobals()
     const setResponseHeader = vi.fn()
     vi.stubGlobal('setResponseHeader', setResponseHeader)
-    const mod = await import('../../server/routes/llms-full.txt.get')
+    const mod = await import('../../server/routes/llms-full.txt')
     const handler = mod.default as unknown as (event: unknown) => string
     return { body: handler({}), setResponseHeader }
   }

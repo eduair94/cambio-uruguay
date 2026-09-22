@@ -448,10 +448,67 @@ describe('only what is new, capped per run, remembered between deploys', () => {
     expect(INDEXNOW_MAX_NEW_PER_RUN).toBeLessThan(INDEXNOW_MAX_URLS_PER_POST)
   })
 
-  it('parseState tolerates garbage and only keeps string URLs', () => {
-    expect(parseState('not json')).toEqual([])
-    expect(parseState('{"urls":"x"}')).toEqual([])
-    expect(parseState('{"urls":["a",1,"b"]}')).toEqual(['a', 'b'])
+  it('parseState tolerates garbage and only keeps string URLs and a valid blockedUntil', () => {
+    expect(parseState('not json')).toEqual({ urls: [], blockedUntil: null })
+    expect(parseState('{"urls":"x"}')).toEqual({ urls: [], blockedUntil: null })
+    expect(parseState('{"urls":["a",1,"b"],"blockedUntil":"garbage"}')).toEqual({
+      urls: ['a', 'b'],
+      blockedUntil: null,
+    })
+    expect(parseState('{"urls":[],"blockedUntil":"2026-09-23T22:28:00.000Z"}').blockedUntil).toBe(
+      '2026-09-23T22:28:00.000Z'
+    )
+  })
+
+  it('a 429 writes a 24 h backoff and the next run stays silent until it expires', async () => {
+    const throttled = () =>
+      fakeFetch({
+        [SITEMAP_INDEX_URL]: response(200, INDEX_XML),
+        'https://cambio-uruguay.com/__sitemap__/es-ES.xml': response(200, CHILD_XML),
+        [INDEXNOW_ENDPOINT]: response(429),
+      })
+    const state = memoryState()
+    const first = await runIndexNow({
+      fetch: throttled().fetchImpl,
+      env: ENABLED,
+      argv: [],
+      key: KEY32,
+      log: vi.fn(),
+      state,
+      now: () => '2026-09-22T22:28:00.000Z',
+    })
+    expect(first.status).toBe('rejected')
+    expect(JSON.parse(state.text!)).toEqual({
+      submittedAt: null,
+      urls: [],
+      blockedUntil: '2026-09-23T22:28:00.000Z',
+    })
+    // Un deploy dos horas después: nada de red hacia el endpoint.
+    const later = HEALTHY()
+    const second = await runIndexNow({
+      fetch: later.fetchImpl,
+      env: ENABLED,
+      argv: [],
+      key: KEY32,
+      log: vi.fn(),
+      state,
+      now: () => '2026-09-23T00:28:00.000Z',
+    })
+    expect(second.status).toBe('backoff')
+    expect(later.calls.some(call => call.url === INDEXNOW_ENDPOINT)).toBe(false)
+    // Pasado el día, vuelve a intentar y, aceptado, limpia el castigo.
+    const after = HEALTHY()
+    const third = await runIndexNow({
+      fetch: after.fetchImpl,
+      env: ENABLED,
+      argv: [],
+      key: KEY32,
+      log: vi.fn(),
+      state,
+      now: () => '2026-09-24T01:00:00.000Z',
+    })
+    expect(third.status).toBe('submitted')
+    expect(JSON.parse(state.text!).blockedUntil).toBeUndefined()
   })
 
   it('first run without state sends at most the cap and persists what was accepted', async () => {
@@ -506,11 +563,11 @@ describe('only what is new, capped per run, remembered between deploys', () => {
     expect(again.calls.some(call => call.url === INDEXNOW_ENDPOINT)).toBe(false)
   })
 
-  it('a rejected POST leaves the state untouched so the same URLs are retried next time', async () => {
+  it('a rejected POST (other than 429) leaves the state untouched so the same URLs are retried next time', async () => {
     const { fetchImpl } = fakeFetch({
       [SITEMAP_INDEX_URL]: response(200, INDEX_XML),
       'https://cambio-uruguay.com/__sitemap__/es-ES.xml': response(200, CHILD_XML),
-      [INDEXNOW_ENDPOINT]: response(429),
+      [INDEXNOW_ENDPOINT]: response(403),
     })
     const state = memoryState()
     const result = await runIndexNow({
