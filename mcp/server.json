@@ -1,7 +1,8 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.eduair94/cambio-uruguay",
-  "description": "Uruguay: exchange rates, rentals (household ranking, fair rent, neighbourhoods, opportunities), used cars and product prices.",
+  "title": "Cambio Uruguay",
+  "description": "Uruguay: exchange rates, rentals, used cars, product prices and search across cambio-uruguay.com",
   "repository": {
     "url": "https://github.com/eduair94/cambio-uruguay.git",
     "source": "github",
@@ -27,13 +28,13 @@
         },
         {
           "name": "SITE_BASE_URL",
-          "description": "Upstream cambio-uruguay.com site API (rentals, cars, products)",
+          "description": "Upstream cambio-uruguay.com site API (rentals, cars, products, site search)",
           "isRequired": false,
           "default": "https://cambio-uruguay.com"
         },
         {
           "name": "MCP_TOOLSETS",
-          "description": "Comma list of toolsets to expose: cambio, alquileres, autos, productos (default: all)",
+          "description": "Comma list of toolsets to expose: cambio, alquileres, autos, productos, sitio (default: all)",
           "isRequired": false
         }
       ]
