@@ -25,7 +25,7 @@ Verify locally on the box:
 
 ```bash
 curl -s http://localhost:8788/health      # → {"status":"ok","toolsets":[...]}
-# tools per toolset (26 at /mcp, 8 at /mcp/alquileres, 6 at /mcp/autos, 5 at /mcp/productos):
+# tools per toolset (29 at /mcp, 8 at /mcp/alquileres, 6 at /mcp/autos, 5 at /mcp/productos, 3 at /mcp/sitio):
 curl -s -X POST http://localhost:8788/mcp/alquileres \
   -H "content-type: application/json" -H "accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | grep -o '"name":"[a-z_]*"' | sort -u
