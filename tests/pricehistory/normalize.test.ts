@@ -175,3 +175,55 @@ describe("summarize", () => {
     expect(summary.changePct).toBe(0);
   });
 });
+
+describe("plausibilidad de la serie", () => {
+  // Medido en producción el 2026-09-22, primera ficha publicada: un Chery Tiggo 8 con dos puntos,
+  // US$ 16.590 y US$ 1.111.111, que el bloque anunciaba como "subió 6.597,5 %". `carlistings`
+  // guarda el punto aunque `priceSanity.ts` después retire el aviso del catálogo, así que el
+  // historial tiene que traer su propia guarda: un salto que ningún vendedor hace es un error de
+  // carga, y de un error de carga no se puede decir cómo cambió el precio.
+  it("con dos puntos y un salto imposible no publica serie", () => {
+    const series = seriesFromCarListing({
+      key: "ml-MLU1",
+      firstSeen: "2026-09-17",
+      lastSeen: "2026-09-22",
+      listing: { title: "Chery Tiggo 8", url: "https://x", sellerName: "Automotora", currency: "USD" },
+      priceHistory: [
+        { price: 16590, currency: "USD", observedAt: "2026-09-17T06:00:00.000Z" },
+        { price: 1111111, currency: "USD", observedAt: "2026-09-21T06:00:00.000Z" },
+      ],
+    });
+    expect(series).toBeNull();
+  });
+
+  it("con dos puntos, duplicar el precio SÍ es un cambio real", () => {
+    // 15.000 -> 30.000 en un alquiler pasa de verdad; la guarda no puede comerse esto.
+    const series = seriesFromMarketLog({
+      key: "alquiler:infocasas:9",
+      vertical: "alquiler",
+      advertId: "infocasas:9",
+      firstSeen: "2026-09-08",
+      lastSeen: "2026-09-22",
+      points: [
+        { d: "2026-09-08", p: 15000, c: "UYU" },
+        { d: "2026-09-19", p: 30000, c: "UYU" },
+      ],
+    });
+    expect(series?.changePct).toBeCloseTo(100, 5);
+  });
+
+  it("con tres o más puntos, saca el punto imposible y conserva el resto", () => {
+    const series = seriesFromPricewatch(
+      pricewatchDoc({
+        history: [
+          { d: "2026-09-17", p: 30000, lp: null, c: "UYU" },
+          { d: "2026-09-19", p: 2900000, lp: null, c: "UYU" },
+          { d: "2026-09-20", p: 29000, lp: null, c: "UYU" },
+          { d: "2026-09-22", p: 27000, lp: null, c: "UYU" },
+        ],
+      })
+    );
+    expect(series?.points.map((point) => point.p)).toEqual([30000, 29000, 27000]);
+    expect(series?.lastChange).toEqual({ from: 29000, to: 27000, at: "2026-09-22" });
+  });
+});

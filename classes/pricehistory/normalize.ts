@@ -67,6 +67,42 @@ export function currencyTail(
   };
 }
 
+/**
+ * Un salto que ningún vendedor hace no es un cambio de precio, es un error de carga. `carlistings`
+ * guarda el punto igual —`priceSanity.ts` retira el AVISO del catálogo, no el punto de su historia— y
+ * la primera ficha publicada el 2026-09-22 anunciaba "subió 6.597,5 %" sobre un Chery Tiggo 8 que
+ * había pasado de US$ 16.590 a US$ 1.111.111.
+ *
+ * El factor es 5, no 2: duplicar el precio de un alquiler pasa de verdad (15.000 -> 30.000, medido) y
+ * la guarda no puede comerse un cambio real. Con TRES o más puntos se descarta el punto que se aparta
+ * de la mediana de los demás, que es la misma mecánica de `classes/priceevents/analyze.ts`; con DOS
+ * no hay mediana ni forma de saber cuál de los dos es el bueno, así que no se publica nada: de un
+ * error de carga no se puede decir cómo cambió el precio.
+ */
+export const PRICE_HISTORY_MAX_RATIO = 5;
+
+const median = (values: readonly number[]): number => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle]! : (sorted[middle - 1]! + sorted[middle]!) / 2;
+};
+
+export function plausiblePoints(points: readonly PriceHistoryPoint[]): PriceHistoryPoint[] | null {
+  if (points.length < 2) return [...points];
+  if (points.length === 2) {
+    const ratio = points[1]!.p / points[0]!.p;
+    return ratio > PRICE_HISTORY_MAX_RATIO || ratio < 1 / PRICE_HISTORY_MAX_RATIO ? null : [...points];
+  }
+  const kept = points.filter((point, index) => {
+    const others = points.filter((_, other) => other !== index).map((other) => other.p);
+    const reference = median(others);
+    if (!(reference > 0)) return true;
+    const ratio = point.p / reference;
+    return ratio <= PRICE_HISTORY_MAX_RATIO && ratio >= 1 / PRICE_HISTORY_MAX_RATIO;
+  });
+  return kept.length ? kept : null;
+}
+
 /** Variación total y último cambio de precio de una serie ya recortada a una sola moneda. */
 export function summarize(points: readonly PriceHistoryPoint[]): {
   changePct: number | null;
@@ -94,7 +130,9 @@ function build(
 ): PriceHistorySeries | null {
   const tail = currencyTail(raw, fallback);
   if (!tail.points.length) return null;
-  return { ...base, ...summarize(tail.points), points: tail.points, currency: tail.currency, currencySwitched: tail.switched };
+  const points = plausiblePoints(tail.points);
+  if (!points || !points.length) return null;
+  return { ...base, ...summarize(points), points, currency: tail.currency, currencySwitched: tail.switched };
 }
 
 /** `pricewatchoffers`: un punto por día aunque el precio no cambie (equipar, sillas, celulares, movilidad). */
