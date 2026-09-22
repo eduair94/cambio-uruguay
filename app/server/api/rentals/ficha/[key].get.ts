@@ -80,10 +80,15 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse> => 
           .map(offer => rentalAdvertId(offer.source, offer.listingId))
           .filter((id): id is string => id !== null)
         const history = await marketHistory('alquiler', advertIds)
-        page.property.offers = page.property.offers.map(offer => {
+        const withHistory = <T extends { source: string; listingId: string }>(offer: T): T => {
           const id = rentalAdvertId(offer.source, offer.listingId)
           return id && history.has(id) ? { ...offer, priceHistory: history.get(id)! } : offer
-        })
+        }
+        page.property.offers = page.property.offers.map(withHistory)
+        // `matchingOffer` es OTRO objeto, no una referencia a la fila de `offers`, y es el que la
+        // ficha muestra por defecto: sin esto la página traía la serie en el payload y no la dibujaba
+        // nunca (medido en producción el 2026-09-22).
+        if (page.property.matchingOffer) page.property.matchingOffer = withHistory(page.property.matchingOffer)
       } catch (error) {
         console.error('[api/rentals/ficha] price history failed', error)
       }
