@@ -15,14 +15,14 @@ Start with `mcp/README.md` (client configs, tool list, env table) and `mcp/DEPLO
 | `lib.ts` | library entry — package `main`/`exports` (`.`, `./api`, `./tools`, `./news`) for programmatic use. |
 | `test/*.test.ts` | vitest, pure handlers against a FAKE `CambioApi` / `fakeSite()` — no network. `server.test.ts` drives the real server through `InMemoryTransport`. |
 
-## Site toolsets: alquileres, autos, productos (v0.2.0)
+## Site toolsets: alquileres, autos, productos, sitio (v0.3.0)
 
 19 more tools read the **site** API (`SITE_BASE_URL`, default `https://cambio-uruguay.com`, the Nuxt
 `app/server/api/*` routes over the APP DB), not the rates API. Same pattern as `tools.ts`: pure
 handlers `(site: SiteApi, input) => Promise<ToolOutput>` in `src/rentals/`, `src/cars/`,
 `src/products/`; zod + descriptions in `src/register/*.ts`; `safe()` turns failures into MCP tool
 errors. `buildServer(api, { site, toolsets })`; HTTP picks toolsets by path (`/mcp`, `/mcp/alquileres`,
-`/mcp/autos`, `/mcp/productos`, `/mcp/cambio`), stdio by `MCP_TOOLSETS`. `src/instructions.ts` is sent
+`/mcp/autos`, `/mcp/productos`, `/mcp/sitio`, `/mcp/cambio`), stdio by `MCP_TOOLSETS`. `src/instructions.ts` is sent
 at initialisation; `src/register/prompts.ts` holds 6 guided workflows.
 
 | dir | role |
@@ -32,6 +32,7 @@ at initialisation; `src/register/prompts.ts` holds 6 guided workflows.
 | `src/rentals/` | search + geocode, household ranking (`POST /api/rentals/fit`), ficha + zone profile, analysis, estimate, zones, opportunities |
 | `src/cars/` | directory, opportunities, ficha, model market, declared risks, report |
 | `src/products/` | unified search (phones, chairs, equipar, movilidad), home basket, stores, SIPC prices, directories |
+| `src/sitio/` | whole-site search (`/api/site/search`: navigation hits from the header search index + BM25 passages from the nightly RAG index `ragchunks`, no embeddings per query), page text (`/api/site/page`, 8 000-char windows), menu (`/api/site/sections`). Passage numbers are as of the crawl date, which every result carries |
 | `skills/buscador-uruguay/` | Agent Skill; `npm run pack-skill` writes `app/public/descargas/buscador-uruguay-skill.zip` (test fails on drift) |
 | `scripts/smoke.mjs` | `npm run smoke`: every site handler against production. Run it after touching a handler: it found 4 real defects the unit tests could not |
 

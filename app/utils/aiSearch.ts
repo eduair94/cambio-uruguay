@@ -8,7 +8,7 @@ export const SKILL_SOURCE_URL =
   'https://github.com/eduair94/cambio-uruguay/tree/main/mcp/skills/buscador-uruguay'
 
 export interface AiToolset {
-  id: 'alquileres' | 'autos' | 'productos' | 'cambio'
+  id: 'alquileres' | 'autos' | 'productos' | 'sitio' | 'cambio'
   title: string
   icon: string
   url: string
@@ -82,6 +82,19 @@ export const AI_TOOLSETS: readonly AiToolset[] = Object.freeze([
       { name: 'check_online_store', what: 'señales de una tienda online (nunca un veredicto)' },
       { name: 'supermarket_prices', what: 'precios SIPC y súper más baratos por departamento' },
       { name: 'list_directories', what: 'todos los directorios del sitio' },
+    ],
+  },
+  {
+    id: 'sitio',
+    title: 'Todo el sitio',
+    icon: 'mdi-web',
+    url: `${MCP_ENDPOINT}/sitio`,
+    summary:
+      'Las unas 3.300 páginas del sitio: guías de impuestos, aduana, tarjetas, bancos, préstamos, sueldo y alquiler, herramientas, glosario y fichas. Responde citando la página.',
+    tools: [
+      { name: 'search_site', what: 'a qué página ir y qué dice el sitio sobre un tema' },
+      { name: 'read_page', what: 'el texto de una página, para citarla con precisión' },
+      { name: 'site_sections', what: 'el menú: qué hay en el sitio y dónde' },
     ],
   },
   {
@@ -200,7 +213,7 @@ export const AI_CONNECTORS: readonly AiConnector[] = Object.freeze([
 ])
 
 export interface AiPromptExample {
-  vertical: 'alquileres' | 'autos' | 'productos'
+  vertical: 'alquileres' | 'autos' | 'productos' | 'sitio'
   text: string
 }
 
@@ -236,5 +249,17 @@ export const AI_PROMPT_EXAMPLES: readonly AiPromptExample[] = Object.freeze([
   {
     vertical: 'productos',
     text: '¿Dónde está más barato un iPhone 13 de 128 GB? ¿Y es confiable la tienda?',
+  },
+  {
+    vertical: 'sitio',
+    text: '¿Cuánto puedo traer por courier sin pagar impuestos, y qué pasa si me paso?',
+  },
+  {
+    vertical: 'sitio',
+    text: '¿Cómo se calcula el aguinaldo y cuándo se cobra?',
+  },
+  {
+    vertical: 'sitio',
+    text: '¿Dónde me conviene cambiar dólares hoy, y cuánto me cobra el banco por una transferencia al exterior?',
   },
 ])

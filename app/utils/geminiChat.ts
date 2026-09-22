@@ -6,13 +6,15 @@
 export const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta'
 // Only the search toolsets: every declaration is resent on each model call and the visitor pays those
 // tokens from their own free quota, so the 7 exchange-rate tools stay out.
-export const CHAT_MCP_URL = 'https://mcp.cambio-uruguay.com/mcp?toolsets=alquileres,autos,productos'
+/** Every toolset: the whole site (sitio), today's rates (cambio) and the three directories. */
+export const CHAT_MCP_URL =
+  'https://mcp.cambio-uruguay.com/mcp?toolsets=sitio,cambio,alquileres,autos,productos'
 export const GEMINI_KEY_STORAGE = 'cu_gemini_key'
 export const MAX_TOOL_ROUNDS = 8
 
 /** Said instead of failing when the model is still calling tools at the round limit. */
 export const ROUND_LIMIT_TEXT =
-  'Hice varias búsquedas y no llegué a cerrar una respuesta. Probá con un pedido más concreto: un barrio, una dirección con número de puerta o un presupuesto.'
+  'Hice varias búsquedas y no llegué a cerrar una respuesta. Probá con un pedido más concreto: un tema puntual, un barrio, una dirección con número de puerta o un presupuesto.'
 
 type Fetch = typeof fetch
 
@@ -210,11 +212,24 @@ export const TOOL_STATUS: Record<string, string> = {
   plan_home_setup: 'Armando la canasta para equipar la casa',
   check_online_store: 'Revisando la tienda',
   supermarket_prices: 'Mirando precios de supermercado',
+  list_directories: 'Mirando los directorios del sitio',
+  search_site: 'Buscando en el sitio',
+  read_page: 'Leyendo la página',
+  site_sections: 'Mirando las secciones del sitio',
+  get_rates: 'Mirando las cotizaciones',
+  best_house: 'Buscando la mejor casa de cambio',
+  convert: 'Convirtiendo',
+  list_houses: 'Mirando las casas de cambio',
+  get_evolution: 'Mirando la historia de la cotización',
+  get_news: 'Leyendo noticias',
+  daily_summary: 'Armando el resumen del mercado',
 }
 
 export const CHAT_INSTRUCTIONS = [
-  'Sos el asistente de búsqueda de cambio-uruguay.com. Ayudás a encontrar alquiler, auto usado o productos en Uruguay usando SOLAMENTE las herramientas disponibles.',
-  'Respondé en español rioplatense, claro y breve, en markdown. Links siempre como [texto](url): el aviso original y la ficha del sitio.',
+  'Sos el asistente de cambio-uruguay.com. Ayudás con todo lo que publica el sitio: cotizaciones, guías (impuestos, aduana y compras en el exterior, tarjetas, bancos, préstamos, sueldo, alquilar), herramientas, y los directorios de alquileres, autos usados y productos. Usá SOLAMENTE las herramientas disponibles.',
+  'Preguntas generales o "¿dónde está…?": buscá con search_site, respondé con lo que dice el sitio y citá cada página como [título](url). Cotizaciones de hoy: herramientas de cambio. Avisos: herramientas de alquileres, autos o productos.',
+  'Si el sitio no cubre el tema, decilo; no respondas de memoria como si fuera información del sitio.',
+  'Respondé en español rioplatense, claro y breve, en markdown sin LaTeX (las cuentas en texto: "lo ganado en el semestre ÷ 12"). Links siempre como [texto](url): la página del sitio de donde sale cada dato, el aviso original y la ficha.',
   'Si faltan datos para buscar bien, preguntá todo lo que falte en UN solo mensaje; si alcanza, buscá sin preguntar.',
   'Nunca inventes avisos, precios, teléfonos ni disponibilidad. Si una herramienta falla, decilo y sugerí otra forma.',
 ].join('\n')

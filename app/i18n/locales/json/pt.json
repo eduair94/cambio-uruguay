@@ -1531,6 +1531,8 @@
     "empty": "Não encontramos resultados para «{q}».",
     "didYouMean": "Você quis dizer…?",
     "seeAll": "Ver todos os resultados",
+    "askAi": "Perguntar à IA: «{q}»",
+    "askAiEmpty": "Não aparece? Pergunte à IA",
     "browseSitemap": "Explorar o mapa do site",
     "resultsFor": "Resultados para «{q}»",
     "pageTitle": "Buscar no Cambio Uruguay",

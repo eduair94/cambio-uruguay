@@ -18,7 +18,7 @@ el ranking por hogar admite ~10 consultas por minuto.
 - `GET /api/rentals/ficha/<key>` — una vivienda: `property`, `market`, `similar`.
 - `GET /api/rentals/zone-profile?zone=<officialZone.zone>&department=…` — servicios del barrio.
 - `GET https://google-maps-proxy.checkleaked.cc/geocode?address=<dirección o lugar>&components=country:UY` —
-  coordenadas (Google Maps; reconoce lugares por nombre). Respaldo: `GET /api/rentals/geocode?q=…` (IDE Uruguay).
+  coordenadas (Google Maps; reconoce lugares por nombre). También: `GET /api/rentals/geocode?q=…` (Google Maps, el mismo que usa el sitio).
 - `POST /api/rentals/fit` (JSON) — ranking por hogar. Cuerpo: `people[]` (`id`, `label`,
   `incomeUyu`, `remoteDays`, `destinations[]` con `id`, `label`, `kind` work|study|other, `lat`,
   `lng`, `days`, `mode` walking|bicycling|transit|driving, `targetKm`), `housingBudgetUyu`,
@@ -46,6 +46,13 @@ el ranking por hogar admite ~10 consultas por minuto.
 - `GET /api/phones`, `GET /api/chairs`, `GET /api/equipar`,
   `GET /api/movilidad/monopatin-electrico`, `GET /api/movilidad/bicicleta-electrica`.
 - `GET /api/stores`, `GET /api/stores/<key>`, `GET /api/precios`, `GET /api/directorios`.
+
+## Todo el sitio
+
+- `GET /api/site/search?q=&limit=` — `pages` (a qué página ir: título, sección, URL; mismo índice que el
+  buscador del sitio) y `content` (pasajes de texto que responden, con `crawledAt`).
+- `GET /api/site/page?path=<ruta o URL>&offset=` — texto de una página por tramos de 8.000 caracteres (`nextOffset`).
+- `GET /api/site/sections` — el menú: secciones y páginas principales.
 
 ## Links para la persona
 

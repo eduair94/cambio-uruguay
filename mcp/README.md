@@ -65,7 +65,7 @@ It is stateless and read-only.
 
 ## Toolsets
 
-26 read-only tools in four toolsets. The hosted endpoint serves all of them at `/mcp`, or one
+29 read-only tools in five toolsets. The hosted endpoint serves all of them at `/mcp`, or one
 toolset per path so a client only loads what it needs:
 
 | Path | Toolset | What it covers |
@@ -74,6 +74,7 @@ toolset per path so a client only loads what it needs:
 | `/mcp/alquileres` | rentals | ~57,000 rental homes from 5 portals, household ranking, fair rent, neighbourhoods, opportunities |
 | `/mcp/autos` | used cars | ~19,000 used cars from 10 sources, opportunities, declared risks, model prices, market report |
 | `/mcp/productos` | products | phones, desk chairs, 38 home categories, e-mobility, online-store signals, supermarket prices |
+| `/mcp/sitio` | the whole site | search every page of cambio-uruguay.com (guides, tools, glossary, data pages), read a page, the site menu |
 | `/mcp/cambio` | exchange rates | the original 7 tools |
 
 For stdio set `MCP_TOOLSETS=alquileres,autos` (default: all).
@@ -152,7 +153,7 @@ Step-by-step for every client: [cambio-uruguay.com/buscar-con-ia](https://cambio
 | `MCP_HTTP_PORT` | Port for the HTTP transport | `8788` |
 | `API_BASE_URL` | Upstream rates API (toolset cambio) | `https://api.cambio-uruguay.com` |
 | `SITE_BASE_URL` | Upstream site API for rentals, cars and products | `https://cambio-uruguay.com` |
-| `MCP_TOOLSETS` | stdio only: comma list of toolsets (`cambio`, `alquileres`, `autos`, `productos`) | all |
+| `MCP_TOOLSETS` | stdio only: comma list of toolsets (`cambio`, `alquileres`, `autos`, `productos`, `sitio`) | all |
 
 ## Development
 

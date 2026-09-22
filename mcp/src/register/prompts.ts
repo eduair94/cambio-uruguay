@@ -12,6 +12,8 @@ export const PROMPTS: Record<Exclude<Toolset, "cambio">, string[]> = {
   alquileres: ["buscar-alquiler", "evaluar-aviso-alquiler", "comparar-barrios"],
   autos: ["buscar-auto-usado", "evaluar-auto"],
   productos: ["equipar-casa"],
+  // search_site/read_page are the workflow; a guided prompt would only restate the instructions.
+  sitio: [],
 };
 
 export function registerRentalPrompts(server: McpServer): void {

@@ -52,6 +52,14 @@
 
       <p v-if="query && isSuggestion" class="text-body-1 mb-4">{{ $t('search.didYouMean') }}</p>
 
+      <!-- Result pages are noindex, so the question in the link is never a crawlable URL family. -->
+      <p v-if="query && results.length" class="search-page__ask-ai mb-4">
+        <NuxtLink :to="askAiTo" data-cta="search-ask-ai" @click="trackAskAi">
+          <VIcon size="small">mdi-chat-processing-outline</VIcon>
+          {{ $t('search.askAi', { q: query }) }}
+        </NuxtLink>
+      </p>
+
       <SearchResults v-if="results.length" mode="links" :groups="groups" />
 
       <VCard
@@ -61,7 +69,18 @@
       >
         <VIcon size="40" class="mb-3">mdi-magnify-close</VIcon>
         <p class="text-body-1 mb-4">{{ $t('search.empty', { q: query }) }}</p>
-        <VBtn :to="localePath('/mapa-del-sitio')" color="primary" variant="tonal">
+        <VBtn
+          :to="askAiTo"
+          color="primary"
+          variant="flat"
+          class="mb-3 mr-sm-2"
+          data-cta="search-ask-ai"
+          @click="trackAskAi"
+        >
+          <VIcon start>mdi-chat-processing-outline</VIcon>
+          {{ $t('search.askAiEmpty') }}
+        </VBtn>
+        <VBtn :to="localePath('/mapa-del-sitio')" color="primary" variant="tonal" class="mb-3">
           <VIcon start>mdi-sitemap-outline</VIcon>
           {{ $t('search.browseSitemap') }}
         </VBtn>
@@ -90,6 +109,7 @@
 <script setup lang="ts">
 import { buildSearchIndex, parseAmountQuery } from '~/utils/searchIndex'
 import { POPULAR, buildResultGroups, scoreDocs, type SearchDoc } from '~/utils/siteNav'
+import { assistantLink } from '~/utils/assistantPrompt'
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -110,6 +130,11 @@ const isSuggestion = computed(() => results.value.some(r => r.suggestion))
 const amountHit = computed(() => (query.value ? parseAmountQuery(query.value) : null))
 
 const groups = computed(() => buildResultGroups(results.value, 50).groups)
+
+// The search box matches titles; the assistant reads the pages and answers the question.
+const askAiTo = computed(() => localePath(assistantLink(query.value)))
+const trackAskAi = () =>
+  track('assistant_cta_click', { content_path: route.path, assistant_topic: 'search' })
 
 const popular = computed(() =>
   POPULAR.map(r => docs.value.find(d => d.to === r)).filter(
@@ -208,6 +233,19 @@ useHead({
 
 .search-page__empty {
   border: 1px dashed rgba(255, 255, 255, 0.16);
+}
+
+.search-page__ask-ai a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgb(var(--v-theme-info));
+  text-decoration: none;
+  overflow-wrap: anywhere;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .v-theme--light {

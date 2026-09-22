@@ -119,11 +119,29 @@
             {{ $t('search.seeAll') }}
             <VIcon size="small">mdi-arrow-right</VIcon>
           </NuxtLink>
+          <NuxtLink
+            class="search-palette__ask-ai"
+            data-cta="search-ask-ai"
+            :to="askAiTo"
+            @click="askAi"
+          >
+            <VIcon size="small">mdi-chat-processing-outline</VIcon>
+            {{ $t('search.askAi', { q: query }) }}
+          </NuxtLink>
         </template>
 
         <div v-else-if="!amountHit" class="search-palette__empty">
           <VIcon size="32">mdi-magnify-close</VIcon>
           <p>{{ $t('search.empty', { q: query }) }}</p>
+          <NuxtLink
+            class="search-palette__ask-ai"
+            data-cta="search-ask-ai"
+            :to="askAiTo"
+            @click="askAi"
+          >
+            <VIcon size="small">mdi-chat-processing-outline</VIcon>
+            {{ $t('search.askAiEmpty') }}
+          </NuxtLink>
           <NuxtLink :to="localePath('/mapa-del-sitio')" @click="open = false">
             {{ $t('search.browseSitemap') }}
           </NuxtLink>
@@ -142,6 +160,7 @@ import type { AmountHit } from '~/utils/searchIndex'
 import { amountLabel } from '~/utils/convert'
 import type { CurrencyCode } from '~/utils/currencyPages'
 import { POPULAR, flattenResults, scoreDocs, type SearchDoc } from '~/utils/siteNav'
+import { assistantLink } from '~/utils/assistantPrompt'
 
 const open = defineModel<boolean>({ required: true })
 
@@ -154,6 +173,7 @@ const switchLocalePath = useSwitchLocalePath()
 const { cycle, mode } = useThemeMode()
 const { bestSell, bestBuy } = useExchangeRates()
 const track = useTrack()
+const route = useRoute()
 
 const RECENTS_KEY = 'cu_search_recents'
 const RECENTS_MAX = 5
@@ -201,6 +221,12 @@ const activeDescendant = computed(() =>
 )
 
 const seeAllTo = computed(() => `${localePath('/buscar')}?q=${encodeURIComponent(query.value)}`)
+// What the search box cannot answer, the assistant can: it reads the pages, not only their titles.
+const askAiTo = computed(() => localePath(assistantLink(query.value)))
+function askAi() {
+  track('assistant_cta_click', { content_path: route.path, assistant_topic: 'search' })
+  open.value = false
+}
 
 const liveMessage = computed(() => {
   if (!query.value) return ''
@@ -542,6 +568,22 @@ onUnmounted(() => clearTimeout(noResultTimer))
   color: rgb(var(--v-theme-info));
   font-size: 0.85rem;
   text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.search-palette__ask-ai {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px 12px;
+  color: rgb(var(--v-theme-info));
+  font-size: 0.85rem;
+  text-decoration: none;
+  overflow-wrap: anywhere;
 
   &:hover {
     text-decoration: underline;

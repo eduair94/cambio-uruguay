@@ -3553,6 +3553,10 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'gemini buscar apartamento',
           'ia para buscar auto usado',
           'chatbot alquileres montevideo',
+          'preguntar a la ia',
+          'chat con ia',
+          'asistente virtual',
+          'chatgpt uruguay',
         ],
       },
       {

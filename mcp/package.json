@@ -1,6 +1,6 @@
 {
   "name": "cambio-uruguay-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "mcpName": "io.github.eduair94/cambio-uruguay",
   "description": "Model Context Protocol server for Uruguay: exchange rates, rental search (household ranking, fair rent, neighbourhoods, opportunities), used cars and product prices from cambio-uruguay.com. Read-only, open source.",
   "type": "module",

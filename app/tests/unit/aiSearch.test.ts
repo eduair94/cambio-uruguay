@@ -24,6 +24,7 @@ const REGISTERED: Record<string, string[]> = {
   alquileres: registeredTools('rentals.ts', 'RENTAL_TOOLS'),
   autos: registeredTools('cars.ts', 'CAR_TOOLS'),
   productos: registeredTools('products.ts', 'PRODUCT_TOOLS'),
+  sitio: registeredTools('sitio.ts', 'SITE_TOOLS'),
   cambio: registeredTools('exchange.ts', 'EXCHANGE_TOOLS'),
 }
 
@@ -43,7 +44,7 @@ describe('/buscar-con-ia', () => {
   })
 
   it('has examples for every search vertical and a snippet for every client', () => {
-    for (const vertical of ['alquileres', 'autos', 'productos'])
+    for (const vertical of ['alquileres', 'autos', 'productos', 'sitio'])
       expect(AI_PROMPT_EXAMPLES.some(example => example.vertical === vertical)).toBe(true)
     for (const client of AI_CONNECTORS) expect(client.steps.length).toBeGreaterThan(0)
     expect(AI_CONNECTORS.filter(client => client.snippet?.includes(MCP_ENDPOINT))).toHaveLength(

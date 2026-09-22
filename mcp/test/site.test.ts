@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { httpSiteApi, SiteError } from "../src/site";
+import { httpSiteApi, SiteError, VERSION } from "../src/site";
 
 function response(status: number, body: unknown = {}) {
   return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -37,7 +37,7 @@ describe("httpSiteApi", () => {
     const init = fetch.mock.calls[0]![1] as RequestInit;
     expect(init.method).toBe("POST");
     expect(init.body).toBe('{"a":1}');
-    expect((init.headers as Record<string, string>)["user-agent"]).toMatch(/^cambio-uruguay-mcp\/0\.2\.0/);
+    expect((init.headers as Record<string, string>)["user-agent"].startsWith(`cambio-uruguay-mcp/${VERSION}`)).toBe(true);
   });
 
   it("maps statuses to Spanish errors", async () => {

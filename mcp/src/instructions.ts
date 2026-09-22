@@ -28,6 +28,11 @@ const BY_TOOLSET: Record<Toolset, string[]> = {
     "Productos — search_products busca en celulares, sillas, hogar (38 categorías) y movilidad eléctrica; plan_home_setup presupuesta equipar una casa; check_online_store da señales de una tienda (nunca un veredicto); supermarket_prices da precios oficiales del SIPC.",
     "Mostrá el precio más bajo con vendedor y link y la banda típica; si conviene usado, decilo con el ahorro.",
   ],
+  sitio: [
+    "Sitio — para cualquier pregunta sobre lo que cubre cambio-uruguay.com (impuestos, aduana y compras en el exterior, tarjetas y bancos, préstamos y deudas, sueldo y BPS, alquilar, consumo) o para saber a qué página ir: search_site primero y, si el pasaje no alcanza, read_page de la mejor página.",
+    "Respondé con lo que dicen esos textos y citá la URL de cada dato. Si el sitio no lo cubre, decilo; si agregás conocimiento general, aclaralo. Si la búsqueda no trae nada, reintentá con las palabras que usaría una guía («franquicia», «aguinaldo», «garantía»).",
+    "Las cifras de los textos son del día en que se leyó cada página (viene la fecha): para cotizaciones de hoy usá las tools de cambio y para avisos las de alquileres, autos o productos. site_sections da el menú del sitio.",
+  ],
 };
 
 export function serverInstructions(toolsets: readonly Toolset[]): string {

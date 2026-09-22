@@ -243,7 +243,11 @@ let openAiTools: OpenAiTool[] = []
 let geminiHistory: GeminiContent[] = []
 let puterHistory: OpenAiMessage[] = []
 
-const suggestions = AI_PROMPT_EXAMPLES.filter((_, i) => [0, 2, 4, 6].includes(i)).map(e => e.text)
+// One question about the site first: it is what the assistant does that a directory filter cannot.
+const suggestions = [
+  AI_PROMPT_EXAMPLES.find(e => e.vertical === 'sitio'),
+  ...AI_PROMPT_EXAMPLES.filter((_, i) => [0, 4, 6].includes(i)),
+].flatMap(e => (e ? [e.text] : []))
 const connectionLabel = computed(() =>
   provider.value === 'puter'
     ? `Conectado${puterName.value ? ` como ${puterName.value}` : ''} · ${model.value}`

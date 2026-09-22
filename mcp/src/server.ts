@@ -9,11 +9,12 @@ import { registerExchange } from "./register/exchange.js";
 import { registerProducts } from "./register/products.js";
 import { registerCarPrompts, registerProductPrompts, registerRentalPrompts } from "./register/prompts.js";
 import { registerRentals } from "./register/rentals.js";
+import { registerSite } from "./register/sitio.js";
 import { httpSiteApi, VERSION, type SiteApi } from "./site.js";
 import { TOOLSETS, type Toolset } from "./toolsets.js";
 
 export interface BuildOptions {
-  /** Upstream for rentals, cars and products; defaults to the public site. */
+  /** Upstream for rentals, cars, products and the site search; defaults to the public site. */
   site?: SiteApi;
   /** Which toolsets to expose; defaults to all of them. */
   toolsets?: readonly Toolset[];
@@ -38,5 +39,6 @@ export function buildServer(api: CambioApi, options: BuildOptions = {}): McpServ
     registerProducts(server, site);
     registerProductPrompts(server);
   }
+  if (site && toolsets.includes("sitio")) registerSite(server, site);
   return server;
 }

@@ -8,7 +8,7 @@
 
 import { toQuery, type QueryValue } from "./format.js";
 
-export const VERSION = "0.2.0";
+export const VERSION = "0.3.0";
 export const DEFAULT_SITE_BASE_URL = "https://cambio-uruguay.com";
 
 export interface SiteRequestOptions {

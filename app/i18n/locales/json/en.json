@@ -1538,6 +1538,8 @@
     "empty": "No results found for “{q}”.",
     "didYouMean": "Did you mean…?",
     "seeAll": "See all results",
+    "askAi": "Ask the AI: “{q}”",
+    "askAiEmpty": "Not here? Ask the AI",
     "browseSitemap": "Browse the sitemap",
     "resultsFor": "Results for “{q}”",
     "pageTitle": "Search Cambio Uruguay",

@@ -47,6 +47,7 @@ describe("toolsets", () => {
     expect(toolsetsFromUrl("/mcp")).toEqual([...TOOLSETS]);
     expect(toolsetsFromUrl("/mcp/")).toEqual([...TOOLSETS]);
     expect(toolsetsFromUrl("/mcp/alquileres")).toEqual(["alquileres"]);
+    expect(toolsetsFromUrl("/mcp/sitio")).toEqual(["sitio"]);
     expect(toolsetsFromUrl("/mcp?toolsets=autos,productos")).toEqual(["autos", "productos"]);
     expect(toolsetsFromUrl("/mcp/nope")).toBeNull();
     expect(toolsetsFromUrl("/other")).toBeNull();

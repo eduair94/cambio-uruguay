@@ -13,6 +13,7 @@ import { listDirectories, searchProducts } from "../dist/products/search.js";
 import { planHomeSetup } from "../dist/products/home.js";
 import { checkOnlineStore } from "../dist/products/stores.js";
 import { supermarketPrices } from "../dist/products/groceries.js";
+import { readPage, searchSite, siteSections } from "../dist/sitio/site.js";
 
 const site = httpSiteApi(process.env.SITE_BASE_URL || undefined);
 let failures = 0;
@@ -67,6 +68,10 @@ await run("search_products phones", () => searchProducts(site, { vertical: "celu
 await run("plan_home_setup", () => planHomeSetup(site, { level: "minima", have: ["heladera", "colchón"] }));
 await run("check_online_store", () => checkOnlineStore(site, { name: "temu" }));
 await run("supermarket_prices", () => supermarketPrices(site, { text: "aceite", department: "Montevideo", limit: 3 }));
+await run("search_site", () => searchSite(site, { query: "cuanto puedo traer por courier sin pagar impuestos" }));
+await run("search_site navigation", () => searchSite(site, { query: "alquileres" }));
+await run("read_page", () => readPage(site, { page: "https://cambio-uruguay.com/alquilar-en-uruguay" }));
+await run("site_sections", () => siteSections(site));
 
 console.log(failures ? `\n${failures} failure(s)` : "\nall green");
 process.exit(failures ? 1 : 0);

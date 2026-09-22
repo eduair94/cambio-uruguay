@@ -11,13 +11,14 @@
 
     <div class="text-overline text-medium-emphasis mb-2">Asistente con IA · gratis</div>
     <h1 class="text-h5 text-md-h4 font-weight-bold mb-3">
-      Un asistente que busca alquiler, auto o productos por vos
+      Un asistente que conoce todo el sitio y busca por vos
     </h1>
     <p class="text-body-1 mb-4" style="max-width: 68ch">
-      Contale lo que necesitás como se lo dirías a alguien: presupuesto, barrio, si tenés mascota,
-      dónde trabajás. El asistente busca en las viviendas, los autos y los precios que relevamos
-      cada día y te responde con una lista corta y los links a cada aviso. Tocás «Empezar», entrás
-      con tu cuenta de Google, Microsoft o Apple, y listo.
+      Preguntale como se lo preguntarías a alguien: cuánto podés traer por courier, cómo se calcula
+      el aguinaldo, dónde conviene cambiar dólares hoy, o que te busque un alquiler, un auto o el
+      precio de algo. Responde con lo que publica cambio-uruguay.com —guías, herramientas,
+      cotizaciones y los avisos que relevamos cada día— y te deja el link a cada página. Tocás
+      «Empezar», entrás con tu cuenta de Google, Microsoft o Apple, y listo.
     </p>
 
     <VAlert type="info" variant="tonal" density="comfortable" class="mb-6 on-dark">
@@ -83,6 +84,10 @@ const FAQ = [
     a: 'Nada de la conversación. El buscador sólo recibe lo que el asistente le pide para cada búsqueda (por ejemplo barrio, presupuesto o la dirección del trabajo para medir distancias) y no lo guarda.',
   },
   {
+    q: '¿De dónde saca las respuestas?',
+    a: 'De cambio-uruguay.com: el texto de sus unas 3.300 páginas (guías, herramientas, glosario y fichas), las cotizaciones del día y los directorios de alquileres, autos y productos. Las páginas se releen cada noche y cada respuesta trae el link a la página de donde sale, para que la verifiques. Si el sitio no cubre algo, te lo dice.',
+  },
+  {
     q: '¿Qué pasa con lo que escribo?',
     a: 'Pasa por Puter y por el proveedor del modelo para generar la respuesta, según sus propias políticas. Para buscar alcanza con barrio, presupuesto y requisitos: evitá datos sensibles.',
   },
@@ -97,13 +102,13 @@ const FAQ = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/asistente-ia'
-const title = 'Asistente con IA: alquiler, autos y precios'
+const title = 'Asistente con IA: dólar, guías y alquileres'
 const description =
-  'Chateá gratis: entrás con Google y un asistente busca alquileres, autos usados y precios en Uruguay y te responde con los links a cada aviso.'
+  'Chateá gratis con un asistente que conoce todo cambio-uruguay.com: cotizaciones, guías, alquileres, autos y precios, con el link a cada página.'
 
 defineOgImageComponent('Cambio', {
   title: 'Asistente con IA',
-  subtitle: 'Alquileres, autos y precios de Uruguay: entrás con Google y preguntás',
+  subtitle: 'Todo cambio-uruguay.com en un chat: entrás con Google y preguntás',
   tag: 'IA gratis',
 })
 

@@ -1,7 +1,8 @@
 // Toolsets let a client load only the part it needs: /mcp exposes everything,
-// /mcp/alquileres only the rental tools, and so on (stdio: MCP_TOOLSETS=a,b).
+// /mcp/alquileres only the rental tools, /mcp/sitio the whole-site search, and so on
+// (stdio: MCP_TOOLSETS=a,b).
 
-export const TOOLSETS = ["cambio", "alquileres", "autos", "productos"] as const;
+export const TOOLSETS = ["cambio", "alquileres", "autos", "productos", "sitio"] as const;
 export type Toolset = (typeof TOOLSETS)[number];
 
 const isToolset = (value: string): value is Toolset => (TOOLSETS as readonly string[]).includes(value);

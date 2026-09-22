@@ -1,18 +1,19 @@
 ---
 name: buscador-uruguay
-description: Busca alquileres, oportunidades inmobiliarias, autos usados y precios de productos en Uruguay con los datos de cambio-uruguay.com. Usala cuando alguien quiera alquilar (presupuesto, barrio, garantía, mascotas, cerca del trabajo o la facultad), saber si un alquiler o un auto está caro, comparar barrios, comprar un auto usado, equipar una casa, revisar una tienda online o comparar precios de supermercado en Uruguay.
+description: Busca alquileres, oportunidades inmobiliarias, autos usados y precios de productos en Uruguay con los datos de cambio-uruguay.com. Usala cuando alguien quiera alquilar (presupuesto, barrio, garantía, mascotas, cerca del trabajo o la facultad), saber si un alquiler o un auto está caro, comparar barrios, comprar un auto usado, equipar una casa, revisar una tienda online o comparar precios de supermercado en Uruguay, y para cualquier pregunta sobre lo que publica cambio-uruguay.com (impuestos, aduana y compras en el exterior, tarjetas, bancos, préstamos, sueldo y BPS) o a qué página del sitio ir.
 ---
 
-# Buscador Uruguay: alquileres, autos y productos
+# Buscador Uruguay: alquileres, autos, productos y todo el sitio
 
 Datos públicos de cambio-uruguay.com, actualizados a diario: ~57.000 viviendas en alquiler (5 portales),
 ~19.000 autos usados (10 fuentes), celulares, sillas, 38 categorías de hogar, movilidad eléctrica,
-tiendas online y precios oficiales de supermercado.
+tiendas online y precios oficiales de supermercado. Además, el texto de las ~3.300 páginas del sitio
+(guías, herramientas, glosario, fichas) para responder preguntas generales citando la página.
 
 ## Cómo acceder a los datos
 
 1. **Con el MCP conectado** (tools `search_rentals`, `rank_rentals_for_household`, …): usalas directamente.
-   URL: `https://mcp.cambio-uruguay.com/mcp` (o `/mcp/alquileres`, `/mcp/autos`, `/mcp/productos`).
+   URL: `https://mcp.cambio-uruguay.com/mcp` (o `/mcp/alquileres`, `/mcp/autos`, `/mcp/productos`, `/mcp/sitio`).
 2. **Sin MCP pero con acceso web/HTTP** (Claude Code, agentes con fetch): llamá la API pública.
    Endpoints, parámetros y ejemplos en `references/api-http.md`.
 3. **Sin ninguna de las dos**: explicá cómo conectar el MCP (https://cambio-uruguay.com/buscar-con-ia)
@@ -44,6 +45,8 @@ tiendas online y precios oficiales de supermercado.
 | "Heladera / celular / silla más barata" | `search_products` |
 | "¿Es confiable esta tienda?" | `check_online_store` (señales, nunca veredicto) |
 | "¿Qué súper es más barato en mi zona?" | `supermarket_prices` |
+| "¿Cuánto puedo traer por courier?" / "¿Cómo se calcula el aguinaldo?" | `search_site` → `read_page` |
+| "¿Dónde está en el sitio…?" / "¿Qué tiene el sitio?" | `search_site` / `site_sections` |
 
 Detalle por vertical: `references/alquileres.md`, `references/autos.md`, `references/productos.md`.
 
@@ -56,6 +59,8 @@ Detalle por vertical: `references/alquileres.md`, `references/autos.md`, `refere
 - **Topes de alquiler en pesos.** Si la persona habla en dólares, convertí (o usá la tool `convert`).
 - **Riesgo de un auto = lo que el vendedor declara**, con su frase. Que no declare nada no prueba nada.
 - **Tiendas: señales con fecha, nunca "confiable" o "estafa".**
+- **Preguntas generales: lo que dice el sitio, con la URL.** Las cifras de esos textos son del día en que se
+  leyó la página (viene la fecha); para la cotización de hoy usá las tools de cambio. Si el sitio no lo cubre, decilo.
 - **No inventes** teléfonos, disponibilidad, estado del inmueble/auto ni datos que las tools no devuelven.
 - **Privacidad**: ingresos y direcciones sólo se usan para rankear; no los repitas innecesariamente.
 - Si una tool falla por límite (429), esperá un minuto; la primera consulta del ranking por hogar puede

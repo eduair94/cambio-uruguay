@@ -6,6 +6,7 @@ import { CAR_TOOLS } from "../src/register/cars";
 import { EXCHANGE_TOOLS } from "../src/register/exchange";
 import { PRODUCT_TOOLS } from "../src/register/products";
 import { RENTAL_TOOLS } from "../src/register/rentals";
+import { SITE_TOOLS } from "../src/register/sitio";
 import { buildServer } from "../src/server";
 import { SiteError } from "../src/site";
 import type { Toolset } from "../src/toolsets";
@@ -33,11 +34,11 @@ async function connect(toolsets?: Toolset[], routes: Record<string, unknown> = {
 const names = async (client: Client) => (await client.listTools()).tools.map((t) => t.name).sort();
 
 describe("buildServer", () => {
-  it("exposes every toolset by default (26 tools)", async () => {
+  it("exposes every toolset by default (29 tools)", async () => {
     const client = await connect();
-    const all = [...EXCHANGE_TOOLS, ...RENTAL_TOOLS, ...CAR_TOOLS, ...PRODUCT_TOOLS].sort();
+    const all = [...EXCHANGE_TOOLS, ...RENTAL_TOOLS, ...CAR_TOOLS, ...PRODUCT_TOOLS, ...SITE_TOOLS].sort();
     expect(await names(client)).toEqual(all);
-    expect(all).toHaveLength(26);
+    expect(all).toHaveLength(29);
     const prompts = (await client.listPrompts()).prompts.map((p) => p.name).sort();
     expect(prompts).toEqual(["analizar-dolar-hoy", "buscar-alquiler", "buscar-auto-usado", "comparar-barrios", "equipar-casa", "evaluar-auto", "evaluar-aviso-alquiler"]);
     expect(client.getInstructions()).toContain("rank_rentals_for_household");
@@ -50,6 +51,10 @@ describe("buildServer", () => {
     expect(await names(await connect(["autos"]))).toEqual([...CAR_TOOLS].sort());
     expect(await names(await connect(["productos"]))).toEqual([...PRODUCT_TOOLS].sort());
     expect(await names(await connect(["cambio"]))).toEqual([...EXCHANGE_TOOLS].sort());
+    const sitio = await connect(["sitio"]);
+    expect(await names(sitio)).toEqual([...SITE_TOOLS].sort());
+    expect(sitio.getInstructions()).toContain("search_site");
+    expect(sitio.getInstructions()).not.toContain("rank_rentals_for_household");
   });
 
   it("marks site tools read-only", async () => {
