@@ -73,12 +73,14 @@ describe("changeFromSeries", () => {
 
 describe("rankChanges", () => {
   it("ordena por magnitud y topea por vendedor", () => {
+    // El nombre público es lo que cuenta para el tope, así que dos vendedores distintos tienen que
+    // tener nombres distintos en el fixture, no sólo claves distintas.
     const rows = [
-      change({ id: "a", sellerKey: "auto", pct: -5 }),
-      change({ id: "b", sellerKey: "auto", pct: -30 }),
-      change({ id: "c", sellerKey: "auto", pct: -20 }),
-      change({ id: "d", sellerKey: "auto", pct: -12 }),
-      change({ id: "e", sellerKey: "otra", pct: -8 }),
+      change({ id: "a", sellerKey: "auto", sellerName: "Automotora", pct: -5 }),
+      change({ id: "b", sellerKey: "auto", sellerName: "Automotora", pct: -30 }),
+      change({ id: "c", sellerKey: "auto", sellerName: "Automotora", pct: -20 }),
+      change({ id: "d", sellerKey: "auto", sellerName: "Automotora", pct: -12 }),
+      change({ id: "e", sellerKey: "otra", sellerName: "Otra automotora", pct: -8 }),
     ];
     const ranked = rankChanges(rows, { perSeller: 3, perVertical: 25 });
     expect(ranked.map(row => row.id)).toEqual(["b", "c", "d", "e"]);
@@ -86,15 +88,19 @@ describe("rankChanges", () => {
 
   it("topea por vertical", () => {
     const rows = Array.from({ length: 30 }, (_, index) =>
-      change({ id: `id-${index}`, sellerKey: `vendedor-${index}`, pct: -(index + 1) })
+      change({ id: `id-${index}`, sellerKey: `vendedor-${index}`, sellerName: `Vendedor ${index}`, pct: -(index + 1) })
     );
     expect(rankChanges(rows, { perSeller: 3, perVertical: 5 })).toHaveLength(5);
   });
 
   it("cada vertical tiene su propio tope", () => {
     const rows = [
-      ...Array.from({ length: 4 }, (_, index) => change({ vertical: "equipar", id: `e${index}`, sellerKey: `v${index}` })),
-      ...Array.from({ length: 4 }, (_, index) => change({ vertical: "autos", id: `a${index}`, sellerKey: `w${index}` })),
+      ...Array.from({ length: 4 }, (_, index) =>
+        change({ vertical: "equipar", id: `e${index}`, sellerKey: `v${index}`, sellerName: `Vendedor ${index}` })
+      ),
+      ...Array.from({ length: 4 }, (_, index) =>
+        change({ vertical: "autos", id: `a${index}`, sellerKey: `w${index}`, sellerName: `Automotora ${index}` })
+      ),
     ];
     const ranked = rankChanges(rows, { perSeller: 3, perVertical: 2 });
     expect(ranked.filter(row => row.vertical === "equipar")).toHaveLength(2);
@@ -110,6 +116,20 @@ describe("rankChanges", () => {
     expect(rankChanges(rows, { perSeller: 3, perVertical: 25 })).toHaveLength(3);
   });
 
+  it("dos claves con el mismo nombre público comparten un solo cupo", () => {
+    // DIMM en celulares tiene su propia tienda (`dimm`) y su cuenta de Mercado Libre (`ml:n:dimm`):
+    // con el tope por clave publicaba seis filas seguidas con el mismo nombre (medido 2026-09-22).
+    const rows = [
+      ...Array.from({ length: 3 }, (_, index) =>
+        change({ vertical: "celulares", id: `tienda-${index}`, sellerKey: "dimm", sellerName: "DIMM", pct: -(index + 10) })
+      ),
+      ...Array.from({ length: 3 }, (_, index) =>
+        change({ vertical: "celulares", id: `ml-${index}`, sellerKey: "ml:n:dimm", sellerName: "DIMM", pct: -(index + 20) })
+      ),
+    ];
+    expect(rankChanges(rows, { perSeller: 3, perVertical: 25 })).toHaveLength(3);
+  });
+
   it("un aviso sin vendedor no consume el cupo de otro", () => {
     const rows = Array.from({ length: 5 }, (_, index) =>
       change({ id: `sin-${index}`, sellerKey: null, sellerName: null, pct: -(index + 1) })
@@ -118,7 +138,10 @@ describe("rankChanges", () => {
   });
 
   it("el orden no depende del orden de entrada", () => {
-    const rows = [change({ id: "a", sellerKey: "x", pct: -10 }), change({ id: "b", sellerKey: "y", pct: -10 })];
+    const rows = [
+      change({ id: "a", sellerKey: "x", sellerName: "Uno", pct: -10 }),
+      change({ id: "b", sellerKey: "y", sellerName: "Dos", pct: -10 }),
+    ];
     expect(rankChanges([...rows].reverse(), { perSeller: 3, perVertical: 25 }).map(row => row.id)).toEqual(["a", "b"]);
   });
 });

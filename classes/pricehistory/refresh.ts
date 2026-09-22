@@ -171,7 +171,10 @@ async function resolveAutos(series: readonly PriceHistorySeries[]): Promise<Pric
   for (const chunk of chunks([...byKey.keys()], LOOKUP_CHUNK)) {
     const rows = await appConnection()
       .collection("carcatalog")
-      .find({ key: { $in: chunk } }, { projection: { _id: 0, key: 1, title: 1, sellerName: 1 } })
+      // `dealerName`, no `sellerName`: el catálogo público de autos nombra así a la automotora, y un
+      // aviso de particular simplemente no lo trae (medido el 2026-09-22, cuando las 25 filas de autos
+      // salieron sin vendedor y el tope de 3 por anunciante no aplicaba a ninguna).
+      .find({ key: { $in: chunk } }, { projection: { _id: 0, key: 1, title: 1, dealerName: 1 } })
       .toArray();
     for (const row of rows) {
       const found = byKey.get(String(row.key));
@@ -180,7 +183,7 @@ async function resolveAutos(series: readonly PriceHistorySeries[]): Promise<Pric
         ...found,
         title: row.title,
         url: `/autos-usados-uruguay/${row.key}`,
-        sellerName: typeof row.sellerName === "string" ? row.sellerName : found.sellerName,
+        sellerName: typeof row.dealerName === "string" && row.dealerName ? row.dealerName : found.sellerName,
       });
     }
   }
