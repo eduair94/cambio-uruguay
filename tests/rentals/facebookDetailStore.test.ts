@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { RentalFacebookDetailDocument } from "../../classes/models/RentalFacebookDetail";
 import {
   facebookDetailUpdate,
+  neighborhoodFromZoneLabel,
   pointContradictsBarrio,
   prioritizeDetailTargets,
   type DetailTarget,
@@ -68,6 +69,14 @@ describe("facebookDetailUpdate", () => {
     expect(facebookDetailUpdate(row({}, { source: "infocasas" }), detail())).toBeNull();
     expect(facebookDetailUpdate(row({}, { listingId: "facebook:2" }), detail())).toBeNull();
     expect(facebookDetailUpdate(row({}, { identity: undefined }), detail())).toBeNull();
+  });
+});
+
+describe("neighborhoodFromZoneLabel", () => {
+  it("names a corner's area by the first part of its INE label, and nothing outside Montevideo", () => {
+    expect(neighborhoodFromZoneLabel("Parque Batlle, Villa Dolores")).toBe("Parque Batlle");
+    expect(neighborhoodFromZoneLabel("Cerrito")).toBe("Cerrito");
+    expect(neighborhoodFromZoneLabel(null)).toBe("");
   });
 });
 

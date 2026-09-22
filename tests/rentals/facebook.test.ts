@@ -62,6 +62,9 @@ describe("Facebook partial coverage and source-owned location", () => {
     expect(silent).toMatchObject({ neighborhood: "", latitude: null });
     expect(silent).not.toHaveProperty("details");
     expect(silent).not.toHaveProperty("description");
+    // A corner's area, derived by the detail job, names a barrio the text did not.
+    expect(toRawRental({ ...advert("5", "Montevideo, Uruguay"), title: "Alquilo apartamento" }, "montevideo", { description: "Sobre Juan Arteaga y José Revuelta", pinCity: "Montevideo", latitude: -34.858, longitude: -56.172, neighborhood: "Cerrito" }))
+      .toMatchObject({ neighborhood: "Cerrito", latitude: -34.858 });
     // The pin's city fills a department the card lacked, never more.
     expect(toRawRental({ ...advert("3", null), title: "Alquiler 1 dormitorio en Centro" }, "montevideo", { description: "", pinCity: "Montevideo", latitude: null, longitude: null }))
       .toMatchObject({ department: "Montevideo", neighborhood: "Centro" });

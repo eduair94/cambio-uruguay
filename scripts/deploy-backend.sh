@@ -75,6 +75,13 @@ log "Pulling latest main…"
 git -C "$REPO_DIR" checkout -- package-lock.json 2>/dev/null || true
 git -C "$REPO_DIR" pull --ff-only origin main
 
+# Bash keeps reading THIS script from the inode it opened, so everything above ran from the
+# pre-pull copy — including the OTHER_APPS list. A pm2 app added in the very commit being
+# deployed was therefore not in the list until the NEXT deploy (currency-rentals-detail,
+# 2026-09-22, had to be started by hand). Re-read the list from the file the pull just wrote.
+# shellcheck disable=SC1090
+source <(grep -m1 '^OTHER_APPS=(' "$REPO_DIR/scripts/deploy-backend.sh")
+
 log "Installing deps (no-audit)…"
 npm install --no-audit --no-fund
 

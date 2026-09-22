@@ -21,7 +21,7 @@ import { areaLocator } from "./classes/propertyzones/geo";
 import { INE_DISPLAY_NAMES } from "./classes/propertyzones/names";
 import { loadOfficialPropertyZoneGeometry } from "./classes/propertyzones/sources/geometry";
 import { addressCandidates, fbRentalDetailFromTexts, locateFacebookRental } from "./classes/rentals/facebookDetail";
-import { applyFacebookDetails, facebookDetailTargets, pointContradictsBarrio, saveFacebookDetails } from "./classes/rentals/facebookDetailStore";
+import { applyFacebookDetails, facebookDetailTargets, neighborhoodFromZoneLabel, pointContradictsBarrio, saveFacebookDetails } from "./classes/rentals/facebookDetailStore";
 import { geocodeCandidates } from "./classes/rentals/facebookGeocode";
 
 const number = (name: string, fallback: number): number => {
@@ -70,18 +70,28 @@ async function main(): Promise<void> {
       summary.geocodeTried += geo.tried;
       let point = geo.point;
       let note: string | null = null;
+      let neighborhood = located.neighborhood;
       if (point) {
         const zone = locate(point.longitude, point.latitude);
-        if (pointContradictsBarrio(located.neighborhood, zone ? INE_DISPLAY_NAMES[zone] ?? null : null)) {
-          note = `punto en ${INE_DISPLAY_NAMES[zone!]} contradice el barrio nombrado (${located.neighborhood}); se descarta`;
+        const label = zone ? INE_DISPLAY_NAMES[zone] ?? null : null;
+        if (pointContradictsBarrio(neighborhood, label)) {
+          note = `punto en ${label} contradice el barrio nombrado (${neighborhood}); se descarta`;
           summary.contradicted++;
           point = null;
-        } else summary.geocoded++;
+        } else {
+          summary.geocoded++;
+          // A corner but no barrio in the text: the area the corner is in names it.
+          if (!neighborhood && label) {
+            neighborhood = neighborhoodFromZoneLabel(label);
+            note = `barrio por coordenada (INE ${label})`;
+            summary.namedBarrio++;
+          }
+        }
       }
       rows.push({
         listingId: target.listingId, id: target.id, readAt, found: detail.found, title: detail.title, description: detail.description,
         pinCity: detail.pinCity, pinPostal: detail.pinPostal, pinLat: detail.pinLat, pinLng: detail.pinLng, isLive: detail.isLive,
-        neighborhood: located.neighborhood, department: located.department,
+        neighborhood, department: located.department,
         latitude: point?.latitude ?? null, longitude: point?.longitude ?? null,
         candidates, geocodeQuery: geo.query, geocodeAddress: point?.address ?? null, geocodeTried: geo.tried, note,
       });

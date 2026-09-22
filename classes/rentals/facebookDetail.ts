@@ -178,11 +178,19 @@ export interface FacebookRentalLocation {
  * Title first, then description, both against the card's department; the pin's city only fills
  * a department the card did not bring. A cue-only word ("Centro") never names a department.
  */
-export function locateFacebookRental(input: { title: string; description?: string | null; department: string; cardNeighborhood?: string; pinCity?: string | null }): FacebookRentalLocation {
+export function locateFacebookRental(input: {
+  title: string;
+  description?: string | null;
+  department: string;
+  cardNeighborhood?: string;
+  pinCity?: string | null;
+  /** What the detail job derived when the text named nothing (the INE area of a geocoded corner). */
+  detailNeighborhood?: string | null;
+}): FacebookRentalLocation {
   const department = input.department || canonicalDepartment(input.pinCity || "");
   const named = neighborhoodFromText(input.title, department) || (input.description ? neighborhoodFromText(input.description, department) : null);
   return {
-    neighborhood: named?.neighborhood || input.cardNeighborhood || "",
+    neighborhood: named?.neighborhood || input.detailNeighborhood || input.cardNeighborhood || "",
     department: department || named?.department || "",
   };
 }

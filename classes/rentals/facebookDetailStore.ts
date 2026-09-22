@@ -98,6 +98,15 @@ const INE_PARTS = new Set(Object.values(INE_DISPLAY_NAMES).flatMap(label => labe
  * (an official area we can test against) and the point sits in a DIFFERENT INE barrio. An
  * advertised name outside the INE list ("Goes", "Pocitos Nuevo") cannot contradict anything.
  */
+/**
+ * The barrio to show for a point when the text named none: the INE area the point is in, by its
+ * first label part ("Parque Batlle" out of "Parque Batlle, Villa Dolores"), which is a name the
+ * portals actually advertise. Only Montevideo has these areas; elsewhere the answer is "".
+ */
+export function neighborhoodFromZoneLabel(zoneLabel: string | null): string {
+  return (zoneLabel || "").split(", ")[0]?.trim() || "";
+}
+
 export function pointContradictsBarrio(neighborhood: string, zoneLabel: string | null): boolean {
   const name = flatten(neighborhood);
   if (!name || !INE_PARTS.has(name) || !zoneLabel) return false;

@@ -92,6 +92,10 @@ describe("locateFacebookRental", () => {
       .toEqual({ neighborhood: "Piedras Blancas", department: "Montevideo" });
     expect(locateFacebookRental({ title: "Alquiler apartamento", description: "", department: "Canelones", cardNeighborhood: "Ciudad De La Costa" }))
       .toEqual({ neighborhood: "Ciudad De La Costa", department: "Canelones" });
+    // The area of a geocoded corner outranks the card's town, never the text.
+    expect(locateFacebookRental({ title: "Alquiler apartamento", description: "esquina Juan Arteaga y José Revuelta", department: "Montevideo", detailNeighborhood: "Cerrito" }))
+      .toEqual({ neighborhood: "Cerrito", department: "Montevideo" });
+    expect(locateFacebookRental({ title: "Alquiler en Buceo", description: "", department: "Montevideo", detailNeighborhood: "Cerrito" }).neighborhood).toBe("Buceo");
   });
 
   it("fills a missing department from the pin's city, and from a unique locality, never from a generic word", () => {

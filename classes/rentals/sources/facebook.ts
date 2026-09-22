@@ -60,7 +60,7 @@ interface FbResponse {
 }
 
 /** What the item page said, when currency-rentals-detail already read it (see facebookDetail.ts). */
-export type FbRentalDetailInput = Pick<RentalFacebookDetailDocument, "description" | "pinCity" | "latitude" | "longitude">;
+export type FbRentalDetailInput = Pick<RentalFacebookDetailDocument, "description" | "pinCity" | "latitude" | "longitude"> & { neighborhood?: string | null };
 
 export function toRawRental(item: FbListing, _locationHint: string, detail?: FbRentalDetailInput | null): RawRental | null {
   const id = String(item.id || "").trim();
@@ -89,6 +89,7 @@ export function toRawRental(item: FbListing, _locationHint: string, detail?: FbR
   const description = detail?.description || "";
   const { neighborhood, department } = locateFacebookRental({
     title, description, department: location.department, cardNeighborhood: location.neighborhood, pinCity: detail?.pinCity ?? null,
+    detailNeighborhood: detail?.neighborhood ?? null,
   });
   const attributes = parseAttributes(description ? [title, description] : [title]);
   // A coordinate only ever comes from a corner or numbered address the seller wrote, geocoded and
