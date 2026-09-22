@@ -74,12 +74,16 @@ describe("detailTargets", () => {
     const old = car("206", 12_000, {}, detail("LT 1.0", null));
     const fresh = car("207", 12_000, {}, detail("LT 1.0", {}));
     const unread = car("208", 12_000);
-    const targets = detailTargets([...peers(), old, fresh, unread], { now: NOW, usdUyu: 40 });
+    // Barata contra su modelo-año y sin versión, pero ya leída: vuelve por la tabla y nada más.
+    const cheapOld = car("209", 8_000, { transmission: null }, detail(null, null));
+    const targets = detailTargets([...peers(), old, fresh, unread, cheapOld], { now: NOW, usdUyu: 40 });
     expect(targets.find(target => target.key === "ml-206")).toMatchObject({ reason: "specs" });
+    expect(targets.find(target => target.key === "ml-209")).toMatchObject({ reason: "specs" });
     expect(targets.find(target => target.key === "ml-207")).toBeUndefined();
     const order = targets.map(target => target.key);
     expect(order.indexOf("ml-208")).toBeLessThan(order.indexOf("ml-206"));
-    expect(queueSummary(targets)).toMatchObject({ specs: 1 });
+    expect(order.indexOf("ml-208")).toBeLessThan(order.indexOf("ml-209"));
+    expect(queueSummary(targets)).toMatchObject({ specs: 2, cheap: 0 });
   });
   it("only queues pages the reader can actually read", () => {
     const web = car("205", 12_000, { source: "carone", permalink: "https://carone.com.uy/chevrolet-onix-717444" });

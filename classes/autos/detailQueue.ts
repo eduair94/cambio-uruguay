@@ -102,7 +102,11 @@ export function detailTargets(docs: readonly StoredCar[], options: DetailQueueOp
     // Un auto con el doble de kilómetros que sus hermanos no está barato: está usado.
     const kmComparable = !group?.km || km === null || km <= group.km * (1 + KM_TOLERANCE_RATIO) + KM_TOLERANCE_MIN;
     const cheap = !!group && price > 0 && 1 - price / group.price >= cheapGap && kmComparable;
-    const reason: DetailTarget["reason"] = cheap ? "cheap" : blocksCohort(doc) ? "blocking" : upgrade ? "specs" : "new";
+    // Una ficha que ya leímos y sólo vuelve por la tabla va SIEMPRE última, aunque el auto esté
+    // barato o le falte la versión: su descripción y su versión ya están, y lo que esperan atrás
+    // son avisos nunca leídos. Medido el 2026-09-22 al desplegar: clasificarla antes puso 2.461
+    // relecturas por delante de todo aviso nuevo, unas seis horas de cola.
+    const reason: DetailTarget["reason"] = upgrade ? "specs" : cheap ? "cheap" : blocksCohort(doc) ? "blocking" : "new";
     targets.push({
       key: doc.key,
       permalink: doc.listing.permalink,
