@@ -2888,6 +2888,30 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El costo de la garantía en sí, que las tres páginas de alquiler de al lado daban por
+        // sabido. Va acá porque la pregunta llega junto con "sin recibo" y "en clearing", y porque
+        // el ángulo propio es el mismo de /elecciones-bps-2026: los topes del Estado están en UR y
+        // ninguna fuente oficial los publica en pesos; el sitio tiene la UR del día.
+        to: '/garantia-de-alquiler-uruguay',
+        labelKey: 'nav.garantiaAlquiler',
+        icon: 'mdi-shield-home-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'garantia de alquiler uruguay',
+          'cuanto cuesta la garantia de alquiler',
+          'garantia de alquiler anda',
+          'fondo de garantia de alquiler',
+          'garantia de alquiler contaduria general de la nacion',
+          'garantia de alquiler para jovenes',
+          'alquilar sin garantia uruguay',
+          'ley 19889 arrendamiento sin garantia',
+          'requisitos garantia de alquiler anv',
+          'tope de alquiler fga ur',
+        ],
+      },
+      {
         to: '/deuda-de-gastos-comunes-uruguay',
         labelKey: 'nav.gastosComunes',
         icon: 'mdi-home-percent-outline',

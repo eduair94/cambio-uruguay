@@ -169,6 +169,22 @@
         "/equipar-casa-uruguay/productos/"
       ],
       "hypothesis": "Una pagina de avisos por categoria (heladera, lavarropas, colchon...) con nuevo y usado de ML, Marketplace y tiendas gana la cola 'heladera usada uruguay' / marca+modelo que la comparativa de precios sola no cubre; la ficha rankea, el hub enlaza."
+    },
+    {
+      "id": "garantia-de-alquiler-tope-en-pesos",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/garantia-de-alquiler-uruguay"
+      ],
+      "queries": [
+        "garantia de alquiler uruguay",
+        "cuanto cuesta la garantia de alquiler",
+        "garantia de alquiler anda",
+        "fondo de garantia de alquiler",
+        "garantia de alquiler para jovenes",
+        "alquilar sin garantia uruguay"
+      ],
+      "hypothesis": "Las tres paginas de alquiler del sitio dan por sabido lo que cuesta la garantia, que es justo la pregunta con la que llega la gente. El angulo propio es el mismo de /elecciones-bps-2026: la ANV y el MVOT publican los topes en UR (18, 21 y 22,5) y ninguna fuente oficial los muestra en pesos, mientras el sitio tiene la UR del dia. Un snippet con el tope convertido deberia ganarle al SERP institucional, que es ilegible y no trae ningun numero. La ventana es enero, cuando pica alquiler."
     }
   ]
 }
