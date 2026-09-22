@@ -1,3 +1,6 @@
+// Sin sufijo de método a propósito: con `.get.ts` un HEAD (curl -I, algunos verificadores de
+// enlaces) devolvía 404 (medido en producción el 22/9/2026); un handler sin sufijo responde
+// GET y HEAD con el mismo cuerpo/cabeceras.
 import { guides } from '../../utils/guides'
 import { LLMS_SITE_URL, renderLlmsFull } from '../../utils/llmsFull'
 
