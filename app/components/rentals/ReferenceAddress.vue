@@ -115,12 +115,9 @@
       <template v-else-if="refining">{{ t('addressCompleteStreet') }}</template>
     </p>
     <p class="rental-reference-address__source">
-      <a
-        href="https://www.gub.uy/infraestructura-datos-espaciales/tramites-y-servicios/servicios/servicio-direcciones-geograficas"
-        target="_blank"
-        rel="noopener"
-        >{{ t('addressSource') }}</a
-      >
+      <a href="https://www.google.com/maps" target="_blank" rel="noopener">{{
+        t('addressSource')
+      }}</a>
     </p>
   </div>
 </template>

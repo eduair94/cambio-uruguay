@@ -163,7 +163,7 @@ async function setup(page: Page, dismissConsent = true) {
     state.geocodes.push(new URL(route.request().url()))
     return route.fulfill({
       json: {
-        source: 'IDE Uruguay',
+        source: 'Google Maps',
         items: [
           {
             label: address,

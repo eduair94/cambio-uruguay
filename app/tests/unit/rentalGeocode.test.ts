@@ -1,374 +1,315 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createRentalGeocoder,
+  fetchGoogle,
+  GEOCODER_URL,
+  type GeocoderFetch,
+} from '../../server/utils/rentalGeocode'
 import {
   normalizeRentalGeocodeQuery,
-  rentalGeocodeItems,
-  rentalGeocodeUniqueScope,
-  rentalGeocodeMatchesScope,
+  rentalGeocodeLabel,
+  splitRentalPredictions,
 } from '../../utils/rentalGeocode'
-import { createRentalGeocoder } from '../../server/utils/rentalGeocode'
 
-// Public IDE v1 response validated on 2026-09-07; no private geocoding key is required.
-const crossing = {
-  type: 'ESQUINA',
-  address: 'HOCQUART ESQ DEMOCRACIA, MONTEVIDEO, MONTEVIDEO',
-  idCalle: 8294,
-  idCalleEsq: 9738,
-  lat: -34.88974051732336,
-  lng: -56.1768286423287,
-  state: 1,
-  stateMsg: '',
-  source: 'ide_uy',
-  ranking: 30,
-  idLocalidad: 3180,
-  idDepartamento: 1,
+const ok = (key: 'predictions' | 'results', rows: unknown[]) => ({ status: 'OK', [key]: rows })
+const place = (lat: number, lng: number, formatted_address: string, extra: object = {}) => ({
+  formatted_address,
+  geometry: { location: { lat, lng } },
+  ...extra,
+})
+
+/** A fake proxy: routes by path, records every call. */
+function fakeGoogle(routes: Record<string, (params: Record<string, string>) => unknown>) {
+  const calls: Array<{ path: string; params: Record<string, string> }> = []
+  const fetchJson: GeocoderFetch = async (path, params) => {
+    calls.push({ path, params })
+    const route = routes[path]
+    if (!route) throw new Error(`no route ${path}`)
+    const value = route(params)
+    if (value instanceof Error) throw value
+    return value
+  }
+  return { fetchJson, calls }
 }
 
-const street = {
-  type: 'CALLE',
-  id: '8294',
-  nomVia: 'HOCQUART',
-  address: 'HOCQUART, MONTEVIDEO, MONTEVIDEO',
-  idCalle: 8294,
-  idLocalidad: 3180,
-  idDepartamento: 1,
-  localidad: 'MONTEVIDEO',
-  departamento: 'MONTEVIDEO',
-  state: 1,
-  stateMsg: '',
-  lat: 0,
-  lng: 0,
-}
+afterEach(() => {
+  vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+})
 
-describe('address input and exact IDE candidates', () => {
-  it('accepts the requested Hocquart y Democracia crossing with a conservative alternate query', () => {
-    expect(
-      normalizeRentalGeocodeQuery({ q: ' Hocquart y Democracia ', department: 'Montevideo' })
-    ).toEqual({
-      text: 'Hocquart y Democracia, Montevideo',
-      intersection: true,
-      fallback: 'Hocquart esquina Democracia, Montevideo',
-    })
-    expect(
-      normalizeRentalGeocodeQuery({
-        q: 'Hocquart y Democracia, Montevideo',
-        department: 'Montevideo',
-      })?.text
-    ).toBe('Hocquart y Democracia, Montevideo')
-    expect(
-      normalizeRentalGeocodeQuery({ q: 'Hocquart esquina Democracia', department: 'Montevideo' })
-    ).toEqual({
-      text: 'Hocquart esquina Democracia, Montevideo',
-      intersection: true,
-      fallback: null,
+describe('address input', () => {
+  it('validates length, characters and the explicit autocomplete mode', () => {
+    expect(normalizeRentalGeocodeQuery({ q: 'abc' })).toBeNull()
+    expect(normalizeRentalGeocodeQuery({ q: 'Rivera <b>2500' })).toBeNull()
+    expect(normalizeRentalGeocodeQuery({ q: 'Rivera 2500', autocomplete: 'yes' })).toBeNull()
+    expect(normalizeRentalGeocodeQuery({ q: '  Rivera   2500 ', autocomplete: '1' })).toEqual({
+      text: 'Rivera 2500',
+      autocomplete: true,
     })
   })
 
-  it('preserves Treinta y Tres as a street name while recognizing another intersection separator', () => {
-    expect(normalizeRentalGeocodeQuery({ q: 'Treinta y Tres 1234' })).toMatchObject({
-      text: 'Treinta y Tres 1234',
-      intersection: false,
-      fallback: null,
-    })
+  it('adds the department once', () => {
+    expect(normalizeRentalGeocodeQuery({ q: 'Rivera 2500', department: 'Montevideo' })?.text).toBe(
+      'Rivera 2500, Montevideo'
+    )
     expect(
-      normalizeRentalGeocodeQuery({ q: 'Treinta y Tres y Buenos Aires', department: 'Montevideo' })
-        ?.fallback
-    ).toBe('Treinta y Tres esquina Buenos Aires, Montevideo')
+      normalizeRentalGeocodeQuery({ q: 'Rivera 2500, montevideo', department: 'Montevideo' })?.text
+    ).toBe('Rivera 2500, montevideo')
   })
+})
 
+describe('Google labels', () => {
   it.each([
-    {},
-    { q: ['Hocquart'] },
-    { q: 1234 },
-    { q: 'ab' },
-    { q: 'A'.repeat(181) },
-    { q: 'Hocquart', department: ['Montevideo'] },
-    { q: 'Hocquart', department: 'M'.repeat(41) },
-    { q: '<script>dirección</script>' },
-    { q: 'Hocquart\u0000Democracia' },
-  ])('rejects malformed query %j', input => {
-    expect(normalizeRentalGeocodeQuery(input)).toBeNull()
+    [
+      'Avenida 18 de Julio, Montevideo Departamento de Montevideo, Uruguay',
+      'Avenida 18 de Julio, Montevideo',
+    ],
+    [
+      'Av. 18 de Julio 1234, 11100 Montevideo, Departamento de Montevideo, Uruguay',
+      'Av. 18 de Julio 1234, Montevideo',
+    ],
+    [
+      '18 de Julio, Barros Blancos Departamento de Canelones, Uruguay',
+      '18 de Julio, Barros Blancos, Canelones',
+    ],
+    ['Tres Cruces, Montevideo Departamento de Montevideo, Uruguay', 'Tres Cruces, Montevideo'],
+  ])('%s → %s', (raw, clean) => {
+    expect(rentalGeocodeLabel(raw)).toBe(clean)
+  })
+})
+
+describe('predictions', () => {
+  it('keeps precise places as points and bare streets as refinements', () => {
+    const { points, streets } = splitRentalPredictions([
+      {
+        description: 'Avenida 18 de Julio, Montevideo Departamento de Montevideo, Uruguay',
+        place_id: 'r',
+        types: ['route', 'geocode'],
+      },
+      {
+        description: 'Sarandí 690, Montevideo Departamento de Montevideo, Uruguay',
+        place_id: 'a',
+        types: ['street_address', 'geocode'],
+      },
+      {
+        description:
+          'Facultad de Ingeniería - UdelaR, Montevideo Departamento de Montevideo, Uruguay',
+        place_id: 'f',
+        types: ['establishment'],
+      },
+      {
+        description: 'Pocitos, Montevideo Departamento de Montevideo, Uruguay',
+        place_id: 'p',
+        types: ['neighborhood', 'geocode'],
+      },
+      { description: 'bad', types: ['route'] },
+    ])
+    expect(points.map(p => p.placeId)).toEqual(['a', 'f', 'p'])
+    expect(streets).toEqual([
+      { label: 'Avenida 18 de Julio, Montevideo', query: 'Avenida 18 de Julio, Montevideo' },
+    ])
+  })
+})
+
+describe('lookup through the Google proxy', () => {
+  it('autocompletes with points located by place_id and street refinements', async () => {
+    const { fetchJson, calls } = fakeGoogle({
+      '/placeAutocomplete': () =>
+        ok('predictions', [
+          {
+            description:
+              'Facultad de Ingeniería - UdelaR, Montevideo Departamento de Montevideo, Uruguay',
+            place_id: 'f',
+            types: ['establishment'],
+          },
+          {
+            description:
+              'Avenida Julio Herrera y Reissig, Montevideo Departamento de Montevideo, Uruguay',
+            place_id: 'r',
+            types: ['route'],
+          },
+        ]),
+      '/geocode': p =>
+        ok(
+          'results',
+          p.place_id === 'f' ? [place(-34.91827, -56.16627, 'Av. Julio Herrera y Reissig 565')] : []
+        ),
+    })
+    const out = await createRentalGeocoder(fetchJson)(
+      { q: 'Facultad de Ing', autocomplete: '1' },
+      'c'
+    )
+    expect(calls[0]).toMatchObject({
+      path: '/placeAutocomplete',
+      params: { input: 'Facultad de Ing', components: 'country:uy', language: 'es' },
+    })
+    expect(calls[1]).toMatchObject({ path: '/geocode', params: { place_id: 'f' } })
+    expect(out).toEqual({
+      source: 'Google Maps',
+      items: [
+        { label: 'Facultad de Ingeniería - UdelaR, Montevideo', lat: -34.91827, lng: -56.16627 },
+      ],
+      refinements: [
+        {
+          label: 'Avenida Julio Herrera y Reissig, Montevideo',
+          query: 'Avenida Julio Herrera y Reissig, Montevideo',
+        },
+      ],
+    })
   })
 
-  it('returns only safe full labels and rounded coordinates, never provider internals', () => {
-    const query = normalizeRentalGeocodeQuery({ q: 'Hocquart y Democracia' })!
-    expect(rentalGeocodeItems([crossing, crossing], query)).toEqual([
+  it('geocodes a full address Google does not predict', async () => {
+    const { fetchJson, calls } = fakeGoogle({
+      '/placeAutocomplete': () => ({ status: 'ZERO_RESULTS', predictions: [] }),
+      '/geocode': () =>
+        ok('results', [
+          place(
+            -34.9068,
+            -56.2023,
+            'Rincón 500, 11000 Montevideo, Departamento de Montevideo, Uruguay'
+          ),
+        ]),
+    })
+    const out = await createRentalGeocoder(fetchJson)({ q: 'Rincón 500', autocomplete: '1' }, 'c')
+    expect(calls.map(c => c.path)).toEqual(['/placeAutocomplete', '/geocode'])
+    expect(out.items).toEqual([{ label: 'Rincón 500, Montevideo', lat: -34.9068, lng: -56.2023 }])
+  })
+
+  it('submitted text: geocoding first, place search for names, nothing outside Uruguay', async () => {
+    const { fetchJson, calls } = fakeGoogle({
+      '/geocode': () => ({ status: 'ZERO_RESULTS', results: [] }),
+      '/textSearch': () =>
+        ok('results', [
+          place(-34.903, -56.136, 'Av. Luis Alberto de Herrera 1290, Montevideo', {
+            name: 'Montevideo Shopping',
+          }),
+          place(40.42, -3.7, 'Madrid, España', { name: 'Otro' }),
+        ]),
+    })
+    const out = await createRentalGeocoder(fetchJson)({ q: 'Montevideo Shopping' }, 'c')
+    expect(calls.map(c => c.path)).toEqual(['/geocode', '/textSearch'])
+    expect(out.items).toEqual([
       {
-        label: crossing.address,
-        lat: -34.88974,
-        lng: -56.17683,
+        label: 'Montevideo Shopping, Av. Luis Alberto de Herrera 1290, Montevideo',
+        lat: -34.903,
+        lng: -56.136,
       },
     ])
   })
 
-  it('never turns a street centroid, locality, nearby door or unknown state into the requested crossing', () => {
-    const query = normalizeRentalGeocodeQuery({ q: 'Hocquart y Democracia' })!
-    expect(
-      rentalGeocodeItems(
-        [
-          ...['CALLE', 'LOCALIDAD', 'CALLEyPORTAL', 'POI'].map(type => ({ ...crossing, type })),
-          ...[undefined, 0, 2, '1'].map(state => ({ ...crossing, state })),
-          ...['Aproximado', 'GEOMETRIA DE CALLE NO ENCONTRADA', undefined].map(stateMsg => ({
-            ...crossing,
-            stateMsg,
-          })),
-          ...[null, NaN, Infinity, '-34.89', 0, -40].map(lat => ({ ...crossing, lat })),
-          { ...crossing, address: '<script>x</script>' },
-          { ...crossing, address: '' },
-        ],
-        query
-      )
-    ).toEqual([])
-    const address = normalizeRentalGeocodeQuery({ q: 'Hocquart 1234' })!
-    expect(rentalGeocodeItems([{ ...crossing, type: 'CALLEyPORTAL' }], address)).toHaveLength(1)
-    expect(rentalGeocodeItems([{ ...crossing, type: 'CALLE' }], address)).toHaveLength(0)
-  })
-})
-
-describe('unscoped intersections use native street evidence', () => {
-  const input = { q: 'Hocquart y Democracia' }
-  const query = normalizeRentalGeocodeQuery(input)!
-
-  it('finds bare Hocquart y Democracia in exactly two calls without assuming a city or using a street centroid', async () => {
-    const fetch = vi.fn().mockResolvedValueOnce([street]).mockResolvedValueOnce([crossing])
-    const lookup = createRentalGeocoder(fetch)
-    expect(await lookup(input, 'client')).toEqual({
-      source: 'IDE Uruguay',
-      items: [{ label: crossing.address, lat: -34.88974, lng: -56.17683 }],
-    })
-    expect(fetch.mock.calls.map(([text]) => text)).toEqual([
-      'Hocquart',
-      'HOCQUART esquina Democracia, MONTEVIDEO, MONTEVIDEO',
+  it('tolerates one failed place lookup but not all of them', async () => {
+    const two = ok('predictions', [
+      { description: 'A 1, Montevideo', place_id: 'a', types: ['street_address'] },
+      { description: 'B 2, Montevideo', place_id: 'b', types: ['street_address'] },
     ])
-    expect(await lookup(input, 'client')).toHaveProperty('items.0.lat', -34.88974)
-    expect(fetch).toHaveBeenCalledTimes(2)
-  })
-
-  it('discovers scope only for a bare intersection, preserving supplied department/locality and numbered street names', () => {
-    expect(query.unscopedIntersection).toEqual({
-      firstStreet: 'Hocquart',
-      secondStreet: 'Democracia',
+    const partial = fakeGoogle({
+      '/placeAutocomplete': () => two,
+      '/geocode': p =>
+        p.place_id === 'a' ? new Error('down') : ok('results', [place(-34.9, -56.18, 'B 2')]),
     })
-    expect(
-      normalizeRentalGeocodeQuery({ q: 'Hocquart esq. Democracia' })?.unscopedIntersection
-    ).toEqual(query.unscopedIntersection)
-    expect(
-      normalizeRentalGeocodeQuery({ q: 'Treinta y Tres y Buenos Aires' })?.unscopedIntersection
-        ?.firstStreet
-    ).toBe('Treinta y Tres')
-    expect(
-      normalizeRentalGeocodeQuery({ q: 'Treinta y Tres 1234' })?.unscopedIntersection
-    ).toBeUndefined()
-    expect(
-      normalizeRentalGeocodeQuery({ q: 'Hocquart y Democracia, Montevideo' })?.unscopedIntersection
-    ).toBeUndefined()
-    expect(
-      normalizeRentalGeocodeQuery({ ...input, department: 'Canelones' })?.unscopedIntersection
-    ).toBeUndefined()
-  })
-
-  it.each(
-    [
-      [],
-      [null],
-      [{ ...street, nomVia: 'HOCQUART NORTE' }],
-      [{ ...street, nomVia: 'HOQUART' }],
-      [{ ...street, type: 'LOCALIDAD', lat: -34.9, lng: -56.17 }],
-      [{ ...street, state: 2, stateMsg: 'Aproximado' }],
-      [{ ...street, idCalle: '8294' }],
-      [{ ...street, idLocalidad: 0 }],
-      [{ ...street, idDepartamento: null }],
-      [{ ...street, localidad: '' }],
-      [{ ...street, departamento: undefined }],
-      [street, { ...street, idCalle: 9999 }],
-      [street, { ...street, idLocalidad: 9999, localidad: 'OTRA LOCALIDAD' }],
-      [street, { ...street, idDepartamento: 19, departamento: 'CANELONES' }],
-      [street, { ...street, idDepartamento: null }],
-      [
-        street,
-        {
-          ...street,
-          idDepartamento: 19,
-          departamento: 'CANELONES',
-          state: 2,
-          stateMsg: 'Aproximado',
-        },
-      ],
-      [street, { ...street, idDepartamento: 19, departamento: 'CANELONES', state: undefined }],
-      [street, { ...street, idDepartamento: 19, departamento: 'CANELONES', stateMsg: undefined }],
-      [street, street, street, street, street],
-    ].map(raw => ({ raw }))
-  )(
-    'declines ambiguous, truncated or inexact scope $raw without a second request',
-    async ({ raw }) => {
-      expect(rentalGeocodeUniqueScope(raw, query)).toBeNull()
-      const fetch = vi.fn().mockResolvedValue(raw)
-      expect(await createRentalGeocoder(fetch)(input, 'client')).toEqual({
-        source: 'IDE Uruguay',
-        items: [],
-      })
-      expect(fetch).toHaveBeenCalledTimes(1)
-    }
-  )
-
-  it('accepts accent/case/spacing normalization while retaining unique native scope', () => {
-    expect(rentalGeocodeUniqueScope([{ ...street, nomVia: ' HÓCQUART ' }], query)).not.toBeNull()
-    expect(rentalGeocodeUniqueScope([street, street], query)).not.toBeNull()
-  })
-
-  it.each([
-    { ...crossing, idCalle: 9999 },
-    { ...crossing, idCalleEsq: 0 },
-    { ...crossing, idCalleEsq: crossing.idCalle },
-    { ...crossing, idCalle: '8294' },
-    { ...crossing, idLocalidad: 9999 },
-    { ...crossing, idDepartamento: 19 },
-    { ...crossing, address: 'HOCQUART ESQ DEFENSA, MONTEVIDEO, MONTEVIDEO' },
-    { ...crossing, address: 'DEMOCRACIA ESQ HOCQUART, MONTEVIDEO, MONTEVIDEO' },
-    { ...crossing, type: 'CALLE' },
-    { ...crossing, state: 2 },
-    { ...crossing, stateMsg: 'Aproximado' },
-    { ...crossing, lat: 0, lng: 0 },
-  ])('does not substitute an inconsistent or approximate second response %j', async row => {
-    const fetch = vi.fn().mockResolvedValueOnce([street]).mockResolvedValueOnce([row])
-    expect(await createRentalGeocoder(fetch)(input, 'client')).toEqual({
-      source: 'IDE Uruguay',
-      items: [],
-    })
-    expect(fetch).toHaveBeenCalledTimes(2)
-  })
-
-  it('accepts reversed native street orientation only when the corresponding labels also reverse', () => {
-    const scope = rentalGeocodeUniqueScope([street], query)!
-    expect(
-      rentalGeocodeMatchesScope(
-        {
-          ...crossing,
-          idCalle: 9738,
-          idCalleEsq: 8294,
-          address: 'DEMOCRACIA ESQ HOCQUART, MONTEVIDEO, MONTEVIDEO',
-        },
-        scope
-      )
-    ).toBe(true)
-    const sameName = rentalGeocodeUniqueScope(
-      [street],
-      normalizeRentalGeocodeQuery({ q: 'Hocquart y Hocquart' })!
-    )!
-    expect(rentalGeocodeMatchesScope(crossing, sameName)).toBe(false)
-  })
-})
-
-describe('bounded official address search', () => {
-  it('falls back once to esquina and caches the result for repeated searches', async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce([{ ...crossing, type: 'CALLE' }])
-      .mockResolvedValue([crossing])
-    const lookup = createRentalGeocoder(fetch)
-    const input = { q: 'Hocquart y Democracia', department: 'Montevideo' }
-    const result = await lookup(input, 'client')
-    expect(result).toEqual({
-      source: 'IDE Uruguay',
-      items: [{ label: crossing.address, lat: -34.88974, lng: -56.17683 }],
-    })
-    expect(fetch.mock.calls.map(([query]) => query)).toEqual([
-      'Hocquart y Democracia, Montevideo',
-      'Hocquart esquina Democracia, Montevideo',
-    ])
-    expect(await lookup(input, 'client')).toEqual(result)
-    expect(fetch).toHaveBeenCalledTimes(2)
-  })
-
-  it('uses the original answer when it already identifies the crossing', async () => {
-    const fetch = vi.fn().mockResolvedValue([crossing])
-    expect(
-      (
-        await createRentalGeocoder(fetch)(
-          { q: 'Hocquart y Democracia', department: 'Montevideo' },
-          'client'
-        )
-      ).items
-    ).toHaveLength(1)
-    expect(fetch).toHaveBeenCalledTimes(1)
-  })
-
-  it('coalesces identical concurrent searches, and bounds unrelated pending work', async () => {
-    let resolve!: (value: unknown) => void
-    const fetch = vi.fn(
-      () =>
-        new Promise(done => {
-          resolve = done
-        })
+    const out = await createRentalGeocoder(partial.fetchJson)(
+      { q: 'calle x', autocomplete: '1' },
+      'c'
     )
-    const lookup = createRentalGeocoder(fetch)
-    const first = lookup({ q: 'Hocquart esquina Democracia' }, 'a')
-    const duplicate = lookup({ q: 'Hocquart esquina Democracia' }, 'b')
-    expect(fetch).toHaveBeenCalledTimes(1)
-    resolve([crossing])
-    expect(await duplicate).toEqual(await first)
-
-    const holds: Array<(value: unknown) => void> = []
-    const busy = createRentalGeocoder(() => new Promise(done => holds.push(done)))
-    const pending = [1, 2, 3, 4].map(i => busy({ q: `Dirección ${i}` }, `client-${i}`))
-    await expect(busy({ q: 'Dirección 5' }, 'other')).rejects.toMatchObject({ statusCode: 429 })
-    holds.forEach(done => done([]))
-    await Promise.all(pending)
+    expect(out.items.map(i => i.label)).toEqual(['B 2, Montevideo'])
+    const report = vi.fn()
+    const down = fakeGoogle({
+      '/placeAutocomplete': () => two,
+      '/geocode': () => new Error('PRIVATE_ADDRESS'),
+    })
+    await expect(
+      createRentalGeocoder(
+        down.fetchJson,
+        Date.now,
+        report
+      )({ q: 'calle x', autocomplete: '1' }, 'c')
+    ).rejects.toMatchObject({ statusCode: 503 })
+    expect(report.mock.calls[0]![0]).toMatchObject({ stage: 'details', failure: 'internal' })
   })
+})
+
+describe('bounds, cache and failures', () => {
+  const empty = () =>
+    fakeGoogle({
+      '/geocode': () => ({ status: 'ZERO_RESULTS', results: [] }),
+      '/textSearch': () => ({ status: 'ZERO_RESULTS', results: [] }),
+    })
 
   it('limits per-client and global traffic, then permits the next time window', async () => {
     let clock = 1000
-    const fetch = vi.fn().mockResolvedValue([])
-    const lookup = createRentalGeocoder(fetch, () => clock)
-    for (let i = 0; i < 60; i++) await lookup({ q: 'Dirección 0' }, 'same-client')
-    await expect(lookup({ q: 'Dirección 1' }, 'same-client')).rejects.toMatchObject({
-      statusCode: 429,
-    })
-    for (let i = 1; i < 60; i++) await lookup({ q: `Dirección ${i}` }, `client-${i}`)
-    await expect(lookup({ q: 'Dirección 61' }, 'new-client')).rejects.toMatchObject({
-      statusCode: 429,
-    })
-    expect(fetch).toHaveBeenCalledTimes(60)
+    const { fetchJson } = empty()
+    const lookup = createRentalGeocoder(fetchJson, () => clock)
+    for (let i = 0; i < 60; i++) await lookup({ q: 'Dirección 0' }, 'same')
+    await expect(lookup({ q: 'Dirección 1' }, 'same')).rejects.toMatchObject({ statusCode: 429 })
+    for (let i = 1; i < 120; i++) await lookup({ q: `Dirección ${i}` }, `client-${i}`)
+    await expect(lookup({ q: 'Dirección 500' }, 'new')).rejects.toMatchObject({ statusCode: 429 })
     clock += 60_001
-    await expect(lookup({ q: 'Dirección 61' }, 'same-client')).resolves.toEqual({
+    await expect(lookup({ q: 'Dirección 500' }, 'same')).resolves.toEqual({
       items: [],
-      source: 'IDE Uruguay',
+      source: 'Google Maps',
     })
   })
 
-  it('bounds the cache and expires empty results sooner than successful ones', async () => {
-    let clock = 1000
-    const fetch = vi.fn().mockResolvedValue([])
-    const lookup = createRentalGeocoder(fetch, () => clock)
-    for (let i = 0; i < 129; i++) {
-      clock += 60_001
-      await lookup({ q: `Dirección ${i}` }, 'client')
+  it('coalesces identical concurrent searches and bounds unrelated pending work', async () => {
+    const holds: Array<() => void> = []
+    const fetchJson: GeocoderFetch = () =>
+      new Promise(done => holds.push(() => done({ status: 'ZERO_RESULTS', results: [] })))
+    const lookup = createRentalGeocoder(fetchJson)
+    const a = lookup({ q: 'Hocquart 1234' }, 'a')
+    const b = lookup({ q: 'Hocquart 1234' }, 'b')
+    expect(holds).toHaveLength(1)
+    const others = [1, 2, 3, 4, 5, 6, 7].map(i => lookup({ q: `Dirección ${i}` }, `c${i}`))
+    await expect(lookup({ q: 'Dirección 9' }, 'x')).rejects.toMatchObject({ statusCode: 429 })
+    while (holds.length) {
+      holds.shift()!()
+      await Promise.resolve()
+      await new Promise(r => setTimeout(r, 0))
     }
-    await lookup({ q: 'Dirección 0' }, 'client')
-    expect(fetch).toHaveBeenCalledTimes(130)
-    await lookup({ q: 'Dirección 0' }, 'client')
-    expect(fetch).toHaveBeenCalledTimes(130)
-    clock += 60_001
-    await lookup({ q: 'Dirección 0' }, 'client')
-    expect(fetch).toHaveBeenCalledTimes(131)
+    await Promise.all([a, b, ...others].map(p => p.catch(() => undefined)))
   })
 
-  it('reports provider failures and malformed responses as unavailable, then allows retry', async () => {
-    const fetch = vi
-      .fn()
-      .mockRejectedValueOnce(new Error('Timeout'))
-      .mockResolvedValueOnce({ error: 'broken' })
-      .mockResolvedValueOnce([])
-    const lookup = createRentalGeocoder(fetch)
-    await expect(lookup({ q: 'Hocquart 1234' }, 'client')).rejects.toMatchObject({
-      statusCode: 503,
+  it('expires empty results sooner than successful ones', async () => {
+    let clock = 1000
+    const { fetchJson, calls } = empty()
+    const lookup = createRentalGeocoder(fetchJson, () => clock)
+    await lookup({ q: 'Nada 123' }, 'c')
+    await lookup({ q: 'Nada 123' }, 'c')
+    expect(calls).toHaveLength(2)
+    clock += 60_001
+    await lookup({ q: 'Nada 123' }, 'c')
+    expect(calls).toHaveLength(4)
+  })
+
+  it('treats a refused answer as unavailable, never as no match, and reports no address', async () => {
+    const report = vi.fn()
+    const { fetchJson } = fakeGoogle({
+      '/geocode': () => ({ status: 'REQUEST_DENIED', error_message: 'PRIVATE_KEY' }),
     })
-    await expect(lookup({ q: 'Hocquart 1234' }, 'client')).rejects.toMatchObject({
-      statusCode: 503,
+    await expect(
+      createRentalGeocoder(fetchJson, () => 5, report)({ q: 'Hocquart 1234' }, 'PRIVATE_CLIENT')
+    ).rejects.toMatchObject({ statusCode: 503 })
+    expect(report).toHaveBeenCalledWith({
+      stage: 'query',
+      failure: 'invalid_response',
+      elapsedMs: 0,
     })
-    await expect(lookup({ q: 'Hocquart 1234' }, 'client')).resolves.toEqual({
-      source: 'IDE Uruguay',
-      items: [],
+    expect(JSON.stringify(report.mock.calls)).not.toMatch(/PRIVATE_|Hocquart|https?:/)
+    await expect(createRentalGeocoder(fetchJson)({ q: [] }, 'c')).rejects.toMatchObject({
+      statusCode: 400,
     })
-    await expect(lookup({ q: [] }, 'client')).rejects.toMatchObject({ statusCode: 400 })
+  })
+
+  it('calls the proxy with GET query parameters and classifies HTTP failures', async () => {
+    const fetch = vi.fn(
+      async () => new Response(JSON.stringify({ status: 'OK', results: [] }), { status: 200 })
+    )
+    vi.stubGlobal('fetch', fetch)
+    await fetchGoogle('/geocode', { address: 'Rincón 500' })
+    expect(String(fetch.mock.calls[0]![0])).toBe(`${GEOCODER_URL}/geocode?address=Rinc%C3%B3n+500`)
+    fetch.mockResolvedValueOnce(new Response('PRIVATE_BODY', { status: 502 }))
+    await expect(fetchGoogle('/geocode', { address: 'x' })).rejects.toMatchObject({
+      failure: 'upstream_http',
+      httpStatus: 502,
+    })
   })
 })

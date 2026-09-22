@@ -1,5 +1,5 @@
 // search_rentals + geocode_uy_address: the rental directory with every filter the
-// site offers, and address/place → coordinates (Google Maps, IDE Uruguay as fallback).
+// site offers, and address/place → coordinates (Google Maps; the site geocoder as fallback).
 
 import { fmt, money, siteUrl, type QueryValue } from "../format.js";
 import { UserInputError, type ToolOutput } from "../output.js";
@@ -156,7 +156,7 @@ export async function geocodeWithSource(site: SiteApi, input: GeocodeInput): Pro
   try {
     return { items: await googleGeocode(site, input), source: "Google Maps" };
   } catch {
-    return { items: await ideGeocode(site, input), source: "IDE Uruguay (geocodificador oficial)" };
+    return { items: await ideGeocode(site, input), source: "cambio-uruguay.com" };
   }
 }
 

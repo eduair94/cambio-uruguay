@@ -200,7 +200,7 @@ async function setup(page: Page, query = '') {
             lng: -56.1768286423287,
           },
         ],
-        source: 'IDE Uruguay',
+        source: 'Google Maps',
       },
     })
   })

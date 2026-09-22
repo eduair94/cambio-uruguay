@@ -94,7 +94,7 @@ export const rentalFitMessages = {
     mapError: 'No pudimos cargar el mapa. Podés buscar la dirección.',
     outside: 'Elegí un punto dentro de Uruguay.',
     placePrivacy:
-      'La búsqueda de direcciones consulta IDE Uruguay. El mapa usa OpenStreetMap. No necesitan tus ingresos.',
+      'La búsqueda de direcciones consulta Google Maps. El mapa usa OpenStreetMap. No necesitan tus ingresos.',
     housingTitle: '¿Qué vivienda buscan?',
     department: 'Departamento',
     allDepartments: 'Todo Uruguay',
@@ -289,7 +289,7 @@ export const rentalFitMessages = {
     mapError: 'The map could not load. You can search the address instead.',
     outside: 'Choose a point within Uruguay.',
     placePrivacy:
-      'Address searches use IDE Uruguay. The map uses OpenStreetMap. Neither needs your income.',
+      'Address searches use Google Maps. The map uses OpenStreetMap. Neither needs your income.',
     housingTitle: 'What home are you looking for?',
     department: 'Department',
     allDepartments: 'All Uruguay',
@@ -482,7 +482,7 @@ export const rentalFitMessages = {
     mapError: 'Não foi possível carregar o mapa. Você pode buscar o endereço.',
     outside: 'Escolha um ponto dentro do Uruguai.',
     placePrivacy:
-      'A busca de endereços usa IDE Uruguay. O mapa usa OpenStreetMap. Nenhum precisa da sua renda.',
+      'A busca de endereços usa Google Maps. O mapa usa OpenStreetMap. Nenhum precisa da sua renda.',
     housingTitle: 'Que moradia procuram?',
     department: 'Departamento',
     allDepartments: 'Todo o Uruguai',

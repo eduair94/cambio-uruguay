@@ -18,11 +18,11 @@ describe('rental address endpoint', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     getQuery.mockReturnValue({ q: 'Hocquart y Democracia', department: 'Montevideo' })
-    lookup.mockResolvedValue({ source: 'IDE Uruguay', items: [] })
+    lookup.mockResolvedValue({ source: 'Google Maps', items: [] })
   })
 
   it('passes submitted input to the bounded resolver and keeps addresses out of shared caching', async () => {
-    await expect(handler({} as any)).resolves.toEqual({ source: 'IDE Uruguay', items: [] })
+    await expect(handler({} as any)).resolves.toEqual({ source: 'Google Maps', items: [] })
     expect(lookup).toHaveBeenCalledWith(
       { q: 'Hocquart y Democracia', department: 'Montevideo' },
       'fixture-client'

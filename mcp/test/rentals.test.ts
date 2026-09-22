@@ -163,7 +163,7 @@ describe("geocoding fallbacks", () => {
     });
     const out = await geocodeAddress(site, { address: "Avenida Italia 2500" });
     expect(calls.slice(1).map((c) => c.query?.q)).toEqual(["Avenida Italia 2500", "Italia 2500"]);
-    expect(out.text).toContain("IDE Uruguay");
+    expect(out.text).toContain("Fuente: cambio-uruguay.com");
     expect(out.text).toContain("AV ITALIA 2500");
   });
 

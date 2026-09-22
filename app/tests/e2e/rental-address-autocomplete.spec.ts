@@ -52,7 +52,7 @@ async function setup(page: Page) {
             ? {
                 items,
                 refinements: refinement ? [{ label: streetLabel, query: streetLabel }] : [],
-                source: 'IDE Uruguay',
+                source: 'Google Maps',
               }
             : { statusCode: state.status },
       })
