@@ -910,3 +910,49 @@ aviso compatible, sin cambiar su fecha; una retirada explícita los limpia.
 
 Contrato completo, límites de frescura, fuentes corroboradas y comandos de actualización:
 [PROPERTY_ADVERTISERS.md](./PROPERTY_ADVERTISERS.md).
+
+## Higiene del índice — 22 de setiembre de 2026
+
+**Lo medido.** Las fichas `/alquileres/<slug>` son `index, follow` y 9.647 de ellas estaban en el
+sitemap, mientras Search Console mostraba ~40 con alguna impresión en 28 días. Es inflar el índice:
+Google reparte su presupuesto de rastreo entre miles de páginas que nadie busca, y el hub
+`/alquileres-uruguay` compite contra sus propias hijas vacías. La regla de corte ya estaba escrita
+en el plan de directorios (`docs/seo/2026-09-16-directorios-de-producto-plan.md` §8): a las 8
+semanas, una ficha con menos de 5 impresiones pasa a `noindex` y el hub se conserva.
+
+**La regla, exacta.** Una ficha con **56 o más días** desde que NOSOTROS la vimos por primera vez
+(`firstSeen` de la propiedad, no la fecha de publicación del portal: mide cuánto tiempo tuvo Google
+para rastrearla en este sitio) y con **menos de 5 impresiones en los últimos 56 días** (datos
+finales de Search Console) responde `noindex, follow`, conserva su canónica y sale del sitemap. Las
+fichas jóvenes no se juzgan: a menos de 8 semanas sus impresiones miden la cola del rastreo, no la
+demanda. El hub no se toca.
+
+**La lista la escribe el backend.** `currency-gsc` (`classes/gsc/indexAllowlist.ts`) hace una
+consulta más a Search Analytics —dimensión `page`, filtro `contains /alquileres/`, ventana de 56
+días, hasta 25.000 filas— y guarda UN documento en la APP DB `seoindexallowlists`
+(`{ family: 'alquileres', asOf, windowDays: 56, minImpressions: 5, urls, rowCount, complete }`):
+las rutas que SÍ tienen demanda. Los espejos `/en` y `/pt` que Search Console todavía recuerde se
+pliegan a la ruta española (el sujeto es la vivienda). Modelo en los dos lados
+(`classes/models/SeoIndexAllowlist.ts`, `app/server/models/SeoIndexAllowlist.ts`), con paridad
+vigilada por `tests/gsc/index_allowlist.test.ts`.
+
+**La ausencia nunca es un veredicto.** Cero filas, un error de la API, una respuesta que llegó al
+tope de filas (`complete: false`) o una lista que se achicó a menos del 30 % de la guardada (la
+misma guarda de "snapshot flaco" del panel) **no escriben nada** y conservan el documento anterior.
+Del lado del app (`app/utils/rentalIndexHygiene.ts`, `rentalListingIndexable`), un documento
+ausente, incompleto o con más de 14 días (`asOf`) vale "sin cambio": todo queda indexable, que es
+exactamente lo que había antes. La única forma de que una ficha baje a `noindex` es que sea vieja Y
+que una lista fresca y completa no la nombre. Una fecha de alta ilegible tampoco condena.
+
+**Una sola función para la página y el sitemap.** `GET /api/rentals/ficha/[key]` aplica
+`withRentalIndexHygiene` sobre la ficha ya armada (`seo.indexable = false` y
+`seo.reasons` suma `no_search_demand`; la página lo convierte en la meta robots como cualquier otra
+razón) y `loadRentalSitemapUrls` corta con la MISMA regla antes de armar el dossier. El app relee la
+lista una vez por hora por proceso (`app/server/utils/rentalIndexAllowlist.ts`), memorizando también
+el `null`.
+
+**Qué esperar.** Con la lista fresca, el sitemap de alquileres baja del orden de los 9.600 a las
+fichas jóvenes más las que Search Console vio; una ficha vieja sin impresiones responde
+`<meta name="robots" content="noindex, follow">` con su canónica intacta. Se mide por cobertura en
+Search Console (páginas indexadas de la familia), no por clics: por eso no lleva fila en
+`docs/seo/experiments.json`.

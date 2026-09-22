@@ -30,6 +30,7 @@ import { PriceEventSnapshotModel } from "../../classes/models/PriceEventSnapshot
 import { PhoneModelModel } from "../../classes/models/PhoneModel";
 import { PhoneMetaModel } from "../../classes/models/PhoneMeta";
 import { PriceChangeSnapshotModel } from "../../classes/models/PriceChangeSnapshot";
+import { SeoIndexAllowlistModel } from "../../classes/models/SeoIndexAllowlist";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -244,4 +245,13 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+
+  it("SeoIndexAllowlist declares exactly the app's top-level fields", () => {
+    // La lista blanca de indexación de las fichas de alquiler: un campo que el backend escriba y el
+    // app no declare nunca llega al lector, y acá el lector decide qué se desindexa.
+    expect(Object.keys(SeoIndexAllowlistModel.schema.obj).sort()).toEqual(
+      appFields(appModel("SeoIndexAllowlist")).sort()
+    );
+    expect(SeoIndexAllowlistModel.collection.name).toBe("seoindexallowlists");
+  });
 });

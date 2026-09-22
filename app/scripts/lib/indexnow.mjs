@@ -34,7 +34,9 @@ export const CHILD_SITEMAP_SUFFIX = 'es-ES.xml'
 export const INDEXNOW_ENABLED_VAR = 'INDEXNOW_ENABLED'
 /** El nombre del archivo de clave en `public/`: sólo hex minúsculas, 8–128, extensión .txt. */
 export const INDEXNOW_KEY_FILE_PATTERN = /^([0-9a-f]{8,128})\.txt$/
-const FETCH_TIMEOUT_MS = 20_000
+// 120 s porque el sitemap ES se genera en el momento (3.600+ URLs, ~5-20 s en el propio VPS) y el
+// primer dry-run desde el servidor abortó por timeout con el valor anterior (22/9/2026).
+const FETCH_TIMEOUT_MS = 120_000
 
 /**
  * Descubre la clave en el listado de `public/`: exactamente UN archivo `<hex>.txt` cuyo contenido

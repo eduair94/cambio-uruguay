@@ -489,6 +489,10 @@ useSeoMeta({
   twitterTitle: () => pageTitle.value,
   twitterDescription: () => description.value,
   twitterCard: 'summary_large_image',
+  // `seo.indexable` ya trae las tres razones para no indexar: calidad de la ficha, identidad
+  // ambigua y, desde setiembre de 2026, falta de demanda medida (`no_search_demand`, ver
+  // utils/rentalIndexHygiene.ts): una ficha con más de 8 semanas que Search Console no vio queda
+  // en `noindex, follow` con su canónica intacta, y el sitemap la omite por la misma regla.
   robots: () =>
     locale.value === 'es' && data.value?.seo.indexable && !error.value
       ? 'index, follow, max-image-preview:large'

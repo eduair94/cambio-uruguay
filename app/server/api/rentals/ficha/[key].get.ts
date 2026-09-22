@@ -3,6 +3,8 @@ import { RentalListingModel } from '../../../models/RentalListing'
 import { RentalMetaModel } from '../../../models/RentalMeta'
 import { connectDb } from '../../../utils/db'
 import { marketHistory, rentalAdvertId } from '../../../utils/priceHistory'
+import { loadRentalIndexAllowlist } from '../../../utils/rentalIndexAllowlist'
+import { withRentalIndexHygiene } from '../../../../utils/rentalIndexHygiene'
 
 import {
   annotateRentalAvailability,
@@ -65,6 +67,11 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse> => 
           ).collation(RENTAL_COLLATION)
         : []
       page = buildRentalPage(property, similar, usdUyu, otherOwners.length > 0, market)
+      // Higiene del índice (docs/app/RENTALS.md): una ficha con más de 8 semanas de vida y sin
+      // demanda medida en Search Console baja a `noindex, follow`. Es la MISMA función que aplica
+      // el sitemap, así la página y el sitemap nunca se contradicen; sin lista, o con una lista
+      // vencida, no cambia nada.
+      page = withRentalIndexHygiene(page, await loadRentalIndexAllowlist())
       page.property = annotateRentalAvailability(
         publicRentalAdvertisers(page.property),
         availability

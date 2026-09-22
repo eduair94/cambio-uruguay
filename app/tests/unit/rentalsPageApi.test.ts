@@ -23,6 +23,11 @@ vi.mock('../../server/utils/rentalAvailability', () => ({
   loadRentalAvailabilityIndex: async () => ({}),
   annotateRentalAvailability: (property: unknown) => property,
 }))
+// Sin lista de Search Console por defecto: la higiene del índice no cambia nada (ver el último test).
+let indexAllowlist: unknown = null
+vi.mock('../../server/utils/rentalIndexAllowlist', () => ({
+  loadRentalIndexAllowlist: () => Promise.resolve(indexAllowlist),
+}))
 vi.mock('../../server/utils/rentalPage', () => ({
   buildRentalPage,
   rentalPageEvidenceStages,
@@ -98,5 +103,30 @@ describe('canonical rental page API', () => {
     getRouterParam.mockReturnValue(' '.repeat(3))
     await expect(handler({} as any)).rejects.toMatchObject({ statusCode: 404 })
     expect(connectDb).not.toHaveBeenCalled()
+  })
+  it('sends an old dossier without measured search demand to noindex, keeping its canonical', async () => {
+    buildRentalPage.mockReturnValue({
+      canonicalPath: '/alquileres/canonical-key',
+      property: { key: 'canonical-key', offers: [], firstSeen: '2026-05-01' },
+      seo: { indexable: true, reasons: [], contentUpdatedAt: null },
+      similar: [],
+    })
+    indexAllowlist = {
+      asOf: new Date().toISOString().slice(0, 10),
+      windowDays: 56,
+      minImpressions: 5,
+      paths: new Set(['/alquileres/otra-con-demanda']),
+    }
+    try {
+      const page = await handler({} as any)
+      expect(page.canonicalPath).toBe('/alquileres/canonical-key')
+      expect(page.seo).toEqual({
+        indexable: false,
+        reasons: ['no_search_demand'],
+        contentUpdatedAt: null,
+      })
+    } finally {
+      indexAllowlist = null
+    }
   })
 })
