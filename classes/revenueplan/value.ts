@@ -60,6 +60,20 @@ export const PROVISIONAL_REVENUE_USD = 10;
 /** Separación entre el multiplicador medido y el del tramo a partir de la cual el tramo miente. */
 export const TIER_DRIFT = 3;
 
+/**
+ * Cuántas veces tiene que superar el RPM sólo-Uruguay al RPM del sitio para que el plan avise de
+ * vistas que no ven anuncios.
+ *
+ * Las dos lecturas comparten numerador (la plata la deja quien ve anuncios, y eso pasa casi todo
+ * en Uruguay) y difieren en el DENOMINADOR: el del sitio suma también las vistas automatizadas que
+ * no cargan ni una unidad. Con audiencia real, las dos cifras se separan por lo que pesa el
+ * tráfico del exterior — decenas por ciento, no un múltiplo. 1,5× queda por encima de esa
+ * diferencia legítima y muy por debajo de lo que produce un pico de robots, que multiplica el
+ * denominador por varias veces. Es una alerta, no un filtro: nada se excluye por esto
+ * (`docs/seo/adsense-growth-loop.md`: «No bloquear países por suposición»).
+ */
+export const UY_RPM_DIVERGENCE = 1.5;
+
 // ---------------------------------------------------------------------------------------------
 // Los tramos
 // ---------------------------------------------------------------------------------------------
@@ -235,6 +249,19 @@ const rpmToUsdPerClick = (rpm: number) => rpm / 1000;
 export interface ValueTable {
   /** RPM del sitio entero en la ventana de ingreso. */
   siteRpm: number;
+  /**
+   * RPM sólo sobre visitas desde Uruguay (`totalsUy` del snapshot). Lectura resistente al tráfico
+   * automatizado. NO ancla ningún multiplicador ni ordena nada: se publica al lado de `siteRpm` y
+   * alimenta la alerta `views-without-impressions`. 0 cuando el snapshot es anterior al campo.
+   */
+  siteRpmUy: number;
+  /** Porción de las vistas del sitio que vinieron de Uruguay, 0..1. Diagnóstico. */
+  uyShareOfViews: number;
+  /** Impresiones de anuncio por vista de página del sitio entero. Diagnóstico. */
+  impressionsPerView: number;
+  /** Vistas y impresiones del recorte uruguayo, para que la alerta exija muestra antes de hablar. */
+  uyViews: number;
+  uyAdImpressions: number;
   /** USD de un clic promedio del sitio. */
   siteUsdPerClick: number;
   /** True mientras el ingreso medido no alcance para llamar medición a nada. */
@@ -271,8 +298,17 @@ function blank(bucket: string, siteRpm: number): FamilyValue {
 export function buildValueTable(revenue: RevenueSnapshot | null): ValueTable {
   const measured = revenue && !revenue.pending;
   const siteRpm = measured ? revenue!.totals.rpm : 0;
+  // Misma compuerta que `siteRpm`: un snapshot pendiente no tiene lectura uruguaya que valga más
+  // que la del sitio. `totalsUy` es opcional de facto (documentos anteriores al 2026-09-22).
+  const uy = measured ? revenue!.totalsUy : undefined;
+  const siteViews = measured ? revenue!.totals.screenPageViews : 0;
   const table: ValueTable = {
     siteRpm,
+    siteRpmUy: uy?.rpm ?? 0,
+    uyShareOfViews: siteViews > 0 ? (uy?.screenPageViews ?? 0) / siteViews : 0,
+    impressionsPerView: siteViews > 0 ? revenue!.totals.adImpressions / siteViews : 0,
+    uyViews: uy?.screenPageViews ?? 0,
+    uyAdImpressions: uy?.adImpressions ?? 0,
     siteUsdPerClick: rpmToUsdPerClick(siteRpm),
     provisional: !measured || revenue!.totals.adRevenue < PROVISIONAL_REVENUE_USD,
     byBucket: new Map(),

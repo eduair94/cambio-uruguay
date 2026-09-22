@@ -51,6 +51,19 @@ export interface Ga4ReportRequest {
   keepEmptyRows?: boolean;
 }
 
+/**
+ * El único lugar del repo que conoce la forma de un `FilterExpression` de la Data API v1beta.
+ *
+ * Es el PRIMER filtro de dimensión que se manda desde acá (2026-09-22): hasta entonces todos los
+ * reportes eran "todo el tráfico" y se recortaba después, en memoria. `dimensionFilter` sigue
+ * tipado `any` en `Ga4ReportRequest` para no romper a nadie; este helper sólo cubre la igualdad
+ * exacta, que es lo único que hace falta hoy (un país). Referencia:
+ * https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/FilterExpression
+ */
+export const exactDimension = (fieldName: string, value: string) => ({
+  filter: { fieldName, stringFilter: { matchType: "EXACT" as const, value } },
+});
+
 export interface Ga4Report {
   dimensionHeaders?: { name: string }[];
   metricHeaders?: { name: string; type?: string }[];

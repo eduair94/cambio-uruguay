@@ -92,6 +92,7 @@ describe("falling-page attribution through the refresh", () => {
       key: "site", asOf: "2026-09-21", currency: "USD",
       range: { start: "2026-08-24", end: "2026-09-20" },
       totals: { adRevenue: 12, adImpressions: 1200, adClicks: 6, screenPageViews: 6000, sessions: 4000, rpm: 2 },
+      totalsUy: { adRevenue: 12, adImpressions: 1200, adClicks: 6, screenPageViews: 6000, sessions: 4000, rpm: 2 },
       families: [{
         bucket: "/historico/*", urls: 1, adRevenue: 8, adImpressions: 400, adClicks: 4,
         screenPageViews: 1000, rpm: 8, shareOfRevenue: 2 / 3,

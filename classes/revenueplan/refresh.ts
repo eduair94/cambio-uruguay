@@ -197,6 +197,7 @@ export async function refreshRevenuePlan(options: RefreshOptions = {}): Promise<
     revenueWindow: revenue?.range || { start: "", end: "" },
     currency: revenue?.currency || "USD",
     siteRpm: Math.round(table.siteRpm * 10000) / 10000,
+    siteRpmUy: Math.round(table.siteRpmUy * 10000) / 10000,
     siteUsdPerClick: Math.round(table.siteUsdPerClick * 1000000) / 1000000,
     revenuePending: table.siteRpm <= 0,
     totalUpsideUsd: totalUpside(actions),

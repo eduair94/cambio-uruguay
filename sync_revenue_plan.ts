@@ -62,7 +62,8 @@ async function main(): Promise<void> {
         `(${archiveDaysRead} días de archivo leídos).`
     );
     console.log(
-      `[revenue-plan] RPM del sitio ${snapshot.siteRpm.toFixed(3)} ${snapshot.currency}/1.000 vistas, ` +
+      `[revenue-plan] RPM del sitio ${snapshot.siteRpm.toFixed(3)} ${snapshot.currency}/1.000 vistas ` +
+        `(sólo Uruguay ${snapshot.siteRpmUy.toFixed(3)}, diagnóstico: no ordena), ` +
         `clic promedio ${snapshot.siteUsdPerClick.toFixed(6)} ${snapshot.currency}, ` +
         `techo estimado de la cola ${money(snapshot.totalUpsideUsd, snapshot.currency)} por 28 días.`
     );

@@ -8,6 +8,7 @@ import {
   TIER_DATO_VIVO,
   TIER_DIRECTORIO,
   TIER_OTRO,
+  UY_RPM_DIVERGENCE,
   buildValueTable,
   tierOf,
   valueOf,
@@ -20,6 +21,8 @@ const revenue = (over: Partial<RevenueSnapshot> = {}): RevenueSnapshot =>
     currency: "USD",
     range: { start: "2026-08-23", end: "2026-09-19" },
     totals: { adRevenue: 20, adImpressions: 9000, adClicks: 12, screenPageViews: 100000, sessions: 60000, rpm: 0.2 },
+    // Uruguay es el 60 % de las vistas y deja el 90 % de la plata: RPM 0,3 contra 0,2 del sitio.
+    totalsUy: { adRevenue: 18, adImpressions: 8500, adClicks: 11, screenPageViews: 60000, sessions: 36000, rpm: 0.3 },
     families: [],
     topPages: [],
     daily: [],
@@ -107,6 +110,42 @@ describe("buildValueTable", () => {
     expect(valueOf(table, "/guias/*").multiplier).toBe(TIER_CONTENIDO.multiplier);
     expect(valueOf(table, "/alquileres-uruguay").multiplier).toBe(TIER_DIRECTORIO.multiplier);
     expect(valueOf(table, "/guias/*").usdPerClick).toBe(0);
+  });
+
+  it("publica el RPM sólo-Uruguay al lado, sin que ancle nada", () => {
+    const table = buildValueTable(revenue());
+    expect(table.siteRpmUy).toBeCloseTo(0.3, 6);
+    expect(table.uyShareOfViews).toBeCloseTo(0.6, 6);
+    expect(table.impressionsPerView).toBeCloseTo(0.09, 6);
+    expect(table.uyViews).toBe(60000);
+    expect(table.uyAdImpressions).toBe(8500);
+    // Lo que ordena y lo que paga sigue saliendo del RPM del sitio entero, no del recorte.
+    expect(table.siteRpm).toBeCloseTo(0.2, 6);
+    expect(table.siteUsdPerClick).toBeCloseTo(0.0002, 8);
+    expect(valueOf(table, "/importar/*").usdPerClick).toBeCloseTo((0.2 * TIER_CONTENIDO.multiplier) / 1000, 8);
+  });
+
+  it("un snapshot anterior al campo (sin `totalsUy`) da 0 y no rompe nada", () => {
+    const legacy = revenue();
+    delete (legacy as Partial<RevenueSnapshot>).totalsUy;
+    const table = buildValueTable(legacy);
+    expect(table.siteRpmUy).toBe(0);
+    expect(table.uyShareOfViews).toBe(0);
+    expect(table.uyViews).toBe(0);
+    expect(table.impressionsPerView).toBeCloseTo(0.09, 6);
+    expect(table.siteRpm).toBeCloseTo(0.2, 6);
+  });
+
+  it("con el snapshot pendiente, el RPM uruguayo también queda en cero: misma compuerta que el del sitio", () => {
+    const table = buildValueTable(revenue({ pending: true }));
+    expect(table.siteRpm).toBe(0);
+    expect(table.siteRpmUy).toBe(0);
+    expect(table.uyShareOfViews).toBe(0);
+    expect(buildValueTable(null).siteRpmUy).toBe(0);
+  });
+
+  it("el umbral de divergencia está donde dice el comentario", () => {
+    expect(UY_RPM_DIVERGENCE).toBe(1.5);
   });
 
   it("marca la ventana como provisional mientras el ingreso sea de centavos", () => {

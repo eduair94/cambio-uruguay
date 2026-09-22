@@ -151,6 +151,12 @@ export interface RevenuePlanSnapshot {
   currency: string;
   /** RPM del sitio entero en la ventana de ingreso. El ancla de todos los multiplicadores. */
   siteRpm: number;
+  /**
+   * RPM sólo sobre visitas desde Uruguay (`totalsUy` del snapshot de ingreso). La lectura que el
+   * tráfico automatizado no puede inflar, publicada AL LADO de `siteRpm`: nunca ancla un
+   * multiplicador ni ordena la cola. 0 mientras el snapshot de ingreso no traiga `totalsUy`.
+   */
+  siteRpmUy: number;
   /** USD que deja un clic promedio del sitio. */
   siteUsdPerClick: number;
   /** True mientras el enlace AdSense↔GA4 no devuelva una medición. Todo lo de abajo queda en tramos. */

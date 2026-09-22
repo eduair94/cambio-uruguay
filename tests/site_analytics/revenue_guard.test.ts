@@ -19,7 +19,8 @@ vi.mock("../../classes/models/SiteRevenueSnapshot", () => ({
 vi.mock("../../classes/models/SiteAnalyticsSnapshot", () => ({
   SiteAnalyticsSnapshotModel: { findOne: vi.fn(), updateOne: vi.fn() },
 }));
-vi.mock("../../classes/site-analytics/ga4", () => ({
+vi.mock("../../classes/site-analytics/ga4", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../classes/site-analytics/ga4")>()),
   runReports: vi.fn(),
 }));
 
@@ -94,6 +95,7 @@ describe("fetchRevenue marca `pending` con el MISMO criterio", () => {
       report([["0.0001", "1", "0", "4131", "2100"]]),
       report([["0.0001", "1", "0", "4131"]], [["/"]]),
       report([["0.0001", "1"]], [["20260902"]]),
+      report([["0.0001", "1", "0", "3000", "1500"]]),
     ]);
     const out = await fetchRevenue("2026-08-06", "2026-09-02", "2026-09-03T00:00:00.000Z");
     expect(out.totals.adImpressions).toBe(1);
@@ -106,9 +108,38 @@ describe("fetchRevenue marca `pending` con el MISMO criterio", () => {
       report([["12.5", "9000", "40", "4131", "2100"]]),
       report([["12.5", "9000", "40", "4131"]], [["/"]]),
       report([["12.5", "9000"]], [["20260902"]]),
+      report([["12.0", "8800", "39", "3000", "1500"]]),
     ]);
     const out = await fetchRevenue("2026-08-06", "2026-09-02", "2026-09-03T00:00:00.000Z");
     expect(out.pending).toBe(false);
+    expect(out.totalsUy.rpm).toBeCloseTo(4);
+  });
+
+  // El total sólo-Uruguay es DIAGNÓSTICO: se publica al lado y no entra en ninguna de las tres
+  // puertas. Si entrara, un segundo eje haría irrazonable la negativa a sobrescribir.
+  it("el escenario de robots (sitio sano, Uruguay en cero) no cambia `pending`", async () => {
+    (runReports as any).mockResolvedValue([
+      report([["12.5", "9000", "40", "400000", "300000"]]),
+      report([["12.5", "9000", "40", "400000"]], [["/"]]),
+      report([["12.5", "9000"]], [["20260902"]]),
+      report([["0", "0", "0", "0", "0"]]),
+    ]);
+    const out = await fetchRevenue("2026-08-06", "2026-09-02", "2026-09-03T00:00:00.000Z");
+    expect(out.totalsUy.screenPageViews).toBe(0);
+    expect(out.pending).toBe(false);
+    expect(revenueIsEmpty(out)).toBe(false);
+  });
+
+  it("y al revés: Uruguay sano no rescata un total del sitio que todavía no es una medición", async () => {
+    (runReports as any).mockResolvedValue([
+      report([["0.0001", "1", "0", "4131", "2100"]]),
+      report([["0.0001", "1", "0", "4131"]], [["/"]]),
+      report([["0.0001", "1"]], [["20260902"]]),
+      report([["12.5", "9000", "40", "3000", "1500"]]),
+    ]);
+    const out = await fetchRevenue("2026-08-06", "2026-09-02", "2026-09-03T00:00:00.000Z");
+    expect(out.totalsUy.adImpressions).toBe(9000);
+    expect(out.pending).toBe(true);
   });
 });
 
@@ -150,6 +181,17 @@ describe("revenueWouldRegress: una lectura flaca no pisa una buena", () => {
   it("una caída normal se guarda igual", async () => {
     stored(good);
     expect(await revenueWouldRegress(snap(9.8, 7000, 4131))).toBe(false);
+  });
+
+  it("el bloque uruguayo no participa: un derrumbe sólo en Uruguay se guarda, y uno del sitio se rechaza aunque Uruguay esté sano", async () => {
+    const withUy = (base: RevenueSnapshot, uyImpressions: number): RevenueSnapshot =>
+      ({
+        ...base,
+        totalsUy: { adRevenue: 0, adImpressions: uyImpressions, adClicks: 0, screenPageViews: 1000, sessions: 0, rpm: 0 },
+      }) as RevenueSnapshot;
+    stored(withUy(good, 8000));
+    expect(await revenueWouldRegress(withUy(snap(13.1, 9400, 4200), 0))).toBe(false);
+    expect(await revenueWouldRegress(withUy(snap(5.9, 4000, 4131), 8000))).toBe(true);
   });
 });
 

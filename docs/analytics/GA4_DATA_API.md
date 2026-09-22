@@ -352,6 +352,29 @@ currency-site-analytics
    └── siterevenuesnapshots     → /api/site-revenue    → /estadisticas-de-busqueda (requireAdmin)
 ```
 
+**Los cuatro reportes** que `fetchRevenue` (`classes/site-analytics/revenue.ts`) pide en UNA llamada
+`batchRunReports` (admite 5), en este orden y con los índices fijados por
+`tests/site_analytics/revenue_pagination.test.ts`:
+
+| # | qué | dimensiones | notas |
+|---|---|---|---|
+| 0 | totales de la ventana | ninguna | `totalAdRevenue`, `publisherAdImpressions`, `publisherAdClicks`, `screenPageViews`, `sessions` → `totals` |
+| 1 | por página | `pagePath` | se pagina de a 2.000 hasta `rowCount` (tope 100.000); de acá salen `families` y `topPages` |
+| 2 | por día | `date` | la serie `daily` |
+| 3 | **totales sólo Uruguay** | ninguna | mismas métricas y ventana que el 0, con `dimensionFilter: exactDimension("countryId", "UY")` → `totalsUy` |
+
+El reporte 3 (desde el 2026-09-22) es el **primer filtro de dimensión** que manda este repo; la forma
+del `FilterExpression` de la v1beta vive en un solo lugar, `exactDimension()` en `ga4.ts`. Se filtra
+por `countryId` (código ISO 3166-1 alfa-2, independiente del idioma) y no por `country`, que es el
+nombre localizado que guarda el snapshot público. Por qué existe: el RPM del sitio divide la plata
+entre todas las vistas, y la lectura del 21/9 mostró vistas automatizadas que no cargan ni una
+unidad de anuncio; el mismo cociente sobre visitas uruguayas es la lectura que ese tráfico no puede
+mover. Es **diagnóstico y aditivo**: `totalsUy` no decide `pending`, no entra en
+`revenueWouldRegress`, y el desglose por página sigue sin filtrar (filtrarlo doblaría la paginación y
+cambiaría todos los RPM por familia). Si el reporte falta, el bloque queda en ceros y todo lo demás
+sigue igual. Regla de `docs/seo/adsense-growth-loop.md`: «No bloquear países por suposición». Lo que
+hace `currency-revenue-plan` con ese número está en `REVENUE_PLAN.md` (guardarraíl «RPM sólo Uruguay»).
+
 **Por qué son dos colecciones y no dos campos.** La ruta pública devuelve el documento de analytics
 entero. Un campo de ingreso ahí adentro es un campo que un `.select()` mal escrito publica sin que
 nadie escriba una línea de HTML. `tests/site_analytics/revenue_privacy.test.ts` falla si aparece

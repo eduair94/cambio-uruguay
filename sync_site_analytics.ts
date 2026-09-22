@@ -67,7 +67,8 @@ async function main(): Promise<void> {
             ? "[site-analytics] ingresos: todavía en cero. El enlace AdSense↔GA4 tarda hasta 24 h en " +
               "devolver datos; el documento queda marcado como pendiente."
             : `[site-analytics] ingresos: ${revenue.totals.adRevenue.toFixed(2)} ${revenue.currency}, ` +
-              `${revenue.totals.adImpressions} impresiones de anuncio, RPM ${revenue.totals.rpm.toFixed(2)}, ` +
+              `${revenue.totals.adImpressions} impresiones de anuncio, RPM ${revenue.totals.rpm.toFixed(2)} ` +
+              `(sólo Uruguay ${revenue.totalsUy.rpm.toFixed(2)} sobre ${revenue.totalsUy.screenPageViews} vistas), ` +
               `${revenue.families.length} familias`
         );
       }

@@ -2,9 +2,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Ga4Report } from "../../classes/site-analytics/ga4";
 
-vi.mock("../../classes/site-analytics/ga4", () => ({ runReports: vi.fn() }));
+// Sólo se mockea la red: `exactDimension` es puro y `fetchRevenue` lo necesita real.
+vi.mock("../../classes/site-analytics/ga4", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../classes/site-analytics/ga4")>()),
+  runReports: vi.fn(),
+}));
 import { runReports } from "../../classes/site-analytics/ga4";
-import { fetchRevenue } from "../../classes/site-analytics/revenue";
+import { UY_COUNTRY_ID, fetchRevenue } from "../../classes/site-analytics/revenue";
 
 const run = vi.mocked(runReports);
 const row = (path: string, revenue = 0, views = 1) => ({
@@ -13,10 +17,13 @@ const row = (path: string, revenue = 0, views = 1) => ({
 });
 const firstRows = () => Array.from({ length: 2000 }, (_, i) => row(`/guias/a-${String(i).padStart(4, "0")}`));
 const report = (rows: NonNullable<Ga4Report["rows"]>, rowCount = rows.length): Ga4Report => ({ rows, rowCount });
-const initial = (pages: Ga4Report): Ga4Report[] => [
-  { rows: [{ metricValues: [8, 200, 0, 2102, 2100].map((n) => ({ value: String(n) })) }] },
+const totals = (values: number[]): Ga4Report => ({ rows: [{ metricValues: values.map((n) => ({ value: String(n) })) }] });
+// Índices 0/1/2 fijos (totales, páginas, diario); el 3 es el total sólo-Uruguay, SIEMPRE último.
+const initial = (pages: Ga4Report, uy: Ga4Report = totals([6, 180, 0, 1000, 990])): Ga4Report[] => [
+  totals([8, 200, 0, 2102, 2100]),
   pages,
   { rows: [] },
+  uy,
 ];
 const fetch = () => fetchRevenue("2026-09-01", "2026-09-07", "2026-09-08T12:00:00Z");
 
@@ -39,6 +46,35 @@ describe("ingreso por familia con todas sus vistas", () => {
     expect(run.mock.calls[1][0]).toEqual([{ ...request, offset: 2000 }]);
   });
 
+  it("el cuarto reporte es el total sólo-Uruguay: mismas métricas, sin dimensiones, filtrado por countryId", async () => {
+    run.mockResolvedValueOnce(initial(report(firstRows())));
+    const result = await fetch();
+    const requests = run.mock.calls[0][0];
+    expect(requests).toHaveLength(4);
+    // Los tres primeros no se mueven: la paginación relee el índice 1 y el diario es el 2.
+    expect(requests[1].dimensions).toEqual([{ name: "pagePath" }]);
+    expect(requests[2].dimensions).toEqual([{ name: "date" }]);
+    const uy = requests[3];
+    expect(uy.dimensions).toBeUndefined();
+    expect(uy.metrics).toEqual(requests[0].metrics);
+    expect(uy.dateRanges).toEqual(requests[0].dateRanges);
+    expect(uy.dimensionFilter).toEqual({
+      filter: { fieldName: "countryId", stringFilter: { matchType: "EXACT", value: UY_COUNTRY_ID } },
+    });
+    expect(UY_COUNTRY_ID).toBe("UY");
+    // Y se lee en su propio bloque, al lado del total, con el mismo RPM por 1.000 vistas.
+    expect(result.totalsUy).toMatchObject({ adRevenue: 6, adImpressions: 180, screenPageViews: 1000, sessions: 990 });
+    expect(result.totalsUy.rpm).toBeCloseTo(6);
+    expect(result.totals.rpm).toBeCloseTo(8000 / 2102);
+  });
+
+  it("sin el cuarto reporte (fixture viejo o GA4 recortando el batch) el bloque uruguayo queda en ceros", async () => {
+    run.mockResolvedValueOnce(initial(report(firstRows())).slice(0, 3));
+    const result = await fetch();
+    expect(result.totalsUy).toEqual({ adRevenue: 0, adImpressions: 0, adClicks: 0, screenPageViews: 0, sessions: 0, rpm: 0 });
+    expect(result.pending).toBe(false);
+  });
+
   it("un múltiplo exacto no pide una página adicional", async () => {
     run.mockResolvedValueOnce(initial(report(firstRows())));
     expect((await fetch()).families[0].urls).toBe(2000);
@@ -46,7 +82,7 @@ describe("ingreso por familia con todas sus vistas", () => {
   });
 
   it("el informe vacío real puede omitir rowCount cero", async () => {
-    run.mockResolvedValueOnce([{}, {}, {}]);
+    run.mockResolvedValueOnce([{}, {}, {}, {}]);
     expect((await fetch()).families).toEqual([]);
   });
 

@@ -39,6 +39,12 @@ export interface SiteRevenueSnapshot {
   currency: string
   range: { start: string; end: string }
   totals: RevenueTotals
+  /**
+   * El mismo total, sólo sobre visitas desde Uruguay (`countryId = UY`): la lectura que el tráfico
+   * automatizado no puede inflar. Opcional porque los documentos anteriores al 2026-09-22 no lo
+   * traen. Diagnóstico, al lado del total: no reemplaza nada.
+   */
+  totalsUy?: RevenueTotals
   families: RevenueFamilyRow[]
   topPages: RevenuePageRow[]
   daily: Array<{ date: string; adRevenue: number; adImpressions: number }>
