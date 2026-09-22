@@ -23,13 +23,30 @@
 // MISMO `bucketOf` que usa el pipeline de Search Console, para que las dos tablas se puedan cruzar
 // fila a fila.
 import { bucketOf } from "../gsc/opportunities";
-import { runReports } from "./ga4";
+import { exactDimension, runReports } from "./ga4";
 import type { Ga4Report, Ga4ReportRequest } from "./ga4";
 
 /** Tamaño de página, NO un límite de cobertura: las URLs sin ingreso también cuentan vistas. */
 const PAGE_LIMIT = 2000;
 /** Como máximo 50 peticiones de páginas. Si no alcanza, no se guarda una foto recortada. */
 const MAX_PAGE_ROWS = 100000;
+
+/**
+ * El país del segundo total, como código ISO 3166-1 alfa-2.
+ *
+ * Se filtra por `countryId` y no por `country` a propósito: `country` es el NOMBRE localizado
+ * ("Uruguay" en la cuenta de servicio de hoy), que es lo que guarda el snapshot público
+ * (`refresh.ts`, reporte 5) y que cambia si algún día cambia el idioma de la cuenta. El código no.
+ *
+ * POR QUÉ EXISTE UN SEGUNDO TOTAL. La lectura del 21/9 (`docs/seo/data/revenue-2026-09-21/`,
+ * gitignored) mostró vistas que no ven anuncios: tráfico automatizado que infla el denominador del
+ * RPM y no aporta ni una impresión. Medir el mismo total sólo sobre visitas uruguayas —donde
+ * está la audiencia real del sitio— da una segunda lectura que ese tráfico no puede mover. Es una
+ * lectura DIAGNÓSTICA, publicada AL LADO del total del sitio: no reemplaza a `totals`, no decide
+ * `pending` y no excluye a nadie. Regla de `docs/seo/adsense-growth-loop.md`: «No bloquear países
+ * por suposición».
+ */
+export const UY_COUNTRY_ID = "UY";
 
 export interface RevenueTotals {
   /** En la moneda de la propiedad (la informa GA4 en `metadata.currencyCode`). */
@@ -69,6 +86,12 @@ export interface RevenueSnapshot {
   currency: string;
   range: { start: string; end: string };
   totals: RevenueTotals;
+  /**
+   * El mismo total, sólo sobre visitas desde Uruguay (`countryId = UY`). Lectura resistente al
+   * tráfico automatizado, que casi nunca sale de acá. Diagnóstica y aditiva: no alimenta `pending`
+   * ni el guardarraíl de regresión, y las familias siguen sin filtrar (ver `UY_COUNTRY_ID`).
+   */
+  totalsUy: RevenueTotals;
   families: RevenueFamilyRow[];
   /** Las páginas que más facturan, para el caso en que una sola cargue una familia entera. */
   topPages: RevenuePageRow[];
@@ -124,11 +147,28 @@ async function allPageRows(request: Ga4ReportRequest, first: Ga4Report | undefin
   return complete;
 }
 
+/** Lee un reporte de totales (sin dimensiones) con el orden de métricas de `totalMetrics`. */
+function totalsOf(report: Ga4Report | undefined): RevenueTotals {
+  const row = rows(report)[0];
+  const totals: RevenueTotals = {
+    adRevenue: num(row?.metricValues?.[0]?.value),
+    adImpressions: num(row?.metricValues?.[1]?.value),
+    adClicks: num(row?.metricValues?.[2]?.value),
+    screenPageViews: num(row?.metricValues?.[3]?.value),
+    sessions: num(row?.metricValues?.[4]?.value),
+    rpm: 0,
+  };
+  totals.rpm = rpmOf(totals.adRevenue, totals.screenPageViews);
+  return totals;
+}
+
 /**
  * Trae el ingreso publicitario de la ventana pedida y lo agrupa por familia.
  *
- * Tres reportes en una sola llamada (`batchRunReports` acepta hasta cinco): totales, por página y
- * por día. Después se pagina el desglose por URL hasta completarlo.
+ * Cuatro reportes en una sola llamada (`batchRunReports` acepta hasta cinco): totales, por página,
+ * por día y los totales sólo de Uruguay. Después se pagina el desglose por URL hasta completarlo.
+ * El de Uruguay va ÚLTIMO a propósito: los índices 0/1/2 están fijados por
+ * `tests/site_analytics/revenue_pagination.test.ts` y por la paginación, que relee el índice 1.
  */
 export async function fetchRevenue(
   start: string,
@@ -146,11 +186,10 @@ export async function fetchRevenue(
     orderBys: [{ dimension: { dimensionName: "pagePath", orderType: "ALPHANUMERIC" } }],
   };
 
+  const totalMetrics = [...adMetrics, { name: "screenPageViews" }, { name: "sessions" }];
+
   const reports = await runReports([
-    {
-      dateRanges,
-      metrics: [...adMetrics, { name: "screenPageViews" }, { name: "sessions" }],
-    },
+    { dateRanges, metrics: totalMetrics },
     pageRequest,
     {
       dateRanges,
@@ -158,20 +197,15 @@ export async function fetchRevenue(
       metrics: [{ name: "totalAdRevenue" }, { name: "publisherAdImpressions" }],
       limit: 400,
     },
+    // Mismas métricas y misma ventana que el total, recortadas a Uruguay. Sin dimensiones: es UNA
+    // fila, y si el reporte falta (fixture viejo, GA4 caído) queda en ceros en vez de romper.
+    { dateRanges, metrics: totalMetrics, dimensionFilter: exactDimension("countryId", UY_COUNTRY_ID) },
   ]);
   const completePages = await allPageRows(pageRequest, reports[1]);
 
   const currency = reports[0]?.metadata?.currencyCode || "USD";
-  const totalRow = rows(reports[0])[0];
-  const totals: RevenueTotals = {
-    adRevenue: num(totalRow?.metricValues?.[0]?.value),
-    adImpressions: num(totalRow?.metricValues?.[1]?.value),
-    adClicks: num(totalRow?.metricValues?.[2]?.value),
-    screenPageViews: num(totalRow?.metricValues?.[3]?.value),
-    sessions: num(totalRow?.metricValues?.[4]?.value),
-    rpm: 0,
-  };
-  totals.rpm = rpmOf(totals.adRevenue, totals.screenPageViews);
+  const totals = totalsOf(reports[0]);
+  const totalsUy = totalsOf(reports[3]);
   if (!completePages.length && (totals.screenPageViews > 0 || totals.adRevenue > 0 || totals.adImpressions > 0 || totals.adClicks > 0)) {
     throw new Error("GA4 revenue: empty page report contradicts totals");
   }
@@ -238,6 +272,7 @@ export async function fetchRevenue(
     currency,
     range: { start, end },
     totals,
+    totalsUy,
     families: familyRows,
     topPages: pageRows
       .filter((p) => p.adRevenue > 0)
@@ -249,6 +284,8 @@ export async function fetchRevenue(
     pending: false,
   };
 
+  // Sólo `totals` decide. `totalsUy` queda deliberadamente fuera de esta regla y de
+  // `revenueWouldRegress`: un segundo eje haría irrazonable la negativa a sobrescribir.
   snapshot.pending = revenueIsEmpty(snapshot);
   return snapshot;
 }

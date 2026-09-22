@@ -281,6 +281,74 @@ if ! wait_healthy; then
 fi
 log "Still answering 200 with only pm2's own workers."
 
+# Purga la caché de borde después del swap.
+#
+# POR QUÉ ACÁ Y NO ANTES: recién en esta línea el sitio está confirmado sirviendo el build nuevo
+# con los workers de pm2 y sin huérfanos. Purgar antes repoblaría el borde desde un build que
+# todavía podía no quedar.
+#
+# POR QUÉ HAY QUE PURGAR: desde que `routeRules` declara `s-maxage` por familia (guías, glosario,
+# comparativas e importar 24 h; casa/sucursales 1 h; histórico/cotización 10 min; páginas de
+# pregunta 6 h), Cloudflare guarda HTML hasta un día, y ese HTML nombra `_nuxt/<hash>.js` que
+# este deploy acaba de renombrar. Sin la purga, el borde reproduce solo el daño de
+# docs/app/LOADING_INCIDENT_2026-09-06.md: 45 scripts que 404 y una pestaña que gira.
+# `purge_everything` y no por prefijo porque la purga por prefijo es Enterprise; el costo es un
+# pico de origen para assets que estaban bien, y es barato.
+#
+# NO ABORTA EL DEPLOY: a esta altura el sitio ya está arriba; una purga fallida es caché viejo, no
+# un sitio caído. Por eso la llamada va con `|| true` (el script corre con `set -e`) y la función
+# devuelve 0 en todas sus salidas. El token sale del `.env` de la raíz (el mismo archivo que lee
+# scripts/oneoff/cf_traffic_report.ts con dotenv) y NUNCA se imprime: sólo se loguea el código HTTP.
+# `tests/unit/deployEdgePurge.test.ts` vigila las tres cosas.
+purge_edge_cache() {
+  local env_file="$REPO_DIR/.env" token zone code
+  if [ ! -r "$env_file" ]; then
+    log "Sin $env_file legible; se saltea la purga de borde."
+    return 0
+  fi
+  # Sólo estas dos claves y sólo dentro de esta función: no se exporta nada al resto del deploy.
+  # Se corta después del `=` (la primera aparición, como hace dotenv), se tolera un CR de Windows y
+  # se sacan comillas envolventes por si alguien las puso.
+  token="$(sed -n 's/^[[:space:]]*CLOUDFLARE_TOKEN[[:space:]]*=[[:space:]]*//p' "$env_file" | head -n1 | tr -d '\r')"
+  token="${token%\"}"; token="${token#\"}"; token="${token%\'}"; token="${token#\'}"
+  zone="$(sed -n 's/^[[:space:]]*CLOUDFLARE_ZONE_ID[[:space:]]*=[[:space:]]*//p' "$env_file" | head -n1 | tr -d '\r')"
+  zone="${zone%\"}"; zone="${zone#\"}"
+  # La zona de cambio-uruguay.com. NO es un secreto (identifica, no autoriza): es la misma que
+  # scripts/oneoff/cf_traffic_report.ts trae de respaldo, y el .env de producción no la declara.
+  zone="${zone:-fcd8289e0c93d7f889d8cd583929a4e5}"
+  if [ -z "$token" ]; then
+    log "Sin CLOUDFLARE_TOKEN en el .env; se saltea la purga de borde."
+    return 0
+  fi
+  # `-s -o /dev/null -w '%{http_code}'`: la respuesta no se imprime y el token viaja sólo en la
+  # cabecera. Una conexión que no llega devuelve "000", no vacío.
+  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 -X POST \
+    "https://api.cloudflare.com/client/v4/zones/$zone/purge_cache" \
+    -H "Authorization: Bearer $token" \
+    -H 'Content-Type: application/json' \
+    --data '{"purge_everything":true}' || true)"
+  if [ "$code" = "200" ]; then
+    log "Caché de borde purgada (purge_everything)."
+  else
+    log "La purga de borde devolvió HTTP ${code:-sin respuesta}; el deploy sigue igual."
+  fi
+  return 0
+}
+purge_edge_cache || true
+
+# IndexNow (Bing/Yandex y los motores que comparten el protocolo; Google NO lo lee): avisa que las
+# URLs del sitemap en español cambiaron. Va DESPUES del segundo wait_healthy a proposito: recien
+# aca sabemos que el build nuevo es el que contesta, y avisar antes seria anunciar URLs que todavia
+# sirve el build viejo. Inerte hasta INDEXNOW_ENABLED=1 (entorno o app/.env): desplegar el archivo
+# no puede, por si solo, empezar a llamar a un tercero.
+#
+# `|| log`: bajo `set -e`, un 4xx de api.indexnow.org pondria en rojo un deploy ya swapeado y sano,
+# la misma clase de bug que el `pm2 startOrReload ... || log` de arriba. `9>&-`: el hijo no hereda
+# el flock del deploy (ver los dos comentarios sobre el fd 9). El script nunca sale distinto de 0,
+# pero la guarda queda por si algun dia lo hace. Tripwire: app/tests/unit/deployIndexNow.test.ts.
+log "IndexNow: submitting the es-ES sitemap (no-op unless INDEXNOW_ENABLED=1)…"
+node "$APP_DIR/scripts/indexnow.mjs" 9>&- || log "indexnow: submission skipped (non-fatal)."
+
 # Delete the old tree DETACHED. By this line the swap and the rolling reload
 # have already happened: the site is live on the new build and nothing below
 # affects it. Measured on run 32086895800, this `rm -rf` was 1m35s of a 7m29s

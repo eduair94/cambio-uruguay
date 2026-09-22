@@ -70,6 +70,12 @@ export interface RevenuePlanSnapshot {
   revenueWindow: { start: string; end: string }
   currency: string
   siteRpm: number
+  /**
+   * RPM medido sólo sobre visitas desde Uruguay. Resistente al tráfico automatizado, que infla el
+   * denominador de `siteRpm` sin dejar impresiones. Nunca ordena la cola: se publica al lado.
+   * Opcional porque los planes anteriores al 2026-09-22 no lo traen.
+   */
+  siteRpmUy?: number
   siteUsdPerClick: number
   revenuePending: boolean
   totalUpsideUsd: number

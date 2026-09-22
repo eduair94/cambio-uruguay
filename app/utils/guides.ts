@@ -116,6 +116,13 @@ export interface Guide {
    * check the number against the operator or the norm instead of trusting us.
    */
   sources?: GuideSource[]
+  /**
+   * Optional ids from `utils/affiliates.ts` (`payoneer`, `wise`, ...). The page renders an
+   * `AffiliateLink` for each, BELOW the prose and only when runtimeConfig carries that partner's
+   * URL — with an empty config the block does not exist. Only for partners the guide already
+   * names and compares with public tariffs; the guide text never changes because of the link.
+   */
+  affiliateIds?: string[]
 }
 
 /**
@@ -436,6 +443,9 @@ export const guides: readonly Guide[] = [
       'Cuánto te cuesta cobrar un pago del exterior en Uruguay: Payoneer, Wise, Prex, PayPal, SWIFT al banco y plataformas de contrato, con las tarifas que publica cada uno.',
     tag: 'COBRAR',
     updatedAt: '2026-09-16',
+    // Los dos socios que la guía compara por nombre y con tarifas públicas. Sin URL en
+    // runtimeConfig no se dibuja nada (utils/affiliates.ts).
+    affiliateIds: ['payoneer', 'wise'],
     sections: [
       {
         heading: 'Las tres vías por las que te llega la plata',

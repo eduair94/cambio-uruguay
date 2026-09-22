@@ -122,7 +122,14 @@
               >, desarrollador uruguayo, junto a un equipo que cuida que la información sea clara,
               precisa y útil. El proyecto nació de una necesidad concreta: comparar cotizaciones sin
               perder tiempo ni pagar de más. Si querés conocer al autor o ponerte en contacto, podés
-              hacerlo a través de su perfil profesional.
+              hacerlo a través de su perfil profesional o de su
+              <a
+                class="about-link"
+                href="https://github.com/eduair94"
+                target="_blank"
+                rel="noopener noreferrer"
+                >perfil en GitHub</a
+              >, donde el código del sitio es público.
             </p>
           </section>
 
@@ -135,6 +142,12 @@
               siempre el precio. No somos una casa de cambio, no operamos divisas y no recibimos
               comisiones por las operaciones que hagas. Nuestro compromiso es con la información
               transparente, para que decidas con datos y no con corazonadas.
+            </p>
+            <p class="text-body-1 text-grey-lighten-1 about-prose mt-3">
+              El sitio se financia con publicidad etiquetada como tal: un espacio patrocinado es un
+              bloque aparte, nunca una posición en el ranking. Las condiciones completas, y lo que
+              no está en venta, están en la página de
+              <NuxtLink :to="localePath('/publicidad')" class="about-link">publicidad</NuxtLink>.
             </p>
           </section>
 
@@ -199,11 +212,14 @@
 </template>
 
 <script setup lang="ts">
+import { ORGANIZATION_ID, authorPersonNode, authorReference } from '~/utils/authorEntity'
+
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
 // Date of the last methodology review. Kept in one place so meta + JSON-LD agree.
-const LAST_REVIEWED = '2026-06-16'
+// 2026-09-22: la entidad del autor pasó a tener @id, y la política de publicidad se enlaza.
+const LAST_REVIEWED = '2026-09-22'
 
 const lastUpdatedDisplay = computed(() =>
   new Date(LAST_REVIEWED).toLocaleDateString(dateLocale(locale.value), {
@@ -282,7 +298,14 @@ useSeoMeta({
   twitterDescription: () => t('acerca.metaDescription'),
 })
 
-// AboutPage + Organization JSON-LD with author/founder for E-E-A-T.
+// AboutPage + Organization + Person JSON-LD for E-E-A-T.
+//
+// Esta página es la ÚNICA que emite el nodo Person completo del autor (con @id, sameAs y
+// worksFor): el resto del sitio (layout, guías, long-form) lo referencia por @id y JSON-LD los
+// fusiona. Hasta el 2026-09-22 acá había DOS Person inline —`founder` y un `author` que
+// Organization ni siquiera admite— y una segunda Organization sin @id que competía con la
+// #identity del layout. Ahora la Organization lleva el mismo @id, así que se fusiona con la del
+// layout en vez de duplicarla, y sólo agrega lo que esta página sabe: quién la fundó.
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl }],
   script: [
@@ -299,36 +322,18 @@ useHead({
               'Metodología, fuentes de datos y equipo detrás de Cambio Uruguay, el comparador de cotizaciones del dólar en Uruguay.',
             dateModified: LAST_REVIEWED,
             inLanguage: 'es-UY',
-            isPartOf: {
-              '@type': 'WebSite',
-              name: 'Cambio Uruguay',
-              url: 'https://cambio-uruguay.com',
-            },
+            isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
+            mainEntity: { '@id': ORGANIZATION_ID },
+            about: [{ '@id': ORGANIZATION_ID }, { '@id': authorReference()['@id'] }],
           },
           {
             '@type': 'Organization',
+            '@id': ORGANIZATION_ID,
             name: 'Cambio Uruguay',
             url: 'https://cambio-uruguay.com',
-            logo: 'https://cambio-uruguay.com/img/logo.png',
-            description:
-              'Plataforma independiente y gratuita para comparar la cotización del dólar y otras divisas en más de 40 casas de cambio de Uruguay, con datos del Banco Central del Uruguay (BCU).',
-            founder: {
-              '@type': 'Person',
-              name: 'Eduardo Airaudo',
-              url: 'https://www.linkedin.com/in/eduardo-airaudo/',
-              jobTitle: 'Founder & Developer',
-            },
-            author: {
-              '@type': 'Person',
-              name: 'Eduardo Airaudo',
-              url: 'https://www.linkedin.com/in/eduardo-airaudo/',
-            },
-            sameAs: [
-              'https://twitter.com/cambio_uruguay',
-              'https://www.linkedin.com/company/cambio-uruguay/',
-              'https://github.com/eduair94/cambio-uruguay',
-            ],
+            founder: authorReference(),
           },
+          authorPersonNode(),
         ],
       }),
     },

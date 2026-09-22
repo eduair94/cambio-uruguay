@@ -52,6 +52,7 @@ async function capture(query: Record<string, string> = {}, total = 240) {
     '../../utils/db': { connectDb: async () => {} },
     '../../utils/rentalZoneServices': { loadRentalServiceZoneIds: async () => [] },
     '../../utils/rentalCoverage': { getRentalCoverage: async () => [] },
+    '../../utils/rentalDirectoryWarm': { rentalDirectoryCacheKey: () => 'default' },
     '../../utils/rentalDetail': { rentalPublicPropertyProjection },
     '../../utils/rentalAvailability': {
       loadRentalAvailabilityIndex: async () => ({ excludedAdvertIds: () => [] }),
@@ -70,6 +71,8 @@ async function capture(query: Record<string, string> = {}, total = 240) {
       return dependencies[id]
     },
     defineEventHandler: (handler: unknown) => handler,
+    // El directorio es un memo de Nitro desde 2026-09-22; acá interesan los pipelines, no la caché.
+    defineCachedEventHandler: (handler: unknown) => handler,
     setResponseHeader: () => {},
     getQuery: () => query,
     createError: ({ statusMessage }: { statusMessage: string }) => new Error(statusMessage),

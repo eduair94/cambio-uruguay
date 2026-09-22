@@ -29,6 +29,7 @@ const plan = (asOf: string, actions: number, experiments: ExperimentResult[] = [
   revenueWindow: { start: "", end: "" },
   currency: "USD",
   siteRpm: 0.2,
+  siteRpmUy: 0.2,
   siteUsdPerClick: 0.0002,
   revenuePending: false,
   totalUpsideUsd: 1,

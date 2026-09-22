@@ -45,6 +45,7 @@ Datos clave:
 - [Preguntas frecuentes](https://cambio-uruguay.com/preguntas-frecuentes): respuestas sobre el dólar y el cambio en Uruguay.
 
 ## Para desarrolladores y agentes de IA
+- [Versión larga para agentes](https://cambio-uruguay.com/llms-full.txt): las 145 guías editoriales, una por bloque, con título, resumen, fecha de revisión y URL canónica (texto plano, generado del catálogo).
 - [Documentación de la API](https://api.cambio-uruguay.com/api-docs): API REST con las cotizaciones en tiempo real.
 - [Servidor MCP](https://mcp.cambio-uruguay.com/mcp): Model Context Protocol para agentes de IA; herramientas que envuelven la API pública.
 - [Código fuente (MIT)](https://github.com/eduair94/cambio-uruguay).

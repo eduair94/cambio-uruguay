@@ -13,9 +13,11 @@
       class="adsbygoogle"
       :data-ad-client="pubId"
       :data-ad-slot="slotId"
-      :data-ad-format="placement === 'in-article' ? 'fluid' : 'auto'"
+      :data-ad-format="
+        placement === 'in-article' ? 'fluid' : placement === 'sidebar' ? undefined : 'auto'
+      "
       :data-ad-layout="placement === 'in-article' ? 'in-article' : undefined"
-      data-full-width-responsive="true"
+      :data-full-width-responsive="placement === 'sidebar' ? undefined : 'true'"
     />
   </aside>
 </template>
@@ -33,6 +35,13 @@ import type { AdPlacement } from '~/composables/useAds'
 //      trade, not just an annoyance);
 //   3. it collapses when AdSense has nothing to serve, instead of leaving a
 //      labelled blank rectangle in the middle of the page.
+//
+// The `sidebar` variant is the same component with a fixed size instead of a
+// responsive one: 300x600, no `data-ad-format` and no full-width-responsive,
+// because a fixed unit asked to be responsive is served at whatever width the
+// rail column happens to have. It is hidden below 1280px with CSS and not with
+// the Vuetify display composable: a `display: none` box never intersects, so on a phone the
+// observer never fires and no request is made. See useAds.ts for the contract.
 
 const props = withDefaults(defineProps<{ placement?: AdPlacement }>(), {
   placement: 'content-end',
@@ -142,6 +151,33 @@ onBeforeUnmount(() => {
   .cu-ad--content-end,
   .cu-ad--in-article {
     min-height: 280px;
+  }
+}
+
+/* The rail. Nothing under lg: the layout only builds the second column from
+   1280px (layouts/default.vue → `.container_custom--rail`), and a hidden box
+   never intersects, so no request leaves a phone. From lg on it is a fixed
+   300x600 that reserves its whole height (anti-CLS, same promise as above) and
+   sticks 80px under the top: 64px of app bar plus the 16px the page keeps
+   between the bar and its content (DESIGN.md → "The Layout Owns The Top Rule").
+   Sticky is safe here and only here because the column is the rail's own —
+   there is no text under it to cover. */
+.cu-ad--sidebar {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .cu-ad--sidebar {
+    display: block;
+    width: 300px;
+    margin: 0;
+    min-height: 600px;
+    position: sticky;
+    top: 80px;
+  }
+  .cu-ad--sidebar :deep(.adsbygoogle) {
+    width: 300px;
+    height: 600px;
   }
 }
 </style>

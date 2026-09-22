@@ -663,6 +663,10 @@
     <!-- The homepage's single manual promotion follows the main rate lookup. -->
     <VContainer class="py-4">
       <ConLaTuyaBanner />
+      <!-- La fila patrocinada: un bloque APARTE del ranking de arriba, nunca dentro de
+           topExchanges (el orden lo determina siempre el precio). Sin `sponsorships.homeRow` en
+           runtimeConfig no deja ni un nodo en el DOM. -->
+      <SponsoredCasaRow class="mt-4" />
     </VContainer>
 
     <!-- Nearby Casa Finder Banner - flagship tourist tool, links to the

@@ -42,6 +42,9 @@ const NO_ADS = [
   // The owner's Search Console dashboard. One reader, logged in, and an ad next to the keyword
   // table would be an impression sold to nobody.
   '/estadisticas-de-busqueda',
+  // El media kit: la página ES la conversión (un anunciante leyendo condiciones), y un anuncio de
+  // AdSense al lado de "qué no vendemos" es exactamente lo que no vendemos.
+  '/publicidad',
 ] as const
 
 /**

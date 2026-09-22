@@ -100,6 +100,9 @@ describe('routeRules cache-control', () => {
     expect(rules.get('/')).toBeTypeOf('string')
     expect(rules.get('/sw.js')).toMatch(/max-age=0/)
     expect(rules.get('/_nuxt/**')).toMatch(/immutable/)
+    // Y una de las reglas por familia, para que un refactor del bloque (un helper, un spread)
+    // no lo vuelva invisible a este parser sin que nadie se entere.
+    expect(rules.get('/en/guias/**')).toBeTypeOf('string')
   })
 
   it.each(DOCUMENT_ROUTES)(
@@ -133,5 +136,70 @@ describe('routeRules cache-control', () => {
   it('retains useful edge caching after the Cloudflare browser-TTL correction', () => {
     expect(cacheControlByRoute().get('/')).toMatch(/(?:^|[\s,])s-maxage=3600(?:,|$)/)
     expect(cacheControlByRoute().get('/widget')).toMatch(/(?:^|[\s,])s-maxage=300(?:,|$)/)
+  })
+
+  // Un cambio accidental de TTL no rompe nada y no lo ve nadie: se fija acá por familia.
+  // Los tres idiomas y las dos formas (índice pelado y `/**`) tienen que decir lo mismo.
+  it.each([
+    ['guias', 86400],
+    ['comparativas', 86400],
+    ['glosario', 86400],
+    ['importar', 86400],
+    ['sucursales', 3600],
+    ['sucursal', 3600],
+    ['historico', 600],
+    ['cotizacion', 600],
+  ])('edge-caches the %s family for %i s in every locale and form', (family, ttl) => {
+    const rules = cacheControlByRoute()
+    for (const locale of ['', '/en', '/pt']) {
+      for (const route of [`${locale}/${family}`, `${locale}/${family}/**`]) {
+        expect(rules.get(route), route).toMatch(new RegExp(`(?:^|[\\s,])s-maxage=${ttl}(?:,|$)`))
+      }
+    }
+  })
+
+  it('edge-caches /casa/** (no bare index exists) for an hour in every locale', () => {
+    const rules = cacheControlByRoute()
+    for (const route of ['/casa/**', '/en/casa/**', '/pt/casa/**']) {
+      expect(rules.get(route), route).toMatch(/(?:^|[\s,])s-maxage=3600(?:,|$)/)
+    }
+    expect(rules.has('/casa'), 'there is no /casa index page to cache').toBe(false)
+  })
+
+  it('edge-caches the flat question pages for six hours, by exact path only', () => {
+    const rules = cacheControlByRoute()
+    for (const slug of [
+      'denunciar-ruidos-molestos-uruguay',
+      'tarjetas-de-credito-uruguay',
+      'inversiones-uruguay',
+      'trabajo-para-menores-de-edad-uruguay',
+      'sala-vip-aeropuerto-uruguay',
+      'multas-de-transito-y-patente-uruguay',
+      'cambiar-de-mutualista-uruguay',
+      'cuanto-sale-la-cedula-de-identidad-uruguaya',
+      'comisiones-de-transferencia-uruguay',
+      'alquilar-estando-en-clearing',
+      'retirar-efectivo-uruguay',
+      'impuesto-autos-electricos-uruguay',
+      'precio-de-la-nafta-uruguay',
+      'devolucion-fonasa-uruguay',
+      'salir-del-clearing',
+      'prestamo-sin-recibo-de-sueldo-uruguay',
+      'garantia-de-alquiler-uruguay',
+      'impuesto-temu-uruguay',
+      'franquicia-aduana-uruguay',
+      'declaracion-de-irpf-uruguay',
+      'fecha-de-cobro-bps-uruguay',
+      'mejores-prestamos-uruguay',
+      'descuentos-con-tarjeta-uruguay',
+    ]) {
+      for (const locale of ['', '/en', '/pt']) {
+        const route = `${locale}/${slug}`
+        expect(rules.get(route), route).toMatch(/(?:^|[\s,])s-maxage=21600(?:,|$)/)
+      }
+      // A glob here would swallow /cuenta, /mi-lista, /estado… and, for the two directories,
+      // their own subroutes.
+      expect(rules.has(`/${slug}/**`), `/${slug}/** must not exist`).toBe(false)
+    }
   })
 })

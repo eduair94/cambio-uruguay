@@ -166,9 +166,11 @@ for (const sample of [
     const excerpt = (await source.locator('.rental-map-detail__description').textContent()) || ''
     expect(excerpt.length).toBeLessThanOrEqual(601)
     expect(excerpt.endsWith('…')).toBe(true)
+    // La ficha es sólo en español (defineI18nRoute en pages/alquileres/[key].vue): desde /en y /pt
+    // localePath resuelve al camino sin prefijo, que es el único que existe.
     await expect(panel.getByRole('link', { name: sample.detail, exact: true })).toHaveAttribute(
       'href',
-      `${prefix}/alquileres/test`
+      '/alquileres/test'
     )
     const footer = panel.locator('.rental-map-detail__footer')
     await expect(footer).toBeInViewport()

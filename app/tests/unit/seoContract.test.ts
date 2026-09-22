@@ -397,3 +397,70 @@ describe('ninguna familia le disputa a otra la misma intención de marca', () =>
     expect(TODAY_WORDS.test(detail)).toBe(true)
   })
 })
+
+// El mismo reparto, para el cluster UR/UI/BPC. Tres URLs propias reclamaban "unidad reajustable":
+// /indicadores/unidad-reajustable ("Valor de la UR hoy"), /glosario/unidad-reajustable ("qué es y
+// definición", con su propio DefinedTerm) y /guias/ui-ur-bpc-diferencias ("qué son y en qué se
+// diferencian"). El registro de crecimiento (octava iteración, 16/9/2026) lo nombra como la mayor
+// demanda ganable fuera del pozo de cero clic, y el sitio la repartía entre tres páginas.
+//
+// El reparto: el INDICADOR es dueño del valor ("valor" + "hoy") y del DefinedTerm; el GLOSARIO
+// define a secas, sin "valor" ni "hoy", enlaza al valor y NO emite DefinedTerm cuando hay un
+// indicador con su slug; la GUÍA compara y no reclama "qué es la UR" sola. Dos lados, como arriba:
+// que nadie más lo reclame Y que alguien sí lo reclame.
+describe('el cluster UR no se lo disputan tres páginas propias', () => {
+  const glossaryPage = read('glosario/[termino].vue')
+  const indicatorPage = read('indicadores/[indicador].vue')
+  const VALUE_WORD = /\bvalor\b/i
+  const TODAY_WORDS = /\bhoy\b|\bhoje\b|\btoday\b/i
+
+  /** El bloque `useSeoMeta({...})` de una página, anclado al `})` en columna 0. */
+  const seoMetaBlock = (source: string) => source.match(/useSeoMeta\(\{[\s\S]*?\n\}\)/)?.[0] ?? ''
+
+  it('el indicador reclama "valor ... hoy" y es dueño del DefinedTerm', () => {
+    const block = seoMetaBlock(indicatorPage)
+    expect(block).not.toBe('')
+    expect(block).toMatch(/Valor de la/)
+    expect(TODAY_WORDS.test(block)).toBe(true)
+    expect(indicatorPage).toContain("'@type': 'DefinedTerm'")
+  })
+
+  it('el glosario define sin "valor" ni "hoy", y para un indicador cede el DefinedTerm', async () => {
+    const block = seoMetaBlock(glossaryPage)
+    expect(block).not.toBe('')
+    // El título del glosario se arma con `pageTitle`; ni la plantilla ni el término pueden meter
+    // "valor"/"hoy" en el <title>.
+    const titleSource = glossaryPage.match(/const pageTitle = computed\([\s\S]*?\n\)/)?.[0] ?? ''
+    expect(titleSource).not.toBe('')
+    expect(VALUE_WORD.test(titleSource)).toBe(false)
+    expect(TODAY_WORDS.test(titleSource)).toBe(false)
+
+    const { getTerm } = await import('../../utils/glossary')
+    const { listIndicatorSlugs } = await import('../../utils/indicators')
+    const shared = listIndicatorSlugs().filter(slug => getTerm(slug))
+    expect(shared).toContain('unidad-reajustable')
+    for (const slug of shared) {
+      const term = getTerm(slug)!.term
+      expect(VALUE_WORD.test(term), `${slug}: "${term}"`).toBe(false)
+      expect(TODAY_WORDS.test(term), `${slug}: "${term}"`).toBe(false)
+    }
+
+    // El DefinedTerm sólo cuando NO hay indicador con ese slug; si lo hay, un WebPage que apunta
+    // al indicador. Y el enlace grande al valor, con su data-cta.
+    expect(glossaryPage).toContain('indicatorFromSlug(')
+    expect(glossaryPage).toMatch(
+      /indicator\.value\s*\?\s*\{\s*'@type':\s*'WebPage'[\s\S]*?significantLink[\s\S]*?:\s*\{\s*'@type':\s*'DefinedTerm'/
+    )
+    expect(glossaryPage).toContain('Ver el valor de hoy')
+    expect(glossaryPage).toContain('/indicadores/${indicator.slug}')
+  })
+
+  it('la guía compara, no reclama "qué es la UR" sola ni el valor de hoy', async () => {
+    const { getGuide } = await import('../../utils/guides')
+    const title = getGuide('ui-ur-bpc-diferencias')?.title ?? ''
+    expect(title).not.toBe('')
+    expect(title).toMatch(/diferencia/i)
+    expect(title).not.toMatch(/qu[ée] es la unidad reajustable/i)
+    expect(VALUE_WORD.test(title) && TODAY_WORDS.test(title)).toBe(false)
+  })
+})

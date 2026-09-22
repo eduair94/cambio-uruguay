@@ -22,7 +22,14 @@ describe('adDensityForPath', () => {
   })
 
   it('carries no ads where the page IS the conversion', () => {
-    for (const p of ['/contacto', '/newsletter', '/cuenta', '/cuenta/alertas', '/conectar']) {
+    for (const p of [
+      '/contacto',
+      '/newsletter',
+      '/cuenta',
+      '/cuenta/alertas',
+      '/conectar',
+      '/publicidad',
+    ]) {
       expect(adDensityForPath(p), p).toBe('none')
     }
   })

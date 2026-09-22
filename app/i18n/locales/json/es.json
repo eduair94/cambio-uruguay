@@ -2421,5 +2421,45 @@
     "tooltip": "Esta casa viene publicando el mismo precio desde hace {days} días. Puede estar desactualizado: confirmalo antes de ir.",
     "tooltipAtLeast": "Esta casa viene publicando el mismo precio desde hace más de {days} días. Puede estar desactualizado: confirmalo antes de ir.",
     "tooltipLeading": "Y es el precio que hoy encabeza el ranking."
+  },
+  "publicidad": {
+    "nav": "Publicidad",
+    "tag": "PUBLICIDAD",
+    "h1": "Publicidad en Cambio Uruguay",
+    "intro": "A quién llega el sitio, qué formatos patrocinados se venden y las reglas que no se negocian: el orden de las cotizaciones no está en venta.",
+    "ogSubtitle": "Formatos, condiciones y contacto",
+    "metaTitle": "Publicidad: formatos y condiciones",
+    "metaDescription": "Anunciá en Cambio Uruguay: fila patrocinada en la home, tarjeta en directorios y bloque en el newsletter. Todo etiquetado, sin tocar el ranking.",
+    "lastReviewed": "Condiciones revisadas el {date}",
+    "pledgeTitle": "Lo primero: el patrocinio no cambia el orden",
+    "pledgeText": "Cambio Uruguay es independiente y gratuito. Un espacio patrocinado es un bloque aparte, etiquetado como publicidad; el ranking de cotizaciones lo decide siempre el precio.",
+    "aboutLink": "Leé cómo funciona el sitio",
+    "audienceTitle": "A quién llega",
+    "audienceIntro": "Describimos la audiencia por lo que viene a hacer. Las cifras del último mes, con fecha, se mandan por correo a quien las pida.",
+    "formatsTitle": "Formatos",
+    "formatsIntro": "Tres formatos, todos con la misma etiqueta y el mismo rel en el enlace. No hay otros.",
+    "formatWhere": "Dónde",
+    "formatWhat": "Qué incluye",
+    "formatFits": "Para quién",
+    "formatSee": "Ver dónde aparece",
+    "notSoldTitle": "Lo que no se vende",
+    "rulesTitle": "Reglas",
+    "contactTitle": "Anunciar",
+    "contactText": "Escribinos con tu producto y el formato que te interesa.",
+    "contactSubject": "Publicidad en Cambio Uruguay",
+    "contactNote": "Respondemos con la audiencia del último mes, con fecha, y una propuesta."
+  },
+  "sponsoredRow": {
+    "cta": "Ver la oferta",
+    "ctaLabel": "Ver la oferta de {name} (se abre en otra pestaña)",
+    "external": "Sitio externo",
+    "notice": "Espacio pago. No cambia el orden de las cotizaciones de arriba.",
+    "policy": "Por qué ves esto"
+  },
+  "affiliates": {
+    "title": "Abrir una cuenta",
+    "ctaLabel": "Abrir una cuenta en {partner} (se abre en otra pestaña)",
+    "disclosure": "Si abrís la cuenta desde estos enlaces, el servicio puede pagarnos una comisión. No cambia lo que pagás ni lo que dice esta guía.",
+    "policy": "Cómo funciona"
   }
 }

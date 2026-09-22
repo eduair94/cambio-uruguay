@@ -1,14 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { BestHouseResult, ConvertResult, RatesResult } from "cambio-uruguay-mcp/tools";
 import type { NewsItem } from "cambio-uruguay-mcp/news";
+import { DAILY_GUIDES, type DailyGuide } from "../src/format/guides.js";
 import {
   formatAlert,
   formatBest,
   formatConvert,
+  formatDailyDiscord,
   formatDailyTelegram,
   formatDailyTwitter,
   formatNews,
   formatRates,
+  TG_PHOTO_CAPTION_MAX,
 } from "../src/format/messages.js";
 import type { AlertData, DailyReportData } from "../src/report/types.js";
 
@@ -133,6 +136,75 @@ describe("formatDailyTelegram", () => {
     expect(out).toContain("vs. 24 h");
     expect(out).toContain("Dólar sube");
     expect(out).toContain("https://cambio-uruguay.com");
+  });
+
+  describe("with a guide of the day", () => {
+    const guide: DailyGuide = DAILY_GUIDES[0]!;
+    const url = `https://cambio-uruguay.com${guide.slug}`;
+    // Balanced-delimiter check for Telegram's legacy parse_mode: an odd count of
+    // `*` or `_` (outside URLs) is what turns into a 400 on the box.
+    const unbalanced = (s: string) => {
+      const text = s.replace(/https?:\/\/\S+/g, "");
+      return (text.match(/\*/g)?.length ?? 0) % 2 !== 0 || (text.match(/(?<!\w)_|_(?!\w)/g)?.length ?? 0) % 2 !== 0;
+    };
+
+    it("keeps the label, the hook and the whole URL next to a very long AI summary", () => {
+      const out = formatDailyTelegram(daily, longAi, "es", TG_PHOTO_CAPTION_MAX, { guide });
+      expect(out.length).toBeLessThanOrEqual(1024);
+      expect(out).toContain("📘 *Guía del día*: " + guide.hook);
+      expect(out).toContain(url);
+      // The guide sits between the AI blurb and the news, before the footer.
+      expect(out.indexOf(url)).toBeLessThan(out.indexOf("📰"));
+      expect(out.indexOf("📰")).toBeLessThan(out.lastIndexOf("https://cambio-uruguay.com"));
+      expect(unbalanced(out)).toBe(false);
+    });
+
+    it("localizes the label and builds the URL from the configured site base", () => {
+      const en = formatDailyTelegram(daily, "", "en", TG_PHOTO_CAPTION_MAX, { guide, siteBaseUrl: "https://example.test/" });
+      expect(en).toContain("📘 *Guide of the day*: ");
+      expect(en).toContain(`https://example.test${guide.slug}`);
+      expect(formatDailyTelegram(daily, "", "pt", TG_PHOTO_CAPTION_MAX, { guide })).toContain("*Guia do dia*");
+    });
+
+    it("is byte-identical to today's output when no guide is passed", () => {
+      const before = formatDailyTelegram(daily, longAi, "es");
+      expect(formatDailyTelegram(daily, longAi, "es", TG_PHOTO_CAPTION_MAX, {})).toBe(before);
+      expect(formatDailyTelegram(daily, longAi, "es", TG_PHOTO_CAPTION_MAX, { guide: undefined })).toBe(before);
+      expect(before).not.toContain("📘");
+    });
+
+    it("drops the guide wholesale, never mid-URL, when the reserve does not fit", () => {
+      // Head + footer alone are ~130 chars for this fixture; 260 leaves no room
+      // for a ~190-char block, so the guide must vanish rather than be cut.
+      const tight = formatDailyTelegram(daily, "Resumen.", "es", 260, { guide });
+      expect(tight.length).toBeLessThanOrEqual(260);
+      expect(tight).not.toContain("📘");
+      expect(tight).not.toContain("/guias/");
+      expect(tight.endsWith("https://cambio-uruguay.com")).toBe(true);
+    });
+
+    it("never leaves a half URL for any catalogue entry at the real caption limit", () => {
+      for (const g of DAILY_GUIDES) {
+        for (const lang of ["es", "en", "pt"] as const) {
+          const out = formatDailyTelegram(daily, longAi, lang, TG_PHOTO_CAPTION_MAX, { guide: g });
+          expect(out.length, g.slug).toBeLessThanOrEqual(1024);
+          expect(out, g.slug).toContain(`https://cambio-uruguay.com${g.slug}\n`);
+          expect(unbalanced(out), g.slug).toBe(false);
+        }
+      }
+    });
+
+    it("costs the summary the reserve but still ships the AI blurb and a headline", () => {
+      const out = formatDailyTelegram(daily, longAi, "es", TG_PHOTO_CAPTION_MAX, { guide });
+      expect(out).toContain("Resumen del mercado");
+      expect(out).toContain("Comprar USD");
+      expect(out).toContain("Dólar sube");
+    });
+
+    it("reaches Discord through the same body", () => {
+      expect(formatDailyDiscord(daily, "", "es", { guide })).toContain(url);
+      expect(formatDailyDiscord(daily, "", "es")).not.toContain("📘");
+    });
   });
 });
 

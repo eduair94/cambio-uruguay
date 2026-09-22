@@ -329,6 +329,435 @@ export default defineNuxtConfig({
     // @scalar/api-reference can't be imported under Node SSR (web-worker shim),
     // so render it client-side only. It's robots-disallowed; the canonical,
     // SSR-chromed entry point is /desarrolladores.
+    // Los avisos de autos (`/autos-usados-uruguay/<clave>`) son `noindex`, vencen en semanas y
+    // son miles: un satori por clave y por idioma es el costo que se quiere sacar. `ogImage:
+    // { url }` y NO `ogImage: false`, porque nuxt-og-image lee la página ANTES de mirar
+    // routeRules: con `false` una URL /__og-image__/... ya rastreada encuentra una página 200
+    // sin payload y devuelve 500; con `url` la misma URL degrada al `{ custom: true, url }`
+    // del propio og:image meta. El patrón es `/*` (UN segmento) y no `/**` a propósito:
+    // medido 22/9/2026 con el matcher del módulo (radix3 + defu sobre matchAll().reverse()),
+    // `/*` toma `/ml-MLU…` y nunca `/precios/<slug>`, así que las páginas de modelo (sí
+    // indexables) conservan la tarjeta generada sin regla de restitución — que además no
+    // existe: `ogImage: {}` en una regla más específica NO borra `url` (defu mezcla, no pisa).
+    // Tres idiomas: prefix_except_default sirve /x, /en/x y /pt/x desde el mismo archivo.
+    // og-autos.png: 1200×630, 282 KB, recorte central de og.png (1536×1024).
+    '/autos-usados-uruguay/*': { ogImage: { url: '/img/og-autos.png' } },
+    '/en/autos-usados-uruguay/*': { ogImage: { url: '/img/og-autos.png' } },
+    '/pt/autos-usados-uruguay/*': { ogImage: { url: '/img/og-autos.png' } },
+    // Caché de borde por familia (propuesta F1.1). Medido en producción el 22/9/2026:
+    // /guias/<slug> 0,52-0,60 s de TTFB en DYNAMIC contra 0,32 s en HIT en /. Cada familia
+    // se declara tres veces (sin prefijo, /en, /pt) porque con `prefix_except_default` el
+    // glob `/guias/**` NO cubre `/en/guias/**`, y dos veces por idioma porque el matcher de
+    // Nitro tampoco hace que `/guias/**` cubra el índice pelado `/guias`. Escritas una por
+    // una y con el valor literal A PROPÓSITO: `routeRules-browser-cache.test.ts` lee este
+    // archivo como TEXTO y una regla generada por un helper o una constante no la ve — y
+    // entonces tampoco vigila que diga `max-age=0, must-revalidate`, que acá es obligatorio y
+    // no decorativo (el HTML nombra `_nuxt/<hash>.js` que cada deploy renombra; ver el
+    // comentario de `/` más arriba y docs/app/LOADING_INCIDENT_2026-09-06.md).
+    //
+    // TTL por familia: 24 h para lo editorial (guías, comparativas, glosario, importar), 1 h
+    // para las fichas de casas y sucursales (cambian con la cotización pero la página lleva
+    // texto que la ancla), 10 min para histórico y cotización (son el número). Cada deploy
+    // purga el borde entero desde `scripts/deploy.sh` (`purge_edge_cache`), así que el
+    // TTL acota lo viejo que puede ser un dato, no un asset.
+    //
+    // EL HTML ANÓNIMO DE ESTAS FAMILIAS ES EL MISMO PARA TODOS, con un asterisco. El idioma
+    // lo decide la URL: `redirectOn: 'root'` (defecto de @nuxtjs/i18n, que este archivo no
+    // pisa) hace que ninguna ruta con prefijo mire cookie ni Accept-Language, y
+    // `server/middleware/lang-cookie-cache.ts` saca el `Set-Cookie: lang=<idioma del
+    // prefijo>` que volvía BYPASS a todo /en y /pt. Nada más del render lee cookie, cabecera
+    // ni sesión (auth, tema, avisos y AdSense son client-only). El asterisco es el aviso de
+    // cookies: `CookieConsent.vue` se renderiza en el servidor leyendo `cu_consent`, así que
+    // el borde guarda la variante "primera visita" y un visitante que ya decidió ve el aviso un
+    // instante hasta que hidrata. Se acepta a sabiendas: es un parpadeo, no un dato equivocado
+    // (la decisión sigue en su cookie y Consent Mode se actualiza igual), y moverlo a client-only
+    // choca con app/AGENTS.md y tests/e2e/consent.spec.ts.
+    //
+    // LO QUE NO VIVE ACÁ: el `s-maxage` es inerte hasta que en Cloudflare exista una Cache
+    // Rule (Caching → Cache Rules) que marque estas rutas como cacheables respetando el TTL del
+    // origen. Al 22/9/2026 la zona tenía reglas sólo para `/`, `/widget` y `/sw.js`; el
+    // nivel "aggressive" no cachea HTML sin una. Y el Browser Cache TTL tiene que seguir en
+    // "Respect Existing Headers" (2026-09-06), o el `max-age=0` no llega al navegador. Un
+    // 301 de `lowercase-routes.ts` (grafía de /historico y /sucursales) hereda el
+    // `s-maxage` de su familia: queda fijado en el borde 10 min / 1 h, y es permanente por
+    // diseño, así que no importa.
+    // guias: s-maxage=86400
+    '/guias': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/guias/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/en/guias': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/en/guias/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/pt/guias': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/pt/guias/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    // comparativas: s-maxage=86400
+    '/comparativas': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/comparativas/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/en/comparativas': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/en/comparativas/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/pt/comparativas': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/pt/comparativas/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    // glosario: s-maxage=86400
+    '/glosario': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/glosario/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/en/glosario': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/en/glosario/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/pt/glosario': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/pt/glosario/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    // importar: s-maxage=86400
+    '/importar': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/importar/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/en/importar': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/en/importar/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/pt/importar': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    '/pt/importar/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=86400' },
+    },
+    // casa: s-maxage=3600
+    '/casa/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/en/casa/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/pt/casa/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    // sucursales: s-maxage=3600
+    '/sucursales': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/sucursales/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/en/sucursales': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/en/sucursales/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/pt/sucursales': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/pt/sucursales/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    // sucursal: s-maxage=3600
+    '/sucursal': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/sucursal/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/en/sucursal': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/en/sucursal/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/pt/sucursal': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    '/pt/sucursal/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600' },
+    },
+    // historico: s-maxage=600
+    '/historico': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    '/historico/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    '/en/historico': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    '/en/historico/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    '/pt/historico': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    '/pt/historico/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    // cotizacion: s-maxage=600
+    '/cotizacion': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    '/cotizacion/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    '/en/cotizacion': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    '/en/cotizacion/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    '/pt/cotizacion': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    '/pt/cotizacion/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=600' },
+    },
+    // Páginas de pregunta (slug plano, top-level): las filas de más impresiones de Search
+    // Console fuera de las familias de directorio. Ruta EXACTA y no un glob, porque comparten
+    // el nivel raíz con /cuenta, /conectar, /mi-lista, /estado, /buscar, /asistente-ia, /widget
+    // y /pizarra, que no se pueden cachear. 6 h: son texto que se edita a mano y a veces varias
+    // veces en un día (el deploy purga igual). `/tarjetas-de-credito-uruguay` y
+    // `/descuentos-con-tarjeta-uruguay` son directorios: acá entra SÓLO su índice, nunca sus
+    // subrutas (`/[programa]`, `/[banco]`, `/cerca-de-mi`...). Mismo asterisco del aviso de
+    // cookies que arriba.
+    '/denunciar-ruidos-molestos-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/denunciar-ruidos-molestos-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/denunciar-ruidos-molestos-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/tarjetas-de-credito-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/tarjetas-de-credito-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/tarjetas-de-credito-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/inversiones-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/inversiones-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/inversiones-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/trabajo-para-menores-de-edad-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/trabajo-para-menores-de-edad-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/trabajo-para-menores-de-edad-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/sala-vip-aeropuerto-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/sala-vip-aeropuerto-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/sala-vip-aeropuerto-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/multas-de-transito-y-patente-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/multas-de-transito-y-patente-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/multas-de-transito-y-patente-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/cambiar-de-mutualista-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/cambiar-de-mutualista-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/cambiar-de-mutualista-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/cuanto-sale-la-cedula-de-identidad-uruguaya': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/cuanto-sale-la-cedula-de-identidad-uruguaya': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/cuanto-sale-la-cedula-de-identidad-uruguaya': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/comisiones-de-transferencia-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/comisiones-de-transferencia-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/comisiones-de-transferencia-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/alquilar-estando-en-clearing': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/alquilar-estando-en-clearing': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/alquilar-estando-en-clearing': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/retirar-efectivo-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/retirar-efectivo-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/retirar-efectivo-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/impuesto-autos-electricos-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/impuesto-autos-electricos-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/impuesto-autos-electricos-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/precio-de-la-nafta-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/precio-de-la-nafta-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/precio-de-la-nafta-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/devolucion-fonasa-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/devolucion-fonasa-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/devolucion-fonasa-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/salir-del-clearing': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/salir-del-clearing': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/salir-del-clearing': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/prestamo-sin-recibo-de-sueldo-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/prestamo-sin-recibo-de-sueldo-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/prestamo-sin-recibo-de-sueldo-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/garantia-de-alquiler-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/garantia-de-alquiler-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/garantia-de-alquiler-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/impuesto-temu-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/impuesto-temu-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/impuesto-temu-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/franquicia-aduana-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/franquicia-aduana-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/franquicia-aduana-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/declaracion-de-irpf-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/declaracion-de-irpf-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/declaracion-de-irpf-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/fecha-de-cobro-bps-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/fecha-de-cobro-bps-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/fecha-de-cobro-bps-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/mejores-prestamos-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/mejores-prestamos-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/mejores-prestamos-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/descuentos-con-tarjeta-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/en/descuentos-con-tarjeta-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
+    '/pt/descuentos-con-tarjeta-uruguay': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=21600' },
+    },
     '/api-reference': { ssr: false },
     '/_nuxt/**': {
       headers: { 'cache-control': 'max-age=31536000, immutable' },
@@ -475,6 +904,12 @@ export default defineNuxtConfig({
       '*/10 * * * *': ['alerts:check'],
       // Rental subscriptions use a Mongo lease and a per-channel outbox across both workers.
       '2,12,22,32,42,52 * * * *': ['rentals:alerts'],
+      // :51 y :56 de cada hora: recalienta el memo de /api/rentals (portada sin filtros, Montevideo,
+      // Canelones, Maldonado y página 2) justo después de que el backend escribe la horaria de
+      // alquileres (pm2 currency-rentals-hourly, :47 UTC) y lejos de rentals:alerts (:52). Los dos
+      // workers del cluster lo disparan y ESO es lo deseado: la caché de Nitro es memoria por proceso
+      // y cada worker calienta la suya. Ver server/utils/rentalDirectoryWarm.ts.
+      '51,56 * * * *': ['rentals:directory-warm'],
       // 11:00 UTC = 08:00 Uruguay: personalized Telegram summary for linked users.
       '0 11 * * *': ['telegram:summary'],
       // 08:15 UTC ≈ 05:15 Uruguay: refresh courier per-kg shipping rates.
@@ -786,6 +1221,7 @@ export default defineNuxtConfig({
       '/indicadores',
       '/blog',
       '/acerca',
+      '/publicidad',
       '/conectar',
       '/desarrolladores',
     ],
@@ -1060,6 +1496,27 @@ export default defineNuxtConfig({
       adsenseSlots: {
         contentEnd: process.env.NUXT_PUBLIC_ADSENSE_SLOT_CONTENT_END || '',
         inArticle: process.env.NUXT_PUBLIC_ADSENSE_SLOT_IN_ARTICLE || '',
+        // Riel de escritorio: 300x600 fijo a la DERECHA de la columna de lectura, desde 1280 px y
+        // sólo con densidad normal (composables/useAds.ts, DESIGN.md → "The Rail Is Not The Column
+        // Rule"). Vacío → sin riel y sin segunda columna: el layout queda como estaba. Se lee al
+        // BUILD (el build corre en el servidor), así que tiene que estar en app/.env del host antes
+        // de `nuxt build`, no sólo al arrancar pm2.
+        sidebar: process.env.NUXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || '',
+      },
+      // Patrocinios (/publicidad): el id de `utils/sponsorships.ts` que ocupa la fila patrocinada
+      // de la home. Vacío por defecto A PROPÓSITO: sin id la fila no existe en el DOM, y un id que
+      // no está en el registro tampoco dibuja nada (composables/useSponsorships.ts). Un patrocinio
+      // se firma con su copia y su URL revisadas en un commit, no con una env suelta.
+      sponsorships: {
+        homeRow: process.env.NUXT_PUBLIC_SPONSORSHIPS_HOME_ROW || '',
+      },
+      // Enlaces de afiliado (utils/affiliates.ts), una clave por id en camelCase. NUNCA en el
+      // repo: un enlace de afiliado con el id de la cuenta adentro es media credencial. Vacío ->
+      // `AffiliateLink` no dibuja nada, ni siquiera el enlace orgánico.
+      affiliates: {
+        payoneer: process.env.NUXT_PUBLIC_AFFILIATES_PAYONEER || '',
+        wise: process.env.NUXT_PUBLIC_AFFILIATES_WISE || '',
+        seguroViaje: process.env.NUXT_PUBLIC_AFFILIATES_SEGURO_VIAJE || '',
       },
       // Firebase Web SDK config (public by design)
       firebase: {

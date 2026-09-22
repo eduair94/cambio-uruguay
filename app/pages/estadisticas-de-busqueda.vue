@@ -95,16 +95,34 @@
         </VAlert>
 
         <VRow class="mb-2 mt-2">
-          <VCol cols="6" md="4">
+          <VCol cols="6" md="3">
             <VCard variant="outlined" class="pa-4 h-100">
               <div class="text-caption text-medium-emphasis">RPM del sitio</div>
               <div class="text-h6 font-weight-bold">
                 {{ rpMoney(plan.siteRpm, plan.currency) }}
               </div>
-              <div class="text-caption text-medium-emphasis">por cada 1.000 vistas</div>
+              <div class="text-caption text-medium-emphasis">
+                por cada 1.000 vistas, sin filtrar: es el ancla de los multiplicadores
+              </div>
             </VCard>
           </VCol>
-          <VCol cols="6" md="4">
+          <!-- La lectura resistente a robots. Mismo numerador (la plata la deja quien ve anuncios,
+               y eso pasa casi todo en Uruguay) y un denominador que el tráfico automatizado no
+               infla. Va AL LADO del RPM del sitio y no lo reemplaza: no se bloquea ningún país por
+               suposición. Si se despega mucho, el job lo dice en una alerta arriba. -->
+          <VCol cols="6" md="3">
+            <VCard variant="outlined" class="pa-4 h-100">
+              <div class="text-caption text-medium-emphasis">RPM sólo Uruguay</div>
+              <div class="text-h6 font-weight-bold">
+                {{ rpMoney(plan.siteRpmUy ?? 0, plan.currency) }}
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                sólo visitas desde Uruguay: la cifra que los robots no mueven. Diagnóstico, no
+                ordena nada
+              </div>
+            </VCard>
+          </VCol>
+          <VCol cols="6" md="3">
             <VCard variant="outlined" class="pa-4 h-100">
               <div class="text-caption text-medium-emphasis">Un clic promedio</div>
               <div class="text-h6 font-weight-bold">
@@ -115,7 +133,7 @@
               </div>
             </VCard>
           </VCol>
-          <VCol cols="12" md="4">
+          <VCol cols="6" md="3">
             <VCard variant="outlined" class="pa-4 h-100">
               <div class="text-caption text-medium-emphasis">Techo de la cola entera</div>
               <div class="text-h6 font-weight-bold">

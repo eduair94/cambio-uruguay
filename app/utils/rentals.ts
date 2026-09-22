@@ -35,6 +35,25 @@ export const RENTAL_COLLATION = { locale: 'es', strength: 1 } as const
 /** One freshness window for the list, map, individual pages and saved-search alerts. */
 export const RENTAL_STALE_DAYS = 10
 
+/**
+ * La forma de una key de vivienda: `<slug>-<hash>` que arma `classes/rentals/dedupe.ts` en el
+ * backend (slugify = minúsculas, dígitos y guiones; hash en base 36). Nada más puede ser una key.
+ *
+ * Sirve para cortar ANTES de tocar Mongo: en producción llegaban `/alquileres/null` y
+ * `/en/alquileres/null` (un enlace roto del lado del cliente) y cada uno corría el pipeline entero de
+ * la ficha para terminar en 404. `null` y `undefined` pasan el regex —son letras minúsculas— y se
+ * rechazan aparte porque son exactamente lo que imprime un `String(undefined)` en una URL.
+ */
+export const RENTAL_KEY_RE = /^[a-z0-9][a-z0-9-]{0,180}$/
+export function rentalValidKey(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value !== 'null' &&
+    value !== 'undefined' &&
+    RENTAL_KEY_RE.test(value)
+  )
+}
+
 /** Autocomplete follows the same user expectation: a keyboard without accents can find Cordón. */
 export function rentalTextMatches(value: unknown, query: string): boolean {
   const fold = (text: unknown) =>

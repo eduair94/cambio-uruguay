@@ -119,6 +119,11 @@ describe('sitemap with a healthy API', () => {
     for (const loc of ['/prestamos-uruguay', '/en/prestamos-uruguay', '/pt/prestamos-uruguay']) {
       expect(locs.has(loc)).toBe(true)
     }
+    // El media kit (/publicidad) es indexable y entra por NAV_SECTIONS (sección `site`), así que
+    // sale en los tres idiomas como cualquier página del esqueleto.
+    for (const loc of ['/publicidad', '/en/publicidad', '/pt/publicidad']) {
+      expect(locs.has(loc), loc).toBe(true)
+    }
     for (const prefix of ['', '/en', '/pt']) {
       expect(urls.filter(url => url.loc === `${prefix}/alquiler-ideal-uruguay`)).toHaveLength(1)
       expect(locs.has(`${prefix}/herramientas/alquiler-ideal-uruguay`)).toBe(false)

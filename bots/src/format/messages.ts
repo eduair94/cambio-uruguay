@@ -2,6 +2,7 @@
 // Telegram/Discord use light Markdown; Twitter is compact and hard-capped at 280.
 import type { BestHouseResult, ConvertResult, RatesResult } from "cambio-uruguay-mcp/tools";
 import type { NewsItem } from "cambio-uruguay-mcp/news";
+import { formatDailyGuide, type DailyGuide } from "./guides.js";
 import { fmtNum, fmtPct, fmtUYU, L, type Lang } from "./i18n.js";
 import type { AlertData, DailyReportData } from "../report/types.js";
 
@@ -9,6 +10,21 @@ const TWEET_MAX = 280;
 /** Telegram caps photo captions at 1024 chars (text messages at 4096). The daily
  * post always carries the OG image, so the channel body must fit the caption. */
 export const TG_PHOTO_CAPTION_MAX = 1024;
+/** Lo máximo que la "guía del día" puede sacarle al caption (rótulo + gancho + URL,
+ * con sus saltos de línea). Cuesta más o menos el tercer titular de noticias, no
+ * el resumen de la IA. El catálogo se testea entrada por entrada contra este
+ * número en el idioma de rótulo más largo, así que subirlo o bajarlo es una
+ * decisión editorial, no un ajuste. */
+export const TG_GUIDE_RESERVE = 200;
+
+/** Lo que el cuerpo diario acepta además de los datos: la guía del día y la base
+ * del sitio con la que se arma su URL (`SITE_BASE_URL`; el footer sigue fijo). */
+export interface DailyBodyExtras {
+  guide?: DailyGuide;
+  siteBaseUrl?: string;
+}
+
+const DEFAULT_SITE = "https://cambio-uruguay.com";
 
 /** Hard-cap a string at n chars, adding an ellipsis when truncated. */
 export function truncate(s: string, n: number): string {
@@ -105,7 +121,8 @@ export function formatDailyTelegram(
   data: DailyReportData,
   ai: string,
   lang: Lang,
-  maxLen: number = TG_PHOTO_CAPTION_MAX
+  maxLen: number = TG_PHOTO_CAPTION_MAX,
+  extras: DailyBodyExtras = {}
 ): string {
   const t = L(lang);
   const head = [`📊 *${t.dailyTitle}* — ${data.date}`, "", ...dailyLines(data, lang)].join("\n");
@@ -115,18 +132,27 @@ export function formatDailyTelegram(
   // then fills its reserve plus whatever the summary left unused.
   let remaining = maxLen - head.length - footer.length;
   const newsReserve = data.news.length ? 220 : 0; // ~3 compact headlines
-  const aiBudget = Math.max(0, remaining - 2 - newsReserve);
+  // La guía del día se arma PRIMERO y se resta por su largo real, nunca por el
+  // tope: entra entera o no entra. Un link cortado por la mitad es peor que
+  // ningún link, así que si ni siquiera cabe sola (un maxLen chico) se descarta
+  // en vez de truncarse. Va después del resumen y antes de las noticias: lo que
+  // pierde es el tercer titular, no el link.
+  let guideBlock = extras.guide ? formatDailyGuide(extras.guide, extras.siteBaseUrl ?? DEFAULT_SITE, t.guideOfTheDay) : "";
+  if (guideBlock.length > remaining) guideBlock = "";
+  const aiBudget = Math.max(0, remaining - 2 - newsReserve - guideBlock.length);
   const blurb = aiBudget > 40 ? compactAiSummary(ai, aiBudget) : "";
   const aiBlock = blurb ? `\n\n${blurb}` : "";
-  remaining -= aiBlock.length;
+  remaining -= aiBlock.length + guideBlock.length;
   const news = fitNewsBlock(data.news, lang, remaining);
-  return truncate(`${head}${aiBlock}${news}${footer}`, maxLen);
+  // Por construcción ya cabe; el truncate queda como cinturón, y como la guía
+  // nunca es lo último, un recorte de emergencia le pegaría al footer, no a ella.
+  return truncate(`${head}${aiBlock}${guideBlock}${news}${footer}`, maxLen);
 }
 
-export function formatDailyDiscord(data: DailyReportData, ai: string, lang: Lang): string {
+export function formatDailyDiscord(data: DailyReportData, ai: string, lang: Lang, extras: DailyBodyExtras = {}): string {
   // Discord renders the same Markdown subset well enough; reuse the body
   // (the 1024 default sits comfortably under Discord's 2000-char limit).
-  return formatDailyTelegram(data, ai, lang);
+  return formatDailyTelegram(data, ai, lang, TG_PHOTO_CAPTION_MAX, extras);
 }
 
 /** Compact daily tweet, hard-capped at 280 chars. */

@@ -2,11 +2,14 @@
 // cannot be edited after the fact. The tests are therefore about the two things
 // that would be embarrassing in public: a post X rejects for length, and a link
 // that 404s because a page was renamed.
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
+import { DAILY_GUIDES, formatDailyGuide } from "../src/format/guides.js";
+import { L } from "../src/format/i18n.js";
+import { TG_GUIDE_RESERVE } from "../src/format/messages.js";
 import {
   CONTENT_PROMOS,
   formatContentPromo,
@@ -21,17 +24,23 @@ const SITE = "https://cambio-uruguay.com";
 
 // The app's catalogues, read as text — bots/ is a separate package and cannot
 // import from app/. Hubs live in `siteNav.ts`; tool pages live in `tools.ts`
-// under `/herramientas/<slug>`, which is why both files are needed here.
-const appUtil = (name: string) =>
-  readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "..", "app", "utils", name), "utf8");
+// under `/herramientas/<slug>`; the editorial guides live in `guides.ts` and
+// its sibling modules (`guides<Tema>.ts`) under `/guias/<slug>`, which is why
+// all three families are needed here.
+const APP_UTILS = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "app", "utils");
+const appUtil = (name: string) => readFileSync(join(APP_UTILS, name), "utf8");
 const siteNav = appUtil("siteNav.ts");
 const tools = appUtil("tools.ts");
+const guideModules = readdirSync(APP_UTILS).filter((f) => /^guides[A-Za-z]*\.ts$/.test(f));
+const guides = guideModules.map(appUtil).join("\n");
 
-/** True when the site declares `slug` as a real route, in either catalogue. */
+/** True when the site declares `slug` as a real route, in any catalogue. */
 function siteDeclares(slug: string): boolean {
   if (siteNav.includes(`to: '${slug}'`)) return true;
   const tool = slug.startsWith("/herramientas/") ? slug.slice("/herramientas/".length) : null;
-  return tool !== null && tools.includes(`slug: '${tool}'`);
+  if (tool !== null) return tools.includes(`slug: '${tool}'`);
+  const guide = slug.startsWith("/guias/") ? slug.slice("/guias/".length) : null;
+  return guide !== null && guides.includes(`slug: '${guide}'`);
 }
 
 describe("the content catalogue", () => {
@@ -99,6 +108,73 @@ describe("formatContentPromo", () => {
     expect(tweetLength("https://cambio-uruguay.com/a-very-long-path-that-keeps-going-and-going")).toBe(
       TCO_URL_LENGTH
     );
+  });
+});
+
+// The daily guide goes out EVERY day inside the Telegram photo caption, so on top
+// of the X catalogue's rules it has to fit a hard reserve and survive Telegram's
+// legacy Markdown, which returns 400 (and drops the whole post) on a stray `*`.
+describe("the daily-guide catalogue", () => {
+  it("reads the guide modules the site really ships", () => {
+    // If this list shrinks to nothing the route check below would pass vacuously.
+    expect(guideModules).toContain("guides.ts");
+    expect(guideModules.length).toBeGreaterThan(5);
+  });
+
+  it("has the hand-written set, with no duplicate slugs", () => {
+    expect(DAILY_GUIDES.length).toBe(25);
+    const slugs = DAILY_GUIDES.map((g) => g.slug);
+    expect(new Set(slugs).size).toBe(slugs.length);
+  });
+
+  it("only links to /guias/ routes the site actually declares", () => {
+    for (const guide of DAILY_GUIDES) {
+      expect(guide.slug.startsWith("/guias/"), guide.slug).toBe(true);
+      expect(siteDeclares(guide.slug), guide.slug).toBe(true);
+    }
+  });
+
+  it("uses absolute site paths, never a locale prefix or a trailing slash", () => {
+    for (const guide of DAILY_GUIDES) {
+      expect(guide.slug, guide.slug).toMatch(/^\/[a-z0-9/-]+$/);
+      expect(guide.slug.endsWith("/"), guide.slug).toBe(false);
+      expect(/^\/(en|pt)\//.test(guide.slug), guide.slug).toBe(false);
+    }
+  });
+
+  it("writes a hook that says something, without figures, month names or shouting", () => {
+    const months =
+      /\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|setiembre|septiembre|octubre|noviembre|diciembre)\b/i;
+    for (const guide of DAILY_GUIDES) {
+      expect(guide.hook.length, guide.slug).toBeGreaterThanOrEqual(60);
+      expect(guide.hook.length, guide.slug).toBeLessThanOrEqual(140);
+      expect(guide.hook.trim(), guide.slug).toBe(guide.hook);
+      // Mechanism over magnitude: a digit is a figure, and figures go stale.
+      expect(guide.hook, guide.slug).not.toMatch(/\d/);
+      expect(guide.hook, guide.slug).not.toMatch(months);
+      expect(guide.hook, guide.slug).not.toMatch(/!{2,}|\p{Lu}{7,}/u);
+    }
+  });
+
+  it("never carries a legacy-Markdown delimiter Telegram could choke on", () => {
+    for (const guide of DAILY_GUIDES) {
+      expect(guide.hook, guide.slug).not.toMatch(/[*_`[\]()]/);
+    }
+  });
+
+  it("fits the caption reserve in every language, URL and label included", () => {
+    for (const lang of ["es", "en", "pt"] as const) {
+      for (const guide of DAILY_GUIDES) {
+        const block = formatDailyGuide(guide, SITE, L(lang).guideOfTheDay);
+        expect(block.length, `${lang} ${guide.slug}: ${block.length}`).toBeLessThanOrEqual(TG_GUIDE_RESERVE);
+        expect(block.endsWith(`${SITE}${guide.slug}`), guide.slug).toBe(true);
+      }
+    }
+  });
+
+  it("tolerates a trailing slash on the configured site URL", () => {
+    const guide = DAILY_GUIDES[0]!;
+    expect(formatDailyGuide(guide, `${SITE}/`, "x")).toBe(formatDailyGuide(guide, SITE, "x"));
   });
 });
 

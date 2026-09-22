@@ -183,14 +183,21 @@ que es el mismo síntoma que "todavía no hay suficiente historia" y por eso nad
 | pisos de muestra por familia | una familia con 40 vistas y una impresión da un RPM espectacular y falso que encabezaría la cola para siempre. |
 | `PROVISIONAL_REVENUE_USD` | con centavos en la ventana, todo RPM por familia es provisional y la pantalla lo dice. |
 | desglose completo de ingreso | `fetchRevenue` pagina por `pagePath` hasta `rowCount`, con presupuesto de 100.000 filas. Las páginas sin anuncios también aportan vistas al RPM. Una página incompleta, repetida, un total cambiante o un error conserva el snapshot privado anterior; la actualización pública sigue independiente. |
+| RPM sólo Uruguay (`totalsUy` → `siteRpmUy`) | el RPM del sitio divide la plata entre TODAS las vistas, incluidas las automatizadas que no cargan ni una unidad de anuncio. Un cuarto reporte de GA4, con las mismas métricas y ventana pero filtrado por `countryId = UY`, da el mismo cociente sobre la audiencia real. Se publica AL LADO (`siteRpmUy` en el plan, tarjeta «RPM sólo Uruguay»): no ancla ningún multiplicador, no ordena la cola, no entra en `pending` ni en `revenueWouldRegress`. Cuando se despega del RPM del sitio por ≥ `UY_RPM_DIVERGENCE` (1,5×) y el recorte uruguayo tiene la misma muestra que exige una familia (≥ 500 vistas y ≥ 100 impresiones), sale la alerta `views-without-impressions` con las dos proporciones y sin montos. |
 
 La lectura del 21/9 detectó que el límite anterior de 2.000 URLs dejaba fuera gran parte de las
 vistas, aunque los ingresos y las impresiones publicitarias sí cerraban. Por eso las familias se
 calculan después de completar el desglose y las páginas más rentables se ordenan al final. Los
 totales originales se conservan: la paginación no excluye países ni decide qué tráfico es humano.
-Un aumento de vistas sin interacción ni anuncios exige investigar su procedencia antes de usarlo
-para reajustar los multiplicadores. Las cifras y el diagnóstico detallado quedan en
-`docs/seo/data/revenue-2026-09-21/`, fuera del repositorio público.
+La misma lectura mostró **vistas sin interacción ni anuncios** inflando el denominador del RPM, y
+desde el 2026-09-22 eso se **mide** en vez de investigarse a mano cada vez: el total sólo-Uruguay
+es la lectura que ese tráfico no puede mover, y la diferencia entre las dos cifras es el tamaño del
+problema. Es una medición **aditiva y diagnóstica**: el RPM del sitio y los multiplicadores siguen
+saliendo del total sin filtrar, y ningún país queda excluido de nada por esto —
+`docs/seo/adsense-growth-loop.md`: «No bloquear países por suposición». Reajustar un multiplicador
+por ese motivo sigue siendo una decisión de una persona, ahora con la cifra al lado. Las cifras y
+el diagnóstico detallado quedan en `docs/seo/data/revenue-2026-09-21/`, fuera del repositorio
+público.
 
 Las caídas de una página conservan su URL desde `pageFalling`, antes de atribuir destinos a las
 consultas. Así una caída del histórico se valora como histórico y una de una guía como guía. Una

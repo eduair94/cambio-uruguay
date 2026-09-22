@@ -26,6 +26,15 @@ describe("el ingreso no toca la superficie pública", () => {
     }
   });
 
+  it("la lectura sólo-Uruguay vive en el snapshot privado, nunca en el público", () => {
+    // `totalsUy` no huele a plata para el regex de arriba, así que se pregunta por el campo
+    // explícito: un nombre inocente no puede colarse en el modelo público.
+    const publicFields = Object.keys(SiteAnalyticsSnapshotModel.schema.obj);
+    expect(publicFields).not.toContain("totalsUy");
+    expect(publicFields).not.toContain("siteRpmUy");
+    expect(Object.keys(SiteRevenueSnapshotModel.schema.obj)).toContain("totalsUy");
+  });
+
   it("las dos colecciones son distintas", () => {
     expect(SiteAnalyticsSnapshotModel.collection.name).toBe("siteanalyticssnapshots");
     expect(SiteRevenueSnapshotModel.collection.name).toBe("siterevenuesnapshots");
@@ -85,5 +94,13 @@ describe("revenueIsEmpty", () => {
 
   it("con plata no está vacío", () => {
     expect(revenueIsEmpty(snap(1.23, 900))).toBe(false);
+  });
+
+  it("sólo mira `totals`: un bloque uruguayo sano no saca de 'todavía no' a un sitio en cero", () => {
+    const withUy = {
+      ...snap(0, 0),
+      totalsUy: { adRevenue: 5, adImpressions: 4000, adClicks: 3, screenPageViews: 80, sessions: 40, rpm: 62.5 },
+    } as RevenueSnapshot;
+    expect(revenueIsEmpty(withUy)).toBe(true);
   });
 });

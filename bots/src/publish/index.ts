@@ -3,12 +3,14 @@
 // channel never blocks the others. Subscriber lists are passed in (resolved by
 // the caller from the store) to keep this module free of Mongo.
 import type { BotConfig } from "../config.js";
+import type { DailyGuide } from "../format/guides.js";
 import { normalizeLang, type Lang } from "../format/i18n.js";
 import {
   formatAlert,
   formatDailyDiscord,
   formatDailyTelegram,
   formatDailyTwitter,
+  TG_PHOTO_CAPTION_MAX,
 } from "../format/messages.js";
 import type { AlertData, DailyReportData } from "../report/types.js";
 import { DiscordPublisher } from "./discord.js";
@@ -35,6 +37,9 @@ export interface PublishDailyInput {
   /** Telegram subscribers to DM (already resolved + active). */
   telegramSubscribers?: SubscriberRef[];
   image?: ImageRef;
+  /** La guía del día, elegida UNA vez por quien llama (la rotación vive en Mongo y
+   * este módulo no la toca): el canal y cada DM por idioma reciben la misma. */
+  guide?: DailyGuide;
 }
 
 export interface PublishDailyResult {
@@ -57,6 +62,7 @@ export async function publishDaily(input: PublishDailyInput): Promise<PublishDai
   const { cfg, data, aiByLang, image } = input;
   const lang = normalizeLang(cfg.defaultLang);
   const ai = aiByLang[lang] ?? aiByLang[cfg.defaultLang] ?? "";
+  const extras = { guide: input.guide, siteBaseUrl: cfg.siteBaseUrl };
   const channels: string[] = [];
   let dmSent = 0;
   const deactivated: string[] = [];
@@ -66,7 +72,10 @@ export async function publishDaily(input: PublishDailyInput): Promise<PublishDai
   if (cfg.telegram) {
     const tg = new TelegramPublisher(cfg.telegram, { dryRun: cfg.dryRun });
     tasks.push(
-      settle("telegram-channel", tg.postChannel(formatDailyTelegram(data, ai, lang), { imageUrl: image?.url })).then(
+      settle(
+        "telegram-channel",
+        tg.postChannel(formatDailyTelegram(data, ai, lang, TG_PHOTO_CAPTION_MAX, extras), { imageUrl: image?.url })
+      ).then(
         (ok) => ok && channels.push("telegram")
       )
     );
@@ -81,7 +90,7 @@ export async function publishDaily(input: PublishDailyInput): Promise<PublishDai
         (async () => {
           const tgDm = new TelegramPublisher(cfg.telegram!, { dryRun: cfg.dryRun });
           for (const [l, subs] of byLang) {
-            const body = formatDailyTelegram(data, aiByLang[l] ?? ai, l);
+            const body = formatDailyTelegram(data, aiByLang[l] ?? ai, l, TG_PHOTO_CAPTION_MAX, extras);
             const res = await tgDm.dmMany(
               subs.map((s) => ({ chatId: s.chatId, text: body })),
               { imageUrl: image?.url }
@@ -97,7 +106,7 @@ export async function publishDaily(input: PublishDailyInput): Promise<PublishDai
   if (cfg.discord?.webhookUrl) {
     const dc = new DiscordPublisher({ webhookUrl: cfg.discord.webhookUrl }, { dryRun: cfg.dryRun });
     tasks.push(
-      settle("discord-channel", dc.postChannel(formatDailyDiscord(data, ai, lang), { imageUrl: image?.url })).then(
+      settle("discord-channel", dc.postChannel(formatDailyDiscord(data, ai, lang, extras), { imageUrl: image?.url })).then(
         (ok) => ok && channels.push("discord")
       )
     );

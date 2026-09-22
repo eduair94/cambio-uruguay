@@ -2,7 +2,7 @@
   <VContainer class="py-6 py-md-10">
     <VBreadcrumbs :items="breadcrumbs" class="px-0 mb-2" />
 
-    <template v-if="!data">
+    <template v-if="!data || !car">
       <h1 class="text-h5 font-weight-bold mb-3">
         {{
           failureCode === 404
@@ -354,16 +354,19 @@ import {
   carSpecTables,
 } from '~/utils/carsSpecs'
 
+// Una clave que no tiene forma de clave (`ml-MLU1; drop`) es un 404 ANTES de tocar la base y
+// antes de que nuxt-og-image vuelva a pedir la página para leer su payload: `validate` corre
+// fuera de setup, igual que en equipar/productos. La macro sólo ve imports, nunca constantes.
+definePageMeta({
+  validate: route => carKeyValid(String(route.params.key ?? '')),
+})
+
 const route = useRoute()
 const localePath = useLocalePath()
 const key = computed(() => String(route.params.key || ''))
 const { data, error } = await useAsyncData<CarDetailResponse>(
   () => `car-${key.value}`,
-  () => {
-    if (!carKeyValid(key.value))
-      throw createError({ statusCode: 404, statusMessage: 'Advert not found' })
-    return $fetch<CarDetailResponse>(`/api/cars/ficha/${encodeURIComponent(key.value)}`)
-  }
+  () => $fetch<CarDetailResponse>(`/api/cars/ficha/${encodeURIComponent(key.value)}`)
 )
 const failureCode = computed(() => {
   const failure = error.value as { statusCode?: number; data?: { statusCode?: number } } | null
@@ -376,18 +379,25 @@ if (import.meta.server && (error.value || !data.value)) {
     useResponseHeader('cache-control').value = 'no-store, max-age=0'
   }
 }
-const car = computed(() => data.value!.car)
+// `null` cuando el aviso ya no está, nunca `data.value!`: el 22/9/2026 una lectura ansiosa
+// (`ref(gallery.value[0])`) sobre un aviso vencido tiraba TypeError dentro de setup y Nitro
+// pisaba el 404 recién puesto con un 500 "Server Error", en los tres idiomas y también en el
+// endpoint /__og-image__ que vuelve a pedir la página. Todo lo que cuelga de `car` tiene que
+// seguir vivo con `car.value === null`; `tests/unit/carsDetailPageStatus.test.ts` lo vigila.
+const car = computed(() => data.value?.car ?? null)
 // The advert's own gallery when its page was read; the search-card cover otherwise.
 const gallery = computed(() =>
-  car.value.pictures?.length ? car.value.pictures : car.value.picture ? [car.value.picture] : []
+  car.value?.pictures?.length ? car.value.pictures : car.value?.picture ? [car.value.picture] : []
 )
 const activePicture = ref<string | null>(gallery.value[0] ?? null)
 watch(gallery, list => {
   activePicture.value = list[0] ?? null
 })
-const specTables = computed(() => carSpecTables(car.value))
-const equipmentGroups = computed(() => carEquipmentGroups(car.value.specs))
-const hasSpecSheet = computed(() => carHasSpecSheet(car.value))
+const specTables = computed(() =>
+  car.value ? carSpecTables(car.value) : { mechanics: [], dimensions: [], deal: [] }
+)
+const equipmentGroups = computed(() => carEquipmentGroups(car.value?.specs))
+const hasSpecSheet = computed(() => !!car.value && carHasSpecSheet(car.value))
 const breadcrumbs = computed(() => [
   { title: 'Autos usados', to: localePath(CARS_PATH) },
   ...(data.value?.market
@@ -402,10 +412,10 @@ const breadcrumbs = computed(() => [
 ])
 const canonical = computed(() => `https://cambio-uruguay.com${carPath(key.value)}`)
 const title = computed(() =>
-  data.value ? `${car.value.title} ${car.value.year}` : 'Aviso de auto usado'
+  car.value ? `${car.value.title} ${car.value.year}` : 'Aviso de auto usado'
 )
 const description = computed(() =>
-  data.value
+  car.value
     ? `${car.value.title}, ${car.value.year}, ${formatCarKm(car.value.km)}: ${formatCarPrice(car.value)}. Comparado contra avisos iguales en Uruguay.`
     : 'Aviso de auto usado en Uruguay.'
 )
@@ -422,7 +432,7 @@ useSeoMeta({
 
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonical.value }],
-  script: data.value
+  script: car.value
     ? [
         {
           type: 'application/ld+json',

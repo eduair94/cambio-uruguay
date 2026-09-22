@@ -16,6 +16,7 @@ const RevenuePlanSnapshotSchema = new Schema(
     revenueWindow: { type: Schema.Types.Mixed, default: {} },
     currency: { type: String, default: 'USD' },
     siteRpm: { type: Number, default: 0 },
+    siteRpmUy: { type: Number, default: 0 },
     siteUsdPerClick: { type: Number, default: 0 },
     revenuePending: { type: Boolean, default: true },
     totalUpsideUsd: { type: Number, default: 0 },

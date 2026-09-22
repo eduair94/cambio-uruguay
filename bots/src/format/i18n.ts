@@ -67,6 +67,8 @@ export interface LabelSet {
   unsubscribed: string;
   langSet: string;
   more: string;
+  /** Rótulo del bloque "guía del día" del resumen diario (ver `format/guides.ts`). */
+  guideOfTheDay: string;
 }
 
 const LABELS: Record<Lang, LabelSet> = {
@@ -93,6 +95,7 @@ const LABELS: Record<Lang, LabelSet> = {
     unsubscribed: "Suscripción cancelada.",
     langSet: "Idioma actualizado",
     more: "ver más",
+    guideOfTheDay: "Guía del día",
   },
   en: {
     buy: "Buy",
@@ -117,6 +120,7 @@ const LABELS: Record<Lang, LabelSet> = {
     unsubscribed: "Unsubscribed.",
     langSet: "Language updated",
     more: "see more",
+    guideOfTheDay: "Guide of the day",
   },
   pt: {
     buy: "Compra",
@@ -141,6 +145,7 @@ const LABELS: Record<Lang, LabelSet> = {
     unsubscribed: "Inscrição cancelada.",
     langSet: "Idioma atualizado",
     more: "ver mais",
+    guideOfTheDay: "Guia do dia",
   },
 };
 

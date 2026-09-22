@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import type { Opportunity, PageTypeRow } from "../../classes/gsc/types";
 import type { RevenueSnapshot } from "../../classes/site-analytics/revenue";
 import { DEFEND_KINDS, UPSIDE_KINDS, buildPlanAlerts, familyLedger, priceActions, totalUpside } from "../../classes/revenueplan/plan";
-import { buildValueTable } from "../../classes/revenueplan/value";
+import { MIN_FAMILY_AD_IMPRESSIONS, MIN_FAMILY_VIEWS, UY_RPM_DIVERGENCE, buildValueTable } from "../../classes/revenueplan/value";
+import type { RevenueTotals } from "../../classes/site-analytics/revenue";
 
 const site = "https://cambio-uruguay.com";
 
@@ -25,6 +26,7 @@ const revenue = (): RevenueSnapshot =>
     currency: "USD",
     range: { start: "2026-08-23", end: "2026-09-19" },
     totals: { adRevenue: 20, adImpressions: 9000, adClicks: 12, screenPageViews: 100000, sessions: 60000, rpm: 0.2 },
+    totalsUy: { adRevenue: 18, adImpressions: 8500, adClicks: 11, screenPageViews: 60000, sessions: 36000, rpm: 0.3 },
     families: [
       {
         bucket: "/convertir/*",
@@ -204,6 +206,63 @@ describe("alertas", () => {
     });
     // 0,45 medido contra 0,2 del sitio = 2,25×, y su tramo asume 1×. No llega al umbral de 3×.
     expect(alerts.map((a) => a.code)).not.toContain("tier-drift");
+  });
+
+  describe("views-without-impressions: el RPM uruguayo delata vistas que no ven anuncios", () => {
+    const uy = (over: Partial<RevenueTotals>): RevenueTotals => ({ ...revenue().totalsUy, ...over });
+    const alertsFor = (totalsUy: RevenueTotals | undefined) => {
+      const snap = { ...revenue(), totalsUy } as RevenueSnapshot;
+      if (!totalsUy) delete (snap as Partial<RevenueSnapshot>).totalsUy;
+      return buildPlanAlerts({
+        table: buildValueTable(snap),
+        families: [],
+        actions: [],
+        gscAsOf: "2026-09-20",
+        revenueAsOf: "2026-09-20",
+        today: "2026-09-20",
+      });
+    };
+
+    it("con audiencia real las dos lecturas se parecen y no avisa", () => {
+      // 0,3 contra 0,2 es 1,5× justo y el umbral es inclusivo: un pelo por debajo no dispara.
+      expect(alertsFor(uy({ rpm: 0.2 * UY_RPM_DIVERGENCE - 0.001 })).map((a) => a.code)).not.toContain(
+        "views-without-impressions"
+      );
+    });
+
+    it("cuando el sitio suma vistas que Uruguay no tiene, avisa con las dos proporciones y sin montos", () => {
+      // El escenario de robots: la plata está en Uruguay (RPM 0,9) y el sitio la divide entre
+      // cinco veces más vistas (RPM 0,2).
+      const alerts = alertsFor(uy({ rpm: 0.9, screenPageViews: 20000 }));
+      const alert = alerts.find((a) => a.code === "views-without-impressions")!;
+      expect(alert.level).toBe("warn");
+      expect(alert.message).toMatch(/4\.5× el del sitio entero/);
+      expect(alert.message).toMatch(/Uruguay es el 20 % de las vistas/);
+      expect(alert.message).toMatch(/9\.0 impresiones cada 100 vistas/);
+      expect(alert.message).toMatch(/no se bloquea ningún país/);
+      expect(alert.message).not.toMatch(/USD|\$/);
+    });
+
+    it("exige la misma muestra que una familia: con pocas vistas uruguayas el cociente es ruido", () => {
+      expect(
+        alertsFor(uy({ rpm: 9, screenPageViews: MIN_FAMILY_VIEWS - 1, adImpressions: 5000 })).map((a) => a.code)
+      ).not.toContain("views-without-impressions");
+      expect(
+        alertsFor(uy({ rpm: 9, screenPageViews: 5000, adImpressions: MIN_FAMILY_AD_IMPRESSIONS - 1 })).map((a) => a.code)
+      ).not.toContain("views-without-impressions");
+    });
+
+    it("un snapshot sin `totalsUy` (anterior al campo) no avisa ni rompe", () => {
+      expect(alertsFor(undefined).map((a) => a.code)).not.toContain("views-without-impressions");
+    });
+
+    it("avisa, no filtra: el RPM del sitio y el precio de cada familia no cambian", () => {
+      const bots = buildValueTable({ ...revenue(), totalsUy: uy({ rpm: 0.9, screenPageViews: 20000 }) } as RevenueSnapshot);
+      const clean = buildValueTable(revenue());
+      expect(bots.siteRpm).toBe(clean.siteRpm);
+      expect(bots.siteUsdPerClick).toBe(clean.siteUsdPerClick);
+      expect(bots.byBucket.get("/guias/*")).toEqual(clean.byBucket.get("/guias/*"));
+    });
   });
 
   it("dice cuántas filas del top 10 no estaban en el top 10 por clics", () => {

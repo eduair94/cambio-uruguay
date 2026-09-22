@@ -1,3 +1,4 @@
+import { authorReference } from '~/utils/authorEntity'
 import type { LongformDoc } from '~/utils/longform'
 
 /** Where a long-form family lives, for canonical URLs and breadcrumbs. */
@@ -82,11 +83,8 @@ export function useLongformSeo(
                   '@type': 'SpeakableSpecification',
                   cssSelector: ['.longform-lead', '.longform-prose'],
                 },
-                author: {
-                  '@type': 'Person',
-                  name: 'Eduardo Airaudo',
-                  url: 'https://www.linkedin.com/in/eduardo-airaudo/',
-                },
+                // Por @id: el nodo Person completo vive en /acerca (utils/authorEntity.ts).
+                author: authorReference(),
                 publisher: {
                   '@type': 'Organization',
                   name: 'Cambio Uruguay',

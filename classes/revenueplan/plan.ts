@@ -2,7 +2,15 @@
 import type { Opportunity, PageTypeRow } from "../gsc/types";
 import type { RevenueSnapshot } from "../site-analytics/revenue";
 import type { FamilyLedgerRow, PricedAction, RevenuePlanAlert } from "./types";
-import { TIER_DRIFT, bucketOfUrl, tierOf, valueOf } from "./value";
+import {
+  MIN_FAMILY_AD_IMPRESSIONS,
+  MIN_FAMILY_VIEWS,
+  TIER_DRIFT,
+  UY_RPM_DIVERGENCE,
+  bucketOfUrl,
+  tierOf,
+  valueOf,
+} from "./value";
 import type { ValueTable } from "./value";
 
 /**
@@ -157,6 +165,28 @@ export function buildPlanAlerts(input: PlanAlertInput): RevenuePlanAlert[] {
       message:
         "El ingreso de la ventana es tan chico que cualquier RPM por familia es provisional: el orden " +
         "vale, el monto en USD es una escala, no una previsión.",
+    });
+  }
+
+  // Vistas que no ven anuncios. El RPM del sitio y el RPM sólo-Uruguay comparten la plata y
+  // difieren en cuántas vistas la dividen; cuando el uruguayo se despega por más de
+  // `UY_RPM_DIVERGENCE`, el denominador del sitio trae vistas que no cargan ni una unidad —
+  // tráfico automatizado, que la lectura del 21/9 vio y que casi nunca sale de Uruguay. Exige la
+  // misma muestra que una familia: con cuarenta vistas uruguayas y un clic el cociente es ruido.
+  // AVISA, NO FILTRA: `siteRpm` sigue sin recortar a propósito y nada se excluye por país.
+  const uyRatio = table.siteRpm > 0 ? table.siteRpmUy / table.siteRpm : 0;
+  const uySampled = table.uyViews >= MIN_FAMILY_VIEWS && table.uyAdImpressions >= MIN_FAMILY_AD_IMPRESSIONS;
+  if (uySampled && uyRatio >= UY_RPM_DIVERGENCE) {
+    alerts.push({
+      level: "warn",
+      code: "views-without-impressions",
+      message:
+        `El RPM medido sólo sobre visitas de Uruguay es ${uyRatio.toFixed(1)}× el del sitio entero: hay vistas ` +
+        `que no ven anuncios (Uruguay es el ${(table.uyShareOfViews * 100).toFixed(0)} % de las vistas; el sitio ` +
+        `sirve ${(table.impressionsPerView * 100).toFixed(1)} impresiones cada 100 vistas). Casi seguro tráfico ` +
+        "automatizado inflando el denominador. El RPM del sitio y los multiplicadores se publican SIN filtrar a " +
+        "propósito — no se bloquea ningún país por suposición; la lectura uruguaya va al lado. Montos en " +
+        "docs/seo/data/.",
     });
   }
 

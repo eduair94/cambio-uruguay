@@ -14,6 +14,7 @@ const SiteRevenueSnapshotSchema = new Schema(
     currency: { type: String, default: 'USD' },
     range: { type: Schema.Types.Mixed, required: true },
     totals: { type: Schema.Types.Mixed, required: true },
+    totalsUy: { type: Schema.Types.Mixed, default: {} },
     families: { type: [Schema.Types.Mixed], default: [] },
     topPages: { type: [Schema.Types.Mixed], default: [] },
     daily: { type: [Schema.Types.Mixed], default: [] },

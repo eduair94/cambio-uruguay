@@ -272,7 +272,10 @@
 
     <VMain id="main" tabindex="-1" :class="formatNameRoute()">
       <CookieConsent />
-      <div class="container_custom">
+      <!-- `--rail` sólo cuando el riel de escritorio va a renderizar: sin el id de la unidad la
+           clase no se aplica y la grilla no existe (una grilla vacía robaría 300 px a toda página
+           de densidad normal y dejaría de colapsar los márgenes entre hijos). -->
+      <div class="container_custom" :class="{ 'container_custom--rail': railOn }">
         <!-- La familia de la página (directorio, sus páginas y sus análisis), ARRIBA: el bloque del
              pie no alcanzaba en páginas de 15.000 px. Sale de utils/directorios.ts. -->
         <FamiliaNav />
@@ -312,6 +315,16 @@
                hash changes keep this instance: filtering is not a new page. -->
           <AdSlot :key="route.path" placement="content-end" />
         </ClientOnly>
+        <!-- El riel de escritorio: 300x600 fijo a la DERECHA de la columna de lectura, nunca
+             adentro (DESIGN.md → "The Rail Is Not The Column Rule"). ÚLTIMO hijo de
+             `.container_custom` a propósito: la grilla de abajo lo manda a la columna 2 y todo lo
+             demás —incluido lo que Auto Ads inserte— queda en la 1, `<slot />` sigue siendo hijo
+             directo (las reglas :first-child del aire de arriba y los `+` de FamiliaNav no cambian)
+             y adSlotLifecycle.test.ts sigue encontrando primero la unidad de cierre. Sólo con
+             densidad normal y sólo si `NUXT_PUBLIC_ADSENSE_SLOT_SIDEBAR` existe (useAds.ts). -->
+        <ClientOnly v-if="railOn">
+          <AdSlot :key="`rail-${route.path}`" placement="sidebar" class="cu-ad-rail" />
+        </ClientOnly>
       </div>
     </VMain>
 
@@ -329,12 +342,19 @@
 import { useLocalePath } from '#imports'
 import { useLoadingStore } from '~/stores/loading'
 import { normalizeAdPath } from '~/utils/ads'
+import { authorReference } from '~/utils/authorEntity'
 import { NAV_SECTIONS, type NavEntry, type NavSection } from '~/utils/siteNav'
 
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
 const loadingStore = useLoadingStore()
+
+// El riel de escritorio. `canRender` ya encierra publisher + id de la unidad + densidad, y es
+// determinista desde runtimeConfig + ruta, así que servidor y cliente coinciden (sin desajuste de
+// hidratación); el <ClientOnly> envuelve sólo la unidad, como en newsletter/[fecha].vue.
+const { canRender: canRenderAd } = useAds()
+const railOn = computed(() => canRenderAd('sidebar'))
 
 const formatNameRoute = () => {
   // Format the route name to be used in class names
@@ -613,12 +633,10 @@ useSchemaOrg([
       postalCode: '11000',
       addressCountry: 'UY',
     },
-    founder: {
-      '@type': 'Person',
-      name: 'Eduardo Airaudo',
-      url: 'https://www.linkedin.com/in/eduardo-airaudo/',
-      jobTitle: 'Founder & Developer',
-    },
+    // El fundador se referencia por @id (el nodo Person completo, con sameAs, vive en /acerca y
+    // JSON-LD los fusiona), pero la referencia lleva nombre y URL: Google no sigue el @id a otra
+    // página, y un founder pelado sería un founder sin nombre en todas las demás.
+    founder: { ...authorReference(), jobTitle: 'Founder & Developer' },
     knowsAbout: [
       'Cotización del dólar en Uruguay',
       'Tipo de cambio Uruguay',
@@ -1072,5 +1090,35 @@ useSchemaOrg([
 .container_custom > .v-container > .v-breadcrumbs:first-child + *,
 .container_custom > :not(.v-container) > .v-container:first-child > .v-breadcrumbs:first-child + * {
   margin-top: 0 !important;
+}
+
+/* El riel de escritorio sale de la columna, no la ensancha (DESIGN.md → "The Rail Is Not The
+   Column Rule"). A 1280 px `.container_custom` ya ocupa todo el ancho (tope 1280, margen 0) y no
+   hay canaleta libre hasta ~1928: un riel que exista desde lg tiene que salir de los 1280, así que
+   la grilla parte el tope en columna de lectura + 24 de hueco + 300, y `max-width`/`padding` de
+   `.container_custom` y `.layout-tail` no se tocan (layoutTop y layoutTail siguen sumando lo
+   mismo; `.layout-tail` rinde 932 dentro de la columna). Sólo con `--rail` (ver el template): sin
+   riel, la ruta es idéntica a antes. SIN scope porque la mitad de los hijos no lleva el atributo del
+   layout: la raíz de la página la renderiza NuxtPage y el `div.google-auto-placed` lo inserta
+   Google (components/cars/SidebarLayout.vue tuvo el mismo bug con :deep). Con scope la regla compila
+   muerta, sin error, y el anuncio automático caería en la columna del riel. */
+@media (min-width: 1280px) {
+  .container_custom--rail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    column-gap: 24px;
+  }
+  /* Todo lo que no es el riel vive en la columna de lectura, incluida la unidad que Auto Ads
+     inserte por su cuenta (`.google-auto-placed`, `.ap_container`). */
+  .container_custom--rail > :not(.cu-ad-rail) {
+    grid-column: 1;
+  }
+  .container_custom--rail > .cu-ad-rail {
+    grid-column: 2;
+    /* NO `1 / -1`: sin grid-template-rows la grilla explícita tiene una sola línea, -1 colapsa a
+       una fila y el sticky sólo viajaría la altura de esa fila. */
+    grid-row: 1 / span 99;
+    align-self: start;
+  }
 }
 </style>

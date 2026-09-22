@@ -383,6 +383,26 @@ The rule lives in `layouts/default.vue` next to `.container_custom` and is the s
 `FamiliaNav.vue` applies after the family bar: when the bar renders it is the first child and owns
 the gap; when it does not, the layout does. `tests/unit/layoutTop.test.ts` reads the source.
 
+**The Rail Is Not The Column Rule.** A desktop ad rail comes out of the 1280px cap; it never
+widens it. At lg the reading column already fills the cap edge to edge — there is no free gutter
+until ~1928px — so the only honest place for a 300px rail from 1280 is inside the cap:
+`.container_custom--rail` turns the container into a two-column grid (reading column, 24px gap,
+300px), and `max-width`, `padding` and `.layout-tail` do not change, so the top and side
+arithmetic (12 + 16 = 28) holds and the tail keeps its own column inside column 1. Everything
+that is not the rail is pinned to column 1 — the page root, the family bar, the tail, the
+content-end unit and whatever Auto Ads inserts (`.google-auto-placed`) — because a grid child
+with no explicit column auto-places into the first free cell, and that cell can be the rail's
+(the cars directory had exactly this bug with a `VRow`). The rule is unscoped on purpose: half of
+the container's children carry no layout scope attribute (the page root is rendered by
+`NuxtPage`, Google's div by Google), so a scoped rule compiles dead without an error. The grid
+exists only while the rail renders — `useAds().canRender('sidebar')`: publisher id, slot id,
+`normal` density — and only from 1280px; without it the route is byte-for-byte what it was,
+including the margin collapsing between the container's children, which a grid stops. The rail
+sticks at 80px (the 64px bar plus the 16px the page keeps under it), and that is acceptable only
+because it covers nothing: it lives in its own column. A rail whose unit goes unfilled leaves its
+column empty rather than reflowing the text to full width — a wider column mid-read is the
+layout shift the reserved box exists to prevent. `tests/unit/adRail.test.ts` reads the source.
+
 **The Min-Width Zero Rule.** Any grid or flex item that can contain an image, a long thread title,
 or a URL carries `min-width: 0`. Without it the item's min-content floor silently widens the whole
 row past the viewport — the single most common responsive defect in this codebase.

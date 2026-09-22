@@ -83,7 +83,8 @@
     "reddit_account": "ts-node scripts/oneoff/reddit_account.ts",
     "reddit_sweep": "ts-node scripts/oneoff/reddit_sweep.ts",
     "sync_property_services": "ts-node sync_property_services.ts",
-    "precios_pin_basket": "ts-node scripts/oneoff/precios_pin_basket.ts"
+    "precios_pin_basket": "ts-node scripts/oneoff/precios_pin_basket.ts",
+    "cf_traffic": "ts-node scripts/oneoff/cf_traffic_report.ts"
   },
   "author": "",
   "license": "ISC",
