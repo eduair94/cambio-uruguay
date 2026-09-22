@@ -109,6 +109,7 @@
     </section>
 
     <!-- ── Los más baratos ───────────────────────────────────────────────── -->
+    <AssistantCta topic="monopatines" class="mb-8" />
     <section
       v-if="cheapestNew.length || cheapestUsed.length"
       class="movilidad-section"

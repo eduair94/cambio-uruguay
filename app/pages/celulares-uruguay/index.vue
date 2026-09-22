@@ -33,6 +33,7 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
     </header>
 
     <!-- ── Filtros ────────────────────────────────────────────────────────── -->
+    <AssistantCta topic="celulares" class="mb-6" />
     <section v-if="cards.length" class="filters mb-6">
       <div class="d-flex flex-wrap ga-2 mb-4">
         <VChip

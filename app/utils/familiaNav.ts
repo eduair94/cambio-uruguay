@@ -89,6 +89,8 @@ const GRUPOS: Readonly<Record<string, readonly GrupoDef[]>> = {
         { to: '/venta-viviendas-uruguay' },
         { to: '/inmobiliarias-uruguay' },
         { to: '/alquiler-ideal-uruguay' },
+        // Buscar conversando: el asistente con IA usa este mismo directorio (utils/assistantPrompt.ts).
+        { to: '/asistente-ia' },
         { to: '/fletes-mudanzas-uruguay' },
       ],
     },

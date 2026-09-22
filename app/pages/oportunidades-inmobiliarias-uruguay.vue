@@ -168,6 +168,10 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
               </template>
             </VSelect>
           </div>
+          <AssistantCta
+            :topic="query.operation === 'sale' ? 'oportunidadesVenta' : 'oportunidadesAlquiler'"
+            class="mb-4"
+          />
           <VProgressLinear v-if="pending" indeterminate color="primary" class="mb-4" />
           <VAlert
             v-if="error"

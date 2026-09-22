@@ -15,6 +15,7 @@ The user delegated design choices. The composition study informs hierarchy, neve
         <NuxtLink :to="localePath('/alquileres-uruguay')">{{ t('exploreShort') }}</NuxtLink>
       </p>
     </header>
+    <AssistantCta v-if="editing" topic="hogar" class="mb-4" />
     <div class="fit-private" data-clarity-mask="true">
       <template v-if="editing">
         <nav class="fit-toolbar" :aria-label="t('step', { n: step + 1 })">

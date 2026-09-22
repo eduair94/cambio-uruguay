@@ -219,6 +219,12 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               <VBtn variant="text" @click="removeReference">{{ t('removePoint') }}</VBtn>
             </div>
           </div>
+          <!-- La pregunta lleva los filtros de la búsqueda (chips), nunca la dirección de referencia. -->
+          <AssistantCta
+            topic="alquiler"
+            :filters="filterChips.map(chip => chip.label)"
+            class="mb-4"
+          />
           <VProgressLinear v-if="pending" indeterminate color="primary" class="mb-4" />
           <VAlert v-if="error" type="error" variant="tonal" class="mb-5" role="alert">
             {{ t('error') }}

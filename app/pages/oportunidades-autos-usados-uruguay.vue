@@ -99,6 +99,7 @@
           @open="filtersOpen = true"
           @update:sort="value => navigate({ ...query, sort: value as CarOpportunitySort, page: 1 })"
         />
+        <AssistantCta topic="oportunidadesAutos" class="mb-4" />
         <VAlert v-if="error" type="info" variant="outlined" class="mb-4">
           La comparación se está calculando. Volvé en unos minutos.
         </VAlert>

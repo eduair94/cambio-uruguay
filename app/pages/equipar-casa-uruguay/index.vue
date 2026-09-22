@@ -61,6 +61,8 @@ planner is client state only and never persists.
       </div>
     </section>
 
+    <AssistantCta topic="equipar" class="mt-6 mb-8" />
+
     <!-- ── Qué comprar primero ───────────────────────────────────────────── -->
     <section id="ranking" class="equipar-section" aria-labelledby="ranking-title">
       <h2 id="ranking-title">{{ c.tierTitle }}</h2>

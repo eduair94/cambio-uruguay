@@ -242,6 +242,8 @@
         </p>
       </section>
 
+      <AssistantCta topic="super" class="mb-10" />
+
       <!-- Canasta -->
       <section v-if="basket" id="canasta" class="mb-10">
         <h2 class="text-h5 font-weight-bold mb-2">La canasta, y qué se puede comparar</h2>

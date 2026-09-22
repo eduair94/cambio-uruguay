@@ -2,6 +2,12 @@
   <VCard variant="flat" class="chat-card pa-4">
     <!-- 1. Todavía sin conectar: un botón, y la clave propia como alternativa plegada -->
     <div v-if="!provider">
+      <div v-if="pendingPrompt" class="pending mb-4" data-testid="assistant-pending-prompt">
+        <div class="text-caption text-medium-emphasis mb-1">
+          Tu pregunta, lista para enviar apenas entres:
+        </div>
+        <p class="text-body-2 mb-0">«{{ pendingPrompt }}»</p>
+      </div>
       <div class="text-center py-2">
         <VBtn
           size="x-large"
@@ -182,6 +188,8 @@ import {
   type PuterLike,
 } from '~/utils/puterChat'
 
+const props = withDefaults(defineProps<{ initialPrompt?: string }>(), { initialPrompt: '' })
+
 interface ChatMessage {
   role: 'user' | 'assistant'
   text: string
@@ -222,6 +230,8 @@ const messages = ref<ChatMessage[]>([])
 const log = ref<HTMLElement | null>(null)
 const puterName = ref('')
 const model = ref('')
+/** A question brought from a directory (?q=): sent once, as soon as the chat is connected. */
+const pendingPrompt = ref(props.initialPrompt)
 
 let puter: PuterLike | null = null
 let apiKey = ''
@@ -269,6 +279,7 @@ async function startPuter() {
     await loadTools()
     model.value = puterModels[0] ?? ''
     provider.value = 'puter'
+    sendPending()
   } catch (e) {
     error.value =
       phase === 'signin'
@@ -295,6 +306,7 @@ async function connectGemini(key = keyInput.value.trim()) {
     keyInput.value = ''
     if (remember.value) writeStored(key)
     provider.value = 'gemini'
+    sendPending()
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e)
     // A remembered key Google now rejects would fail on every visit; a network hiccup would not.
@@ -360,6 +372,24 @@ async function send(text = draft.value) {
   }
 }
 
+function sendPending() {
+  const text = pendingPrompt.value
+  if (!text) return
+  pendingPrompt.value = ''
+  void send(text)
+  // A reload must not ask again on the visitor's quota. history.replaceState keeps the router's
+  // state and does not scroll, unlike router.replace.
+  try {
+    const url = new URL(window.location.href)
+    if (url.searchParams.has('q')) {
+      url.searchParams.delete('q')
+      window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash)
+    }
+  } catch {
+    /* the address bar keeps the question; nothing else depends on it */
+  }
+}
+
 function scrollDown() {
   nextTick(() => log.value?.scrollTo({ top: log.value.scrollHeight, behavior: 'smooth' }))
 }
@@ -404,6 +434,13 @@ onMounted(async () => {
 }
 .steps {
   padding-left: 1.2rem;
+}
+.pending {
+  border-left: 3px solid rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.06);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+  overflow-wrap: anywhere;
 }
 .steps li {
   margin-bottom: 4px;

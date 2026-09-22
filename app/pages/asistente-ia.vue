@@ -29,7 +29,7 @@
     </VAlert>
 
     <ClientOnly>
-      <AssistantChat class="mb-8" />
+      <AssistantChat class="mb-8" :initial-prompt="initialPrompt" />
       <template #fallback>
         <VCard variant="flat" class="pa-6 mb-8 text-center text-medium-emphasis">
           Cargando el asistente…
@@ -62,8 +62,11 @@
 
 <script setup lang="ts">
 import { AI_PROMPT_EXAMPLES } from '~/utils/aiSearch'
+import { readAssistantPrompt } from '~/utils/assistantPrompt'
 
 const localePath = useLocalePath()
+// A directory's «Preguntale a la IA» brings the question in ?q= (utils/assistantPrompt.ts).
+const initialPrompt = readAssistantPrompt(useRoute().query.q)
 const examples = AI_PROMPT_EXAMPLES.map(example => example.text)
 
 const FAQ = [

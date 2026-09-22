@@ -153,6 +153,8 @@ FORM: Grounded structure 5, diagnosis-before-doctrine staging, surface seed aa73
       </div>
     </VAlert>
 
+    <AssistantCta topic="sillas" class="mt-6 mb-6" />
+
     <!-- The directory used to render inline here. It is a shopping tool with its own facets and a
          few hundred rows, and dropping it mid-argument cut this page in half; it lives at
          /sillas-escritorio-uruguay/precios now and this is the doorway to it. -->

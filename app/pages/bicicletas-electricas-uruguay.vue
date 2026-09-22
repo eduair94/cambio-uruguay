@@ -56,6 +56,7 @@
     </section>
 
     <!-- ── Los más baratos ───────────────────────────────────────────────── -->
+    <AssistantCta topic="bicicletas" class="mb-8" />
     <section
       v-if="cheapestNew.length || cheapestUsed.length"
       class="movilidad-section"
