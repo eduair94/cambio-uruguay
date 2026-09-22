@@ -63,14 +63,16 @@ export function rankChanges(changes: readonly PriceChange[], options: RankOption
   for (const change of sorted) {
     const verticalCount = byVertical.get(change.vertical) ?? 0;
     if (verticalCount >= perVertical) continue;
-    // La identidad del vendedor es su clave, y si la fuente no la trae, su nombre público: los logs de
-    // alquiler y venta no guardan `sellerKey`, y sin esta segunda vuelta una inmobiliaria que retocó
-    // el mismo precio en cuatro avisos ocupaba cuatro filas seguidas (medido el 2026-09-22: cuatro
-    // "26.900 -> 36.800" de la misma agencia encabezando la tabla).
+    // La identidad que cuenta para el tope es el NOMBRE PÚBLICO, no la clave interna, y la clave sólo
+    // cuando no hay nombre. Dos medidas del 2026-09-22 lo obligaron: cuatro avisos "26.900 -> 36.800"
+    // de la misma inmobiliaria encabezando alquileres (los logs de alquiler y venta no guardan
+    // `sellerKey`), y seis filas de DIMM en celulares, que tiene DOS claves —su propia tienda
+    // (`dimm`) y su cuenta de Mercado Libre (`ml:n:dimm`)— y por lo tanto dos cupos de tres. Lo que el
+    // lector ve repetido es el nombre, así que el nombre es lo que se topea.
     //
-    // Un aviso sin vendedor NI nombre (particular en un portal que no lo declara) no comparte cupo con
+    // Un aviso sin nombre NI clave (particular en un portal que no lo declara) no comparte cupo con
     // otro: agruparlos bajo una clave vacía los haría competir entre sí sin motivo.
-    const sellerIdentity = change.sellerKey || change.sellerName;
+    const sellerIdentity = (change.sellerName || change.sellerKey || "").trim().toLowerCase();
     if (sellerIdentity) {
       const sellerCount = bySeller.get(`${change.vertical}:${sellerIdentity}`) ?? 0;
       if (sellerCount >= perSeller) continue;

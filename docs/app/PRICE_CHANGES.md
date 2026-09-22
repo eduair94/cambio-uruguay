@@ -92,7 +92,12 @@ colecciones con cursor y publica en APP DB `pricechangesnapshots` un documento `
 - Orden: por magnitud del cambio, con desempate por fecha y por id, así dos corridas con los mismos
   datos publican exactamente la misma tabla.
 - **Tope de 3 filas por vendedor** y 25 por vertical: una automotora que retoca cuarenta precios el
-  mismo día no puede ocupar la tabla entera. Un aviso sin vendedor conocido no comparte cupo con otro.
+  mismo día no puede ocupar la tabla entera. El cupo cuenta por **nombre público**, no por clave
+  interna: DIMM tiene su propia tienda (`dimm`) y su cuenta de Mercado Libre (`ml:n:dimm`), y con el
+  tope por clave publicaba seis filas seguidas con el mismo nombre (medido el 2026-09-22). En autos el
+  nombre sale de `dealerName` del catálogo —no existe `sellerName` ahí, y por eso las 25 primeras
+  filas salieron sin anunciante y sin tope—. Un aviso sin nombre ni clave (un particular que el portal
+  no identifica) no comparte cupo con otro.
 - Alquiler, venta y autos se enriquecen contra el catálogo **público** (`rentallistings`,
   `propertysalecatalog`, `carcatalog`): un aviso que el catálogo ya no publica no aparece, y el enlace
   va a la ficha propia del sitio. Las verticales de retail enlazan a la oferta en la tienda
