@@ -27,7 +27,7 @@ export const rentalZoneMessages = {
     powerPlanned: 'Por trabajos programados: {n} min/mes',
     powerCustomers: '{n} clientes de UTE en la zona',
     powerCollecting:
-      'Estamos midiendo los cortes de luz desde el {date}. UTE muestra sólo la situación del momento y no publica la historia, así que la guardamos nosotros cada 10 minutos. Las cifras aparecen con al menos 14 días observados (van {days}).',
+      'Estamos midiendo los cortes de luz desde el {date}. UTE muestra sólo la situación del momento y no publica la historia, así que la guardamos nosotros cada 10 minutos. Las cifras aparecen a los 3 días observados (van {days}), como provisorias hasta los 14.',
     powerCollectingShort: 'Midiendo desde el {date}',
     powerPreliminary:
       'Cifras provisorias: {days} de 14 días medidos desde el {date}. Nadie publica cortes por barrio (URSEA agrupa por distrito y densidad), así que mostramos nuestro propio registro apenas junta tres días; se vuelve definitivo a los 14.',
@@ -231,7 +231,7 @@ export const rentalZoneMessages = {
     powerPlanned: 'Planned works: {n} min/month',
     powerCustomers: '{n} UTE customers in the area',
     powerCollecting:
-      'We have been measuring power cuts since {date}. UTE only shows the current situation and publishes no history, so we store it every 10 minutes. Figures appear after at least 14 observed days ({days} so far).',
+      'We have been measuring power cuts since {date}. UTE only shows the current situation and publishes no history, so we store it every 10 minutes. Figures appear at 3 observed days ({days} so far), as provisional until 14.',
     powerCollectingShort: 'Measuring since {date}',
     powerPreliminary:
       'Provisional figures: {days} of 14 days measured since {date}. Nobody publishes cuts per neighbourhood (URSEA groups by district and density), so we show our own ledger as soon as it has three days; it becomes final at 14.',
@@ -433,7 +433,7 @@ export const rentalZoneMessages = {
     powerPlanned: 'Por obras programadas: {n} min/mês',
     powerCustomers: '{n} clientes da UTE na área',
     powerCollecting:
-      'Medimos as quedas de energia desde {date}. A UTE só mostra a situação do momento e não publica o histórico, então nós o guardamos a cada 10 minutos. Os números aparecem com pelo menos 14 dias observados (até agora {days}).',
+      'Medimos as quedas de energia desde {date}. A UTE só mostra a situação do momento e não publica o histórico, então nós o guardamos a cada 10 minutos. Os números aparecem aos 3 dias observados (até agora {days}), como provisórios até os 14.',
     powerCollectingShort: 'Medindo desde {date}',
     powerPreliminary:
       'Números provisórios: {days} de 14 dias medidos desde {date}. Ninguém publica quedas por bairro (a URSEA agrupa por distrito e densidade), então mostramos nosso próprio registro assim que junta três dias; fica definitivo aos 14.',

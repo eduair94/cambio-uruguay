@@ -16,6 +16,21 @@ Descartadas: URSEA publica FMIK/TTIK sólo en 42 agrupamientos y en gráficos PD
 operativos de OSE (falta de agua, baja presión) son por departamento. Wayback tiene 4 capturas de la
 API de UTE: no hay historia que recuperar.
 
+**Segunda búsqueda de historia (2026-09-22), también negativa.** Antes de aceptar que el libro
+propio es la única serie se miró lo que la primera búsqueda no había mirado: (1) el JS del propio
+mapa de UTE (`apps2.ute.com.uy/SioEcseNew/Prod/Ecse/js/servicios.js`) enumera TODOS los métodos del
+servicio ECSE —`ObtenerAfectacionesUrbanas`, `ObtenerAfectacionesZona` (Departamento u
+OficinaComercial; el parámetro `Barrio` está comentado y en vivo devuelve `""`), `ObtenerTrabajosMejora`,
+`ObtenerTrabajosGranPorte`, `ObtenerPorcentajeRenovables`—, ninguno recibe fecha ni devuelve
+historia, y no hay swagger; (2) el CDX de Wayback tiene la app estática archivada pero **cero**
+capturas de `SioServEcse/*`; (3) `catalogodatos.gub.uy` no tiene ningún dataset de interrupciones
+(la organización URSEA sólo publica registros de productos y sanciones); (4) la página «Indicadores
+de calidad» de URSEA enlaza sólo el PDF, y sus figuras son gráficos sin valores en texto
+(`pdftotext` sólo extrae la Tabla 1 de metas); (5) r/uruguay tiene 5 hilos con "sin luz" en el
+título desde 2023; (6) los comunicados de UTE (30 páginas) cubren sólo temporales y apagones
+grandes. No hay nada que importar: la serie por barrio empieza el 2026-09-19 y se publica
+provisoria a los 3 días.
+
 **Los 63 barrios de UTE son los 62 del INE** (IoU ≥ 0,95 en 58; Cerro 0,85) más PUERTO, que UTE separa
 de Ciudad Vieja: CIUDAD VIEJA + PUERTO = INE 1. Por eso los clientes de UTE sirven de denominador
 vigente para la misma geografía. La tabla se fija con `scripts/oneoff/build_ute_zones.py`
@@ -110,6 +125,16 @@ entran al filtro.
 El job escribe `officialZone` en `rentallistings` con `$set` sólo donde cambió (el store de alquileres
 usa `$set`, así que el campo sobrevive). `currency-property-zones-hourly` (`--assign-only`, minuto 57)
 asigna lo que llegó en la hora y cede ante la corrida diaria. Índice `{ 'officialZone.zone': 1, lastSeen: -1 }`.
+
+**La horaria también relee la capa de luz** (2026-09-22): `refreshUtilityPower` lee el libro,
+reconstruye `utilities.power` y los niveles (`refreshPowerLevels`, puro) y republica el documento
+`context` con todo lo demás tal como la diaria lo dejó (agua, reclamos, tasas de denuncias,
+geometría, alias). Motivo: el libro crece cada 10 minutos, pero el contexto sólo se reconstruía a
+las 06:53 UTC, así que la fila decía "1 de 14 días" cuando el libro ya llevaba 2,4 y el paso a
+provisorio habría esperado hasta la mañana siguiente. Sin contexto guardado (o sin `utilities`) no
+hace nada; `--dry-run` no publica; un libro ilegible se informa y conserva el contexto. La copia
+de "midiendo" cuenta hacia los **3** días (cuando aparece la cifra), no hacia los 14 (cuando deja de
+ser provisoria); `periods.power.preliminaryDays` viaja en `/api/rentals/zone-scores`.
 
 ## Niveles, filtro e impacto
 

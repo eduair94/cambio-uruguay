@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAmenityDensity, buildClaimsLayer, buildLevels, buildPowerLayer, buildWaterLayer, crimeRates, customersByZone, levelValues, polygonAreaKm2, quantile } from "../../classes/propertyzones/utilities";
+import { buildAmenityDensity, buildClaimsLayer, buildLevels, buildPowerLayer, buildWaterLayer, crimeRates, customersByZone, levelValues, polygonAreaKm2, quantile, refreshPowerLevels } from "../../classes/propertyzones/utilities";
 import type { PowerDayDoc } from "../../classes/utilities/power/store";
 import type { WaterNoticeDoc } from "../../classes/utilities/water/store";
 
@@ -103,6 +103,46 @@ describe("claims, levels", () => {
 
   it("averages customers per public zone", () => {
     expect(customersByZone(ledger(2))).toMatchObject({ "mvd:8": 47_000, "mvd:1": 10_000, "ute:3210": 20_000 });
+  });
+});
+
+describe("refreshPowerLevels", () => {
+  const water = buildWaterLayer([], new Date(Date.UTC(2026, 8, 3)));
+  const stored = {
+    version: 1 as const, generatedAt: "2026-09-02T06:53:00.000Z", names: {}, localities: {}, water, claims: null,
+    power: buildPowerLayer(ledger(2)), crimePeriodTo: "2026-06-30", amenities: null,
+    levels: buildLevels(levelValues(null, water, null, Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`mvd:${i + 1}`, 100 + i])))),
+  };
+  // Ten UTE barrios (levels need nine zones), the i-th one losing i × 30 minutes per customer a month.
+  const BARRIOS = [["AG", "41"], ["AI", "29"], ["AT", "43"], ["BC", "16"], ["BE", "54"], ["BO", "51"], ["BU", "9"], ["CA", "36"], ["CC", "26"], ["CD", "4"]] as const;
+  function wide(days: number): PowerDayDoc[] {
+    const docs: PowerDayDoc[] = [];
+    for (let i = 0; i < days; i++) {
+      docs.push({ _id: `d:1|${day(i)}`, zone: "d:1", day: day(i), name: "MONTEVIDEO", type: "departamento", customers: 600_000,
+        coveredMinutes: 1440, unplannedCustomerMinutes: 0, plannedCustomerMinutes: 0, newIncidents: 0, samples: 144 });
+      BARRIOS.forEach(([code], rank) => docs.push({ _id: `b:${code}|${day(i)}`, zone: `b:${code}`, day: day(i), name: code, type: "barrio",
+        customers: 10_000, coveredMinutes: 1440, unplannedCustomerMinutes: 10_000 * (rank + 1), plannedCustomerMinutes: 0, newIncidents: 0, samples: 144 }));
+    }
+    return docs;
+  }
+
+  it("replaces only the power layer and its levels, keeping every other ranked value the daily run stored", () => {
+    const now = new Date(Date.UTC(2026, 8, 11, 3, 57));
+    const next = refreshPowerLevels(stored, wide(10), now);
+    expect(next.power).toMatchObject({ status: "preliminary", observedDays: 10 });
+    expect(next.generatedAt).toBe(now.toISOString());
+    expect(next.levels.values.luz).toMatchObject({ "mvd:41": 30, "mvd:4": 300 });
+    expect(next.levels.thresholds.luz?.zones).toBe(10);
+    expect(next.levels.byZone.luz).toMatchObject({ "mvd:41": "low", "mvd:4": "high" });
+    expect(next.levels.values.denuncias).toEqual(stored.levels.values.denuncias);
+    expect(next.levels.thresholds.denuncias).toEqual(stored.levels.thresholds.denuncias);
+    expect(next).toMatchObject({ water, claims: null, crimePeriodTo: "2026-06-30", names: {}, localities: {} });
+  });
+
+  it("keeps the stored ledger figures while the new read is still collecting", () => {
+    const next = refreshPowerLevels(stored, ledger(2), new Date(Date.UTC(2026, 8, 3, 3, 57)));
+    expect(next.power?.status).toBe("collecting");
+    expect(next.levels.values.luz).toBeUndefined();
   });
 });
 

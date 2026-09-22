@@ -56,7 +56,11 @@
 <script setup lang="ts">
 import type { RentalZoneScoreAttribute } from '~/utils/rentalZoneTypes'
 import { rentalZoneBarsMessages } from '~/utils/rentalZoneBarsMessages'
-import { rentalServiceZoneFold, rentalZoneScoreId } from '~/utils/rentalZoneServices'
+import {
+  RENTAL_POWER_PRELIMINARY_DAYS,
+  rentalServiceZoneFold,
+  rentalZoneScoreId,
+} from '~/utils/rentalZoneServices'
 
 const props = defineProps<{
   place: {
@@ -146,14 +150,16 @@ const rows = computed<Row[]>(() => {
     }
   })
   // Power has no history anywhere: until three days of our own ledger exist, say so instead of
-  // hiding it, and say how far along the ledger is so the reader knows when the row will fill.
+  // hiding it, and count toward the day the row fills (the provisional threshold), not toward the
+  // day the figure stops being provisional: "1 de 14 días" promised a two-week wait for a row that
+  // appears on the third day.
   if (power?.status === 'collecting' && power.from && !list.some(row => row.attribute === 'luz')) {
     const label = t('label-luz')
     const progress = {
       label,
       date: date(power.from),
       days: Math.floor(power.observedDays ?? 0),
-      min: power.minDays ?? 14,
+      min: power.preliminaryDays ?? RENTAL_POWER_PRELIMINARY_DAYS,
     }
     list.splice(Math.min(1, list.length), 0, {
       attribute: 'luz',

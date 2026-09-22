@@ -835,6 +835,7 @@ export function buildRentalZoneScores(
             to: snapshot.power.observedTo,
             status: statuses.power,
             observedDays: snapshot.power.observedDays,
+            preliminaryDays: RENTAL_POWER_PRELIMINARY_DAYS,
             minDays: RENTAL_POWER_MIN_DAYS,
           }
         : null,

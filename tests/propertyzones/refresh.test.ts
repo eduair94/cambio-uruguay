@@ -13,6 +13,7 @@ const fake = vi.hoisted(() => ({
   impact: vi.fn(),
   publishImpact: vi.fn(),
   publishClaims: vi.fn(),
+  power: vi.fn(),
   realProject: null as
     | null
     | typeof import("../../classes/propertyzones/project").projectZoneObservations,
@@ -32,6 +33,7 @@ vi.mock("../../classes/propertyzones/services", () => ({
   assignListingZones: fake.assign,
   buildUtilityContext: fake.utilities,
   buildZoneImpact: fake.impact,
+  refreshUtilityPower: fake.power,
 }));
 vi.mock("../../classes/propertyzones/sources", () => ({
   loadOfficialPropertyZoneGeometry: fake.geometry,
@@ -207,6 +209,8 @@ beforeEach(() => {
   fake.impact.mockReset().mockReturnValue({ version: 1, generatedAt: stamp, zones: [], attributes: [], joint: null });
   fake.publishImpact.mockReset().mockResolvedValue(undefined);
   fake.publishClaims.mockReset().mockResolvedValue(undefined);
+  fake.power.mockReset().mockImplementation(async ({ previous }) => ({ ...previous, generatedAt: stamp,
+    power: { status: "preliminary", observedFrom: "2026-09-05", observedTo: "2026-09-08", observedDays: 3.2, coverage: 0.98, zones: {}, departments: {} } }));
 });
 afterEach(() => {
   vi.restoreAllMocks();
@@ -413,12 +417,38 @@ describe("independent offline layer refresh", () => {
     expect(fake.assign).toHaveBeenLastCalledWith(expect.objectContaining({ dryRun: true }));
   });
 
-  it("assign-only touches listings and nothing else", async () => {
+  it("assign-only touches listings and republishes the stored context with the power layer read from the ledger", async () => {
     const result = await refreshPropertyZones({ assignOnly: true });
-    expect(result).toMatchObject({ market: null, context: null, errors: [], assignment: { written: 3 } });
+    expect(result).toMatchObject({ market: null, errors: [], assignment: { written: 3 } });
     expect(rentalFind).not.toHaveBeenCalled();
-    expect(fake.readSnapshot).not.toHaveBeenCalled();
-    expect(fake.publishContext).not.toHaveBeenCalled();
     expect(fake.utilities).not.toHaveBeenCalled();
+    expect(fake.loadSources).not.toHaveBeenCalled();
+    expect(fake.power).toHaveBeenCalledWith(expect.objectContaining({ previous: previousUtilities, now }));
+    // Everything the daily run stored travels unchanged; only the utilities and the stamp move.
+    expect(fake.publishContext).toHaveBeenCalledTimes(1);
+    const published = fake.publishContext.mock.calls[0][0];
+    expect(published).toMatchObject({ version: 1, generatedAt: stamp, geometry, crime: previousCrime, services: previousServices });
+    expect(published.utilities.power.status).toBe("preliminary");
+    expect(fake.publishContext.mock.calls[0][1]).toBeUndefined();
+    expect(result.context?.utilities?.power?.observedDays).toBe(3.2);
+  });
+
+  it("assign-only leaves the context alone when no run has stored utilities yet, and never publishes in a dry run", async () => {
+    fake.readSnapshot.mockImplementation(async id => (id === "context" ? { ...previous, utilities: null } : null));
+    expect(await refreshPropertyZones({ assignOnly: true })).toMatchObject({ context: null, errors: [] });
+    expect(fake.power).not.toHaveBeenCalled();
+    expect(fake.publishContext).not.toHaveBeenCalled();
+    fake.readSnapshot.mockImplementation(async id => (id === "context" ? previous : null));
+    const dry = await refreshPropertyZones({ assignOnly: true, dryRun: true });
+    expect(dry.context?.utilities?.power?.status).toBe("preliminary");
+    expect(fake.publishContext).not.toHaveBeenCalled();
+  });
+
+  it("assign-only reports an unreadable ledger without losing the assignment or the stored context", async () => {
+    fake.power.mockRejectedValue(new Error("mongodb://user:secret@host/app timeout"));
+    const result = await refreshPropertyZones({ assignOnly: true });
+    expect(result).toMatchObject({ context: null, errors: ["power: ledger unavailable; stored context retained"], assignment: { written: 3 } });
+    expect(fake.publishContext).not.toHaveBeenCalled();
+    expect(JSON.stringify(result.errors)).not.toContain("secret");
   });
 });

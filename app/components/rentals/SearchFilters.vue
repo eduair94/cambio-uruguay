@@ -488,6 +488,7 @@ import type {
 } from '~/utils/rentalZoneTypes'
 import {
   RENTAL_POWER_MIN_DAYS,
+  RENTAL_POWER_PRELIMINARY_DAYS,
   RENTAL_SERVICE_FILTERS,
   URSEA_URBAN_DENSE_MINUTES_PER_MONTH,
 } from '~/utils/rentalZoneServices'
@@ -687,7 +688,8 @@ const powerCollecting = computed(() => {
           timeZone: 'UTC',
         }).format(new Date(power.observedFrom)),
         days: serviceNumber(Math.floor(power.observedDays)),
-        min: RENTAL_POWER_MIN_DAYS,
+        // The slider unlocks on the provisional threshold, so that is the wait worth announcing.
+        min: RENTAL_POWER_PRELIMINARY_DAYS,
       }
     : null
 })

@@ -1,7 +1,7 @@
 import { appConnection } from "../appdb";
 import { buildZoneAssigner, type ListingLocation, type OfficialZone, type ZoneAlias } from "./assign";
 import type { OfficialPropertyZone, PropertyZoneCrime } from "./sources/types";
-import { buildAmenityDensity, buildClaimsLayer, buildLevels, buildPowerLayer, buildWaterLayer, crimeRates, customersByZone, levelValues, zoneLabels, type ZoneUtilityContext } from "./utilities";
+import { buildAmenityDensity, buildClaimsLayer, buildLevels, buildPowerLayer, buildWaterLayer, crimeRates, customersByZone, levelValues, refreshPowerLevels, zoneLabels, type ZoneUtilityContext } from "./utilities";
 import type { ZoneServiceContext } from "./context";
 import { buildPriceImpact, type ImpactAttribute, type PriceImpact } from "./impact";
 import type { RentalZoneMarketObservation } from "./market";
@@ -126,6 +126,12 @@ export async function buildUtilityContext({ previous, claimsCache, ine, now, for
     levels: buildLevels(levelValues(power, water, claimsLayer, rates)), crimePeriodTo: crime?.periodTo ?? null,
     amenities: buildAmenityDensity(services, ine) ?? previous?.amenities ?? null };
   return { utilities, claims, customers, errors };
+}
+
+/** The power layer alone over the stored utilities, for the hourly run (see refreshPowerLevels). */
+export async function refreshUtilityPower({ previous, now }: { previous: ZoneUtilityContext; now: Date }): Promise<ZoneUtilityContext> {
+  const days = await readPowerDays(montevideoDay(new Date(now.getTime() - 95 * 86_400_000).toISOString()));
+  return refreshPowerLevels(previous, days, now);
 }
 
 /** The stored price analysis, from the same observations as the market cohorts. */

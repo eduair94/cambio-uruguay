@@ -7,7 +7,7 @@ import { buildZoneServiceContext, type PropertyZoneContextSnapshot } from "./con
 import { loadOfficialPropertyZoneGeometry, loadPropertyZoneSources } from "./sources";
 import type { PropertyZoneSources } from "./sources/types";
 import { readZoneSnapshot, publishZoneMarket, publishZoneContext, publishZoneImpact, publishClaimsCache, zoneMarketProblem, type PropertyZoneMarketSnapshot } from "./store";
-import { assignListingZones, buildUtilityContext, buildZoneImpact } from "./services";
+import { assignListingZones, buildUtilityContext, buildZoneImpact, refreshUtilityPower } from "./services";
 import type { ClaimsSnapshot } from "../utilities/claims/source";
 
 const MAX_ROWS = 100_000;
@@ -76,7 +76,18 @@ export async function refreshPropertyZones(options: { dryRun?: boolean; forceSou
   if (options.assignOnly) {
     try { assignment = await assignListingZones({ ine: geometry.zones, now, dryRun: options.dryRun }); }
     catch { errors.push("assignment: listing locations unavailable"); }
-    return { market: null, context: null, errors, assignment: summary() };
+    // The UTE ledger grows every ten minutes: republishing its layer over the stored context keeps
+    // the observed-day count, and the switch to provisional figures, hours rather than a day behind.
+    let context: PropertyZoneContextSnapshot | null = null;
+    try {
+      const previous = await readZoneSnapshot<PropertyZoneContextSnapshot>("context");
+      if (previous?.utilities) {
+        const utilities = await refreshUtilityPower({ previous: previous.utilities, now });
+        context = { ...previous, generatedAt: now.toISOString(), utilities };
+        if (!options.dryRun) await publishZoneContext(context);
+      }
+    } catch { context = null; errors.push("power: ledger unavailable; stored context retained"); }
+    return { market: null, context, errors, assignment: summary() };
   }
   let market: PropertyZoneMarketSnapshot | null = null;
   let observations: RentalZoneMarketObservation[] = [];

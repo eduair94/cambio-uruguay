@@ -373,6 +373,7 @@ describe('preliminary power', () => {
     expect(buildRentalZoneScores(provisional, now)?.periods.power).toMatchObject({
       status: 'preliminary',
       observedDays: 4,
+      preliminaryDays: 3,
       minDays: 14,
     })
     expect(rentalZoneUtilitiesMeta(provisional, now)?.power?.status).toBe('preliminary')
@@ -416,7 +417,12 @@ describe('zone scores for listing cards', () => {
     expect(first.find(row => row.attribute === 'limpieza')?.betterThan).toBe(0)
     expect(first.find(row => row.attribute === 'servicios')?.betterThan).toBe(0)
     expect(scores.zones['mvd:12']!.rows.find(r => r.attribute === 'servicios')?.betterThan).toBe(1)
-    expect(scores.periods.power).toMatchObject({ status: 'ready', observedDays: 30, minDays: 14 })
+    expect(scores.periods.power).toMatchObject({
+      status: 'ready',
+      observedDays: 30,
+      preliminaryDays: 3,
+      minDays: 14,
+    })
   })
 
   it('drops crime once its period is too old', () => {

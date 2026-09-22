@@ -256,8 +256,12 @@ export interface RentalZoneScores {
       from: string | null
       to: string | null
       status: RentalServiceStatus
-      /** Days the ledger has observed so far, and how many it needs before it publishes. */
+      /**
+       * Days the ledger has observed so far, from how many it publishes a provisional figure and
+       * from how many that figure is final.
+       */
       observedDays: number
+      preliminaryDays: number
       minDays: number
     } | null
     water: { from: string; to: string } | null

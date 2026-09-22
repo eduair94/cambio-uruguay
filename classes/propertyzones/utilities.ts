@@ -254,6 +254,20 @@ export function levelValues(power: PowerLayer | null, water: WaterLayer | null, 
   return values;
 }
 
+/**
+ * The stored utilities with the power layer rebuilt from the ledger, which is what the hourly run
+ * republishes: the ledger grows every ten minutes while water, complaints and crime move by the
+ * day, so the daily rebuild alone left the day count and the switch to provisional up to a day
+ * behind. The luz levels follow the new layer; the crime rates are taken as the daily run ranked
+ * them (the denominator is the same ledger) and every other ranked value is derived again from the
+ * layers it already carries, so nothing else changes.
+ */
+export function refreshPowerLevels(previous: ZoneUtilityContext, days: readonly PowerDayDoc[], now: Date): ZoneUtilityContext {
+  const power = buildPowerLayer(days, now);
+  const levels = buildLevels(levelValues(power, previous.water, previous.claims, previous.levels.values?.denuncias ?? null));
+  return { ...previous, generatedAt: now.toISOString(), power, levels };
+}
+
 /** Mean daily UTE customers per public zone over the ledger, for complaint rates (needs no minimum window). */
 export function customersByZone(days: readonly PowerDayDoc[]): Record<string, number> {
   const perEcse = new Map<string, { sum: number; n: number }>();
