@@ -280,6 +280,9 @@ describe("una pieza que abre el título no es un vehículo", () => {
     "Y&trefen Ebike - Juego De Palanca De Freno Macho De 2 Pines.",
     // Del inventario del día siguiente, misma forma: una pieza que abre el título.
     "Acelerador Para Bicicleta Eléctrica Con Puños Incluídos",
+    // `kit` pasó a palabra desnuda (medido: 3 de 622, los tres kits) porque acá no abre el título
+    // y tampoco dice "conversión": es el kit para convertir una bici común, descrito de otra forma.
+    "Bicicleta Electrica Kit P/ Instalar En Tu Bici C/ Motor 350w",
   ];
   it.each(piezas)("%s -> rechazado", (title) => {
     expect(classify(title)).toBeNull();

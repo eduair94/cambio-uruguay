@@ -81,6 +81,11 @@ antepone la marca— lo cubre una SEGUNDA regla, `JUEGO_DE_PIEZAS`: "juego de <p
 posición. No afloja el ancla (eso ya está medido que borra vehículos reales); es una frase que por
 sí sola nunca describe un vehículo. Sobre los mismos 622 avisos marca ese aviso y ninguno más.
 
+`kit` es **palabra desnuda** en las dos listas de exclusión, no una pieza que abre el título: el
+tercer kit del inventario se titula "Bicicleta Electrica Kit P/ Instalar En Tu Bici C/ Motor 350w"
+—no abre con la pieza y tampoco dice "conversión"—. Medido sobre los 622: `kit` en cualquier
+posición marca tres avisos y los tres son kits.
+
 Una fila ya guardada que deja de clasificar no se vuelve a escribir: sale de la ventana que sirve
 la API a los 4 días y de la colección a los 30. Para no esperar, `npm run movilidad_prune_listings`
 (`--apply` para borrar; sin eso sólo informa) relee lo guardado contra el registro de hoy.

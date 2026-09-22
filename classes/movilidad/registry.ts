@@ -93,10 +93,10 @@ const MONOPATIN_INCLUDE =
  * que empieza exactamente donde empieza el título.
  */
 const PIEZA_ABRE_EL_TITULO =
-  /^(pantalla|panel|display|palanca|maneta|manija|pastilla|pastillas|faro|faros|sprocket|pinon|corona|biela|bielas|bolso|bolsa|mochila|canasto|canasta|llanta|llantas|camara|camaras|cubierta|cubiertas|neumatico|neumaticos|rueda|ruedas|guardabarro|guardabarros|cargador|cargadores|bateria|baterias|celda|celdas|controlador|acelerador|puno|punos|manubrio|asiento|sillin|portaequipaje|parrilla|soporte|funda|espejo|timbre|bocina|candado|bomba|inflador|kit|motor|eje|rodamiento|tornillo|cable|cables|conector|velocimetro|odometro|casco|cascos|guantes|chaleco|alarma|gps|protector|cubre|adaptador|valvula|repuesto|repuestos|juego de)\b/;
+  /^(pantalla|panel|display|palanca|maneta|manija|pastilla|pastillas|faro|faros|sprocket|pinon|corona|biela|bielas|bolso|bolsa|mochila|canasto|canasta|llanta|llantas|camara|camaras|cubierta|cubiertas|neumatico|neumaticos|rueda|ruedas|guardabarro|guardabarros|cargador|cargadores|bateria|baterias|celda|celdas|controlador|acelerador|puno|punos|manubrio|asiento|sillin|portaequipaje|parrilla|soporte|funda|espejo|timbre|bocina|candado|bomba|inflador|motor|eje|rodamiento|tornillo|cable|cables|conector|velocimetro|odometro|casco|cascos|guantes|chaleco|alarma|gps|protector|cubre|adaptador|valvula|repuesto|repuestos|juego de)\b/;
 
 const MONOPATIN_EXCLUDE_WORDS =
-  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|conversion|convertir|accesorio|accesorios|moto|motos|motoneta|ciclomotor|triciclo|triciclos|cuatriciclo|cuatriciclos|yumbo|homologad\w*|empadronable|matricula|hoverboard|guante|guantes)\b/;
+  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|conversion|convertir|kit|accesorio|accesorios|moto|motos|motoneta|ciclomotor|triciclo|triciclos|cuatriciclo|cuatriciclos|yumbo|homologad\w*|empadronable|matricula|hoverboard|guante|guantes)\b/;
 
 /** `"bicicleta electrica"`/`"bicicletas electricas"`, `"bici electrica"`, `"e-bike"`/`"ebike"`. Never
  * a bare "bicicleta": a normal pedal bike is not this category, and Loop's own catalogue tags a plain
@@ -122,7 +122,7 @@ const BICICLETA_INCLUDE = /\b(bicicletas? electric[oa]s?|bici electric[oa]|e-?bi
  * bare and stays.
  */
 const BICICLETA_EXCLUDE_WORDS =
-  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|conversion|convertidor|convertir|accesorio|accesorios|triciclo|triciclos|cuatriciclo|cuatriciclos|lubricante)\b/;
+  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|conversion|convertidor|convertir|kit|accesorio|accesorios|triciclo|triciclos|cuatriciclo|cuatriciclos|lubricante)\b/;
 
 /** Explicit power/speed language, or an unambiguous off-road/dual-motor claim. Kept as `match` (a
  * plain regex over the title), not `numeric`, because `EquiparUnit` has no watts/km-per-hour unit and
