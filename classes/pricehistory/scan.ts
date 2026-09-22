@@ -29,6 +29,8 @@ export function changeFromSeries(series: PriceHistorySeries, today: string, wind
     id: series.id,
     title: series.title,
     url: series.url,
+    // Un enlace que sale del sitio se marca: la tarjeta lo abre en otra pestaña y lo dice.
+    external: /^https?:\/\//.test(series.url),
     sellerName: series.sellerName,
     sellerKey: series.sellerKey,
     from: change.from,

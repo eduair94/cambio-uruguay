@@ -50,7 +50,10 @@ export interface PriceChange {
   vertical: PriceHistoryVertical;
   id: string;
   title: string;
+  /** A donde va el lector: la ficha propia del sitio (autos, alquiler, venta) o, cuando el aviso no
+   * tiene ficha propia, la oferta en la tienda. `external` distingue las dos. */
   url: string;
+  external: boolean;
   sellerName: string | null;
   sellerKey: string | null;
   from: number;

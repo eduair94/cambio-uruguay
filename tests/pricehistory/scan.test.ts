@@ -28,6 +28,7 @@ const change = (over: Partial<PriceChange> = {}): PriceChange => ({
   id: "ml:MLU1",
   title: "Heladera",
   url: "https://x/y",
+  external: true,
   sellerName: "Tienda",
   sellerKey: "tienda",
   from: 30000,
