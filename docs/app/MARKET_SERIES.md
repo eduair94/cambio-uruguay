@@ -74,7 +74,7 @@ mercado ese día: un catálogo viejo no es el mercado de hoy.
 
 | colección | qué | quién la lee |
 |---|---|---|
-| `marketpricelogs` | un documento por `mercado:aviso`, con `firstSeen`/`lastSeen` (días en que ESTE job lo vio) y `points [{d, p, c}]` **sólo cuando cambia** el precio o la moneda (tope 40). Se poda a 120 días sin verse | nadie fuera del job: es privada |
+| `marketpricelogs` | un documento por `mercado:aviso`, con `firstSeen`/`lastSeen` (días en que ESTE job lo vio) y `points [{d, p, c}]` **sólo cuando cambia** el precio o la moneda (tope 40). Se poda a 120 días sin verse | privada, con UNA excepción acotada desde el 2026-09-22: la ficha de un alquiler o de una vivienda en venta publica la serie `{fecha, precio}` **de ese aviso** (`classes/pricehistory/`, `docs/app/PRICE_CHANGES.md`). Nada más de estos documentos cruza la red |
 | `marketseries` | un documento por cohorte: `dims`, `labels`, `label`, `latest` y `points` (tope 1.100 = 3 años). Pipeline con `$literal` (la trampa de `PRICEWATCH.md`); re-correr el mismo día reemplaza el punto del día | `GET /api/market-series/series?key=` |
 | `marketseriesmetas` | `index:<mercado>` (zonas o modelos con su `n`, mayores movimientos emparejados, `trackingSince`) y `run` (estado de la última corrida por mercado) | `GET /api/market-series?v=` |
 

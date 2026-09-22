@@ -2,6 +2,7 @@ import { publicRentalAdvertisers, rentalDetailStages } from '../../../utils/rent
 import { RentalListingModel } from '../../../models/RentalListing'
 import { RentalMetaModel } from '../../../models/RentalMeta'
 import { connectDb } from '../../../utils/db'
+import { marketHistory, rentalAdvertId } from '../../../utils/priceHistory'
 
 import {
   annotateRentalAvailability,
@@ -69,6 +70,21 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse> => 
       page.similar = page.similar.map(row =>
         annotateRentalAvailability(publicRentalAdvertisers(row), availability)
       )
+      // Cada AVISO de esta vivienda lleva su propia variación: una vivienda publicada en tres
+      // portales son tres precios pedidos distintos, y una sola línea para la propiedad sería un
+      // número que nadie publicó. Opcional: si la lectura falla, la ficha sale igual.
+      try {
+        const advertIds = page.property.offers
+          .map(offer => rentalAdvertId(offer.source, offer.listingId))
+          .filter((id): id is string => id !== null)
+        const history = await marketHistory('alquiler', advertIds)
+        page.property.offers = page.property.offers.map(offer => {
+          const id = rentalAdvertId(offer.source, offer.listingId)
+          return id && history.has(id) ? { ...offer, priceHistory: history.get(id)! } : offer
+        })
+      } catch (error) {
+        console.error('[api/rentals/ficha] price history failed', error)
+      }
     }
   } catch (error) {
     console.error('[api/rentals/ficha] failed', error)

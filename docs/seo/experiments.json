@@ -185,6 +185,22 @@
         "alquilar sin garantia uruguay"
       ],
       "hypothesis": "Las tres paginas de alquiler del sitio dan por sabido lo que cuesta la garantia, que es justo la pregunta con la que llega la gente. El angulo propio es el mismo de /elecciones-bps-2026: la ANV y el MVOT publican los topes en UR (18, 21 y 22,5) y ninguna fuente oficial los muestra en pesos, mientras el sitio tiene la UR del dia. Un snippet con el tope convertido deberia ganarle al SERP institucional, que es ilegible y no trae ningun numero. La ventana es enero, cuando pica alquiler."
+    },
+    {
+      "id": "cambios-de-precio-por-aviso",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/cambios-de-precio-uruguay"
+      ],
+      "queries": [
+        "bajo de precio uruguay",
+        "cambios de precio uruguay",
+        "bajaron los alquileres uruguay",
+        "bajaron los autos usados uruguay",
+        "subio el precio uruguay",
+        "seguimiento de precios uruguay"
+      ],
+      "hypothesis": "El sitio ya media todos los dias el precio de ~60.000 avisos (pricewatchoffers, carlistings.priceHistory, marketpricelogs) y esa medicion solo existia dentro de la base: ninguna ficha mostraba la variacion del aviso y no habia pagina que la publicara. La hipotesis es que 'bajo de precio' es una consulta de intencion propia que hoy no tiene respuesta local, y que el angulo es el mismo que sostiene al resto del sitio: no una opinion sobre si conviene, sino una serie fechada y medida por nosotros, aviso por aviso, que ninguna fuente uruguaya publica. La pagina es ademas la puerta de entrada a siete directorios que ya existen."
     }
   ]
 }

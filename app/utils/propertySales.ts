@@ -1,3 +1,4 @@
+import type { PriceHistorySeries } from './priceHistory'
 /** Public sale adverts. Separate from rentals and the private opportunity-analysis inputs. */
 import { PROPERTY_SALES_SEO_PILOT_KEYS } from './propertySalesSeo'
 import { agencyKey, type AdvertiserMetadata } from './propertyAdvertiser'
@@ -158,6 +159,9 @@ export interface PropertySaleDetailResponse {
   usdUyu: number
   indexable: boolean
   similar: PropertySaleSummary[]
+  /** Cómo cambió el precio pedido de ESTE aviso desde que lo medimos (`marketpricelogs`, un punto
+   * sólo cuando cambia). `null` mientras no tengamos historia suya. */
+  priceHistory: PriceHistorySeries | null
 }
 
 const text = (value: unknown, max = 90) =>

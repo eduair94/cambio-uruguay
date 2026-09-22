@@ -1,6 +1,7 @@
 import { ChairCatalogMetaModel } from '../../models/ChairCatalogMeta'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
 import { connectDb } from '../../utils/db'
+import { pricewatchHistory } from '../../utils/priceHistory'
 import type { ChairCatalogMeta, ChairCatalogProduct } from '../../../utils/chairCatalog'
 
 export interface ChairDetailResponse {
@@ -58,6 +59,17 @@ export default defineEventHandler(async (event): Promise<ChairDetailResponse> =>
           .limit(6)
           .lean()) as unknown as ChairCatalogProduct[])
       : []
+
+    // La variación por aviso, cruzada con `pricewatchoffers` por el id del aviso. Opcional: si falla,
+    // la ficha sale igual, con la serie del producto que ya publicaba.
+    const history = await pricewatchHistory((typed.offers ?? []).map(offer => offer.id)).catch(
+      () => new Map()
+    )
+    if (history.size) {
+      typed.offers = (typed.offers ?? []).map(offer =>
+        history.has(offer.id) ? { ...offer, priceHistory: history.get(offer.id)! } : offer
+      )
+    }
 
     return { product: typed, meta: (meta as any) ?? null, related }
   } catch {

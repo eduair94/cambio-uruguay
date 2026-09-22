@@ -63,12 +63,18 @@ export function rankChanges(changes: readonly PriceChange[], options: RankOption
   for (const change of sorted) {
     const verticalCount = byVertical.get(change.vertical) ?? 0;
     if (verticalCount >= perVertical) continue;
-    // Un aviso sin vendedor conocido (particular en un portal que no lo declara) no comparte cupo con
+    // La identidad del vendedor es su clave, y si la fuente no la trae, su nombre público: los logs de
+    // alquiler y venta no guardan `sellerKey`, y sin esta segunda vuelta una inmobiliaria que retocó
+    // el mismo precio en cuatro avisos ocupaba cuatro filas seguidas (medido el 2026-09-22: cuatro
+    // "26.900 -> 36.800" de la misma agencia encabezando la tabla).
+    //
+    // Un aviso sin vendedor NI nombre (particular en un portal que no lo declara) no comparte cupo con
     // otro: agruparlos bajo una clave vacía los haría competir entre sí sin motivo.
-    if (change.sellerKey) {
-      const sellerCount = bySeller.get(`${change.vertical}:${change.sellerKey}`) ?? 0;
+    const sellerIdentity = change.sellerKey || change.sellerName;
+    if (sellerIdentity) {
+      const sellerCount = bySeller.get(`${change.vertical}:${sellerIdentity}`) ?? 0;
       if (sellerCount >= perSeller) continue;
-      bySeller.set(`${change.vertical}:${change.sellerKey}`, sellerCount + 1);
+      bySeller.set(`${change.vertical}:${sellerIdentity}`, sellerCount + 1);
     }
     byVertical.set(change.vertical, verticalCount + 1);
     kept.push(change);

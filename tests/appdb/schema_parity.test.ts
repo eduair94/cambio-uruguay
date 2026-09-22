@@ -29,6 +29,7 @@ import { StoreProfileModel } from "../../classes/models/StoreProfile";
 import { PriceEventSnapshotModel } from "../../classes/models/PriceEventSnapshot";
 import { PhoneModelModel } from "../../classes/models/PhoneModel";
 import { PhoneMetaModel } from "../../classes/models/PhoneMeta";
+import { PriceChangeSnapshotModel } from "../../classes/models/PriceChangeSnapshot";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -42,6 +43,15 @@ function appFields(src: string): string[] {
 describe("app-Mongo schema parity", () => {
   // These two collections are an ARCHIVE. A field the backend forgets is a field the app stops
   // seeing on every row written from today on — and there is no way to recompute it later.
+  it("PriceChangeSnapshot declares exactly the app's top-level fields", () => {
+    // La foto de /cambios-de-precio-uruguay. Un campo que el backend escriba y el app no declare se
+    // guarda igual pero no llega nunca a la pantalla, y la página queda diciendo menos de lo que sabe.
+    expect(Object.keys(PriceChangeSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("PriceChangeSnapshot")).sort()
+    );
+    expect(PriceChangeSnapshotModel.collection.name).toBe("pricechangesnapshots");
+  });
+
   it("PricePrediction declares exactly the app's top-level fields", () => {
     expect(Object.keys(PricePredictionModel.schema.obj).sort()).toEqual(appFields(appModel("PricePrediction")).sort());
   });

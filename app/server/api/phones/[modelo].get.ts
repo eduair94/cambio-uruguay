@@ -1,4 +1,5 @@
 import { PhoneModelModel } from '../../models/PhoneModel'
+import { pricewatchHistory } from '../../utils/priceHistory'
 import { PhoneMetaModel } from '../../models/PhoneMeta'
 import { connectDb } from '../../utils/db'
 import {
@@ -73,10 +74,22 @@ export default defineEventHandler(async (event): Promise<PhoneDetailResponse> =>
     'cache-control',
     'public, max-age=900, s-maxage=900, stale-while-revalidate=86400'
   )
+  // La variación del propio aviso, por oferta: la serie del modelo que ya publica esta ficha se mueve
+  // también cuando entra o sale un vendedor, así que no dice si ESTE vendedor bajó su precio.
+  const projected = phoneModelProjection(model)
+  const history = await pricewatchHistory(
+    projected.offers.map(offer => offer.listingId ?? '').filter(Boolean)
+  ).catch(() => new Map())
+  projected.offers = projected.offers.map(offer =>
+    offer.listingId && history.has(offer.listingId)
+      ? { ...offer, priceHistory: history.get(offer.listingId)! }
+      : offer
+  )
+
   return {
     generatedAt: meta?.generatedAt ?? '',
     usdUyu: meta?.usdUyu ?? 0,
-    model: phoneModelProjection(model),
+    model: projected,
     stale: phoneIsStale(model.lastSeen, today),
     publishable: phonePublishable(model, today),
     siblings: phoneSiblings(siblingDocs, model, today),

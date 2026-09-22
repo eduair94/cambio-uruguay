@@ -2,9 +2,10 @@
 
 Un punto de precio por día, por aviso individual (`listingId`), escrito por los jobs que ya leen un
 mercado — hoy `currency-equipar`, `currency-chairs`, `currency-phones` y `currency-movilidad`
-(diaria y horaria de los cuatro) — y guardado en la APP DB, colección `pricewatchoffers`. No tiene página propia ni
-endpoint público todavía: es materia prima para un trabajo futuro (Plan D), documentado acá porque
-empieza a grabarse ahora, antes de que haga falta.
+(diaria y horaria de los cuatro) — y guardado en la APP DB, colección `pricewatchoffers`. Desde el 2026-09-22 la leen dos consumidores
+(ver "Quién lo lee"): `classes/priceevents/` para `/ciberlunes-y-black-friday-uruguay` y
+`classes/pricehistory/` para la variación que muestra cada ficha y para
+`/cambios-de-precio-uruguay`.
 
 ## Por qué por OFERTA y no por producto
 
@@ -123,6 +124,14 @@ año no alimenta ninguna comparación de 60 días, y sin poda la colección crec
 aviso que alguna vez pasó por un buscador. La corrida lo registra en el log ("N vencidas borradas").
 
 ## Quién lo lee
+
+Dos lectores, y ninguno escribe acá.
+
+`classes/pricehistory/` (`docs/app/PRICE_CHANGES.md`) — el que publica la serie: normaliza esta
+colección, `carlistings.priceHistory` y `marketpricelogs` a una forma común, la adjunta a la ficha que
+el lector está mirando (celulares, sillas, el directorio de equipar) y alimenta la página
+`/cambios-de-precio-uruguay`. Es también el primer consumidor que saca esta colección de la base: hasta
+el 2026-09-22 no tenía endpoint ni página.
 
 `sync_price_events.ts` (`classes/priceevents/`, Plan D, `docs/app/PRICE_EVENTS.md`) — el consumidor
 para el que se empezó a grabar esta serie. Compara el precio de HOY de cada oferta contra su propio

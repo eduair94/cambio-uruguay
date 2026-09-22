@@ -9,6 +9,7 @@ import {
   publicCarRow,
 } from '../../../utils/cars'
 import { connectDb } from '../../../utils/db'
+import { carHistory } from '../../../utils/priceHistory'
 
 export default defineEventHandler(async event => {
   const key = String(getRouterParam(event, 'key') || '')
@@ -33,7 +34,7 @@ export default defineEventHandler(async event => {
   if (!row) throw createError({ statusCode: 404, statusMessage: 'Advert not found' })
   const car = publicCarRow(row)
   // Market, similar adverts and the opportunity are optional: a slow read never hides the advert.
-  const [market, similar, opportunities] = await Promise.all([
+  const [market, similar, opportunities, priceHistory] = await Promise.all([
     loadCarMarket(car.marketSlug).catch(() => null),
     CarCatalogModel.find({
       marketSlug: car.marketSlug,
@@ -49,6 +50,8 @@ export default defineEventHandler(async event => {
       .then(rows => rows.map(entry => publicCarRow(entry as Record<string, unknown>)))
       .catch(() => []),
     loadCarOpportunities().catch(() => null),
+    // El historial por aviso es opcional igual que el resto: una lectura lenta nunca esconde la ficha.
+    carHistory(key).catch(() => null),
   ])
   const cohort =
     market?.rows.find(
@@ -69,6 +72,7 @@ export default defineEventHandler(async event => {
       : null,
     similar,
     opportunity: opportunities?.items.find(entry => entry.subject.key === key) ?? null,
+    priceHistory,
   }
   return response
 })

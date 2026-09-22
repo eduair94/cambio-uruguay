@@ -101,6 +101,15 @@ describe("rankChanges", () => {
     expect(ranked.filter(row => row.vertical === "autos")).toHaveLength(2);
   });
 
+  it("sin sellerKey, el nombre del anunciante cuenta como identidad", () => {
+    // Los logs de alquiler y venta no guardan `sellerKey`: sin esta regla, una inmobiliaria que
+    // retocó el mismo precio en cinco avisos ocupaba cinco filas seguidas.
+    const rows = Array.from({ length: 5 }, (_, index) =>
+      change({ vertical: "alquiler", id: `ap-${index}`, sellerKey: null, sellerName: "Inmobiliaria X", pct: -(index + 1) })
+    );
+    expect(rankChanges(rows, { perSeller: 3, perVertical: 25 })).toHaveLength(3);
+  });
+
   it("un aviso sin vendedor no consume el cupo de otro", () => {
     const rows = Array.from({ length: 5 }, (_, index) =>
       change({ id: `sin-${index}`, sellerKey: null, sellerName: null, pct: -(index + 1) })

@@ -1,3 +1,4 @@
+import type { PriceHistorySeries } from './priceHistory'
 // Shared vocabulary of the rental directory (/alquileres-uruguay).
 //
 // The rows are produced by the root backend job `sync_rentals.ts` and read from the app's Mongo by
@@ -135,6 +136,9 @@ export interface RentalOffer extends AdvertiserMetadata {
   publishedAt: string | null
   firstSeen: string
   lastSeen: string
+  /** Cómo cambió el precio pedido de ESTE aviso desde que lo medimos (`marketpricelogs`, un punto por
+   * día y sólo cuando cambia). Ausente cuando todavía no tenemos historia suya. */
+  priceHistory?: PriceHistorySeries
 }
 
 /**

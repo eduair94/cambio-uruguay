@@ -1,3 +1,4 @@
+import type { PriceHistorySeries } from './priceHistory'
 // Types and pure helpers for the desk-chair market directory (/sillas-escritorio-uruguay).
 //
 // The backend job (root `sync_chairs.ts`) writes these documents into the app's MongoDB; the app
@@ -13,7 +14,11 @@ export type ChairCondition = 'new' | 'refurbished' | 'used' | 'unknown'
 export type ChairCatalogConfidence = 'low' | 'medium' | 'high'
 
 export interface ChairCatalogOffer {
+  /** El id del aviso, el mismo con el que `pricewatchoffers` guarda su historial de precio. */
   id: string
+  /** Cómo cambió el precio de ESTE aviso, cuando tenemos historia suya. La serie del producto que la
+   * ficha ya muestra es otra cosa: se mueve también cuando entra o sale un vendedor. */
+  priceHistory?: PriceHistorySeries
   source: ChairMarketSource
   sellerKey: string
   seller: string

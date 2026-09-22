@@ -1,3 +1,4 @@
+import type { PriceHistorySeries } from './priceHistory'
 // Shapes, query handling and the reader's list for /equipar-casa-uruguay/productos.
 //
 // `app/utils` is a FLAT auto-import namespace: every export here is prefixed `equipar*` /
@@ -95,6 +96,9 @@ export interface EquiparListingDoc {
 /** What the API publishes per listing: the card's fields, nothing internal. */
 export interface EquiparProductoPublic {
   listingId: string
+  /** Cómo cambió el precio de ESTE aviso desde que lo medimos (`pricewatchoffers`, un punto por día).
+   * Ausente mientras no tengamos dos lecturas suyas. */
+  priceHistory?: PriceHistorySeries
   category: string
   categoryLabel: string
   variant: string

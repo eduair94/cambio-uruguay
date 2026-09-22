@@ -3437,6 +3437,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/cambios-de-precio-uruguay',
+        labelKey: 'nav.cambiosDePrecio',
+        icon: 'mdi-swap-vertical',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'bajo de precio uruguay',
+          'cambios de precio uruguay',
+          'bajaron los alquileres uruguay',
+          'bajaron los autos usados uruguay',
+          'subio el precio uruguay',
+          'seguimiento de precios uruguay',
+        ],
+      },
+      {
         to: '/ciberlunes-y-black-friday-uruguay',
         labelKey: 'nav.ciberlunes',
         icon: 'mdi-sale-outline',

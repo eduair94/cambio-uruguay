@@ -40,6 +40,11 @@
           (≈ {{ equiparMoneyNbsp(producto.priceUyu) }})
         </span>
       </p>
+      <!-- La variación del PROPIO aviso: este vendedor contra su propio precio de hace unos días, no
+           contra la banda de la categoría (que se mueve cuando entra o sale un vendedor). -->
+      <p v-if="priceMove" class="eq-card__move" :class="priceMove.down ? 'is-down' : 'is-up'">
+        {{ priceMove.text }}
+      </p>
       <p class="eq-card__facts">{{ facts }}</p>
       <p class="eq-card__source">
         {{ producto.sellerName
@@ -63,6 +68,7 @@
 </template>
 
 <script setup lang="ts">
+import { priceChangeLabel } from '~/utils/priceHistory'
 import {
   EQUIPAR_SOURCE_LABELS,
   equiparMoneyNbsp,
@@ -86,6 +92,19 @@ const facts = computed(() =>
     .join(' · ')
 )
 /** `YYYY-MM-DD` read as midday UTC so midnight never rolls it back a day in Montevideo. */
+/**
+ * "bajó 12 % desde el 17/9": la variación del aviso contra su PRIMERA lectura nuestra, con la fecha
+ * a la vista. Sin dos lecturas no se dice nada — una sola no es una variación.
+ */
+const priceMove = computed(() => {
+  const series = props.producto.priceHistory
+  const label = priceChangeLabel(series?.changePct ?? null)
+  if (!series || !label || series.points.length < 2) return null
+  const [year, month, day] = (series.points[0]?.d ?? '').split('-')
+  const since = year && month && day ? `${Number(day)}/${Number(month)}` : series.firstSeen
+  return { text: `${label} desde el ${since}`, down: (series.changePct ?? 0) < 0 }
+})
+
 const seen = computed(() => {
   const time = Date.parse(`${props.producto.lastSeen}T12:00:00Z`)
   if (Number.isNaN(time)) return props.producto.lastSeen
@@ -222,6 +241,18 @@ const roomIcon = computed(() => {
 }
 .eq-card__seen {
   white-space: nowrap;
+}
+.eq-card__move {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.35;
+}
+.eq-card__move.is-down {
+  color: rgb(var(--v-theme-success));
+}
+.eq-card__move.is-up {
+  color: rgb(var(--v-theme-error));
 }
 .eq-card__add {
   align-self: flex-start;
