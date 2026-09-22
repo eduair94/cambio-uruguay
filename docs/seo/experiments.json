@@ -216,6 +216,61 @@
         "seguimiento de precios uruguay"
       ],
       "hypothesis": "El sitio ya media todos los dias el precio de ~60.000 avisos (pricewatchoffers, carlistings.priceHistory, marketpricelogs) y esa medicion solo existia dentro de la base: ninguna ficha mostraba la variacion del aviso y no habia pagina que la publicara. La hipotesis es que 'bajo de precio' es una consulta de intencion propia que hoy no tiene respuesta local, y que el angulo es el mismo que sostiene al resto del sitio: no una opinion sobre si conviene, sino una serie fechada y medida por nosotros, aviso por aviso, que ninguna fuente uruguaya publica. La pagina es ademas la puerta de entrada a siete directorios que ya existen."
+    },
+    {
+      "id": "salario-vacacional-simulador-y-escala",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/salario-vacacional-uruguay"
+      ],
+      "queries": [
+        "salario vacacional uruguay",
+        "como se calcula el salario vacacional",
+        "calcular salario vacacional",
+        "cuando se cobra el salario vacacional",
+        "salario vacacional irpf"
+      ],
+      "hypothesis": "Un simulador con el desglose nominal → aportes → jornal líquido → suma → IRPF, la escala de antigüedad corregida (5/8/12) y la descripción con «sin aportes BPS y con IRPF» deberían mover la porción de clics de las consultas de cálculo, hoy resueltas por planillas y foros."
+    },
+    {
+      "id": "antel-corta-por-facturas",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/que-pasa-si-no-pago-antel"
+      ],
+      "queries": [
+        "que pasa si no pago antel",
+        "cuando antel te corta el servicio",
+        "antel cuanto demora en reconectar el internet",
+        "antel cuando vence mi contrato"
+      ],
+      "hypothesis": "La primera version decia que Antel no publica el plazo hasta el corte; si lo publica, en facturas y en tres documentos (fija: 2.a impaga bloquea salientes y 30 dias despues bloquea todo; movil: 1 y 2 facturas; tabla de junio 2023 retirada). El titulo pasa de 'mora y 72 h' a 'cuando te corta y 72 h', la descripcion entra en 155 con la escalera adelante, y se suma el eje del contrato (plazos de 2 anios, copia del contrato, rescision con todas las mensualidades, tramite URSEC). Deberia ganar la consulta 1 al SERP de foros y a tramitesyconsultas.org, que publica 'tres facturas' sin fuente, y abrir la consulta del contrato que la pagina no cubria."
+    },
+    {
+      "id": "prestamo-solo-con-cedula-y-topes",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/prestamo-sin-recibo-de-sueldo-uruguay"
+      ],
+      "queries": [
+        "prestamos uruguay solo con cedula",
+        "préstamos solo con cédula",
+        "prestamo solo con cedula uruguay"
+      ],
+      "hypothesis": "Una tabla de quien presta de verdad solo con la cedula (y quien exige clearing limpio aunque lo anuncie), con la grilla de topes del BCU fechada, gana la consulta a los comparadores de afiliados que no publican una sola tasa."
+    },
+    {
+      "id": "clearing-que-pasa-y-categorias-bcu",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/salir-del-clearing"
+      ],
+      "queries": [
+        "que pasa si estoy en clearing",
+        "que pasa si estoy en el clearing",
+        "como saber si estoy en el clearing"
+      ],
+      "hypothesis": "Responder 'que pasa si estoy en clearing' con casos fechados, el telefono gratuito de Equifax, el precio del informe y las 7 categorias del BCU convierte impresiones de posicion media en clics para la consulta que la pagina ya recibia."
     }
   ]
 }

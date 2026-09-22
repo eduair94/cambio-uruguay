@@ -52,6 +52,10 @@
               Una deuda <strong>ya cancelada</strong> queda hasta 5 años más —eso sí, no renovables—
               contados <strong>desde que la pagaste</strong>.
             </li>
+            <li>
+              Equifax declara que conserva una "operación cancelada con atraso"
+              <strong>{{ EQUIFAX_CANCELLED_YEARS }} años</strong>, no los 5 que la ley permite.
+            </li>
             <li>Podés pedir tus datos <strong>gratis cada 6 meses</strong> (Ley 18.331).</li>
             <li>Te tienen que responder en <strong>5 días hábiles</strong>.</li>
           </ul>
@@ -78,6 +82,33 @@
       </VCol>
     </VRow>
 
+    <!-- What actually happens -->
+    <h2 class="section-heading mb-1">¿Qué pasa si estoy en clearing?</h2>
+    <p class="text-body-2 mb-4">
+      Nadie te embarga ni te descuenta del sueldo por figurar. Lo que pasa es que te dicen que no: a
+      una tarjeta, a un préstamo de banco, a casi todas las financieras y, a veces, a una garantía
+      de alquiler. Casos concretos, con su fuente:
+    </p>
+    <VCard variant="flat" class="section-card pa-5 pa-sm-6 mb-6">
+      <ul class="rights">
+        <li v-for="c in CLEARING_CONSEQUENCES" :key="c.id">
+          <strong>{{ c.title }}.</strong> {{ c.text }}
+          <template v-if="c.sourceUrl">
+            <a :href="c.sourceUrl" target="_blank" rel="noopener noreferrer">Fuente</a>
+          </template>
+        </li>
+      </ul>
+      <p class="text-body-2 mt-4 mb-0">
+        Quién presta igual, a qué tasa y con qué gastos, con los topes de usura vigentes al lado:
+        <NuxtLink :to="localePath('/prestamo-sin-recibo-de-sueldo-uruguay')"
+          >préstamos sólo con la cédula</NuxtLink
+        >. Para la garantía de alquiler:
+        <NuxtLink :to="localePath('/alquilar-estando-en-clearing')"
+          >alquilar estando en el clearing</NuxtLink
+        >.
+      </p>
+    </VCard>
+
     <!-- Check yourself -->
     <VCard variant="flat" class="cta-card pa-5 pa-sm-6 mb-6">
       <div class="d-flex align-center ga-2 mb-2">
@@ -85,7 +116,8 @@
         <h2 class="text-h6 font-weight-bold mb-0">Paso 1: mirá tu situación real (gratis)</h2>
       </div>
       <p class="text-body-2 mb-4">
-        No pagues por “consultar tu clearing”. Podés verlo sin gastar un peso.
+        No pagues por “consultar tu clearing”. Podés verlo sin gastar un peso: el BCU online y
+        Equifax por teléfono.
       </p>
       <VRow>
         <VCol cols="12" sm="6">
@@ -121,6 +153,75 @@
           </p>
         </VCol>
       </VRow>
+      <VDivider class="my-4" />
+      <h3 class="text-subtitle-1 font-weight-bold mb-1">El informe de Equifax: gratis o pago</h3>
+      <p class="text-body-2 mb-3">
+        Gratis, por teléfono: llamá al <strong>{{ EQUIFAX_FREE_ACCESS.phone }}</strong
+        >, {{ EQUIFAX_FREE_ACCESS.option }}, {{ EQUIFAX_FREE_ACCESS.hours }}; el informe
+        {{ EQUIFAX_FREE_ACCESS.delivery }}, {{ EQUIFAX_FREE_ACCESS.cadence }} (es el derecho de
+        acceso de la Ley 18.331). Si lo querés al momento, se paga:
+      </p>
+      <VTable class="cu-mobile-cards" density="compact">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th class="text-right">Precio</th>
+            <th>Qué es</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="p in EQUIFAX_PRODUCTS" :key="p.id">
+            <td data-label="Producto" class="font-weight-medium">{{ p.name }}</td>
+            <td data-label="Precio" class="text-right text-no-wrap">{{ p.price }}</td>
+            <td data-label="Qué es">{{ p.note }}</td>
+          </tr>
+        </tbody>
+      </VTable>
+      <p class="text-caption text-medium-emphasis mt-3 mb-0">
+        Las Alertas MiClearing avisan por mail de {{ EQUIFAX_ALERT_EVENTS.join(', ') }}; las
+        denuncias de cédula hechas en cualquier seccional llegan solas a Equifax por convenio con el
+        Ministerio del Interior. Precios y teléfono vistos en clearing.com.uy (la web de
+        <a :href="EQUIFAX_PERSONAS_URL" target="_blank" rel="noopener noreferrer">Equifax</a>) y en
+        su
+        <a :href="EQUIFAX_FAQ_URL" target="_blank" rel="noopener noreferrer">FAQ de Equifax</a>
+        el {{ fmtDate(CLEARING_REVIEWED) }}.
+      </p>
+    </VCard>
+
+    <!-- BCU categories -->
+    <VCard variant="flat" class="section-card pa-5 pa-sm-6 mb-6">
+      <h2 class="text-h6 font-weight-bold mb-1">
+        <VIcon start color="primary">mdi-bank</VIcon>
+        Las 7 categorías del BCU, de mejor a peor
+      </h2>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        Es la calificación que te asigna cada banco o financiera supervisada y que consolida la
+        Central de Riesgos. La consulta propia es gratis en
+        <a :href="BCU_CONSULTA_URL" target="_blank" rel="noopener noreferrer">consultadeuda</a>
+        (bcu.gub.uy) y muestra el total en el sistema y su apertura por institución, en moneda de
+        origen.
+      </p>
+      <VTable class="cu-mobile-cards" density="compact">
+        <thead>
+          <tr>
+            <th>Categoría</th>
+            <th>Definición del BCU</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="c in BCU_RISK_CATEGORIES" :key="c.id">
+            <td data-label="Categoría" class="font-weight-bold text-no-wrap">{{ c.code }}</td>
+            <td data-label="Definición del BCU">{{ c.definition }}</td>
+          </tr>
+        </tbody>
+      </VTable>
+      <p class="text-body-2 mt-3 mb-0">
+        Con las palabras del BCU: "{{ BCU_NOT_PUBLISHED }}" Si una calificación te parece
+        equivocada, el reclamo va primero a la institución que la informó y después al Banco
+        Central. Fuente: BCU,
+        <a :href="BCU_CENTRAL_URL" target="_blank" rel="noopener noreferrer">Central de Riesgos</a>,
+        visto el {{ fmtDate(CLEARING_REVIEWED) }}.
+      </p>
     </VCard>
 
     <!-- Rights -->
@@ -388,10 +489,14 @@
       </VAlert>
 
       <VAlert type="warning" variant="tonal" density="comfortable" class="mt-4">
-        <strong>¿Es usura?</strong> La Ley 18.212 le pone un tope a las tasas, y el BCU lo publica
-        <strong>cada trimestre</strong> según el tipo de crédito. Cobrar por encima del tope es
-        <strong>delito</strong>. No fijamos el tope acá porque cambia seguido: compará tu TEA con la
-        tabla vigente.
+        <strong>¿Es usura?</strong> La Ley 18.212 le pone un tope a las tasas, y el BCU lo republica
+        <strong>todos los meses</strong>, sobre una ventana móvil de tres meses, según el tipo de
+        crédito, el plazo y el monto. Cobrar por encima del tope es <strong>delito</strong>. No
+        fijamos el tope acá porque cambia seguido: compará tu TEA con la tabla vigente, que también
+        está, con la fecha de su tabla, en
+        <NuxtLink :to="localePath('/prestamo-sin-recibo-de-sueldo-uruguay')"
+          >préstamos sólo con la cédula</NuxtLink
+        >.
         <div class="mt-2">
           <VBtn
             href="https://usuariofinanciero.bcu.gub.uy/tasas/topes-de-tasas-de-interes-y-usura/"
@@ -428,6 +533,8 @@
       </VAlert>
     </VCard>
 
+    <FaqSection :items="faq" heading="Preguntas frecuentes" class="mb-6" />
+
     <!-- Sources -->
     <VCard variant="flat" class="section-card pa-5 mb-6">
       <h2 class="text-subtitle-2 font-weight-bold mb-2">
@@ -435,10 +542,14 @@
         Fuentes
       </h2>
       <ul class="sources-list">
-        <li v-for="(s, i) in sources" :key="i">
+        <li v-for="s in CLEARING_SOURCES" :key="s.url">
           <a :href="s.url" target="_blank" rel="noopener noreferrer">{{ s.label }}</a>
         </li>
       </ul>
+      <p class="text-caption text-medium-emphasis mt-2 mb-0">
+        Cifras, precios y categorías verificados contra cada fuente el
+        {{ fmtDate(CLEARING_REVIEWED) }}.
+      </p>
     </VCard>
 
     <VAlert type="warning" variant="tonal" density="comfortable" class="mb-6">
@@ -499,9 +610,35 @@
 import { compareStrategies, effectiveRate, type Debt } from '~/utils/debt'
 import { formatUYU } from '~/utils/format'
 import { guideDiscoveryMessages } from '~/utils/guideDiscoveryMessages'
+import {
+  BCU_CENTRAL_URL,
+  BCU_CONSULTA_URL,
+  BCU_NOT_PUBLISHED,
+  BCU_RISK_CATEGORIES,
+  CLEARING_CONSEQUENCES,
+  CLEARING_REVIEWED,
+  CLEARING_SOURCES,
+  EQUIFAX_ALERT_EVENTS,
+  EQUIFAX_CANCELLED_YEARS,
+  EQUIFAX_FAQ_URL,
+  EQUIFAX_FREE_ACCESS,
+  EQUIFAX_PERSONAS_URL,
+  EQUIFAX_PRODUCTS,
+  clearingFaq,
+} from '~/utils/salirDelClearing'
 
 const localePath = useLocalePath()
 const { t } = useI18n({ useScope: 'local', messages: guideDiscoveryMessages })
+
+const faq = clearingFaq()
+
+const fmtDate = (iso: string): string =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString('es-UY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
 
 // --- payoff planner ---
 let seq = 3
@@ -540,29 +677,6 @@ const rate = computed(() =>
   effectiveRate(loanPrincipal.value || 0, loanPayment.value || 0, loanMonths.value || 0)
 )
 
-const sources = [
-  {
-    label: 'BCU — Consulta de la Central de Riesgos Crediticios (gratis)',
-    url: 'https://consultadeuda.bcu.gub.uy/consultadeuda/',
-  },
-  {
-    label: 'BCU — Topes de tasas de interés y usura (Ley 18.212)',
-    url: 'https://usuariofinanciero.bcu.gub.uy/tasas/topes-de-tasas-de-interes-y-usura/',
-  },
-  {
-    label: 'Ley 18.331 — Protección de Datos Personales y acción de Habeas Data',
-    url: 'https://www.impo.com.uy/bases/leyes/18331-2008',
-  },
-  {
-    label: 'Unidad Reguladora y de Control de Datos Personales (URCDP)',
-    url: 'https://www.gub.uy/unidad-reguladora-control-datos-personales/',
-  },
-  {
-    label: 'BCU — Central de Riesgos',
-    url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Central_de_Riesgos.aspx',
-  },
-]
-
 const canonicalUrl = 'https://cambio-uruguay.com/salir-del-clearing'
 const title = 'Cómo salir del clearing en Uruguay: 5 años'
 const description =
@@ -592,7 +706,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'salir del clearing uruguay, clearing de informes, central de riesgos bcu, consultar deuda bcu, cuanto tiempo quedo en el clearing, como saber si estoy en el clearing, clearing cuanto debo, que pasa si estoy en el clearing, ley 18331 habeas data, usura uruguay ley 18212, plan de deudas, salir de deudas uruguay',
+        'salir del clearing uruguay, clearing de informes, central de riesgos bcu, consultar deuda bcu, cuanto tiempo quedo en el clearing, como saber si estoy en el clearing, clearing cuanto debo, que pasa si estoy en clearing, que pasa si estoy en el clearing, categorias bcu 1a 1c 2a 2b 3 4 5, equifax uruguay informe gratis, ley 18331 habeas data, usura uruguay ley 18212, plan de deudas, salir de deudas uruguay',
     },
   ],
   script: [
@@ -613,43 +727,8 @@ useHead(() => ({
               { '@type': 'ListItem', position: 2, name: 'Salir del clearing', item: canonicalUrl },
             ],
           },
-          {
-            '@type': 'FAQPage',
-            mainEntity: [
-              {
-                '@type': 'Question',
-                name: '¿Cuánto tiempo quedo en el clearing?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Depende de si pagaste. Una obligación impaga se registra por cinco años desde que la incorporaron, y si al vencer sigue impaga el acreedor puede pedir por única vez —dentro de los treinta días anteriores al vencimiento— un nuevo registro por otros cinco: pueden ser diez años. Una obligación ya cancelada permanece registrada como tal por un máximo de cinco años no renovables, contados desde la cancelación y no desde el registro original.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: '¿Es lo mismo el Clearing de Informes que la Central de Riesgos del BCU?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'No. El Clearing de Informes es una empresa privada de informes comerciales. La Central de Riesgos es el registro oficial del Banco Central del Uruguay, donde figuran tus créditos con instituciones reguladas y tu categoría de 1A a 5. Podés estar en uno y no en el otro.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: '¿Cómo consulto gratis si tengo deudas?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'La Central de Riesgos del BCU se consulta gratis en consultadeuda.bcu.gub.uy. Además, la Ley 18.331 te da derecho a acceder a tus datos de forma gratuita cada 6 meses, y deben responderte en 5 días hábiles.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: '¿Me pueden cobrar cualquier tasa de interés?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'No. La Ley 18.212 fija topes máximos de tasa y el BCU los publica trimestralmente según el tipo de crédito. Cobrar por encima del tope es usura, que es un delito.',
-                },
-              },
-            ],
-          },
+          // The FAQPage node is emitted by <FaqSection> from the same `faq` list, so the visible
+          // text and the structured data can never drift apart.
         ],
       }),
     },
