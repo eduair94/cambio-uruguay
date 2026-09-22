@@ -128,6 +128,42 @@ export function filterApexUrls(urls, host = INDEXNOW_HOST) {
   return { kept, dropped }
 }
 
+/**
+ * Tope de URLs NUEVAS por corrida. Medido el 22/9/2026: dos deploys seguidos mandaron las 3.691
+ * URLs del sitemap en un solo POST y api.indexnow.org contestó 429 las dos veces ("potential
+ * spam"). El protocolo admite 10.000 por POST, pero re-anunciar todo el sitio en cada deploy es
+ * exactamente lo que el receptor castiga. Ahora se anuncia sólo lo que no se anunció antes, de a
+ * lo sumo esta cantidad; el resto sale en los deploys siguientes.
+ */
+export const INDEXNOW_MAX_NEW_PER_RUN = 500
+
+/**
+ * Qué mandar en esta corrida: las URLs del sitemap que no figuran en el estado guardado (lo que ya
+ * se anunció), en el orden del sitemap, recortadas al tope. Devuelve también el estado que habría
+ * que guardar SI el envío sale bien (lo anunciado antes más lo de ahora), para que un rechazo no
+ * marque como anunciado lo que no llegó. El estado es sólo un conjunto de URLs; una URL que
+ * desaparece del sitemap deja de contar sola.
+ */
+export function planSubmission(urls, previous = [], cap = INDEXNOW_MAX_NEW_PER_RUN) {
+  const seen = new Set(previous)
+  const fresh = urls.filter(url => !seen.has(url))
+  const toSend = fresh.slice(0, cap)
+  const current = new Set(urls)
+  const nextState = [...previous.filter(url => current.has(url)), ...toSend]
+  return { toSend, pending: fresh.length - toSend.length, nextState }
+}
+
+/** El archivo de estado: `{ submittedAt, urls: [...] }`. Cualquier cosa ilegible vale "nunca se anunció nada". */
+export function parseState(text) {
+  try {
+    const parsed = JSON.parse(text)
+    if (!parsed || !Array.isArray(parsed.urls)) return []
+    return parsed.urls.filter(url => typeof url === 'string')
+  } catch {
+    return []
+  }
+}
+
 /** Tandas de hasta `size` URLs (el protocolo acepta 10.000 por POST). */
 export function chunkUrls(urls, size = INDEXNOW_MAX_URLS_PER_POST) {
   const chunks = []
@@ -264,6 +300,12 @@ export async function runIndexNow({
   indexUrl = SITEMAP_INDEX_URL,
   endpoint = INDEXNOW_ENDPOINT,
   host = INDEXNOW_HOST,
+  // Estado entre corridas (lo ya anunciado): `read()` devuelve el texto o null, `write(text)`
+  // persiste. Sin estado inyectado se comporta como si nunca se hubiera anunciado nada, pero igual
+  // respeta el tope por corrida.
+  state = null,
+  maxNewPerRun = INDEXNOW_MAX_NEW_PER_RUN,
+  now = () => new Date().toISOString(),
 } = {}) {
   const dryRun = argv.includes('--dry-run')
   try {
@@ -284,20 +326,36 @@ export async function runIndexNow({
       log(`indexnow: aborted, ${collected.reason}. Nothing sent.`)
       return { status: 'aborted', reason: collected.reason, ...EMPTY }
     }
-    const payloads = chunkUrls(collected.urls).map(chunk => buildPayload(chunk, { host, key }))
+    let previous = []
+    try {
+      const text = state && typeof state.read === 'function' ? state.read() : null
+      previous = text ? parseState(text) : []
+    } catch (error) {
+      log(
+        `indexnow: state unreadable, treating everything as new: ${String(error?.message || error)}`
+      )
+    }
+    const plan = planSubmission(collected.urls, previous, maxNewPerRun)
     log(
-      `indexnow: ${collected.urls.length} URLs from ${collected.childUrl} in ${payloads.length} POST(s)` +
+      `indexnow: ${collected.urls.length} URLs in ${collected.childUrl}, ${previous.length} already announced, ` +
+        `${plan.toSend.length} new to send now` +
+        (plan.pending ? `, ${plan.pending} left for the next deploy` : '') +
         (collected.dropped.length ? `; ${collected.dropped.length} off-host/duplicate dropped` : '')
     )
+    if (plan.toSend.length === 0) {
+      log('indexnow: nothing new since the last announcement; no POST.')
+      return { status: 'nothing-new', urls: 0, chunks: 0, responses: [] }
+    }
+    const payloads = chunkUrls(plan.toSend).map(chunk => buildPayload(chunk, { host, key }))
     if (dryRun) {
       log(
-        `indexnow: --dry-run, would POST to ${endpoint} for host ${host} (key file ${keyLocation(host, key)}).`
+        `indexnow: --dry-run, would POST ${plan.toSend.length} URLs in ${payloads.length} POST(s) to ${endpoint} for host ${host} (key file ${keyLocation(host, key)}).`
       )
-      for (const url of collected.urls.slice(0, 10)) log(`  ${url}`)
-      if (collected.urls.length > 10) log(`  … ${collected.urls.length - 10} more`)
+      for (const url of plan.toSend.slice(0, 10)) log(`  ${url}`)
+      if (plan.toSend.length > 10) log(`  … ${plan.toSend.length - 10} more`)
       return {
         status: 'dry-run',
-        urls: collected.urls.length,
+        urls: plan.toSend.length,
         chunks: payloads.length,
         responses: [],
       }
@@ -309,9 +367,17 @@ export async function runIndexNow({
       )
     }
     const allOk = responses.every(response => response.ok)
+    if (allOk && state && typeof state.write === 'function') {
+      // Sólo un envío aceptado marca URLs como anunciadas: un 429 de hoy se reintenta mañana.
+      try {
+        state.write(JSON.stringify({ submittedAt: now(), urls: plan.nextState }))
+      } catch (error) {
+        log(`indexnow: could not persist state: ${String(error?.message || error)}`)
+      }
+    }
     return {
       status: allOk ? 'submitted' : 'rejected',
-      urls: collected.urls.length,
+      urls: plan.toSend.length,
       chunks: payloads.length,
       responses,
     }

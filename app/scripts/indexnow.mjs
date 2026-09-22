@@ -11,7 +11,7 @@
 //
 // La clave se descubre en public/<hex>.txt (único archivo así, contenido = su nombre). La lógica
 // vive en scripts/lib/indexnow.mjs (pura, con tests en tests/unit/indexnow.test.ts).
-import { readdirSync, readFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 
 import { resolveIndexNowKey, runIndexNow } from './lib/indexnow.mjs'
 
@@ -35,12 +35,30 @@ try {
   console.log(`indexnow: cannot list public/: ${String(error?.message || error)}`)
 }
 
+// Lo ya anunciado vive en app/.data/ (gitignored, fuera de .output: sobrevive el swap del deploy).
+// Sin este archivo cada deploy re-anunciaba el sitemap entero y api.indexnow.org contestaba 429.
+const stateUrl = new URL('../.data/indexnow-announced.json', import.meta.url)
+const state = {
+  read: () => {
+    try {
+      return readFileSync(stateUrl, 'utf8')
+    } catch {
+      return null
+    }
+  },
+  write: text => {
+    mkdirSync(new URL('../.data/', import.meta.url), { recursive: true })
+    writeFileSync(stateUrl, text)
+  },
+}
+
 const result = await runIndexNow({
   fetch: globalThis.fetch,
   env: process.env,
   argv: process.argv.slice(2),
   dotenvText,
   key,
+  state,
   log: message => console.log(message),
 })
 
