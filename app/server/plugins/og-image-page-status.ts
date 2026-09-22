@@ -32,13 +32,24 @@ export default defineNitroPlugin(nitroApp => {
   // Nitro's original handler captures and renders the error. Correct its HTTP
   // status before both actions; changing a response hook would report a false
   // 500 to Sentry before eventually sending the right status to the caller.
+  //
+  // Any 4xx from the page (not only 404/410) means "there is nothing to draw",
+  // never "the renderer broke": a 403 or 451 advert should not page Sentry as a
+  // 500 either. The three strings are every failure the installed extractor can
+  // raise; the third one ("Failed to parse") is what 2026-09-22's autos outage
+  // logged, when a crashed setup turned the page's 404 into a 500 upstream. That
+  // case is fixed at the page and stays 500 here on purpose (the source was 5xx);
+  // the pattern is listed so a future module that reports 4xx through it is
+  // relabelled too instead of slipping past this guard again.
   const onError = nitroApp.h3App.options.onError
   nitroApp.h3App.options.onError = (error, event) => {
     const sourceStatus = sourceStatuses.get(event)
     if (
-      (sourceStatus === 404 || sourceStatus === 410) &&
+      sourceStatus !== undefined &&
+      sourceStatus >= 400 &&
+      sourceStatus < 500 &&
       error.statusCode === 500 &&
-      /^\[Nuxt OG Image\] (?:HTML response from .+ is missing the #nuxt-og-image-options script tag\.|Failed to read the path .+ for og-image extraction, returning no HTML\.)/.test(
+      /^\[Nuxt OG Image\] (?:HTML response from .+ is missing the #nuxt-og-image-options script tag\.|Failed to read the path .+ for og-image extraction, returning no HTML\.|Failed to parse .+ for og-image extraction\.)/.test(
         error.statusMessage || ''
       )
     ) {

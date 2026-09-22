@@ -20,6 +20,27 @@
             <p class="text-body-1 text-grey-lighten-1 term-lead">{{ term.short }}</p>
           </header>
 
+          <!-- Cuando el término es un indicador con página propia, el VALOR de hoy vive allá y
+               esta página sólo lo explica. El enlace va arriba y grande: es lo que la mitad de
+               los que llegan a "qué es la UR" quieren en realidad. -->
+          <VCard v-if="indicator" variant="tonal" color="primary" class="value-box pa-4 mb-5">
+            <div class="d-flex flex-wrap align-center justify-space-between ga-3">
+              <p class="text-body-2 mb-0 value-box__text">
+                Esta página explica qué es la {{ indicator.abbr }}. Su valor de hoy, actualizado con
+                la fuente oficial, está en la página del indicador.
+              </p>
+              <VBtn
+                :to="localePath(`/indicadores/${indicator.slug}`)"
+                color="primary"
+                variant="elevated"
+                data-cta="glosario-ver-valor"
+              >
+                <VIcon start>mdi-chart-line</VIcon>
+                Ver el valor de hoy
+              </VBtn>
+            </div>
+          </VCard>
+
           <VDivider class="mb-5" />
 
           <!-- Definition -->
@@ -78,6 +99,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getTerm, relatedTerms, GLOSSARY_CATEGORIES } from '~/utils/glossary'
+import { indicatorFromSlug } from '~/utils/indicators'
 
 definePageMeta({
   validate: async route => {
@@ -100,6 +122,20 @@ const related = computed(() => (term.value ? relatedTerms(term.value) : []))
 const categoryLabel = computed(() => (term.value ? GLOSSARY_CATEGORIES[term.value.category] : ''))
 const canonicalUrl = computed(() => `https://cambio-uruguay.com/glosario/${slug.value}`)
 
+// El indicador que comparte slug con este término (UI, UR, BPC), si existe. Tres URLs propias se
+// disputaban "unidad reajustable": /indicadores/unidad-reajustable ("Valor de la UR hoy"),
+// /guias/ui-ur-bpc-diferencias ("qué son y en qué se diferencian") y esta. El reparto: el
+// indicador es dueño del VALOR y del DefinedTerm; la guía, de la comparación; el glosario, de la
+// definición a secas — con un título que no dice "valor" ni "hoy" y un enlace grande al valor.
+// `tests/unit/seoContract.test.ts` lo fija de los dos lados.
+const indicator = computed(() => indicatorFromSlug(slug.value))
+
+const pageTitle = computed(() =>
+  indicator.value
+    ? `Qué es la ${term.value?.term ?? ''}`
+    : `${term.value?.term ?? 'Glosario'}: qué es y definición`
+)
+
 defineOgImageComponent('Cambio', {
   title: () => term.value?.term ?? 'Glosario',
   subtitle: () => term.value?.short ?? '',
@@ -107,9 +143,9 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: () => `${term.value?.term ?? 'Glosario'}: qué es y definición | Cambio Uruguay`,
+  title: () => `${pageTitle.value} | Cambio Uruguay`,
   description: () => term.value?.short ?? '',
-  ogTitle: () => `${term.value?.term}: qué es y definición`,
+  ogTitle: () => pageTitle.value,
   ogDescription: () => term.value?.short ?? '',
   ogType: 'article',
   ogUrl: () => canonicalUrl.value,
@@ -127,17 +163,29 @@ useHead({
         JSON.stringify({
           '@context': 'https://schema.org',
           '@graph': [
-            {
-              '@type': 'DefinedTerm',
-              name: term.value?.term,
-              description: term.value?.body,
-              inDefinedTermSet: {
-                '@type': 'DefinedTermSet',
-                name: 'Glosario financiero de Cambio Uruguay',
-                url: 'https://cambio-uruguay.com/glosario',
-              },
-              url: canonicalUrl.value,
-            },
+            // El DefinedTerm lo emite UNA sola página por concepto. Cuando hay un indicador con el
+            // mismo slug, el dueño es /indicadores/<slug> y acá va un WebPage que lo señala.
+            indicator.value
+              ? {
+                  '@type': 'WebPage',
+                  url: canonicalUrl.value,
+                  name: pageTitle.value,
+                  description: term.value?.short,
+                  inLanguage: 'es-UY',
+                  isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
+                  significantLink: `https://cambio-uruguay.com/indicadores/${indicator.value.slug}`,
+                }
+              : {
+                  '@type': 'DefinedTerm',
+                  name: term.value?.term,
+                  description: term.value?.body,
+                  inDefinedTermSet: {
+                    '@type': 'DefinedTermSet',
+                    name: 'Glosario financiero de Cambio Uruguay',
+                    url: 'https://cambio-uruguay.com/glosario',
+                  },
+                  url: canonicalUrl.value,
+                },
             {
               '@type': 'BreadcrumbList',
               itemListElement: [
@@ -186,6 +234,14 @@ useHead({
    mode #1976d2 on that tint is only 3.95:1. Darken it to clear AA. */
 .v-theme--light .example-box .text-overline {
   color: #0d47a1 !important;
+}
+.value-box {
+  border-radius: 12px;
+}
+.value-box__text {
+  flex: 1 1 260px;
+  margin-top: 0;
+  line-height: 1.6;
 }
 .related-box {
   background: rgba(255, 255, 255, 0.03);

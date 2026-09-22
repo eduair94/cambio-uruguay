@@ -11,6 +11,7 @@ import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
   normalizeRentalQuery,
+  rentalValidKey,
   type RentalPropertyDetailResponse,
   type RentalPublicProperty,
 } from '../../../../utils/rentals'
@@ -20,7 +21,8 @@ const STALE_DAYS = RENTAL_STALE_DAYS
 /** One requested property, never the full records behind thousands of map points. */
 export default defineEventHandler(async (event): Promise<RentalPropertyDetailResponse> => {
   const key = String(getRouterParam(event, 'key') ?? '').trim()
-  if (!key || key.length > 512) {
+  // La forma de una key se conoce (`rentalValidKey`): `null`, mayúsculas o 513 letras no abren Mongo.
+  if (!rentalValidKey(key)) {
     setResponseHeader(event, 'cache-control', 'no-store')
     throw createError({ statusCode: 404, statusMessage: 'Rental property is not available' })
   }

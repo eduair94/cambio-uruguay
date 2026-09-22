@@ -25,8 +25,19 @@ const slotScript = compileScript(slot.descriptor, {
 const layout = readSfc('layouts/default.vue')
 // Render the actual layout's ad region, including its key and home exclusion.
 // No Nuxt server, account, Google loader or ad requests enter these tests.
+function placementOf(node: any): string | undefined {
+  return node.props?.find((prop: any) => prop.name === 'placement')?.value?.content
+}
+// The content-end region EXPLICITLY: the layout also carries the desktop rail
+// (`placement="sidebar"`, adRail.test.ts) in its own <ClientOnly>, and "the
+// first ClientOnly with an AdSlot" would silently start exercising whichever
+// one comes first in template order.
 const layoutRegion = elements(layout.descriptor.template!.ast).find(
-  node => node.tag === 'ClientOnly' && node.children.some((child: any) => child.tag === 'AdSlot')
+  node =>
+    node.tag === 'ClientOnly' &&
+    node.children.some(
+      (child: any) => child.tag === 'AdSlot' && placementOf(child) === 'content-end'
+    )
 )
 const layoutRender = compileTemplate({
   source: layoutRegion.loc.source,
@@ -218,13 +229,14 @@ describe('editorial ad placements', () => {
     slug => {
       const page = readSfc(`pages/${slug}.vue`)
       const units = elements(page.descriptor.template!.ast).filter(node => node.tag === 'AdSlot')
+      // `maxAdSlots` is the ceiling of units INSIDE the reading column. The desktop rail
+      // (`placement="sidebar"`) is out of the column by construction — it takes a column of its
+      // own, never a section break — so it does not spend the page's budget and is not counted.
       const layoutUnits = elements(layout.descriptor.template!.ast).filter(
-        node => node.tag === 'AdSlot'
+        node => node.tag === 'AdSlot' && placementOf(node) !== 'sidebar'
       )
       expect(units).toHaveLength(1)
-      expect(units[0].props.find((prop: any) => prop.name === 'placement')?.value.content).toBe(
-        'in-article'
-      )
+      expect(placementOf(units[0])).toBe('in-article')
       expect(units.length + layoutUnits.length).toBe(maxAdSlots(adDensityForPath(`/${slug}`)))
     }
   )

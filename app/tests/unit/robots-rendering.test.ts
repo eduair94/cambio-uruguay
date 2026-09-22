@@ -46,6 +46,22 @@ describe('crawler access to the rendered site', () => {
     }
   })
 
+  // La superficie GEO: /llms-full.txt (server/routes) y el archivo de clave de IndexNow
+  // (public/<key>.txt). Hoy los cubre el `Allow: /` de cada grupo y nada los prohíbe; pinnearlo
+  // evita que un `disallow` futuro (p. ej. `/*.txt`) los esconda sin que nadie lo note, porque
+  // ninguna página del sitio dejaría de funcionar.
+  it.each(['/llms-full.txt', '/llms.txt', '/292e8c53b02444571ea6f266aa1ed661.txt'])(
+    'keeps the agent-facing surface %s fetchable in every crawler group',
+    path => {
+      for (const group of robots.groups) {
+        expect(
+          matchPathToRule(path, group._rules)?.allow ?? true,
+          `${group.userAgent.join(', ')} must be able to fetch ${path}`
+        ).toBe(true)
+      }
+    }
+  )
+
   it('retains the existing admin and server exclusions', () => {
     for (const group of robots.groups) {
       for (const path of ['/admin/settings', '/server/private']) {

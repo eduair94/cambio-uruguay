@@ -50,7 +50,9 @@ export interface PressMention {
 export const PRESS_MENTIONS: readonly PressMention[] = Object.freeze([
   {
     id: 'alainmizrahi-soy-santander-2026-08',
-    pages: ['/tarjetas-de-credito-uruguay'],
+    // También en el media kit (/publicidad): es la prueba de que el ranking se cita afuera tal
+    // como está, que es lo que un anunciante compra cuando NO compra una posición.
+    pages: ['/tarjetas-de-credito-uruguay', '/publicidad'],
     platform: 'x',
     author: 'Alain Mizrahi',
     handle: 'alainmizrahi',

@@ -208,6 +208,11 @@ if (import.meta.server && (error.value || !data.value)) {
     useResponseHeader('cache-control').value = 'no-store, max-age=0'
   }
 }
+// Auditado el 22/9/2026 junto con la ficha de autos, que con el mismo `data.value!` tiró 500 en
+// vez de 404 sobre un aviso vencido: acá sobrevive SÓLO porque todo lo que cuelga de `property`
+// (images, preferredArea, branches, share) es lazy y la plantilla lo cierra con `v-if="error ||
+// !data"`. Una sola lectura ansiosa (`ref(images.value[0])`, un `watch` sin guardas) reproduce la
+// caída; si hace falta una, pasar primero a `data.value?.property ?? null`.
 const property = computed(() => data.value!.property)
 const images = computed(() => [
   ...new Set(

@@ -38,49 +38,71 @@
 
           <!-- Sections -->
           <article class="guide-article">
-            <section v-for="(section, i) in guide.sections" :key="i" class="mb-6">
-              <h2 class="text-h5 font-weight-bold mb-3">{{ section.heading }}</h2>
-              <p class="text-body-1 text-grey-lighten-1 guide-prose">{{ section.body }}</p>
-              <div v-if="section.table" class="table-scroll mt-3">
-                <table class="guide-table cu-mobile-cards">
-                  <thead>
-                    <tr>
-                      <th v-for="(header, hi) in section.table.headers" :key="hi">
-                        {{ header }}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(row, ri) in section.table.rows" :key="ri">
-                      <td
-                        v-for="(cell, ci) in row"
-                        :key="ci"
-                        :data-label="ci === 0 ? '' : section.table.headers[ci]"
-                      >
-                        {{ cell }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <!-- Contextual links: the tool/page this very section talks about, clickable where
+            <template v-for="(section, i) in guide.sections" :key="i">
+              <section class="mb-6">
+                <h2 class="text-h5 font-weight-bold mb-3">{{ section.heading }}</h2>
+                <p class="text-body-1 text-grey-lighten-1 guide-prose">{{ section.body }}</p>
+                <div v-if="section.table" class="table-scroll mt-3">
+                  <table class="guide-table cu-mobile-cards">
+                    <thead>
+                      <tr>
+                        <th v-for="(header, hi) in section.table.headers" :key="hi">
+                          {{ header }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(row, ri) in section.table.rows" :key="ri">
+                        <td
+                          v-for="(cell, ci) in row"
+                          :key="ci"
+                          :data-label="ci === 0 ? '' : section.table.headers[ci]"
+                        >
+                          {{ cell }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <!-- Contextual links: the tool/page this very section talks about, clickable where
                    the reader is reading about it (the body itself is plain text). -->
-              <div v-if="section.links?.length" class="d-flex flex-wrap ga-2 mt-3">
-                <VChip
-                  v-for="link in section.links"
-                  :key="link.to"
-                  :to="localePath(link.to)"
-                  color="primary"
-                  variant="tonal"
-                  size="small"
-                  link
-                >
-                  <VIcon start size="small">mdi-arrow-right-circle-outline</VIcon>
-                  {{ link.label }}
-                </VChip>
-              </div>
-            </section>
+                <div v-if="section.links?.length" class="d-flex flex-wrap ga-2 mt-3">
+                  <VChip
+                    v-for="link in section.links"
+                    :key="link.to"
+                    :to="localePath(link.to)"
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    link
+                  >
+                    <VIcon start size="small">mdi-arrow-right-circle-outline</VIcon>
+                    {{ link.label }}
+                  </VChip>
+                </div>
+              </section>
+              <!-- La unidad editorial, DESPUÉS de la primera sección: la respuesta de la guía va
+                   primero y el anuncio se ve antes de que el lector que ya tiene lo suyo se vaya.
+                   Es una por guía (más el cierre del layout = el tope de `maxAdSlots('normal')`),
+                   entre secciones y nunca adentro de una, en ClientOnly como newsletter/[fecha].vue.
+                   `adsOn` es el mismo idioma de adelanto-de-efectivo y sala-vip; la guarda real
+                   (id de unidad, densidad) vive en AdSlot. -->
+              <ClientOnly v-if="i === 0 && adsOn">
+                <AdSlot placement="in-article" class="mb-6" />
+              </ClientOnly>
+            </template>
           </article>
+
+          <!-- Enlaces de afiliado: sólo en las guías que los declaran (`affiliateIds`) y sólo cuando
+               hay un acuerdo configurado. El texto de arriba dice lo mismo con o sin ellos, y el
+               aviso va a la vista, nunca detrás de un desplegable. -->
+          <section v-if="affiliateIds.length" class="guide-affiliates mb-6">
+            <h2 class="text-subtitle-1 font-weight-bold mb-2">{{ t('affiliates.title') }}</h2>
+            <div class="d-flex flex-wrap ga-3">
+              <AffiliateLink v-for="id in affiliateIds" :id="id" :key="id" />
+            </div>
+            <AffiliateDisclosure />
+          </section>
 
           <!-- Procedural steps (also emitted as HowTo schema) -->
           <section v-if="guide.steps?.length" class="guide-steps mb-2">
@@ -196,6 +218,8 @@
 </template>
 
 <script setup lang="ts">
+import { adDensityForPath } from '~/utils/ads'
+import { authorReference } from '~/utils/authorEntity'
 import { hubOfGuide } from '~/utils/guideHubs'
 import { getGuide } from '~/utils/guides'
 
@@ -217,12 +241,18 @@ const slug = computed(() => String(route.params.slug ?? ''))
 const guide = computed(() => getGuide(slug.value))
 // The topic hub this guide belongs to, if any — the spoke → hub backlink.
 const hub = computed(() => hubOfGuide(slug.value))
+const adsOn = computed(() => adDensityForPath(route.path) !== 'none')
 
 // Belt-and-suspenders: `validate` already 404s unknown slugs, but guard the
 // setup too so the template's `v-if` never renders an undefined guide.
 if (!guide.value) {
   throw createError({ statusCode: 404, statusMessage: 'Guía no encontrada' })
 }
+
+// Enlaces de afiliado: sólo los que la guía declara Y tienen una URL configurada en runtimeConfig.
+// Con la config vacía (el default) la lista queda vacía y el bloque entero no se dibuja.
+const { canRender } = useAffiliates()
+const affiliateIds = computed(() => (guide.value?.affiliateIds ?? []).filter(id => canRender(id)))
 
 const canonicalUrl = computed(() => `https://cambio-uruguay.com/guias/${slug.value}`)
 
@@ -281,11 +311,8 @@ useHead({
                 '@type': 'SpeakableSpecification',
                 cssSelector: ['.guide-lead', '.guide-prose'],
               },
-              author: {
-                '@type': 'Person',
-                name: 'Eduardo Airaudo',
-                url: 'https://www.linkedin.com/in/eduardo-airaudo/',
-              },
+              // Por @id: el nodo Person completo vive en /acerca (utils/authorEntity.ts).
+              author: authorReference(),
               publisher: {
                 '@type': 'Organization',
                 name: 'Cambio Uruguay',

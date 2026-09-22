@@ -3,6 +3,7 @@ import type { RentalAlertDoc } from '../models/RentalAlert'
 import { RentalAlertModel } from '../models/RentalAlert'
 import { PushRegistrationModel } from '../models/PushRegistration'
 import { rentalAlertSearchUrl, type RentalAlertCandidate } from '../../utils/rentalAlerts'
+import { rentalValidKey } from '../../utils/rentals'
 import { adminAuth } from './firebaseAdmin'
 import { connectDb } from './db'
 import { isMailerConfigured, sendMail } from './mailer'
@@ -79,10 +80,6 @@ function html(value: unknown): string {
   )
 }
 
-function localePrefix(locale: string): string {
-  return locale === 'en' || locale === 'pt' ? `/${locale}` : ''
-}
-
 export function rentalAlertEmail(
   alert: RentalAlertDoc,
   candidates: RentalAlertCandidate[],
@@ -106,8 +103,11 @@ export function rentalAlertEmail(
       : c.unknown
   const subject = alert.kind === 'rental-opportunity' ? c.opportunity : c.subject
   const cards = candidates.slice(0, 10).map(item => {
-    const link = /^[a-z0-9][a-z0-9-]{0,180}$/.test(item.propertyKey)
-      ? `${ORIGIN}${localePrefix(locale)}/alquileres/${item.propertyKey}`
+    // El texto del mail va en el idioma del suscriptor; la ficha, no: /alquileres/<key> existe
+    // sólo en español (`defineI18nRoute` en la página, como el blog y las sucursales). Enlazar
+    // /en/alquileres/... mandaba a un 404. El catálogo (`searchUrl`) sí conserva su espejo.
+    const link = rentalValidKey(item.propertyKey)
+      ? `${ORIGIN}/alquileres/${item.propertyKey}`
       : searchUrl
     const title = plain(item.title)
     const place = [plain(item.neighborhood, 100), plain(item.department, 100)]

@@ -2,19 +2,36 @@
 import { adDensityForPath, maxAdSlots, type AdDensity } from '~/utils/ads'
 
 /**
- * The two places an ad is allowed to be.
+ * The three places an ad is allowed to be.
  *   - `content-end`  after the article, before the footer. Rendered by the
  *                    default layout on every route that allows ads.
  *   - `in-article`   one unit inside a long read, dropped by the page itself at
  *                    a section break it chose. Only on `normal` density.
- * There is deliberately no sticky, no overlay and no interstitial placement:
- * those are the formats that cost sessions, and sessions are the traffic.
+ *   - `sidebar`      a fixed 300x600 rail the default layout hangs to the RIGHT
+ *                    of the reading column, out of the column and never in it:
+ *                    the column gives up 300px plus the gap, the text is never
+ *                    interrupted and nothing is pushed down (DESIGN.md → "The
+ *                    Rail Is Not The Column Rule"). Desktop only — `display:
+ *                    none` under 1280px, so on a phone the IntersectionObserver
+ *                    never fires and no request is made — `normal` density
+ *                    only, and inert until `NUXT_PUBLIC_ADSENSE_SLOT_SIDEBAR`
+ *                    exists: with no slot id the modifier class is never
+ *                    applied and the layout is what shipped before the rail.
+ * The rail sticks (top: 80px) while the reader scrolls the column. It is the
+ * one sticky format kept, and only because it never covers content: it lives
+ * in a column of its own. There is still no overlay, no anchor over the text
+ * and no interstitial: those are the formats that cost sessions, and sessions
+ * are the traffic.
  */
-export type AdPlacement = 'content-end' | 'in-article'
+export type AdPlacement = 'content-end' | 'in-article' | 'sidebar'
 
-const SLOT_KEY: Record<AdPlacement, 'contentEnd' | 'inArticle'> = {
+/** Keys of `runtimeConfig.public.adsenseSlots` (nuxt.config.ts). */
+type AdSlotKey = 'contentEnd' | 'inArticle' | 'sidebar'
+
+const SLOT_KEY: Record<AdPlacement, AdSlotKey> = {
   'content-end': 'contentEnd',
   'in-article': 'inArticle',
+  sidebar: 'sidebar',
 }
 
 /**
@@ -43,9 +60,7 @@ export function useAds() {
   const route = useRoute()
   const publicConfig = useRuntimeConfig().public
   const pubId = (publicConfig.adsensePubId as string) || ''
-  const slots = (publicConfig.adsenseSlots ?? {}) as Partial<
-    Record<'contentEnd' | 'inArticle', string>
-  >
+  const slots = (publicConfig.adsenseSlots ?? {}) as Partial<Record<AdSlotKey, string>>
 
   // `definePageMeta({ ads: false })` wins over the route table.
   const density = computed<AdDensity>(() =>
@@ -71,7 +86,10 @@ export function useAds() {
   const canRender = (placement: AdPlacement) => {
     if (!pubId || !slotIdFor(placement)) return false
     if (density.value === 'none') return false
-    if (placement === 'in-article' && density.value !== 'normal') return false
+    // The article unit and the rail are for long reads only: on a `light`
+    // route (a quote, a map, a calculator result) the one unit after the
+    // content is the whole budget.
+    if (placement !== 'content-end' && density.value !== 'normal') return false
     return true
   }
 

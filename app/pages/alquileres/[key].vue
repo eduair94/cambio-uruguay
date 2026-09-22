@@ -14,6 +14,7 @@ import { rentalPageSchema } from '~/utils/rentalPageSeo'
 import {
   RENTAL_GUARANTEE_PUBLISHED,
   RENTAL_SOURCE_LABEL,
+  rentalValidKey,
   totalMonthlyUyu,
   type RentalOffer,
   type RentalPublicProperty,
@@ -40,6 +41,12 @@ import {
   RENTAL_RETURN_STORAGE,
 } from '~/utils/rentalPresentation'
 
+// Sólo en español, como el blog y las sucursales: el aviso es en español, la ficha ya era
+// `noindex` en /en y /pt, y cada espejo gastaba uno de los dos permisos de SSR de propiedades por
+// nada. Borrar la ruta (y no redirigirla) es lo único inmune al bucle de `alwaysRedirect: true`:
+// i18n no puede mandar a /en/alquileres/x si esa ruta no existe, el selector de idioma deja de
+// ofrecerla y el layout deja de emitir sus hreflang solo. Los espejos del CATÁLOGO siguen.
+defineI18nRoute({ locales: ['es'] })
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalPageMessages })
 const localePath = useLocalePath()
 const route = useRoute()
@@ -47,10 +54,17 @@ const propertyKey = computed(() => String(route.params.key || ''))
 const availability = useRentalAvailability()
 const { data, pending, error, refresh } = await useAsyncData<RentalPageResponse>(
   () => `rental-page:${propertyKey.value}`,
-  () =>
-    $fetch(`/api/rentals/ficha/${encodeURIComponent(propertyKey.value)}`, {
-      query: availability.withRevision({}),
-    })
+  () => {
+    // Una key que no puede ser una vivienda (`null`, mayúsculas, vacía) es 404 acá mismo, sin
+    // pedido a la API ni a Mongo, y la página sigue rindiendo SU 404 (título traducido, noindex),
+    // igual que /venta-viviendas-uruguay: en producción /alquileres/null corría el pipeline entero.
+    if (!rentalValidKey(propertyKey.value))
+      throw createError({ statusCode: 404, statusMessage: 'Rental property is not available' })
+    return $fetch<RentalPageResponse>(
+      `/api/rentals/ficha/${encodeURIComponent(propertyKey.value)}`,
+      { query: availability.withRevision({}) }
+    )
+  }
 )
 availability.watchChanges(() => refresh())
 const property = computed(() => data.value?.property ?? null)
@@ -501,7 +515,9 @@ useHead(
   { tagPriority: 'high' }
 )
 useHead(() => ({
-  link: [{ rel: 'canonical', href: canonical.value }],
+  // Mismo `id` que el del layout (`useLocaleHead({ key: 'id' })`): Unhead deduplica por id, así que
+  // éste REEMPLAZA la canónica localizada en vez de sumarse — la ficha salía con dos <link canonical>.
+  link: [{ id: 'i18n-can', rel: 'canonical', href: canonical.value }],
   script:
     property.value && !error.value
       ? [

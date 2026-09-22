@@ -138,17 +138,36 @@ async function runtime(patched = true) {
           await event.fetch!('/renderer-failure')
           throw h3.createError({ statusCode: 500, statusMessage: 'Renderer crashed' })
         }
+        // The installed extractor only raises "Failed to parse" for a 5xx/3xx
+        // source, so a 4xx source with that message has to be staged by hand:
+        // it pins the widened pattern for a module version that reports it.
+        if (source === '/parse-failure') {
+          await event.fetch!('/parse-failure')
+          throw h3.createError({
+            statusCode: 500,
+            statusMessage:
+              '[Nuxt OG Image] Failed to parse `/parse-failure` for og-image extraction. 404 error: Not Found',
+          })
+        }
         return extractor(event, source, source)
       }
       sourceReads.push(event.path)
-      if (event.path === '/renderer-failure') {
+      if (event.path === '/renderer-failure' || event.path === '/parse-failure') {
         throw h3.createError({ statusCode: 404 })
       }
       if (event.path === '/gone') {
         throw h3.createError({ statusCode: 410 })
       }
+      if (event.path === '/forbidden') {
+        throw h3.createError({ statusCode: 403 })
+      }
       if (event.path === '/unavailable') {
         throw h3.createError({ statusCode: 503 })
+      }
+      // The autos outage of 2026-09-22: the page's own setup crashed, so the
+      // source answered 500 "Server Error" instead of its 404.
+      if (event.path === '/crashed') {
+        throw h3.createError({ statusCode: 500, statusMessage: 'Server Error' })
       }
       if (event.path === '/broken') {
         return '<html><body>Successful SSR lost its OG metadata</body></html>'
@@ -191,12 +210,37 @@ describe('OG image status through the installed Nuxt validator, extractor and H3
     for (const [source, expected] of [
       ['/gone', 410],
       ['/unavailable', 500],
+      ['/crashed', 500],
       ['/broken', 500],
     ] as const) {
       const path = `/__og-image__/image${source}/og.png`
       expect((await request(path)).status).toBe(expected)
       expect(captured.find(error => error.path === path)?.status).toBe(expected)
     }
+  })
+
+  it('relabels every 4xx source, and the "Failed to parse" wording, not only 404/410', async () => {
+    const { request, captured, events } = await runtime()
+    for (const [source, expected] of [
+      ['/forbidden', 403],
+      ['/parse-failure', 404],
+    ] as const) {
+      const path = `/__og-image__/image${source}/og.png`
+      expect((await request(path)).status).toBe(expected)
+      expect(captured.find(error => error.path === path)?.status).toBe(expected)
+      expect(events.get(path)?.context.ogSourceStatus).toBe(String(expected))
+    }
+  })
+
+  it('reports the page 500 of a crashed setup as such: a 500 source is never relabelled', async () => {
+    const { request, events, delegated } = await runtime()
+    const path = '/__og-image__/image/crashed/og.png'
+    expect((await request(path)).status).toBe(500)
+    expect(events.get(path)?.context.ogSourceStatus).toBe('500')
+    const error = delegated.mock.calls.find(([, event]) => event.path === path)?.[0]
+    expect(error?.statusMessage).toMatch(
+      /^\[Nuxt OG Image\] Failed to parse `\/crashed` for og-image extraction\. 500 error/
+    )
   })
 
   it('keeps valid OG payloads and adds no source fetch', async () => {

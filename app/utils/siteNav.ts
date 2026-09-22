@@ -3661,6 +3661,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['acerca', 'sobre', 'metodologia', 'quienes somos', 'fuentes'],
       },
       {
+        to: '/publicidad',
+        labelKey: 'publicidad.nav',
+        icon: 'mdi-bullhorn-outline',
+        priority: 0.5,
+        changefreq: 'monthly',
+        keywords: [
+          'publicidad',
+          'anunciar',
+          'patrocinio',
+          'media kit',
+          'tarifas',
+          'sponsor',
+          'afiliados',
+        ],
+      },
+      {
         to: '/contacto',
         labelKey: 'legal.contactNav',
         icon: 'mdi-email-outline',

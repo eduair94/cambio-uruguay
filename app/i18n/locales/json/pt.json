@@ -2402,5 +2402,45 @@
     "tooltip": "Esta casa publica o mesmo preço há {days} dias. Pode estar desatualizado: confirme antes de ir.",
     "tooltipAtLeast": "Esta casa publica o mesmo preço há mais de {days} dias. Pode estar desatualizado: confirme antes de ir.",
     "tooltipLeading": "E é o preço que hoje lidera o ranking."
+  },
+  "publicidad": {
+    "nav": "Publicidade",
+    "tag": "PUBLICIDADE",
+    "h1": "Publicidade no Cambio Uruguay",
+    "intro": "A quem o site chega, quais formatos patrocinados são vendidos e as regras que não se negociam: a ordem das cotações não está à venda.",
+    "ogSubtitle": "Formatos, condições e contato",
+    "metaTitle": "Publicidade: formatos e condições",
+    "metaDescription": "Anuncie no Cambio Uruguay: linha patrocinada na home, cartão nos diretórios e bloco na newsletter. Tudo etiquetado, sem tocar no ranking.",
+    "lastReviewed": "Condições revisadas em {date}",
+    "pledgeTitle": "Primeiro: o patrocínio não muda a ordem",
+    "pledgeText": "O Cambio Uruguay é independente e gratuito. Um espaço patrocinado é um bloco à parte, etiquetado como publicidade; o ranking de cotações é sempre decidido pelo preço.",
+    "aboutLink": "Leia como o site funciona",
+    "audienceTitle": "A quem chega",
+    "audienceIntro": "Descrevemos a audiência pelo que ela vem fazer. Os números do último mês, com data, são enviados por e-mail a quem pedir.",
+    "formatsTitle": "Formatos",
+    "formatsIntro": "Três formatos, todos com a mesma etiqueta e o mesmo rel no link. Não há outros.",
+    "formatWhere": "Onde",
+    "formatWhat": "O que inclui",
+    "formatFits": "Para quem",
+    "formatSee": "Ver onde aparece",
+    "notSoldTitle": "O que não se vende",
+    "rulesTitle": "Regras",
+    "contactTitle": "Anunciar",
+    "contactText": "Escreva para nós com o seu produto e o formato que lhe interessa.",
+    "contactSubject": "Publicidade no Cambio Uruguay",
+    "contactNote": "Respondemos com a audiência do último mês, com data, e uma proposta."
+  },
+  "sponsoredRow": {
+    "cta": "Ver a oferta",
+    "ctaLabel": "Ver a oferta de {name} (abre em outra aba)",
+    "external": "Site externo em espanhol",
+    "notice": "Espaço pago. Não muda a ordem das cotações acima.",
+    "policy": "Por que você vê isto"
+  },
+  "affiliates": {
+    "title": "Abrir uma conta",
+    "ctaLabel": "Abrir uma conta na {partner} (abre em outra aba)",
+    "disclosure": "Se você abrir a conta a partir destes links, o serviço pode nos pagar uma comissão. Não muda o que você paga nem o que diz este guia.",
+    "policy": "Como funciona"
   }
 }

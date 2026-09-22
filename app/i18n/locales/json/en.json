@@ -2409,5 +2409,45 @@
     "tooltip": "This exchange has been publishing the same rate for {days} days. It may be out of date — check before you go.",
     "tooltipAtLeast": "This exchange has been publishing the same rate for more than {days} days. It may be out of date — check before you go.",
     "tooltipLeading": "And it is the rate topping the ranking today."
+  },
+  "publicidad": {
+    "nav": "Advertise",
+    "tag": "ADVERTISE",
+    "h1": "Advertising on Cambio Uruguay",
+    "intro": "Who the site reaches, which sponsored formats are sold and the rules that are not negotiable: the ranking of exchange rates is not for sale.",
+    "ogSubtitle": "Formats, terms and contact",
+    "metaTitle": "Advertising: formats and terms",
+    "metaDescription": "Advertise on Cambio Uruguay: a sponsored row on the home, a card in directories and a block in the newsletter. All labelled, never touching the ranking.",
+    "lastReviewed": "Terms reviewed on {date}",
+    "pledgeTitle": "First: sponsorship never changes the order",
+    "pledgeText": "Cambio Uruguay is independent and free. A sponsored space is a separate block, labelled as advertising; the exchange-rate ranking is always decided by price.",
+    "aboutLink": "Read how the site works",
+    "audienceTitle": "Who it reaches",
+    "audienceIntro": "We describe the audience by what it comes to do. Last month's figures, dated, are sent by email on request.",
+    "formatsTitle": "Formats",
+    "formatsIntro": "Three formats, all with the same label and the same rel on the link. There are no others.",
+    "formatWhere": "Where",
+    "formatWhat": "What it includes",
+    "formatFits": "Who it fits",
+    "formatSee": "See where it appears",
+    "notSoldTitle": "What is not for sale",
+    "rulesTitle": "Rules",
+    "contactTitle": "Advertise",
+    "contactText": "Write to us with your product and the format you are interested in.",
+    "contactSubject": "Advertising on Cambio Uruguay",
+    "contactNote": "We reply with last month's audience, dated, and a proposal."
+  },
+  "sponsoredRow": {
+    "cta": "See the offer",
+    "ctaLabel": "See the offer from {name} (opens in a new tab)",
+    "external": "External site in Spanish",
+    "notice": "Paid space. It does not change the order of the rates above.",
+    "policy": "Why you see this"
+  },
+  "affiliates": {
+    "title": "Open an account",
+    "ctaLabel": "Open an account with {partner} (opens in a new tab)",
+    "disclosure": "If you open the account from these links, the service may pay us a commission. It does not change what you pay or what this guide says.",
+    "policy": "How it works"
   }
 }

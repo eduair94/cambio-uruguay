@@ -1,8 +1,17 @@
-import { withoutDefaultLangCookie } from '../../utils/langCookie'
+import { redundantLangLocale, withoutDefaultLangCookie } from '../../utils/langCookie'
 
-// Saca el `Set-Cookie: lang=es` de las respuestas, que es lo único que le impedía a Cloudflare
-// cachear la home para Googlebot y para toda primera visita. El porqué, con los números medidos,
-// está en `app/utils/langCookie.ts`.
+// Saca el `Set-Cookie: lang=<idioma>` redundante de las respuestas, que es lo único que le impedía
+// a Cloudflare cachear la home para Googlebot y para toda primera visita. El porqué, con los
+// números medidos, está en `app/utils/langCookie.ts`.
+//
+// QUÉ ES REDUNDANTE. En una ruta sin prefijo, `lang=es` (el idioma por defecto). En `/en/...` y
+// `/pt/...`, la cookie del idioma DEL PREFIJO: con `redirectOn: 'root'` (defecto de @nuxtjs/i18n)
+// una ruta con prefijo no mira cookie ni Accept-Language, y el módulo escribe `lang=en` igual en
+// cada render (`loadAndSetLocale` → `syncCookie` en todos sus caminos de salida, incluido el de
+// "no cambió nada"). Medido en producción el 2026-09-22: `/en/guias` sin cookie respondía
+// `Set-Cookie: lang=en` y por eso TODA página de /en y /pt era BYPASS aunque el HTML fuera el
+// mismo para todos. La cookie de OTRO idioma que el de la ruta (`lang=en` en `/guias/x`) sigue
+// pasando: esa sí es una elección del visitante.
 //
 // POR QUÉ ASÍ Y NO CON UN HOOK. La cookie la escribe @nuxtjs/i18n DESPUÉS de este middleware,
 // durante el render, así que no alcanza con borrar la cabecera acá: hay que interceptar el
@@ -18,13 +27,16 @@ export default defineEventHandler(event => {
   if ((res as unknown as { __langCookiePatched?: boolean }).__langCookiePatched) return
   ;(res as unknown as { __langCookiePatched?: boolean }).__langCookiePatched = true
 
+  // Una vez por respuesta y fuera del envoltorio: la ruta no cambia a mitad de la respuesta.
+  const redundant = redundantLangLocale(event.path || '/')
+
   const original = res.setHeader.bind(res)
   res.setHeader = ((name: string, value: unknown) => {
     if (String(name).toLowerCase() !== 'set-cookie') {
       return original(name, value as never)
     }
     const values = Array.isArray(value) ? value.map(String) : [String(value)]
-    const kept = withoutDefaultLangCookie(values)
+    const kept = withoutDefaultLangCookie(values, redundant)
     // Sin cookies que mandar, poner un arreglo vacío deja la cabecera presente y vacía en algunos
     // runtimes; borrarla es lo que de verdad la saca.
     if (!kept.length) {

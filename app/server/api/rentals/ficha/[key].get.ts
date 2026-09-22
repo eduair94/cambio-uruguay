@@ -21,6 +21,7 @@ import {
 import {
   RENTAL_COLLATION,
   normalizeRentalQuery,
+  rentalValidKey,
   type RentalPublicProperty,
 } from '../../../../utils/rentals'
 import type { RentalPageResponse } from '../../../../utils/rentalPage'
@@ -28,7 +29,8 @@ import type { RentalPageResponse } from '../../../../utils/rentalPage'
 /** A canonical SSR page deliberately ignores list/map query parameters. */
 export default defineEventHandler(async (event): Promise<RentalPageResponse> => {
   const key = String(getRouterParam(event, 'key') ?? '').trim()
-  if (!key || key.length > 512) {
+  // La forma de una key se conoce (`rentalValidKey`): `null`, mayúsculas o 513 letras no abren Mongo.
+  if (!rentalValidKey(key)) {
     setResponseHeader(event, 'cache-control', 'no-store')
     throw createError({ statusCode: 404, statusMessage: 'Rental property is not available' })
   }

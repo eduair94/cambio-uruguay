@@ -109,7 +109,7 @@ describe('rental alert transport without network sends', () => {
     expect(h.getUser).not.toHaveBeenCalled()
     expect(h.sendMail).not.toHaveBeenCalled()
   })
-  it('escapes HTML, limits cards to ten, keeps full count, localizes internal links and unsubscribe', () => {
+  it('escapes HTML, limits cards to ten, keeps full count, links the Spanish-only detail page and localizes the search', () => {
     const result = rentalAlertEmail(
       { ...alert, locale: 'en', kind: 'rental-opportunity' },
       Array.from({ length: 12 }, () => candidate),
@@ -119,7 +119,11 @@ describe('rental alert transport without network sends', () => {
     expect(result.html).toContain('&lt;script&gt;')
     expect(result.html.match(/<li>/g)).toHaveLength(10)
     expect(result.html).toContain('12 new listings')
-    expect(result.html).toContain('/en/alquileres/montevideo-cordon-1')
+    // La ficha existe sólo en español (defineI18nRoute en pages/alquileres/[key].vue); el catálogo
+    // que enlaza "ver más" sí conserva el espejo del idioma del suscriptor.
+    expect(result.html).toContain('https://cambio-uruguay.com/alquileres/montevideo-cordon-1')
+    expect(result.html).not.toContain('/en/alquileres/')
+    expect(result.html).toContain('/en/oportunidades-inmobiliarias-uruguay')
     expect(result.html).toContain('operation=rent')
     expect(result.html).not.toContain('evil.example')
     expect(result.html).toContain('not guaranteed savings')

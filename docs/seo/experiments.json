@@ -185,6 +185,21 @@
         "alquilar sin garantia uruguay"
       ],
       "hypothesis": "Las tres paginas de alquiler del sitio dan por sabido lo que cuesta la garantia, que es justo la pregunta con la que llega la gente. El angulo propio es el mismo de /elecciones-bps-2026: la ANV y el MVOT publican los topes en UR (18, 21 y 22,5) y ninguna fuente oficial los muestra en pesos, mientras el sitio tiene la UR del dia. Un snippet con el tope convertido deberia ganarle al SERP institucional, que es ilegible y no trae ningun numero. La ventana es enero, cuando pica alquiler."
+    },
+    {
+      "id": "ur-glosario-cede-el-valor",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/glosario/unidad-reajustable",
+        "/guias/ui-ur-bpc-diferencias"
+      ],
+      "queries": [
+        "que es la ur",
+        "que es la unidad reajustable",
+        "unidad reajustable",
+        "ui ur bpc diferencias"
+      ],
+      "hypothesis": "Tres URLs propias se disputaban 'unidad reajustable'. El glosario pasa a un titulo definicional sin 'valor' ni 'hoy' (Que es la UR), cede el DefinedTerm al indicador y enlaza grande al valor de hoy; la guia queda con la comparacion. La consulta de valor deberia concentrarse en /indicadores/unidad-reajustable (fila indicadores-ur-ui-valor-vivo, que no se toca) y la definicional en el glosario, sin que la porcion del cluster baje."
     }
   ]
 }
