@@ -32,6 +32,52 @@ export interface PublicCarBody {
   basis: "advert" | "model";
 }
 
+/** Lo que Mercado Libre archiva bajo "Control de tracción": la tracción del auto. */
+export type PublicCarDrivetrain = "delantera" | "trasera" | "4x4" | "4x2" | "integral";
+export type PublicCarSteering = "hidraulica" | "electrica" | "asistida" | "mecanica";
+/** El equipamiento que la ficha del aviso marca con Sí o No (classes/autos/specs.ts). */
+export type PublicCarEquipment =
+  | "abs" | "control_estabilidad" | "control_traccion" | "airbag_conductor" | "airbag_pasajero" | "isofix" | "alarma"
+  | "blindado" | "camara_retroceso" | "sensor_estacionamiento" | "estacionamiento_automatico" | "sensor_lluvia"
+  | "faros_antiniebla" | "faros_automaticos" | "tercera_luz_freno" | "alarma_luces"
+  | "aire_acondicionado" | "climatizador" | "piloto_automatico" | "computadora_abordo" | "cristales_electricos"
+  | "cierre_centralizado" | "cierre_automatico_vidrios" | "apertura_remota_baul" | "tapizado_cuero"
+  | "asientos_calefaccionados" | "techo_solar" | "porta_vasos"
+  | "bluetooth" | "apple_carplay" | "android_auto" | "usb" | "entrada_auxiliar" | "am_fm" | "cd" | "dvd" | "mp3"
+  | "comando_volante"
+  | "llantas_aleacion" | "porta_equipaje" | "defensa_delantera" | "desempanador_trasero" | "limpia_luneta"
+  | "rueda_auxilio";
+
+/**
+ * La ficha técnica del aviso, y SÓLO del aviso: nada acá se estima. Sale de la tabla de la página
+ * propia de Mercado Libre leída en `readAt`; los demás portales no tienen ficha leída y no la llevan.
+ * Cada cifra es null cuando la ficha no la trae o cuando no puede ser la de un auto.
+ */
+export interface PublicCarSpecs {
+  readAt: string;
+  powerHp: number | null;
+  valvesPerCylinder: number | null;
+  gears: number | null;
+  drivetrain: PublicCarDrivetrain | null;
+  steering: PublicCarSteering | null;
+  fuelTankL: number | null;
+  trunkL: number | null;
+  lengthMm: number | null;
+  heightMm: number | null;
+  widthMm: number | null;
+  wheelbaseMm: number | null;
+  seats: number | null;
+  /** Lo que la ficha marca con "Sí", en el orden de classes/autos/specs.ts. */
+  equipment: PublicCarEquipment[];
+  /** Lo que la ficha marca con "No": el vendedor dice que el auto no lo tiene. */
+  missing: PublicCarEquipment[];
+  singleOwner: boolean | null;
+  acceptsTrade: boolean | null;
+  negotiable: boolean | null;
+  mechanicalWarranty: boolean | null;
+  factoryWarranty: boolean | null;
+}
+
 export type PublicCarFlag = "damaged" | "financing" | "foreign_plate" | "paperwork" | "price_mismatch" | "recovered";
 export type PublicCarTier = "strict" | "exploratory";
 export type PublicCarSource =
@@ -81,6 +127,8 @@ export interface PublicCarListing {
   dealerName: string | null;
   picture: string | null;
   pictureCount: number | null;
+  /** La galería del propio aviso (hasta 6, del host de fotos de su fuente); sólo la sirve la ficha. */
+  pictures: string[];
   permalink: string;
   firstSeen: string;
   lastSeen: string;
@@ -90,6 +138,8 @@ export interface PublicCarListing {
   risks: PublicCarRisk[];
   opportunity: { tier: PublicCarTier; gap: number; median: number; n: number } | null;
   reference: PublicCarReference | null;
+  /** La ficha técnica del aviso (sólo Mercado Libre); sólo la sirve la ficha, las listas no. */
+  specs: PublicCarSpecs | null;
   /** Hay un teléfono publicable para este aviso; se pide aparte, a /api/cars/contact/<key>. */
   hasContact?: boolean;
 }

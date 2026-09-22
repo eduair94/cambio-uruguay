@@ -46,3 +46,19 @@ Una lectura de la URL de búsqueda usada antes de publicar devolvió temporalmen
 ## Próximo cambio de versión
 
 Para incorporar npm posteriormente, primero verificar que el paquete publicado incluya `mcpName`. Después preparar una nueva versión del manifiesto, validar y publicar. El alta remota ya está completa y no depende de ese paso.
+
+## Actualización a 0.3.0 — 2026-09-22
+
+`io.github.eduair94/cambio-uruguay` pasó a la **0.3.0**: estado `active`, `isLatest: true`, publicada
+`2026-09-22T15:06:18Z`. La 0.1.0 describía sólo cotizaciones (7 tools); la 0.3.0 describe los cinco
+toolsets (29 tools: cotizaciones, alquileres, autos, productos y búsqueda en todo el sitio).
+
+- Mismo método que la 0.1.0: `POST /v0/auth/github-at` con la sesión de `gh` (el token quedó en memoria)
+  y `POST /v0/publish`. HTTP 200. Manifiesto enviado: `server-0.3.0.json`; respuesta: `published-0.3.0.json`.
+- Otra vez **sólo el endpoint remoto**: npm sigue en 0.1.0 sin `mcpName`, y un manifiesto con
+  `packages` npm 0.3.0 lo rechazaría el registro.
+- `websiteUrl` apunta ahora a `https://cambio-uruguay.com/buscar-con-ia` (cómo conectar el MCP), no a
+  la home: quien llega desde el registro viene a conectarlo.
+- La descripción tiene tope de **100 caracteres** en el esquema; el `mcp/server.json` del repo tenía 124
+  y se corrigió en el mismo cambio.
+- Antes de publicar se confirmó que producción devuelve `serverInfo.version: "0.3.0"`.

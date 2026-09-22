@@ -28,13 +28,22 @@ describe("publicCarListing", () => {
       "body", "brand", "brandSlug", "color", "currency", "currencyInferred", "dealerName", "department", "doors", "engine", "firstSeen",
       "flags", "fuel", "fuelEconomy", "hasContact",
       "key", "km", "lastSeen", "listedPrice", "marketSlug", "model", "modelSlug", "neighborhood", "opportunity", "permalink", "picture",
-      "pictureCount", "price", "priceConverted", "priceDrop", "priceUsd", "reference", "risks", "sellerType", "source",
-      "sourceName",
+      "pictureCount", "pictures", "price", "priceConverted", "priceDrop", "priceUsd", "reference", "risks", "sellerType", "source",
+      "sourceName", "specs",
       "title", "transmission", "trim", "year",
     ]);
     expect(row.title).toBe("Peugeot 208 1.5 Allure llamar");
     expect(row.dealerName).toBe("Automotora X");
     expect(JSON.stringify(row)).not.toMatch(/PRIVATE|SELLERID/);
+  });
+  it("publishes the advert's own spec sheet and gallery, and nothing of either when the page was not read", () => {
+    const row = publicCarListing(car({ detail: { ...car().detail!, specs: { "Potencia": "115 hp", "Frenos ABS": "Sí", "Único dueño": "Sí" },
+      pictures: ["https://http2.mlstatic.com/D_1.webp", "https://tracker.example/x.jpg", "https://http2.mlstatic.com/D_2.webp"] } }), null)!;
+    expect(row.specs).toMatchObject({ readAt: NOW.toISOString(), powerHp: 115, equipment: ["abs"], singleOwner: true });
+    expect(row.pictures).toEqual(["https://http2.mlstatic.com/D_1.webp", "https://http2.mlstatic.com/D_2.webp"]);
+    expect(publicCarListing(car({ detail: null }), null)).toMatchObject({ specs: null, pictures: [] });
+    const many = Array.from({ length: 9 }, (_, i) => `https://http2.mlstatic.com/D_${i}.webp`);
+    expect(publicCarListing(car({ detail: { ...car().detail!, pictures: many } }), null)!.pictures).toHaveLength(6);
   });
   it("hides placeholder km, foreign pictures and private sellers' names", () => {
     expect(publicCarListing(car({ kmQuality: "placeholder", km: 111_111 }), null)!.km).toBeNull();

@@ -21,10 +21,10 @@ const car = (id: string, price: number, extra: Partial<StoredCar["listing"]> = {
   },
 });
 
-const detail = (version: string | null): CarDetail => ({
+const detail = (version: string | null, specs: Record<string, string> | null = {}): CarDetail => ({
   readAt: "2026-09-17T00:00:00.000Z", price: 12_000, currency: "USD", active: true, brand: "Chevrolet",
   model: "Onix", year: 2019, km: 60_000, version, engineText: null, sellerName: null, bodyType: null,
-  color: null, doors: null, flags: [], description: "",
+  color: null, doors: null, flags: [], description: "", ...(specs ? { specs } : {}),
 });
 
 const peers = (): StoredCar[] => [
@@ -67,6 +67,23 @@ describe("detailTargets", () => {
     const read = car("204", 12_000, {}, detail("LT 1.0"));
     expect(detailTargets([read], { now: NOW, usdUyu: 40 })).toEqual([]);
     expect(detailTargets([read], { now: NOW, usdUyu: 40, refreshDays: 0.5 })).toHaveLength(1);
+  });
+  it("re-reads a page read before the spec sheet was kept, behind everything unread", () => {
+    // Fichas read up to 2026-09-22 carry version and description but no sheet: they come back once,
+    // after the new adverts, and an empty sheet counts as read.
+    const old = car("206", 12_000, {}, detail("LT 1.0", null));
+    const fresh = car("207", 12_000, {}, detail("LT 1.0", {}));
+    const unread = car("208", 12_000);
+    // Barata contra su modelo-año y sin versión, pero ya leída: vuelve por la tabla y nada más.
+    const cheapOld = car("209", 8_000, { transmission: null }, detail(null, null));
+    const targets = detailTargets([...peers(), old, fresh, unread, cheapOld], { now: NOW, usdUyu: 40 });
+    expect(targets.find(target => target.key === "ml-206")).toMatchObject({ reason: "specs" });
+    expect(targets.find(target => target.key === "ml-209")).toMatchObject({ reason: "specs" });
+    expect(targets.find(target => target.key === "ml-207")).toBeUndefined();
+    const order = targets.map(target => target.key);
+    expect(order.indexOf("ml-208")).toBeLessThan(order.indexOf("ml-206"));
+    expect(order.indexOf("ml-208")).toBeLessThan(order.indexOf("ml-209"));
+    expect(queueSummary(targets)).toMatchObject({ specs: 2, cheap: 0 });
   });
   it("only queues pages the reader can actually read", () => {
     const web = car("205", 12_000, { source: "carone", permalink: "https://carone.com.uy/chevrolet-onix-717444" });

@@ -542,6 +542,57 @@ El informe gana arriba una sección **"Lo que dicen los datos"** (`carReportFind
 calculadas, cada una aparece sólo si la medición que la sostiene está y dice su número. Ninguna es texto
 fijo, porque un hallazgo escrito a mano sigue diciéndose el día que deja de ser cierto.
 
+## La ficha técnica y la galería del aviso (2026-09-22)
+
+La página de cada aviso (`/autos-usados-uruguay/<key>`) publica la **ficha técnica** que la página
+propia de Mercado Libre trae como tabla y nadie leía, y la **galería** del propio aviso.
+`classes/autos/specs.ts` (lectura y rearmado), `app/utils/carsSpecs.ts` (etiquetas y tablas).
+
+**Medido el 2026-09-22 sobre 27 fichas reales**: las 12 filas básicas (marca, modelo, año, versión,
+km, motor, color, puertas, caja, combustible, carrocería y "Control de tracción") están en TODAS;
+potencia, tanque, largo × alto × ancho, distancia entre ejes, plazas y válvulas por cilindro en ~20
+de 27; y después una lista de equipamiento en Sí/No que va de 0 a 45 filas según lo que marcó el
+vendedor. Las marchas no tienen fila: sólo las dice el `ld+json` (`numberOfForwardGears`), y el
+tanque a veces también (`fuelCapacity`); las dos entran a la tabla privada bajo "Marchas" y
+"Capacidad del tanque" cuando la tabla no las trae.
+
+Reglas, todas distintas de las de carrocería y consumo:
+
+- **Nada se estima.** La carrocería y el consumo publican un "≈" cuando salen de los demás avisos
+  del modelo; acá no hay "≈": o lo dice la ficha de ESTE aviso o el campo es null. Sólo Mercado
+  Libre tiene ficha leída, así que sólo sus avisos llevan `specs`; Facebook y las webs de
+  automotora, no.
+- **Sólo cruza la frontera lo que está en la lista.** `detail.specs` guarda la tabla ENTERA tal
+  cual la etiqueta la página (privado, para poder mirar qué más hay); `carSpecsOf` rearma un
+  objeto público con campos fijos —potencia, válvulas, marchas, tracción, dirección, tanque, baúl,
+  medidas, plazas, equipamiento en Sí y en No, único dueño, permuta, negociable, garantías— y una
+  etiqueta que no conoce no se publica. Del lado de la app `publicCarRow` lo vuelve a rearmar
+  clave por clave (`specsOf`), como todo lo demás.
+- **Una cifra que no puede ser la de un auto no se publica**: potencia fuera de 20–1.500 hp,
+  tanque fuera de 10–300 L, medidas fuera de 2–7 m de largo y 1–2,6 m de alto y ancho, más de 15
+  plazas. En milímetros el punto es de miles ("2.600 mm"); en litros la coma es decimal ("77,6 L").
+- **"Control de tracción" es la tracción.** Mercado Libre archiva ahí Delantera / Trasera / 4x4 /
+  4x2 / Integral; el control de tracción de verdad es la fila "Tracción ASR" y va al equipamiento.
+- **El "No" también se publica**, aparte (`missing`): "Bluetooth: No" es un dato que el vendedor
+  dio, y la página lo muestra tachado. Lo que la ficha no menciona no está en ninguna de las dos
+  listas, y la página no lo presenta como ausente.
+- **La galería son las fotos del propio aviso** (`detail.pictures`, el `data-zoom` de la página,
+  hasta 6), cada una atada al host de fotos de su fuente como la de portada. Sólo la sirve la ficha:
+  `carFichaProjection` suma `pictures` y `specs` a la proyección del listado, que sigue sin ellos
+  — una lista de 24 tarjetas no tiene qué hacer con seis URLs y cuarenta claves por fila.
+
+**El relleno se hace solo.** `currency-autos-detail` suma la razón `specs` a su cola: una ficha
+leída antes de esta fecha (sin `detail.specs`) vuelve a leerse UNA vez, después de todo lo que
+nunca se leyó; una tabla vacía (`{}`) ya cuenta como leída. A 400 por hora, las ~19.500 fichas
+vigentes se recorren en dos días, y la relectura a los 14 días sigue igual.
+
+La ficha se muestra como tres tablas (motor y mecánica, medidas y capacidad, condiciones del
+aviso) más el equipamiento por grupo (seguridad, confort, audio y conectividad, exterior), con la
+fecha de lectura y la aclaración de que lo cargó el vendedor. El `ld+json` `Car` de la página
+gana `image`, `bodyType`, `color`, `fuelType`, `vehicleTransmission`, `vehicleEngine`,
+`seatingCapacity`, `numberOfForwardGears`, `driveWheelConfiguration` y `fuelCapacity`. Las
+tarjetas y el directorio no cambian: la ficha técnica no filtra ni ordena nada (todavía).
+
 ## Teléfonos de vendedores
 
 Desde el 2026-09-21 la ficha muestra, con un clic, el teléfono que el vendedor escribió en el texto
