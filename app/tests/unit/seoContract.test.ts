@@ -179,6 +179,9 @@ const NOINDEXED = [
   'autos-usados-uruguay/[key].vue',
   'autos-usados-uruguay/index.vue',
   'autos-usados-uruguay/precios/[slug].vue',
+  // Las dos páginas de movilidad eléctrica llevan su directorio de avisos ADENTRO (2026-09-22):
+  // la URL limpia se indexa y cada combinación de filtros se sale, igual que equipar y autos.
+  'bicicletas-electricas-uruguay.vue',
   'buscar.vue',
   // El tasador se indexa en su URL; cada combinación de marca, modelo y año se sale.
   'cuanto-vale-mi-auto-uruguay.vue',
@@ -197,6 +200,7 @@ const NOINDEXED = [
   // Agency pages exclude empty/error states, thin profiles and filtered directory copies.
   'inmobiliarias-uruguay/[key].vue',
   'inmobiliarias-uruguay/index.vue',
+  'monopatines-electricos-uruguay.vue',
   'newsletter/archivo.vue',
   'offline.vue',
   // Index the used-car opportunity list itself; filter combinations opt out.

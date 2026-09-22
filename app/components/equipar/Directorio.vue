@@ -78,12 +78,17 @@
             v-for="producto in data.items"
             :key="producto.listingId"
             :producto="producto"
-            :in-list="lista.has(producto.listingId)"
-            :hide-category="Boolean(fixedCategoria)"
+            :in-list="!hideList && lista.has(producto.listingId)"
+            :hide-category="Boolean(fixedCategoria) || hideCategory"
+            :hide-list="hideList"
             @toggle="toggle"
           />
         </div>
-        <p v-if="lista.limited.value" class="text-caption text-medium-emphasis mt-2" role="status">
+        <p
+          v-if="!hideList && lista.limited.value"
+          class="text-caption text-medium-emphasis mt-2"
+          role="status"
+        >
           La lista llegó a {{ EQUIPAR_LISTA_MAX }} ítems. Sacá alguno para agregar otro.
         </p>
 
@@ -124,8 +129,15 @@ const props = withDefaults(
     fixedCategoria?: string
     /** The results heading's id: paginating scrolls back to it. */
     anchorId?: string
+    /**
+     * "Mi lista" es de equipar una casa: el directorio de movilidad usa esta misma grilla sin ella
+     * (ver `ListingCard.hideList`), así que tampoco muestra el aviso de tope de la lista.
+     */
+    hideList?: boolean
+    /** La etiqueta de categoría no agrega nada cuando la página entera ES la categoría. */
+    hideCategory?: boolean
   }>(),
-  { fixedCategoria: '', anchorId: 'equipar-resultados' }
+  { fixedCategoria: '', anchorId: 'equipar-resultados', hideList: false, hideCategory: false }
 )
 const emit = defineEmits<{
   update: [query: EquiparProductosQuery]
@@ -141,7 +153,10 @@ watch(smAndDown, mobile => {
 })
 
 const lista = useEquiparLista()
-const toggle = (producto: EquiparProductoPublic) => lista.toggle(equiparListaFromProducto(producto))
+const toggle = (producto: EquiparProductoPublic) => {
+  if (props.hideList) return
+  lista.toggle(equiparListaFromProducto(producto))
+}
 
 function apply(next: EquiparProductosQuery) {
   filtersOpen.value = false

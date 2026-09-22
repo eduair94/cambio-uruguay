@@ -16,8 +16,19 @@ import {
  * route param — it never travels in the query string, so every URL of that page is that category.
  *
  * `async` because the SSR fetch has to be awaited in setup; the pages `await` this.
+ *
+ * `options.apiPath` es lo único que separa a este directorio del de movilidad
+ * (/monopatines-electricos-uruguay, /bicicletas-electricas-uruguay): las dos colecciones guardan
+ * la misma fila y las dos rutas contestan la misma forma (`server/utils/retailProductos.ts`), así
+ * que la página elige de cuál come y el estado, los chips y el `noindex` de las URLs filtradas son
+ * los mismos. `options.key` tiene que ser distinto por vertical: dos páginas con la misma clave de
+ * `useAsyncData` se pisan la respuesta.
  */
-export async function useEquiparProductosDirectorio(fixedCategoria = '') {
+export async function useEquiparProductosDirectorio(
+  fixedCategoria = '',
+  options: { apiPath?: string; key?: string } = {}
+) {
+  const apiPath = options.apiPath ?? '/api/equipar/productos'
   const route = useRoute()
   const router = useRouter()
 
@@ -29,9 +40,9 @@ export async function useEquiparProductosDirectorio(fixedCategoria = '') {
   )
 
   const { data, error } = await useAsyncData(
-    `equipar-productos-${fixedCategoria || 'todo'}`,
+    options.key ?? `equipar-productos-${fixedCategoria || 'todo'}`,
     () =>
-      $fetch<EquiparProductosResponse>('/api/equipar/productos', {
+      $fetch<EquiparProductosResponse>(apiPath, {
         query: equiparProductosParams(query.value),
       }),
     { watch: [query] }

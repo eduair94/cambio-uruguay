@@ -35,6 +35,9 @@ export function toOffer(listing: RetailListing, usdUyu: number): EquiparOffer {
     seller: listing.sellerName,
     title: listing.title,
     url: listing.url,
+    // Marketplace photos are the seller's own and their URLs expire: a card built on one rots into
+    // a broken image (same rule the item-level `image` follows).
+    image: listing.source === "facebook" ? null : (listing.image ?? null),
     price: listing.price,
     currency: listing.currency,
     priceUyu: toUyu(listing.price, listing.currency, usdUyu),

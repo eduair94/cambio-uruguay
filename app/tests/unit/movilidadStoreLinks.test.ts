@@ -14,53 +14,61 @@ import { describe, expect, it } from 'vitest'
 const PAGES = join(__dirname, '..', '..', 'pages')
 const monopatinSource = readFileSync(join(PAGES, 'monopatines-electricos-uruguay.vue'), 'utf8')
 const bicicletaSource = readFileSync(join(PAGES, 'bicicletas-electricas-uruguay.vue'), 'utf8')
+const offerCardSource = readFileSync(
+  join(__dirname, '..', '..', 'components', 'movilidad', 'MovilidadOfferCard.vue'),
+  'utf8'
+)
 
-describe.each([
-  ['monopatines-electricos-uruguay.vue', monopatinSource],
-  ['bicicletas-electricas-uruguay.vue', bicicletaSource],
-])('%s seller links', (_file, src) => {
+// Desde el 2026-09-22 la fila de una oferta de "las más baratas" la dibuja la tarjeta compartida
+// `MovilidadOfferCard.vue` (con foto), así que el contrato del enlace al vendedor se verifica ahí:
+// es el mismo contrato, en un solo lugar en vez de copiado en las dos plantillas.
+describe('MovilidadOfferCard.vue — el enlace al vendedor de cada oferta', () => {
+  const src = offerCardSource
+
   it('resolves the seller through storeSlugForSeller and the shared profile-keys composable', () => {
     expect(src).toContain("import { storeSlugForSeller } from '~/utils/storeDirectory'")
     expect(src).toContain('useStoreProfileKeys()')
   })
 
   it('never links a facebook-sourced offer, even when the seller name resolves to a store', () => {
-    expect(src).toContain("if (source === 'facebook') return null")
+    expect(src).toContain("if (props.offer.source === 'facebook') return null")
   })
 
-  it('links the seller in the "los más baratos" lists to its ficha when it resolves, both Nuevos/Nuevas and Usados/Usadas', () => {
-    const matches = [
-      ...src.matchAll(
-        /<NuxtLink[^>]*v-if="storeKeyFor\(row\.offer\.seller, row\.offer\.source\)"[^>]*>/g
-      ),
-    ]
-    expect(matches.length).toBe(2)
-    // Whitespace-tolerant: prettier is free to wrap this call onto its own lines.
-    expect(src).toMatch(
-      /localePath\(\s*`\/tiendas-online-uruguay\/\$\{storeKeyFor\(row\.offer\.seller, row\.offer\.source\)\}`\s*\)/
-    )
+  it('links the seller to its ficha only when the store has a profile document', () => {
+    expect(src).toContain('storeProfileKeys.value.includes(key)')
+    expect(src).toMatch(/localePath\(\s*`\/tiendas-online-uruguay\/\$\{storeKey\}`\s*\)/)
+    expect(src).toContain('v-if="storeKey"')
   })
 
   it('shows the rotulado label (movilidadSellerLabel), never the raw seller string, as the link text', () => {
-    // The visible/linked text is the ML-unknown-aware label, not `row.offer.seller` directly — an
-    // unidentified ML "seller" never resolves to a key anyway, but the TEXT still has to say so.
-    expect(src).toMatch(/>\{\{ sellerLabel\(row\.offer\) \}\}<\/NuxtLink/)
-    expect(src).toMatch(/<template v-else>\{\{ sellerLabel\(row\.offer\) \}\}<\/template>/)
+    // El texto visible es el rótulo consciente del vendedor sin identificar de ML, no
+    // `offer.seller` crudo — ese nunca resuelve a una ficha, pero el TEXTO igual tiene que decirlo.
+    expect(src).toContain('movilidadSellerLabel(props.offer.seller, props.offer.source)')
+    expect(src).toMatch(/\{\{\s*sellerLabel\s*\}\}/)
+    expect(src).not.toMatch(/\{\{\s*offer\.seller\s*\}\}/)
   })
 
   it('does not nest the store link inside the external listing anchor', () => {
-    const items = [
-      ...src.matchAll(/<li v-for="row in cheapest(?:New|Used)" :key="row\.key">[\s\S]*?<\/li>/g),
-    ]
-    expect(items.length).toBeGreaterThan(0)
-    for (const [li] of items) {
-      // The external `<a>` (the offer title/url) closes before the store NuxtLink opens: siblings,
-      // not nested — same shape storeLinks.test.ts checks for the sillas table cell.
-      const externalAnchorEnd = li.indexOf('</a>')
-      const storeLinkStart = li.indexOf('<NuxtLink')
-      expect(externalAnchorEnd).toBeGreaterThan(-1)
-      expect(storeLinkStart).toBeGreaterThan(externalAnchorEnd)
-    }
+    // Los `<a>` externos (foto y título) cierran antes de que abra el NuxtLink de la ficha:
+    // hermanos, nunca anidados — la misma forma que verifica storeLinks.test.ts.
+    const storeLinkStart = src.indexOf('<NuxtLink')
+    expect(storeLinkStart).toBeGreaterThan(-1)
+    const anchorsBefore = src.slice(0, storeLinkStart)
+    expect((anchorsBefore.match(/<a\s/g) ?? []).length).toBe(
+      (anchorsBefore.match(/<\/a>/g) ?? []).length
+    )
+  })
+})
+
+// Las dos páginas siguen siendo dueñas de USAR esa tarjeta para las dos listas (nuevos y usados).
+describe.each([
+  ['monopatines-electricos-uruguay.vue', monopatinSource],
+  ['bicicletas-electricas-uruguay.vue', bicicletaSource],
+])('%s — las dos listas de "las más baratas" usan la tarjeta compartida', (_file, src) => {
+  it('renders MovilidadOfferCard for both cheapestNew and cheapestUsed', () => {
+    expect(src).toMatch(/v-for="row in cheapestNew"/)
+    expect(src).toMatch(/v-for="row in cheapestUsed"/)
+    expect([...src.matchAll(/<MovilidadOfferCard/g)].length).toBe(2)
   })
 })
 

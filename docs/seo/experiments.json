@@ -328,6 +328,15 @@
         "franquicias uruguay 2026"
       ],
       "hypothesis": "La pagina explicaba el regimen pero no donde consultar el saldo (su unico enlace daba 401) ni que fecha cuenta: una seccion con la pantalla oficial de LuciaKit, el reinicio del 1.º de enero y la regla de liberacion, mas tres FAQ con las frases exactas, deberia sumar clics en consultas donde hoy mandan Gripper y blogs."
+    },
+    {
+      "id": "movilidad-directorio-visual",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/monopatines-electricos-uruguay",
+        "/bicicletas-electricas-uruguay"
+      ],
+      "hypothesis": "Las dos paginas publicaban bandas correctas y una lista de texto sin foto ni filtros. Con foto por aviso y el directorio filtrable (tipo, condicion, marca, vendedor, precio) que ya usa /equipar-casa-uruguay/productos, la pagina pasa de leerse a usarse: mas paginas por sesion y mas clics salientes al aviso, que es lo que la consulta 'monopatin electrico uruguay' busca."
     }
   ]
 }

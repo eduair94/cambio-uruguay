@@ -75,6 +75,13 @@ export interface EquiparOffer {
   seller: string;
   title: string;
   url: string;
+  /**
+   * La foto del aviso, para que una lista de ofertas se pueda leer con los ojos y no parseando
+   * títulos. NUNCA la de Facebook Marketplace: esas URLs son del vendedor y vencen, así que una
+   * tarjeta guardada hoy se rompe sola en unos días (misma regla que {@link EquiparItem.image}).
+   * Aditivo: las filas escritas antes del 2026-09-22 no lo tienen.
+   */
+  image?: string | null;
   price: number;
   currency: "UYU" | "USD";
   /** Always in UYU, whatever the seller published, so rows are comparable. */

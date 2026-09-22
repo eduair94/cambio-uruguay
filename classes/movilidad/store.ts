@@ -13,9 +13,12 @@
 // supplies its own value for. Duplicating that module would only risk the two domains drifting on
 // the SAME merge rule; importing it means a fix there is a fix here too.
 import { MovilidadItemModel } from "../models/MovilidadItem";
+import { MovilidadListingModel } from "../models/MovilidadListing";
 import { MovilidadMetaModel } from "../models/MovilidadMeta";
 import { MovilidadStoreSnapshotModel } from "../models/MovilidadStoreSnapshot";
 import type { RetailListing } from "../retail/types";
+import { equiparListingPruneCutoff, equiparListingUpsert } from "../equipar/store";
+import type { EquiparListingRow } from "../equipar/listings";
 import { storeSnapshotBytes, storeSnapshotRows, STORE_SNAPSHOT_MAX_BYTES } from "../equipar/storeSnapshot";
 import type { EquiparItem } from "../equipar/types";
 import type { MovilidadMeta } from "./types";
@@ -118,4 +121,29 @@ export async function loadStoreSnapshot(): Promise<{ generatedAt: string; listin
     .select({ generatedAt: 1, listings: 1 })
     .lean()) as unknown as { generatedAt: string; listings?: RetailListing[] } | null;
   return row ? { generatedAt: row.generatedAt, listings: row.listings ?? [] } : null;
+}
+
+/** Upserts in batches, like equipar's — one bulkWrite with thousands of ops is a needless risk. */
+const LISTING_BATCH = 500;
+
+/**
+ * Escribe una fila por aviso para el directorio con filtros de las dos páginas y poda lo que no se
+ * ve hace {@link EQUIPAR_LISTING_KEEP_DAYS} días.
+ *
+ * El upsert y el corte de poda se IMPORTAN de equipar en vez de copiarse: son la misma regla
+ * ("todo se reescribe salvo `firstSeen`, que sólo escribe el insert") y un arreglo allá tiene que
+ * ser un arreglo acá. Lo único propio es la colección.
+ */
+export async function saveMovilidadListings(
+  rows: readonly EquiparListingRow[],
+  today: string
+): Promise<{ written: number; pruned: number }> {
+  let written = 0;
+  for (let at = 0; at < rows.length; at += LISTING_BATCH) {
+    const batch = rows.slice(at, at + LISTING_BATCH).map(equiparListingUpsert);
+    await MovilidadListingModel.bulkWrite(batch as any, { ordered: false });
+    written += batch.length;
+  }
+  const pruned = await MovilidadListingModel.deleteMany({ lastSeen: { $lt: equiparListingPruneCutoff(today) } });
+  return { written, pruned: pruned.deletedCount ?? 0 };
 }
