@@ -371,7 +371,9 @@ page's own `py-*` no longer reaches the top — each page had chosen 16, 24, 32,
 shipped `py-6 py-md-10`, 43 shipped `py-8 py-md-12`) and a breadcrumb added Vuetify's 16 on top,
 so on 2026-09-22 the crumbs of `/celulares-uruguay` sat 67px under the bar and the H1 at 115: the
 breadcrumb was farther from the bar than from the title it belongs to. A breadcrumb that opens the
-page carries no top padding; its bottom stays the page's (8px, `pb-2`, is the hub convention).
+page carries no top padding; its bottom stays the page's. Measure it before trusting the class:
+`VBreadcrumbs` renders a `<ul>`, so it keeps the browser's 16px `margin-bottom` (The Text Block
+Owns Its Top Margin Rule) and the hubs' `pb-2` lands 24px above the title, not 8.
 The rule lives in `layouts/default.vue` next to `.container_custom` and is the sibling of the one
 `FamiliaNav.vue` applies after the family bar: when the bar renders it is the first child and owns
 the gap; when it does not, the layout does. `tests/unit/layoutTop.test.ts` reads the source.
