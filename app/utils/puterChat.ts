@@ -26,9 +26,18 @@ export interface OpenAiToolCall {
   /** Gemini 3 through the OpenAI-compatible API: `{ google: { thought_signature } }`. */
   extra_content?: { google?: { thought_signature?: string } }
 }
+/** Text, or a Puter-native tool_use block (see prepareForModel). */
+export interface OpenAiContentBlock {
+  type?: string
+  text?: string
+  id?: string
+  name?: string
+  input?: Record<string, unknown>
+  extra_content?: { google?: { thought_signature?: string } }
+}
 export interface OpenAiMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
-  content?: string | null | Array<{ type?: string; text?: string }>
+  content?: string | null | OpenAiContentBlock[]
   tool_calls?: OpenAiToolCall[]
   tool_call_id?: string
 }
@@ -169,30 +178,37 @@ export interface PuterTurnResult {
 }
 
 /**
- * Gemini 3 rejects a function call sent back without its thought signature (HTTP 400), and on the
- * way through Puter the signature does not survive: the first call worked, the one carrying the
- * tool results failed with `upstream_failed` (reproduced against Google's OpenAI-compatible
- * endpoint, which is what Puter's Gemini provider calls). Google documents a placeholder signature
- * for exactly this case. Other vendors get the history without the Google-only field.
+ * Gemini 3 rejects a function call sent back without its thought signature (HTTP 400). Puter's API
+ * turns OpenAI `tool_calls` into its own `tool_use` blocks copying only id, name and arguments
+ * (`normalize_single_message` in its Messages.js), so a signature in `tool_calls[].extra_content`
+ * never reaches Google — and the arguments string gets JSON-encoded a second time on the way out.
+ * Puter keeps a block's own `extra_content` and serialises an object `input` once, so assistant
+ * turns go in THAT shape. When the signature did not come back (it does not, through puter.js),
+ * the first call of the batch carries the placeholder Google documents for this case. Reproduced
+ * and verified by running Puter's two transformations in front of Google's endpoint.
  */
 export const PLACEHOLDER_SIGNATURE = 'skip_thought_signature_validator'
 
 export function prepareForModel(conversation: OpenAiMessage[], model: string): OpenAiMessage[] {
   const gemini = /gemini/i.test(model)
   return conversation.map(message => {
-    if (!message.tool_calls?.length) return message
-    const toolCalls = message.tool_calls.map((call, index) => {
-      const { extra_content: extra, ...plain } = call
-      if (!gemini) return plain
-      const signature = extra?.google?.thought_signature
-      if (signature)
-        return { ...plain, extra_content: { google: { thought_signature: signature } } }
-      // Only the first call of a parallel batch carries a signature.
-      return index === 0
-        ? { ...plain, extra_content: { google: { thought_signature: PLACEHOLDER_SIGNATURE } } }
-        : plain
+    if (message.role !== 'assistant' || !message.tool_calls?.length) return message
+    const text = messageText(message)
+    const blocks: OpenAiContentBlock[] = message.tool_calls.map((call, index) => {
+      const signature =
+        call.extra_content?.google?.thought_signature ??
+        (index === 0 ? PLACEHOLDER_SIGNATURE : undefined)
+      return {
+        type: 'tool_use',
+        id: call.id,
+        name: call.function?.name ?? '',
+        input: parseArgs(call.function?.arguments ?? ''),
+        ...(gemini && signature
+          ? { extra_content: { google: { thought_signature: signature } } }
+          : {}),
+      }
     })
-    return { ...message, tool_calls: toolCalls }
+    return { role: 'assistant', content: [...(text ? [{ type: 'text', text }] : []), ...blocks] }
   })
 }
 
@@ -207,7 +223,12 @@ async function chat(opts: PuterTurnOptions, conversation: OpenAiMessage[], allow
       return { message: response?.message, model }
     } catch (error) {
       // Puter explains which providers it tried and why; keep it in the console for diagnosis.
-      console.warn('[asistente] Puter', model, (error as { fields?: unknown })?.fields ?? error)
+      const detail = error as { attempts?: unknown; fields?: { attempts?: unknown } }
+      console.warn(
+        '[asistente] Puter',
+        model,
+        JSON.stringify(detail?.attempts ?? detail?.fields?.attempts ?? error)?.slice(0, 3000)
+      )
       const failure = error instanceof PuterChatError ? error : puterError(error)
       if (!failure.modelUnavailable || opts.models.length === 1) throw failure
       opts.models.shift()
