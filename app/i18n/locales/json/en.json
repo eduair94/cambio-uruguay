@@ -736,7 +736,10 @@
     "heading": "{currency} rate at {origin} today and historical chart",
     "answerStale": "The last quote {origin} published for the {currency} is from {date}: ${sell} sell and ${buy} buy. It has published no new prices since. Over the last {months} months it moved {change} %; period high ${max}, low ${min}.",
     "answer": "On {date}, the {currency} at {origin} trades at ${sell} sell and ${buy} buy. Over the last {months} months it moved {change} %; period high ${max}, low ${min}.",
-    "asOf": "Data as of {date}."
+    "asOf": "Data as of {date}.",
+    "recentChangesTitle": "Latest {origin} changes in {currency}",
+    "recentChangesIntro": "Only the days when {origin} moved its buy or sell price: a check without a change leaves no record.",
+    "recentChangesAll": "See the latest changes across every exchange house"
   },
   "pwa": {
     "retry": "Retry",
@@ -810,7 +813,12 @@
     "nearbyCasasDescription": "Find the closest real exchange house with the best rate and reviews. Navigate directly with Google Maps or Waze. No banks or fintechs.",
     "historicalDetailDescriptionLive": "{currency} at {origin} today: sell ${sell}, buy ${buy}. Trend, chart and records. Compare 40+ exchange houses in Uruguay.",
     "sucursalesWithCount": "{origin} branches: opening hours, addresses and phones of {count} locations",
-    "sucursalesInLocation": "{origin} branches in {location}: {count} locations, phones and hours"
+    "sucursalesInLocation": "{origin} branches in {location}: {count} locations, phones and hours",
+    "historicalOriginLead": "US Dollar at {origin} today: buy ${buy}, sell ${sell}.",
+    "historicalOriginLeadOther": "{origin} today: {parts}.",
+    "historicalOriginPairPart": "{code} buy ${buy}, sell ${sell}",
+    "historicalOriginUnitPart": "{code} ${value}",
+    "sucursalesLead": "{origin} today: dollar ${buy} buy / ${sell} sell."
   },
   "dolarDepto": {
     "h1": "Dollar in {department} today",
@@ -2450,5 +2458,9 @@
     "ctaLabel": "Open an account with {partner} (opens in a new tab)",
     "disclosure": "If you open the account from these links, the service may pay us a commission. It does not change what you pay or what this guide says.",
     "policy": "How it works"
-  }
+  },
+  "sucursalesHeading": "{origin} in {location}: branches and opening hours",
+  "sucursalesHeadingAll": "{origin}: branches and opening hours in Uruguay",
+  "sucursalesCountSource": "{count} branches according to the BCU registry",
+  "sucursalesBcuLink": "see the institution at the BCU"
 }

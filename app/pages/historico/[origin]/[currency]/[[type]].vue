@@ -182,6 +182,44 @@
             </VAlert>
           </v-card-text>
 
+          <!-- Últimos cambios fechados de ESTA casa en ESTA moneda, en texto servido por el
+               servidor: lo único del bloque de respuesta que un competidor de una sola
+               cotización no puede publicar, y que hasta ahora sólo existía agregado para todo
+               el mercado en /ultimos-cambios. Se oculta entero sin datos: una lista vacía no
+               es una lista. -->
+          <v-card-text v-if="recentChangeRows.length" class="cu-changes pa-4 pt-0">
+            <h2 class="text-subtitle-1 font-weight-bold mb-1">
+              {{
+                $t('historical.recentChangesTitle', {
+                  origin: exchangeHouseName,
+                  currency: currencyLabel,
+                })
+              }}
+            </h2>
+            <p class="text-body-2 text-medium-emphasis mt-0 mb-2">
+              {{ $t('historical.recentChangesIntro', { origin: exchangeHouseName }) }}
+            </p>
+            <ol class="cu-changes__list mb-2">
+              <li v-for="row in recentChangeRows" :key="row.id" class="cu-change">
+                <time :datetime="row.observedAt" class="cu-change__day">{{ row.day }}</time>
+                <span v-if="row.type" class="cu-change__type">{{ row.type }}</span>
+                <span v-if="row.buyChanged" class="cu-change__move">
+                  {{ $t('rateChanges.buy') }}: ${{ row.previousBuy }}
+                  <v-icon size="14" aria-hidden="true">mdi-arrow-right</v-icon>
+                  ${{ row.buy }}
+                </span>
+                <span v-if="row.sellChanged" class="cu-change__move">
+                  {{ $t('rateChanges.sell') }}: ${{ row.previousSell }}
+                  <v-icon size="14" aria-hidden="true">mdi-arrow-right</v-icon>
+                  ${{ row.sell }}
+                </span>
+              </li>
+            </ol>
+            <NuxtLink :to="localePath('/ultimos-cambios')" class="cu-changes__all">
+              {{ $t('historical.recentChangesAll') }}
+            </NuxtLink>
+          </v-card-text>
+
           <v-card-text v-if="isBcu" class="pa-4">
             <p class="text-body-2 mb-2">{{ bcuExplanation }}</p>
             <NuxtLink :to="localePath('/cotizacion-del-bcu')">{{
@@ -562,7 +600,11 @@ import { currencyFaqIds, type FaqItem } from '~/utils/faqAnswers'
 import { useDisplay } from 'vuetify'
 import { markPoints } from '~/utils/chartMoveMarkers'
 import { attributeMove } from '~/utils/attribution'
-import { historyDetailCanonicalPath } from '~/utils/historyCanonical'
+import {
+  historyDetailCanonicalPath,
+  hreflangLinksFor,
+  isFoldedHistoryType,
+} from '~/utils/historyCanonical'
 import {
   BCU_HISTORY_SOURCE,
   bcuHistoryCopy,
@@ -998,6 +1040,59 @@ const chartRows = computed(() =>
 /** The most recent date in the series, as `DD/MM/AAAA` in Montevideo. */
 const asOfDate = computed(() => (answerFacts.value ? formatDay(answerFacts.value.asOf) : ''))
 
+// Últimos cambios de ESTA casa en ESTA moneda, con fecha — la lista que el
+// competidor nuevo (dolaruruguay.uy) publica por banco y que acá sólo existía
+// agregada para todo el mercado en /ultimos-cambios. Sale del mismo ledger
+// (`cambio_changes`, vía /api/rate-changes-recent, cacheado 5 min = la cadencia
+// del sync), así que sólo lista transiciones reales: una verificación sin cambio
+// no genera fila. Bloqueante a propósito, como la FAQ: si fuera lazy Google vería
+// el bloque vacío. Se limita a 8 filas y, en una variante con tipo, al tipo de
+// la URL; el BCU queda afuera porque su referencia no es una compra/venta.
+interface RecentRateChange {
+  origin: string
+  code: string
+  type: string
+  previousBuy: number
+  previousSell: number
+  buy: number
+  sell: number
+  buyChanged: boolean
+  sellChanged: boolean
+  observedAt: string
+}
+const recentChangesType = String(route.params.type ?? '')
+  .trim()
+  .toUpperCase()
+const { data: recentChangesData } = await useFetch<{
+  asOf: string
+  changes: RecentRateChange[]
+}>('/api/rate-changes-recent', {
+  query: {
+    origin: String(route.params.origin),
+    code: String(route.params.currency ?? '').toUpperCase(),
+    type: recentChangesType || undefined,
+    limit: 8,
+  },
+  immediate: !isBcu.value,
+  default: () => ({ asOf: '', changes: [] as RecentRateChange[] }),
+})
+const recentChangeRows = computed(() => {
+  if (isBcu.value) return []
+  const rows = recentChangesData.value?.changes ?? []
+  return rows.slice(0, 8).map(row => ({
+    id: `${row.type}-${row.observedAt}`,
+    observedAt: row.observedAt,
+    day: formatDay(row.observedAt),
+    type: row.type,
+    buyChanged: row.buyChanged,
+    sellChanged: row.sellChanged,
+    previousBuy: formatRate(row.previousBuy, localeTag.value),
+    buy: formatRate(row.buy, localeTag.value),
+    previousSell: formatRate(row.previousSell, localeTag.value),
+    sell: formatRate(row.sell, localeTag.value),
+  }))
+})
+
 // Records over the selected period, from this casa's sell prices for the ONE
 // rate type the page is about. `sanitizeSeries` drops decimal-shift artefacts
 // first: a scraper glitch must never be published as "el máximo del período" on
@@ -1341,21 +1436,45 @@ const getSellColor = (value: number): string => {
   return 'green-darken-2'
 }
 
-// The one URL that represents this page. BILLETE/CABLE/INTERBANCARIO are
+// The one URL that represents this page. BILLETE/CABLE/INTERBANCARIO/eBROU are
 // alternate views of the same series and fold into the base, so Google
-// consolidates their signals instead of splitting them across near-duplicates;
-// eBROU is a distinct product and stays self-canonical.
+// consolidates their signals instead of splitting them across near-duplicates
+// (see utils/historyCanonical.ts for why eBROU folds too).
 //
 // Initialize before useSeoMeta: Unhead immediately evaluates getters on the
 // client, including og:url, while server rendering defers their evaluation.
 // The canonical, BreadcrumbList and Dataset all share this same URL.
+//
+// Pasa por `localePath` a propósito: cada idioma es canónico de sí mismo (el
+// estándar de i18n, y lo que ya hace /historico/<casa>). Antes esta página mandaba
+// /en/historico/brou/usd a /historico/brou/usd, y Google lo ignoraba —servía la
+// URL /en para consultas en castellano— porque el contenido no era el mismo. Con
+// la canónica propia por idioma el hreflang del layout deja de contradecirla.
+const historicalCanonicalPath = computed(() =>
+  historyDetailCanonicalPath(
+    String(route.params.origin),
+    String(route.params.currency),
+    route.params.type as string | undefined
+  )
+)
 const historicalCanonical = computed(
-  () =>
-    `https://cambio-uruguay.com${historyDetailCanonicalPath(
-      String(route.params.origin),
-      String(route.params.currency),
-      route.params.type as string | undefined
-    )}`
+  () => `https://cambio-uruguay.com${localePath(historicalCanonicalPath.value)}`
+)
+
+// Una variante plegada (BILLETE, eBROU…) no puede ser el destino de ningún
+// `hreflang`: el layout emite el grupo de alternates para la URL VISITADA, así
+// que /historico/brou/usd/ebrou declaraba canónica al padre y a la vez siete
+// alternates (x-default incluido) hacia sí misma — medido en producción el
+// 2026-09-22. Google ignora el hreflang de una URL no canónica y la contradicción
+// resta al grupo entero. No se pueden borrar desde la página (unhead los
+// deduplica por `id`, y el `id` sobrevive a cualquier sobreescritura), así que se
+// re-apuntan al grupo del padre: los mismos siete enlaces que el padre emite.
+const foldedAlternates = computed(() =>
+  isFoldedHistoryType(route.params.type as string | undefined)
+    ? hreflangLinksFor(
+        code => `https://cambio-uruguay.com${localePath(historicalCanonicalPath.value, code)}`
+      )
+    : []
 )
 
 // SEO Configuration with dynamic values
@@ -1428,13 +1547,16 @@ defineOgImageComponent('Cambio', {
 useHead(() => ({
   // Overrides the self-canonical that @nuxtjs/i18n's useLocaleHead emits from
   // the layout — it keys the tag `i18n-can`, so reuse that key or both render.
+  // (`hid` ya no lo reconoce unhead 2: salía impreso como atributo.)
+  // On a folded variant the layout's alternates are re-pointed too: same `id`s,
+  // parent's URLs — see `foldedAlternates`.
   link: [
     {
       key: 'i18n-can',
-      hid: 'i18n-can',
       rel: 'canonical',
       href: historicalCanonical.value,
     },
+    ...foldedAlternates.value,
   ],
   script: [
     {
@@ -1612,6 +1734,46 @@ useHead(() => ({
   gap: 0.75rem 1.5rem;
   grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
   margin: 0;
+}
+
+/* Últimos cambios: una lista ordenada sin viñetas, cada fila con fecha, tipo y
+   los movimientos que hubo. Sin colores de suba/baja a propósito: el bloque es
+   texto servido para el buscador y el lector, no un tablero. */
+.cu-changes__list {
+  display: grid;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cu-change {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: baseline;
+  font-size: 0.875rem;
+}
+.cu-change__day {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.cu-change__type {
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+  text-transform: uppercase;
+}
+.cu-change__move {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.cu-changes__all {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+  text-decoration: none;
+}
+.cu-changes__all:hover {
+  text-decoration: underline;
 }
 
 .cu-record dt {

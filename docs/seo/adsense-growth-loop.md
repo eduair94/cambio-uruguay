@@ -174,6 +174,21 @@ Medición: informe de AdSense **por unidad** (el riel y la unidad de guías tien
 
 Validación local: lectura del código fuente por `tests/unit/adRail.test.ts` (guarda, orden en el layout, grilla sin scope con la unidad automática anclada a la columna 1, reserva 300x600 y ocultamiento bajo 1280, unidad de guías y tope), más las suites existentes de anuncios y de layout (ciclo de vida, política de rutas, loader, aire de arriba, cola del layout, filas partidas por Auto Ads, contenedor por página). Pendiente de producción con el identificador activo: `npm run audit:gutters` y `npm run audit:margins` sobre una guía a 1280, 1440 y 1920 px, y la comprobación de que ninguna unidad automática cae en la columna del riel.
 
+## Undécima iteración: 22/9/2026 (infraestructura del plan de tráfico)
+
+Lectura nueva, con el GraphQL de Cloudflare (`npm run cf_traffic`, token con Zone Analytics: Read): más de la mitad de los pedidos de la semana venían de un solo cliente headless desde Estados Unidos, y el tráfico que GA4 atribuía a Singapur era una granja que rota User-Agents, ejecuta JavaScript y recorre el directorio de alquileres; es el origen de los 504 en las páginas de alquiler. Descartado que fuera un proceso propio (el VPS está en Montreal; el índice RAG no ejecuta JavaScript). Dos reglas WAF de desafío gestionado, por User-Agent headless y por país sólo sobre rutas dinámicas: reversibles y medidas, no un bloqueo por suposición.
+
+Cambios publicados en un solo push (commit `79f21ec5` y siguientes):
+
+1. **Caché de borde por familia**: `s-maxage` en guías, comparativas, glosario e importar (24 h), fichas de casas y sucursales (1 h), histórico y cotización (10 min) y 23 páginas de pregunta (6 h); la cookie de idioma deja de emitirse cuando la URL ya trae el prefijo, que era lo que volvía no cacheable a todo /en y /pt; el deploy purga el borde tras el segundo control de salud. La Cache Rule de Cloudflare se habilita después de comprobar la cabecera en producción.
+2. **Alquileres**: el directorio se sirve desde memoria con recalentamiento horario; los espejos /en y /pt de la ficha dejan de existir; las URL malformadas son 404 antes de tocar la base.
+3. **OG**: la ficha de autos deja de responder 500 con avisos vencidos y usa una tarjeta estática.
+4. **Anuncios**: ver la décima iteración (riel y unidad de guías).
+5. **Medición**: RPM sólo Uruguay al lado del RPM del sitio, para que una granja no deforme el multiplicador por familia.
+6. **Distribución**: «Guía del día» en el reporte diario de Telegram y Discord; `/llms-full.txt` e IndexNow (inerte hasta `INDEXNOW_ENABLED=1`); `/publicidad` y el plumbing de patrocinios y afiliados, que con la configuración vacía no dibuja nada.
+
+Hipótesis: el tráfico automatizado deja de deformar GA4 y de saturar el SSR; el tiempo hasta el primer byte de las familias cacheadas baja al del borde; la parte de la audiencia real que ve la impresión sube. Evaluación: 504 por hora en Cloudflare, TTFB por familia con `cf-cache-status`, RPM sólo Uruguay en el tablero privado y AdSense por unidad, siempre con siete días cerrados. Ningún cambio de esta iteración se declara en `experiments.json` salvo la cesión del glosario de la UR, que sí tiene control.
+
 ## Próximas decisiones
 
 - Verificar las fuentes de la excepción Cambio Principal cuando cambien los datos de origen y, como máximo, en la revisión mensual siguiente. La fecha del 14/9 es una comprobación puntual, no una vigilancia automática de la web propia. La tabla semanal no interpreta ausencia de horario como cierre.

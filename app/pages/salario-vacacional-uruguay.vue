@@ -9,10 +9,12 @@
         El salario vacacional —su nombre legal es
         <strong>suma para el mejor goce de la licencia</strong>— se paga
         <strong>antes de que empiece la licencia</strong> y en proporción a los días que te vas a
-        tomar, y su mínimo es el <strong>100 % del jornal líquido de vacaciones</strong> (Ley
-        16.101). La licencia son <strong>20 días</strong>, más un día a los cinco años de antigüedad
-        y uno más cada cuatro (Ley 12.590). Y sí: la DGI lo grava por IRPF, aparte del resto del
-        sueldo.
+        tomar, y su mínimo es el <strong>100 % del jornal líquido de vacaciones</strong> por cada
+        día (Ley 16.101). No lleva aportes al BPS, pero sí paga IRPF, aparte del resto del sueldo.
+        La licencia son <strong>20 días</strong>, más un día complementario por cada cuatro años de
+        antigüedad en la misma empresa a partir de los cinco (21 a los 5 años, 22 a los 8, 23 a los
+        12; Ley 12.590). Más abajo hay un <a href="#simulador" class="lead-link">simulador</a> que
+        arma el número con tu sueldo.
       </p>
 
       <VCard class="warn-card pa-5 pa-md-6" variant="flat">
@@ -23,10 +25,10 @@
             <p class="callout-text mb-0">
               Porque el 100 % no se aplica sobre el sueldo nominal de esos días sino sobre el
               <strong>jornal líquido de vacaciones</strong>, que el Decreto 615/989 define como el
-              jornal nominal menos los aportes a la seguridad social y el impuesto a las
-              retribuciones. Es la confusión más común con esta partida: el salario vacacional
-              <em>siempre</em> queda por debajo del sueldo nominal de la misma cantidad de días, y
-              no por eso está mal liquidado.
+              jornal nominal menos los aportes a la seguridad social. Es la confusión más común con
+              esta partida: el salario vacacional <em>siempre</em> queda por debajo del sueldo
+              nominal de la misma cantidad de días, y no por eso está mal liquidado. Y no es un
+              «sueldo doble»: son los días que gozás, a jornal líquido.
             </p>
           </div>
         </div>
@@ -42,7 +44,7 @@
       </p>
 
       <div class="timeline">
-        <div v-for="(h, i) in SALARIO_VACACIONAL_HITOS" :key="h.key" class="milestone">
+        <div v-for="(h, i) in SALARIO_VACACIONAL_HITOS" :key="h.id" class="milestone">
           <div class="milestone__head">
             <span class="milestone__badge">{{ i + 1 }}</span>
             <div>
@@ -56,6 +58,20 @@
           <p class="milestone__detail text-body-2 mb-0">{{ h.detail }}</p>
         </div>
       </div>
+
+      <VCard variant="flat" class="note-card pa-5 mt-6">
+        <p class="note-text mb-0">
+          <VIcon icon="mdi-alert-circle-outline" color="warning" size="18" class="mr-1" />
+          <strong
+            >Si te lo pagaron después de volver, o todo junto a fin de año sin haber salido de
+            licencia,</strong
+          >
+          no es lo que dice la norma. La suma va antes de cada tramo y en proporción a sus días
+          (Decreto 615/989, arts. 6 y 7); pagarla toda en el primer tramo sólo vale porque es más
+          favorable, no porque sea exigible. Un crédito laboral impago genera además, desde que es
+          exigible, un recargo automático del 10 % a favor del trabajador (Ley 18.572, art. 29).
+        </p>
+      </VCard>
     </section>
 
     <!-- Cuántos días -->
@@ -63,8 +79,9 @@
       <h2 class="text-h5 font-weight-bold mb-2">Cuántos días de licencia te tocan</h2>
       <p class="section-intro text-medium-emphasis mb-5">
         Veinte días es el piso para cualquier trabajador de la actividad privada. La antigüedad
-        <strong>en la misma empresa</strong> suma días complementarios, y la Ley 12.590 aclara que
-        el cambio de propietario de la empresa no corta esa antigüedad. No hay tope.
+        <strong>en la misma empresa</strong> suma días complementarios —uno por cada cuatro años, a
+        partir de los cinco— y la Ley 12.590 aclara que el cambio de propietario de la empresa no
+        corta esa antigüedad. No hay tope, y el día que generás un año se goza al siguiente.
       </p>
 
       <VTable class="escala-table cu-mobile-cards" density="comfortable">
@@ -94,10 +111,14 @@
         <p class="note-text mb-0">
           <VIcon icon="mdi-information-outline" color="warning" size="18" class="mr-1" />
           El derecho a la licencia entera se genera al completar
-          <strong>1 año, 24 quincenas o 52 semanas</strong> de labor. Quien todavía no llegó genera
-          licencia <strong>proporcional</strong>, ajustada al año civil hasta el 31 de diciembre. Y
-          si hay convenio colectivo aprobado, la licencia puede partirse en dos períodos continuos,
-          con el tramo menor nunca por debajo de <strong>10 días</strong>.
+          <strong>12 meses, 24 quincenas o 52 semanas</strong> de trabajo, con uno o varios patronos
+          (Ley 12.590, art. 4). Quien todavía no llegó genera licencia
+          <strong>proporcional</strong>, ajustada al año civil hasta el 31 de diciembre. Si hay
+          convenio colectivo aprobado, la licencia puede partirse en dos períodos continuos, con el
+          tramo menor nunca por debajo de <strong>10 días</strong>. Y no hubo ningún cambio legal de
+          la licencia anual ni del salario vacacional con vigencia en 2026: lo más reciente que el
+          MTSS lista en su régimen de licencia es el subsidio por paternidad de la Ley 20.312, del 2
+          de agosto de 2024, que no toca nada de esto.
         </p>
       </VCard>
     </section>
@@ -114,7 +135,7 @@
         <div class="formula">
           <span class="term">jornal nominal de vacaciones</span>
           <span class="op">−</span>
-          <span class="term">aportes a la seguridad social e impuesto a las retribuciones</span>
+          <span class="term">aportes a la seguridad social</span>
           <span class="op">=</span>
           <span class="term is-law">jornal líquido</span>
         </div>
@@ -126,8 +147,13 @@
           <span class="term is-result">salario vacacional mínimo</span>
         </div>
         <p class="formula-note text-body-2 text-medium-emphasis mb-0">
-          Es un <strong>mínimo</strong>: un convenio colectivo o tu contrato pueden mejorarlo, nunca
-          reducirlo. Para ver de dónde salen los descuentos del jornal nominal, la
+          Para un mensual, el MTSS lo dice en una frase: «a ese sueldo mensual se le hacen los
+          descuentos, se divide entre 30 y lo que da se multiplica por» los días que salís. Es un
+          <strong>mínimo</strong>: un convenio colectivo o tu contrato pueden mejorarlo, nunca
+          reducirlo. El Decreto 615/989 resta también «el impuesto a las retribuciones», que es el
+          IRP, derogado en 2007 por la Ley 18.083; ninguna norma posterior dice si la retención de
+          IRPF ocupa su lugar, así que el simulador lo ofrece como opción y no como regla. Para ver
+          de dónde salen los descuentos, la
           <NuxtLink :to="localePath('/herramientas/calculadora-sueldo-liquido')"
             >calculadora de sueldo líquido</NuxtLink
           >
@@ -135,16 +161,248 @@
         </p>
       </VCard>
 
-      <VCard variant="flat" class="note-card pa-5">
+      <h3 class="text-h6 font-weight-bold mb-2">
+        Mensual, jornalero o variable: cuál es tu jornal
+      </h3>
+      <p class="section-intro text-medium-emphasis mb-4">
+        El jornal de vacaciones se define según cómo te pagan (Ley 12.590, art. 10), y siempre a los
+        valores vigentes en el momento en que gozás la licencia (Ley 13.556, art. 3).
+      </p>
+      <VTable class="regimen-table cu-mobile-cards mb-8" density="comfortable">
+        <thead>
+          <tr>
+            <th>Cómo te pagan</th>
+            <th>Jornal de vacaciones</th>
+            <th>Norma</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="r in SALARIO_VACACIONAL_REGIMENES" :key="r.id">
+            <td data-label="Cómo te pagan" class="font-weight-medium">{{ r.label }}</td>
+            <td data-label="Jornal" class="text-body-2">{{ r.jornal }}</td>
+            <td data-label="Norma" class="text-caption text-medium-emphasis">{{ r.source }}</td>
+          </tr>
+        </tbody>
+      </VTable>
+
+      <h3 class="text-h6 font-weight-bold mb-2">Qué entra, qué se descuenta y qué queda afuera</h3>
+      <p class="section-intro text-medium-emphasis mb-4">
+        Lo que más se pregunta después de ver el recibo: si las horas extras cuentan, si le sacan
+        aportes, si paga IRPF y si suma para el aguinaldo.
+      </p>
+      <VTable class="componentes-table cu-mobile-cards" density="comfortable">
+        <thead>
+          <tr>
+            <th>Concepto</th>
+            <th>Regla</th>
+            <th>Detalle</th>
+            <th>Norma</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="c in SALARIO_VACACIONAL_COMPONENTES" :key="c.id">
+            <td data-label="Concepto" class="font-weight-medium">{{ c.concepto }}</td>
+            <td data-label="Regla" class="text-no-wrap">
+              <VChip
+                size="small"
+                variant="tonal"
+                :color="
+                  c.regla === 'entra' ? 'success' : c.regla === 'aparte' ? 'warning' : 'error'
+                "
+              >
+                {{ c.reglaLabel }}
+              </VChip>
+            </td>
+            <td data-label="Detalle" class="text-body-2">{{ c.detail }}</td>
+            <td data-label="Norma" class="text-caption text-medium-emphasis">{{ c.source }}</td>
+          </tr>
+        </tbody>
+      </VTable>
+
+      <VCard variant="flat" class="note-card pa-5 mt-6">
         <p class="note-text mb-0">
           <VIcon icon="mdi-scale-balance" color="warning" size="18" class="mr-1" />
-          <strong>El IRPF, y por qué acá no hay un porcentaje.</strong> El Decreto 615/989 declaró
-          en 1989 la suma «libre de todo gravamen fiscal o social», pero hoy la DGI incluye la suma
-          para el mejor goce de la licencia entre los ingresos comprendidos del IRPF, y la grava
-          <em>aparte</em> del resto de las rentas de trabajo, «aplicando una tasa proporcional
-          equivalente a la tasa marginal máxima» que le tocó a esos otros ingresos. Esa tasa depende
-          de la franja de cada persona, así que esta página no publica un número: lo que publica es
-          dónde mirarlo.
+          <strong>Aportes no, IRPF sí.</strong> El Decreto 615/989 declaró en 1989 la suma «libre de
+          todo gravamen fiscal o social», y el BPS sigue tratándola como no gravada por las
+          contribuciones a la seguridad social. Pero el Decreto 148/007 (art. 48) la incluyó en las
+          rentas del trabajo del IRPF, y desde la Ley 19.321 (2015) el aguinaldo y el salario
+          vacacional obligatorios por ley se gravan <em>aparte</em> del resto, «aplicando una tasa
+          proporcional equivalente a la tasa marginal máxima» que le tocó a esos otros ingresos
+          (art. 55 bis), cero si esos ingresos no pagan impuesto. Por eso el porcentaje no es uno
+          solo: el simulador lo estima a partir del sueldo que escribís.
+        </p>
+      </VCard>
+    </section>
+
+    <!-- Simulador -->
+    <section id="simulador" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Simulador: cuánto te tendrían que pagar</h2>
+      <p class="section-intro text-medium-emphasis mb-5">
+        Para un trabajador <strong>mensual</strong> de la actividad privada. Escribí tu sueldo
+        nominal y los días de licencia que te tomás en este tramo; los aportes salen de las tasas
+        del BPS y el IRPF sobre la suma se estima a la tasa marginal máxima que alcanza ese sueldo.
+      </p>
+
+      <VCard variant="flat" class="sim-card pa-5 pa-md-6">
+        <VRow class="sim-inputs">
+          <VCol cols="12" sm="6">
+            <VTextField
+              v-model.number="sueldoNominal"
+              type="number"
+              min="0"
+              label="Sueldo nominal mensual"
+              prefix="$"
+              variant="outlined"
+              density="comfortable"
+              hint="El de antes de descuentos, el que figura en el contrato"
+              persistent-hint
+            />
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VTextField
+              v-model.number="diasLicencia"
+              type="number"
+              min="0"
+              max="60"
+              label="Días de licencia de este tramo"
+              variant="outlined"
+              density="comfortable"
+              :hint="`Con ${antiguedad} años en la empresa te corresponden ${diasPorAntiguedad} al año`"
+              persistent-hint
+            />
+          </VCol>
+          <VCol cols="6" sm="3">
+            <VTextField
+              v-model.number="antiguedad"
+              type="number"
+              min="0"
+              max="60"
+              label="Años en la empresa"
+              variant="outlined"
+              density="comfortable"
+              hide-details
+            />
+          </VCol>
+          <VCol cols="6" sm="3">
+            <VTextField
+              v-model.number="hijos"
+              type="number"
+              min="0"
+              max="15"
+              label="Hijos a cargo"
+              variant="outlined"
+              density="comfortable"
+              hide-details
+            />
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VSwitch
+              v-model="conyugeACargo"
+              color="primary"
+              density="compact"
+              hide-details
+              label="Cónyuge o concubino/a a cargo (mueve la tasa de FONASA)"
+            />
+            <VSwitch
+              v-model="restarIrpf"
+              color="primary"
+              density="compact"
+              hide-details
+              label="Restar también la retención de IRPF del mes (hipótesis, no norma)"
+            />
+          </VCol>
+        </VRow>
+
+        <VDivider class="my-5" />
+
+        <div class="sim-headline">
+          <div class="sim-headline__box">
+            <div class="text-overline text-medium-emphasis">Salario vacacional mínimo</div>
+            <div class="sim-headline__value">{{ formatUYU(sim.salarioVacacional, 0) }}</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ sim.dias }} días a {{ formatUYU(sim.jornalLiquido) }} de jornal líquido
+            </div>
+          </div>
+          <div class="sim-headline__box is-net">
+            <div class="text-overline text-medium-emphasis">Neto estimado después del IRPF</div>
+            <div class="sim-headline__value">{{ formatUYU(sim.neto, 0) }}</div>
+            <div class="text-caption text-medium-emphasis">
+              <template v-if="sim.tasaMarginalMaxima > 0">
+                IRPF a la tasa marginal máxima de tu sueldo ({{ sim.tasaMarginalMaxima }} %): −{{
+                  formatUYU(sim.irpfSobreSalarioVacacional, 0)
+                }}
+              </template>
+              <template v-else>Tu sueldo no paga IRPF, así que la suma tampoco.</template>
+            </div>
+          </div>
+        </div>
+
+        <div class="formula sim-formula mt-5">
+          <span class="op">(</span>
+          <span class="term">{{ formatUYU(sim.sueldoNominal, 0) }}</span>
+          <span class="op">−</span>
+          <span class="term">{{ formatUYU(sim.descuentosAplicados, 0) }}</span>
+          <span class="op">) ÷ 30 ×</span>
+          <span class="term">{{ sim.dias }} días</span>
+          <span class="op">=</span>
+          <span class="term is-result">{{ formatUYU(sim.salarioVacacional, 0) }}</span>
+        </div>
+
+        <dl class="slip mt-4">
+          <div class="slip__row">
+            <dt>Sueldo nominal mensual</dt>
+            <dd>{{ formatUYU(sim.sueldoNominal, 0) }}</dd>
+          </div>
+          <div class="slip__row is-sub">
+            <dt>Aporte jubilatorio (15 %)</dt>
+            <dd>−{{ formatUYU(sim.jubilatorio, 0) }}</dd>
+          </div>
+          <div class="slip__row is-sub">
+            <dt>FONASA ({{ sim.fonasaRate }} %)</dt>
+            <dd>−{{ formatUYU(sim.fonasa, 0) }}</dd>
+          </div>
+          <div class="slip__row is-sub">
+            <dt>FRL (0,1 %)</dt>
+            <dd>−{{ formatUYU(sim.frl, 0) }}</dd>
+          </div>
+          <div v-if="sim.restarIrpf" class="slip__row is-sub">
+            <dt>Retención de IRPF del mes (hipótesis)</dt>
+            <dd>−{{ formatUYU(sim.irpfRetenidoMes, 0) }}</dd>
+          </div>
+          <div class="slip__row is-strong">
+            <dt>Sueldo con los descuentos</dt>
+            <dd>{{ formatUYU(sim.sueldoNominal - sim.descuentosAplicados, 0) }}</dd>
+          </div>
+          <div class="slip__row">
+            <dt>÷ 30 = jornal líquido de vacaciones</dt>
+            <dd>{{ formatUYU(sim.jornalLiquido) }}</dd>
+          </div>
+          <div class="slip__row is-strong">
+            <dt>× {{ sim.dias }} días = salario vacacional mínimo</dt>
+            <dd>{{ formatUYU(sim.salarioVacacional, 0) }}</dd>
+          </div>
+          <div class="slip__row is-sub">
+            <dt>Aportes al BPS sobre la suma</dt>
+            <dd>$ 0 (exenta)</dd>
+          </div>
+          <div class="slip__row is-sub">
+            <dt>IRPF sobre la suma ({{ sim.tasaMarginalMaxima }} %)</dt>
+            <dd>−{{ formatUYU(sim.irpfSobreSalarioVacacional, 0) }}</dd>
+          </div>
+          <div class="slip__row is-strong">
+            <dt>Neto estimado</dt>
+            <dd>{{ formatUYU(sim.neto, 0) }}</dd>
+          </div>
+        </dl>
+
+        <p class="sim-note text-caption text-medium-emphasis mb-0 mt-4">
+          Estimación con las tasas de aportes personales del BPS (jubilatorio 15 %, FONASA según
+          franja y situación familiar, FRL 0,10 %) y la BPC 2026 de
+          {{ formatUYU(URUGUAY.bpc, 0) }}. Supone que este sueldo es tu única renta de trabajo, sin
+          horas extras, tickets ni deducciones extra de IRPF, y que la licencia es de este año. Si
+          sos jornalero, tu jornal es el vigente y no un treintavo del sueldo; si cobrás variable,
+          es el promedio del año anterior. Un convenio puede fijar más. Informativo, no
+          asesoramiento: ante una diferencia, vale tu recibo, el MTSS o la DGI.
         </p>
       </VCard>
     </section>
@@ -186,8 +444,14 @@
         <VBtn :to="localePath('/herramientas/calculadora-irpf')" variant="tonal" size="small">
           Calculadora de IRPF
         </VBtn>
+        <VBtn :to="localePath('/horas-extras-uruguay')" variant="tonal" size="small">
+          Horas extras
+        </VBtn>
         <VBtn :to="localePath('/cuanto-me-tienen-que-pagar-uruguay')" variant="tonal" size="small">
           Cuánto me tienen que pagar
+        </VBtn>
+        <VBtn :to="localePath('/renunciar-al-trabajo-uruguay')" variant="tonal" size="small">
+          Renunciar al trabajo
         </VBtn>
         <VBtn :to="localePath('/seguro-de-paro-uruguay')" variant="tonal" size="small">
           Seguro de paro
@@ -199,7 +463,7 @@
     <section>
       <h2 class="text-h6 font-weight-bold mb-3">Fuentes</h2>
       <p class="sources-note text-body-2 text-medium-emphasis mb-3">
-        Contrastado contra la normativa en IMPO y las páginas oficiales del MTSS y la DGI el
+        Contrastado contra la normativa en IMPO y las páginas oficiales del MTSS, la DGI y el BPS el
         {{ verifiedAt }}. Esta página es informativa: ante una duda puntual vale lo que resuelva el
         organismo o el juez del caso, y un convenio colectivo de tu rama puede darte más que el
         mínimo legal.
@@ -214,12 +478,19 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+import { URUGUAY } from '~/utils/calculators'
+import { formatUYU } from '~/utils/format'
 import {
   LICENCIA_ESCALONES,
+  SALARIO_VACACIONAL_COMPONENTES,
   SALARIO_VACACIONAL_FAQ,
   SALARIO_VACACIONAL_HITOS,
+  SALARIO_VACACIONAL_REGIMENES,
   SALARIO_VACACIONAL_SOURCES,
   SALARIO_VACACIONAL_VERIFIED_AT,
+  diasDeLicencia,
+  simularSalarioVacacional,
 } from '~/utils/salarioVacacional'
 
 const localePath = useLocalePath()
@@ -229,10 +500,31 @@ const verifiedAt = new Date(`${SALARIO_VACACIONAL_VERIFIED_AT}T12:00:00Z`).toLoc
   { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }
 )
 
+// Simulador. Los valores iniciales son sólo un punto de partida para que el lector vea el
+// desglose antes de tocar nada; no son una cifra publicada.
+const sueldoNominal = ref(60000)
+const diasLicencia = ref(20)
+const antiguedad = ref(2)
+const hijos = ref(0)
+const conyugeACargo = ref(false)
+const restarIrpf = ref(false)
+
+const diasPorAntiguedad = computed(() => diasDeLicencia(antiguedad.value || 0))
+
+const sim = computed(() =>
+  simularSalarioVacacional({
+    sueldoNominal: sueldoNominal.value || 0,
+    diasDeLicencia: diasLicencia.value || 0,
+    hijos: hijos.value || 0,
+    conyugeACargo: conyugeACargo.value,
+    restarIrpf: restarIrpf.value,
+  })
+)
+
 const canonicalUrl = 'https://cambio-uruguay.com/salario-vacacional-uruguay'
 const title = 'Salario vacacional: cuánto es y cuándo'
 const description =
-  'El salario vacacional se paga antes de la licencia y mínimo el 100 % del jornal líquido (Ley 16.101). Licencia: 20 días, más 1 a los 5 años y 1 cada 4.'
+  'Se paga antes de la licencia: 100 % del jornal líquido por día (Ley 16.101), sin aportes BPS y con IRPF aparte. Simulador y días por antigüedad.'
 
 defineOgImageComponent('Cambio', {
   title: 'Salario vacacional en Uruguay',
@@ -258,7 +550,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'salario vacacional uruguay, cuando se cobra el salario vacacional, como se calcula el salario vacacional, suma para el mejor goce de la licencia, jornal liquido de vacaciones, licencia anual uruguay, cuantos dias de licencia me corresponden, licencia por antiguedad uruguay, salario vacacional irpf, ley 16101',
+        'salario vacacional uruguay, cuando se cobra el salario vacacional, como se calcula el salario vacacional, calcular salario vacacional, simulador salario vacacional, suma para el mejor goce de la licencia, jornal liquido de vacaciones, licencia anual uruguay, cuantos dias de licencia me corresponden, licencia por antiguedad uruguay, salario vacacional irpf, salario vacacional aportes bps, ley 16101',
     },
   ],
   script: [
@@ -297,6 +589,7 @@ useHead(() => ({
             headline: title,
             description,
             inLanguage: 'es-UY',
+            dateModified: SALARIO_VACACIONAL_VERIFIED_AT,
             mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
             publisher: {
               '@type': 'Organization',
@@ -329,9 +622,18 @@ useHead(() => ({
   max-width: 72ch;
   margin-top: 0;
 }
+.lead-link {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 600;
+  text-decoration: none;
+}
+.lead-link:hover {
+  text-decoration: underline;
+}
 .section-intro,
 .formula-note,
-.sources-note {
+.sources-note,
+.sim-note {
   max-width: 72ch;
   margin-top: 0;
 }
@@ -345,6 +647,7 @@ useHead(() => ({
 .warn-card,
 .formula-card,
 .note-card,
+.sim-card,
 .milestone {
   border: 1px solid rgba(var(--v-border-color), 0.14);
   border-radius: 14px;
@@ -418,6 +721,10 @@ useHead(() => ({
 .formula .op {
   opacity: 0.6;
 }
+.sim-formula {
+  margin-bottom: 0;
+  font-variant-numeric: tabular-nums;
+}
 .formula-note :deep(a),
 .formula-note a {
   color: rgb(var(--v-theme-primary));
@@ -429,8 +736,66 @@ useHead(() => ({
   text-decoration: underline;
 }
 
-.escala-table :deep(th) {
+.escala-table :deep(th),
+.regimen-table :deep(th),
+.componentes-table :deep(th) {
   white-space: nowrap;
+}
+
+/* Simulador */
+.sim-headline {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 600px) {
+  .sim-headline {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.sim-headline__box {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(var(--v-theme-primary), 0.08);
+}
+.sim-headline__box.is-net {
+  background: rgba(var(--v-theme-success), 0.12);
+}
+.sim-headline__value {
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.slip {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  max-width: 560px;
+}
+.slip__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(var(--v-border-color), 0.18);
+  font-size: 0.93rem;
+}
+.slip__row dt,
+.slip__row dd {
+  margin: 0;
+}
+.slip__row dd {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.slip__row.is-sub dt {
+  padding-left: 14px;
+  opacity: 0.8;
+}
+.slip__row.is-strong {
+  font-weight: 700;
+  border-bottom-style: solid;
 }
 
 .sources-list {

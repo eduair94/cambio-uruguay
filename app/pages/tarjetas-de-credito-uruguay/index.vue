@@ -236,6 +236,15 @@
                 <dt>Nota</dt>
                 <dd>{{ p.note }}</dd>
               </div>
+              <!-- Qué documento del emisor se leyó y cuándo, ficha por ficha: la fecha global de
+                   la página no alcanza cuando una cartilla es de marzo y un manual de setiembre. -->
+              <div v-if="p.verifiedOn" class="rank-verified">
+                <dt>Verificado</dt>
+                <dd>
+                  <strong>{{ dateLabel(p.verifiedOn) }}</strong>
+                  <template v-if="p.verifiedNote"> · {{ p.verifiedNote }}</template>
+                </dd>
+              </div>
             </dl>
 
             <VRow class="mt-1">
@@ -322,9 +331,34 @@
       con los emisores. Las tasas de acumulación, valores de canje, descuentos y costos
       <strong>cambian seguido</strong> y varían por categoría de tarjeta y campaña vigente. Los
       puntajes reflejan nuestro mejor criterio con la información pública disponible al
-      {{ CARD_REWARDS_LAST_REVIEWED }}; verificá siempre la letra chica actual en el sitio del
-      emisor antes de decidir.
+      {{ reviewedLabel }}; verificá siempre la letra chica actual en el sitio del emisor antes de
+      decidir.
     </VAlert>
+
+    <!-- What the 22/9/2026 re-verification changed, issuer by issuer, each with the document
+         that says so. Answers "¿esto está actualizado?" without opening 23 fichas. -->
+    <VCard variant="flat" class="tarjetas-section mt-4 pa-5 pa-sm-6">
+      <h2 class="text-subtitle-1 font-weight-bold mb-2 tarjetas-section-title">
+        <VIcon start size="small" color="primary">mdi-update</VIcon>
+        Qué cambió en la reverificación del {{ reviewedLabel }}
+      </h2>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        Cada ficha se releyó contra el tarifario, la cartilla o las bases que el propio emisor
+        publica. Esto es lo que difería de lo que decíamos, con el documento que lo respalda; lo que
+        no cambió sigue en cada ficha con su fecha.
+      </p>
+      <ul class="tarjetas-changes">
+        <li v-for="change in reviewChanges" :key="change.issuer + change.sourceUrl">
+          <strong>{{ change.issuer }}:</strong> {{ change.what }}
+          <a :href="change.sourceUrl" target="_blank" rel="noopener noreferrer">
+            {{ change.sourceLabel }}
+          </a>
+          <span class="text-caption text-medium-emphasis">
+            (visto el {{ dateLabel(change.seenOn) }})
+          </span>
+        </li>
+      </ul>
+    </VCard>
 
     <!-- Dated macro facts that cut across every card, so no single ficha owns them -->
     <VCard variant="flat" class="tarjetas-section mt-4 pa-5 pa-sm-6">
@@ -339,15 +373,16 @@
       <ul class="tarjetas-macro">
         <li>
           <strong>2 puntos menos de IVA</strong> pagando con débito, dinero electrónico o
-          instrumentos análogos (Ley 19.210). No aplica a tarjeta de crédito. En comercios de IVA
-          mínimo o Monotributo el beneficio se expresa como 1,64% o 1,82% del monto.
+          instrumentos análogos (Ley 19.210; guía DGI del 08/04/2026). No aplica a tarjeta de
+          crédito. En comercios de IVA mínimo o Monotributo el beneficio se expresa como 1,64% o
+          1,82% del monto.
         </li>
         <li>
           <strong>9 puntos menos de IVA en gastronomía</strong> pagando con tarjeta o dinero
           electrónico (Ley 17.934) —hoy vigentes por el Decreto 83/026—, pero
           <strong>desde el 1º de octubre de 2026 la reducción baja a 5 puntos</strong> (4,1% de
-          descuento para contribuyentes de IVA Mínimo, según DGI). Cualquier tarjeta que hoy
-          promocione "9% de IVA en restaurantes" queda desactualizada esa semana.
+          descuento para contribuyentes de IVA Mínimo, según la guía DGI del 05/05/2026). Cualquier
+          tarjeta que hoy promocione "9% de IVA en restaurantes" queda desactualizada esa semana.
         </li>
         <li>
           <strong>Devolución de IMESI en combustible</strong>: no es un beneficio de emisor sino un
@@ -358,6 +393,14 @@
         </li>
       </ul>
     </VCard>
+
+    <!-- The questions people bring to this page, phrased as they phrase them (r/uruguay, 2026),
+         answered with the fichas' own dated figures. Expanded: the answers ship in the HTML. -->
+    <FaqSection
+      :items="faq"
+      heading="Preguntas frecuentes sobre anualidad, puntos y tasas"
+      expanded
+    />
 
     <!-- Sources -->
     <VCard variant="flat" class="tarjetas-section mt-4 pa-5">
@@ -424,6 +467,8 @@
 import {
   CARD_REWARDS_LAST_REVIEWED,
   CARD_REWARDS_SOURCES,
+  CARD_REWARDS_FAQ,
+  CARD_REWARDS_REVIEW_CHANGES,
   rankedPrograms,
   REWARD_RUBRIC,
   ISSUER_TYPE_LABELS,
@@ -436,8 +481,10 @@ import {
 import { BANKOS_BANK_BY_CREDIT_PROGRAM, bankosBankName, bankosMapPath } from '~/utils/bankos'
 import { bankPageForBankId } from '~/utils/bankosPages'
 import { directoriosHubListItem } from '~/utils/directorios'
+import { dateLabel } from '~/utils/entityPages'
 import { cardProgramPagePath } from '~/utils/entityPageSlugs'
 import { growthEntryMessages } from '~/utils/growthEntryMessages'
+import type { FaqItem } from '~/utils/faqAnswers'
 
 const localePath = useLocalePath()
 const { t } = useI18n({ useScope: 'local', messages: growthEntryMessages })
@@ -511,6 +558,11 @@ function rankTone(rank: number): string {
 // The ranking's sources live in cardRewards.ts now, each tagged with the fichas it backs, so the
 // per-programme pages cite the same list this page prints.
 const sources = CARD_REWARDS_SOURCES
+// The dated change log of the last re-verification and the FAQ are pure data too (tested in
+// tests/unit/cardRewards.test.ts); the page only lays them out.
+const reviewChanges = CARD_REWARDS_REVIEW_CHANGES
+const faq: FaqItem[] = [...CARD_REWARDS_FAQ]
+const reviewedLabel = dateLabel(CARD_REWARDS_LAST_REVIEWED)
 
 const canonicalUrl = 'https://cambio-uruguay.com/tarjetas-de-credito-uruguay'
 const title = computed(() => t('cards.seoTitle'))
@@ -518,7 +570,7 @@ const description = computed(() => t('cards.description'))
 
 defineOgImageComponent('Cambio', {
   title: 'Ranking de tarjetas de crédito',
-  subtitle: 'Puntos y beneficios comparados en Uruguay',
+  subtitle: 'Anualidad, puntos y descuentos comparados en Uruguay',
   tag: 'RANKING',
 })
 
@@ -540,7 +592,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'mejores tarjetas de credito uruguay, puntos tarjeta credito uruguay, itau volar, scotia puntos, brou recompensa, puntos bbva, oca metraje, ranking tarjetas uruguay, beneficios tarjetas uruguay',
+        'mejores tarjetas de credito uruguay, tarjetas de credito uruguay 2026, anualidad tarjeta de credito uruguay, costo anual tarjeta de credito, tarjeta de credito sin costo anual uruguay, mejor tarjeta para puntos millas uruguay, puntos tarjeta credito uruguay, itau volar, scotia puntos, brou recompensa, puntos bbva, oca metraje, ranking tarjetas uruguay, beneficios tarjetas uruguay',
     },
   ],
   script: [
@@ -619,6 +671,32 @@ useHead(() => ({
 }
 .tarjetas-macro li:last-child {
   margin-bottom: 0;
+}
+
+.tarjetas-changes {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.tarjetas-changes li {
+  margin-bottom: 10px;
+}
+.tarjetas-changes li:last-child {
+  margin-bottom: 0;
+}
+.tarjetas-changes a {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+  text-decoration: none;
+}
+.tarjetas-changes a:hover,
+.tarjetas-changes a:focus-visible {
+  text-decoration: underline;
+}
+
+.rank-verified dd strong {
+  color: rgb(var(--v-theme-success));
 }
 
 .method-panels {

@@ -11,6 +11,7 @@ import {
   INDEXNOW_ENDPOINT,
   INDEXNOW_HOST,
   INDEXNOW_KEY_FILE_PATTERN,
+  INDEXNOW_MAX_NEW_PER_RUN,
   INDEXNOW_MAX_URLS_PER_POST,
   SITEMAP_INDEX_URL,
   buildPayload,
@@ -20,7 +21,9 @@ import {
   filterApexUrls,
   isEnabled,
   keyLocation,
+  parseState,
   pickChildSitemap,
+  planSubmission,
   readEnvFlag,
   resolveIndexNowKey,
   runIndexNow,
@@ -412,5 +415,129 @@ describe('runIndexNow end to end (fetch injected)', () => {
       log: vi.fn(),
     })
     expect(result.status).toBe('aborted')
+  })
+})
+
+// Medido el 22/9/2026: dos deploys seguidos mandaron las 3.691 URLs del sitemap en un POST y
+// api.indexnow.org contestó 429 ("potential spam") las dos veces. Desde entonces se anuncia sólo
+// lo que no se anunció antes, de a lo sumo INDEXNOW_MAX_NEW_PER_RUN, y un rechazo no marca nada.
+describe('only what is new, capped per run, remembered between deploys', () => {
+  const ENABLED = { INDEXNOW_ENABLED: '1' }
+  const memoryState = (initial: string | null = null) => {
+    let text = initial
+    return {
+      read: vi.fn(() => text),
+      write: vi.fn((next: string) => {
+        text = next
+      }),
+      get text() {
+        return text
+      },
+    }
+  }
+
+  it('planSubmission sends only unseen URLs, keeps sitemap order and caps the batch', () => {
+    const urls = ['a', 'b', 'c', 'd']
+    expect(planSubmission(urls, ['b'], 2)).toEqual({
+      toSend: ['a', 'c'],
+      pending: 1,
+      nextState: ['b', 'a', 'c'],
+    })
+    // Una URL que ya no está en el sitemap sale del estado sola.
+    expect(planSubmission(['a'], ['zz', 'a']).nextState).toEqual(['a'])
+    expect(INDEXNOW_MAX_NEW_PER_RUN).toBeLessThan(INDEXNOW_MAX_URLS_PER_POST)
+  })
+
+  it('parseState tolerates garbage and only keeps string URLs', () => {
+    expect(parseState('not json')).toEqual([])
+    expect(parseState('{"urls":"x"}')).toEqual([])
+    expect(parseState('{"urls":["a",1,"b"]}')).toEqual(['a', 'b'])
+  })
+
+  it('first run without state sends at most the cap and persists what was accepted', async () => {
+    const { fetchImpl, calls } = HEALTHY()
+    const state = memoryState()
+    const result = await runIndexNow({
+      fetch: fetchImpl,
+      env: ENABLED,
+      argv: [],
+      key: KEY32,
+      log: vi.fn(),
+      state,
+      maxNewPerRun: 2,
+      now: () => '2026-09-22T22:00:00.000Z',
+    })
+    expect(result).toMatchObject({ status: 'submitted', urls: 2, chunks: 1 })
+    const post = calls.find(call => call.url === INDEXNOW_ENDPOINT)!
+    expect(JSON.parse(post.init!.body!).urlList).toEqual(APEX_URLS.slice(0, 2))
+    expect(JSON.parse(state.text!)).toEqual({
+      submittedAt: '2026-09-22T22:00:00.000Z',
+      urls: APEX_URLS.slice(0, 2),
+    })
+  })
+
+  it('a later run sends only what the state does not list, and a full state means no POST', async () => {
+    const { fetchImpl, calls } = HEALTHY()
+    const state = memoryState(JSON.stringify({ urls: APEX_URLS.slice(0, 2) }))
+    const result = await runIndexNow({
+      fetch: fetchImpl,
+      env: ENABLED,
+      argv: [],
+      key: KEY32,
+      log: vi.fn(),
+      state,
+    })
+    expect(result).toMatchObject({ status: 'submitted', urls: 1 })
+    expect(
+      JSON.parse(calls.find(call => call.url === INDEXNOW_ENDPOINT)!.init!.body!).urlList
+    ).toEqual([APEX_URLS[2]])
+    expect(JSON.parse(state.text!).urls).toEqual(APEX_URLS)
+
+    const again = HEALTHY()
+    const nothing = await runIndexNow({
+      fetch: again.fetchImpl,
+      env: ENABLED,
+      argv: [],
+      key: KEY32,
+      log: vi.fn(),
+      state,
+    })
+    expect(nothing.status).toBe('nothing-new')
+    expect(again.calls.some(call => call.url === INDEXNOW_ENDPOINT)).toBe(false)
+  })
+
+  it('a rejected POST leaves the state untouched so the same URLs are retried next time', async () => {
+    const { fetchImpl } = fakeFetch({
+      [SITEMAP_INDEX_URL]: response(200, INDEX_XML),
+      'https://cambio-uruguay.com/__sitemap__/es-ES.xml': response(200, CHILD_XML),
+      [INDEXNOW_ENDPOINT]: response(429),
+    })
+    const state = memoryState()
+    const result = await runIndexNow({
+      fetch: fetchImpl,
+      env: ENABLED,
+      argv: [],
+      key: KEY32,
+      log: vi.fn(),
+      state,
+    })
+    expect(result.status).toBe('rejected')
+    expect(state.write).not.toHaveBeenCalled()
+  })
+
+  it('--dry-run neither POSTs nor writes state', async () => {
+    const { fetchImpl, calls } = HEALTHY()
+    const state = memoryState()
+    const result = await runIndexNow({
+      fetch: fetchImpl,
+      env: {},
+      argv: ['--dry-run'],
+      key: KEY32,
+      log: vi.fn(),
+      state,
+    })
+    expect(result.status).toBe('dry-run')
+    expect(calls.some(call => call.url === INDEXNOW_ENDPOINT)).toBe(false)
+    expect(state.write).not.toHaveBeenCalled()
   })
 })

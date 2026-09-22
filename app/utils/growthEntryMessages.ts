@@ -3,9 +3,9 @@ export const growthEntryMessages = {
     cards: {
       title: 'Mejores tarjetas de crédito en Uruguay: puntos y beneficios',
       lead: 'Compará {count} programas por costo anual, puntos, canje y descuentos. Cada puntaje tiene un criterio publicado y cada ficha muestra sus condiciones.',
-      seoTitle: 'Mejores tarjetas de crédito en Uruguay',
+      seoTitle: 'Tarjetas de crédito Uruguay 2026: anualidad',
       description:
-        'Compará tarjetas de crédito en Uruguay por costo anual, puntos, canje y descuentos. Ranking con metodología, condiciones y enlaces a fuentes.',
+        'Anualidad, puntos y tasa de 23 tarjetas de crédito, reverificadas el 22/9/2026 contra cada tarifario: Santander UI 895–1.560, PassCard $133,75/mes, OCA 1 Metro cada $120.',
       question: '¿Qué tarjeta de crédito te conviene?',
       answer:
         'Revisá el costo anual, cómo podés canjear los puntos y si los descuentos están en los comercios que usás.',
@@ -32,9 +32,9 @@ export const growthEntryMessages = {
     cards: {
       title: 'Best credit cards in Uruguay: points and benefits',
       lead: 'Compare {count} programmes by annual fee, points, redemption and discounts. Each score follows published criteria, and each entry shows its conditions.',
-      seoTitle: 'Best credit cards in Uruguay: compare benefits',
+      seoTitle: 'Credit cards in Uruguay 2026: annual fees',
       description:
-        'Compare credit cards in Uruguay by annual fee, points, redemption and discounts. Rankings with methodology, conditions and source links.',
+        'Annual fee, points and rates of 23 credit cards in Uruguay, re-checked on 22/9/2026 against each issuer tariff: Santander UI 895–1,560, PassCard $133.75/month, OCA 1 Metro per $120.',
       question: 'Which credit card suits you?',
       answer:
         'Check the annual fee, how you can redeem points and whether discounts apply at the shops you use.',
@@ -61,9 +61,9 @@ export const growthEntryMessages = {
     cards: {
       title: 'Melhores cartões de crédito no Uruguai: pontos e benefícios',
       lead: 'Compare {count} programas por anuidade, pontos, resgate e descontos. Cada nota segue critérios publicados e cada ficha mostra suas condições.',
-      seoTitle: 'Melhores cartões de crédito no Uruguai: compare benefícios',
+      seoTitle: 'Cartões de crédito Uruguai 2026: anuidade',
       description:
-        'Compare cartões de crédito no Uruguai por anuidade, pontos, resgate e descontos. Ranking com metodologia, condições e links para as fontes.',
+        'Anuidade, pontos e taxas de 23 cartões de crédito do Uruguai, reverificados em 22/9/2026 em cada tarifário: Santander UI 895–1.560, PassCard $133,75/mês, OCA 1 Metro a cada $120.',
       question: 'Qual cartão de crédito combina com você?',
       answer:
         'Confira a anuidade, como resgatar os pontos e se os descontos valem nos estabelecimentos que você usa.',

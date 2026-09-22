@@ -116,6 +116,188 @@
       </p>
     </section>
 
+    <!-- Sólo con cédula: quién presta y a qué tasa -->
+    <section class="mb-6" aria-labelledby="cedula-title">
+      <h2 id="cedula-title" class="text-h6 font-weight-bold mb-1">
+        Sólo con cédula: quién presta y a qué tasa
+      </h2>
+      <p class="text-body-2 mb-3">
+        Sólo con la cédula prestan <strong>{{ soloCedulaNames }}</strong
+        >. "Sólo con cédula" quiere decir <strong>sin comprobante de ingresos</strong>, no "sin
+        mirar el clearing": son dos requisitos distintos y cada financiera se para en un lugar
+        diferente. OCA exige no figurar en el clearing y Crédito de la Casa lo exige hasta para su
+        línea chica; la única que dice en su propia página que presta estando en el clearing es
+        Pronto!. Lo que sigue está leído de la página de cada institución el
+        {{ fmtDate(SOLO_CEDULA_REVIEWED) }}.
+      </p>
+      <VCard variant="outlined" class="mb-4">
+        <VTable class="cu-mobile-cards loan-np__table" density="comfortable">
+          <thead>
+            <tr>
+              <th>Institución</th>
+              <th>¿Sólo cédula?</th>
+              <th>Qué pide</th>
+              <th>Clearing</th>
+              <th>Tasa y gastos</th>
+              <th>Montos y plazos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="l in SOLO_CEDULA_LENDERS" :key="l.name">
+              <td data-label="Institución" class="font-weight-medium">
+                <a :href="l.sourceUrl" target="_blank" rel="noopener noreferrer nofollow">{{
+                  l.name
+                }}</a>
+              </td>
+              <td data-label="¿Sólo cédula?" class="text-no-wrap">
+                {{ SOLO_CEDULA_LABELS[l.soloCedula] }}
+              </td>
+              <td data-label="Qué pide">{{ l.pide }}</td>
+              <td data-label="Clearing">{{ l.clearing }}</td>
+              <td data-label="Tasa y gastos">{{ l.tasa }}</td>
+              <td data-label="Montos y plazos">{{ l.montos }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+
+      <h3 class="text-subtitle-1 font-weight-bold mb-1">
+        Topes de usura vigentes (Ley 18.212, tabla del BCU)
+      </h3>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        Tasas medias del período <strong>{{ capsPeriodo }}</strong
+        >, vigentes desde el <strong>{{ capSince }}</strong
+        >. El BCU republica la tabla todos los meses sobre una ventana móvil de tres meses: las
+        filas de consumo en pesos y en dólares salen de la grilla que el sitio lee del BCU; las de
+        autorización de descuento, retención de haberes y crédito de nómina son una lectura del PDF
+        del {{ fmtDate(SOLO_CEDULA_REVIEWED) }}. Tope = media más 55 %; con retención de haberes,
+        más 30 %; crédito de nómina, más 20 %; mora, más 80 %.
+      </p>
+      <VCard variant="outlined" class="mb-3">
+        <VTable class="cu-mobile-cards loan-np__table" density="comfortable">
+          <thead>
+            <tr>
+              <th>Segmento</th>
+              <th>Plazo</th>
+              <th class="text-right">Tasa media</th>
+              <th class="text-right">Tope</th>
+              <th class="text-right">Tope de mora</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="c in caps" :key="c.id">
+              <td data-label="Segmento">
+                {{ c.segment }}
+                <span v-if="!c.live" class="text-caption text-medium-emphasis">
+                  (lectura del PDF)</span
+                >
+              </td>
+              <td data-label="Plazo">{{ c.plazo }}</td>
+              <td data-label="Tasa media" class="text-right text-no-wrap">
+                {{ usuryPct(c.meanPct) }}
+              </td>
+              <td data-label="Tope" class="text-right text-no-wrap font-weight-medium">
+                {{ usuryPct(c.capPct) }}
+              </td>
+              <td data-label="Tope de mora" class="text-right text-no-wrap">
+                {{ c.moraPct != null ? usuryPct(c.moraPct) : '—' }}
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+      <p class="text-caption text-medium-emphasis mb-4">
+        Fuente: BCU — Tasas medias de interés,
+        <a :href="BCU_CAPS_SOURCE_URL" target="_blank" rel="noopener noreferrer">PDF del BCU</a>,
+        visto el {{ fmtDate(SOLO_CEDULA_REVIEWED) }}. En dólares el BCU publica una sola celda de
+        consumo, sin partir por tramo de UI ni por autorización de descuento.
+      </p>
+
+      <VCard variant="flat" class="pa-4 pa-sm-5 mb-4 door-card">
+        <h3 class="text-subtitle-1 font-weight-bold mb-2">
+          Lo que puede sumarse a la tasa sin ser usura (Ley 18.212, art. 14)
+        </h3>
+        <p class="text-body-2 mb-2">
+          El tope se mide sobre la tasa implícita, y la ley deja fuera del cálculo algunos gastos
+          fijos. Con la UI de agosto de 2026 ($ 6,6371), 120 UI son unos $ 796.
+        </p>
+        <ul class="checklist text-body-2">
+          <li v-for="c in USURY_EXCLUDED_COSTS" :key="c.id">{{ c.text }}</li>
+        </ul>
+        <p class="text-caption text-medium-emphasis mt-2 mb-0">
+          Fuente:
+          <a
+            href="https://www.impo.com.uy/bases/leyes/18212-2007"
+            target="_blank"
+            rel="noopener noreferrer"
+            >IMPO — Ley 18.212, texto actualizado</a
+          >, visto el {{ fmtDate(SOLO_CEDULA_REVIEWED) }}.
+        </p>
+      </VCard>
+
+      <VCard variant="flat" class="pa-4 pa-sm-5 door-card">
+        <h3 class="text-subtitle-1 font-weight-bold mb-2">Si sos jubilado o pensionista</h3>
+        <ul class="checklist text-body-2">
+          <li>
+            <strong>BROU con retención</strong> (BPS u organismo con convenio): cédula vigente, a
+            sola firma desde el primer mes de cobro, renovación con el 40 % de las cuotas pagas; el
+            plazo y la afectación bajan con la edad (hasta 70 años, 60 meses y 35 % del nominal;
+            desde 90 años, 12 meses y 20 %). No cobra comisión de concesión ni seguro, pero su
+            página de préstamos con convenio prevé una comisión por cancelación anticipada. Tasas
+            vigentes desde el 1 de setiembre de 2026: de 15 % a 22 % + IVA (preferencial por eBROU)
+            a 20 % a 27 % + IVA (estándar en sucursal); los calificados 3 en el BCU pagan 1,22 %
+            más.
+            <a
+              href="https://www.brou.com.uy/personas/prestamos/prestamo-consumo/prestamos-con-convenio-en-pesos"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Fuente</a
+            >
+            ·
+            <a
+              href="https://www.brou.com.uy/documents/20182/22237/TASAS_VIGENTES_PRESTAMOS_PERSONAS.pdf/6ed06833-7c12-4f9f-8001-f7fb52f60a60"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Tasas (PDF del BROU)</a
+            >
+          </li>
+          <li>
+            La campaña anual <strong>Préstamos a Pasivos</strong> del BROU va en noviembre y
+            diciembre. En 2025 arrancó el 7 de noviembre por eBROU, con atención presencial desde el
+            9 de diciembre por dígito de cédula y cierre el 30 de diciembre, a una tasa "en el
+            entorno del 20 % anual en pesos". Al {{ fmtDate(SOLO_CEDULA_REVIEWED) }} el banco no
+            publicó fechas de la edición 2026.
+            <a
+              href="https://www.gub.uy/presidencia/comunicacion/noticias/140000-jubilados-pensionistas-accederan-prestamos-para-pasivos-del-banco"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Fuente (Presidencia)</a
+            >
+            ·
+            <a
+              href="https://www.montevideo.com.uy/Noticias/BROU-lanzo-prestamos-especiales-para-jubilados-con-una-novedad-como-y-cuando-acceder-uc943682"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              >fecha de inicio (Montevideo Portal)</a
+            >
+          </li>
+          <li>
+            <strong>ANDA, nómina para pasivos</strong>: hasta 80 años, cobro por banco o IEDE,
+            buenos antecedentes y "Contrato Persona" de BPS firmado; 29,40 % o 29,60 % + IVA en
+            setiembre de 2026. <strong>Creditel</strong>: adelanto de jubilación hasta $ 40.000 a 30
+            días (las fuentes de ANDA y Creditel están en la tabla de arriba). Por la
+            <a
+              href="https://www.impo.com.uy/bases/leyes/17829-2004"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Ley 17.829</a
+            >
+            tenés que cobrar en mano al menos el 35 % del nominal después de impuestos y aportes.
+          </li>
+        </ul>
+      </VCard>
+    </section>
+
     <!-- Antes de firmar -->
     <VCard variant="flat" class="pa-4 pa-sm-5 mb-5">
       <h2 class="text-h6 font-weight-bold mb-3">Antes de firmar</h2>
@@ -163,9 +345,10 @@
         </li>
       </ul>
       <p class="text-caption text-medium-emphasis mt-3 mb-0">
-        Citas verificadas contra la página de cada institución el
-        {{ fmtDate(NOPAYSLIP_LOANS_REVIEWED) }}. No tenemos acuerdos comerciales con ninguna.
-        Informativo, no es asesoramiento financiero.
+        Citas de las tres puertas verificadas contra la página de cada institución el
+        {{ fmtDate(NOPAYSLIP_LOANS_REVIEWED) }}; la tabla de "sólo con cédula", los topes del BCU y
+        la parte de jubilados, el {{ fmtDate(SOLO_CEDULA_REVIEWED) }}. No tenemos acuerdos
+        comerciales con ninguna. Informativo, no es asesoramiento financiero.
       </p>
     </VCard>
   </VContainer>
@@ -176,9 +359,17 @@ import { computed } from 'vue'
 import { BCU_CAPS, BCU_IN_FORCE_SINCE, type BcuCapRow } from '~/utils/cashAdvance'
 import type { FaqItem } from '~/utils/faqAnswers'
 import {
+  BCU_CAPS_PERIOD,
+  BCU_CAPS_SOURCE_URL,
+  NOPAYSLIP_CAPS,
   NOPAYSLIP_DOORS,
   NOPAYSLIP_LOANS_REVIEWED,
+  SOLO_CEDULA_LABELS,
+  SOLO_CEDULA_LENDERS,
+  SOLO_CEDULA_REVIEWED,
+  USURY_EXCLUDED_COSTS,
   buildNoPayslipFaq,
+  mergeNoPayslipCaps,
   noPayslipLenders,
   pctEs,
   teaSpread,
@@ -234,6 +425,16 @@ const capRow = computed(() => {
 const capLabel = computed(() => usuryPct(capRow.value.tope * 100))
 const capSince = computed(() => fmtDate(liveCaps.value?.vigenteDesde || BCU_IN_FORCE_SINCE))
 
+// The full grid for the "sólo con cédula" section: live rows where the BCU feed has them, dated
+// PDF readings for the rows it does not carry (marked as such in the table).
+const caps = computed(() => mergeNoPayslipCaps(NOPAYSLIP_CAPS, liveCaps.value?.rows))
+const capsPeriodo = computed(() => liveCaps.value?.periodo || BCU_CAPS_PERIOD)
+const soloCedulaNames = computed(() =>
+  SOLO_CEDULA_LENDERS.filter(l => l.soloCedula === 'si')
+    .map(l => l.name)
+    .join(' y ')
+)
+
 const faq = computed<FaqItem[]>(() =>
   buildNoPayslipFaq({
     rows: rows.value,
@@ -248,7 +449,7 @@ const canonicalUrl = 'https://cambio-uruguay.com/prestamo-sin-recibo-de-sueldo-u
 const title = 'Préstamos sin recibo de sueldo en Uruguay'
 const description = computed(
   () =>
-    `${rows.value.length} instituciones prestan sin recibo de sueldo${spreadLabel.value ? `, con TEA de ${spreadLabel.value}` : ''}. Con certificado de contador, sólo con la cédula o con garantía: quién mira el clearing y el tope de usura.`
+    `${rows.value.length} instituciones prestan sin recibo de sueldo${spreadLabel.value ? `, TEA de ${spreadLabel.value}` : ''}. Con certificado, sólo cédula o garantía: quién mira el clearing y el tope legal.`
 )
 
 useSeoMeta({

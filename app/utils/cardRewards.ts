@@ -12,19 +12,33 @@
 // fact-check pass; where a program's terms are unpublished or unconfirmed we score
 // conservatively and say so in the rationale. Informational, not financial advice.
 
-/** Fecha (YYYY-MM-DD) en que se reverificaron los programas contra fuente oficial. */
-export const CARD_REWARDS_LAST_REVIEWED = '2026-08-17'
+/**
+ * Fecha (YYYY-MM-DD) en que se reverificaron los programas contra fuente oficial.
+ *
+ * Reverificación del 22/9/2026: cada ficha lleva además su propio `verifiedOn` y
+ * `verifiedNote` (qué documento del emisor se leyó y con qué fecha de vigencia),
+ * porque una sola fecha global escondía que, por ejemplo, la cartilla de Scotiabank
+ * es del 20/03/2026 y el Manual de Tarifas de Santander del 22/09/2026. Lo que la
+ * ronda del 22/9/2026 NO pudo verificar y por eso no se toca: Prex (el sitio no
+ * respondió), la lista de nueve emisores de Cabal (su página los muestra sólo como
+ * imagen) y la fecha de inicio 1/5/2024 de los descuentos BROU Recompensa (las
+ * fichas sólo dicen "hasta el 30/04/2027").
+ */
+export const CARD_REWARDS_LAST_REVIEWED = '2026-09-22'
 
 /**
  * Valor de la Unidad Indexada usado para convertir a pesos los costos que los
- * emisores publican en UI (Itaú, Scotiabank, BBVA, OCA). Fuente: INE, informe
- * "Unidad Indexada Agosto 2026" (valor del 17/8/2026).
+ * emisores publican en UI (Itaú, Scotiabank, BBVA, OCA, Santander). Fuente: INE,
+ * informe "Unidad Indexada Setiembre 2026" (informe técnico del 3/9/2026), valor
+ * del 22/9/2026. La conversión anterior (UI del 17/8/2026 = $U 6,6350) quedaba
+ * ~0,18% corta.
  *
- * OJO: no tomar la conversión a pesos que imprime cada emisor. Itaú publica en su
- * ficha "Valor UI: $6,19" —un valor de fines de 2024— y su propio tarifario aclara
- * que los pesos que muestra son "a los solos efectos de referencia".
+ * OJO: no tomar la conversión a pesos que imprime cada emisor. Itaú aclara en su
+ * propio tarifario que los pesos que muestra son "a los solos efectos de
+ * referencia" ("$5.010" al lado de UI 864), y esa referencia queda congelada a la
+ * fecha de impresión.
  */
-export const UI_VALUE_UYU = 6.635
+export const UI_VALUE_UYU = 6.6468
 
 export type IssuerType = 'banco' | 'emisor_no_bancario' | 'fintech' | 'cooperativa' | 'retail'
 export type CardNetwork = 'visa' | 'mastercard' | 'amex' | 'oca' | 'cabal' | 'otro'
@@ -112,6 +126,16 @@ export interface CardProgram {
   rationale?: string
   /** true when the core program facts were confirmed against an authoritative source. */
   verified: boolean
+  /**
+   * Fecha (YYYY-MM-DD) de la última lectura de las fuentes del emisor para ESTA ficha. Distinta de
+   * `CARD_REWARDS_LAST_REVIEWED` a propósito: la ronda global fija el día, esto dice qué se leyó.
+   */
+  verifiedOn?: string
+  /**
+   * Qué documento del emisor se leyó ese día y con qué fecha de vigencia (tarifario, cartilla,
+   * bases), más lo que quedó SIN verificar. Se imprime en la página como "Verificado el …".
+   */
+  verifiedNote?: string
 }
 
 export const ISSUER_TYPE_LABELS: Readonly<Record<IssuerType, string>> = Object.freeze({
@@ -168,7 +192,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     redemptionNote:
       "Los puntos equivalen a dinero ('Puntos = dinero'), pero con dos condiciones duras que conviene saber antes: solo podés canjear si tenés al menos 400 puntos acumulados Y pagaste una compra con la tarjeta Recompensa en los últimos 7 días calendario. El canje se acredita como dinero a favor en la tarjeta de crédito o prepaga, o directo en tu cuenta BROU: a la cuenta llega dentro de las 48 horas, a la tarjeta puede demorar hasta 60 días según la proximidad al cierre.",
     discountNote:
-      'Fuerte red de descuentos automáticos, principal atractivo de la tarjeta, y a diferencia de otros bancos NO son campañas rotativas: BROU los publica con vigencia declarada del 1º de mayo de 2024 al 30 de abril de 2027. (1) Supermercados: 10% en Ta-Ta, El Dorado, Macro Mercado, Micro Macro, Tienda Inglesa y Red Express, martes y jueves, tope de reintegro $U 2.000 por mes y por cuenta. (2) Farmacias: 10% en todas las farmacias del país salvo las de mutualistas, miércoles, sábados y domingos, tope $U 1.000/mes. (3) Combustible: 5% en estaciones ANCAP, lunes y viernes, tope $U 500/mes. Gastronomía y hotelería van por otro lado: son beneficios rotativos del portal beneficios.brou.com.uy, sin días ni topes fijos publicados.',
+      'Fuerte red de descuentos automáticos, principal atractivo de la tarjeta, y a diferencia de otros bancos NO son campañas rotativas: BROU los publica con vigencia declarada hasta el 30 de abril de 2027 (reverificado el 22/9/2026 en recompensa.brou.com.uy, ficha por ficha). (1) Supermercados: 10% en Ta-Ta, El Dorado, Macro Mercado, Micro Macro, Tienda Inglesa y Red Express, martes y jueves, tope de reintegro $U 2.000 por mes y por cuenta. (2) Farmacias: 10% en todas las farmacias del país salvo las de mutualistas, miércoles, sábados y domingos, tope $U 1.000/mes. (3) Combustible: 5% en estaciones ANCAP, lunes y viernes, tope $U 500/mes. Gastronomía y hotelería van por otro lado: son beneficios rotativos del portal beneficios.brou.com.uy, sin días ni topes fijos publicados.',
     feeNote:
       'Primer año sin costo y todas las adicionales exoneradas. El costo depende del segmento que te otorguen —BROU no publica una línea "Recompensa" en su tarifario—: vigente desde el 1/2/2025, con IVA, Internacional $U 1.281, Oro $U 2.928, Platinum $U 4.575 y Black $U 5.856, cobrados en 3 cuotas mensuales. La bonificación va por consumo promedio mensual del año anterior: en Internacional y Oro es 50% entre $U 25.000 y $U 35.000 y 100% desde $U 35.000; en Platinum y Black, 50% entre $U 35.000 y $U 60.000 y 100% desde $U 60.000. Es decir: con $U 25.000 por mes se bonifica la mitad, no todo.',
     pros: [
@@ -186,7 +210,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Familias y usuarios de consumo cotidiano en Uruguay (supermercado, farmacia y combustible ANCAP): la combinación de descuentos automáticos + 1% en puntos suele rendir más que los programas de solo puntos.',
-    note: 'Los puntos vencen a los 24 meses desde su generación (asistencia.brou.com.uy). Reverificado el 17/8/2026: tasa, valor del punto, días/topes de los tres descuentos y tarifario de costos, todo con fuente oficial de BROU.',
+    note: 'Los puntos vencen a los 24 meses desde su generación: lo dicen los Términos y Condiciones del programa (PDF enlazado desde la página oficial, cláusula 4.5), cuyas condiciones rigen desde el 30 de junio de 2026 y que además reservan al BROU la potestad de fijar una fecha de fin avisando con no menos de 30 días corridos. Reverificado el 22/9/2026: tasa, valor del punto, canje (400 puntos y compra en los últimos 7 días), días/topes de los tres descuentos y tarifario de costos, todo con fuente oficial de BROU. Lo único que no pudo confirmarse ese día es la fecha de inicio 1/5/2024 de los descuentos: las fichas sólo publican el fin (30/04/2027).',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Tarifario de tarjetas de crédito vigente desde el 1/2/2025 (sin cambio), página del programa BROU Recompensa, fichas de descuentos de recompensa.brou.com.uy (vigencia hasta el 30/04/2027) y Términos y Condiciones del programa (condiciones desde el 30/6/2026).',
     scores: {
       acumulacion: 72,
       canje: 74,
@@ -232,7 +259,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Clientes habituales de Tienda Inglesa que valoran un programa de puntos con valor claro y canjeable directamente contra la compra del súper.',
-    note: 'Bases del Programa Puntos vigentes desde el 1/1/2026: 15 Puntos cada $U 900, 1 Punto = $U 1, mínimo de canje 150 Puntos, doble punto pagando con Club Card de Scotiabank y vigencia de 6 meses con documento uruguayo / 24 sin renovación con documento extranjero. El emisor de la Club Card sigue siendo Scotiabank Uruguay S.A. (confirmado en las bases de Tienda Inglesa y en scotiabank.com.uy a agosto de 2026): no hubo cambio de marca ni de emisor. Las cifras del régimen anterior (1 punto cada $600, 1 punto = $10, mínimo 15 puntos) quedaron sin efecto. También se retiró el canje por vales de combustible Petrobras: esa marca dejó de operar en Uruguay (DISA compró la red en 2022) y las bases 2026 no incluyen ninguna cláusula de combustible.',
+    note: 'Bases del Programa Puntos vigentes desde el 1/1/2026: 15 Puntos cada $U 900, 1 Punto = $U 1, mínimo de canje 150 Puntos, doble punto pagando con Club Card de Scotiabank y vigencia de 6 meses con documento uruguayo / 24 sin renovación con documento extranjero. El emisor de la Club Card sigue siendo Scotiabank Uruguay S.A. (confirmado en las bases de Tienda Inglesa y en scotiabank.com.uy, reverificado el 22/9/2026): no hubo cambio de marca ni de emisor. Las cifras del régimen anterior (1 punto cada $600, 1 punto = $10, mínimo 15 puntos) quedaron sin efecto. También se retiró el canje por vales de combustible Petrobras: esa marca dejó de operar en Uruguay (DISA compró la red en 2022) y las bases 2026 no incluyen ninguna cláusula de combustible.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Términos y condiciones del Programa Puntos de Tienda Inglesa (bases 2026), sin cambio: 1 Punto entre $U 90 y $U 900, 15 cada $U 900 sin prorrateo, doble con Club Card, mínimo 150, vigencia 6 meses renovables con documento uruguayo y 24 sin renovación con documento extranjero.',
     scores: {
       acumulacion: 82,
       canje: 78,
@@ -253,23 +283,24 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     networks: ['visa', 'mastercard', 'amex'],
     pointsProgramName: 'Scotia Puntos',
     earnRateNote:
-      'La tasa es escalonada por categoría de tarjeta, no un 1 punto cada $U 100 general: Visa Internacional y Mastercard Internacional acumulan 1 punto cada $U 150 (~0,67% de retorno), Visa Platinum 1 punto cada $U 100 (~1%) y Visa Infinite 1 punto cada $U 80 (~1,25%). Las tarjetas de entrada, que son las más masivas, rinden un tercio menos de lo que sugiere el "1%" con el que se asocia al programa.',
+      'La tasa es escalonada por categoría de tarjeta, no un 1 punto cada $U 100 general: Visa Internacional y Mastercard Internacional acumulan 1 punto cada $U 150 (~0,67% de retorno), Visa Platinum 1 punto cada $U 100 (~1%) y Visa Infinite 1 punto cada $U 80 (~1,25%). Las tarjetas de entrada, que son las más masivas, rinden un tercio menos de lo que sugiere el "1%" con el que se asocia al programa. Novedad de las bases de julio de 2026 (Nuevo Scotia Puntos, para tarjetas solicitadas desde el 14/7/2025 y las migradas): bono por primera compra de 500 puntos en Visa Platinum y Visa Infinite (las Internacionales no lo tienen) y bono por consumo mínimo en los primeros 4 meses de 700 puntos en las Internacionales ($U 50.000), 1.500 en Platinum ($U 90.000) y 2.500 en Infinite ($U 120.000). Los puntos se acreditan hasta 10 días hábiles después del cierre.',
     pointValueNote:
       '1 Scotia Punto = $U 1 al canjear. El retorno real depende de la categoría: ~0,67% en las Internacionales, ~1% en Platinum y ~1,25% en Infinite. Valor confirmado en el sitio oficial.',
     redemptionNote:
-      "Canje 100% autogestionado desde la App Scotia Móvil: podés canjear puntos por cualquier compra que se pueda pagar con la tarjeta ('si lo podés pagar con la tarjeta, lo podés canjear con puntos'), a razón de 1 punto = $U 1. Pero el eslogan tiene letra chica: la compra tiene que superar los $U 700, tener menos de 90 días desde la fecha de compra y hay que tener puntos para cubrir el monto TOTAL (no se admite canje parcial). Se canjea únicamente por la App: no hay canje por web ni por sucursal. Los puntos vencen a los 36 meses de generados.",
+      "Canje 100% autogestionado desde la App Scotia Móvil: podés canjear puntos por cualquier compra que se pueda pagar con la tarjeta ('si lo podés pagar con la tarjeta, lo podés canjear con puntos'), a razón de 1 punto = $U 1. Pero el eslogan tiene letra chica: la compra tiene que superar los $U 700, tener menos de 90 días desde la fecha de compra y hay que tener puntos para cubrir el monto TOTAL (no se admite canje parcial). Se canjea únicamente por la App: no hay canje por web ni por sucursal. Los puntos vencen a los 36 meses de generados, y las bases de julio de 2026 agregan el vencimiento del saldo TOTAL a los 180 días corridos sin una compra con la tarjeta.",
     discountNote:
-      'El foco del programa es la acumulación de puntos; los descuentos con comercios van por campañas puntuales (no un cuadro fijo de días como BROU). Programas asociados vigentes a agosto de 2026: Scotia Puntos, Membership Rewards (American Express), Copa ConnectMiles y Club Card (Tienda Inglesa, puntos dobles). Dos que el ranking listaba y ya no corresponden: Gaviotas fue discontinuado el 1 de febrero de 2026 (saldo canjeable hasta el 31/12/2026 en Montevideo Shopping) y Sonrisas fue reemplazado por Scotia Puntos. MileagePlus (United) y Smiles figuran en el sitio solo como enlaces de consulta, sin texto de vigencia ni aviso de baja: quedan como a confirmar.',
+      'El foco del programa es la acumulación de puntos; los descuentos con comercios van por campañas puntuales (no un cuadro fijo de días como BROU). Programas asociados vigentes a setiembre de 2026: Scotia Puntos, Membership Rewards (American Express), Copa ConnectMiles y Club Card (Tienda Inglesa, puntos dobles). Dos que el ranking listaba y ya no corresponden: Gaviotas fue discontinuado el 1 de febrero de 2026 (saldo canjeable hasta el 31/12/2026 en Montevideo Shopping) y Sonrisas fue reemplazado por Scotia Puntos. MileagePlus (United) y Smiles figuran en el sitio solo como enlaces de consulta, sin texto de vigencia ni aviso de baja: quedan como a confirmar.',
     feeNote:
-      'Tarifario oficial vigente (Cartilla Tarjetas de Crédito Personas Físicas F.2540, 20/03/2026): emisión sin costo y primer año sin costo. Cargo anual obligatorio con IVA incluido y denominado en Unidades Indexadas —o sea indexado a la inflación en pesos, no al dólar—: Visa y Mastercard Internacional UI 1.000 (≈ $U 6.635), Platinum UI 1.250 (≈ $U 8.294) e Infinite UI 1.600 (≈ $U 10.616). Adicionales sin costo. Compras en el exterior, cargo obligatorio + IVA por compra: 3% en las Internacionales y Mastercard Oro, 1,5% en American Express Oro y Visa Platinum, 0% en American Express Platinum y Visa Infinite. Conversión a pesos con la UI del 17/8/2026 ($U 6,6350). La referencia de mercado de "~$U 6.000/año" para la Platinum quedó corta: el valor real es ~38% más alto.',
+      'Tarifario oficial vigente (Cartilla Tarjetas de Crédito Personas Físicas F.2540, 20/03/2026): emisión sin costo y primer año sin costo. Cargo anual obligatorio con IVA incluido y denominado en Unidades Indexadas —o sea indexado a la inflación en pesos, no al dólar—: Visa y Mastercard Internacional UI 1.000 (≈ $U 6.647), Platinum UI 1.250 (≈ $U 8.309) e Infinite UI 1.600 (≈ $U 10.635). Adicionales sin costo; reimpresión UI 180. Compras en el exterior, cargo obligatorio + IVA por compra: 3% en las Internacionales y Mastercard Oro, 1,5% en American Express Oro y Visa Platinum, 0% en American Express Platinum y Visa Infinite. Y un cargo que la ficha comercial no cuenta: el "adicional tipo de cambio" por cada transacción en moneda distinta al dólar, 6% en Visa Internacional, 4,5% en Visa Platinum, 3% en Visa Infinite y 3% en Mastercard. Gestión de cobranza por atraso UI 10 + IVA, hasta 5 veces al año. Conversión a pesos con la UI del 22/9/2026 ($U 6,6468). La referencia de mercado de "~$U 6.000/año" para la Platinum quedó corta: el valor real es ~38% más alto.',
     pros: [
       'Valor del punto simple y transparente: 1 punto = $U 1 (sin catálogos con tasas de canje ocultas).',
       'Canje por cualquier compra pagable con la tarjeta, no un catálogo cerrado: sigue siendo de lo más líquido entre los programas bancarios.',
       'Programa unificado: los puntos de Visa y Mastercard acumulan en la misma bolsa Scotia Puntos.',
       'Emisión, primer año y adicionales sin costo, con tarifario público y fechado (cartilla F.2540 del 20/03/2026).',
+      'Bonos de las bases de julio de 2026: 500 puntos por la primera compra en Platinum e Infinite y 700/1.500/2.500 puntos por consumir $U 50.000/90.000/120.000 en los primeros 4 meses.',
     ],
     cons: [
-      'Los puntos vencen a los 36 meses, y además se vence el TOTAL acumulado si pasás 6 meses corridos sin comprar con la tarjeta.',
+      'Los puntos vencen a los 36 meses, y además se vence el TOTAL acumulado si pasás 180 días corridos sin comprar con la tarjeta.',
       'Las tarjetas Internacionales acumulan 1 punto cada $U 150 (~0,67%), no el ~1% que se le atribuye al programa.',
       'Para canjear, la compra debe superar $U 700, tener menos de 90 días y cubrirse 100% con puntos: no hay canje parcial.',
       'El canje es solo por la App Scotia Móvil: no hay web ni sucursal.',
@@ -277,7 +308,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Clientes Scotiabank de gama Platinum o Infinite que usan la tarjeta seguido: el canje por App es de lo más flexible del mercado, pero castiga al que la deja guardada.',
-    note: 'Reverificado el 17/8/2026 contra el sitio oficial y la cartilla F.2540 (vigencia 20/03/2026). Scotiabank Uruguay sigue operando con normalidad: la venta a Davivienda alcanzó Colombia, Costa Rica y Panamá, no Uruguay.',
+    note: 'Reverificado el 22/9/2026 contra el sitio oficial, las bases del Nuevo Scotia Puntos de julio de 2026 y la cartilla F.2540, que sigue siendo la del 20/03/2026 (el cargo anual no cambió). Scotiabank Uruguay sigue operando con normalidad: la venta a Davivienda alcanzó Colombia, Costa Rica y Panamá, no Uruguay.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Bases y condiciones Nuevo Scotia Puntos 07.2026 (ratios sin cambio, bonos de bienvenida y por consumo nuevos, vencimiento total a los 180 días), página del programa (canje > $U 700, < 90 días, sólo App) y cartilla F.2540 vigente desde el 20/03/2026 (UI 1.000 / 1.250 / 1.600, adicional tipo de cambio).',
     scores: {
       acumulacion: 58,
       canje: 72,
@@ -298,20 +332,21 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     networks: ['visa', 'mastercard'],
     pointsProgramName: 'Soy Santander',
     earnRateNote:
-      'Acumulación por consumo con tarjeta de crédito, escalonada por segmento: Internacional 1 punto cada $U 100; Platinum 1 cada $U 90; Black e Infinite 1 cada $U 80; Black e Infinite Private Banking 1 cada $U 70. Con débito se acumula bastante menos: Internacional 1 cada $U 240, Infinite 1 cada $U 200 e Infinite Private Banking 1 cada $U 180. Las exclusiones son distintas según el plástico: en CRÉDITO no acumulan los adelantos de efectivo en cajeros locales o del exterior, los cargos del banco y sus impuestos ni los préstamos con débito automático en cuenta; en DÉBITO no acumulan los débitos automáticos, los retiros en cajeros ni los consumos en redes de cobranza. Los puntos de crédito se acreditan dentro de los 5 días hábiles posteriores al cierre.',
+      'Acumulación por consumo con tarjeta de crédito, escalonada por segmento según las bases vigentes desde el 1/2/2026: Internacional 1 punto cada $U 100; Platinum 1 cada $U 90; Infinite Select y Black Select (Pack Trilogy Select) 1 cada $U 80; Infinite Banca Privada y Black Banca Privada 1 cada $U 70. Con débito se acumula bastante menos: Internacional 1 cada $U 240, Infinite Select 1 cada $U 200 e Infinite Banca Privada 1 cada $U 180. Requisitos por segmento: Internacional ingresos líquidos desde $U 10.000; Platinum desde $U 70.000; Pack Trilogy Select desde $U 200.000 o patrimonio en el banco desde USD 100.000; Pack Trilogy Banca Privada patrimonio desde USD 700.000. Las exclusiones son distintas según el plástico: en CRÉDITO no acumulan los adelantos de efectivo en cajeros locales o del exterior, los cargos del banco y sus impuestos ni los préstamos con débito automático en cuenta; en DÉBITO no acumulan los débitos automáticos, los retiros en cajeros ni los consumos en redes de cobranza. Los puntos de crédito se acreditan dentro de los 5 días hábiles posteriores al cierre.',
     pointValueNote:
       '1 punto = $U 1 para gastar en cualquiera de los centros de canje habilitados (confirmado en dos páginas oficiales vigentes). Dato material que faltaba: el saldo total de puntos se vence si pasan 12 meses corridos sin al menos una compra válida con tarjeta de crédito o débito Santander. El "hasta $U 1,5 en promociones" se retiró: ya no figura en ninguna página oficial vigente.',
     redemptionNote:
-      '1 punto = $U 1. Canje en Tienda Soy Santander (electrodomésticos, muebles, tecnología), Viajes Soy Santander (pasajes, hoteles, experiencias) y vales/gift cards. Dato clave que explica el precio del catálogo: esos centros de canje NO los opera el banco. La Tienda la administra RIOLUX S.A. y Viajes la administra DIEGAL S.A., y Santander se deslinda expresamente de la venta y la posventa. No hay canje mínimo: podés pagar parte con puntos y el saldo en pesos o dólares, incluso en cuotas. Dos plazos a tener en cuenta: los vales canjeados vencen a los 60 días corridos y no se reembolsan, y los cambios y devoluciones en la tienda se piden dentro de los 5 días hábiles de recibido el producto y con el embalaje intacto. Bonos de bienvenida de 1.000 a 5.000 puntos tras la primera compra, más bonos por acreditación de sueldo, pagos automáticos y saldos mínimos.',
+      '1 punto = $U 1. Canje en Tienda Soy Santander (electrodomésticos, muebles, tecnología), Viajes Soy Santander (pasajes, hoteles, experiencias) y vales/gift cards. Dato clave que explica el precio del catálogo: esos centros de canje NO los opera el banco. La Tienda la administra RIOLUX S.A. y Viajes la administra DIEGAL S.A., y Santander se deslinda expresamente de la venta y la posventa. No hay canje mínimo: podés pagar parte con puntos y el saldo en pesos o dólares, incluso en cuotas. Dos plazos a tener en cuenta: los vales canjeados vencen a los 60 días corridos y no se reembolsan, y los cambios y devoluciones en la tienda se piden dentro de los 5 días hábiles de recibido el producto y con el embalaje intacto. Bonos de bienvenida escalonados (santander.com.uy/soysantander, 22/9/2026): 1.000 puntos en Internacional, 3.000 en Platinum, 5.000 en Pack Trilogy Select y 8.000 en Pack Trilogy Banca Privada, más un bono por consumo con crédito de 1.000 puntos al alcanzar $U 200.000 (Internacional), 3.000 a $U 300.000 (Platinum), 5.000 a $U 750.000 (Black e Infinite Select, acumulado entre ambas) y 8.000 a $U 1.000.000 (Banca Privada); y bonos por acreditación de sueldo, pagos automáticos y saldos mínimos.',
     discountNote:
       "Red de descuentos 'Descuentos Santander' en comercios adheridos (gastronomía, indumentaria, viajes, etc.) y promociones/cuotas sin recargo puntuales publicadas en 'Bases y condiciones de promociones'. No se pudo confirmar en fuente oficial un esquema fijo y permanente de descuento por día en supermercados ni un reintegro fijo en combustible bajo esta marca; las promos son rotativas. Detalle de rubros y topes no verificado punto por punto.",
     feeNote:
-      'Costo anual/mantenimiento de la tarjeta no confirmado en fuente oficial (varía por producto y suele bonificarse con acreditación de sueldo). No verificado.',
+      'Ahora sí está publicado: el Manual de Tarifas de Santander (versión 22/09/2026) fija el costo de administración anual de la tarjeta de crédito con IVA incluido en Internacional UI 895 (≈ $U 5.949), Platinum UI 1.085 (≈ $U 7.212) y Black e Infinite UI 1.560 (≈ $U 10.369), cobrado en 3 cuotas consecutivas sin recargo; tarjeta nueva $0 y adicionales $0. La Internacional SOY es sin costo el primer año y desde la renovación paga el 50% del costo anual (≈ UI 448, unos $U 2.974). Compras en el exterior, cargo obligatorio por compra: Internacional 3% + IVA, Platinum 2,5% + IVA, Black 0% e Infinite 0%; más 3% sobre el tipo de cambio cuando la moneda no es el dólar. Seguro sobre saldo deudor: 3 por mil mensual en Internacional y Platinum, 2 por mil en Black e Infinite (salvo Banca Privada), mínimo USD 0,75 y máximo USD 40 por mes. Salas VIP Lounge Key: USD 35 por cada ingreso adicional a los bonificados por tipo de tarjeta. Estado de cuenta en papel $90 con IVA (opcional); pago en redes de cobranza UI 5 + IVA por transacción, sin costo por canales digitales. Conversión con la UI del 22/9/2026 ($U 6,6468).',
     pros: [
       'Punto con valor claro y estable: 1 punto = $U 1, fácil de calcular',
-      'Acumulación acelerada en segmentos altos (hasta 1 pto/$U 70 en Private Banking)',
+      'Acumulación acelerada en segmentos altos (1 pto/$U 80 en Select y 1 pto/$U 70 en Banca Privada)',
       'Canje flexible: productos, viajes y vales, sin necesidad de juntar el 100% en puntos',
-      'Bonos de bienvenida (1.000 a 5.000 puntos) y bonos por sueldo, pagos automáticos y saldos mínimos',
+      'Bonos de bienvenida (1.000 a 8.000 puntos según segmento), bonos por consumo y bonos por sueldo, pagos automáticos y saldos mínimos',
+      'Costo anual publicado en el Manual de Tarifas (22/09/2026), primer año gratis en la Internacional SOY y 0% de recargo en el exterior en Black e Infinite',
     ],
     cons: [
       'El catálogo cotiza por encima de la tienda oficial de la marca en la mayoría de los modelos, aunque no en todos: en un relevamiento propio del 17/8/2026 sobre 9 televisores Samsung con modelo coincidente, 7 salían más caros en la Tienda Soy Santander (entre +1,1% y +8,7%, mediana +6,3%) y 2 más baratos. Los dos catálogos corren promos rotativas, así que es una foto del día.',
@@ -319,21 +354,25 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       'El saldo entero de puntos se vence si pasás 12 meses corridos sin una compra válida',
       'Descuentos en supermercado/combustible son promocionales y rotativos, no un beneficio fijo garantizado',
       'Débito acumula a tasa muy baja (1 pto cada $U 180-240)',
-      'Costo anual de la tarjeta no publicado: remite al manual de tarifas',
+      'La Internacional y la Platinum pagan 3% y 2,5% + IVA por cada compra en el exterior (más 3% sobre el cambio si no es en dólares): el 0% es sólo de Black e Infinite',
+      'Los segmentos que aceleran la acumulación exigen ingresos desde $U 200.000 o patrimonio desde USD 100.000 (Select) y USD 700.000 (Banca Privada)',
     ],
     bestFor:
       'Clientes que ya operan con Santander (sueldo acreditado) y consumen alto con tarjeta de crédito, buscando canjear puntos por viajes o electrodomésticos con un valor de punto predecible.',
-    note: 'El valor oficial es 1 punto = 1 peso al canjear; el "hasta 1,5" ya no figura en ninguna página oficial vigente y se retiró. Los puntos se vencen en bloque si pasan 12 meses corridos sin una compra válida. Comparación de precios del catálogo: relevamiento propio del 17/8/2026 sobre 9 televisores Samsung con modelo coincidente entre tienda.soysantander.com.uy y stienda.uy (Tienda Oficial Samsung en Uruguay), 7 más caros en Santander y 2 más baratos.',
+    note: 'El valor oficial es 1 punto = 1 peso al canjear; el "hasta 1,5" ya no figura en ninguna página oficial vigente y se retiró. Los puntos se vencen en bloque si pasan 12 meses corridos sin una compra válida (bases vigentes desde el 1/2/2026, confirmado el 22/9/2026). Corrección de la revisión anterior: la ficha decía que el banco no publicaba la anualidad; el Manual de Tarifas versión 22/09/2026 la publica (UI 895 / 1.085 / 1.560). Cuidado al reverificar las bases: el PDF tiene dos capas de texto superpuestas en la tabla de acumulación y bonos; la capa dibujada encima —la visible, y la que coincide con santander.com.uy— es la que publicamos (Select 1 cada $U 80, Banca Privada 1 cada $U 70). Comparación de precios del catálogo: relevamiento propio del 17/8/2026 sobre 9 televisores Samsung con modelo coincidente entre tienda.soysantander.com.uy y stienda.uy (Tienda Oficial Samsung en Uruguay), 7 más caros en Santander y 2 más baratos.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Manual de Tarifas versión 22/09/2026 (costo anual por tipo de tarjeta, exterior, seguro sobre saldo, salas VIP), página y bases de Soy Santander (vigencia 1/2/2026: tasas por segmento, bonos, vencimiento a los 12 meses). El relevamiento de precios del catálogo sigue siendo el del 17/8/2026.',
     scores: {
       acumulacion: 72,
       canje: 70,
       descuentos: 68,
-      costo: 58,
+      costo: 62,
       flexibilidad: 64,
       cobertura: 82,
     },
     rationale:
-      'Programa solido y bien documentado: 1 punto = $U1, acumulacion escalonada por segmento (1 pt/$100 Internacional hasta 1 pt/$70 Private Banking), canje flexible con pago parcial en puntos y bonos de bienvenida. Baja el canje de 80 a 70 tras verificar dos cosas: el catalogo lo operan terceros (RIOLUX y DIEGAL, con deslinde expreso del banco) y en un relevamiento propio del 17/8/2026 cotiza por encima de la tienda oficial de la marca en 7 de 9 televisores comparables (mediana +6,3%), o sea que el punto vale $U1 nominal pero compra menos. Baja flexibilidad por el vencimiento en bloque a los 12 meses sin compras, y costo porque el banco sigue sin publicar la anualidad.',
+      'Programa solido y bien documentado: 1 punto = $U1, acumulacion escalonada por segmento (1 pt/$100 Internacional hasta 1 pt/$70 Banca Privada), canje flexible con pago parcial en puntos y bonos de bienvenida de 1.000 a 8.000. Baja el canje de 80 a 70 tras verificar dos cosas: el catalogo lo operan terceros (RIOLUX y DIEGAL, con deslinde expreso del banco) y en un relevamiento propio del 17/8/2026 cotiza por encima de la tienda oficial de la marca en 7 de 9 televisores comparables (mediana +6,3%), o sea que el punto vale $U1 nominal pero compra menos. Baja flexibilidad por el vencimiento en bloque a los 12 meses sin compras. Sube costo de 58 a 62 el 22/9/2026: el Manual de Tarifas ya publica la anualidad (UI 895 en Internacional, con primer ano gratis y 50% desde la renovacion en la SOY), en linea con Itau y por debajo de Scotiabank, aunque la Internacional paga 3% + IVA en el exterior.',
     verified: true,
   },
   {
@@ -350,9 +389,9 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     redemptionNote:
       '1 Punto BBVA = $1 peso uruguayo. Canje principalmente en BBVA Viajes, la plataforma "Powered by Despegar" (operada por Holidays S.A.): vuelos, hoteles, paquetes y experiencias locales e internacionales; ahí sí se puede pagar una parte con puntos y el resto con tarjeta BBVA. Aparte, cada mes se habilitan "Compras Canjeables" que se pagan con puntos desde la app, sin mínimo de canje pero con letra chica dura: tenés 15 días corridos desde la compra para canjear; solo entran compras en pesos uruguayos, en una sola cuota y en comercios dentro de Uruguay; no se permite canje parcial (necesitás puntos para el 100% del importe); se canjea de a una compra por vez; y quedan excluidas las compras hechas por Mercado Pago, Mercado Libre y PedidosYa, porque no muestran el comercio original.',
     discountNote:
-      'Amplia red de descuentos: más de 300 comercios adheridos todos los días. Supermercados: promo Tienda Inglesa 20% de descuento (tope de devolución $U 2.000 por cédula y por mes, vigente del 16/6/2022 al 15/6/2027). Gastronomía: descuentos en restaurantes y tiendas gourmet todo el año en todo el país. Promos con reintegro de hasta 15% (7,5% en el punto de venta + 7,5% en el estado de cuenta, acreditado en un plazo máximo de 30 días): los topes los fija cada comercio y hoy van desde sin tope hasta $U 6.000 por cierre —por ejemplo Zona Tecno aplica 7,5% + 7,5% sin tope y Prodéco 7,5% en POS sin tope más 7,5% en estado de cuenta con tope de $U 6.000—, no los $U 8.000-10.000 que figuraban antes. Ojo con una campaña que caducó: el canje de puntos en estaciones de servicio, restaurantes y cines era del programa general (no de la Comunidad Plus) y la propia página oficial declara vigencia hasta el 30/06/2026, así que a agosto de 2026 está caído.',
+      'Amplia red de descuentos: más de 300 comercios adheridos todos los días. Supermercados: promo Tienda Inglesa 20% de descuento (tope de devolución $U 2.000 por cédula y por mes, vigente del 16/6/2022 al 15/6/2027). Gastronomía: descuentos en restaurantes y tiendas gourmet todo el año en todo el país. Promos con reintegro de hasta 15% (7,5% en el punto de venta + 7,5% en el estado de cuenta, acreditado en un plazo máximo de 30 días): los topes los fija cada comercio y hoy van desde sin tope hasta $U 6.000 por cierre —por ejemplo Zona Tecno aplica 7,5% + 7,5% sin tope y Prodéco 7,5% en POS sin tope más 7,5% en estado de cuenta con tope de $U 6.000—, no los $U 8.000-10.000 que figuraban antes. Ojo con una campaña que caducó: el canje de puntos en estaciones de servicio, restaurantes y cines era del programa general (no de la Comunidad Plus) y la propia página oficial declara vigencia hasta el 30/06/2026, así que a setiembre de 2026 sigue caída.',
     feeNote:
-      'El costo está publicado en el tarifario oficial (Manual de tarifas y comisiones, actualizado el 20 de julio de 2026): emisión gratuita, primer año sin costo y después renovación anual con IVA, en 3 cuotas sin recargo. Costo estándar: Internacional 743 UI (≈ $U 4.930), Oro 872 UI (≈ $U 5.786), Platinum 969 UI (≈ $U 6.429), Infinite y Black 1.308 UI (≈ $U 8.679). Con pago de sueldos en BBVA baja a la mitad: 372 UI (≈ $U 2.468), 436 UI (≈ $U 2.893), 485 UI (≈ $U 3.218) y 645 UI (≈ $U 4.280). Adicionales sin costo hasta 9. Las tarjetas con co-branding quedan excluidas de la bonificación y pagan el 100% del costo estándar. Conversión con la UI del 17/8/2026 ($U 6,6350).',
+      'El costo está publicado en el tarifario oficial (Manual de tarifas y comisiones, última actualización 3/9/2026; los valores en UI son los mismos de la versión del 20/7/2026): emisión gratuita, primer año sin costo y después renovación anual con IVA, en 3 cuotas sin recargo. Costo estándar: Internacional 743 UI (≈ $U 4.939), Oro 872 UI (≈ $U 5.796), Platinum 969 UI (≈ $U 6.441), Infinite y Black 1.308 UI (≈ $U 8.694). Con pago de sueldos en BBVA baja a la mitad: 372 UI (≈ $U 2.473), 436 UI (≈ $U 2.898), 485 UI (≈ $U 3.224) y 645 UI (≈ $U 4.287). Adicionales sin costo hasta 9. Las tarjetas con co-branding quedan excluidas de la bonificación y pagan el 100% del costo estándar. Conversión con la UI del 22/9/2026 ($U 6,6468).',
     pros: [
       'Alta automática: no hay que inscribirse. Con exclusiones expresas: no acumulan las tarjetas de débito y prepagas, las Mastercard Black adheridas a otro programa de puntos/millas/avios (se elige uno solo), las tarjetas de crédito ex-regionales ni las corporativas, y BBVA puede modificar esa lista avisando con 30 días hábiles',
       'Fuerte red de descuentos diarios (300+ comercios) y promos potentes en supermercado (Tienda Inglesa 20%) y gastronomía',
@@ -369,7 +408,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Clientes BBVA que compran seguido en la red de comercios (Tienda Inglesa, gastronomía) y que valoran canjear puntos por viajes y experiencias vía Despegar.',
-    note: 'Tasas de acumulación (1 pto/$100 Internacional-Oro; 1 pto/$80 Platinum-Infinite-Black), equivalencia 1 punto = $1 UYU, vencimiento a 24 meses y costo anual confirmados en los T&C legales del programa y en el Manual de tarifas y comisiones (actualizado el 20/7/2026). Cuidado al reverificar: las páginas de campaña de BBVA reciclan plantillas y dejan copy viejo; lo que manda son los T&C, el tarifario y la ficha de producto.',
+    note: 'Tasas de acumulación (1 pto/$100 Internacional-Oro; 1 pto/$80 Platinum-Infinite-Black), equivalencia 1 punto = $1 UYU, vencimiento a 24 meses y costo anual confirmados el 22/9/2026 en los T&C legales del programa y en el Manual de tarifas y comisiones (última actualización 3/9/2026, mismos valores en UI que el del 20/7/2026). Cuidado al reverificar: las páginas de campaña de BBVA reciclan plantillas y dejan copy viejo; lo que manda son los T&C, el tarifario y la ficha de producto.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Programa de Fidelidad de Puntos BBVA (T&C: tasas, 1 punto = $1, 24 meses, Compras Canjeables) y Manual de tarifas con última actualización 3/9/2026 (mismos UI: 743 / 872 / 969 / 1.308, la mitad con sueldo, co-branding al 100%).',
     scores: {
       acumulacion: 66,
       canje: 62,
@@ -394,11 +436,11 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       'La Comunidad Plus es una Visa Internacional (el tarifario y la ficha le aplican el costo de Internacional), así que acumula 1 Punto BBVA cada $100 consumidos, la tasa base del programa. Lo distintivo no es la tasa sino la acumulación dual: la misma compra suma Puntos BBVA y Puntos Plus, el programa de fidelidad de GDN Uruguay.',
     pointValueNote: '1 punto = $1 UYU (misma equivalencia del programa Puntos BBVA).',
     redemptionNote:
-      'Lo que distingue a la Comunidad Plus no es un canje especial sino que acumula en dos programas en paralelo: Puntos BBVA (canjeables en BBVA Viajes, operado por Despegar, y en las Compras Canjeables de la app, sin mínimo de canje) y Puntos Plus, el de GDN Uruguay. El canje en cines, restaurantes y estaciones de servicio nunca fue una función de esta tarjeta: era una campaña del programa general Puntos BBVA y la propia página oficial declara vigencia hasta el 30/06/2026, o sea que a agosto de 2026 está caída.',
+      'Lo que distingue a la Comunidad Plus no es un canje especial sino que acumula en dos programas en paralelo: Puntos BBVA (canjeables en BBVA Viajes, operado por Despegar, y en las Compras Canjeables de la app, sin mínimo de canje) y Puntos Plus, el de GDN Uruguay. El canje en cines, restaurantes y estaciones de servicio nunca fue una función de esta tarjeta: era una campaña del programa general Puntos BBVA y la propia página oficial declara vigencia hasta el 30/06/2026, o sea que a setiembre de 2026 sigue caída.',
     discountNote:
       'Es el co-brand de BBVA con GDN Uruguay (Grupo Vierci): sus beneficios propios son de súper y retail, no de combustible ni cines. En Ta-Ta: 20% extra en Ofertata todos los días en productos seleccionados, 10% los miércoles y Hometech sin IVA los viernes (18,03% de descuento). En BAS: 25% los miércoles y 12 cuotas sin recargo todos los días. En Multi Ahorro Hogar: 10% los miércoles e IVA Off los viernes en productos Hometech. En las tres cadenas hay 25% de descuento de bienvenida en la primera compra. Además accede a la red general de BBVA de más de 300 comercios adheridos. Los topes puntuales de cada descuento remiten a las condiciones de cada beneficio.',
     feeNote:
-      'Primer año gratis (emisión y mantenimiento bonificados). A partir del segundo año, el mantenimiento es de 743 UI con IVA incluido, ≈ $U 4.930 con la UI del 17/8/2026 — el mismo valor que la Internacional del tarifario, porque la Comunidad Plus es una Visa Internacional. Adicionales sin costo (de 2 a 9). Atención: por ser tarjeta con co-branding queda excluida de la bonificación del 50% por pago de sueldos y paga el 100% del costo estándar.',
+      'Primer año gratis (emisión y mantenimiento bonificados). A partir del segundo año, el mantenimiento es de 743 UI con IVA incluido, ≈ $U 4.939 con la UI del 22/9/2026 — el mismo valor que la Internacional del tarifario, porque la Comunidad Plus es una Visa Internacional. Adicionales sin costo (de 2 a 9). Atención: por ser tarjeta con co-branding queda excluida de la bonificación del 50% por pago de sueldos y paga el 100% del costo estándar; el Manual de tarifas con última actualización 3/9/2026 mantiene esa exclusión y lista el paquete "VINCULADA (Comunidad Plus)" a $0 mensual.',
     pros: [
       'Acumula en dos programas con la misma compra: Puntos BBVA y Puntos Plus de GDN Uruguay',
       'Descuentos concretos y fuertes en Ta-Ta, BAS y Multi Ahorro Hogar (miércoles de 10%-25%, IVA off los viernes, 12 cuotas sin recargo en BAS)',
@@ -413,7 +455,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Quien hace el súper en Ta-Ta, BAS o Multi Ahorro Hogar y quiere exprimir los miércoles de descuento, el IVA off de los viernes y las cuotas sin recargo, sumando en dos programas de puntos a la vez.',
-    note: 'Co-brand de BBVA con GDN Uruguay (Grupo Vierci) para Ta-Ta, BAS y Multi Ahorro Hogar, lanzado el 5 de julio de 2024. Es Visa Internacional (no Mastercard). Costo anual, acumulación dual Puntos BBVA + Puntos Plus, descuentos por cadena y requisitos de ingreso ($U 10.000 líquidos, 18 a 79 años, sin antecedentes en Clearing ni BCU) confirmados en la ficha oficial del producto el 17/8/2026. Solo quedan sin confirmar los topes puntuales de cada descuento. Corrección respecto de la revisión anterior: esta ficha describía un "canje ampliado en cines, estaciones de servicio y Sodimac" que no es de esta tarjeta y además venció el 30/06/2026.',
+    note: 'Co-brand de BBVA con GDN Uruguay (Grupo Vierci) para Ta-Ta, BAS y Multi Ahorro Hogar, lanzado el 5 de julio de 2024. Es Visa Internacional (no Mastercard). Costo anual, acumulación dual Puntos BBVA + Puntos Plus, descuentos por cadena y requisitos de ingreso ($U 10.000 líquidos, 18 a 79 años, sin antecedentes en Clearing ni BCU) confirmados en la ficha oficial del producto el 17/8/2026. Solo quedan sin confirmar los topes puntuales de cada descuento. Corrección respecto de la revisión anterior: esta ficha describía un "canje ampliado en cines, estaciones de servicio y Sodimac" que no es de esta tarjeta y además venció el 30/06/2026. Ronda del 22/9/2026: el tarifario (3/9/2026) se releyó y no cambió, pero la página de producto de la Comunidad Plus no se encontró ese día (404 en las rutas probadas; sólo figura como filtro en /descuentos), así que los descuentos por cadena siguen fechados el 17/8/2026.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Sólo el costo: Manual de tarifas de BBVA con última actualización 3/9/2026 (Internacional 743 UI, co-branding paga el 100%, paquete Vinculada a $0). La ficha del producto no estaba en línea el 22/9/2026; los descuentos por cadena quedan con la verificación del 17/8/2026.',
     scores: {
       acumulacion: 68,
       canje: 60,
@@ -442,7 +487,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     discountNote:
       'Acceso a la red de beneficios Itaú: descuentos todo el año en farmacias, restaurantes, supermercados, moda y espectáculos. Los porcentajes/días concretos rotan y no se publican en la ficha del producto (detalle no verificado).',
     feeNote:
-      '1er año sin costo; luego UI 864/año, que son ≈ $U 5.733 con la UI del 17/8/2026 ($U 6,6350, valor INE). Costo confirmado en el tarifario oficial vigente desde el 1/8/2026 para la línea Internacional, Visa y Mastercard. Se cobra en 3 cuotas en moneda nacional, IVA incluido. Ingreso mínimo declarado ~$26.000. Primera adicional bonificada al 100%, las siguientes al 50%. Ojo: el tarifario imprime "$5.010" al lado de UI 864, pero es un valor de referencia congelado a la fecha de impresión, no el importe a cobrar.',
+      '1er año sin costo; luego UI 864/año, que son ≈ $U 5.743 con la UI del 22/9/2026 ($U 6,6468, valor INE). Costo confirmado en el tarifario oficial, versión setiembre 2026 (portada "setiembre 10, 2026", mismos valores en UI que la versión del 1/8/2026), para la línea Internacional, Visa y Mastercard. Se cobra en 3 cuotas en moneda nacional, IVA incluido. Ingreso mínimo declarado ~$26.000. Primera adicional bonificada al 100%, las siguientes al 50%. Ojo: el tarifario imprime "$5.010" al lado de UI 864, pero es un valor de referencia congelado a la fecha de impresión, no el importe a cobrar. El mismo tarifario lista las otras filas de la gama: Regional UI 471 en Visa y UI 414 en Mastercard (≈ $U 3.131 / $U 2.752), Oro UI 961 (≈ $U 6.388) en ambos sellos y Visa Infinite UI 1.454 (≈ $U 9.664). Y la alternativa al costo suelto son los paquetes de cuentas, que bonifican la tarjeta: Light UI 91 por mes (incluye la Internacional, exterior 3% + IVA), Full UI 190 por mes (incluye la Platinum, exterior 1% + IVA) y Personal Bank UI 280 por mes (incluye la Infinite, sin recargo en el exterior), IVA incluido.',
     pros: [
       'Millas sin aerolínea fija: canje de pasajes en cualquier compañía y sin bloqueo de fechas',
       'Tasa simple y transparente: 1 milla = US$1 en crédito',
@@ -465,6 +510,9 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     bestFor:
       'Usuario que gasta en pesos/dólares y quiere flexibilidad total para canjear pasajes en cualquier aerolínea, sin atarse a un programa de millas específico.',
     note: 'Programa de fidelidad principal de Itaú Uruguay. \'Partiu\' es un programa de Itaú Brasil, no existe con ese nombre en Uruguay. Sobre el vencimiento de las millas hay dos documentos oficiales en conflicto: un PDF alojado en itau.com.uy dice 24 meses, pero es de 2013 (habla del "Programa Volare" y ni menciona la tasa de débito); las bases vigentes en tiendavolar.com.uy dicen 5 años, que es lo que publicamos.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Tarifario de Itaú versión setiembre 2026 (UI 864 sin cambio, primer año sin costo, adicionales, exterior por paquete, costo mensual de los paquetes Light/Full/Personal Bank) y página del programa Volar.',
     scores: {
       acumulacion: 62,
       canje: 72,
@@ -474,7 +522,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       cobertura: 68,
     },
     rationale:
-      'Acumulacion confirmada de 1 milla por US$1 (~1-1,5% asumiendo valor de mercado de la milla, no publicado por Itau) y canje flexible (pasajes en cualquier aerolinea sin restriccion de fechas + catalogo). Costo razonable (1er ano gratis, luego ~$5.300-5.500). Se puntua conservador en acumulacion/canje porque Itau no publica ratio oficial de valor por milla; canje limitado al titular.',
+      'Acumulacion confirmada de 1 milla por US$1 (~1-1,5% asumiendo valor de mercado de la milla, no publicado por Itau) y canje flexible (pasajes en cualquier aerolinea sin restriccion de fechas + catalogo). Costo razonable (1er ano gratis, luego UI 864 = $U 5.743 con la UI del 22/9/2026). Se puntua conservador en acumulacion/canje porque Itau no publica ratio oficial de valor por milla; canje limitado al titular.',
     verified: true,
   },
   {
@@ -492,23 +540,26 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     discountNote:
       'Red de beneficios Itaú más los beneficios de nivel Platinum, con la letra chica que cambió el 1/2/2026: el acceso a salas VIP no es gratuito, el titular Visa Platinum tiene 10 ingresos a US$ 10 cada uno por año calendario y desde el 11° paga US$ 38 por ingreso (se entra por la app Visa Airport Companion y los ingresos de las adicionales se descuentan de los 10 del titular). Lo que sí es sin costo son dos coberturas distintas y no acumulables entre sí: Universal Assistance hasta US$ 15.000 por persona en todo el mundo salvo Uruguay, para titular, cónyuge e hijos dependientes menores de 21 años, y AXA USA para emergencias médicas en viajes de hasta 60 días consecutivos, que exige haber comprado el pasaje con la Visa Platinum y generar el certificado antes de cada viaje.',
     feeNote:
-      '1er año sin costo; luego UI 1.058/año, ≈ $U 7.020 con la UI del 17/8/2026 ($U 6,6350). Confirmado en el tarifario oficial vigente desde el 1/8/2026; se cobra en 3 cuotas en moneda nacional, IVA incluido. Requiere límite/crédito mínimo declarado $U 125.000.',
+      '1er año sin costo; luego UI 1.058/año, ≈ $U 7.032 con la UI del 22/9/2026 ($U 6,6468). Confirmado en el tarifario oficial versión setiembre 2026 (mismo valor que la versión del 1/8/2026); se cobra en 3 cuotas en moneda nacional, IVA incluido. Con el Paquete Full (UI 190 por mes, IVA incluido) la Platinum va incluida y el recargo en el exterior baja a 1% + IVA. Límite/crédito mínimo: el listado de Volar dice $U 125.000 y la ficha de la propia Visa Volar Platinum dice $U 120.000 (leídos el 22/9/2026); publicamos el del listado y dejamos constancia de la contradicción del banco.',
     pros: [
-      '10 ingresos anuales a salas VIP a US$ 10 cada uno (tarifa preferencial, no acceso libre: desde el 11° son US$ 38)',
+      '10 ingresos anuales a salas VIP a US$ 10 cada uno (tarifa preferencial, no acceso libre: desde el 11° son US$ 38 según el tarifario; la ficha del producto todavía imprime US$ 27)',
       'Universal Assistance sin costo hasta US$ 15.000 por persona para el titular y su familia (todo el mundo salvo Uruguay)',
       'Misma tasa 1 milla = US$1 y flexibilidad de canje de pasajes',
       'Bono de bienvenida de 3.500 millas',
     ],
     cons: [
-      'Costo anual mayor (UI 1.058 ≈ $U 7.020) que la Internacional',
+      'Costo anual mayor (UI 1.058 ≈ $U 7.032) que la Internacional',
       'Recargo por compras en el exterior: 3% + IVA (1% + IVA con el Paquete Full; sin recargo con Personal Bank), más 3% adicional sobre el tipo de cambio de Visa Internacional',
-      'Requiere ingreso/límite alto ($U 125.000)',
+      'Requiere ingreso/límite alto ($U 125.000 según el listado; $U 120.000 según la ficha)',
       'Millas vencen a los 5 años y sin valor de milla publicado',
       'Mismas exclusiones de acumulación (efectivo, intereses, redes de cobranza)',
     ],
     bestFor:
       'Cliente de ingresos medios-altos que viaja y valora la asistencia incluida y la sala VIP a tarifa preferencial, manteniendo la flexibilidad de canje de Volar.',
-    note: 'Límite mínimo declarado $125.000 (Itaú aclara que si tu ingreso es mayor, el crédito otorgado será mayor); mismo mínimo que la Visa LATAM Pass Platinum. Costo desde el año 2: UI 1.058/año ≈ $U 7.020. Valor de la milla sin ratio oficial publicado.',
+    note: 'Límite mínimo declarado $125.000 en el listado de Volar (Itaú aclara que si tu ingreso es mayor, el crédito otorgado será mayor); mismo mínimo que la Visa LATAM Pass Platinum. Costo desde el año 2: UI 1.058/año ≈ $U 7.032. Valor de la milla sin ratio oficial publicado. Contradicción del propio banco, leída el 22/9/2026: la ficha de la Visa Volar Platinum dice "Crédito mínimo: $ 120.000" y "Por encima de los 10 accesos la tarifa es de USD 27", y sigue diciendo que Lounge Key estará vigente "hasta el 30/06/2023"; el tarifario de setiembre 2026 fija USD 38 desde el 11° ingreso. Publicamos el tarifario, que es el documento que rige.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Tarifario versión setiembre 2026 (UI 1.058, salas VIP 10 ingresos a USD 10 y USD 38 desde el 11°, Paquete Full UI 190/mes), listado tarjetaVolar.html ($U 125.000) y ficha tarjetaVolarPlatinum.html ($U 120.000, USD 27: copy viejo).',
     scores: {
       acumulacion: 62,
       canje: 72,
@@ -518,7 +569,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       cobertura: 68,
     },
     rationale:
-      'Misma mecanica de acumulacion y canje que Volar base, con beneficios de nivel Platinum que siguen valiendo (asistencia Universal Assistance sin costo hasta US$15.000). Baja descuentos de 75 a 70 tras verificar el tarifario: desde el 1/2/2026 la Platinum ya no tiene ingresos gratis a salas VIP, son 10 ingresos a US$10 y US$38 a partir del 11, o sea una tarifa preferencial y no un acceso incluido. El mayor costo anual (~$7.020) frente a la version base la deja practicamente empatada con Volar Internacional.',
+      'Misma mecanica de acumulacion y canje que Volar base, con beneficios de nivel Platinum que siguen valiendo (asistencia Universal Assistance sin costo hasta US$15.000). Baja descuentos de 75 a 70 tras verificar el tarifario: desde el 1/2/2026 la Platinum ya no tiene ingresos gratis a salas VIP, son 10 ingresos a US$10 y US$38 a partir del 11, o sea una tarifa preferencial y no un acceso incluido. El mayor costo anual (UI 1.058 = $U 7.032) frente a la version base la deja practicamente empatada con Volar Internacional.',
     verified: true,
   },
   {
@@ -537,7 +588,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     discountNote:
       'Red de beneficios Itaú más el nivel Platinum, con dos precisiones. Salas VIP: no son gratis; desde el 1/2/2026 el titular tiene 10 ingresos a US$ 10 cada uno por año calendario y US$ 38 desde el 11°, y los ingresos de las adicionales se restan de los del titular. Y la Platinum NO tiene check-in preferente: en la tabla oficial de LATAM Pass esa fila lleva cruz para Platinum (solo la tiene el nivel Personal Bank, con acompañante). Lo que sí tiene: 3 tramos anuales de cortesía para postular a upgrade dentro de Sudamérica + 1 fuera de Sudamérica, 25% extra de acumulación en vuelos LATAM, 5% de descuento en Shopping LATAM Pass y asistencia al viajero.',
     feeNote:
-      '1er año sin costo; luego UI 1.058/año, ≈ $U 7.020 con la UI del 17/8/2026, confirmado en el tarifario vigente desde el 1/8/2026. Límite/crédito mínimo declarado $U 125.000. Bono de bienvenida 3.500 millas. Primera adicional bonificada.',
+      '1er año sin costo; luego UI 1.058/año, ≈ $U 7.032 con la UI del 22/9/2026, confirmado en el tarifario versión setiembre 2026 (mismo valor que la versión del 1/8/2026). Límite/crédito mínimo declarado $U 125.000 en el listado de LATAM Pass; la ficha de la propia tarjeta dice $U 120.000 y todavía imprime "USD 27" por ingreso extra a salas VIP, donde el tarifario fija USD 38 (leído el 22/9/2026). Bono de bienvenida 3.500 millas. Primera adicional bonificada.',
     pros: [
       'Mejor tasa LATAM: 1 milla por US$1 (el doble que la Internacional)',
       '3 + 1 tramos anuales de cortesía para postular a upgrade de cabina y 25% extra de acumulación en vuelos LATAM',
@@ -548,14 +599,17 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     cons: [
       'Para mantener los beneficios hay que acumular 15.625 millas en consumos entre el 1 de enero y el 31 de diciembre del año siguiente al de activación: a 1 milla por US$ 1, son US$ 15.625 de gasto anual solo para no perder el nivel que estás pagando',
       'Recargo por compras en el exterior: 3% + IVA (1% + IVA con el Paquete Full; sin recargo con Personal Bank), más 3% adicional sobre el tipo de cambio de Visa Internacional',
-      'Costo anual mayor (UI 1.058 ≈ $U 7.020) y requisito de límite alto ($U 125.000)',
+      'Costo anual mayor (UI 1.058 ≈ $U 7.032) y requisito de límite alto ($U 125.000)',
       'Millas atadas a LATAM/socios; menos flexible que Volar',
       'Vencimiento a 36 meses salvo renovación por actividad',
       'Mismas exclusiones (intereses, adelantos, casinos, tributos, reestructuras, préstamos)',
     ],
     bestFor:
       'Viajero LATAM de gasto alto (US$ 15.000+ al año) que quiere maximizar acumulación 1:1 y usar los tramos de cortesía de upgrade.',
-    note: 'Variante premium de la afinidad LATAM Pass. LATAM Pass eliminó la categoría Elite Gold Plus: sus beneficios rigieron hasta el 31 de marzo de 2026 y desde el 1 de abril esos socios fueron reasignados según los Puntos Calificables acumulados en 2025.',
+    note: 'Variante premium de la afinidad LATAM Pass. LATAM Pass eliminó la categoría Elite Gold Plus: sus beneficios rigieron hasta el 31 de marzo de 2026 y desde el 1 de abril esos socios fueron reasignados según los Puntos Calificables acumulados en 2025. Reverificado el 22/9/2026: tarifario versión setiembre 2026 sin cambio de valores; la ficha tarjetaLatamPlatinum.html contradice al listado y al tarifario (crédito mínimo $120.000 y USD 27 por ingreso extra) y se toma el tarifario.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Tarifario versión setiembre 2026 (UI 1.058; salas VIP 10 ingresos a USD 10, USD 38 desde el 11°), listado tarjetaLatam.html ($U 125.000) y ficha tarjetaLatamPlatinum.html ($U 120.000 y USD 27, copy viejo).',
     scores: {
       acumulacion: 62,
       canje: 62,
@@ -581,9 +635,9 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     redemptionNote:
       'Igual que Volar: pasajes cualquier aerolínea + catálogo, vía itauvolar.com.uy/SuperApp. Canje solo titular.',
     discountNote:
-      'Red de beneficios Itaú más el nivel Mastercard Black, hoy publicado en el tarifario vigente desde el 1/8/2026: desde el 1/2/2026 el titular tiene 4 ingresos sin costo a salas VIP más 10 ingresos a US$ 10 cada uno por año calendario, y desde el 15° paga US$ 38 por ingreso; los ingresos de las adicionales se descuentan de los del titular. Además, en la línea Mastercard de Itaú la asistencia en viaje sin costo de Universal Assistance aplica exclusivamente a las tarjetas Black, titular y adicional.',
+      'Red de beneficios Itaú más el nivel Mastercard Black, hoy publicado en el tarifario versión setiembre 2026: desde el 1/2/2026 el titular tiene 4 ingresos sin costo a salas VIP más 10 ingresos a US$ 10 cada uno por año calendario, y desde el 15° paga US$ 38 por ingreso; los ingresos de las adicionales se descuentan de los del titular. Además, en la línea Mastercard de Itaú la asistencia en viaje sin costo de Universal Assistance aplica exclusivamente a las tarjetas Black, titular y adicional.',
     feeNote:
-      'UI 1.454/año, ≈ $U 9.647 con la UI del 17/8/2026 ($U 6,6350), confirmado en el tarifario oficial vigente desde el 1/8/2026. El primer año es sin costo también en la Black: el tarifario lo declara para todo tipo de tarjeta, aunque la ficha del producto no lo repita. Se cobra en 3 cuotas en moneda nacional, IVA incluido. Bono de bienvenida de 3.500 millas Itaú con la primera compra. Límite/crédito mínimo: a consultar.',
+      'UI 1.454/año, ≈ $U 9.664 con la UI del 22/9/2026 ($U 6,6468), confirmado en el tarifario oficial versión setiembre 2026 (mismo valor que la versión del 1/8/2026; la Visa Infinite cuesta lo mismo, UI 1.454). El primer año es sin costo también en la Black: el tarifario lo declara para todo tipo de tarjeta, aunque la ficha del producto no lo repita. Se cobra en 3 cuotas en moneda nacional, IVA incluido; las adicionales de la Black pagan lo mismo que las de la Oro. Bono de bienvenida de 3.500 millas Itaú con la primera compra. Límite/crédito mínimo: a consultar.',
     pros: [
       'Nivel más alto de la gama Volar (Mastercard Black)',
       '4 ingresos anuales sin costo a salas VIP (el único nivel Itaú que conserva accesos gratis) más 10 a US$ 10',
@@ -592,14 +646,17 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       'Bono de bienvenida de 3.500 millas',
     ],
     cons: [
-      'Costo anual más alto de la gama (UI 1.454 ≈ $U 9.647)',
+      'Costo anual más alto de la gama (UI 1.454 ≈ $U 9.664)',
       'Recargo por compras en el exterior: 3% + IVA (1% + IVA con el Paquete Full; sin recargo con Personal Bank)',
       'Millas vencen a los 5 años; sin valor de milla oficial',
       'Mismas exclusiones de acumulación',
     ],
     bestFor:
       'Cliente de alto gasto/patrimonio que quiere el tope de la gama Volar en red Mastercard con beneficios premium.',
-    note: 'Variante tope Mastercard del programa Volar.',
+    note: 'Variante tope Mastercard del programa Volar. Reverificado el 22/9/2026 contra el tarifario versión setiembre 2026: mismo costo (UI 1.454) y mismas reglas de salas VIP que la versión del 1/8/2026.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Tarifario versión setiembre 2026 (Mastercard Black UI 1.454, primer año sin costo, salas VIP 4 + 10 a USD 10 y USD 38 desde el 15°).',
     scores: {
       acumulacion: 60,
       canje: 70,
@@ -609,7 +666,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       cobertura: 60,
     },
     rationale:
-      'Beneficios premium de nivel Black ahora confirmados en el tarifario del 1/8/2026: es el unico nivel Itau que conserva ingresos gratis a salas VIP (4 al ano) y el unico de la linea Mastercard con Universal Assistance sin costo. El costo anual mas alto de la gama (UI 1.454 = $U 9.647, no los $9.000 que decia la conversion vieja) sigue castigando el overall, y la tasa diferenciada para el tramo Black no se detalla en la ficha (asumida igual a Volar), lo que reduce cobertura.',
+      'Beneficios premium de nivel Black ahora confirmados en el tarifario (version setiembre 2026, mismos valores que el del 1/8/2026): es el unico nivel Itau que conserva ingresos gratis a salas VIP (4 al ano) y el unico de la linea Mastercard con Universal Assistance sin costo. El costo anual mas alto de la gama (UI 1.454 = $U 9.664, no los $9.000 que decia la conversion vieja) sigue castigando el overall, y la tasa diferenciada para el tramo Black no se detalla en la ficha (asumida igual a Volar), lo que reduce cobertura.',
     verified: true,
   },
   {
@@ -629,7 +686,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     discountNote:
       'Beneficios de viaje más que descuentos de góndola, pero con topes: acceso a Sala VIP del Aeropuerto de Carrasco con máximo de 3 ingresos anuales por titular y por adicional en las Gold (no acumulables; desde el cuarto se paga un precio preferencial), y acceso vía Priority Pass en las Platinum con 10 ingresos anuales para el titular y 5 para el adicional. Ambas suman 12 accesos anuales de 72 horas al parking del Aeropuerto de Carrasco. Seguro de accidentes en viaje de hasta US$ 75.000 para socios Gold según la ficha de Scotia Puntos American Express (la ficha de la Amex Gold de Membership Rewards declara US$ 300.000: el monto depende de la línea, no hay una cifra única), asistencia en viaje 24/7 hasta US$ 12.000, adicionales sin cargo y Express Cash en sucursales y cajeros Banred. Compras en el exterior con recargo 0% (Platinum) o 1,5% (Oro) + IVA según el tarifario vigente.',
     feeNote:
-      'Tarifario oficial vigente (Cartilla F.2540, 20/03/2026): emisión sin costo, primer año sin costo y adicionales sin costo. Cargo anual obligatorio con IVA, en Unidades Indexadas: American Express Blue Box Internacional UI 1.000 (≈ $U 6.635), Gold UI 1.250 (≈ $U 8.294) y Platinum UI 1.600 (≈ $U 10.616); American Express Centurión Green UI 1.000, Internacional/Gold UI 1.250 y Platinum UI 2.100 (≈ $U 13.934). La referencia de mercado de "~US$ 120/año" no corresponde a ninguna categoría y además estaba mal denominada: el cargo está en UI, no en dólares. Conversión con la UI del 17/8/2026 ($U 6,6350).',
+      'Tarifario oficial vigente (Cartilla F.2540, 20/03/2026): emisión sin costo, primer año sin costo y adicionales sin costo. Cargo anual obligatorio con IVA, en Unidades Indexadas: American Express Blue Box Internacional UI 1.000 (≈ $U 6.647), Gold UI 1.250 (≈ $U 8.309) y Platinum UI 1.600 (≈ $U 10.635); American Express Centurión Green UI 1.000, Internacional/Gold UI 1.250 y Platinum UI 2.100 (≈ $U 13.958); reimpresión de la Centurión Platinum UI 640 con IVA. La referencia de mercado de "~US$ 120/año" no corresponde a ninguna categoría y además estaba mal denominada: el cargo está en UI, no en dólares. Conversión con la UI del 22/9/2026 ($U 6,6468); cartilla releída el 22/9/2026 sin cambios.',
     pros: [
       'Orientada a viajero: Sala VIP Carrasco, seguros y asistencia de viaje robustos, más 12 accesos anuales al parking del Aeropuerto de Carrasco.',
       'Compras en el exterior con recargo escalonado según el tarifario vigente: 0% en American Express Platinum, 1,5% en American Express Oro y 3% en las Internacionales, siempre + IVA. La ficha comercial dice "sin recargo", pero el tarifario del 20/03/2026 manda.',
@@ -642,11 +699,14 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       'Las salas VIP tienen tope: 3 ingresos anuales en Gold (después, precio preferencial) y 10 en Platinum.',
       'Adelantos en efectivo no generan puntos.',
       'Valor del punto Membership Rewards en viajes/experiencias no publicado por el emisor.',
-      'Costo anual en Unidades Indexadas (indexado a la inflación en pesos, no al dólar): Blue Box Internacional UI 1.000 (≈ $U 6.635), Gold UI 1.250 (≈ $U 8.294), Platinum UI 1.600 (≈ $U 10.616); Centurión Platinum llega a UI 2.100 (≈ $U 13.934).',
+      'Costo anual en Unidades Indexadas (indexado a la inflación en pesos, no al dólar): Blue Box Internacional UI 1.000 (≈ $U 6.647), Gold UI 1.250 (≈ $U 8.309), Platinum UI 1.600 (≈ $U 10.635); Centurión Platinum llega a UI 2.100 (≈ $U 13.958).',
     ],
     bestFor:
       'Viajeros frecuentes clientes de Scotiabank que valoran Sala VIP y seguros de viaje, y que usan otra tarjeta Visa/MC para el día a día local. Para el exterior sin recargo, hoy hay que ir a la gama Platinum.',
-    note: 'Corrección de la revisión anterior: "Green" no pertenece a esta línea sino a la Amex Internacional (The Green Card con Membership Rewards), que acumula en Membership Rewards o ConnectMiles y paga 3% + IVA en el exterior. Y Membership Rewards no es un programa "histórico integrado a Scotia Puntos": es uno de los cuatro programas activos que Scotiabank Uruguay lista hoy, con 1 punto por cada US$ 1 y puntos que no vencen.',
+    note: 'Corrección de la revisión anterior: "Green" no pertenece a esta línea sino a la Amex Internacional (The Green Card con Membership Rewards), que acumula en Membership Rewards o ConnectMiles y paga 3% + IVA en el exterior. Y Membership Rewards no es un programa "histórico integrado a Scotia Puntos": es uno de los cuatro programas activos que Scotiabank Uruguay lista hoy, con 1 punto por cada US$ 1 y puntos que no vencen. Reverificado el 22/9/2026: la cartilla F.2540 sigue siendo la del 20/03/2026.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Cartilla F.2540 vigente desde el 20/03/2026 (tabla American Express sin cambio, recargos en el exterior por nivel, reimpresión) y página de programas de premios de Scotiabank.',
     scores: {
       acumulacion: 62,
       canje: 58,
@@ -656,7 +716,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       cobertura: 60,
     },
     rationale:
-      'Fuerte en beneficios de viaje (Sala VIP Carrasco, seguros, asistencia 24/7, parking de Carrasco) y sube flexibilidad al confirmarse que los puntos Membership Rewards no vencen, contra los 36 meses de Scotia Puntos. Bajan descuentos y costo por dos hallazgos con fuente oficial: el "sin recargo en el exterior" dejo de ser general el 1/10/2025 (hoy 3% en Internacional y 1,5% en Oro, 0% solo en Platinum) y el cargo anual real del tarifario va de UI 1.000 a UI 2.100 ($U 6.635 a $U 13.934), muy por encima de la referencia de ~US$120 que se usaba antes. El valor del punto Membership Rewards en viajes sigue sin publicarse.',
+      'Fuerte en beneficios de viaje (Sala VIP Carrasco, seguros, asistencia 24/7, parking de Carrasco) y sube flexibilidad al confirmarse que los puntos Membership Rewards no vencen, contra los 36 meses de Scotia Puntos. Bajan descuentos y costo por dos hallazgos con fuente oficial: el "sin recargo en el exterior" dejo de ser general el 1/10/2025 (hoy 3% en Internacional y 1,5% en Oro, 0% solo en Platinum) y el cargo anual real del tarifario va de UI 1.000 a UI 2.100 ($U 6.647 a $U 13.958 con la UI del 22/9/2026), muy por encima de la referencia de ~US$120 que se usaba antes. El valor del punto Membership Rewards en viajes sigue sin publicarse.',
     verified: true,
   },
   {
@@ -675,7 +735,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     discountNote:
       'Beneficios escalonados por nivel: Clásica, descuentos desde 15% en más de 300 comercios y recargo de 3% + IVA en el exterior; Gold, descuentos desde 25% y recargo de 1,5% + IVA; Platinum, descuentos desde 25%, 0% de recargo en compras en el exterior, 5 ingresos anuales a salas VIP por Priority Pass y acceso al status PreferMember Silver por US$ 60 anuales. Bonos de lanzamiento por consumo: 2.000 millas gastando US$ 1.500 en 4 meses (Clásica), 3.500 por US$ 2.000 (Gold) y 7.000 por US$ 3.000 (Platinum).',
     feeNote:
-      'Primer año bonificado y adicionales sin costo. El cargo anual sigue la tabla American Express del tarifario de Scotiabank (Cartilla F.2540, 20/03/2026), en Unidades Indexadas: UI 1.000 (≈ $U 6.635), UI 1.250 (≈ $U 8.294) o UI 2.100 (≈ $U 13.934) según categoría. Ingreso mínimo declarado: $U 30.000 (Clásica), $U 50.000 (Gold) y $U 100.000 (Platinum).',
+      'Primer año bonificado y adicionales sin costo. El cargo anual sigue la tabla American Express del tarifario de Scotiabank (Cartilla F.2540, 20/03/2026, releída el 22/9/2026 sin cambios), en Unidades Indexadas: UI 1.000 (≈ $U 6.647), UI 1.250 (≈ $U 8.309) o UI 2.100 (≈ $U 13.958) según categoría, con la UI del 22/9/2026. Ingreso mínimo declarado: $U 30.000 (Clásica), $U 50.000 (Gold) y $U 100.000 (Platinum).',
     pros: [
       'Tasa clara y de las mejores del mercado local: 1 milla por cada US$ 1, en los tres niveles',
       'Única alternativa local de millas de aerolínea fuera de LATAM Pass',
@@ -691,7 +751,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Quien vuela seguido por Copa o Star Alliance y quiere concentrar millas ahí en lugar de LATAM, y —en la Platinum— comprar en el exterior sin recargo.',
-    note: 'Programa ausente del ranking hasta esta revisión, pese a estar plenamente vigente: Scotiabank Uruguay lo lista entre sus cuatro programas de premios activos. Tasa, niveles, recargos, bonos e ingresos mínimos confirmados en el sitio del emisor el 17/8/2026.',
+    note: 'Programa ausente del ranking hasta la revisión del 17/8/2026, pese a estar plenamente vigente: Scotiabank Uruguay lo lista entre sus cuatro programas de premios activos. Tasa, niveles, recargos, bonos e ingresos mínimos confirmados en el sitio del emisor el 17/8/2026 y reconfirmados el 22/9/2026 (1 milla por USD 1 en los tres niveles, recargos 3% / 1,5% / 0%, bonos 2.000 / 3.500 / 7.000).',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Página de programas de premios de Scotiabank (ConnectMiles: tasa, niveles, bonos) y cartilla F.2540 vigente desde el 20/03/2026 (cargo anual de la tabla American Express).',
     scores: {
       acumulacion: 62,
       canje: 55,
@@ -701,7 +764,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       cobertura: 58,
     },
     rationale:
-      'Entra al ranking en esta revision. Acumulacion confirmada y competitiva (1 milla por US$1, el doble que la LATAM Pass Internacional de Itau) y beneficios reales en la gama alta: 0% de recargo en el exterior y salas VIP en la Platinum. Puntua bajo en canje y flexibilidad porque las millas solo sirven dentro de Copa/Star Alliance y el emisor no publica cuanto vale la milla, y bajo en costo porque el cargo anual va de UI 1.000 a UI 2.100 ($U 6.635 a $U 13.934) y el 0% en el exterior exige el nivel mas caro.',
+      'Entra al ranking en la revision del 17/8/2026. Acumulacion confirmada y competitiva (1 milla por US$1, el doble que la LATAM Pass Internacional de Itau) y beneficios reales en la gama alta: 0% de recargo en el exterior y salas VIP en la Platinum. Puntua bajo en canje y flexibilidad porque las millas solo sirven dentro de Copa/Star Alliance y el emisor no publica cuanto vale la milla, y bajo en costo porque el cargo anual va de UI 1.000 a UI 2.100 ($U 6.647 a $U 13.958) y el 0% en el exterior exige el nivel mas caro.',
     verified: true,
   },
   {
@@ -720,12 +783,12 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     discountNote:
       'Red de beneficios Itaú (farmacias, restaurantes, supermercados, moda, espectáculos) más lo que efectivamente trae este nivel de LATAM Pass, que es menos de lo que suele creerse: 1 punto calificable cada 2 millas sin tope, 50% extra de puntos calificables sobre las millas acreditadas cada mes, prioridad de postulación a upgrade (no tramos de cortesía), renovación de la vigencia de las millas acumulando 5.000 al año y 5% de descuento en Shopping LATAM Pass. En la tabla oficial de LATAM Pass Uruguay, la columna Internacional lleva cruz en check-in preferente, tramos de cortesía de upgrade dentro y fuera de Sudamérica, selección anticipada de asiento, equipaje prioritario, equipaje adicional de 23 kg, acceso a Lounge Visa y 25% extra de acumulación.',
     feeNote:
-      '1er año sin costo; luego UI 864/año, ≈ $U 5.733 con la UI del 17/8/2026, confirmado en el tarifario vigente desde el 1/8/2026. Ingreso mínimo declarado ~$26.000. Bono de bienvenida 2.500 millas. Primera adicional bonificada.',
+      '1er año sin costo; luego UI 864/año, ≈ $U 5.743 con la UI del 22/9/2026, confirmado en el tarifario versión setiembre 2026 (mismo valor que la versión del 1/8/2026). Ingreso mínimo declarado ~$26.000. Bono de bienvenida 2.500 millas. Primera adicional bonificada.',
     pros: [
       'Millas se integran directo a la cuenta LATAM Pass del socio',
       'Bono de bienvenida de 2.500 millas con la primera compra',
       '5% de descuento en Shopping LATAM Pass y 1 punto calificable cada 2 millas sin tope, más 50% extra de puntos calificables sobre las millas acreditadas cada mes',
-      'Costo anual accesible (UI 864 ≈ $U 5.733) y primera adicional bonificada',
+      'Costo anual accesible (UI 864 ≈ $U 5.743) y primera adicional bonificada',
     ],
     cons: [
       'Tasa baja: solo 1 milla cada US$2 (mitad que la Volar crédito)',
@@ -737,7 +800,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Viajero frecuente de LATAM Airlines que prefiere concentrar millas en el programa LATAM Pass y usar sus asociados.',
-    note: 'Tarjeta de afinidad LATAM; alternativa al programa Volar (no se acumula en ambos con la misma tarjeta de crédito).',
+    note: 'Tarjeta de afinidad LATAM; alternativa al programa Volar (no se acumula en ambos con la misma tarjeta de crédito). Reverificado el 22/9/2026 contra el tarifario versión setiembre 2026 (UI 864 sin cambio).',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Tarifario versión setiembre 2026 (Visa Internacional UI 864, primer año sin costo, exterior por paquete) y listado tarjetaLatam.html.',
     scores: {
       acumulacion: 45,
       canje: 62,
@@ -747,7 +813,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       cobertura: 70,
     },
     rationale:
-      'Acumulacion confirmada pero baja (1 milla cada US$2, ~0,5-0,75% de retorno estimado), la mas floja entre las tarjetas de millas Itau. Baja descuentos de 68 a 58 tras leer la tabla oficial de LATAM Pass columna por columna: este nivel NO tiene check-in preferente, tramos de cortesia de upgrade, seleccion de asiento, equipaje prioritario ni Lounge Visa, beneficios que la ficha anterior le atribuia. Le quedan la red Itau, el 5% de Shopping LATAM Pass y los puntos calificables. Costo moderado (1er ano gratis, luego ~$5.733) y bono de 2.500 millas.',
+      'Acumulacion confirmada pero baja (1 milla cada US$2, ~0,5-0,75% de retorno estimado), la mas floja entre las tarjetas de millas Itau. Baja descuentos de 68 a 58 tras leer la tabla oficial de LATAM Pass columna por columna: este nivel NO tiene check-in preferente, tramos de cortesia de upgrade, seleccion de asiento, equipaje prioritario ni Lounge Visa, beneficios que la ficha anterior le atribuia. Le quedan la red Itau, el 5% de Shopping LATAM Pass y los puntos calificables. Costo moderado (1er ano gratis, luego UI 864 = $U 5.743) y bono de 2.500 millas.',
     verified: true,
   },
   {
@@ -758,41 +824,44 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     networks: ['mastercard', 'visa'],
     pointsProgramName: 'Metros (programa de puntos OCA) + amplia red de descuentos',
     earnRateNote:
-      'OCA Blue: 1 Metro cada $U 104 de consumo (cartilla oficial vigente desde el 01/10/2025). Cruzado con el valor de canje real de $U 0,20 por Metro, el retorno de OCA Blue es ≈ 0,19% del gasto, el más bajo del set. Para la tarjeta de crédito OCA la tasa por peso sigue sin publicarse (la cartilla de crédito vigente desde el 04/08/2026 no menciona el Metraje) y varía con campañas x2/x3. No acumulan Metros los pagos, los retiros en efectivo, los costos de tarjetas, los préstamos amortizables ni las refinanciaciones; con OCA VISA, además, solo acumulan los consumos locales, no las compras en el exterior.',
+      'OCA Blue: 1 Metro cada $U 120 de consumo según la cartilla vigente desde el 15/09/2026 (la anterior, vigente desde el 01/10/2025, decía 1 Metro cada $U 104). Cruzado con el valor de canje en vales de combustible de $U 0,20 por Metro, el retorno de OCA Blue es ≈ 0,17% del gasto (era ≈ 0,19%), el más bajo del set. Para la tarjeta de crédito OCA la tasa por peso sigue sin publicarse (la cartilla de crédito Mastercard vigente desde el 01/09/2026 no menciona el Metraje) y varía con campañas x2/x3. No acumulan Metros los pagos, los retiros en efectivo, los costos de tarjetas, los préstamos amortizables ni las refinanciaciones; con OCA VISA, además, solo acumulan los consumos locales, no las compras en el exterior.',
     pointValueNote:
-      'El valor de canje real es $U 0,20 por Metro. Sale de la propia tabla de vales de combustible del Metraje: $U 500 por 2.500 Metros, $U 1.500 por 7.500 Metros y $U 1.000 de gasoil por 5.000 Metros — las tres relaciones dan exactamente $U 0,20. Cuidado con el "Valor del metro" del tarifario ($U 52 / US$ 1,30 desde el 04/08/2026; era $U 37 / US$ 1,5 en el tarifario de 2019, que es de donde salía la cifra que publicábamos antes): esa cifra es una referencia tarifaria, una tasa de sustitución de Metros faltantes por dinero, NO lo que el Metro rinde al canjear. Combinarla con la tasa de acumulación daría un retorno del 50%, que es absurdo.',
+      'El valor de canje en vales de combustible es $U 0,20 por Metro. Sale de la propia tabla del Metraje: $U 500 por 2.500 Metros, $U 1.500 por 7.500 Metros y $U 1.000 de gasoil por 5.000 Metros — las tres relaciones dan exactamente $U 0,20. Pero hay un canje que rinde más del doble, publicado en las preguntas frecuentes del Metraje (leídas el 22/9/2026): 2.000 Metros cancelan el costo trimestral de la tarjeta Mastercard o Visa, que es UI 130 (≈ $U 864 con la UI del 22/9/2026), o sea ≈ $U 0,43 por Metro; por ahora sólo presencial en sucursales OCA o Metraje o por el 1730, y sólo si el costo ya fue facturado. Cuidado con el "Valor del metro" que imprimía el tarifario anterior ($U 52 / US$ 1,30 en la versión del 04/08/2026; era $U 37 / US$ 1,5 en el tarifario de 2019, que es de donde salía la cifra que publicábamos antes): esa cifra es una referencia tarifaria, una tasa de sustitución de Metros faltantes por dinero, NO lo que el Metro rinde al canjear. Combinarla con la tasa de acumulación daría un retorno del 50%, que es absurdo.',
     redemptionNote:
-      'Metros canjeables por vales de combustible Nafta Súper 95, Premium 97 o Gasoil en estaciones DISA de todo el país, garrafas y recargas Riogas, recarga de saldo de celular, entradas Movie en modalidad dinero + Metros (2D $U 260 + 360 Metros) y viajes vía Hiperviajes. El canje exige estar al día con todos los productos de OCA. Corrección importante: OCA Blue también acumula y canjea Metros (la cartilla le fija tasa propia, 1 Metro cada $U 104); no es una tarjeta de "solo descuentos".',
+      'Metros canjeables por vales de combustible Nafta Súper 95, Premium 97 o Gasoil en estaciones DISA de todo el país, garrafas y recargas Riogas, recarga de saldo de celular, entradas Movie en modalidad dinero + Metros (2D $U 260 + 360 Metros), viajes vía Hiperviajes y —el mejor canje publicado— el costo trimestral de la propia tarjeta Mastercard o Visa por 2.000 Metros. El canje exige estar al día con todos los productos de OCA. Corrección importante: OCA Blue también acumula y canjea Metros (la cartilla le fija tasa propia, 1 Metro cada $U 120 desde el 15/09/2026); no es una tarjeta de "solo descuentos".',
     discountNote:
       'Amplísima red: 20% los viernes con crédito + 12 cuotas todos los días, con tope de $U 5.500 por cuenta y por mes en comercios adheridos, según la página de beneficios de OCA (vigencia declarada del 1/6/2026 al 31/5/2027). Tres condiciones que cambian el cálculo: el +5% extra pagando con OCA App, Apple Pay o Google Pay tiene tope propio de $U 500 por mes, compartido entre todas las promociones activas de OCA App; las 12 cuotas son exclusivas de Mastercard; y la promo no aplica a compras hechas vía Mercado Pago ni es acumulable con otros descuentos. Además, 10% diario en comercios seleccionados y descuentos de 10%-30% en gastronomía, moda, electrónica y educación.',
     feeNote:
-      'Tarifario oficial vigente desde el 04/08/2026: servicio de la tarjeta OCA UI 130 por trimestre con IVA (UI 520 al año, ≈ $U 3.450 con la UI del 17/8/2026), adicional cónyuge sin costo, Visa Internacional UI 130 por trimestre y Visa Oro UI 162,50 por trimestre (≈ $U 4.313 al año). Comisión por uso de la tarjeta en el exterior 2,44% con IVA. Financiación de saldos: 63% TEA en pesos y 12% en dólares (+ IVA); mora 72%. OCA Blue: $0 en tarjeta titular, adicional, mantenimiento de cuenta, comisión por bajo promedio y reposición hasta la 2ª, pero cobra 0,35% + IVA sobre el monto de la factura por pagos en redes de cobranza, y tiene topes diarios de $U 20.000 / US$ 500 en compras locales e internacionales y $U 20.000 / US$ 520 en retiros.',
+      'Cartilla de la tarjeta Mastercard vigente desde el 01/09/2026 y documento "Tasas vigentes" del 15/09/2026: servicio de la tarjeta OCA UI 130 por trimestre con IVA incluido (UI 520 al año, ≈ $U 3.456 con la UI del 22/9/2026), adicional cónyuge UI 0, adicional hijo/otros UI 65 por trimestre con IVA incluido, reposición UI 130, renovación UI 0; Visa Internacional UI 130 por trimestre y Visa Oro UI 162,50 por trimestre (≈ $U 4.320 al año), ambas con IVA incluido, según "Tasas vigentes". Utilización de la tarjeta en el exterior 2,44% con IVA; retiro en el exterior U$S 2,459 + IVA; seguro sobre saldos 0,4% con IVA (máximo 50 UI). Financiación de saldos: los dos documentos de OCA no dicen lo mismo — la cartilla del 01/09/2026 fija 64% TEA + IVA en pesos (12% en dólares), adelanto en efectivo 80% + IVA y mora 75% + IVA (13% en dólares); el documento "Tasas vigentes" del 15/09/2026 dice 63% (12% en dólares), 80% y mora 72% (13%). Publicamos los dos hasta que OCA los unifique. Multas: por pago total dentro de las 48 horas siguientes al vencimiento UI 50 + IVA, por mora UI 50 + IVA; envío de estado de cuenta UI 10 + IVA por mes (opcional); reclamo de consumos sin fundamento 10% + IVA del cupón, mínimo $100 / U$S 4 y máximo $600 / U$S 15; retiros en cajeros y sucursales OCA $0. OCA Blue: $0 en tarjeta titular, adicional, mantenimiento de cuenta, comisión por bajo promedio y reposición hasta la 2ª, pero cobra 0,35% + IVA sobre el monto de la factura por pagos en redes de cobranza, y tiene topes diarios de $U 20.000 / US$ 500 en compras locales e internacionales y $U 20.000 / US$ 520 en retiros.',
     pros: [
       'La red de descuentos en comercio físico más amplia del mercado local',
       '20% los viernes + 12 cuotas es de las promos más agresivas de Uruguay',
       'Los Metros no vencen y son transferibles entre las tarjetas OCA, OCA Blue y OCA VISA del mismo titular',
-      'Canje concreto y útil: vales de combustible en estaciones DISA, garrafas Riogas, recarga de celular, cine y viajes',
+      'Canje concreto y útil: vales de combustible en estaciones DISA, garrafas Riogas, recarga de celular, cine y viajes, y el costo trimestral de la propia tarjeta (2.000 Metros = UI 130, ≈ $U 0,43 por Metro)',
       'Extra 5% con billetera digital; emisor no bancario muy extendido',
     ],
     cons: [
-      'El Metro rinde poquísimo: con la única tasa publicada (OCA Blue, 1 Metro cada $U 104) y el canje real de $U 0,20 por Metro, el retorno es ≈ 0,19% del gasto, un quinto del ~1% de los programas bancarios',
+      'El Metro rinde poquísimo: con la única tasa publicada (OCA Blue, 1 Metro cada $U 120 desde el 15/09/2026) y el canje en combustible de $U 0,20 por Metro, el retorno es ≈ 0,17% del gasto, un sexto del ~1% de los programas bancarios; ni pagando la tarjeta con Metros ($U 0,43) llega al 0,4%',
       'La tasa de acumulación de la tarjeta de crédito OCA no se publica y varía por campañas x2/x3',
       'Sin cashback líquido: el beneficio es descuento condicionado a días/comercios y con topes ($U 5.500 al mes, y $U 500 el extra de la app)',
       'El +5% de la app, las 12 cuotas (solo Mastercard) y la exclusión de compras vía Mercado Pago achican la promo estrella',
     ],
     bestFor:
       'Quien compra mucho en comercio físico local y organiza sus compras para los días de mayor descuento (viernes 20%). Por los Metros, no vale la pena: el valor está en el descuento.',
-    note: 'Los Metros no tienen vencimiento. Solo caducan de forma anticipada por mora superior a 60 días corridos, fallecimiento del titular, tarjeta OCA/OCA VISA inactiva durante 24 meses o devolución de la tarjeta (en OCA Blue, la única causal es el fallecimiento). Esto desmiente la versión de prensa de que "vencen a los 24 meses": los 24 meses son de inactividad de la tarjeta, no de vida del punto. Titularidad: OCA S.A. es propiedad de Itaú Unibanco desde 2007; OCA Blue no la emite OCA S.A. sino OCA Dinero Electrónico S.A., empresa independiente, ambas reguladas por el BCU.',
+    note: 'Los Metros no tienen vencimiento. Solo caducan de forma anticipada por mora superior a 60 días corridos, fallecimiento del titular, tarjeta OCA/OCA VISA inactiva durante 24 meses o devolución de la tarjeta (en OCA Blue, la única causal es el fallecimiento). Esto desmiente la versión de prensa de que "vencen a los 24 meses": los 24 meses son de inactividad de la tarjeta, no de vida del punto. Titularidad: OCA S.A. es propiedad de Itaú Unibanco desde 2007; OCA Blue no la emite OCA S.A. sino OCA Dinero Electrónico S.A., empresa independiente, ambas reguladas por el BCU. Reverificado el 22/9/2026: la cartilla OCA Blue en línea superpone dos versiones (la portada renderizada dice 15/09/2026 y "$120"; la página 3 conserva "01/10/2025" y la capa vieja "$104"); publicamos la cifra visible, que es la vigente. La promo del 20% los viernes (tope $U 5.500, +5% app con tope $U 500, 12 cuotas sólo Mastercard, sin Mercado Pago, 1/6/2026–31/5/2027) se reconfirmó ese día en oca.uy.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Cartilla Mastercard vigente desde el 01/09/2026 (costo trimestral, adicionales, exterior, TEA 64% / mora 75%), "Tasas vigentes" del 15/09/2026 (Visa, TEA 63% / mora 72%), cartilla OCA Blue vigente desde el 15/09/2026 (1 Metro cada $U 120), preguntas frecuentes del Metraje (2.000 Metros por el costo trimestral) y página de la promo de los viernes.',
     scores: {
       acumulacion: 30,
-      canje: 58,
+      canje: 60,
       descuentos: 86,
       costo: 62,
       flexibilidad: 62,
       cobertura: 55,
     },
     rationale:
-      'La correccion mas grande de esta revision. El ranking valuaba el Metro en $U37 tomando el "Valor del metro" del tarifario, que es una referencia tarifaria y no el valor de canje: las tres relaciones de vales de combustible que publica el propio Metraje ($U500 por 2.500 Metros y equivalentes) dan $U 0,20 por Metro. Con la unica tasa publicada (OCA Blue, 1 Metro cada $U104) el retorno real es ~0,19%, asi que acumulacion baja de 45 a 30. Sube flexibilidad de 52 a 62 porque los Metros no vencen y son transferibles entre las tarjetas del titular, mejor que casi todo el set. La red de descuentos sigue siendo su verdadero producto.',
+      'La correccion mas grande de la revision del 17/8/2026 sigue vigente. El ranking valuaba el Metro en $U37 tomando el "Valor del metro" del tarifario, que es una referencia tarifaria y no el valor de canje: las tres relaciones de vales de combustible que publica el propio Metraje ($U500 por 2.500 Metros y equivalentes) dan $U 0,20 por Metro. Con la unica tasa publicada (OCA Blue, 1 Metro cada $U120 desde el 15/09/2026, antes $U104) el retorno real es ~0,17%, asi que acumulacion se queda en 30. Sube canje de 58 a 60 el 22/9/2026 porque el Metraje publica un canje mejor que los vales: 2.000 Metros pagan el costo trimestral de la tarjeta (UI 130), o sea $U 0,43 por Metro. Flexibilidad en 62 porque los Metros no vencen y son transferibles entre las tarjetas del titular, mejor que casi todo el set. La red de descuentos sigue siendo su verdadero producto.',
     verified: true,
   },
   {
@@ -809,7 +878,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     redemptionNote:
       'El canje se rige por las bases del Programa Puntos de Tienda Inglesa vigentes desde el 1/1/2026: mínimo 150 Puntos, canjeables total o parcialmente por cualquier producto excepto cigarros y servicios, en los locales del grupo. No es un catálogo cerrado ni una bolsa Scotia Puntos: se descuenta contra la compra del súper.',
     discountNote:
-      'Beneficio central: acumulación acelerada (puntos dobles) dentro de Tienda Inglesa. Recorte del año: desde el 01/01/2026 las compras fuera de Tienda Inglesa con Club Card ya no acumulan puntos, así que el beneficio quedó encerrado en la cadena.',
+      'Beneficio central: acumulación acelerada (puntos dobles) dentro de Tienda Inglesa. Recorte del año: desde el 01/01/2026 las compras fuera de Tienda Inglesa con Club Card ya no acumulan puntos, así que el beneficio quedó encerrado en la cadena. Promo vigente en la página de Scotiabank al 22/9/2026: "Save the Week", 10% de ahorro en toda la tienda de lunes a viernes con Club Card Visa Infinite, Visa Platinum, Amex Gold y Débito Premium, no acumulable con otras promociones.',
     feeNote:
       'Scotiabank publica que la tarjeta es gratis el primer año. El costo a partir del segundo año no está publicado en la web (ni en la ficha de Club Card ni en la de Club Card American Express): hay que pedir el tarifario.',
     pros: [
@@ -826,7 +895,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Clientes de Scotiabank que hacen buena parte de sus compras de supermercado en Tienda Inglesa y quieren maximizar la acumulación en esa cadena.',
-    note: 'Con documento uruguayo los puntos vencen a los 6 meses, renovables con cada acumulación; con documento extranjero, 24 meses sin renovación. Desde el 01/01/2026 no se acumulan puntos por compras fuera de Tienda Inglesa. Gratis el primer año; costo desde el 2º año no publicado.',
+    note: 'Con documento uruguayo los puntos vencen a los 6 meses, renovables con cada acumulación; con documento extranjero, 24 meses sin renovación (la página de Scotiabank dice sólo "¿Los puntos vencen? Sí, cada 6 meses"; la distinción por documento está en las bases de Tienda Inglesa). Desde el 01/01/2026 no se acumulan puntos por compras fuera de Tienda Inglesa. Gratis el primer año; costo desde el 2º año no publicado (reverificado el 22/9/2026, sigue sin publicarse).',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Página Club Card de Scotiabank (15 puntos cada $900, dobles, 1 punto = $1, sin acumulación fuera de Tienda Inglesa desde el 01/01/26, gratis el primer año, Save the Week) y bases del Programa Puntos de Tienda Inglesa. El costo del segundo año sigue sin publicarse.',
     scores: {
       acumulacion: 78,
       canje: 70,
@@ -855,7 +927,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     discountNote:
       "Red de descuentos muy amplia: p. ej. 25% McDonald's, 50% Grido, 50% cines, 25% Colonia Express; hasta 35% hospedajes, hasta 50% gastronomía, hasta 60% entretenimiento; 15% fijo en confiterías, jugueterías y pizzerías del país.",
     feeNote:
-      'Los costos están publicados en los términos y condiciones oficiales (vigencia agosto 2026) y el "primer año gratis" NO es general: depende de la cartera que te asignen. Cargo anual: cartera 259 $ 1.308 + IVA ya desde el primer año; cartera 52 $ 3.468 + IVA; carteras 299 y 312 $ 5.148 + IVA; cartera 313 $ 0 el primer año y $ 1.308 + IVA después; cartera 201 $ 0 el primer año y $ 2.970 + IVA después. Adicional: entre $ 594 y $ 1.485 + IVA al año. Envío de estado de cuenta 10 UI + IVA por mes; denuncia y reposición 90 UI + IVA. La comisión del 3% por compra internacional existe: lo que Pronto! ofrece es bonificarla, y solo en su lista de "servicios favoritos" (compras, reservas o suscripciones adheridas), no en todo consumo en el exterior.',
+      'Los costos están publicados en los términos y condiciones oficiales (vigencia setiembre 2026, mismo cuadro de cargos que la versión de agosto) y el "primer año gratis" NO es general: depende de la cartera que te asignen. Cargo anual: cartera 259 $ 1.308 + IVA ya desde el primer año; cartera 52 $ 3.468 + IVA; carteras 299 y 312 $ 5.148 + IVA; cartera 313 $ 0 el primer año y $ 1.308 + IVA después; cartera 201 $ 0 el primer año y $ 2.970 + IVA después. Adicional: entre $ 594 y $ 1.485 + IVA al año. Envío de estado de cuenta 10 UI + IVA por mes; denuncia y reposición 90 UI + IVA. Financiación, ahora publicada en los mismos términos: TEA máxima de financiación 63,56% + IVA, retiros de efectivo 63,56% + IVA y mora 73,82% + IVA; multa por impago el menor entre el 50% del impago y 50 UI + IVA, y gestión de cobranza 10 UI + IVA por aviso con tope de 50 UI + IVA por año. La comisión del 3% por compra internacional existe: lo que Pronto! ofrece es bonificarla, y solo en su lista de "servicios favoritos" (compras, reservas o suscripciones adheridas), no en todo consumo en el exterior.',
     pros: [
       'Red de descuentos muy fuerte y variada (comida rápida, cines, viajes)',
       'Se solicita solo con cédula, sin recibo de sueldo ni cuenta bancaria',
@@ -867,11 +939,14 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       'No se publica ni la equivalencia del punto en pesos ni el vencimiento de los puntos',
       'El "primer año gratis" depende de la cartera: hay carteras que pagan $ 1.308 + IVA desde el año uno y otras $ 5.148 + IVA',
       'La bonificación del 3% internacional aplica solo a los servicios adheridos, no a toda compra en el exterior',
-      'Requisitos laxos suelen ir de la mano de tasas de financiación altas (verificar recargos)',
+      'Financiación cara: TEA máxima 63,56% + IVA y mora 73,82% + IVA (términos con vigencia setiembre 2026), en la zona de OCA y lejos del 27,30% + IVA de ANDA',
     ],
     bestFor:
       'Personas sin cuenta bancaria o sin historial crediticio (jóvenes, primer plástico) que quieren descuentos amplios de consumo cotidiano.',
-    note: 'Reverificado el 17/8/2026: tasa (1 punto cada $30), bono de bienvenida, catálogo de canje y tarifario salen del sitio del emisor y de sus términos y condiciones con vigencia agosto 2026, no de comparadores comerciales. Existe además un nivel superior, Visa Pronto+ Premium, que acumula igual y suma el 3% de ahorro en servicios favoritos y beneficios en el exterior, pero no publica costo ni requisitos.',
+    note: 'Reverificado el 22/9/2026: el cuadro de cargos por cartera es idéntico al de agosto, los términos ahora dicen "Vigencia: setiembre 2026" y agregan la TEA máxima. La tasa (1 punto cada $30) y los 1.000 puntos de bienvenida no están en los términos sino en la página de la Visa Pronto+ Premium del propio emisor. Nada sale de comparadores comerciales. Existe además ese nivel superior, Visa Pronto+ Premium, que acumula igual y suma el 3% de ahorro en servicios favoritos y beneficios en el exterior, pero no publica costo ni requisitos.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Términos y condiciones de tarjeta de Pronto! con vigencia setiembre 2026 (cargos por cartera sin cambio, TEA máxima 63,56%, mora 73,82%) y página de la Visa Pronto+ Premium (1 punto cada $30, 1.000 puntos de bienvenida).',
     scores: {
       acumulacion: 58,
       canje: 58,
@@ -915,7 +990,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Clientes habituales de Disco/Devoto/Géant que quieren acumular puntos incluso pagando en efectivo/débito y canjear por productos del super.',
-    note: 'Tasas 2 puntos cada $420 (dentro de las cadenas) y 1 punto cada $650 (fuera, con Hipermás Santander) publicadas en la página oficial del producto en santander.com.uy, no en prensa. Aclaración de nombre: "SumaClub" fue el viejo programa de puntos de Santander (los "billetes"), discontinuado y reemplazado por Soy Santander en 2021; la página oficial de la Hipermás no lo menciona y llama al beneficio simplemente "Programa de fidelidad". El nombre correcto hoy es Programa Más del lado del supermercado y tarjeta Hipermás Santander del lado bancario; SumaClub queda solo como alias histórico. El cambio de control del Grupo Disco (Grupo Calleja, enero 2024) no alteró marcas ni esquema de puntos. Sigue sin publicarse el valor monetario del punto: por eso la ficha queda sin verificar.',
+    note: 'Tasas 2 puntos cada $420 (dentro de las cadenas) y 1 punto cada $650 (fuera, con Hipermás Santander) publicadas en la página oficial del producto en santander.com.uy, no en prensa. Aclaración de nombre: "SumaClub" fue el viejo programa de puntos de Santander (los "billetes"), discontinuado y reemplazado por Soy Santander en 2021; la página oficial de la Hipermás no lo menciona y llama al beneficio simplemente "Programa de fidelidad". El nombre correcto hoy es Programa Más del lado del supermercado y tarjeta Hipermás Santander del lado bancario; SumaClub queda solo como alias histórico. El cambio de control del Grupo Disco (Grupo Calleja, enero 2024) no alteró marcas ni esquema de puntos. Sigue sin publicarse el valor monetario del punto: por eso la ficha queda sin verificar. Reverificado el 22/9/2026 en santander.com.uy/todas-las-tarjetas/hipermas: mismas tasas, primer año gratis, adicionales sin costo y "ver costo en manual de tarifas".',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Ficha de la tarjeta Hipermás en santander.com.uy (2 puntos cada $420 dentro, 1 cada $650 fuera, primer año gratis, adicionales sin costo). El valor del punto y el costo del segundo año siguen sin publicarse.',
     scores: {
       acumulacion: 45,
       canje: 50,
@@ -958,7 +1036,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Usuario que prioriza descuentos diarios inmediatos y una mecánica de puntos simple, sin depender de un banco.',
-    note: 'Acumulación $25 = 1 Credipunto confirmada en el sitio oficial. Sigue sin publicarse el valor monetario del Credipunto y el costo de la tarjeta: la sección Documentación del sitio no expone PDFs y la respuesta del acordeón "¿Cuál es su valor?" se carga por JavaScript desde el back-office y no se sirve. El ~101,9% TEA en pesos que dan los comparadores de plaza es fuente secundaria sin respaldo del emisor, así que no se publica. Reverificado el 17/8/2026.',
+    note: 'Acumulación $25 = 1 Credipunto confirmada en el sitio oficial. Sigue sin publicarse el valor monetario del Credipunto y el costo de la tarjeta: la sección Documentación del sitio no expone PDFs y la respuesta del acordeón "¿Cuál es su valor?" se carga por JavaScript desde el back-office y no se sirve. El ~101,9% TEA en pesos que dan los comparadores de plaza es fuente secundaria sin respaldo del emisor, así que no se publica. Reverificado el 17/8/2026 y de nuevo el 22/9/2026: "Cada $25 en compras con tu tarjeta Mastercard generás un Credipunto", adicionales sin costo, y la sección Documentación sigue sin PDFs.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Página creditel.com.uy/tarjeta ($25 = 1 Credipunto, tarjeta Mastercard, adicionales sin costo). Valor del punto y costo anual siguen sin publicarse.',
     scores: {
       acumulacion: 45,
       canje: 50,
@@ -986,7 +1067,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     discountNote:
       'Descuentos diarios por rubro, con bases vigentes desde el 31 de enero de 2026 y válidas hasta diciembre de 2027: lunes librerías, martes peluquerías, miércoles gastronomía, jueves transporte de pasajeros y viernes cine, teatros y red ticket (excluida la categoría Deportes), en todos los casos 25% con Passcard Clásica y Like y 30% con Passcard Black y Experta, con tope de reintegro de $U 400 por cierre. Sábados heladerías 50% con tope $U 400 y domingos telepeaje 50% con tope $U 200. Cuatro versiones: Clásica, Like (18–29, estudiantes), Black y Experta (60+).',
     feeNote:
-      'Primer año sin costo. Después, la cartilla oficial de Pass Card S.A. fija un "Costo anual Grupo de Afinidad" de $U 78,58 + IVA con periodicidad MENSUAL y carácter obligatorio (≈ $U 95,9 por mes con IVA, ≈ $U 1.150 al año). Tarjetas adicionales sin costo. Otros cargos obligatorios: retiro en efectivo $U 24 + IVA por retiro, pago de servicios en redes de cobranza $U 24 + IVA por transacción y seguro sobre saldo de 6 por mil mensual; el envío del estado de cuenta ($U 41 con IVA) es opcional. Financiación: 113% TEA y mora 128% TEA.',
+      'Primer año sin costo. Después, la cartilla oficial de Pass Card S.A. (FC 02 Revisión 30, la versión servida el 22/9/2026; no imprime fecha de vigencia) fija un "Costo anual Grupo de Afinidad" de $U 133,75 + IVA con periodicidad MENSUAL y carácter obligatorio (≈ $U 163,2 por mes con IVA, ≈ $U 1.958 al año): un 70% más que los $U 78,58 + IVA de la cartilla que leímos el 17/8/2026. Tarjetas adicionales sin costo. Otros cargos obligatorios: seguro antifraudes $U 39 + IVA por mes, seguro sobre saldo de 2,5 por mil mensual, retiro en efectivo $U 24 + IVA por retiro y pago de servicios en redes de cobranza $U 24 + IVA por transacción; con atraso de más de 30 días, cargo por gestión de 10 UI + IVA; desconocimiento de cargo $U 18,03 + IVA. El envío del estado de cuenta (10 UI) es opcional. Financiación: 107% TEA y mora 125% TEA (la cartilla anterior decía 113% y 128%).',
     pros: [
       'Descuentos diarios muy marcados (25%-30% de lunes a viernes, 50% sábados y domingos)',
       'Tasa y valor del punto publicados en las bases: 1 punto cada $100 y 1 punto = $1',
@@ -997,23 +1078,26 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     cons: [
       'Los puntos vencen a los 12 meses corridos desde que se acreditan',
       'El canje topea al 50% del valor del producto: la otra mitad se paga sí o sí con la propia Passcard',
-      'Financiación de 113% TEA (mora 128%), la más cara del segmento: contra 27,40% + IVA de ANDA y 63% de OCA',
-      'Desde el segundo año el mantenimiento es de $U 78,58 + IVA MENSUAL (≈ $U 1.150 al año)',
+      'Financiación de 107% TEA (mora 125%), la más cara del segmento: contra 27,30% + IVA de ANDA y 63-64% de OCA',
+      'Desde el segundo año el mantenimiento es de $U 133,75 + IVA MENSUAL (≈ $U 1.958 al año con IVA), más un seguro antifraudes obligatorio de $U 39 + IVA por mes',
       'Los puntos no son transferibles y los adicionales no pueden canjear',
     ],
     bestFor:
       'Quien quiere descuentos diarios agresivos por rubro (gastronomía, cines, heladerías, telepeaje) sin depender de un banco, y opera por Redpagos.',
-    note: 'Tope de canje: hasta el 50% del valor del producto; la otra mitad se abona con la propia tarjeta Passcard. Las bases exigen además haber generado "puntos suficientes o mínimos" en la cuenta TiendaPass, tener la tarjeta activa y estar al día. El programa es gratuito (no paga suscripción) y la adhesión es automática al aceptar la tarjeta. Corrección de la revisión anterior: la ficha decía 80% en un campo y 50% en otro (el correcto es 50%) y atribuía a Passcard un vínculo con los supermercados Líder / Grupo Ta-Ta que no aparece en ninguna fuente del emisor —ni en las bases, ni en la home, ni en la cartilla—, así que se retiró.',
+    note: 'Tope de canje: hasta el 50% del valor del producto; la otra mitad se abona con la propia tarjeta Passcard. Las bases exigen además haber generado "puntos suficientes o mínimos" en la cuenta TiendaPass, tener la tarjeta activa y estar al día. El programa es gratuito (no paga suscripción) y la adhesión es automática al aceptar la tarjeta. Corrección de la revisión anterior: la ficha decía 80% en un campo y 50% en otro (el correcto es 50%) y atribuía a Passcard un vínculo con los supermercados Líder / Grupo Ta-Ta que no aparece en ninguna fuente del emisor —ni en las bases, ni en la home, ni en la cartilla—, así que se retiró. Reverificado el 22/9/2026: la cartilla servida ese día (FC 02 Revisión 30) cambió el costo mensual, las tasas y el seguro sobre saldo respecto de la que leímos el 17/8/2026, pero no trae fecha de vigencia impresa, así que no podemos fechar el cambio; sólo consta que es la versión en línea.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Cartilla de tarjeta de crédito de Pass Card S.A. (FC 02 Rev. 30, sin fecha de vigencia impresa): $U 133,75 + IVA mensual desde el 2º año, 107% TEA, mora 125%, seguro sobre saldo 2,5 por mil, seguro antifraudes $U 39 + IVA. Las bases de la Tienda Passcard (1 punto cada $100, 1 punto = $1) siguen fechadas el 17/8/2026.',
     scores: {
       acumulacion: 55,
       canje: 48,
       descuentos: 80,
-      costo: 52,
+      costo: 48,
       flexibilidad: 38,
       cobertura: 48,
     },
     rationale:
-      'Descuentos diarios fuertes y ahora bien documentados (25%-30% de lunes a viernes segun version, 50% sabados y domingos, todos con tope de $U400 por cierre). Sube acumulacion porque el contra de "tasa y valor no transparentes" era falso: las bases publican 1 punto cada $100 y 1 punto = $1. Bajan costo (68 a 52) y flexibilidad (45 a 38) al aparecer la cartilla oficial: el mantenimiento es mensual desde el segundo ano, la financiacion es de 113% TEA y los puntos vencen a los 12 meses, no son transferibles y los adicionales no pueden canjear.',
+      'Descuentos diarios fuertes y ahora bien documentados (25%-30% de lunes a viernes segun version, 50% sabados y domingos, todos con tope de $U400 por cierre). Sube acumulacion porque el contra de "tasa y valor no transparentes" era falso: las bases publican 1 punto cada $100 y 1 punto = $1. Bajan costo (68 a 52) y flexibilidad (45 a 38) al aparecer la cartilla oficial: el mantenimiento es mensual desde el segundo ano y los puntos vencen a los 12 meses, no son transferibles y los adicionales no pueden canjear. Costo baja otra vez, de 52 a 48, el 22/9/2026: la cartilla en linea subio el mantenimiento mensual de $U 78,58 a $U 133,75 + IVA (+70%) y agrego un seguro antifraudes obligatorio de $U 39 + IVA por mes; la baja de la TEA de 113% a 107% no compensa.',
     verified: true,
   },
   {
@@ -1024,7 +1108,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     networks: ['visa', 'otro'],
     pointsProgramName: 'Dale (programa de fidelización con acumulación de puntos)',
     earnRateNote:
-      'La tasa está publicada servicio por servicio: con la tarjeta de crédito, cada $U 40 gastados = 1 punto; en préstamos, cada $U 125 solicitados = 1 punto; en retiros de efectivo, cada $U 125 retirados = 1 punto; adelanto de pasividad, 4 puntos por adelanto; turismo, farmacia, clínica médica y odontológica y otros comercios internos, cada $U 40 = 1 punto; garantías de alquiler, 1.000 puntos por año de contrato al momento de la firma o renovación. Los puntos se acreditan diariamente, con un plazo máximo de 72 horas hábiles.',
+      'La tasa está publicada servicio por servicio: con la tarjeta de crédito, cada $U 40 gastados = 1 punto; en préstamos, cada $U 125 solicitados = 1 punto; en retiros de efectivo, cada $U 125 retirados = 1 punto; adelanto de pasividad, 4 puntos por adelanto; turismo, farmacia, clínica médica y odontológica y otros comercios internos, cada $U 40 = 1 punto; garantías de alquiler, 1.000 puntos por año de contrato al momento de la firma o renovación, sólo para contratos desde el 01/01/2026. Los puntos se acreditan diariamente, con un plazo máximo de 72 horas hábiles.',
     pointValueNote:
       'El valor monetario del punto Dale no se publica: ese es el dato que impide calcular un retorno real. Lo que sí está publicado: los puntos vencen a los 24 meses desde su generación y el canje se hace en andatienda.com.uy.',
     redemptionNote:
@@ -1032,10 +1116,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     discountNote:
       "'Días de descuentos' por rubro para socios; convenios en educación, deporte, salud, hogar y recreación. Con la prepaga DEANDA se accede a los descuentos de IVA por ley: −2 puntos en comercios en general y −9 puntos en gastronomía hasta el 30/9/2026, porque desde el 1/10/2026 esa reducción baja a 5 puntos porcentuales (4,1% de descuento para contribuyentes de IVA Mínimo, según DGI). También devolución de IMESI en estaciones de la franja fronteriza. Planes de 2 a 6 o hasta 12 cuotas sin recargo en comercios adheridos. La Tarjeta ANDA VISA es internacional, sin costo anual, sin comisión por compra internacional ni por retiro de efectivo en el exterior, con tipo de cambio preferencial definido por ANDA y aceptación en toda la red VISA (más de 45.000 comercios en el país); la tarjeta ANDA vieja sigue funcionando hasta el recambio.",
     feeNote:
-      'La tarjeta no tiene costo anual (ni la ANDA ni la ANDA VISA) y los adicionales son sin cargo. Financiación de compras a T.E.A. 27,40% + IVA, la más baja del segmento no bancario por amplio margen. Lo que sí se paga es la cuota social: Socio Integral $U 831, Socio suscriptor 50 UI (≈ $U 332 con la UI del 17/8/2026) en las categorías turismo y financiero, y servicio fúnebre $U 132 con IVA. Retiros de préstamos en Abitab, Redpagos, cajeros Banred y sucursales ANDA. Se puede acceder a la tarjeta estando en el Clearing de Informes (según antecedentes, eventualmente con garantía) y el pago se hace por retención de haberes.',
+      'La tarjeta no tiene costo anual (ni la ANDA ni la ANDA VISA) y los adicionales son sin cargo. Financiación de compras a T.E.A. 27,30% + IVA según la ficha oficial leída el 22/9/2026 (la revisión del 17/8/2026 publicaba 27,40%), la más baja del segmento no bancario por amplio margen. Lo que sí se paga es la cuota social: Socio Integral $U 831, Socio suscriptor 50 UI (≈ $U 332 con la UI del 22/9/2026) en las categorías turismo y financiero, y servicio fúnebre $U 132 con IVA. Retiros de préstamos en Abitab, Redpagos, cajeros Banred y sucursales ANDA. Se puede acceder a la tarjeta estando en el Clearing de Informes (según antecedentes, eventualmente con garantía) y el pago se hace por retención de haberes.',
     pros: [
       'Tarjeta sin costo anual (ANDA y ANDA VISA) y adicionales sin cargo',
-      'La financiación más barata del segmento no bancario: 27,40% + IVA, contra 63% de OCA y 113% de Passcard',
+      'La financiación más barata del segmento no bancario: 27,30% + IVA, contra 63-64% de OCA, 63,56% de Pronto! y 107% de Passcard',
       'Tasa de acumulación publicada servicio por servicio, y la más densa en puntos por peso del set ($U 40 = 1 punto)',
       'La ANDA VISA es internacional y no cobra comisión por compra ni por retiro en el exterior',
       'Modelo cooperativo con convenios sociales (educación, salud, deporte) además de la tarjeta',
@@ -1049,7 +1133,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Socios de ANDA que aprovechan convenios sociales, cuotas sin recargo y una tarjeta internacional sin costo anual ni comisión en el exterior.',
-    note: 'Reverificado el 17/8/2026 en el sitio oficial de ANDA: tasa del programa Dale servicio por servicio, vencimiento de los puntos a 24 meses, tarjeta sin costo anual, T.E.A. 27,40% + IVA y existencia de la ANDA VISA internacional. Lo único que sigue sin publicarse es el valor monetario del punto Dale. Corrección de la revisión anterior: decía que la tasa no estaba publicada, que la TEA era 27,50% y "relativamente alta" (es la más baja del segmento) y que la aceptación era menor que Visa/Mastercard, cosa que la ANDA VISA desmiente.',
+    note: 'Reverificado el 22/9/2026 en el sitio oficial de ANDA: tasa del programa Dale servicio por servicio (novedad: los 1.000 puntos por garantía de alquiler rigen para contratos desde el 01/01/2026), vencimiento de los puntos a 24 meses, tarjeta sin costo anual, T.E.A. 27,30% + IVA (la ficha del 17/8/2026 decía 27,40%) y existencia de la ANDA VISA internacional. Lo único que sigue sin publicarse es el valor monetario del punto Dale, y la cuota social no se reverificó ese día. Corrección de la revisión de agosto: decía que la tasa no estaba publicada, que la TEA era 27,50% y "relativamente alta" (es la más baja del segmento) y que la aceptación era menor que Visa/Mastercard, cosa que la ANDA VISA desmiente.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Fichas de la Tarjeta ANDA y ANDA VISA (T.E.A. 27,30% + IVA, sin costo anual, adicionales sin cargo, sin comisión en el exterior) y página del programa Dale (tasas por servicio, garantías desde el 01/01/2026, 24 meses). El valor del punto y la cuota social siguen sin reverificarse.',
     scores: {
       acumulacion: 45,
       canje: 45,
@@ -1059,7 +1146,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       cobertura: 62,
     },
     rationale:
-      'Tres correcciones al alza con fuente oficial. Costo sube de 45 a 62: la tarjeta no tiene costo anual, los adicionales son sin cargo y la TEA de 27,40% + IVA es de lejos la mas barata del segmento no bancario (OCA 63%, Passcard 113%). Cobertura sube de 45 a 62 porque la ANDA VISA es internacional, con red VISA y sin comision por compra ni retiro en el exterior. Acumulacion sube de 35 a 45 porque la tasa del programa Dale si esta publicada servicio por servicio ($U40 = 1 punto con la tarjeta), y no sube mas porque ANDA sigue sin publicar cuanto vale el punto: sin eso no se puede calcular un retorno real. El lastre sigue siendo la cuota social, no la tarjeta.',
+      'Tres correcciones al alza con fuente oficial. Costo sube de 45 a 62: la tarjeta no tiene costo anual, los adicionales son sin cargo y la TEA de 27,30% + IVA (ficha del 22/9/2026) es de lejos la mas barata del segmento no bancario (OCA 63-64%, Passcard 107%). Cobertura sube de 45 a 62 porque la ANDA VISA es internacional, con red VISA y sin comision por compra ni retiro en el exterior. Acumulacion sube de 35 a 45 porque la tasa del programa Dale si esta publicada servicio por servicio ($U40 = 1 punto con la tarjeta), y no sube mas porque ANDA sigue sin publicar cuanto vale el punto: sin eso no se puede calcular un retorno real. El lastre sigue siendo la cuota social, no la tarjeta.',
     verified: false,
   },
   {
@@ -1095,7 +1182,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Usuario que valora asistencias y financiación en cuotas sin recargo por encima de acumular puntos, y que ya opera con alguno de sus emisores.',
-    note: 'Corrección de la revisión anterior: Cabal en Uruguay no se emite solo vía cooperativas de ahorro y crédito. Su lista oficial de emisores son nueve entidades, en su mayoría administradoras de crédito: Bandes Uruguay (banco), Credicompras, Crédito de la Casa, Crédito Valor (Grupo BBVA), Credi Yi, Edenred, Fastcred, Fucerep y Nativa. El origen de la marca es cooperativo, la emisión local es mixta.',
+    note: 'Corrección de la revisión anterior: Cabal en Uruguay no se emite solo vía cooperativas de ahorro y crédito. Su lista oficial de emisores son nueve entidades, en su mayoría administradoras de crédito: Bandes Uruguay (banco), Credicompras, Crédito de la Casa, Crédito Valor (Grupo BBVA), Credi Yi, Edenred, Fastcred, Fucerep y Nativa. El origen de la marca es cooperativo, la emisión local es mixta. Ronda del 22/9/2026: la promo de Macromercado (10% los miércoles, hasta el 31/12/26, tope por cuenta según emisor) se reconfirmó en cabal.com.uy; la lista de emisores NO pudo reverificarse ese día porque cabal.com.uy/emisores la muestra sólo como imagen, sin nombres en texto, así que queda con la verificación del 17/8/2026.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Sólo la promo de Macromercado (página oficial, vigencia hasta el 31/12/26). La lista de nueve emisores y el resto de la ficha quedan con la verificación del 17/8/2026; el tarifario sigue sin publicarse.',
     scores: {
       acumulacion: 20,
       canje: 25,
@@ -1123,7 +1213,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     redemptionNote:
       'No hay catálogo de canje por puntos claramente publicado; el beneficio es vía descuentos/promos y cuotas sin recargo en comercios adheridos.',
     discountNote:
-      'Italmundo sí publica descuentos concretos y fuertes, escalonados por nivel: Platino 30% en supermercados, 25% en combustible y 20% en débitos automáticos el primer mes, más hasta 6 cuotas sin interés en Mercado Libre; Oro 20% / 20% / 20% y hasta 6 cuotas en Mercado Libre; Plata 15% / 15% / 20% y hasta 3 cuotas. Los tres niveles permiten hasta 4 adicionales sin costo extra. Cobertura: la tarjeta Líder es NACIONAL únicamente (todo el país, donde veas el sello Líder o la marca Italmundo); la cobertura internacional, incluidas las compras online, la da la variante Mastercard.',
+      'Italmundo sí publica descuentos concretos y fuertes, escalonados por nivel: Platino 30% en supermercados, 25% en combustible y 20% en débitos automáticos el primer mes, más hasta 6 cuotas sin interés en Mercado Libre; Oro 20% / 20% / 20% y hasta 6 cuotas en Mercado Libre; Plata 15% / 15% / 20% y hasta 3 cuotas. Los tres niveles permiten hasta 4 adicionales sin costo extra. Cobertura: Platino y Oro son "Tarjeta Internacional" y Plata es "Tarjeta Nacional de sello Líder" (todo el país, donde veas el sello Líder o la marca Italmundo); la cobertura internacional, incluidas las compras online, la da la variante Mastercard.',
     feeNote:
       'Italmundo no publica tarifario, así que el costo anual sigue sin confirmarse. Lo que sí publica: las compras en el exterior tienen un cargo administrativo de 3% más IVA sobre el importe; la tarjeta Plata exige un "pago de activación" por única vez que funciona como garantía para emitirla (el monto no se publica); la tarjeta tiene vigencia de 3 años con renovación automática; y se permiten hasta 4 adicionales sin cargo, sin plazo declarado.',
     pros: [
@@ -1140,7 +1230,10 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     ],
     bestFor:
       'Personas que buscan un primer plástico de acceso flexible y descuentos altos en supermercado y combustible, priorizando aprobación por sobre un programa de puntos.',
-    note: 'Corrección de la revisión anterior: se retiraron ACAC como coemisor y First Data como red. La única fuente que respaldaba ACAC es un artículo de prensa de 2011 que ni siquiera la nombra (decía que el segundo emisor "sería un banco"), y First Data se fusionó con Fiserv en 2019 y no aparece en el sitio de Italmundo. Descuentos, niveles, cobertura, cargo del 3% en el exterior, pago de activación y vigencia de 3 años salen del sitio oficial de Italmundo (17/8/2026); el costo anual sigue sin publicarse.',
+    note: 'Corrección de la revisión anterior: se retiraron ACAC como coemisor y First Data como red. La única fuente que respaldaba ACAC es un artículo de prensa de 2011 que ni siquiera la nombra (decía que el segundo emisor "sería un banco"), y First Data se fusionó con Fiserv en 2019 y no aparece en el sitio de Italmundo. Descuentos, niveles, cobertura, cargo del 3% en el exterior, pago de activación y vigencia de 3 años salen del sitio oficial de Italmundo (17/8/2026, reconfirmados el 22/9/2026: 30/25/20, 20/20/20 y 15/15/20, cuotas en Mercado Libre 6/6/3, Plata con pago de activación, 4 adicionales gratis); el costo anual sigue sin publicarse.',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Página italmundo.com.uy/tarjetas (descuentos por nivel, cuotas en Mercado Libre, tipo de tarjeta por nivel, adicionales). Sin tarifario: el costo anual sigue sin publicarse.',
     scores: {
       acumulacion: 18,
       canje: 25,
@@ -1155,7 +1248,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
   },
   {
     id: 'btg-uruguay-tdc',
-    name: 'Tarjetas de Crédito BTG Pactual, ex HSBC (Visa Classic/Internacional, Oro e Infinite; Mastercard Platinum/Excellence)',
+    name: 'Tarjetas de Crédito BTG Pactual, ex HSBC (Visa Classic, Oro e Infinite; Mastercard Platinum)',
     issuer: 'Banco BTG Pactual Uruguay S.A. (ex HSBC Bank (Uruguay) S.A.)',
     issuerType: 'banco',
     networks: ['visa', 'mastercard'],
@@ -1167,25 +1260,28 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     discountNote:
       'Beneficios centrados en descuentos, no en puntos: reducción de 9 puntos del IVA en gastronomía al pagar con la tarjeta (Ley 17.934) hasta el 30/9/2026, porque desde el 1/10/2026 esa reducción baja a 5 puntos porcentuales (4,1% de descuento para contribuyentes de IVA Mínimo, según DGI); aviso gratis vía SMS por cada compra. Perfil de banca Premier/premium (hoy "Excellence" en BTG) más que de acumulación de puntos.',
     feeNote:
-      'Costos oficiales (cartilla de tarjetas y tarifario de Banca Persona de BTG, julio de 2026, + IVA; renovación en 3 cuotas). Residentes: Visa Internacional US$ 85/año, Visa Oro US$ 100, Visa Infinite US$ 120, Mastercard Platinum $U 5.974 y Mastercard Internacional $U 4.702. No residentes: Visa Internacional US$ 100, Visa Oro US$ 122, Visa Infinite US$ 120, Mastercard Excellence $U 5.676 y Mastercard Internacional $U 7.294 (los importes en pesos se ajustan trimestralmente por IPC). Sin costo de emisión el primer año. Las adicionales son sin costo en Visa, pero las de Mastercard se cobran: $U 2.827 + IVA al año para residentes y $U 3.642 + IVA para no residentes. Reimpresión US$ 10 + IVA en Visa, sin costo en Mastercard. Costo mensual de estado de cuenta $ 43 + IVA. Ingreso mínimo: $U 25.000 nominales/mes (nuevos y existentes) o $U 15.000 (nómina).',
+      'Costos oficiales de la cartilla de tarjetas de crédito de BTG (fecha julio 2026, releída el 22/9/2026; una sola tabla, todo + IVA). Visa: Classic US$ 85/año, Oro US$ 100 e Infinite US$ 120, adicionales sin costo, reimpresión US$ 10 + IVA, recargo en el exterior 3% / 3% / 1% + IVA; sin tarifa distinta para no residentes. Mastercard Platinum: residente $U 5.974/año con adicionales a $U 2.827, no residente $U 7.294 con adicionales a $U 3.642, todo + IVA, reimpresión sin costo, exterior 3% + IVA, importes ajustables trimestralmente por IPC. Sin costo de emisión el primer año. Ingreso mínimo: $U 25.000 nominales/mes o $U 15.000 (nómina). Corrección de la revisión del 17/8/2026: esa ficha atribuía a un "tarifario de Banca Persona" una Mastercard Internacional, una Mastercard Excellence, una tarifa Visa distinta para no residentes y un costo mensual de estado de cuenta; nada de eso está en la cartilla vigente, así que se retiró.',
     pros: [
       'Reducción de 9 puntos de IVA en gastronomía al pagar con la tarjeta (baja a 5 puntos el 1/10/2026).',
       'Aviso por SMS de cada consumo (control y seguridad).',
       'Primer año sin costo de emisión (Visa/Mastercard) y adicionales sin costo en Visa.',
-      'Tarjetas de alto rango (Infinite / Excellence) para perfil premium y uso internacional.',
+      'Tarjetas de alto rango (Visa Infinite / Mastercard Platinum) para perfil premium y uso internacional.',
       'Para clientes de la banca Excellence, las tarjetas suman acceso a salas VIP y seguro de viaje. Ojo: es un beneficio del paquete, no de la tarjeta suelta — la cartilla de tarjetas no lo lista.',
     ],
     cons: [
       'No hay programa de puntos ni cashback: cero acumulación por consumo.',
       'Recargo por compras en el exterior: 3% + IVA en Visa Classic, Visa Oro y Mastercard Platinum, y 1% + IVA en Visa Infinite (es el único beneficio concreto de subir a Infinite).',
       'Las adicionales de Mastercard se pagan: $U 2.827 a $U 3.642 + IVA al año.',
-      'Costos anuales relativamente altos a partir del segundo año, y más caros todavía para no residentes.',
+      'Costos anuales relativamente altos a partir del segundo año, y más caros todavía para no residentes en la Mastercard.',
       'Ingreso mínimo elevado ($U 25.000/mes) orientado a segmento medio-alto/Premier.',
       'Menos competitiva que BROU o Scotiabank para quien busca puntos o descuentos de góndola.',
     ],
     bestFor:
       'Clientes de perfil Premier/premium que priorizan servicio bancario internacional, tarjetas de alto rango y el descuento de IVA en gastronomía, y a quienes no les interesa acumular puntos.',
-    note: 'El rebranding se materializó durante el fin de semana del 11 y 12 de julio de 2026 y BTG Pactual comenzó a operar el lunes 13 de julio de 2026 (dato de prensa; el banco no publicó fecha). Nombre de producto: "Mastercard Premier" es de la era HSBC y ya no existe — la cartilla de BTG habla de Mastercard Platinum y el tarifario de Banca Persona de Mastercard Excellence e Internacional.',
+    note: 'El rebranding se materializó durante el fin de semana del 11 y 12 de julio de 2026 y BTG Pactual comenzó a operar el lunes 13 de julio de 2026 (dato de prensa; el banco no publicó fecha). Nombre de producto: "Mastercard Premier" es de la era HSBC y ya no existe — la cartilla de BTG habla de Visa Classic, Oro e Infinite y de Mastercard Platinum, y ningún otro nombre. Reverificado el 22/9/2026 contra esa cartilla (julio 2026).',
+    verifiedOn: '2026-09-22',
+    verifiedNote:
+      'Cartilla de tarjetas de crédito de BTG Pactual (julio 2026): tabla única de costos, exterior por tarjeta, primer año sin costo, rebaja de IVA en restaurantes, sin programa de puntos. Las cifras de "Banca Persona" de la revisión anterior no están en el documento y se retiraron.',
     scores: {
       acumulacion: 15,
       canje: 25,
@@ -1195,7 +1291,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       cobertura: 55,
     },
     rationale:
-      'Ultimo puesto de forma objetiva: estas tarjetas NO tienen programa de puntos ni recompensas —ahora verificado en la cartilla propia de BTG de julio de 2026, ya bajo la marca nueva, no en la heredada de HSBC—, por lo que carecen de acumulacion y canje, las dos dimensiones de mayor peso. El retorno se limita a la reduccion de IVA en gastronomia (9 puntos hasta el 30/9/2026, 5 desde el 1/10) y al aviso por SMS. Costo baja de 48 a 42 al leerse el tarifario completo: aparecen el tramo no residente, mas caro en todas las tarjetas, las adicionales pagas de Mastercard ($U 2.827 a $U 3.642 + IVA) y el recargo de 3% + IVA por compras en el exterior (1% en Infinite).',
+      'Ultimo puesto de forma objetiva: estas tarjetas NO tienen programa de puntos ni recompensas —verificado en la cartilla propia de BTG de julio de 2026, ya bajo la marca nueva, no en la heredada de HSBC, y releida el 22/9/2026—, por lo que carecen de acumulacion y canje, las dos dimensiones de mayor peso. El retorno se limita a la reduccion de IVA en gastronomia (9 puntos hasta el 30/9/2026, 5 desde el 1/10) y al aviso por SMS. Costo baja de 48 a 42 al leerse la cartilla completa: aparecen el tramo no residente de la Mastercard, las adicionales pagas de Mastercard ($U 2.827 a $U 3.642 + IVA) y el recargo de 3% + IVA por compras en el exterior (1% en Infinite).',
     verified: true,
   },
 ])
@@ -1227,12 +1323,14 @@ const SCOTIA_PROGRAMS = [
  * them.
  *
  * They used to be a literal array inside that page, which left the per-programme pages
- * (/tarjetas-de-credito-uruguay/<programa>) no way to cite them. Moved here unchanged — same
- * labels, same URLs, same order — and `programs` says which fichas each one backs, going by what
- * each ficha's own notes cite: an issuer's programme page backs its programmes, its tariff backs
- * their costs, INE's UI value backs every cost quoted in Unidades Indexadas and converted with the
- * UI of 17/8/2026, and DGI's note backs the two fichas that describe the gastronomy IVA cut.
- * `tests/unit/cardProgramPages.test.ts` fails if a listed id stops existing.
+ * (/tarjetas-de-credito-uruguay/<programa>) no way to cite them. Moved here — and `programs` says
+ * which fichas each one backs, going by what each ficha's own notes cite: an issuer's programme
+ * page backs its programmes, its tariff backs their costs, INE's UI value backs every cost quoted
+ * in Unidades Indexadas and converted with the UI of 22/9/2026, and DGI's notes back the fichas
+ * that describe the IVA cuts. The 22/9/2026 round replaced the generic home pages (santander.com.uy,
+ * brou.com.uy) with the exact document each figure comes from — the tariff PDF, the programme
+ * bases, the cartilla — because a reader checking a number needs the page that prints it.
+ * `tests/unit/cardProgramPages.test.ts` fails if a listed id stops existing or a URL repeats.
  */
 export const CARD_REWARDS_SOURCES: readonly CardRewardsSource[] = Object.freeze([
   {
@@ -1241,19 +1339,39 @@ export const CARD_REWARDS_SOURCES: readonly CardRewardsSource[] = Object.freeze(
     programs: ['itau-volar', 'itau-volar-platinum', 'itau-volar-black'],
   },
   {
-    label: 'Santander — Soy Santander Puntos',
-    url: 'https://www.santander.com.uy/',
+    label: 'Santander — Soy Santander (programa, bonos y bases vigentes desde el 1/2/2026)',
+    url: 'https://www.santander.com.uy/soysantander',
     programs: ['santander-soy-santander-puntos'],
   },
   {
-    label: 'BBVA Uruguay — Puntos BBVA',
-    url: 'https://www.bbva.com.uy/personas/productos/tarjetas.html',
+    label: 'Santander — Manual de Tarifas (versión 22/09/2026)',
+    url: 'https://www.santander.com.uy/sites/default/files/manual-de-tarifas/Manual_de_Tarifas_20260922.pdf',
+    programs: ['santander-soy-santander-puntos', 'mas-grupo-disco-sumaclub'],
+  },
+  {
+    label: 'Santander — Tarjeta Hipermás',
+    url: 'https://www.santander.com.uy/todas-las-tarjetas/hipermas',
+    programs: ['mas-grupo-disco-sumaclub'],
+  },
+  {
+    label: 'BBVA Uruguay — Programa de Fidelidad de Puntos BBVA (T&C)',
+    url: 'https://www.bbva.com.uy/personas/productos/tarjetas/programa-de-beneficios.html',
     programs: ['bbva-puntos-bbva', 'bbva-comunidad-plus'],
   },
   {
-    label: 'Scotiabank — Scotia Puntos',
+    label: 'BBVA Uruguay — Manual de tarifas (última actualización 3/9/2026)',
+    url: 'https://www.bbva.com.uy/content/dam/public-web/uruguay/documents/NuevoTarifario2024.pdf',
+    programs: ['bbva-puntos-bbva', 'bbva-comunidad-plus'],
+  },
+  {
+    label: 'Scotiabank — Programas de premios (Scotia Puntos, Membership Rewards, ConnectMiles)',
     url: 'https://www.scotiabank.com.uy/Personas/Tarjetas/Programas-de-premios',
     programs: SCOTIA_PROGRAMS,
+  },
+  {
+    label: 'Scotiabank — Bases y condiciones Nuevo Scotia Puntos (07.2026)',
+    url: 'https://cdn.aglty.io/scotiabank-uruguay/beneficios/2026/07-julio/23-scotiapuntos/BASES_Y_CONDICIONES_07.2026.pdf',
+    programs: ['scotia-puntos'],
   },
   {
     label: 'Scotiabank — Club Card Tienda Inglesa',
@@ -1261,8 +1379,13 @@ export const CARD_REWARDS_SOURCES: readonly CardRewardsSource[] = Object.freeze(
     programs: ['scotia-club-card-tienda-inglesa', 'club-tienda-inglesa-puntos'],
   },
   {
-    label: 'BROU — Tarjeta Recompensa',
-    url: 'https://www.brou.com.uy/',
+    label: 'BROU — Programa BROU Recompensa',
+    url: 'https://www.brou.com.uy/personas/recompensa/programa-brou-recompensa',
+    programs: ['brou-recompensa'],
+  },
+  {
+    label: 'BROU — Términos y Condiciones del programa Recompensa (rigen desde el 30/6/2026)',
+    url: 'https://www.brou.com.uy/documents/20182/462361/TyC-Programa_BROU_Recompensa.PDF/08f63602-3a83-4dc5-9095-e0fd385a430c',
     programs: ['brou-recompensa'],
   },
   {
@@ -1271,7 +1394,22 @@ export const CARD_REWARDS_SOURCES: readonly CardRewardsSource[] = Object.freeze(
     programs: ['oca-oca-blue'],
   },
   {
-    label: 'Pronto! — Términos y condiciones de tarjeta (tarifario, vigencia agosto 2026)',
+    label: 'OCA — Cartilla de la tarjeta Mastercard (vigente desde el 01/09/2026)',
+    url: 'https://oca.uy/download/cartillaOCA.pdf',
+    programs: ['oca-oca-blue'],
+  },
+  {
+    label: 'OCA — Tasas vigentes (desde el 15/09/2026)',
+    url: 'https://oca.uy/download/TasasVigentes.pdf',
+    programs: ['oca-oca-blue'],
+  },
+  {
+    label: 'OCA Dinero Electrónico — Cartilla OCA Blue (vigente desde el 15/09/2026)',
+    url: 'https://oca.uy/download/Cartilla_OCABlue.pdf',
+    programs: ['oca-oca-blue'],
+  },
+  {
+    label: 'Pronto! — Términos y condiciones de tarjeta (tarifario, vigencia setiembre 2026)',
     url: 'https://www.pronto.com.uy/terminos-y-condiciones-de-tarjeta/',
     programs: ['pronto-visa'],
   },
@@ -1281,24 +1419,34 @@ export const CARD_REWARDS_SOURCES: readonly CardRewardsSource[] = Object.freeze(
     programs: ['passcard-puntos-pass'],
   },
   {
+    label: 'PassCard — Cartilla de tarjeta de crédito (FC 02 Rev. 30, servida el 22/9/2026)',
+    url: 'https://www.passcard.com.uy/descargar/Cartilla%20Passcard',
+    programs: ['passcard-puntos-pass'],
+  },
+  {
     label: 'Tienda Inglesa — Bases del Programa Puntos (vigentes desde el 1/1/2026)',
     url: 'https://www.tiendainglesa.com.uy/supermercado/landing/bases-y-condiciones-programa-puntos/349',
     programs: ['club-tienda-inglesa-puntos', 'scotia-club-card-tienda-inglesa'],
   },
   {
     label: 'Scotiabank — Cartilla Tarjetas de Crédito Personas Físicas (F.2540, 20/03/2026)',
-    url: 'https://www.scotiabank.com.uy/Personas/ScotiaPuntos/home',
+    url: 'https://cdn.aglty.io/scotiabank-uruguay/cartillas-condiciones-de-productos/bp/2026/04-abril/24-actualizacion-cartillas/F2540_20260320_TARJETAS_DE_CREDITO_PERSONAS_FISICAS.pdf',
     programs: SCOTIA_PROGRAMS,
   },
   {
-    label: 'BROU — Costos y exoneraciones de tarjetas de crédito',
+    label: 'BROU — Costos y exoneraciones de tarjetas de crédito (vigente desde el 1/2/2025)',
     url: 'https://www.brou.com.uy/personas/tarjetas/costos-y-exoneraciones-visa-y-master/credito',
     programs: ['brou-recompensa'],
   },
   {
-    label: 'Itaú — Tarifario oficial (versión 1 de agosto de 2026)',
+    label: 'Itaú — Tarifario oficial (versión setiembre 2026)',
     url: 'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
     programs: ITAU_PROGRAMS,
+  },
+  {
+    label: 'ANDA — Tarjeta de crédito (T.E.A. 27,30% + IVA)',
+    url: 'https://anda.com.uy/tarjeta-de-credito/',
+    programs: ['tarjeta-anda'],
   },
   {
     label: 'ANDA — Programa de puntos Dale',
@@ -1306,21 +1454,42 @@ export const CARD_REWARDS_SOURCES: readonly CardRewardsSource[] = Object.freeze(
     programs: ['tarjeta-anda'],
   },
   {
-    label: 'OCA — Preguntas frecuentes del Metraje (tabla de canje)',
+    label: 'OCA — Preguntas frecuentes del Metraje (tabla de canje y pago del costo trimestral)',
     url: 'https://metraje.oca.com.uy/site/view-preguntas-frecuentes',
     programs: ['oca-oca-blue'],
   },
   {
-    label: 'BTG Pactual — Tarifas y cartillas (cartilla de tarjetas, julio 2026)',
-    url: 'https://www.btgpactual.uy/tarifas-y-cartillas',
+    label: 'OCA — 20% los viernes (vigencia 1/6/2026 al 31/5/2027)',
+    url: 'https://oca.uy/tiendas-de-tu-ciudad/',
+    programs: ['oca-oca-blue'],
+  },
+  {
+    label: 'Creditel — Tarjeta (Credipuntos)',
+    url: 'https://www.creditel.com.uy/tarjeta',
+    programs: ['creditel-credipuntos'],
+  },
+  {
+    label: 'Italmundo — Tarjetas (Platino, Oro y Plata)',
+    url: 'https://italmundo.com.uy/tarjetas/',
+    programs: ['tarjeta-lider'],
+  },
+  {
+    label: 'Cabal Uruguay — Promo Macromercado (hasta el 31/12/26)',
+    url: 'https://www.cabal.com.uy/promo-macromercado-2/',
+    programs: ['cabal-uruguay'],
+  },
+  {
+    label: 'BTG Pactual — Cartilla de tarjetas de crédito (julio 2026)',
+    url: 'https://static.btgpactual.com/media/tarjetas-de-credito.pdf',
     programs: ['btg-uruguay-tdc'],
   },
   {
-    label: 'INE — Valor de la Unidad Indexada (agosto 2026)',
-    url: 'https://www5.ine.gub.uy/web/guest/unidad-indexada',
+    label: 'INE — Unidad Indexada setiembre 2026 (valor del 22/9/2026: $U 6,6468)',
+    url: 'https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/PDF/UI/2026/UI%20Setiembre%202026.pdf',
     programs: [
       ...ITAU_PROGRAMS,
       ...SCOTIA_PROGRAMS,
+      'santander-soy-santander-puntos',
       'bbva-puntos-bbva',
       'bbva-comunidad-plus',
       'oca-oca-blue',
@@ -1331,6 +1500,12 @@ export const CARD_REWARDS_SOURCES: readonly CardRewardsSource[] = Object.freeze(
     label: 'DGI — Reducción de 9 puntos de IVA en gastronomía (baja a 5 el 1/10/2026)',
     url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/reduccion-9-puntos-iva-determinados-servicios-siempre-sean-abonados',
     programs: ['btg-uruguay-tdc', 'tarjeta-anda'],
+  },
+  {
+    label:
+      'DGI — Reducción de 2 puntos de IVA por medios electrónicos (Ley 19.210, sólo débito y dinero electrónico)',
+    url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/reduccion-iva-para-adquisiciones-se-abonen-traves-medios-electronicos-0',
+    programs: ['tarjeta-anda'],
   },
 ])
 
@@ -1400,6 +1575,162 @@ export function medalFor(rank: number): string | null {
 export function getCardProgram(id: string): CardProgram | undefined {
   return CARD_PROGRAMS.find(p => p.id === id)
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reverificación del 22/9/2026 — qué cambió y las preguntas que la gente hace
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** One dated difference between what the page said and what the issuer publishes today. */
+export interface CardRewardsReviewChange {
+  /** Emisor o programa. */
+  issuer: string
+  /** Qué decía el sitio y qué dice hoy la fuente, en una frase. */
+  what: string
+  /** Documento del emisor (u organismo) que lo respalda. */
+  sourceLabel: string
+  sourceUrl: string
+  /** Fecha (YYYY-MM-DD) en que se leyó esa fuente. */
+  seenOn: string
+}
+
+/**
+ * Las diferencias que la ronda del 22/9/2026 encontró entre lo publicado y las fuentes del
+ * emisor, en el orden en que cambian el veredicto. Se imprime como lista fechada en la página:
+ * es la respuesta a "¿esto está actualizado?" sin obligar al lector a abrir 23 fichas. Las
+ * cifras salen de las mismas notas de `CARD_PROGRAMS`, nunca de acá: esto es el índice.
+ */
+export const CARD_REWARDS_REVIEW_CHANGES: readonly CardRewardsReviewChange[] = Object.freeze([
+  {
+    issuer: 'Santander',
+    what: 'El costo anual ya está publicado: Internacional UI 895, Platinum UI 1.085, Black e Infinite UI 1.560 (IVA incluido, 3 cuotas). La ficha decía que el banco no lo publicaba. Exterior: 3% + IVA en Internacional, 2,5% en Platinum, 0% en Black e Infinite.',
+    sourceLabel: 'Manual de Tarifas, versión 22/09/2026',
+    sourceUrl:
+      'https://www.santander.com.uy/sites/default/files/manual-de-tarifas/Manual_de_Tarifas_20260922.pdf',
+    seenOn: '2026-09-22',
+  },
+  {
+    issuer: 'PassCard',
+    what: 'El mantenimiento mensual desde el 2º año pasó de $U 78,58 a $U 133,75 + IVA (+70%), con un seguro antifraudes obligatorio de $U 39 + IVA por mes; la tasa financiera bajó de 113% a 107% TEA (mora 125%). La cartilla no imprime fecha de vigencia.',
+    sourceLabel: 'Cartilla de tarjeta de crédito, FC 02 Rev. 30',
+    sourceUrl: 'https://www.passcard.com.uy/descargar/Cartilla%20Passcard',
+    seenOn: '2026-09-22',
+  },
+  {
+    issuer: 'OCA',
+    what: 'OCA Blue acumula 1 Metro cada $U 120 (era $U 104) y el Metraje publica un canje que no listábamos y es el que más rinde: 2.000 Metros pagan el costo trimestral de la tarjeta (UI 130), ≈ $U 0,43 por Metro contra $U 0,20 en combustible. La cartilla Mastercard del 01/09/2026 dice TEA 64% y mora 75%; el documento "Tasas vigentes" del 15/09/2026, 63% y 72%.',
+    sourceLabel: 'Cartilla OCA Blue (vigente 15/09/2026), cartilla Mastercard y Tasas vigentes',
+    sourceUrl: 'https://oca.uy/download/Cartilla_OCABlue.pdf',
+    seenOn: '2026-09-22',
+  },
+  {
+    issuer: 'ANDA',
+    what: 'La T.E.A. de la tarjeta es 27,30% + IVA (publicábamos 27,40%). Los 1.000 puntos Dale por garantía de alquiler rigen sólo para contratos desde el 01/01/2026.',
+    sourceLabel: 'Ficha de la Tarjeta ANDA',
+    sourceUrl: 'https://anda.com.uy/tarjeta-de-credito/',
+    seenOn: '2026-09-22',
+  },
+  {
+    issuer: 'Scotiabank',
+    what: 'Scotia Puntos suma bonos que no publicábamos: 500 puntos por la primera compra en Platinum e Infinite y 700 / 1.500 / 2.500 por consumir $U 50.000 / 90.000 / 120.000 en 4 meses. Ratios y cargo anual (UI 1.000 / 1.250 / 1.600, cartilla del 20/03/2026) sin cambio; se agrega el adicional por tipo de cambio en moneda no dólar (6% / 4,5% / 3%).',
+    sourceLabel: 'Bases Nuevo Scotia Puntos 07.2026',
+    sourceUrl:
+      'https://cdn.aglty.io/scotiabank-uruguay/beneficios/2026/07-julio/23-scotiapuntos/BASES_Y_CONDICIONES_07.2026.pdf',
+    seenOn: '2026-09-22',
+  },
+  {
+    issuer: 'Itaú',
+    what: 'El tarifario en línea es la versión de setiembre 2026 (antes citábamos la del 1/8/2026), con los mismos valores: Internacional UI 864, Oro UI 961, Platinum UI 1.058, Infinite y Black UI 1.454. Las fichas de Volar Platinum y LATAM Pass Platinum contradicen al tarifario (USD 27 por ingreso extra a salas VIP donde el tarifario dice USD 38).',
+    sourceLabel: 'Tarifario Itaú, versión setiembre 2026',
+    sourceUrl: 'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
+    seenOn: '2026-09-22',
+  },
+  {
+    issuer: 'BBVA y Pronto!',
+    what: 'Sólo cambió la fecha del documento, no las cifras: el Manual de tarifas de BBVA dice "última actualización 3/9/2026" (mismos UI que el del 20/7/2026) y los términos de Pronto! dicen "vigencia setiembre 2026" (mismo cuadro por cartera), que ahora publican la TEA máxima: 63,56% + IVA y mora 73,82%.',
+    sourceLabel: 'Manual de tarifas de BBVA y términos de Pronto!',
+    sourceUrl: 'https://www.pronto.com.uy/terminos-y-condiciones-de-tarjeta/',
+    seenOn: '2026-09-22',
+  },
+  {
+    issuer: 'BTG Pactual',
+    what: 'La cartilla de julio de 2026 tiene una sola tabla: Visa Classic US$ 85, Oro US$ 100, Infinite US$ 120 (+ IVA) y Mastercard Platinum $U 5.974 (residente) o $U 7.294 (no residente) + IVA. Se retiraron una "Mastercard Excellence", una "Mastercard Internacional" y una tarifa Visa para no residentes que la ficha atribuía a otro tarifario y no están en el documento.',
+    sourceLabel: 'Cartilla de tarjetas de crédito de BTG, julio 2026',
+    sourceUrl: 'https://static.btgpactual.com/media/tarjetas-de-credito.pdf',
+    seenOn: '2026-09-22',
+  },
+  {
+    issuer: 'INE',
+    what: 'Todas las conversiones de UI a pesos se rehicieron con la Unidad Indexada del 22/9/2026 ($U 6,6468); la anterior ($U 6,6350, del 17/8/2026) quedaba ~0,18% corta.',
+    sourceLabel: 'INE — Unidad Indexada setiembre 2026',
+    sourceUrl:
+      'https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/PDF/UI/2026/UI%20Setiembre%202026.pdf',
+    seenOn: '2026-09-22',
+  },
+])
+
+/** Una pregunta frecuente del ranking, con la forma que `FaqSection` consume. */
+export interface CardRewardsFaqItem {
+  id: string
+  question: string
+  answer: string
+}
+
+/**
+ * Las preguntas con las que la gente llega a esta página, escritas como las escribe (r/uruguay,
+ * setiembre 2026: "cuánto cuesta la tarjeta por año", "descuenta IVA", "más barata para
+ * financiar"), respondidas con las cifras de las fichas y la fecha de cada fuente. Todo número
+ * de acá tiene que estar también en alguna nota de `CARD_PROGRAMS` o en `ivaTarjeta.ts`.
+ */
+export const CARD_REWARDS_FAQ: readonly CardRewardsFaqItem[] = Object.freeze([
+  {
+    id: 'anualidad-santander',
+    question: '¿Cuánto cuesta por año la tarjeta de crédito de Santander?',
+    answer:
+      'Según el Manual de Tarifas versión 22/09/2026: Internacional UI 895, Platinum UI 1.085, Black e Infinite UI 1.560, IVA incluido y cobrado en 3 cuotas; tarjeta nueva y adicionales $0. Con la UI del 22/9/2026 ($U 6,6468) son ≈ $U 5.949, $U 7.212 y $U 10.369. La Internacional SOY es gratis el primer año y desde la renovación paga el 50% del costo anual.',
+  },
+  {
+    id: 'anualidad-itau',
+    question: '¿Cuánto cuestan las tarjetas de Itaú y qué tarifario rige?',
+    answer:
+      'El tarifario publicado es la versión de setiembre 2026: Visa y Mastercard Internacional UI 864, Oro UI 961, Visa Platinum UI 1.058, Visa Infinite y Mastercard Black UI 1.454 (≈ $U 5.743, $U 6.388, $U 7.032 y $U 9.664 con la UI del 22/9/2026), IVA incluido, en 3 cuotas; primer año sin costo; primera adicional bonificada al 100% y las siguientes al 50%. Salas VIP: Platinum 10 ingresos a USD 10 (USD 38 desde el 11°); Infinite y Black 4 gratis más 10 a USD 10 (USD 38 desde el 15°).',
+  },
+  {
+    id: 'iva-tarjeta-credito',
+    question: '¿Pagar con tarjeta de crédito descuenta IVA en Uruguay?',
+    answer:
+      'No en compras generales: la rebaja de 2 puntos de la Ley 19.210 es sólo para débito y dinero electrónico (guía DGI del 08/04/2026). Con crédito, débito o dinero electrónico rige la rebaja de gastronomía (restaurantes, bares, hoteles sin hospedaje): 9 puntos hasta el 30/9/2026 y 5 puntos desde el 1/10/2026 (4,1% en comercios de IVA mínimo), según la guía DGI del 05/05/2026.',
+  },
+  {
+    id: 'scotia-puntos-2026',
+    question: '¿Qué cambió en Scotia Puntos en 2026?',
+    answer:
+      'Las bases de julio de 2026 mantienen los ratios (Internacionales 1 punto cada $U 150, Platinum $U 100, Infinite $U 80; 1 punto = $U 1; canje por App de compras mayores a $U 700 y con menos de 90 días; vencimiento a 36 meses o del total a los 180 días sin compra) y agregan bonos: 500 puntos por la primera compra en Platinum e Infinite y 700 / 1.500 / 2.500 puntos por consumir $U 50.000 / 90.000 / 120.000 en 4 meses.',
+  },
+  {
+    id: 'metraje-oca',
+    question: '¿Cuánto rinde el Metraje de OCA hoy?',
+    answer:
+      'En OCA Blue la cartilla vigente desde el 15/09/2026 fija 1 Metro cada $U 120 (antes $U 104). Canjeado en vales de combustible el Metro vale $U 0,20 (retorno ≈ 0,17%), pero el Metraje permite pagar el costo trimestral de la tarjeta Mastercard o Visa con 2.000 Metros, que equivalen a UI 130 (≈ $U 864): ≈ $U 0,43 por Metro, el mejor canje publicado.',
+  },
+  {
+    id: 'passcard-segundo-anio',
+    question: '¿Cuánto cuesta la Passcard después del primer año?',
+    answer:
+      'La cartilla vigente (FC 02 Rev. 30, leída el 22/9/2026) fija un "Costo anual Grupo de Afinidad" de $U 133,75 + IVA con periodicidad mensual y carácter obligatorio (≈ $U 1.958 al año con IVA); el primer año es sin costo y los adicionales gratis. Suma un seguro antifraudes de $U 39 + IVA por mes y un seguro sobre saldo de 2,5 por mil. Tasa financiera 107% TEA, mora 125% TEA.',
+  },
+  {
+    id: 'tarjeta-mas-barata-financiar',
+    question: '¿Cuál es la tarjeta de crédito más barata para financiar?',
+    answer:
+      'Entre los emisores relevados con tasa publicada al 22/9/2026: ANDA 27,30% + IVA (ficha oficial), OCA 63% o 64% + IVA según el documento (Tasas vigentes del 15/09/2026 o cartilla del 01/09/2026), Pronto! hasta 63,56% + IVA y Passcard 107% TEA. Santander, BBVA e Itaú no publican una TEA única de financiación en los tarifarios de tarjetas relevados ese día.',
+  },
+  {
+    id: 'tarjeta-sin-costo-anual',
+    question: '¿Qué tarjeta de crédito no tiene costo anual en Uruguay?',
+    answer:
+      'ANDA (Tarjeta ANDA y ANDA VISA) no cobra costo anual ni adicionales, aunque exige ser socio (ficha oficial del 22/9/2026). El resto bonifica el primer año y después cobra, según el tarifario de cada uno leído ese día: BROU exonera el 50% o el 100% por consumo promedio mensual (tarifario vigente desde el 1/2/2025), BBVA cobra la mitad acreditando sueldo (Manual de tarifas del 3/9/2026), Santander cobra el 50% en la Internacional SOY desde la renovación (Manual de Tarifas del 22/09/2026), e Itaú incluye la tarjeta en sus paquetes de cuentas: Light UI 91, Full UI 190 y Personal Bank UI 280 por mes (tarifario versión setiembre 2026).',
+  },
+])
 
 // ─────────────────────────────────────────────────────────────────────────────
 // "¿Conviene pagar cuentas con tarjeta de crédito?" — worth-it calculator

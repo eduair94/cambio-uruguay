@@ -538,9 +538,14 @@ const getSpreadColor = (spread: number | string): string => {
   return 'red'
 }
 
+// Locale del lector, no `es-UY` fijo: la misma cifra que va en la descripción de
+// /en/historico/<casa> tiene que leerse en inglés («40.00»), igual que hace la
+// página de la moneda con `formatRate(value, localeTag)`. `dateLocale` es un
+// auto-import de utils/format.ts (es → es-UY, en → en-US, pt → pt-BR).
+const numberLocale = computed(() => dateLocale(locale.value))
 const formatNumber = (value: number): string => {
   if (!value || value === 0) return '0.00'
-  return new Intl.NumberFormat('es-UY', {
+  return new Intl.NumberFormat(numberLocale.value, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 4,
   }).format(value)
@@ -630,12 +635,22 @@ const usdToday = computed(() => {
 const headlineRates = computed(() =>
   originHeadlineRates(items.value ?? [], route.params.origin as string, 2)
 )
+// La primera frase —la que Google muestra— sale de claves i18n y no de un literal.
+// Medido en producción el 2026-09-22: /en/historico/itau describía «Dólar en Itaú
+// hoy: compra $38,77, venta $41,37. Check all current and historical…», un
+// espejo en castellano de la página en español que Google servía para consultas
+// en español. El literal era la única parte de la meta que no pasaba por `t()`.
 const seoDescription = computed(() => {
   if (isBcu.value) return bcuText.value.hubDescription
   const base = t('seo.historicalOriginDescription', { origin: originName.value })
   const u = usdToday.value
   if (u) {
-    return `Dólar en ${originName.value} hoy: compra $${formatNumber(u.buy)}, venta $${formatNumber(u.sell)}. ${base}`
+    const lead = t('seo.historicalOriginLead', {
+      origin: originName.value,
+      buy: formatNumber(u.buy),
+      sell: formatNumber(u.sell),
+    })
+    return `${lead} ${base}`
   }
   const others = headlineRates.value
   if (others.length) {
@@ -643,10 +658,18 @@ const seoDescription = computed(() => {
     // "compra/venta" on it would invent a spread that does not exist.
     const parts = others.map(r =>
       r.buy === r.sell
-        ? `${r.code} $${formatNumber(r.sell)}`
-        : `${r.code} compra $${formatNumber(r.buy)}, venta $${formatNumber(r.sell)}`
+        ? t('seo.historicalOriginUnitPart', { code: r.code, value: formatNumber(r.sell) })
+        : t('seo.historicalOriginPairPart', {
+            code: r.code,
+            buy: formatNumber(r.buy),
+            sell: formatNumber(r.sell),
+          })
     )
-    return `${originName.value} hoy: ${parts.join(' · ')}. ${base}`
+    const lead = t('seo.historicalOriginLeadOther', {
+      origin: originName.value,
+      parts: parts.join(' · '),
+    })
+    return `${lead} ${base}`
   }
   return base
 })

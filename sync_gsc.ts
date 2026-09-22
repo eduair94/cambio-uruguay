@@ -22,6 +22,7 @@ dotenv.config();
 
 import { appDbConfigured } from "./classes/appdb";
 import { gscConfigProblem, listSites, siteUrl } from "./classes/gsc/client";
+import { syncIndexAllowlists } from "./classes/gsc/indexAllowlist";
 import { refreshSearchConsole } from "./classes/gsc/refresh";
 import { countDays, loadSnapshot, saveDays, saveSnapshot, snapshotIsThin, storedDays } from "./classes/gsc/store";
 import { notifyAdmin } from "./classes/notify";
@@ -99,6 +100,9 @@ async function main(): Promise<void> {
         console.log(`  [${o.kind}] ${o.subject} (+${o.potentialClicks}) — ${o.note}`);
       }
       for (const a of snapshot.alerts) console.log(`  ALERTA ${a.level}: ${a.message}`);
+      for (const r of await syncIndexAllowlists({ dryRun: true })) {
+        console.log(`[gsc] lista de indexación ${r.family}: ${r.urls} rutas con demanda de ${r.rowCount} filas (${r.note})`);
+      }
       process.exit(0);
     }
 
@@ -123,6 +127,17 @@ async function main(): Promise<void> {
         `${written} días escritos, ${snapshot.archivedDays} en el archivo | ` +
         `indexación ${snapshot.indexation.indexed}/${snapshot.indexation.checked}`
     );
+
+    // Higiene del índice de las familias programáticas (docs/app/RENTALS.md). Va DESPUÉS de la
+    // guarda de snapshot flaco a propósito: una respuesta parcial de Google que ya vació el panel
+    // vaciaría también esta lista, y una lista vacía es lo único que puede desindexar fichas que sí
+    // se buscan. Nunca lanza: una familia que falla conserva su documento anterior.
+    for (const r of await syncIndexAllowlists({ dryRun: false })) {
+      console.log(
+        `[gsc] lista de indexación ${r.family}: ${r.urls} rutas con demanda de ${r.rowCount} filas, ` +
+          `${r.written ? "escrita" : "NO escrita"} (${r.note})`
+      );
+    }
 
     // Only alerts leave the process. The dashboard is pull; Telegram is for the things that mean
     // something broke, and a channel that also carries good news stops being read.

@@ -739,7 +739,10 @@
     "heading": "Cotización del {currency} en {origin} hoy e histórico",
     "answerStale": "La última cotización que publicó {origin} para el {currency} es del {date}: ${sell} venta y ${buy} compra. Desde entonces no publicó precios nuevos. En los últimos {months} meses varió {change} %; máximo del período ${max}, mínimo ${min}.",
     "answer": "Hoy {date}, el {currency} en {origin} cotiza a ${sell} venta y ${buy} compra. En los últimos {months} meses varió {change} %; máximo del período ${max}, mínimo ${min}.",
-    "asOf": "Datos al {date}."
+    "asOf": "Datos al {date}.",
+    "recentChangesTitle": "Últimos cambios de {origin} en {currency}",
+    "recentChangesIntro": "Sólo los días en que {origin} movió la compra o la venta: una verificación sin cambio no genera registro.",
+    "recentChangesAll": "Ver los últimos cambios de todas las casas"
   },
   "pwa": {
     "retry": "Reintentar",
@@ -817,7 +820,12 @@
     "nearbyCasasDescription": "Encontrá la casa de cambio real más cercana con mejor cotización y reseñas. Navegá directo con Google Maps o Waze. Sin bancos ni fintech.",
     "historicalDetailDescriptionLive": "{currency} en {origin} hoy: venta ${sell}, compra ${buy}. Evolución, gráfico y récords. Compará con 40+ casas de cambio de Uruguay.",
     "sucursalesWithCount": "Sucursales de {origin}: horarios, direcciones y teléfonos de {count} locales",
-    "sucursalesInLocation": "Sucursales de {origin} en {location}: {count} locales, teléfonos y horarios"
+    "sucursalesInLocation": "Sucursales de {origin} en {location}: {count} locales, teléfonos y horarios",
+    "historicalOriginLead": "Dólar en {origin} hoy: compra ${buy}, venta ${sell}.",
+    "historicalOriginLeadOther": "{origin} hoy: {parts}.",
+    "historicalOriginPairPart": "{code} compra ${buy}, venta ${sell}",
+    "historicalOriginUnitPart": "{code} ${value}",
+    "sucursalesLead": "{origin} hoy: dólar ${buy} compra / ${sell} venta."
   },
   "dolarDepto": {
     "h1": "Dólar en {department} hoy",
@@ -2461,5 +2469,9 @@
     "ctaLabel": "Abrir una cuenta en {partner} (se abre en otra pestaña)",
     "disclosure": "Si abrís la cuenta desde estos enlaces, el servicio puede pagarnos una comisión. No cambia lo que pagás ni lo que dice esta guía.",
     "policy": "Cómo funciona"
-  }
+  },
+  "sucursalesHeading": "{origin} en {location}: sucursales y horarios",
+  "sucursalesHeadingAll": "{origin}: sucursales y horarios en Uruguay",
+  "sucursalesCountSource": "{count} sucursales según el padrón del BCU",
+  "sucursalesBcuLink": "ver la institución en el BCU"
 }
