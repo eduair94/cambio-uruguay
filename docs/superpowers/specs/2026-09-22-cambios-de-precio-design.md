@@ -72,7 +72,12 @@ la serie en el último cambio de moneda y marca `currencySwitched: true`; la fic
 publicado en otra moneda" en vez de dibujar un salto que no es un cambio de precio. Un aviso que pasó
 de USD a UYU no bajó un 4.000 %.
 
-### D3 — La ficha lee en vivo; la página lee un snapshot
+### D3 — La ficha lee en vivo; la pagina lee un snapshot
+
+No se agrega una ruta `/api/price-history`: la serie viaja adjunta a la respuesta que la ficha o el
+directorio **ya pide** (`/api/cars/ficha`, `/api/rentals/ficha`, `/api/property-sales/ficha`,
+`/api/phones/<modelo>`, `/api/chairs/<slug>`, `/api/equipar/productos`). Una ruta aparte seria un
+segundo viaje por el mismo id y dejaria la serie fuera del HTML servido.
 
 La regla del usuario (2026-09-19, `analisis-periodico-no-en-el-pedido`) es que un análisis que
 procesa la base se calcula periódicamente y se guarda. Se aplica así:
@@ -124,9 +129,9 @@ classes/pricehistory/
   store.ts      escribe APP DB `pricechangesnapshots` (current + day:YYYY-MM-DD, poda 400 d)
 
 app/utils/priceHistory.ts        espejo puro de normalize.ts (formato y etiquetas)
-app/server/utils/priceHistory.ts lectura por id/lote desde el APP DB (models nuevos)
-app/server/api/price-history.get.ts   ?vertical=&id= (y &ids= hasta 60)
-app/server/api/price-changes.get.ts   el snapshot de la página
+app/server/utils/priceHistory.ts lectura por id/lote desde el APP DB (models nuevos) y el UNICO
+                                 armador de lo que cruza la red (publicSeries)
+app/server/api/price-changes.get.ts   el snapshot de la pagina
 app/components/PriceHistoryBlock.vue  el bloque de ficha (reusa components/Sparkline.vue)
 app/pages/cambios-de-precio-uruguay.vue
 ```
@@ -206,9 +211,9 @@ Raíz (`vitest`, sin base de datos — los modelos van simulados):
 App (`app/tests/unit`):
 
 - `priceHistory.test.ts`: paridad del espejo puro con el de raíz (mismas constantes y mismo formato).
-- `priceHistoryApi.test.ts`: la ruta valida `vertical`/`id`, topea `ids` en 60, y **no** devuelve
-  ningún campo de `carlistings`/`marketpricelogs` fuera de la serie (test de privacidad, del mismo
-  tipo que `tests/site_analytics/revenue_privacy.test.ts`).
+- `priceHistoryPrivacy.test.ts`: `publicSeries()` **no** deja pasar ningun campo de
+  `carlistings`/`marketpricelogs` fuera de la serie (test de privacidad, del mismo tipo que
+  `tests/site_analytics/revenue_privacy.test.ts`).
 - `priceChangesApi.test.ts`: forma de la respuesta, snapshot ausente → respuesta vacía, no 500.
 - `siteNav-coverage.test.ts` (ya existe): la ruta nueva entra en la navegación.
 
