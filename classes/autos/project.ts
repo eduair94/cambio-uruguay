@@ -4,6 +4,7 @@ import { CAR_OPPORTUNITY_POLICY, type CarAnalysis, type CarCandidate } from "./a
 import { cleanPublicText } from "./normalize";
 import { safeSourcePermalink, safeSourcePicture } from "./sources/registry";
 import { risksOf, type CarRiskItem } from "./riskAnalyze";
+import { carSpecsOf } from "./specs";
 import type {
   PublicCarCatalogMeta, PublicCarComparable, PublicCarListing, PublicCarOpportunityItem, PublicCarOpportunitySnapshot,
   PublicCarRiskCategoryStat, PublicCarRiskItem, PublicCarRiskSnapshot, PublicCarRiskStats, PublicCarSourceCoverage,
@@ -18,6 +19,18 @@ function dealerNameOf(listing: CarListing): string | null {
   if (listing.dealerName) return cleanPublicText(listing.dealerName) || null;
   if (listing.sellerType !== "dealer" || !listing.detail?.sellerName) return null;
   return cleanPublicText(listing.detail.sellerName) || null;
+}
+
+const GALLERY_MAX = 6;
+/** The advert's own gallery, each URL held to the source's picture host like the cover picture. */
+function galleryOf(listing: CarListing): string[] {
+  const pictures: string[] = [];
+  for (const url of listing.detail?.pictures ?? []) {
+    const safe = safeSourcePicture(listing.source, url);
+    if (safe && !pictures.includes(safe)) pictures.push(safe);
+    if (pictures.length >= GALLERY_MAX) break;
+  }
+  return pictures;
 }
 
 /** `hasContact`: the advert has a phone in `carcontacts` (classes/autos/contacts/build.ts); never the phone itself. */
@@ -55,6 +68,7 @@ export function publicCarListing(listing: CarListing, opportunity: PublicCarList
     dealerName: dealerNameOf(listing),
     picture: safeSourcePicture(listing.source, listing.picture),
     pictureCount: listing.pictureCount,
+    pictures: galleryOf(listing),
     permalink: listing.permalink,
     firstSeen: listing.firstSeen,
     lastSeen: listing.lastSeen,
@@ -63,6 +77,7 @@ export function publicCarListing(listing: CarListing, opportunity: PublicCarList
     risks: risksOf(listing).map(risk => ({ category: risk.category, severity: risk.severity, quote: risk.quote, from: risk.from })),
     opportunity,
     reference: listing.reference ? { ...listing.reference } : null,
+    specs: carSpecsOf(listing.detail),
     hasContact,
   };
 }

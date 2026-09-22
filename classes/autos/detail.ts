@@ -5,6 +5,7 @@
 // candidates are read (hundreds a day, spaced by the shared per-host throttle).
 import { fetchText } from "../rentals/net";
 import { descriptionFlags } from "./normalize";
+import { detailSpecs } from "./specs";
 import type { CarDetail } from "./types";
 
 export const AUTOS_USER_AGENT = process.env.AUTOS_USER_AGENT ||
@@ -86,6 +87,14 @@ export function parseCarDetail(html: string, readAt: string): CarDetail | null {
   const seller = sellerJson ?? sellerHtml;
   const doors = Number(vehicle.numberOfDoors);
   const ldBrand = typeof vehicle.brand === "string" ? vehicle.brand : typeof vehicle.brand?.name === "string" ? vehicle.brand.name : null;
+  // The whole spec table, plus the two figures only the ld+json states: gears (no table row names
+  // them) and the tank when the table left it out.
+  const specs = detailSpecs(html);
+  const gears = Number(vehicle.numberOfForwardGears);
+  if (!("Marchas" in specs) && Number.isInteger(gears) && gears > 0) specs["Marchas"] = String(gears);
+  if (!("Capacidad del tanque" in specs) && typeof vehicle.fuelCapacity === "string" && vehicle.fuelCapacity.trim()) {
+    specs["Capacidad del tanque"] = vehicle.fuelCapacity.trim().slice(0, 80);
+  }
   return {
     readAt,
     price,
@@ -102,6 +111,7 @@ export function parseCarDetail(html: string, readAt: string): CarDetail | null {
     color: typeof vehicle.color === "string" ? vehicle.color : null,
     doors: Number.isInteger(doors) && doors > 0 && doors < 10 ? doors : null,
     pictures: detailPictures(html),
+    specs,
     flags: descriptionFlags(description),
     description: description.slice(0, 5_000),
   };

@@ -25,14 +25,35 @@
         <VCol cols="12" md="6">
           <div class="car-photo">
             <img
-              v-if="car.picture"
-              :src="car.picture"
+              v-if="activePicture"
+              :src="activePicture"
               :alt="car.title"
               width="720"
               height="480"
               referrerpolicy="no-referrer"
             />
             <VIcon v-else icon="mdi-car-outline" size="64" />
+          </div>
+          <div v-if="gallery.length > 1" class="car-gallery mt-2" data-testid="car-gallery">
+            <button
+              v-for="(url, index) in gallery"
+              :key="url"
+              type="button"
+              class="car-gallery__thumb"
+              :class="{ 'car-gallery__thumb--active': url === activePicture }"
+              :aria-label="`Foto ${index + 1} de ${gallery.length}`"
+              :aria-pressed="url === activePicture"
+              @click="activePicture = url"
+            >
+              <img
+                :src="url"
+                alt=""
+                loading="lazy"
+                width="120"
+                height="80"
+                referrerpolicy="no-referrer"
+              />
+            </button>
           </div>
         </VCol>
         <VCol cols="12" md="6">
@@ -194,6 +215,77 @@
         </VCol>
       </VRow>
 
+      <section v-if="car.specs && hasSpecSheet" class="mt-8" data-testid="car-specs">
+        <h2 class="text-h6 mb-1">Ficha técnica</h2>
+        <p class="text-body-2 text-medium-emphasis mb-4">
+          Según la ficha del aviso en {{ car.sourceName }}, leída el
+          {{ formatCarDate(car.specs.readAt) }}. La cargó el vendedor; no la verificamos.
+        </p>
+        <VRow>
+          <VCol v-if="specTables.mechanics.length > 1" cols="12" md="4">
+            <h3 class="text-subtitle-1 font-weight-bold mb-2">Motor y mecánica</h3>
+            <VTable density="compact" class="car-specs__table">
+              <tbody>
+                <tr v-for="item in specTables.mechanics" :key="item.label">
+                  <th scope="row">{{ item.label }}</th>
+                  <td>{{ item.value }}</td>
+                </tr>
+              </tbody>
+            </VTable>
+          </VCol>
+          <VCol v-if="specTables.dimensions.length > 1" cols="12" md="4">
+            <h3 class="text-subtitle-1 font-weight-bold mb-2">Medidas y capacidad</h3>
+            <VTable density="compact" class="car-specs__table">
+              <tbody>
+                <tr v-for="item in specTables.dimensions" :key="item.label">
+                  <th scope="row">{{ item.label }}</th>
+                  <td>{{ item.value }}</td>
+                </tr>
+              </tbody>
+            </VTable>
+          </VCol>
+          <VCol v-if="specTables.deal.length" cols="12" md="4">
+            <h3 class="text-subtitle-1 font-weight-bold mb-2">Condiciones del aviso</h3>
+            <VTable density="compact" class="car-specs__table">
+              <tbody>
+                <tr v-for="item in specTables.deal" :key="item.label">
+                  <th scope="row">{{ item.label }}</th>
+                  <td>{{ item.value }}</td>
+                </tr>
+              </tbody>
+            </VTable>
+          </VCol>
+        </VRow>
+        <template v-if="equipmentGroups.length">
+          <h3 class="text-subtitle-1 font-weight-bold mt-4 mb-1">Equipamiento</h3>
+          <p class="text-body-2 text-medium-emphasis mb-3">
+            Lo que el vendedor marcó en la ficha. Tachado, lo que marcó que el auto no tiene.
+          </p>
+          <div
+            v-for="group in equipmentGroups"
+            :key="group.title"
+            class="mb-3"
+            data-testid="car-equipment-group"
+          >
+            <h4 class="text-body-2 font-weight-bold mb-1">{{ group.title }}</h4>
+            <ul class="car-equipment">
+              <li v-for="label in group.has" :key="label" class="car-equipment__item">
+                <VIcon size="14" aria-hidden="true">mdi-check</VIcon>
+                {{ label }}
+              </li>
+              <li
+                v-for="label in group.lacks"
+                :key="`no-${label}`"
+                class="car-equipment__item car-equipment__item--missing"
+              >
+                <VIcon size="14" aria-hidden="true">mdi-close</VIcon>
+                <s>{{ label }}</s>
+              </li>
+            </ul>
+          </div>
+        </template>
+      </section>
+
       <section v-if="data.cohort" class="mt-8">
         <h2 class="text-h6 mb-2">¿Cómo está el precio?</h2>
         <p class="text-body-1">
@@ -229,6 +321,7 @@
 <script setup lang="ts">
 import { CAR_RISKS_PATH, CAR_RISK_GUIDE } from '~/utils/carsRisk'
 import {
+  CAR_BODY_LABELS,
   CAR_COLOR_LABELS,
   CAR_FLAG_LABELS,
   CAR_FUEL_LABELS,
@@ -249,6 +342,12 @@ import {
   formatCarUsd,
   type CarDetailResponse,
 } from '~/utils/cars'
+import {
+  CAR_DRIVETRAIN_LABELS,
+  carEquipmentGroups,
+  carHasSpecSheet,
+  carSpecTables,
+} from '~/utils/carsSpecs'
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -273,6 +372,17 @@ if (import.meta.server && (error.value || !data.value)) {
   }
 }
 const car = computed(() => data.value!.car)
+// The advert's own gallery when its page was read; the search-card cover otherwise.
+const gallery = computed(() =>
+  car.value.pictures?.length ? car.value.pictures : car.value.picture ? [car.value.picture] : []
+)
+const activePicture = ref<string | null>(gallery.value[0] ?? null)
+watch(gallery, list => {
+  activePicture.value = list[0] ?? null
+})
+const specTables = computed(() => carSpecTables(car.value))
+const equipmentGroups = computed(() => carEquipmentGroups(car.value.specs))
+const hasSpecSheet = computed(() => carHasSpecSheet(car.value))
 const breadcrumbs = computed(() => [
   { title: 'Autos usados', to: localePath(CARS_PATH) },
   ...(data.value?.market
@@ -327,6 +437,45 @@ useHead(() => ({
                   },
                 }
               : {}),
+            ...(gallery.value.length ? { image: gallery.value } : {}),
+            ...(car.value.body ? { bodyType: CAR_BODY_LABELS[car.value.body.type] } : {}),
+            ...(car.value.color ? { color: CAR_COLOR_LABELS[car.value.color] } : {}),
+            ...(car.value.doors ? { numberOfDoors: car.value.doors } : {}),
+            ...(car.value.fuel ? { fuelType: CAR_FUEL_LABELS[car.value.fuel] } : {}),
+            ...(car.value.transmission
+              ? { vehicleTransmission: CAR_TRANSMISSION_LABELS[car.value.transmission] }
+              : {}),
+            ...(car.value.engine || car.value.specs?.powerHp
+              ? {
+                  vehicleEngine: {
+                    '@type': 'EngineSpecification',
+                    ...(car.value.engine ? { engineDisplacement: car.value.engine } : {}),
+                    ...(car.value.specs?.powerHp
+                      ? {
+                          enginePower: {
+                            '@type': 'QuantitativeValue',
+                            value: car.value.specs.powerHp,
+                            unitCode: 'BHP',
+                          },
+                        }
+                      : {}),
+                  },
+                }
+              : {}),
+            ...(car.value.specs?.seats ? { seatingCapacity: car.value.specs.seats } : {}),
+            ...(car.value.specs?.gears ? { numberOfForwardGears: car.value.specs.gears } : {}),
+            ...(car.value.specs?.drivetrain
+              ? { driveWheelConfiguration: CAR_DRIVETRAIN_LABELS[car.value.specs.drivetrain] }
+              : {}),
+            ...(car.value.specs?.fuelTankL
+              ? {
+                  fuelCapacity: {
+                    '@type': 'QuantitativeValue',
+                    value: car.value.specs.fuelTankL,
+                    unitCode: 'LTR',
+                  },
+                }
+              : {}),
             url: canonical.value,
             offers: {
               '@type': 'Offer',
@@ -366,6 +515,56 @@ useHead(() => ({
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+.car-gallery {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.car-gallery__thumb {
+  flex: 0 0 auto;
+  width: 96px;
+  aspect-ratio: 3 / 2;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(var(--v-theme-on-surface), 0.06);
+  cursor: pointer;
+}
+.car-gallery__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.car-gallery__thumb--active {
+  border-color: rgb(var(--v-theme-primary));
+}
+.car-specs__table th {
+  white-space: nowrap;
+  padding-right: 16px;
+}
+.car-equipment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.car-equipment__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 999px;
+  padding: 2px 10px 2px 8px;
+}
+.car-equipment__item--missing {
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 .cars-grid {
   display: grid;

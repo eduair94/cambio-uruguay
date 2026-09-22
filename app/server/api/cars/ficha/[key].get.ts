@@ -1,6 +1,7 @@
 import { carKeyValid, type CarDetailResponse } from '../../../../utils/cars'
 import { CarCatalogModel } from '../../../models/CarCatalog'
 import {
+  carFichaProjection,
   carListingProjection,
   loadCarCatalogMeta,
   loadCarMarket,
@@ -18,7 +19,7 @@ export default defineEventHandler(async event => {
     await connectDb()
     freshDays = (await loadCarCatalogMeta())?.freshDays ?? 4
     row = (await CarCatalogModel.findOne({ key })
-      .select(carListingProjection)
+      .select(carFichaProjection)
       .maxTimeMS(5_000)
       .lean()) as Record<string, unknown> | null
   } catch (error) {

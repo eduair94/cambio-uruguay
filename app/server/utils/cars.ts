@@ -11,9 +11,11 @@ import {
   carSafePermalink,
   carSafePicture,
 } from '../../utils/cars'
+import { CAR_DRIVETRAINS, CAR_EQUIPMENT, CAR_STEERINGS } from '../../utils/carsSpecs'
 import type {
   PublicCarBody,
   PublicCarCatalogMeta,
+  PublicCarEquipment,
   PublicCarFuelEconomy,
   PublicCarListing,
   PublicCarMarketSnapshot,
@@ -23,6 +25,7 @@ import type {
   PublicCarRisk,
   PublicCarRiskSnapshot,
   PublicCarSource,
+  PublicCarSpecs,
 } from '../../utils/carsPublic'
 import { connectDb } from './db'
 
@@ -74,6 +77,13 @@ export const carListingProjection: Record<string, 0 | 1> = Object.fromEntries([
   ['_id', 0],
   ...CAR_FIELDS.map(field => [field, 1]),
 ])
+// The advert's page alone carries its gallery and spec sheet: a list of 24 cards has no use for
+// six photo URLs and forty equipment keys per row.
+export const carFichaProjection: Record<string, 0 | 1> = {
+  ...carListingProjection,
+  pictures: 1,
+  specs: 1,
+}
 
 const sourceOf = (value: unknown): PublicCarSource =>
   CAR_SOURCES_PUBLIC.includes(value as PublicCarSource)
@@ -118,6 +128,55 @@ function bodyOf(value: unknown): PublicCarBody | null {
   const type = CAR_BODY_TYPES.find(item => item === row.type)
   if (!type) return null
   return { type, basis: row.basis === 'model' ? 'model' : 'advert' }
+}
+
+const positiveNumber = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null
+const optionalBoolean = (value: unknown): boolean | null =>
+  value === true ? true : value === false ? false : null
+
+/** La ficha técnica, rearmada campo por campo: una clave o un valor fuera de lista no se publica. */
+function specsOf(value: unknown): PublicCarSpecs | null {
+  if (!value || typeof value !== 'object') return null
+  const row = value as Record<string, unknown>
+  if (typeof row.readAt !== 'string' || !row.readAt) return null
+  const keys = (list: unknown): PublicCarEquipment[] =>
+    Array.isArray(list) ? CAR_EQUIPMENT.filter(key => list.includes(key)) : []
+  return {
+    readAt: row.readAt,
+    powerHp: positiveNumber(row.powerHp),
+    valvesPerCylinder: positiveNumber(row.valvesPerCylinder),
+    gears: positiveNumber(row.gears),
+    drivetrain: CAR_DRIVETRAINS.find(item => item === row.drivetrain) ?? null,
+    steering: CAR_STEERINGS.find(item => item === row.steering) ?? null,
+    fuelTankL: positiveNumber(row.fuelTankL),
+    trunkL: positiveNumber(row.trunkL),
+    lengthMm: positiveNumber(row.lengthMm),
+    heightMm: positiveNumber(row.heightMm),
+    widthMm: positiveNumber(row.widthMm),
+    wheelbaseMm: positiveNumber(row.wheelbaseMm),
+    seats: positiveNumber(row.seats),
+    equipment: keys(row.equipment),
+    missing: keys(row.missing),
+    singleOwner: optionalBoolean(row.singleOwner),
+    acceptsTrade: optionalBoolean(row.acceptsTrade),
+    negotiable: optionalBoolean(row.negotiable),
+    mechanicalWarranty: optionalBoolean(row.mechanicalWarranty),
+    factoryWarranty: optionalBoolean(row.factoryWarranty),
+  }
+}
+
+const GALLERY_MAX = 6
+/** La galería del aviso, cada foto atada al host de su fuente como la de portada. */
+function picturesOf(source: PublicCarSource, value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  const pictures: string[] = []
+  for (const url of value) {
+    const safe = carSafePicture(source, url)
+    if (safe && !pictures.includes(safe)) pictures.push(safe)
+    if (pictures.length >= GALLERY_MAX) break
+  }
+  return pictures
 }
 
 const RISK_CATEGORIES = [
@@ -187,6 +246,7 @@ export function publicCarRow(row: Record<string, any>): PublicCarListing {
     dealerName: optionalText(row.dealerName),
     picture: carSafePicture(source, row.picture),
     pictureCount: optionalNumber(row.pictureCount),
+    pictures: picturesOf(source, row.pictures),
     permalink: carSafePermalink(source, row.permalink),
     firstSeen: String(row.firstSeen),
     lastSeen: String(row.lastSeen),
@@ -213,6 +273,7 @@ export function publicCarRow(row: Record<string, any>): PublicCarListing {
         }
       : null,
     reference: referenceOf(row.reference),
+    specs: specsOf(row.specs),
     hasContact: row.hasContact === true,
   }
 }

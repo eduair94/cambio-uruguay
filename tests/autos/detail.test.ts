@@ -49,6 +49,11 @@ describe("parseCarDetail", () => {
       readAt: READ_AT, price: 9500, currency: "USD", active: true, brand: "BYD", model: "F3", year: 2017, km: 111111,
       version: "1.5 Mt", engineText: "1.5", sellerName: "Olivera Automotores", bodyType: "Sedán", color: "Azul", doors: 5,
       pictures: [], flags: [], description: REAL_DESCRIPTION,
+      // The whole spec table, as the page labels it, plus what only the ld+json states (gears, tank).
+      specs: {
+        "Marca": "BYD", "Modelo": "F3", "Año": "2017", "Versión": "1.5 Mt", "Kilómetros": "111.111 km", "Motor": "1.5",
+        "Capacidad del tanque": "50 L", "Marchas": "5",
+      },
     });
   });
   it("reads price, specs, seller and description from the vehicle page", () => {
@@ -56,6 +61,7 @@ describe("parseCarDetail", () => {
       readAt: READ_AT, price: 9500, currency: "USD", active: true, brand: "BYD", model: "F3", year: 2017, km: 111111,
       version: "1.5 Mt", engineText: "1.5", sellerName: "Olivera Automotores", bodyType: "Sedán", color: "Azul", doors: 5,
       pictures: [], flags: [], description: "Equipamiento completo.\nNunca chocado.",
+      specs: { "Marca": "BYD", "Modelo": "F3", "Año": "2017", "Versión": "1.5 Mt", "Kilómetros": "111.111 km", "Motor": "1.5" },
     });
   });
   it("flags a damaged car and a closed advert", () => {

@@ -106,6 +106,56 @@ describe('publicCarRow', () => {
     ).toBeNull()
   })
 
+  it('rebuilds the spec sheet key by key and the gallery URL by URL', async () => {
+    const { publicCarRow } = await import('../../server/utils/cars')
+    const sheet = {
+      readAt: '2026-09-22T12:00:00.000Z',
+      powerHp: 190,
+      gears: 'six',
+      drivetrain: 'espacial',
+      steering: 'electrica',
+      equipment: ['abs', 'jetpack', 'bluetooth'],
+      missing: 'no',
+      singleOwner: true,
+      acceptsTrade: 'Sí',
+      extra: 'SECRET',
+    }
+    const car = publicCarRow({
+      ...row,
+      source: 'mercadolibre',
+      specs: sheet,
+      pictures: [
+        'https://http2.mlstatic.com/D_1.webp',
+        'https://tracker.example/x.jpg',
+        'https://http2.mlstatic.com/D_1.webp',
+        'https://http2.mlstatic.com/D_2.webp',
+      ],
+    })
+    expect(car.specs).toMatchObject({
+      readAt: sheet.readAt,
+      powerHp: 190,
+      gears: null,
+      drivetrain: null,
+      steering: 'electrica',
+      equipment: ['abs', 'bluetooth'],
+      missing: [],
+      singleOwner: true,
+      acceptsTrade: null,
+    })
+    expect(JSON.stringify(car.specs)).not.toMatch(/SECRET|jetpack/)
+    expect(car.pictures).toEqual([
+      'https://http2.mlstatic.com/D_1.webp',
+      'https://http2.mlstatic.com/D_2.webp',
+    ])
+    expect(
+      publicCarRow({ ...row, source: 'mercadolibre', specs: { powerHp: 190 } }).specs
+    ).toBeNull()
+    expect(publicCarRow({ ...row, source: 'mercadolibre' })).toMatchObject({
+      specs: null,
+      pictures: [],
+    })
+  })
+
   it('keeps each source on its own permalink and picture hosts', async () => {
     const { publicCarRow } = await import('../../server/utils/cars')
     const facebook = publicCarRow({

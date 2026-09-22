@@ -111,6 +111,12 @@ export interface CarDetail {
   doors: number | null;
   /** Private: the advert's own photos, for the checks that need to look at them. */
   pictures?: string[];
+  /**
+   * Private: the advert's whole spec table as the page labels it ("Potencia" → "101 hp"). Missing
+   * on pages read before 2026-09-22; `{}` on a page that had no table. What gets published is the
+   * allowlisted rebuild in ./specs.ts.
+   */
+  specs?: Record<string, string>;
   flags: CarTextFlag[];
   /** Private: never projected to a public collection. */
   description: string;

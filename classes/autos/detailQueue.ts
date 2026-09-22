@@ -14,7 +14,7 @@ export interface DetailTarget {
   key: string;
   permalink: string;
   /** Por qué está en la cola, para poder contarlo en el log. */
-  reason: "cheap" | "blocking" | "new";
+  reason: "cheap" | "blocking" | "new" | "specs";
 }
 
 export interface DetailQueueOptions {
@@ -88,7 +88,10 @@ export function detailTargets(docs: readonly StoredCar[], options: DetailQueueOp
   const targets: Array<DetailTarget & { rank: number; size: number; lastSeen: string }> = [];
   for (const doc of docs) {
     if (!ML_PAGE.test(doc.listing.permalink)) continue;
-    if (doc.detail) {
+    // Una ficha leída antes del 2026-09-22 no guardó la tabla técnica: vuelve una vez, después de
+    // todo lo que nunca se leyó. Una tabla vacía (`{}`) ya cuenta como leída.
+    const upgrade = !!doc.detail && doc.detail.specs === undefined;
+    if (doc.detail && !upgrade) {
       // Ya la leímos: sólo vuelve a la cola si se pidió relectura y la ficha es vieja.
       if (!refreshCutoff || Date.parse(doc.detail.readAt) >= refreshCutoff) continue;
     }
@@ -99,12 +102,12 @@ export function detailTargets(docs: readonly StoredCar[], options: DetailQueueOp
     // Un auto con el doble de kilómetros que sus hermanos no está barato: está usado.
     const kmComparable = !group?.km || km === null || km <= group.km * (1 + KM_TOLERANCE_RATIO) + KM_TOLERANCE_MIN;
     const cheap = !!group && price > 0 && 1 - price / group.price >= cheapGap && kmComparable;
-    const reason: DetailTarget["reason"] = cheap ? "cheap" : blocksCohort(doc) ? "blocking" : "new";
+    const reason: DetailTarget["reason"] = cheap ? "cheap" : blocksCohort(doc) ? "blocking" : upgrade ? "specs" : "new";
     targets.push({
       key: doc.key,
       permalink: doc.listing.permalink,
       reason,
-      rank: reason === "cheap" ? 0 : reason === "blocking" ? 1 : 2,
+      rank: reason === "cheap" ? 0 : reason === "blocking" ? 1 : reason === "new" ? 2 : 3,
       size: groupSizes.get(key) ?? 0,
       lastSeen: doc.lastSeen,
     });
@@ -115,7 +118,7 @@ export function detailTargets(docs: readonly StoredCar[], options: DetailQueueOp
 }
 
 export const queueSummary = (targets: readonly DetailTarget[]): Record<DetailTarget["reason"], number> => {
-  const summary: Record<DetailTarget["reason"], number> = { cheap: 0, blocking: 0, new: 0 };
+  const summary: Record<DetailTarget["reason"], number> = { cheap: 0, blocking: 0, new: 0, specs: 0 };
   for (const target of targets) summary[target.reason]++;
   return summary;
 };
