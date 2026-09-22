@@ -84,6 +84,35 @@ export function currencyTail(
   }
 }
 
+/**
+ * La misma guarda de plausibilidad que la raíz (`classes/pricehistory/normalize.ts`): un salto de más
+ * de 5× contra la mediana de los demás puntos es un error de carga, no un cambio de precio. Con dos
+ * puntos y un salto así no se publica serie: no hay forma de saber cuál de los dos es el bueno.
+ */
+export const PRICE_HISTORY_MAX_RATIO = 5
+
+const median = (values: readonly number[]): number => {
+  const sorted = [...values].sort((a, b) => a - b)
+  const middle = Math.floor(sorted.length / 2)
+  return sorted.length % 2 ? sorted[middle]! : (sorted[middle - 1]! + sorted[middle]!) / 2
+}
+
+export function plausiblePoints(points: readonly PriceHistoryPoint[]): PriceHistoryPoint[] | null {
+  if (points.length < 2) return [...points]
+  if (points.length === 2) {
+    const ratio = points[1]!.p / points[0]!.p
+    return ratio > PRICE_HISTORY_MAX_RATIO || ratio < 1 / PRICE_HISTORY_MAX_RATIO ? null : [...points]
+  }
+  const kept = points.filter((point, index) => {
+    const others = points.filter((_, other) => other !== index).map(other => other.p)
+    const reference = median(others)
+    if (!(reference > 0)) return true
+    const ratio = point.p / reference
+    return ratio <= PRICE_HISTORY_MAX_RATIO && ratio >= 1 / PRICE_HISTORY_MAX_RATIO
+  })
+  return kept.length ? kept : null
+}
+
 export function summarize(points: readonly PriceHistoryPoint[]): {
   changePct: number | null
   lastChange: PriceHistoryChange | null
@@ -106,14 +135,16 @@ export function summarize(points: readonly PriceHistoryPoint[]): {
 function build(id: string, raw: RawPoint[], fallback: PriceHistoryCurrency, firstSeen: string, lastSeen: string): PriceHistorySeries | null {
   const tail = currencyTail(raw, fallback)
   if (!tail.points.length) return null
+  const points = plausiblePoints(tail.points)
+  if (!points || !points.length) return null
   return {
     id,
     currency: tail.currency,
-    points: tail.points,
-    firstSeen: firstSeen || tail.points[0]!.d,
-    lastSeen: lastSeen || tail.points[tail.points.length - 1]!.d,
+    points,
+    firstSeen: firstSeen || points[0]!.d,
+    lastSeen: lastSeen || points[points.length - 1]!.d,
     currencySwitched: tail.switched,
-    ...summarize(tail.points),
+    ...summarize(points),
   }
 }
 

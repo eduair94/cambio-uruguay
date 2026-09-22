@@ -26,7 +26,7 @@ La vertical **autos sale de `carlistings` y no de `marketpricelogs`**, aunque la
 carlistings se actualiza cada hora y marketpricelogs una vez por día, así que publicar las dos
 contaría el mismo cambio dos veces con distinta resolución.
 
-## Las dos reglas del lector
+## Las reglas del lector
 
 - **La moneda nunca se mezcla.** Una serie es de UNA moneda. Se camina desde el último punto hacia
   atrás y se corta en el primero cuya moneda conocida sea distinta; ahí se marca `currencySwitched` y
@@ -34,7 +34,15 @@ contaría el mismo cambio dos veces con distinta resolución.
 - **Un punto sin moneda hereda la del aviso.** Los puntos de `pricewatchoffers` anteriores al
   2026-09-17 no llevan `c` (ver `PRICEWATCH.md`): "desconocida" no es "otra", así que no corta nada.
 
-Y una tercera que es de la UI: **nunca se afirma nada anterior a `firstSeen`**. Todo bloque lleva
+La tercera es de plausibilidad, y salió de mirar la primera ficha publicada: **un salto de más de 5×
+no es un cambio de precio, es un error de carga**. `carlistings` guarda el punto igual —`priceSanity.ts`
+retira el AVISO del catálogo, no el punto de su historia— y el bloque anunciaba "subió 6.597,5 %" sobre
+un Chery Tiggo 8 que había pasado de US$ 16.590 a US$ 1.111.111 (medido el 2026-09-22). Con tres o más
+puntos se descarta el que se aparta de la mediana de los demás; con dos no hay mediana ni forma de
+saber cuál es el bueno, así que **no se publica serie**. El factor es 5 y no 2 porque duplicar el
+precio de un alquiler pasa de verdad (15.000 → 30.000, medido el mismo día).
+
+Y una cuarta que es de la UI: **nunca se afirma nada anterior a `firstSeen`**. Todo bloque lleva
 "lo medimos desde el <fecha>", porque un aviso publicado en 2024 no tiene historia nuestra.
 
 ## Dónde se ve
