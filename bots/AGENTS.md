@@ -29,7 +29,7 @@ Dev (tsx, no build): `npm run dev:telegram`, `npm run dev:discord`, `npm run dai
 | --- | --- | --- |
 | `currency-bot-telegram` | `dist/entries/telegram.js` | always-on, single instance (long-poll) |
 | `currency-bot-discord` | `dist/entries/discord.js` | always-on (gateway) |
-| `currency-daily` | `dist/entries/daily_report.js` | cron `0 12 * * *` (09:00 America/Montevideo) |
+| `currency-daily` | `dist/entries/daily_report.js` | cron `0 12 * * *` (09:00 America/Montevideo). Desde 2026-09 el cuerpo lleva UNA **guía del día** (`src/format/guides.ts`, 25 ganchos escritos a mano para `/guias/<slug>`, sin cifras ni meses) entre el resumen de la IA y las noticias: ocupa `TG_GUIDE_RESERVE` (200) del caption de 1024, o sea el tercer titular, y **entra entera o no entra**, nunca truncada. Rotación propia en la Mongo de bots, colección `botdailyguideposts` (`src/store/guide_state.ts`), **aparte de `botpromoposts`** del promotor de X para que los dos trabajos no se reordenen la cola; sin Mongo rota por día. Sólo avanza con un posteo REAL en el canal de Telegram (ni `DRY_RUN`, ni sin credenciales). La misma guía va al canal y a todos los DMs |
 | `currency-alerts` | `dist/entries/alert_check.js` | cron `*/15 11-21 * * *` (market hours) |
 | `currency-content-promo` | `dist/entries/content_promo.js` | cron `0 14 * * 1,3,5` (11:00 America/Montevideo) — one evergreen guide to X. **Needs `CONTENT_PROMO_ENABLED=1` on top of the Twitter creds**, or it only logs the tweet. |
 
@@ -37,3 +37,5 @@ After changing Discord slash commands, run `npm run register:discord` once.
 
 ## Deploy
 - **Separate deploy surface.** `scripts/deploy-backend.sh` explicitly excludes `bots/` (and `mcp/`) — own cwd, own build, out of scope. Pushing to main does NOT auto-deploy bots; build + `pm2 reload` them manually on the VPS.
+- **Ni los tests corren en CI**: `bots/` no está en ningún path-filter de `.github/workflows/deploy.yml`, así que `cd bots && npm test` se corre a mano antes de empujar. `test/promos.test.ts` lee `app/utils/siteNav.ts`, `tools.ts` y `guides*.ts` COMO TEXTO (bots no puede importar de `app/`) y falla si un slug del catálogo de X o de la guía del día ya no existe en el sitio.
+- Secuencia en el VPS: `cd mcp && npm ci && npm run build` → `cd ../bots && npm ci && npm run build` → `pm2 restart currency-daily` (la cron no relee `ecosystem.config.js`, alcanza con el restart). Antes, `DRY_RUN=1 FORCE=1 npm run daily` imprime el caption exacto con su largo (`N/1024 chars`) y la guía elegida, contra datos y IA reales, sin mandar nada.

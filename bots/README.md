@@ -2,7 +2,7 @@
 
 Telegram + Discord bots and a Twitter/X daily poster for [cambio-uruguay.com](https://cambio-uruguay.com):
 
-- **Daily report** — once a day, an AI market summary + per-currency deltas + news to every configured channel, plus DMs to opt-in subscribers, plus a tweet.
+- **Daily report** — once a day, an AI market summary + per-currency deltas + one **guide of the day** (a hand-written hook linking one of the site's `/guias/` pages, rotated least-recently-posted-first) + news to every configured channel, plus DMs to opt-in subscribers, plus a tweet.
 - **Intraday alerts** — when a watched currency moves beyond a threshold vs the previous day (with cooldown/dedup).
 - **Interactive bots** — `/dolar`, `/cotizacion`, `/mejor`, `/convertir`, `/resumen`, `/historico`, `/noticias`, `/suscribir`, `/desuscribir`, `/idioma`.
 
@@ -63,9 +63,9 @@ report core (data + ai, reuses mcp) ──► formatters (es/en/pt) ──► pu
 ```
 
 - `src/report/` — build daily/alert data, AI summary, share image.
-- `src/format/` — pure i18n + channel message formatters (unit-tested).
+- `src/format/` — pure i18n + channel message formatters (unit-tested). `guides.ts` is the guide-of-the-day catalogue (25 hooks; a hook states a mechanism the page explains, no figures, no month names, and the whole block must fit `TG_GUIDE_RESERVE` in every language — the tests measure each entry).
 - `src/publish/` — per-channel publishers + fan-out orchestrator (`Promise.allSettled`).
-- `src/store/` — Mongo subscriber store + alert/job dedup (+ pure `decideAlert`).
+- `src/store/` — Mongo subscriber store + alert/job dedup (+ pure `decideAlert`). `promo_state.ts` (X promoter) and `guide_state.ts` (daily guide) are two separate least-recently-posted ledgers on purpose: one shared collection would let each job push the other's freshest page to the back of its queue.
 - `src/commands/` — platform-agnostic command router (unit-tested).
 - `src/entries/` — pm2 process entry points.
 
