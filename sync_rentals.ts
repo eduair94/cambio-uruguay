@@ -23,6 +23,7 @@ dotenv.config();
 dotenv.config({ path: "app/.env" });
 
 import { appDbConfigured } from "./classes/appdb";
+import { recordRentalPriceLogs } from "./classes/pricehistory/marketLog";
 import { buildRentalProperties } from "./classes/rentals/dedupe";
 import { fetchUsdUyuRate } from "./classes/rentals/rate";
 import { harvestRentalMarket } from "./classes/rentals/sources";
@@ -120,6 +121,17 @@ async function main(): Promise<void> {
     okSources,
     staleOfferDays: STALE_OFFER_DAYS,
   });
+
+  // El punto de precio de cada aviso visto en esta corrida. Va acá, y no sólo en la corrida diaria de
+  // `currency-market-series`, porque ese job mide una vez por día: un aviso que cambia a las 15 y otra
+  // vez a las 20 queda con un solo punto, y uno que sube y baja el mismo día no queda. Propio
+  // `try/catch`: un fallo del historial nunca puede costar el directorio que ya se guardó.
+  try {
+    const logged = await recordRentalPriceLogs(properties, today);
+    console.log(`[rentals] historial de precio: ${logged.written} avisos`);
+  } catch (error) {
+    console.error("[rentals] no se pudo registrar el historial de precios", error);
+  }
 
   // Sacar cada aviso de las filas que ya no son su dueña, ANTES de podar: una fila que queda sin
   // ofertas la borra este barrido, y lo que sobrevive entra a la poda con su lastSeen recalculado.
