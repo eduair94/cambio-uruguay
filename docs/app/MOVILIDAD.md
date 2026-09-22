@@ -57,6 +57,29 @@ un umbral medido (`tests/movilidad/registry.test.ts`): 350 W y 500 W quedan en `
 `movilidadUsadoAnswer` (`app/utils/movilidad.ts`) separa "no hay categoría donde no convenga" de
 "todavía no relevamos suficiente usado", que son dos respuestas distintas al mismo "sin datos".
 
+## Una pieza que abre el título no es un vehículo (22/9/2026)
+
+Medido sobre los 622 avisos de la PRIMERA corrida publicada del directorio: doce son repuestos que
+pasaban `include` porque el título nombra el vehículo al que van — "Pantalla Lcd Para Bicicleta
+Eléctrica", "Palanca De Freno Para E-bike", "Sprocket Trasero De Acero Para E-bike Y Scooter",
+"Llantas Y Cámaras Para E-bike", dos "Kit bicicleta eléctrica". No es cosmético: a $ 2.958 una
+pantalla entra a la banda por abajo, y con el directorio ordenado por menor precio encabeza "las
+ofertas más baratas".
+
+`PIEZA_ABRE_EL_TITULO` (`classes/movilidad/registry.ts`) es la regla de `IS_A_PART` de autos y por
+la misma razón: la pieza cuenta **sólo si ABRE el título**. Se probó también "abre un segmento"
+(después de `-`, `|` o `,`) sobre los mismos 622 avisos: marcaba 10 más y **9 eran vehículos
+reales** ("Monopatín Eléctrico Knex Urban | Motor 800w", "Segway Ninebot F25 Patinete Eléctrico,
+Motor Potente De 30…"), así que se descartó con la medición en la mano. Lo que paga la regla
+estricta es un aviso de 622, el que antepone la marca ("Y&trefen Ebike - Juego De Palanca De
+Freno"): un falso negativo es una fila de más en el directorio, un falso positivo borra monopatines
+reales de la banda. Los doce títulos y los seis vehículos-control están fijados en
+`tests/movilidad/registry.test.ts`.
+
+Una fila ya guardada que deja de clasificar no se vuelve a escribir: sale de la ventana que sirve
+la API a los 4 días y de la colección a los 30. Para no esperar, `npm run movilidad_prune_listings`
+(`--apply` para borrar; sin eso sólo informa) relee lo guardado contra el registro de hoy.
+
 ## Qué queda afuera, y por qué
 
 Ninguna de las dos categorías incluye una bicicleta o un monopatín SIN motor (`MONOPATIN_INCLUDE`/
