@@ -287,6 +287,33 @@
         "mejor tarjeta para puntos uruguay"
       ],
       "hypothesis": "La pagina decia 'reverificado 17/8/2026' y publicaba cifras que los emisores ya habian cambiado (Santander no publicaba la anualidad y ahora si; PassCard subio el mantenimiento un 70%; OCA Blue paso a 1 Metro cada $120; ANDA cobra 27,30%). Quien busca 'tarjetas de credito uruguay' compara anualidad y puntos, no definiciones (r/uruguay 2026). Hipotesis: un titulo con el anio y el angulo 'anualidad', mas una FAQ con las preguntas reales (cuanto cuesta por anio, descuenta IVA, mas barata para financiar, sin costo anual) y un registro de cambios fechado con el documento de cada emisor, suben la porcion de clics del cluster sin tocar el ranking (los puntajes cambian en 2 fichas: Santander costo 58→62, PassCard costo 52→48, y el orden general no se mueve)."
+    },
+    {
+      "id": "historico-espejos-en-pt-meta",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/en/historico/*",
+        "/pt/historico/*",
+        "/en/sucursales/*",
+        "/pt/sucursales/*"
+      ],
+      "hypothesis": "Con descripcion y canonica en su propio idioma, los espejos /en y /pt dejan de aparecer para consultas en castellano y esos clics vuelven a la URL en espanol."
+    },
+    {
+      "id": "historico-ultimos-cambios",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/historico/*"
+      ],
+      "hypothesis": "Una lista fechada de los ultimos cambios de la casa en la moneda, servida en el HTML de /historico/<casa>/<moneda>, gana el clic frente a un competidor que la publica y responde 'cuando cambio' sin salir de la pagina."
+    },
+    {
+      "id": "sucursales-h1-horarios",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/sucursales/*"
+      ],
+      "hypothesis": "Un h1 con casa, departamento y 'horarios' (lo que la consulta trae) alinea el encabezado con el titulo y sube el CTR de la familia."
     }
   ]
 }

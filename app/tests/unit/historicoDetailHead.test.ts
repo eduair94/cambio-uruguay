@@ -63,6 +63,19 @@ const renderer = vue.createRenderer<any, any>({
   patchProp() {},
 })
 
+interface RecentChangeFixture {
+  origin: string
+  code: string
+  type: string
+  previousBuy: number
+  previousSell: number
+  buy: number
+  sell: number
+  buyChanged: boolean
+  sellChanged: boolean
+  observedAt: string
+}
+
 function setupHistory(
   type?: string,
   server = false,
@@ -71,8 +84,11 @@ function setupHistory(
     origin?: string
     currency?: string
     evolution?: answer.EvolutionRow[]
+    /** What `/api/rate-changes-recent` answers; the query it received is recorded in `fetchCalls`. */
+    changes?: RecentChangeFixture[]
   } = {}
 ) {
+  const fetchCalls: Array<{ url: string; options: Record<string, unknown> }> = []
   const route = vue.reactive({
     params: { origin: options.origin ?? 'brou', currency: options.currency ?? 'usd', type },
     query: {},
@@ -110,7 +126,11 @@ function setupHistory(
       throw new Error(`Unexpected import: ${name}`)
     },
     useI18n: () => ({ t: (key: string) => key, locale: vue.ref('es') }),
-    useLocalePath: () => (path: string) => path,
+    // Mirrors @nuxtjs/i18n `prefix_except_default`: the default locale keeps
+    // the bare path, the others get their prefix — so the alternates the page
+    // re-points on a folded variant can be asserted per locale.
+    useLocalePath: () => (path: string, code?: string) =>
+      code && code !== 'es' ? `/${code}${path}` : path,
     useApiService: () => ({
       getEvolutionData: async () => ({
         data: {
@@ -134,7 +154,24 @@ function setupHistory(
       error: vue.ref(null),
       insight: vue.ref(null),
     }),
-    useFetch: async () => ({ data: vue.ref({ items: [] }) }),
+    useFetch: async (url: string, fetchOptions: Record<string, unknown> = {}) => {
+      fetchCalls.push({ url, options: fetchOptions })
+      if (url === '/api/rate-changes-recent') {
+        // `immediate: false` (the BCU page) leaves the default in place, like Nuxt does.
+        const fallback = (fetchOptions.default as (() => unknown) | undefined)?.() ?? {
+          asOf: '',
+          changes: [],
+        }
+        return {
+          data: vue.ref(
+            fetchOptions.immediate === false
+              ? fallback
+              : { asOf: '2026-09-22T12:00:00.000Z', changes: options.changes ?? [] }
+          ),
+        }
+      }
+      return { data: vue.ref({ items: [] }) }
+    },
     useLazyAsyncData: () => ({ data: vue.ref(null) }),
     useAsyncData: async (_key: string, fetch: () => Promise<unknown>) => ({
       data: vue.ref(await fetch()),
@@ -180,7 +217,7 @@ function setupHistory(
   } else {
     setup = context.exports.default.setup({}, { expose: () => {} })
   }
-  return { setup: setup!, route, head, errors, unmount }
+  return { setup: setup!, route, head, errors, unmount, fetchCalls }
 }
 
 describe('historical detail client metadata', () => {
@@ -328,5 +365,127 @@ describe('BCU reference presentation in the compiled page', () => {
       page.chartData.value.datasets.map((dataset: { label: string }) => dataset.label)
     ).toEqual(['precioCompra', 'precioVenta'])
     expect(page.chartData.value.datasets[0].data).toEqual([39, 40])
+  })
+})
+
+// Medido en producción el 2026-09-22 sobre /historico/brou/usd/ebrou: canónica al
+// padre y siete `rel=alternate hreflang` (x-default incluido) hacia la variante
+// misma. La página no puede borrarlos (unhead los deduplica por `id`), así que los
+// re-apunta al grupo del padre con los mismos ids que emite el layout.
+describe('una variante plegada re-apunta el hreflang al grupo del padre', () => {
+  const byId = (tags: Array<{ tag: string; props: Record<string, unknown> }>) =>
+    Object.fromEntries(
+      tags
+        .filter(tag => tag.tag === 'link' && tag.props.rel === 'alternate')
+        .map(tag => [tag.props.id, [tag.props.hreflang, tag.props.href]])
+    )
+
+  it('emite los siete enlaces del layout con las URLs del padre, por idioma', async () => {
+    const { setup, head } = setupHistory('ebrou', true)
+    await setup
+    const tags = await head.resolveTags()
+    expect(byId(tags)).toEqual({
+      'i18n-xd': ['x-default', 'https://cambio-uruguay.com/historico/brou/usd'],
+      'i18n-alt-es': ['es', 'https://cambio-uruguay.com/historico/brou/usd'],
+      'i18n-alt-es-ES': ['es-ES', 'https://cambio-uruguay.com/historico/brou/usd'],
+      'i18n-alt-en': ['en', 'https://cambio-uruguay.com/en/historico/brou/usd'],
+      'i18n-alt-en-US': ['en-US', 'https://cambio-uruguay.com/en/historico/brou/usd'],
+      'i18n-alt-pt': ['pt', 'https://cambio-uruguay.com/pt/historico/brou/usd'],
+      'i18n-alt-pt-PT': ['pt-PT', 'https://cambio-uruguay.com/pt/historico/brou/usd'],
+    })
+    // El defecto exacto: ninguno vuelve a la variante.
+    for (const [, href] of Object.values(byId(tags))) expect(href).not.toContain('ebrou')
+    expect(tags.find(tag => tag.props.rel === 'canonical')?.props.href).toBe(
+      'https://cambio-uruguay.com/historico/brou/usd'
+    )
+  })
+
+  it('la página base no toca los alternates: los deja al layout', async () => {
+    const { setup, head } = setupHistory(undefined, true)
+    await setup
+    expect(byId(await head.resolveTags())).toEqual({})
+  })
+
+  it('la canónica ya no imprime `hid` como atributo', async () => {
+    const { setup, head } = setupHistory('billete', true)
+    await setup
+    const canonical = (await head.resolveTags()).find(tag => tag.props.rel === 'canonical')
+    expect(canonical?.props.hid).toBeUndefined()
+    expect(canonical?.props.href).toBe('https://cambio-uruguay.com/historico/brou/usd')
+  })
+})
+
+describe('últimos cambios de esta casa en esta moneda', () => {
+  const change = (
+    observedAt: string,
+    over: Partial<RecentChangeFixture> = {}
+  ): RecentChangeFixture => ({
+    origin: 'brou',
+    code: 'USD',
+    type: '',
+    previousBuy: 39.1,
+    previousSell: 40.5,
+    buy: 39.35,
+    sell: 40.75,
+    buyChanged: true,
+    sellChanged: true,
+    observedAt,
+    ...over,
+  })
+  const recentCall = (calls: Array<{ url: string; options: Record<string, unknown> }>) =>
+    calls.find(call => call.url === '/api/rate-changes-recent')
+
+  it('pide al proxy cacheado por casa y moneda, y el tipo sólo cuando la URL trae uno', async () => {
+    const variant = setupHistory('ebrou')
+    await variant.setup
+    expect(recentCall(variant.fetchCalls)?.options.query).toEqual({
+      origin: 'brou',
+      code: 'USD',
+      type: 'EBROU',
+      limit: 8,
+    })
+    const base = setupHistory()
+    await base.setup
+    expect(recentCall(base.fetchCalls)?.options.query).toEqual({
+      origin: 'brou',
+      code: 'USD',
+      type: undefined,
+      limit: 8,
+    })
+  })
+
+  it('formatea cada fila en el idioma de la página, con fecha de Montevideo, y corta en 8', async () => {
+    const changes = Array.from({ length: 10 }, (_, i) =>
+      change(`2026-09-${String(22 - i).padStart(2, '0')}T15:00:00.000Z`, {
+        buyChanged: i % 2 === 0,
+        type: i === 1 ? 'EBROU' : '',
+      })
+    )
+    const { setup } = setupHistory(undefined, false, false, { changes })
+    const page = (await setup) as any
+    expect(page.recentChangeRows.value).toHaveLength(8)
+    expect(page.recentChangeRows.value[0]).toMatchObject({
+      day: '22/09/2026',
+      type: '',
+      buyChanged: true,
+      sellChanged: true,
+      previousBuy: '39,10',
+      buy: '39,35',
+      previousSell: '40,50',
+      sell: '40,75',
+    })
+    expect(page.recentChangeRows.value[1]).toMatchObject({ day: '21/09/2026', type: 'EBROU' })
+  })
+
+  it('sin datos no hay filas, y la página del BCU ni siquiera consulta', async () => {
+    const empty = setupHistory(undefined, false, false, { changes: [] })
+    expect(((await empty.setup) as any).recentChangeRows.value).toEqual([])
+    const bcu = setupHistory(undefined, false, false, {
+      origin: 'bcu',
+      changes: [change('2026-09-22T15:00:00.000Z')],
+    })
+    const page = (await bcu.setup) as any
+    expect(recentCall(bcu.fetchCalls)?.options.immediate).toBe(false)
+    expect(page.recentChangeRows.value).toEqual([])
   })
 })

@@ -64,7 +64,15 @@ describe("las rutas del libro de cambios existen", () => {
     const missing: string[] = [];
     for (const spec of specs) {
       for (const raw of spec.routes) {
-        const route = raw.replace(/[*]$/, "").replace(/\/$/, "") || "/";
+        // Los espejos /en y /pt no tienen carpeta propia: @nuxtjs/i18n (`prefix_except_default`)
+        // sirve TODA página bajo esos prefijos desde el mismo archivo. Una fila que mide un espejo
+        // (`/en/historico/*`) declara una ruta real, y `routeMatches` ya la coteja tal cual contra
+        // las URLs de Search Console; lo único que la rechazaba era este cotejo contra el árbol.
+        const route =
+          raw
+            .replace(/^\/(?:en|pt)(?=\/|$)/, "")
+            .replace(/[*]$/, "")
+            .replace(/\/$/, "") || "/";
         if (!pageExists(route)) missing.push(`${spec.id} → ${raw}`);
       }
     }

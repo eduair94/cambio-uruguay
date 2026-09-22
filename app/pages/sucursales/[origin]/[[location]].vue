@@ -8,8 +8,15 @@
             <v-icon class="mr-2" color="primary">mdi-bank</v-icon>
             <!-- Mismo caso que /historico/<casa>: la plantilla no emitía ningún encabezado de
                  nivel 1. /sucursales/brou/montevideo son 11.303 impresiones. -->
+            <!-- «<Casa> en <Departamento>: sucursales y horarios»: la consulta trae la casa y el
+                 lugar, y «horarios» es la palabra que el título ya lleva. Antes decía
+                 «Sucursales - BROU» en todos los departamentos, y en inglés «Branches - BROU». -->
             <h1 class="text-h5 text-md-h4 ma-0">
-              {{ $t('sucursalesMenu') }} - {{ exchangeHouseName }}
+              {{
+                location
+                  ? $t('sucursalesHeading', { origin: exchangeHouseName, location: locationLabel })
+                  : $t('sucursalesHeadingAll', { origin: exchangeHouseName })
+              }}
             </h1>
             <v-spacer />
             <v-chip color="success" size="small">
@@ -94,8 +101,18 @@
             <v-icon start>mdi-table</v-icon>
             {{ $t('listaSucursales') }}
             <v-spacer />
+            <!-- La cifra nombra su fuente: el padrón de instituciones del BCU (`/api/branches`,
+                 el mismo dato del que sale el título), no el largo de la tabla de abajo. -->
             <span class="text-caption">
-              {{ branchesData?.length || 0 }} {{ $t('sucursalesEncontradas') }}
+              {{ $t('sucursalesCountSource', { count: branchCount }) }}
+              <a
+                v-if="bcuRegistryUrl"
+                :href="bcuRegistryUrl"
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+              >
+                {{ $t('sucursalesBcuLink') }}
+              </a>
             </span>
           </v-card-title>
 
@@ -209,7 +226,8 @@ import { applyBranchCorrections, type BranchFieldSources } from '~/utils/branchC
 
 interface BranchDirectory {
   branches: BranchPage[]
-  casas: Record<string, { name: string }>
+  /** `bcu` is the institution's page in the Banco Central's registry, the source of the branch list. */
+  casas: Record<string, { name: string; bcu?: string }>
   usd: Record<string, { buy: number; sell: number }>
 }
 
@@ -401,15 +419,24 @@ const seoDescription = computed(() => {
 
   // Lead with the number when we have it: the pages whose description carries
   // today's buy/sell are the only ones on this site clearing 1% CTR.
+  //
+  // La frase sale de una clave i18n y la cifra se formatea en el idioma de la
+  // página. Medido el 2026-09-22: /en/sucursales/brou/montevideo describía «BROU
+  // hoy: dólar $39,35 compra / $40,75 venta. BROU has 26 branches…» — castellano
+  // delante del inglés, y Google servía la URL /en para consultas en castellano.
   const usd = usdToday.value
   if (!usd) return base
   const money = (value: number) =>
-    value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  return `${name} hoy: dólar $${money(usd.buy)} compra / $${money(usd.sell)} venta. ${base}`.slice(
-    0,
-    300
-  )
+    value.toLocaleString(dateLocale(locale.value), {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  const lead = t('seo.sucursalesLead', { origin: name, buy: money(usd.buy), sell: money(usd.sell) })
+  return `${lead} ${base}`.slice(0, 300)
 })
+
+/** The institution's page in the BCU registry — the source the branch count cites. */
+const bcuRegistryUrl = computed(() => directory.value?.casas?.[origin]?.bcu || '')
 
 const mapsUrl = computed(() => {
   if (!location) return null
@@ -559,15 +586,20 @@ const canonicalDept = computed(() => {
   return (fromDirectory || location).toLocaleLowerCase('es')
 })
 
+// Pasa por `localePath`: cada idioma es canónico de sí mismo (el estándar de i18n
+// y lo que ya hace /historico/<casa>). Antes /en/sucursales/brou/montevideo
+// mandaba a /sucursales/brou/montevideo y Google lo ignoraba: servía la URL /en
+// para consultas en castellano, porque el contenido no era el mismo.
 useHead({
   link: [
     {
       rel: 'canonical',
-      href: computed(() =>
-        location
-          ? `https://cambio-uruguay.com/sucursales/${origin}/${encodeURIComponent(canonicalDept.value)}`
-          : `https://cambio-uruguay.com/sucursales/${origin}`
-      ),
+      href: computed(() => {
+        const path = location
+          ? `/sucursales/${origin}/${encodeURIComponent(canonicalDept.value)}`
+          : `/sucursales/${origin}`
+        return `https://cambio-uruguay.com${localePath(path)}`
+      }),
     },
   ],
 })

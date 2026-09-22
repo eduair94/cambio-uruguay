@@ -55,3 +55,63 @@ export function historyDetailCanonicalPath(
   if (!raw) return base
   return SELF_CANONICAL_HISTORY_TYPES.has(raw.toLowerCase()) ? `${base}/${raw}` : base
 }
+
+/**
+ * True when the `[[type]]` segment is a duplicate view that folds into the base
+ * page — i.e. the URL visited is NOT its own canonical.
+ *
+ * Existe porque la canónica sola no alcanzaba. Medido el 2026-09-22 sobre
+ * /historico/brou/usd/ebrou: `rel=canonical` apuntaba al padre, pero los siete
+ * `rel=alternate hreflang` (es, es-ES, en, en-US, pt, pt-PT y x-default) que el
+ * layout emite para toda ruta seguían apuntando a la variante misma. Google
+ * ignora el hreflang de una URL no canónica y la contradicción debilita al
+ * grupo entero, así que la página necesita saber si está plegada para re-apuntar
+ * esos enlaces al grupo del padre.
+ */
+export function isFoldedHistoryType(type?: string | null): boolean {
+  const raw = String(type ?? '').trim()
+  return raw !== '' && !SELF_CANONICAL_HISTORY_TYPES.has(raw.toLowerCase())
+}
+
+/**
+ * The hreflang cluster exactly as @nuxtjs/i18n emits it from the layout
+ * (`useLocaleHead({ key: 'id' })`), so a page can override it link by link.
+ *
+ * Los `id` importan: unhead deduplica esos `<link>` por `id`, y un `id` es un
+ * prop que sobrevive a cualquier sobreescritura — una entrada "vacía" con el
+ * mismo `id` imprimiría igual `<link id="i18n-alt-es">`. Lo único que una
+ * página puede hacer desde su lado es re-apuntarlos, y para eso tiene que
+ * emitir los MISMOS ids que el layout: por código (`i18n-alt-es`), por ISO
+ * (`i18n-alt-es-ES`) y el `x-default` (`i18n-xd`), que apunta al idioma por
+ * defecto del sitio. Verificado contra el HTML de producción el 2026-09-22.
+ */
+export const HREFLANG_LOCALES = [
+  { code: 'es', iso: 'es-ES' },
+  { code: 'en', iso: 'en-US' },
+  { code: 'pt', iso: 'pt-PT' },
+] as const
+
+export interface HreflangLink {
+  id: string
+  rel: 'alternate'
+  hreflang: string
+  href: string
+}
+
+/**
+ * Builds the seven alternate links for one canonical path.
+ *
+ * @param urlFor absolute URL of that path in a given locale code (the page
+ *   passes its `localePath` wrapped with the site host).
+ */
+export function hreflangLinksFor(urlFor: (code: string) => string): HreflangLink[] {
+  const links: HreflangLink[] = [
+    { id: 'i18n-xd', rel: 'alternate', hreflang: 'x-default', href: urlFor('es') },
+  ]
+  for (const { code, iso } of HREFLANG_LOCALES) {
+    const href = urlFor(code)
+    links.push({ id: `i18n-alt-${code}`, rel: 'alternate', hreflang: code, href })
+    links.push({ id: `i18n-alt-${iso}`, rel: 'alternate', hreflang: iso, href })
+  }
+  return links
+}
