@@ -48,6 +48,31 @@ describe("Facebook partial coverage and source-owned location", () => {
     expect(toRawRental({ ...advert("4", null), title: "Alquiler en Centro" }, "montevideo")).toMatchObject({ department: "", neighborhood: "" });
   });
 
+  it("keeps what the item page taught: description, barrio, coordinate, guarantees", async () => {
+    const detail = { description: "Casa en alquiler. Zona Piedras Blancas, a media cuadra de José Belloni. Garantía Anda o Porto. 2 dormitorios, 60 m2", pinCity: "Montevideo", latitude: -34.8412, longitude: -56.1421 };
+    const raw = toRawRental({ ...advert("1", "Montevideo, Uruguay"), title: "Casa en alquiler", image: "https://scontent.example/x.jpg" }, "montevideo", detail)!;
+    expect(raw).toMatchObject({ department: "Montevideo", neighborhood: "Piedras Blancas", latitude: -34.8412, longitude: -56.1421, bedrooms: 2, area: 60 });
+    expect(raw.description).toContain("Piedras Blancas");
+    expect(raw.details).toMatchObject({ description: expect.stringContaining("Belloni"), images: ["https://scontent.example/x.jpg"] });
+    // "Porto" is Porto Seguro to the guarantee parser: an insurer, not a fund.
+    expect(raw.guarantees).toEqual(expect.arrayContaining(["anda", "aseguradora"]));
+    expect(raw.petsAllowed).toBeNull();
+    // A page that was read but said nothing changes nothing; a card alone still has no coordinate.
+    const silent = toRawRental({ ...advert("2", "Montevideo, Uruguay"), title: "Casa en alquiler" }, "montevideo", { description: "", pinCity: "Montevideo", latitude: null, longitude: null })!;
+    expect(silent).toMatchObject({ neighborhood: "", latitude: null });
+    expect(silent).not.toHaveProperty("details");
+    expect(silent).not.toHaveProperty("description");
+    // The pin's city fills a department the card lacked, never more.
+    expect(toRawRental({ ...advert("3", null), title: "Alquiler 1 dormitorio en Centro" }, "montevideo", { description: "", pinCity: "Montevideo", latitude: null, longitude: null }))
+      .toMatchObject({ department: "Montevideo", neighborhood: "Centro" });
+    // The harvest asks the store for the cards it read and passes each its detail.
+    vi.mocked(fetchJson).mockResolvedValue({ ok: true, results: [{ ...advert("7", "Montevideo, Uruguay"), title: "Casa en alquiler" }] });
+    const details = vi.fn(async (ids: readonly string[]) => new Map(ids.map(id => [id, detail])));
+    const result = await harvestFacebookMarketplace("fast", 41.5, { details });
+    expect(details).toHaveBeenCalledWith(["facebook:7"]);
+    expect(result.listings[0]).toMatchObject({ listingId: "facebook:7", neighborhood: "Piedras Blancas", latitude: -34.8412 });
+  });
+
   it("adds the corroborated Colonia anchor only to the full sample; never claims completeness", async () => {
     vi.mocked(fetchJson).mockResolvedValue({ ok: true, results: [advert("1")] });
     const result = await harvestFacebookMarketplace("full", 41.5);
@@ -101,7 +126,9 @@ describe("Facebook partial coverage and source-owned location", () => {
     vi.mocked(fetchJson).mockResolvedValue({ ok: true, results: [advert("1"), { ...advert("2"), title: "Busco alquiler" }] });
     const result = await harvestFacebookMarketplace("fast", 41.5);
     expect(result.listings).toHaveLength(1);
-    expect(result.note).toContain("1 avisos únicos de 4 lecturas; 2 descartados");
+    // Cards are deduplicated before conversion, so a rejected card counts once however many
+    // searches returned it.
+    expect(result.note).toContain("1 avisos únicos de 4 lecturas; 1 descartados");
     expect(vi.mocked(fetchJson).mock.calls.every(([url]) => new URL(url).searchParams.get("limit") === "120")).toBe(true);
   });
 });

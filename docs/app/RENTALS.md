@@ -120,6 +120,36 @@ campo vacío, compare-and-set, sin renovar fechas); el asignador de zonas horari
 `officialZone` por nombre en la hora siguiente. Con barrio y sin coordenada la ficha entra al
 filtro de barrio y a «Datos del barrio», pero no al mapa: un centroide no es una ubicación.
 
+**La ficha de Marketplace: `currency-rentals-detail`** (`sync_rentals_detail.ts`, `15 * * * *`,
+`scripts/run-rentals-detail.sh` con flock propio; diseño en
+`docs/superpowers/specs/2026-09-22-rentals-facebook-detail-design.md`). Después del título quedaban
+1.823 ofertas sin barrio, y la ficha del aviso trae lo que la tarjeta no: la DESCRIPCIÓN. Medido
+sobre 100 fichas de esos avisos: 89 con descripción, 31 nombran un barrio, 17 traen una esquina
+o una dirección; con esquina geocodificada y validada se ubican 36 (Montevideo 30 de 63). Nada
+más del nodo aporta (`walk_score`/`transit_score` nulos, `nearby_*` vacíos, `home_address` dice
+"Canelones", `external_url` cero). El job lee las fichas con puppeteer atado al Chrome de
+`facebook_profile_browser` (CDP `:9224`, lo compartido con autos vive en `classes/facebook/`),
+60 por corrida a 6 s (`RENTALS_FB_DETAIL_MAX`, `RENTALS_FB_DETAIL_MINUTES` 12), primero
+Montevideo sin barrio y sin coordenada, cada aviso UNA vez (una ficha sin nodo se guarda igual con
+`found: false`). Escribe la colección privada `rentalfacebookdetails` (descripción saneada con
+`rentalDescription`, ciudad del pin, barrio y punto derivados, candidatos, consulta y respuesta
+del geocodificador) y completa en `rentallistings` sólo los campos VACÍOS de propiedades con un
+único aviso de Facebook: `details.description`, `identity.description`, barrio, departamento,
+coordenada. Barrio: `neighborhoodFromText` sobre el título y después sobre la descripción.
+Coordenada: `addressCandidates` saca esquinas ("Guillermo Rodríguez esquina San Martín") y
+direcciones con número ("Felipe Argentó 467") sólo de segmentos con ancla locativa y sin
+palabras de la vivienda; se geocodifican hasta dos por aviso contra el proxy de Google del sitio
+(`RENTALS_GEOCODER_URL`, `RENTALS_FB_GEOCODE_MAX` 40 por corrida) y **se acepta sólo** una
+intersección real ("&" en la dirección devuelta y una palabra en común con el texto) o un
+ROOFTOP/RANGE con un número que estaba en el texto — sin esa regla Google devuelve el centroide
+de UNA calle, hasta 10 km del inmueble ("Guillermo Rodríguez esq San Martín" → San Martín, CP
+15000). Si el texto nombra un barrio INE y el punto cae en otro barrio INE, se conserva el nombre
+y se descarta el punto. **La cosecha conserva lo aprendido**: `harvestFacebookMarketplace` carga
+las fichas leídas de los avisos que vuelve a ver y `toRawRental` mezcla descripción, barrio,
+coordenada, garantías por texto y dormitorios/baños/m² por texto; sin eso una re-cosecha
+reconstruiría la identidad desde la tarjeta pelada. No se toman: nombre del vendedor, contactos,
+`petsAllowed` (sólo dato estructurado), el pin como ubicación, `home_address`.
+
 El último barrido guardado de alcance `full` se conserva en `rentalmetas`, clave
 `uy-rentals-last-full`, separado del estado horario público. La auditoría de sólo lectura es
 `npx ts-node scripts/oneoff/rentals_coverage_audit.ts`; permite cotejar una muestra con
@@ -268,7 +298,7 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 |---|---|---|---|
 | **Mercado Libre** | bridge propio en `:9656` (`pm2 mercadolibre`), `?raw=true` | dirección con calle+número, barrio, dormitorios/baños/m², precio, foto | gastos comunes, fecha de publicación, lat/lon, nombre del vendedor |
 | **InfoCasas** | `__NEXT_DATA__` de sus páginas de listado | todo lo anterior **más** lat/lon, gastos comunes, inmobiliaria y fecha de publicación | — |
-| **Facebook Marketplace** | bridge propio en `:9657` (`pm2 facebook_marketplace`) | precio, título, ciudad, foto; **el barrio cuando el propio título lo nombra** (`classes/rentals/neighborhoods.ts`) | dirección, coordenadas (ver abajo: el pin de la ficha no es el inmueble), m², dormitorios (salvo que estén en el título) |
+| **Facebook Marketplace** | bridge propio en `:9657` (`pm2 facebook_marketplace`) para las tarjetas; **`currency-rentals-detail` lee la ficha** de cada aviso (CDP al Chrome del perfil) | precio, título, ciudad, foto; el barrio cuando el título o la descripción lo nombran (`classes/rentals/neighborhoods.ts`); descripción, garantías por texto, m²/dormitorios por texto y **coordenada cuando el texto trae una esquina o dirección geocodificable** (`classes/rentals/facebookDetail.ts`) | dirección exacta, gastos comunes, fecha de publicación; el pin de la ficha no es el inmueble y no se publica |
 | **Casasweb** | HTML público de `resultados.aspx`; paginación mediante el formulario de búsqueda que entrega el servidor | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
 | **Inmuebles El País** | los dos endpoints de su propio buscador: `POST /api/chat/init` (una búsqueda guardada por departamento) y `GET /api/chat/<id>/results?page&limit=500`; UA de navegador y cabecera `x-cambio-uruguay-bot`, con puppeteer de respaldo cuando Cloudflare desafía | dirección, barrio, lat/lon, dormitorios/baños/m², gastos comunes, inmobiliaria, foto y **la garantía como dato estructurado** | fecha de publicación original; teléfono y correo de la inmobiliaria (existen en la respuesta y **no se copian**); garaje y amueblado |
 

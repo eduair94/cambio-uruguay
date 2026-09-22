@@ -354,6 +354,17 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // La ficha de los avisos de Facebook de /alquileres-uruguay: descripcion, barrio y esquina
+      // geocodificada. :15 no pisa a autos (:29 horaria, 07:43 diaria) en el mismo Chrome.
+      name: "currency-rentals-detail",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "scripts/run-rentals-detail.sh",
+      interpreter: "bash",
+      cron_restart: "15 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Mercado Libre's price guide for the model-years the directory holds: the version catalogue
       // and a second opinion where our own sample is thin (it is ML's median, not a valuation).
       name: "currency-autos-guide",

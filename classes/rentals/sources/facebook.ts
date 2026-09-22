@@ -19,7 +19,11 @@ import {
   parseAttributes,
   parseLocationLine,
 } from "../normalize";
-import { neighborhoodFromText } from "../neighborhoods";
+import { appDbConfigured } from "../../appdb";
+import type { RentalFacebookDetailDocument } from "../../models/RentalFacebookDetail";
+import { rentalOfferDetails } from "../details";
+import { locateFacebookRental } from "../facebookDetail";
+import { guaranteesFromText } from "../guarantees";
 import type { RawRental, RentalCurrency } from "../types";
 import type { RentalSourceResult } from "./types";
 
@@ -55,7 +59,10 @@ interface FbResponse {
   results?: FbListing[];
 }
 
-export function toRawRental(item: FbListing, _locationHint: string): RawRental | null {
+/** What the item page said, when currency-rentals-detail already read it (see facebookDetail.ts). */
+export type FbRentalDetailInput = Pick<RentalFacebookDetailDocument, "description" | "pinCity" | "latitude" | "longitude">;
+
+export function toRawRental(item: FbListing, _locationHint: string, detail?: FbRentalDetailInput | null): RawRental | null {
   const id = String(item.id || "").trim();
   const title = String(item.title || "").trim();
   const amount = Number(item.price?.amount);
@@ -74,14 +81,19 @@ export function toRawRental(item: FbListing, _locationHint: string): RawRental |
   // The card's location is a city ("Montevideo", "Ciudad de la Costa"), never a street.
   // The search anchor is not evidence of where an individual suggested advert is located.
   const location = parseLocationLine(String(item.location || ""));
-  // The barrio is in the TITLE or nowhere: the bridge returns no description, and the item page's
-  // pin is a ~1 km grid point 3–6 km from the property (see neighborhoods.ts). A title naming a
-  // barrio of the card's department refines the card's town; one naming a unique locality names
-  // the department when the card gave none. Anything less stays "sin informar".
-  const named = neighborhoodFromText(title, location.department);
-  const department = location.department || named?.department || "";
-  const neighborhood = named?.neighborhood || location.neighborhood;
-  const attributes = parseAttributes([title]);
+  // The barrio is in the TITLE, in the DESCRIPTION the detail job read, or nowhere: the bridge
+  // returns no description, and the item page's pin is a ~1 km grid point 3–6 km from the property
+  // (see neighborhoods.ts / facebookDetail.ts). A title naming a barrio of the card's department
+  // refines the card's town; a unique locality names the department when the card gave none; the
+  // pin's city only fills a missing department. Anything less stays "sin informar".
+  const description = detail?.description || "";
+  const { neighborhood, department } = locateFacebookRental({
+    title, description, department: location.department, cardNeighborhood: location.neighborhood, pinCity: detail?.pinCity ?? null,
+  });
+  const attributes = parseAttributes(description ? [title, description] : [title]);
+  // A coordinate only ever comes from a corner or numbered address the seller wrote, geocoded and
+  // validated by the detail job; the card and the pin never place an advert.
+  const located = !!detail && typeof detail.latitude === "number" && typeof detail.longitude === "number";
 
   return {
     parkingSpaces: null,
@@ -106,20 +118,36 @@ export function toRawRental(item: FbListing, _locationHint: string): RawRental |
     address: "",
     street: "",
     streetNumber: "",
-    latitude: null,
-    longitude: null,
+    latitude: located ? detail!.latitude : null,
+    longitude: located ? detail!.longitude : null,
     bedrooms: attributes.bedrooms,
     bathrooms: attributes.bathrooms,
     area: attributes.area,
     // El puente devuelve id,title,url,price,image,location,condition: no hay campo de mascotas.
     // Y el titulo no alcanza: 3 de 1.947 ofertas de Facebook lo mencionan (0,15 %, medido 2026-09-04).
+    // La descripción tampoco cuenta: la política es sólo dato ESTRUCTURADO.
     petsAllowed: null,
-    // El puente de Facebook no devuelve descripcion, asi que no hay de donde sacarla.
-    guarantees: [],
+    // Las garantías sí salen del texto, como en InfoCasas: la ficha es la única fuente en Facebook.
+    guarantees: description ? guaranteesFromText(description) : [],
+    ...(description ? {
+      description,
+      details: rentalOfferDetails({ description, images: item.image ? [item.image] : [] }),
+    } : {}),
   };
 }
 
-export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: number): Promise<RentalSourceResult> {
+export interface HarvestFacebookOptions {
+  /** The stored item-page reads for these listingIds (`facebook:<id>`); defaults to the app DB. */
+  details?: (listingIds: readonly string[]) => Promise<ReadonlyMap<string, FbRentalDetailInput>>;
+}
+
+async function storedDetails(listingIds: readonly string[]): Promise<ReadonlyMap<string, FbRentalDetailInput>> {
+  if (!listingIds.length || !appDbConfigured()) return new Map();
+  const { loadFacebookDetails } = await import("../facebookDetailStore");
+  return loadFacebookDetails(listingIds);
+}
+
+export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: number, options: HarvestFacebookOptions = {}): Promise<RentalSourceResult> {
   if (process.env.RENTALS_FB_ENABLED === "0") {
     return { key: "facebook", ok: true, complete: false, listings: [], note: "deshabilitado por configuración" };
   }
@@ -129,7 +157,7 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
   const locations = mode === "fast" ? LOCATIONS.slice(0, 1) : LOCATIONS;
   const queries = mode === "fast" ? QUERIES.slice(0, 2) : QUERIES;
 
-  const byId = new Map<string, RawRental>();
+  const cards = new Map<string, FbListing>();
   let successful = 0;
   let failed = 0;
   let rawRows = 0;
@@ -164,13 +192,23 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
       rawRows += payload.results.length;
 
       for (const item of payload.results) {
-        const listing = toRawRental(item, location);
-        if (!listing) { rejected++; continue; }
-        const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
-        if (!isPlausibleRent(priceUyu, listing.propertyType)) { rejected++; continue; }
-        byId.set(listing.listingId, listing);
+        const id = String(item?.id || "").trim();
+        if (id && !cards.has(id)) cards.set(id, item);
       }
     }
+  }
+
+  // The item pages already read by currency-rentals-detail: a re-harvest must keep the barrio,
+  // the coordinate and the description learned there, or it would rebuild the identity from the
+  // bare card and forget them.
+  const details = await (options.details ?? storedDetails)([...cards.keys()].map(id => `facebook:${id}`));
+  const byId = new Map<string, RawRental>();
+  for (const [id, item] of cards) {
+    const listing = toRawRental(item, "", details.get(`facebook:${id}`) ?? null);
+    if (!listing) { rejected++; continue; }
+    const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
+    if (!isPlausibleRent(priceUyu, listing.propertyType)) { rejected++; continue; }
+    byId.set(listing.listingId, listing);
   }
 
   return {
