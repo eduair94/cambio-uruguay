@@ -15,6 +15,7 @@ import {
   EQUIPAR_SOURCE_LABELS,
   equiparProductosNormalize,
   type EquiparProductosFacet,
+  type RetailProductosVertical,
   type EquiparProductoPublic,
   type EquiparProductosQuery,
   type EquiparProductosResponse,
@@ -41,6 +42,12 @@ export interface RetailProductosSource {
   loadMeta: () => Promise<{ generatedAt: string | null; usdUyu: number | null }>
   /** Segundos de caché de borde en una respuesta buena. */
   maxAge?: number
+  /**
+   * Contra qué vocabulario se valida `?categoria=`. Sin esto, el normalizador la validaba siempre
+   * contra el de equipar y una categoría de movilidad se caía en silencio: el directorio de
+   * monopatines servía también las bicicletas (medido en producción el 22/9/2026).
+   */
+  vertical?: RetailProductosVertical
 }
 
 const idsOf = (raw: unknown): string[] => {
@@ -68,7 +75,12 @@ async function facet(
       _id: string
       name: string
       count: number
-    }>([{ $match: match }, { $group: { _id: `$${slugField}`, name: { $first: `$${nameField}` }, count: { $sum: 1 } } }, { $sort: { count: -1, _id: 1 } }, { $limit: limit }])
+    }>([
+      { $match: match },
+      { $group: { _id: `$${slugField}`, name: { $first: `$${nameField}` }, count: { $sum: 1 } } },
+      { $sort: { count: -1, _id: 1 } },
+      { $limit: limit },
+    ])
     .option({ maxTimeMS: FACET_MS })
   return rows
     .filter(row => row._id)
@@ -94,8 +106,8 @@ export async function retailProductosResponse(
   raw: Record<string, unknown>,
   source: RetailProductosSource
 ): Promise<EquiparProductosResponse> {
-  const { model, loadMeta, maxAge = 300 } = source
-  const query: EquiparProductosQuery = equiparProductosNormalize(raw)
+  const { model, loadMeta, maxAge = 300, vertical = 'equipar' } = source
+  const query: EquiparProductosQuery = equiparProductosNormalize(raw, vertical)
   const ids = idsOf(raw.ids)
 
   try {

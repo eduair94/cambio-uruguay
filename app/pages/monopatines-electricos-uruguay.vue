@@ -193,6 +193,7 @@
         fixed-categoria="monopatin-electrico"
         hide-list
         hide-category
+        vertical="movilidad"
         anchor-id="movilidad-resultados"
         class="movilidad-directorio"
         @update="dirUpdate"
@@ -361,6 +362,7 @@ const {
   clear: dirClear,
 } = await useEquiparProductosDirectorio('monopatin-electrico', {
   apiPath: '/api/movilidad/productos',
+  vertical: 'movilidad',
   key: 'movilidad-productos-monopatin',
 })
 

@@ -101,6 +101,7 @@ import {
   type EquiparProductosFacet,
   type EquiparProductosFacets,
   type EquiparProductosQuery,
+  type RetailProductosVertical,
 } from '~/utils/equiparProductos'
 
 const props = withDefaults(
@@ -113,8 +114,11 @@ const props = withDefaults(
     mobile?: boolean
     open?: boolean
     total?: number | null
+    /** Contra qué vocabulario se valida la categoría al aplicar: sin esto, aplicar un filtro en
+     * movilidad borraba su propia categoría (el normalizador la validaba contra la de equipar). */
+    vertical?: RetailProductosVertical
   }>(),
-  { fixedCategoria: '', mobile: false, open: false, total: null }
+  { fixedCategoria: '', mobile: false, open: false, total: null, vertical: 'equipar' }
 )
 const emit = defineEmits<{
   apply: [query: EquiparProductosQuery]
@@ -179,18 +183,24 @@ function apply() {
   // VTextField `clearable` sets the model to null; the normalizer only reads strings.
   emit(
     'apply',
-    equiparProductosNormalize({
-      ...draft,
-      q: draft.q ?? '',
-      categoria: props.fixedCategoria || draft.categoria,
-      orden: props.query.orden,
-    })
+    equiparProductosNormalize(
+      {
+        ...draft,
+        q: draft.q ?? '',
+        categoria: props.fixedCategoria || draft.categoria,
+        orden: props.query.orden,
+      },
+      props.vertical
+    )
   )
 }
 function clear() {
   emit(
     'apply',
-    equiparProductosNormalize({ categoria: props.fixedCategoria, orden: props.query.orden })
+    equiparProductosNormalize(
+      { categoria: props.fixedCategoria, orden: props.query.orden },
+      props.vertical
+    )
   )
 }
 </script>

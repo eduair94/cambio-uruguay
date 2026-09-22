@@ -7,6 +7,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { equiparProductosNormalize } from '../../utils/equiparProductos'
+import { equiparProductosMatch } from '../../server/utils/equiparProductos'
 
 const APP = join(__dirname, '..', '..')
 const read = (...parts: string[]): string => readFileSync(join(APP, ...parts), 'utf8')
@@ -87,5 +89,50 @@ describe('la grilla compartida sin "mi lista"', () => {
   it('un aviso de movilidad sin foto no cae en el ícono de equipar la casa', () => {
     expect(listingCard).toContain('mdi-scooter-electric')
     expect(listingCard).toContain('mdi-bicycle-electric')
+  })
+})
+
+describe('la categoría se valida contra el vocabulario de quien pregunta', () => {
+  // El bug, medido en producción el 22/9/2026 con la primera corrida cargada: el normalizador
+  // validaba SIEMPRE contra las categorías de equipar, así que `?categoria=monopatin-electrico` se
+  // caía en silencio y el directorio de monopatines devolvía las 614 filas — bicicletas incluidas.
+  it('una categoría de movilidad sobrevive al normalizador de su propia vertical', () => {
+    expect(
+      equiparProductosNormalize({ categoria: 'monopatin-electrico' }, 'movilidad').categoria
+    ).toBe('monopatin-electrico')
+    expect(
+      equiparProductosNormalize({ categoria: 'bicicleta-electrica' }, 'movilidad').categoria
+    ).toBe('bicicleta-electrica')
+  })
+
+  it('y llega al $match, que es lo que separa un directorio del otro', () => {
+    const query = equiparProductosNormalize({ categoria: 'monopatin-electrico' }, 'movilidad')
+    expect(equiparProductosMatch(query, '2026-09-18').category).toBe('monopatin-electrico')
+  })
+
+  it('sigue descartando una categoría inventada, y la de la otra vertical', () => {
+    expect(equiparProductosNormalize({ categoria: 'zapatos' }, 'movilidad').categoria).toBe('')
+    expect(equiparProductosNormalize({ categoria: 'heladera' }, 'movilidad').categoria).toBe('')
+    expect(equiparProductosNormalize({ categoria: 'monopatin-electrico' }).categoria).toBe('')
+  })
+
+  it('una variante sólo viaja con su categoría válida', () => {
+    const query = equiparProductosNormalize(
+      { categoria: 'monopatin-electrico', variante: 'urbano' },
+      'movilidad'
+    )
+    expect(query.variante).toBe('urbano')
+    expect(
+      equiparProductosNormalize({ categoria: 'monopatin-electrico', variante: 'urbano' }).variante
+    ).toBe('')
+  })
+
+  it('la ruta, el panel y las dos páginas declaran la vertical', () => {
+    expect(movilidadRoute).toContain("vertical: 'movilidad'")
+    expect(read('components', 'equipar', 'ProductosFilters.vue')).toContain('props.vertical')
+    for (const src of [monopatinPage, bicicletaPage]) {
+      expect(src).toContain("vertical: 'movilidad'")
+      expect(src).toContain('vertical="movilidad"')
+    }
   })
 })

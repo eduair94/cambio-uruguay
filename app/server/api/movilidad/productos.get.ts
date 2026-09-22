@@ -20,6 +20,7 @@ import type { EquiparProductosResponse } from '../../../utils/equiparProductos'
 export default defineEventHandler(async (event): Promise<EquiparProductosResponse> => {
   return retailProductosResponse(event, getQuery(event) as Record<string, unknown>, {
     model: MovilidadListingModel,
+    vertical: 'movilidad',
     loadMeta: async () => {
       const meta = (await MovilidadMetaModel.findOne({ key: MOVILIDAD_META_KEY })
         .select({ _id: 0, generatedAt: 1, usdUyu: 1 })

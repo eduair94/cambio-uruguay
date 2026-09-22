@@ -124,6 +124,7 @@
         fixed-categoria="bicicleta-electrica"
         hide-list
         hide-category
+        vertical="movilidad"
         anchor-id="movilidad-resultados"
         class="movilidad-directorio"
         @update="dirUpdate"
@@ -263,6 +264,7 @@ const {
   clear: dirClear,
 } = await useEquiparProductosDirectorio('bicicleta-electrica', {
   apiPath: '/api/movilidad/productos',
+  vertical: 'movilidad',
   key: 'movilidad-productos-bicicleta',
 })
 

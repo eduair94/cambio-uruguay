@@ -12,6 +12,7 @@
       :query="query"
       :facets="facets"
       :fixed-categoria="fixedCategoria"
+      :vertical="vertical"
       mobile
       :total="data?.total ?? null"
       @apply="apply"
@@ -24,6 +25,7 @@
           :query="query"
           :facets="facets"
           :fixed-categoria="fixedCategoria"
+          :vertical="vertical"
           :total="data?.total ?? null"
           @apply="apply"
         />
@@ -117,6 +119,7 @@ import {
   type EquiparProductosQuery,
   type EquiparProductosResponse,
   type EquiparProductosSort,
+  type RetailProductosVertical,
 } from '~/utils/equiparProductos'
 
 const props = withDefaults(
@@ -136,8 +139,16 @@ const props = withDefaults(
     hideList?: boolean
     /** La etiqueta de categoría no agrega nada cuando la página entera ES la categoría. */
     hideCategory?: boolean
+    /** Contra qué vocabulario valida la categoría el panel de filtros (equipar o movilidad). */
+    vertical?: RetailProductosVertical
   }>(),
-  { fixedCategoria: '', anchorId: 'equipar-resultados', hideList: false, hideCategory: false }
+  {
+    fixedCategoria: '',
+    anchorId: 'equipar-resultados',
+    hideList: false,
+    hideCategory: false,
+    vertical: 'equipar',
+  }
 )
 const emit = defineEmits<{
   update: [query: EquiparProductosQuery]

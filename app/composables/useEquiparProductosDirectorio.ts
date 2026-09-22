@@ -7,6 +7,7 @@ import {
   equiparProductosWithout,
   type EquiparProductosQuery,
   type EquiparProductosResponse,
+  type RetailProductosVertical,
 } from '~/utils/equiparProductos'
 
 /**
@@ -26,17 +27,23 @@ import {
  */
 export async function useEquiparProductosDirectorio(
   fixedCategoria = '',
-  options: { apiPath?: string; key?: string } = {}
+  options: { apiPath?: string; key?: string; vertical?: RetailProductosVertical } = {}
 ) {
   const apiPath = options.apiPath ?? '/api/equipar/productos'
+  // Contra qué vocabulario se valida la categoría: la de movilidad no existe en el de equipar, y
+  // validada contra el equivocado se cae en silencio (bug medido el 22/9/2026).
+  const vertical = options.vertical ?? 'equipar'
   const route = useRoute()
   const router = useRouter()
 
   const query = computed<EquiparProductosQuery>(() =>
-    equiparProductosNormalize({
-      ...(route.query as Record<string, unknown>),
-      categoria: fixedCategoria || (route.query.categoria as unknown),
-    })
+    equiparProductosNormalize(
+      {
+        ...(route.query as Record<string, unknown>),
+        categoria: fixedCategoria || (route.query.categoria as unknown),
+      },
+      vertical
+    )
   )
 
   const { data, error } = await useAsyncData(
@@ -67,7 +74,9 @@ export async function useEquiparProductosDirectorio(
     update(equiparProductosWithout(query.value, keys))
 
   const clear = () =>
-    update(equiparProductosNormalize({ categoria: fixedCategoria, orden: query.value.orden }))
+    update(
+      equiparProductosNormalize({ categoria: fixedCategoria, orden: query.value.orden }, vertical)
+    )
 
   return { query, data, error, facets, chips, filtered, update, remove, clear }
 }
