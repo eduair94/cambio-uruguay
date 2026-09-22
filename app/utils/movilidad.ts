@@ -1,3 +1,4 @@
+import type { PriceHistorySeries } from './priceHistory'
 // Shapes and helpers for /monopatines-electricos-uruguay and /bicicletas-electricas-uruguay.
 //
 // `app/utils` is a FLAT auto-import namespace, so every export here is prefixed `movilidad`/
@@ -46,6 +47,11 @@ export interface MovilidadBand {
 }
 
 export interface MovilidadOffer {
+  /** El id del aviso, para cruzarlo con su historial de precio (`pricewatchoffers`). Aditivo: las
+   * filas guardadas antes del 2026-09-22 no lo traen. */
+  listingId?: string
+  /** Cómo cambió el precio de ESTE aviso, cuando tenemos historia suya. */
+  priceHistory?: PriceHistorySeries
   seller: string
   title: string
   url: string

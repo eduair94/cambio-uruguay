@@ -48,6 +48,10 @@ import type { RetailListing } from "../retail/types";
 import type { RetailSourceRun } from "../retail/harvest";
 
 export interface PhoneOffer {
+  /** El id del aviso, el mismo con el que `pricewatchoffers` guarda su historial de precio: sin esto
+   * la ficha no puede decir que ESTE vendedor bajó su propio precio (sólo la banda del modelo, que se
+   * mueve también cuando entra otro vendedor). Aditivo: las filas escritas antes no lo tienen. */
+  listingId: string;
   seller: string;
   sellerKey: string;
   source: "store" | "mercadolibre";
@@ -432,6 +436,7 @@ function screenByMedianOfOthers(condition: PhoneCondition, candidates: readonly 
 function toOffer(candidate: Candidate): PhoneOffer {
   const { listing, condition, priceUyu, esimOnly } = candidate;
   return {
+    listingId: listing.listingId,
     seller: listing.sellerName,
     sellerKey: listing.sellerKey,
     source: listing.source === "mercadolibre" ? "mercadolibre" : "store",

@@ -470,6 +470,10 @@ describe("buildPhoneCatalog", () => {
               listing({
                 title: `Celular Nokia G60 256gb Negro Vendedor ${price}`,
                 price,
+                // El id del aviso también va por precio: el helper lo deriva de un contador de
+                // llamadas, así que sin esto el "mismo" aviso entra con dos identidades distintas
+                // según el orden y el test compararía dos avisos diferentes, no dos órdenes.
+                listingId: `store:${price}`,
                 sellerKey: `store:${price}`,
                 sellerName: `Seller ${price}`,
                 url: `https://example.com.uy/p/nokia-g60-${price}`,

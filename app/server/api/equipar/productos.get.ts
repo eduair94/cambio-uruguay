@@ -1,6 +1,7 @@
 import { EquiparListingModel } from '../../models/EquiparListing'
 import { EquiparMetaModel } from '../../models/EquiparMeta'
 import { connectDb } from '../../utils/db'
+import { pricewatchHistory } from '../../utils/priceHistory'
 import {
   EQUIPAR_PRODUCTOS_PROJECTION,
   equiparProductoPublic,
@@ -15,6 +16,7 @@ import {
   EQUIPAR_SOURCE_LABELS,
   equiparProductosNormalize,
   type EquiparProductosFacet,
+  type EquiparProductoPublic,
   type EquiparProductosQuery,
   type EquiparProductosResponse,
 } from '../../../utils/equiparProductos'
@@ -61,6 +63,21 @@ const idsOf = (raw: unknown): string[] => {
   ].slice(0, IDS_MAX)
 }
 
+
+/**
+ * Le pega a cada fila su propia variación de precio. Es un `$in` de como mucho una página de ids
+ * contra el índice único de `pricewatchoffers`: no agrega sobre la colección, así que va en vivo. Si
+ * la lectura falla, las filas salen igual y sin variación.
+ */
+async function withHistory(items: EquiparProductoPublic[]): Promise<EquiparProductoPublic[]> {
+  if (!items.length) return items
+  const history = await pricewatchHistory(items.map(item => item.listingId)).catch(() => new Map())
+  if (!history.size) return items
+  return items.map(item =>
+    history.has(item.listingId) ? { ...item, priceHistory: history.get(item.listingId)! } : item
+  )
+}
+
 export default defineEventHandler(async (event): Promise<EquiparProductosResponse> => {
   const raw = getQuery(event) as Record<string, unknown>
   const query: EquiparProductosQuery = equiparProductosNormalize(raw)
@@ -87,7 +104,7 @@ export default defineEventHandler(async (event): Promise<EquiparProductosRespons
         total: rows.length,
         page: 1,
         perPage: rows.length,
-        items: rows.map(row => equiparProductoPublic(row as Record<string, unknown>)),
+        items: await withHistory(rows.map(row => equiparProductoPublic(row as Record<string, unknown>))),
         facets: EQUIPAR_PRODUCTOS_EMPTY_FACETS,
         suspect: 0,
       }
@@ -128,7 +145,7 @@ export default defineEventHandler(async (event): Promise<EquiparProductosRespons
       total,
       page: query.page,
       perPage: EQUIPAR_PRODUCTOS_PER_PAGE,
-      items: rows.map(row => equiparProductoPublic(row as Record<string, unknown>)),
+      items: await withHistory(rows.map(row => equiparProductoPublic(row as Record<string, unknown>))),
       facets: {
         categorias,
         variantes,

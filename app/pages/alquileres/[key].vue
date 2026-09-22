@@ -663,6 +663,15 @@ useHead(() => ({
           </template>
           <p class="rental-page__note">{{ t('sourceFacts') }}</p>
         </section>
+        <!-- La variación del AVISO elegido, no de la vivienda: la misma vivienda publicada en tres
+             portales tiene tres precios pedidos, y promediarlos sería un número que nadie publicó. -->
+        <section
+          v-if="selectedOffer.priceHistory"
+          class="rental-page__section"
+          data-testid="rental-price-history"
+        >
+          <PriceHistoryBlock :series="selectedOffer.priceHistory" id="rental-price-history" />
+        </section>
         <section class="rental-page__section" aria-labelledby="rental-description-title">
           <h2 id="rental-description-title">{{ t('descriptionShort') }}</h2>
           <p

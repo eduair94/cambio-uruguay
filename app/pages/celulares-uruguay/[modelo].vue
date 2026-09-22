@@ -81,6 +81,11 @@ hay un precio para hoy).
                   formatOriginal(offer.listPrice, offer.currency)
                 }}</s>
                 {{ formatOriginal(offer.price, offer.currency) }}
+                <!-- La variación de ESTE aviso, distinta de la serie del modelo de más abajo: acá el
+                     sujeto es el vendedor, allá la banda de todo el mercado del modelo. -->
+                <span v-if="offerMove(offer)" class="offer-move" :class="offerMove(offer)!.down ? 'is-down' : 'is-up'">
+                  {{ offerMove(offer)!.text }}
+                </span>
               </td>
               <td data-label="En pesos" class="text-right">{{ phoneMoney(offer.priceUyu) }}</td>
               <td data-label="eSIM">{{ offer.esimOnly ? 'Sí' : '—' }}</td>
@@ -426,6 +431,14 @@ function longDate(value: string | null | undefined): string {
     : ''
 }
 
+/** "bajó 8 %" para una fila de la tabla: la variación del aviso contra su propia primera lectura. */
+function offerMove(offer: PhoneOfferDoc): { text: string; down: boolean } | null {
+  const series = offer.priceHistory
+  const label = priceChangeLabel(series?.changePct ?? null)
+  if (!series || !label || series.points.length < 2) return null
+  return { text: label, down: (series.changePct ?? 0) < 0 }
+}
+
 function shortDate(value: string | null | undefined): string {
   const date = toDate(value)
   return date
@@ -754,6 +767,17 @@ useHead(() => {
 }
 .offers-table {
   margin-top: 12px;
+}
+.offer-move {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.offer-move.is-down {
+  color: rgb(var(--v-theme-success));
+}
+.offer-move.is-up {
+  color: rgb(var(--v-theme-error));
 }
 
 /* Bandas */

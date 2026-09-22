@@ -99,6 +99,12 @@
                   movilidadUsd(row.offer.price)
                 }}</span></span
               >
+              <span
+                v-if="offerMove(row.offer)"
+                class="offer-move"
+                :class="offerMove(row.offer)!.down ? 'is-down' : 'is-up'"
+                >{{ offerMove(row.offer)!.text }}</span
+              >
             </li>
           </ol>
         </div>
@@ -127,6 +133,12 @@
                 }}<span v-if="row.offer.currency === 'USD'" class="offer-usd">{{
                   movilidadUsd(row.offer.price)
                 }}</span></span
+              >
+              <span
+                v-if="offerMove(row.offer)"
+                class="offer-move"
+                :class="offerMove(row.offer)!.down ? 'is-down' : 'is-up'"
+                >{{ offerMove(row.offer)!.text }}</span
               >
             </li>
           </ol>
@@ -399,6 +411,17 @@ useHead(() => ({
     },
   ],
 }))
+
+/** "bajó 9 %": la variación del propio aviso, cuando tenemos dos lecturas suyas. */
+function offerMove(offer: { priceHistory?: { changePct: number | null; points: unknown[] } }): {
+  text: string
+  down: boolean
+} | null {
+  const series = offer.priceHistory
+  const label = priceChangeLabel(series?.changePct ?? null)
+  if (!series || !label || series.points.length < 2) return null
+  return { text: label, down: (series.changePct ?? 0) < 0 }
+}
 </script>
 
 <style scoped>
@@ -555,5 +578,16 @@ useHead(() => ({
   margin: 16px 0 0;
   padding: 0;
   list-style: none;
+}
+
+.offer-move {
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+.offer-move.is-down {
+  color: rgb(var(--v-theme-success));
+}
+.offer-move.is-up {
+  color: rgb(var(--v-theme-error));
 }
 </style>

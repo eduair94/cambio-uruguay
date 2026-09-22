@@ -1,3 +1,4 @@
+import type { PriceHistorySeries } from './priceHistory'
 // Shapes and helpers for `/celulares-uruguay` (Task 6: `GET /api/phones` + `GET /api/phones/<modelo>`).
 //
 // `app/utils` is a FLAT auto-import namespace, so every export here is prefixed `phone`/`PHONE_` —
@@ -31,6 +32,11 @@ export type PhoneBrand =
 export type PhoneCondition = 'new' | 'open-box' | 'refurbished' | 'used'
 
 export interface PhoneOfferDoc {
+  /** El id del aviso, para cruzarlo con su historial de precio. Opcional: las filas guardadas antes
+   * del 2026-09-22 no lo traen, y una ficha vieja simplemente no muestra la variación. */
+  listingId?: string
+  /** Cómo cambió el precio de ESTE aviso (`pricewatchoffers`), cuando tenemos historia suya. */
+  priceHistory?: PriceHistorySeries
   seller: string
   sellerKey: string
   source: 'store' | 'mercadolibre'

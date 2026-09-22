@@ -286,6 +286,11 @@
         </template>
       </section>
 
+      <section v-if="data.priceHistory" class="mt-8" data-testid="car-price-history">
+        <h2 class="text-h6 mb-2">Cómo cambió el precio de este aviso</h2>
+        <PriceHistoryBlock :series="data.priceHistory" title="Lo que pidió este vendedor" id="car-price-history" />
+      </section>
+
       <section v-if="data.cohort" class="mt-8">
         <h2 class="text-h6 mb-2">¿Cómo está el precio?</h2>
         <p class="text-body-1">

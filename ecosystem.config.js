@@ -970,6 +970,21 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // /cambios-de-precio-uruguay: recorre las tres colecciones de historial POR AVISO que el sitio
+      // ya escribe (pricewatchoffers, carlistings.priceHistory, marketpricelogs) y publica la foto de
+      // lo que se movio en los ultimos 7 dias, por vertical. No escribe historial: solo lo lee.
+      //
+      // 16:09 UTC va despues de currency-market-series (13:03, alquiler y venta), currency-phones
+      // (14:29) y currency-movilidad (15:33): la foto del dia ya ve lo que esos tres dejaron escrito.
+      // Necesita APP_MONGO_URI.
+      name: "currency-price-changes",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_price_changes.js",
+      cron_restart: "9 16 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Hourly recompute, but ONLY inside a CyberLunes/Black Friday window: `--event-only` checks
       // `classes/priceevents/calendar.ts`'s `activeEvent()` and exits 0 immediately — no database
       // connection at all — every hour of the year nothing is happening, and runs the same snapshot

@@ -189,6 +189,14 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
                   <span v-if="!offer.available" class="offer-meta">{{
                     t('chairDetail.outOfStock')
                   }}</span>
+                  <!-- La variación de ESTE aviso. La serie de más abajo es la del producto: se mueve
+                       también cuando entra o sale un vendedor, y no dice que alguien bajó su precio. -->
+                  <span
+                    v-if="offerMove(offer)"
+                    class="offer-move"
+                    :class="offerMove(offer)!.down ? 'is-down' : 'is-up'"
+                    >{{ offerMove(offer)!.text }}</span
+                  >
                 </td>
               </tr>
             </tbody>
@@ -452,6 +460,7 @@ import {
   priceTrend,
   starIcons,
   type ChairCatalogMeta,
+  type ChairCatalogOffer,
   type ChairCatalogProduct,
 } from '~/utils/chairCatalog'
 import { storeSlugForSeller } from '~/utils/storeDirectory'
@@ -562,6 +571,14 @@ const breadcrumbs = computed(() => {
 // A hand-drawn sparkline keeps the page free of a charting dependency for four data points.
 const sparkWidth = 600
 const sparkHeight = 120
+/** "bajó 9 %": la variación de un aviso contra su propia primera lectura, para la tabla de ofertas. */
+function offerMove(offer: ChairCatalogOffer): { text: string; down: boolean } | null {
+  const series = offer.priceHistory
+  const label = priceChangeLabel(series?.changePct ?? null)
+  if (!series || !label || series.points.length < 2) return null
+  return { text: label, down: (series.changePct ?? 0) < 0 }
+}
+
 const historyRange = computed(() => {
   const points = product.value?.history ?? []
   const values = points.map(point => point.median)
@@ -886,6 +903,17 @@ useHead(() => ({
   background: rgba(var(--v-theme-primary), 0.08);
 }
 
+.offer-move {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.offer-move.is-down {
+  color: rgb(var(--v-theme-success));
+}
+.offer-move.is-up {
+  color: rgb(var(--v-theme-error));
+}
 .offer-price strong {
   font-variant-numeric: tabular-nums;
 }

@@ -1,3 +1,4 @@
+import type { PriceHistorySeries } from './priceHistory'
 // Shapes and maths for /equipar-casa-uruguay.
 //
 // `app/utils` is a FLAT auto-import namespace, so every export here is prefixed `equipar*` — a bare
@@ -16,6 +17,11 @@ export interface EquiparBand {
 }
 
 export interface EquiparOffer {
+  /** El id del aviso, para cruzarlo con su historial de precio. Las filas guardadas antes del
+   * 2026-09-22 no lo traen y esas tarjetas simplemente no muestran variación. */
+  listingId?: string
+  /** Cómo cambió el precio de ESTE aviso (`pricewatchoffers`), cuando tenemos historia suya. */
+  priceHistory?: PriceHistorySeries
   seller: string
   title: string
   url: string

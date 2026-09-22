@@ -200,6 +200,22 @@
         "ui ur bpc diferencias"
       ],
       "hypothesis": "Tres URLs propias se disputaban 'unidad reajustable'. El glosario pasa a un titulo definicional sin 'valor' ni 'hoy' (Que es la UR), cede el DefinedTerm al indicador y enlaza grande al valor de hoy; la guia queda con la comparacion. La consulta de valor deberia concentrarse en /indicadores/unidad-reajustable (fila indicadores-ur-ui-valor-vivo, que no se toca) y la definicional en el glosario, sin que la porcion del cluster baje."
+    },
+    {
+      "id": "cambios-de-precio-por-aviso",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/cambios-de-precio-uruguay"
+      ],
+      "queries": [
+        "bajo de precio uruguay",
+        "cambios de precio uruguay",
+        "bajaron los alquileres uruguay",
+        "bajaron los autos usados uruguay",
+        "subio el precio uruguay",
+        "seguimiento de precios uruguay"
+      ],
+      "hypothesis": "El sitio ya media todos los dias el precio de ~60.000 avisos (pricewatchoffers, carlistings.priceHistory, marketpricelogs) y esa medicion solo existia dentro de la base: ninguna ficha mostraba la variacion del aviso y no habia pagina que la publicara. La hipotesis es que 'bajo de precio' es una consulta de intencion propia que hoy no tiene respuesta local, y que el angulo es el mismo que sostiene al resto del sitio: no una opinion sobre si conviene, sino una serie fechada y medida por nosotros, aviso por aviso, que ninguna fuente uruguaya publica. La pagina es ademas la puerta de entrada a siete directorios que ya existen."
     }
   ]
 }

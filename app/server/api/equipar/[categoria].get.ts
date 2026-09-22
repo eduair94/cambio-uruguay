@@ -1,6 +1,7 @@
 import { EquiparItemModel } from '../../models/EquiparItem'
 import { EquiparMetaModel } from '../../models/EquiparMeta'
 import { connectDb } from '../../utils/db'
+import { pricewatchHistory } from '../../utils/priceHistory'
 import { isEquiparCategorySlug } from '../../../utils/equiparCategoryPages'
 import {
   equiparCategoryProjection,
@@ -23,6 +24,38 @@ import {
  * without going through the page.
  */
 const STALE_DAYS = 4
+
+/**
+ * Le pega a cada oferta mostrada su propia variación de precio. Lo mismo que hace el directorio de
+ * `/equipar-casa-uruguay/productos`, para las tarjetas de producto: un `$in` por tandas contra el
+ * índice único de `pricewatchoffers`, y si la lectura falla la página sale igual, sin variación.
+ *
+ * Facebook Marketplace nunca entra a `pricewatchoffers` (ver `classes/pricewatch/record.ts`), así que
+ * sus ofertas simplemente no encuentran serie.
+ */
+async function attachOfferHistory<T extends { offers: any[]; products?: { offers: any[] }[] }>(
+  items: T[]
+): Promise<T[]> {
+  const ids: string[] = []
+  for (const item of items) {
+    for (const offer of item.offers ?? []) if (offer?.listingId) ids.push(offer.listingId)
+    for (const product of item.products ?? [])
+      for (const offer of product.offers ?? []) if (offer?.listingId) ids.push(offer.listingId)
+  }
+  if (!ids.length) return items
+  const history = await pricewatchHistory(ids).catch(() => new Map())
+  if (!history.size) return items
+  const withSeries = (offer: any) =>
+    offer?.listingId && history.has(offer.listingId)
+      ? { ...offer, priceHistory: history.get(offer.listingId) }
+      : offer
+  return items.map(item => ({
+    ...item,
+    offers: (item.offers ?? []).map(withSeries),
+    ...(item.products ? { products: item.products.map(p => ({ ...p, offers: (p.offers ?? []).map(withSeries) })) } : {}),
+  }))
+}
+
 
 export default defineEventHandler(async (event): Promise<EquiparCategoryResponse> => {
   const slug = String(getRouterParam(event, 'categoria') || '')
@@ -64,8 +97,8 @@ export default defineEventHandler(async (event): Promise<EquiparCategoryResponse
         listings: run.listings,
       })),
       // Sorted the same way as the index endpoint, then trimmed for payload.
-      items: equiparCategoryProjection(
-        equiparSortItems((rows as unknown as EquiparItemDoc[]) ?? [])
+      items: await attachOfferHistory(
+        equiparCategoryProjection(equiparSortItems((rows as unknown as EquiparItemDoc[]) ?? []))
       ),
     }
   } catch {

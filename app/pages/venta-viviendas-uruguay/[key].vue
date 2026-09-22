@@ -60,6 +60,13 @@
             </ul>
             <p>{{ t('conditionsHint') }}</p>
           </section>
+          <section
+            v-if="data.priceHistory"
+            class="sale-detail__section"
+            data-testid="sale-price-history"
+          >
+            <PriceHistoryBlock :series="data.priceHistory" id="sale-price-history" />
+          </section>
           <section class="sale-detail__section">
             <h2>{{ t('description') }}</h2>
             <p class="sale-detail__description">{{ property.description || t('noDescription') }}</p>

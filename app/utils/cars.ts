@@ -1,3 +1,4 @@
+import type { PriceHistorySeries } from './priceHistory'
 import type {
   PublicCarBody,
   PublicCarBodyType,
@@ -323,6 +324,10 @@ export interface CarDetailResponse {
   market: { slug: string; brand: string; model: string; listings: number } | null
   similar: PublicCarListing[]
   opportunity: PublicCarOpportunityItem | null
+  /** Cómo cambió el precio de ESTE aviso desde que lo medimos (`carlistings.priceHistory`, que se
+   * actualiza cada hora). No es el nivel del modelo, que se mueve también cuando cambia qué autos
+   * hay publicados — eso lo cuenta /evolucion-precio-autos-usados-uruguay. */
+  priceHistory: PriceHistorySeries | null
 }
 
 export interface CarMarketResponse {

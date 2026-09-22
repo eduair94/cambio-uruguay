@@ -1,5 +1,6 @@
 import { PropertySaleCatalogModel } from '../../../models/PropertySaleCatalog'
 import { connectDb } from '../../../utils/db'
+import { marketHistory } from '../../../utils/priceHistory'
 import { loadPropertySalesMeta } from '../../../utils/propertySales'
 import {
   propertySaleDetailProjection,
@@ -57,11 +58,17 @@ export default defineEventHandler(async (event): Promise<PropertySaleDetailRespo
           console.error('[api/property-sales/ficha] similar adverts skipped', error)
         }
       }
+      // El historial del aviso es opcional: si la lectura falla, la ficha sale igual y sin bloque.
+      const history = await marketHistory('venta', [property.key]).catch(error => {
+        console.error('[api/property-sales/ficha] price history skipped', error)
+        return new Map()
+      })
       page = {
         property,
         usdUyu: meta?.usdUyu || 0,
         indexable: propertySaleIndexable(property),
         similar: related.map(publicPropertySaleSummary),
+        priceHistory: history.get(property.key) ?? null,
       }
     }
   } catch (error) {
