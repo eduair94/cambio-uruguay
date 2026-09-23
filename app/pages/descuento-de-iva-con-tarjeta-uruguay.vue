@@ -308,7 +308,7 @@ const verifiedAt = new Date(`${IVA_TARJETA_VERIFIED_AT}T00:00:00Z`).toLocaleDate
 const canonicalUrl = 'https://cambio-uruguay.com/descuento-de-iva-con-tarjeta-uruguay'
 const title = 'Descuento de IVA con tarjeta: 2 o 9 puntos'
 const description =
-  'Con débito o dinero electrónico te sacan 2 puntos de IVA (1,64 % del total); en restaurantes, hoteles, eventos y alquiler de autos son 9 puntos (7,38 %) y ahí también sirve el crédito. El Decreto 83/026 los prorrogó hasta el 30/9/2026: desde el 1º de octubre bajan a 5 puntos, o 4,1 %.'
+  'Con débito te sacan 2 puntos de IVA (1,64 %) y 9 en gastronomía y hotelería (7,38 %). El Decreto 83/026 rige hasta el 30/9/2026; en octubre son 5 puntos.'
 
 defineOgImageComponent('Cambio', {
   title: 'Descuento de IVA con tarjeta',

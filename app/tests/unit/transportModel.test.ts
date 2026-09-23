@@ -57,7 +57,9 @@ function modeAssumptions(
   }
 }
 
-function assumptions(overrides: Partial<Record<TransportMode, Partial<TransportModeAssumptions>>> = {}): TransportAssumptions {
+function assumptions(
+  overrides: Partial<Record<TransportMode, Partial<TransportModeAssumptions>>> = {}
+): TransportAssumptions {
   const modes: TransportMode[] = ['omnibus', 'pie', 'monopatin', 'bici', 'moto', 'auto']
   const byMode = Object.fromEntries(
     modes.map(mode => [mode, modeAssumptions(mode, overrides[mode] ?? {})])
@@ -475,7 +477,11 @@ describe('transportCompare', () => {
       scenario: scenario({ alreadyOwned: true }),
       prices: monopatinPrices,
       assumptions: assumptions({
-        monopatin: { insuranceUyu: figure(12000), roadTaxUyu: figure(6000), storageMonthlyUyu: figure(1000) },
+        monopatin: {
+          insuranceUyu: figure(12000),
+          roadTaxUyu: figure(6000),
+          storageMonthlyUyu: figure(1000),
+        },
       }),
     })
     const result = transportCompare(base)
@@ -538,7 +544,13 @@ describe('transportCompare', () => {
 
   it('el valor del tiempo sólo aparece con un sueldo declarado', () => {
     const withoutWage = transportCompare(
-      input({ prices: monopatinPrices, assumptions: assumptions({ omnibus: { cruiseSpeedKmh: figure(10) }, monopatin: { cruiseSpeedKmh: figure(20) } }) })
+      input({
+        prices: monopatinPrices,
+        assumptions: assumptions({
+          omnibus: { cruiseSpeedKmh: figure(10) },
+          monopatin: { cruiseSpeedKmh: figure(20) },
+        }),
+      })
     ).modes.find(mode => mode.mode === 'monopatin')!
     expect(withoutWage.timeValueMonthlyUyu).toBeNull()
 
@@ -546,7 +558,10 @@ describe('transportCompare', () => {
       input({
         scenario: scenario({ wageHourlyUyu: 300 }),
         prices: monopatinPrices,
-        assumptions: assumptions({ omnibus: { cruiseSpeedKmh: figure(10) }, monopatin: { cruiseSpeedKmh: figure(20) } }),
+        assumptions: assumptions({
+          omnibus: { cruiseSpeedKmh: figure(10) },
+          monopatin: { cruiseSpeedKmh: figure(20) },
+        }),
       })
     ).modes.find(mode => mode.mode === 'monopatin')!
     expect(withWage.timeValueMonthlyUyu).toBeGreaterThan(0)
@@ -560,10 +575,16 @@ describe('transportCompare', () => {
 
   it('financiar cuesta más que pagar al contado, y la diferencia se publica', () => {
     const cash = transportCompare(
-      input({ scenario: scenario({ financing: 'contado' }), prices: { ...monopatinPrices, financingTea: 0.8 } })
+      input({
+        scenario: scenario({ financing: 'contado' }),
+        prices: { ...monopatinPrices, financingTea: 0.8 },
+      })
     ).modes.find(mode => mode.mode === 'monopatin')!
     const credit = transportCompare(
-      input({ scenario: scenario({ financing: 'cuotas', financingMonths: 24 }), prices: { ...monopatinPrices, financingTea: 0.8 } })
+      input({
+        scenario: scenario({ financing: 'cuotas', financingMonths: 24 }),
+        prices: { ...monopatinPrices, financingTea: 0.8 },
+      })
     ).modes.find(mode => mode.mode === 'monopatin')!
     expect(credit.breakdown.financeCostUyu).toBeGreaterThan(0)
     expect(credit.totalHorizonUyu).toBeGreaterThan(cash.totalHorizonUyu)

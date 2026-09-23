@@ -19,9 +19,9 @@ FORM: página de lectura; sin filtros ni estado que el visitante edite.
         Qué bajó y qué subió de precio en Uruguay
       </h1>
       <p class="text-body-1 text-medium-emphasis mb-2">
-        Seguimos el precio de cada aviso que publicamos —autos usados, alquileres, viviendas en venta,
-        cosas para la casa, celulares, sillas y movilidad eléctrica— y anotamos cuánto pide cada día.
-        Acá está lo que se movió en los últimos {{ windowDays }} días: cada aviso contra
+        Seguimos el precio de cada aviso que publicamos —autos usados, alquileres, viviendas en
+        venta, cosas para la casa, celulares, sillas y movilidad eléctrica— y anotamos cuánto pide
+        cada día. Acá está lo que se movió en los últimos {{ windowDays }} días: cada aviso contra
         <strong>su propio precio anterior</strong>, nunca contra otro vendedor.
       </p>
       <p v-if="snapshot" class="as-of text-caption text-medium-emphasis">
@@ -67,8 +67,8 @@ FORM: página de lectura; sin filtros ni estado que el visitante edite.
         </VTable>
         <p class="note text-caption text-medium-emphasis mt-2">
           "Avisos seguidos" es cuántos tienen historial propio guardado, no cuántos hay publicados.
-          Un aviso entra el día que lo vemos por primera vez: antes de esa fecha no sabemos qué precio
-          tenía.
+          Un aviso entra el día que lo vemos por primera vez: antes de esa fecha no sabemos qué
+          precio tenía.
         </p>
       </section>
 
@@ -102,13 +102,9 @@ FORM: página de lectura; sin filtros ni estado que el visitante edite.
           <tbody>
             <tr v-for="row in group.rows" :key="`${row.vertical}:${row.id}`">
               <th scope="row" data-label="Aviso" class="cell-title">
-                <a
-                  v-if="row.external"
-                  :href="row.url"
-                  target="_blank"
-                  rel="nofollow noopener"
-                  >{{ row.title }}</a
-                >
+                <a v-if="row.external" :href="row.url" target="_blank" rel="nofollow noopener">{{
+                  row.title
+                }}</a>
                 <NuxtLink v-else :to="localePath(row.url)">{{ row.title }}</NuxtLink>
                 <span v-if="row.sellerName" class="cell-seller">{{ row.sellerName }}</span>
               </th>
@@ -133,8 +129,8 @@ FORM: página de lectura; sin filtros ni estado que el visitante edite.
       </section>
 
       <VAlert v-if="!groups.length" type="info" variant="tonal" class="mb-6">
-        Ningún aviso cambió de precio en los últimos {{ windowDays }} días. No es un error: la mayoría
-        de los precios se quedan quietos semanas enteras.
+        Ningún aviso cambió de precio en los últimos {{ windowDays }} días. No es un error: la
+        mayoría de los precios se quedan quietos semanas enteras.
       </VAlert>
     </template>
 
@@ -144,20 +140,20 @@ FORM: página de lectura; sin filtros ni estado que el visitante edite.
       <ul class="method-list text-body-2">
         <li>
           <strong>Un cambio es del aviso, no del mercado.</strong> Comparamos el precio de hoy de un
-          aviso contra el precio que ese mismo aviso tenía antes. Si una categoría entera baja porque
-          entró un vendedor barato, eso no aparece acá: eso lo cuentan las páginas de
+          aviso contra el precio que ese mismo aviso tenía antes. Si una categoría entera baja
+          porque entró un vendedor barato, eso no aparece acá: eso lo cuentan las páginas de
           <NuxtLink :to="localePath('/evolucion-precio-alquileres-uruguay')"
             >evolución de precios</NuxtLink
           >.
         </li>
         <li>
-          <strong>Las monedas no se mezclan.</strong> Un aviso que pasó de dólares a pesos no bajó un
-          4.000 %: cambió de unidad. Esos tramos se cortan y no se publican como cambio.
+          <strong>Las monedas no se mezclan.</strong> Un aviso que pasó de dólares a pesos no bajó
+          un 4.000 %: cambió de unidad. Esos tramos se cortan y no se publican como cambio.
         </li>
         <li>
-          <strong>Sólo lo que vemos.</strong> Cada vertical se releva con su propia frecuencia (autos
-          y cosas para la casa, cada hora; alquileres y viviendas en venta, una vez por día), así que
-          un cambio que dura unas horas puede no quedar registrado.
+          <strong>Sólo lo que vemos.</strong> Cada vertical se releva con su propia frecuencia
+          (autos y cosas para la casa, cada hora; alquileres y viviendas en venta, una vez por día),
+          así que un cambio que dura unas horas puede no quedar registrado.
         </li>
         <li>
           <strong>Hasta 3 avisos por vendedor.</strong> Una automotora o una tienda que retoca

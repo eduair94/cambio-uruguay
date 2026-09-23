@@ -31,7 +31,6 @@ import {
  */
 const STALE_DAYS = 4
 
-
 /** Igual que en `/api/equipar/<categoria>`: la variación del propio aviso, por oferta mostrada. */
 async function attachOfferHistory<T extends { offers: any[]; products?: { offers: any[] }[] }>(
   items: T[]
@@ -52,7 +51,9 @@ async function attachOfferHistory<T extends { offers: any[]; products?: { offers
   return items.map(item => ({
     ...item,
     offers: (item.offers ?? []).map(withSeries),
-    ...(item.products ? { products: item.products.map(p => ({ ...p, offers: (p.offers ?? []).map(withSeries) })) } : {}),
+    ...(item.products
+      ? { products: item.products.map(p => ({ ...p, offers: (p.offers ?? []).map(withSeries) })) }
+      : {}),
   }))
 }
 
@@ -97,7 +98,9 @@ export default defineEventHandler(async (event): Promise<MovilidadCategoryRespon
         listings: run.listings,
       })),
       items: await attachOfferHistory(
-        movilidadCategoryProjection(movilidadSortItems((rows as unknown as MovilidadItemDoc[]) ?? []))
+        movilidadCategoryProjection(
+          movilidadSortItems((rows as unknown as MovilidadItemDoc[]) ?? [])
+        )
       ),
     }
   } catch {

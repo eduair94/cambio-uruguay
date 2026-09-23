@@ -83,7 +83,11 @@ hay un precio para hoy).
                 {{ formatOriginal(offer.price, offer.currency) }}
                 <!-- La variación de ESTE aviso, distinta de la serie del modelo de más abajo: acá el
                      sujeto es el vendedor, allá la banda de todo el mercado del modelo. -->
-                <span v-if="offerMove(offer)" class="offer-move" :class="offerMove(offer)!.down ? 'is-down' : 'is-up'">
+                <span
+                  v-if="offerMove(offer)"
+                  class="offer-move"
+                  :class="offerMove(offer)!.down ? 'is-down' : 'is-up'"
+                >
                   {{ offerMove(offer)!.text }}
                 </span>
               </td>

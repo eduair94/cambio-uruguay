@@ -52,10 +52,11 @@ async function attachOfferHistory<T extends { offers: any[]; products?: { offers
   return items.map(item => ({
     ...item,
     offers: (item.offers ?? []).map(withSeries),
-    ...(item.products ? { products: item.products.map(p => ({ ...p, offers: (p.offers ?? []).map(withSeries) })) } : {}),
+    ...(item.products
+      ? { products: item.products.map(p => ({ ...p, offers: (p.offers ?? []).map(withSeries) })) }
+      : {}),
   }))
 }
-
 
 export default defineEventHandler(async (event): Promise<EquiparCategoryResponse> => {
   const slug = String(getRouterParam(event, 'categoria') || '')

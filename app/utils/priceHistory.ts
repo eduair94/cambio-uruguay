@@ -46,7 +46,8 @@ export interface PriceHistorySeries {
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/
 
-const isCurrency = (value: unknown): value is PriceHistoryCurrency => value === 'UYU' || value === 'USD'
+const isCurrency = (value: unknown): value is PriceHistoryCurrency =>
+  value === 'UYU' || value === 'USD'
 
 const round2 = (value: number): number => Math.round(value * 100) / 100
 
@@ -101,7 +102,9 @@ export function plausiblePoints(points: readonly PriceHistoryPoint[]): PriceHist
   if (points.length < 2) return [...points]
   if (points.length === 2) {
     const ratio = points[1]!.p / points[0]!.p
-    return ratio > PRICE_HISTORY_MAX_RATIO || ratio < 1 / PRICE_HISTORY_MAX_RATIO ? null : [...points]
+    return ratio > PRICE_HISTORY_MAX_RATIO || ratio < 1 / PRICE_HISTORY_MAX_RATIO
+      ? null
+      : [...points]
   }
   const kept = points.filter((point, index) => {
     const others = points.filter((_, other) => other !== index).map(other => other.p)
@@ -132,7 +135,13 @@ export function summarize(points: readonly PriceHistoryPoint[]): {
   return { changePct: round2(((last.p - first.p) / first.p) * 100), lastChange }
 }
 
-function build(id: string, raw: RawPoint[], fallback: PriceHistoryCurrency, firstSeen: string, lastSeen: string): PriceHistorySeries | null {
+function build(
+  id: string,
+  raw: RawPoint[],
+  fallback: PriceHistoryCurrency,
+  firstSeen: string,
+  lastSeen: string
+): PriceHistorySeries | null {
   const tail = currencyTail(raw, fallback)
   if (!tail.points.length) return null
   const points = plausiblePoints(tail.points)
@@ -157,7 +166,13 @@ export function seriesFromPricewatch(doc: Record<string, any>): PriceHistorySeri
   const raw = (Array.isArray(doc?.history) ? doc.history : [])
     .map((point: any) => rawPoint(point?.d, point?.p, point?.c))
     .filter((point: RawPoint | null): point is RawPoint => point !== null)
-  return build(id, raw, isCurrency(doc?.currency) ? doc.currency : 'UYU', day(doc?.firstSeen), day(doc?.lastSeen))
+  return build(
+    id,
+    raw,
+    isCurrency(doc?.currency) ? doc.currency : 'UYU',
+    day(doc?.firstSeen),
+    day(doc?.lastSeen)
+  )
 }
 
 /** `carlistings.priceHistory`: un punto sólo cuando el precio cambia. */
@@ -167,7 +182,13 @@ export function seriesFromCarListing(doc: Record<string, any>): PriceHistorySeri
   const raw = (Array.isArray(doc?.priceHistory) ? doc.priceHistory : [])
     .map((point: any) => rawPoint(point?.observedAt, point?.price, point?.currency))
     .filter((point: RawPoint | null): point is RawPoint => point !== null)
-  return build(id, raw, isCurrency(doc?.listing?.currency) ? doc.listing.currency : 'USD', day(doc?.firstSeen), day(doc?.lastSeen))
+  return build(
+    id,
+    raw,
+    isCurrency(doc?.listing?.currency) ? doc.listing.currency : 'USD',
+    day(doc?.firstSeen),
+    day(doc?.lastSeen)
+  )
 }
 
 /** `marketpricelogs`: alquiler y venta, un punto sólo al cambiar. */

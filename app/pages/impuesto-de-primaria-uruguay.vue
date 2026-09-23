@@ -256,7 +256,7 @@ const verifiedAt = new Date(`${IEP_VERIFIED_AT}T12:00:00Z`).toLocaleDateString('
 const canonicalUrl = 'https://cambio-uruguay.com/impuesto-de-primaria-uruguay'
 const title = 'Impuesto de Primaria 2026: quién paga'
 const description =
-  'Lo pagan propietarios, poseedores, promitentes compradores y usufructuarios, en 3 cuotas al año. En 2026 queda exonerado el padrón con valor imponible menor a $ 282.612. La escala publicada es la del Decreto 140/025: 0,15 %, 0,20 %, 0,25 % y 0,30 %. Si alquilás, no es tuyo: lo paga el propietario.'
+  'En 2026 se exonera el padrón con valor imponible menor a $ 282.612; el resto paga de 0,15 % a 0,30 % en 3 cuotas (Decreto 140/025). Lo paga el propietario.'
 
 defineOgImageComponent('Cambio', {
   title: 'Impuesto de Primaria',

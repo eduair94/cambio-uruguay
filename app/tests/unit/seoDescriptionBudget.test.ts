@@ -148,8 +148,19 @@ const RESOLVED = 133
 // —«Guía de…», «La cuenta completa…»— pasó al final o se fue. Ninguna cifra es nueva: todas ya
 // estaban en la descripción vieja y en el cuerpo de su página.
 //
-// Quedan 76 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 76
+// 76 → 64 el 2026-09-23, tercera corrida: las doce más largas que quedaban, de 341 a 267
+// caracteres. Mismo criterio otra vez, y conviene decir por qué no es cosmético: la descripción
+// de `/cotizacion-del-bcu` gastaba sus primeros 155 caracteres definiendo el fondo de cierre y
+// recién después llegaba a lo único que decide el clic —que para la DGI vale el interbancario del
+// día anterior—, así que el SERP publicaba la definición y tiraba la respuesta. Lo que ahora entra
+// entero es el dato: el padrón exonerado en 2026 ($ 282.612), los 2 y 9 puntos de IVA con la fecha
+// en que bajan a 5 (30/9/2026), los tres feriados que se corren al lunes, el 100 %/150 % de la
+// hora extra, las 200.000 UI de tope en efectivo, los US$ 800 y 20 kg del courier y los 3 días
+// hábiles por fallecimiento. Ninguna cifra es nueva: todas ya estaban en la descripción vieja y en
+// el cuerpo de su página.
+//
+// Quedan 64 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
+const OVER_BUDGET = 64
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {

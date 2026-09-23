@@ -9,7 +9,9 @@
     <template v-else>
       <p class="price-history__lead">
         <strong :class="toneClass">{{ changeText }}</strong>
-        {{ t('lead', { date: formatDay(series.points[0]!.d), from: money(first), to: money(last) }) }}
+        {{
+          t('lead', { date: formatDay(series.points[0]!.d), from: money(first), to: money(last) })
+        }}
       </p>
 
       <div class="price-history__plot">

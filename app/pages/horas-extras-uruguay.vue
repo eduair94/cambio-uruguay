@@ -165,7 +165,7 @@ const faq = HORAS_EXTRAS_FAQ as unknown as FaqItem[]
 const canonicalUrl = 'https://cambio-uruguay.com/horas-extras-uruguay'
 const title = 'Horas extras: 100 % hábil, 150 % feriado'
 const description =
-  'La hora extra se paga con 100 % de recargo en día hábil y 150 % en feriado o descanso semanal (Ley 15.996). El tope es de 8 por semana y requieren tu consentimiento. La hora extra empieza donde termina tu jornada: 48 horas semanales en la industria, 44 en el comercio.'
+  'La hora extra se paga con 100 % de recargo en día hábil y 150 % en feriado o descanso semanal (Ley 15.996), con tope de 8 por semana y tu consentimiento.'
 
 defineOgImageComponent('Cambio', {
   title: 'Horas extras en Uruguay',

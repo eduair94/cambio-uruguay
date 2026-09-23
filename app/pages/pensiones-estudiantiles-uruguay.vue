@@ -564,7 +564,7 @@ const surveyedLabel = formatReviewedDate(STUDENT_HOUSING_PRICES_SURVEYED)
 const canonicalUrl = 'https://cambio-uruguay.com/pensiones-estudiantiles-uruguay'
 const title = 'Pensiones estudiantiles en Uruguay 2026'
 const description =
-  'Cuánto sale una pensión o residencia estudiantil en Montevideo en 2026: bandas de precio relevadas, qué conseguís con tu presupuesto, las plazas gratuitas del INJU y de las intendencias, la beca de alojamiento de la Udelar de 2 BPC, los mínimos legales de baños y metros y dónde denunciar.'
+  'Bandas de precio relevadas de pensiones y residencias estudiantiles en Montevideo 2026, las plazas gratis del INJU y la beca de la Udelar, 2 BPC.'
 
 defineOgImageComponent('Cambio', {
   title: 'Pensiones estudiantiles',

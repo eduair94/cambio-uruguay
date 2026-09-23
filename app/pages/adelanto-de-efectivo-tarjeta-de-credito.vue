@@ -1090,7 +1090,7 @@ function teaHeadline(issuer: (typeof ISSUERS)[number]): string {
 const canonicalUrl = 'https://cambio-uruguay.com/adelanto-de-efectivo-tarjeta-de-credito'
 const title = 'Adelanto de efectivo con tarjeta en Uruguay'
 const description =
-  'Cuánto cuesta de verdad sacar efectivo con tarjeta de crédito en Uruguay: la tasa del adelanto es distinta y más alta, corre desde el día 1 y no incluye IVA. Tarifarios de OCA, Itaú, BBVA, BROU, Scotiabank y Santander, tope legal del BCU y comparación con comprar cripto y venderla en Binance.'
+  'La tasa del adelanto de efectivo corre desde el día 1 y no lleva IVA. Tarifarios de OCA, Itaú, BBVA, BROU, Scotiabank y Santander y el tope legal del BCU.'
 
 defineOgImageComponent('Cambio', {
   title: 'Adelanto de efectivo con tarjeta',

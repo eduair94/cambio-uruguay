@@ -39,11 +39,15 @@ const collection = (name: string) =>
   mongoose.connection.readyState === 1 ? mongoose.connection.collection(name) : null
 
 const cleanIds = (ids: readonly string[]): string[] =>
-  [...new Set(ids.filter(id => typeof id === 'string' && ID.test(id)))].slice(0, PRICE_HISTORY_TOTAL_MAX)
+  [...new Set(ids.filter(id => typeof id === 'string' && ID.test(id)))].slice(
+    0,
+    PRICE_HISTORY_TOTAL_MAX
+  )
 
 const chunks = (ids: readonly string[]): string[][] => {
   const out: string[][] = []
-  for (let i = 0; i < ids.length; i += PRICE_HISTORY_ID_MAX) out.push(ids.slice(i, i + PRICE_HISTORY_ID_MAX))
+  for (let i = 0; i < ids.length; i += PRICE_HISTORY_ID_MAX)
+    out.push(ids.slice(i, i + PRICE_HISTORY_ID_MAX))
   return out
 }
 
@@ -56,13 +60,17 @@ export function publicSeries(series: PriceHistorySeries): PriceHistorySeries {
     firstSeen: series.firstSeen,
     lastSeen: series.lastSeen,
     changePct: series.changePct,
-    lastChange: series.lastChange ? { from: series.lastChange.from, to: series.lastChange.to, at: series.lastChange.at } : null,
+    lastChange: series.lastChange
+      ? { from: series.lastChange.from, to: series.lastChange.to, at: series.lastChange.at }
+      : null,
     currencySwitched: series.currencySwitched,
   }
 }
 
 /** equipar, sillas, celulares y movilidad: un punto por día por `listingId`. */
-export async function pricewatchHistory(ids: readonly string[]): Promise<Map<string, PriceHistorySeries>> {
+export async function pricewatchHistory(
+  ids: readonly string[]
+): Promise<Map<string, PriceHistorySeries>> {
   const wanted = cleanIds(ids)
   const found = new Map<string, PriceHistorySeries>()
   if (!wanted.length) return found
@@ -72,7 +80,10 @@ export async function pricewatchHistory(ids: readonly string[]): Promise<Map<str
     const rows = await offers
       .find(
         { listingId: { $in: chunk } },
-        { projection: { _id: 0, listingId: 1, currency: 1, firstSeen: 1, lastSeen: 1, history: 1 }, maxTimeMS: 4000 }
+        {
+          projection: { _id: 0, listingId: 1, currency: 1, firstSeen: 1, lastSeen: 1, history: 1 },
+          maxTimeMS: 4000,
+        }
       )
       .toArray()
     for (const row of rows) {
@@ -90,7 +101,17 @@ export async function carHistory(key: string): Promise<PriceHistorySeries | null
   if (!cars) return null
   const row = await cars.findOne(
     { key },
-    { projection: { _id: 0, key: 1, firstSeen: 1, lastSeen: 1, priceHistory: 1, 'listing.currency': 1 }, maxTimeMS: 4000 }
+    {
+      projection: {
+        _id: 0,
+        key: 1,
+        firstSeen: 1,
+        lastSeen: 1,
+        priceHistory: 1,
+        'listing.currency': 1,
+      },
+      maxTimeMS: 4000,
+    }
   )
   const series = row ? seriesFromCarListing(row) : null
   return series ? publicSeries(series) : null
@@ -110,7 +131,10 @@ export async function marketHistory(
     const rows = await logs
       .find(
         { key: { $in: chunk.map(id => `${vertical}:${id}`) } },
-        { projection: { _id: 0, advertId: 1, firstSeen: 1, lastSeen: 1, points: 1 }, maxTimeMS: 4000 }
+        {
+          projection: { _id: 0, advertId: 1, firstSeen: 1, lastSeen: 1, points: 1 },
+          maxTimeMS: 4000,
+        }
       )
       .toArray()
     for (const row of rows) {
@@ -127,7 +151,8 @@ export async function marketHistory(
  * `classes/propertyzones/project.ts`, que es quien escribe esos logs).
  */
 export function rentalAdvertId(source: unknown, listingId: unknown): string | null {
-  if (typeof source !== 'string' || typeof listingId !== 'string' || !source || !listingId) return null
+  if (typeof source !== 'string' || typeof listingId !== 'string' || !source || !listingId)
+    return null
   const native = listingId.startsWith(`${source}:`) ? listingId.slice(source.length + 1) : listingId
   return native ? `${source}:${native}` : null
 }

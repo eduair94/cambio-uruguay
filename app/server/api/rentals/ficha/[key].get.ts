@@ -95,7 +95,8 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse> => 
         // `matchingOffer` es OTRO objeto, no una referencia a la fila de `offers`, y es el que la
         // ficha muestra por defecto: sin esto la página traía la serie en el payload y no la dibujaba
         // nunca (medido en producción el 2026-09-22).
-        if (page.property.matchingOffer) page.property.matchingOffer = withHistory(page.property.matchingOffer)
+        if (page.property.matchingOffer)
+          page.property.matchingOffer = withHistory(page.property.matchingOffer)
       } catch (error) {
         console.error('[api/rentals/ficha] price history failed', error)
       }
