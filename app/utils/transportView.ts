@@ -272,7 +272,16 @@ export interface TransportViewVerdict {
  */
 export function transportViewVerdict(
   result: TransportModeResult,
-  scenario: TransportScenario
+  scenario: TransportScenario,
+  /**
+   * Costo mensual del modo de referencia (el ómnibus).
+   *
+   * Hace falta para no repetir el error que esta función tuvo en producción el 23/9/2026: caminar
+   * salía `$ 0` por mes y el veredicto decía «Más caro y más lento», porque sin la referencia lo
+   * único que se miraba era el tiempo. Un modo puede ser más lento y más BARATO —caminar lo es
+   * siempre— y eso es una respuesta distinta, no la misma con otro tono.
+   */
+  referenceMonthlyUyu?: number
 ): TransportViewVerdict {
   if (!result.available) {
     return {
@@ -309,6 +318,17 @@ export function transportViewVerdict(
   }
 
   if (result.hoursPerYearVsBus <= 0) {
+    const horasPerdidas = Math.abs(result.hoursPerYearVsBus)
+    const masBarato =
+      typeof referenceMonthlyUyu === 'number' && result.monthlyAverageUyu < referenceMonthlyUyu
+    if (masBarato) {
+      return {
+        tone: 'info',
+        headline: 'Más barato, pero más lento',
+        detail: `Sale menos por mes que el ómnibus y tarda más puerta a puerta: son ${transportViewHoursPerYear(-horasPerdidas)} de tu tiempo. No hay punto de equilibrio que calcular —ya es más barato desde el primer día— y el precio de la hora tampoco, porque acá no estás comprando tiempo: lo estás vendiendo.`,
+        figure: null,
+      }
+    }
     return {
       tone: 'error',
       headline: 'Más caro y más lento',

@@ -460,7 +460,7 @@
                 <template v-else>{{ transportViewHoursPerYear(row.hoursPerYearVsBus) }}</template>
               </td>
               <td data-label="Veredicto">
-                {{ transportViewVerdict(row, effectiveScenario).headline }}
+                {{ transportViewVerdict(row, effectiveScenario, referenceMonthly).headline }}
               </td>
             </template>
             <template v-else>
@@ -926,6 +926,11 @@ const result = computed<TransportCompareResult>(() =>
 )
 
 const sortedModes = computed(() => transportViewSortModes(result.value))
+// El costo del ómnibus, que el veredicto necesita para no confundir «más barato y más lento»
+// con «más caro y más lento»: caminar sale cero y tarda el triple, y son dos cosas distintas.
+const referenceMonthly = computed(
+  () => result.value.modes.find(row => row.mode === result.value.reference)?.monthlyAverageUyu ?? 0
+)
 const availableModes = computed(() => sortedModes.value.filter(row => row.available))
 // Las cuatro tarjetas de arriba son los modos que se COMPRAN: el ómnibus es la referencia y caminar
 // no es una decisión de compra. El veredicto se resuelve una vez por modo y no cuatro veces por
@@ -937,7 +942,7 @@ const headlineVerdicts = computed(() =>
       mode: row.mode,
       label: row.label,
       icon: TRANSPORT_VIEW_MODE_ICONS[row.mode],
-      ...transportViewVerdict(row, effectiveScenario.value),
+      ...transportViewVerdict(row, effectiveScenario.value, referenceMonthly.value),
     }))
 )
 const safetyRows = computed(() => transportViewSafetyRows(assumptions.value))

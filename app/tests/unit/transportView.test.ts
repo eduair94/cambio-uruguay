@@ -212,6 +212,29 @@ describe('el veredicto y sus dos ramas', () => {
   })
 })
 
+describe('el veredicto cuando el modo es más lento', () => {
+  it('caminar es más BARATO y más lento, no más caro: son dos veredictos distintos', () => {
+    // Medido en producción el 23/9/2026: caminar salía `$ 0` por mes y la página lo rotulaba
+    // «Más caro y más lento», porque sin el costo de la referencia lo único que se miraba era el
+    // tiempo. Es el defecto que este test fija.
+    const row = modeOf(transportCompare(input()), 'pie')
+    const verdict = transportViewVerdict(row, scenarioOf(), 2253)
+    expect(verdict.headline).toBe('Más barato, pero más lento')
+    expect(verdict.tone).not.toBe('error')
+  })
+
+  it('un modo más caro Y más lento sigue diciéndose sin vueltas', () => {
+    const row = modeOf(transportCompare(input()), 'pie')
+    const caro = { ...row, monthlyAverageUyu: 9999 }
+    expect(transportViewVerdict(caro, scenarioOf(), 2253).headline).toBe('Más caro y más lento')
+  })
+
+  it('sin la referencia no inventa: se queda con el veredicto conservador', () => {
+    const row = modeOf(transportCompare(input()), 'pie')
+    expect(transportViewVerdict(row, scenarioOf()).headline).toBe('Más caro y más lento')
+  })
+})
+
 describe('el orden de la comparativa', () => {
   it('la referencia va primero, después de más barato a más caro, y sin datos al final', () => {
     const sorted = transportViewSortModes(transportCompare(input()))
