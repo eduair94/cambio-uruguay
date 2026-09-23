@@ -64,7 +64,13 @@ export function rentalTextMatches(value: unknown, query: string): boolean {
   return fold(value).includes(fold(query))
 }
 
-export type RentalSource = 'mercadolibre' | 'infocasas' | 'facebook' | 'elpais' | 'casasweb' | 'tiktok'
+export type RentalSource =
+  | 'mercadolibre'
+  | 'infocasas'
+  | 'facebook'
+  | 'elpais'
+  | 'casasweb'
+  | 'tiktok'
 
 export type RentalPropertyType =
   | 'apartamento'
