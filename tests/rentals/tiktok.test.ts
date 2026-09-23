@@ -1,9 +1,15 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { RENTAL_SOURCES, RENTAL_SOURCE_LABEL } from "../../classes/rentals/types";
 import { captionAmounts, captionLocation, captionPropertyType, captionRejection, captionTitle, parseCaption } from "../../classes/rentals/sources/tiktok/caption";
 import { postFromItemStruct, postToRawRental, postUrl } from "../../classes/rentals/sources/tiktok/post";
+import { canonicalVideoUrl, postFromVideoHtml, readVideoPage, resolveTiktokUrl } from "../../classes/rentals/sources/tiktok/page";
+import { fetchText } from "../../classes/rentals/net";
+
+vi.mock("../../classes/rentals/net", async () => ({ ...(await vi.importActual<typeof import("../../classes/rentals/net")>("../../classes/rentals/net")), fetchText: vi.fn() }));
+const fixture = (name: string): string => readFileSync(join(__dirname, "fixtures", `${name}.html`), "utf8");
+afterEach(() => vi.resetAllMocks());
 
 interface Fixture { id: string; author: string; createTime: number; desc: string; hashtags: string[] }
 const captions: Fixture[] = JSON.parse(readFileSync(join(__dirname, "fixtures", "tiktok-captions.json"), "utf8"));
@@ -168,5 +174,34 @@ describe("TikTok post → RawRental", () => {
     const bare = postFromItemStruct(item({ video: { cover: "" }, contents: undefined }))!;
     expect(bare.cover).toBeNull();
     expect(postToRawRental(bare, parseCaption(bare.lines, bare.hashtags), null, AT)!.image).toBeNull();
+  });
+});
+
+// --- Task 4: one video over plain HTTP -------------------------------------------------------
+
+describe("TikTok video page over plain HTTP", () => {
+  it("reads the embedded itemStruct", () => {
+    const post = postFromVideoHtml(fixture("tiktok-video"))!;
+    expect(post).toMatchObject({ id: "7688511584326454549", author: { uniqueId: "inmobiliariaalquilar" } });
+    expect(post.hashtags).toContain("cordón");
+    expect(postFromVideoHtml("<html>Please wait...</html>")).toBeNull();
+  });
+
+  it("only accepts canonical video URLs and resolves short links by following the redirect", async () => {
+    expect(canonicalVideoUrl("https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549?_r=1")).toBe("https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549");
+    expect(canonicalVideoUrl("https://www.tiktok.com/search?q=alquiler")).toBeNull();
+    const redirect = vi.fn(async () => new Response(null, { status: 301, headers: { location: "https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549?_r=1&_t=x" } }));
+    expect(await resolveTiktokUrl("https://vt.tiktok.com/ZSbJ6eN9S/", redirect as unknown as typeof fetch)).toBe("https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549");
+    expect(redirect.mock.calls[0]![1]).toMatchObject({ redirect: "manual" });
+    expect(await resolveTiktokUrl("https://example.com/x", redirect as unknown as typeof fetch)).toBeNull();
+    expect(redirect).toHaveBeenCalledTimes(1);
+  });
+
+  it("readVideoPage goes through fetchText with the identifying header and returns null on a challenge", async () => {
+    vi.mocked(fetchText).mockResolvedValueOnce(fixture("tiktok-video"));
+    expect((await readVideoPage("https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549"))?.id).toBe("7688511584326454549");
+    expect(vi.mocked(fetchText).mock.calls[0]![1]?.headers).toMatchObject({ "x-cambio-uruguay-bot": "CambioUruguayBot/1.0" });
+    vi.mocked(fetchText).mockResolvedValueOnce("<html>Please wait...</html>");
+    expect(await readVideoPage("https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549")).toBeNull();
   });
 });
