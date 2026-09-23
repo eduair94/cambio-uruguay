@@ -173,7 +173,7 @@ export async function publishPageForCluster(cluster: GapCluster, today: string):
   if (!written.ok) return { status: "failed", reason: written.detail };
 
   // 5. The gate that replaces the merge.
-  const verified = await verifyWorkspace();
+  const verified = await verifyWorkspace(files);
   if (!verified.ok) {
     await notifyAdmin(
       `🚫 *Página generada rechazada* — "${spec.title}"\nNo pasó lint/tests, no se publicó nada.\n\n` +

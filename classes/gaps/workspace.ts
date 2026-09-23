@@ -28,6 +28,7 @@ const MINUTE = 60000;
 const GIT_TIMEOUT = 5 * MINUTE;
 /** The app suite plus lint. Generous: it runs once a day at most. */
 const CHECK_TIMEOUT = 25 * MINUTE;
+const FORMAT_TIMEOUT = 5 * MINUTE;
 const INSTALL_TIMEOUT = 30 * MINUTE;
 
 export interface StepResult {
@@ -91,6 +92,44 @@ export function writeFiles(files: ReadonlyArray<{ path: string; content: string 
   }
 }
 
+/**
+ * Prettier over exactly the files this run wrote, with the clone's own Prettier and config.
+ *
+ * Not cosmetic: it is what makes the gate reachable at all. `emit.ts` builds its output as text —
+ * `JSON.stringify` for every string, so double quotes where the app's Prettier wants single, and
+ * one field per line at a fixed indent, which a long source title pushes past 100 columns. Both are
+ * `prettier/prettier` errors, so the file the bot emits could never pass `npm run lint` as written:
+ * the check meant to protect the page was rejecting every page. Measured 2026-09-23 on a real
+ * addendum: 6 errors before this step, 0 after, and `app/utils/generated/addenda.ts` had never
+ * received a single entry.
+ *
+ * Only the named paths, never the tree — same rule as `commitAndPush`, for the same reason: a
+ * concurrent process's half-finished file must not ride along.
+ */
+export async function formatFiles(files: ReadonlyArray<{ path: string }>): Promise<StepResult> {
+  if (!files.length) return { ok: true, detail: "sin archivos que formatear" };
+
+  const appDir = path.join(WORKSPACE_DIR, "app");
+  const bin = path.join(appDir, "node_modules", "prettier", "bin", "prettier.cjs");
+  if (!fs.existsSync(bin)) {
+    return { ok: false, detail: `falta ${bin} — corré una vez: cd ${appDir} && npm install --force` };
+  }
+
+  try {
+    await run(process.execPath, [bin, "--write", ...files.map((f) => f.path)], {
+      cwd: WORKSPACE_DIR,
+      timeout: FORMAT_TIMEOUT,
+      maxBuffer: 8 * 1024 * 1024,
+    });
+    return { ok: true, detail: `${files.length} archivos formateados` };
+  } catch (e: any) {
+    return {
+      ok: false,
+      detail: `prettier falló:\n${`${e?.stdout ?? ""}\n${e?.stderr ?? e?.message ?? e}`.slice(-1500)}`,
+    };
+  }
+}
+
 async function npmRun(script: string, cwd: string, timeout: number): Promise<StepResult> {
   try {
     const { stdout, stderr } = await run("npm", ["run", script], {
@@ -112,7 +151,7 @@ async function npmRun(script: string, cwd: string, timeout: number): Promise<Ste
  * and a check that always fails is a check that gets skipped. Lint plus the suite is what CI would
  * have run on a pull request, which is exactly the bar being replaced.
  */
-export async function verifyWorkspace(): Promise<StepResult> {
+export async function verifyWorkspace(files: ReadonlyArray<{ path: string }> = []): Promise<StepResult> {
   const appDir = path.join(WORKSPACE_DIR, "app");
   if (!fs.existsSync(path.join(appDir, "node_modules"))) {
     return {
@@ -120,6 +159,11 @@ export async function verifyWorkspace(): Promise<StepResult> {
       detail: `falta ${appDir}/node_modules — corré una vez: cd ${appDir} && npm install --force`,
     };
   }
+
+  // Formatear ANTES de lintear, y acá adentro y no en cada llamador: el archivo emitido nunca
+  // cumple el estilo tal cual sale, así que un llamador que se olvide del paso se rechaza a sí mismo.
+  const formatted = await formatFiles(files);
+  if (!formatted.ok) return formatted;
 
   const lint = await npmRun("lint", appDir, CHECK_TIMEOUT);
   if (!lint.ok) return { ok: false, detail: `lint falló:\n${lint.detail}` };

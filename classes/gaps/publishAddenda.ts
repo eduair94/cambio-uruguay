@@ -68,7 +68,7 @@ export async function enrichExistingPages(today: string): Promise<string[]> {
       continue;
     }
 
-    const verified = await verifyWorkspace();
+    const verified = await verifyWorkspace([file]);
     if (!verified.ok) {
       await notifyAdmin(
         `🚫 *Ampliación rechazada* — ${pagePath}\nNo pasó lint/tests, no se publicó nada.\n\n` +
