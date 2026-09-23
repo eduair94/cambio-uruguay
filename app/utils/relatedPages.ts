@@ -343,6 +343,55 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
     '/multas-de-transito-y-patente-uruguay',
     '/precio-de-la-nafta-uruguay',
   ],
+  // Motos usadas y el comparador de transporte.
+  //
+  // Las dos son páginas SIN barra de familia —motos es un directorio de una sola página y el
+  // comparador no pertenece a ninguna familia porque sale de tres—, así que este bloque es la única
+  // capa que las conecta con sus vecinas. En las páginas que SÍ tienen barra (autos, monopatines,
+  // bicicletas) las dos ya viajan arriba, como grupo, y de ahí se excluyen acá solas:
+  // `familiaNavRutas(path)` es lo primero que este módulo descarta.
+  '/motos-usadas-uruguay': [
+    '/conviene-auto-moto-o-omnibus-uruguay',
+    '/autos-usados-uruguay',
+    '/multas-de-transito-y-patente-uruguay',
+    '/libreta-de-conducir-uruguay',
+    '/precio-de-la-nafta-uruguay',
+    '/estafas-uruguay',
+  ],
+  // El orden es el de la pregunta que sigue: primero de dónde salen los precios que la página
+  // compara, después lo que cuesta tener el vehículo, y al final el presupuesto del mes.
+  '/conviene-auto-moto-o-omnibus-uruguay': [
+    '/motos-usadas-uruguay',
+    '/autos-usados-uruguay',
+    '/monopatines-electricos-uruguay',
+    '/bicicletas-electricas-uruguay',
+    '/precio-de-la-nafta-uruguay',
+    '/multas-de-transito-y-patente-uruguay',
+  ],
+  // Cuánta nafta gastás depende de los kilómetros que hacés: la cuenta completa está del otro lado.
+  '/precio-de-la-nafta-uruguay': [
+    '/conviene-auto-moto-o-omnibus-uruguay',
+    '/autos-usados-uruguay',
+    '/multas-de-transito-y-patente-uruguay',
+    '/impuesto-autos-electricos-uruguay',
+    '/plan-de-vida-uruguay',
+  ],
+  // La patente y el seguro son dos de los cinco costos que el comparador suma.
+  '/multas-de-transito-y-patente-uruguay': [
+    '/conviene-auto-moto-o-omnibus-uruguay',
+    '/autos-usados-uruguay',
+    '/motos-usadas-uruguay',
+    '/comprar-auto-con-deuda-uruguay',
+    '/libreta-de-conducir-uruguay',
+  ],
+  // Quien está sacando la libreta todavía no eligió vehículo: es exactamente el lector del
+  // comparador, y la categoría que necesita depende de lo que elija (A para auto, G1/G2 para moto).
+  '/libreta-de-conducir-uruguay': [
+    '/conviene-auto-moto-o-omnibus-uruguay',
+    '/motos-usadas-uruguay',
+    '/autos-usados-uruguay',
+    '/multas-de-transito-y-patente-uruguay',
+  ],
   '/comprar-auto-con-deuda-uruguay': [
     '/autos-usados-uruguay',
     '/oportunidades-autos-usados-uruguay',

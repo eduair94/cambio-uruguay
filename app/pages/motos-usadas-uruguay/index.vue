@@ -35,6 +35,8 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
       </p>
     </header>
 
+    <AssistantCta topic="motos" class="mb-6" />
+
     <!-- El relevamiento arranca: la página existe antes que el primer dato y lo dice, en vez de
          parecer un mercado vacío. -->
     <VAlert

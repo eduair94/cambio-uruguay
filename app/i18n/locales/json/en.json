@@ -1508,13 +1508,15 @@
       "vivienda": "Related home searches",
       "antesDeAlquilar": "Before you rent",
       "antesDeComprar": "Before you buy",
-      "tarjetasYBancos": "Other cards and banks"
+      "tarjetasYBancos": "Other cards and banks",
+      "otrosVehiculos": "Other ways to get around"
     },
     "preguntas": {
       "garantia": "Which guarantee will they ask for?",
       "sinRecibo": "No payslip?",
       "clearing": "Listed on the credit registry?",
-      "antesDeSenar": "Does the car carry debts?"
+      "antesDeSenar": "Does the car carry debts?",
+      "queConviene": "Which one pays off?"
     },
     "enlaces": {
       "oportunidadesCompra": "Homes for sale below comparables"

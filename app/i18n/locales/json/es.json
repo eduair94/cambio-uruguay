@@ -1519,13 +1519,15 @@
       "vivienda": "Otras búsquedas de vivienda",
       "antesDeAlquilar": "Antes de alquilar",
       "antesDeComprar": "Antes de comprar",
-      "tarjetasYBancos": "Otras tarjetas y bancos"
+      "tarjetasYBancos": "Otras tarjetas y bancos",
+      "otrosVehiculos": "Otras formas de moverse"
     },
     "preguntas": {
       "garantia": "¿Qué garantía te piden?",
       "sinRecibo": "¿Sin recibo de sueldo?",
       "clearing": "¿Estás en el clearing?",
-      "antesDeSenar": "¿El auto tiene deudas?"
+      "antesDeSenar": "¿El auto tiene deudas?",
+      "queConviene": "¿Cuál te conviene?"
     },
     "enlaces": {
       "oportunidadesCompra": "Oportunidades de compra"

@@ -1501,13 +1501,15 @@
       "vivienda": "Outras buscas de imóveis",
       "antesDeAlquilar": "Antes de alugar",
       "antesDeComprar": "Antes de comprar",
-      "tarjetasYBancos": "Outros cartões e bancos"
+      "tarjetasYBancos": "Outros cartões e bancos",
+      "otrosVehiculos": "Outras formas de se locomover"
     },
     "preguntas": {
       "garantia": "Qual garantia vão exigir?",
       "sinRecibo": "Sem comprovante de renda?",
       "clearing": "Com restrição de crédito?",
-      "antesDeSenar": "O carro tem dívidas?"
+      "antesDeSenar": "O carro tem dívidas?",
+      "queConviene": "Qual compensa?"
     },
     "enlaces": {
       "oportunidadesCompra": "Oportunidades de compra"

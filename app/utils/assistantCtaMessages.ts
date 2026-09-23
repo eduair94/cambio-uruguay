@@ -16,6 +16,7 @@ export const ASSISTANT_CTA_GROUP: Readonly<Record<AssistantTopic, AssistantCtaGr
   oportunidadesVenta: 'vivienda',
   autos: 'autos',
   oportunidadesAutos: 'autos',
+  motos: 'autos',
   equipar: 'productos',
   celulares: 'productos',
   sillas: 'productos',
@@ -64,6 +65,7 @@ export const assistantCtaMessages = {
         'Busco un celular con buena relación entre precio y calidad. ¿Cuál me conviene y dónde está más barato?',
       sillas:
         'Busco una silla de escritorio cómoda para trabajar muchas horas. ¿Cuál me conviene y dónde está más barata?',
+      motos: 'Busco una moto usada. ¿Cuál me conviene por precio y qué cuesta tenerla por mes?',
       monopatines:
         'Busco un monopatín eléctrico. ¿Cuál me conviene por precio y dónde está más barato?',
       bicicletas:
@@ -113,6 +115,8 @@ export const assistantCtaMessages = {
         'I am looking for a phone with good value for money. Which one should I get and where is it cheapest?',
       sillas:
         'I am looking for a comfortable desk chair for long working hours. Which one should I get and where is it cheapest?',
+      motos:
+        'I am looking for a used motorbike. Which one is the best value and what does it cost to run per month?',
       monopatines:
         'I am looking for an electric scooter. Which one is the best value and where is it cheapest?',
       bicicletas:
@@ -162,6 +166,7 @@ export const assistantCtaMessages = {
         'Procuro um celular com bom custo-benefício. Qual me convém e onde está mais barato?',
       sillas:
         'Procuro uma cadeira de escritório confortável para trabalhar muitas horas. Qual me convém e onde está mais barata?',
+      motos: 'Procuro uma moto usada. Qual tem o melhor preço e quanto custa mantê-la por mês?',
       monopatines: 'Procuro um patinete elétrico. Qual tem o melhor preço e onde está mais barato?',
       bicicletas:
         'Procuro uma bicicleta elétrica. Qual tem o melhor preço e onde está mais barata?',

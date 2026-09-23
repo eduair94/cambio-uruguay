@@ -17,6 +17,7 @@ export const ASSISTANT_TOPICS = [
   'oportunidadesVenta',
   'autos',
   'oportunidadesAutos',
+  'motos',
   'equipar',
   'celulares',
   'sillas',

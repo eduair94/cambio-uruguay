@@ -125,6 +125,36 @@ const GRUPOS: Readonly<Record<string, readonly GrupoDef[]>> = {
         { to: '/comprar-auto-con-deuda-uruguay', labelKey: 'familiaNav.preguntas.antesDeSenar' },
       ],
     },
+    // Las otras formas de moverse, y la cuenta que las compara. Van como GRUPO y no como análisis
+    // porque no son del directorio de autos: son directorios hermanos con su propia familia, y el
+    // comparador sale de los tres a la vez. La regla del registro —un análisis que comparten dos o
+    // más directorios no pertenece a ninguna familia— lo dejaría afuera de TODAS las barras, que es
+    // justo donde se ve (medido: las hermanas aparecen en y<1.400 px; el pie, a 11.000).
+    {
+      labelKey: 'familiaNav.grupos.otrosVehiculos',
+      links: [
+        { to: '/motos-usadas-uruguay' },
+        { to: '/monopatines-electricos-uruguay' },
+        { to: '/bicicletas-electricas-uruguay' },
+        {
+          to: '/conviene-auto-moto-o-omnibus-uruguay',
+          labelKey: 'familiaNav.preguntas.queConviene',
+        },
+      ],
+    },
+  ],
+  movilidad: [
+    {
+      labelKey: 'familiaNav.grupos.otrosVehiculos',
+      links: [
+        { to: '/motos-usadas-uruguay' },
+        { to: '/autos-usados-uruguay' },
+        {
+          to: '/conviene-auto-moto-o-omnibus-uruguay',
+          labelKey: 'familiaNav.preguntas.queConviene',
+        },
+      ],
+    },
   ],
   tarjetas: [
     {
