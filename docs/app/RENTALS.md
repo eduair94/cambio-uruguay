@@ -1,5 +1,116 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## TikTok — 23 de setiembre de 2026
+
+Sexta fuente: los alquileres que inmobiliarias y particulares publican como video corto, con
+**toda la ficha en la leyenda** (precio, gastos comunes, dormitorios, esquina, barrio,
+garantías, teléfono). El pedido llegó con un ejemplo, `https://vt.tiktok.com/ZSbJ6eN9S/` →
+`@inmobiliariaalquilar`, video `7688511584326454549`: "🏠 ALQUILER 2 DORMITORIOS … 📍 Gaboto y La
+Paz … $22.000 🔹 Gastos comunes $1.850 🔹 Garantías: Aseguradoras 🔹 Cordón / Aguada 📲 099 …".
+Código en `classes/rentals/sources/tiktok/` (`caption.ts` parser puro, `post.ts` → `RawRental`,
+`page.ts` HTTP plano de un video, `browser.ts` listas por navegador, `store.ts` memoria,
+`index.ts` el harvester). Diseño y medición completa en
+`docs/superpowers/specs/2026-09-23-rentals-tiktok-design.md`.
+
+**Lo medido antes de escribir una línea:**
+
+- `yt-dlp` lee un video (descripción, autor, fecha) pero **no lista** cuentas ni hashtags: la API
+  firmada devuelve vacío y `tiktok:tag` está marcado `_WORKING = False`.
+- La página de un video (`/@user/video/<id>`) responde por **HTTP plano** con UA de navegador,
+  también desde el VPS: 450 KB con `__UNIVERSAL_DATA_FOR_REHYDRATION__` → `itemStruct` (leyenda,
+  autor, `createTime`, cover, hashtags, `locationCreated: "UY"`). No hace falta yt-dlp.
+- La página de una cuenta (`/@user`) es un desafío del WAF (1,4 KB, "Please wait…"), y la de un
+  hashtag (`/tag/<tag>`) trae 400 KB sin videos: la lista la pide el cliente a
+  `/api/challenge/item_list/`. Hace falta un navegador.
+- Chrome headless local con `--disable-blink-features=AutomationControlled` y UA sin
+  `HeadlessChrome`: la cuenta devuelve sus 20 videos en 2 páginas. Sin la bandera: cuerpo vacío.
+  El hashtag devuelve vacío en frío y **5 páginas × 30 videos** con las cookies calentadas en una
+  página de video antes (25 cuentas distintas en 50 videos).
+- **Desde la IP del VPS todo `item_list` vuelve vacío**, con el Chrome 117 del sistema headless y
+  también con el Chrome del perfil de Facebook (CDP :9224). Con `--proxy-server=<proxy.txt>` y el
+  mismo Chrome 117: lista completa. El bloqueo es por IP, no por navegador. Los Chrome 131/148 de
+  puppeteer no arrancan en el VPS (`GLIBC_2.25 not found`).
+- `robots.txt`: `User-agent: *` **permite `/tag`** y **prohíbe `/search?`**; `/@user` y
+  `/@user/video/<id>` no están listados. La búsqueda no se usa en ningún camino del código.
+- El `thumbnail_url` del oEmbed es la misma URL firmada del cover: vence en ~36–48 h. No hay
+  miniatura durable, así que la imagen se refresca cada vez que la cuenta se relee.
+
+**Cómo corre.** Sólo la **corrida completa** (04:52 UTC): un Chrome por hora en el VPS es un riesgo
+ya pagado y las leyendas no cambian de hora en hora; la horaria devuelve `ok: true, listings: []`,
+"sólo en la corrida completa". Orden: (1) videos manuales (`RENTALS_TIKTOK_VIDEOS`, admite
+`vt.tiktok.com/…`, HTTP plano, sin navegador); (2) el registro de cuentas (`rentaltiktokaccounts`:
+las semilla más toda cuenta que ya publicó un aviso aceptado), nunca leídas primero y después la
+más vieja, hasta `RENTALS_TIKTOK_MAX_ACCOUNTS`; (3) un Chrome por el proxy: calienta cookies en
+una página de video, lee los hashtags y después las cuentas, con presupuesto de tiempo y cierre
+en `finally`; (4) cada video una vez, del más nuevo al más viejo: leyenda → hechos → oferta, con la
+esquina geocodificada **una sola vez** por video (`rentaltiktokposts` guarda la respuesta, aceptada
+o no, y el motivo de cada rechazo, para medir el parser contra lo real sin volver a pedir nada);
+(5) `complete: true` **sólo** si todas las cuentas que ya estaban registradas se leyeron hasta el
+fin de la ventana o `hasMore: false` — recién entonces la ausencia de un video (borrado o editado
+a "ALQUILADO") es evidencia y la oferta caduca por `RENTALS_STALE_OFFER_DAYS`. Las cuentas
+descubiertas en la corrida no cuentan para eso: se leen en la siguiente.
+
+**Ventana de vigencia.** Un video no se baja cuando el apartamento se alquila; a lo sumo la
+inmobiliaria edita la leyenda. Por eso `RENTALS_TIKTOK_MAX_AGE_DAYS` (45) desde `createTime`, y
+`alquilad[oa]`, `reservad[oa]`, `no disponible`, `traspaso`, `venta` sin `alquil`, `busco` y la
+evidencia de temporal (`rentalPeriodEvidence`) rechazan. `‼️DISPONIBLE‼️` no rechaza.
+
+**Reglas del parser (precisión sobre recall), todas contra leyendas reales
+(`tests/rentals/fixtures/tiktok-captions.json`):**
+
+- **Precio.** Montos con marca de moneda (`$`, `💲`, `$U`, `U$S`, `US$`, `USD`, `pesos`,
+  `dólares`; `$` solo = pesos); un monto sin marca sólo vale si su etiqueta es de precio o de
+  gastos comunes (`PRECIO:42.000`). **La etiqueta más cercana ANTES del monto decide el rol**, y
+  nunca alcanza más atrás que el monto anterior: en "Contrato 2 años ✅ Alquiler $49.000" manda
+  "Alquiler", no "años". Gastos comunes siempre van etiquetados antes de su cifra
+  (`Gastos comunes: $1.850`, `GC $6.000`): una etiqueta después del monto etiqueta al siguiente,
+  así que "$30.000 GC $4.000" es alquiler 30.000 y GC 4.000. Depósito, seña, comisión, cochera,
+  luz, m², años y meses se ignoran; `Anda: $33.000`, `$24.000 con aseguradoras`, `$19.000 Porto
+  Seguro` son **variantes por garantía** y se publica la MENOR. Sin etiqueta: es el precio sólo si
+  es el ÚNICO monto sin etiqueta; con dos distintos, abstención ("precio ambiguo"). "Sin gastos
+  comunes" / "no paga gastos comunes" = GC 0. Después, `isPlausibleRent` con la tasa de la
+  corrida, como en toda fuente.
+- **Departamento.** Nunca de una esquina: "Emilio Frugoni entre Durazno y Maldonado" y "Jackson y
+  Canelones" son calles de Montevideo. Sólo de un hashtag (`#montevideo`, `#alquilermontevideo`,
+  `#montevideouruguay`) o de un nombre detrás de cue locativo ("en Maldonado"); dos departamentos
+  distintos → vacío. **Barrio:** `neighborhoodFromText` sobre la PROSA (la leyenda trae sus
+  hashtags inline y "#Palermo" le ganaba por largo al "Cordón" que la leyenda dice), y los
+  hashtags (`#Pocitos`, `#alquilerpocitos`, `#pocitosmontevideo`) sólo cuando la prosa no nombra
+  ninguno. Un barrio único de Montevideo sin departamento nombra Montevideo (regla existente).
+  "📍La Unión" es el barrio INE "Unión", que es la grafía sobre la que une el asignador de zonas.
+  Y en el diccionario compartido con Facebook, un nombre detrás de palacio/estadio/shopping/
+  hospital/club/liceo/escuela/colegio/sanatorio/terminal/feria/mercado es un hito, no el barrio:
+  "Palacio Peñarol" nombraba Peñarol en un apartamento de Cordón.
+- **Tipo.** "3 habitaciones" son dormitorios, no una habitación en alquiler: `habitacion` sólo con
+  "habitación en/para", pensión, cuarto, pieza, compartida, coliving; después el título
+  (`inferPropertyType`), después las palabras de apartamento/casa en el texto; si nada, `otro`.
+- **Título.** La primera línea sin emojis, viñetas ni hashtags; si la leyenda no tiene ninguna
+  ("#alquiler #montevideo"), "Alquiler en TikTok (@cuenta)".
+- **Esquina → coordenada.** `addressCandidates` de Facebook sobre la leyenda con las viñetas
+  convertidas en saltos de línea y **cada 📍 abriendo su propia línea** (el partidor de segmentos
+  se traga un 📍 que sigue a una palabra, y el ancla tiene que abrir el segmento). Geocodificada
+  con `acceptGeocode` (sólo intersección con palabra en común o ROOFTOP con el número) y
+  `pointContradictsBarrio`: un punto en otra área INE que el barrio nombrado se descarta; sin
+  barrio nombrado, el área del punto lo nombra. Nunca `locationCreated` (es el país).
+- **Lo que no se toma.** Contactos: el teléfono está en la leyenda y `rentalDescription` lo borra;
+  la bio de la cuenta no se copia; `agency`/`publicContact` quedan sin inspeccionar. `sellerType`
+  sólo de lo que el texto declara (`advertiserClassification`): "Inmobiliaria X" como nombre de
+  cuenta no convierte a nadie en inmobiliaria. Mascotas, amueblado y cochera: `null`, como en
+  Facebook (sólo dato estructurado). Unificación: sin dirección con número la fila queda
+  separada; una esquina no es una dirección.
+
+**Buenos modales.** Un Chrome por corrida, 2 s entre cargas, sin login, sin `/search`, sólo rutas
+que robots permite o no lista; cabecera `x-cambio-uruguay-bot` en lo que sale de Node (la página
+del video y la resolución del enlace corto). El proxy cambia la RED, no la identidad, como en
+`classes/autos/sources/proxy.ts`. Los términos de TikTok restringen el acceso automatizado: la
+decisión de leer igual la tomó el dueño del sitio el 2026-09-23, y `RENTALS_TIKTOK_ENABLED=0`
+apaga la fuente sin desplegar.
+
+**Medir el parser contra lo real:** `rentaltiktokposts` guarda cada video con `rejected` (motivo o
+null), `price`, `department`, `neighborhood`, `candidates` y el resultado de la geocodificación.
+`db.rentaltiktokposts.aggregate([{ $group: { _id: "$rejected", n: { $sum: 1 } } }])` dice qué
+rechaza el parser y cuánto; una regla nueva se prueba contra `text` sin volver a pedir nada.
+
 ## Precio por m² y comodidades — 13 de septiembre de 2026
 
 Pedido: ordenar por precio por m² y elegir si hay gimnasio u otros servicios. Diseño y mediciones
@@ -301,6 +412,7 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 | **Facebook Marketplace** | bridge propio en `:9657` (`pm2 facebook_marketplace`) para las tarjetas; **`currency-rentals-detail` lee la ficha** de cada aviso (CDP al Chrome del perfil) | precio, título, ciudad, foto; el barrio cuando el título o la descripción lo nombran (`classes/rentals/neighborhoods.ts`); descripción, garantías por texto, m²/dormitorios por texto y **coordenada cuando el texto trae una esquina o dirección geocodificable** (`classes/rentals/facebookDetail.ts`) | dirección exacta, gastos comunes, fecha de publicación; el pin de la ficha no es el inmueble y no se publica |
 | **Casasweb** | HTML público de `resultados.aspx`; paginación mediante el formulario de búsqueda que entrega el servidor | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
 | **Inmuebles El País** | los dos endpoints de su propio buscador: `POST /api/chat/init` (una búsqueda guardada por departamento) y `GET /api/chat/<id>/results?page&limit=500`; UA de navegador y cabecera `x-cambio-uruguay-bot`, con puppeteer de respaldo cuando Cloudflare desafía | dirección, barrio, lat/lon, dormitorios/baños/m², gastos comunes, inmobiliaria, foto y **la garantía como dato estructurado** | fecha de publicación original; teléfono y correo de la inmobiliaria (existen en la respuesta y **no se copian**); garaje y amueblado |
+| **TikTok** | un Chrome real por corrida (puppeteer, **a través del proxy de `proxy.txt`**: desde la IP del VPS toda lista vuelve vacía) lee las páginas de hashtag (`/tag/...`) y de cuenta (`/@user`) capturando `item_list`; un video suelto se lee por HTTP plano de su propia página. Sólo la corrida completa | precio, gastos comunes, dormitorios/baños/m², tipo, barrio y departamento, garantías y **la fecha real de publicación**, todo leído de la LEYENDA (`classes/rentals/sources/tiktok/caption.ts`, precisión sobre recall); coordenada sólo de una esquina del propio texto geocodificada y aceptada | dirección exacta; el teléfono (está en la leyenda y se borra); unificación con otros portales; la foto es el cover firmado del video y vence en ~36–48 h, se refresca al releer la cuenta |
 
 Verificado localmente el **2026-09-04** con la UA propia: Gallito directo devolvió **403 Cloudflare** en
 `https://www.gallito.com.uy/inmuebles/alquiler`; no se sortea esa protección. Su nuevo portal
@@ -796,6 +908,24 @@ El País vuelve a tener variables propias, ahora que importa:
 | `RENTALS_EP_BROWSER` | `1` | `0` deja la fuente en HTTP plano: se abren las 3 búsquedas que Cloudflare deja pasar y nada más |
 | `RENTALS_EP_CHROME` | — | ruta al Chrome a usar. Se prueban esta, `PUPPETEER_EXECUTABLE_PATH`, `/usr/bin/google-chrome-stable` y por último el Chromium propio de puppeteer |
 | `RENTALS_EP_BROWSER_BUDGET_MS` | 360000 | techo duro de toda la fase de navegador. Un Chrome colgado en este VPS no es un job lento, es una caída |
+
+TikTok (sólo la corrida completa; ver la sección "TikTok" arriba):
+
+| variable | por defecto | qué hace |
+|---|---|---|
+| `RENTALS_TIKTOK_ENABLED` | `1` | `0` apaga la fuente: cero peticiones, cero filas |
+| `RENTALS_TIKTOK_PROXY` | primera línea de `proxy.txt` | proxy (`host:port` o URL `http://`/`socks5://`) para el navegador. **Sin proxy TikTok no lista nada desde la IP del VPS** y la nota de la corrida lo dice |
+| `RENTALS_TIKTOK_TAGS` | `alquilermontevideo,alquileruruguay,alquileresmontevideo,alquilermvd,alquileresuruguay` | hashtags de descubrimiento (`/tag/<tag>`, permitido por robots) |
+| `RENTALS_TIKTOK_ACCOUNTS` | `inmobiliariaalquilar` | cuentas semilla; se suman al registro `rentaltiktokaccounts` |
+| `RENTALS_TIKTOK_VIDEOS` | — | videos sueltos separados por coma (`vt.tiktok.com/…` o la URL canónica), leídos por HTTP plano sin navegador; sus autores entran al registro |
+| `RENTALS_TIKTOK_MAX_ACCOUNTS` | 60 | cuentas leídas por corrida, nunca leídas primero y después la más vieja; si el registro supera el tope la corrida no es `complete` |
+| `RENTALS_TIKTOK_TAG_PAGES` / `RENTALS_TIKTOK_ACCOUNT_PAGES` | 3 / 3 | páginas de 30 por hashtag / por cuenta; la lectura de una cuenta corta antes al pasar la ventana |
+| `RENTALS_TIKTOK_MAX_AGE_DAYS` | 45 | ventana desde `createTime`: un video más viejo no se publica (los videos no se bajan cuando la vivienda se alquila) |
+| `RENTALS_TIKTOK_GEOCODE_MAX` | 60 | esquinas geocodificadas por corrida (sólo videos nuevos; la respuesta se guarda en `rentaltiktokposts`) |
+| `RENTALS_TIKTOK_GAP_MS` | 2000 | separación entre cargas de página en el navegador |
+| `RENTALS_TIKTOK_BROWSER_BUDGET_MS` | 900000 | techo duro de la fase de navegador (15 min), lanzamiento incluido; al vencer se cierra Chrome con lo leído y la corrida no es `complete` |
+| `RENTALS_TIKTOK_CHROME` | — | ruta al Chrome; se prueban esta, `RENTALS_EP_CHROME`, `PUPPETEER_EXECUTABLE_PATH`, `/usr/bin/google-chrome-stable`, `/usr/bin/google-chrome` y por último el Chromium de puppeteer (que en el VPS no arranca: `GLIBC_2.25`) |
+| `RENTALS_TIKTOK_USER_AGENT` | UA de Chrome | la UA de las peticiones HTTP planas (página de video, enlace corto); la identificación viaja en `x-cambio-uruguay-bot` |
 
 ## La página
 
