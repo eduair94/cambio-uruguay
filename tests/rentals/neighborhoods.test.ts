@@ -38,6 +38,11 @@ describe("neighborhoodFromText", () => {
 
   it("does not read a street corner as a barrio", () => {
     expect(neighborhoodFromText("Casa en alquiler en Roosevelt y Arostegui", "Maldonado")).toBeNull();
+    // A landmark that carries a barrio's name is not the barrio: TikTok captions say "Palacio
+    // Peñarol" for a flat in Cordón, and "Shopping Punta Carretas" sits in Punta Carretas but
+    // "a 1 cuadra del Shopping Punta Carretas" is written by adverts in Pocitos.
+    expect(neighborhoodFromText("2 dormitorios frente al Palacio Peñarol, Cordón", "Montevideo")?.neighborhood).toBe("Cordón");
+    expect(neighborhoodFromText("A 1 cuadra del Shopping Punta Carretas", "Montevideo")).toBeNull();
     expect(neighborhoodFromText("Alquilo casa sobre la calle Figurita a metros de Garibaldi", "Montevideo")).toBeNull();
     expect(neighborhoodFromText("Alquiler de 2 Dormitorios sobre Propios , aires puros .!", "Montevideo")?.neighborhood).toBe("Aires Puros");
     expect(neighborhoodFromText("Alquiler Apartamento Ciudad Vieja (25 de Mayo y Guarani )", "Montevideo")?.neighborhood).toBe("Ciudad Vieja");

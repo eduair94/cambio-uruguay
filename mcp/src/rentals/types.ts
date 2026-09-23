@@ -41,13 +41,14 @@ export const RENTAL_AMENITIES = [
   "salon",
 ] as const;
 
-export const RENTAL_SOURCES = ["mercadolibre", "infocasas", "facebook", "elpais", "casasweb"] as const;
+export const RENTAL_SOURCES = ["mercadolibre", "infocasas", "facebook", "elpais", "casasweb", "tiktok"] as const;
 export const SOURCE_LABEL: Record<string, string> = {
   mercadolibre: "Mercado Libre",
   infocasas: "InfoCasas",
   facebook: "Facebook Marketplace",
   elpais: "Inmuebles El País",
   casasweb: "Casasweb",
+  tiktok: "TikTok",
 };
 
 export const RENTAL_SORTS = ["recientes", "precio", "precio-desc", "total", "precio-m2", "metros", "distancia"] as const;

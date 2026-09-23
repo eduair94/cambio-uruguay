@@ -5,7 +5,13 @@ import type { RentalSellerType } from './rentals'
 /** An asking-price comparison, never a transaction valuation or a promised saving. */
 export type OpportunityOperation = 'rent' | 'sale'
 export type OpportunityCurrency = 'UYU' | 'USD'
-export type OpportunitySource = 'mercadolibre' | 'infocasas' | 'facebook' | 'casasweb' | 'elpais'
+export type OpportunitySource =
+  | 'mercadolibre'
+  | 'infocasas'
+  | 'facebook'
+  | 'casasweb'
+  | 'elpais'
+  | 'tiktok'
 export type OpportunityAreaBasis = 'built' | 'total' | 'reported'
 
 export interface OpportunityMoney {

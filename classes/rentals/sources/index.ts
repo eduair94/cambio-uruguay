@@ -12,6 +12,9 @@ import { harvestCasasweb } from "./casasweb";
 import { harvestElpais } from "./elpais";
 import { harvestInfoCasas } from "./infocasas";
 import { harvestMercadoLibre } from "./mercadolibre";
+// TikTok: captions of the videos inmobiliarias post, read through a browser and the proxy (only in
+// the full run; the hourly one launches no Chrome). See ./tiktok/index.ts.
+import { harvestTiktok } from "./tiktok";
 import type { RentalSourceResult } from "./types";
 
 export type { RentalSourceResult } from "./types";
@@ -33,6 +36,7 @@ export async function harvestRentalMarket(mode: "full" | "fast", usdUyu: number)
     harvestFacebookMarketplace(mode, usdUyu),
     harvestCasasweb(mode, usdUyu),
     harvestElpais(mode, usdUyu),
+    harvestTiktok(mode, usdUyu),
   ]);
 
   const listings = runs.flatMap(run => run.listings);

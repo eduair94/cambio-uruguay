@@ -123,10 +123,14 @@ const CUE_ONLY: ReadonlySet<string> = new Set(
     "Progreso", "Libertad", "Sauce", "Toledo", "Rosario", "Dolores", "Young", "Roosevelt", "Puerto"].map(flatten),
 );
 const LOCATIVE_CUES: ReadonlySet<string> = new Set(["en", "barrio", "bo", "zona", "de", "del", "el", "la", "al", "pleno", "ubicado", "ubicada"]);
-/** The token before a name that says the name is a street, not an area. */
+/**
+ * The token before a name that says the name is a street or a landmark, not an area: "Palacio
+ * Peñarol" is a stadium in Cordón, "Shopping Punta Carretas" is named by adverts in Pocitos.
+ */
 const STREET_CUES: ReadonlySet<string> = new Set([
   "av", "avda", "avenida", "calle", "esq", "esquina", "y", "e", "bvar", "blvd", "bulevar", "cno", "camino", "ruta",
   "km", "rambla", "pasaje", "entre", "plaza", "sobre", "frente", "cruce",
+  "palacio", "estadio", "shopping", "hospital", "club", "liceo", "escuela", "colegio", "sanatorio", "terminal", "feria", "mercado",
 ]);
 /** The token after a name that turns it into a corner ("Roosevelt y Arostegui"). */
 const CORNER_CUES: ReadonlySet<string> = new Set(["y", "e", "esq", "esquina", "casi", "entre"]);
