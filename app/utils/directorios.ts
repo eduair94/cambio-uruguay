@@ -149,6 +149,17 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     ]),
   },
   {
+    id: 'motos',
+    to: '/motos-usadas-uruguay',
+    familia: 'vehiculos',
+    titulo: 'Motos usadas',
+    queCompara:
+      'Precios por modelo y año, con la cilindrada como dato propio cuando el aviso la declara.',
+    icon: 'mdi-motorbike',
+    unidad: 'avisos',
+    fuente: 'relevado',
+  },
+  {
     id: 'movilidad',
     to: '/monopatines-electricos-uruguay',
     familia: 'vehiculos',

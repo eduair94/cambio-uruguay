@@ -1755,7 +1755,9 @@
     "usedCarRisks": "Carros com dívida ou batidos",
     "usedCarMarketReport": "Relatório do mercado de carros",
     "usedCarValuation": "Quanto vale meu carro?",
-    "sellUsedCar": "Vender seu carro"
+    "sellUsedCar": "Vender seu carro",
+    "comparadorTransporte": "Carro, moto ou ônibus: o que compensa",
+    "motosUsadas": "Preço de motos usadas"
   },
   "sitemapPage": {
     "h1": "Mapa do site Cambio Uruguay",

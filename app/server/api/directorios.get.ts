@@ -86,6 +86,13 @@ const RELEVADOS: Readonly<Record<string, Adapter>> = {
     )
     return cifra(data?.coverage?.listings, data?.coverage?.lastReadAt)
   },
+  async motos() {
+    // pages/motos-usadas-uruguay/index.vue imprime "{{ payload.total }} avisos": misma ruta y mismo
+    // campo que la página, que es la regla de este archivo — una cifra que el lector no puede
+    // encontrar al hacer clic es la cifra equivocada, por mas que sea la que guardo el job.
+    const data = await get<{ total?: number; generatedAt?: string }>('/api/motos')
+    return cifra(data?.total, data?.generatedAt)
+  },
   async celulares() {
     // pages/celulares-uruguay/index.vue: "Hoy hay {{ cards.length }} modelos con precio vigente".
     const data = await get<{

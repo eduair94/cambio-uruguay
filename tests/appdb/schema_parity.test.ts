@@ -32,6 +32,10 @@ import { PhoneModelModel } from "../../classes/models/PhoneModel";
 import { PhoneMetaModel } from "../../classes/models/PhoneMeta";
 import { PriceChangeSnapshotModel } from "../../classes/models/PriceChangeSnapshot";
 import { SeoIndexAllowlistModel } from "../../classes/models/SeoIndexAllowlist";
+import { TransportSnapshotModel } from "../../classes/models/TransportSnapshot";
+import { MotoCatalogModel } from "../../classes/models/MotoCatalog";
+import { MotoCatalogMetaModel } from "../../classes/models/MotoCatalogMeta";
+import { MotoMarketSnapshotModel } from "../../classes/models/MotoMarketSnapshot";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -255,6 +259,33 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+
+  it("las tres colecciones de motos declaran exactamente los campos del app", () => {
+    // El directorio de /motos-usadas-uruguay y el informe de su mercado. Un campo que el backend
+    // escriba y el app no declare se guarda igual y no llega nunca a la pantalla; y `motocatalog`
+    // además lo lee el comparador de transporte, que toma de ahí el precio de entrada del modo moto.
+    expect(Object.keys(MotoCatalogModel.schema.obj).sort()).toEqual(appFields(appModel("MotoCatalog")).sort());
+    expect(MotoCatalogModel.collection.name).toBe("motocatalog");
+    expect(Object.keys(MotoCatalogMetaModel.schema.obj).sort()).toEqual(
+      appFields(appModel("MotoCatalogMeta")).sort()
+    );
+    expect(MotoCatalogMetaModel.collection.name).toBe("motocatalogmetas");
+    expect(Object.keys(MotoMarketSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("MotoMarketSnapshot")).sort()
+    );
+    expect(MotoMarketSnapshotModel.collection.name).toBe("motomarketsnapshots");
+  });
+
+  it("TransportSnapshot declares exactly the app's top-level fields", () => {
+    // La foto del comparador de transporte. El app la sirve entera en cada carga de
+    // /conviene-auto-moto-o-omnibus-uruguay: un campo que el backend escriba y el app no declare se
+    // guarda igual y no llega nunca a la pantalla, y la página queda comparando con menos de lo que
+    // el job midió.
+    expect(Object.keys(TransportSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("TransportSnapshot")).sort()
+    );
+    expect(TransportSnapshotModel.collection.name).toBe("transportsnapshots");
+  });
 
   it("SeoIndexAllowlist declares exactly the app's top-level fields", () => {
     // La lista blanca de indexación de las fichas de alquiler: un campo que el backend escriba y el

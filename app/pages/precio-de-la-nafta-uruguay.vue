@@ -303,6 +303,9 @@ const related = [
   },
   { label: 'IMESI a autos eléctricos', to: '/impuesto-autos-electricos-uruguay' },
   { label: 'Cuánto cuesta tener auto', to: '/guias/costos-de-tener-auto-uruguay' },
+  // Cuánta nafta gastás depende de los kilómetros que hacés, y esa cuenta —contra el boleto—
+  // está del otro lado.
+  { label: '¿Auto, moto u ómnibus?', to: '/conviene-auto-moto-o-omnibus-uruguay' },
   { label: 'Costo de vida', to: '/herramientas/costo-de-vida' },
   { label: 'Dólar hoy', to: '/dolar-hoy' },
 ]

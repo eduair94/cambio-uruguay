@@ -1762,7 +1762,9 @@
     "usedCarRisks": "Cars with debt or crash damage",
     "usedCarMarketReport": "Used-car market report",
     "usedCarValuation": "What is my car worth?",
-    "sellUsedCar": "Sell your car"
+    "sellUsedCar": "Sell your car",
+    "comparadorTransporte": "Car, motorbike or bus: what pays off",
+    "motosUsadas": "Used motorbike prices"
   },
   "sitemapPage": {
     "h1": "Cambio Uruguay sitemap",

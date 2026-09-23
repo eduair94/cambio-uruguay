@@ -793,6 +793,16 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Precio nuevo y usado, con la normativa de cada departamento.',
         to: '/bicicletas-electricas-uruguay',
       },
+      {
+        label: 'Motos usadas',
+        description: 'Precios por modelo y año, con la cilindrada cuando el aviso la declara.',
+        to: '/motos-usadas-uruguay',
+      },
+      {
+        label: '¿Auto, moto u ómnibus?',
+        description: 'Cuánto sale por mes cada modo y en cuántos meses se paga.',
+        to: '/conviene-auto-moto-o-omnibus-uruguay',
+      },
     ],
     terms: ['imesi', 'tasa-efectiva-anual', 'arancel-aduanero'],
     relatedHubs: ['deudas-y-credito-uruguay', 'finanzas-personales-y-jubilacion-uruguay'],

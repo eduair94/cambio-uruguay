@@ -1773,7 +1773,9 @@
     "usedCarRisks": "Autos con deuda o chocados",
     "usedCarMarketReport": "Informe del mercado de autos",
     "usedCarValuation": "¿Cuánto vale mi auto?",
-    "sellUsedCar": "Vender tu auto"
+    "sellUsedCar": "Vender tu auto",
+    "comparadorTransporte": "Conviene auto, moto u ómnibus",
+    "motosUsadas": "Precio de motos usadas"
   },
   "sitemapPage": {
     "h1": "Mapa del sitio de Cambio Uruguay",

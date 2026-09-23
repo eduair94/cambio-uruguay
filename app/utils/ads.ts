@@ -87,6 +87,10 @@ const LIGHT = [
   '/',
   // Un planificador es un instrumento: una sola unidad, que no se meta en la tabla.
   '/meal-prep-uruguay',
+  // El comparador de transporte es lo mismo: la página ES la calculadora, y el visitante mueve
+  // controles y mira cómo cambia el gráfico. Una unidad metida en el medio de eso rompe justo lo
+  // que la persona vino a hacer.
+  '/conviene-auto-moto-o-omnibus-uruguay',
   '/dolar-hoy',
   '/dolar',
   '/cotizacion',

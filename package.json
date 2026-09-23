@@ -43,6 +43,8 @@
     "ga4_probe": "ts-node scripts/oneoff/ga4_probe.ts",
     "sync_chair_tiers": "ts-node sync_chair_tiers.ts",
     "sync_chairs": "ts-node sync_chairs.ts",
+    "sync_motos": "ts-node sync_motos.ts",
+    "sync_transporte": "ts-node sync_transporte.ts",
     "sync_rag_index": "ts-node sync_rag_index.ts",
     "sync_reddit_bot": "ts-node sync_reddit_bot.ts",
     "sync_reddit_bot_watch": "ts-node sync_reddit_bot_watch.ts",

@@ -113,7 +113,19 @@ export function annualDropOf(points: readonly CarReportDepreciationPoint[]): num
   return drop > 0.005 && drop < 0.5 ? round3(drop) : null;
 }
 
-export function depreciationOf(rows: readonly CarListing[], maxYear: number): CarReportDepreciationPoint[] {
+/**
+ * La curva de precio mediano por año.
+ *
+ * La firma pide `{ year, priceUsd }` y no `CarListing` entero a propósito: la misma curva —y la misma
+ * `annualDropOf` de arriba— es lo que necesita el comparador de transporte para saber cuánto pierde
+ * por año una moto o un auto (`classes/transporte/prices.ts`), y un catálogo de motos no es un
+ * `CarListing`. Es un ensanchamiento del tipo, así que todo lo que ya llamaba a esta función con
+ * avisos de auto sigue compilando sin tocar nada.
+ */
+export function depreciationOf(
+  rows: readonly { year: number; priceUsd: number }[],
+  maxYear: number
+): CarReportDepreciationPoint[] {
   const byYear = new Map<number, number[]>();
   for (const row of rows) {
     if (row.year > maxYear || row.year < maxYear - CAR_REPORT_POLICY.depreciationYears) continue;

@@ -27,6 +27,8 @@ import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
 import { EquiparItemModel } from '../../models/EquiparItem'
 import { StoreProfileModel } from '../../models/StoreProfile'
 import { PhoneModelModel } from '../../models/PhoneModel'
+import { MotoMarketSnapshotModel } from '../../models/MotoMarketSnapshot'
+import { MOTO_REPORT_ID } from '../../../utils/motos'
 import { phoneFreshFloor, phonePublishable, type PhoneModelDoc } from '../../../utils/phones'
 import { listPosts } from '../../utils/blog'
 import { listIssueDates } from '../../utils/newsletterArchive'
@@ -380,6 +382,35 @@ export default defineEventHandler(async _event => {
     if (models.length) console.log(`- Used-car model pages: ${models.length} routes`)
   } catch (carError) {
     console.warn('Failed to add used-car model pages to sitemap:', carError)
+  } finally {
+    await disconnectDbAfterPrerender()
+  }
+
+  // --- Moto model pages: sólo los modelos que la ficha puede sostener ----------------------
+  // Sólo español (el cuerpo son precios pedidos en Uruguay, el mismo criterio que el bloque de autos
+  // de arriba). Se exige `snapshot.band` y no sólo que el documento exista: el job publica una ficha
+  // por modelo vigente aunque no tenga avisos suficientes para una banda, y una ficha sin banda es
+  // una página que no puede contestar la pregunta de su propio título. La `key` reservada del
+  // informe vive en la misma colección y nunca es una ficha.
+  try {
+    await connectDb()
+    const motoModels = await MotoMarketSnapshotModel.find({
+      key: { $ne: MOTO_REPORT_ID },
+      'snapshot.band': { $ne: null },
+    })
+      .select({ key: 1, generatedAt: 1 })
+      .lean()
+    motoModels.forEach(({ key, generatedAt }) => {
+      urls.push({
+        loc: `/motos-usadas-uruguay/${key}`,
+        lastmod: typeof generatedAt === 'string' ? generatedAt.slice(0, 10) : undefined,
+        changefreq: 'daily',
+        priority: 0.6,
+      })
+    })
+    if (motoModels.length) console.log(`- Moto model pages: ${motoModels.length} routes`)
+  } catch (motoError) {
+    console.warn('Failed to add moto model pages to sitemap:', motoError)
   } finally {
     await disconnectDbAfterPrerender()
   }

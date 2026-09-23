@@ -268,6 +268,51 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // El directorio de motos usadas de `/motos-usadas-uruguay`. Reusa el puente de MercadoLibre de
+      // autos contra la categoria MLU1763, con la cilindrada leida del titulo.
+      //
+      // 13:38 cae despues de combustibles (13:11) y antes de movilidad (15:33) y del comparador de
+      // transporte (16:39), que LEE este catalogo: correrlo despues publicaria la comparacion con
+      // los precios de ayer.
+      name: "currency-motos",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_motos.js",
+      cron_restart: "38 13 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Refresco horario, solo precio. El minuto :44 esta libre en toda la hora y queda a siete
+      // minutos de celulares (:37) y de alquileres (:47), los dos consumidores vecinos del mismo
+      // puente de MercadoLibre.
+      name: "currency-motos-hourly",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_motos.js",
+      args: "--fast",
+      cron_restart: "44 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // El comparador de transporte de `/conviene-auto-moto-o-omnibus-uruguay`: precios de cada modo,
+      // la matriz de rutas entre las 68 zonas y los viajes en ómnibus armados con los horarios que
+      // publica la Intendencia.
+      //
+      // 16:39 UTC no es un minuto libre cualquiera: esta corrida LEE lo que dejaron las otras, así que
+      // va después de autos (07:43), combustibles (13:11), motos (13:38), movilidad (15:33) y
+      // cambios de precio (16:09). Correrla antes publicaría la comparación con los precios de ayer.
+      //
+      // La matriz de rutas NO se rehace todos los días: son cuatro llamadas a un servicio donado
+      // (OSRM de FOSSGIS) y la calle no se muda de un día para el otro. Se rehace cada 7 días o con
+      // `--matrix`. Lo que sí se actualiza a diario son los precios y los horarios del ómnibus.
+      name: "currency-transporte",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_transporte.js",
+      cron_restart: "39 16 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Daily rental sweep for /alquileres-uruguay. Reads MercadoLibre (scraper service on :9656),
       // InfoCasas (its own server-rendered payload) and Facebook Marketplace (browser service on
       // :9657), merges the adverts into one row per PROPERTY and writes them to the NUXT APP's

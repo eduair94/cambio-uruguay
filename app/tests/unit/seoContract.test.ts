@@ -201,6 +201,10 @@ const NOINDEXED = [
   'inmobiliarias-uruguay/[key].vue',
   'inmobiliarias-uruguay/index.vue',
   'monopatines-electricos-uruguay.vue',
+  // Motos usadas: el directorio y la ficha por modelo se indexan en su URL limpia; una
+  // combinación de filtros y un modelo sin grupo se salen, igual que autos usados.
+  'motos-usadas-uruguay/[key].vue',
+  'motos-usadas-uruguay/index.vue',
   'newsletter/archivo.vue',
   'offline.vue',
   // Index the used-car opportunity list itself; filter combinations opt out.

@@ -426,6 +426,35 @@
         "/bicicletas-electricas-uruguay"
       ],
       "hypothesis": "Las dos paginas publicaban bandas correctas y una lista de texto sin foto ni filtros. Con foto por aviso y el directorio filtrable (tipo, condicion, marca, vendedor, precio) que ya usa /equipar-casa-uruguay/productos, la pagina pasa de leerse a usarse: mas paginas por sesion y mas clics salientes al aviso, que es lo que la consulta 'monopatin electrico uruguay' busca."
+    },
+    {
+      "id": "comparador-transporte-diario",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/conviene-auto-moto-o-omnibus-uruguay"
+      ],
+      "queries": [
+        "conviene comprar moto o auto",
+        "cuanto sale mantener un auto en uruguay",
+        "cuanto gasto en omnibus por mes",
+        "conviene comprar un monopatin electrico",
+        "cuanto sale tener una moto en uruguay"
+      ],
+      "hypothesis": "El sitio ya publicaba el precio de cada modo por separado (monopatines, bicicletas electricas, autos usados, nafta, boleto) y no contestaba la pregunta que la gente hace con esos precios: si le conviene dejar el omnibus. La pagina junta el precio de compra con el costo de TENERLO (SOA, patente, mantenimiento, energia, depreciacion medida sobre el propio catalogo) y con el tiempo puerta a puerta calculado con los horarios reales del STM y rutas de OpenStreetMap. La apuesta es la segunda rama del veredicto: cuando el modo sale mas caro que el omnibus no hay punto de equilibrio, y la respuesta util no es 'no conviene' sino cuanto sale la hora que ganas. Ninguna pagina uruguaya publica ese numero."
+    },
+    {
+      "id": "motos-usadas-directorio",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/motos-usadas-uruguay"
+      ],
+      "queries": [
+        "motos usadas uruguay",
+        "precio moto 125 uruguay",
+        "cuanto sale una moto usada",
+        "motos baratas montevideo"
+      ],
+      "hypothesis": "La moto es el vehiculo de trabajo en Uruguay y es la alternativa de costo medio entre el boleto y el auto, pero el sitio tenia el agujero justo ahi: publica precios de autos usados, de monopatines y de bicicletas electricas y ninguno de motos. El directorio por modelo-ano con banda p25/mediana/p75 replica lo que ya funciona en /autos-usados-uruguay, y ademas es el insumo que le faltaba al comparador de transporte para poder contestar el modo mas consultado."
     }
   ]
 }

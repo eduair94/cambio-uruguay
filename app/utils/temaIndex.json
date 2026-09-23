@@ -736,6 +736,14 @@
         {
           "to": "/bicicletas-electricas-uruguay",
           "label": "Bicicletas eléctricas"
+        },
+        {
+          "to": "/motos-usadas-uruguay",
+          "label": "Motos usadas"
+        },
+        {
+          "to": "/conviene-auto-moto-o-omnibus-uruguay",
+          "label": "¿Auto, moto u ómnibus?"
         }
       ],
       "guides": [
