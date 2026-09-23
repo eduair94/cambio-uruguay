@@ -1,9 +1,114 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { RENTAL_SOURCES, RENTAL_SOURCE_LABEL } from "../../classes/rentals/types";
+import { captionAmounts, captionLocation, captionPropertyType, captionRejection, captionTitle, parseCaption } from "../../classes/rentals/sources/tiktok/caption";
+
+interface Fixture { id: string; author: string; createTime: number; desc: string; hashtags: string[] }
+const captions: Fixture[] = JSON.parse(readFileSync(join(__dirname, "fixtures", "tiktok-captions.json"), "utf8"));
+const byId = (id: string): Fixture => captions.find(row => row.id === id)!;
+const facts = (id: string) => { const row = byId(id); return parseCaption(row.desc.split("\n"), row.hashtags); };
 
 describe("TikTok is a rental source", () => {
   it("is enumerated with its label", () => {
     expect(RENTAL_SOURCES).toContain("tiktok");
     expect(RENTAL_SOURCE_LABEL.tiktok).toBe("TikTok");
+  });
+});
+
+// Real captions, captured 2026-09-23 from the #alquilermontevideo tag page and @inmobiliariaalquilar.
+describe("TikTok caption amounts", () => {
+  it("separates rent from gastos comunes and ignores garages, deposits and guarantee variants", () => {
+    expect(captionAmounts(byId("7688511584326454549").desc)).toMatchObject({ price: 22000, currency: "UYU", commonExpenses: 1850, commonExpensesCurrency: "UYU", ambiguous: false });
+    expect(captionAmounts(byId("7685857708834245908").desc)).toMatchObject({ price: 29500, commonExpenses: 6000 });
+    expect(captionAmounts(byId("7684347053853445397").desc)).toMatchObject({ price: 25000, commonExpenses: 4900 });
+  });
+
+  it("publishes the LOWEST rent when the price depends on the guarantee", () => {
+    expect(captionAmounts(byId("7677263722120842517").desc)).toMatchObject({ price: 24000, commonExpenses: 3170 });
+    expect(captionAmounts(byId("7673622265199676693").desc)).toMatchObject({ price: 19000, commonExpenses: 1800 });
+  });
+
+  it("reads 'sin gastos comunes' as zero, a labelled amount without a symbol as pesos, and 💲 as $", () => {
+    expect(captionAmounts(byId("7686209173708688661").desc)).toMatchObject({ price: 49000, commonExpenses: 0 });
+    expect(captionAmounts("CASA EN ALQUILER PRECIO:42.000 No paga gastos comunes")).toMatchObject({ price: 42000, currency: "UYU", commonExpenses: 0 });
+    expect(captionAmounts(byId("7670918879937432839").desc)).toMatchObject({ price: 22000, commonExpenses: 0 });
+  });
+
+  it("abstains on two different unlabelled amounts and on no amount at all", () => {
+    expect(captionAmounts("Apto en Pocitos $18.000 lindo $21.000 consultar")).toMatchObject({ price: null, ambiguous: true });
+    // The nearest label wins, and a label never leaks across an earlier amount.
+    expect(captionAmounts("Contrato mínimo 2 años ✅ Alquiler $49.000 ✅ Garantías: Aseguradoras o 6 meses de depósito")).toMatchObject({ price: 49000 });
+    expect(captionAmounts("Alquiler: $29.500 ✅ Cochera opcional: $3.500–$4.000")).toMatchObject({ price: 29500, commonExpenses: null });
+    expect(captionAmounts("📍 Rincón y Bartolomé Mitre 🔹 $17.000 de alquiler 🔹 Gastos comunes: $3.500 aprox.")).toMatchObject({ price: 17000, commonExpenses: 3500 });
+    expect(captionAmounts(byId("7278750140763000070").desc)).toMatchObject({ price: null, ambiguous: false });
+    expect(captionAmounts("Alquiler U$S 900 mensuales gastos comunes U$S 120")).toMatchObject({ price: 900, currency: "USD", commonExpenses: 120, commonExpensesCurrency: "USD" });
+    expect(captionAmounts("Alquiler $ 39.000 + GC")).toMatchObject({ price: 39000, commonExpenses: null });
+  });
+});
+
+describe("TikTok caption rejection", () => {
+  it.each([
+    ["7679135522408746261", "no disponible"],
+    ["7485408122287213879", "reservado"],
+  ])("%s → %s", (id, reason) => expect(captionRejection(byId(id).desc)).toBe(reason));
+
+  it("rejects rented, transferred, sale and wanted adverts, but not 'DISPONIBLE'", () => {
+    expect(captionRejection("🔵 ¡ALQUILADO EN TIEMPO RÉCORD! 🏡 ¿Buscás algo similar?")).toBe("alquilado");
+    expect(captionRejection("🏠 ¡TRASPASO MI APARTAMENTO EN POCITOS! $25.000")).toBe("traspaso");
+    expect(captionRejection("Casa en venta Carrasco U$S 350.000")).toBe("venta");
+    expect(captionRejection("Busco apartamento en alquiler en Pocitos")).toBe("busco");
+    expect(captionRejection("Alquiler temporario por día Punta del Este")).toBe("temporal");
+    expect(captionRejection(byId("7593048064441470219").desc)).toBeNull();
+    expect(captionRejection("Sólo hashtags #alquiler #montevideo")).toBeNull();
+  });
+});
+
+describe("TikTok caption location", () => {
+  it("never reads a department out of a street corner", () => {
+    const palermo = byId("7675131286196849941");
+    expect(captionLocation(palermo.desc, palermo.hashtags)).toEqual({ department: "Montevideo", neighborhood: "Palermo" });
+    const cordon = byId("7673654750243589396");
+    expect(captionLocation(cordon.desc, cordon.hashtags)).toEqual({ department: "Montevideo", neighborhood: "Cordón" });
+  });
+
+  it("takes the department from a hashtag, and the barrio from text or from a hashtag", () => {
+    const union = byId("7670918879937432839");
+    // "📍La Unión" is the INE barrio "Unión": the dictionary's spelling, which the zone assigner joins on.
+    expect(captionLocation(union.desc, union.hashtags)).toEqual({ department: "Montevideo", neighborhood: "Unión" });
+    expect(captionLocation("Apto 2 dormitorios", ["alquilerpocitos"])).toEqual({ department: "Montevideo", neighborhood: "Pocitos" });
+    expect(captionLocation("Alquiler en Piriápolis casa 2 dormitorios", [])).toEqual({ department: "Maldonado", neighborhood: "Piriápolis" });
+  });
+
+  it("abstains on two departments and on a generic name without a cue", () => {
+    expect(captionLocation("Alquiler en Maldonado y en Canelones", ["montevideo", "maldonado"])).toEqual({ department: "", neighborhood: "" });
+    expect(captionLocation("Alquiler Centro 📍 3 habitaciones", ["alquiler"])).toEqual({ department: "", neighborhood: "" });
+    expect(captionLocation("Alquiler en Centro", ["montevideo"])).toEqual({ department: "Montevideo", neighborhood: "Centro" });
+  });
+});
+
+describe("TikTok caption title and type", () => {
+  it("uses the first line without emojis, bullets or hashtags", () => {
+    expect(captionTitle(["🤩 Alquiler Pocitos – Monoambiente con cochera", "✅ 26 de Marzo"])).toBe("Alquiler Pocitos – Monoambiente con cochera");
+    expect(captionTitle([byId("7688511584326454549").desc])).toBe("ALQUILER 2 DORMITORIOS BARATO, MUY ECONÓMICO");
+    expect(captionTitle(["#alquiler #montevideo"])).toBe("");
+  });
+
+  it("does not turn '3 habitaciones' into a room rental", () => {
+    expect(captionPropertyType("Alquiler Centro", byId("7641681054167862548").desc)).toBe("otro");
+    expect(captionPropertyType("Alquiler Pocitos – Monoambiente con cochera", "")).toBe("apartamento");
+    expect(captionPropertyType("Alquiler 2 dormitorios, Punta Carretas", byId("7686209173708688661").desc)).toBe("casa");
+    expect(captionPropertyType("Habitación en alquiler en casa compartida", "")).toBe("habitacion");
+  });
+
+  it("parses the example advert end to end", () => {
+    expect(facts("7688511584326454549")).toMatchObject({
+      rejected: null, price: 22000, currency: "UYU", commonExpenses: 1850, propertyType: "apartamento",
+      department: "Montevideo", neighborhood: "Cordón", bedrooms: 2, bathrooms: 1, area: null,
+      addressCandidates: ["Gaboto y La Paz"],
+    });
+    expect(facts("7688511584326454549").guarantees).toContain("aseguradora");
+    expect(facts("7278750140763000070").rejected).toBe("sin precio");
+    expect(facts("7679135522408746261").rejected).toBe("no disponible");
   });
 });
