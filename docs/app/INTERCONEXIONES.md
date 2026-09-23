@@ -67,6 +67,25 @@ dibuja; sigue en CyberLunes, que no tiene barra), "Más sobre este tema" y "Segu
 Para medirlo de nuevo: posición vertical del primer enlace a cada hermana, en las páginas de la
 familia, a 1280 px; "arriba" es antes de ~1.400 px.
 
+**Un análisis que sale de tres directorios (2026-09-23).** El comparador de transporte
+(`/conviene-auto-moto-o-omnibus-uruguay`) compara autos, motos, monopatines y bicicletas contra el
+ómnibus, así que es análisis de los tres directorios de vehículos a la vez. Declararlo como
+`analisis` de los tres lo habría dejado **fuera de todas las barras**, por la regla de arriba: un
+análisis compartido no pertenece a ninguna familia. Declararlo en uno solo habría mentido sobre los
+otros dos. La figura correcta es el GRUPO, que existe justo para eso: enlaces que no son páginas del
+directorio y que no dan pertenencia. El grupo «Otras formas de moverse» está en `autos` y en
+`movilidad`, y lleva las otras tres formas de moverse más la pregunta que las compara.
+
+Corolario: una página puede estar arriba en varias familias sin ser de ninguna, y su propia página
+no dibuja barra. Para el lector eso está bien —llega desde cualquiera de las tres— y para el
+registro también, porque nada miente sobre a quién pertenece.
+
+**Un directorio de una sola página no dibuja barra, y no es un olvido.** `familiaNavParaRuta`
+devuelve `null` con menos de dos rutas. Hoy es el caso de inmobiliarias, motos, celulares, sillas,
+tiendas, precios y couriers: se llega a ellos desde las barras de sus hermanas (como grupo) y desde
+las otras tres capas. El día que uno gane su segunda página —el informe del mercado de motos, por
+ejemplo— la barra aparece sola.
+
 ## Por qué existe "Más sobre este tema" (medido el 2026-09-19)
 
 Se rastreó el HTML de producción (las 195 páginas raíz, los 16 temas, los 75 términos, las 145 guías
@@ -126,6 +145,14 @@ cd app && npx vitest run tests/unit/temaIndex.test.ts -u
    etiqueta y una línea de descripción; y su entrada del menú (`siteNav`) para la etiqueta
    trilingüe del bloque.
 3. Regenerar el índice (arriba).
+4. Si la página **no** va a tener barra propia —una calculadora, o un análisis que sale de varios
+   directorios— hay dos capas más que hacen el trabajo, y conviene hacer las dos: un `GRUPO` en
+   `utils/familiaNav.ts` para cada familia desde la que se llega (aparece arriba, que es donde se
+   ve) y una entrada en `CURATED` de `utils/relatedPages.ts` con sus vecinas (que es lo único que
+   conecta a las páginas sin barra entre sí). Lo que ya viaja en la barra se excluye solo del bloque
+   de abajo: `familiaNavRutas(path)` es lo primero que descarta.
+5. Si es un directorio: el botón `AssistantCta` con su tema en `utils/assistantPrompt.ts` y su
+   pregunta en los tres idiomas (`utils/assistantCtaMessages.ts`), como los otros doce.
 
 El test también exige que todo término del glosario tenga tema y que toda página de datos del
 registro de directorios esté en algún tema: una página nueva sin tema no pasa CI.
