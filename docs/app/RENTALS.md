@@ -22,7 +22,10 @@ Código en `classes/rentals/sources/tiktok/` (`caption.ts` parser puro, `post.ts
   es estable**: la misma tarde (14:20 UTC), la misma URL desde el VPS ya devolvía el desafío del
   WAF (1,4 KB) y por el proxy la página completa (423 KB). Por eso un video manual se intenta
   primero por HTTP plano y, si vuelve sin `itemStruct`, lo lee el navegador (`plan.videos`), que
-  ya carga una página de video para calentar cookies y va por el proxy.
+  ya carga una página de video para calentar cookies y va por el proxy. Y si ni la redirección
+  del enlace corto contesta (pasó en el barrido de las 14:15: "0 videos manuales, 1 sin leer" con
+  el navegador ya desplegado), el enlace corto va tal cual al navegador, que sigue la
+  redirección solo.
 - La página de una cuenta (`/@user`) es un desafío del WAF (1,4 KB, "Please wait…"), y la de un
   hashtag (`/tag/<tag>`) trae 400 KB sin videos: la lista la pide el cliente a
   `/api/challenge/item_list/`. Hace falta un navegador.

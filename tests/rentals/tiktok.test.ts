@@ -444,3 +444,29 @@ describe("harvestTiktok — manual video through the browser when plain HTTP is 
     expect(store.state.accounts.map(row => row.uniqueId)).toEqual(["inmobiliariaalquilar"]);
   });
 });
+
+describe("harvestTiktok — short link when even the redirect is challenged", () => {
+  it("hands the short link itself to the browser, which follows the redirect", async () => {
+    // The 14:15 UTC sweep read no manual video although the browser fallback was deployed: the
+    // plain HEAD that resolves vt.tiktok.com/… was challenged too, and nothing reached the browser.
+    const short = "https://vt.tiktok.com/ZSbJ6eN9S/";
+    const fromBrowser = post("7688511584326454549", "inmobiliariaalquilar", CAPTION);
+    const readLists = vi.fn(async (plan: ListPlan): Promise<ListResults> => ({
+      launched: true, note: "", tags: new Map(), accounts: new Map(),
+      videos: new Map(plan.videos.map(url => [url, url === short ? fromBrowser : null])),
+    }));
+    const readVideo = vi.fn(async () => null);
+    const run = await harvestTiktok("full", 40, {
+      readLists, store: memoryStore(), now, geocode: noGeo, readVideo,
+      env: { ...baseEnv, RENTALS_TIKTOK_TAGS: "", RENTALS_TIKTOK_ACCOUNTS: "", RENTALS_TIKTOK_VIDEOS: short },
+      resolveUrl: async () => null,
+    });
+    expect(readLists.mock.calls[0]![0].videos).toEqual([short]);
+    expect(readVideo).not.toHaveBeenCalled();
+    expect(run.listings.map(row => row.listingId)).toEqual(["tiktok:7688511584326454549"]);
+    expect(run.note).toContain("1 video manual");
+    // Something that is not a TikTok link at all is simply reported.
+    const junk = await harvestTiktok("full", 40, { readLists, store: memoryStore(), now, geocode: noGeo, readVideo, resolveUrl: async () => null, env: { ...baseEnv, RENTALS_TIKTOK_TAGS: "", RENTALS_TIKTOK_ACCOUNTS: "", RENTALS_TIKTOK_VIDEOS: "https://example.com/x" } });
+    expect(junk.note).toContain("1 sin leer");
+  });
+});

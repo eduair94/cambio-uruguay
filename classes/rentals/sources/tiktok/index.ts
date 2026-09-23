@@ -109,7 +109,14 @@ export async function harvestTiktok(mode: "full" | "fast", usdUyu: number, overr
   let manualFailed = 0;
   for (const raw of list(env.RENTALS_TIKTOK_VIDEOS, "")) {
     const url = await deps.resolveUrl(raw);
-    if (!url) { manualFailed++; continue; }
+    if (!url) {
+      // Even the redirect of a short link gets the WAF interstitial at times (the 14:15 UTC sweep
+      // of 2026-09-23 read no manual video although the browser fallback was live). The browser
+      // follows the redirect itself, so the short link goes there as it is.
+      if (/^https:\/\/(?:[a-z]+\.)?tiktok\.com\//i.test(raw)) pendingVideos.push(raw);
+      else manualFailed++;
+      continue;
+    }
     const post = await deps.readVideo(url);
     if (post) manual.push(post);
     else pendingVideos.push(url);
