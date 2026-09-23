@@ -43,7 +43,7 @@ const EXPLORATORY_POLICY = Object.freeze({
 });
 
 const DAY = 86_400_000;
-const SOURCES = new Set(["infocasas", "mercadolibre", "casasweb", "elpais", "facebook"]);
+const SOURCES = new Set(["infocasas", "mercadolibre", "casasweb", "elpais", "facebook", "tiktok"]);
 const RISKS = new Set<OpportunityRisk>([
   "temporary", "partial_price", "occupied", "unavailable", "needs_renovation", "restricted_rights",
   "project", "multiple_units", "price_on_request", "extra_purchase_costs", "special_layout", "location_conflict", "attribute_conflict",

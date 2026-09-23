@@ -64,7 +64,7 @@ export function rentalTextMatches(value: unknown, query: string): boolean {
   return fold(value).includes(fold(query))
 }
 
-export type RentalSource = 'mercadolibre' | 'infocasas' | 'facebook' | 'elpais' | 'casasweb'
+export type RentalSource = 'mercadolibre' | 'infocasas' | 'facebook' | 'elpais' | 'casasweb' | 'tiktok'
 
 export type RentalPropertyType =
   | 'apartamento'
@@ -373,6 +373,7 @@ export const RENTAL_SOURCE_LABEL: Record<RentalSource, string> = {
   facebook: 'Facebook Marketplace',
   elpais: 'Inmuebles El País',
   casasweb: 'Casasweb',
+  tiktok: 'TikTok',
 }
 
 export const RENTAL_TYPE_LABEL: Record<RentalPropertyType, string> = {

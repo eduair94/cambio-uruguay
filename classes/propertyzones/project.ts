@@ -1,7 +1,7 @@
 import { rentalEligibility } from "../rentals/eligibility";
 import type { RentalZoneMarketObservation } from "./market";
 
-const SOURCES = new Set(["mercadolibre", "infocasas", "facebook", "casasweb", "elpais"]);
+const SOURCES = new Set(["mercadolibre", "infocasas", "facebook", "casasweb", "elpais", "tiktok"]);
 const record = (value: unknown): Record<string, any> => value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, any> : {};
 const name = (value: unknown): string => typeof value === "string" && value.length <= 120 && !/[\p{Cc}\p{Cf}<>]/u.test(value)
   ? value.normalize("NFC").trim().replace(/\s+/g, " ") : "";

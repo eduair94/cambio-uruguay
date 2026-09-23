@@ -1,6 +1,6 @@
 import type { RentalSource } from './rentals'
 
-const SOURCES = new Set(['mercadolibre', 'infocasas', 'facebook', 'elpais', 'casasweb'])
+const SOURCES = new Set(['mercadolibre', 'infocasas', 'facebook', 'elpais', 'casasweb', 'tiktok'])
 
 export interface RentalAvailabilitySummary {
   count: number

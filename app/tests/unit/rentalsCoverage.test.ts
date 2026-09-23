@@ -34,6 +34,7 @@ describe('global rental coverage cache', () => {
         { key: 'facebook', properties: 0 },
         { key: 'elpais', properties: 0 },
         { key: 'casasweb', properties: 1 },
+        { key: 'tiktok', properties: 0 },
       ],
     })
   })
@@ -105,7 +106,7 @@ describe('global rental coverage cache', () => {
     )
     const coverage = await read(undefined, 10)
     expect(coverage?.properties).toBe(0)
-    expect(coverage?.sources).toHaveLength(5)
+    expect(coverage?.sources).toHaveLength(6)
     expect(coverage?.sources.every(source => source.properties === 0)).toBe(true)
   })
 })
