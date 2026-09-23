@@ -41,6 +41,12 @@ jobs:
       # `npm install`, not `npm ci` — same as the server's deploy.sh. The cache
       # above only warms ~/.npm; it does not change how the tree is resolved.
       - run: npm install --force --no-audit --no-fund
+      # Lint gates the deploy too, and not for tidiness: the guide-expansion bot
+      # on the VPS runs `npm run lint` before it publishes anything, so a single
+      # unformatted file merged to `main` makes EVERY expansion fail with the
+      # same `prettier/prettier` wall until someone reformats it by hand. Nothing
+      # in CI used to notice — `npm run test` passes on unformatted code.
+      - run: npm run lint
       - run: npm run test
 
   deploy:
