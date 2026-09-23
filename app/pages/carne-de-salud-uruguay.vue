@@ -303,7 +303,7 @@ const canonicalUrl = 'https://cambio-uruguay.com/carne-de-salud-uruguay'
 // corta. El H1 puede ser más largo; el <title> no.
 const title = 'Carné de salud Uruguay: cuándo es gratis'
 const description =
-  'Tu mutualista o ASSE tiene que darte el carné de salud sin costo cada 2 años si lo necesitás para trabajar y tuviste consulta con médico general en los últimos 12 meses (Decreto 274/017). En ASSE sin ser usuario sale 0,4 UR. El provisorio dura 6 meses.'
+  'Carné de salud sin costo en tu mutualista cada 2 años si lo pide el trabajo (Decreto 274/017). En ASSE sin ser usuario, 0,4 UR; el provisorio dura 6 meses.'
 
 defineOgImageComponent('Cambio', { title, subtitle: description, tag: 'SALUD' })
 

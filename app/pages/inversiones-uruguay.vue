@@ -754,7 +754,7 @@ const learnGuides = [
 const canonicalUrl = 'https://cambio-uruguay.com/inversiones-uruguay'
 const title = 'Dónde invertir en Uruguay: guía 2026'
 const description =
-  'Guía completa para invertir en Uruguay: qué pasa con tus títulos si el corredor quiebra (y por qué no hay un COPAB para inversiones), análisis de Gletir, bancos, Prex, brokers internacionales, renta fija local, fondos, cripto, AFAP e inmobiliario.'
+  'Si tu corredor quiebra no hay COPAB que cubra la inversión. Gletir, bancos, Prex, brokers del exterior, renta fija, fondos, cripto, AFAP e inmobiliario.'
 
 defineOgImageComponent('Cambio', {
   title: 'Invertir en Uruguay',

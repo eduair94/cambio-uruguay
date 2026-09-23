@@ -442,7 +442,7 @@ const calcTools = [
 const canonicalUrl = 'https://cambio-uruguay.com/salud-financiera'
 const title = 'Salud financiera personal en Uruguay 2026'
 const description =
-  'Test de salud financiera personal + ideas realistas de ingresos extra en Uruguay (freelance, delivery, reventa, alquiler, contenido, emprendimientos) y datos locales verificados sobre monotributo, IRPF, BPS e inflación. Ordená tu plata y ganá más.'
+  'Test de salud financiera e ideas de ingreso extra en Uruguay (freelance, delivery, reventa, alquiler, contenido), con monotributo, IRPF y BPS al lado.'
 
 defineOgImageComponent('Cambio', {
   title: 'Salud financiera e ingresos extra',
