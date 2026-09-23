@@ -724,11 +724,31 @@ const SUCIVE_URL = 'https://www.sucive.gub.uy/'
 // Sale de la URL para que la comparación se pueda compartir con los números puestos: una página de
 // calculadora que no se puede enlazar así no se enlaza nunca.
 const scenario = reactive<TransportScenario>(transportScenarioFromQuery(route.query))
-const trayecto = ref<'barrio' | 'km' | 'direccion'>(
-  typeof route.query.zd === 'string' && typeof route.query.zh === 'string' ? 'barrio' : 'km'
-)
-const desde = ref(typeof route.query.zd === 'string' ? route.query.zd : '')
-const hasta = ref(typeof route.query.zh === 'string' ? route.query.zh : '')
+/**
+ * La página ARRANCA en barrios, no en kilómetros.
+ *
+ * Los dos caminos funcionan, pero no dicen lo mismo: con un par de barrios el tiempo del ómnibus
+ * sale de los horarios publicados —caminata, espera y viaje— y el de los demás modos de una ruta
+ * medida sobre la calle; con kilómetros a mano, todo sale de velocidades de crucero y el propio
+ * texto tiene que aclarar que el tiempo del ómnibus es un piso y no el viaje real. Abrir en el
+ * camino estimado y dejar el medido escondido detrás de un clic es mostrar lo peor que la página
+ * sabe hacer.
+ *
+ * Si el snapshot no trae zonas (la base no contestó, o el job todavía no corrió), el `watch` de más
+ * abajo devuelve el control a kilómetros: un selector de barrios vacío no es un camino.
+ */
+const trayecto = ref<'barrio' | 'km' | 'direccion'>('barrio')
+/**
+ * El par por defecto: de un barrio residencial denso al Centro, que es el viaje que más gente hace y
+ * el que la página existe para contestar. No es un ejemplo cualquiera: con 7 km, ómnibus frecuente y
+ * las cuatro alternativas compitiendo de verdad, es el escenario donde el veredicto cambia según el
+ * modo — que es lo que hay que mostrar primero.
+ */
+const DEFAULT_FROM = 'pocitos'
+const DEFAULT_TO = 'centro'
+
+const desde = ref(typeof route.query.zd === 'string' ? route.query.zd : DEFAULT_FROM)
+const hasta = ref(typeof route.query.zh === 'string' ? route.query.zh : DEFAULT_TO)
 
 // El sueldo por hora se edita como número suelto y se apaga con cero o vacío: `null` significa "no
 // traduzcas horas a plata" y un cero significaría que toda hora ganada vale exactamente nada, que es
@@ -960,6 +980,31 @@ const zoneItems = computed(() =>
     title: zone.department === 'Montevideo' ? zone.name : `${zone.name} (${zone.department})`,
     value: zone.slug,
   }))
+)
+
+/**
+ * Si el snapshot no trae las zonas que la página eligió por defecto, el control vuelve a kilómetros.
+ *
+ * Pasa en dos casos reales: la base no contestó (se sirve la forma vacía) y el job todavía no corrió
+ * nunca. En los dos, un selector de barrios vacío no es un camino: sin esto la página abriría en un
+ * modo donde el visitante no puede hacer nada.
+ */
+watch(
+  () => data.value.zones,
+  zones => {
+    if (trayecto.value !== 'barrio') return
+    const slugs = new Set(zones.map(zone => zone.slug))
+    if (slugs.has(desde.value) && slugs.has(hasta.value)) return
+    if (!zones.length) {
+      trayecto.value = 'km'
+      return
+    }
+    // Hay zonas pero no las del default (cambió la lista): se toman las dos primeras antes que
+    // dejar el selector en un valor que no existe.
+    desde.value = zones[0]?.slug ?? ''
+    hasta.value = zones[1]?.slug ?? zones[0]?.slug ?? ''
+  },
+  { immediate: true }
 )
 
 /** Qué modos del par elegido no tienen ruta relevada. Se declara: no se estima en silencio. */
