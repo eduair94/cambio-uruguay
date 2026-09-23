@@ -143,6 +143,20 @@ const GRUPOS: Readonly<Record<string, readonly GrupoDef[]>> = {
       ],
     },
   ],
+  motos: [
+    {
+      labelKey: 'familiaNav.grupos.otrosVehiculos',
+      links: [
+        { to: '/autos-usados-uruguay' },
+        { to: '/monopatines-electricos-uruguay' },
+        { to: '/bicicletas-electricas-uruguay' },
+        {
+          to: '/conviene-auto-moto-o-omnibus-uruguay',
+          labelKey: 'familiaNav.preguntas.queConviene',
+        },
+      ],
+    },
+  ],
   movilidad: [
     {
       labelKey: 'familiaNav.grupos.otrosVehiculos',
@@ -201,7 +215,16 @@ export function familiaNavParaRuta(path: string): FamiliaNav | null {
   if (owners.length !== 1) return null
   const entry = owners[0]!
   const routes = familiaDe(entry)
-  if (routes.length < 2) return null
+  // Una familia de una sola página no dibuja barra: un solo chip que apunta a la página que ya
+  // estás leyendo no es navegación. PERO si ese directorio declara GRUPOS, la barra sí tiene algo
+  // que ofrecer, y es justo donde hace falta.
+  //
+  // Medido en producción el 23/9/2026 sobre `/motos-usadas-uruguay`, que es un directorio de una
+  // sola página: sus enlaces a las otras formas de moverse y al comparador quedaban al 78-80 % del
+  // contenido, o sea en el pie, mientras que las páginas CON barra los tenían al 2-5 %. Es el mismo
+  // defecto que hizo nacer esta barra («el enlace existía, a 11.341 px de 15.868»), con la
+  // diferencia de que acá la causa era una regla nuestra y no el orden del layout.
+  if (routes.length < 2 && !(GRUPOS[entry.id] ?? []).length) return null
   const tambienLabel = new Map((entry.tambien ?? []).map(link => [link.to, link.label]))
   // Una ruta aparece UNA vez en toda la barra: la hermana gana sobre el grupo, y el primer grupo
   // sobre los siguientes. Repetirla fue exactamente lo que volvió confusa la cabecera de alquileres.
