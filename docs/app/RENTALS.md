@@ -32,6 +32,19 @@ Código en `classes/rentals/sources/tiktok/` (`caption.ts` parser puro, `post.ts
   puppeteer no arrancan en el VPS (`GLIBC_2.25 not found`).
 - `robots.txt`: `User-agent: *` **permite `/tag`** y **prohíbe `/search?`**; `/@user` y
   `/@user/video/<id>` no están listados. La búsqueda no se usa en ningún camino del código.
+- **Primera corrida real desde el VPS por el proxy (2026-09-23, 3 cuentas, 1 página de hashtag,
+  1 video manual): 15 avisos de 31 videos en 60 s**, el video del ejemplo con precio, GC, 2
+  dormitorios, 1 baño, Cordón y la esquina "Gaboto y La Paz" geocodificada y aceptada
+  (−34,8974, −56,1820), 7 esquinas ubicadas y 1 descartada por contradecir el barrio nombrado.
+  **Pero la lista de una CUENTA (`/api/post/item_list/`) vuelve con cuerpo vacío por este proxy**
+  —dos cuentas, con y sin calentar cookies, 40 s de espera; el perfil renderiza su título y la
+  lista no llega—, mientras que por el mismo proxy la lista del hashtag trae 30 por página y
+  desde una IP residencial local la cuenta devuelve sus 20 videos. Es la IP del proxy, flaggeada
+  para ese endpoint y no para el otro. Consecuencia hoy: la cobertura la dan los hashtags (hasta
+  5 × 3 páginas × 30 videos por corrida), el registro de cuentas queda con `lista vacía` y
+  `complete` es `false` (nada caduca por ausencia; los videos salen por la ventana de 45 días y
+  la poda de 21). **Un proxy residencial en `RENTALS_TIKTOK_PROXY` habilita las cuentas** sin
+  tocar código.
 - El `thumbnail_url` del oEmbed es la misma URL firmada del cover: vence en ~36–48 h. No hay
   miniatura durable, así que la imagen se refresca cada vez que la cuenta se relee.
 
