@@ -193,7 +193,7 @@ describe("TikTok video page over plain HTTP", () => {
   it("only accepts canonical video URLs and resolves short links by following the redirect", async () => {
     expect(canonicalVideoUrl("https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549?_r=1")).toBe("https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549");
     expect(canonicalVideoUrl("https://www.tiktok.com/search?q=alquiler")).toBeNull();
-    const redirect = vi.fn(async () => new Response(null, { status: 301, headers: { location: "https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549?_r=1&_t=x" } }));
+    const redirect = vi.fn(async (_url: string, _init?: RequestInit) => new Response(null, { status: 301, headers: { location: "https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549?_r=1&_t=x" } }));
     expect(await resolveTiktokUrl("https://vt.tiktok.com/ZSbJ6eN9S/", redirect as unknown as typeof fetch)).toBe("https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549");
     expect(redirect.mock.calls[0]![1]).toMatchObject({ redirect: "manual" });
     expect(await resolveTiktokUrl("https://example.com/x", redirect as unknown as typeof fetch)).toBeNull();
