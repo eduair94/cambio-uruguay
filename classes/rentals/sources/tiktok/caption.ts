@@ -5,14 +5,19 @@
 // advert, a wrong price poisons a median. Measured 2026-09-23 over 50 real captions
 // (`tests/rentals/fixtures/tiktok-captions.json` keeps 15 of them):
 //   * the rent is a peso amount with a `$`, sometimes `💲`, sometimes only a "PRECIO:" label;
+//   * EVERY caption carries a phone number, and `092345678` read as `\d{4,6}` is "92345", a
+//     plausible rent — phones are removed before any amount is read, and a number without a
+//     currency mark is money only when its label sits RIGHT before it;
 //   * the same caption prices gastos comunes, a garage, a deposit and a per-guarantee variant
 //     ("$24.000 con aseguradoras / $25.000 con Anda") — the NEAREST label decides, and a label
 //     never reaches past an earlier amount ("Contrato 2 años ✅ Alquiler $49.000" is rent, not
-//     a number of years);
+//     a number of years); gastos comunes and the ignored items (cochera, depósito, luz…) only
+//     label an ADJACENT amount, because "apartamento con cochera $32.000" is the rent;
 //   * "NO DISPONIBLE", "RESERVADO" and "ALQUILADO" are edited INTO the caption of a flat that is
 //     gone, because a video is never taken down;
 //   * half of Montevideo's streets are department names ("Durazno y Maldonado", "Jackson y
-//     Canelones"), so a department only counts from a hashtag or behind a locative cue.
+//     Canelones", "en Colonia 1234"), so a department only counts from a hashtag or behind a
+//     locative cue, and never when a street number or a corner follows it.
 import { addressCandidates } from "../../facebookDetail";
 import { guaranteesFromText, type RentalGuarantee } from "../../guarantees";
 import { KNOWN_NEIGHBORHOODS, neighborhoodFromText } from "../../neighborhoods";
@@ -61,7 +66,8 @@ export function captionTitle(lines: readonly string[]): string {
 export function captionRejection(text: string): string | null {
   const flat = flatten(text);
   if (/\bno\s+disponible\b/.test(flat)) return "no disponible";
-  if (/\breservad[oa]s?\b/.test(flat)) return "reservado";
+  // "cochera reservada", "lugar reservado para moto" describe the dwelling, not its status.
+  if (/(?<!\b(?:cochera|lugar|garaje|garage|estacionamiento|espacio|sitio)\s)\breservad[oa]s?\b/.test(flat)) return "reservado";
   if (/\balquilad[oa]s?\b/.test(flat)) return "alquilado";
   if (/\btraspaso\b/.test(flat)) return "traspaso";
   if (/\b(?:busco|buscamos|necesito|solicito)\b/.test(flat)) return "busco";
@@ -76,41 +82,51 @@ type Role = "price" | "gc" | "variant" | "ignore" | "plain";
 interface Amount { value: number; currency: RentalCurrency; role: Role }
 
 const USD = /(?:u\$s|us\$|usd|u\$d|d[oó]lares)/i;
+/**
+ * A Uruguayan phone, in every spelling the captions use: `099 232 050`, `099232050`, `09x-xxx-xxx`,
+ * `+598 99 123 456`, `2 712 34 56`; and any bare run of seven or more digits, which is never a rent.
+ */
+const PHONE = /(?<![\d$])(?:\+?598[\s.-]?)?(?:0?9\d(?:[\s.-]?\d){7}|[2-4](?:[\s.-]?\d){7})(?![\d])|(?<![\d.,$])\d{7,}(?![\d.,])/g;
 /** Three bare digits are a dollar rent ("U$S 900") or nothing: without a currency mark they are dropped below. */
 const AMOUNT = /(?:(u\$s|us\$|usd|u\$d|\$)\s*)?(\d{1,3}(?:[.,]\d{3})+|\d{3,6})(?:\s*(pesos|d[oó]lares|usd|u\$s))?/giu;
-/** Labels read BEFORE an amount (the nearest one wins). */
-const BEFORE_LABELS: ReadonlyArray<[Role, RegExp]> = [
-  ["gc", /gastos\s+comunes|gastos\s+c(?![a-záéíóúñ])|(?:^|[^a-z])g\.?\s?c\.?(?![a-záéíóúñ])|expensas/gi],
-  ["ignore", /(?:^|[^a-záéíóúñ])(?:dep[oó]sito|se[ñn]a|comisi[oó]n|honorarios|cochera|garaje|garage|estacionamiento|extra|adelantad[oa]|luz|agua|ute|ose|internet|wifi|tributos?|contribuci[oó]n|m2|m²|metros|a[ñn]os?|meses|hs|horas)(?![a-záéíóúñ])/gi],
-  ["variant", /(?:^|[^a-záéíóúñ])(?:anda|cgn|contadur[ií]a|porto|aseguradoras?|sura|mapfre|surco|fideciu|sancor|garant[ií]as?)(?![a-záéíóúñ])/gi],
-  ["price", /(?:^|[^a-záéíóúñ])(?:precio|alquiler|arriendo|mensual(?:es)?|por\s+mes|al\s+mes|renta|valor)(?![a-záéíóúñ])/gi],
-];
 /**
- * Labels read right AFTER an amount ("$17.000 de alquiler", "$24.000 con aseguradoras"). No GC
- * here on purpose: "$30.000 GC $4.000" labels the NEXT amount, and gastos comunes are always
- * labelled before their own figure.
+ * Labels read BEFORE an amount, within a short window bounded by the previous amount; the
+ * nearest one wins. Gastos comunes and the ignored items must sit RIGHT before their figure.
  */
+const GC_ADJACENT = /(?:gastos\s+comunes|gastos\s+c|g\.?\s?c\.?|expensas)\s*(?:de|aprox\.?|mensual(?:es)?)?\s*[:=]?\s*$/i;
+const IGNORE_ADJACENT = /(?:^|[^a-záéíóúñ])(?:dep[oó]sito|se[ñn]a|comisi[oó]n|honorarios|cochera|garaje|garage|estacionamiento|extra|adelantad[oa]|luz|agua|ute|ose|internet|wifi|tributos?|contribuci[oó]n)(?:\s+(?:opcional|aparte|mensual|por\s+mes))?\s*[:=]?\s*$/i;
+/** "con cochera $32.000", "luz y agua $28.000": the item is a feature of the dwelling, not the amount's label. */
+const IGNORE_IS_FEATURE = /\b(?:con|y|e|sin)\s+[a-záéíóúñ]+\s*[:=]?\s*$/i;
+const VARIANT_LABEL = /(?:^|[^a-záéíóúñ])(?:anda|cgn|contadur[ií]a|porto|aseguradoras?|sura|mapfre|surco|fideciu|sancor|garant[ií]as?)(?![a-záéíóúñ])/gi;
+const PRICE_LABEL = /(?:^|[^a-záéíóúñ])(?:precio|alquiler|arriendo|mensual(?:es)?|por\s+mes|al\s+mes|renta|valor)(?![a-záéíóúñ])/gi;
+/** A currency-less number is money only with its label right before it ("PRECIO:42.000", "Gastos comunes: 1.850"). */
+const BARE_PRICE_ADJACENT = /(?:precio|alquiler|arriendo|renta|valor|mensual(?:es)?)\s*(?:de|es\s+de)?\s*[:=]?\s*$/i;
+/** Labels read right AFTER an amount ("$17.000 de alquiler", "$24.000 con aseguradoras", "$3.000 extra", "120 m2"). */
 const AFTER_LABELS: ReadonlyArray<[Role, RegExp]> = [
-  ["ignore", /^\s*(?:de\s+)?(?:dep[oó]sito|se[ñn]a|extra|adelanto|de\s+garant[ií]a)(?![a-záéíóúñ])/i],
+  ["ignore", /^\s*(?:(?:de\s+)?(?:dep[oó]sito|se[ñn]a|extra|adelanto|de\s+garant[ií]a)|m2|m²|mts?|metros|a[ñn]os?|meses|hs|horas|d[ií]as|cuadras?)(?![a-záéíóúñ])/i],
   ["variant", /^\s*(?:con\s+|para\s+)?(?:anda|cgn|contadur[ií]a|porto|aseguradoras?|sura|mapfre|surco|fideciu|sancor)(?![a-záéíóúñ])/i],
   ["price", /^\s*(?:de\s+)?(?:alquiler|mensual(?:es)?|por\s+mes|al\s+mes)(?![a-záéíóúñ])/i],
 ];
 /** Between two amounts of one range ("$3.500–$4.000", "$18.000 a $20.000"): a connector, never just a space. */
 const RANGE_GAP = /^\s*(?:[-–—/]|a|y|o|hasta)\s*$/i;
 
-function nearestBefore(before: string): Role | null {
-  let role: Role | null = null;
+function lastIndex(pattern: RegExp, text: string): number {
   let position = -1;
-  for (const [kind, pattern] of BEFORE_LABELS) {
-    pattern.lastIndex = 0;
-    for (const match of before.matchAll(pattern)) {
-      if (match.index! > position) { position = match.index!; role = kind; }
-    }
-  }
-  return role;
+  pattern.lastIndex = 0;
+  for (const match of text.matchAll(pattern)) position = match.index!;
+  return position;
 }
 
-function firstAfter(after: string): Role | null {
+function roleBefore(before: string): Role | null {
+  if (GC_ADJACENT.test(before)) return "gc";
+  if (IGNORE_ADJACENT.test(before) && !IGNORE_IS_FEATURE.test(before)) return "ignore";
+  const variant = lastIndex(VARIANT_LABEL, before);
+  const price = lastIndex(PRICE_LABEL, before);
+  if (variant < 0 && price < 0) return null;
+  return variant > price ? "variant" : "price";
+}
+
+function roleAfter(after: string): Role | null {
   for (const [kind, pattern] of AFTER_LABELS) if (pattern.test(after)) return kind;
   return null;
 }
@@ -122,7 +138,7 @@ export function captionAmounts(text: string): {
   commonExpensesCurrency: RentalCurrency | null;
   ambiguous: boolean;
 } {
-  const source = String(text || "").replace(/💲/g, "$").replace(/\$\s*U(?![a-záéíóúñ])/gi, "$");
+  const source = String(text || "").replace(/💲/g, "$").replace(/\$\s*U(?![a-záéíóúñ])/gi, "$").replace(PHONE, " ");
   const amounts: Amount[] = [];
   let previousEnd = 0;
   /** The last number was kept, so a range connector right after it continues its role. */
@@ -141,10 +157,13 @@ export function captionAmounts(text: string): {
     const previous = previousKept && amounts.length ? amounts[amounts.length - 1]! : null;
     const role: Role = previous && RANGE_GAP.test(before)
       ? previous.role
-      : nearestBefore(before) ?? firstAfter(after) ?? "plain";
+      : roleBefore(before) ?? roleAfter(after) ?? "plain";
     previousEnd = end;
-    // A bare number without a currency mark is money only when its label says so.
-    if (!currency && role !== "price" && role !== "gc") { previousKept = false; continue; }
+    // A bare number without a currency mark is money only when its label sits right before it.
+    if (!currency && !((role === "price" && BARE_PRICE_ADJACENT.test(before)) || (role === "gc" && GC_ADJACENT.test(before)))) {
+      previousKept = false;
+      continue;
+    }
     amounts.push({ value, currency: currency ?? "UYU", role });
     previousKept = true;
   }
@@ -191,16 +210,17 @@ export function hashtagEvidence(hashtags: readonly string[]): { departments: Set
     if (core && departmentKeys.has(core)) { departments.add(departmentKeys.get(core)!); continue; }
     if (tag.endsWith("montevideo") && !core) { departments.add("Montevideo"); continue; }
     const hit = neighborhoodKeys.find(([key]) => tag === key || core === key);
-    if (hit) neighborhoods.push(hit[1]);
+    if (hit && !neighborhoods.includes(hit[1])) neighborhoods.push(hit[1]);
     if (tag !== core && tag.endsWith("montevideo")) departments.add("Montevideo");
   }
   return { departments, neighborhoods };
 }
 
 const DEPARTMENT_CUE = /(?:^|[^a-z0-9])(?:en|de|zona|departamento|ciudad|dpto|dpto\.)\s+$/;
-const CORNER_AFTER = /^\s*(?:y|e|esq|esquina|casi|entre)(?![a-z0-9])/;
+/** A street number or a corner connector after the name: "en Colonia 1234", "Durazno y Maldonado". */
+const STREET_AFTER = /^\s*(?:\d|n[°º]|y|e|esq|esquina|casi|entre)(?![a-z])/;
 
-/** Departments the text names behind a locative cue and not as a street ("Durazno y Maldonado"). */
+/** Departments the text names behind a locative cue and not as a street. */
 function departmentsInText(text: string): Set<string> {
   const flat = flatten(text);
   const found = new Set<string>();
@@ -210,7 +230,7 @@ function departmentsInText(text: string): Set<string> {
     for (const match of flat.matchAll(pattern)) {
       const before = flat.slice(0, match.index! + match[1]!.length);
       const after = flat.slice(match.index! + match[0].length);
-      if (!DEPARTMENT_CUE.test(before) || CORNER_AFTER.test(after)) continue;
+      if (!DEPARTMENT_CUE.test(before) || STREET_AFTER.test(after)) continue;
       found.add(canonicalDepartment(name));
     }
   }
@@ -218,8 +238,10 @@ function departmentsInText(text: string): Set<string> {
 }
 
 /**
- * The text first, hashtags only when the text names nothing: "#Palermo #ParqueRodo" tag the
- * neighbours, and the caption "Alquiler Palermo" says which one it is.
+ * The prose first, hashtags only when the prose names nothing: "#Palermo #ParqueRodo" tag the
+ * neighbours, and the caption "Alquiler Palermo" says which one it is. Two barrio hashtags with
+ * a silent prose abstain, and a prose locality of another department than the hashtag's
+ * contradicts it — both fields abstain.
  */
 export function captionLocation(text: string, hashtags: readonly string[]): { department: string; neighborhood: string } {
   // The caption carries its hashtags inline ("… #cordón #Palermo #Gym"): they are read as
@@ -230,15 +252,22 @@ export function captionLocation(text: string, hashtags: readonly string[]): { de
   const departments = new Set([...departmentsInText(prose), ...evidence.departments]);
   if (departments.size > 1) return { department: "", neighborhood: "" };
   const department = departments.size === 1 ? [...departments][0]! : "";
-  const named = neighborhoodFromText(prose, department) || neighborhoodFromText(evidence.neighborhoods.join(" · "), department);
+  const free = neighborhoodFromText(prose, "");
+  if (department && free && flatten(free.department) !== flatten(department)) return { department: "", neighborhood: "" };
+  const fromProse = neighborhoodFromText(prose, department);
+  const fromTags = !fromProse && evidence.neighborhoods.length === 1 ? neighborhoodFromText(evidence.neighborhoods[0]!, department) : null;
+  const named = fromProse || fromTags;
   return { department: department || (named ? named.department : ""), neighborhood: named ? named.neighborhood : "" };
 }
 
 // --- Type ------------------------------------------------------------------------------------
 
+/** A room rental says so with a cue: a shared PATIO or lavadero belongs to a whole dwelling. */
+const ROOM = /\b(?:habitaci[oó]n(?:es)?\s+(?:en|para|disponible)|pensi[oó]n|cuartos?|piezas?|coliving|residencia estudiantil|(?:casa|apartamento|apto|habitaci[oó]n|ba[ñn]o|cocina|cama)s?\s+compartid[oa]s?|compartid[oa]s?\s+con\s+(?:otr[oa]s?|estudiantes|personas|chic[oa]s))\b/;
+
 export function captionPropertyType(title: string, text: string): RentalPropertyType {
   const flat = flatten(`${title}\n${text}`);
-  if (/\b(?:habitaci[oó]n(?:es)?\s+(?:en|para|disponible)|pensi[oó]n|cuarto|pieza|compartid[oa]|coliving|residencia estudiantil)\b/.test(flat)) return "habitacion";
+  if (ROOM.test(flat)) return "habitacion";
   const byTitle = inferPropertyType(title);
   if (byTitle !== "otro" && byTitle !== "habitacion") return byTitle;
   if (/\b(?:apartamento|apto|apart|monoambiente|duplex|penthouse|loft)\b/.test(flat)) return "apartamento";
@@ -272,7 +301,6 @@ export function parseCaption(lines: readonly string[], hashtags: readonly string
     bathrooms: attributes.bathrooms,
     area: attributes.area,
     // The address reader splits on its own bullets; a caption's bullets become line breaks first.
-    // 📍 stays: it is the anchor that says "an address follows".
     // Every 📍 opens its own line and whitespace around the breaks is collapsed: the reader's own
     // splitter swallows a 📍 that follows a word, and the anchor has to open its segment.
     addressCandidates: addressCandidates(text.replace(BULLETS, (bullet) => (bullet === "📍" ? "\n📍" : "\n")).replace(/[ \t]*\n[ \t]*/g, "\n")),

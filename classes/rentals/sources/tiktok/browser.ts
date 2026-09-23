@@ -105,14 +105,19 @@ async function launch(proxy: string | null): Promise<{ browser: Browser; page: P
     "--lang=es-UY", "--disable-blink-features=AutomationControlled", ...proxyArg(proxy),
   ];
   for (const executablePath of [...CHROME_PATHS.filter(Boolean), undefined]) {
+    let browser: Browser | null = null;
     try {
-      const browser = await puppeteer.default.launch({ headless: true, executablePath, args, timeout: 30_000 });
+      browser = await puppeteer.default.launch({ headless: true, executablePath, args, timeout: 30_000 });
       const page = await browser.newPage();
       await page.setViewport({ width: 1366, height: 900 });
       await page.setUserAgent(String(await browser.userAgent()).replace(/HeadlessChrome/, "Chrome"));
       await page.setExtraHTTPHeaders({ "accept-language": "es-UY,es;q=0.9" });
       return { browser, page };
     } catch (error) {
+      // A Chrome that launched but could not open its page is closed HERE: the next candidate
+      // would otherwise launch a second one on top of it, and a stranded Chrome on this VPS is
+      // an outage, not a slow job.
+      if (browser) await browser.close().catch(() => undefined);
       console.warn(`TikTok: Chrome no arrancó en ${executablePath || "puppeteer"} — ${(error as Error).message}`);
     }
   }
@@ -147,6 +152,9 @@ async function readList(page: Page, url: string, pages: number, minCreateTime: n
       await sleep(SETTLE_MS);
       await Promise.all(pending.splice(0));
       if (answers >= pages || !hasMore || oldest < minCreateTime || Date.now() > deadline) break;
+      // Two empty bodies and no answer is the block (measured: an account list through the
+      // proxy), and scrolling for another half minute will not change it.
+      if (answers === 0 && empty >= 2) break;
       try {
         await page.evaluate("window.scrollBy(0, document.body.scrollHeight)");
       } catch {

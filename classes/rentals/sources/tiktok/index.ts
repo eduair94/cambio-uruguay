@@ -46,9 +46,11 @@ const WARM_URL = "https://www.tiktok.com/@inmobiliariaalquilar/video/76885115843
 
 const list = (value: string | undefined, fallback: string): string[] =>
   String(value ?? fallback).split(",").map(item => item.trim().replace(/^[@#]/, "")).filter(Boolean);
+/** Zero is a value an operator can set ("read no accounts", "geocode nothing"); only a missing or broken one falls back. */
 const number = (value: string | undefined, fallback: number): number => {
+  if (value === undefined || value.trim() === "") return fallback;
   const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 };
 const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 

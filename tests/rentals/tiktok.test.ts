@@ -335,3 +335,61 @@ describe("harvestTiktok", () => {
     expect(tiktokProxy({}, () => { throw new Error("ENOENT"); })).toBeNull();
   });
 });
+
+// --- Final review fix pass (2026-09-23): phones, streets that are departments, loose labels ----
+
+describe("TikTok caption — review fix pass", () => {
+  it("never reads a phone number as money, glued or spaced, before or after a label", () => {
+    expect(captionAmounts("🟩 ALQUILER 🟩 📲 099123456 📍 Pocitos 2 dormitorios 💲22.000 Sin gastos comunes")).toMatchObject({ price: 22000, commonExpenses: 0 });
+    expect(captionAmounts("Precio y visitas al 092345678 📍 Cordon $28.000 GC $3.000")).toMatchObject({ price: 28000, commonExpenses: 3000 });
+    expect(captionAmounts("Precio $30.000 + GC 📲 099 123 456")).toMatchObject({ price: 30000, commonExpenses: null });
+    expect(captionAmounts("Consultas al +598 99 123 456. Alquiler $25.000")).toMatchObject({ price: 25000 });
+    expect(captionAmounts("ALQUILER 092345678 Pocitos 2 dormitorios $35.000 gastos comunes $4.000")).toMatchObject({ price: 35000, commonExpenses: 4000 });
+  });
+
+  it("keeps a currency-less number only when its label sits right before it", () => {
+    expect(captionAmounts("ALQUILER casa de 120 m2 - Precio $38.000")).toMatchObject({ price: 38000 });
+    expect(captionAmounts("Alquiler local de 3.000 m2, precio $45.000")).toMatchObject({ price: 45000 });
+    expect(captionAmounts("Alquiler: 22.000 pesos")).toMatchObject({ price: 22000, currency: "UYU" });
+    expect(captionAmounts("Gastos comunes: 1.850 ✅ Alquiler $22.000")).toMatchObject({ price: 22000, commonExpenses: 1850 });
+  });
+
+  it("binds the ignore and GC labels to an adjacent amount, never to anything within reach", () => {
+    expect(captionAmounts("Alquiler apartamento con cochera $32.000")).toMatchObject({ price: 32000 });
+    expect(captionAmounts("Alquiler con luz y agua incluidas $28.000")).toMatchObject({ price: 28000 });
+    expect(captionAmounts("Alquilo garaje en Pocitos $4.500 por mes")).toMatchObject({ price: 4500 });
+    expect(captionAmounts("Precio: $32.500 ✅ Cochera: Incluida ($3.000 extra)")).toMatchObject({ price: 32500 });
+    expect(captionAmounts("GC bajos ✅ 2 dormitorios $22.000")).toMatchObject({ price: 22000, commonExpenses: null });
+    expect(captionAmounts("Cochera opcional: $3.500 ✅ Alquiler: $29.500")).toMatchObject({ price: 29500 });
+  });
+
+  it("treats a department name followed by a street number as a street", () => {
+    expect(captionLocation("Alquilo apartamento en Durazno 1450 esq Ejido, 2 dormitorios", [])).toEqual({ department: "", neighborhood: "" });
+    expect(captionLocation("Alquiler de apartamento en Canelones 1234, Cordón", ["montevideo"])).toEqual({ department: "Montevideo", neighborhood: "Cordón" });
+    expect(captionLocation("Alquilo apartamento en Colonia 1234 esquina Rio Branco", ["montevideo"])).toEqual({ department: "Montevideo", neighborhood: "" });
+    expect(captionLocation("Casa en alquiler en Colonia del Sacramento, 2 dormitorios", [])).toEqual({ department: "Colonia", neighborhood: "Colonia del Sacramento" });
+  });
+
+  it("abstains when the prose names a locality of another department than the hashtag, or when two barrio hashtags compete", () => {
+    expect(captionLocation("Alquiler en Las Piedras, 2 dormitorios", ["alquilermontevideo"])).toEqual({ department: "", neighborhood: "" });
+    expect(captionLocation("Alquiler 1 dormitorio, excelente estado", ["pocitos", "puntacarretas"])).toEqual({ department: "", neighborhood: "" });
+    expect(captionLocation("Alquiler 1 dormitorio, excelente estado", ["pocitos", "pocitosmontevideo"])).toEqual({ department: "Montevideo", neighborhood: "Pocitos" });
+  });
+
+  it("a shared patio is not a room rental, and a reserved garage is not a reserved flat", () => {
+    const union = byId("7670918879937432839");
+    expect(captionPropertyType(captionTitle([union.desc]), union.desc)).toBe("otro");
+    expect(captionPropertyType("Alquiler", "Casa con patio compartido y parrillero")).toBe("casa");
+    expect(captionPropertyType("Habitación en casa compartida", "")).toBe("habitacion");
+    expect(captionPropertyType("Alquilo cuarto con baño compartido", "")).toBe("habitacion");
+    expect(captionRejection("Alquiler apartamento en Pocitos con cochera reservada $30.000")).toBeNull();
+    expect(captionRejection("Lugar reservado para moto ✅ Alquiler $14.000")).toBeNull();
+  });
+
+  it("lets an operator set a budget to zero", async () => {
+    const readLists = listsOf({}, {});
+    await harvestTiktok("full", 40, { readLists, store: memoryStore(), env: { ...baseEnv, RENTALS_TIKTOK_MAX_ACCOUNTS: "0", RENTALS_TIKTOK_TAG_PAGES: "1" }, now, geocode: noGeo });
+    expect(readLists.mock.calls[0]![0].accounts).toEqual([]);
+    expect(readLists.mock.calls[0]![0].tagPages).toBe(1);
+  });
+});

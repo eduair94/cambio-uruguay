@@ -71,31 +71,45 @@ evidencia de temporal (`rentalPeriodEvidence`) rechazan. `‼️DISPONIBLE‼️
 **Reglas del parser (precisión sobre recall), todas contra leyendas reales
 (`tests/rentals/fixtures/tiktok-captions.json`):**
 
-- **Precio.** Montos con marca de moneda (`$`, `💲`, `$U`, `U$S`, `US$`, `USD`, `pesos`,
-  `dólares`; `$` solo = pesos); un monto sin marca sólo vale si su etiqueta es de precio o de
-  gastos comunes (`PRECIO:42.000`). **La etiqueta más cercana ANTES del monto decide el rol**, y
-  nunca alcanza más atrás que el monto anterior: en "Contrato 2 años ✅ Alquiler $49.000" manda
-  "Alquiler", no "años". Gastos comunes siempre van etiquetados antes de su cifra
-  (`Gastos comunes: $1.850`, `GC $6.000`): una etiqueta después del monto etiqueta al siguiente,
-  así que "$30.000 GC $4.000" es alquiler 30.000 y GC 4.000. Depósito, seña, comisión, cochera,
-  luz, m², años y meses se ignoran; `Anda: $33.000`, `$24.000 con aseguradoras`, `$19.000 Porto
-  Seguro` son **variantes por garantía** y se publica la MENOR. Sin etiqueta: es el precio sólo si
-  es el ÚNICO monto sin etiqueta; con dos distintos, abstención ("precio ambiguo"). "Sin gastos
+- **Precio.** Primero se borran los teléfonos (`099 232 050`, `092345678`, `+598 99 …`, y toda
+  tira desnuda de 7+ dígitos): TODAS las leyendas traen uno y `092345678` leído como `\d{4,6}`
+  era "92.345", un alquiler verosímil (lo encontró la revisión, no la muestra). Después, montos
+  con marca de moneda (`$`, `💲`, `$U`, `U$S`, `US$`, `USD`, `pesos`, `dólares`; `$` solo =
+  pesos); un monto sin marca sólo vale con la etiqueta de precio o de gastos comunes PEGADA
+  adelante (`PRECIO:42.000`, `Gastos comunes: 1.850`), así "casa de 120 m2 - Precio $38.000" no
+  publica 120. **El rol lo decide la etiqueta más cercana ANTES del monto, en una ventana de 34
+  caracteres que nunca alcanza más atrás que el monto anterior**: en "Contrato 2 años ✅ Alquiler
+  $49.000" manda "Alquiler". Gastos comunes y los rubros ignorados (depósito, seña, comisión,
+  cochera, luz, agua, internet, tributos) sólo etiquetan al monto ADYACENTE (`GC: $6.000`,
+  `Cochera opcional: $3.500`) y nunca cuando son un atributo de la vivienda ("apartamento con
+  cochera $32.000" es el alquiler; "GC bajos ✅ 2 dormitorios $22.000" también). Una etiqueta
+  después del monto etiqueta al siguiente, así que "$30.000 GC $4.000" es alquiler 30.000 y GC
+  4.000; las unidades (`m2`, `años`, `meses`, `cuadras`) y `extra`/`de depósito` sí se leen
+  después del monto. `Anda: $33.000`, `$24.000 con aseguradoras`, `$19.000 Porto Seguro` son
+  **variantes por garantía** y se publica la MENOR. Sin etiqueta: es el precio sólo si es el
+  ÚNICO monto sin etiqueta; con dos distintos, abstención ("precio ambiguo"). "Sin gastos
   comunes" / "no paga gastos comunes" = GC 0. Después, `isPlausibleRent` con la tasa de la
   corrida, como en toda fuente.
-- **Departamento.** Nunca de una esquina: "Emilio Frugoni entre Durazno y Maldonado" y "Jackson y
-  Canelones" son calles de Montevideo. Sólo de un hashtag (`#montevideo`, `#alquilermontevideo`,
+- **Departamento.** Nunca de una calle: "Emilio Frugoni entre Durazno y Maldonado", "Jackson y
+  Canelones" y **"en Colonia 1234"** (nombre seguido de número de puerta o de conector de esquina)
+  son calles de Montevideo. Sólo de un hashtag (`#montevideo`, `#alquilermontevideo`,
   `#montevideouruguay`) o de un nombre detrás de cue locativo ("en Maldonado"); dos departamentos
-  distintos → vacío. **Barrio:** `neighborhoodFromText` sobre la PROSA (la leyenda trae sus
-  hashtags inline y "#Palermo" le ganaba por largo al "Cordón" que la leyenda dice), y los
-  hashtags (`#Pocitos`, `#alquilerpocitos`, `#pocitosmontevideo`) sólo cuando la prosa no nombra
-  ninguno. Un barrio único de Montevideo sin departamento nombra Montevideo (regla existente).
+  distintos → vacío; y si la prosa nombra una localidad de OTRO departamento que el del hashtag
+  ("en Las Piedras" con `#alquilermontevideo`, que las inmobiliarias ponen en todo su catálogo),
+  los dos campos abstienen. **Barrio:** `neighborhoodFromText` sobre la PROSA (la leyenda trae sus
+  hashtags inline y "#Palermo" le ganaba por largo al "Cordón" que la leyenda dice), y un hashtag
+  de barrio (`#Pocitos`, `#alquilerpocitos`, `#pocitosmontevideo`) sólo cuando la prosa no nombra
+  ninguno **y el hashtag es uno solo**: con `#pocitos #puntacarretas` y prosa muda se abstiene
+  (6 de las 15 leyendas de la muestra taggean dos barrios vecinos). Un barrio único de
+  Montevideo sin departamento nombra Montevideo (regla existente).
   "📍La Unión" es el barrio INE "Unión", que es la grafía sobre la que une el asignador de zonas.
   Y en el diccionario compartido con Facebook, un nombre detrás de palacio/estadio/shopping/
   hospital/club/liceo/escuela/colegio/sanatorio/terminal/feria/mercado es un hito, no el barrio:
   "Palacio Peñarol" nombraba Peñarol en un apartamento de Cordón.
 - **Tipo.** "3 habitaciones" son dormitorios, no una habitación en alquiler: `habitacion` sólo con
-  "habitación en/para", pensión, cuarto, pieza, compartida, coliving; después el título
+  "habitación en/para", pensión, cuarto, pieza, coliving o "casa/apartamento/baño/cocina/cama
+  compartida" — un "patio compartido" o un "lavadero compartido" es de una vivienda entera y
+  antes la mandaba a `habitacion` (con piso de 3.000 en vez de 8.000); después el título
   (`inferPropertyType`), después las palabras de apartamento/casa en el texto; si nada, `otro`.
 - **Título.** La primera línea sin emojis, viñetas ni hashtags; si la leyenda no tiene ninguna
   ("#alquiler #montevideo"), "Alquiler en TikTok (@cuenta)".
