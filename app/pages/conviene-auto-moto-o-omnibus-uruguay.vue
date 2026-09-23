@@ -1526,15 +1526,18 @@ useHead(() => ({
 }
 
 /* En la tabla el enlace no se pinta de azul: la columna se lee en vertical y cinco enlaces azules
-   seguidos compiten con las cifras, que son lo que hay que comparar. Se subraya al pasar. */
-.td-link {
+   seguidos compiten con las cifras, que son lo que hay que comparar. Se subraya al pasar.
+   Va calificado con `.tp-section` a propósito: la regla de sección de más arriba es `.tp-section a`,
+   que con el atributo de scope pesa (0,2,1) y le ganaba a `.td-link` (0,2,0) — medido en producción,
+   donde los cinco nombres salían azules igual. */
+.tp-section a.td-link {
   color: inherit;
   text-decoration: none;
   border-bottom: 1px dotted rgba(var(--v-theme-on-surface), 0.38);
 }
 
-.td-link:hover,
-.td-link:focus-visible {
+.tp-section a.td-link:hover,
+.tp-section a.td-link:focus-visible {
   color: rgb(var(--v-theme-link));
   border-bottom-color: currentcolor;
 }
