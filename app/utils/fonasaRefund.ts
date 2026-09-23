@@ -30,14 +30,30 @@
 // titulares de servicios personales no incluidos por otra actividad — un trámite distinto (mensual,
 // no anual) que se confunde con esta devolución porque comparte el nombre.
 //
-// FUENTES PRIMARIAS, verificadas el 2026-09-15 (ver FONASA_SOURCES para la lista completa):
+// LO QUE CAMBIÓ EL 2026-09-22: la página publicaba el CPE de enero ($ 6.693) y decía que no había
+// encontrado el ajuste posterior. Existe y es localizable: el Decreto 163/026 (promulgado el
+// 17/07/2026, Diario Oficial del 23/07/2026) subió el CPE a $ 6.858 desde el 1.º de julio de 2026
+// (art. 11) en el mismo texto que autorizó el aumento de cuotas y tickets de julio (individuales
+// hasta 2,13 %, art. 5; tope de $ 880 por tasa moderadora y 1,60 % para las que están entre $ 660 y
+// $ 880, art. 8; ASSE hasta 1,00 %, art. 12). El cuadro «Ajustes de precios de salud – julio 2026»
+// del MSP (21/07/2026) trae las mismas cifras. El CPE pasó a ser una lista fechada (`CPE_HISTORY`)
+// y los dos ajustes del año quedaron en `HEALTH_PRICE_ADJUSTMENTS`, porque la pregunta «¿cuánto
+// subió la cuota?» llega a esta página junto con la de la devolución. Regla de la casa: una cifra
+// nunca se «actualiza» a ojo, se relee de la norma y se fecha, o se saca.
+//
+// FUENTES PRIMARIAS, verificadas el 2026-09-22 (ver FONASA_SOURCES para la lista completa):
 //   - Ley 18.731 art. 3 — la comparación al 31 de diciembre y el excedente a devolver. VIGENTE.
 //     https://www.impo.com.uy/bases/leyes/18731-2011/3
-//   - Decreto 317/025 arts. 17 y 18 — nueva metodología del CPE y su valor desde el 1/1/2026.
-//     https://www.impo.com.uy/bases/decretos-originales/317-2025
+//   - Decreto 317/025 arts. 5, 8, 10, 17 y 18 — ajuste de enero de 2026, nueva metodología del CPE
+//     y su valor desde el 1/1/2026. https://www.impo.com.uy/bases/decretos-originales/317-2025
+//   - Decreto 163/026 arts. 5, 8, 11, 12, 16 y 17 — ajuste de julio de 2026 y CPE desde el
+//     1/7/2026. https://www.impo.com.uy/bases/decretos/163-2026
+//   - MSP, «Ajustes de precios de salud – julio 2026» (PDF del 21/07/2026) — el cuadro con las
+//     mismas cifras
 //   - MEF, «Preguntas y respuestas sobre el cambio al CPE» (09/01/2026) — el impacto recién en 2027
-//   - Presidencia (03/09/2025 y 2026) — cifras y calendario de los ejercicios 2024 y 2025
-//   - BPS — cómo se arma el tope anual y la retención de IRPF sobre lo devuelto
+//   - Presidencia (03/09/2025 y 03/09/2026) — cifras y calendario de los ejercicios 2024 y 2025
+//   - BPS — cómo se arma el tope anual (sólo los meses con beneficio; el CPE de los hijos a medias
+//     entre los dos generantes) y la retención de IRPF sobre lo devuelto
 //   - BPS — devolución Fonasa 2026 (consulta, cobro) y anticipo Fonasa de servicios personales
 
 export interface FonasaSource {
@@ -61,7 +77,7 @@ export interface FonasaExercise {
 }
 
 /** Fecha en la que se contrastó todo lo de este archivo contra la fuente oficial. */
-export const FONASA_VERIFIED_AT = '2026-09-15'
+export const FONASA_VERIFIED_AT = '2026-09-22'
 
 /**
  * El 25 % del artículo 3 de la Ley 18.731: el tope no es el CPE, es el CPE más un cuarto.
@@ -69,9 +85,44 @@ export const FONASA_VERIFIED_AT = '2026-09-15'
  */
 export const CPE_UPLIFT = 1.25
 
-/** Costo promedio equivalente mensual, en pesos. Decreto 317/025 art. 18, desde el 1/1/2026. */
-export const CPE_MONTHLY = 6693
-export const CPE_FROM = '2026-01-01'
+export interface CpeValue {
+  /** Primer día en que rige (ISO). */
+  readonly from: string
+  /** Costo promedio equivalente mensual, en pesos. */
+  readonly monthly: number
+  /** Norma y artículo que lo fijan. */
+  readonly norm: string
+  readonly url: string
+}
+
+/**
+ * El CPE de 2026, fechado. Se agrega una fila por cada decreto que lo mueve, nunca una estimación:
+ * el art. 17 del Decreto 317/025 lo ata a los ajustes de cuotas salud, que en Uruguay son dos por
+ * año, así que la lista crece con cada uno.
+ */
+export const CPE_HISTORY: readonly CpeValue[] = [
+  {
+    from: '2026-01-01',
+    monthly: 6693,
+    norm: 'Decreto 317/025, artículo 18',
+    url: 'https://www.impo.com.uy/bases/decretos-originales/317-2025',
+  },
+  {
+    from: '2026-07-01',
+    monthly: 6858,
+    norm: 'Decreto 163/026, artículo 11',
+    url: 'https://www.impo.com.uy/bases/decretos/163-2026',
+  },
+]
+
+/** El CPE con el que arrancó el año (el que el MEF explicó en enero y el que usa el anticipo). */
+export const CPE_JAN_2026: CpeValue = CPE_HISTORY[0]!
+/** El CPE vigente: la última fila con decreto publicado. */
+export const CPE_CURRENT: CpeValue = CPE_HISTORY[CPE_HISTORY.length - 1]!
+
+/** Costo promedio equivalente mensual vigente, en pesos (alias de `CPE_CURRENT`). */
+export const CPE_MONTHLY = CPE_CURRENT.monthly
+export const CPE_FROM = CPE_CURRENT.from
 
 /**
  * Cuándo cambia ese valor, que NO es sólo en enero.
@@ -80,17 +131,89 @@ export const CPE_FROM = '2026-01-01'
  * CPE «se ajustará en las mismas oportunidades que determine el Poder Ejecutivo para las cuotas
  * salud», y recién «adicionalmente, en enero de cada año» se recalcula incorporando los cambios en
  * las expectativas de vida. O sea que cada ajuste de cuotas salud mueve el CPE, y en Uruguay esos
- * ajustes son típicamente dos por año.
+ * ajustes son típicamente dos por año. En 2026 ya pasó: el de julio (Decreto 163/026) lo movió.
  *
- * La página publicaba «$ 6.693 desde el 1.º de enero de 2026» sin esta parte, lo que lo hacía leer
- * como un valor fijo hasta el enero siguiente. No lo es. Acá no se estima el valor que rija hoy —no
- * encontramos el decreto posterior y estimarlo sería inventar una cifra— pero sí se dice cuál es la
- * regla, que es lo que le permite a alguien saber que tiene que mirar.
+ * La regla va sin cifras a propósito: el valor vive en `CPE_HISTORY`, con su decreto y su fecha.
  */
 export const CPE_ADJUSTMENT_RULE =
-  'Ese valor no queda fijo hasta el enero siguiente. El artículo 17 del Decreto 317/025 dispone que el costo promedio equivalente se ajusta en las mismas oportunidades que el Poder Ejecutivo determine para las cuotas salud, y que además, en enero de cada año, se recalcula incorporando los cambios en las expectativas de vida de la población. Si el Ejecutivo ajustó las cuotas salud después de esa fecha, el CPE vigente es más alto que el que figura acá.'
+  'Ese valor no queda fijo hasta el enero siguiente. El artículo 17 del Decreto 317/025 dispone que el costo promedio equivalente se ajusta en las mismas oportunidades que el Poder Ejecutivo determine para las cuotas salud, y que además, en enero de cada año, se recalcula incorporando los cambios en las expectativas de vida de la población. En 2026 ya pasó una vez: el ajuste de cuotas de julio, el Decreto 163/026, movió el CPE en la misma fecha. El próximo cambio llega con el próximo ajuste de cuotas salud, no con el calendario.'
 /** Ejercicio al que le corresponde ese CPE (el que se cobra al año siguiente). */
 export const CPE_EXERCISE = 2026
+
+export interface HealthPriceAdjustment {
+  /** «Enero de 2026», «Julio de 2026». */
+  readonly label: string
+  /** Desde cuándo rige (ISO). */
+  readonly from: string
+  /** Decreto que lo dispone. */
+  readonly norm: string
+  readonly url: string
+  /** Aumento máximo autorizado de la cuota básica de afiliación individual a una mutualista, en %. */
+  readonly individualQuotaMaxPct: number
+  /** Tope de toda tasa moderadora (ticket u orden), en pesos. */
+  readonly moderatorFeeCapPesos: number
+  /** Aumento máximo de las tasas que ya están entre `bandFloorPesos` y el tope, en %. */
+  readonly bandMaxPct: number
+  readonly bandFloorPesos: number
+  /** Aumento máximo de las cuotas de afiliación a ASSE, en %. */
+  readonly asseMaxPct: number
+  /** CPE mensual que fija el mismo decreto, en pesos. */
+  readonly cpeMonthly: number
+}
+
+/**
+ * Los dos ajustes de precios de salud de 2026, leídos del decreto y no de la prensa. Se publican
+ * juntos porque la pregunta «¿cuánto subió la cuota?» llega a la página de la devolución, y porque
+ * el CPE —el número que arma el tope— sale del MISMO decreto que sube tickets y cuotas.
+ *
+ * Lo que NO está acá, a propósito: un precio de cuota mutual en pesos. El Poder Ejecutivo sólo
+ * autoriza el aumento máximo; cada institución fija y publica la suya.
+ */
+export const HEALTH_PRICE_ADJUSTMENTS: readonly HealthPriceAdjustment[] = [
+  {
+    label: 'Enero de 2026',
+    from: '2026-01-01',
+    norm: 'Decreto 317/025',
+    url: 'https://www.impo.com.uy/bases/decretos-originales/317-2025',
+    individualQuotaMaxPct: 2.5,
+    moderatorFeeCapPesos: 880,
+    bandMaxPct: 1.88,
+    bandFloorPesos: 660,
+    asseMaxPct: 2.96,
+    cpeMonthly: 6693,
+  },
+  {
+    label: 'Julio de 2026',
+    from: '2026-07-01',
+    norm: 'Decreto 163/026',
+    url: 'https://www.impo.com.uy/bases/decretos/163-2026',
+    individualQuotaMaxPct: 2.13,
+    moderatorFeeCapPesos: 880,
+    bandMaxPct: 1.6,
+    bandFloorPesos: 660,
+    asseMaxPct: 1,
+    cpeMonthly: 6858,
+  },
+]
+
+export const LATEST_ADJUSTMENT: HealthPriceAdjustment =
+  HEALTH_PRICE_ADJUSTMENTS[HEALTH_PRICE_ADJUSTMENTS.length - 1]!
+
+/**
+ * Cómo verificar en el recibo si la mutualista aplicó bien el aumento de julio de 2026. El
+ * Decreto 163/026 obliga a imprimir el texto exacto (art. 17) y a mostrar la cuota básica separada
+ * del aporte al Fondo Nacional de Recursos, los complementos y los impuestos (art. 16).
+ */
+export const RECEIPT_RULE_JULY_2026 = {
+  norm: 'Decreto 163/026, artículos 16 y 17',
+  url: 'https://www.impo.com.uy/bases/decretos/163-2026',
+  /** La frase que el recibo de julio de 2026 tiene que traer. */
+  julyText:
+    'El aumento máximo de la cuota básica autorizado por el Poder Ejecutivo, a aplicar en julio de 2026, es de 2,13% (dos con trece por ciento)',
+  /** La frase de los meses siguientes, mientras no haya otro ajuste. */
+  followingMonthsText:
+    'De acuerdo a lo resuelto por el Poder Ejecutivo, no está autorizado incrementar el valor de la cuota básica en el presente mes',
+} as const
 
 /**
  * Retención de IRPF sobre lo devuelto. Es una retención, no un impuesto nuevo: lo que se devuelve
@@ -117,6 +240,9 @@ export const FONASA_EXERCISES: readonly FonasaExercise[] = [
     retireeThreshold: 122598,
   },
   {
+    // BPS, novedad del 3/9/2026 (act. 7/9/2026): «más de 152.000 personas, por unos 8.676 millones».
+    // Presidencia publicó el mismo día «más de 8.085 millones»: se conserva la cifra del BPS, que es
+    // quien paga, y no se mezclan.
     year: 2025,
     paidFrom: '2026-09-21',
     people: 152000,
@@ -129,7 +255,7 @@ export const FONASA_EXERCISES: readonly FonasaExercise[] = [
 /** El último ejercicio con cifras oficiales. */
 export const LATEST_EXERCISE: FonasaExercise = FONASA_EXERCISES[FONASA_EXERCISES.length - 1]!
 
-/** Cómo saber si estás comprendido en la devolución 2026 (BPS, verificado 2026-09-15). */
+/** Cómo saber si estás comprendido en la devolución 2026 (BPS, verificado 2026-09-22). */
 export const FONASA_CONSULTA = {
   web: 'https://www.bps.gub.uy/15053/',
   phone: '0800 2016',
@@ -155,10 +281,17 @@ export const FONASA_COBRO = {
   ],
 } as const
 
-/** Anticipo mensual de FONASA de servicios personales (BPS, comunicado 6/2026). */
+/**
+ * Anticipo mensual de FONASA de servicios personales (BPS, comunicado 6/2026). El mínimo publicado
+ * es el 75 % del CPE que regía en enero de 2026. El CPE subió en julio, pero la relectura del
+ * 2026-09-22 no cubrió la página del anticipo, así que la cifra se conserva con su base y su fecha:
+ * no se recalcula a ojo. El monto que vale es el de la factura que emite el BPS.
+ */
 export const FONASA_ANTICIPO = {
   minPctOfCpe: 75,
   minMonthly: 5020,
+  /** CPE mensual sobre el que el BPS calculó ese mínimo. */
+  cpeBasisMonthly: CPE_JAN_2026.monthly,
   since: '2026-01-01',
   dueExample: 'la factura de los servicios de enero de 2026 venció el 24 de febrero',
   url: 'https://www.bps.gub.uy/9534/servicios-personales:-anticipo-fonasa.html',
@@ -210,6 +343,8 @@ export interface FonasaFaq {
   readonly answer: string
 }
 
+const pesos = (n: number) => n.toLocaleString('es-UY')
+
 export const FONASA_FAQ: readonly FonasaFaq[] = [
   {
     question: '¿Cómo saber si tengo devolución de FONASA?',
@@ -224,7 +359,7 @@ export const FONASA_FAQ: readonly FonasaFaq[] = [
   {
     question: '¿A quién le corresponde la devolución de FONASA?',
     short: 'No es un sueldo fijo: depende de tu tope anual',
-    answer: `No hay un ingreso fijo desde el cual se cobra: depende de tu tope anual (el CPE de tu cobertura y la de quienes tenés a cargo, más 25 %). Como referencia, por el ejercicio ${LATEST_EXERCISE.year} el BPS informó que les corresponde devolución a los trabajadores con un promedio mensual nominal superior a $ ${LATEST_EXERCISE.workerThreshold.toLocaleString('es-UY')} y a los jubilados o pensionistas con más de $ ${LATEST_EXERCISE.retireeThreshold.toLocaleString('es-UY')}. Quien atribuye cobertura a más personas tiene un tope más alto y necesita ganar más para superarlo.`,
+    answer: `No hay un ingreso fijo desde el cual se cobra: depende de tu tope anual (el CPE de tu cobertura y la de quienes tenés a cargo, más 25 %). Como referencia, por el ejercicio ${LATEST_EXERCISE.year} el BPS informó que les corresponde devolución a los trabajadores con un promedio mensual nominal superior a $ ${pesos(LATEST_EXERCISE.workerThreshold)} y a los jubilados o pensionistas con más de $ ${pesos(LATEST_EXERCISE.retireeThreshold)}. Quien atribuye cobertura a más personas tiene un tope más alto y necesita ganar más para superarlo.`,
   },
   {
     question: '¿Qué pasa si no elegí cómo cobrar antes del 16 de setiembre?',
@@ -240,12 +375,12 @@ export const FONASA_FAQ: readonly FonasaFaq[] = [
   {
     question: '¿Desde qué sueldo te devuelven?',
     short: 'No hay un sueldo fijo: depende de a cuánta gente cubrís',
-    answer: `No hay un umbral único. Por el ejercicio ${LATEST_EXERCISE.year} el BPS informó que les corresponde devolución a los trabajadores con un promedio de ingresos mensuales superior a $ ${LATEST_EXERCISE.workerThreshold.toLocaleString('es-UY')} y a los jubilados o pensionistas con más de $ ${LATEST_EXERCISE.retireeThreshold.toLocaleString('es-UY')} (valores nominales). Esas cifras corresponden al caso más simple. Si atribuís cobertura a hijos o a tu cónyuge, tu tope anual sube y hace falta ganar más para superarlo.`,
+    answer: `No hay un umbral único. Por el ejercicio ${LATEST_EXERCISE.year} el BPS informó que les corresponde devolución a los trabajadores con un promedio de ingresos mensuales superior a $ ${pesos(LATEST_EXERCISE.workerThreshold)} y a los jubilados o pensionistas con más de $ ${pesos(LATEST_EXERCISE.retireeThreshold)} (valores nominales). Esas cifras corresponden al caso más simple. Si atribuís cobertura a hijos o a tu cónyuge, tu tope anual sube y hace falta ganar más para superarlo.`,
   },
   {
     question: '¿Qué es el CPE y por qué se le suma 25 %?',
     short: 'Es el costo de tu cobertura; el 25 % lo pone la ley',
-    answer: `El costo promedio equivalente es lo que le cuesta al Seguro Nacional de Salud atender a cada beneficiario a lo largo de su vida. El artículo 3 de la Ley 18.731 no compara tus aportes contra el CPE pelado: los compara contra el CPE incrementado en un 25 %. Recién por encima de eso hay excedente. Desde el 1.º de enero de 2026 el CPE mensual es de $ ${CPE_MONTHLY.toLocaleString('es-UY')}, fijado por el artículo 18 del Decreto 317/025.`,
+    answer: `El costo promedio equivalente es lo que le cuesta al Seguro Nacional de Salud atender a cada beneficiario a lo largo de su vida. El artículo 3 de la Ley 18.731 no compara tus aportes contra el CPE pelado: los compara contra el CPE incrementado en un 25 %. Recién por encima de eso hay excedente. Desde el 1.º de julio de 2026 el CPE mensual es de $ ${pesos(CPE_CURRENT.monthly)} (${CPE_CURRENT.norm}); entre enero y junio de 2026 fue de $ ${pesos(CPE_JAN_2026.monthly)} (${CPE_JAN_2026.norm}).`,
   },
   {
     question: '¿Cuentan los hijos y el cónyuge?',
@@ -257,7 +392,12 @@ export const FONASA_FAQ: readonly FonasaFaq[] = [
     question: '¿Y si no tuve cobertura los doce meses?',
     short: 'El tope se prorratea por mes',
     answer:
-      'Sólo se computan los meses en los que efectivamente tuviste el beneficio. Medio año de cobertura es medio tope, lo que en la práctica hace más fácil superarlo con el mismo sueldo mensual.',
+      'Sólo se computan los meses en los que efectivamente tuviste el beneficio: el BPS lo escribe así, «se deben considerar exclusivamente los meses del ejercicio en los cuales la persona fue beneficiaria». Medio año de cobertura es medio tope, lo que en la práctica hace más fácil superarlo con el mismo sueldo mensual. Los meses en el seguro de paro cuentan, porque del subsidio se sigue descontando FONASA; los meses sin trabajo y sin subsidio, no.',
+  },
+  {
+    question: 'Me quedé sin trabajo: ¿sigo en FONASA y me toca la devolución?',
+    short: 'Cobertura hasta fin de ese mes; el tope, sólo por los meses con beneficio',
+    answer: `La cobertura llega hasta el último día del mes en que te desvinculaste o en que terminó el seguro de paro (en el seguro seguís cubierto y aportando), según la respuesta del BPS actualizada el 15/09/2025. Para la devolución, el BPS computa sólo los meses en los que fuiste beneficiario, así que el tope de ese año es más chico y la referencia de $ ${pesos(LATEST_EXERCISE.workerThreshold)} no te aplica tal cual: se compara lo que aportaste en esos meses contra el tope de esos meses.`,
   },
   {
     question: '¿Cuánto te retienen de IRPF?',
@@ -269,6 +409,11 @@ export const FONASA_FAQ: readonly FonasaFaq[] = [
     question: '¿El cambio de metodología del CPE me baja la devolución de este año?',
     short: `No: recién se nota en la de ${METHODOLOGY_FIRST_IMPACT_YEAR}`,
     answer: `El Decreto 317/025 sustituyó, en su artículo 17, la metodología con la que se calcula el CPE —pasó a usar curvas de supervivencia y a promediar la cápita de los 18 años previos en lugar de asumir cobertura desde el nacimiento—. El MEF aclaró que ese cambio no afecta la devolución que se paga en 2026 y que recién impactará en la de ${METHODOLOGY_FIRST_IMPACT_YEAR}, porque la que se cobra ahora se calcula sobre el ejercicio anterior.`,
+  },
+  {
+    question: '¿Cuánto subieron la cuota mutual y los tickets en julio de 2026?',
+    short: 'Cuotas individuales hasta 2,13 %, tope de $ 880 por ticket, CPE a $ 6.858',
+    answer: `El Decreto 163/026 (Diario Oficial del 23/07/2026) autorizó hasta ${LATEST_ADJUSTMENT.individualQuotaMaxPct.toLocaleString('es-UY')} % de aumento en la cuota básica de afiliación individual a las mutualistas, mantuvo el tope de $ ${pesos(LATEST_ADJUSTMENT.moderatorFeeCapPesos)} por ticket u orden y limitó a ${LATEST_ADJUSTMENT.bandMaxPct.toLocaleString('es-UY', { minimumFractionDigits: 2 })} % el aumento de las tasas que ya estaban entre $ ${pesos(LATEST_ADJUSTMENT.bandFloorPesos)} y $ ${pesos(LATEST_ADJUSTMENT.moderatorFeeCapPesos)}; las cuotas de ASSE, hasta ${LATEST_ADJUSTMENT.asseMaxPct.toLocaleString('es-UY', { minimumFractionDigits: 2 })} %. En el mismo texto, el artículo 11 llevó el CPE a $ ${pesos(LATEST_ADJUSTMENT.cpeMonthly)}. No hay un precio oficial de cuota mutual en pesos: cada institución fija el suyo dentro de ese máximo.`,
   },
   {
     question: '¿Qué pasa si tengo deuda con el BPS?',
@@ -285,8 +430,17 @@ export const FONASA_SOURCES: readonly FonasaSource[] = [
   },
   {
     label:
-      'Decreto 317/025, artículos 17 y 18 — nueva metodología del CPE y su valor desde el 1/1/2026 (IMPO)',
+      'Decreto 317/025, artículos 5, 8, 10, 17 y 18 — ajuste de enero de 2026, nueva metodología del CPE y su valor desde el 1/1/2026 (IMPO)',
     url: 'https://www.impo.com.uy/bases/decretos-originales/317-2025',
+  },
+  {
+    label:
+      'Decreto 163/026, artículos 5, 8, 11, 12, 16 y 17 — ajuste de julio de 2026: cuotas individuales hasta 2,13 %, tope de $ 880 por tasa moderadora, CPE de $ 6.858 desde el 1/7/2026 (IMPO)',
+    url: 'https://www.impo.com.uy/bases/decretos/163-2026',
+  },
+  {
+    label: 'MSP — Ajustes de precios de salud, julio de 2026 (cuadro publicado el 21/07/2026)',
+    url: 'https://www.gub.uy/ministerio-salud-publica/sites/ministerio-salud-publica/files/2026-07/ajustes-precios-salud-julio-2026.pdf',
   },
   {
     label: 'MEF — Preguntas y respuestas sobre el cambio al CPE y su impacto en la devolución',
@@ -298,7 +452,8 @@ export const FONASA_SOURCES: readonly FonasaSource[] = [
     url: 'https://www.gub.uy/presidencia/comunicacion/noticias/155000-personas-cobraran-devolucion-del-excedente-aportes-fonasa',
   },
   {
-    label: 'BPS — Cálculo de la devolución Fonasa (y la retención de IRPF)',
+    label:
+      'BPS — Cálculo de la devolución Fonasa: sólo los meses con beneficio, el CPE de los hijos en partes iguales, y la retención de IRPF',
     url: 'https://www.bps.gub.uy/10576/calculo-de-la-devolucion-fonasa.html',
   },
   {
@@ -308,6 +463,11 @@ export const FONASA_SOURCES: readonly FonasaSource[] = [
   {
     label: 'BPS — Devolución Fonasa (montos, canales y calendario)',
     url: 'https://www.bps.gub.uy/23298/devolucion-fonasa.html',
+  },
+  {
+    label:
+      'BPS — Devolución Fonasa: a partir del 21 de setiembre comienza el pago del ejercicio 2025 (novedad del 3/9/2026)',
+    url: 'https://www.bps.gub.uy/24521/devolucion-fonasa.html',
   },
   {
     label: 'BPS — Normativa de devolución Fonasa (Leyes 18.731 y 18.922, Res. DGI 3148/017)',
@@ -324,6 +484,11 @@ export const FONASA_SOURCES: readonly FonasaSource[] = [
   {
     label: 'Presidencia — BPS habilitó la consulta de la devolución Fonasa 2026',
     url: 'https://www.gub.uy/presidencia/comunicacion/noticias/devolucion-fonasa-bps-consulta-2026',
+  },
+  {
+    label:
+      'BPS — Luego del subsidio por desempleo, de ser despedido o renunciar, ¿por cuánto tiempo tengo cobertura Fonasa? (actualizado el 15/09/2025)',
+    url: 'https://www.bps.gub.uy/23321/luego-de-finalizado-mi-subsidio-por-desempleo-por-despido-de-ser-despedido_a-o-renunciar-por-cuanto-tiempo-tendre-cobertura-fonasa.html',
   },
   {
     label: 'BPS — Servicios personales: anticipo Fonasa',

@@ -1,6 +1,6 @@
-// Seis guías de trabajo y BPS minadas de Reddit: la mutualista al quedarse sin trabajo, el subsidio por
+// Siete guías de trabajo y BPS minadas de Reddit: la mutualista al quedarse sin trabajo, el subsidio por
 // expensas funerarias, cobrar la jubilación desde el exterior, la canasta de fin de año, cómo pedir un aumento
-// y pedir que te despidan. Demanda: hilos 1sjd2oc, 1mdpzgf, 1l75w1d, 1uqxcjs, 1n1w3ld, 10wa2k6, 17b94l8,
+// y pedir que te despidan, más los casos especiales del aguinaldo. Demanda: hilos 1sjd2oc, 1mdpzgf, 1l75w1d, 1uqxcjs, 1n1w3ld, 10wa2k6, 17b94l8,
 // 1kdz5vi, 1qwjr4h, 1fjzlsc y 1pd31ur, más la cola de autocompletado ("bonos fonasa cesante", "servicios
 // fúnebres uruguay", "cómo saber si me corresponde canasta bps"). Cifras verificadas el 2026-09-13 contra BPS
 // (23321, 4802, 3494, 11428, 12675, 12610, 15767, 23115, 11414, 21733, 23594, 15193, 14980 y la R.D. 18-16/2005),
@@ -8,143 +8,258 @@
 // ronda, consultas, despido y preguntas frecuentes), Presidencia (canasta 2025) e IMPO (Ley 18.731 art. 30,
 // Ley 10.449 art. 5, Ley 16.045 art. 2, Decretos-Ley 15.180 y 14.407, Decretos 264/025 y 345/023, Acuerdo
 // Multilateral del Mercosur y acta del Grupo 10 subgrupo 20 del 19/11/2025).
+// 2026-09-22: aguinaldo-casos-especiales-uruguay (IMPO: Ley 12.840, DL 14.525, Decretos 113/026 y 122/026,
+// DL 14.407, Ley 19.161, Ley 18.091, Ley 18.572 art. 29, Ley 13.619, Decreto 49/000, Decreto 951/975; BPS 4774,
+// 4802, 18239, 4804, 9780, 11439, 16629, 16585, 6596, 21733; MTSS denuncias y FAQ; DGI IRPF 11/06/2026).
+// 2026-09-22: me-quede-sin-trabajo-mutualista-fonasa-uruguay REESCRITA conservando el slug (la versión nueva es
+// un superconjunto: bonos = Chile, duraciones y topes 2026 del seguro de paro, plazo de 30 días, cuota de 18 a 21,
+// tope de ASSE, los dos ajustes de 2026 con Decreto 163/026, sin afiliación voluntaria, la trampa COVID de los
+// «3 meses», reafiliación automática, efecto en la devolución). Fuentes: BPS 23321, 4802, 18239, 6486, 10576,
+// 24521, 17508; IMPO Ley 18.731 art. 30, Ley 18.211, Decretos 317/025 y 163/026, Ley 20.486; ASSE; MSP ajustes
+// 07/2026; MTSS prórrogas; FONASA Chile sólo para desambiguar la consulta.
 import type { Guide } from './guides'
 
 export const trabajoBpsGuides: readonly Guide[] = [
   {
     slug: 'me-quede-sin-trabajo-mutualista-fonasa-uruguay',
-    title: 'Me quedé sin trabajo: ¿pierdo la mutualista y el Fonasa?',
+    title: 'FONASA sin trabajo: cuánto dura la cobertura (2026)',
     description:
-      'Si cobrás seguro de paro seguís con Fonasa; si no, la cobertura llega a fin del mes del cese y tus hijos siguen 12 meses. Después: ASSE o socio individual.',
+      'Si te despiden, renunciás o termina el seguro de paro, FONASA cubre hasta el último día de ese mes; tus hijos, 12 meses más. Qué opciones quedan en 2026.',
     tag: 'FONASA',
-    updatedAt: '2026-09-13',
+    updatedAt: '2026-09-22',
     sections: [
       {
-        heading: '¿Hasta cuándo tengo Fonasa si me despiden o renuncio?',
-        body: 'La cobertura no se corta el día que dejás de trabajar, y tampoco dura lo que dura la indemnización. El BPS lo contesta con una regla de calendario: "Se mantendrá la cobertura Fonasa hasta el último día del mes en el que se produce la finalización del Subsidio por desempleo por despido o la desvinculación laboral". Traducido: si te despiden o renunciás el día 5 de un mes, seguís atendiéndote en tu mutualista hasta el último día de ese mismo mes, no hasta el 5 del siguiente. Si en cambio pasás al seguro de paro, la fecha que manda es la del final del subsidio, y el mes se cuenta igual. Por eso lo primero no es elegir prestador: es anotar qué día se corta la cobertura en tu caso, porque de esa fecha salen todos los demás plazos. Si tenés consultas, estudios o recetas por renovar, conviene hacerlos antes de ese último día, mientras todavía pagás las órdenes y los tickets como afiliado.',
+        heading: 'Respuesta corta: hasta el último día del mes',
+        body: 'Si te despiden, renunciás o se te termina el seguro de paro, la cobertura de FONASA no se corta ese día ni dura meses: llega hasta el último día del mes en que pasó. El BPS lo contesta con esas palabras en su pregunta frecuente sobre el tema, actualizada el 15 de setiembre de 2025: «Se mantendrá la cobertura Fonasa hasta el último día del mes en el que se produce la finalización del Subsidio por desempleo por despido o la desvinculación laboral». Un cese el 3 de setiembre te deja cubierto hasta el 30 de setiembre; uno el 28, hasta el 30 también. Dos cosas que circulan y no rigen en 2026: los «tres meses más de cobertura para despedidos» fueron el Decreto 217/020, una medida del Fondo Solidario COVID-19 para quienes perdieron FONASA entre el 1.º de agosto y el 31 de octubre de 2020, y los «30 días de gracia para regularizar» los repiten calculadoras y blogs, pero el BPS no los menciona. La única continuidad que sí está en la ley es la de los hijos, más abajo. Lo primero que conviene hacer, entonces, es anotar tu último día de cobertura y adelantar a esa fecha consultas, estudios y recetas.',
       },
       {
-        heading: 'Si vas al seguro de paro, seguís con mutualista (y por eso te descuentan Fonasa)',
-        body: 'Estar en el seguro de paro no te saca del sistema de salud. El BPS lo escribe en la página del subsidio por despido: "Los trabajadores mantienen el derecho a la cobertura asistencial del Sistema Nacional Integrado de Salud (SNIS) por el período de amparo al subsidio por desempleo, realizando los aportes correspondientes al Fonasa". Esa última parte explica algo que sorprende en el primer cobro: del subsidio te descuentan el aporte al Fonasa, igual que del sueldo, y es justamente ese aporte el que mantiene la cobertura. Mientras dure la prestación seguís en la misma mutualista, sin trámite de por medio. El corte llega después, con la regla de la sección anterior: el último día del mes en que termina el subsidio. Si todavía no sabés si te corresponde el seguro de paro, cuánto se cobra o cuánto dura según la causal, eso está en nuestra página del seguro de paro, que es la otra mitad de esta misma pregunta.',
+        heading: 'En el seguro de paro seguís cubierto, y por eso te descuentan FONASA',
+        body: 'Entrar al seguro de paro no te saca del sistema de salud. La página del subsidio por desempleo por despido del BPS lo dice así: «Los trabajadores mantienen el derecho a la cobertura asistencial del Sistema Nacional Integrado de Salud (SNIS) por el período de amparo al subsidio por desempleo, realizando los aportes correspondientes al Fonasa». Del subsidio se descuenta el aporte, igual que del sueldo, y ese aporte es el que sostiene la mutualista. Cuánto dura depende de la causal: por despido o fin de contrato son 6 meses o 72 jornales según el tipo de remuneración, y los mayores de 50 años tienen 6 meses o 54 jornales más; por suspensión son 4 meses o 48 jornales; por reducción de trabajo de 25 % o más, 72 jornales. El plazo importa: el subsidio se pide por los servicios en línea del BPS dentro de los 30 días corridos desde el egreso (causal despido o fin de contrato), y si se pide después se pierde por los meses transcurridos; la caducidad corre desde el último día del mes en que tuviste remuneración. Si la empresa no comunicó el egreso, la reserva de derecho se hace en oficinas del BPS dentro de esos mismos 30 días. Quien agotó el subsidio recién puede volver a cobrarlo 12 meses después de la última prestación. Y las prórrogas no son generales: se otorgan por empresa, por ley (la Ley 20.486 facultó al MTSS a extender hasta el 30 de junio de 2026 el subsidio de los trabajadores de Frigorífico Casa Blanca S.A.) o por resolución del MTSS de 90 días (Res. 194 a 197/026, del 4 de setiembre de 2026).',
+        table: {
+          headers: ['Causal', 'Cuánto dura', 'Cuánto cobrás (topes 2026, BPS)'],
+          rows: [
+            [
+              'Despido o fin de contrato',
+              '6 meses o 72 jornales; mayores de 50 años, 6 meses o 54 jornales más',
+              '66 % del promedio de los 6 meses previos el mes 1, y baja a 57 %, 50 %, 45 %, 42 % y 40 %; topes de $ 93.155 (mes 1) a $ 50.802 (mes 6); 20 % más con familiares a cargo',
+            ],
+            [
+              'Suspensión',
+              '4 meses o 48 jornales',
+              '50 % del promedio de los últimos 6 meses; tope $ 67.754 y mínimo $ 8.467 (enero de 2026)',
+            ],
+            [
+              'Reducción de trabajo (25 % o más)',
+              '72 jornales',
+              'El cálculo por causal está en la página del seguro de paro del sitio',
+            ],
+          ],
+        },
         links: [
-          { label: 'Seguro de paro: requisitos y cuánto se cobra', to: '/seguro-de-paro-uruguay' },
+          {
+            label: 'Seguro de paro: requisitos, plazos y calculadora',
+            to: '/seguro-de-paro-uruguay',
+          },
         ],
       },
       {
-        heading: 'Tus hijos siguen doce meses más; tu pareja, no',
-        body: 'Para los chicos la ley pone un colchón que casi nadie conoce. El artículo 30 de la Ley 18.731 dice que los menores de 18 años y los mayores de esa edad con discapacidad mantienen la cobertura "por un período de doce meses continuos", contados "a partir del mes siguiente al del cese de la aportación", siempre que el período de aportación "haya sido no menor a un año". Si te quedaste sin trabajo en marzo, entonces, tus hijos siguen amparados de abril a marzo del año siguiente. El mismo artículo pone el final anticipado: el beneficio "cesará si el beneficiario obtiene el mismo amparo por sí o a través de otro generante", por ejemplo si el otro padre consigue trabajo y los ampara. Lo que el artículo no incluye es al cónyuge o concubino. Si tu pareja estaba amparada por tu Fonasa, la extensión no la alcanza, así que conviene que planee su propia salida al mismo tiempo que vos.',
+        heading: 'Hijos: 12 meses más. Pareja: no. De 18 a 21: una cuota',
+        body: 'Los menores de 18 años y los mayores con discapacidad que tenías a cargo no pierden FONASA con vos. El artículo 30 de la Ley 18.731 les mantiene el amparo «por un período de doce meses continuos contados a partir del mes siguiente al del cese de la aportación», siempre que el período de aportación «haya sido no menor a un año»; el BPS lo aplica como 12 meses de aportes en los 24 anteriores al cese o al fin del subsidio. El amparo cesa antes si el hijo obtiene cobertura por sí mismo o a través de otro generante, por ejemplo si el otro padre consigue trabajo formal. Lo que la ley no incluye es al cónyuge o concubino a cargo: el capítulo entero se titula «Continuidad del amparo de menores y mayores con discapacidad», y ni el artículo ni la página del BPS nombran a la pareja, así que pierde el amparo junto con vos salvo que lo genere por su cuenta. Un caso aparte son los hijos de 18 a 21 años sin discapacidad: si estaban amparados al cumplir 18, siguen en FONASA pagando una cuota bonificada al prestador más el aporte al Fondo Nacional de Recursos, que se gestiona en la propia mutualista. Según el cuadro de ajustes de precios de salud del MSP de julio de 2026, esa cuota suma $ 3.513 por mes (cápita $ 2.574,62, componente meta $ 316,62 y FNR $ 621,58, que se ajusta en otras fechas). Es la única cuota que un particular le paga al FONASA.',
       },
       {
-        heading: 'La salida más usada: afiliarte a ASSE',
-        body: 'Cuando la cobertura se termina, la puerta que no depende de tu bolsillo es ASSE. El trámite de afiliación que publica el Estado distingue tres modalidades: gratuita, para las personas que no superan los topes de ingresos establecidos; Fonasa, para quien sigue siendo beneficiario del sistema; y cuota ASSE, para quienes superan esos topes. Te van a pedir documento de identidad vigente, certificado de ingresos y comprobante de residencia, y se hace en los puestos de afiliación de los centros asistenciales, en los Puntos de Atención a la Ciudadanía o en la Dirección de Atención al Usuario, en Cerro Largo 1816, Montevideo. La duda que más se repite es la de los tratamientos en curso. No des por hecho que la historia clínica llegue sola al nuevo prestador: antes de que venza tu cobertura, pedí en la mutualista una copia y las recetas vigentes, y llevalas a la primera consulta. Si todavía tenés Fonasa y lo que buscás es pasarte a ASSE, las reglas están en nuestra página de cambio de mutualista.',
+        heading: '¿Puedo pagar FONASA por mi cuenta? No: estas son las salidas',
+        body: 'No existe una afiliación voluntaria al FONASA para quien se quedó sin trabajo. La lista de beneficiarios que publica el BPS (trabajadores con 13 jornales o 1,25 BPC, unipersonales, monotributistas, funcionarios, servicios personales, entre otros) no tiene esa categoría, y los artículos 61 a 71 de la Ley 18.211 tampoco la prevén; lo decimos como ausencia en la norma, no porque haya una frase que lo prohíba. Lo que sí existe son dos puertas. La primera es ASSE: la afiliación es gratuita, sin tickets ni órdenes, si los ingresos del hogar no superan las 62 UR más 2,5 UR por cada integrante del grupo familiar; por encima de eso se paga la Cuota ASSE mensual (Decreto 287/012), y también se paga si ya tenés otra cobertura individual sin derecho a FONASA. La segunda es quedarte en tu mutualista como socio individual, pagando la cuota. Ese precio lo fija cada institución: el Poder Ejecutivo sólo autoriza el aumento máximo, que fue de 2,50 % en enero de 2026 (Decreto 317/025, artículo 5) y de 2,13 % en julio de 2026 (Decreto 163/026, artículo 5); por eso no publicamos un precio de cuota, pedilo por escrito a tu mutualista. Los tickets y órdenes tienen tope de $ 880 por tasa moderadora, y las que ya estaban entre $ 660 y $ 880 sólo pudieron subir 1,60 % en julio. Antes de cambiar, pedí copia de tu historia clínica y las recetas vigentes.',
+        table: {
+          headers: ['Opción', 'Qué pagás', 'Condición'],
+          rows: [
+            [
+              'ASSE, afiliación gratuita',
+              'Nada: sin tickets ni órdenes',
+              'Ingresos del hogar de hasta 62 UR más 2,5 UR por integrante',
+            ],
+            [
+              'ASSE, con Cuota ASSE',
+              'Una cuota mensual (aumento máximo de 1,00 % en julio de 2026)',
+              'Ingresos por encima del tope, o tener otra cobertura individual sin FONASA',
+            ],
+            [
+              'Mutualista, socio individual',
+              'La cuota que fija cada institución (aumento máximo de 2,13 % en julio de 2026) más tickets y órdenes con tope de $ 880',
+              'Pedir el valor por escrito y avisar por escrito si dejás de ser socio',
+            ],
+          ],
+        },
         links: [
           { label: 'Cambiar de mutualista o pasarte a ASSE', to: '/cambiar-de-mutualista-uruguay' },
+          { label: 'Tickets y órdenes: cuánto cuestan', to: '/tickets-mutualistas-uruguay' },
         ],
       },
       {
-        heading: '¿Puedo quedarme en mi mutualista pagando yo?',
-        body: 'Sí: perder el Fonasa no te obliga a irte, pero cambia quién paga. Sin el aporte, la cuota la pagás vos como afiliado individual. El precio lo fija cada institución y lo que controla el Estado son los aumentos: el Ministerio de Salud Pública publica en cada ajuste los porcentajes máximos de aumento autorizados para las cuotas de los afiliados individuales y colectivos de las mutualistas, junto con los de tickets y órdenes; el más reciente, el de julio de 2026, se publicó el 21 de julio. No publicamos un precio de cuota porque varía de una institución a otra, y un promedio te haría decidir mal. Lo que conviene es pedirle a tu mutualista, por escrito, el valor de la cuota individual que te correspondería desde el mes siguiente al corte, y compararlo con lo que te costaría ASSE según tus ingresos. Si decidís no seguir, avisalo también por escrito, así queda constancia de desde cuándo dejás de ser socio.',
+        heading: '«Bonos de FONASA» es Chile: no busques eso acá',
+        body: 'Si llegaste buscando «cuántos días duran los bonos de FONASA» o «comprar bonos de FONASA estando cesante», la respuesta es de otro país. El FONASA de Chile vende Bonos de Atención de Salud en su Modalidad Libre Elección, y su propia página dice que tienen una vigencia de 30 días para usarse y que pueden devolverse hasta 5 años después de emitidos. El FONASA uruguayo, el de la Ley 18.211, no emite bonos: financia la cuota salud que recibe tu prestador, y lo que pagás vos en la mutualista son tasas moderadoras, es decir tickets y órdenes, con un tope de $ 880 por tasa fijado por decreto. Una orden es el copago de alguien que ya está afiliado, así que sin cobertura no hay orden que puedas comprar para atenderte. Primero se resuelve la afiliación, como socio individual o en ASSE, y recién después vienen las órdenes.',
       },
       {
-        heading: 'Qué son los "bonos", las órdenes y los tickets',
-        body: 'En los buscadores se repite "comprar bonos de Fonasa estando cesante", y conviene desarmar la confusión porque puede costar plata. Lo que pagás en la ventanilla de una mutualista cuando pedís una consulta o retirás un medicamento no es un bono que te dé cobertura: son tasas moderadoras. El Ministerio de Salud Pública las describe como "las tasas moderadoras (tickets y órdenes) que las Instituciones de Asistencia Médica Colectiva (IAMC) están autorizadas a cobrar a sus afiliados", con precios máximos que se autorizan por decreto. En la lista publicada el 4 de diciembre de 2025, el tope era de $ 880 sin impuestos y de $ 1.128 con IVA y timbres incluidos, y el ajuste de julio de 2026 mantuvo ese valor tope de $ 880 sin impuestos. La palabra que importa es "afiliados": una orden o un ticket es el copago de alguien que ya está afiliado, así que sin cobertura no hay orden que puedas comprar para atenderte. Si perdiste el Fonasa, primero se resuelve la afiliación, como socio individual o en ASSE, y recién después vienen las órdenes.',
+        heading: 'Cuando volvés a trabajar',
+        body: 'La cobertura vuelve por donde se fue: el aporte. Sos usuario del Seguro Nacional de Salud cuando cumplís 13 jornadas de trabajo en el mes o cobrás al menos 1,25 BPC, que en 2026 son $ 8.580 (BPC de $ 6.864). La afiliación es automática al último prestador integral en el que estuviste amparado por FONASA; si no hay registro en el BPS ni en el Registro Único de Cobertura de Asistencia Formal del MSP, va a ASSE. Rige desde el día de la afiliación, y en las causales del artículo 2 del Decreto 344/020 podés elegir otro prestador dentro de los 180 días, con efecto desde el primer día del mes siguiente. El hueco entre el último día de cobertura y el primer mes del trabajo nuevo lo cubrís por tu cuenta, como socio individual o en ASSE. Si tus hijos estaban usando los 12 meses del artículo 30, ese amparo termina apenas vuelven a quedar cubiertos por vos.',
       },
       {
-        heading: 'Si volvés a trabajar o empezás a facturar',
-        body: 'La cobertura vuelve por la misma puerta por la que se fue: el aporte. Cuando conseguís un empleo en blanco, el Fonasa se genera otra vez con el recibo de sueldo, y lo mismo pasa con las formas de trabajo independiente que aportan al sistema. Hay dos cuidados para ese momento. El primero es el hueco: entre el último día de cobertura y el primer mes del trabajo nuevo pueden pasar semanas sin Fonasa, y ese tramo lo tenés que cubrir por tu cuenta, como socio individual o en ASSE. El segundo es no mezclar las cosas si todavía cobrás el seguro de paro: abrir una empresa o empezar una actividad puede cortar el subsidio, y la página del seguro de paro explica qué dice el BPS sobre eso antes de que te inscribas. Y si tus hijos están usando los doce meses del artículo 30, recordá que ese amparo termina apenas vuelven a quedar cubiertos por vos o por el otro padre.',
-        links: [{ label: 'Seguro de paro: qué lo corta', to: '/seguro-de-paro-uruguay' }],
+        heading: 'Y la devolución FONASA del año en que te quedaste sin trabajo',
+        body: 'Cada setiembre el BPS devuelve el excedente de aportes del año anterior, comparado contra un tope que se arma con el costo promedio equivalente de tu cobertura más 25 %. Para quien estuvo parte del año sin trabajo hay una regla que cambia la cuenta: el BPS computa «exclusivamente los meses del ejercicio en los cuales la persona fue beneficiaria», así que el tope de ese año es más chico y la referencia de $ 122.629 de promedio mensual que publica para 2026 no te aplica tal cual. Los meses en el seguro de paro cuentan, porque del subsidio se descuenta FONASA; los meses sin trabajo y sin subsidio no suman tope, pero tampoco aportes. La devolución del ejercicio 2025 se paga desde el 21 de setiembre de 2026 a más de 152.000 personas, por unos 8.676 millones de pesos, con 8 % de retención de IRPF; se consulta en bps.gub.uy, en el 0800 2016 o por WhatsApp al 092 366 272.',
+        links: [
+          { label: 'Devolución FONASA 2026: cuándo se cobra', to: '/devolucion-fonasa-uruguay' },
+        ],
       },
     ],
     steps: [
       {
-        name: 'Fijá el último día de cobertura',
-        text: 'Es el último día del mes en que te desvinculaste o, si vas al seguro de paro, del mes en que termina el subsidio.',
+        name: 'Anotá tu último día de cobertura',
+        text: 'Es el último día del mes del cese o, si vas al seguro de paro, del mes en que termina el subsidio.',
       },
       {
-        name: 'Aprovechá el tiempo que te queda',
-        text: 'Consultas, estudios y recetas pendientes conviene hacerlos antes de ese día, mientras seguís siendo afiliado.',
+        name: 'Pedí el seguro de paro dentro de los 30 días',
+        text: 'Por los servicios en línea del BPS, dentro de los 30 días corridos desde el egreso; después se pierde por los meses transcurridos.',
       },
       {
-        name: 'Pedí copia de tu historia clínica',
-        text: 'Solicitala en la mutualista junto con las recetas vigentes, sobre todo si estás en un tratamiento que no podés cortar.',
+        name: 'Revisá a quién tenías a cargo',
+        text: 'Los hijos menores siguen 12 meses si aportaste 12 de los últimos 24; la pareja no, y los de 18 a 21 pagan la cuota en el prestador.',
       },
       {
-        name: 'Revisá la situación de tus hijos',
-        text: 'Si aportaste al menos un año, los menores de 18 y los mayores con discapacidad siguen amparados doce meses desde el mes siguiente al cese.',
-      },
-      {
-        name: 'Elegí la salida',
-        text: 'Pedí por escrito el valor de la cuota individual de tu mutualista y comparalo con la afiliación a ASSE, gratuita o con cuota según tus ingresos.',
+        name: 'Elegí ASSE o la cuota individual',
+        text: 'Compará el tope de ASSE gratis (62 UR más 2,5 UR por integrante) con la cuota individual que tu mutualista te pase por escrito.',
       },
     ],
     faqs: [
       {
-        q: 'Renuncio al trabajo, ¿hasta cuándo tengo Fonasa y mutualista?',
-        a: 'Hasta el último día del mes en que se produce la desvinculación. El BPS aplica esa regla a la desvinculación laboral en general, así que no se corta el día del cese sino a fin de ese mes.',
+        q: '¿Cuántos días duran los bonos de FONASA?',
+        a: 'Esa pregunta es del FONASA de Chile: sus Bonos de Atención de Salud duran 30 días desde que se compran, según fonasa.gob.cl. En Uruguay el FONASA no emite bonos; lo que se paga en la mutualista son tickets y órdenes, con un tope de $ 880 por tasa moderadora fijado por decreto.',
       },
       {
-        q: 'Estoy en el seguro de paro, ¿sigo teniendo mutualista?',
-        a: 'Sí. El BPS dice que los trabajadores mantienen la cobertura del SNIS durante el período del subsidio por desempleo, realizando los aportes al Fonasa, que se descuentan del propio subsidio. La cobertura sigue hasta el último día del mes en que termina el subsidio.',
+        q: 'Me quedé sin trabajo: ¿hasta cuándo me cubre FONASA?',
+        a: 'Hasta el último día del mes en que te desvinculaste, por despido o renuncia, o en que terminó tu subsidio por desempleo, según la pregunta frecuente del BPS actualizada el 15 de setiembre de 2025. No hay meses ni días de gracia adicionales en 2026: los tres meses extra fueron una medida COVID de 2020.',
       },
       {
-        q: '¿Mis hijos pierden la mutualista si me quedo sin trabajo?',
-        a: 'No enseguida. Por el artículo 30 de la Ley 18.731, los menores de 18 y los mayores con discapacidad mantienen la cobertura doce meses continuos desde el mes siguiente al cese de la aportación, si el período de aportes no fue menor a un año. Ese amparo cesa si pasan a estar cubiertos por otro generante.',
+        q: '¿Estando en seguro de paro sigo teniendo FONASA?',
+        a: 'Sí. Mientras dura el subsidio mantenés la cobertura del SNIS y del propio subsidio se descuentan los aportes al FONASA. Por despido son 6 meses o 72 jornales, y los mayores de 50 años tienen hasta 6 meses más; por suspensión, 4 meses o 48 jornales. Pedilo dentro de los 30 días corridos desde el egreso.',
       },
       {
-        q: '¿Puedo comprar bonos de Fonasa si estoy cesante?',
-        a: 'En el sistema de salud no hay un bono que se compre para tener cobertura. Lo que se paga en la mutualista son tasas moderadoras, es decir órdenes y tickets, que las instituciones cobran a sus afiliados. Sin afiliación no te sirven: primero tenés que resolver si seguís como socio individual o te afiliás a ASSE.',
+        q: '¿Puedo comprar bonos o pagar FONASA por mi cuenta si estoy cesante?',
+        a: 'No. El FONASA uruguayo no vende bonos ni admite la afiliación voluntaria de desempleados: no hay ninguna categoría así en la lista de beneficiarios del BPS ni en la Ley 18.211. La única cuota que un particular le paga al FONASA es la de los hijos de 18 a 21 años, $ 3.513 por mes desde julio de 2026 según el cuadro del MSP. Las salidas son ASSE, gratis o con cuota, y la afiliación individual a una mutualista.',
       },
       {
-        q: '¿Cuántos días duran los bonos de Fonasa?',
-        a: 'Si con "bonos" te referís a cuánto te dura la cobertura después de quedarte sin trabajo, es hasta el último día del mes del cese, o del mes en que termina el seguro de paro, y tus hijos menores pueden seguir doce meses más. Las órdenes y los tickets son otra cosa: el copago de cada consulta o medicamento.',
-      },
-      {
-        q: '¿Me puedo pasar a ASSE si perdí el Fonasa?',
-        a: 'Sí. La afiliación a ASSE tiene una modalidad gratuita para quienes no superan los topes de ingresos y otra con cuota para quienes los superan. Se tramita con documento, certificado de ingresos y comprobante de residencia en los puestos de afiliación de ASSE.',
+        q: '¿Qué pasa con mis hijos y mi pareja cuando pierdo FONASA?',
+        a: 'Tus hijos menores de 18, o mayores con discapacidad, conservan FONASA 12 meses más contados desde el mes siguiente al cese, si aportaste al menos 12 meses en los 24 anteriores (Ley 18.731, artículo 30, aplicado por el BPS). El cónyuge o concubino a cargo no tiene esa extensión: la ley sólo la prevé para menores y personas con discapacidad.',
       },
     ],
     related: [
       { label: 'Seguro de paro en Uruguay', to: '/seguro-de-paro-uruguay' },
+      { label: 'Devolución FONASA 2026', to: '/devolucion-fonasa-uruguay' },
       { label: 'Cambiar de mutualista', to: '/cambiar-de-mutualista-uruguay' },
+      { label: 'Tickets y órdenes de la mutualista', to: '/tickets-mutualistas-uruguay' },
+      { label: 'Indemnización por despido', to: '/indemnizacion-por-despido-uruguay' },
       { label: 'Renunciar al trabajo: qué cobrás', to: '/renunciar-al-trabajo-uruguay' },
-      { label: '¿Puedo pedir que me despidan?', to: '/guias/pedir-que-me-despidan-uruguay' },
     ],
     sources: [
       {
         label:
-          'Luego de finalizado el subsidio por desempleo, de ser despedido o renunciar — "Se mantendrá la cobertura Fonasa hasta el último día del mes en el que se produce la finalización del Subsidio por desempleo por despido o la desvinculación laboral" (actualizado el 15/09/2025)',
+          'Luego de finalizado el subsidio por desempleo, de ser despedido o renunciar, ¿por cuánto tiempo tendré cobertura Fonasa? — «hasta el último día del mes» (actualizado el 15/09/2025, leído el 22/09/2026)',
         url: 'https://www.bps.gub.uy/23321/luego-de-finalizado-mi-subsidio-por-desempleo-por-despido-de-ser-despedido_a-o-renunciar-por-cuanto-tiempo-tendre-cobertura-fonasa.html',
         publisher: 'BPS',
       },
       {
         label:
-          'Subsidio por desempleo por despido — "Los trabajadores mantienen el derecho a la cobertura asistencial del Sistema Nacional Integrado de Salud (SNIS) por el período de amparo al subsidio por desempleo, realizando los aportes correspondientes al Fonasa"',
+          'Subsidio por desempleo por despido — cobertura del SNIS durante el amparo, duración, plazo de 30 días, topes 2026 (actualizado el 26/01/2026, leído el 22/09/2026)',
         url: 'https://www.bps.gub.uy/4802/subsidio-por-desempleo-por-despido.html',
         publisher: 'BPS',
       },
       {
         label:
-          'Ley 18.731 art. 30 — los menores de 18 y los mayores con discapacidad mantienen la cobertura "por un período de doce meses continuos", "a partir del mes siguiente al del cese de la aportación", con aportación "no menor a un año", y el beneficio "cesará" si obtienen el amparo por otro generante',
+          'Subsidio por desempleo por suspensión — 4 meses o 48 jornales; reducción 72 jornales; tope $ 67.754 y mínimo $ 8.467 (enero de 2026)',
+        url: 'https://www.bps.gub.uy/18239/subsidio-por-desempleo-por-suspension.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Afiliación mutual trabajadores — beneficiarios, 13 jornales o 1,25 BPC ($ 8.580), afiliación automática al último prestador, 12 meses más para los hijos, cuota de 18 a 21 (actualizado el 11/06/2026)',
+        url: 'https://www.bps.gub.uy/6486/afiliacion-mutual-trabajadores.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Ley 18.731, artículo 30 — continuidad del amparo de menores y mayores con discapacidad: doce meses continuos desde el mes siguiente al cese',
         url: 'https://www.impo.com.uy/bases/leyes/18731-2011/30',
         publisher: 'IMPO',
       },
       {
         label:
-          'Afiliación a ASSE — modalidades gratuita (sin superar los topes de ingresos), Fonasa y cuota ASSE; documento vigente, certificado de ingresos y comprobante de residencia (actualizado el 09/04/2026)',
+          'Ley 18.211 — artículo 62 (usuarios del Seguro Nacional de Salud) y artículos 61 a 71 (beneficiarios)',
+        url: 'https://www.impo.com.uy/bases/leyes/18211-2007',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Afiliación a ASSE — gratuita, Fonasa o con Cuota ASSE (Decreto 287/012) (actualizado el 09/04/2026)',
         url: 'https://www.gub.uy/tramites/afiliacion-asse',
         publisher: 'ASSE / gub.uy',
       },
       {
         label:
-          'Precios de tickets y órdenes de las IAMC desde noviembre de 2025 (Decreto 231/025) — son "las tasas moderadoras (tickets y órdenes) que las Instituciones de Asistencia Médica Colectiva (IAMC) están autorizadas a cobrar a sus afiliados"; tope de $ 880 sin impuestos y $ 1.128 con IVA y timbres (publicado el 04/12/2025)',
-        url: 'https://www.gub.uy/ministerio-salud-publica/datos-y-estadisticas/datos/precios-tickets-ordenes-instituciones-asistencia-medica-colectiva-iamc-noviembre-2025',
+          'Trámites afiliatorios — tope de ingresos para la afiliación gratuita: 62 UR más 2,5 UR por integrante',
+        url: 'https://www.asse.com.uy/contenido/Tramites-afiliatorios-14545',
+        publisher: 'ASSE',
+      },
+      {
+        label:
+          'Decreto 317/025 — ajuste de enero de 2026: cuotas individuales hasta 2,50 % (art. 5), tope de $ 880 por tasa moderadora (art. 8), CPE $ 6.693 (art. 18)',
+        url: 'https://www.impo.com.uy/bases/decretos/317-2025',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 163/026 — ajuste de julio de 2026: cuotas individuales hasta 2,13 % (art. 5), tope de $ 880 y 1,60 % para la banda $ 660–880 (art. 8), CPE $ 6.858 (art. 11), ASSE hasta 1,00 % (art. 12)',
+        url: 'https://www.impo.com.uy/bases/decretos/163-2026',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ajustes de precios de salud – julio 2026 — cuota FONASA de 18 a 21 años ($ 3.513), tope de tasas moderadoras, CPE (publicado el 21/07/2026)',
+        url: 'https://www.gub.uy/ministerio-salud-publica/sites/ministerio-salud-publica/files/2026-07/ajustes-precios-salud-julio-2026.pdf',
         publisher: 'MSP',
       },
       {
         label:
-          'Ajuste de cuotas, cápitas y tasas moderadoras de julio de 2026 — porcentajes máximos de aumento autorizados para las cuotas de afiliados individuales y colectivos, tickets y órdenes; el PDF adjunto fija el "Valor tope máximo para todas las tasas moderadoras" en $ 880 (publicado el 21/07/2026)',
-        url: 'https://www.gub.uy/ministerio-salud-publica/datos-y-estadisticas/datos/ajuste-cuotas-capitas-tasas-moderadoras-julio-2026',
-        publisher: 'MSP',
+          'Cálculo de la devolución Fonasa — sólo los meses en que la persona fue beneficiaria; retención de IRPF de 8 %',
+        url: 'https://www.bps.gub.uy/10576/calculo-de-la-devolucion-fonasa.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Devolución Fonasa — el pago del ejercicio 2025 comienza el 21 de setiembre de 2026: más de 152.000 personas, unos 8.676 millones (3/9/2026)',
+        url: 'https://www.bps.gub.uy/24521/devolucion-fonasa.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Extensión de cobertura de salud para trabajadores despedidos o con cese de actividades — la medida de tres meses del 1/8 al 31/10/2020 (Decreto 217/020, Fondo Solidario COVID-19)',
+        url: 'https://www.bps.gub.uy/17508/extension-de-cobertura-de-salud-para-trabajadores-despedidos-o-con-cese-de-actividades.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Ley 20.486 — el MTSS puede extender hasta el 30/6/2026 el subsidio de los trabajadores de Frigorífico Casa Blanca S.A. (prórroga por empresa)',
+        url: 'https://www.impo.com.uy/bases/leyes/20486-2026',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Prórrogas del subsidio por desempleo — resoluciones por empresa y por 90 días (4/9/2026)',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/tematica/prorrogas',
+        publisher: 'MTSS',
+      },
+      {
+        label:
+          'Bonos Fonasa: qué son y cómo utilizarlos — «vigencia de 30 días» (fuente extranjera, sólo para aclarar el significado de la consulta)',
+        url: 'https://www.fonasa.gob.cl/modalidades-de-atencion/red-de-prestadores-en-convenio/bonos-fonasa/',
+        publisher: 'FONASA Chile',
       },
     ],
   },
@@ -826,6 +941,326 @@ export const trabajoBpsGuides: readonly Guide[] = [
           'Decreto-Ley 14.407 art. 23 — prohíbe despedir al trabajador ausente por enfermedad; "El trabajador dado de alta no podrá ser despedido antes de que transcurran treinta días de su reincorporación", y la violación hace que "el pago de la indemnización por despido sea el doble de la normal", salvo notoria mala conducta o despido no vinculado con la enfermedad',
         url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/23',
         publisher: 'IMPO',
+      },
+    ],
+  },
+  {
+    slug: 'aguinaldo-casos-especiales-uruguay',
+    title: 'Aguinaldo con 3 meses, en negro o enfermo: casos 2026',
+    description:
+      'Sí: se cobra con cualquier antigüedad, en proporción a lo pagado en dinero. Quién paga en BPS, recargo del 10 % por atraso, plazos 2026 y jubilados.',
+    tag: 'AGUINALDO',
+    updatedAt: '2026-09-22',
+    sections: [
+      {
+        heading: 'Con 3 meses de trabajo cobrás igual: no hay antigüedad mínima',
+        body: 'Sí, te corresponde. La Ley 12.840 no exige un año ni ninguna otra antigüedad: su artículo 3 dice que, al terminar la relación laboral por renuncia, jubilación o despido, el trabajador cobra "el sueldo anual complementario en proporción al tiempo de permanencia en la empresa", y la misma proporción rige cuando llega la fecha de pago y llevás pocos meses. La excusa del "año de antigüedad" que algunos empleadores repiten tiene un origen real pero vencido: el artículo 6 de esa ley pidió no menos de un año de antigüedad "en el año 1960", únicamente para el primer aguinaldo, y nunca más. La cuenta es la doceava parte de lo que te pagaron en dinero en los meses trabajados del semestre. Quien entró en marzo cobró en junio de 2026 la doceava parte de marzo, abril y mayo, y en diciembre la de junio a noviembre. La única forma de perder la parte no cobrada es el despido por notoria mala conducta (art. 3); si te vas sin renunciar formalmente, el MTSS aclara en sus preguntas frecuentes que la empresa igual debe abonar "la licencia no gozada, el salario vacacional y el aguinaldo generado", y lo que se pierde es la indemnización por despido.',
+        links: [
+          {
+            label: 'Calculadora de aguinaldo',
+            to: '/herramientas/calculadora-aguinaldo',
+          },
+          {
+            label: 'Cómo se calcula el aguinaldo',
+            to: '/guias/como-se-calcula-el-aguinaldo-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Qué entra en el cálculo y qué queda afuera, con la norma de cada fila',
+        body: 'El artículo 2 de la Ley 12.840 define la base: "la totalidad de las prestaciones en dinero originadas en la relación de trabajo que tengan carácter remuneratorio", pagadas en los doce meses anteriores al 1.º de diciembre. La palabra que decide es "dinero", y por eso las exclusiones más buscadas tienen cada una su norma: la propia ley deja afuera las participaciones en los beneficios de la empresa y el aguinaldo del año anterior; el Decreto 49/000 excluye el salario vacacional; y el MTSS explica que los tickets de alimentación no entran porque no son dinero, aunque sí cuentan para la licencia, el salario vacacional y la indemnización por despido. La excepción va en sentido contrario: al trabajador rural la alimentación y la vivienda le integran el aguinaldo aunque las reciba en especie, valuadas por el ficto legal (Ley 13.619, art. 1). Y hay un rubro que se liquida al lado del aguinaldo sin ser aguinaldo: en el trabajo doméstico, la prima por presentismo, que es la cuarta parte del medio aguinaldo, con los mismos rubros, para quien tuvo asistencia perfecta en el semestre (la enfermedad certificada y la licencia no cuentan como faltas), y se paga en las mismas oportunidades que el aguinaldo. En junio de 2026 el BPS la liquidó a quien tuvo asistencia perfecta de diciembre de 2025 a mayo de 2026, salvo que el empleador informara lo contrario hasta el 30 de junio.',
+        table: {
+          headers: ['Partida', '¿Integra el aguinaldo?', 'Norma'],
+          rows: [
+            ['Sueldo, horas extra, comisiones, en dinero', 'Sí', 'Ley 12.840, art. 2'],
+            [
+              'Alimentación y vivienda del trabajador rural',
+              'Sí, aun en especie',
+              'Ley 13.619, art. 1',
+            ],
+            ['Participación en las ganancias', 'No', 'Ley 12.840, art. 2'],
+            ['Aguinaldo del año anterior', 'No', 'Ley 12.840, art. 2'],
+            ['Salario vacacional', 'No', 'Decreto 49/000, art. 2'],
+            ['Tickets de alimentación', 'No', 'MTSS, preguntas frecuentes'],
+          ],
+        },
+      },
+      {
+        heading: 'Las fechas de 2026, con la norma que fija cada una',
+        body: 'El techo está en la Ley 12.840 (art. 1): el aguinaldo se paga "dentro de los diez días anteriores al 24 de diciembre", o sea del 14 al 23. El Decreto-Ley 14.525 permite partirlo: "lo generado hasta el 31 de mayo dentro del mes de junio y el complemento antes del 24 de diciembre". Y cada año un decreto ejerce esa facultad y puede acortar el plazo. Para 2026 es el Decreto 113/026, promulgado el 29 de mayo de 2026 y publicado el 5 de junio: la primera cuota se pagó dentro de junio (tope 30 de junio) y la segunda, por lo generado del 1.º de junio al 30 de noviembre, se paga "hasta el 20 del mes de diciembre", que cae domingo; el decreto no dice nada sobre días inhábiles. El de 2024 decía "antes del 20"; el de 2026 dice "hasta el 20", que incluye ese día. Los funcionarios públicos no cobran por esta ley sino por el Decreto-Ley 14.360 y un decreto propio: el 122/026 fijó el cobro de la cuota de junio desde el 18 de junio de 2026, por lo generado del 1.º de diciembre de 2025 al 31 de mayo de 2026; al 22 de setiembre de 2026 la cuota de diciembre del sector público no tiene decreto. La construcción va por la tercera fila de la tabla.',
+        table: {
+          headers: ['Quién', 'Junio 2026', 'Diciembre 2026', 'Norma'],
+          rows: [
+            [
+              'Sector privado',
+              'Lo generado hasta el 31 de mayo, dentro de junio (tope 30 de junio)',
+              'Lo generado del 1.º de junio al 30 de noviembre, hasta el 20 de diciembre',
+              'Ley 12.840; Decreto-Ley 14.525; Decreto 113/026',
+            ],
+            [
+              'Funcionarios públicos',
+              'Desde el 18 de junio, por lo generado del 1/12/2025 al 31/5/2026',
+              'Sin decreto al 22 de setiembre de 2026',
+              'Decreto-Ley 14.360; Decreto 122/026',
+            ],
+            [
+              'Construcción (Ley 14.411)',
+              'El BPS paga la primera parte: noviembre del año anterior a abril',
+              'El BPS paga la segunda parte: mayo a octubre (en 2025, desde el 12 de diciembre)',
+              'Ley 14.411; Decreto 951/975; BPS',
+            ],
+          ],
+        },
+        links: [
+          {
+            label: 'Cuándo se cobra el aguinaldo: la página con las fechas',
+            to: '/cuando-se-cobra-el-aguinaldo-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Incapacitado, certificado o accidentado: quién paga el aguinaldo',
+        body: 'Si estás con subsidio por enfermedad del BPS, la cuota parte de aguinaldo de ese período la paga el BPS, no tu empleador. Lo manda el Decreto-Ley 14.407 (art. 28): el beneficiario "tendrá derecho a percibir una parte proporcional del aguinaldo por el tiempo que esté cobrando subsidio", liquidada y pagada por el seguro de enfermedad, que hoy administra el BPS. La página del BPS, actualizada el 8 de setiembre de 2026, lo confirma con su fórmula: el 70 % de la materia gravada, sin contar el aguinaldo, con tope de $ 67.754 (valor de enero de 2026), "más la cuota parte de aguinaldo", desde el cuarto día de certificación (desde el primero si hay internación). Los días que trabajaste ese semestre los liquida el empleador: son dos recibos. En un accidente de trabajo la cosa es distinta y la fuente se termina antes: durante la incapacidad temporaria el BSE cubre dos tercios del jornal (66,67 %) y el BPS agrega el 3,33 % restante hasta llegar al 70 %, según la página del BPS; pero ni la ley de accidentes ni las páginas del BSE consultadas dicen quién liquida la cuota parte de aguinaldo de ese período, así que preguntalo en el BSE o el BPS antes de darlo por hecho. Y si la incapacidad es parcial, el subsidio transitorio (hasta tres años) no menciona el aguinaldo; si el nuevo dictamen configura incapacidad total, pasás a jubilación por incapacidad total, y un jubilado no cobra aguinaldo.',
+        links: [
+          {
+            label: 'Me certifiqué: cuánto cobro y quién paga',
+            to: '/guias/me-certifique-subsidio-por-enfermedad-uruguay',
+          },
+          { label: 'Accidente de trabajo', to: '/accidente-de-trabajo-uruguay' },
+        ],
+      },
+      {
+        heading: 'Maternidad, paternidad y seguro de paro: dos que sí, uno que la ley no prevé',
+        body: 'Los subsidios por maternidad y por paternidad incluyen la cuota parte de aguinaldo por ley: la Ley 19.161 (arts. 6 y 9) fija el subsidio en el promedio de los últimos seis meses "más la cuota parte correspondiente al sueldo anual complementario, licencia y salario vacacional" del período de amparo, y el BPS lo repite en sus páginas de maternidad y paternidad, en un solo pago por todo el período. El seguro de paro es la asimetría: el Decreto-Ley 15.180 no menciona el aguinaldo, y la página del BPS de subsidio por desempleo por despido (actualizada el 26 de enero de 2026) define el monto como porcentajes del promedio de los seis meses anteriores, sin cuota parte de aguinaldo. Para mensuales y destajistas la escala es 66 % el primer mes (tope 2026 de $ 93.155), 57 % el segundo ($ 80.445), 50 % ($ 67.754), 45 % ($ 59.287), 42 % ($ 55.044) y 40 % ($ 50.802); para jornaleros, 16, 14, 12, 11, 10 y 9 jornales con los mismos topes. Lo que sí cobrás es lo generado antes de entrar al seguro, que el empleador paga en la fecha normal y el BPS no descuenta del subsidio: el aguinaldo figura entre los rubros que no se descuentan. En una suspensión total el BPS liquida el mes entero y aclara que el trabajador "solo puede haber cobrado aguinaldo y feriados pagos".',
+        links: [
+          {
+            label: 'Seguro de paro: requisitos y cuánto se cobra',
+            to: '/seguro-de-paro-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'En negro: el derecho existe, lo que falta es la prueba',
+        body: 'Te corresponde igual. La Ley 12.840 obliga a "todo patrono", y el aguinaldo nace de la relación de trabajo, no del registro en el BPS: en noviembre de 2025 la prensa informó una sentencia que reconoció la dependencia entre PedidosYa y un repartidor y condenó a la empresa a pagar aguinaldo y aportes, sin que hubiera un recibo de sueldo de por medio. Lo que cambia en el trabajo no registrado es que hay que probar el vínculo, y las tres puertas son públicas. Primera, el BPS: el servicio en línea "Denunciar diferencias de salarios y actividades no declaradas", con usuario personal, sirve para actividades no declaradas o mal declaradas desde el 1.º de abril de 1996 y admite adjuntar recibos, sentencias u otros documentos; si el BPS prueba la dependencia, reconstruye tu historia laboral. Segunda, el MTSS: con el vínculo vigente, la denuncia anónima en la Inspección General del Trabajo; si ya te fuiste, el Centro de Asesoramiento del MTSS y la liquidación en DINATRA (0800 7171). Tercera, el juicio laboral, con un plazo que no perdona: las acciones prescriben al año contado desde el día siguiente al cese (Ley 18.091, art. 1), cada crédito a los cinco años desde que fue exigible (art. 2), y la sola presentación en el MTSS pidiendo audiencia de conciliación interrumpe el plazo (art. 3). Guardá mensajes, transferencias, horarios y nombres de testigos desde ahora.',
+        links: [
+          {
+            label: 'Denunciar trabajo en negro',
+            to: '/denunciar-trabajo-en-negro-uruguay',
+          },
+          {
+            label: 'Trabajo en negro: cómo comprobarlo',
+            to: '/guias/trabajo-en-negro-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Si no pagan a tiempo: 10 % automático, multa, dónde denunciar y hasta cuándo',
+        body: 'Dos consecuencias que se acumulan, y sólo una es plata para vos. La primera: la omisión de pago de cualquier crédito laboral genera "automáticamente, desde su exigibilidad, un recargo del 10 %" sobre lo adeudado (Ley 18.572, art. 29); si el aguinaldo vencía el 20 de diciembre de 2026, desde el 21 el monto es un 10 % más. La segunda: el empleador que viola la ley del aguinaldo es sancionado con una multa equivalente al doble del monto del sueldo anual complementario de cada trabajador (Ley 12.840, art. 7), cuya percepción y destino rige la Ley 5.427: la cobra el Estado, no vos, así que nadie "cobra el doble". Dónde ir depende de tu situación. Con vínculo vigente y la infracción ocurriendo, la Inspección General del Trabajo del MTSS (Oficina 108, Juncal 1511, lunes a viernes de 9 a 16, asesoramientoydenuncias@mtss.gub.uy) recibe denuncias anónimas y lista el aguinaldo entre sus materias; si el aguinaldo impago es del semestre pasado y seguís en la empresa, el camino es la División Consultas de DINATRA con agenda al 0800 7171; si ya no trabajás ahí, el Centro de Asesoramiento del MTSS en planta baja o las Oficinas de Trabajo del Interior. La Inspección no calcula liquidaciones: eso lo hace DINATRA. Si la empresa quebró, el Fondo de Garantía de Créditos Laborales del BPS (Ley 19.690) cubre aguinaldos, licencias y salarios vacacionales de los dos últimos años previos al cese de pago, más la multa del 10 %, hasta 105.000 UI en un único pago.',
+        links: [
+          {
+            label: 'Cuánto me tienen que pagar',
+            to: '/cuanto-me-tienen-que-pagar-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Construcción, jubilados, IRPF y las dos preguntas que no son de Uruguay',
+        body: 'En la construcción el aguinaldo no lo paga el patrón: a los trabajadores de la Ley 14.411 con aportación Construcción se lo liquida y paga el BPS, junto con la antigüedad, la licencia y el salario vacacional, porque la aportación unificada comprende los aportes "para el pago de la licencia anual, del sueldo anual complementario y de las sumas para el mejor goce de la licencia" (Decreto 951/975, art. 1). Los períodos son propios: junio liquida de noviembre del año anterior a abril y diciembre de mayo a octubre; no cobran quienes tienen nóminas impagas; y cobrar del BPS te pone en multiempleo, con obligación de presentar la declaración jurada de IRPF. El Fondo Social de la Construcción es otra prestación y su página no menciona el aguinaldo. Los jubilados y pensionistas no cobran aguinaldo: lo que existe es la canasta de fin de año del BPS, una partida única de $ 3.151 en la edición 2025 para pasivos residentes con ingresos personales menores a $ 20.458 mensuales (pensionistas, además, con 65 años o más), que se pagó desde el 2 de diciembre de 2025; al 22 de setiembre de 2026 el BPS no publicó la edición 2026 ni su tope. El IRPF: la DGI grava el aguinaldo legal aparte, con una tasa proporcional igual a la tasa marginal máxima que ya pagás por el resto de tus rentas de trabajo, así que no te sube de franja; sólo lo que exceda el mínimo legal por convenio se suma a los ingresos comunes. Y dos consultas que el autocompletado trae desde otros países: el aguinaldo uruguayo no se mide en días (los "15 días de sueldo" son de la ley mexicana; acá es la doceava parte de lo pagado en dinero), y no existe un aguinaldo por Fiestas Patrias, que es una partida de Perú.',
+        links: [
+          {
+            label: 'Canasta de fin de año del BPS',
+            to: '/guias/canasta-fin-de-ano-bps-uruguay',
+          },
+          {
+            label: 'Declaración de IRPF: quién debe',
+            to: '/declaracion-de-irpf-uruguay',
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Me corresponde aguinaldo si llevo 3 meses trabajando?',
+        a: 'Sí. La Ley 12.840 no exige antigüedad: cobrás el aguinaldo en proporción al tiempo de permanencia en la empresa (art. 3), tanto al irte como cuando llega la fecha de pago. La exigencia de un año existió sólo para el aguinaldo de 1960 (art. 6). Con tres meses cobrás la doceava parte de lo que te pagaron en dinero en esos tres meses.',
+      },
+      {
+        q: '¿Quién paga el aguinaldo si estoy incapacitado con certificado médico?',
+        a: 'El BPS, no tu empleador. El Decreto-Ley 14.407 (art. 28) manda pagar la parte proporcional del aguinaldo por el tiempo en subsidio, y la página del BPS (actualizada el 8 de setiembre de 2026) lo confirma: 70 % de la materia gravada, tope $ 67.754 (valor 01/2026), más la cuota parte de aguinaldo. Los días trabajados los liquida el empleador. En el BSE por accidente, ninguna fuente primaria dice quién liquida esa cuota parte: consultalo.',
+      },
+      {
+        q: '¿Me corresponde aguinaldo si estoy en negro?',
+        a: 'Sí: el derecho nace de la relación de trabajo, no del registro (Ley 12.840, art. 1). Para cobrarlo hay que probar el vínculo: denuncia en línea al BPS de actividades no declaradas con recibos, mensajes u otros documentos, asesoramiento en el MTSS y, si hace falta, juicio laboral. El plazo es un año desde que terminó la relación (Ley 18.091) y la presentación en el MTSS lo interrumpe.',
+      },
+      {
+        q: '¿Qué pasa si no me pagan el aguinaldo a tiempo?',
+        a: 'Desde el día en que venció corre automáticamente un recargo del 10 % a tu favor (Ley 18.572, art. 29), y el empleador queda expuesto a una multa del doble del sueldo anual complementario (Ley 12.840, art. 7), que cobra el Estado. Con vínculo vigente denunciás en la Inspección General del Trabajo (Oficina 108, Juncal 1511); si ya te fuiste, en el Centro de Asesoramiento del MTSS; las liquidaciones las hace DINATRA (0800 7171). Tenés un año desde el cese.',
+      },
+      {
+        q: '¿Cuántos días de aguinaldo corresponden por año?',
+        a: 'En Uruguay el aguinaldo no se mide en días: es la doceava parte de todo lo pagado en dinero en los doce meses anteriores al 1.º de diciembre (Ley 12.840, art. 2), partido en dos cuotas, la de junio hasta el 30 de junio y la de diciembre, en 2026, hasta el 20 de diciembre (Decreto 113/026). Los "15 días" son de la ley mexicana.',
+      },
+    ],
+    related: [
+      {
+        label: 'Cuándo se cobra el aguinaldo',
+        to: '/cuando-se-cobra-el-aguinaldo-uruguay',
+      },
+      {
+        label: 'Cómo se calcula el aguinaldo',
+        to: '/guias/como-se-calcula-el-aguinaldo-uruguay',
+      },
+      {
+        label: 'Calculadora de aguinaldo',
+        to: '/herramientas/calculadora-aguinaldo',
+      },
+      { label: 'Seguro de paro', to: '/seguro-de-paro-uruguay' },
+      {
+        label: 'Denunciar trabajo en negro',
+        to: '/denunciar-trabajo-en-negro-uruguay',
+      },
+      { label: 'Salario vacacional', to: '/salario-vacacional-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 12.840 (22/12/1960) — sueldo anual complementario: plazo, base en dinero, proporcional al egreso, el año de antigüedad sólo para 1960, multa del doble',
+        url: 'https://www.impo.com.uy/bases/leyes/12840-1960',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 113/026 (29/05/2026) — aguinaldo 2026 de la actividad privada: junio y hasta el 20 de diciembre',
+        url: 'https://www.impo.com.uy/bases/decretos/113-2026',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 122/026 (03/06/2026) — aguinaldo de junio de 2026 de los funcionarios públicos, desde el 18 de junio',
+        url: 'https://www.impo.com.uy/bases/decretos/122-2026',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Decreto-Ley 14.525 (27/05/1976) — el pago en dos etapas',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14525-1976',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.572, art. 29 — recargo automático del 10 % por omisión de pago de créditos laborales',
+        url: 'https://www.impo.com.uy/bases/leyes/18572-2009/29',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.091 (07/01/2007) — prescripción: un año desde el cese, cinco desde la exigibilidad',
+        url: 'https://www.impo.com.uy/bases/leyes/18091-2007',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407, art. 28 — la cuota parte de aguinaldo del subsidio por enfermedad',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 19.161, arts. 6 y 9 — cuota parte de aguinaldo en los subsidios por maternidad y paternidad',
+        url: 'https://www.impo.com.uy/bases/leyes/19161-2013',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 13.619, art. 1 — alimentación y vivienda del trabajador rural integran el aguinaldo',
+        url: 'https://www.impo.com.uy/bases/leyes/13619-1967',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Decreto 49/000, art. 2 — el salario vacacional no se computa para el aguinaldo',
+        url: 'https://www.impo.com.uy/bases/decretos/49-2000',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 951/975, art. 1 — la aportación unificada de la construcción comprende el aguinaldo',
+        url: 'https://www.impo.com.uy/bases/decretos/951-1975',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Subsidio por enfermedad: 70 %, tope $ 67.754 (01/2026), más la cuota parte de aguinaldo; reparto BSE/BPS (actualizado 08/09/2026)',
+        url: 'https://www.bps.gub.uy/4774/subsidio-por-enfermedad.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Subsidio por desempleo por despido: escala y topes 2026, sin cuota parte de aguinaldo (actualizado 26/01/2026)',
+        url: 'https://www.bps.gub.uy/4802/subsidio-por-desempleo-por-despido.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Subsidio por desempleo por suspensión: "solo puede haber cobrado aguinaldo y feriados pagos"',
+        url: 'https://www.bps.gub.uy/18239/subsidio-por-desempleo-por-suspension.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Subsidio por maternidad: 100 % del promedio más cuota parte de aguinaldo (actualizado 03/11/2025)',
+        url: 'https://www.bps.gub.uy/4804/subsidio-por-maternidad.html',
+        publisher: 'BPS',
+      },
+      {
+        label: 'Subsidio transitorio por incapacidad parcial (actualizado 13/04/2026)',
+        url: 'https://www.bps.gub.uy/9780/subsidio-transitorio-por-incapacidad-parcial.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Denuncias de trabajadores: actividades no declaradas desde el 1/4/1996 (actualizado 13/03/2026)',
+        url: 'https://www.bps.gub.uy/11439/denuncias-de-trabajadores.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Garantía de Créditos Laborales (Ley 19.690): aguinaldos de los dos últimos años, más la multa del 10 %, hasta 105.000 UI',
+        url: 'https://www.bps.gub.uy/16629/garantia-de-creditos-laborales.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Partidas salariales de Construcción: el BPS liquida aguinaldo, licencia y salario vacacional; períodos noviembre–abril y mayo–octubre (actualizado 05/12/2025)',
+        url: 'https://www.bps.gub.uy/16585/partidas-salariales-de-construccion.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Prima por presentismo del trabajo doméstico: cuarta parte del medio aguinaldo (actualizado 01/07/2026)',
+        url: 'https://www.bps.gub.uy/6596/prima-por-presentismo.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Canasta de fin de año: $ 3.151 (valor 2025), ingresos menores a $ 20.458 (actualizado 04/12/2025)',
+        url: 'https://www.bps.gub.uy/21733/canasta-de-fin-de-ano.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Denuncias laborales en la Inspección General del Trabajo: sólo con vínculo vigente; desvinculados y liquidaciones',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/politicas-y-gestion/denuncias-laborales',
+        publisher: 'MTSS',
+      },
+      {
+        label:
+          'Preguntas frecuentes en materia laboral: tickets de alimentación y abandono de trabajo',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/institucional/preguntas-frecuentes/materia-laboral',
+        publisher: 'MTSS',
+      },
+      {
+        label:
+          'IRPF para trabajadores dependientes (11/06/2026): el aguinaldo legal se grava aparte, a la tasa marginal máxima',
+        url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/irpf-para-trabajadores-dependientes',
+        publisher: 'DGI',
       },
     ],
   },

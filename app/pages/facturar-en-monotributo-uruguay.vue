@@ -248,9 +248,9 @@
       <h2 class="section-title">Cuánto se paga por mes en 2026</h2>
       <p class="section-intro">
         La cuota no depende de cuánto facturás: depende de si sumás FONASA, si tenés cónyuge o
-        concubino con FONASA, si hay hijos a cargo y —en la ley 19.942 y en el Mides— de la
-        antigüedad de la empresa. Montos vigentes desde enero de 2026, verificados el 15 de
-        setiembre de 2026 contra BPS.
+        concubino a cargo (sin FONASA propio), si hay hijos a cargo y —en la ley 19.942 y en el
+        Mides— de la antigüedad de la empresa. Montos vigentes desde enero de 2026, verificados el
+        {{ aportesVerifiedAt }} contra BPS.
       </p>
 
       <h3 class="card-title card-title--sm">Monotributo ley 19.942 (altas desde el 1/1/2021)</h3>
@@ -260,18 +260,26 @@
             <tr>
               <th scope="col">Antigüedad de la empresa</th>
               <th scope="col">Sin FONASA</th>
-              <th scope="col">Con FONASA, sin cónyuge, con hijos</th>
-              <th scope="col">Con FONASA, con cónyuge, con hijos</th>
+              <th scope="col">Con FONASA, sin cónyuge a cargo, sin hijos</th>
+              <th scope="col">Con FONASA, sin cónyuge a cargo, con hijos</th>
+              <th scope="col">Con FONASA, con cónyuge a cargo, sin hijos</th>
+              <th scope="col">Con FONASA, con cónyuge a cargo, con hijos</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="t in LEY_19942_ROWS" :key="t.label">
               <th scope="row">{{ t.label }}</th>
               <td data-label="Sin FONASA">{{ formatUYU(t.sinFonasa, 0) }}</td>
-              <td data-label="Con FONASA, sin cónyuge, con hijos">
+              <td data-label="Con FONASA, sin cónyuge a cargo, sin hijos">
+                {{ formatUYU(t.conFonasaSinConyugeSinHijos, 0) }}
+              </td>
+              <td data-label="Con FONASA, sin cónyuge a cargo, con hijos">
                 {{ formatUYU(t.conFonasaSinConyuge, 0) }}
               </td>
-              <td data-label="Con FONASA, con cónyuge, con hijos">
+              <td data-label="Con FONASA, con cónyuge a cargo, sin hijos">
+                {{ formatUYU(t.conFonasaConConyugeSinHijos, 0) }}
+              </td>
+              <td data-label="Con FONASA, con cónyuge a cargo, con hijos">
                 {{ formatUYU(t.conFonasaConConyuge, 0) }}
               </td>
             </tr>
@@ -279,14 +287,45 @@
         </table>
       </div>
       <p class="table-note">
-        Las columnas «con FONASA» son la situación con hijos a cargo: BPS no publica para este
-        régimen una columna separada sin hijos, a diferencia del Mides. Y «con cónyuge» es el hogar
-        con cónyuge o concubino con FONASA, no el caso en que ambos integran la misma empresa (paga
-        otro monto, más alto, y no está en esta tabla).
+        «Sin FONASA» incluye
+        {{ formatUYU(MONO_APORTES_2026.composicion.seguroEnfermedadSinFonasa, 0) }}
+        de seguro de enfermedad sin cobertura médica (el 8 % de una BPC). «Cónyuge a cargo» es, en
+        palabras de BPS, el cónyuge o concubino que no tiene cobertura FONASA por su propia
+        actividad o pasividad y la recibe a través del titular: si tu pareja ya tiene FONASA por su
+        trabajo o jubilación, pagás la columna «sin cónyuge a cargo». Las columnas «sin hijos» salen
+        del PDF de detalle de BPS. El caso en que ambos cónyuges integran la misma empresa paga otro
+        monto, más alto, y no está en esta tabla.
       </p>
       <p class="table-note">
         Las empresas que abrieron hasta el 31/12/2020 quedan en la ley 18.083: no tienen gradualidad
         y pagan siempre el monto pleno, el mismo de la fila «Desde el mes 25» de arriba.
+      </p>
+
+      <h3 class="card-title card-title--sm mt-8">Sociedad de hecho, ley 19.942</h3>
+      <div class="table-scroll mb-3">
+        <table class="rate-table cu-mobile-cards">
+          <thead>
+            <tr>
+              <th scope="col">Socios</th>
+              <th scope="col">Meses 1 a 12 (25%)</th>
+              <th scope="col">Meses 13 a 24 (50%)</th>
+              <th scope="col">Desde el mes 25 (100%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="t in SOCIEDAD_ROWS" :key="t.label">
+              <th scope="row">{{ t.label }}</th>
+              <td data-label="Meses 1 a 12 (25%)">{{ formatUYU(t.tramos[0], 0) }}</td>
+              <td data-label="Meses 13 a 24 (50%)">{{ formatUYU(t.tramos[1], 0) }}</td>
+              <td data-label="Desde el mes 25 (100%)">{{ formatUYU(t.tramos[2], 0) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">
+        Sólo aporte jubilatorio y FRL: los socios de una sociedad de hecho del monotributo común no
+        tienen la opción FONASA (en el Mides sí, por integrante). Hasta dos socios, o tres si son
+        familiares.
       </p>
 
       <h3 class="card-title card-title--sm mt-8">Monotributo Social MIDES (ley 18.874)</h3>
@@ -296,18 +335,26 @@
             <tr>
               <th scope="col">Antigüedad de la empresa</th>
               <th scope="col">Sin FONASA</th>
-              <th scope="col">Con FONASA, sin cónyuge, con hijos</th>
-              <th scope="col">Con FONASA, con cónyuge, con hijos</th>
+              <th scope="col">Con FONASA, sin cónyuge a cargo, sin hijos</th>
+              <th scope="col">Con FONASA, sin cónyuge a cargo, con hijos</th>
+              <th scope="col">Con FONASA, con cónyuge a cargo, sin hijos</th>
+              <th scope="col">Con FONASA, con cónyuge a cargo, con hijos</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="t in MIDES_ROWS" :key="t.label">
               <th scope="row">{{ t.label }}</th>
               <td data-label="Sin FONASA">{{ formatUYU(t.sinFonasa, 0) }}</td>
-              <td data-label="Con FONASA, sin cónyuge, con hijos">
+              <td data-label="Con FONASA, sin cónyuge a cargo, sin hijos">
+                {{ formatUYU(t.sinConyugeSinHijos, 0) }}
+              </td>
+              <td data-label="Con FONASA, sin cónyuge a cargo, con hijos">
                 {{ formatUYU(t.sinConyugeConHijos, 0) }}
               </td>
-              <td data-label="Con FONASA, con cónyuge, con hijos">
+              <td data-label="Con FONASA, con cónyuge a cargo, sin hijos">
+                {{ formatUYU(t.conConyugeSinHijos, 0) }}
+              </td>
+              <td data-label="Con FONASA, con cónyuge a cargo, con hijos">
                 {{ formatUYU(t.conConyugeConHijos, 0) }}
               </td>
             </tr>
@@ -315,7 +362,9 @@
         </table>
       </div>
       <p class="table-note">
-        El Mides tiene cuatro tramos, no tres: 25/50/75/100% del aporte, cada uno de 12 meses.
+        El Mides tiene cuatro tramos, no tres: 25/50/75/100% del aporte, cada uno de 12 meses. La
+        gradualidad no toca el FONASA: con la opción, la parte de salud se paga entera desde el
+        primer mes.
       </p>
 
       <VRow class="mt-6">
@@ -326,8 +375,67 @@
         </VCol>
       </VRow>
       <p class="table-note">
-        El tope de activos no aplica a las empresas del Monotributo Social MIDES.
+        El tope de activos no aplica a las empresas del Monotributo Social MIDES. En UI, que es como
+        los fija la ley: {{ formatNumber(MONO_TOPES_UI.unipersonalUi, 0) }} UI la unipersonal,
+        {{ formatNumber(MONO_TOPES_UI.sociedadDeHechoUi, 0) }} UI la sociedad de hecho y
+        {{ formatNumber(MONO_TOPES_UI.activosUi, 0) }} UI los activos. Publicamos los pesos de BPS y
+        DGI, no una conversión propia.
       </p>
+    </section>
+
+    <!-- Qué pasa si… -->
+    <section id="que-pasa-si" class="mb-12">
+      <h2 class="section-title">Qué pasa si…</h2>
+      <p class="section-intro">
+        Lo que se pregunta cuando el monotributo ya está abierto: no facturé, me pasé del tope, debo
+        cuotas, quiero sacar el FONASA o cambiar de mutualista, quién lo paga, y qué es el
+        Monotributo Social Mides. Verificado el {{ casosVerifiedAt }} contra BPS, DGI, MIDES y los
+        textos vigentes de IMPO; cada respuesta lleva sus fuentes abajo.
+      </p>
+
+      <VRow>
+        <VCol v-for="c in CASOS" :id="`caso-${c.id}`" :key="c.id" cols="12">
+          <SurfaceCard>
+            <h3 class="card-title">{{ c.question }}</h3>
+            <p class="caso-short">{{ c.short }}</p>
+            <p v-for="(d, i) in c.detail" :key="i" class="caso-detail">{{ d }}</p>
+
+            <div v-if="c.table" class="table-scroll mt-4 mb-2">
+              <table class="rate-table cu-mobile-cards">
+                <thead>
+                  <tr>
+                    <th v-for="h in c.table.headers" :key="h" scope="col">{{ h }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, ri) in c.table.rows" :key="ri">
+                    <th scope="row">{{ row[0] }}</th>
+                    <td
+                      v-for="(cell, ci) in row.slice(1)"
+                      :key="ci"
+                      :data-label="c.table.headers[ci + 1]"
+                    >
+                      {{ cell }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p v-if="c.table?.note" class="table-note">{{ c.table.note }}</p>
+
+            <template #footer>
+              <div class="caso-sources">
+                <span class="caso-sources-label">Fuentes, vistas el {{ casosVerifiedAt }}:</span>
+                <template v-for="(s, i) in c.sources" :key="s.url">
+                  <a :href="s.url" target="_blank" rel="noopener noreferrer" class="source-link">
+                    {{ s.label }}</a
+                  ><span v-if="i < c.sources.length - 1"> · </span>
+                </template>
+              </div>
+            </template>
+          </SurfaceCard>
+        </VCol>
+      </VRow>
     </section>
 
     <!-- Mitos -->
@@ -521,8 +629,9 @@
       <h2 class="text-h6 font-weight-bold mb-3">Fuentes</h2>
       <p class="text-body-2 text-medium-emphasis mb-3">
         Contrastado el {{ verifiedAt }} con DGI, BPS y los textos vigentes de IMPO.
-        {{ DISCLAIMER }} Los montos mensuales de 2026 de la sección «Cuánto se paga por mes» se
-        verificaron aparte el 15 de setiembre de 2026 contra el BPS.
+        {{ DISCLAIMER }} Los montos mensuales de 2026 de la sección «Cuánto se paga por mes» y las
+        respuestas de «Qué pasa si…» se verificaron aparte el {{ casosVerifiedAt }} contra BPS, DGI,
+        MIDES e IMPO.
       </p>
       <ul class="sources-list">
         <li v-for="s in SOURCES" :key="s.url">
@@ -536,6 +645,7 @@
 <script setup lang="ts">
 import { formatNumber, formatUYU } from '~/utils/format'
 import {
+  CASOS,
   CORE_ANSWER,
   COST_LEVERS,
   DISCLAIMER,
@@ -543,7 +653,9 @@ import {
   FIGURES,
   LEYENDAS,
   MONO_APORTES_2026,
+  MONO_CASOS_VERIFIED_AT,
   MONO_INVOICING_VERIFIED_AT,
+  MONO_TOPES_UI,
   MYTHS,
   QUOTE_CHANNELS,
   ROUTES,
@@ -585,6 +697,12 @@ const LEY_19942_ROWS = [
   { label: 'Primeros 12 meses (25%)', ...MONO_APORTES_2026.ley19942.primerAnio },
   { label: 'Segundos 12 meses (50%)', ...MONO_APORTES_2026.ley19942.segundoAnio },
   { label: 'Desde el mes 25 (100%)', ...MONO_APORTES_2026.ley19942.pleno },
+]
+
+const SOCIEDAD_ROWS = [
+  { label: 'Un socio', tramos: MONO_APORTES_2026.sociedadDeHecho.unSocio },
+  { label: 'Dos socios', tramos: MONO_APORTES_2026.sociedadDeHecho.dosSocios },
+  { label: 'Tres socios', tramos: MONO_APORTES_2026.sociedadDeHecho.tresSocios },
 ]
 
 const MIDES_ROWS = [
@@ -647,19 +765,24 @@ const verdictText = computed(() => {
   return `Con estos números la factura electrónica sale ${formatUYU(r.diferenciaMensual, 0)} menos por mes. Suele pasar cuando emitís muchos comprobantes: revisá que el abono cotizado incluya tu volumen.`
 })
 
-const verifiedAt = new Date(MONO_INVOICING_VERIFIED_AT).toLocaleDateString('es-UY', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-  timeZone: 'UTC',
-})
+// 'es-UY' y no 'es': sólo la variante uruguaya escribe «setiembre».
+const longDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-UY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+const verifiedAt = longDate(MONO_INVOICING_VERIFIED_AT)
+const aportesVerifiedAt = longDate(MONO_APORTES_2026.verifiedAt)
+const casosVerifiedAt = longDate(MONO_CASOS_VERIFIED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/facturar-en-monotributo-uruguay'
 const title = 'Facturar en Monotributo y Monotributo MIDES'
-// La meta description se corta a los ~160 caracteres en el resultado de búsqueda: entra la
-// promesa (facturar en monotributo, cuánto se paga por mes en 2026, MIDES) y nada más.
+// La meta description se corta a los ~155 caracteres en el resultado de búsqueda: entra la
+// promesa (facturar, cuánto se paga en 2026, y las situaciones que se buscan) y nada más.
 const description =
-  'Talonario o factura electrónica: cómo facturar en monotributo, cuánto se paga por mes en 2026 y los montos del Monotributo Social MIDES.'
+  'Talonario o factura electrónica, cuánto se paga por mes en 2026 y qué pasa si no facturás, te pasás del tope, debés cuotas o no querés pagar FONASA.'
 
 defineOgImageComponent('Cambio', {
   title: 'Facturar en Monotributo',
@@ -685,7 +808,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'facturar monotributo uruguay, talonario monotributo, monotributo social mides factura, factura electronica monotributo obligatoria, cai talonario dgi, imprenta autorizada dgi, constancia impresion documentacion, cfe monotributo, credito 80 ui facturacion electronica, boleta monotributo, categorias monotributo 2026, monotributo montos 2026, cuanto se paga de monotributo, monotributo mides cuota',
+        'facturar monotributo uruguay, talonario monotributo, monotributo social mides factura, factura electronica monotributo obligatoria, cai talonario dgi, imprenta autorizada dgi, constancia impresion documentacion, cfe monotributo, credito 80 ui facturacion electronica, boleta monotributo, categorias monotributo 2026, monotributo montos 2026, cuanto se paga de monotributo, monotributo mides cuota, que pasa si tengo monotributo y no facturo, que pasa si me paso del tope del monotributo, que pasa si debo monotributo, monotributo sin fonasa, monotributo cambiar de mutualista, quien paga el monotributo, monotributo social mides tope de facturacion',
     },
   ],
   script: [
@@ -912,6 +1035,29 @@ useHead(() => ({
   font-size: 0.8rem;
   line-height: 1.35;
   opacity: 0.7;
+}
+
+/* Qué pasa si…: la respuesta corta primero, el detalle después, las fuentes fechadas al pie. */
+.caso-short {
+  font-weight: 600;
+  color: rgb(var(--v-theme-link));
+  margin-bottom: 16px;
+}
+.caso-detail {
+  margin-bottom: 12px;
+  opacity: 0.88;
+}
+.caso-detail:last-of-type {
+  margin-bottom: 0;
+}
+.caso-sources {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+.caso-sources-label {
+  font-weight: 600;
+  margin-right: 4px;
 }
 
 .footnote {

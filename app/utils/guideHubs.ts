@@ -903,6 +903,7 @@ export const guideHubs: readonly GuideHub[] = [
       'feriados-en-uruguay-como-se-pagan',
       'llegar-tarde-tolerancia-y-sanciones-uruguay',
       'como-se-calcula-el-aguinaldo-uruguay',
+      'aguinaldo-casos-especiales-uruguay',
       'licencia-y-salario-vacacional-uruguay',
       'me-certifique-subsidio-por-enfermedad-uruguay',
       'despido-y-liquidacion-uruguay',
@@ -952,7 +953,8 @@ export const guideHubs: readonly GuideHub[] = [
       },
       {
         label: 'Cuándo se cobra el aguinaldo',
-        description: 'Fechas y cuenta del medio aguinaldo.',
+        description:
+          'Hasta el 20 de diciembre de 2026 por decreto; la cuota de junio y quién paga.',
         to: '/cuando-se-cobra-el-aguinaldo-uruguay',
       },
       {

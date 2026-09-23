@@ -328,6 +328,95 @@
         "franquicias uruguay 2026"
       ],
       "hypothesis": "La pagina explicaba el regimen pero no donde consultar el saldo (su unico enlace daba 401) ni que fecha cuenta: una seccion con la pantalla oficial de LuciaKit, el reinicio del 1.º de enero y la regla de liberacion, mas tres FAQ con las frases exactas, deberia sumar clics en consultas donde hoy mandan Gripper y blogs."
+    },
+    {
+      "id": "aguinaldo-diciembre-2026-decreto-y-casos",
+      "shippedOn": "2026-09-23",
+      "routes": [
+        "/cuando-se-cobra-el-aguinaldo-uruguay"
+      ],
+      "queries": [
+        "aguinaldo diciembre 2026",
+        "cuando se cobra el aguinaldo 2026",
+        "hasta cuando se paga el aguinaldo",
+        "aguinaldo 2026 uruguay",
+        "aguinaldo seguro de paro",
+        "aguinaldo en negro"
+      ],
+      "hypothesis": "Liderar con la fecha operativa (hasta el 20/12/2026, Decreto 113/026) en título-descripción y una sección fechada, más los casos que la cola de demanda pregunta (en negro, seguro de paro, BPS, construcción corregida), debería mover la porción de clics de las consultas de diciembre, hoy resueltas por prensa que sólo publica la fecha."
+    },
+    {
+      "id": "guia-aguinaldo-casos-especiales",
+      "shippedOn": "2026-09-23",
+      "routes": [
+        "/guias/aguinaldo-casos-especiales-uruguay"
+      ],
+      "queries": [
+        "puedo recibir aguinaldo si llevo 3 meses trabajando",
+        "me corresponde aguinaldo si estoy en negro",
+        "quien paga el aguinaldo cuando estas incapacitado",
+        "que pasa si no pagan aguinaldo a tiempo",
+        "cuantos dias aguinaldo corresponden por año"
+      ],
+      "hypothesis": "Una guía que contesta los ocho casos del autocompletado con el artículo de la norma (antigüedad mínima, BPS/BSE, en negro, atraso, seguro de paro, jubilados, IRPF) debería captar consultas de cola larga que la página de fechas no cubría."
+    },
+    {
+      "id": "monotributo-que-pasa-si",
+      "shippedOn": "2026-09-23",
+      "routes": [
+        "/facturar-en-monotributo-uruguay"
+      ],
+      "queries": [
+        "que pasa si tengo monotributo y no facturo",
+        "que pasa si me paso del tope del monotributo",
+        "que pasa si debo monotributo",
+        "monotributo sin fonasa",
+        "quien paga el monotributo el empleado o el empleador",
+        "facturacion anual monotributo social mides"
+      ],
+      "hypothesis": "La pagina solo respondia talonario vs CFE y cuanto se paga; las consultas que llegan preguntan que pasa cuando el monotributo ya esta abierto (no facturo, tope, deuda, FONASA opcional, mutualista, quien paga, MIDES). Se agrega la seccion 'Que pasa si' con 7 casos fechados y las frases exactas en el FAQ, se corrigen dos afirmaciones erroneas sobre las tablas de BPS y la descripcion pasa a nombrar esas situaciones: deberia sumar impresiones y clics en esas consultas, donde hoy responden hilos de Reddit desactualizados."
+    },
+    {
+      "id": "devolucion-fonasa-anio-y-cpe-julio-2026",
+      "shippedOn": "2026-09-23",
+      "routes": [
+        "/devolucion-fonasa-uruguay"
+      ],
+      "queries": [
+        "devolucion fonasa 2026",
+        "cuando se cobra la devolucion fonasa",
+        "cpe fonasa 2026",
+        "aumento cuota mutual julio 2026"
+      ],
+      "hypothesis": "La descripcion arranca con 'Devolucion FONASA 2026' (152 caracteres, antes el anio solo aparecia dentro de una fecha) y la pagina deja de publicar un CPE viejo con un 'no encontramos el decreto': trae los dos decretos de 2026 (317/025 y 163/026) con cuotas, tope de tickets y CPE en una tabla. Deberia subir el CTR en la consulta con anio y sumar impresiones en 'cpe 2026' y 'cuota mutual julio 2026', donde hoy mandan MSP e IMPO en PDF."
+    },
+    {
+      "id": "fonasa-sin-trabajo-cobertura-2026",
+      "shippedOn": "2026-09-23",
+      "routes": [
+        "/guias/me-quede-sin-trabajo-mutualista-fonasa-uruguay"
+      ],
+      "queries": [
+        "seguro de paro fonasa",
+        "me quede sin trabajo fonasa",
+        "cuanto dura la cobertura fonasa despues del despido",
+        "bonos fonasa cesante"
+      ],
+      "hypothesis": "Una guia con el anio en el titulo que contesta primero la regla del BPS (ultimo dia del mes), trae las duraciones y topes 2026 del seguro de paro, publica la ausencia de afiliacion voluntaria y aclara en una linea que 'bonos de FONASA' es Chile deberia ganar la consulta uruguaya 'seguro de paro fonasa' a blogs que publican 30 dias de gracia y 3 meses COVID como vigentes, y dejar de perseguir la consulta chilena. Reescritura sobre el slug ya indexado desde el 2026-09-13, sin URL nueva."
+    },
+    {
+      "id": "irpf-tres-casos-con-numero",
+      "shippedOn": "2026-09-23",
+      "routes": [
+        "/declaracion-de-irpf-uruguay"
+      ],
+      "queries": [
+        "cuanto irpf me tienen que quitar",
+        "que pasa si el irpf sale negativo",
+        "que pasa si debo irpf",
+        "puedo cobrar irpf de años anteriores"
+      ],
+      "hypothesis": "La pagina respondia el tramite (obligados, formularios, mora) pero ninguna de las cuatro consultas con numero: no tenia la BPC 2026 ni la escala mensual, hablaba de devolucion sin definir el signo, y de la deuda tenia la multa pero no las 5 cuotas, los codigos, el recargo real ni el convenio. Se agregan los tres casos con cifra, fuente y fecha (escala oficial de DGI, calendario de devoluciones fila por fila, cuotas de la Res. 2284/025, tasas mensuales de mora y convenio) y el titulo pasa de 'quien debe' a 'cuanto te retienen y quien debe'. Deberia ganar la consulta de retencion, que hoy se la llevan calculadoras de sueldo y foros, y las de saldo negativo/deuda, donde el SERP es Reddit."
     }
   ]
 }

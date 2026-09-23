@@ -93,8 +93,11 @@
           <span class="term is-result">tu tope anual</span>
         </div>
         <p class="text-body-2 text-medium-emphasis mb-3 mt-4">
-          El CPE mensual vale $ {{ money(CPE_MONTHLY) }} desde el 1.º de enero de 2026 (artículo 18
-          del Decreto 317/025). El 1,25 lo pone la ley, no el BPS.
+          El CPE mensual vale $ {{ money(CPE_CURRENT.monthly) }} desde el {{ cpeCurrentFrom }} ({{
+            CPE_CURRENT.norm
+          }}); entre enero y junio de 2026 fue de $ {{ money(CPE_JAN_2026.monthly) }} ({{
+            CPE_JAN_2026.norm
+          }}). El 1,25 lo pone la ley, no el BPS.
         </p>
         <!-- El valor NO queda fijo hasta enero: se mueve con cada ajuste de cuotas salud. -->
         <VAlert type="info" variant="tonal" density="compact" class="mb-0">
@@ -151,7 +154,8 @@
     <section id="calcular" class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Calculá tu tope y tu excedente</h2>
       <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
-        Con el CPE del ejercicio {{ CPE_EXERCISE }}, o sea la devolución que se cobra en
+        Con el CPE vigente del ejercicio {{ CPE_EXERCISE }} ($
+        {{ money(CPE_CURRENT.monthly) }} desde julio), o sea la devolución que se cobra en
         {{ CPE_EXERCISE + 1 }}. El aporte personal al FONASA figura en tu recibo de sueldo como
         descuento por FONASA: sumá los doce meses del año.
       </p>
@@ -313,8 +317,8 @@
       <VCard variant="flat" class="path-card pa-5 pa-md-6">
         <p class="mb-3">
           El Decreto 317/025 hizo dos cosas en el mismo texto. El artículo 18 fijó el CPE en $
-          {{ money(CPE_MONTHLY) }} desde el 1.º de enero de 2026. El artículo 17 sustituyó la
-          metodología con la que se calcula: pasó a usar curvas de supervivencia en lugar de una
+          {{ money(CPE_JAN_2026.monthly) }} desde el 1.º de enero de 2026. El artículo 17 sustituyó
+          la metodología con la que se calcula: pasó a usar curvas de supervivencia en lugar de una
           única edad de expectativa de vida, y para los mayores de 18 años promedia la cápita de los
           18 años previos en vez de suponer cobertura desde el nacimiento —el Seguro Nacional de
           Salud arrancó en enero de 2008, así que nadie mayor de esa edad estuvo cubierto desde que
@@ -324,6 +328,87 @@
           El MEF aclaró el punto que más confusión generó: el cambio de metodología
           <strong>no toca la devolución que se paga en 2026</strong>, porque esa se calcula sobre el
           ejercicio anterior. Recién impacta en la de {{ METHODOLOGY_FIRST_IMPACT_YEAR }}.
+        </p>
+      </VCard>
+    </section>
+
+    <!-- Los dos ajustes de precios de salud de 2026: el CPE sale del mismo decreto que sube cuotas y tickets -->
+    <section class="mb-12" aria-labelledby="ajustes-2026">
+      <h2 id="ajustes-2026" class="text-h5 font-weight-bold mb-2">
+        Cuotas, tickets y CPE: los dos ajustes de 2026
+      </h2>
+      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+        El CPE que arma tu tope sale del mismo decreto que autoriza el aumento de la cuota mutual y
+        de los tickets. En 2026 hubo dos: enero (Decreto 317/025) y julio (Decreto 163/026,
+        publicado en el Diario Oficial el 23 de julio). Lo que el Poder Ejecutivo fija es el aumento
+        máximo, no el precio: cada mutualista publica su propia cuota dentro de ese tope.
+      </p>
+      <VCard variant="flat" class="results-card pa-0 mb-4">
+        <VTable class="cu-mobile-cards" density="comfortable">
+          <thead>
+            <tr>
+              <th>Qué fija el decreto</th>
+              <th v-for="a in HEALTH_PRICE_ADJUSTMENTS" :key="a.norm">
+                {{ a.label }} · {{ a.norm }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Cuota básica de afiliación individual a una mutualista (aumento máximo)</td>
+              <td
+                v-for="a in HEALTH_PRICE_ADJUSTMENTS"
+                :key="a.norm"
+                :data-label="a.label"
+                class="font-weight-medium"
+              >
+                hasta {{ pct(a.individualQuotaMaxPct) }} %
+              </td>
+            </tr>
+            <tr>
+              <td>Tope de cada ticket u orden (tasa moderadora)</td>
+              <td v-for="a in HEALTH_PRICE_ADJUSTMENTS" :key="a.norm" :data-label="a.label">
+                $ {{ money(a.moderatorFeeCapPesos) }}
+              </td>
+            </tr>
+            <tr>
+              <td>Tasas que ya están entre $ 660 y $ 880 (aumento máximo)</td>
+              <td v-for="a in HEALTH_PRICE_ADJUSTMENTS" :key="a.norm" :data-label="a.label">
+                hasta {{ pct(a.bandMaxPct) }} %
+              </td>
+            </tr>
+            <tr>
+              <td>Cuotas de afiliación a ASSE (aumento máximo)</td>
+              <td v-for="a in HEALTH_PRICE_ADJUSTMENTS" :key="a.norm" :data-label="a.label">
+                hasta {{ pct(a.asseMaxPct) }} %
+              </td>
+            </tr>
+            <tr>
+              <td>Costo promedio equivalente (CPE) mensual</td>
+              <td
+                v-for="a in HEALTH_PRICE_ADJUSTMENTS"
+                :key="a.norm"
+                :data-label="a.label"
+                class="font-weight-medium"
+              >
+                $ {{ money(a.cpeMonthly) }}
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+      <VCard variant="flat" class="path-card pa-5 pa-md-6">
+        <p class="mb-3">
+          Cómo verificar en el recibo que tu mutualista aplicó bien el aumento de julio: el artículo
+          17 del Decreto 163/026 la obliga a imprimir el texto «{{
+            RECEIPT_RULE_JULY_2026.julyText
+          }}» y, en los meses siguientes, «{{ RECEIPT_RULE_JULY_2026.followingMonthsText }}». El
+          artículo 16 exige además que la cuota básica figure separada del aporte al Fondo Nacional
+          de Recursos, de los complementos y de los impuestos.
+        </p>
+        <p class="mb-0 text-medium-emphasis text-body-2">
+          Fuentes: los dos decretos en IMPO y el cuadro «Ajustes de precios de salud – julio 2026»
+          del MSP (21 de julio de 2026), leídos el {{ verifiedAt }}.
         </p>
       </VCard>
     </section>
@@ -342,7 +427,10 @@
       <VCard variant="flat" class="anticipo-card pa-5 pa-md-6">
         <p class="mb-3">
           El mínimo es el {{ FONASA_ANTICIPO.minPctOfCpe }} % del costo promedio equivalente:
-          <strong>{{ money(FONASA_ANTICIPO.minMonthly) }}</strong> desde el {{ anticipoSince }}.
+          <strong>{{ money(FONASA_ANTICIPO.minMonthly) }}</strong> desde el {{ anticipoSince }},
+          calculado por el BPS sobre el CPE de $ {{ money(FONASA_ANTICIPO.cpeBasisMonthly) }} que
+          regía entonces. El CPE subió a $ {{ money(CPE_CURRENT.monthly) }} en julio: el monto que
+          vale es el de la factura que emite el BPS.
         </p>
         <p class="mb-3">Por ejemplo, {{ FONASA_ANTICIPO.dueExample }}.</p>
         <p class="mb-0">
@@ -372,6 +460,16 @@
         <VBtn :to="localePath('/desvincularme-de-la-afap-uruguay')" variant="tonal" size="small">
           Desvincularme de una AFAP
         </VBtn>
+        <VBtn :to="localePath('/seguro-de-paro-uruguay')" variant="tonal" size="small">
+          Seguro de paro: cuánto y por cuánto tiempo
+        </VBtn>
+        <VBtn
+          :to="localePath('/guias/me-quede-sin-trabajo-mutualista-fonasa-uruguay')"
+          variant="tonal"
+          size="small"
+        >
+          Sin trabajo: hasta cuándo te cubre FONASA
+        </VBtn>
       </div>
     </section>
 
@@ -396,8 +494,10 @@ import { computed, ref } from 'vue'
 
 import type { FaqItem } from '~/utils/faqAnswers'
 import {
+  CPE_CURRENT,
   CPE_EXERCISE,
   CPE_ADJUSTMENT_RULE,
+  CPE_JAN_2026,
   CPE_MONTHLY,
   FONASA_ANTICIPO,
   FONASA_COBRO,
@@ -407,9 +507,11 @@ import {
   FONASA_SOURCES,
   FONASA_STEPS,
   FONASA_VERIFIED_AT,
+  HEALTH_PRICE_ADJUSTMENTS,
   IRPF_RETENTION_PCT,
   LATEST_EXERCISE,
   METHODOLOGY_FIRST_IMPACT_YEAR,
+  RECEIPT_RULE_JULY_2026,
   annualCap,
   estimateRefund,
 } from '~/utils/fonasaRefund'
@@ -445,6 +547,12 @@ const refund = computed(() =>
 
 const moneyFmt = new Intl.NumberFormat('es-UY', { maximumFractionDigits: 0 })
 const money = (n: number) => moneyFmt.format(Math.round(n))
+/** Porcentajes de los decretos, con dos decimales como los escribe la norma («2,13 %», «1,00 %»). */
+const pctFmt = new Intl.NumberFormat('es-UY', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+const pct = (n: number) => pctFmt.format(n)
 
 const longDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString('es-UY', {
@@ -468,6 +576,15 @@ const chooseByPassed = todayIso > FONASA_COBRO.chooseBy
 
 const verifiedAt = longDate(FONASA_VERIFIED_AT)
 const paidFrom = longDate(latest.paidFrom)
+/** «21 de setiembre»: el año ya va adelante en la descripción, repetirlo la sacaba de los 155. */
+const paidFromShort = new Date(`${latest.paidFrom}T00:00:00Z`).toLocaleDateString('es-UY', {
+  day: 'numeric',
+  month: 'long',
+  timeZone: 'UTC',
+})
+/** El año en que se COBRA (el ejercicio es el anterior): es el año que la gente escribe al buscar. */
+const payYear = latest.paidFrom.slice(0, 4)
+const cpeCurrentFrom = longDate(CPE_CURRENT.from)
 const chooseByDate = longDate(FONASA_COBRO.chooseBy)
 const anticipoSince = longDate(FONASA_ANTICIPO.since)
 const people = computed(() => latest.people.toLocaleString('es-UY'))
@@ -480,12 +597,13 @@ const faqItems = computed<FaqItem[]>(() =>
 
 const canonicalUrl = 'https://cambio-uruguay.com/devolucion-fonasa-uruguay'
 const title = 'Devolución FONASA 2026: cuándo se cobra'
-// ≤ 160 caracteres (la anterior tenía 243 y Google la cortaba a la mitad), y en el tiempo verbal
-// que corresponde: el primer día de pago es el 21 de setiembre de 2026 y antes de esa fecha «el BPS
-// devolvió» era falso.
+// ≤ 155 caracteres (la anterior tenía 243 y Google la cortaba a la mitad), con el AÑO adelante
+// —«devolución fonasa 2026» es como se busca— y en el tiempo verbal que corresponde: el primer día
+// de pago es el 21 de setiembre de 2026 y antes de esa fecha «el BPS pagó» era falso. Medidas el
+// 2026-09-22: 152 (pasado) y 151 (futuro) caracteres.
 const description = paidFromPassed
-  ? `El BPS devolvió ${totalMillones} millones a ${latest.people.toLocaleString('es-UY')} personas desde el ${paidFrom}. Consultá si te toca en bps.gub.uy, ${FONASA_CONSULTA.phone} o WhatsApp.`
-  : `El BPS informó que devolverá ${totalMillones} millones a ${latest.people.toLocaleString('es-UY')} personas desde el ${paidFrom}. Consultá si te toca en bps.gub.uy, ${FONASA_CONSULTA.phone} o WhatsApp.`
+  ? `Devolución FONASA ${payYear}: el BPS pagó ${totalMillones} millones a ${latest.people.toLocaleString('es-UY')} personas desde el ${paidFromShort}. Consultá si te toca en bps.gub.uy, ${FONASA_CONSULTA.phone} o WhatsApp.`
+  : `Devolución FONASA ${payYear}: el BPS paga ${totalMillones} millones a ${latest.people.toLocaleString('es-UY')} personas desde el ${paidFromShort}. Consultá si te toca en bps.gub.uy, ${FONASA_CONSULTA.phone} o WhatsApp.`
 
 defineOgImageComponent('Cambio', {
   title: 'Devolución de FONASA',
@@ -511,7 +629,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'devolucion fonasa, devolucion fonasa bps, cuando cobro la devolucion fonasa, estoy comprendido fonasa, excedente de aportes fonasa, tope anual fonasa, costo promedio equivalente cpe, cpe 2026, retencion irpf devolucion fonasa, devolucion fonasa jubilados, ley 18731 articulo 3, decreto 317/025, devolucion fonasa 2026, como saber si tengo devolucion fonasa, consulta devolucion fonasa, a quien le corresponde devolucion fonasa, anticipo fonasa, anticipo fonasa servicios personales',
+        'devolucion fonasa, devolucion fonasa bps, cuando cobro la devolucion fonasa, estoy comprendido fonasa, excedente de aportes fonasa, tope anual fonasa, costo promedio equivalente cpe, cpe 2026, retencion irpf devolucion fonasa, devolucion fonasa jubilados, ley 18731 articulo 3, decreto 317/025, devolucion fonasa 2026, como saber si tengo devolucion fonasa, consulta devolucion fonasa, a quien le corresponde devolucion fonasa, anticipo fonasa, anticipo fonasa servicios personales, decreto 163/026, cpe julio 2026, aumento cuota mutual julio 2026, tope ticket mutualista 880',
     },
   ],
   script: [

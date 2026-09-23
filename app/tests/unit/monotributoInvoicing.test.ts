@@ -3,14 +3,20 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
+  CASOS,
   COST_LEVERS,
   CORE_ANSWER,
   DISCLAIMER,
   FAQ,
   FIGURES,
+  IVA_MINIMO_2026,
   LEYENDAS,
   MONO_APORTES_2026,
+  MONO_CASOS_VERIFIED_AT,
   MONO_INVOICING_VERIFIED_AT,
+  MONO_MORA_2026,
+  MONO_TOPES_UI,
+  MONO_VENCIMIENTOS_2026,
   MYTHS,
   QUOTE_CHANNELS,
   ROUTES,
@@ -150,8 +156,8 @@ describe('contenido', () => {
 })
 
 describe('MONO_APORTES_2026', () => {
-  it('is verified against BPS on 2026-09-15, separate from the invoicing figures', () => {
-    expect(MONO_APORTES_2026.verifiedAt).toBe('2026-09-15')
+  it('is verified against BPS on 2026-09-22, separate from the invoicing figures', () => {
+    expect(MONO_APORTES_2026.verifiedAt).toBe('2026-09-22')
   })
 
   it('matches the ley 19.942 gradualidad (25/50/100%, tramos de 12 meses)', () => {
@@ -163,10 +169,57 @@ describe('MONO_APORTES_2026', () => {
     expect(MONO_APORTES_2026.ley19942.pleno.conFonasaConConyuge).toBe(7888)
   })
 
+  // Corrección del 2026-09-22: la página decía que BPS no publicaba columnas «sin hijos» para la
+  // ley 19.942. El PDF de detalle sí las trae; son estas.
+  it('publishes the «sin hijos» columns from the BPS PDF for ley 19.942', () => {
+    const { primerAnio, segundoAnio, pleno } = MONO_APORTES_2026.ley19942
+    expect([primerAnio, segundoAnio, pleno].map(t => t.conFonasaSinConyugeSinHijos)).toEqual([
+      4761, 5284, 6327,
+    ])
+    expect([primerAnio, segundoAnio, pleno].map(t => t.conFonasaConConyugeSinHijos)).toEqual([
+      5653, 6176, 7219,
+    ])
+    // Con hijos siempre cuesta más que sin hijos, y con cónyuge a cargo más que sin.
+    for (const t of [primerAnio, segundoAnio, pleno]) {
+      expect(t.conFonasaSinConyuge).toBeGreaterThan(t.conFonasaSinConyugeSinHijos)
+      expect(t.conFonasaConConyuge).toBeGreaterThan(t.conFonasaSinConyuge)
+      expect(t.conFonasaConConyugeSinHijos).toBeGreaterThan(t.conFonasaSinConyugeSinHijos)
+    }
+    expect(MONO_APORTES_2026.sources.some(s => s.url.endsWith('.pdf'))).toBe(true)
+  })
+
+  it('composes the cuota the way the BPS PDF explains it (5 BFC, jubilatorio+FRL, 8 % de 1 BPC)', () => {
+    const c = MONO_APORTES_2026.composicion
+    expect(c.montoGravado).toBe(9240)
+    expect(c.jubilatorioFrlPleno).toBe(2088)
+    expect(c.seguroEnfermedadSinFonasa).toBe(549)
+    expect(c.bpc).toBe(6864)
+    expect(c.fonasaBaseBpc).toBe(6.5)
+    // 8 % de una BPC redondeado = los $549 que paga quien no opta por FONASA.
+    expect(Math.round(c.bpc * 0.08)).toBe(c.seguroEnfermedadSinFonasa)
+    // 25 % del jubilatorio+FRL más el seguro de enfermedad = la cuota sin FONASA del primer año.
+    expect(c.jubilatorioFrlPleno * 0.25 + c.seguroEnfermedadSinFonasa).toBe(
+      MONO_APORTES_2026.ley19942.primerAnio.sinFonasa
+    )
+    expect(c.jubilatorioFrlPleno + c.seguroEnfermedadSinFonasa).toBe(
+      MONO_APORTES_2026.ley19942.pleno.sinFonasa
+    )
+  })
+
+  it('publishes the sociedad de hecho table (jubilatorio + FRL only, por socio)', () => {
+    const sh = MONO_APORTES_2026.sociedadDeHecho
+    expect(sh.unSocio).toEqual([522, 1045, 2088])
+    expect(sh.dosSocios).toEqual([1045, 2088, 4176])
+    expect(sh.tresSocios).toEqual([1566, 3132, 6265])
+    // Un socio pleno = el jubilatorio+FRL pleno de la composición.
+    expect(sh.unSocio[2]).toBe(MONO_APORTES_2026.composicion.jubilatorioFrlPleno)
+  })
+
   it('matches the Mides gradualidad (25/50/75/100%, cuatro tramos de 12 meses)', () => {
     expect(MONO_APORTES_2026.mides.sinFonasa).toEqual([659, 1320, 1979, 2637])
     expect(MONO_APORTES_2026.mides.conFonasa[3]!.sinConyugeConHijos).toBe(6996)
     expect(MONO_APORTES_2026.mides.conFonasa[0]!.sinConyugeConHijos).toBe(5430)
+    expect(MONO_APORTES_2026.mides.conFonasa[0]!.sinConyugeSinHijos).toBe(4761)
   })
 
   it('publishes the 2026 caps (unipersonal, sociedad de hecho, activos)', () => {
@@ -188,6 +241,141 @@ describe('MONO_APORTES_2026', () => {
     expect(FIGURES.aporteMidesAnio1SinFonasa.value).toBe(MONO_APORTES_2026.mides.sinFonasa[0])
     expect(FIGURES.aporteMidesPlenoSinFonasa.value).toBe(MONO_APORTES_2026.mides.sinFonasa[3])
     expect(FIGURES.topeAnualUnipersonal.value).toBe(MONO_APORTES_2026.topes.unipersonal)
+  })
+})
+
+describe('CASOS (Qué pasa si…)', () => {
+  const PRIMARY = /^https:\/\/(www\.)?(gub\.uy|bps\.gub\.uy|impo\.com\.uy)\//
+
+  it('is dated 2026-09-22 and covers the seven situations the brief asked for', () => {
+    expect(MONO_CASOS_VERIFIED_AT).toBe('2026-09-22')
+    expect(CASOS.map(c => c.id)).toEqual([
+      'no-facturo',
+      'me-paso-del-tope',
+      'debo-cuotas',
+      'fonasa-opcional',
+      'cambiar-mutualista',
+      'quien-paga',
+      'monotributo-social-mides',
+    ])
+  })
+
+  it('answers first, details after, and dates every source to a primary domain', () => {
+    for (const c of CASOS) {
+      expect(c.question, c.id).toMatch(/\?$/)
+      expect(c.short.length, c.id).toBeGreaterThan(30)
+      expect(c.short.length, c.id).toBeLessThan(120)
+      expect(c.detail.length, c.id).toBeGreaterThanOrEqual(3)
+      for (const d of c.detail) expect(d.length).toBeGreaterThan(80)
+      expect(c.sources.length, c.id).toBeGreaterThanOrEqual(1)
+      for (const s of c.sources) {
+        expect(s.url, `${c.id}: ${s.url}`).toMatch(PRIMARY)
+        expect(s.seenOn).toBe(MONO_CASOS_VERIFIED_AT)
+        expect(s.label.length).toBeGreaterThan(10)
+      }
+    }
+  })
+
+  it('renders every table with rows that match its header count and no empty cells', () => {
+    const withTable = CASOS.filter(c => c.table)
+    expect(withTable.length).toBeGreaterThanOrEqual(5)
+    for (const c of withTable) {
+      const t = c.table!
+      expect(t.headers.length).toBeGreaterThanOrEqual(2)
+      for (const row of t.rows) {
+        expect(row.length, `${c.id}: ${row.join(' | ')}`).toBe(t.headers.length)
+        for (const cell of row) expect(cell.trim().length, c.id).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  // Las cifras que deciden: si alguien las «corrige», la página pasa a responder mal.
+  it('pins the 2026 figures the answers hinge on', () => {
+    const all = CASOS.map(c => [c.short, ...c.detail].join(' ')).join(' ')
+    // Topes en pesos Y en UI, sin una conversión propia.
+    expect(all).toContain('$1.175.537')
+    expect(all).toContain('$1.959.229')
+    expect(all).toContain('183.000 UI')
+    expect(all).toContain('305.000 UI')
+    expect(MONO_TOPES_UI).toEqual({
+      unipersonalUi: 183_000,
+      sociedadDeHechoUi: 305_000,
+      activosUi: 152_500,
+    })
+    // Suspensión de oficio a los 2 meses; mora 5/10/20 % y 0,80 % mensual.
+    expect(MONO_MORA_2026.mesesSinPagarParaSuspension).toBe(2)
+    expect([
+      MONO_MORA_2026.multaDentroDe5DiasHabiles,
+      MONO_MORA_2026.multaHasta90Dias,
+      MONO_MORA_2026.multaDespuesDe90Dias,
+    ]).toEqual([5, 10, 20])
+    expect(MONO_MORA_2026.recargoMensualPct).toBe(0.8)
+    expect(all).toContain('0,80 % mensual')
+    // FONASA opcional: $549 sin la opción, código 9.
+    expect(all).toContain('$549')
+    expect(all).toMatch(/opcional/)
+    // IVA mínimo 2026 como escalón siguiente.
+    expect(IVA_MINIMO_2026).toEqual({
+      cuota: 5910,
+      cuotaNuevaEmpresaAnio1: 1478,
+      cuotaNuevaEmpresaAnio2: 2955,
+      topeIngresos: 1_959_229,
+      topeIngresosUi: 305_000,
+    })
+    expect(all).toContain('$5.910')
+    // Regla del tercer año civil.
+    expect(all).toMatch(/tercer año civil/)
+    // Cambio de mutualista: 23 meses, y la fecha de la fuente a la vista.
+    expect(all).toContain('23 meses')
+    expect(all).toContain('14/9/2023')
+  })
+
+  it('never claims what the dossier forbids', () => {
+    const all = CASOS.map(c => [c.short, ...c.detail, c.table?.note ?? ''].join(' ')).join(' ')
+    // Ni categorías argentinas, ni «se cierra sola», ni FONASA obligatorio, ni 72 cuotas vigentes.
+    expect(all).not.toMatch(/categor[íi]a [A-K]\b/)
+    // La frase del mito sólo aparece citada y negada, nunca afirmada.
+    expect(all).toMatch(/No es que «la empresa se cierra sola y no debés nada»/)
+    expect(all.split('se cierra sola').length - 1).toBe(1)
+    expect(all).not.toMatch(/FONASA (es )?obligatori/i)
+    const debo = CASOS.find(c => c.id === 'debo-cuotas')!
+    expect(debo.detail.join(' ')).toMatch(
+      /72 cuotas al 2 % anual y sin multas de la ley 19\.942 no están abiertas/
+    )
+    expect(all).not.toMatch(/mayores de 18/)
+    // La inactividad del unipersonal común se publica como lo que BPS lista, no como regla.
+    const noFacturo = CASOS.find(c => c.id === 'no-facturo')!
+    expect(noFacturo.detail.join(' ')).toMatch(/BPS no lista un trámite de inactividad/)
+    expect(noFacturo.detail.join(' ')).toMatch(/Confirmalo con BPS/)
+    // El tope en pesos no se deriva de la UI.
+    expect(all).not.toMatch(/6,6468|1\.216\.364/)
+  })
+
+  it('ships the 2026 payment calendar, one row per month, in house spelling', () => {
+    expect(MONO_VENCIMIENTOS_2026).toHaveLength(12)
+    expect(MONO_VENCIMIENTOS_2026.map(v => v.dia)).toEqual([
+      23, 24, 20, 24, 25, 22, 21, 21, 21, 22, 23, 21,
+    ])
+    expect(MONO_VENCIMIENTOS_2026.map(v => v.mes)).toContain('setiembre')
+    expect(MONO_VENCIMIENTOS_2026.map(v => v.mes)).not.toContain('septiembre')
+    // Y el no-facturo lo publica como tabla, con la fuente del Mides además de la del común.
+    const noFacturo = CASOS.find(c => c.id === 'no-facturo')!
+    expect(noFacturo.table?.rows).toHaveLength(12)
+    expect(noFacturo.sources.some(s => s.url.includes('vencimientos-de-monotributo-social'))).toBe(
+      true
+    )
+  })
+
+  it('adds the exact search phrases to the FAQ (and so to the FAQPage schema)', () => {
+    const questions = FAQ.map(f => f.question)
+    for (const c of CASOS) {
+      if (c.id === 'monotributo-social-mides') continue
+      expect(questions, c.question).toContain(c.question)
+    }
+    expect(questions).toContain(
+      '¿Cuál es la facturación anual máxima del Monotributo Social MIDES?'
+    )
+    expect(FAQ.length).toBeGreaterThanOrEqual(18)
   })
 })
 
@@ -274,6 +462,31 @@ describe('la página existe y usa la data', () => {
 
   it('never writes "septiembre" (house style is "setiembre")', () => {
     expect(page.toLowerCase()).not.toContain('septiembre')
+  })
+
+  it('publishes the «Qué pasa si…» section with dated sources and the new columns', () => {
+    expect(page).toContain('id="que-pasa-si"')
+    expect(page).toContain('CASOS')
+    expect(page).toContain('MONO_CASOS_VERIFIED_AT')
+    expect(page).toContain('conFonasaSinConyugeSinHijos')
+    expect(page).toContain('SOCIEDAD_ROWS')
+    // La fecha de verificación ya no está a mano: sale de la constante.
+    expect(page).not.toContain('15 de setiembre de 2026')
+    expect(page).toContain('aportesVerifiedAt')
+  })
+
+  // Las dos frases que la verificación del 2026-09-22 encontró mal en producción.
+  it('no longer carries the two stale claims about the BPS tables', () => {
+    expect(page).not.toMatch(/no publica para este régimen una columna separada sin hijos/)
+    expect(page).not.toMatch(/«con cónyuge» es el hogar\s+con cónyuge o concubino con FONASA/)
+    expect(page).toMatch(/no tiene cobertura FONASA por su propia\s+actividad o pasividad/)
+  })
+
+  it('keeps the meta description inside the SERP budget with the new promise up front', () => {
+    const m = page.match(/const description =\s+'([^']+)'/)
+    expect(m).not.toBeNull()
+    expect(m![1]!.length).toBeLessThanOrEqual(155)
+    expect(m![1]).toMatch(/qué pasa si/)
   })
 
   it('emits exactly one FAQPage graph node and one <h1>', () => {
