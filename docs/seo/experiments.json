@@ -417,6 +417,15 @@
         "puedo cobrar irpf de años anteriores"
       ],
       "hypothesis": "La pagina respondia el tramite (obligados, formularios, mora) pero ninguna de las cuatro consultas con numero: no tenia la BPC 2026 ni la escala mensual, hablaba de devolucion sin definir el signo, y de la deuda tenia la multa pero no las 5 cuotas, los codigos, el recargo real ni el convenio. Se agregan los tres casos con cifra, fuente y fecha (escala oficial de DGI, calendario de devoluciones fila por fila, cuotas de la Res. 2284/025, tasas mensuales de mora y convenio) y el titulo pasa de 'quien debe' a 'cuanto te retienen y quien debe'. Deberia ganar la consulta de retencion, que hoy se la llevan calculadoras de sueldo y foros, y las de saldo negativo/deuda, donde el SERP es Reddit."
+    },
+    {
+      "id": "movilidad-directorio-visual",
+      "shippedOn": "2026-09-22",
+      "routes": [
+        "/monopatines-electricos-uruguay",
+        "/bicicletas-electricas-uruguay"
+      ],
+      "hypothesis": "Las dos paginas publicaban bandas correctas y una lista de texto sin foto ni filtros. Con foto por aviso y el directorio filtrable (tipo, condicion, marca, vendedor, precio) que ya usa /equipar-casa-uruguay/productos, la pagina pasa de leerse a usarse: mas paginas por sesion y mas clics salientes al aviso, que es lo que la consulta 'monopatin electrico uruguay' busca."
     }
   ]
 }

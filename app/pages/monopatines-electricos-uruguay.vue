@@ -28,7 +28,14 @@
 
       <div v-else class="variant-grid">
         <article v-for="item in variants" :key="item.key" class="variant-card">
-          <h3>{{ item.variantLabel }}</h3>
+          <div class="variant-head">
+            <MovilidadVariantThumb
+              :src="item.image ?? null"
+              :alt="`Monopatín eléctrico ${item.variantLabel.toLowerCase()}`"
+              icon="mdi-scooter-electric"
+            />
+            <h3>{{ item.variantLabel }}</h3>
+          </div>
 
           <template v-if="item.newBand">
             <p class="variant-median">
@@ -74,8 +81,17 @@
         <tbody>
           <tr v-for="row in productRows" :key="row.key">
             <td data-label="">
-              <strong>{{ row.product.name }}</strong>
-              <span class="cu-cell-note">{{ row.variantLabel }}</span>
+              <div class="product-cell">
+                <MovilidadVariantThumb
+                  :src="row.product.image ?? null"
+                  :alt="row.product.name"
+                  icon="mdi-scooter-electric"
+                />
+                <span class="product-cell__text">
+                  <strong>{{ row.product.name }}</strong>
+                  <span class="cu-cell-note">{{ row.variantLabel }}</span>
+                </span>
+              </div>
             </td>
             <td data-label="Vendedores" class="text-right">{{ row.product.sellers }}</td>
             <td data-label="Mejor precio" class="text-right price">
@@ -115,7 +131,7 @@
     </section>
 
     <!-- ── Los más baratos ───────────────────────────────────────────────── -->
-    <AssistantCta topic="monopatines" class="mb-8" />
+    <AssistantCta topic="monopatines" class="movilidad-cta" />
     <section
       v-if="cheapestNew.length || cheapestUsed.length"
       class="movilidad-section"
@@ -134,64 +150,56 @@
 
       <div class="cheap-grid">
         <div v-if="cheapestNew.length">
-          <h3>Nuevos</h3>
-          <ol class="offer-list">
-            <li v-for="row in cheapestNew" :key="row.key">
-              <a :href="row.offer.url" target="_blank" rel="nofollow noopener" class="cat-link">{{
-                row.offer.title
-              }}</a>
-              <span class="offer-meta"
-                ><NuxtLink
-                  v-if="storeKeyFor(row.offer.seller, row.offer.source)"
-                  :to="
-                    localePath(
-                      `/tiendas-online-uruguay/${storeKeyFor(row.offer.seller, row.offer.source)}`
-                    )
-                  "
-                  class="cat-link"
-                  >{{ sellerLabel(row.offer) }}</NuxtLink
-                ><template v-else>{{ sellerLabel(row.offer) }}</template> · {{ row.variantLabel }} ·
-                {{ movilidadShortDate(row.offer.observedAt) }}</span
-              >
-              <span class="offer-price"
-                >{{ movilidadMoney(row.offer.priceUyu)
-                }}<span v-if="row.offer.currency === 'USD'" class="offer-usd">{{
-                  movilidadUsd(row.offer.price)
-                }}</span></span
-              >
-            </li>
-          </ol>
+          <h3 class="cheap-title">Nuevos</h3>
+          <div class="offer-grid">
+            <MovilidadOfferCard
+              v-for="row in cheapestNew"
+              :key="row.key"
+              :offer="row.offer"
+              :variant-label="row.variantLabel"
+              categoria="monopatin-electrico"
+            />
+          </div>
         </div>
         <div v-if="cheapestUsed.length">
-          <h3>Usados</h3>
-          <ol class="offer-list">
-            <li v-for="row in cheapestUsed" :key="row.key">
-              <a :href="row.offer.url" target="_blank" rel="nofollow noopener" class="cat-link">{{
-                row.offer.title
-              }}</a>
-              <span class="offer-meta"
-                ><NuxtLink
-                  v-if="storeKeyFor(row.offer.seller, row.offer.source)"
-                  :to="
-                    localePath(
-                      `/tiendas-online-uruguay/${storeKeyFor(row.offer.seller, row.offer.source)}`
-                    )
-                  "
-                  class="cat-link"
-                  >{{ sellerLabel(row.offer) }}</NuxtLink
-                ><template v-else>{{ sellerLabel(row.offer) }}</template> · {{ row.variantLabel }} ·
-                {{ movilidadShortDate(row.offer.observedAt) }}</span
-              >
-              <span class="offer-price"
-                >{{ movilidadMoney(row.offer.priceUyu)
-                }}<span v-if="row.offer.currency === 'USD'" class="offer-usd">{{
-                  movilidadUsd(row.offer.price)
-                }}</span></span
-              >
-            </li>
-          </ol>
+          <h3 class="cheap-title">Usados</h3>
+          <div class="offer-grid">
+            <MovilidadOfferCard
+              v-for="row in cheapestUsed"
+              :key="row.key"
+              :offer="row.offer"
+              :variant-label="row.variantLabel"
+              categoria="monopatin-electrico"
+            />
+          </div>
         </div>
       </div>
+    </section>
+
+    <!-- ── Directorio con filtros ────────────────────────────────────────── -->
+    <section v-if="hasDirectorio" class="movilidad-section" aria-labelledby="directorio-title">
+      <h2 id="directorio-title">Todos los monopatines eléctricos en venta</h2>
+      <p class="section-intro">
+        Todos los avisos vigentes, con foto y filtros por tipo, condición, marca, vendedor y precio.
+        Es la misma lectura que arma las medianas de arriba: un aviso que la banda descartó por
+        precio dudoso tampoco aparece acá.
+      </p>
+      <EquiparDirectorio
+        :query="dirQuery"
+        :data="dirData"
+        :error="dirError"
+        :facets="dirFacets"
+        :chips="dirChips"
+        fixed-categoria="monopatin-electrico"
+        hide-list
+        hide-category
+        vertical="movilidad"
+        anchor-id="movilidad-resultados"
+        class="movilidad-directorio"
+        @update="dirUpdate"
+        @remove="dirRemove"
+        @clear="dirClear"
+      />
     </section>
 
     <!-- ── Normativa ─────────────────────────────────────────────────────── -->
@@ -294,7 +302,6 @@ import {
   movilidadSellerLabel,
   movilidadShortDate,
   movilidadUsadoAnswer,
-  movilidadUsd,
   type MovilidadCategoryResponse,
   type MovilidadItemDoc,
   type MovilidadOffer,
@@ -339,6 +346,33 @@ const { data } = await useFetch('/api/movilidad/monopatin-electrico', {
     })),
   }),
 })
+
+// El directorio con filtros de abajo: misma maquinaria que /equipar-casa-uruguay/productos sobre
+// `movilidadlistings` (una fila por aviso que la banda aceptó). La clave de `useAsyncData` es propia
+// por vertical: dos páginas con la misma se pisan la respuesta.
+const {
+  query: dirQuery,
+  data: dirData,
+  error: dirError,
+  facets: dirFacets,
+  chips: dirChips,
+  filtered: dirFiltered,
+  update: dirUpdate,
+  remove: dirRemove,
+  clear: dirClear,
+} = await useEquiparProductosDirectorio('monopatin-electrico', {
+  apiPath: '/api/movilidad/productos',
+  vertical: 'movilidad',
+  key: 'movilidad-productos-monopatin',
+})
+
+/**
+ * El directorio sólo se dibuja cuando hay avisos que mostrar, o cuando el lector puso un filtro
+ * (ahí tiene que poder sacarlo aunque el resultado sea cero). Sin esto, una base todavía sin
+ * escribir —el job publica esta colección desde el 22/9/2026— abriría una sección vacía diciendo
+ * "probá sacar la marca" cuando el lector no filtró nada.
+ */
+const hasDirectorio = computed(() => (dirData.value?.total ?? 0) > 0 || dirFiltered.value)
 
 const items = computed<MovilidadItemDoc[]>(() => data.value?.items ?? [])
 const asOf = computed(() => data.value?.generatedAt ?? null)
@@ -473,6 +507,9 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
   twitterTitle: 'Precio de monopatines eléctricos en Uruguay',
   twitterDescription: seoDescription,
+  // Cada combinación de filtros del directorio es una copia delgada de esta página: sólo la URL
+  // limpia se indexa (mismo criterio que /equipar-casa-uruguay/productos).
+  robots: () => (dirFiltered.value ? 'noindex, follow' : 'index, follow'),
 })
 
 // FAQPage lo emite FaqSection: no se repite acá.
@@ -663,43 +700,6 @@ function offerMove(offer: { priceHistory?: { changePct: number | null; points: u
   gap: 16px 32px;
   margin-top: 18px;
 }
-.offer-list {
-  margin: 10px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.offer-list li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2px 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(var(--v-border-color), 0.15);
-  font-size: 0.875rem;
-}
-.offer-list a {
-  grid-column: 1;
-  overflow-wrap: anywhere;
-}
-.offer-meta {
-  grid-column: 1;
-  font-size: 0.75rem;
-  opacity: 0.72;
-}
-.offer-usd {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 400;
-  opacity: 0.72;
-  text-align: right;
-}
-.offer-price {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-}
 
 /* Guía */
 .guide-list {
@@ -719,6 +719,44 @@ function offerMove(offer: { priceHistory?: { changePct: number | null; points: u
   margin: 16px 0 0;
   padding: 0;
   list-style: none;
+}
+
+/* El bloque del asistente es una sección más: sin esto quedaba pegado a la tabla de modelos. */
+.movilidad-cta {
+  margin-top: 40px;
+}
+.variant-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.product-cell__text {
+  display: block;
+  min-width: 0;
+}
+.cheap-title {
+  margin-bottom: 12px;
+}
+.offer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+@media (min-width: 600px) {
+  .offer-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+  }
+}
+.movilidad-directorio {
+  margin-top: 24px;
 }
 
 .offer-move {

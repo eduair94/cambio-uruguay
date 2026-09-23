@@ -14,6 +14,12 @@ const BICICLETA_FILE = join(PAGES, 'bicicletas-electricas-uruguay.vue')
 
 const read = (file: string): string => readFileSync(file, 'utf8')
 
+/** La tarjeta con foto que las dos páginas usan para cada oferta (2026-09-22): parte del contrato
+ * que antes vivía entero en la plantilla de cada página. */
+const OFFER_CARD = read(
+  join(__dirname, '..', '..', 'components', 'movilidad', 'MovilidadOfferCard.vue')
+)
+
 /** Lo que va entre el primer `<template>` y su cierre de nivel superior, sin comentarios. */
 function template(src: string): string {
   const start = src.indexOf('<template>')
@@ -79,8 +85,14 @@ describe.each(PAGES_UNDER_TEST)(
       expect(canonicalLine).not.toContain('localePath(')
     })
 
-    it('nunca se noindexa', () => {
-      expect(src).not.toMatch(/noindex/i)
+    it('la URL limpia se indexa; sólo una con filtros del directorio no', () => {
+      // El directorio de abajo lleva sus filtros en la query, y cada combinación es una copia
+      // delgada de esta misma página (mismo criterio que /equipar-casa-uruguay/productos). Lo que
+      // NO puede pasar nunca es que la página se noindexe entera o pida `none`.
+      expect(src).toMatch(
+        /robots: \(\) => \(dirFiltered\.value \? 'noindex, follow' : 'index, follow'\)/
+      )
+      expect(src).not.toMatch(/robots:\s*['"]noindex/i)
       expect(src).not.toMatch(/robots:\s*['"]none/i)
     })
 
@@ -138,13 +150,17 @@ describe.each(PAGES_UNDER_TEST)(
     // ver movilidadStoreLinks.test.ts para el contrato completo (mismo patrón que
     // sillas-escritorio-uruguay/[slug].vue y equipar-casa-uruguay/[categoria].vue).
     it('resuelve la ficha del vendedor con storeSlugForSeller + useStoreProfileKeys()', () => {
-      expect(src).toContain('storeSlugForSeller')
-      expect(src).toContain('useStoreProfileKeys()')
-      expect(src).toContain('/tiendas-online-uruguay/')
+      // Desde el 2026-09-22 la fila de una oferta la dibuja `MovilidadOfferCard`, así que la regla
+      // se cumple en la página, en la tarjeta compartida, o en las dos (monopatines la sigue
+      // necesitando en su tabla de modelos). Lo que no puede es no cumplirse en ninguna.
+      const both = src + OFFER_CARD
+      expect(both).toContain('storeSlugForSeller')
+      expect(both).toContain('useStoreProfileKeys()')
+      expect(both).toContain('/tiendas-online-uruguay/')
     })
 
     it('rotula al vendedor sin identificar de Mercado Libre vía movilidadSellerLabel', () => {
-      expect(src).toContain('movilidadSellerLabel')
+      expect(src + OFFER_CARD).toContain('movilidadSellerLabel')
     })
 
     it('no arma un veredicto de "es legal"/"está prohibido" en su propio texto', () => {

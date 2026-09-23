@@ -20,6 +20,7 @@ import { EquiparMetaModel } from "../../classes/models/EquiparMeta";
 import { EquiparListingModel } from "../../classes/models/EquiparListing";
 import { MovilidadItemModel } from "../../classes/models/MovilidadItem";
 import { MovilidadMetaModel } from "../../classes/models/MovilidadMeta";
+import { MovilidadListingModel } from "../../classes/models/MovilidadListing";
 import { CharruaTextModel } from "../../classes/models/CharruaText";
 import { CharruaSnapshotModel } from "../../classes/models/CharruaSnapshot";
 import { CarCatalogMetaModel } from "../../classes/models/CarCatalogMeta";
@@ -163,6 +164,15 @@ describe("app-Mongo schema parity", () => {
   it("MovilidadMeta declares exactly the app's top-level fields", () => {
     expect(Object.keys(MovilidadMetaModel.schema.obj).sort()).toEqual(appFields(appModel("MovilidadMeta")).sort());
     expect(MovilidadMetaModel.collection.name).toBe("movilidadmeta");
+  });
+
+  it("MovilidadListing declares exactly the app's top-level fields", () => {
+    // Una fila por aviso del directorio con filtros de monopatines/bicicletas. Un campo que el
+    // backend escriba y el app no declare es un filtro o una tarjeta que se queda sin ese dato.
+    expect(Object.keys(MovilidadListingModel.schema.obj).sort()).toEqual(
+      appFields(appModel("MovilidadListing")).sort()
+    );
+    expect(MovilidadListingModel.collection.name).toBe("movilidadlistings");
   });
 
   it("CharruaText declares exactly the app's top-level fields", () => {

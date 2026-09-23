@@ -71,8 +71,32 @@ const MONOPATIN_INCLUDE =
  * incluida"): a complete factory e-bike/e-scooter title essentially never says any of the three,
  * connector present or not, so there is nothing a bare match costs here.
  */
-const MONOPATIN_EXCLUDE =
-  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|conversion|convertir|accesorio|accesorios|moto|motos|motoneta|ciclomotor|triciclo|triciclos|cuatriciclo|cuatriciclos|yumbo|homologad\w*|empadronable|matricula|hoverboard|guante|guantes)\b/;
+/**
+ * Una PIEZA o un accesorio que abre el título, para cualquiera de las dos categorías.
+ *
+ * Medido el 22/9/2026 sobre los 622 avisos de la primera corrida publicada: 12 de ellos son
+ * repuestos que pasaban `include` porque el título nombra el vehículo al que van ("Pantalla Lcd
+ * Para Bicicleta Eléctrica", "Palanca De Freno Para E-bike", "Sprocket Trasero De Acero Para
+ * E-bike Y Scooter", "Llantas Y Cámaras Para E-bike"). No es un detalle cosmético del directorio:
+ * a $ 2.958 una pantalla entra a la banda por abajo y encabeza "las ofertas más baratas".
+ *
+ * La regla es la de `IS_A_PART` en autos, y por la misma razón: la pieza vale sólo si ABRE el
+ * título. Probado también "abre un segmento" (después de `-`, `|` o `,`) sobre los mismos 622: de
+ * los 10 avisos extra que marcaba, 9 son vehículos reales — "Monopatín Eléctrico Knex Urban |
+ * Motor 800w", "Segway Ninebot F25 Patinete Eléctrico, Motor Potente De 30..." — así que el modo
+ * segmento se descartó con la medición en la mano. El precio que paga la regla estricta es un
+ * aviso de 622: "Y&trefen Ebike - Juego De Palanca De Freno Macho De 2 Pines", que antepone la
+ * marca. Un falso negativo es una fila de más en el directorio; un falso positivo borra
+ * monopatines reales de la banda.
+ *
+ * El `^` funciona porque `matchesCategory` prueba `exclude` contra `norm(`${title} ${context}`)`,
+ * que empieza exactamente donde empieza el título.
+ */
+const PIEZA_ABRE_EL_TITULO =
+  /^(pantalla|panel|display|palanca|maneta|manija|pastilla|pastillas|faro|faros|sprocket|pinon|corona|biela|bielas|bolso|bolsa|mochila|canasto|canasta|llanta|llantas|camara|camaras|cubierta|cubiertas|neumatico|neumaticos|rueda|ruedas|guardabarro|guardabarros|cargador|cargadores|bateria|baterias|celda|celdas|controlador|acelerador|puno|punos|manubrio|asiento|sillin|portaequipaje|parrilla|soporte|funda|espejo|timbre|bocina|candado|bomba|inflador|motor|eje|rodamiento|tornillo|cable|cables|conector|velocimetro|odometro|casco|cascos|guantes|chaleco|alarma|gps|protector|cubre|adaptador|valvula|repuesto|repuestos|juego de)\b/;
+
+const MONOPATIN_EXCLUDE_WORDS =
+  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|conversion|convertir|kit|accesorio|accesorios|moto|motos|motoneta|ciclomotor|triciclo|triciclos|cuatriciclo|cuatriciclos|yumbo|homologad\w*|empadronable|matricula|hoverboard|guante|guantes)\b/;
 
 /** `"bicicleta electrica"`/`"bicicletas electricas"`, `"bici electrica"`, `"e-bike"`/`"ebike"`. Never
  * a bare "bicicleta": a normal pedal bike is not this category, and Loop's own catalogue tags a plain
@@ -97,8 +121,8 @@ const BICICLETA_INCLUDE = /\b(bicicletas? electric[oa]s?|bici electric[oa]|e-?bi
  * for the full reasoning. Replaced by the bare `conversion`/`convertir`; `convertidor` was already
  * bare and stays.
  */
-const BICICLETA_EXCLUDE =
-  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|conversion|convertidor|convertir|accesorio|accesorios|triciclo|triciclos|cuatriciclo|cuatriciclos|lubricante)\b/;
+const BICICLETA_EXCLUDE_WORDS =
+  /\b(bateria|baterias|cargador|cargadores|casco|cascos|cubierta|cubiertas|neumatico|neumaticos|camara( de aire)?|conversion|convertidor|convertir|kit|accesorio|accesorios|triciclo|triciclos|cuatriciclo|cuatriciclos|lubricante)\b/;
 
 /** Explicit power/speed language, or an unambiguous off-road/dual-motor claim. Kept as `match` (a
  * plain regex over the title), not `numeric`, because `EquiparUnit` has no watts/km-per-hour unit and
@@ -106,6 +130,26 @@ const BICICLETA_EXCLUDE =
  * there or it says nothing, and "nothing" correctly falls to `urbano`. */
 const ALTO_RENDIMIENTO_MATCH =
   /\b([89]\d{2}|\d{4,5}) ?w(?:atts?)?\b|\b(4[5-9]|[5-9]\d) ?km\/?h\b|\btodo ?terreno\b|\bcross\b|\boff-?road\b|\bdoble motor\b|\bdual drive\b|\bfat ?tire\b/;
+
+/**
+ * "Juego de <pieza>" en CUALQUIER posición del título.
+ *
+ * Es el único falso negativo que dejaba {@link PIEZA_ABRE_EL_TITULO}: "Y&trefen Ebike - Juego De
+ * Palanca De Freno Macho De 2 Pines" antepone la marca, así que la pieza no abre nada. No se
+ * arregla aflojando el ancla —ya está medido que "abre un segmento" borra vehículos reales— sino
+ * con una frase que por sí sola nunca describe un vehículo: un "juego de" seguido de una pieza es
+ * un repuesto, esté donde esté. Medido sobre los mismos 622 avisos: marca ese aviso y ninguno más.
+ */
+const JUEGO_DE_PIEZAS =
+  /\bjuego de (palanca|palancas|biela|bielas|llanta|llantas|camara|camaras|pastilla|pastillas|luces|luz|tornillo|tornillos|puno|punos|cable|cables|freno|frenos|pedal|pedales|guardabarro|guardabarros|espejo|espejos)\b/;
+
+/** Las dos listas de palabras, cada una con las dos reglas de pieza. */
+const MONOPATIN_EXCLUDE = new RegExp(
+  `${PIEZA_ABRE_EL_TITULO.source}|${JUEGO_DE_PIEZAS.source}|${MONOPATIN_EXCLUDE_WORDS.source}`
+);
+const BICICLETA_EXCLUDE = new RegExp(
+  `${PIEZA_ABRE_EL_TITULO.source}|${JUEGO_DE_PIEZAS.source}|${BICICLETA_EXCLUDE_WORDS.source}`
+);
 
 export const MOVILIDAD_CATEGORIES: EquiparCategory[] = [
   {

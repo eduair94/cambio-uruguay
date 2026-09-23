@@ -12,6 +12,7 @@
     "oca": "ts-node scripts/oneoff/oca.ts",
     "prex": "ts-node scripts/oneoff/prex.ts",
     "backfill_offer_listing_ids": "ts-node scripts/oneoff/backfill_offer_listing_ids.ts",
+    "movilidad_prune_listings": "ts-node scripts/oneoff/movilidad_prune_listings.ts",
     "mp_promos": "ts-node scripts/oneoff/mp_promos.ts",
     "bbva": "ts-node scripts/oneoff/bbva.ts",
     "scotiabank": "ts-node scripts/oneoff/scotiabank.ts",

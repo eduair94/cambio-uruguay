@@ -6,6 +6,7 @@ import type { PriceHistorySeries } from './priceHistory'
 import type { EquiparRoom, EquiparTier } from './equipar'
 import { equiparMoney } from './equipar'
 import { isEquiparCategorySlug } from './equiparCategoryPages'
+import { isMovilidadCategorySlug } from './movilidad'
 
 export const EQUIPAR_PRODUCTOS_PATH = '/equipar-casa-uruguay/productos'
 export const EQUIPAR_LISTA_PATH = '/equipar-casa-uruguay/mi-lista'
@@ -197,9 +198,30 @@ const money = (value: unknown): number | null => {
   return number > 0 ? number : null
 }
 
-export function equiparProductosNormalize(raw: Record<string, unknown>): EquiparProductosQuery {
+/**
+ * Las dos verticales que comparten este directorio: `/equipar-casa-uruguay/productos` y el que
+ * llevan adentro `/monopatines-electricos-uruguay` y `/bicicletas-electricas-uruguay`.
+ *
+ * Existe por un bug medido en producción el 22/9/2026: el normalizador validaba la categoría
+ * SIEMPRE contra el vocabulario de equipar, así que `?categoria=monopatin-electrico` se caía en
+ * silencio y el directorio de monopatines servía también las bicicletas. La categoría sigue
+ * validándose — una inventada no llega a la consulta — pero contra el vocabulario de QUIEN pregunta.
+ */
+export type RetailProductosVertical = 'equipar' | 'movilidad'
+
+export const retailProductosCategoriaValida = (
+  slug: string,
+  vertical: RetailProductosVertical
+): boolean =>
+  vertical === 'movilidad' ? isMovilidadCategorySlug(slug) : isEquiparCategorySlug(slug)
+
+export function equiparProductosNormalize(
+  raw: Record<string, unknown>,
+  vertical: RetailProductosVertical = 'equipar'
+): EquiparProductosQuery {
   const categoria = slugOf(raw.categoria, SLUG)
-  const validCategoria = categoria && isEquiparCategorySlug(categoria) ? categoria : ''
+  const validCategoria =
+    categoria && retailProductosCategoriaValida(categoria, vertical) ? categoria : ''
   const condicion = text(raw.condicion)
   const fuente = text(raw.fuente)
   const orden = text(raw.orden)

@@ -52,6 +52,7 @@
         <span class="eq-card__seen"> · visto el {{ seen }}</span>
       </p>
       <VBtn
+        v-if="!hideList"
         :color="inList ? undefined : 'primary'"
         :variant="inList ? 'outlined' : 'tonal'"
         size="small"
@@ -81,6 +82,11 @@ const props = defineProps<{
   inList: boolean
   /** On a per-category page every card is that category: the badge would only repeat the H1. */
   hideCategory?: boolean
+  /**
+   * "Mi lista" es la lista para equipar una casa vacía: un monopatín no va ahí, así que el
+   * directorio de movilidad dibuja la misma tarjeta sin el botón en vez de tener su propia copia.
+   */
+  hideList?: boolean
 }>()
 const emit = defineEmits<{ toggle: [producto: EquiparProductoPublic] }>()
 
@@ -126,6 +132,10 @@ const roomIcon = computed(() => {
   if (/calefon|toallas|cortina/.test(category)) return 'mdi-shower'
   if (/lavarropas|secarropas|limpieza|tacho|plancha|aspiradora/.test(category))
     return 'mdi-washing-machine'
+  // Las dos categorías de /monopatines-electricos-uruguay y /bicicletas-electricas-uruguay, que
+  // comparten esta tarjeta: sin esto un aviso sin foto caía en el sillón de equipar la casa.
+  if (/monopatin/.test(category)) return 'mdi-scooter-electric'
+  if (/bicicleta/.test(category)) return 'mdi-bicycle-electric'
   return 'mdi-sofa-outline'
 })
 </script>

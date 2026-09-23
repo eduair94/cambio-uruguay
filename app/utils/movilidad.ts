@@ -55,6 +55,10 @@ export interface MovilidadOffer {
   seller: string
   title: string
   url: string
+  /** La foto del aviso, para que la lista se pueda leer con los ojos. NUNCA la de Facebook
+   * Marketplace: esas URLs son del vendedor y vencen (`EquiparOffer.image`). Aditiva: las filas
+   * escritas antes del 2026-09-22 no la traen. */
+  image?: string | null
   price: number
   currency: 'UYU' | 'USD'
   priceUyu: number

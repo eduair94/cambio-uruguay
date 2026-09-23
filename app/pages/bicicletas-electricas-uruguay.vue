@@ -28,7 +28,14 @@
 
       <div v-else class="variant-grid">
         <article v-for="item in variants" :key="item.key" class="variant-card">
-          <h3>{{ item.variantLabel }}</h3>
+          <div class="variant-head">
+            <MovilidadVariantThumb
+              :src="item.image ?? null"
+              :alt="`Bicicleta eléctrica ${item.variantLabel.toLowerCase()}`"
+              icon="mdi-bicycle-electric"
+            />
+            <h3>{{ item.variantLabel }}</h3>
+          </div>
 
           <template v-if="item.newBand">
             <p class="variant-median">
@@ -56,7 +63,7 @@
     </section>
 
     <!-- ── Los más baratos ───────────────────────────────────────────────── -->
-    <AssistantCta topic="bicicletas" class="mb-8" />
+    <AssistantCta topic="bicicletas" class="movilidad-cta" />
     <section
       v-if="cheapestNew.length || cheapestUsed.length"
       class="movilidad-section"
@@ -74,76 +81,56 @@
 
       <div class="cheap-grid">
         <div v-if="cheapestNew.length">
-          <h3>Nuevas</h3>
-          <ol class="offer-list">
-            <li v-for="row in cheapestNew" :key="row.key">
-              <a :href="row.offer.url" target="_blank" rel="nofollow noopener" class="cat-link">{{
-                row.offer.title
-              }}</a>
-              <span class="offer-meta"
-                ><NuxtLink
-                  v-if="storeKeyFor(row.offer.seller, row.offer.source)"
-                  :to="
-                    localePath(
-                      `/tiendas-online-uruguay/${storeKeyFor(row.offer.seller, row.offer.source)}`
-                    )
-                  "
-                  class="cat-link"
-                  >{{ sellerLabel(row.offer) }}</NuxtLink
-                ><template v-else>{{ sellerLabel(row.offer) }}</template> · {{ row.variantLabel }} ·
-                {{ movilidadShortDate(row.offer.observedAt) }}</span
-              >
-              <span class="offer-price"
-                >{{ movilidadMoney(row.offer.priceUyu)
-                }}<span v-if="row.offer.currency === 'USD'" class="offer-usd">{{
-                  movilidadUsd(row.offer.price)
-                }}</span></span
-              >
-              <span
-                v-if="offerMove(row.offer)"
-                class="offer-move"
-                :class="offerMove(row.offer)!.down ? 'is-down' : 'is-up'"
-                >{{ offerMove(row.offer)!.text }}</span
-              >
-            </li>
-          </ol>
+          <h3 class="cheap-title">Nuevas</h3>
+          <div class="offer-grid">
+            <MovilidadOfferCard
+              v-for="row in cheapestNew"
+              :key="row.key"
+              :offer="row.offer"
+              :variant-label="row.variantLabel"
+              categoria="bicicleta-electrica"
+            />
+          </div>
         </div>
         <div v-if="cheapestUsed.length">
-          <h3>Usadas</h3>
-          <ol class="offer-list">
-            <li v-for="row in cheapestUsed" :key="row.key">
-              <a :href="row.offer.url" target="_blank" rel="nofollow noopener" class="cat-link">{{
-                row.offer.title
-              }}</a>
-              <span class="offer-meta"
-                ><NuxtLink
-                  v-if="storeKeyFor(row.offer.seller, row.offer.source)"
-                  :to="
-                    localePath(
-                      `/tiendas-online-uruguay/${storeKeyFor(row.offer.seller, row.offer.source)}`
-                    )
-                  "
-                  class="cat-link"
-                  >{{ sellerLabel(row.offer) }}</NuxtLink
-                ><template v-else>{{ sellerLabel(row.offer) }}</template> · {{ row.variantLabel }} ·
-                {{ movilidadShortDate(row.offer.observedAt) }}</span
-              >
-              <span class="offer-price"
-                >{{ movilidadMoney(row.offer.priceUyu)
-                }}<span v-if="row.offer.currency === 'USD'" class="offer-usd">{{
-                  movilidadUsd(row.offer.price)
-                }}</span></span
-              >
-              <span
-                v-if="offerMove(row.offer)"
-                class="offer-move"
-                :class="offerMove(row.offer)!.down ? 'is-down' : 'is-up'"
-                >{{ offerMove(row.offer)!.text }}</span
-              >
-            </li>
-          </ol>
+          <h3 class="cheap-title">Usadas</h3>
+          <div class="offer-grid">
+            <MovilidadOfferCard
+              v-for="row in cheapestUsed"
+              :key="row.key"
+              :offer="row.offer"
+              :variant-label="row.variantLabel"
+              categoria="bicicleta-electrica"
+            />
+          </div>
         </div>
       </div>
+    </section>
+
+    <!-- ── Directorio con filtros ────────────────────────────────────────── -->
+    <section v-if="hasDirectorio" class="movilidad-section" aria-labelledby="directorio-title">
+      <h2 id="directorio-title">Todas las bicicletas eléctricas en venta</h2>
+      <p class="section-intro">
+        Todos los avisos vigentes, con foto y filtros por tipo, condición, marca, vendedor y precio.
+        Es la misma lectura que arma las medianas de arriba: un aviso que la banda descartó por
+        precio dudoso tampoco aparece acá.
+      </p>
+      <EquiparDirectorio
+        :query="dirQuery"
+        :data="dirData"
+        :error="dirError"
+        :facets="dirFacets"
+        :chips="dirChips"
+        fixed-categoria="bicicleta-electrica"
+        hide-list
+        hide-category
+        vertical="movilidad"
+        anchor-id="movilidad-resultados"
+        class="movilidad-directorio"
+        @update="dirUpdate"
+        @remove="dirRemove"
+        @clear="dirClear"
+      />
     </section>
 
     <!-- ── Normativa ─────────────────────────────────────────────────────── -->
@@ -243,34 +230,13 @@ import {
   movilidadLongDate,
   movilidadMoney,
   movilidadPrecioTipicoAnswer,
-  movilidadSellerLabel,
-  movilidadShortDate,
   movilidadUsadoAnswer,
-  movilidadUsd,
   type MovilidadCategoryResponse,
   type MovilidadItemDoc,
-  type MovilidadOffer,
 } from '~/utils/movilidad'
-import { storeSlugForSeller } from '~/utils/storeDirectory'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 
 const localePath = useLocalePath()
-
-// El nombre del vendedor enlaza a su ficha (/tiendas-online-uruguay/<key>) sólo cuando esa tienda
-// tiene ficha propia — la ruta 404s de verdad si no. `storeProfileKeys` es la lista compartida con
-// /sillas-escritorio-uruguay/[slug].vue y /equipar-casa-uruguay/[categoria].vue (useStoreProfileKeys.ts).
-const storeProfileKeys = useStoreProfileKeys()
-// `source` es opcional para que cualquier llamada siga compilando; una oferta de Facebook nunca
-// enlaza, aunque el nombre del vendedor resuelva a una tienda curada: el nombre visible de un
-// vendedor particular de Marketplace no es la identidad de una empresa (mismo motivo que en las
-// páginas hermanas). `storeSlugForSeller` además nunca resuelve "Mercado Libre" a la ficha de
-// Mercado Libre (`classes/stores/match.ts`/`storeDirectory.ts`, `EXCLUDED_ALIAS_NORMS`), así que un
-// vendedor sin identificar de ML tampoco enlaza aunque no hiciera falta este guard para eso.
-const storeKeyFor = (seller: string, source?: string): string | null => {
-  if (source === 'facebook') return null
-  const key = storeSlugForSeller(seller)
-  return key && storeProfileKeys.value.includes(key) ? key : null
-}
 
 // Server-rendered: las medianas tienen que estar en el HTML que lee el buscador. `bicicleta-electrica`
 // es régimen `commodity` (classes/movilidad/registry.ts): no hay modelos identificados, así que esta
@@ -283,18 +249,39 @@ const { data } = await useFetch('/api/movilidad/bicicleta-electrica', {
   }),
 })
 
+// El directorio con filtros de abajo: misma maquinaria que /equipar-casa-uruguay/productos sobre
+// `movilidadlistings` (una fila por aviso que la banda aceptó). La clave de `useAsyncData` es propia
+// por vertical: dos páginas con la misma se pisan la respuesta.
+const {
+  query: dirQuery,
+  data: dirData,
+  error: dirError,
+  facets: dirFacets,
+  chips: dirChips,
+  filtered: dirFiltered,
+  update: dirUpdate,
+  remove: dirRemove,
+  clear: dirClear,
+} = await useEquiparProductosDirectorio('bicicleta-electrica', {
+  apiPath: '/api/movilidad/productos',
+  vertical: 'movilidad',
+  key: 'movilidad-productos-bicicleta',
+})
+
+/**
+ * El directorio sólo se dibuja cuando hay avisos que mostrar, o cuando el lector puso un filtro
+ * (ahí tiene que poder sacarlo aunque el resultado sea cero). Sin esto, una base todavía sin
+ * escribir —el job publica esta colección desde el 22/9/2026— abriría una sección vacía diciendo
+ * "probá sacar la marca" cuando el lector no filtró nada.
+ */
+const hasDirectorio = computed(() => (dirData.value?.total ?? 0) > 0 || dirFiltered.value)
+
 const items = computed<MovilidadItemDoc[]>(() => data.value?.items ?? [])
 const asOf = computed(() => data.value?.generatedAt ?? null)
 
 const variants = computed(() =>
   [...items.value].sort((a, b) => (a.variantRank ?? 1) - (b.variantRank ?? 1))
 )
-
-/** El vendedor sin identificar de Mercado Libre se rotula; el nombre real de una tienda enlaza a
- * su ficha por separado, vía `storeKeyFor` (nunca a partir de este texto rotulado). */
-function sellerLabel(offer: MovilidadOffer): string {
-  return movilidadSellerLabel(offer.seller, offer.source)
-}
 
 const cheapestNew = computed(() => movilidadCheapestOffers(variants.value, 'new', 8))
 const cheapestUsed = computed(() => movilidadCheapestOffers(variants.value, 'used', 6))
@@ -377,6 +364,9 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
   twitterTitle: 'Precio de bicicletas eléctricas en Uruguay',
   twitterDescription: seoDescription,
+  // Cada combinación de filtros del directorio es una copia delgada de esta página: sólo la URL
+  // limpia se indexa (mismo criterio que /equipar-casa-uruguay/productos).
+  robots: () => (dirFiltered.value ? 'noindex, follow' : 'index, follow'),
 })
 
 // FAQPage lo emite FaqSection: no se repite acá.
@@ -411,17 +401,6 @@ useHead(() => ({
     },
   ],
 }))
-
-/** "bajó 9 %": la variación del propio aviso, cuando tenemos dos lecturas suyas. */
-function offerMove(offer: { priceHistory?: { changePct: number | null; points: unknown[] } }): {
-  text: string
-  down: boolean
-} | null {
-  const series = offer.priceHistory
-  const label = priceChangeLabel(series?.changePct ?? null)
-  if (!series || !label || series.points.length < 2) return null
-  return { text: label, down: (series.changePct ?? 0) < 0 }
-}
 </script>
 
 <style scoped>
@@ -522,43 +501,6 @@ function offerMove(offer: { priceHistory?: { changePct: number | null; points: u
   gap: 16px 32px;
   margin-top: 18px;
 }
-.offer-list {
-  margin: 10px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.offer-list li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2px 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(var(--v-border-color), 0.15);
-  font-size: 0.875rem;
-}
-.offer-list a {
-  grid-column: 1;
-  overflow-wrap: anywhere;
-}
-.offer-meta {
-  grid-column: 1;
-  font-size: 0.75rem;
-  opacity: 0.72;
-}
-.offer-usd {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 400;
-  opacity: 0.72;
-  text-align: right;
-}
-.offer-price {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-}
 
 /* Guía */
 .guide-list {
@@ -580,14 +522,31 @@ function offerMove(offer: { priceHistory?: { changePct: number | null; points: u
   list-style: none;
 }
 
-.offer-move {
-  font-weight: 600;
-  font-size: 0.78rem;
+/* El bloque del asistente es una sección más: sin esto quedaba pegado a la grilla de tipos. */
+.movilidad-cta {
+  margin-top: 40px;
 }
-.offer-move.is-down {
-  color: rgb(var(--v-theme-success));
+.variant-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
-.offer-move.is-up {
-  color: rgb(var(--v-theme-error));
+.cheap-title {
+  margin-bottom: 12px;
+}
+.offer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+@media (min-width: 600px) {
+  .offer-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+  }
+}
+.movilidad-directorio {
+  margin-top: 24px;
 }
 </style>

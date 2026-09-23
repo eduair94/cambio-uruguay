@@ -25,6 +25,9 @@ export interface EquiparOffer {
   seller: string
   title: string
   url: string
+  /** La foto del aviso. NUNCA la de Facebook Marketplace: esas URLs son del vendedor y vencen
+   * (ver `EquiparOffer.image` en classes/equipar/types.ts). Aditiva desde el 2026-09-22. */
+  image?: string | null
   price: number
   currency: 'UYU' | 'USD'
   priceUyu: number

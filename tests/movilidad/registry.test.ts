@@ -257,3 +257,50 @@ describe("clasificación completa: category + variant vía itemKey", () => {
     expect(itemKey(category.key, variant.key)).toBe("bicicleta-electrica:plegable");
   });
 });
+
+describe("una pieza que abre el título no es un vehículo", () => {
+  // Los doce avisos que la primera corrida publicada (622 filas, 22/9/2026) colaba como
+  // monopatines y bicicletas. No es cosmético: a $ 2.958 una pantalla LCD entra a la banda por
+  // abajo y, con el directorio ordenado por menor precio, encabeza "las ofertas más baratas".
+  const piezas = [
+    "Pantalla Lcd Para Bicicleta Eléctrica 24v-48v A Prueba De Agua",
+    "Pantalla Lcd Para Bicicletas Eléctricas, 318/222 Cm, 24-60v",
+    "Palanca De Freno Para E-bike, Izquierda, Plástico Negro Popular",
+    "Panel Lcd Para Bicicleta Eléctrica, Odómetro Inalámbrico",
+    "Pantalla Lcd Bicicleta Eléctrica 24v-60v E-bike Tamaño 318x22",
+    "Faro Led Para Ebike Con Bocina Integrada Y 4 Luces, Resistente",
+    "Sprocket Trasero De Acero Para E-bike Y Scooter, 92t 25h",
+    "Bolsa Frontal Universal Para Bicicleta Eléctrica Sur Ron - Negra",
+    "Llantas Y Cámaras Para E-bike Y Bicicletas Eléctricas Black",
+    "Juego De 2 Bielas Praxis E-bike 172,5 Mm. Excelente Estado",
+    "Kit bicicleta electrica 1000watts",
+    "Kit Bicicleta Eléctrica Lionel Ebikes 1000w 48v Completo",
+    // Antepone la marca, así que la pieza no abre el título: lo agarra `JUEGO_DE_PIEZAS`, la frase
+    // que por sí sola nunca describe un vehículo. Único falso negativo que dejaba el ancla.
+    "Y&trefen Ebike - Juego De Palanca De Freno Macho De 2 Pines.",
+    // Del inventario del día siguiente, misma forma: una pieza que abre el título.
+    "Acelerador Para Bicicleta Eléctrica Con Puños Incluídos",
+    // `kit` pasó a palabra desnuda (medido: 3 de 622, los tres kits) porque acá no abre el título
+    // y tampoco dice "conversión": es el kit para convertir una bici común, descrito de otra forma.
+    "Bicicleta Electrica Kit P/ Instalar En Tu Bici C/ Motor 350w",
+  ];
+  it.each(piezas)("%s -> rechazado", (title) => {
+    expect(classify(title)).toBeNull();
+  });
+
+  // La regla es estricta A PROPÓSITO: la pieza tiene que ABRIR el título, igual que `IS_A_PART` en
+  // autos. Medido sobre los mismos 622 avisos, la variante "abre un segmento" (después de `-`, `|`
+  // o `,`) marcaba 10 avisos más y 9 eran vehículos reales. Estos son esos vehículos: si alguno
+  // empieza a dar null, alguien aflojó el ancla y se está borrando oferta real.
+  const vehiculosQueNombranUnaPieza = [
+    ["Monopatín Eléctrico Plegable 250w | Motor Potente | 25 Km/h", "monopatin-electrico"],
+    ["Monopatín Eléctrico Knex Urban | Motor 800w | 48v*10.4ah", "monopatin-electrico"],
+    ["Segway Ninebot F25 Patinete Eléctrico, Motor Potente De 30", "monopatin-electrico"],
+    ["Monopatin Eléctrico Joyor S5 600w Potencia C/pantalla", "monopatin-electrico"],
+    ["Bicicleta Eléctrica Rodado 26 Nakto 250w 32km/h C/ Canasto", "bicicleta-electrica"],
+    ["Swagtron Eb-6 Bandit E-bike - Motor De 350 W, Asistencia De", "bicicleta-electrica"],
+  ] as const;
+  it.each(vehiculosQueNombranUnaPieza)("%s sigue siendo %s", (title, key) => {
+    expect(classify(title)?.key, title).toBe(key);
+  });
+});

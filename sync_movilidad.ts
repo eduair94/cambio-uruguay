@@ -22,6 +22,7 @@ dotenv.config({ path: "app/.env" });
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { fetchUsdUyuRate } from "./classes/chairs/catalog";
 import { buildEquiparCatalog, uncoveredCategories } from "./classes/equipar/catalog";
+import { buildEquiparListings } from "./classes/equipar/listings";
 import { specsFor } from "./classes/equipar/classify";
 import { mergeStoreSnapshot } from "./classes/equipar/storeSnapshot";
 import { MOVILIDAD_CATEGORIES, MOVILIDAD_STORE_KEYS } from "./classes/movilidad/registry";
@@ -30,6 +31,7 @@ import {
   loadPreviousItems,
   loadStoreSnapshot,
   saveMovilidadCatalog,
+  saveMovilidadListings,
   saveStoreSnapshot,
   withHistory,
   type PreviousItem,
@@ -172,6 +174,20 @@ export async function main(): Promise<void> {
   };
 
   await saveMovilidadCatalog(stored, meta);
+
+  // Una fila por aviso para el directorio con filtros de las dos páginas. Mismo `registry` que el
+  // catálogo, así que una fila guardada acá es una fila que la banda contó allá. Try/catch propio:
+  // un fallo escribiendo el directorio nunca puede costar el catálogo recién guardado, y las dos
+  // corridas (diaria y horaria) lo escriben — cada aviso con el `observedAt` que realmente tiene.
+  try {
+    const built = buildEquiparListings({ listings, usdUyu, registry: MOVILIDAD_CATEGORIES });
+    const saved = await saveMovilidadListings(built.rows, today);
+    console.log(
+      `[movilidad] avisos: ${saved.written} escritos, ${saved.pruned} podados, ${built.rejected} rechazados por la banda, ${built.suspect} sospechosos`
+    );
+  } catch (error) {
+    console.error("[movilidad] no se pudo guardar el directorio de avisos", error);
+  }
 
   // Own try/catch: a failure recording history must never cost the catalogue that was just saved.
   // Recorded over `guarded.listings` (pre-merge, unit-guarded), not the possibly snapshot-merged

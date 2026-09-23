@@ -57,6 +57,39 @@ un umbral medido (`tests/movilidad/registry.test.ts`): 350 W y 500 W quedan en `
 `movilidadUsadoAnswer` (`app/utils/movilidad.ts`) separa "no hay categoría donde no convenga" de
 "todavía no relevamos suficiente usado", que son dos respuestas distintas al mismo "sin datos".
 
+## Una pieza que abre el título no es un vehículo (22/9/2026)
+
+Medido sobre los 622 avisos de la PRIMERA corrida publicada del directorio: doce son repuestos que
+pasaban `include` porque el título nombra el vehículo al que van — "Pantalla Lcd Para Bicicleta
+Eléctrica", "Palanca De Freno Para E-bike", "Sprocket Trasero De Acero Para E-bike Y Scooter",
+"Llantas Y Cámaras Para E-bike", dos "Kit bicicleta eléctrica". No es cosmético: a $ 2.958 una
+pantalla entra a la banda por abajo, y con el directorio ordenado por menor precio encabeza "las
+ofertas más baratas".
+
+`PIEZA_ABRE_EL_TITULO` (`classes/movilidad/registry.ts`) es la regla de `IS_A_PART` de autos y por
+la misma razón: la pieza cuenta **sólo si ABRE el título**. Se probó también "abre un segmento"
+(después de `-`, `|` o `,`) sobre los mismos 622 avisos: marcaba 10 más y **9 eran vehículos
+reales** ("Monopatín Eléctrico Knex Urban | Motor 800w", "Segway Ninebot F25 Patinete Eléctrico,
+Motor Potente De 30…"), así que se descartó con la medición en la mano. Lo que paga la regla
+estricta es un aviso de 622, el que antepone la marca ("Y&trefen Ebike - Juego De Palanca De
+Freno"): un falso negativo es una fila de más en el directorio, un falso positivo borra monopatines
+reales de la banda. Los doce títulos y los seis vehículos-control están fijados en
+`tests/movilidad/registry.test.ts`.
+
+El único falso negativo que dejaba esa regla —"Y&trefen Ebike - Juego De Palanca De Freno", que
+antepone la marca— lo cubre una SEGUNDA regla, `JUEGO_DE_PIEZAS`: "juego de <pieza>" en cualquier
+posición. No afloja el ancla (eso ya está medido que borra vehículos reales); es una frase que por
+sí sola nunca describe un vehículo. Sobre los mismos 622 avisos marca ese aviso y ninguno más.
+
+`kit` es **palabra desnuda** en las dos listas de exclusión, no una pieza que abre el título: el
+tercer kit del inventario se titula "Bicicleta Electrica Kit P/ Instalar En Tu Bici C/ Motor 350w"
+—no abre con la pieza y tampoco dice "conversión"—. Medido sobre los 622: `kit` en cualquier
+posición marca tres avisos y los tres son kits.
+
+Una fila ya guardada que deja de clasificar no se vuelve a escribir: sale de la ventana que sirve
+la API a los 4 días y de la colección a los 30. Para no esperar, `npm run movilidad_prune_listings`
+(`--apply` para borrar; sin eso sólo informa) relee lo guardado contra el registro de hoy.
+
 ## Qué queda afuera, y por qué
 
 Ninguna de las dos categorías incluye una bicicleta o un monopatín SIN motor (`MONOPATIN_INCLUDE`/
@@ -231,6 +264,15 @@ ayer no se vio HOY. Ver [PRICEWATCH.md](PRICEWATCH.md).
   — un documento: corrida, fuentes, categorías sin cobertura. Sin `baskets` (no hay canasta acá).
 - **`movilidadstoresnapshots`** (`classes/models/MovilidadStoreSnapshot.ts`) — **sin espejo en `app/`**,
   a propósito: sólo la horaria del propio backend la lee, igual que `equiparstoresnapshots`.
+- **`movilidadlistings`** (`classes/models/MovilidadListing.ts`, espejo
+  `app/server/models/MovilidadListing.ts`) — **una fila por aviso** que la banda aceptó, para el
+  directorio con filtros de las dos páginas (2026-09-22). La FORMA es la de `equiparlistings`
+  (`EquiparListingRow`) y el tipo es el mismo a propósito: `buildEquiparListings` devuelve esa fila
+  sea cual sea el registro inyectado, así que declarar una paralela sólo habilitaría que las dos
+  deriven. La COLECCIÓN es aparte porque un monopatín no puede aparecer en el directorio de equipar
+  la casa. Las filas `suspect` se guardan (para poder publicar el conteo) y **nunca se sirven**;
+  poda a 30 días con el mismo corte de equipar (`equiparListingPruneCutoff`). Las escriben las dos
+  corridas, la diaria y la horaria, con el `observedAt` que cada aviso realmente tiene.
 - `pricewatchoffers` (compartida con equipar/sillas, vertical `movilidad`; ver
   [PRICEWATCH.md](PRICEWATCH.md)).
 
@@ -271,6 +313,29 @@ Reglas de publicación, heredadas de equipar sin reescribirlas:
   documento escrito antes de un ajuste de la banda no debe abrir la tabla de modelos con un precio
   que la banda actual ya rechazaría. `bicicleta-electrica` es régimen `commodity`: no arma tabla de
   modelos en absoluto, sólo banda y ofertas más baratas.
+
+### `GET /api/movilidad/productos` — el directorio con filtros (2026-09-22)
+
+El mismo cuerpo que `/api/equipar/productos`, extraído a `app/server/utils/retailProductos.ts` y
+compartido por las dos rutas: paginado en Mongo, cada faceta contada sobre la consulta **sin su
+propio filtro** (para que el panel diga cuántas filas devolvería cada opción junto con todo lo demás
+que el lector ya puso), y el conteo de sospechosos que quedaron afuera. Lo único inyectado es la
+colección y de qué documento sale la fecha de la corrida, así que un arreglo en la paginación o en
+una faceta vale para las dos verticales en vez de tener que copiarse.
+
+En la página, el directorio va **adentro** de `/monopatines-electricos-uruguay` y
+`/bicicletas-electricas-uruguay`, no en una ruta aparte: el lector llama "el directorio" a estas dos
+páginas, y una ruta nueva obligaría a convertir cada `pages/<x>.vue` en `pages/<x>/index.vue` (si no,
+Nuxt la vuelve layout padre con `<NuxtPage>`) por dos canonicals más que nadie pidió. La categoría va
+fija por página (`fixed-categoria`), el botón de **«agregar a mi lista» no aparece** (esa lista es
+para equipar una casa vacía: `hide-list`), y **toda URL con filtros va `noindex, follow`** — cada
+combinación es una copia delgada de la misma página, igual que en `/equipar-casa-uruguay/productos`.
+
+La foto: `EquiparItem.image` (la representativa del tipo) ya se guardaba y no se dibujaba; desde el
+2026-09-22 cada OFERTA además lleva la suya (`EquiparOffer.image`, aditivo, también para equipar).
+**Nunca la de Facebook Marketplace**: esas URLs son del vendedor y vencen, así que una tarjeta
+construida sobre una de ésas se rompe sola en unos días — un aviso de Marketplace se dibuja con el
+ícono de su categoría.
 
 ## La normativa, como dato (`app/utils/movilidadNormativa.ts`)
 
