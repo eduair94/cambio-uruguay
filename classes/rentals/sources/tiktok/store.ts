@@ -17,30 +17,41 @@ export interface TiktokStore {
   savePosts(rows: TiktokPostRow[]): Promise<void>;
 }
 
-const accounts = () => appConnection().collection(RentalTiktokAccountModel.collection.name);
-const posts = () => appConnection().collection(RentalTiktokPostModel.collection.name);
+/**
+ * The connection, OPEN. The harvest runs in parallel with the history load in sync_rentals.ts, so
+ * nothing guarantees anyone connected before this store is first used — and a raw collection on
+ * a connection that is still opening is mongoose's buffering wrapper, whose `find` throws
+ * "Collection method find is synchronous" (measured on the VPS, 2026-09-23).
+ */
+const connected = async () => {
+  const connection = appConnection();
+  await connection.asPromise();
+  return connection;
+};
+const accounts = async () => (await connected()).collection(RentalTiktokAccountModel.collection.name);
+const posts = async () => (await connected()).collection(RentalTiktokPostModel.collection.name);
 
 /** The real store; without `APP_MONGO_URI` it remembers nothing and writes nothing. */
 export const appDbTiktokStore: TiktokStore = {
   async loadAccounts() {
     if (!appDbConfigured()) return [];
-    const docs = await accounts().find({}, { projection: { _id: 0 } }).toArray();
+    const docs = await (await accounts()).find({}, { projection: { _id: 0 } }).toArray();
     return docs as unknown as TiktokAccountRow[];
   },
   async saveAccounts(rows) {
     if (!appDbConfigured() || !rows.length) return;
-    await accounts().bulkWrite(rows.map(row => ({
+    await (await accounts()).bulkWrite(rows.map(row => ({
       updateOne: { filter: { uniqueId: row.uniqueId }, update: { $set: row }, upsert: true },
     })), { ordered: false });
   },
   async loadPosts(ids) {
     if (!appDbConfigured() || !ids.length) return new Map();
-    const docs = await posts().find({ id: { $in: [...ids] } }, { projection: { _id: 0 } }).toArray();
+    const docs = await (await posts()).find({ id: { $in: [...ids] } }, { projection: { _id: 0 } }).toArray();
     return new Map(docs.map(doc => [String(doc.id), doc as unknown as TiktokPostRow]));
   },
   async savePosts(rows) {
     if (!appDbConfigured() || !rows.length) return;
-    await posts().bulkWrite(rows.map(row => ({
+    await (await posts()).bulkWrite(rows.map(row => ({
       updateOne: { filter: { listingId: row.listingId }, update: { $set: row }, upsert: true },
     })), { ordered: false });
   },
