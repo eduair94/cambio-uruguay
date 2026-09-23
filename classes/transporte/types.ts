@@ -60,7 +60,20 @@ export interface TransportTransitPair {
 
 /** Precio de compra de un modo, tal como lo publica su propio catálogo. */
 export interface TransportVehiclePrice {
-  medianUyu: number;
+  /**
+   * El precio con el que la página arranca, y NO la mediana del catálogo.
+   *
+   * Es el p25 para los modos que se compran usados (auto, moto): la mediana del catálogo de autos
+   * usados no es "lo que sale un auto para ir a trabajar" —ese catálogo incluye camionetas de
+   * US$ 40.000 y quien evalúa dejar el ómnibus no está mirando esas—, así que anclar ahí decidiría
+   * la respuesta de la página sin que el visitante lo sepa. Para monopatín y bici, donde el catálogo
+   * es de vehículos comparables entre sí, la referencia ES la mediana.
+   *
+   * Se llama `referenceUyu` y no `medianUyu` porque el campo tiene que decir lo que guarda: la
+   * primera versión se llamaba así y guardaba el p25, que es la clase de nombre que engaña al que
+   * lee el contrato seis meses después. La banda completa viaja al lado, en `p25Uyu`/`p75Uyu`.
+   */
+  referenceUyu: number;
   p25Uyu: number | null;
   p75Uyu: number | null;
   condition: "nuevo" | "usado";

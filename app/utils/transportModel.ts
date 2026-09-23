@@ -148,7 +148,7 @@ export interface TransportPrices {
 
 export interface TransportVehiclePrice {
   /** Mediana del catálogo, en pesos. */
-  medianUyu: number
+  referenceUyu: number
   p25Uyu: number | null
   p75Uyu: number | null
   condition: 'nuevo' | 'usado'
@@ -462,7 +462,7 @@ function buildBreakdown(
   const km = kmForMode(mode, input) * vehicleTrips
 
   const price = prices.vehiclePriceUyu[mode] ?? null
-  const vehicleCost = isVehicle && price ? price.medianUyu : 0
+  const vehicleCost = isVehicle && price ? price.referenceUyu : 0
 
   const upfrontGross = isVehicle ? vehicleCost + a.equipmentUyu.value + a.paperworkUyu.value : 0
   const upfront = scenario.alreadyOwned ? 0 : upfrontGross
@@ -484,7 +484,7 @@ function buildBreakdown(
   const marginalOnly = scenario.alreadyOwned
   const monthly = {
     insurance: !isVehicle || marginalOnly ? 0 : (a.insuranceUyu?.value ?? 0) / 12,
-    roadTax: !isVehicle || marginalOnly ? 0 : roadTaxYearly(a, price?.medianUyu ?? 0) / 12,
+    roadTax: !isVehicle || marginalOnly ? 0 : roadTaxYearly(a, price?.referenceUyu ?? 0) / 12,
     fixedMaintenance: !isVehicle ? 0 : a.fixedMaintenanceUyu.value / 12,
     storage: !isVehicle || marginalOnly ? 0 : a.storageMonthlyUyu.value,
     energy: monthlyEnergy(mode, km, input),
@@ -496,7 +496,8 @@ function buildBreakdown(
     rainFallbackFare: rainTrips * prices.busFareUyu,
     theftRisk:
       isVehicle && scenario.includeTheftRisk && price
-        ? (price.medianUyu * a.theftAnnualProbability.value * (1 - a.theftRecoveryShare.value)) / 12
+        ? (price.referenceUyu * a.theftAnnualProbability.value * (1 - a.theftRecoveryShare.value)) /
+          12
         : 0,
     fare: mode === 'omnibus' ? tripsPerMonth * prices.busFareUyu : 0,
   }
@@ -603,7 +604,7 @@ export function transportResidual(
 ): number {
   if (!TRANSPORT_VEHICLE_MODES.includes(mode)) return 0
   if (!input.scenario.includeDepreciation || input.scenario.alreadyOwned) return 0
-  const price = input.prices.vehiclePriceUyu[mode]?.medianUyu ?? 0
+  const price = input.prices.vehiclePriceUyu[mode]?.referenceUyu ?? 0
   if (price <= 0) return 0
   const { value: annualDrop } = transportAnnualDepreciation(mode, input)
   const friction =

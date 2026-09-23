@@ -509,7 +509,7 @@
               </tbody>
             </VTable>
             <p v-if="row.price" class="field-note">
-              Precio de referencia: {{ transportViewMoney(row.price.medianUyu) }} ({{
+              Precio de referencia: {{ transportViewMoney(row.price.referenceUyu) }} ({{
                 row.price.condition
               }}, {{ row.price.offers }} avisos relevados<template v-if="row.price.asOf">
                 al {{ transportViewDate(row.price.asOf) }}</template
@@ -1026,7 +1026,7 @@ const liveFigureRows = computed(() => {
       id: `precio-${mode}`,
       label,
       // La ausencia se declara. Un guion acá sería un cero en la cuenta de arriba.
-      value: price ? transportViewMoney(price.medianUyu) : 'sin datos relevados',
+      value: price ? transportViewMoney(price.referenceUyu) : 'sin datos relevados',
       source: price
         ? `Catálogo propio (${price.source}), ${price.offers} avisos${price.asOf ? ` · ${transportViewDate(price.asOf)}` : ''}`
         : 'Todavía no relevamos precios de este modo',

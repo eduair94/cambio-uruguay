@@ -55,7 +55,7 @@ function bandOf(
   if (prices.length < 5) return null;
   const anchor = options.anchor ?? 0.25;
   return {
-    medianUyu: Math.round(quantile(prices, anchor)),
+    referenceUyu: Math.round(quantile(prices, anchor)),
     p25Uyu: Math.round(quantile(prices, 0.25)),
     p75Uyu: Math.round(quantile(prices, 0.75)),
     condition: options.condition,
@@ -196,7 +196,7 @@ async function readMovilidad(): Promise<{ monopatin: TransportVehiclePrice | nul
     }
     if (prices.length < 5) return null;
     return {
-      medianUyu: Math.round(quantile(prices, 0.5)),
+      referenceUyu: Math.round(quantile(prices, 0.5)),
       p25Uyu: Math.round(quantile(prices, 0.25)),
       p75Uyu: Math.round(quantile(prices, 0.75)),
       condition: "nuevo",

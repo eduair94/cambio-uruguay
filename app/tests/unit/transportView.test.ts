@@ -42,7 +42,7 @@ const PRICES: TransportPrices = {
   kwhUyu: 10.31,
   vehiclePriceUyu: {
     monopatin: {
-      medianUyu: 25000,
+      referenceUyu: 25000,
       p25Uyu: 18000,
       p75Uyu: 38000,
       condition: 'nuevo',
@@ -52,7 +52,7 @@ const PRICES: TransportPrices = {
       source: 'movilidaditems',
     },
     auto: {
-      medianUyu: 400000,
+      referenceUyu: 400000,
       p25Uyu: 300000,
       p75Uyu: 620000,
       condition: 'usado',

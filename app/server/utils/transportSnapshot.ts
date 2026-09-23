@@ -222,10 +222,15 @@ export function transportProjectPrices(raw: Record<string, unknown> | null | und
   const vehiclePriceUyu: TransportPrices['vehiclePriceUyu'] = {}
   for (const [mode, value] of Object.entries(vehicles)) {
     const row = value as Record<string, unknown> | null
-    const median = num(row?.medianUyu)
-    if (!median || median <= 0) continue
+    // `medianUyu` es el nombre VIEJO del mismo campo. Se lee mientras pueda haber un snapshot escrito
+    // por el job anterior: entre el deploy del app y la siguiente corrida del job hay una ventana en
+    // la que la base tiene la forma vieja, y sin este respaldo la página mostraría "sin datos" para
+    // TODOS los modos justo después de desplegar un renombrado. Se puede sacar cuando el job haya
+    // corrido (diario, 16:39 UTC).
+    const reference = num(row?.referenceUyu) ?? num((row as Record<string, unknown>)?.medianUyu)
+    if (!reference || reference <= 0) continue
     vehiclePriceUyu[mode as TransportMode] = {
-      medianUyu: median,
+      referenceUyu: reference,
       p25Uyu: num(row?.p25Uyu),
       p75Uyu: num(row?.p75Uyu),
       condition: row?.condition === 'nuevo' ? 'nuevo' : 'usado',

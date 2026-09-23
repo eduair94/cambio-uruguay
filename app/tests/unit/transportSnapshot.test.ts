@@ -30,7 +30,7 @@ const DOC: TransportSnapshotRaw = {
     kwhUyu: 10.31,
     vehiclePriceUyu: {
       auto: {
-        medianUyu: 400000,
+        referenceUyu: 400000,
         p25Uyu: 300000,
         p75Uyu: 620000,
         condition: 'usado',
@@ -40,7 +40,7 @@ const DOC: TransportSnapshotRaw = {
         source: 'carcatalog',
       },
       // Un modo con precio en cero no es un precio: no puede llegar al modelo.
-      moto: { medianUyu: 0, condition: 'usado', offers: 0, source: 'motocatalog' },
+      moto: { referenceUyu: 0, condition: 'usado', offers: 0, source: 'motocatalog' },
     },
     financingTea: 0.45,
     usuryCapTea: 0.62,
@@ -249,5 +249,36 @@ describe('la respuesta completa', () => {
     expect(empty.prices.vehiclePriceUyu).toEqual({})
     expect(empty.notice).toBeTruthy()
     expect(transportProjectComparador(null).surveyed).toBe(false)
+  })
+})
+
+describe('compatibilidad con el snapshot viejo', () => {
+  it('lee `medianUyu` mientras la base todavía tenga la forma anterior', () => {
+    // Entre el deploy del app y la siguiente corrida del job hay una ventana con la forma vieja en
+    // la base. Sin este respaldo, la página mostraría "sin datos" para TODOS los modos justo después
+    // de desplegar el renombrado — que es la peor forma de fallar: parece que no hay mercado.
+    const doc = {
+      slug: 'current',
+      builtAt: '2026-09-23T02:51:59.413Z',
+      prices: {
+        busFareUyu: 52,
+        naftaSuper95PerLitreUyu: 75,
+        vehiclePriceUyu: {
+          auto: {
+            medianUyu: 391463,
+            p25Uyu: 391463,
+            p75Uyu: 700000,
+            condition: 'usado',
+            offers: 18528,
+          },
+        },
+      },
+      zones: [],
+      routes: [],
+      transit: [],
+      coverage: {},
+    }
+    const projected = transportProjectComparador(doc as never, null)
+    expect(projected.prices.vehiclePriceUyu.auto?.referenceUyu).toBe(391463)
   })
 })

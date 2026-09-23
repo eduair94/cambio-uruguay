@@ -191,7 +191,7 @@ describe('transportResidual', () => {
       prices: prices({
         vehiclePriceUyu: {
           auto: {
-            medianUyu: 400000,
+            referenceUyu: 400000,
             p25Uyu: null,
             p75Uyu: null,
             condition: 'usado',
@@ -214,7 +214,7 @@ describe('transportResidual', () => {
       prices: prices({
         vehiclePriceUyu: {
           auto: {
-            medianUyu: 400000,
+            referenceUyu: 400000,
             p25Uyu: null,
             p75Uyu: null,
             condition: 'usado',
@@ -255,7 +255,7 @@ describe('transportCumulativeCost', () => {
       prices: prices({
         vehiclePriceUyu: {
           monopatin: {
-            medianUyu: 24000,
+            referenceUyu: 24000,
             p25Uyu: null,
             p75Uyu: null,
             condition: 'nuevo',
@@ -297,7 +297,7 @@ describe('transportCumulativeCost', () => {
       prices: prices({
         vehiclePriceUyu: {
           monopatin: {
-            medianUyu: 100000,
+            referenceUyu: 100000,
             p25Uyu: null,
             p75Uyu: null,
             condition: 'nuevo',
@@ -319,7 +319,7 @@ describe('transportCumulativeCost', () => {
 
 describe('transportCashOut', () => {
   const monopatin = {
-    medianUyu: 24000,
+    referenceUyu: 24000,
     p25Uyu: null,
     p75Uyu: null,
     condition: 'nuevo' as const,
@@ -369,7 +369,7 @@ describe('transportCompare', () => {
   const monopatinPrices = prices({
     vehiclePriceUyu: {
       monopatin: {
-        medianUyu: 24000,
+        referenceUyu: 24000,
         p25Uyu: 18000,
         p75Uyu: 32000,
         condition: 'nuevo',
@@ -401,7 +401,7 @@ describe('transportCompare', () => {
       prices: prices({
         vehiclePriceUyu: {
           auto: {
-            medianUyu: 600000,
+            referenceUyu: 600000,
             p25Uyu: null,
             p75Uyu: null,
             condition: 'usado',
@@ -438,7 +438,7 @@ describe('transportCompare', () => {
       prices: prices({
         vehiclePriceUyu: {
           auto: {
-            medianUyu: 900000,
+            referenceUyu: 900000,
             p25Uyu: null,
             p75Uyu: null,
             condition: 'usado',
