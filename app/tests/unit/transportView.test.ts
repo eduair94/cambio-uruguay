@@ -22,6 +22,7 @@ import {
   transportViewMonthlyRows,
   transportViewSafetyRows,
   transportViewSortModes,
+  transportViewDirectory,
   transportViewVerdict,
 } from '../../utils/transportView'
 
@@ -232,6 +233,39 @@ describe('el veredicto cuando el modo es más lento', () => {
   it('sin la referencia no inventa: se queda con el veredicto conservador', () => {
     const row = modeOf(transportCompare(input()), 'pie')
     expect(transportViewVerdict(row, scenarioOf()).headline).toBe('Más caro y más lento')
+  })
+})
+
+describe('el enlace al catálogo de cada modo', () => {
+  it('dice cuántos avisos hay del otro lado, que es lo que decide el clic', () => {
+    const link = transportViewDirectory('auto', 18528)
+    expect(link?.to).toBe('/autos-usados-uruguay')
+    expect(link?.cta).toBe('Ver los 18.528 avisos')
+    // El nombre accesible se entiende leído fuera de su fila, que es como lo lee un lector de
+    // pantalla cuando salta de enlace en enlace.
+    expect(link?.aria).toBe('Ver los 18.528 avisos de autos usados')
+  })
+
+  it('sin avisos relevados el enlace sigue valiendo: el directorio explica por qué no hay', () => {
+    const link = transportViewDirectory('moto', null)
+    expect(link?.to).toBe('/motos-usadas-uruguay')
+    expect(link?.cta).toBe('Ver el directorio')
+    expect(link?.aria).toBe('Ver el directorio de motos usadas')
+  })
+
+  it('un solo aviso no dice «los 1 avisos»', () => {
+    expect(transportViewDirectory('bici', 1)?.cta).toBe('Ver el aviso')
+  })
+
+  it('el ómnibus y caminar no tienen catálogo, y eso no es un olvido', () => {
+    expect(transportViewDirectory('omnibus', 999)).toBeNull()
+    expect(transportViewDirectory('pie', 999)).toBeNull()
+  })
+
+  it('los cuatro modos que se compran tienen el suyo', () => {
+    for (const mode of ['monopatin', 'bici', 'moto', 'auto'] as const) {
+      expect(transportViewDirectory(mode, 10)?.to).toMatch(/^\/[a-z-]+$/)
+    }
   })
 })
 

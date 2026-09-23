@@ -56,6 +56,18 @@
             </p>
             <p class="vc-figure">{{ cell.figure ?? '—' }}</p>
             <p class="vc-detail">{{ cell.detail }}</p>
+            <!-- La pregunta que sigue al veredicto es «bueno, ¿cuál compro?»: el catálogo va acá,
+                 no a 73 % de la página. El texto dice cuántos avisos hay del otro lado, que es lo
+                 que decide si el clic vale la pena. -->
+            <NuxtLink
+              v-if="cell.directorio"
+              :to="localePath(cell.directorio.to)"
+              class="vc-link"
+              :aria-label="cell.directorio.aria"
+            >
+              {{ cell.directorio.cta }}
+              <VIcon icon="mdi-arrow-right" size="14" />
+            </NuxtLink>
           </article>
         </div>
 
@@ -439,7 +451,18 @@
           <tr v-for="row in sortedModes" :key="row.mode">
             <td data-label="Modo">
               <VIcon :icon="TRANSPORT_VIEW_MODE_ICONS[row.mode]" size="18" class="mr-1" />
-              {{ row.label }}
+              <!-- El nombre del modo es el enlace a su catálogo: en una tabla de comparación es
+                   donde la mano ya está, y no agrega peso visual. El ómnibus y caminar no tienen
+                   catálogo y quedan como texto. -->
+              <NuxtLink
+                v-if="directorioDe(row)"
+                :to="localePath(directorioDe(row)!.to)"
+                class="td-link"
+                :aria-label="directorioDe(row)!.aria"
+              >
+                {{ row.label }}
+              </NuxtLink>
+              <template v-else>{{ row.label }}</template>
             </td>
             <template v-if="row.available">
               <td data-label="Por mes" class="text-right money">
@@ -466,6 +489,13 @@
             <template v-else>
               <td data-label="Estado" colspan="6" class="empty-cell">
                 {{ row.unavailableReason }}
+                <NuxtLink
+                  v-if="directorioDe(row)"
+                  :to="localePath(directorioDe(row)!.to)"
+                  class="td-link"
+                >
+                  Ver el directorio de {{ directorioDe(row)!.noun }}
+                </NuxtLink>
               </td>
             </template>
           </tr>
@@ -511,8 +541,16 @@
             <p v-if="row.price" class="field-note">
               Precio de referencia: {{ transportViewMoney(row.price.referenceUyu) }} ({{
                 row.price.condition
-              }}, {{ row.price.offers }} avisos relevados<template v-if="row.price.asOf">
-                al {{ transportViewDate(row.price.asOf) }}</template
+              }},
+              <!-- La cantidad de avisos es el enlace: el lector está mirando el precio y lo que
+                   quiere es ver de dónde salió. -->
+              <NuxtLink
+                v-if="directorioDe(row)"
+                :to="localePath(directorioDe(row)!.to)"
+                :aria-label="directorioDe(row)!.aria"
+                >{{ row.price.offers }} avisos relevados</NuxtLink
+              ><template v-else>{{ row.price.offers }} avisos relevados</template
+              ><template v-if="row.price.asOf"> al {{ transportViewDate(row.price.asOf) }}</template
               >). Banda del catálogo: {{ transportViewMoney(row.price.p25Uyu) }} a
               {{ transportViewMoney(row.price.p75Uyu) }}.
             </p>
@@ -683,6 +721,7 @@ import {
   type TransportFigure,
   type TransportMode,
   type TransportModeAssumptions,
+  type TransportModeResult,
   type TransportPrices,
   type TransportScenario,
   type TransportTiming,
@@ -696,6 +735,7 @@ import {
 } from '~/utils/transportScenario'
 import {
   TRANSPORT_VIEW_CAVEATS,
+  transportViewDirectory,
   TRANSPORT_VIEW_EDITABLE_FIELDS,
   TRANSPORT_VIEW_EDITABLE_GLOBAL,
   TRANSPORT_VIEW_MODE_ICONS,
@@ -955,6 +995,15 @@ const availableModes = computed(() => sortedModes.value.filter(row => row.availa
 // Las cuatro tarjetas de arriba son los modos que se COMPRAN: el ómnibus es la referencia y caminar
 // no es una decisión de compra. El veredicto se resuelve una vez por modo y no cuatro veces por
 // tarjeta desde la plantilla.
+/**
+ * El catálogo de avisos de una fila, con su cantidad real.
+ *
+ * Se resuelve acá y no en la plantilla para que el número que dice el enlace sea EXACTAMENTE el que
+ * la fila de al lado usó para calcular la banda: son el mismo `offers` del mismo snapshot.
+ */
+const directorioDe = (row: TransportModeResult) =>
+  transportViewDirectory(row.mode, row.price?.offers ?? null)
+
 const headlineVerdicts = computed(() =>
   sortedModes.value
     .filter(row => row.mode !== 'omnibus' && row.mode !== 'pie')
@@ -962,6 +1011,7 @@ const headlineVerdicts = computed(() =>
       mode: row.mode,
       label: row.label,
       icon: TRANSPORT_VIEW_MODE_ICONS[row.mode],
+      directorio: directorioDe(row),
       ...transportViewVerdict(row, effectiveScenario.value, referenceMonthly.value),
     }))
 )
@@ -1177,25 +1227,15 @@ if (import.meta.client) {
 }
 
 // ── Enlaces ────────────────────────────────────────────────────────────────
+/**
+ * Lo que rodea la cuenta, y ya NO los catálogos.
+ *
+ * Antes esta grilla repetía los directorios de monopatín, bici y auto, que ahora viajan pegados a
+ * cada modo —en la tarjeta del veredicto, en la tabla y en el desglose—. Dejarlos acá también era
+ * el mismo enlace cuatro veces en una página: lo que queda son las páginas que la cuenta USA pero
+ * no compara.
+ */
 const enlaces = [
-  {
-    to: '/monopatines-electricos-uruguay',
-    icon: 'mdi-scooter-electric',
-    label: 'Precio de monopatines eléctricos',
-    note: 'La banda p25/mediana/p75 de donde sale el precio que usa esta cuenta.',
-  },
-  {
-    to: '/bicicletas-electricas-uruguay',
-    icon: 'mdi-bicycle-electric',
-    label: 'Precio de bicicletas eléctricas',
-    note: 'Nuevo y usado, con las ofertas y su fecha.',
-  },
-  {
-    to: '/autos-usados-uruguay',
-    icon: 'mdi-car-hatchback',
-    label: 'Autos usados en Uruguay',
-    note: 'El catálogo de donde sale el precio de referencia y la pérdida de valor medida.',
-  },
   {
     to: '/precio-de-la-nafta-uruguay',
     icon: 'mdi-gas-station',
@@ -1213,6 +1253,18 @@ const enlaces = [
     icon: 'mdi-credit-card-outline',
     label: '¿Cuotas o contado?',
     note: 'La tasa implícita que el comercio no te dice, si vas a financiar el vehículo.',
+  },
+  {
+    to: '/multas-de-transito-y-patente-uruguay',
+    icon: 'mdi-card-account-details-outline',
+    label: 'Multas y patente',
+    note: 'De dónde sale la patente que esta cuenta suma, y cómo consultarla por matrícula.',
+  },
+  {
+    to: '/libreta-de-conducir-uruguay',
+    icon: 'mdi-card-account-details',
+    label: 'Libreta de conducir',
+    note: 'Qué categoría necesitás según lo que elijas: A para auto, G1 o G2 para moto.',
   },
 ]
 
@@ -1436,6 +1488,60 @@ useHead(() => ({
 .vc-mode {
   font-weight: 600;
   font-size: 0.95rem;
+}
+
+/* El enlace al catálogo: acción secundaria, al pie de la tarjeta y separada del veredicto por una
+   línea, para que se lea como «lo que sigue» y no como parte de la conclusión. */
+.vc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  width: 100%;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(var(--v-theme-link));
+  text-decoration: none;
+}
+
+.vc-link:hover,
+.vc-link:focus-visible {
+  text-decoration: underline;
+}
+
+.vc-link .v-icon {
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.vc-link:hover .v-icon {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vc-link .v-icon {
+    transition: none;
+  }
+}
+
+/* En la tabla el enlace no se pinta de azul: la columna se lee en vertical y cinco enlaces azules
+   seguidos compiten con las cifras, que son lo que hay que comparar. Se subraya al pasar. */
+.td-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(var(--v-theme-on-surface), 0.38);
+}
+
+.td-link:hover,
+.td-link:focus-visible {
+  color: rgb(var(--v-theme-link));
+  border-bottom-color: currentcolor;
+}
+
+.empty-cell .td-link {
+  margin-left: 6px;
+  white-space: nowrap;
 }
 
 .vc-headline {

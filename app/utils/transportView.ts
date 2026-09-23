@@ -57,6 +57,62 @@ export const TRANSPORT_VIEW_MODE_COLORS: Record<TransportMode, string> = {
   auto: '#c62828',
 }
 
+/**
+ * El directorio de avisos de cada modo: adónde va el lector cuando ya decidió.
+ *
+ * La página contesta «cuál te conviene» y la pregunta que sigue es «bueno, ¿cuál compro?». Hasta
+ * ahora la única salida era una grilla de tarjetas al 73 % del contenido, la misma para los seis
+ * modos; ahora cada modo lleva su catálogo al lado del veredicto, que es donde se decide.
+ *
+ * El ómnibus y caminar no están y no es un olvido: no hay avisos que ver.
+ */
+export const TRANSPORT_VIEW_MODE_DIRECTORY: Partial<
+  Record<TransportMode, { to: string; noun: string }>
+> = {
+  monopatin: { to: '/monopatines-electricos-uruguay', noun: 'monopatines eléctricos' },
+  bici: { to: '/bicicletas-electricas-uruguay', noun: 'bicicletas eléctricas' },
+  moto: { to: '/motos-usadas-uruguay', noun: 'motos usadas' },
+  auto: { to: '/autos-usados-uruguay', noun: 'autos usados' },
+}
+
+export interface TransportViewDirectory {
+  to: string
+  /** Lo que dice el enlace. Nombra lo que vas a encontrar, no la acción. */
+  cta: string
+  /** El nombre accesible completo: el enlace tiene que entenderse leído fuera de su fila. */
+  aria: string
+  noun: string
+  offers: number | null
+}
+
+/**
+ * El enlace al catálogo de un modo, con la cantidad REAL de avisos cuando se conoce.
+ *
+ * «Ver los 530 avisos» le dice al lector qué hay del otro lado antes de gastar el clic; «Ver el
+ * directorio» es lo que queda cuando todavía no relevamos precios de ese modo — y ahí el enlace
+ * sigue valiendo, porque el directorio explica por sí mismo que el relevamiento está arrancando.
+ */
+export function transportViewDirectory(
+  mode: TransportMode,
+  offers: number | null | undefined
+): TransportViewDirectory | null {
+  const entry = TRANSPORT_VIEW_MODE_DIRECTORY[mode]
+  if (!entry) return null
+  const count = typeof offers === 'number' && offers > 0 ? offers : null
+  const cta = count
+    ? count === 1
+      ? 'Ver el aviso'
+      : `Ver los ${count.toLocaleString('es-UY')} avisos`
+    : 'Ver el directorio'
+  return {
+    to: entry.to,
+    cta,
+    aria: count ? `${cta} de ${entry.noun}` : `Ver el directorio de ${entry.noun}`,
+    noun: entry.noun,
+    offers: count,
+  }
+}
+
 export function transportViewMoney(value: number | null | undefined, decimals = 0): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) return 'sin datos'
   return formatUYU(value, decimals)
