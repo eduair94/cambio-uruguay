@@ -289,26 +289,52 @@ npx vitest run tests/transporte
 npx tsc -p tsconfig.production.json --noEmit   # hay UN error preexistente: sync_sheet.ts sin sheet_key.json
 ```
 
+## Lo que la primera corrida en producción midió (23/9/2026)
+
+| cifra | valor |
+|---|---|
+| zonas publicadas | 65 (de 68; Ciudad de la Costa, Pando y Canelones quedan afuera porque los horarios de la IM cubren Montevideo) |
+| pares con viaje en ómnibus | 3.828 de 4.160 (92 %) |
+| rutas | 16.640 en **4 llamadas** a OSRM de FOSSGIS |
+| tiempo de la corrida | 41 s la primera; 7,7 s la segunda, reusando la matriz |
+| boleto / nafta / kWh | $52 · $75,04 · $10,31 |
+| precios por modo | monopatín $12.000 (16 avisos) · bici $27.150 (13) · moto $60.366 (530) · auto $391.463 (18.528) |
+
+Y el veredicto que publica, con 7 km, 5 días y horizonte de 36 meses:
+
+| modo | por mes | puerta a puerta | contra el ómnibus | veredicto |
+|---|---|---|---|---|
+| Ómnibus | $2.253 | 26 min | referencia | es la referencia |
+| A pie | $0 | 1 h 33 | −581 h al año | más barato, pero más lento |
+| Monopatín | $1.157 | 24 min | +20 h al año | se paga en 4 meses |
+| Bici eléctrica | $1.520 | 22 min | +36 h al año | se paga en 9 meses |
+| Moto | $2.953 | 15 min (ruta de auto) | +97 h al año | no se paga nunca; la hora sale $584 |
+| Auto usado | $9.056 | 18 min | +72 h al año | no se paga nunca; la hora sale $1.135 |
+
+## Tres defectos que encontró LEER la página publicada, no los tests
+
+Con 10.088 tests del app y 4.670 de la raíz en verde:
+
+1. **«A pie: más caro y más lento»**, cuando caminar sale `$ 0`. El veredicto elegía esa rama mirando
+   sólo el tiempo; para los cuatro modos que se compran eso es cierto casi siempre, así que el
+   defecto sólo aparece cuando un modo cuesta cero. Ahora la función recibe el costo de la
+   referencia y separa «más barato, pero más lento» de «más caro y más lento».
+2. **`medianUyu` guardaba el p25.** La pantalla decía la verdad («Precio de referencia»); el
+   contrato no. Se llama `referenceUyu`.
+3. **La página abría en el camino estimado** (escribir los km) con el medido escondido detrás de un
+   clic. Arranca en Pocitos → Centro.
+
 ## Qué queda pendiente
 
-- **El app del comparador**: `app/utils/transportModel.ts`, `transportAssumptions.ts`,
-  `transportScenario.ts` y `transportView.ts` ya existen; **falta la página**
-  `app/pages/conviene-auto-moto-o-omnibus-uruguay.vue` y las rutas `app/server/api/transporte/`
-  (`comparador.get.ts` con caché y `ruta.get.ts` para el ruteo vivo por dirección).
-- **El registro del job**: todavía no hay entrada `currency-transporte` en `ecosystem.config.js` ni
-  en `OTHER_APPS` de `scripts/deploy-backend.sh`. Sin las dos, el job **no arranca en el VPS**: no
-  falla, no loguea, y la colección simplemente no se mueve (`tests/sync/pm2_registration.test.ts` lo
-  vigila para los jobs ya declarados).
-- **La fila en `docs/seo/experiments.json`**, en el mismo commit que publique la página: sin ella el
-  cambio no se mide nunca.
-- **`motocatalog`**: hasta que exista el directorio de motos, `prices.ts` comprueba que la colección
-  esté antes de leerla y el modo `moto` se publica sin banda.
-- **El interior**: los horarios publicados por la IM cubren Montevideo. El resto del área
-  metropolitana viaja en líneas del MTOP (GTFS), que todavía no se leen; las zonas sin parada quedan
-  declaradas en `coverage.notes` en vez de estimadas.
-- **`busMonthlyPassUyu` es `null`**: el abono mensual del STM todavía no lo publica ningún job del
-  sitio, así que no se inventa.
-- **Verificar la cobertura contra una corrida real en el VPS**: los 3.826 pares y las 18.224 rutas
-  son del relevamiento del 22/9/2026, antes de que el CSV de horarios pasara a mandar sobre el
-  recorrido. Conviene volver a medirlos en la primera corrida de producción y actualizar la tabla de
-  arriba con la fecha nueva.
+- **La moto se rutea como un auto.** Ningún ruteador público modela pasar entre filas ni usar el
+  hueco del semáforo. La página lo dice donde muestra el tiempo; descontarle minutos por suposición
+  sería decidir la comparación con un número inventado.
+- **332 pares de barrios sin viaje en ómnibus** (8 %): son periferia contra periferia, que necesita
+  dos trasbordos. Se declaran; no se estiman.
+- **El área metropolitana fuera de Montevideo** (Ciudad de la Costa, Pando, Canelones) necesita los
+  horarios del MTOP, que este job todavía no lee.
+- **El respaldo que lee `medianUyu`** en `app/server/utils/transportSnapshot.ts` se puede sacar: era
+  para la ventana entre el deploy del renombrado y la primera corrida del job con el nombre nuevo.
+- **Valhalla propio** en el VPS (docker, sobre el mismo extracto de Geofabrik que ya baja
+  `currency-property-services`) daría los cinco modos en un motor y un `motor_scooter` real para el
+  monopatín. Hoy no hace falta: OSRM resuelve la matriz entera en cuatro llamadas.
