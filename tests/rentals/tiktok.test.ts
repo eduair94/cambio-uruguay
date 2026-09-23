@@ -166,7 +166,7 @@ describe("TikTok post → RawRental", () => {
   });
 
   it("takes a validated corner coordinate and its INE barrio when the text named none", () => {
-    const post = postFromItemStruct(item({ desc: "Alquiler 2 dormitorios 📍 Gaboto y La Paz $22.000", contents: undefined, textExtra: [] }))!;
+    const post = postFromItemStruct(item({ desc: "Alquiler 2 dormitorios en Montevideo 📍 Gaboto y La Paz $22.000", contents: undefined, textExtra: [] }))!;
     const row = postToRawRental(post, parseCaption(post.lines, post.hashtags), { latitude: -34.9, longitude: -56.18, neighborhood: "Cordón" }, AT)!;
     expect(row).toMatchObject({ latitude: -34.9, longitude: -56.18, neighborhood: "Cordón", department: "Montevideo" });
   });
@@ -303,7 +303,7 @@ describe("harvestTiktok", () => {
       readLists: listsOf({}, {}), store, now, geocode, locateZone: () => "8",
       env: { ...baseEnv, RENTALS_TIKTOK_TAGS: "", RENTALS_TIKTOK_ACCOUNTS: "", RENTALS_TIKTOK_VIDEOS: "https://vt.tiktok.com/ZSbJ6eN9S/" },
       resolveUrl: async () => "https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549",
-      readVideo: async () => post("7688511584326454549", "inmobiliariaalquilar", "Alquiler 2 dormitorios 📍 Chucarro y Guayaquí $30.000"),
+      readVideo: async () => post("7688511584326454549", "inmobiliariaalquilar", "Alquiler 2 dormitorios en Montevideo 📍 Chucarro y Guayaquí $30.000"),
     };
     const first = await harvestTiktok("full", 40, deps);
     expect(first.listings[0]).toMatchObject({ listingId: "tiktok:7688511584326454549", latitude: -34.906, longitude: -56.156, neighborhood: "Pocitos", department: "Montevideo" });
@@ -391,5 +391,32 @@ describe("TikTok caption — review fix pass", () => {
     await harvestTiktok("full", 40, { readLists, store: memoryStore(), env: { ...baseEnv, RENTALS_TIKTOK_MAX_ACCOUNTS: "0", RENTALS_TIKTOK_TAG_PAGES: "1" }, now, geocode: noGeo });
     expect(readLists.mock.calls[0]![0].accounts).toEqual([]);
     expect(readLists.mock.calls[0]![0].tagPages).toBe(1);
+  });
+});
+
+// --- Measured on the first production sweep (95 posts, 2026-09-23 12:39 UTC) ------------------
+
+describe("TikTok caption — first production sweep", () => {
+  it("reads 'Gastos C.' with its abbreviation dot, so the rent beside it is not ambiguous", () => {
+    expect(captionAmounts("ALQUILER CORDON DESIGN 🔥 - 1 Dormitorio - 1 Baño - $29.000 - Gastos C. $6.400 - 📲 099 266 021")).toMatchObject({ price: 29000, commonExpenses: 6400, ambiguous: false });
+    expect(captionAmounts("Portería virtual 24hs $27.000 Gastos C. $4.500 #montevideo")).toMatchObject({ price: 27000, commonExpenses: 4500 });
+  });
+
+  it("'mensuales' labels the number BEFORE it, and a bare 'N gastos comunes' is the GC, never the rent", () => {
+    expect(captionAmounts("Varias áreas de uso comun 29.900 mensuales 4400 gastos comunes #alquileres")).toMatchObject({ price: 29900, commonExpenses: 4400 });
+    expect(captionAmounts("$30.000 GC $4.000")).toMatchObject({ price: 30000, commonExpenses: 4000 });
+    expect(captionAmounts("Alquiler $ 39.000 + GC")).toMatchObject({ price: 39000, commonExpenses: null });
+  });
+
+  it("refuses a caption with no trace of Uruguay: the global hashtags carry US and Mexican adverts", () => {
+    expect(facts("7688511584326454549").rejected).toBeNull();
+    const reading = parseCaption(["🏡 APARTAMENTO EN ALQUILER – CIUDAD DE READING Acogedor apartamento de 1 habitación y 1 baño disponible por $9,000 al mes, con todos los servicios incluidos."], ["alquiler", "apartamento"]);
+    expect(reading.rejected).toBe("sin evidencia de Uruguay");
+    const newark = parseCaption(["323 S 7th St Newark NJ 2 habitaciones $18000 Tercer piso unidad más grande #newarkrentals #apartmento #alquileres"], ["newarkrentals", "apartmento", "alquileres"]);
+    expect(newark.rejected).toBe("sin evidencia de Uruguay");
+    // A Uruguayan phone, a Uruguayan hashtag or a guarantee name is evidence enough when the caption names no place.
+    expect(parseCaption(["🏠Alquiler 1 Dormitorio $19.500 091 297 817"], ["tiktokuruguay", "alquileres"]).rejected).toBeNull();
+    expect(parseCaption(["Alquiler $ 21.500 Garantías Aseguradoras Anda y Contaduria"], ["alquiler"]).rejected).toBeNull();
+    expect(parseCaption(["Alquiler apartamento 2 dormitorios $22.000 sin gastos comunes 099 232 050"], []).rejected).toBeNull();
   });
 });

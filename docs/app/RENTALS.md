@@ -84,8 +84,12 @@ evidencia de temporal (`rentalPeriodEvidence`) rechazan. `‼️DISPONIBLE‼️
   `Cochera opcional: $3.500`) y nunca cuando son un atributo de la vivienda ("apartamento con
   cochera $32.000" es el alquiler; "GC bajos ✅ 2 dormitorios $22.000" también). Una etiqueta
   después del monto etiqueta al siguiente, así que "$30.000 GC $4.000" es alquiler 30.000 y GC
-  4.000; las unidades (`m2`, `años`, `meses`, `cuadras`) y `extra`/`de depósito` sí se leen
-  después del monto. `Anda: $33.000`, `$24.000 con aseguradoras`, `$19.000 Porto Seguro` son
+  4.000 — salvo que a la etiqueta no la siga ningún monto: "29.900 mensuales 4400 gastos comunes"
+  (primer barrido real) es alquiler 29.900 y GC 4.400, porque `mensuales` etiqueta al número de
+  ANTES (por eso no es etiqueta "antes") y un `gastos comunes` sin cifra después etiqueta al de
+  antes; `Gastos C.` con el punto de la abreviatura también cuenta. Las unidades (`m2`, `años`,
+  `meses`, `cuadras`) y `extra`/`de depósito` sí se leen después del monto. `Anda: $33.000`,
+  `$24.000 con aseguradoras`, `$19.000 Porto Seguro` son
   **variantes por garantía** y se publica la MENOR. Sin etiqueta: es el precio sólo si es el
   ÚNICO monto sin etiqueta; con dos distintos, abstención ("precio ambiguo"). "Sin gastos
   comunes" / "no paga gastos comunes" = GC 0. Después, `isPlausibleRent` con la tasa de la
@@ -119,6 +123,12 @@ evidencia de temporal (`rentalPeriodEvidence`) rechazan. `‼️DISPONIBLE‼️
   con `acceptGeocode` (sólo intersección con palabra en común o ROOFTOP con el número) y
   `pointContradictsBarrio`: un punto en otra área INE que el barrio nombrado se descarta; sin
   barrio nombrado, el área del punto lo nombra. Nunca `locationCreated` (es el país).
+- **Evidencia de Uruguay.** El primer barrido real (95 videos) trajo avisos de Reading (PA),
+  Newark (NJ) y México bajo los hashtags globales, en castellano, con "alquiler" y un precio
+  dentro de la banda de verosimilitud. Sin departamento ni barrio nombrados, sin hashtag uruguayo
+  (`#uruguay`, `#montevideo`, `#…uy`), sin teléfono uruguayo (`09x xxx xxx`, `+598`) y sin una
+  palabra que sólo se escribe acá (Anda, CGN, Contaduría, Porto Seguro, aseguradoras, `$U`), la
+  leyenda se rechaza: `sin evidencia de Uruguay`.
 - **Lo que no se toma.** Contactos: el teléfono está en la leyenda y `rentalDescription` lo borra;
   la bio de la cuenta no se copia; `agency`/`publicContact` quedan sin inspeccionar. `sellerType`
   sólo de lo que el texto declara (`advertiserClassification`): "Inmobiliaria X" como nombre de

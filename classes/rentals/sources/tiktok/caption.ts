@@ -86,23 +86,29 @@ const USD = /(?:u\$s|us\$|usd|u\$d|d[oó]lares)/i;
  * A Uruguayan phone, in every spelling the captions use: `099 232 050`, `099232050`, `09x-xxx-xxx`,
  * `+598 99 123 456`, `2 712 34 56`; and any bare run of seven or more digits, which is never a rent.
  */
-const PHONE = /(?<![\d$])(?:\+?598[\s.-]?)?(?:0?9\d(?:[\s.-]?\d){7}|[2-4](?:[\s.-]?\d){7})(?![\d])|(?<![\d.,$])\d{7,}(?![\d.,])/g;
+const PHONE = /(?<![\d$])(?:\+?598[\s.-]?)?(?:0?9\d(?:[\s.-]?\d){6}|[2-4](?:[\s.-]?\d){7})(?![\d])|(?<![\d.,$])\d{7,}(?![\d.,])/g;
 /** Three bare digits are a dollar rent ("U$S 900") or nothing: without a currency mark they are dropped below. */
 const AMOUNT = /(?:(u\$s|us\$|usd|u\$d|\$)\s*)?(\d{1,3}(?:[.,]\d{3})+|\d{3,6})(?:\s*(pesos|d[oó]lares|usd|u\$s))?/giu;
 /**
  * Labels read BEFORE an amount, within a short window bounded by the previous amount; the
  * nearest one wins. Gastos comunes and the ignored items must sit RIGHT before their figure.
  */
-const GC_ADJACENT = /(?:gastos\s+comunes|gastos\s+c|g\.?\s?c\.?|expensas)\s*(?:de|aprox\.?|mensual(?:es)?)?\s*[:=]?\s*$/i;
+const GC_ADJACENT = /(?:gastos\s+comunes|gastos\s+c\.?|g\.?\s?c\.?|expensas)\s*(?:de|aprox\.?|mensual(?:es)?)?\s*[:=]?\s*$/i;
 const IGNORE_ADJACENT = /(?:^|[^a-záéíóúñ])(?:dep[oó]sito|se[ñn]a|comisi[oó]n|honorarios|cochera|garaje|garage|estacionamiento|extra|adelantad[oa]|luz|agua|ute|ose|internet|wifi|tributos?|contribuci[oó]n)(?:\s+(?:opcional|aparte|mensual|por\s+mes))?\s*[:=]?\s*$/i;
 /** "con cochera $32.000", "luz y agua $28.000": the item is a feature of the dwelling, not the amount's label. */
 const IGNORE_IS_FEATURE = /\b(?:con|y|e|sin)\s+[a-záéíóúñ]+\s*[:=]?\s*$/i;
 const VARIANT_LABEL = /(?:^|[^a-záéíóúñ])(?:anda|cgn|contadur[ií]a|porto|aseguradoras?|sura|mapfre|surco|fideciu|sancor|garant[ií]as?)(?![a-záéíóúñ])/gi;
-const PRICE_LABEL = /(?:^|[^a-záéíóúñ])(?:precio|alquiler|arriendo|mensual(?:es)?|por\s+mes|al\s+mes|renta|valor)(?![a-záéíóúñ])/gi;
+/** "mensuales" / "por mes" are NOT here: they label the number BEFORE them ("29.900 mensuales 4400 gastos comunes"). */
+const PRICE_LABEL = /(?:^|[^a-záéíóúñ])(?:precio|alquiler|arriendo|renta|valor)(?![a-záéíóúñ])/gi;
 /** A currency-less number is money only with its label right before it ("PRECIO:42.000", "Gastos comunes: 1.850"). */
-const BARE_PRICE_ADJACENT = /(?:precio|alquiler|arriendo|renta|valor|mensual(?:es)?)\s*(?:de|es\s+de)?\s*[:=]?\s*$/i;
-/** Labels read right AFTER an amount ("$17.000 de alquiler", "$24.000 con aseguradoras", "$3.000 extra", "120 m2"). */
+const BARE_PRICE_ADJACENT = /(?:precio|alquiler|arriendo|renta|valor)\s*(?:de|es\s+de)?\s*[:=]?\s*$/i;
+/**
+ * Labels read right AFTER an amount ("$17.000 de alquiler", "29.900 mensuales", "$24.000 con
+ * aseguradoras", "$3.000 extra", "120 m2", "4400 gastos comunes"). A GC word that is itself
+ * followed by an amount ("$30.000 GC $4.000") labels THAT amount, not the one before.
+ */
 const AFTER_LABELS: ReadonlyArray<[Role, RegExp]> = [
+  ["gc", /^\s*(?:de\s+)?(?:gastos\s+comunes|gastos\s+c\.?|g\.?\s?c\.?|expensas)(?![a-záéíóúñ])(?!\.?\s*(?:aprox\.?\s*)?[:=]?\s*(?:u\$s|us\$|usd|\$)?\s*\d)/i],
   ["ignore", /^\s*(?:(?:de\s+)?(?:dep[oó]sito|se[ñn]a|extra|adelanto|de\s+garant[ií]a)|m2|m²|mts?|metros|a[ñn]os?|meses|hs|horas|d[ií]as|cuadras?)(?![a-záéíóúñ])/i],
   ["variant", /^\s*(?:con\s+|para\s+)?(?:anda|cgn|contadur[ií]a|porto|aseguradoras?|sura|mapfre|surco|fideciu|sancor)(?![a-záéíóúñ])/i],
   ["price", /^\s*(?:de\s+)?(?:alquiler|mensual(?:es)?|por\s+mes|al\s+mes)(?![a-záéíóúñ])/i],
@@ -155,12 +161,17 @@ export function captionAmounts(text: string): {
     const after = source.slice(end, end + 28);
     const currency: RentalCurrency | null = USD.test(symbol) || USD.test(word) ? "USD" : symbol || /pesos/i.test(word) ? "UYU" : null;
     const previous = previousKept && amounts.length ? amounts[amounts.length - 1]! : null;
-    const role: Role = previous && RANGE_GAP.test(before)
-      ? previous.role
-      : roleBefore(before) ?? roleAfter(after) ?? "plain";
+    const fromBefore = roleBefore(before);
+    const fromAfter = fromBefore ? null : roleAfter(after);
+    const role: Role = previous && RANGE_GAP.test(before) ? previous.role : fromBefore ?? fromAfter ?? "plain";
     previousEnd = end;
-    // A bare number without a currency mark is money only when its label sits right before it.
-    if (!currency && !((role === "price" && BARE_PRICE_ADJACENT.test(before)) || (role === "gc" && GC_ADJACENT.test(before)))) {
+    // A bare number without a currency mark is money only when its label is glued to it: right
+    // before ("PRECIO:42.000", "Gastos comunes: 1.850") or right after ("29.900 mensuales",
+    // "4400 gastos comunes").
+    const bareAllowed = (fromBefore === "price" && BARE_PRICE_ADJACENT.test(before))
+      || fromBefore === "gc"
+      || fromAfter === "price" || fromAfter === "gc";
+    if (!currency && !bareAllowed) {
       previousKept = false;
       continue;
     }
@@ -276,6 +287,28 @@ export function captionPropertyType(title: string, text: string): RentalProperty
   return byText === "habitacion" ? "otro" : byText;
 }
 
+// --- Uruguay ---------------------------------------------------------------------------------
+
+const UY_HASHTAG = /uruguay|montevideo|mvd|(?:^|[^a-z])uy$/;
+const UY_PHONE = /(?<!\d)(?:\+?598[\s.-]?)?0?9\d(?:[\s.-]?\d){6}(?!\d)/;
+/** The guarantee names, "$U"/"UYU" and "pesos uruguayos": nobody outside Uruguay writes them. */
+const UY_WORDS = /\b(?:anda|cgn|contadur[ií]a|porto\s+seguro|aseguradoras?|fideciu|surco|uyu|pesos\s+uruguayos)\b|\$\s*u(?![a-z])/;
+
+/**
+ * Whether the caption shows ANY trace of Uruguay. The first production sweep (95 posts) found US
+ * and Mexican adverts under the global hashtags ("CIUDAD DE READING … $1,100 al mes", "Newark NJ
+ * $1800"), written in Spanish with "alquiler" and a price inside the plausibility band. A named
+ * department or barrio, a Uruguayan hashtag, a Uruguayan phone or a guarantee name is enough;
+ * a caption with none of them is not published.
+ */
+export function uruguayEvidence(text: string, hashtags: readonly string[], location: { department: string; neighborhood: string }): boolean {
+  if (location.department || location.neighborhood) return true;
+  const tags = [...hashtags, ...(text.match(/#(\S+)/g) || []).map(tag => tag.slice(1))].map(tag => flatten(tag).replace(/[^a-z0-9]/g, ""));
+  if (tags.some(tag => UY_HASHTAG.test(tag))) return true;
+  if (UY_PHONE.test(text)) return true;
+  return UY_WORDS.test(flatten(text));
+}
+
 // --- Everything ------------------------------------------------------------------------------
 
 export function parseCaption(lines: readonly string[], hashtags: readonly string[]): CaptionFacts {
@@ -286,6 +319,7 @@ export function parseCaption(lines: readonly string[], hashtags: readonly string
   const attributes = parseAttributes([text]);
   const rejected = captionRejection(text)
     ?? (!/\b(?:alquil|arriend)/.test(flatten(text)) ? "sin verbo de alquiler" : null)
+    ?? (!uruguayEvidence(text, hashtags, location) ? "sin evidencia de Uruguay" : null)
     ?? (amounts.ambiguous ? "precio ambiguo" : amounts.price === null ? "sin precio" : null);
   return {
     title,
