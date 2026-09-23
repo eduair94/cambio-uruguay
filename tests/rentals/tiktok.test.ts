@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { RENTAL_SOURCES, RENTAL_SOURCE_LABEL } from "../../classes/rentals/types";
 import { captionAmounts, captionLocation, captionPropertyType, captionRejection, captionTitle, parseCaption } from "../../classes/rentals/sources/tiktok/caption";
+import { postFromItemStruct, postToRawRental, postUrl } from "../../classes/rentals/sources/tiktok/post";
 
 interface Fixture { id: string; author: string; createTime: number; desc: string; hashtags: string[] }
 const captions: Fixture[] = JSON.parse(readFileSync(join(__dirname, "fixtures", "tiktok-captions.json"), "utf8"));
@@ -110,5 +111,62 @@ describe("TikTok caption title and type", () => {
     expect(facts("7688511584326454549").guarantees).toContain("aseguradora");
     expect(facts("7278750140763000070").rejected).toBe("sin precio");
     expect(facts("7679135522408746261").rejected).toBe("no disponible");
+  });
+});
+
+// --- Task 3: itemStruct → post → RawRental ----------------------------------------------------
+
+const example = byId("7688511584326454549");
+const item = (over: Record<string, unknown> = {}) => ({
+  id: "7688511584326454549", desc: example.desc, createTime: "1790121112",
+  author: { uniqueId: "inmobiliariaalquilar", nickname: "Inmobiliaria Alquilar Mvd", secUid: "MS4wLjAB" },
+  video: { cover: "https://p16-common-sign.tiktokcdn.com/x~tplv.image?x-expires=1790330400" },
+  textExtra: example.hashtags.map(hashtagName => ({ hashtagName, type: 1 })),
+  contents: [{ desc: "🏠 ALQUILER 2 DORMITORIOS BARATO, MUY ECONÓMICO" }, { desc: "🔹📍 Gaboto y La Paz" }],
+  ...over,
+});
+const AT = "2026-09-23T10:00:00.000Z";
+
+describe("TikTok post → RawRental", () => {
+  it("normalises an itemStruct: lines from contents, hashtags from textExtra, cover, author", () => {
+    const post = postFromItemStruct(item())!;
+    expect(post).toMatchObject({ id: "7688511584326454549", createTime: 1790121112, author: { uniqueId: "inmobiliariaalquilar" }, hashtags: ["alquiler", "apartamento", "cordón", "aguada", "alquilar"] });
+    expect(post.lines[0]).toBe("🏠 ALQUILER 2 DORMITORIOS BARATO, MUY ECONÓMICO");
+    expect(postUrl(post)).toBe("https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549");
+    expect(postFromItemStruct(item({ contents: undefined }))!.lines).toEqual([example.desc]);
+    expect(postFromItemStruct({ id: "1" })).toBeNull();
+    expect(postFromItemStruct(item({ author: { uniqueId: "" } }))).toBeNull();
+  });
+
+  it("builds the offer: sanitized description without the phone, real publish date, guarantees, no contacts", () => {
+    const post = postFromItemStruct(item({ contents: undefined }))!;
+    const row = postToRawRental(post, parseCaption(post.lines, post.hashtags), null, AT)!;
+    expect(row).toMatchObject({
+      source: "tiktok", listingId: "tiktok:7688511584326454549", url: postUrl(post), price: 22000, currency: "UYU",
+      commonExpenses: 1850, commonExpensesCurrency: "UYU", propertyType: "apartamento", department: "Montevideo", neighborhood: "Cordón",
+      bedrooms: 2, bathrooms: 1, address: "", street: "", streetNumber: "", latitude: null, longitude: null,
+      publishedAt: "2026-09-22", sellerName: "Inmobiliaria Alquilar Mvd", sellerType: "desconocido", petsAllowed: null, furnished: null, parkingSpaces: null,
+      image: "https://p16-common-sign.tiktokcdn.com/x~tplv.image?x-expires=1790330400",
+    });
+    expect(row.description).not.toContain("099");
+    expect(row.details?.description).not.toContain("232 050");
+    expect(row.details?.images).toEqual([row.image]);
+    expect(row.guarantees).toContain("aseguradora");
+    expect(row.agency).toBeUndefined();
+    expect(row.publicContact).toBeUndefined();
+  });
+
+  it("takes a validated corner coordinate and its INE barrio when the text named none", () => {
+    const post = postFromItemStruct(item({ desc: "Alquiler 2 dormitorios 📍 Gaboto y La Paz $22.000", contents: undefined, textExtra: [] }))!;
+    const row = postToRawRental(post, parseCaption(post.lines, post.hashtags), { latitude: -34.9, longitude: -56.18, neighborhood: "Cordón" }, AT)!;
+    expect(row).toMatchObject({ latitude: -34.9, longitude: -56.18, neighborhood: "Cordón", department: "Montevideo" });
+  });
+
+  it("returns null for a rejected caption and a null image for a missing cover", () => {
+    const gone = postFromItemStruct(item({ desc: "⛔️NO DISPONIBLE⛔️ Alquiler $20.000", contents: undefined }))!;
+    expect(postToRawRental(gone, parseCaption(gone.lines, gone.hashtags), null, AT)).toBeNull();
+    const bare = postFromItemStruct(item({ video: { cover: "" }, contents: undefined }))!;
+    expect(bare.cover).toBeNull();
+    expect(postToRawRental(bare, parseCaption(bare.lines, bare.hashtags), null, AT)!.image).toBeNull();
   });
 });
