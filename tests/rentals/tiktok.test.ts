@@ -247,7 +247,7 @@ const post = (id: string, uniqueId: string, desc: string, createTime = 179012111
   postFromItemStruct(item({ id: vid(id), desc, contents: undefined, textExtra: [], createTime: String(createTime), author: { uniqueId, nickname: uniqueId, secUid: "S" } }))!;
 const listsOf = (tags: Record<string, ReturnType<typeof post>[]>, accounts: Record<string, { posts: ReturnType<typeof post>[]; exhausted?: boolean }>) =>
   vi.fn(async (_plan: ListPlan): Promise<ListResults> => ({
-    launched: true, note: "",
+    launched: true, note: "", videos: new Map(),
     tags: new Map(Object.entries(tags).map(([tag, posts]) => [tag, { posts, pages: 1, exhausted: true, failure: null }])),
     accounts: new Map(Object.entries(accounts).map(([acc, read]) => [acc, { posts: read.posts, pages: 1, exhausted: read.exhausted ?? true, failure: null }])),
   }));
@@ -324,7 +324,7 @@ describe("harvestTiktok", () => {
 
   it("says so when there is no proxy and the lists came back empty", async () => {
     const readLists = vi.fn(async (): Promise<ListResults> => ({
-      launched: true, note: "", accounts: new Map(),
+      launched: true, note: "", accounts: new Map(), videos: new Map(),
       tags: new Map([["alquilermontevideo", { posts: [], pages: 0, exhausted: false, failure: "lista vacía (IP bloqueada o desafío)" }]]),
     }));
     const run = await harvestTiktok("full", 40, { readLists, store: memoryStore(), env: { ...baseEnv, RENTALS_TIKTOK_PROXY: "", RENTALS_TIKTOK_ACCOUNTS: "" }, now });
@@ -418,5 +418,29 @@ describe("TikTok caption — first production sweep", () => {
     expect(parseCaption(["🏠Alquiler 1 Dormitorio $19.500 091 297 817"], ["tiktokuruguay", "alquileres"]).rejected).toBeNull();
     expect(parseCaption(["Alquiler $ 21.500 Garantías Aseguradoras Anda y Contaduria"], ["alquiler"]).rejected).toBeNull();
     expect(parseCaption(["Alquiler apartamento 2 dormitorios $22.000 sin gastos comunes 099 232 050"], []).rejected).toBeNull();
+  });
+});
+
+describe("harvestTiktok — manual video through the browser when plain HTTP is challenged", () => {
+  it("hands the canonical URL to the browser and publishes what it read", async () => {
+    // Measured 2026-09-23 14:20 UTC: the VPS gets the WAF interstitial (1,4 KB) for the video page
+    // it had read in full that morning; through the proxy the page is complete.
+    const canonical = "https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549";
+    const fromBrowser = post("7688511584326454549", "inmobiliariaalquilar", CAPTION);
+    const readLists = vi.fn(async (plan: ListPlan): Promise<ListResults> => ({
+      launched: true, note: "", tags: new Map(), accounts: new Map(),
+      videos: new Map(plan.videos.map(url => [url, url === canonical ? fromBrowser : null])),
+    }));
+    const store = memoryStore();
+    const run = await harvestTiktok("full", 40, {
+      readLists, store, now, geocode: noGeo,
+      env: { ...baseEnv, RENTALS_TIKTOK_TAGS: "", RENTALS_TIKTOK_ACCOUNTS: "", RENTALS_TIKTOK_VIDEOS: "https://vt.tiktok.com/ZSbJ6eN9S/" },
+      resolveUrl: async () => canonical,
+      readVideo: async () => null,
+    });
+    expect(readLists.mock.calls[0]![0].videos).toEqual([canonical]);
+    expect(run.listings.map(row => row.listingId)).toEqual(["tiktok:7688511584326454549"]);
+    expect(run.note).toContain("1 video manual");
+    expect(store.state.accounts.map(row => row.uniqueId)).toEqual(["inmobiliariaalquilar"]);
   });
 });

@@ -79,7 +79,7 @@ function defaultLocateZone(lng: number, lat: number): string | null {
   return zoneLocator(lng, lat);
 }
 
-const EMPTY_LISTS: ListResults = { tags: new Map(), accounts: new Map(), launched: false, note: "" };
+const EMPTY_LISTS: ListResults = { tags: new Map(), accounts: new Map(), videos: new Map(), launched: false, note: "" };
 
 export async function harvestTiktok(mode: "full" | "fast", usdUyu: number, overrides: Partial<HarvestTiktokDeps> = {}): Promise<RentalSourceResult> {
   const deps: HarvestTiktokDeps = {
@@ -102,14 +102,17 @@ export async function harvestTiktok(mode: "full" | "fast", usdUyu: number, overr
   const maxAccounts = number(env.RENTALS_TIKTOK_MAX_ACCOUNTS, 60);
   const geocodeBudget = { remaining: number(env.RENTALS_TIKTOK_GEOCODE_MAX, 60) };
 
-  // 1. Videos a person handed us: plain HTTP, no browser, no proxy.
+  // 1. Videos a person handed us: plain HTTP first (free when it works); the ones the WAF
+  //    challenges go to the browser below, through the proxy.
   const manual: TiktokPost[] = [];
+  const pendingVideos: string[] = [];
   let manualFailed = 0;
   for (const raw of list(env.RENTALS_TIKTOK_VIDEOS, "")) {
     const url = await deps.resolveUrl(raw);
-    const post = url ? await deps.readVideo(url) : null;
+    if (!url) { manualFailed++; continue; }
+    const post = await deps.readVideo(url);
     if (post) manual.push(post);
-    else manualFailed++;
+    else pendingVideos.push(url);
   }
 
   // 2. Who to read: the registry plus the seeds, never-read first, then oldest read, within budget.
@@ -125,7 +128,7 @@ export async function harvestTiktok(mode: "full" | "fast", usdUyu: number, overr
 
   // 3. The lists, through one browser.
   const plan: ListPlan = {
-    tags, accounts,
+    tags, accounts, videos: pendingVideos,
     tagPages: number(env.RENTALS_TIKTOK_TAG_PAGES, 3),
     accountPages: number(env.RENTALS_TIKTOK_ACCOUNT_PAGES, 3),
     minCreateTime,
@@ -134,7 +137,12 @@ export async function harvestTiktok(mode: "full" | "fast", usdUyu: number, overr
     proxy,
     warmUrl: WARM_URL,
   };
-  const lists = tags.length || accounts.length ? await deps.readLists(plan) : EMPTY_LISTS;
+  const lists = tags.length || accounts.length || pendingVideos.length ? await deps.readLists(plan) : EMPTY_LISTS;
+  for (const url of pendingVideos) {
+    const post = lists.videos.get(url);
+    if (post) manual.push(post);
+    else manualFailed++;
+  }
 
   // 4. Every video once, newest first: caption → facts → offer.
   const posts = new Map<string, TiktokPost>();

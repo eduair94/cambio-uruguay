@@ -18,6 +18,7 @@
 //     so the executable path candidates put the system Chrome first.
 //
 // Never `/search?`: robots.txt disallows it, and this reader has no code path that builds it.
+import { postFromVideoHtml } from "./page";
 import { postFromItemStruct, type TiktokPost } from "./post";
 
 export interface ListRead {
@@ -32,6 +33,12 @@ export interface ListRead {
 export interface ListPlan {
   tags: string[];
   accounts: string[];
+  /**
+   * Canonical video URLs plain HTTP could not read (the WAF interstitial, measured on the VPS
+   * the afternoon of 2026-09-23 for a page it had served in full that morning). The browser goes
+   * through the proxy, where the page is complete.
+   */
+  videos: string[];
   tagPages: number;
   accountPages: number;
   /** Unix seconds: scrolling stops once a list shows posts older than this. */
@@ -46,6 +53,8 @@ export interface ListPlan {
 export interface ListResults {
   tags: Map<string, ListRead>;
   accounts: Map<string, ListRead>;
+  /** The videos of `plan.videos`, by URL; null when the page carried no itemStruct. */
+  videos: Map<string, TiktokPost | null>;
   launched: boolean;
   note: string;
 }
@@ -177,8 +186,8 @@ async function readList(page: Page, url: string, pages: number, minCreateTime: n
 }
 
 export const readTiktokLists: ListReader = async plan => {
-  const results: ListResults = { tags: new Map(), accounts: new Map(), launched: false, note: "" };
-  if (!plan.tags.length && !plan.accounts.length) return results;
+  const results: ListResults = { tags: new Map(), accounts: new Map(), videos: new Map(), launched: false, note: "" };
+  if (!plan.tags.length && !plan.accounts.length && !plan.videos.length) return results;
   // The budget covers everything: launching, warming, every list. A Chrome that will not start is
   // exactly as expensive as one that will not finish, and a leaked one is an outage on the VPS.
   const deadline = Date.now() + plan.budgetMs;
@@ -192,6 +201,18 @@ export const readTiktokLists: ListReader = async plan => {
   try {
     await page.goto(plan.warmUrl, { waitUntil: "domcontentloaded", timeout: NAV_TIMEOUT_MS }).catch(() => undefined);
     await sleep(SETTLE_MS);
+    // The videos plain HTTP could not read: the same page, from the browser, through the proxy.
+    for (const url of plan.videos) {
+      if (Date.now() > deadline) { results.note = "presupuesto agotado antes de los videos"; break; }
+      await sleep(plan.gapMs);
+      try {
+        await page.goto(url, { waitUntil: "domcontentloaded", timeout: NAV_TIMEOUT_MS });
+        await sleep(SETTLE_MS);
+        results.videos.set(url, postFromVideoHtml(String(await page.content())));
+      } catch {
+        results.videos.set(url, null);
+      }
+    }
     const jobs: Array<{ kind: "tags" | "accounts"; key: string; url: string; pages: number }> = [
       ...plan.tags.map(tag => ({ kind: "tags" as const, key: tag, url: `https://www.tiktok.com/tag/${encodeURIComponent(tag)}`, pages: plan.tagPages })),
       ...plan.accounts.map(account => ({ kind: "accounts" as const, key: account, url: `https://www.tiktok.com/@${encodeURIComponent(account)}`, pages: plan.accountPages })),

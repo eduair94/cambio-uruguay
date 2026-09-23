@@ -18,7 +18,11 @@ Código en `classes/rentals/sources/tiktok/` (`caption.ts` parser puro, `post.ts
   firmada devuelve vacío y `tiktok:tag` está marcado `_WORKING = False`.
 - La página de un video (`/@user/video/<id>`) responde por **HTTP plano** con UA de navegador,
   también desde el VPS: 450 KB con `__UNIVERSAL_DATA_FOR_REHYDRATION__` → `itemStruct` (leyenda,
-  autor, `createTime`, cover, hashtags, `locationCreated: "UY"`). No hace falta yt-dlp.
+  autor, `createTime`, cover, hashtags, `locationCreated: "UY"`). No hace falta yt-dlp. **Pero no
+  es estable**: la misma tarde (14:20 UTC), la misma URL desde el VPS ya devolvía el desafío del
+  WAF (1,4 KB) y por el proxy la página completa (423 KB). Por eso un video manual se intenta
+  primero por HTTP plano y, si vuelve sin `itemStruct`, lo lee el navegador (`plan.videos`), que
+  ya carga una página de video para calentar cookies y va por el proxy.
 - La página de una cuenta (`/@user`) es un desafío del WAF (1,4 KB, "Please wait…"), y la de un
   hashtag (`/tag/<tag>`) trae 400 KB sin videos: la lista la pide el cliente a
   `/api/challenge/item_list/`. Hace falta un navegador.
