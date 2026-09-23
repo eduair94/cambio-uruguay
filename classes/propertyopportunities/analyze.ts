@@ -61,6 +61,7 @@ const HOSTS: Record<OpportunityListing["source"], { advert: string[]; image: str
   facebook: { advert: ["facebook.com"], image: ["fbcdn.net"] },
   casasweb: { advert: ["casasweb.com"], image: ["casasweb.com", "static.tokkobroker.com"] },
   elpais: { advert: ["inmuebles.elpais.com.uy"], image: ["imagenes.gallito.com.uy"] },
+  tiktok: { advert: ["tiktok.com"], image: ["tiktokcdn.com", "tiktokcdn-us.com", "tiktokcdn-eu.com"] },
 };
 
 function publicUrl(value: unknown, source?: OpportunityListing["source"], kind: "advert" | "image" = "advert"): string | null {

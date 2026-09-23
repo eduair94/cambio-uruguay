@@ -85,10 +85,13 @@ const BEFORE_LABELS: ReadonlyArray<[Role, RegExp]> = [
   ["variant", /(?:^|[^a-záéíóúñ])(?:anda|cgn|contadur[ií]a|porto|aseguradoras?|sura|mapfre|surco|fideciu|sancor|garant[ií]as?)(?![a-záéíóúñ])/gi],
   ["price", /(?:^|[^a-záéíóúñ])(?:precio|alquiler|arriendo|mensual(?:es)?|por\s+mes|al\s+mes|renta|valor)(?![a-záéíóúñ])/gi],
 ];
-/** Labels read right AFTER an amount ("$17.000 de alquiler", "$24.000 con aseguradoras"). */
+/**
+ * Labels read right AFTER an amount ("$17.000 de alquiler", "$24.000 con aseguradoras"). No GC
+ * here on purpose: "$30.000 GC $4.000" labels the NEXT amount, and gastos comunes are always
+ * labelled before their own figure.
+ */
 const AFTER_LABELS: ReadonlyArray<[Role, RegExp]> = [
-  ["gc", /^\s*(?:de\s+|en\s+|por\s+)?(?:gastos\s+comunes|g\.?\s?c\.?(?![a-záéíóúñ])|expensas)/i],
-  ["ignore", /^\s*(?:de\s+|por\s+)?(?:dep[oó]sito|se[ñn]a|extra|cochera|garaje|adelantad[oa]|de\s+adelanto)(?![a-záéíóúñ])/i],
+  ["ignore", /^\s*(?:de\s+)?(?:dep[oó]sito|se[ñn]a|extra|adelanto|de\s+garant[ií]a)(?![a-záéíóúñ])/i],
   ["variant", /^\s*(?:con\s+|para\s+)?(?:anda|cgn|contadur[ií]a|porto|aseguradoras?|sura|mapfre|surco|fideciu|sancor)(?![a-záéíóúñ])/i],
   ["price", /^\s*(?:de\s+)?(?:alquiler|mensual(?:es)?|por\s+mes|al\s+mes)(?![a-záéíóúñ])/i],
 ];
@@ -270,9 +273,9 @@ export function parseCaption(lines: readonly string[], hashtags: readonly string
     area: attributes.area,
     // The address reader splits on its own bullets; a caption's bullets become line breaks first.
     // 📍 stays: it is the anchor that says "an address follows".
-    // Whitespace around the new breaks is collapsed: the reader's own splitter swallows a 📍 that
-    // follows "word \n", and the anchor has to open its segment.
-    addressCandidates: addressCandidates(text.replace(BULLETS, (bullet) => (bullet === "📍" ? bullet : "\n")).replace(/[ \t]*\n[ \t]*/g, "\n")),
+    // Every 📍 opens its own line and whitespace around the breaks is collapsed: the reader's own
+    // splitter swallows a 📍 that follows a word, and the anchor has to open its segment.
+    addressCandidates: addressCandidates(text.replace(BULLETS, (bullet) => (bullet === "📍" ? "\n📍" : "\n")).replace(/[ \t]*\n[ \t]*/g, "\n")),
     guarantees: guaranteesFromText(text),
   };
 }
