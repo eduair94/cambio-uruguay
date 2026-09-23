@@ -6,6 +6,7 @@ import { captionAmounts, captionLocation, captionPropertyType, captionRejection,
 import { postFromItemStruct, postToRawRental, postUrl } from "../../classes/rentals/sources/tiktok/post";
 import { canonicalVideoUrl, postFromVideoHtml, readVideoPage, resolveTiktokUrl } from "../../classes/rentals/sources/tiktok/page";
 import { fetchText } from "../../classes/rentals/net";
+import { parseListBody, proxyArg } from "../../classes/rentals/sources/tiktok/browser";
 
 vi.mock("../../classes/rentals/net", async () => ({ ...(await vi.importActual<typeof import("../../classes/rentals/net")>("../../classes/rentals/net")), fetchText: vi.fn() }));
 const fixture = (name: string): string => readFileSync(join(__dirname, "fixtures", `${name}.html`), "utf8");
@@ -203,5 +204,25 @@ describe("TikTok video page over plain HTTP", () => {
     expect(vi.mocked(fetchText).mock.calls[0]![1]?.headers).toMatchObject({ "x-cambio-uruguay-bot": "CambioUruguayBot/1.0" });
     vi.mocked(fetchText).mockResolvedValueOnce("<html>Please wait...</html>");
     expect(await readVideoPage("https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549")).toBeNull();
+  });
+});
+
+// --- Task 5: list plumbing (the browser itself is never launched in the unit suite) -----------
+
+describe("TikTok list plumbing", () => {
+  it("parses an item_list body and treats an empty or failed body as no answer", () => {
+    const parsed = parseListBody(JSON.stringify({ statusCode: 0, hasMore: true, itemList: [item(), { id: "x" }] }))!;
+    expect(parsed.hasMore).toBe(true);
+    expect(parsed.posts.map(post => post.id)).toEqual(["7688511584326454549"]);
+    expect(parseListBody("")).toBeNull();
+    expect(parseListBody("{\"statusCode\":10000}")).toBeNull();
+    expect(parseListBody("<html>challenge</html>")).toBeNull();
+  });
+
+  it("turns a proxy into a Chrome flag", () => {
+    expect(proxyArg("1.2.3.4:8080")).toEqual(["--proxy-server=http://1.2.3.4:8080"]);
+    expect(proxyArg("socks5://1.2.3.4:1080")).toEqual(["--proxy-server=socks5://1.2.3.4:1080"]);
+    expect(proxyArg(null)).toEqual([]);
+    expect(proxyArg("  ")).toEqual([]);
   });
 });
