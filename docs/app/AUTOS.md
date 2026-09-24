@@ -615,7 +615,7 @@ baúl, largo, potencia, proporción 4x4 y de ABS, airbags, control de estabilida
 sí/(sí+no)), la caída anual con la misma recta del informe y el índice de repuestos. Si el armado
 falla, la corrida sigue publicando catálogo e informe y se conserva el snapshot anterior.
 
-**Los repuestos** (`currency-autos-parts`, `sync_autos_parts.ts`, 02:11 UTC): seis piezas por
+**Los repuestos** (`currency-autos-parts`, `sync_autos_parts.ts`, 02:11, 18:11 y 22:11 UTC): seis piezas por
 modelo —pastillas delanteras, filtro de aceite, amortiguador delantero, kit de embrague, kit de
 distribución y óptica delantera— buscadas en Mercado Libre por el puente `:9656`, cada una en su
 categoría (`CAR_PARTS` en `classes/autos/repuestos.ts`). Reglas que salieron de títulos reales:
@@ -628,14 +628,35 @@ categoría (`CAR_PARTS` en `classes/autos/repuestos.ts`). Reglas que salieron de
 - **la distribución exige "kit"**: la categoría mezcla correas sueltas con kits y el Onix iba de
   $ 508 a $ 6.740 en la primera corrida;
 - 3 ofertas y **2 vendedores** para que una pieza tenga precio (el filtro del C4 Cactus salía de uno
-  solo).
+  solo); las ofertas sin vendedor identificado cuentan como un solo vendedor;
+- **el título tiene que nombrar la pieza**, además de la categoría: un filtro de aire no es de
+  aceite, discos con pastillas no son pastillas, un faro auxiliar no es la óptica;
+- el modelo se reconoce junto o separado ("Tcross", "Rav 4", "S-10"), la cilindrada no se lee como
+  modelo ("Mazda 6 2.3" no nombra al Mazda 3) y **un modelo más largo de la misma marca no es
+  este**: "C4 Cactus" no cuenta para el C4, ni "Onix Plus" para el Onix;
+- una página sin lista de resultados, o que no aplicó la categoría pedida, es una falla y no "cero
+  ofertas"; una lectura con menos de 3 piezas no pisa una anterior que tenía índice.
 
 El índice es la media geométrica de (mediana del modelo / mediana de todos los modelos) con 3+
-piezas; una pieza entra a la base con 5+ modelos. Nunca se suma una canasta a la que le faltan
-piezas. Ritmo: 15 min por noche a 2,5 s entre pedidos, relectura cada 14 días, y 40 min mientras
-menos de la mitad de los modelos tenga relevamiento; tres pedidos sin respuesta cortan la corrida y
-un modelo sólo se guarda si sus seis búsquedas contestaron. `--dry-run --models=a,b` imprime sin
-escribir. Medido el 2026-09-24: 248 modelos con 12+ avisos; Onix con 17-43 ofertas por pieza.
+piezas; una pieza entra a la base con 5+ modelos, y la base sale sólo de los modelos que hoy están
+en el asesor. Nunca se suma una canasta a la que le faltan piezas. Ritmo: 10 min por corrida en el
+hueco :11-:21 del puente (entre movilidad y sillas horarias), tres corridas por día lejos de las
+barridas diarias de ML, 2 s entre pedidos, sin reintentos dentro de `fetchJson`, el reloj mirado en
+cada pedido y relectura cada 14 días; tres pedidos sin respuesta cortan la corrida y un modelo sólo
+se guarda si sus seis búsquedas contestaron. `--dry-run --models=a,b` imprime sin escribir. Medido
+el 2026-09-24: 248 modelos con 12+ avisos; Onix con 17-43 ofertas por pieza. En el asesor, un modelo
+relevado con menos de 3 piezas con precio vale como no relevado: no se afirma que no tenga repuestos.
+
+**El orden** (`app/utils/carAdvisor.ts`), con tres defectos que sólo aparecieron leyendo la salida
+real de cuatro perfiles: con US$ 20.000 recomendaba un Geely LC 2017 de US$ 6.900 (ahora un auto bajo
+el 40 % del presupuesto queda afuera si hay 3+ opciones en rango, y el uso del presupuesto pesa en
+"lo más nuevo posible"); la primera razón decía "con US$ 20.000 llegás a un 2017" cuando 2017 era
+el año más nuevo a la venta; y el espacio de una familia de cinco lo ganaban autos chicos porque el
+baúl de las fichas se carga con los asientos rebatidos (Up! con 985 L). El espacio mira sobre todo el
+largo, descarta baúles y plazas imposibles para la carrocería, en pick-ups y furgones no cuenta el
+largo (es la caja) y, si la ficha no dice nada, la carrocería aproxima el tamaño sólo para ordenar.
+Los precios por año salen de la cohorte limpia (sin avisos que declaren choque, deuda o papeles),
+la misma que muestra el enlace al directorio.
 
 **El costo mensual** (`app/utils/carAdvisorFigures.ts`): combustible (consumo de la variante × km ×
 ANCAP), patente estimada con el Texto Ordenado del SUCIVE 2026 leído del PDF (4,5 % del valor de

@@ -581,7 +581,12 @@ const EXAMPLE_PROFILES = [
   },
   {
     title: 'Familia de cinco con US$ 20.000, seguridad y espacio',
-    query: { presupuesto: '20000', personas: '5', prioridad: 'seguridad,espacio' },
+    query: {
+      presupuesto: '20000',
+      personas: '5',
+      carroceria: 'suv,sedan,rural,monovolumen',
+      prioridad: 'seguridad,espacio',
+    },
   },
   {
     title: 'Trabajo y carga con US$ 25.000 y 30.000 km por año',
@@ -607,6 +612,7 @@ const EXCLUSION_LABELS: Record<CarAdvisorExclusion, string> = {
   carroceria: 'por la carrocería',
   uso: 'por el uso',
   plazas: 'por las plazas',
+  debajo: 'por quedar muy por debajo de tu presupuesto',
 }
 const excludedText = computed(() => {
   const parts = (advice.value?.excluded ?? [])

@@ -43,6 +43,7 @@ export type CarAdvisorExclusion =
   | 'carroceria'
   | 'uso'
   | 'plazas'
+  | 'debajo'
 
 export const CAR_ADVISOR_USES: ReadonlyArray<{
   value: CarAdvisorUse
@@ -74,6 +75,43 @@ const MAX_PRIORITIES = 3
 const MAX_RESULTS = 8
 /** Una prioridad elegida pesa esto contra 1 de lo demás. */
 const PRIORITY_WEIGHT = 3
+/**
+ * El tamaño típico de cada carrocería, de 0 a 1. Sólo ordena el espacio cuando la ficha no dice
+ * baúl, largo ni plazas; no se publica en ningún lado.
+ */
+const BODY_SPACE: Record<PublicCarBodyType, number> = {
+  coupe: 0.1,
+  cabriolet: 0.1,
+  hatchback: 0.25,
+  sedan: 0.5,
+  pickup: 0.6,
+  suv: 0.65,
+  rural: 0.7,
+  monovolumen: 0.9,
+  furgon: 0.9,
+}
+/** En una pick-up o un furgón el largo es la caja: no dice nada del lugar para pasajeros. */
+const CARGO_BODIES: readonly PublicCarBodyType[] = ['pickup', 'furgon']
+/** Un auto que usa menos que esto del presupuesto no es lo que busca quien lo dijo. */
+const MIN_BUDGET_USE = 0.4
+/** Carrocerías donde más de cinco plazas es un error de la ficha, no un dato. */
+const FIVE_SEAT_BODIES: readonly PublicCarBodyType[] = ['hatchback', 'sedan', 'coupe', 'cabriolet']
+/** Arriba de esto, el baúl de un auto chico está medido con los asientos rebatidos. */
+const MAX_SMALL_TRUNK_L = 600
+
+/**
+ * Lo que la ficha dice y no puede ser: un hatchback de 7 plazas, o un baúl de 985 litros en un auto
+ * chico (es la cifra con los asientos rebatidos). Se trata como que la ficha no lo dice.
+ */
+function sensibleModel(model: PublicCarAdvisorModel): PublicCarAdvisorModel {
+  const small = !!model.body && FIVE_SEAT_BODIES.includes(model.body)
+  const seats = model.seats
+  const badSeats = seats !== null && (seats < 2 || (seats > 5 && small))
+  const badTrunk = model.trunkL !== null && small && model.trunkL > MAX_SMALL_TRUNK_L
+  return badSeats || badTrunk
+    ? { ...model, seats: badSeats ? null : seats, trunkL: badTrunk ? null : model.trunkL }
+    : model
+}
 
 export interface CarAdvisorQuery {
   /** Presupuesto de compra en dólares. */
@@ -383,8 +421,11 @@ function explain(
   typicalDrop: number | null
 ): { reasons: string[]; tradeoffs: string[] } {
   const { model, row, costs } = candidate
+  const newest = candidate.variant.years[0]?.year === row.year
   const reasons: string[] = [
-    `Con ${formatCarUsd(query.budget ?? row.median)} llegás a un ${row.year}: la mitad de los ${row.n} avisos de ese año se pide hasta ${formatCarUsd(row.median)}.`,
+    newest
+      ? `El más nuevo a la venta es un ${row.year}: la mitad de sus ${row.n} avisos se pide hasta ${formatCarUsd(row.median)}.`
+      : `Con ${formatCarUsd(query.budget ?? row.median)} llegás a un ${row.year}: la mitad de los ${row.n} avisos de ese año se pide hasta ${formatCarUsd(row.median)}.`,
   ]
   const tradeoffs: string[] = []
 
@@ -477,7 +518,7 @@ export function adviseCars(
 
   const candidates: Candidate[] = []
   let cheapestOutOfBudget: number | null = null
-  for (const model of snapshot.data.models) {
+  for (const model of snapshot.data.models.map(sensibleModel)) {
     for (const variant of model.variants) {
       if (query.transmission && variant.transmission !== query.transmission) {
         exclude('caja')
@@ -515,7 +556,18 @@ export function adviseCars(
       })
     }
   }
+  // Quien dice "tengo US$ 20.000" no busca un auto de 6.000: un modelo cuyo año más nuevo usa menos
+  // del 40 % del presupuesto queda afuera, salvo que casi nada llegue a ese rango.
+  const inRange = candidates.filter(item => item.row.median >= budget * MIN_BUDGET_USE)
+  if (inRange.length >= 3 && inRange.length < candidates.length) {
+    excluded.set('debajo', candidates.length - inRange.length)
+    candidates.splice(0, candidates.length, ...inRange)
+  }
 
+  const budgetUse = normalizer(
+    candidates.map(item => item.row.median / budget),
+    true
+  )
   const years = normalizer(
     candidates.map(item => item.row.year),
     true
@@ -555,6 +607,10 @@ export function adviseCars(
     candidates.map(item => item.model.seats),
     true
   )
+  const longer = normalizer(
+    candidates.map(item => item.model.lengthMm),
+    true
+  )
   const shorter = normalizer(
     candidates.map(item => item.model.lengthMm),
     false
@@ -587,7 +643,7 @@ export function adviseCars(
   const scored = candidates.map(candidate => {
     const { model, row } = candidate
     const scores: Record<CarAdvisorScoreKey, number> = {
-      nuevo: 0.7 * years(row.year) + 0.3 * kms(row.kmMedian),
+      nuevo: 0.5 * years(row.year) + 0.2 * kms(row.kmMedian) + 0.3 * budgetUse(row.median / budget),
       costo: cash(candidate.costs.monthlyCashUyu),
       reventa:
         0.7 * drops(model.annualDrop ?? context.typicalDrop) +
@@ -596,7 +652,18 @@ export function adviseCars(
         ? 0.7 * partsIndex(model.parts.index) + 0.3 * partsOffers(Math.log(1 + model.parts.offers))
         : 0.5,
       seguridad: safety(safetyRaw(candidate)),
-      espacio: 0.5 * trunk(model.trunkL) + 0.5 * seats(model.seats),
+      espacio: (() => {
+        // El largo es el dato más confiable de la ficha; el baúl lo cargan unos con los asientos
+        // rebatidos y otros no. Lo que la ficha no dice lo aproxima la carrocería, sólo para ordenar.
+        const prior = model.body ? BODY_SPACE[model.body] : 0.5
+        const part = (value: number | null, score: (value: number | null) => number) =>
+          value === null ? prior : score(value)
+        return (
+          0.2 * part(model.trunkL, trunk) +
+          0.6 * part(CARGO_BODIES.includes(model.body ?? 'sedan') ? null : model.lengthMm, longer) +
+          0.2 * part(model.seats, seats)
+        )
+      })(),
       uso:
         query.use === 'ciudad'
           ? shorter(model.lengthMm)

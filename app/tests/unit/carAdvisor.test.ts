@@ -370,6 +370,64 @@ describe('adviseCars', () => {
   })
 })
 
+describe('presupuesto bien usado', () => {
+  it('un auto que usa menos del 40 % del presupuesto no entra, si hay otras opciones', () => {
+    const response = adviseCars(snapshot, query({ budget: 30_000 }), prices)
+    expect(response.results.map(result => result.marketSlug)).not.toContain('renault-kwid')
+    expect(response.excluded).toContainEqual({ reason: 'debajo', count: 1 })
+  })
+  it('si casi nada llega a ese rango, no se descarta nada', () => {
+    const results = adviseCars(
+      snapshot,
+      query({ budget: 30_000, fuels: ['diesel'] }),
+      prices
+    ).results
+    expect(results.map(result => result.marketSlug)).toEqual(['toyota-hilux'])
+  })
+  it('cuando el año recomendado es el más nuevo que hay, lo dice así', () => {
+    const onixResult = adviseCars(snapshot, query({ budget: 25_000 }), prices).results.find(
+      result => result.marketSlug === 'chevrolet-onix'
+    )!
+    expect(onixResult.reasons[0]).toMatch(/más nuevo/)
+    expect(onixResult.reasons[0]).not.toMatch(/llegás/)
+  })
+  it('una ficha que le da 7 plazas a un hatchback no es un dato', () => {
+    const odd = model({ ...kwid, marketSlug: 'suzuki-alto', seats: 7 })
+    const data = { ...snapshot, data: { ...snapshot.data, models: [odd] } }
+    const result = adviseCars(data, query({ budget: 11_000, people: 6 }), prices).results[0]!
+    expect(result.space.seats).toBeNull()
+  })
+})
+
+describe('espacio', () => {
+  it('sin ficha, la carrocería ordena el espacio: un hatchback no gana a un SUV largo', () => {
+    const small = model({
+      marketSlug: 'x-chico',
+      body: 'hatchback',
+      seats: null,
+      trunkL: null,
+      lengthMm: null,
+      variants: [variant({ years: years([[2022, 14_000]]) })],
+    })
+    const suv = model({
+      marketSlug: 'x-suv',
+      body: 'suv',
+      seats: null,
+      trunkL: null,
+      lengthMm: 4_350,
+      variants: [variant({ years: years([[2019, 14_000]]) })],
+    })
+    const pair = { ...snapshot, data: { ...snapshot.data, models: [small, suv] } }
+    const results = adviseCars(
+      pair,
+      query({ budget: 15_000, priorities: ['espacio'] }),
+      prices
+    ).results
+    const espacio = (slug: string) => results.find(item => item.marketSlug === slug)!.scores.espacio
+    expect(espacio('x-suv')).toBeGreaterThan(espacio('x-chico'))
+  })
+})
+
 describe('carAdvisorDraft', () => {
   it('el formulario se arma desde la URL, así un perfil de ejemplo lo deja completo', () => {
     const draft = carAdvisorDraft(
