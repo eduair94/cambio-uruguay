@@ -113,13 +113,24 @@ export function buildCarAdvisor(
 ): PublicCarAdvisorSnapshotData {
   const byModel = new Map<string, CarListing[]>();
   for (const row of listings.filter(reportable)) byModel.set(row.marketSlug, [...(byModel.get(row.marketSlug) ?? []), row]);
-  const { baseline, byModel: partsByModel } = partsIndex(options.parts);
+  // Los precios por año salen de la cohorte LIMPIA, la misma regla del tablero de riesgo: un aviso que
+  // declara choque o deuda se pide 21-35 % menos, y el enlace al directorio filtra esos avisos. Si
+  // entraran a la mediana, el año recomendado sería más optimista que lo que la persona encuentra.
+  const risky = new Set(listings.filter(row => declaredRisks(row.title, row.detail?.description ?? "").length > 0).map(row => row.key));
 
-  const models: PublicCarAdvisorModel[] = [];
+  const included: Array<{ marketSlug: string; group: CarListing[]; variants: PublicCarAdvisorVariant[] }> = [];
   for (const [marketSlug, group] of byModel) {
     if (group.length < CAR_ADVISOR_POLICY.minimumAdverts) continue;
-    const variants = variantsOf(group);
-    if (!variants.length) continue;
+    const variants = variantsOf(group.filter(row => !risky.has(row.key)));
+    if (variants.length) included.push({ marketSlug, group, variants });
+  }
+  // La base del índice de repuestos es la de los modelos que hoy están en el asesor: un relevamiento
+  // de un modelo que salió del catálogo no puede seguir moviendo el promedio.
+  const slugs = new Set(included.map(entry => entry.marketSlug));
+  const { baseline, byModel: partsByModel } = partsIndex(options.parts.filter(record => slugs.has(record.marketSlug)));
+
+  const models: PublicCarAdvisorModel[] = [];
+  for (const { marketSlug, group, variants } of included) {
     const specs = group.map(row => carSpecsOf(row.detail)).filter((spec): spec is PublicCarSpecs => !!spec);
     const drivetrains = specs.map(spec => spec.drivetrain).filter((value): value is NonNullable<typeof value> => !!value);
     const fourByFour = drivetrains.length >= CAR_ADVISOR_POLICY.minimumShareN
@@ -148,7 +159,7 @@ export function buildCarAdvisor(
       isofix: shareOf(specs, "isofix"),
       annualDrop: annualDropOf(depreciationOf(group, options.maxYear)),
       dealerShare: round3(group.filter(row => row.sellerType === "dealer").length / group.length),
-      declaredRiskShare: round3(group.filter(row => declaredRisks(row.title, row.detail?.description ?? "").length > 0).length / group.length),
+      declaredRiskShare: round3(group.filter(row => risky.has(row.key)).length / group.length),
       variants,
       parts: partsByModel.get(marketSlug) ?? null,
     });

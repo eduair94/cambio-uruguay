@@ -7,7 +7,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { appConnection, appDbConfigured } from "./classes/appdb";
-import { harvestParts, planPartsTargets, type CarPartsTarget } from "./classes/autos/repuestosHarvest";
+import { harvestParts, planPartsTargets, shouldReplacePartsRecord, type CarPartsTarget } from "./classes/autos/repuestosHarvest";
 import { loadCarPartsRecords, loadCatalogMeta, saveCarPartsRecords } from "./classes/autos/store";
 import { CarHarvestMetaModel } from "./classes/models/CarHarvestMeta";
 import { fetchUsdUyuRate } from "./classes/rentals/rate";
@@ -28,21 +28,23 @@ async function main(): Promise<void> {
   const models: CarPartsTarget[] = (meta?.models ?? [])
     .filter(model => model.listings >= MIN_LISTINGS)
     .map(model => ({ marketSlug: model.slug, brand: model.brand, model: model.model, adverts: model.listings }));
+  // Los hermanos salen de TODO el catálogo, no sólo de los modelos con 12+ avisos: un "C4 Cactus"
+  // con pocos avisos igual tiene que impedir que sus repuestos se cuenten como del C4.
+  const byBrand = new Map<string, string[]>();
+  for (const model of meta?.models ?? []) byBrand.set(model.brand, [...(byBrand.get(model.brand) ?? []), model.model]);
+  for (const model of models) model.siblings = (byBrand.get(model.brand) ?? []).filter(name => name !== model.model);
   const only = argument("models")?.split(",").map(slug => slug.trim()).filter(Boolean);
   const previous = new Map((await loadCarPartsRecords()).map(record => [record.marketSlug, record] as const));
   const due = only
     ? models.filter(model => only.includes(model.marketSlug))
     : planPartsTargets(models, previous, now);
-  // Arranque: mientras no se leyó ni la mitad de los modelos, la corrida dura más, para que el asesor
-  // no pase una semana diciendo "todavía no relevamos". En régimen alcanza con 15 minutos: ~40
-  // modelos por noche contra ~250 que se releen cada 14 días.
-  const bootstrapping = previous.size < models.length / 2;
-  const minutes = Number(process.env.AUTOS_PARTS_MINUTES || (bootstrapping ? 40 : 15));
+  // Diez minutos: el hueco del puente entre :11 y :21. El ritmo lo dan las tres corridas por día.
+  const minutes = Number(process.env.AUTOS_PARTS_MINUTES || 10);
   console.log(`[autos-parts] ${models.length} models with ${MIN_LISTINGS}+ adverts, ${previous.size} read before, ${due.length} due, ${minutes} min`);
   const result = await harvestParts(due, {
     usdUyu,
     now,
-    gapMs: Number(process.env.AUTOS_PARTS_GAP_MS || 2_500),
+    gapMs: Number(process.env.AUTOS_PARTS_GAP_MS || 2_000),
     maxDurationMs: minutes * 60_000,
   });
   console.log(`[autos-parts] ${result.requests} searches, ${result.records.length} models read${result.note ? `, ${result.note}` : ""}`);
@@ -50,12 +52,18 @@ async function main(): Promise<void> {
     for (const record of result.records.slice(0, 5)) console.log(JSON.stringify(record));
     return;
   }
-  await saveCarPartsRecords(result.records);
+  // Una lectura flaca no pisa una buena (classes/autos/repuestosHarvest.ts): el modelo queda con su
+  // relevamiento anterior y, como su fecha no cambia, se vuelve a pedir en la corrida siguiente.
+  const kept = result.records.filter(record => shouldReplacePartsRecord(previous.get(record.marketSlug), record));
+  if (kept.length < result.records.length) {
+    console.log(`[autos-parts] ${result.records.length - kept.length} lecturas flacas no pisan la anterior`);
+  }
+  await saveCarPartsRecords(kept);
   const finishedAt = new Date().toISOString();
   await CarHarvestMetaModel.updateOne(
     { key: "uy-cars-parts" },
     { $set: { updatedAt: finishedAt, data: {
-      finishedAt, models: models.length, due: due.length, requests: result.requests, written: result.records.length,
+      finishedAt, models: models.length, due: due.length, requests: result.requests, written: kept.length,
       note: result.note, ok: result.note !== "puente sin respuesta",
     } } },
     { upsert: true },

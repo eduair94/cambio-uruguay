@@ -91,15 +91,35 @@ describe("buildCarAdvisor", () => {
     expect(onix.bodyShare).toBe(0.75);
   });
 
+  const slugs = ["chevrolet-onix", "b-b", "c-c", "d-d", "e-e"];
+  const fiveModels = slugs.flatMap(marketSlug => many(12, { marketSlug }));
+  const recordsFor = (list: string[]): CarPartsRecord[] => list.map(marketSlug => ({
+    marketSlug, brand: "X", model: "Y", readAt: NOW,
+    parts: (["pastillas", "filtro_aceite", "embrague"] as const).map(key => ({
+      key, median: marketSlug === "chevrolet-onix" ? 1500 : 1000, p25: 900, p75: 1100, offers: 5, sellers: 3,
+    })),
+  }));
+
   it("pega el índice de repuestos del modelo", () => {
-    const parts: CarPartsRecord[] = ["chevrolet-onix", "b", "c", "d", "e"].map(marketSlug => ({
-      marketSlug, brand: "X", model: "Y", readAt: NOW,
-      parts: (["pastillas", "filtro_aceite", "embrague"] as const).map(key => ({
-        key, median: marketSlug === "chevrolet-onix" ? 1500 : 1000, p25: 900, p75: 1100, offers: 5, sellers: 3,
-      })),
-    }));
-    const data = buildCarAdvisor(many(12), { maxYear: 2027, parts, typicalDrop: null });
-    expect(data.models[0]!.parts?.index).toBe(1.5);
+    const data = buildCarAdvisor(fiveModels, { maxYear: 2027, parts: recordsFor(slugs), typicalDrop: null });
+    expect(data.models.find(model => model.marketSlug === "chevrolet-onix")!.parts?.index).toBe(1.5);
     expect(data.partsBaseline.map(part => part.key)).toEqual(["pastillas", "filtro_aceite", "embrague"]);
+  });
+
+  it("un relevamiento de un modelo que ya no está en el catálogo no entra a la base", () => {
+    const data = buildCarAdvisor(many(12), { maxYear: 2027, parts: recordsFor(slugs), typicalDrop: null });
+    expect(data.partsBaseline).toEqual([]);
+    expect(data.models[0]!.parts?.index).toBeNull();
+  });
+
+  it("los precios por año salen de los avisos que no declaran choque, deuda ni papeles", () => {
+    const listings = [
+      ...many(12, { price: 12_000 }),
+      ...many(4, { price: 6_000, title: "Chevrolet Onix chocado" }),
+    ];
+    const onix = buildCarAdvisor(listings, { maxYear: 2027, parts: [], typicalDrop: null }).models[0]!;
+    expect(onix.variants[0]!.years[0]).toMatchObject({ n: 12, median: 12_000 });
+    expect(onix.adverts).toBe(16);
+    expect(onix.declaredRiskShare).toBe(0.25);
   });
 });

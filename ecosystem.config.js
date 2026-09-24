@@ -421,14 +421,16 @@ module.exports = {
     },
     {
       // Spare-parts prices per model (six parts, one Mercado Libre category each) for the buying
-      // advisor /que-auto-comprar-uruguay. 02:11 UTC: no hourly consumer of the :9656 bridge runs
-      // between :07 and :23. 15-minute wall clock (40 while less than half the models were ever read),
-      // oldest reading first, a model is re-read every 14 days.
+      // advisor /que-auto-comprar-uruguay. :11 sits between movilidad-hourly (:07, short) and
+      // chairs-hourly (:23), the widest gap the :9656 bridge has; a 10-minute wall clock checked on
+      // every request keeps the run inside it. Three slots a day, away from the daily ML sweeps (the
+      // autos one runs 07:43 to ~10:15), so the first full pass takes days, not weeks; once every
+      // model is fresh (14 days) a run ends early.
       name: "currency-autos-parts",
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync_autos_parts.js",
-      cron_restart: "11 2 * * *",
+      cron_restart: "11 2,18,22 * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {

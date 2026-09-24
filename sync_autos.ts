@@ -355,8 +355,17 @@ async function main(): Promise<void> {
   else await saveCarOpportunitySnapshot(snapshot);
   await saveCarRiskSnapshot(riskSnapshot);
   await saveCarReportSnapshot(reportSnapshot);
-  if (advisorSnapshot && advisorSnapshot.data.models.length) await saveCarAdvisorSnapshot(advisorSnapshot);
-  else console.warn("[autos] asesor sin modelos; se conserva el snapshot anterior");
+  // El asesor es un agregado más: una corrida flaca (catálogo rechazado) no lo reescribe, y si guardarlo
+  // falla se avisa y la corrida termina igual, con su motivo de rechazo guardado.
+  if (!advisorSnapshot || !advisorSnapshot.data.models.length || catalogRefusal) {
+    console.warn("[autos] asesor sin publicar esta vez; se conserva el snapshot anterior");
+  } else {
+    try {
+      await saveCarAdvisorSnapshot(advisorSnapshot);
+    } catch (error) {
+      console.error("[autos] no se pudo guardar el asesor; se conserva el anterior:", error);
+    }
+  }
 
   const refusalText = [catalogRefusal, snapshotRefusal].filter((reason): reason is string => !!reason).join(" · ") || null;
   await saveRefusal(refusalText, generatedAt);

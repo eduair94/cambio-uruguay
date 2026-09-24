@@ -45,7 +45,33 @@ describe("partTitleMatches", () => {
   });
 
   it("acentos y barras no esconden el modelo", () => {
-    expect(matches("Discos Y Pastillas Freno Chevrolet Ónix/Prisma 1.4", "Chevrolet", "Onix", "pastillas")).toBe(true);
+    expect(matches("Pastillas Freno Chevrolet Ónix/Prisma 1.4", "Chevrolet", "Onix", "pastillas")).toBe(true);
+  });
+
+  it("el título tiene que nombrar la pieza: un filtro de aire o un disco son otra cosa", () => {
+    expect(matches("Filtro De Aire Chevrolet Onix 1.4", "Chevrolet", "Onix", "filtro_aceite")).toBe(false);
+    expect(matches("Disco De Freno Chevrolet Onix Del", "Chevrolet", "Onix", "pastillas")).toBe(false);
+    expect(matches("Discos Y Pastillas Freno Chevrolet Onix 1.4", "Chevrolet", "Onix", "pastillas")).toBe(false);
+    expect(matches("Faro Auxiliar Neblinero Toyota Hilux 2016", "Toyota", "Hilux", "optica")).toBe(false);
+    expect(matches("Embregue Kit Volkswagen Gol 1.6", "Volkswagen", "Gol", "embrague")).toBe(true);
+  });
+
+  it("un modelo escrito junto o separado es el mismo: Tcross, Rav 4, S-10", () => {
+    expect(matches("Filtro Aceite Vw Tcross 1.0 Tsi", "Volkswagen", "T-Cross", "filtro_aceite")).toBe(true);
+    expect(matches("Amortiguador Delantero Toyota Rav 4 2013", "Toyota", "RAV4", "amortiguador")).toBe(true);
+    expect(matches("Kit Embrague Chevrolet S-10 2.8", "Chevrolet", "S10", "embrague")).toBe(true);
+  });
+
+  it("la cilindrada no es el modelo: el 2.3 no nombra a un Mazda 3", () => {
+    expect(matches("Filtro De Aceite Mazda 6 2.3", "Mazda", "3", "filtro_aceite")).toBe(false);
+  });
+
+  it("un modelo más largo de la misma marca no es este: un C4 Cactus no es un C4", () => {
+    const c4 = partsModelTokens("Citroën", "C4", ["C4 Cactus", "C3"]);
+    expect(partTitleMatches("Pastillas Freno Citroen C4 Cactus 2018", c4, part("pastillas"))).toBe(false);
+    expect(partTitleMatches("Pastillas Freno Citroen C4 1.6 Del", c4, part("pastillas"))).toBe(true);
+    const onix = partsModelTokens("Chevrolet", "Onix", ["Onix plus", "Prisma"]);
+    expect(partTitleMatches("Pastillas Freno Chevrolet Onix Plus 2021", onix, part("pastillas"))).toBe(false);
   });
 });
 

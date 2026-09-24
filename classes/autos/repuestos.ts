@@ -29,17 +29,42 @@ export interface CarPart {
   perUnit: boolean;
   /** Es la pieza delantera: la trasera es otra pieza con otro precio. */
   front: boolean;
-  /** Lo que el título tiene que decir para ser ESTA pieza: una correa suelta no es el kit. */
-  requires?: RegExp;
+  /**
+   * Lo que el título tiene que decir para ser ESTA pieza, todo a la vez, sobre el texto sin acentos.
+   * La categoría sola no alcanza: si el puente no la aplica, un filtro de aire del Onix se cotizaría
+   * como filtro de aceite, y una correa suelta como el kit de distribución.
+   */
+  mustSay: readonly RegExp[];
+  /** Lo que la hace otra pieza: discos con pastillas, un faro auxiliar, la bomba del embrague. */
+  mustNotSay?: RegExp;
 }
 
 export const CAR_PARTS: readonly CarPart[] = [
-  { key: "pastillas", label: "Pastillas de freno delanteras", category: "MLU62414", query: "pastillas freno", perUnit: false, front: true },
-  { key: "filtro_aceite", label: "Filtro de aceite", category: "MLU164783", query: "filtro aceite", perUnit: false, front: false },
-  { key: "amortiguador", label: "Amortiguador delantero", category: "MLU164832", query: "amortiguador delantero", perUnit: true, front: true },
-  { key: "embrague", label: "Kit de embrague", category: "MLU164977", query: "kit embrague", perUnit: false, front: false },
-  { key: "distribucion", label: "Kit de distribución", category: "MLU164771", query: "kit distribucion", perUnit: false, front: false, requires: /\b(kit|juego)\b/ },
-  { key: "optica", label: "Óptica delantera", category: "MLU442928", query: "farol delantero", perUnit: true, front: true },
+  {
+    key: "pastillas", label: "Pastillas de freno delanteras", category: "MLU62414", query: "pastillas freno", perUnit: false, front: true,
+    mustSay: [/\b(pastillas?|patin(es)?)\b/], mustNotSay: /\bdiscos?\b/,
+  },
+  {
+    key: "filtro_aceite", label: "Filtro de aceite", category: "MLU164783", query: "filtro aceite", perUnit: false, front: false,
+    mustSay: [/\bfiltros?\b/, /\baceite\b/], mustNotSay: /\b(aire|combustible|nafta|polen|habitaculo)\b/,
+  },
+  {
+    key: "amortiguador", label: "Amortiguador delantero", category: "MLU164832", query: "amortiguador delantero", perUnit: true, front: true,
+    mustSay: [/\bamortiguador(es)?\b/],
+  },
+  {
+    key: "embrague", label: "Kit de embrague", category: "MLU164977", query: "kit embrague", perUnit: false, front: false,
+    // "Embregue" está escrito así en avisos reales.
+    mustSay: [/\b(embrague|embregue|clutch)\b/], mustNotSay: /\b(cilindro|bomba|cable|horquilla|pedal)\b/,
+  },
+  {
+    key: "distribucion", label: "Kit de distribución", category: "MLU164771", query: "kit distribucion", perUnit: false, front: false,
+    mustSay: [/\b(kit|juego)\b/, /\bdistribucion\b/],
+  },
+  {
+    key: "optica", label: "Óptica delantera", category: "MLU442928", query: "farol delantero", perUnit: true, front: true,
+    mustSay: [/optic|\bfar(o|ol|os|oles)\b/], mustNotSay: /\b(auxiliar(es)?|neblineros?|antinieblas?)\b/,
+  },
 ];
 
 /** Un modelo necesita esto para que una pieza tenga precio. */
@@ -51,7 +76,20 @@ export const PART_MIN_SELLERS = 2;
 /** Piezas con precio que hacen falta para dar un índice. */
 export const PART_INDEX_MIN_PARTS = 3;
 
-const words = (text: string): string[] => fold(text).split(/[^a-z0-9]+/).filter(Boolean);
+// La cilindrada no es el modelo: "Mazda 6 2.3" partido en palabras daría un "3" que no está.
+const words = (text: string): string[] =>
+  fold(text).replace(/\b\d+[.,]\d+\b/g, " ").split(/[^a-z0-9]+/).filter(Boolean);
+
+/** Las palabras del título y cada par y trío pegado: "Rav 4" también es "rav4", "T Cross" es "tcross". */
+function titleForms(text: string): Set<string> {
+  const list = words(text);
+  const forms = new Set(list);
+  for (let index = 0; index < list.length; index++) {
+    if (index + 1 < list.length) forms.add(list[index]! + list[index + 1]!);
+    if (index + 2 < list.length) forms.add(list[index]! + list[index + 1]! + list[index + 2]!);
+  }
+  return forms;
+}
 
 /** Palabras que describen la carrocería o la edición y no el modelo. */
 const GENERIC = new Set(["new", "nuevo", "nueva", "sedan", "hatch", "hatchback", "cabina", "doble", "simple", "cd", "cs", "4x4", "4x2", "pick", "up"]);
@@ -66,16 +104,29 @@ const BRAND_ALIASES: Record<string, string[]> = {
 export interface PartsModelTokens {
   model: string[];
   brand: string[];
+  /**
+   * Los otros modelos de la marca que contienen todas las palabras de este y alguna más: un título
+   * que nombra "C4 Cactus" no habla del C4, y uno que nombra "Onix Plus" no habla del Onix.
+   */
+  siblings: string[][];
 }
 
-export function partsModelTokens(brand: string, model: string): PartsModelTokens {
+const distinctiveWords = (model: string): string[] => {
   const all = words(model);
   // "Up!" es la palabra entera del modelo: ahí "up" no es genérica.
   const distinctive = all.filter(word => !GENERIC.has(word));
+  return distinctive.length ? distinctive : all;
+};
+
+export function partsModelTokens(brand: string, model: string, siblings: readonly string[] = []): PartsModelTokens {
+  const own = distinctiveWords(model);
   const brandKey = fold(brand).trim().replace(/\s+/g, "-");
   return {
-    model: distinctive.length ? distinctive : all,
+    model: own,
     brand: BRAND_ALIASES[brandKey] ?? words(brand),
+    siblings: siblings
+      .map(distinctiveWords)
+      .filter(other => other.length > own.length && own.every(word => other.includes(word))),
   };
 }
 
@@ -83,16 +134,23 @@ const REAR = /\btras(era|eras|ero|eros)?\b/;
 const SET = /\b(par|pares|x2|kit|juego|jgo|set)\b|\bx 2\b/;
 const USED = /\busad[oa]s?\b/;
 
-export function partTitleMatches(title: string, tokens: PartsModelTokens, part: Pick<CarPart, "perUnit" | "front" | "requires">): boolean {
+export function partTitleMatches(
+  title: string,
+  tokens: PartsModelTokens,
+  part: Pick<CarPart, "perUnit" | "front" | "mustSay" | "mustNotSay">,
+): boolean {
   const folded = fold(title);
-  const present = new Set(words(title));
-  if (!tokens.model.length || !tokens.model.every(word => present.has(word))) return false;
-  const shortName = Math.max(...tokens.model.map(word => word.length)) <= 3;
-  if (shortName && !tokens.brand.some(word => present.has(word))) return false;
+  const present = titleForms(title);
+  if (!tokens.model.length) return false;
+  const joined = tokens.model.join("");
+  if (!tokens.model.every(word => present.has(word)) && !present.has(joined)) return false;
+  if (joined.length <= 3 && !tokens.brand.some(word => present.has(word))) return false;
+  if (tokens.siblings.some(other => other.every(word => present.has(word)))) return false;
+  if (!part.mustSay.every(pattern => pattern.test(folded))) return false;
+  if (part.mustNotSay?.test(folded)) return false;
   if (part.front && REAR.test(folded)) return false;
   if (part.perUnit && SET.test(folded)) return false;
   if (USED.test(folded)) return false;
-  if (part.requires && !part.requires.test(folded)) return false;
   return true;
 }
 

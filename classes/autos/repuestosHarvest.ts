@@ -6,7 +6,9 @@
 // en vez de insistir. Un modelo se guarda sólo si sus seis búsquedas contestaron: un modelo a medias
 // parecería no tener repuestos cuando lo que no tuvo fue respuesta.
 import { fetchJson } from "../rentals/net";
-import { CAR_PARTS, partTitleMatches, partsModelTokens, summarizePart, type CarPart, type CarPartsRecord } from "./repuestos";
+import {
+  CAR_PARTS, PART_INDEX_MIN_PARTS, partTitleMatches, partsModelTokens, summarizePart, type CarPart, type CarPartsRecord,
+} from "./repuestos";
 import { mlCarsApiBase } from "./sources/mercadolibre";
 import { fold } from "./normalize";
 
@@ -15,6 +17,8 @@ export interface CarPartsTarget {
   brand: string;
   model: string;
   adverts: number;
+  /** Los otros modelos de la misma marca: un título que nombra uno más largo no es de este. */
+  siblings?: string[];
 }
 
 export interface MlPartResult {
@@ -27,6 +31,7 @@ export interface MlPartResult {
 
 export interface MlPartsPage {
   paging?: { total?: number };
+  filters?: Array<{ id?: string; values?: Array<{ id?: string }> }>;
   results?: MlPartResult[];
 }
 
@@ -35,6 +40,23 @@ export type PartsPageFetcher = (url: string) => Promise<MlPartsPage | null>;
 /** Un modelo leído hace menos que esto no se relee: el precio de un repuesto no se mueve en días. */
 export const PARTS_MAX_AGE_DAYS = 14;
 const MAX_CONSECUTIVE_FAILURES = 3;
+
+/**
+ * Una página vale como lectura sólo si trae su lista de resultados y, si trae algo, la categoría que
+ * se pidió aplicada. Una respuesta degradada del puente leída como "cero ofertas" dejaría al modelo
+ * sin repuestos dos semanas; una sin categoría cotizaría un filtro de aire como filtro de aceite.
+ */
+function pageIsReading(page: MlPartsPage | null, category: string): page is MlPartsPage {
+  if (!page || !Array.isArray(page.results)) return false;
+  if (!page.results.length) return true;
+  const applied = (page.filters ?? []).find(filter => filter.id === "category")?.values?.map(value => value.id) ?? [];
+  return applied.includes(category);
+}
+
+/** Una lectura flaca no pisa una buena: si antes había índice y ahora no, se conserva lo anterior. */
+export function shouldReplacePartsRecord(previous: CarPartsRecord | undefined, next: CarPartsRecord): boolean {
+  return !previous || previous.parts.length < PART_INDEX_MIN_PARTS || next.parts.length >= PART_INDEX_MIN_PARTS;
+}
 
 const searchWords = (text: string): string => text.replace(/[^\p{L}\p{N}.]+/gu, " ").trim();
 
@@ -67,7 +89,7 @@ export function planPartsTargets(
 const isUsed = (condition: string | undefined): boolean => /usad|used/.test(fold(condition ?? ""));
 
 function recordFrom(target: CarPartsTarget, pages: ReadonlyMap<CarPart["key"], MlPartsPage>, usdUyu: number, readAt: string): CarPartsRecord {
-  const tokens = partsModelTokens(target.brand, target.model);
+  const tokens = partsModelTokens(target.brand, target.model, target.siblings ?? []);
   const parts: CarPartsRecord["parts"] = [];
   for (const part of CAR_PARTS) {
     const seen = new Set<string>();
@@ -82,7 +104,8 @@ function recordFrom(target: CarPartsTarget, pages: ReadonlyMap<CarPart["key"], M
       if (!partTitleMatches(String(result.title ?? ""), tokens, part)) continue;
       seen.add(id);
       prices.push(currency === "USD" ? amount * usdUyu : amount);
-      sellers.push(String(result.seller?.id ?? result.seller?.name ?? id));
+      // Sin vendedor identificado, todas cuentan como uno: si no, el mínimo de dos vendedores no mide nada.
+      sellers.push(String(result.seller?.id ?? result.seller?.name ?? "?"));
     }
     const summary = summarizePart(prices, sellers);
     if (summary) parts.push({ key: part.key, ...summary });
@@ -97,7 +120,7 @@ export async function harvestParts(
   options: { usdUyu: number; gapMs: number; maxDurationMs: number; now: Date; fetchPage?: PartsPageFetcher; apiBase?: string },
 ): Promise<{ records: CarPartsRecord[]; requests: number; note: string | null }> {
   const fetchPage: PartsPageFetcher = options.fetchPage
-    ?? (url => fetchJson<MlPartsPage>(url, { timeoutMs: 45_000, retries: 1, unthrottled: true }));
+    ?? (url => fetchJson<MlPartsPage>(url, { timeoutMs: 45_000, retries: 0, unthrottled: true }));
   const started = Date.now();
   const records: CarPartsRecord[] = [];
   let requests = 0;
@@ -106,10 +129,12 @@ export async function harvestParts(
     if (Date.now() - started >= options.maxDurationMs) return { records, requests, note: "presupuesto agotado" };
     const pages = new Map<CarPart["key"], MlPartsPage>();
     for (const part of CAR_PARTS) {
+      // El reloj se mira en cada pedido: un modelo con el puente colgado puede tardar minutos.
+      if (Date.now() - started >= options.maxDurationMs) return { records, requests, note: "presupuesto agotado" };
       if (requests > 0 && options.gapMs > 0) await sleep(options.gapMs);
       const page = await fetchPage(partsSearchUrl(part, target.brand, target.model, options.apiBase));
       requests++;
-      if (!page) {
+      if (!pageIsReading(page, part.category)) {
         if (++failures >= MAX_CONSECUTIVE_FAILURES) return { records, requests, note: "puente sin respuesta" };
         continue;
       }
