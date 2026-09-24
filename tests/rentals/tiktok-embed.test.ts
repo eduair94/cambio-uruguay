@@ -41,7 +41,10 @@ describe("the creator embed", () => {
 
   it("is read to the end when the account shows fewer videos than a page", () => {
     expect(parseCreatorEmbed(EMBED, "inmo.ejemplo", WINDOW).exhausted).toBe(true);
-    const videos = Array.from({ length: 10 }, (_, i) => ({ id: String(7688511584326454549n - BigInt(i) * 10n ** 13n), desc: `Alquiler ${i}`, authorUniqueId: "inmo.ejemplo" }));
+    // An id published at second t: t in the high 32 bits (no BigInt: the build targets ES6).
+    const idAt = (t: number): string => String(t * 4_294_967_296);
+    const videos = Array.from({ length: 10 }, (_, i) => ({ id: idAt(1790121112 - i * 3_600), desc: `Alquiler ${i}`, authorUniqueId: "inmo.ejemplo" }));
+    expect(createTimeFromId(videos[3]!.id)).toBe(1790121112 - 3 * 3_600);
     const page = (list: unknown[]) => `<script id="__FRONTITY_CONNECT_STATE__">${JSON.stringify({ source: { data: { "/embed/@inmo.ejemplo": { pageName: "creator", userInfo: { uniqueId: "inmo.ejemplo" }, videoList: list } } } })}</script>`;
     // Ten recent videos: the account may have more inside the window.
     expect(parseCreatorEmbed(page(videos), "inmo.ejemplo", WINDOW).exhausted).toBe(false);
