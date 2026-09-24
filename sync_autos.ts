@@ -20,7 +20,9 @@ import { buildMarketSnapshots } from "./classes/autos/market";
 import { fold, slugify } from "./classes/autos/normalize";
 import { IS_A_PART } from "./classes/autos/sources/common";
 import { buildCarCatalog, buildOpportunitySnapshot, buildRiskSnapshot, CAR_CATALOG_FRESH_DAYS } from "./classes/autos/project";
+import { buildCarAdvisor } from "./classes/autos/advisor";
 import { buildCarReport, CAR_REPORT_POLICY } from "./classes/autos/report";
+import { quantile } from "./classes/autos/stats";
 import { analyzeCarRisk } from "./classes/autos/riskAnalyze";
 import { harvestWebSource, sourceEnabled, WEB_SOURCES } from "./classes/autos/sources";
 import type { WebCarContext } from "./classes/autos/sources/common";
@@ -29,7 +31,7 @@ import {
   collapseRefusal, loadCatalogMeta, loadContactOptOuts, loadDealerContacts, loadGuideEntries, loadHarvestMeta, loadOpportunityStats,
   loadRetiredCarSpans, loadSourceMetas, loadStoredCars,
   loadVocabularies, mergeVocabularies, publishCarCatalog, publishCarContacts, publishCarMarkets, saveCarDetails, saveCarHarvest,
-  saveCarOpportunitySnapshot, saveCarReportSnapshot, saveCarRiskSnapshot, saveDealerContacts, saveFbWanted, saveHarvestMeta, saveRefusal,
+  loadCarPartsRecords, saveCarAdvisorSnapshot, saveCarOpportunitySnapshot, saveCarReportSnapshot, saveCarRiskSnapshot, saveDealerContacts, saveFbWanted, saveHarvestMeta, saveRefusal,
   saveSourceHarvest, saveSourceMeta, saveVocabularies,
   sourceMetaRecord,
 } from "./classes/autos/store";
@@ -301,11 +303,21 @@ async function main(): Promise<void> {
     },
   });
   const reportSnapshot = { version: 1 as const, generatedAt, usdUyu, data: report };
+  // El asesor de compra (/que-auto-comprar-uruguay): los mismos avisos, una tabla por modelo, y la
+  // caída típica calculada igual que la del informe para que las dos páginas digan el mismo número.
+  const drops = report.models.map(model => model.annualDrop).filter((drop): drop is number => drop !== null);
+  const advisor = buildCarAdvisor(listings, {
+    maxYear,
+    parts: dryRun ? [] : await loadCarPartsRecords(),
+    typicalDrop: drops.length ? Math.round(quantile(drops, 0.5) * 1000) / 1000 : null,
+  });
+  const advisorSnapshot = { version: 1 as const, generatedAt, usdUyu, data: advisor };
   console.log(`[autos] catalog ${catalog.listings.length}, models ${markets.length}, opportunities ${snapshot.items.length}, duplicates ${JSON.stringify(duplicates)}`, JSON.stringify(analysis.stats));
   console.log(`[autos] informe: ${report.models.length} modelos con ${CAR_REPORT_POLICY.minimumAdverts}+ avisos, ` +
     `mediana US$ ${report.market.price.median}, ${report.depreciation.length} curvas de depreciación, ` +
     `automotora vs dueño ${report.sellerGaps.median === null ? "sin dato" : `${Math.round(report.sellerGaps.median * 100)}%`}, ` +
     `rotación ${report.rotation.measurable ? `${report.rotation.medianDays} días` : "todavía no"}`);
+  console.log(`[autos] asesor: ${advisor.models.length} modelos, ${advisor.models.filter(model => model.parts?.index != null).length} con índice de repuestos`);
   console.log(`[autos] riesgo declarado ${riskAnalysis.stats.declared} avisos, ${riskAnalysis.stats.measured} con descuento medido`,
     JSON.stringify(riskAnalysis.categories.map(category => `${category.category}:${category.adverts}${category.medianGap === null ? "" : `/${Math.round(category.medianGap * 100)}%`}`)));
   console.log(`[autos] sources ${catalog.meta.sources.map(item => `${item.source}=${item.listings}`).join(" ")}`);
@@ -314,7 +326,7 @@ async function main(): Promise<void> {
     const bySource = new Map<string, typeof catalog.listings>();
     for (const row of catalog.listings) bySource.set(row.source, [...(bySource.get(row.source) ?? []), row]);
     fs.writeFileSync(reportFile, JSON.stringify({
-      dryRun, catalogMeta: catalog.meta, duplicates, contacts: contactStats, markets: markets.slice(0, 30), snapshot, riskSnapshot, reportSnapshot,
+      dryRun, catalogMeta: catalog.meta, duplicates, contacts: contactStats, markets: markets.slice(0, 30), snapshot, riskSnapshot, reportSnapshot, advisorSnapshot,
       samples: Object.fromEntries([...bySource].map(([source, rows]) => [source, rows.filter((_, index) => index % Math.max(1, Math.floor(rows.length / 20)) === 0).slice(0, 20)])),
     }, null, 2));
   }
@@ -337,6 +349,8 @@ async function main(): Promise<void> {
   else await saveCarOpportunitySnapshot(snapshot);
   await saveCarRiskSnapshot(riskSnapshot);
   await saveCarReportSnapshot(reportSnapshot);
+  if (advisor.models.length) await saveCarAdvisorSnapshot(advisorSnapshot);
+  else console.warn("[autos] asesor sin modelos; se conserva el snapshot anterior");
 
   const refusalText = [catalogRefusal, snapshotRefusal].filter((reason): reason is string => !!reason).join(" · ") || null;
   await saveRefusal(refusalText, generatedAt);
