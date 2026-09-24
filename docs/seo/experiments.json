@@ -485,6 +485,26 @@
         "apostillar titulo universitario uruguay"
       ],
       "hypothesis": "El arancel ya estaba en el sitio pero escondido: la unica mencion en 250 paginas era una linea del FAQ de la partida de nacimiento, que lo contesta de pasada. Es el mismo accidente que el certificado de antecedentes, cuyo precio vivia dentro de la pagina del pasaporte. La apuesta no es el importe sino el ORDEN, que ninguna fuente publica junta: la apostilla es el ultimo paso y casi nunca se paga sola, porque Cancilleria solo apostilla firmas ya registradas ante ella y segun quien firmo hay otro organismo antes con su propio arancel (MEC 269 por documento, MSP 1 UR, IGRN sin arancel publicado). Las tres fichas son publicas y estan en tres sitios distintos; nadie las suma. El total de la IGRN se publica como piso declarado en vez de omitir lo que falta."
+    },
+    {
+      "id": "descripciones-cuarta-tanda",
+      "shippedOn": "2026-09-24",
+      "routes": [
+        "/advertencias-bcu",
+        "/apps-economia-uruguay",
+        "/carne-de-salud-uruguay",
+        "/cotizaciones-de-la-region",
+        "/cuenta-remunerada-uruguay",
+        "/deuda-de-gastos-comunes-uruguay",
+        "/franquicia-viajero-uruguay",
+        "/inversiones-uruguay",
+        "/meal-prep-uruguay",
+        "/mejores-bancos-uruguay",
+        "/mejores-prestamos-uruguay",
+        "/salud-financiera",
+        "/temas-de-dinero-reddit"
+      ],
+      "hypothesis": "Las trece descripciones mas largas que quedaban (265 a 237 caracteres) perdian en el corte de 155 justo la parte que decide el clic: el 12 % anual y los 4 anos de los gastos comunes, el Decreto 274/017 y las 0,4 UR del carne de salud, los US$ 500/300 y el 50 % de la franquicia del viajero, la Ley 19.210 de la cuenta remunerada y el nombre de los bancos rankeados. Ninguna cifra es nueva: todas ya estaban en la descripcion vieja y en el cuerpo de su pagina, lo que cambia es que ahora entran enteras en el SERP."
     }
   ]
 }

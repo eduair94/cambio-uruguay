@@ -130,9 +130,11 @@ const measured = pageFiles()
   }))
   .filter((page): page is { file: string; description: string } => page.description !== null)
 
-// 133 el 2026-09-20, que es el conteo real y no un número redondo: el sobrante de un piso más
-// bajo alcanzaría para que una descripción nueva saliera cortada sin poner nada en rojo.
-const RESOLVED = 133
+// 141 el 2026-09-24 (133 el 2026-09-20), que es el conteo real y no un número redondo: el sobrante
+// de un piso más bajo alcanzaría para que una descripción nueva saliera cortada sin poner nada en
+// rojo. Sube con cada página nueva que declara su descripción como literal, y baja sólo si alguien
+// vuelve dinámica una que hoy se mide — que es justamente lo que este piso tiene que delatar.
+const RESOLVED = 141
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente
@@ -159,8 +161,17 @@ const RESOLVED = 133
 // hábiles por fallecimiento. Ninguna cifra es nueva: todas ya estaban en la descripción vieja y en
 // el cuerpo de su página.
 //
-// Quedan 64 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 64
+// 64 → 51 el 2026-09-24, cuarta corrida: las trece más largas que quedaban, de 265 a 237
+// caracteres. Mismo criterio y misma comprobación de siempre —ninguna cifra es nueva, todas ya
+// estaban en la descripción vieja y en el cuerpo de su página—, y lo que ahora entra entero es el
+// dato que decide el clic: el 12 % anual y los cuatro años de prescripción de los gastos comunes,
+// el Decreto 274/017 y las 0,4 UR del carné de salud, los US$ 500 aéreos / US$ 300 terrestres y el
+// 50 % sobre el excedente de la franquicia del viajero, la Ley 19.210 que impide llamar interés al
+// rendimiento de Prex y Mercado Pago, y los bancos rankeados por su nombre en vez de «tier list
+// interactiva de». Lo genérico —«Guía completa para…», «Directorio de apps útiles para…»— se fue.
+//
+// Quedan 51 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
+const OVER_BUDGET = 51
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {

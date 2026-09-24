@@ -248,7 +248,7 @@ function formatDate(iso: string): string {
 const canonicalUrl = 'https://cambio-uruguay.com/advertencias-bcu'
 const title = 'Advertencias del BCU: buscá la empresa'
 const description =
-  'Buscá una empresa antes de darle tu plata. Todas las advertencias publicadas por el Banco Central del Uruguay sobre entidades no autorizadas ni registradas, con el comunicado oficial linkeado. Que no aparezca no significa que sea confiable.'
+  'Todas las advertencias del BCU sobre entidades no autorizadas, con el comunicado oficial. Que una empresa no aparezca acá no significa que sea confiable.'
 
 defineOgImageComponent('Cambio', {
   title: '¿El BCU advirtió sobre esta empresa?',

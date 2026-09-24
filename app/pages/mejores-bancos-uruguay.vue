@@ -826,7 +826,7 @@ const { subs: redditSubs } = useRedditSentiment()
 const canonicalUrl = 'https://cambio-uruguay.com/mejores-bancos-uruguay'
 const title = 'Mejores bancos de Uruguay 2026: tier list'
 const description =
-  'Tier list interactiva de bancos y fintech que ofrecen productos al público en Uruguay (BROU, Itaú, Santander, BBVA, Scotiabank, BTG Pactual, Heritage, Mercado Pago y Prex). Rankeados con datos de apps, comisiones, atención, dólares y cobertura.'
+  'BROU, Itaú, Santander, BBVA, Scotiabank, BTG Pactual, Heritage, Mercado Pago y Prex, rankeados por app, comisiones, atención, dólares y cobertura.'
 
 defineOgImageComponent('Cambio', {
   title: 'Mejores bancos de Uruguay',

@@ -191,7 +191,7 @@ const asOfLabel = computed(() =>
 const canonicalUrl = 'https://cambio-uruguay.com/temas-de-dinero-reddit'
 const title = 'De qué habla Uruguay de plata en Reddit'
 const description =
-  'Radar en vivo de lo que los uruguayos preguntan sobre dinero en Reddit: dólar, deudas y clearing, alquiler, impuestos, préstamos, inversión, sueldo, tarjetas y más, rankeado por lo que más se repite, con hilos reales y la guía nuestra para cada tema.'
+  'Dólar, deudas y clearing, alquiler, impuestos, préstamos e inversión: de qué habla Uruguay cuando habla de plata en Reddit, según lo que más se repite.'
 
 defineOgImageComponent('Cambio', {
   title: 'De qué habla Uruguay sobre plata',

@@ -1191,7 +1191,7 @@ const PAGE_SOURCES: { label: string; url: string }[] = [
 const canonicalUrl = 'https://cambio-uruguay.com/mejores-prestamos-uruguay'
 const title = 'Mejores préstamos en Uruguay 2026'
 const description =
-  'Tier list de dónde pedir un préstamo personal en Uruguay: bancos, financieras, cooperativas y fintech rankeados por tasa, acceso, letra chica, rapidez y reputación. Incluye cuáles prestan estando en el clearing. Se reverifica todas las semanas.'
+  'Bancos, financieras, cooperativas y fintech rankeados por tasa, acceso y letra chica, con cuáles prestan estando en el clearing. Se reverifica cada semana.'
 
 defineOgImageComponent('Cambio', {
   title: 'Mejores préstamos de Uruguay',

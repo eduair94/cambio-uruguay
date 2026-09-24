@@ -273,7 +273,7 @@ const groups = computed(() => moneyAppsByCategory(filtered.value))
 const canonicalUrl = 'https://cambio-uruguay.com/apps-economia-uruguay'
 const title = 'Apps de economía y dinero en Uruguay 2026'
 const description =
-  'Directorio de apps útiles para tu plata en Uruguay: aplicaciones de bancos (BROU, Itaú, Santander, BBVA, Scotiabank), billeteras y pagos (Mercado Pago, Prex, MiDinero), inversión, cripto, trámites del Estado (BPS, DGI), servicios útiles y proyectos de la comunidad.'
+  'BROU, Itaú, Santander, BBVA, Mercado Pago, Prex, MiDinero, BPS y DGI: las apps que te tocan la plata en Uruguay, con billeteras, inversión y cripto.'
 
 defineOgImageComponent('Cambio', {
   title: 'Apps de dinero en Uruguay',
