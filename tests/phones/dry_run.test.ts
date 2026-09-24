@@ -21,7 +21,10 @@ vi.mock("../../classes/appdb", () => ({
   },
 }));
 
-const storeSnapshotState = vi.hoisted(() => ({ data: null as null | { generatedAt: string; listings: unknown[] } }));
+const storeSnapshotState = vi.hoisted(() => ({
+  data: null as null | { generatedAt: string; listings: unknown[] },
+  storedPublishable: 0,
+}));
 const storeCalls = vi.hoisted(() => ({
   loadPrevious: 0,
   countStored: 0,
@@ -36,13 +39,12 @@ vi.mock("../../classes/phones/store", () => ({
     storeCalls.loadPrevious++;
     return new Map();
   },
-  // 0 stored: the thin-run guard's relative check (`publishable < stored * 0.4`) only engages when
-  // `stored > 0` — this keeps the fixture's single FAKE_MODEL from tripping it regardless of the
-  // scenario under test, which is the write gate, not the guard's own arithmetic (that lives in
-  // classes/equipar/catalog.ts's tests for the equivalent equipar guard).
-  countStoredPhones: async () => {
+  // 0 stored by default: the thin-run guard's relative check (`publishable < stored * 0.4`) only
+  // engages when `stored > 0` — this keeps the fixture's single FAKE_MODEL from tripping it unless a
+  // test sets `storedPublishable` on purpose (the guard's own suite is further down this file).
+  countPublishableStoredPhones: async () => {
     storeCalls.countStored++;
-    return 0;
+    return storeSnapshotState.storedPublishable;
   },
   withPhoneHistory: (models: unknown[]) => {
     storeCalls.withHistory++;
@@ -151,6 +153,7 @@ beforeEach(() => {
   storeCalls.loadSnapshot = 0;
   storeCalls.saveSnapshot.length = 0;
   storeSnapshotState.data = null;
+  storeSnapshotState.storedPublishable = 0;
   pricewatchCalls.length = 0;
   catalogCalls.length = 0;
   process.argv = ORIGINAL_ARGV;
@@ -264,5 +267,43 @@ describe("sync_phones.ts: foto de tiendas entre la diaria y la horaria", () => {
     await main();
     expect(storeCalls.loadSnapshot).toBe(0);
     expect(storeCalls.saveSnapshot).toHaveLength(0);
+  });
+});
+
+describe("sync_phones.ts: la guarda de corrida flaca", () => {
+  // Medido 2026-09-24: la guarda contaba TODOS los modelos guardados (225, y crece: un modelo que deja
+  // de venderse no se borra) contra los que ESTA corrida puede publicar con banda nueva (95 la
+  // diaria, ~71 la horaria). La horaria falló todas las horas desde el 19/9 y la diaria pasaba por 5
+  // modelos, con el umbral subiendo ~1,4 por día.
+  it("compara contra lo guardado CON banda nueva publicable: la diaria con 1 de 2 publica", async () => {
+    storeSnapshotState.storedPublishable = 2;
+    setArgv();
+    await main();
+    expect(storeCalls.save).toHaveLength(1);
+    expect(pricewatchCalls).toHaveLength(1);
+  });
+
+  it("menos del 40 % de lo publicable guardado sigue siendo un corte: no guarda nada", async () => {
+    storeSnapshotState.storedPublishable = 3;
+    setArgv();
+    await expect(main()).rejects.toThrow(/se conserva el catálogo anterior/);
+    expect(storeCalls.save).toHaveLength(0);
+    expect(pricewatchCalls).toHaveLength(0);
+  });
+
+  it("la horaria que publicaría menos modelos que la diaria no pisa el catálogo, pero sí registra el historial por oferta", async () => {
+    storeSnapshotState.storedPublishable = 2;
+    setArgv("--fast");
+    await main();
+    expect(storeCalls.save).toHaveLength(0);
+    expect(pricewatchCalls).toHaveLength(1);
+  });
+
+  it("la horaria que cubre lo mismo que la diaria sí publica", async () => {
+    storeSnapshotState.storedPublishable = 1;
+    setArgv("--fast");
+    await main();
+    expect(storeCalls.save).toHaveLength(1);
+    expect(pricewatchCalls).toHaveLength(1);
   });
 });

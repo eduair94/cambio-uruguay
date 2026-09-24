@@ -36,8 +36,17 @@ export async function loadPreviousPhones(): Promise<Map<string, PreviousPhone>> 
   return new Map(rows.map((row) => [row.key, { firstSeen: row.firstSeen, history: row.history ?? [] }]));
 }
 
-export async function countStoredPhones(): Promise<number> {
-  return PhoneModelModel.countDocuments({});
+/**
+ * Stored models with a publishable NEW band — the same test as sync_phones.ts's
+ * `hasPublishableNewBand`, which is what the thin-run guard compares a run against. Counting every
+ * document instead was wrong twice: a model that stops selling is never deleted (see the header), so
+ * the count only grows, and it measured "models" against "models with a price". Measured 2026-09-24:
+ * 225 documents, 96 with a band; the hourly run failed every hour and the daily passed by 5 models.
+ */
+export const PUBLISHABLE_NEW_BAND_FILTER = { "bands.new": { $ne: null }, ambiguousConditions: { $ne: "new" } } as const;
+
+export async function countPublishableStoredPhones(): Promise<number> {
+  return PhoneModelModel.countDocuments(PUBLISHABLE_NEW_BAND_FILTER);
 }
 
 /** Keeps at most a year of daily points — same horizon as classes/equipar/store.ts's own trimHistory. */

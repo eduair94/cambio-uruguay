@@ -215,6 +215,22 @@ menos del 40% de los modelos que ya estaban guardados con banda nueva publicable
 se conoce — una corrida `--dry-run` sin APP DB configurada no tiene con qué compararse y sólo se
 rechaza si queda totalmente vacía), el job tira un `Error` y el catálogo anterior queda intacto.
 
+**Hasta el 2026-09-24 el código no hacía lo que dice el párrafo de arriba**: contaba TODOS los
+documentos guardados, no los que tienen banda nueva publicable. Como un modelo que deja de venderse no
+se borra, ese número sólo crece (208 el 19/9, 225 el 24/9, de los que 96 tenían banda) y lo comparaba
+contra los modelos con banda de la corrida (95 la diaria, ~71 la horaria). Resultado medido en los logs
+de pm2: la horaria falló **todas las horas** desde el 19/9 como mínimo (nunca publicó ni grabó el
+historial por oferta) y la diaria pasaba por 5 modelos con el umbral subiendo ~1,4 por día — se habría
+caído sola alrededor del 28/9, llevándose el catálogo y el historial de celulares. Ahora cuenta
+`PUBLISHABLE_NEW_BAND_FILTER` (`classes/phones/store.ts`, la misma prueba que `hasPublishableNewBand`).
+
+**La horaria nunca achica el catálogo de la diaria.** Aun con la foto de tiendas, la horaria pide 8
+búsquedas de ML contra 40 y le pone banda a menos modelos (~71 contra ~95, medido el 2026-09-24).
+Publicarla le sacaría la banda a un par de docenas de modelos 23 horas al día y pisaría su punto
+diario de historia con uno más flaco. Si la horaria publicaría menos modelos con banda nueva que los
+guardados, no escribe el catálogo, lo dice en el log y termina en 0; **el historial por oferta
+(`pricewatchoffers`) sí lo graba**, porque son observaciones reales de esa hora.
+
 **`--dry-run` funciona incluso sin `APP_MONGO_URI`/`MONGO_URI` configurada** (un chequeo local sin
 `app/.env`): salta cargar el catálogo anterior, contar lo guardado y leer la foto de tiendas, y avisa
 por consola que lo está haciendo, en vez de intentar conectar sólo para leer cuando la corrida no

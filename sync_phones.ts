@@ -26,7 +26,7 @@ import type { PhoneMeta, PhoneModel } from "./classes/phones/catalog";
 import { identifyPhone } from "./classes/phones/identify";
 import { PHONE_SPEC, PHONE_STORE_KEYS } from "./classes/phones/spec";
 import {
-  countStoredPhones,
+  countPublishableStoredPhones,
   loadPhoneStoreSnapshot,
   loadPreviousPhones,
   savePhoneCatalog,
@@ -68,7 +68,7 @@ export async function main(): Promise<void> {
   const startedAt = Date.now();
   const stores = retailStores(PHONE_STORE_KEYS);
 
-  const [harvest, usdUyu, previous, storedCount, storeSnapshot] = await Promise.all([
+  const [harvest, usdUyu, previous, storedPublishable, storeSnapshot] = await Promise.all([
     harvestRetail({
       stores,
       specs: [PHONE_SPEC],
@@ -79,7 +79,7 @@ export async function main(): Promise<void> {
     }),
     fetchUsdUyuRate(),
     skipDb ? Promise.resolve(new Map()) : loadPreviousPhones(),
-    skipDb ? Promise.resolve(null) : countStoredPhones(),
+    skipDb ? Promise.resolve(null) : countPublishableStoredPhones(),
     // Only the hourly run reads it, and only when it can reach the APP DB at all. A snapshot that
     // cannot be read leaves the hourly run exactly as it was before the snapshot existed; it never
     // fails the run — see classes/phones/storeSnapshot.ts for why this exists.
@@ -131,14 +131,21 @@ export async function main(): Promise<void> {
   const ambiguousDropped = models.reduce((sum, model) => sum + model.ambiguousDropped, 0);
 
   // A run that priced almost nothing is an outage, not a market — publishing it would blank a page
-  // that was correct yesterday. When storedCount is unknown (a dry run with no APP DB to compare
-  // against), only total emptiness refuses; there is nothing stored to measure a relative drop
-  // against.
-  if (!publishable.length || (storedCount !== null && storedCount > 0 && publishable.length < storedCount * 0.4)) {
+  // that was correct yesterday. Measured against the stored models that HAVE a publishable new band,
+  // like for like (see countPublishableStoredPhones). When that count is unknown (a dry run with no
+  // APP DB to compare against), only total emptiness refuses; there is nothing stored to measure a
+  // relative drop against.
+  if (!publishable.length || (storedPublishable !== null && storedPublishable > 0 && publishable.length < storedPublishable * 0.4)) {
     throw new Error(
-      `[phones] sólo ${publishable.length} modelos con banda nueva publicable contra ${storedCount ?? "?"} guardados — se conserva el catálogo anterior`
+      `[phones] sólo ${publishable.length} modelos con banda nueva publicable contra ${storedPublishable ?? "?"} guardados — se conserva el catálogo anterior`
     );
   }
+
+  // The hourly run searches a fifth of the daily's ML terms, so it prices fewer models (~71 against
+  // ~95, measured 2026-09-24) even with the store snapshot merged in. Publishing that would strip
+  // the band off two dozen models for 23 hours a day and overwrite their daily history point with a
+  // thinner one. It still records what it saw per offer: those are real observations of the hour.
+  const keepDailyCatalog = fast && storedPublishable !== null && publishable.length < storedPublishable;
 
   const today = new Date().toISOString().slice(0, 10);
   const stored = withPhoneHistory(models, previous, today);
@@ -152,7 +159,13 @@ export async function main(): Promise<void> {
   };
 
   if (!dryRun) {
-    await savePhoneCatalog(stored, meta);
+    if (keepDailyCatalog) {
+      console.log(
+        `[phones] horaria: ${publishable.length} modelos con banda nueva contra ${storedPublishable} publicados — se conserva el catálogo de la diaria`
+      );
+    } else {
+      await savePhoneCatalog(stored, meta);
+    }
 
     // Own try/catch, like sync_equipar.ts: a pricewatch failure must never cost the catalogue that
     // was just saved. Recorded over `guarded.listings` (pre-merge, unit-guarded) rather than the
