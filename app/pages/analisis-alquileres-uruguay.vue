@@ -396,7 +396,7 @@ not decorative charts. On phones the chart rows recompose and the form stays in 
         :neighborhoods="data?.facets.neighborhoods ?? []"
         :currency="query.currency"
         :facets-ready="!loading && !error"
-        :facets-error="Boolean(error)"
+        :facets-error="Boolean(error) && !ssrRetrying"
         :facets-stale="staleCatalogue"
         @retry-facets="refresh"
       />
@@ -478,8 +478,40 @@ async function openMap() {
   await nextTick()
   document.getElementById('mapa-alquileres')?.scrollIntoView({ block: 'start' })
 }
-onMounted(() => {
+/**
+ * Un fallo del SSR se reintenta UNA vez desde el navegador.
+ *
+ * Desde el 2026-09-19 esta página se renderiza en el servidor (antes era `server: false` por los
+ * 9,78 s de un análisis en frío; con el snapshot semanal ya no hace falta). Ganó las medianas en el
+ * HTML y heredó un problema: si esa única llamada falla —el snapshot todavía no existe, la base no
+ * contesta, el proceso acaba de arrancar— la página queda muerta hasta que el lector encuentre el
+ * botón «Volver a intentar». Un 503 momentáneo no debería costar una visita.
+ *
+ * Sólo el transitorio. El 503 de `RENTAL_ANALYSIS_STALE` es un estado DELIBERADO —el snapshot pasó
+ * los 14 días y la página lo dice con su fecha— y reintentarlo sería un bucle que nunca mejora.
+ * Por eso la condición mira `staleCatalogue` y no `error` a secas.
+ *
+ * Una sola vez: si el segundo intento también falla, el estado de error queda y decide el lector.
+ *
+ * Y mientras el reintento está en vuelo la página tiene que verse CARGANDO, no rota. `refresh()`
+ * no limpia `error` hasta que resuelve, así que sin `ssrRetrying` el lector —y el estimador, que
+ * recibe `facets-error`— ven el estado de falla durante todo el reintento: la lista de zonas decía
+ * "Sin zonas con avisos en esta moneda" cuando la respuesta todavía estaba viajando. Un reintento
+ * automático que muestra el fracaso mientras reintenta es peor que no reintentar.
+ */
+const ssrRetried = ref(false)
+const ssrRetrying = ref(false)
+onMounted(async () => {
   if (route.hash === '#mapa-alquileres') openMap()
+  if (error.value && !staleCatalogue.value && !ssrRetried.value) {
+    ssrRetried.value = true
+    ssrRetrying.value = true
+    try {
+      await refresh()
+    } finally {
+      ssrRetrying.value = false
+    }
+  }
 })
 watch(
   () => route.hash,
@@ -498,7 +530,8 @@ async function selectMontevideo() {
     hash: '#mapa-alquileres',
   })
 }
-const loading = computed(() => pending.value || status.value === 'idle')
+// `ssrRetrying` entra acá para que el reintento automático se vea como lo que es: una carga.
+const loading = computed(() => pending.value || status.value === 'idle' || ssrRetrying.value)
 const failureData = computed(
   () => error.value?.data as { data?: { code?: string; generatedAt?: string } } | undefined
 )

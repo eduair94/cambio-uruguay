@@ -370,7 +370,9 @@ test('individual page keeps own photos, costs and canonical; no catalogue mounte
   await expect(page.locator('.sales-directory')).toHaveCount(0)
   await expect(page.locator('.sale-detail__facts')).toContainText('U$S 150.000')
   await expect(page.locator('.sale-detail__facts')).toContainText('$ 4.200')
-  await expect(page.locator('.sale-detail__dates')).toContainText('5 de septiembre de 2026')
+  // «setiembre», no «septiembre»: es la grafía uruguaya y el sitio entero la usa desde
+  // `afc64d81`. El spec quedó con la castellana y desde entonces falla contra una página correcta.
+  await expect(page.locator('.sale-detail__dates')).toContainText('5 de setiembre de 2026')
   const schema = await page.locator('script[type="application/ld+json"]').allTextContents()
   const listing = schema
     .map(text => JSON.parse(text))
