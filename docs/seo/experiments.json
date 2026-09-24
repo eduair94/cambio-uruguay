@@ -457,6 +457,25 @@
       "hypothesis": "La moto es el vehiculo de trabajo en Uruguay y es la alternativa de costo medio entre el boleto y el auto, pero el sitio tenia el agujero justo ahi: publica precios de autos usados, de monopatines y de bicicletas electricas y ninguno de motos. El directorio por modelo-ano con banda p25/mediana/p75 replica lo que ya funciona en /autos-usados-uruguay, y ademas es el insumo que le faltaba al comparador de transporte para poder contestar el modo mas consultado."
     },
     {
+      "id": "descripciones-que-empiezan-por-la-respuesta",
+      "shippedOn": "2026-09-24",
+      "routes": [
+        "/advertencias-bcu",
+        "/apps-economia-uruguay",
+        "/carne-de-salud-uruguay",
+        "/cuenta-remunerada-uruguay",
+        "/deuda-de-gastos-comunes-uruguay",
+        "/franquicia-viajero-uruguay",
+        "/inversiones-uruguay",
+        "/meal-prep-uruguay",
+        "/mejores-bancos-uruguay",
+        "/mejores-prestamos-uruguay",
+        "/salud-financiera",
+        "/temas-de-dinero-reddit"
+      ],
+      "hypothesis": "Las doce descripciones mas largas que quedaban del tramo contenido (265 a 237 caracteres) gastaban su primer renglon nombrando el formato de la pagina (directorio, tier list, guia, radar) y el dato quedaba del lado que Google corta a los 155; arrancar por la respuesta (4 anios y 12 % de gastos comunes, Decreto 274/017, US$ 500 de franquicia, la Ley 19.210, que no hay COPAB, quien presta en clearing) deberia subir la porcion de clics desde el mismo ranking."
+    },
+    {
       "id": "partida-de-nacimiento-costo",
       "shippedOn": "2026-09-23",
       "routes": [

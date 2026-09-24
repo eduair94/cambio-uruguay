@@ -159,8 +159,20 @@ const RESOLVED = 133
 // hábiles por fallecimiento. Ninguna cifra es nueva: todas ya estaban en la descripción vieja y en
 // el cuerpo de su página.
 //
-// Quedan 64 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 64
+// 64 → 52 el 2026-09-23, cuarta corrida: las doce más largas que quedaban, de 265 a 237
+// caracteres, TODAS del tramo `contenido`. Y acá el patrón que las une es el que más cuesta ver
+// leyendo la página: las doce empezaban nombrando LO QUE LA PÁGINA ES («Directorio de apps
+// útiles…», «Tier list interactiva de…», «Guía completa para…», «Radar en vivo de…»), o sea
+// gastaban el renglón que el SERP sí publica en una etiqueta de formato que no diferencia nada, y
+// el dato que decide el clic quedaba del lado cortado. Ahora arranca la respuesta: los 4 años y el
+// 12 % de los gastos comunes, el Decreto 274/017 y las 0,4 UR del carné de salud, los US$ 500 y
+// US$ 300 de la franquicia de viajero, que la Ley 19.210 le prohíbe a una billetera pagar
+// intereses, que si el corredor quiebra no hay COPAB, cuáles prestan estando en el clearing, y los
+// nombres propios con los que se busca (BROU, Itaú, Mercado Pago, Prex). Ninguna cifra es nueva:
+// todas ya estaban en la descripción vieja y en el cuerpo de su página.
+//
+// Quedan 52 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
+const OVER_BUDGET = 52
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {
