@@ -28,6 +28,7 @@ import type {
   PublicCarAdvisorVariant,
   PublicCarBodyType,
   PublicCarFuel,
+  PublicCarPartPrice,
   PublicCarTransmission,
 } from './carsPublic'
 import { TRANSPORT_MODE_ASSUMPTIONS } from './transportAssumptions'
@@ -668,4 +669,15 @@ export function adviseCars(
         ? Math.ceil(cheapestOutOfBudget / 500) * 500
         : null,
   }
+}
+
+/** Lo que devuelve /api/cars/advisor. */
+export interface CarAdvisorApiResponse extends CarAdvisorResponse {
+  generatedAt: string
+  usdUyu: number
+  models: number
+  typicalDrop: number | null
+  partsBaseline: PublicCarPartPrice[]
+  fuel: { asOf: string | null; from: string; super95: number; gasoil50s: number }
+  query: CarAdvisorQuery
 }

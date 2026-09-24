@@ -16,7 +16,8 @@
 //    cuota en fecha. No se acumulan.
 // El valor de mercado oficial (aforo) no se publica por modelo —sale por matrícula— así que acá se
 // estima con la mediana de lo que se pide, y la página lo dice al lado del número.
-import type { PublicCarFuel } from './carsPublic'
+import type { PublicCarFuel, PublicCarPartKey } from './carsPublic'
+import type { FaqItem } from './faqAnswers'
 import { UTE_IVA_RATE, UTE_TARIFFS } from './householdBills'
 import { SITE_ASSUMPTION, TRANSPORT_MODE_ASSUMPTIONS } from './transportAssumptions'
 import type { TransportFigure } from './transportModel'
@@ -193,5 +194,58 @@ export const CAR_ADVISOR_CHECKLIST: readonly CarAdvisorCheck[] = Object.freeze([
       'Choques, recupero de seguro, chapa extranjera, deuda o papeles en trámite bajan el precio, y a veces el aviso lo dice. En nuestro tablero de riesgo declarado ves cuánto menos se pide por cada motivo.',
     url: '/autos-chocados-y-con-deuda-uruguay',
     label: 'Autos chocados y con deuda',
+  },
+])
+
+// ---------------------------------------------------------------------------------------------
+// Repuestos y preguntas frecuentes
+// ---------------------------------------------------------------------------------------------
+
+/** Espejo de `CAR_PARTS` (classes/autos/repuestos.ts): cómo se llama cada pieza en la página. */
+export const CAR_PART_LABELS: Record<PublicCarPartKey, string> = {
+  pastillas: 'Pastillas de freno delanteras',
+  filtro_aceite: 'Filtro de aceite',
+  amortiguador: 'Amortiguador delantero',
+  embrague: 'Kit de embrague',
+  distribucion: 'Kit de distribución',
+  optica: 'Óptica delantera',
+}
+
+export const CAR_ADVISOR_FAQ: readonly FaqItem[] = Object.freeze([
+  {
+    id: 'mejor-auto',
+    question: '¿Cuál es el mejor auto usado para comprar en Uruguay?',
+    answer:
+      'No hay uno solo: depende de cuánto tenés, para qué lo usás y qué te importa más. El asesor ordena los modelos que entran en tu presupuesto según lo que contestás —costo de tenerlo, repuestos, reventa, seguridad, espacio o que sea lo más nuevo posible— con los avisos vigentes de hoy. Por eso la lista cambia si cambian tus respuestas o el mercado.',
+  },
+  {
+    id: 'patente-usado',
+    question: '¿Cómo se calcula la patente de un auto usado en 2026?',
+    answer:
+      'Según el Texto Ordenado del SUCIVE 2026, un auto usado paga el 4,5 % de su valor de mercado oficial (el aforo), pasado a pesos con un dólar fijo de $ 41,826. Un eléctrico usado paga 2,25 % del valor sin IVA, y ningún modelo 1992 o posterior paga menos de $ 8.770,10 al año. Pagando el año entero con la primera cuota hay 20 % de bonificación, o 10 % pagando cada cuota en fecha, sin acumularse. Acá estimamos el aforo con la mediana de lo que se pide por ese modelo y año; el importe exacto de un auto se consulta en el SUCIVE con su matrícula y padrón.',
+  },
+  {
+    id: 'repuestos',
+    question: '¿De dónde salen los precios de los repuestos?',
+    answer:
+      'De un relevamiento propio en Mercado Libre Uruguay: para cada modelo buscamos seis piezas —pastillas de freno delanteras, filtro de aceite, amortiguador delantero, kit de embrague, kit de distribución y óptica delantera— y nos quedamos con los avisos nuevos que nombran ese modelo. El índice compara cada pieza con la mediana de todos los modelos: 0,80 quiere decir 20 % más barato que el modelo típico. Son precios de avisos, no el stock de las casas de repuestos, y una pieza puede cambiar entre generaciones del mismo modelo. Se relee cada semana.',
+  },
+  {
+    id: 'latin-ncap',
+    question: '¿Qué significan las estrellas de Latin NCAP?',
+    answer:
+      'Latin NCAP choca autos vendidos en América Latina y los califica de 0 a 5 estrellas. Cambió su protocolo en 2016 y en 2020, así que una calificación de 2015 y una de 2023 no se comparan entre sí. Mostramos un resultado sólo si aplica al año del auto recomendado; si no hay, decimos "sin ensayo que aplique", que no es lo mismo que cero estrellas.',
+  },
+  {
+    id: 'no-aparece',
+    question: '¿Por qué no aparece el auto que estoy buscando?',
+    answer:
+      'Para dar un consejo hacen falta datos: el modelo necesita al menos 12 avisos vigentes, la combinación de combustible y caja al menos 6, y el año al menos 3. Además cuentan tus filtros: presupuesto, caja, combustible, carrocería, cuántos viajan y el uso. Los autos a GNC quedan afuera porque hay muy pocos para comparar. En el directorio de autos usados están todos los avisos.',
+  },
+  {
+    id: 'seguro',
+    question: '¿El costo mensual incluye el seguro contra todo riesgo?',
+    answer:
+      'No. Incluye el SOA, el seguro obligatorio, con la prima promedio que publica el BCU, que es un promedio de mercado y no una tarifa. Un seguro contra todo riesgo depende del auto, de tu edad, de dónde lo guardás y de la aseguradora, y ninguna publica un tarifario: hay que cotizarlo.',
   },
 ])

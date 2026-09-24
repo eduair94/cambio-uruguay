@@ -1,3 +1,4 @@
+import { CarAdvisorSnapshotModel } from '../models/CarAdvisorSnapshot'
 import { CarCatalogMetaModel } from '../models/CarCatalogMeta'
 import { CarMarketSnapshotModel } from '../models/CarMarketSnapshot'
 import { CarOpportunitySnapshotModel } from '../models/CarOpportunitySnapshot'
@@ -13,6 +14,7 @@ import {
 } from '../../utils/cars'
 import { CAR_DRIVETRAINS, CAR_EQUIPMENT, CAR_STEERINGS } from '../../utils/carsSpecs'
 import type {
+  PublicCarAdvisorSnapshot,
   PublicCarBody,
   PublicCarCatalogMeta,
   PublicCarEquipment,
@@ -390,4 +392,20 @@ export async function loadCarMarket(slug: string): Promise<PublicCarMarketSnapsh
   if (marketCache.size > 500) marketCache.clear()
   marketCache.set(slug, { snapshot, expires: Date.now() + 300_000 })
   return snapshot
+}
+
+let advisorCache: { expires: number; snapshot: PublicCarAdvisorSnapshot } | null = null
+/** La tabla por modelo del asesor de compra. Agregados: sólo se valida la forma del documento. */
+export async function loadCarAdvisor(): Promise<PublicCarAdvisorSnapshot | null> {
+  if (advisorCache && advisorCache.expires > Date.now()) return advisorCache.snapshot
+  await connectDb()
+  const doc = await CarAdvisorSnapshotModel.findOne({ key: 'used' })
+    .select({ _id: 0, snapshot: 1 })
+    .maxTimeMS(10_000)
+    .lean()
+  const raw = doc?.snapshot
+  if (!raw || raw.version !== 1 || !Array.isArray(raw.data?.models) || !raw.data.models.length)
+    return null
+  advisorCache = { snapshot: raw, expires: Date.now() + 600_000 }
+  return raw
 }
