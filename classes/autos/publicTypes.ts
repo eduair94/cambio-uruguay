@@ -503,3 +503,91 @@ export interface PublicCarReportSnapshot {
   usdUyu: number;
   data: PublicCarReportSnapshotData;
 }
+
+/** Las seis piezas de la canasta de repuestos (classes/autos/repuestos.ts). */
+export type PublicCarPartKey = "pastillas" | "filtro_aceite" | "amortiguador" | "embrague" | "distribucion" | "optica";
+
+/** Mediana en pesos de una pieza, sobre avisos de Mercado Libre Uruguay que nombran el modelo. */
+export interface PublicCarPartPrice {
+  key: PublicCarPartKey;
+  median: number;
+  offers: number;
+}
+
+export interface PublicCarAdvisorParts {
+  readAt: string;
+  /** Media geométrica de (mediana del modelo / mediana de todos) con 3+ piezas; null si no alcanza. */
+  index: number | null;
+  /** Ofertas coincidentes sumadas en las seis piezas: avisos de repuestos, no stock de las casas. */
+  offers: number;
+  parts: PublicCarPartPrice[];
+}
+
+export interface PublicCarAdvisorYear {
+  year: number;
+  n: number;
+  p25: number;
+  median: number;
+  p75: number;
+  kmMedian: number | null;
+}
+
+/** Combustible × caja: un Corolla híbrido automático y uno a nafta manual no cuestan ni consumen lo mismo. */
+export interface PublicCarAdvisorVariant {
+  fuel: PublicCarFuel;
+  transmission: PublicCarTransmission;
+  adverts: number;
+  litersPer100Km: number | null;
+  /** Qué parte de los avisos con consumo lo declara; el resto es la estimación por modelo. */
+  consumptionDeclaredShare: number | null;
+  years: PublicCarAdvisorYear[];
+}
+
+/** Sí / (sí + no) entre las fichas que mencionan el dato; lo no mencionado no cuenta. */
+export interface PublicCarAdvisorShare {
+  share: number;
+  n: number;
+}
+
+export interface PublicCarAdvisorModel {
+  marketSlug: string;
+  brand: string;
+  model: string;
+  brandSlug: string;
+  modelSlug: string;
+  adverts: number;
+  sellers: number;
+  body: PublicCarBodyType | null;
+  bodyShare: number | null;
+  /** Fichas técnicas leídas: la base de plazas, baúl, largo, potencia y equipamiento. */
+  specsN: number;
+  seats: number | null;
+  trunkL: number | null;
+  lengthMm: number | null;
+  powerHp: number | null;
+  fourByFour: PublicCarAdvisorShare | null;
+  abs: PublicCarAdvisorShare | null;
+  airbags: PublicCarAdvisorShare | null;
+  esc: PublicCarAdvisorShare | null;
+  isofix: PublicCarAdvisorShare | null;
+  annualDrop: number | null;
+  dealerShare: number;
+  declaredRiskShare: number;
+  variants: PublicCarAdvisorVariant[];
+  parts: PublicCarAdvisorParts | null;
+}
+
+export interface PublicCarAdvisorSnapshotData {
+  /** Caída anual típica del mercado: la que se usa cuando el modelo no tiene curva propia. */
+  typicalDrop: number | null;
+  /** Mediana de cada pieza entre todos los modelos medidos: la base del índice de repuestos. */
+  partsBaseline: PublicCarPartPrice[];
+  models: PublicCarAdvisorModel[];
+}
+
+export interface PublicCarAdvisorSnapshot {
+  version: 1;
+  generatedAt: string;
+  usdUyu: number;
+  data: PublicCarAdvisorSnapshotData;
+}
