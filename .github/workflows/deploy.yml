@@ -319,6 +319,35 @@ jobs:
         run: |
           gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --squash --delete-branch \
             --match-head-commit "$HEAD_SHA"
+      # El grupo `production-deploy` admite UN run pendiente: el que llega después reemplaza al que
+      # espera. Pasó el mismo día en que nació este job: los dispatch de #38 y #35 quedaron en cola
+      # y un push de otra sesión que sólo tocaba el backend los canceló, así que el frontend no se
+      # desplegó. Un run EN CURSO no se cancela nunca (cancel-in-progress es false para main), así
+      # que se despacha recién con el grupo libre y se confirma que arrancó; si igual lo cancelaron
+      # en los segundos de cola, se vuelve a intentar.
       - name: Dispatch production deploy
         if: env.DEPLOYS == 'true'
-        run: gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
+        run: |
+          set -euo pipefail
+          busy() {
+            gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy.yml --branch main --limit 20 \
+              --json status --jq '[.[] | select(.status != "completed")] | length'
+          }
+          for attempt in 1 2 3; do
+            for _ in $(seq 1 60); do [ "$(busy)" = "0" ] && break; sleep 30; done
+            since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
+            for _ in $(seq 1 40); do
+              sleep 15
+              run="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy.yml --branch main \
+                --event workflow_dispatch --limit 5 --json databaseId,status,conclusion,createdAt \
+                --jq "[.[] | select(.createdAt >= \"$since\")] | last // empty")"
+              [ -z "$run" ] && continue
+              status="$(jq -r .status <<<"$run")"; conclusion="$(jq -r .conclusion <<<"$run")"
+              if [ "$status" = "in_progress" ] || { [ "$status" = "completed" ] && [ "$conclusion" != "cancelled" ]; }; then
+                echo "Deploy run $(jq -r .databaseId <<<"$run") arrancó."; exit 0
+              fi
+              [ "$conclusion" = "cancelled" ] && { echo "Dispatch cancelado en cola; reintento."; break; }
+            done
+          done
+          echo "::error::El deploy despachado no llegó a arrancar en tres intentos."; exit 1
