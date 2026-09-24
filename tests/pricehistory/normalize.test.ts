@@ -176,6 +176,37 @@ describe("summarize", () => {
   });
 });
 
+describe("precio de relleno", () => {
+  it("un punto de relleno no es un precio: 11.111 -> 29.000 no es una suba", () => {
+    const series = seriesFromMarketLog({
+      vertical: "alquiler",
+      advertId: "mercadolibre:MLU1",
+      firstSeen: "2026-09-18",
+      lastSeen: "2026-09-24",
+      points: [
+        { d: "2026-09-18", p: 11111, c: "UYU" },
+        { d: "2026-09-24", p: 29000, c: "UYU" },
+      ],
+    });
+    expect(series?.points).toEqual([{ d: "2026-09-24", p: 29000 }]);
+    expect(series?.lastChange).toBeNull();
+  });
+  it("vale igual en pricewatch y en autos", () => {
+    const pw = seriesFromPricewatch(pricewatchDoc({ history: [{ d: "2026-09-17", p: 1111, lp: null, c: "UYU" }, { d: "2026-09-22", p: 2390, lp: null, c: "UYU" }] }));
+    expect(pw?.lastChange).toBeNull();
+    const car = seriesFromCarListing({
+      key: "ml-MLU1",
+      listing: { title: "Onix", url: "https://x", currency: "USD" },
+      priceHistory: [
+        { price: 12345, currency: "USD", observedAt: "2026-09-17T06:00:00.000Z" },
+        { price: 13900, currency: "USD", observedAt: "2026-09-18T06:00:00.000Z" },
+        { price: 13500, currency: "USD", observedAt: "2026-09-19T06:00:00.000Z" },
+      ],
+    });
+    expect(car?.lastChange).toEqual({ from: 13900, to: 13500, at: "2026-09-19" });
+  });
+});
+
 describe("plausibilidad de la serie", () => {
   // Medido en producción el 2026-09-22, primera ficha publicada: un Chery Tiggo 8 con dos puntos,
   // US$ 16.590 y US$ 1.111.111, que el bloque anunciaba como "subió 6.597,5 %". `carlistings`
@@ -190,10 +221,24 @@ describe("plausibilidad de la serie", () => {
       listing: { title: "Chery Tiggo 8", url: "https://x", sellerName: "Automotora", currency: "USD" },
       priceHistory: [
         { price: 16590, currency: "USD", observedAt: "2026-09-17T06:00:00.000Z" },
-        { price: 1111111, currency: "USD", observedAt: "2026-09-21T06:00:00.000Z" },
+        // Dos ceros de más: el 1.111.111 original hoy lo descarta antes la regla de relleno.
+        { price: 1659000, currency: "USD", observedAt: "2026-09-21T06:00:00.000Z" },
       ],
     });
     expect(series).toBeNull();
+  });
+
+  it("el 1.111.111 del Tiggo 8 original es relleno: queda el precio real, sin cambio", () => {
+    const series = seriesFromCarListing({
+      key: "ml-MLU1",
+      listing: { title: "Chery Tiggo 8", url: "https://x", currency: "USD" },
+      priceHistory: [
+        { price: 16590, currency: "USD", observedAt: "2026-09-17T06:00:00.000Z" },
+        { price: 1111111, currency: "USD", observedAt: "2026-09-21T06:00:00.000Z" },
+      ],
+    });
+    expect(series?.points).toEqual([{ d: "2026-09-17", p: 16590 }]);
+    expect(series?.lastChange).toBeNull();
   });
 
   it("con dos puntos, duplicar el precio SÍ es un cambio real", () => {

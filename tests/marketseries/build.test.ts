@@ -118,6 +118,13 @@ describe("buildMarketDay: misma oferta", () => {
     expect(week.w30).toBeNull();
     expect(week.w90).toBeNull();
   });
+  it("a placeholder price in the log is never the price a pair compares against", () => {
+    const uy = entry(
+      buildMarketDay({ vertical: "alquiler", today: TODAY, observations: flats(8, () => ({ price: 29000 })), logs: logsAt(11111) }),
+      "alquiler|UYU|todas|any|uy",
+    )!.point;
+    expect(uy.w7).toBeNull();
+  });
   it("returns only the logs that changed", () => {
     const observations = flats(8, i => ({ price: i === 0 ? 90 : 100, seenAt: "2026-09-17", seenDay: "2026-09-17" }));
     const day = buildMarketDay({ vertical: "alquiler", today: TODAY, observations, logs: logsAt(100) });

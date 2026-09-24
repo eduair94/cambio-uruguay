@@ -41,6 +41,9 @@ describe("rentalObservation", () => {
   it("older than the directory's 10 days is stale", () => {
     expect(rentalObservation({ ...rental, lastSeen: "2026-09-01" }, NOW)).toBe("stale");
   });
+  it("a placeholder price (11.111) is not an asking price: counted apart, never logged", () => {
+    expect(rentalObservation({ ...rental, price: 11111 }, NOW)).toBe("placeholder");
+  });
 });
 
 const sale = {
@@ -65,6 +68,7 @@ describe("saleObservation", () => {
     expect(saleObservation({ ...sale, price: { amount: 0, currency: "USD" } }, NOW, 21)).toBe("invalid");
     expect(saleObservation({ ...sale, price: { amount: 10, currency: "EUR" } }, NOW, 21)).toBe("invalid");
     expect(saleObservation({ ...sale, lastSeen: "2026-08-01T00:00:00.000Z" }, NOW, 21)).toBe("stale");
+    expect(saleObservation({ ...sale, price: { amount: 111111, currency: "USD" } }, NOW, 21)).toBe("placeholder");
   });
   it("a built area outside 8..100000 m2 is unknown, not a reason to drop the row", () => {
     expect((saleObservation({ ...sale, areas: { built: 3 } }, NOW, 21) as { areaBuilt: unknown }).areaBuilt).toBeNull();
@@ -102,5 +106,12 @@ describe("carObservation", () => {
   });
   it("stale after the catalogue's own window", () => {
     expect(carObservation({ ...carRow, lastSeen: "2026-09-10T08:00:00.000Z" }, NOW, 4)).toBe("stale");
+  });
+});
+
+describe("carObservation: placeholder", () => {
+  it("US$ 11.111 is a placeholder, US$ 9.999 a price", () => {
+    expect(carObservation({ ...carRow, price: 11111 }, NOW, 4)).toBe("placeholder");
+    expect(carObservation({ ...carRow, price: 9999 }, NOW, 4)).not.toBe("placeholder");
   });
 });

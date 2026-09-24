@@ -68,6 +68,11 @@ describe("pricewatchEligible", () => {
     expect(pricewatchEligible(listing({ source: "store", condition: "unknown" }))).toBe(true);
   });
 
+  it("descarta un precio de relleno (1.111): no es un precio que se pueda seguir", () => {
+    expect(pricewatchEligible(listing({ price: 1111 }))).toBe(false);
+    expect(pricewatchEligible(listing({ price: 9999 }))).toBe(true);
+  });
+
   it("descarta precio 0: no es una oferta real", () => {
     expect(pricewatchEligible(listing({ price: 0 }))).toBe(false);
   });

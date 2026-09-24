@@ -1,5 +1,6 @@
 // El día de un mercado: nivel por cohorte (una observación por vivienda o aviso) y "misma oferta"
 // (cada aviso contra su propio log de ANTES de hoy). Puro: sin base, testeable.
+import { isPlaceholderPrice } from "../pricehistory/placeholder";
 import { cohortLabel, cohortsOf } from "./cohorts";
 import { buildHistogram } from "./histogram";
 import { marketLogKey, nextLog, priceAt, shiftDay } from "./log";
@@ -136,7 +137,8 @@ export function buildMarketDay(input: MarketDayInput): MarketDay {
       // catalogue's seven-day pairs, which halved the published variation.
       if (obs.seenDay <= since) continue;
       const then = priceAt(log, since);
-      if (!then || then.c !== obs.currency || !(then.p > 0)) continue;
+      // A placeholder the log recorded before sources.ts refused them ("11111") is not a price then.
+      if (!then || then.c !== obs.currency || !(then.p > 0) || isPlaceholderPrice(then.p)) continue;
       for (const cohort of cohorts) accumulator(cohort).pairs[window].push(obs.price / then.p);
     }
     const next = nextLog(log, obs);

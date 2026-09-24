@@ -45,7 +45,7 @@ async function main(): Promise<void> {
     const status = result.error ? `ERROR ${result.error}` : result.skipped ? `SALTEADO ${result.skipped}` : "ok";
     console.log(
       `[market-series] ${result.vertical}: ${status} observaciones=${result.observations} avisos=${result.adverts} ` +
-        `unidades=${result.groups} cohortes=${result.cohorts} logs=${result.logsWritten} podados=${result.logsPruned} excluidos: ${excluded}`,
+        `unidades=${result.groups} cohortes=${result.cohorts} logs=${result.logsWritten}${result.logsSkipped ? ` (${result.logsSkipped} ya movidos por la cosecha)` : ""} podados=${result.logsPruned} excluidos: ${excluded}`,
     );
     for (const line of result.sample) console.log(`[market-series]   ${line}`);
   }

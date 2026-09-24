@@ -42,6 +42,18 @@ puntos se descarta el que se aparta de la mediana de los demás; con dos no hay 
 saber cuál es el bueno, así que **no se publica serie**. El factor es 5 y no 2 porque duplicar el
 precio de un alquiler pasa de verdad (15.000 → 30.000, medido el mismo día).
 
+Y antes de todas, desde el 2026-09-24: **un precio de relleno no es un punto**
+(`classes/pricehistory/placeholder.ts`, espejo en `app/utils/priceHistory.ts`). Hay anunciantes que
+publican primero con "11111" y después ponen el real, y el primer cambio de alquileres de la página era
+"11.111 → 29.000 (+161 %)" — 2,6×, así que la guarda de 5× no lo veía. En los tres historiales había
+49 puntos así en alquileres, 11 en autos, 3 en ventas y 9 en pricewatch. Cuenta como relleno sólo una
+tira de unos (4 cifras o más) o la secuencia 12345 (5 o más); los nueves no (US$ 9.999 y $ 99.999 son
+precios psicológicos reales), los otros dígitos repetidos tampoco (hay sillas a $ 2.222 de verdad) y
+1234 tampoco (1.234 → 1.299 en equipar es un repreciado plausible). La regla corre en el lector y
+también en los escritores (`pricewatchEligible`, `marketObservationsFromRentals`, las fuentes de
+`currency-market-series`, que lo cuentan en `excluded.placeholder`), así que desde ahí no se graba más;
+los puntos viejos quedan en la base y el lector los salta.
+
 Y una cuarta que es de la UI: **nunca se afirma nada anterior a `firstSeen`**. Todo bloque lleva
 "lo medimos desde el <fecha>", porque un aviso publicado en 2024 no tiene historia nuestra.
 
@@ -136,11 +148,14 @@ base de datos por su gemelo en JS (`applyMarketPoints`, `tests/pricehistory/mark
 La cosecha no poda nada: la poda de `marketpricelogs` sigue siendo de `currency-market-series`, por
 vertical y a 120 días.
 
-Queda una ventana conocida, y es del otro lado: `currency-market-series` sí hace leer-modificar-
-escribir (carga todos los logs de la vertical al empezar y los reemplaza al terminar), así que un
-punto que la cosecha horaria escriba **mientras ese job corre** puede perderse. Son los pocos minutos
-de su corrida diaria, y el punto vuelve en la hora siguiente si el precio sigue ahí; arreglarlo sería
-reescribir ese job para que también use el pipeline atómico, y no vale el riesgo por esa ventana.
+Hasta el 2026-09-24 quedaba una ventana del otro lado: `currency-market-series` hace
+leer-modificar-escribir (carga todos los logs de la vertical al empezar y los reemplaza al terminar),
+así que un punto que la cosecha horaria escribiera **mientras ese job corría** se perdía. Cerrada sin
+reescribir el job: el reemplazo es condicional (`marketLogWriteOperation` en
+`classes/marketseries/store.ts`) y sólo aplica si el documento sigue con el mismo `lastSeen`, el mismo
+largo y el mismo último punto que cuando se leyó; si no, la cosecha registró algo más nuevo y el job
+no lo pisa (el log de la corrida lo cuenta como "ya movidos por la cosecha"). Un log nuevo se inserta
+con `$setOnInsert`, así que tampoco pisa uno que la cosecha haya creado en el medio.
 
 Medido el 2026-09-22, primera corrida horaria con esto puesto: 2.058 avisos registrados, y la
 colección pasó de 29.196 a 30.649 filas de alquiler — o sea que además hay 1.453 avisos que el

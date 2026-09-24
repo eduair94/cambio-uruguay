@@ -4,6 +4,7 @@
 // hoy, y ese mercado se saltea.
 import { appConnection } from "../appdb";
 import type { RentalZoneMarketObservation } from "../propertyzones/market";
+import { isPlaceholderPrice } from "../pricehistory/placeholder";
 import { projectZoneObservations, ZONE_RENTAL_PROJECTION } from "../propertyzones/project";
 import { shiftDay } from "./log";
 import type { MarketObservation, MarketVertical } from "./types";
@@ -17,7 +18,7 @@ const KEY = /^[\w:.-]{1,160}$/;
 
 export interface MarketRead {
   observations: MarketObservation[];
-  /** Rows left out, by reason ("stale", "invalid", "currency", "flags"). */
+  /** Rows left out, by reason ("stale", "invalid", "placeholder", "currency", "flags"). */
   excluded: Record<string, number>;
   dataAsOf: string;
 }
@@ -52,6 +53,7 @@ export function rentalObservation(o: RentalZoneMarketObservation, now: Date): Ma
   const seenDay = freshSeen(o.lastSeen, now, RENTAL_FRESH_DAYS);
   if (!seenDay) return "stale";
   if (!(o.price > 0) || (o.currency !== "UYU" && o.currency !== "USD")) return "invalid";
+  if (isPlaceholderPrice(o.price)) return "placeholder";
   return {
     ...NONE,
     vertical: "alquiler",
@@ -83,6 +85,7 @@ export function saleObservation(row: Record<string, any>, now: Date, freshDays: 
     (currency !== "USD" && currency !== "UYU")
   )
     return "invalid";
+  if (isPlaceholderPrice(amount)) return "placeholder";
   const seenDay = freshSeen(row.lastSeen, now, freshDays);
   if (!seenDay) return "stale";
   const built = row.areas?.built;
@@ -108,6 +111,7 @@ export function carObservation(row: Record<string, any>, now: Date, freshDays: n
   const marketSlug = typeof row.marketSlug === "string" && row.marketSlug.length <= 80 && SLUG.test(row.marketSlug) ? row.marketSlug : null;
   // Same floor as the Motorlider guard: under USD 1.000 it is a deposit, not a car.
   if (!key || !marketSlug || !(typeof row.price === "number" && row.price >= 1_000 && row.price <= 500_000)) return "invalid";
+  if (isPlaceholderPrice(row.price)) return "placeholder";
   if (row.currency !== "USD" || row.currencyInferred === true) return "currency";
   // Every public flag (damaged, debt, foreign plate, recovered...) already keeps a car out of the model page.
   if (Array.isArray(row.flags) && row.flags.length) return "flags";

@@ -38,6 +38,8 @@ export interface MarketVerticalResult {
   groups: number;
   cohorts: number;
   logsWritten: number;
+  /** Changed logs another writer (the hourly rental harvest) moved between this run's read and write. */
+  logsSkipped: number;
   logsPruned: number;
   excluded: Record<string, number>;
   /** The biggest cohorts, for the job log (a dry run is read from here). */
@@ -63,6 +65,7 @@ export async function refreshMarketSeries(
       groups: 0,
       cohorts: 0,
       logsWritten: 0,
+      logsSkipped: 0,
       logsPruned: 0,
       excluded: {},
       sample: [],
@@ -74,11 +77,12 @@ export async function refreshMarketSeries(
       const previous = await readMarketIndex(vertical);
       result.skipped = marketThinRun(read.observations.length, previous?.observations);
       if (!result.skipped) {
+        const logs = await loadMarketLogs(vertical);
         const day = buildMarketDay({
           vertical,
           today,
           observations: read.observations,
-          logs: await loadMarketLogs(vertical),
+          logs,
           trackingSince: marketTrackingSince(previous, today),
         });
         const index = buildMarketIndex({
@@ -101,7 +105,7 @@ export async function refreshMarketSeries(
           .map(entry => `${entry.cohort.key} n=${entry.point.n} med=${entry.point.med ?? "-"} w7=${entry.point.w7?.chg ?? "-"} w30=${entry.point.w30?.chg ?? "-"}`);
         if (!options.dryRun) {
           await writeMarketSeries(day.entries, today);
-          await writeMarketLogs(day.logs);
+          result.logsSkipped = await writeMarketLogs(day.logs, logs);
           result.logsPruned = await pruneMarketLogs(vertical, today);
           await writeMarketIndex(index);
         }

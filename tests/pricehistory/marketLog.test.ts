@@ -112,6 +112,7 @@ describe("marketObservationsFromRentals", () => {
           { source: "infocasas", listingId: "infocasas:3", price: 0, currency: "UYU" },
           { source: "infocasas", listingId: "infocasas:4", price: 25000, currency: "EUR" },
           { source: "infocasas", listingId: "infocasas:5", price: 25000 },
+          { source: "mercadolibre", listingId: "mercadolibre:MLU6", price: 11111, currency: "UYU" },
         ],
       }),
     ] as any);

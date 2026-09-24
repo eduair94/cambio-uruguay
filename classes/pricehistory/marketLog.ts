@@ -12,6 +12,7 @@
 import { appConnection } from "../appdb";
 import { MARKET_LOG_COLLECTION } from "../marketseries/store";
 import type { MarketPricePoint, MarketVertical } from "../marketseries/types";
+import { isPlaceholderPrice } from "./placeholder";
 
 /** El mismo tope que `classes/marketseries/log.ts`: la serie de un aviso no crece sin límite. */
 export const MARKET_LOG_MAX_POINTS = 40;
@@ -150,6 +151,7 @@ export function marketObservationsFromRentals(properties: readonly { offers?: re
       const price = offer?.price;
       const currency = offer?.currency;
       if (typeof price !== "number" || !Number.isFinite(price) || price <= 0) continue;
+      if (isPlaceholderPrice(price)) continue;
       if (currency !== "UYU" && currency !== "USD") continue;
       const existing = byAdvert.get(advertId);
       if (!existing || price < existing.p) byAdvert.set(advertId, { advertId, p: price, c: currency });

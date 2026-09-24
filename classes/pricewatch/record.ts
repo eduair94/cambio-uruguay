@@ -4,17 +4,25 @@
 // comparison only exists if a daily point per offer has been written since well before the season
 // that needs it, which is why this starts recording now rather than when Plan D is built.
 import { PricewatchOfferModel } from "../models/PricewatchOffer";
+import { isPlaceholderPrice } from "../pricehistory/placeholder";
 import type { RetailListing } from "../retail/types";
 import type { PricewatchPoint } from "./types";
 
 /**
  * Facebook Marketplace has no shelf price to discount against — every listing is a one-off private
  * ask — and a used item's price is whatever that seller decided today, not a markdown off a list
- * price either. Both are excluded regardless of source. A listing worth $0 or with no url to revisit
- * is not an observable offer.
+ * price either. Both are excluded regardless of source. A listing worth $0, priced with a placeholder
+ * ("1111", see classes/pricehistory/placeholder.ts) or with no url to revisit is not an observable
+ * offer.
  */
 export function pricewatchEligible(listing: RetailListing): boolean {
-  return listing.source !== "facebook" && listing.condition !== "used" && listing.price > 0 && !!listing.url;
+  return (
+    listing.source !== "facebook" &&
+    listing.condition !== "used" &&
+    listing.price > 0 &&
+    !isPlaceholderPrice(listing.price) &&
+    !!listing.url
+  );
 }
 
 const lit = (value: unknown): { $literal: unknown } => ({ $literal: value });

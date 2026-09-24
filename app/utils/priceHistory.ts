@@ -51,6 +51,17 @@ const isCurrency = (value: unknown): value is PriceHistoryCurrency =>
 
 const round2 = (value: number): number => Math.round(value * 100) / 100
 
+/**
+ * Espejo de classes/pricehistory/placeholder.ts: un precio de relleno ("11111", "12345") no es un
+ * punto. Sólo unos repetidos (4 cifras o más) y la secuencia 12345 (5 o más); los nueves y 1234 son
+ * precios reales.
+ */
+export function isPlaceholderPrice(price: number): boolean {
+  if (typeof price !== 'number' || !Number.isInteger(price) || price <= 0) return false
+  const digits = String(price)
+  return /^1{4,}$/.test(digits) || /^12345(?:67?)?$/.test(digits)
+}
+
 interface RawPoint {
   d: string
   p: number
@@ -61,6 +72,7 @@ const rawPoint = (d: unknown, p: unknown, c: unknown): RawPoint | null => {
   const day = typeof d === 'string' ? d.slice(0, 10) : ''
   if (!DAY.test(day)) return null
   if (typeof p !== 'number' || !Number.isFinite(p) || p <= 0) return null
+  if (isPlaceholderPrice(p)) return null
   return { d: day, p, c: isCurrency(c) ? c : null }
 }
 

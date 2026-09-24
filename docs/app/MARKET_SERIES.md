@@ -95,8 +95,14 @@ de actualizarlo.
   y 4.724 en venta (todos autocomparaciones), y la tabla de "mayores movimientos" —que no miraba la
   fecha— se publicó desde el primer día mientras la tarjeta de al lado decía "se publica desde el
   25/9". Con el corte en el origen, tarjetas, tabla histórica, "mismo lugar" y movimientos dicen lo
-  mismo. Los puntos del 18 al 24/9 guardados antes del arreglo conservan su `w7` viejo; la página no
-  lo muestra (la tabla histórica sólo lista `w30`) y no se reescribieron.
+  mismo. Los puntos del 18 al 24/9 guardados antes del arreglo se limpiaron el mismo día (`w7` a
+  `null` en 2.251 cohortes, `points` y `latest`), con respaldo de los valores viejos en el VPS:
+  `/root/backups/marketseries-w7-before-gate-20260924.json`.
+- **Un precio de relleno no entra** (`classes/pricehistory/placeholder.ts`: "11111", "12345"): las
+  fuentes lo cuentan en `excluded.placeholder` y no llega ni al nivel ni al log, y un punto de relleno
+  que el log haya guardado antes nunca es el "precio de entonces" de un par.
+- **El job no pisa lo que escribió la cosecha de alquileres mientras corría**: el reemplazo de cada log
+  es condicional (`marketLogWriteOperation`); ver `PRICE_CHANGES.md`.
 
 ## El job
 

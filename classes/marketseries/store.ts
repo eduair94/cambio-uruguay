@@ -82,13 +82,37 @@ export async function loadMarketLogs(vertical: MarketVertical): Promise<Map<stri
   return logs;
 }
 
-export async function writeMarketLogs(logs: readonly MarketPriceLog[]): Promise<void> {
+/**
+ * One changed log's write, conditional on the document being as this run read it. Since 2026-09-22
+ * the rental harvest writes the same collection every hour with an atomic pipeline
+ * (classes/pricehistory/marketLog.ts), while this job reads every log, computes, and only then writes:
+ * a blind replace would delete whatever point the harvest appended in between. If the document moved,
+ * the harvest recorded something newer than this run's observation and the write is skipped; a log
+ * this run creates is only inserted if nobody created it first.
+ */
+export function marketLogWriteOperation(log: MarketPriceLog, before: MarketPriceLog | undefined) {
+  if (!before) return { updateOne: { filter: { key: log.key }, update: { $setOnInsert: log }, upsert: true as const } };
+  const last = before.points.length - 1;
+  const filter: Record<string, unknown> = { key: log.key, lastSeen: before.lastSeen, points: { $size: before.points.length } };
+  if (last >= 0) {
+    filter[`points.${last}.d`] = before.points[last]!.d;
+    filter[`points.${last}.p`] = before.points[last]!.p;
+    filter[`points.${last}.c`] = before.points[last]!.c;
+  }
+  return { replaceOne: { filter, replacement: log } };
+}
+
+/** Writes the changed logs; returns how many were skipped because another writer moved them first. */
+export async function writeMarketLogs(logs: readonly MarketPriceLog[], before: ReadonlyMap<string, MarketPriceLog>): Promise<number> {
   const collection = appConnection().collection(MARKET_LOG_COLLECTION);
-  for (let i = 0; i < logs.length; i += BATCH)
-    await collection.bulkWrite(
-      logs.slice(i, i + BATCH).map(log => ({ replaceOne: { filter: { key: log.key }, replacement: log, upsert: true } })),
-      { ordered: false },
-    );
+  let skipped = 0;
+  for (let i = 0; i < logs.length; i += BATCH) {
+    const batch = logs.slice(i, i + BATCH);
+    // Mixed replace/update ops are not in the driver's bulk-op typings as one union.
+    const result = await collection.bulkWrite(batch.map(log => marketLogWriteOperation(log, before.get(log.key))) as any, { ordered: false });
+    skipped += batch.length - result.matchedCount - result.upsertedCount;
+  }
+  return skipped;
 }
 
 export async function pruneMarketLogs(vertical: MarketVertical, today: string): Promise<number> {

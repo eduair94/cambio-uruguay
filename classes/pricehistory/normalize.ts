@@ -8,6 +8,7 @@ import type {
   PriceHistorySeries,
   PriceHistoryVertical,
 } from "./types";
+import { isPlaceholderPrice } from "./placeholder";
 
 const VERTICALS: readonly PriceHistoryVertical[] = ["autos", "alquiler", "venta", "equipar", "sillas", "celulares", "movilidad"];
 
@@ -35,6 +36,8 @@ const rawPoint = (d: unknown, p: unknown, c: unknown): RawPoint | null => {
   const day = typeof d === "string" ? d.slice(0, 10) : "";
   if (!DAY.test(day)) return null;
   if (typeof p !== "number" || !Number.isFinite(p) || p <= 0) return null;
+  // Un precio de relleno ("11111") no es un punto: el cambio que vendría después no lo hizo nadie.
+  if (isPlaceholderPrice(p)) return null;
   return { d: day, p, c: isCurrency(c) ? c : null };
 };
 

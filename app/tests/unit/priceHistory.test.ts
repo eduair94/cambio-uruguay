@@ -4,7 +4,9 @@ import {
   seriesFromMarketLog as rootMarket,
   seriesFromPricewatch as rootPricewatch,
 } from '../../../classes/pricehistory/normalize'
+import { isPlaceholderPrice as rootPlaceholder } from '../../../classes/pricehistory/placeholder'
 import {
+  isPlaceholderPrice,
   priceChangeLabel,
   seriesFromCarListing,
   seriesFromMarketLog,
@@ -107,6 +109,26 @@ describe('espejo del historial por aviso', () => {
       ],
     }
     same(seriesFromCarListing(doc), rootCar(doc))
+  })
+
+  it('un precio de relleno se descarta igual en los dos lados', () => {
+    for (const price of [
+      1111, 11111, 111111, 1111111, 12345, 123456, 9999, 99999, 2222, 1234, 11112,
+    ])
+      expect(isPlaceholderPrice(price)).toBe(rootPlaceholder(price))
+    const doc = {
+      key: 'alquiler:mercadolibre:MLU1',
+      vertical: 'alquiler',
+      advertId: 'mercadolibre:MLU1',
+      firstSeen: '2026-09-18',
+      lastSeen: '2026-09-24',
+      points: [
+        { d: '2026-09-18', p: 11111, c: 'UYU' },
+        { d: '2026-09-24', p: 29000, c: 'UYU' },
+      ],
+    }
+    same(seriesFromMarketLog(doc), rootMarket(doc))
+    expect(seriesFromMarketLog(doc)?.lastChange).toBeNull()
   })
 
   it('marketpricelogs contesta igual que la raíz', () => {
