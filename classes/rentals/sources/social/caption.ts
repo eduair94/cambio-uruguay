@@ -110,6 +110,8 @@ const BARE_PRICE_ADJACENT = /(?:precio|alquiler|arriendo|renta|valor)\s*(?:de|es
 const AFTER_LABELS: ReadonlyArray<[Role, RegExp]> = [
   ["gc", /^\s*(?:de\s+)?(?:gastos\s+comunes|gastos\s+c\.?|g\.?\s?c\.?|expensas)(?![a-záéíóúñ])(?!\.?\s*(?:aprox\.?\s*)?[:=]?\s*(?:u\$s|us\$|usd|\$)?\s*\d)/i],
   ["ignore", /^\s*(?:(?:de\s+)?(?:dep[oó]sito|se[ñn]a|extra|adelanto|de\s+garant[ií]a)|m2|m²|mts?|metros|a[ñn]os?|meses|hs|horas|d[ií]as|cuadras?)(?![a-záéíóúñ])/i],
+  // "$336.000 anual", "$540.000 al año": the year's total, never the monthly rent.
+  ["ignore", /^\s*\)?\s*(?:anual(?:es)?|al\s+a[ñn]o|por\s+a[ñn]o|x\s+a[ñn]o)(?![a-záéíóúñ])/i],
   ["variant", /^\s*(?:con\s+|para\s+)?(?:anda|cgn|contadur[ií]a|porto|aseguradoras?|sura|mapfre|surco|fideciu|sancor)(?![a-záéíóúñ])/i],
   ["price", /^\s*(?:de\s+)?(?:alquiler|mensual(?:es)?|por\s+mes|al\s+mes)(?![a-záéíóúñ])/i],
 ];
@@ -130,6 +132,21 @@ function roleBefore(before: string): Role | null {
   const price = lastIndex(PRICE_LABEL, before);
   if (variant < 0 && price < 0) return null;
   return variant > price ? "variant" : "price";
+}
+
+/**
+ * Among unlabelled amounts, the rent when one of them is at least DOMINANCE times every other,
+ * all in one currency. Measured on the stored captions of 2026-09-24: "✅ $34.700 … ✅ Cocheras
+ * disponibles: $3.500 a $4.000" and "$38.500 … lugar por menos de $2000" were abstentions, and
+ * what sits next to a rent without a label is always far smaller (a garage, a storage room, an
+ * outdated GC). Two amounts of one order ("antes $30.000, ahora $27.000") and two currencies
+ * ("$25.000 o venta U$S 95.000") still abstain.
+ */
+const DOMINANCE = 4;
+function dominant(plain: readonly Amount[]): Amount | null {
+  if (new Set(plain.map(amount => amount.currency)).size !== 1) return null;
+  const top = plain.reduce((best, amount) => (amount.value > best.value ? amount : best));
+  return plain.every(amount => amount.value === top.value || amount.value * DOMINANCE <= top.value) ? top : null;
 }
 
 function roleAfter(after: string): Role | null {
@@ -189,8 +206,10 @@ export function captionAmounts(text: string): {
   let ambiguous = false;
   if (labelled.length) chosen = min(labelled);
   else if (distinct(plain) === 1) chosen = plain[0]!;
-  else if (plain.length > 1) ambiguous = true;
-  else if (variants.length) chosen = min(variants);
+  else if (plain.length > 1) {
+    chosen = dominant(plain);
+    ambiguous = !chosen;
+  } else if (variants.length) chosen = min(variants);
   return {
     price: chosen ? chosen.value : null,
     currency: chosen ? chosen.currency : null,
@@ -329,6 +348,27 @@ export function foreignAdvert(text: string, hashtags: readonly string[]): boolea
   return FOREIGN.test(flatten(text)) && !declaredUruguay(text, hashtags);
 }
 
+// --- Rental intent ---------------------------------------------------------------------------
+
+/**
+ * Only a rental names these in Uruguay: a rental guarantee (aseguradora, Porto Seguro, CGN,
+ * Contaduría, ANDA) or a lease term ("Contrato 2 años", "contrato mínimo de 1 año"). Measured
+ * 2026-09-24: an agency's captions that open straight with the corner or the price and never
+ * write "alquiler" ("Victor Haedo y Acevedo Diaz … $29.800 … Garantías: Aseguradoras … Contrato
+ * 2 años") were rejected. "anda" is also a verb ("anda bárbaro"), so ANDA counts only in capitals
+ * or right after "garantía".
+ */
+const RENTAL_ONLY = [
+  /\b(?:aseguradoras?|porto\s+seguro|fideciu|cgn|contadur[ií]a)\b/i,
+  /\bANDA\b/,
+  /\bgarant[ií]as?\b[^.\n]{0,30}\banda\b/i,
+  /\bcontrato\s+(?:m[ií]nimo\s+)?(?:de\s+)?\d+\s+a[ñn]os?\b/i,
+];
+
+export function rentalIntent(text: string): boolean {
+  return /\b(?:alquil|arriend)/.test(flatten(text)) || RENTAL_ONLY.some(pattern => pattern.test(text));
+}
+
 // --- Everything ------------------------------------------------------------------------------
 
 export function parseCaption(lines: readonly string[], hashtags: readonly string[]): CaptionFacts {
@@ -338,7 +378,7 @@ export function parseCaption(lines: readonly string[], hashtags: readonly string
   const location = captionLocation(text, hashtags);
   const attributes = parseAttributes([text]);
   const rejected = captionRejection(text)
-    ?? (!/\b(?:alquil|arriend)/.test(flatten(text)) ? "sin verbo de alquiler" : null)
+    ?? (!rentalIntent(text) ? "sin verbo de alquiler" : null)
     ?? (foreignAdvert(text, hashtags) ? "aviso de otro país" : null)
     ?? (!uruguayEvidence(text, hashtags, location) ? "sin evidencia de Uruguay" : null)
     ?? (amounts.ambiguous ? "precio ambiguo" : amounts.price === null ? "sin precio" : null);

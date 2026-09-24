@@ -103,6 +103,34 @@ se sigue emitiendo sólo para que los reclamos guardados con ella conserven su d
 Las dos copias que ya estaban publicadas no caducan por ausencia (ninguna red social es `complete`):
 desaparecen solas a los 10 días de la última vez que se las vio.
 
+**Segunda iteración (25/9): lo que se perdía, medido sobre lo guardado.** Tres cosas:
+
+- **Las cuentas de TikTok nunca se habían leído.** Las 36 del registro volvían siempre con la lista
+  vacía (`reads: 0`), así que todo TikTok salía de los hashtags, donde abundan los avisos de "renta"
+  de Estados Unidos. La **inserción del creador** (`GET /embed/@<cuenta>`, `tiktok/embed.ts`)
+  contesta por HTTP plano desde la IP del VPS, sin proxy ni Chrome: 36 de 36 cuentas, 265 videos
+  de los últimos 45 días, con la leyenda entera en `desc` y la portada. No trae la fecha, pero el id
+  la lleva: sus 32 bits altos son el segundo de publicación (coincide con el `createTime` guardado
+  por segundos). Muestra los ~10 últimos videos, fijados incluidos, así que una cuenta cuenta como
+  leída hasta el fin de la ventana sólo si muestra menos de 10 o al menos 4 son más viejos que la
+  ventana (TikTok fija hasta 3). Una cuenta inexistente contesta 400 con `pageName: "error"` y
+  queda anotada "no existe en TikTok" sin frenar la cobertura. Chrome queda sólo para los hashtags
+  y los videos manuales que desafía el WAF.
+- **Alquileres que nunca escriben "alquiler".** "Victor Haedo y Acevedo Diaz … $29.800 … Garantías:
+  Aseguradoras … Contrato 2 años" se rechazaba "sin verbo de alquiler". Ahora cuentan como verbo una
+  garantía de alquiler con nombre (aseguradora, Porto Seguro, CGN, Contaduría, ANDA) o un plazo de
+  contrato en años. "anda" también es verbo ("anda bárbaro"): ANDA vale en mayúsculas o detrás de
+  "garantía".
+- **Montos sin etiqueta.** "✅ $34.700 … ✅ Cocheras disponibles: $3.500 a $4.000" era "precio
+  ambiguo". Si todos los montos sin etiqueta van en una moneda y uno es al menos 4 veces cada uno de
+  los demás, ese es el alquiler; lo que acompaña a un alquiler sin etiqueta (cochera, depósito,
+  gastos viejos) siempre es mucho menor. Dos montos del mismo orden ("antes $30.000, ahora $27.000")
+  o de dos monedas siguen absteniendo, y "$336.000 anual" nunca es el mensual.
+
+Sobre las 347 leyendas guardadas, el parser nuevo cambia 7 veredictos: seis alquileres uruguayos
+recuperados y uno de Caracas que sigue rechazado. Ningún aviso nuevo es falso. El presupuesto de
+Instagram sube de 12 a 20 minutos: con 32 cuentas, 8 quedaban sin leer.
+
 **Primera corrida real, desde el VPS, 24/9 19:14 UTC** (TikTok con 4 cuentas y 2 hashtags, Instagram
 con 8 cuentas, Facebook con 8 páginas; 332 s en total):
 
@@ -174,9 +202,9 @@ ya pagado y las leyendas no cambian de hora en hora; la horaria devuelve `ok: tr
 "sólo en la corrida completa". Orden: (1) videos manuales (`RENTALS_TIKTOK_VIDEOS`, admite
 `vt.tiktok.com/…`, HTTP plano, sin navegador); (2) el registro de cuentas (`rentaltiktokaccounts`:
 las semilla más toda cuenta que ya publicó un aviso aceptado), nunca leídas primero y después la
-más vieja, hasta `RENTALS_TIKTOK_MAX_ACCOUNTS`; (3) un Chrome por el proxy: calienta cookies en
-una página de video, lee los hashtags y después las cuentas, con presupuesto de tiempo y cierre
-en `finally`; (4) cada video una vez, del más nuevo al más viejo: leyenda → hechos → oferta, con la
+más vieja, hasta `RENTALS_TIKTOK_MAX_ACCOUNTS`, cada una por HTTP plano desde su inserción del
+creador (desde el 25/9; ver «Segunda iteración» arriba); (3) un Chrome por el proxy: calienta
+cookies en una página de video y lee los hashtags, con presupuesto de tiempo y cierre en `finally`; (4) cada video una vez, del más nuevo al más viejo: leyenda → hechos → oferta, con la
 esquina geocodificada **una sola vez** por video (`rentaltiktokposts` guarda la respuesta, aceptada
 o no, y el motivo de cada rechazo, para medir el parser contra lo real sin volver a pedir nada);
 (5) `complete: true` **sólo** si todas las cuentas que ya estaban registradas se leyeron hasta el
@@ -1079,7 +1107,8 @@ TikTok (sólo la corrida completa; ver la sección "TikTok" arriba):
 | `RENTALS_TIKTOK_ACCOUNTS` | `inmobiliariaalquilar` | cuentas semilla; se suman al registro `rentaltiktokaccounts` |
 | `RENTALS_TIKTOK_VIDEOS` | — | videos sueltos separados por coma (`vt.tiktok.com/…` o la URL canónica), leídos por HTTP plano sin navegador; sus autores entran al registro |
 | `RENTALS_TIKTOK_MAX_ACCOUNTS` | 60 | cuentas leídas por corrida, nunca leídas primero y después la más vieja; si el registro supera el tope la corrida no es `complete` |
-| `RENTALS_TIKTOK_TAG_PAGES` / `RENTALS_TIKTOK_ACCOUNT_PAGES` | 3 / 3 | páginas de 30 por hashtag / por cuenta; la lectura de una cuenta corta antes al pasar la ventana |
+| `RENTALS_TIKTOK_TAG_PAGES` | 3 | páginas de 30 por hashtag, en Chrome por el proxy |
+| `RENTALS_TIKTOK_EMBED_GAP_MS` / `RENTALS_TIKTOK_EMBED_BUDGET_MS` | 2000 / 360000 | pausa entre cuentas y techo de la lectura de cuentas por la inserción del creador (6 min); cinco fallas de red seguidas la cortan |
 | `RENTALS_TIKTOK_MAX_AGE_DAYS` | 45 | ventana desde `createTime`: un video más viejo no se publica (los videos no se bajan cuando la vivienda se alquila) |
 | `RENTALS_TIKTOK_GEOCODE_MAX` | 60 | esquinas geocodificadas por corrida (sólo videos nuevos; la respuesta se guarda en `rentaltiktokposts`) |
 | `RENTALS_TIKTOK_GAP_MS` | 2000 | separación entre cargas de página en el navegador |
@@ -1097,7 +1126,7 @@ Instagram y Facebook Reels (sólo la corrida completa; ver la sección "Instagra
 | `RENTALS_INSTAGRAM_MAX_NEW_POSTS` | 12 | posts nuevos leídos por cuenta (un perfil muestra 12) |
 | `RENTALS_INSTAGRAM_REFRESH_DAYS` | 3 | un post conocido se vuelve a leer pasados estos días (portada nueva, "ALQUILADO") |
 | `RENTALS_SOCIAL_CLAIM_DAYS` | 10 | vida de un reclamo de la guarda de copias desde la última vez que se vio al dueño; igual a `RENTAL_STALE_DAYS` del app |
-| `RENTALS_INSTAGRAM_GAP_MS` / `RENTALS_INSTAGRAM_BUDGET_MS` | 2500 / 720000 | pausa entre páginas y techo de la fase de navegador (12 min) |
+| `RENTALS_INSTAGRAM_GAP_MS` / `RENTALS_INSTAGRAM_BUDGET_MS` | 2500 / 1200000 | pausa entre páginas y techo de la fase de navegador (20 min) |
 | `RENTALS_INSTAGRAM_PROXY` / `RENTALS_FBREELS_PROXY` | — | proxy del Chrome; sin él, la IP del VPS (medido: contesta) |
 | `RENTALS_INSTAGRAM_MAX_AGE_DAYS` / `RENTALS_FBREELS_MAX_AGE_DAYS` | 45 / 45 | ventana desde la fecha del post |
 | `RENTALS_INSTAGRAM_GEOCODE_MAX` / `RENTALS_FBREELS_GEOCODE_MAX` | 40 / 30 | esquinas geocodificadas por corrida, sólo posts nuevos |

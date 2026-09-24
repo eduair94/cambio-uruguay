@@ -9,6 +9,7 @@ import { fetchText } from "../../classes/rentals/net";
 import { parseListBody, proxyArg, type ListPlan, type ListResults } from "../../classes/rentals/sources/tiktok/browser";
 import { harvestTiktok, tiktokProxy } from "../../classes/rentals/sources/tiktok";
 import type { TiktokAccountRow, TiktokPostRow, TiktokStore } from "../../classes/rentals/sources/tiktok/store";
+import type { AccountPlan, CreatorRead } from "../../classes/rentals/sources/tiktok/embed";
 
 vi.mock("../../classes/rentals/net", async () => ({ ...(await vi.importActual<typeof import("../../classes/rentals/net")>("../../classes/rentals/net")), fetchText: vi.fn() }));
 const fixture = (name: string): string => readFileSync(join(__dirname, "fixtures", `${name}.html`), "utf8");
@@ -251,6 +252,12 @@ const listsOf = (tags: Record<string, ReturnType<typeof post>[]>, accounts: Reco
     tags: new Map(Object.entries(tags).map(([tag, posts]) => [tag, { posts, pages: 1, exhausted: true, failure: null }])),
     accounts: new Map(Object.entries(accounts).map(([acc, read]) => [acc, { posts: read.posts, pages: 1, exhausted: read.exhausted ?? true, failure: null }])),
   }));
+/** The creator-embed reader (embed.ts), fed like the browser lists above. */
+const accountsOf = (accounts: Record<string, { posts: ReturnType<typeof post>[]; exhausted?: boolean; exists?: boolean }>) =>
+  vi.fn(async (_plan: AccountPlan): Promise<Map<string, CreatorRead>> =>
+    new Map(Object.entries(accounts).map(([acc, read]) => [acc, { posts: read.posts, pages: 1, exhausted: read.exhausted ?? true, failure: null, exists: read.exists ?? true, nickname: "" }])));
+/** No test reaches TikTok: every harvest gets a reader, empty unless the test gives one. */
+const noAccounts = accountsOf({});
 const baseEnv = { RENTALS_TIKTOK_PROXY: "1.2.3.4:8080", RENTALS_TIKTOK_TAGS: "alquilermontevideo", RENTALS_TIKTOK_ACCOUNTS: "inmobiliariaalquilar", RENTALS_TIKTOK_MAX_AGE_DAYS: "45" };
 const now = () => new Date("2026-09-23T05:00:00.000Z");
 const noGeo = async () => ({ point: null, query: null, tried: 0 });
@@ -259,18 +266,16 @@ const CAPTION = "🏠 Alquiler Pocitos 2 dormitorios 📍 Chucarro y Guayaquí $
 describe("harvestTiktok", () => {
   it("does nothing in the hourly run and when disabled", async () => {
     const readLists = listsOf({}, {});
-    expect(await harvestTiktok("fast", 40, { readLists, env: baseEnv, now, store: memoryStore() })).toMatchObject({ key: "tiktok", ok: true, complete: false, listings: [] });
-    expect(await harvestTiktok("full", 40, { readLists, env: { ...baseEnv, RENTALS_TIKTOK_ENABLED: "0" }, now, store: memoryStore() })).toMatchObject({ ok: true, listings: [], note: "deshabilitado por configuración" });
+    expect(await harvestTiktok("fast", 40, { readAccounts: noAccounts, readLists, env: baseEnv, now, store: memoryStore() })).toMatchObject({ key: "tiktok", ok: true, complete: false, listings: [] });
+    expect(await harvestTiktok("full", 40, { readAccounts: noAccounts, readLists, env: { ...baseEnv, RENTALS_TIKTOK_ENABLED: "0" }, now, store: memoryStore() })).toMatchObject({ ok: true, listings: [], note: "deshabilitado por configuración" });
     expect(readLists).not.toHaveBeenCalled();
   });
 
   it("reads the seed account, publishes its adverts, registers discovered authors, and is complete when every account was exhausted", async () => {
     const store = memoryStore();
-    const readLists = listsOf(
-      { alquilermontevideo: [post("1", "otra.inmo", CAPTION), post("2", "spam", "#alquiler #montevideo")] },
-      { inmobiliariaalquilar: { posts: [post("3", "inmobiliariaalquilar", CAPTION)] } },
-    );
-    const run = await harvestTiktok("full", 40, { readLists, store, env: baseEnv, now, geocode: noGeo });
+    const readLists = listsOf({ alquilermontevideo: [post("1", "otra.inmo", CAPTION), post("2", "spam", "#alquiler #montevideo")] }, {});
+    const readAccounts = accountsOf({ inmobiliariaalquilar: { posts: [post("3", "inmobiliariaalquilar", CAPTION)] } });
+    const run = await harvestTiktok("full", 40, { readAccounts, readLists, store, env: baseEnv, now, geocode: noGeo });
     expect(run).toMatchObject({ key: "tiktok", ok: true, complete: true });
     expect(run.listings.map(row => row.listingId).sort()).toEqual([`tiktok:${vid("1")}`, `tiktok:${vid("3")}`]);
     expect(run.listings[0]).toMatchObject({ price: 30000, commonExpenses: 4000, department: "Montevideo", neighborhood: "Pocitos", bedrooms: 2 });
@@ -280,27 +285,30 @@ describe("harvestTiktok", () => {
     expect(store.state.posts.find(row => row.id === vid("2"))?.rejected).toBe("sin precio");
     const plan = readLists.mock.calls[0]![0];
     expect(plan.proxy).toBe("1.2.3.4:8080");
-    expect(plan.accounts).toEqual(["inmobiliariaalquilar"]);
+    // Accounts are read over plain HTTP from their creator embed; the browser only lists hashtags.
+    expect(plan.accounts).toEqual([]);
+    expect(readAccounts.mock.calls[0]![0]).toMatchObject({ accounts: ["inmobiliariaalquilar"], minCreateTime: plan.minCreateTime });
     expect(plan.tags).toEqual(["alquilermontevideo"]);
     expect(plan.minCreateTime).toBe(Math.floor(now().getTime() / 1000) - 45 * 86_400);
   });
 
   it("is NOT complete when an account was cut by budget or not read, and never publishes a video older than the window", async () => {
     const store = memoryStore([{ uniqueId: "vieja.inmo", secUid: "S", nickname: "Vieja", firstSeen: "2026-09-01", lastReadAt: "2026-09-01T00:00:00.000Z", lastPostAt: null, published: 3, reads: 1, note: null }]);
-    const readLists = listsOf({}, { "vieja.inmo": { posts: [post("9", "vieja.inmo", CAPTION, 1780000000)], exhausted: false } });
-    const run = await harvestTiktok("full", 40, { readLists, store, env: { ...baseEnv, RENTALS_TIKTOK_MAX_ACCOUNTS: "1" }, now, geocode: noGeo });
+    const readLists = listsOf({}, {});
+    const readAccounts = accountsOf({ "vieja.inmo": { posts: [post("9", "vieja.inmo", CAPTION, 1780000000)], exhausted: false } });
+    const run = await harvestTiktok("full", 40, { readAccounts, readLists, store, env: { ...baseEnv, RENTALS_TIKTOK_MAX_ACCOUNTS: "1" }, now, geocode: noGeo });
     expect(run.complete).toBe(false);
     expect(run.listings).toEqual([]);
     expect(run.note).toContain("fuera de la ventana");
     // The never-read seed goes first; the registry row read three weeks ago comes after, and the budget of one leaves it out.
-    expect(readLists.mock.calls[0]![0].accounts).toEqual(["inmobiliariaalquilar"]);
+    expect(readAccounts.mock.calls[0]![0].accounts).toEqual(["inmobiliariaalquilar"]);
   });
 
   it("imports a manual short link over HTTP without the browser, and geocodes a corner once", async () => {
     const store = memoryStore();
     const geocode = vi.fn(async () => ({ point: { latitude: -34.906, longitude: -56.156, address: "Chucarro & Guayaquí" }, query: "q", tried: 1 }));
     const deps = {
-      readLists: listsOf({}, {}), store, now, geocode, locateZone: () => "8",
+      readLists: listsOf({}, {}), readAccounts: noAccounts, store, now, geocode, locateZone: () => "8",
       env: { ...baseEnv, RENTALS_TIKTOK_TAGS: "", RENTALS_TIKTOK_ACCOUNTS: "", RENTALS_TIKTOK_VIDEOS: "https://vt.tiktok.com/ZSbJ6eN9S/" },
       resolveUrl: async () => "https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549",
       readVideo: async () => post("7688511584326454549", "inmobiliariaalquilar", "Alquiler 2 dormitorios en Montevideo 📍 Chucarro y Guayaquí $30.000"),
@@ -316,8 +324,9 @@ describe("harvestTiktok", () => {
 
   it("drops a point that contradicts the named barrio, and keeps the barrio", async () => {
     const geocode = vi.fn(async () => ({ point: { latitude: -34.906, longitude: -56.156, address: "x" }, query: "q", tried: 1 }));
-    const readLists = listsOf({}, { inmobiliariaalquilar: { posts: [post("5", "inmobiliariaalquilar", "Alquiler en Pocitos 📍 Chucarro y Guayaquí $30.000")] } });
-    const run = await harvestTiktok("full", 40, { readLists, store: memoryStore(), env: baseEnv, now, geocode, locateZone: () => "2" });
+    const readLists = listsOf({}, {});
+    const readAccounts = accountsOf({ inmobiliariaalquilar: { posts: [post("5", "inmobiliariaalquilar", "Alquiler en Pocitos 📍 Chucarro y Guayaquí $30.000")] } });
+    const run = await harvestTiktok("full", 40, { readAccounts, readLists, store: memoryStore(), env: baseEnv, now, geocode, locateZone: () => "2" });
     expect(run.listings[0]).toMatchObject({ neighborhood: "Pocitos", latitude: null, longitude: null });
     expect(run.note).toContain("contradecir el barrio");
   });
@@ -327,7 +336,7 @@ describe("harvestTiktok", () => {
       launched: true, note: "", accounts: new Map(), videos: new Map(),
       tags: new Map([["alquilermontevideo", { posts: [], pages: 0, exhausted: false, failure: "lista vacía (IP bloqueada o desafío)" }]]),
     }));
-    const run = await harvestTiktok("full", 40, { readLists, store: memoryStore(), env: { ...baseEnv, RENTALS_TIKTOK_PROXY: "", RENTALS_TIKTOK_ACCOUNTS: "" }, now });
+    const run = await harvestTiktok("full", 40, { readAccounts: noAccounts, readLists, store: memoryStore(), env: { ...baseEnv, RENTALS_TIKTOK_PROXY: "", RENTALS_TIKTOK_ACCOUNTS: "" }, now });
     expect(run.ok).toBe(false);
     expect(run.note).toContain("sin proxy");
     expect(tiktokProxy({}, () => "9.9.9.9:3128\n")).toBe("9.9.9.9:3128");
@@ -388,7 +397,7 @@ describe("TikTok caption — review fix pass", () => {
 
   it("lets an operator set a budget to zero", async () => {
     const readLists = listsOf({}, {});
-    await harvestTiktok("full", 40, { readLists, store: memoryStore(), env: { ...baseEnv, RENTALS_TIKTOK_MAX_ACCOUNTS: "0", RENTALS_TIKTOK_TAG_PAGES: "1" }, now, geocode: noGeo });
+    await harvestTiktok("full", 40, { readAccounts: noAccounts, readLists, store: memoryStore(), env: { ...baseEnv, RENTALS_TIKTOK_MAX_ACCOUNTS: "0", RENTALS_TIKTOK_TAG_PAGES: "1" }, now, geocode: noGeo });
     expect(readLists.mock.calls[0]![0].accounts).toEqual([]);
     expect(readLists.mock.calls[0]![0].tagPages).toBe(1);
   });
@@ -432,7 +441,7 @@ describe("harvestTiktok — manual video through the browser when plain HTTP is 
       videos: new Map(plan.videos.map(url => [url, url === canonical ? fromBrowser : null])),
     }));
     const store = memoryStore();
-    const run = await harvestTiktok("full", 40, {
+    const run = await harvestTiktok("full", 40, { readAccounts: noAccounts,
       readLists, store, now, geocode: noGeo,
       env: { ...baseEnv, RENTALS_TIKTOK_TAGS: "", RENTALS_TIKTOK_ACCOUNTS: "", RENTALS_TIKTOK_VIDEOS: "https://vt.tiktok.com/ZSbJ6eN9S/" },
       resolveUrl: async () => canonical,
@@ -456,7 +465,7 @@ describe("harvestTiktok — short link when even the redirect is challenged", ()
       videos: new Map(plan.videos.map(url => [url, url === short ? fromBrowser : null])),
     }));
     const readVideo = vi.fn(async () => null);
-    const run = await harvestTiktok("full", 40, {
+    const run = await harvestTiktok("full", 40, { readAccounts: noAccounts,
       readLists, store: memoryStore(), now, geocode: noGeo, readVideo,
       env: { ...baseEnv, RENTALS_TIKTOK_TAGS: "", RENTALS_TIKTOK_ACCOUNTS: "", RENTALS_TIKTOK_VIDEOS: short },
       resolveUrl: async () => null,
@@ -466,7 +475,7 @@ describe("harvestTiktok — short link when even the redirect is challenged", ()
     expect(run.listings.map(row => row.listingId)).toEqual(["tiktok:7688511584326454549"]);
     expect(run.note).toContain("1 video manual");
     // Something that is not a TikTok link at all is simply reported.
-    const junk = await harvestTiktok("full", 40, { readLists, store: memoryStore(), now, geocode: noGeo, readVideo, resolveUrl: async () => null, env: { ...baseEnv, RENTALS_TIKTOK_TAGS: "", RENTALS_TIKTOK_ACCOUNTS: "", RENTALS_TIKTOK_VIDEOS: "https://example.com/x" } });
+    const junk = await harvestTiktok("full", 40, { readAccounts: noAccounts, readLists, store: memoryStore(), now, geocode: noGeo, readVideo, resolveUrl: async () => null, env: { ...baseEnv, RENTALS_TIKTOK_TAGS: "", RENTALS_TIKTOK_ACCOUNTS: "", RENTALS_TIKTOK_VIDEOS: "https://example.com/x" } });
     expect(junk.note).toContain("1 sin leer");
   });
 });

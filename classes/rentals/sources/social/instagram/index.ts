@@ -104,7 +104,7 @@ export async function harvestInstagramRun(mode: "full" | "fast", usdUyu: number,
     known,
     maxNewPerAccount: envNumber(env.RENTALS_INSTAGRAM_MAX_NEW_POSTS, 12),
     gapMs: envNumber(env.RENTALS_INSTAGRAM_GAP_MS, 2_500),
-    budgetMs: envNumber(env.RENTALS_INSTAGRAM_BUDGET_MS, 12 * 60_000),
+    budgetMs: envNumber(env.RENTALS_INSTAGRAM_BUDGET_MS, 20 * 60_000),
     proxy: String(env.RENTALS_INSTAGRAM_PROXY || "").trim() || null,
   });
 
