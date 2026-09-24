@@ -2453,6 +2453,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/apostillar-un-documento-uruguay',
+        labelKey: 'nav.apostilla',
+        icon: 'mdi-stamper',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'apostillar un documento uruguay',
+          'apostilla uruguay',
+          'cuanto sale la apostilla uruguay',
+          'apostilla mrree cancilleria',
+          'legalizacion de documentos uruguay',
+          'legalizar documentos para el exterior uruguay',
+          'apostilla convenio de la haya uruguay',
+          'apostillar titulo universitario uruguay',
+        ],
+      },
+      {
         to: '/declarar-dinero-en-efectivo-uruguay',
         labelKey: 'nav.declararEfectivo',
         icon: 'mdi-cash-multiple',

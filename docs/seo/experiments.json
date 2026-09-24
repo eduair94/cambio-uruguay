@@ -470,6 +470,21 @@
         "apostillar partida de nacimiento uruguay"
       ],
       "hypothesis": "El sitio ya nombraba la partida como requisito de otra cosa en media docena de guias (ciudadania legal, residencia Mercosur, cedula de quien nacio afuera, matrimonio) y no contestaba cuanto sale ni como se pide: un hueco hacia adentro antes que hacia afuera. Y la respuesta cambio sin que se note: desde el 1/1/2022 la partida es digital y gratis, asi que la consulta de costo se contesta con una fecha de inscripcion y no con un precio. La apuesta es la misma que funciono en la cedula y el pasaporte: publicar el importe exacto arriba del snippet (53 comun, 12 urgente, 77 la apostilla) donde el resultado que hoy ocupa el SERP es la ficha de gub.uy, que no lo muestra en la descripcion."
+    },
+    {
+      "id": "apostillar-documento-costo",
+      "shippedOn": "2026-09-24",
+      "routes": [
+        "/apostillar-un-documento-uruguay"
+      ],
+      "queries": [
+        "apostillar un documento uruguay",
+        "apostilla uruguay",
+        "cuanto sale la apostilla uruguay",
+        "legalizacion de documentos uruguay",
+        "apostillar titulo universitario uruguay"
+      ],
+      "hypothesis": "El arancel ya estaba en el sitio pero escondido: la unica mencion en 250 paginas era una linea del FAQ de la partida de nacimiento, que lo contesta de pasada. Es el mismo accidente que el certificado de antecedentes, cuyo precio vivia dentro de la pagina del pasaporte. La apuesta no es el importe sino el ORDEN, que ninguna fuente publica junta: la apostilla es el ultimo paso y casi nunca se paga sola, porque Cancilleria solo apostilla firmas ya registradas ante ella y segun quien firmo hay otro organismo antes con su propio arancel (MEC 269 por documento, MSP 1 UR, IGRN sin arancel publicado). Las tres fichas son publicas y estan en tres sitios distintos; nadie las suma. El total de la IGRN se publica como piso declarado en vez de omitir lo que falta."
     }
   ]
 }
