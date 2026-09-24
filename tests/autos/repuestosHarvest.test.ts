@@ -3,7 +3,7 @@ import path from "path";
 import { describe, expect, it } from "vitest";
 import { CAR_PARTS, type CarPartsRecord } from "../../classes/autos/repuestos";
 import {
-  harvestParts, partsSearchUrl, planPartsTargets, shouldReplacePartsRecord, type MlPartsPage,
+  bridgeWindowOpen, harvestParts, partsSearchUrl, planPartsTargets, shouldReplacePartsRecord, type MlPartsPage,
 } from "../../classes/autos/repuestosHarvest";
 
 const ROOT = path.join(__dirname, "..", "..");
@@ -130,6 +130,15 @@ describe("shouldReplacePartsRecord", () => {
     expect(shouldReplacePartsRecord(priced(5), priced(3))).toBe(true);
     expect(shouldReplacePartsRecord(priced(2), priced(0))).toBe(true);
     expect(shouldReplacePartsRecord(undefined, priced(0))).toBe(true);
+  });
+});
+
+describe("bridgeWindowOpen", () => {
+  it("sólo lee en el hueco del puente: un arranque por deploy a las :32 sale sin leer", () => {
+    expect(bridgeWindowOpen(new Date("2026-09-24T02:11:00.000Z"))).toBe(true);
+    expect(bridgeWindowOpen(new Date("2026-09-24T18:13:59.000Z"))).toBe(true);
+    expect(bridgeWindowOpen(new Date("2026-09-24T22:32:00.000Z"))).toBe(false);
+    expect(bridgeWindowOpen(new Date("2026-09-24T22:14:00.000Z"))).toBe(false);
   });
 });
 

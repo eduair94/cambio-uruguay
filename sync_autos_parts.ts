@@ -7,7 +7,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { appConnection, appDbConfigured } from "./classes/appdb";
-import { harvestParts, planPartsTargets, shouldReplacePartsRecord, type CarPartsTarget } from "./classes/autos/repuestosHarvest";
+import { bridgeWindowOpen, harvestParts, planPartsTargets, shouldReplacePartsRecord, type CarPartsTarget } from "./classes/autos/repuestosHarvest";
 import { loadCarPartsRecords, loadCatalogMeta, saveCarPartsRecords } from "./classes/autos/store";
 import { CarHarvestMetaModel } from "./classes/models/CarHarvestMeta";
 import { fetchUsdUyuRate } from "./classes/rentals/rate";
@@ -22,6 +22,12 @@ async function main(): Promise<void> {
   const dryRun = process.argv.includes("--dry-run");
   if (!appDbConfigured()) throw new Error("APP_MONGO_URI is required; refusing to use a different database");
   const now = new Date();
+  const only = argument("models")?.split(",").map(slug => slug.trim()).filter(Boolean);
+  if (!only && !process.env.AUTOS_PARTS_ANY_TIME && !bridgeWindowOpen(now)) {
+    const minute = String(now.getUTCMinutes()).padStart(2, "0");
+    console.log(`[autos-parts] arrancó a las :${minute}, fuera del hueco del puente (:11); sale sin leer`);
+    return;
+  }
   const usdUyu = await fetchUsdUyuRate();
   if (!(usdUyu > 0)) throw new Error("No current USD/UYU reference; parts in dollars cannot be converted");
   const meta = await loadCatalogMeta();
@@ -33,7 +39,6 @@ async function main(): Promise<void> {
   const byBrand = new Map<string, string[]>();
   for (const model of meta?.models ?? []) byBrand.set(model.brand, [...(byBrand.get(model.brand) ?? []), model.model]);
   for (const model of models) model.siblings = (byBrand.get(model.brand) ?? []).filter(name => name !== model.model);
-  const only = argument("models")?.split(",").map(slug => slug.trim()).filter(Boolean);
   const previous = new Map((await loadCarPartsRecords()).map(record => [record.marketSlug, record] as const));
   const due = only
     ? models.filter(model => only.includes(model.marketSlug))

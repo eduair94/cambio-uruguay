@@ -42,6 +42,16 @@ export const PARTS_MAX_AGE_DAYS = 14;
 const MAX_CONSECUTIVE_FAILURES = 3;
 
 /**
+ * El hueco del puente :9656 es de :11 a :21 (entre movilidad-horaria y sillas-horaria), y el cron
+ * dispara a las :11. pm2 también ejecuta la app al registrarla o recrearla en un deploy, a cualquier
+ * minuto: fuera de :11-:13 la corrida sale sin leer, así nunca pisa a otro consumidor del puente.
+ */
+export function bridgeWindowOpen(now: Date): boolean {
+  const minute = now.getUTCMinutes();
+  return minute >= 11 && minute <= 13;
+}
+
+/**
  * Una página vale como lectura sólo si trae su lista de resultados y, si trae algo, la categoría que
  * se pidió aplicada. Una respuesta degradada del puente leída como "cero ofertas" dejaría al modelo
  * sin repuestos dos semanas; una sin categoría cotizaría un filtro de aire como filtro de aceite.
