@@ -6,12 +6,17 @@
 // registry already knows. A TikTok handle is not an Instagram account: `habitarte.inmobiliaria`
 // is a Mexican agency there and `cap.propiedades` does not exist. So every candidate is judged by
 // what it publishes — `activa` once an advert passes the parser (Uruguay evidence included),
-// `descartada` after three posts and none — and `no existe`/`descartada` are looked at again only
-// after 30 days.
+// `descartada` after three reads with nothing published — and `no existe`/`descartada` are looked
+// at again only after 30 days. A seed or an active account is never demoted by one "not
+// available" answer (a rate-limited profile looks the same as a deleted one): it keeps its status
+// and says so in its note.
 //
-// A profile shows its 12 latest posts. Only the codes the memory does not have are read (~6 s
-// each); the known ones still listed are rebuilt from memory. What the profile no longer lists is
-// not emitted and does not expire: 12 posts are not a catalogue, so `complete` is always false.
+// A profile shows its 12 latest posts. Only the codes the memory does not have, or read more than
+// RENTALS_INSTAGRAM_REFRESH_DAYS (3) ago, are read (~6 s each): the refresh is what brings a new
+// cover (the signed image URLs expire) and an "ALQUILADO" edit. The rest still listed are rebuilt
+// from memory, posts outside the window included, so an account of old posts is not re-read every
+// run. What the profile no longer lists is not emitted and does not expire: 12 posts are not a
+// catalogue, so `complete` is always false.
 import { geocodeCandidates } from "../../../facebookGeocode";
 import { RentalInstagramAccountModel, RentalInstagramPostModel, type RentalInstagramAccountDocument } from "../../../../models/RentalSocial";
 import { appDbTiktokStore } from "../../tiktok/store";
@@ -64,6 +69,7 @@ export async function harvestInstagramRun(mode: "full" | "fast", usdUyu: number,
   const maxAgeDays = envNumber(env.RENTALS_INSTAGRAM_MAX_AGE_DAYS, 45);
   const minCreateTime = Math.floor(now.getTime() / 1000) - maxAgeDays * 86_400;
   const recheckBefore = new Date(now.getTime() - RECHECK_DAYS * 86_400_000).toISOString();
+  const refreshBefore = new Date(now.getTime() - envNumber(env.RENTALS_INSTAGRAM_REFRESH_DAYS, 3) * 86_400_000).toISOString();
 
   // 1. The registry: seeds, then TikTok's handles as candidates.
   const registry = new Map<string, InstagramAccountRow>((await deps.accounts.loadAccounts()).map(row => [row.handle, row]));
@@ -92,9 +98,10 @@ export async function harvestInstagramRun(mode: "full" | "fast", usdUyu: number,
 
   // 3. One browser: profiles, then only the codes the memory does not have.
   const stored = await deps.posts.loadPostsByAuthors(accounts);
+  const known = new Set([...stored].filter(([, row]) => (row.fetchedAt || row.readAt || "") >= refreshBefore).map(([id]) => id));
   const results = await deps.readInstagram({
     accounts,
-    known: new Set(stored.keys()),
+    known,
     maxNewPerAccount: envNumber(env.RENTALS_INSTAGRAM_MAX_NEW_POSTS, 12),
     gapMs: envNumber(env.RENTALS_INSTAGRAM_GAP_MS, 2_500),
     budgetMs: envNumber(env.RENTALS_INSTAGRAM_BUDGET_MS, 12 * 60_000),
@@ -116,7 +123,7 @@ export async function harvestInstagramRun(mode: "full" | "fast", usdUyu: number,
   const { processed, counts } = await processPosts(posts.values(), stored, {
     usdUyu, observedAt, minCreateTime,
     geocodeBudget: { remaining: envNumber(env.RENTALS_INSTAGRAM_GEOCODE_MAX, 40) },
-    geocode: deps.geocode, locateZone: deps.locateZone,
+    geocode: deps.geocode, locateZone: deps.locateZone, rememberTooOld: true,
   });
   const listings = processed.filter(p => p.row).map(p => p.row!);
 
@@ -135,7 +142,13 @@ export async function harvestInstagramRun(mode: "full" | "fast", usdUyu: number,
     if (!read.profile) { row.note = "perfil ilegible"; continue; }
     answered++;
     row.checkedAt = observedAt;
-    if (!read.profile.exists) { row.status = "no existe"; row.note = null; continue; }
+    if (!read.profile.exists) {
+      // One answer does not undo what the account already proved: Instagram answers "not
+      // available" to a rate-limited visitor too. Only a candidate, which proved nothing, goes.
+      if (row.status === "semilla" || row.status === "activa") row.note = "perfil no disponible en esta lectura";
+      else { row.status = "no existe"; row.note = null; }
+      continue;
+    }
     row.name = read.profile.name || row.name;
     row.lastReadAt = observedAt;
     row.reads++;
@@ -147,7 +160,9 @@ export async function harvestInstagramRun(mode: "full" | "fast", usdUyu: number,
     row.evaluated += judgedToday;
     row.published = acceptedBy.get(handle) ?? 0;
     if (row.published > 0 && (row.status === "candidata" || row.status === "descartada" || row.status === "no existe")) row.status = "activa";
-    else if (row.status === "candidata" && row.evaluated >= DISCARD_AFTER && row.published === 0) row.status = "descartada";
+    // Three posts judged, or three reads — an account of old posts gives nothing to judge, and a
+    // candidate is read on every run until it is settled.
+    else if (row.status === "candidata" && (row.evaluated >= DISCARD_AFTER || row.reads >= DISCARD_AFTER) && row.published === 0) row.status = "descartada";
     else if (row.status === "descartada" && row.published === 0) row.note = "sigue sin avisos de Uruguay";
   }
   await deps.posts.savePosts(processed.map(p => p.memory));

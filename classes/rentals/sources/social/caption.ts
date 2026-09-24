@@ -303,10 +303,30 @@ const UY_WORDS = /\b(?:anda|cgn|contadur[ií]a|porto\s+seguro|aseguradoras?|fide
  */
 export function uruguayEvidence(text: string, hashtags: readonly string[], location: { department: string; neighborhood: string }): boolean {
   if (location.department || location.neighborhood) return true;
+  return declaredUruguay(text, hashtags);
+}
+
+/** The evidence a caption writes itself — not a place name, which Buenos Aires shares with Montevideo. */
+function declaredUruguay(text: string, hashtags: readonly string[]): boolean {
   const tags = [...hashtags, ...(text.match(/#(\S+)/g) || []).map(tag => tag.slice(1))].map(tag => flatten(tag).replace(/[^a-z0-9]/g, ""));
   if (tags.some(tag => UY_HASHTAG.test(tag))) return true;
   if (UY_PHONE.test(text)) return true;
-  return UY_WORDS.test(flatten(text));
+  const flat = flatten(text);
+  return UY_WORDS.test(flat) || /\b(?:uruguay|montevideo)\b/.test(flat);
+}
+
+/**
+ * Words only a Buenos Aires advert writes: "CABA", "Capital Federal", "expensas" (Uruguay says
+ * gastos comunes), "N ambientes" (Uruguay counts dormitorios). Palermo, Belgrano and Recoleta are
+ * barrios on both banks, so the barrio reader alone would publish "Palermo CABA $450.000" as a
+ * Montevideo flat at ten times its price. "Buenos Aires" alone is not a marker: it is a street
+ * of Ciudad Vieja and a balneario of Maldonado.
+ */
+const FOREIGN = /\b(?:caba|capital\s+federal|expensas|\d+\s*ambientes|pesos\s+argentinos|provincia\s+de\s+buenos\s+aires|conurbano|gba|amba)\b/;
+
+/** Whether a caption is another country's advert: a foreign marker and nothing Uruguayan written. */
+export function foreignAdvert(text: string, hashtags: readonly string[]): boolean {
+  return FOREIGN.test(flatten(text)) && !declaredUruguay(text, hashtags);
 }
 
 // --- Everything ------------------------------------------------------------------------------
@@ -319,6 +339,7 @@ export function parseCaption(lines: readonly string[], hashtags: readonly string
   const attributes = parseAttributes([text]);
   const rejected = captionRejection(text)
     ?? (!/\b(?:alquil|arriend)/.test(flatten(text)) ? "sin verbo de alquiler" : null)
+    ?? (foreignAdvert(text, hashtags) ? "aviso de otro país" : null)
     ?? (!uruguayEvidence(text, hashtags, location) ? "sin evidencia de Uruguay" : null)
     ?? (amounts.ambiguous ? "precio ambiguo" : amounts.price === null ? "sin precio" : null);
   return {

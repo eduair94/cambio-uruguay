@@ -38,6 +38,22 @@ function handleOf(url: unknown, id: string): string {
   return id;
 }
 
+/**
+ * The fuller of two copies of one story. The search repeats a story, and a repeat can carry only
+ * the first line of the caption ("…ver más") and no thumbnail: whichever comes first in the page,
+ * the longer caption wins and a missing cover or permalink is taken from the other copy.
+ */
+function fuller(a: SocialPost, b: SocialPost): SocialPost {
+  const [long, short] = a.lines.join("\n").length >= b.lines.join("\n").length ? [a, b] : [b, a];
+  const permalink = (post: SocialPost): boolean => !/\/reel\/\d+\/$/.test(post.url);
+  return {
+    ...long,
+    url: permalink(long) || !permalink(short) ? long.url : short.url,
+    cover: long.cover || short.cover,
+    createTime: Math.max(long.createTime, short.createTime),
+  };
+}
+
 export function reelsFromFacebookHtml(html: string): SocialPost[] {
   const out = new Map<string, SocialPost>();
   for (const match of String(html || "").matchAll(/<script type="application\/json"[^>]*>([\s\S]*?)<\/script>/g)) {
@@ -48,7 +64,7 @@ export function reelsFromFacebookHtml(html: string): SocialPost[] {
       continue;
     }
     for (const story of walk(data)) {
-      if (typeof story.post_id !== "string" || !DIGITS.test(story.post_id) || out.has(story.post_id)) continue;
+      if (typeof story.post_id !== "string" || !DIGITS.test(story.post_id)) continue;
       if (typeof story.message?.text !== "string" || !Array.isArray(story.actors)) continue;
       let videoId = "";
       let publish = 0;
@@ -66,7 +82,7 @@ export function reelsFromFacebookHtml(html: string): SocialPost[] {
       const actor: Node = story.actors[0] || {};
       const actorId = actor.id ? String(actor.id) : "";
       const text = story.message.text.slice(0, 4_000);
-      out.set(story.post_id, {
+      const post: SocialPost = {
         source: "facebookreels",
         id: story.post_id,
         url: permalink || `https://www.facebook.com/reel/${videoId}/`,
@@ -75,7 +91,9 @@ export function reelsFromFacebookHtml(html: string): SocialPost[] {
         author: { uniqueId: handleOf(actor.url, actorId), nickname: typeof actor.name === "string" ? actor.name.trim().slice(0, 120) : "", secUid: actorId },
         cover: HTTPS.test(thumb) ? thumb : null,
         hashtags: hashtagsIn(text),
-      });
+      };
+      const seen = out.get(story.post_id);
+      out.set(story.post_id, seen ? fuller(seen, post) : post);
     }
   }
   return [...out.values()];

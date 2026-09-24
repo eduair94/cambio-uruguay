@@ -99,5 +99,6 @@ export function postFromInstagramMemory(row: SocialPostRow): SocialPost | null {
     author: { uniqueId: row.uniqueId, nickname: row.authorName || row.uniqueId, secUid: "" },
     cover: row.image || null,
     hashtags: row.hashtags || [],
+    fetchedAt: row.fetchedAt || row.readAt,
   };
 }

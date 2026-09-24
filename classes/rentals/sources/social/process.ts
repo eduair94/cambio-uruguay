@@ -26,6 +26,12 @@ export interface ProcessContext {
   geocodeBudget: { remaining: number };
   geocode: GeocodeFn;
   locateZone: LocateZone;
+  /**
+   * Keep a memory row for posts outside the window too (row null, "fuera de la ventana"). Instagram
+   * reads each post page by page, ~6 s each, and skips only what the memory has: without the row,
+   * an account whose 12 latest posts are old would have all of them read again on every run.
+   */
+  rememberTooOld?: boolean;
 }
 
 export interface ProcessedPost {
@@ -68,7 +74,11 @@ export async function processPosts(
   const unique = new Map<string, SocialPost>();
   for (const post of posts) unique.set(post.id, post);
   for (const post of [...unique.values()].sort((a, b) => b.createTime - a.createTime)) {
-    if (post.createTime < ctx.minCreateTime) { counts.tooOld++; continue; }
+    const tooOld = post.createTime < ctx.minCreateTime;
+    if (tooOld) {
+      counts.tooOld++;
+      if (!ctx.rememberTooOld) continue;
+    }
     const facts = parseCaption(post.lines, post.hashtags);
     const previous = stored.get(post.id);
     let geo: PostGeo | null = previous && typeof previous.latitude === "number" && typeof previous.longitude === "number"
@@ -77,8 +87,10 @@ export async function processPosts(
     let geocodeQuery = previous ? previous.geocodeQuery : null;
     let geocodeAddress = previous ? previous.geocodeAddress : null;
     let note: string | null = previous ? previous.note : null;
-    // A corner is geocoded ONCE per post: the answer, accepted or refused, is remembered.
-    if (!facts.rejected && !previous && facts.addressCandidates.length && ctx.geocodeBudget.remaining > 0) {
+    // A corner is geocoded ONCE per post: the answer, accepted or refused, is remembered. A post
+    // stored without a query was never tried (the budget ran out that run), so it is tried now.
+    const neverTried = !previous || (previous.geocodeQuery == null && geo === null);
+    if (!tooOld && !facts.rejected && neverTried && facts.addressCandidates.length && ctx.geocodeBudget.remaining > 0) {
       const outcome = await ctx.geocode(facts.addressCandidates, facts.department, ctx.geocodeBudget);
       geocodeQuery = outcome.query;
       geocodeAddress = outcome.point ? outcome.point.address : null;
@@ -97,14 +109,14 @@ export async function processPosts(
         }
       }
     }
-    let row = postToRawRental(post, facts, geo, ctx.observedAt);
-    let reason = facts.rejected;
+    let row = tooOld ? null : postToRawRental(post, facts, geo, ctx.observedAt);
+    let reason = tooOld ? "fuera de la ventana" : facts.rejected;
     if (row && !isPlausibleRent(row.currency === "USD" ? row.price * ctx.usdUyu : row.price, row.propertyType)) {
       reason = "precio inverosímil";
       counts.implausible++;
       row = null;
     }
-    if (reason) counts.rejected++;
+    if (reason && !tooOld) counts.rejected++;
     processed.push({
       post,
       facts,
@@ -117,6 +129,7 @@ export async function processPosts(
         candidates: facts.addressCandidates, geocodeQuery, geocodeAddress,
         latitude: geo ? geo.latitude : null, longitude: geo ? geo.longitude : null, geoNeighborhood: geo && geo.neighborhood ? geo.neighborhood : null,
         note, url: post.url, authorName: post.author.nickname, image: post.cover,
+        fetchedAt: post.fetchedAt || ctx.observedAt,
       },
     });
   }

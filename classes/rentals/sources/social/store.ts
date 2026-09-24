@@ -12,6 +12,8 @@ export interface SocialPostRow extends RentalTiktokPostDocument {
   url?: string;
   authorName?: string;
   image?: string | null;
+  /** When the network's own page was last read (a row rebuilt from memory keeps it); absent on rows older than it. */
+  fetchedAt?: string;
 }
 
 export interface SocialPostStore {

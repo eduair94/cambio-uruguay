@@ -37,31 +37,61 @@ los **hechos** (la primera esquina/dirección del texto con las calles ordenadas
 falta uno de los cuatro, no hay clave) y el **gemelo de texto** (red + cuenta + hash de la leyenda
 normalizada). Los avisos que comparten una clave se agrupan (unión de conjuntos: un carrusel gemelo
 de un reel que comparte esquina con un video de TikTok es una sola vivienda). Y la elección es
-**estable**: el primer aviso que publicó una clave la reclama en `rentalsocialclaims` mientras se lo
-vea dentro de `RENTALS_PRUNE_DAYS` (21). Si se lo ve hoy, gana; si no se lo ve hoy, **ninguna copia lo
-reemplaza** (su oferta sigue en el directorio hasta la poda); sin reclamo, gana TikTok, después
-Instagram, después Facebook Reels, y dentro de la red el más viejo. Sin la estabilidad, la copia
-publicada podría saltar de red entre corridas y, como ninguna de estas fuentes es `complete`, la
-vieja no caducaría: la vivienda aparecería dos veces hasta la poda. El precio de la regla: dos
-viviendas distintas en la misma esquina, con el mismo precio y los mismos dormitorios, se tomarían
-por una; se oculta una, nunca se publica un dato equivocado.
+**estable**: el primer aviso que publicó una clave la reclama en `rentalsocialclaims` **exactamente
+mientras el directorio lo muestra**: 10 días desde la última vez que se lo vio (`SOCIAL_CLAIM_DAYS`,
+igual a `RENTAL_STALE_DAYS` de `app/utils/rentals.ts`, y un test los ata), o 4 si su red leyó todo hoy
+(`RENTALS_STALE_OFFER_DAYS`: una red `complete` caduca antes lo que dejó de ver). Si se lo ve hoy,
+gana; si no se lo ve hoy, **ninguna copia lo reemplaza** mientras el reclamo viva; sin reclamo, gana
+TikTok, después Instagram, después Facebook Reels, y dentro de la red el más viejo. Un dueño que se
+ve hoy con **otra** leyenda (le cambiaron el precio: otra clave de hechos) sigue reclamando sus claves
+viejas, porque su aviso sigue en el sitio. Sin la estabilidad, la copia publicada podría saltar de red
+entre corridas y, como ninguna de estas fuentes es `complete`, la vieja no caducaría: la vivienda
+aparecería dos veces. Con una ventana más larga que la del directorio (la revisión final encontró la
+de poda, 21 días) la vivienda desaparecía de los días 11 al 21: el directorio ya ocultaba al dueño y
+el reclamo todavía ocultaba a la copia. El precio de la regla: dos viviendas distintas en la misma
+esquina, con el mismo precio y los mismos dormitorios, se tomarían por una; se oculta una, nunca se
+publica un dato equivocado. Y si la guarda falla (un reclamo guardado ilegible), se publica sin ella:
+una copia de más es menos daño que tumbar la sincronización de todos los portales.
 
 **Instagram.** Sin descubrimiento, se leen **cuentas**: las semillas (`RENTALS_INSTAGRAM_ACCOUNTS`,
 por defecto `inmobiliariaalquilar`) y, como **candidatas**, los handles del registro de TikTok. Un
 handle de TikTok no es una cuenta de Instagram — `habitarte.inmobiliaria` es una inmobiliaria
 mexicana ahí; `cap.propiedades` y `zamar.inmo` no existen —, así que cada candidata se juzga por lo
 que publica: pasa a **`activa`** cuando un aviso suyo pasa el parser (con la evidencia de Uruguay
-incluida), a **`descartada`** con tres posts evaluados y ninguno aceptado, y a **`no existe`** cuando
-el perfil dice "no está disponible"; esas dos se vuelven a mirar a los 30 días. El perfil muestra sus
-**12 posts más recientes**; sólo se lee la página de los códigos que la memoria no tiene y los
-conocidos se reconstruyen de `rentalinstagramposts`, así que una corrida en régimen lee pocos posts.
+incluida), a **`descartada`** con tres posts evaluados o tres lecturas y ninguno aceptado (una cuenta
+de posts viejos no da nada que juzgar y, sin el tope de lecturas, se leería en cada corrida), y a
+**`no existe`** cuando el perfil dice "no está disponible"; esas dos se vuelven a mirar a los 30 días.
+Una semilla o una cuenta `activa` **nunca** baja por una respuesta así (Instagram contesta lo mismo a
+un visitante limitado): conserva su estado y lo dice en la nota. El perfil muestra sus **12 posts más
+recientes**; sólo se lee la página de los códigos que la memoria no tiene o que se leyeron hace más de
+`RENTALS_INSTAGRAM_REFRESH_DAYS` (3) — la relectura trae la portada nueva (las URL firmadas vencen) y
+el "ALQUILADO" que la inmobiliaria edita en la leyenda —, y los demás se reconstruyen de
+`rentalinstagramposts`, **los de fuera de la ventana incluidos**, así que una corrida en régimen lee
+pocos posts.
 Carruseles y reels cuentan igual (los dos son el mismo aviso) y la guarda deja uno.
 `complete: false` siempre: doce posts no son el catálogo.
 
 **Facebook Reels.** Doce búsquedas de video (`RENTALS_FBREELS_QUERIES`) y dos hashtags
 (`RENTALS_FBREELS_TAGS`); de cada página, las historias **con video** (las fotos que mezclan las
 páginas de hashtag no son reels). Unas cinco historias por página: el resto de la lista se carga al
-hacer scroll, cosa que un visitante sin sesión no recibe. `complete: false` siempre.
+hacer scroll, cosa que un visitante sin sesión no recibe. La búsqueda repite historias, y la
+repetición puede traer sólo la primera línea y sin portada: gana la copia de leyenda más larga,
+aparezca antes o después, y la portada que falta se toma de la otra. `complete: false` siempre.
+
+**Lo que corrigió la revisión final** (además de la ventana de reclamos, arriba):
+
+- **El título no lleva teléfono.** La primera línea de una leyenda suele terminar en el WhatsApp
+  ("ALQUILER POCITOS … $25.000 - WhatsApp 099 …") y el título no se limpia más adelante: pasa por el
+  mismo borrado que la descripción y pierde el "WhatsApp" colgado.
+- **Un aviso de Buenos Aires no es de Montevideo por nombrar Palermo.** Palermo, Belgrano y Recoleta
+  son barrios de las dos orillas, así que el lector de barrios publicaba "Palermo CABA $450.000" como
+  vivienda montevideana. "CABA", "Capital Federal", "expensas", "N ambientes", "pesos argentinos",
+  "GBA"/"AMBA" rechazan con `aviso de otro país`, salvo que la leyenda escriba algo uruguayo (hashtag,
+  teléfono, garantía, "$U", "Montevideo"). "Buenos Aires" solo no cuenta: es una calle de Ciudad Vieja
+  y un balneario de Maldonado. Medido sobre las 224 leyendas guardadas: cero avisos publicados
+  cambiaron de veredicto.
+- **Una esquina que se quedó sin presupuesto de geocodificación se intenta en la corrida siguiente.**
+  Antes, un post guardado nunca se volvía a geocodificar, aunque nunca se hubiera intentado.
 
 **Primera corrida real, desde el VPS, 24/9 19:14 UTC** (TikTok con 4 cuentas y 2 hashtags, Instagram
 con 8 cuentas, Facebook con 8 páginas; 332 s en total):
@@ -1055,6 +1085,8 @@ Instagram y Facebook Reels (sólo la corrida completa; ver la sección "Instagra
 | `RENTALS_INSTAGRAM_ACCOUNTS` | `inmobiliariaalquilar` | cuentas semilla; los handles del registro de TikTok entran solos como candidatas |
 | `RENTALS_INSTAGRAM_MAX_ACCOUNTS` | 40 | cuentas por corrida: semillas y activas primero (la leída hace más tiempo), después candidatas |
 | `RENTALS_INSTAGRAM_MAX_NEW_POSTS` | 12 | posts nuevos leídos por cuenta (un perfil muestra 12) |
+| `RENTALS_INSTAGRAM_REFRESH_DAYS` | 3 | un post conocido se vuelve a leer pasados estos días (portada nueva, "ALQUILADO") |
+| `RENTALS_SOCIAL_CLAIM_DAYS` | 10 | vida de un reclamo de la guarda de copias desde la última vez que se vio al dueño; igual a `RENTAL_STALE_DAYS` del app |
 | `RENTALS_INSTAGRAM_GAP_MS` / `RENTALS_INSTAGRAM_BUDGET_MS` | 2500 / 720000 | pausa entre páginas y techo de la fase de navegador (12 min) |
 | `RENTALS_INSTAGRAM_PROXY` / `RENTALS_FBREELS_PROXY` | — | proxy del Chrome; sin él, la IP del VPS (medido: contesta) |
 | `RENTALS_INSTAGRAM_MAX_AGE_DAYS` / `RENTALS_FBREELS_MAX_AGE_DAYS` | 45 / 45 | ventana desde la fecha del post |

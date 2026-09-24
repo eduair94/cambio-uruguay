@@ -25,6 +25,15 @@ export interface HarvestSocialDeps {
 
 const CLAIM_FORGET_DAYS = 60;
 
+/**
+ * How long a claim protects its flat after its owner was last seen: exactly as long as the
+ * directory keeps showing an offer (`RENTAL_STALE_DAYS` in app/utils/rentals.ts, pinned by
+ * tests/rentals/social-review.test.ts). Longer, and a flat the directory already hides stays
+ * hidden in its copies too (the review found days 11–21 empty with the prune window); shorter,
+ * and a copy is published next to an original the directory still shows.
+ */
+export const SOCIAL_CLAIM_DAYS = 10;
+
 export const DEFAULT_SOCIAL_RUNS: HarvestSocialDeps["runs"] = [
   harvestTiktokRun,
   harvestInstagramRun,
@@ -41,28 +50,44 @@ export async function harvestSocial(mode: "full" | "fast", usdUyu: number, overr
       runs.push(await run(mode, usdUyu));
     } catch (error) {
       // Only the error class: a message can carry a URL or a proxy.
-      console.error(`[social] ${source} falló`, error);
+      console.error(`[social] ${source} falló: ${String((error as Error)?.name || "Error")}`);
       runs.push({ result: { key: source, ok: false, complete: false, listings: [], note: `falla: ${String((error as Error)?.name || "Error")}` }, processed: [] });
     }
   }
 
+  // The guard can only hide copies: if it fails, publishing every accepted advert is the lesser
+  // harm next to failing the whole rental sync for every portal.
+  try {
+    return await guardCopies(runs, deps);
+  } catch (error) {
+    console.error(`[social] la guarda de copias falló, se publica sin ella: ${String((error as Error)?.name || "Error")}`);
+    return runs.map(run => run.result);
+  }
+}
+
+async function guardCopies(runs: PlatformRun[], deps: HarvestSocialDeps): Promise<RentalSourceResult[]> {
   const entries = runs.flatMap(run => run.processed.map(entryFor).filter((entry): entry is SocialEntry => !!entry));
   if (!entries.length) return runs.map(run => run.result);
 
   const now = deps.now();
-  const pruneDays = envNumber(deps.env.RENTALS_PRUNE_DAYS, 21);
-  const since = new Date(now.getTime() - pruneDays * 86_400_000).toISOString();
+  const claimDays = envNumber(deps.env.RENTALS_SOCIAL_CLAIM_DAYS, SOCIAL_CLAIM_DAYS);
+  // A network that read everything today expires the offers it no longer saw after
+  // RENTALS_STALE_OFFER_DAYS (sync_rentals.ts): its claims last as long, not longer.
+  const staleOfferDays = envNumber(deps.env.RENTALS_STALE_OFFER_DAYS, 4);
+  const complete = new Set(runs.filter(run => run.result.complete === true).map(run => run.result.key));
+  const since = (days: number): string => new Date(now.getTime() - days * 86_400_000).toISOString();
   // Without the claims the guard still works within the run; it only loses the memory of who
-  // published first, which costs at most one duplicate until the prune.
-  const live = await deps.claims.loadLiveClaims(since).catch((error: unknown) => {
+  // published first, which costs at most one duplicate while the directory shows the older one.
+  const loaded = await deps.claims.loadLiveClaims(since(claimDays)).catch((error: unknown) => {
     console.warn(`[social] no se pudieron leer los reclamos: ${String((error as Error)?.name || error)}`);
     return new Map<string, SocialClaim>();
   });
+  const live = new Map([...loaded].filter(([, claim]) => !complete.has(claim.source) || claim.lastSeenAt >= since(staleOfferDays)));
   const resolution = resolveCopies(entries, live, now.toISOString());
   await deps.claims.saveClaims(resolution.claims).catch((error: unknown) => {
     console.warn(`[social] no se pudieron guardar los reclamos: ${String((error as Error)?.name || error)}`);
   });
-  await deps.claims.pruneClaims(new Date(now.getTime() - CLAIM_FORGET_DAYS * 86_400_000).toISOString()).catch(() => undefined);
+  await deps.claims.pruneClaims(since(CLAIM_FORGET_DAYS)).catch(() => undefined);
 
   const kept = new Set(resolution.keep.map(entry => entry.listingId));
   const copies = new Map<string, number>();

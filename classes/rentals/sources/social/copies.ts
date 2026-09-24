@@ -12,11 +12,13 @@
 //   * the text twin: network + account + a hash of the normalised caption, for the carousel and
 //     the reel of one account even when they name no corner.
 //
-// And the choice is STABLE across runs. None of these sources is `complete`, so an offer that stops
-// being emitted is not expired — it stays until the prune. If the kept copy moved from one network
-// to another between runs, both would be on the site. So the first listing that published a key
-// owns it (rentalsocialclaims) while it is seen within the prune window; an owner not seen today
-// still blocks its copies, and only when its claim lapses can a copy take over.
+// And the choice is STABLE across runs. Instagram and Facebook Reels are never `complete`, so an
+// offer that stops being emitted is not expired — the directory keeps showing it for
+// RENTAL_STALE_DAYS (10) after it was last seen. If the kept copy moved from one network to another
+// between runs, both would be on the site. So the first listing that published a key owns it
+// (rentalsocialclaims) for exactly as long as the directory shows it (index.ts, SOCIAL_CLAIM_DAYS);
+// an owner not seen today still blocks its copies, an owner seen today under other keys (an edited
+// caption) keeps its old keys, and only when the claim lapses can a copy take over.
 import { createHash } from "node:crypto";
 import { flatten } from "../../normalize";
 import type { RawRental } from "../../types";
@@ -104,28 +106,39 @@ export function resolveCopies(entries: readonly SocialEntry[], live: ReadonlyMap
   });
 
   const rank = (entry: SocialEntry): number => SOCIAL_SOURCES.indexOf(entry.source);
+  // A stored claim is data from an earlier run: a missing field must not throw.
+  const firstOf = (claim: SocialClaim): string => (typeof claim.firstPublishedAt === "string" ? claim.firstPublishedAt : "");
+  const idOf = (claim: SocialClaim): string => (typeof claim.listingId === "string" ? claim.listingId : "");
+  const seenToday = new Set(entries.map(entry => entry.listingId));
   const out: CopyResolution = { keep: [], copies: [], claims: [] };
   for (const members of groups.values()) {
     const keys = [...new Set(members.flatMap(member => member.keys))];
     const claimants = keys
       .map(key => live.get(key))
-      .filter((claim): claim is SocialClaim => !!claim)
-      .sort((a, b) => a.firstPublishedAt.localeCompare(b.firstPublishedAt) || a.listingId.localeCompare(b.listingId));
+      .filter((claim): claim is SocialClaim => !!claim && !!idOf(claim))
+      .sort((a, b) => firstOf(a).localeCompare(firstOf(b)) || idOf(a).localeCompare(idOf(b)));
     const ids = new Set(members.map(member => member.listingId));
     const seenClaimant = claimants.find(claim => ids.has(claim.listingId));
     let canonical: SocialEntry;
     if (seenClaimant) {
       canonical = members.find(member => member.listingId === seenClaimant.listingId)!;
     } else if (claimants.length) {
-      // The flat is already on the site under a listing not seen today: nothing here replaces it.
-      for (const member of members) out.copies.push({ entry: member, of: claimants[0]!.listingId });
+      // The flat is already on the site under a listing not in this group: nothing here replaces it.
+      const owner = claimants[0]!;
+      for (const member of members) out.copies.push({ entry: member, of: owner.listingId });
+      // An owner seen TODAY under other keys (its caption was edited: a new price is a new fact
+      // key) is still on the site, so its old keys stay claimed. Without this, the old claim would
+      // lapse and this copy would be published next to the edited original.
+      if (seenToday.has(owner.listingId)) {
+        for (const key of keys) out.claims.push({ key, listingId: owner.listingId, source: owner.source, firstPublishedAt: firstOf(owner) || now, lastSeenAt: now });
+      }
       continue;
     } else {
       canonical = [...members].sort((a, b) => rank(a) - rank(b) || a.createTime - b.createTime || a.listingId.localeCompare(b.listingId))[0]!;
     }
     out.keep.push(canonical);
     for (const member of members) if (member !== canonical) out.copies.push({ entry: member, of: canonical.listingId });
-    const firstPublishedAt = claimants.filter(claim => claim.listingId === canonical.listingId).map(claim => claim.firstPublishedAt).sort()[0] || now;
+    const firstPublishedAt = claimants.filter(claim => claim.listingId === canonical.listingId).map(firstOf).filter(Boolean).sort()[0] || now;
     for (const key of keys) out.claims.push({ key, listingId: canonical.listingId, source: canonical.source, firstPublishedAt, lastSeenAt: now });
   }
   return out;

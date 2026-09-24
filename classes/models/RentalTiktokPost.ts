@@ -59,6 +59,7 @@ export const socialPostSchema = (): Schema => {
     url: { type: String, default: null },
     authorName: { type: String, default: null },
     image: { type: String, default: null },
+    fetchedAt: { type: String, default: null },
   }, { autoCreate: false, autoIndex: false });
   schema.index({ listingId: 1 }, { unique: true });
   schema.index({ uniqueId: 1 });

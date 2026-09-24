@@ -33,6 +33,8 @@ export interface SocialPost {
   /** A signed cover image (they expire within days); null when the post carries none. */
   cover: string | null;
   hashtags: string[];
+  /** When the network's own page was last read; absent means "just now". Rebuilt posts keep theirs. */
+  fetchedAt?: string;
 }
 
 export interface PostGeo {
@@ -51,15 +53,27 @@ export function hashtagsIn(text: string): string[] {
   return out.slice(0, 40);
 }
 
+/** A contact prompt left dangling at the end of a title once its number was scrubbed ("… - WhatsApp"). */
+const CONTACT_TAIL = /[\s\-–—|:,.]*(?:(?:whats?app|wpp|wsp|cel(?:ular)?|tel(?:[eé]fono)?|contacto|consultas?|ll[aá]manos|escr[ií]benos)[\s\-–—|:,.]*)*$/i;
+
+/**
+ * The title as it may be published: the first line of a caption often ends with the phone
+ * ("ALQUILER POCITOS … $25.000 - WhatsApp 099 232 050"), and titles are not cleaned downstream.
+ * Same scrub as the description (details.ts), then the dangling prompt goes.
+ */
+export function publicTitle(text: string): string {
+  return rentalDescription(text, 200).replace(/\s+/g, " ").replace(CONTACT_TAIL, "").trim();
+}
+
 /**
  * The offer, or null when the caption is not a publishable rental. Contacts never cross: the
- * description is sanitised, and `agency`/`publicContact` stay uninspected (`undefined`).
+ * description and the title are sanitised, and `agency`/`publicContact` stay uninspected (`undefined`).
  */
 export function postToRawRental(post: SocialPost, facts: CaptionFacts, geo: PostGeo | null, observedAt: string): RawRental | null {
   if (facts.rejected || facts.price === null || !facts.currency) return null;
   const body = post.lines.join("\n");
   const url = post.url;
-  const title = facts.title || `Alquiler en ${RENTAL_SOURCE_LABEL[post.source]} (@${post.author.uniqueId})`;
+  const title = publicTitle(facts.title) || `Alquiler en ${RENTAL_SOURCE_LABEL[post.source]} (@${post.author.uniqueId})`;
   const neighborhood = facts.neighborhood || (geo && geo.neighborhood) || "";
   // Only Montevideo has INE areas, so a barrio derived from a point implies the department.
   const department = facts.department || (geo && geo.neighborhood ? "Montevideo" : "");
