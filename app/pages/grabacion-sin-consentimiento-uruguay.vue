@@ -588,6 +588,7 @@ const verifiedDisplay = computed(() =>
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone: siteTimeZone(RECORDING_VERIFIED_AT),
   })
 )
 
