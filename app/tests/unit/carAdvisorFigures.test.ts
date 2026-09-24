@@ -54,14 +54,16 @@ describe('Latin NCAP', () => {
   it('cada resultado viene de latinncap.com, con estrellas válidas y años a los que aplica', () => {
     for (const entry of LATIN_NCAP) {
       expect(entry.url).toMatch(/^https:\/\/(www\.)?latinncap\.com\//)
-      const stars = entry.protocol === '2020+' ? [entry.stars] : [entry.adultStars, entry.childStars]
+      const stars =
+        entry.protocol === '2020+' ? [entry.stars] : [entry.adultStars, entry.childStars]
       for (const value of stars) {
         expect(Number.isInteger(value)).toBe(true)
         expect(value).toBeGreaterThanOrEqual(0)
         expect(value).toBeLessThanOrEqual(5)
       }
       expect(entry.appliesFrom).toBeGreaterThan(1990)
-      if (entry.appliesTo !== null) expect(entry.appliesTo).toBeGreaterThanOrEqual(entry.appliesFrom)
+      if (entry.appliesTo !== null)
+        expect(entry.appliesTo).toBeGreaterThanOrEqual(entry.appliesFrom)
     }
   })
 
