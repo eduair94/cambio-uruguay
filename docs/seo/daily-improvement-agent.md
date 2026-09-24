@@ -11,6 +11,12 @@ cuenta de GitHub — hasta entonces la API la rechazaba con
 
 Se administra en <https://claude.ai/code/routines>. Para pausarla, deshabilitarla ahí.
 
+**Ojo (2026-09-24):** desde la sesión local de esa fecha el trigger `trig_01GMv1wqDRRux2tLhCWYTsJU`
+devuelve 404 y no aparece en el listado de routines de esa cuenta, pero la corrida sigue llegando
+(PRs #37, #38 y #39, ~16:15 UTC). Está administrada desde otra cuenta u organización de claude.ai:
+para cambiarle el prompt hay que entrar con esa. Las reglas que tienen que llegarle sí o sí van en
+`AGENTS.md`, que toda sesión de Claude Code carga sola.
+
 ## Lo que este agente NO puede ver
 
 Corre en la nube de Anthropic, en un checkout aislado. **No tiene** acceso al Mongo del app, a
@@ -42,7 +48,13 @@ La priorización fina en plata la sigue leyendo una persona en `/estadisticas-de
 
 ## Las reglas que lleva el prompt
 
-- **Nunca empuja a `main` ni despliega.** Rama + PR. El merge —y por lo tanto el deploy— es del dueño.
+- **Nunca empuja a `main` ni despliega.** Rama + PR. Desde el 2026-09-24 el merge y el deploy los
+  hace el job `automerge` de `.github/workflows/deploy.yml` cuando gitleaks y los tests unitarios
+  pasan (ver `AGENTS.md`, sección Deploy). Antes quedaban esperando una aprobación que el autor no
+  puede darse, y como la corrida siguiente mira `main` y no los PRs abiertos, rehacía el mismo
+  trabajo: #37, #38 y #39 tocaban las mismas páginas.
+- **Mira los PRs abiertos antes de elegir el trabajo del día** y no abre uno sobre rutas que otro
+  PR abierto ya toca. Si un PR suyo quedó abierto, es que la compuerta falló: se arregla ése.
 - **Una mejora por día, terminada y verificada.** Si no hay nada que valga la pena, lo dice y no abre
   PR: un PR de relleno ensucia el libro de cambios y arruina la medición de los que sí importan.
 - **Declara lo que cambia** en `docs/seo/experiments.json`, en el mismo commit. Un cambio que toca

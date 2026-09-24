@@ -6,6 +6,9 @@ on:
   push:
     branches: [main]
   pull_request:
+    # `ready_for_review` además de los tres de siempre: un borrador que pasa a listo tiene que
+    # volver a correr para que el job `automerge` de abajo lo vea.
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 # PR checks can replace older PR checks without waiting for a production build.
@@ -153,6 +156,10 @@ jobs:
               - 'app/server/**'
               - 'app/pages/videos-de-economia-uruguay.vue'
               - 'app/pages/videos-de-economia-uruguay/**'
+              # Los dos tripwires del libro de cambios (tests/revenueplan/experiments*.test.ts) leen
+              # este archivo. Sin esta línea un PR que sólo agrega su fila —todos los de la corrida
+              # diaria lo hacen— salteaba la suite que lo valida, y ahora esos PRs se mergean solos.
+              - 'docs/seo/experiments.json'
             backend:
               - 'index.ts'
               - 'classes/**'
@@ -254,3 +261,64 @@ jobs:
           ssh -i ~/.ssh/deploy_key -p "$PORT" -o IdentitiesOnly=yes \
             "$DEPLOY_USER@$HOST" \
             "cd '$REPO_DIR' && bash scripts/deploy-backend.sh"
+
+  # --- Los PRs propios se aprueban, se mergean y se despliegan solos ---------------------------
+  # Los abren las sesiones de Claude (la corrida diaria en la nube, sesiones locales) con la cuenta
+  # del dueño, y `main` exige una aprobación de alguien que NO sea quien empujó por última vez: el
+  # autor no puede aprobarse a sí mismo, así que los PRs quedaban en BLOCKED para siempre. Y un PR
+  # sin mergear no lo ve la corrida del día siguiente —mira `main`, no los PRs abiertos—, que
+  # rehacía el mismo trabajo: #37, #38 y #39 tocaban las mismas páginas (2026-09-21..24).
+  #
+  # La aprobación la da `github-actions[bot]` (el repo tiene habilitado "Allow GitHub Actions to
+  # create and approve pull requests"), que es otra identidad que la del último push.
+  #
+  # Compuerta: gitleaks + los tests unitarios de cada paquete tocado, los mismos que bloquean el
+  # deploy de `main`. `E2E` / Playwright NO bloquea, igual que no bloquea el deploy.
+  #
+  # Sólo PRs del dueño, desde una rama de este mismo repo, contra `main`. Para frenar uno: dejarlo
+  # en borrador o ponerle la etiqueta `no-automerge`.
+  #
+  # El deploy se DISPARA a mano después del merge: un push hecho con el GITHUB_TOKEN no dispara
+  # workflows (regla de GitHub contra bucles), así que el `on: push` de arriba nunca vería este
+  # merge. `workflow_dispatch` sí está permitido, y ese camino corre los tests sobre `main` y
+  # despliega app y backend enteros (ver el comentario del job `deploy`).
+  automerge:
+    name: Auto-approve + merge
+    needs: [secret-scan, test, backend-test, changes]
+    if: >-
+      !cancelled() &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == github.repository_owner &&
+      !contains(github.event.pull_request.labels.*.name, 'no-automerge') &&
+      needs.changes.result == 'success' &&
+      needs.secret-scan.result == 'success' &&
+      (needs.test.result == 'success' || needs.test.result == 'skipped') &&
+      (needs.backend-test.result == 'success' || needs.backend-test.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      DEPLOYS: ${{ needs.changes.outputs.app == 'true' || needs.changes.outputs.backend == 'true' }}
+    steps:
+      - name: Approve
+        run: |
+          gh pr review "$PR" --repo "$GITHUB_REPOSITORY" --approve \
+            --body "Aprobado automáticamente: gitleaks y tests unitarios en verde sobre ${HEAD_SHA:0:8}."
+      # `--repo` explícito: sin él gh intenta borrar también la rama local y no hay checkout.
+      # `--match-head-commit`: si alguien empujó mientras corrían los tests, no se mergea algo que
+      # no se probó; el push nuevo dispara su propia corrida.
+      - name: Merge
+        run: |
+          gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --squash --delete-branch \
+            --match-head-commit "$HEAD_SHA"
+      - name: Dispatch production deploy
+        if: env.DEPLOYS == 'true'
+        run: gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
