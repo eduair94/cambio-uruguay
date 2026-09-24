@@ -8,6 +8,8 @@ import { CarListingModel } from "../models/CarListing";
 import { CarMarketSnapshotModel } from "../models/CarMarketSnapshot";
 import { CarOpportunitySnapshotModel } from "../models/CarOpportunitySnapshot";
 import { CarReportSnapshotModel } from "../models/CarReportSnapshot";
+import { CarAdvisorSnapshotModel } from "../models/CarAdvisorSnapshot";
+import { CarPartsPriceModel } from "../models/CarPartsPrice";
 import { CarRiskSnapshotModel } from "../models/CarRiskSnapshot";
 import type { CarPhotoVerdict } from "./llm/vision";
 import type { CarContactRecord } from "./contacts/build";
@@ -16,8 +18,9 @@ import { guideKey, type CarGuideEntry, type CarGuideTarget } from "./catalog/gui
 import { carKey } from "./enrich";
 import { slugify } from "./normalize";
 import type { DetailFetchResult } from "./detail";
+import type { CarPartsRecord } from "./repuestos";
 import type {
-  PublicCarCatalogMeta, PublicCarListing, PublicCarMarketSnapshot, PublicCarOpportunitySnapshot, PublicCarReportSnapshot, PublicCarRiskSnapshot,
+  PublicCarAdvisorSnapshot, PublicCarCatalogMeta, PublicCarListing, PublicCarMarketSnapshot, PublicCarOpportunitySnapshot, PublicCarReportSnapshot, PublicCarRiskSnapshot,
 } from "./publicTypes";
 import type { FbCard, FbItem } from "./sources/facebook";
 import type { CarDetail, CarHarvestResult, CarModelVocabulary, CarPricePoint, CarSource, CarSourceResult, RawCarListing, StoredCar } from "./types";
@@ -533,4 +536,33 @@ export async function loadGuideTargets(now: Date, days = 21): Promise<CarGuideTa
     targets.set(key, target);
   }
   return [...targets.values()];
+}
+
+/** El asesor de compra (/que-auto-comprar-uruguay): una tabla por modelo, sin una sola fila de aviso. */
+export async function saveCarAdvisorSnapshot(snapshot: PublicCarAdvisorSnapshot): Promise<void> {
+  await CarAdvisorSnapshotModel.updateOne(
+    { key: "used" },
+    { $set: { generatedAt: snapshot.generatedAt, snapshot } },
+    { upsert: true },
+  );
+}
+
+const partsCollection = () => appConnection().collection(CarPartsPriceModel.collection.name);
+
+/** Los precios de repuestos por modelo (privados): el asesor publica sólo el índice que sale de acá. */
+export async function loadCarPartsRecords(): Promise<CarPartsRecord[]> {
+  await nativeReady();
+  return (await partsCollection().find({}, { projection: { _id: 0 } }).toArray()) as unknown as CarPartsRecord[];
+}
+
+export async function saveCarPartsRecords(records: readonly CarPartsRecord[]): Promise<void> {
+  if (!records.length) return;
+  await nativeReady();
+  const collection = partsCollection();
+  await collection.createIndex({ marketSlug: 1 }, { unique: true });
+  for (let index = 0; index < records.length; index += CHUNK) {
+    await collection.bulkWrite(records.slice(index, index + CHUNK).map(record => ({
+      replaceOne: { filter: { marketSlug: record.marketSlug }, replacement: { ...record }, upsert: true },
+    })), { ordered: false });
+  }
 }

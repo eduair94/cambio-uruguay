@@ -420,6 +420,17 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Spare-parts prices per model (six parts, one Mercado Libre category each) for the buying
+      // advisor /que-auto-comprar-uruguay. 02:11 UTC: no hourly consumer of the :9656 bridge runs
+      // between :07 and :23. 10-minute wall clock, oldest reading first, a model is re-read weekly.
+      name: "currency-autos-parts",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_autos_parts.js",
+      cron_restart: "11 2 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Weekly Uruguay OSM extract; services remain a local indexed snapshot between runs.
       name: "currency-property-services",
       autorestart: false,
