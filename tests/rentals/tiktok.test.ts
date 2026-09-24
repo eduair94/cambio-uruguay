@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RENTAL_SOURCES, RENTAL_SOURCE_LABEL } from "../../classes/rentals/types";
-import { captionAmounts, captionLocation, captionPropertyType, captionRejection, captionTitle, parseCaption } from "../../classes/rentals/sources/tiktok/caption";
+import { captionAmounts, captionLocation, captionPropertyType, captionRejection, captionTitle, parseCaption } from "../../classes/rentals/sources/social/caption";
 import { postFromItemStruct, postToRawRental, postUrl } from "../../classes/rentals/sources/tiktok/post";
 import { canonicalVideoUrl, postFromVideoHtml, readVideoPage, resolveTiktokUrl } from "../../classes/rentals/sources/tiktok/page";
 import { fetchText } from "../../classes/rentals/net";

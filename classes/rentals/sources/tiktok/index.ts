@@ -22,7 +22,7 @@ import { isPlausibleRent } from "../../normalize";
 import type { RawRental } from "../../types";
 import type { RentalSourceResult } from "../types";
 import { readTiktokLists, type ListPlan, type ListReader, type ListResults } from "./browser";
-import { parseCaption } from "./caption";
+import { parseCaption } from "../social/caption";
 import { readVideoPage, resolveTiktokUrl } from "./page";
 import { postToRawRental, type PostGeo, type TiktokPost } from "./post";
 import { appDbTiktokStore, type TiktokAccountRow, type TiktokPostRow, type TiktokStore } from "./store";

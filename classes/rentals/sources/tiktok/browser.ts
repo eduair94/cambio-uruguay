@@ -18,8 +18,11 @@
 //     so the executable path candidates put the system Chrome first.
 //
 // Never `/search?`: robots.txt disallows it, and this reader has no code path that builds it.
+import { launchChrome, sleep, type Browser, type Page } from "../social/chrome";
 import { postFromVideoHtml } from "./page";
 import { postFromItemStruct, type TiktokPost } from "./post";
+
+export { proxyArg } from "../social/chrome";
 
 export interface ListRead {
   posts: TiktokPost[];
@@ -61,25 +64,9 @@ export interface ListResults {
 
 export type ListReader = (plan: ListPlan) => Promise<ListResults>;
 
-const CHROME_PATHS = [
-  process.env.RENTALS_TIKTOK_CHROME,
-  process.env.RENTALS_EP_CHROME,
-  process.env.PUPPETEER_EXECUTABLE_PATH,
-  "/usr/bin/google-chrome-stable",
-  "/usr/bin/google-chrome",
-];
 const NAV_TIMEOUT_MS = Number(process.env.RENTALS_TIKTOK_NAV_MS || 60_000);
 const SETTLE_MS = Number(process.env.RENTALS_TIKTOK_SETTLE_MS || 4_000);
 const LIST_API = /\/api\/(?:post|challenge)\/item_list\//;
-const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
-
-/** `host:port` or a full proxy URL → Chrome's flag; nothing for no proxy. */
-export function proxyArg(proxy: string | null): string[] {
-  const value = String(proxy || "").trim();
-  if (!value) return [];
-  return [`--proxy-server=${/^\w+:\/\//.test(value) ? value : `http://${value}`}`];
-}
-
 /** An item_list answer, or null for an empty body (the block), a challenge page, or a TikTok error status. */
 export function parseListBody(body: string): { posts: TiktokPost[]; hasMore: boolean } | null {
   if (!body) return null;
@@ -94,43 +81,6 @@ export function parseListBody(body: string): { posts: TiktokPost[]; hasMore: boo
   } catch {
     return null;
   }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Browser = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Page = any;
-
-async function launch(proxy: string | null): Promise<{ browser: Browser; page: Page } | null> {
-  let puppeteer: { default: { launch: (options: Record<string, unknown>) => Promise<Browser> } };
-  try {
-    puppeteer = await import("puppeteer");
-  } catch (error) {
-    console.warn(`TikTok: puppeteer no disponible — ${(error as Error).message}`);
-    return null;
-  }
-  const args = [
-    "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--no-first-run", "--no-zygote", "--disable-gpu",
-    "--lang=es-UY", "--disable-blink-features=AutomationControlled", ...proxyArg(proxy),
-  ];
-  for (const executablePath of [...CHROME_PATHS.filter(Boolean), undefined]) {
-    let browser: Browser | null = null;
-    try {
-      browser = await puppeteer.default.launch({ headless: true, executablePath, args, timeout: 30_000 });
-      const page = await browser.newPage();
-      await page.setViewport({ width: 1366, height: 900 });
-      await page.setUserAgent(String(await browser.userAgent()).replace(/HeadlessChrome/, "Chrome"));
-      await page.setExtraHTTPHeaders({ "accept-language": "es-UY,es;q=0.9" });
-      return { browser, page };
-    } catch (error) {
-      // A Chrome that launched but could not open its page is closed HERE: the next candidate
-      // would otherwise launch a second one on top of it, and a stranded Chrome on this VPS is
-      // an outage, not a slow job.
-      if (browser) await browser.close().catch(() => undefined);
-      console.warn(`TikTok: Chrome no arrancó en ${executablePath || "puppeteer"} — ${(error as Error).message}`);
-    }
-  }
-  return null;
 }
 
 /** Loads one list page and scrolls until `pages` API answers arrived, the list ended, or the window was passed. */
@@ -191,7 +141,7 @@ export const readTiktokLists: ListReader = async plan => {
   // The budget covers everything: launching, warming, every list. A Chrome that will not start is
   // exactly as expensive as one that will not finish, and a leaked one is an outage on the VPS.
   const deadline = Date.now() + plan.budgetMs;
-  const started = await launch(plan.proxy);
+  const started = await launchChrome(plan.proxy, "TikTok");
   if (!started) {
     results.note = "Chrome no arrancó";
     return results;
