@@ -117,3 +117,104 @@ export function buildComparisonChartData(
 
   return { labels, datasets }
 }
+
+/**
+ * Time-range presets for the comparison chart. `'all'` keeps every point; the
+ * finite keys map to a rolling window measured in days (see {@link RANGE_DAYS}).
+ */
+export type RangeKey = '7d' | '1m' | '3m' | '6m' | '1y' | 'all'
+
+/** Ordered list of every range key, for validation and UI iteration. */
+export const RANGE_KEYS: readonly RangeKey[] = ['7d', '1m', '3m', '6m', '1y', 'all']
+
+/** How many days each finite range spans. `'all'` has no bound and is absent here. */
+export const RANGE_DAYS: Record<Exclude<RangeKey, 'all'>, number> = {
+  '7d': 7,
+  '1m': 30,
+  '3m': 90,
+  '6m': 180,
+  '1y': 365,
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** Narrow an arbitrary string to a {@link RangeKey}, falling back to `'all'`. */
+export function parseRangeKey(raw: unknown): RangeKey {
+  return typeof raw === 'string' && (RANGE_KEYS as readonly string[]).includes(raw)
+    ? (raw as RangeKey)
+    : 'all'
+}
+
+/**
+ * Keep only the points within `range` of the most recent date present across
+ * every series.
+ *
+ * The window is anchored to the latest data point in the input — not "today" —
+ * so a house whose feed lags by a few days still shows a full window instead of
+ * an empty tail. `'all'` (or input with no parseable dates) returns the series
+ * unchanged. Series identity/order is preserved so downstream colour-by-index
+ * and legend labels stay stable.
+ */
+export function filterSeriesByRange(
+  series: readonly LabelledSeries[],
+  range: RangeKey
+): LabelledSeries[] {
+  if (range === 'all') return series.map(s => ({ ...s, points: [...s.points] }))
+
+  let maxMs = Number.NEGATIVE_INFINITY
+  for (const s of series) {
+    for (const point of s.points) {
+      const ms = Date.parse(point.date)
+      if (Number.isFinite(ms) && ms > maxMs) maxMs = ms
+    }
+  }
+  if (!Number.isFinite(maxMs)) return series.map(s => ({ ...s, points: [...s.points] }))
+
+  const cutoff = maxMs - RANGE_DAYS[range] * DAY_MS
+  return series.map(s => ({
+    ...s,
+    points: s.points.filter(point => {
+      const ms = Date.parse(point.date)
+      return Number.isFinite(ms) && ms >= cutoff
+    }),
+  }))
+}
+
+/** Summary statistics for a single house over the visible window. */
+export interface DatasetStats {
+  /** Most recent (last non-null) value, or `null` if the window has no data. */
+  current: number | null
+  min: number | null
+  max: number | null
+  avg: number | null
+}
+
+/**
+ * Derive summary stats from a merged dataset's aligned values.
+ *
+ * The input is one `ComparisonDataset.data` array (ascending by date, `null`
+ * for gaps and dropped outliers). Computing the table from the SAME cleaned,
+ * range-filtered series that feeds the chart guarantees the numbers below the
+ * chart always match the lines above it.
+ */
+export function datasetStats(data: readonly (number | null)[]): DatasetStats {
+  const values = data.filter((v): v is number => typeof v === 'number' && Number.isFinite(v))
+  if (values.length === 0) return { current: null, min: null, max: null, avg: null }
+
+  // Labels are ascending, so the last finite value is the most recent quote.
+  let current: number | null = null
+  for (let i = data.length - 1; i >= 0; i--) {
+    const v = data[i]
+    if (typeof v === 'number' && Number.isFinite(v)) {
+      current = v
+      break
+    }
+  }
+
+  return {
+    current,
+    min: Math.min(...values),
+    max: Math.max(...values),
+    avg: values.reduce((sum, v) => sum + v, 0) / values.length,
+  }
+}
