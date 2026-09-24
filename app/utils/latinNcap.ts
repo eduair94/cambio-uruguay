@@ -141,9 +141,16 @@ export const LATIN_NCAP: readonly LatinNcapEntry[] = [
   { marketSlug: 'volkswagen-virtus', testedName: 'Volkswagen Virtus + 4 Airbags', testYear: 2018, protocol: '2016-2019', adultStars: 5, childStars: 5, stars: null, url: 'https://www.latinncap.com/es/resultado/102/volkswagen-virtus-+-4-airbags' },
 ]
 
-/** Los ensayos del modelo, el más reciente primero. */
-export function latinNcapResults(marketSlug: string, limit = 4): LatinNcapEntry[] {
+/**
+ * Los ensayos del modelo, los más cercanos al año del auto primero (y a igual distancia, el más
+ * reciente): a un 2012 le sirve más el ensayo de 2011 que el de una generación de 2021.
+ */
+export function latinNcapResults(marketSlug: string, limit = 4, year?: number): LatinNcapEntry[] {
   return LATIN_NCAP.filter(entry => entry.marketSlug === marketSlug)
-    .sort((a, b) => b.testYear - a.testYear)
+    .sort((a, b) =>
+      year === undefined
+        ? b.testYear - a.testYear
+        : Math.abs(a.testYear - year) - Math.abs(b.testYear - year) || b.testYear - a.testYear
+    )
     .slice(0, limit)
 }

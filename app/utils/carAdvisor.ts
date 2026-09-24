@@ -114,6 +114,33 @@ function listOf<T extends string>(value: unknown, allowed: readonly T[], max = 2
 
 const ADVISOR_FUELS = CAR_FUELS.filter(fuel => fuel !== 'gnc')
 
+/** El formulario de la página, armado desde la URL: así un enlace con respuestas deja todo completo. */
+export interface CarAdvisorDraft {
+  presupuesto: string
+  uso: CarAdvisorUse
+  km: number
+  personas: number
+  caja: string
+  combustible: string[]
+  carroceria: string[]
+  prioridad: string[]
+  gastoMes: string
+}
+
+export function carAdvisorDraft(query: CarAdvisorQuery): CarAdvisorDraft {
+  return {
+    presupuesto: query.budget === null ? '' : String(query.budget),
+    uso: query.use,
+    km: query.kmYear,
+    personas: query.people,
+    caja: query.transmission,
+    combustible: [...query.fuels],
+    carroceria: [...query.bodies],
+    prioridad: [...query.priorities],
+    gastoMes: query.monthlyMax === null ? '' : String(query.monthlyMax),
+  }
+}
+
 export function normalizeCarAdvisorQuery(input: Record<string, unknown>): CarAdvisorQuery {
   const use = CAR_ADVISOR_USES.find(item => item.value === first(input.uso))?.value ?? 'mixto'
   const transmission = first(input.caja)
@@ -164,6 +191,8 @@ export interface CarAdvisorCosts {
   consumptionEstimated: boolean
   /** La caída anual no es la del modelo sino la típica del mercado. */
   depreciationFromMarket: boolean
+  /** Ni el modelo ni el mercado tienen curva: la depreciación es "sin dato", no cero. */
+  depreciationKnown: boolean
 }
 
 export type CarAdvisorScoreKey = CarAdvisorPriority | 'uso'
@@ -182,10 +211,15 @@ export interface CarAdvisorResult {
   stretch: { year: number; p25: number } | null
   costs: CarAdvisorCosts
   parts: PublicCarAdvisorParts | null
+  /**
+   * El relevamiento tiene piezas suficientes para afirmar algo. Un modelo leído sin ninguna pieza
+   * con precio suele ser un nombre que el buscador no reconoce, no un modelo sin repuestos.
+   */
+  partsMeasured: boolean
   annualDrop: number | null
   safety: {
     /**
-     * Los ensayos de Latin NCAP del modelo, el más reciente primero. No dicen a qué años de
+     * Los ensayos de Latin NCAP del modelo, los más cercanos al año primero. No dicen a qué años de
      * modelo aplican, así que se muestran y no puntúan (utils/latinNcap.ts).
      */
     ncap: LatinNcapEntry[]
@@ -309,8 +343,8 @@ function costsOf(
   const maintenanceUyu =
     CAR_ADVISOR_FIGURES.maintenanceFixedUyu.value +
     CAR_ADVISOR_FIGURES.maintenancePerKmUyu.value * query.kmYear * (model.parts?.index ?? 1)
-  const drop = model.annualDrop ?? context.typicalDrop ?? 0
-  const depreciationUyu = drop * priceUsd * context.usdUyu
+  const drop = model.annualDrop ?? context.typicalDrop
+  const depreciationUyu = drop === null ? 0 : drop * priceUsd * context.usdUyu
   const cash = fuelUyu + patenteUyu + soaUyu + maintenanceUyu
   return {
     fuelUyu,
@@ -322,9 +356,15 @@ function costsOf(
     monthlyCashUyu: cash / 12,
     consumption,
     consumptionEstimated,
-    depreciationFromMarket: model.annualDrop === null,
+    depreciationFromMarket: model.annualDrop === null && drop !== null,
+    depreciationKnown: drop !== null,
   }
 }
+
+/** Lo mismo que PART_INDEX_MIN_PARTS de classes/autos/repuestos.ts: debajo, no hay nada que afirmar. */
+const PARTS_MIN_MEASURED = 3
+const partsMeasured = (parts: PublicCarAdvisorParts | null): parts is PublicCarAdvisorParts =>
+  !!parts && parts.parts.length >= PARTS_MIN_MEASURED
 
 const shareValue = (share: PublicCarAdvisorShare | null): number | null =>
   share && share.n >= 5 ? share.share : null
@@ -360,7 +400,7 @@ function explain(
       `Es de los más caros de mantener entre tus opciones: ${uyu(costs.monthlyCashUyu)} por mes.`
     )
 
-  const parts = model.parts
+  const parts = partsMeasured(model.parts) ? model.parts : null
   if (parts?.index != null && parts.index <= 0.9)
     reasons.push(
       `Repuestos ${pct(1 - parts.index)} más baratos que el modelo típico, con ${parts.offers} avisos de repuestos en Mercado Libre.`
@@ -497,11 +537,13 @@ export function adviseCars(
     true
   )
   const partsIndex = normalizer(
-    candidates.map(item => item.model.parts?.index ?? null),
+    candidates.map(item => (partsMeasured(item.model.parts) ? item.model.parts.index : null)),
     false
   )
   const partsOffers = normalizer(
-    candidates.map(item => (item.model.parts ? Math.log(1 + item.model.parts.offers) : null)),
+    candidates.map(item =>
+      partsMeasured(item.model.parts) ? Math.log(1 + item.model.parts.offers) : null
+    ),
     true
   )
   const safety = normalizer(candidates.map(safetyRaw), true)
@@ -521,8 +563,9 @@ export function adviseCars(
     candidates.map(item => item.model.powerHp),
     true
   )
-  const consumption = normalizer(
-    candidates.map(item => item.costs.consumption),
+  // En ruta pesa lo que cuesta cada kilómetro, no los litros: un eléctrico mide su consumo en kWh.
+  const fuelCost = normalizer(
+    candidates.map(item => item.costs.fuelUyu),
     false
   )
   const fourByFour = normalizer(
@@ -549,7 +592,7 @@ export function adviseCars(
       reventa:
         0.7 * drops(model.annualDrop ?? context.typicalDrop) +
         0.3 * liquidity(Math.log(model.adverts)),
-      repuestos: model.parts
+      repuestos: partsMeasured(model.parts)
         ? 0.7 * partsIndex(model.parts.index) + 0.3 * partsOffers(Math.log(1 + model.parts.offers))
         : 0.5,
       seguridad: safety(safetyRaw(candidate)),
@@ -558,7 +601,7 @@ export function adviseCars(
         query.use === 'ciudad'
           ? shorter(model.lengthMm)
           : query.use === 'ruta'
-            ? 0.5 * power(model.powerHp) + 0.5 * consumption(candidate.costs.consumption)
+            ? 0.5 * power(model.powerHp) + 0.5 * fuelCost(candidate.costs.fuelUyu)
             : query.use === 'campo'
               ? fourByFour(model.fourByFour?.share ?? null)
               : query.use === 'carga'
@@ -605,9 +648,10 @@ export function adviseCars(
         stretch: candidate.stretch,
         costs,
         parts: model.parts,
+        partsMeasured: partsMeasured(model.parts),
         annualDrop: model.annualDrop,
         safety: {
-          ncap: latinNcapResults(model.marketSlug),
+          ncap: latinNcapResults(model.marketSlug, 4, row.year),
           esc: model.esc,
           airbags: model.airbags,
           abs: model.abs,
@@ -665,4 +709,33 @@ export interface CarAdvisorApiResponse extends CarAdvisorResponse {
   partsBaseline: PublicCarPartPrice[]
   fuel: { asOf: string | null; from: string; super95: number; gasoil50s: number }
   query: CarAdvisorQuery
+}
+
+const isNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value)
+
+/**
+ * El documento que deja el job tiene la forma que el puntaje espera. Se mira modelo por modelo: un
+ * modelo mal formado tiraría un 500 en la página en vez del aviso de "se está actualizando".
+ */
+export function validCarAdvisorSnapshot(raw: unknown): raw is PublicCarAdvisorSnapshot {
+  const snapshot = raw as PublicCarAdvisorSnapshot | null
+  if (!snapshot || snapshot.version !== 1 || !isNumber(snapshot.usdUyu)) return false
+  const models = snapshot.data?.models
+  if (!Array.isArray(models) || !models.length || !Array.isArray(snapshot.data.partsBaseline))
+    return false
+  return models.every(
+    model =>
+      typeof model?.marketSlug === 'string' &&
+      isNumber(model.adverts) &&
+      Array.isArray(model.variants) &&
+      model.variants.every(
+        variant =>
+          typeof variant?.fuel === 'string' &&
+          Array.isArray(variant.years) &&
+          variant.years.every(
+            year => isNumber(year?.year) && isNumber(year.median) && isNumber(year.p25)
+          )
+      )
+  )
 }

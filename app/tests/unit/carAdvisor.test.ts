@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   adviseCars,
+  carAdvisorDraft,
+  validCarAdvisorSnapshot,
   carAdvisorQueryParams,
   normalizeCarAdvisorQuery,
   type CarAdvisorQuery,
@@ -310,5 +312,90 @@ describe('adviseCars', () => {
 
   it('sin presupuesto no recomienda nada', () => {
     expect(adviseCars(snapshot, query({ budget: null }), prices).results).toEqual([])
+  })
+
+  it('un relevamiento sin piezas con precio vale como no relevado: neutro y sin afirmar escasez', () => {
+    const empty = { readAt: '2026-09-24T02:15:00.000Z', index: null, offers: 0, parts: [] }
+    const bare = {
+      ...snapshot,
+      data: {
+        ...snapshot.data,
+        models: snapshot.data.models.map(item =>
+          item.marketSlug === 'toyota-corolla' ? { ...item, parts: empty } : item
+        ),
+      },
+    }
+    const result = adviseCars(bare, query({ budget: 25_000 }), prices).results.find(
+      item => item.marketSlug === 'toyota-corolla'
+    )!
+    expect(result.scores.repuestos).toBe(0.5)
+    expect(result.partsMeasured).toBe(false)
+    expect([...result.reasons, ...result.tradeoffs].join(' ')).not.toMatch(/repuesto/i)
+  })
+
+  it('sin caída propia ni típica, la depreciación es sin dato y no cero con etiqueta', () => {
+    const noDrop = {
+      ...snapshot,
+      data: { ...snapshot.data, typicalDrop: null, models: [model({ ...kwid, annualDrop: null })] },
+    }
+    const result = adviseCars(noDrop, query({ budget: 11_000 }), prices).results[0]!
+    expect(result.costs.depreciationKnown).toBe(false)
+    expect(result.costs.depreciationUyu).toBe(0)
+  })
+
+  it('en ruta, un eléctrico no pierde por medir su consumo en kWh', () => {
+    const ev = model({
+      marketSlug: 'byd-dolphin',
+      brand: 'BYD',
+      model: 'Dolphin',
+      powerHp: 100,
+      variants: [
+        variant({
+          fuel: 'electrico',
+          transmission: 'automatica',
+          litersPer100Km: null,
+          years: years([[2024, 12_000]]),
+        }),
+      ],
+    })
+    const gas = model({
+      marketSlug: 'x-gas',
+      powerHp: 100,
+      variants: [variant({ litersPer100Km: 9, years: years([[2024, 12_000]]) })],
+    })
+    const pair = { ...snapshot, data: { ...snapshot.data, models: [ev, gas] } }
+    const results = adviseCars(pair, query({ budget: 13_000, use: 'ruta' }), prices).results
+    const uso = (slug: string) => results.find(item => item.marketSlug === slug)!.scores.uso
+    expect(uso('byd-dolphin')).toBeGreaterThan(uso('x-gas'))
+  })
+})
+
+describe('carAdvisorDraft', () => {
+  it('el formulario se arma desde la URL, así un perfil de ejemplo lo deja completo', () => {
+    const draft = carAdvisorDraft(
+      normalizeCarAdvisorQuery({
+        presupuesto: '10000',
+        uso: 'ciudad',
+        prioridad: 'costo,repuestos',
+      })
+    )
+    expect(draft).toMatchObject({
+      presupuesto: '10000',
+      uso: 'ciudad',
+      prioridad: ['costo', 'repuestos'],
+      gastoMes: '',
+    })
+  })
+})
+
+describe('validCarAdvisorSnapshot', () => {
+  it('rechaza un documento con un modelo mal formado en vez de romper la página', () => {
+    expect(validCarAdvisorSnapshot(snapshot)).toBe(true)
+    const broken = {
+      ...snapshot,
+      data: { ...snapshot.data, models: [{ ...onix, variants: undefined }] },
+    }
+    expect(validCarAdvisorSnapshot(broken)).toBe(false)
+    expect(validCarAdvisorSnapshot({ version: 1, data: { models: [] } })).toBe(false)
   })
 })

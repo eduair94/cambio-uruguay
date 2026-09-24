@@ -73,6 +73,7 @@ describe('Latin NCAP', () => {
       [...onix.map(entry => entry.testYear)].sort((a, b) => b - a)
     )
     expect(latinNcapResults('volkswagen-saveiro')).toEqual([])
+    expect(latinNcapResults('chevrolet-onix', 4, 2015)[0]!.testYear).toBe(2014)
   })
 
   it('la etiqueta dice el protocolo, porque 2015 y 2023 no se comparan', () => {

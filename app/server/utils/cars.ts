@@ -29,6 +29,7 @@ import type {
   PublicCarSource,
   PublicCarSpecs,
 } from '../../utils/carsPublic'
+import { validCarAdvisorSnapshot } from '../../utils/carAdvisor'
 import { connectDb } from './db'
 
 const CAR_FIELDS = [
@@ -395,17 +396,31 @@ export async function loadCarMarket(slug: string): Promise<PublicCarMarketSnapsh
 }
 
 let advisorCache: { expires: number; snapshot: PublicCarAdvisorSnapshot } | null = null
-/** La tabla por modelo del asesor de compra. Agregados: sólo se valida la forma del documento. */
+let advisorLoading: Promise<PublicCarAdvisorSnapshot | null> | null = null
+/**
+ * La tabla por modelo del asesor de compra. Si la base falla o el documento no tiene la forma
+ * esperada, se sigue sirviendo el último bueno: la página vive de agregados que cambian una vez por
+ * hora. Un solo pedido a la base por vencimiento, aunque lleguen varios juntos.
+ */
 export async function loadCarAdvisor(): Promise<PublicCarAdvisorSnapshot | null> {
   if (advisorCache && advisorCache.expires > Date.now()) return advisorCache.snapshot
-  await connectDb()
-  const doc = await CarAdvisorSnapshotModel.findOne({ key: 'used' })
-    .select({ _id: 0, snapshot: 1 })
-    .maxTimeMS(10_000)
-    .lean()
-  const raw = doc?.snapshot
-  if (!raw || raw.version !== 1 || !Array.isArray(raw.data?.models) || !raw.data.models.length)
-    return null
-  advisorCache = { snapshot: raw, expires: Date.now() + 600_000 }
-  return raw
+  advisorLoading ??= (async () => {
+    try {
+      await connectDb()
+      const doc = await CarAdvisorSnapshotModel.findOne({ key: 'used' })
+        .select({ _id: 0, snapshot: 1 })
+        .maxTimeMS(10_000)
+        .lean()
+      const raw: unknown = doc?.snapshot
+      if (!validCarAdvisorSnapshot(raw)) return advisorCache?.snapshot ?? null
+      advisorCache = { snapshot: raw, expires: Date.now() + 600_000 }
+      return raw
+    } catch (error) {
+      if (advisorCache) return advisorCache.snapshot
+      throw error
+    } finally {
+      advisorLoading = null
+    }
+  })()
+  return advisorLoading
 }

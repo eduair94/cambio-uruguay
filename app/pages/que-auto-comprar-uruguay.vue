@@ -125,13 +125,18 @@
           <NuxtLink :to="localePath(CARS_PATH)">directorio de autos usados</NuxtLink>.
         </VAlert>
 
+        <VAlert v-else-if="budgetOutOfRange" type="warning" variant="outlined">
+          El presupuesto tiene que estar entre US$ 1.000 y US$ 500.000. Corregilo a la izquierda y
+          volvé a buscar.
+        </VAlert>
+
         <template v-else-if="advice && query.budget">
           <p class="text-body-1 mb-4">
             <template v-if="advice.results.length">
               Con {{ formatCarUsd(query.budget) }}, estas son las
-              <strong>{{ advice.results.length }} mejores opciones</strong> de
-              {{ advice.considered }} que entran en tu presupuesto y tus filtros, entre
-              {{ advice.models }} modelos con avisos suficientes.
+              <strong>{{ advice.results.length }} mejores opciones</strong> entre
+              {{ advice.considered }} combinaciones de modelo, combustible y caja que entran en tu
+              presupuesto y tus filtros, de {{ advice.models }} modelos con avisos suficientes.
             </template>
             <template v-else>
               Con {{ formatCarUsd(query.budget) }} y esos filtros no encontramos ningún modelo con
@@ -203,7 +208,7 @@
             <div class="advisor-card__grid mt-3">
               <section>
                 <h3 class="advisor-card__label">
-                  Tenerlo: {{ formatUyu(result.costs.monthlyCashUyu) }} por mes
+                  Lo que sale del bolsillo: {{ formatUyu(result.costs.monthlyCashUyu) }} por mes
                 </h3>
                 <table class="advisor-costs text-body-2">
                   <tbody>
@@ -233,16 +238,22 @@
                     </tr>
                     <tr class="advisor-costs__extra">
                       <th scope="row">
-                        Lo que pierde de valor
-                        <span class="text-medium-emphasis">
-                          ({{
-                            result.costs.depreciationFromMarket
-                              ? 'caída típica del mercado'
-                              : `${carReportPercent(result.annualDrop, 1)} por año`
-                          }})
-                        </span>
+                        Además, lo que pierde de valor
+                        <span class="text-medium-emphasis">({{ depreciationText(result) }})</span>
                       </th>
-                      <td>{{ formatUyu(result.costs.depreciationUyu / 12) }}</td>
+                      <td>
+                        {{
+                          result.costs.depreciationKnown
+                            ? formatUyu(result.costs.depreciationUyu / 12)
+                            : 'sin dato'
+                        }}
+                      </td>
+                    </tr>
+                    <tr v-if="result.costs.depreciationKnown">
+                      <th scope="row">Contando lo que pierde de valor</th>
+                      <td>
+                        <strong>{{ formatUyu(result.costs.annualUyu / 12) }}</strong>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -250,12 +261,13 @@
 
               <section>
                 <h3 class="advisor-card__label">Repuestos</h3>
-                <template v-if="result.parts && result.parts.parts.length">
+                <template v-if="result.parts && result.partsMeasured">
                   <p class="text-body-2 mb-1">
                     <template v-if="result.parts.index !== null">
                       {{ partsIndexText(result.parts.index) }} ·
                     </template>
-                    {{ result.parts.offers }} avisos en Mercado Libre
+                    {{ result.parts.offers }} avisos en Mercado Libre, relevados el
+                    {{ dayOf(result.parts.readAt) }}
                   </p>
                   <table class="advisor-costs text-body-2">
                     <tbody>
@@ -266,12 +278,9 @@
                     </tbody>
                   </table>
                 </template>
-                <p v-else-if="result.parts" class="text-body-2 mb-0">
-                  Casi no hay avisos de repuestos de este modelo en Mercado Libre: preguntá precios
-                  antes de comprar.
-                </p>
                 <p v-else class="text-body-2 text-medium-emphasis mb-0">
-                  Todavía no relevamos sus repuestos.
+                  Todavía no tenemos avisos de repuestos suficientes de este modelo para medirlos:
+                  preguntá precios antes de comprar.
                 </p>
               </section>
             </div>
@@ -427,8 +436,8 @@
         </li>
         <li>
           <strong>Los repuestos.</strong> Seis piezas buscadas en Mercado Libre Uruguay para cada
-          modelo; el índice compara cada una con la mediana de todos los modelos. Se relee cada
-          semana.
+          modelo; el índice compara cada una con la mediana de todos los modelos. Cada modelo se
+          relee cada dos semanas.
         </li>
         <li>
           <strong>El orden.</strong> Cada opción se puntúa contra las demás que pasaron tus filtros
@@ -458,9 +467,11 @@ import {
   CAR_ADVISOR_KM_STEPS,
   CAR_ADVISOR_PRIORITIES,
   CAR_ADVISOR_USES,
+  carAdvisorDraft,
   carAdvisorQueryParams,
   normalizeCarAdvisorQuery,
   type CarAdvisorApiResponse,
+  type CarAdvisorDraft,
   type CarAdvisorExclusion,
   type CarAdvisorResult,
 } from '~/utils/carAdvisor'
@@ -506,17 +517,13 @@ const { data: advice, error: advisorError } = await useAsyncData(
   { watch: [paramsKey] }
 )
 
-const draft = reactive({
-  presupuesto: query.value.budget === null ? '' : String(query.value.budget),
-  uso: query.value.use,
-  km: query.value.kmYear,
-  personas: query.value.people,
-  caja: query.value.transmission as string,
-  combustible: [...query.value.fuels] as string[],
-  carroceria: [...query.value.bodies] as string[],
-  prioridad: [...query.value.priorities] as string[],
-  gastoMes: query.value.monthlyMax === null ? '' : String(query.value.monthlyMax),
-})
+// El formulario sigue a la URL: un perfil de ejemplo o el enlace de "desde US$ X" cambian la
+// consulta sin rearmar la página, y el formulario tiene que mostrar lo que se está calculando.
+const draft = reactive<CarAdvisorDraft>(carAdvisorDraft(query.value))
+watch(query, next => Object.assign(draft, carAdvisorDraft(next)))
+const budgetOutOfRange = computed(
+  () => Boolean(route.query.presupuesto) && query.value.budget === null
+)
 
 const draftQuery = computed(() =>
   normalizeCarAdvisorQuery({
@@ -552,7 +559,7 @@ const kmItems = computed(() =>
     .sort((a, b) => a - b)
     .map(km => ({ title: `${formatCarKm(km)} por año`, value: km }))
 )
-const peopleItems = [1, 2, 3, 4, 5, 6, 7].map(people => ({
+const peopleItems = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(people => ({
   title: people === 1 ? 'Sólo yo' : `${people} personas`,
   value: people,
 }))
@@ -606,7 +613,7 @@ const excludedText = computed(() => {
     .filter(item => item.count > 0)
     .sort((a, b) => b.count - a.count)
     .map(item => `${item.count} ${EXCLUSION_LABELS[item.reason]}`)
-  return parts.length ? `Quedaron afuera: ${parts.join(', ')}.` : ''
+  return parts.length ? `Combinaciones que quedaron afuera: ${parts.join(', ')}.` : ''
 })
 
 function consumptionText(result: CarAdvisorResult): string {
@@ -656,6 +663,17 @@ const withBudget = (budget: number) =>
     path: CAR_ADVISOR_PATH,
     query: carAdvisorQueryParams({ ...query.value, budget }),
   })
+
+const dayOf = (iso: string): string => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
+  return match ? `${match[3]}/${match[2]}` : ''
+}
+
+function depreciationText(result: CarAdvisorResult): string {
+  if (!result.costs.depreciationKnown) return 'no hay precios de años suficientes para medirlo'
+  if (result.costs.depreciationFromMarket) return 'caída típica del mercado'
+  return `${carReportPercent(result.annualDrop, 1)} por año`
+}
 
 const generatedDay = computed(() => {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(advice.value?.generatedAt ?? '')

@@ -30,7 +30,6 @@ const TOS_2026_URL =
   'https://tramites.montevideo.gub.uy/sites/tramites.montevideo.gub.uy/files/tramites/documentos/TOS%202026.pdf'
 const SITE_URL = 'https://cambio-uruguay.com/que-auto-comprar-uruguay'
 
-
 export const PATENTE_2026 = {
   usedRate: 0.045,
   electricUsedRate: 0.0225,
@@ -51,7 +50,7 @@ export const PATENTE_2026 = {
     asOf: '2026-01-01',
     source: 'SUCIVE — Texto Ordenado 2026, arts. 2.1, 8 y 31',
     sourceUrl: TOS_2026_URL,
-    note: 'Usados 4,5 % del valor de mercado, eléctricos usados 2,25 % sin IVA, piso de $ 8.770,10 y dólar a $ 41,826. El valor de mercado oficial (aforo) se consulta por matrícula: acá se estima con la mediana de lo que se pide.',
+    note: 'Usados 4,5 % del valor de mercado, eléctricos usados 2,25 % sin IVA (los híbridos no tienen alícuota propia: pagan como cualquier auto), piso de $ 8.770,10 y dólar a $ 41,826. El valor de mercado oficial (aforo) se consulta por matrícula: acá se estima con la mediana de lo que se pide.',
   } satisfies TransportFigure,
 } as const
 
@@ -199,13 +198,13 @@ export const CAR_ADVISOR_FAQ: readonly FaqItem[] = Object.freeze([
     id: 'patente-usado',
     question: '¿Cómo se calcula la patente de un auto usado en 2026?',
     answer:
-      'Según el Texto Ordenado del SUCIVE 2026, un auto usado paga el 4,5 % de su valor de mercado oficial (el aforo), pasado a pesos con un dólar fijo de $ 41,826. Un eléctrico usado paga 2,25 % del valor sin IVA, y ningún modelo 1992 o posterior paga menos de $ 8.770,10 al año. Pagando el año entero con la primera cuota hay 20 % de bonificación, o 10 % pagando cada cuota en fecha, sin acumularse. Acá estimamos el aforo con la mediana de lo que se pide por ese modelo y año; el importe exacto de un auto se consulta en el SUCIVE con su matrícula y padrón.',
+      'Según el Texto Ordenado del SUCIVE 2026, un auto usado paga el 4,5 % de su valor de mercado oficial (el aforo), pasado a pesos con un dólar fijo de $ 41,826. Un eléctrico usado paga 2,25 % del valor sin IVA; los híbridos no tienen alícuota propia y pagan como cualquier auto. Ningún modelo 1992 o posterior paga menos de $ 8.770,10 al año. Pagando el año entero con la primera cuota hay 20 % de bonificación, o 10 % pagando cada cuota en fecha, sin acumularse. Acá estimamos el aforo con la mediana de lo que se pide por ese modelo y año; el importe exacto de un auto se consulta en el SUCIVE con su matrícula y padrón.',
   },
   {
     id: 'repuestos',
     question: '¿De dónde salen los precios de los repuestos?',
     answer:
-      'De un relevamiento propio en Mercado Libre Uruguay: para cada modelo buscamos seis piezas —pastillas de freno delanteras, filtro de aceite, amortiguador delantero, kit de embrague, kit de distribución y óptica delantera— y nos quedamos con los avisos nuevos que nombran ese modelo. El índice compara cada pieza con la mediana de todos los modelos: 0,80 quiere decir 20 % más barato que el modelo típico. Son precios de avisos, no el stock de las casas de repuestos, y una pieza puede cambiar entre generaciones del mismo modelo. Se relee cada semana.',
+      'De un relevamiento propio en Mercado Libre Uruguay: para cada modelo buscamos seis piezas —pastillas de freno delanteras, filtro de aceite, amortiguador delantero, kit de embrague, kit de distribución y óptica delantera— y nos quedamos con los avisos nuevos que nombran ese modelo. El índice compara cada pieza con la mediana de todos los modelos: 0,80 quiere decir 20 % más barato que el modelo típico. Son precios de avisos, no el stock de las casas de repuestos, y una pieza puede cambiar entre generaciones del mismo modelo. Cada modelo se relee cada dos semanas.',
   },
   {
     id: 'latin-ncap',
