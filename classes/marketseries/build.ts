@@ -62,6 +62,13 @@ export interface MarketDayInput {
   observations: readonly MarketObservation[];
   /** Keyed by `marketLogKey`, as they were BEFORE today. */
   logs: ReadonlyMap<string, MarketPriceLog>;
+  /**
+   * The index's first tracking day (`marketTrackingSince`). A window is only measured from
+   * `trackingSince + W` on — the date the page promises for each "misma oferta" card. Before it, the
+   * only adverts with a price W days back are the ones the catalogue had not re-read when tracking
+   * began, which is a sample of the stalest listings, not the market. Omitted, nothing is gated.
+   */
+  trackingSince?: string;
 }
 
 export interface MarketDay {
@@ -116,12 +123,19 @@ export function buildMarketDay(input: MarketDayInput): MarketDay {
     }
   }
 
+  const windows = MARKET_WINDOWS.filter(window => !input.trackingSince || input.today >= shiftDay(input.trackingSince, window));
   const changed: MarketPriceLog[] = [];
   for (const obs of adverts.values()) {
     const log = input.logs.get(marketLogKey(obs.vertical, obs.advertId));
     const cohorts = cohortsOf(obs);
-    for (const window of MARKET_WINDOWS) {
-      const then = priceAt(log, shiftDay(input.today, -window));
+    for (const window of windows) {
+      const since = shiftDay(input.today, -window);
+      // The catalogue keeps a row it did not re-read (21 days for sales, 10 for rentals): a reading
+      // from on or before the reference day IS the log's price at that day, so the "pair" would be
+      // one observation divided by itself — always "same". Measured 2026-09-24: 48 % of the sale
+      // catalogue's seven-day pairs, which halved the published variation.
+      if (obs.seenDay <= since) continue;
+      const then = priceAt(log, since);
       if (!then || then.c !== obs.currency || !(then.p > 0)) continue;
       for (const cohort of cohorts) accumulator(cohort).pairs[window].push(obs.price / then.p);
     }
@@ -133,9 +147,9 @@ export function buildMarketDay(input: MarketDayInput): MarketDay {
   const ordered = [...accumulators.values()].sort((a, b) => (a.cohort.key < b.cohort.key ? -1 : a.cohort.key > b.cohort.key ? 1 : 0));
   for (const acc of ordered) {
     const level = levelStats(acc.prices);
-    const windows = {} as Record<MarketWindow, MarketPairStats | null>;
-    for (const window of MARKET_WINDOWS) windows[window] = acc.pairs[window].length ? pairStats(acc.pairs[window]) : null;
-    const pairsPublishable = MARKET_WINDOWS.some(window => (windows[window]?.n ?? 0) >= MARKET_PAIR_MINIMUM);
+    const stats = {} as Record<MarketWindow, MarketPairStats | null>;
+    for (const window of MARKET_WINDOWS) stats[window] = acc.pairs[window].length ? pairStats(acc.pairs[window]) : null;
+    const pairsPublishable = MARKET_WINDOWS.some(window => (stats[window]?.n ?? 0) >= MARKET_PAIR_MINIMUM);
     if (level.n < MARKET_SAMPLE_MINIMUM && !pairsPublishable) continue;
     const labels: MarketCohortLabels = {
       department: preferredName(acc.names.department),
@@ -151,9 +165,9 @@ export function buildMarketDay(input: MarketDayInput): MarketDay {
         d: input.today,
         ...level,
         m2: input.vertical === "autos" ? null : medianStats(acc.m2),
-        w7: windows[7],
-        w30: windows[30],
-        w90: windows[90],
+        w7: stats[7],
+        w30: stats[30],
+        w90: stats[90],
       },
       hist: buildHistogram(acc.prices),
     });

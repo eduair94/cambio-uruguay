@@ -82,6 +82,22 @@ El día de observación de un log es el `lastSeen` del propio catálogo, no el d
 el cosechador no releyó no genera un punto nuevo. El emparejado se calcula contra el log **de antes**
 de actualizarlo.
 
+**Dos reglas del emparejado que faltaban hasta el 2026-09-24** (`classes/marketseries/build.ts`):
+
+- **Una lectura que no se renovó después del día de referencia no forma par.** El catálogo conserva
+  filas que el cosechador no volvió a leer (21 días en ventas, 10 en alquileres), y para esas la
+  observación de "hoy" ES el precio del log en el día de referencia: el par dividía una lectura por sí
+  misma y siempre daba "igual". Medido sobre ventas ese día: 5.988 de 12.397 pares de 7 días (48 %)
+  eran eso, y la variación publicada (−0,01 %) era la mitad de la real (−0,03 %).
+- **Ninguna ventana se mide antes de `trackingSince + W`**, la fecha que ya prometía la tarjeta. El
+  `firstSeen` de un log es el `lastSeen` del catálogo en la primera corrida, que puede ser días
+  anterior: con eso el 18/9, primer día de seguimiento, ya había 2.677 "pares de 7 días" en alquiler
+  y 4.724 en venta (todos autocomparaciones), y la tabla de "mayores movimientos" —que no miraba la
+  fecha— se publicó desde el primer día mientras la tarjeta de al lado decía "se publica desde el
+  25/9". Con el corte en el origen, tarjetas, tabla histórica, "mismo lugar" y movimientos dicen lo
+  mismo. Los puntos del 18 al 24/9 guardados antes del arreglo conservan su `w7` viejo; la página no
+  lo muestra (la tabla histórica sólo lista `w30`) y no se reescribieron.
+
 ## El job
 
 `node dist/sync_market_series.js [--dry-run] [--only=alquiler,venta,autos]`. Cada mercado en su

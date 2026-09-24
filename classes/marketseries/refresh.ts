@@ -3,7 +3,7 @@
 // índice. Si el índice se escribe último, una corrida que muere a la mitad no anuncia cohortes nuevas.
 import { appConnection } from "../appdb";
 import { buildMarketDay } from "./build";
-import { buildMarketIndex } from "./indexDoc";
+import { buildMarketIndex, marketTrackingSince } from "./indexDoc";
 import { MARKET_READERS } from "./sources";
 import {
   ensureMarketIndexes,
@@ -74,7 +74,13 @@ export async function refreshMarketSeries(
       const previous = await readMarketIndex(vertical);
       result.skipped = marketThinRun(read.observations.length, previous?.observations);
       if (!result.skipped) {
-        const day = buildMarketDay({ vertical, today, observations: read.observations, logs: await loadMarketLogs(vertical) });
+        const day = buildMarketDay({
+          vertical,
+          today,
+          observations: read.observations,
+          logs: await loadMarketLogs(vertical),
+          trackingSince: marketTrackingSince(previous, today),
+        });
         const index = buildMarketIndex({
           vertical,
           today,

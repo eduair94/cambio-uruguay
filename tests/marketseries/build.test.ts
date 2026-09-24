@@ -85,6 +85,39 @@ describe("buildMarketDay: misma oferta", () => {
     expect(uy.med).toBeNull();
     expect(uy.w30!.n).toBe(8);
   });
+  it("a reading not refreshed since the reference day is not a pair: it would be compared with itself", () => {
+    // Measured 2026-09-24 on the sale catalogue: 5.988 of 12.397 seven-day pairs were this, all "same".
+    const stale = flats(8, () => ({ price: 100, seenAt: "2026-09-08", seenDay: "2026-09-08" }));
+    const logs = new Map<string, MarketPriceLog>(
+      stale.map(obs => {
+        const key = marketLogKey("alquiler", obs.advertId);
+        return [key, { key, vertical: "alquiler", advertId: obs.advertId, firstSeen: "2026-09-08", lastSeen: "2026-09-08", points: [{ d: "2026-09-08", p: 100, c: "UYU" }] }];
+      }),
+    );
+    const uy = entry(buildMarketDay({ vertical: "alquiler", today: TODAY, observations: stale, logs }), "alquiler|UYU|todas|any|uy")!.point;
+    expect(uy.w7).toBeNull();
+    expect(uy.w30).toBeNull();
+  });
+  it("a reading from after the reference day pairs even when it is not from today", () => {
+    const observations = flats(8, () => ({ price: 90, seenAt: "2026-09-12", seenDay: "2026-09-12" }));
+    const uy = entry(buildMarketDay({ vertical: "alquiler", today: TODAY, observations, logs: logsAt(100) }), "alquiler|UYU|todas|any|uy")!.point;
+    expect(uy.w7).toMatchObject({ n: 8, chg: -0.1 });
+  });
+  it("no window is measured before tracking has lasted that long", () => {
+    const observations = flats(8, () => ({ price: 90 }));
+    const early = entry(
+      buildMarketDay({ vertical: "alquiler", today: TODAY, observations, logs: logsAt(100), trackingSince: "2026-09-12" }),
+      "alquiler|UYU|todas|any|uy",
+    )!.point;
+    expect(early.w7).toBeNull();
+    const week = entry(
+      buildMarketDay({ vertical: "alquiler", today: TODAY, observations, logs: logsAt(100), trackingSince: "2026-09-11" }),
+      "alquiler|UYU|todas|any|uy",
+    )!.point;
+    expect(week.w7).toMatchObject({ n: 8, chg: -0.1 });
+    expect(week.w30).toBeNull();
+    expect(week.w90).toBeNull();
+  });
   it("returns only the logs that changed", () => {
     const observations = flats(8, i => ({ price: i === 0 ? 90 : 100, seenAt: "2026-09-17", seenDay: "2026-09-17" }));
     const day = buildMarketDay({ vertical: "alquiler", today: TODAY, observations, logs: logsAt(100) });

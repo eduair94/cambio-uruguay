@@ -30,9 +30,13 @@ type Candidate = { entry: MarketSeriesEntry; stats: MarketPairStats & { chg: num
 
 const collator = new Intl.Collator("es", { sensitivity: "base" });
 
+/** The first tracking day, kept across runs; the day's pairs are gated on it (see buildMarketDay). */
+export function marketTrackingSince(previous: Pick<MarketSeriesIndex, "trackingSince"> | null | undefined, today: string): string {
+  return previous?.trackingSince && previous.trackingSince < today ? previous.trackingSince : today;
+}
+
 export function buildMarketIndex(input: MarketIndexInput): MarketSeriesIndex {
-  const trackingSince =
-    input.previous?.trackingSince && input.previous.trackingSince < input.today ? input.previous.trackingSince : input.today;
+  const trackingSince = marketTrackingSince(input.previous, input.today);
   const scopes = new Map<string, MarketIndexScope>();
   const models: MarketIndexModel[] = [];
   const pool: MarketSeriesEntry[] = [];

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { carCohorts, housingCohorts } from "../../classes/marketseries/cohorts";
-import { buildMarketIndex } from "../../classes/marketseries/indexDoc";
+import { buildMarketIndex, marketTrackingSince } from "../../classes/marketseries/indexDoc";
 import type { MarketPairStats, MarketSeriesEntry, MarketSeriesPoint } from "../../classes/marketseries/types";
 import { car, observation } from "./fixtures";
 
@@ -51,6 +51,12 @@ describe("buildMarketIndex", () => {
   it("keeps the first tracking day across runs", () => {
     const previous = buildMarketIndex({ ...base, today: "2026-09-01", entries: [] });
     expect(buildMarketIndex({ ...base, previous, entries: [] }).trackingSince).toBe("2026-09-01");
+  });
+  it("the tracking day the index keeps is the one the day's pairs are gated on", () => {
+    expect(marketTrackingSince(null, "2026-09-18")).toBe("2026-09-18");
+    expect(marketTrackingSince({ trackingSince: "2026-09-01" }, "2026-09-18")).toBe("2026-09-01");
+    // A previous index from the future (a clock gone wrong) never pushes the start forward.
+    expect(marketTrackingSince({ trackingSince: "2026-09-20" }, "2026-09-18")).toBe("2026-09-18");
   });
 
   it("movers use 30 days when there are enough pairs, never the country row", () => {
