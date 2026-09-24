@@ -34,8 +34,8 @@ video de TikTok). El directorio no puede unirlas (`dedupe.ts` exige dirección e
 `copies.ts` publica una y cuenta el resto en la nota de cada red. Dos claves dicen "misma vivienda":
 los **hechos** (la primera esquina/dirección del texto con las calles ordenadas y sin prefijos —
 "La Paz y Gaboto" = "Gaboto y La Paz", "Av. Italia" = "Italia" —, moneda, precio y dormitorios; si
-falta uno de los cuatro, no hay clave) y el **gemelo de texto** (red + cuenta + hash de la leyenda
-normalizada). Los avisos que comparten una clave se agrupan (unión de conjuntos: un carrusel gemelo
+falta uno de los cuatro, no hay clave) y el **gemelo de texto** (hash de la leyenda normalizada, en
+cualquier red y bajo cualquier cuenta: la inmobiliaria pega la MISMA leyenda en TikTok e Instagram). Los avisos que comparten una clave se agrupan (unión de conjuntos: un carrusel gemelo
 de un reel que comparte esquina con un video de TikTok es una sola vivienda). Y la elección es
 **estable**: el primer aviso que publicó una clave la reclama en `rentalsocialclaims` **exactamente
 mientras el directorio lo muestra**: 10 días desde la última vez que se lo vio (`SOCIAL_CLAIM_DAYS`,
@@ -92,6 +92,16 @@ aparezca antes o después, y la portada que falta se toma de la otra. `complete:
   cambiaron de veredicto.
 - **Una esquina que se quedó sin presupuesto de geocodificación se intenta en la corrida siguiente.**
   Antes, un post guardado nunca se volvía a geocodificar, aunque nunca se hubiera intentado.
+
+**Y lo que encontró la primera corrida en producción** (24/9, 21:07 UTC; TikTok 45 avisos, Instagram
+22, Facebook Reels 2, 19 copias ocultadas): el gemelo de texto llevaba la red en la clave, así que
+nunca cruzaba redes, y una leyenda sin esquina no tiene clave de hechos. "¡MIRÁ ESTA OPORTUNIDAD EN
+EUSKALERRIA! … $21.700", palabra por palabra y de la misma cuenta en TikTok e Instagram, salió en dos
+tarjetas; lo mismo una casa de $21.000, y un tercer par tenía la misma leyenda bajo dos cuentas de
+una inmobiliaria. La clave de texto ya no lleva red ni cuenta. La clave vieja (red + cuenta + hash)
+se sigue emitiendo sólo para que los reclamos guardados con ella conserven su dueño hasta vencer.
+Las dos copias que ya estaban publicadas no caducan por ausencia (ninguna red social es `complete`):
+desaparecen solas a los 10 días de la última vez que se las vio.
 
 **Primera corrida real, desde el VPS, 24/9 19:14 UTC** (TikTok con 4 cuentas y 2 hashtags, Instagram
 con 8 cuentas, Facebook con 8 páginas; 332 s en total):

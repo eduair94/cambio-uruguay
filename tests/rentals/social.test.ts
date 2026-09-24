@@ -3,7 +3,7 @@ import { RENTAL_SOURCES, RENTAL_SOURCE_LABEL } from "../../classes/rentals/types
 import { postToRawRental, hashtagsIn } from "../../classes/rentals/sources/social/post";
 import { parseCaption } from "../../classes/rentals/sources/social/caption";
 import { processPosts } from "../../classes/rentals/sources/social/process";
-import { factKey, resolveCopies, textKey, type SocialEntry } from "../../classes/rentals/sources/social/copies";
+import { factKey, legacyTextKey, resolveCopies, textKey, type SocialEntry } from "../../classes/rentals/sources/social/copies";
 import { harvestSocial } from "../../classes/rentals/sources/social";
 
 describe("Instagram and Facebook Reels are rental sources", () => {
@@ -88,12 +88,15 @@ describe("the copy guard", () => {
     expect(factKey(factsFor("Gaboto y La Paz", null, 2))).toBeNull();
   });
 
-  it("twins the carousel and the reel of one account by their caption, ignoring emojis and hashtags, and only within one account", () => {
+  it("twins posts by their caption, ignoring emojis and hashtags, on any network and under any handle", () => {
     const text = "🏠 Alquiler Pocitos / Puerto del Buceo – 1 dormitorio 📍 Marco Bruto y Rivera 💰 $26.000 #alquiler";
     const post = (id: string, lines: string[], handle = "inmobiliariaalquilar") =>
       ({ source: "instagram" as const, id, url: "", lines, createTime: 1, author: { uniqueId: handle, nickname: "", secUid: "" }, cover: null, hashtags: [] });
     expect(textKey(post("a", [text]))).toBe(textKey(post("b", [text.replace("🏠 ", "") + " #reels"])));
-    expect(textKey(post("c", [text], "otra.inmo"))).not.toBe(textKey(post("a", [text])));
+    // The same caption pasted by one agency under another handle is the same advert.
+    expect(textKey(post("c", [text], "otra.inmo"))).toBe(textKey(post("a", [text])));
+    // The first key (network + handle) survives only to keep the claims stored under it.
+    expect(legacyTextKey(post("c", [text], "otra.inmo"))).not.toBe(legacyTextKey(post("a", [text])));
     expect(textKey(post("d", ["Alquiler"]))).toBeNull();
   });
 

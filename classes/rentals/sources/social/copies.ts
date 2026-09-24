@@ -9,8 +9,8 @@
 // Two keys say "same flat":
 //   * the facts: the first corner/address the caption names (streets in any order), currency,
 //     price and bedrooms — all four, or no key at all;
-//   * the text twin: network + account + a hash of the normalised caption, for the carousel and
-//     the reel of one account even when they name no corner.
+//   * the text twin: a hash of the normalised caption, for the carousel and the reel of one
+//     account, and for the caption an agency pastes on every network, even when they name no corner.
 //
 // And the choice is STABLE across runs. Instagram and Facebook Reels are never `complete`, so an
 // offer that stops being emitted is not expired — the directory keeps showing it for
@@ -66,11 +66,32 @@ export function factKey(facts: CaptionFacts): string | null {
   return `hechos:${streets.join("|")}:${facts.currency}${facts.price}:${facts.bedrooms}d`;
 }
 
-export function textKey(post: SocialPost): string | null {
+function captionHash(post: SocialPost): string | null {
   const normalized = flatten(post.lines.join(" ")).replace(/#\S+/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
   if (normalized.length < 40) return null;
-  const hash = createHash("sha1").update(normalized).digest("hex").slice(0, 16);
-  return `texto:${post.source}:${post.author.uniqueId}:${hash}`;
+  return createHash("sha1").update(normalized).digest("hex").slice(0, 16);
+}
+
+/**
+ * The same caption, on any network and under any handle. Measured 2026-09-24 after the first
+ * production run: an agency pastes the SAME caption on TikTok and Instagram ("¡MIRÁ ESTA
+ * OPORTUNIDAD EN EUSKALERRIA! … $21.700", word for word, same handle) and names no corner, so no
+ * fact key exists and the directory showed it twice; a third pair had the same caption under two
+ * handles of one agency. Forty characters of identical text, price included, is one advert.
+ */
+export function textKey(post: SocialPost): string | null {
+  const hash = captionHash(post);
+  return hash ? `texto:${hash}` : null;
+}
+
+/**
+ * The first text key (network + handle + hash). It still names the claims stored before the
+ * cross-network key existed; kept so those claims keep their owners until they lapse
+ * (SOCIAL_CLAIM_DAYS), after which it can go.
+ */
+export function legacyTextKey(post: SocialPost): string | null {
+  const hash = captionHash(post);
+  return hash ? `texto:${post.source}:${post.author.uniqueId}:${hash}` : null;
 }
 
 export function entryFor(processed: ProcessedPost): SocialEntry | null {
@@ -79,7 +100,7 @@ export function entryFor(processed: ProcessedPost): SocialEntry | null {
     source: processed.post.source,
     listingId: processed.row.listingId,
     row: processed.row,
-    keys: [factKey(processed.facts), textKey(processed.post)].filter((key): key is string => !!key),
+    keys: [factKey(processed.facts), textKey(processed.post), legacyTextKey(processed.post)].filter((key): key is string => !!key),
     createTime: processed.post.createTime,
   };
 }

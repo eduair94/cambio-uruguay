@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { harvestSocial, SOCIAL_CLAIM_DAYS } from "../../classes/rentals/sources/social";
 import { parseCaption } from "../../classes/rentals/sources/social/caption";
-import { factKey, resolveCopies, textKey } from "../../classes/rentals/sources/social/copies";
+import { factKey, legacyTextKey, resolveCopies, textKey } from "../../classes/rentals/sources/social/copies";
 import { postToRawRental, type SocialPost } from "../../classes/rentals/sources/social/post";
 import { processPosts } from "../../classes/rentals/sources/social/process";
 import type { SocialClaim, SocialPostRow } from "../../classes/rentals/sources/social/store";
@@ -211,5 +211,39 @@ describe("Instagram after the review", () => {
     expect(run.result.listings.map(r => r.listingId)).toEqual(["instagram:K1xxxxxxxxx"]);
     expect(s.state.posts.get("K2xxxxxxxxx")).toMatchObject({ rejected: "alquilado", fetchedAt: NOW.toISOString() });
     expect(s.state.posts.get("K1xxxxxxxxx")).toMatchObject({ fetchedAt: day(-1).toISOString() });
+  });
+});
+
+// --- After the first production run (2026-09-24 21:07 UTC) ----------------------------------------
+
+describe("the same caption on two networks, with no corner, is one flat", () => {
+  const EUSKALERRIA = [
+    "🔥 ¡MIRÁ ESTA OPORTUNIDAD EN EUSKALERRIA! 🏡",
+    "¿Buscás 3 dormitorios, espacio y comodidad sin irte de presupuesto? 👀 Esta puede ser la indicada.",
+    "🛏️ 3 dormitorios",
+    "🛡️ Garantía de aseguradora o ANDA",
+    "💰 ALQUILER: $21.700",
+    "#Euskalerria #AlquilerMontevideo #ApartamentoEnAlquiler #3Dormitorios #AlquilerUY",
+  ].join("\n");
+
+  it("publishes one of the TikTok video and the Instagram post", async () => {
+    const tt = postOf("tiktok", "T9", EUSKALERRIA, "inmobiliaria.micasaya");
+    const ig = postOf("instagram", "I9", EUSKALERRIA, "inmobiliaria.micasaya");
+    expect(factKey(parseCaption(tt.lines, []))).toBeNull();
+    const results = await harvestSocial("full", 40, { runs: [runOf("tiktok", [tt]), runOf("instagram", [ig]), idle("facebookreels")], claims: claimStore(), now: () => day(0), env: {} });
+    expect(published(results)).toEqual(["tiktok:T9"]);
+  });
+
+  it("keeps the owner a claim stored under the first text key names", async () => {
+    const claims = claimStore();
+    const ig = postOf("instagram", "I9", EUSKALERRIA, "inmobiliaria.micasaya");
+    const tt = postOf("tiktok", "T9", EUSKALERRIA, "inmobiliaria.micasaya");
+    // Before the cross-network key, each copy claimed its own network's key; the Instagram one was first.
+    for (const post of [ig, tt]) {
+      const key = legacyTextKey(post)!;
+      claims.rows.set(key, { key, listingId: `${post.source}:${post.id}`, source: post.source, firstPublishedAt: post === ig ? day(-1).toISOString() : day(0).toISOString(), lastSeenAt: day(0).toISOString() });
+    }
+    const results = await harvestSocial("full", 40, { runs: [runOf("tiktok", [tt]), runOf("instagram", [ig]), idle("facebookreels")], claims, now: () => day(0), env: {} });
+    expect(published(results)).toEqual(["instagram:I9"]);
   });
 });
