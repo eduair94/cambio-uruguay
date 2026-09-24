@@ -9,9 +9,10 @@
 import type { RentalSourceResult } from "../types";
 import { harvestTiktokRun } from "../tiktok";
 import { entryFor, resolveCopies, type SocialEntry } from "./copies";
+import { harvestFacebookReelsRun } from "./facebookreels";
 import { harvestInstagramRun } from "./instagram";
 import { SOCIAL_SOURCES, type SocialSource } from "./post";
-import { envNumber, idleRun, plural, type PlatformRun } from "./run";
+import { envNumber, plural, type PlatformRun } from "./run";
 import { mongoClaimStore, type ClaimStore, type SocialClaim } from "./store";
 
 export interface HarvestSocialDeps {
@@ -27,7 +28,7 @@ const CLAIM_FORGET_DAYS = 60;
 export const DEFAULT_SOCIAL_RUNS: HarvestSocialDeps["runs"] = [
   harvestTiktokRun,
   harvestInstagramRun,
-  async () => idleRun("facebookreels", "todavía no conectado"),
+  harvestFacebookReelsRun,
 ];
 
 export async function harvestSocial(mode: "full" | "fast", usdUyu: number, overrides: Partial<HarvestSocialDeps> = {}): Promise<RentalSourceResult[]> {
