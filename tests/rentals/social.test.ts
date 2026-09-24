@@ -3,6 +3,8 @@ import { RENTAL_SOURCES, RENTAL_SOURCE_LABEL } from "../../classes/rentals/types
 import { postToRawRental, hashtagsIn } from "../../classes/rentals/sources/social/post";
 import { parseCaption } from "../../classes/rentals/sources/social/caption";
 import { processPosts } from "../../classes/rentals/sources/social/process";
+import { factKey, resolveCopies, textKey, type SocialEntry } from "../../classes/rentals/sources/social/copies";
+import { harvestSocial } from "../../classes/rentals/sources/social";
 
 describe("Instagram and Facebook Reels are rental sources", () => {
   it("are enumerated with their labels", () => {
@@ -59,5 +61,107 @@ describe("processPosts", () => {
     const again = await processPosts([igPost("A", "Alquiler 1 dormitorio en Pocitos 📍 Charrúa y Luis Ponce — Pocitos $27.500")], new Map([["A", processed[0]!.memory]]), ctx);
     expect(geocode).toHaveBeenCalledTimes(1);
     expect(again.processed[0]!.row).toMatchObject({ latitude: -34.91 });
+  });
+});
+
+// --- Task 4: the copy guard ------------------------------------------------------------------------
+
+const factsFor = (corner: string | null, price: number | null, bedrooms: number | null) =>
+  ({ ...parseCaption(["Alquiler en Montevideo"], []), addressCandidates: corner ? [corner] : [], price, currency: "UYU" as const, bedrooms });
+const entry = (source: SocialEntry["source"], id: string, keys: string[], createTime = 1790000000): SocialEntry =>
+  ({ source, listingId: `${source}:${id}`, row: { listingId: `${source}:${id}` } as never, keys, createTime });
+const NOW = "2026-09-24T05:00:00.000Z";
+
+describe("the copy guard", () => {
+  it("keys a flat by corner (streets in any order), price and bedrooms, and never without all three", () => {
+    expect(factKey(factsFor("Gaboto y La Paz", 22000, 2))).toBe(factKey(factsFor("La Paz y Gaboto", 22000, 2)));
+    expect(factKey(factsFor("Gaboto esq. La Paz", 22000, 2))).toBe(factKey(factsFor("La Paz y Gaboto", 22000, 2)));
+    // The address reader drops a leading article ("La Paz y Gaboto" → "Paz y Gaboto"), and captions
+    // write "Av. Italia" and "Avenida Italia": the key does not care.
+    expect(factKey(factsFor("Paz y Gaboto", 22000, 2))).toBe(factKey(factsFor("Gaboto y La Paz", 22000, 2)));
+    expect(factKey(factsFor("Av. Italia y Garibaldi", 30000, 1))).toBe(factKey(factsFor("Garibaldi y Avenida Italia", 30000, 1)));
+    expect(factKey(factsFor("Bvar. Artigas y Gral. Flores", 30000, 1))).toBe(factKey(factsFor("Artigas y Flores", 30000, 1)));
+    expect(factKey(factsFor("Gaboto y La Paz", 22000, 3))).not.toBe(factKey(factsFor("Gaboto y La Paz", 22000, 2)));
+    expect(factKey(factsFor("Gaboto y La Paz", 23000, 2))).not.toBe(factKey(factsFor("Gaboto y La Paz", 22000, 2)));
+    expect(factKey(factsFor(null, 22000, 2))).toBeNull();
+    expect(factKey(factsFor("Gaboto y La Paz", 22000, null))).toBeNull();
+    expect(factKey(factsFor("Gaboto y La Paz", null, 2))).toBeNull();
+  });
+
+  it("twins the carousel and the reel of one account by their caption, ignoring emojis and hashtags, and only within one account", () => {
+    const text = "🏠 Alquiler Pocitos / Puerto del Buceo – 1 dormitorio 📍 Marco Bruto y Rivera 💰 $26.000 #alquiler";
+    const post = (id: string, lines: string[], handle = "inmobiliariaalquilar") =>
+      ({ source: "instagram" as const, id, url: "", lines, createTime: 1, author: { uniqueId: handle, nickname: "", secUid: "" }, cover: null, hashtags: [] });
+    expect(textKey(post("a", [text]))).toBe(textKey(post("b", [text.replace("🏠 ", "") + " #reels"])));
+    expect(textKey(post("c", [text], "otra.inmo"))).not.toBe(textKey(post("a", [text])));
+    expect(textKey(post("d", ["Alquiler"]))).toBeNull();
+  });
+
+  it("publishes one of the same flat across networks: TikTok first, then the oldest", () => {
+    const r = resolveCopies([entry("facebookreels", "1", ["k"], 1), entry("instagram", "2", ["k"], 2), entry("tiktok", "3", ["k"], 3), entry("instagram", "4", ["other"])], new Map(), NOW);
+    expect(r.keep.map(e => e.listingId).sort()).toEqual(["instagram:4", "tiktok:3"]);
+    expect(r.copies.map(c => [c.entry.listingId, c.of]).sort()).toEqual([["facebookreels:1", "tiktok:3"], ["instagram:2", "tiktok:3"]]);
+    expect(r.claims).toEqual(expect.arrayContaining([expect.objectContaining({ key: "k", listingId: "tiktok:3", source: "tiktok", firstPublishedAt: NOW, lastSeenAt: NOW })]));
+    const sameNetwork = resolveCopies([entry("instagram", "late", ["t"], 20), entry("instagram", "early", ["t"], 10)], new Map(), NOW);
+    expect(sameNetwork.keep.map(e => e.listingId)).toEqual(["instagram:early"]);
+  });
+
+  it("joins groups transitively: a reel that shares its caption with one copy and its corner with another is the same flat", () => {
+    const r = resolveCopies([entry("instagram", "carousel", ["texto:x"]), entry("instagram", "reel", ["texto:x", "hechos:y"]), entry("tiktok", "video", ["hechos:y"])], new Map(), NOW);
+    expect(r.keep.map(e => e.listingId)).toEqual(["tiktok:video"]);
+    expect(r.claims.map(c => c.key).sort()).toEqual(["hechos:y", "texto:x"]);
+  });
+
+  it("keeps the flat with its first publisher: a live claimant seen today wins, and one unseen today blocks every copy", () => {
+    const live = new Map([["k", { key: "k", listingId: "instagram:2", source: "instagram" as const, firstPublishedAt: "2026-09-10T00:00:00.000Z", lastSeenAt: "2026-09-23T05:00:00.000Z" }]]);
+    const seen = resolveCopies([entry("tiktok", "3", ["k"]), entry("instagram", "2", ["k"])], live, NOW);
+    expect(seen.keep.map(e => e.listingId)).toEqual(["instagram:2"]);
+    expect(seen.claims.find(c => c.key === "k")).toMatchObject({ listingId: "instagram:2", firstPublishedAt: "2026-09-10T00:00:00.000Z", lastSeenAt: NOW });
+    const unseen = resolveCopies([entry("tiktok", "3", ["k"])], live, NOW);
+    expect(unseen.keep).toEqual([]);
+    expect(unseen.copies).toEqual([expect.objectContaining({ of: "instagram:2" })]);
+    expect(unseen.claims).toEqual([]);
+  });
+
+  it("never groups an entry without keys", () => {
+    expect(resolveCopies([entry("tiktok", "1", []), entry("tiktok", "2", [])], new Map(), NOW).keep).toHaveLength(2);
+  });
+});
+
+describe("harvestSocial", () => {
+  const processedFor = (source: "tiktok" | "instagram", id: string, corner: string) => {
+    const text = `Alquiler 2 dormitorios en Montevideo 📍 ${corner} $22.000`;
+    const post = { source, id, url: `https://example.com/${id}`, lines: [text], createTime: 1790000000, author: { uniqueId: "a", nickname: "", secUid: "" }, cover: null, hashtags: [] };
+    const facts = parseCaption([text], []);
+    return { post, facts, row: { listingId: `${source}:${id}`, source } as never, memory: {} as never };
+  };
+  const runOf = (source: "tiktok" | "instagram", items: ReturnType<typeof processedFor>[]) => async () =>
+    ({ result: { key: source, ok: true, complete: false, listings: items.map(p => p.row), note: `${items.length} avisos` }, processed: items });
+
+  it("runs every network, drops copies across them, says so in the note, and survives a network that throws", async () => {
+    const saved: unknown[] = [];
+    const claims = { loadLiveClaims: async () => new Map(), saveClaims: async (rows: unknown[]) => { saved.push(...rows); }, pruneClaims: async () => {} };
+    const results = await harvestSocial("full", 40, {
+      runs: [
+        runOf("tiktok", [processedFor("tiktok", "1", "Gaboto y La Paz")]),
+        runOf("instagram", [processedFor("instagram", "A", "La Paz y Gaboto"), processedFor("instagram", "B", "Rivera y Soca")]),
+        async () => { throw new Error("boom"); },
+      ],
+      claims, now: () => new Date(NOW), env: {},
+    });
+    expect(results.map(r => [r.key, r.listings.length])).toEqual([["tiktok", 1], ["instagram", 1], ["facebookreels", 0]]);
+    expect(results[0]!.note).toBe("1 avisos");
+    expect(results[1]!.note).toBe("2 avisos; 1 copia de un aviso ya publicado (en esta u otra red)");
+    expect(results[2]).toMatchObject({ key: "facebookreels", ok: false, complete: false, note: "falla: Error" });
+    expect(saved.length).toBeGreaterThan(0);
+  });
+
+  it("still guards within the run when the claims cannot be read", async () => {
+    const claims = { loadLiveClaims: async () => { throw new Error("mongo down"); }, saveClaims: async () => {}, pruneClaims: async () => {} };
+    const results = await harvestSocial("full", 40, {
+      runs: [runOf("tiktok", [processedFor("tiktok", "1", "Gaboto y La Paz")]), runOf("instagram", [processedFor("instagram", "A", "La Paz y Gaboto")])],
+      claims, now: () => new Date(NOW), env: {},
+    });
+    expect(results.map(r => r.listings.length)).toEqual([1, 0]);
   });
 });

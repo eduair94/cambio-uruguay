@@ -12,9 +12,10 @@ import { harvestCasasweb } from "./casasweb";
 import { harvestElpais } from "./elpais";
 import { harvestInfoCasas } from "./infocasas";
 import { harvestMercadoLibre } from "./mercadolibre";
-// TikTok: captions of the videos inmobiliarias post, read through a browser and the proxy (only in
-// the full run; the hourly one launches no Chrome). See ./tiktok/index.ts.
-import { harvestTiktok } from "./tiktok";
+// TikTok, Instagram and Facebook Reels: the captions of the short videos inmobiliarias post, read
+// by headless browsers (only in the full run; the hourly one launches no Chrome), with one copy of
+// each flat across networks. See ./social/index.ts.
+import { harvestSocial } from "./social";
 import type { RentalSourceResult } from "./types";
 
 export type { RentalSourceResult } from "./types";
@@ -30,14 +31,15 @@ export interface RentalHarvest {
  * the same advert.
  */
 export async function harvestRentalMarket(mode: "full" | "fast", usdUyu: number): Promise<RentalHarvest> {
-  const runs = await Promise.all([
+  const [mercadolibre, infocasas, facebook, casasweb, elpais, social] = await Promise.all([
     harvestMercadoLibre(mode, usdUyu),
     harvestInfoCasas(mode, usdUyu),
     harvestFacebookMarketplace(mode, usdUyu),
     harvestCasasweb(mode, usdUyu),
     harvestElpais(mode, usdUyu),
-    harvestTiktok(mode, usdUyu),
+    harvestSocial(mode, usdUyu),
   ]);
+  const runs: RentalSourceResult[] = [mercadolibre, infocasas, facebook, casasweb, elpais, ...social];
 
   const listings = runs.flatMap(run => run.listings);
   await enrichAgencyContacts(listings, { maxProfiles: mode === "fast" ? 12 : 80 });
