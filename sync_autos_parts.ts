@@ -33,12 +33,17 @@ async function main(): Promise<void> {
   const due = only
     ? models.filter(model => only.includes(model.marketSlug))
     : planPartsTargets(models, previous, now);
-  console.log(`[autos-parts] ${models.length} models with ${MIN_LISTINGS}+ adverts, ${previous.size} read before, ${due.length} due`);
+  // Arranque: mientras no se leyó ni la mitad de los modelos, la corrida dura más, para que el asesor
+  // no pase una semana diciendo "todavía no relevamos". En régimen alcanza con 15 minutos: ~40
+  // modelos por noche contra ~250 que se releen cada 14 días.
+  const bootstrapping = previous.size < models.length / 2;
+  const minutes = Number(process.env.AUTOS_PARTS_MINUTES || (bootstrapping ? 40 : 15));
+  console.log(`[autos-parts] ${models.length} models with ${MIN_LISTINGS}+ adverts, ${previous.size} read before, ${due.length} due, ${minutes} min`);
   const result = await harvestParts(due, {
     usdUyu,
     now,
-    gapMs: Number(process.env.AUTOS_PARTS_GAP_MS || 2_000),
-    maxDurationMs: Number(process.env.AUTOS_PARTS_MINUTES || 10) * 60_000,
+    gapMs: Number(process.env.AUTOS_PARTS_GAP_MS || 2_500),
+    maxDurationMs: minutes * 60_000,
   });
   console.log(`[autos-parts] ${result.requests} searches, ${result.records.length} models read${result.note ? `, ${result.note}` : ""}`);
   if (dryRun) {

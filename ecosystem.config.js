@@ -422,7 +422,8 @@ module.exports = {
     {
       // Spare-parts prices per model (six parts, one Mercado Libre category each) for the buying
       // advisor /que-auto-comprar-uruguay. 02:11 UTC: no hourly consumer of the :9656 bridge runs
-      // between :07 and :23. 10-minute wall clock, oldest reading first, a model is re-read weekly.
+      // between :07 and :23. 15-minute wall clock (40 while less than half the models were ever read),
+      // oldest reading first, a model is re-read every 14 days.
       name: "currency-autos-parts",
       autorestart: false,
       exec_mode: "fork",

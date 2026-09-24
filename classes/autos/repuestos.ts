@@ -29,6 +29,8 @@ export interface CarPart {
   perUnit: boolean;
   /** Es la pieza delantera: la trasera es otra pieza con otro precio. */
   front: boolean;
+  /** Lo que el título tiene que decir para ser ESTA pieza: una correa suelta no es el kit. */
+  requires?: RegExp;
 }
 
 export const CAR_PARTS: readonly CarPart[] = [
@@ -36,7 +38,7 @@ export const CAR_PARTS: readonly CarPart[] = [
   { key: "filtro_aceite", label: "Filtro de aceite", category: "MLU164783", query: "filtro aceite", perUnit: false, front: false },
   { key: "amortiguador", label: "Amortiguador delantero", category: "MLU164832", query: "amortiguador delantero", perUnit: true, front: true },
   { key: "embrague", label: "Kit de embrague", category: "MLU164977", query: "kit embrague", perUnit: false, front: false },
-  { key: "distribucion", label: "Kit de distribución", category: "MLU164771", query: "kit distribucion", perUnit: false, front: false },
+  { key: "distribucion", label: "Kit de distribución", category: "MLU164771", query: "kit distribucion", perUnit: false, front: false, requires: /\b(kit|juego)\b/ },
   { key: "optica", label: "Óptica delantera", category: "MLU442928", query: "farol delantero", perUnit: true, front: true },
 ];
 
@@ -44,6 +46,8 @@ export const CAR_PARTS: readonly CarPart[] = [
 export const PART_MIN_OFFERS = 3;
 /** Y la pieza necesita esto para entrar al índice: la base de una razón no puede ser anécdota. */
 export const PART_BASELINE_MIN_MODELS = 5;
+/** Un solo vendedor no es un mercado: su precio es su lista, no la de la pieza. */
+export const PART_MIN_SELLERS = 2;
 /** Piezas con precio que hacen falta para dar un índice. */
 export const PART_INDEX_MIN_PARTS = 3;
 
@@ -79,7 +83,7 @@ const REAR = /\btras(era|eras|ero|eros)?\b/;
 const SET = /\b(par|pares|x2|kit|juego|jgo|set)\b|\bx 2\b/;
 const USED = /\busad[oa]s?\b/;
 
-export function partTitleMatches(title: string, tokens: PartsModelTokens, part: Pick<CarPart, "perUnit" | "front">): boolean {
+export function partTitleMatches(title: string, tokens: PartsModelTokens, part: Pick<CarPart, "perUnit" | "front" | "requires">): boolean {
   const folded = fold(title);
   const present = new Set(words(title));
   if (!tokens.model.length || !tokens.model.every(word => present.has(word))) return false;
@@ -88,6 +92,7 @@ export function partTitleMatches(title: string, tokens: PartsModelTokens, part: 
   if (part.front && REAR.test(folded)) return false;
   if (part.perUnit && SET.test(folded)) return false;
   if (USED.test(folded)) return false;
+  if (part.requires && !part.requires.test(folded)) return false;
   return true;
 }
 
@@ -101,7 +106,7 @@ export interface CarPartSummary {
 
 export function summarizePart(prices: readonly number[], sellers: readonly string[]): CarPartSummary | null {
   const usable = prices.filter(price => Number.isFinite(price) && price > 0);
-  if (usable.length < PART_MIN_OFFERS) return null;
+  if (usable.length < PART_MIN_OFFERS || new Set(sellers).size < PART_MIN_SELLERS) return null;
   return {
     median: Math.round(quantile(usable, 0.5)),
     p25: Math.round(quantile(usable, 0.25)),

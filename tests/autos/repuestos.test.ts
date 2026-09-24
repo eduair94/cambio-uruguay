@@ -34,6 +34,11 @@ describe("partTitleMatches", () => {
     expect(matches("Kit Embrague Fiat Strada Pick Up 1.4", "Volkswagen", "Up!", "embrague")).toBe(false);
   });
 
+  it("la distribución exige el kit: una correa suelta es otra pieza", () => {
+    expect(matches("Correa Distribucion Chevrolet Onix 1.4", "Chevrolet", "Onix", "distribucion")).toBe(false);
+    expect(matches("Kit Distribución Skf Chevrolet Onix 1.4", "Chevrolet", "Onix", "distribucion")).toBe(true);
+  });
+
   it("donde el precio es por unidad, un par o un kit no cuenta", () => {
     expect(matches("Kit Faros Delanteros Toyota Hilux Set X2", "Toyota", "Hilux", "optica")).toBe(false);
     expect(matches("Optico Delantero Toyota Hilux 2021-2024", "Toyota", "Hilux", "optica")).toBe(true);
@@ -47,6 +52,9 @@ describe("partTitleMatches", () => {
 describe("summarizePart", () => {
   it("con menos de tres ofertas no hay precio", () => {
     expect(summarizePart([100, 200], ["a", "b"])).toBeNull();
+  });
+  it("un solo vendedor no es un mercado", () => {
+    expect(summarizePart([100, 200, 300], ["a", "a", "a"])).toBeNull();
   });
   it("mediana, cuartiles y vendedores distintos", () => {
     expect(summarizePart([100, 200, 300, 400], ["a", "a", "b", "c"])).toEqual({ median: 250, p25: 175, p75: 325, offers: 4, sellers: 3 });

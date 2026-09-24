@@ -33,7 +33,7 @@ export interface MlPartsPage {
 export type PartsPageFetcher = (url: string) => Promise<MlPartsPage | null>;
 
 /** Un modelo leído hace menos que esto no se relee: el precio de un repuesto no se mueve en días. */
-export const PARTS_MAX_AGE_DAYS = 7;
+export const PARTS_MAX_AGE_DAYS = 14;
 const MAX_CONSECUTIVE_FAILURES = 3;
 
 const searchWords = (text: string): string => text.replace(/[^\p{L}\p{N}.]+/gu, " ").trim();

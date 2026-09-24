@@ -24,8 +24,8 @@ describe("planPartsTargets", () => {
   it("primero lo nunca leído, después lo más viejo, y lo fresco no se relee", () => {
     const previous = new Map([
       ["viejo", readAgo("viejo", 20)],
-      ["menos-viejo", readAgo("menos-viejo", 9)],
-      ["fresco", readAgo("fresco", 2)],
+      ["menos-viejo", readAgo("menos-viejo", 16)],
+      ["fresco", readAgo("fresco", 10)],
     ]);
     const plan = planPartsTargets([model("fresco", 900), model("menos-viejo", 800), model("viejo", 50), model("nuevo", 20)], previous, now);
     expect(plan.map(target => target.marketSlug)).toEqual(["nuevo", "viejo", "menos-viejo"]);
