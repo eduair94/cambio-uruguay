@@ -457,6 +457,14 @@
       "hypothesis": "La moto es el vehiculo de trabajo en Uruguay y es la alternativa de costo medio entre el boleto y el auto, pero el sitio tenia el agujero justo ahi: publica precios de autos usados, de monopatines y de bicicletas electricas y ninguno de motos. El directorio por modelo-ano con banda p25/mediana/p75 replica lo que ya funciona en /autos-usados-uruguay, y ademas es el insumo que le faltaba al comparador de transporte para poder contestar el modo mas consultado."
     },
     {
+      "id": "descripcion-cotizaciones-de-la-region",
+      "shippedOn": "2026-09-24",
+      "routes": [
+        "/cotizaciones-de-la-region"
+      ],
+      "hypothesis": "La descripcion media 263 caracteres y arrancaba por la etiqueta de formato (tablero regional con todos los mercados que publica cada pais), asi que los nombres por los que se busca la pagina -los siete dolares argentinos, el PTAX y el turismo de Brasil- quedaban del lado que Google corta a los 155; con ellos adelante y 152 caracteres deberia subir la porcion de clics desde el mismo ranking. Tramo dato-vivo, asi que el efecto esperado en ingreso es chico."
+    },
+    {
       "id": "descripciones-que-empiezan-por-la-respuesta",
       "shippedOn": "2026-09-24",
       "routes": [

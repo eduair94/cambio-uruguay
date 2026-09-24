@@ -130,9 +130,11 @@ const measured = pageFiles()
   }))
   .filter((page): page is { file: string; description: string } => page.description !== null)
 
-// 133 el 2026-09-20, que es el conteo real y no un número redondo: el sobrante de un piso más
-// bajo alcanzaría para que una descripción nueva saliera cortada sin poner nada en rojo.
-const RESOLVED = 133
+// 141 el 2026-09-24 (133 el 2026-09-20), que es el conteo real y no un número redondo: el sobrante
+// de un piso más bajo alcanzaría para que una descripción nueva saliera cortada sin poner nada en
+// rojo. Sube con cada página nueva que declara su descripción como literal, y baja sólo si alguien
+// vuelve dinámica una que hoy se mide — que es justamente lo que este piso tiene que delatar.
+const RESOLVED = 141
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente
@@ -171,8 +173,14 @@ const RESOLVED = 133
 // nombres propios con los que se busca (BROU, Itaú, Mercado Pago, Prex). Ninguna cifra es nueva:
 // todas ya estaban en la descripción vieja y en el cuerpo de su página.
 //
-// Quedan 52 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 52
+// 52 → 51 el 2026-09-24: `/cotizaciones-de-la-region` (263 caracteres), la que quedó afuera de la
+// cuarta corrida porque es del tramo `dato-vivo`. Arrancaba por «Tablero regional con todos los
+// mercados que publica cada país», y lo que se busca —los siete dólares argentinos, el PTAX— quedaba
+// del lado cortado. `/fecha-de-cobro-bps-uruguay` (156, uno de más) se deja para después del
+// 2026-10-18: su fila del libro de cambios está midiendo hasta esa fecha.
+//
+// Quedan 51 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
+const OVER_BUDGET = 51
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {

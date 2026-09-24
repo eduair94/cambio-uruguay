@@ -775,7 +775,7 @@ const LINKS = [
 
 const title = 'El dólar en Argentina, Brasil y la región'
 const description =
-  'Tablero regional con todos los mercados que publica cada país: los siete dólares argentinos, el PTAX y el dólar turismo brasileños, el referencial paraguayo, el observado chileno y el paralelo boliviano, comparados con lo que cobran las casas de cambio uruguayas.'
+  'Los siete dólares argentinos, el PTAX y el turismo de Brasil, el referencial paraguayo, el observado chileno y el paralelo boliviano, con el de Uruguay.'
 const canonicalUrl = 'https://cambio-uruguay.com/cotizaciones-de-la-region'
 
 defineOgImageComponent('Cambio', {
