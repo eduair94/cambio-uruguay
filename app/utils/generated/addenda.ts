@@ -34,6 +34,31 @@ export interface PageAddendum {
 }
 
 export const PAGE_ADDENDA: readonly PageAddendum[] = Object.freeze([
+  {
+    route: '/guias/importar-de-aliexpress-a-uruguay',
+    updatedAt: '2026-09-24',
+    items: [
+      {
+        question:
+          '¿Me conviene el envío directo de AliExpress o usar un courier/casillero tipo Aerobox, y cuál conviene?',
+        answer:
+          'Con el envío directo no te tenés que registrar en nada: comprás y el vendedor te lo manda a tu casa, pero si elegís la opción gratis tarda entre 30 y 60 días, y aunque pagues por un envío más rápido igual quedás en 15 a 20 días. Con un courier como Aerobox te registrás gratis, te dan una dirección en Miami para usar como destino de tus compras, y después pedís el reenvío a Uruguay cuando te llegaron todos los paquetes; el propio courier lo vende como más rápido y seguro que el correo tradicional, aunque no da un número de días concreto para ese tramo. La diferencia práctica es que el courier suma un paso extra (recibir en Miami y reexpedir) a cambio de evitarte las demoras típicas del envío gratuito directo.',
+        sources: [{ title: 'aerobox.com.uy', url: 'https://aerobox.com.uy/aliexpress-uruguay/' }],
+      },
+      {
+        question:
+          '¿Unos auriculares Bluetooth como los Moondrop Space Travel necesitan algún trámite de homologación en URSEC para poder importarlos?',
+        answer:
+          'No: las Resoluciones de URSEC N° 275/2021 y N° 297/2021 dejan exceptuados de la intervención de URSEC a los equipos que funcionan únicamente con Wifi4, Wifi5, Wifi6 y/o Bluetooth, y unos auriculares Bluetooth entran justo en esa excepción. El certificado de URSEC (que cuesta $204, más un adicional de hasta $215 en casos como transmisores-sensores, micrófonos, cámaras o teléfonos inalámbricos) solo hace falta si el equipo usa otra tecnología radioeléctrica que no esté en esa lista de excepciones.',
+        sources: [
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/tramites/certificado-habilitar-ingreso-pais-equipos-radioelectricos-bajo-regimen-franquicia-persona-fisica',
+          },
+        ],
+      },
+    ],
+  },
   // <<< generated-addenda >>>
 ])
 
