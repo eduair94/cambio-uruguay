@@ -3249,6 +3249,25 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El asesor de compra: presupuesto, uso y prioridades → modelo y año, con patente, repuestos
+        // y costo mensual. Ver docs/app/AUTOS.md, "El asesor de compra y los repuestos".
+        to: '/que-auto-comprar-uruguay',
+        labelKey: 'nav.usedCarAdvisor',
+        icon: 'mdi-car-info',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'que auto comprar',
+          'que auto usado comprar',
+          'que auto me conviene',
+          'auto ideal',
+          'mejor auto usado uruguay',
+          'repuestos baratos auto',
+          'patente auto usado',
+        ],
+      },
+      {
         to: '/vender-mi-auto-uruguay',
         labelKey: 'nav.sellUsedCar',
         icon: 'mdi-car-arrow-right',

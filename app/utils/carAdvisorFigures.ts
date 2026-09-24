@@ -110,29 +110,7 @@ export interface LatinNcapEntry {
   childStars: number | null
   /** Desde 2020, una sola calificación. */
   stars: number | null
-  /** Años de modelo a los que aplica el ensayo. */
-  appliesFrom: number
-  appliesTo: number | null
   url: string
-  note?: string
-}
-
-/**
- * Sólo resultados verificados en latinncap.com. Un modelo que no está acá no tiene ensayo que
- * aplique, y eso NO es un cero: la página dice "sin ensayo".
- */
-export const LATIN_NCAP: readonly LatinNcapEntry[] = []
-
-/** El ensayo que aplica a ese modelo y año; si hay varios, el más reciente. */
-export function latinNcapFor(marketSlug: string, year: number): LatinNcapEntry | null {
-  return (
-    LATIN_NCAP.filter(
-      entry =>
-        entry.marketSlug === marketSlug &&
-        year >= entry.appliesFrom &&
-        (entry.appliesTo === null || year <= entry.appliesTo)
-    ).sort((a, b) => b.testYear - a.testYear)[0] ?? null
-  )
 }
 
 /** "3 estrellas (protocolo 2020)" o "4 adulto, 3 niño (protocolo 2016-2019)". */
@@ -234,7 +212,7 @@ export const CAR_ADVISOR_FAQ: readonly FaqItem[] = Object.freeze([
     id: 'latin-ncap',
     question: '¿Qué significan las estrellas de Latin NCAP?',
     answer:
-      'Latin NCAP choca autos vendidos en América Latina y los califica de 0 a 5 estrellas. Cambió su protocolo en 2016 y en 2020, así que una calificación de 2015 y una de 2023 no se comparan entre sí. Mostramos un resultado sólo si aplica al año del auto recomendado; si no hay, decimos "sin ensayo que aplique", que no es lo mismo que cero estrellas.',
+      'Latin NCAP choca autos vendidos en América Latina y los califica de 0 a 5 estrellas. Cambió su protocolo en 2016 y en 2020, así que una calificación de 2015 y una de 2023 no se comparan entre sí. Además califica UNA versión, con sus airbags, en un momento, y casi nunca dice desde qué año vale: el mismo modelo puede tener cero estrellas en una generación y cinco en la siguiente. Por eso mostramos los ensayos del modelo con su año y su enlace, y no los usamos para ordenar: confirmá cuál corresponde al auto que mirás. Que no haya ensayo no quiere decir cero estrellas.',
   },
   {
     id: 'no-aparece',

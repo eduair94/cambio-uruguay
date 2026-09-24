@@ -719,6 +719,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/mercado-de-autos-usados-uruguay',
       },
       {
+        label: '¿Qué auto usado comprar?',
+        description:
+          'El modelo y el año que te alcanzan, con patente, repuestos y cuánto sale tenerlo por mes.',
+        to: '/que-auto-comprar-uruguay',
+      },
+      {
         label: '¿Cuánto vale mi auto?',
         description: 'El precio de mercado de tu auto, con los avisos de hoy.',
         to: '/cuanto-vale-mi-auto-uruguay',

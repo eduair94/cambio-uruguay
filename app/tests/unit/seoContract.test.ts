@@ -215,6 +215,8 @@ const NOINDEXED = [
   // por salir solo cuando menos de 30 locales del pais declaran ese articulo,
   // porque ahi la pagina no puede prometer la comparacion que promete su titulo.
   'precio/[slug].vue',
+  // El asesor de compra se indexa en su URL; cada combinación de respuestas se sale, como el tasador.
+  'que-auto-comprar-uruguay.vue',
   // El ranking de autores de r/CharruaDevs nombra personas: se llega desde el termometro y no entra
   // al indice. La pagina que SI se indexa es /mercado-it-uruguay, con los mismos datos sin nombres.
   'ranking-usuarios-charruadevs.vue',

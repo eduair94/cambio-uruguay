@@ -145,6 +145,7 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
       '/evolucion-precio-autos-usados-uruguay',
       '/autos-chocados-y-con-deuda-uruguay',
       '/cuanto-vale-mi-auto-uruguay',
+      '/que-auto-comprar-uruguay',
       '/vender-mi-auto-uruguay',
     ]),
   },

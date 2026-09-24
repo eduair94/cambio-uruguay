@@ -311,6 +311,11 @@
       <section class="mb-10">
         <h2 class="text-h5 mb-3">Cómo usar esto para elegir</h2>
         <p class="text-body-1 mb-3">
+          Si querés que lo hagamos por vos, el
+          <NuxtLink :to="localePath(CAR_ADVISOR_PATH)">asesor de compra</NuxtLink> cruza tu
+          presupuesto y tu uso con estos mismos datos, la patente y el precio de los repuestos.
+        </p>
+        <p class="text-body-1 mb-3">
           ¿Estás del otro lado? La
           <NuxtLink :to="localePath(CAR_SELL_PATH)">guía para vender tu auto</NuxtLink> usa estos
           mismos datos para decir cuánto pedir, y el
@@ -377,6 +382,7 @@
 <script setup lang="ts">
 import { CAR_OPPORTUNITIES_PATH, CARS_PATH, carMarketPath, formatCarDate } from '~/utils/cars'
 import { CAR_RISKS_PATH, type CarRisksResponse } from '~/utils/carsRisk'
+import { CAR_ADVISOR_PATH } from '~/utils/carAdvisorFigures'
 import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
 import {
   CAR_REPORT_FUEL_LABELS,

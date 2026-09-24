@@ -13,13 +13,8 @@
 //  * Lo que falta no castiga ni premia: vale el punto medio y se dice. Un modelo sin relevamiento de
 //    repuestos no es un modelo con repuestos caros.
 import { CAR_BODY_TYPES, CAR_FUELS, formatCarUsd } from './cars'
-import {
-  CAR_ADVISOR_FIGURES,
-  estimatePatenteUyu,
-  latinNcapFor,
-  latinNcapLabel,
-  type LatinNcapEntry,
-} from './carAdvisorFigures'
+import { CAR_ADVISOR_FIGURES, estimatePatenteUyu, type LatinNcapEntry } from './carAdvisorFigures'
+import { latinNcapResults } from './latinNcap'
 import type {
   PublicCarAdvisorModel,
   PublicCarAdvisorParts,
@@ -189,7 +184,11 @@ export interface CarAdvisorResult {
   parts: PublicCarAdvisorParts | null
   annualDrop: number | null
   safety: {
-    ncap: LatinNcapEntry | null
+    /**
+     * Los ensayos de Latin NCAP del modelo, el más reciente primero. No dicen a qué años de
+     * modelo aplican, así que se muestran y no puntúan (utils/latinNcap.ts).
+     */
+    ncap: LatinNcapEntry[]
     esc: PublicCarAdvisorShare | null
     airbags: PublicCarAdvisorShare | null
     abs: PublicCarAdvisorShare | null
@@ -231,7 +230,6 @@ interface Candidate {
   row: PublicCarAdvisorVariant['years'][number]
   stretch: { year: number; p25: number } | null
   costs: CarAdvisorCosts
-  ncap: LatinNcapEntry | null
 }
 
 const median = (values: readonly number[]): number | null => {
@@ -335,12 +333,7 @@ function safetyRaw(candidate: Candidate): number | null {
   const equipment = [candidate.model.esc, candidate.model.airbags, candidate.model.abs]
     .map(shareValue)
     .filter((value): value is number => value !== null)
-  const ncap = candidate.ncap
-  const stars = ncap ? (ncap.protocol === '2020+' ? ncap.stars : ncap.adultStars) : null
-  if (stars === null && !equipment.length) return null
-  if (stars === null) return mean(equipment)
-  if (!equipment.length) return stars / 5
-  return 0.6 * (stars / 5) + 0.4 * mean(equipment)
+  return equipment.length ? mean(equipment) : null
 }
 
 function explain(
@@ -388,13 +381,6 @@ function explain(
       )
   }
 
-  if (candidate.ncap) {
-    const stars =
-      candidate.ncap.protocol === '2020+' ? candidate.ncap.stars : candidate.ncap.adultStars
-    if (stars !== null && stars >= 4) reasons.push(`Latin NCAP: ${latinNcapLabel(candidate.ncap)}.`)
-    else if (stars !== null && stars <= 2)
-      tradeoffs.push(`Latin NCAP: ${latinNcapLabel(candidate.ncap)}.`)
-  }
   const esc = shareValue(model.esc)
   if (esc !== null && esc >= 0.8)
     reasons.push(`${pct(esc)} de las fichas de este modelo declara control de estabilidad.`)
@@ -486,7 +472,6 @@ export function adviseCars(
         row,
         stretch: newer && newer.p25 <= budget ? { year: newer.year, p25: newer.p25 } : null,
         costs: costsOf(model, variant, row.median, row.year, query, context),
-        ncap: latinNcapFor(model.marketSlug, row.year),
       })
     }
   }
@@ -622,7 +607,7 @@ export function adviseCars(
         parts: model.parts,
         annualDrop: model.annualDrop,
         safety: {
-          ncap: candidate.ncap,
+          ncap: latinNcapResults(model.marketSlug),
           esc: model.esc,
           airbags: model.airbags,
           abs: model.abs,

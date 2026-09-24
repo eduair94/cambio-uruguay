@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest'
 import {
   CAR_ADVISOR_CHECKLIST,
   CAR_ADVISOR_FIGURES,
-  LATIN_NCAP,
   PATENTE_2026,
   estimatePatenteUyu,
-  latinNcapFor,
+  latinNcapLabel,
 } from '../../utils/carAdvisorFigures'
+import { LATIN_NCAP, latinNcapResults } from '../../utils/latinNcap'
 
 describe('patente 2026 (Texto Ordenado del SUCIVE)', () => {
   it('usado: 4,5 % del valor de mercado al dólar del SUCIVE', () => {
@@ -51,9 +51,11 @@ describe('cifras con fecha y fuente', () => {
 })
 
 describe('Latin NCAP', () => {
-  it('cada resultado viene de latinncap.com, con estrellas válidas y años a los que aplica', () => {
+  it('cada resultado viene de latinncap.com, con estrellas válidas para su protocolo', () => {
+    expect(LATIN_NCAP.length).toBeGreaterThan(50)
     for (const entry of LATIN_NCAP) {
-      expect(entry.url).toMatch(/^https:\/\/(www\.)?latinncap\.com\//)
+      expect(entry.url.startsWith('https://www.latinncap.com/')).toBe(true)
+      expect(entry.testYear).toBeGreaterThanOrEqual(2010)
       const stars =
         entry.protocol === '2020+' ? [entry.stars] : [entry.adultStars, entry.childStars]
       for (const value of stars) {
@@ -61,17 +63,20 @@ describe('Latin NCAP', () => {
         expect(value).toBeGreaterThanOrEqual(0)
         expect(value).toBeLessThanOrEqual(5)
       }
-      expect(entry.appliesFrom).toBeGreaterThan(1990)
-      if (entry.appliesTo !== null)
-        expect(entry.appliesTo).toBeGreaterThanOrEqual(entry.appliesFrom)
     }
   })
 
-  it('fuera de los años que cubre el ensayo no hay estrellas', () => {
-    const entry = LATIN_NCAP[0]
-    if (!entry) return
-    expect(latinNcapFor(entry.marketSlug, entry.appliesFrom)).not.toBeNull()
-    expect(latinNcapFor(entry.marketSlug, entry.appliesFrom - 30)).toBeNull()
-    expect(latinNcapFor('modelo-que-no-existe', 2020)).toBeNull()
+  it('los ensayos de un modelo van del más reciente al más viejo, y un modelo sin ensayo no tiene', () => {
+    const onix = latinNcapResults('chevrolet-onix', 10)
+    expect(onix.length).toBeGreaterThan(1)
+    expect(onix.map(entry => entry.testYear)).toEqual(
+      [...onix.map(entry => entry.testYear)].sort((a, b) => b - a)
+    )
+    expect(latinNcapResults('volkswagen-saveiro')).toEqual([])
+  })
+
+  it('la etiqueta dice el protocolo, porque 2015 y 2023 no se comparan', () => {
+    const old = LATIN_NCAP.find(entry => entry.protocol !== '2020+')!
+    expect(latinNcapLabel(old)).toContain(old.protocol)
   })
 })

@@ -136,9 +136,12 @@
         <li>
           Cómo está el mercado hoy —precios, qué modelo pierde más valor por año, qué se compra con
           cada presupuesto— está en el
-          <NuxtLink :to="localePath(CAR_REPORT_PATH)">informe del mercado</NuxtLink>. Si vas a
-          vender, el <NuxtLink :to="localePath(CAR_VALUATION_PATH)">tasador</NuxtLink> te dice
-          cuánto se pide hoy por el tuyo y la
+          <NuxtLink :to="localePath(CAR_REPORT_PATH)">informe del mercado</NuxtLink>. Si no sabés
+          qué modelo te conviene, el
+          <NuxtLink :to="localePath(CAR_ADVISOR_PATH)">asesor de compra</NuxtLink> te dice qué año
+          te alcanza, cuánto sale tenerlo y cuánto cuestan sus repuestos. Si vas a vender, el
+          <NuxtLink :to="localePath(CAR_VALUATION_PATH)">tasador</NuxtLink> te dice cuánto se pide
+          hoy por el tuyo y la
           <NuxtLink :to="localePath(CAR_SELL_PATH)">guía para vender</NuxtLink>, qué suma y qué
           resta en el precio.
         </li>
@@ -176,6 +179,7 @@
 import { useDisplay } from 'vuetify'
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
+import { CAR_ADVISOR_PATH } from '~/utils/carAdvisorFigures'
 import { CAR_REPORT_PATH } from '~/utils/carsReport'
 import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
 import {

@@ -678,6 +678,10 @@
           "label": "El mercado de autos usados"
         },
         {
+          "to": "/que-auto-comprar-uruguay",
+          "label": "¿Qué auto usado comprar?"
+        },
+        {
           "to": "/cuanto-vale-mi-auto-uruguay",
           "label": "¿Cuánto vale mi auto?"
         },
