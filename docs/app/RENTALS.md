@@ -127,6 +127,13 @@ desaparecen solas a los 10 días de la última vez que se las vio.
   gastos viejos) siempre es mucho menor. Dos montos del mismo orden ("antes $30.000, ahora $27.000")
   o de dos monedas siguen absteniendo, y "$336.000 anual" nunca es el mensual.
 
+- **El tipo que la leyenda no nombra.** Con las cuentas leídas, 45 de 188 avisos aceptados salían
+  "otro" ("Alquiler - Cordón Mercedes y Tacuarembó 5 piso al frente … 2 dormitorios") y las
+  estadísticas por zona sólo cuentan apartamento y casa. Dormitorios más una señal de edificio (un
+  piso, gastos comunes, balcón, ascensor, portería, amenities, barbacoa) es apartamento; "casita" es
+  casa; "sin gastos comunes" no cuenta como señal de edificio, y una oficina se nombra sola y queda
+  afuera. Quedan "otro" 18 de 188.
+
 Sobre las 347 leyendas guardadas, el parser nuevo cambia 7 veredictos: seis alquileres uruguayos
 recuperados y uno de Caracas que sigue rechazado. Ningún aviso nuevo es falso. El presupuesto de
 Instagram sube de 12 a 20 minutos: con 32 cuentas, 8 quedaban sin leer.

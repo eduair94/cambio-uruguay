@@ -23,6 +23,21 @@ describe("a rental advert that never says 'alquiler'", () => {
   });
 });
 
+describe("the type of a dwelling the caption never names", () => {
+  it("is an apartment when it has bedrooms and a building cue", () => {
+    // mympropiedades1, 2026-09-25.
+    expect(parse("Alquiler - Cordón Mercedes y Tacuarembo 5 piso al frente Living comedor con cocina integrada Terraza Baño 2 dormitorios $ 29000 $ 6300 #alquiler").propertyType).toBe("apartamento");
+    expect(parse("1 dormitorio, cocina integrada, balcón con todo el sol de la mañana. $24500 GC $5500 aprox Piso 3. Monterroso y Salterain Garantías: andas, aseguradoras").propertyType).toBe("apartamento");
+    expect(parse("🏘️Alquiler de 2 Dormitorios 📍Montevideo, Aires Puros ☑️Cocina integrada ☑️Baño Alquiler $27.000 Gastos comunes $1300").propertyType).toBe("apartamento");
+  });
+
+  it("is a house when it says 'casita', and stays unnamed without a building cue or when it is an office", () => {
+    expect(parse("🏡 Alquiler en Pocitos – $19.700 ✅ 1 dormitorio ✅ Tipo casita ✅ Gastos comunes: $2.300").propertyType).toBe("casa");
+    expect(parse("🏠 Alquiler Cruz de Carrasco. 2 Dormitorios, Patio y Parrillero. $22.000").propertyType).toBe("otro");
+    expect(parse("ALQUILER SIN GASTOS COMUNES - OFICINAS O CONSULTORIOS - $22.000 - Cocina - Baño - Piso alto, 2 dormitorios").propertyType).not.toBe("apartamento");
+  });
+});
+
 describe("unlabelled amounts of one caption", () => {
   it("takes the rent when it is at least four times every other unlabelled amount of the same currency", () => {
     const soho = "🤩 Alquiler 2 dormitorios en Ventura Soho – Palermo\n✅ Maldonado 1821 esq. Yaro\n✅ $34.700\n✅ Gastos comunes: $5.400\n✅ Piso 10\n✅ Cocheras disponibles: $3.500 a $4.000\n✅ Garantías: aseguradoras\n✅ Contrato mínimo 2 años";

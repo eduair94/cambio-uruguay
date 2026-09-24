@@ -301,10 +301,25 @@ export function captionPropertyType(title: string, text: string): RentalProperty
   const byTitle = inferPropertyType(title);
   if (byTitle !== "otro" && byTitle !== "habitacion") return byTitle;
   if (/\b(?:apartamento|apto|apart|monoambiente|duplex|penthouse|loft)\b/.test(flat)) return "apartamento";
-  if (/\b(?:casa|chalet|chacra|quinta)\b/.test(flat)) return "casa";
+  if (/\b(?:casa|casita|chalet|chacra|quinta)\b/.test(flat)) return "casa";
   const byText = inferPropertyType(text);
-  return byText === "habitacion" ? "otro" : byText;
+  if (byText === "habitacion") return "otro";
+  // "Sin gastos comunes" says the opposite of a building: it is how a house or a PH is sold.
+  const cues = flat.replace(/\b(?:sin|no\s+(?:paga|pagas|tiene|abona)|libre\s+de)\s+(?:gastos\s+comunes|g\.?\s?c\.?)/g, " ");
+  if (byText === "otro" && DWELLING.test(cues) && BUILDING.test(cues) && !/\b(?:oficinas?|consultorios?|locales?)\b/.test(cues)) return "apartamento";
+  return byText;
 }
+
+/**
+ * A dwelling in a building, when the caption never says "apartamento". Measured 2026-09-25 on the
+ * creator-embed read: 45 of 188 accepted adverts came out "otro" — "Alquiler - Cordón Mercedes y
+ * Tacuarembó 5 piso al frente … 2 dormitorios $29.000 $6.300", "1 dormitorio, cocina integrada,
+ * balcón … GC $5.500 … Piso 3" — and zone statistics only count apartamento and casa. Bedrooms
+ * plus a building cue (a floor, gastos comunes, balcony, lift, porter, amenities, the shared
+ * barbacoa) is an apartment; an office names itself and stays out.
+ */
+const DWELLING = /\b(?:\d+\s*dorm(?:itorios?|s?\b)|(?:un|dos|tres|cuatro)\s+dormitorios?|dormitorios?)\b/;
+const BUILDING = /\b(?:\d+\s*(?:°|º|o)?\s*piso|piso\s+\d+|(?:primer|segundo|tercer|cuarto|quinto)\s+piso|piso\s+(?:alto|al\s+frente)|gastos\s+comunes|g\.?\s?c\.?\s*\$|balc[oó]n|ascensor|porter[ií]a|amenities|barbacoa|edificio|complejo)\b/;
 
 // --- Uruguay ---------------------------------------------------------------------------------
 
