@@ -11,7 +11,9 @@ export type OpportunitySource =
   | "facebook"
   | "casasweb"
   | "elpais"
-  | "tiktok";
+  | "tiktok"
+  | "instagram"
+  | "facebookreels";
 export type OpportunityAreaBasis = "built" | "total" | "reported";
 
 export interface OpportunityMoney {

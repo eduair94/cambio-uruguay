@@ -71,6 +71,8 @@ export type RentalSource =
   | 'elpais'
   | 'casasweb'
   | 'tiktok'
+  | 'instagram'
+  | 'facebookreels'
 
 export type RentalPropertyType =
   | 'apartamento'
@@ -380,6 +382,8 @@ export const RENTAL_SOURCE_LABEL: Record<RentalSource, string> = {
   elpais: 'Inmuebles El País',
   casasweb: 'Casasweb',
   tiktok: 'TikTok',
+  instagram: 'Instagram',
+  facebookreels: 'Facebook Reels',
 }
 
 export const RENTAL_TYPE_LABEL: Record<RentalPropertyType, string> = {

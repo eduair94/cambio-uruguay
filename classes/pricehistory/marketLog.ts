@@ -18,7 +18,7 @@ import { isPlaceholderPrice } from "./placeholder";
 export const MARKET_LOG_MAX_POINTS = 40;
 
 /** Las fuentes que el seguimiento de alquileres reconoce (espejo de `classes/propertyzones/project.ts`). */
-const RENTAL_SOURCES = new Set(["mercadolibre", "infocasas", "facebook", "casasweb", "elpais", "tiktok"]);
+const RENTAL_SOURCES = new Set(["mercadolibre", "infocasas", "facebook", "casasweb", "elpais", "tiktok", "instagram", "facebookreels"]);
 
 const NATIVE_ID = /^[\w-]{1,120}$/;
 const RESERVED = new Set(["constructor", "prototype", "__proto__"]);

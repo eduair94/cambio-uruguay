@@ -36,6 +36,8 @@ const SOURCE_RANK: Record<RentalSource, number> = {
   facebook: 1,
   // A caption: the same fields as a Marketplace card, read from free text.
   tiktok: 1,
+  instagram: 1,
+  facebookreels: 1,
 };
 
 export interface DedupeContext {

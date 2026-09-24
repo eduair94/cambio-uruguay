@@ -43,7 +43,7 @@ const EXPLORATORY_POLICY = Object.freeze({
 });
 
 const DAY = 86_400_000;
-const SOURCES = new Set(["infocasas", "mercadolibre", "casasweb", "elpais", "facebook", "tiktok"]);
+const SOURCES = new Set(["infocasas", "mercadolibre", "casasweb", "elpais", "facebook", "tiktok", "instagram", "facebookreels"]);
 const RISKS = new Set<OpportunityRisk>([
   "temporary", "partial_price", "occupied", "unavailable", "needs_renovation", "restricted_rights",
   "project", "multiple_units", "price_on_request", "extra_purchase_costs", "special_layout", "location_conflict", "attribute_conflict",
@@ -62,6 +62,8 @@ const HOSTS: Record<OpportunityListing["source"], { advert: string[]; image: str
   casasweb: { advert: ["casasweb.com"], image: ["casasweb.com", "static.tokkobroker.com"] },
   elpais: { advert: ["inmuebles.elpais.com.uy"], image: ["imagenes.gallito.com.uy"] },
   tiktok: { advert: ["tiktok.com"], image: ["tiktokcdn.com", "tiktokcdn-us.com", "tiktokcdn-eu.com"] },
+  instagram: { advert: ["instagram.com"], image: ["cdninstagram.com", "fbcdn.net"] },
+  facebookreels: { advert: ["facebook.com"], image: ["fbcdn.net"] },
 };
 
 function publicUrl(value: unknown, source?: OpportunityListing["source"], kind: "advert" | "image" = "advert"): string | null {
