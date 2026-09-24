@@ -59,6 +59,32 @@ export const PAGE_ADDENDA: readonly PageAddendum[] = Object.freeze([
       },
     ],
   },
+  {
+    route: '/herramientas/costo-de-vida',
+    updatedAt: '2026-09-24',
+    items: [
+      {
+        question:
+          "¿Cuánto se necesita para vivir 'cómodo' en Montevideo si tenés auto y querés una zona cara como Carrasco?",
+        answer:
+          "El alquiler ahí ya es otro mundo: un 2 dormitorios en Carrasco promedia $U68.052 por mes y uno de 3 dormitorios puede llegar a $U98.676, muy por encima de los $U22.000 de zonas como La Blanqueada. Sumale el auto —nafta súper a $88,67 el litro y seguro de unos US$200-300 al año— y salidas a comer más seguido, donde una cena en un restaurante de gama media cuesta entre US$25 y US$30 por persona. Solo con esos tres rubros (zona cara, auto y comer afuera) ya estás muy por encima del presupuesto 'cómodo' que calcula la herramienta para sueldos medios.",
+        sources: [
+          {
+            title: 'cuantomecuesta.com',
+            url: 'https://cuantomecuesta.com/uy/alquiler-montevideo/',
+          },
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/ministerio-industria-energia-mineria/comunicacion/noticias/precio-combustibles-julio-2026-baja-principales-combustibles-reduccion-100',
+          },
+          {
+            title: 'esim.holafly.com',
+            url: 'https://esim.holafly.com/es/blog/finanzas/costo-vida-montevideo/',
+          },
+        ],
+      },
+    ],
+  },
   // <<< generated-addenda >>>
 ])
 
