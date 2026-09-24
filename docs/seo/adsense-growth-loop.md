@@ -176,7 +176,7 @@ Validación local: lectura del código fuente por `tests/unit/adRail.test.ts` (g
 
 ## Undécima iteración: 22/9/2026 (infraestructura del plan de tráfico)
 
-Lectura nueva, con el GraphQL de Cloudflare (`npm run cf_traffic`, token con Zone Analytics: Read): más de la mitad de los pedidos de la semana venían de un solo cliente headless desde Estados Unidos, y el tráfico que GA4 atribuía a Singapur era una granja que rota User-Agents, ejecuta JavaScript y recorre el directorio de alquileres; es el origen de los 504 en las páginas de alquiler. Descartado que fuera un proceso propio (el VPS está en Montreal; el índice RAG no ejecuta JavaScript). Dos reglas WAF de desafío gestionado, por User-Agent headless y por país sólo sobre rutas dinámicas: reversibles y medidas, no un bloqueo por suposición.
+Lectura nueva, con el GraphQL de Cloudflare (`npm run cf_traffic`, token con Zone Analytics: Read): más de la mitad de los pedidos de la semana venían de un solo cliente headless desde Estados Unidos, y el tráfico que GA4 atribuía a Singapur era una granja que rota User-Agents, ejecuta JavaScript y recorre el directorio de alquileres. Se le atribuyeron entonces los 504 de esas páginas; la revisión del 24/9, documentada debajo, retira esa atribución al distinguir los sondeos internos de Early Hints. Descartado que fuera un proceso propio (el VPS está en Montreal; el índice RAG no ejecuta JavaScript). Dos reglas WAF de desafío gestionado, por User-Agent headless y por país sólo sobre rutas dinámicas: reversibles y medidas, no un bloqueo por suposición.
 
 Cambios publicados en un solo push (commit `79f21ec5` y siguientes):
 
@@ -187,7 +187,15 @@ Cambios publicados en un solo push (commit `79f21ec5` y siguientes):
 5. **Medición**: RPM sólo Uruguay al lado del RPM del sitio, para que una granja no deforme el multiplicador por familia.
 6. **Distribución**: «Guía del día» en el reporte diario de Telegram y Discord; `/llms-full.txt` e IndexNow (inerte hasta `INDEXNOW_ENABLED=1`); `/publicidad` y el plumbing de patrocinios y afiliados, que con la configuración vacía no dibuja nada.
 
-Hipótesis: el tráfico automatizado deja de deformar GA4 y de saturar el SSR; el tiempo hasta el primer byte de las familias cacheadas baja al del borde; la parte de la audiencia real que ve la impresión sube. Evaluación: 504 por hora en Cloudflare, TTFB por familia con `cf-cache-status`, RPM sólo Uruguay en el tablero privado y AdSense por unidad, siempre con siete días cerrados. Ningún cambio de esta iteración se declara en `experiments.json` salvo la cesión del glosario de la UR, que sí tiene control.
+Hipótesis: el tráfico automatizado deja de deformar GA4 y de saturar el SSR; el tiempo hasta el primer byte de las familias cacheadas baja al del borde; la parte de la audiencia real que ve la impresión sube. Evaluación: respuestas 5xx de clientes en Cloudflare (ver corrección del 24/9 debajo), TTFB por familia con `cf-cache-status`, RPM sólo Uruguay en el tablero privado y AdSense por unidad, siempre con siete días cerrados. Ningún cambio de esta iteración se declara en `experiments.json` salvo la cesión del glosario de la UR, que sí tiene control.
+
+## Corrección de la medición de disponibilidad: 24/9/2026
+
+La atribución anterior de los 504 a caídas del origen era incorrecta: la consulta sumaba también subrequests internos de Cloudflare. La comprobación por `requestSource` de los días completos 21 y 23 y de una hora del 24 encontró que todos esos 504 eran `earlyHintsCache`; ninguno llegaba a una petición de cliente (`eyeball`). [Cloudflare documenta](https://developers.cloudflare.com/cache/advanced-configuration/early-hints/#emit-early-hints) que ese 504 señala ausencia de pistas en la caché de Early Hints y no un error del origen. Las cifras agregadas anteriores no sirven para cuantificar una caída ni el efecto del WAF.
+
+`npm run cf_traffic` ahora filtra `requestSource: "eyeball"` y el host `cambio-uruguay.com`. El segundo argumento permite otro host o `'*'` para toda la zona; ese último modo añade el desglose por host. La salida explicita el alcance y que «clientes» incluye bots. El control de disponibilidad usa todos los 5xx, sin inferir humanidad por país ni confundir la zona completa con la web principal. Las reglas WAF no se modificaron: esta corrección afecta a la medición, y no reemplaza la evidencia por ruta y User-Agent que las motivó.
+
+Las colocaciones manuales del riel y editorial están presentes en la configuración del build y del SSR comprobados el 24/9. El registro privado del 22/9 ya informaba su activación, pero aún no se acredita la primera impresión. La unidad editorial se comparte con otras páginas, por lo que su informe por unidad no aísla sólo las guías. No atribuir ingresos ni visibilidad a la presencia de un identificador. Evidencia privada y controles de esta revisión en `data/revenue-2026-09-24/`.
 
 ## Próximas decisiones
 

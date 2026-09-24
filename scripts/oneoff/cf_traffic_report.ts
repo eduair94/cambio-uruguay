@@ -2,11 +2,20 @@
 //
 //   npm run cf_traffic            # últimos 7 días
 //   npm run cf_traffic -- 3       # últimos N días (máx. 30 en el plan gratuito)
+//   npm run cf_traffic -- 3 api.cambio-uruguay.com  # otro host de la zona
+//   npm run cf_traffic -- 3 '*'   # todos los hosts de la zona
 //
 // Cloudflare ve cada petición y la clasifica; GA4 sólo ve a quien ejecuta gtag y el VPS no tiene
 // access log. Este script pide al GraphQL de Cloudflare el desglose por país, ruta, User-Agent,
 // estado y caché de la zona y lo imprime como tablas: alcanza para decidir una regla WAF sobre las
-// rutas que el cliente recorre, sin bloquear países por suposición.
+// rutas que el cliente recorre, sin bloquear países por suposición. Por defecto sólo el host
+// cambio-uruguay.com y requestSource=eyeball: peticiones de clientes, incluidos bots, no una
+// certificación de visitas humanas. Los subrequests internos de Cloudflare quedan fuera.
+//
+// Early Hints usa 504 para indicar que no tiene pistas cacheadas: NO es un fallo del lector ni
+// del origen. El 24/9 todos los 504 de los días 21 y 23 eran requestSource=earlyHintsCache.
+// Contarlos como caídas habría confundido decenas de miles de sondeos internos con errores web.
+// https://developers.cloudflare.com/cache/advanced-configuration/early-hints/#emit-early-hints
 //
 // Necesita un token con **Zone Analytics: Read**: `CLOUDFLARE_ANALYTICS_TOKEN` en el `.env` (o
 // `CLOUDFLARE_TOKEN` si ese ya tiene el permiso). El token que purga la caché NO alcanza: devuelve
@@ -47,7 +56,7 @@ function table(title: string, rows: Row[], cols: string[]): void {
     return;
   }
   const total = rows.reduce((s, r) => s + r.count, 0);
-  console.log([...cols, "requests", "%"].join(" | "));
+  console.log([...cols, "requests", "% de filas mostradas"].join(" | "));
   for (const r of rows) {
     console.log([...cols.map(c => String(r.dimensions[c] ?? "")), r.count, ((100 * r.count) / Math.max(1, total)).toFixed(1)].join(" | "));
   }
@@ -73,10 +82,17 @@ async function main(): Promise<void> {
     process.exit(1);
   }
   const days = Math.min(30, Math.max(1, Number(process.argv[2] || 7)));
+  const host = process.argv[3] || "cambio-uruguay.com";
   const end = new Date();
   const start = new Date(end.getTime() - days * 86_400_000);
-  const base: Filter = { datetime_geq: start.toISOString(), datetime_lt: end.toISOString() };
-  console.log(`[cf-traffic] zona ${ZONE_TAG}, ${isoDay(start)} → ${isoDay(end)} (${days} días)`);
+  const base: Filter = {
+    datetime_geq: start.toISOString(),
+    datetime_lt: end.toISOString(),
+    requestSource: "eyeball",
+    ...(host === "*" ? {} : { clientRequestHTTPHost: host }),
+  };
+  console.log(`[cf-traffic] zona ${ZONE_TAG}, host ${host}, ${isoDay(start)} → ${isoDay(end)} (${days} días)`);
+  console.log("Ámbito: peticiones de clientes (eyeball), incluidos bots; sin subrequests internos de Cloudflare.");
 
   const run = async (dims: string, limit = 25, extraFilter: Filter = {}): Promise<Row[]> => {
     try {
@@ -93,8 +109,9 @@ async function main(): Promise<void> {
   };
 
   table("Por país", await run("clientCountryName"), ["clientCountryName"]);
+  if (host === "*") table("Por host", await run("clientRequestHTTPHost"), ["clientRequestHTTPHost"]);
   table("Por ASN (si el plan lo expone; nombre en bgp.he.net/AS<n>)", await run("clientAsn"), ["clientAsn"]);
-  table("Por estado de respuesta y caché", await run("edgeResponseStatus cacheStatus", 20), ["edgeResponseStatus", "cacheStatus"]);
+  table("Por estado de respuesta y caché (clientes)", await run("edgeResponseStatus cacheStatus", 200), ["edgeResponseStatus", "cacheStatus"]);
   table("Por tipo de dispositivo", await run("clientDeviceType", 5), ["clientDeviceType"]);
   table("Por User-Agent (top 25)", await run("userAgent", 25), ["userAgent"]);
   table("Por ruta (top 40)", await run("clientRequestPath", 40), ["clientRequestPath"]);
