@@ -392,10 +392,11 @@ describe('presupuesto bien usado', () => {
     expect(onixResult.reasons[0]).not.toMatch(/llegás/)
   })
   it('una ficha que le da 7 plazas a un hatchback no es un dato', () => {
-    const odd = model({ ...kwid, marketSlug: 'suzuki-alto', seats: 7 })
+    const odd = model({ ...kwid, marketSlug: 'suzuki-alto', seats: 7, trunkL: 520 })
     const data = { ...snapshot, data: { ...snapshot.data, models: [odd] } }
     const result = adviseCars(data, query({ budget: 11_000, people: 6 }), prices).results[0]!
     expect(result.space.seats).toBeNull()
+    expect(result.space.trunkL).toBeNull()
   })
 })
 

@@ -97,7 +97,12 @@ const MIN_BUDGET_USE = 0.4
 /** Carrocerías donde más de cinco plazas es un error de la ficha, no un dato. */
 const FIVE_SEAT_BODIES: readonly PublicCarBodyType[] = ['hatchback', 'sedan', 'coupe', 'cabriolet']
 /** Arriba de esto, el baúl de un auto chico está medido con los asientos rebatidos. */
-const MAX_SMALL_TRUNK_L = 600
+const MAX_TRUNK_L: Partial<Record<PublicCarBodyType, number>> = {
+  hatchback: 450,
+  coupe: 450,
+  cabriolet: 450,
+  sedan: 600,
+}
 
 /**
  * Lo que la ficha dice y no puede ser: un hatchback de 7 plazas, o un baúl de 985 litros en un auto
@@ -107,7 +112,8 @@ function sensibleModel(model: PublicCarAdvisorModel): PublicCarAdvisorModel {
   const small = !!model.body && FIVE_SEAT_BODIES.includes(model.body)
   const seats = model.seats
   const badSeats = seats !== null && (seats < 2 || (seats > 5 && small))
-  const badTrunk = model.trunkL !== null && small && model.trunkL > MAX_SMALL_TRUNK_L
+  const maxTrunk = model.body ? MAX_TRUNK_L[model.body] : undefined
+  const badTrunk = model.trunkL !== null && maxTrunk !== undefined && model.trunkL > maxTrunk
   return badSeats || badTrunk
     ? { ...model, seats: badSeats ? null : seats, trunkL: badTrunk ? null : model.trunkL }
     : model

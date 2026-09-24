@@ -108,7 +108,7 @@
           </div>
           <VTextField
             v-model="draft.gastoMes"
-            label="Gasto máximo por mes en el auto ($, opcional)"
+            label="Gasto máximo por mes ($, opcional)"
             inputmode="numeric"
             placeholder="Ej. 12000"
             density="comfortable"
