@@ -10,6 +10,7 @@ import { FRONTERA_ROUTES } from '../../utils/frontera'
 import { growthEntryMessages } from '../../utils/growthEntryMessages'
 import { noiseNavigationMessages } from '../../utils/noiseNavigationMessages'
 import { finesNavigationMessages } from '../../utils/finesNavigationMessages'
+import { recordingConsentMessages } from '../../utils/recordingConsentMessages'
 
 /**
  * El presupuesto de caracteres de los títulos que llevan datos adentro.
@@ -176,6 +177,7 @@ const LOCAL_TITLE_MESSAGES: Record<string, Record<string, unknown>> = {
   '~/utils/growthEntryMessages': growthEntryMessages.es,
   '~/utils/noiseNavigationMessages': noiseNavigationMessages.es,
   '~/utils/finesNavigationMessages': finesNavigationMessages.es,
+  '~/utils/recordingConsentMessages': recordingConsentMessages.es,
 }
 
 function localMessageTitle(source: string, titleVariable: string): string | null {
@@ -268,6 +270,7 @@ describe('el lector sigue los títulos trasladados a mensajes locales', () => {
     ['tarjetas-de-credito-uruguay/index.vue', growthEntryMessages.es.cards.seoTitle],
     ['denunciar-ruidos-molestos-uruguay.vue', noiseNavigationMessages.es.title],
     ['multas-de-transito-y-patente-uruguay.vue', finesNavigationMessages.es.title],
+    ['grabacion-sin-consentimiento-uruguay.vue', recordingConsentMessages.es.title],
   ]) {
     it(`mide el mensaje importado real de ${file}`, () => {
       expect(staticTitle(readFileSync(join(PAGES_DIR, file), 'utf8'))).toBe(
