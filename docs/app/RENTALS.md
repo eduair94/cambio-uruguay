@@ -1,5 +1,79 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Instagram y Facebook Reels — 24 de setiembre de 2026
+
+Séptima y octava fuente, pedidas junto con TikTok ("TikTok, Instagram reels, Facebook reels,
+etc."). Lo que no depende de la red salió de `sources/tiktok/` a **`classes/rentals/sources/social/`**:
+`caption.ts` (el parser de leyendas, sin cambios), `post.ts` (`SocialPost`: red, id, URL propia,
+leyenda, fecha, autor, portada), `process.ts` (ventana, leyenda → hechos, esquina geocodificada una
+vez por post, fila de memoria), `store.ts` (memoria por colección y reclamos), `copies.ts` (la
+guarda de copias), `chrome.ts` (el Chrome headless) e `index.ts` (`harvestSocial`). Cada red tiene
+su adaptador: `sources/tiktok/`, `social/instagram/`, `social/facebookreels/`. `harvestSocial` las
+corre **en secuencia** (un Chrome a la vez en el VPS), aísla la que falla y devuelve un resultado por
+red. Diseño completo en `docs/superpowers/specs/2026-09-24-rentals-social-design.md`.
+
+**Lo medido antes de escribir código (desde esta máquina y desde el VPS):**
+
+| red | descubrimiento sin sesión | de dónde sale la leyenda | medido |
+|---|---|---|---|
+| Instagram | **sólo cuentas**: `/explore/tags/…` redirige a login y `/api/v1/users/web_profile_info` da 429 hasta desde una IP residencial | la página del post, en un Chrome: el JSON embebido trae el nodo del post (`code`, `caption.text`, `taken_at`, `user`, `product_type`, `image_versions2`) **y los de otros posts de la cuenta**, así que se toma el nodo cuyo `code` es el pedido | 12 de 12 posts de una cuenta leídos desde la IP del VPS, ~6 s cada uno; por el proxy, error de red |
+| Facebook Reels | la **búsqueda de videos** (`/watch/search/?q=…`) y `/hashtag/…`, detrás del cartel de login | la página misma: cada resultado trae su `Story` entero (`post_id`, `message.text`, `actors[0]`, `videoId`, `publish_time`, miniatura, `/reel/<id>/`) | 8 páginas en 80 s: 24 historias, 23 reels, 6 de los últimos 45 días, 4 con precio; aparecen avisos de República Dominicana y Colombia |
+| YouTube | búsqueda y `/hashtag/…` con `yt-dlp` | una lectura por video | 49 videos: 3 de los últimos 45 días y **ninguno con precio**; los de inmobiliarias tienen 1–4 años. **No se construyó** |
+
+Threads y X exigen sesión para buscar; Kwai no tiene presencia medible acá. La sesión del Chrome del
+perfil de Facebook (`facebook_profile_browser`) está en error desde el 24/9 07:31 UTC
+(`FB_PROFILE_BROWSER_MONITOR_INVALID_RESPONSE`): **ninguna de estas fuentes la usa**, cada una lanza
+un Chrome headless propio y sin sesión. `robots.txt` de facebook.com e instagram.com dice
+`User-agent: *` / `Disallow: /`; se leen páginas públicas porque lo pidió el dueño del sitio, como
+TikTok, con un interruptor por red.
+
+**La guarda de copias.** La misma inmobiliaria publica la misma vivienda en las tres redes, y en
+Instagram varias veces: en la primera corrida real, "Marco Bruto y Rivera, 1 dormitorio, $26.000"
+apareció **siete veces** (tres carruseles y tres reels de Instagram, con redacciones distintas, y un
+video de TikTok). El directorio no puede unirlas (`dedupe.ts` exige dirección exacta), así que
+`copies.ts` publica una y cuenta el resto en la nota de cada red. Dos claves dicen "misma vivienda":
+los **hechos** (la primera esquina/dirección del texto con las calles ordenadas y sin prefijos —
+"La Paz y Gaboto" = "Gaboto y La Paz", "Av. Italia" = "Italia" —, moneda, precio y dormitorios; si
+falta uno de los cuatro, no hay clave) y el **gemelo de texto** (red + cuenta + hash de la leyenda
+normalizada). Los avisos que comparten una clave se agrupan (unión de conjuntos: un carrusel gemelo
+de un reel que comparte esquina con un video de TikTok es una sola vivienda). Y la elección es
+**estable**: el primer aviso que publicó una clave la reclama en `rentalsocialclaims` mientras se lo
+vea dentro de `RENTALS_PRUNE_DAYS` (21). Si se lo ve hoy, gana; si no se lo ve hoy, **ninguna copia lo
+reemplaza** (su oferta sigue en el directorio hasta la poda); sin reclamo, gana TikTok, después
+Instagram, después Facebook Reels, y dentro de la red el más viejo. Sin la estabilidad, la copia
+publicada podría saltar de red entre corridas y, como ninguna de estas fuentes es `complete`, la
+vieja no caducaría: la vivienda aparecería dos veces hasta la poda. El precio de la regla: dos
+viviendas distintas en la misma esquina, con el mismo precio y los mismos dormitorios, se tomarían
+por una; se oculta una, nunca se publica un dato equivocado.
+
+**Instagram.** Sin descubrimiento, se leen **cuentas**: las semillas (`RENTALS_INSTAGRAM_ACCOUNTS`,
+por defecto `inmobiliariaalquilar`) y, como **candidatas**, los handles del registro de TikTok. Un
+handle de TikTok no es una cuenta de Instagram — `habitarte.inmobiliaria` es una inmobiliaria
+mexicana ahí; `cap.propiedades` y `zamar.inmo` no existen —, así que cada candidata se juzga por lo
+que publica: pasa a **`activa`** cuando un aviso suyo pasa el parser (con la evidencia de Uruguay
+incluida), a **`descartada`** con tres posts evaluados y ninguno aceptado, y a **`no existe`** cuando
+el perfil dice "no está disponible"; esas dos se vuelven a mirar a los 30 días. El perfil muestra sus
+**12 posts más recientes**; sólo se lee la página de los códigos que la memoria no tiene y los
+conocidos se reconstruyen de `rentalinstagramposts`, así que una corrida en régimen lee pocos posts.
+Carruseles y reels cuentan igual (los dos son el mismo aviso) y la guarda deja uno.
+`complete: false` siempre: doce posts no son el catálogo.
+
+**Facebook Reels.** Doce búsquedas de video (`RENTALS_FBREELS_QUERIES`) y dos hashtags
+(`RENTALS_FBREELS_TAGS`); de cada página, las historias **con video** (las fotos que mezclan las
+páginas de hashtag no son reels). Unas cinco historias por página: el resto de la lista se carga al
+hacer scroll, cosa que un visitante sin sesión no recibe. `complete: false` siempre.
+
+**Primera corrida real, desde el VPS, 24/9 19:14 UTC** (TikTok con 4 cuentas y 2 hashtags, Instagram
+con 8 cuentas, Facebook con 8 páginas; 332 s en total):
+
+| red | avisos aceptados | publicados tras la guarda | nota |
+|---|---|---|---|
+| TikTok | 23 de 53 videos | 22 | 1 copia |
+| Instagram | 24 de 26 posts | 8 | 16 copias: la misma vivienda en carrusel, reel y TikTok; 2 cuentas nuevas `activa` encontradas por handle de TikTok (`alquiler.montevideo`, `alquilermontevideo`), 4 sin perfil |
+| Facebook Reels | 1 de 27 reels | 1 | 20 fuera de la ventana de 45 días, 6 rechazados (temporarios, extranjeros) |
+
+Los 10 pares copia/guardado revisados a mano eran, los 10, la misma vivienda.
+
 ## TikTok — 23 de setiembre de 2026
 
 Sexta fuente: los alquileres que inmobiliarias y particulares publican como video corto, con
@@ -457,6 +531,8 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 | **Casasweb** | HTML público de `resultados.aspx`; paginación mediante el formulario de búsqueda que entrega el servidor | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
 | **Inmuebles El País** | los dos endpoints de su propio buscador: `POST /api/chat/init` (una búsqueda guardada por departamento) y `GET /api/chat/<id>/results?page&limit=500`; UA de navegador y cabecera `x-cambio-uruguay-bot`, con puppeteer de respaldo cuando Cloudflare desafía | dirección, barrio, lat/lon, dormitorios/baños/m², gastos comunes, inmobiliaria, foto y **la garantía como dato estructurado** | fecha de publicación original; teléfono y correo de la inmobiliaria (existen en la respuesta y **no se copian**); garaje y amueblado |
 | **TikTok** | un Chrome real por corrida (puppeteer, **a través del proxy de `proxy.txt`**: desde la IP del VPS toda lista vuelve vacía) lee las páginas de hashtag (`/tag/...`) y de cuenta (`/@user`) capturando `item_list`; un video suelto se lee por HTTP plano de su propia página. Sólo la corrida completa | precio, gastos comunes, dormitorios/baños/m², tipo, barrio y departamento, garantías y **la fecha real de publicación**, todo leído de la LEYENDA (`classes/rentals/sources/tiktok/caption.ts`, precisión sobre recall); coordenada sólo de una esquina del propio texto geocodificada y aceptada | dirección exacta; el teléfono (está en la leyenda y se borra); unificación con otros portales; la foto es el cover firmado del video y vence en ~36–48 h, se refresca al releer la cuenta |
+| **Instagram** | un Chrome headless propio, **sin sesión y sin proxy** (desde la IP del VPS contesta; por el proxy dio error de red): el perfil de cada cuenta del registro (12 posts) y la página de cada post que la memoria no tiene. Sólo la corrida completa | lo mismo que TikTok, leído de la LEYENDA; la fecha real (`taken_at`) y la portada | descubrimiento por hashtag (exige sesión); más de 12 posts por cuenta; el teléfono de la leyenda (se borra); la portada vence en días y se refresca al releer |
+| **Facebook Reels** | un Chrome headless propio, **sin sesión** (nunca el del perfil de Marketplace): búsquedas de video y páginas de hashtag, cada resultado trae su historia entera. Sólo la corrida completa | lo mismo que TikTok, leído de la LEYENDA; `publish_time`, autor, `/reel/<id>/` y miniatura | más de ~5 resultados por página (el resto exige sesión); fotos (no son reels); el teléfono de la leyenda |
 
 Verificado localmente el **2026-09-04** con la UA propia: Gallito directo devolvió **403 Cloudflare** en
 `https://www.gallito.com.uy/inmuebles/alquiler`; no se sortea esa protección. Su nuevo portal
@@ -970,6 +1046,23 @@ TikTok (sólo la corrida completa; ver la sección "TikTok" arriba):
 | `RENTALS_TIKTOK_BROWSER_BUDGET_MS` | 900000 | techo duro de la fase de navegador (15 min), lanzamiento incluido; al vencer se cierra Chrome con lo leído y la corrida no es `complete` |
 | `RENTALS_TIKTOK_CHROME` | — | ruta al Chrome; se prueban esta, `RENTALS_EP_CHROME`, `PUPPETEER_EXECUTABLE_PATH`, `/usr/bin/google-chrome-stable`, `/usr/bin/google-chrome` y por último el Chromium de puppeteer (que en el VPS no arranca: `GLIBC_2.25`) |
 | `RENTALS_TIKTOK_USER_AGENT` | UA de Chrome | la UA de las peticiones HTTP planas (página de video, enlace corto); la identificación viaja en `x-cambio-uruguay-bot` |
+
+Instagram y Facebook Reels (sólo la corrida completa; ver la sección "Instagram y Facebook Reels" arriba):
+
+| variable | por defecto | qué hace |
+|---|---|---|
+| `RENTALS_INSTAGRAM_ENABLED` / `RENTALS_FBREELS_ENABLED` | `1` | `0` apaga la red: cero peticiones, cero filas |
+| `RENTALS_INSTAGRAM_ACCOUNTS` | `inmobiliariaalquilar` | cuentas semilla; los handles del registro de TikTok entran solos como candidatas |
+| `RENTALS_INSTAGRAM_MAX_ACCOUNTS` | 40 | cuentas por corrida: semillas y activas primero (la leída hace más tiempo), después candidatas |
+| `RENTALS_INSTAGRAM_MAX_NEW_POSTS` | 12 | posts nuevos leídos por cuenta (un perfil muestra 12) |
+| `RENTALS_INSTAGRAM_GAP_MS` / `RENTALS_INSTAGRAM_BUDGET_MS` | 2500 / 720000 | pausa entre páginas y techo de la fase de navegador (12 min) |
+| `RENTALS_INSTAGRAM_PROXY` / `RENTALS_FBREELS_PROXY` | — | proxy del Chrome; sin él, la IP del VPS (medido: contesta) |
+| `RENTALS_INSTAGRAM_MAX_AGE_DAYS` / `RENTALS_FBREELS_MAX_AGE_DAYS` | 45 / 45 | ventana desde la fecha del post |
+| `RENTALS_INSTAGRAM_GEOCODE_MAX` / `RENTALS_FBREELS_GEOCODE_MAX` | 40 / 30 | esquinas geocodificadas por corrida, sólo posts nuevos |
+| `RENTALS_FBREELS_QUERIES` | doce búsquedas (alquiler montevideo, … alquiler punta del este) | búsquedas de video (`/watch/search/?q=…`) |
+| `RENTALS_FBREELS_TAGS` | `alquilermontevideo,alquileruruguay` | páginas de hashtag |
+| `RENTALS_FBREELS_GAP_MS` / `RENTALS_FBREELS_BUDGET_MS` | 2500 / 360000 | pausa entre páginas y techo de la fase de navegador (6 min) |
+| `RENTALS_SOCIAL_CHROME` | — | ruta al Chrome de las tres redes (antes que `RENTALS_TIKTOK_CHROME`/`RENTALS_EP_CHROME`) |
 
 ## La página
 
