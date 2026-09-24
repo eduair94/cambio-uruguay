@@ -306,18 +306,24 @@ async function main(): Promise<void> {
   // El asesor de compra (/que-auto-comprar-uruguay): los mismos avisos, una tabla por modelo, y la
   // caída típica calculada igual que la del informe para que las dos páginas digan el mismo número.
   const drops = report.models.map(model => model.annualDrop).filter((drop): drop is number => drop !== null);
-  const advisor = buildCarAdvisor(listings, {
-    maxYear,
-    parts: dryRun ? [] : await loadCarPartsRecords(),
-    typicalDrop: drops.length ? Math.round(quantile(drops, 0.5) * 1000) / 1000 : null,
-  });
-  const advisorSnapshot = { version: 1 as const, generatedAt, usdUyu, data: advisor };
+  // Es un agregado de más: si falla, se avisa y la corrida sigue publicando catálogo e informe.
+  let advisor: ReturnType<typeof buildCarAdvisor> | null = null;
+  try {
+    advisor = buildCarAdvisor(listings, {
+      maxYear,
+      parts: dryRun ? [] : await loadCarPartsRecords(),
+      typicalDrop: drops.length ? Math.round(quantile(drops, 0.5) * 1000) / 1000 : null,
+    });
+  } catch (error) {
+    console.error("[autos] asesor falló; se conserva el snapshot anterior:", error);
+  }
+  const advisorSnapshot = advisor ? { version: 1 as const, generatedAt, usdUyu, data: advisor } : null;
   console.log(`[autos] catalog ${catalog.listings.length}, models ${markets.length}, opportunities ${snapshot.items.length}, duplicates ${JSON.stringify(duplicates)}`, JSON.stringify(analysis.stats));
   console.log(`[autos] informe: ${report.models.length} modelos con ${CAR_REPORT_POLICY.minimumAdverts}+ avisos, ` +
     `mediana US$ ${report.market.price.median}, ${report.depreciation.length} curvas de depreciación, ` +
     `automotora vs dueño ${report.sellerGaps.median === null ? "sin dato" : `${Math.round(report.sellerGaps.median * 100)}%`}, ` +
     `rotación ${report.rotation.measurable ? `${report.rotation.medianDays} días` : "todavía no"}`);
-  console.log(`[autos] asesor: ${advisor.models.length} modelos, ${advisor.models.filter(model => model.parts?.index != null).length} con índice de repuestos`);
+  if (advisor) console.log(`[autos] asesor: ${advisor.models.length} modelos, ${advisor.models.filter(model => model.parts?.index != null).length} con índice de repuestos`);
   console.log(`[autos] riesgo declarado ${riskAnalysis.stats.declared} avisos, ${riskAnalysis.stats.measured} con descuento medido`,
     JSON.stringify(riskAnalysis.categories.map(category => `${category.category}:${category.adverts}${category.medianGap === null ? "" : `/${Math.round(category.medianGap * 100)}%`}`)));
   console.log(`[autos] sources ${catalog.meta.sources.map(item => `${item.source}=${item.listings}`).join(" ")}`);
@@ -349,7 +355,7 @@ async function main(): Promise<void> {
   else await saveCarOpportunitySnapshot(snapshot);
   await saveCarRiskSnapshot(riskSnapshot);
   await saveCarReportSnapshot(reportSnapshot);
-  if (advisor.models.length) await saveCarAdvisorSnapshot(advisorSnapshot);
+  if (advisorSnapshot && advisorSnapshot.data.models.length) await saveCarAdvisorSnapshot(advisorSnapshot);
   else console.warn("[autos] asesor sin modelos; se conserva el snapshot anterior");
 
   const refusalText = [catalogRefusal, snapshotRefusal].filter((reason): reason is string => !!reason).join(" · ") || null;
