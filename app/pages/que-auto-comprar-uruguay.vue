@@ -37,9 +37,10 @@
             v-model="draft.uso"
             :items="useItems"
             label="¿Para qué lo vas a usar?"
+            :hint="useHint"
+            persistent-hint
             density="comfortable"
             variant="outlined"
-            hide-details
           />
           <VSelect
             v-model="draft.km"
@@ -68,7 +69,9 @@
           <VSelect
             v-model="draft.combustible"
             :items="fuelItems"
-            label="Combustible (vacío = cualquiera)"
+            label="Combustible"
+            placeholder="Cualquiera"
+            persistent-placeholder
             multiple
             chips
             closable-chips
@@ -79,7 +82,9 @@
           <VSelect
             v-model="draft.carroceria"
             :items="bodyItems"
-            label="Carrocería (vacío = cualquiera)"
+            label="Carrocería"
+            placeholder="Cualquiera"
+            persistent-placeholder
             multiple
             chips
             closable-chips
@@ -538,9 +543,10 @@ function apply() {
 }
 
 const useItems = CAR_ADVISOR_USES.map(item => ({
-  title: `${item.title} — ${item.hint}`,
+  title: item.title,
   value: item.value,
 }))
+const useHint = computed(() => CAR_ADVISOR_USES.find(item => item.value === draft.uso)?.hint ?? '')
 const kmItems = computed(() =>
   [...new Set([...CAR_ADVISOR_KM_STEPS, query.value.kmYear])]
     .sort((a, b) => a - b)
