@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { RENTAL_SOURCES, RENTAL_SOURCE_LABEL } from "../../classes/rentals/types";
 import { postToRawRental, hashtagsIn } from "../../classes/rentals/sources/social/post";
 import { parseCaption } from "../../classes/rentals/sources/social/caption";
+import { processPosts } from "../../classes/rentals/sources/social/process";
 
 describe("Instagram and Facebook Reels are rental sources", () => {
   it("are enumerated with their labels", () => {
@@ -30,5 +31,33 @@ describe("social post → RawRental", () => {
 
   it("reads hashtags out of a caption", () => {
     expect(hashtagsIn("Alquiler #Pocitos #alquilerMontevideo #1dormitorio fin #Pocitos")).toEqual(["Pocitos", "alquilerMontevideo", "1dormitorio"]);
+  });
+});
+
+// --- Task 3: shared processing ---------------------------------------------------------------------
+
+const igPost = (id: string, text: string, createTime = 1790119737) => ({ source: "instagram" as const, id, url: `https://www.instagram.com/p/${id}/`,
+  lines: text.split(/\n+/), createTime, author: { uniqueId: "inmobiliariaalquilar", nickname: "Inmobiliaria Alquiler Montevideo", secUid: "" },
+  cover: "https://scontent.cdninstagram.com/x.jpg", hashtags: [] as string[] });
+
+describe("processPosts", () => {
+  it("drops posts older than the window, rejects by caption, geocodes a new corner once and remembers url, author and image", async () => {
+    const geocode = vi.fn(async () => ({ point: { latitude: -34.91, longitude: -56.15, address: "Charrúa & Luis Ponce" }, query: "q", tried: 1 }));
+    const ctx = { usdUyu: 40, observedAt: "2026-09-24T05:00:00.000Z", minCreateTime: 1790000000, geocodeBudget: { remaining: 5 }, geocode, locateZone: () => "8" };
+    const { processed, counts } = await processPosts([
+      igPost("A", "Alquiler 1 dormitorio en Pocitos 📍 Charrúa y Luis Ponce — Pocitos $27.500"),
+      igPost("B", "⛔️NO DISPONIBLE⛔️ Alquiler en Pocitos $20.000"),
+      igPost("C", "Alquiler en Pocitos $30.000", 1780000000),
+    ], new Map(), ctx);
+    expect(counts).toMatchObject({ tooOld: 1, rejected: 1, geocoded: 1, implausible: 0, contradicted: 0 });
+    expect(processed.map(p => p.post.id)).toEqual(["A", "B"]);
+    expect(processed[0]!.row).toMatchObject({ listingId: "instagram:A", latitude: -34.91 });
+    expect(processed[0]!.facts.addressCandidates).toEqual(["Charrúa y Luis Ponce"]);
+    expect(processed[0]!.memory).toMatchObject({ listingId: "instagram:A", id: "A", uniqueId: "inmobiliariaalquilar", url: "https://www.instagram.com/p/A/",
+      authorName: "Inmobiliaria Alquiler Montevideo", image: "https://scontent.cdninstagram.com/x.jpg", rejected: null });
+    expect(processed[1]!.memory).toMatchObject({ rejected: "no disponible" });
+    const again = await processPosts([igPost("A", "Alquiler 1 dormitorio en Pocitos 📍 Charrúa y Luis Ponce — Pocitos $27.500")], new Map([["A", processed[0]!.memory]]), ctx);
+    expect(geocode).toHaveBeenCalledTimes(1);
+    expect(again.processed[0]!.row).toMatchObject({ latitude: -34.91 });
   });
 });

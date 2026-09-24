@@ -7,33 +7,30 @@
 //   2. the account registry (seeds + every account that ever published an accepted advert), oldest
 //      read first, within `RENTALS_TIKTOK_MAX_ACCOUNTS`;
 //   3. one Chrome through the proxy: the hashtag pages, then the account pages;
-//   4. every video once, newest first: caption → facts → offer, geocoding a corner ONCE per video;
+//   4. every video once, newest first: caption → facts → offer (../social/process.ts);
 //   5. the registry and the per-video memory are written; `complete` is true only when every
 //      account tracked BEFORE this run was read to the end of its window — only then is a missing
 //      video (deleted, or edited into "ALQUILADO") evidence that the flat is gone.
 //
 // The hourly run reads nothing: a Chrome per hour on the VPS is a risk this repo has already
-// paid for once, and captions do not change hour to hour.
+// paid for once, and captions do not change hour to hour. What gets PUBLISHED is decided one level
+// up, in ../social/index.ts: the copy guard keeps one copy of a flat that other networks carry too.
 import fs from "node:fs";
-import { INE_DISPLAY_NAMES } from "../../../propertyzones/names";
-import { neighborhoodFromZoneLabel, pointContradictsBarrio } from "../../facebookDetailStore";
-import { geocodeCandidates, type GeocodeOutcome } from "../../facebookGeocode";
-import { isPlausibleRent } from "../../normalize";
-import type { RawRental } from "../../types";
+import { geocodeCandidates } from "../../facebookGeocode";
 import type { RentalSourceResult } from "../types";
+import { defaultLocateZone, processPosts, type GeocodeFn, type LocateZone } from "../social/process";
+import { envList, envNumber, idleRun, plural, type PlatformRun } from "../social/run";
 import { readTiktokLists, type ListPlan, type ListReader, type ListResults } from "./browser";
-import { parseCaption } from "../social/caption";
 import { readVideoPage, resolveTiktokUrl } from "./page";
-import { postToRawRental, type PostGeo, type TiktokPost } from "./post";
-import { appDbTiktokStore, type TiktokAccountRow, type TiktokPostRow, type TiktokStore } from "./store";
+import type { TiktokPost } from "./post";
+import { appDbTiktokStore, type TiktokAccountRow, type TiktokStore } from "./store";
 
 export interface HarvestTiktokDeps {
   readLists: ListReader;
   readVideo: (url: string) => Promise<TiktokPost | null>;
   resolveUrl: (url: string) => Promise<string | null>;
-  geocode: (candidates: readonly string[], department: string, budget: { remaining: number }) => Promise<GeocodeOutcome>;
-  /** The INE zone code a point falls in (Montevideo only), or null. */
-  locateZone: (lng: number, lat: number) => string | null;
+  geocode: GeocodeFn;
+  locateZone: LocateZone;
   store: TiktokStore;
   now: () => Date;
   env: NodeJS.ProcessEnv;
@@ -43,16 +40,6 @@ const DEFAULT_TAGS = "alquilermontevideo,alquileruruguay,alquileresmontevideo,al
 const DEFAULT_ACCOUNTS = "inmobiliariaalquilar";
 /** Any public video page: it only exists to give the browser the origin's cookies before the tag list. */
 const WARM_URL = "https://www.tiktok.com/@inmobiliariaalquilar/video/7688511584326454549";
-
-const list = (value: string | undefined, fallback: string): string[] =>
-  String(value ?? fallback).split(",").map(item => item.trim().replace(/^[@#]/, "")).filter(Boolean);
-/** Zero is a value an operator can set ("read no accounts", "geocode nothing"); only a missing or broken one falls back. */
-const number = (value: string | undefined, fallback: number): number => {
-  if (value === undefined || value.trim() === "") return fallback;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
-};
-const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 
 /** `RENTALS_TIKTOK_PROXY`, else the first line of `proxy.txt` (the one Prex already uses), else none. */
 export function tiktokProxy(env: NodeJS.ProcessEnv, readFile: (path: string) => string = path => fs.readFileSync(path, "utf8")): string | null {
@@ -65,49 +52,35 @@ export function tiktokProxy(env: NodeJS.ProcessEnv, readFile: (path: string) => 
   }
 }
 
-let zoneLocator: ((lng: number, lat: number) => string | null) | null = null;
-/** Loaded once per process, and only when a point actually needs a zone. */
-function defaultLocateZone(lng: number, lat: number): string | null {
-  if (!zoneLocator) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { areaLocator } = require("../../../propertyzones/geo") as typeof import("../../../propertyzones/geo");
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { loadOfficialPropertyZoneGeometry } = require("../../../propertyzones/sources/geometry") as typeof import("../../../propertyzones/sources/geometry");
-    const zones = loadOfficialPropertyZoneGeometry().zones;
-    zoneLocator = areaLocator(zones.map(zone => ({ id: zone.officialCode, geometry: zone.geometry })));
-  }
-  return zoneLocator(lng, lat);
-}
-
 const EMPTY_LISTS: ListResults = { tags: new Map(), accounts: new Map(), videos: new Map(), launched: false, note: "" };
 
-export async function harvestTiktok(mode: "full" | "fast", usdUyu: number, overrides: Partial<HarvestTiktokDeps> = {}): Promise<RentalSourceResult> {
+export async function harvestTiktokRun(mode: "full" | "fast", usdUyu: number, overrides: Partial<HarvestTiktokDeps> = {}): Promise<PlatformRun> {
   const deps: HarvestTiktokDeps = {
     readLists: readTiktokLists, readVideo: readVideoPage, resolveUrl: resolveTiktokUrl, geocode: geocodeCandidates,
     locateZone: defaultLocateZone, store: appDbTiktokStore, now: () => new Date(), env: process.env,
     ...overrides,
   };
   const { env } = deps;
-  if (env.RENTALS_TIKTOK_ENABLED === "0") return { key: "tiktok", ok: true, complete: false, listings: [], note: "deshabilitado por configuración" };
-  if (mode === "fast") return { key: "tiktok", ok: true, complete: false, listings: [], note: "sólo en la corrida completa" };
+  if (env.RENTALS_TIKTOK_ENABLED === "0") return idleRun("tiktok", "deshabilitado por configuración");
+  if (mode === "fast") return idleRun("tiktok", "sólo en la corrida completa");
 
   const now = deps.now();
   const observedAt = now.toISOString();
   const today = observedAt.slice(0, 10);
-  const maxAgeDays = number(env.RENTALS_TIKTOK_MAX_AGE_DAYS, 45);
+  const maxAgeDays = envNumber(env.RENTALS_TIKTOK_MAX_AGE_DAYS, 45);
   const minCreateTime = Math.floor(now.getTime() / 1000) - maxAgeDays * 86_400;
   const proxy = tiktokProxy(env);
-  const seeds = list(env.RENTALS_TIKTOK_ACCOUNTS, DEFAULT_ACCOUNTS);
-  const tags = list(env.RENTALS_TIKTOK_TAGS, DEFAULT_TAGS);
-  const maxAccounts = number(env.RENTALS_TIKTOK_MAX_ACCOUNTS, 60);
-  const geocodeBudget = { remaining: number(env.RENTALS_TIKTOK_GEOCODE_MAX, 60) };
+  const seeds = envList(env.RENTALS_TIKTOK_ACCOUNTS, DEFAULT_ACCOUNTS);
+  const tags = envList(env.RENTALS_TIKTOK_TAGS, DEFAULT_TAGS);
+  const maxAccounts = envNumber(env.RENTALS_TIKTOK_MAX_ACCOUNTS, 60);
+  const geocodeBudget = { remaining: envNumber(env.RENTALS_TIKTOK_GEOCODE_MAX, 60) };
 
   // 1. Videos a person handed us: plain HTTP first (free when it works); the ones the WAF
   //    challenges go to the browser below, through the proxy.
   const manual: TiktokPost[] = [];
   const pendingVideos: string[] = [];
   let manualFailed = 0;
-  for (const raw of list(env.RENTALS_TIKTOK_VIDEOS, "")) {
+  for (const raw of envList(env.RENTALS_TIKTOK_VIDEOS, "")) {
     const url = await deps.resolveUrl(raw);
     if (!url) {
       // Even the redirect of a short link gets the WAF interstitial at times (the 14:15 UTC sweep
@@ -136,11 +109,11 @@ export async function harvestTiktok(mode: "full" | "fast", usdUyu: number, overr
   // 3. The lists, through one browser.
   const plan: ListPlan = {
     tags, accounts, videos: pendingVideos,
-    tagPages: number(env.RENTALS_TIKTOK_TAG_PAGES, 3),
-    accountPages: number(env.RENTALS_TIKTOK_ACCOUNT_PAGES, 3),
+    tagPages: envNumber(env.RENTALS_TIKTOK_TAG_PAGES, 3),
+    accountPages: envNumber(env.RENTALS_TIKTOK_ACCOUNT_PAGES, 3),
     minCreateTime,
-    gapMs: number(env.RENTALS_TIKTOK_GAP_MS, 2_000),
-    budgetMs: number(env.RENTALS_TIKTOK_BROWSER_BUDGET_MS, 15 * 60_000),
+    gapMs: envNumber(env.RENTALS_TIKTOK_GAP_MS, 2_000),
+    budgetMs: envNumber(env.RENTALS_TIKTOK_BROWSER_BUDGET_MS, 15 * 60_000),
     proxy,
     warmUrl: WARM_URL,
   };
@@ -156,60 +129,16 @@ export async function harvestTiktok(mode: "full" | "fast", usdUyu: number, overr
   for (const post of manual) posts.set(post.id, post);
   for (const read of [...lists.tags.values(), ...lists.accounts.values()]) for (const post of read.posts) posts.set(post.id, post);
   const stored = await deps.store.loadPosts([...posts.keys()]);
-  const rows: TiktokPostRow[] = [];
-  const listings: RawRental[] = [];
+  const { processed, counts } = await processPosts(posts.values(), stored, {
+    usdUyu, observedAt, minCreateTime, geocodeBudget, geocode: deps.geocode, locateZone: deps.locateZone,
+  });
+  const listings = processed.filter(p => p.row).map(p => p.row!);
   const publishedBy = new Map<string, number>();
   const authors = new Map<string, TiktokPost["author"]>();
-  let tooOld = 0, rejected = 0, implausible = 0, geocoded = 0, contradicted = 0;
-  for (const post of [...posts.values()].sort((a, b) => b.createTime - a.createTime)) {
-    if (post.createTime < minCreateTime) { tooOld++; continue; }
-    const facts = parseCaption(post.lines, post.hashtags);
-    const previous = stored.get(post.id);
-    let geo: PostGeo | null = previous && typeof previous.latitude === "number" && typeof previous.longitude === "number"
-      ? { latitude: previous.latitude, longitude: previous.longitude, neighborhood: previous.geoNeighborhood || undefined }
-      : null;
-    let geocodeQuery = previous ? previous.geocodeQuery : null;
-    let geocodeAddress = previous ? previous.geocodeAddress : null;
-    let note: string | null = null;
-    // A corner is geocoded ONCE per video: the answer, accepted or refused, is remembered.
-    if (!facts.rejected && !previous && facts.addressCandidates.length && geocodeBudget.remaining > 0) {
-      const outcome = await deps.geocode(facts.addressCandidates, facts.department, geocodeBudget);
-      geocodeQuery = outcome.query;
-      geocodeAddress = outcome.point ? outcome.point.address : null;
-      if (outcome.point) {
-        const zone = deps.locateZone(outcome.point.longitude, outcome.point.latitude);
-        const zoneLabel = zone ? INE_DISPLAY_NAMES[zone] ?? null : null;
-        if (pointContradictsBarrio(facts.neighborhood, zoneLabel)) {
-          contradicted++;
-          note = `punto en ${zoneLabel} contradice el barrio nombrado (${facts.neighborhood}); se descarta`;
-        } else {
-          geocoded++;
-          const fromZone = facts.neighborhood ? "" : neighborhoodFromZoneLabel(zoneLabel);
-          geo = { latitude: outcome.point.latitude, longitude: outcome.point.longitude, neighborhood: fromZone || undefined };
-          if (fromZone) note = `barrio por coordenada (INE ${zoneLabel})`;
-        }
-      }
-    }
-    const row = postToRawRental(post, facts, geo, observedAt);
-    let reason = facts.rejected;
-    if (row && !isPlausibleRent(row.currency === "USD" ? row.price * usdUyu : row.price, row.propertyType)) {
-      reason = "precio inverosímil";
-      implausible++;
-    } else if (row) {
-      listings.push(row);
-      publishedBy.set(post.author.uniqueId, (publishedBy.get(post.author.uniqueId) ?? 0) + 1);
-      authors.set(post.author.uniqueId, post.author);
-    }
-    if (reason) rejected++;
-    rows.push({
-      listingId: `tiktok:${post.id}`, id: post.id, uniqueId: post.author.uniqueId, createTime: post.createTime, readAt: observedAt,
-      text: post.lines.join("\n").slice(0, 4_000), hashtags: post.hashtags.slice(0, 40), rejected: reason,
-      price: row ? row.price : facts.price, currency: row ? row.currency : facts.currency,
-      department: row ? row.department : facts.department, neighborhood: row ? row.neighborhood : facts.neighborhood,
-      candidates: facts.addressCandidates, geocodeQuery, geocodeAddress,
-      latitude: geo ? geo.latitude : null, longitude: geo ? geo.longitude : null, geoNeighborhood: geo && geo.neighborhood ? geo.neighborhood : null,
-      note,
-    });
+  for (const p of processed) {
+    if (!p.row) continue;
+    publishedBy.set(p.post.author.uniqueId, (publishedBy.get(p.post.author.uniqueId) ?? 0) + 1);
+    authors.set(p.post.author.uniqueId, p.post.author);
   }
 
   // 5. The registry: every account read now, plus every author who published something.
@@ -233,7 +162,7 @@ export async function harvestTiktok(mode: "full" | "fast", usdUyu: number, overr
     if (newest) row.lastPostAt = new Date(newest * 1000).toISOString();
   }
   for (const row of known.values()) row.published = publishedBy.get(row.uniqueId) ?? 0;
-  await deps.store.savePosts(rows);
+  await deps.store.savePosts(processed.map(p => p.memory));
   await deps.store.saveAccounts([...known.values()]);
 
   // 6. Completeness: absence is evidence only if EVERY account tracked before this run was read to the end of its window.
@@ -242,13 +171,18 @@ export async function harvestTiktok(mode: "full" | "fast", usdUyu: number, overr
   const emptyLists = [...lists.tags.values(), ...lists.accounts.values()].filter(read => read.failure).length;
   const ok = listings.length > 0 || (posts.size > 0 && emptyLists === 0);
   const note = `${plural(listings.length, "aviso", "avisos")} de ${plural(posts.size, "video", "videos")}`
-    + ` (${rejected} rechazados, ${tooOld} fuera de la ventana de ${maxAgeDays} días, ${implausible} con precio inverosímil)`
+    + ` (${counts.rejected} rechazados, ${counts.tooOld} fuera de la ventana de ${maxAgeDays} días, ${counts.implausible} con precio inverosímil)`
     + `; ${plural(lists.tags.size, "hashtag", "hashtags")} y ${lists.accounts.size} de ${plural(known.size, "cuenta", "cuentas")} leídas`
     + (manual.length || manualFailed ? `; ${plural(manual.length, "video manual", "videos manuales")}${manualFailed ? `, ${manualFailed} sin leer` : ""}` : "")
-    + `; ${plural(geocoded, "esquina ubicada", "esquinas ubicadas")}${contradicted ? `, ${contradicted} descartadas por contradecir el barrio` : ""}`
+    + `; ${plural(counts.geocoded, "esquina ubicada", "esquinas ubicadas")}${counts.contradicted ? `, ${counts.contradicted} descartadas por contradecir el barrio` : ""}`
     + (proxy ? "" : "; sin proxy: TikTok no lista desde esta IP")
     + (emptyLists ? `; ${plural(emptyLists, "lista vacía", "listas vacías")}` : "")
     + (lists.note ? `; ${lists.note}` : "")
     + (complete ? "" : `; cobertura parcial (${plural(unread.length, "cuenta", "cuentas")} sin leer a fondo)`);
-  return { key: "tiktok", ok, complete, listings, note };
+  return { result: { key: "tiktok", ok, complete, listings, note }, processed };
+}
+
+/** The TikTok result alone, without the copy guard (tests, and callers that only want TikTok). */
+export async function harvestTiktok(mode: "full" | "fast", usdUyu: number, overrides: Partial<HarvestTiktokDeps> = {}): Promise<RentalSourceResult> {
+  return (await harvestTiktokRun(mode, usdUyu, overrides)).result;
 }

@@ -30,28 +30,42 @@ export interface RentalTiktokPostDocument {
   note: string | null;
 }
 
-const RentalTiktokPostSchema = new Schema({
-  listingId: { type: String, required: true },
-  id: { type: String, required: true },
-  uniqueId: { type: String, required: true },
-  createTime: { type: Number, required: true },
-  readAt: { type: String, required: true },
-  text: { type: String, default: "" },
-  hashtags: { type: [String], default: [] },
-  rejected: { type: String, default: null },
-  price: { type: Number, default: null },
-  currency: { type: String, default: null },
-  department: { type: String, default: "" },
-  neighborhood: { type: String, default: "" },
-  candidates: { type: [String], default: [] },
-  geocodeQuery: { type: String, default: null },
-  geocodeAddress: { type: String, default: null },
-  latitude: { type: Number, default: null },
-  longitude: { type: Number, default: null },
-  geoNeighborhood: { type: String, default: null },
-  note: { type: String, default: null },
-}, { autoCreate: false, autoIndex: false });
-RentalTiktokPostSchema.index({ listingId: 1 }, { unique: true });
-RentalTiktokPostSchema.index({ readAt: 1 });
+/**
+ * One schema for every social network's post memory (TikTok here; Instagram and Facebook Reels in
+ * RentalSocial.ts). `url`, `authorName` and `image` are what a network that is not re-read every
+ * run (Instagram) needs to rebuild a post from memory.
+ */
+export const socialPostSchema = (): Schema => {
+  const schema = new Schema({
+    listingId: { type: String, required: true },
+    id: { type: String, required: true },
+    uniqueId: { type: String, required: true },
+    createTime: { type: Number, required: true },
+    readAt: { type: String, required: true },
+    text: { type: String, default: "" },
+    hashtags: { type: [String], default: [] },
+    rejected: { type: String, default: null },
+    price: { type: Number, default: null },
+    currency: { type: String, default: null },
+    department: { type: String, default: "" },
+    neighborhood: { type: String, default: "" },
+    candidates: { type: [String], default: [] },
+    geocodeQuery: { type: String, default: null },
+    geocodeAddress: { type: String, default: null },
+    latitude: { type: Number, default: null },
+    longitude: { type: Number, default: null },
+    geoNeighborhood: { type: String, default: null },
+    note: { type: String, default: null },
+    url: { type: String, default: null },
+    authorName: { type: String, default: null },
+    image: { type: String, default: null },
+  }, { autoCreate: false, autoIndex: false });
+  schema.index({ listingId: 1 }, { unique: true });
+  schema.index({ uniqueId: 1 });
+  schema.index({ readAt: 1 });
+  return schema;
+};
+
+const RentalTiktokPostSchema = socialPostSchema();
 
 export const RentalTiktokPostModel = appModel<RentalTiktokPostDocument>("RentalTiktokPost", RentalTiktokPostSchema, "rentaltiktokposts");
