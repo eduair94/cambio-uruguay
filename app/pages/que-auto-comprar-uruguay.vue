@@ -466,9 +466,9 @@ import {
   CAR_ADVISOR_PATH,
   CAR_PART_LABELS,
   PATENTE_2026,
-  PATENTE_CONSULTA_URL,
   latinNcapLabel,
 } from '~/utils/carAdvisorFigures'
+import { PATENTE_CONSULTA_URL } from '~/utils/trafficFines'
 import {
   CAR_BODY_LABELS,
   CAR_BODY_TYPES,

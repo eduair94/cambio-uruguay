@@ -20,6 +20,7 @@ import type { PublicCarFuel, PublicCarPartKey } from './carsPublic'
 import type { FaqItem } from './faqAnswers'
 import { UTE_IVA_RATE, UTE_TARIFFS } from './householdBills'
 import { SITE_ASSUMPTION, TRANSPORT_MODE_ASSUMPTIONS } from './transportAssumptions'
+import { PATENTE_CONSULTA_URL, PATENTE_DEUDA_URL } from './trafficFines'
 import type { TransportFigure } from './transportModel'
 
 export const CAR_ADVISOR_PATH = '/que-auto-comprar-uruguay'
@@ -29,8 +30,6 @@ const TOS_2026_URL =
   'https://tramites.montevideo.gub.uy/sites/tramites.montevideo.gub.uy/files/tramites/documentos/TOS%202026.pdf'
 const SITE_URL = 'https://cambio-uruguay.com/que-auto-comprar-uruguay'
 
-export const PATENTE_CONSULTA_URL = 'https://www.sucive.gub.uy/consulta_patente'
-export const PATENTE_DEUDA_URL = 'https://www.sucive.gub.uy/consulta_deuda'
 
 export const PATENTE_2026 = {
   usedRate: 0.045,
