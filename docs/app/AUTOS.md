@@ -598,3 +598,57 @@ tarjetas y el directorio no cambian: la ficha técnica no filtra ni ordena nada 
 Desde el 2026-09-21 la ficha muestra, con un clic, el teléfono que el vendedor escribió en el texto
 público de su aviso o el número comercial de la automotora. Política, fuentes medidas, vencimiento y
 bajas en [AUTOS_CONTACTOS.md](AUTOS_CONTACTOS.md).
+
+## El asesor de compra y los repuestos (2026-09-24)
+
+`/que-auto-comprar-uruguay`: la persona contesta presupuesto, uso, kilómetros por año, cuántos
+viajan, caja, combustible, carrocería, hasta tres prioridades y un gasto mensual máximo, y recibe
+hasta ocho modelos con el año que le alcanza, el costo mensual de tenerlo y lo que resigna. La
+respuesta vive en la URL (cada combinación es `noindex`), y el cálculo corre en el servidor por
+pedido (`app/utils/carAdvisor.ts`) sobre una tabla chica precalculada.
+
+**La tabla** (`classes/autos/advisor.ts` → `caradvisorsnapshots`, la escribe cada corrida de
+`currency-autos` al lado del informe, sobre los mismos avisos comparables): una fila por modelo con
+12+ avisos, partida en **variantes combustible × caja** (6+ avisos) con p25/mediana/p75 por año
+(3+ avisos), el consumo mediano, la carrocería dominante, lo que dicen las fichas técnicas (plazas,
+baúl, largo, potencia, proporción 4x4 y de ABS, airbags, control de estabilidad e ISOFIX como
+sí/(sí+no)), la caída anual con la misma recta del informe y el índice de repuestos. Si el armado
+falla, la corrida sigue publicando catálogo e informe y se conserva el snapshot anterior.
+
+**Los repuestos** (`currency-autos-parts`, `sync_autos_parts.ts`, 02:11 UTC): seis piezas por
+modelo —pastillas delanteras, filtro de aceite, amortiguador delantero, kit de embrague, kit de
+distribución y óptica delantera— buscadas en Mercado Libre por el puente `:9656`, cada una en su
+categoría (`CAR_PARTS` en `classes/autos/repuestos.ts`). Reglas que salieron de títulos reales:
+
+- el modelo va como palabra entera y con todas sus palabras ("Peugeot 2008" no es un 208, "Citroen
+  C4 06-" no es un C4 Cactus), y un nombre de tres letras o menos exige la marca ("Pick Up" no es
+  un Up!);
+- la trasera no es la delantera, y donde el precio es por unidad (amortiguador, óptica) un par o un
+  kit no cuenta;
+- **la distribución exige "kit"**: la categoría mezcla correas sueltas con kits y el Onix iba de
+  $ 508 a $ 6.740 en la primera corrida;
+- 3 ofertas y **2 vendedores** para que una pieza tenga precio (el filtro del C4 Cactus salía de uno
+  solo).
+
+El índice es la media geométrica de (mediana del modelo / mediana de todos los modelos) con 3+
+piezas; una pieza entra a la base con 5+ modelos. Nunca se suma una canasta a la que le faltan
+piezas. Ritmo: 15 min por noche a 2,5 s entre pedidos, relectura cada 14 días, y 40 min mientras
+menos de la mitad de los modelos tenga relevamiento; tres pedidos sin respuesta cortan la corrida y
+un modelo sólo se guarda si sus seis búsquedas contestaron. `--dry-run --models=a,b` imprime sin
+escribir. Medido el 2026-09-24: 248 modelos con 12+ avisos; Onix con 17-43 ofertas por pieza.
+
+**El costo mensual** (`app/utils/carAdvisorFigures.ts`): combustible (consumo de la variante × km ×
+ANCAP), patente estimada con el Texto Ordenado del SUCIVE 2026 leído del PDF (4,5 % del valor de
+mercado, eléctricos 2,25 % sin IVA, piso $ 8.770,10, dólar del SUCIVE $ 41,826, bonificación 20 % o
+10 % no acumulable; el aforo no se publica por modelo, así que se estima con la mediana pedida), SOA
+promedio del BCU y el mantenimiento del comparador de transporte con la parte por km escalada por
+el índice de repuestos. La depreciación se muestra aparte: no sale del bolsillo cada mes.
+
+**Latin NCAP** (`app/utils/latinNcap.ts`, 124 resultados verificados uno por uno en latinncap.com
+el 2026-09-24): se MUESTRAN los ensayos del modelo y **no puntúan**, porque Latin NCAP califica una
+versión en un momento y casi nunca dice a qué años de modelo aplica (el Onix tiene 0 estrellas
+adulto en 2017 y 5 en 2019; son dos generaciones). Quedaron afuera tres resultados cuyo auto no es
+el que se vende acá (Vento hecho en India, Sentra B13, Dolphin Plus). Sin ensayo no es cero.
+
+Lo que la página no puede decir, y dice: cuánto falla cada modelo (nadie lo publica), el precio de
+cierre y el seguro contra todo riesgo.
