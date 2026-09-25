@@ -13,6 +13,8 @@ The user delegated design choices. The composition study informs hierarchy, neve
       <p>
         {{ t('introShort') }}
         <NuxtLink :to="localePath('/alquileres-uruguay')">{{ t('exploreShort') }}</NuxtLink>
+        ·
+        <NuxtLink :to="localePath('/donde-vivir-uruguay')">{{ t('whereShort') }}</NuxtLink>
       </p>
     </header>
     <AssistantCta v-if="editing" topic="hogar" class="mb-4" />

@@ -13,6 +13,11 @@
         <strong>se reparte entre los años que te quedes</strong>. Acá está la cuenta con las tres
         adentro.
       </p>
+      <p class="mb-6">
+        ¿Todavía no sabés dónde? El
+        <NuxtLink :to="localePath('/donde-vivir-uruguay')">asesor de barrios</NuxtLink> te dice en
+        cuáles te alcanza para alquilar o comprar, con la cuota y el alquiler de cada uno.
+      </p>
 
       <VCard class="honest-card pa-5 pa-md-6" variant="flat">
         <div class="text-overline mb-2">Qué no vas a encontrar acá</div>

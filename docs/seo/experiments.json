@@ -542,6 +542,21 @@
         "cuanto sale la patente de un auto usado"
       ],
       "hypothesis": "El sitio tenia todas las piezas de la decision de compra de un auto usado -precios por modelo y ano, depreciacion, consumo, riesgo declarado, patente- repartidas en cinco paginas y ninguna que contestara la pregunta que la gente hace primero: que auto me conviene con esta plata. El asesor las cruza con lo que la persona contesta y agrega lo que ninguna tenia, el precio medido de los repuestos por modelo. La apuesta es entrar en consultas de intencion de compra (que auto comprar, que auto me conviene) donde el SERP son foros y notas genericas sin numeros uruguayos, y llevar ese trafico al directorio con los filtros ya puestos."
+    },
+    {
+      "id": "donde-vivir",
+      "shippedOn": "2026-09-25",
+      "routes": [
+        "/donde-vivir-uruguay"
+      ],
+      "queries": [
+        "donde vivir en montevideo",
+        "mejores barrios para vivir en montevideo",
+        "cuanto necesito para comprar un apartamento en montevideo",
+        "cuanto tengo que ganar para alquilar",
+        "conviene alquilar o comprar"
+      ],
+      "hypothesis": "El sitio mide el precio de alquiler y de venta por barrio, las denuncias, los cortes de luz y agua y los reclamos, pero cada pieza vive en una pagina distinta y ninguna contesta la pregunta de quien se muda: en que barrio me alcanza, y me conviene alquilar o comprar ahi. El asesor las cruza con el ingreso y el ahorro del hogar, con los topes reales de las garantias y de los creditos hipotecarios. La apuesta es entrar en consultas de mudanza (donde vivir, mejores barrios, cuanto necesito) donde el SERP son notas de opinion sin numeros, y llevar ese trafico a los directorios de alquiler y venta con el barrio y el presupuesto ya filtrados."
     }
   ]
 }

@@ -431,6 +431,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/barrios-alquileres-uruguay',
       },
       {
+        label: '¿Dónde vivir?',
+        description:
+          'Los barrios donde alquilar o comprar entra en tu plata, con la cuota y cómo es cada uno.',
+        to: '/donde-vivir-uruguay',
+      },
+      {
         label: 'Tu alquiler ideal',
         description: 'Qué zonas encajan con tu presupuesto y lo que necesitás.',
         to: '/alquiler-ideal-uruguay',

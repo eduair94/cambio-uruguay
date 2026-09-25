@@ -422,6 +422,10 @@
           "label": "Comparar barrios"
         },
         {
+          "to": "/donde-vivir-uruguay",
+          "label": "¿Dónde vivir?"
+        },
+        {
           "to": "/alquiler-ideal-uruguay",
           "label": "Tu alquiler ideal"
         },

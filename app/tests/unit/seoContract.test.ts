@@ -190,6 +190,8 @@ const NOINDEXED = [
   'descuentos-con-tarjeta-uruguay/cerca-de-mi.vue',
   // La lista del lector vive en su navegador: nada que indexar. Los dos directorios de avisos de
   // equipar se indexan en su URL limpia; cada combinación de filtros se sale, como autos.
+  // El asesor de vivienda se indexa en su URL; cada combinación de respuestas se sale.
+  'donde-vivir-uruguay.vue',
   'equipar-casa-uruguay/mi-lista.vue',
   'equipar-casa-uruguay/productos/[categoria].vue',
   'equipar-casa-uruguay/productos/index.vue',

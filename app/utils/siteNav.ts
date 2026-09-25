@@ -2758,6 +2758,25 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El asesor de vivienda: barrios para alquilar o comprar según la plata del hogar, con
+        // cuota, gastos de entrada y cómo es cada barrio. Ver docs/app/DONDE_VIVIR.md.
+        to: '/donde-vivir-uruguay',
+        labelKey: 'nav.housingAdvisor',
+        icon: 'mdi-home-search',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'donde vivir en montevideo',
+          'mejores barrios para vivir en montevideo',
+          'que barrio me conviene',
+          'alquilar o comprar',
+          'cuanto necesito para comprar un apartamento',
+          'cuanto tengo que ganar para alquilar',
+          'barrios mas seguros montevideo',
+        ],
+      },
+      {
         to: '/alquiler-ideal-uruguay',
         labelKey: 'nav.rentalFit',
         icon: 'mdi-home-account',

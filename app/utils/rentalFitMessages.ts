@@ -2,6 +2,7 @@ export const rentalFitMessages = {
   es: {
     introShort: 'Por presupuesto y cercanía a tus lugares.',
     exploreShort: 'Ver todos los alquileres',
+    whereShort: 'Elegir primero el barrio',
     budgetTitleShort: '¿Cuánto pueden pagar por mes?',
     budgetShort: 'Presupuesto mensual ($)',
     budgetHintShort: 'Para alquiler y gastos comunes de todo el hogar, en pesos uruguayos.',
@@ -197,6 +198,7 @@ export const rentalFitMessages = {
   en: {
     introShort: 'By budget and proximity to your places.',
     exploreShort: 'Browse all rentals',
+    whereShort: 'Pick the neighbourhood first',
     budgetTitleShort: 'What can your household spend per month?',
     budgetShort: 'Monthly budget (UYU)',
     budgetHintShort: 'Rent and common charges for the whole household, in Uruguayan pesos.',
@@ -390,6 +392,7 @@ export const rentalFitMessages = {
   pt: {
     introShort: 'Por orçamento e proximidade aos seus lugares.',
     exploreShort: 'Ver todos os aluguéis',
+    whereShort: 'Escolher o bairro antes',
     budgetTitleShort: 'Quanto podem pagar por mês?',
     budgetShort: 'Orçamento mensal (UYU)',
     budgetHintShort: 'Aluguel e condomínio de toda a família, em pesos uruguaios.',
