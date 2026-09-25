@@ -394,7 +394,7 @@ const sources = [
 const canonicalUrl = 'https://cambio-uruguay.com/pagar-cuentas-con-tarjeta'
 const title = 'Pagar cuentas con tarjeta por Totalnet'
 const description =
-  'Guía para pagar UTE, OSE, Antel, patente e impuestos con tarjeta de crédito en pagos.totalnet.uy: si acumula millas o puntos (caso Itaú Volar), si hay recargo, pros y contras, y una calculadora para saber si te conviene.'
+  'Totalnet procesa UTE, OSE, Antel o la patente como una compra y no como Abitab, así que lo esperable es que sumen millas. El 3,75 % lo paga el cobrador.'
 
 defineOgImageComponent('Cambio', {
   title: 'Pagar cuentas con tarjeta',

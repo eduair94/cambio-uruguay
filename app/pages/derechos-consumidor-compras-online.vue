@@ -523,7 +523,7 @@ async function copyReply() {
 // --- SEO ---
 const title = 'Derechos del consumidor en compras online'
 const description =
-  'Guía uruguaya para reclamar entregas atrasadas, productos defectuosos o distintos, garantías, cobros incorrectos, renovaciones, publicidad y servicios online. Elegí el incidente y generá un texto basado en la Ley 17.250.'
+  'El art. 33 de la Ley 17.250 te deja elegir cumplimiento, sustitución o devolución actualizada, y la venta a distancia tiene retracto de 5 días hábiles.'
 
 defineOgImageComponent('Cambio', {
   title: 'Tu compra online salió mal',

@@ -519,7 +519,7 @@ const relatedLinks = [
 // Ver tests/unit/seoTitleBudget.test.ts.
 const title = 'Cómo clonan una tarjeta en Uruguay'
 const description =
-  'Cómo se clona una tarjeta en Uruguay según lo que realmente se reporta, y qué control te da cada emisor: aviso por compra, bloqueo desde la app, topes por canal y número virtual, con la fuente de cada casilla.'
+  'Casi nunca te clonan el chip: se llevan número, vencimiento y código, y compran por internet. Qué control te da cada emisor, con la fuente de cada casilla.'
 const canonicalUrl = 'https://cambio-uruguay.com/clonacion-de-tarjetas-uruguay'
 
 useSeoMeta({

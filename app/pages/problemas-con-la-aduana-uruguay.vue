@@ -1052,7 +1052,7 @@ function useProblemForClaim(id: BucketId) {
 const canonicalUrl = 'https://cambio-uruguay.com/problemas-con-la-aduana-uruguay'
 const title = 'Problemas con la aduana: qué hacer'
 const description =
-  'Paquete retenido, factura exigida, cobro que no entendés, franquicia agotada, decomiso: situaciones típicas con los pasos exactos, a quién reclamarle y la norma citada. Con calculadoras y un generador de reclamo.'
+  'Paquete retenido, factura exigida, franquicia agotada o decomiso: los pasos exactos con la norma citada, y el piso de IVA de US$ 20 del régimen postal.'
 
 defineOgImageComponent('Cambio', {
   title: 'Problemas con la aduana: qué hacer en cada caso',

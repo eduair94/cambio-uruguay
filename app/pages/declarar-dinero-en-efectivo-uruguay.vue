@@ -327,7 +327,7 @@ const faqs = [
 const canonicalUrl = 'https://cambio-uruguay.com/declarar-dinero-en-efectivo-uruguay'
 const title = `Declarar efectivo en Uruguay: hasta US$ ${DECLARATION_THRESHOLD_USD.toLocaleString('es-UY')} no declarás nada`
 const description =
-  'Podés entrar o sacar hasta US$ 10.000 sin declarar; por encima de eso se declara en la Aduana. Desde marzo de 2026 la multa por no hacerlo es 30 % del excedente y 60 % del total si reincidís (Ley 19.574 art. 29).'
+  'Hasta US$ 10.000 entrás o salís sin declarar; por encima se declara en la Aduana. Desde marzo de 2026 la multa es 30 % del excedente (Ley 19.574 art. 29).'
 
 defineOgImageComponent('Cambio', {
   title: '¿Cuánta plata podés sacar de Uruguay sin declarar?',

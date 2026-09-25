@@ -574,6 +574,25 @@
       "hypothesis": "El sitio ya cubre monotributo, que empresa abrir y la prescripcion de deudas, pero no el papel que el BPS pide en el medio de todas esas operaciones. La consulta es de marca y de plazo -cuanto dura, cual de los dos me piden- y hoy la contestan gestorias y estudios contables, no una pagina con la cifra al frente. La apuesta es entrar por la vigencia (180 dias corridos desde el dia siguiente a la expedicion, que es el dato que se busca y el que nadie pone en el snippet) y por los seis actos que exigen el especial, y llevar ese trafico a las paginas de empresa y facturacion que ya existen."
     },
     {
+      "id": "descripciones-que-empiezan-por-la-respuesta-3",
+      "shippedOn": "2026-09-25",
+      "routes": [
+        "/accidente-de-trabajo-uruguay",
+        "/clonacion-de-tarjetas-uruguay",
+        "/cuanto-vale-una-milla-itau-uruguay",
+        "/declarar-dinero-en-efectivo-uruguay",
+        "/derechos-consumidor-compras-online",
+        "/donde-te-entregan-el-paquete-uruguay",
+        "/envio-directo-o-casillero-uruguay",
+        "/impuesto-autos-electricos-uruguay",
+        "/llevar-dolares-o-reales-a-brasil",
+        "/pagar-cuentas-con-tarjeta",
+        "/problemas-con-la-aduana-uruguay",
+        "/trabajo-para-menores-de-edad-uruguay"
+      ],
+      "hypothesis": "Las doce descripciones mas largas del tramo contenido entran enteras en el SERP y arrancan por el dato que decide el clic, no por la etiqueta de formato."
+    },
+    {
       "id": "descripciones-que-empiezan-por-la-respuesta-2",
       "shippedOn": "2026-09-25",
       "routes": [
