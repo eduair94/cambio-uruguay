@@ -112,7 +112,7 @@ function whole(value: unknown, min: number, max: number): number | null {
 export function foldZoneName(name: string): string {
   return String(name || '')
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/\p{Diacritic}/gu, '')
     .replace(/["'“”]/g, '')
     .toLowerCase()
     .replace(/\s+/g, ' ')
@@ -898,4 +898,13 @@ export function adviseHousing(
           sale: wantsSale && cheapestSale !== null ? Math.ceil(cheapestSale / 5_000) * 5_000 : null,
         },
   }
+}
+
+/** Lo que devuelve /api/housing/advisor. */
+export interface HousingAdvisorApiResponse extends HousingAdvisorResponse {
+  generatedAt: string | null
+  usdUyu: number
+  zones: number
+  departments: string[]
+  query: HousingAdvisorQuery
 }
