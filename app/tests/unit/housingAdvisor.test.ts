@@ -292,6 +292,61 @@ describe('adviseHousing', () => {
   })
 })
 
+describe('alquiler más gastos comunes', () => {
+  // El total mediano de los avisos que declaran gastos comunes es otro subconjunto: $ 24.500 de
+  // alquiler "con gastos comunes $ 25.000" confunde. Se suman las dos medianas y se dicen las dos.
+  const odd = zone({
+    name: 'Odd',
+    rent: {
+      n: 50,
+      p25: 22_000,
+      median: 24_500,
+      p75: 27_000,
+      monthlyMedian: 25_000,
+      monthlyP25: 23_000,
+      expensesMedian: 3_500,
+      m2Median: 500,
+    },
+  })
+  it('el tope propio se compara contra alquiler + gastos comunes medianos', () => {
+    const fits = adviseHousing([odd], query({ operation: 'alquilar', rentMax: 25_000 }), {
+      usdUyu: USD,
+    })
+    expect(fits.results).toEqual([])
+    expect(fits.minimum).toEqual({ rent: 28_000, sale: null })
+  })
+  it('la razón nombra las dos cifras', () => {
+    const result = adviseHousing([odd], query({ operation: 'alquilar', income: 100_000 }), {
+      usdUyu: USD,
+    }).results[0]!
+    expect(result.reasons[0]).toContain('$ 24.500')
+    expect(result.reasons[0]).toContain('más $ 3.500 de gastos comunes')
+  })
+})
+
+describe('gastos comunes en cero', () => {
+  it('si la mitad de los avisos no tiene gastos comunes, no se escribe "más $ 0"', () => {
+    const noFees = zone({
+      name: 'Casas',
+      rent: {
+        n: 60,
+        p25: 23_000,
+        median: 26_000,
+        p75: 28_000,
+        monthlyMedian: 26_000,
+        monthlyP25: 23_000,
+        expensesMedian: 0,
+        m2Median: 400,
+      },
+    })
+    const result = adviseHousing([noFees], query({ operation: 'alquilar', income: 100_000 }), {
+      usdUyu: USD,
+    }).results[0]!
+    expect(result.reasons[0]).not.toContain('$ 0')
+    expect(result.reasons[0]).toContain('sin gastos comunes')
+  })
+})
+
 describe('joinHousingZones', () => {
   const rentZone = (neighborhood: string, median: number, official: string | null) =>
     ({

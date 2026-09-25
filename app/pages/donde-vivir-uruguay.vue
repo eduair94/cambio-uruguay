@@ -71,12 +71,13 @@
           <VTextField
             v-if="draft.operacion !== 'comprar'"
             v-model="draft.alquilerMax"
-            label="Tope de alquiler + gastos comunes ($, opcional)"
+            label="Tu tope de alquiler ($, opcional)"
             inputmode="numeric"
-            placeholder="Si lo dejás vacío, usamos el de la garantía"
+            placeholder="Ej. 35000"
             density="comfortable"
             variant="outlined"
-            hide-details
+            hint="Alquiler más gastos comunes. Vacío: usamos el tope de la garantía."
+            persistent-hint
           />
           <template v-if="draft.operacion !== 'alquilar'">
             <VTextField
@@ -169,7 +170,7 @@
             </header>
 
             <div class="housing-card__grid">
-              <section v-if="result.rent">
+              <section v-if="result.rent && query.operation !== 'comprar'">
                 <h3 class="housing-card__label">Alquiler</h3>
                 <p class="text-h6 font-weight-bold mb-0">{{ formatUyu(result.rent.median) }}</p>
                 <p class="text-caption mb-1">
@@ -177,14 +178,17 @@
                   {{ formatUyu(result.rent.p75 ?? result.rent.median) }} ·
                   {{ result.rent.n }} avisos
                 </p>
-                <p v-if="result.rent.monthlyMedian !== null" class="text-body-2 mb-0">
-                  Con gastos comunes: {{ formatUyu(result.rent.monthlyMedian) }} por mes.
+                <p v-if="result.rent.expensesMedian" class="text-body-2 mb-0">
+                  Más gastos comunes: {{ formatUyu(result.rent.expensesMedian) }} de mediana.
+                </p>
+                <p v-else-if="result.rent.expensesMedian === 0" class="text-body-2 mb-0">
+                  La mitad de los avisos viene sin gastos comunes.
                 </p>
                 <p v-if="result.rentEntryUyu !== null" class="text-body-2 mb-0">
                   Para entrar: primer mes y comisión, unos {{ formatUyu(result.rentEntryUyu) }}.
                 </p>
               </section>
-              <section v-if="result.sale">
+              <section v-if="result.sale && query.operation !== 'alquilar'">
                 <h3 class="housing-card__label">Venta</h3>
                 <p class="text-h6 font-weight-bold mb-0">{{ formatUsd(result.sale.median) }}</p>
                 <p class="text-caption mb-1">
@@ -206,7 +210,10 @@
               </section>
             </div>
 
-            <section v-if="result.rentVsBuy" class="housing-card__versus mt-3">
+            <section
+              v-if="result.rentVsBuy && query.operation === 'comparar'"
+              class="housing-card__versus mt-3"
+            >
               <h3 class="housing-card__label">¿Alquilar o comprar acá?</h3>
               <p class="text-body-2 mb-0">
                 La vivienda vale {{ decimal(result.rentVsBuy.yearsOfRent) }} años de alquiler (rinde
@@ -476,8 +483,14 @@ const EXAMPLE_PROFILES = [
     query: { ingreso: '120000', ahorro: '30000', prioridad: 'precio,luz' },
   },
   {
-    title: 'Comprar para alquilar: los barrios que más rinden',
-    query: { operacion: 'comprar', ahorro: '60000', credito: 'contado', prioridad: 'inversion' },
+    title: 'Comprar un 1 dormitorio para alquilarlo, con US$ 40.000 y $ 100.000 de ingreso',
+    query: {
+      operacion: 'comprar',
+      dormitorios: '1',
+      ingreso: '100000',
+      ahorro: '40000',
+      prioridad: 'inversion',
+    },
   },
 ]
 
@@ -669,7 +682,7 @@ useHead({
 }
 .housing-form__pair {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: 12px;
 }
 @media (min-width: 960px) {

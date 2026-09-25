@@ -511,6 +511,22 @@ const betterThan = (zone: HousingZone, ...attributes: HousingScoreAttribute[]): 
       .filter((value): value is number => typeof value === 'number')
   )
 
+/**
+ * Alquiler + gastos comunes con las dos medianas. El total mediano de la zona sale sólo de los avisos
+ * que declaran gastos comunes —otro subconjunto—, y publicar "$ 24.500, con gastos comunes $ 25.000"
+ * hace pensar que los gastos son $ 500. Si la zona no tiene gastos comunes medidos, se usa ese total.
+ */
+const rentTotal = (rent: HousingZoneRent): number =>
+  rent.expensesMedian !== null
+    ? rent.median + rent.expensesMedian
+    : (rent.monthlyMedian ?? rent.median)
+const rentTotalLow = (rent: HousingZoneRent): number | null =>
+  rent.p25 === null
+    ? null
+    : rent.expensesMedian !== null
+      ? rent.p25 + rent.expensesMedian
+      : (rent.monthlyP25 ?? rent.p25)
+
 const bedroomsLabel = (bedrooms: number): string =>
   bedrooms === 0
     ? 'monoambiente'
@@ -568,9 +584,11 @@ function explain(
 
   if (zone.rent && query.operation !== 'comprar') {
     const withExpenses =
-      zone.rent.monthlyMedian !== null
-        ? ` (${uyu(zone.rent.monthlyMedian)} con gastos comunes)`
-        : ''
+      zone.rent.expensesMedian === null
+        ? ''
+        : zone.rent.expensesMedian > 0
+          ? `, más ${uyu(zone.rent.expensesMedian)} de gastos comunes`
+          : ', y la mitad de los avisos viene sin gastos comunes'
     const share =
       query.income !== null ? `: ${pct(zone.rent.median / query.income)} de tu ingreso` : ''
     reasons.push(
@@ -613,7 +631,11 @@ function explain(
   if (candidate.rentStretch && query.operation !== 'comprar')
     tradeoffs.push(
       `El alquiler mediano se pasa de tu tope; la cuarta parte más barata entra (desde ${uyu(
-        (budget.rentBasis === 'total' ? zone.rent?.monthlyP25 : zone.rent?.p25) ?? 0
+        (zone.rent
+          ? budget.rentBasis === 'total'
+            ? rentTotalLow(zone.rent)
+            : zone.rent.p25
+          : null) ?? 0
       )}).`
     )
   if (candidate.saleStretch && query.operation !== 'alquilar')
@@ -678,12 +700,12 @@ export function adviseHousing(
     }
     const rentValue = zone.rent
       ? budget.rentBasis === 'total'
-        ? (zone.rent.monthlyMedian ?? zone.rent.median)
+        ? rentTotal(zone.rent)
         : zone.rent.median
       : null
     const rentLow = zone.rent
       ? budget.rentBasis === 'total'
-        ? (zone.rent.monthlyP25 ?? zone.rent.p25)
+        ? rentTotalLow(zone.rent)
         : zone.rent.p25
       : null
     const rentFits =
@@ -720,9 +742,7 @@ export function adviseHousing(
       continue
     }
     const buy = buyCosts(zone, budget, context.usdUyu)
-    const rentMonthly = zone.rent
-      ? (zone.rent.monthlyMedian ?? zone.rent.median + (zone.rent.expensesMedian ?? 0))
-      : null
+    const rentMonthly = zone.rent ? rentTotal(zone.rent) : null
     candidates.push({
       zone,
       rentValue,
