@@ -25,8 +25,10 @@ import {
   type HousingCreditId,
   type HousingCreditProfile,
 } from './housingAdvisorFigures'
+import { computePayroll } from './payroll'
+import { rentalZoneScoreId } from './rentalZoneServices'
 import { RENTAL_ZONE_DEPARTMENTS } from './rentalZones'
-import type { RentalZone } from './rentalZoneTypes'
+import type { RentalZone, RentalZoneScores } from './rentalZoneTypes'
 
 export type HousingOperation = 'alquilar' | 'comprar' | 'comparar'
 export type HousingPropertyType = 'apartamento' | 'casa'
@@ -48,6 +50,11 @@ export type HousingScoreAttribute =
   | 'alumbrado'
   | 'servicios'
 export type HousingExclusion = 'sin_datos' | 'presupuesto'
+/** El estado de la capa de cortes de luz: 'preliminary' se publica como provisorio. */
+export interface HousingPowerStatus {
+  status: string
+  observedDays: number
+}
 
 export const HOUSING_OPERATIONS: ReadonlyArray<{ value: HousingOperation; title: string }> = [
   { value: 'comparar', title: 'No sé: comparar' },
@@ -103,7 +110,10 @@ const first = (value: unknown): string => {
 function whole(value: unknown, min: number, max: number): number | null {
   const raw = first(value)
     .replace(/u\$s|us\$|usd|\$/gi, '')
-    .replace(/[.,\s]/g, '')
+    .replace(/\s/g, '')
+    // Los centésimos del recibo ("85.432,18") no son más dígitos: se cortan antes que los miles.
+    .replace(/[.,]\d{1,2}$/, '')
+    .replace(/[.,]/g, '')
   if (!/^\d+$/.test(raw)) return null
   const parsed = Number(raw)
   return parsed >= min && parsed <= max ? parsed : null
@@ -163,6 +173,33 @@ export function housingAdvisorQueryParams(query: HousingAdvisorQuery): Record<st
   return params
 }
 
+const ANSWER_KEYS = [
+  'operacion',
+  'departamento',
+  'tipo',
+  'dormitorios',
+  'ingreso',
+  'alquilerMax',
+  'ahorro',
+  'credito',
+  'plazo',
+  'prioridad',
+] as const
+
+/** Si la URL trae alguna respuesta del formulario (aunque sea la que se asume sin preguntar). */
+export function housingAdvisorHasAnswers(input: Record<string, unknown>): boolean {
+  return ANSWER_KEYS.some(key => first(input[key]) !== '')
+}
+
+/**
+ * Lo que pone en la URL el botón del formulario. Nunca vacío: quien busca con las respuestas que
+ * vienen marcadas también quiere ver barrios, y una URL sin respuestas muestra el formulario solo.
+ */
+export function housingAdvisorSubmitParams(query: HousingAdvisorQuery): Record<string, string> {
+  const params = housingAdvisorQueryParams(query)
+  return Object.keys(params).length ? params : { operacion: query.operation }
+}
+
 /** El formulario de la página, armado desde la URL. */
 export interface HousingAdvisorDraft {
   operacion: HousingOperation
@@ -197,6 +234,12 @@ export function housingAdvisorDraft(query: HousingAdvisorQuery): HousingAdvisorD
 // ---------------------------------------------------------------------------------------------
 
 export interface HousingBudget {
+  /**
+   * El líquido estimado del ingreso: la cuota tope de los prestamistas es sobre lo que se cobra en
+   * mano, no sobre el nominal. Se calcula como un solo sueldo, sin hijos a cargo; con dos sueldos el
+   * líquido real es algo mayor, así que el error queda del lado de pedir menos.
+   */
+  incomeNet: number | null
   /** Pesos por mes; null si no hay ingreso ni tope propio. */
   rentMax: number | null
   /** "alquiler": el tope de la garantía, que se compara contra el alquiler; "total": el propio. */
@@ -220,6 +263,7 @@ export function housingBudget(query: HousingAdvisorQuery, usdUyu: number): Housi
   const rentMax =
     query.rentMax ?? (query.income !== null ? query.income * HOUSING_GUARANTEE_CAPS.anda : null)
   const savings = query.savings ?? 0
+  const incomeNet = query.income !== null ? computePayroll({ nominal: query.income }).liquido : null
 
   let buyMaxBySavings: number | null
   let buyMaxByIncome: number | null = null
@@ -227,11 +271,11 @@ export function housingBudget(query: HousingAdvisorQuery, usdUyu: number): Housi
     buyMaxBySavings = savings / (1 + ENTRY_HIGH)
   } else {
     buyMaxBySavings = savings / (1 - profile.financing + ENTRY_HIGH)
-    if (query.income !== null && usdUyu > 0) {
-      // La cuota tope sobre el ingreso define el préstamo máximo; el precio es ese préstamo sobre
+    if (incomeNet !== null && incomeNet > 0 && usdUyu > 0) {
+      // La cuota tope sobre el líquido define el préstamo máximo; el precio es ese préstamo sobre
       // la parte que el prestamista financia.
       const unitInstallment = housingInstallment(1, profile.tea, years)
-      const maxLoanUyu = (profile.installmentCap * query.income) / unitInstallment
+      const maxLoanUyu = (profile.installmentCap * incomeNet) / unitInstallment
       buyMaxByIncome = maxLoanUyu / profile.financing / usdUyu
     }
   }
@@ -239,6 +283,7 @@ export function housingBudget(query: HousingAdvisorQuery, usdUyu: number): Housi
     (value): value is number => value !== null
   )
   return {
+    incomeNet,
     rentMax,
     rentBasis: query.rentMax !== null ? 'total' : 'alquiler',
     rentMaxMapfre: query.income !== null ? query.income * HOUSING_GUARANTEE_CAPS.mapfre : null,
@@ -292,23 +337,20 @@ export interface HousingZone {
   scores: Partial<Record<HousingScoreAttribute, HousingScore>>
   /** El barrio oficial (INE/UTE) cuyo contexto se usa. */
   official: string | null
+  /** El barrio en las series de precios ("b:montevideo:malvin"), si tiene serie de venta. */
+  seriesToken?: string | null
 }
 
-export interface HousingScoresInput {
-  zones: Record<
-    string,
-    {
-      name: string
-      department: string
-      rows: Array<{ attribute: string; value: number; betterThan: number; zones: number }>
-    }
-  >
-  resolver: Record<string, Record<string, string>>
-}
+/** Lo que el asesor lee de los scores de zona: los barrios y cómo encontrar uno por su nombre. */
+export type HousingScoresInput = Pick<RentalZoneScores, 'zones' | 'resolver'>
 
 export interface HousingSaleCohort {
+  /** "venta|USD|<tipo>|<dorm>|b:<depto>:<barrio>": de ahí sale el barrio para la evolución. */
+  key?: string
   labels: { neighborhood: string | null }
   latest: {
+    /** Día del último punto: una cohorte que bajó de 8 avisos deja de actualizarse, no se borra. */
+    d?: string
     n: number
     p25: number | null
     med: number | null
@@ -327,21 +369,28 @@ const SCORE_ATTRIBUTES: readonly HousingScoreAttribute[] = [
   'servicios',
 ]
 
+/**
+ * Las series de venta del día del índice. El índice dice que un barrio tiene ALGUNA serie hoy, pero
+ * la cohorte de un tipo y dormitorios que bajó de 8 avisos queda con su último punto viejo: publicarlo
+ * sería presentar un precio de hace semanas como lo que se pide hoy.
+ */
+export function currentSaleCohorts<T extends HousingSaleCohort>(
+  cohorts: readonly T[],
+  day: string
+): T[] {
+  return cohorts.filter(cohort => !!cohort?.labels && cohort.latest?.d === day)
+}
+
 function scoresFor(
   official: string | null,
-  folded: string,
+  name: string,
+  department: string,
   scores: HousingScoresInput | null
 ): { official: string | null; scores: HousingZone['scores'] } {
   if (!scores) return { official: null, scores: {} }
-  let id = official && scores.zones[official] ? official : null
-  if (!id)
-    for (const map of Object.values(scores.resolver ?? {})) {
-      const found = map?.[folded]
-      if (found && scores.zones[found]) {
-        id = found
-        break
-      }
-    }
+  // El mismo resolvedor que el directorio: los 62 barrios INE sólo valen en Montevideo, y afuera se
+  // busca la localidad o el alias DEL departamento. Un "Centro" de Maldonado no es el de Montevideo.
+  const id = rentalZoneScoreId(scores, { zone: official, department, neighborhood: name })
   if (!id) return { official: null, scores: {} }
   const zone = scores.zones[id]!
   const out: HousingZone['scores'] = {}
@@ -399,9 +448,13 @@ export function joinHousingZones(
       p75: latest.p75,
       m2Median: latest.m2?.med ?? null,
     }
+    const token = cohort.key?.split('|')[4]
+    const seriesToken = token?.startsWith('b:') ? token : null
     const existing = byId.get(id)
-    if (existing) existing.sale = sale
-    else
+    if (existing) {
+      existing.sale = sale
+      existing.seriesToken = seriesToken
+    } else
       byId.set(id, {
         id,
         name,
@@ -411,11 +464,12 @@ export function joinHousingZones(
         scores: {},
         official: null,
         officialId: null,
+        seriesToken,
       })
   }
   return [...byId.values()].map(({ officialId, ...zone }) => ({
     ...zone,
-    ...scoresFor(officialId, zone.id, scores),
+    ...scoresFor(officialId, zone.name, department, scores),
   }))
 }
 
@@ -472,6 +526,8 @@ export interface HousingAdvisorResult {
   notes: string[]
   rentalsQuery: Record<string, string> | null
   salesQuery: Record<string, string> | null
+  /** Para /evolucion-precio-*: el mismo barrio, tipo y dormitorios. */
+  seriesQuery: Record<string, string> | null
 }
 
 export interface HousingAdvisorResponse {
@@ -481,6 +537,11 @@ export interface HousingAdvisorResponse {
   excluded: Array<{ reason: HousingExclusion; count: number }>
   /** Si nada entra: desde cuánto empieza a haber, en cada modo. */
   minimum: { rent: number | null; sale: number | null } | null
+  /** Si no hay resultados, por qué: faltan avisos o no entra en la plata. */
+  emptyReason: HousingExclusion | null
+  /** Si hubo un tope de plata para lo que se pidió (ingreso, tope propio o ahorro). */
+  budgetApplied: boolean
+  power: HousingPowerStatus | null
 }
 
 const pct = (value: number): string => `${Math.round(value * 100)} %`
@@ -574,15 +635,35 @@ function explain(
   candidate: Candidate,
   query: HousingAdvisorQuery,
   budget: HousingBudget,
-  group: Candidate[]
+  group: Candidate[],
+  power: HousingPowerStatus | null
 ): { reasons: string[]; tradeoffs: string[]; notes: string[] } {
   const { zone } = candidate
   const reasons: string[] = []
   const tradeoffs: string[] = []
   const notes: string[] = []
   const what = `${query.type === 'casa' ? 'una casa' : 'un apartamento'} de ${bedroomsLabel(query.bedrooms)}`
+  const whatPlural = `${query.type === 'casa' ? 'las casas' : 'los apartamentos'} ${
+    query.bedrooms === 0 ? 'monoambiente' : `de ${bedroomsLabel(query.bedrooms)}`
+  }`
+  // En comparar un barrio entra si UNO de los dos modos entra; el otro no puede ir a "por qué".
+  const rentOut =
+    query.operation === 'comparar' && candidate.rentFits === false && !candidate.rentStretch
+  const saleOut =
+    query.operation === 'comparar' && candidate.saleFits === false && !candidate.saleStretch
+  if (rentOut && zone.rent && budget.rentMax !== null)
+    tradeoffs.push(
+      `Alquilar acá no te alcanza: la mediana es ${uyu(candidate.rentValue ?? zone.rent.median)} y lo que alcanza, ${uyu(budget.rentMax)}.`
+    )
+  if (saleOut && zone.sale && budget.buyMax !== null)
+    tradeoffs.push(
+      // Sin ahorro cargado el techo es cero: se dice cuánta entrada pide, no "hasta US$ 0".
+      query.savings === null && candidate.buy
+        ? `Comprar acá pide ahorro: la mitad se pide hasta ${usd(zone.sale.median)} y la entrada ronda ${usd(candidate.buy.cashNeeded)}.`
+        : `Comprar acá no te alcanza: la mitad se pide hasta ${usd(zone.sale.median)} y te alcanza hasta ${usd(budget.buyMax)}.`
+    )
 
-  if (zone.rent && query.operation !== 'comprar') {
+  if (zone.rent && query.operation !== 'comprar' && !rentOut) {
     const withExpenses =
       zone.rent.expensesMedian === null
         ? ''
@@ -590,16 +671,16 @@ function explain(
           ? `, más ${uyu(zone.rent.expensesMedian)} de gastos comunes`
           : ', y la mitad de los avisos viene sin gastos comunes'
     const share =
-      query.income !== null ? `: ${pct(zone.rent.median / query.income)} de tu ingreso` : ''
+      query.income !== null ? ` (${pct(zone.rent.median / query.income)} de tu ingreso)` : ''
     reasons.push(
-      `Alquilar ${what} sale ${uyu(zone.rent.median)} de mediana${withExpenses}${share}.`
+      `Alquilar ${what} sale ${uyu(zone.rent.median)} de mediana${share}${withExpenses}.`
     )
   }
-  if (zone.sale && candidate.buy && query.operation !== 'alquilar') {
+  if (zone.sale && candidate.buy && query.operation !== 'alquilar' && !saleOut) {
     const loan = budget.profile
       ? ` Con el ${budget.profile.label} ponés ${usd(candidate.buy.cashNeeded)} de entrada y la cuota ronda ${uyu(candidate.buy.installmentUyu)}.`
       : ` Al contado necesitás ${usd(candidate.buy.cashNeeded)} con los gastos de compra.`
-    reasons.push(`La mitad de ${what} se pide hasta ${usd(zone.sale.median)}.${loan}`)
+    reasons.push(`La mitad de ${whatPlural} se piden hasta ${usd(zone.sale.median)}.${loan}`)
   }
 
   const safety = zone.scores.denuncias?.betterThan
@@ -610,13 +691,18 @@ function explain(
   const services = zone.scores.servicios?.betterThan
   if (services !== undefined && services >= 0.7)
     reasons.push(`Más servicios cerca que el ${pct(services)} de los barrios medidos.`)
-  const power = zone.scores.luz?.betterThan
-  if (power !== undefined && power <= 0.3)
-    tradeoffs.push(`Más cortes de luz que el ${pct(1 - power)} de los barrios medidos.`)
-  else if (power !== undefined && power >= 0.75)
-    reasons.push(`Menos cortes de luz que el ${pct(power)} de los barrios medidos.`)
+  const cuts = zone.scores.luz?.betterThan
+  // La capa de luz se publica provisoria hasta juntar los días del libro; el resto del sitio lo dice.
+  const provisional =
+    power?.status === 'preliminary' ? ` (provisorio · ${power.observedDays} días medidos)` : ''
+  if (cuts !== undefined && cuts <= 0.3)
+    tradeoffs.push(
+      `Más cortes de luz que el ${pct(1 - cuts)} de los barrios medidos${provisional}.`
+    )
+  else if (cuts !== undefined && cuts >= 0.75)
+    reasons.push(`Menos cortes de luz que el ${pct(cuts)} de los barrios medidos${provisional}.`)
 
-  if (candidate.rentVsBuy && query.operation !== 'alquilar') {
+  if (candidate.rentVsBuy && query.operation !== 'alquilar' && !saleOut) {
     const yields = group
       .map(item => item.rentVsBuy?.grossYield)
       .filter((value): value is number => typeof value === 'number')
@@ -675,9 +761,13 @@ function explain(
 export function adviseHousing(
   zones: readonly HousingZone[],
   query: HousingAdvisorQuery,
-  context: { usdUyu: number }
+  context: { usdUyu: number; power?: HousingPowerStatus | null }
 ): HousingAdvisorResponse {
   const budget = housingBudget(query, context.usdUyu)
+  // Días enteros, como los cuenta el resto del sitio ("provisorio · 5 días medidos").
+  const power = context.power
+    ? { ...context.power, observedDays: Math.floor(context.power.observedDays) }
+    : null
   const excluded = new Map<HousingExclusion, number>()
   const exclude = (reason: HousingExclusion) =>
     excluded.set(reason, (excluded.get(reason) ?? 0) + 1)
@@ -848,7 +938,7 @@ export function adviseHousing(
     .slice(0, MAX_RESULTS)
     .map(({ candidate, scores, score }) => {
       const { zone } = candidate
-      const { reasons, tradeoffs, notes } = explain(candidate, query, budget, group)
+      const { reasons, tradeoffs, notes } = explain(candidate, query, budget, group, power)
       const bedrooms = String(query.bedrooms)
       return {
         id: zone.id,
@@ -888,7 +978,15 @@ export function adviseHousing(
                   ? { monthlyMax: String(Math.round(budget.rentMax)) }
                   : { priceMax: String(Math.round(budget.rentMax)) }
                 : {}),
-              currency: 'UYU',
+              // Sin moneda: el tope ya filtra por el precio en pesos, y la moneda del directorio es
+              // la PUBLICADA — pedir UYU escondería los alquileres en dólares que están en la mediana.
+            }
+          : null,
+        seriesQuery: zone.seriesToken
+          ? {
+              zona: zone.seriesToken,
+              tipo: query.type,
+              dormitorios: query.bedrooms >= 4 ? '4plus' : bedrooms,
             }
           : null,
         salesQuery: zone.sale
@@ -906,9 +1004,16 @@ export function adviseHousing(
       }
     })
 
+  const budgetExcluded = excluded.get('presupuesto') ?? 0
   return {
     budget,
     results,
+    emptyReason: results.length ? null : budgetExcluded > 0 ? 'presupuesto' : 'sin_datos',
+    // Sin ahorro cargado el techo de compra es cero por construcción, no una cifra de la persona.
+    budgetApplied:
+      (wantsRent && budget.rentMax !== null) ||
+      (wantsSale && budget.buyMax !== null && query.savings !== null),
+    power,
     considered: candidates.length,
     excluded: [...excluded.entries()].map(([reason, count]) => ({ reason, count })),
     minimum: results.length

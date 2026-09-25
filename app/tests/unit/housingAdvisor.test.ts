@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   adviseHousing,
+  currentSaleCohorts,
   foldZoneName,
+  housingAdvisorHasAnswers,
   housingAdvisorQueryParams,
+  housingAdvisorSubmitParams,
   housingBudget,
   joinHousingZones,
   normalizeHousingAdvisorQuery,
@@ -11,6 +14,7 @@ import {
   type HousingZone,
 } from '../../utils/housingAdvisor'
 import { housingInstallment } from '../../utils/housingAdvisorFigures'
+import { computePayroll } from '../../utils/payroll'
 import type { RentalZone } from '../../utils/rentalZoneTypes'
 
 const USD = 40
@@ -194,7 +198,11 @@ describe('housingBudget', () => {
     const budget = housingBudget(query({ income: 150_000, savings: 30_000, credit: 'bhu' }), USD)
     const bySavings = 30_000 / (1 - 0.9 + 0.1066)
     const i = 1.045 ** (1 / 12) - 1
-    const maxLoan = (0.25 * 150_000 * (1 - (1 + i) ** -300)) / i
+    // La cuota tope del BHU es sobre el ingreso disponible: el líquido, no el nominal.
+    const net = computePayroll({ nominal: 150_000 }).liquido
+    expect(budget.incomeNet).toBeCloseTo(net, 4)
+    expect(net).toBeLessThan(150_000 * 0.85)
+    const maxLoan = (0.25 * net * (1 - (1 + i) ** -300)) / i
     const byIncome = maxLoan / 0.9 / USD
     expect(budget.buyMaxBySavings).toBeCloseTo(bySavings, 4)
     expect(budget.buyMaxByIncome).toBeCloseTo(byIncome, 4)
@@ -280,7 +288,6 @@ describe('adviseHousing', () => {
       bedrooms: '2',
       bedroomsExact: '1',
       priceMax: '40000',
-      currency: 'UYU',
     })
     expect(result.salesQuery).toMatchObject({
       department: 'Montevideo',
@@ -390,7 +397,7 @@ describe('joinHousingZones', () => {
         rows: [{ attribute: 'denuncias', value: 10, betterThan: 0.4, zones: 62 }],
       },
     },
-    resolver: { ine: { malvin: 'mvd:11' } },
+    resolver: { ine: { malvin: 'mvd:11' }, aliases: {}, localities: {} },
   }
 
   it('une alquiler y venta por nombre sin tildes ni mayúsculas, y encuentra el barrio oficial', () => {
@@ -412,9 +419,215 @@ describe('joinHousingZones', () => {
     expect(malvin.scores.denuncias?.betterThan).toBe(0.4)
   })
 
+  it('un barrio de otro departamento con el nombre de uno de Montevideo no hereda sus datos', () => {
+    const input: HousingScoresInput = {
+      zones: {
+        'mvd:2': {
+          name: 'Centro',
+          department: 'Montevideo',
+          rows: [{ attribute: 'denuncias', value: 900, betterThan: 0.05, zones: 62 }],
+        },
+      },
+      resolver: { ine: { centro: 'mvd:2' }, aliases: {}, localities: {} },
+    }
+    const [centro] = joinHousingZones([rentZone('Centro', 25_000, null)], [], input, 'Maldonado')
+    expect(centro!.scores).toEqual({})
+    expect(centro!.official).toBeNull()
+  })
+
+  it('fuera de Montevideo se resuelve por la localidad de ese departamento', () => {
+    const input: HousingScoresInput = {
+      zones: {
+        'ute:7': {
+          name: 'San Carlos',
+          department: 'Maldonado',
+          rows: [{ attribute: 'luz', value: 3, betterThan: 0.6, zones: 90 }],
+        },
+      },
+      resolver: { ine: {}, aliases: {}, localities: { 'maldonado|san carlos': 'ute:7' } },
+    }
+    const [zone] = joinHousingZones([rentZone('San Carlos', 20_000, null)], [], input, 'Maldonado')
+    expect(zone!.scores.luz?.betterThan).toBe(0.6)
+  })
+
+  it('un barrio oficial con coma se encuentra aunque sólo tenga ventas', () => {
+    const input: HousingScoresInput = {
+      zones: {
+        'mvd:40': {
+          name: 'Prado, Nueva Savona',
+          department: 'Montevideo',
+          rows: [{ attribute: 'denuncias', value: 10, betterThan: 0.7, zones: 62 }],
+        },
+      },
+      resolver: { ine: { 'prado nueva savona': 'mvd:40' }, aliases: {}, localities: {} },
+    }
+    const [zone] = joinHousingZones(
+      [],
+      [
+        {
+          labels: { neighborhood: 'Prado, Nueva Savona' },
+          latest: { n: 12, p25: 100_000, med: 120_000, p75: 140_000, m2: null },
+        },
+      ],
+      input,
+      'Montevideo'
+    )
+    expect(zone!.scores.denuncias?.betterThan).toBe(0.7)
+  })
+
+  it('la tarjeta enlaza la evolución de precios del mismo barrio, tipo y dormitorios', () => {
+    const [zone] = joinHousingZones(
+      [rentZone('Malvín', 39_000, null)],
+      [
+        {
+          key: 'venta|USD|apartamento|2|b:montevideo:malvin',
+          labels: { neighborhood: 'Malvín' },
+          latest: { n: 30, p25: 150_000, med: 180_000, p75: 200_000, m2: null },
+        },
+      ],
+      scoresInput,
+      'Montevideo'
+    )
+    expect(zone!.seriesToken).toBe('b:montevideo:malvin')
+    const result = adviseHousing([zone!], query({ operation: 'comprar', savings: 100_000 }), {
+      usdUyu: USD,
+    }).results[0]!
+    expect(result.seriesQuery).toEqual({
+      zona: 'b:montevideo:malvin',
+      tipo: 'apartamento',
+      dormitorios: '2',
+    })
+  })
+
   it('una zona sin mediana (menos de 8 avisos) no entra', () => {
     const empty = rentZone('Vacío', 0, null)
     ;(empty.prices.rent as { median: number | null }).median = null
     expect(joinHousingZones([empty], [], scoresInput, 'Montevideo')).toEqual([])
+  })
+})
+
+describe('revisión final', () => {
+  it('los centésimos del recibo no multiplican el monto por cien', () => {
+    expect(
+      normalizeHousingAdvisorQuery({ ingreso: '85.432,18', ahorro: 'US$ 30.000,00' })
+    ).toMatchObject({ income: 85_432, savings: 30_000 })
+    expect(normalizeHousingAdvisorQuery({ ingreso: '85432.18' }).income).toBe(85_432)
+    expect(normalizeHousingAdvisorQuery({ ingreso: '1.234.567' }).income).toBe(1_234_567)
+    expect(normalizeHousingAdvisorQuery({ ingreso: '120.000' }).income).toBe(120_000)
+  })
+
+  it('una serie de venta que el job dejó de actualizar no se publica como vigente', () => {
+    const point = { n: 10, p25: 90_000, med: 100_000, p75: 110_000, m2: null }
+    const fresh = { labels: { neighborhood: 'A' }, latest: { ...point, d: '2026-09-24' } }
+    const old = { labels: { neighborhood: 'B' }, latest: { ...point, d: '2026-09-18' } }
+    expect(currentSaleCohorts([fresh, old], '2026-09-24')).toEqual([fresh])
+  })
+
+  it('sin barrios con avisos no le echa la culpa a la plata', () => {
+    const none = adviseHousing([], query({ operation: 'alquilar', income: 50_000 }), {
+      usdUyu: USD,
+    })
+    expect(none.emptyReason).toBe('sin_datos')
+    expect(advise({ operation: 'alquilar', rentMax: 10_000 }).emptyReason).toBe('presupuesto')
+    expect(advise({ operation: 'alquilar', income: 100_000 }).emptyReason).toBeNull()
+  })
+
+  it('sin ingreso ni tope no dice que filtró por plata', () => {
+    expect(advise({ operation: 'alquilar' }).budgetApplied).toBe(false)
+    expect(advise({ operation: 'alquilar', income: 100_000 }).budgetApplied).toBe(true)
+  })
+
+  it('los cortes de luz provisorios lo dicen en cada línea', () => {
+    const response = adviseHousing(ZONES, query({ operation: 'alquilar', income: 100_000 }), {
+      usdUyu: USD,
+      power: { status: 'preliminary', observedDays: 5 },
+    })
+    const lines = response.results
+      .flatMap(result => [...result.reasons, ...result.tradeoffs])
+      .filter(line => /cortes de luz/.test(line))
+    expect(lines.length).toBeGreaterThan(0)
+    for (const line of lines) expect(line).toContain('provisorio · 5 días medidos')
+    expect(response.power).toEqual({ status: 'preliminary', observedDays: 5 })
+  })
+
+  it('los días del libro de luz se cuentan enteros, como en el resto del sitio', () => {
+    const response = adviseHousing(ZONES, query({ operation: 'alquilar', income: 100_000 }), {
+      usdUyu: USD,
+      power: { status: 'preliminary', observedDays: 5.3 },
+    })
+    const text = response.results.flatMap(result => result.tradeoffs).join(' ')
+    expect(text).toContain('provisorio · 5 días medidos')
+    expect(response.power?.observedDays).toBe(5)
+  })
+
+  it('comparar: comprar fuera de alcance va a lo que resignás, no a por qué', () => {
+    const result = advise({ income: 150_000, savings: 10_000 }).results.find(
+      item => item.name === 'Cordón'
+    )!
+    expect(result.saleFits).toBe(false)
+    expect(result.saleStretch).toBe(false)
+    expect(result.reasons.join(' ')).not.toContain('US$')
+    expect(result.tradeoffs[0]).toMatch(/^Comprar acá no te alcanza/)
+  })
+
+  it('comparar sin ahorro: dice cuánta entrada pide, no "te alcanza hasta US$ 0"', () => {
+    const response = advise({})
+    const cordon = response.results.find(item => item.name === 'Cordón')!
+    expect(cordon.tradeoffs.join(' ')).not.toContain('US$ 0')
+    expect(cordon.tradeoffs[0]).toMatch(/^Comprar acá pide ahorro: .*entrada ronda US\$ \d/)
+    expect(response.budgetApplied).toBe(false)
+  })
+
+  it('comparar: alquilar fuera de alcance también', () => {
+    const caro = zone({
+      name: 'Caro',
+      rent: {
+        n: 30,
+        p25: 80_000,
+        median: 90_000,
+        p75: 95_000,
+        monthlyMedian: 95_000,
+        monthlyP25: 85_000,
+        expensesMedian: 5_000,
+        m2Median: 900,
+      },
+      sale: { n: 30, p25: 90_000, median: 100_000, p75: 110_000, m2Median: 2_000 },
+    })
+    const result = adviseHousing(
+      [caro],
+      query({ income: 100_000, savings: 200_000, credit: 'contado' }),
+      { usdUyu: USD }
+    ).results[0]!
+    expect(result.rentFits).toBe(false)
+    expect(result.reasons.join(' ')).not.toMatch(/^Alquilar/)
+    expect(result.tradeoffs[0]).toMatch(/^Alquilar acá no te alcanza/)
+  })
+
+  it('la venta se dice en plural y el porcentaje es del alquiler solo', () => {
+    const buy = adviseHousing(
+      ZONES,
+      query({ operation: 'comprar', income: 300_000, savings: 100_000 }),
+      { usdUyu: USD }
+    ).results.find(item => item.name === 'Cordón')!
+    expect(buy.reasons.join(' ')).toContain(
+      'La mitad de los apartamentos de 2 dormitorios se piden hasta US$ 172.656.'
+    )
+    const rent = advise({ operation: 'alquilar', income: 150_000 }).results.find(
+      item => item.name === 'Cordón'
+    )!
+    expect(rent.reasons[0]).toBe(
+      'Alquilar un apartamento de 2 dormitorios sale $ 34.500 de mediana (23 % de tu ingreso), más $ 5.500 de gastos comunes.'
+    )
+  })
+
+  it('enviar el formulario sin tocar nada igual muestra barrios', () => {
+    const params = housingAdvisorSubmitParams(normalizeHousingAdvisorQuery({}))
+    expect(params).toEqual({ operacion: 'comparar' })
+    expect(housingAdvisorHasAnswers(params)).toBe(true)
+    expect(housingAdvisorHasAnswers({})).toBe(false)
+    expect(housingAdvisorHasAnswers({ utm_source: 'x' })).toBe(false)
+    expect(housingAdvisorSubmitParams(normalizeHousingAdvisorQuery({ ingreso: '90000' }))).toEqual({
+      ingreso: '90000',
+    })
   })
 })

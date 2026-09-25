@@ -853,7 +853,7 @@ export function buildRentalZoneScores(
 
 /** The zone id of a listing: its own official zone, else its advertised barrio resolved by name. */
 export function rentalZoneScoreId(
-  scores: RentalZoneScores | null,
+  scores: Pick<RentalZoneScores, 'zones' | 'resolver'> | null,
   place: {
     zone?: string | null
     department?: string | null

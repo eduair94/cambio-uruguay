@@ -131,10 +131,21 @@
           <p class="text-body-1 mb-4">
             <template v-if="advice.results.length">
               Estos son los <strong>{{ advice.results.length }} barrios</strong> que mejor cumplen
-              lo que marcaste, de {{ advice.considered }} donde lo que buscás entra en tu plata ({{
-                advice.zones
-              }}
-              barrios de {{ query.department }} con avisos suficientes).
+              lo que marcaste,
+              <template v-if="advice.budgetApplied">
+                de {{ advice.considered }} donde lo que buscás entra en tu plata
+              </template>
+              <template v-else>de {{ advice.considered }} con datos</template>
+              ({{ advice.zones }} barrios de {{ query.department }} con avisos suficientes).
+            </template>
+            <template v-else-if="advice.emptyReason === 'sin_datos'">
+              Todavía no hay barrios de {{ query.department }} con 8 avisos o más de
+              {{ bedroomsText }}{{ query.operation === 'comprar' ? ' en venta' : '' }}: con menos,
+              la mediana no dice nada. Probá con otra cantidad de dormitorios, el otro tipo de
+              vivienda o la
+              <NuxtLink :to="localePath('/barrios-alquileres-uruguay')"
+                >comparación de barrios</NuxtLink
+              >.
             </template>
             <template v-else>
               Con esos números no encontramos barrios de {{ query.department }} donde
@@ -211,7 +222,7 @@
             </div>
 
             <section
-              v-if="result.rentVsBuy && query.operation === 'comparar'"
+              v-if="result.rentVsBuy && query.operation === 'comparar' && bothReachable(result)"
               class="housing-card__versus mt-3"
             >
               <h3 class="housing-card__label">¿Alquilar o comprar acá?</h3>
@@ -281,6 +292,21 @@
               >
                 Ver ventas
               </VBtn>
+              <VBtn
+                :to="
+                  localePath({
+                    path:
+                      query.operation === 'comprar'
+                        ? '/evolucion-precio-viviendas-uruguay'
+                        : '/evolucion-precio-alquileres-uruguay',
+                    query: result.seriesQuery ?? {},
+                  })
+                "
+                variant="text"
+                size="small"
+              >
+                Evolución de precios
+              </VBtn>
               <VBtn :to="localePath('/alquiler-ideal-uruguay')" variant="text" size="small">
                 Elegir el apartamento
               </VBtn>
@@ -344,7 +370,9 @@
         <li>
           <strong>Lo que alcanza para comprar.</strong> El menor de dos techos: lo que cubre tu
           ahorro (la parte que no financia el crédito más los gastos de compra) y lo que permite la
-          cuota tope sobre tu ingreso. {{ HOUSING_CREDIT_PROFILES.bhu.figure.note }}
+          cuota tope sobre tu ingreso líquido, que estimamos restando aportes jubilatorios, FONASA,
+          FRL e IRPF como si fuera un solo sueldo (con dos sueldos el líquido real es algo mayor).
+          {{ HOUSING_CREDIT_PROFILES.bhu.figure.note }}
           {{ HOUSING_CREDIT_PROFILES.banco.figure.note }} La cuota se calcula con la tasa efectiva
           anual pasada a mensual.
         </li>
@@ -385,7 +413,9 @@ import {
   HOUSING_PRIORITIES,
   foldZoneName,
   housingAdvisorDraft,
+  housingAdvisorHasAnswers,
   housingAdvisorQueryParams,
+  housingAdvisorSubmitParams,
   normalizeHousingAdvisorQuery,
   type HousingAdvisorApiResponse,
   type HousingAdvisorDraft,
@@ -411,7 +441,8 @@ const localePath = useLocalePath()
 const query = computed(() => normalizeHousingAdvisorQuery(route.query))
 const params = computed(() => housingAdvisorQueryParams(query.value))
 const paramsKey = computed(() => JSON.stringify(params.value))
-const hasAnswers = computed(() => Object.keys(params.value).length > 0)
+// "?operacion=comparar" también es una respuesta, aunque sea la que se asume sin preguntar.
+const hasAnswers = computed(() => housingAdvisorHasAnswers(route.query))
 
 const { data: advice, error: advisorError } = await useAsyncData(
   'housing-advisor',
@@ -419,7 +450,7 @@ const { data: advice, error: advisorError } = await useAsyncData(
     hasAnswers.value
       ? $fetch<HousingAdvisorApiResponse>('/api/housing/advisor', { query: params.value })
       : Promise.resolve(null),
-  { watch: [paramsKey] }
+  { watch: [paramsKey, hasAnswers] }
 )
 
 // El formulario sigue a la URL: un caso de ejemplo cambia la consulta sin rearmar la página.
@@ -439,7 +470,7 @@ function apply() {
     plazo: draft.plazo,
     prioridad: draft.prioridad.join(','),
   })
-  router.replace({ query: housingAdvisorQueryParams(next) })
+  router.replace({ query: housingAdvisorSubmitParams(next) })
 }
 
 const operationItems = HOUSING_OPERATIONS.map(item => ({ title: item.title, value: item.value }))
@@ -539,7 +570,7 @@ const budgetLines = computed(() => {
       )
     else if (budget.buyMax !== null && budget.profile && current.savings !== null)
       lines.push(
-        `Con ${formatUsd(current.savings)} de ahorro y el crédito ${budget.profile.label === 'BHU' ? 'del BHU' : 'de un banco privado'} (financia ${percent(budget.profile.financing)}, cuota hasta ${percent(budget.profile.installmentCap)} del ingreso, ${percent(budget.profile.tea, 2)} a ${budget.years} años) alcanza hasta ${formatUsd(budget.buyMax)}: el ahorro cubre hasta ${formatUsd(budget.buyMaxBySavings ?? 0)}${budget.buyMaxByIncome !== null ? ` y la cuota hasta ${formatUsd(budget.buyMaxByIncome)}` : ', y sin ingreso no sabemos cuánta cuota podés pagar'}.`
+        `Con ${formatUsd(current.savings)} de ahorro y el crédito ${budget.profile.label === 'BHU' ? 'del BHU' : 'de un banco privado'} (financia ${percent(budget.profile.financing)}, cuota hasta ${percent(budget.profile.installmentCap)} del líquido${budget.incomeNet !== null ? `, que estimamos en ${formatUyu(budget.incomeNet)}` : ''}, desde ${percent(budget.profile.tea, 2)} a ${budget.years} años) alcanza hasta ${formatUsd(budget.buyMax)}: el ahorro cubre hasta ${formatUsd(budget.buyMaxBySavings ?? 0)}${budget.buyMaxByIncome !== null ? ` y la cuota hasta ${formatUsd(budget.buyMaxByIncome)}` : ', y sin ingreso no sabemos cuánta cuota podés pagar'}.`
       )
     else if (budget.buyMax !== null && current.savings !== null)
       lines.push(
@@ -567,6 +598,15 @@ function isStretch(result: HousingAdvisorResult): boolean {
   return !(result.rentFits || result.saleFits) && (result.rentStretch || result.saleStretch)
 }
 
+// En comparar un barrio entra si UNO de los dos entra; la cuenta de alquilar contra comprar sólo
+// vale donde los dos están a tiro.
+const reachable = (fits: boolean | null, stretch: boolean): boolean => fits !== false || stretch
+function bothReachable(result: HousingAdvisorResult): boolean {
+  return (
+    reachable(result.rentFits, result.rentStretch) && reachable(result.saleFits, result.saleStretch)
+  )
+}
+
 function versusText(result: HousingAdvisorResult): string {
   const versus = result.rentVsBuy!
   const gap = versus.buyMonthly - versus.rentMonthly
@@ -591,6 +631,12 @@ const CONTEXT_ROWS: Array<{
   { label: 'Servicios cerca', attributes: ['servicios'], phrase: 'más que' },
 ]
 
+// La capa de luz es provisoria hasta juntar los días del libro de cortes, y el sitio lo dice.
+const powerNote = computed(() => {
+  const power = advice.value?.power
+  return power?.status === 'preliminary' ? ` (provisorio · ${power.observedDays} días medidos)` : ''
+})
+
 function contextLines(result: HousingAdvisorResult) {
   return CONTEXT_ROWS.flatMap(row => {
     const values = row.attributes
@@ -598,7 +644,8 @@ function contextLines(result: HousingAdvisorResult) {
       .filter((value): value is number => typeof value === 'number')
     if (!values.length) return []
     const share = values.reduce((sum, value) => sum + value, 0) / values.length
-    return [{ label: row.label, share, text: `${row.phrase} el ${percent(share)} de los barrios` }]
+    const label = row.attributes.includes('luz') ? `${row.label}${powerNote.value}` : row.label
+    return [{ label, share, text: `${row.phrase} el ${percent(share)} de los barrios` }]
   })
 }
 
@@ -607,15 +654,14 @@ const generatedDay = computed(() => {
   return match ? `${match[2]}/${match[1]}` : 'último relevamiento'
 })
 
-// La pregunta para el asistente se arma con las mismas respuestas del formulario.
+// La pregunta para el asistente se arma con las respuestas del formulario, nunca con el ingreso ni
+// el ahorro: la pregunta termina en otro servicio (regla de utils/assistantPrompt.ts).
 const assistantFilters = computed(() => {
   const current = query.value
   return [
     HOUSING_OPERATIONS.find(item => item.value === current.operation)?.title.toLowerCase() ?? '',
     current.department,
     bedroomsText.value,
-    current.income !== null ? `ingreso ${formatUyu(current.income)}` : '',
-    current.savings !== null ? `ahorro ${formatUsd(current.savings)}` : '',
   ].filter(Boolean)
 })
 
@@ -692,8 +738,9 @@ useHead({
   }
 }
 .housing-budget {
-  border-left: 3px solid rgb(var(--v-theme-primary));
-  padding: 4px 0 4px 12px;
+  background: rgba(var(--v-theme-primary), 0.06);
+  border-radius: 12px;
+  padding: 12px 16px;
 }
 .housing-card,
 .housing-empty {

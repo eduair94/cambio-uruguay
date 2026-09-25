@@ -24,6 +24,6 @@ export default defineEventHandler(async event => {
     zones: data.zones.length,
     departments: RENTAL_ZONE_DEPARTMENTS,
     query,
-    ...adviseHousing(data.zones, query, { usdUyu: data.usdUyu }),
+    ...adviseHousing(data.zones, query, { usdUyu: data.usdUyu, power: data.power }),
   }
 })

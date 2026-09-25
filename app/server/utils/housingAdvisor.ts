@@ -3,7 +3,9 @@
 // se calculan una vez por día en otros jobs; acá sólo se leen, se unen y se guardan 10 minutos por
 // departamento, tipo y dormitorios. Si la base falla, se sirve lo último bueno.
 import {
+  currentSaleCohorts,
   joinHousingZones,
+  type HousingPowerStatus,
   type HousingSaleCohort,
   type HousingScoresInput,
   type HousingZone,
@@ -21,6 +23,7 @@ export interface HousingAdvisorData {
   generatedAt: string | null
   usdUyu: number
   zones: HousingZone[]
+  power: HousingPowerStatus | null
 }
 
 const cache = new Map<string, { expires: number; data: HousingAdvisorData }>()
@@ -35,19 +38,19 @@ async function saleCohorts(
 ): Promise<HousingSaleCohort[]> {
   await connectDb()
   const index = (await MarketSeriesMetaModel.findOne({ key: 'index:venta' })
-    .select({ _id: 0, scopes: 1 })
+    .select({ _id: 0, scopes: 1, day: 1 })
     .maxTimeMS(5_000)
-    .lean()) as Pick<MarketSeriesIndex, 'scopes'> | null
+    .lean()) as Pick<MarketSeriesIndex, 'scopes' | 'day'> | null
   const tokens = (index?.scopes ?? [])
     .filter(scope => scope.scope === 'neighborhood' && scope.department === department)
     .map(scope => scope.token)
-  if (!tokens.length) return []
+  if (!tokens.length || !index?.day) return []
   const keys = tokens.map(token => `venta|USD|${type}|${bedroomsBucket(bedrooms)}|${token}`)
   const docs = await MarketSeriesModel.find({ key: { $in: keys } })
-    .select({ _id: 0, labels: 1, latest: 1 })
+    .select({ _id: 0, key: 1, labels: 1, latest: 1 })
     .maxTimeMS(8_000)
     .lean()
-  return docs as unknown as HousingSaleCohort[]
+  return currentSaleCohorts(docs as unknown as HousingSaleCohort[], index.day)
 }
 
 async function build(
@@ -63,6 +66,7 @@ async function build(
   ])
   const usdUyu = Number((meta as { usdUyu?: number } | null)?.usdUyu) || 0
   if (!(usdUyu > 0)) throw new Error('HOUSING_ADVISOR_NO_RATE')
+  const power = scores?.periods?.power
   return {
     generatedAt: rentZones.generatedAt ?? null,
     usdUyu,
@@ -72,6 +76,7 @@ async function build(
       scores as HousingScoresInput | null,
       department
     ),
+    power: power ? { status: power.status, observedDays: power.observedDays } : null,
   }
 }
 

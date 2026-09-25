@@ -24,15 +24,26 @@ si la base falla):
 | dólar | `propertysalecatalogmetas` `uy-sales` | `currency-property-opportunities` |
 
 La unión es por nombre de barrio plegado (sin tildes ni mayúsculas) dentro del departamento; el
-contexto se busca por la zona oficial que ya trae la zona de alquiler o, si no, por el `resolver` de
-los scores.
+contexto se busca por la zona oficial que ya trae la zona de alquiler o, si no, con
+`rentalZoneScoreId`, el mismo resolvedor del directorio: los 62 barrios INE valen **sólo en
+Montevideo** y afuera se busca la localidad o el alias de ESE departamento. La primera versión
+probaba el nombre pelado contra el mapa INE y un "Centro" de Maldonado heredaba las denuncias del
+Centro de Montevideo.
+
+Las series de venta se leen sólo si su último punto es del día del índice (`currentSaleCohorts`):
+una cohorte que bajó de 8 avisos no se borra, queda con su último punto, y sin la guarda se
+publicaba como precio de hoy.
 
 ## Las cifras (`app/utils/housingAdvisorFigures.ts`)
 
 - **Alquiler que alcanza**: el de la garantía, 40 % del ingreso nominal (Contaduría y ANDA); Mapfre
   30 %. Si la persona pone su tope, manda el suyo y se compara contra alquiler + gastos comunes.
 - **Comprar**: el menor de dos techos, lo que cubre el ahorro (parte no financiada + gastos de compra)
-  y lo que permite la cuota tope. Dos perfiles reales, no un promedio: BHU (UI, 4,50 %, 25 años,
+  y lo que permite la cuota tope sobre el **líquido**, no el nominal: el BHU dice "ingreso
+  disponible". El líquido sale de `computePayroll` (`utils/payroll.ts`) como si el ingreso del hogar
+  fuera un solo sueldo sin hijos a cargo; con dos sueldos el real es algo mayor, así que el error
+  queda del lado de pedir menos. Con $ 120.000 nominales la diferencia era de un cuarto del techo.
+  Dos perfiles reales, no un promedio: BHU (UI, 4,50 %, 25 años,
   90 %, cuota 25 %) y Santander público general (UI, 4,75 %, 20 años, 80 %, cuota 35 %), publicados
   al 16/9/2026. La cuota usa la TEA pasada a mensual `(1+TEA)^(1/12) − 1` (la calculadora de comprar
   o alquilar la divide por 12, que sobrestima la cuota).
@@ -46,7 +57,11 @@ los scores.
 Precio y metros del modo elegido, denuncias, servicios, luz y agua, reclamos y (si compra)
 rentabilidad bruta; las prioridades pesan 3, lo demás 1, lo que falta 0,5. El contexto es el
 percentil del barrio entre TODOS los medidos, no entre los candidatos. Un barrio que entra sólo por
-su cuarto más barato va después de los que entran por la mediana.
+su cuarto más barato va después de los que entran por la mediana. En "comparar" un barrio entra si
+UNO de los dos modos entra: el que no alcanza va a "Lo que resignás" y la caja de alquilar contra
+comprar sólo aparece donde los dos están a tiro. Los cortes de luz llevan "provisorio · N días
+medidos" mientras la capa lo sea. Sin resultados, la página distingue "no hay 8 avisos" de "no
+entra en tu plata". Los montos con centésimos del recibo ("85.432,18") se leen sin los centésimos.
 
 **Lo que salió de leer los perfiles reales** (con los tests en verde): "$ 24.500, con gastos comunes
 $ 25.000" hacía pensar que los gastos eran $ 500 — el total mediano sale sólo de los avisos que
@@ -58,5 +73,6 @@ cuota; y el caso de ejemplo "comprar para alquilar con US$ 60.000 al contado" de
 
 Montevideo, apartamento de 2 dormitorios: 48 barrios con alquiler (n ≥ 8), 29 con venta. Con
 $ 120.000 de ingreso y US$ 30.000 de ahorro con el BHU: alquiler hasta $ 48.000, compra hasta
-US$ 145.208 (el ahorro y la cuota casi empatan), 47 barrios en rango. Fuera de Montevideo sólo hay
+US$ 106.086 — manda la cuota: 25 % de un líquido estimado de $ 87.065; sobre el nominal daba
+US$ 145.208 —, 47 barrios en rango. Fuera de Montevideo sólo hay
 precios: el contexto por barrio existe para los 62 barrios INE y las localidades UTE.
