@@ -294,7 +294,7 @@ const canonicalUrl = `https://cambio-uruguay.com${CAJ_PATH}`
 // van en la descripción, que es donde se miden.
 const title = 'Certificado de antecedentes judiciales'
 const description =
-  'La ficha oficial lo cobra en UI, no en pesos: 26,50 UI el común (15 días) y 53,10 UI el urgente (2 días hábiles), convertidos acá con la UI de hoy. Caduca a los 90 días de expedido, y el de la Ley 19.791 es otro trámite de 26,5 UI.'
+  'Cuesta 26,50 UI el común (15 días) y 53,10 UI el urgente (2 días hábiles), convertidos acá con la UI de hoy. Caduca a los 90 días de expedido.'
 
 useSeoMeta({
   title: () => `${title} | Cambio Uruguay`,

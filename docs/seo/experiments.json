@@ -557,6 +557,38 @@
         "conviene alquilar o comprar"
       ],
       "hypothesis": "El sitio mide el precio de alquiler y de venta por barrio, las denuncias, los cortes de luz y agua y los reclamos, pero cada pieza vive en una pagina distinta y ninguna contesta la pregunta de quien se muda: en que barrio me alcanza, y me conviene alquilar o comprar ahi. El asesor las cruza con el ingreso y el ahorro del hogar, con los topes reales de las garantias y de los creditos hipotecarios. La apuesta es entrar en consultas de mudanza (donde vivir, mejores barrios, cuanto necesito) donde el SERP son notas de opinion sin numeros, y llevar ese trafico a los directorios de alquiler y venta con el barrio y el presupuesto ya filtrados."
+    },
+    {
+      "id": "certificados-bps",
+      "shippedOn": "2026-09-25",
+      "routes": [
+        "/certificados-bps-uruguay"
+      ],
+      "queries": [
+        "certificado comun bps",
+        "certificado especial bps",
+        "cuanto dura el certificado del bps",
+        "vigencia certificado bps",
+        "certificado especial para vender inmueble"
+      ],
+      "hypothesis": "El sitio ya cubre monotributo, que empresa abrir y la prescripcion de deudas, pero no el papel que el BPS pide en el medio de todas esas operaciones. La consulta es de marca y de plazo -cuanto dura, cual de los dos me piden- y hoy la contestan gestorias y estudios contables, no una pagina con la cifra al frente. La apuesta es entrar por la vigencia (180 dias corridos desde el dia siguiente a la expedicion, que es el dato que se busca y el que nadie pone en el snippet) y por los seis actos que exigen el especial, y llevar ese trafico a las paginas de empresa y facturacion que ya existen."
+    },
+    {
+      "id": "descripciones-que-empiezan-por-la-respuesta-2",
+      "shippedOn": "2026-09-25",
+      "routes": [
+        "/estafas-uruguay",
+        "/conviene-pagar-todo-con-credito-uruguay",
+        "/certificado-de-antecedentes-judiciales-uruguay"
+      ],
+      "queries": [
+        "me clonaron la tarjeta uruguay",
+        "quien paga una transferencia no autorizada",
+        "conviene pagar todo con tarjeta de credito",
+        "certificado de antecedentes judiciales precio",
+        "cuanto sale el certificado de antecedentes"
+      ],
+      "hypothesis": "Quinta corrida del trinquete de descripciones: las tres mas largas que quedaban (233, 231 y 231 caracteres) gastaban el renglon que el SERP publica en enumerar o en describir lo que la pagina es, y dejaban del lado cortado el dato que decide el clic -que la carga de la prueba es del emisor, el 1,64 % de los dos puntos de IVA, y las 26,50 y 53,10 UI del certificado-. Ahora las tres arrancan por ese dato y entran enteras en 155 caracteres. Ninguna cifra es nueva. La apuesta es la misma que midio la cuarta corrida: mismo puesto, mas clics."
     }
   ]
 }

@@ -475,7 +475,7 @@ const sources = [
 const canonicalUrl = 'https://cambio-uruguay.com/estafas-uruguay'
 const title = 'Me estafaron en Uruguay: qué dice la ley'
 const description =
-  'Tarjeta clonada, phishing, transferencia no autorizada, estafa de Marketplace: quién paga según la ley uruguaya, con el artículo al lado. La carga de la prueba es del emisor. Plazos, escalera de reclamo y una carta lista para copiar.'
+  'Tarjeta clonada, phishing o transferencia no autorizada: la carga de la prueba es del emisor, no tuya. Qué dice la ley uruguaya, plazos y carta modelo.'
 
 defineOgImageComponent('Cambio', {
   title: 'Me estafaron: ¿qué me tienen que devolver?',

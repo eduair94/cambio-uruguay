@@ -624,7 +624,7 @@ const SOURCES = [
 const canonicalUrl = 'https://cambio-uruguay.com/conviene-pagar-todo-con-credito-uruguay'
 const title = '¿Conviene pagar todo con crédito?'
 const description =
-  'Dejar la plata rindiendo en Prex o Mercado Pago y pagar todo con la tarjeta de crédito hasta el vencimiento. El flote rinde décimas del gasto; la rebaja de dos puntos de IVA que resignás es 1,64 %. Cuándo conviene, con tus números.'
+  'Pagar todo con crédito y dejar la plata en Prex o Mercado Pago: el flote rinde décimas y los dos puntos de IVA que resignás son 1,64 %. Cuándo conviene.'
 
 defineOgImageComponent('Cambio', {
   title: 'Pagar todo con crédito',

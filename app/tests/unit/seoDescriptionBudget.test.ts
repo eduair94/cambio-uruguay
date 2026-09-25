@@ -179,8 +179,24 @@ const RESOLVED = 141
 // del lado cortado. `/fecha-de-cobro-bps-uruguay` (156, uno de más) se deja para después del
 // 2026-10-18: su fila del libro de cambios está midiendo hasta esa fecha.
 //
-// Quedan 51 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 51
+// 51 → 48 el 2026-09-25, quinta corrida: las tres más largas que quedaban (233, 231 y 231
+// caracteres). Mismo criterio que la cuarta, y las tres fallaban igual pero por motivos
+// distintos. `/estafas-uruguay` enumeraba los cuatro fraudes antes de llegar a lo único que
+// contesta la pregunta —que la carga de la prueba es del EMISOR y no de la víctima—, así que el
+// SERP publicaba la lista y cortaba la respuesta; ahora la enumeración se acorta a tres y el dato
+// entra. `/conviene-pagar-todo-con-credito-uruguay` gastaba el primer renglón describiendo la
+// maniobra («Dejar la plata rindiendo … hasta el vencimiento») y dejaba el 1,64 % afuera.
+// `/certificado-de-antecedentes-judiciales-uruguay` abría con un matiz de formato («La ficha
+// oficial lo cobra en UI, no en pesos») y empujaba las dos tarifas al borde; se le cae además la
+// cola de la Ley 19.791, que es otro trámite y tiene su propio lugar en el cuerpo de la página.
+// Ninguna cifra es nueva: todas ya estaban en la descripción vieja y en el cuerpo de su página.
+//
+// `/fecha-de-cobro-bps-uruguay` (156, uno solo de más) SIGUE reservada hasta después del
+// 2026-10-18: su fila del libro de cambios está midiendo hasta esa fecha y tocarle la descripción
+// ahora le cambia el sujeto al experimento.
+//
+// Quedan 48 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
+const OVER_BUDGET = 48
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {
