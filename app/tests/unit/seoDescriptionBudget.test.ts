@@ -191,12 +191,34 @@ const RESOLVED = 141
 // cola de la Ley 19.791, que es otro trámite y tiene su propio lugar en el cuerpo de la página.
 // Ninguna cifra es nueva: todas ya estaban en la descripción vieja y en el cuerpo de su página.
 //
+// 48 → 36 el 2026-09-25, sexta corrida: las doce más largas que quedaban, de 225 a 209 caracteres,
+// TODAS del tramo `contenido`. Esta tanda se partió en dos mitades y conviene distinguirlas, porque
+// sólo una es un recorte. En cuatro páginas la respuesta YA estaba adelante y sobraba la cola que
+// nombraba el formato («Matriz completa … con fuentes primarias», «Con calculadoras y un generador
+// de reclamo»): ahí se podó y listo. En las otras ocho el primer renglón —el único que el SERP
+// publica— lo gastaba una etiqueta de género («Guía uruguaya para reclamar…», «Guía para pagar…»,
+// «Cómo se clona una tarjeta … según lo que realmente se reporta», «La comparación con precios
+// reales de las dos puntas»), y la respuesta quedaba del lado cortado. Ahora arranca el dato: el
+// art. 33 de la Ley 17.250 y los 5 días hábiles de retracto, los US$ 800 que Estados Unidos ya no
+// exonera, el piso de IVA de US$ 20 del régimen postal, los US$ 10.000 del efectivo y el 30 % de
+// multa de la Ley 19.574, el carné del INAU a los 15 años con sus 6 horas, la culpa grave que la
+// Ley 16.074 no castiga, y que el nombre y el domicilio del destinatario son requisitos de la
+// franquicia. Ninguna cifra es nueva: todas ya estaban en la descripción vieja o en el cuerpo de
+// su página.
+//
+// Una precisión que no es de estilo: `/pagar-cuentas-con-tarjeta` decía «si acumula millas o
+// puntos» y la página aclara, en un recuadro, que eso es una INFERENCIA y no una confirmación de
+// Itaú. La descripción nueva dice «lo esperable es que sumen millas» y adelanta lo que sí está
+// publicado —que Totalnet procesa como compra y no como red de cobranza, y que el 3,75 % es
+// comisión de adquirencia que se le retiene al cobrador—. Una descripción que afirma de más gana
+// el clic y lo devuelve.
+//
 // `/fecha-de-cobro-bps-uruguay` (156, uno solo de más) SIGUE reservada hasta después del
 // 2026-10-18: su fila del libro de cambios está midiendo hasta esa fecha y tocarle la descripción
 // ahora le cambia el sujeto al experimento.
 //
-// Quedan 48 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 48
+// Quedan 36 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
+const OVER_BUDGET = 36
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {

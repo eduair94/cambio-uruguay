@@ -607,7 +607,7 @@ const SOURCES = [
 const canonicalUrl = 'https://cambio-uruguay.com/cuanto-vale-una-milla-itau-uruguay'
 const title = '¿Cuánto vale una milla de Itaú?'
 const description =
-  'Itaú no publica cuánto vale una milla Volar. Acá está el umbral que tiene que superar la tuya para que rinda dejar la plata en Prex o Mercado Pago y pasarla a Itaú sólo para comprar, y cómo medir la tuya con un canje real.'
+  'Itaú no tarifa la milla Volar: su propia ficha dice que no hay ratio oficial. El umbral que tiene que superar la tuya, y cómo medirla con un canje real.'
 
 defineOgImageComponent('Cambio', {
   title: 'Cuánto vale una milla de Itaú',
