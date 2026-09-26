@@ -216,7 +216,8 @@
                   gastos de compra.
                 </p>
                 <p v-if="result.buy && result.buy.installmentUyu > 0" class="text-body-2 mb-0">
-                  Cuota del crédito: {{ formatUyu(result.buy.installmentUyu) }} por mes.
+                  Cuota estimada del crédito: {{ formatUyu(result.buy.installmentUyu) }} por mes,
+                  sin seguros.
                 </p>
               </section>
             </div>
@@ -307,8 +308,13 @@
               >
                 Evolución de precios
               </VBtn>
-              <VBtn :to="localePath('/alquiler-ideal-uruguay')" variant="text" size="small">
-                Elegir el apartamento
+              <VBtn
+                v-if="result.fitQuery"
+                :to="localePath({ path: '/alquiler-ideal-uruguay', query: result.fitQuery })"
+                variant="text"
+                size="small"
+              >
+                {{ query.type === 'casa' ? 'Elegir la casa' : 'Elegir el apartamento' }}
               </VBtn>
             </div>
           </article>
@@ -570,7 +576,7 @@ const budgetLines = computed(() => {
       )
     else if (budget.buyMax !== null && budget.profile && current.savings !== null)
       lines.push(
-        `Con ${formatUsd(current.savings)} de ahorro y el crédito ${budget.profile.label === 'BHU' ? 'del BHU' : 'de un banco privado'} (financia ${percent(budget.profile.financing)}, cuota hasta ${percent(budget.profile.installmentCap)} del líquido${budget.incomeNet !== null ? `, que estimamos en ${formatUyu(budget.incomeNet)}` : ''}, desde ${percent(budget.profile.tea, 2)} a ${budget.years} años) alcanza hasta ${formatUsd(budget.buyMax)}: el ahorro cubre hasta ${formatUsd(budget.buyMaxBySavings ?? 0)}${budget.buyMaxByIncome !== null ? ` y la cuota hasta ${formatUsd(budget.buyMaxByIncome)}` : ', y sin ingreso no sabemos cuánta cuota podés pagar'}.`
+        `Con ${formatUsd(current.savings)} de ahorro y el crédito ${budget.profile.label === 'BHU' ? 'del BHU' : 'de un banco privado'} (financia ${percent(budget.profile.financing)}, cuota hasta ${percent(budget.profile.installmentCap)} del líquido${budget.incomeNet !== null ? `, que estimamos en ${formatUyu(budget.incomeNet)}` : ''}, ${budget.tea < budget.profile.tea ? '' : 'desde '}${percent(budget.tea, 2)} a ${budget.years} años) alcanza hasta ${formatUsd(budget.buyMax)}: el ahorro cubre hasta ${formatUsd(budget.buyMaxBySavings ?? 0)}${budget.buyMaxByIncome !== null ? ` y la cuota hasta ${formatUsd(budget.buyMaxByIncome)}` : ', y sin ingreso no sabemos cuánta cuota podés pagar'}.`
       )
     else if (budget.buyMax !== null && current.savings !== null)
       lines.push(
@@ -669,6 +675,12 @@ const canonical = `https://cambio-uruguay.com${HOUSING_ADVISOR_PATH}`
 const title = '¿Dónde vivir? Alquilar o comprar por barrio'
 const description =
   'Qué barrio te conviene para alquilar o comprar en Uruguay según tu ingreso y ahorro: precios, cuota, denuncias, cortes de luz y servicios de cada barrio.'
+
+defineOgImageComponent('Cambio', {
+  title: '¿Dónde vivir?',
+  subtitle: 'Barrios para alquilar o comprar según tu plata',
+  tag: 'VIVIENDA',
+})
 
 useSeoMeta({
   title: `${title} | Cambio Uruguay`,

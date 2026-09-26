@@ -18,8 +18,14 @@ import { loadRentalZoneScores } from './rentalZoneServices'
 import { loadRentalZones } from './rentalZones'
 
 const CACHE_MS = 600_000
+/** Lo que se guarda si una parte faltó (datos de barrio o dólar): se reintenta pronto. */
+const PARTIAL_CACHE_MS = 60_000
+/** Tras una caída, cuánto se espera antes de volver a pedirle a la base. */
+const RETRY_MS = 30_000
 
 export interface HousingAdvisorData {
+  /** Faltó una parte (datos de barrio o dólar): se sirve, pero se guarda poco. */
+  partial: boolean
   generatedAt: string | null
   usdUyu: number
   zones: HousingZone[]
@@ -27,6 +33,7 @@ export interface HousingAdvisorData {
 }
 
 const cache = new Map<string, { expires: number; data: HousingAdvisorData }>()
+const failures = new Map<string, { until: number; error: unknown }>()
 const loading = new Map<string, Promise<HousingAdvisorData>>()
 
 const bedroomsBucket = (bedrooms: number): string => (bedrooms >= 4 ? '4plus' : String(bedrooms))
@@ -58,16 +65,22 @@ async function build(
   type: string,
   bedrooms: number
 ): Promise<HousingAdvisorData> {
+  let partial = false
   const [rentZones, sales, scores, meta] = await Promise.all([
     loadRentalZones({ department, propertyType: type, bedrooms: bedroomsBucket(bedrooms) }),
     saleCohorts(department, type, bedrooms),
-    loadRentalZoneScores().catch(() => null),
+    loadRentalZoneScores().catch(() => {
+      partial = true
+      return null
+    }),
     loadPropertySalesMeta().catch(() => null),
   ])
+  // Sin dólar alquilar sigue andando; el endpoint corta comprar y comparar.
   const usdUyu = Number((meta as { usdUyu?: number } | null)?.usdUyu) || 0
-  if (!(usdUyu > 0)) throw new Error('HOUSING_ADVISOR_NO_RATE')
+  if (!(usdUyu > 0)) partial = true
   const power = scores?.periods?.power
   return {
+    partial,
     generatedAt: rentZones.generatedAt ?? null,
     usdUyu,
     zones: joinHousingZones(
@@ -88,16 +101,26 @@ export async function loadHousingAdvisorData(
   const key = `${department}|${type}|${bedrooms}`
   const cached = cache.get(key)
   if (cached && cached.expires > Date.now()) return cached.data
+  // Recién caída y sin nada guardado: fallar ya, en vez de esperar los timeouts en cada pedido.
+  const failure = failures.get(key)
+  if (!cached && failure && failure.until > Date.now()) throw failure.error
   const pending = loading.get(key)
   if (pending) return pending
   const promise = build(department, type, bedrooms)
     .then(data => {
       if (cache.size > 200) cache.clear()
-      cache.set(key, { data, expires: Date.now() + CACHE_MS })
+      failures.delete(key)
+      cache.set(key, { data, expires: Date.now() + (data.partial ? PARTIAL_CACHE_MS : CACHE_MS) })
       return data
     })
     .catch(error => {
-      if (cached) return cached.data
+      if (failures.size > 200) failures.clear()
+      failures.set(key, { until: Date.now() + RETRY_MS, error })
+      // Con algo guardado se sirve eso, y no se vuelve a probar hasta dentro de un rato.
+      if (cached) {
+        cached.expires = Date.now() + RETRY_MS
+        return cached.data
+      }
       throw error
     })
     .finally(() => loading.delete(key))

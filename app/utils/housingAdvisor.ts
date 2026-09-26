@@ -251,6 +251,8 @@ export interface HousingBudget {
   buyMaxByIncome: number | null
   profile: HousingCreditProfile | null
   years: number
+  /** La tasa que corresponde al plazo: Santander cobra menos hasta 10 años. */
+  tea: number
   entryRate: number
 }
 
@@ -260,6 +262,11 @@ const ENTRY_LOW = HOUSING_BUY_ENTRY.itp + HOUSING_BUY_ENTRY.deedLow + HOUSING_BU
 export function housingBudget(query: HousingAdvisorQuery, usdUyu: number): HousingBudget {
   const profile = query.credit === 'contado' ? null : HOUSING_CREDIT_PROFILES[query.credit]
   const years = profile ? Math.min(query.years ?? profile.maxYears, profile.maxYears) : 0
+  const tea = !profile
+    ? 0
+    : profile.shortTerm && years <= profile.shortTerm.maxYears
+      ? profile.shortTerm.tea
+      : profile.tea
   const rentMax =
     query.rentMax ?? (query.income !== null ? query.income * HOUSING_GUARANTEE_CAPS.anda : null)
   const savings = query.savings ?? 0
@@ -274,7 +281,7 @@ export function housingBudget(query: HousingAdvisorQuery, usdUyu: number): Housi
     if (incomeNet !== null && incomeNet > 0 && usdUyu > 0) {
       // La cuota tope sobre el líquido define el préstamo máximo; el precio es ese préstamo sobre
       // la parte que el prestamista financia.
-      const unitInstallment = housingInstallment(1, profile.tea, years)
+      const unitInstallment = housingInstallment(1, tea, years)
       const maxLoanUyu = (profile.installmentCap * incomeNet) / unitInstallment
       buyMaxByIncome = maxLoanUyu / profile.financing / usdUyu
     }
@@ -292,6 +299,7 @@ export function housingBudget(query: HousingAdvisorQuery, usdUyu: number): Housi
     buyMaxByIncome,
     profile,
     years,
+    tea,
     entryRate: ENTRY_HIGH,
   }
 }
@@ -513,8 +521,6 @@ export interface HousingAdvisorResult {
   rentStretch: boolean
   saleFits: boolean | null
   saleStretch: boolean
-  /** Alquiler (o alquiler + gastos comunes) sobre el ingreso. */
-  rentShareOfIncome: number | null
   rentEntryUyu: number | null
   buy: HousingBuyCosts | null
   rentVsBuy: HousingRentVsBuy | null
@@ -526,6 +532,8 @@ export interface HousingAdvisorResult {
   notes: string[]
   rentalsQuery: Record<string, string> | null
   salesQuery: Record<string, string> | null
+  /** Para /alquiler-ideal-uruguay: el barrio, el presupuesto, el tipo y los dormitorios. */
+  fitQuery: Record<string, string> | null
   /** Para /evolucion-precio-*: el mismo barrio, tipo y dormitorios. */
   seriesQuery: Record<string, string> | null
 }
@@ -615,9 +623,7 @@ function buyCosts(
   const price = zone.sale.median
   const financing = budget.profile?.financing ?? 0
   const loanUyu = financing * price * usdUyu
-  const installmentUyu = budget.profile
-    ? housingInstallment(loanUyu, budget.profile.tea, budget.years)
-    : 0
+  const installmentUyu = budget.profile ? housingInstallment(loanUyu, budget.tea, budget.years) : 0
   const downPayment = (1 - financing) * price
   return {
     price,
@@ -678,7 +684,7 @@ function explain(
   }
   if (zone.sale && candidate.buy && query.operation !== 'alquilar' && !saleOut) {
     const loan = budget.profile
-      ? ` Con el ${budget.profile.label} ponés ${usd(candidate.buy.cashNeeded)} de entrada y la cuota ronda ${uyu(candidate.buy.installmentUyu)}.`
+      ? ` Con el ${budget.profile.label} ponés ${usd(candidate.buy.cashNeeded)} de entrada y la cuota ronda ${uyu(candidate.buy.installmentUyu)} (estimada, sin seguros).`
       : ` Al contado necesitás ${usd(candidate.buy.cashNeeded)} con los gastos de compra.`
     reasons.push(`La mitad de ${whatPlural} se piden hasta ${usd(zone.sale.median)}.${loan}`)
   }
@@ -716,7 +722,7 @@ function explain(
 
   if (candidate.rentStretch && query.operation !== 'comprar')
     tradeoffs.push(
-      `El alquiler mediano se pasa de tu tope; la cuarta parte más barata entra (desde ${uyu(
+      `El alquiler mediano se pasa de ${budget.rentBasis === 'total' ? 'tu tope' : 'lo que acepta la garantía'}; la cuarta parte más barata entra (desde ${uyu(
         (zone.rent
           ? budget.rentBasis === 'total'
             ? rentTotalLow(zone.rent)
@@ -831,7 +837,8 @@ export function adviseHousing(
           cheapestSale === null ? zone.sale.median : Math.min(cheapestSale, zone.sale.median)
       continue
     }
-    const buy = buyCosts(zone, budget, context.usdUyu)
+    // Sin dólar no hay cuenta de compra: el precio en dólares no se puede llevar a pesos.
+    const buy = context.usdUyu > 0 ? buyCosts(zone, budget, context.usdUyu) : null
     const rentMonthly = zone.rent ? rentTotal(zone.rent) : null
     candidates.push({
       zone,
@@ -951,10 +958,6 @@ export function adviseHousing(
         rentStretch: candidate.rentStretch,
         saleFits: candidate.saleFits,
         saleStretch: candidate.saleStretch,
-        rentShareOfIncome:
-          candidate.rentValue !== null && query.income !== null
-            ? candidate.rentValue / query.income
-            : null,
         rentEntryUyu: zone.rent
           ? zone.rent.median * (1 + HOUSING_RENT_ENTRY.commissionMonths)
           : null,
@@ -982,6 +985,20 @@ export function adviseHousing(
               // la PUBLICADA — pedir UYU escondería los alquileres en dólares que están en la mediana.
             }
           : null,
+        // El presupuesto de alquiler ideal es alquiler + gastos comunes; con el tope de la garantía
+        // (sólo alquiler) eso queda del lado de pedir menos, y la persona lo puede subir allá.
+        fitQuery:
+          zone.rent && query.operation !== 'comprar'
+            ? {
+                departamento: zone.department,
+                barrio: zone.name,
+                ...(budget.rentMax !== null
+                  ? { presupuesto: String(Math.round(budget.rentMax)) }
+                  : {}),
+                tipo: query.type,
+                dormitorios: bedrooms,
+              }
+            : null,
         seriesQuery: zone.seriesToken
           ? {
               zona: zone.seriesToken,
@@ -994,7 +1011,9 @@ export function adviseHousing(
               department: zone.department,
               neighborhood: zone.name,
               type: query.type,
-              ...(query.bedrooms < 4 ? { bedrooms } : {}),
+              // El directorio de ventas filtra dormitorios exactos (sólo 8 es "8 o más"): para
+              // "4 o más" se pide 4, que es casi todo el tramo, antes que no filtrar nada.
+              bedrooms: query.bedrooms >= 4 ? '4' : bedrooms,
               ...(budget.buyMax !== null && budget.buyMax > 0
                 ? { maxPrice: String(Math.round(budget.buyMax)) }
                 : {}),

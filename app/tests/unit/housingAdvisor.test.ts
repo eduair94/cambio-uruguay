@@ -631,3 +631,102 @@ describe('revisión final', () => {
     })
   })
 })
+
+describe('menores de la revisión', () => {
+  it('sin tope propio, el que se pasa es el de la garantía', () => {
+    const pocitos = advise({ operation: 'alquilar', income: 100_000 }).results.find(
+      item => item.name === 'Pocitos'
+    )!
+    expect(pocitos.tradeoffs.join(' ')).toContain('se pasa de lo que acepta la garantía')
+    const own = adviseHousing(ZONES, query({ operation: 'alquilar', rentMax: 49_000 }), {
+      usdUyu: USD,
+    }).results.find(item => item.name === 'Pocitos')!
+    expect(own.tradeoffs.join(' ')).toContain('se pasa de tu tope')
+  })
+
+  it('la cuota del crédito se dice estimada y sin seguros', () => {
+    const buy = adviseHousing(
+      ZONES,
+      query({ operation: 'comprar', income: 300_000, savings: 100_000 }),
+      { usdUyu: USD }
+    ).results.find(item => item.name === 'Cordón')!
+    expect(buy.reasons.join(' ')).toMatch(/la cuota ronda \$ [\d.]+ \(estimada, sin seguros\)/)
+  })
+
+  it('Santander a 10 años o menos cobra la tasa corta', () => {
+    const long = housingBudget(query({ income: 200_000, savings: 50_000, credit: 'banco' }), USD)
+    const short = housingBudget(
+      query({ income: 200_000, savings: 50_000, credit: 'banco', years: 10 }),
+      USD
+    )
+    expect(long.tea).toBe(0.0475)
+    expect(short.tea).toBe(0.04)
+    const net = computePayroll({ nominal: 200_000 }).liquido
+    const i = 1.04 ** (1 / 12) - 1
+    const maxLoan = (0.35 * net * (1 - (1 + i) ** -120)) / i
+    expect(short.buyMaxByIncome).toBeCloseTo(maxLoan / 0.8 / USD, 4)
+    expect(housingBudget(query({ credit: 'bhu', years: 10, income: 200_000 }), USD).tea).toBe(0.045)
+  })
+
+  it('la cuota de cada barrio usa la tasa del plazo', () => {
+    const result = adviseHousing(
+      ZONES,
+      query({
+        operation: 'comprar',
+        income: 300_000,
+        savings: 150_000,
+        credit: 'banco',
+        years: 10,
+      }),
+      { usdUyu: USD }
+    ).results.find(item => item.name === 'Cordón')!
+    expect(result.buy!.installmentUyu).toBeCloseTo(
+      housingInstallment(0.8 * 172_656 * USD, 0.04, 10),
+      4
+    )
+  })
+
+  it('4 dormitorios o más: el enlace a ventas pide 4 en vez de ninguno', () => {
+    const result = adviseHousing(
+      ZONES,
+      query({ operation: 'comprar', bedrooms: 4, income: 300_000, savings: 100_000 }),
+      { usdUyu: USD }
+    ).results[0]!
+    expect(result.salesQuery).toMatchObject({ bedrooms: '4' })
+  })
+
+  it('sin dólar, alquilar funciona y no arma cuentas de compra', () => {
+    const response = adviseHousing(ZONES, query({ operation: 'alquilar', income: 100_000 }), {
+      usdUyu: 0,
+    })
+    expect(response.results.length).toBeGreaterThan(0)
+    for (const result of response.results) {
+      expect(result.rentVsBuy).toBeNull()
+      expect(result.buy).toBeNull()
+    }
+  })
+
+  it('el enlace a alquiler ideal lleva barrio, presupuesto, tipo y dormitorios; al comprar no hay', () => {
+    const rent = advise({ operation: 'alquilar', income: 100_000 }).results.find(
+      item => item.name === 'Cordón'
+    )!
+    expect(rent.fitQuery).toEqual({
+      departamento: 'Montevideo',
+      barrio: 'Cordón',
+      presupuesto: '40000',
+      tipo: 'apartamento',
+      dormitorios: '2',
+    })
+    const buy = adviseHousing(
+      ZONES,
+      query({ operation: 'comprar', income: 300_000, savings: 100_000 }),
+      { usdUyu: USD }
+    ).results[0]!
+    expect(buy.fitQuery).toBeNull()
+  })
+
+  it('ya no devuelve campos que nadie lee', () => {
+    const result = advise({ operation: 'alquilar', income: 100_000 }).results[0]!
+    expect(result).not.toHaveProperty('rentShareOfIncome')
+  })
+})

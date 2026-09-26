@@ -87,6 +87,46 @@ function normalizeZones(value: unknown): RentalFitZones {
   return { mode: choice(raw.mode, ['prefer', 'only'] as const, 'prefer'), include, exclude }
 }
 
+export interface RentalFitPrefill {
+  department?: string
+  zones?: RentalFitZones
+  types?: RentalFitInput['types']
+  minBedrooms?: number
+  housingBudgetUyu?: number
+}
+
+/**
+ * What /donde-vivir-uruguay hands over in the URL: the barrio it recommended, the budget, the type
+ * and bedrooms. Each field stands alone: an invalid one is dropped, never the whole prefill, and a
+ * barrio without a known department is dropped because a name alone does not identify a zone.
+ */
+export function rentalFitPrefill(
+  input: Record<string, unknown>,
+  departments: readonly string[]
+): RentalFitPrefill {
+  const text = (value: unknown) => (typeof value === 'string' ? value : '')
+  const prefill: RentalFitPrefill = {}
+  const department = departments.find(item => fold(item) === fold(text(input.departamento)))
+  if (department) {
+    prefill.department = department
+    try {
+      const neighborhood = zoneName(text(input.barrio))
+      prefill.zones = { mode: 'prefer', include: [{ department, neighborhood }], exclude: [] }
+    } catch {
+      // Sin barrio válido la búsqueda queda en todo el departamento.
+    }
+  }
+  const type = text(input.tipo)
+  if (type === 'apartamento' || type === 'casa') prefill.types = [type]
+  const bedrooms = Number(text(input.dormitorios))
+  if (text(input.dormitorios) && Number.isInteger(bedrooms) && bedrooms >= 0 && bedrooms <= 20)
+    prefill.minBedrooms = bedrooms
+  const budget = Number(text(input.presupuesto))
+  if (Number.isInteger(budget) && budget > 0 && budget <= 10_000_000)
+    prefill.housingBudgetUyu = budget
+  return prefill
+}
+
 /** Reject an invalid household as a whole; never silently remove a person's destination. */
 export function normalizeRentalFitInput(value: unknown): RentalFitInput {
   try {

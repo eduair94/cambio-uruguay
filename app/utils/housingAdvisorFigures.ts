@@ -44,6 +44,8 @@ export interface HousingCreditProfile {
   currency: 'UI'
   /** Tasa efectiva anual publicada. */
   tea: number
+  /** Una tasa menor para plazos cortos, si el prestamista la publica. */
+  shortTerm?: { maxYears: number; tea: number }
   maxYears: number
   /** Qué parte del valor financia. */
   financing: number
@@ -76,6 +78,7 @@ export const HOUSING_CREDIT_PROFILES: Record<HousingCreditId, HousingCreditProfi
     lender: 'Santander, público general',
     currency: 'UI',
     tea: 0.0475,
+    shortTerm: { maxYears: 10, tea: 0.04 },
     maxYears: 20,
     financing: 0.8,
     installmentCap: 0.35,
@@ -84,7 +87,7 @@ export const HOUSING_CREDIT_PROFILES: Record<HousingCreditId, HousingCreditProfi
       asOf: '2026-09-16',
       source: 'Santander, cartilla del crédito hipotecario',
       sourceUrl: 'https://www.creditohipotecariosantander.com.uy/simular',
-      note: 'En UI, 4,75 % de 11 a 30 años; al público general le publica hasta 20 años, financia el 80 % y la cuota puede llegar al 35 % del ingreso.',
+      note: 'En UI, 4,00 % hasta 10 años y 4,75 % de 11 a 30; al público general le publica hasta 20 años, financia el 80 % y la cuota puede llegar al 35 % del ingreso.',
     },
   },
 }

@@ -13,8 +13,15 @@ mercado y manda a esas dos.
 ## Sin job nuevo
 
 `GET /api/housing/advisor` (`app/server/utils/housingAdvisor.ts`) junta tres agregados que ya se
-calculan a diario, con caché de 10 minutos por departamento × tipo × dormitorios (y lo último bueno
-si la base falla):
+calculan a diario, con caché de 10 minutos por departamento × tipo × dormitorios. Cuando algo falla:
+
+- **Faltan los datos de barrio o el dólar**: se sirve lo que hay y se guarda sólo un minuto. Sin
+  dólar, alquilar responde igual (no lo usa) y comprar o comparar dan 503.
+- **Se cae la base**: si hay algo guardado, se sirve eso y no se vuelve a probar por 30 segundos; si
+  no hay nada, durante esos 30 segundos se falla en el acto en vez de esperar los timeouts en cada
+  pedido (`tests/unit/housingAdvisorLoader.test.ts`).
+
+Los tres agregados:
 
 | dato | de dónde | job |
 |---|---|---|
@@ -44,8 +51,8 @@ publicaba como precio de hoy.
   fuera un solo sueldo sin hijos a cargo; con dos sueldos el real es algo mayor, así que el error
   queda del lado de pedir menos. Con $ 120.000 nominales la diferencia era de un cuarto del techo.
   Dos perfiles reales, no un promedio: BHU (UI, 4,50 %, 25 años,
-  90 %, cuota 25 %) y Santander público general (UI, 4,75 %, 20 años, 80 %, cuota 35 %), publicados
-  al 16/9/2026. La cuota usa la TEA pasada a mensual `(1+TEA)^(1/12) − 1` (la calculadora de comprar
+  90 %, cuota 25 %) y Santander público general (UI, 4,75 %, 20 años, 80 %, cuota 35 %; 4,00 %
+  hasta 10 años, que se aplica si `plazo` ≤ 10), publicados al 16/9/2026. La cuota usa la TEA pasada a mensual `(1+TEA)^(1/12) − 1` (la calculadora de comprar
   o alquilar la divide por 12, que sobrestima la cuota).
 - **Gastos de compra**: ITP 2 % (sobre el valor de Catastro; acá sobre el precio), escrituración 3 %
   a 5 % (referencia de mercado), comisión 3,66 %. El techo usa el extremo alto (10,66 %).
@@ -62,6 +69,22 @@ UNO de los dos modos entra: el que no alcanza va a "Lo que resignás" y la caja 
 comprar sólo aparece donde los dos están a tiro. Los cortes de luz llevan "provisorio · N días
 medidos" mientras la capa lo sea. Sin resultados, la página distingue "no hay 8 avisos" de "no
 entra en tu plata". Los montos con centésimos del recibo ("85.432,18") se leen sin los centésimos.
+
+## Los enlaces de cada tarjeta
+
+- **Ver alquileres**: barrio, tipo, dormitorios exactos (o "4 o más") y el tope en pesos, sin
+  moneda — la moneda del directorio es la publicada y escondería los avisos en dólares.
+- **Ver ventas**: barrio, tipo, dormitorios y el techo en dólares. El directorio de ventas filtra
+  dormitorios exactos (sólo 8 quiere decir "8 o más"), así que "4 o más" pide 4, casi todo el tramo.
+- **Evolución de precios**: la serie del mismo barrio, tipo y dormitorios (`zona=b:<depto>:<barrio>`,
+  tomado de la clave de la serie de venta).
+- **Elegir el apartamento / la casa** (sólo alquilar y comparar): `/alquiler-ideal-uruguay` con
+  `departamento`, `barrio`, `presupuesto`, `tipo` y `dormitorios`. Esa página los lee con
+  `rentalFitPrefill` (campo por campo: uno inválido se ignora, nunca el resto) y los saca de la URL.
+  El presupuesto de allá es alquiler + gastos comunes; con el tope de la garantía (sólo alquiler) eso
+  queda del lado de pedir menos, y la persona lo sube allá.
+- Ninguna zona de alquiler medida lleva coma en el nombre (el directorio de alquileres parte el
+  filtro de barrio por comas), y las que sólo tienen venta no enlazan a alquileres.
 
 **Lo que salió de leer los perfiles reales** (con los tests en verde): "$ 24.500, con gastos comunes
 $ 25.000" hacía pensar que los gastos eran $ 500 — el total mediano sale sólo de los avisos que

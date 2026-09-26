@@ -420,7 +420,7 @@ import type {
   RentalFitResponse,
   RentalFitResult,
 } from '~/utils/rentalFitTypes'
-import { normalizeRentalFitInput } from '~/utils/rentalFit'
+import { normalizeRentalFitInput, rentalFitPrefill } from '~/utils/rentalFit'
 import { rentalFitMessages } from '~/utils/rentalFitMessages'
 import { rentalMoney, rentalPropertyPath } from '~/utils/rentalPresentation'
 import ZonesPicker from '~/components/rentals/zones/Picker.vue'
@@ -581,6 +581,19 @@ const departments = [
   'Tacuarembó',
   'Treinta y Tres',
 ]
+// Lo que manda /donde-vivir-uruguay en la URL: el barrio, el presupuesto, el tipo y los
+// dormitorios. Se lee una vez, igual en el servidor y en el navegador, y después se saca de la URL.
+const PREFILL_KEYS = ['departamento', 'barrio', 'presupuesto', 'tipo', 'dormitorios']
+const prefillRoute = useRoute()
+const prefillRouter = useRouter()
+Object.assign(draft.value, rentalFitPrefill(prefillRoute.query, departments))
+onMounted(() => {
+  if (!PREFILL_KEYS.some(key => key in prefillRoute.query)) return
+  const rest = Object.fromEntries(
+    Object.entries(prefillRoute.query).filter(([key]) => !PREFILL_KEYS.includes(key))
+  )
+  prefillRouter.replace({ query: rest })
+})
 const departmentItems = computed(() => [
   { value: '', title: t('allDepartments') },
   ...departments.map(value => ({ value, title: value })),

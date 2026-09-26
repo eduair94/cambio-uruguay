@@ -2803,8 +2803,8 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         labelKey: 'nav.housingAdvisor',
         icon: 'mdi-home-search',
         priority: 0.8,
-        changefreq: 'daily',
-        fresh: true,
+        // Sin respuestas la URL muestra el formulario y las guías: no cambia todos los días.
+        changefreq: 'monthly',
         keywords: [
           'donde vivir en montevideo',
           'mejores barrios para vivir en montevideo',
