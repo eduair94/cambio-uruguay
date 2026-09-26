@@ -39,7 +39,7 @@ import {
   type MinimumWageResponse,
   type Palancas,
   type PlanDelMes,
-  type Region,
+  type SmnRegion,
   type Restriccion,
   type TipoVivienda,
 } from '../../utils/minimumWage'
@@ -274,6 +274,28 @@ export function rowsFromRoomProperties(properties: RoomRawProperty[]): MinimumWa
   return rows
 }
 
+// La cosecha asigna a veces a Rivera una vivienda de Santana do Livramento, que está en Brasil.
+const FUERA_DE_URUGUAY = /\blivramento\b/
+
+/** Sin departamento no hay región contra la que hacer la cuenta: el aviso no entra. */
+const enUruguay = (row: MinimumWageRow): boolean =>
+  row.department.trim() !== '' && !FUERA_DE_URUGUAY.test(fold(`${row.title} ${row.neighborhood}`))
+
+/**
+ * Dos avisos con el mismo título, precio y lugar son, a efectos de esta página, el mismo: una
+ * inmobiliaria que publica siete unidades iguales o una residencia que repite su aviso en Facebook
+ * llenaban la lista con la misma tarjeta. Se muestra una, con cuántas son.
+ */
+const claveIgual = (row: MinimumWageListing): string =>
+  [
+    fold(row.title).trim(),
+    row.tipo,
+    row.alquiler,
+    row.gastosComunes ?? '',
+    fold(row.department).trim(),
+    fold(row.neighborhood).trim(),
+  ].join('|')
+
 export function buildMinimumWageDataset(input: {
   generatedAt: string
   analysisAt: string | null
@@ -292,7 +314,7 @@ export function buildMinimumWageDataset(input: {
     ...(input.analysisListings ?? input.budget.map(asCohort)),
     ...input.rooms.map(asCohort),
   ])
-  const all = [...input.budget, ...input.rooms]
+  const all = [...input.budget, ...input.rooms].filter(enUruguay)
   const rows = all.filter(row => plausibleRent(asCohort(row), medians))
   return {
     generatedAt: input.generatedAt,
@@ -309,12 +331,12 @@ const VEREDICTO_ORDEN = { cierra: 0, 'cierra-si': 1, 'no-cierra': 2 } as const
 function enForma(row: MinimumWageRow, forma: Forma, departamento: string): boolean {
   return (
     (forma.tipos as readonly TipoVivienda[]).includes(row.tipo) &&
-    (forma.regiones as readonly Region[]).includes(regionDe(row.department)) &&
+    (forma.regiones as readonly SmnRegion[]).includes(regionDe(row.department)) &&
     (!departamento || mismoDepartamento(row.department, departamento))
   )
 }
 
-function planes(forma: Forma, palancas: Palancas): Map<Region, PlanDelMes> {
+function planes(forma: Forma, palancas: Palancas): Map<SmnRegion, PlanDelMes> {
   return new Map(forma.regiones.map(region => [region, planDelMes(forma.id, region, palancas)]))
 }
 
@@ -330,23 +352,38 @@ export function queryMinimumWage(
   const formas: FormaResumen[] = FORMAS.map(forma => {
     const con = planes(forma, query.palancas)
     const sin = planes(forma, PALANCAS_NINGUNA)
-    const items: MinimumWageItem[] = []
-    let sinPalancas = 0
+    const sorted: MinimumWageItem[] = []
+    const sinPalancas = new Set<string>()
     for (const row of visible) {
       if (!enForma(row, forma, query.departamento)) continue
       const region = regionDe(row.department)
       const evaluacion = evaluarAviso(con.get(region)!, row)
-      if (evaluarAviso(sin.get(region)!, row).veredicto !== 'no-cierra') sinPalancas++
+      if (evaluarAviso(sin.get(region)!, row).veredicto !== 'no-cierra')
+        sinPalancas.add(claveIgual(row))
       if (evaluacion.veredicto === 'no-cierra') continue
       const { advertId: _advertId, ...listing } = row
-      items.push({ ...listing, evaluacion, puertas: puertasDeEntrada(forma.id, row, query.joven) })
+      sorted.push({
+        ...listing,
+        evaluacion,
+        puertas: puertasDeEntrada(forma.id, row, query.joven),
+        iguales: 1,
+      })
     }
-    items.sort(
+    sorted.sort(
       (a, b) =>
         VEREDICTO_ORDEN[a.evaluacion.veredicto] - VEREDICTO_ORDEN[b.evaluacion.veredicto] ||
         a.evaluacion.costo - b.evaluacion.costo ||
         a.key.localeCompare(b.key)
     )
+    // Después de ordenar: de un grupo de iguales queda el que mejor cierra.
+    const grupos = new Map<string, MinimumWageItem>()
+    for (const item of sorted) {
+      const clave = claveIgual(item)
+      const primero = grupos.get(clave)
+      if (primero) primero.iguales++
+      else grupos.set(clave, item)
+    }
+    const items = [...grupos.values()]
     if (forma.id === query.forma) selectedItems = items
     const counts = new Map<string, number>()
     for (const item of items) counts.set(item.department, (counts.get(item.department) ?? 0) + 1)
@@ -359,7 +396,7 @@ export function queryMinimumWage(
         .map(([department, count]) => ({ department, count }))
         .sort((a, b) => b.count - a.count || a.department.localeCompare(b.department, 'es'))
         .slice(0, 5),
-      sinPalancas,
+      sinPalancas: sinPalancas.size,
     }
   })
 

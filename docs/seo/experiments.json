@@ -19,6 +19,19 @@
   ],
   "experiments": [
     {
+      "id": "vivir-con-el-salario-minimo",
+      "shippedOn": "2026-09-26",
+      "routes": [
+        "/vivir-con-el-salario-minimo-uruguay"
+      ],
+      "queries": [
+        "vivir con el salario minimo uruguay",
+        "se puede vivir con el sueldo minimo",
+        "alquiler con sueldo minimo"
+      ],
+      "hypothesis": "La consulta de vivir con el minimo tenia una sola respuesta en el sitio, /vivir-con-25000-pesos-uruguay, que la contesta con promedios del INE y concluye que no alcanza. La pagina nueva contesta la otra mitad -de que forma si- con los avisos vigentes del directorio, cuatro formas con su techo y la garantia que acepta cada alquiler. La apuesta es entrar en las consultas de salario minimo y alquiler barato, donde el sitio hoy no tiene una pagina que las responda."
+    },
+    {
       "id": "reconocer-anos-trabajados-bps",
       "shippedOn": "2026-09-26",
       "routes": [

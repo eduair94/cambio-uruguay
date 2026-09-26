@@ -20,74 +20,77 @@ import {
   topeFgaJovenes,
   type Palancas,
   type PuertaId,
-  type Region,
+  type SmnRegion,
 } from './minimumWage'
+
+/** Espacio duro: que el signo y la cifra no queden en renglones distintos. */
+const NBSP = String.fromCharCode(160)
 
 /** Pesos con punto de miles, igual en el servidor y en el navegador (sin depender de ICU). */
 export const pesos = (value: number): string =>
-  `$ ${Math.round(value)
+  `$${NBSP}${Math.round(value)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`
 
-export interface Fuente {
+export interface SmnFuente {
   label: string
   url: string
 }
 
-const ASSE: Fuente = {
+const ASSE: SmnFuente = {
   label: 'Afiliación a ASSE — trámite en gub.uy',
   url: 'https://www.gub.uy/tramites/afiliacion-asse',
 }
-const BOLETO: Fuente = {
+const BOLETO: SmnFuente = {
   label: 'Tarifas del transporte colectivo urbano — Intendencia de Montevideo',
   url: 'https://montevideo.gub.uy/areas-tematicas/sistema-de-transporte-metropolitano/tarifas-del-transporte-colectivo-urbano',
 }
-const LEY_AGUINALDO: Fuente = {
+const LEY_AGUINALDO: SmnFuente = {
   label: 'Ley N.º 12.840 — sueldo anual complementario (IMPO)',
   url: 'https://www.impo.com.uy/bases/leyes/12840-1960',
 }
-const LEY_VACACIONAL: Fuente = {
+const LEY_VACACIONAL: SmnFuente = {
   label: 'Ley N.º 16.101 — salario vacacional (IMPO)',
   url: 'https://www.impo.com.uy/bases/leyes/16101-1989',
 }
-const COSTO_DE_VIDA: Fuente = {
+const COSTO_DE_VIDA: SmnFuente = {
   label: 'Modelo de costo de vida del sitio',
   url: 'https://cambio-uruguay.com/herramientas/costo-de-vida',
 }
-const ANDA: Fuente = {
+const ANDA: SmnFuente = {
   label: 'Garantía de alquiler, requisitos del inquilino — ANDA',
   url: 'https://anda.com.uy/garantia-de-alquiler/inquilino/',
 }
-const FGA: Fuente = {
+const FGA: SmnFuente = {
   label: 'Fondo de Garantía de Alquiler — Agencia Nacional de Vivienda',
   url: 'https://www.anv.gub.uy/fondo-de-garantia-de-alquiler',
 }
-const FGA_JOVENES: Fuente = {
+const FGA_JOVENES: SmnFuente = {
   label: 'Fondo de Garantía de Alquiler para Jóvenes — Agencia Nacional de Vivienda',
   url: 'https://www.anv.gub.uy/fondo-de-garantia-de-alquiler-para-jovenes',
 }
-const LEY_SIN_GARANTIA: Fuente = {
+const LEY_SIN_GARANTIA: SmnFuente = {
   label: 'Ley N.º 19.889, artículo 421 — alquiler sin garantía (IMPO)',
   url: 'https://www.impo.com.uy/bases/leyes/19889-2020/421',
 }
-const DECRETO_SMN: Fuente = {
+const DECRETO_SMN: SmnFuente = {
   label: 'Decreto 319/025 — salario mínimo nacional 2026 (IMPO)',
   url: 'https://www.impo.com.uy/bases/decretos/319-2025',
 }
-const INE_ALQUILERES: Fuente = {
+const INE_ALQUILERES: SmnFuente = {
   label: 'INE — Indicadores de actividad inmobiliaria, alquileres',
   url: 'https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-indicadores-actividad-inmobiliaria-iai-alquileres',
 }
 
-const transporteRegion = (region: Region): number =>
+const transporteRegion = (region: SmnRegion): number =>
   Math.round(TRANSPORTE_MES * (region === 'interior' ? COST_MODEL.interiorTransportFactor : 1))
 
 export interface PalancaInfo {
   titulo: string
   detalle: string
   /** Cuánto sube el techo por mes, por persona. */
-  valor: (region: Region) => number
-  fuente: Fuente
+  valor: (region: SmnRegion) => number
+  fuente: SmnFuente
 }
 
 export const PALANCAS_INFO: Record<keyof Palancas, PalancaInfo> = {
@@ -126,7 +129,7 @@ export const PALANCAS_INFO: Record<keyof Palancas, PalancaInfo> = {
 export interface PuertaInfo {
   titulo: string
   regla: string
-  /** Fuente externa (https) o página del sitio (/…). */
+  /** SmnFuente externa (https) o página del sitio (/…). */
   url: string
 }
 
@@ -167,7 +170,7 @@ export const MINIMUM_WAGE_FAQ: FaqItem[] = [
   {
     id: 'salario-minimo-se-puede',
     question: '¿Se puede vivir con el salario mínimo en Uruguay?',
-    answer: `Solo y alquilando al precio promedio, no: el líquido del mínimo es ${pesos(LIQUIDO_SMN)} y el alquiler promedio de un contrato nuevo en Montevideo es ${pesos(alquilerNuevoRegion('montevideo'))}. Las cuentas que sí cierran son las de una pieza en una pensión o residencia, una casa chica en el interior o una vivienda entre dos personas que cobran el mínimo. Todas piden decisiones —ir a pie, atenderse en ASSE, apartar el aguinaldo— y ninguna deja ahorro.`,
+    answer: `Solo y alquilando al precio promedio, no: el líquido del mínimo es ${pesos(LIQUIDO_SMN)} y el alquiler promedio de un contrato nuevo en Montevideo es ${pesos(alquilerNuevoRegion('montevideo'))}. Las cuentas que sí cierran son las de una pieza en una pensión o residencia, una casa chica en el interior o una vivienda entre dos personas que cobran el mínimo. Todas piden decisiones —ir a pie, atenderse en ASSE, apartar el aguinaldo— y lo que sobra, cuando sobra, es poco.`,
   },
   {
     id: 'salario-minimo-liquido',
@@ -206,7 +209,7 @@ export const MINIMUM_WAGE_FAQ: FaqItem[] = [
   },
 ]
 
-export const MINIMUM_WAGE_SOURCES: Fuente[] = [
+export const MINIMUM_WAGE_SOURCES: SmnFuente[] = [
   DECRETO_SMN,
   INE_ALQUILERES,
   BOLETO,

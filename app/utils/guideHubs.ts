@@ -437,6 +437,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/donde-vivir-uruguay',
       },
       {
+        label: 'Vivir con el salario mínimo',
+        description: 'Las formas en que el mínimo alcanza, con los alquileres de hoy que entran.',
+        to: '/vivir-con-el-salario-minimo-uruguay',
+      },
+      {
         label: 'Tu alquiler ideal',
         description: 'Qué zonas encajan con tu presupuesto y lo que necesitás.',
         to: '/alquiler-ideal-uruguay',
@@ -1242,6 +1247,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Vivir con $25.000',
         description: 'Cómo se reparte un sueldo chico, con precios de hoy.',
         to: '/vivir-con-25000-pesos-uruguay',
+      },
+      {
+        label: 'Vivir con el salario mínimo',
+        description: 'Pieza, interior o dos sueldos: la cuenta que cierra y los avisos que entran.',
+        to: '/vivir-con-el-salario-minimo-uruguay',
       },
       {
         label: 'Precios de supermercado',

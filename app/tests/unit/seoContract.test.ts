@@ -224,6 +224,9 @@ const NOINDEXED = [
   'ranking-usuarios-charruadevs.vue',
   // Sale dossiers use the same reviewed, fresh pilot gate as their sitemap entries.
   'venta-viviendas-uruguay/[key].vue',
+  // Las formas de vivir con el salario mínimo se indexan en su URL; cada combinación de decisiones
+  // y departamento se sale, como el asesor de vivienda.
+  'vivir-con-el-salario-minimo-uruguay.vue',
   'widget.vue',
 ]
 

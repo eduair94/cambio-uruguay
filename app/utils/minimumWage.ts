@@ -24,7 +24,7 @@ import type { RentalSource } from './rentals'
 
 export const MINIMUM_WAGE_PATH = '/vivir-con-el-salario-minimo-uruguay'
 
-export type Region = 'montevideo' | 'interior'
+export type SmnRegion = 'montevideo' | 'interior'
 export type TipoVivienda = 'habitacion' | 'casa' | 'apartamento'
 export type FormaId = 'pieza' | 'solo-interior' | 'dos-sueldos' | 'solo-montevideo'
 
@@ -35,7 +35,7 @@ const fold = (value: string): string =>
     .toLocaleLowerCase('es')
     .trim()
 
-export const regionDe = (department: string): Region =>
+export const regionDe = (department: string): SmnRegion =>
   fold(department) === 'montevideo' ? 'montevideo' : 'interior'
 
 export const mismoDepartamento = (a: string, b: string): boolean => fold(a) === fold(b)
@@ -46,7 +46,7 @@ export interface Forma {
   /** Quién vive así, en una línea. */
   quien: string
   tipos: readonly TipoVivienda[]
-  regiones: readonly Region[]
+  regiones: readonly SmnRegion[]
   /** Personas del hogar; cada una cobra el mínimo. */
   personas: 1 | 2
 }
@@ -168,7 +168,7 @@ export interface Linea {
 
 export interface PlanDelMes {
   forma: FormaId
-  region: Region
+  region: SmnRegion
   personas: 1 | 2
   ingresos: Linea[]
   ingreso: number
@@ -186,7 +186,7 @@ export interface PlanDelMes {
 
 const suma = (lineas: Linea[]) => lineas.reduce((total, linea) => total + linea.monto, 0)
 
-export function planDelMes(formaId: FormaId, region: Region, palancas: Palancas): PlanDelMes {
+export function planDelMes(formaId: FormaId, region: SmnRegion, palancas: Palancas): PlanDelMes {
   const forma = formaPorId(formaId)
   const n = forma.personas
   const interior = region === 'interior'
@@ -429,6 +429,8 @@ export interface MinimumWageListing {
 export interface MinimumWageItem extends MinimumWageListing {
   evaluacion: Evaluacion
   puertas: PuertaId[]
+  /** Cuántos avisos idénticos (título, precio y lugar) representa esta tarjeta. */
+  iguales: number
 }
 
 export interface FormaResumen {

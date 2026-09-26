@@ -104,6 +104,7 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
       '/evolucion-precio-alquileres-uruguay',
       '/barrios-alquileres-uruguay',
       '/donde-vivir-uruguay',
+      '/vivir-con-el-salario-minimo-uruguay',
       '/comparar-portales-de-alquiler-uruguay',
     ]),
   },

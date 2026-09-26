@@ -42,8 +42,10 @@ describe('copy', () => {
     for (const url of urls) expect(url).toMatch(/^https:\/\//)
   })
   it('pesos agrupa miles con punto sin depender de ICU', () => {
-    expect(pesos(20407.6)).toBe('$ 20.408')
-    expect(pesos(950)).toBe('$ 950')
+    const nbsp = String.fromCharCode(160)
+    expect(pesos(20407.6)).toBe(`$${nbsp}20.408`)
+    expect(pesos(950)).toBe(`$${nbsp}950`)
+    expect(pesos(950).startsWith('$')).toBe(true)
   })
   it('las preguntas usan las cifras de la cuenta, no números escritos a mano', () => {
     const texto = MINIMUM_WAGE_FAQ.map(f => f.answer).join(' ')

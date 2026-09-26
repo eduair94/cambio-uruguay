@@ -1482,6 +1482,26 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // Las formas en que el líquido del mínimo cubre un mes austero, con los avisos de alquiler
+        // de hoy que entran. Ver docs/app/VIVIR_SALARIO_MINIMO.md.
+        to: '/vivir-con-el-salario-minimo-uruguay',
+        labelKey: 'nav.vivirSalarioMinimo',
+        icon: 'mdi-home-heart',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'vivir con el salario minimo uruguay',
+          'se puede vivir con el sueldo minimo',
+          'alquiler con sueldo minimo',
+          'pension barata montevideo',
+          'habitacion en alquiler barata',
+          'alquilar con 20000 pesos',
+          'garantia de alquiler sueldo minimo',
+          'como llegar a fin de mes con el minimo',
+        ],
+      },
+      {
         to: '/contractor-en-uruguay',
         labelKey: 'nav.contractorUy',
         icon: 'mdi-laptop-account',

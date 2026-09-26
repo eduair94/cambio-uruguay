@@ -426,6 +426,10 @@
           "label": "¿Dónde vivir?"
         },
         {
+          "to": "/vivir-con-el-salario-minimo-uruguay",
+          "label": "Vivir con el salario mínimo"
+        },
+        {
           "to": "/alquiler-ideal-uruguay",
           "label": "Tu alquiler ideal"
         },
@@ -1179,6 +1183,10 @@
         {
           "to": "/vivir-con-25000-pesos-uruguay",
           "label": "Vivir con $25.000"
+        },
+        {
+          "to": "/vivir-con-el-salario-minimo-uruguay",
+          "label": "Vivir con el salario mínimo"
         },
         {
           "to": "/precios-de-supermercado-uruguay",

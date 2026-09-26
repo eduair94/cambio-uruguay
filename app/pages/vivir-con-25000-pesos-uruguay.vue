@@ -519,6 +519,13 @@
         {{ uyu(INGRESO_PERCAPITA_MEDIANA.pais) }}. La línea de pobreza no es «lo que cuesta vivir
         bien»: es el umbral por debajo del cual el INE cuenta a un hogar como pobre.
       </p>
+      <p class="text-body-1 mt-4 mb-0">
+        Estos arreglos usan promedios. Las formas en que el salario mínimo sí alcanza, con los
+        avisos de alquiler de hoy que entran en la cuenta, están en
+        <NuxtLink :to="localePath('/vivir-con-el-salario-minimo-uruguay')"
+          >vivir con el salario mínimo</NuxtLink
+        >.
+      </p>
     </section>
 
     <!-- ── 7. Lo que pone el Estado ──────────────────────────────────────── -->

@@ -330,6 +330,58 @@ describe('queryMinimumWage', () => {
     const response = queryMinimumWage(dataset, {}, id => id === 'rent:facebook:1')
     expect(response.items.map(i => i.key)).toEqual(['r3'])
   })
+  it('sin departamento no hay región: el aviso no entra en ninguna forma', () => {
+    const conHueco = buildMinimumWageDataset({
+      ...dataset,
+      budget: [],
+      rooms: [row({ key: 'x1', department: '' })],
+      analysisListings: [],
+    })
+    expect(queryMinimumWage(conHueco, {}, none).total).toBe(0)
+  })
+  it('una vivienda del otro lado de la frontera no es del interior', () => {
+    const frontera = buildMinimumWageDataset({
+      ...dataset,
+      budget: [
+        row({
+          key: 'b1',
+          tipo: 'casa',
+          department: 'Rivera',
+          title: 'Alquilo casa en Santana do Livramento',
+          alquiler: 7000,
+          pension: false,
+          advertId: 'rent:facebook:9',
+        }),
+      ],
+      rooms: [],
+      analysisListings: [],
+    })
+    expect(queryMinimumWage(frontera, { forma: 'solo-interior' }, none).total).toBe(0)
+  })
+  it('avisos idénticos se muestran una vez, con cuántos son', () => {
+    const iguales = buildMinimumWageDataset({
+      ...dataset,
+      budget: [],
+      rooms: [
+        row({ key: 'i1', title: 'Residencia Para Parejas', advertId: 'rent:facebook:11' }),
+        row({ key: 'i2', title: 'Residencia para parejas', advertId: 'rent:facebook:12' }),
+        row({
+          key: 'i3',
+          title: 'Residencia para parejas',
+          alquiler: 8100,
+          advertId: 'rent:facebook:13',
+        }),
+      ],
+      analysisListings: [],
+    })
+    const response = queryMinimumWage(iguales, {}, none)
+    expect(response.items.map(i => [i.key, i.iguales])).toEqual([
+      ['i1', 2],
+      ['i3', 1],
+    ])
+    expect(response.total).toBe(2)
+    expect(response.formas.find(f => f.id === 'pieza')!.cierran).toBe(2)
+  })
   it('lista los departamentos con avisos de los tipos de la forma', () => {
     expect(queryMinimumWage(dataset, { forma: 'dos-sueldos' }, none).departamentos).toEqual([
       'Colonia',
