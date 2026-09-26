@@ -19,6 +19,12 @@ import type { FaqItem } from './faqAnswers'
 
 export const RENTAL_GUARANTEE_VERIFIED_AT = '2026-09-22'
 
+/**
+ * FGA Jóvenes: «El monto máximo para alquilar es de 22,5 UR y no puede superar el 40 % de el/los
+ * ingresos» (ANV, leído el 2026-09-26). No pide un mínimo individual; en grupos, 30 UR colectivas.
+ */
+export const FGA_JOVENES_MAX_INCOME_SHARE = 0.4
+
 /** Una fuente citada al pie, y en el `citation` del JSON-LD. */
 export interface GuaranteeSource {
   label: string
@@ -111,6 +117,8 @@ export const GUARANTEE_OPTIONS: readonly GuaranteeOption[] = [
     requirements: [
       'Tener entre 18 y 29 años, y estudiar o trabajar.',
       'Contar con un ingreso líquido, individual o colectivo, de hasta 100 UR.',
+      'El alquiler no puede superar las 22,5 UR ni el 40 % de los ingresos.',
+      'En grupos (hasta 5 personas), el ingreso colectivo mínimo es de 30 UR.',
       'El depósito es del 12 % del monto de la garantía, por única vez.',
     ],
     source: {
