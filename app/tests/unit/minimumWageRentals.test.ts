@@ -38,9 +38,9 @@ describe('roomTextFlags', () => {
       roomTextFlags('Alquilo habitaciónes con luz agua y wifi incluidos', '').serviciosIncluidos
     ).toBe(true)
     expect(roomTextFlags('Residencia', 'Todo incluido en el precio.').serviciosIncluidos).toBe(true)
-    expect(
-      roomTextFlags('Pieza', 'con gastos incluidos, a sr mayor solo').serviciosIncluidos
-    ).toBe(true)
+    expect(roomTextFlags('Pieza', 'con gastos incluidos, a sr mayor solo').serviciosIncluidos).toBe(
+      true
+    )
     expect(roomTextFlags('Pieza', 'Luz y wifi en el precio').serviciosIncluidos).toBe(true)
     expect(roomTextFlags('Pieza', 'Servicios no incluidos.').serviciosIncluidos).toBe(false)
     expect(roomTextFlags('Pieza', 'No incluye luz ni agua').serviciosIncluidos).toBe(false)
@@ -70,9 +70,7 @@ describe('roomTextFlags', () => {
     expect(roomTextFlags('Residencia Masculina A Dos Cuadras De 18', '').restriccion).toBe(
       'hombres'
     )
-    expect(roomTextFlags('Residencia Estudiantil En El Centro', '').restriccion).toBe(
-      'estudiantes'
-    )
+    expect(roomTextFlags('Residencia Estudiantil En El Centro', '').restriccion).toBe('estudiantes')
     expect(roomTextFlags('Residencia', 'para chicos y chicas del interior').restriccion).toBe(null)
     expect(roomTextFlags('Alquilo habitación', 'zona centro').restriccion).toBe(null)
   })
@@ -224,7 +222,9 @@ describe('filas', () => {
       {
         ...base,
         key: 'h4',
-        offers: [offer({ title: 'Habitación por día', details: { description: '$ 900 por noche' } })],
+        offers: [
+          offer({ title: 'Habitación por día', details: { description: '$ 900 por noche' } }),
+        ],
       },
     ] as never)
     expect(rows.map(r => r.key)).toEqual(['h1'])

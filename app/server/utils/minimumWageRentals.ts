@@ -75,20 +75,21 @@ export interface MinimumWageDataset {
 const fold = (value: string): string =>
   value
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036F]/g, '')
     .toLowerCase()
     .replace(/\+/g, ' ')
     .replace(/[^\S\n]+/g, ' ')
 
 const INCLUIDOS =
-  /\b(?:servicios|luz|agua|wifi|internet|gastos|ute|ose)\b[^.\n]{0,40}?\bincluid[oa]s?\b|\btodo incluido\b|\bincluye (?:la )?(?:luz|agua|wifi|internet|servicios|gastos)\b|\b(?:luz|agua|wifi)\b[^.\n]{0,30}?\ben el precio\b/g
+  /\b(?:servicios|luz|agua|wifi|internet|gastos|ute|ose)\b[^.\n]{1,40}?\bincluid[oa]s?\b|\btodo incluido\b|\bincluye (?:la )?(?:luz|agua|wifi|internet|servicios|gastos)\b|\b(?:luz|agua|wifi)\b[^.\n]{1,30}?\ben el precio\b/g
 const NO_INCLUIDOS = /\bno (?:estan |van |son )?incluid[oa]s?\b|\bno incluye\b/
 
 // "Baño compartido" o "cocina compartida" es una pieza propia en una casa compartida: no cuenta.
 const COMPARTIDA =
   /\b(?:habitacion(?:es)?|piezas?|cuartos?|dormitorios?) compartid[oa]s?\b|\bcamas? en (?:habitacion|pieza|cuarto|dormitorio)\b|\bcuchetas?\b|\bliteras?\b|\bindividuales? y compartid[oa]s?\b/
 const PENSION = /\b(?:pension|residencia|alojamiento|hostel|hogar estudiantil)\b/
-const MIXTO = /\b(?:chicos y chicas|chicas y chicos|hombres y mujeres|mujeres y hombres|mixt[ao]s?)\b/
+const MIXTO =
+  /\b(?:chicos y chicas|chicas y chicos|hombres y mujeres|mujeres y hombres|mixt[ao]s?)\b/
 const MUJERES =
   /\b(?:femenin[ao]s?|(?:para|a) (?:mujeres|chicas|senoritas|damas|una mujer|mujer sola|senora sola))\b/
 const HOMBRES =

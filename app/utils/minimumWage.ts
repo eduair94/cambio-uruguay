@@ -31,7 +31,7 @@ export type FormaId = 'pieza' | 'solo-interior' | 'dos-sueldos' | 'solo-montevid
 const fold = (value: string): string =>
   value
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036F]/g, '')
     .toLocaleLowerCase('es')
     .trim()
 
@@ -321,9 +321,7 @@ export const topeAnda = (personas: 1 | 2): number =>
 
 /** El alquiler más alto del FGA Jóvenes para una persona sola con el mínimo. */
 export const topeFgaJovenes = (): number =>
-  Math.floor(
-    Math.min(topeUr('fga-jovenes') * UR.valor, FGA_JOVENES_MAX_INCOME_SHARE * LIQUIDO_SMN)
-  )
+  Math.floor(Math.min(topeUr('fga-jovenes') * UR.valor, FGA_JOVENES_MAX_INCOME_SHARE * LIQUIDO_SMN))
 
 /** Líquido que el FGA exige al núcleo, en pesos. */
 export const minimoFga = (): number => Math.ceil(FGA.ingresoMinUR * UR.valor)
