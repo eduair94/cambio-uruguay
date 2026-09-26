@@ -18,6 +18,39 @@ import { COST_MODEL } from '../../utils/costOfLiving'
 import { SMN_VIGENTE, TRANSPORTE_MES } from '../../utils/lowWage'
 import { computePayroll } from '../../utils/payroll'
 import { UR } from '../../utils/stateSupport'
+import {
+  MINIMUM_WAGE_FAQ,
+  MINIMUM_WAGE_SOURCES,
+  PALANCAS_INFO,
+  PUERTAS_INFO,
+  pesos,
+} from '../../utils/minimumWageCopy'
+
+describe('copy', () => {
+  it('cada palanca tiene fuente https y un valor positivo', () => {
+    for (const info of Object.values(PALANCAS_INFO)) {
+      expect(info.fuente.url).toMatch(/^https:\/\//)
+      expect(info.valor('montevideo')).toBeGreaterThan(0)
+    }
+  })
+  it('cada puerta tiene su fuente', () => {
+    for (const info of Object.values(PUERTAS_INFO)) expect(info.url).toMatch(/^(https:\/\/|\/)/)
+  })
+  it('las fuentes son https y no se repiten', () => {
+    const urls = MINIMUM_WAGE_SOURCES.map(s => s.url)
+    expect(new Set(urls).size).toBe(urls.length)
+    for (const url of urls) expect(url).toMatch(/^https:\/\//)
+  })
+  it('pesos agrupa miles con punto sin depender de ICU', () => {
+    expect(pesos(20407.6)).toBe('$ 20.408')
+    expect(pesos(950)).toBe('$ 950')
+  })
+  it('las preguntas usan las cifras de la cuenta, no números escritos a mano', () => {
+    const texto = MINIMUM_WAGE_FAQ.map(f => f.answer).join(' ')
+    expect(texto).toContain(pesos(LIQUIDO_SMN))
+    expect(texto).toContain(pesos(planDelMes('pieza', 'montevideo', PALANCAS_TODAS).techoPieza))
+  })
+})
 
 describe('ingresos del salario mínimo', () => {
   it('parte del líquido del SMN vigente', () => {
