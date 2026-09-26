@@ -19,6 +19,40 @@
   ],
   "experiments": [
     {
+      "id": "reconocer-anos-trabajados-bps",
+      "shippedOn": "2026-09-26",
+      "routes": [
+        "/reconocer-anos-trabajados-uruguay"
+      ],
+      "queries": [
+        "reconocimiento de anos trabajados",
+        "reconocimiento de anos trabajados bps",
+        "anos trabajados que no figuran en la historia laboral",
+        "trabaje antes de 1996 y no figura",
+        "plazo reconocimiento de anos trabajados"
+      ],
+      "hypothesis": "La historia laboral del BPS arranca el 1/4/1996 y lo anterior hay que reconocerlo con un plazo por fecha de nacimiento que vence, pero el sitio no tenia pagina: /cuando-me-puedo-jubilar-uruguay contesta la EDAD y los anos exigidos, no de donde salen esos anos. La pagina publica el cuadro entero del BPS con el estado de cada franja hoy y un resolvedor por fecha de nacimiento, y el dato que ninguna fuente pone adelante: dos franjas (nacidos hasta el 1/6/1963 y entre el 2/6/1963 y el 1/6/1968) cierran el mismo dia, el 31/5/2027, porque el Decreto de MTSS del 21/5/2026 extendio la primera y la empato con la segunda."
+    },
+    {
+      "id": "descripciones-que-empiezan-por-la-respuesta-4",
+      "shippedOn": "2026-09-26",
+      "routes": [
+        "/alquilar-en-uruguay",
+        "/api-cotizacion-intradia",
+        "/asignacion-familiar-uruguay",
+        "/autos-usados-uruguay",
+        "/couriers-uruguay",
+        "/hecho-a-pedido",
+        "/importar",
+        "/prestamos-uruguay",
+        "/reclamo-sodimac-compra-cancelada",
+        "/tarjetas-de-debito-uruguay",
+        "/tendencias-uruguay",
+        "/videos-de-economia-uruguay"
+      ],
+      "hypothesis": "Septima corrida del trinquete de descripciones: las doce mas largas que quedaban, de 222 a 194 caracteres. Once gastaban el unico renglon que el SERP publica en una etiqueta de genero o de formato (Comparativa de..., Guia completa para..., Buscador de..., Los videos de YouTube... actualizados todos los dias) y dejaban del lado cortado el dato que decide el clic; ahora arrancan por ese dato y entran enteras en 155 caracteres. Ninguna cifra es nueva. La doceava, /api-cotizacion-intradia, cambio de afirmacion y no de largo: cerraba con la anecdota del pedido y ahora dice que el endpoint no pide autenticacion ni declara limite de llamadas, que es lo que decide usarlo. Misma apuesta que la cuarta y la sexta corrida: mismo puesto, mas clics."
+    },
+    {
       "id": "irpf-anios-anteriores",
       "shippedOn": "2026-09-14",
       "routes": [

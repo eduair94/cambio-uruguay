@@ -678,7 +678,7 @@ const FAQ: FaqItem[] = [
 
 const title = 'API de cotización y variación intradía'
 const description =
-  'GET /intraday: apertura, último valor, máximo, mínimo y cada movimiento del día de todas las casas de cambio de Uruguay. Endpoint público y gratuito, publicado a pedido de un estudiante de UTEC.'
+  'GET /intraday devuelve apertura, último, máximo, mínimo y cada movimiento del día de cada casa de cambio uruguaya. Sin autenticación ni límite de llamadas.'
 const canonicalUrl = 'https://cambio-uruguay.com/api-cotizacion-intradia'
 
 defineOgImageComponent('Cambio', {

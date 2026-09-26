@@ -251,7 +251,7 @@ function update(next: CarsQuery) {
 const canonical = `https://cambio-uruguay.com${CARS_PATH}`
 const title = 'Autos usados en venta en Uruguay'
 const description =
-  'Buscador de autos usados en venta en Uruguay: precio en dólares, kilómetros, versión y comparación contra autos iguales. Avisos de Mercado Libre, Facebook Marketplace y automotoras, actualizados todos los días.'
+  'Avisos de Mercado Libre, Facebook Marketplace, Clasiautos y automotoras en un buscador: precio en dólares, kilómetros, versión y comparación con iguales.'
 
 useSeoMeta({
   title: `${title} | Cambio Uruguay`,

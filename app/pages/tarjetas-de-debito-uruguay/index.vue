@@ -831,7 +831,7 @@ const faqs = [
 const canonicalUrl = 'https://cambio-uruguay.com/tarjetas-de-debito-uruguay'
 const title = 'Tarjetas de débito para comprar en dólares'
 const description =
-  'Cuánto te cobran de verdad al comprar en dólares o ítems de juegos con tarjetas disponibles en Uruguay: Prex, OCA, MiDinero, Mercado Pago y débito de BROU, Itaú, Santander y más. Tier list, calculadora y ranking con datos.'
+  'Un ítem de US$ 49,99 te sale 6–7 % más: 2,5 % + US$ 0,50 + IVA de comisión, más el spread al pasar pesos a dólares. Prex, OCA, Mercado Pago y débito.'
 
 defineOgImageComponent('Cambio', {
   title: 'Comprar en dólares en Uruguay',

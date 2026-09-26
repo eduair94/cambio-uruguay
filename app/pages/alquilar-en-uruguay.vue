@@ -822,7 +822,7 @@ const communitiesReviewedLabel = formatReviewedDate(RENT_COMMUNITIES_LAST_REVIEW
 const canonicalUrl = 'https://cambio-uruguay.com/alquilar-en-uruguay'
 const title = 'Cómo alquilar en Uruguay: garantía y costos'
 const description =
-  'Guía completa para alquilar en Uruguay: qué hacer si necesitás techo hoy, cómo buscar habitación o vivienda, garantías ANDA, CGN, seguro, BHU y sin garantía, costos, contrato, derechos y estafas.'
+  'La garantía puede ser 3 % mensual, una prima de seguro o hasta 5 meses de depósito en el BHU, y el 8 % del alquiler se descuenta del IRPF.'
 
 defineOgImageComponent('Cambio', {
   title: 'La guía para alquilar en Uruguay',

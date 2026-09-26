@@ -148,7 +148,7 @@ const TONE_COLOR: Record<RegimeOutcome['tone'], string> = {
 
 const canonicalUrl = 'https://cambio-uruguay.com/importar'
 const description =
-  'Qué impuestos paga cada tipo de artículo al importarlo a Uruguay: libros y material impreso exentos de IVA, medicamentos con tasa mínima, electrónica, ropa, alimentos y más, con los trámites y cómo declararlo.'
+  'La franquicia son US$ 800 al año en 3 envíos, pero el IVA depende de qué compres: libros exentos, medicamentos con tasa mínima, electrónica y ropa.'
 
 defineOgImageComponent('Cambio', {
   title: 'Importar a Uruguay según qué compres',

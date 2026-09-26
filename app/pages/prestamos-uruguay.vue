@@ -588,7 +588,7 @@ const gremialLenders = [
 const canonicalUrl = 'https://cambio-uruguay.com/prestamos-uruguay'
 const title = 'Dónde pedir un préstamo en Uruguay: bancos, financieras y cooperativas (2026)'
 const description =
-  'Comparativa de préstamos personales en Uruguay: tasas TEA de referencia, montos máximos, plazos y requisitos de BROU, Itaú, Creditel, OCA, Verde (FUCAC), ACAC, Prex y más. Fuentes: BCU y sitios oficiales.'
+  'En operaciones por menos de 10.000 UI una financiera puede pasar el 100 % de TEA sin salirse del tope de usura. 23 prestadores con su tasa, monto y plazo.'
 
 defineOgImageComponent('Cambio', {
   title: 'Préstamos en Uruguay',

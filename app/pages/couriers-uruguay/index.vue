@@ -520,7 +520,7 @@ const sources = [
 const canonicalUrl = 'https://cambio-uruguay.com/couriers-uruguay'
 const title = 'Couriers en Uruguay: precio por kilo 2026'
 const description =
-  'Comparativa de couriers puerta a puerta de Miami a Uruguay: precio de referencia por kilo, cargo de manejo y demora. Gripper, Envía Mi Compra, Casilla Mía, Punto Mío y más, con fuentes oficiales.'
+  'Precio por kilo de 15 couriers de Miami a Uruguay en la escala de paquete chico, con su cargo de manejo y su demora. Gripper, Aerobox, Casilla Mía.'
 
 defineOgImageComponent('Cambio', {
   title: 'Couriers en Uruguay',

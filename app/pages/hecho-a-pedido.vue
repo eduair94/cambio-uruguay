@@ -303,7 +303,7 @@ const FAQ: FaqItem[] = [
 
 const title = 'Hecho a pedido: qué pidieron y qué se hizo'
 const description =
-  'Endpoints, páginas y arreglos de este sitio que existen porque alguien los pidió por correo, por un issue o preguntando en público. Qué se pidió, qué se hizo y qué se aprendió — sin publicar quién.'
+  'El endpoint /intraday salió del correo de un estudiante de UTEC; las guías, de preguntas sin contestar. Qué se pidió, qué se hizo y qué se aprendió.'
 const canonicalUrl = 'https://cambio-uruguay.com/hecho-a-pedido'
 
 defineOgImageComponent('Cambio', {

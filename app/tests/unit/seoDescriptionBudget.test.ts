@@ -217,8 +217,28 @@ const RESOLVED = 141
 // 2026-10-18: su fila del libro de cambios está midiendo hasta esa fecha y tocarle la descripción
 // ahora le cambia el sujeto al experimento.
 //
-// Quedan 36 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 36
+// 36 → 24 el 2026-09-26, séptima corrida: las doce más largas que quedaban, de 222 a 194
+// caracteres. El patrón de esta tanda es el de la cuarta y la sexta, y vale nombrarlo otra vez
+// porque es el que se repite: once de las doce gastaban el primer renglón —el único que el SERP
+// publica— en una etiqueta de género o de formato («Comparativa de…», «Guía completa para…»,
+// «Buscador de…», «Qué impuestos paga cada tipo de artículo…», «Los videos de YouTube…,
+// actualizados todos los días»), y el dato que decide el clic caía del lado cortado. Ahora arranca
+// la respuesta: el 6–7 % que se apila sobre un ítem de US$ 49,99 (2,5 % + US$ 0,50 + IVA más el
+// spread), los US$ 800 al año en 3 envíos de la franquicia, el 100 % de TEA que una financiera
+// puede cobrar por debajo de 10.000 UI sin salirse del tope de usura, el art. 12 de la Ley 17.250 y
+// el Decreto 244/000 de la factura como prueba, el 3 % mensual o los 5 meses de depósito en el BHU
+// y el 8 % del alquiler que se descuenta del IRPF, los 15 couriers medidos sobre un paquete de 2 kg,
+// y los 13 temas de los videos. Ninguna cifra es nueva: todas ya estaban en la descripción vieja o
+// en el cuerpo de su página.
+//
+// La doceava no era un recorte de etiqueta sino de afirmación. `/api-cotizacion-intradia` cerraba
+// con «publicado a pedido de un estudiante de UTEC», que es cierto y está en la página, pero no es
+// lo que busca quien necesita el endpoint; lo que sí decide usarlo —que no pide autenticación ni
+// declara límite de llamadas— estaba en el cuerpo y no en el snippet. La anécdota del pedido se
+// mudó a `/hecho-a-pedido`, que es la página cuyo tema es exactamente eso.
+//
+// Quedan 24 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
+const OVER_BUDGET = 24
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {

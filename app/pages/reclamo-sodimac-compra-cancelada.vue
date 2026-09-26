@@ -700,7 +700,7 @@ async function copyComplaint() {
 
 const title = 'Sodimac canceló tu compra: cómo reclamar'
 const description =
-  'Guía para compradores de Sodimac Uruguay afectados por cancelaciones de julio de 2026: criterio oficial sobre errores de precio, valor de la factura y plantilla para reclamar o denunciar ante el MEF.'
+  'La oferta precisa vincula al vendedor (Ley 17.250, art. 12) y la factura prueba el contrato (Decreto 244/000). Qué reclamar y la plantilla para el MEF.'
 
 defineOgImageComponent('Cambio', {
   title: 'Sodimac canceló tu compra',
