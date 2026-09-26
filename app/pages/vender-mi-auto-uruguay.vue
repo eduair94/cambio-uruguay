@@ -409,7 +409,7 @@ const withoutTrim = computed(() => opportunities.value?.stats.excluded.no_trim ?
 const canonical = `https://cambio-uruguay.com${CAR_SELL_PATH}`
 const title = 'Vender tu auto usado en Uruguay'
 const description =
-  'Cuánto pedir por tu auto usado en Uruguay, qué suma y qué resta en el precio, cuánto vas a terminar bajando y cuánto te cuesta esperar, medido sobre los avisos vigentes.'
+  'Tu precio lo fijan los otros avisos del mismo modelo y año, no una tabla: los tres números del tasador, cuánto vas a bajar y cuánto cuesta esperar.'
 
 useSeoMeta({
   title: `${title} | Cambio Uruguay`,

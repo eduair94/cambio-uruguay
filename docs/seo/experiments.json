@@ -642,6 +642,36 @@
         "cuanto sale el certificado de antecedentes"
       ],
       "hypothesis": "Quinta corrida del trinquete de descripciones: las tres mas largas que quedaban (233, 231 y 231 caracteres) gastaban el renglon que el SERP publica en enumerar o en describir lo que la pagina es, y dejaban del lado cortado el dato que decide el clic -que la carga de la prueba es del emisor, el 1,64 % de los dos puntos de IVA, y las 26,50 y 53,10 UI del certificado-. Ahora las tres arrancan por ese dato y entran enteras en 155 caracteres. Ninguna cifra es nueva. La apuesta es la misma que midio la cuarta corrida: mismo puesto, mas clics."
+    },
+    {
+      "id": "descripciones-del-tramo-contenido-por-tramo",
+      "shippedOn": "2026-09-26",
+      "routes": [
+        "/comisiones-de-transferencia-uruguay",
+        "/alquilar-sin-recibo-de-sueldo",
+        "/cambiar-de-mutualista-uruguay",
+        "/que-empresa-abrir-uruguay",
+        "/declarar-compra-exterior-uruguay",
+        "/importar-a-uruguay-siendo-extranjero",
+        "/vender-mi-auto-uruguay",
+        "/cuanto-sale-el-pasaporte-uruguayo",
+        "/factura-de-ute-uruguay",
+        "/plan-de-vida-uruguay",
+        "/me-cobran-algo-que-no-autorice"
+      ],
+      "queries": [
+        "comision por transferir dolares entre bancos uruguay",
+        "alquilar sin recibo de sueldo uruguay",
+        "cuando me puedo cambiar de mutualista",
+        "pasarse a asse en cualquier momento",
+        "tope monotributo 2026",
+        "como declarar una compra del exterior uruguay",
+        "importar a uruguay siendo extranjero",
+        "cuanto sale el pasaporte uruguayo",
+        "por que sube la factura de ute",
+        "me cobran algo que no autorice"
+      ],
+      "hypothesis": "Octava corrida del trinquete de descripciones, y la primera elegida por TRAMO y no por largo: las once que quedaban del tramo contenido (8x el promedio del sitio por vista) de las 24 pasadas de 155 caracteres. Seis gastaban el renglon que el SERP publica en el formato o en la pregunta; cinco tenian la respuesta adelante pero cortaban el dato que la decide. Ahora entran enteras y arrancan por ese dato: la exoneracion Itau-Prex y los $ 45 de la vuelta, el certificado contable con el 40 % de ANDA, el calendario por digito mas ASSE en cualquier momento, los topes de monotributo y Literal E, Ahiva contra el portal del courier, la franquicia que no existe sin cedula, el 4,0 % del Dto. 339/025 y las tarifas del pasaporte. Ninguna cifra es nueva. Misma apuesta que midio la cuarta corrida: mismo puesto, mas clics, y esta vez sobre el tramo que mas rinde por vista."
     }
   ]
 }

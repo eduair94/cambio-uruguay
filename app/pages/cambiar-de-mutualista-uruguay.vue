@@ -402,8 +402,11 @@ const canonicalUrl = 'https://cambio-uruguay.com/cambiar-de-mutualista-uruguay'
 const title = 'Cambiar de mutualista: el mes de tu cédula'
 // El texto largo de antes (450 caracteres) nunca se mostraba entero: Google corta cerca de 155, y
 // la consulta que trae visitas es "cuándo me puedo cambiar de mutualista". La respuesta va primero.
+// Segundo recorte (179 → 144): entraba la respuesta del calendario pero no la excepción, que es la
+// otra mitad de la consulta y la que el lector no espera. Lo que salió — «Calendario BPS y las
+// salidas fuera de fecha» — nombraba el formato; ASSE en cualquier momento es el dato.
 const description =
-  'Te podés cambiar de mutualista en el mes que le toca al último dígito de tu cédula, con 23 meses en tu prestador. Calendario BPS y las salidas fuera de fecha, como pasarte a ASSE.'
+  'Te cambiás de mutualista en el mes que le toca al último dígito de tu cédula, con 23 meses de permanencia; a ASSE, en cualquier momento del año.'
 
 defineOgImageComponent('Cambio', {
   title: 'Cambiar de mutualista',
