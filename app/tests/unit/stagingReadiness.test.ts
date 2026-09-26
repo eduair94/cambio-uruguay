@@ -38,8 +38,11 @@ writeFileSync(new URL('../child.pid', import.meta.url), String(process.pid))
 writeFileSync(new URL('../runtime-mode', import.meta.url), process.env.NODE_ENV || 'unset')
 writeFileSync(new URL('../heap-limit', import.meta.url), String(getHeapStatistics().heap_size_limit))
 const mode = ${JSON.stringify(mode)}
-// A broken probe must never leave this synthetic child alive for 120 seconds.
-setTimeout(() => process.exit(90), 5000).unref()
+// A broken probe must never leave this synthetic child alive for 120 seconds. 20s and not 5s:
+// this timer has to outlast the wait for the 'listening' marker below, which on a loaded runner
+// is seconds and not milliseconds. At 5s the margin between 'the child is up' and 'the child
+// gave up' was what CI ran out of.
+setTimeout(() => process.exit(90), 20000).unref()
 if (mode === 'exit-before-ready') process.exit(23)
 if (mode === 'error-before-ready') {
   process.send?.({ error: 'Synthetic warmup failure' })
@@ -206,8 +209,16 @@ describe.skipIf(process.platform === 'win32')('cancelling the staging probe on P
 
       try {
         // The child owns the port but has deliberately withheld IPC readiness.
+        //
+        // 8s and not 2s, because what this waits for is TWO Node cold starts —
+        // `spawn(node check-staging.cjs)`, which spawns `node server/index.mjs`, which writes
+        // three files, builds a server and only then writes the marker. Measured on the
+        // container: ~160ms idle, ~700ms at 4x CPU oversubscription, and 2.3–3.1s under heavy
+        // contention, which is where the 2s budget ran out and turned CI red on a diff of
+        // eleven meta descriptions. Two Node cold starts landing inside two seconds is not the
+        // property this test exists to protect; the assertions below are.
         await vi.waitFor(() => expect(existsSync(join(output, 'listening'))).toBe(true), {
-          timeout: 2_000,
+          timeout: 8_000,
         })
         expect(probeProcess.kill(signal)).toBe(true)
         const exit = await finished
@@ -235,6 +246,7 @@ describe.skipIf(process.platform === 'win32')('cancelling the staging probe on P
         }
       }
     },
-    12_000
+    // Covers the 8s marker wait plus the signal round trip and the 6s pid drain in `finally`.
+    30_000
   )
 })
