@@ -247,7 +247,7 @@ const fmtDate = (iso: string): string => {
 const canonicalUrl = 'https://cambio-uruguay.com/alquilar-sin-recibo-de-sueldo'
 const title = 'Alquilar sin recibo de sueldo en Uruguay'
 const description =
-  'Independiente, monotributista o con ingresos variables: qué garantía de alquiler te acepta y cuál no. FGA, ANDA, seguros, contrato sin garantía y depósito, con lo que pide cada una.'
+  'Un certificado contable reemplaza al recibo: ANDA acepta alquiler hasta el 40 % del ingreso nominal y Porto el 30 % del líquido. Qué garantía te sirve.'
 
 useSeoMeta({
   title: () => `${title} | Cambio Uruguay`,

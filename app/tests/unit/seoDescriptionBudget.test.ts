@@ -130,11 +130,13 @@ const measured = pageFiles()
   }))
   .filter((page): page is { file: string; description: string } => page.description !== null)
 
-// 141 el 2026-09-24 (133 el 2026-09-20), que es el conteo real y no un número redondo: el sobrante
-// de un piso más bajo alcanzaría para que una descripción nueva saliera cortada sin poner nada en
-// rojo. Sube con cada página nueva que declara su descripción como literal, y baja sólo si alguien
-// vuelve dinámica una que hoy se mide — que es justamente lo que este piso tiene que delatar.
-const RESOLVED = 141
+// 145 el 2026-09-26 (141 el 2026-09-24, 133 el 2026-09-20), que es el conteo real y no un número
+// redondo: el sobrante de un piso más bajo alcanzaría para que una descripción nueva saliera cortada
+// sin poner nada en rojo. Sube con cada página nueva que declara su descripción como literal, y baja
+// sólo si alguien vuelve dinámica una que hoy se mide — que es justamente lo que este piso tiene que
+// delatar. Las cuatro que subieron el piso desde el 24/9 se habían publicado sin volver a apretarlo,
+// que es la única forma en que este número se queda flojo.
+const RESOLVED = 145
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente
@@ -237,8 +239,47 @@ const RESOLVED = 141
 // declara límite de llamadas— estaba en el cuerpo y no en el snippet. La anécdota del pedido se
 // mudó a `/hecho-a-pedido`, que es la página cuyo tema es exactamente eso.
 //
-// Quedan 24 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 24
+// 24 → 13 el 2026-09-26, octava corrida: las ONCE que quedaban del tramo `contenido`, de 188 a 156
+// caracteres — o sea la tanda se eligió por TRAMO y no por largo, que es el cambio respecto de las
+// siete anteriores. Con el ratchet ya en el rango 156–192, lo que decide cuál recortar primero no es
+// cuántos caracteres sobran sino cuánto vale la vista que se gana: el tramo `contenido` rinde 8× el
+// promedio del sitio y el `directorio` 0,2× (`classes/revenueplan/value.ts`), así que las trece que
+// quedan —informes de mercado, endpoints, evoluciones de precio, tableros— pueden esperar.
+//
+// Seis de las once gastaban el primer renglón en el formato o en la pregunta en vez de la respuesta:
+// «Cuánto cobra cada banco y billetera…» cuando el hallazgo de la página es que Itaú↔Prex está
+// exonerado por nombre propio en los dos tarifarios y desde cualquier otro banco la vuelta cuesta
+// $ 45 o U$S 1,90; «Independiente, monotributista o con ingresos variables» cuando lo que desbloquea
+// el alquiler es el certificado contable (ANDA acepta hasta el 40 % del ingreso nominal, Porto el
+// 30 % del líquido); «Descubrí qué figura legal te conviene» cuando la compuerta es el tope
+// ($ 1.175.537 el monotributo unipersonal, 305.000 UI el Literal E, y arriba IVA e IRAE reales); «Paso a paso para declarar»
+// cuando la respuesta es Ahíva para el correo común y el portal del courier para el courier, con el
+// operador postal pagando a la DNA desde el 1/5/2026; «Guía 2026 para recibir compras» cuando lo
+// decisivo es que sin cédula uruguaya no hay franquicia (60 % hasta US$ 800, mínimo US$ 20); y «Por
+// qué sube tu factura de UTE», que es literalmente la pregunta y no el 4,0 % medio del Dto. 339/025
+// desde el 1/1/2026.
+//
+// Las otras cinco ya tenían la respuesta adelante y sobraba cola (`/cuanto-sale-el-pasaporte-uruguayo`
+// perdió un «vigentes»), o el dato del cuerpo no llegaba al snippet: `/cambiar-de-mutualista-uruguay`
+// entraba con el calendario por dígito pero cortaba la EXCEPCIÓN —a ASSE se pasa en cualquier
+// momento del año, Dto. 344/020 art. 17— que es la otra mitad de la misma consulta;
+// `/plan-de-vida-uruguay` describía el orden («lo esencial, la deuda cara, el colchón…») en vez de
+// decir por qué ese orden; `/me-cobran-algo-que-no-autorice` enumeraba los tres casos y dejaba
+// afuera que el que supervisa no es el que ordena devolver; y `/vender-mi-auto-uruguay` prometía
+// «medido sobre los avisos vigentes» sin decir la conclusión, que el precio lo fijan los otros
+// avisos del mismo modelo y año y no una tabla.
+//
+// Ninguna cifra es nueva: todas ya estaban en la descripción vieja o en el cuerpo de su página. Las
+// que no son literales en el `.vue` —el margen de negociación de `/vender-mi-auto-uruguay`, la tasa
+// media del BCU de `/plan-de-vida-uruguay`— NO se copiaron a la descripción a propósito: una cifra
+// viva congelada en un literal es el error recurrente del repo.
+//
+// `/fecha-de-cobro-bps-uruguay` (156, uno solo de más) SIGUE reservada hasta después del 2026-10-18:
+// su fila del libro de cambios está midiendo hasta esa fecha y tocarle la descripción ahora le
+// cambia el sujeto al experimento.
+//
+// Quedan 13 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
+const OVER_BUDGET = 13
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {

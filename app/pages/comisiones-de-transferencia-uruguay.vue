@@ -698,7 +698,7 @@ const faq: FaqItem[] = [
 // descripción, el H1 y la URL.
 const title = 'Comisiones de transferencia entre bancos'
 const description =
-  'Cuánto cobra cada banco y billetera uruguaya por transferir, con la fila textual de su tarifario, y cuánto queda realmente de la diferencia de pizarra al mover dólares entre instituciones.'
+  'Entre Itaú y Prex no se cobra nada; desde cualquier otro banco la vuelta a pesos cuesta $ 45 o U$S 1,90. El tarifario de cada uno, con la fila textual.'
 const canonicalUrl = 'https://cambio-uruguay.com/comisiones-de-transferencia-uruguay'
 
 useSeoMeta({

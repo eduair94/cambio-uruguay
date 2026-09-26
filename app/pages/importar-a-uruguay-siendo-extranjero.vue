@@ -622,7 +622,7 @@ const sources = [
 const canonicalUrl = 'https://cambio-uruguay.com/importar-a-uruguay-siendo-extranjero'
 const title = 'Importar a Uruguay siendo extranjero'
 const description =
-  'Guía 2026 para recibir compras en Uruguay durante una estadía temporal: qué cambia con o sin cédula uruguaya, impuestos desde Mercosur, Amazon y China, y cómo elegir courier.'
+  'Sin cédula uruguaya podés recibir envíos pero no usar la franquicia: 60 % hasta US$ 800 y mínimo US$ 20 por envío. Con cédula, la franquicia anual.'
 
 defineOgImageComponent('Cambio', {
   title: '¿Podés importar a Uruguay siendo extranjero?',

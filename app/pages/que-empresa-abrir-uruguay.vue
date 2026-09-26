@@ -2050,7 +2050,7 @@ const sources = computed<SourceEntry[]>(() => {
 const canonicalUrl = 'https://cambio-uruguay.com/que-empresa-abrir-uruguay'
 const title = 'Qué empresa abrir: monotributo, SAS o SRL'
 const description =
-  'Descubrí qué figura legal te conviene según lo que facturás: monotributo, unipersonal Literal E, IRPF, SAS o SRL. Costos reales 2026, topes y responsabilidad, con la norma citada.'
+  'El monotributo unipersonal llega a $ 1.175.537 al año y el Literal E a 305.000 UI; arriba de ahí, IVA e IRAE reales. Costos 2026 con la norma citada.'
 
 defineOgImageComponent('Cambio', {
   title: 'Qué empresa abrir en Uruguay',

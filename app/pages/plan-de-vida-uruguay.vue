@@ -577,7 +577,7 @@ const faq: FaqItem[] = [
 
 const title = 'Cómo distribuir tu sueldo en Uruguay'
 const description =
-  'En qué orden conviene usar cada peso del sueldo: lo esencial, la deuda cara, el colchón y el excedente, con la tasa pública y fechada que justifica cada paso.'
+  'No es el 50/30/20: es un orden. Pagar la deuda de consumo rinde más que colocar la plata, y cada paso lleva su tasa pública y fechada del BCU.'
 const canonicalUrl = 'https://cambio-uruguay.com/plan-de-vida-uruguay'
 
 useSeoMeta({

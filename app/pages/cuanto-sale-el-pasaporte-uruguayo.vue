@@ -269,7 +269,7 @@ const RELATED = [
 const canonicalUrl = 'https://cambio-uruguay.com/cuanto-sale-el-pasaporte-uruguayo'
 const title = 'Cuánto sale el pasaporte uruguayo: $3.703'
 const description =
-  'Renovar el pasaporte uruguayo sale $3.703 más $175 del certificado: $3.878. Primera vez, $5.630. Urgente, $8.609 y $12.114. Aranceles vigentes desde el 1/7/2026.'
+  'Renovar el pasaporte uruguayo sale $3.703 más $175 del certificado: $3.878. Primera vez, $5.630. Urgente, $8.609 y $12.114. Aranceles desde el 1/7/2026.'
 
 defineOgImageComponent('Cambio', {
   title: 'Cuánto sale el pasaporte uruguayo',

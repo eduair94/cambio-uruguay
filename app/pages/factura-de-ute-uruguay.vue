@@ -605,11 +605,13 @@ const title = 'Factura de UTE alta: qué tarifa te conviene'
  * Ojo con el cierre: esta frase es lo que se ve en Google y al compartir, y una parte grande de la
  * audiencia está en Montevideo, donde el saneamiento no viene en la factura de OSE. Prometer ahí
  * «el saneamiento te cobra el agua dos veces» es exactamente el error que se corrigió en el h2.
- * Recortada a ≤160 caracteres (SEO): sigue nombrando OSE, Montevideo, la Intendencia y el decreto,
- * que es lo que exige `householdBills.test.ts`.
+ * Recortada a ≤155 caracteres, con el AJUSTE adelante (SEO): «Por qué sube tu factura de UTE» era
+ * la pregunta, no la respuesta; el 4,0 % medio del decreto desde el 1/1/2026 es el dato, y ya
+ * estaba en `householdBills.ts`. Sigue nombrando OSE, Montevideo, la Intendencia y el decreto, que
+ * es lo que exige `householdBills.test.ts`.
  */
 const description =
-  'Por qué sube tu factura de UTE (Decreto 339/025): comparador Simple, Doble y Triple Horario, y quién cobra el saneamiento: OSE o la Intendencia de Montevideo.'
+  'UTE subió 4,0 % promedio desde el 1/1/2026 (Dto. 339/025): comparador Simple, Doble y Triple Horario; el saneamiento, OSE o la Intendencia de Montevideo.'
 
 defineOgImageComponent('Cambio', {
   title: '¿Por qué te vino cara la factura de UTE?',

@@ -602,7 +602,7 @@ const relatedLinks = [
 const canonicalUrl = 'https://cambio-uruguay.com/declarar-compra-exterior-uruguay'
 const title = 'Declarar compras del exterior en Uruguay'
 const description =
-  'Paso a paso para declarar compras del exterior en Uruguay sin courier, por Correo Uruguayo, Amazon Global, Temu o courier. Quién hace el trámite y cuándo se necesita despachante.'
+  'Por correo común registrás la compra en Ahíva; por courier, en el portal del courier. Desde el 1/5/2026 el operador postal paga los tributos a la DNA.'
 
 defineOgImageComponent('Cambio', {
   title: 'Cómo declarar una compra del exterior',
