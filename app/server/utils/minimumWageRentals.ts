@@ -80,20 +80,23 @@ const fold = (value: string): string =>
     .replace(/\+/g, ' ')
     .replace(/[^\S\n]+/g, ' ')
 
+// "Servicios incluidos" quiere decir luz Y agua: "wifi incluido, luz aparte" o "con luz incluida"
+// dejan la cuenta de la luz sin saber, y "gastos comunes incluidos" no es un servicio.
 const INCLUIDOS =
-  /\b(?:servicios|luz|agua|wifi|internet|gastos|ute|ose)\b[^.\n]{1,40}?\bincluid[oa]s?\b|\btodo incluido\b|\bincluye (?:la )?(?:luz|agua|wifi|internet|servicios|gastos)\b|\b(?:luz|agua|wifi)\b[^.\n]{1,30}?\ben el precio\b/g
-const NO_INCLUIDOS = /\bno (?:estan |van |son )?incluid[oa]s?\b|\bno incluye\b/
+  /\btodo incluido\b|\b(?:servicios?|gastos) incluid[oa]s?\b|\b(?:luz\b[^.\n]{1,25}?\bagua|agua\b[^.\n]{1,25}?\bluz)\b[^.\n]{1,30}?\b(?:incluid[oa]s?|en el precio)\b|\bincluye (?:la )?(?:luz y (?:el |la )?agua|agua y (?:la )?luz)\b/g
+const NO_INCLUIDOS =
+  /\bno (?:estan |van |son )?incluid[oa]s?\b|\bno incluye\b|\b(?:excepto|salvo|menos|aparte|a cargo)\b/
 
 // "Baño compartido" o "cocina compartida" es una pieza propia en una casa compartida: no cuenta.
 const COMPARTIDA =
   /\b(?:habitacion(?:es)?|piezas?|cuartos?|dormitorios?) compartid[oa]s?\b|\bcamas? en (?:habitacion|pieza|cuarto|dormitorio)\b|\bcuchetas?\b|\bliteras?\b|\bindividuales? y compartid[oa]s?\b/
 const PENSION = /\b(?:pension|residencia|alojamiento|hostel|hogar estudiantil)\b/
 const MIXTO =
-  /\b(?:chicos y chicas|chicas y chicos|hombres y mujeres|mujeres y hombres|mixt[ao]s?)\b/
+  /\b(?:chic[oa]s (?:y|o) chic[oa]s|hombres? (?:y|o) mujer(?:es)?|mujer(?:es)? (?:y|o) hombres?|damas (?:y|o) caballeros|caballeros (?:y|o) damas|mixt[ao]s?|ambos sexos)\b/
 const MUJERES =
   /\b(?:femenin[ao]s?|(?:para|a) (?:mujeres|chicas|senoritas|damas|una mujer|mujer sola|senora sola))\b/
-const HOMBRES =
-  /\b(?:masculin[ao]s?|(?:para|a) (?:hombres?|varones|caballeros|sr|senor)|hombre solo)\b/
+// Sin "a Sr./señor" a secas: "consultas a Sr. Pérez" no restringe a nadie.
+const HOMBRES = /\b(?:masculin[ao]s?|(?:para|a) (?:hombres?|varones|caballeros)|hombre solo)\b/
 const ESTUDIANTES = /\b(?:estudiantil|estudiantes|universitari[ao]s)\b/
 
 export function roomTextFlags(
@@ -110,8 +113,15 @@ export function roomTextFlags(
   let serviciosIncluidos = false
   for (const match of text.matchAll(INCLUIDOS)) {
     const start = match.index ?? 0
-    const around = text.slice(Math.max(0, start - 25), start + match[0].length + 5)
-    if (!NO_INCLUIDOS.test(around)) serviciosIncluidos = true
+    const end = start + match[0].length
+    // La negación se busca en la misma oración: "todo incluido excepto luz", "no incluye".
+    const before =
+      text
+        .slice(Math.max(0, start - 25), start)
+        .split(/[.\n]/)
+        .pop() ?? ''
+    const after = text.slice(end, end + 35).split(/[.\n]/)[0] ?? ''
+    if (!NO_INCLUIDOS.test(`${before}${match[0]}${after}`)) serviciosIncluidos = true
   }
   const mixto = MIXTO.test(text)
   const restriccion: Restriccion | null =
@@ -281,20 +291,37 @@ const FUERA_DE_URUGUAY = /\blivramento\b/
 const enUruguay = (row: MinimumWageRow): boolean =>
   row.department.trim() !== '' && !FUERA_DE_URUGUAY.test(fold(`${row.title} ${row.neighborhood}`))
 
+// Palabras que dicen qué es y no cuál es: un título hecho sólo de ellas no identifica a nadie.
+const GENERICAS = new Set(
+  (
+    'alquiler alquilo alquila alquilan alquilamos se de del en una un la el las los con y para por ' +
+    'habitacion habitaciones pieza piezas cuarto cuartos apartamento apto casa monoambiente ' +
+    'dormitorio dormitorios mensual mes persona individual privada amplia amplio comoda comodo ' +
+    'linda lindo luminosa luminoso'
+  ).split(' ')
+)
+
 /**
- * Dos avisos con el mismo título, precio y lugar son, a efectos de esta página, el mismo: una
- * inmobiliaria que publica siete unidades iguales o una residencia que repite su aviso en Facebook
- * llenaban la lista con la misma tarjeta. Se muestra una, con cuántas son.
+ * Dos avisos del mismo portal con el mismo título, precio y lugar son, a efectos de esta página, el
+ * mismo: una inmobiliaria que publica siete unidades iguales o una residencia que repite su aviso
+ * en Facebook llenaban la lista con la misma tarjeta. Se muestra una, con cuántas son. Nunca se
+ * juntan portales distintos ni títulos genéricos ("Alquilo habitación"): ahí el precio y el texto
+ * no prueban que sean el mismo aviso, y la tarjeta enlazaría a uno solo de dos avisos distintos.
  */
-const claveIgual = (row: MinimumWageListing): string =>
-  [
-    fold(row.title).trim(),
+const claveIgual = (row: MinimumWageListing): string => {
+  const titulo = fold(row.title).trim()
+  const palabras = titulo.split(/[^a-z0-9]+/).filter(Boolean)
+  if (palabras.every(palabra => GENERICAS.has(palabra))) return `unico|${row.key}`
+  return [
+    row.source,
+    titulo,
     row.tipo,
     row.alquiler,
     row.gastosComunes ?? '',
     fold(row.department).trim(),
     fold(row.neighborhood).trim(),
   ].join('|')
+}
 
 export function buildMinimumWageDataset(input: {
   generatedAt: string
@@ -340,6 +367,52 @@ function planes(forma: Forma, palancas: Palancas): Map<SmnRegion, PlanDelMes> {
   return new Map(forma.regiones.map(region => [region, planDelMes(forma.id, region, palancas)]))
 }
 
+/** Los avisos de una forma que entran en su cuenta, ordenados y con los iguales juntos. */
+function evaluarForma(
+  forma: Forma,
+  rows: MinimumWageRow[],
+  palancas: Palancas,
+  departamento: string,
+  joven: boolean
+): { items: MinimumWageItem[]; sinPalancas: number } {
+  const con = planes(forma, palancas)
+  const sin = planes(forma, PALANCAS_NINGUNA)
+  const sorted: MinimumWageItem[] = []
+  let sinPalancas = 0
+  for (const row of rows) {
+    if (!enForma(row, forma, departamento)) continue
+    const region = regionDe(row.department)
+    const evaluacion = evaluarAviso(con.get(region)!, row)
+    if (evaluarAviso(sin.get(region)!, row).veredicto !== 'no-cierra') sinPalancas++
+    if (evaluacion.veredicto === 'no-cierra') continue
+    const { advertId: _advertId, ...listing } = row
+    sorted.push({
+      ...listing,
+      evaluacion,
+      puertas: puertasDeEntrada(forma.id, row, joven),
+      iguales: 1,
+    })
+  }
+  sorted.sort(
+    (a, b) =>
+      VEREDICTO_ORDEN[a.evaluacion.veredicto] - VEREDICTO_ORDEN[b.evaluacion.veredicto] ||
+      a.evaluacion.costo - b.evaluacion.costo ||
+      a.key.localeCompare(b.key)
+  )
+  // Después de ordenar: de un grupo de iguales queda el que mejor cierra.
+  const grupos = new Map<string, MinimumWageItem>()
+  for (const item of sorted) {
+    const clave = claveIgual(item)
+    const primero = grupos.get(clave)
+    if (primero) primero.iguales++
+    else grupos.set(clave, item)
+  }
+  return { items: [...grupos.values()], sinPalancas }
+}
+
+const avisosDe = (items: MinimumWageItem[]): number =>
+  items.reduce((total, item) => total + item.iguales, 0)
+
 export function queryMinimumWage(
   dataset: MinimumWageDataset,
   input: Record<string, unknown>,
@@ -347,60 +420,36 @@ export function queryMinimumWage(
 ): MinimumWageResponse {
   const query = normalizeMinimumWageQuery(input)
   const visible = dataset.rows.filter(row => !hidden(row.advertId))
-  let selectedItems: MinimumWageItem[] = []
+  const forma = FORMAS.find(item => item.id === query.forma)!
 
-  const formas: FormaResumen[] = FORMAS.map(forma => {
-    const con = planes(forma, query.palancas)
-    const sin = planes(forma, PALANCAS_NINGUNA)
-    const sorted: MinimumWageItem[] = []
-    const sinPalancas = new Set<string>()
-    for (const row of visible) {
-      if (!enForma(row, forma, query.departamento)) continue
-      const region = regionDe(row.department)
-      const evaluacion = evaluarAviso(con.get(region)!, row)
-      if (evaluarAviso(sin.get(region)!, row).veredicto !== 'no-cierra')
-        sinPalancas.add(claveIgual(row))
-      if (evaluacion.veredicto === 'no-cierra') continue
-      const { advertId: _advertId, ...listing } = row
-      sorted.push({
-        ...listing,
-        evaluacion,
-        puertas: puertasDeEntrada(forma.id, row, query.joven),
-        iguales: 1,
-      })
-    }
-    sorted.sort(
-      (a, b) =>
-        VEREDICTO_ORDEN[a.evaluacion.veredicto] - VEREDICTO_ORDEN[b.evaluacion.veredicto] ||
-        a.evaluacion.costo - b.evaluacion.costo ||
-        a.key.localeCompare(b.key)
-    )
-    // Después de ordenar: de un grupo de iguales queda el que mejor cierra.
-    const grupos = new Map<string, MinimumWageItem>()
-    for (const item of sorted) {
-      const clave = claveIgual(item)
-      const primero = grupos.get(clave)
-      if (primero) primero.iguales++
-      else grupos.set(clave, item)
-    }
-    const items = [...grupos.values()]
-    if (forma.id === query.forma) selectedItems = items
+  // Las tarjetas de las cuatro formas describen el país: el departamento elegido filtra la lista
+  // de avisos, no los resúmenes (si no, "Solo en Montevideo" diría "ninguno" con Salto elegido).
+  // Los conteos son de AVISOS: una tarjeta que junta iguales cuenta todos los que junta.
+  const formas: FormaResumen[] = FORMAS.map(item => {
+    const { items, sinPalancas } = evaluarForma(item, visible, query.palancas, '', query.joven)
     const counts = new Map<string, number>()
-    for (const item of items) counts.set(item.department, (counts.get(item.department) ?? 0) + 1)
+    for (const row of items)
+      counts.set(row.department, (counts.get(row.department) ?? 0) + row.iguales)
     return {
-      id: forma.id,
-      cierran: items.filter(item => item.evaluacion.veredicto === 'cierra').length,
-      condicionados: items.filter(item => item.evaluacion.veredicto === 'cierra-si').length,
-      desde: items.length ? Math.min(...items.map(item => item.evaluacion.costo)) : null,
+      id: item.id,
+      cierran: avisosDe(items.filter(row => row.evaluacion.veredicto === 'cierra')),
+      condicionados: avisosDe(items.filter(row => row.evaluacion.veredicto === 'cierra-si')),
+      desde: items.length ? Math.min(...items.map(row => row.evaluacion.costo)) : null,
       porDepartamento: [...counts]
         .map(([department, count]) => ({ department, count }))
         .sort((a, b) => b.count - a.count || a.department.localeCompare(b.department, 'es'))
         .slice(0, 5),
-      sinPalancas: sinPalancas.size,
+      sinPalancas,
     }
   })
 
-  const forma = FORMAS.find(item => item.id === query.forma)!
+  const selectedItems = evaluarForma(
+    forma,
+    visible,
+    query.palancas,
+    query.departamento,
+    query.joven
+  ).items
   const pages = Math.ceil(selectedItems.length / PER_PAGE)
   const page = Math.min(query.page, Math.max(1, pages))
   const departamentos = [
@@ -422,6 +471,7 @@ export function queryMinimumWage(
     total: selectedItems.length,
     page,
     pages,
+    avisos: avisosDe(selectedItems),
     excluidosPorPrecio: dataset.excluidosPorPrecio,
     departamentos,
   }

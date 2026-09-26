@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   AGUINALDO_MENSUAL,
@@ -7,6 +9,7 @@ import {
   PALANCAS_TODAS,
   SERVICIOS_DESGLOSE,
   VACACIONAL_MENSUAL,
+  efectoPalanca,
   evaluarAviso,
   minimumWageQueryToParams,
   normalizeMinimumWageQuery,
@@ -25,6 +28,19 @@ import {
   PUERTAS_INFO,
   pesos,
 } from '../../utils/minimumWageCopy'
+
+describe('la página', () => {
+  // Un renombre de tipo (Fuente → SmnFuente) reemplazó también el texto de los enlaces: la página
+  // publicaba "SmnFuente." al pie de cada decisión y cada garantía.
+  it('no muestra nombres de tipos como texto', () => {
+    const source = readFileSync(
+      join(__dirname, '..', '..', 'pages', 'vivir-con-el-salario-minimo-uruguay.vue'),
+      'utf8'
+    )
+    const template = source.slice(0, source.search(/<script\b/))
+    expect(template).not.toMatch(/>[^<{]*\bSmn[A-Z]/)
+  })
+})
 
 describe('copy', () => {
   it('cada palanca tiene fuente https y un valor positivo', () => {
@@ -123,6 +139,21 @@ describe('planDelMes', () => {
     expect(dos.gasto).toBe(uno.gasto * 2)
     expect(dos.servicio).toBe(
       Math.round(SERVICIOS_DESGLOSE.ute * 1.15) + Math.round(SERVICIOS_DESGLOSE.ose * 1.15)
+    )
+  })
+})
+
+describe('efectoPalanca', () => {
+  it('es lo que la palanca mueve el techo de ESA forma', () => {
+    expect(efectoPalanca('pieza', 'montevideo', PALANCAS_TODAS, 'sinInternet')).toBe(0)
+    expect(efectoPalanca('solo-interior', 'interior', PALANCAS_TODAS, 'sinInternet')).toBe(
+      SERVICIOS_DESGLOSE.internet
+    )
+    expect(efectoPalanca('pieza', 'montevideo', PALANCAS_TODAS, 'caminar')).toBe(
+      TRANSPORTE_MES - COST_MODEL.aPieBiciMonthly
+    )
+    expect(efectoPalanca('dos-sueldos', 'montevideo', PALANCAS_NINGUNA, 'caminar')).toBe(
+      2 * (TRANSPORTE_MES - COST_MODEL.aPieBiciMonthly)
     )
   })
 })
@@ -237,6 +268,21 @@ describe('query', () => {
     expect(q.page).toBe(1)
     expect(q.palancas.caminar).toBe(true)
     expect(q.departamento).toBe('')
+  })
+  it('el departamento tiene que ser uno de los 19: texto libre no entra (clave de caché)', () => {
+    expect(normalizeMinimumWageQuery({ departamento: 'Montevideopage2' }).departamento).toBe('')
+    expect(normalizeMinimumWageQuery({ departamento: 'paysandu' }).departamento).toBe('Paysandú')
+  })
+  it('un departamento fuera de la región de la forma se ignora', () => {
+    expect(
+      normalizeMinimumWageQuery({ forma: 'solo-montevideo', departamento: 'Salto' }).departamento
+    ).toBe('')
+    expect(
+      normalizeMinimumWageQuery({ forma: 'solo-interior', departamento: 'Montevideo' }).departamento
+    ).toBe('')
+    expect(
+      normalizeMinimumWageQuery({ forma: 'dos-sueldos', departamento: 'Montevideo' }).departamento
+    ).toBe('Montevideo')
   })
   it('ida y vuelta por la URL', () => {
     const q = normalizeMinimumWageQuery({

@@ -20,7 +20,7 @@ import { LICENCIA_BASE_DIAS, simularSalarioVacacional } from './salarioVacaciona
 import { FGA, UR } from './stateSupport'
 import { FGA_JOVENES_MAX_INCOME_SHARE, GUARANTEE_OPTIONS } from './rentalGuarantee'
 import { HOUSING_GUARANTEE_CAPS } from './housingAdvisorFigures'
-import type { RentalSource } from './rentals'
+import { RENTAL_DEPARTMENTS, canonicalRentalDepartment, type RentalSource } from './rentals'
 
 export const MINIMUM_WAGE_PATH = '/vivir-con-el-salario-minimo-uruguay'
 
@@ -268,6 +268,26 @@ export function planDelMes(formaId: FormaId, region: SmnRegion, palancas: Palanc
   }
 }
 
+/** El techo que importa para la forma: el de la pieza o el de alquiler más gastos comunes. */
+export const techoDeForma = (plan: PlanDelMes): number =>
+  formaPorId(plan.forma).tipos.includes('habitacion') ? plan.techoPieza : plan.techoVivienda
+
+/**
+ * Cuánto sube el techo de ESTA forma una palanca, con las demás como están. Es lo que la página
+ * imprime al lado de cada interruptor: sin internet no mueve nada en una pieza, y en un hogar de
+ * dos sueldos caminar vale por los dos.
+ */
+export function efectoPalanca(
+  formaId: FormaId,
+  region: SmnRegion,
+  palancas: Palancas,
+  id: keyof Palancas
+): number {
+  const con = planDelMes(formaId, region, { ...palancas, [id]: true })
+  const sin = planDelMes(formaId, region, { ...palancas, [id]: false })
+  return techoDeForma(con) - techoDeForma(sin)
+}
+
 // ─── Un aviso contra la cuenta ───────────────────────────────────────────────
 
 export type Veredicto = 'cierra' | 'cierra-si' | 'no-cierra'
@@ -376,8 +396,18 @@ const flag = (value: unknown, fallback: boolean): boolean =>
 
 export function normalizeMinimumWageQuery(input: Record<string, unknown> = {}): MinimumWageQuery {
   const forma = FORMAS.find(item => item.id === input.forma)?.id ?? 'pieza'
+  // Sólo uno de los 19 departamentos: un texto libre multiplicaría las claves de la caché (y Nitro
+  // las escapa quitando todo lo que no es letra o dígito, así que dos textos distintos colisionan).
+  // Un departamento fuera de la región de la forma se ignora en vez de vaciar la lista.
+  const canonical =
+    typeof input.departamento === 'string'
+      ? canonicalRentalDepartment(input.departamento.trim().slice(0, 60))
+      : ''
   const departamento =
-    typeof input.departamento === 'string' ? input.departamento.trim().slice(0, 60) : ''
+    RENTAL_DEPARTMENTS.includes(canonical) &&
+    formaPorId(forma).regiones.includes(regionDe(canonical))
+      ? canonical
+      : ''
   const page = Number(input.page)
   const palancas = Object.fromEntries(
     PALANCA_IDS.map(id => [id, flag(input[PALANCA_PARAM[id]], PALANCAS_TODAS[id])])
@@ -458,6 +488,8 @@ export interface MinimumWageResponse {
   total: number
   page: number
   pages: number
+  /** Avisos de la forma elegida: `total` cuenta tarjetas, y una tarjeta puede juntar iguales. */
+  avisos: number
   /** Avisos que no se muestran porque su precio no puede ser el de esa vivienda. */
   excluidosPorPrecio: number
   departamentos: string[]

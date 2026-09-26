@@ -41,8 +41,23 @@ describe('roomTextFlags', () => {
     expect(roomTextFlags('Pieza', 'con gastos incluidos, a sr mayor solo').serviciosIncluidos).toBe(
       true
     )
-    expect(roomTextFlags('Pieza', 'Luz y wifi en el precio').serviciosIncluidos).toBe(true)
+    expect(roomTextFlags('Pieza', 'Luz y agua en el precio').serviciosIncluidos).toBe(true)
+    expect(
+      roomTextFlags('HABITACIÓN AMOBLADA CON TODOS LOS GASTOS INCLUÍDOS', '').serviciosIncluidos
+    ).toBe(true)
+    expect(roomTextFlags('Cama', 'Incluye agua y luz.').serviciosIncluidos).toBe(true)
     expect(roomTextFlags('Pieza', 'Servicios no incluidos.').serviciosIncluidos).toBe(false)
+  })
+  it('una inclusión parcial no es "servicios incluidos"', () => {
+    for (const texto of [
+      'wifi incluido, luz y agua aparte',
+      'Precio con todo incluido excepto luz',
+      'gastos comunes incluidos',
+      'Luz y wifi en el precio',
+      'Con luz incluida, patio',
+      'todo incluido salvo la luz, que se paga aparte',
+    ])
+      expect(roomTextFlags('Pieza', texto).serviciosIncluidos, texto).toBe(false)
     expect(roomTextFlags('Pieza', 'No incluye luz ni agua').serviciosIncluidos).toBe(false)
     expect(roomTextFlags('Pieza', 'Alquilo pieza en Unión').serviciosIncluidos).toBe(false)
   })
@@ -73,6 +88,10 @@ describe('roomTextFlags', () => {
     expect(roomTextFlags('Residencia Estudiantil En El Centro', '').restriccion).toBe('estudiantes')
     expect(roomTextFlags('Residencia', 'para chicos y chicas del interior').restriccion).toBe(null)
     expect(roomTextFlags('Alquilo habitación', 'zona centro').restriccion).toBe(null)
+    expect(roomTextFlags('Pieza', 'Consultas a Sr. Pérez').restriccion).toBe(null)
+    expect(roomTextFlags('Pieza', 'ideal para chicas o chicos').restriccion).toBe(null)
+    expect(roomTextFlags('Pieza', 'para hombres o mujeres').restriccion).toBe(null)
+    expect(roomTextFlags('Pieza', 'aceptamos ambos sexos').restriccion).toBe(null)
   })
 })
 
@@ -325,6 +344,7 @@ describe('queryMinimumWage', () => {
     expect(response.total).toBe(0)
     expect(response.items).toEqual([])
     expect(response.page).toBe(1)
+    expect(response.query.departamento).toBe('')
   })
   it('un aviso reportado como no disponible no se muestra', () => {
     const response = queryMinimumWage(dataset, {}, id => id === 'rent:facebook:1')
@@ -379,8 +399,45 @@ describe('queryMinimumWage', () => {
       ['i1', 2],
       ['i3', 1],
     ])
+    // Las tarjetas son 2, los avisos 3: los conteos que dicen "avisos" cuentan avisos.
     expect(response.total).toBe(2)
-    expect(response.formas.find(f => f.id === 'pieza')!.cierran).toBe(2)
+    expect(response.avisos).toBe(3)
+    expect(response.formas.find(f => f.id === 'pieza')!.cierran).toBe(3)
+  })
+  it('no junta avisos de portales distintos ni títulos genéricos', () => {
+    const distintos = buildMinimumWageDataset({
+      ...dataset,
+      budget: [],
+      rooms: [
+        row({ key: 'g1', title: 'Residencia Luna', advertId: 'rent:facebook:21' }),
+        row({
+          key: 'g2',
+          title: 'Residencia Luna',
+          source: 'mercadolibre',
+          advertId: 'rent:mercadolibre:22',
+        }),
+        row({ key: 'g3', title: 'Habitación', advertId: 'rent:facebook:23' }),
+        row({ key: 'g4', title: 'Alquilo habitación', advertId: 'rent:facebook:24' }),
+        row({ key: 'g5', title: 'Alquilo habitación', advertId: 'rent:facebook:25' }),
+      ],
+      analysisListings: [],
+    })
+    const response = queryMinimumWage(distintos, {}, none)
+    expect(response.items.every(i => i.iguales === 1)).toBe(true)
+    expect(response.total).toBe(5)
+  })
+  it('las tarjetas de las formas describen el país: el departamento sólo filtra la lista', () => {
+    const todo = queryMinimumWage(dataset, { forma: 'solo-interior' }, none)
+    const colonia = queryMinimumWage(
+      dataset,
+      { forma: 'solo-interior', departamento: 'Colonia' },
+      none
+    )
+    expect(colonia.formas).toEqual(todo.formas)
+    expect(colonia.items.map(i => i.key)).toEqual(['c1'])
+    const salto = queryMinimumWage(dataset, { forma: 'solo-interior', departamento: 'Salto' }, none)
+    expect(salto.total).toBe(0)
+    expect(salto.formas).toEqual(todo.formas)
   })
   it('lista los departamentos con avisos de los tipos de la forma', () => {
     expect(queryMinimumWage(dataset, { forma: 'dos-sueldos' }, none).departamentos).toEqual([

@@ -24,13 +24,12 @@
       </p>
       <p v-if="data" class="text-body-1 mb-0">
         <template v-if="formasQueCierran.length">
-          Hoy la cuenta cierra en
+          Hoy entran avisos en
           <strong>{{ formasQueCierran.length }} de las {{ FORMAS.length }} formas</strong>, con
-          {{ resumenFormas }}. Lo que sobra, cuando sobra, es poco: cada aviso dice cuánto.
+          {{ resumenFormas }}. {{ notaCondicionados }}
         </template>
         <template v-else>
-          Con las decisiones que marcaste, hoy ningún aviso vigente entra en la cuenta. Probá
-          activar las de abajo.
+          {{ sinNinguna }}
         </template>
       </p>
     </header>
@@ -62,7 +61,8 @@
             </p>
             <p v-else class="text-body-2 mb-1"><strong>Hoy no entra ningún aviso.</strong></p>
             <p class="text-body-2 text-medium-emphasis mb-3">
-              Sin las decisiones de la cuenta: {{ resumenDe(item.id)!.sinPalancas }}.
+              Sin las decisiones de la cuenta: {{ miles(resumenDe(item.id)!.sinPalancas) }}
+              {{ resumenDe(item.id)!.sinPalancas === 1 ? 'aviso' : 'avisos' }}.
             </p>
           </template>
           <VBtn
@@ -83,11 +83,11 @@
         <section aria-labelledby="smn-cuenta" class="smn-panel">
           <h2 id="smn-cuenta" class="text-h5 mb-1">La cuenta del mes</h2>
           <p class="text-body-2 text-medium-emphasis mb-3">
-            Cada decisión sube el techo lo que dice al lado, por persona.
+            Cada decisión sube el techo de esta forma lo que dice al lado.
           </p>
           <div class="smn-palancas">
             <VSwitch
-              v-for="id in PALANCA_IDS"
+              v-for="id in palancasVisibles"
               :key="id"
               :model-value="state.palancas[id]"
               color="primary"
@@ -99,9 +99,7 @@
               <template #label>
                 <span class="text-body-2">
                   {{ PALANCAS_INFO[id].titulo }}
-                  <span class="text-medium-emphasis">
-                    (+{{ pesos(PALANCAS_INFO[id].valor(regionPrincipal)) }})
-                  </span>
+                  <span class="text-medium-emphasis"> ({{ efectoTexto(id) }}) </span>
                 </span>
               </template>
             </VSwitch>
@@ -166,8 +164,8 @@
             {{ forma.personas === 2 ? 'Dos sueldos mínimos, dos personas. ' : '' }}Comida, ropa y
             varios en el perfil austero del
             <NuxtLink :to="localePath('/herramientas/costo-de-vida')">costo de vida</NuxtLink>
-            del sitio; en el interior la comida sigue la canasta del INE y el boleto es un 30 % más
-            barato.
+            del sitio; en el interior la comida sigue la relación entre las canastas del INE y el
+            ómnibus se cuenta un 30 % más barato, como en ese modelo (distancias más cortas).
           </p>
         </section>
       </VCol>
@@ -182,11 +180,11 @@
       <template v-else-if="data">
         <p class="text-body-1 mb-4" :class="{ 'smn-cargando': status === 'pending' }">
           <template v-if="data.total">
-            <strong>{{ miles(data.total) }}</strong>
-            {{ data.total === 1 ? 'aviso vigente entra' : 'avisos vigentes entran' }} en la cuenta{{
-              state.departamento ? ` en ${state.departamento}` : ''
-            }}. Primero los que cierran con todo el dato a la vista, después los que cierran si se
-            confirma lo que falta.
+            <strong>{{ miles(data.avisos) }}</strong>
+            {{ data.avisos === 1 ? 'aviso vigente entra' : 'avisos vigentes entran' }} en la
+            cuenta{{ state.departamento ? ` en ${state.departamento}` : '' }}. Primero los que
+            cierran con todo el dato a la vista, después los que cierran si se confirma lo que
+            falta.
           </template>
           <template v-else>
             Hoy ningún aviso vigente entra en esta cuenta{{
@@ -250,7 +248,7 @@
           <dt class="text-subtitle-1 font-weight-bold">{{ PALANCAS_INFO[id].titulo }}</dt>
           <dd class="text-body-1 mb-3">
             {{ PALANCAS_INFO[id].detalle }}
-            <a :href="PALANCAS_INFO[id].fuente.url" target="_blank" rel="noopener">SmnFuente</a>.
+            <a :href="PALANCAS_INFO[id].fuente.url" target="_blank" rel="noopener">Fuente</a>.
           </dd>
         </template>
       </dl>
@@ -268,7 +266,7 @@
           <dd class="text-body-1 mb-3">
             {{ info.regla }}
             <NuxtLink v-if="info.url.startsWith('/')" :to="localePath(info.url)">Más</NuxtLink>
-            <a v-else :href="info.url" target="_blank" rel="noopener">SmnFuente</a>.
+            <a v-else :href="info.url" target="_blank" rel="noopener">Fuente</a>.
           </dd>
         </template>
       </dl>
@@ -310,8 +308,9 @@
         </li>
         <li v-if="data?.excluidosPorPrecio">
           <strong>Precios que no pueden ser.</strong> Dejamos afuera
-          {{ data.excluidosPorPrecio }} avisos cuyo precio es menos del 30 % de lo que se pide por
-          viviendas iguales en su departamento: casi siempre es un error de moneda o de período.
+          {{ miles(data.excluidosPorPrecio) }} avisos del directorio cuyo precio es menos del 30 %
+          de la mediana de viviendas parecidas (mismo tipo y dormitorios en su departamento, o en el
+          país si allí hay pocas): casi siempre es un error de moneda o de período.
         </li>
       </ul>
     </section>
@@ -340,6 +339,7 @@ import {
   LIQUIDO_SMN,
   MINIMUM_WAGE_PATH,
   PALANCA_IDS,
+  efectoPalanca,
   formaPorId,
   minimumWageQueryToParams,
   normalizeMinimumWageQuery,
@@ -399,11 +399,42 @@ const vecesCba = (comidaMontevideo / INE_PER_CAPITA_LINES.montevideo.cba)
 
 const forma = computed(() => formaPorId(state.forma))
 const esPieza = computed(() => forma.value.tipos.includes('habitacion'))
-const regionPrincipal = computed<SmnRegion>(() => forma.value.regiones[0]!)
 // La cuenta se hace acá también: es pura y así los números no esperan al servidor.
 const planes = computed(() =>
   forma.value.regiones.map(region => planDelMes(forma.value.id, region, state.palancas))
 )
+
+// Lo que cada interruptor mueve el techo de la forma elegida, por región. Uno que no mueve nada en
+// esta forma —internet en una pieza— no se muestra.
+const efectos = (id: keyof Palancas): number[] =>
+  forma.value.regiones.map(region => efectoPalanca(forma.value.id, region, state.palancas, id))
+const palancasVisibles = computed(() => PALANCA_IDS.filter(id => efectos(id).some(v => v > 0)))
+// Una cifra si vale lo mismo en las dos regiones; las dos si no (caminar: el boleto del interior).
+function efectoTexto(id: keyof Palancas): string {
+  const valores = efectos(id)
+  return new Set(valores).size > 1
+    ? forma.value.regiones
+        .map((region, index) => `+${pesos(valores[index]!)} ${REGION_EN[region]}`)
+        .join(', ')
+    : `+${pesos(valores[0]!)}`
+}
+
+const sinNinguna = computed(() =>
+  PALANCA_IDS.every(id => state.palancas[id])
+    ? 'Hoy ningún aviso vigente entra en ninguna de las cuatro formas.'
+    : 'Con las decisiones que marcaste, hoy ningún aviso vigente entra. Probá activar las que están apagadas en la cuenta del mes.'
+)
+
+// La mayoría de los avisos no publica sus gastos comunes ni dice si la pieza incluye los
+// servicios: el titular lo dice en vez de llamar "cierra" a lo que es condicional.
+const notaCondicionados = computed(() => {
+  const resumenes = formasQueCierran.value.map(item => resumenDe(item.id)!)
+  const condicionados = resumenes.reduce((total, row) => total + row.condicionados, 0)
+  const cierran = resumenes.reduce((total, row) => total + row.cierran, 0)
+  return condicionados > cierran
+    ? 'La mayoría entra si se confirma un dato que el aviso no publica —los gastos comunes o si la pieza incluye luz y agua—: cada aviso dice cuál y hasta cuánto puede costar.'
+    : 'Cada aviso dice cuánto sobra por mes.'
+})
 
 function techoDe(id: FormaId): string {
   const item = formaPorId(id)

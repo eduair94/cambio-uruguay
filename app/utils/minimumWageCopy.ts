@@ -77,6 +77,10 @@ const DECRETO_SMN: SmnFuente = {
   label: 'Decreto 319/025 — salario mínimo nacional 2026 (IMPO)',
   url: 'https://www.impo.com.uy/bases/decretos/319-2025',
 }
+const INE_POBREZA: SmnFuente = {
+  label: 'INE — Estimación de la pobreza por el método del ingreso (canastas básicas)',
+  url: 'https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/estimacion-pobreza-metodo-ingreso',
+}
 const INE_ALQUILERES: SmnFuente = {
   label: 'INE — Indicadores de actividad inmobiliaria, alquileres',
   url: 'https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-indicadores-actividad-inmobiliaria-iai-alquileres',
@@ -120,7 +124,7 @@ export const PALANCAS_INFO: Record<keyof Palancas, PalancaInfo> = {
   },
   sinInternet: {
     titulo: 'Sin internet en la casa',
-    detalle: `Arreglarte con los datos del celular ahorra ${pesos(SERVICIOS_DESGLOSE.internet)} por mes, la cuota de internet del modelo del sitio. En una pieza no cambia nada: el wifi suele venir con la pieza.`,
+    detalle: `Arreglarte con los datos del celular ahorra ${pesos(SERVICIOS_DESGLOSE.internet)} por mes, la cuota de internet del modelo del sitio. En una pieza no cambia la cuenta: lo que se cobre aparte por servicios es lo que el aviso tiene que confirmar.`,
     valor: () => SERVICIOS_DESGLOSE.internet,
     fuente: COSTO_DE_VIDA,
   },
@@ -129,7 +133,7 @@ export const PALANCAS_INFO: Record<keyof Palancas, PalancaInfo> = {
 export interface PuertaInfo {
   titulo: string
   regla: string
-  /** SmnFuente externa (https) o página del sitio (/…). */
+  /** Fuente externa (https) o página del sitio (/…). */
   url: string
 }
 
@@ -212,6 +216,7 @@ export const MINIMUM_WAGE_FAQ: FaqItem[] = [
 export const MINIMUM_WAGE_SOURCES: SmnFuente[] = [
   DECRETO_SMN,
   INE_ALQUILERES,
+  INE_POBREZA,
   BOLETO,
   ASSE,
   LEY_AGUINALDO,

@@ -259,7 +259,7 @@ export const RENTAL_GUARANTEE_FAQ: readonly FaqItem[] = [
     id: 'requisitos-ingreso',
     question: '¿Cuánto tengo que ganar para que me den el Fondo de Garantía de Alquiler?',
     answer:
-      'El núcleo de convivencia tiene que tener un ingreso líquido formal de entre 15 y 100 UR, con al menos 3 meses de continuidad, y ninguno de sus integrantes puede ser propietario de un inmueble en el mismo departamento donde se pide la garantía. En el fondo para jóvenes el tope de ingreso es de 100 UR y no se exige mínimo publicado.',
+      'El núcleo de convivencia tiene que tener un ingreso líquido formal de entre 15 y 100 UR, con al menos 3 meses de continuidad, y ninguno de sus integrantes puede ser propietario de un inmueble en el mismo departamento donde se pide la garantía. En el fondo para jóvenes el tope de ingreso es de 100 UR, no se publica un mínimo para quien alquila solo, el alquiler no puede pasar del 40 % de los ingresos y un grupo de hasta 5 personas necesita al menos 30 UR entre todos.',
   },
   {
     id: 'sin-garantia',
