@@ -2,7 +2,7 @@
 // Separado de store.ts para que los tests no importen mongoose: el store recibe el modelo.
 import { MongooseServer, Schema } from "../database";
 import { createKeyStore, type KeyModel, type KeyStore } from "./store";
-import type { UsageDaysRepo, UsageRow } from "./usage";
+import { usageUpsertOps, type UsageDaysRepo, type UsageRow } from "./usage";
 
 const keySchema = new Schema(
   {
@@ -46,16 +46,7 @@ export function usageDaysRepo(): UsageDaysRepo {
   return {
     async upsertDay(day: string, rows: UsageRow[]) {
       if (!rows.length) return 0;
-      await model.bulkWrite(
-        rows.map((r) => ({
-          updateOne: {
-            filter: { day, client: r.client, route: r.route },
-            update: { $set: { count: r.count } },
-            upsert: true,
-          },
-        })),
-        { ordered: false }
-      );
+      await model.bulkWrite(usageUpsertOps(day, rows) as any[], { ordered: false });
       return rows.length;
     },
     async readRange(from: string, to: string) {

@@ -32,6 +32,21 @@ export interface AnonymousLead {
   routes: { route: string; count: number }[];
 }
 
+/**
+ * Las operaciones de Mongo para guardar un día del medidor. `$max` y no `$set`: si Redis perdió
+ * datos (un reinicio, un flush), la copia siguiente trae un número MENOR y no puede pisar el que ya
+ * estaba guardado. Correrla dos veces sigue sin duplicar.
+ */
+export function usageUpsertOps(day: string, rows: UsageRow[]) {
+  return rows.map((r) => ({
+    updateOne: {
+      filter: { day, client: r.client, route: r.route },
+      update: { $max: { count: r.count } },
+      upsert: true,
+    },
+  }));
+}
+
 export function splitField(field: string): { client: string; route: string } | null {
   const i = field.lastIndexOf("|");
   if (i <= 0 || i === field.length - 1) return null;

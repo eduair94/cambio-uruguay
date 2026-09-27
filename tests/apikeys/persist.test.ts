@@ -36,4 +36,14 @@ describe("copia del medidor a Mongo", () => {
     expect(target.table.get("2026-09-26|ua:ArboitePanel/1.0|/exchange/la_favorita")?.count).toBe(290);
     expect(touchLastUsed).toHaveBeenCalledWith(["000000000000000000000001"], now);
   });
+
+  it("un job caído varios días no pierde nada: copia todo día que siga en Redis", async () => {
+    const redis = new FakeRedis();
+    await redis.hincrby("usage:2026-09-24", "site|/", 40);
+    await redis.hincrby("usage:2026-08-20", "site|/", 3);
+    const target = repo();
+    const result = await persistUsage({ redis, repo: target, store: { touchLastUsed: async () => undefined }, now: new Date("2026-09-27T15:07:00Z") });
+    expect(result.days).toEqual(["2026-08-20", "2026-09-24"]);
+    expect(target.table.get("2026-09-24|site|/")?.count).toBe(40);
+  });
 });

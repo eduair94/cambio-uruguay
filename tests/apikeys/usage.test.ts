@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rankAnonymous, rowsFromHash, splitField, summarize } from "../../classes/apikeys/usage";
+import { rankAnonymous, rowsFromHash, splitField, summarize, usageUpsertOps } from "../../classes/apikeys/usage";
 
 describe("filas del medidor", () => {
   it("parte el campo por el último separador", () => {
@@ -40,5 +40,19 @@ describe("resúmenes", () => {
     const leads = rankAnonymous(summarize(rows, "2026-09-27"));
     expect(leads.map((l) => l.userAgent)).toEqual(["ArboitePanel/1.0", "curl/8.0"]);
     expect(leads[0]).toMatchObject({ total: 570, last7: 570 });
+  });
+});
+
+describe("escritura del uso en Mongo", () => {
+  it("un conteo guardado nunca baja: si Redis perdió datos, Mongo conserva el mayor", () => {
+    expect(usageUpsertOps("2026-09-27", [{ day: "2026-09-27", client: "site", route: "/", count: 5 }])).toEqual([
+      {
+        updateOne: {
+          filter: { day: "2026-09-27", client: "site", route: "/" },
+          update: { $max: { count: 5 } },
+          upsert: true,
+        },
+      },
+    ]);
   });
 });

@@ -157,20 +157,21 @@ class RedisCacheService {
    * Delete all keys matching a pattern.
    * Uses SCAN to avoid blocking Redis.
    */
-  async delPattern(pattern: string): Promise<number> {
+  async delPattern(pattern: string, keep: (fullKey: string) => boolean = () => false): Promise<number> {
     if (!this.isConnected() || !this.client) return 0;
     try {
       let deleted = 0;
       const stream = this.client.scanStream({ match: pattern, count: 100 });
       return new Promise((resolve, reject) => {
         stream.on("data", async (keys: string[]) => {
-          if (keys.length > 0) {
+          const doomed = keys.filter((k) => !keep(k));
+          if (doomed.length > 0) {
             // Strip the prefix since ioredis adds it automatically on del
-            const cleanKeys = keys.map((k) => k.replace(KEY_PREFIX, ""));
+            const cleanKeys = doomed.map((k) => k.replace(KEY_PREFIX, ""));
             const pipeline = this.client!.pipeline();
             cleanKeys.forEach((k) => pipeline.del(k));
             await pipeline.exec();
-            deleted += keys.length;
+            deleted += doomed.length;
           }
         });
         stream.on("end", () => resolve(deleted));
@@ -254,7 +255,7 @@ class RedisCacheService {
    * Flush all keys with our prefix.
    */
   async flushAll(): Promise<number> {
-    return this.delPattern("*");
+    return this.delPattern("*", survivesFlush);
   }
 
   /**
@@ -274,5 +275,13 @@ class RedisCacheService {
 
 // Singleton instance
 const redisCache = new RedisCacheService();
+
+/**
+ * Lo que NO es caché y vive en el mismo Redis: el medidor de uso de la API (`usage:<día>`, lo que
+ * se mide y se factura) y los contadores de límite (`rl:*`). Vaciar la caché no los toca.
+ */
+export function survivesFlush(fullKey: string): boolean {
+  return fullKey.startsWith(`${KEY_PREFIX}usage:`) || fullKey.startsWith(`${KEY_PREFIX}rl:`);
+}
 
 export { redisCache, RedisCacheService, CacheOptions };
