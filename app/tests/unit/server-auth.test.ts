@@ -30,11 +30,13 @@ describe('requireUser', () => {
     await expect(requireUser(fakeEvent('Bearer xyz'))).rejects.toMatchObject({ statusCode: 401 })
   })
 
-  it('returns uid + email on a valid token', async () => {
+  it('returns uid + email (and the session identity flags) on a valid token', async () => {
     verifyIdToken.mockResolvedValueOnce({ uid: 'u1', email: 'a@b.com' })
     await expect(requireUser(fakeEvent('Bearer good'))).resolves.toEqual({
       uid: 'u1',
       email: 'a@b.com',
+      emailVerified: false,
+      anonymous: false,
     })
   })
 })
