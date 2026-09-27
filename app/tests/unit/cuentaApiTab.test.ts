@@ -22,6 +22,12 @@ describe('pestaña api de /cuenta', () => {
     expect(panel).toContain("'/api/me/api-keys'")
   })
 
+  it('explica por qué un invitado o un correo sin verificar no puede crear claves', () => {
+    const panel = read('components/account/ApiKeysPanel.vue')
+    expect(panel).toContain('correo verificado')
+    expect(panel).toContain('emailVerified')
+  })
+
   it('el panel de administración se esconde ante 401/403 en vez de mostrar un error', () => {
     const admin = read('components/account/ApiClientsAdminPanel.vue')
     expect(admin).toContain('v-if="!forbidden"')

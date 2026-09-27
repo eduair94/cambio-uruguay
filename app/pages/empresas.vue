@@ -115,17 +115,18 @@ import {
 const localePath = useLocalePath()
 const auth = useAuthStore()
 
-// "Crear una clave": con sesión va directo a la pestaña; sin sesión abre el acceso y navega apenas
-// la sesión existe, así nadie termina en la portada después de iniciar sesión.
+// "Crear una clave": con una cuenta (con correo; un invitado no identifica a nadie) va directo a la
+// pestaña; si no, abre el acceso y navega apenas hay cuenta, así nadie termina en la portada.
 const pendingKey = ref(false)
 const keysPath = () => localePath({ path: '/cuenta', query: { tab: 'api' } })
+const hasAccount = computed(() => Boolean(auth.user?.email))
 function startKey() {
-  if (auth.isLoggedIn) return navigateTo(keysPath())
+  if (hasAccount.value) return navigateTo(keysPath())
   pendingKey.value = true
   auth.openDialog()
 }
 watch(
-  () => auth.isLoggedIn,
+  hasAccount,
   loggedIn => {
     if (loggedIn && pendingKey.value) {
       pendingKey.value = false

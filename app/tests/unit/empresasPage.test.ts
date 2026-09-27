@@ -26,6 +26,10 @@ describe('/empresas', () => {
     expect(page).toContain('API_CONTACT_EMAIL')
   })
 
+  it('una sesión de invitado no cuenta como cuenta para crear una clave', () => {
+    expect(page).toMatch(/auth\.user\?\.email/)
+  })
+
   it('tiene condiciones con ancla y el botón lleva a la pestaña de claves', () => {
     expect(page).toContain('id="condiciones"')
     expect(page).toContain("query: { tab: 'api' }")

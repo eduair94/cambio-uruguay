@@ -30,6 +30,10 @@
 
     <VCard variant="outlined" class="pa-4 mb-6">
       <h3 class="text-subtitle-1 font-weight-bold mb-3">Crear una clave</h3>
+      <VAlert v-if="!eligible" type="info" variant="tonal" density="compact" class="mb-3">
+        Para crear una clave necesitás una cuenta con correo verificado: entrá con Google, o abrí el
+        enlace de verificación que te mandamos al registrarte con correo y contraseña.
+      </VAlert>
       <form @submit.prevent="create">
         <VRow dense>
           <VCol cols="12" md="6">
@@ -192,6 +196,9 @@ import {
 
 const localePath = useLocalePath()
 const { authFetch } = useAuthFetch()
+const auth = useAuthStore()
+// La API también lo exige: un invitado no identifica a nadie y cada alta avisa al dueño.
+const eligible = computed(() => Boolean(auth.user?.email && auth.user?.emailVerified))
 
 const keys = ref<ApiKeyRecord[]>([])
 const usage = ref<ApiUsageResponse | null>(null)
@@ -210,6 +217,7 @@ const activeCount = computed(() => keys.value.filter(k => k.status === 'active')
 const canCreate = computed(
   () =>
     !creating.value &&
+    eligible.value &&
     form.acceptTerms &&
     activeCount.value < MAX_KEYS_PER_ACCOUNT &&
     form.label.trim().length >= FIELD_LIMITS.label.min &&
