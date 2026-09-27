@@ -10,7 +10,8 @@ export default defineEventHandler(async event => {
   await requireAdmin(event)
   setResponseHeader(event, 'cache-control', 'private, no-store')
   const id = String(getRouterParam(event, 'id') || '')
-  if (!/^[a-f0-9]{24}$/.test(id)) throw createError({ statusCode: 400, statusMessage: 'Clave inválida.' })
+  if (!/^[a-f0-9]{24}$/.test(id))
+    throw createError({ statusCode: 400, statusMessage: 'Clave inválida.' })
   const b = ((await readBody(event)) ?? {}) as Record<string, unknown>
   const body: Record<string, unknown> = {}
   for (const field of FIELDS) if (b[field] !== undefined) body[field] = b[field]

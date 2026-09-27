@@ -28,13 +28,20 @@
               <div class="font-weight-bold">{{ k.label }}</div>
               <code>{{ k.prefix }}…</code>
               <div class="text-caption">
-                {{ k.ownerEmail || k.ownerUid }} · {{ k.status === 'active' ? 'activa' : 'revocada' }}
+                {{ k.ownerEmail || k.ownerUid }} ·
+                {{ k.status === 'active' ? 'activa' : 'revocada' }}
               </div>
             </td>
             <td class="api-admin-panel__use">
               <div>{{ k.company }}</div>
               <div class="text-caption">{{ k.useCase }}</div>
-              <a v-if="k.website" :href="k.website" target="_blank" rel="noopener noreferrer nofollow" class="text-caption">
+              <a
+                v-if="k.website"
+                :href="k.website"
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                class="text-caption"
+              >
                 {{ k.website }}
               </a>
             </td>
@@ -53,10 +60,22 @@
             <td class="text-end">{{ formatCount(keyUsage(data.usage, k.id)?.total ?? 0) }}</td>
             <td class="text-caption">{{ routesText(keyUsage(data.usage, k.id)?.routes) }}</td>
             <td>
-              <VTextField v-if="edits[k.id]" v-model="edits[k.id].notes" density="compact" variant="outlined" hide-details />
+              <VTextField
+                v-if="edits[k.id]"
+                v-model="edits[k.id].notes"
+                density="compact"
+                variant="outlined"
+                hide-details
+              />
             </td>
             <td>
-              <VBtn size="small" variant="tonal" :loading="saving === k.id" :disabled="!dirty(k)" @click="save(k)">
+              <VBtn
+                size="small"
+                variant="tonal"
+                :loading="saving === k.id"
+                :disabled="!dirty(k)"
+                @click="save(k)"
+              >
                 Guardar
               </VBtn>
             </td>
@@ -66,8 +85,8 @@
 
       <h3 class="text-subtitle-1 font-weight-bold mb-1">Sin clave: quién usa la API</h3>
       <p class="text-body-2 text-medium-emphasis mb-2">
-        Por User-Agent (el programa que se identifica; nunca la IP). Los que piden todos los días son
-        los candidatos a un plan. Lectores del sitio en 30 días:
+        Por User-Agent (el programa que se identifica; nunca la IP). Los que piden todos los días
+        son los candidatos a un plan. Lectores del sitio en 30 días:
         {{ formatCount(data.usage.site?.total ?? 0) }} pedidos.
       </p>
       <VTable density="compact">
@@ -126,17 +145,21 @@ function dirty(k: ApiKeyRecord): boolean {
 }
 
 function routesText(routes?: { route: string; count: number }[]): string {
-  return (routes ?? [])
-    .slice(0, 3)
-    .map(r => `${r.route} (${formatCount(r.count)})`)
-    .join(', ') || '—'
+  return (
+    (routes ?? [])
+      .slice(0, 3)
+      .map(r => `${r.route} (${formatCount(r.count)})`)
+      .join(', ') || '—'
+  )
 }
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    const res = await authFetch<{ keys: ApiKeyRecord[]; usage: ApiUsageResponse }>('/api/admin/api-clients')
+    const res = await authFetch<{ keys: ApiKeyRecord[]; usage: ApiUsageResponse }>(
+      '/api/admin/api-clients'
+    )
     resetEdits(res.keys)
     data.value = res
   } catch (e: any) {

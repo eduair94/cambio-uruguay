@@ -9,7 +9,10 @@ export default defineEventHandler(async event => {
   setResponseHeader(event, 'cache-control', 'private, no-store')
   const b = ((await readBody(event)) ?? {}) as Record<string, unknown>
   if (b.acceptTerms !== true) {
-    throw createError({ statusCode: 400, statusMessage: 'Para crear una clave hay que aceptar las condiciones de uso.' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Para crear una clave hay que aceptar las condiciones de uso.',
+    })
   }
   const text = (v: unknown) => (typeof v === 'string' ? v : '')
   return apiAdminFetch<{ key: string; apiKey: ApiKeyRecord }>('/admin/api-keys', {

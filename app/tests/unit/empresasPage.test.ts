@@ -33,13 +33,21 @@ describe('/empresas', () => {
   })
 
   it('las tarjetas de /desarrolladores y /publicidad enlazan a /empresas', () => {
-    expect(readFileSync(join(APP, 'pages/desarrolladores.vue'), 'utf8')).toContain("localePath('/empresas')")
-    expect(readFileSync(join(APP, 'pages/publicidad.vue'), 'utf8')).toContain("localePath('/empresas')")
+    expect(readFileSync(join(APP, 'pages/desarrolladores.vue'), 'utf8')).toContain(
+      "localePath('/empresas')"
+    )
+    expect(readFileSync(join(APP, 'pages/publicidad.vue'), 'utf8')).toContain(
+      "localePath('/empresas')"
+    )
   })
 
   it('la referencia pública declara la clave como opcional', () => {
     const spec = JSON.parse(readFileSync(join(APP, 'public/openapi.json'), 'utf8'))
-    expect(spec.components.securitySchemes.ApiKeyAuth).toMatchObject({ type: 'apiKey', in: 'header', name: 'X-API-Key' })
+    expect(spec.components.securitySchemes.ApiKeyAuth).toMatchObject({
+      type: 'apiKey',
+      in: 'header',
+      name: 'X-API-Key',
+    })
     expect(spec.security).toEqual([{}, { ApiKeyAuth: [] }])
     expect(spec.paths['/usage']).toBeTruthy()
   })

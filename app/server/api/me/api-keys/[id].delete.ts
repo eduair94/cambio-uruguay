@@ -7,7 +7,11 @@ export default defineEventHandler(async event => {
   const { uid } = await requireUser(event)
   setResponseHeader(event, 'cache-control', 'private, no-store')
   const id = String(getRouterParam(event, 'id') || '')
-  if (!/^[a-f0-9]{24}$/.test(id)) throw createError({ statusCode: 400, statusMessage: 'Clave inválida.' })
-  await apiAdminFetch(`/admin/api-keys/${id}`, { method: 'PATCH', body: { ownerUid: uid, status: 'revoked' } })
+  if (!/^[a-f0-9]{24}$/.test(id))
+    throw createError({ statusCode: 400, statusMessage: 'Clave inválida.' })
+  await apiAdminFetch(`/admin/api-keys/${id}`, {
+    method: 'PATCH',
+    body: { ownerUid: uid, status: 'revoked' },
+  })
   return { ok: true }
 })

@@ -87,7 +87,10 @@ export function formatDay(iso: string): string {
   })
 }
 
-export function keyUsage(usage: ApiUsageResponse | null | undefined, id: string): ClientSummary | null {
+export function keyUsage(
+  usage: ApiUsageResponse | null | undefined,
+  id: string
+): ClientSummary | null {
   return usage?.byClient?.[`key:${id}`] ?? null
 }
 

@@ -13,7 +13,10 @@ export async function apiAdminFetch<T>(path: string, opts: AdminFetchOptions = {
   const config = useRuntimeConfig()
   const token = String(config.apiAdminToken || '')
   if (!token) {
-    throw createError({ statusCode: 503, statusMessage: 'El servicio de claves no está configurado.' })
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'El servicio de claves no está configurado.',
+    })
   }
   try {
     return (await $fetch(`${config.apiBaseServer}${path}`, {
@@ -26,8 +29,14 @@ export async function apiAdminFetch<T>(path: string, opts: AdminFetchOptions = {
   } catch (e: any) {
     const status = Number(e?.statusCode ?? e?.response?.status ?? 0)
     if (status >= 400 && status < 500 && status !== 401) {
-      throw createError({ statusCode: status, statusMessage: e?.data?.message || 'Pedido inválido.' })
+      throw createError({
+        statusCode: status,
+        statusMessage: e?.data?.message || 'Pedido inválido.',
+      })
     }
-    throw createError({ statusCode: 502, statusMessage: 'El servicio de claves no respondió. Probá de nuevo en un rato.' })
+    throw createError({
+      statusCode: 502,
+      statusMessage: 'El servicio de claves no respondió. Probá de nuevo en un rato.',
+    })
   }
 }

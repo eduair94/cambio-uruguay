@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 // Vive en la suite del APP a propósito: la raíz no puede importar app/ (ver storeConstantsParity).
 import { DEFAULT_PLAN_LIMITS } from '../../../classes/apikeys/plans'
-import { FIELD_LIMITS as API_FIELD_LIMITS, MAX_ACTIVE_PER_OWNER } from '../../../classes/apikeys/validate'
+import {
+  FIELD_LIMITS as API_FIELD_LIMITS,
+  MAX_ACTIVE_PER_OWNER,
+} from '../../../classes/apikeys/validate'
 import { API_PLAN_LIMITS, FIELD_LIMITS, MAX_KEYS_PER_ACCOUNT } from '../../utils/apiKeys'
 
 // /empresas y el formulario de alta muestran estos números; la API es la que los aplica. Si

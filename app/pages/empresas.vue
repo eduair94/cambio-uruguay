@@ -11,10 +11,23 @@
         gratuita ves tu consumo, y un plan Empresa te da más capacidad y uso comercial.
       </p>
       <div class="d-flex flex-wrap ga-3 mb-10">
-        <VBtn color="primary" variant="flat" size="large" prepend-icon="mdi-key-plus" data-cta="empresas-crear-clave" @click="startKey">
+        <VBtn
+          color="primary"
+          variant="flat"
+          size="large"
+          prepend-icon="mdi-key-plus"
+          data-cta="empresas-crear-clave"
+          @click="startKey"
+        >
           Crear una clave gratis
         </VBtn>
-        <VBtn :href="mailto" variant="tonal" size="large" prepend-icon="mdi-email-outline" data-cta="empresas-contacto">
+        <VBtn
+          :href="mailto"
+          variant="tonal"
+          size="large"
+          prepend-icon="mdi-email-outline"
+          data-cta="empresas-contacto"
+        >
           Escribinos por un plan Empresa
         </VBtn>
       </div>
@@ -43,7 +56,11 @@
       <h2 class="text-h5 font-weight-bold mb-3">Planes</h2>
       <VRow class="mb-2">
         <VCol v-for="plan in PLANS" :key="plan.id" cols="12" md="4">
-          <VCard :variant="plan.id === 'free' ? 'tonal' : 'outlined'" :color="plan.id === 'free' ? 'primary' : undefined" class="pa-4 h-100">
+          <VCard
+            :variant="plan.id === 'free' ? 'tonal' : 'outlined'"
+            :color="plan.id === 'free' ? 'primary' : undefined"
+            class="pa-4 h-100"
+          >
             <h3 class="text-h6 font-weight-bold mb-1">{{ plan.title }}</h3>
             <p class="text-body-2 mb-3">{{ plan.who }}</p>
             <ul class="empresas-page__list text-body-2">
@@ -60,8 +77,9 @@
 
       <h2 class="text-h5 font-weight-bold mb-3">Cómo se usa la clave</h2>
       <p class="text-body-2 mb-2">
-        En la cabecera <code>X-API-Key</code> (o <code>Authorization: Bearer</code>). Si tu herramienta
-        no puede poner cabeceras, como una planilla, va en la dirección con <code>?api_key=</code>.
+        En la cabecera <code>X-API-Key</code> (o <code>Authorization: Bearer</code>). Si tu
+        herramienta no puede poner cabeceras, como una planilla, va en la dirección con
+        <code>?api_key=</code>.
       </p>
       <pre class="empresas-page__code mb-8"><code>{{ CURL }}</code></pre>
 
@@ -167,10 +185,22 @@ const DATA = [
 ]
 
 const USES = [
-  { title: 'Pantalla de pizarra', text: 'Mostrar en el local las cotizaciones propias o las de la competencia, actualizadas solas.' },
-  { title: 'Planillas y costos', text: 'Traer el dólar del día a una planilla de costos o de precios sin copiarlo a mano.' },
-  { title: 'Monitoreo de competencia', text: 'Saber cuándo y cuánto movió su pizarra cada casa, y dónde queda la tuya.' },
-  { title: 'Productos financieros', text: 'Apps, bots y paneles que necesitan el precio real de cada casa y no sólo el oficial.' },
+  {
+    title: 'Pantalla de pizarra',
+    text: 'Mostrar en el local las cotizaciones propias o las de la competencia, actualizadas solas.',
+  },
+  {
+    title: 'Planillas y costos',
+    text: 'Traer el dólar del día a una planilla de costos o de precios sin copiarlo a mano.',
+  },
+  {
+    title: 'Monitoreo de competencia',
+    text: 'Saber cuándo y cuánto movió su pizarra cada casa, y dónde queda la tuya.',
+  },
+  {
+    title: 'Productos financieros',
+    text: 'Apps, bots y paneles que necesitan el precio real de cada casa y no sólo el oficial.',
+  },
 ]
 
 const PLANS = [
@@ -178,7 +208,11 @@ const PLANS = [
     id: 'anonymous',
     title: API_PLAN_LABELS.anonymous,
     who: 'Para probar y para uso personal.',
-    lines: [`${perMin('anonymous')} pedidos por minuto`, `${perDay('anonymous')} pedidos por día, por dirección IP`, 'Sin registro'],
+    lines: [
+      `${perMin('anonymous')} pedidos por minuto`,
+      `${perDay('anonymous')} pedidos por día, por dirección IP`,
+      'Sin registro',
+    ],
   },
   {
     id: 'free',
@@ -226,11 +260,13 @@ const FAQ = [
   },
   {
     question: '¿Cada cuánto se actualizan las cotizaciones?',
-    answer: 'Cada casa se consulta cada cinco minutos, y el historial intradía guarda una fila sólo cuando el precio cambió.',
+    answer:
+      'Cada casa se consulta cada cinco minutos, y el historial intradía guarda una fila sólo cuando el precio cambió.',
   },
   {
     question: '¿Puedo usarla desde una planilla de Google?',
-    answer: 'Sí, con Apps Script: poné la clave en la dirección con ?api_key= y leé el JSON de la respuesta.',
+    answer:
+      'Sí, con Apps Script: poné la clave en la dirección con ?api_key= y leé el JSON de la respuesta.',
   },
 ]
 
@@ -268,7 +304,12 @@ useHead(() => ({
           {
             '@type': 'BreadcrumbList',
             itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Cambio Uruguay', item: 'https://cambio-uruguay.com' },
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
               { '@type': 'ListItem', position: 2, name: 'Datos para empresas', item: canonicalUrl },
             ],
           },

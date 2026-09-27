@@ -74,7 +74,11 @@
               <template #label>
                 <span>
                   Acepto las
-                  <NuxtLink :to="`${localePath('/empresas')}#condiciones`" target="_blank" @click.stop>
+                  <NuxtLink
+                    :to="`${localePath('/empresas')}#condiciones`"
+                    target="_blank"
+                    @click.stop
+                  >
                     condiciones de uso de la API
                   </NuxtLink>
                 </span>
@@ -97,7 +101,8 @@
             Crear clave
           </VBtn>
           <span v-if="activeCount >= MAX_KEYS_PER_ACCOUNT" class="text-caption">
-            Llegaste al tope de {{ MAX_KEYS_PER_ACCOUNT }} claves activas: revocá una para crear otra.
+            Llegaste al tope de {{ MAX_KEYS_PER_ACCOUNT }} claves activas: revocá una para crear
+            otra.
           </span>
         </div>
       </form>
@@ -220,7 +225,9 @@ async function load() {
   loading.value = true
   loadError.value = ''
   try {
-    const res = await authFetch<{ keys: ApiKeyRecord[]; usage: ApiUsageResponse | null }>('/api/me/api-keys')
+    const res = await authFetch<{ keys: ApiKeyRecord[]; usage: ApiUsageResponse | null }>(
+      '/api/me/api-keys'
+    )
     keys.value = res.keys
     usage.value = res.usage
   } catch (e) {

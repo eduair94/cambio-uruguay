@@ -6,7 +6,11 @@ import { requireUser } from '../../../utils/auth'
 export default defineEventHandler(async event => {
   const { uid } = await requireUser(event)
   setResponseHeader(event, 'cache-control', 'private, no-store')
-  const { keys } = await apiAdminFetch<{ keys: ApiKeyRecord[] }>('/admin/api-keys', { query: { ownerUid: uid } })
-  const usage = await apiAdminFetch<ApiUsageResponse>('/admin/api-usage', { query: { ownerUid: uid, days: 30 } })
+  const { keys } = await apiAdminFetch<{ keys: ApiKeyRecord[] }>('/admin/api-keys', {
+    query: { ownerUid: uid },
+  })
+  const usage = await apiAdminFetch<ApiUsageResponse>('/admin/api-usage', {
+    query: { ownerUid: uid, days: 30 },
+  })
   return { keys, usage }
 })

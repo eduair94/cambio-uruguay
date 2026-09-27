@@ -112,7 +112,12 @@ npm run dev</code></pre>
             </div>
             <p class="text-body-2 mb-0">{{ t('dev.businessText') }}</p>
           </div>
-          <VBtn :to="localePath('/empresas')" color="indigo" variant="flat" prepend-icon="mdi-key-plus">
+          <VBtn
+            :to="localePath('/empresas')"
+            color="indigo"
+            variant="flat"
+            prepend-icon="mdi-key-plus"
+          >
             {{ t('dev.businessCta') }}
           </VBtn>
         </div>
