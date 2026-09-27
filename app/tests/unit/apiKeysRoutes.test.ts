@@ -145,17 +145,32 @@ describe('claves propias', () => {
 })
 
 describe('quién puede crear una clave', () => {
-  const alta = { label: 'Pantalla', company: 'Cambio', useCase: 'Pizarra del local', acceptTerms: true }
+  const alta = {
+    label: 'Pantalla',
+    company: 'Cambio',
+    useCase: 'Pizarra del local',
+    acceptTerms: true,
+  }
 
   it('una sesión de invitado no crea claves ni dispara el aviso al dueño', async () => {
-    requireUser.mockResolvedValueOnce({ uid: 'g1', email: null, emailVerified: false, anonymous: true })
+    requireUser.mockResolvedValueOnce({
+      uid: 'g1',
+      email: null,
+      emailVerified: false,
+      anonymous: true,
+    })
     readBody.mockResolvedValueOnce(alta)
     await expect(createH({} as any)).rejects.toMatchObject({ statusCode: 403 })
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('un correo sin verificar tampoco', async () => {
-    requireUser.mockResolvedValueOnce({ uid: 'u2', email: 'x@y.uy', emailVerified: false, anonymous: false })
+    requireUser.mockResolvedValueOnce({
+      uid: 'u2',
+      email: 'x@y.uy',
+      emailVerified: false,
+      anonymous: false,
+    })
     readBody.mockResolvedValueOnce(alta)
     await expect(createH({} as any)).rejects.toMatchObject({ statusCode: 403 })
     expect(fetchMock).not.toHaveBeenCalled()

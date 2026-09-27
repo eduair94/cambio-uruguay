@@ -125,15 +125,12 @@ function startKey() {
   pendingKey.value = true
   auth.openDialog()
 }
-watch(
-  hasAccount,
-  loggedIn => {
-    if (loggedIn && pendingKey.value) {
-      pendingKey.value = false
-      navigateTo(keysPath())
-    }
+watch(hasAccount, loggedIn => {
+  if (loggedIn && pendingKey.value) {
+    pendingKey.value = false
+    navigateTo(keysPath())
   }
-)
+})
 
 const mailto = `mailto:${API_CONTACT_EMAIL}?subject=${encodeURIComponent('Plan Empresa de la API — Cambio Uruguay')}`
 

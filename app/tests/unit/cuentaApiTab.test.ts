@@ -28,6 +28,11 @@ describe('pestaña api de /cuenta', () => {
     expect(panel).toContain('emailVerified')
   })
 
+  it('cada clave muestra su cuota y el administrador ve el uso por día', () => {
+    expect(read('components/account/ApiKeysPanel.vue')).toContain('quotaText(k)')
+    expect(read('components/account/ApiClientsAdminPanel.vue')).toContain('dailyText(')
+  })
+
   it('el panel de administración se esconde ante 401/403 en vez de mostrar un error', () => {
     const admin = read('components/account/ApiClientsAdminPanel.vue')
     expect(admin).toContain('v-if="!forbidden"')

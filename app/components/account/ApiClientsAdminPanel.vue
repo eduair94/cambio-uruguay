@@ -17,6 +17,7 @@
             <th>Plan</th>
             <th class="text-end">7 días</th>
             <th class="text-end">30 días</th>
+            <th>Por día</th>
             <th>Rutas</th>
             <th>Notas</th>
             <th />
@@ -58,6 +59,9 @@
             </td>
             <td class="text-end">{{ formatCount(keyUsage(data.usage, k.id)?.last7 ?? 0) }}</td>
             <td class="text-end">{{ formatCount(keyUsage(data.usage, k.id)?.total ?? 0) }}</td>
+            <td class="text-caption api-admin-panel__daily">
+              {{ dailyText(keyUsage(data.usage, k.id), data.usage.to) }}
+            </td>
             <td class="text-caption">{{ routesText(keyUsage(data.usage, k.id)?.routes) }}</td>
             <td>
               <VTextField
@@ -118,6 +122,7 @@
 import {
   API_PLAN_LABELS,
   ASSIGNABLE_PLANS,
+  dailyText,
   formatCount,
   keyUsage,
   type ApiKeyRecord,
@@ -198,6 +203,9 @@ onMounted(load)
 }
 .api-admin-panel__use {
   max-width: 280px;
+}
+.api-admin-panel__daily {
+  min-width: 220px;
 }
 .api-admin-panel__ua {
   max-width: 420px;

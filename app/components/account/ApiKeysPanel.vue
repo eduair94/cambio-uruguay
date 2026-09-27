@@ -145,6 +145,10 @@
           </div>
           <VDivider class="my-3" />
           <dl class="api-keys-panel__facts text-body-2">
+            <div class="api-keys-panel__quota">
+              <dt>Cuota</dt>
+              <dd>{{ quotaText(k) }}</dd>
+            </div>
             <div>
               <dt>Creada</dt>
               <dd>{{ formatDay(k.createdAt) }}</dd>
@@ -190,6 +194,7 @@ import {
   formatCount,
   formatDay,
   keyUsage,
+  quotaText,
   type ApiKeyRecord,
   type ApiUsageResponse,
 } from '~/utils/apiKeys'
@@ -323,6 +328,9 @@ onMounted(load)
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px 16px;
   margin: 0;
+}
+.api-keys-panel__quota {
+  grid-column: 1 / -1;
 }
 .api-keys-panel__facts dt {
   font-size: 0.75rem;

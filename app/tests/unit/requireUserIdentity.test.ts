@@ -5,7 +5,8 @@ vi.mock('../../server/utils/firebaseAdmin', () => ({ adminAuth: () => ({ verifyI
 
 const { requireUser } = await import('../../server/utils/auth')
 
-const event = (token: string) => ({ node: { req: { headers: { authorization: `Bearer ${token}` } } } }) as any
+const event = (token: string) =>
+  ({ node: { req: { headers: { authorization: `Bearer ${token}` } } } }) as any
 
 beforeEach(() => verifyIdToken.mockReset())
 

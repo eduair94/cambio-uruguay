@@ -12,7 +12,8 @@ export default defineEventHandler(async event => {
   if (anonymous || !email || !emailVerified) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'Para crear una clave necesitás una cuenta con correo verificado: entrá con Google o verificá tu correo.',
+      statusMessage:
+        'Para crear una clave necesitás una cuenta con correo verificado: entrá con Google o verificá tu correo.',
     })
   }
   const b = ((await readBody(event)) ?? {}) as Record<string, unknown>

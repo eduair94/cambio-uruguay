@@ -97,3 +97,31 @@ export function keyUsage(
 export function curlExample(credential: string): string {
   return `curl -H "X-API-Key: ${credential}" ${API_PUBLIC_BASE}/usage`
 }
+
+/** La cuota de una clave: la de su plan, o la propia si tiene un acuerdo a medida. */
+export function quotaText(record: Pick<ApiKeyRecord, 'plan' | 'limits'>): string {
+  if (record.plan === 'internal') return 'sin límite'
+  const base = API_PLAN_LIMITS[record.plan]
+  const perMinute = record.limits?.perMinute ?? base.perMinute
+  const perDay = record.limits?.perDay ?? base.perDay
+  return `${formatCount(perMinute)} por minuto · ${formatCount(perDay)} por día`
+}
+
+/** El uso por día de los últimos `days` días, del más nuevo al más viejo, con los ceros a la vista. */
+export function dailyText(
+  summary: ClientSummary | null | undefined,
+  today: string,
+  days = 7
+): string {
+  const [y, m, d] = today.split('-').map(Number)
+  const counts = new Map((summary?.daily ?? []).map(entry => [entry.day, entry.count]))
+  const parts: string[] = []
+  for (let back = 0; back < days; back++) {
+    const date = new Date(Date.UTC(y, m - 1, d - back))
+    const key = date.toISOString().slice(0, 10)
+    parts.push(
+      `${date.getUTCDate()}/${date.getUTCMonth() + 1}: ${formatCount(counts.get(key) ?? 0)}`
+    )
+  }
+  return parts.join(' · ')
+}
