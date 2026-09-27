@@ -876,6 +876,14 @@
           "label": "Calculadora de IRPF"
         },
         {
+          "to": "/declaracion-de-irpf-uruguay",
+          "label": "Declaración de IRPF"
+        },
+        {
+          "to": "/devolucion-fonasa-uruguay",
+          "label": "Devolución de FONASA"
+        },
+        {
           "to": "/herramientas/calculadora-aguinaldo",
           "label": "Calculadora de aguinaldo"
         },
@@ -1173,6 +1181,34 @@
           "label": "Preguntas de finanzas personales"
         },
         {
+          "to": "/cuando-me-puedo-jubilar-uruguay",
+          "label": "¿Cuándo me puedo jubilar?"
+        },
+        {
+          "to": "/reconocer-anos-trabajados-uruguay",
+          "label": "Reconocer años trabajados"
+        },
+        {
+          "to": "/desvincularme-de-la-afap-uruguay",
+          "label": "Desvincularme de una AFAP"
+        },
+        {
+          "to": "/fecha-de-cobro-bps-uruguay",
+          "label": "Fecha de cobro del BPS"
+        },
+        {
+          "to": "/suplemento-solidario-bps",
+          "label": "Suplemento solidario del BPS"
+        },
+        {
+          "to": "/pension-a-la-vejez-uruguay",
+          "label": "Pensión a la vejez"
+        },
+        {
+          "to": "/elecciones-bps-2026",
+          "label": "Elecciones del BPS 2026"
+        },
+        {
           "to": "/estafas-uruguay",
           "label": "Estafas en Uruguay"
         },
@@ -1409,6 +1445,14 @@
         {
           "to": "/certificado-de-antecedentes-judiciales-uruguay",
           "label": "Certificado de antecedentes judiciales"
+        },
+        {
+          "to": "/certificados-bps-uruguay",
+          "label": "Certificados del BPS"
+        },
+        {
+          "to": "/certificado-unico-dgi-uruguay",
+          "label": "Certificado Único de DGI"
         },
         {
           "to": "/cuanto-sale-la-cedula-de-identidad-uruguaya",
