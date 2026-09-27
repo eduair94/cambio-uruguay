@@ -11,6 +11,10 @@ import { MAX_ACTIVE_PER_OWNER, type KeyPatch, type NewKeyInput } from "./validat
 
 const CACHE_MS = 60_000;
 const CACHE_MAX = 5_000;
+/** Mongo del backend es remoto: si no contesta en este tiempo, el pedido no lo espera. */
+const LOOKUP_TIMEOUT_MS = 1_500;
+/** Después de servir una respuesta vieja por una falla, se reintenta Mongo a los 10 s, no en cada pedido. */
+const STALE_RETRY_MS = 10_000;
 const OBJECT_ID = /^[a-f0-9]{24}$/;
 
 export interface ApiKeyRecord {
@@ -86,19 +90,40 @@ export function toRecord(doc: any): ApiKeyRecord {
   };
 }
 
+/** Una espera con tope. `setTimeout` (no un intervalo): no es trabajo programado dentro de la API. */
+function withDeadline<T>(work: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`Mongo no contestó en ${ms} ms`)), ms);
+  });
+  return Promise.race([work, deadline]).finally(() => clearTimeout(timer));
+}
+
 export function createKeyStore(
   model: KeyModel,
-  opts: { now?: () => number; generate?: () => string } = {}
+  opts: { now?: () => number; generate?: () => string; lookupTimeoutMs?: number } = {}
 ): KeyStore {
   const now = opts.now ?? Date.now;
   const generate = opts.generate ?? (() => generateCredential());
+  const lookupTimeoutMs = opts.lookupTimeoutMs ?? LOOKUP_TIMEOUT_MS;
   const cache = new Map<string, { at: number; record: ApiKeyRecord | null }>();
 
   return {
     async findActiveByHash(hash) {
       const hit = cache.get(hash);
       if (hit && now() - hit.at < CACHE_MS) return hit.record;
-      const doc = await model.findOne({ keyHash: hash, status: "active" }).lean();
+      let doc: any;
+      try {
+        doc = await withDeadline(model.findOne({ keyHash: hash, status: "active" }).lean(), lookupTimeoutMs);
+      } catch (e) {
+        // Mongo caído o colgado: la última respuesta conocida vale más que hacer esperar (o degradar)
+        // a un cliente que paga. Sin respuesta conocida, se tira y el middleware lo deja pasar.
+        if (hit) {
+          cache.set(hash, { at: now() - CACHE_MS + STALE_RETRY_MS, record: hit.record });
+          return hit.record;
+        }
+        throw e;
+      }
       const record = doc ? toRecord(doc) : null;
       if (cache.size >= CACHE_MAX) cache.clear();
       cache.set(hash, { at: now(), record });

@@ -19,6 +19,7 @@ function setup(start = 1_000_000) {
   const store = createKeyStore(model, {
     now: () => clock,
     generate: () => "cu_" + String(++n).padStart(32, "A"),
+    lookupTimeoutMs: 30,
   });
   return { model, store, tick: (ms: number) => (clock += ms) };
 }
@@ -80,6 +81,26 @@ describe("store de claves", () => {
     await store.create({ ...input, ownerUid: "otra", label: "Ajena" });
     expect((await store.list("uid-1")).map((r) => r.label)).toEqual(["Segunda", "Primera"]);
     expect(await store.list()).toHaveLength(3);
+  });
+
+  it("si Mongo se cuelga, corta a tiempo y sirve la última respuesta conocida", async () => {
+    const { model, store, tick } = setup();
+    const { plaintext } = await store.create(input);
+    const hash = hashCredential(plaintext);
+    expect(await store.findActiveByHash(hash)).toMatchObject({ label: "Pantalla" });
+    tick(61_000);
+    model.findOne = (() => ({ lean: () => new Promise(() => undefined) })) as any;
+    const started = Date.now();
+    expect(await store.findActiveByHash(hash)).toMatchObject({ label: "Pantalla" });
+    expect(Date.now() - started).toBeLessThan(1000);
+  });
+
+  it("sin respuesta conocida, un Mongo colgado falla rápido y no deja esperando al pedido", async () => {
+    const { model, store } = setup();
+    model.findOne = (() => ({ lean: () => new Promise(() => undefined) })) as any;
+    const started = Date.now();
+    await expect(store.findActiveByHash(hashCredential("cu_" + "B".repeat(32)))).rejects.toThrow();
+    expect(Date.now() - started).toBeLessThan(1000);
   });
 
   it("anota el último uso", async () => {
