@@ -103,6 +103,21 @@ npm run dev</code></pre>
         </VCol>
       </VRow>
 
+      <VCard variant="tonal" color="indigo" class="pa-4 mt-6">
+        <div class="d-flex flex-column flex-md-row align-md-center ga-3">
+          <div class="flex-grow-1">
+            <div class="d-flex align-center ga-2 mb-1">
+              <VIcon>mdi-domain</VIcon>
+              <span class="text-subtitle-1 font-weight-bold">{{ t('dev.business') }}</span>
+            </div>
+            <p class="text-body-2 mb-0">{{ t('dev.businessText') }}</p>
+          </div>
+          <VBtn :to="localePath('/empresas')" color="indigo" variant="flat" prepend-icon="mdi-key-plus">
+            {{ t('dev.businessCta') }}
+          </VBtn>
+        </div>
+      </VCard>
+
       <VCard variant="outlined" class="preferential-api-card pa-4 mt-6">
         <div class="d-flex flex-column flex-md-row align-md-center ga-3">
           <div class="flex-grow-1">

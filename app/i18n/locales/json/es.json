@@ -617,6 +617,9 @@
   "requested": {
     "nav": "Hecho a pedido"
   },
+  "empresas": {
+    "nav": "Datos para empresas"
+  },
   "dev": {
     "nav": "Desarrolladores",
     "title": "Desarrolladores",
@@ -635,7 +638,10 @@
     "mcp": "Servidor MCP",
     "mcpText": "Usá las cotizaciones desde Claude, Cursor y otros asistentes IA. Pegá esta configuración en tu cliente MCP.",
     "reference": "Referencia de la API",
-    "referenceText": "Explorá todos los endpoints, parámetros y respuestas. Probalos directamente desde acá."
+    "referenceText": "Explorá todos los endpoints, parámetros y respuestas. Probalos directamente desde acá.",
+    "business": "Datos para empresas",
+    "businessText": "¿Vas a usar la API en un producto? Creá una clave gratis para ver tu consumo, o escribinos por un plan con más capacidad y uso comercial.",
+    "businessCta": "Planes y claves"
   },
   "ecosystem": {
     "title": "Código abierto y ecosistema",
@@ -2475,7 +2481,8 @@
     "contactTitle": "Anunciar",
     "contactText": "Escribinos con tu producto y el formato que te interesa.",
     "contactSubject": "Publicidad en Cambio Uruguay",
-    "contactNote": "Respondemos con la audiencia del último mes, con fecha, y una propuesta."
+    "contactNote": "Respondemos con la audiencia del último mes, con fecha, y una propuesta.",
+    "apiLink": "¿Buscás datos y no anuncios? Planes de la API para empresas"
   },
   "sponsoredRow": {
     "cta": "Ver la oferta",

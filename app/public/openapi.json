@@ -4,7 +4,7 @@
     "title": "Cambio Uruguay Public API",
     "version": "1.0.0",
     "summary": "Real-time and historical exchange-rate data for Uruguay.",
-    "description": "Free, read-only, public REST API behind https://cambio-uruguay.com.\n\nIt aggregates buy/sell quotes from 38+ Uruguayan exchange houses and banks (BROU, BCU and private *cambios*), refreshed about every 10 minutes, plus branch locations, historical series and AI market insights.\n\nNo API key or authentication is required. Please be considerate with request volume and cache responses where you can.\n\n- Source code (open source): https://github.com/eduair94/cambio-uruguay\n- MCP server: https://mcp.cambio-uruguay.com/mcp\n- This document: https://cambio-uruguay.com/openapi.json",
+    "description": "Free, read-only, public REST API behind https://cambio-uruguay.com.\n\nIt aggregates buy/sell quotes from 38+ Uruguayan exchange houses and banks (BROU, BCU and private *cambios*), refreshed about every 10 minutes, plus branch locations, historical series and AI market insights.\n\nNo API key or authentication is required; an optional free key (https://cambio-uruguay.com/empresas) identifies you, meters your usage and applies your plan. Please be considerate with request volume and cache responses where you can.\n\n- Source code (open source): https://github.com/eduair94/cambio-uruguay\n- MCP server: https://mcp.cambio-uruguay.com/mcp\n- This document: https://cambio-uruguay.com/openapi.json",
     "contact": {
       "name": "Eduardo Airaudo",
       "url": "https://github.com/eduair94/cambio-uruguay"
@@ -17,6 +17,7 @@
   "servers": [
     { "url": "https://api.cambio-uruguay.com", "description": "Production" }
   ],
+  "security": [{}, { "ApiKeyAuth": [] }],
   "externalDocs": {
     "description": "GitHub repository",
     "url": "https://github.com/eduair94/cambio-uruguay"
@@ -31,6 +32,14 @@
     { "name": "System", "description": "Health and liveness probes." }
   ],
   "paths": {
+    "/usage": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Your plan and usage",
+        "description": "With a key, returns its plan, its limits and what was used this minute and today (Montevideo time). Without a key, the anonymous plan.",
+        "responses": { "200": { "description": "Plan, limits and usage" } }
+      }
+    },
     "/": {
       "get": {
         "tags": ["Rates"],
@@ -432,6 +441,14 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Optional. Without a key the API works under the anonymous ceiling; with one it identifies you, meters your usage and applies your plan. Also accepted as `Authorization: Bearer cu_…` or `?api_key=`. Free keys at https://cambio-uruguay.com/empresas."
+      }
+    },
     "parameters": {
       "Origin": {
         "name": "origin",

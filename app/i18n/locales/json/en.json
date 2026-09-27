@@ -614,6 +614,9 @@
   "requested": {
     "nav": "Built on request"
   },
+  "empresas": {
+    "nav": "Data for business"
+  },
   "dev": {
     "nav": "Developers",
     "title": "Developers",
@@ -632,7 +635,10 @@
     "mcp": "MCP server",
     "mcpText": "Use the rates from Claude, Cursor and other AI assistants. Paste this config into your MCP client.",
     "reference": "API reference",
-    "referenceText": "Browse every endpoint, parameter and response — and try them right here."
+    "referenceText": "Browse every endpoint, parameter and response — and try them right here.",
+    "business": "Data for business",
+    "businessText": "Using the API in a product? Create a free key to see your usage, or write to us for a plan with more capacity and commercial use.",
+    "businessCta": "Plans and keys"
   },
   "ecosystem": {
     "title": "Open source & ecosystem",
@@ -2464,7 +2470,8 @@
     "contactTitle": "Advertise",
     "contactText": "Write to us with your product and the format you are interested in.",
     "contactSubject": "Advertising on Cambio Uruguay",
-    "contactNote": "We reply with last month's audience, dated, and a proposal."
+    "contactNote": "We reply with last month's audience, dated, and a proposal.",
+    "apiLink": "Looking for data rather than ads? API plans for business"
   },
   "sponsoredRow": {
     "cta": "See the offer",

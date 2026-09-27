@@ -141,6 +141,9 @@
             <p class="text-caption mt-3 mb-0 publicidad-contact__note">
               {{ t('publicidad.contactNote') }}
             </p>
+            <p class="text-body-2 mt-4 mb-0">
+              <NuxtLink :to="localePath('/empresas')">{{ t('publicidad.apiLink') }}</NuxtLink>
+            </p>
           </VCard>
         </VCol>
       </VRow>

@@ -3790,6 +3790,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['desarrolladores', 'api', 'developers', 'json', 'endpoint', 'open source'],
       },
       {
+        to: '/empresas',
+        labelKey: 'empresas.nav',
+        icon: 'mdi-domain',
+        priority: 0.6,
+        changefreq: 'monthly',
+        keywords: [
+          'api empresas',
+          'datos cotizaciones',
+          'clave api',
+          'plan comercial',
+          'pizarra',
+          'monitoreo competencia',
+          'b2b',
+        ],
+      },
+      {
         to: '/api-cotizacion-intradia',
         labelKey: 'intradayApi.nav',
         icon: 'mdi-chart-timeline-variant',
