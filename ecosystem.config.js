@@ -294,6 +294,17 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Medidor de uso de la API (claves de empresas, classes/apikeys/): copia el hash de Redis de
+      // ayer y de hoy a Mongo `api_usage_days` y anota el último uso de cada clave. Fuera de la API
+      // porque currency-server es cluster ×2 y nada programado puede vivir adentro.
+      name: "currency-api-usage",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_api_usage.js",
+      cron_restart: "7 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // El comparador de transporte de `/conviene-auto-moto-o-omnibus-uruguay`: precios de cada modo,
       // la matriz de rutas entre las 68 zonas y los viajes en ómnibus armados con los horarios que
       // publica la Intendencia.
