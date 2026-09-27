@@ -42,6 +42,8 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
     },
     termsOfService: 'https://cambio-uruguay.com/terminos'
   },
+  // `{}` primero: sin clave también vale (la clave es opcional).
+  security: [{}, { ApiKeyAuth: [] }],
   servers: [
     {
       url: 'https://api.cambio-uruguay.com',
@@ -99,6 +101,15 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
     }
   ],
   components: {
+    securitySchemes: {
+      ApiKeyAuth: {
+        type: 'apiKey',
+        in: 'header',
+        name: 'X-API-Key',
+        description:
+          'Opcional. Sin clave la API funciona con el techo anónimo; con clave te identifica, mide tu uso y aplica tu plan. También se acepta `Authorization: Bearer cu_…` o `?api_key=`. Claves en https://cambio-uruguay.com/empresas.',
+      },
+    },
     schemas: {
       ExchangeData: {
         type: 'object',

@@ -67,6 +67,11 @@ import {
 import { REGIONAL_COUNTRY_CURRENCY } from "./classes/regional/types";
 import { origins } from "./classes/origins";
 import { redisCache } from "./classes/redis_cache";
+import { createApiKeyMiddleware } from "./classes/apikeys/middleware";
+import { apiKeyStore, usageDaysRepo } from "./classes/apikeys/mongo";
+import { adminAuth, registerApiKeyRoutes } from "./classes/apikeys/routes";
+import type { RedisLike } from "./classes/apikeys/counters";
+import { notifyAdmin } from "./classes/notify";
 import { ga4Configured } from "./classes/site-analytics/ga4";
 import { isPartialSyncRun } from "./classes/sync_health";
 import { emptyRealtime, fetchRealtime } from "./classes/site-analytics/realtime";
@@ -208,6 +213,36 @@ const main = async () => {
   }
   
   console.log("Start express");
+
+  // Claves de API, planes y medidor de uso (classes/apikeys/, docs/api/API_KEYS.md). Va antes de
+  // la primera ruta y después de CORS, así el preflight nunca llega. La API no exige clave: la usa
+  // para identificar, medir y dar el plan de cada cliente.
+  const apiKeyRedis = () => redisCache.getClient() as unknown as RedisLike | null;
+  server.getApp().use(
+    createApiKeyMiddleware({ redis: apiKeyRedis, lookup: (hash) => apiKeyStore().findActiveByHash(hash) })
+  );
+  registerApiKeyRoutes(server.getApp(), {
+    store: apiKeyStore,
+    usageRepo: usageDaysRepo,
+    redis: apiKeyRedis,
+    notify: (text) => notifyAdmin(text),
+  });
+
+  /**
+   * @openapi
+   * /usage:
+   *   get:
+   *     tags:
+   *       - Health
+   *     summary: Tu plan y tu consumo
+   *     description: |
+   *       Con una clave (`X-API-Key`, `Authorization: Bearer cu_…` o `?api_key=`) devuelve su plan,
+   *       sus límites y lo consumido en este minuto y en el día (Montevideo). Sin clave, el plan
+   *       anónimo. Claves gratuitas en https://cambio-uruguay.com/empresas.
+   *     responses:
+   *       200:
+   *         description: Plan, límites y consumo
+   */
   
   /**
    * @openapi
@@ -2197,7 +2232,7 @@ const main = async () => {
    *     tags:
    *       - Health
    *     summary: Limpiar cache Redis
-   *     description: Limpia todas las entradas del cache Redis.
+   *     description: Limpia todas las entradas del cache Redis. Requiere la cabecera X-Admin-Token.
    *     responses:
    *       200:
    *         description: Cache limpiado exitosamente
@@ -2211,9 +2246,9 @@ const main = async () => {
    *                 keysDeleted:
    *                   type: number
    */
-  server.postJson("cache/flush", async (req: Request): Promise<any> => {
+  server.getApp().post("/cache/flush", adminAuth(), async (_req: Request, res: Response) => {
     const deleted = await redisCache.flushAll();
-    return { flushed: true, keysDeleted: deleted };
+    res.json({ flushed: true, keysDeleted: deleted });
   });
 
   /**
