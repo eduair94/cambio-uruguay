@@ -45,16 +45,18 @@ export function firstHeader(value: unknown): string | undefined {
 
 /**
  * Orden: `X-API-Key`, `Authorization: Bearer cu_…`, `?api_key=`. Un `Authorization` que no es de
- * los nuestros (Basic, un JWT de otro servicio) se ignora: no es una clave mal escrita.
+ * los nuestros (Basic, un JWT de otro servicio) se ignora: no es una clave mal escrita. Un valor
+ * VACÍO tampoco es una clave: es el «Try it» de la documentación sin clave cargada, o una planilla
+ * con la celda en blanco, y tiene que funcionar como anónimo.
  */
 export function extractCredential(headers: HeaderBag, query: Record<string, unknown>): Extracted {
   const candidates: string[] = [];
-  const header = firstHeader(headers["x-api-key"]);
-  if (header !== undefined) candidates.push(header.trim());
+  const header = firstHeader(headers["x-api-key"])?.trim();
+  if (header) candidates.push(header);
   const auth = firstHeader(headers["authorization"]);
   if (auth && /^bearer\s+cu_/i.test(auth.trim())) candidates.push(auth.trim().replace(/^bearer\s+/i, ""));
-  const fromQuery = firstHeader(query["api_key"]);
-  if (fromQuery !== undefined) candidates.push(fromQuery.trim());
+  const fromQuery = firstHeader(query["api_key"])?.trim();
+  if (fromQuery) candidates.push(fromQuery);
   if (!candidates.length) return { kind: "none" };
   const value = candidates[0];
   return isWellFormed(value) ? { kind: "present", value } : { kind: "malformed" };

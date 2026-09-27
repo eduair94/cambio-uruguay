@@ -36,6 +36,13 @@ describe("credencial", () => {
     expect(extractCredential({}, { api_key: sample })).toEqual({ kind: "present", value: sample });
   });
 
+  it("una clave vacía es no mandar clave (el «Try it» de la documentación o una celda en blanco)", () => {
+    expect(extractCredential({ "x-api-key": "" }, {})).toEqual({ kind: "none" });
+    expect(extractCredential({ "x-api-key": "   " }, {})).toEqual({ kind: "none" });
+    expect(extractCredential({}, { api_key: "" })).toEqual({ kind: "none" });
+    expect(extractCredential({ "x-api-key": "" }, { api_key: "hola" })).toEqual({ kind: "malformed" });
+  });
+
   it("sin clave es anónimo, y un Authorization ajeno no cuenta como clave", () => {
     expect(extractCredential({}, {})).toEqual({ kind: "none" });
     expect(extractCredential({ authorization: "Basic dXNlcjpwYXNz" }, {})).toEqual({ kind: "none" });
@@ -43,7 +50,6 @@ describe("credencial", () => {
 
   it("una clave con otra forma es inválida, no anónima", () => {
     expect(extractCredential({ "x-api-key": "hola" }, {})).toEqual({ kind: "malformed" });
-    expect(extractCredential({}, { api_key: "" })).toEqual({ kind: "malformed" });
     expect(extractCredential({ authorization: "Bearer cu_corta" }, {})).toEqual({ kind: "malformed" });
   });
 });
