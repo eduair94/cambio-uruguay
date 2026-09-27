@@ -7,6 +7,7 @@
       <VTab value="saved">{{ $t('auth.saved') }}</VTab>
       <VTab value="favorites">{{ $t('auth.favorites') }}</VTab>
       <VTab value="alerts">{{ $t('alerts.tab') }}</VTab>
+      <VTab value="api">API</VTab>
     </VTabs>
 
     <VTabsWindow v-model="tab">
@@ -89,6 +90,10 @@
         <RentalAlertPanel />
         <AccountAlertsPanel />
       </VTabsWindowItem>
+      <VTabsWindowItem value="api">
+        <AccountApiKeysPanel />
+        <AccountApiClientsAdminPanel />
+      </VTabsWindowItem>
     </VTabsWindow>
     <RentalAlertDialog />
   </VContainer>
@@ -109,14 +114,14 @@ const favorites = useFavoritesState()
 
 const route = useRoute()
 const tab = ref(
-  ['saved', 'favorites', 'alerts'].includes(String(route.query.tab))
+  ['saved', 'favorites', 'alerts', 'api'].includes(String(route.query.tab))
     ? String(route.query.tab)
     : 'saved'
 )
 watch(
   () => route.query.tab,
   value => {
-    if (['saved', 'favorites', 'alerts'].includes(String(value))) tab.value = String(value)
+    if (['saved', 'favorites', 'alerts', 'api'].includes(String(value))) tab.value = String(value)
   }
 )
 const saved = ref<any[]>([])
