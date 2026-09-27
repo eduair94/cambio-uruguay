@@ -97,6 +97,14 @@ class RedisCacheService {
   }
 
   /**
+   * Cliente crudo para los contadores de las claves de API (classes/apikeys/counters.ts). `null`
+   * si Redis no está conectado: quien lo pide deja pasar el pedido sin límite y sin medir.
+   */
+  getClient(): Redis | null {
+    return this.connected && this.client ? this.client : null;
+  }
+
+  /**
    * Get a cached value by key.
    * Returns null if not found or Redis is unavailable.
    */
