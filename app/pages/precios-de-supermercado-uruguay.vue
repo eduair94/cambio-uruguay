@@ -1029,7 +1029,7 @@ const faqItems: FaqItem[] = [
 // pasados de 60 y no hace falta gastar el 34 aca.
 const title = 'Precios de supermercado en Uruguay'
 const description =
-  'Precios de góndola declarados al SIPC (Ministerio de Economía), producto por producto y local por local, con la fecha de cada dato y el histórico que el Estado no guarda.'
+  'Precios de góndola declarados al SIPC (MEF), local por local y con la fecha que declara cada uno: una góndola de más de dos semanas no encabeza.'
 const canonicalUrl = 'https://cambio-uruguay.com/precios-de-supermercado-uruguay'
 
 useSeoMeta({

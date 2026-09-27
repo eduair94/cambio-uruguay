@@ -569,8 +569,7 @@ const canonicalUrl = 'https://cambio-uruguay.com/ciberlunes-y-black-friday-urugu
 // vigila `tests/unit/seoTitleBudget.test.ts`. El H1 sí puede ser más largo y explícito.
 const title = 'CyberLunes y Black Friday: ¿descuento real?'
 const description =
-  'Bajas reales y precios tachados por encima del historial propio en CyberLunes y Black Friday ' +
-  'Uruguay: qué tiendas relevamos, desde cuándo, y qué dice la Ley 17.250 sobre el precio tachado.'
+  'Una baja cuenta si hoy está 10 % debajo del propio mínimo de 60 días del aviso, y un tachado si está 10 % encima de su máximo. Y qué exige la Ley 17.250.'
 
 defineOgImageComponent('Cambio', {
   title: 'CyberLunes y Black Friday',

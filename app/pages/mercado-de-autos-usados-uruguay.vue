@@ -472,7 +472,7 @@ const headline = computed(() => [
 const canonical = `https://cambio-uruguay.com${CAR_REPORT_PATH}`
 const title = 'Mercado de autos usados en Uruguay'
 const description =
-  'Informe del mercado de autos usados en Uruguay: precios medianos, modelos con más oferta, cuánto pierde por año cada modelo, qué comprás con cada presupuesto y cuánto margen hay para negociar.'
+  'Mide oferta, no ventas: en Uruguay las transferencias de usados no se publican por modelo. Precios medianos, depreciación y margen de negociación.'
 
 useSeoMeta({
   title: `${title} | Cambio Uruguay`,

@@ -130,13 +130,14 @@ const measured = pageFiles()
   }))
   .filter((page): page is { file: string; description: string } => page.description !== null)
 
-// 145 el 2026-09-26 (141 el 2026-09-24, 133 el 2026-09-20), que es el conteo real y no un número
+// 146 el 2026-09-27 (145 el 2026-09-26, 141 el 2026-09-24, 133 el 2026-09-20), que es el conteo
+// real y no un número
 // redondo: el sobrante de un piso más bajo alcanzaría para que una descripción nueva saliera cortada
 // sin poner nada en rojo. Sube con cada página nueva que declara su descripción como literal, y baja
 // sólo si alguien vuelve dinámica una que hoy se mide — que es justamente lo que este piso tiene que
 // delatar. Las cuatro que subieron el piso desde el 24/9 se habían publicado sin volver a apretarlo,
 // que es la única forma en que este número se queda flojo.
-const RESOLVED = 145
+const RESOLVED = 146
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente
@@ -278,8 +279,43 @@ const RESOLVED = 145
 // su fila del libro de cambios está midiendo hasta esa fecha y tocarle la descripción ahora le
 // cambia el sujeto al experimento.
 //
-// Quedan 13 para las próximas corridas, y este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 13
+// 13 → 1 el 2026-09-27, novena corrida: las DOCE que quedaban, de 192 a 161 caracteres, todas del
+// tramo `dato-vivo`/`directorio` — o sea las que la octava corrida dejó a propósito para el final
+// porque rinden 0,2× el promedio del sitio contra el 8× del tramo `contenido`
+// (`classes/revenueplan/value.ts`). Se hacen ahora porque son las últimas: con esta tanda el
+// ratchet queda en la única reservada, y a partir de acá cualquier descripción que salga cortada
+// es una que se escribió hoy, no deuda vieja.
+//
+// El patrón de las doce es el de siempre y vale nombrarlo una vez más porque acá se ve en su forma
+// más pura: once abrían con la ETIQUETA DE FORMATO del directorio («Informe del mercado de autos
+// usados en Uruguay:», «Endpoints públicos y gratuitos», «Directorio de sucursales de casas de
+// cambio y bancos en Uruguay:», «Precios de motos usadas en Uruguay:», «Cuánta gente usa
+// cambio-uruguay.com:»), que es exactamente el renglón que el SERP publica, y la afirmación que
+// diferencia a la página caía del lado cortado. Ahora arranca la afirmación: que el informe de
+// autos MIDE OFERTA Y NO VENTAS —en Uruguay las transferencias de usados no se publican por
+// modelo, que es la razón por la que el dato no existe y no un descargo—; que la API no pide
+// registro ni clave, con los siete dólares argentinos desde 2011 y el observado chileno desde
+// 1984; que una baja de CyberLunes sólo cuenta si hoy está 10 % debajo del propio mínimo de 60
+// días del aviso; que las motos eléctricas van aparte y nunca se promedian con las de nafta; y que
+// en el SIPC una góndola de más de dos semanas no encabeza el «más barato».
+//
+// Dos no fueron recortes de etiqueta. `/api-cotizaciones-regionales` decía «series diarias desde
+// 1995», que es la fecha del PTAX y la más TARDÍA de las que la página enumera: el observado
+// chileno arranca en 1984, así que el snippet vendía once años menos de historia que la que hay.
+// Y `/precios-de-supermercado-uruguay` prometía «el histórico que el Estado no guarda», que es
+// cierto del backend pero NO está afirmado en ninguna parte del cuerpo de la página; una
+// descripción que promete algo que la página no sostiene gana el clic y lo devuelve, así que en su
+// lugar va la regla de frescura que la página sí documenta.
+//
+// Ninguna cifra es nueva: todas ya estaban en la descripción vieja o en el cuerpo de su página. Y
+// ninguna cifra VIVA se copió a un literal —el margen de negociación del informe, los usuarios de
+// los últimos 28 días, el descuento medido de los autos que declaran deuda—: ésas se arman en
+// tiempo de render y congelarlas acá es el error recurrente del repo.
+//
+// Queda 1, y es `/fecha-de-cobro-bps-uruguay` (156, uno solo de más), RESERVADA hasta después del
+// 2026-10-18: su fila del libro de cambios está midiendo hasta esa fecha y tocarle la descripción
+// ahora le cambia el sujeto al experimento. Este número SÓLO PUEDE BAJAR.
+const OVER_BUDGET = 1
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {

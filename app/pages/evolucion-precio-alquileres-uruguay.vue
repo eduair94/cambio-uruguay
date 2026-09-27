@@ -95,7 +95,7 @@ const faq = computed(() => marketSeriesFaq('alquiler', data.value?.index?.tracki
 const canonicalUrl = 'https://cambio-uruguay.com/evolucion-precio-alquileres-uruguay'
 const title = 'Evolución del alquiler en Uruguay'
 const description =
-  'Cuánto se pide de alquiler por barrio, tipo y dormitorios, y cuánto cambió el mismo aviso en 7, 30 y 90 días. Pesos y dólares por separado, actualizado a diario.'
+  'Cuánto se pide de alquiler por barrio, tipo y dormitorios, y cuánto cambió el mismo aviso en 7, 30 y 90 días. Pesos y dólares nunca se mezclan.'
 
 defineOgImageComponent('Cambio', {
   title: 'Evolución del alquiler',

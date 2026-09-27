@@ -101,7 +101,7 @@ const visibleGroups = computed(() => {
 const canonicalUrl = 'https://cambio-uruguay.com/sucursal'
 const title = 'Sucursales de casas de cambio y bancos'
 const description =
-  'Directorio de sucursales de casas de cambio y bancos en Uruguay: dirección, teléfono y horario de cada mostrador, con la cotización del dólar que publica esa casa hoy.'
+  'Dirección, teléfono y horario de cada mostrador de casas de cambio y bancos de Uruguay, con la cotización del dólar que publica esa casa hoy.'
 
 defineOgImageComponent('Cambio', { title, subtitle: description, tag: 'SUCURSALES' })
 

@@ -538,7 +538,7 @@ const faq = computed<FaqItem[]>(() => [
 const CANONICAL = `https://cambio-uruguay.com${MOTOS_PATH}`
 const TITLE = 'Motos usadas en venta en Uruguay'
 const DESCRIPTION =
-  'Precios de motos usadas en Uruguay: avisos vigentes con año, cilindrada, kilómetros y departamento, y la ficha de cada modelo con su rango de precios y cuánto pierde por año.'
+  'Avisos vigentes de motos usadas con año, cilindrada, kilómetros y departamento. Las eléctricas van aparte: nunca se promedian con las de nafta.'
 
 defineOgImageComponent('Cambio', {
   title: TITLE,

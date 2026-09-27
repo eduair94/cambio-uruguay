@@ -289,7 +289,7 @@ function clear() {
 const canonical = `https://cambio-uruguay.com${CAR_OPPORTUNITIES_PATH}`
 const title = 'Oportunidades en autos usados en Uruguay'
 const description =
-  'Autos usados que piden menos que otros avisos del mismo modelo, año, versión, motor y caja en Uruguay, con los comparables a la vista y cada ficha revisada. No es una tasación.'
+  'Autos que piden menos que otros del mismo modelo, año, versión, motor y caja, con los comparables a la vista y cada ficha revisada. No es una tasación.'
 
 useSeoMeta({
   title: `${title} | Cambio Uruguay`,

@@ -87,7 +87,7 @@ const faq = computed(() => marketSeriesFaq('venta', data.value?.index?.trackingS
 const canonicalUrl = 'https://cambio-uruguay.com/evolucion-precio-viviendas-uruguay'
 const title = 'Evolución del precio de la vivienda'
 const description =
-  'Cuánto se pide por casas y apartamentos en venta por barrio, en total y por m² construido, y cuánto cambió el mismo aviso en 7, 30 y 90 días. Actualizado a diario.'
+  'Casas y apartamentos por barrio: cuánto se pide en total y por m² construido, y cuánto cambió el mismo aviso en 7, 30 y 90 días. Pesos y dólares aparte.'
 
 defineOgImageComponent('Cambio', {
   title: 'Evolución del precio de la vivienda',

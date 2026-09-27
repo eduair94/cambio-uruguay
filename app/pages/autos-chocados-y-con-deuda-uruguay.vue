@@ -356,7 +356,7 @@ function clear() {
 const canonical = `https://cambio-uruguay.com${CAR_RISKS_PATH}`
 const title = 'Autos con deuda o chocados en Uruguay'
 const description =
-  'Avisos de autos usados cuyo vendedor declara deuda, choque, recupero de seguro o papeles pendientes, con la frase del aviso y cuánto menos piden que el mismo auto sin declarar nada.'
+  'Lo que el vendedor declara —deuda, choque, recupero de seguro, papeles pendientes— con su frase textual y cuánto menos pide que los que no declaran nada.'
 
 useSeoMeta({
   title: `${title} | Cambio Uruguay`,

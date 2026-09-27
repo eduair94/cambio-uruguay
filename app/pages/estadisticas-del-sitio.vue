@@ -613,7 +613,7 @@ function metricValue(metric: SummaryMetric): string {
 
 const title = 'Estadísticas del sitio'
 const description =
-  'Cuánta gente usa cambio-uruguay.com: usuarios, sesiones, páginas más leídas, de dónde llegan y con qué dispositivo. Datos agregados de Google Analytics 4, actualizados todos los días.'
+  'Usuarios, sesiones y páginas más leídas de cambio-uruguay.com en los últimos 28 días, de dónde llegan y con qué dispositivo. Datos de GA4, en público.'
 const canonicalUrl = 'https://cambio-uruguay.com/estadisticas-del-sitio'
 
 defineOgImageComponent('Cambio', {

@@ -404,7 +404,7 @@ function apply() {
 const canonical = `https://cambio-uruguay.com${CAR_VALUATION_PATH}`
 const title = '¿Cuánto vale mi auto usado en Uruguay?'
 const description =
-  'Calculá cuánto se pide hoy por tu auto usado en Uruguay: modelo, año y kilómetros contra los avisos vigentes de Mercado Libre, Facebook y automotoras, con el rango y cómo publicarlo.'
+  'Marca, modelo, año y kilómetros contra los avisos vigentes de Mercado Libre, Facebook y ocho webs de automotoras, corregido por kilometraje.'
 
 useSeoMeta({
   title: `${title} | Cambio Uruguay`,

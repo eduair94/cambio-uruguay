@@ -685,6 +685,54 @@
         "me cobran algo que no autorice"
       ],
       "hypothesis": "Octava corrida del trinquete de descripciones, y la primera elegida por TRAMO y no por largo: las once que quedaban del tramo contenido (8x el promedio del sitio por vista) de las 24 pasadas de 155 caracteres. Seis gastaban el renglon que el SERP publica en el formato o en la pregunta; cinco tenian la respuesta adelante pero cortaban el dato que la decide. Ahora entran enteras y arrancan por ese dato: la exoneracion Itau-Prex y los $ 45 de la vuelta, el certificado contable con el 40 % de ANDA, el calendario por digito mas ASSE en cualquier momento, los topes de monotributo y Literal E, Ahiva contra el portal del courier, la franquicia que no existe sin cedula, el 4,0 % del Dto. 339/025 y las tarifas del pasaporte. Ninguna cifra es nueva. Misma apuesta que midio la cuarta corrida: mismo puesto, mas clics, y esta vez sobre el tramo que mas rinde por vista."
+    },
+    {
+      "id": "descripciones-del-tramo-dato-vivo",
+      "shippedOn": "2026-09-27",
+      "routes": [
+        "/mercado-de-autos-usados-uruguay",
+        "/api-cotizaciones-regionales",
+        "/ciberlunes-y-black-friday-uruguay",
+        "/estadisticas-del-sitio",
+        "/cuanto-vale-mi-auto-uruguay",
+        "/autos-chocados-y-con-deuda-uruguay",
+        "/oportunidades-autos-usados-uruguay",
+        "/motos-usadas-uruguay",
+        "/precios-de-supermercado-uruguay",
+        "/sucursal",
+        "/evolucion-precio-viviendas-uruguay",
+        "/evolucion-precio-alquileres-uruguay"
+      ],
+      "queries": [
+        "mercado de autos usados uruguay",
+        "api cotizaciones dolar region",
+        "ciberlunes uruguay descuentos reales",
+        "cuanto vale mi auto uruguay",
+        "autos con deuda uruguay",
+        "oportunidades autos usados uruguay",
+        "precios motos usadas uruguay",
+        "precios de supermercado uruguay",
+        "sucursales casas de cambio uruguay",
+        "precio alquileres por barrio montevideo"
+      ],
+      "hypothesis": "Novena corrida del trinquete de descripciones, y la que lo cierra: las doce que quedaban pasadas de 155 caracteres (192 a 161), todas del tramo dato-vivo/directorio que la octava dejo para el final por rendir 0,2x el promedio del sitio por vista contra 8x el tramo contenido. Once abrian con la etiqueta de formato del directorio -\"Informe del mercado de\", \"Endpoints publicos y gratuitos\", \"Directorio de sucursales de\"- que es justo el renglon que el SERP publica, y la afirmacion que diferencia la pagina caia del lado cortado. Ahora arranca la afirmacion: que el informe mide OFERTA y no ventas porque en Uruguay las transferencias de usados no se publican por modelo, que la API no pide registro ni clave, que una baja de CyberLunes solo cuenta 10 % debajo del propio minimo de 60 dias, que las motos electricas nunca se promedian con las de nafta, y que en el SIPC una gondola de mas de dos semanas no encabeza. Dos no fueron recorte de etiqueta sino de exactitud: la API decia \"series desde 1995\" cuando el observado chileno arranca en 1984, y supermercado prometia un historico que el cuerpo de la pagina no afirma. Ninguna cifra es nueva. Misma apuesta que las ocho anteriores: mismo puesto, mas clics."
+    },
+    {
+      "id": "certificado-unico-dgi",
+      "shippedOn": "2026-09-27",
+      "routes": [
+        "/certificado-unico-dgi-uruguay"
+      ],
+      "queries": [
+        "certificado unico dgi",
+        "certificado unico dgi vigencia",
+        "certificado unico para vender inmueble",
+        "certificado unico dgi vender auto",
+        "formulario 5000 dgi",
+        "consulta certificado unico dgi",
+        "necesito certificado unico si cobro sueldo"
+      ],
+      "hypothesis": "Pagina nueva para un hueco real: el sitio ya tenia los certificados del BPS y el unico departamental, pero el certificado unico de la DGI -el que el art. 80 del Titulo 1 pone como condicion para enajenar un inmueble o un auto- no estaba en ninguna parte. La apuesta es que la consulta se gana contestando lo que las gestorias no contestan: que a la persona fisica con rentas de trabajo dependiente la DGI NO se lo emite (Res. 4127/015 art. 1 lit. d, y lit. j para los contribuyentes del ITP), asi que el asalariado que va a vender su apartamento no tiene un tramite pendiente sino un regimen que no lo alcanza. Lleva los cinco actos que el art. 80 bloquea, los diez literales de la exclusion con su salvedad, los tres motivos de suspension -uno es el impuesto de primaria, que ya tiene pagina- y el timbre de $ 270 de la tabla vigente en vez del importe vencido que publica la ficha del tramite."
     }
   ]
 }
