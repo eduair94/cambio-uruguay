@@ -108,6 +108,18 @@ describe("rutas de administración", () => {
     expect(gone.body.apiKey.status).toBe("revoked");
   });
 
+  it("las notas del administrador nunca le llegan al dueño de la clave", async () => {
+    const { call } = await start();
+    const { body } = await call("POST", "/admin/api-keys", alta);
+    const id = body.apiKey.id;
+    await call("PATCH", `/admin/api-keys/${id}`, { notes: "Precio acordado, pago atrasado" });
+    const own = await call("GET", "/admin/api-keys?ownerUid=uid-1");
+    expect(own.body.keys[0]).not.toHaveProperty("notes");
+    const renamed = await call("PATCH", `/admin/api-keys/${id}`, { ownerUid: "uid-1", label: "Otra" });
+    expect(renamed.body.apiKey).not.toHaveProperty("notes");
+    expect((await call("GET", "/admin/api-keys")).body.keys[0].notes).toBe("Precio acordado, pago atrasado");
+  });
+
   it("lista por dueño", async () => {
     const { call } = await start();
     await call("POST", "/admin/api-keys", alta);

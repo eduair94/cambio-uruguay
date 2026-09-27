@@ -55,6 +55,12 @@ function newKeyMessage(record: ApiKeyRecord): string {
   return lines.join("\n");
 }
 
+/** Lo que ve el dueño de una clave: todo menos las notas internas del administrador. */
+function forOwner(record: ApiKeyRecord): Omit<ApiKeyRecord, "notes"> {
+  const { notes: _notes, ...visible } = record;
+  return visible;
+}
+
 function fail(res: Response, e: unknown) {
   console.error("[apikeys] ruta de administración:", (e as Error)?.message || e);
   return res.status(500).json({ error: "internal", message: "No se pudo completar la operación." });
@@ -70,7 +76,7 @@ export function registerApiKeyRoutes(app: Application, deps: RouteDeps): void {
     try {
       const { record, plaintext } = await deps.store().create(parsed.value);
       void deps.notify(newKeyMessage(record)).catch(() => false);
-      return res.status(201).json({ key: plaintext, apiKey: record });
+      return res.status(201).json({ key: plaintext, apiKey: forOwner(record) });
     } catch (e) {
       if (e instanceof TooManyKeysError) {
         return res.status(409).json({
@@ -85,7 +91,8 @@ export function registerApiKeyRoutes(app: Application, deps: RouteDeps): void {
   app.get("/admin/api-keys", auth, async (req, res) => {
     try {
       const ownerUid = typeof req.query.ownerUid === "string" && req.query.ownerUid ? req.query.ownerUid : undefined;
-      return res.json({ keys: await deps.store().list(ownerUid) });
+      const keys = await deps.store().list(ownerUid);
+      return res.json({ keys: ownerUid ? keys.map(forOwner) : keys });
     } catch (e) {
       return fail(res, e);
     }
@@ -100,7 +107,7 @@ export function registerApiKeyRoutes(app: Application, deps: RouteDeps): void {
     try {
       const updated = await deps.store().update(String(req.params.id), parsed.value, ownerUid);
       if (!updated) return res.status(404).json({ error: "not_found", message: "No existe esa clave." });
-      return res.json({ apiKey: updated });
+      return res.json({ apiKey: ownerUid ? forOwner(updated) : updated });
     } catch (e) {
       return fail(res, e);
     }

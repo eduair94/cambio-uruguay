@@ -47,7 +47,7 @@ export interface ApiKeyRecord {
   createdAt: string
   revokedAt: string | null
   lastUsedAt: string | null
-  notes: string | null
+  notes?: string | null
 }
 
 export interface ClientSummary {
