@@ -733,6 +733,24 @@
         "necesito certificado unico si cobro sueldo"
       ],
       "hypothesis": "Pagina nueva para un hueco real: el sitio ya tenia los certificados del BPS y el unico departamental, pero el certificado unico de la DGI -el que el art. 80 del Titulo 1 pone como condicion para enajenar un inmueble o un auto- no estaba en ninguna parte. La apuesta es que la consulta se gana contestando lo que las gestorias no contestan: que a la persona fisica con rentas de trabajo dependiente la DGI NO se lo emite (Res. 4127/015 art. 1 lit. d, y lit. j para los contribuyentes del ITP), asi que el asalariado que va a vender su apartamento no tiene un tramite pendiente sino un regimen que no lo alcanza. Lleva los cinco actos que el art. 80 bloquea, los diez literales de la exclusion con su salvedad, los tres motivos de suspension -uno es el impuesto de primaria, que ya tiene pagina- y el timbre de $ 270 de la tabla vigente en vez del importe vencido que publica la ficha del tramite."
+    },
+    {
+      "id": "bps-jubilacion-en-su-tema",
+      "shippedOn": "2026-09-27",
+      "routes": [
+        "/cuando-me-puedo-jubilar-uruguay",
+        "/reconocer-anos-trabajados-uruguay",
+        "/desvincularme-de-la-afap-uruguay",
+        "/fecha-de-cobro-bps-uruguay",
+        "/suplemento-solidario-bps",
+        "/pension-a-la-vejez-uruguay",
+        "/elecciones-bps-2026",
+        "/certificados-bps-uruguay",
+        "/certificado-unico-dgi-uruguay",
+        "/declaracion-de-irpf-uruguay",
+        "/devolucion-fonasa-uruguay"
+      ],
+      "hypothesis": "Once paginas del tramo contenido -el BPS, la jubilacion, el IRPF y los certificados- no figuraban en ningun tema de guideHubs, asi que no dibujaban el bloque 'Mas sobre este tema' y no se enlazaban entre si aunque contestan la misma pregunta. Sumarlas a sus temas las conecta con el tema entero en los dos sentidos, sin tocar el texto de ninguna pagina."
     }
   ]
 }

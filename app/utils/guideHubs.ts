@@ -954,6 +954,16 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/herramientas/calculadora-irpf',
       },
       {
+        label: 'Declaración de IRPF',
+        description: 'Quién está obligado, desde qué sueldo retienen y qué pasa si da a pagar.',
+        to: '/declaracion-de-irpf-uruguay',
+      },
+      {
+        label: 'Devolución de FONASA',
+        description: 'Quién cobra el excedente del aporte, cuánto es y desde cuándo se paga.',
+        to: '/devolucion-fonasa-uruguay',
+      },
+      {
         label: 'Calculadora de aguinaldo',
         description: 'Tu SAC según lo ganado.',
         to: '/herramientas/calculadora-aguinaldo',
@@ -1233,6 +1243,44 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Las dudas más comunes, respondidas.',
         to: '/preguntas-economia-personal',
       },
+      // El BPS y la jubilación: el tema se llama "y jubilación" y sus páginas propias estaban
+      // fuera de él (sólo entraban las guías), así que las siete se ignoraban entre sí.
+      {
+        label: '¿Cuándo me puedo jubilar?',
+        description: 'La edad y los años de trabajo que pide tu generación, según la Ley 20.130.',
+        to: '/cuando-me-puedo-jubilar-uruguay',
+      },
+      {
+        label: 'Reconocer años trabajados',
+        description:
+          'Lo anterior al 1/4/1996 no figura en la historia laboral: el plazo por fecha de nacimiento.',
+        to: '/reconocer-anos-trabajados-uruguay',
+      },
+      {
+        label: 'Desvincularme de una AFAP',
+        description: 'Revocar la opción del artículo 8, entre los 40 y los 49 años.',
+        to: '/desvincularme-de-la-afap-uruguay',
+      },
+      {
+        label: 'Fecha de cobro del BPS',
+        description: 'Cuándo y dónde cobrás, y cómo consultar tu fecha por mensaje.',
+        to: '/fecha-de-cobro-bps-uruguay',
+      },
+      {
+        label: 'Suplemento solidario del BPS',
+        description: 'Quién lo cobra, cuánto paga y cómo pedirlo.',
+        to: '/suplemento-solidario-bps',
+      },
+      {
+        label: 'Pensión a la vejez',
+        description: 'Requisitos y monto de la prestación para mayores sin jubilación.',
+        to: '/pension-a-la-vejez-uruguay',
+      },
+      {
+        label: 'Elecciones del BPS 2026',
+        description: 'Quién está obligado a votar y cuánto es la multa.',
+        to: '/elecciones-bps-2026',
+      },
       {
         label: 'Estafas en Uruguay',
         description: 'Reconocer y evitar fraudes.',
@@ -1453,6 +1501,16 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Certificado de antecedentes judiciales',
         description: 'Cuánto sale hoy en pesos, los dos certificados y cuándo vence.',
         to: '/certificado-de-antecedentes-judiciales-uruguay',
+      },
+      {
+        label: 'Certificados del BPS',
+        description: 'El común y el especial, qué actos exige cada uno y cuánto duran.',
+        to: '/certificados-bps-uruguay',
+      },
+      {
+        label: 'Certificado Único de DGI',
+        description: 'Cuándo hace falta, a quién no se lo emiten y qué sale la solicitud.',
+        to: '/certificado-unico-dgi-uruguay',
       },
       {
         label: 'Cuánto sale la cédula',
