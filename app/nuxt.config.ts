@@ -1381,6 +1381,9 @@ export default defineNuxtConfig({
     // trigger for the daily driver ingest). Unset -> endpoint is open, mirroring
     // /api/blog/generate's NUXT_BLOG_GENERATE_TOKEN pattern.
     driversIngestToken: process.env.NUXT_DRIVERS_INGEST_TOKEN || '',
+    // Token compartido con la API (`API_ADMIN_TOKEN` del backend) para las rutas /admin/* de las
+    // claves de empresas (server/utils/apiAdmin.ts). Sólo servidor; se hornea en el build.
+    apiAdminToken: process.env.NUXT_API_ADMIN_TOKEN || '',
     // Comma-separated emails allowed to read /api/search-console (the private Search Console
     // dashboard). Baked from .env at build like everything else here — pm2's runtime env is empty,
     // so a process.env read would be undefined in prod. UNSET MEANS THE ROUTE 503s, on purpose:
