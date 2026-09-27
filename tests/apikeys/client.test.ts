@@ -9,9 +9,21 @@ describe("IP del cliente", () => {
   });
 
   it("internas: loopback siempre, más las de API_INTERNAL_IPS", () => {
-    const set = internalIps({ API_INTERNAL_IPS: "104.234.204.107, 10.0.0.2" } as NodeJS.ProcessEnv);
+    const set = internalIps({ API_INTERNAL_IPS: "104.234.204.107, 10.0.0.2" } as NodeJS.ProcessEnv, {});
     expect([...set].sort()).toEqual(["10.0.0.2", "104.234.204.107", "127.0.0.1", "::1"]);
-    expect(internalIps({} as NodeJS.ProcessEnv).has("127.0.0.1")).toBe(true);
+    expect(internalIps({} as NodeJS.ProcessEnv, {}).has("127.0.0.1")).toBe(true);
+  });
+
+  it("las direcciones propias de la máquina son internas aunque falte la variable", () => {
+    const interfaces = {
+      eth0: [
+        { address: "104.234.204.107", family: "IPv4" },
+        { address: "2602:ffd5:1:1::10", family: "IPv6" },
+      ],
+    } as any;
+    const set = internalIps({} as NodeJS.ProcessEnv, interfaces);
+    expect(set.has("104.234.204.107")).toBe(true);
+    expect(set.has("2602:ffd5:1:1::10")).toBe(true);
   });
 });
 

@@ -4,6 +4,7 @@
 // La IP sale de `CF-Connecting-IP` si viene. Quien le pegue directo al origen puede falsificarla (o
 // el Referer) y saltarse el techo anónimo: está aceptado en el diseño, porque antes no había techo
 // alguno y lo que se vende —el plan de una clave— no depende de la IP.
+import { networkInterfaces } from "os";
 import { firstHeader, type HeaderBag } from "./credential";
 
 const LOOPBACK = ["127.0.0.1", "::1"];
@@ -20,13 +21,24 @@ export function clientIp(headers: HeaderBag, reqIp?: string): string {
   return normalizeIp(cf && cf.trim() ? cf : reqIp);
 }
 
-/** Loopback siempre (el SSR del sitio, el MCP y los bots viven en el VPS) más `API_INTERNAL_IPS`. */
-export function internalIps(env: NodeJS.ProcessEnv = process.env): Set<string> {
+type Interfaces = ReturnType<typeof networkInterfaces>;
+
+/**
+ * Loopback siempre, las direcciones de la propia máquina (IPv4 e IPv6: el SSR del sitio le pega a
+ * la IP pública del VPS, y el MCP y los bots salen por Cloudflare con la del VPS) y además
+ * `API_INTERNAL_IPS`. Las propias salen de la máquina y no de la configuración: si la variable
+ * falta o está mal escrita, el sitio no puede terminar compartiendo un solo techo anónimo.
+ */
+export function internalIps(env: NodeJS.ProcessEnv = process.env, interfaces: Interfaces = networkInterfaces()): Set<string> {
+  const own = Object.values(interfaces)
+    .flat()
+    .map((info) => normalizeIp(info?.address))
+    .filter((ip) => ip !== "unknown");
   const extra = String(env.API_INTERNAL_IPS || "")
     .split(/[\s,;]+/)
     .map((ip) => normalizeIp(ip))
     .filter((ip) => ip !== "unknown");
-  return new Set([...LOOPBACK, ...extra]);
+  return new Set([...LOOPBACK, ...own, ...extra]);
 }
 
 /**
