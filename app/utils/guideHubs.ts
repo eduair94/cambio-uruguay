@@ -906,6 +906,16 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Cuándo prescriben las deudas con organismos públicos.',
         to: '/prescripcion-de-deudas-con-el-estado-uruguay',
       },
+      {
+        label: '¿Cuotas o contado?',
+        description: 'La tasa que el comercio no te dice, contra lo que rinde la plata quieta.',
+        to: '/conviene-comprar-en-cuotas',
+      },
+      {
+        label: '¿Conviene pagar todo con crédito?',
+        description: 'Lo que rinde el flote contra los puntos de IVA que resignás.',
+        to: '/conviene-pagar-todo-con-credito-uruguay',
+      },
     ],
     terms: ['tasa-efectiva-anual', 'tasa-de-interes', 'interes-compuesto'],
     relatedHubs: [
@@ -1462,6 +1472,36 @@ export const guideHubs: readonly GuideHub[] = [
         label: '¿Cuánto vale una milla de Itaú?',
         description: 'Lo que rinde en pesos cada milla del programa.',
         to: '/cuanto-vale-una-milla-itau-uruguay',
+      },
+      {
+        label: 'Descuento de IVA con tarjeta',
+        description: 'Cuántos puntos de IVA te saca el débito, con su decreto y hasta cuándo rige.',
+        to: '/descuento-de-iva-con-tarjeta-uruguay',
+      },
+      {
+        label: 'Pagar cuentas con tarjeta',
+        description: 'UTE, OSE, Antel y la patente por Totalnet, y quién paga la comisión.',
+        to: '/pagar-cuentas-con-tarjeta',
+      },
+      {
+        label: 'Comisiones de Mercado Pago',
+        description: 'Qué te descuenta por cobrar, según el medio y el plazo.',
+        to: '/comisiones-mercado-pago-uruguay',
+      },
+      {
+        label: 'Tarjetas de socio',
+        description: 'Las que no son de crédito ni de débito: qué cuestan y qué descuentan.',
+        to: '/tarjetas-de-socio-uruguay',
+      },
+      {
+        label: 'Apps y clubes de beneficios',
+        description: 'Cuánto devuelve cada club, qué cuesta y cuándo vencen los puntos.',
+        to: '/apps-de-beneficios-uruguay',
+      },
+      {
+        label: 'Cómo clonan una tarjeta',
+        description: 'Qué se llevan de verdad y qué control te da cada emisor.',
+        to: '/clonacion-de-tarjetas-uruguay',
       },
     ],
     terms: [

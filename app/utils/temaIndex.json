@@ -829,6 +829,14 @@
         {
           "to": "/prescripcion-de-deudas-con-el-estado-uruguay",
           "label": "Deudas con el Estado"
+        },
+        {
+          "to": "/conviene-comprar-en-cuotas",
+          "label": "¿Cuotas o contado?"
+        },
+        {
+          "to": "/conviene-pagar-todo-con-credito-uruguay",
+          "label": "¿Conviene pagar todo con crédito?"
         }
       ],
       "guides": [
@@ -1399,6 +1407,30 @@
         {
           "to": "/cuanto-vale-una-milla-itau-uruguay",
           "label": "¿Cuánto vale una milla de Itaú?"
+        },
+        {
+          "to": "/descuento-de-iva-con-tarjeta-uruguay",
+          "label": "Descuento de IVA con tarjeta"
+        },
+        {
+          "to": "/pagar-cuentas-con-tarjeta",
+          "label": "Pagar cuentas con tarjeta"
+        },
+        {
+          "to": "/comisiones-mercado-pago-uruguay",
+          "label": "Comisiones de Mercado Pago"
+        },
+        {
+          "to": "/tarjetas-de-socio-uruguay",
+          "label": "Tarjetas de socio"
+        },
+        {
+          "to": "/apps-de-beneficios-uruguay",
+          "label": "Apps y clubes de beneficios"
+        },
+        {
+          "to": "/clonacion-de-tarjetas-uruguay",
+          "label": "Cómo clonan una tarjeta"
         }
       ],
       "guides": [
