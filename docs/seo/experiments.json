@@ -785,6 +785,21 @@
         "por que el bcu quiere mas pesos"
       ],
       "hypothesis": "Decima corrida del mismo criterio que bajo el ratchet de descripciones de 121 a 1: las dos abrian con la etiqueta de genero o con la pregunta -'Guia para saldar deudas en Uruguay', 'Que busca la desdolarizacion'- y la afirmacion que decide el clic caia del lado que el SERP corta. Ahora arranca la respuesta: que a ChauDeudas y MiDeuda les paga el acreedor y hacen gratis lo que se puede hacer solo, y que cerca de 7 de cada 10 depositos y 1 de cada 2 creditos estan en dolares. Ninguna cifra es nueva: las dos ya estaban en el cuerpo de su pagina con su fuente. La de /saldar-deudas-uruguay NO se escribio alrededor del 35 % de la Ley 17.829 aunque la pagina lo cite, porque esa intencion ya es de /embargo-de-sueldo-uruguay y dos paginas propias reclamandola se la quitan entre si."
+    },
+    {
+      "id": "tarjetas-y-pagos-entran-a-su-tema",
+      "shippedOn": "2026-09-28",
+      "routes": [
+        "/descuento-de-iva-con-tarjeta-uruguay",
+        "/pagar-cuentas-con-tarjeta",
+        "/comisiones-mercado-pago-uruguay",
+        "/tarjetas-de-socio-uruguay",
+        "/apps-de-beneficios-uruguay",
+        "/clonacion-de-tarjetas-uruguay",
+        "/conviene-comprar-en-cuotas",
+        "/conviene-pagar-todo-con-credito-uruguay"
+      ],
+      "hypothesis": "Las ocho eran huerfanas: no estaban en los `resources` de ningun tema, asi que no dibujaban 'Mas sobre este tema' y no recibian NINGUN enlace de ese bloque -el vinculo del tema es reciproco por construccion y ellas no estaban en la relacion-. Solo las tenia el menu, que no es una relacion entre paginas. Seis entran a 'Bancos, tarjetas y pagos' y las dos decisiones de compra a 'Deudas y credito', donde ya viven las guias de debito-contra-credito y de cashback. Las ocho son del tramo `contenido`, que rinde 8x el promedio del sitio (classes/revenueplan/value.ts), asi que es el enlazado interno mas barato que quedaba sin hacer: no se escribio ni una pagina nueva. Se espera mas rastreo y mas sesiones de dos paginas desde el tema hacia ellas."
     }
   ]
 }
