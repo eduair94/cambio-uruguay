@@ -751,6 +751,40 @@
         "/devolucion-fonasa-uruguay"
       ],
       "hypothesis": "Once paginas del tramo contenido -el BPS, la jubilacion, el IRPF y los certificados- no figuraban en ningun tema de guideHubs, asi que no dibujaban el bloque 'Mas sobre este tema' y no se enlazaban entre si aunque contestan la misma pregunta. Sumarlas a sus temas las conecta con el tema entero en los dos sentidos, sin tocar el texto de ninguna pagina."
+    },
+    {
+      "id": "prestamo-hipotecario",
+      "shippedOn": "2026-09-28",
+      "routes": [
+        "/prestamo-hipotecario-uruguay"
+      ],
+      "queries": [
+        "prestamo hipotecario uruguay",
+        "prestamo hipotecario bhu",
+        "prestamo hipotecario anv",
+        "fondo de garantia de creditos hipotecarios",
+        "credito hipotecario en unidades indexadas",
+        "cuanto me prestan para comprar casa uruguay",
+        "deduccion irpf prestamo hipotecario",
+        "plan ur anv"
+      ],
+      "hypothesis": "Pagina nueva para el credito mas grande que toma una familia uruguaya y que el sitio no tenia: /comprar-o-alquilar-uruguay compara la cuota contra el alquiler y la da por sabida. La apuesta NO es competir por tasas -no se publica ninguna- sino por lo que nadie contesta: que el hipotecario uruguayo no se denomina en pesos ni en dolares sino en UI o en UR, y que los requisitos del FGCH de la ANV estan escritos en UR. Ese es el mismo angulo que hizo funcionar a /garantia-de-alquiler-uruguay: el organismo publica el techo de ingreso solo en UR 100 y este sitio tiene la UR del dia, asi que el snippet lleva ese techo en pesos, que es la cifra que la fuente oficial no da. Lleva los seis limites del FGCH con la frase textual de la ANV, el tope de deduccion del IRPF calculado con la BPC del anio en vez del monto 2025 que publico la DGI, y el Plan UR para quien arrastra un credito de los noventa. Las condiciones propias del BHU quedan afuera a proposito: su sitio rechaza la lectura automatizada y no se pudieron leer de la fuente."
+    },
+    {
+      "id": "descripciones-respuesta-primero-10",
+      "shippedOn": "2026-09-28",
+      "routes": [
+        "/saldar-deudas-uruguay",
+        "/por-que-el-bcu-quiere-mas-pesos"
+      ],
+      "queries": [
+        "chaudeudas opiniones",
+        "mideuda vale la pena",
+        "negociar deuda uruguay",
+        "desdolarizacion uruguay",
+        "por que el bcu quiere mas pesos"
+      ],
+      "hypothesis": "Decima corrida del mismo criterio que bajo el ratchet de descripciones de 121 a 1: las dos abrian con la etiqueta de genero o con la pregunta -'Guia para saldar deudas en Uruguay', 'Que busca la desdolarizacion'- y la afirmacion que decide el clic caia del lado que el SERP corta. Ahora arranca la respuesta: que a ChauDeudas y MiDeuda les paga el acreedor y hacen gratis lo que se puede hacer solo, y que cerca de 7 de cada 10 depositos y 1 de cada 2 creditos estan en dolares. Ninguna cifra es nueva: las dos ya estaban en el cuerpo de su pagina con su fuente. La de /saldar-deudas-uruguay NO se escribio alrededor del 35 % de la Ley 17.829 aunque la pagina lo cite, porque esa intencion ya es de /embargo-de-sueldo-uruguay y dos paginas propias reclamandola se la quitan entre si."
     }
   ]
 }

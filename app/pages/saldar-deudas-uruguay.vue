@@ -484,7 +484,7 @@ const sources = [
 
 const title = 'Saldar deudas: ChauDeudas o MiDeuda'
 const description =
-  'Guía para saldar deudas en Uruguay: verificá prescripción, negociá una quita, entendé cuándo pueden retener o embargar el sueldo y reconstruí tu historial.'
+  'ChauDeudas y MiDeuda no son estafa: les paga el acreedor y hacen gratis lo que podés hacer solo. Pedí tu Clearing gratis cada 6 meses y negociá la quita.'
 const canonicalUrl = 'https://cambio-uruguay.com/saldar-deudas-uruguay'
 
 defineOgImageComponent('Cambio', {

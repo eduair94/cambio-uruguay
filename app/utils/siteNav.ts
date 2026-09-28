@@ -1397,6 +1397,31 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         priority: 0.7,
         changefreq: 'monthly',
       },
+      {
+        // El crédito más grande que toma una familia uruguaya y el sitio no tenía página propia:
+        // `/comprar-o-alquilar-uruguay` compara la cuota contra el alquiler y la da por sabida. Va
+        // en `credit` y no en `houses` porque la consulta es de crédito ("cuánto me prestan", "BHU",
+        // "ANV"), y el ángulo propio es el de `/garantia-de-alquiler-uruguay`: la ANV publica el
+        // techo de ingreso del FGCH sólo en UR y este sitio tiene la UR del día. NO publica tasas.
+        to: '/prestamo-hipotecario-uruguay',
+        labelKey: 'nav.prestamoHipotecario',
+        icon: 'mdi-home-city-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'prestamo hipotecario uruguay',
+          'prestamo hipotecario bhu',
+          'prestamo hipotecario anv',
+          'fondo de garantia de creditos hipotecarios',
+          'credito hipotecario en unidades indexadas',
+          'cuanto me prestan para comprar casa uruguay',
+          'cuota en ui o ur',
+          'deduccion irpf prestamo hipotecario',
+          'plan ur anv',
+          'ahorro previo para comprar vivienda uruguay',
+        ],
+      },
     ],
   },
   {
