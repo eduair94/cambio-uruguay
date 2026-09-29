@@ -418,6 +418,30 @@ useHead(() => ({
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Cambio Uruguay',
+            item: `https://cambio-uruguay.com${localePath('/')}`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            // El mismo rótulo que el enlace de vuelta que ya muestra la página, así que el
+            // eslabón del medio se traduce solo.
+            name: c.value.back,
+            item: `https://cambio-uruguay.com${localePath('/alquilar-en-uruguay')}`,
+          },
+          { '@type': 'ListItem', position: 3, name: c.value.title, item: canonical.value },
+        ],
+      }).replace(/</g, '\\u003c'),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         name: c.value.title,
         description: c.value.description,

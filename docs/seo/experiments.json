@@ -816,6 +816,17 @@
         "las motos pagan peaje"
       ],
       "hypothesis": "El peaje era el unico costo de andar en auto sin pagina propia: el sitio ya tenia la nafta, la patente, las multas y el costo por mes de cada modo. La apuesta son dos datos que nadie publica juntos y que salen del MTOP y del Decreto 119/023: que el mismo paso tiene tres precios segun como se pague (167 con TAG, 196,57 en la barrera, 214 por SUCIVE, o sea 28 por ciento entre las dos puntas) y que las motos no pagan peaje. Consultas de marca e intencion local, con volumen estable y sin caja de respuesta de Google."
+    },
+    {
+      "id": "migas-en-el-renglon-verde",
+      "shippedOn": "2026-09-29",
+      "routes": [
+        "/barrios-alquileres-uruguay",
+        "/comparar-plataformas-dolar-uruguay",
+        "/fletes-mudanzas-uruguay",
+        "/sillas-escritorio-uruguay/*"
+      ],
+      "hypothesis": "Siete paginas emitian estructurados sin BreadcrumbList, asi que el renglon verde del resultado era la URL cruda en vez del rastro con nombres. Se declaran las que buscan por su tema y no estan dentro de otra ventana abierta; /acerca y /contacto quedan fuera porque no son un cambio pensado para mover trafico. Se mide si el mismo puesto gana mas clic cuando el visitante lee a que seccion pertenece la pagina antes de entrar."
     }
   ]
 }

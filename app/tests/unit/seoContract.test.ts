@@ -288,8 +288,25 @@ const LEGACY_BUDGET = { seoMeta: 0, canonical: 0, structuredData: 0 }
  * tarjetas, y los seis hubs (`/glosario`, `/guias`, `/temas`, `/blog`, `/herramientas`,
  * `/importar`). SÓLO PUEDE BAJAR: una página nueva que emite estructurados sin migas pone CI en
  * rojo antes de publicarse.
+ *
+ * 17 → 10 el 2026-09-29, segunda tanda: las SIETE que no están dentro de una ventana de medición
+ * abierta (`/acerca`, `/barrios-alquileres-uruguay`, `/comparar-plataformas-dolar-uruguay`,
+ * `/contacto`, `/fletes-mudanzas-uruguay` y las dos de sillas). El criterio NO es el tramo, y vale
+ * decir por qué: las migas cambian el MISMO renglón del snippet que seis filas abiertas de
+ * `docs/seo/experiments.json` están midiendo sobre las otras diez páginas —todas descripciones
+ * reescritas entre el 24 y el 28 de septiembre—, así que tocar `/plan-de-vida-uruguay` o
+ * `/reclamo-sodimac-compra-cancelada` hoy le cambia el sujeto al experimento que las está midiendo.
+ * Es la misma reserva que `seoDescriptionBudget.test.ts` ya aplica a `/fecha-de-cobro-bps-uruguay`.
+ * Las diez entran cuando su ventana cierre (la última, `/por-que-el-bcu-quiere-mas-pesos`, el
+ * 2026-10-26).
+ *
+ * Y el eslabón del medio NO se inventa: se usa el padre que la página YA le muestra al lector —el
+ * `back-link` a `/alquilar-en-uruguay`, el directorio al que vuelve el botón de cancelar, el rastro
+ * visible que las dos de sillas ya calculaban para la pantalla y nunca serializaban— y donde no hay
+ * ninguno el rastro se queda en dos eslabones. Un rastro con un padre inventado es peor que uno
+ * corto: le promete al visitante una sección que no existe.
  */
-const BREADCRUMB_BUDGET = 17
+const BREADCRUMB_BUDGET = 10
 
 function missing(predicate: (source: string) => boolean): string[] {
   return OWES_OWN_SEO.filter(file => predicate(read(file))).sort()

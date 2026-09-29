@@ -315,6 +315,23 @@ useHead({
         '@context': 'https://schema.org',
         '@graph': [
           {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Sobre Cambio Uruguay',
+                item: canonicalUrl,
+              },
+            ],
+          },
+          {
             '@type': 'AboutPage',
             url: canonicalUrl,
             name: 'Sobre Cambio Uruguay',

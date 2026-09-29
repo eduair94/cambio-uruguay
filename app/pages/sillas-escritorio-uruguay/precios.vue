@@ -92,10 +92,43 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// El rastro va SIEMPRE, y fuera del `script` condicional de abajo: no depende del catálogo, así
+// que un día sin productos no tiene por qué devolverle al visitante la URL cruda en el resultado.
+// Tampoco depende del viewport como el rastro visible: el que lee esto es el rastreador, y para él
+// el eslabón de la home existe en los dos anchos de pantalla.
+const breadcrumbLd = () => ({
+  type: 'application/ld+json' as const,
+  innerHTML: JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Cambio Uruguay',
+        item: `https://cambio-uruguay.com${localePath('/')}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: t('nav.chairTiers'),
+        item: `https://cambio-uruguay.com${localePath('/sillas-escritorio-uruguay')}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: t('chairMarket.breadcrumb'),
+        item: canonicalUrl.value,
+      },
+    ],
+  }),
+})
+
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl.value }],
   script: catalog.value?.products.length
     ? [
+        breadcrumbLd(),
         {
           type: 'application/ld+json',
           innerHTML: JSON.stringify({
@@ -116,7 +149,7 @@ useHead(() => ({
           }),
         },
       ]
-    : [],
+    : [breadcrumbLd()],
 }))
 </script>
 
