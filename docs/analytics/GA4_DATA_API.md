@@ -349,8 +349,11 @@ Métricas que habilita: `totalAdRevenue`, `publisherAdImpressions`, `publisherAd
 ```
 currency-site-analytics
    ├── siteanalyticssnapshots   → /api/site-analytics  → /estadisticas-del-sitio   (PÚBLICO)
-   └── siterevenuesnapshots     → /api/site-revenue    → /estadisticas-de-busqueda (requireAdmin)
+   ├── siterevenuesnapshots     → /api/site-revenue    → /estadisticas-de-busqueda (requireAdmin)
+   └── sitepagerankings         → /api/site-page-ranking → /estadisticas-por-pagina (requireAdmin)
 ```
+
+El tercero (desde el 2026-09-29) es el ranking de páginas por visita: ver `PAGE_RANKING.md`.
 
 **Los cuatro reportes** que `fetchRevenue` (`classes/site-analytics/revenue.ts`) pide en UNA llamada
 `batchRunReports` (admite 5), en este orden y con los índices fijados por
