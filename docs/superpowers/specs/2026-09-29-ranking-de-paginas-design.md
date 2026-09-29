@@ -31,8 +31,9 @@ Ninguna responde "qué páginas mueven el sitio, cuáles suben, cuáles se caen 
   página. La pública no se toca.
 - **Audiencia = Uruguay** (`countryId = UY`) para rankear. El total de todos los países se guarda al lado
   sólo para mostrar qué parte de cada página es de afuera.
-- **Base semanal = mediana de las semanas activas** (desde la primera semana con vistas), no la suma. Es
-  lo que ordena por defecto. La suma de 28 días queda como columna.
+- **Base semanal = mediana de las semanas activas** (desde la primera semana con vistas), no la suma, y
+  sin la semana del pico cuando lo hay (con dos semanas activas la mediana es el promedio: `[0,0,95,4]`
+  daba 50). Es lo que ordena por defecto. La suma de 28 días queda como columna.
 - **Calculado una vez por día en el job existente** `currency-site-analytics`, no en el pedido (regla del
   repo: el análisis que procesa la base se guarda). Va en su propio `try` después del snapshot público y
   del ingreso: un fallo acá no frena nada de lo anterior.
@@ -90,10 +91,11 @@ PageRankRow = {
 ## Señales (umbrales en constantes exportadas)
 
 - **nueva**: las dos primeras semanas en cero y vistas después.
-- **pico**: la semana máxima ≥ 3× la mediana de las otras semanas activas y ≥ 20 vistas. No se decide con
-  esto.
-- **cae** / **crece**: con ≥ 30 vistas en alguna de las dos mitades, segunda mitad ≤ 0,6× (cae) o ≥ 1,5×
-  (crece) la primera. Una página nueva no "crece": es nueva.
+- **pico**: la semana máxima ≥ 3× la SEGUNDA mejor, ≥ 20 vistas, y no es la última semana (ahí no se
+  distingue de un crecimiento). `[10,10,40,40]` es cambio de nivel, no pico. No se decide con esto.
+- **cae** / **crece**: POR SEMANA, las dos últimas contra las anteriores en que la página ya existía
+  (`[0,108,70,13]` por mitades crudas daba −23 %; por semana, −62 %). Muestra mínima 30 vistas llevadas a
+  dos semanas; ≤ 0,6× cae, ≥ 1,5× crece; nunca sobre un pico. Una página nueva no "crece": es nueva.
 - **rebota**: ≥ 50 vistas, < 20 s de permanencia por usuario y tramo `contenido` u `otro`. En una
   cotización, una visita corta es el éxito.
 - **afuera**: ≥ 50 vistas totales y < 50 % desde Uruguay (espejo /en legítimo o tráfico automatizado).
@@ -104,8 +106,9 @@ PageRankRow = {
 1. **Sostienen el sitio**: top 5 por valor → no romper, velocidad, enlazar desde ellas.
 2. **Se están cayendo**: `cae` (sin `pico`), por vistas perdidas × multiplicador → revisar posición en
    Search Console y que la página responda.
-3. **Suben / nuevas**: `crece` o `nueva`, por vistas ganadas × multiplicador → enlazarlas desde las
-   grandes, ampliarlas.
+3. **Suben / nuevas**: `crece` o `nueva`, sin `pico` y con ≥ 20 vistas en las últimas dos semanas, por
+   vistas ganadas × multiplicador → enlazarlas desde las grandes, ampliarlas. El texto de "caen" cambia
+   según el canal: directo (fin de un empujón), redes (el hilo se enfrió), IA, búsqueda (Search Console).
 4. **Se van rápido**: `rebota` → rehacer lo de arriba del pliegue.
 5. **Llegan desde IA**: `ia` → mantener cifras fechadas y frescas.
 6. **Picos**: `pico` → aviso para no leer la suma como base.

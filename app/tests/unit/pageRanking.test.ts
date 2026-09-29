@@ -40,15 +40,54 @@ function row(over: Partial<PageRankRow>): PageRankRow {
 }
 
 const pages = [
-  row({ path: '/alquileres-uruguay', title: 'Alquileres en Uruguay', family: '/alquileres-uruguay', base: 167, views: 664, trend: -0.7, value: 33.4, engagementSeconds: 479, signals: ['cae'] }),
-  row({ path: '/guias/testamento', title: 'Cómo hacer un testamento', family: '/guias/*', base: 12, views: 26, trend: 1.2, value: 96, signals: ['crece'] }),
-  row({ path: '/guias/casarse', title: 'Casarse por civil', family: '/guias/*', base: 12, views: 27, trend: null, value: 96, signals: ['nueva', 'ia'] }),
-  row({ path: '/', title: 'Cambio Uruguay', family: '/', base: 300, views: 1276, trend: -0.4, value: 300, engagementSeconds: 96 }),
+  row({
+    path: '/alquileres-uruguay',
+    title: 'Alquileres en Uruguay',
+    family: '/alquileres-uruguay',
+    base: 167,
+    views: 664,
+    trend: -0.7,
+    value: 33.4,
+    engagementSeconds: 479,
+    signals: ['cae'],
+  }),
+  row({
+    path: '/guias/testamento',
+    title: 'Cómo hacer un testamento',
+    family: '/guias/*',
+    base: 12,
+    views: 26,
+    trend: 1.2,
+    value: 96,
+    signals: ['crece'],
+  }),
+  row({
+    path: '/guias/casarse',
+    title: 'Casarse por civil',
+    family: '/guias/*',
+    base: 12,
+    views: 27,
+    trend: null,
+    value: 96,
+    signals: ['nueva', 'ia'],
+  }),
+  row({
+    path: '/',
+    title: 'Cambio Uruguay',
+    family: '/',
+    base: 300,
+    views: 1276,
+    trend: -0.4,
+    value: 300,
+    engagementSeconds: 96,
+  }),
 ]
 
 describe('filterRankedPages', () => {
   it('busca en ruta y título, sin acentos ni mayúsculas', () => {
-    expect(filterRankedPages(pages, { q: 'COMO hacer' }).map(p => p.path)).toEqual(['/guias/testamento'])
+    expect(filterRankedPages(pages, { q: 'COMO hacer' }).map(p => p.path)).toEqual([
+      '/guias/testamento',
+    ])
     expect(filterRankedPages(pages, { q: 'guias/' }).map(p => p.path)).toEqual([
       '/guias/testamento',
       '/guias/casarse',
@@ -136,6 +175,13 @@ describe('formato', () => {
   })
 
   it('los grupos de foco van en el orden de lectura', () => {
-    expect(PR_FOCUS_GROUPS.map(g => g.kind)).toEqual(['sostienen', 'caen', 'suben', 'rebotan', 'ia', 'picos'])
+    expect(PR_FOCUS_GROUPS.map(g => g.kind)).toEqual([
+      'sostienen',
+      'caen',
+      'suben',
+      'rebotan',
+      'ia',
+      'picos',
+    ])
   })
 })

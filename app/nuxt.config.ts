@@ -1197,6 +1197,8 @@ export default defineNuxtConfig({
       '/server/',
       '/api-reference',
       '/estadisticas-de-busqueda',
+      // El ranking privado de páginas por visita: misma lógica que el tablero de Search Console.
+      '/estadisticas-por-pagina',
       // Lista de autores de r/CharruaDevs con nombre propio: noindex en la pagina y fuera del
       // rastreo. Los mismos datos, agregados y sin nombres, estan en /mercado-it-uruguay.
       '/ranking-usuarios-charruadevs',
@@ -1290,6 +1292,7 @@ export default defineNuxtConfig({
       '/estado',
       '/api-reference',
       '/estadisticas-de-busqueda',
+      '/estadisticas-por-pagina',
       '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/ranking-usuarios-charruadevs',
       '/*/offline',
@@ -1298,6 +1301,7 @@ export default defineNuxtConfig({
       '/*/estado',
       '/*/api-reference',
       '/*/estadisticas-de-busqueda',
+      '/*/estadisticas-por-pagina',
       '/*/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/*/ranking-usuarios-charruadevs',
     ],

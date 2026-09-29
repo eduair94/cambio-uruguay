@@ -66,6 +66,11 @@ describe("primitivas del ranking", () => {
     expect(baseOf([0, 0, 0, 0])).toBe(0);
     // Un cero en el medio sí cuenta: la página existía y nadie entró.
     expect(baseOf([8, 0, 0, 8])).toBe(4);
+    // Con un pico, la base es lo que queda sin esa semana: con dos semanas activas la mediana es el
+    // promedio y el empujón la inflaba (/mercado-it-uruguay daba 50 por semana y hace 4).
+    expect(baseOf([0, 0, 95, 4])).toBe(4);
+    expect(baseOf([192, 32, 34, 19])).toBe(32);
+    expect(baseOf([0, 33, 0, 0])).toBe(0);
   });
 
   it("trendOf: segunda mitad contra primera, con muestra mínima", () => {
@@ -73,6 +78,9 @@ describe("primitivas del ranking", () => {
     expect(trendOf([0, 0, 154, 89])).toBeNull(); // sin primera mitad no hay tendencia: es nueva
     expect(trendOf([5, 4, 6, 3])).toBeNull(); // 9 y 9: ruido
     expect(trendOf([10, 10, 40, 40])).toBe(3);
+    // Por semana, contra las semanas en que la página YA existía: lanzada en la semana 2, la
+    // mitad cruda (0 + 108 contra 70 + 13) decía −23 % y la página se estaba cayendo.
+    expect(trendOf([0, 108, 70, 13])).toBeCloseTo(41.5 / 108 - 1, 4);
   });
 
   it("isNewPage", () => {
@@ -90,6 +98,10 @@ describe("primitivas del ranking", () => {
     expect(isPico([3, 2, 4, 5])).toBe(false);
     expect(isPico([0, 0, 0, 12])).toBe(false); // una sola semana activa no alcanza para decir pico
     expect(isPico([2, 2, 2, 15])).toBe(false); // bajo el piso de 20
+    // El máximo en la última semana no se distingue todavía de un crecimiento.
+    expect(isPico([0, 0, 2, 24])).toBe(false); // /bicicletas-electricas-uruguay, recién lanzada
+    expect(isPico([2, 2, 2, 40])).toBe(false);
+    expect(isPico([0, 0, 95, 4])).toBe(true); // /mercado-it-uruguay: lanzamiento que se apagó
   });
 });
 
@@ -150,8 +162,8 @@ describe("buildFocus", () => {
     expect(kinds.indexOf("suben")).toBeLessThan(kinds.indexOf("picos"));
     const cae = focus.find((f) => f.kind === "caen")!;
     expect(cae.path).toBe("/cae");
-    expect(cae.headline).toContain("500");
-    expect(cae.headline).toContain("150");
+    expect(cae.headline).toContain("250"); // por semana: (300 + 200) / 2
+    expect(cae.headline).toContain("75"); // (120 + 30) / 2
     const pico = focus.find((f) => f.kind === "picos")!;
     expect(pico.path).toBe("/pico");
     expect(pico.headline).toContain("190");
@@ -165,6 +177,24 @@ describe("buildFocus", () => {
     ];
     const caen = buildFocus(rows, weekStarts).filter((f) => f.kind === "caen");
     expect(caen.map((f) => f.path)).toEqual(["/guia", "/directorio"]);
+  });
+
+  it("suben no lleva picos de lanzamiento ni páginas de un puñado de vistas", () => {
+    const rows = [
+      withSignals(row({ path: "/lanzamiento", weeks: [0, 0, 95, 4] })),
+      withSignals(row({ path: "/chiquita", weeks: [0, 0, 4, 6] })),
+      withSignals(row({ path: "/arranca", weeks: [0, 0, 2, 24] })),
+    ];
+    const suben = buildFocus(rows, weekStarts).filter((f) => f.kind === "suben");
+    expect(suben.map((f) => f.path)).toEqual(["/arranca"]);
+  });
+
+  it("una caída que traían las redes no manda a Search Console", () => {
+    const social = { ...noEntrances, total: 80, social: 79, organic: 1 };
+    const r = withSignals(row({ path: "/redes", weeks: [16, 131, 57, 14], entrances: social, multiplier: 8 }));
+    const cae = buildFocus([r], weekStarts).find((f) => f.kind === "caen")!;
+    expect(cae.detail).toMatch(/redes/);
+    expect(cae.detail).not.toMatch(/Search Console/);
   });
 
   it(`como mucho ${FOCUS_PER_GROUP} por grupo`, () => {

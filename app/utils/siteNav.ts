@@ -4067,6 +4067,8 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   // The owner's Search Console dashboard: not content, not for readers, and its whole point is that
   // the queries it renders never become a public page.
   '/estadisticas-de-busqueda',
+  // El ranking privado de páginas por visita (GA4): la lista de trabajo del sitio, no contenido.
+  '/estadisticas-por-pagina',
   // "¿Tengo descuento acá?": una herramienta cuya respuesta depende de dónde está parado quien la
   // abre. No hay nada que indexar; se llega desde el mapa.
   '/descuentos-con-tarjeta-uruguay/cerca-de-mi',

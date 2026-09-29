@@ -61,6 +61,8 @@ export const AFUERA_MIN_VIEWS = 50;
 export const AFUERA_MAX_UY_SHARE = 0.5;
 /** Entradas desde asistentes de IA para marcar `ia`. */
 export const IA_MIN_ENTRANCES = 5;
+/** Vistas en las últimas dos semanas para que una página entre en "suben". Debajo es anécdota. */
+export const FOCUS_MIN_VIEWS = 20;
 
 // ---------------------------------------------------------------------------------------------
 // Tipos
@@ -145,9 +147,15 @@ function activeWeeks(weeks: number[]): number[] {
 /**
  * La base semanal. Mediana y no promedio: una semana con un enlace compartido no la mueve.
  * Desde la primera semana con vistas: una página lanzada en la semana 3 no arrastra dos ceros.
+ * Y sin la semana del pico, cuando lo hay: con dos semanas activas la mediana ES el promedio, y
+ * `[0, 0, 95, 4]` daba 50 por semana a una página que hace 4.
  */
 export function baseOf(weeks: number[]): number {
-  return median(activeWeeks(weeks));
+  const active = activeWeeks(weeks);
+  if (!isPico(weeks)) return median(active);
+  const rest = [...active];
+  rest.splice(rest.indexOf(Math.max(...rest)), 1);
+  return median(rest);
 }
 
 function halves(weeks: number[]): [number, number] {
@@ -156,12 +164,31 @@ function halves(weeks: number[]): [number, number] {
   return [sum(weeks.slice(0, cut)), sum(weeks.slice(cut))];
 }
 
-/** Segunda mitad contra primera. `null` cuando no hay contra qué comparar o la muestra es ruido. */
+/**
+ * Vistas POR SEMANA antes y después: las últimas dos semanas contra las semanas anteriores en que
+ * la página ya existía. Por semana y no por mitad cruda: una página lanzada en la semana 2
+ * (`[0, 108, 70, 13]`) daba −23 % comparando 108 contra 83, cuando por semana pasó de 108 a 41,5.
+ * `null` si la página no existía en la primera mitad (es nueva, no crece).
+ */
+export function trendParts(weeks: number[]): { before: number; after: number } | null {
+  const cut = Math.floor(weeks.length / 2);
+  const first = weeks.findIndex((w) => w > 0);
+  if (first < 0 || first >= cut) return null;
+  const earlier = weeks.slice(first, cut);
+  const later = weeks.slice(cut);
+  return {
+    before: earlier.reduce((a, b) => a + b, 0) / earlier.length,
+    after: later.reduce((a, b) => a + b, 0) / later.length,
+  };
+}
+
+/** Después contra antes, por semana. `null` sin antes o con muestra de ruido. */
 export function trendOf(weeks: number[]): number | null {
-  const [a, b] = halves(weeks);
-  if (a <= 0) return null;
-  if (Math.max(a, b) < TREND_MIN_VIEWS) return null;
-  return b / a - 1;
+  const parts = trendParts(weeks);
+  if (!parts || parts.before <= 0) return null;
+  // Llevado a dos semanas, para que el piso signifique lo mismo que en la mitad cruda.
+  if (Math.max(parts.before, parts.after) * 2 < TREND_MIN_VIEWS) return null;
+  return parts.after / parts.before - 1;
 }
 
 /** Nada en la primera mitad y algo en la segunda. No "crece": es nueva. */
@@ -171,13 +198,16 @@ export function isNewPage(weeks: number[]): boolean {
 }
 
 /**
- * Una semana sola que triplica a la segunda mejor. Contra la SEGUNDA y no contra la mediana:
- * `[10, 10, 40, 40]` es un cambio de nivel (dos semanas iguales arriba), no un pico.
+ * Una semana sola que triplica a la segunda mejor y después se apaga. Contra la SEGUNDA y no contra
+ * la mediana: `[10, 10, 40, 40]` es un cambio de nivel, no un pico. Y el máximo no puede ser la
+ * última semana: `[0, 0, 2, 24]` es una página que arranca, y todavía no hay semana que diga si se
+ * sostiene.
  */
 export function isPico(weeks: number[]): boolean {
   const active = activeWeeks(weeks);
   if (active.length < 2) return false;
   const [top, second] = [...active].sort((a, b) => b - a);
+  if (active.indexOf(top) === active.length - 1) return false;
   return top >= PICO_MIN_VIEWS && top >= PICO_FACTOR * second;
 }
 
@@ -225,15 +255,33 @@ const CHANNEL_WORDS: Record<Exclude<keyof Entrances, "total">, string> = {
   other: "otros canales",
 };
 
+type Channel = Exclude<keyof Entrances, "total">;
+
 /** El canal por el que más se entra, o `null` si nadie entra por esta página. */
-function mainChannel(e: Entrances): Exclude<keyof Entrances, "total"> | null {
-  const keys = Object.keys(CHANNEL_WORDS) as Array<Exclude<keyof Entrances, "total">>;
-  let best: Exclude<keyof Entrances, "total"> | null = null;
+function mainChannel(e: Entrances): Channel | null {
+  const keys = Object.keys(CHANNEL_WORDS) as Channel[];
+  let best: Channel | null = null;
   for (const k of keys) if (e[k] > 0 && (!best || e[k] > e[best])) best = k;
   return best;
 }
 
 const label = (r: PageRankRow) => r.title || r.path;
+
+/** Qué mirar ante una caída, según por dónde entraba la gente. */
+function whyItFell(main: Channel | null): string {
+  switch (main) {
+    case "direct":
+      return "La mayoría entraba directo (enlace compartido o lanzamiento): puede ser el final de un empujón y no una caída de búsqueda. Si importa, volver a difundirla.";
+    case "social":
+      return "La traían las redes y el hilo se enfrió. Si importa, volver a compartirla donde se habla del tema; no es un problema de la página.";
+    case "ai":
+      return "La traían asistentes de IA: revisar que las cifras sigan fechadas y al día, que es lo que los hace citarla.";
+    case "organic":
+      return "Entra sobre todo por búsqueda: mirar en Search Console si perdió posición y abrir la página para confirmar que responde.";
+    default:
+      return "Entra por canales mezclados: abrir la página para confirmar que responde y mirar en Search Console si perdió posición.";
+  }
+}
 
 function top<T extends PageRankRow>(rows: T[], score: (r: T) => number, limit = FOCUS_PER_GROUP): T[] {
   return [...rows]
@@ -265,34 +313,37 @@ export function buildFocus(rows: PageRankRow[], weekStarts: string[]): FocusItem
     );
   }
 
-  for (const r of top(rows.filter(has("cae")), (r) => {
-    const [a, b] = halves(r.weeks);
-    return (a - b) * r.multiplier;
-  })) {
-    const [a, b] = halves(r.weeks);
-    const main = mainChannel(r.entrances);
+  const moved = (r: PageRankRow) => {
+    const p = trendParts(r.weeks);
+    return p ? p.after - p.before : 0;
+  };
+
+  for (const r of top(rows.filter(has("cae")), (r) => -moved(r) * r.multiplier)) {
+    const p = trendParts(r.weeks)!;
     item(
       "caen",
       r,
-      `Pasó de ${fmt(a)} a ${fmt(b)} vistas (${signedPct(b / a - 1)}, primeras dos semanas contra últimas dos)`,
-      main === "direct"
-        ? "La mayoría entraba directo (enlace compartido o lanzamiento): puede ser el final de un empujón y no una caída de búsqueda. Si importa, volver a difundirla."
-        : `Entra sobre todo por ${main ? CHANNEL_WORDS[main] : "—"}: mirar en Search Console si perdió posición y abrir la página para confirmar que responde.`
+      `Pasó de ${fmt(p.before)} a ${fmt(p.after)} vistas por semana (${signedPct(p.after / p.before - 1)}: últimas dos semanas contra las anteriores)`,
+      whyItFell(mainChannel(r.entrances))
     );
   }
 
-  for (const r of top(rows.filter((r) => has("crece")(r) || has("nueva")(r)), (r) => {
-    const [a, b] = halves(r.weeks);
-    return (b - a) * r.multiplier;
-  })) {
-    const [a, b] = halves(r.weeks);
+  // Un lanzamiento que ya se apagó (`pico`) no "sube", y una página nueva con un puñado de vistas es
+  // anécdota: las dos llenaban el grupo en la primera lectura real.
+  const recent = (r: PageRankRow) => halves(r.weeks)[1];
+  const rising = rows.filter(
+    (r) => (has("crece")(r) || has("nueva")(r)) && !has("pico")(r) && recent(r) >= FOCUS_MIN_VIEWS
+  );
+  const gained = (r: PageRankRow) => (r.signals.includes("nueva") ? recent(r) : moved(r) * 2);
+  for (const r of top(rising, (r) => gained(r) * r.multiplier)) {
+    const p = trendParts(r.weeks);
     const main = mainChannel(r.entrances);
     item(
       "suben",
       r,
-      r.signals.includes("nueva")
-        ? `Nueva: ${fmt(b)} vistas en las últimas dos semanas`
-        : `De ${fmt(a)} a ${fmt(b)} vistas (${signedPct(b / a - 1)})`,
+      r.signals.includes("nueva") || !p
+        ? `Nueva: ${fmt(recent(r))} vistas en las últimas dos semanas`
+        : `De ${fmt(p.before)} a ${fmt(p.after)} vistas por semana (${signedPct(p.after / p.before - 1)})`,
       (main ? `Llega sobre todo por ${CHANNEL_WORDS[main]}. ` : "") +
         "Enlazarla desde las páginas que sostienen el sitio y ampliar lo que la trae."
     );
@@ -450,8 +501,6 @@ function num(row: Ga4Row, key: string): number {
 
 /** `(not set)` o vacío no es una página: cuenta en los totales, nunca como fila. */
 const isNotSet = (raw: string) => !raw || raw === "(not set)";
-
-type Channel = Exclude<keyof Entrances, "total">;
 
 function channelOf(group: string): Channel {
   switch (group) {

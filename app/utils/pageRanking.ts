@@ -109,10 +109,10 @@ export const PR_SIGNAL_COLORS: Record<PageSignal, string> = {
 }
 
 export const PR_SIGNAL_HELP: Record<PageSignal, string> = {
-  cae: 'Las últimas dos semanas tienen 40 % menos vistas que las primeras dos (sin pico de por medio).',
-  crece: 'Las últimas dos semanas tienen 50 % más vistas que las primeras dos.',
+  cae: 'Por semana, las últimas dos tienen 40 % menos vistas que las anteriores (sin pico de por medio).',
+  crece: 'Por semana, las últimas dos tienen 50 % más vistas que las anteriores.',
   nueva: 'Sin vistas en las primeras dos semanas de la ventana.',
-  pico: 'Una semana triplica a la segunda mejor: fue un empujón, no una base.',
+  pico: 'Una semana triplica a la segunda mejor y después se apaga: fue un empujón. La base se calcula sin esa semana.',
   rebota: 'Contenido con 50+ vistas y menos de 20 s de permanencia por usuario.',
   afuera: 'Menos de la mitad de sus vistas son desde Uruguay.',
   ia: 'Cinco o más entradas desde asistentes de IA (ChatGPT, Gemini, Perplexity…).',
@@ -134,7 +134,11 @@ export const PR_FOCUS_GROUPS: { kind: FocusKind; title: string; why: string }[] 
     title: 'Suben o son nuevas',
     why: 'Lo que conviene empujar con enlaces internos y ampliar.',
   },
-  { kind: 'rebotan', title: 'Se van rápido', why: 'Llegan y no encuentran la respuesta arriba de todo.' },
+  {
+    kind: 'rebotan',
+    title: 'Se van rápido',
+    why: 'Llegan y no encuentran la respuesta arriba de todo.',
+  },
   { kind: 'ia', title: 'Llegan desde asistentes de IA', why: 'Un canal nuevo que ya trae gente.' },
   {
     kind: 'picos',
@@ -170,7 +174,7 @@ export interface PrFilter {
 const fold = (s: string) =>
   (s || '')
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u0300-\u036F]/g, '')
     .toLowerCase()
 
 export function filterRankedPages(pages: PageRankRow[], f: PrFilter): PageRankRow[] {
@@ -225,13 +229,16 @@ export function prWeekBars(weeks: number[]): number[] {
   return weeks.map(w => (max > 0 ? w / max : 0))
 }
 
-export const prLabel = (row: { path: string; title: string }) => stripSiteSuffix(row.title) || row.path
+export const prLabel = (row: { path: string; title: string }) =>
+  stripSiteSuffix(row.title) || row.path
 
 /** Familias presentes, de la que más vistas suma a la que menos. Para el selector. */
 export function prFamilies(pages: PageRankRow[]): string[] {
   const views = new Map<string, number>()
   for (const p of pages) views.set(p.family, (views.get(p.family) || 0) + p.views)
-  return [...views.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([f]) => f)
+  return [...views.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([f]) => f)
 }
 
 /** El job corre una vez por día: más de dos días es que no corrió. */

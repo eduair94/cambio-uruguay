@@ -1,6 +1,16 @@
 <template>
   <VContainer fluid class="gsc-page py-6">
-    <h1 class="text-h4 mb-1">Search Console</h1>
+    <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-1">
+      <h1 class="text-h4">Search Console</h1>
+      <VBtn
+        to="/estadisticas-por-pagina"
+        variant="text"
+        size="small"
+        prepend-icon="mdi-format-list-numbered"
+      >
+        Ranking de páginas por visita
+      </VBtn>
+    </div>
     <p class="text-body-2 text-medium-emphasis mb-6">
       Panel privado. Lo escribe el job <code>currency-gsc</code> una vez por día y no lo ve nadie
       más que las cuentas de <code>NUXT_ADMIN_EMAILS</code>.
