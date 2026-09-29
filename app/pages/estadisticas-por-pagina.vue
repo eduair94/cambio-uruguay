@@ -171,16 +171,23 @@
       <VTable density="compact" class="mb-3 cu-mobile-cards">
         <thead>
           <tr>
-            <th class="text-right">#</th>
+            <th class="text-right text-no-wrap">#</th>
             <th>Página</th>
-            <th class="text-right" title="Mediana de las semanas desde la primera con vistas">
+            <th
+              class="text-right text-no-wrap"
+              title="Mediana de las semanas desde la primera con vistas"
+            >
               Base / sem.
             </th>
-            <th class="text-right">28 días</th>
+            <th class="text-right text-no-wrap">28 días</th>
             <th>4 semanas</th>
-            <th class="text-right" title="Últimas dos semanas contra las primeras dos">Tend.</th>
-            <th class="text-right" title="Permanencia promedio por usuario">Perm.</th>
-            <th class="text-right" title="Porción de las vistas que son desde Uruguay">% UY</th>
+            <th class="text-right text-no-wrap" title="Últimas dos semanas contra las primeras dos">
+              Tend.
+            </th>
+            <th class="text-right text-no-wrap" title="Permanencia promedio por usuario">Perm.</th>
+            <th class="text-right text-no-wrap" title="Porción de las vistas que son desde Uruguay">
+              % UY
+            </th>
             <th>Entradas</th>
             <th>Tramo</th>
             <th>Señales</th>
@@ -188,15 +195,17 @@
         </thead>
         <tbody>
           <tr v-for="row in visible" :key="row.path">
-            <td data-label="#" class="text-right text-medium-emphasis">{{ row.rank }}</td>
+            <td data-label="#" class="text-right text-no-wrap text-medium-emphasis">
+              {{ row.rank }}
+            </td>
             <td data-label="Página" class="pr-subject">
               <a :href="row.path" target="_blank" rel="noopener">{{ prLabel(row) }}</a>
               <div class="text-caption text-medium-emphasis pr-path">{{ row.path }}</div>
             </td>
-            <td data-label="Base / sem." class="text-right font-weight-bold">
+            <td data-label="Base / sem." class="text-right text-no-wrap font-weight-bold">
               {{ prNumber(row.base) }}
             </td>
-            <td data-label="28 días" class="text-right">{{ prNumber(row.views) }}</td>
+            <td data-label="28 días" class="text-right text-no-wrap">{{ prNumber(row.views) }}</td>
             <td data-label="4 semanas">
               <span class="pr-bars" :title="row.weeks.join(' · ')">
                 <span
@@ -207,13 +216,15 @@
                 />
               </span>
             </td>
-            <td data-label="Tend." class="text-right" :class="trendClass(row.trend)">
+            <td data-label="Tend." class="text-right text-no-wrap" :class="trendClass(row.trend)">
               {{ prTrend(row.trend) }}
             </td>
-            <td data-label="Perm." class="text-right">{{ prSeconds(row.engagementSeconds) }}</td>
+            <td data-label="Perm." class="text-right text-no-wrap">
+              {{ prSeconds(row.engagementSeconds) }}
+            </td>
             <td
               data-label="% UY"
-              class="text-right"
+              class="text-right text-no-wrap"
               :class="row.uyShare < 0.5 ? 'text-warning' : ''"
             >
               {{ prPercent(row.uyShare) }}
@@ -260,13 +271,13 @@
           <tr>
             <th>Familia</th>
             <th>Tramo</th>
-            <th class="text-right">URLs</th>
-            <th class="text-right">Base / sem.</th>
-            <th class="text-right">28 días</th>
-            <th class="text-right">% del sitio</th>
+            <th class="text-right text-no-wrap">URLs</th>
+            <th class="text-right text-no-wrap">Base / sem.</th>
+            <th class="text-right text-no-wrap">28 días</th>
+            <th class="text-right text-no-wrap">% del sitio</th>
             <th>4 semanas</th>
-            <th class="text-right">Tend.</th>
-            <th class="text-right">Perm.</th>
+            <th class="text-right text-no-wrap">Tend.</th>
+            <th class="text-right text-no-wrap">Perm.</th>
             <th>Entradas</th>
           </tr>
         </thead>
@@ -276,12 +287,14 @@
             <td data-label="Tramo" class="text-caption">
               {{ f.tier }} <span class="text-medium-emphasis">×{{ f.multiplier }}</span>
             </td>
-            <td data-label="URLs" class="text-right">{{ prNumber(f.urls) }}</td>
-            <td data-label="Base / sem." class="text-right font-weight-bold">
+            <td data-label="URLs" class="text-right text-no-wrap">{{ prNumber(f.urls) }}</td>
+            <td data-label="Base / sem." class="text-right text-no-wrap font-weight-bold">
               {{ prNumber(f.base) }}
             </td>
-            <td data-label="28 días" class="text-right">{{ prNumber(f.views) }}</td>
-            <td data-label="% del sitio" class="text-right">{{ prPercent(f.share) }}</td>
+            <td data-label="28 días" class="text-right text-no-wrap">{{ prNumber(f.views) }}</td>
+            <td data-label="% del sitio" class="text-right text-no-wrap">
+              {{ prPercent(f.share) }}
+            </td>
             <td data-label="4 semanas">
               <span class="pr-bars" :title="f.weeks.join(' · ')">
                 <span
@@ -292,10 +305,12 @@
                 />
               </span>
             </td>
-            <td data-label="Tend." class="text-right" :class="trendClass(f.trend)">
+            <td data-label="Tend." class="text-right text-no-wrap" :class="trendClass(f.trend)">
               {{ prTrend(f.trend) }}
             </td>
-            <td data-label="Perm." class="text-right">{{ prSeconds(f.engagementSeconds) }}</td>
+            <td data-label="Perm." class="text-right text-no-wrap">
+              {{ prSeconds(f.engagementSeconds) }}
+            </td>
             <td data-label="Entradas" class="text-caption">
               <span v-if="f.entrances.total">
                 <strong>{{ prNumber(f.entrances.total) }}</strong>
