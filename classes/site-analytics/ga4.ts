@@ -38,6 +38,11 @@ export interface Ga4Credentials {
 export interface Ga4DateRange {
   startDate: string;
   endDate: string;
+  /**
+   * Con más de un rango por reporte (hasta 4), GA4 agrega la dimensión `dateRange` a cada fila con
+   * este nombre. Sin nombre contesta `date_range_0`, `date_range_1`…
+   */
+  name?: string;
 }
 
 export interface Ga4ReportRequest {

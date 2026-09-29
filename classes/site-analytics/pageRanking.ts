@@ -24,6 +24,10 @@
 // el mismo del plan de ingreso), que es forma y no un monto. Este repositorio es público.
 import { bucketOf } from "../gsc/opportunities";
 import { tierOf } from "../revenueplan/value";
+import { exactDimension, reportRows, runReports } from "./ga4";
+import type { Ga4Report, Ga4ReportRequest, Ga4Row } from "./ga4";
+import { addDays, analyticsWindows, DEFAULT_TIMEZONE, publicPath } from "./refresh";
+import type { AnalyticsWindows } from "./refresh";
 
 // ---------------------------------------------------------------------------------------------
 // Umbrales
@@ -324,4 +328,364 @@ export function buildFocus(rows: PageRankRow[], weekStarts: string[]): FocusItem
   }
 
   return out;
+}
+
+// ---------------------------------------------------------------------------------------------
+// El armado: cinco reportes de GA4 → un documento
+// ---------------------------------------------------------------------------------------------
+
+export const PAGE_RANKING_KEY = "site";
+/** Filas por reporte. La Data API acepta hasta 250.000; el sitio mide del orden de decenas de miles. */
+const REPORT_LIMIT = 100000;
+/** Nombres de las cuatro semanas; GA4 los devuelve en la dimensión `dateRange` de cada fila. */
+const WEEK_NAMES = ["w0", "w1", "w2", "w3"];
+const WEEK_DAYS = 7;
+
+export interface FamilyRankRow {
+  family: string;
+  tier: string;
+  multiplier: number;
+  urls: number;
+  views: number;
+  /** Mediana de las semanas SUMADAS de la familia, no la suma de las bases. */
+  base: number;
+  weeks: number[];
+  engagementSeconds: number;
+  entrances: Entrances;
+  trend: number | null;
+  value: number;
+  /** Porción de las vistas uruguayas del sitio, 0..1. */
+  share: number;
+}
+
+export interface PageRankingTotals {
+  viewsUy: number;
+  /** Todos los países. La diferencia con `viewsUy` es la parte que no se usa para rankear. */
+  viewsAll: number;
+  uyShare: number;
+  sessionsUy: number;
+  usersUy: number;
+  weeklyUy: number[];
+  /** Sesiones uruguayas por canal (`sessionDefaultChannelGroup`, etiqueta de GA4 tal cual). */
+  channels: { label: string; sessions: number; share: number }[];
+}
+
+export interface PageRankingSnapshot {
+  key: string;
+  asOf: string;
+  timezone: string;
+  range: { start: string; end: string; days: number };
+  weeks: { start: string; end: string }[];
+  totals: PageRankingTotals;
+  /** Páginas con vistas desde Uruguay en la ventana (antes del recorte a `MAX_PAGES`). */
+  pageCount: number;
+  /** Algún reporte vino con menos filas de las que GA4 dice tener. */
+  truncated: boolean;
+  pages: PageRankRow[];
+  families: FamilyRankRow[];
+  focus: FocusItem[];
+}
+
+/** Las cuatro semanas de la ventana, la más vieja primero. La última termina donde termina la ventana. */
+export function rankingWeeks(w: AnalyticsWindows): { start: string; end: string }[] {
+  return WEEK_NAMES.map((_, i) => {
+    const start = addDays(w.current.start, i * WEEK_DAYS);
+    return { start, end: i === WEEK_NAMES.length - 1 ? w.current.end : addDays(start, WEEK_DAYS - 1) };
+  });
+}
+
+const names = (...list: string[]) => list.map((name) => ({ name }));
+const uruguay = () => exactDimension("countryId", "UY");
+
+/** Los cinco reportes, en el orden que lee {@link buildPageRanking}. Entran en un solo batch. */
+export function pageRankingRequests(w: AnalyticsWindows): Ga4ReportRequest[] {
+  const window = [{ startDate: w.current.start, endDate: w.current.end }];
+  return [
+    // 0 — vistas uruguayas por página y por semana (cuatro rangos en un reporte)
+    {
+      dateRanges: rankingWeeks(w).map((r, i) => ({ startDate: r.start, endDate: r.end, name: WEEK_NAMES[i] })),
+      dimensions: names("pagePath"),
+      metrics: names("screenPageViews"),
+      dimensionFilter: uruguay(),
+      limit: REPORT_LIMIT,
+    },
+    // 1 — título, usuarios y permanencia (28 días; los usuarios no se suman entre semanas)
+    {
+      dateRanges: window,
+      dimensions: names("pagePath", "pageTitle"),
+      metrics: names("screenPageViews", "activeUsers", "userEngagementDuration"),
+      dimensionFilter: uruguay(),
+      limit: REPORT_LIMIT,
+    },
+    // 2 — todos los países, sólo para el contraste
+    {
+      dateRanges: window,
+      dimensions: names("pagePath"),
+      metrics: names("screenPageViews"),
+      orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
+      limit: REPORT_LIMIT,
+    },
+    // 3 — por dónde se ENTRA a cada página
+    {
+      dateRanges: window,
+      dimensions: names("landingPage", "sessionDefaultChannelGroup"),
+      metrics: names("sessions", "engagedSessions"),
+      dimensionFilter: uruguay(),
+      limit: REPORT_LIMIT,
+    },
+    // 4 — totales por país: el de Uruguay exacto y la suma de todos
+    {
+      dateRanges: window,
+      dimensions: names("countryId"),
+      metrics: names("screenPageViews", "sessions", "activeUsers"),
+      limit: 500,
+    },
+  ];
+}
+
+function num(row: Ga4Row, key: string): number {
+  const v = row[key];
+  return typeof v === "number" && Number.isFinite(v) ? v : 0;
+}
+
+/** `(not set)` o vacío no es una página: cuenta en los totales, nunca como fila. */
+const isNotSet = (raw: string) => !raw || raw === "(not set)";
+
+type Channel = Exclude<keyof Entrances, "total">;
+
+function channelOf(group: string): Channel {
+  switch (group) {
+    case "Organic Search":
+      return "organic";
+    case "Direct":
+      return "direct";
+    case "Organic Social":
+    case "Paid Social":
+      return "social";
+    case "AI Assistant":
+      return "ai";
+    default:
+      return "other";
+  }
+}
+
+const emptyEntrances = (): Entrances => ({ total: 0, organic: 0, direct: 0, social: 0, ai: 0, other: 0 });
+const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
+
+function isTruncated(report: Ga4Report | undefined): boolean {
+  const count = report?.rowCount;
+  return typeof count === "number" && (report?.rows?.length || 0) < count;
+}
+
+function familiesOf(rows: PageRankRow[]): FamilyRankRow[] {
+  const total = sum(rows.map((r) => r.views));
+  const acc = new Map<string, FamilyRankRow & { seconds: number; users: number }>();
+  for (const r of rows) {
+    let f = acc.get(r.family);
+    if (!f) {
+      f = {
+        family: r.family,
+        tier: r.tier,
+        multiplier: r.multiplier,
+        urls: 0,
+        views: 0,
+        base: 0,
+        weeks: WEEK_NAMES.map(() => 0),
+        engagementSeconds: 0,
+        entrances: emptyEntrances(),
+        trend: null,
+        value: 0,
+        share: 0,
+        seconds: 0,
+        users: 0,
+      };
+      acc.set(r.family, f);
+    }
+    f.urls += 1;
+    f.views += r.views;
+    r.weeks.forEach((w, i) => (f!.weeks[i] += w));
+    f.seconds += r.engagementSeconds * r.users;
+    f.users += r.users;
+    for (const k of Object.keys(f.entrances) as Array<keyof Entrances>) f.entrances[k] += r.entrances[k];
+  }
+  return [...acc.values()]
+    .map(({ seconds, users, ...f }) => {
+      const base = baseOf(f.weeks);
+      return {
+        ...f,
+        base,
+        trend: trendOf(f.weeks),
+        engagementSeconds: users > 0 ? Math.round(seconds / users) : 0,
+        value: base * f.multiplier,
+        share: total > 0 ? f.views / total : 0,
+      };
+    })
+    .sort((a, b) => b.base - a.base || b.views - a.views || a.family.localeCompare(b.family))
+    .slice(0, MAX_FAMILIES);
+}
+
+export interface BuildPageRankingContext {
+  asOf: string;
+  timezone: string;
+  windows: AnalyticsWindows;
+}
+
+/** Pura: los cinco reportes de {@link pageRankingRequests}, en orden, se vuelven un documento. */
+export function buildPageRanking(reports: Ga4Report[], ctx: BuildPageRankingContext): PageRankingSnapshot {
+  const weeks = rankingWeeks(ctx.windows);
+
+  // 0 — semanas
+  const weeklyUy = WEEK_NAMES.map(() => 0);
+  const pageWeeks = new Map<string, number[]>();
+  for (const row of reportRows(reports[0])) {
+    const i = WEEK_NAMES.indexOf(String(row.dateRange ?? ""));
+    if (i < 0) continue;
+    const views = num(row, "screenPageViews");
+    weeklyUy[i] += views;
+    const raw = String(row.pagePath ?? "");
+    if (isNotSet(raw)) continue;
+    const path = publicPath(raw);
+    const w = pageWeeks.get(path) || WEEK_NAMES.map(() => 0);
+    w[i] += views;
+    pageWeeks.set(path, w);
+  }
+
+  // 1 — título, usuarios, permanencia. Mismo camino con varios títulos: gana el más visto.
+  const detail = new Map<string, { views: number; users: number; seconds: number; title: string; titleViews: number }>();
+  for (const row of reportRows(reports[1])) {
+    const raw = String(row.pagePath ?? "");
+    if (isNotSet(raw)) continue;
+    const path = publicPath(raw);
+    const views = num(row, "screenPageViews");
+    const title = String(row.pageTitle ?? "").trim();
+    const d = detail.get(path) || { views: 0, users: 0, seconds: 0, title: "", titleViews: -1 };
+    d.views += views;
+    d.users += num(row, "activeUsers");
+    d.seconds += num(row, "userEngagementDuration");
+    if (title && title !== "(not set)" && views > d.titleViews) {
+      d.title = title;
+      d.titleViews = views;
+    }
+    detail.set(path, d);
+  }
+
+  // 2 — todos los países
+  const viewsAll = new Map<string, number>();
+  for (const row of reportRows(reports[2])) {
+    const raw = String(row.pagePath ?? "");
+    if (isNotSet(raw)) continue;
+    const path = publicPath(raw);
+    viewsAll.set(path, (viewsAll.get(path) || 0) + num(row, "screenPageViews"));
+  }
+
+  // 3 — entradas por canal
+  const channelSessions = new Map<string, number>();
+  const entrances = new Map<string, Entrances & { engaged: number }>();
+  for (const row of reportRows(reports[3])) {
+    const sessions = num(row, "sessions");
+    const group = String(row.sessionDefaultChannelGroup ?? "").trim() || "(not set)";
+    channelSessions.set(group, (channelSessions.get(group) || 0) + sessions);
+    const raw = String(row.landingPage ?? "");
+    if (isNotSet(raw)) continue;
+    const path = publicPath(raw);
+    const e = entrances.get(path) || { ...emptyEntrances(), engaged: 0 };
+    e.total += sessions;
+    e[channelOf(group)] += sessions;
+    e.engaged += num(row, "engagedSessions");
+    entrances.set(path, e);
+  }
+
+  // 4 — totales por país
+  let viewsUy = 0;
+  let sessionsUy = 0;
+  let usersUy = 0;
+  let viewsAllTotal = 0;
+  for (const row of reportRows(reports[4])) {
+    const views = num(row, "screenPageViews");
+    viewsAllTotal += views;
+    if (row.countryId === "UY") {
+      viewsUy += views;
+      sessionsUy += num(row, "sessions");
+      usersUy += num(row, "activeUsers");
+    }
+  }
+
+  const all: PageRankRow[] = [];
+  for (const path of new Set([...pageWeeks.keys(), ...detail.keys()])) {
+    const w = pageWeeks.get(path) || WEEK_NAMES.map(() => 0);
+    const d = detail.get(path);
+    const views = d ? d.views : sum(w);
+    const users = d?.users || 0;
+    const tier = tierOf(bucketOf(path));
+    const base = baseOf(w);
+    // Un reporte truncado no puede dejar a una página con menos vistas totales que uruguayas.
+    const all_ = Math.max(viewsAll.get(path) || 0, views);
+    const e = entrances.get(path);
+    const partial: Omit<PageRankRow, "signals" | "rank"> = {
+      path,
+      title: d?.title || "",
+      family: bucketOf(path),
+      tier: tier.name,
+      multiplier: tier.multiplier,
+      weeks: w,
+      views,
+      base,
+      users,
+      engagementSeconds: users > 0 ? Math.round((d?.seconds || 0) / users) : 0,
+      viewsAll: all_,
+      uyShare: all_ > 0 ? views / all_ : 1,
+      entrances: e
+        ? { total: e.total, organic: e.organic, direct: e.direct, social: e.social, ai: e.ai, other: e.other }
+        : emptyEntrances(),
+      engagedRate: e && e.total > 0 ? e.engaged / e.total : 0,
+      trend: trendOf(w),
+      value: base * tier.multiplier,
+    };
+    all.push({ ...partial, rank: 0, signals: signalsOf(partial) });
+  }
+  all.sort((a, b) => b.base - a.base || b.views - a.views || a.path.localeCompare(b.path));
+  all.forEach((r, i) => (r.rank = i + 1));
+
+  const focus = buildFocus(all, weeks.map((w) => w.start));
+  const inFocus = new Set(focus.map((f) => f.path));
+
+  const channelTotal = sum([...channelSessions.values()]);
+  const channels = [...channelSessions.entries()]
+    .map(([label, sessions]) => ({ label, sessions, share: channelTotal > 0 ? sessions / channelTotal : 0 }))
+    .filter((c) => c.sessions > 0)
+    .sort((a, b) => b.sessions - a.sessions || a.label.localeCompare(b.label));
+
+  return {
+    key: PAGE_RANKING_KEY,
+    asOf: ctx.asOf,
+    timezone: reports[1]?.metadata?.timeZone || ctx.timezone,
+    range: ctx.windows.current,
+    weeks,
+    totals: {
+      viewsUy,
+      viewsAll: viewsAllTotal,
+      uyShare: viewsAllTotal > 0 ? viewsUy / viewsAllTotal : 0,
+      sessionsUy,
+      usersUy,
+      weeklyUy,
+      channels,
+    },
+    pageCount: all.length,
+    truncated: reports.some(isTruncated),
+    pages: all.filter((r, i) => i < MAX_PAGES || inFocus.has(r.path)),
+    families: familiesOf(all),
+    focus,
+  };
+}
+
+/** Sin vistas uruguayas es casi seguro una propiedad o un permiso equivocado, no un mes quieto. */
+export function pageRankingIsEmpty(s: PageRankingSnapshot): boolean {
+  return s.totals.viewsUy === 0 || s.pages.length === 0;
+}
+
+export async function refreshPageRanking(now: Date = new Date()): Promise<PageRankingSnapshot> {
+  const timezone = process.env.GA4_TIMEZONE || DEFAULT_TIMEZONE;
+  const windows = analyticsWindows(now, timezone);
+  const reports = await runReports(pageRankingRequests(windows));
+  return buildPageRanking(reports, { asOf: now.toISOString(), timezone, windows });
 }

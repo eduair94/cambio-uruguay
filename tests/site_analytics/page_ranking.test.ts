@@ -9,7 +9,17 @@ import {
   signalsOf,
   trendOf,
 } from "../../classes/site-analytics/pageRanking";
+import {
+  buildPageRanking,
+  MAX_PAGES,
+  pageRankingIsEmpty,
+  pageRankingRequests,
+  rankingWeeks,
+} from "../../classes/site-analytics/pageRanking";
 import type { PageRankRow } from "../../classes/site-analytics/pageRanking";
+import { exactDimension } from "../../classes/site-analytics/ga4";
+import type { Ga4Report } from "../../classes/site-analytics/ga4";
+import { addDays, analyticsWindows } from "../../classes/site-analytics/refresh";
 
 const noEntrances = { total: 0, organic: 0, direct: 0, social: 0, ai: 0, other: 0 };
 
@@ -168,5 +178,201 @@ describe("buildFocus", () => {
 
   it("sin filas no hay foco", () => {
     expect(buildFocus([], weekStarts)).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------
+// Armado desde los reportes de GA4
+// ---------------------------------------------------------------------------------------------
+
+/** Un reporte con la forma de GA4 a partir de filas planas. */
+function report(dims: string[], metrics: string[], rows: (string | number)[][], rowCount?: number): Ga4Report {
+  return {
+    dimensionHeaders: dims.map((name) => ({ name })),
+    metricHeaders: metrics.map((name) => ({ name })),
+    rows: rows.map((r) => ({
+      dimensionValues: r.slice(0, dims.length).map((value) => ({ value: String(value) })),
+      metricValues: r.slice(dims.length).map((value) => ({ value: String(value) })),
+    })),
+    rowCount: rowCount ?? rows.length,
+  };
+}
+
+const windows = analyticsWindows(new Date("2026-09-29T15:00:00Z"), "America/Montevideo");
+
+function fixture(): Ga4Report[] {
+  return [
+    report(
+      ["pagePath", "dateRange"],
+      ["screenPageViews"],
+      [
+        ["/alquileres-uruguay", "w0", 303],
+        ["/alquileres-uruguay", "w1", 210],
+        ["/alquileres-uruguay", "w2", 124],
+        ["/alquileres-uruguay", "w3", 27],
+        ["/guias/x/", "w0", 10],
+        ["/guias/x?utm_source=a", "w0", 5],
+        ["/guias/x", "w2", 20],
+        ["/guias/x", "w3", 25],
+        ["/solo-semanal", "w3", 12],
+        ["(not set)", "w1", 4],
+      ]
+    ),
+    report(
+      ["pagePath", "pageTitle"],
+      ["screenPageViews", "activeUsers", "userEngagementDuration"],
+      [
+        ["/alquileres-uruguay", "Alquileres", 664, 107, 49538],
+        ["/guias/x", "Guía X viejo", 10, 5, 300],
+        ["/guias/x", "Guía X", 50, 20, 1200],
+        ["/solo-titulo", "Sólo título", 7, 3, 90],
+      ]
+    ),
+    // Todos los países. Truncado a propósito: GA4 dice 5 filas y manda 2.
+    report(["pagePath"], ["screenPageViews"], [["/alquileres-uruguay", 673], ["/guias/x", 200]], 5),
+    report(
+      ["landingPage", "sessionDefaultChannelGroup"],
+      ["sessions", "engagedSessions"],
+      [
+        ["/alquileres-uruguay", "Direct", 116, 70],
+        ["/alquileres-uruguay", "Organic Search", 32, 20],
+        ["/alquileres-uruguay", "Referral", 3, 2],
+        ["/guias/x", "AI Assistant", 6, 4],
+        ["/guias/x", "Organic Social", 2, 1],
+        ["(not set)", "Direct", 50, 1],
+      ]
+    ),
+    report(
+      ["countryId"],
+      ["screenPageViews", "sessions", "activeUsers"],
+      [
+        ["UY", 10236, 5194, 5082],
+        ["SG", 20000, 100, 9000],
+        ["US", 500, 50, 40],
+      ]
+    ),
+  ];
+}
+
+const build = (reports = fixture()) =>
+  buildPageRanking(reports, { asOf: "2026-09-29T15:00:00.000Z", timezone: "America/Montevideo", windows });
+
+describe("ventanas y pedidos", () => {
+  it("cuatro semanas contiguas que cubren la ventana", () => {
+    const weeks = rankingWeeks(windows);
+    expect(weeks).toHaveLength(4);
+    expect(weeks[0].start).toBe(windows.current.start);
+    expect(weeks[3].end).toBe(windows.current.end);
+    for (let i = 1; i < 4; i++) expect(weeks[i].start).toBe(addDays(weeks[i - 1].end, 1));
+  });
+
+  it("cinco reportes, en el orden del spec", () => {
+    const reqs = pageRankingRequests(windows);
+    expect(reqs).toHaveLength(5);
+    expect(reqs[0].dateRanges.map((r) => r.name)).toEqual(["w0", "w1", "w2", "w3"]);
+    expect(reqs[0].dimensionFilter).toEqual(exactDimension("countryId", "UY"));
+    expect(reqs[1].dimensions!.map((d) => d.name)).toEqual(["pagePath", "pageTitle"]);
+    expect(reqs[2].dimensionFilter).toBeUndefined(); // el contraste es con TODOS los países
+    expect(reqs[3].dimensions!.map((d) => d.name)).toEqual(["landingPage", "sessionDefaultChannelGroup"]);
+    expect(reqs[4].dimensions!.map((d) => d.name)).toEqual(["countryId"]);
+  });
+});
+
+describe("buildPageRanking", () => {
+  it("una fila por ruta pública, sin (not set)", () => {
+    const s = build();
+    expect(s.pages.map((p) => p.path)).toEqual(["/alquileres-uruguay", "/guias/x", "/solo-semanal", "/solo-titulo"]);
+    expect(s.pages.map((p) => p.rank)).toEqual([1, 2, 3, 4]);
+    expect(s.pageCount).toBe(4);
+  });
+
+  it("mezcla barra final y query string, y se queda con el título más visto", () => {
+    const g = build().pages.find((p) => p.path === "/guias/x")!;
+    expect(g.weeks).toEqual([15, 0, 20, 25]);
+    expect(g.base).toBe(17.5);
+    expect(g.title).toBe("Guía X");
+    expect(g.views).toBe(60);
+    expect(g.users).toBe(25);
+    expect(g.engagementSeconds).toBe(60);
+    expect(g.viewsAll).toBe(200);
+    expect(g.uyShare).toBeCloseTo(0.3);
+    expect(g.entrances).toEqual({ total: 8, organic: 0, direct: 0, social: 2, ai: 6, other: 0 });
+    expect(g.signals).toContain("ia");
+    expect(g.family).toBe("/guias/*");
+    expect(g.tier).toBe("contenido");
+  });
+
+  it("una ruta que sólo está en un reporte igual tiene fila", () => {
+    const s = build();
+    const semanal = s.pages.find((p) => p.path === "/solo-semanal")!;
+    expect(semanal.title).toBe("");
+    expect(semanal.views).toBe(12);
+    expect(semanal.viewsAll).toBe(12); // ausente del reporte truncado: no puede ser menos que lo uruguayo
+    expect(semanal.uyShare).toBe(1);
+    expect(semanal.signals).toEqual(["nueva"]);
+    const titulo = s.pages.find((p) => p.path === "/solo-titulo")!;
+    expect(titulo.weeks).toEqual([0, 0, 0, 0]);
+    expect(titulo.views).toBe(7);
+    expect(titulo.base).toBe(0);
+  });
+
+  it("el directorio que cae lleva tramo, entradas y valor", () => {
+    const a = build().pages[0];
+    expect(a.tier).toBe("directorio");
+    expect(a.multiplier).toBe(0.2);
+    expect(a.entrances).toEqual({ total: 151, organic: 32, direct: 116, social: 0, ai: 0, other: 3 });
+    expect(a.engagedRate).toBeCloseTo(92 / 151);
+    expect(a.signals).toEqual(["cae"]);
+    expect(a.value).toBeCloseTo(167 * 0.2);
+  });
+
+  it("totales: Uruguay exacto del reporte por país, canales con (not set) incluido", () => {
+    const t = build().totals;
+    expect(t.viewsUy).toBe(10236);
+    expect(t.viewsAll).toBe(30736);
+    expect(t.uyShare).toBeCloseTo(10236 / 30736);
+    expect(t.sessionsUy).toBe(5194);
+    expect(t.usersUy).toBe(5082);
+    expect(t.weeklyUy).toEqual([318, 214, 144, 64]);
+    expect(t.channels[0]).toEqual({ label: "Direct", sessions: 166, share: 166 / 209 });
+    expect(t.channels.map((c) => c.label)).toEqual(["Direct", "Organic Search", "AI Assistant", "Referral", "Organic Social"]);
+  });
+
+  it("marca truncado cuando GA4 manda menos filas de las que dice tener", () => {
+    expect(build().truncated).toBe(true);
+    const whole = fixture();
+    whole[2] = report(["pagePath"], ["screenPageViews"], [["/alquileres-uruguay", 673]]);
+    expect(build(whole).truncated).toBe(false);
+  });
+
+  it("familias y foco", () => {
+    const s = build();
+    expect(s.families.find((f) => f.family === "/guias/*")).toMatchObject({ urls: 1, views: 60, tier: "contenido" });
+    expect(s.focus.find((f) => f.kind === "caen")?.path).toBe("/alquileres-uruguay");
+    expect(s.weeks).toEqual(rankingWeeks(windows));
+    expect(s.range).toEqual(windows.current);
+  });
+
+  it(`recorta a ${MAX_PAGES} filas pero conserva las que están en el foco`, () => {
+    const reports = fixture();
+    const base = (reports[0].rows || []).map((r) => [
+      r.dimensionValues![0].value!,
+      r.dimensionValues![1].value!,
+      Number(r.metricValues![0].value),
+    ]);
+    const many = Array.from({ length: MAX_PAGES + 100 }, (_, i) => [`/p${i}`, "w3", 1000 - i]);
+    reports[0] = report(["pagePath", "dateRange"], ["screenPageViews"], [...base, ...many]);
+    const s = build(reports);
+    expect(s.pageCount).toBe(MAX_PAGES + 104);
+    const kept = new Set(s.pages.map((p) => p.path));
+    for (const f of s.focus) expect(kept.has(f.path)).toBe(true);
+    expect(s.pages.length).toBeLessThanOrEqual(MAX_PAGES + s.focus.length);
+    expect(kept.has("/alquileres-uruguay")).toBe(true); // está en "caen" aunque su base quede abajo
+  });
+
+  it("vacío cuando Uruguay no tiene vistas", () => {
+    expect(pageRankingIsEmpty(build())).toBe(false);
+    const empty = fixture().map((r) => ({ ...r, rows: [], rowCount: 0 }));
+    expect(pageRankingIsEmpty(build(empty))).toBe(true);
   });
 });
