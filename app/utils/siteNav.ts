@@ -3477,6 +3477,31 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El peaje era el único costo de andar en auto sin página propia: el sitio ya tenía la
+        // nafta, la patente, las multas y el costo por mes de cada modo. Y las dos cosas que más
+        // plata mueven no las sabe casi nadie — que el mismo paso tiene tres precios según cómo se
+        // pague, y que las motos no pagan.
+        to: '/peajes-uruguay',
+        labelKey: 'nav.peajes',
+        icon: 'mdi-boom-gate-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'peajes uruguay',
+          'precio peaje uruguay',
+          'cuanto sale el peaje',
+          'tarifa peaje 2026',
+          'telepeaje uruguay',
+          'tag telepeaje',
+          'peaje sucive',
+          'peajes ruta interbalnearia',
+          'las motos pagan peaje',
+          'bonificacion peaje vivo cerca',
+          'cuantos peajes hay en uruguay',
+        ],
+      },
+      {
         to: '/impuesto-autos-electricos-uruguay',
         labelKey: 'nav.impuestoAutosElectricos',
         icon: 'mdi-car-electric-outline',

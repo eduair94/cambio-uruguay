@@ -776,6 +776,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/precio-de-la-nafta-uruguay',
       },
       {
+        label: 'Peajes',
+        description: 'Cuánto sale cada paso según cómo se pague, y quién no paga.',
+        to: '/peajes-uruguay',
+      },
+      {
         label: 'IMESI a los autos eléctricos',
         description: 'Cómo cambia el impuesto a los autos eléctricos.',
         to: '/impuesto-autos-electricos-uruguay',

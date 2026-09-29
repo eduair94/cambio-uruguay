@@ -800,6 +800,22 @@
         "/conviene-pagar-todo-con-credito-uruguay"
       ],
       "hypothesis": "Las ocho eran huerfanas: no estaban en los `resources` de ningun tema, asi que no dibujaban 'Mas sobre este tema' y no recibian NINGUN enlace de ese bloque -el vinculo del tema es reciproco por construccion y ellas no estaban en la relacion-. Solo las tenia el menu, que no es una relacion entre paginas. Seis entran a 'Bancos, tarjetas y pagos' y las dos decisiones de compra a 'Deudas y credito', donde ya viven las guias de debito-contra-credito y de cashback. Las ocho son del tramo `contenido`, que rinde 8x el promedio del sitio (classes/revenueplan/value.ts), asi que es el enlazado interno mas barato que quedaba sin hacer: no se escribio ni una pagina nueva. Se espera mas rastreo y mas sesiones de dos paginas desde el tema hacia ellas."
+    },
+    {
+      "id": "peajes-uruguay",
+      "shippedOn": "2026-09-29",
+      "routes": [
+        "/peajes-uruguay"
+      ],
+      "queries": [
+        "peajes uruguay",
+        "precio peaje uruguay",
+        "cuanto sale el peaje",
+        "telepeaje uruguay",
+        "cuantos peajes hay en uruguay",
+        "las motos pagan peaje"
+      ],
+      "hypothesis": "El peaje era el unico costo de andar en auto sin pagina propia: el sitio ya tenia la nafta, la patente, las multas y el costo por mes de cada modo. La apuesta son dos datos que nadie publica juntos y que salen del MTOP y del Decreto 119/023: que el mismo paso tiene tres precios segun como se pague (167 con TAG, 196,57 en la barrera, 214 por SUCIVE, o sea 28 por ciento entre las dos puntas) y que las motos no pagan peaje. Consultas de marca e intencion local, con volumen estable y sin caja de respuesta de Google."
     }
   ]
 }

@@ -722,6 +722,10 @@
           "label": "Precio de la nafta"
         },
         {
+          "to": "/peajes-uruguay",
+          "label": "Peajes"
+        },
+        {
           "to": "/impuesto-autos-electricos-uruguay",
           "label": "IMESI a los autos eléctricos"
         },
