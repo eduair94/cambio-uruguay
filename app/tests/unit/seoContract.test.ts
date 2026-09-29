@@ -271,6 +271,26 @@ const OWES_OWN_SEO = files.filter(file => !NOINDEXED.includes(file) && !delegate
 
 const LEGACY_BUDGET = { seoMeta: 0, canonical: 0, structuredData: 0 }
 
+/**
+ * Las páginas que emiten JSON-LD pero NO un `BreadcrumbList`.
+ *
+ * Es la deuda que quedaba debajo de `structuredData`, y por eso no la veía: ese contador se
+ * conforma con que exista un `application/ld+json`, así que una página con su `FAQPage` o su
+ * `Article` lo dejaba en cero teniendo el rastro vacío. El `BreadcrumbList` es lo único que
+ * cambia lo que el visitante LEE en el resultado de Google: sin él el renglón verde es la URL
+ * cruda (`cambio-uruguay.com/me-cobran-algo-que-no-autorice`), con él es el rastro con nombres
+ * («Cambio Uruguay › Cobros no autorizados»), que es la misma regla de oro de las descripciones
+ * aplicada al otro renglón del snippet.
+ *
+ * Medido el 2026-09-29 sobre las páginas que se deben su propio SEO: 33 sin migas. Bajó a 17 en
+ * la misma corrida — las dos del dólar (`/dolar-hoy` y `/por-que-sube-el-dolar`, que llevan su
+ * `@graph` y ahí el `BreadcrumbList` va como primer nodo), las ocho de aduana, consumo y
+ * tarjetas, y los seis hubs (`/glosario`, `/guias`, `/temas`, `/blog`, `/herramientas`,
+ * `/importar`). SÓLO PUEDE BAJAR: una página nueva que emite estructurados sin migas pone CI en
+ * rojo antes de publicarse.
+ */
+const BREADCRUMB_BUDGET = 17
+
 function missing(predicate: (source: string) => boolean): string[] {
   return OWES_OWN_SEO.filter(file => predicate(read(file))).sort()
 }
@@ -320,6 +340,13 @@ describe('the legacy SEO debt only shrinks', () => {
   it(`has at most ${LEGACY_BUDGET.structuredData} pages with no JSON-LD`, () => {
     const offenders = missing(source => !source.includes('application/ld+json'))
     expect(offenders).toHaveLength(LEGACY_BUDGET.structuredData)
+  })
+
+  it(`has at most ${BREADCRUMB_BUDGET} pages whose JSON-LD carries no BreadcrumbList`, () => {
+    const offenders = missing(
+      source => source.includes('application/ld+json') && !source.includes('BreadcrumbList')
+    )
+    expect(offenders.length, offenders.join('\n')).toBeLessThanOrEqual(BREADCRUMB_BUDGET)
   })
 
   // The loophole guard, and the reason excusing the shell children is safe.

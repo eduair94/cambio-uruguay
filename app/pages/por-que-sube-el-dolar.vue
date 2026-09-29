@@ -180,6 +180,23 @@ useHead(() => ({
         '@context': 'https://schema.org',
         '@graph': [
           {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: `https://cambio-uruguay.com${localePath('/')}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: t('porQueDolar.title'),
+                item: canonical.value,
+              },
+            ],
+          },
+          {
             '@type': 'Article',
             headline: t('porQueDolar.metaTitle'),
             description: t('porQueDolar.metaDescription'),

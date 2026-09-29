@@ -99,6 +99,22 @@ useHead({
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Cambio Uruguay',
+            item: 'https://cambio-uruguay.com',
+          },
+          { '@type': 'ListItem', position: 2, name: 'Herramientas', item: canonicalUrl },
+        ],
+      }),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
         '@type': 'ItemList',
         name: 'Herramientas de Cambio Uruguay',
         itemListElement: tools.map((t, i) => ({

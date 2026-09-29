@@ -132,12 +132,28 @@ useHead(() => ({
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: [1, 2, 3].map(n => ({
-          '@type': 'Question',
-          name: t(`dolarHoy.faqQ${n}`),
-          acceptedAnswer: { '@type': 'Answer', text: t(`dolarHoy.faqA${n}`) },
-        })),
+        '@graph': [
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: `https://cambio-uruguay.com${localePath('/')}`,
+              },
+              { '@type': 'ListItem', position: 2, name: t('dolarHoy.nav'), item: canonical.value },
+            ],
+          },
+          {
+            '@type': 'FAQPage',
+            mainEntity: [1, 2, 3].map(n => ({
+              '@type': 'Question',
+              name: t(`dolarHoy.faqQ${n}`),
+              acceptedAnswer: { '@type': 'Answer', text: t(`dolarHoy.faqA${n}`) },
+            })),
+          },
+        ],
       }),
     },
   ],
