@@ -644,10 +644,48 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// Igual que en `/sillas-escritorio-uruguay/precios`: el rastro va SIEMPRE y fuera del `script`
+// condicional, porque no depende de que el catálogo haya traído esta silla, y no depende del
+// viewport como el rastro visible — el que lee esto es el rastreador.
+const breadcrumbLd = () => ({
+  type: 'application/ld+json' as const,
+  innerHTML: JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Cambio Uruguay',
+        item: `https://cambio-uruguay.com${localePath('/')}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: t('nav.chairTiers'),
+        item: `https://cambio-uruguay.com${localePath('/sillas-escritorio-uruguay')}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: t('chairMarket.breadcrumb'),
+        item: `https://cambio-uruguay.com${localePath('/sillas-escritorio-uruguay/precios')}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: product.value?.name ?? slug.value,
+        item: canonicalUrl.value,
+      },
+    ],
+  }),
+})
+
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl.value }],
   script: product.value
     ? [
+        breadcrumbLd(),
         {
           type: 'application/ld+json',
           innerHTML: JSON.stringify({
@@ -686,7 +724,7 @@ useHead(() => ({
           }),
         },
       ]
-    : [],
+    : [breadcrumbLd()],
 }))
 </script>
 

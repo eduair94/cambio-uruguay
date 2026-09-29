@@ -21,6 +21,9 @@ import { normalizeRentalQuery, rentalQueryToParams } from '~/utils/rentals'
 import ZoneExplorer from '~/components/rentals/zones/Explorer.vue'
 import ZonePriceImpact from '~/components/rentals/zones/PriceImpact.vue'
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalZoneMessages })
+// Los rótulos del rastro son de navegación y viven en el catálogo global; el `t` de arriba es de
+// alcance local y sólo resuelve `rentalZoneMessages`. Mismo idioma que `alquileres-uruguay.vue`.
+const { t: globalT } = useI18n({ useScope: 'global' })
 const localePath = useLocalePath()
 const initial: RentalZonePreferences = { mode: 'only', include: [], exclude: [] }
 const canonical = computed(
@@ -39,6 +42,35 @@ defineOgImageComponent('Cambio', {
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonical.value }],
   script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Cambio Uruguay',
+            item: `https://cambio-uruguay.com${localePath('/')}`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            // El directorio al que esta página vuelve cuando el visitante cancela, que es el padre
+            // que ya le muestra: no hay ninguno inventado acá.
+            name: globalT('nav.alquileres'),
+            item: `https://cambio-uruguay.com${localePath('/alquileres-uruguay')}`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: globalT('nav.rentalZones'),
+            item: canonical.value,
+          },
+        ],
+      }).replace(/</g, '\\u003c'),
+    },
     {
       type: 'application/ld+json',
       innerHTML: JSON.stringify({

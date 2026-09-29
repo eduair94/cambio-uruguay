@@ -85,17 +85,37 @@ useHead({
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
-        '@type': 'ContactPage',
-        url: canonicalUrl,
-        name: 'Contacto - Cambio Uruguay',
-        inLanguage: 'es-UY',
-        isPartOf: { '@type': 'WebSite', name: 'Cambio Uruguay', url: 'https://cambio-uruguay.com' },
-        mainEntity: {
-          '@type': 'Organization',
-          name: 'Cambio Uruguay',
-          email: 'admin@cambio-uruguay.com',
-          url: 'https://cambio-uruguay.com',
-        },
+        '@graph': [
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              { '@type': 'ListItem', position: 2, name: 'Contacto', item: canonicalUrl },
+            ],
+          },
+          {
+            '@type': 'ContactPage',
+            url: canonicalUrl,
+            name: 'Contacto - Cambio Uruguay',
+            inLanguage: 'es-UY',
+            isPartOf: {
+              '@type': 'WebSite',
+              name: 'Cambio Uruguay',
+              url: 'https://cambio-uruguay.com',
+            },
+            mainEntity: {
+              '@type': 'Organization',
+              name: 'Cambio Uruguay',
+              email: 'admin@cambio-uruguay.com',
+              url: 'https://cambio-uruguay.com',
+            },
+          },
+        ],
       }),
     },
   ],
