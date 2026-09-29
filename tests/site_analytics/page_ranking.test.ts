@@ -15,6 +15,8 @@ import {
   pageRankingIsEmpty,
   pageRankingRequests,
   rankingWeeks,
+  rankingFamily,
+  rankingTier,
 } from "../../classes/site-analytics/pageRanking";
 import type { PageRankRow } from "../../classes/site-analytics/pageRanking";
 import { exactDimension } from "../../classes/site-analytics/ga4";
@@ -125,11 +127,14 @@ describe("signalsOf", () => {
     expect(signalsOf(row({ weeks: [10, 10, 40, 40] }))).toEqual(["crece"]);
   });
 
-  it("rebota sólo en contenido u otro: en una cotización la visita corta es el éxito", () => {
+  it("rebota sólo en contenido: en una cotización la visita corta es el éxito", () => {
     const quick = { weeks: [20, 20, 20, 20], engagementSeconds: 12 };
     expect(signalsOf(row({ ...quick, tier: "contenido" }))).toContain("rebota");
-    expect(signalsOf(row({ ...quick, tier: "otro" }))).toContain("rebota");
+    // "otro" es SIN CLASIFICAR: ahí caen /dolar-hoy, /comparar, /pizarra (revisión del 29/9).
+    expect(signalsOf(row({ ...quick, tier: "otro" }))).not.toContain("rebota");
     expect(signalsOf(row({ ...quick, tier: "dato-vivo" }))).not.toContain("rebota");
+    // Sin usuarios medidos la permanencia es 0 por falta de dato, no porque se vayan.
+    expect(signalsOf(row({ ...quick, tier: "contenido", users: 0 }))).not.toContain("rebota");
   });
 
   it("afuera: la mayoría de las vistas no son de Uruguay", () => {
@@ -287,6 +292,26 @@ function fixture(): Ga4Report[] {
 const build = (reports = fixture()) =>
   buildPageRanking(reports, { asOf: "2026-09-29T15:00:00.000Z", timezone: "America/Montevideo", windows });
 
+describe("rankingFamily y tramo de las fichas", () => {
+  it("pliega las fichas de un directorio bajo su hub", () => {
+    expect(rankingFamily("/alquileres/montevideo-cordon-1tts26l")).toBe("/alquileres/*");
+    expect(rankingFamily("/autos-usados-uruguay/precios/chevrolet-onix")).toBe("/autos-usados-uruguay/*");
+    // Lo que bucketOf ya pliega o deja suelto a propósito no cambia.
+    expect(rankingFamily("/guias/x")).toBe("/guias/*");
+    expect(rankingFamily("/historico/brou/usd")).toBe("/historico/*");
+    expect(rankingFamily("/alquileres-uruguay")).toBe("/alquileres-uruguay");
+    expect(rankingFamily("/")).toBe("/");
+    expect(rankingFamily("/en/celulares-uruguay")).toBe("/en/celulares-uruguay/*");
+  });
+
+  it("una ficha sin clasificar hereda el tramo de su hub", () => {
+    expect(rankingTier("/autos-usados-uruguay/*").name).toBe("directorio");
+    expect(rankingTier("/alquileres/*").name).toBe("directorio");
+    expect(rankingTier("/guias/*").name).toBe("contenido");
+    expect(rankingTier("/dolar-hoy").name).toBe("otro");
+  });
+});
+
 describe("ventanas y pedidos", () => {
   it("cuatro semanas contiguas que cubren la ventana", () => {
     const weeks = rankingWeeks(windows);
@@ -398,6 +423,33 @@ describe("buildPageRanking", () => {
     for (const f of s.focus) expect(kept.has(f.path)).toBe(true);
     expect(s.pages.length).toBeLessThanOrEqual(MAX_PAGES + s.focus.length);
     expect(kept.has("/alquileres-uruguay")).toBe(true); // está en "caen" aunque su base quede abajo
+  });
+
+  it("(other) de GA4 no es una página", () => {
+    const reports = fixture();
+    reports[1] = report(
+      ["pagePath", "pageTitle"],
+      ["screenPageViews", "activeUsers", "userEngagementDuration"],
+      [...(reports[1].rows || []).map((r) => [
+        r.dimensionValues![0].value!,
+        r.dimensionValues![1].value!,
+        ...r.metricValues!.map((m) => Number(m.value)),
+      ]), ["(other)", "(other)", 900, 300, 100]]
+    );
+    expect(build(reports).pages.map((p) => p.path)).not.toContain("(other)");
+  });
+
+  it("un reporte que llega justo al límite cuenta como truncado", () => {
+    const reports = fixture();
+    const rows = Array.from({ length: 5 }, (_, i) => [`/x${i}`, 1]);
+    reports[2] = report(["pagePath"], ["screenPageViews"], rows, 5);
+    const limited = pageRankingRequests(windows).map((r) => ({ ...r, limit: 5 }));
+    expect(buildPageRanking(reports, { asOf: "x", timezone: "UTC", windows }, limited).truncated).toBe(true);
+  });
+
+  it("los reportes por página piden de mayor a menor: un truncado pierde las chicas", () => {
+    const reqs = pageRankingRequests(windows);
+    for (const i of [0, 1, 2, 3]) expect(reqs[i].orderBys?.[0]?.desc).toBe(true);
   });
 
   it("vacío cuando Uruguay no tiene vistas", () => {

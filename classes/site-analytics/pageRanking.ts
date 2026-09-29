@@ -12,7 +12,7 @@
 //     afuera (señal `afuera`).
 //   * El orden lo da la BASE SEMANAL —la mediana de las semanas desde que la página existe— y no la
 //     suma de 28 días. `/oportunidades-inmobiliarias-uruguay` hizo 192, 32, 34 y 19 vistas por
-//     semana: la suma dice 277 y la base dice 33. Un enlace compartido un día no es tráfico.
+//     semana: la suma dice 277 y la base, sin la semana del pico, 32. Un enlace compartido un día no es tráfico.
 //   * La tendencia se mide DENTRO de la ventana (primeras dos semanas contra últimas dos), nunca
 //     contra la ventana anterior: el 2/9 cambió el consentimiento por región y GA4 pasó de ver ~25 %
 //     del tráfico a verlo casi todo. Contra agosto, todo "crece".
@@ -24,6 +24,7 @@
 // el mismo del plan de ingreso), que es forma y no un monto. Este repositorio es público.
 import { bucketOf } from "../gsc/opportunities";
 import { tierOf } from "../revenueplan/value";
+import type { Tier } from "../revenueplan/value";
 import { exactDimension, reportRows, runReports } from "./ga4";
 import type { Ga4Report, Ga4ReportRequest, Ga4Row } from "./ga4";
 import { addDays, analyticsWindows, DEFAULT_TIMEZONE, publicPath } from "./refresh";
@@ -108,7 +109,7 @@ export interface PageRankRow {
   entrances: Entrances;
   /** Sesiones con interacción / sesiones que entraron por acá, 0..1. */
   engagedRate: number;
-  /** (semanas 3+4) / (semanas 1+2) − 1. `null` sin muestra o sin primera mitad. */
+  /** Vistas por semana de las dos últimas contra las anteriores activas, − 1. `null` sin muestra o si es nueva. */
   trend: number | null;
   /** base × multiplier. Ordena el foco. */
   value: number;
@@ -222,9 +223,12 @@ export function signalsOf(row: Omit<PageRankRow, "signals" | "rank">): PageSigna
     if (1 + row.trend <= TREND_DOWN) out.push("cae");
     else if (1 + row.trend >= TREND_UP) out.push("crece");
   }
-  // En una cotización o un conversor, entrar, ver el número e irse ES el éxito.
+  // Sólo contenido: en una cotización o un conversor, entrar, ver el número e irse ES el éxito, y
+  // "otro" es SIN CLASIFICAR — ahí caen /dolar-hoy, /comparar y /pizarra. Sin usuarios medidos la
+  // permanencia es 0 por falta de dato, no porque la gente se vaya.
   if (
-    (row.tier === "contenido" || row.tier === "otro") &&
+    row.tier === "contenido" &&
+    row.users > 0 &&
     row.views >= REBOTA_MIN_VIEWS &&
     row.engagementSeconds < REBOTA_MAX_SECONDS
   ) {
@@ -445,6 +449,32 @@ export function rankingWeeks(w: AnalyticsWindows): { start: string; end: string 
   });
 }
 
+/**
+ * La familia para ESTE ranking. `bucketOf` sólo pliega su lista fija, así que cada ficha de un
+ * directorio (`/alquileres/<ficha>`, `/autos-usados-uruguay/<…>`) quedaba como una familia de una
+ * URL y la tabla de familias no decía nada de la plantilla. Acá, lo que `bucketOf` deja suelto con
+ * dos segmentos o más se pliega bajo su primer segmento. No se toca `bucketOf`: lo comparten
+ * Search Console y el plan de ingreso, y sus familias tienen que seguir cruzándose fila a fila.
+ */
+export function rankingFamily(path: string): string {
+  const family = bucketOf(path);
+  if (family !== path) return family;
+  const seg = path.split("/").filter(Boolean);
+  return seg.length >= 2 ? `/${seg[0]}/*` : family;
+}
+
+/**
+ * El tramo de una familia del ranking. Una ficha sin clasificar hereda el de su hub: una ficha de
+ * `/autos-usados-uruguay` es directorio aunque `tierOf` no la conozca. Tampoco se toca `tierOf`,
+ * por la misma razón que arriba.
+ */
+export function rankingTier(family: string): Tier {
+  const tier = tierOf(family);
+  if (tier.name !== "otro") return tier;
+  const hub = /^\/([^/]+)\/\*$/.exec(family);
+  return hub ? tierOf(`/${hub[1]}`) : tier;
+}
+
 const names = (...list: string[]) => list.map((name) => ({ name }));
 const uruguay = () => exactDimension("countryId", "UY");
 
@@ -458,6 +488,8 @@ export function pageRankingRequests(w: AnalyticsWindows): Ga4ReportRequest[] {
       dimensions: names("pagePath"),
       metrics: names("screenPageViews"),
       dimensionFilter: uruguay(),
+      // De mayor a menor en todos: si GA4 trunca, que se pierdan las páginas chicas y no filas al azar.
+      orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
       limit: REPORT_LIMIT,
     },
     // 1 — título, usuarios y permanencia (28 días; los usuarios no se suman entre semanas)
@@ -466,6 +498,7 @@ export function pageRankingRequests(w: AnalyticsWindows): Ga4ReportRequest[] {
       dimensions: names("pagePath", "pageTitle"),
       metrics: names("screenPageViews", "activeUsers", "userEngagementDuration"),
       dimensionFilter: uruguay(),
+      orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
       limit: REPORT_LIMIT,
     },
     // 2 — todos los países, sólo para el contraste
@@ -482,6 +515,7 @@ export function pageRankingRequests(w: AnalyticsWindows): Ga4ReportRequest[] {
       dimensions: names("landingPage", "sessionDefaultChannelGroup"),
       metrics: names("sessions", "engagedSessions"),
       dimensionFilter: uruguay(),
+      orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
       limit: REPORT_LIMIT,
     },
     // 4 — totales por país: el de Uruguay exacto y la suma de todos
@@ -499,8 +533,11 @@ function num(row: Ga4Row, key: string): number {
   return typeof v === "number" && Number.isFinite(v) ? v : 0;
 }
 
-/** `(not set)` o vacío no es una página: cuenta en los totales, nunca como fila. */
-const isNotSet = (raw: string) => !raw || raw === "(not set)";
+/**
+ * `(not set)`, `(other)` (la fila de desborde de GA4) o vacío no son páginas: cuentan en los
+ * totales, nunca como fila.
+ */
+const isNotSet = (raw: string) => !raw || raw === "(not set)" || raw === "(other)";
 
 function channelOf(group: string): Channel {
   switch (group) {
@@ -521,9 +558,15 @@ function channelOf(group: string): Channel {
 const emptyEntrances = (): Entrances => ({ total: 0, organic: 0, direct: 0, social: 0, ai: 0, other: 0 });
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 
-function isTruncated(report: Ga4Report | undefined): boolean {
+/**
+ * Menos filas de las que GA4 dice tener, o justo el tope pedido. Lo segundo no depende de cómo
+ * cuenta `rowCount` un reporte con varios rangos de fechas.
+ */
+function isTruncated(report: Ga4Report | undefined, request: Ga4ReportRequest | undefined): boolean {
+  const rows = report?.rows?.length || 0;
   const count = report?.rowCount;
-  return typeof count === "number" && (report?.rows?.length || 0) < count;
+  if (typeof count === "number" && rows < count) return true;
+  return !!request?.limit && rows >= request.limit;
 }
 
 function familiesOf(rows: PageRankRow[]): FamilyRankRow[] {
@@ -579,8 +622,15 @@ export interface BuildPageRankingContext {
   windows: AnalyticsWindows;
 }
 
-/** Pura: los cinco reportes de {@link pageRankingRequests}, en orden, se vuelven un documento. */
-export function buildPageRanking(reports: Ga4Report[], ctx: BuildPageRankingContext): PageRankingSnapshot {
+/**
+ * Pura: los cinco reportes de {@link pageRankingRequests}, en orden, se vuelven un documento.
+ * `requests` sólo se usa para saber si algún reporte llegó al tope pedido.
+ */
+export function buildPageRanking(
+  reports: Ga4Report[],
+  ctx: BuildPageRankingContext,
+  requests: Ga4ReportRequest[] = pageRankingRequests(ctx.windows)
+): PageRankingSnapshot {
   const weeks = rankingWeeks(ctx.windows);
 
   // 0 — semanas
@@ -665,7 +715,8 @@ export function buildPageRanking(reports: Ga4Report[], ctx: BuildPageRankingCont
     const d = detail.get(path);
     const views = d ? d.views : sum(w);
     const users = d?.users || 0;
-    const tier = tierOf(bucketOf(path));
+    const family = rankingFamily(path);
+    const tier = rankingTier(family);
     const base = baseOf(w);
     // Un reporte truncado no puede dejar a una página con menos vistas totales que uruguayas.
     const all_ = Math.max(viewsAll.get(path) || 0, views);
@@ -673,7 +724,7 @@ export function buildPageRanking(reports: Ga4Report[], ctx: BuildPageRankingCont
     const partial: Omit<PageRankRow, "signals" | "rank"> = {
       path,
       title: d?.title || "",
-      family: bucketOf(path),
+      family,
       tier: tier.name,
       multiplier: tier.multiplier,
       weeks: w,
@@ -720,7 +771,7 @@ export function buildPageRanking(reports: Ga4Report[], ctx: BuildPageRankingCont
       channels,
     },
     pageCount: all.length,
-    truncated: reports.some(isTruncated),
+    truncated: reports.some((r, i) => isTruncated(r, requests[i])),
     pages: all.filter((r, i) => i < MAX_PAGES || inFocus.has(r.path)),
     families: familiesOf(all),
     focus,
@@ -735,6 +786,7 @@ export function pageRankingIsEmpty(s: PageRankingSnapshot): boolean {
 export async function refreshPageRanking(now: Date = new Date()): Promise<PageRankingSnapshot> {
   const timezone = process.env.GA4_TIMEZONE || DEFAULT_TIMEZONE;
   const windows = analyticsWindows(now, timezone);
-  const reports = await runReports(pageRankingRequests(windows));
-  return buildPageRanking(reports, { asOf: now.toISOString(), timezone, windows });
+  const requests = pageRankingRequests(windows);
+  const reports = await runReports(requests);
+  return buildPageRanking(reports, { asOf: now.toISOString(), timezone, windows }, requests);
 }

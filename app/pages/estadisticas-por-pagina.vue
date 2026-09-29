@@ -181,7 +181,10 @@
             </th>
             <th class="text-right text-no-wrap">28 días</th>
             <th>4 semanas</th>
-            <th class="text-right text-no-wrap" title="Últimas dos semanas contra las primeras dos">
+            <th
+              class="text-right text-no-wrap"
+              title="Vistas por semana: las dos últimas contra las anteriores en que la página ya existía"
+            >
               Tend.
             </th>
             <th class="text-right text-no-wrap" title="Permanencia promedio por usuario">Perm.</th>
@@ -456,7 +459,9 @@ const focusGroups = computed(() =>
 const topTenShare = computed(() => {
   const s = snapshot.value
   if (!s) return 0
-  const total = s.pages.reduce((acc, p) => acc + p.views, 0)
+  // Sobre el total uruguayo y no sobre las filas guardadas: con más de 600 páginas, dividir por lo
+  // guardado exagera la concentración.
+  const total = s.totals.viewsUy
   const top = [...s.pages]
     .sort((a, b) => b.views - a.views)
     .slice(0, 10)
