@@ -13,6 +13,7 @@ import { RentalMetaModel } from "../../classes/models/RentalMeta";
 import { PropertyOpportunitySnapshotModel } from "../../classes/models/PropertyOpportunitySnapshot";
 import { SearchConsoleSnapshotModel } from "../../classes/models/SearchConsoleSnapshot";
 import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapshot";
+import { SitePageRankingModel } from "../../classes/models/SitePageRanking";
 import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
 import { RevenuePlanSnapshotModel } from "../../classes/models/RevenuePlanSnapshot";
 import { EquiparItemModel } from "../../classes/models/EquiparItem";
@@ -149,6 +150,12 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+  it("SitePageRanking declares exactly the app's top-level fields", () => {
+    expect(Object.keys(SitePageRankingModel.schema.obj).sort()).toEqual(
+      appFields(appModel("SitePageRanking")).sort()
+    );
+  });
+
   it("EquiparItem declares exactly the app's top-level fields", () => {
     expect(Object.keys(EquiparItemModel.schema.obj).sort()).toEqual(appFields(appModel("EquiparItem")).sort());
   });
@@ -245,6 +252,7 @@ describe("app-Mongo schema parity", () => {
     expect(RentalMetaModel.collection.name).toBe("rentalmetas");
     expect(SearchConsoleSnapshotModel.collection.name).toBe("searchconsolesnapshots");
     expect(SiteRevenueSnapshotModel.collection.name).toBe("siterevenuesnapshots");
+    expect(SitePageRankingModel.collection.name).toBe("sitepagerankings");
     expect(EquiparItemModel.collection.name).toBe("equiparitems");
     expect(EquiparMetaModel.collection.name).toBe("equiparmeta");
     expect(StoreProfileModel.collection.name).toBe("storeprofiles");

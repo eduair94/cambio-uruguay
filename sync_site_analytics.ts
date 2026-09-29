@@ -12,6 +12,10 @@
 // Never blanks the stored snapshot: a failed run leaves yesterday's numbers serving. Only the
 // `--allow-empty` flag lets an all-zero snapshot be written, and that exists purely so a brand-new
 // property can be seeded on purpose.
+//
+// Three writes, each in its own guard: the public snapshot, the private ad revenue
+// (`siterevenuesnapshots`) and the private page ranking (`sitepagerankings`, served to
+// /estadisticas-por-pagina — see classes/site-analytics/pageRanking.ts).
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -19,7 +23,13 @@ import { appDbConfigured } from "./classes/appdb";
 import { ga4ConfigProblem } from "./classes/site-analytics/ga4";
 import { refreshSiteAnalytics, snapshotIsEmpty } from "./classes/site-analytics/refresh";
 import { fetchRevenue, revenueIsEmpty } from "./classes/site-analytics/revenue";
-import { revenueWouldRegress, saveSiteAnalytics, saveSiteRevenue } from "./classes/site-analytics/store";
+import { pageRankingIsEmpty, refreshPageRanking } from "./classes/site-analytics/pageRanking";
+import {
+  revenueWouldRegress,
+  savePageRanking,
+  saveSiteAnalytics,
+  saveSiteRevenue,
+} from "./classes/site-analytics/store";
 
 async function main(): Promise<void> {
   if (!appDbConfigured()) {
@@ -75,6 +85,31 @@ async function main(): Promise<void> {
     } catch (e: any) {
       const detail = e?.response?.data ? JSON.stringify(e.response.data) : e?.message || String(e);
       console.warn(`[site-analytics] no se pudo leer el ingreso publicitario: ${detail}`);
+    }
+
+    // El ranking por página (privado, /estadisticas-por-pagina). Último y en su propio try por la
+    // misma razón que el ingreso: es lo más nuevo, y un fallo acá no puede dejar sin actualizar ni
+    // la página pública ni la plata. Un ranking sin vistas uruguayas no pisa el anterior.
+    try {
+      const ranking = await refreshPageRanking(new Date(snapshot.asOf));
+      if (pageRankingIsEmpty(ranking)) {
+        console.warn("[site-analytics] ranking por página: cero vistas desde Uruguay — se conserva el anterior.");
+      } else {
+        await savePageRanking(ranking);
+        const counts = ranking.focus.reduce<Record<string, number>>((acc, f) => {
+          acc[f.kind] = (acc[f.kind] || 0) + 1;
+          return acc;
+        }, {});
+        console.log(
+          `[site-analytics] ranking por página: ${ranking.totals.viewsUy} vistas desde Uruguay ` +
+            `(${Math.round(ranking.totals.uyShare * 100)} % del total), ${ranking.pageCount} páginas, ` +
+            `${ranking.pages.length} guardadas${ranking.truncated ? " (GA4 truncó algún reporte)" : ""}; ` +
+            `foco ${JSON.stringify(counts)}`
+        );
+      }
+    } catch (e: any) {
+      const detail = e?.response?.data ? JSON.stringify(e.response.data) : e?.message || String(e);
+      console.warn(`[site-analytics] no se pudo armar el ranking por página: ${detail}`);
     }
 
     console.log(

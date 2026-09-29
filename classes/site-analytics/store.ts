@@ -3,6 +3,9 @@
 // unrecomputable.
 import { SiteAnalyticsSnapshotModel } from "../models/SiteAnalyticsSnapshot";
 import { SiteRevenueSnapshotModel } from "../models/SiteRevenueSnapshot";
+import { SitePageRankingModel } from "../models/SitePageRanking";
+import { PAGE_RANKING_KEY } from "./pageRanking";
+import type { PageRankingSnapshot } from "./pageRanking";
 import { revenueIsEmpty, SITE_REVENUE_KEY } from "./revenue";
 import type { RevenueSnapshot } from "./revenue";
 import { SITE_ANALYTICS_KEY } from "./types";
@@ -79,4 +82,20 @@ export async function saveSiteRevenue(snapshot: RevenueSnapshot): Promise<void> 
     { $set: { ...snapshot, key: SITE_REVENUE_KEY } },
     { upsert: true }
   );
+}
+
+// ---------------------------------------------------------------------------------------------
+// El ranking por página: privado, un documento, reescrito cada día.
+// ---------------------------------------------------------------------------------------------
+
+export async function savePageRanking(snapshot: PageRankingSnapshot): Promise<void> {
+  await SitePageRankingModel.updateOne(
+    { key: PAGE_RANKING_KEY },
+    { $set: { ...snapshot, key: PAGE_RANKING_KEY } },
+    { upsert: true }
+  );
+}
+
+export async function loadPageRanking(): Promise<PageRankingSnapshot | null> {
+  return SitePageRankingModel.findOne({ key: PAGE_RANKING_KEY }).lean<PageRankingSnapshot>().exec();
 }

@@ -10,6 +10,7 @@ import path from "path";
 import { describe, expect, it } from "vitest";
 import { SiteAnalyticsSnapshotModel } from "../../classes/models/SiteAnalyticsSnapshot";
 import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapshot";
+import { SitePageRankingModel } from "../../classes/models/SitePageRanking";
 import { revenueIsEmpty } from "../../classes/site-analytics/revenue";
 import type { RevenueSnapshot } from "../../classes/site-analytics/revenue";
 
@@ -33,6 +34,14 @@ describe("el ingreso no toca la superficie pública", () => {
     expect(publicFields).not.toContain("totalsUy");
     expect(publicFields).not.toContain("siteRpmUy");
     expect(Object.keys(SiteRevenueSnapshotModel.schema.obj)).toContain("totalsUy");
+  });
+
+  it("el ranking por página tampoco guarda plata: es privado, pero no es el lugar", () => {
+    // Su valor es base × multiplicador de tramo (forma). Si algún día hace falta ingreso por
+    // página, se lee de `siterevenuesnapshots`; copiarlo acá duplicaría la superficie a vigilar.
+    for (const field of Object.keys(SitePageRankingModel.schema.obj)) {
+      expect(field).not.toMatch(MONEY);
+    }
   });
 
   it("las dos colecciones son distintas", () => {
