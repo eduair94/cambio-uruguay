@@ -514,7 +514,6 @@ const entranceBreakdown = (e: Entrances) =>
 }
 .pr-bar {
   width: 7px;
-  border-radius: 1px;
   background: rgb(var(--v-theme-primary));
   opacity: 0.8;
 }
