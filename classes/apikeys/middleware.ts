@@ -10,7 +10,7 @@
 // lo sumo una vez por minuto. No hay timers: nada programado vive en la API (cluster ×2).
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { clientIp, internalIps, isSiteReferrer } from "./client";
-import { countRequest, meter, type RedisLike } from "./counters";
+import { countRequest, invalidAttempts, meter, noteInvalid, refundDay, type RedisLike } from "./counters";
 import { extractCredential, firstHeader, hashCredential } from "./credential";
 import { meterRoute, meterUserAgent } from "./normalize";
 import { effectiveLimits, planLimits, type Limits, type PlanId } from "./plans";
@@ -40,6 +40,8 @@ export interface MiddlewareDeps {
 }
 
 export const DOCS_URL = "https://cambio-uruguay.com/empresas";
+/** Claves inexistentes por IP y minuto antes de cortar sin consultar Mongo. */
+export const MAX_INVALID_PER_MINUTE = 30;
 const EXPOSED = "X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-Plan";
 const EXEMPT_EXACT = new Set(["/health", "/ping", "/robots.txt", "/favicon.ico"]);
 const EXEMPT_PREFIX = ["/api-docs", "/public/", "/admin/"];
@@ -104,6 +106,7 @@ export function createApiKeyMiddleware(deps: MiddlewareDeps): RequestHandler {
     try {
       const credential = extractCredential(req.headers, req.query as Record<string, unknown>);
       if (credential.kind === "malformed") {
+        res.setHeader("Cache-Control", "no-store");
         return res
           .status(401)
           .json(invalid("La clave no tiene el formato de Cambio Uruguay: cu_ seguido de 32 letras y números."));
@@ -111,6 +114,20 @@ export function createApiKeyMiddleware(deps: MiddlewareDeps): RequestHandler {
 
       let record: ApiKeyRecord | null = null;
       if (credential.kind === "present") {
+        const redis = deps.redis();
+        const ip = clientIp(req.headers, req.ip);
+        const keysNow = windowKeys(now());
+        // Una clave inventada por pedido cuesta una consulta a Mongo cada una (el caché negativo
+        // sólo ataja las repetidas): pasado el tope, esa IP espera el minuto sin consultar nada.
+        if (redis && (await invalidAttempts(redis, ip, keysNow)) >= MAX_INVALID_PER_MINUTE) {
+          res.setHeader("Cache-Control", "no-store");
+          res.setHeader("Retry-After", String(Math.max(1, Math.ceil((keysNow.minuteResetsAt.getTime() - now().getTime()) / 1000))));
+          return res.status(429).json({
+            error: "too_many_invalid_keys",
+            message: "Demasiadas claves que no existen desde esta dirección. Probá de nuevo en un minuto.",
+            docs: DOCS_URL,
+          });
+        }
         let found: ApiKeyRecord | null | undefined;
         try {
           found = await deps.lookup(hashCredential(credential.value));
@@ -118,7 +135,11 @@ export function createApiKeyMiddleware(deps: MiddlewareDeps): RequestHandler {
           logOnce(`no se pudo validar una clave, el pedido pasa como anónimo: ${e?.message || e}`);
           found = undefined;
         }
-        if (found === null) return res.status(401).json(invalid("La clave no existe o fue revocada."));
+        if (found === null) {
+          if (redis) await noteInvalid(redis, ip, keysNow);
+          res.setHeader("Cache-Control", "no-store");
+          return res.status(401).json(invalid("La clave no existe o fue revocada."));
+        }
         record = found ?? null;
       }
 
@@ -150,8 +171,10 @@ export function createApiKeyMiddleware(deps: MiddlewareDeps): RequestHandler {
           res.setHeader("X-RateLimit-Remaining", String(decision.remaining));
           res.setHeader("X-RateLimit-Reset", String(Math.ceil(decision.resetAt.getTime() / 1000)));
           if (!decision.allowed) {
+            if (decision.exceeded === "minute") await refundDay(redis!, client.subject, keys);
             const wait = Math.max(1, Math.ceil((decision.resetAt.getTime() - at.getTime()) / 1000));
             res.setHeader("Retry-After", String(wait));
+            res.setHeader("Cache-Control", "no-store");
             return res.status(429).json({
               error: "rate_limited",
               window: decision.exceeded,

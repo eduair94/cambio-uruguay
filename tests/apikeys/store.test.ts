@@ -56,6 +56,16 @@ describe("store de claves", () => {
     expect(model.findOneCalls).toBe(calls + 1);
   });
 
+  it("una avalancha de claves inventadas no desaloja de la caché a las claves válidas", async () => {
+    const { model, store } = setup();
+    const { plaintext } = await store.create(input);
+    await store.findActiveByHash(hashCredential(plaintext));
+    for (let i = 0; i < 6000; i++) await store.findActiveByHash(`inventada-${i}`);
+    const calls = model.findOneCalls;
+    expect(await store.findActiveByHash(hashCredential(plaintext))).toMatchObject({ label: "Pantalla" });
+    expect(model.findOneCalls).toBe(calls);
+  });
+
   it("revocar rige ya en este proceso y queda fechado", async () => {
     const { store } = setup();
     const { record, plaintext } = await store.create(input);

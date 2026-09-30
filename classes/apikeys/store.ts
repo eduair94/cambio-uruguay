@@ -107,6 +107,7 @@ export function createKeyStore(
   const generate = opts.generate ?? (() => generateCredential());
   const lookupTimeoutMs = opts.lookupTimeoutMs ?? LOOKUP_TIMEOUT_MS;
   const cache = new Map<string, { at: number; record: ApiKeyRecord | null }>();
+  let negatives = 0;
 
   return {
     async findActiveByHash(hash) {
@@ -125,8 +126,18 @@ export function createKeyStore(
         throw e;
       }
       const record = doc ? toRecord(doc) : null;
-      if (cache.size >= CACHE_MAX) cache.clear();
-      cache.set(hash, { at: now(), record });
+      if (record) {
+        cache.set(hash, { at: now(), record });
+      } else {
+        // Las respuestas NEGATIVAS tienen su propio tope: una avalancha de claves inventadas vacía
+        // sólo las negativas y nunca desaloja a las claves válidas (que son pocas y pagan).
+        if (negatives >= CACHE_MAX) {
+          for (const [key, entry] of cache) if (!entry.record) cache.delete(key);
+          negatives = 0;
+        }
+        if (!cache.get(hash)) negatives++;
+        cache.set(hash, { at: now(), record: null });
+      }
       return record;
     },
 
@@ -153,6 +164,7 @@ export function createKeyStore(
       });
       const plain = typeof doc?.toObject === "function" ? doc.toObject() : doc;
       cache.clear();
+      negatives = 0;
       return { record: toRecord(plain), plaintext };
     },
 
@@ -177,6 +189,7 @@ export function createKeyStore(
       if (!Object.keys(set).length) return null;
       const doc = await model.findOneAndUpdate(filter, { $set: set }, { new: true }).lean();
       cache.clear();
+      negatives = 0;
       return doc ? toRecord(doc) : null;
     },
 

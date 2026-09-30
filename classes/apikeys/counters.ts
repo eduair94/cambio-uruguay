@@ -13,10 +13,27 @@ export interface RedisMulti {
 
 export interface RedisLike {
   multi(): RedisMulti;
+  get(key: string): Promise<string | null>;
+  incr(key: string): Promise<number>;
+  decr(key: string): Promise<number>;
   hincrby(key: string, field: string, increment: number): Promise<number>;
   expire(key: string, seconds: number): Promise<number>;
   hgetall(key: string): Promise<Record<string, string>>;
   mget(...keys: string[]): Promise<(string | null)[]>;
+}
+
+/**
+ * Tope de espera de los contadores en el camino del pedido. Un Redis conectado pero trabado no
+ * responde ni con error: sin tope, cada pedido a la API esperaría con él.
+ */
+export const COUNTER_TIMEOUT_MS = 250;
+
+function within<T>(work: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`Redis no contestó en ${ms} ms`)), ms);
+  });
+  return Promise.race([work, deadline]).finally(() => clearTimeout(timer));
 }
 
 const MINUTE_TTL = 120;
@@ -27,16 +44,18 @@ export const USAGE_TTL = 40 * 86_400;
 export const minuteKey = (subject: string, bucket: number): string => `rl:m:${subject}:${bucket}`;
 export const dayKey = (subject: string, day: string): string => `rl:d:${subject}:${day}`;
 export const usageKey = (day: string): string => `usage:${day}`;
+export const invalidKey = (ip: string, bucket: number): string => `rl:inv:${ip}:${bucket}`;
 
 export async function countRequest(
   redis: RedisLike,
   subject: string,
-  keys: WindowKeys
+  keys: WindowKeys,
+  timeoutMs = COUNTER_TIMEOUT_MS
 ): Promise<{ minute: number; day: number } | null> {
   try {
     const m = minuteKey(subject, keys.minuteBucket);
     const d = dayKey(subject, keys.day);
-    const res = await redis.multi().incr(m).expire(m, MINUTE_TTL).incr(d).expire(d, DAY_TTL).exec();
+    const res = await within(redis.multi().incr(m).expire(m, MINUTE_TTL).incr(d).expire(d, DAY_TTL).exec(), timeoutMs);
     if (!res || res[0]?.[0] || res[2]?.[0]) return null;
     const minute = Number(res[0]?.[1]);
     const day = Number(res[2]?.[1]);
@@ -50,13 +69,50 @@ export async function countRequest(
 export async function readCounts(
   redis: RedisLike,
   subject: string,
-  keys: WindowKeys
+  keys: WindowKeys,
+  timeoutMs = COUNTER_TIMEOUT_MS
 ): Promise<{ minute: number; day: number } | null> {
   try {
-    const [m, d] = await redis.mget(minuteKey(subject, keys.minuteBucket), dayKey(subject, keys.day));
+    const [m, d] = await within(redis.mget(minuteKey(subject, keys.minuteBucket), dayKey(subject, keys.day)), timeoutMs);
     return { minute: Number(m ?? 0) || 0, day: Number(d ?? 0) || 0 };
   } catch {
     return null;
+  }
+}
+
+/**
+ * Un pedido que cortó el límite de MINUTO no gasta el cupo del DÍA: si no, un cliente que ignora el
+ * Retry-After durante una ráfaga se queda sin día entero con pedidos que nunca se atendieron.
+ */
+export async function refundDay(redis: RedisLike, subject: string, keys: WindowKeys): Promise<void> {
+  try {
+    await within(redis.decr(dayKey(subject, keys.day)), COUNTER_TIMEOUT_MS);
+  } catch {
+    // Sin devolución el cliente pierde un pedido del día; no vale cortar nada por eso.
+  }
+}
+
+/** Intentos de esta IP en este minuto con una clave que no existe (bien formada pero inventada). */
+export async function invalidAttempts(
+  redis: RedisLike,
+  ip: string,
+  keys: WindowKeys,
+  timeoutMs = COUNTER_TIMEOUT_MS
+): Promise<number> {
+  try {
+    return Number(await within(redis.get(invalidKey(ip, keys.minuteBucket)), timeoutMs)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function noteInvalid(redis: RedisLike, ip: string, keys: WindowKeys): Promise<void> {
+  try {
+    const key = invalidKey(ip, keys.minuteBucket);
+    await within(redis.incr(key), COUNTER_TIMEOUT_MS);
+    await within(redis.expire(key, MINUTE_TTL), COUNTER_TIMEOUT_MS);
+  } catch {
+    // Sin la cuenta, esa IP sigue pudiendo probar claves: el caché negativo del store acota el costo.
   }
 }
 

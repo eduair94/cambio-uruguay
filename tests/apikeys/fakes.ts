@@ -7,6 +7,8 @@ export class FakeRedis implements RedisLike {
   hashes = new Map<string, Map<string, number>>();
   ttl = new Map<string, number>();
   fail = false;
+  /** Redis conectado pero colgado: las operaciones nunca contestan. */
+  hang = false;
 
   private guard() {
     if (this.fail) throw new Error("redis caído");
@@ -30,9 +32,10 @@ export class FakeRedis implements RedisLike {
         });
         return chain;
       },
-      exec: async () => {
+      exec: () => {
+        if (this.hang) return new Promise(() => undefined);
         this.guard();
-        return ops.map((op) => op());
+        return Promise.resolve(ops.map((op) => op()));
       },
     };
     return chain;
@@ -59,7 +62,32 @@ export class FakeRedis implements RedisLike {
     return Object.fromEntries([...hash].map(([f, v]) => [f, String(v)]));
   }
 
-  async mget(...keys: string[]): Promise<(string | null)[]> {
+  get(key: string): Promise<string | null> {
+    if (this.hang) return new Promise(() => undefined);
+    this.guard();
+    return Promise.resolve(this.strings.has(key) ? String(this.strings.get(key)) : null);
+  }
+
+  async incr(key: string): Promise<number> {
+    this.guard();
+    const next = (this.strings.get(key) ?? 0) + 1;
+    this.strings.set(key, next);
+    return next;
+  }
+
+  async decr(key: string): Promise<number> {
+    this.guard();
+    const next = (this.strings.get(key) ?? 0) - 1;
+    this.strings.set(key, next);
+    return next;
+  }
+
+  mget(...keys: string[]): Promise<(string | null)[]> {
+    if (this.hang) return new Promise(() => undefined);
+    return this.mgetNow(...keys);
+  }
+
+  private async mgetNow(...keys: string[]): Promise<(string | null)[]> {
     this.guard();
     return keys.map((k) => (this.strings.has(k) ? String(this.strings.get(k)) : null));
   }

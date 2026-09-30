@@ -83,6 +83,43 @@ function build(opts: { redis?: FakeRedis | null; lookup?: (h: string) => Promise
   return { mw, redis };
 }
 
+describe("respuestas de error del middleware", () => {
+  it("un 401 y un 429 no se guardan en ninguna caché", async () => {
+    const { mw } = build({ env: { API_LIMIT_ANONYMOUS_PER_MINUTE: "1" } });
+    const bad = await run(mw, fakeReq({ headers: { "x-api-key": "hola" } }));
+    expect(bad.res.headers["cache-control"]).toBe("no-store");
+    await run(mw, fakeReq());
+    const cut = await run(mw, fakeReq());
+    expect(cut.res.statusCode).toBe(429);
+    expect(cut.res.headers["cache-control"]).toBe("no-store");
+  });
+
+  it("los pedidos cortados por el minuto no gastan el cupo del día", async () => {
+    const { mw, redis } = build({ env: { API_LIMIT_ANONYMOUS_PER_MINUTE: "2" } });
+    for (let i = 0; i < 5; i++) await run(mw, fakeReq());
+    expect(redis!.strings.get("rl:d:ip:200.40.1.2:2026-09-27")).toBe(2);
+  });
+
+  it("después de 30 claves inventadas en un minuto, la IP recibe 429 sin consultar Mongo", async () => {
+    let lookups = 0;
+    const { mw } = build({
+      lookup: async () => {
+        lookups++;
+        return null;
+      },
+    });
+    for (let i = 0; i < 30; i++) {
+      const invented = "cu_" + String(i).padStart(32, "B");
+      const r = await run(mw, fakeReq({ headers: { "x-api-key": invented } }));
+      expect(r.res.statusCode).toBe(401);
+    }
+    const blocked = await run(mw, fakeReq({ headers: { "x-api-key": "cu_" + "C".repeat(32) } }));
+    expect(blocked.res.statusCode).toBe(429);
+    expect(blocked.res.body.error).toBe("too_many_invalid_keys");
+    expect(lookups).toBe(30);
+  });
+});
+
 describe("middleware de claves", () => {
   it("anónimo: pasa, lleva cabeceras y se mide por User-Agent", async () => {
     const { mw, redis } = build();
