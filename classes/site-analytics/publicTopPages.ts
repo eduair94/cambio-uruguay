@@ -50,7 +50,16 @@ export const PUBLIC_EXCLUDED_PATHS: readonly string[] = Object.freeze([
   "/conectar",
   "/mi-lista",
   "/api-reference",
+  // Tablero de operación de los scrapers: público pero `noindex`, no una página para recomendar.
+  "/estado",
 ]);
+
+/**
+ * El título de una página de error. El sitio no tiene página de error propia: un 404 lleva el
+ * título por defecto de Nuxt ("404 - Page not found | Nuxt") y GA4 lo cuenta igual. Sin esto, un
+ * enlace roto que citó un asistente de IA aparecería recomendado, con enlace, en la lista pública.
+ */
+const ERROR_TITLE = /^\d{3}\s*-\s|\|\s*Nuxt\s*$/;
 
 export function isPublicListable(path: string): boolean {
   if (!path.startsWith("/")) return false;
@@ -157,7 +166,7 @@ function publicTopic(f: FamilyRankRow): PublicTopicRow {
 const recentPerWeek = (weeks: number[]) => (weeks[weeks.length - 1] + weeks[weeks.length - 2]) / 2;
 
 export function buildPublicTopPages(ranking: PageRankingSnapshot): PublicTopPagesSnapshot {
-  const listable = ranking.pages.filter((r) => isPublicListable(r.path));
+  const listable = ranking.pages.filter((r) => isPublicListable(r.path) && !ERROR_TITLE.test(r.title));
   const rankOf = new Map(listable.map((r, i) => [r.path, i + 1]));
   const byPath = (a: PageRankRow, b: PageRankRow) => a.path.localeCompare(b.path);
 
@@ -189,7 +198,10 @@ export function buildPublicTopPages(ranking: PageRankingSnapshot): PublicTopPage
   const topics = ranking.families
     .filter(
       (f) =>
-        f.family.endsWith("/*") && !/^\/(en|pt)(\/|$)/.test(f.family) && !PUBLIC_EXCLUDED_PATHS.includes(f.family)
+        f.family.endsWith("/*") &&
+        !/^\/(en|pt)(\/|$)/.test(f.family) &&
+        // Contra el HUB: una familia se llama `/x/*` y nunca es igual a una ruta excluida.
+        !PUBLIC_EXCLUDED_PATHS.includes(f.family.replace(/\/\*$/, ""))
     )
     .slice(0, PUBLIC_TOPICS)
     .map(publicTopic);

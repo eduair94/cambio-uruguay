@@ -107,6 +107,7 @@ describe("isPublicListable", () => {
     expect(isPublicListable("/alquileres/montevideo-cordon-1tts26l")).toBe(false); // ficha suelta
     expect(isPublicListable("/autos-usados-uruguay/precios/chevrolet-onix")).toBe(false);
     expect(isPublicListable("/api/rentals")).toBe(false);
+    expect(isPublicListable("/estado")).toBe(false); // tablero de operación, noindex
   });
 
   it("toda ruta privada del app está excluida también acá", () => {
@@ -241,6 +242,22 @@ describe("buildPublicTopPages", () => {
     walk(doc);
     for (const k of FORBIDDEN) expect(keys.has(k), k).toBe(false);
     expect(JSON.stringify(doc)).not.toContain("secreto");
+  });
+
+  it("una página de error no se lista ni se enlaza, aunque la cite una IA", () => {
+    // Sin página de error propia, un 404 lleva el título por defecto de Nuxt y GA4 lo cuenta.
+    const broken = row("/guias/slug-inventado", [0, 0, 15, 20], {
+      title: "404 - Page not found | Nuxt",
+      entrances: { ...noEntrances, total: 9, ai: 9 },
+    });
+    const withBroken = buildPublicTopPages(ranking([...many(12), broken]));
+    const listed = [...withBroken.pages, ...withBroken.rising, ...withBroken.aiCited].map((r) => r.path);
+    expect(listed).not.toContain("/guias/slug-inventado");
+  });
+
+  it("un tema cuyo hub es privado no se publica", () => {
+    const doc2 = buildPublicTopPages(ranking(many(12), [family("/cuenta/*", [50, 50, 50, 50])]));
+    expect(doc2.topics).toEqual([]);
   });
 
   it(`como mucho ${PUBLIC_PAGES} páginas, ${PUBLIC_RISING} en alza y ${PUBLIC_AI} de IA`, () => {

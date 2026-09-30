@@ -395,6 +395,8 @@ const REPORT_LIMIT = 100000;
 /** Nombres de las cuatro semanas; GA4 los devuelve en la dimensión `dateRange` de cada fila. */
 const WEEK_NAMES = ["w0", "w1", "w2", "w3"];
 const WEEK_DAYS = 7;
+/** Índice del primer reporte de series semanales (canal, dispositivo) en {@link pageRankingRequests}. */
+const WEEKLY_SERIES_FROM = 5;
 
 export interface FamilyRankRow {
   family: string;
@@ -839,6 +841,14 @@ export async function refreshPageRanking(now: Date = new Date()): Promise<PageRa
   const timezone = process.env.GA4_TIMEZONE || DEFAULT_TIMEZONE;
   const windows = analyticsWindows(now, timezone);
   const requests = pageRankingRequests(windows);
-  const reports = await runReports(requests);
+  const reports = await runReports(requests.slice(0, WEEKLY_SERIES_FROM));
+  // Canales y dispositivos por semana, en su propia llamada: si fallan, el ranking se guarda igual
+  // con las series vacías (`weeklySeries` de un reporte ausente es `[]`).
+  try {
+    reports.push(...(await runReports(requests.slice(WEEKLY_SERIES_FROM))));
+  } catch (e: any) {
+    const detail = e?.response?.data ? JSON.stringify(e.response.data) : e?.message || String(e);
+    console.warn(`[site-analytics] series semanales por canal y dispositivo: ${detail}`);
+  }
   return buildPageRanking(reports, { asOf: now.toISOString(), timezone, windows }, requests);
 }

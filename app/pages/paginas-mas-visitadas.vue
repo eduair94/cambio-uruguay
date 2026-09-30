@@ -336,9 +336,9 @@
             en primer plano.
           </li>
           <li>
-            Quedan fuera las páginas de cuenta y las privadas, las versiones en inglés y portugués y
-            las fichas sueltas de los directorios (cada aviso de alquiler o de auto), que sí cuentan
-            en los temas.
+            Quedan fuera las páginas de cuenta y las privadas, las versiones en inglés y portugués,
+            las páginas de error y las páginas de detalle de los directorios (cada aviso de
+            alquiler, cada auto, cada modelo de celular), que sí cuentan en los temas.
           </li>
           <li>
             Las direcciones se publican sin lo que va después del signo de pregunta: nada de lo que
