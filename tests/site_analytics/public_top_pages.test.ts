@@ -141,6 +141,7 @@ describe("buildPublicTopPages", () => {
     family("/historico/*", [200, 220, 230, 210]),
     family("/en/alquileres/*", [900, 900, 900, 900]),
     family("/estadisticas-por-pagina", [300, 300, 300, 300]),
+    family("/dolar-hoy", [30, 30, 30, 30]), // página suelta: ya está en la lista, no es un tema
   ];
   const doc = buildPublicTopPages(ranking(pages, families));
 
@@ -188,7 +189,7 @@ describe("buildPublicTopPages", () => {
     ]);
   });
 
-  it("temas sin espejos ni privadas", () => {
+  it("temas: sólo plantillas de varias páginas, sin espejos ni privadas", () => {
     expect(doc.topics.map((t) => t.family)).toEqual(["/historico/*"]);
     expect(doc.topics[0]).toEqual({
       family: "/historico/*",

@@ -184,8 +184,13 @@ export function buildPublicTopPages(ranking: PageRankingSnapshot): PublicTopPage
     .slice(0, PUBLIC_AI)
     .map((r) => ({ ...publicRow(r, rankOf.get(r.path) || 0), aiEntrances: r.entrances.ai }));
 
+  // Un tema es una PLANTILLA (`/historico/*`, `/alquileres/*`): una página suelta ya está en la lista
+  // principal y repetirla acá como "tema" sólo duplica filas.
   const topics = ranking.families
-    .filter((f) => !/^\/(en|pt)(\/|$)/.test(f.family) && !PUBLIC_EXCLUDED_PATHS.includes(f.family))
+    .filter(
+      (f) =>
+        f.family.endsWith("/*") && !/^\/(en|pt)(\/|$)/.test(f.family) && !PUBLIC_EXCLUDED_PATHS.includes(f.family)
+    )
     .slice(0, PUBLIC_TOPICS)
     .map(publicTopic);
 
