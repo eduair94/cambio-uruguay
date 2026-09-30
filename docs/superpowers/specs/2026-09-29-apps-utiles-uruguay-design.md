@@ -88,7 +88,7 @@ verificación determinística contra la ficha de cada tienda (Play `gl=UY`, App 
   de apps, fecha = última revisión), familia `dinero` ("Dinero y servicios"), con migas por el hub.
 - **Tema:** `tramites-y-documentos-uruguay` (el tema natural de las apps del Estado).
 - **Cruces:** a `/apps-economia-uruguay` desde la categoría de plata ("las 69 apps de plata") y a
-  `/apps-de-beneficios-uruguay` desde compras; a `/clonacion-de-tarjetas-uruguay` desde la sección
+  `/apps-de-beneficios-uruguay` desde la pestaña de plata; a `/estafas-uruguay` desde la sección
   de apps falsas. No se edita el snippet de `/apps-economia-uruguay`.
 - **Nada de afiliados**: enlaces `rel="noopener noreferrer nofollow"`, como las otras dos páginas.
 
@@ -211,7 +211,8 @@ Orden de lectura (el mismo en celular, recompuesto, no achicado):
    - En "Todas", resultados agrupados por categoría (h2 con ícono y cantidad); en una categoría, la
      lista sola con la descripción de la categoría. Grilla CSS (1 columna en celular, `minmax(300px,
      1fr)` en escritorio) con `:deep(.google-auto-placed) { grid-column: 1 / -1 }`.
-   - Botón flotante "↑ Categorías" (sólo cliente, aparece al pasar la barra).
+   - Al pie de cada grupo, un enlace "Volver a las categorías" (`#explorar`): sin botón flotante,
+     que competiría con los avisos y el menú del sitio.
 5. **Tarjeta:** ícono 48 px (o monograma), nombre, organización + insignia de tipo, resumen, 2–4
    usos, chips de metadatos (alcance, requisitos), línea de la tienda ("Actualizada: 17 set 2026 ·
    4,4 ★ en Google Play (1.434)"), "En la tienda figura como «Banco de Previsión Social»", botones
