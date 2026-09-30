@@ -18,8 +18,12 @@ export interface Message {
   html: string;
 }
 
+// Entre 2 y 4 decimales: el peso argentino se cotiza a 0,021 y con dos decimales un movimiento de
+// 0,021 a 0,024 se leería "0,02 → 0,02". Mismo formato que classes/rate_changes.ts.
+const MONEY = new Intl.NumberFormat("es-UY", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+
 export function money(n: number): string {
-  return n.toFixed(2).replace(".", ",");
+  return MONEY.format(n);
 }
 
 export function escapeHtml(s: string): string {

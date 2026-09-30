@@ -10,6 +10,8 @@ describe("mensajes del monitor", () => {
   it("coma decimal con dos cifras", () => {
     expect(money(40.1)).toBe("40,10");
     expect(money(42.5)).toBe("42,50");
+    expect(money(0.021)).toBe("0,021");
+    expect(money(1234.5)).toBe("1.234,50");
   });
 
   it("agrupa por moneda y habla en texto plano con nombres legibles", () => {
