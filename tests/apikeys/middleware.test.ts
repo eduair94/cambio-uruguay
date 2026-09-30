@@ -83,6 +83,19 @@ function build(opts: { redis?: FakeRedis | null; lookup?: (h: string) => Promise
   return { mw, redis };
 }
 
+describe("integradores desde el navegador", () => {
+  it("un sitio ajeno que llama desde el navegador se mide por su sitio, no por el navegador de cada lector", async () => {
+    const { mw, redis } = build();
+    for (const ua of ["Mozilla/5.0 Chrome", "Mozilla/5.0 Firefox"]) {
+      const { res } = await run(mw, fakeReq({ headers: { origin: "https://www.ejemplo.com.uy", "user-agent": ua } }));
+      expect(res.headers["x-plan"]).toBe("anonymous");
+      res.finish();
+    }
+    await flush();
+    expect(await redis!.hgetall("usage:2026-09-27")).toEqual({ "origin:www.ejemplo.com.uy|/exchange/brou": "2" });
+  });
+});
+
 describe("respuestas de error del middleware", () => {
   it("un 401 y un 429 no se guardan en ninguna caché", async () => {
     const { mw } = build({ env: { API_LIMIT_ANONYMOUS_PER_MINUTE: "1" } });

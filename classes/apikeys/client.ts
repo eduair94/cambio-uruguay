@@ -57,3 +57,24 @@ export function isSiteReferrer(origin?: string, referer?: string): boolean {
   }
   return false;
 }
+
+/**
+ * El sitio ajeno desde cuyo navegador llega el pedido (Origin, o si no Referer), o null. Un sitio
+ * que muestra nuestras cotizaciones llamando a la API desde el navegador de sus lectores aparecería
+ * como cientos de User-Agent distintos, cada uno demasiado chico para verse: se mide por su sitio.
+ */
+export function foreignHost(origin?: string, referer?: string): string | null {
+  for (const raw of [origin, referer]) {
+    if (!raw) continue;
+    try {
+      const url = new URL(raw);
+      if (url.protocol !== "https:" && url.protocol !== "http:") continue;
+      const host = url.hostname.toLowerCase();
+      if (host === SITE_HOST || host.endsWith(`.${SITE_HOST}`)) return null;
+      return host;
+    } catch {
+      // Una cabecera que no es URL no identifica a nadie.
+    }
+  }
+  return null;
+}

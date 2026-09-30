@@ -30,6 +30,7 @@ const usageSchema = new Schema(
   { collection: "api_usage_days", versionKey: false }
 );
 usageSchema.index({ day: 1, client: 1, route: 1 }, { unique: true });
+usageSchema.index({ client: 1, day: 1 });
 
 let keyStore: KeyStore | null = null;
 
@@ -49,8 +50,10 @@ export function usageDaysRepo(): UsageDaysRepo {
       await model.bulkWrite(usageUpsertOps(day, rows) as any[], { ordered: false });
       return rows.length;
     },
-    async readRange(from: string, to: string) {
-      const docs = await model.find({ day: { $gte: from, $lte: to } }, { _id: 0, day: 1, client: 1, route: 1, count: 1 }).lean();
+    async readRange(from: string, to: string, clients?: string[]) {
+      const filter: Record<string, unknown> = { day: { $gte: from, $lte: to } };
+      if (clients) filter.client = { $in: clients };
+      const docs = await model.find(filter, { _id: 0, day: 1, client: 1, route: 1, count: 1 }).lean();
       return (docs as any[]).map((d) => ({ day: d.day, client: d.client, route: d.route, count: Number(d.count) || 0 }));
     },
   };

@@ -9,7 +9,7 @@
 // caído al validar una clave (pasa como anónimo) y cualquier excepción propia (pasa). Se registra a
 // lo sumo una vez por minuto. No hay timers: nada programado vive en la API (cluster ×2).
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import { clientIp, internalIps, isSiteReferrer } from "./client";
+import { clientIp, foreignHost, internalIps, isSiteReferrer } from "./client";
 import { countRequest, invalidAttempts, meter, noteInvalid, refundDay, type RedisLike } from "./counters";
 import { extractCredential, firstHeader, hashCredential } from "./credential";
 import { meterRoute, meterUserAgent } from "./normalize";
@@ -78,11 +78,12 @@ function classify(req: Request, record: ApiKeyRecord | null, internal: Set<strin
   if (isSiteReferrer(firstHeader(req.headers.origin), firstHeader(req.headers.referer))) {
     return { kind: "site", plan: "site", subject: null, meterId: "site", keyId: null, keyPrefix: null, limits: null };
   }
+  const host = foreignHost(firstHeader(req.headers.origin), firstHeader(req.headers.referer));
   return {
     kind: "anonymous",
     plan: "anonymous",
     subject: `ip:${ip}`,
-    meterId: `ua:${meterUserAgent(req.headers["user-agent"])}`,
+    meterId: host ? `origin:${host}` : `ua:${meterUserAgent(req.headers["user-agent"])}`,
     keyId: null,
     keyPrefix: null,
     limits: planLimits("anonymous", env),

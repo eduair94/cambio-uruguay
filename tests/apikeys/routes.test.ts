@@ -15,14 +15,17 @@ afterEach(() => {
   servers = [];
 });
 
+const readCalls: Array<{ from: string; to: string; clients?: string[] }> = [];
+
 function memoryRepo(rows: UsageRow[] = []): UsageDaysRepo {
   return {
     async upsertDay(_day, dayRows) {
       rows.push(...dayRows);
       return dayRows.length;
     },
-    async readRange(from, to) {
-      return rows.filter((r) => r.day >= from && r.day <= to);
+    async readRange(from, to, clients) {
+      readCalls.push({ from, to, clients });
+      return rows.filter((r) => r.day >= from && r.day <= to && (!clients || clients.includes(r.client)));
     },
   };
 }
@@ -143,9 +146,13 @@ describe("rutas de administración", () => {
     expect(admin.body.anonymous[0]).toMatchObject({ userAgent: "ArboitePanel/1.0", total: 295 });
     expect(admin.body.site.total).toBe(50);
 
+    readCalls.length = 0;
     const own = await call("GET", "/admin/api-usage?days=30&ownerUid=uid-1");
     expect(Object.keys(own.body.byClient)).toEqual([client]);
     expect(own.body.anonymous).toBeUndefined();
+    // El uso de un dueño se filtra en Mongo por sus claves, no leyendo todo y filtrando acá.
+    expect(readCalls.length).toBeGreaterThan(0);
+    expect(readCalls.every((c) => Array.isArray(c.clients) && c.clients.length === 1 && c.clients[0] === client)).toBe(true);
     expect(own.body.site).toBeUndefined();
   });
 

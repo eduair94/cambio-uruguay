@@ -139,7 +139,11 @@ export function registerApiKeyRoutes(app: Application, deps: RouteDeps): void {
       const today = montevideoDay(now());
       const from = dayMinus(today, days - 1);
       const repo = deps.usageRepo();
-      const rows: UsageRow[] = days > 1 ? await repo.readRange(from, dayMinus(today, 1)) : [];
+      // El uso de un dueño se filtra en Mongo por sus claves: leer todo el uso de 30 días (cada
+      // User-Agent anónimo por ruta) para quedarse con dos filas era lo que hacía cada carga de la
+      // pestaña de claves.
+      const clients = ownerUid ? (await deps.store().list(ownerUid)).map((r) => `key:${r.id}`) : undefined;
+      const rows: UsageRow[] = days > 1 ? await repo.readRange(from, dayMinus(today, 1), clients) : [];
       const redis = deps.redis();
       let todayRows: UsageRow[] | null = null;
       if (redis) {
@@ -149,10 +153,10 @@ export function registerApiKeyRoutes(app: Application, deps: RouteDeps): void {
           todayRows = null;
         }
       }
-      rows.push(...(todayRows ?? (await repo.readRange(today, today))));
+      rows.push(...(todayRows ?? (await repo.readRange(today, today, clients))));
 
-      if (ownerUid) {
-        const own = new Set((await deps.store().list(ownerUid)).map((r) => `key:${r.id}`));
+      if (clients) {
+        const own = new Set(clients);
         const summary = summarize(rows.filter((r) => own.has(r.client)), today);
         return res.json({ from, to: today, days, byClient: summary });
       }
