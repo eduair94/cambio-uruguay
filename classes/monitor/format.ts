@@ -55,12 +55,14 @@ function eventLine(e: Exclude<MonitorEvent, { kind: "daily" }>, name: NameOf): s
     return `• ${name(e.origin)} movió su pizarra (${hhmm(e.at)}): ${parts.join(" · ")}`;
   }
   if (e.kind === "position") {
-    const verb = e.from === null ? "quedó" : e.to < e.from ? "subió" : "bajó";
-    const from = e.from === null ? "" : ` del ${ordinal(e.from)}`;
+    const where =
+      e.from === null
+        ? `quedó en el ${ordinal(e.to)}`
+        : `${e.to < e.from ? "subió" : "bajó"} del ${ordinal(e.from)} al ${ordinal(e.to)}`;
     const ahead = e.better.length
       ? ` Mejores ahora: ${e.better.map((b) => `${name(b.origin)} (${money(b.value)})`).join(", ")}.`
       : "";
-    return `• Tu ${SIDE[e.side]} ${verb}${from} al ${ordinal(e.to)} lugar entre ${e.of} casas.${ahead}`;
+    return `• Tu ${SIDE[e.side]} ${where} lugar entre ${e.of} ${e.of === 1 ? "casa" : "casas"}.${ahead}`;
   }
   const since = e.lastOwnChangeAt ? `desde las ${hhmm(e.lastOwnChangeAt)}` : "en todo el día";
   return `• Tu pizarra no se movió ${since} y en las últimas 3 horas se movieron ${e.movers.length} competidores: ${e.movers
@@ -103,7 +105,15 @@ export function formatEvents(events: readonly MonitorEvent[], name: NameOf, now:
   return toMessage(subject, lines);
 }
 
-export function formatAccessEnded(): Message {
+/** El aviso único al perder el acceso: al terminar la prueba, o al dejar de tener el plan Empresa. */
+export function formatAccessEnded(previous: "trial" | "business" = "trial"): Message {
+  if (previous === "business") {
+    return toMessage("El plan Empresa del monitor de competencia no está activo", [
+      "El monitor de competencia de Cambio Uruguay dejó de avisarte: tu cuenta ya no tiene el plan Empresa activo.",
+      `Si es un error o querés renovarlo, escribinos a ${CONTACT}.`,
+      "Tu configuración queda guardada.",
+    ]);
+  }
   return toMessage("Terminó la prueba del monitor de competencia", [
     "Terminó la prueba de 14 días del monitor de competencia de Cambio Uruguay.",
     `Para que siga avisándote, el monitor está incluido en el plan Empresa: escribinos a ${CONTACT}.`,

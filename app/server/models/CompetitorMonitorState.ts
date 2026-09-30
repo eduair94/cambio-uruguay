@@ -10,6 +10,7 @@ export interface CompetitorMonitorStateDoc {
   dailyDay: string | null
   lastQuotes: Record<string, { buy: number; sell: number }>
   accessEndedAt: Date | null
+  lastAccess: 'trial' | 'business' | null
   lastRunAt: Date | null
   lastSentAt: Date | null
 }
@@ -23,6 +24,7 @@ const CompetitorMonitorStateSchema = new Schema<CompetitorMonitorStateDoc>(
     dailyDay: { type: String, default: null },
     lastQuotes: { type: Schema.Types.Mixed, default: {} },
     accessEndedAt: { type: Date, default: null },
+    lastAccess: { type: String, default: null },
     lastRunAt: { type: Date, default: null },
     lastSentAt: { type: Date, default: null },
   },

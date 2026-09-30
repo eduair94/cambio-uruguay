@@ -104,7 +104,7 @@ export async function runMonitors(deps: RunDeps): Promise<RunResult> {
           state.accessEndedAt = deps.now;
           await deps.saveState(state);
           result.expiredNotices++;
-          const notice = formatAccessEnded();
+          const notice = formatAccessEnded(state.lastAccess === "business" ? "business" : "trial");
           const emailNotice = config.channels.email === "none" ? null : notice;
           if (await deliver(deps, config, chatId, notice, emailNotice, result)) {
             state.lastSentAt = deps.now;
@@ -119,6 +119,7 @@ export async function runMonitors(deps: RunDeps): Promise<RunResult> {
       const quotes = groupQuotes(rows, new Set(group), new Set(config.currencies));
       const changes = await deps.changesSince(since, group, config.currencies);
       const { events, state: next } = evaluate({ config, state, now: deps.now, quotes, changes });
+      next.lastAccess = access.status;
       result.evaluated++;
 
       const onlyDaily = (list: MonitorEvent[]) => list.filter((e) => e.kind === "daily");

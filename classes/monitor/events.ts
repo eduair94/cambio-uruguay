@@ -16,6 +16,7 @@
 import moment from "moment-timezone";
 import { implausibleReason } from "../rate_plausibility";
 import { bestOf, placementOf, type Placement } from "./ranking";
+import { normalizeType } from "./snapshot";
 import type { LedgerChange, MonitorConfig, MonitorState, Quote, Side } from "./types";
 
 const ZONE = "America/Montevideo";
@@ -115,10 +116,12 @@ export function evaluate(input: EvaluationInput): { events: MonitorEvent[]; stat
   const quoteOf = (origin: string, code: string): Quote | null =>
     (quotes.get(code) ?? []).find((q) => q.origin === origin) ?? null;
   // Del ledger sólo cuentan los cambios sanos del mismo tipo que publica la foto.
-  const counted = input.changes.filter((c) => {
-    const q = quoteOf(c.origin, c.code);
-    return !!q && q.type === c.type && c.observedAt.getTime() <= nowMs && saneChange(c);
-  });
+  const counted = input.changes
+    .map((c) => ({ ...c, code: c.code.toUpperCase(), type: normalizeType(c.type) }))
+    .filter((c) => {
+      const q = quoteOf(c.origin, c.code);
+      return !!q && q.type === c.type && c.observedAt.getTime() <= nowMs && saneChange(c);
+    });
 
   for (const code of config.currencies) {
     for (const q of quotes.get(code) ?? []) {

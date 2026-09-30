@@ -53,6 +53,8 @@ export interface MonitorState {
    */
   lastQuotes: Record<string, { buy: number; sell: number }>;
   accessEndedAt: Date | null;
+  /** Con qué acceso se evaluó la última vez: decide si el aviso de fin habla de la prueba o del plan. */
+  lastAccess: "trial" | "business" | null;
   /** Última EVALUACIÓN (un monitor vencido no la actualiza). Más vieja que 30 min: se re-aprende. */
   lastRunAt: Date | null;
   lastSentAt: Date | null;
@@ -67,6 +69,7 @@ export function emptyState(uid: string, now: Date): MonitorState {
     quietDay: {},
     dailyDay: null,
     accessEndedAt: null,
+    lastAccess: null,
     lastRunAt: null,
     lastSentAt: null,
   };

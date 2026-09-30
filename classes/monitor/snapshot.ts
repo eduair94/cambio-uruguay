@@ -8,6 +8,11 @@ import type { Quote, SnapshotRow } from "./types";
 
 const COUNTER_TYPES = ["", "BILLETE"];
 
+/** El tipo de una cotización como lo compara el monitor (la foto y el ledger, igual). */
+export function normalizeType(type: string | null | undefined): string {
+  return String(type ?? "").trim().toUpperCase();
+}
+
 export function groupQuotes(
   rows: readonly SnapshotRow[],
   group: ReadonlySet<string>,
@@ -16,7 +21,7 @@ export function groupQuotes(
   const chosen = new Map<string, Quote>();
   for (const row of rows) {
     const code = String(row.code ?? "").toUpperCase();
-    const type = String(row.type ?? "").trim().toUpperCase();
+    const type = normalizeType(row.type);
     if (row.origin === "bcu" || !group.has(row.origin) || !codes.has(code)) continue;
     const rank = COUNTER_TYPES.indexOf(type);
     if (rank < 0) continue;

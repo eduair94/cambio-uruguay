@@ -63,6 +63,7 @@ function toState(doc: any): MonitorState | null {
     dailyDay: doc.dailyDay ?? null,
     lastQuotes: doc.lastQuotes ?? {},
     accessEndedAt: doc.accessEndedAt ? new Date(doc.accessEndedAt) : null,
+    lastAccess: doc.lastAccess === "business" || doc.lastAccess === "trial" ? doc.lastAccess : null,
     lastRunAt: doc.lastRunAt ? new Date(doc.lastRunAt) : null,
     lastSentAt: doc.lastSentAt ? new Date(doc.lastSentAt) : null,
   };

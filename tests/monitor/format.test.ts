@@ -30,6 +30,26 @@ describe("mensajes del monitor", () => {
     expect(m.subject).toBe("Monitor de competencia: 3 novedades");
   });
 
+  it("gramática de la posición: 'quedó en el', y una casa en singular", () => {
+    const m = formatEvents(
+      [
+        { kind: "position", code: "USD", side: "buy", from: null, to: 1, of: 1, better: [] },
+        { kind: "position", code: "USD", side: "sell", from: 3, to: 2, of: 4, better: [] },
+      ],
+      name,
+      NOW
+    )!;
+    expect(m.text).toContain("Tu compra quedó en el 1.º lugar entre 1 casa.");
+    expect(m.text).toContain("Tu venta subió del 3.º al 2.º lugar entre 4 casas.");
+  });
+
+  it("fin de plan Empresa: no habla de la prueba", () => {
+    const m = formatAccessEnded("business");
+    expect(m.subject).toBe("El plan Empresa del monitor de competencia no está activo");
+    expect(m.text).not.toContain("prueba");
+    expect(m.text).toContain("admin@cambio-uruguay.com");
+  });
+
   it("el resumen del día tiene su propio asunto", () => {
     const events: MonitorEvent[] = [
       {

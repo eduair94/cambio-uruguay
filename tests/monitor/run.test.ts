@@ -131,6 +131,18 @@ describe("corrida del monitor", () => {
     expect(states.get("u1")!.accessEndedAt).toBeNull();
   });
 
+  it("si se le quita el plan Empresa, el aviso habla del plan y no de la prueba", async () => {
+    const old = config({ trialStartedAt: new Date(NOW.getTime() - 60 * 86_400_000) });
+    const states = new Map([["u1", seenState()]]);
+    const paying = deps({ monitors: async () => [old], hasBusinessKey: async () => true }, states);
+    await runMonitors(paying.deps);
+    expect(states.get("u1")!.lastAccess).toBe("business");
+    const removed = deps({ monitors: async () => [old], hasBusinessKey: async () => false }, states);
+    await runMonitors(removed.deps);
+    expect(removed.sent[0].text).toContain("plan Empresa");
+    expect(removed.sent[0].text).not.toContain("prueba");
+  });
+
   it("guarda el estado ANTES de enviar: un corte a mitad de camino no reenvía", async () => {
     const order: string[] = [];
     const states = new Map([["u1", seenState()]]);

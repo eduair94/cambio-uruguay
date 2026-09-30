@@ -13,6 +13,7 @@ const CompetitorMonitorStateSchema = new Schema(
     dailyDay: { type: String, default: null },
     lastQuotes: { type: Schema.Types.Mixed, default: {} },
     accessEndedAt: { type: Date, default: null },
+    lastAccess: { type: String, default: null },
     lastRunAt: { type: Date, default: null },
     lastSentAt: { type: Date, default: null },
   },

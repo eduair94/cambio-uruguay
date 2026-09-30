@@ -141,6 +141,17 @@ describe("movimientos de la competencia", () => {
     expect(events.filter((e) => e.kind === "move")).toEqual([]);
   });
 
+  it("el tipo del ledger se compara normalizado, como el de la foto", () => {
+    const { events } = evaluate({
+      config: config(),
+      state: seen({ "gales|USD": { buy: 40.1, sell: 42.6 } }),
+      now: NOW,
+      quotes: quotesOf(quote("propia", 40.1, 42.6), quote("gales", 40.2, 42.6, "BILLETE")),
+      changes: [change("gales", min(2), [40.1, 42.6], [40.2, 42.6], " billete ")],
+    });
+    expect(events.find((e) => e.kind === "move")).toMatchObject({ at: min(2) });
+  });
+
   it("sin cambio del ledger en la ventana, la hora del movimiento es la de la corrida", () => {
     const { events } = evaluate({
       config: config(),
