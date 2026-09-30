@@ -10,6 +10,10 @@
           "label": "Dólar hoy"
         },
         {
+          "to": "/pizarra",
+          "label": "Pizarra del dólar"
+        },
+        {
           "to": "/casas-de-cambio",
           "label": "Casas de cambio"
         },
@@ -920,6 +924,10 @@
           "label": "Horas extras"
         },
         {
+          "to": "/feriados-que-se-corren-uruguay",
+          "label": "Feriados que se corren al lunes"
+        },
+        {
           "to": "/cuando-se-cobra-el-aguinaldo-uruguay",
           "label": "Cuándo se cobra el aguinaldo"
         },
@@ -1245,6 +1253,10 @@
           "label": "Precios de supermercado"
         },
         {
+          "to": "/tickets-mutualistas-uruguay",
+          "label": "Tickets y órdenes de mutualistas"
+        },
+        {
           "to": "/meal-prep-uruguay",
           "label": "Meal prep"
         },
@@ -1409,12 +1421,20 @@
           "label": "Retirar efectivo"
         },
         {
+          "to": "/limite-de-efectivo-uruguay",
+          "label": "Límite de efectivo"
+        },
+        {
           "to": "/alternativa-a-bankos-uruguay",
           "label": "Alternativa a Bankos"
         },
         {
           "to": "/cuanto-vale-una-milla-itau-uruguay",
           "label": "¿Cuánto vale una milla de Itaú?"
+        },
+        {
+          "to": "/sala-vip-aeropuerto-uruguay",
+          "label": "Sala VIP del aeropuerto"
         },
         {
           "to": "/descuento-de-iva-con-tarjeta-uruguay",

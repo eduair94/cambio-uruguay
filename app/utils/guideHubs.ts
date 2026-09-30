@@ -75,6 +75,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/dolar-hoy',
       },
       {
+        label: 'Pizarra del dólar',
+        description: 'Dólar, euro, real y peso argentino: compra y venta de todas las casas.',
+        to: '/pizarra',
+      },
+      {
         label: 'Casas de cambio',
         description: 'Directorio y reputación de las casas.',
         to: '/casas-de-cambio',
@@ -1009,6 +1014,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/horas-extras-uruguay',
       },
       {
+        label: 'Feriados que se corren al lunes',
+        description: 'Son tres: 19 de abril, 18 de mayo y 12 de octubre (Ley 16.805, art. 2).',
+        to: '/feriados-que-se-corren-uruguay',
+      },
+      {
         label: 'Cuándo se cobra el aguinaldo',
         description:
           'Hasta el 20 de diciembre de 2026 por decreto; la cuota de junio y quién paga.',
@@ -1327,6 +1337,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/precios-de-supermercado-uruguay',
       },
       {
+        label: 'Tickets y órdenes de mutualistas',
+        description: 'Lo que cobra cada una de las 34 instituciones, del tarifario del MSP.',
+        to: '/tickets-mutualistas-uruguay',
+      },
+      {
         label: 'Meal prep',
         description: 'Una semana de comidas en un día de cocina, con precios del SIPC.',
         to: '/meal-prep-uruguay',
@@ -1474,6 +1489,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/retirar-efectivo-uruguay',
       },
       {
+        label: 'Límite de efectivo',
+        description: 'Hasta 200.000 UI, o el 5 % con tope de 450.000 UI (Ley 19.210, art. 35).',
+        to: '/limite-de-efectivo-uruguay',
+      },
+      {
         label: 'Alternativa a Bankos',
         description: 'Los descuentos de tus tarjetas sin instalar la app.',
         to: '/alternativa-a-bankos-uruguay',
@@ -1482,6 +1502,12 @@ export const guideHubs: readonly GuideHub[] = [
         label: '¿Cuánto vale una milla de Itaú?',
         description: 'Lo que rinde en pesos cada milla del programa.',
         to: '/cuanto-vale-una-milla-itau-uruguay',
+      },
+      {
+        label: 'Sala VIP del aeropuerto',
+        description:
+          'Qué tarjeta entra gratis a Carrasco, los US$ 10 de Itaú y los US$ 90 sueltos.',
+        to: '/sala-vip-aeropuerto-uruguay',
       },
       {
         label: 'Descuento de IVA con tarjeta',
