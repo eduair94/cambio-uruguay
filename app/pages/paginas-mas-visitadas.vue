@@ -152,6 +152,28 @@
         </div>
       </section>
 
+      <section v-if="snapshot.guides?.length" class="mb-8" aria-labelledby="guides-title">
+        <h2 id="guides-title" class="text-h6 font-weight-bold mb-1">Las guías más leídas</h2>
+        <p class="text-body-2 text-medium-emphasis mb-3">
+          Las páginas que responden un problema concreto —trámites, bancos, deudas, alquilar,
+          invertir— ordenadas por lo que se leen en una semana normal.
+        </p>
+        <VRow dense>
+          <VCol v-for="row in snapshot.guides" :key="row.path" cols="12" sm="6" md="4">
+            <VCard :to="row.path" variant="outlined" class="pa-4 h-100">
+              <div class="text-body-1 font-weight-medium">{{ prLabel(row) }}</div>
+              <div class="text-caption text-medium-emphasis">
+                {{ topicOf(row.path, t)?.section || row.path }}
+              </div>
+              <div class="text-body-2 mt-2">
+                {{ whole(row.base) }} lecturas por semana · {{ prSeconds(row.engagementSeconds) }}
+                por persona
+              </div>
+            </VCard>
+          </VCol>
+        </VRow>
+      </section>
+
       <VRow class="mb-8">
         <VCol cols="12" md="6">
           <section aria-labelledby="rising-title">

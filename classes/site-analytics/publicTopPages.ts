@@ -26,6 +26,11 @@ export const PUBLIC_RISING = 10;
 export const PUBLIC_AI = 10;
 /** Temas (familias). */
 export const PUBLIC_TOPICS = 25;
+/**
+ * "Guías más leídas": las páginas de CONTENIDO más visitadas. Es la lista que enlaza la portada
+ * (en español) hacia lo que rinde; el tramo se usa para elegir y no sale en el documento.
+ */
+export const PUBLIC_GUIDES = 10;
 /** Entradas desde asistentes de IA para entrar en esa lista. Más bajo que la señal privada (5): acá
  * se ordena, no se alerta. */
 export const PUBLIC_AI_MIN_ENTRANCES = 3;
@@ -129,6 +134,7 @@ export interface PublicTopPagesSnapshot {
   rising: PublicRisingRow[];
   aiCited: PublicAiRow[];
   topics: PublicTopicRow[];
+  guides: PublicPageRow[];
 }
 
 const series = (xs: WeeklySeries[] | undefined): WeeklySeries[] =>
@@ -206,6 +212,12 @@ export function buildPublicTopPages(ranking: PageRankingSnapshot): PublicTopPage
     .slice(0, PUBLIC_TOPICS)
     .map(publicTopic);
 
+  // Lectura de un campo privado para ELEGIR, nunca para publicar: la fila sale con `publicRow`.
+  const guides = listable
+    .filter((r) => r.tier === "contenido")
+    .slice(0, PUBLIC_GUIDES)
+    .map((r) => publicRow(r, rankOf.get(r.path) || 0));
+
   const t = ranking.totals;
   return {
     key: TOP_PAGES_KEY,
@@ -226,6 +238,7 @@ export function buildPublicTopPages(ranking: PageRankingSnapshot): PublicTopPage
     rising,
     aiCited,
     topics,
+    guides,
   };
 }
 

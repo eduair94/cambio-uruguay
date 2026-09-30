@@ -93,3 +93,7 @@ regla de `siterevenuesnapshots`: lo público nunca sale de un `.select()` sobre 
   siguen contando en los temas.
 - **Guarda**: con menos de 10 páginas publicables o sin vistas no se escribe; queda la anterior.
 - La página pone nombre humano a cada ruta con `NAV_SECTIONS` (`app/utils/topPages.ts`, `topicOf`).
+- **`guides`** (desde 2026-09-30): las 10 páginas de CONTENIDO más visitadas (el tramo se usa para
+  elegir y no sale). Las 6 primeras van a la **portada en español**, en el HTML del servidor, como
+  "Las guías más leídas": hasta ese día la portada sólo enlazaba páginas de datos. Fila
+  `guias-mas-leidas-en-la-portada` en `docs/seo/experiments.json`.

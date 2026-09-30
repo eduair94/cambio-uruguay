@@ -835,6 +835,19 @@
         "/paginas-mas-visitadas"
       ],
       "hypothesis": "Pagina nueva e indexable con el ranking publico de las paginas mas visitadas desde Uruguay, lo que esta creciendo y lo que citan los asistentes de IA. Se mide si gana busquedas propias (lo mas visto, paginas populares) y si su lista de enlaces a las cien mas visitadas lleva lectores a esas paginas."
+    },
+    {
+      "id": "guias-mas-leidas-en-la-portada",
+      "shippedOn": "2026-09-30",
+      "routes": [
+        "/comisiones-de-transferencia-uruguay",
+        "/inversiones-uruguay",
+        "/tarjetas-de-credito-uruguay",
+        "/alquilar-estando-en-clearing",
+        "/guias/casarse-por-civil-uruguay",
+        "/guias/hacer-un-testamento-uruguay"
+      ],
+      "hypothesis": "La portada es la pagina con mas trafico y no enlazaba ninguna guia: sus enlaces eran todos a paginas de datos. Se agrega un bloque en el HTML del servidor con las seis guias mas leidas del ranking diario de GA4 (se actualiza solo; estas son las del dia del deploy). Se mide si la autoridad que reciben desde la portada las sube en busqueda. El cambio de idioma del mismo dia (sin redireccion por navegador) toca todo el sitio y no se declara."
     }
   ]
 }

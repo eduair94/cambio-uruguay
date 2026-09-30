@@ -18,6 +18,7 @@ const SiteTopPagesSchema = new Schema(
     rising: { type: [Schema.Types.Mixed], default: [] },
     aiCited: { type: [Schema.Types.Mixed], default: [] },
     topics: { type: [Schema.Types.Mixed], default: [] },
+    guides: { type: [Schema.Types.Mixed], default: [] },
   },
   { timestamps: true }
 )

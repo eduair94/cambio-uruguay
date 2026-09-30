@@ -825,6 +825,44 @@
       :heading="t('faq.title')"
     />
 
+    <!-- Guías más leídas. La portada es la página con más tráfico del sitio y hasta el
+         2026-09-30 sólo enlazaba páginas de datos: ni una guía, que es lo que la gente sigue
+         leyendo después del dólar. La lista sale del ranking diario de GA4
+         (`sitetoppages.guides`, ver docs/analytics/PAGE_RANKING.md), así que se actualiza sola.
+         Sólo en español: las guías son páginas en español. En el HTML del servidor, para que los
+         enlaces cuenten. -->
+    <section v-if="homeGuides.length" v-reveal class="home-guides-section py-12">
+      <VContainer>
+        <VRow>
+          <VCol cols="12" class="text-center mb-8">
+            <h2 class="section-title">Las guías más leídas</h2>
+            <p class="section-subtitle">
+              Lo que más se consulta en Uruguay además del dólar, según las visitas de esta semana.
+            </p>
+          </VCol>
+        </VRow>
+        <VRow justify="center">
+          <VCol v-for="guide in homeGuides" :key="guide.path" cols="12" sm="6" md="4">
+            <NuxtLink :to="guide.path" class="text-decoration-none">
+              <VCard class="internal-link-card pa-6 h-100" elevation="3" hover>
+                <h3 class="text-h6 font-weight-bold mb-2">{{ prLabel(guide) }}</h3>
+                <p class="text-body-2 text-grey-lighten-1 mb-0">
+                  {{ topicOf(guide.path, t)?.section }}
+                </p>
+              </VCard>
+            </NuxtLink>
+          </VCol>
+        </VRow>
+        <VRow>
+          <VCol cols="12" class="text-center">
+            <NuxtLink to="/paginas-mas-visitadas" class="home-guides-more">
+              Ver las 100 páginas más visitadas
+            </NuxtLink>
+          </VCol>
+        </VRow>
+      </VContainer>
+    </section>
+
     <!-- Internal Linking Section - Topical Cluster Navigation -->
     <section v-reveal class="internal-links-section py-12">
       <VContainer>
@@ -1078,6 +1116,8 @@
 
 <script setup lang="ts">
 import { useLocalePath } from '#imports'
+import { prLabel } from '~/utils/pageRanking'
+import { topicOf, type TopPageRow, type TopPagesSnapshot } from '~/utils/topPages'
 import DirectionToggle from '@/components/DirectionToggle.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -1099,6 +1139,9 @@ import {
   type ExchangeChannelFilter,
 } from '@/utils/exchangeChannel'
 import { dedupeDepartmentNames, sameDepartment } from '@/utils/departments'
+
+/** Cuántas guías muestra la portada. */
+const HOME_GUIDES = 6
 
 const { mobile } = useDisplay()
 
@@ -1226,6 +1269,16 @@ defineOgImageComponent('Cambio', {
 
 // Data-grounded FAQ embed (USD live answers + evergreen). FaqBlock renders the
 // visible accordion and the single home FAQPage JSON-LD from these same items.
+// Las guías más leídas (bloque de arriba). `transform` y no `pick`: la ruta devuelve `null` sin
+// documento, y `pick` sobre `null` rompe; así el payload lleva sólo la lista.
+const { data: topGuides } = await useFetch('/api/site-top-pages', {
+  key: 'home-top-guides',
+  transform: (doc: TopPagesSnapshot | null): TopPageRow[] => doc?.guides ?? [],
+})
+const homeGuides = computed(() =>
+  locale.value === 'es' ? (topGuides.value || []).slice(0, HOME_GUIDES) : []
+)
+
 const { data: faqData } = await useFetch<{ generatedAt: string; items: FaqItem[] }>('/api/faq', {
   query: { lang: locale },
   default: () => ({ generatedAt: '', items: [] as FaqItem[] }),

@@ -8,6 +8,7 @@ import {
   isPublicListable,
   PUBLIC_AI,
   PUBLIC_EXCLUDED_PATHS,
+  PUBLIC_GUIDES,
   PUBLIC_PAGES,
   PUBLIC_RISING,
   publicTopPagesIsThin,
@@ -242,6 +243,29 @@ describe("buildPublicTopPages", () => {
     walk(doc);
     for (const k of FORBIDDEN) expect(keys.has(k), k).toBe(false);
     expect(JSON.stringify(doc)).not.toContain("secreto");
+  });
+
+  it("guías más leídas: sólo contenido, por base, sin decir el tramo", () => {
+    const rows = [
+      row("/", [300, 300, 300, 300], { tier: "dato-vivo" }),
+      row("/alquileres-uruguay", [200, 200, 200, 200], { tier: "directorio" }),
+      row("/comisiones-de-transferencia-uruguay", [70, 70, 70, 70]),
+      row("/guias/hacer-un-testamento-uruguay", [12, 12, 12, 12]),
+      row("/dolar-hoy", [25, 25, 25, 25], { tier: "otro" }),
+      row("/en/guias/x", [90, 90, 90, 90]), // espejo: no
+    ];
+    const d = buildPublicTopPages(ranking(rows));
+    expect(d.guides.map((g) => g.path)).toEqual([
+      "/comisiones-de-transferencia-uruguay",
+      "/guias/hacer-un-testamento-uruguay",
+    ]);
+    // El puesto es el de la lista general, no el de la sublista.
+    expect(d.guides[0].rank).toBe(3);
+    expect(JSON.stringify(d.guides)).not.toContain("contenido");
+  });
+
+  it(`como mucho ${PUBLIC_GUIDES} guías`, () => {
+    expect(buildPublicTopPages(ranking(many(PUBLIC_GUIDES + 5))).guides).toHaveLength(PUBLIC_GUIDES);
   });
 
   it("una página de error no se lista ni se enlaza, aunque la cite una IA", () => {

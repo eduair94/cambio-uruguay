@@ -62,6 +62,8 @@ export interface TopPagesSnapshot {
   rising: TopRisingRow[]
   aiCited: TopAiRow[]
   topics: TopTopicRow[]
+  /** Las páginas de contenido más visitadas (desde 2026-09-30; ausente en documentos viejos). */
+  guides?: TopPageRow[]
 }
 
 export interface Topic {
