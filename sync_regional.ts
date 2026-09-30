@@ -30,8 +30,7 @@
 //   * it refuses to publish a collapsed board over a healthy one;
 //   * nothing is averaged across countries: every published figure keeps the
 //     market and the publisher it came from.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import moment from "moment-timezone";
 import { cambio_info } from "./classes/cambioInfo";

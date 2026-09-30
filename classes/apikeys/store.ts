@@ -44,7 +44,7 @@ export interface KeyModel {
   findOneAndUpdate(
     filter: Record<string, unknown>,
     update: { $set: Record<string, unknown> },
-    opts: { new: true }
+    opts: { returnDocument: "after" }
   ): { lean(): Promise<any> };
   updateMany(filter: Record<string, unknown>, update: { $set: Record<string, unknown> }): Promise<unknown>;
 }
@@ -194,7 +194,7 @@ export function createKeyStore(
         set.revokedAt = patch.status === "revoked" ? new Date(now()) : null;
       }
       if (!Object.keys(set).length) return null;
-      const doc = await model.findOneAndUpdate(filter, { $set: set }, { new: true }).lean();
+      const doc = await model.findOneAndUpdate(filter, { $set: set }, { returnDocument: "after" }).lean();
       cache.clear();
       negatives = 0;
       return doc ? toRecord(doc) : null;

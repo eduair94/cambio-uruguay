@@ -1,6 +1,6 @@
 import axios from "axios";
 import { load } from "cheerio";
-import dotenv from "dotenv";
+import "dotenv/config";
 import fs from "fs";
 import { HttpProxyAgent } from "http-proxy-agent";
 import { HttpsProxyAgent } from "https-proxy-agent";
@@ -9,7 +9,6 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 import { ProxyFileService } from "../ProxyFileService";
 import { withDolarAhoraFallback } from "./dolarahora";
-dotenv.config();
 const e = process.env;
 
 /**

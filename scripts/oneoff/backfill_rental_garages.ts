@@ -99,7 +99,7 @@ export async function garageBackfillMain(): Promise<void> {
   const requested = args.find(value => value.startsWith("--apply="))?.slice(8);
   if (args.some(value => value !== "--dry-run" && !/^--apply=[a-f0-9]{64}$/.test(value))
     || args.length > 1 || (requested && !/^[a-f0-9]{64}$/.test(requested))) throw Error("Use --dry-run or --apply=<reviewed hash>");
-  dotenv.config();
+  dotenv.config({ quiet: true });
   const appEnv = fs.existsSync("app/.env") ? dotenv.parse(fs.readFileSync("app/.env")) : {};
   process.env.APP_MONGO_URI = process.env.APP_MONGO_URI || appEnv.APP_MONGO_URI || appEnv.MONGO_URI;
   if (!process.env.APP_MONGO_URI) throw Error("App database is not configured");

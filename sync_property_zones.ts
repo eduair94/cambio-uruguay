@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { refreshPropertyZones } from "./classes/propertyzones/refresh";
 import { withZoneRefreshLease } from "./classes/propertyzones/store";

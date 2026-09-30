@@ -3,8 +3,7 @@
 // Three languages, each independent: a failed language keeps its previous stored briefing rather
 // than blanking it. 10:37 is not a multiple of 5 (currency-sync is */5) and sits clear of the Reddit
 // jobs (nitro reddit:sentiment at 10:10, currency-aduana Mondays 09:30).
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { buildBanksBriefing, type Lang } from "./classes/banks/news";
 import { geminiConfigured } from "./classes/gemini";

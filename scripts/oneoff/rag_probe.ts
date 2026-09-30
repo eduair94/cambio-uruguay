@@ -9,8 +9,7 @@
 // them by running real questions through the real index and looking at where the line falls
 // between "this page answers it" and "this page is merely about the same subject". Costs one
 // embedding per question and posts nothing.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "../../classes/appdb";
 import { botConfig } from "../../classes/redditbot/config";

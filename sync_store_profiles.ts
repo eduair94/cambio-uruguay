@@ -43,8 +43,8 @@
 // `--reddit-only` (Task 13: ask Reddit only — every other source keeps last week's value untouched —
 // meant to run nightly so the 24-month Reddit backfill finishes in ~8 nights instead of ~8 weeks).
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appDbConfigured } from "./classes/appdb";
 import {

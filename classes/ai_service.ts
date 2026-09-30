@@ -1,11 +1,9 @@
-import dotenv from "dotenv";
+import "dotenv/config";
 import OpenAI from "openai";
 import { CambioObj } from "../interfaces/Cambio";
 import { aiInsightCache } from "./ai_insight_cache";
 import { BCU_ORIGIN, isPublicRate } from "./rate_source";
 import { redisCache } from "./redis_cache";
-
-dotenv.config();
 
 // Language-specific system prompts
 const SYSTEM_PROMPTS: Record<string, string> = {

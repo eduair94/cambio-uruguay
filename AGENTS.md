@@ -3,8 +3,8 @@
 Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-uruguay.com): a TypeScript Express API + casa-de-cambio/currency scrapers (this dir) plus a separate Nuxt frontend (`app/`), an MCP server (`mcp/`), and social bots (`bots/`). Operate only inside this worktree.
 
 ## Two build surfaces (own package.json, own deploy, DIFFERENT MongoDBs)
-- **Root** = Express API + scrapers + sync jobs. `name:"api"`, TS4.9, CommonJS. Dev: `npm run dev` (`ts-node index.ts`). Build: `npm run build` (`tsc -p tsconfig.production.json` → `dist/`). Prod: pm2 via `ecosystem.config.js`. Mongo DB `cambio-uy` (`config.ts`), host A.
-- **`app/`** = Nuxt 4 (`compatibilityVersion: 4`) / Vuetify 4.1.5 frontend. `name:"app"` v2.0.0, ESM, TS5.7. Own `package.json`, own build (`nuxt build`), own deploy (`app/scripts/deploy.sh`). Uses a DIFFERENT Mongo (`APP_MONGO_URI`, host B). **`classes/appdb.ts` is the only bridge from root → app DB.**
+- **Root** = Express API + scrapers + sync jobs. `name:"api"`, TypeScript 6.0 emitting CommonJS (`moduleResolution: bundler`, so ESM-only deps such as puppeteer 25 and the proxy agents load through Node 22's `require(esm)`). TypeScript stays on 6.0: 7.x has no classic compiler API, which ts-node and typescript-eslint need. Dev: `npm run dev` (`ts-node index.ts`). Build: `npm run build` (`tsc -p tsconfig.production.json` → `dist/`). Prod: pm2 via `ecosystem.config.js`. Mongo DB `cambio-uy` (`config.ts`), host A.
+- **`app/`** = Nuxt 4.4 (`compatibilityVersion: 4`; 4.5 needs Node ≥22.19, see `app/AGENTS.md`) / Vuetify 4.2 frontend. `name:"app"` v2.0.0, ESM, TypeScript 6.0. Own `package.json`, own build (`nuxt build`), own deploy (`app/scripts/deploy.sh`). Uses a DIFFERENT Mongo (`APP_MONGO_URI`, host B). **`classes/appdb.ts` is the only bridge from root → app DB.**
 - **`mcp/`**, **`bots/`** = own `package.json` + `npm run build`; build separately before their pm2 apps start.
 - **Rule: never mutate `app/` mid-build.** Root `tsconfig.json` excludes `app`, `dist`, `mcp`, `bots`, `scripts/oneoff`.
 

@@ -13,8 +13,8 @@
 //     is refused and the previous snapshot stands.
 // The page therefore degrades to "stale but correct", never to blank or wrong.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appDbConfigured } from "./classes/appdb";
 import { claudeConfigured } from "./classes/claude";

@@ -17,9 +17,7 @@
 // A Reddit outage must degrade the nightly job to "no new opinions today", never throw into it.
 // With no credentials configured, every call here is a silent no-op.
 
-import dotenv from "dotenv";
-
-dotenv.config();
+import "dotenv/config";
 
 const TOKEN_URL = "https://www.reddit.com/api/v1/access_token";
 const API = "https://oauth.reddit.com";

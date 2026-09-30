@@ -4,8 +4,7 @@
 //
 //   node dist/sync_autos_parts.js                         due models, oldest reading first
 //   node dist/sync_autos_parts.js --dry-run --models=a,b  read those models, print, write nothing
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { bridgeWindowOpen, harvestParts, planPartsTargets, shouldReplacePartsRecord, type CarPartsTarget } from "./classes/autos/repuestosHarvest";
 import { loadCarPartsRecords, loadCatalogMeta, saveCarPartsRecords } from "./classes/autos/store";

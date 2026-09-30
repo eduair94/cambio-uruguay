@@ -1,7 +1,5 @@
-import dotenv from "dotenv";
+import "dotenv/config";
 import OpenAI from "openai";
-
-dotenv.config();
 
 /**
  * Test script for AI Service

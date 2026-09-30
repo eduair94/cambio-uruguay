@@ -7,8 +7,7 @@
 // entre sí, y el resultado queda escrito como dato con sus conteos y su fecha.
 //
 // Correr: npm run precios_pin_basket
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import fs from "fs";
 import path from "path";

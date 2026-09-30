@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import fs from "fs";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { analyzeOpportunities } from "./classes/propertyopportunities/analyze";

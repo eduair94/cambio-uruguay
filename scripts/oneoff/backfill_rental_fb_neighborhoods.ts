@@ -62,7 +62,7 @@ export async function fbNeighborhoodBackfillMain(): Promise<void> {
   const args = process.argv.slice(2);
   if (args.length !== 1 || !["--dry-run", "--apply"].includes(args[0]!)) throw Error("Use --dry-run or --apply");
   const apply = args[0] === "--apply";
-  dotenv.config();
+  dotenv.config({ quiet: true });
   const appEnv = fs.existsSync("app/.env") ? dotenv.parse(fs.readFileSync("app/.env")) : {};
   process.env.APP_MONGO_URI = process.env.APP_MONGO_URI || appEnv.APP_MONGO_URI || appEnv.MONGO_URI;
   if (!process.env.APP_MONGO_URI) throw Error("App database is not configured");

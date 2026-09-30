@@ -10,8 +10,7 @@
 // Never blanks the stored snapshot: if every source fails, the previous document keeps serving and
 // the process exits non-zero so pm2 logs show it. `--allow-empty` exists only to seed a brand-new
 // database on purpose.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { buildTrendsSnapshot, snapshotIsEmpty } from "./classes/trends/refresh";

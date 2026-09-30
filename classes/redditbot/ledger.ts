@@ -52,7 +52,7 @@ export async function seenPostIds(postIds: readonly string[]): Promise<Set<strin
   // Los dos lados importan, así que la respuesta depende de en cuál estamos. Ensayando, una fila
   // `dry_run` SÍ frena: re-evaluar lo mismo cada hora gasta embeddings y llamadas al juez de un cupo
   // diario. Publicando, NO frena: nunca se le habló a esa gente.
-  const excluded = canPost() ? ["waiting_page", "dry_run"] : ["waiting_page"];
+  const excluded: RedditBotReplyDoc["status"][] = canPost() ? ["waiting_page", "dry_run"] : ["waiting_page"];
 
   const [propias, sociales] = await Promise.all([
     RedditBotReplyModel.find({ postId: { $in: [...postIds] }, status: { $nin: excluded } })

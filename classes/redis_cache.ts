@@ -1,7 +1,5 @@
-import dotenv from "dotenv";
+import "dotenv/config";
 import Redis from "ioredis";
-
-dotenv.config();
 
 const DEFAULT_TTL = 300; // 5 minutes default
 const KEY_PREFIX = "cambio:";

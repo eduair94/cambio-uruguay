@@ -1,7 +1,7 @@
 // gemini.ts is the grounded leg of the norms gate: it must never call the real Gemini API from a
 // unit test (network, cost, flakiness), so axios is mocked end to end. Two things are pinned here:
 //   F1 — geminiConfigured()/askGrounded() must accept NUXT_GEMINI_API_KEY, because the root .env
-//        (all dotenv.config() sees here) has no bare GEMINI_API_KEY — this repo's key lives in
+//        (all dotenv/config loads here) has no bare GEMINI_API_KEY — this repo's key lives in
 //        app/.env under the Nuxt-prefixed name.
 //   F3 — resolveUri() must resolve off the Location header of the FIRST redirect response
 //        (maxRedirects: 0), and must never ground a chunk it could not resolve — not on the

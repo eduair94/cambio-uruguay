@@ -41,8 +41,8 @@ If running locally on port 3528:
 ### Dependencies
 ```json
 {
-  "swagger-jsdoc": "^6.2.8",
-  "@scalar/express-api-reference": "^0.8.41",
+  "swagger-jsdoc": "^6.3.0",
+  "@scalar/express-api-reference": "^0.10.24",
   "@types/swagger-jsdoc": "^6.0.4"
 }
 ```

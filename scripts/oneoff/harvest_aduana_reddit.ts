@@ -10,9 +10,7 @@
  *   npm run harvest_aduana_reddit -- --year
  *   npm run harvest_aduana_reddit -- --supplemental
  */
-import dotenv from "dotenv";
-
-dotenv.config();
+import "dotenv/config";
 
 import { ADUANA_AUDIT_QUERIES, harvestAduana } from "../../classes/aduana/harvest";
 import { MongooseServer, withTimeout } from "../../classes/database";

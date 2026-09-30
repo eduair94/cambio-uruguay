@@ -14,8 +14,7 @@
 // que hace es no esperar una hora entre corridas: cuando el tope diario o el interruptor cortan, se
 // termina. Si querés más volumen, la perilla es `REDDIT_BOT_MAX_PER_DAY`, y subirla es una decisión
 // distinta de correr esto.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "../../classes/appdb";
 import { botConfig, canPost } from "../../classes/redditbot/config";

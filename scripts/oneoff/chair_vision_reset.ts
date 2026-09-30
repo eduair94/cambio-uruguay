@@ -1,8 +1,8 @@
 // Clears the image-identification cache. Needed once because an early version cached failed calls
 // (HTTP 429) as "not identifiable", which would have kept those photos from ever being retried.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { ChairVisionGuessModel } from "../../classes/models/ChairVisionGuess";
 

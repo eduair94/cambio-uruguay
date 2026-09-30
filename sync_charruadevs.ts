@@ -9,8 +9,7 @@
 //   node dist/sync_charruadevs.js --seed <dir>    siembra (texts.jsonl + state.json)
 //   node dist/sync_charruadevs.js --authors <f>   pega autores sobre el corpus ya sembrado
 //   node dist/sync_charruadevs.js --dry-run       calcula todo, no escribe estado ni snapshot
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { runRefresh } from "./classes/charruadevs/refresh";

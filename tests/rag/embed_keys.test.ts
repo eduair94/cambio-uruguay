@@ -78,7 +78,7 @@ describe("gemini — embedding key rotation", () => {
 
   it("reports zero when nothing is configured, instead of pretending", async () => {
     const { embedKeysAvailable } = await fresh();
-    // Cleared AFTER the import on purpose: gemini.ts runs `dotenv.config()` at load, which would
+    // Cleared AFTER the import on purpose: gemini.ts loads `dotenv/config` at import, which would
     // repopulate them from the developer's own .env and make this pass only on a clean CI box.
     // `embedKeys()` reads the environment per call, so clearing it here is the honest test.
     delete process.env.GEMINI_API_KEY;

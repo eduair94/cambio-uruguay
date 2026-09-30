@@ -2,8 +2,8 @@
 // admitted today (casters, auditorium seating, junk identities left by an older, looser filter).
 // Safe to run any time: it never touches a row that still passes.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { pruneRejectedChairs } from "../../classes/chairs/store";
 

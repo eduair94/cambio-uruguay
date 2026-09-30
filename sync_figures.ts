@@ -4,8 +4,7 @@
 //
 // The DRIFT WATCHDOG is NOT here — it stayed in the app (nitro task figures:drift), because it
 // needs the app's Telegram config and its own dedupe state, and it spends no Gemini call.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { geminiConfigured } from "./classes/gemini";
 import { refreshUyFigures } from "./classes/figures/refresh";

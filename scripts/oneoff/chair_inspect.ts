@@ -2,8 +2,8 @@
 // Mongo client: multi-platform chairs first (the whole point of the directory), then the rating
 // signals behind the stars.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { ChairCatalogMetaModel } from "./../../classes/models/ChairCatalogMeta";
 import { ChairCatalogProductModel } from "./../../classes/models/ChairCatalogProduct";

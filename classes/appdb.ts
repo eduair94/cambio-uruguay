@@ -11,8 +11,7 @@
 // mongoose.connect() here would hijack the default connection classes/database.ts owns; createConnection
 // keeps them separate and lets a single process talk to both.
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 let conn: mongoose.Connection | null = null;
 
@@ -46,7 +45,9 @@ export function appConnection(): mongoose.Connection {
 export function appModel<T>(name: string, schema: mongoose.Schema, collection: string): mongoose.Model<T> {
   let cached: mongoose.Model<T> | null = null;
   const resolve = (): mongoose.Model<T> => {
-    if (!cached) cached = appConnection().model<T>(name, schema, collection);
+    // Not `model<T>(...)`: with a generic T, TypeScript compares `Schema` against mongoose 9's
+    // `Schema<T, …>` structurally and never finishes — it ran the whole backend build out of heap.
+    if (!cached) cached = appConnection().model(name, schema, collection) as unknown as mongoose.Model<T>;
     return cached;
   };
   return new Proxy({} as mongoose.Model<T>, {

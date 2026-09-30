@@ -15,10 +15,8 @@
 // return unit vectors today; normalising unconditionally means switching models via env cannot
 // quietly change what a score means.
 
-import dotenv from "dotenv";
+import "dotenv/config";
 import { embedContents, embedKeysAvailable } from "../gemini";
-
-dotenv.config();
 
 export const EMBED_MODEL = (process.env.RAG_EMBED_MODEL || "gemini-embedding-001").trim();
 export const EMBED_DIMS = ((): number => {

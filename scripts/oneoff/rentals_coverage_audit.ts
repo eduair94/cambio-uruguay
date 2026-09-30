@@ -4,9 +4,9 @@
  * Missing IDs prove a gap only in that sample, never the size of a portal's whole inventory.
  */
 import dotenv from "dotenv";
+import "dotenv/config";
 import fs from "fs";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+dotenv.config({ path: "app/.env", quiet: true });
 import { appConnection } from "../../classes/appdb";
 import { RentalListingModel } from "../../classes/models/RentalListing";
 import { RentalMetaModel } from "../../classes/models/RentalMeta";

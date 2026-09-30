@@ -12,8 +12,7 @@
 // Escribe la colección privada `rentalfacebookdetails` y completa en `rentallistings` sólo los
 // campos vacíos de propiedades con un único aviso de Facebook. La cosecha (sync_rentals.ts) vuelve
 // a leer esas fichas al re-cosechar el aviso, así que lo aprendido no se pierde.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { FB_ITEM_URL, FacebookSessionError, connectFacebookBrowser, facebookSessionOk, readFacebookPageTexts, sleep } from "./classes/facebook/browser";
 import type { RentalFacebookDetailDocument } from "./classes/models/RentalFacebookDetail";

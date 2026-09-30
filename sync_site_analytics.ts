@@ -17,8 +17,7 @@
 // (`siterevenuesnapshots`), the private page ranking (`sitepagerankings`, served to
 // /estadisticas-por-pagina — see classes/site-analytics/pageRanking.ts) and its public projection
 // (`sitetoppages`, served to /paginas-mas-visitadas — classes/site-analytics/publicTopPages.ts).
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { ga4ConfigProblem } from "./classes/site-analytics/ga4";

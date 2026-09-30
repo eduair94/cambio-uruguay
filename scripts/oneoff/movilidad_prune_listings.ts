@@ -11,8 +11,8 @@
 // Es seguro correrlo cuando sea: nunca toca una fila que sigue pasando el filtro. Por defecto sólo
 // informa; borra con `--apply`.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { categoryFor } from "../../classes/equipar/classify";
 import { MOVILIDAD_CATEGORIES } from "../../classes/movilidad/registry";

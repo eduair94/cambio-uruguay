@@ -18,8 +18,7 @@
 //   --dry-run          cosecha y clasifica, imprime, no escribe
 //   --no-serp          saltea la etapa del SERP (la única que sale a Google)
 //   --serp-budget=N    cuántos candidatos se clasifican mirando el SERP (25 por defecto)
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { refreshDemandQueue } from "./classes/demand/refresh";

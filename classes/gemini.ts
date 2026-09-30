@@ -17,9 +17,7 @@
 // It NEVER throws. No key, HTTP error, timeout, empty candidate — all of it is `null`, which every
 // caller reads as "no update this cycle".
 import axios from "axios";
-import dotenv from "dotenv";
-
-dotenv.config();
+import "dotenv/config";
 
 // Model is env-overridable so a billing upgrade can swap in a bigger model with no code change.
 // The default MUST be a model that is still served AND still supports the google_search grounding
@@ -160,7 +158,7 @@ export interface GroundedReply {
  * Accepts either env var name. This repo's actual Gemini key lives in `app/.env` as
  * `NUXT_GEMINI_API_KEY` (the Nuxt runtime-config convention — the app side reads it through
  * `useRuntimeConfig()`) or in the root `.env` as the bare `GEMINI_API_KEY` — the only file
- * `dotenv.config()` loads here. Reading only one name meant this gate was unconfigured in
+ * `dotenv/config` loads here. Reading only one name meant this gate was unconfigured in
  * production from the day it first shipped, and callers returned early with nothing logged, so a
  * scheduled job "ran" while never spending a single Gemini call and nobody could tell from the
  * logs. A skipped AI call must say so out loud.

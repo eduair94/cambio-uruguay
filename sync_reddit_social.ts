@@ -5,8 +5,7 @@
 // dos primeros comentarios del bot— y mientras eso pase, el bot de respuestas escribe para nadie.
 //
 // Se apaga solo al llegar a REDDIT_SOCIAL_KARMA_TARGET. Ver classes/redditbot/social/run.ts.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { botCredentialsPresent } from "./classes/redditbot/config";

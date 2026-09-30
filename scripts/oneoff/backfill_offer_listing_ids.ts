@@ -11,8 +11,8 @@
 //
 //   npm run backfill_offer_listing_ids -- --dry-run
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appConnection, appDbConfigured } from "../../classes/appdb";
 

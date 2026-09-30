@@ -13,8 +13,7 @@
 // came back with less than half the videos already serving — is refused too, because a YouTube
 // hiccup that leaves three rows standing produces a page that looks alive and is empty.
 // `--allow-empty` exists only to seed a brand-new database on purpose.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { VIDEO_CHANNELS } from "./classes/videos/channels";

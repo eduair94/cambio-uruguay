@@ -1,8 +1,7 @@
 // Copia horaria del medidor de uso de la API (pm2 `currency-api-usage`, minuto 7 de cada hora):
 // Redis `usage:<día>` → Mongo `api_usage_days`, y `lastUsedAt` de cada clave con uso hoy.
 // Ver classes/apikeys/persist.ts y docs/api/API_KEYS.md.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import type { RedisLike } from "./classes/apikeys/counters";
 import { apiKeyStore, usageDaysRepo } from "./classes/apikeys/mongo";

@@ -1,9 +1,6 @@
 import { apiReference } from "@scalar/express-api-reference";
-import bodyParser from "body-parser";
 import cors from "cors";
 import express, { Request, Response } from "express";
-import { RecaptchaV2 } from "express-recaptcha";
-import { ValidationChain, validationResult } from "express-validator";
 import * as http from "http";
 import { swaggerSpec } from "../../swagger/config";
 import { FunctionExpress } from "./Express.interface";
@@ -12,21 +9,10 @@ class Express {
   private port: number;
   private app: express.Application = express();
   private baseUrl: string;
-  private recaptcha: RecaptchaV2;
 
-  constructor(
-    port: number,
-    baseUrl: string,
-    recaptchaKey: { siteKey: string; secretKey: string } = {
-      siteKey: "",
-      secretKey: "",
-    }
-  ) {
+  constructor(port: number, baseUrl: string) {
     this.baseUrl = baseUrl;
     this.port = port;
-    if (recaptchaKey.siteKey) {
-      this.recaptcha = new RecaptchaV2(recaptchaKey.siteKey, recaptchaKey.secretKey);
-    }
     const origin = process.env.origin;
     console.log("ORIGIN", origin);
 
@@ -50,9 +36,9 @@ class Express {
       next();
     });
 
-    this.app.use(bodyParser.json({ limit: "50mb" }));
+    this.app.use(express.json({ limit: "50mb" }));
     this.app.set("trust proxy", true);
-    this.app.use(bodyParser.urlencoded({ extended: false }));
+    this.app.use(express.urlencoded({ extended: false }));
     
     // Serve static files (favicon, etc.)
     this.app.use('/public', express.static('public'));
@@ -63,10 +49,6 @@ class Express {
 
   public getApp(): express.Application {
     return this.app;
-  }
-
-  public getRecaptchaMiddleWare() {
-    return this.recaptcha.middleware.verify;
   }
 
   private setupSwagger(): void {
@@ -153,14 +135,8 @@ class Express {
     });
   }
 
-  public confirmPull(requestUrl: string, f: FunctionExpress): void {
+  public postJson(requestUrl: string, f: FunctionExpress): void {
     this.app.post(`${this.baseUrl}${requestUrl}`, async (req: Request, res: Response) => {
-      res.json({ received: true });
-      const result: any = await f(req);
-    });
-  }
-  public postJson(requestUrl: string, f: FunctionExpress, validation: ValidationChain[] = []): void {
-    this.app.post(`${this.baseUrl}${requestUrl}`, validation, async (req: Request, res: Response) => {
       // Ensure cache-friendly headers
       res.removeHeader("Vary");
       res.set({
@@ -168,9 +144,6 @@ class Express {
         Vary: "Accept-Encoding",
       });
 
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) return res.json({ error: errors.array() });
-      
       try {
         const result: any = await f(req);
         res.json(result);
@@ -188,42 +161,6 @@ class Express {
         
         console.error('API Error:', error);
         return res.status(500).json(errorResponse);
-      }
-    });
-  }
-  public postJsonRecaptcha(requestUrl: string, f: FunctionExpress, validation: ValidationChain[] = []): void {
-    this.app.post(`${this.baseUrl}${requestUrl}`, this.recaptcha.middleware.verify, async (req: Request, res: Response) => {
-      // Ensure cache-friendly headers
-      res.removeHeader("Vary");
-      res.set({
-        "Content-Type": "application/json",
-        Vary: "Accept-Encoding",
-      });
-
-      if (!req["recaptcha"]["error"]) {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) return res.json({ error: errors.array() });
-        
-        try {
-          const result: any = await f(req);
-          res.json(result);
-        } catch (error: any) {
-          // Handle ValidationError with proper error details
-          if (error.name === 'ValidationError' && error.details) {
-            return res.status(error.statusCode || 400).json(error.details);
-          }
-          
-          // Handle other errors with user-friendly messages
-          const errorResponse = {
-            error: error.message || 'Internal server error',
-            timestamp: new Date().toISOString()
-          };
-          
-          console.error('API Error:', error);
-          return res.status(500).json(errorResponse);
-        }
-      } else {
-        res.json({ error: "Bad recaptcha" });
       }
     });
   }

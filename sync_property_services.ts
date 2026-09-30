@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import { writeFile, rm } from "node:fs/promises";
 import { resolve, sep } from "node:path";
 import { appConnection, appDbConfigured } from "./classes/appdb";

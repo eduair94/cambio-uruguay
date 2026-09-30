@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { runWaterHarvest } from "./classes/utilities/water/run";
 import { mongoWaterStore } from "./classes/utilities/water/store";

@@ -1,8 +1,8 @@
 // Inspect a real harvest and selected confirmed conflicts, then apply exactly that reviewed plan.
 // Run under scripts/run-rentals.sh's flock. No crawl, expiration, or invented fresh observation.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve, relative, isAbsolute } from "node:path";

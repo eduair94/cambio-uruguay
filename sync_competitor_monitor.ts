@@ -2,8 +2,7 @@
 // minutos 3, 8, 13…: después de que arrancó el sync de las :00/:05). Lee el ledger de cambios y la
 // foto del día de la base del backend, la configuración y los contactos de la base del app, y avisa
 // por Telegram y correo. Ver docs/api/COMPETITOR_MONITOR.md y classes/monitor/.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { apiKeyStore } from "./classes/apikeys/mongo";
 import { appConnection } from "./classes/appdb";

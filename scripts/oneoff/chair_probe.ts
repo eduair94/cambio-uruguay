@@ -3,8 +3,7 @@
 //
 //   npm run chair_probe                 # every source
 //   npm run chair_probe -- bertoni      # a single registry key ("mercadolibre" / "facebook" too)
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { harvestFacebookMarketplace } from "../../classes/chairs/sources/facebook";
 import { harvestFenicioStore } from "../../classes/chairs/sources/fenicio";
