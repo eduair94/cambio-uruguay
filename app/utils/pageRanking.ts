@@ -156,7 +156,7 @@ const CHANNEL_LABELS: Record<string, string> = {
   'Organic Social': 'Redes',
   'AI Assistant': 'Asistentes de IA',
   Referral: 'Otros sitios',
-  Unassigned: 'Sin asignar',
+  Unassigned: 'Sin origen identificado',
   'Cross-network': 'Campañas',
   'Paid Search': 'Búsqueda paga',
   'Paid Social': 'Redes pagas',

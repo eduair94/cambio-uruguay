@@ -94,6 +94,36 @@ export function topicOf(path: string, t: (key: string) => string): Topic | null 
 /** `/historico/*` → `/historico`: la ruta del hub de una familia. */
 export const familyHub = (family: string) => family.replace(/\/\*$/, '')
 
+/**
+ * Hubs que no tienen página propia (`pages/alquileres/` y `pages/casa/` sólo tienen fichas): sin
+ * esto el tema se llamaría `/alquileres` y su enlace daría 404.
+ */
+const FAMILY_OVERRIDES: Record<string, { label: string; to: string }> = {
+  '/alquileres/*': { label: 'Fichas de alquiler', to: '/alquileres-uruguay' },
+  '/casa/*': { label: 'Casas de cambio, una por una', to: '/casas-de-cambio' },
+}
+
+/** `/algo-nuevo` → `Algo nuevo`. */
+const humanize = (hub: string) => {
+  const words = hub.replace(/^\//, '').replace(/-/g, ' ')
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : hub
+}
+
+/**
+ * Nombre y destino de un tema (familia). Con entrada en la navegación, su etiqueta y el hub; si no,
+ * un nombre legible y SIN enlace — mejor que un enlace a una ruta que no existe.
+ */
+export function familyTopic(
+  family: string,
+  t: (key: string) => string
+): { label: string; to: string | null } {
+  const override = FAMILY_OVERRIDES[family]
+  if (override) return { ...override }
+  const hub = familyHub(family)
+  const topic = topicOf(hub, t)
+  return topic ? { label: topic.label, to: hub } : { label: humanize(hub), to: null }
+}
+
 /** Última semana contra la primera, − 1. `null` si la primera es cero o no hay serie. */
 export function channelChange(weeks: number[]): number | null {
   if (weeks.length < 2 || !(weeks[0] > 0)) return null

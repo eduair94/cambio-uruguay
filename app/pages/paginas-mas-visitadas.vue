@@ -113,7 +113,7 @@
                 </div>
               </td>
               <td data-label="Por semana" class="text-right text-no-wrap font-weight-bold">
-                {{ prNumber(row.base) }}
+                {{ whole(row.base) }}
               </td>
               <td data-label="28 días" class="text-right text-no-wrap">
                 {{ prNumber(row.views) }}
@@ -163,12 +163,13 @@
             <VList density="compact" class="bg-transparent pa-0">
               <VListItem v-for="row in snapshot.rising" :key="row.path" class="px-0">
                 <NuxtLink :to="row.path" class="font-weight-medium">{{ prLabel(row) }}</NuxtLink>
+                <div class="text-caption text-medium-emphasis">{{ row.path }}</div>
                 <div class="text-body-2 text-medium-emphasis">
                   <template v-if="row.before === null">
-                    Nueva: {{ prNumber(row.after) }} visitas por semana
+                    Nueva: {{ whole(row.after) }} visitas por semana
                   </template>
                   <template v-else>
-                    De {{ prNumber(row.before) }} a {{ prNumber(row.after) }} visitas por semana
+                    De {{ whole(row.before) }} a {{ whole(row.after) }} visitas por semana
                   </template>
                 </div>
               </VListItem>
@@ -190,6 +191,7 @@
             <VList density="compact" class="bg-transparent pa-0">
               <VListItem v-for="row in snapshot.aiCited" :key="row.path" class="px-0">
                 <NuxtLink :to="row.path" class="font-weight-medium">{{ prLabel(row) }}</NuxtLink>
+                <div class="text-caption text-medium-emphasis">{{ row.path }}</div>
                 <div class="text-body-2 text-medium-emphasis">
                   {{ prNumber(row.aiEntrances) }} visitas desde un asistente de IA
                 </div>
@@ -221,16 +223,22 @@
           <tbody>
             <tr v-for="topic in snapshot.topics" :key="topic.family">
               <td data-label="Tema" class="top-pages__subject">
-                <NuxtLink :to="familyHub(topic.family)">{{ topicName(topic.family) }}</NuxtLink>
+                <NuxtLink
+                  v-if="familyTopic(topic.family, t).to"
+                  :to="familyTopic(topic.family, t).to!"
+                >
+                  {{ familyTopic(topic.family, t).label }}
+                </NuxtLink>
+                <span v-else>{{ familyTopic(topic.family, t).label }}</span>
               </td>
               <td data-label="Páginas" class="text-right text-no-wrap">
                 {{ prNumber(topic.urls) }}
               </td>
               <td data-label="Por semana" class="text-right text-no-wrap font-weight-bold">
-                {{ prNumber(topic.base) }}
+                {{ whole(topic.base) }}
               </td>
               <td data-label="Del total" class="text-right text-no-wrap">
-                {{ prPercent(topic.share) }}
+                {{ sharePct(topic.share) }}
               </td>
               <td data-label="Semana a semana">
                 <span
@@ -280,11 +288,7 @@
                     {{ prNumber(v) }}
                   </td>
                   <td data-label="Cambio" class="text-right text-no-wrap font-weight-bold">
-                    {{
-                      channelChange(series.weeks) === null
-                        ? '—'
-                        : prTrend(channelChange(series.weeks))
-                    }}
+                    {{ channelDelta(series.weeks) }}
                   </td>
                 </tr>
               </tbody>
@@ -362,7 +366,7 @@ import {
 import {
   channelChange,
   deviceLabel,
-  familyHub,
+  familyTopic,
   topicOf,
   weekShares,
   type TopPageRow,
@@ -413,9 +417,18 @@ const topTenShare = computed(() => {
   return top / s.totals.viewsUy
 })
 
+/** Canales con volumen de verdad: "Otros sitios" con 1 → 5 visitas no es un +400 % que decir. */
+const CHANNEL_MIN_SESSIONS = 40
 const channelRows = computed(() =>
-  (snapshot.value?.totals.weeklyChannels || []).filter(s => s.weeks.some(v => v >= 5))
+  (snapshot.value?.totals.weeklyChannels || []).filter(
+    s => s.weeks.reduce((a, b) => a + b, 0) >= CHANNEL_MIN_SESSIONS
+  )
 )
+/** Cambio de la primera a la última semana, sólo si la primera semana lo sostiene. */
+const channelDelta = (weeks: number[]) => {
+  const change = (weeks[0] || 0) >= 20 ? channelChange(weeks) : null
+  return change === null ? '—' : prTrend(change)
+}
 const searchChange = computed(() => {
   const search = snapshot.value?.totals.weeklyChannels.find(s => s.label === 'Organic Search')
   return search ? channelChange(search.weeks) : null
@@ -427,14 +440,17 @@ const deviceRows = computed(() => {
   if (!weeks) return []
   const first = weekShares(series, 0)
   const last = weekShares(series, weeks - 1)
-  return series.map((s, i) => ({ label: s.label, first: first[i].share, last: last[i].share }))
+  // Sin la tablet en 0 % → 0 %: no dice nada.
+  return series
+    .map((s, i) => ({ label: s.label, first: first[i].share, last: last[i].share }))
+    .filter(d => d.first >= 0.005 || d.last >= 0.005)
 })
 
-/** Nombre humano de una familia: la entrada de la navegación de su hub, o el hub tal cual. */
-const topicName = (family: string) => {
-  const hub = familyHub(family)
-  return topicOf(hub, t)?.label || hub
-}
+/** Las medianas pueden terminar en ,5: en una página pública se leen como enteros. */
+const whole = (n: number | null) => prNumber(Math.round(n || 0))
+
+/** Un tema chico no es "0 %". */
+const sharePct = (x: number) => (x > 0 && x < 0.005 ? '<1 %' : prPercent(x))
 
 const trendClass = (row: TopPageRow) =>
   row.isPeak || row.trend === null

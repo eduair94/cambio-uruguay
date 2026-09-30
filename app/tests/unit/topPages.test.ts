@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { channelChange, deviceLabel, familyHub, topicOf, weekShares } from '../../utils/topPages'
+import {
+  channelChange,
+  deviceLabel,
+  familyHub,
+  familyTopic,
+  topicOf,
+  weekShares,
+} from '../../utils/topPages'
 
 // `t` de mentira: devuelve la clave, así el test no depende del catálogo de traducciones.
 const t = (key: string) => key
@@ -60,5 +67,24 @@ describe('deviceLabel', () => {
     expect(deviceLabel('mobile')).toBe('Celular')
     expect(deviceLabel('desktop')).toBe('Computadora')
     expect(deviceLabel('smart tv')).toBe('smart tv')
+  })
+})
+
+describe('familyTopic', () => {
+  it('usa la navegación cuando el hub es una página', () => {
+    expect(familyTopic('/historico/*', t)).toEqual({ label: 'historico', to: '/historico' })
+  })
+
+  it('los hubs sin página propia llevan su nombre y su destino a mano', () => {
+    // /alquileres y /casa no tienen index: enlazarlos daría 404.
+    expect(familyTopic('/alquileres/*', t)).toEqual({
+      label: 'Fichas de alquiler',
+      to: '/alquileres-uruguay',
+    })
+    expect(familyTopic('/casa/*', t)?.to).toBe('/casas-de-cambio')
+  })
+
+  it('un hub desconocido se nombra legible y sin enlace', () => {
+    expect(familyTopic('/algo-nuevo/*', t)).toEqual({ label: 'Algo nuevo', to: null })
   })
 })
