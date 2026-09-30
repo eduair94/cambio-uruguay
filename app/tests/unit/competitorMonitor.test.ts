@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { monitorAccess, sanitizeMonitor } from '../../utils/competitorMonitor'
+import { counterHouses, monitorAccess, sanitizeMonitor } from '../../utils/competitorMonitor'
 
 const houses = new Set(['propia', 'gales', 'varlix', 'aeromar'])
 const good = {
@@ -83,6 +83,43 @@ describe('acceso al monitor (espejo del backend)', () => {
     })
     expect(monitorAccess(start, true, new Date('2026-12-01T12:00:00Z'))).toEqual({
       status: 'business',
+    })
+  })
+})
+
+describe('casas que se pueden monitorear', () => {
+  const local = {
+    brou: { name: 'BROU' },
+    gales: { name: 'Cambio Gales' },
+    banco_x: { name: 'Banco X' },
+    bcu: { name: 'BCU' },
+  }
+
+  it('sólo las que publican precio de mostrador hoy (una casa sólo con eBROU nunca se monitorea)', () => {
+    const rows = [
+      { origin: 'brou', type: 'BILLETE', buy: 40, sell: 42 },
+      { origin: 'gales', type: '', buy: 40.1, sell: 42.6 },
+      { origin: 'banco_x', type: 'EBROU', buy: 40.5, sell: 42.1 },
+    ]
+    expect(counterHouses(local, rows)).toEqual([
+      { id: 'brou', name: 'BROU' },
+      { id: 'gales', name: 'Cambio Gales' },
+    ])
+  })
+
+  it('sin cotizaciones del día todavía, no filtra (no se puede juzgar)', () => {
+    expect(counterHouses(local, []).map(h => h.id)).toEqual(['banco_x', 'brou', 'gales'])
+  })
+})
+
+describe('acceso sin confirmar', () => {
+  it('si no se pudo consultar el plan y la prueba ya venció, no afirma que terminó', () => {
+    const start = new Date('2026-09-01T12:00:00Z')
+    expect(monitorAccess(start, null, new Date('2026-09-20T12:00:00Z'))).toEqual({
+      status: 'unknown',
+    })
+    expect(monitorAccess(start, null, new Date('2026-09-04T12:00:00Z'))).toMatchObject({
+      status: 'trial',
     })
   })
 })

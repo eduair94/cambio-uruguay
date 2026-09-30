@@ -1,5 +1,5 @@
 <template>
-  <section v-if="!forbidden" class="api-admin-panel mt-10">
+  <section v-if="ready && !forbidden" class="api-admin-panel mt-10">
     <h2 class="text-h6 font-weight-bold mb-1">Clientes de la API</h2>
     <p class="text-body-2 text-medium-emphasis mb-4">
       Panel de administración (cuentas de NUXT_ADMIN_EMAILS). Uso de los últimos 30 días; el de hoy,
@@ -136,7 +136,7 @@
             <td class="text-caption">{{ m.ownOrigin || '—' }} · {{ m.competitors.join(', ') }}</td>
             <td class="text-caption">{{ m.currencies.join(', ') }}</td>
             <td class="text-caption">{{ accessText(m.access) }}</td>
-            <td class="text-caption">{{ m.lastSentAt ? formatDay(m.lastSentAt) : '—' }}</td>
+            <td class="text-caption">{{ m.lastSentAt ? formatDateTime(m.lastSentAt) : '—' }}</td>
           </tr>
           <tr v-if="!monitors.length">
             <td colspan="5" class="text-caption">Todavía nadie armó un monitor.</td>
@@ -153,7 +153,7 @@ import {
   ASSIGNABLE_PLANS,
   dailyText,
   formatCount,
-  formatDay,
+  formatDateTime,
   keyUsage,
   type ApiKeyRecord,
   type ApiPlanId,
@@ -176,6 +176,7 @@ const monitors = ref<AdminMonitor[]>([])
 function accessText(access: MonitorAccess): string {
   if (access.status === 'trial') return `prueba, ${access.daysLeft} d`
   if (access.status === 'business') return 'Empresa'
+  if (access.status === 'unknown') return 'sin confirmar'
   return 'vencido'
 }
 
@@ -185,6 +186,9 @@ const data = ref<{ keys: ApiKeyRecord[]; usage: ApiUsageResponse } | null>(null)
 const loading = ref(true)
 const error = ref('')
 const forbidden = ref(false)
+// No se dibuja nada hasta saber si la cuenta es administradora: antes, a cualquier usuario le
+// aparecía un instante el título del panel mientras volvía el 403.
+const ready = ref(false)
 const saving = ref('')
 const edits = reactive<Record<string, { plan: ApiPlanId; notes: string }>>({})
 const planItems = ASSIGNABLE_PLANS.map(plan => ({ title: API_PLAN_LABELS[plan], value: plan }))
@@ -227,6 +231,7 @@ async function load() {
     else error.value = e?.data?.statusMessage || `La ruta respondió ${status || 'sin respuesta'}.`
   } finally {
     loading.value = false
+    ready.value = true
   }
 }
 

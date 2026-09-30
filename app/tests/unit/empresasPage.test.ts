@@ -10,6 +10,11 @@ const APP = join(__dirname, '..', '..')
 const page = readFileSync(join(APP, 'pages/empresas.vue'), 'utf8')
 
 describe('/empresas', () => {
+  it('el monitor se puede empezar desde la página y el plan Empresa lo incluye', () => {
+    expect(page).toContain('Crear el monitor desde tu cuenta')
+    expect(page).toContain('Monitor de competencia incluido')
+  })
+
   it('el monitoreo de competencia dice que se prueba gratis, con la constante', () => {
     expect(page).toContain('TRIAL_DAYS')
     expect(page).toContain('Monitoreo de competencia')

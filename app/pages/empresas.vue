@@ -50,6 +50,9 @@
       <ul class="empresas-page__list text-body-1 mb-8">
         <li v-for="use in USES" :key="use.title">
           <strong>{{ use.title }}.</strong> {{ use.text }}
+          <button v-if="use.cta" type="button" class="empresas-page__inline-cta" @click="startKey">
+            {{ use.cta }}
+          </button>
         </li>
       </ul>
 
@@ -195,6 +198,7 @@ const USES = [
   {
     title: 'Monitoreo de competencia',
     text: `Avisos por Telegram o correo cuando otra casa mueve su pizarra o cambia tu lugar en el grupo, y un resumen al cierre del día. Probalo ${TRIAL_DAYS} días gratis desde tu cuenta.`,
+    cta: 'Crear el monitor desde tu cuenta',
   },
   {
     title: 'Productos financieros',
@@ -231,6 +235,7 @@ const PLANS = [
       `Desde ${perMin('business')} pedidos por minuto`,
       `Desde ${perDay('business')} pedidos por día`,
       'Límites a medida, uso comercial y contacto directo',
+      'Monitor de competencia incluido',
     ],
   },
 ]
@@ -337,6 +342,16 @@ useHead(() => ({
 }
 .empresas-page__list li {
   margin-bottom: 6px;
+}
+.empresas-page__inline-cta {
+  margin-left: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgb(var(--v-theme-primary));
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
 }
 .empresas-page__code {
   padding: 12px 16px;

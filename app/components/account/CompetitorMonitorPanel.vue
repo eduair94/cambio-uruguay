@@ -30,11 +30,14 @@
           <template v-else-if="data.access.status === 'business'"
             >Activo con el plan Empresa.</template
           >
+          <template v-else-if="data.access.status === 'unknown'">
+            No pudimos confirmar tu plan en este momento. Probá de nuevo en un rato.
+          </template>
           <template v-else>
             Terminó la prueba. Para que siga avisándote, escribinos a {{ API_CONTACT_EMAIL }} por el
             plan Empresa. Tu configuración queda guardada.
           </template>
-          <span v-if="data.lastSentAt"> Último aviso: {{ formatDay(data.lastSentAt) }}.</span>
+          <span v-if="data.lastSentAt"> Último aviso: {{ formatDateTime(data.lastSentAt) }}.</span>
         </VAlert>
 
         <VCard variant="outlined" class="pa-4">
@@ -61,6 +64,19 @@
                   closable-chips
                   density="comfortable"
                 />
+                <p
+                  v-if="form.competitors.length > MAX_COMPETITORS"
+                  class="text-caption text-error mb-0"
+                >
+                  Elegiste {{ form.competitors.length }}: el máximo es {{ MAX_COMPETITORS }}. Sacá
+                  {{ form.competitors.length - MAX_COMPETITORS }} para poder guardar.
+                </p>
+                <p
+                  v-else-if="!form.competitors.length"
+                  class="text-caption text-medium-emphasis mb-0"
+                >
+                  Elegí al menos un competidor.
+                </p>
               </VCol>
               <VCol cols="12" md="6">
                 <VSelect
@@ -170,7 +186,7 @@
 </template>
 
 <script setup lang="ts">
-import { API_CONTACT_EMAIL, formatDay } from '~/utils/apiKeys'
+import { API_CONTACT_EMAIL, formatDateTime } from '~/utils/apiKeys'
 import {
   MAX_COMPETITORS,
   MONITOR_CURRENCIES,
@@ -208,7 +224,7 @@ const houseItems = computed(() =>
 )
 const competitorItems = computed(() => houseItems.value.filter(h => h.value !== form.ownOrigin))
 const accessType = computed(() =>
-  data.value?.access?.status === 'expired'
+  data.value?.access?.status === 'expired' || data.value?.access?.status === 'unknown'
     ? 'warning'
     : data.value?.access?.status === 'business'
       ? 'success'

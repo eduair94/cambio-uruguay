@@ -16,7 +16,7 @@ export default defineEventHandler(async event => {
     .lean()
     .exec()
   const lastSent = new Map(states.map(s => [s.uid, s.lastSentAt]))
-  let business = new Set<string>()
+  let business: Set<string> | null = null
   try {
     const { keys } = await apiAdminFetch<{
       keys: { ownerUid: string; status: string; plan: string }[]
@@ -35,7 +35,7 @@ export default defineEventHandler(async event => {
       competitors: m.competitors,
       currencies: m.currencies,
       active: m.active,
-      access: monitorAccess(m.trialStartedAt, business.has(m.uid)),
+      access: monitorAccess(m.trialStartedAt, business ? business.has(m.uid) : null),
       lastSentAt: lastSent.get(m.uid) ? new Date(lastSent.get(m.uid) as Date).toISOString() : null,
       createdAt: m.createdAt ?? null,
     })),

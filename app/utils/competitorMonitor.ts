@@ -21,15 +21,18 @@ export type MonitorAccess =
   | { status: 'trial'; daysLeft: number; endsAt: string }
   | { status: 'business' }
   | { status: 'expired'; endedAt: string }
+  /** No se pudo consultar el plan y la prueba ya venció: no se afirma que terminó. */
+  | { status: 'unknown' }
 
 const DAY_MS = 86_400_000
 
+/** `hasBusiness` null = no se pudo consultar el plan (la API de claves no contestó). */
 export function monitorAccess(
   trialStartedAt: Date | string,
-  hasBusiness: boolean,
+  hasBusiness: boolean | null,
   now = new Date()
 ): MonitorAccess {
-  if (hasBusiness) return { status: 'business' }
+  if (hasBusiness === true) return { status: 'business' }
   const endsAt = new Date(new Date(trialStartedAt).getTime() + TRIAL_DAYS * DAY_MS)
   if (now.getTime() < endsAt.getTime()) {
     return {
@@ -38,7 +41,39 @@ export function monitorAccess(
       endsAt: endsAt.toISOString(),
     }
   }
+  if (hasBusiness === null) return { status: 'unknown' }
   return { status: 'expired', endedAt: endsAt.toISOString() }
+}
+
+const COUNTER_TYPES = new Set(['', 'BILLETE'])
+
+/**
+ * Las casas que el monitor puede seguir: las que HOY publican precio de mostrador (tipo vacío o
+ * BILLETE). Una casa que sólo publica precios con cuenta (eBROU, transferencia) nunca entra en la
+ * foto del monitor, así que ofrecerla sería prometer avisos que no van a llegar. Sin cotizaciones
+ * del día todavía (antes del primer sync) no se puede juzgar: se ofrecen todas. Nunca el BCU.
+ */
+export function counterHouses(
+  local: Record<string, { name?: string } | undefined>,
+  rows: readonly { origin?: string; type?: string | null; buy?: number; sell?: number }[]
+): { id: string; name: string }[] {
+  const priced = new Set(
+    rows
+      .filter(
+        r =>
+          COUNTER_TYPES.has(
+            String(r.type ?? '')
+              .trim()
+              .toUpperCase()
+          ) &&
+          (Number(r.buy) > 0 || Number(r.sell) > 0)
+      )
+      .map(r => String(r.origin))
+  )
+  return Object.entries(local ?? {})
+    .filter(([id]) => id !== 'bcu' && (!rows.length || priced.has(id)))
+    .map(([id, info]) => ({ id, name: info?.name || id }))
+    .sort((a, b) => a.name.localeCompare(b.name, 'es'))
 }
 
 export function emptyMonitorInput(): MonitorInput {

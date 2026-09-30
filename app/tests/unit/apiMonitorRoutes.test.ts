@@ -109,6 +109,40 @@ describe('GET /api/me/monitor', () => {
   })
 })
 
+describe('GET /api/me/monitor: bordes', () => {
+  it('si la API de claves falla y la prueba venció, el acceso queda sin confirmar', async () => {
+    monitorFindOne.mockReturnValueOnce(
+      lean({ ...good, uid: 'u1', trialStartedAt: new Date('2026-01-01T00:00:00Z') })
+    )
+    stateFindOne.mockReturnValueOnce(lean(null))
+    userFindById.mockReturnValueOnce(lean(null))
+    apiAdminFetch.mockRejectedValueOnce(Object.assign(new Error('x'), { statusCode: 502 }))
+    const res: any = await getH({} as any)
+    expect(res.access).toEqual({ status: 'unknown' })
+  })
+
+  it('el selector ofrece sólo casas con precio de mostrador hoy', async () => {
+    fetchMock.mockImplementation(async (path: string) =>
+      path === '/localData'
+        ? {
+            propia: { name: 'Mi Casa' },
+            gales: { name: 'Cambio Gales' },
+            soloebrou: { name: 'Solo eBROU' },
+          }
+        : [
+            { origin: 'propia', type: '', buy: 40, sell: 42 },
+            { origin: 'gales', type: 'BILLETE', buy: 40, sell: 42 },
+            { origin: 'soloebrou', type: 'EBROU', buy: 40, sell: 42 },
+          ]
+    )
+    monitorFindOne.mockReturnValueOnce(lean(null))
+    stateFindOne.mockReturnValueOnce(lean(null))
+    userFindById.mockReturnValueOnce(lean(null))
+    const res: any = await getH({} as any)
+    expect(res.houses.map((h: any) => h.id)).toEqual(['gales', 'propia'])
+  })
+})
+
 describe('PUT /api/me/monitor', () => {
   it('una sesión de invitado o sin correo verificado no arma monitores', async () => {
     requireUser.mockResolvedValueOnce({

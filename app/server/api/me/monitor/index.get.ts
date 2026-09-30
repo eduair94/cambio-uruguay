@@ -9,7 +9,8 @@ import { requireUser } from '../../../utils/auth'
 import { connectDb } from '../../../utils/db'
 import { loadMonitorHouses } from '../../../utils/monitorHouses'
 
-async function hasBusinessKey(uid: string): Promise<boolean> {
+/** true/false según las claves de la cuenta; null si la API de claves no contestó. */
+async function hasBusinessKey(uid: string): Promise<boolean | null> {
   try {
     const { keys } = await apiAdminFetch<{ keys: { status: string; plan: string }[] }>(
       '/admin/api-keys',
@@ -19,7 +20,7 @@ async function hasBusinessKey(uid: string): Promise<boolean> {
     )
     return keys.some(k => k.status === 'active' && k.plan === 'business')
   } catch {
-    return false
+    return null
   }
 }
 
@@ -31,7 +32,7 @@ export default defineEventHandler(async event => {
     CompetitorMonitorModel.findOne({ uid }).lean().exec(),
     CompetitorMonitorStateModel.findOne({ uid }).lean().exec(),
     UserModel.findById(uid).lean().exec(),
-    loadMonitorHouses().catch(() => []),
+    loadMonitorHouses({ counterOnly: true }).catch(() => []),
     hasBusinessKey(uid),
   ])
   return {

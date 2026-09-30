@@ -57,7 +57,27 @@ describe('pestaña api de /cuenta', () => {
 
   it('el panel de administración se esconde ante 401/403 en vez de mostrar un error', () => {
     const admin = read('components/account/ApiClientsAdminPanel.vue')
-    expect(admin).toContain('v-if="!forbidden"')
+    expect(admin).toContain('!forbidden"')
     expect(admin).toMatch(/status === 403 \|\| status === 401/)
+  })
+})
+
+describe('bordes de los paneles', () => {
+  it('el panel de administración no aparece hasta saber si la cuenta es administradora', () => {
+    expect(read('components/account/ApiClientsAdminPanel.vue')).toContain(
+      'v-if="ready && !forbidden"'
+    )
+  })
+
+  it('el monitor explica por qué no se puede guardar con más de 12 competidores o ninguno', () => {
+    const panel = read('components/account/CompetitorMonitorPanel.vue')
+    expect(panel).toContain('el máximo es')
+    expect(panel).toContain('Elegí al menos un competidor')
+  })
+
+  it('el último aviso muestra la hora y un plan sin confirmar no dice que terminó la prueba', () => {
+    const panel = read('components/account/CompetitorMonitorPanel.vue')
+    expect(panel).toContain('formatDateTime(data.lastSentAt)')
+    expect(panel).toContain("status === 'unknown'")
   })
 })

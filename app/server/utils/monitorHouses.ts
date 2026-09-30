@@ -1,12 +1,18 @@
-// Las casas que se pueden elegir en el monitor: las que conoce la API (`/localData`), sin el BCU,
-// ordenadas por nombre. Tira si la API no contesta: sin la lista no se puede validar un guardado.
-export async function loadMonitorHouses(): Promise<{ id: string; name: string }[]> {
-  const data = await $fetch<Record<string, { name?: string }>>('/localData', {
-    baseURL: useRuntimeConfig().apiBaseServer,
+// Las casas del monitor de competencia. `counterOnly` (el selector): sólo las que hoy publican
+// precio de mostrador. Sin él (validar un guardado): todas las que conoce la API, para que una casa
+// que hoy no publicó no invalide una configuración ya hecha. Tira si `/localData` no contesta; si
+// no contesta `/` (antes del primer sync del día), el selector no filtra.
+import { counterHouses } from '../../utils/competitorMonitor'
+
+export async function loadMonitorHouses(
+  opts: { counterOnly?: boolean } = {}
+): Promise<{ id: string; name: string }[]> {
+  const baseURL = useRuntimeConfig().apiBaseServer
+  const local = await $fetch<Record<string, { name?: string }>>('/localData', {
+    baseURL,
     timeout: 8000,
   })
-  return Object.entries(data ?? {})
-    .filter(([id]) => id !== 'bcu')
-    .map(([id, info]) => ({ id, name: info?.name || id }))
-    .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+  if (!opts.counterOnly) return counterHouses(local, [])
+  const rows = await $fetch<unknown>('/', { baseURL, timeout: 8000 }).catch(() => [])
+  return counterHouses(local, Array.isArray(rows) ? rows : [])
 }

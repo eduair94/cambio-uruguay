@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dailyText, quotaText } from '../../utils/apiKeys'
+import { dailyText, formatDateTime, quotaText } from '../../utils/apiKeys'
 
 describe('lo que se muestra de una clave', () => {
   it('la cuota del plan, o la propia si tiene un acuerdo a medida', () => {
@@ -22,5 +22,11 @@ describe('lo que se muestra de una clave', () => {
     }
     expect(dailyText(summary, '2026-09-27', 3)).toBe('27/9: 15 · 26/9: 0 · 25/9: 5')
     expect(dailyText(null, '2026-09-27', 2)).toBe('27/9: 0 · 26/9: 0')
+  })
+})
+
+describe('fecha y hora', () => {
+  it('muestra la hora de Montevideo', () => {
+    expect(formatDateTime('2026-09-29T14:05:00Z')).toContain('11:05')
   })
 })
