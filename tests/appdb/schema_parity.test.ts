@@ -37,6 +37,7 @@ import { TransportSnapshotModel } from "../../classes/models/TransportSnapshot";
 import { MotoCatalogModel } from "../../classes/models/MotoCatalog";
 import { MotoCatalogMetaModel } from "../../classes/models/MotoCatalogMeta";
 import { MotoMarketSnapshotModel } from "../../classes/models/MotoMarketSnapshot";
+import { UsefulAppsSnapshotModel } from "../../classes/models/UsefulAppsSnapshot";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -302,5 +303,14 @@ describe("app-Mongo schema parity", () => {
       appFields(appModel("SeoIndexAllowlist")).sort()
     );
     expect(SeoIndexAllowlistModel.collection.name).toBe("seoindexallowlists");
+  });
+
+  it("UsefulAppsSnapshot declares exactly the app's top-level fields", () => {
+    // La foto semanal de las tiendas para /apps-utiles-uruguay: un campo que el job escriba y el app
+    // no declare se guarda igual, pero la ruta no lo ve nunca.
+    expect(Object.keys(UsefulAppsSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("UsefulAppsSnapshot")).sort()
+    );
+    expect(UsefulAppsSnapshotModel.collection.name).toBe("usefulappssnapshots");
   });
 });
