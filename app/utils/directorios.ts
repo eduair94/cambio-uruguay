@@ -300,6 +300,17 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
       '/que-banco-tiene-mas-descuentos-uruguay',
     ]),
   },
+  {
+    id: 'apps',
+    to: '/apps-utiles-uruguay',
+    familia: 'dinero',
+    titulo: 'Apps útiles',
+    queCompara:
+      'Las apps del Estado y las del día a día, con el desarrollador que figura en cada tienda.',
+    icon: 'mdi-cellphone-check',
+    unidad: 'apps',
+    fuente: 'curado',
+  },
 ])
 
 /** Las claves que `/api/directorios` puede devolver: las que declaran tener cifra. */

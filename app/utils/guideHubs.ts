@@ -1587,6 +1587,11 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'El organismo que corresponde a cada problema.',
         to: '/a-quien-le-reclamo-uruguay',
       },
+      {
+        label: 'Apps útiles y del Estado',
+        description: 'Las que todos deberían tener y cómo reconocer la oficial en cada tienda.',
+        to: '/apps-utiles-uruguay',
+      },
     ],
     terms: ['residencia-fiscal', 'dgi'],
     relatedHubs: ['derechos-y-reclamos-uruguay', 'pareja-familia-y-dinero-uruguay'],

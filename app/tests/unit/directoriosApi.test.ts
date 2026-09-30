@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CARD_PROGRAMS, CARD_REWARDS_LAST_REVIEWED } from '../../utils/cardRewards'
 import { CASAS_LAST_RESEARCHED, CASAS_REPUTATION } from '../../utils/casasDirectory'
 import { COURIERS, COURIER_RATES_VERIFIED_AT } from '../../utils/courierShipping'
+import { USEFUL_APPS, USEFUL_APPS_VERIFIED_AT } from '../../utils/usefulAppsCatalog'
 
 // La ruta no toca Mongo: le pregunta a la misma ruta que usa cada página. Acá cada una de esas
 // rutas es una respuesta que un test puede cambiar o romper, con la forma que tiene en producción.
@@ -110,6 +111,7 @@ describe('GET /api/directorios', () => {
       count: CARD_PROGRAMS.length,
       asOf: CARD_REWARDS_LAST_REVIEWED,
     })
+    expect(cifras.apps).toEqual({ count: USEFUL_APPS.length, asOf: USEFUL_APPS_VERIFIED_AT })
   })
 
   it('no inventa cifra para un directorio cuya página no publica un total', async () => {
@@ -168,7 +170,7 @@ describe('GET /api/directorios', () => {
 
   it('si no se pudo leer NINGUNA cifra relevada, la respuesta no se cachea', async () => {
     const { cifras } = await handler({})
-    expect(Object.keys(cifras).sort()).toEqual(['casas', 'couriers', 'tarjetas'])
+    expect(Object.keys(cifras).sort()).toEqual(['apps', 'casas', 'couriers', 'tarjetas'])
     expect(cacheControl()).toBe('no-store')
   })
 })

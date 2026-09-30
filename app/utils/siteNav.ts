@@ -597,6 +597,32 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'directorio apps',
         ],
       },
+      {
+        // Las apps del Estado que todos deberían tener y las del día a día, por categoría
+        // (ómnibus, salud, trámites, luz, bancos). Las de plata siguen en /apps-economia-uruguay.
+        to: '/apps-utiles-uruguay',
+        labelKey: 'nav.appsUtiles',
+        icon: 'mdi-cellphone-check',
+        priority: 0.8,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'apps utiles uruguay',
+          'apps del estado uruguay',
+          'aplicaciones del gobierno uruguay',
+          'app gub.uy',
+          'app bps personas',
+          'app asse',
+          'app como ir',
+          'app stm montevideo',
+          'app ute',
+          'mi antel',
+          'app 911 uruguay',
+          'identidad digital tuid abitab',
+          'app omnibus montevideo',
+          'apps que todo uruguayo deberia tener',
+        ],
+      },
     ],
   },
   {

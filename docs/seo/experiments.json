@@ -827,6 +827,22 @@
         "/sillas-escritorio-uruguay/*"
       ],
       "hypothesis": "Siete paginas emitian estructurados sin BreadcrumbList, asi que el renglon verde del resultado era la URL cruda en vez del rastro con nombres. Se declaran las que buscan por su tema y no estan dentro de otra ventana abierta; /acerca y /contacto quedan fuera porque no son un cambio pensado para mover trafico. Se mide si el mismo puesto gana mas clic cuando el visitante lee a que seccion pertenece la pagina antes de entrar."
+    },
+    {
+      "id": "apps-utiles-uruguay",
+      "shippedOn": "2026-09-30",
+      "routes": [
+        "/apps-utiles-uruguay"
+      ],
+      "queries": [
+        "apps del estado uruguay",
+        "apps utiles uruguay",
+        "app como ir",
+        "app stm montevideo",
+        "app bps personas",
+        "aplicaciones del gobierno uruguay"
+      ],
+      "hypothesis": "El sitio no tenia pagina para las apps del Estado ni para las del dia a dia fuera de la plata. La apuesta es un dato que nadie publica junto con el enlace correcto: la app de omnibus mas bajada de Montevideo no es la oficial (Como ir es de la Intendencia y STM Montevideo de un desarrollador independiente), OSE y el Correo no tienen app, y cada tarjeta muestra el desarrollador tal cual figura en cada tienda. Consultas de marca de organismos con volumen estable y sin caja de respuesta."
     }
   ]
 }

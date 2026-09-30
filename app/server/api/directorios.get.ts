@@ -2,6 +2,7 @@ import { CARD_PROGRAMS, CARD_REWARDS_LAST_REVIEWED } from '../../utils/cardRewar
 import { CASAS_LAST_RESEARCHED, CASAS_REPUTATION } from '../../utils/casasDirectory'
 import { COURIERS, COURIER_RATES_VERIFIED_AT } from '../../utils/courierShipping'
 import { DIRECTORIOS_CON_CIFRA, type DirectorioCifra } from '../../utils/directorios'
+import { USEFUL_APPS, USEFUL_APPS_VERIFIED_AT } from '../../utils/usefulAppsCatalog'
 
 /**
  * Las cifras de `/directorios-uruguay`: una por directorio, cada una con la fecha de SU dato.
@@ -126,6 +127,7 @@ const CURADOS: Readonly<Record<string, DirectorioCifra>> = {
   casas: cifra(CASAS_REPUTATION.length, CASAS_LAST_RESEARCHED),
   couriers: cifra(COURIERS.length, COURIER_RATES_VERIFIED_AT),
   tarjetas: cifra(CARD_PROGRAMS.length, CARD_REWARDS_LAST_REVIEWED),
+  apps: cifra(USEFUL_APPS.length, USEFUL_APPS_VERIFIED_AT),
 }
 
 interface CifrasLeidas {

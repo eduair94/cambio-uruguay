@@ -418,6 +418,19 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
     '/apps-economia-uruguay',
     '/salir-del-clearing',
   ],
+  // Apps útiles: lo que sigue es plata (las de economía), trámites y el aviso de estafas.
+  '/apps-utiles-uruguay': [
+    '/apps-economia-uruguay',
+    '/certificados-bps-uruguay',
+    '/a-quien-le-reclamo-uruguay',
+    '/estafas-uruguay',
+  ],
+  // Quien vino por las apps de plata casi siempre busca también las del Estado.
+  '/apps-economia-uruguay': [
+    '/apps-utiles-uruguay',
+    '/apps-de-beneficios-uruguay',
+    '/mejores-bancos-uruguay',
+  ],
   // The three programmatic families are 1.250-odd URLs between them, so the
   // tail of a computed list repeats itself across hundreds of pages. Six
   // curated entries each cover the whole family through the prefix rule.
