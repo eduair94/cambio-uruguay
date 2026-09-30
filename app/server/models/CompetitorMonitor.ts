@@ -43,4 +43,8 @@ const CompetitorMonitorSchema = new Schema<CompetitorMonitorDoc>(
 
 export const CompetitorMonitorModel: Model<CompetitorMonitorDoc> =
   (mongoose.models.CompetitorMonitor as Model<CompetitorMonitorDoc>) ||
-  mongoose.model<CompetitorMonitorDoc>('CompetitorMonitor', CompetitorMonitorSchema, 'competitormonitors')
+  mongoose.model<CompetitorMonitorDoc>(
+    'CompetitorMonitor',
+    CompetitorMonitorSchema,
+    'competitormonitors'
+  )
