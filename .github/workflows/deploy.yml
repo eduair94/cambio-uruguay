@@ -149,6 +149,7 @@ jobs:
               - 'classes/apikeys/plans.ts'
               - 'classes/apikeys/validate.ts'
               - 'classes/equipar/registry.ts'
+              - 'classes/usefulapps/catalog.ts'
               # I3 (final review, Plan D): app/utils/priceEvents.ts hand-mirrors this file's calendar
               # array; a root-only edit here (e.g. the November-date manual update) must still run the
               # app suite so priceEventsCalendarParity.test.ts catches a mismatch before it deploys.
