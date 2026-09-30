@@ -1687,6 +1687,33 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El Fondo de Solidaridad aparecía en nueve archivos del sitio —la calculadora de sueldo
+        // líquido, las deducciones del IRPF, los gastos del hogar— siempre como un descuento que
+        // hay que meter en OTRA cuenta, y en ninguno como la pregunta propia: quién lo paga,
+        // cuánto y hasta cuándo. Y el ángulo que el sitio puede dar es el peso: la escala vigente
+        // está en BPC y acá la BPC está auditada. La versión en salarios mínimos que devuelven los
+        // buscadores es el texto derogado.
+        to: '/fondo-de-solidaridad-uruguay',
+        labelKey: 'nav.fondoDeSolidaridad',
+        icon: 'mdi-school-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'fondo de solidaridad',
+          'fondo de solidaridad uruguay',
+          'cuanto se paga fondo de solidaridad',
+          'fondo de solidaridad 2026',
+          'aporte fondo de solidaridad bpc',
+          'quienes pagan fondo de solidaridad',
+          'fondo de solidaridad udelar',
+          'adicional fondo de solidaridad',
+          'hasta cuando se paga el fondo de solidaridad',
+          'fondo de solidaridad utec utu',
+          'exoneracion fondo de solidaridad',
+        ],
+      },
+      {
         to: '/certificados-bps-uruguay',
         labelKey: 'nav.certificadosBps',
         icon: 'mdi-certificate-outline',

@@ -896,6 +896,10 @@
           "label": "Devolución de FONASA"
         },
         {
+          "to": "/fondo-de-solidaridad-uruguay",
+          "label": "Fondo de Solidaridad"
+        },
+        {
           "to": "/herramientas/calculadora-aguinaldo",
           "label": "Calculadora de aguinaldo"
         },

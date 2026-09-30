@@ -979,6 +979,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/devolucion-fonasa-uruguay',
       },
       {
+        label: 'Fondo de Solidaridad',
+        description: 'Quién aporta, cuánto por año en pesos y hasta cuándo se paga.',
+        to: '/fondo-de-solidaridad-uruguay',
+      },
+      {
         label: 'Calculadora de aguinaldo',
         description: 'Tu SAC según lo ganado.',
         to: '/herramientas/calculadora-aguinaldo',
