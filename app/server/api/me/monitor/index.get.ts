@@ -28,11 +28,19 @@ export default defineEventHandler(async event => {
   const { uid, email, emailVerified, anonymous } = await requireUser(event)
   setResponseHeader(event, 'cache-control', 'private, no-store')
   await connectDb()
+  const saved = CompetitorMonitorModel.findOne({ uid }).lean().exec()
   const [monitor, state, user, houses, business] = await Promise.all([
-    CompetitorMonitorModel.findOne({ uid }).lean().exec(),
+    saved,
     CompetitorMonitorStateModel.findOne({ uid }).lean().exec(),
     UserModel.findById(uid).lean().exec(),
-    loadMonitorHouses({ counterOnly: true }).catch(() => []),
+    saved
+      .then(m =>
+        loadMonitorHouses({
+          counterOnly: true,
+          keep: m ? [m.ownOrigin, ...(m.competitors ?? [])].filter(Boolean) : [],
+        })
+      )
+      .catch(() => []),
     hasBusinessKey(uid),
   ])
   return {

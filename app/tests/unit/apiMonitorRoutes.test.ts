@@ -141,6 +141,28 @@ describe('GET /api/me/monitor: bordes', () => {
     const res: any = await getH({} as any)
     expect(res.houses.map((h: any) => h.id)).toEqual(['gales', 'propia'])
   })
+
+  it('una casa ya guardada que hoy no publica sigue en el selector (si no, se borraría al guardar)', async () => {
+    fetchMock.mockImplementation(async (path: string) =>
+      path === '/localData'
+        ? {
+            propia: { name: 'Mi Casa' },
+            gales: { name: 'Cambio Gales' },
+            soloebrou: { name: 'Solo eBROU' },
+          }
+        : [
+            { origin: 'propia', type: '', buy: 40, sell: 42 },
+            { origin: 'gales', type: 'BILLETE', buy: 40, sell: 42 },
+          ]
+    )
+    monitorFindOne.mockReturnValueOnce(
+      lean({ ...good, competitors: ['gales', 'soloebrou'], uid: 'u1', trialStartedAt: new Date() })
+    )
+    stateFindOne.mockReturnValueOnce(lean(null))
+    userFindById.mockReturnValueOnce(lean(null))
+    const res: any = await getH({} as any)
+    expect(res.houses.map((h: any) => h.id)).toEqual(['gales', 'propia', 'soloebrou'])
+  })
 })
 
 describe('PUT /api/me/monitor', () => {

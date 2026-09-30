@@ -110,6 +110,23 @@ describe('casas que se pueden monitorear', () => {
   it('sin cotizaciones del día todavía, no filtra (no se puede juzgar)', () => {
     expect(counterHouses(local, []).map(h => h.id)).toEqual(['banco_x', 'brou', 'gales'])
   })
+
+  it('una casa ya guardada en el monitor sigue en la lista aunque hoy no publique', () => {
+    const rows = [
+      { origin: 'brou', type: 'BILLETE', buy: 40, sell: 42 },
+      { origin: 'gales', type: '', buy: 40.1, sell: 42.6 },
+    ]
+    expect(counterHouses(local, rows, ['banco_x']).map(h => h.id)).toEqual([
+      'banco_x',
+      'brou',
+      'gales',
+    ])
+  })
+
+  it('con la foto a medio llenar (menos de la mitad con precio) no filtra', () => {
+    const rows = [{ origin: 'brou', type: 'BILLETE', buy: 40, sell: 42 }]
+    expect(counterHouses(local, rows).map(h => h.id)).toEqual(['banco_x', 'brou', 'gales'])
+  })
 })
 
 describe('acceso sin confirmar', () => {

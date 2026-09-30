@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clientIp, internalIps, isSiteReferrer, normalizeIp } from "../../classes/apikeys/client";
+import { clientIp, foreignHost, internalIps, isSiteReferrer, normalizeIp } from "../../classes/apikeys/client";
 
 describe("IP del cliente", () => {
   it("prefiere la que manda Cloudflare y saca el prefijo IPv4-en-IPv6", () => {
@@ -38,5 +38,26 @@ describe("pedido del propio sitio", () => {
     expect(isSiteReferrer("https://notcambio-uruguay.com")).toBe(false);
     expect(isSiteReferrer("basura", undefined)).toBe(false);
     expect(isSiteReferrer(undefined, undefined)).toBe(false);
+  });
+});
+
+describe("sitio ajeno que llama desde el navegador", () => {
+  it("toma el Origin", () => {
+    expect(foreignHost("https://www.ejemplo.com.uy")).toBe("www.ejemplo.com.uy");
+  });
+
+  it("un clic desde Google (navegación) no es un integrador: el Referer sólo cuenta en un fetch", () => {
+    expect(foreignHost(undefined, "https://www.google.com/", "navigate")).toBeNull();
+    expect(foreignHost(undefined, "https://github.com/public-apis", undefined)).toBeNull();
+    expect(foreignHost(undefined, "https://panel.ejemplo.uy/", "cors")).toBe("panel.ejemplo.uy");
+  });
+
+  it("una dirección IP nunca queda en el medidor", () => {
+    expect(foreignHost("http://200.40.1.2:8080")).toBeNull();
+    expect(foreignHost("http://[2800:ae::1]")).toBeNull();
+  });
+
+  it("el propio sitio no es ajeno", () => {
+    expect(foreignHost("https://cambio-uruguay.com")).toBeNull();
   });
 });

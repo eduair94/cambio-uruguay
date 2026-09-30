@@ -64,6 +64,7 @@ describe('pestaña api de /cuenta', () => {
 
 describe('bordes de los paneles', () => {
   it('el panel de administración no aparece hasta saber si la cuenta es administradora', () => {
+    expect(read('components/account/ApiClientsAdminPanel.vue')).not.toContain('VProgressLinear')
     expect(read('components/account/ApiClientsAdminPanel.vue')).toContain(
       'v-if="ready && !forbidden"'
     )

@@ -1,9 +1,11 @@
 // Middleware Express de las claves de API: quién pide, si le queda cuota y qué se anota.
 //
 // Se registra en index.ts DESPUÉS de CORS (el preflight OPTIONS nunca llega) y ANTES de la primera
-// ruta. Orden de clasificación, del spec: clave (válida → su plan; inválida → 401), IP interna (el
-// SSR del sitio, el MCP y los bots: ni cuenta ni mide), lector del sitio por Origin/Referer (sin
-// límite, medido como `site`), y anónimo con techo por IP.
+// ruta. Orden de clasificación, del spec: clave (válida → su plan; inválida → 401, y 429 a la IP
+// que prueba más de MAX_INVALID_PER_MINUTE claves inexistentes DISTINTAS por minuto), IP interna
+// (el SSR del sitio, el MCP y los bots: ni cuenta ni mide), lector del sitio por Origin/Referer
+// (sin límite, medido como `site`), y anónimo con techo por IP, medido por el sitio ajeno que lo
+// llama desde el navegador (`origin:`) o por su User-Agent (`ua:`).
 //
 // Tres fallas que NO pueden tumbar un pedido: Redis caído (pasa sin límite y sin medir), Mongo
 // caído al validar una clave (pasa como anónimo) y cualquier excepción propia (pasa). Se registra a
@@ -24,7 +26,7 @@ export interface ApiClientInfo {
   plan: PlanId | "site";
   /** Sujeto de los contadores de límite (`key:<id>` o `ip:<ip>`); null = sin techo. */
   subject: string | null;
-  /** Cliente del medidor (`key:<id>`, `ua:<User-Agent>` o `site`); null = no se mide. */
+  /** Cliente del medidor (`key:<id>`, `ua:<User-Agent>`, `origin:<sitio>` o `site`); null = no se mide. */
   meterId: string | null;
   keyId: string | null;
   keyPrefix: string | null;
@@ -34,6 +36,8 @@ export interface ApiClientInfo {
 export interface MiddlewareDeps {
   redis: () => RedisLike | null;
   lookup: (hash: string) => Promise<ApiKeyRecord | null>;
+  /** Clave ya conocida como válida por este proceso: nunca la frena el tope de claves inválidas. */
+  isKnownValid?: (hash: string) => boolean;
   env?: NodeJS.ProcessEnv;
   now?: () => Date;
   log?: (message: string) => void;
@@ -78,7 +82,11 @@ function classify(req: Request, record: ApiKeyRecord | null, internal: Set<strin
   if (isSiteReferrer(firstHeader(req.headers.origin), firstHeader(req.headers.referer))) {
     return { kind: "site", plan: "site", subject: null, meterId: "site", keyId: null, keyPrefix: null, limits: null };
   }
-  const host = foreignHost(firstHeader(req.headers.origin), firstHeader(req.headers.referer));
+  const host = foreignHost(
+    firstHeader(req.headers.origin),
+    firstHeader(req.headers.referer),
+    firstHeader(req.headers["sec-fetch-mode"])
+  );
   return {
     kind: "anonymous",
     plan: "anonymous",
@@ -120,7 +128,12 @@ export function createApiKeyMiddleware(deps: MiddlewareDeps): RequestHandler {
         const keysNow = windowKeys(now());
         // Una clave inventada por pedido cuesta una consulta a Mongo cada una (el caché negativo
         // sólo ataja las repetidas): pasado el tope, esa IP espera el minuto sin consultar nada.
-        if (redis && (await invalidAttempts(redis, ip, keysNow)) >= MAX_INVALID_PER_MINUTE) {
+        const hash = hashCredential(credential.value);
+        if (
+          redis &&
+          !deps.isKnownValid?.(hash) &&
+          (await invalidAttempts(redis, ip, keysNow)) >= MAX_INVALID_PER_MINUTE
+        ) {
           res.setHeader("Cache-Control", "no-store");
           res.setHeader("Retry-After", String(Math.max(1, Math.ceil((keysNow.minuteResetsAt.getTime() - now().getTime()) / 1000))));
           return res.status(429).json({
@@ -131,13 +144,13 @@ export function createApiKeyMiddleware(deps: MiddlewareDeps): RequestHandler {
         }
         let found: ApiKeyRecord | null | undefined;
         try {
-          found = await deps.lookup(hashCredential(credential.value));
+          found = await deps.lookup(hash);
         } catch (e: any) {
           logOnce(`no se pudo validar una clave, el pedido pasa como anónimo: ${e?.message || e}`);
           found = undefined;
         }
         if (found === null) {
-          if (redis) await noteInvalid(redis, ip, keysNow);
+          if (redis) await noteInvalid(redis, ip, keysNow, hash);
           res.setHeader("Cache-Control", "no-store");
           return res.status(401).json(invalid("La clave no existe o fue revocada."));
         }

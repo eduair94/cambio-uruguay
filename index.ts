@@ -219,7 +219,11 @@ const main = async () => {
   // para identificar, medir y dar el plan de cada cliente.
   const apiKeyRedis = () => redisCache.getClient() as unknown as RedisLike | null;
   server.getApp().use(
-    createApiKeyMiddleware({ redis: apiKeyRedis, lookup: (hash) => apiKeyStore().findActiveByHash(hash) })
+    createApiKeyMiddleware({
+      redis: apiKeyRedis,
+      lookup: (hash) => apiKeyStore().findActiveByHash(hash),
+      isKnownValid: (hash) => apiKeyStore().isKnownValid(hash),
+    })
   );
   registerApiKeyRoutes(server.getApp(), {
     store: apiKeyStore,

@@ -54,10 +54,11 @@ describe("devoluciones y claves inválidas", () => {
     expect(await readCounts(redis, "ip:1.2.3.4", keys)).toEqual({ minute: 2, day: 1 });
   });
 
-  it("cuenta los intentos con clave inválida por IP y por minuto", async () => {
+  it("cuenta las claves inválidas DISTINTAS por IP y por minuto, no los intentos", async () => {
     const redis = new FakeRedis();
-    await noteInvalid(redis, "1.2.3.4", keys);
-    await noteInvalid(redis, "1.2.3.4", keys);
+    await noteInvalid(redis, "1.2.3.4", keys, "hash-a");
+    await noteInvalid(redis, "1.2.3.4", keys, "hash-b");
+    await noteInvalid(redis, "1.2.3.4", keys, "hash-a");
     expect(await invalidAttempts(redis, "1.2.3.4", keys)).toBe(2);
     expect(await invalidAttempts(redis, "5.6.7.8", keys)).toBe(0);
     expect(redis.ttl.get(`rl:inv:1.2.3.4:${keys.minuteBucket}`)).toBe(120);

@@ -50,7 +50,13 @@
       <ul class="empresas-page__list text-body-1 mb-8">
         <li v-for="use in USES" :key="use.title">
           <strong>{{ use.title }}.</strong> {{ use.text }}
-          <button v-if="use.cta" type="button" class="empresas-page__inline-cta" @click="startKey">
+          <button
+            v-if="use.cta"
+            type="button"
+            class="empresas-page__inline-cta"
+            data-cta="empresas-monitor"
+            @click="startKey('#monitor')"
+          >
             {{ use.cta }}
           </button>
         </li>
@@ -121,18 +127,20 @@ const auth = useAuthStore()
 
 // "Crear una clave": con una cuenta (con correo; un invitado no identifica a nadie) va directo a la
 // pestaña; si no, abre el acceso y navega apenas hay cuenta, así nadie termina en la portada.
-const pendingKey = ref(false)
-const keysPath = () => localePath({ path: '/cuenta', query: { tab: 'api' } })
+const pendingKey = ref<string | false>(false)
+const keysPath = (hash = '') => localePath({ path: '/cuenta', query: { tab: 'api' }, hash })
 const hasAccount = computed(() => Boolean(auth.user?.email))
-function startKey() {
-  if (hasAccount.value) return navigateTo(keysPath())
-  pendingKey.value = true
+function startKey(hash: string | MouseEvent = '') {
+  const target = typeof hash === 'string' ? hash : ''
+  if (hasAccount.value) return navigateTo(keysPath(target))
+  pendingKey.value = target
   auth.openDialog()
 }
 watch(hasAccount, loggedIn => {
-  if (loggedIn && pendingKey.value) {
+  if (loggedIn && pendingKey.value !== false) {
+    const target = pendingKey.value
     pendingKey.value = false
-    navigateTo(keysPath())
+    navigateTo(keysPath(target))
   }
 })
 
@@ -197,7 +205,7 @@ const USES = [
   },
   {
     title: 'Monitoreo de competencia',
-    text: `Avisos por Telegram o correo cuando otra casa mueve su pizarra o cambia tu lugar en el grupo, y un resumen al cierre del día. Probalo ${TRIAL_DAYS} días gratis desde tu cuenta.`,
+    text: `Avisos por Telegram o correo cuando otra casa mueve su pizarra o cambia tu lugar en el grupo, y un resumen al cierre del día. Probalo ${TRIAL_DAYS} días gratis.`,
     cta: 'Crear el monitor desde tu cuenta',
   },
   {

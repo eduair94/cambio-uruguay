@@ -71,11 +71,19 @@ async function run(mw: any, req: any) {
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-function build(opts: { redis?: FakeRedis | null; lookup?: (h: string) => Promise<ApiKeyRecord | null>; env?: Record<string, string> } = {}) {
+function build(
+  opts: {
+    redis?: FakeRedis | null;
+    lookup?: (h: string) => Promise<ApiKeyRecord | null>;
+    env?: Record<string, string>;
+    isKnownValid?: (h: string) => boolean;
+  } = {}
+) {
   const redis = opts.redis === undefined ? new FakeRedis() : opts.redis;
   const mw = createApiKeyMiddleware({
     redis: () => redis,
     lookup: opts.lookup ?? (async () => null),
+    isKnownValid: opts.isKnownValid,
     env: (opts.env ?? {}) as NodeJS.ProcessEnv,
     now: () => NOW,
     log: () => undefined,
@@ -93,6 +101,31 @@ describe("integradores desde el navegador", () => {
     }
     await flush();
     expect(await redis!.hgetall("usage:2026-09-27")).toEqual({ "origin:www.ejemplo.com.uy|/exchange/brou": "2" });
+  });
+});
+
+describe("el tope de claves inválidas no castiga a clientes legítimos", () => {
+  it("la misma clave revocada repetida no bloquea a la IP (cuenta claves distintas)", async () => {
+    const { mw } = build();
+    for (let i = 0; i < 40; i++) {
+      const r = await run(mw, fakeReq({ headers: { "x-api-key": sample } }));
+      expect(r.res.statusCode).toBe(401);
+    }
+  });
+
+  it("una clave válida ya conocida pasa aunque su IP esté sobre el tope", async () => {
+    const doc = record();
+    const validHash = hashCredential(sample);
+    const { mw } = build({
+      lookup: async (h) => (h === validHash ? doc : null),
+      isKnownValid: (h) => h === validHash,
+    });
+    for (let i = 0; i < 31; i++) {
+      await run(mw, fakeReq({ headers: { "x-api-key": "cu_" + String(i).padStart(32, "B") } }));
+    }
+    const { res, next } = await run(mw, fakeReq({ headers: { "x-api-key": sample } }));
+    expect(next).toHaveBeenCalledOnce();
+    expect(res.headers["x-plan"]).toBe("free");
   });
 });
 

@@ -6,8 +6,7 @@
       en vivo.
     </p>
     <VAlert v-if="error" type="error" variant="tonal" class="mb-4">{{ error }}</VAlert>
-    <VProgressLinear v-if="loading" indeterminate class="mb-3" />
-    <template v-else-if="data">
+    <template v-if="data">
       <h3 class="text-subtitle-1 font-weight-bold mb-2">Claves ({{ data.keys.length }})</h3>
       <VTable density="compact" class="mb-8">
         <thead>
@@ -183,7 +182,6 @@ function accessText(access: MonitorAccess): string {
 const { authFetch } = useAuthFetch()
 
 const data = ref<{ keys: ApiKeyRecord[]; usage: ApiUsageResponse } | null>(null)
-const loading = ref(true)
 const error = ref('')
 const forbidden = ref(false)
 // No se dibuja nada hasta saber si la cuenta es administradora: antes, a cualquier usuario le
@@ -212,7 +210,6 @@ function routesText(routes?: { route: string; count: number }[]): string {
 }
 
 async function load() {
-  loading.value = true
   error.value = ''
   try {
     const res = await authFetch<{ keys: ApiKeyRecord[]; usage: ApiUsageResponse }>(
@@ -230,7 +227,6 @@ async function load() {
     if (status === 403 || status === 401) forbidden.value = true
     else error.value = e?.data?.statusMessage || `La ruta respondió ${status || 'sin respuesta'}.`
   } finally {
-    loading.value = false
     ready.value = true
   }
 }

@@ -7,6 +7,7 @@ import type { WindowKeys } from "./window";
 
 export interface RedisMulti {
   incr(key: string): RedisMulti;
+  sadd(key: string, member: string): RedisMulti;
   expire(key: string, seconds: number): RedisMulti;
   exec(): Promise<Array<[Error | null, unknown]> | null>;
 }
@@ -14,6 +15,7 @@ export interface RedisMulti {
 export interface RedisLike {
   multi(): RedisMulti;
   get(key: string): Promise<string | null>;
+  scard(key: string): Promise<number>;
   incr(key: string): Promise<number>;
   decr(key: string): Promise<number>;
   hincrby(key: string, field: string, increment: number): Promise<number>;
@@ -92,7 +94,11 @@ export async function refundDay(redis: RedisLike, subject: string, keys: WindowK
   }
 }
 
-/** Intentos de esta IP en este minuto con una clave que no existe (bien formada pero inventada). */
+/**
+ * Claves DISTINTAS que no existen (bien formadas pero inventadas o revocadas) que probó esta IP en
+ * este minuto. Distintas y no intentos: repetir la misma clave revocada no le cuesta nada a Mongo
+ * (la ataja el caché negativo) y no puede dejar afuera a la clave válida del mismo cliente.
+ */
 export async function invalidAttempts(
   redis: RedisLike,
   ip: string,
@@ -100,17 +106,17 @@ export async function invalidAttempts(
   timeoutMs = COUNTER_TIMEOUT_MS
 ): Promise<number> {
   try {
-    return Number(await within(redis.get(invalidKey(ip, keys.minuteBucket)), timeoutMs)) || 0;
+    return Number(await within(redis.scard(invalidKey(ip, keys.minuteBucket)), timeoutMs)) || 0;
   } catch {
     return 0;
   }
 }
 
-export async function noteInvalid(redis: RedisLike, ip: string, keys: WindowKeys): Promise<void> {
+export async function noteInvalid(redis: RedisLike, ip: string, keys: WindowKeys, hash: string): Promise<void> {
   try {
     const key = invalidKey(ip, keys.minuteBucket);
-    await within(redis.incr(key), COUNTER_TIMEOUT_MS);
-    await within(redis.expire(key, MINUTE_TTL), COUNTER_TIMEOUT_MS);
+    // Atómico: una clave sin vencimiento quedaría para siempre si el EXPIRE se perdiera.
+    await within(redis.multi().sadd(key, hash).expire(key, MINUTE_TTL).exec(), COUNTER_TIMEOUT_MS);
   } catch {
     // Sin la cuenta, esa IP sigue pudiendo probar claves: el caché negativo del store acota el costo.
   }

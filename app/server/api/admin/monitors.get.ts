@@ -25,7 +25,8 @@ export default defineEventHandler(async event => {
       keys.filter(k => k.status === 'active' && k.plan === 'business').map(k => k.ownerUid)
     )
   } catch {
-    // Sin la API, el acceso se muestra como si no hubiera plan: el panel sigue sirviendo.
+    // Sin la API de claves el acceso queda «sin confirmar» (business = null), nunca «vencido»:
+    // el panel sigue sirviendo.
   }
   return {
     monitors: monitors.map(m => ({

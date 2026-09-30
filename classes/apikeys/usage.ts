@@ -1,7 +1,8 @@
 // El medidor de uso convertido en lo que lee una persona: filas por día × cliente × ruta, un
 // resumen por cliente y el ranking de los que usan la API sin clave. Puro.
 //
-// Cliente = `key:<id>` (una clave), `ua:<User-Agent>` (anónimo) o `site` (lectores del sitio). El
+// Cliente = `key:<id>` (una clave), `ua:<User-Agent>` (anónimo), `origin:<sitio>` (un sitio ajeno que
+// llama desde el navegador de sus lectores) o `site` (lectores del sitio). El
 // ranking de anónimos es la lista de a quién ofrecerle un plan: un programa que se identifica y pide
 // todos los días. Nunca hay IP acá.
 import { dayMinus } from "./window";

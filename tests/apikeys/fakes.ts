@@ -5,6 +5,7 @@ import type { KeyModel } from "../../classes/apikeys/store";
 export class FakeRedis implements RedisLike {
   strings = new Map<string, number>();
   hashes = new Map<string, Map<string, number>>();
+  sets = new Map<string, Set<string>>();
   ttl = new Map<string, number>();
   fail = false;
   /** Redis conectado pero colgado: las operaciones nunca contestan. */
@@ -22,6 +23,15 @@ export class FakeRedis implements RedisLike {
           const next = (this.strings.get(key) ?? 0) + 1;
           this.strings.set(key, next);
           return [null, next];
+        });
+        return chain;
+      },
+      sadd: (key: string, member: string) => {
+        ops.push(() => {
+          const set = this.sets.get(key) ?? new Set<string>();
+          set.add(member);
+          this.sets.set(key, set);
+          return [null, 1];
         });
         return chain;
       },
@@ -66,6 +76,12 @@ export class FakeRedis implements RedisLike {
     if (this.hang) return new Promise(() => undefined);
     this.guard();
     return Promise.resolve(this.strings.has(key) ? String(this.strings.get(key)) : null);
+  }
+
+  scard(key: string): Promise<number> {
+    if (this.hang) return new Promise(() => undefined);
+    this.guard();
+    return Promise.resolve(this.sets.get(key)?.size ?? 0);
   }
 
   async incr(key: string): Promise<number> {

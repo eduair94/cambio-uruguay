@@ -160,6 +160,25 @@ describe('runAlertsCheck: una sola vez y sin cortes', () => {
     expect(deps.claimAlert).toHaveBeenCalledTimes(2)
   })
 
+  it('si falla leer los contactos de una alerta ya reclamada, las demás se procesan', async () => {
+    const push = vi.fn().mockResolvedValue([])
+    const log = vi.fn()
+    const getUserContacts = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('mongo caído'))
+      .mockResolvedValue({ email: null, fcmTokens: ['t1'], telegramChatId: null })
+    const deps = makeDeps({
+      loadActiveAlerts: vi.fn().mockResolvedValue([alert('a1'), alert('a2')]),
+      getUserContacts,
+      push,
+      log,
+    })
+    const res = await runAlertsCheck(deps as any)
+    expect(res.fired).toBe(2)
+    expect(push).toHaveBeenCalledTimes(1)
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('a1'))
+  })
+
   it('el texto de Telegram escapa el guión bajo de las casas (Markdown)', async () => {
     const telegram = vi.fn().mockResolvedValue(true)
     const deps = makeDeps({

@@ -55,7 +55,8 @@ const COUNTER_TYPES = new Set(['', 'BILLETE'])
  */
 export function counterHouses(
   local: Record<string, { name?: string } | undefined>,
-  rows: readonly { origin?: string; type?: string | null; buy?: number; sell?: number }[]
+  rows: readonly { origin?: string; type?: string | null; buy?: number; sell?: number }[],
+  keep: readonly string[] = []
 ): { id: string; name: string }[] {
   const priced = new Set(
     rows
@@ -70,8 +71,14 @@ export function counterHouses(
       )
       .map(r => String(r.origin))
   )
+  const known = Object.keys(local ?? {}).filter(id => id !== 'bcu')
+  // Con menos de la mitad de las casas con precio la foto está a medio llenar (el sync corre cada
+  // 5 min): filtrar ahí dejaría afuera a casas que sí publican. Y una casa ya guardada en el
+  // monitor siempre se ofrece: si faltara en el selector, guardar la borraría sin avisar.
+  const judge = priced.size * 2 >= known.length
+  const kept = new Set(keep)
   return Object.entries(local ?? {})
-    .filter(([id]) => id !== 'bcu' && (!rows.length || priced.has(id)))
+    .filter(([id]) => id !== 'bcu' && (!judge || priced.has(id) || kept.has(id)))
     .map(([id, info]) => ({ id, name: info?.name || id }))
     .sort((a, b) => a.name.localeCompare(b.name, 'es'))
 }

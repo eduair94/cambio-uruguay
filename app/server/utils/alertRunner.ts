@@ -46,16 +46,23 @@ export async function runAlertsCheck(
     if (!(await deps.claimAlert(String(a._id), new Date(deps.now)))) continue
     fired++
 
+    const warn = (what: string, e: any) =>
+      (deps.log ?? console.warn)(`[alerts:check] ${what} falló para ${a._id}: ${e?.message || e}`)
     const { title, body } = alertText(a, rate as number)
-    const contacts = await deps.getUserContacts(a.uid)
+    let contacts: Awaited<ReturnType<RunnerDeps['getUserContacts']>>
+    try {
+      contacts = await deps.getUserContacts(a.uid)
+    } catch (e: any) {
+      // Ya está reclamada: una excepción acá no puede cortar las alertas que siguen.
+      warn('contactos', e)
+      continue
+    }
     const attempt = async (channel: string, send: () => Promise<unknown>) => {
       try {
         await send()
       } catch (e: any) {
         // Un canal que falla (SMTP caído) no corta los otros canales ni las otras alertas.
-        ;(deps.log ?? console.warn)(
-          `[alerts:check] ${channel} falló para ${a._id}: ${e?.message || e}`
-        )
+        warn(channel, e)
       }
     }
 

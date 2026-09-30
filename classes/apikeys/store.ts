@@ -51,6 +51,8 @@ export interface KeyModel {
 
 export interface KeyStore {
   findActiveByHash(hash: string): Promise<ApiKeyRecord | null>;
+  /** Sin consultar nada: ¿esta clave se validó hace poco en este proceso? */
+  isKnownValid(hash: string): boolean;
   create(input: NewKeyInput): Promise<{ record: ApiKeyRecord; plaintext: string }>;
   list(ownerUid?: string): Promise<ApiKeyRecord[]>;
   update(id: string, patch: KeyPatch, ownerUid?: string): Promise<ApiKeyRecord | null>;
@@ -110,6 +112,11 @@ export function createKeyStore(
   let negatives = 0;
 
   return {
+    isKnownValid(hash) {
+      const hit = cache.get(hash);
+      return !!hit?.record && now() - hit.at < 10 * CACHE_MS;
+    },
+
     async findActiveByHash(hash) {
       const hit = cache.get(hash);
       if (hit && now() - hit.at < CACHE_MS) return hit.record;

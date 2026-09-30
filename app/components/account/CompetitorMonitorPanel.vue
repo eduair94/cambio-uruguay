@@ -1,5 +1,5 @@
 <template>
-  <section class="monitor-panel mt-10">
+  <section id="monitor" ref="root" class="monitor-panel mt-10">
     <h2 class="text-h6 font-weight-bold mb-1">Monitor de competencia</h2>
     <p class="text-body-2 text-medium-emphasis mb-4 monitor-panel__intro">
       Te avisamos por Telegram o por correo cuando otra casa mueve su pizarra, cuando cambia tu
@@ -206,6 +206,8 @@ interface MonitorResponse {
 }
 
 const { authFetch } = useAuthFetch()
+const route = useRoute()
+const root = ref<HTMLElement | null>(null)
 const data = ref<MonitorResponse | null>(null)
 const loading = ref(true)
 const loadError = ref('')
@@ -276,7 +278,15 @@ async function save() {
   }
 }
 
-onMounted(load)
+// Desde el botón de /empresas (`#monitor`): el panel de claves de arriba carga y empuja a este,
+// así que el salto del router cae en otro lado. Se repite cuando ya está dibujado.
+onMounted(async () => {
+  await load()
+  if (route.hash === '#monitor') {
+    await nextTick()
+    root.value?.scrollIntoView({ block: 'start' })
+  }
+})
 </script>
 
 <style scoped>
