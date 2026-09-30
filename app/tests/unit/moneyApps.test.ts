@@ -68,3 +68,16 @@ describe('money apps directory', () => {
     expect(appHaystack({ ...app, description: 'Inversión rápida' })).toContain('inversion rapida')
   })
 })
+
+describe('filas corregidas el 2026-09-30', () => {
+  it('ninguna app enlaza el paquete de un banco de República Dominicana', () => {
+    for (const a of MONEY_APPS) expect(a.androidUrl ?? '').not.toContain('com.popular.pinkapp')
+  })
+
+  it('HSBC ya no opera en Uruguay: toda mención lo dice junto a BTG Pactual', () => {
+    for (const a of MONEY_APPS) {
+      const text = `${a.name} ${a.description} ${a.note ?? ''}`
+      if (/HSBC/.test(text)) expect(text, a.id).toMatch(/BTG/)
+    }
+  })
+})

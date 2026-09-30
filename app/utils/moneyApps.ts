@@ -129,7 +129,7 @@ export const MONEY_APPS: MoneyApp[] = [
     website: 'https://www.brou.com.uy/',
     androidUrl: 'https://play.google.com/store/apps/details?id=uy.com.brou.token',
     iosUrl: 'https://apps.apple.com/uy/app/brou-llave-digital/id1442954236',
-    note: 'Herramienta de seguridad (token), no de banca en sí.',
+    note: 'El BROU hoy activa la Llave Digital dentro de App eBROU ("no se necesitan aplicaciones o dispositivos adicionales"). Esta app aparte sigue publicada, pero en iPhone no se actualiza desde abril de 2019.',
     verified: true,
   },
   {
@@ -251,7 +251,7 @@ export const MONEY_APPS: MoneyApp[] = [
     website: 'https://www.btgpactual.uy/',
     androidUrl: 'https://play.google.com/store/apps/details?id=uy.com.hsbc.hsbcuruguay',
     iosUrl: 'https://apps.apple.com/uy/app/hsbc-uruguay-ibanca/id1497854802',
-    note: 'El 10/07/2026 HSBC Uruguay pasó a operar como BTG Pactual: el home banking se mudó a ibanca.btgpactual.uy y la app es la misma. Ojo: en las tiendas sigue publicada como "HSBC Uruguay - iBanca" (falta la republicación bajo BTG).',
+    note: 'El 10/07/2026 HSBC Uruguay pasó a operar como BTG Pactual: el home banking se mudó a ibanca.btgpactual.uy y la app es la misma, hoy llamada "BTG Pactual - iBanca" en las dos tiendas. En el App Store el vendedor todavía figura como HSBC Bank (Uruguay) S.A.',
     verified: true,
   },
   {
@@ -413,14 +413,13 @@ export const MONEY_APPS: MoneyApp[] = [
     name: 'Toke',
     category: 'billeteras_pagos',
     developer: 'Urutec',
-    platforms: ['android', 'web'],
+    platforms: ['web'],
     free: true,
     official: true,
     description:
-      'Sistema interoperable de pagos con QR en Uruguay que conecta bancos e instituciones de dinero electrónico (BROU, Santander, Itaú, BBVA, Scotiabank, HSBC) para pagar leyendo un QR.',
+      'Sistema interoperable de pagos con QR en Uruguay que conecta bancos e instituciones de dinero electrónico (BROU, Santander, Itaú, BBVA, Scotiabank, BTG Pactual) para pagar leyendo un QR.',
     website: 'https://toke.uy/',
-    androidUrl: 'https://play.google.com/store/apps/details?id=com.popular.pinkapp',
-    note: 'Se usa mayormente dentro de la app de cada banco adherido; también existe una app Toke independiente en Google Play.',
+    note: 'No se baja una app aparte: se paga desde la app de tu banco o de tu billetera adherida. La "Toke - App de pagos" de Google Play es de un banco de República Dominicana.',
     verified: true,
   },
   {
