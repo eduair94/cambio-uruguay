@@ -30,6 +30,11 @@ async function startServer() {
   // PM2 ready message. Finish this worker's first SSR BEFORE joining the socket.
   if (send) {
     const started = Date.now()
+    // Nitro starts its plugins without awaiting them, and @nuxtjs/i18n 10 registers the request
+    // hook that builds its server context only after an async cache cleanup. A render issued in
+    // this same tick gets there first and fails with "Nuxt I18n server context has not been set up
+    // yet"; one turn of the event loop lets those plugins finish.
+    await new Promise(resolve => setImmediate(resolve))
     await warmWorkerBeforeReady(
       () =>
         nitroApp.localFetch(WORKER_READINESS_PATH, {
