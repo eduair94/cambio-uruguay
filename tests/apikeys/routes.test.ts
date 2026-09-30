@@ -160,6 +160,21 @@ describe("rutas de administración", () => {
   });
 });
 
+describe("alcance del dueño", () => {
+  it("un ownerUid presente pero que no es texto es 400, nunca el alcance del administrador", async () => {
+    const { call } = await start();
+    await call("POST", "/admin/api-keys", alta);
+    expect((await call("GET", "/admin/api-keys?ownerUid=")).status).toBe(400);
+    expect((await call("GET", "/admin/api-keys?ownerUid=a&ownerUid=b")).status).toBe(400);
+    expect((await call("GET", "/admin/api-usage?ownerUid=&days=3")).status).toBe(400);
+    const { body } = await call("GET", "/admin/api-keys");
+    const id = body.keys[0].id;
+    expect((await call("PATCH", `/admin/api-keys/${id}`, { ownerUid: ["uid-1"], plan: "business" })).status).toBe(400);
+    expect((await call("PATCH", `/admin/api-keys/${id}`, { ownerUid: 42, plan: "business" })).status).toBe(400);
+    expect((await call("GET", "/admin/api-keys")).body.keys[0].plan).toBe("free");
+  });
+});
+
 describe("escapeMarkdown", () => {
   it("escapa los caracteres que rompen el Markdown de Telegram", () => {
     expect(escapeMarkdown("a_b*c`d[e")).toBe("a\\_b\\*c\\`d\\[e");

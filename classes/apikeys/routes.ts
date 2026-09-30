@@ -55,6 +55,19 @@ function newKeyMessage(record: ApiKeyRecord): string {
   return lines.join("\n");
 }
 
+/**
+ * El alcance de un pedido: sin `ownerUid` es el administrador; con un texto no vacío, un usuario.
+ * Cualquier otra cosa (vacío, lista, número) es un pedido mal armado y NUNCA cae en el alcance del
+ * administrador por no ser un texto.
+ */
+function ownerScope(value: unknown): { ok: true; ownerUid?: string } | { ok: false } {
+  if (value === undefined) return { ok: true };
+  return typeof value === "string" && value ? { ok: true, ownerUid: value } : { ok: false };
+}
+
+const badScope = (res: Response) =>
+  res.status(400).json({ error: "invalid_input", message: "ownerUid tiene que ser un texto no vacío." });
+
 /** Lo que ve el dueño de una clave: todo menos las notas internas del administrador. */
 function forOwner(record: ApiKeyRecord): Omit<ApiKeyRecord, "notes"> {
   const { notes: _notes, ...visible } = record;
@@ -90,7 +103,9 @@ export function registerApiKeyRoutes(app: Application, deps: RouteDeps): void {
 
   app.get("/admin/api-keys", auth, async (req, res) => {
     try {
-      const ownerUid = typeof req.query.ownerUid === "string" && req.query.ownerUid ? req.query.ownerUid : undefined;
+      const scope = ownerScope(req.query.ownerUid);
+      if (scope.ok === false) return badScope(res);
+      const ownerUid = scope.ownerUid;
       const keys = await deps.store().list(ownerUid);
       return res.json({ keys: ownerUid ? keys.map(forOwner) : keys });
     } catch (e) {
@@ -100,7 +115,9 @@ export function registerApiKeyRoutes(app: Application, deps: RouteDeps): void {
 
   app.patch("/admin/api-keys/:id", auth, async (req, res) => {
     const body = (req.body ?? {}) as Record<string, unknown>;
-    const ownerUid = typeof body.ownerUid === "string" && body.ownerUid ? body.ownerUid : undefined;
+    const scope = ownerScope(body.ownerUid);
+    if (scope.ok === false) return badScope(res);
+    const ownerUid = scope.ownerUid;
     const { ownerUid: _ignored, ...rest } = body;
     const parsed = validatePatch(rest, Boolean(ownerUid));
     if (parsed.ok === false) return res.status(400).json({ error: "invalid_input", message: parsed.error });
@@ -116,7 +133,9 @@ export function registerApiKeyRoutes(app: Application, deps: RouteDeps): void {
   app.get("/admin/api-usage", auth, async (req, res) => {
     try {
       const days = Math.min(40, Math.max(1, Number.parseInt(String(req.query.days ?? "30"), 10) || 30));
-      const ownerUid = typeof req.query.ownerUid === "string" && req.query.ownerUid ? req.query.ownerUid : undefined;
+      const scope = ownerScope(req.query.ownerUid);
+      if (scope.ok === false) return badScope(res);
+      const ownerUid = scope.ownerUid;
       const today = montevideoDay(now());
       const from = dayMinus(today, days - 1);
       const repo = deps.usageRepo();
