@@ -208,8 +208,8 @@ const success = ref('')
 const emailReady = computed(() =>
   Boolean(
     capabilities.value?.emailAvailable &&
-      capabilities.value.emailVerified &&
-      capabilities.value.email
+    capabilities.value.emailVerified &&
+    capabilities.value.email
   )
 )
 const pushReady = computed(() =>
@@ -227,10 +227,10 @@ const pushAllowed = computed(() => pushReady.value || previous.value?.channels.p
 const canSave = computed(() =>
   Boolean(
     draft.value &&
-      capabilities.value?.accountEligible &&
-      (draft.value.channels.email || draft.value.channels.push) &&
-      (!draft.value.channels.email || emailAllowed.value) &&
-      (!draft.value.channels.push || pushAllowed.value)
+    capabilities.value?.accountEligible &&
+    (draft.value.channels.email || draft.value.channels.push) &&
+    (!draft.value.channels.email || emailAllowed.value) &&
+    (!draft.value.channels.push || pushAllowed.value)
   )
 )
 const frequencies = computed(() => [

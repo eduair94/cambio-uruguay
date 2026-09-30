@@ -200,7 +200,12 @@
       <!-- Top pages -->
       <VCard variant="outlined" class="pa-4 pa-md-5 mb-5">
         <h2 class="text-h6 font-weight-bold mb-1">{{ t('siteStats.pagesTitle') }}</h2>
-        <p class="text-body-2 text-medium-emphasis mb-4">{{ t('siteStats.pagesHint') }}</p>
+        <p class="text-body-2 text-medium-emphasis mb-2">{{ t('siteStats.pagesHint') }}</p>
+        <p class="text-body-2 mb-4">
+          <NuxtLink :to="localePath('/paginas-mas-visitadas')" class="stats-link">
+            {{ t('siteStats.fullRanking') }}
+          </NuxtLink>
+        </p>
 
         <VTable density="comfortable" class="cu-mobile-cards stats-table">
           <thead>

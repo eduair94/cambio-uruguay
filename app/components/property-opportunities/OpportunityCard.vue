@@ -175,8 +175,8 @@
             <div v-if="analysis.perAreaMedian">
               <dt>{{ t('price_per_m2') }} · {{ t(opportunityAreaKey(subject.area)) }}</dt>
               <dd>
-                {{ perAreaMoney(subject.comparisonPrice / subject.area.value) }} ·
-                {{ t('median') }} {{ perAreaMoney(analysis.perAreaMedian) }}
+                {{ perAreaMoney(subject.comparisonPrice / subject.area.value) }} · {{ t('median') }}
+                {{ perAreaMoney(analysis.perAreaMedian) }}
               </dd>
               <dd>{{ gap(analysis.perAreaGapPct) }}</dd>
             </div>

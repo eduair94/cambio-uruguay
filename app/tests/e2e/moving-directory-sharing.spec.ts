@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { pickOption } from './support/vuetifySelect'
 
 test('shared filters, history, grouped prices and live review states', async ({
   page,
@@ -35,7 +36,7 @@ test('shared filters, history, grouped prices and live review states', async ({
   async function select(label: string, option: string) {
     await page.getByRole('textbox', { name: label, exact: true }).focus()
     await page.getByRole('textbox', { name: label, exact: true }).press('ArrowDown')
-    await page.getByRole('option', { name: option, exact: true }).click()
+    await pickOption(page, option)
   }
   async function ready() {
     await page.waitForFunction(

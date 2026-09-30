@@ -25,8 +25,7 @@ import axios from "axios";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import type { GscRow } from "./types";
 

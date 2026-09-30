@@ -18,7 +18,7 @@ export default defineEventHandler(async event => {
   if (!carMarketSlugValid(slug))
     throw createError({ statusCode: 404, statusMessage: 'Model not found' })
   let market: PublicCarMarketSnapshot | null
-  let freshDays = 4
+  let freshDays: number
   try {
     market = await loadCarMarket(slug)
     freshDays = (await loadCarCatalogMeta())?.freshDays ?? 4

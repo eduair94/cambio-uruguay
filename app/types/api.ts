@@ -5,13 +5,7 @@
 
 /** Operation type. Empty string = plain/cash quote. */
 export type ExchangeType =
-  | ''
-  | 'INTERBANCARIO'
-  | 'PROMED.FONDO'
-  | 'CABLE'
-  | 'BILLETE'
-  | 'EBROU'
-  | 'TRANSFERENCIA'
+  '' | 'INTERBANCARIO' | 'PROMED.FONDO' | 'CABLE' | 'BILLETE' | 'EBROU' | 'TRANSFERENCIA'
 
 /** One row from GET / — a currency quote for a given exchange house. */
 export interface ExchangeRate {

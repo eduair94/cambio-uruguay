@@ -185,7 +185,7 @@ describe('Sentry errors privacy boundary', () => {
 
   it('has an explicit allowlist excluding all recording, requests, console, context and tracing', () => {
     const names = [
-      'InboundFilters',
+      'EventFilters',
       'FunctionToString',
       'BrowserApiErrors',
       'GlobalHandlers',
@@ -206,6 +206,9 @@ describe('Sentry errors privacy boundary', () => {
       'BrowserTracing',
       'Mongo',
       'LinkedErrors',
+      'ConversationId',
+      'ProcessSession',
+      'SpanStreaming',
       'FutureUnsafeIntegration',
     ]
     const defaults = names.map(name => ({ name }))
@@ -213,13 +216,13 @@ describe('Sentry errors privacy boundary', () => {
     const nitro = sentryErrorOptions(config, 'nitro')
     expect(browser.integrations(defaults).map(item => item.name)).toEqual(names.slice(0, 5))
     expect(nitro.integrations(defaults).map(item => item.name)).toEqual([
-      'InboundFilters',
+      'EventFilters',
       'FunctionToString',
       'OnUncaughtException',
       'OnUnhandledRejection',
     ])
-    expect(browser.autoSessionTracking).toBe(false)
-    expect(browser.sendDefaultPii).toBe(false)
+    expect(browser.dataCollection).toMatchObject({ userInfo: false, httpBodies: [] })
+    expect(nitro).toMatchObject({ enableRuntimeChannelInjection: false, traceLifecycle: 'static' })
     expect(browser.tracePropagationTargets).toEqual([])
     expect(browser).not.toHaveProperty('tracesSampleRate')
     expect(browser.beforeBreadcrumb()).toBeNull()

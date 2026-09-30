@@ -60,16 +60,17 @@
   text-transform: uppercase;
 }
 
-/* Vuetify 3's `.v-btn` carried `overflow: hidden`; v4's VBtn.css dropped it and kept
- * `.v-btn__content { white-space: nowrap }`. A label wider than its button therefore
- * neither wraps nor clips — it SPILLS, drawing over whatever sits beside the button.
- * The uppercase rule above widens every label ~8%, so this site meets it early: the
+/* `.v-btn__content` ships `white-space: nowrap`, so a label wider than its button does
+ * not wrap. Vuetify 4.0–4.1 also dropped v3's `.v-btn { overflow: hidden }`, and the label
+ * SPILLED over whatever sat beside the button; 4.2 restored the overflow (vuetifyjs/vuetify
+ * #22992), so without the rules below it is CLIPPED instead. The uppercase rule above
+ * widens every label ~8%, so this site meets it early: the
  * `/descuentos-con-tarjeta-uruguay` CTA ("¿Tengo descuento acá? Ver los de esta cuadra")
  * needed 360px inside a 301px block button on a 390px screen and painted ~30px of text
  * past each edge. `scripts/btn-overflow-audit.mjs` found 10 more on mobile.
  *
- * Restoring `overflow: hidden` would contain it by truncating the label, which on a CTA
- * is the worse failure. Let it wrap instead: the button keeps the exact height it had
+ * Clipping truncates the label, which on a CTA is the worse failure of the two. Let it
+ * wrap instead: the button keeps the exact height it had
  * while the label fits, and grows a line when it does not. VBtn sizes itself as
  * `height: calc(var(--v-btn-height) + <density delta>)`, so the floor has to carry the
  * same delta — `min-height: var(--v-btn-height)` alone would make every compact button

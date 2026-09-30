@@ -5,8 +5,8 @@
 // Facebook Marketplace is the source this exists for: its titles are routinely just "silla de
 // escritorio", so every listing arrives unidentified and the photo is the only evidence there is.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { harvestFacebookMarketplace } from "../../classes/chairs/sources/facebook";
 import { harvestMercadoLibre } from "../../classes/chairs/sources/mercadolibre";

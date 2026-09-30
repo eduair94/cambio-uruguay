@@ -77,6 +77,7 @@ const NEVER_SUGGEST = new Set<string>([
   '/terminos',
   '/acerca',
   '/estadisticas-del-sitio',
+  '/paginas-mas-visitadas',
   '/analiticas',
 ])
 

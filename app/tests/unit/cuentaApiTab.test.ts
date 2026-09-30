@@ -8,6 +8,28 @@ const read = (p: string) => readFileSync(join(APP, p), 'utf8')
 describe('pestaña api de /cuenta', () => {
   const page = read('pages/cuenta/index.vue')
 
+  it('la pestaña api monta el monitor de competencia entre las claves y la administración', () => {
+    const tab = page.slice(page.indexOf('<VTabsWindowItem value="api">'))
+    const keys = tab.indexOf('<AccountApiKeysPanel />')
+    const monitor = tab.indexOf('<AccountCompetitorMonitorPanel />')
+    const admin = tab.indexOf('<AccountApiClientsAdminPanel />')
+    expect(keys).toBeGreaterThan(-1)
+    expect(monitor).toBeGreaterThan(keys)
+    expect(admin).toBeGreaterThan(monitor)
+  })
+
+  it('el monitor ofrece vincular Telegram y muestra el estado de la prueba', () => {
+    const panel = read('components/account/CompetitorMonitorPanel.vue')
+    expect(panel).toContain('<AccountTelegramLink')
+    expect(panel).toContain("'/api/me/monitor'")
+    expect(panel).toContain('TRIAL_DAYS')
+    expect(panel).toContain('daysLeft')
+  })
+
+  it('el panel de administración lista los monitores', () => {
+    expect(read('components/account/ApiClientsAdminPanel.vue')).toContain("'/api/admin/monitors'")
+  })
+
   it('acepta ?tab=api y monta los dos paneles', () => {
     expect(page).toContain("['saved', 'favorites', 'alerts', 'api']")
     expect(page).toContain('<VTab value="api">API</VTab>')
@@ -35,7 +57,28 @@ describe('pestaña api de /cuenta', () => {
 
   it('el panel de administración se esconde ante 401/403 en vez de mostrar un error', () => {
     const admin = read('components/account/ApiClientsAdminPanel.vue')
-    expect(admin).toContain('v-if="!forbidden"')
+    expect(admin).toContain('!forbidden"')
     expect(admin).toMatch(/status === 403 \|\| status === 401/)
+  })
+})
+
+describe('bordes de los paneles', () => {
+  it('el panel de administración no aparece hasta saber si la cuenta es administradora', () => {
+    expect(read('components/account/ApiClientsAdminPanel.vue')).not.toContain('VProgressLinear')
+    expect(read('components/account/ApiClientsAdminPanel.vue')).toContain(
+      'v-if="ready && !forbidden"'
+    )
+  })
+
+  it('el monitor explica por qué no se puede guardar con más de 12 competidores o ninguno', () => {
+    const panel = read('components/account/CompetitorMonitorPanel.vue')
+    expect(panel).toContain('el máximo es')
+    expect(panel).toContain('Elegí al menos un competidor')
+  })
+
+  it('el último aviso muestra la hora y un plan sin confirmar no dice que terminó la prueba', () => {
+    const panel = read('components/account/CompetitorMonitorPanel.vue')
+    expect(panel).toContain('formatDateTime(data.lastSentAt)')
+    expect(panel).toContain("status === 'unknown'")
   })
 })

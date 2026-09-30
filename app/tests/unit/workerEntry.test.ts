@@ -75,6 +75,7 @@ function runEntry(
       },
     },
     console: { log() {}, info() {}, error() {} },
+    setImmediate,
   }) as Promise<void>
   return { result, listen, send, construct, schedule, graceful, upgrade }
 }
@@ -86,7 +87,12 @@ describe('production worker entry', () => {
       () => new Promise<{ status: number; text(): Promise<string> }>(resolve => (finish = resolve))
     )
     const entry = runEntry(render)
-    expect(render).toHaveBeenCalledWith('/acerca', expect.objectContaining({ redirect: 'manual' }))
+    await vi.waitFor(() =>
+      expect(render).toHaveBeenCalledWith(
+        '/acerca',
+        expect.objectContaining({ redirect: 'manual' })
+      )
+    )
     expect(entry.construct).not.toHaveBeenCalled()
     expect(entry.listen).not.toHaveBeenCalled()
     expect(entry.send).not.toHaveBeenCalled()
@@ -97,6 +103,24 @@ describe('production worker entry', () => {
     expect(entry.graceful).toHaveBeenCalledOnce()
     expect(entry.upgrade).toHaveBeenCalledWith('upgrade')
     expect(entry.schedule).toHaveBeenCalledOnce()
+  })
+
+  it('renders only after the plugins still awaiting at startup have finished', async () => {
+    // Stands in for @nuxtjs/i18n 10: its Nitro plugin awaits a cache cleanup before registering
+    // the request hook SSR needs, and Nitro does not await plugins before the entry runs.
+    let pluginReady = false
+    void Promise.resolve()
+      .then(() => undefined)
+      .then(() => {
+        pluginReady = true
+      })
+    const entry = runEntry(async () =>
+      pluginReady
+        ? { status: 200, text: async () => '<h1>Cambio Uruguay</h1>' }
+        : { status: 500, text: async () => 'Nuxt I18n server context has not been set up yet.' }
+    )
+    await entry.result
+    expect(entry.send).toHaveBeenCalledWith('ready')
   })
 
   it('never opens a socket or announces ready after failed SSR', async () => {

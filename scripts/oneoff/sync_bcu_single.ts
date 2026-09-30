@@ -1,7 +1,7 @@
-import { GoogleSpreadsheet } from "google-spreadsheet";
 import BCU_Details from "../../classes/bcu_details";
 import { cambio_info } from "../../classes/cambioInfo";
 import { MongooseServer } from "../../classes/database";
+import { openSpreadsheet } from "../../classes/sheets";
 import { origins } from "../../classes/origins";
 import * as credentials from "../../sheet_key.json";
 
@@ -18,8 +18,7 @@ async function main() {
     console.log("Response sync", res_sync);
     // Add Rows to Sheet.
     const info = await cambio_info.getMarkets({origin: origin});
-    const document = new GoogleSpreadsheet("1yKfUC3EZbpiFD-6yJuoUewgjjzA2yv9zhy7a0G2zD30");
-    await document.useServiceAccountAuth(credentials);
+    const document = openSpreadsheet("1yKfUC3EZbpiFD-6yJuoUewgjjzA2yv9zhy7a0G2zD30", credentials);
     await document.loadInfo();
     const sheet = document.sheetsByIndex[0];
     const data = info.map((el) => {

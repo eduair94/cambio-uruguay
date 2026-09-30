@@ -3,9 +3,8 @@ vi.mock('../../server/models/PropertyOpportunitySnapshot', () => ({
   PropertyOpportunitySnapshotModel: {},
 }))
 vi.mock('../../server/utils/db', () => ({ connectDb: vi.fn() }))
-const { publicOpportunityListing, publicOpportunityItem } = await import(
-  '../../server/utils/propertyOpportunities'
-)
+const { publicOpportunityListing, publicOpportunityItem } =
+  await import('../../server/utils/propertyOpportunities')
 
 describe('opportunity public facts', () => {
   it('projects new comparison and sensitivity evidence without leaking unknown nested fields', () => {

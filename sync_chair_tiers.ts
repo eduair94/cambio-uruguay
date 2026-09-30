@@ -2,8 +2,8 @@
 // Reddit and Gemini run only here in the backend. The Nuxt app reads the materialized snapshot
 // from its own MongoDB and never calls either provider during a page request.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appDbConfigured } from "./classes/appdb";
 import { geminiConfigured } from "./classes/gemini";

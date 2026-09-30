@@ -14,6 +14,7 @@ import { PropertyOpportunitySnapshotModel } from "../../classes/models/PropertyO
 import { SearchConsoleSnapshotModel } from "../../classes/models/SearchConsoleSnapshot";
 import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapshot";
 import { SitePageRankingModel } from "../../classes/models/SitePageRanking";
+import { SiteTopPagesModel } from "../../classes/models/SiteTopPages";
 import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
 import { RevenuePlanSnapshotModel } from "../../classes/models/RevenuePlanSnapshot";
 import { EquiparItemModel } from "../../classes/models/EquiparItem";
@@ -37,6 +38,8 @@ import { TransportSnapshotModel } from "../../classes/models/TransportSnapshot";
 import { MotoCatalogModel } from "../../classes/models/MotoCatalog";
 import { MotoCatalogMetaModel } from "../../classes/models/MotoCatalogMeta";
 import { MotoMarketSnapshotModel } from "../../classes/models/MotoMarketSnapshot";
+import { CompetitorMonitorModel } from "../../classes/models/CompetitorMonitor";
+import { CompetitorMonitorStateModel } from "../../classes/models/CompetitorMonitorState";
 import { UsefulAppsSnapshotModel } from "../../classes/models/UsefulAppsSnapshot";
 
 const appModel = (name: string): string =>
@@ -49,6 +52,20 @@ function appFields(src: string): string[] {
 }
 
 describe("app-Mongo schema parity", () => {
+  it("CompetitorMonitor declares exactly the app's top-level fields", () => {
+    // La configuración del monitor la escribe el app y la lee el job: un campo que el job no declare
+    // no se lee nunca, y el monitor ignora en silencio lo que la persona eligió.
+    expect(Object.keys(CompetitorMonitorModel.schema.obj).sort()).toEqual(appFields(appModel("CompetitorMonitor")).sort());
+    expect(CompetitorMonitorModel.collection.name).toBe("competitormonitors");
+  });
+
+  it("CompetitorMonitorState declares exactly the app's top-level fields", () => {
+    expect(Object.keys(CompetitorMonitorStateModel.schema.obj).sort()).toEqual(
+      appFields(appModel("CompetitorMonitorState")).sort()
+    );
+    expect(CompetitorMonitorStateModel.collection.name).toBe("competitormonitorstates");
+  });
+
   // These two collections are an ARCHIVE. A field the backend forgets is a field the app stops
   // seeing on every row written from today on — and there is no way to recompute it later.
   it("PriceChangeSnapshot declares exactly the app's top-level fields", () => {
@@ -157,6 +174,10 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+  it("SiteTopPages declares exactly the app's top-level fields", () => {
+    expect(Object.keys(SiteTopPagesModel.schema.obj).sort()).toEqual(appFields(appModel("SiteTopPages")).sort());
+  });
+
   it("EquiparItem declares exactly the app's top-level fields", () => {
     expect(Object.keys(EquiparItemModel.schema.obj).sort()).toEqual(appFields(appModel("EquiparItem")).sort());
   });
@@ -254,6 +275,7 @@ describe("app-Mongo schema parity", () => {
     expect(SearchConsoleSnapshotModel.collection.name).toBe("searchconsolesnapshots");
     expect(SiteRevenueSnapshotModel.collection.name).toBe("siterevenuesnapshots");
     expect(SitePageRankingModel.collection.name).toBe("sitepagerankings");
+    expect(SiteTopPagesModel.collection.name).toBe("sitetoppages");
     expect(EquiparItemModel.collection.name).toBe("equiparitems");
     expect(EquiparMetaModel.collection.name).toBe("equiparmeta");
     expect(StoreProfileModel.collection.name).toBe("storeprofiles");

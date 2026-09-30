@@ -19,31 +19,29 @@ function response(query: RentalBudgetQuery): RentalBudgetResponse {
   const monthly = query.basis === 'monthly'
   const base = query.band === 'under10000' ? 8500 : 11500
   const known = query.band === 'under10000' ? 9000 : 12000
-  const offers = (['infocasas', 'casasweb'] as const).map(
-    (source): RentalOffer => ({
-      source,
-      listingId: `${source}:fixture301`,
-      url:
-        source === 'infocasas'
-          ? 'https://www.infocasas.com.uy/fixture/301'
-          : 'https://casasweb.com/fixture301',
-      title: 'Apartamento mensual de prueba',
-      price: source === 'infocasas' ? base : known,
-      priceUyu: source === 'infocasas' ? base : known,
-      currency: 'UYU',
-      commonExpenses: source === 'infocasas' ? null : 1000,
-      commonExpensesCurrency: source === 'infocasas' ? null : 'UYU',
-      sellerName: 'Anunciante de prueba',
-      sellerType: 'inmobiliaria',
-      image: null,
-      parkingSpaces: null,
-      furnished: null,
-      publishedAt: date,
-      firstSeen: date,
-      lastSeen: date,
-      availability: { count: 0, lastReportedAt: null, status: 'unconfirmed' },
-    })
-  )
+  const offers = (['infocasas', 'casasweb'] as const).map((source): RentalOffer => ({
+    source,
+    listingId: `${source}:fixture301`,
+    url:
+      source === 'infocasas'
+        ? 'https://www.infocasas.com.uy/fixture/301'
+        : 'https://casasweb.com/fixture301',
+    title: 'Apartamento mensual de prueba',
+    price: source === 'infocasas' ? base : known,
+    priceUyu: source === 'infocasas' ? base : known,
+    currency: 'UYU',
+    commonExpenses: source === 'infocasas' ? null : 1000,
+    commonExpensesCurrency: source === 'infocasas' ? null : 'UYU',
+    sellerName: 'Anunciante de prueba',
+    sellerType: 'inmobiliaria',
+    image: null,
+    parkingSpaces: null,
+    furnished: null,
+    publishedAt: date,
+    firstSeen: date,
+    lastSeen: date,
+    availability: { count: 0, lastReportedAt: null, status: 'unconfirmed' },
+  }))
   const selected = offers[monthly ? 1 : 0]
   return {
     generatedAt: date,

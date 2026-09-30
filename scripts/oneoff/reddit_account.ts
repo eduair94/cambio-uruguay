@@ -10,8 +10,7 @@
 // Lo único que NO puede contestar es si un comentario ya publicado sigue vivo — eso lo hace
 // `sync_reddit_bot_watch`, que lo lee con un token anónimo porque el autor ve sus propios
 // comentarios borrados como si estuvieran perfectos, para siempre.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { botConfig, botCredentialsPresent, canPost } from "../../classes/redditbot/config";
 import { bioDeclaresBot, SUGGESTED_BIO } from "../../classes/redditbot/identity";

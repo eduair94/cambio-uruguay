@@ -60,6 +60,12 @@ it('captures Vue, window errors and unhandled promise rejections without DOM/ses
     value: new RangeError('Maximum call stack size exceeded private-promise'),
   })
   window.onunhandledrejection!(rejection as PromiseRejectionEvent)
+  // An error thrown inside AdSense itself: EventFilters must drop it (denyUrls). The filter was
+  // renamed from InboundFilters in v11, and an allowlist naming the old one silently lost it.
+  const adError = new Error('ad failure')
+  adError.stack =
+    'Error: ad failure\n    at f (https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js:1:2)'
+  window.onerror!('ad failure', 'https://pagead2.googlesyndication.com/x.js', 1, 2, adError)
   await BrowserSentry.flush(1000)
   expect(envelopes).toHaveLength(3)
   expect(envelopes.flatMap(envelope => envelope[1].map(item => item[0].type))).toEqual([
@@ -79,4 +85,6 @@ it('captures Vue, window errors and unhandled promise rejections without DOM/ses
   ).toBe(true)
   for (const category of ['breadcrumbs', 'replay', 'session', 'user', 'request'])
     expect(body).not.toContain(`"${category}"`)
+  // Nor may Sentry infer the visitor's IP from the connection.
+  expect(body).toContain('"infer_ip":"never"')
 })

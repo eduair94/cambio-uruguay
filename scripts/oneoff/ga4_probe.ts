@@ -12,8 +12,7 @@
 // pedirlo a mano en la consola es justo el paso donde se cuela el error. Si la cuenta ya tiene el
 // rol Lector, este script imprime el `GA4_PROPERTY_ID` listo para pegar en el `.env`.
 import axios from "axios";
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { ga4AccessToken, ga4Credentials, ga4PropertyId, runRealtimeReport, runReports } from "../../classes/site-analytics/ga4";
 

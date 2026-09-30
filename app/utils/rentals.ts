@@ -75,14 +75,7 @@ export type RentalSource =
   | 'facebookreels'
 
 export type RentalPropertyType =
-  | 'apartamento'
-  | 'casa'
-  | 'habitacion'
-  | 'local'
-  | 'oficina'
-  | 'garaje'
-  | 'terreno'
-  | 'otro'
+  'apartamento' | 'casa' | 'habitacion' | 'local' | 'oficina' | 'garaje' | 'terreno' | 'otro'
 
 /** Search groups never become a stored property classification. Unknown types are not homes. */
 export type RentalTypeFilter = RentalPropertyType | 'vivienda'
@@ -176,13 +169,7 @@ export interface RentalOffer extends AdvertiserMetadata {
  * que no se separen.
  */
 export type RentalGuarantee =
-  | 'anda'
-  | 'contaduria'
-  | 'aseguradora'
-  | 'propietaria'
-  | 'deposito'
-  | 'bhu'
-  | 'aConvenir'
+  'anda' | 'contaduria' | 'aseguradora' | 'propietaria' | 'deposito' | 'bhu' | 'aConvenir'
 
 /** Cómo se llama cada una en la página, y qué significa para quien nunca alquiló. */
 export const RENTAL_GUARANTEE_LABELS: Record<RentalGuarantee, { label: string; hint: string }> = {
@@ -404,13 +391,7 @@ export const RENTAL_SELLER_LABEL: Record<RentalSellerType, string> = {
 }
 
 export type RentalSort =
-  | 'recientes'
-  | 'precio'
-  | 'precio-desc'
-  | 'total'
-  | 'precio-m2'
-  | 'metros'
-  | 'distancia'
+  'recientes' | 'precio' | 'precio-desc' | 'total' | 'precio-m2' | 'metros' | 'distancia'
 
 export const RENTAL_SORTS: ReadonlyArray<{ value: RentalSort; label: string }> = Object.freeze([
   { value: 'recientes', label: 'Más recientes' },

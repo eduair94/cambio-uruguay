@@ -92,6 +92,7 @@
       </VTabsWindowItem>
       <VTabsWindowItem value="api">
         <AccountApiKeysPanel />
+        <AccountCompetitorMonitorPanel />
         <AccountApiClientsAdminPanel />
       </VTabsWindowItem>
     </VTabsWindow>

@@ -65,7 +65,7 @@ export default defineCachedEventHandler(
     }
 
     // --- Uruguayan casa quotes (public API) --------------------------------
-    let rates: RateRow[] = []
+    let rates: RateRow[]
     let local: Record<string, { name?: string }> = {}
     try {
       ;[rates, local] = await Promise.all([

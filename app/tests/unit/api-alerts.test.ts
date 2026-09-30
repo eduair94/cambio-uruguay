@@ -61,7 +61,7 @@ describe('alerts API', () => {
     expect(findOneAndUpdate).toHaveBeenCalledWith(
       { _id: 'a1', uid: 'u1' },
       { $set: expect.objectContaining({ active: false, armed: true }) },
-      { new: true }
+      { returnDocument: 'after' }
     )
     expect(res).toMatchObject({ _id: 'a1' })
   })
@@ -72,5 +72,30 @@ describe('alerts API', () => {
     const res = await delH({} as any)
     expect(deleteOne).toHaveBeenCalledWith({ _id: 'a1', uid: 'u1' })
     expect(res).toEqual({ ok: true })
+  })
+})
+
+describe('alerts API: canal Telegram', () => {
+  it('crear una alerta desde la web guarda el canal Telegram', async () => {
+    readBody.mockResolvedValueOnce({
+      currency: 'USD',
+      kind: 'bestBuy',
+      op: '>=',
+      target: 41,
+      channels: { push: false, email: true, telegram: true },
+    })
+    create.mockResolvedValueOnce({ _id: 'a1' })
+    await addH({} as any)
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ channels: { push: false, email: true, telegram: true } })
+    )
+  })
+
+  it('editarla también', async () => {
+    getRouterParam.mockReturnValueOnce('a1')
+    readBody.mockResolvedValueOnce({ channels: { push: true, email: true, telegram: true } })
+    findOneAndUpdate.mockReturnValueOnce({ lean: () => ({ exec: () => Promise.resolve({}) }) })
+    await patchH({} as any)
+    expect(findOneAndUpdate.mock.calls[0][1].$set['channels.telegram']).toBe(true)
   })
 })

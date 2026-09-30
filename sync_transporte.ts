@@ -17,8 +17,8 @@
 // es un `Error`, `main` se exporta, y el proceso sólo corre detrás de `require.main === module` —
 // así un test puede importarlo y correrlo contra colaboradores falsos sin tocar una base real.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { MongooseServer, withTimeout } from "./classes/database";

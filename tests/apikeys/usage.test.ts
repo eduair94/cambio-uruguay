@@ -36,6 +36,13 @@ describe("resúmenes", () => {
     ]);
   });
 
+  it("los sitios web que llaman desde el navegador entran al ranking con su nombre", () => {
+    const leads = rankAnonymous(
+      summarize([{ day: "2026-09-27", client: "origin:www.ejemplo.com.uy", route: "/", count: 9 }], "2026-09-27")
+    );
+    expect(leads).toEqual([{ userAgent: "sitio web: www.ejemplo.com.uy", total: 9, last7: 9, routes: [{ route: "/", count: 9 }] }]);
+  });
+
   it("ordena a los anónimos por volumen, sin los lectores del sitio ni las claves", () => {
     const leads = rankAnonymous(summarize(rows, "2026-09-27"));
     expect(leads.map((l) => l.userAgent)).toEqual(["ArboitePanel/1.0", "curl/8.0"]);

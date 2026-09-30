@@ -524,13 +524,13 @@ const advancedOpen = ref(
   !props.mobile &&
     Boolean(
       props.query.q ||
-        props.query.bathrooms !== null ||
-        props.query.areaMin !== null ||
-        props.query.areaMax !== null ||
-        props.query.parking ||
-        props.query.furnished ||
-        props.query.pets ||
-        props.query.amenities.length
+      props.query.bathrooms !== null ||
+      props.query.areaMin !== null ||
+      props.query.areaMax !== null ||
+      props.query.parking ||
+      props.query.furnished ||
+      props.query.pets ||
+      props.query.amenities.length
     )
 )
 const costsOpen = ref(
@@ -546,10 +546,10 @@ const sourceOpen = ref(
   !props.mobile &&
     Boolean(
       props.query.source ||
-        props.query.agency ||
-        props.query.currency ||
-        props.query.availability !== 'all' ||
-        props.query.multi
+      props.query.agency ||
+      props.query.currency ||
+      props.query.availability !== 'all' ||
+      props.query.multi
     )
 )
 const nearbyOpen = ref(!props.mobile && Boolean(props.query.sedes.length))

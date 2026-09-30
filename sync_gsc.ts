@@ -17,8 +17,7 @@
 //   --no-inspect     skip the URL Inspection sample (saves 20 calls of the 2.000/day quota).
 //   --dry-run        fetch and compute, print, write nothing.
 //   --allow-thin     store a snapshot that looks like an upstream failure. Only for seeding.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { gscConfigProblem, listSites, siteUrl } from "./classes/gsc/client";

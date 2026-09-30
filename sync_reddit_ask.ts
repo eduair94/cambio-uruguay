@@ -6,8 +6,7 @@
 //
 // Con REDDIT_ASK_DRY_RUN sin poner en 0, hace todo el trabajo y no publica: sirve para leer el post
 // antes de que exista.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { botCredentialsPresent } from "./classes/redditbot/config";

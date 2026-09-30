@@ -32,9 +32,7 @@
 // "no answer this time".
 
 import axios from "axios";
-import dotenv from "dotenv";
-
-dotenv.config();
+import "dotenv/config";
 
 const BASE_URL = (process.env.CLAUDE_AGENT_URL || "http://127.0.0.1:9310").replace(/\/+$/, "");
 const DEFAULT_TIMEOUT_MS = 300000;

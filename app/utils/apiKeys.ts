@@ -87,6 +87,18 @@ export function formatDay(iso: string): string {
   })
 }
 
+/** Fecha y hora en Montevideo (el monitor avisa cada 5 minutos: la fecha sola no alcanza). */
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('es-UY', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone: 'America/Montevideo',
+  })
+}
+
 export function keyUsage(
   usage: ApiUsageResponse | null | undefined,
   id: string

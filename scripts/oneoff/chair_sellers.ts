@@ -2,8 +2,8 @@
 // that may also run its own storefront — a far better source of integration candidates than a
 // web search, because these sellers demonstrably stock chairs today.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { ChairCatalogProductModel } from "../../classes/models/ChairCatalogProduct";
 

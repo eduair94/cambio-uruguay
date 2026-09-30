@@ -11,12 +11,7 @@ import { fetchNewsFrom, type NewsItem } from './news'
 
 /** One economic beat covered by the aggregator. Drives grouping + i18n labels. */
 export type EconomyTopic =
-  | 'inflacion'
-  | 'empleo'
-  | 'empresas'
-  | 'bcu'
-  | 'comercio_exterior'
-  | 'fiscal'
+  'inflacion' | 'empleo' | 'empresas' | 'bcu' | 'comercio_exterior' | 'fiscal'
 
 export interface EconomyTopicDef {
   id: EconomyTopic

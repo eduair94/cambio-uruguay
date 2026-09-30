@@ -9,8 +9,8 @@
 //                 un evento activo HOY, sale en 0 SIN CONECTAR A LA BASE — 24 corridas por día, 365
 //                 días al año, casi todas sin nada que hacer, no deben costar ni una conexión.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appDbConfigured } from "./classes/appdb";
 import { activeEvent } from "./classes/priceevents/calendar";

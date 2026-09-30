@@ -414,11 +414,7 @@
               {{ row.adRevenue ? formatRevenue(row.adRevenue, revenueCurrency) : '—' }}
             </td>
             <td data-label="Vale" class="text-right">×{{ familyMultiplier(row.bucket) }}</td>
-            <td
-              data-label="Δ tráfico↔plata"
-              class="text-right"
-              :class="familyGapClass(row.bucket)"
-            >
+            <td data-label="Δ tráfico↔plata" class="text-right" :class="familyGapClass(row.bucket)">
               {{ familyGap(row.bucket) }}
             </td>
           </tr>

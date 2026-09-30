@@ -29,8 +29,7 @@
 // Flags:
 //   --dry-run    calcula e imprime, no escribe. Igual necesita leer la base del app.
 //   --force      escribe aunque la corrida parezca flaca (sólo para sembrar la primera vez).
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { notifyAdmin } from "./classes/notify";

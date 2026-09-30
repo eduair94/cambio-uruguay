@@ -37,14 +37,7 @@ export function preciosMatchesQuery(haystack: string, query: string): boolean {
 // ---------------------------------------------------------------------------
 
 export type PreciosCategoryId =
-  | 'almacen'
-  | 'bebidas'
-  | 'lacteos'
-  | 'carnes'
-  | 'frutas'
-  | 'limpieza'
-  | 'higiene'
-  | 'otros'
+  'almacen' | 'bebidas' | 'lacteos' | 'carnes' | 'frutas' | 'limpieza' | 'higiene' | 'otros'
 
 export const PRECIOS_CATEGORIES: Array<{ id: Exclude<PreciosCategoryId, 'otros'>; label: string }> =
   [
@@ -209,13 +202,7 @@ export function preciosSortBy<T>(
 // ---------------------------------------------------------------------------
 
 export type PreciosArticleSortKey =
-  | 'nombre'
-  | 'barato'
-  | 'mediana'
-  | 'caro'
-  | 'unidad'
-  | 'ahorro'
-  | 'locales'
+  'nombre' | 'barato' | 'mediana' | 'caro' | 'unidad' | 'ahorro' | 'locales'
 
 export const PRECIOS_ARTICLE_SORTS: Record<
   PreciosArticleSortKey,

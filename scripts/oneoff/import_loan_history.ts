@@ -10,8 +10,7 @@
 //   cd /root/cambio-uruguay && node dist/import_loan_history.js
 // Idempotent: re-running it merges by (lenderId, date) and never overwrites an entry Mongo already
 // has with a different value — the fs file is the past, the cron owns the present.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import fs from "fs";
 import path from "path";

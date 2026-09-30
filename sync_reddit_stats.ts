@@ -6,8 +6,7 @@
 //
 // Corre después del vigilante horario a propósito. El vigilante es el que actualiza los votos y el
 // estado de cada comentario, así que contar antes de que él corra es contar con los números de ayer.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { refreshRedditStats } from "./classes/redditstats/refresh";

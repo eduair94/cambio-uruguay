@@ -16,8 +16,8 @@
 // corre (y sólo sale una vez, con la conexión cerrada) detrás de `require.main === module`. Así un
 // test puede importar `main` y llamarla contra colaboradores mockeados, sin proceso ni base.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { fetchUsdUyuRate } from "./classes/rentals/rate";

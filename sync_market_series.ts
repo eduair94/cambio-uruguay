@@ -7,8 +7,8 @@
 //   --dry-run                lee y calcula, no escribe nada.
 //   --only=alquiler,autos    sólo esos mercados.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { refreshMarketSeries } from "./classes/marketseries/refresh";

@@ -120,12 +120,7 @@ export interface PublicCarSpecs {
 }
 
 export type PublicCarFlag =
-  | 'damaged'
-  | 'financing'
-  | 'foreign_plate'
-  | 'paperwork'
-  | 'price_mismatch'
-  | 'recovered'
+  'damaged' | 'financing' | 'foreign_plate' | 'paperwork' | 'price_mismatch' | 'recovered'
 export type PublicCarTier = 'strict' | 'exploratory'
 export type PublicCarSource =
   | 'mercadolibre'
@@ -375,13 +370,7 @@ export interface PublicCarOpportunitySnapshot {
 }
 
 export type PublicCarRiskCategory =
-  | 'deuda'
-  | 'papeles'
-  | 'siniestro'
-  | 'recupero'
-  | 'mecanica'
-  | 'chapa_extranjera'
-  | 'uso_intensivo'
+  'deuda' | 'papeles' | 'siniestro' | 'recupero' | 'mecanica' | 'chapa_extranjera' | 'uso_intensivo'
 export type PublicCarRiskSeverity = 'alta' | 'media'
 
 export interface PublicCarRisk {
@@ -578,12 +567,7 @@ export interface PublicCarReportSnapshot {
 
 /** Las seis piezas de la canasta de repuestos (classes/autos/repuestos.ts). */
 export type PublicCarPartKey =
-  | 'pastillas'
-  | 'filtro_aceite'
-  | 'amortiguador'
-  | 'embrague'
-  | 'distribucion'
-  | 'optica'
+  'pastillas' | 'filtro_aceite' | 'amortiguador' | 'embrague' | 'distribucion' | 'optica'
 
 /** Mediana en pesos de una pieza, sobre avisos de Mercado Libre Uruguay que nombran el modelo. */
 export interface PublicCarPartPrice {

@@ -172,8 +172,10 @@ fi
 
 timed "Clear staging and generated build files" rm -rf "$STAGING" "$APP_DIR/.nuxt"
 wait_for_load
-# 8192 heap: 4096 OOM'd after firebase-auth landed (see memory/deploy notes).
-timed "Build staging output" env NODE_OPTIONS="--max-old-space-size=8192" NITRO_OUTPUT_DIR="$STAGING" npx nuxt build
+# 10240 heap: 4096 OOM'd after firebase-auth landed, and 8192 stopped fitting with the Nuxt 4.4 upgrade
+# (2026-09-30): the build's peak climbed from ~9.4 GB to ~10.6 GB RSS, most of it retained into the Nitro
+# stage, and a CentOS 7 / Node 22.14 replica of this box ran out of heap at 8192 and built at 10240.
+timed "Build staging output" env NODE_OPTIONS="--max-old-space-size=10240" NITRO_OUTPUT_DIR="$STAGING" npx nuxt build
 
 # Sanity: the staging build must have a server entry before we swap.
 if [ ! -f "$STAGING/server/index.mjs" ]; then

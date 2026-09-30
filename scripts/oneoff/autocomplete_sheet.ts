@@ -1,6 +1,7 @@
-import { GoogleSpreadsheet, GoogleSpreadsheetRow } from "google-spreadsheet";
+import type { GoogleSpreadsheetRow } from "google-spreadsheet";
 import { cambio_info } from "../../classes/cambioInfo";
 import { MongooseServer } from "../../classes/database";
+import { openSpreadsheet } from "../../classes/sheets";
 import { sleep } from "../../config/config";
 import * as credentials from "../../sheet_key.json";
 
@@ -18,8 +19,7 @@ async function saveRow(row: GoogleSpreadsheetRow, att = 0) {
 
 async function main() {
   await MongooseServer.startConnectionPromise();
-  const document = new GoogleSpreadsheet("1yKfUC3EZbpiFD-6yJuoUewgjjzA2yv9zhy7a0G2zD30");
-  await document.useServiceAccountAuth(credentials);
+  const document = openSpreadsheet("1yKfUC3EZbpiFD-6yJuoUewgjjzA2yv9zhy7a0G2zD30", credentials);
   await document.loadInfo();
   const sheet = document.sheetsByIndex[0];
   const rows: GoogleSpreadsheetRow[] = await sheet.getRows();
@@ -27,15 +27,15 @@ async function main() {
   const totalRows = rows.length;
   for (let row of rows) {
     console.log(pos, totalRows);
-    const id = row.ID;
+    const id = row.get("ID");
     console.log("ID", id);
     const findSuc: any = await cambio_info.findSuc(id);
     if (findSuc) {
       const phone = findSuc.Telefono;
       const name = findSuc.Nombre;
-      if (!row.Telefono && !row.Nombre) {
-        if (phone) row.Telefono = phone;
-        if (name) row.Nombre = name;
+      if (!row.get("Telefono") && !row.get("Nombre")) {
+        if (phone) row.set("Telefono", phone);
+        if (name) row.set("Nombre", name);
         if (phone || name) {
           await saveRow(row);
         }

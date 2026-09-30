@@ -10,8 +10,7 @@
 //
 // Each currency is its own try/catch — a single bad currency can't block the rest, exactly like
 // the app's predictions:daily task did.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { listActiveCurrencies, recordTodayPrediction } from "./classes/predictions/refresh";

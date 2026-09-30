@@ -305,6 +305,17 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Monitor de competencia para casas de cambio (classes/monitor/): cada 5 minutos, en los
+      // minutos 3, 8, 13… para caer después de que arrancó el sync de las :00/:05. Evalúa contra el
+      // ledger y la foto del día, avisa por Telegram y correo, y guarda el estado en la base del app.
+      name: "currency-competitor-monitor",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_competitor_monitor.js",
+      cron_restart: "3-58/5 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // El comparador de transporte de `/conviene-auto-moto-o-omnibus-uruguay`: precios de cada modo,
       // la matriz de rutas entre las 68 zonas y los viajes en ómnibus armados con los horarios que
       // publica la Intendencia.

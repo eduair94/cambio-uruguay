@@ -2,7 +2,6 @@
   <VChart
     class="ranking-echart"
     :option="option"
-    :theme="null"
     autoresize
     role="img"
     aria-label="Ranking de temas por consultas de los últimos 90 días"
@@ -40,7 +39,14 @@ const ordered = computed(() => [...props.points].reverse())
 
 const option = computed(() => ({
   animationDuration: 500,
-  grid: { left: 8, right: 44, top: 6, bottom: 6, containLabel: true },
+  grid: {
+    left: 8,
+    right: 44,
+    top: 6,
+    bottom: 6,
+    outerBoundsMode: 'same',
+    outerBoundsContain: 'axisLabel',
+  },
   tooltip: {
     trigger: 'axis',
     axisPointer: { type: 'shadow' },

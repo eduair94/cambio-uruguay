@@ -2,7 +2,6 @@
   <VChart
     class="topic-echart"
     :option="option"
-    :theme="null"
     autoresize
     role="img"
     aria-label="Mapa de temas consultados: volumen y momentum"
@@ -53,7 +52,14 @@ const symbolSize = (recent: number) => Math.max(20, 12 + Math.sqrt(Math.max(0, r
 function scatterOption() {
   return {
     animationDuration: 500,
-    grid: { left: 8, right: 22, top: 30, bottom: 44, containLabel: true },
+    grid: {
+      left: 8,
+      right: 22,
+      top: 30,
+      bottom: 44,
+      outerBoundsMode: 'same',
+      outerBoundsContain: 'axisLabel',
+    },
     tooltip: {
       trigger: 'item',
       backgroundColor: tipBg.value,

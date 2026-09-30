@@ -2,8 +2,7 @@
 // `currency-temas-analysis`). Fires DAILY but self-gates to 90 days on the stored `asOf`, so the
 // cadence is 90 days without relying on a drift-prone every-90-days cron. Never blanks the stored
 // analysis on a failure — a failed run just keeps the previous good analysis (or the app baseline).
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { geminiConfigured } from "./classes/gemini";
 import { appDbConfigured } from "./classes/appdb";

@@ -855,10 +855,7 @@ export const P2P_TIMELINE: readonly TimelineEvent[] = Object.freeze([
 // ── Qué salió mal en Uruguay (y qué era cada cosa) ───────────────────────────────────────
 
 export type CaseKind =
-  | 'cesion-de-creditos'
-  | 'fondo-ganadero'
-  | 'crowdfunding'
-  | 'descuento-de-cheques'
+  'cesion-de-creditos' | 'fondo-ganadero' | 'crowdfunding' | 'descuento-de-cheques'
 
 export interface UyCase {
   id: string

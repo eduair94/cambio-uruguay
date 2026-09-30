@@ -3,8 +3,7 @@
 //
 // The drafts land in docs/reddit-gaps/ and are NOT pages. See classes/gaps/draft.ts for why this
 // pipeline deliberately stops one step short of publishing.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { geminiConfigured } from "./classes/gemini";

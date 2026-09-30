@@ -829,6 +829,43 @@
       "hypothesis": "Siete paginas emitian estructurados sin BreadcrumbList, asi que el renglon verde del resultado era la URL cruda en vez del rastro con nombres. Se declaran las que buscan por su tema y no estan dentro de otra ventana abierta; /acerca y /contacto quedan fuera porque no son un cambio pensado para mover trafico. Se mide si el mismo puesto gana mas clic cuando el visitante lee a que seccion pertenece la pagina antes de entrar."
     },
     {
+      "id": "paginas-mas-visitadas",
+      "shippedOn": "2026-09-30",
+      "routes": [
+        "/paginas-mas-visitadas"
+      ],
+      "hypothesis": "Pagina nueva e indexable con el ranking publico de las paginas mas visitadas desde Uruguay, lo que esta creciendo y lo que citan los asistentes de IA. Se mide si gana busquedas propias (lo mas visto, paginas populares) y si su lista de enlaces a las cien mas visitadas lleva lectores a esas paginas."
+    },
+    {
+      "id": "guias-mas-leidas-en-la-portada",
+      "shippedOn": "2026-09-30",
+      "routes": [
+        "/comisiones-de-transferencia-uruguay",
+        "/inversiones-uruguay",
+        "/tarjetas-de-credito-uruguay",
+        "/alquilar-estando-en-clearing",
+        "/guias/casarse-por-civil-uruguay",
+        "/guias/hacer-un-testamento-uruguay"
+      ],
+      "hypothesis": "La portada es la pagina con mas trafico y no enlazaba ninguna guia: sus enlaces eran todos a paginas de datos. Se agrega un bloque en el HTML del servidor con las seis guias mas leidas del ranking diario de GA4 (se actualiza solo; estas son las del dia del deploy). Se mide si la autoridad que reciben desde la portada las sube en busqueda. El cambio de idioma del mismo dia (sin redireccion por navegador) toca todo el sitio y no se declara."
+    },
+    {
+      "id": "fondo-de-solidaridad",
+      "shippedOn": "2026-09-30",
+      "routes": [
+        "/fondo-de-solidaridad-uruguay"
+      ],
+      "queries": [
+        "fondo de solidaridad",
+        "cuanto se paga fondo de solidaridad",
+        "fondo de solidaridad 2026",
+        "quienes pagan fondo de solidaridad",
+        "hasta cuando se paga el fondo de solidaridad",
+        "adicional fondo de solidaridad"
+      ],
+      "hypothesis": "El Fondo de Solidaridad aparecia en nueve archivos del sitio (calculadora de sueldo liquido, deducciones del IRPF, gastos del hogar) siempre como un descuento que hay que meter en OTRA cuenta, y en ninguno como la pregunta propia. Dos apuestas medibles. Una: la escala que devuelven los buscadores esta DEROGADA -el art. 3 original de la Ley 16.524 y el art. 3 de la Ley 17.451 la fijan en salarios minimos, y el art. 271 de la Ley 19.535 la paso a BPC con umbral de 8 BPC-, asi que la pagina entra a un SERP donde las respuestas de arriba tienen el numero mal por un factor grande. Dos: la escala esta en BPC y el sitio tiene la BPC auditada, asi que publica el aporte en PESOS (0,5/1/2 BPC = 3.432/6.864/13.728 y el umbral en 54.912 al mes), que es la cifra que la norma no da y la regla de oro de las descripciones pide. El monto del adicional NO se publica: el art. 493 de la Ley 20.075 dejo el 50 por ciento restante de su baja a la Ley de Presupuesto Nacional 2025-2029 y esa norma no se pudo leer, asi que va la mecanica y la cadena de normas sin cifra."
+    },
+    {
       "id": "apps-utiles-uruguay",
       "shippedOn": "2026-09-30",
       "routes": [

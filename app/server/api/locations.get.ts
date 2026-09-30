@@ -7,7 +7,7 @@ export default defineCachedEventHandler(
   async () => {
     const config = useRuntimeConfig()
     const base = config.apiBaseServer || config.public.apiBase
-    let backend: any[] = []
+    let backend: any[]
     try {
       backend = await $fetch<any[]>('/locations', { baseURL: base })
     } catch (err) {

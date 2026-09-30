@@ -1,8 +1,7 @@
 // Cost-of-living live figures (pm2 app `currency-costs`, daily 09:43 UTC ≈ 06:43
 // America/Montevideo). Never blanks the stored figures on a failure — a failed refresh just
 // means the previous good figures (or the app's own baseline) keep serving.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { geminiConfigured } from "./classes/gemini";
 import { refreshLiveCosts } from "./classes/costs/refresh";

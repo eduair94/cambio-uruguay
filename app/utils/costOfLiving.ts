@@ -28,11 +28,7 @@ export type Housing = 'alquila' | 'propia'
 /** Montevideo price zone (ignored for the interior). */
 export type MvdZone = 'economico' | 'intermedio' | 'costa'
 export type TransportMode =
-  | 'a_pie_bici'
-  | 'publico_ocasional'
-  | 'publico_diario'
-  | 'auto'
-  | 'auto_publico'
+  'a_pie_bici' | 'publico_ocasional' | 'publico_diario' | 'auto' | 'auto_publico'
 export type Lifestyle = 'austero' | 'moderado' | 'comodo'
 export type HealthMode = 'fonasa' | 'particular'
 
@@ -55,10 +51,7 @@ export interface BudgetInputs {
 }
 
 export type DwellingType =
-  | 'monoambiente'
-  | '1_dormitorio'
-  | '2_dormitorios'
-  | 'habitacion_compartida'
+  'monoambiente' | '1_dormitorio' | '2_dormitorios' | 'habitacion_compartida'
 
 interface CostModel {
   /** Typical monthly rent in UYU, [montevideo, interior] not needed — city factor handles interior. */

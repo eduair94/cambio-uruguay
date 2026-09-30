@@ -11,8 +11,7 @@
 // written exactly as in a scheduled run, so invoking it twice on the same thread is a no-op rather
 // than a second comment. The only relaxed rule is the age window, because a thread picked by hand
 // was picked knowing how old it is.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "../../classes/appdb";
 import { botConfig, botCredentialsPresent, canPost } from "../../classes/redditbot/config";

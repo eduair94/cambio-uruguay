@@ -8,8 +8,7 @@
 // Source is the official BCU PDF, parsed deterministically — no LLM, no API key.
 // Never blanks the stored table on a failure — a failed refresh just means the previous good
 // table (or the verified baseline in classes/bcurates/table.ts) keeps serving.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { refreshBcuRates } from "./classes/bcurates/refresh";
 import { loadBcuRates, saveBcuRates } from "./classes/bcurates/store";

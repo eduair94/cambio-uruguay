@@ -7,8 +7,8 @@
 //
 // Un flag: --dry-run lee, arma la foto y la imprime, sin escribir ni podar.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appDbConfigured } from "./classes/appdb";
 import { runPriceChanges } from "./classes/pricehistory/refresh";

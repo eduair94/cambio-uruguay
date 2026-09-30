@@ -16,12 +16,7 @@ export type { AduanaFact, AduanaProblem, BucketId, PublicAduanaPayload }
 // --- verifyCharges ---------------------------------------------------------------------------
 
 export type ChargeId =
-  | 'iva'
-  | 'prestacion_unica'
-  | 'gestion_courier'
-  | 'deposito'
-  | 'flete'
-  | 'otro'
+  'iva' | 'prestacion_unica' | 'gestion_courier' | 'deposito' | 'flete' | 'otro'
 
 export interface Charge {
   id: ChargeId

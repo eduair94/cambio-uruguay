@@ -129,12 +129,7 @@ export function checkPrescription(
 }
 
 export type RubricId =
-  | 'transparencia'
-  | 'costo'
-  | 'independencia'
-  | 'privacidad'
-  | 'utilidad'
-  | 'constancia'
+  'transparencia' | 'costo' | 'independencia' | 'privacidad' | 'utilidad' | 'constancia'
 
 export interface RubricDimension {
   id: RubricId

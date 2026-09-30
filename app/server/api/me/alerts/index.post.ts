@@ -32,6 +32,8 @@ export default defineEventHandler(async event => {
     channels: {
       push: b?.channels?.push !== false,
       email: b?.channels?.email !== false,
+      // El panel manda el canal Telegram; antes se descartaba y la alerta nunca salía por ahí.
+      telegram: b?.channels?.telegram === true,
     },
   })
 })

@@ -384,16 +384,16 @@ watch(
       const q = props.query
       advancedOpen.value = Boolean(
         q.bathrooms !== '' ||
-          q.parking ||
-          q.furnished ||
-          q.photos ||
-          q.amenity ||
-          q.minArea !== null ||
-          q.maxArea !== null ||
-          q.source !== 'all' ||
-          q.seller ||
-          q.owner ||
-          q.recent !== 'all'
+        q.parking ||
+        q.furnished ||
+        q.photos ||
+        q.amenity ||
+        q.minArea !== null ||
+        q.maxArea !== null ||
+        q.source !== 'all' ||
+        q.seller ||
+        q.owner ||
+        q.recent !== 'all'
       )
       invalid.value = null
       invalidFields.value = []

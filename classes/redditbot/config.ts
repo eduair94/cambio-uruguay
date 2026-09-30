@@ -1,6 +1,6 @@
 // Every knob of the Reddit bot, read from the environment at call time.
 //
-// Read at call time, never at import: the sync entrypoints run `dotenv.config()` themselves and a
+// Read at call time, never at import: the sync entrypoints load `dotenv/config` themselves and a
 // module-scope constant would freeze the value from before that ran — the same trap classes/
 // reddit.ts documents for its own credentials.
 //
@@ -9,9 +9,7 @@
 // not be the day it starts talking to strangers. Same reasoning as `CONTENT_PROMO_ENABLED` in
 // bots/: one gate would mean shipping the code IS shipping the behaviour.
 
-import dotenv from "dotenv";
-
-dotenv.config();
+import "dotenv/config";
 
 const num = (name: string, fallback: number): number => {
   const raw = Number(process.env[name]);

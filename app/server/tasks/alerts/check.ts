@@ -26,6 +26,14 @@ export default defineTask({
       persistAlert: async (id, patch) => {
         await AlertModel.updateOne({ _id: id }, { $set: patch })
       },
+      // Reclamo atómico: sólo la instancia que la desarma la envía (cluster ×2, dos tareas a la vez).
+      claimAlert: async (id, at) =>
+        (
+          await AlertModel.updateOne(
+            { _id: id, armed: true },
+            { $set: { armed: false, lastFiredAt: at } }
+          )
+        ).modifiedCount === 1,
       pruneTokens: async (uid, tokens) => {
         await UserModel.updateOne({ _id: uid }, { $pull: { fcmTokens: { $in: tokens } } })
       },

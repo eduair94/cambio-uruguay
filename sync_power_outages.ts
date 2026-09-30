@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { runPowerSample } from "./classes/utilities/power/run";
 import { mongoPowerStore } from "./classes/utilities/power/store";

@@ -18,9 +18,9 @@
 //   * it refuses to publish a collapsed directory over a healthy one;
 //   * every price is stored in pesos with the run's rate, so two portals can be compared at all.
 import dotenv from "dotenv";
+import "dotenv/config";
 import fs from "fs";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appDbConfigured } from "./classes/appdb";
 import { recordRentalPriceLogs } from "./classes/pricehistory/marketLog";

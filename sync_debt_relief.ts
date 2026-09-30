@@ -1,8 +1,7 @@
 // BCU usury caps (pm2 app `currency-debt-relief`, monthly on the 1st, 10:13 UTC ≈ 07:13
 // America/Montevideo). Never blanks the stored caps on a failure — a failed refresh just means
 // the previous good caps (or the verified baseline) keep serving for up to a month.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { geminiConfigured } from "./classes/gemini";
 import { refreshLiveDebtRelief } from "./classes/debt/refresh";

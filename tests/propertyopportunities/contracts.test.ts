@@ -3,10 +3,13 @@ import path from "path";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
+// Formatting never counts: prettier decides the whitespace, the quotes and whether a union that
+// fits on one line keeps its leading `|` (the app's prettier drops it, the backend keeps it).
 const contract = (file: string) => fs.readFileSync(path.join(__dirname, "../..", file), "utf8")
   .replace(/\/\*[\s\S]*?\*\//g, "")
   .replace(/\/\/[^\n\r]*/g, "")
   .replace(/[\s;,]/g, "")
+  .replace(/([=:])\|/g, "$1")
   .replace(/'/g, '"');
 
 describe("property opportunity contract", () => {

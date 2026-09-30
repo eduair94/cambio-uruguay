@@ -48,7 +48,7 @@ const TYPES: Record<string, RentalPropertyType> = {
 };
 
 export function elpaisCategoryUrls(xml: string): string[] {
-  const $ = cheerio.load(xml, { xmlMode: true });
+  const $ = cheerio.load(xml, { xml: true });
   return [...new Set($("loc").map((_, node) => $(node).text().trim()).get().filter((raw) => {
     try {
       const url = new URL(raw);

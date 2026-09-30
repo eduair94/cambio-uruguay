@@ -83,23 +83,21 @@ export function publicOpportunityItem(item: OpportunityItem): OpportunityItem {
           }
         : {}),
     },
-    comparables: item.comparables.slice(0, 10).map(
-      (row): OpportunityComparable => ({
-        ...publicOpportunityListing(row),
-        differences: {
-          areaPercent: row.differences.areaPercent,
-          ...(row.differences.featureDifferences
-            ? {
-                featureDifferences: row.differences.featureDifferences.map(difference => ({
-                  feature: difference.feature,
-                  subject: difference.subject,
-                  comparable: difference.comparable,
-                })),
-              }
-            : {}),
-        },
-      })
-    ),
+    comparables: item.comparables.slice(0, 10).map((row): OpportunityComparable => ({
+      ...publicOpportunityListing(row),
+      differences: {
+        areaPercent: row.differences.areaPercent,
+        ...(row.differences.featureDifferences
+          ? {
+              featureDifferences: row.differences.featureDifferences.map(difference => ({
+                feature: difference.feature,
+                subject: difference.subject,
+                comparable: difference.comparable,
+              })),
+            }
+          : {}),
+      },
+    })),
     cautions: item.cautions,
   }
 }

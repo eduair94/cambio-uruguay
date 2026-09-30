@@ -995,7 +995,6 @@ export function annualCost(route: AccessRoute, visits: number, guests = 0): Cost
     if (route.extraUsd === null) {
       unpriced = remaining
       steps.push(`${remaining} acceso${remaining === 1 ? '' : 's'} a tarifa no publicada`)
-      remaining = 0
     } else {
       const pool = route.extraPool === null ? remaining : Math.min(route.extraPool, remaining)
       if (pool > 0) {
@@ -1011,7 +1010,6 @@ export function annualCost(route: AccessRoute, visits: number, guests = 0): Cost
           variable += remaining * route.overflowUsd
           steps.push(`${remaining} × US$ ${route.overflowUsd}`)
         }
-        remaining = 0
       }
     }
   }

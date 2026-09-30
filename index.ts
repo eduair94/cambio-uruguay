@@ -219,7 +219,11 @@ const main = async () => {
   // para identificar, medir y dar el plan de cada cliente.
   const apiKeyRedis = () => redisCache.getClient() as unknown as RedisLike | null;
   server.getApp().use(
-    createApiKeyMiddleware({ redis: apiKeyRedis, lookup: (hash) => apiKeyStore().findActiveByHash(hash) })
+    createApiKeyMiddleware({
+      redis: apiKeyRedis,
+      lookup: (hash) => apiKeyStore().findActiveByHash(hash),
+      isKnownValid: (hash) => apiKeyStore().isKnownValid(hash),
+    })
   );
   registerApiKeyRoutes(server.getApp(), {
     store: apiKeyStore,
@@ -2070,7 +2074,7 @@ const main = async () => {
       }, 503);
     }
 
-    const { type, language, currency, origin, customPrompt, model } = req.body;
+    const { type, language, currency, origin, customPrompt, model } = req.body ?? {};
 
     // Validate type
     const validTypes = ["market_summary", "currency_analysis", "best_rates", "trend_analysis", "custom"];
@@ -2332,14 +2336,14 @@ const main = async () => {
    *               code: "USD"
    *               error: "not found"
    */
-  server.getJson("exchange/:origin/:code?", async (req: Request): Promise<any> => {
+  server.getJson("exchange/:origin{/:code}", async (req: Request<{ origin: string; code?: string }>): Promise<any> => {
     let date = req.query.date as string;
     let dateM = null;
     if (date) {
       // Parse date explicitly in Uruguay timezone to ensure consistency
       dateM = moment.tz(date, "YYYY-MM-DD", "America/Montevideo").toDate();
     }
-    const origin = (req.params.origin as string).toLowerCase();
+    const origin = req.params.origin.toLowerCase();
     
     // Validate origin parameter
     const originValidation = validateOrigin(origin);
@@ -2461,7 +2465,7 @@ const main = async () => {
    *         $ref: '#/components/responses/BadRequest'
    */
   server.postJson("geocoding", async (req: Request): Promise<any> => {
-    const address = req.body.address as string;
+    const address = req.body?.address as string;
     const url = `https://nominatim.openstreetmap.org/search.php?q=${encodeURIComponent(address)}&polygon_geojson=1&format=jsonv2`;
     return axios
       .get(url)
@@ -3548,7 +3552,7 @@ const main = async () => {
    *       400:
    *         $ref: '#/components/responses/ValidationError'
    */
-  server.getJson("exchanges/:origin/:location?", async (req: Request): Promise<any> => {
+  server.getJson("exchanges/:origin{/:location}", async (req: Request<{ origin: string; location?: string }>): Promise<any> => {
     const origin = req.params.origin;
     
     // Validate origin parameter
@@ -3609,7 +3613,7 @@ const main = async () => {
    *       400:
    *         $ref: '#/components/responses/ValidationError'
    */
-  server.getJson("bcu/:origin", async (req: Request): Promise<any> => {
+  server.getJson("bcu/:origin", async (req: Request<{ origin: string }>): Promise<any> => {
     const origin = req.params.origin;
     
     // Validate origin parameter
@@ -3693,7 +3697,7 @@ const main = async () => {
    *       400:
    *         $ref: '#/components/responses/ValidationError'
    */
-  server.getJson("evolution/:origin/:code/:type?", async (req: Request): Promise<any> => {
+  server.getJson("evolution/:origin/:code{/:type}", async (req: Request<{ origin: string; code: string; type?: string }>): Promise<any> => {
     const origin = req.params.origin;
     const code = req.params.code.toUpperCase().trim();
     const type = req.params.type;
@@ -4075,4 +4079,10 @@ const main = async () => {
   });
 };
 
-main();
+// Routes are registered inside main(), after the server is already listening: a route Express
+// rejects at registration (Express 5 throws on v4 path syntax such as `:param?`) would otherwise
+// leave a half-registered API serving 404s. Crash instead, so pm2 and the deploy notice.
+main().catch((error) => {
+  console.error("API boot failed:", error);
+  process.exit(1);
+});

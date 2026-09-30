@@ -440,13 +440,7 @@ const availabilityItems = computed(() =>
   }))
 )
 type FilterKey =
-  | 'department'
-  | 'neighborhood'
-  | 'type'
-  | 'bedrooms'
-  | 'availability'
-  | 'agency'
-  | 'owner'
+  'department' | 'neighborhood' | 'type' | 'bedrooms' | 'availability' | 'agency' | 'owner'
 const chips = computed(() => {
   const q = query.value,
     rows: { key: FilterKey; label: string }[] = []

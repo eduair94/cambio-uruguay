@@ -6,8 +6,7 @@
 // throws on a thin/empty pull, so a bad Bankos day leaves the previous good snapshot in place rather
 // than blanking the page. Refuses to run without APP_MONGO_URI (writing to the wrong DB would make
 // the fallback invisible to the app).
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { buildSnapshot } from "./classes/bankos/refresh";

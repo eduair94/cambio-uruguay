@@ -1,13 +1,12 @@
 <template>
-  <section v-if="!forbidden" class="api-admin-panel mt-10">
+  <section v-if="ready && !forbidden" class="api-admin-panel mt-10">
     <h2 class="text-h6 font-weight-bold mb-1">Clientes de la API</h2>
     <p class="text-body-2 text-medium-emphasis mb-4">
       Panel de administración (cuentas de NUXT_ADMIN_EMAILS). Uso de los últimos 30 días; el de hoy,
       en vivo.
     </p>
     <VAlert v-if="error" type="error" variant="tonal" class="mb-4">{{ error }}</VAlert>
-    <VProgressLinear v-if="loading" indeterminate class="mb-3" />
-    <template v-else-if="data">
+    <template v-if="data">
       <h3 class="text-subtitle-1 font-weight-bold mb-2">Claves ({{ data.keys.length }})</h3>
       <VTable density="compact" class="mb-8">
         <thead>
@@ -114,6 +113,35 @@
           </tr>
         </tbody>
       </VTable>
+      <h3 class="text-subtitle-1 font-weight-bold mt-8 mb-2">
+        Monitores de competencia ({{ monitors.length }})
+      </h3>
+      <VTable density="compact">
+        <thead>
+          <tr>
+            <th>Cuenta</th>
+            <th>Casa y grupo</th>
+            <th>Monedas</th>
+            <th>Acceso</th>
+            <th>Último aviso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="m in monitors" :key="m.uid">
+            <td>
+              <div>{{ m.email || m.uid }}</div>
+              <div class="text-caption">{{ m.active ? 'activo' : 'pausado' }}</div>
+            </td>
+            <td class="text-caption">{{ m.ownOrigin || '—' }} · {{ m.competitors.join(', ') }}</td>
+            <td class="text-caption">{{ m.currencies.join(', ') }}</td>
+            <td class="text-caption">{{ accessText(m.access) }}</td>
+            <td class="text-caption">{{ m.lastSentAt ? formatDateTime(m.lastSentAt) : '—' }}</td>
+          </tr>
+          <tr v-if="!monitors.length">
+            <td colspan="5" class="text-caption">Todavía nadie armó un monitor.</td>
+          </tr>
+        </tbody>
+      </VTable>
     </template>
   </section>
 </template>
@@ -124,18 +152,41 @@ import {
   ASSIGNABLE_PLANS,
   dailyText,
   formatCount,
+  formatDateTime,
   keyUsage,
   type ApiKeyRecord,
   type ApiPlanId,
   type ApiUsageResponse,
 } from '~/utils/apiKeys'
+import type { MonitorAccess } from '~/utils/competitorMonitor'
+
+interface AdminMonitor {
+  uid: string
+  email: string | null
+  ownOrigin: string | null
+  competitors: string[]
+  currencies: string[]
+  active: boolean
+  access: MonitorAccess
+  lastSentAt: string | null
+}
+const monitors = ref<AdminMonitor[]>([])
+
+function accessText(access: MonitorAccess): string {
+  if (access.status === 'trial') return `prueba, ${access.daysLeft} d`
+  if (access.status === 'business') return 'Empresa'
+  if (access.status === 'unknown') return 'sin confirmar'
+  return 'vencido'
+}
 
 const { authFetch } = useAuthFetch()
 
 const data = ref<{ keys: ApiKeyRecord[]; usage: ApiUsageResponse } | null>(null)
-const loading = ref(true)
 const error = ref('')
 const forbidden = ref(false)
+// No se dibuja nada hasta saber si la cuenta es administradora: antes, a cualquier usuario le
+// aparecía un instante el título del panel mientras volvía el 403.
+const ready = ref(false)
 const saving = ref('')
 const edits = reactive<Record<string, { plan: ApiPlanId; notes: string }>>({})
 const planItems = ASSIGNABLE_PLANS.map(plan => ({ title: API_PLAN_LABELS[plan], value: plan }))
@@ -159,7 +210,6 @@ function routesText(routes?: { route: string; count: number }[]): string {
 }
 
 async function load() {
-  loading.value = true
   error.value = ''
   try {
     const res = await authFetch<{ keys: ApiKeyRecord[]; usage: ApiUsageResponse }>(
@@ -167,12 +217,17 @@ async function load() {
     )
     resetEdits(res.keys)
     data.value = res
+    monitors.value = (
+      await authFetch<{ monitors: AdminMonitor[] }>('/api/admin/monitors').catch(() => ({
+        monitors: [],
+      }))
+    ).monitors
   } catch (e: any) {
     const status = Number(e?.statusCode ?? e?.response?.status ?? 0)
     if (status === 403 || status === 401) forbidden.value = true
     else error.value = e?.data?.statusMessage || `La ruta respondió ${status || 'sin respuesta'}.`
   } finally {
-    loading.value = false
+    ready.value = true
   }
 }
 

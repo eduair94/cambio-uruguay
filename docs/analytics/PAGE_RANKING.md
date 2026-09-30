@@ -8,7 +8,8 @@ enfocarse". Diseño: `docs/superpowers/specs/2026-09-29-ranking-de-paginas-desig
 currency-site-analytics (10:51 UTC)
    ├── siteanalyticssnapshots → /api/site-analytics     → /estadisticas-del-sitio   (PÚBLICO)
    ├── siterevenuesnapshots   → /api/site-revenue       → /estadisticas-de-busqueda (requireAdmin)
-   └── sitepagerankings       → /api/site-page-ranking  → /estadisticas-por-pagina  (requireAdmin)
+   ├── sitepagerankings       → /api/site-page-ranking  → /estadisticas-por-pagina  (requireAdmin)
+   └── sitetoppages           → /api/site-top-pages     → /paginas-mas-visitadas    (PÚBLICO)
 ```
 
 El tercer paso va último y en su propio `try`: un fallo no deja sin actualizar ni la página pública
@@ -16,7 +17,7 @@ ni el ingreso, y un ranking con cero vistas uruguayas no pisa el anterior. Códi
 `classes/site-analytics/pageRanking.ts` (puro salvo `refreshPageRanking`), tests en
 `tests/site_analytics/page_ranking.test.ts`.
 
-## Los cinco reportes (un `batchRunReports`)
+## Los siete reportes (dos llamadas: `batchRunReports` acepta cinco)
 
 | # | dimensiones | métricas | filtro |
 |---|---|---|---|
@@ -25,6 +26,8 @@ ni el ingreso, y un ranking con cero vistas uruguayas no pisa el anterior. Códi
 | 2 | `pagePath` | vistas | ninguno (todos los países) |
 | 3 | `landingPage`, `sessionDefaultChannelGroup` | `sessions`, `engagedSessions` | UY |
 | 4 | `countryId` | vistas, sesiones, usuarios | ninguno |
+| 5 | `sessionDefaultChannelGroup` × 4 semanas | `sessions` | UY |
+| 6 | `deviceCategory` × 4 semanas | `sessions` | UY |
 
 El reporte 0 manda **cuatro `dateRanges` con nombre** (`w0`…`w3`, la más vieja primero): GA4 agrega la
 dimensión `dateRange` a cada fila con ese nombre. Los usuarios no se suman entre semanas, por eso el
@@ -68,3 +71,29 @@ un empujón; redes: el hilo se enfrió; búsqueda: Search Console).
 
 En el VPS, `node dist/sync_site_analytics.js` reescribe los tres documentos. No hay flag para correr
 sólo el ranking: los tres pasos son idempotentes.
+
+## La versión pública (`/paginas-mas-visitadas`, desde 2026-09-29)
+
+Mismo job, un paso más después de guardar el ranking privado y en su propio `try`:
+`buildPublicTopPages` (`classes/site-analytics/publicTopPages.ts`) arma el documento `sitetoppages`
+**campo por campo** y `/api/site-top-pages` (pública, cacheada una hora) lo devuelve entero. Es la
+regla de `siterevenuesnapshots`: lo público nunca sale de un `.select()` sobre un documento privado.
+
+- **No sale**: tramo, multiplicador, valor, foco, % desde Uruguay por página, entradas por canal de
+  cada página, señales internas. `tests/site_analytics/public_top_pages.test.ts` recorre el documento
+  buscando esas claves.
+- **Sale**: las 100 más visitadas (base, 28 días, 4 semanas, tendencia, permanencia, nueva/pico), 10
+  "en alza" (crece o nueva, sin pico, ≥ 20 vistas en las dos últimas semanas, ordenadas por vistas
+  ganadas por semana, SIN multiplicador de tramo), 10 "recomendadas por IA" (≥ 3 entradas desde
+  asistentes), 25 temas (sólo familias `/*`, que son plantillas) y los totales por canal y dispositivo
+  semana a semana.
+- **Qué se lista**: páginas públicas en español. Fuera `PUBLIC_EXCLUDED_PATHS` (incluye todo
+  `EXCLUDED_ROUTES` de `app/utils/siteNav.ts`; el test lee ese archivo y exige paridad), los espejos
+  `/en` y `/pt`, y las fichas sueltas (lo que `bucketOf` deja sin plegar con dos segmentos o más), que
+  siguen contando en los temas.
+- **Guarda**: con menos de 10 páginas publicables o sin vistas no se escribe; queda la anterior.
+- La página pone nombre humano a cada ruta con `NAV_SECTIONS` (`app/utils/topPages.ts`, `topicOf`).
+- **`guides`** (desde 2026-09-30): las 10 páginas de CONTENIDO más visitadas (el tramo se usa para
+  elegir y no sale). Las 6 primeras van a la **portada en español**, en el HTML del servidor, como
+  "Las guías más leídas": hasta ese día la portada sólo enlazaba páginas de datos. Fila
+  `guias-mas-leidas-en-la-portada` en `docs/seo/experiments.json`.

@@ -312,7 +312,7 @@ export async function fetchComments(
     }
     if (out.length >= MAX_COMMENTS_PER_POST || !token) break
 
-    let more: MoreChildrenResponse | null = null
+    let more: MoreChildrenResponse
     try {
       more = await throttled(() =>
         $fetch<MoreChildrenResponse>(`${API}/api/morechildren`, {

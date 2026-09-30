@@ -5,8 +5,7 @@
 //
 // Medido el 2026-09-18: 122 fichas de 16.865 avisos de ML. A 400 lecturas por corrida horaria el
 // atraso entero se cubre en dos días y después esto es mantenimiento de lo que entra cada día.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { fetchUsdUyuRate } from "./classes/chairs/catalog";
 import { detailTargets, queueSummary } from "./classes/autos/detailQueue";

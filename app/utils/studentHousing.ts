@@ -197,10 +197,7 @@ export const STUDENT_HOUSING_LEGAL_MINIMUMS: readonly StudentHousingRule[] = Obj
 // --- Relevamiento de precios ------------------------------------------------
 
 export type StudentHousingPlaza =
-  | 'cama-compartida'
-  | 'habitacion-doble'
-  | 'habitacion-individual'
-  | 'individual-femenina'
+  'cama-compartida' | 'habitacion-doble' | 'habitacion-individual' | 'individual-femenina'
 
 export interface StudentHousingPriceBand {
   plaza: StudentHousingPlaza

@@ -72,6 +72,9 @@ export interface PageRankingTotals {
   usersUy: number
   weeklyUy: number[]
   channels: { label: string; sessions: number; share: number }[]
+  /** Sesiones uruguayas por canal y por dispositivo, semana a semana (desde el 2026-09-29). */
+  weeklyChannels?: { label: string; weeks: number[] }[]
+  weeklyDevices?: { label: string; weeks: number[] }[]
 }
 
 export interface PageRankingSnapshot {
@@ -153,7 +156,7 @@ const CHANNEL_LABELS: Record<string, string> = {
   'Organic Social': 'Redes',
   'AI Assistant': 'Asistentes de IA',
   Referral: 'Otros sitios',
-  Unassigned: 'Sin asignar',
+  Unassigned: 'Sin origen identificado',
   'Cross-network': 'Campañas',
   'Paid Search': 'Búsqueda paga',
   'Paid Social': 'Redes pagas',

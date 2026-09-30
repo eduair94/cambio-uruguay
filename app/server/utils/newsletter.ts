@@ -125,7 +125,7 @@ export async function buildDigestData(lang: NewsletterLang): Promise<DigestData>
     const bestSell = rows.reduce((a, b) => (b.sell < a.sell ? b : a))
     const bestBuy = rows.reduce((a, b) => (b.buy > a.buy ? b : a))
     if (bestSell.date) date = bestSell.date.slice(0, 10)
-    let changePct = 0
+    let changePct: number
     try {
       const evo = await $fetch<{ evolution?: Array<{ date: string; sell?: number }> }>(
         `/evolution/${encodeURIComponent(bestSell.origin)}/${code}`,
@@ -143,7 +143,7 @@ export async function buildDigestData(lang: NewsletterLang): Promise<DigestData>
     })
   }
 
-  let ai = ''
+  let ai: string
   try {
     const r = await $fetch<{ insight?: string }>('/ai/insights', {
       baseURL: apiBase,
@@ -164,7 +164,7 @@ export async function buildDigestData(lang: NewsletterLang): Promise<DigestData>
     ai = ''
   }
 
-  let news: DigestNews[] = []
+  let news: DigestNews[]
   try {
     news = (await fetchNews(5)).map(n => ({ title: n.title, link: n.link, source: n.source }))
   } catch {

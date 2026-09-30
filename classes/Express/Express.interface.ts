@@ -7,9 +7,5 @@ export interface rFunctionExpress {
 
 export interface FunctionExpress {
   (req: Request,res?: Response): Promise<rFunctionExpress>;
-  
-}
 
-export interface FunctionExpressRes {
-  (req: Request, res: Response): Promise<rFunctionExpress>;
 }

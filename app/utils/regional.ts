@@ -16,13 +16,7 @@ export type RegionalCountry = 'AR' | 'BR' | 'CL' | 'PY' | 'BO' | 'UY'
 
 /** What kind of price a quote is. Drives the chip and the grouping. */
 export type RegionalKind =
-  | 'official'
-  | 'wholesale'
-  | 'parallel'
-  | 'financial'
-  | 'card'
-  | 'retail'
-  | 'reference'
+  'official' | 'wholesale' | 'parallel' | 'financial' | 'card' | 'retail' | 'reference'
 
 export interface RegionalQuote {
   id: string

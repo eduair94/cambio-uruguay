@@ -72,7 +72,7 @@ describe('hreflangLinksFor', () => {
   it('los ISO son los que declara nuxt.config.ts, que es de donde el layout los saca', () => {
     const config = readFileSync(join(__dirname, '..', '..', 'nuxt.config.ts'), 'utf8')
     for (const { code, iso } of HREFLANG_LOCALES) {
-      expect(config).toContain(`{ code: '${code}', iso: '${iso}'`)
+      expect(config).toContain(`{ code: '${code}', language: '${iso}'`)
     }
   })
 })

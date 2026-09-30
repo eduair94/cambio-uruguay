@@ -16,7 +16,7 @@ export default defineEventHandler(async event => {
   const doc = await BankosUserCardsModel.findOneAndUpdate(
     { uid },
     { uid, cards, ...notify },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
   )
     .lean()
     .exec()

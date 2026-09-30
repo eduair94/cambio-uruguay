@@ -395,6 +395,8 @@ const REPORT_LIMIT = 100000;
 /** Nombres de las cuatro semanas; GA4 los devuelve en la dimensión `dateRange` de cada fila. */
 const WEEK_NAMES = ["w0", "w1", "w2", "w3"];
 const WEEK_DAYS = 7;
+/** Índice del primer reporte de series semanales (canal, dispositivo) en {@link pageRankingRequests}. */
+const WEEKLY_SERIES_FROM = 5;
 
 export interface FamilyRankRow {
   family: string;
@@ -423,6 +425,19 @@ export interface PageRankingTotals {
   weeklyUy: number[];
   /** Sesiones uruguayas por canal (`sessionDefaultChannelGroup`, etiqueta de GA4 tal cual). */
   channels: { label: string; sessions: number; share: number }[];
+  /**
+   * Sesiones uruguayas por canal, semana a semana (la más vieja primero), de mayor a menor total.
+   * Es lo que mostró que la búsqueda crecía mientras las vistas "caían": los que se iban eran los
+   * que entran directo y leen muchas páginas. `[]` si el reporte no vino.
+   */
+  weeklyChannels: WeeklySeries[];
+  /** Lo mismo por dispositivo (`mobile`, `desktop`, `tablet`, etiqueta de GA4 tal cual). */
+  weeklyDevices: WeeklySeries[];
+}
+
+export interface WeeklySeries {
+  label: string;
+  weeks: number[];
 }
 
 export interface PageRankingSnapshot {
@@ -476,15 +491,20 @@ export function rankingTier(family: string): Tier {
 }
 
 const names = (...list: string[]) => list.map((name) => ({ name }));
+const weekRanges = (w: AnalyticsWindows) =>
+  rankingWeeks(w).map((r, i) => ({ startDate: r.start, endDate: r.end, name: WEEK_NAMES[i] }));
 const uruguay = () => exactDimension("countryId", "UY");
 
-/** Los cinco reportes, en el orden que lee {@link buildPageRanking}. Entran en un solo batch. */
+/**
+ * Los siete reportes, en el orden que lee {@link buildPageRanking}. `runReports` los parte en dos
+ * llamadas (el batch acepta cinco).
+ */
 export function pageRankingRequests(w: AnalyticsWindows): Ga4ReportRequest[] {
   const window = [{ startDate: w.current.start, endDate: w.current.end }];
   return [
     // 0 — vistas uruguayas por página y por semana (cuatro rangos en un reporte)
     {
-      dateRanges: rankingWeeks(w).map((r, i) => ({ startDate: r.start, endDate: r.end, name: WEEK_NAMES[i] })),
+      dateRanges: weekRanges(w),
       dimensions: names("pagePath"),
       metrics: names("screenPageViews"),
       dimensionFilter: uruguay(),
@@ -524,6 +544,22 @@ export function pageRankingRequests(w: AnalyticsWindows): Ga4ReportRequest[] {
       dimensions: names("countryId"),
       metrics: names("screenPageViews", "sessions", "activeUsers"),
       limit: 500,
+    },
+    // 5 — sesiones uruguayas por canal, semana a semana
+    {
+      dateRanges: weekRanges(w),
+      dimensions: names("sessionDefaultChannelGroup"),
+      metrics: names("sessions"),
+      dimensionFilter: uruguay(),
+      limit: 500,
+    },
+    // 6 — sesiones uruguayas por dispositivo, semana a semana
+    {
+      dateRanges: weekRanges(w),
+      dimensions: names("deviceCategory"),
+      metrics: names("sessions"),
+      dimensionFilter: uruguay(),
+      limit: 100,
     },
   ];
 }
@@ -567,6 +603,22 @@ function isTruncated(report: Ga4Report | undefined, request: Ga4ReportRequest | 
   const count = report?.rowCount;
   if (typeof count === "number" && rows < count) return true;
   return !!request?.limit && rows >= request.limit;
+}
+
+/** Una dimensión × las cuatro semanas → una serie por valor, de mayor a menor total. */
+function weeklySeries(report: Ga4Report | undefined, dimension: string, metric: string): WeeklySeries[] {
+  const acc = new Map<string, number[]>();
+  for (const row of reportRows(report)) {
+    const i = WEEK_NAMES.indexOf(String(row.dateRange ?? ""));
+    if (i < 0) continue;
+    const label = String(row[dimension] ?? "").trim() || "(not set)";
+    const weeks = acc.get(label) || WEEK_NAMES.map(() => 0);
+    weeks[i] += num(row, metric);
+    acc.set(label, weeks);
+  }
+  return [...acc.entries()]
+    .map(([label, weeks]) => ({ label, weeks }))
+    .sort((a, b) => sum(b.weeks) - sum(a.weeks) || a.label.localeCompare(b.label));
 }
 
 function familiesOf(rows: PageRankRow[]): FamilyRankRow[] {
@@ -623,7 +675,7 @@ export interface BuildPageRankingContext {
 }
 
 /**
- * Pura: los cinco reportes de {@link pageRankingRequests}, en orden, se vuelven un documento.
+ * Pura: los siete reportes de {@link pageRankingRequests}, en orden, se vuelven un documento.
  * `requests` sólo se usa para saber si algún reporte llegó al tope pedido.
  */
 export function buildPageRanking(
@@ -769,6 +821,8 @@ export function buildPageRanking(
       usersUy,
       weeklyUy,
       channels,
+      weeklyChannels: weeklySeries(reports[5], "sessionDefaultChannelGroup", "sessions"),
+      weeklyDevices: weeklySeries(reports[6], "deviceCategory", "sessions"),
     },
     pageCount: all.length,
     truncated: reports.some((r, i) => isTruncated(r, requests[i])),
@@ -787,6 +841,14 @@ export async function refreshPageRanking(now: Date = new Date()): Promise<PageRa
   const timezone = process.env.GA4_TIMEZONE || DEFAULT_TIMEZONE;
   const windows = analyticsWindows(now, timezone);
   const requests = pageRankingRequests(windows);
-  const reports = await runReports(requests);
+  const reports = await runReports(requests.slice(0, WEEKLY_SERIES_FROM));
+  // Canales y dispositivos por semana, en su propia llamada: si fallan, el ranking se guarda igual
+  // con las series vacías (`weeklySeries` de un reporte ausente es `[]`).
+  try {
+    reports.push(...(await runReports(requests.slice(WEEKLY_SERIES_FROM))));
+  } catch (e: any) {
+    const detail = e?.response?.data ? JSON.stringify(e.response.data) : e?.message || String(e);
+    console.warn(`[site-analytics] series semanales por canal y dispositivo: ${detail}`);
+  }
   return buildPageRanking(reports, { asOf: now.toISOString(), timezone, windows }, requests);
 }

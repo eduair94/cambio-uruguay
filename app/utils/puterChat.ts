@@ -99,8 +99,7 @@ export class PuterChatError extends Error {
 
 export function puterError(error: unknown): PuterChatError {
   const raw = error as
-    | { message?: string; code?: string; error?: { message?: string; code?: string } }
-    | string
+    { message?: string; code?: string; error?: { message?: string; code?: string } } | string
   const text = (
     typeof raw === 'string'
       ? raw

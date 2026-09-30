@@ -6,6 +6,7 @@ import {
   type Request,
   type TestInfo,
 } from '@playwright/test'
+import { pickOption } from './support/vuetifySelect'
 import type { RentalFitInput, RentalFitResponse, RentalFitResult } from '../../utils/rentalFitTypes'
 import type { RentalOffer, RentalPublicProperty } from '../../utils/rentals'
 
@@ -241,7 +242,7 @@ async function select(page: Page, scope: Locator, label: string, option: string)
     .filter({ has: scope.page().getByLabel(label, { exact: true }) })
     .locator('.v-field__append-inner')
     .click()
-  await page.getByRole('option', { name: option, exact: true }).click()
+  await pickOption(page, option)
 }
 async function confirmAddress(place: Locator) {
   await place

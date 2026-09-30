@@ -294,12 +294,12 @@ const limit = ref(18)
 const hasFilters = computed(() =>
   Boolean(
     category.value ||
-      department.value ||
-      query.value ||
-      pricedOnly.value ||
-      vehicleOnly.value ||
-      localOnly.value ||
-      sort.value !== 'name'
+    department.value ||
+    query.value ||
+    pricedOnly.value ||
+    vehicleOnly.value ||
+    localOnly.value ||
+    sort.value !== 'name'
   )
 )
 const categoryOptions = computed(() => [

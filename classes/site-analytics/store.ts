@@ -4,6 +4,9 @@
 import { SiteAnalyticsSnapshotModel } from "../models/SiteAnalyticsSnapshot";
 import { SiteRevenueSnapshotModel } from "../models/SiteRevenueSnapshot";
 import { SitePageRankingModel } from "../models/SitePageRanking";
+import { SiteTopPagesModel } from "../models/SiteTopPages";
+import { TOP_PAGES_KEY } from "./publicTopPages";
+import type { PublicTopPagesSnapshot } from "./publicTopPages";
 import { PAGE_RANKING_KEY } from "./pageRanking";
 import type { PageRankingSnapshot } from "./pageRanking";
 import { revenueIsEmpty, SITE_REVENUE_KEY } from "./revenue";
@@ -98,4 +101,12 @@ export async function savePageRanking(snapshot: PageRankingSnapshot): Promise<vo
 
 export async function loadPageRanking(): Promise<PageRankingSnapshot | null> {
   return SitePageRankingModel.findOne({ key: PAGE_RANKING_KEY }).lean<PageRankingSnapshot>().exec();
+}
+
+// ---------------------------------------------------------------------------------------------
+// La versión PÚBLICA del ranking (/paginas-mas-visitadas): otra colección, armada campo por campo.
+// ---------------------------------------------------------------------------------------------
+
+export async function saveSiteTopPages(doc: PublicTopPagesSnapshot): Promise<void> {
+  await SiteTopPagesModel.updateOne({ key: TOP_PAGES_KEY }, { $set: { ...doc, key: TOP_PAGES_KEY } }, { upsert: true });
 }

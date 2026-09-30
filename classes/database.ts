@@ -1,6 +1,5 @@
 import mongoose, { Schema as MongooseSchema, PipelineStage } from "mongoose";
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import { mongoConfig } from "../config";
 const Schema = MongooseSchema;
 
@@ -169,7 +168,6 @@ export class MongooseServer {
   public async addToSet(entry: any, items: any, att = 0): Promise<any> {
     const options = {
       upsert: true,
-      useFindAndModify: false,
       setDefaultsOnInsert: true,
     };
     try {
@@ -190,7 +188,6 @@ export class MongooseServer {
     const update = entry;
     const options = {
       upsert: true,
-      useFindAndModify: false,
       setDefaultsOnInsert: true,
     };
     try {
@@ -216,7 +213,6 @@ export class MongooseServer {
     const update = entry;
     const options = {
       upsert: true,
-      useFindAndModify: false,
       setDefaultsOnInsert: true,
     };
     try {
@@ -236,9 +232,8 @@ export class MongooseServer {
     const pushMongo = { $push: toPush };
     const options = {
       upsert: true,
-      useFindAndModify: false,
       setDefaultsOnInsert: true,
-      new: true,
+      returnDocument: "after" as const,
     };
     try {
       const doc = await this.Model.findOneAndUpdate(entry, pushMongo, options).lean().exec();
@@ -362,7 +357,6 @@ export class MongooseServer {
     });
     const options = {
       upsert: true,
-      useFindAndModify: false,
       setDefaultsOnInsert: true,
     };
     try {

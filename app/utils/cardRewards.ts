@@ -53,12 +53,7 @@ export interface RubricDimension {
 }
 
 export type RubricId =
-  | 'acumulacion'
-  | 'canje'
-  | 'descuentos'
-  | 'costo'
-  | 'flexibilidad'
-  | 'cobertura'
+  'acumulacion' | 'canje' | 'descuentos' | 'costo' | 'flexibilidad' | 'cobertura'
 
 /**
  * The transparent, weighted rubric. Weights reflect what matters most to a typical

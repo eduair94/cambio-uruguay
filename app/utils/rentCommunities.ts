@@ -23,12 +23,7 @@ export type ChannelRisk = 'bajo' | 'medio' | 'alto'
 export type ChannelGroupId = 'seguras' | 'roomies' | 'facebook' | 'busqueda-vivo'
 export type ChannelAudience = 'buscar' | 'publicar' | 'ambos' | 'roommates' | 'estudiantes'
 export type ChannelKind =
-  | 'reddit'
-  | 'facebook-group'
-  | 'facebook-page'
-  | 'facebook-search'
-  | 'plataforma'
-  | 'institucional'
+  'reddit' | 'facebook-group' | 'facebook-page' | 'facebook-search' | 'plataforma' | 'institucional'
 
 export interface RentChannel {
   name: string
@@ -47,14 +42,7 @@ export interface RentChannel {
 }
 
 export type RegionId =
-  | 'montevideo'
-  | 'metropolitana'
-  | 'maldonado'
-  | 'colonia'
-  | 'litoral'
-  | 'norte'
-  | 'centro'
-  | 'pais'
+  'montevideo' | 'metropolitana' | 'maldonado' | 'colonia' | 'litoral' | 'norte' | 'centro' | 'pais'
 
 export interface RegionMeta {
   id: RegionId

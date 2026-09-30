@@ -44,13 +44,15 @@ export interface KeyModel {
   findOneAndUpdate(
     filter: Record<string, unknown>,
     update: { $set: Record<string, unknown> },
-    opts: { new: true }
+    opts: { returnDocument: "after" }
   ): { lean(): Promise<any> };
   updateMany(filter: Record<string, unknown>, update: { $set: Record<string, unknown> }): Promise<unknown>;
 }
 
 export interface KeyStore {
   findActiveByHash(hash: string): Promise<ApiKeyRecord | null>;
+  /** Sin consultar nada: ¿esta clave se validó hace poco en este proceso? */
+  isKnownValid(hash: string): boolean;
   create(input: NewKeyInput): Promise<{ record: ApiKeyRecord; plaintext: string }>;
   list(ownerUid?: string): Promise<ApiKeyRecord[]>;
   update(id: string, patch: KeyPatch, ownerUid?: string): Promise<ApiKeyRecord | null>;
@@ -107,8 +109,14 @@ export function createKeyStore(
   const generate = opts.generate ?? (() => generateCredential());
   const lookupTimeoutMs = opts.lookupTimeoutMs ?? LOOKUP_TIMEOUT_MS;
   const cache = new Map<string, { at: number; record: ApiKeyRecord | null }>();
+  let negatives = 0;
 
   return {
+    isKnownValid(hash) {
+      const hit = cache.get(hash);
+      return !!hit?.record && now() - hit.at < 10 * CACHE_MS;
+    },
+
     async findActiveByHash(hash) {
       const hit = cache.get(hash);
       if (hit && now() - hit.at < CACHE_MS) return hit.record;
@@ -125,8 +133,18 @@ export function createKeyStore(
         throw e;
       }
       const record = doc ? toRecord(doc) : null;
-      if (cache.size >= CACHE_MAX) cache.clear();
-      cache.set(hash, { at: now(), record });
+      if (record) {
+        cache.set(hash, { at: now(), record });
+      } else {
+        // Las respuestas NEGATIVAS tienen su propio tope: una avalancha de claves inventadas vacía
+        // sólo las negativas y nunca desaloja a las claves válidas (que son pocas y pagan).
+        if (negatives >= CACHE_MAX) {
+          for (const [key, entry] of cache) if (!entry.record) cache.delete(key);
+          negatives = 0;
+        }
+        if (!cache.get(hash)) negatives++;
+        cache.set(hash, { at: now(), record: null });
+      }
       return record;
     },
 
@@ -153,6 +171,7 @@ export function createKeyStore(
       });
       const plain = typeof doc?.toObject === "function" ? doc.toObject() : doc;
       cache.clear();
+      negatives = 0;
       return { record: toRecord(plain), plaintext };
     },
 
@@ -175,8 +194,9 @@ export function createKeyStore(
         set.revokedAt = patch.status === "revoked" ? new Date(now()) : null;
       }
       if (!Object.keys(set).length) return null;
-      const doc = await model.findOneAndUpdate(filter, { $set: set }, { new: true }).lean();
+      const doc = await model.findOneAndUpdate(filter, { $set: set }, { returnDocument: "after" }).lean();
       cache.clear();
+      negatives = 0;
       return doc ? toRecord(doc) : null;
     },
 

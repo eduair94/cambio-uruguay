@@ -1802,7 +1802,9 @@
     "usedCarAdvisor": "¿Qué auto comprar?",
     "sellUsedCar": "Vender tu auto",
     "comparadorTransporte": "Conviene auto, moto u ómnibus",
-    "motosUsadas": "Precio de motos usadas"
+    "motosUsadas": "Precio de motos usadas",
+    "paginasMasVisitadas": "Páginas más visitadas",
+    "fondoDeSolidaridad": "Fondo de Solidaridad"
   },
   "sitemapPage": {
     "h1": "Mapa del sitio de Cambio Uruguay",
@@ -2397,6 +2399,7 @@
     "peak": "Día más alto del período: {date}, con {users} usuarios.",
     "pagesTitle": "Páginas más leídas",
     "pagesHint": "Las direcciones se publican sin lo que va después del signo de pregunta, así que nada de lo que alguien escribió en el buscador aparece acá.",
+    "fullRanking": "Ver las 100 más visitadas desde Uruguay, con las que están creciendo",
     "table": {
       "page": "Página",
       "views": "Vistas",

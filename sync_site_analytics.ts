@@ -13,21 +13,23 @@
 // `--allow-empty` flag lets an all-zero snapshot be written, and that exists purely so a brand-new
 // property can be seeded on purpose.
 //
-// Three writes, each in its own guard: the public snapshot, the private ad revenue
-// (`siterevenuesnapshots`) and the private page ranking (`sitepagerankings`, served to
-// /estadisticas-por-pagina — see classes/site-analytics/pageRanking.ts).
-import dotenv from "dotenv";
-dotenv.config();
+// Four writes, each in its own guard: the public snapshot, the private ad revenue
+// (`siterevenuesnapshots`), the private page ranking (`sitepagerankings`, served to
+// /estadisticas-por-pagina — see classes/site-analytics/pageRanking.ts) and its public projection
+// (`sitetoppages`, served to /paginas-mas-visitadas — classes/site-analytics/publicTopPages.ts).
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { ga4ConfigProblem } from "./classes/site-analytics/ga4";
 import { refreshSiteAnalytics, snapshotIsEmpty } from "./classes/site-analytics/refresh";
 import { fetchRevenue, revenueIsEmpty } from "./classes/site-analytics/revenue";
 import { pageRankingIsEmpty, refreshPageRanking } from "./classes/site-analytics/pageRanking";
+import { buildPublicTopPages, publicTopPagesIsThin } from "./classes/site-analytics/publicTopPages";
 import {
   revenueWouldRegress,
   savePageRanking,
   saveSiteAnalytics,
+  saveSiteTopPages,
   saveSiteRevenue,
 } from "./classes/site-analytics/store";
 
@@ -106,6 +108,25 @@ async function main(): Promise<void> {
             `${ranking.pages.length} guardadas${ranking.truncated ? " (GA4 truncó algún reporte)" : ""}; ` +
             `foco ${JSON.stringify(counts)}`
         );
+
+        // La versión pública (/paginas-mas-visitadas). Sale del ranking recién guardado y en su propio
+        // try: si falla, la privada ya quedó escrita.
+        try {
+          const pub = buildPublicTopPages(ranking);
+          if (publicTopPagesIsThin(pub)) {
+            console.warn(
+              `[site-analytics] páginas más visitadas: sólo ${pub.pages.length} publicables — se conserva la anterior.`
+            );
+          } else {
+            await saveSiteTopPages(pub);
+            console.log(
+              `[site-analytics] páginas más visitadas: ${pub.pages.length} páginas, ${pub.rising.length} en alza, ` +
+                `${pub.aiCited.length} recomendadas por IA, ${pub.topics.length} temas`
+            );
+          }
+        } catch (e: any) {
+          console.warn(`[site-analytics] no se pudo armar la versión pública del ranking: ${e?.message || e}`);
+        }
       }
     } catch (e: any) {
       const detail = e?.response?.data ? JSON.stringify(e.response.data) : e?.message || String(e);

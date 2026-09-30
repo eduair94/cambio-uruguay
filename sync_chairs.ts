@@ -11,8 +11,8 @@
 //   * The run refuses to publish an empty catalogue over a good one. A total outage keeps the last
 //     known market rather than blanking the directory.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appDbConfigured } from "./classes/appdb";
 import { buildChairCatalog, fetchUsdUyuRate } from "./classes/chairs/catalog";

@@ -58,7 +58,7 @@ export async function loadTrackingSince(): Promise<string | null> {
  * {@link PricewatchOfferLike} necesita antes de que el documento cruce la red.
  */
 export function offersSeenTodayByVertical(vertical: string, today: string) {
-  const projection: Record<string, unknown> = { history: { $slice: -HISTORY_PROJECTION_POINTS } };
+  const projection: Record<string, 1 | { $slice: number }> = { history: { $slice: -HISTORY_PROJECTION_POINTS } };
   for (const field of OFFER_FIELDS) projection[field] = 1;
   return PricewatchOfferModel.find({ vertical, lastSeen: today }).select(projection).lean().cursor();
 }

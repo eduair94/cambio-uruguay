@@ -1,7 +1,8 @@
 // El medidor de uso convertido en lo que lee una persona: filas por día × cliente × ruta, un
 // resumen por cliente y el ranking de los que usan la API sin clave. Puro.
 //
-// Cliente = `key:<id>` (una clave), `ua:<User-Agent>` (anónimo) o `site` (lectores del sitio). El
+// Cliente = `key:<id>` (una clave), `ua:<User-Agent>` (anónimo), `origin:<sitio>` (un sitio ajeno que
+// llama desde el navegador de sus lectores) o `site` (lectores del sitio). El
 // ranking de anónimos es la lista de a quién ofrecerle un plan: un programa que se identifica y pide
 // todos los días. Nunca hay IP acá.
 import { dayMinus } from "./window";
@@ -15,7 +16,8 @@ export interface UsageRow {
 
 export interface UsageDaysRepo {
   upsertDay(day: string, rows: UsageRow[]): Promise<number>;
-  readRange(from: string, to: string): Promise<UsageRow[]>;
+  /** Con `clients`, sólo esos clientes (el uso de un dueño se filtra en Mongo, no en memoria). */
+  readRange(from: string, to: string, clients?: string[]): Promise<UsageRow[]>;
 }
 
 export interface ClientSummary {
@@ -89,10 +91,17 @@ export function summarize(rows: UsageRow[], today: string, topRoutes = 10): Reco
   return out;
 }
 
+/** Cómo se muestra un cliente anónimo: su User-Agent, o el sitio web desde cuyo navegador llama. */
+function anonymousLabel(client: string): string | null {
+  if (client.startsWith("ua:")) return client.slice(3);
+  if (client.startsWith("origin:")) return `sitio web: ${client.slice(7)}`;
+  return null;
+}
+
 export function rankAnonymous(summary: Record<string, ClientSummary>, top = 30): AnonymousLead[] {
   return Object.entries(summary)
-    .filter(([client]) => client.startsWith("ua:"))
-    .map(([client, s]) => ({ userAgent: client.slice(3), total: s.total, last7: s.last7, routes: s.routes.slice(0, 5) }))
+    .filter(([client]) => anonymousLabel(client) !== null)
+    .map(([client, s]) => ({ userAgent: anonymousLabel(client)!, total: s.total, last7: s.last7, routes: s.routes.slice(0, 5) }))
     .sort((a, b) => b.total - a.total || a.userAgent.localeCompare(b.userAgent))
     .slice(0, top);
 }

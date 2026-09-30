@@ -12,11 +12,9 @@
 
 import fs from "fs";
 import path from "path";
-import dotenv from "dotenv";
+import "dotenv/config";
 import { askClaude, askClaudeJson, claudeConfigured, claudeHasBudget, claudeSaturated } from "./claude";
 import { askPlain, askWithImage, geminiConfigured } from "./gemini";
-
-dotenv.config();
 
 export type TextProvider = "claude" | "gemini";
 

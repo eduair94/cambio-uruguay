@@ -12,13 +12,7 @@ export type RecipeSlot = 'desayuno' | 'principal' | 'merienda'
 export type Appliance = 'airfryer' | 'microondas' | 'anafe' | 'horno' | 'sin-coccion'
 
 export type ProteinSource =
-  | 'pollo'
-  | 'carne'
-  | 'huevo'
-  | 'pescado'
-  | 'legumbre'
-  | 'lacteo'
-  | 'ninguna'
+  'pollo' | 'carne' | 'huevo' | 'pescado' | 'legumbre' | 'lacteo' | 'ninguna'
 
 export type IngredientCategory = 'carniceria' | 'verduleria' | 'almacen' | 'lacteos' | 'despensa'
 

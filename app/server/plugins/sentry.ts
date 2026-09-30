@@ -18,13 +18,7 @@ export default defineNitroPlugin(nitroApp => {
     })
   )
     return
-  if (!Sentry.getClient())
-    Sentry.init({
-      ...sentryErrorOptions(config, 'nitro'),
-      // Error hooks need no HTTP/DB instrumentation or ESM loader patches.
-      registerEsmLoaderHooks: false,
-      skipOpenTelemetrySetup: true,
-    })
+  if (!Sentry.getClient()) Sentry.init(sentryErrorOptions(config, 'nitro'))
   nitroApp.hooks.hook('error', (error, context) => {
     const status = sentryHttpStatus(error)
     if (status && status < 500) return

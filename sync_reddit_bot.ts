@@ -4,8 +4,7 @@
 // behind the daily/per-sub/per-page caps in classes/redditbot/limits.ts. With
 // REDDIT_BOT_ENABLED unset it still does the whole pipeline and posts nothing, which is the
 // intended state until the thresholds have been watched for a few days.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
 import { botConfig, botCredentialsPresent, canPost } from "./classes/redditbot/config";

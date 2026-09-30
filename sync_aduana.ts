@@ -4,8 +4,7 @@
 // re-check the legal facts. If Reddit is down the facts still get checked; if the AI is down the
 // old quotes keep serving. No stage ever blanks good data, and the norms gate means the AI can
 // flag a change of law but not publish one.
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { aiService } from "./classes/ai_service";
 import { aggregateFromCorpus, refreshLabels } from "./classes/aduana/classify";

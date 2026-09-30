@@ -16,8 +16,8 @@
 // without a stray `process.exit` inside main() tearing down the test runner if a mock lets execution
 // fall through past it.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { fetchUsdUyuRate } from "./classes/chairs/catalog";

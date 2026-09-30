@@ -31,8 +31,7 @@ export interface PropertyPhotoRef {
  * por tarjeta. Cada superficie dice qué aviso está mirando y el visor pide esa ficha al abrirse.
  */
 export type PropertyGallerySource =
-  | { kind: 'rental'; key: string; params?: Record<string, unknown> }
-  | { kind: 'sale'; key: string }
+  { kind: 'rental'; key: string; params?: Record<string, unknown> } | { kind: 'sale'; key: string }
 
 /** Lo que una tarjeta le pide a la página cuando alguien toca su foto. */
 export interface PropertyPreviewRequest {

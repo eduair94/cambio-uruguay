@@ -24,8 +24,7 @@
 // El plan gratuito NO expone todas las dimensiones (ASN, nombre del ASN, bot management): cada
 // tabla se pide por separado y la que no está disponible lo dice en vez de tumbar el informe.
 import axios from "axios";
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 const ZONE_TAG = process.env.CLOUDFLARE_ZONE_ID || "fcd8289e0c93d7f889d8cd583929a4e5";
 const ENDPOINT = "https://api.cloudflare.com/client/v4/graphql";

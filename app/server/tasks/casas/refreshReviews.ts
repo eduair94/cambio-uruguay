@@ -43,7 +43,7 @@ export default defineTask({
     if (gmapsBase) {
       for (const [code, placeId] of Object.entries(CASAS_PLACE_IDS)) {
         const prev = doc.reviews[code] ?? null
-        let fetched = null
+        let fetched: ReturnType<typeof parsePlaceDetails> | null
         try {
           const json = await $fetch(`${gmapsBase}/placeDetails`, {
             params: { place_id: placeId, fields: FIELDS },

@@ -1,6 +1,6 @@
 # Monitoreo de errores de la app
 
-La app utiliza el SDK existente `@sentry/nuxt` (lock: 8.55.0), con dos plugins propios: navegador y Nitro. No activa el módulo automático de Nuxt, instrumentación HTTP/Mongo, trazas, perfiles, logs, Replay ni seguimiento de sesiones. La inicialización ocurre cuando `runtimeConfig` está disponible; el proceso PM2 no necesita volver a cargar `.env`.
+La app utiliza el SDK existente `@sentry/nuxt` (lock: 11.1.0), con dos plugins propios: navegador y Nitro. No activa el módulo automático de Nuxt, instrumentación HTTP/Mongo, trazas, perfiles, logs, Replay ni seguimiento de sesiones. La inicialización ocurre cuando `runtimeConfig` está disponible; el proceso PM2 no necesita volver a cargar `.env`.
 
 ## Configuración
 
@@ -37,4 +37,4 @@ y falta de metadatos OG. El buscador de direcciones tiene la categoría fija
 
 Tras desplegar, confirmar la configuración efectiva y la recepción en el proyecto autorizado antes de afirmar que el monitoreo está activo. Un DSN configurado y una respuesta exitosa del ingest prueban transporte; consultar el evento en el proyecto confirma su disponibilidad para el operador.
 
-Referencias oficiales: [SDK de Nuxt](https://docs.sentry.io/platforms/javascript/guides/nuxt/manual-setup/), [opciones y filtrado](https://docs.sentry.io/platforms/javascript/guides/nuxt/configuration/options/). Las opciones implementadas se verificaron contra la versión instalada: las opciones `dataCollection` de versiones recientes no existen en 8.55.0.
+Referencias oficiales: [SDK de Nuxt](https://docs.sentry.io/platforms/javascript/guides/nuxt/manual-setup/), [opciones y filtrado](https://docs.sentry.io/platforms/javascript/guides/nuxt/configuration/options/). Las opciones implementadas se verificaron contra la versión instalada (11.1.0): `sendDefaultPii`, `autoSessionTracking`, `registerEsmLoaderHooks` y `skipOpenTelemetrySetup` ya no existen; los reemplazan `dataCollection` (con `userInfo: false` el SDK declara `infer_ip: never`), `enableRuntimeChannelInjection: false` y `traceLifecycle: 'static'` (sin estos dos, el SDK registra hooks de carga de módulos y agrega `SpanStreaming` por fuera de la lista permitida). El filtro de URLs ajenas se llama `EventFilters` (antes `InboundFilters`): una lista permitida con el nombre viejo lo pierde en silencio. Y `@sentry/nuxt` ignora todo `Sentry.init()` posterior al primero en el mismo proceso.

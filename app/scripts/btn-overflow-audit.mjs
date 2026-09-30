@@ -1,10 +1,10 @@
 // Sweep every route for button LABELS that render OUTSIDE their own button.
 //
-// Why this exists: Vuetify 3's `.v-btn` carried `overflow: hidden`, so a label wider
-// than the button was clipped — ugly, but contained. Vuetify 4 dropped it (VBtn.css
-// has `max-width: 100%` and nothing else), while `.v-btn__content` still ships
-// `white-space: nowrap`. The pair means a long label neither wraps nor clips: it
-// SPILLS, drawing text over whatever sits next to the button. `.v-chip` is NOT affected
+// Why this exists: `.v-btn__content` ships `white-space: nowrap`, so a label wider than
+// its button does not wrap. Vuetify 4.0–4.1 also dropped v3's `.v-btn { overflow: hidden }`
+// and such a label SPILLED, drawing text over whatever sat next to the button; 4.2
+// restored the overflow, so today the same finding means a CLIPPED label. The probe is
+// unchanged: it measures the content box, which overflow does not move. `.v-chip` is NOT affected
 // (VChip.css still carries `overflow: hidden`, so a long chip clips instead). The site's
 // own `legacy-vuetify.css` makes buttons likelier to spill by restoring the v3 UPPERCASE,
 // which widens every label ~8%.

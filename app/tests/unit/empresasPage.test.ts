@@ -10,6 +10,28 @@ const APP = join(__dirname, '..', '..')
 const page = readFileSync(join(APP, 'pages/empresas.vue'), 'utf8')
 
 describe('/empresas', () => {
+  it('el monitor se puede empezar desde la página y el plan Empresa lo incluye', () => {
+    expect(page).toContain('Crear el monitor desde tu cuenta')
+    expect(page).toContain('Monitor de competencia incluido')
+  })
+
+  it('el botón del monitor se mide y lleva a la sección del monitor, no sólo a la pestaña', () => {
+    expect(page).toContain('data-cta="empresas-monitor"')
+    expect(page).toContain('@click="startKey(\'#monitor\')"')
+    expect(page).toContain("query: { tab: 'api' }, hash })")
+    const panel = readFileSync(join(APP, 'components/account/CompetitorMonitorPanel.vue'), 'utf8')
+    expect(panel).toContain('id="monitor"')
+  })
+
+  it('el texto del monitor no repite lo que dice el botón', () => {
+    expect(page).not.toMatch(/días gratis desde tu cuenta/)
+  })
+
+  it('el monitoreo de competencia dice que se prueba gratis, con la constante', () => {
+    expect(page).toContain('TRIAL_DAYS')
+    expect(page).toContain('Monitoreo de competencia')
+  })
+
   it('está en la navegación con su etiqueta en los tres idiomas', () => {
     const entry = NAV_SECTIONS.flatMap(s => s.entries).find(i => i.to === '/empresas')
     expect(entry?.labelKey).toBe('empresas.nav')

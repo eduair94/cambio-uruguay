@@ -90,8 +90,7 @@ export function aiConfigured(): boolean {
  */
 export async function chatCompletion(opts: ChatOptions): Promise<ChatResult | null> {
   const cfg = useRuntimeConfig().ai as
-    | { baseUrl?: string; apiKey?: string; model?: string }
-    | undefined
+    { baseUrl?: string; apiKey?: string; model?: string } | undefined
   if (!cfg?.apiKey || !cfg.baseUrl) return null
 
   const model = cfg.model || 'wormv5.1'

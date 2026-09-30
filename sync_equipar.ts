@@ -12,8 +12,8 @@
 //   * A basket total travels with the list of what could NOT be priced. A total that quietly skips
 //     the fridge is lower than the truth and reads as a better deal.
 import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "app/.env" });
+import "dotenv/config";
+dotenv.config({ path: "app/.env", quiet: true });
 
 import { appDbConfigured } from "./classes/appdb";
 import { fetchUsdUyuRate } from "./classes/chairs/catalog";
