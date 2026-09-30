@@ -51,9 +51,10 @@ export function usefulAppStoreButtons(
     if (!ref) continue
     const read = facts?.[store]
     if (read?.status === 'missing') {
-      unavailable.push(
-        `No está en ${STORE_NAME[store]} de Uruguay (revisado el ${usefulAppsLongDate(read.checkedAt)}).`
-      )
+      // Un 404 dice cosas distintas: el App Store /uy/ contesta 404 si la app no está en Uruguay,
+      // Google Play sólo si la ficha ya no existe en ningún país (con gl=UY contesta 200 igual).
+      const where = store === 'ios' ? 'el App Store de Uruguay' : 'Google Play'
+      unavailable.push(`No está en ${where} (revisado el ${usefulAppsLongDate(read.checkedAt)}).`)
       continue
     }
     buttons.push({
@@ -80,6 +81,16 @@ export function usefulAppStoreButtons(
   return { buttons, unavailable }
 }
 
+/**
+ * El enlace a la tarjeta de una app desde otra parte de la página (el kit, "La oficial es …"). Con
+ * la categoría en la query también anda antes de hidratar: si el explorador está en otra pestaña o
+ * filtrado, un "#id" suelto no llevaba a ningún lado. Ya hidratada, la página lo intercepta
+ * (`data-app-link`) y abre la categoría sin navegar.
+ */
+export function usefulAppsAppHref(app: Pick<UsefulApp, 'id' | 'category'>): string {
+  return `?categoria=${app.category}#${app.id}`
+}
+
 export interface UsefulAppCardView {
   iconSrc: string | null
   kindLabel: string
@@ -92,7 +103,7 @@ export interface UsefulAppCardView {
   warning: string | null
   /** Nota neutra de las oficiales (sólo Android, reemplazó a otra…). */
   note: string | null
-  alternative: { id: string; name: string } | null
+  alternative: { id: string; name: string; href: string } | null
   buttons: UsefulAppButton[]
   unavailable: string[]
   guides: { to: string; label: string }[]
@@ -174,7 +185,11 @@ export function usefulAppCardView(app: UsefulApp, input: UsefulAppCardInput): Us
     warning,
     note: kindTone === 'comunidad' ? null : (app.note ?? null),
     alternative: input.alternative
-      ? { id: input.alternative.id, name: input.alternative.name }
+      ? {
+          id: input.alternative.id,
+          name: input.alternative.name,
+          href: usefulAppsAppHref(input.alternative),
+        }
       : null,
     buttons,
     unavailable,

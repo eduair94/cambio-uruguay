@@ -7,7 +7,7 @@
 // ratings — a 500 would turn "the job has not run yet" into a broken page.
 import { UsefulAppsSnapshotModel } from '../../models/UsefulAppsSnapshot'
 import { connectDb } from '../../utils/db'
-import { usefulAppsCompactStores } from '../../../utils/usefulAppsStores'
+import { usefulAppsCompactStores, usefulAppsIsoDay } from '../../../utils/usefulAppsStores'
 
 export default defineEventHandler(async event => {
   setResponseHeader(
@@ -21,7 +21,9 @@ export default defineEventHandler(async event => {
     const doc = await UsefulAppsSnapshotModel.findOne({ key: 'uy' })
       .select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0, developerChanges: 0, counts: 0 })
       .lean()
-    return usefulAppsCompactStores(doc, new Date().toISOString().slice(0, 10))
+    // El día de hoy en Uruguay, no el del reloj UTC del servidor.
+    const now = new Date()
+    return usefulAppsCompactStores(doc, usefulAppsIsoDay(now) ?? now.toISOString().slice(0, 10))
   } catch {
     return null
   }

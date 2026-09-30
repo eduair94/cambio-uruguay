@@ -66,7 +66,7 @@ describe('usefulAppStoreButtons', () => {
     )
     expect(out.buttons.map(b => b.store)).toEqual(['ios'])
     expect(out.unavailable).toEqual([
-      'No está en Google Play de Uruguay (revisado el 20 de setiembre de 2026).',
+      'No está en Google Play (revisado el 20 de setiembre de 2026).',
     ])
   })
 
@@ -121,7 +121,11 @@ describe('usefulAppCardView', () => {
     expect(view.kindLabel).toBe('No oficial')
     expect(view.warning).toBe(STM.note)
     expect(view.note).toBeNull()
-    expect(view.alternative).toEqual({ id: 'como-ir', name: 'Cómo ir' })
+    expect(view.alternative).toEqual({
+      id: 'como-ir',
+      name: 'Cómo ir',
+      href: '?categoria=transporte#como-ir',
+    })
   })
 
   it('metadatos, guías con etiqueta y sin datos de tienda no inventa nada', () => {

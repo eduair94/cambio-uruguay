@@ -279,39 +279,71 @@ const KIND_TERMS: Readonly<Record<UsefulAppKind, string>> = Object.freeze({
   comunidad: 'independiente',
 })
 
-const haystacks = new WeakMap<UsefulApp, string>()
+// Las palabras que piden "del Estado" se resuelven con el tipo y no con el texto: "estado de
+// cuenta" y "Estados Unidos" están en tarjetas de bancos y de compras, y buscar "estado" las traía.
+const PUBLIC_WORDS: ReadonlySet<string> = new Set([
+  'estado',
+  'estatal',
+  'estatales',
+  'gobierno',
+  'publica',
+  'publicas',
+  'publico',
+  'publicos',
+])
 
-function usefulAppHaystack(app: UsefulApp): string {
+/** Las palabras de un texto, normalizadas y cortadas también por la puntuación ("9-1-1", "gub.uy"). */
+export function usefulAppsWordsOf(parts: readonly unknown[]): string[] {
+  const words = usefulAppNormalize(parts.filter(Boolean).join(' '))
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean)
+  return [...new Set(words)]
+}
+
+/** Las palabras con contenido de una búsqueda: sin las vacías ("app", "de", "uruguay"). */
+export function usefulAppsQueryTokens(query: string): string[] {
+  return usefulAppsWordsOf([query]).filter(token => !STOPWORDS.has(token))
+}
+
+/**
+ * Una sigla corta (UTE, BPS, OSE, STM, ID) tiene que ser una palabra entera: buscada como parte de
+ * una palabra, "ose" encontraba COSEM y San José, "bus" cada "Buscá" y "gas" los "gigas". Desde
+ * cuatro letras alcanza con el principio de una palabra, así "mutu" ya encuentra las mutualistas
+ * mientras se escribe.
+ */
+export function usefulAppsWordMatches(words: readonly string[], token: string): boolean {
+  return token.length <= 3 ? words.includes(token) : words.some(word => word.startsWith(token))
+}
+
+const haystacks = new WeakMap<UsefulApp, readonly string[]>()
+
+function usefulAppHaystack(app: UsefulApp): readonly string[] {
   const cached = haystacks.get(app)
   if (cached !== undefined) return cached
-  const text = usefulAppNormalize(
-    [
-      app.name,
-      app.organization,
-      app.summary,
-      ...app.uses,
-      ...(app.keywords ?? []),
-      CATEGORY_TERMS[app.category],
-      KIND_TERMS[app.kind],
-      app.android?.developer,
-      app.ios?.developer,
-      ...(app.departments ?? []),
-    ]
-      .filter(Boolean)
-      .join(' ')
-  )
-  haystacks.set(app, text)
-  return text
+  const words = usefulAppsWordsOf([
+    app.name,
+    app.organization,
+    app.summary,
+    ...app.uses,
+    ...(app.keywords ?? []),
+    CATEGORY_TERMS[app.category],
+    KIND_TERMS[app.kind],
+    app.android?.developer,
+    app.ios?.developer,
+    ...(app.departments ?? []),
+  ])
+  haystacks.set(app, words)
+  return words
 }
 
 /** Cada palabra con contenido tiene que aparecer, en cualquier orden. */
 export function usefulAppMatches(app: UsefulApp, query: string): boolean {
-  const tokens = usefulAppNormalize(query)
-    .split(' ')
-    .filter(token => token && !STOPWORDS.has(token))
+  const tokens = usefulAppsQueryTokens(query)
   if (!tokens.length) return true
-  const hay = usefulAppHaystack(app)
-  return tokens.every(token => hay.includes(token))
+  const words = usefulAppHaystack(app)
+  return tokens.every(token =>
+    PUBLIC_WORDS.has(token) ? usefulAppIsPublic(app) : usefulAppsWordMatches(words, token)
+  )
 }
 
 /** Dos letras para el monograma cuando no hay ícono: "Cómo ir" → "CI", "Prex" → "PR". */
@@ -509,6 +541,18 @@ export function usefulAppsTabCounts(
     counts[tab] = apps.filter(app => usefulAppInTab(app, tab, ctx)).length
   }
   return counts
+}
+
+/**
+ * Lo que mostraría cada pestaña con la búsqueda y los filtros de ahora: con "luz" escrito, una
+ * pastilla que dice "Salud 27" y abre "0 apps" es una promesa rota.
+ */
+export function usefulAppsTabCountsFor(
+  apps: readonly UsefulApp[],
+  state: UsefulAppsState,
+  ctx: UsefulAppsFilterContext
+): Record<UsefulAppsTab, number> {
+  return usefulAppsTabCounts(usefulAppsFilter(apps, { ...state, tab: 'todas' }, ctx), ctx)
 }
 
 export function usefulAppsDepartmentsIn(apps: readonly UsefulApp[]): UsefulAppDepartment[] {

@@ -5,6 +5,7 @@ import {
   USEFUL_APP_CATEGORIES,
   USEFUL_APP_DEPARTMENTS,
   usefulAppIsPublic,
+  usefulAppMatches,
 } from '../../utils/usefulApps'
 import { USEFUL_APPS, USEFUL_APPS_VERIFIED_AT } from '../../utils/usefulAppsCatalog'
 import { USEFUL_APPS_GUIDE_LABELS } from '../../utils/usefulAppsContent'
@@ -95,6 +96,8 @@ describe('catálogo de apps útiles', () => {
     expect(community.length).toBeGreaterThan(0)
     for (const a of community) {
       expect(a.note, a.id).toMatch(/no es (de|oficial)/i)
+      // La tarjeta agrega "La oficial es <enlace>." sola: en la nota quedaba repetida.
+      expect(a.note, a.id).not.toMatch(/la oficial es/i)
       const official = USEFUL_APPS.find(o => o.id === a.officialAlternative)
       expect(official, a.id).toBeDefined()
       expect(usefulAppIsPublic(official!), a.id).toBe(true)
@@ -125,5 +128,27 @@ describe('catálogo de apps útiles', () => {
         expect(pageExists(route), `${a.id}: ${route}`).toBe(true)
       }
     }
+  })
+
+  it('la búsqueda encuentra lo que la gente escribe y no confunde siglas', () => {
+    const find = (q: string) => USEFUL_APPS.filter(a => usefulAppMatches(a, q)).map(a => a.id)
+    // Medido el 30/9/2026 en la revisión: "ose" traía COSEM y el Hospital Evangélico (San José),
+    // "bus" cada "Buscá", "gas" los "gigas" y "estado" los "estado de cuenta" de los bancos.
+    expect(find('OSE')).toEqual([])
+    expect(find('bus')).toEqual(expect.arrayContaining(['como-ir', 'stm-montevideo', 'seguitubus']))
+    expect(find('bus')).not.toEqual(expect.arrayContaining(['buscojobs']))
+    expect(find('bus')).not.toContain('computrabajo')
+    for (const id of ['mi-tigo', 'mi-claro', 'nuevo-siglo', 'viatik'])
+      expect(find('gas')).not.toContain(id)
+    expect(find('gas')).toEqual(expect.arrayContaining(['riogas', 'estaciones-ancap']))
+    const estado = find('apps del estado')
+    expect(estado.length).toBeGreaterThan(20)
+    for (const id of estado)
+      expect(usefulAppIsPublic(USEFUL_APPS.find(a => a.id === id)!), id).toBe(true)
+    expect(find('app de la luz')).toContain('ute')
+    expect(find('ómnibus')).toEqual(expect.arrayContaining(['como-ir', 'stm-montevideo']))
+    expect(find('ute')).toEqual(expect.arrayContaining(['ute', 'ute-mueve']))
+    expect(find('911')).toContain('emergencia-911')
+    expect(find('mutu').length).toBeGreaterThan(5)
   })
 })

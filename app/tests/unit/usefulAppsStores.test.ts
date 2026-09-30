@@ -74,8 +74,9 @@ describe('usefulAppsStores — compactado para la página', () => {
       }),
       '2026-10-01'
     )
+    // La captura de las 01:40 UTC del 1/10 es la noche del 30/9 en Uruguay.
     expect(out).toEqual({
-      capturedAt: '2026-10-01',
+      capturedAt: '2026-09-30',
       apps: {
         'bps-personas': {
           android: {
@@ -137,17 +138,31 @@ describe('usefulAppsStores — compactado para la página', () => {
     ).toBeNull()
   })
 
-  it('acepta fechas que vuelven de Mongo como Date', () => {
+  it('acepta fechas que vuelven de Mongo como Date, y un instante es un día de Uruguay', () => {
     const out = usefulAppsCompactStores(
       {
         key: 'uy',
         capturedAt: new Date('2026-10-01T01:40:00Z'),
-        apps: { x: { android: { status: 'ok', checkedAt: new Date('2026-10-01T01:41:00Z') } } },
+        apps: { x: { android: { status: 'ok', checkedAt: new Date('2026-10-01T14:41:00Z') } } },
+      },
+      '2026-10-01'
+    )
+    // 01:40 UTC es 22:40 del día anterior en Montevideo; 14:41 UTC es el mismo día.
+    expect(out?.capturedAt).toBe('2026-09-30')
+    expect(out?.apps.x?.android?.checkedAt).toBe('2026-10-01')
+  })
+
+  it('un día suelto o la medianoche UTC de un día guardado no se mueven', () => {
+    const out = usefulAppsCompactStores(
+      {
+        key: 'uy',
+        capturedAt: '2026-10-01T00:00:00.000Z',
+        apps: { x: { android: { status: 'ok', checkedAt: '2026-09-30' } } },
       },
       '2026-10-01'
     )
     expect(out?.capturedAt).toBe('2026-10-01')
-    expect(out?.apps.x?.android?.checkedAt).toBe('2026-10-01')
+    expect(out?.apps.x?.android?.checkedAt).toBe('2026-09-30')
   })
 })
 

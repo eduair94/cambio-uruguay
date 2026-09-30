@@ -20,6 +20,7 @@ import {
   usefulAppsSort,
   usefulAppsStateFromQuery,
   usefulAppsTabCounts,
+  usefulAppsTabCountsFor,
 } from '../../utils/usefulApps'
 
 const app = (over: Partial<UsefulApp>): UsefulApp => ({
@@ -175,6 +176,54 @@ describe('usefulApps — búsqueda', () => {
     expect(usefulAppMatches(ANTEL, 'luz')).toBe(false)
     expect(usefulAppMatches(COMO_IR, 'auto')).toBe(false)
   })
+
+  it('una sigla corta es una palabra entera, no un pedazo de otra', () => {
+    const COSEM = app({
+      id: 'cosem',
+      name: 'COSEM',
+      organization: 'COSEM',
+      kind: 'privada',
+      category: 'salud',
+      summary: 'Agendá consultas.',
+      uses: ['Buscá un médico'],
+      departments: ['San José'],
+    })
+    // "ose" estaba adentro de "cosem" y de "san jose"; "bus" adentro de "buscá".
+    expect(usefulAppMatches(COSEM, 'ose')).toBe(false)
+    expect(usefulAppMatches(COSEM, 'bus')).toBe(false)
+    expect(usefulAppMatches(UTE, 'ute')).toBe(true)
+    expect(usefulAppMatches(COMO_IR, 'stm')).toBe(true)
+  })
+
+  it('desde cuatro letras alcanza con el principio de una palabra', () => {
+    expect(usefulAppMatches(COMO_IR, 'omni')).toBe(true)
+    expect(usefulAppMatches(UTE, 'elect')).toBe(true)
+    // …pero no con el medio: "tricidad" no es el principio de ninguna palabra.
+    expect(usefulAppMatches(UTE, 'tricidad')).toBe(false)
+  })
+
+  it('corta también por la puntuación, así "9-1-1" y "gub.uy" se encuentran', () => {
+    const EMERGENCIA = app({ id: 'e', name: 'Emergencia 9-1-1', keywords: ['911'] })
+    const GUB = app({ id: 'g', name: 'gub.uy' })
+    expect(usefulAppMatches(EMERGENCIA, '911')).toBe(true)
+    expect(usefulAppMatches(EMERGENCIA, '9-1-1')).toBe(true)
+    expect(usefulAppMatches(GUB, 'gub.uy')).toBe(true)
+    expect(usefulAppMatches(GUB, 'gub')).toBe(true)
+  })
+
+  it('"estado" pide apps del Estado aunque una privada diga "estado de cuenta"', () => {
+    const OCA = app({
+      id: 'oca',
+      name: 'OCA',
+      kind: 'privada',
+      category: 'dinero',
+      uses: ['Mirá el estado de cuenta', 'Comprá en Estados Unidos'],
+    })
+    expect(usefulAppMatches(OCA, 'estado')).toBe(false)
+    expect(usefulAppMatches(OCA, 'apps del estado')).toBe(false)
+    expect(usefulAppMatches(UTE, 'gobierno')).toBe(true)
+    expect(usefulAppMatches(OCA, 'cuenta')).toBe(true)
+  })
 })
 
 describe('usefulApps — estado ↔ URL', () => {
@@ -308,6 +357,15 @@ describe('usefulApps — filtro, orden y grupos', () => {
     expect(counts.transporte).toBe(2)
     expect(counts.ocio).toBe(1)
     expect(counts.salud).toBe(0)
+  })
+
+  it('con una búsqueda o un filtro, cada pestaña cuenta lo que mostraría (sin contar la pestaña)', () => {
+    const luz = { ...USEFUL_APPS_DEFAULT_STATE, tab: 'transporte' as const, q: 'luz' }
+    const counts = usefulAppsTabCountsFor(ALL, luz, ctx)
+    expect(counts.todas).toBe(1)
+    expect(counts.hogar).toBe(1)
+    expect(counts.transporte).toBe(0)
+    expect(counts.imprescindibles).toBe(1)
   })
 
   it('lista los departamentos presentes en orden alfabético, sin repetir', () => {

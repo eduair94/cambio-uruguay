@@ -39,7 +39,9 @@
           <p class="ua-kit__why">{{ row.item.why }}</p>
           <div v-for="app in row.apps" :key="app.id" class="ua-kit__app">
             <UsefulAppsIcon :name="app.name" :src="iconOf(app)" :size="32" />
-            <a class="ua-kit__app-name" :href="`#${app.id}`">{{ app.name }}</a>
+            <a class="ua-kit__app-name" :href="usefulAppsAppHref(app)" :data-app-link="app.id">{{
+              app.name
+            }}</a>
             <VBtn
               v-for="button in buttonsOf(app)"
               :key="button.store"
@@ -76,7 +78,9 @@
           <p class="ua-kit__why">{{ row.item.why }}</p>
           <div v-for="app in row.apps" :key="app.id" class="ua-kit__app">
             <UsefulAppsIcon :name="app.name" :src="iconOf(app)" :size="32" />
-            <a class="ua-kit__app-name" :href="`#${app.id}`">{{ app.name }}</a>
+            <a class="ua-kit__app-name" :href="usefulAppsAppHref(app)" :data-app-link="app.id">{{
+              app.name
+            }}</a>
             <VBtn
               v-for="button in buttonsOf(app)"
               :key="button.store"
@@ -105,7 +109,7 @@
 import type { UsefulApp, UsefulAppCategoryId, UsefulAppsPlatform } from '~/utils/usefulApps'
 import { USEFUL_APPS_KIT } from '~/utils/usefulAppsContent'
 import { type UsefulAppsAppFacts, usefulAppsIconFor } from '~/utils/usefulAppsStores'
-import { usefulAppStoreButtons, usefulAppsKitView } from '~/utils/usefulAppsView'
+import { usefulAppStoreButtons, usefulAppsAppHref, usefulAppsKitView } from '~/utils/usefulAppsView'
 
 const props = defineProps<{
   apps: readonly UsefulApp[]

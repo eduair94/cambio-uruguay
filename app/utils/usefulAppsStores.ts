@@ -4,11 +4,17 @@
 // MÓDULO PURO: lo usan la ruta /api/useful-apps/stores, la página, la tarjeta y los tests.
 //
 // Las fechas se escriben con una tabla propia de meses y no con Intl: el servidor (ICU 76) y el
-// navegador (ICU 78) no escriben igual, y "setiembre" es como se dice acá.
+// navegador (ICU 78) no escriben igual, y "setiembre" es como se dice acá. Intl sólo se usa para
+// saber qué DÍA es un instante en Uruguay, y ahí devuelve números, que no cambian entre versiones.
+import { siteTimeZone } from './format'
 
 export type UsefulAppsStoreStatus = 'ok' | 'missing'
 
-/** Una ficha tal como la guarda el job. `missing` = la tienda contestó 404 (no está en Uruguay). */
+/**
+ * Una ficha tal como la guarda el job. `missing` = la tienda contestó 404: en el App Store /uy/,
+ * no está en Uruguay; en Google Play, la ficha ya no existe (Play contesta 200 con gl=UY aunque la
+ * app no se ofrezca acá).
+ */
 export interface UsefulAppsStoreSignal {
   status: UsefulAppsStoreStatus
   /** Día en que se leyó la ficha. Mongo lo devuelve como Date o como string. */
@@ -76,14 +82,30 @@ export function usefulAppsSafeIcon(url: unknown): string | null {
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/
 
-/** `YYYY-MM-DD` de un string ISO o un Date; `null` si no es una fecha. */
+function calendarDay(at: Date, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(at)
+  const part = (type: string) => parts.find(p => p.type === type)?.value ?? ''
+  return `${part('year')}-${part('month')}-${part('day')}`
+}
+
+/**
+ * `YYYY-MM-DD` de un día o de un instante; `null` si no es una fecha. Un día suelto queda como
+ * está; un instante (la captura del job, un Date de Mongo) pasa al día de Uruguay, con la misma
+ * regla que el resto del sitio (`siteTimeZone`): la corrida de las 01:34 UTC es la noche anterior
+ * acá, y fechada con el día UTC decía "tiendas leídas" mañana.
+ */
 export function usefulAppsIsoDay(value: unknown): string | null {
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value.toISOString().slice(0, 10)
+  if (typeof value === 'string' && DAY.test(value)) {
+    return Number.isNaN(Date.parse(`${value}T00:00:00Z`)) ? null : value
   }
-  if (typeof value !== 'string') return null
-  const day = value.slice(0, 10)
-  return DAY.test(day) && !Number.isNaN(Date.parse(`${day}T00:00:00Z`)) ? day : null
+  const at = value instanceof Date ? value : typeof value === 'string' ? new Date(value) : null
+  if (!at || Number.isNaN(at.getTime())) return null
+  return calendarDay(at, siteTimeZone(at))
 }
 
 function daysBetween(from: string, to: string): number {

@@ -13,6 +13,7 @@ import {
   USEFUL_APPS_NOT_APPS,
   USEFUL_APPS_SAFETY,
   usefulAppsKitSanitize,
+  usefulAppsNotAppsFor,
 } from '../../utils/usefulAppsContent'
 
 const byId = new Map(USEFUL_APPS.map(a => [a.id, a]))
@@ -83,6 +84,35 @@ describe('lo que no es una app', () => {
         expect(c.label.trim(), s.id).not.toBe('')
       }
       expect(s.source, s.id).toMatch(/^https:\/\//)
+    }
+  })
+})
+
+describe('lo que no es una app, desde el buscador', () => {
+  const ids = (q: string) => usefulAppsNotAppsFor(q).map(s => s.id)
+
+  it('una búsqueda del servicio trae su aviso', () => {
+    expect(ids('OSE')).toEqual(['ose'])
+    expect(ids('app de OSE')).toEqual(['ose'])
+    expect(ids('correo uruguayo')).toEqual(['correo'])
+    expect(ids('ID Uruguay')).toEqual(['id-uruguay'])
+    expect(ids('recargar la STM')).toEqual(['recarga-stm'])
+    expect(ids('tarjeta stm')).toEqual(['recarga-stm'])
+    expect(ids('bhu')).toEqual(['bhu'])
+    expect(ids('pagar con qr')).toEqual(['toke'])
+  })
+
+  it('una palabra genérica del nombre no alcanza', () => {
+    expect(ids('tarjeta')).toEqual([])
+    expect(ids('banco')).toEqual([])
+    expect(ids('app de la luz')).toEqual([])
+    expect(ids('')).toEqual([])
+  })
+
+  it('cada aviso tiene palabras de búsqueda en minúsculas', () => {
+    for (const s of USEFUL_APPS_NOT_APPS) {
+      expect(s.keywords.length, s.id).toBeGreaterThan(0)
+      for (const k of s.keywords) expect(k, s.id).toBe(k.toLowerCase())
     }
   })
 })

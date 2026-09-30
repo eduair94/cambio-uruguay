@@ -12,8 +12,12 @@
 //     HTML ("10 ago 2026"); el App Store la trae en el bloque `versionHistory`
 //     (`secondarySubtitle`, fecha completa) y en un `<time datetime>` junto al número de versión;
 //   - las descargas, sólo en Play ("100 k+", rotulado "Descargas").
-// Un 404 es una ausencia EXPLÍCITA (la app no está en Uruguay). Cualquier otra cosa —red, 5xx, un
-// 200 sin JSON-LD— es un error y la corrida conserva lo que ya sabía (refresh.ts).
+// Un 404 es una ausencia EXPLÍCITA, pero no dice lo mismo en las dos tiendas. El App Store en /uy/
+// contesta 404 si la app no se ofrece en Uruguay. Google Play NO: con `gl=UY` contesta 200, con
+// JSON-LD y todo, aunque la app no esté disponible acá (medido el 30/9/2026 con PayPay, Venmo y
+// Cash App, que en el App Store /uy/ dan 404). En Android un 404 sólo significa que la ficha ya
+// no existe en ningún país. Cualquier otra cosa —red, 5xx, un 200 sin JSON-LD— es un error y la
+// corrida conserva lo que ya sabía (refresh.ts), después de los reintentos.
 import type { StoreListing, StoreName } from "./types";
 
 export const USEFUL_APPS_UA = "cambio-uruguay.com apps bot (+https://cambio-uruguay.com)";
@@ -157,7 +161,16 @@ export function parseAppStoreListing(html: string): StoreListing | null {
 export type ReadOutcome =
   | { kind: "ok"; listing: StoreListing }
   | { kind: "missing" }
-  | { kind: "error"; message: string };
+  | { kind: "error"; message: string; retryAfterMs?: number };
+
+/** `Retry-After` en segundos o como fecha HTTP; `undefined` si no vino o no se entiende. */
+export function retryAfterMs(value: string | null, now = Date.now()): number | undefined {
+  if (!value) return undefined;
+  const seconds = Number(value.trim());
+  if (value.trim() !== "" && Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  const at = Date.parse(value);
+  return Number.isNaN(at) ? undefined : Math.max(0, at - now);
+}
 
 export type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
 
@@ -189,7 +202,13 @@ export async function readListing(
     return { kind: "error", message: err instanceof Error ? err.message : String(err) };
   }
   if (res.status === 404) return { kind: "missing" };
-  if (!res.ok) return { kind: "error", message: `HTTP ${res.status}` };
+  if (!res.ok) {
+    return {
+      kind: "error",
+      message: `HTTP ${res.status}`,
+      retryAfterMs: retryAfterMs(res.headers.get("retry-after")),
+    };
+  }
   let html: string;
   try {
     html = await res.text();

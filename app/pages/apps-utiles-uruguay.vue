@@ -9,7 +9,7 @@ servidor lee); después de hidratar, el filtro es del cliente y la URL se reescr
 history.replaceState.
 -->
 <template>
-  <VContainer class="ua-page py-6 py-md-10">
+  <VContainer class="ua-page py-6 py-md-10" @click="onAppLink">
     <VBreadcrumbs
       :items="[
         { title: 'Inicio', to: localePath('/') },
@@ -36,14 +36,7 @@ history.replaceState.
         />
         <StatTile label="Revisado" :value="verifiedShort" :note="storesNote" />
       </div>
-      <ContentTaskLinks
-        label="En esta página"
-        :items="[
-          { label: 'Las imprescindibles', to: '#kit' },
-          { label: 'Todas por categoría', to: '#explorar' },
-          { label: 'Cómo reconocer la oficial', to: '#oficial' },
-        ]"
-      />
+      <ContentTaskLinks label="En esta página" :items="taskLinks" />
     </header>
 
     <UsefulAppsKit
@@ -57,7 +50,12 @@ history.replaceState.
     <section id="explorar" class="ua-block ua-explorer" aria-labelledby="ua-explorar-title">
       <h2 id="ua-explorar-title" class="ua-section-title">Todas las apps, por categoría</h2>
       <UsefulAppsCategoryNav :tabs="tabLinks" :current="state.tab" @select="selectTab" />
-      <UsefulAppsFilters :state="state" :departments="departments" @update="update" />
+      <UsefulAppsFilters
+        :state="filterState"
+        :departments="departments"
+        :can-sort-by-update="hasStoreDates"
+        @update="update"
+      />
 
       <div class="ua-results-head">
         <p class="ua-count" aria-live="polite">
@@ -83,6 +81,16 @@ history.replaceState.
         >, y los clubes de puntos en
         <NuxtLink :to="localePath('/apps-de-beneficios-uruguay')">apps de beneficios</NuxtLink>.
       </p>
+      <ul v-if="notAppHits.length" class="ua-notapp-hits" aria-label="Lo que buscás no es una app">
+        <li v-for="service in notAppHits" :key="service.id">
+          <VIcon size="20" aria-hidden="true">mdi-information-outline</VIcon>
+          <span>
+            <strong>{{ service.name }}</strong
+            >: {{ service.instead }}
+            <a :href="'#no-es-app-' + service.id">Ver los canales oficiales</a>
+          </span>
+        </li>
+      </ul>
 
       <template v-if="results.length">
         <template v-if="grouped">
@@ -95,7 +103,6 @@ history.replaceState.
             <h3 :id="`ua-grupo-${group.category.id}`" class="ua-group__title">
               <VIcon size="22" aria-hidden="true">{{ group.category.icon }}</VIcon>
               {{ group.category.label }}
-              <span class="ua-group__count">{{ group.apps.length }}</span>
             </h3>
             <ul class="ua-grid">
               <li v-for="app in group.apps" :key="app.id">
@@ -140,7 +147,12 @@ history.replaceState.
         ellos. Esto es lo que sí existe.
       </p>
       <ul class="ua-notapps">
-        <li v-for="service in USEFUL_APPS_NOT_APPS" :key="service.id">
+        <li
+          v-for="service in USEFUL_APPS_NOT_APPS"
+          :id="'no-es-app-' + service.id"
+          :key="service.id"
+          class="ua-notapp"
+        >
           <SurfaceCard padding="compact" stretch>
             <h3 class="ua-notapp__name">{{ service.name }}</h3>
             <p class="ua-notapp__looking">{{ service.lookingFor }}</p>
@@ -207,6 +219,7 @@ import {
   type UsefulApp,
   type UsefulAppCategoryId,
   type UsefulAppsPlatform,
+  type UsefulAppsSort,
   type UsefulAppsState,
   type UsefulAppsTab,
   usefulAppIsPublic,
@@ -219,7 +232,7 @@ import {
   usefulAppsQueryFromState,
   usefulAppsSort,
   usefulAppsStateFromQuery,
-  usefulAppsTabCounts,
+  usefulAppsTabCountsFor,
 } from '~/utils/usefulApps'
 import { USEFUL_APPS, USEFUL_APPS_VERIFIED_AT } from '~/utils/usefulAppsCatalog'
 import {
@@ -228,6 +241,7 @@ import {
   USEFUL_APPS_FAQ,
   USEFUL_APPS_NOT_APPS,
   USEFUL_APPS_SAFETY,
+  usefulAppsNotAppsFor,
 } from '~/utils/usefulAppsContent'
 import {
   type UsefulAppsAppFacts,
@@ -270,7 +284,6 @@ onMounted(() => {
 
 const ctx = { essentialIds: USEFUL_APPS_ESSENTIAL_IDS }
 const appsById = new Map(USEFUL_APPS.map(app => [app.id, app]))
-const counts = usefulAppsTabCounts(USEFUL_APPS, ctx)
 const departments = usefulAppsDepartmentsIn(USEFUL_APPS)
 const publicCount = USEFUL_APPS.filter(usefulAppIsPublic).length
 const verifiedLabel = usefulAppsLongDate(USEFUL_APPS_VERIFIED_AT)
@@ -283,19 +296,45 @@ const storesNote = computed(() =>
   storesLabel.value ? `tiendas leídas el ${storesLabel.value}` : 'a mano, ficha por ficha'
 )
 
+// Sin la lectura de las tiendas no hay fechas: "Actualizadas hace poco" se esconde y un
+// ?orden=recientes compartido se lee como "Más útiles primero" (antes aplanaba la lista en el
+// orden del catálogo y decía estar ordenada por fecha).
+const hasStoreDates = computed(() =>
+  Object.values(facts.value).some(app => Boolean(usefulAppsLatestUpdate(app)))
+)
+const orden = computed<UsefulAppsSort>(() =>
+  state.orden === 'recientes' && !hasStoreDates.value ? 'utiles' : state.orden
+)
+const filterState = computed<UsefulAppsState>(() => ({ ...state, orden: orden.value }))
+
 const results = computed(() =>
-  usefulAppsSort(usefulAppsFilter(USEFUL_APPS, state, ctx), state.orden, app =>
+  usefulAppsSort(usefulAppsFilter(USEFUL_APPS, state, ctx), orden.value, app =>
     usefulAppsLatestUpdate(facts.value[app.id])
   )
 )
 const grouped = computed(() =>
-  state.tab === 'todas' && state.orden === 'utiles' ? usefulAppsGroup(results.value) : null
+  state.tab === 'todas' && orden.value === 'utiles' ? usefulAppsGroup(results.value) : null
 )
-const tabLinks = computed(() => usefulAppsTabLinks(localePath(BASE_PATH), state, counts))
+// Cada pastilla cuenta lo que mostraría con la búsqueda y los filtros de ahora.
+const counts = computed(() => usefulAppsTabCountsFor(USEFUL_APPS, state, ctx))
+const tabLinks = computed(() => usefulAppsTabLinks(localePath(BASE_PATH), state, counts.value))
+const notAppHits = computed(() => usefulAppsNotAppsFor(state.q))
+
+// "#kit" suelto es un router.push sin la query: la barra perdía los filtros que la lista seguía
+// mostrando (la query la escribe usePreciosQuerySync con replaceState y el router no la conoce).
+const taskLinks = computed(() => {
+  const search = new URLSearchParams(usefulAppsQueryFromState(state)).toString()
+  const prefix = search ? '?' + search : ''
+  return [
+    { label: 'Las imprescindibles', to: prefix + '#kit' },
+    { label: 'Todas por categoría', to: prefix + '#explorar' },
+    { label: 'Cómo reconocer la oficial', to: prefix + '#oficial' },
+  ]
+})
 const currentCategory = computed(
   () => USEFUL_APP_CATEGORIES.find(category => category.id === state.tab) ?? null
 )
-const filtersActive = computed(() => usefulAppsActiveFilterCount(state) > 0)
+const filtersActive = computed(() => usefulAppsActiveFilterCount(filterState.value) > 0)
 const faqItems = USEFUL_APPS_FAQ as FaqItem[]
 
 function alternativeOf(app: UsefulApp): UsefulApp | null {
@@ -313,6 +352,32 @@ function clearFilters() {
 function openTab(tab: UsefulAppCategoryId) {
   state.tab = tab
   nextTick(() => document.getElementById('explorar')?.scrollIntoView({ block: 'start' }))
+}
+
+// Los enlaces a una tarjeta (el kit, "La oficial es …") llevan data-app-link. Con el explorador en
+// otra pestaña o filtrado, la tarjeta no está en la página y el ancla no llevaba a ningún lado: se
+// abre la categoría de la app, sin filtros, y recién ahí se baja hasta ella. Antes de hidratar, el
+// href ?categoria=…#id navega y llega al mismo lugar.
+function onAppLink(event: MouseEvent) {
+  if (event.defaultPrevented || event.button !== 0) return
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+  const link = (event.target as Element | null)?.closest?.('a[data-app-link]')
+  const app = appsById.get(link?.getAttribute('data-app-link') ?? '')
+  if (!app) return
+  event.preventDefault()
+  if (!document.getElementById(app.id)) {
+    Object.assign(state, { ...USEFUL_APPS_DEFAULT_STATE, tab: app.category })
+  }
+  nextTick(() => {
+    document.getElementById(app.id)?.scrollIntoView({ block: 'start' })
+    const url = window.location.pathname + window.location.search + '#' + app.id
+    const saved = window.history.state
+    window.history.replaceState(
+      saved && typeof saved === 'object' ? { ...saved, current: url } : saved,
+      '',
+      url
+    )
+  })
 }
 
 const title = 'Apps del Estado y apps útiles en Uruguay'
@@ -460,11 +525,6 @@ useHead(() => ({
   font-size: 1.25rem;
   font-weight: 700;
 }
-.ua-group__count {
-  font-size: 0.875rem;
-  font-weight: 600;
-  opacity: 0.7;
-}
 .ua-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -503,6 +563,29 @@ useHead(() => ({
 }
 .ua-empty__title {
   font-weight: 700;
+}
+.ua-notapp-hits {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ua-notapp-hits > li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(var(--v-theme-info), 0.1);
+  line-height: 1.5;
+}
+.ua-notapp-hits a {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+}
+.ua-notapp {
+  scroll-margin-top: 84px;
 }
 .ua-notapps {
   display: grid;

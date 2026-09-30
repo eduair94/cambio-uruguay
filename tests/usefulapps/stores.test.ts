@@ -10,6 +10,7 @@ import {
   parsePlayListing,
   playIcon,
   readListing,
+  retryAfterMs,
 } from "../../classes/usefulapps/stores";
 
 const FIXTURES = path.join(__dirname, "fixtures");
@@ -128,5 +129,18 @@ describe("readListing", () => {
         ua: "cambio-uruguay.com apps bot (+https://cambio-uruguay.com)",
       },
     ]);
+  });
+});
+
+describe("retryAfterMs", () => {
+  it("lee segundos o una fecha HTTP, y nada si no se entiende", () => {
+    expect(retryAfterMs("12")).toBe(12000);
+    expect(retryAfterMs("0")).toBe(0);
+    const now = Date.parse("2026-10-01T01:34:00Z");
+    expect(retryAfterMs("Thu, 01 Oct 2026 01:34:30 GMT", now)).toBe(30000);
+    expect(retryAfterMs("Thu, 01 Oct 2026 01:00:00 GMT", now)).toBe(0);
+    expect(retryAfterMs(null)).toBeUndefined();
+    expect(retryAfterMs("")).toBeUndefined();
+    expect(retryAfterMs("pronto")).toBeUndefined();
   });
 });

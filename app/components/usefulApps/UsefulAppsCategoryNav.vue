@@ -80,7 +80,9 @@ function onSelect(event: MouseEvent, tab: UsefulAppsTab) {
   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
   event.preventDefault()
   emit('select', tab)
-  close(false)
+  // Cerrar el <details> con el foco adentro lo tiraba a <body>: vuelve al resumen, que ahora dice
+  // la categoría elegida.
+  close(true)
 }
 </script>
 

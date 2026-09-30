@@ -36,10 +36,16 @@
           color="primary"
           density="comfortable"
           class="cu-btn-grid"
+          role="group"
           aria-labelledby="ua-filter-tipo"
           @update:model-value="onTipo"
         >
-          <VBtn v-for="option in USEFUL_APPS_KIND_FILTERS" :key="option.id" :value="option.id">
+          <VBtn
+            v-for="option in USEFUL_APPS_KIND_FILTERS"
+            :key="option.id"
+            :value="option.id"
+            :aria-pressed="state.tipo === option.id"
+          >
             {{ option.label }}
           </VBtn>
         </VBtnToggle>
@@ -53,12 +59,21 @@
           color="primary"
           density="comfortable"
           class="cu-btn-grid"
+          role="group"
           aria-labelledby="ua-filter-plataforma"
           @update:model-value="onPlataforma"
         >
-          <VBtn value="todas">Cualquiera</VBtn>
-          <VBtn value="android" prepend-icon="mdi-android">Android</VBtn>
-          <VBtn value="ios" prepend-icon="mdi-apple">iPhone</VBtn>
+          <VBtn value="todas" :aria-pressed="state.plataforma === 'todas'">Cualquiera</VBtn>
+          <VBtn
+            value="android"
+            prepend-icon="mdi-android"
+            :aria-pressed="state.plataforma === 'android'"
+          >
+            Android
+          </VBtn>
+          <VBtn value="ios" prepend-icon="mdi-apple" :aria-pressed="state.plataforma === 'ios'">
+            iPhone
+          </VBtn>
         </VBtnToggle>
       </div>
       <VSelect
@@ -88,6 +103,10 @@
 <script setup lang="ts">
 // Los controles de Vuetify emiten al montar: cada handler compara con el estado actual y sólo
 // avisa un cambio de verdad, así el eco del montaje no reescribe la URL ni resetea nada.
+//
+// VBtnToggle no dice cuál está elegido (VBtn no pone aria-pressed) y es un div sin rol, donde
+// aria-labelledby no se anuncia: role="group" y aria-pressed a mano, como en
+// descuentos-con-tarjeta-uruguay.
 import {
   USEFUL_APPS_KIND_FILTERS,
   USEFUL_APPS_MAX_QUERY,
@@ -99,7 +118,15 @@ import {
   usefulAppsActiveFilterCount,
 } from '~/utils/usefulApps'
 
-const props = defineProps<{ state: UsefulAppsState; departments: readonly UsefulAppDepartment[] }>()
+const props = withDefaults(
+  defineProps<{
+    state: UsefulAppsState
+    departments: readonly UsefulAppDepartment[]
+    /** Sin la lectura de las tiendas no hay fechas: "Actualizadas hace poco" no ordenaría nada. */
+    canSortByUpdate?: boolean
+  }>(),
+  { canSortByUpdate: true }
+)
 const emit = defineEmits<{ update: [patch: Partial<UsefulAppsState>] }>()
 
 const ALL_COUNTRY = 'todo-el-pais'
@@ -112,7 +139,12 @@ const departmentItems = computed(() => [
   { title: 'Todo el país', value: ALL_COUNTRY },
   ...props.departments.map(d => ({ title: d, value: d })),
 ])
-const sortItems = USEFUL_APPS_SORTS.map(sort => ({ title: sort.label, value: sort.id }))
+const sortItems = computed(() =>
+  USEFUL_APPS_SORTS.filter(sort => props.canSortByUpdate || sort.id !== 'recientes').map(sort => ({
+    title: sort.label,
+    value: sort.id,
+  }))
+)
 
 function onQuery(value: string | null) {
   const q = (value ?? '').slice(0, USEFUL_APPS_MAX_QUERY)

@@ -4,7 +4,12 @@
 // FAQ. MÓDULO PURO. Cada afirmación sale de una ficha o de una página oficial abierta el
 // USEFUL_APPS_VERIFIED_AT (utils/usefulAppsCatalog.ts).
 import type { FaqItem } from './faqAnswers'
-import type { UsefulAppCategoryId } from './usefulApps'
+import {
+  type UsefulAppCategoryId,
+  usefulAppsQueryTokens,
+  usefulAppsWordMatches,
+  usefulAppsWordsOf,
+} from './usefulApps'
 
 export interface UsefulAppsKitItem {
   id: string
@@ -164,6 +169,12 @@ export interface UsefulAppsNotApp {
   channels: readonly UsefulAppsNotAppChannel[]
   /** Página oficial donde se vieron los canales. */
   source: string
+  /**
+   * Con qué palabras lo busca la gente en el buscador de la página. Una búsqueda muestra el aviso
+   * sólo si alguna de sus palabras está acá: el nombre solo no alcanza, porque "tarjeta" (de
+   * "Recarga de la tarjeta STM") traería el aviso de la STM a quien busca su banco.
+   */
+  keywords: readonly string[]
 }
 
 // Cada canal se vio en la página oficial que figura en `source` (abiertas el 30/9/2026). Los
@@ -181,6 +192,7 @@ export const USEFUL_APPS_NOT_APPS: readonly UsefulAppsNotApp[] = Object.freeze([
       { label: 'Teléfono', value: '0800 1871 (*1871 desde el celular)', url: 'tel:08001871' },
     ],
     source: 'https://www.ose.com.uy/',
+    keywords: ['ose', 'agua', 'obras sanitarias'],
   },
   {
     id: 'correo',
@@ -198,6 +210,7 @@ export const USEFUL_APPS_NOT_APPS: readonly UsefulAppsNotApp[] = Object.freeze([
       { label: 'Teléfono', value: '0800 2108', url: 'tel:08002108' },
     ],
     source: 'https://www.correo.com.uy/seguimientodeenvios',
+    keywords: ['correo', 'paquete', 'paquetes', 'envio', 'envios', 'seguimiento', 'encomienda'],
   },
   {
     id: 'recarga-stm',
@@ -209,6 +222,7 @@ export const USEFUL_APPS_NOT_APPS: readonly UsefulAppsNotApp[] = Object.freeze([
       { label: 'STM en línea', value: 'stm.gub.uy', url: 'https://stm.gub.uy/app/mistm/cuenta/' },
     ],
     source: 'https://montevideo.gub.uy/stm-en-linea',
+    keywords: ['stm', 'recarga', 'recargar', 'boleto'],
   },
   {
     id: 'id-uruguay',
@@ -224,6 +238,7 @@ export const USEFUL_APPS_NOT_APPS: readonly UsefulAppsNotApp[] = Object.freeze([
       },
     ],
     source: 'https://mi.iduruguay.gub.uy/',
+    keywords: ['id uruguay', 'iduruguay', 'usuario gub.uy', 'contraseña'],
   },
   {
     id: 'toke',
@@ -233,6 +248,7 @@ export const USEFUL_APPS_NOT_APPS: readonly UsefulAppsNotApp[] = Object.freeze([
       'Toke no se baja: es la red de pagos con QR que usás desde la app de tu banco o de tu billetera.',
     channels: [{ label: 'Qué es Toke', value: 'toke.uy', url: 'https://toke.uy/' }],
     source: 'https://toke.uy/',
+    keywords: ['toke', 'qr', 'pagar con qr'],
   },
   {
     id: 'bhu',
@@ -242,8 +258,26 @@ export const USEFUL_APPS_NOT_APPS: readonly UsefulAppsNotApp[] = Object.freeze([
       'El BHU no tiene app: la cuota se paga en línea desde su web. La «Banco Hipotecario» de las tiendas es de Argentina.',
     channels: [{ label: 'Web del BHU', value: 'bhu.com.uy', url: 'https://www.bhu.com.uy/' }],
     source: 'https://www.bhu.com.uy/',
+    keywords: ['bhu', 'hipotecario', 'vivienda'],
   },
 ])
+
+/**
+ * Lo que no es una app y coincide con una búsqueda: quien escribe "OSE" o "correo" tiene la
+ * respuesta más abajo en la misma página, y sin esto veía "Ninguna app coincide".
+ */
+export function usefulAppsNotAppsFor(query: string): UsefulAppsNotApp[] {
+  const tokens = usefulAppsQueryTokens(query)
+  if (!tokens.length) return []
+  return USEFUL_APPS_NOT_APPS.filter(item => {
+    const keywords = usefulAppsWordsOf(item.keywords)
+    const words = usefulAppsWordsOf([item.name, ...item.keywords])
+    return (
+      tokens.every(token => usefulAppsWordMatches(words, token)) &&
+      tokens.some(token => usefulAppsWordMatches(keywords, token))
+    )
+  })
+}
 
 export const USEFUL_APPS_CRITERIA: readonly string[] = Object.freeze([
   'Está hoy en Google Play o en el App Store de Uruguay: abrimos cada ficha.',

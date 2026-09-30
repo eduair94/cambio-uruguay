@@ -31,7 +31,10 @@
       <span>
         {{ view.warning }}
         <template v-if="view.alternative">
-          La oficial es <a :href="`#${view.alternative.id}`">{{ view.alternative.name }}</a
+          La oficial es
+          <a :href="view.alternative.href" :data-app-link="view.alternative.id">{{
+            view.alternative.name
+          }}</a
           >.
         </template>
       </span>

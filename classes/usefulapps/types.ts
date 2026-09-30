@@ -18,7 +18,11 @@ export interface StoreListing {
 }
 
 export interface StoreSignal extends Partial<StoreListing> {
-  /** `missing` = la tienda contestó 404: la app no está en la tienda de Uruguay. */
+  /**
+   * `missing` = la tienda contestó 404. En el App Store (`/uy/`) eso es "no está en Uruguay"; en
+   * Google Play sólo "la ficha ya no existe": Play contesta 200 con `gl=UY` aunque la app no se
+   * ofrezca acá (ver stores.ts).
+   */
   status: "ok" | "missing";
   /** Día (YYYY-MM-DD) de la lectura. Una lectura fallida conserva la anterior con SU fecha. */
   checkedAt: string;
@@ -45,6 +49,8 @@ export interface UsefulAppsCounts {
   missing: number;
   /** Pedidos que fallaron (red, 5xx, página sin JSON-LD): conservan lo anterior. */
   failed: number;
+  /** Reintentos gastados en la corrida (429, 5xx, red), con tope en refresh.ts. */
+  retried: number;
 }
 
 export interface UsefulAppsSnapshot {
