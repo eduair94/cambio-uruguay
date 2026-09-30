@@ -321,9 +321,15 @@ describe("ventanas y pedidos", () => {
     for (let i = 1; i < 4; i++) expect(weeks[i].start).toBe(addDays(weeks[i - 1].end, 1));
   });
 
-  it("cinco reportes, en el orden del spec", () => {
+  it("siete reportes, en el orden del spec", () => {
     const reqs = pageRankingRequests(windows);
-    expect(reqs).toHaveLength(5);
+    expect(reqs).toHaveLength(7);
+    // 5 y 6: sesiones uruguayas por canal y por dispositivo, las cuatro semanas.
+    expect(reqs[5].dimensions!.map((d) => d.name)).toEqual(["sessionDefaultChannelGroup"]);
+    expect(reqs[5].dateRanges.map((r) => r.name)).toEqual(["w0", "w1", "w2", "w3"]);
+    expect(reqs[5].dimensionFilter).toEqual(exactDimension("countryId", "UY"));
+    expect(reqs[6].dimensions!.map((d) => d.name)).toEqual(["deviceCategory"]);
+    expect(reqs[6].dateRanges).toHaveLength(4);
     expect(reqs[0].dateRanges.map((r) => r.name)).toEqual(["w0", "w1", "w2", "w3"]);
     expect(reqs[0].dimensionFilter).toEqual(exactDimension("countryId", "UY"));
     expect(reqs[1].dimensions!.map((d) => d.name)).toEqual(["pagePath", "pageTitle"]);
@@ -450,6 +456,52 @@ describe("buildPageRanking", () => {
   it("los reportes por página piden de mayor a menor: un truncado pierde las chicas", () => {
     const reqs = pageRankingRequests(windows);
     for (const i of [0, 1, 2, 3]) expect(reqs[i].orderBys?.[0]?.desc).toBe(true);
+  });
+
+  it("series semanales por canal y por dispositivo, de mayor a menor", () => {
+    const reports = [
+      ...fixture(),
+      report(
+        ["sessionDefaultChannelGroup", "dateRange"],
+        ["sessions"],
+        [
+          ["Direct", "w0", 317],
+          ["Direct", "w3", 207],
+          ["Organic Search", "w0", 548],
+          ["Organic Search", "w1", 641],
+          ["Organic Search", "w2", 784],
+          ["Organic Search", "w3", 896],
+          ["AI Assistant", "w3", 153],
+          ["AI Assistant", "w0", 42],
+        ]
+      ),
+      report(
+        ["deviceCategory", "dateRange"],
+        ["sessions"],
+        [
+          ["desktop", "w0", 576],
+          ["mobile", "w0", 529],
+          ["mobile", "w3", 800],
+          ["desktop", "w3", 580],
+        ]
+      ),
+    ];
+    const t = build(reports).totals;
+    expect(t.weeklyChannels).toEqual([
+      { label: "Organic Search", weeks: [548, 641, 784, 896] },
+      { label: "Direct", weeks: [317, 0, 0, 207] },
+      { label: "AI Assistant", weeks: [42, 0, 0, 153] },
+    ]);
+    expect(t.weeklyDevices).toEqual([
+      { label: "mobile", weeks: [529, 0, 0, 800] },
+      { label: "desktop", weeks: [576, 0, 0, 580] },
+    ]);
+  });
+
+  it("sin los reportes semanales las series quedan vacías", () => {
+    const t = build().totals;
+    expect(t.weeklyChannels).toEqual([]);
+    expect(t.weeklyDevices).toEqual([]);
   });
 
   it("vacío cuando Uruguay no tiene vistas", () => {
