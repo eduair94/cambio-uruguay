@@ -11,13 +11,7 @@
  */
 
 export type PriceHistoryVertical =
-  | 'autos'
-  | 'alquiler'
-  | 'venta'
-  | 'equipar'
-  | 'sillas'
-  | 'celulares'
-  | 'movilidad'
+  'autos' | 'alquiler' | 'venta' | 'equipar' | 'sillas' | 'celulares' | 'movilidad'
 
 export type PriceHistoryCurrency = 'UYU' | 'USD'
 

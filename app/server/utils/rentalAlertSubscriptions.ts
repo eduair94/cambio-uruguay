@@ -169,7 +169,7 @@ export async function createRentalAlertSubscription(user: RentalAlertUser, input
     const quota = await RentalAlertQuotaModel.findOneAndUpdate(
       { _id: `${user.uid}:${Math.floor(now / 60000)}` },
       { $inc: { attempts: 1 }, $setOnInsert: { expiresAt: new Date(now + 180000) } },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     ).lean()
     if ((quota?.attempts || 0) > 10) throw rentalAlertError('too_many_requests', 429)
     const startsAt = await prepareRentalAlertBaseline(kind)
@@ -248,7 +248,7 @@ export async function updateRentalAlertSubscription(
     const updated = await RentalAlertModel.findOneAndUpdate(
       { _id: key, uid: user.uid, revision: row.revision },
       { $set: patch },
-      { new: true }
+      { returnDocument: 'after' }
     ).lean()
     if (!updated) throw rentalAlertError('temporarily_unavailable', 503)
     return { item: publicRentalAlert(updated) }

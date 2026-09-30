@@ -209,11 +209,11 @@ export function rentalAlertOutboxCurrent(
 ): boolean {
   return Boolean(
     alert?.active &&
-      alert.uid === outbox.uid &&
-      alert.kind === outbox.kind &&
-      alert.revision === outbox.revision &&
-      index.algorithm === outbox.algorithm &&
-      new Date(outbox.createdAt).getTime() >= new Date(index.baselineAt).getTime()
+    alert.uid === outbox.uid &&
+    alert.kind === outbox.kind &&
+    alert.revision === outbox.revision &&
+    index.algorithm === outbox.algorithm &&
+    new Date(outbox.createdAt).getTime() >= new Date(index.baselineAt).getTime()
   )
 }
 

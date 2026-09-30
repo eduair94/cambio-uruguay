@@ -1,13 +1,7 @@
 import mongoose, { Schema, type Model } from 'mongoose'
 import type { RentalAlertKind } from '../../utils/rentalAlerts'
 export type RentalAlertChannelStatus =
-  | 'pending'
-  | 'sending'
-  | 'sent'
-  | 'failed'
-  | 'uncertain'
-  | 'unavailable'
-  | 'skipped'
+  'pending' | 'sending' | 'sent' | 'failed' | 'uncertain' | 'unavailable' | 'skipped'
 export interface RentalAlertChannelState {
   status: RentalAlertChannelStatus
   attempts: number

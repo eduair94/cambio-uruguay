@@ -72,7 +72,7 @@ it('returns HTTP 404 through app.vue and the installed Nuxt SSR runtime after hi
       'utf8'
     ),
     {
-      h3,
+      '@nuxt/nitro-server/h3': h3,
       vue,
       '../nuxt.js': { useNuxtApp: () => nuxtApp },
       './router.js': {},
@@ -140,7 +140,10 @@ it('returns HTTP 404 through app.vue and the installed Nuxt SSR runtime after hi
   )
   const renderer = runSource(
     readFileSync(
-      resolve(__dirname, '../../node_modules/nuxt/dist/core/runtime/nitro/handlers/renderer.js'),
+      resolve(
+        __dirname,
+        '../../node_modules/@nuxt/nitro-server/dist/runtime/handlers/renderer.mjs'
+      ),
       'utf8'
     ),
     {
@@ -149,6 +152,7 @@ it('returns HTTP 404 through app.vue and the installed Nuxt SSR runtime after hi
         getRequestDependencies: () => ({ styles: {}, scripts: {} }),
         getPreloadLinks: () => [],
         getPrefetchLinks: () => [],
+        renderResourceHeaders: () => ({}),
       },
       h3,
       ufo,
@@ -162,7 +166,7 @@ it('returns HTTP 404 through app.vue and the installed Nuxt SSR runtime after hi
         getRouteRules: () => ({}),
         useNitroApp: () => ({ hooks }),
       },
-      '../utils/renderer/build-files.js': {
+      '../utils/renderer/build-files.mjs': {
         getRenderer: async () => ({
           renderToString: async () => {
             const vueApp = vue.createSSRApp(root)
@@ -180,14 +184,23 @@ it('returns HTTP 404 through app.vue and the installed Nuxt SSR runtime after hi
           },
         }),
       },
-      '../utils/cache.js': {},
-      '../utils/renderer/payload.js': { renderPayloadScript: () => [] },
-      '../utils/renderer/app.js': { createSSRContext: () => ssrContext },
-      '../utils/renderer/inline-styles.js': {},
-      '../utils/renderer/islands.js': {},
+      '../utils/cache.mjs': {},
+      '../utils/renderer/payload.mjs': { renderPayloadScript: () => [] },
+      '../utils/renderer/app.mjs': { createSSRContext: () => ssrContext },
+      '../utils/renderer/inline-styles.mjs': {},
+      '../utils/renderer/islands.mjs': {},
       '#internal/unhead.config.mjs': {},
-      '#internal/nuxt.config.mjs': { appHead: {}, appTeleportAttrs: {}, appTeleportTag: '' },
-      '#internal/nuxt/paths': {},
+      '#internal/nuxt/nitro-config.mjs': {},
+      '#internal/nuxt.config.mjs': {
+        appHead: {},
+        appTeleportAttrs: {},
+        appTeleportTag: '',
+        componentIslands: false,
+      },
+      '#internal/nuxt/entry-ids.mjs': { default: [] },
+      '#internal/entry-chunk.mjs': {},
+      '#internal/nuxt/paths': { buildAssetsURL: () => '', publicAssetsURL: () => '' },
+      pathe: {},
     },
     { process: { env: {} } }
   ).default

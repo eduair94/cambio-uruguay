@@ -1,51 +1,16 @@
 // @ts-check
-import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
-import eslintConfigPrettier from 'eslint-config-prettier'
-import eslintPluginPrettier from 'eslint-plugin-prettier'
+import { createConfigForNuxt } from '@nuxt/eslint-config'
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 
 export default createConfigForNuxt({
   features: {
     // Rules for module authors
     tooling: true,
   },
-  dirs: {
-    src: [
-      './pages',
-      './components',
-      './composables',
-      './utils',
-      './layouts',
-      './plugins',
-      './middleware',
-      './assets',
-      './server',
-      './stores',
-      './types',
-    ],
-  },
 }).append(
-  // Prettier config - must come first to avoid conflicts
-  eslintConfigPrettier,
-  {
-    plugins: {
-      prettier: eslintPluginPrettier,
-    },
-    rules: {
-      'prettier/prettier': [
-        'error',
-        {
-          semi: false,
-          singleQuote: true,
-          trailingComma: 'es5',
-          tabWidth: 2,
-          useTabs: false,
-          printWidth: 100,
-          arrowParens: 'avoid',
-          endOfLine: 'lf',
-        },
-      ],
-    },
-  },
+  // Prettier first among the appended configs: it switches off the stylistic rules it owns and
+  // reports formatting as `prettier/prettier`, reading the options from .prettierrc.
+  eslintPluginPrettierRecommended,
   // Your custom configs here
   {
     files: ['**/*.{js,mjs,cjs,ts,mts,vue}'],

@@ -65,7 +65,7 @@ export default defineCachedEventHandler(
     const config = useRuntimeConfig()
     const base = config.apiBaseServer || config.public.apiBase
 
-    let rawBranches: unknown[] = []
+    let rawBranches: unknown[]
     try {
       rawBranches = await $fetch<unknown[]>('/locations', { baseURL: base })
     } catch (err) {
@@ -73,7 +73,7 @@ export default defineCachedEventHandler(
       rawBranches = []
     }
 
-    let localData: Record<string, Partial<BranchCasa>> = {}
+    let localData: Record<string, Partial<BranchCasa>>
     try {
       localData = await $fetch<Record<string, Partial<BranchCasa>>>('/localData', { baseURL: base })
     } catch (err) {

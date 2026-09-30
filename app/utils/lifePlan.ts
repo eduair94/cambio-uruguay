@@ -135,11 +135,7 @@ export function lifePlanBestRealNet(
 }
 
 export type LifePlanDebtKind =
-  | 'sin_descuento'
-  | 'con_descuento'
-  | 'gastos_comunes'
-  | 'estado'
-  | 'otro'
+  'sin_descuento' | 'con_descuento' | 'gastos_comunes' | 'estado' | 'otro'
 
 export interface LifePlanDebtKindMeta {
   id: LifePlanDebtKind

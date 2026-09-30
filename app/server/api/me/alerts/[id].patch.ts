@@ -19,5 +19,7 @@ export default defineEventHandler(async event => {
     set['channels.telegram'] = b.channels.telegram === true
   }
   await connectDb()
-  return AlertModel.findOneAndUpdate({ _id: id, uid }, { $set: set }, { new: true }).lean().exec()
+  return AlertModel.findOneAndUpdate({ _id: id, uid }, { $set: set }, { returnDocument: 'after' })
+    .lean()
+    .exec()
 })

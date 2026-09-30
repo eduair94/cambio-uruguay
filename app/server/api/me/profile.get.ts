@@ -10,7 +10,7 @@ export default defineEventHandler(async event => {
   const user = await UserModel.findByIdAndUpdate(
     uid,
     { $set: { email } },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
   )
   return {
     uid: user._id,

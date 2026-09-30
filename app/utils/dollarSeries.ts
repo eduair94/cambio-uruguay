@@ -17,7 +17,7 @@ export function toSeries(
     if (!p || !p.date) continue
     const buy = typeof p.buy === 'number' ? p.buy : null
     const sell = typeof p.sell === 'number' ? p.sell : null
-    let value: number | null = null
+    let value: number | null
     if (kind === 'sell') value = sell ?? buy
     else if (kind === 'buy') value = buy ?? sell
     else value = buy !== null && sell !== null ? (buy + sell) / 2 : (sell ?? buy)

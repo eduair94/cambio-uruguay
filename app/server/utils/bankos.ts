@@ -107,7 +107,8 @@ export async function getRawCatalog(): Promise<{
       return { catalog, source: 'snapshot' }
     } catch (snapErr) {
       throw new Error(
-        `Bankos unavailable: live failed (${(liveErr as Error).message}) and no snapshot (${(snapErr as Error).message})`
+        `Bankos unavailable: live failed (${(liveErr as Error).message}) and no snapshot (${(snapErr as Error).message})`,
+        { cause: snapErr }
       )
     }
   }

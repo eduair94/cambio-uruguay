@@ -938,7 +938,6 @@ export default defineNuxtConfig({
 
   // Modules
   modules: [
-    //'@nuxtjs/web-vitals',
     '@nuxtjs/seo',
     // NOT '@nuxtjs/leaflet' — that module unconditionally pushes
     // leaflet/dist/leaflet.css into Nuxt's GLOBAL css array, shipping it on
@@ -1043,7 +1042,6 @@ export default defineNuxtConfig({
         ],
       },
     ],
-    //'@sentry/nuxt/module',
     [
       '@vite-pwa/nuxt',
       {
@@ -1333,13 +1331,10 @@ export default defineNuxtConfig({
     // Required for @nuxtjs/i18n to emit absolute hreflang/canonical alternate
     // links (was missing -> no hreflang tags were rendered).
     baseUrl: 'https://cambio-uruguay.com',
-    bundle: {
-      optimizeTranslationDirective: false,
-    },
     locales: [
-      { code: 'en', iso: 'en-US', name: 'English', file: 'en.ts' },
-      { code: 'es', iso: 'es-ES', name: 'Español', file: 'es.ts' },
-      { code: 'pt', iso: 'pt-PT', name: 'Português', file: 'pt.ts' },
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.ts' },
+      { code: 'es', language: 'es-ES', name: 'Español', file: 'es.ts' },
+      { code: 'pt', language: 'pt-PT', name: 'Português', file: 'pt.ts' },
     ],
     defaultLocale: 'es',
     strategy: 'prefix_except_default',

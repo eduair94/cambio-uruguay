@@ -40,7 +40,7 @@ const keyFor = (date: string) => `${PREFIX}:${date}`
  * issues without loading a year of JSON.
  */
 export async function listIssueDates(): Promise<string[]> {
-  let keys: string[] = []
+  let keys: string[]
   try {
     // `useStorage` itself is inside the try: it is a Nitro auto-import, so it is
     // simply absent outside a Nitro runtime (unit tests, a stray script) and

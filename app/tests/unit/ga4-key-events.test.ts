@@ -29,6 +29,7 @@ describe('GA4 key events', () => {
     expect(sources[event]).toContain(`'${event}'`)
   })
 
+  // Parses every .ts/.vue file in six directories: ~5 s on CI, right at vitest's default budget.
   it('internal interaction metadata does not reuse traffic-source or campaign fields', () => {
     const collisions: string[] = []
     const scan = (dir: string) => {
@@ -74,7 +75,7 @@ describe('GA4 key events', () => {
     for (const dir of ['components', 'composables', 'layouts', 'pages', 'plugins', 'utils'])
       scan(dir)
     expect(collisions).toEqual([])
-  })
+  }, 30_000)
 
   it('alert_created carries the alert shape, not a casa', () => {
     const src = sources.alert_created

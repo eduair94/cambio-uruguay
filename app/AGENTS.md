@@ -1,14 +1,15 @@
 # app/ — AGENTS
 
-Nuxt 4 (`compatibilityVersion: 4`) + Vuetify 4.1.5 SSR frontend for cambio-uruguay.com: live USD rates, ~60 content/tool pages, trilingual (es default / en / pt).
+Nuxt 4 (`compatibilityVersion: 4`) + Vuetify 4.2 SSR frontend for cambio-uruguay.com: live USD rates, ~60 content/tool pages, trilingual (es default / en / pt).
 
 ## Run / build / test / lint
+- **Nuxt stays on 4.4.x (`~4.4.8`) while the VPS runs Node 22.14**: Nuxt 4.5 declares `engines.node ^22.19.0`, and the production build runs on that box. With it: Vite 7 (Nuxt 4.4's), `@nuxtjs/i18n` 10.4.x (10.5+ needs Nuxt 4.5's unhead 3). `isomorphic-dompurify` is pinned to 3.19.0 for the same reason (3.20+/4.x need Node ≥22.22.2). Lift them together when the VPS Node moves.
 - Dev: `npm run dev` → **port 3311** (`0.0.0.0`); prod: `npm run build` then `npm run start`.
 - PM2 and the staging probe must explicitly set `NODE_ENV=production`: external Vue modules select their runtime when Node starts, independently of the Nuxt build mode. Also keep their `--max-old-space-size=512` budget aligned, below PM2's 900 MiB RSS restart threshold. An absent environment and oversized default heap contributed to memory restarts and intermittent 502s on 2026-09-07. Keep `ecosystem.config.cjs` and `scripts/check-staging.cjs` aligned; see `docs/app/SSR_RUNTIME.md`.
-- After `.nuxt` is wiped (dev restart, branch switch): `npx nuxi prepare` (also runs via `postinstall`/`prepare` = `nuxt prepare`).
+- After `.nuxt` is wiped (dev restart, branch switch): `npx nuxi prepare` (also runs via `postinstall` = `nuxt prepare`).
 - **`npm run typecheck` (vue-tsc) is BROKEN — it crashes. Use `npm run lint` (eslint flat) instead;** `npm run lintfix` to auto-fix.
-- Prettier is enforced *through* eslint (`prettier/prettier` rule): `semi:false, singleQuote, arrowParens:avoid, printWidth:100, trailingComma:es5, tabWidth:2`. lint-staged runs `lintfix` on js/ts/vue, `prettier --write` on json/md/css. Known conflict: prettier vs `vue/html-self-closing` anchor/attr wrapping — let `lintfix` settle it, don't hand-format.
-- Unit: `npm run test:unit` (= `vitest run`; `tests/unit/**`, **environment: node, no Nuxt runtime** — tested logic must avoid Nuxt auto-imports & use relative imports). Most `utils/*.ts` have a paired `*.test.ts`.
+- Prettier is enforced *through* eslint (`prettier/prettier` rule): `semi:false, singleQuote, arrowParens:avoid, printWidth:100, trailingComma:es5, tabWidth:2`. There is no pre-commit hook: `npm run lint` is the gate (CI and the VPS guide bot both run it), so run `npm run lintfix` before pushing. Known conflict: prettier vs `vue/html-self-closing` anchor/attr wrapping — let `lintfix` settle it, don't hand-format.
+- Unit: `npm run test:unit` (= `vitest run`; `tests/unit/**`, **environment: node, no Nuxt runtime** — tested logic must avoid Nuxt auto-imports & use relative imports). Most `utils/*.ts` have a paired `*.test.ts`. The parity tests (`*Parity.test.ts`, `aduanaFallback`, `carContacts`, `priceEvents`, `priceHistory`) also import root `classes/*` modules, and CI's app job installs only `app/`: every package those modules load at runtime must be an app devDependency. Today that is `axios` (`classes/stores/profile.ts` → `signals/tone.ts` → `classes/gemini.ts`) — it looks unused from `app/`, don't prune it.
 - E2E: `npm run test:e2e` (Playwright, system Chrome, `tests/e2e/**`, baseURL `localhost:3311`, `workers:1`, reuses running dev server). **Gate every interaction on hydration** (`expect(...).toPass()` retries) or you hit first-click races (Suspense hydration bug is latent site-wide).
 
 ## Layout

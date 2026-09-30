@@ -19,7 +19,7 @@ export async function withRentalAlertLease<T>(
     claim = await RentalAlertLeaseModel.findOneAndUpdate(
       { _id: key, expiresAt: { $lte: now } },
       { $set: { owner, expiresAt: new Date(now.getTime() + LEASE_MS) } },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     ).lean()
   } catch (error) {
     if ((error as { code?: number }).code === 11000) throw leaseError()

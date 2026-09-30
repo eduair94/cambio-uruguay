@@ -218,7 +218,7 @@ describe('authenticated rental subscription lifecycle', () => {
     expect(mocks.update).toHaveBeenCalledWith(
       { _id: id, uid: user.uid, revision: 1 },
       { $set: expect.objectContaining({ active: false, revision: 2 }) },
-      { new: true }
+      { returnDocument: 'after' }
     )
     expect(mocks.baseline).not.toHaveBeenCalled()
   })

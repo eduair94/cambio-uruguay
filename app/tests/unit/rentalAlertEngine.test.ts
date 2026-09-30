@@ -162,16 +162,13 @@ describe('rental alert durable delivery decisions', () => {
   })
 
   it('does not skip matching IDs past a full digest or unmatched events inside its page', () => {
-    const events = Array.from(
-      { length: 501 },
-      (_, i): RentalAlertEventDoc => ({
-        _id: `event-${i}`,
-        candidateId: String(i).padStart(4, '0'),
-        kind: 'rental-search',
-        discoveredAt: at,
-        baseline: false,
-      })
-    )
+    const events = Array.from({ length: 501 }, (_, i): RentalAlertEventDoc => ({
+      _id: `event-${i}`,
+      candidateId: String(i).padStart(4, '0'),
+      kind: 'rental-search',
+      discoveredAt: at,
+      baseline: false,
+    }))
     const matches = events.filter((_, i) => i % 2 === 0).map(event => candidate(event.candidateId))
     const first = rentalAlertSelectEvents(events, matches, 200)
     expect(first.selected).toHaveLength(200)

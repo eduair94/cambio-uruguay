@@ -243,8 +243,8 @@ export function sentryErrorOptions(
 ) {
   const permitted = new Set(
     runtime === 'browser'
-      ? ['InboundFilters', 'FunctionToString', 'BrowserApiErrors', 'GlobalHandlers', 'Dedupe']
-      : ['InboundFilters', 'FunctionToString', 'OnUncaughtException', 'OnUnhandledRejection']
+      ? ['EventFilters', 'FunctionToString', 'BrowserApiErrors', 'GlobalHandlers', 'Dedupe']
+      : ['EventFilters', 'FunctionToString', 'OnUncaughtException', 'OnUnhandledRejection']
   )
   const seen = new WeakSet<object>()
   return {
@@ -254,7 +254,7 @@ export function sentryErrorOptions(
       : 'production',
     release: /^[\w.@+-]{1,160}$/.test(config.release || '') ? config.release : undefined,
     // Scripts the page embeds but does not control. Their frames are their own
-    // code, so the report is not actionable here; InboundFilters reads the last
+    // code, so the report is not actionable here; EventFilters reads the last
     // named frame, which for these failures is the third-party file itself.
     ...(runtime === 'browser'
       ? {
@@ -265,10 +265,22 @@ export function sentryErrorOptions(
             /^(?:chrome|moz|safari-web|safari)-extension:/,
           ],
         }
-      : {}),
-    sendDefaultPii: false,
+      : {
+          // Both only serve tracing, which is never enabled: the load-time module
+          // hooks, and the SpanStreaming integration v11 adds behind the allowlist.
+          enableRuntimeChannelInjection: false,
+          traceLifecycle: 'static' as const,
+        }),
+    // No IP inference, headers, cookies, bodies or query strings (v11 collects
+    // all of them by default; `sendDefaultPii` no longer exists).
+    dataCollection: {
+      userInfo: false,
+      cookies: false,
+      httpHeaders: false,
+      httpBodies: [],
+      urlQueryParams: false,
+    },
     sendClientReports: false,
-    autoSessionTracking: false,
     maxBreadcrumbs: 0,
     tracePropagationTargets: [] as string[],
     integrations: <T extends { name: string }>(integrations: T[]) =>

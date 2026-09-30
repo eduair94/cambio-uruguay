@@ -9,13 +9,7 @@
 // nunca en `benefits`.
 
 export type MembershipCategory =
-  | 'medio'
-  | 'shopping'
-  | 'supermercado'
-  | 'combustible'
-  | 'entretenimiento'
-  | 'joven'
-  | 'otro'
+  'medio' | 'shopping' | 'supermercado' | 'combustible' | 'entretenimiento' | 'joven' | 'otro'
 
 export interface MembershipCard {
   id: string

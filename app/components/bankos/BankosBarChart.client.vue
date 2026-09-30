@@ -1,12 +1,5 @@
 <template>
-  <VChart
-    class="bankos-echart"
-    :option="option"
-    :theme="null"
-    autoresize
-    role="img"
-    :aria-label="ariaLabel"
-  />
+  <VChart class="bankos-echart" :option="option" autoresize role="img" :aria-label="ariaLabel" />
 </template>
 
 <script setup lang="ts">
@@ -50,7 +43,14 @@ const option = computed(() => {
   const rows = [...props.rows].reverse()
   const grouped = rows.some(r => typeof r.value2 === 'number')
   return {
-    grid: { left: 4, right: 16, top: grouped ? 30 : 8, bottom: 4, containLabel: true },
+    grid: {
+      left: 4,
+      right: 16,
+      top: grouped ? 30 : 8,
+      bottom: 4,
+      outerBoundsMode: 'same',
+      outerBoundsContain: 'axisLabel',
+    },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },

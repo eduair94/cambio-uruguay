@@ -122,7 +122,7 @@ async function consumeQuota(uid: string, now: Date) {
     const value = await RentalAvailabilityQuotaModel.findOneAndUpdate(
       { _id: `${ownerHash}:${windowMs}:${window}` },
       { $inc: { attempts: 1 }, $setOnInsert: { expiresAt: new Date((window + 2) * windowMs) } },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     ).lean()
     if (!value || value.attempts > limit) throw rentalAvailabilityError('rate_limited', 429)
   }

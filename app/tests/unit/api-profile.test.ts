@@ -28,7 +28,7 @@ describe('GET /api/me/profile', () => {
     expect(findByIdAndUpdate).toHaveBeenCalledWith(
       'u1',
       { $set: { email: 'a@b.com' } },
-      expect.objectContaining({ upsert: true, new: true })
+      expect.objectContaining({ upsert: true, returnDocument: 'after' })
     )
     expect(res).toMatchObject({ uid: 'u1', email: 'a@b.com' })
   })

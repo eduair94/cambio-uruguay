@@ -73,9 +73,7 @@ function listing(overrides: Partial<PublicCarListing> = {}): PublicCarListing {
 }
 
 type Scenario =
-  | { kind: 'missing' }
-  | { kind: 'unavailable' }
-  | { kind: 'live'; car?: Partial<PublicCarListing> }
+  { kind: 'missing' } | { kind: 'unavailable' } | { kind: 'live'; car?: Partial<PublicCarListing> }
 
 async function setupPage(scenario: Scenario) {
   const head = createHead()

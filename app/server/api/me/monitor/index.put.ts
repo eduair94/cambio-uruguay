@@ -32,7 +32,7 @@ export default defineEventHandler(async event => {
   await CompetitorMonitorModel.findOneAndUpdate(
     { uid },
     { $set: { ...parsed.value, email }, $setOnInsert: { trialStartedAt: new Date() } },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
   )
     .lean()
     .exec()

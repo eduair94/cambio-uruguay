@@ -20,12 +20,7 @@
 export type ThemeId = 'app' | 'comisiones' | 'atencion' | 'usd' | 'productos' | 'cobertura'
 
 export type SentimentLabel =
-  | 'muy positivo'
-  | 'positivo'
-  | 'mixto'
-  | 'negativo'
-  | 'muy negativo'
-  | 'sin datos'
+  'muy positivo' | 'positivo' | 'mixto' | 'negativo' | 'muy negativo' | 'sin datos'
 
 /** One thing somebody said: a post (title+body) or a comment. */
 export interface RedditMention {

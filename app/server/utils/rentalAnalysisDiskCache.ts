@@ -280,7 +280,7 @@ export function createRentalAnalysisDiskCache({
             // A just-created lock may not have its content yet; wait for its owner.
           }
           if (now() - startedAt >= waitMs || performance.now() - startedMonotonic >= waitMs)
-            throw new Error('Rental analysis normalization is already running')
+            throw new Error('Rental analysis normalization is already running', { cause: error })
           await new Promise(resolve => setTimeout(resolve, pollMs))
         }
       }

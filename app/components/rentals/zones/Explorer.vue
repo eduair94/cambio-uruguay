@@ -460,9 +460,9 @@ const selectionCount = computed(() => draft.value.include.length + draft.value.e
 const mismatched = computed(() =>
   Boolean(
     props.lockedDepartment &&
-      [...draft.value.include, ...draft.value.exclude].some(
-        zone => fold(zone.department) !== fold(props.lockedDepartment)
-      )
+    [...draft.value.include, ...draft.value.exclude].some(
+      zone => fold(zone.department) !== fold(props.lockedDepartment)
+    )
   )
 )
 function canAdd(zone: RentalZoneRef) {

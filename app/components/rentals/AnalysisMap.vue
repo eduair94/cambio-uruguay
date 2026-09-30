@@ -436,12 +436,12 @@ const selectedRow = computed(() => rows.value.find(row => row.id === selectedId.
 const unmatchedNeighborhood = computed(() =>
   Boolean(
     props.query.neighborhood &&
-      boundaries.value &&
-      !rows.value.some(
-        row =>
-          rentalAnalysisLocationName(row.name) ===
-          rentalAnalysisLocationName(props.query.neighborhood)
-      )
+    boundaries.value &&
+    !rows.value.some(
+      row =>
+        rentalAnalysisLocationName(row.name) ===
+        rentalAnalysisLocationName(props.query.neighborhood)
+    )
   )
 )
 const selectedSource = computed(() =>

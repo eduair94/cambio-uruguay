@@ -19,15 +19,7 @@ import { GENERATED_NAV } from './generatedPages'
 
 /** What kind of thing a search result points at. Drives ranking and the type chip. */
 export type SearchType =
-  | 'page'
-  | 'tool'
-  | 'currency'
-  | 'convert'
-  | 'glossary'
-  | 'guide'
-  | 'indicator'
-  | 'casa'
-  | 'action'
+  'page' | 'tool' | 'currency' | 'convert' | 'glossary' | 'guide' | 'indicator' | 'casa' | 'action'
 
 /** A quick action a search result can perform instead of navigating. */
 export interface SearchAction {

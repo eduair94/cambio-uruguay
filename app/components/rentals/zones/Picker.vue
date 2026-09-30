@@ -75,9 +75,9 @@ const fold = (value: string) =>
 const mismatched = computed(() =>
   Boolean(
     props.department &&
-      [...props.modelValue.include, ...props.modelValue.exclude].some(
-        zone => fold(zone.department) !== fold(props.department)
-      )
+    [...props.modelValue.include, ...props.modelValue.exclude].some(
+      zone => fold(zone.department) !== fold(props.department)
+    )
   )
 )
 watch(mismatched, value => emit('validity', !value), { immediate: true })

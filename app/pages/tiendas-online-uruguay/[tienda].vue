@@ -359,8 +359,8 @@ const ageFresh = computed(() =>
 const siteFresh = computed(() =>
   Boolean(
     profile.value.site &&
-      profile.value.site.status === 'ok' &&
-      storeSignalFresh(profile.value.site.checkedAt, now)
+    profile.value.site.status === 'ok' &&
+    storeSignalFresh(profile.value.site.checkedAt, now)
   )
 )
 // `storeAddress` already gates Google/site on their OWN freshness (fix round 1, item 2), so a
@@ -378,15 +378,15 @@ const googleFresh = computed(() =>
 const redditFresh = computed(() =>
   Boolean(
     profile.value.reddit &&
-      profile.value.reddit.mentions > 0 &&
-      storeSignalFresh(profile.value.reddit.checkedAt, now)
+    profile.value.reddit.mentions > 0 &&
+    storeSignalFresh(profile.value.reddit.checkedAt, now)
   )
 )
 const catalogFresh = computed(() =>
   Boolean(
     profile.value.catalog &&
-      profile.value.catalog.offers > 0 &&
-      storeSignalFresh(profile.value.catalog.checkedAt, now)
+    profile.value.catalog.offers > 0 &&
+    storeSignalFresh(profile.value.catalog.checkedAt, now)
   )
 )
 

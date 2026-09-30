@@ -133,14 +133,12 @@ export function rentalBudgetOwnExpenses(
 export function projectRentalBudgetProperty(row: BudgetRawProperty): RentalPublicProperty | null {
   const offers: RentalOffer[] = []
   for (const own of row.offers || []) {
-    if (
-      !(
-        typeof own.priceUyu === 'number' &&
-        Number.isFinite(own.priceUyu) &&
-        own.priceUyu > 0 &&
-        own.priceUyu <= MAX_PRICE
-      )
-    )
+    if (!(
+      typeof own.priceUyu === 'number' &&
+      Number.isFinite(own.priceUyu) &&
+      own.priceUyu > 0 &&
+      own.priceUyu <= MAX_PRICE
+    ))
       continue
     if (!rentalAvailabilityAdvertId(own.source, own.listingId)) continue
     const identity = own.identity?.version === 1 ? own.identity : undefined

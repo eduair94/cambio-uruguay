@@ -30,20 +30,9 @@ import { TRANSPORT_MODE_ASSUMPTIONS } from './transportAssumptions'
 
 export type CarAdvisorUse = 'ciudad' | 'mixto' | 'ruta' | 'carga' | 'campo'
 export type CarAdvisorPriority =
-  | 'costo'
-  | 'reventa'
-  | 'repuestos'
-  | 'seguridad'
-  | 'espacio'
-  | 'nuevo'
+  'costo' | 'reventa' | 'repuestos' | 'seguridad' | 'espacio' | 'nuevo'
 export type CarAdvisorExclusion =
-  | 'presupuesto'
-  | 'caja'
-  | 'combustible'
-  | 'carroceria'
-  | 'uso'
-  | 'plazas'
-  | 'debajo'
+  'presupuesto' | 'caja' | 'combustible' | 'carroceria' | 'uso' | 'plazas' | 'debajo'
 
 export const CAR_ADVISOR_USES: ReadonlyArray<{
   value: CarAdvisorUse

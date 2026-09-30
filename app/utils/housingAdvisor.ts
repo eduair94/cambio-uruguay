@@ -34,21 +34,9 @@ export type HousingOperation = 'alquilar' | 'comprar' | 'comparar'
 export type HousingPropertyType = 'apartamento' | 'casa'
 export type HousingCredit = HousingCreditId | 'contado'
 export type HousingPriority =
-  | 'precio'
-  | 'metros'
-  | 'seguridad'
-  | 'servicios'
-  | 'luz'
-  | 'reclamos'
-  | 'inversion'
+  'precio' | 'metros' | 'seguridad' | 'servicios' | 'luz' | 'reclamos' | 'inversion'
 export type HousingScoreAttribute =
-  | 'denuncias'
-  | 'luz'
-  | 'agua'
-  | 'saneamiento'
-  | 'limpieza'
-  | 'alumbrado'
-  | 'servicios'
+  'denuncias' | 'luz' | 'agua' | 'saneamiento' | 'limpieza' | 'alumbrado' | 'servicios'
 export type HousingExclusion = 'sin_datos' | 'presupuesto'
 /** El estado de la capa de cortes de luz: 'preliminary' se publica como provisorio. */
 export interface HousingPowerStatus {

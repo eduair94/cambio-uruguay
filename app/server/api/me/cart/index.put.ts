@@ -17,7 +17,7 @@ export default defineEventHandler(async event => {
   const doc = await ImportCartModel.findOneAndUpdate(
     { uid },
     { uid, items: cappedItems, settings },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
   )
     .lean()
     .exec()

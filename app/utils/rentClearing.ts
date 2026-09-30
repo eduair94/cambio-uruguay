@@ -128,11 +128,7 @@ export const RENT_CLEARING_SOURCES: readonly ClearingSource[] = Object.freeze([
  *  - 'no-confirmado'    : could not be confirmed against a primary source.
  */
 export type ClearingCheck =
-  | 'excluyente'
-  | 'tolerante'
-  | 'evalua-no-publica'
-  | 'no-mira-tu-clearing'
-  | 'no-confirmado'
+  'excluyente' | 'tolerante' | 'evalua-no-publica' | 'no-mira-tu-clearing' | 'no-confirmado'
 
 export const CLEARING_CHECK_LABEL: Record<ClearingCheck, string> = {
   excluyente: 'Te rechaza por el clearing',
@@ -143,13 +139,7 @@ export const CLEARING_CHECK_LABEL: Record<ClearingCheck, string> = {
 }
 
 export type RouteId =
-  | 'deposito'
-  | 'sin-garantia'
-  | 'fga'
-  | 'garante'
-  | 'dueno-directo'
-  | 'anda'
-  | 'seguro'
+  'deposito' | 'sin-garantia' | 'fga' | 'garante' | 'dueno-directo' | 'anda' | 'seguro'
 
 export interface GuaranteeRoute {
   id: RouteId

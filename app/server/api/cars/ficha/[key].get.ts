@@ -15,7 +15,7 @@ export default defineEventHandler(async event => {
   const key = String(getRouterParam(event, 'key') || '')
   if (!carKeyValid(key)) throw createError({ statusCode: 404, statusMessage: 'Advert not found' })
   let row: Record<string, unknown> | null
-  let freshDays = 4
+  let freshDays: number
   try {
     await connectDb()
     freshDays = (await loadCarCatalogMeta())?.freshDays ?? 4

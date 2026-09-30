@@ -134,14 +134,7 @@ export type OpportunityCaution =
 export type OpportunitySignal = 'total_price' | 'price_per_m2'
 export type OpportunityComparisonScope = 'same_features' | 'wider_area' | 'local_context'
 export type OpportunityFeature =
-  | 'parking'
-  | 'furnishing'
-  | 'access'
-  | 'aspect'
-  | 'pool'
-  | 'gym'
-  | 'condition'
-  | 'ground_floor'
+  'parking' | 'furnishing' | 'access' | 'aspect' | 'pool' | 'gym' | 'condition' | 'ground_floor'
 
 export interface OpportunityComparable extends OpportunityPublicListing {
   /** Explicit measured differences, not monetary adjustments. */

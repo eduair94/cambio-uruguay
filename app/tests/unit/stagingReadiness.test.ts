@@ -19,12 +19,7 @@ async function freePort(): Promise<number> {
 
 function fixture(
   mode:
-    | 'ready'
-    | 'error-before-ready'
-    | 'exit-before-ready'
-    | 'http500'
-    | 'shell'
-    | 'wait-before-ready'
+    'ready' | 'error-before-ready' | 'exit-before-ready' | 'http500' | 'shell' | 'wait-before-ready'
 ) {
   fixtureRoot = mkdtempSync(join(repoRoot, '.sdd-staging-test-'))
   const serverDir = join(fixtureRoot, 'server')

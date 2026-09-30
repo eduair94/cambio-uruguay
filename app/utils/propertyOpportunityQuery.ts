@@ -153,7 +153,7 @@ export function queryPropertyOpportunities(
       (query.signal === 'all' || (analysis.signals ?? ['total_price']).includes(query.signal))
   )
   selected.sort((a, b) => {
-    let order = 0
+    let order: number
     if (query.sort === 'price') order = a.subject.comparisonPrice - b.subject.comparisonPrice
     else if (query.sort === 'recent') order = b.subject.lastSeen.localeCompare(a.subject.lastSeen)
     else if (query.sort === 'discount')

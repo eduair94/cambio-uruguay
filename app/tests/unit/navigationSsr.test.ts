@@ -58,6 +58,7 @@ describe('mobile navigation before hydration', () => {
     expect(nav).toContain('inert')
     expect(style).not.toContain('display:none')
     expect(style).toContain('width:288px')
-    expect(style).toContain('translateX(-289px)')
+    // Parked one pixel past its own width. Vuetify ≤4.1 wrote it in pixels, 4.2 relative to itself.
+    expect(style).toMatch(/translateX\((?:-289px|calc\(-100% \+ -1px\))\)/)
   })
 })

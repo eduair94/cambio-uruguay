@@ -120,11 +120,7 @@ export function priceEventActiveEvent(today: string): PriceEventCalendarEntry | 
  * ediciones. Un evento vencido nunca es "la próxima".
  */
 export type PriceEventCountdownStatus =
-  | 'upcoming'
-  | 'first-day'
-  | 'in-progress'
-  | 'undated'
-  | 'none'
+  'upcoming' | 'first-day' | 'in-progress' | 'undated' | 'none'
 
 export interface PriceEventCountdown {
   /** `null` sólo cuando `status === 'none'`: no hay ningún evento, confirmado o no, que mostrar. */

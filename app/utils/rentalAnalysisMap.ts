@@ -10,12 +10,7 @@ import type {
 
 export type RentalAnalysisMapLayer = 'prices' | 'crime' | 'services'
 export type RentalAnalysisMapOffense =
-  | 'all'
-  | 'hurto'
-  | 'rapina'
-  | 'lesiones'
-  | 'violencia-domestica'
-  | 'abigeato'
+  'all' | 'hurto' | 'rapina' | 'lesiones' | 'violencia-domestica' | 'abigeato'
 export interface RentalAnalysisMapSelection {
   layer: RentalAnalysisMapLayer
   statistic: 'mean' | 'median'
@@ -48,11 +43,11 @@ export function rentalAnalysisMapMatches(
 ): boolean {
   return Boolean(
     analysis &&
-      rentalAnalysisLocationName(analysis.query.department) ===
-        rentalAnalysisLocationName(query.department) &&
-      analysis.query.currency === query.currency &&
-      analysis.query.type === query.type &&
-      analysis.query.bedrooms === query.bedrooms
+    rentalAnalysisLocationName(analysis.query.department) ===
+      rentalAnalysisLocationName(query.department) &&
+    analysis.query.currency === query.currency &&
+    analysis.query.type === query.type &&
+    analysis.query.bedrooms === query.bedrooms
   )
 }
 const finitePositive = (value: number | null | undefined) =>

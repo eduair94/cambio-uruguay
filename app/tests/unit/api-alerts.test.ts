@@ -61,7 +61,7 @@ describe('alerts API', () => {
     expect(findOneAndUpdate).toHaveBeenCalledWith(
       { _id: 'a1', uid: 'u1' },
       { $set: expect.objectContaining({ active: false, armed: true }) },
-      { new: true }
+      { returnDocument: 'after' }
     )
     expect(res).toMatchObject({ _id: 'a1' })
   })

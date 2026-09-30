@@ -14,7 +14,7 @@ export default defineEventHandler(async event => {
   return WatchlistModel.findOneAndUpdate(
     { uid },
     { uid, ...list },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
   )
     .lean()
     .exec()

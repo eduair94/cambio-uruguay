@@ -12,13 +12,7 @@
  * the page supplies via `openUrl` — the component just opens it, optionally staging the body first.
  */
 export type SendChannel =
-  | 'email'
-  | 'whatsapp'
-  | 'telegram'
-  | 'facebook'
-  | 'link'
-  | 'native'
-  | 'copy'
+  'email' | 'whatsapp' | 'telegram' | 'facebook' | 'link' | 'native' | 'copy'
 
 /** Prefill a subreddit submit page with a title + self-text (best-effort; Reddit may trim length). */
 export function redditSubmit(subreddit: string, title: string, text: string): string {

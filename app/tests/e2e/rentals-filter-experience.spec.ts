@@ -634,12 +634,13 @@ test('390px mobile: an address chosen before Leaflet loads is centered when the 
     releaseLeaflet = resolve
   })
   let leafletBlocked = false
-  // Keep the real JavaScript unchanged. Delay only the map library response,
-  // identified by its preserved license header rather than a build-specific hash.
+  // Keep the real JavaScript unchanged. Delay only the map library response, identified by
+  // Leaflet's own attribution string rather than a build-specific hash (its license banner is
+  // not guaranteed to survive minification).
   await page.route(/\/_nuxt\/.*\.js(?:\?|$)/, async route => {
     const response = await route.fetch()
     const body = await response.text()
-    if (/\*\s*Leaflet \d+\./.test(body)) {
+    if (body.includes('A JavaScript library for interactive maps')) {
       leafletBlocked = true
       await leafletGate
     }

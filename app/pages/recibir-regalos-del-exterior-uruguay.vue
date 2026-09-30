@@ -273,8 +273,7 @@
           tabindex="0"
           role="region"
           aria-label="Instrucciones para quien despacha el regalo"
-          >{{ senderInstructions }}</pre
-        >
+          >{{ senderInstructions }}</pre>
       </VCard>
     </section>
 

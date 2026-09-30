@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as Sentry from '@sentry/nuxt'
 import type { Envelope } from '@sentry/nuxt'
 import { createApp, createError, defineEventHandler, toNodeListener } from 'h3'
@@ -12,27 +12,34 @@ const config = {
   release: 'cambio-uruguay-app@test-release',
 }
 
-afterEach(async () => {
-  await Sentry.close(1000)
+// One client per process, as in production: @sentry/nuxt ignores every Sentry.init() after the
+// first, so every test shares this transport (and the plugin under test finds the client ready).
+const envelopes: Envelope[] = []
+beforeAll(() => {
+  Sentry.init({
+    ...sentryErrorOptions(config, 'nitro'),
+    transport: () => ({
+      send: async envelope => {
+        envelopes.push(envelope)
+        return { statusCode: 200 }
+      },
+      flush: async () => true,
+    }),
+  })
+})
+beforeEach(() => {
+  envelopes.length = 0
+})
+afterEach(() => {
   vi.unstubAllGlobals()
   vi.unstubAllEnvs()
+})
+afterAll(async () => {
+  await Sentry.close(1000)
 })
 
 describe('Sentry SDK real local transport', () => {
   it('emits one scrubbed error envelope, no session/traces/breadcrumbs/attachments', async () => {
-    const envelopes: Envelope[] = []
-    Sentry.init({
-      ...sentryErrorOptions(config, 'nitro'),
-      registerEsmLoaderHooks: false,
-      skipOpenTelemetrySetup: true,
-      transport: () => ({
-        send: async envelope => {
-          envelopes.push(envelope)
-          return { statusCode: 200 }
-        },
-        flush: async () => true,
-      }),
-    })
     Sentry.setUser({ id: 'private-uid', email: 'private@example.invalid', ip_address: '127.2.3.4' })
     Sentry.setExtra('body', 'private-body')
     Sentry.addBreadcrumb({ message: 'private-click' })
@@ -67,7 +74,7 @@ describe('Sentry SDK real local transport', () => {
       .getOptions()
       .integrations!.map(item => item.name)
     expect(integrations).toEqual([
-      'InboundFilters',
+      'EventFilters',
       'FunctionToString',
       'OnUncaughtException',
       'OnUnhandledRejection',
@@ -83,19 +90,6 @@ describe('Nitro error lifecycle', () => {
     vi.stubEnv('NODE_ENV', 'production')
     vi.stubEnv('CU_DEPLOY_PREFLIGHT', '')
     const { default: plugin } = await import('../../server/plugins/sentry')
-    const envelopes: Envelope[] = []
-    Sentry.init({
-      ...sentryErrorOptions(config, 'nitro'),
-      registerEsmLoaderHooks: false,
-      skipOpenTelemetrySetup: true,
-      transport: () => ({
-        send: async envelope => {
-          envelopes.push(envelope)
-          return { statusCode: 200 }
-        },
-        flush: async () => true,
-      }),
-    })
     plugin({
       hooks: { hook: (name: string, fn: (...args: unknown[]) => unknown) => hooks.set(name, fn) },
     } as never)
@@ -128,19 +122,6 @@ describe('Nitro error lifecycle', () => {
     vi.stubEnv('NODE_ENV', 'production')
     vi.stubEnv('CU_DEPLOY_PREFLIGHT', '')
     const { default: plugin } = await import('../../server/plugins/sentry')
-    const envelopes: Envelope[] = []
-    Sentry.init({
-      ...sentryErrorOptions(config, 'nitro'),
-      registerEsmLoaderHooks: false,
-      skipOpenTelemetrySetup: true,
-      transport: () => ({
-        send: async envelope => {
-          envelopes.push(envelope)
-          return { statusCode: 200 }
-        },
-        flush: async () => true,
-      }),
-    })
     plugin({
       hooks: { hook: (name: string, fn: (...args: unknown[]) => unknown) => hooks.set(name, fn) },
     } as never)

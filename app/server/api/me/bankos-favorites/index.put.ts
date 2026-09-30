@@ -13,7 +13,7 @@ export default defineEventHandler(async event => {
   const doc = await BankosUserFavoritesModel.findOneAndUpdate(
     { uid },
     { uid, favorites },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
   )
     .lean()
     .exec()

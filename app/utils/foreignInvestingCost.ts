@@ -1195,7 +1195,7 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
   const noSchedule = { amountUsd: null, isFloor: false }
 
   // ── 1. Salida ────────────────────────────────────────────────────────────────────────────
-  let outboundBankFee = 0
+  let outboundBankFee: number
   let correspondentOut = 0
 
   if (input.route === 'local') {
@@ -1402,7 +1402,7 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
   })
   const wiredHomeUsd = Math.max(brokerCashUsd - withdrawalUsd, 0)
 
-  let inboundBankFee = 0
+  let inboundBankFee: number
   let correspondentIn = 0
   if (input.route === 'local') {
     const local = input.localTransferInUsd

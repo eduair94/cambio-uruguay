@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { pickOption } from './support/vuetifySelect'
 
 // The home page's "where can I operate / where am I" controls. A price you
 // cannot take (needs an account you don't have) or cannot reach (two
@@ -57,10 +58,7 @@ test('department filter narrows the market and survives a reload', async ({ page
     expect(options.length).toBeGreaterThan(5)
   }).toPass({ timeout: 60_000 })
 
-  const rivera = page
-    .locator('.v-overlay-container .v-list-item-title')
-    .filter({ hasText: /^Rivera$/i })
-  await rivera.first().click()
+  await pickOption(page, /^Rivera$/i)
 
   await expect(page).toHaveURL(/dep=RIVERA/i, { timeout: 15_000 })
   await expect(page.locator('[data-testid="home-filter-notice"]')).toBeVisible()

@@ -28,7 +28,7 @@ export default defineEventHandler(async (event): Promise<RentalPropertyDetailRes
   }
   const query = normalizeRentalQuery(getQuery(event) as Record<string, unknown>)
   let property: RentalPublicProperty | undefined
-  let usdUyu = 0
+  let usdUyu: number
   try {
     await connectDb()
     const availability = await loadRentalAvailabilityIndex()

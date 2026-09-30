@@ -93,9 +93,9 @@ export default defineEventHandler(async (event): Promise<MotoDetailResponse> => 
     ...(floor ? { lastSeen: { $gte: floor } } : {}),
   }
 
-  let listings: MotoPublicListing[] = []
-  let listingsTotal = 0
-  let siblings: MotoDetailResponse['siblings'] = []
+  let listings: MotoPublicListing[]
+  let listingsTotal: number
+  let siblings: MotoDetailResponse['siblings']
   try {
     const [rows, count, brandDocs] = await Promise.all([
       MotoCatalogModel.find(listingMatch)

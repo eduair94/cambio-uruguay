@@ -28,12 +28,7 @@ export interface RentalZonePrices {
   lastSeenTo: string | null
 }
 export type RentalZoneServiceCategory =
-  | 'supermarket'
-  | 'grocery'
-  | 'pharmacy'
-  | 'healthcare'
-  | 'transit'
-  | 'education'
+  'supermarket' | 'grocery' | 'pharmacy' | 'healthcare' | 'transit' | 'education'
 export interface RentalZoneSource {
   name: string
   url: string
@@ -101,13 +96,7 @@ export interface RentalZoneBoundaryCollection {
 
 /** Neighbourhood service attributes the directory can filter by ("the third with the fewest problems"). */
 export type RentalServiceAttribute =
-  | 'luz'
-  | 'agua'
-  | 'alumbrado'
-  | 'saneamiento'
-  | 'limpieza'
-  | 'calles'
-  | 'denuncias'
+  'luz' | 'agua' | 'alumbrado' | 'saneamiento' | 'limpieza' | 'calles' | 'denuncias'
 export type RentalServiceLevel = 'low' | 'mid' | 'high'
 /**
  * One requested bound on the listing's official area: `max` keeps areas whose value is at most
