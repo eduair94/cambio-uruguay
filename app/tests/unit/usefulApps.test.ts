@@ -1,0 +1,281 @@
+import { describe, expect, it } from 'vitest'
+import {
+  USEFUL_APP_CATEGORIES,
+  USEFUL_APP_KIND_LABELS,
+  USEFUL_APPS_DEFAULT_STATE,
+  type UsefulApp,
+  usefulAppAppStoreUrl,
+  usefulAppInitials,
+  usefulAppKindMatches,
+  usefulAppMatches,
+  usefulAppPlayUrl,
+  usefulAppsActiveFilterCount,
+  usefulAppsCountLabel,
+  usefulAppsDepartmentsIn,
+  usefulAppsDetectPlatform,
+  usefulAppsFilter,
+  usefulAppsGroup,
+  usefulAppsHrefForTab,
+  usefulAppsQueryFromState,
+  usefulAppsSort,
+  usefulAppsStateFromQuery,
+  usefulAppsTabCounts,
+} from '../../utils/usefulApps'
+
+const app = (over: Partial<UsefulApp>): UsefulApp => ({
+  id: 'x',
+  name: 'X',
+  organization: 'Org',
+  kind: 'estado',
+  category: 'tramites',
+  summary: 'Resumen de prueba.',
+  uses: ['Consultá algo'],
+  source: 'https://www.gub.uy/',
+  ...over,
+})
+
+const UTE = app({
+  id: 'ute',
+  name: 'UTE Clientes',
+  organization: 'UTE',
+  kind: 'empresa-publica',
+  category: 'hogar',
+  summary: 'Pagá la luz y avisá si te quedaste sin luz.',
+  uses: ['Mirá tu consumo'],
+  keywords: ['luz', 'electricidad'],
+  android: { id: 'uy.com.ute.customers', developer: 'UTE Sistemas' },
+  ios: { id: '6472210207', developer: 'UTE' },
+})
+const COMO_IR = app({
+  id: 'como-ir',
+  name: 'Cómo ir',
+  organization: 'Intendencia de Montevideo',
+  kind: 'intendencia',
+  category: 'transporte',
+  summary: 'Planificá tu viaje en ómnibus.',
+  keywords: ['omnibus', 'bondi', 'stm'],
+  departments: ['Montevideo'],
+  android: { id: 'uy.gub.imm.stm.mobile.comoir', developer: 'Intendencia de Montevideo' },
+})
+const STM = app({
+  id: 'stm-montevideo',
+  name: 'STM Montevideo',
+  organization: 'Desarrollador independiente',
+  kind: 'comunidad',
+  category: 'transporte',
+  departments: ['Montevideo'],
+  officialAlternative: 'como-ir',
+  ios: { id: '938009980', developer: 'Gabriel Yordi' },
+})
+const PEDIDOS = app({
+  id: 'pedidosya',
+  name: 'PedidosYa',
+  organization: 'PedidosYa',
+  kind: 'privada',
+  category: 'compras',
+  also: ['ocio'],
+  android: { id: 'com.pedidosya', developer: 'PedidosYa S.A' },
+})
+const ALL = [UTE, COMO_IR, STM, PEDIDOS]
+const ctx = { essentialIds: ['como-ir', 'ute'] }
+
+describe('usefulApps — categorías y tipos', () => {
+  it('declara diez categorías con ícono mdi y sin repetir id', () => {
+    expect(USEFUL_APP_CATEGORIES).toHaveLength(10)
+    expect(new Set(USEFUL_APP_CATEGORIES.map(c => c.id)).size).toBe(10)
+    for (const c of USEFUL_APP_CATEGORIES) {
+      expect(c.icon).toMatch(/^mdi-/)
+      expect(c.label.length).toBeGreaterThan(3)
+      expect(c.blurb.endsWith('.')).toBe(true)
+    }
+  })
+
+  it('agrupa los tipos como los distingue la gente', () => {
+    expect(USEFUL_APP_KIND_LABELS.comunidad).toBe('No oficial')
+    expect(usefulAppKindMatches(UTE, 'publicas')).toBe(true)
+    expect(usefulAppKindMatches(COMO_IR, 'publicas')).toBe(true)
+    expect(usefulAppKindMatches(PEDIDOS, 'publicas')).toBe(false)
+    expect(usefulAppKindMatches(PEDIDOS, 'privadas')).toBe(true)
+    expect(usefulAppKindMatches(STM, 'privadas')).toBe(false)
+    expect(usefulAppKindMatches(STM, 'no-oficiales')).toBe(true)
+    expect(usefulAppKindMatches(STM, 'todas')).toBe(true)
+  })
+
+  it('arma los enlaces a las fichas oficiales', () => {
+    expect(usefulAppPlayUrl('uy.com.ute.customers')).toBe(
+      'https://play.google.com/store/apps/details?id=uy.com.ute.customers'
+    )
+    expect(usefulAppAppStoreUrl('6472210207')).toBe('https://apps.apple.com/uy/app/id6472210207')
+  })
+
+  it('saca las iniciales para el monograma', () => {
+    expect(usefulAppInitials('Cómo ir')).toBe('CI')
+    expect(usefulAppInitials('gub.uy')).toBe('GU')
+    expect(usefulAppInitials('Prex')).toBe('PR')
+  })
+})
+
+describe('usefulApps — búsqueda', () => {
+  it('ignora tildes, mayúsculas y el orden de las palabras', () => {
+    expect(usefulAppMatches(COMO_IR, 'OMNIBUS')).toBe(true)
+    expect(usefulAppMatches(COMO_IR, 'ómnibus montevideo')).toBe(true)
+    expect(usefulAppMatches(COMO_IR, 'montevideo omnibus')).toBe(true)
+  })
+
+  it('no deja que las palabras vacías vacíen el resultado', () => {
+    expect(usefulAppMatches(UTE, 'app de la luz')).toBe(true)
+    expect(usefulAppMatches(UTE, 'aplicación para la luz en Uruguay')).toBe(true)
+  })
+
+  it('busca también en el desarrollador y la organización', () => {
+    expect(usefulAppMatches(UTE, 'ute sistemas')).toBe(true)
+    expect(usefulAppMatches(STM, 'yordi')).toBe(true)
+  })
+
+  it('una búsqueda vacía o de sólo palabras vacías deja pasar todo', () => {
+    expect(usefulAppMatches(UTE, '')).toBe(true)
+    expect(usefulAppMatches(UTE, '  la de  ')).toBe(true)
+  })
+
+  it('exige cada palabra con contenido', () => {
+    expect(usefulAppMatches(UTE, 'luz agua')).toBe(false)
+  })
+})
+
+describe('usefulApps — estado ↔ URL', () => {
+  it('lee la URL con lista blanca, campo por campo', () => {
+    const state = usefulAppsStateFromQuery({
+      categoria: 'xxx',
+      tipo: 'publicas',
+      plataforma: 'blackberry',
+      depto: 'Narnia',
+      orden: 'az',
+      q: 'a'.repeat(80),
+    })
+    expect(state.tab).toBe('todas')
+    expect(state.tipo).toBe('publicas')
+    expect(state.plataforma).toBe('todas')
+    expect(state.depto).toBe('')
+    expect(state.orden).toBe('az')
+    expect(state.q).toHaveLength(60)
+  })
+
+  it('acepta arreglos (query repetida) tomando el primero', () => {
+    expect(usefulAppsStateFromQuery({ categoria: ['salud', 'dinero'] }).tab).toBe('salud')
+  })
+
+  it('acepta un departamento con tilde', () => {
+    expect(usefulAppsStateFromQuery({ depto: 'Paysandú' }).depto).toBe('Paysandú')
+  })
+
+  it('escribe sólo lo que difiere del default, así la URL limpia es la canónica', () => {
+    expect(usefulAppsQueryFromState(USEFUL_APPS_DEFAULT_STATE)).toEqual({})
+    expect(
+      usefulAppsQueryFromState({ ...USEFUL_APPS_DEFAULT_STATE, tab: 'salud', q: '  asse ' })
+    ).toEqual({ categoria: 'salud', q: 'asse' })
+  })
+
+  it('ida y vuelta sin pérdida', () => {
+    const state = {
+      tab: 'transporte',
+      q: 'omnibus',
+      tipo: 'publicas',
+      plataforma: 'ios',
+      depto: 'Montevideo',
+      orden: 'recientes',
+    } as const
+    expect(usefulAppsStateFromQuery(usefulAppsQueryFromState(state))).toEqual(state)
+  })
+
+  it('cuenta los filtros activos sin contar la pestaña', () => {
+    expect(usefulAppsActiveFilterCount({ ...USEFUL_APPS_DEFAULT_STATE, tab: 'salud' })).toBe(0)
+    expect(
+      usefulAppsActiveFilterCount({ ...USEFUL_APPS_DEFAULT_STATE, q: 'x', depto: 'Salto' })
+    ).toBe(2)
+  })
+
+  it('arma el enlace de cada pestaña sobre la ruta base', () => {
+    const base = '/apps-utiles-uruguay'
+    expect(usefulAppsHrefForTab(base, USEFUL_APPS_DEFAULT_STATE, 'todas')).toBe(base)
+    expect(usefulAppsHrefForTab(base, USEFUL_APPS_DEFAULT_STATE, 'salud')).toBe(
+      `${base}?categoria=salud`
+    )
+  })
+})
+
+describe('usefulApps — filtro, orden y grupos', () => {
+  it('la pestaña de categoría incluye las que la declaran en `also`', () => {
+    const state = { ...USEFUL_APPS_DEFAULT_STATE, tab: 'ocio' as const }
+    expect(usefulAppsFilter(ALL, state, ctx).map(a => a.id)).toEqual(['pedidosya'])
+  })
+
+  it('Imprescindibles sigue el orden del kit, no el del catálogo', () => {
+    const state = { ...USEFUL_APPS_DEFAULT_STATE, tab: 'imprescindibles' as const }
+    expect(usefulAppsFilter(ALL, state, ctx).map(a => a.id)).toEqual(['como-ir', 'ute'])
+  })
+
+  it('el departamento deja las nacionales y las de ese departamento', () => {
+    const state = { ...USEFUL_APPS_DEFAULT_STATE, depto: 'Salto' as const }
+    expect(usefulAppsFilter(ALL, state, ctx).map(a => a.id)).toEqual(['ute', 'pedidosya'])
+  })
+
+  it('la plataforma exige la ficha de esa tienda', () => {
+    const state = { ...USEFUL_APPS_DEFAULT_STATE, plataforma: 'ios' as const }
+    expect(usefulAppsFilter(ALL, state, ctx).map(a => a.id)).toEqual(['ute', 'stm-montevideo'])
+  })
+
+  it('ordena A–Z sin tildes y por actualización con las desconocidas al final', () => {
+    expect(usefulAppsSort(ALL, 'az').map(a => a.id)).toEqual([
+      'como-ir',
+      'pedidosya',
+      'stm-montevideo',
+      'ute',
+    ])
+    const updated: Record<string, string> = { ute: '2026-06-04', 'como-ir': '2025-03-26' }
+    expect(usefulAppsSort(ALL, 'recientes', a => updated[a.id] ?? null).map(a => a.id)).toEqual([
+      'ute',
+      'como-ir',
+      'stm-montevideo',
+      'pedidosya',
+    ])
+    expect(usefulAppsSort(ALL, 'utiles').map(a => a.id)).toEqual(ALL.map(a => a.id))
+  })
+
+  it('agrupa por categoría principal en el orden de las pestañas, sin repetir', () => {
+    const groups = usefulAppsGroup(ALL)
+    expect(groups.map(g => g.category.id)).toEqual(['transporte', 'hogar', 'compras'])
+    expect(groups.reduce((n, g) => n + g.apps.length, 0)).toBe(ALL.length)
+  })
+
+  it('cuenta cada pestaña', () => {
+    const counts = usefulAppsTabCounts(ALL, ctx)
+    expect(counts.todas).toBe(4)
+    expect(counts.imprescindibles).toBe(2)
+    expect(counts.transporte).toBe(2)
+    expect(counts.ocio).toBe(1)
+    expect(counts.salud).toBe(0)
+  })
+
+  it('lista los departamentos presentes en el orden del país', () => {
+    expect(usefulAppsDepartmentsIn(ALL)).toEqual(['Montevideo'])
+  })
+})
+
+describe('usefulApps — plataforma y textos', () => {
+  it('detecta Android, iPhone y iPad con escritorio', () => {
+    expect(usefulAppsDetectPlatform('Mozilla/5.0 (Linux; Android 14; SM-A146M)')).toBe('android')
+    expect(usefulAppsDetectPlatform('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)')).toBe(
+      'ios'
+    )
+    expect(usefulAppsDetectPlatform('Mozilla/5.0 (Macintosh; Intel Mac OS X)', 'MacIntel', 5)).toBe(
+      'ios'
+    )
+    expect(usefulAppsDetectPlatform('Mozilla/5.0 (Windows NT 10.0; Win64; x64)')).toBeNull()
+  })
+
+  it('pluraliza la cantidad', () => {
+    expect(usefulAppsCountLabel(1)).toBe('1 app')
+    expect(usefulAppsCountLabel(0)).toBe('0 apps')
+    expect(usefulAppsCountLabel(118)).toBe('118 apps')
+  })
+})
