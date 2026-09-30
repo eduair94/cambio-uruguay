@@ -16,6 +16,7 @@ export default defineEventHandler(async event => {
   if (b?.channels) {
     set['channels.push'] = b.channels.push !== false
     set['channels.email'] = b.channels.email !== false
+    set['channels.telegram'] = b.channels.telegram === true
   }
   await connectDb()
   return AlertModel.findOneAndUpdate({ _id: id, uid }, { $set: set }, { new: true }).lean().exec()

@@ -10,6 +10,7 @@ function makeDeps(over: Partial<any> = {}) {
       .fn()
       .mockResolvedValue({ email: 'a@b.com', fcmTokens: ['t1'], telegramChatId: null }),
     persistAlert: vi.fn().mockResolvedValue(undefined),
+    claimAlert: vi.fn().mockResolvedValue(true),
     pruneTokens: vi.fn().mockResolvedValue(undefined),
     push: vi.fn().mockResolvedValue([]),
     email: vi.fn().mockResolvedValue(undefined),
@@ -37,10 +38,8 @@ describe('runAlertsCheck', () => {
     const res = await runAlertsCheck(deps as any)
     expect(deps.push).toHaveBeenCalledWith(['t1'], expect.any(String), expect.any(String))
     expect(deps.email).toHaveBeenCalledWith('a@b.com', expect.any(String), expect.any(String))
-    expect(deps.persistAlert).toHaveBeenCalledWith(
-      'a1',
-      expect.objectContaining({ armed: false, lastFiredAt: expect.any(Date) })
-    )
+    // Se desarma ANTES de enviar (reclamo atómico), no después.
+    expect(deps.claimAlert).toHaveBeenCalledWith('a1', expect.any(Date))
     expect(res).toEqual({ checked: 1, fired: 1 })
   })
 
@@ -111,5 +110,66 @@ describe('runAlertsCheck', () => {
     })
     await runAlertsCheck(deps as any)
     expect(telegram).toHaveBeenCalledWith('77', expect.any(String))
+  })
+})
+
+describe('runAlertsCheck: una sola vez y sin cortes', () => {
+  const alert = (id: string, over: Record<string, unknown> = {}) => ({
+    _id: id,
+    uid: 'u1',
+    currency: 'USD',
+    kind: 'bestBuy',
+    op: '>=',
+    target: 41,
+    origin: 'any',
+    armed: true,
+    lastFiredAt: null,
+    channels: { push: true, email: true, telegram: true },
+    ...over,
+  })
+
+  it('las dos instancias del cluster corren a la vez y la alerta sale una sola vez', async () => {
+    const claimed = new Set<string>()
+    const claimAlert = vi.fn(async (id: string) => {
+      if (claimed.has(id)) return false
+      claimed.add(id)
+      return true
+    })
+    const push = vi.fn().mockResolvedValue([])
+    const deps = () =>
+      makeDeps({ loadActiveAlerts: vi.fn().mockResolvedValue([alert('a1')]), claimAlert, push })
+    const [a, b] = await Promise.all([runAlertsCheck(deps() as any), runAlertsCheck(deps() as any)])
+    expect(push).toHaveBeenCalledTimes(1)
+    expect(a.fired + b.fired).toBe(1)
+  })
+
+  it('un correo que falla no corta los otros canales ni las otras alertas', async () => {
+    const email = vi.fn().mockRejectedValue(new Error('smtp caído'))
+    const telegram = vi.fn().mockResolvedValue(true)
+    const deps = makeDeps({
+      loadActiveAlerts: vi.fn().mockResolvedValue([alert('a1'), alert('a2')]),
+      getUserContacts: vi
+        .fn()
+        .mockResolvedValue({ email: 'a@b.com', fcmTokens: [], telegramChatId: '99' }),
+      email,
+      telegram,
+    })
+    const res = await runAlertsCheck(deps as any)
+    expect(res.fired).toBe(2)
+    expect(telegram).toHaveBeenCalledTimes(2)
+    expect(deps.claimAlert).toHaveBeenCalledTimes(2)
+  })
+
+  it('el texto de Telegram escapa el guión bajo de las casas (Markdown)', async () => {
+    const telegram = vi.fn().mockResolvedValue(true)
+    const deps = makeDeps({
+      loadActiveAlerts: vi.fn().mockResolvedValue([alert('a1', { origin: 'la_favorita' })]),
+      getUserContacts: vi
+        .fn()
+        .mockResolvedValue({ email: null, fcmTokens: [], telegramChatId: '99' }),
+      telegram,
+    })
+    await runAlertsCheck(deps as any)
+    expect(telegram.mock.calls[0][1]).toContain('la\\_favorita')
   })
 })

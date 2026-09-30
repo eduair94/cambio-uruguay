@@ -23,3 +23,11 @@ export async function sendTelegram(
     return false
   }
 }
+
+/**
+ * Escapa lo que el Markdown (legacy) de Telegram interpreta. Sin esto, un identificador de casa como
+ * `la_favorita` abre una cursiva que nunca cierra y Telegram rechaza el mensaje entero en silencio.
+ */
+export function escapeTelegramMarkdown(text: string): string {
+  return text.replace(/[_*`[]/g, c => `\\${c}`)
+}
