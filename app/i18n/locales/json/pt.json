@@ -1783,7 +1783,8 @@
     "usedCarAdvisor": "Qual carro usado comprar?",
     "sellUsedCar": "Vender seu carro",
     "comparadorTransporte": "Carro, moto ou ônibus: o que compensa",
-    "motosUsadas": "Preço de motos usadas"
+    "motosUsadas": "Preço de motos usadas",
+    "paginasMasVisitadas": "Páginas mais visitadas"
   },
   "sitemapPage": {
     "h1": "Mapa do site Cambio Uruguay",
@@ -2378,6 +2379,7 @@
     "peak": "Dia mais alto do período: {date}, com {users} usuários.",
     "pagesTitle": "Páginas mais lidas",
     "pagesHint": "Os endereços são publicados sem nada depois do ponto de interrogação, então nada digitado na busca aparece aqui.",
+    "fullRanking": "Ver as 100 mais visitadas a partir do Uruguai e as que estão crescendo",
     "table": {
       "page": "Página",
       "views": "Visualizações",

@@ -3999,6 +3999,25 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El ranking de páginas en público: la versión sin nada privado del que usa el dueño
+        // (classes/site-analytics/publicTopPages.ts).
+        to: '/paginas-mas-visitadas',
+        labelKey: 'nav.paginasMasVisitadas',
+        icon: 'mdi-podium',
+        priority: 0.5,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'paginas mas visitadas',
+          'lo mas visto',
+          'lo mas consultado',
+          'ranking de paginas',
+          'paginas populares',
+          'que se consulta mas',
+          'recomendadas por chatgpt',
+        ],
+      },
+      {
         to: '/estadisticas-reddit',
         labelKey: 'redditStats.nav',
         icon: 'mdi-reddit',

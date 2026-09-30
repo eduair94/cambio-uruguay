@@ -1790,7 +1790,8 @@
     "usedCarAdvisor": "Which used car to buy?",
     "sellUsedCar": "Sell your car",
     "comparadorTransporte": "Car, motorbike or bus: what pays off",
-    "motosUsadas": "Used motorbike prices"
+    "motosUsadas": "Used motorbike prices",
+    "paginasMasVisitadas": "Most visited pages"
   },
   "sitemapPage": {
     "h1": "Cambio Uruguay sitemap",
@@ -2385,6 +2386,7 @@
     "peak": "Busiest day of the period: {date}, with {users} users.",
     "pagesTitle": "Most-read pages",
     "pagesHint": "Paths are published without anything after the question mark, so nothing typed into the search box can show up here.",
+    "fullRanking": "See the 100 most visited pages from Uruguay, and which ones are growing",
     "table": {
       "page": "Page",
       "views": "Views",

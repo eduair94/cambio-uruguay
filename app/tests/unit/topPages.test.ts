@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  channelChange,
-  deviceLabel,
-  familyHub,
-  topicOf,
-  weekShares,
-} from '../../utils/topPages'
+import { channelChange, deviceLabel, familyHub, topicOf, weekShares } from '../../utils/topPages'
 
 // `t` de mentira: devuelve la clave, así el test no depende del catálogo de traducciones.
 const t = (key: string) => key

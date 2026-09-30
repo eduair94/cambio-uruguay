@@ -827,6 +827,14 @@
         "/sillas-escritorio-uruguay/*"
       ],
       "hypothesis": "Siete paginas emitian estructurados sin BreadcrumbList, asi que el renglon verde del resultado era la URL cruda en vez del rastro con nombres. Se declaran las que buscan por su tema y no estan dentro de otra ventana abierta; /acerca y /contacto quedan fuera porque no son un cambio pensado para mover trafico. Se mide si el mismo puesto gana mas clic cuando el visitante lee a que seccion pertenece la pagina antes de entrar."
+    },
+    {
+      "id": "paginas-mas-visitadas",
+      "shippedOn": "2026-09-29",
+      "routes": [
+        "/paginas-mas-visitadas"
+      ],
+      "hypothesis": "Pagina nueva e indexable con el ranking publico de las paginas mas visitadas desde Uruguay, lo que esta creciendo y lo que citan los asistentes de IA. Se mide si gana busquedas propias (lo mas visto, paginas populares) y si su lista de enlaces a las cien mas visitadas lleva lectores a esas paginas."
     }
   ]
 }
