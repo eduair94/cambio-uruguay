@@ -864,6 +864,18 @@
         "adicional fondo de solidaridad"
       ],
       "hypothesis": "El Fondo de Solidaridad aparecia en nueve archivos del sitio (calculadora de sueldo liquido, deducciones del IRPF, gastos del hogar) siempre como un descuento que hay que meter en OTRA cuenta, y en ninguno como la pregunta propia. Dos apuestas medibles. Una: la escala que devuelven los buscadores esta DEROGADA -el art. 3 original de la Ley 16.524 y el art. 3 de la Ley 17.451 la fijan en salarios minimos, y el art. 271 de la Ley 19.535 la paso a BPC con umbral de 8 BPC-, asi que la pagina entra a un SERP donde las respuestas de arriba tienen el numero mal por un factor grande. Dos: la escala esta en BPC y el sitio tiene la BPC auditada, asi que publica el aporte en PESOS (0,5/1/2 BPC = 3.432/6.864/13.728 y el umbral en 54.912 al mes), que es la cifra que la norma no da y la regla de oro de las descripciones pide. El monto del adicional NO se publica: el art. 493 de la Ley 20.075 dejo el 50 por ciento restante de su baja a la Ley de Presupuesto Nacional 2025-2029 y esa norma no se pudo leer, asi que va la mecanica y la cadena de normas sin cifra."
+    },
+    {
+      "id": "huerfanas-entran-a-su-tema",
+      "shippedOn": "2026-09-30",
+      "routes": [
+        "/feriados-que-se-corren-uruguay",
+        "/limite-de-efectivo-uruguay",
+        "/pizarra",
+        "/sala-vip-aeropuerto-uruguay",
+        "/tickets-mutualistas-uruguay"
+      ],
+      "hypothesis": "Las cinco estaban fuera de TODOS los temas, o sea no dibujaban 'Mas sobre este tema' y -como el vinculo del tema es reciproco por construccion- tampoco recibian un solo enlace de ese bloque desde ninguna otra pagina: solo llegaban desde el menu y desde 'Segui leyendo'. Entran al tema donde ya vive su vecina mas cercana (la pizarra con /dolar-hoy, los feriados que se corren detras de /horas-extras-uruguay, el tope de efectivo detras de /retirar-efectivo-uruguay, la sala VIP al lado de /cuanto-vale-una-milla-itau-uruguay y los tickets de mutualista entre los gastos fijos del mes), asi que cada una pasa a recibir enlaces desde las demas paginas de su tema y desde el hub. Son las unicas cinco de las veinticuatro huerfanas sin una fila abierta en este libro: las otras diecinueve se declararon entre el 16 y el 29 de septiembre y entran cuando cierre su ventana."
     }
   ]
 }
