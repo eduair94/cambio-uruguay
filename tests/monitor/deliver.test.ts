@@ -10,6 +10,7 @@ describe("envío del monitor", () => {
     const body = JSON.parse(fetchImpl.mock.calls[0][1].body);
     expect(body).toMatchObject({ chat_id: "123", text: "Cambio_Gales movió" });
     expect(body.parse_mode).toBeUndefined();
+    expect(fetchImpl.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
   });
 
   it("Telegram sin token, sin chat o con error de red devuelve false sin tirar", async () => {

@@ -18,6 +18,11 @@ const config = (over: Partial<MonitorConfig> = {}): MonitorConfig => ({
   ...over,
 });
 
+/** Una corrida de hace 5 minutos que ya vio a gales en 40,10 / 42,60. */
+function seenState(): MonitorState {
+  return { ...emptyState("u1", min(5)), lastRunAt: min(5), lastQuotes: { "gales|USD": { buy: 40.1, sell: 42.6 } } };
+}
+
 function deps(over: Partial<RunDeps> = {}, states = new Map<string, MonitorState>()) {
   const sent: Array<{ via: string; to: string; text: string }> = [];
   const base: RunDeps = {
@@ -60,7 +65,7 @@ describe("corrida del monitor", () => {
   });
 
   it("con estado previo, avisa por Telegram lo nuevo y el correo diario no recibe el movimiento", async () => {
-    const states = new Map([["u1", { ...emptyState("u1", min(5)) }]]);
+    const states = new Map([["u1", seenState()]]);
     const { deps: d, sent } = deps({}, states);
     const r = await runMonitors(d);
     expect(r.messages).toBe(1);
@@ -70,14 +75,14 @@ describe("corrida del monitor", () => {
   });
 
   it("con correo en 'all' recibe lo mismo por correo", async () => {
-    const states = new Map([["u1", { ...emptyState("u1", min(5)) }]]);
+    const states = new Map([["u1", seenState()]]);
     const { deps: d, sent } = deps({ monitors: async () => [config({ channels: { telegram: false, email: "all" } })] }, states);
     await runMonitors(d);
     expect(sent.map((s) => [s.via, s.to])).toEqual([["email", "ana@casa.uy"]]);
   });
 
   it("el cursor avanza aunque el envío falle", async () => {
-    const states = new Map([["u1", { ...emptyState("u1", min(5)) }]]);
+    const states = new Map([["u1", seenState()]]);
     const { deps: d } = deps({ sendTelegram: async () => false }, states);
     const r = await runMonitors(d);
     expect(r.sendFailures).toBe(1);
@@ -104,7 +109,7 @@ describe("corrida del monitor", () => {
 
   it("prueba vencida: un solo aviso, sin evaluar, y vuelve a andar con plan Empresa", async () => {
     const expired = config({ trialStartedAt: new Date(NOW.getTime() - 15 * 86_400_000) });
-    const states = new Map([["u1", { ...emptyState("u1", min(5)) }]]);
+    const states = new Map([["u1", seenState()]]);
     const changesSince = vi.fn(async () => []);
     const first = deps({ monitors: async () => [expired], changesSince }, states);
     const r1 = await runMonitors(first.deps);
@@ -118,10 +123,67 @@ describe("corrida del monitor", () => {
     expect(r2.expiredNotices).toBe(0);
     expect(again.sent).toEqual([]);
 
+    expect(states.get("u1")!.lastRunAt).toEqual(min(5));
+
     const paid = deps({ monitors: async () => [expired], hasBusinessKey: async () => true }, states);
     const r3 = await runMonitors(paid.deps);
     expect(r3.evaluated).toBe(1);
     expect(states.get("u1")!.accessEndedAt).toBeNull();
+  });
+
+  it("guarda el estado ANTES de enviar: un corte a mitad de camino no reenvía", async () => {
+    const order: string[] = [];
+    const states = new Map([["u1", seenState()]]);
+    const { deps: d } = deps(
+      {
+        saveState: async (st) => {
+          order.push(`save:${st.lastSentAt ? "sent" : "pending"}`);
+          states.set(st.uid, st);
+        },
+        sendTelegram: async () => {
+          order.push("send");
+          return true;
+        },
+      },
+      states
+    );
+    await runMonitors(d);
+    expect(order).toEqual(["save:pending", "send", "save:sent"]);
+  });
+
+  it("si no se pudo guardar el estado, no se envía nada", async () => {
+    const states = new Map([["u1", seenState()]]);
+    const { deps: d, sent } = deps(
+      {
+        saveState: async () => {
+          throw new Error("mongo");
+        },
+      },
+      states
+    );
+    const r = await runMonitors(d);
+    expect(r.failures).toBe(1);
+    expect(sent).toEqual([]);
+  });
+
+  it("con el presupuesto de tiempo agotado no empieza más monitores", async () => {
+    const states = new Map<string, MonitorState>();
+    let elapsed = 0;
+    const { deps: d } = deps(
+      {
+        monitors: async () => [config({ uid: "a" }), config({ uid: "b" })],
+        budgetMs: 1000,
+        elapsedMs: () => elapsed,
+        saveState: async (st) => {
+          states.set(st.uid, st);
+          elapsed = 5000;
+        },
+      },
+      states
+    );
+    const r = await runMonitors(d);
+    expect(r.skipped).toBe(1);
+    expect([...states.keys()]).toEqual(["a"]);
   });
 
   it("pide al ledger desde el principio del día y el grupo entero", async () => {

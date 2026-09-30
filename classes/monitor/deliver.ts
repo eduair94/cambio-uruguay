@@ -16,6 +16,8 @@ export async function sendTelegramText(
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ chat_id: chatId, text, link_preview_options: { is_disabled: true } }),
+      // Sin tope, un fetch colgado frena a todos los monitores que vienen detrás en la corrida.
+      signal: AbortSignal.timeout(10_000),
     });
     const data: any = await (res as any).json().catch(() => ({}));
     return Boolean(data?.ok);
