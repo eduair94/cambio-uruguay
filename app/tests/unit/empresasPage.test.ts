@@ -10,6 +10,11 @@ const APP = join(__dirname, '..', '..')
 const page = readFileSync(join(APP, 'pages/empresas.vue'), 'utf8')
 
 describe('/empresas', () => {
+  it('el monitoreo de competencia dice que se prueba gratis, con la constante', () => {
+    expect(page).toContain('TRIAL_DAYS')
+    expect(page).toContain('Monitoreo de competencia')
+  })
+
   it('está en la navegación con su etiqueta en los tres idiomas', () => {
     const entry = NAV_SECTIONS.flatMap(s => s.entries).find(i => i.to === '/empresas')
     expect(entry?.labelKey).toBe('empresas.nav')

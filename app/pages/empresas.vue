@@ -111,6 +111,7 @@ import {
   MAX_KEYS_PER_ACCOUNT,
   formatCount,
 } from '~/utils/apiKeys'
+import { TRIAL_DAYS } from '~/utils/competitorMonitor'
 
 const localePath = useLocalePath()
 const auth = useAuthStore()
@@ -193,7 +194,7 @@ const USES = [
   },
   {
     title: 'Monitoreo de competencia',
-    text: 'Saber cuándo y cuánto movió su pizarra cada casa, y dónde queda la tuya.',
+    text: `Avisos por Telegram o correo cuando otra casa mueve su pizarra o cambia tu lugar en el grupo, y un resumen al cierre del día. Probalo ${TRIAL_DAYS} días gratis desde tu cuenta.`,
   },
   {
     title: 'Productos financieros',

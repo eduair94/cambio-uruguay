@@ -8,6 +8,28 @@ const read = (p: string) => readFileSync(join(APP, p), 'utf8')
 describe('pestaña api de /cuenta', () => {
   const page = read('pages/cuenta/index.vue')
 
+  it('la pestaña api monta el monitor de competencia entre las claves y la administración', () => {
+    const tab = page.slice(page.indexOf('<VTabsWindowItem value="api">'))
+    const keys = tab.indexOf('<AccountApiKeysPanel />')
+    const monitor = tab.indexOf('<AccountCompetitorMonitorPanel />')
+    const admin = tab.indexOf('<AccountApiClientsAdminPanel />')
+    expect(keys).toBeGreaterThan(-1)
+    expect(monitor).toBeGreaterThan(keys)
+    expect(admin).toBeGreaterThan(monitor)
+  })
+
+  it('el monitor ofrece vincular Telegram y muestra el estado de la prueba', () => {
+    const panel = read('components/account/CompetitorMonitorPanel.vue')
+    expect(panel).toContain('<AccountTelegramLink')
+    expect(panel).toContain("'/api/me/monitor'")
+    expect(panel).toContain('TRIAL_DAYS')
+    expect(panel).toContain('daysLeft')
+  })
+
+  it('el panel de administración lista los monitores', () => {
+    expect(read('components/account/ApiClientsAdminPanel.vue')).toContain("'/api/admin/monitors'")
+  })
+
   it('acepta ?tab=api y monta los dos paneles', () => {
     expect(page).toContain("['saved', 'favorites', 'alerts', 'api']")
     expect(page).toContain('<VTab value="api">API</VTab>')
