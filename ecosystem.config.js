@@ -964,6 +964,19 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Apps útiles (/apps-utiles-uruguay). Reads the public Google Play and App Store listing of
+      // every app in classes/usefulapps/catalog.ts (robots-allowed pages only, ~230 requests at
+      // 1.5 s) and writes icon, rating, last version and availability into the Nuxt app's
+      // database. Weekly: ratings and versions move in weeks. Thursday 01:34 UTC — a minute used by
+      // no other job and a night with nothing else running. Needs APP_MONGO_URI.
+      name: "currency-useful-apps",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_useful_apps.js",
+      cron_restart: "34 1 * * 4",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Termómetro del mercado IT (/mercado-it-uruguay): r/CharruaDevs desde Arctic Shift, cada post
       // y cada comentario "de mercado" clasificado con Gemini (postura −2…+2, tema, IA, relato),
       // votos vivos vía la API de Reddit y un snapshot en la base del APP. Diario 12:14 UTC: minuto
