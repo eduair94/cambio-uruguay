@@ -362,8 +362,8 @@ export default defineNuxtConfig({
     // TTL acota lo viejo que puede ser un dato, no un asset.
     //
     // EL HTML ANÓNIMO DE ESTAS FAMILIAS ES EL MISMO PARA TODOS, con un asterisco. El idioma
-    // lo decide la URL: `redirectOn: 'root'` (defecto de @nuxtjs/i18n, que este archivo no
-    // pisa) hace que ninguna ruta con prefijo mire cookie ni Accept-Language, y
+    // lo decide la URL: desde el 2026-09-30 `detectBrowserLanguage: false` (ver la config de
+    // i18n más abajo), así que ninguna ruta mira cookie ni Accept-Language, y
     // `server/middleware/lang-cookie-cache.ts` saca el `Set-Cookie: lang=<idioma del
     // prefijo>` que volvía BYPASS a todo /en y /pt. Nada más del render lee cookie, cabecera
     // ni sesión (auth, tema, avisos y AdSense son client-only). El asterisco es el aviso de
@@ -1343,12 +1343,13 @@ export default defineNuxtConfig({
     ],
     defaultLocale: 'es',
     strategy: 'prefix_except_default',
-    detectBrowserLanguage: {
-      useCookie: true,
-      cookieKey: 'lang',
-      alwaysRedirect: true,
-      fallbackLocale: 'es',
-    },
+    // El idioma lo decide SÓLO la URL (2026-09-30). Con la detección por navegador, la raíz
+    // mandaba a /en a cualquiera con el celular en inglés — y el sitio es uruguayo: GA4 1–28/9
+    // midió 86 de ~100 entradas uruguayas a /en con navegador en inglés (45 desde Reddit), con
+    // 26 s de permanencia contra 67 s en la portada en español. El selector de idioma navega por
+    // URL (`switchLocalePath`) y las versiones /en y /pt siguen indexadas por hreflang, así que
+    // quien quiere otro idioma lo encuentra; Googlebot no manda Accept-Language, no cambia nada.
+    detectBrowserLanguage: false,
     // imports: false, // Disable vue-i18n composable auto-imports (removed, not supported)
   },
 
