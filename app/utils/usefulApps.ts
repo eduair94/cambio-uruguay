@@ -27,7 +27,7 @@ export type UsefulAppKind =
   | 'comunidad'
 
 /** Los diecinueve departamentos, en orden alfabético (el orden del selector). */
-export const USEFUL_APP_DEPARTMENTS = [
+export const USEFUL_APP_DEPARTMENTS = Object.freeze([
   'Artigas',
   'Canelones',
   'Cerro Largo',
@@ -47,7 +47,7 @@ export const USEFUL_APP_DEPARTMENTS = [
   'Soriano',
   'Tacuarembó',
   'Treinta y Tres',
-] as const
+] as const)
 
 export type UsefulAppDepartment = (typeof USEFUL_APP_DEPARTMENTS)[number]
 
@@ -101,66 +101,66 @@ export interface UsefulAppCategory {
 }
 
 export const USEFUL_APP_CATEGORIES: readonly UsefulAppCategory[] = Object.freeze([
-  {
+  Object.freeze({
     id: 'tramites',
     label: 'Trámites e identidad',
     icon: 'mdi-card-account-details-outline',
     blurb: 'Tu usuario del Estado, la identidad digital, el BPS y la DGI.',
-  },
-  {
+  }),
+  Object.freeze({
     id: 'salud',
     label: 'Salud',
     icon: 'mdi-medical-bag',
     blurb: 'ASSE, las mutualistas, las emergencias móviles y las farmacias.',
-  },
-  {
+  }),
+  Object.freeze({
     id: 'transporte',
     label: 'Transporte y auto',
     icon: 'mdi-bus',
     blurb: 'El ómnibus, los pasajes, los peajes, la patente, el estacionamiento y los taxis.',
-  },
-  {
+  }),
+  Object.freeze({
     id: 'dinero',
     label: 'Bancos, tarjetas y pagos',
     icon: 'mdi-credit-card-outline',
     blurb: 'Los bancos, las tarjetas, las billeteras y dónde pagar las cuentas.',
-  },
-  {
+  }),
+  Object.freeze({
     id: 'hogar',
     label: 'Luz, teléfono y servicios',
     icon: 'mdi-home-lightning-bolt-outline',
     blurb: 'La luz, el celular, internet, el cable y el supergás.',
-  },
-  {
+  }),
+  Object.freeze({
     id: 'emergencias',
     label: 'Emergencias y clima',
     icon: 'mdi-alarm-light-outline',
     blurb: 'El 9-1-1, los desfibriladores y el pronóstico oficial.',
-  },
-  {
+  }),
+  Object.freeze({
     id: 'ciudad',
     label: 'Tu intendencia',
     icon: 'mdi-city-variant-outline',
     blurb: 'Reclamos, playas y turismo de cada departamento.',
-  },
-  {
+  }),
+  Object.freeze({
     id: 'educacion',
     label: 'Educación y trabajo',
     icon: 'mdi-school-outline',
     blurb: 'La escuela, el liceo, la facultad, Ceibal y la búsqueda de empleo.',
-  },
-  {
+  }),
+  Object.freeze({
     id: 'compras',
     label: 'Compras y delivery',
     icon: 'mdi-cart-outline',
     blurb: 'Delivery, supermercados, compras en el exterior y precios.',
-  },
-  {
+  }),
+  Object.freeze({
     id: 'ocio',
     label: 'Cultura y entretenimiento',
     icon: 'mdi-ticket-outline',
     blurb: 'Entradas, fútbol, cine y la televisión pública.',
-  },
+  }),
 ])
 
 export const USEFUL_APP_KIND_LABELS: Readonly<Record<UsefulAppKind, string>> = Object.freeze({
@@ -187,10 +187,10 @@ export type UsefulAppsKindFilter = 'todas' | 'publicas' | 'privadas' | 'no-ofici
 
 export const USEFUL_APPS_KIND_FILTERS: readonly { id: UsefulAppsKindFilter; label: string }[] =
   Object.freeze([
-    { id: 'todas', label: 'Todas' },
-    { id: 'publicas', label: 'Del Estado' },
-    { id: 'privadas', label: 'Privadas' },
-    { id: 'no-oficiales', label: 'No oficiales' },
+    Object.freeze({ id: 'todas', label: 'Todas' }),
+    Object.freeze({ id: 'publicas', label: 'Del Estado' }),
+    Object.freeze({ id: 'privadas', label: 'Privadas' }),
+    Object.freeze({ id: 'no-oficiales', label: 'No oficiales' }),
   ])
 
 export function usefulAppKindMatches(
@@ -241,6 +241,8 @@ const STOPWORDS: ReadonlySet<string> = new Set([
   'los',
   'mi',
   'o',
+  'oficial',
+  'oficiales',
   'para',
   'por',
   'que',
@@ -250,9 +252,32 @@ const STOPWORDS: ReadonlySet<string> = new Set([
   'y',
 ])
 
-const CATEGORY_LABEL: Readonly<Record<string, string>> = Object.fromEntries(
-  USEFUL_APP_CATEGORIES.map(category => [category.id, category.label])
-)
+// Las palabras con las que se busca cada pestaña. No son la etiqueta: "Luz, teléfono y servicios"
+// hacía que buscar "luz" trajera Antel y el cable, y "Transporte y auto" traía el ómnibus al buscar
+// "auto".
+const CATEGORY_TERMS: Readonly<Record<UsefulAppCategoryId, string>> = Object.freeze({
+  tramites: 'tramites identidad',
+  salud: 'salud',
+  transporte: 'transporte',
+  dinero: 'banco bancos tarjeta tarjetas pagos',
+  hogar: 'hogar servicios',
+  emergencias: 'emergencia emergencias',
+  ciudad: 'intendencia',
+  educacion: 'educacion estudio',
+  compras: 'compras',
+  ocio: 'cultura entretenimiento',
+})
+
+// Quién la hace, en palabras que no se contradicen: con la etiqueta "No oficial" en el índice,
+// buscar "oficial" devolvía justo la única app que no lo es.
+const KIND_TERMS: Readonly<Record<UsefulAppKind, string>> = Object.freeze({
+  estado: 'estado',
+  intendencia: 'estado intendencia',
+  'empresa-publica': 'estado empresa publica',
+  'organismo-publico': 'estado organismo publico',
+  privada: 'empresa privada',
+  comunidad: 'independiente',
+})
 
 const haystacks = new WeakMap<UsefulApp, string>()
 
@@ -266,8 +291,8 @@ function usefulAppHaystack(app: UsefulApp): string {
       app.summary,
       ...app.uses,
       ...(app.keywords ?? []),
-      CATEGORY_LABEL[app.category],
-      USEFUL_APP_KIND_LABELS[app.kind],
+      CATEGORY_TERMS[app.category],
+      KIND_TERMS[app.kind],
       app.android?.developer,
       app.ios?.developer,
       ...(app.departments ?? []),
@@ -291,13 +316,12 @@ export function usefulAppMatches(app: UsefulApp, query: string): boolean {
 
 /** Dos letras para el monograma cuando no hay ícono: "Cómo ir" → "CI", "Prex" → "PR". */
 export function usefulAppInitials(name: string): string {
-  const words = name
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .split(/[\s.\-:+/]+/)
-    .filter(Boolean)
+  const stripped = name.normalize('NFD').replace(/\p{Diacritic}/gu, '')
+  const words = stripped.split(/[\s.\-:+/]+/).filter(Boolean)
   const letters =
-    words.length >= 2 ? `${words[0]!.charAt(0)}${words[1]!.charAt(0)}` : name.slice(0, 2)
+    words.length >= 2
+      ? `${words[0]!.charAt(0)}${words[1]!.charAt(0)}`
+      : stripped.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 2)
   return letters.toUpperCase()
 }
 
@@ -328,9 +352,9 @@ export const USEFUL_APPS_DEFAULT_STATE: Readonly<UsefulAppsState> = Object.freez
 })
 
 export const USEFUL_APPS_SORTS: readonly { id: UsefulAppsSort; label: string }[] = Object.freeze([
-  { id: 'utiles', label: 'Más útiles primero' },
-  { id: 'az', label: 'Nombre (A–Z)' },
-  { id: 'recientes', label: 'Actualizadas hace poco' },
+  Object.freeze({ id: 'utiles', label: 'Más útiles primero' }),
+  Object.freeze({ id: 'az', label: 'Nombre (A–Z)' }),
+  Object.freeze({ id: 'recientes', label: 'Actualizadas hace poco' }),
 ])
 
 export const USEFUL_APPS_MAX_QUERY = 60
@@ -340,6 +364,15 @@ const TABS: readonly string[] = [
   'imprescindibles',
   ...USEFUL_APP_CATEGORIES.map(category => category.id),
 ]
+
+// "paysandu", "PAYSANDÚ" y "Paysandú" son el mismo departamento: un enlace armado con otra
+// grafía no se pierde en silencio, y la URL que se reescribe usa la canónica.
+const DEPARTMENT_BY_NAME: ReadonlyMap<string, UsefulAppDepartment> = new Map(
+  USEFUL_APP_DEPARTMENTS.map((department): [string, UsefulAppDepartment] => [
+    usefulAppNormalize(department),
+    department,
+  ])
+)
 
 const firstString = (value: unknown): string => {
   const raw = Array.isArray(value) ? value[0] : value
@@ -364,9 +397,7 @@ export function usefulAppsStateFromQuery(query: Record<string, unknown>): Useful
       ? (tipo as UsefulAppsKindFilter)
       : 'todas',
     plataforma: plataforma === 'android' || plataforma === 'ios' ? plataforma : 'todas',
-    depto: (USEFUL_APP_DEPARTMENTS as readonly string[]).includes(depto)
-      ? (depto as UsefulAppDepartment)
-      : '',
+    depto: DEPARTMENT_BY_NAME.get(usefulAppNormalize(depto)) ?? '',
     orden: USEFUL_APPS_SORTS.some(s => s.id === orden) ? (orden as UsefulAppsSort) : 'utiles',
   }
 }

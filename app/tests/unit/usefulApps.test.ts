@@ -112,6 +112,13 @@ describe('usefulApps — categorías y tipos', () => {
     expect(usefulAppInitials('Cómo ir')).toBe('CI')
     expect(usefulAppInitials('gub.uy')).toBe('GU')
     expect(usefulAppInitials('Prex')).toBe('PR')
+    expect(usefulAppInitials('Ómnibus')).toBe('OM')
+    expect(usefulAppInitials('+Cinemateca')).toBe('CI')
+  })
+
+  it('congela también cada categoría: son constantes compartidas entre pedidos del servidor', () => {
+    expect(Object.isFrozen(USEFUL_APP_CATEGORIES)).toBe(true)
+    expect(Object.isFrozen(USEFUL_APP_CATEGORIES[0])).toBe(true)
   })
 })
 
@@ -140,6 +147,34 @@ describe('usefulApps — búsqueda', () => {
   it('exige cada palabra con contenido', () => {
     expect(usefulAppMatches(UTE, 'luz agua')).toBe(false)
   })
+
+  it('"oficial" no invierte el filtro: es una palabra vacía y el Tipo decide', () => {
+    expect(usefulAppMatches(UTE, 'app oficial de la luz')).toBe(true)
+    expect(usefulAppMatches(COMO_IR, 'oficial')).toBe(true)
+    expect(usefulAppMatches(STM, 'oficial')).toBe(true)
+  })
+
+  it('busca por quién la hace con palabras que no se contradicen', () => {
+    expect(usefulAppMatches(COMO_IR, 'estado')).toBe(true)
+    expect(usefulAppMatches(UTE, 'estado')).toBe(true)
+    expect(usefulAppMatches(PEDIDOS, 'estado')).toBe(false)
+    expect(usefulAppMatches(STM, 'independiente')).toBe(true)
+  })
+
+  it('la etiqueta de la pestaña no arrastra apps que no tienen que ver', () => {
+    const ANTEL = app({
+      id: 'mi-antel',
+      name: 'Mi Antel',
+      organization: 'Antel',
+      kind: 'empresa-publica',
+      category: 'hogar',
+      summary: 'Tu saldo y tus facturas de Antel.',
+      uses: ['Consultá el saldo del celular'],
+      keywords: ['antel', 'celular'],
+    })
+    expect(usefulAppMatches(ANTEL, 'luz')).toBe(false)
+    expect(usefulAppMatches(COMO_IR, 'auto')).toBe(false)
+  })
 })
 
 describe('usefulApps — estado ↔ URL', () => {
@@ -164,8 +199,11 @@ describe('usefulApps — estado ↔ URL', () => {
     expect(usefulAppsStateFromQuery({ categoria: ['salud', 'dinero'] }).tab).toBe('salud')
   })
 
-  it('acepta un departamento con tilde', () => {
+  it('acepta un departamento con tilde, sin tilde o en otra caja, y devuelve el canónico', () => {
     expect(usefulAppsStateFromQuery({ depto: 'Paysandú' }).depto).toBe('Paysandú')
+    expect(usefulAppsStateFromQuery({ depto: 'paysandu' }).depto).toBe('Paysandú')
+    expect(usefulAppsStateFromQuery({ depto: 'rio negro' }).depto).toBe('Río Negro')
+    expect(usefulAppsStateFromQuery({ depto: 'Narnia' }).depto).toBe('')
   })
 
   it('escribe sólo lo que difiere del default, así la URL limpia es la canónica', () => {
@@ -192,6 +230,15 @@ describe('usefulApps — estado ↔ URL', () => {
     expect(
       usefulAppsActiveFilterCount({ ...USEFUL_APPS_DEFAULT_STATE, q: 'x', depto: 'Salto' })
     ).toBe(2)
+    // El orden cuenta: vive en "Más filtros" y "Limpiar filtros" lo vuelve al default.
+    expect(
+      usefulAppsActiveFilterCount({
+        ...USEFUL_APPS_DEFAULT_STATE,
+        tipo: 'publicas',
+        plataforma: 'ios',
+        orden: 'az',
+      })
+    ).toBe(3)
   })
 
   it('arma el enlace de cada pestaña sobre la ruta base', () => {
@@ -222,6 +269,13 @@ describe('usefulApps — filtro, orden y grupos', () => {
   it('la plataforma exige la ficha de esa tienda', () => {
     const state = { ...USEFUL_APPS_DEFAULT_STATE, plataforma: 'ios' as const }
     expect(usefulAppsFilter(ALL, state, ctx).map(a => a.id)).toEqual(['ute', 'stm-montevideo'])
+  })
+
+  it('el tipo y la búsqueda también filtran', () => {
+    const publicas = { ...USEFUL_APPS_DEFAULT_STATE, tipo: 'publicas' as const }
+    expect(usefulAppsFilter(ALL, publicas, ctx).map(a => a.id)).toEqual(['ute', 'como-ir'])
+    const omnibus = { ...USEFUL_APPS_DEFAULT_STATE, q: 'omnibus' }
+    expect(usefulAppsFilter(ALL, omnibus, ctx).map(a => a.id)).toEqual(['como-ir'])
   })
 
   it('ordena A–Z sin tildes y por actualización con las desconocidas al final', () => {
@@ -256,8 +310,13 @@ describe('usefulApps — filtro, orden y grupos', () => {
     expect(counts.salud).toBe(0)
   })
 
-  it('lista los departamentos presentes en el orden del país', () => {
+  it('lista los departamentos presentes en orden alfabético, sin repetir', () => {
     expect(usefulAppsDepartmentsIn(ALL)).toEqual(['Montevideo'])
+    const local = [
+      app({ id: 's', departments: ['Salto'] }),
+      app({ id: 'm', departments: ['Montevideo', 'Canelones'] }),
+    ]
+    expect(usefulAppsDepartmentsIn(local)).toEqual(['Canelones', 'Montevideo', 'Salto'])
   })
 })
 
