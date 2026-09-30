@@ -61,6 +61,7 @@ function toState(doc: any): MonitorState | null {
     positions: doc.positions ?? {},
     quietDay: doc.quietDay ?? {},
     dailyDay: doc.dailyDay ?? null,
+    lastQuotes: doc.lastQuotes ?? {},
     accessEndedAt: doc.accessEndedAt ? new Date(doc.accessEndedAt) : null,
     lastRunAt: doc.lastRunAt ? new Date(doc.lastRunAt) : null,
     lastSentAt: doc.lastSentAt ? new Date(doc.lastSentAt) : null,

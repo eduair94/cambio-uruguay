@@ -11,6 +11,7 @@ const CompetitorMonitorStateSchema = new Schema(
     positions: { type: Schema.Types.Mixed, default: {} },
     quietDay: { type: Schema.Types.Mixed, default: {} },
     dailyDay: { type: String, default: null },
+    lastQuotes: { type: Schema.Types.Mixed, default: {} },
     accessEndedAt: { type: Date, default: null },
     lastRunAt: { type: Date, default: null },
     lastSentAt: { type: Date, default: null },

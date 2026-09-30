@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupQuotes } from "../../classes/monitor/snapshot";
+import { groupQuotes, plausibleRows } from "../../classes/monitor/snapshot";
 
 const rows = [
   { origin: "gales", code: "USD", type: "", buy: 40.1, sell: 42.6 },
@@ -32,5 +32,21 @@ describe("foto del grupo", () => {
   it("una casa que publica sólo la venta queda con la compra en 0", () => {
     const q = groupQuotes([{ origin: "gales", code: "USD", type: "", buy: 0, sell: 42.6 }], new Set(["gales"]), new Set(["USD"]));
     expect(q.get("USD")![0]).toMatchObject({ buy: 0, sell: 42.6 });
+  });
+});
+
+describe("filtro de plausibilidad de la foto", () => {
+  it("saca la venta con la coma perdida (contra sus pares) y la compra mayor que la venta", () => {
+    const usd = (origin: string, buy: number, sell: number) => ({ origin, code: "USD", type: "", buy, sell });
+    const rows = [
+      usd("a", 40.1, 42.6),
+      usd("b", 40.2, 42.5),
+      usd("c", 40.0, 42.7),
+      usd("d", 40.1, 42.6),
+      usd("e", 40.3, 42.4),
+      usd("coma", 40.1, 4260),
+      usd("al_reves", 43.0, 42.0),
+    ];
+    expect(plausibleRows(rows).map((r) => r.origin).sort()).toEqual(["a", "b", "c", "d", "e"]);
   });
 });

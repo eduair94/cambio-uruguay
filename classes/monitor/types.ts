@@ -25,10 +25,16 @@ export interface MonitorConfig {
   trialStartedAt: Date;
 }
 
-/** Posición vista en la última corrida y la última avisada (1 = mejor; null = sin posición). */
+/**
+ * Posición vista en la última corrida y la última avisada (1 = mejor; null = sin posición), y
+ * `basis`: contra qué se midió (casas con precio de ese lado + grupo configurado). Si el grupo
+ * cambia —una edición del cliente, un competidor que falta de la foto— se re-aprende sin avisar:
+ * ese cambio de puesto no lo causó ningún precio.
+ */
 export interface PositionMemo {
   seen: number | null;
   alerted: number | null;
+  basis?: string;
 }
 
 /** El estado que escribe sólo el job (`competitormonitorstates`). */
@@ -40,7 +46,14 @@ export interface MonitorState {
   /** Moneda → día (YYYY-MM-DD, Montevideo) del último aviso de pizarra quieta. */
   quietDay: Record<string, string>;
   dailyDay: string | null;
+  /**
+   * Último precio CONFIRMADO en la foto por casa y moneda (`${origen}|${moneda}`). Un movimiento se
+   * mide contra esto y no contra el "antes" del ledger: el ledger registra cada lectura antes de la
+   * guarda de plausibilidad, así que su "antes" puede ser un valor que nunca se publicó.
+   */
+  lastQuotes: Record<string, { buy: number; sell: number }>;
   accessEndedAt: Date | null;
+  /** Última EVALUACIÓN (un monitor vencido no la actualiza). Más vieja que 30 min: se re-aprende. */
   lastRunAt: Date | null;
   lastSentAt: Date | null;
 }
@@ -49,6 +62,7 @@ export function emptyState(uid: string, now: Date): MonitorState {
   return {
     uid,
     cursor: now,
+    lastQuotes: {},
     positions: {},
     quietDay: {},
     dailyDay: null,
