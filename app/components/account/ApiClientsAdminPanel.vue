@@ -114,6 +114,35 @@
           </tr>
         </tbody>
       </VTable>
+      <h3 class="text-subtitle-1 font-weight-bold mt-8 mb-2">
+        Monitores de competencia ({{ monitors.length }})
+      </h3>
+      <VTable density="compact">
+        <thead>
+          <tr>
+            <th>Cuenta</th>
+            <th>Casa y grupo</th>
+            <th>Monedas</th>
+            <th>Acceso</th>
+            <th>Último aviso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="m in monitors" :key="m.uid">
+            <td>
+              <div>{{ m.email || m.uid }}</div>
+              <div class="text-caption">{{ m.active ? 'activo' : 'pausado' }}</div>
+            </td>
+            <td class="text-caption">{{ m.ownOrigin || '—' }} · {{ m.competitors.join(', ') }}</td>
+            <td class="text-caption">{{ m.currencies.join(', ') }}</td>
+            <td class="text-caption">{{ accessText(m.access) }}</td>
+            <td class="text-caption">{{ m.lastSentAt ? formatDay(m.lastSentAt) : '—' }}</td>
+          </tr>
+          <tr v-if="!monitors.length">
+            <td colspan="5" class="text-caption">Todavía nadie armó un monitor.</td>
+          </tr>
+        </tbody>
+      </VTable>
     </template>
   </section>
 </template>
@@ -124,11 +153,31 @@ import {
   ASSIGNABLE_PLANS,
   dailyText,
   formatCount,
+  formatDay,
   keyUsage,
   type ApiKeyRecord,
   type ApiPlanId,
   type ApiUsageResponse,
 } from '~/utils/apiKeys'
+import type { MonitorAccess } from '~/utils/competitorMonitor'
+
+interface AdminMonitor {
+  uid: string
+  email: string | null
+  ownOrigin: string | null
+  competitors: string[]
+  currencies: string[]
+  active: boolean
+  access: MonitorAccess
+  lastSentAt: string | null
+}
+const monitors = ref<AdminMonitor[]>([])
+
+function accessText(access: MonitorAccess): string {
+  if (access.status === 'trial') return `prueba, ${access.daysLeft} d`
+  if (access.status === 'business') return 'Empresa'
+  return 'vencido'
+}
 
 const { authFetch } = useAuthFetch()
 
@@ -167,6 +216,11 @@ async function load() {
     )
     resetEdits(res.keys)
     data.value = res
+    monitors.value = (
+      await authFetch<{ monitors: AdminMonitor[] }>('/api/admin/monitors').catch(() => ({
+        monitors: [],
+      }))
+    ).monitors
   } catch (e: any) {
     const status = Number(e?.statusCode ?? e?.response?.status ?? 0)
     if (status === 403 || status === 401) forbidden.value = true
