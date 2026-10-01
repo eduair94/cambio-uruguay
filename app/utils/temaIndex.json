@@ -1209,6 +1209,10 @@
           "label": "¿Cuándo me puedo jubilar?"
         },
         {
+          "to": "/iass-uruguay",
+          "label": "IASS: impuesto a las jubilaciones"
+        },
+        {
           "to": "/reconocer-anos-trabajados-uruguay",
           "label": "Reconocer años trabajados"
         },

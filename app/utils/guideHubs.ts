@@ -1281,6 +1281,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/cuando-me-puedo-jubilar-uruguay',
       },
       {
+        label: 'IASS: impuesto a las jubilaciones',
+        description: 'Desde cuánto se paga, la escala marginal y el caso de varios organismos.',
+        to: '/iass-uruguay',
+      },
+      {
         label: 'Reconocer años trabajados',
         description:
           'Lo anterior al 1/4/1996 no figura en la historia laboral: el plazo por fecha de nacimiento.',

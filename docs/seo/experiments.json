@@ -876,6 +876,21 @@
         "/tickets-mutualistas-uruguay"
       ],
       "hypothesis": "Las cinco estaban fuera de TODOS los temas, o sea no dibujaban 'Mas sobre este tema' y -como el vinculo del tema es reciproco por construccion- tampoco recibian un solo enlace de ese bloque desde ninguna otra pagina: solo llegaban desde el menu y desde 'Segui leyendo'. Entran al tema donde ya vive su vecina mas cercana (la pizarra con /dolar-hoy, los feriados que se corren detras de /horas-extras-uruguay, el tope de efectivo detras de /retirar-efectivo-uruguay, la sala VIP al lado de /cuanto-vale-una-milla-itau-uruguay y los tickets de mutualista entre los gastos fijos del mes), asi que cada una pasa a recibir enlaces desde las demas paginas de su tema y desde el hub. Son las unicas cinco de las veinticuatro huerfanas sin una fila abierta en este libro: las otras diecinueve se declararon entre el 16 y el 29 de septiembre y entran cuando cierre su ventana."
+    },
+    {
+      "id": "iass-pagina-propia",
+      "shippedOn": "2026-10-01",
+      "routes": [
+        "/iass-uruguay"
+      ],
+      "queries": [
+        "iass",
+        "iass uruguay",
+        "cuanto me descuentan de la jubilacion",
+        "escala iass",
+        "iass minimo no imponible"
+      ],
+      "hypothesis": "Las franjas del IASS ya estaban publicadas pero dentro de /impuestos-inversiones-uruguay, en una seccion que su propio texto abre diciendo que el IASS no grava inversiones: el dato estaba donde quien lo busca no entra. Una pagina propia con la cuenta abierta tramo por tramo y la opcion de quien cobra de varios organismos deberia capturar la consulta de marca \"iass\" y la de intencion \"cuanto me descuentan de la jubilacion\", que hoy no tienen pagina. Se le saco la palabra clave \"iass\" a la entrada de inversiones en siteNav para que el buscador propio no las enfrente."
     }
   ]
 }

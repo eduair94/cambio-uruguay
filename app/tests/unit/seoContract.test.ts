@@ -245,6 +245,28 @@ const SEO_SHELL_COMPONENTS = {
   // The routing wrapper mounts either this directory or the independently checked dossier.
   PropertySalesDirectory: 'property-sales/Directory.vue',
 }
+/**
+ * Los constructores de JSON-LD: una página puede armar su `@graph` en un helper de `utils/`.
+ *
+ * Es el MISMO agujero que `SEO_SHELL_COMPONENTS` tapa para el title y el canonical, un nivel más
+ * abajo. El contador de migas es un grep del archivo de la página, así que
+ * `buildVideoPageSchema(...)` —que emite el `BreadcrumbList` como primer nodo del grafo desde la
+ * primera versión— le resulta invisible, y las dos páginas de videos figuraban como deuda teniendo
+ * el rastro puesto. Eso no es un falso positivo inofensivo: es exactamente la holgura que el
+ * comentario de `LEGACY_BUDGET` describe para el canonical en 23 sobre una deuda real de 0, un
+ * presupuesto de 10 parado sobre una deuda de 8 que se come dos páginas nuevas sin migas y sigue
+ * en verde.
+ */
+const SCHEMA_BUILDERS: Record<string, string> = {
+  buildVideoPageSchema: 'videoSchema.ts',
+}
+const BUILDER_FILES = Object.values(SCHEMA_BUILDERS).map(file =>
+  join(__dirname, '..', '..', 'utils', file)
+)
+/** True when the page hands its structured data to one of those builders. */
+const buildsSchema = (source: string) =>
+  Object.keys(SCHEMA_BUILDERS).some(name => new RegExp(`\\b${name}\\s*\\(`).test(source))
+
 const SEO_SHELLS = Object.keys(SEO_SHELL_COMPONENTS)
 const SHELL_FILES = Object.values(SEO_SHELL_COMPONENTS).map(file =>
   join(__dirname, '..', '..', 'components', file)
@@ -308,7 +330,7 @@ const LEGACY_BUDGET = { seoMeta: 0, canonical: 0, structuredData: 0 }
  * ninguno el rastro se queda en dos eslabones. Un rastro con un padre inventado es peor que uno
  * corto: le promete al visitante una sección que no existe.
  */
-const BREADCRUMB_BUDGET = 10
+const BREADCRUMB_BUDGET = 8
 
 function missing(predicate: (source: string) => boolean): string[] {
   return OWES_OWN_SEO.filter(file => predicate(read(file))).sort()
@@ -363,7 +385,10 @@ describe('the legacy SEO debt only shrinks', () => {
 
   it(`has at most ${BREADCRUMB_BUDGET} pages whose JSON-LD carries no BreadcrumbList`, () => {
     const offenders = missing(
-      source => source.includes('application/ld+json') && !source.includes('BreadcrumbList')
+      source =>
+        source.includes('application/ld+json') &&
+        !source.includes('BreadcrumbList') &&
+        !buildsSchema(source)
     )
     expect(offenders.length, offenders.join('\n')).toBeLessThanOrEqual(BREADCRUMB_BUDGET)
   })
@@ -378,6 +403,14 @@ describe('the legacy SEO debt only shrinks', () => {
     expect(source).toContain('application/ld+json')
     expect(source).toContain('BreadcrumbList')
     expect(source).toContain('https://cambio-uruguay.com')
+  })
+
+  // La otra mitad de esa excusa: si `buildVideoPageSchema` dejara de emitir el rastro, las dos
+  // páginas que lo delegan se quedarían sin migas y el contador de arriba seguiría en 8.
+  it.each(BUILDER_FILES)('%s emits the BreadcrumbList its callers delegate to it', builder => {
+    const source = readFileSync(builder, 'utf8')
+    expect(source).toContain('BreadcrumbList')
+    expect(source).toContain('ListItem')
   })
 
   // El H1 es la única señal de la página que Google lee sin depender de nadie: el title lo puede

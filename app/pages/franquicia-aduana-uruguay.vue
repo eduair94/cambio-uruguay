@@ -2,13 +2,22 @@
   <VContainer class="page py-6 py-md-10">
     <!-- Hero -->
     <header class="hero mb-6">
-      <p class="eyebrow">Compras en el exterior · Julio 2026</p>
+      <p class="eyebrow">Compras en el exterior · verificado el {{ LAST_RESEARCHED_LABEL }}</p>
       <h1 class="text-h4 text-md-h3 font-weight-bold mb-2">¿Tu compra del exterior paga IVA?</h1>
       <p class="text-body-1 text-medium-emphasis mb-4">
-        El régimen cambió en 2026 y hay una fecha marcada en rojo: el
-        <strong>1.º de octubre</strong>. Acá está la regla que rige hoy, la que va a regir después,
-        y de dónde sale cada una — con el decreto y la resolución linkeados, para que no nos creas a
-        nosotros.
+        <template v-if="registryEnforced">
+          El régimen cambió en 2026 y la fecha que estaba marcada en rojo —el
+          <strong>{{ ENFORCED_LABEL }}</strong
+          >— ya pasó: para no pagar IVA en una compra de EE.UU. ahora hace falta que el vendedor
+          esté registrado ante la Aduana. Acá está la regla que rige hoy y de dónde sale — con el
+          decreto y la resolución linkeados, para que no nos creas a nosotros.
+        </template>
+        <template v-else>
+          El régimen cambió en 2026 y hay una fecha marcada en rojo: el
+          <strong>{{ ENFORCED_LABEL }}</strong
+          >. Acá está la regla que rige hoy, la que va a regir después, y de dónde sale cada una —
+          con el decreto y la resolución linkeados, para que no nos creas a nosotros.
+        </template>
       </p>
       <VAlert type="info" variant="tonal" density="comfortable" icon="mdi-scale-balance">
         Todo lo de esta página sale de la <strong>Ley 20.446 art. 627</strong>, el
@@ -629,16 +638,29 @@
 
     <!-- What changes on Oct 1 -->
     <section class="mb-8">
-      <h2 class="section-heading mb-1">Qué cambia el 1.º de octubre de 2026</h2>
+      <h2 class="section-heading mb-1">
+        {{
+          registryEnforced ? `Qué cambió el ${ENFORCED_LABEL}` : `Qué cambia el ${ENFORCED_LABEL}`
+        }}
+      </h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
-        Hoy, para no pagar IVA en una compra de EE.UU. de hasta US$ 200, alcanza con que la compra
-        sea de EE.UU. Desde el 1/10/2026 va a hacer falta, además, que el
-        <strong>vendedor</strong> —el que emite la factura, no el courier— esté
-        <strong>registrado ante la Aduana</strong>: si no figura, no hay exoneración. La
-        <em>validación automática</em> de LUCIA, en cambio, arranca el
+        <template v-if="registryEnforced">
+          Para no pagar IVA en una compra de EE.UU. de hasta US$ {{ USA_IVA_EXEMPTION_USD }} ya no
+          alcanza con que la compra sea de EE.UU.: desde el {{ ENFORCED_LABEL }} hace falta, además,
+          que el <strong>vendedor</strong> —el que emite la factura, no el courier— esté
+          <strong>registrado ante la Aduana</strong>. Si no figura, no hay exoneración.
+        </template>
+        <template v-else>
+          Hoy, para no pagar IVA en una compra de EE.UU. de hasta US$
+          {{ USA_IVA_EXEMPTION_USD }}, alcanza con que la compra sea de EE.UU. Desde el
+          {{ ENFORCED_LABEL }} va a hacer falta, además, que el <strong>vendedor</strong> —el que
+          emite la factura, no el courier— esté <strong>registrado ante la Aduana</strong>: si no
+          figura, no hay exoneración.
+        </template>
+        La <em>validación automática</em> de LUCIA, en cambio, arranca el
         <strong>3/11/2026</strong> (RG 26/2026 num. 10), así que hay 33 días en los que el requisito
-        rige sin que el sistema lo bloquee solo. Buena noticia del 5/10: el courier puede registrar
-        al vendedor por vos y la Aduana tiene que publicar la lista.
+        rige sin que el sistema lo bloquee solo. El courier puede registrar al vendedor por vos y la
+        Aduana tiene que publicar la lista.
       </p>
 
       <VCard variant="flat" class="timeline pa-5">
@@ -662,8 +684,10 @@
       >
         <strong>Ya hay lista.</strong> La Aduana publica las empresas registradas: Xipron Inc
         (Tiendamía), United States Xpress Inc, Grinbox Corp, Netbox Corp, Miami box latinoamérica
-        LLC y Eshop Miami INC. Si el emisor de tu factura no está entre ellas, desde el 1/10/2026 el
-        envío paga IVA.
+        LLC y Eshop Miami INC. Si el emisor de tu factura no está entre ellas,
+        {{
+          registryEnforced ? 'el envío paga IVA' : `desde el ${ENFORCED_LABEL} el envío paga IVA`
+        }}.
         <a
           href="https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/"
           target="_blank"
@@ -759,10 +783,21 @@ const franchiseAvailable = ref(FRANCHISE_ANNUAL_USD)
 const shipmentsUsed = ref(0)
 const sellerRegistered = ref(true)
 
+/**
+ * Whether the seller-registry requirement is ALREADY in force, for the prose.
+ *
+ * El formulario leía la fecha desde el 2026-10-01 (`showSellerQuestion`) pero el texto seguía
+ * escrito desde antes: el título decía «Qué cambia el 1.º de octubre», el hero prometía «la que va
+ * a regir después» y el cuerpo afirmaba que «alcanza con que la compra sea de EE.UU.» — que el día
+ * que la regla entró en vigencia pasó a ser falso en una página de plata, y subestimar el costo es
+ * el error caro de los dos. Cuelga del MISMO `rules` que el cálculo, así que una tercera prórroga
+ * que llegue por `/api/aduana` mueve la fecha, el tiempo verbal y la pregunta del formulario a la
+ * vez, sin volver a tocar este archivo.
+ */
+const registryEnforced = computed(() => isSellerRegistryEnforced(new Date(), rules.value))
+
 /** Only ask about the seller once the answer can actually change the outcome (live date). */
-const showSellerQuestion = computed(
-  () => origin.value === 'usa' && isSellerRegistryEnforced(new Date(), rules.value)
-)
+const showSellerQuestion = computed(() => origin.value === 'usa' && registryEnforced.value)
 
 const decision = computed(() =>
   resolveRegime(
@@ -843,6 +878,7 @@ const taxLine = computed(() => {
 
 // Reactive to the live overlay: a prórroga moves this "desde X" label without a redeploy.
 const ENFORCED_LABEL = computed(() => formatDate(rules.value.sellerRegistryEnforcedFrom))
+
 const LAST_RESEARCHED_LABEL = formatDate(LAST_RESEARCHED)
 
 function formatDate(iso: string): string {
