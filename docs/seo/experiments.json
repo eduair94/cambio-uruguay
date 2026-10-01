@@ -891,6 +891,25 @@
         "iass minimo no imponible"
       ],
       "hypothesis": "Las franjas del IASS ya estaban publicadas pero dentro de /impuestos-inversiones-uruguay, en una seccion que su propio texto abre diciendo que el IASS no grava inversiones: el dato estaba donde quien lo busca no entra. Una pagina propia con la cuenta abierta tramo por tramo y la opcion de quien cobra de varios organismos deberia capturar la consulta de marca \"iass\" y la de intencion \"cuanto me descuentan de la jubilacion\", que hoy no tienen pagina. Se le saco la palabra clave \"iass\" a la entrada de inversiones en siteNav para que el buscador propio no las enfrente."
+    },
+    {
+      "id": "descripciones-de-las-guias-respuesta-primero",
+      "shippedOn": "2026-10-01",
+      "routes": [
+        "/guias/abogado-gratis-uruguay",
+        "/guias/comprar-en-amazon-desde-uruguay",
+        "/guias/despido-y-liquidacion-uruguay",
+        "/guias/elegir-o-cambiar-de-afap-uruguay",
+        "/guias/estudio-de-cobranza-uruguay",
+        "/guias/horas-extra-en-uruguay",
+        "/guias/licencia-y-salario-vacacional-uruguay",
+        "/guias/llegar-tarde-tolerancia-y-sanciones-uruguay",
+        "/guias/me-certifique-subsidio-por-enfermedad-uruguay",
+        "/guias/me-deben-el-sueldo-uruguay",
+        "/guias/no-pagar-prestamo-e-irse-del-pais-uruguay",
+        "/guias/trabajar-para-el-exterior-desde-uruguay"
+      ],
+      "hypothesis": "Las doce descripciones mas largas del catalogo de guias, de 306 a 215 caracteres, o sea entre una y dos veces lo que el SERP publica. Once abrian con la etiqueta del tema ('El subsidio por enfermedad en Uruguay:', 'Consecuencias reales de no pagar un prestamo...') y la respuesta caia del lado cortado; ahora arranca el dato que decide el clic (el 70 % desde el cuarto dia con tope de $ 67.754, el dia 10 corrido y el recargo del 10 %, el piso del 35 % de la Ley 17.829, el 100 %/150 % de la Ley 15.996, el todo o nada de los USD 200). Es el tramo contenido, que rinde 8x el promedio del sitio, y ninguna de las doce estaba medida por los presupuestos de titulo y descripcion, que leen literales de pages/*.vue y no el catalogo."
     }
   ]
 }
