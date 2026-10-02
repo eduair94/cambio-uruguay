@@ -81,6 +81,21 @@ const FUERA_DE_TEMA_POR_DISENO = [
  * crédito", que es el tema donde ya viven `tarjeta-debito-vs-credito-uruguay` y
  * `cashback-millas-o-puntos-uruguay`.
  *
+ * 24 → 19 el 2026-09-30. Las cinco que salieron no son un cluster sino lo contrario: son las
+ * ÚNICAS cinco de las veinticuatro que no están dentro de una ventana de medición abierta de
+ * `docs/seo/experiments.json`. Las otras diecinueve llevan una fila declarada entre el 16 y el 29
+ * de septiembre, y `AGENTS.md` es explícito en que dos filas sobre las mismas rutas arruinan la
+ * medición de las dos: entrar a un tema es un cambio pensado para mover tráfico, así que declara
+ * su propia fila y le cambiaría el sujeto al experimento que ya está midiendo esa página. Entran
+ * cuando su ventana cierre (la última, `/comparar-plataformas-dolar-uruguay`, el 2026-10-27).
+ *
+ * Las cinco fueron a donde ya vivía su vecina más cercana, no a un tema nuevo: la pizarra al lado
+ * de `/dolar-hoy`, los feriados que se corren detrás de `/horas-extras-uruguay` (el tema ya lleva
+ * la guía `feriados-en-uruguay-como-se-pagan`), el tope de efectivo detrás de
+ * `/retirar-efectivo-uruguay` y la sala VIP al lado de `/cuanto-vale-una-milla-itau-uruguay`
+ * —los dos beneficios de tarjeta que el sitio mide en plata—, y los tickets de mutualista entre
+ * los otros gastos fijos del mes de "Finanzas personales" (supermercado, supergas, meal prep).
+ *
  * Para bajar este número: una entrada en `resources` del tema que corresponda
  * (`utils/guideHubs.ts`), con etiqueta y una línea de descripción, y regenerar el índice
  * (`npx vitest run tests/unit/temaIndex.test.ts -u`). El vínculo queda recíproco solo.
@@ -96,24 +111,19 @@ const DEUDA_SIN_TEMA = [
   '/declarar-dinero-en-efectivo-uruguay',
   '/factura-de-ose-uruguay',
   '/factura-de-ute-uruguay',
-  '/feriados-que-se-corren-uruguay',
   '/garantia-de-alquiler-uruguay',
   '/grabacion-sin-consentimiento-uruguay',
   '/importar-a-uruguay-siendo-extranjero',
   '/impuesto-temu-uruguay',
-  '/limite-de-efectivo-uruguay',
-  '/pizarra',
   '/prestamo-hipotecario-uruguay',
   '/que-pasa-si-no-pago-antel',
-  '/sala-vip-aeropuerto-uruguay',
   '/temas-de-dinero-reddit',
   '/tendencias-uruguay',
-  '/tickets-mutualistas-uruguay',
   '/trabajo-para-menores-de-edad-uruguay',
 ]
 
 /** El trinquete. Este número sólo puede bajar: subirlo es publicar una página huérfana. */
-const DEUDA_MAXIMA = 24
+const DEUDA_MAXIMA = 19
 
 describe('ninguna página de lectura queda fuera de todos los temas', () => {
   const sinTema = rootRoutes.filter(route => temasDeRuta(route).length === 0)

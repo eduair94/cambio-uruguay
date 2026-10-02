@@ -6,9 +6,10 @@ const Schema = MongooseSchema;
 /**
  * Race `p` against a timeout, same idiom validate_cambios.ts uses around
  * `MongooseServer.startConnectionPromise()`. Needed because that promise never rejects and never
- * times out on its own (`connectWithRetry` swallows its connection error and the promise just
- * awaits the "open" event forever) — every scheduled-job entrypoint that dials the DB must wrap
- * the call in this, or an unreachable Mongo hangs the job forever instead of failing it loudly.
+ * times out on its own (`connectWithRetry` keeps retrying in the background and the promise just
+ * awaits the "open" event, however long Mongo stays down) — every scheduled-job entrypoint that
+ * dials the DB must wrap the call in this, or an unreachable Mongo hangs the job instead of
+ * failing it loudly.
  */
 export const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T> =>
   Promise.race([
@@ -372,12 +373,29 @@ export class MongooseServer {
     }
   }
 
+  public static retryBaseMs = 2000;
+  private static connectRetries = 0;
+  private static connectRetryTimer: NodeJS.Timeout | null = null;
+
   public static connectWithRetry = (): any => {
     mongoose.set("strictQuery", false);
     const uri = process.env.MONGODB_URI || `mongodb://localhost:27017/${mongoConfig.database}`;
-    mongoose
-      .connect(uri, {})
-      .catch(() => {});
+    mongoose.connect(uri, {}).catch((err) => {
+      // Mongoose only auto-reconnects AFTER a first successful connect; a failed initial connect
+      // is final. Swallowing it left long-running apps (currency-sheet) DB-less until a manual
+      // restart after the 2026-09-30 104 outage. unref(): the retry must never keep a finished
+      // scheduled job alive — those still fail fast through withTimeout + process.exit(1).
+      const s = MongooseServer;
+      if (!s.retry || s.connectRetryTimer) return;
+      if (mongoose.connection.readyState === 1) return;
+      const delay = Math.min(30000, s.retryBaseMs * 2 ** s.connectRetries++);
+      console.error(`MongoDB initial connect failed (${err?.message}), retry in ${delay}ms`);
+      s.connectRetryTimer = setTimeout(() => {
+        s.connectRetryTimer = null;
+        s.connectWithRetry();
+      }, delay);
+      s.connectRetryTimer.unref();
+    });
   };
 
   public static dealConnection = (): void => {

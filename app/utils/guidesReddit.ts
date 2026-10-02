@@ -262,7 +262,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'no-pagar-prestamo-e-irse-del-pais-uruguay',
     title: '¿Qué pasa si no pago un préstamo en Uruguay (y me voy del país)?',
     description:
-      'Consecuencias reales de no pagar un préstamo bancario en Uruguay: por qué es un incumplimiento civil y no un delito, qué te pueden embargar, el Clearing y el BCU, la prescripción, qué pasa si te vas a Brasil, y las salidas legítimas.',
+      'No pagar un préstamo no es delito: la Constitución prohíbe la prisión por deudas (art. 52). Hay juicio ejecutivo y embargo, e irte del país no lo borra.',
     tag: 'DEUDA',
     updatedAt: '2026-07-18',
     sections: [
@@ -2183,7 +2183,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'licencia-y-salario-vacacional-uruguay',
     title: 'Licencia y salario vacacional en Uruguay',
     description:
-      'Cuántos días de licencia te corresponden según antigüedad (20 días más uno cada cuatro años desde el quinto), quién fija la fecha, hasta cuándo podés dejarla, cuándo se puede fraccionar y cómo se calcula el salario vacacional.',
+      'Veinte días de licencia (Ley 12.590) y uno más cada cuatro años desde el quinto. El salario vacacional iguala el jornal líquido y se paga antes de empezar.',
     tag: 'LICENCIA',
     updatedAt: '2026-08-10',
     sections: [
@@ -2258,7 +2258,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'despido-y-liquidacion-uruguay',
     title: 'Despido y liquidación en Uruguay: qué te corresponde',
     description:
-      'Qué te corresponde al ser despedido en Uruguay: indemnización por despido, tope, preaviso, qué incluye la liquidación final, cuándo el que renuncia cobra igual (despido indirecto) y qué cambia si el trabajo es en casa de familia.',
+      'Un mes de sueldo por año o fracción, con tope de seis mensualidades, y el jornalero por su propio régimen en jornales. Qué entra en esa base de cálculo.',
     tag: 'DESPIDO',
     updatedAt: '2026-08-10',
     sections: [
@@ -2593,7 +2593,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'trabajar-para-el-exterior-desde-uruguay',
     title: 'Trabajar para el exterior desde Uruguay: cómo facturar y tributar',
     description:
-      'Cómo facturar y tributar si trabajás freelance para clientes del exterior desde Uruguay: unipersonal, por qué la exportación de servicios no está gravada por IVA (y no es una "tasa cero"), IRAE, aportes BPS, si tu cliente del exterior puede inscribirse como empleador y cómo verificar tu historia laboral.',
+      'Facturar al exterior sale sin IVA porque la operación no está gravada: no es una «tasa cero», que en Uruguay no existe. Unipersonal, Literal E, IRAE y BPS.',
     tag: 'EXTERIOR',
     updatedAt: '2026-08-10',
     sections: [
@@ -3755,7 +3755,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'comprar-en-amazon-desde-uruguay',
     title: 'Comprar en Amazon desde Uruguay: courier, aduana y costo real',
     description:
-      'Cómo comprar en Amazon desde Uruguay por courier: la exoneración de IVA de USD 200 para compras de EE.UU. (todo o nada), la franquicia de USD 800, qué mira la aduana y el registro del vendedor desde octubre de 2026.',
+      'Hasta USD 200 de EE.UU. no pagás IVA, y es todo o nada: con USD 201 pagás sobre el total. Más la franquicia anual de USD 800 en hasta 3 envíos.',
     tag: 'IMPORTACIÓN',
     updatedAt: '2026-07-20',
     sections: [
@@ -4086,7 +4086,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'elegir-o-cambiar-de-afap-uruguay',
     title: 'Cómo elegir o cambiarte de AFAP en Uruguay',
     description:
-      'Cómo elegir la AFAP que más te conviene para tu jubilación en Uruguay y cuándo podés cambiarte: a quién le entran aportes a la cuenta individual, comisión de administración, rentabilidad, subfondos y qué mirar antes de decidir.',
+      'A la AFAP entran 5 de los 15 puntos sólo si empezaste a trabajar desde el 1/12/2023; antes todo va al BPS hasta el tope A. Después comparás comisiones.',
     tag: 'AFAP',
     updatedAt: '2026-08-10',
     sections: [
@@ -4474,7 +4474,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'horas-extra-en-uruguay',
     title: 'Horas extra en Uruguay: cuándo se generan y cómo se pagan',
     description:
-      'Cuándo una hora es «extra» en Uruguay (tope de 8 horas diarias y 44 o 48 semanales), cuánto se paga (100% de recargo en días hábiles y 150% en descanso o feriado), por qué el pago es irrenunciable y cómo reclamar las horas extra impagas.',
+      'La hora extra vale 100 % más en día hábil y 150 % en descanso o feriado (Ley 15.996). Es irrenunciable y se genera pasadas las 8 diarias o 44/48 semanales.',
     tag: 'HORAS EXTRA',
     updatedAt: '2026-07-19',
     sections: [
@@ -4569,7 +4569,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'llegar-tarde-tolerancia-y-sanciones-uruguay',
     title: 'Llegar tarde, tolerancia y sanciones en el trabajo (Uruguay)',
     description:
-      'Cómo funcionan la tolerancia de llegada, los descuentos por llegar tarde y las sanciones laborales en Uruguay: por qué no hay una ley que obligue a dar «minutos de tolerancia», qué puede y qué no puede hacer el empleador, y cuándo la impuntualidad puede costar el trabajo.',
+      'Ninguna ley obliga a dar tolerancia en el privado: la fija tu convenio. Dentro de ella no hay falta, y el descuento es proporcional, nunca una multa.',
     tag: 'PUNTUALIDAD',
     updatedAt: '2026-07-19',
     sections: [
@@ -4661,7 +4661,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'me-certifique-subsidio-por-enfermedad-uruguay',
     title: 'Me certifiqué: cuánto cobro, desde qué día, quién paga, y si me pueden despedir',
     description:
-      'El subsidio por enfermedad en Uruguay: el 70 % que paga el BPS con tope de $ 67.754 (01/2026), por qué se cobra recién desde el cuarto día y qué cambia con la internación, cuánto puede durar, y el artículo 23 que prohíbe despedirte estando certificado y tarifa la violación en el doble de la indemnización.',
+      'El BPS paga el 70 % desde el cuarto día certificado —el primero si hay internación—, tope de $ 67.754 (01/2026). Despedirte certificado cuesta el doble.',
     tag: 'ENFERMEDAD',
     updatedAt: '2026-08-10',
     sections: [
@@ -4958,7 +4958,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'me-deben-el-sueldo-uruguay',
     title: 'Me deben el sueldo: cómo reclamar en Uruguay',
     description:
-      'Qué hacer ante un sueldo impago en Uruguay: desde qué día hay incumplimiento, el recargo del 10 % que corre solo, la constancia de la Inspección que vale como título ejecutivo, la conciliación previa del MTSS y el plazo para que el reclamo laboral no prescriba.',
+      'Si cobrás por mes, pasado el día 10 corrido ya es incumplimiento (Ley 10.449) y corre solo un recargo del 10 % (Ley 18.572). Un año para reclamar.',
     tag: 'RECLAMO',
     updatedAt: '2026-08-11',
     sections: [
@@ -5090,7 +5090,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'abogado-gratis-uruguay',
     title: 'Abogado gratis en Uruguay: qué puerta te corresponde',
     description:
-      'Dónde conseguir asesoramiento jurídico gratuito en Uruguay: Defensoría Pública, el Consultorio Jurídico de la Facultad de Derecho, la consulta laboral del MTSS y Defensa del Consumidor, con los requisitos de cada uno y los temas que ninguno toma.',
+      'El Consultorio Jurídico atiende gratis en Montevideo hasta $ 55.000 nominales (2026); lo laboral lo asesora el MTSS y el juicio, la Defensoría Pública.',
     tag: 'ACCESO',
     updatedAt: '2026-08-11',
     sections: [
@@ -5199,7 +5199,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'estudio-de-cobranza-uruguay',
     title: 'Te llama un estudio de cobranza: qué puede y qué no',
     description:
-      'Qué puede hacer legalmente una empresa de cobranza en Uruguay y qué no: gestión o cartera cedida, el detalle de la deuda por escrito, por qué no pueden retenerte el sueldo, el plazo del Clearing y dónde reclamar si el trato se pasa de la raya.',
+      'Un cobrador no puede retenerte el sueldo: la Ley 17.829 tasa las retenciones y deja un piso del 35 %. En el Clearing el registro dura hasta 10 años.',
     tag: 'COBRANZA',
     updatedAt: '2026-08-11',
     sections: [

@@ -704,7 +704,10 @@
         El IASS no grava inversiones, pero se cruza con ellas en cualquier planificación de retiro,
         y
         <strong>la mayoría de las calculadoras uruguayas lo publica mal</strong>. Estas son las
-        franjas vigentes, con la BPC de hoy ({{ formatUYU(bpc, 0) }}):
+        franjas vigentes, con la BPC de hoy ({{ formatUYU(bpc, 0) }}). Si lo que buscás es cuánto te
+        descuentan de una pasividad, la cuenta abierta tramo por tramo y el caso de quien cobra de
+        varios organismos están en
+        <NuxtLink :to="localePath('/iass-uruguay')" class="imp-link">IASS en Uruguay</NuxtLink>:
       </p>
       <VTable density="comfortable" class="imp-table cu-mobile-cards mb-3">
         <thead>
@@ -977,6 +980,7 @@ import {
   type DepositTerm,
 } from '~/utils/capitalTax'
 import { formatUYU, formatUSD } from '~/utils/format'
+import { IASS_ANNUAL_BRACKETS } from '~/utils/iass'
 import { currentIndicatorValue, indicatorFromSlug } from '~/utils/indicators'
 import type { ExchangeRate } from '~/types/api'
 
@@ -1116,29 +1120,31 @@ const residencyRoutes = [
   },
 ]
 
-// IASS 2026 brackets. The rates are legal; the pesos come from the live BPC.
-const iassBrackets = computed(() => [
-  {
-    label: 'Hasta 108 BPC',
-    pesos: `Hasta ${formatUYU(bpcToPesos(108), 0)}`,
-    rate: 'Exento',
-  },
-  {
-    label: 'De 108 a 180 BPC',
-    pesos: `${formatUYU(bpcToPesos(108), 0)} — ${formatUYU(bpcToPesos(180), 0)}`,
-    rate: '6%',
-  },
-  {
-    label: 'De 180 a 600 BPC',
-    pesos: `${formatUYU(bpcToPesos(180), 0)} — ${formatUYU(bpcToPesos(600), 0)}`,
-    rate: '24%',
-  },
-  {
-    label: 'Más de 600 BPC',
-    pesos: `Más de ${formatUYU(bpcToPesos(600), 0)}`,
-    rate: '30%',
-  },
-])
+// IASS brackets. Las tasas y los tramos salen de `utils/iass.ts`, que es el catálogo que comparte
+// con `/iass-uruguay`: esta tabla estaba escrita a mano acá y era la única copia, así que una
+// actualización de la escala tenía que acordarse de los dos lados. Los pesos siguen saliendo de la
+// BPC viva de esta página.
+const iassBrackets = computed(() =>
+  IASS_ANNUAL_BRACKETS.map(bracket => {
+    const from = formatUYU(bpcToPesos(bracket.fromBpc), 0)
+    const to = bracket.toBpc === null ? null : formatUYU(bpcToPesos(bracket.toBpc), 0)
+    return {
+      label:
+        bracket.toBpc === null
+          ? `Más de ${bracket.fromBpc} BPC`
+          : bracket.fromBpc === 0
+            ? `Hasta ${bracket.toBpc} BPC`
+            : `De ${bracket.fromBpc} a ${bracket.toBpc} BPC`,
+      pesos:
+        bracket.toBpc === null
+          ? `Más de ${from}`
+          : bracket.fromBpc === 0
+            ? `Hasta ${to}`
+            : `${from} — ${to}`,
+      rate: bracket.ratePct === 0 ? 'Exento' : `${bracket.ratePct}%`,
+    }
+  })
+)
 
 const myths = [
   {

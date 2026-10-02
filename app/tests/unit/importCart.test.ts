@@ -9,6 +9,21 @@ const item = (
   ...over,
 })
 
+/**
+ * Las dos reglas con fecha, fijadas a mano.
+ *
+ * `computeCart` resuelve `today` con `new Date()` cuando no se lo pasan, así que un caso de
+ * EE.UU. sin fecha no mide lo que dice medir: mide el calendario. El 2026-10-01 entró en vigencia
+ * el registro del vendedor (`SELLER_REGISTRY_ENFORCED_FROM`) y los dos casos TIFA de abajo
+ * cambiaron de resultado de un día para el otro sin que nadie tocara una línea de código — el que
+ * esperaba la exoneración se puso rojo y el que esperaba IVA siguió verde por el motivo
+ * equivocado, que es el peor de los dos. La fecha va DESPUÉS de la vigencia a propósito: así el
+ * caso corre bajo la norma que rige hoy, y `sellerRegistered` deja fija la única otra variable
+ * para que lo que se esté midiendo sea el umbral de los US$ 200 sobre el total del envío.
+ */
+const TODAY = new Date('2026-10-01T00:00:00Z')
+const REGISTERED = { today: TODAY, sellerRegistered: true } as const
+
 describe('computeCart — courier regime', () => {
   it('applies the 60% simplified rate without franchise (single general item)', () => {
     const items = [item({ id: 'a', priceUsd: 100, categoryId: 'general' })]
@@ -170,6 +185,7 @@ describe('computeCart — basket-level shipment rules', () => {
       origin: 'usa',
       useFranchise: true,
       franchiseAvailableUsd: 800,
+      ...REGISTERED,
     })
     expect(r.totalTaxUsd).toBe(66)
   })
@@ -184,8 +200,30 @@ describe('computeCart — basket-level shipment rules', () => {
       origin: 'usa',
       useFranchise: true,
       franchiseAvailableUsd: 800,
+      ...REGISTERED,
     })
     expect(r.totalTaxUsd).toBe(0)
+  })
+
+  it('cobra IVA sobre la canasta de EE.UU. cuyo vendedor no está registrado ante la DNA', () => {
+    // El otro lado de la regla que entró en vigencia el 2026-10-01, y el que ningún caso del
+    // carrito cubría: mismo envío de US$ 180 que el caso anterior, dentro del umbral de los
+    // US$ 200, pero sin registro del emisor de la factura la exoneración no corre y el envío paga
+    // IVA sobre el total (22% de 180 = 39,6). Es la lectura conservadora que documenta
+    // `SELLER_REGISTRY_ENFORCED_FROM`: prometer la exoneración de más subestima el costo.
+    const items = [
+      item({ id: 'a', priceUsd: 100, categoryId: 'general' }),
+      item({ id: 'b', priceUsd: 80, categoryId: 'general' }),
+    ]
+    const r = computeCart(items, {
+      regime: 'courier',
+      origin: 'usa',
+      useFranchise: true,
+      franchiseAvailableUsd: 800,
+      today: TODAY,
+    })
+    expect(r.totalTaxUsd).toBe(39.6)
+    expect(r.lines[0]!.tax?.ivaExempt).toBe(false)
   })
 })
 

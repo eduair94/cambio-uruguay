@@ -1621,6 +1621,36 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // Las franjas del IASS ya estaban en el sitio, pero dentro de
+        // `/impuestos-inversiones-uruguay`, en una sección que su propio texto abre diciendo que
+        // «el IASS no grava inversiones». El dato estaba bien y estaba donde quien lo busca no
+        // entra: un jubilado que pregunta cuánto le descuentan no busca impuestos a las
+        // inversiones. Dos cosas que esta página puede dar y esa sección no daba: la cuenta abierta
+        // tramo por tramo (la escala es marginal y la tasa efectiva nunca es la del tramo), y la
+        // opción de quien cobra de varios organismos a la vez, que hay que SOLICITAR y que explica
+        // la mayoría de los ajustes finales con sorpresa.
+        to: '/iass-uruguay',
+        labelKey: 'nav.iass',
+        icon: 'mdi-account-cash-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'iass',
+          'iass uruguay',
+          'iass 2026',
+          'impuesto a las jubilaciones uruguay',
+          'cuanto me descuentan de la jubilacion',
+          'escala iass',
+          'franjas iass',
+          'iass minimo no imponible',
+          'iass bps',
+          'impuesto de asistencia a la seguridad social',
+          'iass varios organismos',
+          'ajuste final iass',
+        ],
+      },
+      {
         to: '/impuestos-inversiones-uruguay',
         labelKey: 'nav.impuestosInversiones',
         icon: 'mdi-file-percent-outline',
@@ -1637,7 +1667,6 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'residencia fiscal uruguay',
           'tax holiday uruguay',
           'impuesto al patrimonio',
-          'iass',
           'irnr',
           'declaracion jurada irpf',
         ],

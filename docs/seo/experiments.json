@@ -866,8 +866,54 @@
       "hypothesis": "El Fondo de Solidaridad aparecia en nueve archivos del sitio (calculadora de sueldo liquido, deducciones del IRPF, gastos del hogar) siempre como un descuento que hay que meter en OTRA cuenta, y en ninguno como la pregunta propia. Dos apuestas medibles. Una: la escala que devuelven los buscadores esta DEROGADA -el art. 3 original de la Ley 16.524 y el art. 3 de la Ley 17.451 la fijan en salarios minimos, y el art. 271 de la Ley 19.535 la paso a BPC con umbral de 8 BPC-, asi que la pagina entra a un SERP donde las respuestas de arriba tienen el numero mal por un factor grande. Dos: la escala esta en BPC y el sitio tiene la BPC auditada, asi que publica el aporte en PESOS (0,5/1/2 BPC = 3.432/6.864/13.728 y el umbral en 54.912 al mes), que es la cifra que la norma no da y la regla de oro de las descripciones pide. El monto del adicional NO se publica: el art. 493 de la Ley 20.075 dejo el 50 por ciento restante de su baja a la Ley de Presupuesto Nacional 2025-2029 y esa norma no se pudo leer, asi que va la mecanica y la cadena de normas sin cifra."
     },
     {
-      "id": "apps-utiles-uruguay",
+      "id": "huerfanas-entran-a-su-tema",
       "shippedOn": "2026-09-30",
+      "routes": [
+        "/feriados-que-se-corren-uruguay",
+        "/limite-de-efectivo-uruguay",
+        "/pizarra",
+        "/sala-vip-aeropuerto-uruguay",
+        "/tickets-mutualistas-uruguay"
+      ],
+      "hypothesis": "Las cinco estaban fuera de TODOS los temas, o sea no dibujaban 'Mas sobre este tema' y -como el vinculo del tema es reciproco por construccion- tampoco recibian un solo enlace de ese bloque desde ninguna otra pagina: solo llegaban desde el menu y desde 'Segui leyendo'. Entran al tema donde ya vive su vecina mas cercana (la pizarra con /dolar-hoy, los feriados que se corren detras de /horas-extras-uruguay, el tope de efectivo detras de /retirar-efectivo-uruguay, la sala VIP al lado de /cuanto-vale-una-milla-itau-uruguay y los tickets de mutualista entre los gastos fijos del mes), asi que cada una pasa a recibir enlaces desde las demas paginas de su tema y desde el hub. Son las unicas cinco de las veinticuatro huerfanas sin una fila abierta en este libro: las otras diecinueve se declararon entre el 16 y el 29 de septiembre y entran cuando cierre su ventana."
+    },
+    {
+      "id": "iass-pagina-propia",
+      "shippedOn": "2026-10-01",
+      "routes": [
+        "/iass-uruguay"
+      ],
+      "queries": [
+        "iass",
+        "iass uruguay",
+        "cuanto me descuentan de la jubilacion",
+        "escala iass",
+        "iass minimo no imponible"
+      ],
+      "hypothesis": "Las franjas del IASS ya estaban publicadas pero dentro de /impuestos-inversiones-uruguay, en una seccion que su propio texto abre diciendo que el IASS no grava inversiones: el dato estaba donde quien lo busca no entra. Una pagina propia con la cuenta abierta tramo por tramo y la opcion de quien cobra de varios organismos deberia capturar la consulta de marca \"iass\" y la de intencion \"cuanto me descuentan de la jubilacion\", que hoy no tienen pagina. Se le saco la palabra clave \"iass\" a la entrada de inversiones en siteNav para que el buscador propio no las enfrente."
+    },
+    {
+      "id": "descripciones-de-las-guias-respuesta-primero",
+      "shippedOn": "2026-10-01",
+      "routes": [
+        "/guias/abogado-gratis-uruguay",
+        "/guias/comprar-en-amazon-desde-uruguay",
+        "/guias/despido-y-liquidacion-uruguay",
+        "/guias/elegir-o-cambiar-de-afap-uruguay",
+        "/guias/estudio-de-cobranza-uruguay",
+        "/guias/horas-extra-en-uruguay",
+        "/guias/licencia-y-salario-vacacional-uruguay",
+        "/guias/llegar-tarde-tolerancia-y-sanciones-uruguay",
+        "/guias/me-certifique-subsidio-por-enfermedad-uruguay",
+        "/guias/me-deben-el-sueldo-uruguay",
+        "/guias/no-pagar-prestamo-e-irse-del-pais-uruguay",
+        "/guias/trabajar-para-el-exterior-desde-uruguay"
+      ],
+      "hypothesis": "Las doce descripciones mas largas del catalogo de guias, de 306 a 215 caracteres, o sea entre una y dos veces lo que el SERP publica. Once abrian con la etiqueta del tema ('El subsidio por enfermedad en Uruguay:', 'Consecuencias reales de no pagar un prestamo...') y la respuesta caia del lado cortado; ahora arranca el dato que decide el clic (el 70 % desde el cuarto dia con tope de $ 67.754, el dia 10 corrido y el recargo del 10 %, el piso del 35 % de la Ley 17.829, el 100 %/150 % de la Ley 15.996, el todo o nada de los USD 200). Es el tramo contenido, que rinde 8x el promedio del sitio, y ninguna de las doce estaba medida por los presupuestos de titulo y descripcion, que leen literales de pages/*.vue y no el catalogo."
+    },
+    {
+      "id": "apps-utiles-uruguay",
+      "shippedOn": "2026-10-02",
       "routes": [
         "/apps-utiles-uruguay"
       ],
