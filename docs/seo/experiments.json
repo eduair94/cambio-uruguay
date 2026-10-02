@@ -19,6 +19,25 @@
   ],
   "experiments": [
     {
+      "id": "titulos-de-las-guias-respuesta-primero",
+      "shippedOn": "2026-10-02",
+      "routes": [
+        "/guias/regimen-patrimonial-matrimonio-uruguay",
+        "/guias/devolucion-iva-turistas-uruguay",
+        "/guias/dolares-deteriorados-billetes-rechazados-uruguay",
+        "/guias/horarios-casas-de-cambio-uruguay",
+        "/guias/dolar-cripto-usdt-uruguay",
+        "/guias/cajeros-automaticos-uruguay-turistas",
+        "/guias/cambiar-monedas-poco-comunes-uruguay",
+        "/guias/proyeccion-dolar-uruguay-se-puede-predecir",
+        "/guias/precio-del-oro-en-uruguay",
+        "/guias/importar-de-aliexpress-a-uruguay",
+        "/guias/deposito-de-alquiler-uruguay",
+        "/guias/elegir-tarjeta-credito-beneficios-uruguay"
+      ],
+      "hypothesis": "Los doce titulos mas largos del catalogo de guias (104 a 84 caracteres con la marca) se recortaron a 60 o menos poniendo la respuesta adelante, asi que el SERP deja de cortar justo la cifra que decide el clic."
+    },
+    {
       "id": "vivir-con-el-salario-minimo",
       "shippedOn": "2026-09-26",
       "routes": [
