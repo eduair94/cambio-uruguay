@@ -1052,7 +1052,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'precio-del-oro-en-uruguay',
-    title: 'Precio del oro en Uruguay: cómo se cotiza y dónde comprarlo o venderlo',
+    title: 'Precio del oro: la onza troy es 31,1035 g',
     description:
       'Cómo se forma el precio del oro en Uruguay, qué es la onza troy, cómo pasar el valor a gramos según los quilates y dónde comparar para comprar o vender al mejor precio.',
     tag: 'ORO',
@@ -1122,7 +1122,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'cambiar-monedas-poco-comunes-uruguay',
-    title: 'Cómo cambiar monedas menos comunes en Uruguay (libra, yen, franco y más)',
+    title: 'Cambiar yen, franco o guaraní: más spread',
     description:
       'Dónde y cómo cambiar monedas menos habituales en Uruguay como el yen, el franco suizo, el guaraní o el peso chileno: qué casas las cotizan y cómo comparar el precio.',
     tag: 'MONEDAS',
@@ -1158,7 +1158,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'dolar-cripto-usdt-uruguay',
-    title: 'Dólar cripto y USDT en Uruguay: qué son y cómo se relacionan con el dólar',
+    title: 'Dólar cripto: USDT ≈ USD 1, no es billete',
     description:
       'Qué es el dólar cripto y el USDT, cómo se vinculan con el dólar billete en Uruguay, para qué se usan y qué riesgos conviene tener en cuenta antes de operar.',
     tag: 'CRIPTO',
@@ -1264,7 +1264,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'devolucion-iva-turistas-uruguay',
-    title: 'Devolución de IVA para turistas en Uruguay: hoteles, gastronomía y Tax Free',
+    title: 'Hoteles sin IVA para turistas y Tax Free',
     description:
       'Cómo funcionan los beneficios de IVA para turistas extranjeros en Uruguay: hoteles sin IVA todo el año, reducción en gastronomía por temporada y devolución Tax Free al salir.',
     tag: 'IMPUESTOS',
@@ -1369,7 +1369,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'cajeros-automaticos-uruguay-turistas',
-    title: 'Cajeros automáticos en Uruguay para turistas: redes, límites y comisiones',
+    title: 'Cajeros para turistas: pagás dos comisiones',
     description:
       'Cómo sacar pesos (o dólares) con tarjeta extranjera en Uruguay: redes Banred y RedBROU, límites por extracción, comisiones y cuándo conviene una casa de cambio.',
     tag: 'CAJEROS',
@@ -1499,7 +1499,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'horarios-casas-de-cambio-uruguay',
-    title: 'Horarios de las casas de cambio en Uruguay (y dónde cambiar fuera de hora)',
+    title: 'Casas de cambio: domingo casi todas cierran',
     description:
       'A qué hora abren las casas de cambio en Uruguay, qué pasa los sábados y domingos, y dónde cambiar fuera de horario: aeropuerto de Carrasco, terminales y shoppings.',
     tag: 'HORARIOS',
@@ -1631,7 +1631,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'dolares-deteriorados-billetes-rechazados-uruguay',
-    title: 'Dólares deteriorados o rechazados: qué billetes aceptan las casas de cambio',
+    title: 'Dólares rotos pagan menos; la cara chica no',
     description:
       'Por qué algunas casas de cambio rechazan o pagan menos por dólares rotos, manchados o de serie vieja en Uruguay, y por qué el mito de la "cara chica" no aplica acá.',
     tag: 'BILLETES',
@@ -1666,7 +1666,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'proyeccion-dolar-uruguay-se-puede-predecir',
-    title: '¿A cuánto va a llegar el dólar en Uruguay? Qué se puede prever y qué no',
+    title: '¿A cuánto llega el dólar? Nadie lo predice',
     description:
       'Si se puede predecir el dólar en Uruguay, qué muestran las expectativas del mercado y la encuesta del BCU, y por qué conviene una estrategia en lugar de adivinar el precio.',
     tag: 'PROYECCIÓN',

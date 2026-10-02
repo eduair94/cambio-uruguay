@@ -8,8 +8,7 @@ import type { Guide } from './guides'
 export const parejaGuides: readonly Guide[] = [
   {
     slug: 'regimen-patrimonial-matrimonio-uruguay',
-    title:
-      'Régimen patrimonial del matrimonio en Uruguay: sociedad conyugal o separación de bienes',
+    title: 'Al casarte rige la sociedad conyugal',
     description:
       'En Uruguay, al casarte rige la sociedad conyugal salvo que pactes capitulaciones: qué son los bienes propios, los gananciales y la separación de bienes.',
     tag: 'MATRIMONIO',

@@ -44,8 +44,34 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  */
 const MEASURED = 146
 
-/** 116 el 2026-10-01, la primera medición. SÓLO PUEDE BAJAR. */
-const TITLE_OVER_BUDGET = 116
+/**
+ * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres
+ * contando la marca (el peor era más de dos veces el presupuesto).
+ *
+ * Mismo criterio que las corridas de descripciones, y el mismo patrón, que acá pesa más porque el
+ * título es lo único del snippet que decide el clic: los doce gastaban el renglón en la ETIQUETA
+ * DEL TEMA y después anunciaban el ÍNDICE de la guía («Precio del oro en Uruguay: cómo se cotiza y
+ * dónde comprarlo o venderlo», «Cajeros automáticos en Uruguay para turistas: redes, límites y
+ * comisiones», «Cómo elegir la tarjeta de crédito con mejores beneficios en Uruguay»), o sea
+ * prometían las secciones en vez de contestar. Y la cola —la parte que el SERP corta— era justo
+ * donde estaba la respuesta.
+ *
+ * Ahora cada título la trae adelante: que la onza troy son 31,1035 g, que 1 USDT vale casi USD 1 y
+ * no es un dólar billete, que el domingo casi todas las casas de cambio cierran, que con tarjeta
+ * del exterior el hotel va sin IVA, que en el cajero pagás dos comisiones (la de la red y la de tu
+ * banco), que en AliExpress la cuenta es la franquicia anual de USD 800 o el 60 % del régimen
+ * simplificado, que el depósito de alquiler es tuyo, que lo que baja el precio de un dólar es el
+ * deterioro y no la «cara chica», que el dólar no se predice, que una moneda poco operada se paga
+ * con más spread, que al casarte sin capitulaciones rige la sociedad conyugal y que la mejor
+ * tarjeta depende de cómo gastás.
+ *
+ * Ninguna cifra es nueva: todas ya estaban en el cuerpo de su guía. Y ninguna se escribió con más
+ * firmeza que la fuente — el cuerpo dice que en Carrasco se cambia «prácticamente las 24 horas»,
+ * así que el título usa el dato que sí es categórico (el domingo cierran) y no inventa un horario.
+ *
+ * SÓLO PUEDE BAJAR.
+ */
+const TITLE_OVER_BUDGET = 104
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.

@@ -581,7 +581,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'deposito-de-alquiler-uruguay',
-    title: 'El depósito de alquiler en Uruguay: cómo funciona y cómo recuperarlo',
+    title: 'Depósito de alquiler: es tuyo y se devuelve',
     description:
       'Qué es el depósito de alquiler en Uruguay, cuánto suele ser, para qué puede usarlo el propietario y cómo reclamar su devolución.',
     tag: 'DEPÓSITO',
@@ -3566,7 +3566,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'importar-de-aliexpress-a-uruguay',
-    title: 'Cómo importar de AliExpress a Uruguay: courier, franquicia e impuestos',
+    title: 'AliExpress a Uruguay: USD 800 al año o 60 %',
     description:
       'Cómo importar de AliExpress a Uruguay: la franquicia anual de USD 800, el 60% con mínimo de USD 20 por envío, por qué AliExpress parte tu pedido en varios trackings y qué cobra el Correo aparte del impuesto.',
     tag: 'IMPORTACIÓN',
@@ -3849,7 +3849,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'elegir-tarjeta-credito-beneficios-uruguay',
-    title: 'Cómo elegir la tarjeta de crédito con mejores beneficios en Uruguay',
+    title: 'Qué tarjeta elegir: depende de cómo gastás',
     description:
       'Cómo comparar tarjetas de crédito en Uruguay por sus beneficios reales: la red de descuentos, la acumulación de puntos o millas, el canje, el costo anual y cómo elegir la tarjeta que rinde para cómo gastás vos.',
     tag: 'TARJETAS',
