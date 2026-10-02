@@ -1734,6 +1734,34 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // «Fardos de ropa americana» se vende en redes con cifras de Chile y Argentina, donde ese
+        // mercado existe. En Uruguay casi no entra ropa usada importada y lo que se llama «fardo»
+        // es un lote cerrado de prendas. La página cuenta de dónde sacan la ropa los feriantes,
+        // cuánto deja un lote según lo que se vende, qué es legal (importar ropa usada no está
+        // prohibido; revender contrabando sí) y por qué un fardo por courier no cierra.
+        to: '/ropa-por-kilo-uruguay',
+        labelKey: 'nav.ropaPorKilo',
+        icon: 'mdi-tshirt-crew-outline',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'ropa por kilo',
+          'ropa por kilo uruguay',
+          'fardos de ropa',
+          'fardos de ropa uruguay',
+          'fardos de ropa americana',
+          'importar ropa usada uruguay',
+          'ropa usada por kilo montevideo',
+          'mayorista de ropa montevideo',
+          'donde compran ropa los feriantes',
+          'lote de ropa usada',
+          'revender ropa',
+          'negocio de ropa usada',
+          'barrio de los judios mayoristas',
+        ],
+      },
+      {
         // El Fondo de Solidaridad aparecía en nueve archivos del sitio —la calculadora de sueldo
         // líquido, las deducciones del IRPF, los gastos del hogar— siempre como un descuento que
         // hay que meter en OTRA cuenta, y en ninguno como la pregunta propia: quién lo paga,

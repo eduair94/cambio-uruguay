@@ -1393,6 +1393,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/facturar-en-monotributo-uruguay',
       },
       {
+        label: 'Ropa por kilo y fardos',
+        description: 'Dónde compran los feriantes, cuánto deja un lote y qué dice la aduana.',
+        to: '/ropa-por-kilo-uruguay',
+      },
+      {
         label: 'Trabajar para el exterior',
         description: 'Facturar y cobrar a clientes de afuera.',
         to: '/guias/trabajar-para-el-exterior-desde-uruguay',

@@ -1326,6 +1326,10 @@
           "label": "Facturar en monotributo"
         },
         {
+          "to": "/ropa-por-kilo-uruguay",
+          "label": "Ropa por kilo y fardos"
+        },
+        {
           "to": "/guias/trabajar-para-el-exterior-desde-uruguay",
           "label": "Trabajar para el exterior"
         },
