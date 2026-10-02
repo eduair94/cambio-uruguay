@@ -37,7 +37,7 @@ export const USEFUL_APPS_KIT: readonly UsefulAppsKitItem[] = Object.freeze([
     id: 'bps',
     group: 'todos',
     title: 'Tu historia laboral',
-    why: 'Tu historia laboral, los recibos de cobro, los certificados y el cambio de mutualista, sin ir al BPS.',
+    why: 'Tu historia laboral, los recibos de cobro, las constancias y el cambio de mutualista, sin ir al BPS.',
     appIds: ['bps-personas'],
   },
   {
@@ -217,7 +217,7 @@ export const USEFUL_APPS_NOT_APPS: readonly UsefulAppsNotApp[] = Object.freeze([
     name: 'Recarga de la tarjeta STM',
     lookingFor: 'Recargar la tarjeta STM desde el celular',
     instead:
-      'La recarga oficial es STM en línea, una web de la Intendencia: entrás con tu usuario gub.uy y activás la tarjeta una sola vez.',
+      'La recarga oficial es STM en línea, de la Intendencia: te adherís en su web con tu usuario gub.uy y activás la tarjeta una vez. La versión beta de Cómo ir ya recarga.',
     channels: [
       { label: 'STM en línea', value: 'stm.gub.uy', url: 'https://stm.gub.uy/app/mistm/cuenta/' },
     ],
@@ -255,7 +255,7 @@ export const USEFUL_APPS_NOT_APPS: readonly UsefulAppsNotApp[] = Object.freeze([
     name: 'BHU',
     lookingFor: 'Pagar la cuota del préstamo del BHU',
     instead:
-      'El BHU no tiene app: la cuota se paga en línea desde su web. La «Banco Hipotecario» de las tiendas es de Argentina.',
+      'El BHU no tiene app: la cuota se paga en línea desde su web. Las «Banco Hipotecario» de las tiendas son de Argentina y de El Salvador.',
     channels: [{ label: 'Web del BHU', value: 'bhu.com.uy', url: 'https://www.bhu.com.uy/' }],
     source: 'https://www.bhu.com.uy/',
     keywords: ['bhu', 'hipotecario', 'vivienda'],
@@ -281,10 +281,10 @@ export function usefulAppsNotAppsFor(query: string): UsefulAppsNotApp[] {
 
 export const USEFUL_APPS_CRITERIA: readonly string[] = Object.freeze([
   'Está hoy en Google Play o en el App Store de Uruguay: abrimos cada ficha.',
-  'La publica la organización que presta el servicio. Si no, lo decimos arriba de todo y te mostramos la oficial.',
+  'La publica la organización que presta el servicio o la empresa que se la desarrolla, y en cada tarjeta ponemos ese nombre tal cual figura en la tienda. Si la hace alguien sin relación con el servicio, lo decimos arriba de todo y te mostramos la oficial.',
   'Le sirve a mucha gente que vive en Uruguay: quedan afuera las apps internas de funcionarios, los pilotos y las de nicho.',
   'Tiene mantenimiento: más de dos años sin una versión nueva la saca de la lista, salvo que sea la única oficial de su servicio, y entonces la tarjeta lo avisa.',
-  'Nadie paga por aparecer ni hay enlaces de afiliados: cada botón lleva a la ficha oficial de la tienda.',
+  'Nadie paga por aparecer ni hay enlaces de afiliados: los botones llevan a la ficha oficial de cada tienda o a la web de quien presta el servicio.',
 ])
 
 export const USEFUL_APPS_SAFETY: readonly string[] = Object.freeze([
@@ -341,19 +341,19 @@ export const USEFUL_APPS_FAQ: readonly FaqItem[] = Object.freeze([
     id: 'apps-del-estado-que-tener',
     question: '¿Qué apps del Estado conviene tener en el celular?',
     answer:
-      'Para casi todos: gub.uy (avisos antes de que venzan la cédula, el pasaporte y la libreta, y la historia clínica digital), BPS Personas (historia laboral, recibos y certificados), una identidad digital —TuID de Antel o Identidad Digital Abitab—, Emergencia 9-1-1 y UTE Clientes. Según tu caso suman la DGI, SUCIVE, Telepeaje, Cómo ir, GURI Familia, Mi Antel y la del BROU.',
+      'Para casi todos: gub.uy (avisos antes de que venzan la cédula, el pasaporte y la libreta, y la historia clínica digital), BPS Personas (historia laboral, recibos y constancias), una identidad digital —TuID de Antel o Identidad Digital Abitab—, Emergencia 9-1-1 y UTE Clientes. Según tu caso suman la DGI, SUCIVE, Telepeaje, Cómo ir, GURI Familia, Mi Antel y la del BROU.',
   },
   {
     id: 'app-oficial-omnibus-montevideo',
     question: '¿Cuál es la app oficial del ómnibus en Montevideo?',
     answer:
-      'Cómo ir, de la Intendencia de Montevideo: arma el viaje y muestra en el mapa dónde viene el ómnibus. La app «STM Montevideo», la más descargada, la hace un desarrollador independiente con los datos públicos del STM: sirve, pero no es de la Intendencia. La recarga oficial de la tarjeta STM es STM en línea, en la web de la Intendencia.',
+      'Cómo ir, de la Intendencia de Montevideo: arma el viaje y muestra en el mapa dónde viene el ómnibus. La app «STM Montevideo», la más descargada, la hace un desarrollador independiente con los datos públicos del STM: sirve, pero no es de la Intendencia. La recarga oficial de la tarjeta STM es STM en línea, de la Intendencia: hoy se hace en su web, y la versión de prueba de Cómo ir (abierta desde el 30/9/2026) ya la permite desde la app a quien está adherido.',
   },
   {
     id: 'id-uruguay-app',
     question: '¿Hay una app de ID Uruguay?',
     answer:
-      'No como app aparte: ID Uruguay es tu usuario de gub.uy y se gestiona en la web mi.iduruguay.gub.uy. En el celular lo usás con la app gub.uy. Para los trámites que piden más seguridad —la DGI o la historia clínica— hace falta una identidad digital: TuID de Antel o Identidad Digital Abitab.',
+      'No como app aparte: ID Uruguay es tu usuario de gub.uy y se gestiona en la web mi.iduruguay.gub.uy. En el celular lo usás con la app gub.uy. Para ver la historia clínica hace falta una identidad digital: TuID de Antel o Identidad Digital Abitab. A la app de la DGI también se entra con el usuario gub.uy.',
   },
   {
     id: 'como-saber-si-es-oficial',

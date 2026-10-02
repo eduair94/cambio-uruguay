@@ -405,10 +405,10 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Agendá consultas médicas',
       'Mirá tu historia clínica y usá la videoconsulta',
       'Pedí medicamentos a domicilio o sacá número para la farmacia',
-      'Pagá en línea los estudios indicados',
+      'Agendá los estudios que te indicó el médico y hacé pagos en línea',
     ],
     needs: ['Ser socio de CASMU', 'La misma clave del área de socios de la web'],
-    departments: ['Montevideo'],
+    departments: ['Montevideo', 'Canelones', 'Maldonado', 'San José'],
     android: {
       id: 'com.casmu.appmovil.sdcasmu',
       developer: 'CASMU Mobile',
@@ -438,7 +438,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Pedí el tele-triage de emergencia: un médico te llama antes de que vayas',
     ],
     needs: ['Ser socio de la Asociación Española', 'Usuario de Autogestión'],
-    departments: ['Montevideo'],
+    departments: ['Montevideo', 'Canelones', 'Maldonado', 'San José'],
     android: {
       id: 'com.apraful.asesp',
       developer: 'Asociación Española',
@@ -468,7 +468,21 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Consultá tu historial de medicación',
     ],
     needs: ['Ser socio de Médica Uruguaya'],
-    departments: ['Montevideo'],
+    departments: [
+      'Montevideo',
+      'Canelones',
+      'Cerro Largo',
+      'Colonia',
+      'Durazno',
+      'Florida',
+      'Lavalleja',
+      'Maldonado',
+      'Río Negro',
+      'Rocha',
+      'San José',
+      'Tacuarembó',
+      'Treinta y Tres',
+    ],
     android: {
       id: 'com.apraful.mucam',
       developer: 'Medica Uruguaya',
@@ -497,7 +511,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Pagá la cuota y mirá tu estado de cuenta',
     ],
     needs: ['Ser socio del Hospital Británico'],
-    departments: ['Montevideo'],
+    departments: ['Montevideo', 'Maldonado'],
     android: {
       id: 'com.hospitalbritanico.app',
       developer: 'Hospital Británico',
@@ -524,7 +538,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Encontrá los centros de salud de SMI',
     ],
     needs: ['Ser socio de SMI', 'Registrarte en la autogestión de SMI'],
-    departments: ['Montevideo'],
+    departments: ['Montevideo', 'Canelones'],
     android: {
       id: 'com.apraful.smi',
       developer: 'SMI - Servicio Médico Integral',
@@ -551,7 +565,16 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Revisá las indicaciones médicas y tu plan de medicación',
     ],
     needs: ['Ser socio del Círculo Católico'],
-    departments: ['Montevideo'],
+    departments: [
+      'Montevideo',
+      'Canelones',
+      'Colonia',
+      'Flores',
+      'Florida',
+      'Maldonado',
+      'San José',
+      'Soriano',
+    ],
     android: {
       id: 'com.circulocatolico.appsocios',
       developer: 'Circulo Católico del Uruguay Mutualista',
@@ -578,7 +601,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Hacé las gestiones de todo tu núcleo familiar',
     ],
     needs: ['Ser socio de COSEM'],
-    departments: ['Montevideo'],
+    departments: ['Montevideo', 'Canelones', 'Maldonado'],
     android: {
       id: 'uy.com.universal.portal.cosem',
       developer: 'Universal Soluciones Tecnológicas',
@@ -632,7 +655,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Recibí recordatorios de tus citas',
     ],
     needs: ['Ser socio de CUDAM'],
-    departments: ['Montevideo'],
+    departments: ['Montevideo', 'Canelones'],
     android: {
       id: 'com.apraful.cudam',
       developer: 'Cudam',
@@ -659,7 +682,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Mirá tu estado de cuenta',
     ],
     needs: ['Ser socio de MP'],
-    departments: ['Montevideo', 'Maldonado'],
+    departments: ['Montevideo', 'Canelones', 'Maldonado'],
     android: {
       id: 'uy.com.universal.portal.mp',
       developer: 'Universal Soluciones Tecnológicas',
@@ -713,7 +736,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Encontrá los policlínicos de SEMM en el mapa',
     ],
     needs: ['Ser socio de SEMM'],
-    departments: ['Montevideo'],
+    departments: ['Montevideo', 'Canelones'],
     android: {
       id: 'uy.com.universal.portal.semm',
       developer: 'SEMM-Emergencia Médico Móvil',
@@ -735,12 +758,12 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
   },
   {
     id: 'ucm',
-    name: 'emi',
+    name: 'UCM',
     organization: 'UCM (Grupo emi)',
     kind: 'privada',
     category: 'salud',
     summary:
-      'La app que UCM enlaza para sus afiliados: pedí un médico, videoconsulta y especialistas.',
+      'La app de UCM para sus afiliados: pedí un médico, hacé una videoconsulta y agendá especialistas.',
     uses: [
       'Pedí un médico cuando lo necesites',
       'Hacé una videoconsulta o chateá con un médico',
@@ -749,15 +772,15 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     needs: ['Ser afiliado de UCM'],
     departments: ['Montevideo', 'Canelones'],
     android: {
-      id: 'com.kubo.emi',
+      id: 'net.runid.ucm',
       developer: 'Grupo emi',
     },
     ios: {
-      id: '879593518',
+      id: '1034898650',
       developer: 'Grupo emi',
     },
-    source: 'https://www.ucm.com.uy/',
-    note: 'Es la app del Grupo emi, del que UCM es parte: la enlaza la web de UCM.',
+    source: 'https://www.ucm.com.uy/sobre-ucm-conocenos/sobre-nuestro-portal-app',
+    note: 'En el App Store figura como «ucm Uruguay». No confundir con «emi», la app general del Grupo emi.',
     keywords: [
       'ucm',
       'emi',
@@ -1117,7 +1140,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       developer: 'Gabriel Yordi',
     },
     source: 'https://apps.apple.com/uy/app/stm-montevideo/id938009980',
-    note: 'No es de la Intendencia: la hace un desarrollador independiente con los datos públicos del STM y tiene compras dentro de la app.',
+    note: 'No es de la Intendencia: la hace un desarrollador independiente con los datos abiertos del STM. En Android muestra anuncios y en iPhone acepta donaciones.',
     officialAlternative: 'como-ir',
     keywords: [
       'omnibus',
@@ -1243,7 +1266,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     },
     web: 'https://www.uber.com/global/es/cities/montevideo/',
     source: 'https://www.uber.com/global/es/cities/montevideo/',
-    note: 'Fijate en la app si hay servicio en tu ciudad: la página de Uber para Uruguay sólo detalla Montevideo.',
+    note: 'Fijate en la app si hay servicio en tu ciudad: la página de Uber para Uruguay sólo detalla Montevideo y Punta del Este.',
     keywords: ['uber', 'viaje', 'auto con chofer', 'taxi', 'transporte'],
   },
   {
@@ -1347,7 +1370,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     },
     web: 'https://www.trescruces.com.uy/',
     source: 'https://www.trescruces.com.uy/',
-    note: 'Sólo muestra las empresas adheridas, y en el mapa sólo los ómnibus con rastreo. No pide usuario ni datos personales.',
+    note: 'En la lista aparecen todos los servicios en curso que salen o llegan a Tres Cruces; en el mapa, sólo los ómnibus con rastreo. No pide usuario ni datos personales.',
     keywords: [
       'tres cruces',
       'terminal',
@@ -1364,9 +1387,9 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     organization: 'URUBUS (Ululo S.R.L.)',
     kind: 'privada',
     category: 'transporte',
-    summary: 'Comprá pasajes de ómnibus de unas 70 empresas y elegí el asiento desde el celular.',
+    summary: 'Buscá horarios de unas 70 empresas de ómnibus y comprá pasajes eligiendo el asiento.',
     uses: [
-      'Buscá horarios y comprá pasajes a más de mil localidades',
+      'Buscá horarios a más de mil localidades y comprá pasajes de las empresas adheridas',
       'Elegí el asiento y recibí el pasaje con código QR',
       'Pagá con tarjeta, transferencia o redes de cobranza',
       'Consultá o cancelá tus pasajes',
@@ -1397,7 +1420,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Consultá los horarios y seguí tus encomiendas',
       'Seguí tu ómnibus en tiempo real',
     ],
-    departments: ['Montevideo', 'Canelones', 'Maldonado', 'Rocha', 'Colonia'],
+    departments: ['Montevideo', 'Canelones', 'Maldonado', 'Rocha', 'Colonia', 'San José'],
     android: {
       id: 'uy.com.cot.twa',
       developer: 'COT S.A.',
@@ -1422,6 +1445,15 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Comprá, reservá o cambiá tus pasajes',
       'Mirá tus pasajes y comprobantes, o dejá un pasaje abierto',
       'Consultá horarios y tarifas',
+    ],
+    departments: [
+      'Montevideo',
+      'San José',
+      'Colonia',
+      'Durazno',
+      'Tacuarembó',
+      'Rivera',
+      'Artigas',
     ],
     android: {
       id: 'uy.com.turil.twa',
@@ -1504,7 +1536,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Mirá cuánto tiempo te queda y extendelo desde donde estés',
       'Pagá con Mercado Pago y guardá los comprobantes',
     ],
-    needs: ['Cuenta de Mercado Pago'],
+    needs: ['Pagar con Mercado Pago (es el único medio de pago de la app)'],
     departments: ['Durazno'],
     android: {
       id: 'com.streampay.parking.eparking',
@@ -1515,8 +1547,9 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       developer: 'StreamPay',
     },
     web: 'https://streampay.com/',
-    source: 'https://streampay.com/',
-    note: 'La empresa la presenta como la app oficial del estacionamiento de Durazno; no encontramos una página de la Intendencia que lo diga.',
+    source:
+      'https://elacontecer.com.uy/empresarial/eparking-durazno-app-whatsapp-sms-estacionamiento-tarifado-2026/',
+    note: 'La presentó el Gobierno de Durazno en junio de 2026 y la opera StreamPay, la empresa adjudicataria. Sin la app también se paga por WhatsApp o SMS al 098 445 511 o en comercios adheridos.',
     keywords: ['estacionamiento', 'estacionamiento tarifado', 'parking', 'durazno', 'mercado pago'],
   },
   {
@@ -1531,7 +1564,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     uses: [
       'Encontrá la estación más cercana y la mejor ruta para llegar',
       'Pagá el combustible desde el celular y sumá ANCAPuntos',
-      'Pedí que te lleven la garrafa de Supergás ANCAP',
+      'Pedí la garrafa de Supergás ANCAP a domicilio en Montevideo y la costa de Canelones',
       'Enterate de las promociones y descuentos de la red',
     ],
     android: {
@@ -1648,7 +1681,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       developer: 'Banco Itaú Uruguay S.A.',
     },
     source: 'https://www.itau.com.uy/inst/appItau.html',
-    note: 'Para pagar facturas, con QR o con el celular, Itaú usa otra app: «Itaú Pagos».',
+    note: 'Para pagar en comercios con QR o acercando el celular, Itaú usa otra app: «Itaú Pagos». Las facturas se pagan desde las dos.',
     keywords: ['itau', 'banco', 'transferencias', 'cheques', 'tarjeta', 'itoken'],
     guides: ['/mejores-bancos-uruguay'],
   },
@@ -2090,7 +2123,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       developer: 'Abitab',
     },
     source: 'https://www.abitab.com.uy/innovaportal/v/1406/1/innova.bs/abitab-online',
-    note: 'No confundir con «ID Digital Abitab», que es la app de identidad digital.',
+    note: 'No confundir con «Identidad Digital Abitab», que es la app de identidad digital.',
     keywords: ['abitab', 'pagar facturas', 'giros', 'locker', 'estacionamiento', 'telepeaje'],
     guides: ['/pagar-cuentas-con-tarjeta'],
   },
@@ -2404,7 +2437,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Pedí gas a granel',
       'Encontrá los puntos de venta cerca',
     ],
-    departments: ['Montevideo', 'Canelones'],
+    departments: ['Montevideo', 'Canelones', 'San José'],
     android: {
       id: 'com.riogas.mobile',
       developer: 'Riogas S.A.',
@@ -2799,7 +2832,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       developer: 'DGEIP',
     },
     source: 'https://play.google.com/store/apps/details?id=uy.edu.anep.apps.estudiantes',
-    note: 'Es nueva: todavía no encontramos un anuncio de la ANEP que diga en qué niveles funciona.',
+    note: 'Está en las tiendas desde setiembre de 2025, pero todavía no encontramos un anuncio de la ANEP que diga en qué niveles funciona.',
     keywords: ['anep', 'liceo', 'utu', 'secundaria', 'estudiantes', 'notas', 'faltas', 'horarios'],
   },
   {
@@ -2834,7 +2867,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     id: 'biblioteca-pais',
     name: 'Biblioteca País',
     organization: 'Ceibal',
-    kind: 'estado',
+    kind: 'organismo-publico',
     category: 'educacion',
     summary:
       'Más de 10.000 libros y audiolibros gratis para leer o escuchar, con sólo tener cédula uruguaya.',
@@ -2900,7 +2933,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     },
     web: 'https://ibirapita.org.uy/',
     source: 'https://ibirapita.org.uy/innovaportal/v/58/1/web/preguntas-frecuentes.html',
-    note: 'La app no es la tablet que entrega el Plan Ibirapitá: esa se tramita aparte con el BPS.',
+    note: 'La app no es el celular que entrega el Plan Ibirapitá (antes era una tablet): ese beneficio se consulta aparte con el BPS.',
     keywords: [
       'ibirapita',
       'bps',
@@ -3017,12 +3050,13 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     organization: 'Rappi',
     kind: 'privada',
     category: 'compras',
-    summary: 'Pedí comida, súper y farmacia a domicilio en Montevideo.',
+    summary:
+      'Pedí comida, súper y farmacia a domicilio en Montevideo, Ciudad de la Costa y Punta del Este.',
     uses: [
-      'Pedí comida de restaurantes de Montevideo',
+      'Pedí comida de los restaurantes de tu zona',
       'Hacé compras de súper, farmacia, kiosco y bebidas',
     ],
-    departments: ['Montevideo'],
+    departments: ['Montevideo', 'Canelones', 'Maldonado'],
     android: {
       id: 'com.grability.rappi',
       developer: 'Rappi, Inc - Delivery',
@@ -3033,7 +3067,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     },
     web: 'https://www.rappi.com.uy/',
     source: 'https://www.rappi.com.uy/',
-    note: 'En su web sólo figura Montevideo: si vivís en otro lado, fijate si llega a tu zona.',
+    note: 'Llega a Montevideo, Ciudad de la Costa y Punta del Este: si vivís en otro lado, fijate en la app si llega a tu zona.',
     keywords: ['delivery', 'comida', 'rappi', 'supermercado', 'farmacia', 'envio a domicilio'],
   },
   {
@@ -3157,10 +3191,26 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     uses: [
       'Elegí envío a domicilio, con día y horario, o un punto de retiro',
       'Pagá online o cuando te llega el pedido',
-      'Comprá antes de las 15 y recibí en el día, si hay cupo',
+      'Recibí en el día si comprás temprano y hay cupo',
       'Repetí tus pedidos frecuentes',
     ],
     needs: ['Cuenta de Ta-Ta'],
+    departments: [
+      'Artigas',
+      'Canelones',
+      'Cerro Largo',
+      'Colonia',
+      'Durazno',
+      'Florida',
+      'Lavalleja',
+      'Maldonado',
+      'Montevideo',
+      'Paysandú',
+      'Rivera',
+      'Salto',
+      'Soriano',
+      'Tacuarembó',
+    ],
     android: {
       id: 'com.tatauy.android.vtex',
       developer: 'TA-TA S.A.',
@@ -3171,7 +3221,7 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     },
     web: 'https://www.tata.com.uy/',
     source: 'https://www.tata.com.uy/',
-    note: 'Los puntos PLUS se manejan en otra app de Ta-Ta: «Comunidad Plus».',
+    note: 'Los puntos PLUS se manejan aparte, en Comunidad Plus (plus.uy o su app).',
     keywords: ['supermercado', 'tata', 'ta-ta', 'compras', 'delivery', 'super online'],
     guides: ['/precios-de-supermercado-uruguay'],
   },
@@ -3341,8 +3391,8 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
     summary: 'Mirá canales en vivo, cámaras y eventos, y contratá películas y series si querés.',
     uses: [
       'Mirá canales nacionales e internacionales en vivo',
-      'Mirá cámaras en vivo y eventos gratis',
-      'Contratá películas y series por suscripción o alquilá un estreno',
+      'Mirá cámaras en vivo y transmisiones de eventos',
+      'Mirá películas y series por suscripción o alquiler (en iPhone se contratan en la web)',
     ],
     needs: ['Registrarte para ver parte del contenido'],
     android: {
@@ -3458,7 +3508,10 @@ export const USEFUL_APPS: readonly UsefulApp[] = Object.freeze([
       'Buscá por temática, género y etiquetas',
       'Seguí ciclos, estrenos y festivales',
     ],
-    needs: ['Estar en Uruguay: el catálogo sólo se ve dentro del país'],
+    needs: [
+      'Estar en Uruguay para ver las películas (el catálogo se recorre desde cualquier país)',
+      'Registrarte: hay títulos gratis y el resto se paga por película o con una membresía',
+    ],
     android: {
       id: 'com.mascinemateca.app',
       developer: 'Cinemateca Uruguaya',

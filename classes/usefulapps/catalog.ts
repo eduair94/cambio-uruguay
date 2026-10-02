@@ -173,8 +173,8 @@ export const USEFUL_APP_STORE_IDS: readonly UsefulAppStoreIds[] = Object.freeze(
   },
   {
     "id": "ucm",
-    "android": "com.kubo.emi",
-    "ios": "879593518",
+    "android": "net.runid.ucm",
+    "ios": "1034898650",
     "androidDeveloper": "Grupo emi",
     "iosDeveloper": "Grupo emi"
   },

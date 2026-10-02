@@ -23,16 +23,17 @@ history.replaceState.
       <p class="ua-eyebrow">Directorio</p>
       <h1 class="ua-title">Apps útiles en Uruguay: las del Estado y las del día a día</h1>
       <p class="ua-lead">
-        {{ USEFUL_APPS.length }} apps que sirven para vivir en Uruguay —{{ publicCount }} son del
-        Estado, de una intendencia o de una empresa pública—, con el desarrollador tal cual figura
-        en cada tienda para que instales la oficial. Revisadas una por una el {{ verifiedLabel }}.
+        {{ USEFUL_APPS.length }} apps que sirven para vivir en Uruguay —{{ publicCount }} son
+        públicas: del Estado, de una intendencia, de una empresa pública o de un organismo como la
+        Caja de Profesionales—, con el desarrollador tal cual figura en cada tienda para que
+        instales la oficial. Revisadas una por una el {{ verifiedLabel }}.
       </p>
       <div class="ua-stats">
         <StatTile label="Apps" :value="String(USEFUL_APPS.length)" note="en 10 categorías" />
         <StatTile
-          label="Del Estado"
+          label="Públicas"
           :value="String(publicCount)"
-          note="organismos, intendencias y empresas públicas"
+          note="Estado, intendencias, empresas y organismos públicos"
         />
         <StatTile label="Revisado" :value="verifiedShort" :note="storesNote" />
       </div>

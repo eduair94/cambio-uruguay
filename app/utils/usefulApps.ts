@@ -19,12 +19,7 @@ export type UsefulAppCategoryId =
 
 /** Quién está detrás. La tarjeta muestra la etiqueta exacta; el filtro "Tipo" los agrupa. */
 export type UsefulAppKind =
-  | 'estado'
-  | 'intendencia'
-  | 'empresa-publica'
-  | 'organismo-publico'
-  | 'privada'
-  | 'comunidad'
+  'estado' | 'intendencia' | 'empresa-publica' | 'organismo-publico' | 'privada' | 'comunidad'
 
 /** Los diecinueve departamentos, en orden alfabético (el orden del selector). */
 export const USEFUL_APP_DEPARTMENTS = Object.freeze([
@@ -188,7 +183,7 @@ export type UsefulAppsKindFilter = 'todas' | 'publicas' | 'privadas' | 'no-ofici
 export const USEFUL_APPS_KIND_FILTERS: readonly { id: UsefulAppsKindFilter; label: string }[] =
   Object.freeze([
     Object.freeze({ id: 'todas', label: 'Todas' }),
-    Object.freeze({ id: 'publicas', label: 'Del Estado' }),
+    Object.freeze({ id: 'publicas', label: 'Públicas' }),
     Object.freeze({ id: 'privadas', label: 'Privadas' }),
     Object.freeze({ id: 'no-oficiales', label: 'No oficiales' }),
   ])
