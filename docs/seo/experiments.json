@@ -941,6 +941,22 @@
         "importar ropa usada uruguay"
       ],
       "hypothesis": "El sitio no tenia nada sobre revender ropa. La consulta llega con el precio por kilo de los fardos chilenos y argentinos en la cabeza, y ninguna pagina uruguaya dice que en Uruguay ese mercado casi no existe (428 t importadas en 2024 contra 118.084 t de Chile), que importar ropa usada no esta prohibido pero revender contrabando si, ni hace la cuenta del fardo por courier, donde el flete es casi el 90 % del costo. Una pagina con la calculadora del lote, los mayoristas documentados y la norma leida deberia capturar las consultas de fardos y ropa por kilo, que hoy no tienen pagina."
+    },
+    {
+      "id": "contribucion-inmobiliaria-pagina-propia",
+      "shippedOn": "2026-10-02",
+      "routes": [
+        "/contribucion-inmobiliaria-uruguay"
+      ],
+      "queries": [
+        "contribucion inmobiliaria",
+        "contribucion inmobiliaria montevideo",
+        "contribucion inmobiliaria 2026",
+        "como se calcula la contribucion inmobiliaria",
+        "quien paga la contribucion inmobiliaria",
+        "contribucion inmobiliaria en 12 cuotas"
+      ],
+      "hypothesis": "La frase \"contribucion inmobiliaria\" estaba en DOS archivos del repo y en ninguna pagina, teniendo el sitio ya el Impuesto de Primaria sobre el mismo padron. El SERP es institucional e ilegible: la escala vive en un PDF de la intendencia y el texto de la norma esta a valores de 2022 sin el IPC, asi que nadie publica la escala 2026 aplicada por tramos ni dice que la alicuota de la tabla no es la factura (10 % de saneamiento mas 12 % de pluviales encima, y la Tasa General que la paga el ocupante y no el propietario). Ademas la intendencia abrio el 1/10/2026 la ventana para pasar de 3 a 12 cuotas, que cierra el 15/12. Una pagina con la escala oficial, el metodo progresional con su ejemplo y la ventana fechada deberia tomar las consultas de marca departamental, que hoy no tienen pagina propia."
     }
   ]
 }

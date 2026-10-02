@@ -3192,6 +3192,31 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El OTRO impuesto del mismo padrón, y el que explica por qué no existe "la tasa del país":
+        // la contribución urbana y suburbana la fija cada intendencia (Constitución, art. 297, num.
+        // 1.º), así que hay diecinueve escalas. Va pegada a Primaria porque la pregunta que llega es
+        // la misma —qué le corresponde pagar a quién por una vivienda— y porque las dos salen del
+        // mismo valor de Catastro.
+        to: '/contribucion-inmobiliaria-uruguay',
+        labelKey: 'nav.contribucionInmobiliaria',
+        icon: 'mdi-home-city',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'contribucion inmobiliaria uruguay',
+          'contribucion inmobiliaria montevideo',
+          'contribucion inmobiliaria 2026',
+          'como se calcula la contribucion inmobiliaria',
+          'alicuota contribucion inmobiliaria montevideo',
+          'pagar contribucion inmobiliaria montevideo',
+          'contribucion inmobiliaria en 12 cuotas',
+          'quien paga la contribucion inmobiliaria',
+          'tasa general montevideo quien la paga',
+          'valor imponible contribucion inmobiliaria',
+        ],
+      },
+      {
         // El impuesto de la vivienda que el sitio sólo nombraba de costado: como línea deducible
         // en el IRPF del alquiler y como advertencia en la guía del primer alquiler ("no lo pagás
         // vos"). Va acá, al lado de gastos comunes, porque la pregunta que llega es la misma —qué

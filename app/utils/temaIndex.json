@@ -562,6 +562,10 @@
         {
           "to": "/impuesto-de-primaria-uruguay",
           "label": "Impuesto de Primaria"
+        },
+        {
+          "to": "/contribucion-inmobiliaria-uruguay",
+          "label": "Contribución inmobiliaria"
         }
       ],
       "guides": [

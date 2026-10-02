@@ -594,6 +594,11 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Quién lo paga, cuánto es y cómo se calcula.',
         to: '/impuesto-de-primaria-uruguay',
       },
+      {
+        label: 'Contribución inmobiliaria',
+        description: 'La fija cada intendencia: escala, adicionales y en cuántas cuotas se paga.',
+        to: '/contribucion-inmobiliaria-uruguay',
+      },
     ],
     terms: [
       'ui',
