@@ -267,10 +267,16 @@ const state = reactive<UsefulAppsState>(
 )
 usePreciosQuerySync(() => usefulAppsQueryFromState(state))
 
-const { data: stores } = await useFetch<UsefulAppsStoresPayload | null>('/api/useful-apps/stores', {
-  key: 'useful-apps-stores',
-  default: () => null,
-})
+// Sin documento la ruta contesta vacío (204): se normaliza a null para que el handler nunca
+// devuelva undefined (Nuxt lo trata como "sin dato" y repite el pedido en el cliente).
+const { data: stores } = await useAsyncData<UsefulAppsStoresPayload | null>(
+  'useful-apps-stores',
+  () =>
+    $fetch<UsefulAppsStoresPayload | null>('/api/useful-apps/stores')
+      .then(payload => payload ?? null)
+      .catch(() => null),
+  { default: () => null }
+)
 const facts = computed<Record<string, UsefulAppsAppFacts>>(() => stores.value?.apps ?? {})
 
 // La tienda del lector sólo se sabe en el cliente: el HTML del servidor es el mismo para todos.
@@ -325,7 +331,8 @@ const notAppHits = computed(() => usefulAppsNotAppsFor(state.q))
 // mostrando (la query la escribe usePreciosQuerySync con replaceState y el router no la conoce).
 const taskLinks = computed(() => {
   const search = new URLSearchParams(usefulAppsQueryFromState(state)).toString()
-  const prefix = search ? '?' + search : ''
+  // Con la ruta delante: un 'to' que empieza con '?' no lo resuelve el router.
+  const prefix = localePath(BASE_PATH) + (search ? '?' + search : '')
   return [
     { label: 'Las imprescindibles', to: prefix + '#kit' },
     { label: 'Todas por categoría', to: prefix + '#explorar' },
@@ -483,6 +490,8 @@ useHead(() => ({
 }
 .ua-block {
   margin-top: 40px;
+  /* #kit, #explorar y #oficial: que el encabezado fijo no tape el título al llegar por el ancla. */
+  scroll-margin-top: 84px;
 }
 .ua-section-title {
   margin-bottom: 8px;
@@ -597,7 +606,7 @@ useHead(() => ({
   list-style: none;
 }
 .ua-notapp__name {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 700;
 }
 .ua-notapp__looking {

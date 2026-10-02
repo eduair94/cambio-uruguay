@@ -119,10 +119,10 @@ function onSelect(event: MouseEvent, tab: UsefulAppsTab) {
   background: rgb(var(--v-theme-primary));
   color: rgb(var(--v-theme-on-primary));
 }
+/* Sin opacidad: atenuado no llegaba a 4,5:1 (3,9 sobre blanco, 3,5 sobre la pastilla elegida). */
 .ua-tabs__count {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
-  opacity: 0.8;
 }
 .ua-tabs__pill:focus-visible,
 .ua-tabs__summary:focus-visible,

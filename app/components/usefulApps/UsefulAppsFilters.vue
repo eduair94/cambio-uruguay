@@ -27,7 +27,7 @@
     </button>
 
     <div id="ua-more-filters" class="ua-filters__more" :class="{ 'ua-filters__more--open': open }">
-      <div class="ua-filter">
+      <div class="ua-filter ua-filter--tipo">
         <span id="ua-filter-tipo" class="ua-filter__label">Quién la hace</span>
         <VBtnToggle
           :model-value="state.tipo"
@@ -50,7 +50,7 @@
           </VBtn>
         </VBtnToggle>
       </div>
-      <div class="ua-filter">
+      <div class="ua-filter ua-filter--plataforma">
         <span id="ua-filter-plataforma" class="ua-filter__label">Tu celular</span>
         <VBtnToggle
           :model-value="state.plataforma"
@@ -208,6 +208,18 @@ function onOrden(value: unknown) {
   display: grid;
   gap: 8px;
   min-width: 0;
+}
+/* En la fila de filtros cada grupo ocupa su ancho de verdad: sin base, la celda flex se queda con
+   el ancho mínimo del contenido y la grilla de cu-btn-grid cae a una sola columna (los botones
+   quedaban apilados en el escritorio). */
+.ua-filter--tipo {
+  flex: 1 1 28rem;
+}
+.ua-filter--plataforma {
+  flex: 1 1 20rem;
+}
+.ua-filter .cu-btn-grid {
+  --cu-btn-grid-min: 6.5rem;
 }
 .ua-filter__label {
   font-size: 0.75rem;

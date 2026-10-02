@@ -161,7 +161,7 @@ function onTab(event: MouseEvent, tab: UsefulAppCategoryId) {
 }
 .ua-kit__group {
   margin-top: 24px;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 700;
 }
 .ua-kit__list {
