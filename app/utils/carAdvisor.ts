@@ -341,43 +341,59 @@ function bodyAllowed(
   return null
 }
 
-function costsOf(
-  model: PublicCarAdvisorModel,
-  variant: PublicCarAdvisorVariant,
-  priceUsd: number,
-  year: number,
-  query: CarAdvisorQuery,
-  context: {
-    usdUyu: number
-    typicalDrop: number | null
-    prices: CarAdvisorFuelPrices
-    fuelFallback: Map<PublicCarFuel, number>
-  }
+export interface CarOwnershipInput {
+  fuel: PublicCarFuel
+  /** L/100 km medido (del aviso o del modelo); null = la mediana del combustible o el supuesto. */
+  litersPer100Km: number | null
+  /** Índice de repuestos del modelo (1 = promedio); null cuenta como promedio. */
+  partsIndex: number | null
+  /** Caída anual del propio modelo; null usa la típica del mercado. */
+  annualDrop: number | null
+  priceUsd: number
+  year: number
+  kmYear: number
+}
+
+export interface CarOwnershipContext {
+  usdUyu: number
+  typicalDrop: number | null
+  prices: CarAdvisorFuelPrices
+  fuelFallback: Map<PublicCarFuel, number>
+}
+
+/**
+ * Lo que cuesta tener un auto un año: combustible, patente, SOA, mantenimiento y depreciación. La
+ * comparten el asesor (por modelo) y la ficha de cada aviso (utils/carInsight.ts, por auto), así
+ * una cifra no puede decir una cosa en una página y otra en la de al lado.
+ */
+export function carOwnershipCosts(
+  input: CarOwnershipInput,
+  context: CarOwnershipContext
 ): CarAdvisorCosts {
-  let consumption = variant.litersPer100Km
+  let consumption = input.litersPer100Km
   let consumptionEstimated = false
   let fuelUyu: number
-  if (variant.fuel === 'electrico') {
+  if (input.fuel === 'electrico') {
     consumption = CAR_ADVISOR_FIGURES.evKwhPer100Km.value
     consumptionEstimated = true
-    fuelUyu = (consumption * query.kmYear * CAR_ADVISOR_FIGURES.kwhUyu.value) / 100
+    fuelUyu = (consumption * input.kmYear * CAR_ADVISOR_FIGURES.kwhUyu.value) / 100
   } else {
     if (consumption === null) {
       consumption =
-        context.fuelFallback.get(variant.fuel) ??
+        context.fuelFallback.get(input.fuel) ??
         TRANSPORT_MODE_ASSUMPTIONS.auto.consumptionPer100Km.value
       consumptionEstimated = true
     }
-    const perLiter = variant.fuel === 'diesel' ? context.prices.gasoil50s : context.prices.super95
-    fuelUyu = (consumption * query.kmYear * perLiter) / 100
+    const perLiter = input.fuel === 'diesel' ? context.prices.gasoil50s : context.prices.super95
+    fuelUyu = (consumption * input.kmYear * perLiter) / 100
   }
-  const patenteUyu = estimatePatenteUyu(priceUsd, variant.fuel, year)
+  const patenteUyu = estimatePatenteUyu(input.priceUsd, input.fuel, input.year)
   const soaUyu = CAR_ADVISOR_FIGURES.soaUyu.value
   const maintenanceUyu =
     CAR_ADVISOR_FIGURES.maintenanceFixedUyu.value +
-    CAR_ADVISOR_FIGURES.maintenancePerKmUyu.value * query.kmYear * (model.parts?.index ?? 1)
-  const drop = model.annualDrop ?? context.typicalDrop
-  const depreciationUyu = drop === null ? 0 : drop * priceUsd * context.usdUyu
+    CAR_ADVISOR_FIGURES.maintenancePerKmUyu.value * input.kmYear * (input.partsIndex ?? 1)
+  const drop = input.annualDrop ?? context.typicalDrop
+  const depreciationUyu = drop === null ? 0 : drop * input.priceUsd * context.usdUyu
   const cash = fuelUyu + patenteUyu + soaUyu + maintenanceUyu
   return {
     fuelUyu,
@@ -389,9 +405,49 @@ function costsOf(
     monthlyCashUyu: cash / 12,
     consumption,
     consumptionEstimated,
-    depreciationFromMarket: model.annualDrop === null && drop !== null,
+    depreciationFromMarket: input.annualDrop === null && drop !== null,
     depreciationKnown: drop !== null,
   }
+}
+
+/** La mediana de consumo de cada combustible entre todos los modelos: el respaldo sin dato propio. */
+export function carAdvisorFuelFallback(
+  snapshot: PublicCarAdvisorSnapshot
+): Map<PublicCarFuel, number> {
+  const fallback = new Map<PublicCarFuel, number>()
+  for (const fuel of ADVISOR_FUELS) {
+    const value = median(
+      snapshot.data.models.flatMap(model =>
+        model.variants
+          .filter(variant => variant.fuel === fuel && variant.litersPer100Km !== null)
+          .map(variant => variant.litersPer100Km!)
+      )
+    )
+    if (value !== null) fallback.set(fuel, Math.round(value * 10) / 10)
+  }
+  return fallback
+}
+
+function costsOf(
+  model: PublicCarAdvisorModel,
+  variant: PublicCarAdvisorVariant,
+  priceUsd: number,
+  year: number,
+  query: CarAdvisorQuery,
+  context: CarOwnershipContext
+): CarAdvisorCosts {
+  return carOwnershipCosts(
+    {
+      fuel: variant.fuel,
+      litersPer100Km: variant.litersPer100Km,
+      partsIndex: model.parts?.index ?? null,
+      annualDrop: model.annualDrop,
+      priceUsd,
+      year,
+      kmYear: query.kmYear,
+    },
+    context
+  )
 }
 
 /** Lo mismo que PART_INDEX_MIN_PARTS de classes/autos/repuestos.ts: debajo, no hay nada que afirmar. */
@@ -493,17 +549,7 @@ export function adviseCars(
   if (query.budget === null) return empty
   const budget = query.budget
 
-  const fuelFallback = new Map<PublicCarFuel, number>()
-  for (const fuel of ADVISOR_FUELS) {
-    const value = median(
-      snapshot.data.models.flatMap(model =>
-        model.variants
-          .filter(variant => variant.fuel === fuel && variant.litersPer100Km !== null)
-          .map(variant => variant.litersPer100Km!)
-      )
-    )
-    if (value !== null) fuelFallback.set(fuel, Math.round(value * 10) / 10)
-  }
+  const fuelFallback = carAdvisorFuelFallback(snapshot)
   const context = {
     usdUyu: snapshot.usdUyu,
     typicalDrop: snapshot.data.typicalDrop,
