@@ -123,6 +123,17 @@ describe('buildPropertyInsight — position and per m²', () => {
   })
 })
 
+describe('buildPropertyInsight — no bedrooms', () => {
+  it('has no similar homes and no verdict when the advert publishes no bedrooms', () => {
+    const insight = buildPropertyInsight(
+      input({ subject: home({ price: 30_000, bedrooms: null }) })
+    )
+    expect(insight.comparables).toBe(0)
+    expect(insight.position).toBeNull()
+    expect(insight.picks.map(item => item.kind)).not.toContain('cheapest-similar')
+  })
+})
+
 describe('buildPropertyInsight — picks', () => {
   it('offers the cheapest similar, the cheapest per m², a bigger one and one more bedroom', () => {
     const cheapest = home({ price: 24_000, pricePerM2: 400, distanceKm: 0.8 })

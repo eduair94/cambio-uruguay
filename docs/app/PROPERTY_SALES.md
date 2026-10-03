@@ -61,3 +61,29 @@ La revisión descubrió casos que también debían salir de la búsqueda y de la
 La interfaz se probó a 320, 390 y 1440 píxeles: sin desborde horizontal, filtros accesibles después de desplazarse, botones táctiles de al menos 44 píxeles, cancelación que recupera foco y posición, detalles del mapa visibles y fichas individuales que no montan otro catálogo detrás. Los recorridos de comparación, fotos, favoritos vacíos, almacenamiento bloqueado y datos estructurados tienen pruebas de navegador. La suite completa de la aplicación aprobó 5.432 pruebas al concluir la integración inicial.
 
 La revisión previa a la publicación de las 09:33 UTC produjo 8.533 anuncios públicos: 8.382 de InfoCasas y 151 de Casasweb, desde 21.543 identificadores privados. De Casasweb se pudieron leer 237 fichas completas; 151 superaron los controles y 3.700 tarjetas permanecieron privadas hasta contar con esa lectura. El mismo cálculo produjo 13 oportunidades de compra y 40 de alquiler. Estas cifras describen esa captura, no una cobertura fija o exhaustiva del mercado.
+
+## Comparada con lo que hay cerca (2026-10-03)
+
+La ficha (alquiler y venta) pide aparte, desde el navegador, `/api/property-insight/<alquiler|venta>/<key>`
+y muestra el bloque "Comparada con lo que hay cerca" (`components/property/PriceInsight.vue`,
+trilingüe, `utils/propertyInsightMessages.ts`). La lógica es una sola función pura para las dos
+operaciones, `utils/propertyInsight.ts#buildPropertyInsight`; los cargadores están en
+`server/utils/propertyInsight.ts`. Spec: `docs/superpowers/specs/2026-10-03-propiedades-ficha-comparativa-design.md`.
+
+- **Cerca** = distancia a la coordenada PROPIA del aviso. Alquiler usa `rentalDistanceStages` (la
+  política de `rentalNearbyOrigin`, la misma de servicios cercanos y del orden por distancia); venta
+  usa `geo.precision` exacta o aproximada. El radio es el menor de 1, 2, 3 o 5 km con 8 parecidas
+  (mismo tipo y dormitorios). Sin coordenada propia: el barrio (o la localidad), sin distancias.
+- **Veredicto** con ≥ 5 parecidas, bandas −15/−5/+5/+15 % contra la mediana. Sin dormitorios
+  publicados no hay parecidas (medido: una pensión sin dormitorios se comparaba con todo el barrio);
+  en alquiler sólo apartamentos y casas.
+- **$/m²**: alquiler con `rentalPricePerM2`; venta con `utils/propertySalePricePerM2.ts` (superficie
+  edificada, si no total, si no informada, nunca la del terreno; tope 100 + 80 × dormitorios; piso
+  US$ 300/m² apto y US$ 150/m² casa; techo US$ 20.000/m²). Barata en total y cara por m² (o al
+  revés) se explica con el tamaño.
+- **Elecciones**: la más económica parecida, la más económica por m², con más dormitorios y la más
+  grande por la misma plata (≤ 105 %), la parecida más cercana (±20 % de precio).
+- Alquiler compara el alquiler sin gastos comunes; venta compara en dólares y deja afuera ocupadas,
+  a reformar y en pozo.
+- El bloque se pinta sólo después de montar: el servidor nunca lo renderiza y la petición ya está en
+  curso durante la hidratación (sin la bandera, mismatch medido en dev).

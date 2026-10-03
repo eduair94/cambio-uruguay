@@ -140,7 +140,13 @@ export async function loadRentalInsight(key: string): Promise<PropertyInsight | 
   ])
     .collation(RENTAL_COLLATION)
     .option({ maxTimeMS: 3000 })
-  if (!row || rentalPageConflicts(row).length) return null
+  // Sólo viviendas: una habitación o un local no tienen "parecidas" por dormitorios ni $/m².
+  if (
+    !row ||
+    !['apartamento', 'casa'].includes(row.propertyType) ||
+    rentalPageConflicts(row).length
+  )
+    return null
   const origin = rentalNearbyOrigin(row)
   // La identidad es evidencia privada: se usa para decidir y no viaja más allá de esta función.
   const subjectRow: RentalRow = {

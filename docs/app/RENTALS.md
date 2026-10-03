@@ -1301,3 +1301,29 @@ fichas jóvenes más las que Search Console vio; una ficha vieja sin impresiones
 `<meta name="robots" content="noindex, follow">` con su canónica intacta. Se mide por cobertura en
 Search Console (páginas indexadas de la familia), no por clics: por eso no lleva fila en
 `docs/seo/experiments.json`.
+
+## Comparada con lo que hay cerca (2026-10-03)
+
+La ficha (alquiler y venta) pide aparte, desde el navegador, `/api/property-insight/<alquiler|venta>/<key>`
+y muestra el bloque "Comparada con lo que hay cerca" (`components/property/PriceInsight.vue`,
+trilingüe, `utils/propertyInsightMessages.ts`). La lógica es una sola función pura para las dos
+operaciones, `utils/propertyInsight.ts#buildPropertyInsight`; los cargadores están en
+`server/utils/propertyInsight.ts`. Spec: `docs/superpowers/specs/2026-10-03-propiedades-ficha-comparativa-design.md`.
+
+- **Cerca** = distancia a la coordenada PROPIA del aviso. Alquiler usa `rentalDistanceStages` (la
+  política de `rentalNearbyOrigin`, la misma de servicios cercanos y del orden por distancia); venta
+  usa `geo.precision` exacta o aproximada. El radio es el menor de 1, 2, 3 o 5 km con 8 parecidas
+  (mismo tipo y dormitorios). Sin coordenada propia: el barrio (o la localidad), sin distancias.
+- **Veredicto** con ≥ 5 parecidas, bandas −15/−5/+5/+15 % contra la mediana. Sin dormitorios
+  publicados no hay parecidas (medido: una pensión sin dormitorios se comparaba con todo el barrio);
+  en alquiler sólo apartamentos y casas.
+- **$/m²**: alquiler con `rentalPricePerM2`; venta con `utils/propertySalePricePerM2.ts` (superficie
+  edificada, si no total, si no informada, nunca la del terreno; tope 100 + 80 × dormitorios; piso
+  US$ 300/m² apto y US$ 150/m² casa; techo US$ 20.000/m²). Barata en total y cara por m² (o al
+  revés) se explica con el tamaño.
+- **Elecciones**: la más económica parecida, la más económica por m², con más dormitorios y la más
+  grande por la misma plata (≤ 105 %), la parecida más cercana (±20 % de precio).
+- Alquiler compara el alquiler sin gastos comunes; venta compara en dólares y deja afuera ocupadas,
+  a reformar y en pozo.
+- El bloque se pinta sólo después de montar: el servidor nunca lo renderiza y la petición ya está en
+  curso durante la hidratación (sin la bandera, mismatch medido en dev).

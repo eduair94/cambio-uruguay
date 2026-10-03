@@ -65,7 +65,7 @@
             class="sale-detail__section"
             data-testid="sale-price-history"
           >
-            <PriceHistoryBlock :series="data.priceHistory" id="sale-price-history" />
+            <PriceHistoryBlock id="sale-price-history" :series="data.priceHistory" />
           </section>
           <section class="sale-detail__section">
             <h2>{{ t('description') }}</h2>
@@ -162,6 +162,7 @@
           </NuxtLink>
         </aside>
       </div>
+      <PropertyPriceInsight operation="venta" :property-key="data.property.key" />
       <section v-if="data.similar.length" class="sale-detail__similar">
         <h2>{{ t('similar') }}</h2>
         <div>

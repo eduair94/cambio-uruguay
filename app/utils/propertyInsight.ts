@@ -66,6 +66,8 @@ export interface PropertyInsightStats {
 
 export interface PropertyInsight {
   unit: PropertyInsightUnit
+  /** Lo que pide este aviso, en la misma unidad que todo lo demás, y su superficie creíble. */
+  subject: { price: number; area: number | null }
   scope: { kind: 'radius'; radiusKm: number } | { kind: 'neighborhood'; neighborhood: string }
   /** Parecidos (mismo tipo y dormitorios) dentro del alcance. */
   comparables: number
@@ -135,8 +137,10 @@ export function buildPropertyInsight(input: PropertyInsightInput): PropertyInsig
     seenKeys.add(peer.key)
     return true
   })
+  // Sin dormitorios publicados no hay "parecida": medido el 3/10, una pensión sin dormitorios
+  // terminaba comparada contra cualquier cosa del barrio. Sin parecidas, sin veredicto.
   const similar = (peer: PropertyInsightListing) =>
-    subject.bedrooms === null || peer.bedrooms === subject.bedrooms
+    subject.bedrooms !== null && peer.bedrooms === subject.bedrooms
 
   // El alcance: el menor radio con ocho parecidos; sin coordenada propia, el barrio.
   let scope: PropertyInsight['scope']
@@ -230,6 +234,10 @@ export function buildPropertyInsight(input: PropertyInsightInput): PropertyInsig
 
   return {
     unit,
+    subject: {
+      price: Math.round(subject.price),
+      area: subject.pricePerM2 === null ? null : subject.area,
+    },
     scope,
     comparables: comparables.length,
     position,

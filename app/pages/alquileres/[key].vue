@@ -674,7 +674,7 @@ useHead(() => ({
           class="rental-page__section"
           data-testid="rental-price-history"
         >
-          <PriceHistoryBlock :series="selectedOffer.priceHistory" id="rental-price-history" />
+          <PriceHistoryBlock id="rental-price-history" :series="selectedOffer.priceHistory" />
         </section>
         <section class="rental-page__section" aria-labelledby="rental-description-title">
           <h2 id="rental-description-title">{{ t('descriptionShort') }}</h2>
@@ -776,6 +776,12 @@ useHead(() => ({
             {{ t('smallSample', { n: market?.minimumSample || 10 }) }}
           </p>
         </section>
+        <PropertyPriceInsight
+          v-if="data?.property"
+          operation="alquiler"
+          :property-key="data.property.key"
+          class="rental-page__section"
+        />
         <section
           id="rental-page-offers"
           class="rental-page__section"
