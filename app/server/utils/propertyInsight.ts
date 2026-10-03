@@ -138,7 +138,7 @@ export async function loadRentalInsight(key: string): Promise<PropertyInsight | 
       },
     },
   ])
-    .collation(RENTAL_COLLATION)
+    // Sin collation: el índice único de `key` no la tiene, y con ella cada vista escanea la colección.
     .option({ maxTimeMS: 3000 })
   // Sólo viviendas: una habitación o un local no tienen "parecidas" por dormitorios ni $/m².
   if (
@@ -154,7 +154,10 @@ export async function loadRentalInsight(key: string): Promise<PropertyInsight | 
     offers: row.offers.map(({ identity: _identity, ...offer }) => offer),
   }
   const subject = rentalListing(subjectRow, usdUyu)
-  if (!subject || !row.department?.trim()) return null
+  // Sin dormitorios no hay "parecidas"; sin coordenada ni barrio no hay "cerca": en los dos casos el
+  // bloque diría "0 viviendas parecidas", que es falso, así que no se muestra.
+  if (!subject || !row.department?.trim() || subject.bedrooms === null) return null
+  if (!origin && !row.neighborhood?.trim()) return null
 
   const query = normalizeRentalQuery({
     department: row.department,
@@ -180,6 +183,8 @@ export async function loadRentalInsight(key: string): Promise<PropertyInsight | 
       ? [
           ...rentalDistanceStages({ refLat: origin.lat, refLng: origin.lng }),
           { $match: { distanceKm: { $ne: null, $lte: MAX_RADIUS_KM } } },
+          // Los más cercanos primero ANTES del tope: si no, en el centro el corte se lleva los de 300 m.
+          { $sort: { distanceKm: 1, key: 1 } },
         ]
       : []),
     { $limit: MAX_PEERS },
@@ -254,6 +259,65 @@ function saleListing(
   }
 }
 
+/** Lo mínimo para comparar: el detalle (título, foto) se pide después, sólo de las elegidas. */
+const SALE_LITE_PROJECTION = {
+  _id: 0,
+  key: 1,
+  propertyType: 1,
+  bedrooms: 1,
+  bathrooms: 1,
+  neighborhood: 1,
+  locality: 1,
+  conditions: 1,
+  'price.amount': 1,
+  'price.currency': 1,
+  'areas.built': 1,
+  'areas.total': 1,
+  'areas.reported': 1,
+  'geo.lat': 1,
+  'geo.lng': 1,
+  'geo.precision': 1,
+} as const
+/** Filas livianas que se leen por consulta: una ciudad entera cabe, después se ordena por distancia. */
+const MAX_SALE_LITE = 12_000
+
+const finite = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) ? value : null
+
+/** Una fila liviana como resumen mínimo, con los mismos nombres que el público. */
+function saleLite(doc: Record<string, any>): PropertySaleSummary {
+  const geo =
+    finite(doc.geo?.lat) !== null && finite(doc.geo?.lng) !== null
+      ? { lat: doc.geo.lat, lng: doc.geo.lng, precision: doc.geo.precision }
+      : null
+  return {
+    key: String(doc.key ?? ''),
+    title: '',
+    image: null,
+    propertyType: doc.propertyType === 'casa' ? 'casa' : 'apartamento',
+    bedrooms: finite(doc.bedrooms),
+    bathrooms: finite(doc.bathrooms),
+    neighborhood: String(doc.neighborhood ?? ''),
+    locality: String(doc.locality ?? ''),
+    conditions: Array.isArray(doc.conditions) ? doc.conditions : [],
+    price: {
+      amount: finite(doc.price?.amount) ?? 0,
+      currency: doc.price?.currency === 'UYU' ? 'UYU' : 'USD',
+    },
+    areas: {
+      built: finite(doc.areas?.built),
+      total: finite(doc.areas?.total),
+      reported: finite(doc.areas?.reported),
+      land: null,
+      terrace: null,
+    },
+    geo,
+  } as unknown as PropertySaleSummary
+}
+
+const excluded = (summary: PropertySaleSummary) =>
+  !!summary.conditions?.some(condition => SALE_INSIGHT_EXCLUDED_CONDITIONS.has(condition))
+
 export async function loadPropertySaleInsight(key: string): Promise<PropertyInsight | null> {
   await connectDb()
   const [row, meta] = await Promise.all([
@@ -266,15 +330,22 @@ export async function loadPropertySaleInsight(key: string): Promise<PropertyInsi
   if (!row) return null
   const usdUyu = meta?.usdUyu || 0
   const summary = publicPropertySaleSummary(row)
+  // Ocupada, a reformar o en pozo: el bloque dice que esas no se comparan, así que tampoco se juzga.
+  if (excluded(summary) || summary.bedrooms === null) return null
   const origin = located(summary)
-  const subject = saleListing(summary, usdUyu, origin)
-  if (!subject || !summary.department) return null
-  const zone = summary.neighborhood
-    ? { neighborhood: summary.neighborhood }
+  // Sin coordenada, la zona es el barrio o, si no hay, la localidad; y se compara por ESE campo en
+  // los dos lados (un vecino con barrio y localidad no puede quedar afuera por tener barrio).
+  const zoneField: 'neighborhood' | 'locality' | null = summary.neighborhood
+    ? 'neighborhood'
     : summary.locality
-      ? { locality: summary.locality }
+      ? 'locality'
       : null
-  if (!origin && !zone) return null
+  const zoneOf = (item: PropertySaleSummary) =>
+    zoneField === 'locality' ? item.locality : item.neighborhood || item.locality
+  const subjectListing = saleListing(summary, usdUyu, origin)
+  if (!subjectListing || !summary.department) return null
+  if (!origin && !zoneField) return null
+  const subject = { ...subjectListing, neighborhood: zoneOf(summary) }
   const docs = await PropertySaleCatalogModel.find({
     ...propertySalesVisibleFilter(),
     department: summary.department,
@@ -286,21 +357,49 @@ export async function loadPropertySaleInsight(key: string): Promise<PropertyInsi
           'geo.lat': { $gte: origin.lat - BOX_LAT, $lte: origin.lat + BOX_LAT },
           'geo.lng': { $gte: origin.lng - BOX_LNG, $lte: origin.lng + BOX_LNG },
         }
-      : zone),
+      : { [zoneField!]: zoneField === 'locality' ? summary.locality : summary.neighborhood }),
   })
-    .select(propertySaleSummaryProjection)
-    .limit(MAX_PEERS)
+    .select(SALE_LITE_PROJECTION)
+    .limit(MAX_SALE_LITE)
     .collation(PROPERTY_SALES_COLLATION)
     .maxTimeMS(4000)
     .lean()
   const peers = docs
-    .map(doc => publicPropertySaleSummary(doc))
+    .map(doc => saleLite(doc as Record<string, any>))
     // Ocupada, a reformar o en pozo son otro mercado: ni comparan ni se ofrecen como alternativa.
-    .filter(
-      item => !item.conditions?.some(condition => SALE_INSIGHT_EXCLUDED_CONDITIONS.has(condition))
-    )
-    .map(item => saleListing(item, usdUyu, origin))
+    .filter(item => !excluded(item))
+    .map(item => {
+      const listing = saleListing(item, usdUyu, origin)
+      return listing ? { ...listing, neighborhood: zoneOf(item) } : null
+    })
     .filter((item): item is PropertyInsightListing => !!item)
     .filter(item => !origin || (item.distanceKm !== null && item.distanceKm <= MAX_RADIUS_KM))
-  return buildPropertyInsight({ subject, peers, located: !!origin, unit: 'USD' })
+    .sort((a, b) => (a.distanceKm ?? 0) - (b.distanceKm ?? 0) || a.key.localeCompare(b.key))
+    .slice(0, MAX_PEERS)
+  const insight = buildPropertyInsight({ subject, peers, located: !!origin, unit: 'USD' })
+  if (!insight.picks.length) return insight
+  // El detalle (título, foto) sólo de las elegidas.
+  const full = await PropertySaleCatalogModel.find({
+    ...propertySalesVisibleFilter(),
+    key: { $in: insight.picks.map(item => item.listing.key) },
+  })
+    .select(propertySaleSummaryProjection)
+    .maxTimeMS(3000)
+    .lean()
+  const byKey = new Map(full.map(doc => [String(doc.key), publicPropertySaleSummary(doc)]))
+  insight.picks = insight.picks.flatMap(item => {
+    const detail = byKey.get(item.listing.key)
+    if (!detail) return []
+    return [
+      {
+        ...item,
+        listing: {
+          ...item.listing,
+          title: detail.title,
+          image: rentalSavedSafeUrl(detail.image),
+        },
+      },
+    ]
+  })
+  return insight
 }

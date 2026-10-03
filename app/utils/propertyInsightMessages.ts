@@ -8,9 +8,9 @@ export const propertyInsightMessages = {
     title: 'Comparada con lo que hay cerca',
     loading: 'Comparando con lo que hay cerca…',
     scopeRadius:
-      'Contra {n} viviendas parecidas (mismo tipo y dormitorios) a menos de {km} km de este aviso.',
+      'Comparables a menos de {km} km de este aviso, del mismo tipo y con los mismos dormitorios: {n}.',
     scopeNeighborhood:
-      'Este aviso no publica una ubicación propia: se compara contra {n} viviendas parecidas de {zone}, sin distancias.',
+      'Este aviso no publica una ubicación propia, así que se compara con su zona ({zone}), sin distancias. Comparables del mismo tipo y dormitorios: {n}.',
     rentNote: 'Se compara el alquiler sin gastos comunes.',
     saleNote:
       'Se compara en dólares; no entran viviendas ocupadas, a reformar ni en pozo. Son precios pedidos, no una tasación.',
@@ -31,8 +31,7 @@ export const propertyInsightMessages = {
     cheaperLast: 'de los más caros de los parecidos',
     lowWarning:
       'Un precio tan por debajo del resto suele tener un motivo: estado, ubicación exacta, condiciones o un error del aviso. Preguntá antes de entusiasmarte.',
-    noVerdict:
-      'Hay {n} viviendas parecidas en esa zona: con menos de cinco no damos un veredicto, cualquier promedio es ruido.',
+    noVerdict: 'Con menos de cinco comparables no damos un veredicto: cualquier promedio es ruido.',
     perM2Title: 'Precio por m²',
     perM2:
       'Este aviso pide {value} por m². La mediana de lo cercano de tamaño parecido es {median} ({n} avisos): está {gap} esa cifra.',
@@ -61,14 +60,17 @@ export const propertyInsightMessages = {
     diffAreaMore: '{n} m² más',
     diffAreaLess: '{n} m² menos',
     diffSuffix: 'que este',
+    rentUsdNote:
+      'Este aviso publica en dólares: se convirtió a pesos a la cotización del día para comparar.',
+    barLabel:
+      'Rango de precios de los comparables: de {min} a {max}, mediana {median}. Este aviso: {price}.',
   },
   en: {
     title: 'Compared with what is nearby',
     loading: 'Comparing with what is nearby…',
-    scopeRadius:
-      'Against {n} similar homes (same type and bedrooms) within {km} km of this advert.',
+    scopeRadius: 'Comparable homes within {km} km of this advert, same type and bedrooms: {n}.',
     scopeNeighborhood:
-      'This advert does not publish its own location: it is compared against {n} similar homes in {zone}, without distances.',
+      'This advert does not publish its own location, so it is compared with its area ({zone}), without distances. Comparable homes of the same type and bedrooms: {n}.',
     rentNote: 'Rent is compared without building fees.',
     saleNote:
       'Compared in US dollars; occupied homes, homes needing renovation and off-plan units are left out. These are asking prices, not a valuation.',
@@ -89,8 +91,7 @@ export const propertyInsightMessages = {
     cheaperLast: 'among the most expensive of the similar homes',
     lowWarning:
       'A price this far below the rest usually has a reason: condition, exact location, terms or a mistake in the advert. Ask before getting excited.',
-    noVerdict:
-      'There are {n} similar homes in that area: with fewer than five we give no verdict, any average is noise.',
+    noVerdict: 'With fewer than five comparable homes we give no verdict: any average is noise.',
     perM2Title: 'Price per m²',
     perM2:
       'This advert asks {value} per m². The median of similar-sized homes nearby is {median} ({n} adverts): it is {gap} that figure.',
@@ -119,14 +120,18 @@ export const propertyInsightMessages = {
     diffAreaMore: '{n} m² more',
     diffAreaLess: '{n} m² less',
     diffSuffix: 'than this one',
+    rentUsdNote:
+      'This advert is listed in US dollars: it was converted to pesos at the day rate to compare.',
+    barLabel:
+      'Price range of comparable homes: from {min} to {max}, median {median}. This advert: {price}.',
   },
   pt: {
     title: 'Comparado com o que há perto',
     loading: 'Comparando com o que há perto…',
     scopeRadius:
-      'Contra {n} imóveis parecidos (mesmo tipo e quartos) a menos de {km} km deste anúncio.',
+      'Comparáveis a menos de {km} km deste anúncio, do mesmo tipo e com os mesmos quartos: {n}.',
     scopeNeighborhood:
-      'Este anúncio não publica uma localização própria: é comparado com {n} imóveis parecidos em {zone}, sem distâncias.',
+      'Este anúncio não publica uma localização própria, então é comparado com sua região ({zone}), sem distâncias. Comparáveis do mesmo tipo e quartos: {n}.',
     rentNote: 'O aluguel é comparado sem as despesas de condomínio.',
     saleNote:
       'Comparado em dólares; ficam de fora imóveis ocupados, para reformar ou na planta. São preços pedidos, não uma avaliação.',
@@ -138,8 +143,8 @@ export const propertyInsightMessages = {
     thisOne: 'Este: {price}',
     middle: 'metade central {from} – {to}',
     summary:
-      'Metade dos parecidos pede menos de {median}. Este anúncio pede {price}, {gap} a mediana, e é {cheaper}.',
-    gapAt: 'bem na',
+      'Metade dos parecidos pede menos de {median}. Este anúncio pede {price}, {gap} mediana, e é {cheaper}.',
+    gapAt: 'igual à',
     gapBelow: '{pct} abaixo da',
     gapAbove: '{pct} acima da',
     cheaperFirst: 'o mais barato dos parecidos',
@@ -147,11 +152,10 @@ export const propertyInsightMessages = {
     cheaperLast: 'um dos mais caros dos parecidos',
     lowWarning:
       'Um preço tão abaixo dos demais costuma ter um motivo: estado, localização exata, condições ou um erro do anúncio. Pergunte antes de se animar.',
-    noVerdict:
-      'Há {n} imóveis parecidos nessa região: com menos de cinco não damos veredicto, qualquer média é ruído.',
+    noVerdict: 'Com menos de cinco comparáveis não damos veredicto: qualquer média é ruído.',
     perM2Title: 'Preço por m²',
     perM2:
-      'Este anúncio pede {value} por m². A mediana dos imóveis próximos de tamanho parecido é {median} ({n} anúncios): está {gap} esse valor.',
+      'Este anúncio pede {value} por m². A mediana dos imóveis próximos de tamanho parecido é {median} ({n} anúncios): este está {gap} mediana.',
     perM2Alone:
       'Este anúncio pede {value} por m²; não há anúncios próximos suficientes para comparar.',
     perM2Unknown: 'A área publicada não permite calcular um preço por m² confiável.',
@@ -175,5 +179,9 @@ export const propertyInsightMessages = {
     diffAreaMore: '{n} m² a mais',
     diffAreaLess: '{n} m² a menos',
     diffSuffix: 'que este',
+    rentUsdNote:
+      'Este anúncio está em dólares: foi convertido para pesos à cotação do dia para comparar.',
+    barLabel:
+      'Faixa de preços dos comparáveis: de {min} a {max}, mediana {median}. Este anúncio: {price}.',
   },
 } as const

@@ -5,17 +5,19 @@
 -->
 <template>
   <section
-    v-if="mounted && (insight || pending)"
+    v-if="mounted && insight"
     class="property-insight"
     data-testid="property-price-insight"
     aria-labelledby="property-insight-title"
   >
     <h2 id="property-insight-title">{{ t('title') }}</h2>
-    <p v-if="pending && !insight" class="property-insight__note">{{ t('loading') }}</p>
 
     <template v-if="insight">
       <p class="property-insight__note">
         {{ scopeText }} {{ t(operation === 'alquiler' ? 'rentNote' : 'saleNote') }}
+        <template v-if="operation === 'alquiler' && insight.subject.currency === 'USD'">
+          {{ t('rentUsdNote') }}
+        </template>
       </p>
 
       <template v-if="position">
@@ -28,7 +30,14 @@
         <div
           class="property-insight__bar"
           role="img"
-          :aria-label="`${money(position.min)} – ${money(position.max)}; ${money(position.median)}; ${money(insight.subject.price)}`"
+          :aria-label="
+            t('barLabel', {
+              min: money(position.min),
+              max: money(position.max),
+              median: money(position.median),
+              price: money(insight.subject.price),
+            })
+          "
         >
           <div class="property-insight__track" />
           <div
@@ -70,7 +79,7 @@
           {{ t('lowWarning') }}
         </VAlert>
       </template>
-      <p v-else class="property-insight__note">{{ t('noVerdict', { n: insight.comparables }) }}</p>
+      <p v-else class="property-insight__note">{{ t('noVerdict') }}</p>
 
       <h3>{{ t('perM2Title') }}</h3>
       <p v-if="insight.perM2">
@@ -100,7 +109,7 @@
                 <img
                   v-if="item.listing.image"
                   :src="item.listing.image"
-                  :alt="item.listing.title"
+                  :alt="''"
                   width="320"
                   height="200"
                   loading="lazy"
@@ -141,7 +150,7 @@ const { t, locale } = useI18n({ useScope: 'local', messages: propertyInsightMess
 const localePath = useLocalePath()
 
 // Del navegador y sin bloquear: la ficha no espera a la comparativa.
-const { data, pending } = useLazyFetch<{ insight: PropertyInsight | null }>(
+const { data } = useLazyFetch<{ insight: PropertyInsight | null }>(
   () => `/api/property-insight/${props.operation}/${encodeURIComponent(props.propertyKey)}`,
   { server: false, key: `property-insight-${props.operation}-${props.propertyKey}` }
 )
@@ -222,9 +231,10 @@ const gapText = (gap: number) =>
 const cheaperText = computed(() => {
   const value = position.value
   if (!value) return ''
-  if (value.cheaperShare === 0) return t('cheaperFirst')
+  // Con empates (precios redondos) "el más económico" sólo si nadie pide lo mismo o menos.
+  if (value.cheaperShare === 0 && value.pricierShare === 1) return t('cheaperFirst')
   // Hacia abajo y nunca 10: con uno solo más barato, "10 de cada 10" sería falso.
-  const ofTen = Math.min(9, Math.floor((1 - value.cheaperShare) * 10))
+  const ofTen = Math.min(9, Math.floor(value.pricierShare * 10))
   return ofTen <= 0 ? t('cheaperLast') : t('cheaperOf', { n: ofTen })
 })
 

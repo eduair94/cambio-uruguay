@@ -149,6 +149,27 @@ describe('buildPropertyInsight — picks', () => {
     expect(new Set(Object.values(byKind)).size).toBe(insight.picks.length)
   })
 
+  it('counts ties apart: equal round prices are neither cheaper nor pricier', () => {
+    const subject = home({ price: 30_000 })
+    const peers = near([30_000, 30_000, 31_000, 32_000, 33_000])
+    const position = buildPropertyInsight(input({ subject, peers })).position!
+    expect(position.cheaperShare).toBe(0)
+    expect(position.pricierShare).toBeCloseTo(3 / 5)
+  })
+
+  it('never offers a junk price (under half the lower quartile) as the cheapest', () => {
+    const junk = home({ price: 3_000, pricePerM2: 50 })
+    const insight = buildPropertyInsight(input({ peers: [...input().peers, junk] }))
+    expect(insight.picks.map(item => item.listing.key)).not.toContain(junk.key)
+  })
+
+  it('hides an area the per-m² guard rejected on the card', () => {
+    const typo = home({ price: 24_000, area: 900, pricePerM2: null })
+    const insight = buildPropertyInsight(input({ peers: [...input().peers, typo] }))
+    const card = insight.picks.find(item => item.listing.key === typo.key)
+    expect(card?.listing.area).toBeNull()
+  })
+
   it('never offers something pricier than 105 % as "for the same money"', () => {
     const expensive = home({ price: 40_000, bedrooms: 4, area: 150, pricePerM2: 266 })
     const insight = buildPropertyInsight(input({ peers: [...input().peers, expensive] }))

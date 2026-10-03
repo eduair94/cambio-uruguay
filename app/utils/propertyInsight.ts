@@ -26,6 +26,8 @@ export const PROPERTY_INSIGHT_TARGET = 8
 export const PROPERTY_INSIGHT_MIN_PEERS = 5
 /** "Por la misma plata": hasta 5 % más de lo que pide este aviso. */
 export const PROPERTY_INSIGHT_STRETCH = 1.05
+/** Debajo de esta fracción del cuartil inferior un precio no se ofrece como "la más económica". */
+export const PROPERTY_INSIGHT_JUNK_FACTOR = 0.5
 /** "Parecida más cercana": precio dentro de ±20 % del de este aviso. */
 export const PROPERTY_INSIGHT_CLOSE_PRICE = 0.2
 
@@ -59,6 +61,8 @@ export interface PropertyInsightStats {
   max: number
   /** Qué parte de los comparables pide MENOS que este aviso (0..1). */
   cheaperShare: number
+  /** Qué parte pide MÁS (0..1). Con precios redondos hay empates: no es 1 − cheaperShare. */
+  pricierShare: number
   /** precio / mediana − 1. */
   gap: number
   verdict: PropertyInsightVerdict
@@ -67,7 +71,7 @@ export interface PropertyInsightStats {
 export interface PropertyInsight {
   unit: PropertyInsightUnit
   /** Lo que pide este aviso, en la misma unidad que todo lo demás, y su superficie creíble. */
-  subject: { price: number; area: number | null }
+  subject: { price: number; area: number | null; currency: PropertyInsightUnit }
   scope: { kind: 'radius'; radiusKm: number } | { kind: 'neighborhood'; neighborhood: string }
   /** Parecidos (mismo tipo y dormitorios) dentro del alcance. */
   comparables: number
@@ -118,6 +122,7 @@ function statsOf(value: number, values: number[]): PropertyInsightStats | null {
     p75: Math.round(quantile(sorted, 0.75)),
     max: Math.round(sorted[sorted.length - 1]!),
     cheaperShare: sorted.filter(item => item < value).length / sorted.length,
+    pricierShare: sorted.filter(item => item > value).length / sorted.length,
     gap,
     verdict: propertyInsightVerdict(gap),
   }
@@ -182,6 +187,12 @@ export function buildPropertyInsight(input: PropertyInsightInput): PropertyInsig
         )
       : null
 
+  const priceFloor = position ? position.p25 * PROPERTY_INSIGHT_JUNK_FACTOR : 0
+  const perM2Floor = perM2Stats ? perM2Stats.p25 * PROPERTY_INSIGHT_JUNK_FACTOR : 0
+  // Lo mismo para "por la misma plata": medido el 3/10, un 2 dormitorios a US$ 667/m² (la quinta
+  // parte de la zona) aparecía como "con más dormitorios por la misma plata".
+  const plausible = (peer: PropertyInsightListing) =>
+    peer.price >= priceFloor && (peer.pricePerM2 === null || peer.pricePerM2 >= perM2Floor)
   const picks: PropertyInsight['picks'] = []
   const used = new Set<string>()
   const pick = (
@@ -192,17 +203,24 @@ export function buildPropertyInsight(input: PropertyInsightInput): PropertyInsig
     const candidate = ordered.find(item => !used.has(item.key) && accept(item))
     if (!candidate) return
     used.add(candidate.key)
-    picks.push({ kind, listing: candidate })
+    // Una superficie que la guarda de $/m² rechazó (un 900 m² tipeado) no se muestra en la tarjeta.
+    picks.push({
+      kind,
+      listing: candidate.pricePerM2 === null ? { ...candidate, area: null } : candidate,
+    })
   }
 
   const ceiling = subject.price * PROPERTY_INSIGHT_STRETCH
-  pick('cheapest-similar', [...comparables].sort(byPrice))
+  // "La más económica" premia el dato roto (un aviso de temporada, un precio mal tipeado): con
+  // muestra, nada por debajo de la mitad del cuartil inferior se ofrece como alternativa.
+  pick('cheapest-similar', comparables.filter(peer => peer.price >= priceFloor).sort(byPrice))
   pick(
     'cheapest-per-m2',
     near
       .filter(
         peer =>
           peer.pricePerM2 !== null &&
+          peer.pricePerM2 >= perM2Floor &&
           (subject.bedrooms === null || (peer.bedrooms ?? -1) >= subject.bedrooms)
       )
       .sort((a, b) => a.pricePerM2! - b.pricePerM2! || byDistance(a, b)),
@@ -212,14 +230,20 @@ export function buildPropertyInsight(input: PropertyInsightInput): PropertyInsig
     pick(
       'more-bedrooms-same-money',
       near
-        .filter(peer => peer.price <= ceiling && (peer.bedrooms ?? -1) > subject.bedrooms!)
+        .filter(
+          peer =>
+            peer.price <= ceiling && plausible(peer) && (peer.bedrooms ?? -1) > subject.bedrooms!
+        )
         .sort((a, b) => byPrice(a, b))
     )
   }
   pick(
     'bigger-same-money',
     near
-      .filter(peer => peer.price <= ceiling && peer.pricePerM2 !== null && peer.area !== null)
+      .filter(
+        peer =>
+          peer.price <= ceiling && plausible(peer) && peer.pricePerM2 !== null && peer.area !== null
+      )
       .sort((a, b) => b.area! - a.area! || byPrice(a, b)),
     peer => subject.area === null || subject.pricePerM2 === null || peer.area! >= subject.area * 1.1
   )
@@ -237,6 +261,7 @@ export function buildPropertyInsight(input: PropertyInsightInput): PropertyInsig
     subject: {
       price: Math.round(subject.price),
       area: subject.pricePerM2 === null ? null : subject.area,
+      currency: subject.shown.currency,
     },
     scope,
     comparables: comparables.length,
