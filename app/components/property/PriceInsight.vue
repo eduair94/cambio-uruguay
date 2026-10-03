@@ -4,8 +4,14 @@
   ya está entera y este bloque simplemente no aparece. La lógica vive en utils/propertyInsight.ts.
 -->
 <template>
+  <div
+    v-if="mounted && !insight"
+    ref="sentinel"
+    class="property-insight__sentinel"
+    aria-hidden="true"
+  />
   <section
-    v-if="mounted && insight"
+    v-else-if="mounted && insight"
     class="property-insight"
     data-testid="property-price-insight"
     aria-labelledby="property-insight-title"
@@ -149,17 +155,40 @@ const props = defineProps<{
 const { t, locale } = useI18n({ useScope: 'local', messages: propertyInsightMessages })
 const localePath = useLocalePath()
 
-// Del navegador y sin bloquear: la ficha no espera a la comparativa.
-const { data } = useLazyFetch<{ insight: PropertyInsight | null }>(
+// Del navegador, sin bloquear y sólo cuando el lugar del bloque se acerca a la pantalla: la ficha no
+// espera a la comparativa, y un bot que carga la ficha y se va no dispara la agregación.
+const { data, execute } = useLazyFetch<{ insight: PropertyInsight | null }>(
   () => `/api/property-insight/${props.operation}/${encodeURIComponent(props.propertyKey)}`,
-  { server: false, key: `property-insight-${props.operation}-${props.propertyKey}` }
+  {
+    server: false,
+    immediate: false,
+    key: `property-insight-${props.operation}-${props.propertyKey}`,
+  }
 )
-// El servidor nunca pinta este bloque; en el cliente la petición ya está en curso durante la
-// hidratación, así que sin esta bandera el primer render del cliente no coincide con el del servidor.
+// El servidor nunca pinta este bloque: el centinela y el bloque aparecen recién al montar, así el
+// primer render del cliente coincide con el del servidor.
 const mounted = ref(false)
-onMounted(() => {
+const sentinel = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+onMounted(async () => {
   mounted.value = true
+  await nextTick()
+  if (!sentinel.value || typeof IntersectionObserver === 'undefined') {
+    void execute()
+    return
+  }
+  observer = new IntersectionObserver(
+    entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return
+      observer?.disconnect()
+      observer = null
+      void execute()
+    },
+    { rootMargin: '600px 0px' }
+  )
+  observer.observe(sentinel.value)
 })
+onBeforeUnmount(() => observer?.disconnect())
 const insight = computed(() => data.value?.insight ?? null)
 const position = computed(() => insight.value?.position ?? null)
 
@@ -287,6 +316,9 @@ function diffText(listing: PropertyInsightListing): string {
 <style scoped>
 .property-insight {
   margin-top: 32px;
+}
+.property-insight__sentinel {
+  height: 1px;
 }
 .property-insight h2 {
   font-size: 1.25rem;

@@ -10,6 +10,7 @@ vi.mock('../../server/utils/propertyInsight', () => ({
 const { getRouterParam } = installNitroGlobals()
 vi.stubGlobal('setResponseHeader', vi.fn())
 const handler = (await import('../../server/api/property-insight/[operation]/[key].get')).default
+const { resetPropertyInsightCache } = await import('../../server/utils/propertyInsightCache')
 
 const route = (operation: string, key: string) =>
   getRouterParam.mockImplementation((_event: unknown, name: string) =>
@@ -18,6 +19,7 @@ const route = (operation: string, key: string) =>
 
 describe('/api/property-insight', () => {
   beforeEach(() => {
+    resetPropertyInsightCache()
     loadRentalInsight.mockReset()
     loadPropertySaleInsight.mockReset()
   })
@@ -42,7 +44,16 @@ describe('/api/property-insight', () => {
     loadPropertySaleInsight.mockResolvedValue(null)
     route('venta', 'infocasas-123')
     expect(await handler({} as never)).toEqual({ insight: null })
+    resetPropertyInsightCache()
     loadPropertySaleInsight.mockRejectedValue(new Error('down'))
     await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 503 })
+  })
+
+  it('reads each advert once while the cache is fresh, even with concurrent requests', async () => {
+    loadPropertySaleInsight.mockResolvedValue({ unit: 'USD' })
+    route('venta', 'infocasas-777')
+    await Promise.all([handler({} as never), handler({} as never)])
+    await handler({} as never)
+    expect(loadPropertySaleInsight).toHaveBeenCalledTimes(1)
   })
 })

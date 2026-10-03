@@ -5,6 +5,7 @@ import { propertySaleValidKey } from '../../../../utils/propertySales'
 import { rentalValidKey } from '../../../../utils/rentals'
 import type { PropertyInsight } from '../../../../utils/propertyInsight'
 import { loadPropertySaleInsight, loadRentalInsight } from '../../../utils/propertyInsight'
+import { cachedPropertyInsight } from '../../../utils/propertyInsightCache'
 
 export interface PropertyInsightResponse {
   insight: PropertyInsight | null
@@ -22,8 +23,9 @@ export default defineEventHandler(async (event): Promise<PropertyInsightResponse
     throw createError({ statusCode: 404, statusMessage: 'Property is not available' })
   }
   try {
-    const insight =
-      operation === 'alquiler' ? await loadRentalInsight(key) : await loadPropertySaleInsight(key)
+    const insight = await cachedPropertyInsight(`${operation}:${key}`, () =>
+      operation === 'alquiler' ? loadRentalInsight(key) : loadPropertySaleInsight(key)
+    )
     setResponseHeader(event, 'cache-control', 'public, max-age=120, s-maxage=600')
     return { insight }
   } catch (error) {
