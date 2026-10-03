@@ -53,7 +53,7 @@
       <h3 class="text-subtitle-1 font-weight-bold mb-1">Videos que lo prueban</h3>
       <p class="text-body-2 text-medium-emphasis mb-3">
         Reseñas publicadas en YouTube por sus autores; no son nuestras ni las patrocinamos. Pueden
-        mostrar otra versión o año que el del aviso.
+        mostrar otra versión o año{{ forAdvert ? ' que el del aviso' : '' }}.
       </p>
       <div class="car-model-info__videos">
         <figure v-for="video in info.videos" :key="video.id" class="car-model-info__video">
@@ -77,7 +77,11 @@
 <script setup lang="ts">
 import { carVideoThumbnail, carVideoUrl, type PublicCarModelInfo } from '~/utils/carModelInfo'
 
-const props = defineProps<{ info: PublicCarModelInfo }>()
+const props = defineProps<{
+  info: PublicCarModelInfo
+  /** En la ficha de un aviso (y no en la página del modelo). */
+  forAdvert?: boolean
+}>()
 
 const plain = (value: string) =>
   value

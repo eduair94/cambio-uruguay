@@ -269,6 +269,15 @@ describe('used-car APIs', () => {
     expect(detail.insight!.position).toBeNull()
     expect(detail.modelInfo).toBeNull()
   })
+  it('drops the comparison instead of claiming there are no comparables when that read fails', async () => {
+    getRouterParam.mockReturnValue('ml-MLU700355317')
+    findOneLean.mockResolvedValue({ ...row, source: 'mercadolibre' })
+    findLean.mockRejectedValue(new Error('slow'))
+    const detail = (await fichaHandler({} as never)) as { car: { key: string }; insight: unknown }
+    expect(detail.car.key).toBe('ml-MLU700355317')
+    expect(detail.insight).toBeNull()
+    findLean.mockReset()
+  })
   it('404s an unknown model page and marks thin models non-indexable', async () => {
     getRouterParam.mockReturnValue('byd-f3')
     await expect(marketHandler({} as never)).rejects.toMatchObject({ statusCode: 404 })

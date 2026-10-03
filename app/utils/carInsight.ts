@@ -139,6 +139,8 @@ export interface CarInsightParts {
 export interface CarInsight {
   position: CarInsightPosition | null
   km: CarInsightKm | null
+  /** El aviso trae km pero no son creíbles (relleno o muy pocos para su edad): no se usan. */
+  kmDoubtful: boolean
   /** El puesto del aviso entre los de su modelo ordenados por precio contra su año y sus km. */
   kmValue: { rank: number; of: number } | null
   picks: CarInsightPick[]
@@ -158,12 +160,36 @@ export interface CarInsight {
   supply: { listings: number; sameYear: number | null }
 }
 
+/** Lo que hace falta de un aviso para la tabla de otros modelos y para saber si está limpio. */
+export type CarInsightBandRow = Pick<
+  PublicCarListing,
+  | 'key'
+  | 'marketSlug'
+  | 'brand'
+  | 'model'
+  | 'year'
+  | 'km'
+  | 'priceUsd'
+  | 'title'
+  | 'flags'
+  | 'risks'
+  | 'currencyInferred'
+>
+
 export interface CarInsightInput {
   car: PublicCarListing
   /** Avisos vigentes del mismo modelo (el endpoint lee año ±2). Puede incluir al propio aviso. */
   peers: PublicCarListing[]
-  /** Avisos vigentes de cualquier modelo en la banda de precio (y carrocería) del aviso. */
+  /**
+   * Candidatos de otros modelos para las tarjetas (el endpoint trae los más nuevos y los de menos km
+   * de la banda de precio y carrocería del aviso, no un recorte cualquiera).
+   */
   alternatives: PublicCarListing[]
+  /**
+   * La banda ENTERA, en filas livianas, para la tabla de modelos. Sin ella la tabla se arma con
+   * `alternatives`, que es una muestra: los tests la omiten.
+   */
+  band?: CarInsightBandRow[]
   market: PublicCarMarketSnapshot | null
   report: PublicCarReportSnapshot | null
   advisor: PublicCarAdvisorSnapshot | null
@@ -193,7 +219,7 @@ const titleDeclaresRisk = (title: string): boolean =>
   TITLE_RISK.test(title.replace(TITLE_RISK_DENIED, ' '))
 
 /** Ni riesgo declarado, ni marcas, ni moneda deducida: lo que vale como "el mercado". */
-export const carInsightClean = (car: PublicCarListing): boolean =>
+export const carInsightClean = (car: CarInsightBandRow): boolean =>
   !car.currencyInferred &&
   !car.flags.length &&
   !car.risks.length &&
@@ -208,7 +234,10 @@ const PLACEHOLDER_KM = new Set([1, 1234, 12345, 123456, 111111, 99999, 999999])
  * por la misma plata": desde los tres años de antigüedad se exigen al menos 1.000 km por año, y nada
  * pasa de 600.000. Los km se siguen mostrando tal cual en la tarjeta; sólo no se usan para elegir.
  */
-export function carInsightTrustedKm(car: PublicCarListing, nowYear: number): number | null {
+export function carInsightTrustedKm(
+  car: Pick<PublicCarListing, 'km' | 'year'>,
+  nowYear: number
+): number | null {
   const km = car.km
   if (km === null || km < 0 || km > 600_000 || PLACEHOLDER_KM.has(km)) return null
   const age = nowYear - car.year
@@ -268,10 +297,11 @@ function positionOf(car: PublicCarListing, peers: PublicCarListing[]): CarInsigh
 
 function kmOf(
   car: PublicCarListing,
+  km: number | null,
   market: PublicCarMarketSnapshot | null,
   report: PublicCarReportSnapshot | null
 ): CarInsightKm | null {
-  if (!market || car.km === null) return null
+  if (!market || km === null) return null
   const coefficients = report?.data?.valuation ?? null
   if (coefficients?.km.value == null) return null
   const version = market.rows.find(
@@ -284,7 +314,7 @@ function kmOf(
   )
   const estimate = estimateCarValue(market, coefficients, {
     year: car.year,
-    km: car.km,
+    km,
     rowKey: version
       ? [version.trim ?? '', version.engine ?? '', version.transmission ?? ''].join('|')
       : null,
@@ -333,9 +363,9 @@ const byCheapest = (a: PublicCarListing, b: PublicCarListing): number =>
 
 function alternativesOf(
   car: PublicCarListing,
-  others: PublicCarListing[]
+  others: readonly CarInsightBandRow[]
 ): CarInsightModelOption[] {
-  const groups = new Map<string, PublicCarListing[]>()
+  const groups = new Map<string, CarInsightBandRow[]>()
   for (const other of others) {
     const list = groups.get(other.marketSlug) ?? []
     list.push(other)
@@ -402,7 +432,10 @@ export function buildCarInsight(input: CarInsightInput): CarInsight {
   const trusted = (item: PublicCarListing) => carInsightTrustedKm(item, nowYear)
   const peers = input.peers.filter(peer => peer.key !== car.key && carInsightClean(peer))
   const position = positionOf(car, peers)
-  const km = kmOf(car, market, report)
+  // Los km del propio aviso pasan por la misma guarda: con "12345 km" en un 1988, el precio
+  // "corregido por km" saldría inflado al tope y el aviso, primero en el orden.
+  const ownKm = trusted(car)
+  const km = kmOf(car, ownKm, market, report)
   const perTenThousand = report?.data?.valuation?.km.value ?? null
 
   // Las elecciones, en el orden en que la página las muestra. Un mismo aviso no aparece dos veces.
@@ -436,7 +469,7 @@ export function buildCarInsight(input: CarInsightInput): CarInsight {
     .map(peer => ({ peer, ratio: kmValueRatio(peer, trusted(peer), market, perTenThousand) }))
     .filter((item): item is { peer: PublicCarListing; ratio: number } => item.ratio !== null)
     .sort((a, b) => a.ratio - b.ratio || byCheapest(a.peer, b.peer))
-  const ownRatio = kmValueRatio(car, car.km, market, perTenThousand)
+  const ownRatio = kmValueRatio(car, ownKm, market, perTenThousand)
   pick(
     'best-km-value',
     rated.filter(item => ownRatio === null || item.ratio < ownRatio).map(item => item.peer)
@@ -453,7 +486,7 @@ export function buildCarInsight(input: CarInsightInput): CarInsight {
   pick(
     'lowest-km-for-price',
     affordable.filter(peer => trusted(peer) !== null).sort(byLowestKm),
-    peer => car.km === null || peer.km! < car.km
+    peer => ownKm === null || peer.km! < ownKm
   )
   pick('newest-for-price', [...affordable].sort(byNewest), peer => peer.year > car.year)
 
@@ -465,7 +498,7 @@ export function buildCarInsight(input: CarInsightInput): CarInsight {
   pick(
     'other-lowest-km',
     others.filter(other => trusted(other) !== null).sort(byLowestKm),
-    other => car.km === null || other.km! < car.km
+    other => ownKm === null || other.km! < ownKm
   )
 
   const model = advisor?.data.models.find(item => item.marketSlug === car.marketSlug) ?? null
@@ -537,8 +570,9 @@ export function buildCarInsight(input: CarInsightInput): CarInsight {
     km,
     kmValue,
     picks,
-    alternatives: alternativesOf(car, input.alternatives.filter(carInsightClean)),
-    band: input.alternatives.length
+    alternatives: alternativesOf(car, (input.band ?? input.alternatives).filter(carInsightClean)),
+    kmDoubtful: car.km !== null && ownKm === null,
+    band: (input.band ?? input.alternatives).length
       ? {
           from: Math.round(car.priceUsd * CAR_INSIGHT_BAND_FLOOR),
           to: Math.round(ceiling),

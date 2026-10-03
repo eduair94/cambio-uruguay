@@ -67,11 +67,19 @@
         revés), esta comparación no vale: confirmalo antes de sacar conclusiones.
       </p>
     </template>
-    <p v-else class="text-body-1 mb-2">
-      Todavía no hay cinco avisos comparables de {{ car.brand }} {{ car.model }} {{ car.year }} sin
-      deuda ni choque declarados, así que no damos un veredicto: con tan pocos, cualquier promedio
-      es ruido.
-    </p>
+    <template v-else>
+      <p v-if="cohort" class="text-body-1 mb-2">
+        Para {{ car.brand }} {{ car.model }} {{ cohort.trim || '' }} {{ car.year }} hay
+        {{ cohort.n }} avisos, contando los que declaran deuda o choque: la mitad pide menos de
+        <strong>{{ formatCarUsd(cohort.median) }}</strong> y el rango central va de
+        {{ formatCarUsd(cohort.p25) }} a {{ formatCarUsd(cohort.p75) }}. Este aviso pide
+        {{ formatCarUsd(car.priceUsd) }}.
+      </p>
+      <p class="text-body-2 text-medium-emphasis mb-2">
+        Todavía no hay cinco avisos de {{ car.model }} {{ car.year }} sin deuda ni choque
+        declarados, así que no damos un veredicto: con tan pocos, cualquier promedio es ruido.
+      </p>
+    </template>
 
     <p v-if="insight.km" class="text-body-1 mb-2" data-testid="car-insight-km">
       <strong>Corregido por kilómetros:</strong> con {{ formatCarKm(car.km) }} (la mediana de
@@ -81,13 +89,18 @@
       <strong>{{ formatCarUsd(insight.km.expected) }}</strong
       >. Este aviso está {{ gapText(insight.km.gap) }} eso.
       <template v-if="insight.km.perTenThousandUsd">
-        En este modelo, cada 10.000 km de más le restan unos
-        {{ formatCarUsd(insight.km.perTenThousandUsd) }} al precio.
+        Con lo que descuenta el mercado por kilómetro, en un {{ car.model }} de este año cada 10.000
+        km de más son unos {{ formatCarUsd(insight.km.perTenThousandUsd) }} menos.
       </template>
+    </p>
+    <p v-else-if="insight.kmDoubtful" class="text-body-2 text-medium-emphasis mb-2">
+      Los {{ formatCarKm(car.km) }} que dice el aviso son pocos para un auto de {{ car.year }} (o
+      parecen un número de relleno), así que no los usamos para comparar: preguntá el kilometraje
+      real.
     </p>
     <p v-if="insight.kmValue" class="text-body-2 mb-2">
       Si se ordenan los {{ insight.kmValue.of }} {{ car.model }} de años parecidos por lo que piden
-      contra lo esperable para su año y sus km, este queda
+      contra lo esperable para su año y sus km (1º es el que menos pide para lo que es), este queda
       <strong>{{ insight.kmValue.rank }}º</strong>.
     </p>
 
@@ -97,8 +110,9 @@
       </h3>
       <p class="text-body-2 text-medium-emphasis mb-3">
         Sólo avisos vigentes sin deuda, choque ni moneda dudosa. "Por esta plata" es hasta un 5 %
-        más de lo que pide este aviso. Pueden ser otra versión, cabina o motor: mirá el título antes
-        de comparar.
+        más de lo que pide este aviso; "el más barato por km recorrido" es el que menos pide contra
+        lo esperable para su año y sus km. Pueden ser otra versión, cabina o motor: mirá el título
+        antes de comparar.
       </p>
       <div class="car-insight__picks">
         <div v-for="item in sameModelPicks" :key="item.car.key" class="car-insight__pick">
@@ -161,9 +175,14 @@
 <script setup lang="ts">
 import type { CarInsight, CarInsightPick, CarInsightVerdict } from '~/utils/carInsight'
 import { CAR_BODY_LABELS, carMarketPath, formatCarKm, formatCarUsd } from '~/utils/cars'
-import type { PublicCarListing } from '~/utils/carsPublic'
+import type { PublicCarListing, PublicCarMarketRow } from '~/utils/carsPublic'
 
-const props = defineProps<{ insight: CarInsight; car: PublicCarListing }>()
+const props = defineProps<{
+  insight: CarInsight
+  car: PublicCarListing
+  /** La cohorte del snapshot de mercado (todos los avisos), para cuando no hay veredicto. */
+  cohort?: PublicCarMarketRow | null
+}>()
 const localePath = useLocalePath()
 
 const VERDICT_LABELS: Record<CarInsightVerdict, string> = {
@@ -223,7 +242,8 @@ const cheaperText = computed(() => {
   if (!value) return ''
   const cheaper = value.cheaperShare
   if (cheaper === 0) return 'el más barato de los comparables'
-  const ofTen = Math.round((1 - cheaper) * 10)
+  // Hacia abajo y nunca 10: si hay un solo comparable más barato, "10 de cada 10" sería falso.
+  const ofTen = Math.min(9, Math.floor((1 - cheaper) * 10))
   if (ofTen <= 0) return 'de los más caros de los comparables'
   return `más barato que ${ofTen} de cada 10`
 })
@@ -237,6 +257,9 @@ const PICK_LABELS: Record<CarInsightPick['kind'], string> = {
   'other-lowest-km': 'El de menos km de otro modelo',
 }
 function pickLabel(item: CarInsightPick): string {
+  // Si este aviso es el más barato, la tarjeta es el siguiente: "del mismo año" mentiría.
+  if (item.kind === 'cheapest-same' && position.value?.cheaperShare === 0)
+    return 'El más barato de los demás'
   if (item.kind === 'cheapest-same' && position.value?.basis === 'version')
     return 'El más barato de la misma versión y año'
   if (item.kind === 'cheapest-same' && position.value?.basis === 'years')

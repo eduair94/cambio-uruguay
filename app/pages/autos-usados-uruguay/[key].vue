@@ -295,7 +295,13 @@
         />
       </section>
 
-      <CarsPriceInsight v-if="data.insight" :insight="data.insight" :car="car" class="mt-8" />
+      <CarsPriceInsight
+        v-if="data.insight"
+        :insight="data.insight"
+        :car="car"
+        :cohort="data.cohort"
+        class="mt-8"
+      />
       <section v-else-if="data.cohort" class="mt-8">
         <h2 class="text-h6 mb-2">¿Cómo está el precio?</h2>
         <p class="text-body-1">
@@ -320,7 +326,7 @@
         class="mt-8"
       />
 
-      <CarsModelInfo v-if="data.modelInfo" :info="data.modelInfo" class="mt-8" />
+      <CarsModelInfo v-if="data.modelInfo" :info="data.modelInfo" for-advert class="mt-8" />
 
       <section v-if="data.similar.length" class="mt-8">
         <h2 class="text-h6 mb-3">Otros {{ car.brand }} {{ car.model }} parecidos</h2>

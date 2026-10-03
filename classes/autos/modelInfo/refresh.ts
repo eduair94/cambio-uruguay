@@ -58,7 +58,9 @@ export function mergeModelInfo(
   let wiki = previous?.wiki;
   let wikiReadAt = previous?.wikiReadAt ?? null;
   if (reading.wiki === undefined) failures.push("wikipedia");
-  else {
+  else if (reading.wiki || !previous?.wiki) {
+    // Igual que con los videos: un "no hay artículo" no borra uno bueno que ya estaba (cambia el
+    // orden de la búsqueda o la heurística, no la enciclopedia).
     wiki = reading.wiki;
     wikiReadAt = at;
   }

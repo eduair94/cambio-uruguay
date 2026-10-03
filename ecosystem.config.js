@@ -444,7 +444,8 @@ module.exports = {
     {
       // The model explained on every advert page: its Wikipedia summary and up to four YouTube
       // reviews verified through YouTube's own oEmbed (classes/autos/modelInfo/). 40 models a run,
-      // refreshed monthly; one grounded Gemini call per model, far from the morning Gemini jobs.
+      // refreshed monthly; one or two grounded Gemini calls per model (up to 80 a run), far from the
+      // morning Gemini jobs.
       name: "currency-autos-models",
       autorestart: false,
       exec_mode: "fork",

@@ -165,8 +165,19 @@ describe("mergeModelInfo", () => {
     expect(merged.failures).toEqual(["wikipedia", "youtube"]);
     expect(merged.readAt).toBe(now.toISOString());
   });
-  it("clears the article only on an explicit 'there is none'", () => {
-    expect(mergeModelInfo(target, previous, { wiki: null, videos: [video] }, now).wiki).toBeNull();
+  it("does not wipe a good article on a later 'there is none', but records none for a new model", () => {
+    expect(mergeModelInfo(target, previous, { wiki: null, videos: [video] }, now).wiki).toEqual(wiki);
+    expect(mergeModelInfo(target, undefined, { wiki: null, videos: [] }, now).wiki).toBeNull();
+  });
+  it("treats an unreachable oEmbed as a failure, not as 'no videos'", async () => {
+    await expect(
+      findModelVideos("Volkswagen", "Saveiro", {
+        ask: async () => ({ text: "x", sourceUris: [], resolvedByChunk: ["https://www.youtube.com/watch?v=c8MmSaOgDlw"] }),
+        oembed: async () => {
+          throw new Error("ECONNRESET");
+        },
+      }),
+    ).rejects.toThrow(/unreachable/);
   });
   it("does not drop old videos because one search came back empty", () => {
     const merged = mergeModelInfo(target, previous, { wiki, videos: [] }, now);

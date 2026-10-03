@@ -199,7 +199,7 @@ const facts = computed(() => {
   if (insight.sellerGap && Math.abs(insight.sellerGap.gap) >= 0.02) {
     const gap = insight.sellerGap.gap
     list.push(
-      `En el ${car.model}, las automotoras piden ${percent(gap)} ${gap > 0 ? 'más' : 'menos'} que los particulares por el mismo año y versión${car.sellerType ? ` (este aviso es de ${car.sellerType === 'dealer' ? 'una automotora' : 'un particular'})` : ''}.`
+      `En el ${car.model}, las automotoras piden ${percent(gap)} ${gap > 0 ? 'más' : 'menos'} que los particulares por el mismo año${car.sellerType ? ` (este aviso es de ${car.sellerType === 'dealer' ? 'una automotora' : 'un particular'})` : ''}.`
     )
   }
   if (insight.supply.listings) {

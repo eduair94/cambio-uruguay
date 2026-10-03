@@ -115,9 +115,16 @@ export async function findModelVideos(
   }
   if (!ids.length) throw new Error("the search opened no YouTube page");
   const found: CarModelVideo[] = [];
+  let errors = 0;
   for (const id of ids) {
-    const video = await oembed(id).catch(() => null);
+    const video = await oembed(id).catch(() => {
+      errors += 1;
+      return null;
+    });
     if (video && videoTitleMatches(video.title, brand, model)) found.push(video);
   }
+  // Si TODAS las verificaciones fallaron por red, no es "no hay videos": es una falla, y se
+  // reintenta en una semana en vez de quedar vacío un mes.
+  if (errors === ids.length) throw new Error("youtube oembed unreachable");
   return rankVideos(found);
 }

@@ -304,6 +304,35 @@ describe('buildCarInsight — km and picks', () => {
     expect(insight.kmValue).toBeNull()
   })
 
+  it('does not correct by km nor rank the advert when its own odometer is a placeholder', () => {
+    const now = new Date('2026-10-03T00:00:00.000Z')
+    const car = listing({ year: 2015, km: 12_345, priceUsd: 17_500, price: 17_500 })
+    const insight = buildCarInsight(input({ car, now }))
+    expect(insight.km).toBeNull()
+    expect(insight.kmValue).toBeNull()
+    expect(insight.kmDoubtful).toBe(true)
+    expect(buildCarInsight(input()).kmDoubtful).toBe(false)
+  })
+
+  it('builds the other-models table from the whole band when it is given', () => {
+    const band = Array.from({ length: 9 }, (_, index) => ({
+      key: `b${index}`,
+      marketSlug: 'fiat-strada',
+      brand: 'Fiat',
+      model: 'Strada',
+      year: 2020 + (index % 3),
+      km: 50_000,
+      priceUsd: 17_000,
+      title: 'Strada',
+      flags: [],
+      risks: [],
+      currencyInferred: false,
+    }))
+    const insight = buildCarInsight(input({ alternatives: [], band }))
+    expect(insight.alternatives[0]).toMatchObject({ marketSlug: 'fiat-strada', adverts: 9 })
+    expect(insight.band).not.toBeNull()
+  })
+
   it('picks the cheapest of the same year, skipping risky and inferred adverts', () => {
     const cheapRisky = listing({ priceUsd: 12_000, price: 12_000, risks: [{} as never] })
     const inferred = listing({ priceUsd: 12_500, price: 12_500, currencyInferred: true })
