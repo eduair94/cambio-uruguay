@@ -19,6 +19,25 @@
   ],
   "experiments": [
     {
+      "id": "titulos-de-las-guias-respuesta-primero-3",
+      "shippedOn": "2026-10-03",
+      "routes": [
+        "/guias/alquiler-temporario-uruguay",
+        "/guias/billeteras-digitales-uruguay-como-funcionan",
+        "/guias/hablar-de-dinero-en-pareja-uruguay",
+        "/guias/comprar-dolares-online-uruguay",
+        "/guias/garantias-de-alquiler-uruguay",
+        "/guias/derechos-posesorios-uruguay",
+        "/guias/cedula-uruguaya-para-argentinos",
+        "/guias/billete-cable-transferencia",
+        "/guias/credito-prendario-auto-uruguay",
+        "/guias/enviar-recibir-dinero-exterior",
+        "/guias/como-afecta-la-fed-al-dolar",
+        "/guias/entender-tea-tna-y-cft"
+      ],
+      "hypothesis": "Tercera tanda de titulos de guia: doce de 78 a 74 caracteres con la marca, que gastaban el renglon en la etiqueta del tema y anunciaban el indice, recortados a 60 o menos con la respuesta adelante (el dueno del temporario paga IRPF, una billetera no es un banco, la garantia es 3 % mensual o prima, los posesorios titulan a los 20 anos). Mismo puesto, mas clics."
+    },
+    {
       "id": "autos-modelo-explicado-en-precios",
       "shippedOn": "2026-10-03",
       "routes": [

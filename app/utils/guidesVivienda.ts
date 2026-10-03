@@ -310,7 +310,7 @@ export const viviendaGuides: readonly Guide[] = [
   },
   {
     slug: 'derechos-posesorios-uruguay',
-    title: 'Derechos posesorios en Uruguay: qué comprás y cuándo titulás',
+    title: 'Derechos posesorios: 20 años para titular',
     description:
       'Comprar derechos posesorios no te hace dueño: hacen falta 20 años de posesión (10 con justo título y buena fe), un juicio de prescripción y pagar ITP.',
     tag: 'POSESIÓN',

@@ -186,7 +186,7 @@ export const tramitesGuides: readonly Guide[] = [
   },
   {
     slug: 'cedula-uruguaya-para-argentinos',
-    title: 'Cédula uruguaya para argentinos: cómo sacarla y cuánto sale',
+    title: 'Cédula para argentinos: residencia Mercosur',
     description:
       'Si sos argentino o del Mercosur, te alcanza con acreditar la nacionalidad para la residencia permanente, y con el certificado en trámite ya sacás la cédula.',
     tag: 'MERCOSUR',
