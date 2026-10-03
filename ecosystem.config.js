@@ -442,6 +442,17 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // The model explained on every advert page: its Wikipedia summary and up to four YouTube
+      // reviews verified through YouTube's own oEmbed (classes/autos/modelInfo/). 40 models a run,
+      // refreshed monthly; one grounded Gemini call per model, far from the morning Gemini jobs.
+      name: "currency-autos-models",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_car_models.js",
+      cron_restart: "37 6 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Spare-parts prices per model (six parts, one Mercado Libre category each) for the buying
       // advisor /que-auto-comprar-uruguay. :11 sits between movilidad-hourly (:07, short) and
       // chairs-hourly (:23), the widest gap the :9656 bridge has; a 10-minute wall clock checked on
