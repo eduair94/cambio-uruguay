@@ -68,6 +68,7 @@
         <CarsMarketTable
           :rows="data.market.rows"
           show-version
+          filterable
           caption="Misma versión, motor y caja; sólo combinaciones con 5 avisos o más."
         />
       </section>
