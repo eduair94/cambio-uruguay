@@ -5,6 +5,9 @@ const connectDb = vi.fn()
 const loadCarCatalogMeta = vi.fn()
 const loadCarOpportunities = vi.fn()
 const loadCarMarket = vi.fn()
+const loadCarModelInfo = vi.fn().mockResolvedValue(null)
+const loadCarReport = vi.fn().mockResolvedValue(null)
+const loadCarAdvisor = vi.fn().mockResolvedValue(null)
 const findOneLean = vi.fn()
 const findLean = vi.fn()
 const countDocuments = vi.fn()
@@ -21,6 +24,12 @@ vi.mock('../../server/utils/cars', async importOriginal => ({
   loadCarCatalogMeta,
   loadCarOpportunities,
   loadCarMarket,
+  loadCarModelInfo,
+  loadCarReport,
+  loadCarAdvisor,
+}))
+vi.mock('../../server/utils/carFuelPrices', () => ({
+  loadCarFuelPrices: vi.fn().mockResolvedValue(null),
 }))
 vi.mock('../../server/models/CarCatalog', () => ({
   CarCatalogModel: {
@@ -246,9 +255,19 @@ describe('used-car APIs', () => {
   it('serves an advert even when optional market data fails', async () => {
     getRouterParam.mockReturnValue('ml-MLU700355317')
     loadCarMarket.mockRejectedValue(new Error('slow'))
-    const detail = (await fichaHandler({} as never)) as { car: { key: string }; cohort: unknown }
+    loadCarModelInfo.mockRejectedValueOnce(new Error('slow'))
+    const detail = (await fichaHandler({} as never)) as {
+      car: { key: string }
+      cohort: unknown
+      insight: { position: unknown } | null
+      modelInfo: unknown
+    }
     expect(detail.car.key).toBe('ml-MLU700355317')
     expect(detail.cohort).toBeNull()
+    // Without the market the comparison still answers (no verdict), and a failed model read is null.
+    expect(detail.insight).not.toBeNull()
+    expect(detail.insight!.position).toBeNull()
+    expect(detail.modelInfo).toBeNull()
   })
   it('404s an unknown model page and marks thin models non-indexable', async () => {
     getRouterParam.mockReturnValue('byd-f3')

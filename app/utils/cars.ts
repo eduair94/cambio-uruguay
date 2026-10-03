@@ -1,4 +1,6 @@
 import type { PriceHistorySeries } from './priceHistory'
+import type { CarInsight } from './carInsight'
+import type { PublicCarModelInfo } from './carModelInfo'
 import type {
   PublicCarBody,
   PublicCarBodyType,
@@ -328,6 +330,10 @@ export interface CarDetailResponse {
    * actualiza cada hora). No es el nivel del modelo, que se mueve también cuando cambia qué autos
    * hay publicados — eso lo cuenta /evolucion-precio-autos-usados-uruguay. */
   priceHistory: PriceHistorySeries | null
+  /** "¿Vale lo que piden?": posición, elecciones, depreciación y costos (utils/carInsight.ts). */
+  insight: CarInsight | null
+  /** Wikipedia y videos del modelo (currency-autos-models); null si todavía no se leyó. */
+  modelInfo: PublicCarModelInfo | null
 }
 
 export interface CarMarketResponse {
@@ -335,6 +341,7 @@ export interface CarMarketResponse {
   listings: PublicCarListing[]
   opportunities: PublicCarOpportunityItem[]
   indexable: boolean
+  modelInfo: PublicCarModelInfo | null
 }
 
 /**

@@ -1,6 +1,7 @@
 import { CarAdvisorSnapshotModel } from '../models/CarAdvisorSnapshot'
 import { CarCatalogMetaModel } from '../models/CarCatalogMeta'
 import { CarMarketSnapshotModel } from '../models/CarMarketSnapshot'
+import { CarModelInfoModel } from '../models/CarModelInfo'
 import { CarOpportunitySnapshotModel } from '../models/CarOpportunitySnapshot'
 import { CarReportSnapshotModel } from '../models/CarReportSnapshot'
 import { CarRiskSnapshotModel } from '../models/CarRiskSnapshot'
@@ -30,6 +31,7 @@ import type {
   PublicCarSpecs,
 } from '../../utils/carsPublic'
 import { validCarAdvisorSnapshot } from '../../utils/carAdvisor'
+import { validCarModelInfo, type PublicCarModelInfo } from '../../utils/carModelInfo'
 import { connectDb } from './db'
 
 const CAR_FIELDS = [
@@ -423,4 +425,23 @@ export async function loadCarAdvisor(): Promise<PublicCarAdvisorSnapshot | null>
     }
   })()
   return advisorLoading
+}
+
+const modelInfoCache = new Map<string, { expires: number; info: PublicCarModelInfo | null }>()
+/**
+ * Wikipedia y videos del modelo (`carmodelinfos`, currency-autos-models). Cambia una vez por mes:
+ * media hora de caché por proceso, y una lectura que falla no esconde nada, devuelve null.
+ */
+export async function loadCarModelInfo(slug: string): Promise<PublicCarModelInfo | null> {
+  const cached = modelInfoCache.get(slug)
+  if (cached && cached.expires > Date.now()) return cached.info
+  await connectDb()
+  const doc = await CarModelInfoModel.findOne({ marketSlug: slug })
+    .select({ _id: 0, __v: 0 })
+    .maxTimeMS(3_000)
+    .lean()
+  const info = validCarModelInfo(doc)
+  if (modelInfoCache.size > 600) modelInfoCache.clear()
+  modelInfoCache.set(slug, { info, expires: Date.now() + 1_800_000 })
+  return info
 }

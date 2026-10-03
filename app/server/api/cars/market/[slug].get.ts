@@ -9,6 +9,7 @@ import {
   carListingProjection,
   loadCarCatalogMeta,
   loadCarMarket,
+  loadCarModelInfo,
   loadCarOpportunities,
   publicCarRow,
 } from '../../../utils/cars'
@@ -31,7 +32,7 @@ export default defineEventHandler(async event => {
     })
   }
   if (!market) throw createError({ statusCode: 404, statusMessage: 'Model not found' })
-  const [listings, opportunities] = await Promise.all([
+  const [listings, opportunities, modelInfo] = await Promise.all([
     CarCatalogModel.find({
       marketSlug: slug,
       lastSeen: { $gte: new Date(Date.now() - freshDays * 86_400_000).toISOString() },
@@ -49,6 +50,7 @@ export default defineEventHandler(async event => {
           snapshot?.items.filter(entry => entry.subject.marketSlug === slug).slice(0, 6) ?? []
       )
       .catch(() => []),
+    loadCarModelInfo(slug).catch(() => null),
   ])
   setResponseHeader(event, 'cache-control', 'public, max-age=120, s-maxage=300')
   const response: CarMarketResponse = {
@@ -56,6 +58,7 @@ export default defineEventHandler(async event => {
     listings,
     opportunities,
     indexable: market.listings >= CAR_MARKET_INDEX_MIN,
+    modelInfo,
   }
   return response
 })

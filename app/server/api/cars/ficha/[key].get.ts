@@ -1,10 +1,12 @@
 import { carKeyValid, type CarDetailResponse } from '../../../../utils/cars'
 import { CarCatalogModel } from '../../../models/CarCatalog'
+import { loadCarInsight } from '../../../utils/carInsight'
 import {
   carFichaProjection,
   carListingProjection,
   loadCarCatalogMeta,
   loadCarMarket,
+  loadCarModelInfo,
   loadCarOpportunities,
   publicCarRow,
 } from '../../../utils/cars'
@@ -34,8 +36,9 @@ export default defineEventHandler(async event => {
   if (!row) throw createError({ statusCode: 404, statusMessage: 'Advert not found' })
   const car = publicCarRow(row)
   // Market, similar adverts and the opportunity are optional: a slow read never hides the advert.
-  const [market, similar, opportunities, priceHistory] = await Promise.all([
-    loadCarMarket(car.marketSlug).catch(() => null),
+  const marketRead = loadCarMarket(car.marketSlug).catch(() => null)
+  const [market, similar, opportunities, priceHistory, insight, modelInfo] = await Promise.all([
+    marketRead,
     CarCatalogModel.find({
       marketSlug: car.marketSlug,
       key: { $ne: car.key },
@@ -52,6 +55,9 @@ export default defineEventHandler(async event => {
     loadCarOpportunities().catch(() => null),
     // El historial por aviso es opcional igual que el resto: una lectura lenta nunca esconde la ficha.
     carHistory(key).catch(() => null),
+    // La comparativa y el modelo explicado tampoco: sin ellos la ficha sigue siendo la ficha.
+    marketRead.then(snapshot => loadCarInsight(car, snapshot, freshDays)).catch(() => null),
+    loadCarModelInfo(car.marketSlug).catch(() => null),
   ])
   const cohort =
     market?.rows.find(
@@ -73,6 +79,8 @@ export default defineEventHandler(async event => {
     similar,
     opportunity: opportunities?.items.find(entry => entry.subject.key === key) ?? null,
     priceHistory,
+    insight,
+    modelInfo,
   }
   return response
 })

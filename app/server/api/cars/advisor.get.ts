@@ -2,20 +2,8 @@
 // contra lo que la persona contestó. El análisis pesado ya está hecho (caradvisorsnapshots); acá
 // sólo se filtra y ordena una tabla chica en memoria.
 import { adviseCars, normalizeCarAdvisorQuery } from '../../../utils/carAdvisor'
-import type { FuelResponse } from '../../../utils/fuelPrices'
-import { FUEL_FALLBACK } from '../../utils/combustiblesFallback'
+import { loadCarFuelPrices } from '../../utils/carFuelPrices'
 import { loadCarAdvisor } from '../../utils/cars'
-
-async function fuelPrices(): Promise<FuelResponse> {
-  try {
-    const response = await $fetch<FuelResponse>('/api/combustibles')
-    return response?.latest?.super95 != null && response.latest.gasoil50s != null
-      ? response
-      : FUEL_FALLBACK
-  } catch {
-    return FUEL_FALLBACK
-  }
-}
 
 export default defineEventHandler(async event => {
   const query = normalizeCarAdvisorQuery(getQuery(event))
@@ -31,7 +19,7 @@ export default defineEventHandler(async event => {
       cause: error,
     })
   }
-  const fuel = await fuelPrices()
+  const fuel = await loadCarFuelPrices()
   const prices = { super95: fuel.latest.super95!, gasoil50s: fuel.latest.gasoil50s! }
   setResponseHeader(event, 'cache-control', 'public, max-age=300, s-maxage=900')
   return {
