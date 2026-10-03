@@ -30,9 +30,9 @@ export interface PublicCarModelInfo {
   videosReadAt: string | null
 }
 
-const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/
-const WIKI_URL = /^https:\/\/(es|en)\.wikipedia\.org\/wiki\/[^\s"'<>]+$/
-const WIKI_THUMB = /^https:\/\/(upload|thumb)\.wikimedia\.org\/[^\s"'<>]+$/
+const VIDEO_ID = /^[\w-]{11}$/
+const WIKI_URL = /^https:\/\/(?:es|en)\.wikipedia\.org\/wiki\/[^\s"'<>]+$/
+const WIKI_THUMB = /^https:\/\/(?:upload|thumb)\.wikimedia\.org\/[^\s"'<>]+$/
 const CHANNEL_URL = /^https:\/\/www\.youtube\.com\/[^\s"'<>]+$/
 
 const text = (value: unknown, max: number): string | null => {
@@ -98,7 +98,8 @@ export function validCarModelInfo(raw: unknown): PublicCarModelInfo | null {
 }
 
 /** La miniatura que YouTube sirve para cualquier video público, sin API. */
-export const carVideoThumbnail = (id: string): string => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
+export const carVideoThumbnail = (id: string): string =>
+  `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
 /** Incrustado sin cookies hasta que la persona le da play. */
 export const carVideoEmbed = (id: string): string =>
   `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`

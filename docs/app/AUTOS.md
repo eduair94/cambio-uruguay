@@ -673,3 +673,42 @@ el que se vende acá (Vento hecho en India, Sentra B13, Dolphin Plus). Sin ensay
 
 Lo que la página no puede decir, y dice: cuánto falla cada modelo (nadie lo publica), el precio de
 cierre y el seguro contra todo riesgo.
+
+## La comparativa de cada ficha y el modelo explicado (2026-10-03)
+
+Pedido: "comparativa de precio como hacen las páginas de Mercado Libre y otros análisis que ayuden
+a decidir si vale la pena: el auto más barato por ese precio, el más barato por km recorrido, una
+descripción del modelo y videos". Spec y plan en
+`docs/superpowers/{specs,plans}/2026-10-02-autos-ficha-comparativa*`.
+
+**¿Vale lo que piden?** (`app/utils/carInsight.ts`, pura; la arma `app/server/utils/carInsight.ts`
+por pedido, sin job). El endpoint de la ficha lee los avisos vigentes del mismo modelo (año ±2) y los
+de otros modelos entre 90 % y 105 % del precio con la misma carrocería, y los cruza con los
+snapshots que ya existían (mercado, informe, asesor) y el precio de la nafta.
+
+- **Posición**: contra los LIMPIOS del mismo año (versión si hay ≥ 5, año ±1 si el año no llega a
+  5). Sin cinco comparables no hay veredicto. Bandas de −15 / −5 / +5 / +15 % contra la mediana.
+- **Corregido por km**: `estimateCarValue`, el mismo cálculo del tasador.
+- **Elecciones**: el más barato del mismo año, el más barato por km recorrido (menor precio contra
+  la mediana de SU año × el factor de km del tasador), y por esta plata (≤ 105 %) el de menos km y
+  el más nuevo, del mismo modelo y de otros. Nunca el propio aviso, nunca uno con riesgo.
+- **Limpio** = sin `risks`, sin `flags`, moneda leída y **título sin "deuda/chocado/para
+  repuestos…"** (lo negado no cuenta). Medido el 3/10: un Logan "Deuda de patente" no tenía riesgo
+  marcado y salía como "el más nuevo por la misma plata".
+- **Km creíbles** (`carInsightTrustedKm`): desde los 3 años, ≥ 1.000 km/año, ≤ 600.000 y fuera de
+  los rellenos (12345, 123456…). Un Gol 1988 con "12345 km" ganaba "el de menos km". La tarjeta
+  sigue mostrando los km del aviso; sólo no se usan para elegir.
+- **Costo de tenerlo**: `carOwnershipCosts`, extraída del asesor para que las dos páginas den la
+  misma cifra. 12.000 km/año, consumo del aviso o del modelo, patente SUCIVE 2026 estimada.
+
+**El modelo explicado** (`currency-autos-models`, `classes/autos/modelInfo/`, APP DB
+`carmodelinfos`, pública). Wikipedia: resumen REST de es (luego en), aceptado sólo si habla de un
+vehículo y nombra el modelo — la Saveiro redirige a "Volkswagen Gol" y la página lo dice. YouTube:
+`/results` está prohibido por robots, la Data API pide clave y el SERP interno estaba caído, así que
+se le pregunta a Gemini con `google_search` y **los ids salen sólo de los chunks de grounding
+resueltos** (el TEXTO trae tokens de redirección con forma de id), cada uno verificado con el oEmbed
+oficial y con el título nombrando el modelo (sin juguetes, juegos ni avisos de venta). A veces
+Gemini no busca (cero chunks): se pregunta otra vez con otra redacción y, si tampoco, cuenta como
+falla y se reintenta a la semana. 40 modelos por corrida, refresco a los 30 días; fuente caída
+conserva lo anterior. Se muestra en la ficha y en `/autos-usados-uruguay/precios/<modelo>`, con la
+fachada de `VideosEmbed` (nada de YouTube carga hasta el play).

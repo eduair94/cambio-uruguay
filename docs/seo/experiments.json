@@ -19,6 +19,14 @@
   ],
   "experiments": [
     {
+      "id": "autos-modelo-explicado-en-precios",
+      "shippedOn": "2026-10-03",
+      "routes": [
+        "/autos-usados-uruguay/precios/"
+      ],
+      "hypothesis": "Las paginas de precios por modelo suman el resumen de Wikipedia y videos de prueba del modelo: mas contenido propio del modelo (no solo tablas) para consultas como 'saveiro usada opiniones' o 'hilux usada precio', y mas tiempo en pagina."
+    },
+    {
       "id": "titulos-de-las-guias-respuesta-primero",
       "shippedOn": "2026-10-02",
       "routes": [
