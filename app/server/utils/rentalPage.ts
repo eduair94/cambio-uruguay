@@ -78,6 +78,14 @@ export function rentalPageReprice<T extends RentalPageEvidence>(property: T, usd
   }
 }
 
+/** Peers whose every advert belongs to them alone (also used by server/utils/propertyInsight.ts). */
+export function unambiguousRentalPeers<T extends RentalPageEvidence>(
+  property: RentalPageEvidence,
+  peers: T[]
+) {
+  return unambiguousPeers(property, peers)
+}
+
 function unambiguousPeers<T extends RentalPageEvidence>(property: RentalPageEvidence, peers: T[]) {
   const owners = new Map<string, Set<string>>()
   for (const row of [property, ...peers]) {
