@@ -1457,8 +1457,13 @@ useHead(() => ({
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 12px;
 }
-.rental-page__market dd {
+/* Etiqueta al fondo de su fila (pegada a su monto) y monto arriba de la suya: si un rango envuelve a
+   dos líneas en una columna angosta, los dos montos siguen empezando a la misma altura. */
+.rental-page__market dt {
   align-self: end;
+}
+.rental-page__market dd {
+  align-self: start;
   font-size: 1.5rem;
   line-height: 1.2;
   text-align: start;
