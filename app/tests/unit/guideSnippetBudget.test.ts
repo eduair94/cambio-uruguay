@@ -69,9 +69,43 @@ const MEASURED = 146
  * firmeza que la fuente — el cuerpo dice que en Carrasco se cambia «prácticamente las 24 horas»,
  * así que el título usa el dato que sí es categórico (el domingo cierran) y no inventa un horario.
  *
+ * 104 → 92 el 2026-10-03, segunda tanda de títulos: doce pasados del presupuesto, de 83 a 77
+ * caracteres contando la marca. Mismo defecto y misma cura, con un cuidado extra: estos doce no
+ * eran sólo largos, eran la ETIQUETA seguida del índice en su forma más pura («Criptomonedas en
+ * Uruguay: regulación e impuestos (qué dice la ley)», «Comisión inmobiliaria en Uruguay: cuánto
+ * cobran y quién paga»), o sea prometían las secciones y la respuesta caía del lado cortado.
+ *
+ * Ahora cada uno contesta: que el dólar fiscal es la cotización de COMPRA del BROU del día hábil
+ * anterior, que las criptomonedas son activos y no moneda de curso legal, que en una cuenta
+ * conjunta indistinta cualquiera de los dos retira todo el saldo sin consultar, que los billetes
+ * van de $ 20 a $ 2.000 y las monedas de 1 a 50, que la UI ajusta por el IPC, que un préstamo se
+ * compara por su costo total y nunca por la cuota, que primero se ahorra y mucho después se
+ * invierte, que en una compra del exterior la cuenta es la franquicia anual de USD 800 o el 60 %
+ * del régimen simplificado, que la reforma jubilatoria sube la edad por generación y no para todos
+ * a la vez, que la separación de bienes se pacta ANTES de casarse (después ya no hay
+ * capitulaciones, hay disolución judicial), que la comisión inmobiliaria no tiene tope legal —el
+ * 3 % más IVA sale de un arancel privado de la Cámara, de 2007— y que el débito gasta lo tuyo
+ * mientras el crédito te presta.
+ *
+ * Ninguna cifra es nueva y ninguna se escribió con más firmeza que su fuente, que acá descartó dos
+ * títulos ya redactados: la guía de cripto dice expresamente que el tratamiento impositivo NO está
+ * resuelto, así que el título afirma lo único categórico y se calla el impuesto; y la de débito vs
+ * crédito iba a decir que el débito baja el IVA y el crédito no, cuando su propio cuerpo dice que
+ * la rebaja de la Ley 19.210 es de «la tarjeta de débito y otros medios electrónicos» —el crédito
+ * es uno— y que el porcentaje vigente hay que verificarlo. Por la misma razón el de jubilaciones
+ * dice «edad por generación» y no una edad.
+ *
+ * Y TRES de los doce títulos más largos se quedaron sin tocar aunque estaban redactados: sus rutas
+ * (`/guias/me-certifique-subsidio-por-enfermedad-uruguay`,
+ * `/guias/no-pagar-prestamo-e-irse-del-pais-uruguay`,
+ * `/guias/trabajar-para-el-exterior-desde-uruguay`) están dentro de la ventana abierta de
+ * `descripciones-de-las-guias-respuesta-primero`, que cierra el 2026-10-29, y `AGENTS.md` es
+ * explícito en que dos filas sobre las mismas rutas arruinan la medición de las dos. Entraron en su
+ * lugar los tres más largos con la ruta libre. Esos tres entran cuando su ventana cierre.
+ *
  * SÓLO PUEDE BAJAR.
  */
-const TITLE_OVER_BUDGET = 104
+const TITLE_OVER_BUDGET = 92
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.

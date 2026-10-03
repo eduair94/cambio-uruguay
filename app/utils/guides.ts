@@ -302,7 +302,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'comprar-online-exterior-impuestos',
-    title: 'Comprar online del exterior en Uruguay: impuestos y franquicia',
+    title: 'Compras del exterior: USD 800 al año o 60 %',
     description:
       'Cómo funciona la franquicia courier de USD 800, cuándo pagás el 60% del régimen simplificado y cómo estimar el costo total de una compra online del exterior en Uruguay.',
     tag: 'IMPORTACIÓN',
@@ -844,7 +844,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'unidad-indexada-explicada',
-    title: 'Unidad Indexada (UI) explicada: para qué sirve y cómo se calcula',
+    title: 'Unidad Indexada: ajusta por el IPC',
     description:
       'Qué es la Unidad Indexada (UI) en Uruguay, por qué ajusta por inflación, en qué contratos aparece y cómo convertir UI a pesos uruguayos.',
     tag: 'INDEXACIÓN',
@@ -1468,7 +1468,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'billetes-y-monedas-de-uruguay',
-    title: 'Billetes y monedas de Uruguay: denominaciones y cómo reconocerlos',
+    title: 'Billetes de $ 20 a $ 2.000 y monedas 1 a 50',
     description:
       'Qué billetes (20 a 2.000 pesos) y monedas (1 a 50 pesos) circulan en Uruguay, sus características de seguridad y consejos para reconocer billetes falsos.',
     tag: 'BILLETES',
@@ -1537,7 +1537,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'tipo-de-cambio-fiscal-dgi-uruguay',
-    title: 'Tipo de cambio para facturar en Uruguay: el dólar fiscal de la DGI',
+    title: 'Dólar fiscal: compra del BROU, día anterior',
     description:
       'Qué tipo de cambio se usa para facturar en dólares y liquidar IVA e IRPF en Uruguay: la cotización de compra del Banco República del día hábil anterior. Cómo encontrarla.',
     tag: 'FACTURACIÓN',
@@ -1591,7 +1591,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'criptomonedas-regulacion-impuestos-uruguay',
-    title: 'Criptomonedas en Uruguay: regulación e impuestos (qué dice la ley)',
+    title: 'Criptomonedas: activos, no moneda legal',
     description:
       'Cómo están reguladas las criptomonedas en Uruguay tras la Ley de Activos Virtuales, qué rol tiene el Banco Central y por qué su tratamiento impositivo todavía no está resuelto. Guía informativa.',
     tag: 'CRIPTO',

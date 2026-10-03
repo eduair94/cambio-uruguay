@@ -984,6 +984,41 @@
         "contribucion inmobiliaria en 12 cuotas"
       ],
       "hypothesis": "La frase \"contribucion inmobiliaria\" estaba en DOS archivos del repo y en ninguna pagina, teniendo el sitio ya el Impuesto de Primaria sobre el mismo padron. El SERP es institucional e ilegible: la escala vive en un PDF de la intendencia y el texto de la norma esta a valores de 2022 sin el IPC, asi que nadie publica la escala 2026 aplicada por tramos ni dice que la alicuota de la tabla no es la factura (10 % de saneamiento mas 12 % de pluviales encima, y la Tasa General que la paga el ocupante y no el propietario). Ademas la intendencia abrio el 1/10/2026 la ventana para pasar de 3 a 12 cuotas, que cierra el 15/12. Una pagina con la escala oficial, el metodo progresional con su ejemplo y la ventana fechada deberia tomar las consultas de marca departamental, que hoy no tienen pagina propia."
+    },
+    {
+      "id": "cortes-de-luz-por-barrio-pagina-nueva",
+      "shippedOn": "2026-10-03",
+      "routes": [
+        "/cortes-de-luz-por-barrio-uruguay"
+      ],
+      "queries": [
+        "cortes de luz por barrio",
+        "cortes de luz uruguay",
+        "cuantos cortes de luz tiene mi barrio",
+        "barrios con mas cortes de luz",
+        "cortes de luz montevideo",
+        "calidad del servicio electrico ursea"
+      ],
+      "hypothesis": "El libro de cortes de luz por barrio existe desde setiembre y hasta hoy solo se veia como UNA barra dentro de una tarjeta del directorio de alquileres: ninguna URL propia, asi que ninguna consulta de cortes de luz podia llegar a el. Y el dato no esta publicado en ningun otro lado: URSEA publica por agrupamiento (42 agrupamientos definidos por zona geografica y, dentro de la zona, por densidad de suministros) y su informe de calidad del servicio tecnico no desagrega por barrio ni por localidad. La pagina saca a la superficie las 143 areas medidas (62 barrios de Montevideo y 81 localidades de 19 departamentos) con su mediana, los extremos y la referencia de 36 min al mes que sale del Tca de 3,6 h por semestre del agrupamiento Urbano alta densidad BT. Deberia tomar las consultas de corte de luz por zona, que hoy no tienen pagina en el sitio."
+    },
+    {
+      "id": "titulos-de-las-guias-respuesta-primero-2",
+      "shippedOn": "2026-10-03",
+      "routes": [
+        "/guias/tipo-de-cambio-fiscal-dgi-uruguay",
+        "/guias/criptomonedas-regulacion-impuestos-uruguay",
+        "/guias/cuenta-conjunta-o-separada-pareja-uruguay",
+        "/guias/billetes-y-monedas-de-uruguay",
+        "/guias/unidad-indexada-explicada",
+        "/guias/prestamo-a-sola-firma-uruguay",
+        "/guias/educacion-financiera-para-jovenes-uruguay",
+        "/guias/comprar-online-exterior-impuestos",
+        "/guias/reforma-jubilatoria-uruguay-que-cambia",
+        "/guias/separacion-de-bienes-uruguay",
+        "/guias/comision-inmobiliaria-uruguay",
+        "/guias/tarjeta-debito-vs-credito-uruguay"
+      ],
+      "hypothesis": "Segunda tanda de titulos de guias: doce pasados de los 60 caracteres que publica el SERP, de 83 a 77 contando la marca. El defecto es el de la primera tanda: la etiqueta del tema seguida del indice de la guia, con la respuesta del lado que Google corta. Ahora cada uno arranca por la respuesta (el dolar fiscal es la COMPRA del BROU del dia habil anterior; la cripto es un activo y no moneda de curso legal; en una cuenta conjunta indistinta cualquiera retira todo; la comision inmobiliaria no tiene tope legal) y entra entero. Tres candidatos de los doce mas largos se dejaron afuera a proposito porque sus rutas estan dentro de la ventana abierta de descripciones-de-las-guias-respuesta-primero (cierra el 2026-10-29) y dos filas sobre la misma ruta arruinan la medicion de las dos; en su lugar entraron los tres mas largos con la ruta libre. Es el tramo contenido, que rinde 8x el promedio del sitio, asi que un titulo cortado cuesta mas caro aca. Se espera mas CTR a igual posicion, como midio la primera tanda."
     }
   ]
 }

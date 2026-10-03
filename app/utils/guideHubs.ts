@@ -436,6 +436,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/barrios-alquileres-uruguay',
       },
       {
+        label: 'Cortes de luz por barrio',
+        description: 'Minutos sin luz al mes de cada barrio, medidos del mapa público de UTE.',
+        to: '/cortes-de-luz-por-barrio-uruguay',
+      },
+      {
         label: '¿Dónde vivir?',
         description:
           'Los barrios donde alquilar o comprar entra en tu plata, con la cuota y cómo es cada uno.',

@@ -1760,7 +1760,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'prestamo-a-sola-firma-uruguay',
-    title: 'El préstamo a sola firma en Uruguay: cuándo conviene y cuándo no',
+    title: 'Sola firma: compará el costo total',
     description:
       'Cómo funcionan los préstamos a sola firma en Uruguay, por qué son caros, cómo leer la tasa efectiva y el costo total, y cuándo tienen sentido.',
     tag: 'PRÉSTAMOS',
@@ -3531,7 +3531,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'educacion-financiera-para-jovenes-uruguay',
-    title: 'Educación financiera para jóvenes en Uruguay: por dónde empezar',
+    title: 'Jóvenes: ahorrar primero, invertir después',
     description:
       'Educación financiera para jóvenes en Uruguay: presupuesto, ahorro, evitar deuda mala y primeros pasos para invertir, con recursos gratuitos.',
     tag: 'JÓVENES',
@@ -3952,7 +3952,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'tarjeta-debito-vs-credito-uruguay',
-    title: 'Tarjeta de débito vs crédito en Uruguay: cuándo usar cada una',
+    title: 'Débito gasta lo tuyo; crédito te presta',
     description:
       'Tarjeta de débito o de crédito en Uruguay: diferencias reales, la rebaja de IVA en pagos electrónicos (Ley 19.210), protección ante fraude, cómo cuidar el presupuesto y cuándo conviene cada una.',
     tag: 'TARJETAS',
@@ -4005,7 +4005,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'reforma-jubilatoria-uruguay-que-cambia',
-    title: 'Reforma jubilatoria en Uruguay: qué cambia y a quién le aplica',
+    title: 'Reforma jubilatoria: edad por generación',
     description:
       'Qué cambia con la reforma jubilatoria (Ley 20.130) en Uruguay: el nuevo Sistema Previsional Común, cómo sube la edad de retiro según el año en que naciste y cómo afecta tu jubilación.',
     tag: 'REFORMA',

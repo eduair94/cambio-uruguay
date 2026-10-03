@@ -50,7 +50,7 @@ export const parejaGuides: readonly Guide[] = [
   },
   {
     slug: 'separacion-de-bienes-uruguay',
-    title: 'Separación de bienes en Uruguay: cómo funciona y cómo pactarla',
+    title: 'Separación de bienes: se pacta antes',
     description:
       'Qué es el régimen de separación de bienes en Uruguay, cómo pactarlo por capitulaciones ante escribano y cuándo conviene elegirlo.',
     tag: 'BIENES',
@@ -200,7 +200,7 @@ export const parejaGuides: readonly Guide[] = [
   },
   {
     slug: 'cuenta-conjunta-o-separada-pareja-uruguay',
-    title: '¿Cuenta conjunta o separada? Cómo organizar las finanzas de pareja',
+    title: 'Cuenta conjunta: cualquiera retira todo',
     description:
       'Cuenta conjunta, separada o mixta: cómo organizar las finanzas de pareja en Uruguay, cómo funciona una cuenta conjunta y qué riesgos tiene.',
     tag: 'FINANZAS',

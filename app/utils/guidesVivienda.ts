@@ -11,7 +11,7 @@ import type { Guide } from './guides'
 export const viviendaGuides: readonly Guide[] = [
   {
     slug: 'comision-inmobiliaria-uruguay',
-    title: 'Comisión inmobiliaria en Uruguay: cuánto cobran y quién paga',
+    title: 'Comisión inmobiliaria: no hay tope legal',
     description:
       'No hay tope legal: el 3 % más IVA a cada parte en la venta y un mes de alquiler más IVA sale del arancel de la Cámara Inmobiliaria. Quién paga y qué pasa si se cae.',
     tag: 'COMISIÓN',

@@ -426,6 +426,10 @@
           "label": "Comparar barrios"
         },
         {
+          "to": "/cortes-de-luz-por-barrio-uruguay",
+          "label": "Cortes de luz por barrio"
+        },
+        {
           "to": "/donde-vivir-uruguay",
           "label": "¿Dónde vivir?"
         },
