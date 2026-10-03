@@ -242,7 +242,7 @@ export const parejaGuides: readonly Guide[] = [
   },
   {
     slug: 'hablar-de-dinero-en-pareja-uruguay',
-    title: 'Cómo hablar de dinero en pareja y armar un presupuesto juntos',
+    title: 'Dinero en pareja: no esconder las deudas',
     description:
       'Cómo hablar de dinero en pareja sin conflictos: transparencia, objetivos comunes, presupuesto compartido y cómo manejar estilos distintos.',
     tag: 'PAREJA',

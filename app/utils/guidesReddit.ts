@@ -390,7 +390,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'garantias-de-alquiler-uruguay',
-    title: 'Garantía de alquiler: ANDA, Contaduría, Porto, Sura o Mapfre',
+    title: 'Garantía de alquiler: 3 % mensual o prima',
     description:
       'Comparativa de las garantías de alquiler en Uruguay: cuánto cuesta cada una, cuánto podés alquilar y cuál acepta más rápido, con lo que publica cada proveedor.',
     tag: 'GARANTÍAS',
@@ -803,7 +803,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'alquiler-temporario-uruguay',
-    title: 'Alquiler temporario y Airbnb en Uruguay: lo que hay que saber',
+    title: 'Airbnb y temporario: el dueño paga IRPF',
     description:
       'Alquiler temporario y Airbnb en Uruguay: diferencias con el alquiler permanente, obligaciones tributarias ante DGI y riesgos para anfitrión e inquilino.',
     tag: 'TEMPORARIO',
@@ -1575,7 +1575,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'credito-prendario-auto-uruguay',
-    title: 'Cómo funciona el crédito prendario para el auto en Uruguay',
+    title: 'Prendario del auto: si no pagás, lo rematan',
     description:
       'Crédito prendario para el auto en Uruguay: qué es la prenda, el costo real con seguro y gastos, y qué pasa si dejás de pagar.',
     tag: 'PRENDARIO',
@@ -1799,7 +1799,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'entender-tea-tna-y-cft',
-    title: 'TEA, TNA y CFT: cómo entender el costo real de un crédito',
+    title: 'TEA, TNA y CFT: el costo total, no la cuota',
     description:
       'Qué son la TNA, la TEA y el costo financiero total, por qué la cuota chica engaña y cómo comparar créditos por su costo real en Uruguay.',
     tag: 'TASAS',
@@ -3433,7 +3433,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'billeteras-digitales-uruguay-como-funcionan',
-    title: 'Billeteras digitales en Uruguay: cómo funcionan y cuál elegir',
+    title: 'Billeteras digitales: no son un banco',
     description:
       'Cómo funcionan las billeteras digitales en Uruguay (Prex, Mi Dinero y otras), en qué se diferencian de un banco y cuál elegir según tu uso.',
     tag: 'BILLETERAS',

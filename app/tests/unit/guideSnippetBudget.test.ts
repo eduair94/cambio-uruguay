@@ -103,9 +103,38 @@ const MEASURED = 146
  * explícito en que dos filas sobre las mismas rutas arruinan la medición de las dos. Entraron en su
  * lugar los tres más largos con la ruta libre. Esos tres entran cuando su ventana cierre.
  *
+ * 92 → 80 el 2026-10-03, tercera tanda: doce más, de 78 a 74 caracteres contando la marca.
+ *
+ * Misma cura y, otra vez, el mismo defecto de origen: once de los doce eran la ETIQUETA DEL TEMA
+ * seguida del índice de la guía («Alquiler temporario y Airbnb en Uruguay: lo que hay que saber»,
+ * «Billeteras digitales en Uruguay: cómo funcionan y cuál elegir», «TEA, TNA y CFT: cómo entender
+ * el costo real de un crédito»), o sea prometían las secciones y dejaban la respuesta del lado que
+ * el SERP corta. El doceavo, `/guias/garantias-de-alquiler-uruguay`, era lo contrario de una
+ * etiqueta y fallaba igual: enumeraba los cinco proveedores («ANDA, Contaduría, Porto, Sura o
+ * Mapfre») sin decir cuánto cuesta ninguno, que es la pregunta.
+ *
+ * Ahora cada uno contesta: que el anfitrión de un temporario paga IRPF, que una billetera de
+ * dinero electrónico no es un banco, que en la garantía de alquiler se paga 3 % mensual (retención)
+ * o una prima (seguro de fianza), que los derechos posesorios se titulan a los veinte años, que la
+ * cédula de un argentino sale de la residencia Mercosur y no de un trámite propio, que BILLETE es
+ * el dólar en efectivo y CABLE el que va o viene del exterior, que si no pagás el prendario te
+ * rematan el auto, que al cobrar del exterior el costo está en el retiro y no en la acreditación,
+ * que una suba de tasas de la Fed tiende a un dólar global más fuerte, que un crédito se compara
+ * por el costo total y nunca por la cuota, que para comprar dólares online hace falta cuenta
+ * habilitada, y que en pareja lo que rompe la confianza son las deudas ocultas.
+ *
+ * Ninguna cifra es nueva: el 3 % y los veinte años ya estaban en el cuerpo de su guía. Y ninguna se
+ * escribió con más firmeza que su fuente, que acá descartó dos redacciones: el de billeteras iba a
+ * decir «sin garantía COPAB» cuando su propio cuerpo dice que el saldo no está cubierto
+ * «directamente» —el matiz no es adorno, los fondos sí quedan respaldados según la normativa del
+ * BCU—, así que el título afirma la diferencia que la guía sí da por categórica; y el de la Fed
+ * conserva el «tiende» porque el cuerpo avisa que «no es una regla matemática», y además dice
+ * «dólar global» para no prometer la cotización uruguaya, que la guía explica que tiene su propia
+ * dinámica.
+ *
  * SÓLO PUEDE BAJAR.
  */
-const TITLE_OVER_BUDGET = 92
+const TITLE_OVER_BUDGET = 80
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.

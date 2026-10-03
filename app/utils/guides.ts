@@ -170,7 +170,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'billete-cable-transferencia',
-    title: 'BILLETE vs CABLE vs TRANSFERENCIA vs eBROU: qué significan',
+    title: 'BILLETE es efectivo; CABLE va al exterior',
     description:
       'Qué significan BILLETE, CABLE, TRANSFERENCIA, eBROU e INTERBANCARIO en las cotizaciones del dólar en Uruguay y por qué cada tipo tiene un precio distinto.',
     tag: 'TIPOS',
@@ -438,7 +438,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'enviar-recibir-dinero-exterior',
-    title: 'Cobrar del exterior en Uruguay: cuánto te cuesta cada vía',
+    title: 'Cobrar del exterior: el costo es al retirar',
     description:
       'Cuánto te cuesta cobrar un pago del exterior en Uruguay: Payoneer, Wise, Prex, PayPal, SWIFT al banco y plataformas de contrato, con las tarifas que publica cada uno.',
     tag: 'COBRAR',
@@ -974,7 +974,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'como-afecta-la-fed-al-dolar',
-    title: 'Cómo afecta la Reserva Federal (Fed) al dólar y a Uruguay',
+    title: 'Fed: más tasa tiende a un dólar más fuerte',
     description:
       'Qué es la Reserva Federal de EE.UU., cómo sus decisiones de tasas mueven al dólar en el mundo y por qué eso llega hasta la cotización en Uruguay.',
     tag: 'GLOBAL',
@@ -1026,7 +1026,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'comprar-dolares-online-uruguay',
-    title: 'Cómo comprar dólares online en Uruguay (eBROU y plataformas)',
+    title: 'Comprar dólares online: eBROU pide cuenta',
     description:
       'Guía para comprar y vender dólares por internet en Uruguay: plataformas como eBROU, transferencia entre cuentas, requisitos y ventajas frente al efectivo.',
     tag: 'DIGITAL',
