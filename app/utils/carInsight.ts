@@ -24,7 +24,11 @@ import {
 } from './carAdvisor'
 import type { LatinNcapEntry } from './carAdvisorFigures'
 import { latinNcapResults } from './latinNcap'
-import { CAR_VALUATION_MAX_KM_ADJUSTMENT, CAR_VALUATION_MIN_SAMPLE, estimateCarValue } from './carsValuation'
+import {
+  CAR_VALUATION_MAX_KM_ADJUSTMENT,
+  CAR_VALUATION_MIN_SAMPLE,
+  estimateCarValue,
+} from './carsValuation'
 import type {
   PublicCarAdvisorModel,
   PublicCarAdvisorShare,
@@ -164,6 +168,8 @@ export interface CarInsightInput {
   report: PublicCarReportSnapshot | null
   advisor: PublicCarAdvisorSnapshot | null
   fuel: (CarAdvisorFuelPrices & { asOf: string | null }) | null
+  /** Para la antigüedad que vuelve creíbles a los km; por defecto, hoy. */
+  now?: Date
 }
 
 export function carInsightVerdict(gap: number): CarInsightVerdict {
@@ -174,9 +180,41 @@ export function carInsightVerdict(gap: number): CarInsightVerdict {
   return 'muy-alto'
 }
 
+/**
+ * Lo que el título dice y el análisis de riesgo a veces no marca (medido el 2026-10-03: un Logan
+ * "Deuda de patente" salía como "el más nuevo por la misma plata"). Lo negado no cuenta: "sin deuda"
+ * es un argumento de venta, no una declaración.
+ */
+const TITLE_RISK =
+  /\b(?:deudas?|chocad[oa]s?|choque|para repuestos?|recuperad[oa]|sin papeles|a reparar|motor fundido|no arranca|embargad[oa]|siniestrad[oa])\b/i
+const TITLE_RISK_DENIED =
+  /\b(?:sin|no tiene|libre de|cero|nunca)\s+(?:deudas?|chocad[oa]s?|choques?|siniestros?)\b/gi
+const titleDeclaresRisk = (title: string): boolean =>
+  TITLE_RISK.test(title.replace(TITLE_RISK_DENIED, ' '))
+
 /** Ni riesgo declarado, ni marcas, ni moneda deducida: lo que vale como "el mercado". */
 export const carInsightClean = (car: PublicCarListing): boolean =>
-  !car.currencyInferred && !car.flags.length && !car.risks.length && car.priceUsd > 0
+  !car.currencyInferred &&
+  !car.flags.length &&
+  !car.risks.length &&
+  car.priceUsd > 0 &&
+  !titleDeclaresRisk(car.title)
+
+/** Kilometrajes de relleno que los vendedores escriben cuando no quieren poner el real. */
+const PLACEHOLDER_KM = new Set([1, 1234, 12345, 123456, 111111, 99999, 999999])
+
+/**
+ * Los km del aviso si son creíbles; null si no. Un Gol 1988 con "12345 km" ganaba "el de menos km
+ * por la misma plata": desde los tres años de antigüedad se exigen al menos 1.000 km por año, y nada
+ * pasa de 600.000. Los km se siguen mostrando tal cual en la tarjeta; sólo no se usan para elegir.
+ */
+export function carInsightTrustedKm(car: PublicCarListing, nowYear: number): number | null {
+  const km = car.km
+  if (km === null || km < 0 || km > 600_000 || PLACEHOLDER_KM.has(km)) return null
+  const age = nowYear - car.year
+  if (age >= 3 && km < 1_000 * age) return null
+  return km
+}
 
 function quantile(sorted: readonly number[], q: number): number {
   if (!sorted.length) return 0
@@ -187,7 +225,10 @@ function quantile(sorted: readonly number[], q: number): number {
 }
 
 const median = (values: readonly number[]): number =>
-  quantile([...values].sort((a, b) => a - b), 0.5)
+  quantile(
+    [...values].sort((a, b) => a - b),
+    0.5
+  )
 
 function positionOf(car: PublicCarListing, peers: PublicCarListing[]): CarInsightPosition | null {
   const sameYear = peers.filter(peer => peer.year === car.year)
@@ -244,7 +285,9 @@ function kmOf(
   const estimate = estimateCarValue(market, coefficients, {
     year: car.year,
     km: car.km,
-    rowKey: version ? [version.trim ?? '', version.engine ?? '', version.transmission ?? ''].join('|') : null,
+    rowKey: version
+      ? [version.trim ?? '', version.engine ?? '', version.transmission ?? ''].join('|')
+      : null,
   })
   if (!estimate) return null
   return {
@@ -266,13 +309,14 @@ function kmOf(
  */
 function kmValueRatio(
   car: PublicCarListing,
+  km: number | null,
   market: PublicCarMarketSnapshot | null,
   perTenThousand: number | null
 ): number | null {
-  if (!market || car.km === null || perTenThousand === null) return null
+  if (!market || km === null || perTenThousand === null) return null
   const year = market.years.find(row => row.year === car.year && row.n >= CAR_VALUATION_MIN_SAMPLE)
   if (!year || !(year.median > 0) || !(year.kmMedian > 0)) return null
-  const raw = (1 - perTenThousand) ** ((car.km - year.kmMedian) / 10_000)
+  const raw = (1 - perTenThousand) ** ((km - year.kmMedian) / 10_000)
   const factor = Math.min(
     1 + CAR_VALUATION_MAX_KM_ADJUSTMENT,
     Math.max(1 - CAR_VALUATION_MAX_KM_ADJUSTMENT, raw)
@@ -311,7 +355,12 @@ function alternativesOf(
         medianKm: kms.length ? Math.round(median(kms)) : null,
       }
     })
-    .sort((a, b) => b.adverts - a.adverts || b.medianYear - a.medianYear || a.marketSlug.localeCompare(b.marketSlug))
+    .sort(
+      (a, b) =>
+        b.adverts - a.adverts ||
+        b.medianYear - a.medianYear ||
+        a.marketSlug.localeCompare(b.marketSlug)
+    )
     .slice(0, 6)
 }
 
@@ -349,6 +398,8 @@ const enoughShare = (share: PublicCarAdvisorShare | null): PublicCarAdvisorShare
 
 export function buildCarInsight(input: CarInsightInput): CarInsight {
   const { car, market, report, advisor, fuel } = input
+  const nowYear = (input.now ?? new Date()).getUTCFullYear()
+  const trusted = (item: PublicCarListing) => carInsightTrustedKm(item, nowYear)
   const peers = input.peers.filter(peer => peer.key !== car.key && carInsightClean(peer))
   const position = positionOf(car, peers)
   const km = kmOf(car, market, report)
@@ -382,10 +433,10 @@ export function buildCarInsight(input: CarInsightInput): CarInsight {
 
   let kmValue: CarInsight['kmValue'] = null
   const rated = peers
-    .map(peer => ({ peer, ratio: kmValueRatio(peer, market, perTenThousand) }))
+    .map(peer => ({ peer, ratio: kmValueRatio(peer, trusted(peer), market, perTenThousand) }))
     .filter((item): item is { peer: PublicCarListing; ratio: number } => item.ratio !== null)
     .sort((a, b) => a.ratio - b.ratio || byCheapest(a.peer, b.peer))
-  const ownRatio = kmValueRatio(car, market, perTenThousand)
+  const ownRatio = kmValueRatio(car, car.km, market, perTenThousand)
   pick(
     'best-km-value',
     rated.filter(item => ownRatio === null || item.ratio < ownRatio).map(item => item.peer)
@@ -401,7 +452,7 @@ export function buildCarInsight(input: CarInsightInput): CarInsight {
   const affordable = peers.filter(peer => peer.priceUsd <= ceiling)
   pick(
     'lowest-km-for-price',
-    affordable.filter(peer => peer.km !== null).sort(byLowestKm),
+    affordable.filter(peer => trusted(peer) !== null).sort(byLowestKm),
     peer => car.km === null || peer.km! < car.km
   )
   pick('newest-for-price', [...affordable].sort(byNewest), peer => peer.year > car.year)
@@ -413,7 +464,7 @@ export function buildCarInsight(input: CarInsightInput): CarInsight {
   pick('other-newest', [...others].sort(byNewest), other => other.year >= car.year)
   pick(
     'other-lowest-km',
-    others.filter(other => other.km !== null).sort(byLowestKm),
+    others.filter(other => trusted(other) !== null).sort(byLowestKm),
     other => car.km === null || other.km! < car.km
   )
 
@@ -486,10 +537,7 @@ export function buildCarInsight(input: CarInsightInput): CarInsight {
     km,
     kmValue,
     picks,
-    alternatives: alternativesOf(
-      car,
-      input.alternatives.filter(carInsightClean)
-    ),
+    alternatives: alternativesOf(car, input.alternatives.filter(carInsightClean)),
     band: input.alternatives.length
       ? {
           from: Math.round(car.priceUsd * CAR_INSIGHT_BAND_FLOOR),

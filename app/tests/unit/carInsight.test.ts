@@ -343,11 +343,48 @@ describe('buildCarInsight — km and picks', () => {
   it('offers the lowest km for the money under its own card when nothing else claims it', () => {
     const lowKm = listing({ priceUsd: 18_300, price: 18_300, km: 20_000 })
     const insight = buildCarInsight(
-      input({ peers: [...input().peers, lowKm], report: { ...report, data: { ...report.data, valuation: { ...report.data.valuation, km: { value: null, cohorts: 0, p25: null, p75: null } } } } as PublicCarReportSnapshot })
+      input({
+        peers: [...input().peers, lowKm],
+        report: {
+          ...report,
+          data: {
+            ...report.data,
+            valuation: {
+              ...report.data.valuation,
+              km: { value: null, cohorts: 0, p25: null, p75: null },
+            },
+          },
+        } as PublicCarReportSnapshot,
+      })
     )
-    expect(insight.picks.find(item => item.kind === 'lowest-km-for-price')?.car.key).toBe(
-      lowKm.key
+    expect(insight.picks.find(item => item.kind === 'lowest-km-for-price')?.car.key).toBe(lowKm.key)
+  })
+
+  it('treats a title that declares debt or a crash as not clean, unless it denies it', () => {
+    const debt = listing({
+      priceUsd: 15_000,
+      price: 15_000,
+      title: 'Saveiro 2024 deuda de patente',
+    })
+    const denied = listing({ priceUsd: 16_000, price: 16_000, title: 'Saveiro 2024 sin deuda' })
+    const insight = buildCarInsight(input({ peers: [...input().peers, debt, denied] }))
+    expect(insight.picks.find(item => item.kind === 'cheapest-same')?.car.key).toBe(denied.key)
+    expect(insight.picks.map(item => item.car.key)).not.toContain(debt.key)
+  })
+
+  it('does not pick lowest km from a placeholder or an implausible odometer', () => {
+    const now = new Date('2026-10-03T00:00:00.000Z')
+    const placeholder = listing({ priceUsd: 17_000, price: 17_000, km: 12_345, year: 2018 })
+    const implausible = listing({ priceUsd: 17_000, price: 17_000, km: 2_000, year: 2015 })
+    const real = listing({ priceUsd: 17_000, price: 17_000, km: 20_000 })
+    const insight = buildCarInsight(
+      input({ now, peers: [...input().peers, placeholder, implausible, real] })
     )
+    const keys = insight.picks
+      .filter(item => item.kind === 'lowest-km-for-price' || item.kind === 'best-km-value')
+      .map(item => item.car.key)
+    expect(keys).not.toContain(placeholder.key)
+    expect(keys).not.toContain(implausible.key)
   })
 
   it('never shows the same advert twice', () => {

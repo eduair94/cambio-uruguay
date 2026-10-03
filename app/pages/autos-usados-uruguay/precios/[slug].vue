@@ -89,6 +89,8 @@
         <CarsGuideTable :rows="data.market.guide" :updated-at="data.market.guideUpdatedAt" />
       </section>
 
+      <CarsModelInfo v-if="data.modelInfo" :info="data.modelInfo" class="mb-8" />
+
       <section v-if="data.opportunities.length" class="mb-8">
         <h2 class="text-h6 mb-3">Oportunidades de este modelo</h2>
         <div class="d-flex flex-column ga-4">

@@ -46,7 +46,9 @@ async function main(): Promise<void> {
     ? targets.filter((target) => only.includes(target.marketSlug))
     : planModelInfoTargets(targets, previous, now, budget);
   console.log(`[autos-models] ${targets.length} models, ${previous.size} read before, ${planned.length} due`);
-  if (!dryRun) await CarModelInfoModel.collection.createIndex({ marketSlug: 1 }, { unique: true });
+  // appModel is a lazy Proxy: its `.collection` is not usable before the first query, so the
+  // index goes through the connection, the way classes/autos/store.ts does it.
+  if (!dryRun) await appConnection().collection("carmodelinfos").createIndex({ marketSlug: 1 }, { unique: true });
 
   const counts = { wiki: 0, noWiki: 0, videos: 0, noVideos: 0, failed: 0 };
   for (const [index, target] of planned.entries()) {

@@ -295,7 +295,8 @@
         />
       </section>
 
-      <section v-if="data.cohort" class="mt-8">
+      <CarsPriceInsight v-if="data.insight" :insight="data.insight" :car="car" class="mt-8" />
+      <section v-else-if="data.cohort" class="mt-8">
         <h2 class="text-h6 mb-2">¿Cómo está el precio?</h2>
         <p class="text-body-1">
           Para {{ car.brand }} {{ car.model }} {{ data.cohort.trim || '' }} {{ car.year }} hay
@@ -311,6 +312,15 @@
         <h2 class="text-h6 mb-2">Por qué aparece como oportunidad</h2>
         <CarsOpportunityCard :item="data.opportunity" hide-subject-link />
       </section>
+
+      <CarsOwnershipInsight
+        v-if="data.insight && hasOwnership"
+        :insight="data.insight"
+        :car="car"
+        class="mt-8"
+      />
+
+      <CarsModelInfo v-if="data.modelInfo" :info="data.modelInfo" class="mt-8" />
 
       <section v-if="data.similar.length" class="mt-8">
         <h2 class="text-h6 mb-3">Otros {{ car.brand }} {{ car.model }} parecidos</h2>
@@ -402,6 +412,10 @@ const specTables = computed(() =>
 )
 const equipmentGroups = computed(() => carEquipmentGroups(car.value?.specs))
 const hasSpecSheet = computed(() => !!car.value && carHasSpecSheet(car.value))
+const hasOwnership = computed(() => {
+  const insight = data.value?.insight
+  return !!insight && !!(insight.depreciation || insight.costs || insight.parts)
+})
 const breadcrumbs = computed(() => [
   { title: 'Autos usados', to: localePath(CARS_PATH) },
   ...(data.value?.market
