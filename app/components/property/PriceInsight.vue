@@ -46,18 +46,23 @@
           "
         >
           <div class="property-insight__track" />
-          <div
-            class="property-insight__band"
-            :style="{
-              left: `${at(position.p25)}%`,
-              width: `${at(position.p75) - at(position.p25)}%`,
-            }"
-          />
-          <div class="property-insight__median" :style="{ left: `${at(position.median)}%` }" />
-          <div class="property-insight__marker" :style="{ left: `${at(insight.subject.price)}%` }">
-            <span :class="['property-insight__marker-label', markerEdge]">
-              {{ t('thisOne', { price: money(insight.subject.price) }) }}
-            </span>
+          <div class="property-insight__rail">
+            <div
+              class="property-insight__band"
+              :style="{
+                left: `${at(position.p25)}%`,
+                width: `${at(position.p75) - at(position.p25)}%`,
+              }"
+            />
+            <div class="property-insight__median" :style="{ left: `${at(position.median)}%` }" />
+            <div
+              class="property-insight__marker"
+              :style="{ left: `${at(insight.subject.price)}%` }"
+            >
+              <span :class="['property-insight__marker-label', markerEdge]">
+                {{ t('thisOne', { price: money(insight.subject.price) }) }}
+              </span>
+            </div>
           </div>
         </div>
         <div class="property-insight__scale">
@@ -358,7 +363,13 @@ function diffText(listing: PropertyInsightListing): string {
 .property-insight__bar {
   position: relative;
   height: 44px;
-  margin: 28px 8px 4px;
+  margin: 28px 0 4px;
+}
+/* El riel va 8px adentro de cada punta para que el marcador (16px) en un extremo no se salga, y la
+   pista va al ras: así la barra arranca y termina exactamente donde el texto de arriba y de abajo. */
+.property-insight__rail {
+  position: absolute;
+  inset: 0 8px;
 }
 .property-insight__track {
   position: absolute;
@@ -429,14 +440,19 @@ function diffText(listing: PropertyInsightListing): string {
   margin: 0;
   padding: 0;
 }
+/* Cada tarjeta ocupa dos filas compartidas con sus vecinas (subgrid): si una etiqueta envuelve a dos
+   líneas, todas las tarjetas de esa fila bajan juntas y arrancan a la misma altura. */
 .property-insight__picks li {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  row-gap: 6px;
 }
-.property-insight__pick-label {
+.property-insight__picks .property-insight__pick-label {
   font-weight: 700;
   font-size: 0.875rem;
-  margin: 0 0 6px;
+  margin: 0;
+  align-self: end;
 }
 .property-insight__card {
   display: flex;

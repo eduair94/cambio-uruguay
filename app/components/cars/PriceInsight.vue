@@ -21,18 +21,20 @@
         :aria-label="`Rango de ${formatCarUsd(position.min)} a ${formatCarUsd(position.max)}; mediana ${formatCarUsd(position.median)}; este aviso ${formatCarUsd(car.priceUsd)}`"
       >
         <div class="car-insight__track" />
-        <div
-          class="car-insight__band"
-          :style="{
-            left: `${at(position.p25)}%`,
-            width: `${at(position.p75) - at(position.p25)}%`,
-          }"
-        />
-        <div class="car-insight__median" :style="{ left: `${at(position.median)}%` }" />
-        <div class="car-insight__marker" :style="{ left: `${at(car.priceUsd)}%` }">
-          <span :class="['car-insight__marker-label', markerEdge]">
-            Este: {{ formatCarUsd(car.priceUsd) }}
-          </span>
+        <div class="car-insight__rail">
+          <div
+            class="car-insight__band"
+            :style="{
+              left: `${at(position.p25)}%`,
+              width: `${at(position.p75) - at(position.p25)}%`,
+            }"
+          />
+          <div class="car-insight__median" :style="{ left: `${at(position.median)}%` }" />
+          <div class="car-insight__marker" :style="{ left: `${at(car.priceUsd)}%` }">
+            <span :class="['car-insight__marker-label', markerEdge]">
+              Este: {{ formatCarUsd(car.priceUsd) }}
+            </span>
+          </div>
         </div>
       </div>
       <div class="car-insight__scale text-caption text-medium-emphasis mb-3">
@@ -324,7 +326,13 @@ function diffText(other: PublicCarListing): string {
 .car-insight__bar {
   position: relative;
   height: 44px;
-  margin: 28px 8px 4px;
+  margin: 28px 0 4px;
+}
+/* El riel va 8px adentro de cada punta para que el marcador (16px) en un extremo no se salga, y la
+   pista va al ras: así la barra arranca y termina exactamente donde el texto de arriba y de abajo. */
+.car-insight__rail {
+  position: absolute;
+  inset: 0 8px;
 }
 .car-insight__track {
   position: absolute;
@@ -389,9 +397,13 @@ function diffText(other: PublicCarListing): string {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
 }
+/* Tres filas compartidas con las vecinas (subgrid): etiqueta, diferencia y tarjeta. Una etiqueta de
+   dos líneas baja la fila entera y las tarjetas arrancan a la misma altura. */
 .car-insight__pick {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  row-gap: 0;
 }
 .car-insight__pick-label {
   font-weight: 700;
@@ -402,7 +414,6 @@ function diffText(other: PublicCarListing): string {
   font-size: 0.8rem;
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
   margin: 0 0 6px;
-  min-height: 2.4em;
 }
 .car-insight__model {
   font-weight: 500;

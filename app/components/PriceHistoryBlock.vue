@@ -1,6 +1,13 @@
 <template>
-  <section v-if="series" class="price-history" :aria-labelledby="headingId">
-    <h3 :id="headingId" class="price-history__title">{{ title ?? t('title') }}</h3>
+  <section
+    v-if="series"
+    class="price-history"
+    :class="{ 'price-history--bare': bare }"
+    :aria-labelledby="labelledBy ?? headingId"
+  >
+    <h3 v-if="!labelledBy" :id="headingId" class="price-history__title">
+      {{ title ?? t('title') }}
+    </h3>
 
     <p v-if="!hasSeries" class="price-history__lead">
       {{ t('noChange', { date: formatDay(series.firstSeen) }) }}
@@ -55,6 +62,13 @@ const props = defineProps<{
   /** Título propio de la ficha que lo muestra; si no viene, el del bloque. */
   title?: string
   id?: string
+  /**
+   * Sin tarjeta: el contenido va al ras de la columna, como el resto de las secciones de una ficha
+   * que separa sus secciones con filetes (alquiler). Lo pide la ficha que ya pone su propio h2.
+   */
+  bare?: boolean
+  /** El id del h2 de la sección que lo contiene; con él, el bloque no repite su título. */
+  labelledBy?: string
 }>()
 
 const { t } = useI18n({ useScope: 'local', messages: priceHistoryMessages })
@@ -101,10 +115,26 @@ function formatDay(day: string): string {
 </script>
 
 <style scoped>
+/* El borde estaba escrito con la sintaxis de alfa con barra sobre `--v-border-color`, y Vuetify guarda
+   esa variable como "r,g,b": la declaración era inválida, el borde nunca se pintó y el relleno de
+   16px quedaba como una sangría invisible respecto de las secciones de alrededor. El tripwire está
+   en tests/unit/vuetifyColorSyntax.test.ts. */
 .price-history {
-  border: 1px solid rgb(var(--v-border-color, 0 0 0) / 0.18);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 12px;
   padding: 16px;
+}
+.price-history--bare {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  /* El mismo aire que deja la ficha entre un h2 y su primer párrafo: 12px en alquiler; la ficha que
+     usa otro lo declara en `--price-history-gap` (venta, 16px). */
+  margin-top: var(--price-history-gap, 12px);
+}
+.price-history--bare .price-history__lead,
+.price-history--bare .price-history__last {
+  font-size: 1rem;
 }
 .price-history__title {
   font-size: 1rem;

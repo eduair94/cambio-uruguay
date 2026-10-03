@@ -64,8 +64,15 @@
             v-if="data.priceHistory"
             class="sale-detail__section"
             data-testid="sale-price-history"
+            aria-labelledby="sale-price-history-title"
           >
-            <PriceHistoryBlock id="sale-price-history" :series="data.priceHistory" />
+            <h2 id="sale-price-history-title">{{ t('priceHistoryTitle') }}</h2>
+            <PriceHistoryBlock
+              id="sale-price-history"
+              :series="data.priceHistory"
+              bare
+              labelled-by="sale-price-history-title"
+            />
           </section>
           <section class="sale-detail__section">
             <h2>{{ t('description') }}</h2>
@@ -471,6 +478,7 @@ defineOgImageComponent('Cambio', {
   overflow-wrap: anywhere;
 }
 .sale-detail__section {
+  --price-history-gap: 16px;
   padding-top: 24px;
   margin-top: 24px;
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.14);

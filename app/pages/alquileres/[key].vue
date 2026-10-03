@@ -111,6 +111,8 @@ const listedFor = computed(() =>
 )
 const money = (value: number, currency: RentalOffer['currency'] = 'UYU') =>
   rentalMoney(value, currency, locale.value)
+/** Para rangos: "$ 37.000 – $ 42.000" se parte en el guion, nunca entre "$" y el número. */
+const tightMoney = (value: number) => money(value).replace(' ', '\u00A0')
 const date = (value: string | null | undefined) =>
   rentalDate(value, locale.value) || t('notPublished')
 const title = computed(() => property.value?.title || t('unavailableTitle'))
@@ -673,8 +675,15 @@ useHead(() => ({
           v-if="selectedOffer.priceHistory"
           class="rental-page__section"
           data-testid="rental-price-history"
+          aria-labelledby="rental-price-history-title"
         >
-          <PriceHistoryBlock id="rental-price-history" :series="selectedOffer.priceHistory" />
+          <h2 id="rental-price-history-title">{{ t('priceHistoryTitle') }}</h2>
+          <PriceHistoryBlock
+            id="rental-price-history"
+            :series="selectedOffer.priceHistory"
+            bare
+            labelled-by="rental-price-history-title"
+          />
         </section>
         <section class="rental-page__section" aria-labelledby="rental-description-title">
           <h2 id="rental-description-title">{{ t('descriptionShort') }}</h2>
@@ -710,9 +719,13 @@ useHead(() => ({
                 @click="showMap = !showMap"
                 >{{ t(showMap ? 'hideMap' : 'showMap') }}</VBtn
               >
-              <VBtn variant="text" :to="nearbyLink" prepend-icon="mdi-home-search-outline">{{
-                t('exploreArea')
-              }}</VBtn>
+              <VBtn
+                variant="text"
+                class="cu-btn-flush rental-page__explore"
+                :to="nearbyLink"
+                prepend-icon="mdi-home-search-outline"
+                >{{ t('exploreArea') }}</VBtn
+              >
             </div>
             <div v-if="showMap" id="rental-location-map" class="rental-page__map">
               <ClientOnly
@@ -730,9 +743,13 @@ useHead(() => ({
           <template v-else>
             <p class="rental-page__note">{{ t('noCoordinates') }}</p>
             <div class="rental-page__location-actions">
-              <VBtn variant="text" :to="nearbyLink" prepend-icon="mdi-home-search-outline">{{
-                t('exploreArea')
-              }}</VBtn>
+              <VBtn
+                variant="text"
+                class="cu-btn-flush rental-page__explore"
+                :to="nearbyLink"
+                prepend-icon="mdi-home-search-outline"
+                >{{ t('exploreArea') }}</VBtn
+              >
             </div>
           </template>
           <PropertyNearbyServices operation="rent" :property-key="property.key" />
@@ -752,7 +769,7 @@ useHead(() => ({
               </div>
               <div v-if="market.p25RentUyu !== null && market.p75RentUyu !== null">
                 <dt>{{ t('middleRange') }}</dt>
-                <dd>{{ money(market.p25RentUyu) }} – {{ money(market.p75RentUyu) }}</dd>
+                <dd>{{ tightMoney(market.p25RentUyu) }} – {{ tightMoney(market.p75RentUyu) }}</dd>
               </div>
             </dl>
             <p v-if="difference !== null" class="rental-page__verdict">
@@ -1273,6 +1290,19 @@ useHead(() => ({
 .rental-page__section :deep(.nearby-services) {
   scroll-margin-top: 124px;
 }
+/* "La vida cerca" vive dentro de Ubicación pero se lee como una sección más: mismo filete, mismo
+   aire arriba (32 + 28) y nada abajo, que el aire lo pone la sección siguiente. */
+.rental-page__section :deep(.nearby-services) {
+  margin-top: 32px;
+  padding-block: 28px 0;
+  border-top-color: rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.rental-page__section :deep(.nearby-services h2) {
+  line-height: 1.3;
+}
+.rental-page__section :deep(.nearby-services .nearby-services__intro) {
+  margin-top: 12px;
+}
 
 /* Sections are separated by a hairline and a generous gap: portal rhythm. */
 .rental-page__section {
@@ -1330,15 +1360,26 @@ useHead(() => ({
   line-height: 1.5;
   color: rgba(var(--v-theme-on-surface), 0.76);
 }
+/* `break-word`, no `anywhere`: con `anywhere` el mínimo de la columna era una letra y el flex partía
+   "Apartament / o" a mitad de palabra mientras la etiqueta tenía lugar para envolver. Un valor que
+   no entra en la mitad de la columna ya se apila debajo de su etiqueta (`is-stacked`). */
 .rental-page dd {
   font-weight: 700;
   line-height: 1.5;
   text-align: end;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+}
+.rental-page__facts dt {
+  min-width: 0;
+}
+.rental-page__facts dd {
+  flex: 0 1 auto;
+  max-width: 62%;
 }
 .rental-page dd.is-empty {
   font-weight: 400;
   color: rgba(var(--v-theme-on-surface), 0.6);
+  white-space: nowrap;
 }
 .rental-page__quote {
   margin-top: 16px;
@@ -1381,6 +1422,11 @@ useHead(() => ({
   margin-top: 2px;
   color: rgba(var(--v-theme-on-surface), 0.68);
 }
+/* cu-btn-flush pone la ETIQUETA en el borde; con ícono antepuesto el ícono sobresale los 4px de su
+   margen negativo de Vuetify. Medido: 114 contra 118 del resto. Cuatro píxeles más de corrimiento. */
+.rental-page__explore {
+  --cu-btn-pad: 12px;
+}
 .rental-page__location-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1399,13 +1445,20 @@ useHead(() => ({
   gap: 16px;
   margin-top: 16px;
 }
+/* Las dos tarjetas comparten filas (subgrid): si una etiqueta envuelve a dos líneas, el monto de la
+   tarjeta vecina baja con ella y los dos números quedan en la misma línea. */
 .rental-page__market > div {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 2;
+  align-content: start;
+  row-gap: 4px;
   padding: 16px 18px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 12px;
 }
 .rental-page__market dd {
-  margin-top: 4px;
+  align-self: end;
   font-size: 1.5rem;
   line-height: 1.2;
   text-align: start;
@@ -1619,11 +1672,13 @@ useHead(() => ({
   line-height: 1.55;
   min-height: 44px;
 }
+/* Sin el margen propio del navegador (3–4px a la izquierda): la casilla arranca en el borde del
+   contenido, como el texto de las demás secciones. */
 .rental-page__questions input {
   width: 20px;
   height: 20px;
   flex: 0 0 20px;
-  margin-top: 2px;
+  margin: 2px 0 0;
   accent-color: rgb(var(--v-theme-primary));
 }
 .rental-page__questions input:checked + span {
