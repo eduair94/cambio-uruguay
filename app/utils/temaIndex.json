@@ -738,6 +738,10 @@
           "label": "Peajes"
         },
         {
+          "to": "/precio-del-boleto-montevideo",
+          "label": "Precio del boleto en Montevideo"
+        },
+        {
           "to": "/impuesto-autos-electricos-uruguay",
           "label": "IMESI a los autos eléctricos"
         },

@@ -796,6 +796,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/peajes-uruguay',
       },
       {
+        label: 'Precio del boleto en Montevideo',
+        description: 'Las tarifas del STM, cuánto más sale en efectivo y la devolución TUS.',
+        to: '/precio-del-boleto-montevideo',
+      },
+      {
         label: 'IMESI a los autos eléctricos',
         description: 'Cómo cambia el impuesto a los autos eléctricos.',
         to: '/impuesto-autos-electricos-uruguay',

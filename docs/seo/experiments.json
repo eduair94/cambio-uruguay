@@ -1050,6 +1050,20 @@
       "shippedOn": "2026-10-04",
       "routes": ["/autos-usados-uruguay/hasta-*"],
       "hypothesis": "Las busquedas 'autos usados hasta <monto> dolares' y 'que auto usado comprar' no tienen pagina; el informe ya calcula que modelos hay en cada tramo."
+    },
+    {
+      "id": "precio-del-boleto-montevideo",
+      "shippedOn": "2026-10-04",
+      "routes": ["/precio-del-boleto-montevideo"],
+      "queries": [
+        "precio del boleto montevideo",
+        "cuanto sale el boleto en montevideo",
+        "boleto 2 horas montevideo",
+        "tarifas stm",
+        "boleto jubilado montevideo",
+        "boleto estudiante montevideo"
+      ],
+      "hypothesis": "El sitio tenia pagina propia para cada costo de ANDAR EN AUTO -nafta, patente, multas, peajes, IMESI de los electricos, costo por mes de cada modo- y ninguna para el costo de NO tener auto, que es el que paga la mayoria: el boleto solo existia como insumo de otras cuentas (dos boletos por dia, veintidos dias, en vivir con el salario minimo). Es demanda local y de marca (STM, TUS, Intendencia), no una conversion que Google contesta en su propia caja. La tabla se transcribe de la fuente oficial y lo unico calculado es el sobreprecio de pagar en efectivo, restando los dos precios publicados de cada renglon: entre 13 % y 26 % mas caro por viaje, y la combinacion metropolitana es el unico boleto que cuesta igual de las dos formas."
     }
   ]
 }

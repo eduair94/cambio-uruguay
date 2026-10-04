@@ -562,3 +562,122 @@ describe('el cluster UR no se lo disputan tres páginas propias', () => {
     expect(VALUE_WORD.test(title) && TODAY_WORDS.test(title)).toBe(false)
   })
 })
+
+// ---------------------------------------------------------------------------
+// El canonical apunta a su propia ruta
+// ---------------------------------------------------------------------------
+
+/**
+ * El contrato de arriba exige que el canonical EXISTA y que sea absoluto sobre nuestro host. No
+ * mira a dónde apunta, y ése es el agujero: un canonical copiado de la página de al lado cumple
+ * las dos condiciones y le dice a Google que esta página es un duplicado de la otra. El efecto no
+ * es un error, es una desaparición — la página sale del índice y el tráfico se le acredita a la
+ * URL que el canonical nombra, que es el resultado que tiene el mismo síntoma que "todavía no
+ * posiciona". Y es el error más fácil de cometer, porque toda página nueva de este sitio empieza
+ * copiando el bloque `useSeoMeta` + `useHead` de una existente: `const canonicalUrl` es la línea
+ * que hay que acordarse de cambiar, y nada avisaba si no se cambiaba.
+ *
+ * ALCANCE. Sólo las páginas ESTÁTICAS con un canonical literal. Una ruta dinámica arma su
+ * canonical con el parámetro (`https://cambio-uruguay.com${localePath(propertySalePath(...))}`) y
+ * no se puede resolver leyendo el archivo; comprobar eso es trabajo de los tests de cada familia.
+ * `canonicalLiterals()` deja fuera cualquier cadena con interpolación por la misma razón.
+ *
+ * Medido el 2026-10-04: 0 páginas mal apuntadas sobre las 180 que se pueden leer del archivo. El
+ * test no llega para arreglar una deuda, llega para que siga en cero.
+ */
+function pageRoute(file: string): string {
+  const route = file.replace(/\.vue$/, '').replace(/(^|\/)index$/, '')
+  return route ? `/${route}` : '/'
+}
+
+/**
+ * Los canonicals absolutos de un archivo, resolviendo el `const` cuando lo hay.
+ *
+ * Casi ninguna página escribe la URL dentro del `link`: el idiom del sitio es
+ * `const canonicalUrl = 'https://cambio-uruguay.com/x'` arriba y `href: canonicalUrl` abajo,
+ * porque la misma constante alimenta `ogUrl` y el JSON-LD. Un patrón que sólo mirara el literal
+ * inline encontraría dos páginas en todo el repo — y es precisamente ESA constante la que se
+ * olvida de cambiar quien copia la página de al lado, así que resolverla es el test.
+ */
+function canonicalLiterals(source: string): string[] {
+  const found = new Set<string>()
+  const patterns = [
+    /rel:\s*'canonical'[\s\S]{0,200}?href:\s*([^\s,}][^,}\n]*)/g,
+    /href:\s*([^\s,}][^,}\n]*),[\s\S]{0,120}?rel:\s*'canonical'/g,
+  ]
+  for (const pattern of patterns) {
+    for (const match of source.matchAll(pattern)) {
+      const expression = match[1]!.trim()
+      const literal = /^(['"`])([^'"`]*)\1$/.exec(expression)
+      let href = literal?.[2]
+      if (href === undefined) {
+        // Un identificador: se resuelve con su `const` del mismo archivo, si es una cadena cerrada.
+        if (!/^[a-z_$][\w$]*$/i.test(expression)) continue
+        const declared = new RegExp(`\\bconst\\s+${expression}\\s*=\\s*(['"\`])([^'"\`]*)\\1`).exec(
+          source
+        )
+        href = declared?.[2]
+      }
+      // Interpolado, computado o importado: el valor real no está en el archivo.
+      if (href === undefined || href.includes('${')) continue
+      if (!href.startsWith('https://cambio-uruguay.com')) continue
+      found.add(href)
+    }
+  }
+  return [...found]
+}
+
+const STATIC_WITH_CANONICAL = files
+  .filter(file => !file.includes('['))
+  .map(file => ({ file, hrefs: canonicalLiterals(read(file)) }))
+  .filter(entry => entry.hrefs.length > 0)
+
+describe('el canonical de cada página estática apunta a su propia ruta', () => {
+  it('encuentra canonicals que revisar', () => {
+    // Guarda de la guarda: si los patrones dejaran de enganchar, el test de abajo pasaría sobre
+    // cero páginas y seguiría verde.
+    expect(STATIC_WITH_CANONICAL.length).toBeGreaterThan(150)
+  })
+
+  it('no declara el canonical de otra página', () => {
+    const wrong: string[] = []
+    for (const { file, hrefs } of STATIC_WITH_CANONICAL) {
+      const route = pageRoute(file)
+      for (const href of hrefs) {
+        const path = href.replace('https://cambio-uruguay.com', '') || '/'
+        if (path !== route) wrong.push(`${file}: canonical ${path}, ruta ${route}`)
+      }
+    }
+    expect(wrong.sort()).toEqual([])
+  })
+
+  it('declara un solo canonical por página', () => {
+    // Dos `rel: 'canonical'` literales distintos en un archivo son dos respuestas a la misma
+    // pregunta, y Google elige una. Pasa al duplicar el bloque `useHead` en vez de editarlo.
+    const doubled = STATIC_WITH_CANONICAL.filter(entry => entry.hrefs.length > 1).map(
+      entry => `${entry.file}: ${entry.hrefs.join(' , ')}`
+    )
+    expect(doubled.sort()).toEqual([])
+  })
+
+  it('reconoce una ruta mal apuntada y una interpolada', () => {
+    // El test de arriba sólo prueba que hoy no hay ninguna: estos dos casos prueban que sabría verlo.
+    expect(
+      canonicalLiterals("link: [{ rel: 'canonical', href: 'https://cambio-uruguay.com/otra' }]")
+    ).toEqual(['https://cambio-uruguay.com/otra'])
+    // El idiom real del sitio: la constante de arriba y el `href` de abajo.
+    expect(
+      canonicalLiterals(
+        "const canonicalUrl = 'https://cambio-uruguay.com/otra'\nlink: [{ rel: 'canonical', href: canonicalUrl }]"
+      )
+    ).toEqual(['https://cambio-uruguay.com/otra'])
+    expect(
+      canonicalLiterals("link: [{ rel: 'canonical', href: `https://cambio-uruguay.com/${slug}` }]")
+    ).toEqual([])
+    // Un identificador que no se puede resolver leyendo el archivo no se adivina.
+    expect(canonicalLiterals("link: [{ rel: 'canonical', href: computedUrl }]")).toEqual([])
+    expect(pageRoute('precio-del-boleto-montevideo.vue')).toBe('/precio-del-boleto-montevideo')
+    expect(pageRoute('couriers-uruguay/index.vue')).toBe('/couriers-uruguay')
+    expect(pageRoute('index.vue')).toBe('/')
+  })
+})
