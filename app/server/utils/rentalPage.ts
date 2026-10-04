@@ -412,7 +412,7 @@ export function buildRentalPage(
     market,
     similar,
     // The neighbourhood link needs the zone snapshot; the endpoint resolves it (bounded, in parallel).
-    barrioPath: null,
+    barrioLink: null,
   }
 }
 

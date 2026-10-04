@@ -51,6 +51,14 @@ export interface RentalBarrioSummary {
   cells: RentalBarrioCell[]
   publishableCells: number
   listings: number
+  /**
+   * The raw `neighborhood` spellings the snapshot buckets carry for this barrio ("POCITOS",
+   * "Pocitos"). Server-only: the listings query matches them exactly so it can use the
+   * `{department, neighborhood}` index instead of a collated scan. Never sent to the client.
+   */
+  spellings: string[]
+  /** The same folded name exists in another department (Carrasco: Montevideo and Canelones). */
+  nameShared: boolean
 }
 export interface RentalBarrioRank {
   position: number
@@ -64,6 +72,10 @@ export interface RentalBarrioPage {
   neighborhood: string
   slug: string
   path: string
+  /** See `RentalBarrioSummary.spellings`; the barrio endpoint strips it from the response. */
+  spellings: string[]
+  /** Title, H1 and breadcrumb name the department when this is true, or two pages would share them. */
+  nameShared: boolean
   cells: RentalBarrioCell[]
   rank: RentalBarrioRank | null
   similar: RentalBarrioLink[]
@@ -112,12 +124,31 @@ const medianOf = (
   bedrooms: RentalZoneBedrooms
 ) => cellOf(summary, type, bedrooms)?.prices.rent.median ?? null
 
-export function listRentalBarrios(snapshots: RentalZoneSnapshots): RentalBarrioSummary[] {
+/**
+ * One list per snapshot: the loader caches the `market` object, and every ficha and barrio request
+ * would otherwise regroup thousands of buckets. Keyed weakly so a replaced snapshot is collected.
+ * The returned list is shared: callers filter/copy it, never mutate it.
+ */
+const barrioListCache = new WeakMap<object, readonly RentalBarrioSummary[]>()
+
+export function listRentalBarrios(snapshots: RentalZoneSnapshots): readonly RentalBarrioSummary[] {
+  const market = snapshots.market
+  if (!market) return []
+  const cached = barrioListCache.get(market)
+  if (cached) return cached
+  const list = buildRentalBarrioList(market.buckets ?? [])
+  barrioListCache.set(market, list)
+  return list
+}
+
+function buildRentalBarrioList(
+  buckets: NonNullable<RentalZoneSnapshots['market']>['buckets']
+): RentalBarrioSummary[] {
   const groups = new Map<
     string,
     { department: string; spellings: string[]; cells: RentalBarrioCell[] }
   >()
-  for (const bucket of snapshots.market?.buckets ?? []) {
+  for (const bucket of buckets) {
     const key = JSON.stringify([bucket.department, rentalZoneName(bucket.neighborhood)])
     const group = groups.get(key) ?? { department: bucket.department, spellings: [], cells: [] }
     if (!group.spellings.includes(bucket.neighborhood)) group.spellings.push(bucket.neighborhood)
@@ -131,6 +162,9 @@ export function listRentalBarrios(snapshots: RentalZoneSnapshots): RentalBarrioS
   const out: RentalBarrioSummary[] = []
   for (const group of groups.values()) {
     const neighborhood = rentalZoneLabel(group.spellings)
+    const slug = rentalBarrioSlug(neighborhood)
+    // A name made only of punctuation would publish `/alquiler/<departamento>/`: no page.
+    if (!slug) continue
     const cells = group.cells.sort((a, b) => cellOrder(a) - cellOrder(b))
     const anyCount = (type: RentalZonePropertyType) =>
       cells.find(cell => cell.propertyType === type && cell.bedrooms === 'any')?.prices.rent
@@ -139,13 +173,22 @@ export function listRentalBarrios(snapshots: RentalZoneSnapshots): RentalBarrioS
       department: group.department,
       departmentSlug: slugifyDepartment(group.department),
       neighborhood,
-      slug: rentalBarrioSlug(neighborhood),
+      slug,
       path: rentalBarrioPath(group.department, neighborhood),
       cells,
       publishableCells: cells.filter(cell => cell.prices.rent.median !== null).length,
       listings: anyCount('apartamento') + anyCount('casa'),
+      spellings: group.spellings,
+      nameShared: false,
     })
   }
+  const departmentsByName = new Map<string, Set<string>>()
+  for (const item of out) {
+    const name = rentalZoneName(item.neighborhood)
+    departmentsByName.set(name, (departmentsByName.get(name) ?? new Set()).add(item.departmentSlug))
+  }
+  for (const item of out)
+    item.nameShared = (departmentsByName.get(rentalZoneName(item.neighborhood))?.size ?? 0) > 1
   return out.sort(
     (a, b) =>
       a.department.localeCompare(b.department, 'es') ||
@@ -178,6 +221,9 @@ export function buildRentalBarrioPage(
   const self = all.find(item => item.departmentSlug === departmentSlug && item.slug === barrioSlug)
   if (!self) return null
   const peers = all.filter(item => item.department === self.department && item !== self)
+  // Links go only to pages that can be indexed: a chip to a noindex page is a dead end for Google
+  // and a thin page for the reader. The rank still counts every barrio with data.
+  const linkable = peers.filter(item => item.publishableCells >= RENTAL_BARRIO_MIN_CELLS)
   const cells = self.cells.filter(cell => cell.prices.rent.median !== null)
 
   let rank: RentalBarrioRank | null = null
@@ -192,6 +238,7 @@ export function buildRentalBarrioPage(
     const higher = compared.filter(item => medianOf(item, type, bedrooms)! > own).length
     rank = { position: higher + 1, of: compared.length + 1, propertyType: type, bedrooms }
     similar = compared
+      .filter(item => linkable.includes(item))
       .sort(
         (a, b) =>
           Math.abs(medianOf(a, type, bedrooms)! - own) -
@@ -202,8 +249,7 @@ export function buildRentalBarrioPage(
       .map(item => link(item, type, bedrooms))
     break
   }
-  const largest = peers
-    .filter(item => item.publishableCells > 0)
+  const largest = [...linkable]
     .sort((a, b) => b.listings - a.listings || a.neighborhood.localeCompare(b.neighborhood, 'es'))
     .slice(0, LARGEST_LIMIT)
     .map(item => link(item, 'apartamento', 'any'))
@@ -227,6 +273,8 @@ export function buildRentalBarrioPage(
     neighborhood: self.neighborhood,
     slug: self.slug,
     path: self.path,
+    spellings: self.spellings,
+    nameShared: self.nameShared,
     cells,
     rank,
     similar,

@@ -126,7 +126,10 @@
       </div>
 
       <section v-if="data.similar.length" class="mb-8">
-        <h2 class="text-h6 mb-2">Barrios con precios parecidos</h2>
+        <h2 class="text-h6 mb-1">Barrios con precios parecidos</h2>
+        <p class="text-body-2 text-medium-emphasis mb-2">
+          {{ rentalBarrioChipCaption(data.rank?.bedrooms ?? 'any') }}
+        </p>
         <div class="d-flex flex-wrap ga-2">
           <VChip
             v-for="item in data.similar"
@@ -141,7 +144,8 @@
       </section>
 
       <section v-if="data.largest.length" class="mb-8">
-        <h2 class="text-h6 mb-2">Barrios de {{ data.department }} con más avisos</h2>
+        <h2 class="text-h6 mb-1">Barrios de {{ data.department }} con más avisos</h2>
+        <p class="text-body-2 text-medium-emphasis mb-2">{{ rentalBarrioChipCaption('any') }}</p>
         <div class="d-flex flex-wrap ga-2">
           <VChip
             v-for="item in data.largest"
@@ -178,10 +182,12 @@ import { rentalBarrioDirectoryPath, type RentalBarrioCell } from '~/utils/rental
 import {
   BEDROOM_LABEL,
   formatUyu,
+  rentalBarrioChipCaption,
   rentalBarrioDate,
   rentalBarrioDescription,
   rentalBarrioFaq,
   rentalBarrioIntro,
+  rentalBarrioPlace,
   rentalBarrioRankSentence,
   rentalBarrioTitle,
 } from '~/utils/rentalBarrioCopy'
@@ -211,6 +217,8 @@ const TYPE_TITLE: Record<RentalZonePropertyType, string> = {
   apartamento: 'Apartamentos',
   casa: 'Casas',
 }
+
+const LISTING_TYPE: Record<string, string> = { apartamento: 'Apartamento', casa: 'Casa' }
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -262,7 +270,9 @@ const officialZone = computed<RentalOfficialZone | null>(() =>
 const breadcrumbs = computed(() => [
   { title: 'Inicio', to: localePath('/') },
   { title: 'Alquileres', to: localePath(RENTALS_PATH) },
-  { title: data.value?.neighborhood ?? 'Barrio' },
+  // No hay página por departamento (/alquiler/<departamento> no existe): un eslabón inventado
+  // promete una sección que no está. Con nombre compartido el departamento va en la última miga.
+  { title: data.value ? rentalBarrioPlace(data.value) : 'Barrio' },
 ])
 
 const tables = computed(() => {
@@ -277,12 +287,15 @@ const tables = computed(() => {
 })
 
 function listingFacts(listing: RentalBarrioListing): string {
+  // El tipo sale del aviso (el endpoint sólo trae apartamentos y casas); sin dato no se inventa.
   const facts: string[] = []
+  const type = LISTING_TYPE[listing.propertyType]
+  if (type) facts.push(type)
   if (listing.bedrooms === 0) facts.push('Monoambiente')
   else if (listing.bedrooms !== null)
     facts.push(`${listing.bedrooms} ${listing.bedrooms === 1 ? 'dormitorio' : 'dormitorios'}`)
   if (listing.area !== null) facts.push(`${listing.area} m²`)
-  return facts.join(' · ') || (listing.propertyType === 'casa' ? 'Casa' : 'Apartamento')
+  return facts.join(' · ')
 }
 
 useSeoMeta({
@@ -316,7 +329,7 @@ useHead(() => ({
               {
                 '@type': 'ListItem',
                 position: 3,
-                name: data.value.neighborhood,
+                name: rentalBarrioPlace(data.value),
                 item: canonical.value,
               },
             ],

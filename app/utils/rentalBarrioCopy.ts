@@ -3,8 +3,11 @@
 // Puro (sin Vue ni I/O) para que cada regla de copy se pruebe en vitest. Una pregunta frecuente
 // sólo existe si hay un dato que la conteste: nada de "consultá con una inmobiliaria".
 import type { FaqItem } from './faqAnswers'
-import type { RentalBarrioCell, RentalBarrioPage } from './rentalBarrio'
+import type { RentalBarrioCell, RentalBarrioPage as FullBarrioPage } from './rentalBarrio'
 import type { RentalZoneBedrooms, RentalZonePropertyType } from './rentalZoneTypes'
+
+/** Lo que llega al cliente: las grafías crudas se quedan en el servidor. */
+type RentalBarrioPage = Omit<FullBarrioPage, 'spellings'>
 
 export const BEDROOM_LABEL: Record<RentalZoneBedrooms, string> = {
   any: 'Todos',
@@ -66,12 +69,32 @@ const range = (cell: RentalBarrioCell) => {
   return p25 !== null && p75 !== null ? ` (entre ${formatUyu(p25)} y ${formatUyu(p75)})` : ''
 }
 
-export function rentalBarrioTitle(page: Pick<RentalBarrioPage, 'neighborhood'>): string {
-  const variants = [
-    `Alquiler en ${page.neighborhood}: cuánto cuesta hoy`,
-    `Alquiler en ${page.neighborhood}: precios hoy`,
-    `Alquiler en ${page.neighborhood}`,
-  ]
+type BarrioName = Pick<RentalBarrioPage, 'neighborhood' | 'department' | 'nameShared'>
+
+/**
+ * "Carrasco, Canelones" when the same name exists in another department, else "Pocitos". Lo usan
+ * el título, el H1 y la última miga: dos páginas no pueden compartirlos.
+ */
+export function rentalBarrioPlace(page: BarrioName): string {
+  return page.nameShared ? `${page.neighborhood}, ${page.department}` : page.neighborhood
+}
+
+export function rentalBarrioTitle(page: BarrioName): string {
+  const place = rentalBarrioPlace(page)
+  // Con nombre compartido el departamento es lo que distingue la página: la cascada suelta antes
+  // la coletilla (incluso el "hoy") que el departamento.
+  const variants = page.nameShared
+    ? [
+        `Alquiler en ${place}: cuánto cuesta hoy`,
+        `Alquiler en ${place}: precios hoy`,
+        `Alquiler en ${place}: precios`,
+        `Alquiler en ${place}`,
+      ]
+    : [
+        `Alquiler en ${place}: cuánto cuesta hoy`,
+        `Alquiler en ${place}: precios hoy`,
+        `Alquiler en ${place}`,
+      ]
   // Un nombre propio no se corta: si ni la última entra, se publica igual.
   return (
     variants.find(title => withBrand(title).length <= MAX_TITLE) ?? variants[variants.length - 1]!
@@ -122,7 +145,18 @@ export function rentalBarrioIntro(page: RentalBarrioPage): string {
 export function rentalBarrioRankSentence(page: RentalBarrioPage): string | null {
   const rank = page.rank
   if (!rank || rank.of < 3) return null
-  return `${page.neighborhood} es el ${rank.position}.º barrio más caro de ${page.department} para un ${subject(rank.propertyType, rank.bedrooms)}, entre ${rank.of} con datos.`
+  const place = rank.position === 1 ? 'el barrio más caro' : `el ${rank.position}.º barrio más caro`
+  return `${page.neighborhood} es ${place} de ${page.department} para un ${subject(rank.propertyType, rank.bedrooms)}, entre ${rank.of} con datos.`
+}
+
+/**
+ * Qué mediana muestra cada chip de barrio. "Parecidos" compara la celda del ranking (2 dormitorios
+ * o, si falta, todos); "con más avisos" siempre apartamento/todos.
+ */
+export function rentalBarrioChipCaption(bedrooms: RentalZoneBedrooms): string {
+  return bedrooms === 'any'
+    ? 'Mediana por mes de apartamento, todos los dormitorios.'
+    : `Mediana por mes de ${subject('apartamento', bedrooms)}.`
 }
 
 export function rentalBarrioFaq(page: RentalBarrioPage): FaqItem[] {

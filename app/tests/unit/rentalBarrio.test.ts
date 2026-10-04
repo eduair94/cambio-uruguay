@@ -82,6 +82,38 @@ describe('listRentalBarrios', () => {
     const carrasco = list.filter(item => item.slug === 'carrasco')
     expect(carrasco.map(item => item.departmentSlug)).toEqual(['canelones'])
     expect(list.find(item => item.slug === 'malvin')!.neighborhood).toBe('Malvín')
+    // The raw spellings the listings query matches exactly (server-side only).
+    expect(pocitos[0]!.spellings).toEqual(['POCITOS', 'Pocitos'])
+    expect(list.every(item => item.nameShared === false)).toBe(true)
+  })
+
+  it('marca el nombre repetido en otro departamento', () => {
+    const data = snapshots()
+    data.market!.buckets.push(bucket('CARRASCO', 'apartamento', 'any', 60000, 300) as any)
+    const list = listRentalBarrios(data)
+    const carrasco = list.filter(item => item.slug === 'carrasco')
+    expect(carrasco.map(item => [item.departmentSlug, item.nameShared])).toEqual([
+      ['canelones', true],
+      ['montevideo', true],
+    ])
+    expect(list.find(item => item.slug === 'pocitos')!.nameShared).toBe(false)
+  })
+
+  it('descarta un barrio cuyo nombre no deja slug', () => {
+    const data = snapshots()
+    data.market!.buckets.push(bucket('---', 'apartamento', 'any', 20000, 50) as any)
+    const list = listRentalBarrios(data)
+    expect(list.some(item => item.slug === '')).toBe(false)
+    expect(list.some(item => item.path.endsWith('/'))).toBe(false)
+  })
+
+  it('arma la lista una vez por snapshot', () => {
+    const data = snapshots()
+    const first = listRentalBarrios(data)
+    expect(listRentalBarrios(data)).toBe(first)
+    // Another snapshot (the loader replaced `market`) is grouped again.
+    expect(listRentalBarrios(snapshots())).not.toBe(first)
+    expect(listRentalBarrios({ market: null, context: null } as any)).toEqual([])
   })
 })
 
@@ -100,7 +132,34 @@ describe('buildRentalBarrioPage', () => {
     expect(page.similar.map(link => link.neighborhood)).toEqual(['Malvín', 'Cordón'])
     expect(page.largest[0]!.neighborhood).toBe('Cordón')
     expect(page.largest.some(link => link.neighborhood === 'Carrasco')).toBe(false)
+    // Casabó has one publishable cell: its page is noindex, so no chip links to it.
+    expect(page.largest.map(link => link.neighborhood)).toEqual(['Cordón', 'Malvín'])
     expect(page.indexable).toBe(true)
+    expect(page.nameShared).toBe(false)
+    expect(page.spellings).toEqual(['POCITOS', 'Pocitos'])
+  })
+
+  it('similares y más avisos sólo enlazan barrios indexables; el rank cuenta a todos', () => {
+    const data = snapshots()
+    // Buceo: a 2-bedroom median right next to Pocitos', but a single publishable cell.
+    data.market!.buckets.push(bucket('Buceo', 'apartamento', '2', 35500, 30) as any)
+    const page = buildRentalBarrioPage(data, 'montevideo', 'pocitos', NOW)!
+    expect(page.rank).toEqual({ position: 1, of: 4, propertyType: 'apartamento', bedrooms: '2' })
+    expect(page.similar.map(link => link.neighborhood)).toEqual(['Malvín', 'Cordón'])
+    expect(page.largest.some(link => link.neighborhood === 'Buceo')).toBe(false)
+  })
+
+  it('con el nombre repetido en otro departamento, la página lo sabe', () => {
+    const data = snapshots()
+    data.market!.buckets.push(
+      bucket('Carrasco', 'apartamento', 'any', 60000, 300) as any,
+      bucket('Carrasco', 'apartamento', '2', 65000, 100) as any
+    )
+    const montevideo = buildRentalBarrioPage(data, 'montevideo', 'carrasco', NOW)!
+    const canelones = buildRentalBarrioPage(data, 'canelones', 'carrasco', NOW)!
+    expect(montevideo.nameShared).toBe(true)
+    expect(canelones.nameShared).toBe(true)
+    expect(montevideo.path).not.toBe(canelones.path)
   })
 
   it('sin la celda de 2 dormitorios, compara por apartamento/any', () => {

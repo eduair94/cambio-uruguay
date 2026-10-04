@@ -4,6 +4,8 @@ import {
   rentalBarrioDescription,
   rentalBarrioFaq,
   rentalBarrioIntro,
+  rentalBarrioChipCaption,
+  rentalBarrioPlace,
   rentalBarrioRankSentence,
   rentalBarrioTitle,
 } from '../../utils/rentalBarrioCopy'
@@ -40,6 +42,8 @@ const page = (over: Partial<RentalBarrioPage> = {}): RentalBarrioPage => ({
   neighborhood: 'Pocitos',
   slug: 'pocitos',
   path: '/alquiler/montevideo/pocitos',
+  spellings: ['Pocitos'],
+  nameShared: false,
   cells: [
     cell('apartamento', 'any', 32000, 6500),
     cell('apartamento', '1', 27000),
@@ -72,6 +76,40 @@ describe('rentalBarrioCopy', () => {
     expect(rentalBarrioTitle(page({ neighborhood: 'Punta Carretas' }))).toBe(
       'Alquiler en Punta Carretas: precios hoy'
     )
+  })
+
+  it('mismo nombre en dos departamentos: títulos distintos, el departamento sobrevive', () => {
+    const shared = (department: string) =>
+      page({ neighborhood: 'Carrasco', department, nameShared: true })
+    const canelones = rentalBarrioTitle(shared('Canelones'))
+    const montevideo = rentalBarrioTitle(shared('Montevideo'))
+    expect(canelones).not.toBe(montevideo)
+    // ": precios hoy" no entra en 60 con la marca (61): cae "hoy" antes que el departamento.
+    expect(canelones).toBe('Alquiler en Carrasco, Canelones: precios')
+    expect(montevideo).toBe('Alquiler en Carrasco, Montevideo: precios')
+    for (const title of [canelones, montevideo])
+      expect(`${title} | Cambio Uruguay`.length).toBeLessThanOrEqual(60)
+    // Corto: entra la variante larga, con departamento.
+    expect(
+      rentalBarrioTitle(page({ neighborhood: 'Cerro', department: 'Salto', nameShared: true }))
+    ).toBe('Alquiler en Cerro, Salto: cuánto cuesta hoy')
+    // Largo: nunca se suelta el departamento, aunque se pase.
+    expect(
+      rentalBarrioTitle(
+        page({
+          neighborhood: 'Barrio Parque Miramar',
+          department: 'Treinta y Tres',
+          nameShared: true,
+        })
+      )
+    ).toBe('Alquiler en Barrio Parque Miramar, Treinta y Tres')
+    // La última miga y el H1 usan el mismo lugar.
+    expect(rentalBarrioPlace(shared('Canelones'))).toBe('Carrasco, Canelones')
+    // Un nombre único no cambia.
+    expect(rentalBarrioTitle(page({ neighborhood: 'Carrasco' }))).toBe(
+      'Alquiler en Carrasco: cuánto cuesta hoy'
+    )
+    expect(rentalBarrioPlace(page())).toBe('Pocitos')
   })
 
   it('description: si no entra en 155 se cae la coletilla, no la cifra ni la fecha', () => {
@@ -107,6 +145,19 @@ describe('rentalBarrioCopy', () => {
         page({ rank: { position: 1, of: 2, propertyType: 'apartamento', bedrooms: '2' } })
       )
     ).toBeNull()
+    // Primero de la tabla: no se dice 'el 1.º'.
+    expect(
+      rentalBarrioRankSentence(
+        page({ rank: { position: 1, of: 12, propertyType: 'apartamento', bedrooms: 'any' } })
+      )
+    ).toBe('Pocitos es el barrio más caro de Montevideo para un apartamento, entre 12 con datos.')
+  })
+
+  it('chips: dicen qué mediana muestran', () => {
+    expect(rentalBarrioChipCaption('2')).toBe('Mediana por mes de apartamento de 2 dormitorios.')
+    expect(rentalBarrioChipCaption('any')).toBe(
+      'Mediana por mes de apartamento, todos los dormitorios.'
+    )
   })
 
   it('FAQ: sólo preguntas con dato, más garantías', () => {

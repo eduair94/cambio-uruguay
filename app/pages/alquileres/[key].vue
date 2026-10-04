@@ -129,7 +129,7 @@ const zone = computed(() =>
 )
 const street = computed(() => (property.value ? rentalStreet(property.value) : ''))
 // La API decide (sólo barrios con página indexable) y manda la ruta o null: la ficha no carga la lista.
-const barrioLink = computed(() => data.value?.barrioPath ?? null)
+const barrioLink = computed(() => data.value?.barrioLink ?? null)
 const types: Record<string, string> = {
   apartamento: 'apartment',
   casa: 'house',
@@ -757,9 +757,9 @@ useHead(() => ({
             <VBtn
               variant="text"
               class="cu-btn-flush rental-page__explore"
-              :to="barrioLink"
+              :to="barrioLink.path"
               prepend-icon="mdi-chart-box-outline"
-              >{{ t('barrioPrices', { name: property.neighborhood }) }}</VBtn
+              >{{ t('barrioPrices', { name: barrioLink.label }) }}</VBtn
             >
           </div>
           <PropertyNearbyServices operation="rent" :property-key="property.key" />
