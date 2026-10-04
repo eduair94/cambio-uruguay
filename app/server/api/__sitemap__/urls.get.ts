@@ -21,6 +21,7 @@ import { toolSlugs } from '../../../utils/tools'
 import { videoTopicSlugs } from '../../../utils/videoTopics'
 import { isEquiparCategorySlug } from '../../../utils/equiparCategoryPages'
 import { CarCatalogMetaModel } from '../../models/CarCatalogMeta'
+import { CAR_BUDGETS, carBudgetPath } from '../../../utils/carBudget'
 import { isStoreDirectoryKey } from '../../../utils/storeDirectory'
 import { storeIndexable, type StorePublicProfile } from '../../../utils/storeProfiles'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
@@ -386,6 +387,11 @@ export default defineEventHandler(async _event => {
   } finally {
     await disconnectDbAfterPrerender()
   }
+
+  // --- Used-car pages by budget: the five fixed tiers of the market report, no DB read --------
+  CAR_BUDGETS.forEach(budget => {
+    urls.push({ loc: carBudgetPath(budget), changefreq: 'daily', priority: 0.6 })
+  })
 
   // --- Rental price pages per neighborhood: only indexable ones (≥2 cells, fresh snapshot) -----
   // Spanish only, same reasoning as the used-car block: the body is Uruguayan asking prices.
