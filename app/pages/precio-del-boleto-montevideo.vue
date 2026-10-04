@@ -139,7 +139,8 @@
 
       <p class="note-text mb-3">
         La <strong>combinación metropolitana</strong> es el único boleto de la tabla que cuesta lo
-        mismo de las dos formas: {{ pesos(80) }} con tarjeta y {{ pesos(80) }} en efectivo.
+        mismo de las dos formas: {{ pesos(metropolitana.conTarjeta) }} con tarjeta y
+        {{ pesos(metropolitana.enEfectivo) }} en efectivo.
       </p>
 
       <VCard variant="flat" class="note-card pa-4 pa-md-5">
@@ -367,6 +368,13 @@ const soloTarjeta = soloConTarjeta()
  * «entre 0 % y 26 %», que describe otra cosa.
  */
 const conSobreprecio = sobreprecios.filter(s => s.diferencia > 0)
+
+/**
+ * La combinación metropolitana, leída del catálogo y no escrita en el template: el párrafo afirma
+ * que cuesta lo mismo de las dos formas, así que si la tarifa cambiara de un lado la frase pasaría
+ * a mentir con un número puesto a mano.
+ */
+const metropolitana = sobreprecios.find(s => s.id === 'combinacion-metropolitana')!
 const sobreprecioMaximo = Math.max(...conSobreprecio.map(s => s.ratio))
 const sobreprecioMinimoUrbano = Math.min(...conSobreprecio.map(s => s.ratio))
 
