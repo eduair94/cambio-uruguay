@@ -207,9 +207,9 @@ export const deudasGuides: readonly Guide[] = [
   },
   {
     slug: 'cancelar-prestamo-antes-de-tiempo-uruguay',
-    title: '¿Puedo cancelar un préstamo antes de tiempo en Uruguay?',
+    title: 'No hay derecho a cancelar un préstamo antes',
     description:
-      'No hay derecho general a cancelar antes: lo define tu contrato, salvo el hipotecario para vivienda. Qué intereses te descuentan y qué comisiones publican las entidades.',
+      'No existe obligación del acreedor de aceptarla, dice Defensa del Consumidor: lo define tu contrato, salvo el hipotecario para vivienda.',
     tag: 'CANCELACIÓN',
     updatedAt: '2026-09-13',
     sections: [

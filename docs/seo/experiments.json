@@ -1064,6 +1064,25 @@
         "boleto estudiante montevideo"
       ],
       "hypothesis": "El sitio tenia pagina propia para cada costo de ANDAR EN AUTO -nafta, patente, multas, peajes, IMESI de los electricos, costo por mes de cada modo- y ninguna para el costo de NO tener auto, que es el que paga la mayoria: el boleto solo existia como insumo de otras cuentas (dos boletos por dia, veintidos dias, en vivir con el salario minimo). Es demanda local y de marca (STM, TUS, Intendencia), no una conversion que Google contesta en su propia caja. La tabla se transcribe de la fuente oficial y lo unico calculado es el sobreprecio de pagar en efectivo, restando los dos precios publicados de cada renglon: entre 13 % y 26 % mas caro por viaje, y la combinacion metropolitana es el unico boleto que cuesta igual de las dos formas."
+    },
+    {
+      "id": "snippet-entero-de-las-guias-respuesta-primero",
+      "shippedOn": "2026-10-04",
+      "routes": [
+        "/guias/trabajo-en-negro-uruguay",
+        "/guias/comprar-criptomonedas-en-uruguay",
+        "/guias/feriados-en-uruguay-como-se-pagan",
+        "/guias/cashback-millas-o-puntos-uruguay",
+        "/guias/interes-compuesto-explicado-uruguay",
+        "/guias/credito-hipotecario-uruguay",
+        "/guias/abrir-empresa-unipersonal-uruguay",
+        "/guias/vender-por-mercado-libre-uruguay",
+        "/guias/pagar-patente-sucive-uruguay",
+        "/guias/documentos-para-cambiar-dolares-uruguay",
+        "/guias/cancelar-prestamo-antes-de-tiempo-uruguay",
+        "/guias/cuanto-tiempo-guardar-recibos-y-facturas-uruguay"
+      ],
+      "hypothesis": "Primera tanda que arregla el snippet ENTERO de las mismas doce guias: titulo y descripcion en una sola fila. Las tres tandas de titulos y la de descripciones anteriores tocaban media mitad por guia, y de las 146 hay 43 pasadas de los dos presupuestos con la ruta libre, asi que una fila por mitad gasta dos ventanas sobre el mismo renglon del SERP. Los doce titulos van de 74 a 60 caracteres contando la marca y las doce descripciones de 208 a 155. El defecto es el de siempre: la etiqueta del tema seguida del indice de la guia, con la respuesta del lado que Google corta. Ahora cada snippet arranca por la respuesta (los feriados pagos son cinco; la plataforma de cripto tiene que estar registrada como PSAV ante el BCU; el trabajo en negro se comprueba en tu propia historia laboral del BPS; Mercado Libre cobra entre 11,5 % y 17 % por venta; la patente vence el 20 de cada mes impar; el crédito hipotecario del BHU va solo en UI; no hay derecho general a cancelar un prestamo antes de tiempo). Uno de los doce dejo un hallazgo que no era del SERP: un titulo que EMPIEZA por la palabra tipeada puntua 74 en el buscador del propio sitio contra 56 el que solo la contiene, asi que el titulo del hipotecario no puede arrancar por \"Credito\" sin robarle a /prestamos-uruguay su primer resultado. Ninguna cifra es nueva ni se escribio con mas firmeza que su fuente. Es el tramo contenido, que rinde 8x el promedio del sitio, asi que un snippet cortado cuesta mas caro aca. Se espera mas CTR a igual posicion, como midieron las tandas anteriores."
     }
   ]
 }
