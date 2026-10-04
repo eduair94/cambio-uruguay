@@ -112,6 +112,10 @@ describe('carBudget', () => {
       resolve(__dirname, '../../server/api/cars/budget/[monto].get.ts'),
       'utf8'
     )
-    expect(source.replace(/s+/g, ' ')).toContain('currencyInferred: { $ne: true }')
+    // Sin comentarios de línea: una línea comentada no puede satisfacer la guarda.
+    const code = source.replace(/\/\/.*$/gm, '')
+    expect(code).toMatch(
+      /CarCatalogModel\.find\(\{[^;]*?currencyInferred:\s*\{\s*\$ne:\s*true\s*\}/
+    )
   })
 })
