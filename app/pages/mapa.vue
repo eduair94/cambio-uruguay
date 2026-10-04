@@ -4,6 +4,14 @@
     <p class="text-body-2 mb-4">{{ t('map.subtitle') }}</p>
 
     <v-row dense class="mb-2">
+      <v-col cols="12" md="9">
+        <ReferenceAddress @select="setLocation" />
+      </v-col>
+      <v-col cols="12" md="3" class="d-flex align-start pt-md-8">
+        <v-btn color="primary" :loading="locating" block @click="locate">
+          <v-icon start>mdi-crosshairs-gps</v-icon>{{ t('map.useMyLocation') }}
+        </v-btn>
+      </v-col>
       <v-col cols="12" sm="6" md="3">
         <v-select
           v-model="currency"
@@ -37,11 +45,6 @@
             :aria-label="`${t('map.radius')} (km)`"
           />
         </div>
-      </v-col>
-      <v-col cols="12" sm="6" md="3" class="d-flex align-center">
-        <v-btn color="primary" :loading="locating" block @click="locate">
-          <v-icon start>mdi-crosshairs-gps</v-icon>{{ t('map.useMyLocation') }}
-        </v-btn>
       </v-col>
       <v-col cols="12" sm="6" md="3" class="d-flex align-center">
         <v-switch
@@ -79,7 +82,9 @@
           :cash-label="t('map.withdrawCash')"
           height="72vh"
           @marker-click="onMarkerClick"
+          @map-point="setLocation"
         />
+        <p class="text-caption mt-1 mb-0">{{ t('map.tapMapHint') }}</p>
       </v-col>
       <v-col cols="12" md="4">
         <v-card variant="outlined" class="ranked-panel">
@@ -121,6 +126,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'
+import ReferenceAddress from '~/components/rentals/ReferenceAddress.vue'
 import { buildRatesByOrigin, rankNearby, type RatesByOrigin } from '~/utils/nearbyRates'
 
 const { t, locale } = useI18n()
@@ -228,6 +234,14 @@ function focus(id: string) {
   highlightId.value = id
   mapRef.value?.focusBranch(id)
 }
+// Three ways to set the point: GPS, a typed address, or a tap on the map. GPS alone left
+// anyone who denied the permission (or browses on desktop) ranked around a fixed Montevideo.
+function setLocation(point: { lat: number; lng: number }) {
+  if (!Number.isFinite(point.lat) || !Number.isFinite(point.lng)) return
+  userLocation.value = { lat: point.lat, lng: point.lng }
+  geoError.value = ''
+  highlightId.value = null
+}
 function locate() {
   if (!import.meta.client || !navigator.geolocation) {
     geoError.value = t('map.geoUnavailable')
@@ -236,12 +250,13 @@ function locate() {
   locating.value = true
   navigator.geolocation.getCurrentPosition(
     pos => {
-      userLocation.value = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+      setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
       locating.value = false
     },
     () => {
+      // No invented fallback: ranking around a point the visitor never chose is worse than
+      // asking them to type an address or tap the map.
       geoError.value = t('map.geoDenied')
-      userLocation.value = { lat: -34.9011, lng: -56.1645 } // fallback: Montevideo
       locating.value = false
     },
     { enableHighAccuracy: true, timeout: 8000 }
