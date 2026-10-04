@@ -1038,6 +1038,18 @@
         "/guias/tarjeta-debito-vs-credito-uruguay"
       ],
       "hypothesis": "Segunda tanda de titulos de guias: doce pasados de los 60 caracteres que publica el SERP, de 83 a 77 contando la marca. El defecto es el de la primera tanda: la etiqueta del tema seguida del indice de la guia, con la respuesta del lado que Google corta. Ahora cada uno arranca por la respuesta (el dolar fiscal es la COMPRA del BROU del dia habil anterior; la cripto es un activo y no moneda de curso legal; en una cuenta conjunta indistinta cualquiera retira todo; la comision inmobiliaria no tiene tope legal) y entra entero. Tres candidatos de los doce mas largos se dejaron afuera a proposito porque sus rutas estan dentro de la ventana abierta de descripciones-de-las-guias-respuesta-primero (cierra el 2026-10-29) y dos filas sobre la misma ruta arruinan la medicion de las dos; en su lugar entraron los tres mas largos con la ruta libre. Es el tramo contenido, que rinde 8x el promedio del sitio, asi que un titulo cortado cuesta mas caro aca. Se espera mas CTR a igual posicion, como midio la primera tanda."
+    },
+    {
+      "id": "alquiler-precios-por-barrio",
+      "shippedOn": "2026-10-04",
+      "routes": ["/alquiler/"],
+      "hypothesis": "Una pagina por barrio con la mediana por dormitorio (dato propio que los portales no publican) capta la cola larga 'alquiler <barrio> <n> dormitorios' / 'cuanto cuesta alquilar en <barrio>' que hoy cae en fichas sueltas en posicion 10-60."
+    },
+    {
+      "id": "autos-usados-por-presupuesto",
+      "shippedOn": "2026-10-04",
+      "routes": ["/autos-usados-uruguay/hasta-*"],
+      "hypothesis": "Las busquedas 'autos usados hasta <monto> dolares' y 'que auto usado comprar' no tienen pagina; el informe ya calcula que modelos hay en cada tramo."
     }
   ]
 }

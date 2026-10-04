@@ -164,6 +164,8 @@ describe('the dynamic families the sitemap submits are routable', () => {
  * removed itself from search — which is the accident the last test catches.
  */
 const NOINDEXED = [
+  // Páginas por barrio: se indexan sólo con muestra suficiente; el resto se sale.
+  'alquiler/[departamento]/[barrio].vue',
   // The rental directory is INDEXABLE at its own URL; only its filtered and paginated views
   // opt out, for the same reason `buscar.vue` does — a facet combination is an infinite set of
   // thin copies of one page.
@@ -177,6 +179,8 @@ const NOINDEXED = [
   // Autos usados: the directory and the model pages index at their own URL; filter combinations,
   // thin models and single adverts (they expire within weeks) opt out.
   'autos-usados-uruguay/[key].vue',
+  // Por presupuesto: se indexa con modelos suficientes en el tramo; si no, noindex.
+  'autos-usados-uruguay/hasta-[monto]-dolares.vue',
   'autos-usados-uruguay/index.vue',
   'autos-usados-uruguay/precios/[slug].vue',
   // Las dos páginas de movilidad eléctrica llevan su directorio de avisos ADENTRO (2026-09-22):

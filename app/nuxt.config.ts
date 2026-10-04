@@ -344,6 +344,27 @@ export default defineNuxtConfig({
     '/autos-usados-uruguay/*': { ogImage: { url: '/img/og-autos.png' } },
     '/en/autos-usados-uruguay/*': { ogImage: { url: '/img/og-autos.png' } },
     '/pt/autos-usados-uruguay/*': { ogImage: { url: '/img/og-autos.png' } },
+    // Páginas por barrio y por presupuesto (2026-10-04): sólo en español, sin /en ni /pt.
+    // El patrón `hasta-*` no existe en el matcher (el comodín es de segmento entero), así que
+    // los cinco tramos van uno por uno.
+    '/alquiler/**': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=300' },
+    },
+    '/autos-usados-uruguay/hasta-6000-dolares': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=900' },
+    },
+    '/autos-usados-uruguay/hasta-10000-dolares': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=900' },
+    },
+    '/autos-usados-uruguay/hasta-15000-dolares': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=900' },
+    },
+    '/autos-usados-uruguay/hasta-20000-dolares': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=900' },
+    },
+    '/autos-usados-uruguay/hasta-30000-dolares': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate, s-maxage=900' },
+    },
     // Caché de borde por familia (propuesta F1.1). Medido en producción el 22/9/2026:
     // /guias/<slug> 0,52-0,60 s de TTFB en DYNAMIC contra 0,32 s en HIT en /. Cada familia
     // se declara tres veces (sin prefijo, /en, /pt) porque con `prefix_except_default` el

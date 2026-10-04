@@ -4260,6 +4260,8 @@ export const UNLISTED_ROUTES: ReadonlyArray<{ to: string; priority: number; chan
  */
 export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freeze({
   'alquileres/[key]': 'consumer',
+  'alquiler/[departamento]/[barrio]': 'consumer',
+  'autos-usados-uruguay/hasta-[monto]-dolares': 'consumer',
   'precio/[slug]': 'consumer',
   'venta-viviendas-uruguay/[key]': 'consumer',
   'autos-usados-uruguay/[key]': 'consumer',
