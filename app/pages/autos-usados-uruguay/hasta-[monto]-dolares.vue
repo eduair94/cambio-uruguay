@@ -144,7 +144,9 @@ import {
 import { CARS_PATH, carMarketPath, formatCarDate, formatCarKm } from '~/utils/cars'
 import type { FaqItem } from '~/utils/faqAnswers'
 
-// Sólo en español, como el resto del directorio de autos: el contenido son avisos uruguayos.
+// Sólo en español, a diferencia del directorio de autos y de las páginas de modelo (que son
+// trilingües): el texto de cada tramo se arma en español. Quien enlace acá desde una página
+// trilingüe usa la ruta cruda, sin localePath, o en /en y /pt cae en un 404.
 defineI18nRoute({ locales: ['es'] })
 definePageMeta({
   validate: route => parseCarBudget(route.params.monto) !== null,

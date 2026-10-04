@@ -245,7 +245,9 @@
         </p>
         <div v-for="budget in data.data.budgets" :key="budget.maxUsd" class="mb-4">
           <h3 class="text-subtitle-1 font-weight-bold mb-2">
-            <NuxtLink v-if="budgetPage(budget.maxUsd)" :to="localePath(budgetPage(budget.maxUsd)!)">
+            <!-- Ruta cruda, sin localePath: las páginas por presupuesto existen sólo en español y
+                 este informe es trilingüe; /en/autos-usados-uruguay/hasta-… sería un 404. -->
+            <NuxtLink v-if="budgetPage(budget.maxUsd)" :to="budgetPage(budget.maxUsd)!">
               Con {{ carReportUsd(budget.maxUsd) }}
             </NuxtLink>
             <template v-else>Con {{ carReportUsd(budget.maxUsd) }}</template>
