@@ -160,9 +160,13 @@ describe("pure zone market publication guards", () => {
 describe("single-owner zone refresh lease", () => {
   const fakeLease = () => {
     const collection = {
+      // What driver 6+ (mongoose 8/9) actually returns: the document, NOT `{ value }`. The mock
+      // used the old shape, which is why the 2026-09-30 upgrade broke the lease with tests green.
       findOneAndUpdate: vi.fn(
         async (_filter: unknown, update: any, _options: unknown) => ({
-          value: { owner: update.$set.owner },
+          _id: "refresh-lock",
+          owner: update.$set.owner,
+          expiresAt: update.$set.expiresAt,
         }),
       ),
       deleteOne: vi.fn(async () => undefined),
@@ -223,7 +227,8 @@ describe("single-owner zone refresh lease", () => {
   it("requires its returned ownership token before running", async () => {
     const { collection } = fakeLease();
     collection.findOneAndUpdate.mockResolvedValue({
-      value: { owner: "another-worker" },
+      _id: "refresh-lock",
+      owner: "another-worker",
     });
     const run = vi.fn();
     await expect(withZoneRefreshLease(run)).rejects.toThrow(
