@@ -14,7 +14,10 @@ export default defineEventHandler(async event => {
   try {
     page = await loadRentalBarrio(department, barrio)
   } catch {
-    throw createError({ statusCode: 503, statusMessage: 'Neighborhood data temporarily unavailable' })
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Neighborhood data temporarily unavailable',
+    })
   }
   if (!page) throw createError({ statusCode: 404, statusMessage: 'Neighborhood not found' })
   setResponseHeader(event, 'cache-control', 'public, max-age=120, s-maxage=300')

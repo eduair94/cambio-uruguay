@@ -119,14 +119,21 @@ describe('buildRentalBarrioPage', () => {
   })
 
   it('un snapshot de más de 7 días se sirve pero no se indexa', () => {
-    const page = buildRentalBarrioPage(snapshots('2026-09-26T06:53:00.000Z'), 'montevideo', 'pocitos', NOW)!
+    const page = buildRentalBarrioPage(
+      snapshots('2026-09-26T06:53:00.000Z'),
+      'montevideo',
+      'pocitos',
+      NOW
+    )!
     expect(page.indexable).toBe(false)
     expect(page.generatedAt).toBe('2026-09-26T06:53:00.000Z')
   })
 
   it('reconoce el barrio oficial de Montevideo (para el panel de servicios)', () => {
     const data = snapshots()
-    ;(data as any).context = { boundaries: { features: [{ properties: { name: 'POCITOS', officialCode: '1' } }] } }
+    ;(data as any).context = {
+      boundaries: { features: [{ properties: { name: 'POCITOS', officialCode: '1' } }] },
+    }
     expect(buildRentalBarrioPage(data, 'montevideo', 'pocitos', NOW)!.officialZone).toBe('POCITOS')
     expect(buildRentalBarrioPage(data, 'montevideo', 'cordon', NOW)!.officialZone).toBeNull()
     expect(buildRentalBarrioPage(data, 'canelones', 'carrasco', NOW)!.officialZone).toBeNull()
@@ -144,6 +151,8 @@ describe('buildRentalBarrioPage', () => {
   it('barrio o departamento desconocido, o sin mercado, devuelve null', () => {
     expect(buildRentalBarrioPage(snapshots(), 'montevideo', 'carrasco', NOW)).toBeNull()
     expect(buildRentalBarrioPage(snapshots(), 'atlantida', 'pocitos', NOW)).toBeNull()
-    expect(buildRentalBarrioPage({ market: null, context: null }, 'montevideo', 'pocitos', NOW)).toBeNull()
+    expect(
+      buildRentalBarrioPage({ market: null, context: null }, 'montevideo', 'pocitos', NOW)
+    ).toBeNull()
   })
 })
