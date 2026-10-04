@@ -8,6 +8,7 @@ import {
   rentalBarrioSlug,
 } from '../../utils/rentalBarrio'
 import type { RentalZoneSnapshots } from '../../utils/rentalZones'
+import { normalizeRentalQuery } from '../../utils/rentals'
 
 const NOW = Date.parse('2026-10-04T12:00:00Z')
 const dist = (median: number | null, count = 20) => ({
@@ -134,15 +135,41 @@ describe('buildRentalBarrioPage', () => {
     ;(data as any).context = {
       boundaries: { features: [{ properties: { name: 'POCITOS', officialCode: '1' } }] },
     }
-    expect(buildRentalBarrioPage(data, 'montevideo', 'pocitos', NOW)!.officialZone).toBe('POCITOS')
-    expect(buildRentalBarrioPage(data, 'montevideo', 'cordon', NOW)!.officialZone).toBeNull()
-    expect(buildRentalBarrioPage(data, 'canelones', 'carrasco', NOW)!.officialZone).toBeNull()
+    const pocitos = buildRentalBarrioPage(data, 'montevideo', 'pocitos', NOW)!
+    expect(pocitos.officialZone).toBe('POCITOS')
+    // /api/rentals/zone-profile takes the code, not the name.
+    expect(pocitos.officialZoneId).toBe('mvd:1')
+    const cordon = buildRentalBarrioPage(data, 'montevideo', 'cordon', NOW)!
+    expect(cordon.officialZone).toBeNull()
+    expect(cordon.officialZoneId).toBeNull()
+    const carrasco = buildRentalBarrioPage(data, 'canelones', 'carrasco', NOW)!
+    expect(carrasco.officialZone).toBeNull()
+    expect(carrasco.officialZoneId).toBeNull()
   })
 
   it('arma el filtro del directorio', () => {
+    // The cells count exact bedrooms; the directory's `bedrooms` is a minimum without the flag.
     expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', '2')).toBe(
-      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos&bedrooms=2'
+      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos&bedrooms=2&bedroomsExact=1'
     )
+    expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', '0')).toBe(
+      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos&bedrooms=0'
+    )
+    expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', '4plus')).toBe(
+      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos&bedrooms=4'
+    )
+    expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', '1', 'apartamento')).toBe(
+      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos&type=apartamento&bedrooms=1&bedroomsExact=1'
+    )
+    expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', 'any', 'casa')).toBe(
+      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos&type=casa'
+    )
+    // The directory reads the link back as the same row.
+    const path = rentalBarrioDirectoryPath('Montevideo', 'Pocitos', '2', 'apartamento')
+    const query = normalizeRentalQuery(Object.fromEntries(new URLSearchParams(path.split('?')[1])))
+    expect(query.types).toEqual(['apartamento'])
+    expect(query.bedrooms).toBe(2)
+    expect(query.bedroomsExact).toBe(true)
     expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', 'any')).toBe(
       '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos'
     )

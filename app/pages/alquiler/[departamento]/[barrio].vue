@@ -56,7 +56,12 @@
                 <td data-label="">
                   <NuxtLink
                     :to="
-                      rentalBarrioDirectoryPath(data.department, data.neighborhood, cell.bedrooms)
+                      rentalBarrioDirectoryPath(
+                        data.department,
+                        data.neighborhood,
+                        cell.bedrooms,
+                        group.type
+                      )
                     "
                   >
                     {{ BEDROOM_LABEL[cell.bedrooms] }}
@@ -89,7 +94,7 @@
 
       <section v-if="data.listings.length" class="mb-8">
         <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-3">
-          <h2 class="text-h6 mb-0">Avisos de hoy en {{ data.neighborhood }}</h2>
+          <h2 class="text-h6 mb-0">Avisos recientes en {{ data.neighborhood }}</h2>
           <VBtn variant="text" :to="data.directoryPath">Ver todos en el directorio</VBtn>
         </div>
         <div class="barrio-grid">
@@ -116,8 +121,10 @@
         </VBtn>
       </div>
 
-      <!-- Sin RentalsZoneServicesPanel: /api/rentals/zone-profile pide el código de zona
-           (`mvd:N`) y `officialZone` trae el nombre oficial; entra cuando la API mande el código. -->
+      <div v-if="officialZone" class="mb-8">
+        <RentalsZoneServicesPanel :zone="officialZone" hide-evidence />
+      </div>
+
       <section v-if="data.similar.length" class="mb-8">
         <h2 class="text-h6 mb-2">Barrios con precios parecidos</h2>
         <div class="d-flex flex-wrap ga-2">
@@ -179,6 +186,7 @@ import {
   rentalBarrioTitle,
 } from '~/utils/rentalBarrioCopy'
 import { rentalMoney, rentalPropertyPath } from '~/utils/rentalPresentation'
+import type { RentalOfficialZone } from '~/utils/rentals'
 import type { RentalZonePropertyType } from '~/utils/rentalZoneTypes'
 
 // Sólo en español, como las fichas de alquiler: el contenido (barrios, avisos) es en español.
@@ -239,6 +247,17 @@ const canonical = computed(() =>
   data.value ? `${SITE}${data.value.path}` : `${SITE}/alquiler/${department.value}/${barrio.value}`
 )
 const dataDate = computed(() => (data.value ? rentalBarrioDate(data.value) : null))
+// Same shape the rental ficha passes; the endpoint keys on the zone code, the title on the name.
+const officialZone = computed<RentalOfficialZone | null>(() =>
+  data.value?.officialZoneId
+    ? {
+        zone: data.value.officialZoneId,
+        name: data.value.neighborhood,
+        department: data.value.department,
+        evidence: 'name',
+      }
+    : null
+)
 
 const breadcrumbs = computed(() => [
   { title: 'Inicio', to: localePath('/') },

@@ -72,15 +72,29 @@ export interface RentalBarrioPage {
   rentalDataAsOf: string | null
   indexable: boolean
   officialZone: string | null
+  /** `mvd:<code>`, the key `/api/rentals/zone-profile` expects; null outside the 62 areas. */
+  officialZoneId: string | null
 }
 
+/**
+ * Directory link for one table row. The market cells count EXACT bedrooms ('4plus' is the only
+ * open bucket), while the directory's `bedrooms` is a minimum unless `bedroomsExact=1`, so the
+ * link carries the flag to list the same homes the row measured. `type` is the directory's own
+ * filter key (`rentalQueryToParams`), whose values are the stored property types.
+ */
 export function rentalBarrioDirectoryPath(
   department: string,
   neighborhood: string,
-  bedrooms?: string
+  bedrooms?: string,
+  propertyType?: RentalZonePropertyType
 ): string {
   const params = new URLSearchParams({ department, neighborhood })
-  if (bedrooms && bedrooms !== 'any') params.set('bedrooms', bedrooms)
+  if (propertyType) params.set('type', propertyType)
+  if (bedrooms === '4plus') params.set('bedrooms', '4')
+  else if (bedrooms && /^\d$/.test(bedrooms)) {
+    params.set('bedrooms', bedrooms)
+    if (bedrooms !== '0') params.set('bedroomsExact', '1')
+  }
   return `/alquileres-uruguay?${params.toString()}`
 }
 
@@ -198,14 +212,16 @@ export function buildRentalBarrioPage(
   const fresh =
     Number.isFinite(generated) && now - generated <= RENTAL_BARRIO_MAX_AGE_DAYS * 86_400_000
   // The 62 official areas only exist for Montevideo; match by the same folded name the job uses.
-  const officialZone =
+  // The services endpoint takes the zone CODE (`mvd:<officialCode>`), not the name.
+  const official =
     self.department === 'Montevideo'
-      ? ((snapshots.context?.boundaries?.features ?? [])
-          .map(feature => feature.properties.name)
-          .find(name => rentalZoneName(name) === rentalZoneName(self.neighborhood)) ?? null)
+      ? ((snapshots.context?.boundaries?.features ?? []).find(
+          feature => rentalZoneName(feature.properties.name) === rentalZoneName(self.neighborhood)
+        )?.properties ?? null)
       : null
   return {
-    officialZone,
+    officialZone: official?.name ?? null,
+    officialZoneId: official?.officialCode ? `mvd:${official.officialCode}` : null,
     department: self.department,
     departmentSlug: self.departmentSlug,
     neighborhood: self.neighborhood,
