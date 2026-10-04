@@ -229,6 +229,7 @@ describe("single-owner zone refresh lease", () => {
     collection.findOneAndUpdate.mockResolvedValue({
       _id: "refresh-lock",
       owner: "another-worker",
+      expiresAt: new Date(),
     });
     const run = vi.fn();
     await expect(withZoneRefreshLease(run)).rejects.toThrow(
