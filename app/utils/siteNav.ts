@@ -3647,6 +3647,34 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El costo de NO tener auto, que es el que paga la mayoría, y el único que no tenía
+        // página: el sitio ya contestaba la nafta, la patente, las multas, los peajes y el costo
+        // por mes de cada modo. El boleto sólo existía como insumo de otras cuentas («dos boletos
+        // por día, veintidós días» en vivir con el salario mínimo). Va pegado a la nafta y al
+        // peaje porque la pregunta es la misma —cuánto sale moverse— y porque las tres son una
+        // tarifa publicada que cambia sola.
+        to: '/precio-del-boleto-montevideo',
+        labelKey: 'nav.precioBoleto',
+        icon: 'mdi-bus',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'precio del boleto montevideo',
+          'cuanto sale el boleto en montevideo',
+          'boleto 2 horas montevideo',
+          'tarifas stm',
+          'boleto jubilado montevideo',
+          'boleto estudiante montevideo',
+          'boleto zonal montevideo',
+          'boleto centrico montevideo',
+          'boleto tus mides',
+          'tarjeta stm precio',
+          'recarga minima tarjeta stm',
+          'combinacion metropolitana precio',
+        ],
+      },
+      {
         to: '/impuesto-autos-electricos-uruguay',
         labelKey: 'nav.impuestoAutosElectricos',
         icon: 'mdi-car-electric-outline',

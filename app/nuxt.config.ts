@@ -845,9 +845,6 @@ export default defineNuxtConfig({
     externals: {
       trace: false,
     },
-    experimental: {
-      bundleRuntimeDependencies: false,
-    },
     storage: {
       redis: {
         driver: 'memory', // Use memory storage for development
@@ -896,6 +893,18 @@ export default defineNuxtConfig({
         base: './.data/company',
       },
     },
+    // UN SOLO bloque `experimental`, y la razón de la nota: había DOS, separados por las ~50
+    // líneas de `storage`, así que el segundo ganaba por semántica de objeto y el primero
+    // —`bundleRuntimeDependencies: false`, puesto a propósito junto a `externals.trace`— nunca
+    // estuvo en efecto. Vite lo venía avisando ("Duplicate key experimental") en cada corrida de
+    // tests, mezclado entre miles de líneas de salida. El peligro no es sólo esa opción perdida:
+    // mientras hubiera dos bloques, cualquier opción agregada al de arriba se descartaba igual y
+    // en silencio.
+    //
+    // Se conserva EXACTAMENTE lo que estaba vigente (wasm + tasks): activar
+    // `bundleRuntimeDependencies: false` cambiaría cómo el build de producción resuelve los
+    // paquetes y no se puede verificar sin hacer ese build, así que queda como decisión del
+    // mantenedor y no como efecto colateral de arreglar la clave repetida.
     experimental: {
       wasm: true,
       tasks: true, // enable Nitro scheduled tasks (daily blog generation)
