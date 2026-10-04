@@ -490,6 +490,15 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
     '/alquileres-uruguay',
     '/saldar-deudas-uruguay',
   ],
+  // Páginas de precios por barrio (`/alquiler/<departamento>/<barrio>`).
+  '/alquiler': [
+    '/alquileres-uruguay',
+    '/barrios-alquileres-uruguay',
+    '/evolucion-precio-alquileres-uruguay',
+    '/garantia-de-alquiler-uruguay',
+    '/primer-alquiler-uruguay',
+    '/alquilar-sin-recibo-de-sueldo',
+  ],
   // Search and preparation are two parts of the same housing journey. Keep
   // both directions explicit instead of letting generic price keywords choose.
   '/alquileres-uruguay': [

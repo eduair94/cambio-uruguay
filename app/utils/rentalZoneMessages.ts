@@ -59,6 +59,9 @@ export const rentalZoneMessages = {
     officialArea: 'Barrio oficial: {name}',
     servicesLayerHint: 'Sin dato no significa cero.',
     title: 'Compará barrios para alquilar',
+    barrioPagesTitle: 'Precios de alquiler por barrio',
+    barrioPagesIntro:
+      'Una página por barrio con lo que se pide por mes según tipo de vivienda y dormitorios, y los gastos comunes. Entre paréntesis, los avisos medidos.',
     intro:
       'Precios publicados, servicios registrados y denuncias oficiales para conocer mejor cada zona.',
     seo: 'Compará barrios de Uruguay por alquileres, cortes de luz y de agua, reclamos a la Intendencia, servicios y datos oficiales, con muestras y fechas a la vista.',
@@ -263,6 +266,9 @@ export const rentalZoneMessages = {
     officialArea: 'Official neighbourhood: {name}',
     servicesLayerHint: 'No data does not mean zero.',
     title: 'Compare neighbourhoods for renting',
+    barrioPagesTitle: 'Rental prices by neighbourhood',
+    barrioPagesIntro:
+      'One page per neighbourhood with monthly asking rents by property type and bedrooms, plus common charges. In brackets, the adverts measured. The pages are in Spanish.',
     intro: 'Asking rents, mapped services and official reports to understand each area.',
     seo: 'Compare Uruguay’s neighbourhoods by rents, power and water cuts, city complaints, mapped services and official data, with samples and dates in view.',
     explore: 'Explore rentals',
@@ -465,6 +471,9 @@ export const rentalZoneMessages = {
     officialArea: 'Bairro oficial: {name}',
     servicesLayerHint: 'Sem dado não significa zero.',
     title: 'Compare bairros para alugar',
+    barrioPagesTitle: 'Preços de aluguel por bairro',
+    barrioPagesIntro:
+      'Uma página por bairro com o aluguel mensal pedido por tipo de imóvel e quartos, e as despesas de condomínio. Entre parênteses, os anúncios medidos. As páginas estão em espanhol.',
     intro:
       'Aluguéis anunciados, serviços registrados e denúncias oficiais para conhecer cada região.',
     seo: 'Compare bairros do Uruguai por aluguéis, quedas de energia e cortes de água, reclamações à prefeitura, serviços e dados oficiais, com amostras e datas.',

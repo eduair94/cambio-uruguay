@@ -31,4 +31,10 @@ export interface RentalPageResponse {
   }
   market: RentalPageMarket
   similar: RentalPublicProperty[]
+  /**
+   * `/alquiler/<departamento>/<barrio>` and the barrio's display name, only when that page is
+   * indexable; filled by the ficha endpoint. The label is the page's own ("Pocitos"), never the
+   * advert's raw spelling ("POCITOS").
+   */
+  barrioLink: { path: string; label: string } | null
 }

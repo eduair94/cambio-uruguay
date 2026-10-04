@@ -21,6 +21,7 @@ import { toolSlugs } from '../../../utils/tools'
 import { videoTopicSlugs } from '../../../utils/videoTopics'
 import { isEquiparCategorySlug } from '../../../utils/equiparCategoryPages'
 import { CarCatalogMetaModel } from '../../models/CarCatalogMeta'
+import { CAR_BUDGETS, carBudgetPath } from '../../../utils/carBudget'
 import { isStoreDirectoryKey } from '../../../utils/storeDirectory'
 import { storeIndexable, type StorePublicProfile } from '../../../utils/storeProfiles'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
@@ -34,6 +35,7 @@ import { listPosts } from '../../utils/blog'
 import { listIssueDates } from '../../utils/newsletterArchive'
 import { loadPropertySaleSitemapUrls } from '../../utils/propertySales'
 import { connectDb, disconnectDbAfterPrerender } from '../../utils/db'
+import { loadIndexableRentalBarrios } from '../../utils/rentalBarrio'
 
 interface SitemapUrl {
   loc: string
@@ -382,6 +384,25 @@ export default defineEventHandler(async _event => {
     if (models.length) console.log(`- Used-car model pages: ${models.length} routes`)
   } catch (carError) {
     console.warn('Failed to add used-car model pages to sitemap:', carError)
+  } finally {
+    await disconnectDbAfterPrerender()
+  }
+
+  // --- Used-car pages by budget: the five fixed tiers of the market report, no DB read --------
+  CAR_BUDGETS.forEach(budget => {
+    urls.push({ loc: carBudgetPath(budget), changefreq: 'daily', priority: 0.6 })
+  })
+
+  // --- Rental price pages per neighborhood: only indexable ones (≥2 cells, fresh snapshot) -----
+  // Spanish only, same reasoning as the used-car block: the body is Uruguayan asking prices.
+  try {
+    const barrios = await loadIndexableRentalBarrios()
+    barrios.forEach(barrio => {
+      urls.push({ loc: barrio.path, changefreq: 'daily', priority: 0.6 })
+    })
+    if (barrios.length) console.log(`- Rental neighborhood pages: ${barrios.length} routes`)
+  } catch (barrioError) {
+    console.warn('Failed to add rental neighborhood pages to sitemap:', barrioError)
   } finally {
     await disconnectDbAfterPrerender()
   }

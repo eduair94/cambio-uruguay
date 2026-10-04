@@ -245,7 +245,12 @@
         </p>
         <div v-for="budget in data.data.budgets" :key="budget.maxUsd" class="mb-4">
           <h3 class="text-subtitle-1 font-weight-bold mb-2">
-            Con {{ carReportUsd(budget.maxUsd) }}
+            <!-- Ruta cruda, sin localePath: las páginas por presupuesto existen sólo en español y
+                 este informe es trilingüe; /en/autos-usados-uruguay/hasta-… sería un 404. -->
+            <NuxtLink v-if="budgetPage(budget.maxUsd)" :to="budgetPage(budget.maxUsd)!">
+              Con {{ carReportUsd(budget.maxUsd) }}
+            </NuxtLink>
+            <template v-else>Con {{ carReportUsd(budget.maxUsd) }}</template>
             <span class="text-body-2 text-medium-emphasis font-weight-regular">
               ({{ budget.adverts.toLocaleString('es-UY') }} avisos en esa franja)
             </span>
@@ -381,6 +386,7 @@
 
 <script setup lang="ts">
 import { CAR_OPPORTUNITIES_PATH, CARS_PATH, carMarketPath, formatCarDate } from '~/utils/cars'
+import { carBudgetPath, parseCarBudget } from '~/utils/carBudget'
 import { CAR_RISKS_PATH, type CarRisksResponse } from '~/utils/carsRisk'
 import { CAR_ADVISOR_PATH } from '~/utils/carAdvisorFigures'
 import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
@@ -433,6 +439,11 @@ const keepsValue = computed(() => data.value!.data.depreciation.slice(0, 8))
 const losesValue = computed(() => [...data.value!.data.depreciation].reverse().slice(0, 8))
 const bestDrop = computed(() => keepsValue.value[0]?.annualDrop ?? 0.02)
 const worstDrop = computed(() => losesValue.value[0]?.annualDrop ?? 0.1)
+/** La página del tramo, si el tope es uno de los que el app publica (paridad con report.ts). */
+const budgetPage = (maxUsd: number): string | null => {
+  const budget = parseCarBudget(String(maxUsd))
+  return budget === null ? null : carBudgetPath(budget)
+}
 const medianOf = (marketSlug: string): number =>
   data.value!.data.models.find(model => model.marketSlug === marketSlug)?.price.median ?? 0
 

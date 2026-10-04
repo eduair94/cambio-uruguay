@@ -84,6 +84,7 @@ export const rentalPageMessages = {
     noCoordinates:
       'El aviso no publica coordenadas utilizables. Confirmá la dirección antes de coordinar la visita.',
     exploreArea: 'Buscar más en esta zona',
+    barrioPrices: 'Precios de alquiler en {name}',
     marketTitle: 'Cómo se compara el alquiler en la zona',
     marketIntro:
       '{n} resultados del índice en {zone}, del mismo tipo y con la misma cantidad de dormitorios. No incluye esta ficha.',
@@ -240,6 +241,7 @@ export const rentalPageMessages = {
     noCoordinates:
       'This advert has no usable coordinates. Confirm the address before arranging a visit.',
     exploreArea: 'Find more in this area',
+    barrioPrices: 'Rental prices in {name}',
     marketTitle: 'How the rent compares in this area',
     marketIntro:
       '{n} indexed results in {zone}, of the same type and with the same bedroom count. This page is excluded.',
@@ -396,6 +398,7 @@ export const rentalPageMessages = {
     noCoordinates:
       'O anúncio não informa coordenadas utilizáveis. Confirme o endereço antes de marcar a visita.',
     exploreArea: 'Buscar mais nesta região',
+    barrioPrices: 'Preços de aluguel em {name}',
     marketTitle: 'Como o aluguel se compara na região',
     marketIntro:
       '{n} resultados do índice em {zone}, do mesmo tipo e com a mesma quantidade de quartos. Esta ficha não está incluída.',

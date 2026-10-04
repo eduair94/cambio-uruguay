@@ -1,0 +1,244 @@
+// app/tests/unit/rentalBarrio.test.ts
+import { describe, expect, it } from 'vitest'
+import {
+  buildRentalBarrioPage,
+  listRentalBarrios,
+  rentalBarrioDirectoryPath,
+  rentalBarrioPath,
+  rentalBarrioSlug,
+} from '../../utils/rentalBarrio'
+import type { RentalZoneSnapshots } from '../../utils/rentalZones'
+import { normalizeRentalQuery } from '../../utils/rentals'
+
+const NOW = Date.parse('2026-10-04T12:00:00Z')
+const dist = (median: number | null, count = 20) => ({
+  count,
+  mean: median,
+  median,
+  p25: median === null ? null : Math.round(median * 0.85),
+  p75: median === null ? null : Math.round(median * 1.15),
+})
+const empty = { count: 0, mean: null, median: null, p25: null, p75: null }
+const bucket = (
+  neighborhood: string,
+  propertyType: 'apartamento' | 'casa',
+  bedrooms: 'any' | '0' | '1' | '2' | '3' | '4plus',
+  median: number | null,
+  count = 20,
+  department = 'Montevideo'
+) => ({
+  department,
+  neighborhood,
+  propertyType,
+  bedrooms,
+  prices: {
+    rent: dist(median, count),
+    commonExpenses: dist(median === null ? null : 6000, count),
+    monthlyTotal: dist(median === null ? null : median + 6000, count),
+    builtSquareMeter: empty,
+    sources: 3,
+    lastSeenFrom: '2026-09-28T00:00:00.000Z',
+    lastSeenTo: '2026-10-03T00:00:00.000Z',
+  },
+})
+const snapshots = (generatedAt = '2026-10-04T06:53:00.000Z'): RentalZoneSnapshots =>
+  ({
+    market: {
+      generatedAt,
+      rentalDataAsOf: generatedAt,
+      buckets: [
+        bucket('POCITOS', 'apartamento', 'any', 32000, 900),
+        bucket('Pocitos', 'apartamento', '2', 36000, 300),
+        bucket('POCITOS', 'apartamento', '1', 27000, 250),
+        bucket('Pocitos', 'casa', 'any', null, 5),
+        bucket('Cordón', 'apartamento', 'any', 24000, 1200),
+        bucket('CORDON', 'apartamento', '2', 26000, 400),
+        bucket('Malvín', 'apartamento', 'any', 28000, 500),
+        bucket('MALVIN', 'apartamento', '2', 34000, 200),
+        bucket('Casabó', 'casa', 'any', 15000, 9),
+        bucket('Carrasco', 'apartamento', 'any', 45000, 100, 'Canelones'),
+        bucket('Carrasco', 'apartamento', '2', 47000, 40, 'Canelones'),
+      ],
+    },
+    context: null,
+  }) as unknown as RentalZoneSnapshots
+
+describe('rentalBarrioSlug / rentalBarrioPath', () => {
+  it('pliega tildes, mayúsculas y espacios', () => {
+    expect(rentalBarrioSlug('Malvín Norte')).toBe('malvin-norte')
+    expect(rentalBarrioSlug('  PUNTA   CARRETAS ')).toBe('punta-carretas')
+    expect(rentalBarrioPath('Cerro Largo', 'Melo')).toBe('/alquiler/cerro-largo/melo')
+  })
+})
+
+describe('listRentalBarrios', () => {
+  it('une las grafías de un mismo barrio y separa departamentos', () => {
+    const list = listRentalBarrios(snapshots())
+    const pocitos = list.filter(item => item.slug === 'pocitos')
+    expect(pocitos).toHaveLength(1)
+    expect(pocitos[0]!.neighborhood).toBe('Pocitos')
+    expect(pocitos[0]!.publishableCells).toBe(3)
+    expect(pocitos[0]!.listings).toBe(905)
+    const carrasco = list.filter(item => item.slug === 'carrasco')
+    expect(carrasco.map(item => item.departmentSlug)).toEqual(['canelones'])
+    expect(list.find(item => item.slug === 'malvin')!.neighborhood).toBe('Malvín')
+    // The raw spellings the listings query matches exactly (server-side only).
+    expect(pocitos[0]!.spellings).toEqual(['POCITOS', 'Pocitos'])
+    expect(list.every(item => item.nameShared === false)).toBe(true)
+  })
+
+  it('marca el nombre repetido en otro departamento', () => {
+    const data = snapshots()
+    data.market!.buckets.push(bucket('CARRASCO', 'apartamento', 'any', 60000, 300) as any)
+    const list = listRentalBarrios(data)
+    const carrasco = list.filter(item => item.slug === 'carrasco')
+    expect(carrasco.map(item => [item.departmentSlug, item.nameShared])).toEqual([
+      ['canelones', true],
+      ['montevideo', true],
+    ])
+    expect(list.find(item => item.slug === 'pocitos')!.nameShared).toBe(false)
+  })
+
+  it('descarta un barrio cuyo nombre no deja slug', () => {
+    const data = snapshots()
+    data.market!.buckets.push(bucket('---', 'apartamento', 'any', 20000, 50) as any)
+    const list = listRentalBarrios(data)
+    expect(list.some(item => item.slug === '')).toBe(false)
+    expect(list.some(item => item.path.endsWith('/'))).toBe(false)
+  })
+
+  it('arma la lista una vez por snapshot', () => {
+    const data = snapshots()
+    const first = listRentalBarrios(data)
+    expect(listRentalBarrios(data)).toBe(first)
+    // Another snapshot (the loader replaced `market`) is grouped again.
+    expect(listRentalBarrios(snapshots())).not.toBe(first)
+    expect(listRentalBarrios({ market: null, context: null } as any)).toEqual([])
+  })
+})
+
+describe('buildRentalBarrioPage', () => {
+  it('arma celdas, rank, similares y más buscados', () => {
+    const page = buildRentalBarrioPage(snapshots(), 'montevideo', 'pocitos', NOW)!
+    expect(page.path).toBe('/alquiler/montevideo/pocitos')
+    // `casa/any` de Pocitos tiene mediana nula (n = 5): page.cells sólo trae celdas publicables.
+    expect(page.cells.map(cell => `${cell.propertyType}/${cell.bedrooms}`)).toEqual([
+      'apartamento/any',
+      'apartamento/1',
+      'apartamento/2',
+    ])
+    expect(page.officialZone).toBeNull()
+    expect(page.rank).toEqual({ position: 1, of: 3, propertyType: 'apartamento', bedrooms: '2' })
+    expect(page.similar.map(link => link.neighborhood)).toEqual(['Malvín', 'Cordón'])
+    expect(page.largest[0]!.neighborhood).toBe('Cordón')
+    expect(page.largest.some(link => link.neighborhood === 'Carrasco')).toBe(false)
+    // Casabó has one publishable cell: its page is noindex, so no chip links to it.
+    expect(page.largest.map(link => link.neighborhood)).toEqual(['Cordón', 'Malvín'])
+    expect(page.indexable).toBe(true)
+    expect(page.nameShared).toBe(false)
+    expect(page.spellings).toEqual(['POCITOS', 'Pocitos'])
+  })
+
+  it('similares y más avisos sólo enlazan barrios indexables; el rank cuenta a todos', () => {
+    const data = snapshots()
+    // Buceo: a 2-bedroom median right next to Pocitos', but a single publishable cell.
+    data.market!.buckets.push(bucket('Buceo', 'apartamento', '2', 35500, 30) as any)
+    const page = buildRentalBarrioPage(data, 'montevideo', 'pocitos', NOW)!
+    expect(page.rank).toEqual({ position: 1, of: 4, propertyType: 'apartamento', bedrooms: '2' })
+    expect(page.similar.map(link => link.neighborhood)).toEqual(['Malvín', 'Cordón'])
+    expect(page.largest.some(link => link.neighborhood === 'Buceo')).toBe(false)
+  })
+
+  it('con el nombre repetido en otro departamento, la página lo sabe', () => {
+    const data = snapshots()
+    data.market!.buckets.push(
+      bucket('Carrasco', 'apartamento', 'any', 60000, 300) as any,
+      bucket('Carrasco', 'apartamento', '2', 65000, 100) as any
+    )
+    const montevideo = buildRentalBarrioPage(data, 'montevideo', 'carrasco', NOW)!
+    const canelones = buildRentalBarrioPage(data, 'canelones', 'carrasco', NOW)!
+    expect(montevideo.nameShared).toBe(true)
+    expect(canelones.nameShared).toBe(true)
+    expect(montevideo.path).not.toBe(canelones.path)
+  })
+
+  it('sin la celda de 2 dormitorios, compara por apartamento/any', () => {
+    const data = snapshots()
+    data.market!.buckets = data.market!.buckets.filter(
+      row => !(row.neighborhood.toLowerCase() === 'pocitos' && row.bedrooms === '2')
+    )
+    const page = buildRentalBarrioPage(data, 'montevideo', 'pocitos', NOW)!
+    expect(page.rank).toEqual({ position: 1, of: 3, propertyType: 'apartamento', bedrooms: 'any' })
+  })
+
+  it('con menos de dos celdas publicables no se indexa', () => {
+    const page = buildRentalBarrioPage(snapshots(), 'montevideo', 'casabo', NOW)!
+    expect(page.cells).toHaveLength(1)
+    expect(page.indexable).toBe(false)
+    expect(page.rank).toBeNull()
+  })
+
+  it('un snapshot de más de 7 días se sirve pero no se indexa', () => {
+    const page = buildRentalBarrioPage(
+      snapshots('2026-09-26T06:53:00.000Z'),
+      'montevideo',
+      'pocitos',
+      NOW
+    )!
+    expect(page.indexable).toBe(false)
+    expect(page.generatedAt).toBe('2026-09-26T06:53:00.000Z')
+  })
+
+  it('reconoce el barrio oficial de Montevideo (para el panel de servicios)', () => {
+    const data = snapshots()
+    ;(data as any).context = {
+      boundaries: { features: [{ properties: { name: 'POCITOS', officialCode: '1' } }] },
+    }
+    const pocitos = buildRentalBarrioPage(data, 'montevideo', 'pocitos', NOW)!
+    expect(pocitos.officialZone).toBe('POCITOS')
+    // /api/rentals/zone-profile takes the code, not the name.
+    expect(pocitos.officialZoneId).toBe('mvd:1')
+    const cordon = buildRentalBarrioPage(data, 'montevideo', 'cordon', NOW)!
+    expect(cordon.officialZone).toBeNull()
+    expect(cordon.officialZoneId).toBeNull()
+    const carrasco = buildRentalBarrioPage(data, 'canelones', 'carrasco', NOW)!
+    expect(carrasco.officialZone).toBeNull()
+    expect(carrasco.officialZoneId).toBeNull()
+  })
+
+  it('arma el filtro del directorio', () => {
+    // The cells count exact bedrooms; the directory's `bedrooms` is a minimum without the flag.
+    expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', '2')).toBe(
+      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos&bedrooms=2&bedroomsExact=1'
+    )
+    expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', '0')).toBe(
+      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos&bedrooms=0'
+    )
+    expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', '4plus')).toBe(
+      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos&bedrooms=4'
+    )
+    expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', '1', 'apartamento')).toBe(
+      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos&type=apartamento&bedrooms=1&bedroomsExact=1'
+    )
+    expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', 'any', 'casa')).toBe(
+      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos&type=casa'
+    )
+    // The directory reads the link back as the same row.
+    const path = rentalBarrioDirectoryPath('Montevideo', 'Pocitos', '2', 'apartamento')
+    const query = normalizeRentalQuery(Object.fromEntries(new URLSearchParams(path.split('?')[1])))
+    expect(query.types).toEqual(['apartamento'])
+    expect(query.bedrooms).toBe(2)
+    expect(query.bedroomsExact).toBe(true)
+    expect(rentalBarrioDirectoryPath('Montevideo', 'Pocitos', 'any')).toBe(
+      '/alquileres-uruguay?department=Montevideo&neighborhood=Pocitos'
+    )
+  })
+
+  it('barrio o departamento desconocido, o sin mercado, devuelve null', () => {
+    expect(buildRentalBarrioPage(snapshots(), 'montevideo', 'carrasco', NOW)).toBeNull()
+    expect(buildRentalBarrioPage(snapshots(), 'atlantida', 'pocitos', NOW)).toBeNull()
+    expect(
+      buildRentalBarrioPage({ market: null, context: null }, 'montevideo', 'pocitos', NOW)
+    ).toBeNull()
+  })
+})

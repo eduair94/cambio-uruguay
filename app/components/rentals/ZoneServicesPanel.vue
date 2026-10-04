@@ -2,7 +2,7 @@
 <template>
   <section class="zone-services" data-testid="rental-zone-services">
     <h3>{{ t('panelTitle', { name: zone.name }) }}</h3>
-    <p class="meta">{{ t(`evidence_${zone.evidence}`) }}</p>
+    <p v-if="!hideEvidence" class="meta">{{ t(`evidence_${zone.evidence}`) }}</p>
     <!-- The profile is fetched only in the browser: its loading state must not be part of the SSR HTML. -->
     <ClientOnly>
       <p v-if="pending" class="meta" role="status">{{ t('loading') }}</p>
@@ -75,7 +75,8 @@ import type {
 import type { RentalOfficialZone } from '~/utils/rentals'
 import { rentalZoneMessages } from '~/utils/rentalZoneMessages'
 
-const props = defineProps<{ zone: RentalOfficialZone }>()
+// `hideEvidence`: the evidence line speaks of ONE advert; a neighbourhood page has no advert to cite.
+const props = defineProps<{ zone: RentalOfficialZone; hideEvidence?: boolean }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalZoneMessages })
 const localePath = useLocalePath()
 const {

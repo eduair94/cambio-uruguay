@@ -11,11 +11,26 @@
       @apply="apply"
       @cancel="navigateTo(localePath('/alquileres-uruguay'))"
     />
+    <section v-if="barrioGroups.length" class="barrio-pages" aria-labelledby="barrio-pages-title">
+      <h2 id="barrio-pages-title">{{ t('barrioPagesTitle') }}</h2>
+      <p class="barrio-pages-intro">{{ t('barrioPagesIntro') }}</p>
+      <div v-for="group in barrioGroups" :key="group.department" class="barrio-pages-group">
+        <h3>{{ group.department }}</h3>
+        <ul>
+          <li v-for="item in group.barrios" :key="item.path">
+            <!-- Ruta cruda, sin localePath: las páginas de barrio existen sólo en español. -->
+            <NuxtLink :to="item.path">{{ item.neighborhood }}</NuxtLink>
+            <span class="barrio-pages-count"> ({{ count(item.listings) }})</span>
+          </li>
+        </ul>
+      </div>
+    </section>
     <ZonePriceImpact id="servicios-y-alquiler" />
   </VContainer>
 </template>
 <script setup lang="ts">
 import type { RentalZonePreferences } from '~/utils/rentalZoneTypes'
+import type { RentalBarrioSummary } from '~/utils/rentalBarrio'
 import { rentalZoneMessages } from '~/utils/rentalZoneMessages'
 import { normalizeRentalQuery, rentalQueryToParams } from '~/utils/rentals'
 import ZoneExplorer from '~/components/rentals/zones/Explorer.vue'
@@ -26,6 +41,35 @@ const { t, locale } = useI18n({ useScope: 'local', messages: rentalZoneMessages 
 const { t: globalT } = useI18n({ useScope: 'global' })
 const localePath = useLocalePath()
 const initial: RentalZonePreferences = { mode: 'only', include: [], exclude: [] }
+// Enlazado SSR a las páginas de barrio indexables. Lista vacía o caída = la sección no existe.
+// `lazy` igual se resuelve en el servidor (onServerPrefetch); sólo no frena una navegación.
+type RentalBarrioListItem = Pick<
+  RentalBarrioSummary,
+  'department' | 'neighborhood' | 'path' | 'listings'
+>
+const { data: rentalBarrios } = useAsyncData(
+  'rental-barrios',
+  () =>
+    $fetch<{ barrios: RentalBarrioListItem[] }>('/api/rentals/barrios').catch(() => ({
+      barrios: [] as RentalBarrioListItem[],
+    })),
+  { default: () => ({ barrios: [] as RentalBarrioListItem[] }), lazy: true }
+)
+const barrioGroups = computed(() => {
+  const groups = new Map<string, RentalBarrioListItem[]>()
+  for (const item of rentalBarrios.value?.barrios ?? []) {
+    groups.set(item.department, [...(groups.get(item.department) ?? []), item])
+  }
+  // Montevideo primero (es la mayoría de los avisos), después alfabético; dentro, el orden de la
+  // API (más avisos primero).
+  return [...groups]
+    .sort(
+      ([a], [b]) =>
+        Number(b === 'Montevideo') - Number(a === 'Montevideo') || a.localeCompare(b, 'es')
+    )
+    .map(([department, barrios]) => ({ department, barrios }))
+})
+const count = (value: number) => new Intl.NumberFormat(locale.value).format(value)
 const canonical = computed(
   () => `https://cambio-uruguay.com${localePath('/barrios-alquileres-uruguay')}`
 )
@@ -110,6 +154,40 @@ function apply(zones: RentalZonePreferences) {
   font-size: clamp(1.45rem, 4vw, 2.15rem);
   font-weight: 800;
   line-height: 1.2;
+}
+.barrio-pages {
+  margin-top: 32px;
+}
+.barrio-pages h2 {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+.barrio-pages-intro {
+  margin: 0 0 16px;
+  max-width: 72ch;
+}
+.barrio-pages-group + .barrio-pages-group {
+  margin-top: 20px;
+}
+.barrio-pages h3 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.barrio-pages ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  columns: 4 200px;
+  column-gap: 24px;
+}
+.barrio-pages li {
+  break-inside: avoid;
+  padding: 3px 0;
+}
+.barrio-pages-count {
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 .rental-zones-page :deep(.explorer-scroll) {
   padding: 0;
