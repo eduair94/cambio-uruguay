@@ -132,9 +132,47 @@ const MEASURED = 146
  * «dólar global» para no prometer la cotización uruguaya, que la guía explica que tiene su propia
  * dinámica.
  *
+ * 80 → 68 el 2026-10-04, cuarta tanda, y la primera que arregla las DOS señales de la misma guía.
+ *
+ * Las tres tandas anteriores tocaron sólo el título y la corrida de descripciones del 2026-10-01
+ * sólo la descripción, así que cada guía gastaba una fila del libro de cambios por mitad de
+ * snippet. Los dos contadores miden el MISMO renglón de doce guías, y de las 146 hay 43 pasadas de
+ * los dos presupuestos con la ruta libre: arreglar las dos en la misma fila baja los dos
+ * contadores doce y declara UN sujeto, que es además el único honesto —el visitante ve el título y
+ * la descripción juntos, y medirlos por separado sobre la misma URL es lo que `AGENTS.md` prohíbe.
+ *
+ * Mismo defecto de siempre en los doce: la ETIQUETA DEL TEMA seguida del índice («Cómo comprar
+ * criptomonedas en Uruguay (sin perderte)», «Cómo pagar la patente SUCIVE: dónde, cuándo y
+ * convenios», «Comparativa de crédito hipotecario en Uruguay»), con la respuesta del lado que el
+ * SERP corta. Ahora cada título contesta: que los feriados pagos son cinco y el resto no se paga
+ * doble, que la plataforma de cripto tiene que estar registrada como PSAV ante el BCU, que el
+ * trabajo en negro se comprueba en tu propia historia laboral del BPS, que Mercado Libre cobra
+ * entre 11,5 % y 17 % por venta, que la patente vence el 20 de cada mes impar, que el BHU presta
+ * sólo en UI, que una unipersonal se abre inscribiéndose en DGI y BPS, que para cambiar dólares
+ * piden documento desde el orden de USD 3.000 diarios, que no hay derecho general a cancelar un
+ * préstamo antes de tiempo, que los comprobantes de la DGI se guardan 5 años y las constancias de
+ * deuda 10, que el interés compuesto gana sobre los intereses ya acumulados y que entre cashback y
+ * millas lo decide cuánto viajás.
+ *
+ * Ninguna cifra es nueva: las cinco fechas del artículo 18 de la Ley 12.590, el IVA mínimo del
+ * Literal E, el 11,5–17 %, el umbral de USD 3.000 y los plazos del Código Tributario ya estaban en
+ * el cuerpo de su guía. Y ninguna se escribió con más firmeza que su fuente: el umbral de dólares
+ * va como «desde USD 3.000» porque el cuerpo dice «del orden de»; el de cancelación anticipada cita
+ * a Defensa del Consumidor en vez de afirmar la regla por su cuenta; y el de cripto se calla el
+ * impuesto, que la propia guía declara sin resolver.
+ *
+ * Y uno de los doce dejó un hallazgo que no era del SERP: el BUSCADOR DEL PROPIO SITIO. La guía del
+ * hipotecario iba a titularse «Crédito hipotecario: el BHU presta sólo en UI», y `scoreDocs` de
+ * `utils/siteNav.ts` puntúa 74 un título que EMPIEZA por lo tipeado contra 56 uno que sólo lo tiene
+ * como palabra, así que escribir «Crédito» adelante le robaba a `/prestamos-uruguay` el primer
+ * resultado de la palabra «credito» —justo la página que `searchIndex.test.ts` exige primera porque
+ * un lector la reportó inalcanzable—. El título quedó «El crédito hipotecario del BHU, sólo en UI»:
+ * contesta igual y no empieza por el término. Vale para toda tanda futura: un título de guía que
+ * arranca con una palabra genérica que otra página reclama se mide en los dos buscadores, no en uno.
+ *
  * SÓLO PUEDE BAJAR.
  */
-const TITLE_OVER_BUDGET = 80
+const TITLE_OVER_BUDGET = 68
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.
@@ -161,8 +199,14 @@ const TITLE_OVER_BUDGET = 80
  * publicarla en el snippet como vigente es el error recurrente del repo
  * ([[cifra-vieja-pasa-la-banda-de-plausibilidad]]); en su lugar entró la franquicia anual, que no
  * se mueve.
+ *
+ * 77 → 65 el 2026-10-04: las doce descripciones de la cuarta tanda de títulos, en la misma fila del
+ * libro de cambios y por la razón que ese comentario explica. Diez de las doce abrían con la
+ * etiqueta del tema o repetían el título («Cómo comprar criptomonedas en Uruguay paso a paso:
+ * exchanges locales…», «Cómo abrir una empresa unipersonal en Uruguay paso a paso: inscripción en
+ * DGI y BPS…»), y las otras dos ya arrancaban por el dato y sólo estaban largas.
  */
-const DESCRIPTION_OVER_BUDGET = 77
+const DESCRIPTION_OVER_BUDGET = 65
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {

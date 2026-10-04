@@ -1403,9 +1403,9 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'documentos-para-cambiar-dolares-uruguay',
-    title: 'Qué documentos necesitás para cambiar dólares en Uruguay',
+    title: 'Cambiar dólares: documento desde USD 3.000',
     description:
-      'Cuándo te piden cédula o pasaporte para cambiar dólares en Uruguay, qué es la declaración jurada de origen de fondos y la regla de declarar más de USD 10.000 en aduana.',
+      'Por debajo del orden de USD 3.000 diarios se cambia sin documento; por encima piden cédula o pasaporte. Con USD 10.000 o más se declara en aduana.',
     tag: 'TRÁMITES',
     updatedAt: '2026-06-20',
     sections: [

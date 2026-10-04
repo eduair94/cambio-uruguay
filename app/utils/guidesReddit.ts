@@ -881,9 +881,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'credito-hipotecario-uruguay',
-    title: 'Comparativa de crédito hipotecario en Uruguay',
+    title: 'El crédito hipotecario del BHU, sólo en UI',
     description:
-      'Qué publica cada prestamista de vivienda en Uruguay: BHU, Fondo de Garantía, Itaú, Santander, BBVA, Scotiabank y BTG Pactual, con tasa, plazo, financiación y cuota sobre el ingreso.',
+      'La moneda decide antes que la tasa: el BHU presta sólo en Unidades Indexadas y los cinco privados en UI o dólares. El BROU no da hipotecario de compra.',
     tag: 'HIPOTECA',
     updatedAt: '2026-09-16',
     sections: [
@@ -3071,9 +3071,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'interes-compuesto-explicado-uruguay',
-    title: 'Interés compuesto: el concepto que cambia tus finanzas',
+    title: 'Interés compuesto: el interés gana interés',
     description:
-      'Interés compuesto explicado con ejemplos uruguayos: por qué el tiempo importa más que el monto, cómo juega a favor en el ahorro y en contra en la tarjeta, y la regla del 72.',
+      'El interés compuesto gana también sobre los intereses ya acumulados, así que pesa más el tiempo que el monto. La regla del 72: 72 dividido la tasa anual.',
     tag: 'CONCEPTO',
     updatedAt: '2026-07-18',
     sections: [
@@ -3899,9 +3899,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'cashback-millas-o-puntos-uruguay',
-    title: 'Cashback, millas o puntos: qué conviene según cómo gastás',
+    title: 'Cashback o millas: lo decide cuánto viajás',
     description:
-      'Cashback, millas o puntos de tarjeta en Uruguay: cómo se diferencian, cómo calcular el valor real de cada uno, a quién le conviene cada tipo y los errores que hacen perder los beneficios de tarjeta.',
+      'Un punto vale lo que consigas al canjearlo: dividí el precio en plata entre los puntos gastados. Si arrastrás saldo, el interés se come el beneficio.',
     tag: 'TARJETAS',
     updatedAt: '2026-07-18',
     sections: [
@@ -4166,9 +4166,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'comprar-criptomonedas-en-uruguay',
-    title: 'Cómo comprar criptomonedas en Uruguay (sin perderte)',
+    title: 'Comprar criptomonedas: que sea PSAV del BCU',
     description:
-      'Cómo comprar criptomonedas en Uruguay paso a paso: exchanges locales registrados como PSAV ante el BCU, plataformas internacionales, P2P, en qué wallet guardar tus Bitcoin o USDT y qué costos y riesgos mirar.',
+      'Comprar cripto es legal, pero no son moneda de curso legal. Por la Ley 20.345 el BCU supervisa a los PSAV: mirá si tu plataforma está registrada ahí.',
     tag: 'CRIPTO',
     updatedAt: '2026-07-18',
     sections: [
@@ -4363,9 +4363,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'abrir-empresa-unipersonal-uruguay',
-    title: 'Cómo abrir una empresa unipersonal en Uruguay',
+    title: 'Empresa unipersonal: se abre en DGI y BPS',
     description:
-      'Cómo abrir una empresa unipersonal en Uruguay paso a paso: inscripción en DGI y BPS, el régimen de pequeña empresa (Literal E) e IVA mínimo, costos y cuándo conviene para emprender.',
+      'Se abre inscribiéndose en DGI y BPS. En el Literal E pagás un IVA mínimo fijo ($5.910 en 2026) y no separa tu patrimonio: respondés con tus bienes.',
     tag: 'UNIPERSONAL',
     updatedAt: '2026-07-18',
     sections: [
@@ -5293,9 +5293,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'feriados-en-uruguay-como-se-pagan',
-    title: 'Feriados en Uruguay: cuáles se pagan doble y cuáles no',
+    title: 'Cinco feriados se pagan doble, el resto no',
     description:
-      'Cómo se paga un feriado en Uruguay: cuáles son los cinco feriados pagos, cuánto se cobra si trabajás o no, qué cambia entre mensual y jornalero, y por qué Carnaval y Semana de Turismo no se pagan doble.',
+      'Sólo cinco días se pagan doble (1/1, 1/5, 18/7, 25/8 y 25/12), por el art. 18 de la Ley 12.590. Carnaval y Semana de Turismo son feriado común.',
     tag: 'FERIADOS',
     updatedAt: '2026-08-11',
     sections: [
@@ -5383,9 +5383,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'trabajo-en-negro-uruguay',
-    title: 'Trabajo en negro en Uruguay: cómo comprobarlo y qué hacer',
+    title: 'Trabajo en negro: lo dice tu historia BPS',
     description:
-      'Cómo verificar en el BPS si tu empleador te declara, cómo denunciar actividades no declaradas o salarios declarados de menos, qué perdés mientras no figurás y por qué los créditos laborales se reclaman igual.',
+      'Tu historia laboral del BPS dice mes a mes quién te declaró y con qué sueldo. Podés denunciar diferencias desde 1996, y los créditos se reclaman igual.',
     tag: 'INFORMALIDAD',
     updatedAt: '2026-08-11',
     sections: [

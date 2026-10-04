@@ -526,9 +526,9 @@ export const tramitesGuides: readonly Guide[] = [
   },
   {
     slug: 'cuanto-tiempo-guardar-recibos-y-facturas-uruguay',
-    title: '¿Cuánto tiempo guardar recibos y facturas en Uruguay?',
+    title: 'Recibos: 5 años la DGI, 10 el Código Civil',
     description:
-      'No hay un plazo único: la DGI tiene 5 años desde el fin del año civil, un reclamo laboral 1 año desde el cese, el alquiler 4 años y la regla general del Código Civil, 10.',
+      'No hay un plazo único: la DGI, 5 años desde el fin del año civil; un reclamo laboral, 1 año desde el cese; el alquiler, 4; el Código Civil, 10.',
     tag: 'PRESCRIPCIÓN',
     updatedAt: '2026-09-13',
     sections: [

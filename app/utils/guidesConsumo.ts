@@ -139,9 +139,9 @@ export const consumoGuides: readonly Guide[] = [
   },
   {
     slug: 'vender-por-mercado-libre-uruguay',
-    title: 'Vender por Mercado Libre: cuánto cobra y cuándo facturar',
+    title: 'Mercado Libre cobra 11,5 % a 17 % por venta',
     description:
-      'Mercado Libre cobra entre 11,5% y 17% por venta más un costo fijo en productos de menos de $1.000. Cuándo liberan la plata y cuándo te conviene monotributo o unipersonal.',
+      'Mercado Libre cobra entre 11,5 % y 17 % del precio más un fijo en productos de menos de $1.000. Cuándo liberan la plata y si te conviene monotributo.',
     tag: 'MERCADO LIBRE',
     updatedAt: '2026-09-13',
     sections: [
@@ -256,9 +256,9 @@ export const consumoGuides: readonly Guide[] = [
   },
   {
     slug: 'pagar-patente-sucive-uruguay',
-    title: 'Cómo pagar la patente SUCIVE: dónde, cuándo y convenios',
+    title: 'Patente SUCIVE: vence el 20 del mes impar',
     description:
-      'La patente 2026 vence el 20 de cada mes impar (el 21 en setiembre). Dónde se paga, si sirve OCA, cómo ver cuánto debés por matrícula y padrón, y cómo hacer un convenio.',
+      'La patente 2026 vence el 20 de cada mes impar (el 21 en setiembre) y pagar cada cuota en fecha bonifica 10 %. Dónde se paga y si sirve OCA.',
     tag: 'SUCIVE',
     updatedAt: '2026-09-13',
     sections: [
