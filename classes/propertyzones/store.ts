@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { appConnection } from "../appdb";
+import { leaseOwner } from "../leaseClaim";
 import type { PropertyZoneSources } from "./sources/types";
 import type { PropertyZoneContextSnapshot } from "./context";
 import type { RentalZoneMarketBucket } from "./market";
@@ -29,7 +30,7 @@ export async function withZoneRefreshLease<T>(run: () => Promise<T>): Promise<T>
     if ((error as any).code === 11000) throw new Error("Property zone refresh already running");
     throw error;
   }
-  if (claim.value?.owner !== owner) throw new Error("Property zone refresh lease unavailable");
+  if (leaseOwner(claim) !== owner) throw new Error("Property zone refresh lease unavailable");
   try { return await run(); }
   finally { await collection.deleteOne({ _id: "refresh-lock" as any, owner }); }
 }

@@ -69,6 +69,24 @@ describe("marketLogOperation", () => {
     expect(set.advertId).toEqual({ $literal: "infocasas:1" });
     expect(set.firstSeen).toEqual({ $ifNull: ["$firstSeen", { $literal: "2026-09-22" }] });
   });
+
+  it("nunca arma un $slice de tres argumentos (el servidor rechaza un conteo de 0)", () => {
+    // Un historial de un solo punto que cambia de precio el mismo día pedía `$slice: [prev, 0, 0]`
+    // y la base tiraba el lote entero de la corrida horaria de alquileres (24/9 a 4/10/2026).
+    const op = marketLogOperation("alquiler", "infocasas:1", { d: "2026-09-22", p: 25000, c: "UYU" });
+    const threeArgSlices: unknown[] = [];
+    const walk = (node: unknown): void => {
+      if (Array.isArray(node)) return node.forEach(walk);
+      if (!node || typeof node !== "object") return;
+      for (const [k, v] of Object.entries(node)) {
+        if (k === "$slice" && Array.isArray(v) && v.length === 3) threeArgSlices.push(v);
+        walk(v);
+      }
+    };
+    walk(op.updateOne.update);
+    expect(threeArgSlices).toEqual([]);
+    expect(JSON.stringify(op.updateOne.update)).toContain('"$filter"');
+  });
 });
 
 describe("marketAdvertId", () => {

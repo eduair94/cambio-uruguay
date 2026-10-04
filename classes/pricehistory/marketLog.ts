@@ -103,13 +103,12 @@ export function marketLogOperation(
                           $slice: [
                             {
                               $concatArrays: [
-                                {
-                                  $cond: [
-                                    { $eq: ["$$last.d", lit(point.d)] },
-                                    { $slice: ["$$prev", 0, { $max: [0, { $subtract: [{ $size: "$$prev" }, 1] }] }] },
-                                    "$$prev",
-                                  ],
-                                },
+                                // Drop today's point, if any (only the last one can be today's).
+                                // NOT a 3-argument `$slice` up to size-1: the server rejects a count
+                                // of 0 ("Third argument to $slice must be positive"), which is
+                                // exactly a one-point history re-priced the same day — every hourly
+                                // rentals run failed its whole price-log batch on that since 24/9.
+                                { $filter: { input: "$$prev", cond: { $ne: ["$$this.d", lit(point.d)] } } },
                                 [lit(point)],
                               ],
                             },

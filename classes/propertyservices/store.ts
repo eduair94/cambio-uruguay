@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { appConnection } from "../appdb";
+import { leaseOwner } from "../leaseClaim";
 import { serviceSnapshotProblem } from "./classify";
 import { ServiceMeta, ServiceSnapshot } from "./types";
 
@@ -21,7 +22,7 @@ export async function withServiceRefreshLease<T>(run: () => Promise<T>): Promise
     if ((error as any).code === 11000) throw new Error("Property services refresh already running");
     throw error;
   }
-  if (claim.value?.owner !== owner) throw new Error("Property services lease unavailable");
+  if (leaseOwner(claim) !== owner) throw new Error("Property services lease unavailable");
   try { return await run(); }
   finally { await locks.deleteOne({ _id: SERVICE_META_KEY as any, owner }); }
 }
