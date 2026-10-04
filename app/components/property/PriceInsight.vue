@@ -195,6 +195,30 @@ onMounted(async () => {
 })
 onBeforeUnmount(() => observer?.disconnect())
 const insight = computed(() => data.value?.insight ?? null)
+
+// El bloque llega tarde y mide ~1.200px. Si para entonces su lugar ya quedó ARRIBA de la pantalla
+// (se bajó rápido, o se saltó con el índice a "Costos y avisos"), insertarlo empujaba todo lo que
+// la persona estaba mirando: medido el 2026-10-04, "Avisos" pasaba de 124px a 1.342px del borde
+// 300ms después del clic. El anclaje del navegador no lo corrige porque el nodo que se reemplaza
+// es el propio centinela, así que se compensa a mano: se mide antes de pintar y se corre el scroll
+// lo que creció la página.
+watch(
+  insight,
+  async (value, previous) => {
+    if (!value || previous || !import.meta.client) return
+    // No alcanza con "quedó arriba de la pantalla": con "Otras propiedades" en el borde superior el
+    // centinela está visible a 80px, y lo que la persona lee está DEBAJO de él. Si el lugar del
+    // bloque está en la mitad de arriba (o más arriba), lo que se mira está debajo y se compensa;
+    // en la mitad de abajo, el bloque crece hacia abajo sin mover lo que se ve.
+    const top = sentinel.value?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY
+    if (top >= window.innerHeight / 2) return
+    const before = document.documentElement.scrollHeight
+    await nextTick()
+    const grown = document.documentElement.scrollHeight - before
+    if (grown > 0) window.scrollBy({ top: grown, behavior: 'instant' })
+  },
+  { flush: 'pre' }
+)
 const position = computed(() => insight.value?.position ?? null)
 
 const VERDICT_KEYS: Record<PropertyInsightVerdict, string> = {

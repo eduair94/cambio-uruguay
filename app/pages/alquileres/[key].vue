@@ -793,12 +793,6 @@ useHead(() => ({
             {{ t('smallSample', { n: market?.minimumSample || 10 }) }}
           </p>
         </section>
-        <PropertyPriceInsight
-          v-if="data?.property"
-          operation="alquiler"
-          :property-key="data.property.key"
-          class="rental-page__section"
-        />
         <section
           id="rental-page-offers"
           class="rental-page__section"
@@ -949,6 +943,14 @@ useHead(() => ({
             t('coverage')
           }}</NuxtLink>
         </section>
+        <!-- Al final de la columna a propósito: llega tarde (se pide al acercarse) y mide ~1.200px; si
+             quedara arriba de una sección del índice, saltar a esa sección la empujaría. -->
+        <PropertyPriceInsight
+          v-if="data?.property"
+          operation="alquiler"
+          :property-key="data.property.key"
+          class="rental-page__section"
+        />
       </article>
       <aside class="rental-page__decision" aria-labelledby="rental-cost-title">
         <h2 id="rental-cost-title">{{ t('costTitle') }}</h2>
