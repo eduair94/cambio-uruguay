@@ -20,6 +20,7 @@ import {
   type RentalPublicProperty,
 } from '~/utils/rentals'
 import { portalPriceGap, rentalListedFor } from '~/utils/rentalPortals'
+import { rentalBarrioPath } from '~/utils/rentalBarrio'
 import {
   emptyRentalSaved,
   readRentalSaved,
@@ -52,6 +53,8 @@ const localePath = useLocalePath()
 const route = useRoute()
 const propertyKey = computed(() => String(route.params.key || ''))
 const availability = useRentalAvailability()
+// Antes del await de la ficha para que corra en paralelo; nunca falla (lista vacía = sin enlace).
+const { data: rentalBarrios } = useRentalBarrios()
 const { data, pending, error, refresh } = await useAsyncData<RentalPageResponse>(
   () => `rental-page:${propertyKey.value}`,
   () => {
@@ -128,6 +131,13 @@ const zone = computed(() =>
   [property.value?.neighborhood, property.value?.department].filter(Boolean).join(', ')
 )
 const street = computed(() => (property.value ? rentalStreet(property.value) : ''))
+// Sólo a una página de barrio indexable: un enlace a un noindex desde cada ficha sería ruido.
+const barrioLink = computed(() => {
+  const { department, neighborhood } = property.value ?? {}
+  if (!department || !neighborhood) return null
+  const path = rentalBarrioPath(department, neighborhood)
+  return rentalBarrios.value?.barrios.some(item => item.path === path) ? path : null
+})
 const types: Record<string, string> = {
   apartamento: 'apartment',
   casa: 'house',
@@ -725,6 +735,14 @@ useHead(() => ({
                 prepend-icon="mdi-home-search-outline"
                 >{{ t('exploreArea') }}</VBtn
               >
+              <VBtn
+                v-if="barrioLink"
+                variant="text"
+                class="cu-btn-flush rental-page__explore"
+                :to="barrioLink"
+                prepend-icon="mdi-chart-box-outline"
+                >{{ t('barrioPrices', { name: property.neighborhood }) }}</VBtn
+              >
             </div>
             <div v-if="showMap" id="rental-location-map" class="rental-page__map">
               <ClientOnly
@@ -748,6 +766,14 @@ useHead(() => ({
                 :to="nearbyLink"
                 prepend-icon="mdi-home-search-outline"
                 >{{ t('exploreArea') }}</VBtn
+              >
+              <VBtn
+                v-if="barrioLink"
+                variant="text"
+                class="cu-btn-flush rental-page__explore"
+                :to="barrioLink"
+                prepend-icon="mdi-chart-box-outline"
+                >{{ t('barrioPrices', { name: property.neighborhood }) }}</VBtn
               >
             </div>
           </template>
