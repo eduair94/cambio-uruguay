@@ -411,6 +411,8 @@ export function buildRentalPage(
     seo: { indexable: reasons.length === 0, reasons, contentUpdatedAt: null },
     market,
     similar,
+    // The neighbourhood link needs the zone snapshot; the endpoint resolves it (bounded, in parallel).
+    barrioPath: null,
   }
 }
 

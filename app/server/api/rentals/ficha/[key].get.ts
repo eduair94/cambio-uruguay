@@ -5,6 +5,10 @@ import { connectDb } from '../../../utils/db'
 import { marketHistory, rentalAdvertId } from '../../../utils/priceHistory'
 import { loadRentalIndexAllowlist } from '../../../utils/rentalIndexAllowlist'
 import { withRentalIndexHygiene } from '../../../../utils/rentalIndexHygiene'
+import {
+  resolveIndexableBarrioPath,
+  startIndexableRentalBarrioPaths,
+} from '../../../utils/rentalBarrio'
 
 import {
   annotateRentalAvailability,
@@ -38,6 +42,8 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse> => 
     throw createError({ statusCode: 404, statusMessage: 'Rental property is not available' })
   }
   let page: RentalPageResponse | undefined
+  // Arranca ya, en paralelo con Mongo; nunca rechaza y la espera de abajo tiene tope.
+  const barrioPaths = startIndexableRentalBarrioPaths()
   try {
     await connectDb()
     const availability = await loadRentalAvailabilityIndex()
@@ -72,6 +78,13 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse> => 
       // el sitemap, así la página y el sitemap nunca se contradicen; sin lista, o con una lista
       // vencida, no cambia nada.
       page = withRentalIndexHygiene(page, await loadRentalIndexAllowlist())
+      page.barrioPath = await resolveIndexableBarrioPath(
+        property.department,
+        property.neighborhood,
+        {
+          paths: barrioPaths,
+        }
+      )
       page.property = annotateRentalAvailability(
         publicRentalAdvertisers(page.property),
         availability

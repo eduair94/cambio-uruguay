@@ -4,8 +4,12 @@ vi.mock('../../server/utils/db', () => ({ connectDb: vi.fn(async () => undefined
 vi.mock('../../server/models/RentalListing', () => ({ RentalListingModel: { find: vi.fn() } }))
 vi.mock('../../server/utils/rentalZones', () => ({ loadRentalZoneSnapshots: vi.fn() }))
 
-const { loadRentalBarrio, loadIndexableRentalBarrios } =
-  await import('../../server/utils/rentalBarrio')
+const {
+  loadRentalBarrio,
+  loadIndexableRentalBarrios,
+  resolveIndexableBarrioPath,
+  startIndexableRentalBarrioPaths,
+} = await import('../../server/utils/rentalBarrio')
 
 const NOW = Date.parse('2026-10-04T12:00:00Z')
 const dist = (median: number | null) => ({
@@ -125,5 +129,58 @@ describe('loadIndexableRentalBarrios', () => {
       now: () => NOW,
     })
     expect(stale).toEqual([])
+  })
+})
+
+describe('resolveIndexableBarrioPath (el enlace de la ficha)', () => {
+  const indexable = () =>
+    loadIndexableRentalBarrios({ snapshots: snapshots('2026-10-04T06:00:00Z'), now: () => NOW })
+
+  it('otra grafía del mismo barrio cae en la misma página', async () => {
+    expect(await resolveIndexableBarrioPath('Montevideo', 'POCITOS', { barrios: indexable })).toBe(
+      '/alquiler/montevideo/pocitos'
+    )
+    const accented = async () => [{ path: '/alquiler/paysandu/barrio-jardin' }] as any
+    expect(
+      await resolveIndexableBarrioPath('Paysandú', 'Barrio Jardín', { barrios: accented })
+    ).toBe('/alquiler/paysandu/barrio-jardin')
+    expect(
+      await resolveIndexableBarrioPath('PAYSANDU', 'barrio jardin', { barrios: accented })
+    ).toBe('/alquiler/paysandu/barrio-jardin')
+  })
+
+  it('un barrio sin página indexable, o sin barrio, no lleva enlace', async () => {
+    // Casabó tiene una sola celda: la página existe pero es noindex.
+    expect(
+      await resolveIndexableBarrioPath('Montevideo', 'Casabó', { barrios: indexable })
+    ).toBeNull()
+    expect(await resolveIndexableBarrioPath('Montevideo', '', { barrios: indexable })).toBeNull()
+    expect(await resolveIndexableBarrioPath(null, 'Pocitos', { barrios: indexable })).toBeNull()
+  })
+
+  it('si el snapshot falla o tarda, la ficha sale sin enlace y sin esperar', async () => {
+    const failing = async () => {
+      throw new Error('mongo down')
+    }
+    expect(
+      await resolveIndexableBarrioPath('Montevideo', 'Pocitos', { barrios: failing })
+    ).toBeNull()
+    const throwsSync = (() => {
+      throw new Error('sync')
+    }) as any
+    expect(await startIndexableRentalBarrioPaths(throwsSync)).toBeNull()
+    const started = Date.now()
+    const hanging = () => new Promise<never>(() => undefined)
+    expect(
+      await resolveIndexableBarrioPath('Montevideo', 'Pocitos', { barrios: hanging, timeoutMs: 30 })
+    ).toBeNull()
+    expect(Date.now() - started).toBeLessThan(1000)
+  })
+
+  it('usa la lista que la ficha arrancó antes (en paralelo con Mongo)', async () => {
+    const paths = startIndexableRentalBarrioPaths(indexable)
+    expect(await resolveIndexableBarrioPath('Montevideo', 'Pocitos', { paths })).toBe(
+      '/alquiler/montevideo/pocitos'
+    )
   })
 })

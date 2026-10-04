@@ -28,6 +28,12 @@ let indexAllowlist: unknown = null
 vi.mock('../../server/utils/rentalIndexAllowlist', () => ({
   loadRentalIndexAllowlist: () => Promise.resolve(indexAllowlist),
 }))
+// El enlace al barrio tiene su propio test (rentalBarrioServer); acá sólo se ve que llega a la respuesta.
+const resolveIndexableBarrioPath = vi.fn(async () => '/alquiler/montevideo/pocitos')
+vi.mock('../../server/utils/rentalBarrio', () => ({
+  startIndexableRentalBarrioPaths: () => Promise.resolve(null),
+  resolveIndexableBarrioPath,
+}))
 vi.mock('../../server/utils/rentalPage', () => ({
   buildRentalPage,
   rentalPageEvidenceStages,
@@ -68,6 +74,7 @@ describe('canonical rental page API', () => {
       canonicalPath: '/alquileres/canonical-key',
       property: { key: 'canonical-key', offers: [] },
       similar: [],
+      barrioPath: '/alquiler/montevideo/pocitos',
     })
     expect(getQuery).not.toHaveBeenCalled()
     expect(buildRentalPage).toHaveBeenCalledWith(

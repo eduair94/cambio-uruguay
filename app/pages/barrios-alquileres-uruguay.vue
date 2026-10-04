@@ -30,7 +30,7 @@
 </template>
 <script setup lang="ts">
 import type { RentalZonePreferences } from '~/utils/rentalZoneTypes'
-import type { RentalBarrioListItem } from '~/composables/useRentalBarrios'
+import type { RentalBarrioSummary } from '~/utils/rentalBarrio'
 import { rentalZoneMessages } from '~/utils/rentalZoneMessages'
 import { normalizeRentalQuery, rentalQueryToParams } from '~/utils/rentals'
 import ZoneExplorer from '~/components/rentals/zones/Explorer.vue'
@@ -42,7 +42,19 @@ const { t: globalT } = useI18n({ useScope: 'global' })
 const localePath = useLocalePath()
 const initial: RentalZonePreferences = { mode: 'only', include: [], exclude: [] }
 // Enlazado SSR a las páginas de barrio indexables. Lista vacía o caída = la sección no existe.
-const { data: rentalBarrios } = useRentalBarrios()
+// `lazy` igual se resuelve en el servidor (onServerPrefetch); sólo no frena una navegación.
+type RentalBarrioListItem = Pick<
+  RentalBarrioSummary,
+  'department' | 'neighborhood' | 'path' | 'listings'
+>
+const { data: rentalBarrios } = useAsyncData(
+  'rental-barrios',
+  () =>
+    $fetch<{ barrios: RentalBarrioListItem[] }>('/api/rentals/barrios').catch(() => ({
+      barrios: [] as RentalBarrioListItem[],
+    })),
+  { default: () => ({ barrios: [] as RentalBarrioListItem[] }), lazy: true }
+)
 const barrioGroups = computed(() => {
   const groups = new Map<string, RentalBarrioListItem[]>()
   for (const item of rentalBarrios.value?.barrios ?? []) {

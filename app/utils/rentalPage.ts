@@ -31,4 +31,6 @@ export interface RentalPageResponse {
   }
   market: RentalPageMarket
   similar: RentalPublicProperty[]
+  /** `/alquiler/<departamento>/<barrio>` when that page is indexable; filled by the ficha endpoint. */
+  barrioPath: string | null
 }
