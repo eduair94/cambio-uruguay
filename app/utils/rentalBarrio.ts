@@ -1,0 +1,179 @@
+// app/utils/rentalBarrio.ts
+// Una página por barrio con lo que ya calcula `currency-property-zones` (snapshot `market`):
+// renta, gastos comunes y total por tipo × dormitorios. Este módulo es puro: lo usan el endpoint,
+// el sitemap y el hub, así que el gate de indexación vive en un solo lugar.
+import { slugifyDepartment } from './departments'
+import { slugifyText } from './longform'
+import { rentalZoneLabel, rentalZoneName, type RentalZoneSnapshots } from './rentalZones'
+import type { RentalZoneBedrooms, RentalZonePrices, RentalZonePropertyType } from './rentalZoneTypes'
+
+export const RENTAL_BARRIO_MAX_AGE_DAYS = 7
+export const RENTAL_BARRIO_MIN_CELLS = 2
+export const RENTAL_BARRIO_BEDROOMS: readonly RentalZoneBedrooms[] = ['any', '0', '1', '2', '3', '4plus']
+export const RENTAL_BARRIO_TYPES: readonly RentalZonePropertyType[] = ['apartamento', 'casa']
+const SIMILAR_LIMIT = 6
+const LARGEST_LIMIT = 6
+
+export const rentalBarrioSlug = (neighborhood: string): string => slugifyText(rentalZoneName(neighborhood))
+export const rentalBarrioPath = (department: string, neighborhood: string): string =>
+  `/alquiler/${slugifyDepartment(department)}/${rentalBarrioSlug(neighborhood)}`
+
+export interface RentalBarrioCell {
+  propertyType: RentalZonePropertyType
+  bedrooms: RentalZoneBedrooms
+  prices: RentalZonePrices
+}
+export interface RentalBarrioLink {
+  department: string
+  neighborhood: string
+  path: string
+  median: number | null
+  count: number
+}
+export interface RentalBarrioSummary {
+  department: string
+  departmentSlug: string
+  neighborhood: string
+  slug: string
+  path: string
+  cells: RentalBarrioCell[]
+  publishableCells: number
+  listings: number
+}
+export interface RentalBarrioRank {
+  position: number
+  of: number
+  propertyType: RentalZonePropertyType
+  bedrooms: RentalZoneBedrooms
+}
+export interface RentalBarrioPage {
+  department: string
+  departmentSlug: string
+  neighborhood: string
+  slug: string
+  path: string
+  cells: RentalBarrioCell[]
+  rank: RentalBarrioRank | null
+  similar: RentalBarrioLink[]
+  largest: RentalBarrioLink[]
+  generatedAt: string | null
+  rentalDataAsOf: string | null
+  indexable: boolean
+  officialZone: string | null
+}
+
+export function rentalBarrioDirectoryPath(department: string, neighborhood: string, bedrooms?: string): string {
+  const params = new URLSearchParams({ department, neighborhood })
+  if (bedrooms && bedrooms !== 'any') params.set('bedrooms', bedrooms)
+  return `/alquileres-uruguay?${params.toString()}`
+}
+
+const cellOrder = (cell: RentalBarrioCell) =>
+  RENTAL_BARRIO_TYPES.indexOf(cell.propertyType) * 10 + RENTAL_BARRIO_BEDROOMS.indexOf(cell.bedrooms)
+const cellOf = (summary: RentalBarrioSummary, type: RentalZonePropertyType, bedrooms: RentalZoneBedrooms) =>
+  summary.cells.find(cell => cell.propertyType === type && cell.bedrooms === bedrooms) ?? null
+const medianOf = (summary: RentalBarrioSummary, type: RentalZonePropertyType, bedrooms: RentalZoneBedrooms) =>
+  cellOf(summary, type, bedrooms)?.prices.rent.median ?? null
+
+export function listRentalBarrios(snapshots: RentalZoneSnapshots): RentalBarrioSummary[] {
+  const groups = new Map<string, { department: string; spellings: string[]; cells: RentalBarrioCell[] }>()
+  for (const bucket of snapshots.market?.buckets ?? []) {
+    const key = JSON.stringify([bucket.department, rentalZoneName(bucket.neighborhood)])
+    const group = groups.get(key) ?? { department: bucket.department, spellings: [], cells: [] }
+    if (!group.spellings.includes(bucket.neighborhood)) group.spellings.push(bucket.neighborhood)
+    group.cells.push({ propertyType: bucket.propertyType, bedrooms: bucket.bedrooms, prices: bucket.prices })
+    groups.set(key, group)
+  }
+  const out: RentalBarrioSummary[] = []
+  for (const group of groups.values()) {
+    const neighborhood = rentalZoneLabel(group.spellings)
+    const cells = group.cells.sort((a, b) => cellOrder(a) - cellOrder(b))
+    const anyCount = (type: RentalZonePropertyType) =>
+      cells.find(cell => cell.propertyType === type && cell.bedrooms === 'any')?.prices.rent.count ?? 0
+    out.push({
+      department: group.department,
+      departmentSlug: slugifyDepartment(group.department),
+      neighborhood,
+      slug: rentalBarrioSlug(neighborhood),
+      path: rentalBarrioPath(group.department, neighborhood),
+      cells,
+      publishableCells: cells.filter(cell => cell.prices.rent.median !== null).length,
+      listings: anyCount('apartamento') + anyCount('casa'),
+    })
+  }
+  return out.sort(
+    (a, b) => a.department.localeCompare(b.department, 'es') || b.listings - a.listings || a.neighborhood.localeCompare(b.neighborhood, 'es')
+  )
+}
+
+const link = (summary: RentalBarrioSummary, type: RentalZonePropertyType, bedrooms: RentalZoneBedrooms): RentalBarrioLink => ({
+  department: summary.department,
+  neighborhood: summary.neighborhood,
+  path: summary.path,
+  median: medianOf(summary, type, bedrooms),
+  count: summary.listings,
+})
+
+export function buildRentalBarrioPage(
+  snapshots: RentalZoneSnapshots,
+  departmentSlug: string,
+  barrioSlug: string,
+  now = Date.now()
+): RentalBarrioPage | null {
+  const market = snapshots.market
+  if (!market) return null
+  const all = listRentalBarrios(snapshots)
+  const self = all.find(item => item.departmentSlug === departmentSlug && item.slug === barrioSlug)
+  if (!self) return null
+  const peers = all.filter(item => item.department === self.department && item !== self)
+  const cells = self.cells.filter(cell => cell.prices.rent.median !== null)
+
+  let rank: RentalBarrioRank | null = null
+  let similar: RentalBarrioLink[] = []
+  for (const [type, bedrooms] of [['apartamento', '2'], ['apartamento', 'any']] as const) {
+    const own = medianOf(self, type, bedrooms)
+    if (own === null) continue
+    const compared = peers.filter(item => medianOf(item, type, bedrooms) !== null)
+    const higher = compared.filter(item => medianOf(item, type, bedrooms)! > own).length
+    rank = { position: higher + 1, of: compared.length + 1, propertyType: type, bedrooms }
+    similar = compared
+      .sort(
+        (a, b) =>
+          Math.abs(medianOf(a, type, bedrooms)! - own) - Math.abs(medianOf(b, type, bedrooms)! - own) ||
+          a.neighborhood.localeCompare(b.neighborhood, 'es')
+      )
+      .slice(0, SIMILAR_LIMIT)
+      .map(item => link(item, type, bedrooms))
+    break
+  }
+  const largest = peers
+    .filter(item => item.publishableCells > 0)
+    .sort((a, b) => b.listings - a.listings || a.neighborhood.localeCompare(b.neighborhood, 'es'))
+    .slice(0, LARGEST_LIMIT)
+    .map(item => link(item, 'apartamento', 'any'))
+
+  const generated = Date.parse(market.generatedAt ?? '')
+  const fresh = Number.isFinite(generated) && now - generated <= RENTAL_BARRIO_MAX_AGE_DAYS * 86_400_000
+  // The 62 official areas only exist for Montevideo; match by the same folded name the job uses.
+  const officialZone =
+    self.department === 'Montevideo'
+      ? (snapshots.context?.boundaries?.features ?? [])
+          .map(feature => feature.properties.name)
+          .find(name => rentalZoneName(name) === rentalZoneName(self.neighborhood)) ?? null
+      : null
+  return {
+    officialZone,
+    department: self.department,
+    departmentSlug: self.departmentSlug,
+    neighborhood: self.neighborhood,
+    slug: self.slug,
+    path: self.path,
+    cells,
+    rank,
+    similar,
+    largest,
+    generatedAt: market.generatedAt ?? null,
+    rentalDataAsOf: market.rentalDataAsOf ?? null,
+    indexable: fresh && self.publishableCells >= RENTAL_BARRIO_MIN_CELLS,
+  }
+}
