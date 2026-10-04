@@ -88,9 +88,30 @@ watch(near, async isNear => {
   // during push(). Watching afterwards misses that response permanently.
   const checkStatus = () => {
     if (el.getAttribute('data-ad-status') !== 'unfilled') return
+    // Devolver el espacio reservado (300–600px) con el bloque ya en la mitad de arriba de la
+    // pantalla, o más arriba, subía de golpe todo lo que la persona estaba leyendo debajo: medido
+    // el 2026-10-04 al pie de una ficha de venta, el pie saltó 451px. En ese caso se compensa el
+    // scroll con lo que se achicó la página; en la mitad de abajo, se colapsa hacia abajo y lo
+    // que se ve no se mueve.
+    // Documento y ventana del propio nodo, no los globales: medir nunca puede impedir el colapso.
+    const doc = root.value?.ownerDocument
+    const view = doc?.defaultView
+    let before: number | null = null
+    try {
+      const box = root.value?.getBoundingClientRect()
+      if (box && view && doc && box.top < view.innerHeight / 2)
+        before = doc.documentElement.scrollHeight
+    } catch {
+      before = null
+    }
     unfilled.value = true
     mo?.disconnect()
     mo = null
+    if (before !== null && doc && view)
+      void nextTick(() => {
+        const lost = before! - doc.documentElement.scrollHeight
+        if (lost > 0) view.scrollBy({ top: -lost, behavior: 'instant' })
+      })
   }
   mo = new MutationObserver(checkStatus)
   mo.observe(el, { attributes: true, attributeFilter: ['data-ad-status'] })
