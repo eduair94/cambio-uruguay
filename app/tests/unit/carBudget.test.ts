@@ -106,4 +106,12 @@ describe('carBudget', () => {
     expect(faq).toHaveLength(3)
     expect(faq[2]!.answer).not.toMatch(/\b(19|20)\d\d\b/)
   })
+
+  it('el endpoint no lista avisos con moneda deducida', () => {
+    const source = readFileSync(
+      resolve(__dirname, '../../server/api/cars/budget/[monto].get.ts'),
+      'utf8'
+    )
+    expect(source.replace(/s+/g, ' ')).toContain('currencyInferred: { $ne: true }')
+  })
 })

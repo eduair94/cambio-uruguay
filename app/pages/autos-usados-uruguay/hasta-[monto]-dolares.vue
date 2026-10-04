@@ -81,6 +81,9 @@
           <h2 class="text-h6 mb-0">Avisos vigentes hasta {{ usd }}</h2>
           <VBtn variant="text" :to="directoryLink">Ver todos en el directorio</VBtn>
         </div>
+        <p class="text-body-2 text-medium-emphasis mb-3">
+          Avisos entre {{ listingFloor }} y {{ usd }}, los de año más nuevo primero.
+        </p>
         <div v-if="data.listings.length" class="budget-grid">
           <CarsListingCard v-for="car in data.listings" :key="car.key" :car="car" />
         </div>
@@ -127,6 +130,7 @@
 
 <script setup lang="ts">
 import {
+  CAR_BUDGET_LISTING_FLOOR,
   carBudgetDescription,
   carBudgetFaq,
   carBudgetIntro,
@@ -182,6 +186,7 @@ if (import.meta.server && (error.value || !data.value)) {
 }
 
 const usd = computed(() => formatUsd(budget.value))
+const listingFloor = computed(() => formatUsd(Math.round(budget.value * CAR_BUDGET_LISTING_FLOOR)))
 const bandFrom = computed(() => formatUsd(budget.value * 0.8))
 const heading = computed(() => carBudgetTitle(budget.value))
 const description = computed(() => (data.value ? carBudgetDescription(data.value) : ''))

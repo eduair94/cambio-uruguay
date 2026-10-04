@@ -2,6 +2,7 @@
 // /autos-usados-uruguay/hasta-<monto>-dolares, más unos avisos vigentes de ese presupuesto.
 // No recalcula nada: los modelos, sus medianas y el conteo de la franja son los del informe.
 import {
+  CAR_BUDGET_LISTING_FLOOR,
   CAR_BUDGET_MIN_MODELS,
   CAR_BUDGETS,
   parseCarBudget,
@@ -48,9 +49,11 @@ export default defineEventHandler(async event => {
   )
   const freshDays = meta?.freshDays ?? 4
 
-  // El piso del 50 % deja afuera repuestos y señas que priceSanity no haya retirado.
+  // El piso (CAR_BUDGET_LISTING_FLOOR) deja afuera repuestos y señas que priceSanity no haya retirado.
   const listings = await CarCatalogModel.find({
-    priceUsd: { $lte: budget, $gte: budget * 0.5 },
+    priceUsd: { $lte: budget, $gte: budget * CAR_BUDGET_LISTING_FLOOR },
+    // Una moneda deducida contra autos parecidos no es un precio publicado: no se muestra.
+    currencyInferred: { $ne: true },
     lastSeen: { $gte: new Date(Date.now() - freshDays * 86_400_000).toISOString() },
   })
     .select(carListingProjection)

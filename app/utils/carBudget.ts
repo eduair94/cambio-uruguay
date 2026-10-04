@@ -12,6 +12,8 @@ export const CAR_BUDGETS = [6000, 10000, 15000, 20000, 30000] as const
 export type CarBudget = (typeof CAR_BUDGETS)[number]
 /** Con menos modelos que esto la página existe pero va `noindex`: no contesta "qué comprar". */
 export const CAR_BUDGET_MIN_MODELS = 3
+/** Los avisos listados cuestan entre esta fracción del tope y el tope (deja afuera repuestos y señas). */
+export const CAR_BUDGET_LISTING_FLOOR = 0.5
 
 /** Presupuesto del `<title>` medido CON la marca, como `tests/unit/seoTitleBudget.test.ts`. */
 const MAX_TITLE = 60
