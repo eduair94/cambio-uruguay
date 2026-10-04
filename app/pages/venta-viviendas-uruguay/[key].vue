@@ -76,7 +76,12 @@
           </section>
           <section class="sale-detail__section">
             <h2>{{ t('description') }}</h2>
-            <p class="sale-detail__description">{{ property.description || t('noDescription') }}</p>
+            <PropertyDescription
+              v-if="property.description"
+              :text="property.description"
+              class="sale-detail__description"
+            />
+            <p v-else>{{ t('noDescription') }}</p>
           </section>
           <section v-if="property.amenities.length" class="sale-detail__section">
             <h2>{{ t('amenities') }}</h2>
@@ -437,9 +442,16 @@ defineOgImageComponent('Cambio', {
 .sale-detail__aside {
   min-width: 0;
 }
+/* Fija la columna lateral ENTERA, no sólo la tarjeta: con la tarjeta sola, el enlace "¿Comprar o
+   alquilar?" que la sigue seguía de largo con el scroll y su flecha cruzaba por encima de la
+   tarjeta fija (medido el 2026-10-04). Sólo en escritorio: en móvil la columna va arriba. */
+@media (min-width: 960px) {
+  .sale-detail__aside {
+    position: sticky;
+    top: 88px;
+  }
+}
 .sale-detail__facts {
-  position: sticky;
-  top: 88px;
   border: 1px solid rgba(var(--v-theme-on-surface), 0.15);
   border-radius: 14px;
   background: rgb(var(--v-theme-surface));
@@ -488,8 +500,7 @@ defineOgImageComponent('Cambio', {
   line-height: 1.75;
 }
 .sale-detail__description {
-  white-space: pre-line;
-  overflow-wrap: anywhere;
+  margin-top: 16px;
   font-size: 0.95rem;
 }
 .sale-detail__conditions {
@@ -520,6 +531,13 @@ defineOgImageComponent('Cambio', {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.15);
   border-radius: 8px;
   font-size: 0.85rem;
+}
+/* "La vida cerca" vive dentro de Ubicación pero se lee como otra sección: el mismo filete y el
+   mismo aire que separa las secciones de esta ficha (24 + 24), sin nada abajo. */
+.sale-detail__section :deep(.nearby-services) {
+  margin-top: 24px;
+  padding-block: 24px 0;
+  border-top-color: rgba(var(--v-theme-on-surface), 0.14);
 }
 .sale-detail__map {
   margin-top: 16px;

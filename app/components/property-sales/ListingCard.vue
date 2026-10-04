@@ -137,7 +137,11 @@ const readDate = computed(() =>
 )
 </script>
 <style scoped>
+/* Columna flexible para que el pie (enlaces) baje al fondo: en una fila de tarjetas de distinto
+   alto, "Ver ficha" y "Ver aviso original" quedan todos a la misma altura. */
 .sale-card {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   border: 1px solid rgba(var(--v-theme-on-surface), 0.15);
   border-radius: 14px;
@@ -221,6 +225,7 @@ button.sale-card__photo {
   color: rgb(var(--v-theme-link));
 }
 .sale-card__body {
+  flex: 1;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -267,11 +272,14 @@ button.sale-card__photo {
   color: rgba(var(--v-theme-on-surface), 0.7);
   overflow-wrap: anywhere;
 }
+/* Sin espacio entre filas cuando los dos enlaces no entran en una: cada uno ya tiene 44px de
+   alto táctil, y el `gap` de 8px sumado dejaba ~50px de aire entre "Ver ficha" y el siguiente. */
 .sale-card__links {
+  margin-top: auto;
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0 8px;
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   padding-top: 4px;
 }

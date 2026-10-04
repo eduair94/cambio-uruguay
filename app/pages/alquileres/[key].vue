@@ -687,13 +687,12 @@ useHead(() => ({
         </section>
         <section class="rental-page__section" aria-labelledby="rental-description-title">
           <h2 id="rental-description-title">{{ t('descriptionShort') }}</h2>
-          <p
+          <PropertyDescription
             v-if="selectedOffer.details?.description"
+            :text="selectedOffer.details.description"
             class="rental-page__description"
             data-testid="rental-source-description"
-          >
-            {{ selectedOffer.details.description }}
-          </p>
+          />
           <p v-else>{{ t('descriptionEmpty') }}</p>
           <p class="rental-page__note">
             {{ t('descriptionSource', { source: source(selectedOffer) }) }}
@@ -1408,9 +1407,7 @@ useHead(() => ({
   color: rgb(var(--v-theme-primary));
 }
 .rental-page__description {
-  white-space: pre-line;
-  overflow-wrap: anywhere;
-  max-width: 72ch;
+  margin-top: 12px;
 }
 .rental-page__address {
   display: flex;
