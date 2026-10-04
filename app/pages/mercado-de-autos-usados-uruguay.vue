@@ -570,7 +570,7 @@ useHead({
   font-size: 0.9rem;
 }
 .report-chip span {
-  color: rgb(var(--v-theme-on-surface-variant, var(--v-theme-on-surface)));
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
   font-size: 0.8rem;
 }
 </style>

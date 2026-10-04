@@ -441,7 +441,7 @@ useHead(() => ({
 .section-intro {
   margin-top: 0;
   line-height: 1.6;
-  color: rgb(var(--v-theme-on-surface-variant));
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 .warn-card {
   border: 1px solid rgba(var(--v-theme-warning), 0.35);
@@ -460,7 +460,7 @@ useHead(() => ({
 }
 .verdict-label {
   font-size: 0.85rem;
-  color: rgb(var(--v-theme-on-surface-variant));
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 .verdict-amount {
   margin-top: 0;
@@ -479,7 +479,7 @@ useHead(() => ({
 }
 .vg-label {
   font-size: 0.78rem;
-  color: rgb(var(--v-theme-on-surface-variant));
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 .vg-value {
   font-weight: 700;
