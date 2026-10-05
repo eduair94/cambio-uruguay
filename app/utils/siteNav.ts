@@ -3675,6 +3675,31 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El auto cruzando la misma frontera que el sitio ya cubre con plata encima (franquicia
+        // del viajero, declarar efectivo, llevar dólares o reales): no había nada sobre los
+        // papeles del vehículo. Va pegada a la nafta, el peaje y las multas porque la pregunta
+        // llega junto con ellas —antes del feriado largo— y porque la confusión que resuelve es de
+        // seguros: el SOA no es el que te piden del otro lado.
+        to: '/llevar-el-auto-a-brasil-o-argentina',
+        labelKey: 'nav.autoAlExterior',
+        icon: 'mdi-car-side',
+        // Cita normas, no precios: no cambia de un día para otro.
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'carta verde uruguay',
+          'carta verde mercosur',
+          'llevar el auto a brasil',
+          'llevar el auto a argentina',
+          'seguro para viajar a brasil en auto',
+          'requisitos para salir de uruguay en auto',
+          'tarjeta verde seguro auto',
+          'sacar el auto del pais uruguay',
+          'papeles para cruzar la frontera en auto',
+          'puede manejar otra persona mi auto en brasil',
+        ],
+      },
+      {
         to: '/impuesto-autos-electricos-uruguay',
         labelKey: 'nav.impuestoAutosElectricos',
         icon: 'mdi-car-electric-outline',

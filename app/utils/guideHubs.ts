@@ -801,6 +801,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/precio-del-boleto-montevideo',
       },
       {
+        label: 'Llevar el auto a Brasil o Argentina',
+        description: 'La carta verde del Mercosur y los seis papeles que pide la norma.',
+        to: '/llevar-el-auto-a-brasil-o-argentina',
+      },
+      {
         label: 'IMESI a los autos eléctricos',
         description: 'Cómo cambia el impuesto a los autos eléctricos.',
         to: '/impuesto-autos-electricos-uruguay',

@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { join, relative, resolve, sep } from 'node:path'
 // The sitemap used to be one big try/catch around a live API call: any upstream
 // hiccup returned `[]` and the site silently submitted an empty sitemap. These
 // tests pin the two properties that fix bought us — the static backbone survives
@@ -200,6 +200,91 @@ describe('sitemap during prerender', () => {
 
     expect(disconnect).toHaveBeenCalled()
     vi.doUnmock('../../server/utils/db')
+  })
+})
+
+// Una entrada del sitemap que el router no resuelve es un 404 que NOSOTROS le mandamos a Google:
+// gasta presupuesto de rastreo, aparece en Search Console como «URL enviada no encontrada» y su
+// síntoma —la página no está en el índice— es idéntico al de una página que todavía no posiciona.
+// Las pruebas de arriba verifican que el sitemap contenga lo que debe; ninguna verificaba que lo
+// que contiene EXISTA. `internalLinks.test.ts` ya tiene este modelo de router, pero sólo mira los
+// enlaces escritos a mano: el sitemap emite además las familias de catálogo
+// (`/guias/*`, `/importar/*`, `/alquiler/*`, las fichas por sucursal), que son miles de URLs
+// derivadas en código y por eso las que más fácil cambian de forma sin que nadie las abra.
+//
+// Alcance, igual que en `internalLinks.test.ts`: se verifica la FORMA del path contra los archivos
+// de `pages/`, o sea el prefijo estático y la cantidad de segmentos. Un segmento dinámico matchea
+// cualquier valor, así que esto no dice que `/casa/inventada` tenga datos; dice que
+// `/casa/<algo>` es una ruta del router y que `/casa/brou/extra` no lo es. Es el defecto que se
+// cuela al renombrar o mover una página y dejar el emisor del sitemap apuntando a la ruta vieja.
+//
+// Hoy hay 0; el test llega para que siga en cero.
+describe('cada URL que el sitemap declara existe en el router', () => {
+  const PAGES_DIR = join(__dirname, '..', '..', 'pages')
+
+  function pageFilesOnDisk(dir: string = PAGES_DIR): string[] {
+    return readdirSync(dir).flatMap(name => {
+      const full = join(dir, name)
+      if (statSync(full).isDirectory()) return pageFilesOnDisk(full)
+      if (!name.endsWith('.vue')) return []
+      return [relative(PAGES_DIR, full).split(sep).join('/')]
+    })
+  }
+
+  /** `herramientas/index.vue` -> `/herramientas`; `index.vue` -> `/`. */
+  function fileToRoute(file: string): string {
+    const route = file.replace(/\.vue$/, '').replace(/(^|\/)index$/, '')
+    return route ? `/${route}` : '/'
+  }
+
+  /** Optional Nuxt segments include their slash: `/foo/[[bar]]` also matches `/foo`. */
+  function routeMatcher(route: string): RegExp {
+    const pattern = route
+      .split('/')
+      .slice(1)
+      .map(segment => {
+        if (/^\[\[[^\]]+\]\]$/.test(segment)) return '(?:/[^/]+)?'
+        if (/^\[\.\.\.[^\]]+\]$/.test(segment)) return '/.+'
+        if (/^\[[^\]]+\]$/.test(segment)) return '/[^/]+'
+        return `/${segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
+      })
+      .join('')
+    return new RegExp(`^${pattern}$`)
+  }
+
+  const files = pageFilesOnDisk()
+  const staticRoutes = new Set(files.filter(file => !file.includes('[')).map(fileToRoute))
+  const dynamicRoutes = files
+    .filter(file => file.includes('['))
+    .map(fileToRoute)
+    .map(routeMatcher)
+
+  const resolvesInRouter = (path: string): boolean =>
+    staticRoutes.has(path) || dynamicRoutes.some(matcher => matcher.test(path))
+
+  it('reconoce las rutas que existen y rechaza las que no', () => {
+    // Guarda del guardarraíl: un modelo de router que dejara de matchear haría pasar el test de
+    // abajo sobre un sitemap entero roto.
+    expect(resolvesInRouter('/')).toBe(true)
+    expect(resolvesInRouter('/casa/brou')).toBe(true)
+    expect(resolvesInRouter('/historico/bcu/usd/billete')).toBe(true)
+    expect(resolvesInRouter('/casa/brou/comprar-dolares/extra')).toBe(false)
+    expect(resolvesInRouter('/pagina-que-no-existe')).toBe(false)
+  })
+
+  it('no declara ninguna URL que el router no resuelva', async () => {
+    const urls = await runHandler(HEALTHY)
+    // Los prefijos de idioma los agrega el emisor sobre la misma ruta española, así que se miden
+    // una vez: comprobar `/en/x` y `/pt/x` repetiría el mismo hallazgo tres veces.
+    const broken = [
+      ...new Set(
+        urls
+          .map(url => url.loc)
+          .filter(loc => !/^\/(?:en|pt)(?:\/|$)/.test(loc))
+          .filter(loc => !resolvesInRouter(loc))
+      ),
+    ].sort()
+    expect(broken, broken.join('\n')).toEqual([])
   })
 })
 

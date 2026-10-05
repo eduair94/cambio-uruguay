@@ -1083,6 +1083,20 @@
         "/guias/cuanto-tiempo-guardar-recibos-y-facturas-uruguay"
       ],
       "hypothesis": "Primera tanda que arregla el snippet ENTERO de las mismas doce guias: titulo y descripcion en una sola fila. Las tres tandas de titulos y la de descripciones anteriores tocaban media mitad por guia, y de las 146 hay 43 pasadas de los dos presupuestos con la ruta libre, asi que una fila por mitad gasta dos ventanas sobre el mismo renglon del SERP. Los doce titulos van de 74 a 60 caracteres contando la marca y las doce descripciones de 208 a 155. El defecto es el de siempre: la etiqueta del tema seguida del indice de la guia, con la respuesta del lado que Google corta. Ahora cada snippet arranca por la respuesta (los feriados pagos son cinco; la plataforma de cripto tiene que estar registrada como PSAV ante el BCU; el trabajo en negro se comprueba en tu propia historia laboral del BPS; Mercado Libre cobra entre 11,5 % y 17 % por venta; la patente vence el 20 de cada mes impar; el crédito hipotecario del BHU va solo en UI; no hay derecho general a cancelar un prestamo antes de tiempo). Uno de los doce dejo un hallazgo que no era del SERP: un titulo que EMPIEZA por la palabra tipeada puntua 74 en el buscador del propio sitio contra 56 el que solo la contiene, asi que el titulo del hipotecario no puede arrancar por \"Credito\" sin robarle a /prestamos-uruguay su primer resultado. Ninguna cifra es nueva ni se escribio con mas firmeza que su fuente. Es el tramo contenido, que rinde 8x el promedio del sitio, asi que un snippet cortado cuesta mas caro aca. Se espera mas CTR a igual posicion, como midieron las tandas anteriores."
+    },
+    {
+      "id": "llevar-el-auto-al-exterior",
+      "shippedOn": "2026-10-05",
+      "routes": ["/llevar-el-auto-a-brasil-o-argentina"],
+      "queries": [
+        "carta verde uruguay",
+        "carta verde mercosur",
+        "llevar el auto a brasil",
+        "seguro para viajar a brasil en auto",
+        "requisitos para salir de uruguay en auto",
+        "sacar el auto del pais uruguay"
+      ],
+      "hypothesis": "Pagina nueva. El sitio cubria cada costo de andar en auto (nafta, patente, multas, peajes, boleto) y cada parte de cruzar la frontera con plata encima (franquicia del viajero, declarar efectivo, llevar dolares o reales), y nada sobre el auto cruzando esa misma frontera: 'carta verde' no aparecia en ningun archivo del repo. La apuesta es el dato que nadie publica junto: que el seguro que te piden afuera NO es el SOA sino el del Decreto 8/997 (Res. GMC 120/94), y que una poliza uruguaya vale solo en los paises donde la aseguradora tenga acuerdo de representacion (art. 4). Sin precio de la carta verde: la emiten aseguradoras privadas y no hay arancel oficial que citar."
     }
   ]
 }
