@@ -67,3 +67,61 @@ export async function readFacebookPageTexts(browser: Browser, url: string, settl
     await page.close().catch(() => undefined);
   }
 }
+
+export interface FacebookListScroll {
+  /** Every JSON text the page produced (embedded scripts first, then each GraphQL body). */
+  onText: (text: string) => void;
+  /** How many distinct listings the caller has collected so far: the stop signal. */
+  count: () => number;
+  maxScrolls: number;
+  /** Consecutive scrolls without a new listing that mean Facebook has nothing more to send. */
+  stagnantRounds: number;
+  /** Epoch ms; the list stops scrolling there and reports `exhausted: false`. */
+  deadline: number;
+  gapMs?: number;
+}
+
+/**
+ * Loads a Marketplace list (a search or a category feed) and scrolls to the BOTTOM until Facebook
+ * stops sending listings. Two things measured on 2026-10-05 make this the only way to read a list
+ * whole: the grid is virtualized (the DOM never holds more than ~45 item links, so counting
+ * anchors stalls while the GraphQL stream keeps delivering), and scrolling by a screen height does
+ * not reach the load-more trigger — three such scrolls read 20–26 cards of a search that, scrolled
+ * to the bottom, delivered 288. The tab is always closed.
+ */
+export async function scrollFacebookList(browser: Browser, url: string, options: FacebookListScroll): Promise<{ scrolls: number; exhausted: boolean }> {
+  const page: Page = await browser.newPage();
+  const pending: Array<Promise<void>> = [];
+  const onResponse = (response: HTTPResponse): void => {
+    if (!response.url().includes("/api/graphql")) return;
+    pending.push(response.text().then(options.onText, () => undefined));
+  };
+  page.on("response", onResponse);
+  try {
+    await page.setViewport({ width: 1400, height: 900 });
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
+    guard(page.url());
+    await page.waitForSelector("a[href*=\"/marketplace/item/\"]", { timeout: 30_000 }).catch(() => null);
+    guard(page.url());
+    const embedded = (await page.evaluate(() =>
+      Array.from(document.querySelectorAll("script[type=\"application/json\"]")).map(node => node.textContent || ""),
+    )) as string[];
+    embedded.forEach(options.onText);
+    let scrolls = 0;
+    let stagnant = 0;
+    while (scrolls < options.maxScrolls && stagnant < options.stagnantRounds && Date.now() < options.deadline) {
+      const before = options.count();
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await sleep(options.gapMs ?? 2_000);
+      await Promise.all(pending.splice(0));
+      scrolls++;
+      stagnant = options.count() === before ? stagnant + 1 : 0;
+    }
+    guard(page.url());
+    await Promise.all(pending.splice(0));
+    return { scrolls, exhausted: stagnant >= options.stagnantRounds };
+  } finally {
+    page.off("response", onResponse);
+    await page.close().catch(() => undefined);
+  }
+}

@@ -602,7 +602,7 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 |---|---|---|---|
 | **Mercado Libre** | bridge propio en `:9656` (`pm2 mercadolibre`), `?raw=true` | dirección con calle+número, barrio, dormitorios/baños/m², precio, foto | gastos comunes, fecha de publicación, lat/lon, nombre del vendedor |
 | **InfoCasas** | `__NEXT_DATA__` de sus páginas de listado | todo lo anterior **más** lat/lon, gastos comunes, inmobiliaria y fecha de publicación | — |
-| **Facebook Marketplace** | bridge propio en `:9657` (`pm2 facebook_marketplace`) para las tarjetas; **`currency-rentals-detail` lee la ficha** de cada aviso (CDP al Chrome del perfil) | precio, título, ciudad, foto; el barrio cuando el título o la descripción lo nombran (`classes/rentals/neighborhoods.ts`); descripción, garantías por texto, m²/dormitorios por texto y **coordenada cuando el texto trae una esquina o dirección geocodificable** (`classes/rentals/facebookDetail.ts`) | dirección exacta, gastos comunes, fecha de publicación; el pin de la ficha no es el inmueble y no se publica |
+| **Facebook Marketplace** | **el Chrome del perfil por CDP `:9224`** (`classes/rentals/sources/facebookBrowser.ts`): cada búsqueda se scrollea HASTA EL FONDO y las tarjetas salen del stream GraphQL de Facebook (con su categoría); el bridge `:9657` (`pm2 facebook_marketplace`) queda de respaldo si el navegador no lee nada; **`currency-rentals-detail` lee la ficha** de cada aviso (CDP al Chrome del perfil) | precio, título, ciudad, foto; el barrio cuando el título o la descripción lo nombran (`classes/rentals/neighborhoods.ts`); descripción, garantías por texto, m²/dormitorios por texto y **coordenada cuando el texto trae una esquina o dirección geocodificable** (`classes/rentals/facebookDetail.ts`) | dirección exacta, gastos comunes, fecha de publicación; el pin de la ficha no es el inmueble y no se publica |
 | **Casasweb** | HTML público de `resultados.aspx`; paginación mediante el formulario de búsqueda que entrega el servidor | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
 | **Inmuebles El País** | los dos endpoints de su propio buscador: `POST /api/chat/init` (una búsqueda guardada por departamento) y `GET /api/chat/<id>/results?page&limit=500`; UA de navegador y cabecera `x-cambio-uruguay-bot`, con puppeteer de respaldo cuando Cloudflare desafía | dirección, barrio, lat/lon, dormitorios/baños/m², gastos comunes, inmobiliaria, foto y **la garantía como dato estructurado** | fecha de publicación original; teléfono y correo de la inmobiliaria (existen en la respuesta y **no se copian**); garaje y amueblado |
 | **TikTok** | un Chrome real por corrida (puppeteer, **a través del proxy de `proxy.txt`**: desde la IP del VPS toda lista vuelve vacía) lee las páginas de hashtag (`/tag/...`) y de cuenta (`/@user`) capturando `item_list`; un video suelto se lee por HTTP plano de su propia página. Sólo la corrida completa | precio, gastos comunes, dormitorios/baños/m², tipo, barrio y departamento, garantías y **la fecha real de publicación**, todo leído de la LEYENDA (`classes/rentals/sources/tiktok/caption.ts`, precisión sobre recall); coordenada sólo de una esquina del propio texto geocodificada y aceptada | dirección exacta; el teléfono (está en la leyenda y se borra); unificación con otros portales; la foto es el cover firmado del video y vence en ~36–48 h, se refresca al releer la cuenta |
@@ -1067,6 +1067,23 @@ Lo que pasó ese día, y lo que cambió por eso:
   igual que las solicitudes. Lo ya guardado no se perdía: `store.ts` conserva un `true` anterior.
 - **Facebook.** El puente (:9657, repo trustpilot) estuvo caído del 2026-09-11 23:48 al 2026-09-12
   16:16 UTC. En este repo no había nada que corregir más allá del motivo en la nota.
+- **Facebook, cobertura (2026-10-05).** Un aviso compartido por el usuario («Alquiler Monoambiente
+  Tres Cruces», ítem `4537809589822735`) no estaba en el directorio: ninguna de las 2.615 propiedades
+  de Facebook guardadas, y ninguna búsqueda del puente lo devolvía — ni siquiera «monoambiente tres
+  cruces». La causa no era un filtro: el puente scrollea tres pantallas y lee la grilla visible, así
+  que cada búsqueda daba 20–26 tarjetas (la corrida completa juntaba 270 en total). Dos hechos
+  medidos: la grilla está **virtualizada** (el DOM nunca tiene más de ~45 enlaces, contar anclas se
+  frena mientras el GraphQL sigue mandando) y scrollear una pantalla **no dispara la carga**; hay que
+  ir al fondo. Scrolleadas hasta que Facebook deja de mandar, siete búsquedas de Montevideo dieron
+  **2.355 avisos distintos en 13 minutos** («alquiler» sola, 864, y el aviso entre ellos). Cada
+  redacción sigue sumando cientos que las otras no muestran: una búsqueda es un ranking, no la
+  categoría, y por eso `complete` sigue en `false`. La categoría «Propiedades en alquiler»
+  (`1468271819871448`) cuenta como declaración del vendedor, igual que la palabra en el título —
+  Facebook genera títulos como «Monoambiente 1 baño Departamento/condominio»—, pero un título de
+  venta sin palabra de alquiler sigue absteniéndose. La horaria lee sólo lo nuevo
+  (`sortBy=creation_time_descend`: quince scrolls de «alquiler» cubren ~66 h). El navegador NO se
+  condiciona al `sessionStatus` del monitor del perfil (estaba en `error` con la sesión andando); la
+  verdad es la redirección a login, que corta la lectura.
 
 ## Variables de entorno
 
@@ -1081,6 +1098,8 @@ Lo que pasó ese día, y lo que cambió por eso:
 | `RENTALS_CW_MAX_PAGES` | 60 | tope de páginas por departamento/tipo en Casasweb; la rápida toma una página por búsqueda |
 | `RENTALS_CW_PAUSE_MS` | 60000 | pausa única por corrida antes de la segunda lectura de las búsquedas de Casasweb que fallaron |
 | `RENTALS_FB_ENABLED` | — | `0` apaga Marketplace |
+| `RENTALS_FB_BROWSER` | — | `0` vuelve al puente `:9657` (20–26 tarjetas por búsqueda) |
+| `RENTALS_FB_BROWSER_MINUTES` | 60 / 8 | tope de reloj del lector por navegador en full / fast; al cortar conserva lo leído |
 | `RENTALS_FB_LOCATIONS` | montevideo,ciudad-de-la-costa,maldonado,salto,paysandu,colonia-del-sacramento | anclas de búsqueda en Marketplace; las sugerencias pueden estar en otras zonas |
 | `RENTALS_HOST_GAP_MS` | 1200 | separación mínima entre dos requests al mismo host |
 | `RENTALS_LOCK_FILE` | `/tmp/cambio-uruguay-rentals-sync.lock` | archivo de bloqueo del wrapper Linux; ambos jobs deben compartir el mismo valor |
