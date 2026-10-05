@@ -1097,6 +1097,25 @@
         "sacar el auto del pais uruguay"
       ],
       "hypothesis": "Pagina nueva. El sitio cubria cada costo de andar en auto (nafta, patente, multas, peajes, boleto) y cada parte de cruzar la frontera con plata encima (franquicia del viajero, declarar efectivo, llevar dolares o reales), y nada sobre el auto cruzando esa misma frontera: 'carta verde' no aparecia en ningun archivo del repo. La apuesta es el dato que nadie publica junto: que el seguro que te piden afuera NO es el SOA sino el del Decreto 8/997 (Res. GMC 120/94), y que una poliza uruguaya vale solo en los paises donde la aseguradora tenga acuerdo de representacion (art. 4). Sin precio de la carta verde: la emiten aseguradoras privadas y no hay arancel oficial que citar."
+    },
+    {
+      "id": "snippet-entero-de-las-guias-respuesta-primero-2",
+      "shippedOn": "2026-10-05",
+      "routes": [
+        "/guias/facturar-como-freelancer-uruguay",
+        "/guias/jubilacion-y-afap-como-funciona-uruguay",
+        "/guias/transferencia-a-cuenta-equivocada-uruguay",
+        "/guias/alias-para-transferir-uruguay",
+        "/guias/usar-tarjeta-uruguaya-en-argentina",
+        "/guias/ciudadania-legal-uruguaya",
+        "/guias/me-compraron-la-deuda-uruguay",
+        "/guias/precio-supergas-garrafa-uruguay",
+        "/guias/cambiar-dolares-aeropuerto-carrasco",
+        "/guias/invertir-en-la-bolsa-de-usa-desde-uruguay",
+        "/guias/recibir-transferencia-del-exterior-uruguay",
+        "/guias/saldo-a-favor-tarjeta-de-credito-uruguay"
+      ],
+      "hypothesis": "Quinta tanda del snippet entero de las guias: titulo y descripcion de las mismas doce, en una sola fila. Lo nuevo no es el criterio sino como se eligieron las doce. De las cien guias del catalogo pasadas de alguno de los dos presupuestos, treinta y seis estan dentro de una ventana de medicion abierta de este mismo archivo (las cuatro tandas del 1 al 4 de octubre, que cierran hasta el 1 de noviembre), asi que tocarles el snippet hoy le cambiaria el sujeto al experimento que las esta midiendo; la tanda salio de las 64 libres, por mayor sobrante total. Diez titulos iban de 74 a 63 caracteres contando la marca y las doce descripciones de 202 a 161, y el defecto es el de siempre con una variante mas cara: once descripciones enumeraban el INDICE de la guia (\"por que necesitas..., como funciona..., que impuestos pagas\"), o sea gastaban el unico renglon que el SERP publica sin contestar nada. Ahora cada snippet arranca por la respuesta: sin inscribirse no se factura y el monotributista esta exceptuado de la factura electronica; a quien empezo a trabajar antes de diciembre de 2023 y gana por debajo del tope A no le entra nada a una AFAP; el banco no debita sin autorizacion del titular; el alias uruguayo es el celular y no tres palabras; en Argentina el dolar lo pone la red de la tarjeta; tres anos de residencia con familia constituida y cinco sin ella; la deuda cedida no te obliga hasta que te notifiquen (art. 1758); recibir un SWIFT arranca en US$ 17,50; y el saldo a favor de la tarjeta no se pierde. Ninguna cifra es nueva ni se escribio con mas firmeza que su fuente: el tope A va sin monto porque el cuerpo lo fecha y se actualiza, y el supergas va con el dia desde el que rige. Un titulo tampoco puede arrancar por una palabra generica que otra pagina reclama en el buscador propio: el de la bolsa de Estados Unidos quedo \"Bolsa de USA desde Uruguay\" y no \"Invertir\", que es la palabra de /inversiones-uruguay. Es el tramo contenido, que rinde 8x el promedio del sitio. Se espera mas CTR a igual posicion, como midieron las tandas anteriores."
     }
   ]
 }

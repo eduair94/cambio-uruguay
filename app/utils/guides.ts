@@ -1320,9 +1320,9 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'cambiar-dolares-aeropuerto-carrasco',
-    title: 'Cambiar dólares en el Aeropuerto de Carrasco: ¿conviene?',
+    title: 'Dólares en Carrasco: cambiá sólo lo justo',
     description:
-      'Cambiar dólares en el aeropuerto de Montevideo es cómodo pero caro: la cotización suele ser peor que en el centro. Cuánto cambiar, dónde y cómo no perder de más.',
+      'En el aeropuerto la cotización suele ser peor que en el centro: cambiá lo justo para el traslado y las primeras horas, y el grueso en una casa de cambio.',
     tag: 'AEROPUERTO',
     updatedAt: '2026-06-20',
     sections: [

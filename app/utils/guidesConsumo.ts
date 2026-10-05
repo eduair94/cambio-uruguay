@@ -535,9 +535,9 @@ export const consumoGuides: readonly Guide[] = [
   },
   {
     slug: 'precio-supergas-garrafa-uruguay',
-    title: 'Precio del supergás: cuánto sale la garrafa de 13 kg',
+    title: 'Supergás: la garrafa de 13 kg, $1.216,28',
     description:
-      'Desde julio de 2026 el kilo de supergás cuesta $93,56: la garrafa de 13 kg, $1.216,28. Quién fija el precio, el descuento del 50% del MIDES y cómo compararlo con UTE.',
+      'El kilo está en $93,56 desde el 1/7/2026 y el Ejecutivo lo mantuvo en setiembre: la garrafa de 13 kg sale $1.216,28. El MIDES descuenta el 50 % por tuapp.',
     tag: 'SUPERGÁS',
     updatedAt: '2026-09-13',
     sections: [

@@ -170,9 +170,35 @@ const MEASURED = 146
  * contesta igual y no empieza por el término. Vale para toda tanda futura: un título de guía que
  * arranca con una palabra genérica que otra página reclama se mide en los dos buscadores, no en uno.
  *
+ * 68 → 58 el 2026-10-05, quinta tanda, otra vez el snippet entero de las mismas doce guías. Lo que
+ * cambia en esta tanda no es el criterio sino CÓMO SE ELIGEN las doce: de las cien guías que
+ * quedaban pasadas de alguno de los dos presupuestos, treinta y seis están dentro de una ventana de
+ * medición abierta de `docs/seo/experiments.json` —las cuatro tandas anteriores, que se declararon
+ * entre el 1 y el 4 de octubre y cierran hasta el 1 de noviembre—. Tocarles el snippet hoy le
+ * cambia el sujeto al experimento que las está midiendo, así que la tanda se eligió entre las 64
+ * libres y por mayor sobrante total (título más descripción), no por la lista cruda de las más
+ * largas. Es la misma reserva que `seoContract.test.ts` aplica a las migas y
+ * `temaHuerfanas.test.ts` a las huérfanas.
+ *
+ * Diez de los doce títulos estaban pasados, de 74 a 63 caracteres contando la marca, y el defecto
+ * es el de siempre: la pregunta en vez de la respuesta («¿Cómo obtener la ciudadanía uruguaya?
+ * Requisitos y plazos», «Saldo a favor en la tarjeta de crédito: cómo funciona», «Alias para
+ * transferir: cómo funciona con tu celular»). Ahora contestan: tres años de residencia con familia
+ * constituida y cinco sin ella, que el saldo a favor no se pierde, que el alias uruguayo es el
+ * celular y no tres palabras, que la cesión de la deuda no te obliga hasta que te notifiquen, que
+ * en Argentina el dólar lo pone la red de la tarjeta y que recibir un SWIFT arranca en US$ 17,50.
+ *
+ * Y dos aplicaciones de la regla del buscador propio que este comentario dejó escrita en la tanda
+ * anterior. El título de la bolsa de Estados Unidos no puede arrancar por «Invertir» —`scoreDocs`
+ * puntúa 74 un título que EMPIEZA por lo tipeado contra 56 el que sólo lo contiene, y la palabra la
+ * reclaman `/inversiones-uruguay` y `/invertir-en-proyectos-uruguayos`, que `searchIndex.test.ts`
+ * exige primera—, así que quedó «Bolsa de USA desde Uruguay: broker e IRPF». Y el del supergás no
+ * lleva la fecha en el título porque no entra, así que la cifra va con su fecha en la descripción:
+ * un precio regulado que el Ejecutivo revisa todos los meses no se publica como si fuera perpetuo.
+ *
  * SÓLO PUEDE BAJAR.
  */
-const TITLE_OVER_BUDGET = 68
+const TITLE_OVER_BUDGET = 58
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.
@@ -205,8 +231,28 @@ const TITLE_OVER_BUDGET = 68
  * etiqueta del tema o repetían el título («Cómo comprar criptomonedas en Uruguay paso a paso:
  * exchanges locales…», «Cómo abrir una empresa unipersonal en Uruguay paso a paso: inscripción en
  * DGI y BPS…»), y las otras dos ya arrancaban por el dato y sólo estaban largas.
+ *
+ * 65 → 53 el 2026-10-05, las doce descripciones de la quinta tanda de títulos, en la misma fila del
+ * libro de cambios y elegidas con el criterio que explica el comentario de `TITLE_OVER_BUDGET`.
+ * Iban de 202 a 161 caracteres y once abrían describiendo el ÍNDICE de la guía («Cómo facturar como
+ * freelancer o emprendedor en Uruguay: por qué necesitás…, cómo funciona…, cómo le facturás…, qué
+ * impuestos pagás», «Lo que cobran BROU, Itaú, Santander, BBVA y Scotiabank…»), que es la forma más
+ * cara del defecto: enumera las secciones y la respuesta no aparece en ningún renglón. Ahora
+ * arranca el dato: que sin inscribirse no se factura y que el monotributista está exceptuado de la
+ * factura electrónica, que a quien empezó a trabajar antes de diciembre de 2023 y gana por debajo
+ * del tope A no le entra nada a una AFAP, que el banco no debita sin autorización del titular, que
+ * el alias es el celular, que la red convierte la compra a dólares, los tres y cinco años del
+ * artículo 75, el artículo 1758 para la deuda cedida, el kilo de supergás con su fecha, que en
+ * Carrasco se cambia lo justo, el IRPF que desde 2026 grava también la ganancia al vender, el piso
+ * de US$ 17,50 del SWIFT y que el saldo a favor no se pierde.
+ *
+ * Ninguna cifra es nueva: todas ya estaban en la descripción vieja o en el cuerpo de su guía. Y
+ * ninguna se escribió con más firmeza que su fuente: el supergás va con el día desde el que rige y
+ * con el mes en que el Ejecutivo lo mantuvo, y el tope A de la AFAP va SIN su monto —el cuerpo lo
+ * fecha el 10 de agosto de 2026 y se actualiza, así que en el snippet, donde la fecha no entra,
+ * queda como el umbral que es—.
  */
-const DESCRIPTION_OVER_BUDGET = 65
+const DESCRIPTION_OVER_BUDGET = 53
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {

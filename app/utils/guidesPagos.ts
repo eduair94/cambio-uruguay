@@ -240,9 +240,9 @@ export const pagosGuides: readonly Guide[] = [
   },
   {
     slug: 'transferencia-a-cuenta-equivocada-uruguay',
-    title: 'Transferí a la cuenta equivocada: cómo recuperar la plata',
+    title: 'Transferí mal: sólo devuelve quien recibió',
     description:
-      'Si transferiste a otra cuenta por error o pagaste y no te mandaron el producto: la devolución que gestiona el banco, el pago indebido del Código Civil y la denuncia.',
+      'El banco no debita sin autorización del titular: pide la devolución y contesta en unos 10 días hábiles. Si se niega, queda el art. 1312 del Código Civil.',
     tag: 'TRANSFERENCIA',
     updatedAt: '2026-09-13',
     sections: [
@@ -383,9 +383,9 @@ export const pagosGuides: readonly Guide[] = [
   },
   {
     slug: 'recibir-transferencia-del-exterior-uruguay',
-    title: 'Recibir plata del exterior: cuánto cobra cada banco',
+    title: 'Recibir del exterior: desde US$ 17,50',
     description:
-      'Lo que cobran BROU, Itaú, Santander, BBVA y Scotiabank por un SWIFT recibido según sus tarifarios de 2026, con ejemplos por monto, por qué rebota y dónde entra Wise.',
+      'La comisión la paga el que recibe: Scotiabank desde US$ 17,50, BROU 0,4 % con mínimo de US$ 35 e Itaú US$ 10 más corresponsal. Y por qué rebota un SWIFT.',
     tag: 'SWIFT',
     updatedAt: '2026-09-13',
     sections: [
@@ -558,9 +558,9 @@ export const pagosGuides: readonly Guide[] = [
   },
   {
     slug: 'alias-para-transferir-uruguay',
-    title: 'Alias para transferir: cómo funciona con tu celular',
+    title: 'Alias para transferir: es tu celular',
     description:
-      'En Uruguay el alias es tu celular asociado a tu cuenta: cómo se activa en BROU e Itaú, si sirve entre bancos distintos, qué cuesta, qué tope tiene y qué datos ve el otro.',
+      'Es tu celular asociado a tu cuenta, no tres palabras: sirve con cualquier banco local, cuesta lo mismo que la transferencia y el que te manda ve tu nombre.',
     tag: 'ALIAS',
     updatedAt: '2026-09-13',
     sections: [
@@ -680,9 +680,9 @@ export const pagosGuides: readonly Guide[] = [
   },
   {
     slug: 'usar-tarjeta-uruguaya-en-argentina',
-    title: 'Tarjeta uruguaya en Argentina: qué dólar te aplican',
+    title: 'Tarjeta en Argentina: el dólar es de la red',
     description:
-      'Qué dólar te aplican al pagar en Argentina con una tarjeta uruguaya, qué dice el BCRA sobre tarjetas extranjeras, el recargo de cada emisor y cuándo conviene el efectivo.',
+      'La red convierte la compra a dólares y tu banco la debita. Itaú suma 3 % sobre el tipo de cambio de Visa y el BROU débito cobra 3 %. Y qué dice el BCRA.',
     tag: 'ARGENTINA',
     updatedAt: '2026-09-13',
     sections: [

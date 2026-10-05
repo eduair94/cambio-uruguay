@@ -2929,9 +2929,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'invertir-en-la-bolsa-de-usa-desde-uruguay',
-    title: 'Cómo invertir en la bolsa de USA desde Uruguay',
+    title: 'Bolsa de USA desde Uruguay: broker e IRPF',
     description:
-      'Cómo invertir en la bolsa de Estados Unidos desde Uruguay: brokers locales e internacionales, ETFs vs acciones, costos y la tributación de IRPF sobre rentas del exterior.',
+      'Desde 2026 el IRPF también grava la ganancia al vender, no sólo intereses y dividendos. Corredor local o broker internacional, ETF o acción, y los costos.',
     tag: 'BOLSA',
     updatedAt: '2026-07-18',
     sections: [
@@ -3269,7 +3269,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'jubilacion-y-afap-como-funciona-uruguay',
     title: 'Jubilación y AFAP en Uruguay: cómo funciona',
     description:
-      'Cómo funciona la jubilación en Uruguay: el sistema mixto BPS más AFAP, a quién le entra plata a la AFAP según cuándo empezó a trabajar, qué es una AFAP y qué cambió con la reforma de 2023.',
+      'Si empezaste a trabajar antes de diciembre de 2023, ganás por debajo del tope A y nunca hiciste la opción del art. 8, hoy no te entra nada a una AFAP.',
     tag: 'JUBILACIÓN',
     updatedAt: '2026-08-10',
     sections: [
@@ -4418,7 +4418,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'facturar-como-freelancer-uruguay',
     title: 'Cómo facturar como freelancer en Uruguay',
     description:
-      'Cómo facturar como freelancer o emprendedor en Uruguay: por qué necesitás monotributo o empresa unipersonal, cómo funciona la e-factura, cómo le facturás a un cliente del exterior y qué impuestos pagás.',
+      'Para facturar hay que estar inscripto: monotributo o unipersonal. El monotributista está exceptuado de la factura electrónica; el de IVA emite CFE.',
     tag: 'FACTURACIÓN',
     updatedAt: '2026-07-18',
     sections: [
