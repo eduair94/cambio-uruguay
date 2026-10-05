@@ -89,7 +89,7 @@ export interface FacebookListScroll {
  * not reach the load-more trigger — three such scrolls read 20–26 cards of a search that, scrolled
  * to the bottom, delivered 288. The tab is always closed.
  */
-export async function scrollFacebookList(browser: Browser, url: string, options: FacebookListScroll): Promise<{ scrolls: number; exhausted: boolean }> {
+export async function scrollFacebookList(browser: Browser, url: string, options: FacebookListScroll): Promise<{ scrolls: number; exhausted: boolean; initial: number }> {
   const page: Page = await browser.newPage();
   const pending: Array<Promise<void>> = [];
   const onResponse = (response: HTTPResponse): void => {
@@ -107,6 +107,9 @@ export async function scrollFacebookList(browser: Browser, url: string, options:
       Array.from(document.querySelectorAll("script[type=\"application/json\"]")).map(node => node.textContent || ""),
     )) as string[];
     embedded.forEach(options.onText);
+    await Promise.all(pending.splice(0));
+    // What the page brought before any scroll: a list that never grows past it was not loaded.
+    const initial = options.count();
     let scrolls = 0;
     let stagnant = 0;
     while (scrolls < options.maxScrolls && stagnant < options.stagnantRounds && Date.now() < options.deadline) {
@@ -119,7 +122,7 @@ export async function scrollFacebookList(browser: Browser, url: string, options:
     }
     guard(page.url());
     await Promise.all(pending.splice(0));
-    return { scrolls, exhausted: stagnant >= options.stagnantRounds };
+    return { scrolls, exhausted: stagnant >= options.stagnantRounds, initial };
   } finally {
     page.off("response", onResponse);
     await page.close().catch(() => undefined);

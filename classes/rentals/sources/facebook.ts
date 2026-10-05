@@ -161,11 +161,20 @@ export interface HarvestFacebookOptions {
  */
 const BROWSER_QUERIES = ["alquiler", "alquiler apartamento", "alquiler casa", "alquiler monoambiente", "alquiler habitacion", "se alquila", "alquilo"];
 
+const searches = (locations: readonly string[], queries: readonly string[]) =>
+  locations.flatMap(location => queries.map(query => ({ location, query })));
+
 function browserPlan(mode: "full" | "fast"): Parameters<typeof readFacebookRentals>[0] {
   const minutes = Number(process.env.RENTALS_FB_BROWSER_MINUTES || (mode === "fast" ? 8 : 60));
   return mode === "fast"
-    ? { locations: LOCATIONS.slice(0, 1), queries: ["alquiler", "alquiler apartamento"], sort: "newest", maxScrolls: 15, stagnantRounds: 6, maxDurationMs: minutes * 60_000 }
-    : { locations: LOCATIONS, queries: BROWSER_QUERIES, maxScrolls: 150, stagnantRounds: 10, maxDurationMs: minutes * 60_000 };
+    ? { searches: searches(LOCATIONS.slice(0, 1), ["alquiler", "alquiler apartamento"]), sort: "newest", maxScrolls: 15, stagnantRounds: 6, maxDurationMs: minutes * 60_000 }
+    : {
+      // Montevideo with every wording, the other anchors with the three broadest: each anchor
+      // ranks its own area first (Maldonado alone added 494 adverts Montevideo's seven never
+      // showed), and fewer lists spare the session the throttle described in facebookBrowser.ts.
+      searches: [...searches(LOCATIONS.slice(0, 1), BROWSER_QUERIES), ...searches(LOCATIONS.slice(1), BROWSER_QUERIES.slice(0, 3))],
+      maxScrolls: 150, stagnantRounds: 10, maxDurationMs: minutes * 60_000,
+    };
 }
 
 /** Card → row, keeping what the item page taught, and the plausibility floor per type. */
@@ -210,7 +219,7 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
         ok: true,
         listings,
         note: `navegador: ${listings.length} avisos únicos de ${read.cards.length} tarjetas (${read.reads} lecturas); ${rejected} descartados; `
-          + `${read.lists} búsquedas (${read.exhausted} leídas hasta el final), ${read.failed} fallidas`
+          + `${read.lists} búsquedas (${read.exhausted} leídas hasta el final, ${read.stalled} sin cargar más que la primera página), ${read.failed} fallidas`
           + (read.note ? `; ${read.note}` : ""),
       };
     }

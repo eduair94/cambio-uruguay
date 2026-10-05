@@ -152,7 +152,7 @@ const node = (id: string, overrides: Record<string, unknown> = {}) => ({
 });
 const graphql = (...nodes: unknown[]) => `for (;;);${JSON.stringify({ data: { marketplace_search: { feed_units: { edges: nodes.map(listing => ({ node: { listing } })) } } } })}`;
 const read = (cards: FacebookRentalRead["cards"], extra: Partial<FacebookRentalRead> = {}): FacebookRentalRead => ({
-  cards, reads: cards.length, lists: 1, exhausted: 1, failed: 0, sessionLost: false, unreachable: false, note: null, ...extra,
+  cards, reads: cards.length, lists: 1, exhausted: 1, failed: 0, stalled: 0, sessionLost: false, unreachable: false, note: null, ...extra,
 });
 
 describe("Facebook through the profile browser", () => {
@@ -191,10 +191,14 @@ describe("Facebook through the profile browser", () => {
     })]);
     expect(result.note).toContain("navegador: 1 avisos únicos");
     // The full sweep reads every anchor city to the end; the hourly one only the newest of Montevideo.
-    expect(browser.mock.calls[0][0]).toMatchObject({ locations: expect.arrayContaining(["montevideo", "colonia-del-sacramento"]), maxScrolls: 150 });
-    expect(browser.mock.calls[0][0].queries).toContain("alquiler");
+    const full = browser.mock.calls[0][0];
+    expect(full.maxScrolls).toBe(150);
+    expect(full.searches.filter(s => s.location === "montevideo")).toHaveLength(7);
+    expect(full.searches).toContainEqual({ location: "colonia-del-sacramento", query: "alquiler" });
+    expect(full.searches.filter(s => s.location === "maldonado")).toHaveLength(3);
     await harvestFacebookMarketplace("fast", 41.5, { browser, details: async () => new Map() });
-    expect(browser.mock.calls[1][0]).toMatchObject({ locations: ["montevideo"], sort: "newest" });
+    expect(browser.mock.calls[1][0]).toMatchObject({ sort: "newest" });
+    expect(browser.mock.calls[1][0].searches.every(s => s.location === "montevideo")).toBe(true);
   });
 
   it("falls back to the bridge, saying why, when the browser read nothing", async () => {

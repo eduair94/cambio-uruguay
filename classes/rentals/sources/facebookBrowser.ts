@@ -65,6 +65,8 @@ export interface FacebookRentalRead {
   /** Lists that ran out of listings (as opposed to hitting the scroll cap or the clock). */
   exhausted: number;
   failed: number;
+  /** Lists that never loaded past their first page. */
+  stalled: number;
   sessionLost: boolean;
   /** The browser could not be reached at all: the caller falls back to the bridge. */
   unreachable: boolean;
@@ -72,8 +74,8 @@ export interface FacebookRentalRead {
 }
 
 export async function readFacebookRentals(options: {
-  locations: readonly string[];
-  queries: readonly string[];
+  /** Each search is a Marketplace city anchor plus a wording, read in this order. */
+  searches: ReadonlyArray<{ location: string; query: string }>;
   /** "newest" reads the most recent adverts first (the hourly top-up); default is relevance. */
   sort?: "newest";
   maxScrolls: number;
@@ -84,8 +86,9 @@ export async function readFacebookRentals(options: {
 }): Promise<FacebookRentalRead> {
   const deadline = Date.now() + options.maxDurationMs;
   const cards = new Map<string, FbListing>();
-  const result: FacebookRentalRead = { cards: [], reads: 0, lists: 0, exhausted: 0, failed: 0, sessionLost: false, unreachable: false, note: null };
+  const result: FacebookRentalRead = { cards: [], reads: 0, lists: 0, exhausted: 0, failed: 0, stalled: 0, sessionLost: false, unreachable: false, note: null };
   let browser: Browser | null = null;
+  let stalledInARow = 0;
   try {
     browser = await (options.connect ?? connectFacebookBrowser)();
   } catch {
@@ -94,34 +97,50 @@ export async function readFacebookRentals(options: {
     return result;
   }
   try {
-    outer: for (const location of options.locations) {
-      for (const query of options.queries) {
-        if (Date.now() >= deadline) {
-          result.note = "presupuesto de tiempo agotado";
-          break outer;
+    for (const { location, query } of options.searches) {
+      if (Date.now() >= deadline) {
+        result.note = "presupuesto de tiempo agotado";
+        break;
+      }
+      if (result.lists) await sleep(options.gapMs ?? 15_000);
+      // Stagnation is per list: counting the run's union, a second search that keeps delivering
+      // cards an earlier one already had would look exhausted and stop early.
+      const seenHere = new Set<string>();
+      try {
+        const run = await scrollFacebookList(browser, searchUrl(location, query, options.sort), {
+          onText: text => {
+            for (const card of rentalCardsFromText(text)) {
+              result.reads++;
+              seenHere.add(card.id!);
+              if (!cards.has(card.id!)) cards.set(card.id!, card);
+            }
+          },
+          count: () => seenHere.size,
+          maxScrolls: options.maxScrolls,
+          stagnantRounds: options.stagnantRounds,
+          deadline,
+        });
+        result.lists++;
+        if (run.exhausted) result.exhausted++;
+        if (seenHere.size <= run.initial) {
+          result.stalled++;
+          stalledInARow++;
+        } else {
+          stalledInARow = 0;
         }
-        if (result.lists) await sleep(options.gapMs ?? 3_000);
-        try {
-          const run = await scrollFacebookList(browser, searchUrl(location, query, options.sort), {
-            onText: text => {
-              for (const card of rentalCardsFromText(text)) {
-                result.reads++;
-                if (!cards.has(card.id!)) cards.set(card.id!, card);
-              }
-            },
-            count: () => cards.size,
-            maxScrolls: options.maxScrolls,
-            stagnantRounds: options.stagnantRounds,
-            deadline,
-          });
-          result.lists++;
-          if (run.exhausted) result.exhausted++;
-        } catch (error) {
-          if (error instanceof FacebookSessionError) throw error;
-          result.failed++;
-          // Only the error class: messages can carry URLs.
-          result.note = `falla del navegador: ${String((error as Error)?.name || "Error")}`;
+        // Facebook throttles the infinite scroll of a session that has scrolled a lot: measured
+        // 2026-10-05, after an hour of probing, the same search that had delivered 864 cards
+        // stopped at its first 24, with any script. One short search happens (a narrow
+        // wording); two in a row is the throttle, and insisting only spends the account.
+        if (stalledInARow >= 2) {
+          result.note = "Facebook dejó de cargar más resultados en dos búsquedas seguidas; se corta para no forzar la sesión";
+          break;
         }
+      } catch (error) {
+        if (error instanceof FacebookSessionError) throw error;
+        result.failed++;
+        // Only the error class: messages can carry URLs.
+        result.note = `falla del navegador: ${String((error as Error)?.name || "Error")}`;
       }
     }
   } catch (error) {

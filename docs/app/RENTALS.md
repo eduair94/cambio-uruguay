@@ -1083,7 +1083,14 @@ Lo que pasó ese día, y lo que cambió por eso:
   venta sin palabra de alquiler sigue absteniéndose. La horaria lee sólo lo nuevo
   (`sortBy=creation_time_descend`: quince scrolls de «alquiler» cubren ~66 h). El navegador NO se
   condiciona al `sessionStatus` del monitor del perfil (estaba en `error` con la sesión andando); la
-  verdad es la redirección a login, que corta la lectura.
+  verdad es la redirección a login, que corta la lectura. **Facebook frena el scroll infinito de una
+  sesión que scrolleó mucho**: después de una hora de sondeos, la misma búsqueda que había dado 864
+  tarjetas se quedó en las primeras 24, con cualquier script. Por eso la completa no barre seis
+  ciudades por siete redacciones: Montevideo con las siete y las otras cinco anclas con las tres más
+  amplias (cada ancla ordena primero su zona: Maldonado sumó 494 avisos que Montevideo no mostraba),
+  15 s entre búsquedas, y **dos búsquedas seguidas que no pasan de la primera página cortan la
+  corrida** con lo leído hasta ahí. La detención por "sin novedades" se mide por búsqueda, no por la
+  unión de la corrida.
 
 ## Variables de entorno
 
