@@ -361,9 +361,9 @@ export const deudasGuides: readonly Guide[] = [
   },
   {
     slug: 'me-compraron-la-deuda-uruguay',
-    title: 'Me compraron la deuda: ¿a quién le pago en Uruguay?',
+    title: 'Me compraron la deuda: vale si te notifican',
     description:
-      'Si el banco o la financiera vendió tu deuda: no necesitan tu permiso, pero sí notificarte. Qué puede cobrarte el comprador y qué pasa con la prescripción y el Clearing.',
+      'No precisan tu permiso para venderla, pero sin notificación no te obliga (art. 1758) y al comprador podés oponerle las mismas excepciones que al banco.',
     tag: 'CESIÓN',
     updatedAt: '2026-09-13',
     sections: [
@@ -497,9 +497,9 @@ export const deudasGuides: readonly Guide[] = [
   },
   {
     slug: 'saldo-a-favor-tarjeta-de-credito-uruguay',
-    title: 'Saldo a favor en la tarjeta de crédito: cómo funciona',
+    title: 'Saldo a favor en la tarjeta: no se pierde',
     description:
-      'Si pagás la tarjeta antes del cierre o de más, queda a favor y se descuenta al cierre. Qué pasa con el disponible, el seguro, el débito automático y la devolución.',
+      'No se pierde: se compensa cuando el emisor cierra el período. Con débito automático, lo que pagás después del cierre no se descuenta de ese débito.',
     tag: 'TARJETA',
     updatedAt: '2026-09-13',
     sections: [

@@ -48,7 +48,13 @@ describe("official Geofabrik download redirects", () => {
     fetchMock.mockResolvedValueOnce(new Response(checksum + "  uruguay-latest.osm.pbf\n"))
       .mockResolvedValueOnce(hop.response).mockResolvedValueOnce(new Response(payload));
     const result = await downloadServicePbf();
-    expect(await readFile(result.file)).toEqual(payload);
+    // `.equals()` y no `toEqual()`: el payload tiene que pesar 1 MB —`downloadServicePbf` rechaza
+    // por debajo de 1.000.000 de bytes, así que no se puede achicar— y la igualdad estructural de
+    // vitest sobre dos Buffer de ese tamaño cuesta ~3 s contra ~1 ms de `Buffer.equals`. Eran los
+    // 2986 ms de este caso, el único del archivo con relojes reales, contra el presupuesto de
+    // 5000 ms: 1,7× de margen, que en un runner cargado se agota y lo tira por timeout (pasó en
+    // CI el 2026-10-05). Afirma exactamente lo mismo, byte a byte.
+    expect((await readFile(result.file)).equals(payload), "los bytes escritos no son el payload").toBe(true);
     expect(result.sourceSha256).toBe(createHash("sha256").update(payload).digest("hex"));
     expect(fetchMock.mock.calls.map(call => call[0])).toEqual([SERVICE_SOURCE + ".md5", SERVICE_SOURCE, dated]);
     const options = fetchMock.mock.calls.map(call => call[1]);

@@ -12,9 +12,9 @@ import type { Guide } from './guides'
 export const tramitesGuides: readonly Guide[] = [
   {
     slug: 'ciudadania-legal-uruguaya',
-    title: '¿Cómo obtener la ciudadanía uruguaya? Requisitos y plazos',
+    title: 'Ciudadanía legal: 3 años con familia, 5 sin',
     description:
-      'La ciudadanía legal se pide en la Corte Electoral con 3 años de residencia habitual si tenés familia constituida o 5 si no; es gratis y casarte no te la da directo.',
+      'Se pide en la Corte Electoral con 3 años de residencia habitual si tenés familia constituida y 5 si no. Es gratis, y casarte con un uruguayo no te la da.',
     tag: 'CIUDADANÍA',
     updatedAt: '2026-09-13',
     sections: [
