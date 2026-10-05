@@ -742,6 +742,10 @@
           "label": "Precio del boleto en Montevideo"
         },
         {
+          "to": "/llevar-el-auto-a-brasil-o-argentina",
+          "label": "Llevar el auto a Brasil o Argentina"
+        },
+        {
           "to": "/impuesto-autos-electricos-uruguay",
           "label": "IMESI a los autos eléctricos"
         },
