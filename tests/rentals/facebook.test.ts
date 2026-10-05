@@ -1,12 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { harvestFacebookMarketplace, toRawRental } from "../../classes/rentals/sources/facebook";
 import { fetchJson } from "../../classes/rentals/net";
+import { FB_RENTALS_CATEGORY, rentalCardsFromText, type FacebookRentalRead, type readFacebookRentals } from "../../classes/rentals/sources/facebookBrowser";
 
 vi.mock("../../classes/rentals/net", () => ({ fetchJson: vi.fn() }));
 const advert = (id: string, location: string | null = "Colonia Del Sacramento, Colonia, Uruguay") => ({
   id, title: "Casa en alquiler anual", price: { amount: 20000, currency: "UYU" }, location,
 });
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  // The bridge tests below: the browser reader is covered in its own block.
+  vi.stubEnv("RENTALS_FB_BROWSER", "0");
+});
 afterEach(() => vi.unstubAllEnvs());
 
 describe("Facebook partial coverage and source-owned location", () => {
@@ -133,5 +138,75 @@ describe("Facebook partial coverage and source-owned location", () => {
     // searches returned it.
     expect(result.note).toContain("1 avisos únicos de 4 lecturas; 1 descartados");
     expect(vi.mocked(fetchJson).mock.calls.every(([url]) => new URL(url).searchParams.get("limit") === "120")).toBe(true);
+  });
+});
+
+// A Marketplace GraphQL body as the browser receives it: one JSON document per line, `for (;;);`.
+const node = (id: string, overrides: Record<string, unknown> = {}) => ({
+  id, marketplace_listing_title: "Alquiler Monoambiente Tres Cruces", marketplace_listing_category_id: FB_RENTALS_CATEGORY,
+  listing_price: { formatted_amount: "UYU20,000", amount: "20000.00" },
+  location: { reverse_geocode: { city: "Montevideo", city_page: { display_name: "Montevideo, Uruguay" } } },
+  primary_listing_photo: { image: { uri: "https://scontent.example/a.jpg" } },
+  marketplace_listing_seller: { name: "Fraiman Propiedades" }, is_live: true, is_sold: false, is_pending: false,
+  ...overrides,
+});
+const graphql = (...nodes: unknown[]) => `for (;;);${JSON.stringify({ data: { marketplace_search: { feed_units: { edges: nodes.map(listing => ({ node: { listing } })) } } } })}`;
+const read = (cards: FacebookRentalRead["cards"], extra: Partial<FacebookRentalRead> = {}): FacebookRentalRead => ({
+  cards, reads: cards.length, lists: 1, exhausted: 1, failed: 0, stalled: 0, sessionLost: false, unreachable: false, note: null, ...extra,
+});
+
+describe("Facebook through the profile browser", () => {
+  beforeEach(() => vi.stubEnv("RENTALS_FB_BROWSER", "1"));
+
+  it("reads the cards from Facebook's GraphQL stream, skipping what is no longer on offer", () => {
+    const cards = rentalCardsFromText(graphql(
+      node("4537809589822735"),
+      node("2000002", { is_sold: true }), node("3000003", { is_pending: true }), node("4000004", { is_live: false }),
+      node("5000005", { listing_price: { formatted_amount: "USD650", amount: "650.00" } }),
+    ));
+    expect(cards.map(card => card.id)).toEqual(["4537809589822735", "5000005"]);
+    expect(cards[0]).toMatchObject({
+      title: "Alquiler Monoambiente Tres Cruces", price: { amount: 20000, currency: "UYU" }, location: "Montevideo, Uruguay",
+      seller: "Fraiman Propiedades", image: "https://scontent.example/a.jpg", categoryId: FB_RENTALS_CATEGORY,
+      url: "https://www.facebook.com/marketplace/item/4537809589822735/",
+    });
+    expect(cards[1].price).toEqual({ amount: 650, currency: "USD" });
+  });
+
+  it("takes the rentals category as the advert's own declaration, but not over a sale title", () => {
+    const [card] = rentalCardsFromText(graphql(node("1000001", { marketplace_listing_title: "Monoambiente 1 baño Departamento/condominio" })));
+    expect(toRawRental(card, "")).toMatchObject({ listingId: "facebook:1000001", department: "Montevideo" });
+    // The same generated title from the bridge (no category) still needs the word.
+    expect(toRawRental({ ...card, categoryId: null }, "")).toBeNull();
+    expect(toRawRental({ ...card, title: "Casa en venta" }, "")).toBeNull();
+  });
+
+  it("publishes the advert that no bridge search returned (item 4537809589822735)", async () => {
+    const browser = vi.fn<typeof readFacebookRentals>(async () => read(rentalCardsFromText(graphql(node("4537809589822735")))));
+    const result = await harvestFacebookMarketplace("full", 41.5, { browser, details: async () => new Map() });
+    expect(fetchJson).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ ok: true, complete: false });
+    expect(result.listings).toEqual([expect.objectContaining({
+      listingId: "facebook:4537809589822735", price: 20000, currency: "UYU", department: "Montevideo", neighborhood: "Tres Cruces",
+    })]);
+    expect(result.note).toContain("navegador: 1 avisos únicos");
+    // The full sweep reads every anchor city to the end; the hourly one only the newest of Montevideo.
+    const full = browser.mock.calls[0][0];
+    expect(full.maxScrolls).toBe(150);
+    expect(full.searches.filter(s => s.location === "montevideo")).toHaveLength(7);
+    expect(full.searches).toContainEqual({ location: "colonia-del-sacramento", query: "alquiler" });
+    expect(full.searches.filter(s => s.location === "maldonado")).toHaveLength(3);
+    await harvestFacebookMarketplace("fast", 41.5, { browser, details: async () => new Map() });
+    expect(browser.mock.calls[1][0]).toMatchObject({ sort: "newest" });
+    expect(browser.mock.calls[1][0].searches.every(s => s.location === "montevideo")).toBe(true);
+  });
+
+  it("falls back to the bridge, saying why, when the browser read nothing", async () => {
+    vi.mocked(fetchJson).mockResolvedValue({ ok: true, results: [advert("9")] });
+    const browser = vi.fn<typeof readFacebookRentals>(async () => read([], { lists: 0, unreachable: true, note: "navegador del perfil inaccesible" }));
+    const result = await harvestFacebookMarketplace("fast", 41.5, { browser, details: async () => new Map() });
+    expect(fetchJson).toHaveBeenCalledTimes(2);
+    expect(result.listings.map(row => row.listingId)).toEqual(["facebook:9"]);
+    expect(result.note).toContain("navegador sin lecturas (navegador del perfil inaccesible)");
   });
 });

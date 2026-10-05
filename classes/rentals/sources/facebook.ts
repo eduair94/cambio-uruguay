@@ -26,6 +26,7 @@ import { locateFacebookRental } from "../facebookDetail";
 import { guaranteesFromText } from "../guarantees";
 import type { RawRental, RentalCurrency } from "../types";
 import type { RentalSourceResult } from "./types";
+import { FB_RENTALS_CATEGORY, readFacebookRentals } from "./facebookBrowser";
 
 const API_BASE = (process.env.RENTALS_FB_API || "http://104.234.204.107:9657/facebook/marketplace").replace(
   /\/+$/,
@@ -42,7 +43,7 @@ const LOCATIONS = (process.env.RENTALS_FB_LOCATIONS || "montevideo,ciudad-de-la-
   .map((value) => value.trim())
   .filter(Boolean);
 
-interface FbListing {
+export interface FbListing {
   id?: string;
   title?: string;
   url?: string;
@@ -50,6 +51,8 @@ interface FbListing {
   image?: string | null;
   location?: string | null;
   seller?: string | null;
+  /** Only the browser reader has it: the bridge parses the visible grid. */
+  categoryId?: string | null;
 }
 
 interface FbResponse {
@@ -76,7 +79,12 @@ export function toRawRental(item: FbListing, _locationHint: string, detail?: FbR
   const rentalText = flatten(title)
     .replace(/\b(?:ya no|no)\s+(?:(?:se|lo|la)\s+)?(?:alquila(?:n)?|alquilo|alquiler|arrienda(?:n)?|arriendo)\b/g, "")
     .replace(/\b(?:no (?:es|esta) (?:en|para)|sin opcion (?:de|a))\s+alquiler\b/g, "");
-  if (!/\b(?:alquiler(?:es)?|alquilo|alquila(?:n|mos)?|alquilar|arriendo|arrienda(?:n)?|arrendamiento)\b|\balq(?:uil)?(?:\.|(?=\s|:|$))/.test(rentalText)) return null;
+  const titleSaysRent = /\b(?:alquiler(?:es)?|alquilo|alquila(?:n|mos)?|alquilar|arriendo|arrienda(?:n)?|arrendamiento)\b|\balq(?:uil)?(?:\.|(?=\s|:|$))/.test(rentalText);
+  // The seller filing the advert under "Propiedades en alquiler" declares the operation as much as
+  // the word in the title does: Facebook generates titles like "Monoambiente 1 baño
+  // Departamento/condominio" for those. A sale word with no rent word still abstains (above), and
+  // the bridge never carries a category, so its cards still need the word.
+  if (!titleSaysRent && item.categoryId !== FB_RENTALS_CATEGORY) return null;
 
   // The card's location is a city ("Montevideo", "Ciudad de la Costa"), never a street.
   // The search anchor is not evidence of where an individual suggested advert is located.
@@ -140,6 +148,52 @@ export function toRawRental(item: FbListing, _locationHint: string, detail?: FbR
 export interface HarvestFacebookOptions {
   /** The stored item-page reads for these listingIds (`facebook:<id>`); defaults to the app DB. */
   details?: (listingIds: readonly string[]) => Promise<ReadonlyMap<string, FbRentalDetailInput>>;
+  /** The browser reader; defaults to the profile Chrome (see facebookBrowser.ts). */
+  browser?: typeof readFacebookRentals;
+}
+
+/**
+ * The browser reader's searches. Measured 2026-10-05 on Montevideo, each scrolled to the end:
+ * "alquiler" 864 cards, and every further query still added hundreds the others never showed
+ * (union 2.355 after the seven, in 13 minutes) — Facebook ranks a search, it does not list a
+ * category, so wording is coverage. The hourly run reads only the newest: sorted by creation
+ * time, fifteen scrolls of "alquiler" reach back ~66 hours.
+ */
+const BROWSER_QUERIES = ["alquiler", "alquiler apartamento", "alquiler casa", "alquiler monoambiente", "alquiler habitacion", "se alquila", "alquilo"];
+
+const searches = (locations: readonly string[], queries: readonly string[]) =>
+  locations.flatMap(location => queries.map(query => ({ location, query })));
+
+function browserPlan(mode: "full" | "fast"): Parameters<typeof readFacebookRentals>[0] {
+  const minutes = Number(process.env.RENTALS_FB_BROWSER_MINUTES || (mode === "fast" ? 8 : 60));
+  return mode === "fast"
+    ? { searches: searches(LOCATIONS.slice(0, 1), ["alquiler", "alquiler apartamento"]), sort: "newest", maxScrolls: 15, stagnantRounds: 6, maxDurationMs: minutes * 60_000 }
+    : {
+      // Montevideo with every wording, the other anchors with the three broadest: each anchor
+      // ranks its own area first (Maldonado alone added 494 adverts Montevideo's seven never
+      // showed), and fewer lists spare the session the throttle described in facebookBrowser.ts.
+      searches: [...searches(LOCATIONS.slice(0, 1), BROWSER_QUERIES), ...searches(LOCATIONS.slice(1), BROWSER_QUERIES.slice(0, 3))],
+      maxScrolls: 150, stagnantRounds: 10, maxDurationMs: minutes * 60_000,
+    };
+}
+
+/** Card → row, keeping what the item page taught, and the plausibility floor per type. */
+async function convert(cards: readonly FbListing[], usdUyu: number, options: HarvestFacebookOptions): Promise<{ listings: RawRental[]; rejected: number }> {
+  // The item pages already read by currency-rentals-detail: a re-harvest must keep the barrio,
+  // the coordinate and the description learned there, or it would rebuild the identity from the
+  // bare card and forget them.
+  const ids = cards.map(card => String(card.id || "").trim()).filter(Boolean);
+  const details = await (options.details ?? storedDetails)(ids.map(id => `facebook:${id}`));
+  const byId = new Map<string, RawRental>();
+  let rejected = 0;
+  for (const item of cards) {
+    const listing = toRawRental(item, "", details.get(`facebook:${String(item.id || "").trim()}`) ?? null);
+    if (!listing) { rejected++; continue; }
+    const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
+    if (!isPlausibleRent(priceUyu, listing.propertyType)) { rejected++; continue; }
+    byId.set(listing.listingId, listing);
+  }
+  return { listings: [...byId.values()], rejected };
 }
 
 async function storedDetails(listingIds: readonly string[]): Promise<ReadonlyMap<string, FbRentalDetailInput>> {
@@ -151,6 +205,25 @@ async function storedDetails(listingIds: readonly string[]): Promise<ReadonlyMap
 export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: number, options: HarvestFacebookOptions = {}): Promise<RentalSourceResult> {
   if (process.env.RENTALS_FB_ENABLED === "0") {
     return { key: "facebook", ok: true, complete: false, listings: [], note: "deshabilitado por configuración" };
+  }
+
+  let fallbackReason = "";
+  if (process.env.RENTALS_FB_BROWSER !== "0") {
+    const read = await (options.browser ?? readFacebookRentals)(browserPlan(mode));
+    if (read.lists > 0) {
+      const { listings, rejected } = await convert(read.cards, usdUyu, options);
+      return {
+        key: "facebook",
+        // Scrolled to the end, a search is still Facebook's ranking of the market, not the market.
+        complete: false,
+        ok: true,
+        listings,
+        note: `navegador: ${listings.length} avisos únicos de ${read.cards.length} tarjetas (${read.reads} lecturas); ${rejected} descartados; `
+          + `${read.lists} búsquedas (${read.exhausted} leídas hasta el final, ${read.stalled} sin cargar más que la primera página), ${read.failed} fallidas`
+          + (read.note ? `; ${read.note}` : ""),
+      };
+    }
+    fallbackReason = `navegador sin lecturas (${read.note || "sin búsquedas"}); `;
   }
 
   const configuredLimit = Number(process.env.RENTALS_FB_LIMIT || 40);
@@ -199,26 +272,16 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
     }
   }
 
-  // The item pages already read by currency-rentals-detail: a re-harvest must keep the barrio,
-  // the coordinate and the description learned there, or it would rebuild the identity from the
-  // bare card and forget them.
-  const details = await (options.details ?? storedDetails)([...cards.keys()].map(id => `facebook:${id}`));
-  const byId = new Map<string, RawRental>();
-  for (const [id, item] of cards) {
-    const listing = toRawRental(item, "", details.get(`facebook:${id}`) ?? null);
-    if (!listing) { rejected++; continue; }
-    const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
-    if (!isPlausibleRent(priceUyu, listing.propertyType)) { rejected++; continue; }
-    byId.set(listing.listingId, listing);
-  }
+  const converted = await convert([...cards.values()], usdUyu, options);
+  rejected = converted.rejected;
 
   return {
     key: "facebook",
     // The bridge returns a limited set per city/query, never the entire live marketplace.
     complete: false,
     ok: successful > 0,
-    listings: [...byId.values()],
-    note: `${byId.size} avisos únicos de ${rawRows} lecturas; ${rejected} descartados; `
+    listings: converted.listings,
+    note: `${fallbackReason}${converted.listings.length} avisos únicos de ${rawRows} lecturas; ${rejected} descartados; `
       + `${successful}/${locations.length * queries.length} consultas respondidas, ${failed} fallidas; `
       + `cobertura parcial: ${locations.length} ciudades de búsqueda, hasta ${perQuery} tarjetas por consulta, con sugerencias de otras zonas`
       + (failed ? `; último fallo: ${lastError}` : ""),
