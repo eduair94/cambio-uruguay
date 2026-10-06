@@ -1897,6 +1897,31 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El tema estaba repartido en pedazos —la antigüedad en despido, el paro en su página, la
+        // jornada enterrada en una guía de liquidación— y ninguno contestaba la pregunta del que
+        // contrata. Va pegada al despido y al seguro de paro porque el laudo, el alta en BPS y la
+        // liquidación llegan juntos, y porque la corrección que la originó vive en esa página: la
+        // antigüedad mínima son 90 días (Ley 18.065), no el año de la ley de 1958.
+        to: '/trabajo-domestico-uruguay',
+        labelKey: 'nav.trabajoDomestico',
+        icon: 'mdi-home-heart',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'trabajo domestico uruguay',
+          'cuanto se le paga a una empleada domestica',
+          'salario minimo trabajo domestico',
+          'categorias trabajo domestico bps',
+          'categoria cuidados trabajo domestico',
+          'registrar empleada domestica en bps',
+          'aportes servicio domestico',
+          'despido empleada domestica',
+          'descanso nocturno sin retiro',
+          'ley 18065',
+        ],
+      },
+      {
         to: '/cuando-me-puedo-jubilar-uruguay',
         labelKey: 'nav.cuandoJubilarme',
         icon: 'mdi-account-clock-outline',

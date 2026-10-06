@@ -956,6 +956,10 @@
           "label": "Indemnización por despido"
         },
         {
+          "to": "/trabajo-domestico-uruguay",
+          "label": "Trabajo doméstico en casa de familia"
+        },
+        {
           "to": "/renunciar-al-trabajo-uruguay",
           "label": "Renunciar al trabajo"
         },
