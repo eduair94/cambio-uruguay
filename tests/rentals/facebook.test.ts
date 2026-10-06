@@ -193,7 +193,8 @@ describe("Facebook through the profile browser", () => {
     // The full sweep reads every anchor city to the end; the hourly one only the newest of Montevideo.
     const full = browser.mock.calls[0][0];
     expect(full.maxScrolls).toBe(150);
-    expect(full.searches.filter(s => s.location === "montevideo")).toHaveLength(7);
+    expect(full.searches.filter(s => s.location === "montevideo")).toHaveLength(9);
+    expect(full.searches).toContainEqual({ location: "montevideo", query: "apartamento para alquilar" });
     expect(full.searches).toContainEqual({ location: "colonia-del-sacramento", query: "alquiler" });
     expect(full.searches.filter(s => s.location === "maldonado")).toHaveLength(3);
     await harvestFacebookMarketplace("fast", 41.5, { browser, details: async () => new Map() });

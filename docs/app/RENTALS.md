@@ -1094,7 +1094,12 @@ Lo que pasó ese día, y lo que cambió por eso:
   ciudades por siete redacciones: Montevideo con las siete y las otras cinco anclas con las tres más
   amplias (cada ancla ordena primero su zona: Maldonado sumó 494 avisos que Montevideo no mostraba),
   15 s entre búsquedas, y **dos búsquedas seguidas que no pasan de la primera página cortan la
-  corrida** con lo leído hasta ahí. La detención por "sin novedades" se mide por búsqueda, no por la
+  corrida** con lo leído hasta ahí. **Cobertura medida esa noche** (captura-recaptura: 13 búsquedas
+  que la corrida no hace, otras ciudades y redacciones, contra la base recién escrita): 87 % de
+  1.143 avisos válidos ya estaban; las búsquedas con «alquiler» daban 97–99 %, y lo que faltaba
+  venía de otras palabras — «apartamento para alquilar» 77 %, «arriendo» 58 % —, que pasaron a
+  la lista de Montevideo. Las anclas de ciudad casi no filtran: «rivera» o «mercedes» devuelven
+  sobre todo Montevideo y Maldonado. La detención por "sin novedades" se mide por búsqueda, no por la
   unión de la corrida.
 
 ## Variables de entorno
