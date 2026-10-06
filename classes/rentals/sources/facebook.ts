@@ -159,7 +159,14 @@ export interface HarvestFacebookOptions {
  * category, so wording is coverage. The hourly run reads only the newest: sorted by creation
  * time, fifteen scrolls of "alquiler" reach back ~66 hours.
  */
-const BROWSER_QUERIES = ["alquiler", "alquiler apartamento", "alquiler casa", "alquiler monoambiente", "alquiler habitacion", "se alquila", "alquilo"];
+// The last two came from a capture-recapture check the same night (13 searches the run never
+// made, 1.143 valid adverts): wordings with "alquiler" found 97–99 % already stored, while
+// "apartamento para alquilar" found 77 % and "arriendo" 58 % — Facebook matches the word, so a
+// seller who wrote "alquilar" or "arriendo" never shows in an "alquiler" search.
+const BROWSER_QUERIES = [
+  "alquiler", "alquiler apartamento", "alquiler casa", "alquiler monoambiente", "alquiler habitacion", "se alquila", "alquilo",
+  "apartamento para alquilar", "arriendo",
+];
 
 const searches = (locations: readonly string[], queries: readonly string[]) =>
   locations.flatMap(location => queries.map(query => ({ location, query })));
