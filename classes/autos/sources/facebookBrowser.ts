@@ -13,20 +13,8 @@ const searchUrl = (query: string): string => `https://www.facebook.com/marketpla
 const itemUrl = (id: string): string => `https://www.facebook.com/marketplace/item/${id}/`;
 const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
-export async function facebookSessionOk(healthUrl = process.env.AUTOS_FB_HEALTH_URL || "http://127.0.0.1:9246/health"): Promise<boolean> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10_000);
-  try {
-    const response = await fetch(healthUrl, { signal: controller.signal });
-    if (!response.ok) return false;
-    const body = (await response.json()) as { sessionStatus?: unknown };
-    return body?.sessionStatus === "valid";
-  } catch {
-    return false;
-  } finally {
-    clearTimeout(timer);
-  }
-}
+// One gate for every Marketplace reader: see classes/facebook/browser.ts for why `error` passes.
+export { facebookSessionOk } from "../../facebook/browser";
 
 function guard(url: string): void {
   if (/facebook\.com\/(?:login|checkpoint)|\/login\.php/.test(url)) throw new FacebookSessionError("la sesión de Facebook no es válida");
