@@ -680,9 +680,9 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'dolares-para-viajar',
-    title: 'Cuántos dólares llevar de viaje y cómo conseguirlos',
+    title: 'Cuántos dólares llevar: primero el gasto',
     description:
-      'Cómo planificar cuántos dólares llevar de viaje desde Uruguay, billete vs tarjeta, dónde conseguir el mejor precio y cómo evitar cambiar caro en el aeropuerto.',
+      'Estimá días por gasto diario y recién después mirá el tipo de cambio. Mezclá efectivo y tarjeta, comprá con anticipación y no cambies en el aeropuerto.',
     tag: 'VIAJES',
     updatedAt: '2026-06-17',
     sections: [
@@ -1194,9 +1194,9 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'moneda-de-uruguay',
-    title: '¿Cuál es la moneda de Uruguay? El peso uruguayo (UYU)',
+    title: 'La moneda de Uruguay es el peso (UYU)',
     description:
-      'La moneda de Uruguay es el peso uruguayo (UYU), emitido por el Banco Central. Qué billetes y monedas circulan, cómo se usa el dólar y por qué no hay "dólar blue".',
+      'De curso legal y emitido por el BCU: en cualquier comercio podés pagar en pesos. El dólar se usa mucho para ahorrar, pero acá no hay «dólar blue».',
     tag: 'MONEDA',
     updatedAt: '2026-06-20',
     sections: [
@@ -1230,9 +1230,9 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'pagar-en-dolares-o-pesos-uruguay',
-    title: '¿Conviene pagar en dólares o en pesos en Uruguay?',
+    title: 'Casi siempre conviene pagar en pesos',
     description:
-      'En Uruguay muchos comercios turísticos aceptan dólares, pero a un cambio propio peor. Cuándo pagar en pesos, cuándo usar tarjeta y cómo no perder en el cambio.',
+      'El comercio turístico acepta dólares a su propio cambio, peor que el de una casa de cambio. Cambiá el efectivo y pagá en pesos; en el posnet, elegí pesos.',
     tag: 'TURISMO',
     updatedAt: '2026-06-20',
     sections: [

@@ -10,9 +10,9 @@ import type { Guide } from './guides'
 export const consumoGuides: readonly Guide[] = [
   {
     slug: 'devoluciones-y-cambios-en-tiendas-uruguay',
-    title: 'Devoluciones en tiendas: ¿te las tienen que aceptar?',
+    title: 'Devolver en el local no es un derecho',
     description:
-      'En la tienda física no hay derecho a devolver por arrepentimiento: rige la política de cambios que el comercio anunció y, si el producto falla, la garantía legal.',
+      'Los cinco días del artículo 16 son para la compra a distancia. En el local rige la política que el comercio anunció, y el vale de cambio no puede vencer.',
     tag: 'CONSUMO',
     updatedAt: '2026-09-13',
     sections: [
@@ -389,9 +389,9 @@ export const consumoGuides: readonly Guide[] = [
   },
   {
     slug: 'titulo-del-auto-uruguay',
-    title: 'Título del auto: ¿hay que hacerlo o alcanza la libreta?',
+    title: 'El título del auto no es obligatorio',
     description:
-      'La libreta es de la intendencia; el título, del Registro de la Propiedad. No es obligatorio, pero es lo que te protege frente a terceros. Costos 2026 y riesgos.',
+      'Inscribir la compraventa es voluntario y es carga del comprador (art. 85, Ley 16.871), pero sin título un embargo contra el titular inscripto te alcanza.',
     tag: 'TÍTULO',
     updatedAt: '2026-09-13',
     sections: [

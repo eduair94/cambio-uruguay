@@ -265,9 +265,9 @@ export const trabajoBpsGuides: readonly Guide[] = [
   },
   {
     slug: 'subsidio-expensas-funerarias-bps-uruguay',
-    title: 'Subsidio por expensas funerarias: cuánto paga el BPS',
+    title: 'El BPS le reintegra el sepelio a quien pagó',
     description:
-      'El BPS reintegra hasta $ 44.716 (2026) de un sepelio si el fallecido era trabajador, jubilado o subsidiado. Quién lo cobra, qué cubre y el plazo de 180 días.',
+      'Hasta $ 44.716 por todo concepto desde enero de 2026, con factura y recibo de quien pagó. Plazo: 180 días. Con servicio fúnebre, sólo los complementarios.',
     tag: 'SEPELIO',
     updatedAt: '2026-09-13',
     sections: [
@@ -382,9 +382,9 @@ export const trabajoBpsGuides: readonly Guide[] = [
   },
   {
     slug: 'cobrar-jubilacion-uruguaya-desde-el-exterior',
-    title: 'Cobrar la jubilación uruguaya viviendo en el exterior',
+    title: 'La jubilación del BPS se gira al exterior',
     description:
-      'Cómo pedir la jubilación del BPS viviendo afuera, cómo te llega el giro, la fe de vida que hay que renovar y cómo se suman tus años si el país tiene convenio.',
+      'El giro sale del 5.º día hábil en la moneda del país y el BROU descuenta US$ 8. La fe de vida vale 90 días con biometría. La pensión a la vejez no se gira.',
     tag: 'JUBILACIÓN',
     updatedAt: '2026-09-13',
     sections: [
@@ -792,9 +792,9 @@ export const trabajoBpsGuides: readonly Guide[] = [
   },
   {
     slug: 'pedir-que-me-despidan-uruguay',
-    title: '¿Puedo pedir que me despidan en vez de renunciar?',
+    title: 'El despido lo decide la empresa, no vos',
     description:
-      'Despido, renuncia o acuerdo de egreso: qué cambia en indemnización y seguro de paro, por qué un egreso pactado puede quedar sin subsidio y qué arriesgás si se simula.',
+      'Pedirlo no está prohibido, pero el despido es un acto unilateral del empleador. Un egreso pactado puede dejarte sin seguro de paro: tiene que ser forzoso.',
     tag: 'DESPIDO',
     updatedAt: '2026-09-13',
     sections: [
