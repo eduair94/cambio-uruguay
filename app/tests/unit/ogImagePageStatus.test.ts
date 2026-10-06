@@ -74,7 +74,7 @@ async function runtime(patched = true) {
   ).default
   const app = h3.createApp({
     onRequest: async event => {
-      event.fetch = async input => request(String(input))
+      event.fetch = async input => local(String(input))
       events.set(event.path, event)
       await hooks.get('request')?.(event)
     },
@@ -100,6 +100,11 @@ async function runtime(patched = true) {
   }
   const webHandler = h3.toWebHandler(app)
   const request = (path: string) => webHandler(new Request(`http://localhost${path || '/'}`))
+  // A followed redirect to another host leaves this app: model it as the gateway failure it is.
+  const local = (path: string) =>
+    path.startsWith('/') || !path
+      ? request(path)
+      : Promise.resolve(new Response('', { status: 502, statusText: 'Bad Gateway' }))
   // Execute the installed extractor, not a copy of its error checks. All fetches
   // remain in this in-memory H3 app; no Sentry, application jobs or network.
   const extractor = runSource(
@@ -128,7 +133,7 @@ async function runtime(patched = true) {
       '../util/options.js': {},
       './instances.js': {},
     },
-    { globalThis: { $fetch: { raw: request } } }
+    { globalThis: { $fetch: { raw: local } } }
   ).fetchPathHtmlAndExtractOptions
   app.use(
     h3.eventHandler(async event => {
@@ -168,6 +173,14 @@ async function runtime(patched = true) {
       // source answered 500 "Server Error" instead of its 404.
       if (event.path === '/crashed') {
         throw h3.createError({ statusCode: 500, statusMessage: 'Server Error' })
+      }
+      // A redirect whose destination the extractor follows but cannot read a card from (the
+      // production failure behind og_source 301), and one pointing off-site.
+      if (event.path === '/moved') {
+        return h3.sendRedirect(event, '/broken', 301)
+      }
+      if (event.path === '/moved-off-site') {
+        return h3.sendRedirect(event, 'https://example.invalid/phish', 301)
       }
       if (event.path === '/broken') {
         return '<html><body>Successful SSR lost its OG metadata</body></html>'
@@ -241,6 +254,31 @@ describe('OG image status through the installed Nuxt validator, extractor and H3
     expect(error?.statusMessage).toMatch(
       /^\[Nuxt OG Image\] Failed to parse `\/crashed` for og-image extraction\. 500 error/
     )
+  })
+
+  it('sends the image of a redirected page to its destination instead of a 500', async () => {
+    // Sentry CAMBIO-URUGUAY-BACKEND-9/-11: og_source 301 reported as a 500.
+    const { request: unpatched } = await runtime(false)
+    const path = '/__og-image__/image/moved/og.png'
+    expect((await unpatched(path)).status).toBe(500)
+
+    const { request, captured, delegated, events } = await runtime()
+    const response = await request(path)
+    expect(events.get(path)?.context.ogSourceStatus).toBe('301')
+    expect(response.status).toBe(301)
+    expect(response.headers.get('location')).toBe('/__og-image__/image/broken/og.png')
+    // Neither captured nor handed to Nitro's error handler (which is what reports to Sentry).
+    expect(captured.find(error => error.path === path)).toBeUndefined()
+    expect(delegated.mock.calls.find(([, event]) => event.path === path)).toBeUndefined()
+  })
+
+  it('never follows a redirect off the site: that image is a 404', async () => {
+    const { request, captured } = await runtime()
+    const path = '/__og-image__/image/moved-off-site/og.png'
+    const response = await request(path)
+    expect(response.status).toBe(404)
+    expect(response.headers.get('location')).toBeNull()
+    expect(captured.find(error => error.path === path)?.status).toBe(404)
   })
 
   it('keeps valid OG payloads and adds no source fetch', async () => {

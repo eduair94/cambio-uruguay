@@ -1,4 +1,5 @@
-import { createError, defineEventHandler, getQuery, setResponseHeader } from 'h3'
+import { createError, defineEventHandler, getQuery } from 'h3'
+import { setHeaderUnlessSent } from '../../utils/cachedResponseHeader'
 import { loadMinimumWage } from '../../utils/minimumWageRentals'
 import {
   minimumWageQueryToParams,
@@ -36,10 +37,12 @@ const cached = defineCachedEventHandler(
 export default defineEventHandler(async (event): Promise<MinimumWageResponse> => {
   try {
     const response = await cached(event)
-    setResponseHeader(event, 'cache-control', 'public, max-age=60, s-maxage=300')
+    // Ante un `If-None-Match` que coincide, el memo ya contestó 304 y cerró la respuesta: escribir
+    // encima tiraba ERR_HTTP_HEADERS_SENT y este catch lo convertía en un 503 (ver /api/rentals).
+    setHeaderUnlessSent(event, 'cache-control', 'public, max-age=60, s-maxage=300')
     return response as MinimumWageResponse
   } catch (error) {
-    setResponseHeader(event, 'cache-control', 'no-store')
+    setHeaderUnlessSent(event, 'cache-control', 'no-store')
     throw createError({
       statusCode: 503,
       statusMessage: 'Minimum wage rentals are temporarily unavailable',

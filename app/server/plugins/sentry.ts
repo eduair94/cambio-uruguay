@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/nuxt'
 import {
+  EXPECTED_REFUSAL_CODES,
+  sentryErrorCode,
   sentryErrorOptions,
   sentryErrorsEnabled,
   sentryHttpStatus,
@@ -29,12 +31,17 @@ export default defineNitroPlugin(nitroApp => {
     // a 503 that wraps its cause still reports what actually failed.
     const routing = context.event?.context as { ogSourceStatus?: unknown } | undefined
     const mongoCode = sentryMongoCode(error)
+    // The string code says WHAT failed in a fixed vocabulary: CAMBIO-URUGUAY-BACKEND-14 was an
+    // ERR_HTTP_HEADERS_SENT that the report could only call 'HTTP 500 error'.
+    const errorCode = sentryErrorCode(error)
+    if (errorCode && EXPECTED_REFUSAL_CODES.has(errorCode)) return
     Sentry.captureException(cause instanceof Error ? cause : error, {
       tags: {
         route: sentryRouteCategory(context.event?.path),
         method: context.event?.method || 'UNKNOWN',
         ...(status ? { http_status: String(status) } : {}),
         ...(mongoCode ? { mongo_code: mongoCode } : {}),
+        ...(errorCode ? { error_code: errorCode } : {}),
         ...(routing?.ogSourceStatus ? { og_source: String(routing.ogSourceStatus) } : {}),
       },
     })
