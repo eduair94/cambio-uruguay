@@ -11,9 +11,9 @@ import type { Guide } from './guides'
 export const pagosGuides: readonly Guide[] = [
   {
     slug: 'comercio-no-acepta-debito-uruguay',
-    title: 'Monto mínimo para pagar con débito: ¿es legal?',
+    title: 'El mínimo para pagar con débito es legal',
     description:
-      'Desde 2020 un comercio puede fijar un monto mínimo para el débito: la LUC derogó el artículo 64 de la Ley 19.210. Qué pasa con el recargo, el IVA y dónde reclamar.',
+      'Desde 2020: el art. 224 de la LUC derogó el art. 64 de la Ley 19.210, que prohibía el mínimo y el recargo. Lo que sigue obligando es informar el precio.',
     tag: 'DÉBITO',
     updatedAt: '2026-09-13',
     sections: [

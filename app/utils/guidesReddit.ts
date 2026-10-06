@@ -1109,9 +1109,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'costos-de-escrituracion-uruguay',
-    title: 'Costos de escrituración al comprar una casa en Uruguay',
+    title: 'Escriturar una casa: entre 5 % y 8 %',
     description:
-      'Todos los gastos de escriturar una casa en Uruguay más allá del precio: honorarios de escribano, ITP, aportes, montepío y certificados, y cómo estimar el total.',
+      'Orientativo: el comprador destina del 5 % al 8 % del precio. Honorarios cercanos al 3 % más IVA, ITP del 2 % sobre el valor de Catastro y los certificados.',
     tag: 'COSTOS',
     updatedAt: '2026-07-18',
     sections: [
@@ -2768,9 +2768,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'como-empezar-a-invertir-uruguay',
-    title: 'Cómo empezar a invertir en Uruguay desde cero',
+    title: 'Antes de invertir, saldá la deuda cara',
     description:
-      'Guía para empezar a invertir en Uruguay desde cero: primero saldar deudas caras y armar el fondo de emergencia, después elegir instrumentos según tu horizonte y riesgo.',
+      'Ningún instrumento seguro rinde más que lo que te cuesta un saldo de tarjeta. Primero la deuda cara y el colchón líquido; después el horizonte y el riesgo.',
     tag: 'INVERSIÓN',
     updatedAt: '2026-07-18',
     sections: [
@@ -4313,9 +4313,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'monotributo-uruguay-que-es-y-cuando-conviene',
-    title: 'Monotributo en Uruguay: qué es y cuándo conviene',
+    title: 'Monotributo: un pago mensual al BPS',
     description:
-      'Qué es el monotributo en Uruguay, cuánto se paga y los topes de ingresos 2026, y cuándo conviene frente a una empresa unipersonal para emprender o facturar en chico.',
+      'Unifica aportes e impuestos en una cuota fija y sin manejar IVA (Ley 18.083). Topes 2026: 183.000 UI al año el unipersonal y 305.000 la sociedad de hecho.',
     tag: 'MONOTRIBUTO',
     updatedAt: '2026-07-18',
     sections: [

@@ -196,9 +196,60 @@ const MEASURED = 146
  * lleva la fecha en el título porque no entra, así que la cifra va con su fecha en la descripción:
  * un precio regulado que el Ejecutivo revisa todos los meses no se publica como si fuera perpetuo.
  *
+ *
+ * 58 → 46 el 2026-10-06, sexta tanda, otra vez el snippet entero de las mismas doce guías y con el
+ * criterio de selección que dejó escrito la quinta: de las guías pasadas de alguno de los dos
+ * presupuestos, las que están dentro de una ventana de medición abierta de
+ * `docs/seo/experiments.json` no se tocan. Lo que cambió hoy es de dónde salen las doce. Las cinco
+ * tandas anteriores vaciaron el solapamiento grande: de las 146 guías quedan **23 pasadas de los
+ * DOS presupuestos a la vez y sólo 21 con la ruta libre**, así que la tanda ya no se elige entre
+ * decenas de candidatas sino que es casi todo lo que queda arreglable en una fila honesta del libro
+ * de cambios. Los sobrantes también se achicaron —de 17 a 10 caracteres sumando las dos señales,
+ * contra los 44 de la primera tanda de títulos—, que es la forma que tiene este ratchet de decir
+ * que la deuda que sobra ya no es de longitud sino de redacción: lo que queda pasado de un solo
+ * presupuesto se arregla cuando cierren las ventanas que lo miden.
+ *
+ * El defecto, en cambio, es el mismo y vale nombrarlo porque acá convive con su variante: seis de
+ * los doce títulos eran la PREGUNTA del lector en vez de la respuesta («¿Cuál es la moneda de
+ * Uruguay?», «¿Puedo pedir que me despidan en vez de renunciar?», «Devoluciones en tiendas: ¿te
+ * las tienen que aceptar?», «Monto mínimo para pagar con débito: ¿es legal?»), que es peor que la
+ * etiqueta: repite la consulta que el visitante acaba de escribir y no le adelanta nada. Los otros
+ * seis eran la etiqueta del tema seguida del índice («Costos de escrituración al comprar una casa
+ * en Uruguay», «Monotributo en Uruguay: qué es y cuándo conviene», «Cuántos dólares llevar de
+ * viaje y cómo conseguirlos»).
+ *
+ * Ahora cada uno contesta: que la moneda es el peso (UYU), que el título del auto NO es
+ * obligatorio, que el despido lo decide la empresa y no el trabajador, que devolver en el local no
+ * es un derecho, que escriturar una casa sale entre el 5 % y el 8 % del precio, que antes de
+ * invertir se salda la deuda cara, que el monotributo es un pago mensual al BPS, que la jubilación
+ * del BPS se gira al exterior, que cuántos dólares llevar se decide por el gasto y no por la
+ * cotización, que el mínimo para el débito es legal, que el sepelio lo reintegra el BPS a quien
+ * pagó y que casi siempre conviene pagar en pesos.
+ *
+ * Ninguna cifra es nueva: el 5-8 % y el 3 % de honorarios, el 2 % del ITP, los topes de 183.000 y
+ * 305.000 UI, los US$ 8 del BROU, los 90 días de fe de vida, los $ 44.716 y los 180 días del
+ * sepelio, el art. 224 de la LUC y el art. 85 de la Ley 16.871 ya estaban en el cuerpo de su guía.
+ * Y ninguna se escribió con más firmeza que su fuente, que acá descartó tres redacciones. El de
+ * escrituración lleva «Orientativo» en la descripción porque el cuerpo dice «como referencia
+ * práctica y orientativa» y además avisa que los porcentajes cambian. El del título del auto no
+ * publica la tasa del Registro ($ 2.530) en el snippet: el cuerpo la fecha en «setiembre de 2026»
+ * y una tasa sin su fecha es el error recurrente del repo, así que el snippet se queda con lo que
+ * no se mueve —que la inscripción es voluntaria y que es carga del comprador—. Y el del sepelio
+ * deja los $ 44.716 en la DESCRIPCIÓN, con el mes desde el que rigen, y usa el título para la
+ * respuesta estructural que nadie espera (el BPS le paga a quien pagó el sepelio, aunque sea un
+ * tercero, y no a la familia por ser familia).
+ *
+ * Y una tercera aplicación de la regla del buscador propio. `scoreDocs` puntúa 110 un título que
+ * EMPIEZA por lo tipeado, y medido antes de redactar: «invertir» lo gana `/inversiones-uruguay`
+ * (68) y «despido» lo gana `/guias/despido-y-liquidacion-uruguay` (110). Por eso el título de
+ * cómo empezar a invertir quedó «Antes de invertir, saldá la deuda cara» y el de pedir el despido
+ * «El despido lo decide la empresa, no vos»: los dos contestan y ninguno abre con la palabra que
+ * otra página ya reclama. Se verificó después del cambio que los dos primeros puestos siguen
+ * siendo los mismos.
+ *
  * SÓLO PUEDE BAJAR.
  */
-const TITLE_OVER_BUDGET = 58
+const TITLE_OVER_BUDGET = 46
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.
@@ -251,8 +302,22 @@ const TITLE_OVER_BUDGET = 58
  * con el mes en que el Ejecutivo lo mantuvo, y el tope A de la AFAP va SIN su monto —el cuerpo lo
  * fecha el 10 de agosto de 2026 y se actualiza, así que en el snippet, donde la fecha no entra,
  * queda como el umbral que es—.
+ *
+ * 53 → 41 el 2026-10-06, las doce descripciones de la sexta tanda de títulos, en la misma fila del
+ * libro de cambios y elegidas con el criterio que explica el comentario de `TITLE_OVER_BUDGET`.
+ * Iban de 168 a 156 caracteres —los sobrantes más chicos de las seis tandas— y el patrón se partió
+ * en dos mitades parejas. Seis enumeraban el ÍNDICE de la guía («Qué es el monotributo en Uruguay,
+ * cuánto se paga y los topes…, y cuándo conviene frente a…», «Cómo pedir la jubilación del BPS
+ * viviendo afuera, cómo te llega el giro, la fe de vida… y cómo se suman tus años»), y dos de ésas
+ * además arrancaban repitiendo el título con «Guía para…» o «Guía práctica para…». Las otras seis
+ * YA abrían por la respuesta y sólo estaban largas: ahí la reescritura no movió el arranque, sumó
+ * el dato que la cola se comía (que el vale de cambio no puede vencer, que el artículo derogado es
+ * el 64 por el 224 de la LUC, que la pensión a la vejez no se gira).
+ *
+ * Ninguna cifra es nueva y ninguna se escribió con más firmeza que su fuente: ver el comentario de
+ * `TITLE_OVER_BUDGET` para las tres redacciones que eso descartó.
  */
-const DESCRIPTION_OVER_BUDGET = 53
+const DESCRIPTION_OVER_BUDGET = 41
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {
