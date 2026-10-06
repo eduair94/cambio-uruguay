@@ -177,4 +177,20 @@ describe('el catálogo que se muestra', () => {
     expect(texto).not.toMatch(/25 jornales/)
     expect(texto).not.toMatch(/veinticinco jornales/)
   })
+
+  it('el piso de antigüedad del trabajo doméstico son 90 días, no el año de la ley de 1958', () => {
+    // CORREGIDO el 2026-10-06. La página publicaba «una antigüedad mínima de un año continuado»
+    // citando la Ley 12.597, art. 7 (1958), que la ley propia del sector dejó sin efecto: la Ley
+    // 18.065, art. 7 (2006) da derecho a indemnización «desde los noventa días corridos de
+    // iniciada la relación laboral». Era un dato que le contestaba «no te corresponde nada» a
+    // quien sí tenía derecho, así que queda atado acá para que no vuelva.
+    const domestico = DESPIDO_REGLAS.find(r => r.key === 'domestico')
+    expect(domestico).toBeDefined()
+    const texto = `${domestico!.label} ${domestico!.detail}`.toLowerCase()
+    expect(texto).toMatch(/noventa días|90 días/)
+    expect(domestico!.source).toContain('18.065')
+    // El año viejo sólo puede aparecer marcado como vencido, nunca como la regla de hoy.
+    expect(domestico!.label.toLowerCase()).not.toMatch(/necesita un año/)
+    expect(DESPIDO_SOURCES.some(s => s.url.includes('18065-2006'))).toBe(true)
+  })
 })

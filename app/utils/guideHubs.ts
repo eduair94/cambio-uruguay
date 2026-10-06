@@ -1055,6 +1055,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/indemnizacion-por-despido-uruguay',
       },
       {
+        label: 'Trabajo doméstico en casa de familia',
+        description:
+          'Las tres categorías del laudo, los descansos de la Ley 18.065 y el alta en BPS.',
+        to: '/trabajo-domestico-uruguay',
+      },
+      {
         label: 'Renunciar al trabajo',
         description: 'Qué cobrás y qué tenés que avisar.',
         to: '/renunciar-al-trabajo-uruguay',
