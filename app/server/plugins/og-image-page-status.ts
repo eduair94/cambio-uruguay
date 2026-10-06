@@ -1,4 +1,5 @@
-import type { H3Event } from 'h3'
+import { sendRedirect, type H3Event } from 'h3'
+import { ogImageRedirectTarget } from '../utils/ogImageRedirect'
 
 // nuxt-og-image 5 turns a missing page into a 500 when its error HTML has no
 // OG payload. Keep the page's actual 404/410 without hiding a successful SSR
@@ -6,6 +7,7 @@ import type { H3Event } from 'h3'
 // fetch: no extra render, shared fetch patch, or second directory query.
 export default defineNitroPlugin(nitroApp => {
   const sourceStatuses = new WeakMap<H3Event, number>()
+  const sourceLocations = new WeakMap<H3Event, string>()
 
   nitroApp.hooks.hook('request', event => {
     const match = event.path
@@ -24,6 +26,8 @@ export default defineNitroPlugin(nitroApp => {
       if ((String(input).split('?')[0] || '/') === sourcePath) {
         sourceStatuses.set(event, response.status)
         context.ogSourceStatus = String(response.status)
+        const location = response.headers?.get?.('location')
+        if (location) sourceLocations.set(event, location)
       }
       return response
     }
@@ -41,17 +45,37 @@ export default defineNitroPlugin(nitroApp => {
   // case is fixed at the page and stays 500 here on purpose (the source was 5xx);
   // the pattern is listed so a future module that reports 4xx through it is
   // relabelled too instead of slipping past this guard again.
+  //
+  // A 3xx page (an old slug, an upper-case department) has no card of its own either: the module
+  // read the redirect's empty body and reported "missing the #nuxt-og-image-options script tag" as
+  // a 500 (Sentry CAMBIO-URUGUAY-BACKEND-9 and -11, `og_source: 301`, from crawlers that kept the
+  // old og:image). That card is the destination's, so the image request is redirected to the
+  // destination's image — same flavor, same extension — and to a 404 when the target is unusable.
   const onError = nitroApp.h3App.options.onError
   nitroApp.h3App.options.onError = (error, event) => {
     const sourceStatus = sourceStatuses.get(event)
-    if (
-      sourceStatus !== undefined &&
-      sourceStatus >= 400 &&
-      sourceStatus < 500 &&
+    const extractorFailure =
       error.statusCode === 500 &&
       /^\[Nuxt OG Image\] (?:HTML response from .+ is missing the #nuxt-og-image-options script tag\.|Failed to read the path .+ for og-image extraction, returning no HTML\.|Failed to parse .+ for og-image extraction\.)/.test(
         error.statusMessage || ''
       )
+    if (
+      extractorFailure &&
+      sourceStatus !== undefined &&
+      sourceStatus >= 300 &&
+      sourceStatus < 400
+    ) {
+      const target = ogImageRedirectTarget(event.path, sourceLocations.get(event))
+      if (target) return sendRedirect(event, target, 301)
+      error.statusCode = 404
+      error.statusMessage = 'OG image not found'
+      error.message = 'OG image not found'
+    }
+    if (
+      sourceStatus !== undefined &&
+      sourceStatus >= 400 &&
+      sourceStatus < 500 &&
+      extractorFailure
     ) {
       error.statusCode = sourceStatus
       error.statusMessage = 'OG image not found'

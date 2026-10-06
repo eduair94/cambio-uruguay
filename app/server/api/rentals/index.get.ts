@@ -1,4 +1,5 @@
 import { loadRentalServiceZoneIds } from '../../utils/rentalZoneServices'
+import { setHeaderUnlessSent } from '../../utils/cachedResponseHeader'
 import { publicRentalAdvertisers, rentalPublicPropertyProjection } from '../../utils/rentalDetail'
 import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
@@ -241,13 +242,16 @@ const cachedDirectory = defineCachedEventHandler(
 // Nitro reemplaza `cache-control` con su propio `s-maxage/stale-while-revalidate` en toda respuesta
 // que sale del memo, y descarta las cabeceras que el handler puso antes de lanzar. Por eso las dos
 // cabeceras que este sitio promete —la del navegador y el `no-store` del 503— se ponen por fuera.
+// Pero NUNCA sobre una respuesta ya enviada: ante un `If-None-Match` que coincide, el memo contesta
+// 304 y cierra la respuesta él mismo, y escribir una cabecera encima tiraba ERR_HTTP_HEADERS_SENT y
+// convertía ese 304 en un 500 (Sentry CAMBIO-URUGUAY-BACKEND-14).
 export default defineEventHandler(async (event): Promise<RentalsResponse> => {
   try {
     const response = await cachedDirectory(event)
-    setResponseHeader(event, 'cache-control', RENTAL_DIRECTORY_CACHE_CONTROL)
+    setHeaderUnlessSent(event, 'cache-control', RENTAL_DIRECTORY_CACHE_CONTROL)
     return response as RentalsResponse
   } catch (error) {
-    setResponseHeader(event, 'cache-control', 'no-store')
+    setHeaderUnlessSent(event, 'cache-control', 'no-store')
     throw error
   }
 })

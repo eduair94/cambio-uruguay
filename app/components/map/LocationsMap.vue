@@ -13,6 +13,7 @@
 import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import type { BranchFieldSources } from '~/utils/branchCorrections'
 import { MAP_TILE_REFERRER_POLICY, MAP_TILE_URL_FALLBACK } from '~/utils/mapTiles'
+import { mapContainerAvailable } from '~/utils/mapContainer'
 
 interface Branch {
   origin: string
@@ -122,6 +123,8 @@ let userMarker: any = null
 let referenceMarker: any = null
 let radiusCircle: any = null
 let initStarted = false
+/** Bumped on unmount, so an init still awaiting its imports knows it belongs to a dead instance. */
+let lifecycle = 0
 /** Ya se encuadró sobre los datos: sólo se hace en el primer render con marcadores. */
 let hasFitted = false
 const markersById = new Map<string, any>()
@@ -178,18 +181,34 @@ function defaultPopup(b: Branch): string {
 async function init() {
   if (initStarted || !el.value) return
   initStarted = true
-  // import('leaflet') yields the ESM namespace; L.map/tileLayer are named exports
-  // but the markercluster plugin augments leaflet's *default* object (and window.L),
-  // so use that — otherwise L.markerClusterGroup is undefined and init throws.
-  const leafletMod: any = await import('leaflet')
-  L = leafletMod.default ?? leafletMod
-  if (import.meta.client) (window as any).L = L
-  await import('leaflet.markercluster')
-  await import('leaflet/dist/leaflet.css')
-  await import('leaflet.markercluster/dist/MarkerCluster.css')
-  await import('leaflet.markercluster/dist/MarkerCluster.Default.css')
+  const run = lifecycle
+  try {
+    // import('leaflet') yields the ESM namespace; L.map/tileLayer are named exports
+    // but the markercluster plugin augments leaflet's *default* object (and window.L),
+    // so use that — otherwise L.markerClusterGroup is undefined and init throws.
+    const leafletMod: any = await import('leaflet')
+    L = leafletMod.default ?? leafletMod
+    if (import.meta.client) (window as any).L = L
+    await import('leaflet.markercluster')
+    await import('leaflet/dist/leaflet.css')
+    await import('leaflet.markercluster/dist/MarkerCluster.css')
+    await import('leaflet.markercluster/dist/MarkerCluster.Default.css')
+  } catch (error) {
+    if (run === lifecycle) initStarted = false
+    throw error
+  }
 
-  map = L.map(el.value, { scrollWheelZoom: true }).setView(props.center, props.zoom)
+  // The imports above take a network round trip, and the visitor can leave the page meanwhile
+  // (Sentry CAMBIO-URUGUAY-BACKEND-17, /casa/:item): this instance is then unmounted, `el` is null
+  // and Leaflet throws "Map container not found" from a promise nobody awaits. The same race on a
+  // div that another init already owns is "Map container is already initialized".
+  const container = el.value
+  if (run !== lifecycle || !mapContainerAvailable(container)) {
+    if (run === lifecycle) initStarted = false
+    return
+  }
+
+  map = L.map(container, { scrollWheelZoom: true }).setView(props.center, props.zoom)
   map.on('click', (event: { originalEvent?: MouseEvent; latlng: { lat: number; lng: number } }) => {
     const target = event.originalEvent?.target
     // A cluster zoom, marker selection or map control must not dismiss the page's panel.
@@ -501,6 +520,7 @@ watch(el, () => {
   if (el.value) init()
 })
 onBeforeUnmount(() => {
+  lifecycle++
   if (map) {
     map.remove()
     map = null

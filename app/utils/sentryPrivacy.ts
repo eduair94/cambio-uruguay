@@ -7,6 +7,102 @@ export interface SentryErrorConfig {
   release?: string
 }
 
+/** A lazily imported script or stylesheet that never arrived (Chrome, Safari, Firefox, Vite). */
+const CHUNK_FAILURE =
+  /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Loading (?:CSS )?chunk .+ failed|Unable to preload CSS/i
+/** A DOM node Vue was patching was moved or removed by something else (translators, extensions). */
+const DOM_PATCH_FAILURE =
+  /Failed to execute '(?:insertBefore|removeChild|appendChild|replaceChild)' on 'Node'|The node (?:before which the new node is to be inserted|to be removed) is not a child of this node|Node\.(?:insertBefore|removeChild|appendChild|replaceChild): Child/i
+
+/**
+ * Crawlers and automation run the page's JavaScript with budgets and blocked requests a visitor
+ * never has. On 2026-10-05, 59 events of "JavaScript chunk failed to load" came almost entirely
+ * from Yandex, Bing, Baidu, Meta and Tencent-cloud address blocks: none of them is a visitor.
+ */
+// A bare "bot" word is not enough: phones such as "CUBOT X30" carry it. Crawlers announce
+// themselves as `Name-bot/1.0`, `compatible; Namebot` or with a `+http://` info URL.
+const AUTOMATED_USER_AGENT =
+  /bot\/|compatible; [^;)]*bot|\+https?:\/\/|crawl|spider|slurp|scrapy|headless|lighthouse|pagespeed|facebookexternalhit|meta-external|facebookcatalog|embedly|google web preview|yandex|baidu|bytespider|bytedance|petalbot|semrush|ahrefs|mj12|dotbot|bingpreview|adsbot|mediapartners|google-inspectiontool|googleother|applebot|duckduck|sogou|360spider|qwant|seznam|phantomjs|puppeteer|playwright|selenium|python|curl\/|wget|go-http|java\/|okhttp|axios|node-fetch/i
+
+export function isAutomatedBrowser(navigatorLike: unknown): boolean {
+  if (!navigatorLike || typeof navigatorLike !== 'object') return false
+  const nav = navigatorLike as { userAgent?: unknown; webdriver?: unknown }
+  if (nav.webdriver === true) return true
+  const agent = typeof nav.userAgent === 'string' ? nav.userAgent : ''
+  return !agent || AUTOMATED_USER_AGENT.test(agent)
+}
+
+/** Browser family and major version only; never the full user agent. */
+export function sentryBrowserTag(userAgent: unknown): string {
+  const agent = typeof userAgent === 'string' ? userAgent : ''
+  if (/\bInstagram\b/.test(agent)) return 'Instagram app'
+  if (/\bFBA[NV]\/|\bFB_IAB\b/.test(agent)) return 'Facebook app'
+  const major = (pattern: RegExp) => agent.match(pattern)?.[1]?.slice(0, 3)
+  const families: Array<[string, RegExp]> = [
+    ['Edge', /\bEdg(?:e|A|iOS)?\/(\d+)/],
+    ['Opera', /\bOPR\/(\d+)/],
+    ['Samsung', /\bSamsungBrowser\/(\d+)/],
+    ['Firefox', /\b(?:Firefox|FxiOS)\/(\d+)/],
+    ['Chrome', /\b(?:Chrome|CriOS)\/(\d+)/],
+    ['Safari', /\bVersion\/(\d+)(?:\.\d+)* (?:Mobile\/\S+ )?Safari\//],
+  ]
+  for (const [family, pattern] of families) {
+    const version = major(pattern)
+    if (version) return `${family} ${version}`
+  }
+  return 'Other'
+}
+
+/** Vue's own vocabulary for where an error happened: component file name and lifecycle code. */
+export function sentryVueTags(instance: unknown, info: unknown): Record<string, string> {
+  const tags: Record<string, string> = {}
+  const options =
+    instance && typeof instance === 'object'
+      ? ((instance as { $options?: { __name?: unknown; name?: unknown } }).$options ?? {})
+      : {}
+  const name = typeof options.__name === 'string' ? options.__name : options.name
+  if (typeof name === 'string' && /^[A-Z_][\w-]{0,63}$/i.test(name)) tags.component = name
+  const hook =
+    typeof info === 'string'
+      ? (info.match(/#(runtime-\d{1,2})$/)?.[1] ?? (/^[a-z][a-z ]{2,40}$/.test(info) ? info : ''))
+      : ''
+  if (hook) tags.vue_hook = hook
+  return tags
+}
+
+/** A Nuxt route NAME (from file names under pages/), without the i18n locale suffix. */
+export function sentryPageName(name: unknown): string | undefined {
+  if (typeof name !== 'string') return undefined
+  const page = name.replace(/___[a-z]{2}(?:-[A-Z]{2})?$/, '')
+  return /^[a-z\d][\w-]{0,80}$/i.test(page) ? page : undefined
+}
+
+/**
+ * The string code from the error or its cause chain (`ERR_HTTP_HEADERS_SENT`, `ECONNRESET`,
+ * `RENTAL_ANALYSIS_STALE`): a fixed enum naming what failed, never on what.
+ */
+export function sentryErrorCode(error: unknown): string | undefined {
+  const seen = new Set<unknown>()
+  let current = error
+  for (let depth = 0; depth < 5 && current && typeof current === 'object'; depth += 1) {
+    if (seen.has(current)) return undefined
+    seen.add(current)
+    const candidate = current as { code?: unknown; cause?: unknown }
+    if (typeof candidate.code === 'string' && /^[A-Z][A-Z\d_]{1,63}$/.test(candidate.code))
+      return candidate.code
+    current = candidate.cause
+  }
+  return undefined
+}
+
+/**
+ * Refusals a route answers on purpose and that heal themselves, so a report adds nothing: the
+ * rental analysis snapshot not built yet on a cold worker (the bootstrap plugin builds it; the
+ * route answers 503 with this code meanwhile). A STALE snapshot is still reported: it means the
+ * weekly rebuild has been failing for two weeks.
+ */
+export const EXPECTED_REFUSAL_CODES: ReadonlySet<string> = new Set(['RENTAL_ANALYSIS_UNAVAILABLE'])
+
 export function sentryErrorsEnabled(
   config: SentryErrorConfig,
   context: { dev?: boolean; prerender?: boolean; test?: boolean; preflight?: boolean } = {}
@@ -147,7 +243,7 @@ function safeFrame(frame: StackFrame): StackFrame {
 
 function errorClass(value: unknown): string {
   return typeof value === 'string' &&
-    /^(?:Error|TypeError|RangeError|ReferenceError|SyntaxError|URIError|H3Error|FetchError|MongoServerError|MongoNetworkError|MongoServerSelectionError|AbortError|ChunkLoadError)$/.test(
+    /^(?:Error|TypeError|RangeError|ReferenceError|SyntaxError|URIError|H3Error|FetchError|MongoServerError|MongoNetworkError|MongoServerSelectionError|AbortError|ChunkLoadError|DOMException|NotFoundError|HierarchyRequestError)$/.test(
       value
     )
     ? value
@@ -160,12 +256,10 @@ function technicalMessage(value: unknown, status?: string): string {
   if (/\[Nuxt OG Image\].*missing the #nuxt-og-image-options script tag/.test(message))
     return 'OG image metadata missing from page'
   if (/\[Nuxt OG Image\].*returning no HTML/.test(message)) return 'OG image page returned no HTML'
-  if (
-    /Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk .+ failed/i.test(
-      message
-    )
-  )
-    return 'JavaScript chunk failed to load'
+  if (CHUNK_FAILURE.test(message)) return 'JavaScript chunk failed to load'
+  if (DOM_PATCH_FAILURE.test(message)) return 'DOM node changed outside Vue during patch'
+  if (/Map container (?:not found|is already initialized)/.test(message))
+    return 'Leaflet map container unavailable'
   if (/Cannot read propert(?:y|ies) of (?:undefined|null)/i.test(message))
     return 'Cannot read a property of null or undefined'
   if (/is not a function/i.test(message)) return 'Value is not a function'
@@ -180,9 +274,25 @@ function technicalMessage(value: unknown, status?: string): string {
 // Diagnostic tags, each a fixed technical vocabulary rather than free text:
 // the Mongo failure code, and the status the OG extractor's own page read saw
 // (`unobserved` when it never resolved). Anything else in the tag is dropped.
+//
+// Added 2026-10-05, because every open browser issue that day was unattributable
+// (`/other`, frames only inside Vue's renderer): the string code of the error
+// chain (`ERR_HTTP_HEADERS_SENT`, `RENTAL_ANALYSIS_STALE`), the Vue component
+// file name and lifecycle code, the Nuxt route NAME (built from file names under
+// pages/, never from what the visitor typed), the browser family and major
+// version, and the HTTP status a failed asset answered when re-checked.
 const diagnosticTags: Array<[string, RegExp]> = [
   ['mongo_code', /^\d{1,6}$/],
   ['og_source', /^(?:[1-5]\d{2}|unobserved)$/],
+  ['error_code', /^[A-Z][A-Z\d_]{1,63}$/],
+  ['component', /^[A-Z_][\w-]{0,63}$/i],
+  ['vue_hook', /^(?:runtime-\d{1,2}|[a-z][a-z ]{2,40})$/],
+  ['page', /^[a-z\d][\w-]{0,80}$/i],
+  [
+    'browser',
+    /^(?:(?:Chrome|Edge|Firefox|Safari|Samsung|Opera) \d{1,3}|Facebook app|Instagram app|Other)$/,
+  ],
+  ['asset_status', /^(?:[1-5]\d{2}|network)$/],
 ]
 
 /** An allowlist, so future SDK integrations cannot silently add private data. */
@@ -236,11 +346,126 @@ export function sanitizeSentryEvent(
   }
 }
 
+/** The error's own message, or the first one down its cause chain (Nuxt wraps chunk errors). */
+function originalMessages(error: unknown): string[] {
+  const messages: string[] = []
+  const seen = new Set<unknown>()
+  let current = error
+  for (let depth = 0; depth < 4 && current && typeof current === 'object'; depth += 1) {
+    if (seen.has(current)) break
+    seen.add(current)
+    const { message, cause } = current as { message?: unknown; cause?: unknown }
+    if (typeof message === 'string') messages.push(message)
+    current = cause
+  }
+  if (typeof error === 'string') messages.push(error)
+  return messages
+}
+
+/**
+ * For a lazy chunk or stylesheet that failed to load: the same-origin `/_nuxt/` asset it names
+ * (`null` when the browser does not name it, as Safari's "Importing a module script failed").
+ * `undefined` when the error is not an asset failure at all.
+ */
+export function chunkFailureAsset(error: unknown, origin: string): string | null | undefined {
+  const messages = originalMessages(error)
+  if (!messages.some(message => CHUNK_FAILURE.test(message))) return undefined
+  for (const message of messages) {
+    for (const candidate of message.match(/https?:\/\/[^\s'"<>]+|\/_nuxt\/[^\s'"<>]+/g) || []) {
+      try {
+        const url = new URL(candidate.replace(/[).,;]+$/, ''), origin)
+        if (url.origin === new URL(origin).origin && url.pathname.startsWith('/_nuxt/'))
+          return `${url.origin}${url.pathname}`
+      } catch {
+        // Not a URL after all: keep looking.
+      }
+    }
+  }
+  return null
+}
+
+/**
+ * Whether the frame that threw is code this site does not ship: an anonymous or evaluated frame
+ * (`<anonymous>:1:226`, what in-app browsers and extensions inject), or a script on another host.
+ * The page's own bundle (`/_nuxt/`) and same-origin inline scripts are first-party.
+ */
+export function thrownOutsideSiteCode(event: Event, origin: string): boolean {
+  const frames = event.exception?.values?.at(-1)?.stacktrace?.frames
+  if (!frames?.length) return false
+  const filename = String(frames.at(-1)?.filename || '')
+  if (!filename || /^(?:<anonymous>|\[native code\]|native)$/.test(filename)) return true
+  if (filename.startsWith('/_nuxt/')) return false
+  if (!/^(?:https?:)?\/\//.test(filename)) return false
+  try {
+    const url = new URL(filename, origin)
+    return url.origin !== new URL(origin).origin && !url.pathname.startsWith('/_nuxt/')
+  } catch {
+    return true
+  }
+}
+
+/** HEAD the asset again, bypassing every cache: what a reload would get. */
+export async function checkAssetStatus(
+  url: string,
+  fetcher: typeof fetch = globalThis.fetch
+): Promise<number | 'network'> {
+  if (typeof fetcher !== 'function') return 'network'
+  const controller = typeof AbortController === 'function' ? new AbortController() : undefined
+  const timer = controller ? setTimeout(() => controller.abort(), 5000) : undefined
+  try {
+    const response = await fetcher(url, {
+      method: 'HEAD',
+      cache: 'no-store',
+      credentials: 'omit',
+      signal: controller?.signal,
+    })
+    return response.status
+  } catch {
+    return 'network'
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
+}
+
+/** A re-checked asset that is really gone or broken on the server (not the visitor's network). */
+export const assetIsMissing = (status: number | 'network') =>
+  typeof status === 'number' && (status === 404 || status === 410 || status >= 500)
+
+export interface BrowserReportContext {
+  /** The page origin, to tell the site's own scripts from injected or foreign ones. */
+  origin?: () => string
+  /** Extra diagnostic tags read at send time (browser family, Nuxt page name). */
+  tags?: () => Record<string, string | undefined>
+  /** Re-checks a failed asset; injectable for tests. */
+  checkAsset?: (url: string) => Promise<number | 'network'>
+  /** Events one page load may send; the rest are almost always knock-on failures. */
+  maxEventsPerPage?: number
+}
+
 export function sentryErrorOptions(
   config: SentryErrorConfig,
   runtime: 'browser' | 'nitro',
-  route?: () => unknown
+  route?: () => unknown,
+  context: BrowserReportContext = {}
 ) {
+  // One page load: after an asset failed or a DOM patch broke, Vue's tree and the module graph
+  // are inconsistent until the next reload, and every later error is a consequence (on
+  // 2026-10-05, CAMBIO-URUGUAY-BACKEND-16, -13 and -N were one visitor's single DOM failure).
+  const page = { incident: false, sent: 0 }
+  const maxEventsPerPage = context.maxEventsPerPage ?? 5
+  const origin = () => {
+    try {
+      return context.origin?.() || globalThis.location?.origin || 'https://cambio-uruguay.com'
+    } catch {
+      return 'https://cambio-uruguay.com'
+    }
+  }
+  const finishBrowser = (event: Event, hint: EventHint): Event | null => {
+    if (page.sent >= maxEventsPerPage) return null
+    const sanitized = sanitizeSentryEvent(event, hint, config, runtime)
+    if (sanitized) page.sent += 1
+    return sanitized
+  }
   const permitted = new Set(
     runtime === 'browser'
       ? ['EventFilters', 'FunctionToString', 'BrowserApiErrors', 'GlobalHandlers', 'Dedupe']
@@ -296,7 +521,42 @@ export function sentryErrorOptions(
       // its events need this narrowly categorized route supplied explicitly.
       if (route && !event.tags?.route)
         event = { ...event, tags: { ...event.tags, route: sentryRouteCategory(route()) } }
-      return sanitizeSentryEvent(event, hint, config, runtime)
+      if (runtime !== 'browser') return sanitizeSentryEvent(event, hint, config, runtime)
+
+      const extra = (() => {
+        try {
+          return context.tags?.() ?? {}
+        } catch {
+          return {}
+        }
+      })()
+      event = { ...event, tags: { ...extra, ...event.tags } }
+      if (page.incident) return null
+      const asset = chunkFailureAsset(original, origin())
+      if (asset !== undefined) {
+        // Whatever the verdict, what follows on this page is a consequence of the missing module.
+        page.incident = true
+        // Safari names no URL: nothing to verify, and a deploy that really lost an asset is
+        // still reported by every browser that does name it.
+        if (!asset) return null
+        const check = context.checkAsset ?? (url => checkAssetStatus(url))
+        return check(asset).then(status =>
+          assetIsMissing(status)
+            ? finishBrowser(
+                { ...event, tags: { ...event.tags, asset_status: String(status) } },
+                hint
+              )
+            : null
+        )
+      }
+      if (thrownOutsideSiteCode(event, origin())) return null
+      // No frame at all and no HTTP status: nothing in the event says where or what (the
+      // message is withheld on purpose), so the report could never be acted on.
+      const frames = event.exception?.values?.at(-1)?.stacktrace?.frames
+      if (!frames?.length && !/^5\d\d$/.test(String(event.tags?.http_status || ''))) return null
+      if (originalMessages(original).some(message => DOM_PATCH_FAILURE.test(message)))
+        page.incident = true
+      return finishBrowser(event, hint)
     },
   }
 }
