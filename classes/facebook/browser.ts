@@ -13,15 +13,30 @@ export class FacebookSessionError extends Error {}
 export const FB_ITEM_URL = (id: string): string => `https://www.facebook.com/marketplace/item/${id}/`;
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
-/** The profile browser's own health endpoint: `sessionStatus: "valid"` or nothing is read. */
+/**
+ * Whether the profile browser's health report lets a reader try. Only a session that is known to
+ * be gone stops it: `invalid` (Facebook showed a login gate, or the profile has no session), no
+ * session at all, or no browser. `error` means the monitor could not VALIDATE the session — on
+ * 2026-10-05 it said so for twelve hours while every Marketplace read worked (`loginGates: 0`; the
+ * failures were `FB_PROFILE_BROWSER_ID_MISMATCH` lookups from another use of the profile), and
+ * requiring `valid` silently stopped the rentals detail job. A reader that does try still ends on
+ * the first login or checkpoint page (`guard`), so trying costs one page, not the account.
+ */
+export function facebookSessionUsable(body: unknown): boolean {
+  if (!body || typeof body !== "object") return false;
+  const health = body as { sessionStatus?: unknown; sessionPresent?: unknown; browserConnected?: unknown };
+  if (health.sessionPresent === false || health.browserConnected === false) return false;
+  return health.sessionStatus === "valid" || health.sessionStatus === "error" || health.sessionStatus === "unknown";
+}
+
+/** Reads the profile browser's health endpoint. It answers 503 whenever it is not `valid`, so the
+ * body is read whatever the status. */
 export async function facebookSessionOk(healthUrl = process.env.FB_PROFILE_HEALTH_URL || process.env.AUTOS_FB_HEALTH_URL || "http://127.0.0.1:9246/health"): Promise<boolean> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 10_000);
   try {
     const response = await fetch(healthUrl, { signal: controller.signal });
-    if (!response.ok) return false;
-    const body = (await response.json()) as { sessionStatus?: unknown };
-    return body?.sessionStatus === "valid";
+    return facebookSessionUsable(await response.json());
   } catch {
     return false;
   } finally {

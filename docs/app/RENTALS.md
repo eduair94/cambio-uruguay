@@ -435,7 +435,12 @@ más del nodo aporta (`walk_score`/`transit_score` nulos, `nearby_*` vacíos, `h
 `facebook_profile_browser` (CDP `:9224`, lo compartido con autos vive en `classes/facebook/`),
 60 por corrida a 6 s (`RENTALS_FB_DETAIL_MAX`, `RENTALS_FB_DETAIL_MINUTES` 12), primero
 Montevideo sin barrio y sin coordenada, cada aviso UNA vez (una ficha sin nodo se guarda igual con
-`found: false`). Escribe la colección privada `rentalfacebookdetails` (descripción saneada con
+`found: false`). **Arranca salvo que la sesión esté perdida de verdad** (`facebookSessionUsable`:
+`invalid`, sin sesión o sin navegador): hasta el 2026-10-05 exigía `sessionStatus: "valid"`, y el
+monitor del perfil pasó doce horas en `error` (no podía validar; `loginGates: 0`, las fallas eran
+`FB_PROFILE_BROWSER_ID_MISMATCH` de otro uso del perfil) contestando 503, que el job además
+descartaba sin leer el cuerpo — así que no leyó ninguna ficha mientras Marketplace respondía
+normal. La página de login sigue cortando la corrida. Escribe la colección privada `rentalfacebookdetails` (descripción saneada con
 `rentalDescription`, ciudad del pin, barrio y punto derivados, candidatos, consulta y respuesta
 del geocodificador) y completa en `rentallistings` sólo los campos VACÍOS de propiedades con un
 único aviso de Facebook: `details.description`, `identity.description`, barrio, departamento,
