@@ -49,6 +49,61 @@ describe('/api/property-insight', () => {
     await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 503 })
   })
 
+  // Sentry CAMBIO-URUGUAY-BACKEND-C: the neighbours aggregation hit its maxTimeMS while the local
+  // mongod stalled for a few seconds; the same read a minute later took ~200 ms.
+  const mongoError = (name: string, code?: number) =>
+    Object.assign(new Error('operation exceeded time limit'), { name, code })
+
+  it('retries a read that timed out on the server once, and answers its result', async () => {
+    loadRentalInsight
+      .mockRejectedValueOnce(mongoError('MongoServerError', 50))
+      .mockResolvedValueOnce({ unit: 'UYU' })
+    route('alquiler', 'montevideo-centro-1abc')
+    expect(await handler({} as never)).toEqual({ insight: { unit: 'UYU' } })
+    expect(loadRentalInsight).toHaveBeenCalledTimes(2)
+  })
+
+  it('retries a dropped connection once as well', async () => {
+    loadPropertySaleInsight
+      .mockRejectedValueOnce(mongoError('MongoNetworkError'))
+      .mockResolvedValueOnce(null)
+    route('venta', 'infocasas-123')
+    expect(await handler({} as never)).toEqual({ insight: null })
+    expect(loadPropertySaleInsight).toHaveBeenCalledTimes(2)
+  })
+
+  it('answers 503 with the original cause when the retry also fails, and caches nothing', async () => {
+    const second = mongoError('MongoServerError', 50)
+    loadRentalInsight
+      .mockRejectedValueOnce(mongoError('MongoServerError', 50))
+      .mockRejectedValueOnce(second)
+    route('alquiler', 'montevideo-centro-1abc')
+    await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 503, cause: second })
+    expect(loadRentalInsight).toHaveBeenCalledTimes(2)
+    loadRentalInsight.mockResolvedValueOnce({ unit: 'UYU' })
+    expect(await handler({} as never)).toEqual({ insight: { unit: 'UYU' } })
+  })
+
+  it('does not retry a failure that a second identical read would repeat', async () => {
+    for (const error of [mongoError('MongoServerError', 2), new TypeError('bad row')]) {
+      resetPropertyInsightCache()
+      loadPropertySaleInsight.mockReset().mockRejectedValue(error)
+      route('venta', 'infocasas-123')
+      await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 503 })
+      expect(loadPropertySaleInsight).toHaveBeenCalledTimes(1)
+    }
+  })
+
+  it('shares one read and one retry between concurrent requests for the same advert', async () => {
+    loadRentalInsight
+      .mockRejectedValueOnce(mongoError('MongoServerError', 50))
+      .mockResolvedValueOnce({ unit: 'UYU' })
+    route('alquiler', 'montevideo-centro-1abc')
+    const answers = await Promise.all([handler({} as never), handler({} as never)])
+    expect(answers).toEqual([{ insight: { unit: 'UYU' } }, { insight: { unit: 'UYU' } }])
+    expect(loadRentalInsight).toHaveBeenCalledTimes(2)
+  })
+
   it('reads each advert once while the cache is fresh, even with concurrent requests', async () => {
     loadPropertySaleInsight.mockResolvedValue({ unit: 'USD' })
     route('venta', 'infocasas-777')

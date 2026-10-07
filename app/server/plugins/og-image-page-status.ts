@@ -1,5 +1,9 @@
-import { sendRedirect, type H3Event } from 'h3'
-import { ogImageRedirectTarget } from '../utils/ogImageRedirect'
+import { sendRedirect, setResponseHeader, type H3Event } from 'h3'
+import {
+  ogImageFallbackPath,
+  ogImageNetworkFailure,
+  ogImageRedirectTarget,
+} from '../utils/ogImageRedirect'
 
 // nuxt-og-image 5 turns a missing page into a 500 when its error HTML has no
 // OG payload. Keep the page's actual 404/410 without hiding a successful SSR
@@ -51,9 +55,24 @@ export default defineNitroPlugin(nitroApp => {
   // a 500 (Sentry CAMBIO-URUGUAY-BACKEND-9 and -11, `og_source: 301`, from crawlers that kept the
   // old og:image). That card is the destination's, so the image request is redirected to the
   // destination's image — same flavor, same extension — and to a 404 when the target is unusable.
+  //
+  // A page that answered 2xx but whose card could not be drawn because a request to another host
+  // failed (the module's emoji lookup on api.iconify.design, Sentry CAMBIO-URUGUAY-BACKEND-18)
+  // gets the site's static card through a temporary, uncached redirect: the share preview still
+  // has an image, the next request draws the real card again, and an outage of somebody else's
+  // host is not reported as our 500. Any other failure of a readable page stays a 500.
   const onError = nitroApp.h3App.options.onError
   nitroApp.h3App.options.onError = (error, event) => {
     const sourceStatus = sourceStatuses.get(event)
+    if (sourceStatus !== undefined && sourceStatus >= 200 && sourceStatus < 300) {
+      const networkCode = ogImageNetworkFailure(error)
+      const fallback = networkCode ? ogImageFallbackPath(event.path) : null
+      if (fallback) {
+        console.warn(`[og-image] ${networkCode} while drawing the card; serving ${fallback}`)
+        setResponseHeader(event, 'cache-control', 'no-store')
+        return sendRedirect(event, fallback, 302)
+      }
+    }
     const extractorFailure =
       error.statusCode === 500 &&
       /^\[Nuxt OG Image\] (?:HTML response from .+ is missing the #nuxt-og-image-options script tag\.|Failed to read the path .+ for og-image extraction, returning no HTML\.|Failed to parse .+ for og-image extraction\.)/.test(

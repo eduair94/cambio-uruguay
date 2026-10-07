@@ -4,6 +4,7 @@ import { runInNewContext } from 'node:vm'
 import { parse as parseSfc } from '@vue/compiler-sfc'
 import * as devalue from 'devalue'
 import * as h3 from 'h3'
+import { createFetch } from 'ofetch'
 import ts from 'typescript'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -138,7 +139,9 @@ async function runtime(patched = true) {
   app.use(
     h3.eventHandler(async event => {
       if (event.path.startsWith('/__og-image__/image/')) {
-        const source = event.path.replace('/__og-image__/image', '').replace(/\/og\.png$/, '')
+        const source = event.path
+          .replace('/__og-image__/image', '')
+          .replace(/\/og\.(?:png|svg)$/, '')
         if (source === '/renderer-failure') {
           await event.fetch!('/renderer-failure')
           throw h3.createError({ statusCode: 500, statusMessage: 'Renderer crashed' })
@@ -152,6 +155,27 @@ async function runtime(patched = true) {
             statusCode: 500,
             statusMessage:
               '[Nuxt OG Image] Failed to parse `/parse-failure` for og-image extraction. 404 error: Not Found',
+          })
+        }
+        // The page read works; the card then needs an emoji from api.iconify.design, which the
+        // module fetches with ofetch `retry: 3` and no catch (Sentry CAMBIO-URUGUAY-BACKEND-18).
+        // The real ofetch builds the error chain; only the socket underneath is staged.
+        if (source.endsWith('-emoji-timeout') || source === '/emoji-bug') {
+          await event.fetch!(source)
+          const offline = createFetch({
+            fetch: async () => {
+              if (source === '/emoji-bug') throw new TypeError('Cannot read properties of null')
+              throw new TypeError('fetch failed', {
+                cause: Object.assign(new Error('connect ETIMEDOUT 192.0.2.1:443'), {
+                  code: 'ETIMEDOUT',
+                }),
+              })
+            },
+          })
+          await offline('https://api.iconify.design/noto/stop-sign.svg', {
+            responseType: 'text',
+            retry: 3,
+            retryDelay: 0,
           })
         }
         return extractor(event, source, source)
@@ -270,6 +294,39 @@ describe('OG image status through the installed Nuxt validator, extractor and H3
     // Neither captured nor handed to Nitro's error handler (which is what reports to Sentry).
     expect(captured.find(error => error.path === path)).toBeUndefined()
     expect(delegated.mock.calls.find(([, event]) => event.path === path)).toBeUndefined()
+  })
+
+  it('serves the static card when a readable page cannot be drawn because another host timed out', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const { request, captured, delegated, events } = await runtime()
+    for (const [source, card] of [
+      ['/precios-emoji-timeout', '/img/og.png'],
+      ['/en/autos-usados-uruguay/fb-1-emoji-timeout', '/img/og-autos.png'],
+    ] as const) {
+      const path = `/__og-image__/image${source}/og.png`
+      const response = await request(path)
+      expect(events.get(path)?.context.ogSourceStatus).toBe('200')
+      expect(response.status).toBe(302)
+      expect(response.headers.get('location')).toBe(card)
+      expect(response.headers.get('cache-control')).toBe('no-store')
+      // Neither captured nor handed to Nitro's error handler (which is what reports to Sentry).
+      expect(captured.find(error => error.path === path)).toBeUndefined()
+      expect(delegated.mock.calls.find(([, event]) => event.path === path)).toBeUndefined()
+    }
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('ETIMEDOUT'))
+    warn.mockRestore()
+  })
+
+  it('keeps a 500 for a render bug, and for debugging views that are not cards', async () => {
+    const { request, captured } = await runtime()
+    for (const path of [
+      '/__og-image__/image/emoji-bug/og.png',
+      '/__og-image__/image/precios-emoji-timeout/og.svg',
+    ]) {
+      const response = await request(path)
+      expect(response.status).toBe(500)
+      expect(captured.find(error => error.path === path)?.status).toBe(500)
+    }
   })
 
   it('never follows a redirect off the site: that image is a 404', async () => {
