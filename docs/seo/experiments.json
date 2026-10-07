@@ -19,6 +19,21 @@
   ],
   "experiments": [
     {
+      "id": "descripciones-de-las-guias-respuesta-primero-2",
+      "shippedOn": "2026-10-07",
+      "routes": [
+        "/guias/bonos-y-renta-fija-uruguay",
+        "/guias/plazo-fijo-en-uruguay-conviene",
+        "/guias/conviene-ahorrar-en-dolares-uruguay",
+        "/guias/alquilar-sin-garantia-uruguay",
+        "/guias/legitima-y-herederos-forzosos-uruguay",
+        "/guias/hay-impuesto-a-la-herencia-uruguay",
+        "/guias/como-pedir-un-aumento-de-sueldo-uruguay",
+        "/guias/impuesto-temu-uruguay"
+      ],
+      "hypothesis": "Las ocho guias cuyo titulo ya entraba en el SERP pero cuya descripcion pasaba de 155 caracteres: la respuesta pasa al arranque (topes de COPAB, fracciones de la legitima, minimo de US$ 20 de IVA por envio, valor de Catastro) y la descripcion entra entera, asi que el renglon que Google publica deja de ser el indice de la guia."
+    },
+    {
       "id": "titulos-de-las-guias-respuesta-primero-3",
       "shippedOn": "2026-10-03",
       "routes": [
