@@ -645,7 +645,7 @@ export const trabajoBpsGuides: readonly Guide[] = [
     slug: 'como-pedir-un-aumento-de-sueldo-uruguay',
     title: 'Cómo pedir un aumento de sueldo en Uruguay',
     description:
-      'Confirmá tu laudo y los ajustes del Consejo de Salarios, retroactivos incluidos. Después, cuándo pedir más, con qué argumentos y por qué no hay un porcentaje correcto.',
+      'Primero el laudo: por debajo del mínimo de tu categoría se reclama, no se pide, y el retroactivo corre desde la vigencia del acta. Después, cómo negociar.',
     tag: 'AUMENTO',
     updatedAt: '2026-09-13',
     sections: [

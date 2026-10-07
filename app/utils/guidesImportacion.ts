@@ -16,7 +16,7 @@ export const importacionGuides: readonly Guide[] = [
     slug: 'impuesto-temu-uruguay',
     title: 'Impuesto Temu: qué es y cuánto pagás',
     description:
-      'Desde el 1.º de mayo de 2026 tus compras web del exterior pagan IVA 22 %, con franquicia de US$ 800 en tres envíos. Cuánto pagás, cuándo no y quién te lo cobra.',
+      'Desde el 1.º de mayo de 2026 tu compra web del exterior paga IVA 22 %, con un mínimo de US$ 20 por envío, y la franquicia es de US$ 800 en tres envíos.',
     tag: 'ADUANA',
     updatedAt: '2026-09-15',
     sections: [

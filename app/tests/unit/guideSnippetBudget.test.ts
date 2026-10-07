@@ -364,8 +364,41 @@ const TITLE_OVER_BUDGET = 37
  * Ninguna cifra es nueva y ninguna se escribió con más firmeza que su fuente: ver el comentario de
  * `TITLE_OVER_BUDGET` para las dos redacciones que eso descartó y para los matices que el snippet
  * conserva.
+ *
+ * 32 → 24 el 2026-10-07, en su propia fila del libro de cambios y la primera tanda que toca SÓLO la
+ * descripción: son las ocho guías con la ruta libre que pasan de 155 con el título ya dentro de los
+ * 60, así que no hay título que reescribir y la tanda se nombra por la mitad del snippet que arregla.
+ * Las siete tandas anteriores se comieron el solapamiento entre las dos señales —la del 2026-10-07
+ * ya anota que de las 11 guías pasadas en ambas sólo 9 tenían la ruta libre— y de acá en adelante
+ * cada señal baja por su cuenta.
+ *
+ * Iban de 171 a 160 caracteres y seis de las ocho enumeraban el ÍNDICE de la guía, que es la forma
+ * más cara del defecto: «Guía básica de bonos y renta fija en Uruguay: qué es, deuda soberana
+ * uruguaya, letras de regulación monetaria, riesgo y rendimiento…», «Plazo fijo en Uruguay: cómo
+ * funciona, pesos vs UI vs dólares, tasa real frente a la inflación, impuestos, garantía de
+ * COPAB…», «Opciones reales para alquilar sin garante propietario en Uruguay: seguro de fianza,
+ * régimen sin garantía de la LUC, adelanto de meses, ANDA…». Y dos abrían REPITIENDO LA PREGUNTA
+ * que el visitante acaba de escribir sin contestarla («¿Conviene ahorrar en dólares en Uruguay?
+ * Economía bimonetaria, cuándo tiene sentido…», «¿Existe impuesto a la herencia en Uruguay? No hay
+ * impuesto sucesorio…»), que es peor: gasta el arranque en devolver la consulta.
+ *
+ * Ahora arranca la respuesta, y en cuatro casos es una cifra que ya estaba en el cuerpo y no en el
+ * snippet: los topes del Fondo de Garantía de Depósitos (UI 250.000 en moneda nacional y US$ 10.000
+ * en extranjera, por persona e institución), las tres fracciones de la legítima (1/2 con un hijo,
+ * 2/3 con dos, 3/4 con tres o más), el mínimo de US$ 20 de IVA por envío postal y el valor de
+ * Catastro como base del ITP. Las otras cuatro son categóricas: que el bono se vende antes del
+ * vencimiento pero a precio de mercado y sin la garantía que sí cubre al plazo fijo, que dolarizar
+ * tiene sentido cuando la meta está en dólares, que por debajo del laudo de tu categoría se reclama
+ * en vez de pedir, y que las vías sin garante propietario son cinco.
+ *
+ * Ninguna cifra es nueva y ninguna se escribió con más firmeza que su fuente. Dos matices que eso
+ * conservó: los intereses del plazo fijo «suelen pagar IRPF» y no «pagan», porque así lo dice el
+ * cuerpo; y el plazo del ITP por causa de muerte quedó AFUERA aunque era el dato más accionable,
+ * porque el cuerpo lo escribe «en general, alrededor de un año, pero confirmá el plazo vigente ante
+ * la DGI» y un snippet no tiene lugar para esa salvedad — publicar «un año» a secas sería
+ * exactamente el error recurrente del repo.
  */
-const DESCRIPTION_OVER_BUDGET = 32
+const DESCRIPTION_OVER_BUDGET = 24
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {

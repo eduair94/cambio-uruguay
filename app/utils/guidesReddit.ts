@@ -644,7 +644,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'alquilar-sin-garantia-uruguay',
     title: 'Cómo alquilar sin garantía en Uruguay',
     description:
-      'Opciones reales para alquilar sin garante propietario en Uruguay: seguro de fianza, régimen sin garantía de la LUC, adelanto de meses, ANDA y la garantía estatal.',
+      'Cinco vías sin garante propietario: seguro de fianza, adelanto de meses, ANDA, la garantía de la Contaduría y el régimen de la LUC, que acorta el desalojo.',
     tag: 'SIN GARANTÍA',
     updatedAt: '2026-07-18',
     sections: [
@@ -1460,7 +1460,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'legitima-y-herederos-forzosos-uruguay',
     title: 'Legítima y herederos forzosos en Uruguay',
     description:
-      'Qué es la legítima en Uruguay, quiénes son los herederos forzosos (hijos, ascendientes, cónyuge), la porción disponible y por qué no podés desheredar libremente.',
+      'La legítima es la mitad del patrimonio con un hijo, dos tercios con dos y tres cuartos con tres o más. Sin descendientes, los ascendientes llevan la mitad.',
     tag: 'LEGÍTIMA',
     updatedAt: '2026-07-18',
     sections: [
@@ -1499,7 +1499,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'hay-impuesto-a-la-herencia-uruguay',
     title: '¿Hay impuesto a la herencia en Uruguay?',
     description:
-      '¿Existe impuesto a la herencia en Uruguay? No hay impuesto sucesorio, pero sí costos reales de la sucesión y el ITP al transmitir inmuebles por causa de muerte.',
+      'No existe: Uruguay no grava el hecho de heredar. Lo que se paga son los costos de la sucesión y, si hay inmuebles, el ITP sobre el valor que fija Catastro.',
     tag: 'IMPUESTOS',
     updatedAt: '2026-07-18',
     sections: [
@@ -2892,7 +2892,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'plazo-fijo-en-uruguay-conviene',
     title: '¿Conviene un plazo fijo en Uruguay?',
     description:
-      'Plazo fijo en Uruguay: cómo funciona, pesos vs UI vs dólares, tasa real frente a la inflación, impuestos, garantía de COPAB y liquidez para decidir si te conviene.',
+      'COPAB cubre hasta UI 250.000 en pesos y US$ 10.000 en dólares, por persona e institución, y los intereses suelen pagar IRPF. La tasa real y la liquidez.',
     tag: 'PLAZO FIJO',
     updatedAt: '2026-07-18',
     sections: [
@@ -2992,7 +2992,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'bonos-y-renta-fija-uruguay',
     title: 'Bonos y renta fija en Uruguay: guía básica',
     description:
-      'Guía básica de bonos y renta fija en Uruguay: qué es, deuda soberana uruguaya, letras de regulación monetaria, riesgo y rendimiento, y en qué se diferencia del plazo fijo.',
+      'El bono se vende antes del vencimiento a precio de mercado y sin la garantía de COPAB que sí cubre al plazo fijo. Soberanos, LRM y los tres riesgos.',
     tag: 'RENTA FIJA',
     updatedAt: '2026-07-18',
     sections: [
@@ -3034,7 +3034,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'conviene-ahorrar-en-dolares-uruguay',
     title: '¿Conviene ahorrar en dólares en Uruguay?',
     description:
-      '¿Conviene ahorrar en dólares en Uruguay? Economía bimonetaria, cuándo tiene sentido dolarizar, el riesgo de mirar solo el dólar, diversificar y dónde comprar mejor.',
+      'Conviene si la meta está en dólares: inmueble, auto o viaje. Gastar en pesos suma riesgo de cambio, y el billete quieto pierde por la inflación de EE. UU.',
     tag: 'DÓLARES',
     updatedAt: '2026-07-18',
     sections: [
