@@ -454,6 +454,13 @@ useSeoMeta({
   robots: 'noindex, follow',
 })
 
+// Adverts are noindex, expire within weeks and number in the thousands: drawing a satori card per
+// advert and per locale is the cost to avoid, so every advert shares the static autos card. It is
+// set HERE and not as an `ogImage: { url }` route rule because nuxt-og-image 5.1.6 ignores `url`
+// in route rules: its `app:rendered` plugin re-emits the generated per-page URL over it (see
+// nuxt.config.ts and tests/unit/autosOgImage.test.ts). og-autos.png is 1200×630.
+defineOgImage({ url: '/img/og-autos.png', width: 1200, height: 630 })
+
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonical.value }],
   script: car.value

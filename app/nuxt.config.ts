@@ -329,21 +329,12 @@ export default defineNuxtConfig({
     // @scalar/api-reference can't be imported under Node SSR (web-worker shim),
     // so render it client-side only. It's robots-disallowed; the canonical,
     // SSR-chromed entry point is /desarrolladores.
-    // Los avisos de autos (`/autos-usados-uruguay/<clave>`) son `noindex`, vencen en semanas y
-    // son miles: un satori por clave y por idioma es el costo que se quiere sacar. `ogImage:
-    // { url }` y NO `ogImage: false`, porque nuxt-og-image lee la página ANTES de mirar
-    // routeRules: con `false` una URL /__og-image__/... ya rastreada encuentra una página 200
-    // sin payload y devuelve 500; con `url` la misma URL degrada al `{ custom: true, url }`
-    // del propio og:image meta. El patrón es `/*` (UN segmento) y no `/**` a propósito:
-    // medido 22/9/2026 con el matcher del módulo (radix3 + defu sobre matchAll().reverse()),
-    // `/*` toma `/ml-MLU…` y nunca `/precios/<slug>`, así que las páginas de modelo (sí
-    // indexables) conservan la tarjeta generada sin regla de restitución — que además no
-    // existe: `ogImage: {}` en una regla más específica NO borra `url` (defu mezcla, no pisa).
-    // Tres idiomas: prefix_except_default sirve /x, /en/x y /pt/x desde el mismo archivo.
-    // og-autos.png: 1200×630, 282 KB, recorte central de og.png (1536×1024).
-    '/autos-usados-uruguay/*': { ogImage: { url: '/img/og-autos.png' } },
-    '/en/autos-usados-uruguay/*': { ogImage: { url: '/img/og-autos.png' } },
-    '/pt/autos-usados-uruguay/*': { ogImage: { url: '/img/og-autos.png' } },
+    // Sin regla `ogImage` para los avisos de autos: su tarjeta estática la pide la página
+    // (`pages/autos-usados-uruguay/[key].vue`, `defineOgImage({ url })`). nuxt-og-image 5.1.6 NO
+    // respeta `ogImage: { url }` en routeRules: su plugin `route-rule-og-image.server` corre en
+    // `app:rendered`, ve la regla y vuelve a emitir og:image/twitter:image con la URL generada
+    // `/__og-image__/image/<página>/og.png`, pisando la estática: el 7/10/2026 las tres reglas que
+    // hubo acá no aparecían en el HTML de ningún aviso. Ver tests/unit/autosOgImage.test.ts.
     // Páginas por barrio y por presupuesto (2026-10-04): sólo en español, sin /en ni /pt.
     // El patrón `hasta-*` no existe en el matcher (el comodín es de segmento entero), así que
     // los cinco tramos van uno por uno.
