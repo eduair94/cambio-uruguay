@@ -284,9 +284,9 @@ export const parejaGuides: readonly Guide[] = [
   },
   {
     slug: 'division-de-bienes-en-el-divorcio-uruguay',
-    title: 'División de bienes en un divorcio en Uruguay',
+    title: 'Los gananciales se reparten por mitades',
     description:
-      'Cómo se dividen los bienes en un divorcio en Uruguay: los gananciales se reparten por mitades, los propios quedan de cada uno y la pensión a los hijos va aparte.',
+      'Los gananciales se reparten por mitades y los propios quedan de cada uno, pero antes se descuentan las deudas. La pensión a los hijos va aparte.',
     tag: 'DIVORCIO',
     updatedAt: '2026-07-18',
     sections: [

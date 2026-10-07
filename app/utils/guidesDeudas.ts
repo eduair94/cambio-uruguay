@@ -18,9 +18,9 @@ const PREXTAMO_TYC_URL = 'https://assets.paigo.uy/prextamo/docs/TyC-PreXtamo.pdf
 export const deudasGuides: readonly Guide[] = [
   {
     slug: 'cuando-prescribe-una-deuda-uruguay',
-    title: '¿Cuándo prescribe una deuda privada en Uruguay?',
+    title: 'Una deuda exigible prescribe a 10 años',
     description:
-      'Tarjeta, préstamo o garantía de alquiler: la acción personal prescribe a los diez años, el vale a los cuatro, y nada opera solo. Qué corta el plazo y qué no.',
+      'La acción personal prescribe a los diez años (Código Civil, art. 1216), la vía ejecutiva a los cinco y el vale a los cuatro. Nada de eso opera solo.',
     tag: 'PRESCRIPCIÓN',
     updatedAt: '2026-09-13',
     sections: [

@@ -2041,9 +2041,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'entender-tu-recibo-de-sueldo-uruguay',
-    title: 'Cómo entender tu recibo de sueldo en Uruguay',
+    title: 'Del nominal te descuentan 15 % jubilatorio',
     description:
-      'Qué es el nominal y el líquido, qué te descuentan (jubilatorio entre BPS y AFAP, FONASA, FRL, IRPF) y por qué, para que entiendas tu recibo de sueldo en Uruguay.',
+      'Sobre el nominal, no sobre el líquido: 15 % jubilatorio, FONASA de aprox. 3 % a 8 % según cargas y FRL del orden del 0,1 %. El IRPF, sólo si pasás el piso.',
     tag: 'SUELDO',
     updatedAt: '2026-08-10',
     sections: [
@@ -3110,9 +3110,9 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'errores-y-estafas-al-invertir-uruguay',
-    title: 'Errores comunes y estafas al invertir en Uruguay',
+    title: 'Rendimiento alto y garantizado no existe',
     description:
-      'Errores comunes y estafas al invertir en Uruguay: rendimiento garantizado, esquemas Ponzi, cripto fraudulento, brokers no regulados y cómo verificar en el BCU.',
+      'Un rendimiento por sobre la deuda más segura implica riesgo. Un Ponzi paga a los viejos con plata de los nuevos; la Ley 20.345 exige registro en el BCU.',
     tag: 'ESTAFAS',
     updatedAt: '2026-07-18',
     sections: [

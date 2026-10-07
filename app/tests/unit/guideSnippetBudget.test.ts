@@ -247,9 +247,40 @@ const MEASURED = 146
  * otra página ya reclama. Se verificó después del cambio que los dos primeros puestos siguen
  * siendo los mismos.
  *
+ * 46 → 37 el 2026-10-07, séptima tanda: nueve guías elegidas por estar pasadas en LAS DOS señales
+ * a la vez, así que la misma reescritura baja los dos presupuestos y entra como una sola fila del
+ * libro de cambios. Los títulos iban de 69 a 61 caracteres contando la marca.
+ *
+ * Siete de los nueve eran otra vez la ETIQUETA DEL TEMA seguida del índice («Euros y reales en
+ * Uruguay: dónde y cómo cambiarlos», «Errores comunes y estafas al invertir en Uruguay», «Comprar
+ * una casa en remate en Uruguay: cómo funciona»), y los otros dos eran la PREGUNTA del visitante
+ * devuelta sin contestar («¿Cuál es el mejor momento para cambiar divisas?», «¿Cuándo prescribe
+ * una deuda privada en Uruguay?»), que es el mismo defecto con otra cara: gasta el renglón en
+ * repetir la consulta y deja la respuesta del lado que el SERP corta.
+ *
+ * Ahora cada uno contesta: que al comprar lo que te cuesta es la VENTA de la casa y no su compra
+ * (la columna que todo el mundo mira al revés), que fuera del día hábil el precio queda congelado
+ * en la última referencia, que el euro y el real se arbitran contra el dólar, que un rendimiento
+ * alto y garantizado no existe, que la acción personal prescribe a los diez años, que en 2025 la
+ * canasta del BPS fue de $ 3.151, que del nominal se descuenta 15 % de jubilatorio, que los
+ * gananciales se reparten por mitades y que el remate judicial va sin base y al mejor postor.
+ *
+ * Ninguna cifra es nueva: todas ya estaban en el cuerpo de su guía. Y ninguna se escribió con más
+ * firmeza que su fuente, que acá descartó dos redacciones. El título del remate iba a decir que la
+ * seña «es 10 %», cuando el CGP dice que NO PUEDE SER MENOR al 10 % que fija el tribunal: es un
+ * piso, no la cifra, así que el título se queda con lo que sí es categórico (sin base, al mejor
+ * postor) y el piso va en la descripción con su «no menor al». Y la descripción del remate NO
+ * publica las condiciones de la ANV (base del 50 %, seña del 5 %, comisión del 1 % más IVA): el
+ * cuerpo las fecha «a setiembre de 2026» y el snippet no tiene lugar para esa fecha, que es el
+ * error recurrente del repo, así que dice que la ANV va con otras reglas y deja los números
+ * fechados en el cuerpo. Por lo mismo el recibo de sueldo conserva los matices del cuerpo en el
+ * snippet («aprox. 3 % a 8 %» para el FONASA, «del orden del 0,1 %» para el FRL) en vez de
+ * publicar esos dos porcentajes como exactos, y la canasta del BPS lleva el año adelante («En 2025
+ * …») porque es un monto que un decreto nuevo cambia cada año.
+ *
  * SÓLO PUEDE BAJAR.
  */
-const TITLE_OVER_BUDGET = 46
+const TITLE_OVER_BUDGET = 37
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.
@@ -316,8 +347,25 @@ const TITLE_OVER_BUDGET = 46
  *
  * Ninguna cifra es nueva y ninguna se escribió con más firmeza que su fuente: ver el comentario de
  * `TITLE_OVER_BUDGET` para las tres redacciones que eso descartó.
+ *
+ * 41 → 32 el 2026-10-07, las nueve descripciones de la séptima tanda, en la misma fila del libro de
+ * cambios y por la razón que explica el comentario de `TITLE_OVER_BUDGET`: las nueve guías estaban
+ * pasadas en las dos señales, así que se reescribieron las dos juntas. Iban de 161 a 156 caracteres
+ * —otra vez los sobrantes más chicos— y el patrón se partió como la vez pasada. Cinco abrían con la
+ * etiqueta del tema o anunciando el índice («Cómo cambiar euros y reales en Uruguay, por qué su
+ * precio se mueve…», «Errores comunes y estafas al invertir en Uruguay: rendimiento garantizado,
+ * esquemas Ponzi, cripto fraudulento…», «Remate judicial o de la ANV: seña, comisión del rematador,
+ * plazos…»), que es la forma más cara del defecto porque enumera las secciones y la respuesta no
+ * aparece en ningún renglón. Las otras cuatro YA abrían por la respuesta y sólo estaban largas: ahí
+ * la reescritura no movió el arranque, sumó la norma que la cola se comía (el art. 1216 del Código
+ * Civil para los diez años, el Decreto 264/025 para los $ 3.151) o el paso que faltaba (que antes
+ * de repartir los gananciales se descuentan las deudas de la sociedad).
+ *
+ * Ninguna cifra es nueva y ninguna se escribió con más firmeza que su fuente: ver el comentario de
+ * `TITLE_OVER_BUDGET` para las dos redacciones que eso descartó y para los matices que el snippet
+ * conserva.
  */
-const DESCRIPTION_OVER_BUDGET = 41
+const DESCRIPTION_OVER_BUDGET = 32
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {

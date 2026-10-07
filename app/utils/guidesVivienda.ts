@@ -152,9 +152,9 @@ export const viviendaGuides: readonly Guide[] = [
   },
   {
     slug: 'comprar-en-remate-uruguay',
-    title: 'Comprar una casa en remate en Uruguay: cómo funciona',
+    title: 'Remate judicial: sin base, al mejor postor',
     description:
-      'Remate judicial o de la ANV: seña, comisión del rematador, plazos para pagar el saldo, qué deudas del inmueble pagás vos y qué pasa si la casa está ocupada.',
+      'Seña no menor al 10 % de la oferta, saldo en 20 días corridos, escritura en 30 y 3 % de comisión del comprador. El remate de la ANV va con otras reglas.',
     tag: 'REMATE',
     updatedAt: '2026-09-13',
     sections: [

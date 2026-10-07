@@ -208,9 +208,9 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'comprar-dolares-mejor-precio',
-    title: 'Cómo comprar dólares al mejor precio en Uruguay',
+    title: 'Si comprás dólares, mirá la venta',
     description:
-      'Guía práctica para comprar dólares al mejor precio en Uruguay: comparar entre casas de cambio, entender el spread, elegir el canal y evitar comisiones ocultas.',
+      'Si comprás, lo que te cuesta es la venta de la casa, no su compra. Compará la venta entre más de 40 casas, mirá el spread y evitá el aeropuerto.',
     tag: 'PRECIO',
     updatedAt: '2026-06-16',
     sections: [
@@ -268,9 +268,9 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'mejor-momento-cambiar-divisas',
-    title: '¿Cuál es el mejor momento para cambiar divisas?',
+    title: 'Cambiá en día hábil y horario de mercado',
     description:
-      'Cuándo conviene cambiar divisas en Uruguay: horarios y días hábiles, volatilidad del mercado, y por qué tu necesidad pesa más que intentar adivinar el piso.',
+      'Fuera del día hábil y el horario bancario los precios quedan congelados en la última referencia y operan menos casas. Adivinar el piso falla: escaloná.',
     tag: 'TIMING',
     updatedAt: '2026-06-16',
     sections: [
@@ -766,9 +766,9 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'euros-reales-donde-cambiar',
-    title: 'Euros y reales en Uruguay: dónde y cómo cambiarlos',
+    title: 'El euro y el real se mueven con el dólar',
     description:
-      'Cómo cambiar euros y reales en Uruguay, por qué su precio se mueve junto con el dólar (arbitraje) y cómo encontrar la mejor cotización entre casas de cambio.',
+      'Su precio sale por arbitraje: la cotización internacional de cada moneda frente al dólar más el dólar/peso local. Al operarse menos, el spread se ensancha.',
     tag: 'DIVISAS',
     updatedAt: '2026-06-17',
     sections: [

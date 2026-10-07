@@ -522,9 +522,9 @@ export const trabajoBpsGuides: readonly Guide[] = [
   },
   {
     slug: 'canasta-fin-de-ano-bps-uruguay',
-    title: 'Canasta de fin de año del BPS: ¿me corresponde?',
+    title: 'En 2025 la canasta del BPS fue de $ 3.151',
     description:
-      'En 2025 fue de $ 3.151 para jubilados y pensionistas con pasividades de hasta $ 20.458 y sin otros ingresos. Quién la cobra, cuándo se paga y si hay que pedirla.',
+      'El Decreto 264/025 la fijó en $ 3.151 y se pagó con las pasividades de noviembre. Depende de un decreto nuevo cada año: para 2026 no hay monto aún.',
     tag: 'JUBILADOS',
     updatedAt: '2026-09-13',
     sections: [
