@@ -22,6 +22,10 @@
       <p v-if="yearMove" class="text-body-2 text-medium-emphasis" style="max-width: 68ch">
         {{ yearMove }}
       </p>
+      <p class="text-body-2 mt-2" style="max-width: 68ch">
+        El supergás se fija por kilo, pero se compra por garrafa:
+        <NuxtLink :to="garrafaLink" class="cu-link">cuánto sale la de 13 kg</NuxtLink>.
+      </p>
     </header>
 
     <section class="mb-8">
@@ -296,7 +300,15 @@ const verifiedAt = new Date(`${FUEL_VERIFIED_AT}T12:00:00Z`).toLocaleDateString(
   timeZone: 'UTC',
 })
 
+// El precio del supergás que esta página publica está POR KILO, que es como lo fija el decreto y
+// no como se compra. Medido el 2026-10-07 contra el autocompletado uruguayo (`gl=uy`, el método de
+// `sync_search_demand`), DOS de las diez primeras sugerencias de «cuanto cuesta» son «la garrafa de
+// 13 kilos», y quien la contesta —con la multiplicación hecha y el descuento del MIDES— es la guía.
+// No tenía un solo enlace desde acá, que es la página que trae el número.
+const garrafaLink = computed(() => localePath('/guias/precio-supergas-garrafa-uruguay'))
+
 const related = [
+  { label: 'Cuánto sale la garrafa de supergás', to: '/guias/precio-supergas-garrafa-uruguay' },
   {
     label: 'Descuentos en combustible',
     to: '/descuentos-con-tarjeta-uruguay/rubro/combustible-y-vehiculos',
