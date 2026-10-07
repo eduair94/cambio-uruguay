@@ -139,6 +139,9 @@ async function setupPage(scenario: Scenario) {
     }),
     useSeoMeta: (input: unknown) => unhead.useSeoMeta(input as never, { head }),
     useHead: (input: unknown) => unhead.useHead(input as never, { head }),
+    // La tarjeta social estática del aviso se prueba con el runtime real de nuxt-og-image en
+    // autosOgImage.test.ts; acá sólo importa que el setup corra.
+    defineOgImage: () => {},
     definePageMeta: (value: typeof meta) => {
       meta = value
     },
