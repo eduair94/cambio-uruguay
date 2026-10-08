@@ -9,8 +9,15 @@ import { isRetiredRentalKey } from "./retiredKeys";
 // again. Without that rule an hourly "fast" run — which reads only today's adverts — would wipe
 // every other portal's rows off every property it touched.
 import { RentalListingModel } from "../models/RentalListing";
-import { RENT_COHORT_FLOOR_UYU, type RentPriceRow } from "./currency";
+import {
+  RENT_COHORT_FLOOR_UYU,
+  RENT_PESOS_SUSPECT_UYU,
+  correctStoredRentCurrencies,
+  type RentPriceCohorts,
+  type RentPriceRow,
+} from "./currency";
 import { RentalMetaModel } from "../models/RentalMeta";
+import { looksLikeRentalAdvert } from "./normalize";
 import { detachedRentalKey, partitionRentalOffers, propertyFromRentalOffers } from "./reconcile";
 import { RENTAL_FULL_META_KEY, RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalSource } from "./types";
 
@@ -343,10 +350,75 @@ export async function dropReassignedOffers(
  * reads a slice of the market, and "not in this slice" says nothing about whether a flat is still
  * for rent.
  */
+/**
+ * Takes out stored adverts the CURRENT advert filter rejects: a season ("Alquiler de verano"), a
+ * stay priced per night, a castle you hire for a birthday. A full harvest drops them on read, but a
+ * partial portal never expires what it did not see, so they kept showing until their 10 days ran
+ * out. This is a positive reading of the advert's own title, not absence. A property left with no
+ * advert is deleted, as the stale prune would do ten days later.
+ */
+export async function dropRejectedStoredRentals(): Promise<{ offers: number; properties: number; deleted: number }> {
+  const slim = await RentalListingModel.find({})
+    .select({ _id: 0, key: 1, "offers.listingId": 1, "offers.title": 1 })
+    .lean() as unknown as Array<{ key: string; offers?: Array<{ listingId: string; title?: string }> }>;
+  const affected = slim.filter((row) => (row.offers || []).some((offer) => !looksLikeRentalAdvert(String(offer.title || ""))));
+  let offers = 0;
+  let deleted = 0;
+  const operations = [];
+  for (let index = 0; index < affected.length; index += CHUNK) {
+    const keys = affected.slice(index, index + CHUNK).map((row) => row.key);
+    const rows = await RentalListingModel.find({ key: { $in: keys } })
+      .select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 })
+      .lean() as unknown as RentalProperty[];
+    for (const property of rows) {
+      if (isRetiredRentalKey(property.key)) continue;
+      const kept = property.offers.filter((offer) => looksLikeRentalAdvert(String(offer.title || "")));
+      offers += property.offers.length - kept.length;
+      if (!kept.length) {
+        operations.push({ deleteOne: { filter: { key: property.key } } });
+        deleted++;
+        continue;
+      }
+      const row = recomputeFromOffers(property, kept);
+      operations.push({ updateOne: { filter: { key: property.key }, update: { $set: { ...structuredClone(row) } } } });
+    }
+  }
+  for (let index = 0; index < operations.length; index += CHUNK) {
+    await RentalListingModel.bulkWrite(operations.slice(index, index + CHUNK), { ordered: false });
+  }
+  return { offers, properties: operations.length, deleted };
+}
+
 export async function pruneStaleRentals(today: string, days: number): Promise<number> {
   const cutoff = new Date(Date.parse(`${today}T00:00:00Z`) - days * 86_400_000).toISOString().slice(0, 10);
   const result = await RentalListingModel.deleteMany({ lastSeen: { $lt: cutoff } });
   return result?.deletedCount ?? 0;
+}
+
+/**
+ * Re-reads, against the zone's market, the peso prices of adverts this run did not see again
+ * (currency.ts). Bounded by construction: only rows with a UYU advert under the suspect ceiling.
+ * Idempotent: a corrected advert is USD and marked, so it never matches again.
+ */
+export async function correctStoredRentalCurrencies(cohorts: RentPriceCohorts, usdUyu: number): Promise<number> {
+  if (!(usdUyu > 0) || !cohorts.size) return 0;
+  const rows = await RentalListingModel.find({
+    offers: { $elemMatch: { currency: "UYU", price: { $lt: RENT_PESOS_SUSPECT_UYU }, currencyInferred: { $ne: true } } },
+  })
+    .select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 })
+    .lean() as unknown as RentalProperty[];
+  const operations = [];
+  for (const property of rows) {
+    if (isRetiredRentalKey(property.key)) continue;
+    const { offers, corrected } = correctStoredRentCurrencies(property, cohorts, usdUyu);
+    if (!corrected) continue;
+    const row = recomputeFromOffers(property, offers);
+    operations.push({ updateOne: { filter: { key: property.key }, update: { $set: { ...structuredClone(row) } } } });
+  }
+  for (let index = 0; index < operations.length; index += CHUNK) {
+    await RentalListingModel.bulkWrite(operations.slice(index, index + CHUNK), { ordered: false });
+  }
+  return operations.length;
 }
 
 export async function countRentals(): Promise<number> {

@@ -70,7 +70,15 @@ diga casa: eran casas de 8 a 15 dormitorios a $ 8.200–9.500 dentro de la media
 sus oportunidades. Más adentro del título describe un uso ("Casa de 5 dormitorios | Cowork |
 Residencia Estudiantil", $ 60.000) y no cambia nada. 24 de 24 correctas.
 
-Todo se aplica cuando la corrida vuelve a leer cada aviso; la completa de las 04:52 relee todos.
+**Y lo ya guardado, en cada corrida (también la horaria).** Una corrida sólo reescribe los avisos que
+sus portales le volvieron a mostrar, y el navegador de Facebook muestra una franja: la completa del
+8/10 leyó 2.155 de los 7.025 avisos vigentes, así que "Carrasco 2 dormitorios" a $ 2.500 seguía en
+pesos y la primera corrida con la regla corrigió sólo 5. Ahora, después de guardar,
+`correctStoredRentalCurrencies` relee contra el mismo mercado las ofertas guardadas en pesos debajo
+de $ 12.000 (41 propiedades el 8/10, todas costa este y Carrasco), y `dropRejectedStoredRentals`
+saca las que el filtro de avisos de hoy rechaza (118 filas de un solo aviso: temporada, eventos,
+inflables) en vez de dejarlas públicas hasta que venzan. Las dos son lecturas del propio aviso, no
+de su ausencia, e idempotentes.
 
 ## Excluir: habitaciones y residencias, barrios, tipos, portales y palabras — 7 de octubre de 2026
 

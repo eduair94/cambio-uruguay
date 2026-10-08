@@ -31,7 +31,9 @@ import { harvestRentalMarket } from "./classes/rentals/sources";
 import { sourcesAllowingExpiry } from "./classes/rentals/sources/types";
 import {
   carrySourceHistory,
+  correctStoredRentalCurrencies,
   countRentals,
+  dropRejectedStoredRentals,
   loadRentPriceRows,
   loadRentalHistory,
   loadRentalMeta,
@@ -166,6 +168,24 @@ async function main(): Promise<void> {
     );
   }
   if (mode === "full") pruned = await pruneStaleRentals(today, PRUNE_DAYS);
+  {
+    // Stored adverts the filter now rejects (seasons, per-night stays, things for hire) would
+    // otherwise stay public until their 10 days ran out on the partial portals. A reading of each
+    // advert's own title, not absence, so the hourly slice may run it too.
+    const rejected = await dropRejectedStoredRentals().catch((error) => {
+      console.warn("[rentals] no se pudieron revisar los avisos guardados:", error instanceof Error ? error.message : error);
+      return { offers: 0, properties: 0, deleted: 0 };
+    });
+    if (rejected.offers) {
+      console.log(`[rentals] ${rejected.offers} avisos guardados que ya no son alquiler mensual de un inmueble (${rejected.properties} filas, ${rejected.deleted} borradas)`);
+    }
+  }
+  // Adverts this run did not see again keep their stored price; read those against the market too.
+  const storedCurrencies = await correctStoredRentalCurrencies(cohorts, usdUyu).catch((error) => {
+    console.warn("[rentals] no se pudieron revisar las monedas guardadas:", error instanceof Error ? error.message : error);
+    return 0;
+  });
+  if (storedCurrencies) console.log(`[rentals] ${storedCurrencies} propiedades guardadas con un precio en pesos leído como dólares`);
 
   const total = await countRentals();
   const meta: RentalMeta = {

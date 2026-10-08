@@ -27,7 +27,7 @@
 // elsewhere.
 
 import { flatten, inferPropertyType } from "./normalize";
-import type { RawRental } from "./types";
+import type { RawRental, RentalOffer, RentalProperty } from "./types";
 
 /** Under this, no home rents in pesos anywhere: any cohort may decide. */
 export const RENT_PESOS_ABSURD_UYU = 5_000;
@@ -113,13 +113,19 @@ function isHomeAdvert(listing: Pick<RawRental, "propertyType" | "title" | "bedro
   return listing.propertyType === "otro" && (listing.bedrooms !== null || DWELLING_TITLE.test(title));
 }
 
+/** What the reading needs from an advert, fresh from a portal or already stored. */
+export type RentCurrencySubject = Pick<
+  RawRental,
+  "currency" | "price" | "propertyType" | "title" | "bedrooms" | "department" | "neighborhood"
+>;
+
 export type RentCurrencyVerdict =
   | { kind: "unchanged" }
   | { kind: "usd"; cohort: string }
   /** Absurd as pesos AND as dollars: left as published, there is nothing to correct it to. */
   | { kind: "implausible"; cohort: string };
 
-export function rentCurrencyVerdict(listing: RawRental, cohorts: RentPriceCohorts, usdUyu: number): RentCurrencyVerdict {
+export function rentCurrencyVerdict(listing: RentCurrencySubject, cohorts: RentPriceCohorts, usdUyu: number): RentCurrencyVerdict {
   if (listing.currency !== "UYU" || !Number.isFinite(listing.price) || listing.price <= 0) return { kind: "unchanged" };
   if (listing.price >= RENT_PESOS_SUSPECT_UYU || !(usdUyu > 0) || !isHomeAdvert(listing)) return { kind: "unchanged" };
   const band = cohortFor(cohorts, listing);
@@ -145,4 +151,36 @@ export function inferRentalCurrencies(
     return { ...listing, currency: "USD" as const, currencyInferred: true as const };
   });
   return { listings: result, corrected };
+}
+
+/**
+ * The same reading for adverts already stored. A run only rewrites the adverts its portals showed it
+ * again, and Facebook's browser shows a slice: on 2026-10-08 the full run read 2.155 of the 7.025
+ * live Marketplace adverts, so "Carrasco 2 dormitorios" at $ 2.500 would have stayed in pesos until it
+ * expired. The advert's own identity speaks first; the property's fields fill what a legacy advert
+ * never recorded. `priceUyu` is re-expressed with today's rate, as a fresh read would be.
+ */
+export function correctStoredRentCurrencies(
+  property: Pick<RentalProperty, "title" | "propertyType" | "department" | "neighborhood" | "bedrooms" | "offers">,
+  cohorts: RentPriceCohorts,
+  usdUyu: number
+): { offers: RentalOffer[]; corrected: number } {
+  let corrected = 0;
+  const offers = property.offers.map((offer) => {
+    if (offer.currency !== "UYU" || offer.currencyInferred === true) return offer;
+    const own = offer.identity;
+    const subject: RentCurrencySubject = {
+      currency: offer.currency,
+      price: offer.price,
+      title: offer.title || property.title,
+      propertyType: own?.propertyType ?? property.propertyType,
+      department: own?.department ?? property.department,
+      neighborhood: own?.neighborhood ?? property.neighborhood,
+      bedrooms: own ? own.bedrooms : property.bedrooms,
+    };
+    if (rentCurrencyVerdict(subject, cohorts, usdUyu).kind !== "usd") return offer;
+    corrected++;
+    return { ...offer, currency: "USD" as const, currencyInferred: true as const, priceUyu: Math.round(offer.price * usdUyu) };
+  });
+  return { offers, corrected };
 }
