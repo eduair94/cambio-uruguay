@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RENTAL_SOURCE_LABEL, totalMonthlyUyu, type RentalCurrency } from '~/utils/rentals'
 import type { RentalSavedFavorite, RentalSavedOffer, RentalSavedState } from '~/utils/rentalSaved'
 import { rentalSavedMessages } from '~/utils/rentalSavedMessages'
 import { rentalPropertyPath } from '~/utils/rentalPresentation'
+import {
+  rentalSavedChange,
+  rentalSavedChangeKeys,
+  type RentalSavedChange,
+  type RentalSavedCurrent,
+} from '~/utils/rentalSavedChanges'
 import RentalAlertButton from './RentalAlertButton.vue'
 
 const props = defineProps<{ state: RentalSavedState; usdUyu: number }>()
@@ -28,6 +34,41 @@ watch(
   },
   { immediate: true }
 )
+
+// Today's adverts of the saved properties, so each one can say what changed since it was saved.
+// Only in the browser (the list itself lives there), and a failed read just shows no line.
+const current = ref<Map<string, RentalSavedCurrent> | null>(null)
+const savedKeys = computed(() => rentalSavedChangeKeys(props.state.favorites.map(f => f.key)))
+async function loadCurrent() {
+  if (!savedKeys.value.length) return
+  try {
+    const { items } = await $fetch<{ items: RentalSavedCurrent[] }>('/api/rentals/guardadas', {
+      query: { keys: savedKeys.value.join(',') },
+      retry: 0,
+      timeout: 15_000,
+    })
+    current.value = new Map(items.map(item => [item.key, item]))
+  } catch {
+    current.value = null
+  }
+}
+onMounted(loadCurrent)
+watch(() => savedKeys.value.join(','), loadCurrent)
+
+function change(favorite: RentalSavedFavorite): RentalSavedChange | null {
+  return current.value ? rentalSavedChange(favorite, current.value.get(favorite.key)) : null
+}
+function changeLine(favorite: RentalSavedFavorite): string {
+  const result = change(favorite)
+  if (!result) return ''
+  if (result.status === 'gone') return t('changeGone')
+  if (result.status !== 'down' && result.status !== 'up') return ''
+  return t(result.status === 'down' ? 'changeDown' : 'changeUp', {
+    amount: money(Math.abs(result.to - result.from), result.currency),
+    from: money(result.from, result.currency),
+    to: money(result.to, result.currency),
+  })
+}
 
 const shownFavorites = computed(() =>
   showAll.value ? props.state.favorites : props.state.favorites.slice(0, 6)
@@ -197,6 +238,14 @@ const comparisonRows = computed(() => [
               :aria-label="t('removeFavorite', { name: favorite.title })"
               @click="emit('removeFavorite', favorite.key)"
             />
+            <p
+              v-if="changeLine(favorite)"
+              class="saved-favorite__change"
+              :class="`saved-favorite__change--${change(favorite)?.status}`"
+              data-testid="rental-saved-change"
+            >
+              {{ changeLine(favorite) }}
+            </p>
           </li>
         </ul>
         <v-btn
@@ -339,6 +388,16 @@ const comparisonRows = computed(() => [
   align-items: center;
   gap: 8px;
   border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.saved-favorite__change {
+  grid-column: 1 / -1;
+  margin: -4px 0 8px 40px;
+  font-size: 0.8125rem;
+  color: rgba(var(--v-theme-on-surface), 0.8);
+}
+.saved-favorite__change--down {
+  color: rgb(var(--v-theme-success));
+  font-weight: 600;
 }
 .saved-favorite :deep(.v-label) {
   padding-block: 8px;

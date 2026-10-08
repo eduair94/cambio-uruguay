@@ -33,6 +33,9 @@ export const rentalSavedMessages = {
     confirmed: 'Lo declara el aviso',
     studio: 'Monoambiente',
     zeroExpenses: 'Sin gastos comunes',
+    changeDown: 'Bajó {amount} desde que la guardaste ({from} → {to})',
+    changeUp: 'Subió {amount} desde que la guardaste ({from} → {to})',
+    changeGone: 'Ya no la encontramos publicada en los portales que leemos',
     snapshot:
       'Datos y cambio de moneda del momento en que guardaste. La disponibilidad y el precio pueden cambiar: confirmalos en el aviso original.',
     totalNote:
@@ -78,6 +81,9 @@ export const rentalSavedMessages = {
     confirmed: 'Stated in the listing',
     studio: 'Studio',
     zeroExpenses: 'No building fees',
+    changeDown: 'Down {amount} since you saved it ({from} → {to})',
+    changeUp: 'Up {amount} since you saved it ({from} → {to})',
+    changeGone: 'No longer listed on the portals we read',
     snapshot:
       'Details and currency conversion are from when you saved. Availability and prices may change: confirm them in the original listing.',
     totalNote:
@@ -122,6 +128,9 @@ export const rentalSavedMessages = {
     confirmed: 'Declarado no anúncio',
     studio: 'Studio',
     zeroExpenses: 'Sem condomínio',
+    changeDown: 'Baixou {amount} desde que você salvou ({from} → {to})',
+    changeUp: 'Subiu {amount} desde que você salvou ({from} → {to})',
+    changeGone: 'Não aparece mais nos portais que lemos',
     snapshot:
       'Dados e câmbio do momento em que você salvou. A disponibilidade e o preço podem mudar: confirme no anúncio original.',
     totalNote:

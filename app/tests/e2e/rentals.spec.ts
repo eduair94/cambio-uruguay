@@ -984,6 +984,28 @@ test.describe('rental directory', () => {
       )
       .toBe('25000')
 
+    // What became of each saved property since it was saved (2026-10-08): the first dropped $ 1.000
+    // in the same advert, the second is no longer in the public directory.
+    const droppedOffer = fixtureProperties[0]!.offers[0]!
+    await page.route(/\/api\/rentals\/guardadas(?:\?|$)/, route =>
+      route.fulfill({
+        json: {
+          items: [
+            {
+              key: fixtureProperties[0]!.key,
+              offers: [
+                {
+                  source: droppedOffer.source,
+                  url: droppedOffer.url,
+                  price: droppedOffer.price - 1000,
+                  currency: droppedOffer.currency,
+                },
+              ],
+            },
+          ],
+        },
+      })
+    )
     await page.reload({ waitUntil: 'domcontentloaded' })
     await expect(page.getByRole('button', { name: 'Mis guardados (3)', exact: true })).toBeVisible({
       timeout: 90_000,
@@ -993,6 +1015,9 @@ test.describe('rental directory', () => {
         await page.getByRole('button', { name: 'Mis guardados (3)', exact: true }).click()
       await expect(page.locator('.saved-compare-table')).toBeVisible()
     }).toPass({ timeout: 60_000 })
+    const changes = page.getByTestId('rental-saved-change')
+    await expect(changes.filter({ hasText: 'Bajó $ 1.000 desde que la guardaste' })).toHaveCount(1)
+    await expect(changes.filter({ hasText: 'Ya no la encontramos publicada' })).toHaveCount(1)
     const totalRow = page
       .locator('.saved-compare-table')
       .getByRole('row')
