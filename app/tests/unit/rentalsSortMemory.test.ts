@@ -80,7 +80,16 @@ async function capture(query: Record<string, string> = {}, total = 240) {
     console,
   })
   await module.exports.default!({})
-  return { items: pipelines[0]!, median: pipelines.at(-1)!, itemsOptions: options[0]! }
+  // The median is a branch of the facet pass (rentalMedianFacet), not a seventh aggregation.
+  const facets = pipelines.find(pipeline => pipeline.some(stage => stage.$facet))!
+  const median = facets.find(stage => stage.$facet)!.$facet.median as Stage[]
+  return {
+    items: pipelines[0]!,
+    median,
+    facets,
+    itemsOptions: options[0]!,
+    count: pipelines.length,
+  }
 }
 
 describe('rental endpoint sort input', () => {
@@ -122,6 +131,13 @@ describe('rental endpoint sort input', () => {
       expect(median.find(stage => stage.$project)!.$project).toEqual({ _id: 0, priceUyu: 1 })
     }
   )
+
+  it('takes the median in the facet pass instead of a seventh aggregation over the inventory', async () => {
+    // 2026-10-08: the separate pass ran after the other six and cost ~1,4 s of every uncached search.
+    const { count, median } = await capture({ source: 'casasweb' })
+    expect(count).toBe(5)
+    expect(median.at(-2)).toEqual({ $group: { _id: null, prices: { $push: '$priceUyu' } } })
+  })
 
   it('prices per m² with the advert chosen by the filters, before projecting and paging', async () => {
     const { items, median } = await capture({ sort: 'precio-m2', source: 'casasweb', page: '2' })
@@ -264,10 +280,8 @@ describe.skipIf(!uri)('real Mongo rental sort memory regression', () => {
   it.each([239, 240])('keeps the exact %i-home median with no disk spill', async count => {
     for (const source of ['', 'casasweb']) {
       const { median } = await capture({ source }, count)
-      const middle = await execute(count, median)
-      expect(middle.every(row => Object.keys(row).join() === 'priceUyu')).toBe(true)
-      const actual = Math.round(middle.reduce((sum, row) => sum + row.priceUyu, 0) / middle.length)
-      expect(actual).toBe(Math.round((source ? 12000 : 10000) + (count - 1) / 2))
+      const [row] = await execute(count, median)
+      expect(Math.round(row!.median)).toBe(Math.round((source ? 12000 : 10000) + (count - 1) / 2))
     }
   })
 
