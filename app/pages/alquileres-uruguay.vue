@@ -1055,7 +1055,9 @@ const filterChips = computed(() => {
       'bedrooms',
       q.bedrooms === 0
         ? t('studio')
-        : `${q.bedrooms}${q.bedroomsExact ? '' : '+'} ${t('bedrooms')}`,
+        : q.bedroomsExact
+          ? t('bedroomCount', { n: q.bedrooms }, q.bedrooms)
+          : t('bedroomsAtLeast', { n: q.bedrooms }),
       ['bedrooms', 'bedroomsExact']
     )
   for (const [key, value] of Object.entries({
@@ -1443,9 +1445,11 @@ const specsLabel = (property: RentalProperty) =>
     property.bedrooms !== null
       ? property.bedrooms === 0
         ? t('studio')
-        : `${property.bedrooms} ${t('bedrooms').toLowerCase()}`
+        : t('bedroomCount', { n: property.bedrooms }, property.bedrooms)
       : '',
-    property.bathrooms !== null ? `${property.bathrooms} ${t('bathrooms').toLowerCase()}` : '',
+    property.bathrooms !== null
+      ? t('bathroomCount', { n: property.bathrooms }, property.bathrooms)
+      : '',
     property.area ? `${property.area} m²` : '',
     pricePerM2Label(property),
   ]
