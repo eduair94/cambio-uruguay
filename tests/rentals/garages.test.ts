@@ -64,4 +64,15 @@ describe("a rented garage is distinct from a home's parking amenity", () => {
     expect(mercadolibre(card("Casa con garage"))?.propertyType).toBe("otro");
     expect(mercadolibre(card("Garage en alquiler", "MLU1473", "MLU-APARTMENTS_FOR_RENT"))?.propertyType).toBe("apartamento");
   });
+
+  it("files a residence of beds as rooms even when MercadoLibre's category says house", () => {
+    const card = (title: string) => ({
+      metadata: { id: "MLU987654321", category_id: "MLU1467", domain_id: "MLU-HOUSES_FOR_RENT", url_params: new URLSearchParams({ permalink: "https://casa.mercadolibre.com.uy/MLU-987654321-residencia", title }).toString() },
+      components: [{ type: "price", price: { current_price: { value: 9350, currency: "UYU" } } }],
+    });
+    expect(mercadolibre(card("Residencia Estudiantil Femenina, Hogar Estudiantil"))?.propertyType).toBe("habitacion");
+    expect(mercadolibre(card("Casa De 5 Dormitorios | Cowork | Residencia Estudiantil"))?.propertyType).toBe("casa");
+    const row = { _id: "6a42b0f33b79e8db94e28524", transactionType: "rental", status: "active", province: "Montevideo", propertyType: "house", price: { amount: 9350, currency: "UYU" } };
+    expect(elpaisToRawRental({ ...row, title: "Residencia Estudiantil En El Centro" })?.propertyType).toBe("habitacion");
+  });
 });

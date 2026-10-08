@@ -223,6 +223,7 @@ describe("inferPropertyType", () => {
     ["Alquiler 1 Dormitorio en La Blanqueada", "otro"],
     ["3 habitaciones 1 baño - Departamento", "apartamento"],
     ["Alquiler la teja 2 cuartos $17000", "otro"],
+    ["Monoambiente 1 baño Departamento/condominio", "apartamento"],
   ])("a counted room describes a home: %s", (title, expected) => {
     expect(inferPropertyType(title)).toBe(expected);
   });
@@ -239,6 +240,7 @@ describe("inferPropertyType", () => {
     "Alquilo cuartos",
     "RENTA DE PIEZAS INDIVIDUALES Y COMPARTIDAS EN EL CORAZON DE LA CIUDAD VIEJA",
     "10 habitaciones 6 baños Solo habitación",
+    "Monoambiente 1 baño Solo habitación",
   ])("a room offered on its own is still a room: %s", (title) => {
     expect(inferPropertyType(title)).toBe("habitacion");
   });

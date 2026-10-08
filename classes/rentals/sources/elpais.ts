@@ -36,7 +36,7 @@ import * as cheerio from "cheerio";
 import { guaranteesFromElpaisCodes, guaranteesFromText, mergeGuarantees } from "../guarantees";
 import { rentalDescription, rentalOfferDetails } from "../details";
 import { fetchJson, sleep } from "../net";
-import { canonicalDepartment, flatten, inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, parseCurrency, parseStreet } from "../normalize";
+import { canonicalDepartment, flatten, inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, opensWithResidence, parseCurrency, parseStreet } from "../normalize";
 import type { RawRental, RentalPropertyType } from "../types";
 import type { RentalSourceResult } from "./types";
 
@@ -157,7 +157,7 @@ export function elpaisToRawRental(value: unknown, observedAt = new Date().toISOS
     ownerDirect: ownerDirectDeclaration({ ownerDirect: row.ownerDirect, title, description }, `${ORIGIN}/property/${row._id}`, observedAt),
     image: typeof (image?.publicUrl || image?.url) === "string" ? image.publicUrl || image.url : null,
     // createdAt is the portal's import date, not necessarily the advert's publication date.
-    publishedAt: null, propertyType: TYPES[String(row.propertyType)] || inferPropertyType(title),
+    publishedAt: null, propertyType: opensWithResidence(title) ? "habitacion" : TYPES[String(row.propertyType)] || inferPropertyType(title),
     department, neighborhood: String(row.neighborhood || "").trim(), address,
     street: street.street, streetNumber: street.number,
     latitude: located ? lat : null, longitude: located ? lon : null,
