@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCasaswebPin, prioritizeCasaswebDetailTargets, type CasaswebDetailTarget } from "../../classes/rentals/casaswebDetail";
+import { parseCasaswebPin, prioritizeCasaswebDetailTargets, readCasaswebDetail, type CasaswebDetailTarget } from "../../classes/rentals/casaswebDetail";
 import { PIN_SOURCES, pinFor, type RentalPin } from "../../classes/rentals/detailPins";
 import type { RentalProperty } from "../../classes/rentals/types";
 
@@ -34,6 +34,36 @@ describe("the map pin of a Casasweb rental page", () => {
     expect(parseCasaswebPin(page("CW222638", ""), "casasweb:CW222638")).toBeNull();
     expect(parseCasaswebPin(page("CW222638", marker("-34.910033", "-56.198587", "CW100001")), "casasweb:CW222638")).toBeNull();
     expect(parseCasaswebPin(page("CW222638", marker("-34.6037", "-58.3816", "CW222638")), "casasweb:CW222638")).toBeNull();
+  });
+});
+
+// The data list of the same page (CW249120, Pocitos, 2026-10-08).
+const facts = (expenses: string, bathrooms = "1", bedrooms = "1") =>
+  `<ul class="cw-caracteristicas"><li title='Dormitorios'><img src='v26/dormitorio.svg' class='cw-ico' alt='' /><b>${bedrooms}</b> dorm.</li> ` +
+  `<li title='Baños'><img src='v26/bano.svg' class='cw-ico' alt='' /><b>${bathrooms}</b> baño</li></ul>` +
+  `<ul class="cw-detalles"><li><b>Estado : </b>A Estrenar</li> <li><b>Gastos Comunes : </b>${expenses}</li> <li><b>Dormitorios: </b>1</li></ul>`;
+
+describe("the data list of a Casasweb rental page", () => {
+  const own = (body: string) => page("CW249120", marker("-34.9104", "-56.1508", "CW249120")) + body;
+
+  it("reads common expenses, bathrooms and bedrooms the card does not carry", () => {
+    expect(readCasaswebDetail(own(facts("$6.000")), "casasweb:CW249120")).toEqual({
+      pin: { latitude: -34.9104, longitude: -56.1508 },
+      expenses: { amount: 6_000, currency: "UYU" },
+      bathrooms: 1,
+      bedrooms: 1,
+    });
+    expect(readCasaswebDetail(own(facts("U$S 150", "2", "3")), "casasweb:CW249120")).toMatchObject({
+      expenses: { amount: 150, currency: "USD" },
+      bathrooms: 2,
+      bedrooms: 3,
+    });
+  });
+
+  it("takes a zero as not stated, and concludes nothing from another advert's page", () => {
+    expect(readCasaswebDetail(own(facts("$0")), "casasweb:CW249120")?.expenses).toBeNull();
+    expect(readCasaswebDetail(own(""), "casasweb:CW249120")).toMatchObject({ expenses: null, bathrooms: null, bedrooms: null });
+    expect(readCasaswebDetail(own(facts("$6.000")), "casasweb:CW100001")).toBeUndefined();
   });
 });
 

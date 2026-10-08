@@ -38,6 +38,15 @@ los :25, sólo propiedades sin coordenada, primero viviendas de Montevideo, cada
   las primeras 120 propiedades de ML ubicadas el 8/10 salían en el mapa pero decían "este aviso no
   publica una ubicación". Las coordenadas no prueban identidad en el dedupe: no cambia ninguna unión.
 - Prueba en seco el 2026-10-08: 25 de 25 fichas con marcador.
+- **Gastos comunes, baños y dormitorios de la misma ficha.** La lista de datos de la ficha publica
+  `<li><b>Gastos Comunes : </b>$6.000</li>` y `<li title='Baños'>…<b>1</b> baño</li>`, que la tarjeta
+  no trae: Casasweb tenía 1 % de propiedades con gastos comunes y 10 % con baños. El job los guarda
+  en la misma lectura (`readCasaswebDetail`), completa sólo campos vacíos (los gastos comunes, con la
+  misma plausibilidad que ML: ≥ $ 200 y no más que el alquiler; un "$0" no es "sin gastos comunes")
+  y la cosecha los reaplica al aviso crudo (`applyCasaswebDetails`): ninguna propiedad de Casasweb
+  estaba unida a otro portal, así que no mueve la deduplicación. Desde entonces el job lee TODAS las
+  fichas, no sólo las sin coordenada, y las filas viejas sin estos campos se releen una vez. En seco:
+  30 fichas, 25 con gastos comunes y 29 con baños.
 
 ## Monoambientes de Mercado Libre — 8 de octubre de 2026
 

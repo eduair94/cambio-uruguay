@@ -1,10 +1,10 @@
 // Lee la ficha propia de los avisos de Casasweb del directorio de alquileres para traer el punto de
-// su mapa, que la tarjeta de búsqueda no publica (classes/rentals/casaswebDetail.ts). Con
-// presupuesto: primero las viviendas de Montevideo, sólo propiedades sin coordenada, cada aviso una
-// vez por mes.
+// su mapa, los gastos comunes y los baños, que la tarjeta de búsqueda no publica
+// (classes/rentals/casaswebDetail.ts). Con presupuesto: primero las viviendas de Montevideo, cada
+// aviso una vez por mes.
 //
-// Escribe la colección privada `rentalcasaswebdetails` y completa en `rentallistings` sólo la
-// coordenada VACÍA de la propiedad. La cosecha la reaplica (classes/rentals/detailPins.ts).
+// Escribe la colección privada `rentalcasaswebdetails` y completa en `rentallistings` sólo campos
+// VACÍOS. La cosecha los reaplica (detailPins.ts para el punto, applyCasaswebDetails para el resto).
 //
 // Las fichas se piden con la UA del bot y el espaciado por host de net.ts; a los :25, lejos de la
 // cosecha horaria (:47), que lee las búsquedas del mismo sitio. Cinco fallas seguidas cortan la
@@ -16,12 +16,14 @@ import { appConnection, appDbConfigured } from "./classes/appdb";
 import {
   CASASWEB_DETAIL_COLLECTION,
   casaswebDetailTargets,
-  parseCasaswebPin,
+  readCasaswebDetail,
   saveCasaswebDetails,
+  writeCasaswebFacts,
   type CasaswebRentalDetail,
 } from "./classes/rentals/casaswebDetail";
 import { writeDetailPin } from "./classes/rentals/detailPins";
 import { fetchText, sleep } from "./classes/rentals/net";
+import { RENTAL_META_KEY } from "./classes/rentals/types";
 
 const number = (name: string, fallback: number): number => {
   const raw = Number(process.env[name]);
@@ -32,8 +34,13 @@ async function main(): Promise<void> {
   const dryRun = process.argv.includes("--dry-run");
   if (!appDbConfigured()) throw new Error("APP_MONGO_URI is required; refusing to use a different database");
   await appConnection().asPromise();
+  const meta = await appConnection().collection("rentalmetas").findOne({ key: RENTAL_META_KEY }, { projection: { usdUyu: 1 } });
+  const usdUyu = Number(meta?.usdUyu) || 0;
   const targets = await casaswebDetailTargets(new Date(), number("RENTALS_CASASWEB_DETAIL_MAX", 80));
-  const summary = { targets: targets.length, read: 0, pinned: 0, noMap: 0, unreadable: 0, failed: 0, located: 0, note: "" };
+  const summary = {
+    targets: targets.length, read: 0, pinned: 0, noMap: 0, withExpenses: 0, withBathrooms: 0,
+    unreadable: 0, failed: 0, located: 0, completed: 0, note: "",
+  };
   if (!targets.length) {
     console.log("[rentals-casasweb-detail] sin fichas pendientes");
     return;
@@ -47,8 +54,8 @@ async function main(): Promise<void> {
     if (consecutiveFailures >= 5) { summary.note = "cinco fallas seguidas: Casasweb no está contestando"; break; }
     let failure = "";
     const html = await fetchText(target.url, { retries: 1, timeoutMs: 20_000, onFailure: reason => { failure = reason; } });
-    const pin = html ? parseCasaswebPin(html, target.listingId) : undefined;
-    if (!html || pin === undefined) {
+    const facts = html ? readCasaswebDetail(html, target.listingId) : undefined;
+    if (!html || facts === undefined) {
       // Not saved: a failed read, or a page that is not this advert's, is simply a target again.
       consecutiveFailures++;
       if (html) summary.unreadable++; else summary.failed++;
@@ -56,12 +63,25 @@ async function main(): Promise<void> {
     } else {
       consecutiveFailures = 0;
       summary.read++;
-      rows.push({ listingId: target.listingId, readAt: new Date().toISOString(), latitude: pin?.latitude ?? null, longitude: pin?.longitude ?? null, ok: true });
+      const { pin, expenses, bathrooms, bedrooms } = facts;
+      rows.push({
+        listingId: target.listingId,
+        readAt: new Date().toISOString(),
+        latitude: pin?.latitude ?? null,
+        longitude: pin?.longitude ?? null,
+        expenses,
+        bathrooms,
+        bedrooms,
+        ok: true,
+      });
+      if (expenses) summary.withExpenses++;
+      if (bathrooms !== null) summary.withBathrooms++;
       if (!pin) summary.noMap++;
       else {
         summary.pinned++;
         if (!dryRun && (await writeDetailPin(target, pin))) summary.located++;
       }
+      if (!dryRun) summary.completed += await writeCasaswebFacts(target, facts, usdUyu);
     }
     await sleep(gapMs);
   }
