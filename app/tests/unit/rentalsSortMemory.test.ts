@@ -95,10 +95,13 @@ describe('rental endpoint sort input', () => {
         expect(projection).toBeLessThan(pipeline.findIndex(stage => stage.$sort))
       }
       const projection = items.find(stage => stage.$project)!.$project
+      // "Más recientes" breaks a same-day tie by the document's ObjectId, projected under a
+      // temporary name because the public projection drops `_id` (see RENTAL_INSERTED_SORT_FIELD).
       for (const key of Object.keys(rentals.rentalMongoSort(sort as rentals.RentalSort)))
-        expect(projection[key]).toBe(1)
+        expect(projection[key]).toBe(key === rentals.RENTAL_INSERTED_SORT_FIELD ? '$_id' : 1)
       expect(projection).toEqual({
         ...rentalPublicPropertyProjection,
+        ...rentals.rentalInsertedProjection(sort as rentals.RentalSort),
         ...(sort === 'total'
           ? Object.fromEntries(rentals.RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
           : {}),
@@ -110,6 +113,8 @@ describe('rental endpoint sort input', () => {
       })
       if (sort === 'total')
         expect(items.at(-1)).toEqual({ $unset: [...rentals.RENTAL_TOTAL_SORT_FIELDS] })
+      if (sort === 'recientes')
+        expect(items.at(-1)).toEqual({ $unset: [rentals.RENTAL_INSERTED_SORT_FIELD] })
       if (sort === 'precio-m2')
         expect(items.at(-1)).toEqual({
           $unset: [...rentalPricePerM2.RENTAL_PRICE_PER_M2_SORT_FIELDS],

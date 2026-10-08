@@ -23,7 +23,9 @@ import {
 import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
+  RENTAL_INSERTED_SORT_FIELD,
   RENTAL_TOTAL_SORT_FIELDS,
+  rentalInsertedProjection,
   buildRentalFilter,
   normalizeRentalQuery,
   rentalMongoSort,
@@ -108,6 +110,7 @@ const cachedDirectory = defineCachedEventHandler(
             $project: {
               ...rentalPublicPropertyProjection,
               ...rentalDistanceProjection(query),
+              ...rentalInsertedProjection(query.sort),
               ...(query.sort === 'total'
                 ? Object.fromEntries(RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
                 : {}),
@@ -120,6 +123,9 @@ const cachedDirectory = defineCachedEventHandler(
           { $skip: (query.page - 1) * query.perPage },
           { $limit: query.perPage },
           ...(query.sort === 'total' ? [{ $unset: [...RENTAL_TOTAL_SORT_FIELDS] }] : []),
+          ...(Object.keys(rentalInsertedProjection(query.sort)).length
+            ? [{ $unset: [RENTAL_INSERTED_SORT_FIELD] }]
+            : []),
           ...(query.sort === 'precio-m2' ? [{ $unset: [...RENTAL_PRICE_PER_M2_SORT_FIELDS] }] : []),
           ...(query.refLat !== null ? [{ $unset: [...RENTAL_DISTANCE_SORT_FIELDS] }] : []),
         ])
