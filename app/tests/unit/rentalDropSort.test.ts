@@ -25,7 +25,12 @@ describe('sorting the rental directory by price drop', () => {
   })
 
   it('puts the largest drop first and the rest by freshness, with a stable tie-break', () => {
-    expect(rentalMongoSort('baja')).toEqual({ 'priceDrop.pct': -1, freshAt: -1, key: 1 })
+    expect(rentalMongoSort('baja')).toEqual({
+      'priceDrop.pct': -1,
+      freshAt: -1,
+      _rentalInserted: -1,
+      key: 1,
+    })
   })
 
   it('is presentation for a saved-search alert', () => {

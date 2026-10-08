@@ -1682,6 +1682,19 @@ export function rentalOfferStages(query: RentalQuery, usdUyu: number) {
 /** Temporary sort keys only: project before the blocking sort, then discard before responding. */
 export const RENTAL_TOTAL_SORT_FIELDS = ['_rentalMonthlyUnknown', '_rentalMonthlyTotal'] as const
 
+/**
+ * The tie-break inside one day of "más recientes": `freshAt` is a DATE, so every property of the same
+ * day tied and `key` broke the tie alphabetically — the first page of Montevideo was all Aguada and
+ * Aires Puros (2026-10-08). The document's ObjectId is the moment we first saved the property, so
+ * among the same day the run of 10:47 comes before the one of 06:47, and one run mixes barrios.
+ * A temporary sort key like the totals': the public projection drops `_id`.
+ */
+export const RENTAL_INSERTED_SORT_FIELD = '_rentalInserted'
+
+export function rentalInsertedProjection(sort: RentalSort): Record<string, string> {
+  return sort === 'recientes' || sort === 'baja' ? { [RENTAL_INSERTED_SORT_FIELD]: '$_id' } : {}
+}
+
 /** Stable tie-breaks keep adjacent pages from repeating or skipping equal-price properties. */
 export function rentalMongoSort(sort: RentalSort): Record<string, 1 | -1> {
   if (sort === 'distancia') return { _rentalDistanceUnknown: 1, distanceKm: 1, key: 1 }
@@ -1694,6 +1707,7 @@ export function rentalMongoSort(sort: RentalSort): Record<string, 1 | -1> {
     return { _rentalPricePerM2Unknown: 1, _rentalPricePerM2: 1, priceUyu: 1, key: 1 }
   if (sort === 'metros') return { area: -1, priceUyu: 1, key: 1 }
   // Largest drop first (see `priceDrop`); a property without one has none and keeps 'recientes' order.
-  if (sort === 'baja') return { 'priceDrop.pct': -1, freshAt: -1, key: 1 }
-  return { freshAt: -1, key: 1 }
+  if (sort === 'baja')
+    return { 'priceDrop.pct': -1, freshAt: -1, [RENTAL_INSERTED_SORT_FIELD]: -1, key: 1 }
+  return { freshAt: -1, [RENTAL_INSERTED_SORT_FIELD]: -1, key: 1 }
 }

@@ -10,6 +10,7 @@ import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
   RENTAL_TOTAL_SORT_FIELDS,
+  rentalInsertedProjection,
   buildRentalFilter,
   normalizeRentalQuery,
   rentalMatchingOffer,
@@ -100,6 +101,7 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
             // Internal sort keys, omitted from the public map-point mapper below.
             priceUyu: 1,
             freshAt: 1,
+            ...rentalInsertedProjection(query.sort),
             ...(query.sort === 'total'
               ? Object.fromEntries(RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
               : {}),
