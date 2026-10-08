@@ -108,6 +108,13 @@ aviso una vez por mes.
   cosecha lo reaplica, porque cada hora vuelve a llegar la tarjeta sin el dato.
 - Prueba en seco el 2026-10-08 sobre 15 fichas de viviendas de Montevideo: 12 con gastos comunes,
   3 sin dato, 0 descartadas.
+- **Dormitorios de la misma tabla.** La tira de atributos de la tarjeta a veces no trae los
+  dormitorios: 531 viviendas de ML no los tenían sin ser monoambientes, y 10 de 12 fichas de esas
+  los declaraban en la fila "Dormitorios". Donde la tarjeta sí los traía, la ficha coincidió en 30 de
+  30. `parseMlRentalBedrooms` (0 a 10, un número solo) los guarda en la misma lectura, se completan
+  sólo en viviendas con el campo vacío y `applyMlDetails` los reaplica en la cosecha (un solo grupo
+  multi-portal con ML ese día). La "Superficie total" de la ficha NO se usa: es a menudo "1 m²" (el
+  formulario) o el terreno de una casa, y el directorio publica superficie construida.
 
 ## Bajó de precio (`bajo=1`) — 8 de octubre de 2026
 
