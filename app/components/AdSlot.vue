@@ -150,7 +150,9 @@ onBeforeUnmount(() => {
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  opacity: 0.55;
+  /* 0.55 gave #808182 on the page's #f6f7f9: 3.64:1, under the 4.5:1 that 11 px text needs
+     (Lighthouse on /alquileres-uruguay, 2026-10-08). 0.72 is ~5.9:1 there, and more on white. */
+  opacity: 0.72;
 }
 
 .cu-ad :deep(.adsbygoogle) {
