@@ -219,12 +219,6 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               <VBtn variant="text" @click="removeReference">{{ t('removePoint') }}</VBtn>
             </div>
           </div>
-          <!-- La pregunta lleva los filtros de la búsqueda (chips), nunca la dirección de referencia. -->
-          <AssistantCta
-            topic="alquiler"
-            :filters="filterChips.map(chip => chip.label)"
-            class="mb-4"
-          />
           <VProgressLinear v-if="pending" indeterminate color="primary" class="mb-4" />
           <VAlert v-if="error" type="error" variant="tonal" class="mb-5" role="alert">
             {{ t('error') }}
@@ -638,6 +632,17 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               {{ t('pageStatus', { current: query.page, total: pageCount }) }}
             </p>
           </div>
+          <!--
+            Después de los resultados y no antes: arriba, sus 160 px más el anuncio automático dejaban
+            el primer precio fuera de la primera pantalla en 320, 390 y 430 px (el e2e de
+            rentals-filter-experience lo fija). "¿No sabés cuál elegir?" es la pregunta de quien ya
+            miró la página. La pregunta lleva los filtros (chips), nunca la dirección de referencia.
+          -->
+          <AssistantCta
+            topic="alquiler"
+            :filters="filterChips.map(chip => chip.label)"
+            class="mt-6"
+          />
         </section>
       </div>
     </div>
