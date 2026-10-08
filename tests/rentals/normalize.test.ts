@@ -256,3 +256,55 @@ describe("attribute numbers belong to their own labels", () => {
     expect(parseAttributes(["1 habitación, 1 baño, 22 m2"])).toEqual({ bedrooms: 1, bathrooms: 1, area: 22 });
   });
 });
+
+// Public adverts on 2026-10-07 that the directory listed as monthly homes.
+describe("what is not a monthly home rental", () => {
+  it.each([
+    "Alquiler castillos inflabes y cama elástica",
+    "Alquiler maquina soprano titanium alma depilación definitiva",
+    "SE ALQUILA FOOD TRUCK",
+    "Alquiler de volquetas",
+    "Alquiler para eventos cumpleaños reuniones",
+    "Alquiler de amplio salón de fiestas y eventos",
+    "ALQUILO $2390 LA NOCHE 1 cuadra de la playa / 6 PERSONAS",
+    "ALQUILER por Días COSTA AZUL, CANELONES",
+    "Alquiler segunda quincena de enero y febrero",
+    "Alquiler primer quincena de enero Balneario Buenos Aires",
+    "Alquiler De Verano, Apartamento De 3 Dormitorios En La Barra",
+    "Alquiler enero 2 dormitorios en Península Punta del Este",
+    "Casa en alquiler para verano pinares, Punta del Este",
+  ])("rejects %s", (title) => {
+    expect(looksLikeRentalAdvert(title)).toBe(false);
+  });
+
+  it.each([
+    "Oficinas Equipada Para Escribana, Contadora Sicóloga Etc Con Sala De Reuniones",
+    "Complejo De 3 Edificios En Palermo Con Seguridad. Barbacoa y salón de fiestas",
+    "Ideal Clínica O Salón De Fiestas",
+    "Se alquila por Luc salón para fiestas o pizzería en Estación Atlántida",
+    "Apartamento En Alquiler De Verano 6 Meses O Más 1 Dormitorio Santos Dumont",
+    "Alquilo apartamento 2 dormitorios, ingreso en enero",
+    "Alquilo apartamento, visitas toda la semana",
+  ])("keeps %s", (title) => {
+    expect(looksLikeRentalAdvert(title)).toBe(true);
+  });
+});
+
+describe("a title that opens with a residence rents beds", () => {
+  it.each([
+    "Residencia Estudiantil En El Centro",
+    "Hogar - Residencia Estudiantil En El Centro.la Mejor!!",
+    "RESIDENCIA FEMENINA EN EL CENTRO",
+    "Alquilo Residencia Estudiante O Trabajadores O Pensionista U Otro",
+  ])("%s is a room even when the portal says house", (title) => {
+    expect(inferPropertyType(title, "MLU-HOUSES_FOR_RENT")).toBe("habitacion");
+  });
+
+  it.each([
+    ["Alquiler Casa De 5 Dormitorios, 3 Baños Y Cochera En Reducto | Cowork | Residencia Estudiantil.", "casa"],
+    ["Exclusiva Residencia en Alquiler en Los Olivos, Carrasco", "casa"],
+    ["Residencia de categoría en alquiler con piscina", "casa"],
+  ])("%s keeps the portal's type", (title, expected) => {
+    expect(inferPropertyType(title, "MLU-HOUSES_FOR_RENT")).toBe(expected);
+  });
+});

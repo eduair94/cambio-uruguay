@@ -140,6 +140,8 @@ export interface RentalOffer extends RentalAdvertiserFields {
   title: string;
   price: number;
   currency: RentalCurrency;
+  /** Published as UYU, read as USD against the zone's market (currency.ts). Absent = as published. */
+  currencyInferred?: true;
   /** Rent expressed in pesos with the run's USD rate, so two portals can be compared. */
   priceUyu: number;
   /** Gastos comunes when the portal states them; `null` means "not published", never zero. */
@@ -268,6 +270,8 @@ export interface RawRental extends RentalAdvertiserFields {
   title: string;
   price: number;
   currency: RentalCurrency;
+  /** The portal said UYU; the zone's market says dollars (see currency.ts). Never set by a parser. */
+  currencyInferred?: true;
   commonExpenses: number | null;
   commonExpensesCurrency: RentalCurrency | null;
   sellerName: string;

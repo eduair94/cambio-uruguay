@@ -31,6 +31,7 @@ import { sourcesAllowingExpiry } from "./classes/rentals/sources/types";
 import {
   carrySourceHistory,
   countRentals,
+  loadRentPriceRows,
   loadRentalHistory,
   loadRentalMeta,
   dropReassignedOffers,
@@ -38,6 +39,7 @@ import {
   saveRentalMeta,
   saveRentalProperties,
 } from "./classes/rentals/store";
+import { inferRentalCurrencies, rentPriceCohorts } from "./classes/rentals/currency";
 import { RENTAL_META_KEY, type RentalMeta } from "./classes/rentals/types";
 
 /** A full run that finds less than this share of what we already had is treated as an outage. */
@@ -87,6 +89,17 @@ async function main(): Promise<void> {
     console.error("[rentals] ningún portal respondió — se conserva el directorio anterior");
     process.exit(1);
   }
+
+  // A home "in pesos" at a price no home in its zone costs in pesos is a dollar price the portal
+  // labelled UYU (Facebook does it by default). Read against the published market, which the hourly
+  // slice could not supply by itself; a failed read only skips the correction.
+  const cohorts = rentPriceCohorts(await loadRentPriceRows().catch((error) => {
+    console.warn("[rentals] sin mercado para deducir monedas:", error instanceof Error ? error.message : error);
+    return [];
+  }));
+  const currencies = inferRentalCurrencies(harvest.listings, cohorts, usdUyu);
+  if (currencies.corrected) console.log(`[rentals] ${currencies.corrected} avisos en pesos leídos como dólares por el mercado de su zona`);
+  harvest.listings = currencies.listings;
 
   const properties = buildRentalProperties(harvest.listings, {
     usdUyu,

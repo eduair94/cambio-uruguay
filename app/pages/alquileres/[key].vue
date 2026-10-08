@@ -971,6 +971,13 @@ useHead(() => ({
             {{ t('selectedSource', { source: source(selectedOffer) }) }}</span
           >
         </p>
+        <p
+          v-if="selectedOffer.currencyInferred"
+          class="rental-page__note"
+          data-testid="rental-currency-inferred"
+        >
+          {{ t('currencyInferredLong') }}
+        </p>
         <dl class="rental-page__monthly">
           <div>
             <dt>{{ t('expenses') }}</dt>

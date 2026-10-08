@@ -104,7 +104,7 @@ export async function loadRentalMarket(): Promise<{ rows: Pick<RentalProperty, "
   const rows = await RentalListingModel.find({ "offers.identity.version": 1 }).select({
     _id: 0, key: 1, "offers.identity": 1, "offers.source": 1, "offers.listingId": 1,
     "offers.title": 1, "offers.url": 1, "offers.image": 1, "offers.sellerName": 1,
-    "offers.price": 1, "offers.currency": 1, "offers.commonExpenses": 1, "offers.commonExpensesCurrency": 1,
+    "offers.price": 1, "offers.currency": 1, "offers.currencyInferred": 1, "offers.commonExpenses": 1, "offers.commonExpensesCurrency": 1,
     "offers.lastSeen": 1, "offers.publishedAt": 1, "offers.parkingSpaces": 1, "offers.furnished": 1,
     "offers.details.description": 1, "offers.details.builtArea": 1, "offers.details.totalArea": 1,
     "offers.details.landArea": 1, "offers.details.amenities": 1,

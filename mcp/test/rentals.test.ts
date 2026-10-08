@@ -58,6 +58,25 @@ describe("rentalSearchParams", () => {
     });
   });
 
+  it("maps the exclusions to the site's sin* params", () => {
+    const q = rentalSearchParams({
+      excludeNeighborhoods: ["Centro", "Cordón"],
+      excludeTypes: ["habitacion"],
+      excludeSources: ["facebook"],
+      excludeWords: ["temporario", "pension"],
+      roomsAndResidences: "hide",
+    });
+    expect(q).toMatchObject({
+      sinBarrios: "Centro,Cordón",
+      sinTipos: "habitacion",
+      sinPortales: "facebook",
+      sinPalabras: "temporario,pension",
+      residencias: "ocultar",
+    });
+    expect(rentalSearchParams({ roomsAndResidences: "only" }).residencias).toBe("solo");
+    expect(rentalSearchParams({}).sinBarrios).toBeUndefined();
+  });
+
   it("uses a single neighborhood param and forces distance sort near a point", () => {
     const q = rentalSearchParams({ neighborhoods: ["Centro"], sort: "precio", hideReported: "none" }, { lat: -34.9, lng: -56.2, label: "Trabajo" });
     expect(q.neighborhood).toBe("Centro");
