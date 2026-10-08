@@ -168,10 +168,6 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
               </template>
             </VSelect>
           </div>
-          <AssistantCta
-            :topic="query.operation === 'sale' ? 'oportunidadesVenta' : 'oportunidadesAlquiler'"
-            class="mb-4"
-          />
           <VProgressLinear v-if="pending" indeterminate color="primary" class="mb-4" />
           <VAlert
             v-if="error"
@@ -254,6 +250,15 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
               >{{ t('next') }}</VBtn
             >
           </nav>
+          <!--
+            Después de los resultados: arriba empujaba la comparación de la primera tarjeta fuera de
+            la primera pantalla en el celular (cinco e2e de property-opportunities), como en el
+            directorio de alquileres.
+          -->
+          <AssistantCta
+            :topic="query.operation === 'sale' ? 'oportunidadesVenta' : 'oportunidadesAlquiler'"
+            class="mt-6"
+          />
         </section>
         <section id="opportunity-method" class="opportunities__method">
           <h2>{{ t('method') }}</h2>
