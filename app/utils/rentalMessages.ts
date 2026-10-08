@@ -330,6 +330,9 @@ export const rentalMessages = {
     'precio-desc': 'Mayor alquiler',
     metros: 'Mayor superficie',
     'precio-m2': 'Menor precio por m²',
+    baja: 'Mayor baja de precio',
+    dropSortHint:
+      'Primero las que más bajaron en los últimos 30 días; después, el resto de la más nueva a la más vieja.',
     pricePerM2SortHint:
       'Alquiler dividido por la superficie publicada. Las habitaciones y los avisos sin una superficie creíble quedan al final.',
     pricePerM2: '{price}/m²',
@@ -659,6 +662,9 @@ export const rentalMessages = {
     'precio-desc': 'Highest rent',
     metros: 'Largest area',
     'precio-m2': 'Lowest price per m²',
+    baja: 'Biggest price drop',
+    dropSortHint:
+      'First the ones that dropped the most in the last 30 days; then the rest, newest first.',
     pricePerM2SortHint:
       'Rent divided by the published area. Rooms and listings without a plausible area appear last.',
     pricePerM2: '{price}/m²',
@@ -998,6 +1004,9 @@ export const rentalMessages = {
     'precio-desc': 'Maior aluguel',
     metros: 'Maior área',
     'precio-m2': 'Menor preço por m²',
+    baja: 'Maior queda de preço',
+    dropSortHint:
+      'Primeiro os que mais baixaram nos últimos 30 dias; depois, o resto do mais novo ao mais antigo.',
     pricePerM2SortHint:
       'Aluguel dividido pela área informada. Quartos e anúncios sem área plausível ficam no final.',
     pricePerM2: '{price}/m²',
