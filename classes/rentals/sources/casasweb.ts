@@ -1,5 +1,5 @@
 import { advertiserClassification, ownerDirectDeclaration } from "../advertiser";
-// Public Casasweb search cards. Pagination submits the exact search form served by the site;
+// Public Casasweb search cards. Pagination follows the numbered links the site's own pager serves;
 // no browser challenges, private APIs, contact data, or advert descriptions are collected.
 import * as cheerio from "cheerio";
 import { setTimeout as sleep } from "timers/promises";
@@ -9,54 +9,53 @@ import type { RawRental } from "../types";
 import type { RentalSourceResult } from "./types";
 
 const ORIGIN = "https://casasweb.com";
-// Values from the public search form: all 19 departments, housing and commercial rentals.
-const PROPERTY_TYPES = ["a", "c", "f", "o", "l", "d", "i", "t", "h", "b", "g"];
+// Values from the public search form (housing and commercial rentals) and the path each one has
+// on the site. The 2026-10-07 redesign moved every search to these paths: the old
+// `resultados.aspx?n=A&t=..&x=..` query answered 404 for seventeen hours and then 301 here.
+const TYPE_PATHS: Record<string, string> = {
+  a: "apartamentos", c: "casas", f: "chacras", o: "oficinas", l: "locales-comerciales", d: "depositos",
+  i: "locales-industriales", t: "terrenos", h: "containers", b: "edificios", g: "garajes",
+};
+const PROPERTY_TYPES = Object.keys(TYPE_PATHS);
+// Indexed by the form's department value: 1 = Montevideo … 19 = Treinta y Tres.
+const DEPARTMENT_PATHS = [
+  "montevideo", "artigas", "canelones", "cerro-largo", "colonia", "durazno", "flores", "florida", "lavalleja", "maldonado",
+  "paysandu", "rio-negro", "rivera", "rocha", "salto", "san-jose", "soriano", "tacuarembo", "treinta-y-tres",
+];
 const clean = (text: string): string => text.replace(/\s+/g, " ").trim();
 
-export function casaswebSearchUrl(department: number, propertyType: string): string {
-  return `${ORIGIN}/resultados.aspx?m=0&n=A&t=${propertyType}&x=${department}&z=0`;
+export function casaswebSearchUrl(department: number, propertyType: string, operation: "alquiler" | "venta" = "alquiler"): string {
+  const type = TYPE_PATHS[propertyType], place = DEPARTMENT_PATHS[department - 1];
+  if (!Number.isInteger(department) || !type || !place) throw new Error(`Invalid Casasweb search: ${department}/${propertyType}`);
+  return `${ORIGIN}/${operation}/${type}/${place}`;
+}
+
+/**
+ * The search pager: GET links, the current page marked `aria-current`. A search that fits in one
+ * page has no pager at all. Anything else — two current pages, none, a link off the portal — is
+ * a page this parser cannot place, and the caller treats it as a different search.
+ */
+export function readCasaswebPager($: cheerio.CheerioAPI): { currentPage: number | null; nextUrl: string | null } {
+  const links = $("[id$=pnlPager] a[href]");
+  if (!links.length) return { currentPage: 1, nextUrl: null };
+  const current = links.filter("[aria-current=page]");
+  const page = current.length === 1 ? Number(clean(current.text())) : NaN;
+  if (!Number.isSafeInteger(page) || page < 1) return { currentPage: null, nextUrl: null };
+  const next = links.toArray().find((node) => clean($(node).text()) === String(page + 1));
+  const url = next ? new URL($(next).attr("href")!, ORIGIN) : null;
+  return { currentPage: page, nextUrl: url && url.origin === ORIGIN ? url.href : null };
 }
 
 export interface CasaswebPage {
   listings: RawRental[];
   total: number;
-  nextBody: string | null;
+  nextUrl: string | null;
   cardCount: number;
   /** Includes excluded seasonal/reserved cards: coverage and eligibility are different checks. */
   advertIds: string[];
   department: number | null;
   propertyType: string | null;
   currentPage: number | null;
-}
-
-function currentPage($: cheerio.CheerioAPI): number | null {
-  const selected = $("input[type=submit][id*=btnP].btn-secondary");
-  // The public form leaves every button outlined on the first page, including one-page searches.
-  if (!selected.length) return 1;
-  if (selected.length !== 1) return null;
-  const page = Number(selected.val());
-  return Number.isSafeInteger(page) && page > 0 ? page : null;
-}
-
-/** Read the NEXT numbered submit button, preserving server-issued form state verbatim. */
-function nextPageBody($: cheerio.CheerioAPI, page: number | null): string | null {
-  if (page === null) return null;
-  const buttons = $("input[type=submit][id*=btnP]").toArray();
-  const next = buttons.find((node) => Number($(node).val()) === page + 1);
-  if (!next) return null;
-  const params = new URLSearchParams();
-  $("form input[name]").each((_, node) => {
-    const input = $(node);
-    const type = input.attr("type");
-    if (type === "hidden" || type === "text" || ((type === "checkbox" || type === "radio") && input.is(":checked"))) {
-      params.append(input.attr("name")!, String(input.val() ?? ""));
-    }
-  });
-  $("form select[name]").each((_, node) => {
-    params.set($(node).attr("name")!, String($(node).val() ?? ""));
-  });
-  params.set($(next).attr("name")!, String($(next).val()));
-  return params.toString();
 }
 
 export function parseCasaswebPage(html: string, observedAt = new Date().toISOString()): CasaswebPage | null {
@@ -67,14 +66,15 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
   if (!Number.isSafeInteger(total) || total < 0) return null;
   const department = Number($("select[id$=drpDepto]").val());
   const propertyType = $("select[id$=drpTipo]").val();
-  const page = currentPage($);
+  const pager = readCasaswebPager($);
   const listings: RawRental[] = [];
   const advertIds: string[] = [];
   let cardCount = 0;
   $("a[href]").each((_, node) => {
     const card = $(node);
     const href = card.attr("href") || "";
-    if (!/^ALQUILER(?:_|$)/.test(href) || !card.find(".item-info").length) return;
+    // Root-relative since the redesign ("/ALQUILER__…"), bare before it.
+    if (!/^\/?ALQUILER(?:_|$)/.test(href) || !card.find(".item-info").length) return;
     cardCount++;
     const title = clean(card.find(".item-title h3").text());
     const location = card.find(".tipo-propiedad-zona small");
@@ -89,7 +89,8 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
     const money = clean(rent.find("h2").text());
     // A seasonal price may appear on the same card. Only the explicit monthly ALQUILER counts.
     const amount = money.match(/\bMES\s+([\d.,]+)/i);
-    const currency = parseCurrency(clean(rent.find("h2 small").text()));
+    // "<small>$</small> <small>MES</small> 3.800": the period sits in its own <small> next to the currency.
+    const currency = parseCurrency(rent.find("h2 small").toArray().map((node) => clean($(node).text())).filter((text) => !/^MES$/i.test(text)).join(" "));
     const price = amount ? parseMoney(amount[1]) : null;
     if (!id || !title || !department || !price || !currency || !looksLikeRentalAdvert(title)) return;
     if (/\breservad[oa]\b|\balquilad[oa]\b/i.test(title)) return;
@@ -98,8 +99,8 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
     const parking = details.match(/Garaje\s*\((\d+)\)/i);
     const bathrooms = title.match(/\b(\d+)\s+baños?\b/i);
     const area = clean(location.eq(0).find("i").text()).match(/([\d.,]+)\s*m/i);
-    const style = card.find("img.card-img").attr("style") || "";
-    const image = style.match(/url\(['"]?(https:\/\/[^'"\s)]+)['"]?\)/i)?.[1] ?? null;
+    const photo = card.find("img.card-img").attr("src") || "";
+    const image = /^https:\/\/\S+$/i.test(photo) ? photo : null;
     listings.push({
       source: "casasweb", listingId: `casasweb:${id}`, url: new URL(href, ORIGIN).href, title,
       price, currency,
@@ -120,10 +121,10 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
     });
   });
   return {
-    listings, total, nextBody: nextPageBody($, page), cardCount, advertIds,
+    listings, total, nextUrl: pager.nextUrl, cardCount, advertIds,
     department: Number.isSafeInteger(department) && department >= 1 && department <= 19 ? department : null,
     propertyType: typeof propertyType === "string" && propertyType ? propertyType : null,
-    currentPage: page,
+    currentPage: pager.currentPage,
   };
 }
 
@@ -150,8 +151,7 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
   let recovered = 0;
 
   async function readSearch(department: number, type: string): Promise<CasaswebSearchRead> {
-    const url = casaswebSearchUrl(department, type);
-    let body: string | null = null;
+    let url = casaswebSearchUrl(department, type);
     let initialTotal: number | null = null;
     let partial = false;
     const advertIds = new Set<string>();
@@ -161,14 +161,15 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
       const onFailure = (reason: string) => { transport = reason; };
       // Default retries on purpose: the hourly pass opens with the only three Montevideo searches,
       // so without them one dropped connection trips the stop below and the whole source is down
-      // for an hour (2026-09-21). Resubmitting the pagination form just asks for the same page.
-      const html = await fetchText(url, body === null ? { onFailure } : {
-        method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" }, onFailure,
-      });
+      // for an hour (2026-09-21).
+      const html = await fetchText(url, { onFailure });
       const parsed = html ? parseCasaswebPage(html) : null;
       if (!parsed || parsed.department !== department || parsed.propertyType !== type || parsed.currentPage !== page) {
         return { failure: !html ? transport : !parsed ? "página irreconocible" : "búsqueda distinta a la pedida", incomplete: true };
       }
+      // A page that counts results but shows no card this parser recognises has changed its cards:
+      // the 2026-10-07 redesign kept the count and the selects, and this read as "0 avisos".
+      if (parsed.total > 0 && parsed.cardCount === 0) return { failure: "tarjetas irreconocibles", incomplete: true };
       pages++;
       if (initialTotal === null) initialTotal = parsed.total;
       // A live search is not a snapshot. Do not expire absent adverts if its inventory changes.
@@ -180,8 +181,8 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
       for (const row of parsed.listings) {
         if (isPlausibleRent(row.price * (row.currency === "USD" ? usdUyu : 1), row.propertyType)) byId.set(row.listingId, row);
       }
-      body = parsed.nextBody;
-      if (!body) return { failure: null, incomplete: partial || advertIds.size !== parsed.total };
+      if (!parsed.nextUrl) return { failure: null, incomplete: partial || advertIds.size !== parsed.total };
+      url = parsed.nextUrl;
       if (page === pageBudget) partial = true;
     }
     return { failure: null, incomplete: partial };
