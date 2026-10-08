@@ -12,6 +12,10 @@
 // Escribe la colección privada `rentalfacebookdetails` y completa en `rentallistings` sólo los
 // campos vacíos de propiedades con un único aviso de Facebook. La cosecha (sync_rentals.ts) vuelve
 // a leer esas fichas al re-cosechar el aviso, así que lo aprendido no se pierde.
+//
+// --reapply no abre Facebook: vuelve a pasar TODAS las fichas ya guardadas por la misma escritura
+// (sólo campos vacíos, compare-and-set). Para cuando `facebookDetailUpdate` aprende a completar un
+// campo nuevo: si no, sólo lo verían los avisos que se lean de acá en adelante.
 import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { FB_ITEM_URL, FacebookSessionError, connectFacebookBrowser, facebookSessionOk, readFacebookPageTexts, sleep } from "./classes/facebook/browser";
@@ -20,7 +24,14 @@ import { areaLocator } from "./classes/propertyzones/geo";
 import { INE_DISPLAY_NAMES } from "./classes/propertyzones/names";
 import { loadOfficialPropertyZoneGeometry } from "./classes/propertyzones/sources/geometry";
 import { addressCandidates, fbRentalDetailFromTexts, locateFacebookRental } from "./classes/rentals/facebookDetail";
-import { applyFacebookDetails, facebookDetailTargets, neighborhoodFromZoneLabel, pointContradictsBarrio, saveFacebookDetails } from "./classes/rentals/facebookDetailStore";
+import {
+  applyFacebookDetails,
+  facebookDetailTargets,
+  neighborhoodFromZoneLabel,
+  pointContradictsBarrio,
+  reapplyStoredFacebookDetails,
+  saveFacebookDetails,
+} from "./classes/rentals/facebookDetailStore";
 import { geocodeCandidates } from "./classes/rentals/facebookGeocode";
 
 const number = (name: string, fallback: number): number => {
@@ -34,6 +45,10 @@ async function main(): Promise<void> {
   await appConnection().asPromise();
   const now = new Date();
   const summary = { targets: 0, read: 0, found: 0, withDescription: 0, namedBarrio: 0, geocodeTried: 0, geocoded: 0, contradicted: 0, written: 0, sessionLost: false, note: "" };
+  if (process.argv.includes("--reapply")) {
+    console.log(`[rentals-detail] reaplicadas: ${JSON.stringify(await reapplyStoredFacebookDetails())}`);
+    return;
+  }
 
   if (!(await facebookSessionOk())) {
     console.log("[rentals-detail] sesión de Facebook no disponible; nada que leer");

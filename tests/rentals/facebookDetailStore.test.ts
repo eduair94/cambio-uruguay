@@ -63,6 +63,26 @@ describe("facebookDetailUpdate", () => {
     expect(facebookDetailUpdate(row(), detail({ found: false, description: "", neighborhood: "", latitude: null, longitude: null }))).toBeNull();
   });
 
+  // 936 fields the description states were still empty on 2026-10-08: the harvest reads them only
+  // when it sees the advert again.
+  it("fills empty bedrooms, bathrooms and area from the description, as the harvest would", () => {
+    const description = "Apartamento de 2 dormitorios, 1 baño, 55 m2, a media cuadra de José Belloni";
+    const set = facebookDetailUpdate(row({}, { title: "Alquiler apto" }), detail({ description }))!;
+    expect(set).toMatchObject({ bedrooms: 2, bathrooms: 1, area: 55, "offers.0.identity.bedrooms": 2, "offers.0.identity.area": 55 });
+  });
+
+  it("never overwrites an attribute the property already has", () => {
+    const description = "Apartamento de 2 dormitorios, 1 baño, 55 m2";
+    const set = facebookDetailUpdate(
+      row({ bedrooms: 3, area: 60 }, { identity: { version: 1, description: "", neighborhood: "", department: "Montevideo", latitude: null, longitude: null, bedrooms: 3, area: 60 } }),
+      detail({ description })
+    )!;
+    expect(set).not.toHaveProperty("bedrooms");
+    expect(set).not.toHaveProperty("area");
+    expect(set).not.toHaveProperty("offers.0.identity.bedrooms");
+    expect(set.bathrooms).toBe(1);
+  });
+
   it("touches neither a merged property, another portal, another advert nor a legacy offer", () => {
     const merged = row({ offers: [row().offers![0]!, { source: "infocasas", listingId: "infocasas:9", identity: { version: 1 } }] });
     expect(facebookDetailUpdate(merged, detail())).toBeNull();
