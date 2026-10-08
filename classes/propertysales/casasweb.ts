@@ -27,7 +27,7 @@ export function casaswebSaleUrl(department: number, type: "a" | "c"): string {
 export function readCasaswebSalePrice(html: string, id: string): OpportunityMoney | null {
   if (!/^\d{1,18}$/.test(id)) return null;
   const $ = cheerio.load(html);
-  if (!casaswebTitleNames($("title").text(), id)) return null;
+  if (!casaswebTitleNames($("title").text(), `CW${id}`)) return null;
   const references = $("li").toArray().map(node => clean($(node).text())).filter(value => /^Ref\s*:/i.test(value));
   if (references.length !== 1 || !new RegExp(`^Ref\\s*:\\s*CW${id}$`, "i").test(references[0]!)) return null;
   const priceHeaders = $("h2").filter((_, node) => $(node).find("span.cw-op-venta").length > 0);

@@ -62,7 +62,12 @@ visible en su bloque inmediato. Se verificó en CW229366 sin cuenta ni gesto de 
 de WhatsApp se convierte en un número; su mensaje prellenado no se copia ni se envía.
 
 El lector exige el ID en el título de página, una única referencia `Ref: CW<ID>`, el título del
-inmueble y el bloque comercial exacto. No lee contactos de las tarjetas recomendadas ni del pie
+inmueble y el bloque comercial exacto. Un aviso importado de Tokko conserva la referencia de ese
+sistema (`TKA<ID>`) en el título y en `Ref:`, y se lee igual contra ella. Ventas guarda el número
+solo (`casasweb:123`) y alquileres la referencia de la tarjeta (`casasweb:CW123`): hasta el
+2026-10-08 el lector y la muestra rotativa sólo aceptaban la primera forma, así que ninguno de los
+3.000 avisos de alquiler de Casasweb tuvo contacto mientras El País e InfoCasas sumaban ~2.400 y
+~2.800. No lee contactos de las tarjetas recomendadas ni del pie
 de página. Ese bloque da evidencia de inmobiliaria, pero no un ID nativo corroborado: se publica
 el contacto **por aviso**, sin fabricar `agency.key`. Una tarjeta que sólo tiene un nombre conserva
 tipo desconocido hasta contar con evidencia positiva. Ventas aprovecha sus fichas completas ya
