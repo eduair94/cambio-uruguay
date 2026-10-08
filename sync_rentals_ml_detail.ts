@@ -1,9 +1,11 @@
 // Lee la ficha propia de los avisos de Mercado Libre del directorio de alquileres para traer sus
-// gastos comunes, que la tarjeta de búsqueda no publica (classes/rentals/mlDetail.ts). Con
-// presupuesto: primero las viviendas de Montevideo, cada aviso una vez por mes.
+// gastos comunes y el pin de su mapa, que la tarjeta de búsqueda no publica
+// (classes/rentals/mlDetail.ts). Con presupuesto: primero las viviendas de Montevideo, cada aviso
+// una vez por mes.
 //
 // Escribe la colección privada `rentalmldetails` y completa en `rentallistings` sólo el
-// `commonExpenses` VACÍO del mismo aviso. La cosecha lo reaplica al volver a ver el aviso.
+// `commonExpenses` VACÍO del mismo aviso y la coordenada VACÍA de su propiedad. La cosecha los
+// reaplica al volver a ver el aviso.
 //
 // Las fichas se piden directo a mercadolibre.com.uy desde el VPS, con la UA del bot y 2 s entre
 // pedidos —como currency-autos-detail (:11), que lee de la misma IP—; por eso esta corre a los :35.
@@ -17,8 +19,10 @@ import {
   mlDetailExpenses,
   mlDetailTargets,
   parseMlRentalExpenses,
+  parseMlRentalPin,
   saveMlDetails,
   writeMlDetailExpenses,
+  writeMlDetailPin,
   type MlRentalDetail,
 } from "./classes/rentals/mlDetail";
 import { fetchText, sleep } from "./classes/rentals/net";
@@ -37,7 +41,7 @@ async function main(): Promise<void> {
   const meta = await appConnection().collection("rentalmetas").findOne({ key: RENTAL_META_KEY }, { projection: { usdUyu: 1 } });
   const usdUyu = Number(meta?.usdUyu) || 0;
   const targets = await mlDetailTargets(now, number("RENTALS_ML_DETAIL_MAX", 120));
-  const summary = { targets: targets.length, read: 0, stated: 0, zeroOrAbsent: 0, unreadable: 0, failed: 0, implausible: 0, written: 0, note: "" };
+  const summary = { targets: targets.length, read: 0, stated: 0, zeroOrAbsent: 0, unreadable: 0, failed: 0, implausible: 0, written: 0, pinned: 0, located: 0, note: "" };
   if (!targets.length) {
     console.log("[rentals-ml-detail] sin fichas pendientes");
     return;
@@ -62,7 +66,20 @@ async function main(): Promise<void> {
     } else {
       consecutiveFailures = 0;
       summary.read++;
-      rows.push({ listingId: target.listingId, readAt, amount: stated?.amount ?? null, currency: stated?.currency ?? null, ok: true });
+      const pin = parseMlRentalPin(html);
+      rows.push({
+        listingId: target.listingId,
+        readAt,
+        amount: stated?.amount ?? null,
+        currency: stated?.currency ?? null,
+        latitude: pin?.latitude ?? null,
+        longitude: pin?.longitude ?? null,
+        ok: true,
+      });
+      if (pin) {
+        summary.pinned++;
+        if (!dryRun && (await writeMlDetailPin(target, pin))) summary.located++;
+      }
       if (!stated) summary.zeroOrAbsent++;
       else {
         summary.stated++;
@@ -79,7 +96,8 @@ async function main(): Promise<void> {
   }
   if (!dryRun) await saveMlDetails(rows);
   const stored = dryRun ? 0 : await appConnection().collection(ML_DETAIL_COLLECTION).countDocuments({ amount: { $gt: 0 } });
-  console.log(`[rentals-ml-detail] ${JSON.stringify({ ...summary, dryRun, withExpensesStored: stored })}`);
+  const pins = dryRun ? 0 : await appConnection().collection(ML_DETAIL_COLLECTION).countDocuments({ latitude: { $type: "number" } });
+  console.log(`[rentals-ml-detail] ${JSON.stringify({ ...summary, dryRun, withExpensesStored: stored, withPinStored: pins })}`);
 }
 
 main()
