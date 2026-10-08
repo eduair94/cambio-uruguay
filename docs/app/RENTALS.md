@@ -393,7 +393,7 @@ portal devuelve. Cada página debe conservar categoría, filtros y offset; cada 
 corresponder a una categoría/dominio de alquiler aceptada. Los topes son globales además del
 límite por consulta. La cobertura sigue siendo parcial.
 
-Casasweb añade Chacras (`f`) a sus 19 departamentos y valida el formulario, la página y los IDs
+Casasweb añade Chacras (`f`) a sus 19 departamentos y valida la búsqueda servida, la página y los IDs
 únicos antes de declarar el barrido completo. El País también valida paginador, IDs y total
 final. Marketplace añade Colonia del Sacramento después de corroborar tarjetas propias de
 esa ciudad; nunca se atribuye la ciudad solicitada a una sugerencia sin ubicación publicada.
@@ -608,7 +608,7 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 | **Mercado Libre** | bridge propio en `:9656` (`pm2 mercadolibre`), `?raw=true` | dirección con calle+número, barrio, dormitorios/baños/m², precio, foto | gastos comunes, fecha de publicación, lat/lon, nombre del vendedor |
 | **InfoCasas** | `__NEXT_DATA__` de sus páginas de listado | todo lo anterior **más** lat/lon, gastos comunes, inmobiliaria y fecha de publicación | — |
 | **Facebook Marketplace** | **el Chrome del perfil por CDP `:9224`** (`classes/rentals/sources/facebookBrowser.ts`): cada búsqueda se scrollea HASTA EL FONDO y las tarjetas salen del stream GraphQL de Facebook (con su categoría); el bridge `:9657` (`pm2 facebook_marketplace`) queda de respaldo si el navegador no lee nada; **`currency-rentals-detail` lee la ficha** de cada aviso (CDP al Chrome del perfil) | precio, título, ciudad, foto; el barrio cuando el título o la descripción lo nombran (`classes/rentals/neighborhoods.ts`); descripción, garantías por texto, m²/dormitorios por texto y **coordenada cuando el texto trae una esquina o dirección geocodificable** (`classes/rentals/facebookDetail.ts`) | dirección exacta, gastos comunes, fecha de publicación; el pin de la ficha no es el inmueble y no se publica |
-| **Casasweb** | HTML público de `resultados.aspx`; paginación mediante el formulario de búsqueda que entrega el servidor | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
+| **Casasweb** | HTML público de sus páginas de búsqueda (`/alquiler/<tipo>/<departamento>`, desde el rediseño del 2026-10-07); paginación por los enlaces `?pag=N` de su propio paginador | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
 | **Inmuebles El País** | los dos endpoints de su propio buscador: `POST /api/chat/init` (una búsqueda guardada por departamento) y `GET /api/chat/<id>/results?page&limit=500`; UA de navegador y cabecera `x-cambio-uruguay-bot`, con puppeteer de respaldo cuando Cloudflare desafía | dirección, barrio, lat/lon, dormitorios/baños/m², gastos comunes, inmobiliaria, foto y **la garantía como dato estructurado** | fecha de publicación original; teléfono y correo de la inmobiliaria (existen en la respuesta y **no se copian**); garaje y amueblado |
 | **TikTok** | un Chrome real por corrida (puppeteer, **a través del proxy de `proxy.txt`**: desde la IP del VPS toda lista vuelve vacía) lee las páginas de hashtag (`/tag/...`) y de cuenta (`/@user`) capturando `item_list`; un video suelto se lee por HTTP plano de su propia página. Sólo la corrida completa | precio, gastos comunes, dormitorios/baños/m², tipo, barrio y departamento, garantías y **la fecha real de publicación**, todo leído de la LEYENDA (`classes/rentals/sources/tiktok/caption.ts`, precisión sobre recall); coordenada sólo de una esquina del propio texto geocodificada y aceptada | dirección exacta; el teléfono (está en la leyenda y se borra); unificación con otros portales; la foto es el cover firmado del video y vence en ~36–48 h, se refresca al releer la cuenta |
 | **Instagram** | un Chrome headless propio, **sin sesión y sin proxy** (desde la IP del VPS contesta; por el proxy dio error de red): el perfil de cada cuenta del registro (12 posts) y la página de cada post que la memoria no tiene. Sólo la corrida completa | lo mismo que TikTok, leído de la LEYENDA; la fecha real (`taken_at`) y la portada | descubrimiento por hashtag (exige sesión); más de 12 posts por cuenta; el teléfono de la leyenda (se borra); la portada vence en días y se refresca al releer |
@@ -679,8 +679,21 @@ aperturas, tienen que ser Montevideo, Maldonado y Canelones, no Artigas (1 aviso
 (ninguno). `complete` sigue en `false` hasta tenerlos todos, así que ninguna ausencia caduca nada
 mientras tanto.
 
-[Casasweb](https://casasweb.com/resultados.aspx?m=0&n=A&t=c&x=1&z=1) entrega tarjetas HTML y un
-formulario ASP.NET de paginación **funcional**: se verificaron las páginas 1 y 2 con IDs distintos.
+[Casasweb](https://casasweb.com/alquiler/casas/montevideo) entrega tarjetas HTML y un paginador
+de enlaces (`?pag=N`, la página actual marcada `aria-current`; una búsqueda de una sola página
+no trae paginador). **El 2026-10-07 el portal se rediseñó** y la fuente pasó de 240 avisos por
+hora a cero: primero `resultados.aspx?n=A&t=..&x=..` contestó 404 (01:48–18:48 UTC) y después
+301 a las rutas nuevas (`/alquiler/<tipo>/<departamento>`, `/venta/...`), donde los enlaces de
+las tarjetas empiezan con `/` (`/ALQUILER__…`), la foto pasó del `style` al `src`, la moneda y
+el período van en dos `<small>` (`$` y `MES`) y el formulario ASP.NET de paginación (`btnP`) se
+reemplazó por los enlaces. Desde entonces se piden directamente las rutas canónicas —la
+redirección vieja ya faltó una vez—, con la tabla tipo/departamento → ruta en
+`classes/rentals/sources/casasweb.ts` (medida contra los 301 del portal), y la corrida dice
+`tarjetas irreconocibles` cuando una página cuenta resultados pero no trae ninguna tarjeta
+legible: la página rediseñada conservó el contador y los `select`, y durante la rotura la nota
+sólo decía "0 avisos únicos". Las fichas propias también cambiaron (la referencia pasó al final
+del `<title>`: "… - CW123 | Casasweb"), lo que rompía de paso el contacto comercial y la
+confirmación de ventas (`docs/app/PROPERTY_SALES_BACKEND.md`).
 El barrido completo recorre los 19 departamentos y diez tipos (apartamentos, casas, oficinas,
 locales comerciales/industriales, depósitos, terrenos, containers, edificios y garajes). El
 repaso horario toma sólo la primera página de casas/apartamentos en Montevideo, Canelones y
@@ -702,7 +715,7 @@ del barrido para las aisladas; y sólo tres fallas seguidas **después** de la p
 barrido. Una búsqueda recuperada cuenta como leída entera, así que no le quita `complete` a la
 corrida. La nota dice cuántas se leyeron tras la pausa y por qué falló cada una de las que no
 (`3 búsquedas fallidas: HTTP 503 ×3`, `tiempo agotado (25000 ms)`, `página irreconocible`,
-`búsqueda distinta a la pedida`), para separar un portal que no contesta de uno que cambió la
+`tarjetas irreconocibles`, `búsqueda distinta a la pedida`), para separar un portal que no contesta de uno que cambió la
 página. El aviso del directorio ("No pudimos actualizar … desde …") ya no sale por una sola
 horaria perdida: `staleRentalSources` (`app/utils/rentals.ts`) espera 90 min sin lectura buena,
 medidos contra el `generatedAt` de la corrida y no contra el reloj (SSR e hidratación coinciden),

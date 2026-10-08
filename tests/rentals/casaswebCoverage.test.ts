@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchText } from "../../classes/rentals/net";
-import { harvestCasasweb, parseCasaswebPage } from "../../classes/rentals/sources/casasweb";
+import { casaswebSearchUrl, harvestCasasweb, parseCasaswebPage } from "../../classes/rentals/sources/casasweb";
 import { sourcesAllowingExpiry } from "../../classes/rentals/sources/types";
 
 vi.mock("../../classes/rentals/net", () => ({ fetchText: vi.fn() }));
@@ -17,35 +17,46 @@ interface SearchPage {
   cards?: Card[];
 }
 
-// Reduced structure from public search responses observed 2026-09-07. No external requests.
+// Every search the harvester can ask for, keyed by its canonical path, so a mock can tell which
+// one a URL is — including the `?pag=N` links the pager hands out.
+const SEARCHES = new Map(Array.from({ length: 19 }, (_, index) => index + 1).flatMap(department =>
+  [..."acfoldithbg"].map(type => [new URL(casaswebSearchUrl(department, type)).pathname, { department, type }] as const)));
+function searchOf(url: string): { department: number; type: string; page: number } {
+  const parsed = new URL(url);
+  const search = SEARCHES.get(parsed.pathname);
+  if (!search) throw new Error(`Not a Casasweb search: ${url}`);
+  return { ...search, page: Number(parsed.searchParams.get("pag") || 1) };
+}
+
+// Reduced structure of the public search pages served after the portal's 2026-10-07 redesign.
+// No external requests.
 function searchHtml({ department = 1, type = "a", page = 1, total = 0, hasNext = false, cards = [] }: SearchPage): string {
   const label = type === "f" ? "Chacra" : type === "g" ? "Garaje" : "Apartamento";
-  return `<form>
-    <input type="hidden" name="__VIEWSTATE" value="page-${page}" />
-    <select id="ctl00_content_drpNegocio" name="ctl00$content$drpNegocio"><option value="A" selected>Alquiler</option></select>
-    <select id="ctl00_content_drpDepto" name="ctl00$content$drpDepto"><option value="${department}" selected>Departamento</option></select>
-    <select id="ctl00_content_drpTipo" name="ctl00$content$drpTipo"><option value="${type}" selected>${label}</option></select>
-    <span>${total} Resultados</span>
-    ${cards.map(card => `<div class="card"><a href="ALQUILER_CW${card.id ?? ""}">
-      <div class="item-info">
-        <div class="tipo-propiedad-zona"><small><b>${label}</b>Centro</small><small><strong>${card.id === null ? "" : `CW${card.id}`}</strong>${department === 3 ? "Canelones" : "Montevideo"}</small></div>
+  const path = new URL(casaswebSearchUrl(department, type)).pathname;
+  const link = (n: number) => `<a class='btn btn-sm ${n === page ? "btn-secondary" : "btn-outline-secondary"} p-1 mb-2 mx-1' ` +
+    `href='${path}${n > 1 ? `?pag=${n}` : ""}'${n === page ? " aria-current='page'" : ""}>${n}</a>`;
+  const pages = Array.from({ length: page + (hasNext ? 1 : 0) }, (_, index) => index + 1);
+  return `<form method="post" action="#" id="aspnetForm">
+    <small class="mb-4">${total} Resultados<br></small>
+    <select id="ctl00_content_drpNegocio" name="ctl00$content$drpNegocio"><option selected="selected" value="A">Alquiler</option></select>
+    <select id="ctl00_content_drpTipo" name="ctl00$content$drpTipo"><option selected="selected" value="${type}">${label}</option></select>
+    <select id="ctl00_content_drpDepto" name="ctl00$content$drpDepto"><option selected="selected" value="${department}">Departamento</option></select>
+    ${cards.map(card => `<div class="item-grid"><div class="card"><a href='/ALQUILER__AGENCIA_CW${card.id ?? ""}'>
+      <img src='https://casasweb.com/fotos/${card.id ?? 0}s.jpg' class="card-img fondo" />
+      <div class="card-body item-info">
+        <div class="tipo-propiedad-zona"><small><b>${label}</b><br />Centro</small><small class="text-right"><strong>${card.id === null ? "" : `CW${card.id}`}</strong><br />${department === 3 ? "Canelones" : "Montevideo"}</small></div>
         <div class="item-title"><h3>${card.title ?? `Alquiler ${label} de 2 dormitorios`}</h3></div>
-        <div class="item-precio"><div class="precio"><h3>ALQUILER</h3><h2><small>UYU</small> MES 25.000</h2></div></div>
-      </div></a></div>`).join("")}
-    <input type="submit" id="ctl00_content_btnP${page - 1}" name="ctl00$content$btnP${page - 1}" value="${page}" class="${page === 1 ? "btn-outline-secondary" : "btn-secondary"}" />
-    ${hasNext ? `<input type="submit" id="ctl00_content_btnP${page}" name="ctl00$content$btnP${page}" value="${page + 1}" class="btn-outline-secondary" />` : ""}
+        <div class="item-precio"><div class="col precio"><h3 class="my-1 cw-alquiler">ALQUILER</h3><h2 class="my-0"><small>$</small> <small>MES</small> 25.000</h2></div></div>
+      </div></a></div></div>`).join("")}
+    ${pages.length > 1 ? `<div id="ctl00_content_pnlPager" class="mb-2" role="group">${pages.map(link).join("")}</div>` : ""}
   </form>`;
 }
 
 function serve(target?: (page: number) => SearchPage | null): { department: number; type: string; page: number }[] {
   const requests: { department: number; type: string; page: number }[] = [];
   vi.mocked(fetchText).mockImplementation(async (url, options = {}) => {
-    const query = new URL(url).searchParams;
-    const department = Number(query.get("x"));
-    const type = query.get("t")!;
-    const params = new URLSearchParams(typeof options.body === "string" ? options.body : undefined);
-    const button = [...params.entries()].find(([key]) => /\$btnP\d+$/.test(key));
-    const page = button ? Number(button[1]) : 1;
+    expect(options.method ?? "GET").toBe("GET");
+    const { department, type, page } = searchOf(url);
     requests.push({ department, type, page });
     if (department === 1 && type === "a" && target) {
       const result = target(page);
@@ -81,14 +92,18 @@ describe("Casasweb coverage and absence safety", () => {
     expect(fast.complete).toBe(false);
   });
 
-  it("checks the actual form selection and accepts the portal's unhighlighted first-page button", () => {
+  it("checks the actual search selection and follows the pager's own next link", () => {
     const result = parseCasaswebPage(searchHtml({ department: 3, type: "f", total: 1, cards: [{ id: 221797 }], hasNext: true }))!;
     expect(result).toMatchObject({ department: 3, propertyType: "f", currentPage: 1, advertIds: ["casasweb:CW221797"] });
-    const next = new URLSearchParams(result.nextBody!);
-    expect(next.get("ctl00$content$drpDepto")).toBe("3");
-    expect(next.get("ctl00$content$drpTipo")).toBe("f");
-    expect(next.get("ctl00$content$btnP1")).toBe("2");
-    expect(next.get("__VIEWSTATE")).toBe("page-1");
+    expect(result.nextUrl).toBe("https://casasweb.com/alquiler/chacras/canelones?pag=2");
+  });
+
+  it("reads deeper pages by their links until the pager has no next one", async () => {
+    const requests = serve(page => ({ total: 3, hasNext: page < 3, cards: [{ id: page }] }));
+    const result = await harvestCasasweb("full", 40);
+    expect(requests.filter(request => request.department === 1 && request.type === "a").map(request => request.page)).toEqual([1, 2, 3]);
+    expect(result).toMatchObject({ ok: true, complete: true });
+    expect(result.listings.map(row => row.listingId)).toEqual(["casasweb:CW1", "casasweb:CW2", "casasweb:CW3", "casasweb:CW221797"]);
   });
 
   it("preserves the portal's external-reference advert IDs as well as CW-prefixed ones", () => {
@@ -173,10 +188,6 @@ describe("Casasweb transient failures", () => {
     vi.stubGlobal("fetch", fetchMock);
     return fetchMock;
   }
-  const searchOf = (url: string) => {
-    const query = new URL(url).searchParams;
-    return { department: Number(query.get("x")), type: query.get("t")! };
-  };
   const reset = () => Object.assign(new TypeError("fetch failed"), { cause: { code: "ECONNRESET" } });
 
   afterEach(() => vi.unstubAllGlobals());
@@ -264,5 +275,17 @@ describe("Casasweb transient failures", () => {
     });
     const result = await harvestCasasweb("fast", 40);
     expect(result.note).toContain("3 búsquedas fallidas: página irreconocible ×3");
+  });
+
+  // 2026-10-07 19:49 UTC on: the redesigned search pages still carried the count and the selects,
+  // so every hourly run "read" its 9 pages and published "0 avisos únicos" without saying why.
+  it("says the cards changed when a page counts results but none of its cards can be read", async () => {
+    vi.mocked(fetchText).mockImplementation(async (url) => {
+      const { department, type } = searchOf(url);
+      return searchHtml({ department, type, total: 5, cards: [{ id: 1 }] }).replace("href='/ALQUILER__", "href='/ficha/ALQUILER__");
+    });
+    const result = await harvestCasasweb("fast", 40);
+    expect(result.ok).toBe(false);
+    expect(result.note).toContain("3 búsquedas fallidas: tarjetas irreconocibles ×3");
   });
 });

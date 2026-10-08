@@ -45,7 +45,7 @@ La misma función decide la indexabilidad de una ficha y su presencia en el site
 ## Referencias revisadas
 
 - [Apartamentos en venta de InfoCasas](https://www.infocasas.com.uy/venta/apartamentos) y [casas](https://www.infocasas.com.uy/venta/casas): precio, gastos, fotos y condiciones de compra publicados por cada anunciante.
-- [Buscador público de venta de Casasweb](https://casasweb.com/resultados.aspx?m=0&n=V&t=a&x=1&z=0): operación explícita de venta, tipo y departamento.
+- [Buscador público de venta de Casasweb](https://casasweb.com/venta/apartamentos/montevideo): operación explícita de venta, tipo y departamento.
 - [Robots meta de Google](https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag): controla indexación de variantes e incompletas.
 - [Sitemaps de Google](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap): URLs canónicas y fechas de modificación reales.
 - [RealEstateListing de Schema.org](https://schema.org/RealEstateListing): descripción semántica de la ficha, sin prometer un resultado enriquecido en Google.

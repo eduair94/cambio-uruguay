@@ -5,13 +5,21 @@ import { flatten } from "./normalize";
 import { fetchText } from "./net";
 import type { RawRental, RentalAdvertiserFields, RentalSellerType } from "./types";
 
+/**
+ * Whether an advert page's <title> names its own reference as a whole word. It opened the title
+ * ("CW123 …") until the portal's 2026-10-07 redesign and closes it now ("… - CW123 | Casasweb").
+ */
+export function casaswebTitleNames(title: string, id: string): boolean {
+  return new RegExp(`(?:^|\\s)CW${id}(?:\\s|$)`).test(title.replace(/\s+/g, " ").trim());
+}
+
 /** Only the advert's own visible commercial block, never the recommendation cards/footer. */
 export function readCasaswebAdvertiser(html: string, advert: { listingId: string; url: string; title: string }, observedAt: string):
   (RentalAdvertiserFields & { sellerType: RentalSellerType }) | null {
   const id = /^casasweb:(\d{1,18})$/.exec(advert.listingId)?.[1];
   if (!id || !Number.isFinite(Date.parse(observedAt))) return null;
   const $ = cheerio.load(html);
-  if (!$("title").text().trim().startsWith(`CW${id} `)) return null;
+  if (!casaswebTitleNames($("title").text(), id)) return null;
   const references = $("li").toArray().map(node => $(node).text().trim()).filter(value => /^Ref\s*:/i.test(value));
   if (references.length !== 1 || !new RegExp(`^Ref\\s*:\\s*CW${id}$`, "i").test(references[0]!)) return null;
   const title = rentalDescription($("h1").first().text(), 500);

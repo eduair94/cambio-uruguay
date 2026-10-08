@@ -1,15 +1,16 @@
-import { readCasaswebAdvertiser } from "../rentals/casaswebContacts";
+import { casaswebTitleNames, readCasaswebAdvertiser } from "../rentals/casaswebContacts";
 import { advertiserClassification, ownerDirectDeclaration } from "../rentals/advertiser";
 import * as cheerio from "cheerio";
 import { rentalDescription, rentalImages } from "../rentals/details";
 import { canonicalDepartment, flatten, parseCurrency, parseMoney } from "../rentals/normalize";
 import { fetchText } from "../rentals/net";
+import { casaswebSearchUrl, readCasaswebPager } from "../rentals/sources/casasweb";
 import type { OpportunityListing } from "../propertyopportunities/types";
 import type { OpportunityMoney } from "../propertyopportunities/types";
 
 const ORIGIN = "https://casasweb.com";
 const clean = (value: string) => rentalDescription(value, 2_000).replace(/\s+/g, " ").trim();
-export interface CasaswebSalePage { listings: OpportunityListing[]; unavailableIds: string[]; nextBody: string | null; total: number }
+export interface CasaswebSalePage { listings: OpportunityListing[]; unavailableIds: string[]; nextUrl: string | null; total: number }
 export interface CasaswebSaleHarvest {
   source: "casasweb"; operation: "sale"; ok: boolean; complete: false; readAt: string;
   listings: OpportunityListing[]; unavailableIds: string[];
@@ -19,17 +20,17 @@ export interface CasaswebSaleHarvest {
 
 export function casaswebSaleUrl(department: number, type: "a" | "c"): string {
   if (!Number.isInteger(department) || department < 1 || department > 19 || !["a", "c"].includes(type)) throw new Error("Invalid sale search");
-  return `${ORIGIN}/resultados.aspx?m=0&n=V&t=${type}&x=${department}&z=0`;
+  return casaswebSearchUrl(department, type, "venta");
 }
 
 /** Cards have been observed printing "$" for USD sales. The own detail header disambiguates. */
 export function readCasaswebSalePrice(html: string, id: string): OpportunityMoney | null {
   if (!/^\d{1,18}$/.test(id)) return null;
   const $ = cheerio.load(html);
-  if (!clean($("title").text()).startsWith(`CW${id} `)) return null;
+  if (!casaswebTitleNames($("title").text(), id)) return null;
   const references = $("li").toArray().map(node => clean($(node).text())).filter(value => /^Ref\s*:/i.test(value));
   if (references.length !== 1 || !new RegExp(`^Ref\\s*:\\s*CW${id}$`, "i").test(references[0]!)) return null;
-  const priceHeaders = $("h2").filter((_, node) => $(node).find("span.venta").length > 0);
+  const priceHeaders = $("h2").filter((_, node) => $(node).find("span.cw-op-venta").length > 0);
   if (priceHeaders.length !== 1) return null;
   const match = clean(priceHeaders.text()).match(/^Venta\s+(USD|U\$S|US\$|\$)\s*([\d.,]+)$/i);
   const currency = match ? parseCurrency(match[1]!) : null, amount = match ? parseMoney(match[2]!) : null;
@@ -43,9 +44,9 @@ export function readCasaswebSaleDetail(html: string, card: OpportunityListing, r
   const $ = cheerio.load(html);
   const title = rentalDescription($("h1").first().text(), 500);
   const descriptionHeading = $("h3").filter((_, node) => /^Descripción$/i.test($(node).text().trim())).first();
-  const detailsHeading = $("h3").filter((_, node) => /^Detalles$/i.test($(node).text().trim())).first();
-  if (!title || !descriptionHeading.length || !detailsHeading.length) return null;
-  const detailRoot = detailsHeading.parent();
+  // The facts list lost its "Detalles" heading in the redesign; its own class names it now.
+  const detailRoot = $("ul.cw-detalles");
+  if (!title || !descriptionHeading.length || detailRoot.length !== 1) return null;
   const get = (label: RegExp) => {
     const node = detailRoot.find("li").filter((_, node) => label.test(flatten(clean($(node).find("b").first().text())))).first();
     return clean(node.clone().children("b").remove().end().text());
@@ -56,8 +57,7 @@ export function readCasaswebSaleDetail(html: string, card: OpportunityListing, r
   const body = descriptionHeading.parent().clone(); body.find("h3").remove();
   const description = rentalDescription(body.html(), 8_000);
   if (description.length < 30) return null;
-  const amenitiesHeading = $("h3").filter((_, node) => /^Amenities$/i.test($(node).text().trim())).first();
-  const amenities = amenitiesHeading.parent().find("li").toArray().map(node => clean($(node).text())).filter(Boolean);
+  const amenities = $(".cw-amenities li").toArray().map(node => clean($(node).text())).filter(Boolean);
   const images = rentalImages($("a.gallery-item2[href]").toArray().map(node => $(node).attr("href")));
   const built = number(get(/^metros edificados/));
   const reported = parseMoney(get(/^area total/).replace(/m[²2].*$/i, "").trim()) || card.area?.value || null;
@@ -153,7 +153,7 @@ export function readCasaswebSalePage(html: string, readAt: string): CasaswebSale
   const listings: OpportunityListing[] = [], unavailableIds: string[] = [];
   $("a[href]").each((_, node) => {
     const card = $(node), href = card.attr("href") || "";
-    if (!/^VENTA_[^/?#]+_CW\d+$/i.test(href) || !card.find(".item-info").length) return;
+    if (!/^\/?VENTA_[^/?#]+_CW\d+$/i.test(href) || !card.find(".item-info").length) return;
     const location = card.find(".tipo-propiedad-zona small");
     const label = clean(location.eq(1).find("strong").text());
     const id = /^CW(\d{1,18})$/.exec(label)?.[1];
@@ -177,8 +177,7 @@ export function readCasaswebSalePage(html: string, readAt: string): CasaswebSale
     const bathrooms = title.match(/\b(\d+)\s+baños?\b/i);
     const rawArea = clean(location.eq(0).find("i").text()).match(/([\d.,]+)\s*m/i);
     const reported = rawArea ? parseMoney(rawArea[1]!) : null;
-    const style = card.find("img.card-img").attr("style") || "";
-    const images = rentalImages([style.match(/url\(['"]?(https:\/\/[^'"\s)]+)['"]?\)/i)?.[1]]);
+    const images = rentalImages([card.find("img.card-img").attr("src")]);
     listings.push({
       id: `sale:casasweb:${id}`, operation: "sale", source: "casasweb", listingId: `casasweb:${id}`,
       url: new URL(href, ORIGIN).href, title, description: details, image: images[0] || null, images,
@@ -194,39 +193,21 @@ export function readCasaswebSalePage(html: string, readAt: string): CasaswebSale
       riskFlags: [...(/\bProyecto\b/.test(details) ? ["project" as const] : []), ...(/\bRenta\b/.test(details) ? ["occupied" as const] : [])],
     });
   });
-  const buttons = $("input[type=submit][id*=btnP]").toArray();
-  const current = buttons.find(node => $(node).hasClass("btn-secondary"));
-  const page = current ? Number($(current).val()) : 1;
-  const next = buttons.find(node => Number($(node).val()) === page + 1);
-  let nextBody: string | null = null;
-  if (next) {
-    const params = new URLSearchParams();
-    $("form input[name]").each((_, node) => {
-      const input = $(node), type = input.attr("type");
-      if (type === "hidden" || type === "text" || ((type === "checkbox" || type === "radio") && input.is(":checked")))
-        params.append(input.attr("name")!, String(input.val() ?? ""));
-    });
-    $("form select[name]").each((_, node) => { params.set($(node).attr("name")!, String($(node).val() ?? "")); });
-    params.set($(next).attr("name")!, String($(next).val()));
-    nextBody = params.toString();
-  }
-  return { listings, unavailableIds, total: Number(count[1]!.replace(/[.,]/g, "")), nextBody };
+  return { listings, unavailableIds, total: Number(count[1]!.replace(/[.,]/g, "")), nextUrl: readCasaswebPager($).nextUrl };
 }
 
 /** Breadth first across all departments; bounded partial readings never retire unseen IDs. */
 export async function harvestCasaswebSales(options: {
   maxPages?: number; maxDurationMs?: number; now?: () => Date;
-  fetchPage?: (url: string, body: string | null) => Promise<string | null>;
+  fetchPage?: (url: string) => Promise<string | null>;
   onProgress?: (pages: number, listings: number) => void;
 } = {}): Promise<CasaswebSaleHarvest> {
   const now = options.now || (() => new Date()), started = now().getTime();
   const maxPages = Math.max(1, Math.min(120, Math.floor(options.maxPages || 120)));
   const maxDuration = Math.max(1_000, Math.min(6 * 60_000, options.maxDurationMs || 6 * 60_000));
-  const fetchPage = options.fetchPage || ((url, body) => fetchText(url, body === null ? { retries: 0, timeoutMs: 20_000 } : {
-    retries: 0, timeoutMs: 20_000, method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" },
-  }));
+  const fetchPage = options.fetchPage || (url => fetchText(url, { retries: 0, timeoutMs: 20_000 }));
   const queues = Array.from({ length: 19 }, (_, i) => i + 1).flatMap(department => (["a", "c"] as const).map(type => ({
-    url: casaswebSaleUrl(department, type), body: null as string | null, active: true, seen: new Set<string>(),
+    url: casaswebSaleUrl(department, type), active: true, seen: new Set<string>(),
   })));
   const rows = new Map<string, OpportunityListing>(), unavailable = new Set<string>();
   let pagesRequested = 0, pagesRead = 0, failedPages = 0, consecutiveFailures = 0;
@@ -235,7 +216,7 @@ export async function harvestCasaswebSales(options: {
     if (pagesRequested >= maxPages || now().getTime() - started >= maxDuration) break sweep;
     pagesRequested++;
     let html: string | null = null;
-    try { html = await fetchPage(queue.url, queue.body); } catch { /* Keep prior source reads. */ }
+    try { html = await fetchPage(queue.url); } catch { /* Keep prior source reads. */ }
     const parsed = html ? readCasaswebSalePage(html, now().toISOString()) : null;
     if (!parsed) {
       queue.active = false; failedPages++;
@@ -248,7 +229,7 @@ export async function harvestCasaswebSales(options: {
     queue.seen.add(fingerprint);
     for (const row of parsed.listings) rows.set(row.id, row);
     parsed.unavailableIds.forEach(id => unavailable.add(id));
-    queue.body = parsed.nextBody; queue.active = queue.body !== null;
+    if (parsed.nextUrl) queue.url = parsed.nextUrl; else queue.active = false;
     options.onProgress?.(pagesRead, rows.size);
   }
   return { source: "casasweb", operation: "sale", ok: rows.size > 0, complete: false, readAt: now().toISOString(),

@@ -65,12 +65,14 @@ describe("bounded public commercial contacts", () => {
   });
   it("reads Casasweb's visible own WhatsApp without inventing an agency ID or taking another advert's block", () => {
     const advert = { listingId: "casasweb:123", title: "Apartamento luminoso", url: "https://casasweb.com/ALQUILER_APARTAMENTO_CW123" };
-    const page = `<title>CW123 Apartamento luminoso</title><h1>Apartamento luminoso</h1><li>Ref: CW123</li><center><h2 id="nombreInmo">Agencia pública</h2><a href="https://wa.me/59899123456?text=PRIVATE">WhatsApp</a></center><footer>private@example.com</footer>`;
+    // The advert page as served after the portal's 2026-10-07 redesign: the reference moved to the end of the title.
+    const page = `<title>Apartamento luminoso - CW123 | Casasweb</title><h1>Apartamento luminoso</h1><li>Ref: <b>CW123 </b></li><center><div class="cw-contacto-label">Consultá por esta propiedad</div><h2 id="nombreInmo">Agencia pública</h2><a href="https://wa.me/59899123456?text=PRIVATE">WhatsApp</a></center><footer>private@example.com</footer>`;
     const parsed = readCasaswebAdvertiser(page, advert, NOW)!;
     expect(parsed.sellerType).toBe("inmobiliaria"); expect(parsed.agency).toBeUndefined(); expect(parsed.ownerDirect).toBeNull();
     expect(parsed.publicContact?.channels).toEqual([{ kind: "whatsapp", value: "+59899123456", sourceUrl: advert.url, observedAt: NOW }]);
     expect(readCasaswebAdvertiser(page, { ...advert, listingId: "casasweb:124" }, NOW)).toBeNull();
-    expect(readCasaswebAdvertiser(page.replace("Ref: CW123", "Ref: CW124"), advert, NOW)).toBeNull();
+    expect(readCasaswebAdvertiser(page.replace("Ref: <b>CW123", "Ref: <b>CW124"), advert, NOW)).toBeNull();
+    expect(readCasaswebAdvertiser(page.replace("- CW123 |", "- CW1234 |"), advert, NOW)).toBeNull();
     expect(readCasaswebAdvertiser(page.replace("<h1>Apartamento luminoso", "<h1>Otra propiedad"), advert, NOW)).toBeNull();
   });
 });

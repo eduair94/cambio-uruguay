@@ -20,36 +20,61 @@ vi.mock("../../classes/rentals/sources/elpais_browser", () => ({ openSearchesWit
 const fixture = (name: string): string => readFileSync(join(__dirname, "fixtures", `${name}.html`), "utf8");
 afterEach(() => vi.resetAllMocks());
 
+// The fixture is the page served after the portal's 2026-10-07 redesign, which published every
+// card link with a leading slash, moved the photo to `src` and replaced the paging form with links:
+// the parser read 9 pages an hour and found 0 adverts in them.
 describe("Casasweb's public monthly-rental cards", () => {
-  it("keeps the rental price when the same card also advertises a sale", () => {
+  it("reads every card of the redesigned search page, keeping the rent when the card also advertises a sale", () => {
     const parsed = parseCasaswebPage(fixture("casasweb"))!;
-    expect(parsed.total).toBe(52);
-    expect(parsed.listings).toHaveLength(3);
+    expect(parsed).toMatchObject({ total: 1135, department: 1, propertyType: "a", currentPage: 1, cardCount: 4 });
+    expect(parsed.listings.map(row => row.listingId)).toEqual(["casasweb:CW255368", "casasweb:CW255283", "casasweb:CW258047", "casasweb:TKA7919965"]);
     expect(parsed.listings[0]).toMatchObject({
-      listingId: "casasweb:CW243972", currency: "USD", price: 1250,
-      department: "Montevideo", neighborhood: "Carrasco", propertyType: "casa",
-      bedrooms: 2, bathrooms: 3, area: 80, parkingSpaces: 1,
-      sellerName: "Cooper Inmobiliaria", address: "", commonExpenses: null,
+      currency: "UYU", price: 16000, department: "Montevideo", neighborhood: "Nuevo París", propertyType: "apartamento",
+      bedrooms: 2, bathrooms: 1, area: 45, parkingSpaces: null, sellerName: "Artigas Inmobiliaria", address: "", commonExpenses: null,
+      url: "https://casasweb.com/ALQUILER__ARTIGAS_INMOBILIARIA_APARTAMENTO_NUEVO_PAR%C3%8DS_MONTEVIDEO_CW255368",
+      image: "https://casasweb.com/fotos/3205566s.jpg",
     });
-    expect(parsed.listings[1]?.price).toBe(3000); // the sale is USD 480,000
-    expect(isPlausibleRent(parsed.listings[2]!.price * 40, "casa")).toBe(false);
+    expect(parsed.listings[1]).toMatchObject({ price: 14900, currency: "UYU" }); // the same card sells it for USD 40.000
+    expect(parsed.listings[2]).toMatchObject({ bedrooms: 3, parkingSpaces: 1, neighborhood: "Malvin Norte" });
+    expect(parsed.listings[3]?.image).toMatch(/^https:\/\/static\.tokkobroker\.com\/pictures\/7919965_/);
   });
 
-  it("submits only the next public search button with server-issued form state", () => {
-    const parsed = parseCasaswebPage(fixture("casasweb"))!;
-    const body = new URLSearchParams(parsed.nextBody!);
-    expect(body.get("__VIEWSTATE")).toBe("fixture-state");
-    expect(body.get("ctl00$content$btnP1")).toBe("2");
-    expect(body.has("ctl00$content$btnP0")).toBe(false);
-    expect(body.get("ctl00$content$drpNegocio")).toBe("A");
-    expect(casaswebSearchUrl(19, "c")).toBe("https://casasweb.com/resultados.aspx?m=0&n=A&t=c&x=19&z=0");
+  it("reads a rent in dollars and still rejects an amount no monthly rent can be", () => {
+    const html = fixture("casasweb").replace("<small>$</small>", "<small>USD</small>").replace("<small>MES</small> 16.000", "<small>MES</small> 120.000.000");
+    const row = parseCasaswebPage(html)!.listings[0]!;
+    expect(row).toMatchObject({ currency: "USD", price: 120_000_000 });
+    expect(isPlausibleRent(row.price * 40, row.propertyType)).toBe(false);
+  });
+
+  it("follows the next numbered link of the pager, and knows a page without pager is the only one", () => {
+    expect(parseCasaswebPage(fixture("casasweb"))!.nextUrl).toBe("https://casasweb.com/alquiler/apartamentos/montevideo?pag=2");
+    const withPager = (links: string) => fixture("casasweb").replace(/<div id="ctl00_content_pnlPager"[\s\S]*?<\/div>/, links === "" ? "" :
+      `<div id="ctl00_content_pnlPager" class="mb-2" role="group">${links}</div>`);
+    const link = (page: number, current = false, href = `/alquiler/apartamentos/montevideo${page > 1 ? `?pag=${page}` : ""}`) =>
+      `<a class='btn btn-sm ${current ? "btn-secondary" : "btn-outline-secondary"} p-1 mb-2 mx-1' href='${href}'${current ? " aria-current='page'" : ""}>${page}</a>`;
+    expect(parseCasaswebPage(withPager(link(1) + link(21) + link(22, true)))).toMatchObject({ currentPage: 22, nextUrl: null });
+    expect(parseCasaswebPage(withPager(""))).toMatchObject({ currentPage: 1, nextUrl: null });
+    // Two current pages, or none among several links, is not a page this parser can place.
+    expect(parseCasaswebPage(withPager(link(1, true) + link(2, true)))!.currentPage).toBeNull();
+    expect(parseCasaswebPage(withPager(link(1) + link(2)))!.currentPage).toBeNull();
+    // A pager that points away from the portal is not followed.
+    expect(parseCasaswebPage(withPager(link(1, true) + link(2, false, "https://example.com/?pag=2")))!.nextUrl).toBeNull();
+  });
+
+  it("asks for the portal's own canonical search pages, not the retired query that answered 404 for a day", () => {
+    expect(casaswebSearchUrl(19, "c")).toBe("https://casasweb.com/alquiler/casas/treinta-y-tres");
+    expect(casaswebSearchUrl(1, "a")).toBe("https://casasweb.com/alquiler/apartamentos/montevideo");
+    expect(casaswebSearchUrl(12, "l")).toBe("https://casasweb.com/alquiler/locales-comerciales/rio-negro");
+    expect(casaswebSearchUrl(16, "g", "venta")).toBe("https://casasweb.com/venta/garajes/san-jose");
+    expect(() => casaswebSearchUrl(20, "a")).toThrow();
+    expect(() => casaswebSearchUrl(1, "x")).toThrow();
   });
 
   it("rejects challenge pages, sale searches, and reserved/seasonal listings", () => {
     expect(parseCasaswebPage("<title>Just a moment...</title>")).toBeNull();
-    expect(parseCasaswebPage(fixture("casasweb").replace('selected value="A"', 'selected value="V"'))).toBeNull();
-    const html = fixture("casasweb").replace("Alquiler Casa Carrasco 2 Dormitorios 3 Baños Garaje Osaka", "Alquiler temporal por noche");
-    expect(parseCasaswebPage(html)!.listings).toHaveLength(2);
+    expect(parseCasaswebPage(fixture("casasweb").replace('selected="selected" value="A"', 'value="A"').replace('<option value="V">', '<option selected="selected" value="V">'))).toBeNull();
+    const html = fixture("casasweb").replaceAll("Alquiler Apartamento Nuevo París 2 Dormitorios 1 Baño", "Alquiler temporal por noche");
+    expect(parseCasaswebPage(html)!.listings).toHaveLength(3);
   });
 
   it("stops after three failed responses and cannot expire previous offers", async () => {

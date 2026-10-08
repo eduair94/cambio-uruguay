@@ -41,9 +41,10 @@ describe("a rented garage is distinct from a home's parking amenity", () => {
 
   it("retains the declared Casasweb type rather than classifying every parking amenity as a garage", () => {
     const html = readFileSync(join(__dirname, "fixtures", "casasweb.html"), "utf8");
-    expect(parseCasaswebPage(html)!.listings[0]).toMatchObject({ propertyType: "casa", parkingSpaces: 1 });
-    const garage = html.replace(/<b>Casa/, "<b>Garaje")
-      .replace("Alquiler Casa Carrasco 2 Dormitorios 3 Baños Garaje Osaka", "Alquiler garaje en edificio de apartamentos");
+    const withGarage = html.replaceAll("ALQUILER APARTAMENTO 3 DORMITORIOS", "ALQUILER APARTAMENTO 3 DORMITORIOS CON GARAJE");
+    expect(parseCasaswebPage(withGarage)!.listings[2]).toMatchObject({ propertyType: "apartamento", parkingSpaces: 1 });
+    const garage = html.replace(/<b>Apartamento/, "<b>Garaje")
+      .replaceAll("Alquiler Apartamento Nuevo París 2 Dormitorios 1 Baño", "Alquiler garaje en edificio de apartamentos");
     expect(parseCasaswebPage(garage)!.listings[0]!.propertyType).toBe("garaje");
   });
 

@@ -27,7 +27,7 @@ const UA =
   "CambioUruguayBot/1.0 (+https://cambio-uruguay.com/alquileres-uruguay; rental price index; contact via site)";
 
 export interface FetchOptions {
-  /** Only used to submit the public Casasweb search pagination form. */
+  /** Only used to open El País's saved searches; Casasweb pages by links since its 2026-10-07 redesign. */
   method?: "GET" | "POST";
   /**
    * `FormData` is for El País, whose search endpoint takes `multipart/form-data`. It is passed
