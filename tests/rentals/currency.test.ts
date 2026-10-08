@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  correctStoredRentCurrencies,
   inferRentalCurrencies,
   rentCurrencyVerdict,
   rentPriceCohorts,
   type RentPriceRow,
 } from "../../classes/rentals/currency";
-import type { RawRental } from "../../classes/rentals/types";
+import type { RawRental, RentalOffer } from "../../classes/rentals/types";
 
 const USD = 41.35;
 
@@ -113,3 +114,63 @@ describe("a home priced in pesos below anything its zone costs is a dollar price
     expect(thin.size).toBe(0);
   });
 });
+
+describe("adverts already stored are read the same way", () => {
+  const offer = (changes: Partial<RentalOffer>): RentalOffer => ({
+    source: "facebook",
+    listingId: "facebook:9",
+    url: "https://www.facebook.com/marketplace/item/9",
+    title: "ALQUILER EN CARRASCO 2 DORMITORIOS AMOBLADO VENTURA TOWER",
+    price: 2_500,
+    currency: "UYU",
+    priceUyu: 2_500,
+    commonExpenses: null,
+    commonExpensesCurrency: null,
+    sellerName: "",
+    sellerType: "desconocido",
+    image: null,
+    publishedAt: null,
+    parkingSpaces: null,
+    furnished: null,
+    petsAllowed: null,
+    guarantees: [],
+    firstSeen: "2026-10-01",
+    lastSeen: "2026-10-07",
+    ...changes,
+  });
+  const property = (offers: RentalOffer[]) => ({
+    title: offers[0]!.title,
+    propertyType: "otro" as const,
+    department: "Montevideo",
+    neighborhood: "Carrasco",
+    bedrooms: 2,
+    offers,
+  });
+
+  it("corrects a stored advert the run did not see again, at today's rate", () => {
+    const { offers, corrected } = correctStoredRentCurrencies(property([offer({})]), cohorts, USD);
+    expect(corrected).toBe(1);
+    expect(offers[0]).toMatchObject({ currency: "USD", price: 2_500, currencyInferred: true, priceUyu: Math.round(2_500 * USD) });
+  });
+
+  it("reads the advert's own identity before the property's fields", () => {
+    const own = offer({
+      identity: {
+        version: 1, propertyType: "otro", department: "Colonia", neighborhood: "Carmelo", address: "", street: "",
+        streetNumber: "", latitude: null, longitude: null, bedrooms: 1, bathrooms: null, area: null,
+      },
+      title: "Alquilo casa", price: 6_500, priceUyu: 6_500,
+    });
+    expect(correctStoredRentCurrencies(property([own]), cohorts, USD).corrected).toBe(0);
+  });
+
+  it("is idempotent and leaves every other advert untouched", () => {
+    const first = correctStoredRentCurrencies(property([offer({}), offer({ listingId: "infocasas:1", source: "infocasas", price: 40_000, priceUyu: 40_000 })]), cohorts, USD);
+    expect(first.corrected).toBe(1);
+    expect(first.offers[1]).toMatchObject({ currency: "UYU", price: 40_000 });
+    const again = correctStoredRentCurrencies(property(first.offers), cohorts, USD);
+    expect(again.corrected).toBe(0);
+    expect(again.offers).toEqual(first.offers);
+  });
+});
+
