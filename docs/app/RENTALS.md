@@ -1,5 +1,26 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Casasweb en el mapa — 8 de octubre de 2026
+
+La tarjeta de Casasweb no trae dirección ni coordenada: sus 2.696 propiedades vigentes tenían 0 % de
+coordenadas. La ficha propia dibuja un mapa Leaflet con un marcador rotulado con la referencia del
+aviso (`L.marker([lat, lng], …).bindTooltip('CW222638', …)`). `currency-rentals-casasweb-detail`
+(`sync_rentals_casasweb_detail.ts`, `classes/rentals/casaswebDetail.ts`) lo lee: 80 fichas por hora a
+los :25, sólo propiedades sin coordenada, primero viviendas de Montevideo, cada aviso una vez por mes.
+
+- **Medido antes de creerle.** Sin dirección no hay contra qué geocodificar, así que se midió el
+  barrio: en 60 fichas de Montevideo, 59 con marcador y 59 puntos distintos (no es el centroide del
+  barrio), y el barrio que declara el aviso coincide con el mayoritario de sus 15 vecinos con
+  coordenada de El País/InfoCasas en el **83 %**; esas mismas fuentes, contra sí mismas, dan 79 %. Los
+  desacuerdos son nombres ("Puerto del Buceo" contra "Puerto Buceo") o bordes.
+- **Identidad.** `parseCasaswebPin` exige que el `<title>` nombre la referencia del aviso (si no, no
+  concluye nada y no guarda) y descarta un marcador rotulado con otra referencia.
+- **Compartido con ML.** Guarda en `rentalcasaswebdetails`; la escritura inmediata y la reaplicación
+  en la cosecha (`applyDetailPins`, `classes/rentals/detailPins.ts`) son las mismas que las de
+  Mercado Libre: sólo una coordenada vacía, después del dedupe. Si una propiedad tiene avisos de los
+  dos portales, gana el pin de ML.
+- Prueba en seco el 2026-10-08: 25 de 25 fichas con marcador.
+
 ## Monoambientes de Mercado Libre — 8 de octubre de 2026
 
 La tira de atributos de la tarjeta de ML imprime "2 dormitorios" pero omite "0 dormitorios": los
@@ -36,7 +57,7 @@ oficial por coordenada no las veían. La tarjeta de búsqueda no trae ubicación
 - **Dónde se escribe.** `currency-rentals-ml-detail` lo guarda en `rentalmldetails` (`latitude`/
   `longitude`) en la misma lectura que los gastos comunes y completa la coordenada de la propiedad
   sólo si está VACÍA: un punto de InfoCasas o El País nunca se mueve. Las filas leídas antes no
-  tienen el campo y vuelven a leerse una vez. La cosecha lo reaplica (`applyMlPins`) **después de la
+  tienen el campo y vuelven a leerse una vez. La cosecha lo reaplica (`applyDetailPins`, `detailPins.ts`) **después de la
   deduplicación** y no en el aviso crudo: en el aviso sumaría completitud y cambiaría cuál es el
   canónico de un grupo multi-portal. Con varios avisos de ML en una propiedad decide el de menor id.
 - Prueba en seco el 2026-10-08 con la UA del bot: 20 de 20 fichas con pin. A 120 fichas por hora, las

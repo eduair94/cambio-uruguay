@@ -25,7 +25,7 @@ dotenv.config({ path: "app/.env", quiet: true });
 import { appDbConfigured } from "./classes/appdb";
 import { recordRentalPriceLogs } from "./classes/pricehistory/marketLog";
 import { refreshRentalPriceDrops } from "./classes/rentals/priceDrops";
-import { applyMlPins } from "./classes/rentals/mlDetail";
+import { applyDetailPins } from "./classes/rentals/detailPins";
 import { buildRentalProperties } from "./classes/rentals/dedupe";
 import { fetchUsdUyuRate } from "./classes/rentals/rate";
 import { harvestRentalMarket } from "./classes/rentals/sources";
@@ -122,14 +122,15 @@ async function main(): Promise<void> {
       `(${duplicatesCollapsed} repetidos unificados, ${merged} publicadas en más de un portal)`
   );
 
-  // The map pin of the Mercado Libre item pages (currency-rentals-ml-detail): the search card has no
-  // coordinate, so without this every run would blank it. After the dedupe on purpose — a point on
-  // the rows before it would change which advert is canonical in a multi-portal group.
+  // The map pin of the Mercado Libre and Casasweb advert pages (currency-rentals-ml-detail,
+  // currency-rentals-casasweb-detail): the search cards have no coordinate, so without this every
+  // run would blank it. After the dedupe on purpose — a point on the rows before it would change
+  // which advert is canonical in a multi-portal group.
   try {
-    const located = await applyMlPins(properties);
-    if (located) console.log(`[rentals] ${located} propiedades de Mercado Libre ubicadas con el pin de su ficha`);
+    const located = await applyDetailPins(properties);
+    for (const [source, count] of Object.entries(located)) console.log(`[rentals] ${count} propiedades de ${source} ubicadas con el pin de su ficha`);
   } catch (error) {
-    console.warn("[rentals] no se pudieron reaplicar los pines de las fichas de Mercado Libre", error);
+    console.warn("[rentals] no se pudieron reaplicar los pines de las fichas", error);
   }
 
   // A full sweep that comes back with half of what we had is an outage upstream, not a market that

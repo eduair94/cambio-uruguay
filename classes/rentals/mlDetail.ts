@@ -21,10 +21,11 @@
 // vendedor ("Andes 1200"); y 40 avisos SIN dirección dieron 39 pines distintos, o sea que no cae al
 // centroide del barrio. El "APPROXIMATE" de la página es el centroide del PAÍS (`geo_information`),
 // no el del aviso. Se publica en la propiedad sólo si su coordenada está vacía, después de la
-// deduplicación (`applyMlPins`), para no cambiar qué aviso es el canónico de un grupo.
+// deduplicación (`applyDetailPins`, detailPins.ts), para no cambiar qué aviso es el canónico.
 import { appConnection } from "../appdb";
+import { inUruguay, type RentalPin } from "./detailPins";
 import { parseCurrency, parseMoney } from "./normalize";
-import type { RawRental, RentalCurrency, RentalProperty } from "./types";
+import type { RawRental, RentalCurrency } from "./types";
 
 export const ML_DETAIL_COLLECTION = "rentalmldetails";
 /** Common expenses move with the building's budget, not every week: one read a month is enough. */
@@ -62,18 +63,6 @@ export function parseMlRentalExpenses(html: string): { amount: number; currency:
   return amount && amount > 0 && currency ? { amount, currency } : null;
 }
 
-export interface MlRentalPin {
-  latitude: number;
-  longitude: number;
-}
-
-// The rectangle around Uruguay also holds Buenos Aires; south of -34.3 the Uruguayan coast ends at
-// Colonia del Sacramento (-57.85), and anything further west is across the river.
-const inUruguay = (lat: number, lng: number): boolean =>
-  lat >= -35.1 && lat <= -30 && lng >= -58.6 && lng <= -53 && (lat > -34.3 || lng >= -58);
-/** Montevideo's department, with a margin: a pin outside it cannot be a Montevideo advert. */
-const inMontevideo = (lat: number, lng: number): boolean => lat >= -34.96 && lat <= -34.69 && lng >= -56.45 && lng <= -56.0;
-
 /**
  * The pin of the item page's own map. The page served to our (honest) UA has no interactive map,
  * only its static image, `<img data-testid="static-map" src="…staticmap?…&center=-34.88…%2C-56.17…">`;
@@ -81,7 +70,7 @@ const inMontevideo = (lat: number, lng: number): boolean => lat >= -34.96 && lat
  * (both read on MLU-701446219, 2026-10-08). Never the page's `geo_information`, which is the
  * centroid of Uruguay on every page.
  */
-export function parseMlRentalPin(html: string): MlRentalPin | null {
+export function parseMlRentalPin(html: string): RentalPin | null {
   const match =
     /data-testid="static-map"[^>]*?\ssrc="[^"]*?[?&;]center=(-?\d{1,2}\.\d+)(?:%2C|,)(-?\d{1,2}\.\d+)/.exec(html) ??
     /"map_info":\{.{0,200}?"location":\{"latitude":"?(-?\d{1,2}\.\d+)"?,"longitude":"?(-?\d{1,2}\.\d+)"?\}/s.exec(html);
@@ -92,12 +81,6 @@ export function parseMlRentalPin(html: string): MlRentalPin | null {
   // The country centroid, should a page ever put it on the map too.
   if (Math.abs(latitude + 32.522778) < 1e-4 && Math.abs(longitude + 55.765835) < 1e-4) return null;
   return { latitude, longitude };
-}
-
-/** Whether a pin may locate a property of that department: Montevideo's must fall inside it. */
-export function mlPinFits(pin: MlRentalPin, department: string): boolean {
-  if (!inUruguay(pin.latitude, pin.longitude)) return false;
-  return department !== "Montevideo" || inMontevideo(pin.latitude, pin.longitude);
 }
 
 /**
@@ -225,73 +208,4 @@ export async function applyMlDetails(rows: RawRental[], usdUyu: number): Promise
     filled++;
   }
   return filled;
-}
-
-/**
- * Puts a pin on the stored property right away — only when its coordinate is empty, so a point
- * another portal published (InfoCasas, El País) is never moved. The harvest keeps it (`applyMlPins`).
- */
-export async function writeMlDetailPin(target: Pick<MlDetailTarget, "key" | "department">, pin: MlRentalPin): Promise<boolean> {
-  if (!mlPinFits(pin, target.department)) return false;
-  const result = await listings().updateOne(
-    { key: target.key, latitude: null },
-    { $set: { latitude: pin.latitude, longitude: pin.longitude } }
-  );
-  return result.modifiedCount > 0;
-}
-
-/**
- * The pin of a property without a coordinate, from its Mercado Libre adverts' item pages. With
- * several ML adverts (the dedupe found them to be one unit) the lowest listing id decides, so the
- * point does not hop between runs.
- */
-export function mlPinFor(
-  property: Pick<RentalProperty, "department" | "latitude" | "offers">,
-  pins: ReadonlyMap<string, MlRentalPin>
-): MlRentalPin | null {
-  if (typeof property.latitude === "number") return null;
-  const ids = property.offers
-    .filter(offer => offer.source === "mercadolibre" && pins.has(offer.listingId))
-    .map(offer => offer.listingId)
-    .sort();
-  for (const id of ids) {
-    const pin = pins.get(id)!;
-    if (mlPinFits(pin, property.department)) return pin;
-  }
-  return null;
-}
-
-/**
- * The harvest's half for the pin: properties are rebuilt from the search cards every hour, and the
- * card has no coordinate, so without this the save would blank what the item page gave. Runs after
- * the dedupe. Returns how many properties it located.
- */
-export async function applyMlPins(properties: RentalProperty[]): Promise<number> {
-  const ids = [
-    ...new Set(
-      properties
-        .filter(property => typeof property.latitude !== "number")
-        .flatMap(property => property.offers.filter(offer => offer.source === "mercadolibre").map(offer => offer.listingId))
-    ),
-  ];
-  if (!ids.length) return 0;
-  const pins = new Map<string, MlRentalPin>();
-  for (let i = 0; i < ids.length; i += 5_000) {
-    const docs = await details()
-      .find(
-        { listingId: { $in: ids.slice(i, i + 5_000) }, latitude: { $type: "number" }, longitude: { $type: "number" } },
-        { projection: { _id: 0, listingId: 1, latitude: 1, longitude: 1 } }
-      )
-      .toArray();
-    for (const doc of docs) pins.set(String(doc.listingId), { latitude: Number(doc.latitude), longitude: Number(doc.longitude) });
-  }
-  let located = 0;
-  for (const property of properties) {
-    const pin = mlPinFor(property, pins);
-    if (!pin) continue;
-    property.latitude = pin.latitude;
-    property.longitude = pin.longitude;
-    located++;
-  }
-  return located;
 }

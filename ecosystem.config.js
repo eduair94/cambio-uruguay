@@ -443,6 +443,16 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // The map pin of Casasweb's advert pages for /alquileres-uruguay: its search card carries no
+      // address and no coordinate. At :25, away from the hourly harvest (:47) that reads the same site.
+      name: "currency-rentals-casasweb-detail",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_rentals_casasweb_detail.js",
+      cron_restart: "25 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Mercado Libre's price guide for the model-years the directory holds: the version catalogue
       // and a second opinion where our own sample is thin (it is ML's median, not a valuation).
       name: "currency-autos-guide",
