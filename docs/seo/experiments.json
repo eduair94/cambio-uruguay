@@ -19,6 +19,12 @@
   ],
   "experiments": [
     {
+      "id": "pagina-desalojo-de-alquiler",
+      "shippedOn": "2026-10-08",
+      "routes": ["/desalojo-de-alquiler-uruguay"],
+      "hypothesis": "Pagina nueva para la intencion que la familia de alquiler no contestaba: que hacer cuando llega una intimacion. El tema existia partido en dos renglones de un acordeon de /alquilar-en-uruguay, donde quien busca \"desalojo por falta de pago\" no entra. El angulo propio son los DOS regimenes con plazos distintos (Ley 19.889 arts. 421 y 437 a 444 contra Decreto-Ley 14.219 Cap. VIII Secc. 1) y la regla que decide cual rige: lo decide el contrato, no la deuda. Se mide como pagina nueva: clics propios de la ruta a los 28 dias."
+    },
+    {
       "id": "descripciones-de-las-guias-respuesta-primero-2",
       "shippedOn": "2026-10-07",
       "routes": [

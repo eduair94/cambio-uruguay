@@ -477,6 +477,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/alquilar-estando-en-clearing',
       },
       {
+        label: 'Desalojo de un alquiler',
+        description: 'Los plazos de los dos regímenes, con el artículo de cada uno.',
+        to: '/desalojo-de-alquiler-uruguay',
+      },
+      {
         label: 'Comparar portales',
         description: 'Qué portal publica qué, y cuánto se superponen.',
         to: '/comparar-portales-de-alquiler-uruguay',

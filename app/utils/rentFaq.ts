@@ -385,8 +385,15 @@ export const RENT_FAQ: readonly RentFaqEntry[] = Object.freeze([
   {
     cat: 'derechos',
     q: 'En el régimen común (Ley 14.219), ¿qué plazos de desalojo hay por falta de pago y al vencer el contrato?',
-    a: 'Por falta de pago (mal pagador): primero te intiman el pago con un plazo de 10 días hábiles; si no pagás, va a juicio y el juez concede un plazo de desalojo de 20 días, y recién después el lanzamiento. Si depositás lo adeudado más un 60% dentro del plazo para oponer excepciones, se desestima el desalojo, pero eso lo podés usar una sola vez. Si sos buen pagador y el contrato de casa-habitación vence, tenés derecho a un plazo de desalojo de hasta 1 año. Todo pasa por el juzgado.',
-    sourceUrl: 'https://www.impo.com.uy/bases/decretos-ley/14219-1974',
+    // El recargo es 40%, no 60%: el 60% es la redacción ORIGINAL de 1974 del artículo 51 y la
+    // Ley 15.799 de 30/12/1985, art. 17, le dio nueva redacción. El error no era simétrico —le
+    // pedía a un inquilino intimado un 50% más de plata de la que la ley exige para frenar el
+    // desalojo—, así que va con el artículo puntual como fuente. El año del buen pagador se saca
+    // de acá porque es de las causales del art. 24 (Capítulo VI) y no del desalojo por mora, y el
+    // art. 102 deja ese capítulo afuera para las fincas construidas después del 2/6/1968. El
+    // detalle completo, con los dos regímenes, vive en /desalojo-de-alquiler-uruguay.
+    a: 'Por falta de pago (mal pagador): primero te intiman el pago y caés en mora si no pagás dentro de los 10 días hábiles siguientes a la intimación (art. 55); después va a juicio y el juez concede un plazo de desalojo de 20 días (art. 48), y recién después el lanzamiento, que no puede hacerse efectivo hasta pasados 15 días hábiles de notificado (art. 62). Si consignás lo adeudado más un 40% dentro del plazo para oponer excepciones, el juicio queda clausurado, pero eso lo podés usar una sola vez (art. 51, redacción de la Ley 15.799). Ojo: el 60% que circula es el texto original de 1974, sustituido en 1985. Todo pasa por el juzgado.',
+    sourceUrl: 'https://www.impo.com.uy/bases/decretos-ley/14219-1974/51',
   },
   {
     cat: 'derechos',

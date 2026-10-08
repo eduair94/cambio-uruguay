@@ -458,6 +458,10 @@
           "label": "Alquilar estando en el Clearing"
         },
         {
+          "to": "/desalojo-de-alquiler-uruguay",
+          "label": "Desalojo de un alquiler"
+        },
+        {
           "to": "/comparar-portales-de-alquiler-uruguay",
           "label": "Comparar portales"
         },

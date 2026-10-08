@@ -3172,6 +3172,31 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El otro lado del contrato: `/garantia-de-alquiler-uruguay` contesta qué se firma al
+        // entrar, y nada contestaba qué pasa al dejar de pagar. La respuesta vivía en dos renglones
+        // de un acordeón de `/alquilar-en-uruguay`, donde quien busca "desalojo por falta de pago"
+        // no entra. El ángulo propio son los DOS regímenes: cuál te rige lo decide tu contrato (las
+        // cinco condiciones del art. 421 de la Ley 19.889), no la deuda, y los plazos no se parecen.
+        to: '/desalojo-de-alquiler-uruguay',
+        labelKey: 'nav.desalojoAlquiler',
+        icon: 'mdi-home-alert-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'desalojo uruguay',
+          'desalojo por falta de pago uruguay',
+          'cuanto tarda un desalojo uruguay',
+          'plazo de desalojo uruguay',
+          'me quieren desalojar uruguay',
+          'lanzamiento desalojo uruguay',
+          'intimacion de pago alquiler uruguay',
+          'mal pagador alquiler uruguay',
+          'ley 14219 desalojo',
+          'desalojo arrendamiento sin garantia luc',
+        ],
+      },
+      {
         to: '/deuda-de-gastos-comunes-uruguay',
         labelKey: 'nav.gastosComunes',
         icon: 'mdi-home-percent-outline',

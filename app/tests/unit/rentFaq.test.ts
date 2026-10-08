@@ -183,6 +183,18 @@ describe('rentFaq - grouping', () => {
     expect(e!.sourceUrl).toBe('https://www.impo.com.uy/bases/codigo-comercio/817-1865/112')
   })
 
+  it('pide el 40% vigente del art. 51, no el 60% de la redacción de 1974', () => {
+    // El Decreto-Ley 14.219 art. 51 pedía originalmente el 60%; la Ley 15.799 de 30/12/1985,
+    // art. 17, le dio nueva redacción y desde entonces es el 40%. La respuesta publicaba el 60%,
+    // o sea le pedía a un inquilino intimado un 50% más de plata de la que la ley exige para
+    // frenar el desalojo. Las dos redacciones conviven en los buscadores, así que esto va fijado.
+    const e = RENT_FAQ.find(x => /plazos de desalojo hay por falta de pago/i.test(x.q))!
+    expect(e.a).toMatch(/lo adeudado más un 40%/)
+    expect(e.a).not.toMatch(/lo adeudado más un 60%/)
+    expect(e.a).toMatch(/Ley 15\.799/)
+    expect(e.sourceUrl).toBe('https://www.impo.com.uy/bases/decretos-ley/14219-1974/51')
+  })
+
   it('covers the core high-demand topics', () => {
     const present = new Set(rentFaqByCategory().map(g => g.category.id))
     for (const id of [
