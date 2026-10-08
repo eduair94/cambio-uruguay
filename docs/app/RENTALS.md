@@ -87,8 +87,8 @@ oficial por coordenada no las veían. La tarjeta de búsqueda no trae ubicación
   tienen el campo y vuelven a leerse una vez. La cosecha lo reaplica (`applyDetailPins`, `detailPins.ts`) **después de la
   deduplicación** y no en el aviso crudo: en el aviso sumaría completitud y cambiaría cuál es el
   canónico de un grupo multi-portal. Con varios avisos de ML en una propiedad decide el de menor id.
-- Prueba en seco el 2026-10-08 con la UA del bot: 20 de 20 fichas con pin. A 120 fichas por hora, las
-  ~29.000 de ML se cubren en unos 10 días.
+- Prueba en seco el 2026-10-08 con la UA del bot: 20 de 20 fichas con pin. A 240 fichas por hora (desde el mismo 8/10), las
+  ~29.000 de ML se cubren en unos 5 días.
 
 ## Gastos comunes de Mercado Libre — 8 de octubre de 2026
 
@@ -96,7 +96,7 @@ Los ~30.000 avisos de Mercado Libre (la mitad del directorio) no tenían gastos 
 de búsqueda no los publica, así que "Menor total mensual" y los topes de total y de gastos comunes los
 dejaban afuera a todos. La ficha propia sí los publica, en la tabla de especificaciones ("Gastos
 comunes | 19.500 UYU"). `currency-rentals-ml-detail` (`sync_rentals_ml_detail.ts`,
-`classes/rentals/mlDetail.ts`) lee 120 fichas por hora, primero las viviendas de Montevideo, y cada
+`classes/rentals/mlDetail.ts`) lee 240 fichas por hora (120 hasta el 8/10: tardaban ~4 min sin fallas), primero las viviendas de Montevideo, y cada
 aviso una vez por mes.
 
 - **Un cero no cuenta.** En una muestra de 20 fichas, 16 tenían la fila y 5 de ellas decían "0 UYU",
