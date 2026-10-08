@@ -5,6 +5,8 @@ import * as cheerio from "cheerio";
 import { setTimeout as sleep } from "timers/promises";
 import { fetchText } from "../net";
 import { canonicalDepartment, inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, parseCurrency, parseMoney } from "../normalize";
+import { appDbConfigured } from "../../appdb";
+import { applyCasaswebDetails } from "../casaswebDetail";
 import type { RawRental } from "../types";
 import type { RentalSourceResult } from "./types";
 
@@ -224,9 +226,20 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
       await pause();
     }
   }
+  const listings = [...byId.values()];
+  // The card states neither common expenses nor bathrooms; what each advert's own page stated
+  // (currency-rentals-casasweb-detail) goes back on before saving, or every run would blank it.
+  let fromDetail = 0;
+  if (appDbConfigured()) {
+    try {
+      fromDetail = await applyCasaswebDetails(listings, usdUyu);
+    } catch (error) {
+      console.warn("[rentals] Casasweb: no se pudieron reaplicar los datos de las fichas", error);
+    }
+  }
   return {
-    key: "casasweb", ok: byId.size > 0, complete: !incomplete, listings: [...byId.values()],
-    note: `${pages} páginas, ${byId.size} avisos únicos; departamentos consultados: ${attemptedDepartments.size}` +
+    key: "casasweb", ok: byId.size > 0, complete: !incomplete, listings,
+    note: `${pages} páginas, ${byId.size} avisos únicos (${fromDetail} completados con su ficha); departamentos consultados: ${attemptedDepartments.size}` +
       (incomplete ? " — cobertura parcial; se conservan avisos no vistos" : "") +
       (recovered ? `; ${count(recovered, "búsqueda leída", "búsquedas leídas")} tras una pausa` : "") +
       (failed ? `; ${count(failed, "búsqueda fallida", "búsquedas fallidas")}: ${[...reasons].map(([reason, n]) => `${reason} ×${n}`).join(", ")}` : ""),
