@@ -417,14 +417,7 @@ export const RENTAL_SELLER_LABEL: Record<RentalSellerType, string> = {
 }
 
 export type RentalSort =
-  | 'recientes'
-  | 'precio'
-  | 'precio-desc'
-  | 'total'
-  | 'precio-m2'
-  | 'metros'
-  | 'baja'
-  | 'distancia'
+  'recientes' | 'precio' | 'precio-desc' | 'total' | 'precio-m2' | 'metros' | 'baja' | 'distancia'
 
 export const RENTAL_SORTS: ReadonlyArray<{ value: RentalSort; label: string }> = Object.freeze([
   { value: 'recientes', label: 'Más recientes' },
