@@ -278,6 +278,25 @@ export interface RentalProperty {
   freshAt: string
   firstSeen: string
   lastSeen: string
+  /**
+   * The largest recent drop among the shown adverts (`bajo=1` filters on it). Written by the rentals
+   * harvest from `marketpricelogs`; absent when no advert dropped in the window.
+   */
+  priceDrop?: RentalPriceDrop | null
+}
+
+/** Espejo de `classes/rentals/priceDrops.ts`: los dos lados tienen que hablar de la misma ventana. */
+export const RENTAL_PRICE_DROP_DAYS = 30
+
+export interface RentalPriceDrop {
+  listingId: string
+  from: number
+  to: number
+  currency: RentalCurrency
+  /** Day of the drop (YYYY-MM-DD). */
+  at: string
+  /** Percentage, one decimal. */
+  pct: number
 }
 
 /** Fields returned publicly; addressKey only supports internal deduplication. */
@@ -453,6 +472,8 @@ export interface RentalQuery {
    * las consultas armadas a mano.
    */
   sinceDays?: number | null
+  /** Sólo las que bajaron de precio en los últimos {@link RENTAL_PRICE_DROP_DAYS} días (`bajo=1`). */
+  priceDropped?: boolean
   source: string
   bedrooms: number | null
   bedroomsExact: boolean
@@ -684,6 +705,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     sharedLiving: normalizeRentalSharedLivingFilter(input.residencias ?? input.sharedLiving),
     sinceDays:
       sinceDays !== null && sinceDays >= 1 && sinceDays <= RENTAL_SINCE_DAYS_MAX ? sinceDays : null,
+    priceDropped: enabled(input.bajo ?? input.priceDropped),
     source: Object.hasOwn(RENTAL_SOURCE_LABEL, source) ? source : '',
     bedrooms: bedrooms !== null && bedrooms >= 0 && bedrooms <= 10 ? bedrooms : null,
     bedroomsExact: enabled(input.bedroomsExact),
@@ -735,6 +757,7 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   if (query.excludeWords?.length) params.sinPalabras = query.excludeWords.join(',')
   if (query.sharedLiving) params.residencias = query.sharedLiving
   if (query.sinceDays) params.dias = String(query.sinceDays)
+  if (query.priceDropped) params.bajo = '1'
   if (query.source) params.source = query.source
   if (query.bedrooms !== null) params.bedrooms = String(query.bedrooms)
   if (query.bedroomsExact) params.bedroomsExact = '1'
@@ -1112,6 +1135,10 @@ export function buildRentalFilter(
   // Indexed (`freshAt` + `key`). The public pipeline matches it again after recomputing `freshAt`
   // from the adverts it keeps, so hiding a portal cannot leave a home "new" only through that portal.
   if (query.sinceDays) nonLocation.freshAt = { $gte: rentalSinceCutoff(query.sinceDays) }
+  // By the drop's own date: a property the last hourly run did not touch stops counting once its
+  // drop leaves the window, without waiting for the daily run to unset it.
+  if (query.priceDropped)
+    nonLocation['priceDrop.at'] = { $gte: rentalSinceCutoff(RENTAL_PRICE_DROP_DAYS) }
   if (query.bedrooms !== null)
     nonLocation.bedrooms =
       query.bedrooms === 0 || query.bedroomsExact ? query.bedrooms : { $gte: query.bedrooms }
@@ -1530,6 +1557,10 @@ export function rentalPublicStages(
         lastSeen: { $max: '$offers.lastSeen' },
         freshAt: {
           $ifNull: [{ $max: '$offers.publishedAt' }, { $max: '$offers.firstSeen' }],
+        },
+        // Only while the advert that dropped is among the ones kept: hiding its portal hides the drop.
+        priceDrop: {
+          $cond: [{ $in: ['$priceDrop.listingId', '$offers.listingId'] }, '$priceDrop', '$$REMOVE'],
         },
         matchingOffer: {
           $reduce: {

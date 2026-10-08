@@ -470,6 +470,25 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                           })
                         }}
                       </p>
+                      <p
+                        v-if="property.priceDrop"
+                        class="rental-card__gap"
+                        data-testid="rental-card-drop"
+                        :title="t('dropNote')"
+                      >
+                        <VIcon size="14" aria-hidden="true">mdi-arrow-down</VIcon>
+                        {{
+                          t('dropLine', {
+                            pct: numberFormat(property.priceDrop.pct),
+                            from: rentalPriceLabel(
+                              property.priceDrop.from,
+                              property.priceDrop.currency,
+                              0
+                            ),
+                            date: dateLabel(property.priceDrop.at),
+                          })
+                        }}
+                      </p>
                     </div>
 
                     <h3>
@@ -991,6 +1010,7 @@ const filterChips = computed(() => {
     add('residencias', t(q.sharedLiving === 'solo' ? 'sharedLivingOnly' : 'sharedLivingHideChip'))
   if (q.sinceDays)
     add('dias', q.sinceDays === 1 ? t('sinceYesterday') : t('sinceLastDays', { n: q.sinceDays }))
+  if (q.priceDropped) add('bajo', t('priceDroppedChip'))
   if (q.q) add('q', q.q)
   if (q.agency) add('agency', agencyName.value || t('selectedAgency'))
   if (q.bedrooms !== null)

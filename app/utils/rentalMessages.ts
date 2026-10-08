@@ -257,6 +257,10 @@ export const rentalMessages = {
     loadingPhotos: 'Buscando el resto de las fotos…',
     portals: '{n} portales',
     gapLine: 'Más barato en {cheap}: {diff} menos que en {dear} ({pct} %)',
+    dropLine: 'Bajó {pct} %: antes {from}, desde el {date}',
+    dropNote: 'Lo vimos bajar en el portal; el precio de arriba ya es el nuevo.',
+    priceDropped: 'Bajó de precio en los últimos 30 días',
+    priceDroppedChip: 'Bajó de precio',
     currencyInferred: 'Publicado en pesos; por el monto y la zona, son dólares.',
     gapNote:
       'Compara el alquiler pedido en cada aviso, no el total con gastos comunes; un aviso en dólares se pasa a pesos con la cotización de la lectura. Confirmá precio y condiciones con el anunciante.',
@@ -590,6 +594,10 @@ export const rentalMessages = {
     loadingPhotos: 'Fetching the remaining photos…',
     portals: '{n} portals',
     gapLine: 'Cheaper on {cheap}: {diff} less than on {dear} ({pct} %)',
+    dropLine: 'Down {pct} %: was {from}, since {date}',
+    dropNote: 'We saw it drop on the portal; the price above is already the new one.',
+    priceDropped: 'Price dropped in the last 30 days',
+    priceDroppedChip: 'Price dropped',
     currencyInferred: 'Listed in pesos; given the amount and the area, it is dollars.',
     gapNote:
       'This compares the rent each advert asks for, not the total with common expenses; an advert priced in dollars is converted at the reading’s rate. Confirm price and terms with the advertiser.',
@@ -929,6 +937,10 @@ export const rentalMessages = {
     loadingPhotos: 'Buscando as demais fotos…',
     portals: '{n} portais',
     gapLine: 'Mais barato em {cheap}: {diff} a menos do que em {dear} ({pct} %)',
+    dropLine: 'Baixou {pct} %: antes {from}, desde {date}',
+    dropNote: 'Vimos o preço baixar no portal; o valor acima já é o novo.',
+    priceDropped: 'Baixou de preço nos últimos 30 dias',
+    priceDroppedChip: 'Baixou de preço',
     currencyInferred: 'Publicado em pesos; pelo valor e a região, são dólares.',
     gapNote:
       'Compara o aluguel pedido em cada anúncio, não o total com condomínio; um anúncio em dólares é convertido pela cotação da leitura. Confirme preço e condições com o anunciante.',

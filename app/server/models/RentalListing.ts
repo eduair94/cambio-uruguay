@@ -42,6 +42,8 @@ const RentalListingSchema = new Schema(
     offers: { type: [Schema.Types.Mixed], default: [] },
     /** Written by the backend zone job; the app only reads it. */
     officialZone: { type: Schema.Types.Mixed, default: undefined },
+    /** Written by the backend rentals harvest (`classes/rentals/priceDrops.ts`); the app only reads it. */
+    priceDrop: { type: Schema.Types.Mixed, default: undefined },
     sources: { type: [String], default: [] },
     freshAt: { type: String, default: '' },
     firstSeen: { type: String, required: true },

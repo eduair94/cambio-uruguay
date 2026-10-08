@@ -1,5 +1,24 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Bajó de precio (`bajo=1`) — 8 de octubre de 2026
+
+Cada cosecha ya escribía un punto de precio por aviso en `marketpricelogs`
+(`classes/pricehistory/marketLog.ts`); el directorio no lo usaba. Medido el 2026-10-08: 2.469 avisos
+cuyo último cambio en 14 días fue una baja, contra 415 subas. Ahora, después de registrar el punto,
+`refreshRentalPriceDrops` (`classes/rentals/priceDrops.ts`) escribe en la propiedad `priceDrop`
+`{ listingId, from, to, currency, at, pct }`: la mayor baja de los últimos 30 días entre sus avisos,
+leída con la misma normalización que `/cambios-de-precio-uruguay` (`seriesFromMarketLog`: sólo la
+cola en la moneda actual, y un salto de ×5 no es un cambio de precio). Tres condiciones más: el aviso
+todavía pide el precio bajado, en la misma moneda (si se movió otra vez no es el precio que muestra
+la tarjeta); la baja es de al menos 1 % (la tarjeta redondea y diría "Bajó 0 %"); y sólo se escribe lo
+que cambió. Como `officialZone`, la escribe sólo ese paso y el store nunca la borra.
+
+El filtro va por la fecha de la baja (`priceDrop.at` dentro de la ventana), así que una propiedad que
+la última horaria no tocó deja de contar sola. El pipeline público la saca si el aviso que bajó no está
+entre los que se muestran: ocultar un portal no deja "más barata" a una vivienda por ese portal. La
+tarjeta lo dice en verde, como la diferencia entre portales: "Bajó 10 %: antes $ 30.000, desde el
+03/10". Las alertas guardadas la rechazan: mandan avisos nuevos, no cambios de precio.
+
 ## Publicadas en los últimos N días (`dias=`) — 8 de octubre de 2026
 
 `dias=1|3|7|14|30` (la URL acepta 1–90) filtra por `freshAt`, que es lo mismo que ordena "más

@@ -217,6 +217,13 @@ export function normalizeRentalAlertFilters(
   const allowed = kind === 'rental-search' ? searchKeys : opportunityKeys
   for (const [key, value] of Object.entries(input)) {
     if (presentation.has(key) || !populated(value)) continue
+    // "Bajó de precio" is about adverts already published; an alert only sends new ones, so the
+    // criterion cannot be honoured. Off (as the normalized query always carries it) is no criterion.
+    if (key === 'bajo' || key === 'priceDropped') {
+      if ([true, '1', 1, 'true'].includes(value as string | number | boolean))
+        throw new RentalAlertValidationError('unsupported_filter')
+      continue
+    }
     if (!allowed.has(key)) throw new RentalAlertValidationError('unsupported_filter')
     const values = Array.isArray(value) ? value : [value]
     if (Array.isArray(value) && (!arrayKeys.has(key) || value.length > 20))
