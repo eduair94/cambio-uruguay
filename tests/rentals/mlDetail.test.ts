@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { mlDetailExpenses, parseMlRentalExpenses, prioritizeMlDetailTargets, type MlDetailTarget } from "../../classes/rentals/mlDetail";
+import {
+  mlDetailExpenses,
+  mlPinFits,
+  mlPinFor,
+  parseMlRentalExpenses,
+  parseMlRentalPin,
+  prioritizeMlDetailTargets,
+  type MlDetailTarget,
+  type MlRentalPin,
+} from "../../classes/rentals/mlDetail";
+import type { RentalProperty } from "../../classes/rentals/types";
 
 // The spec table of a Mercado Libre rental item page, as served on 2026-10-08 (MLU-695924825).
 const specRow = (value: string) =>
@@ -69,5 +79,71 @@ describe("which item pages are read first", () => {
       "mercadolibre:MLU4",
       "mercadolibre:MLU2",
     ]);
+  });
+});
+
+// The item page's map, as served on 2026-10-08 (MLU-701446219, La Comercial). The same page also
+// carries `geo_information`, the centroid of Uruguay marked "APPROXIMATE", on every advert.
+const COUNTRY = `"geo_information":{"location":{"latitude":-32.522778,"longitude":-55.765835,"type":"APPROXIMATE"}}`;
+const mapInfo = (lat: string, lng: string) =>
+  `"map_info":{"icon":{"id":"PIN_REAL_ESTATE"},"location":{"latitude":"${lat}","longitude":"${lng}"},"action":{"timeout":0}}`;
+
+// What our own UA is served instead (same advert, same day): no interactive map, only its image.
+const staticMap = (lat: string, lng: string) =>
+  `<span class="ui-pdp-media"><img class="ui-pdp-image" data-testid="static-map" src="https://maps.googleapis.com/maps/api/staticmap?key=K&amp;maptype=roadmap&amp;scale=1&amp;format=jpg&amp;center=${lat}%2C${lng}&amp;zoom=16&amp;size=732x300&amp;signature=S" srcSet="x"/></span>`;
+
+describe("the map pin of a Mercado Libre rental item page", () => {
+  it("reads the static map the page serves our UA", () => {
+    expect(parseMlRentalPin(`${COUNTRY} … ${staticMap("-34.889821", "-56.178567")}`)).toEqual({
+      latitude: -34.889821,
+      longitude: -56.178567,
+    });
+  });
+
+  it("reads the advert's own map, never the country centroid next to it", () => {
+    expect(parseMlRentalPin(`${COUNTRY} … ${mapInfo("-34.889821", "-56.178567")}`)).toEqual({
+      latitude: -34.889821,
+      longitude: -56.178567,
+    });
+    expect(parseMlRentalPin(COUNTRY)).toBeNull();
+    expect(parseMlRentalPin(mapInfo("-32.522778", "-55.765835"))).toBeNull();
+  });
+
+  it("refuses a point outside Uruguay", () => {
+    // Buenos Aires sits inside the rectangle around Uruguay, across the river.
+    expect(parseMlRentalPin(mapInfo("-34.6037", "-58.3816"))).toBeNull();
+    expect(parseMlRentalPin(mapInfo("-34.4626", "-57.8400"))).not.toBeNull();
+    expect(parseMlRentalPin(mapInfo("0", "0"))).toBeNull();
+  });
+
+  it("keeps a Montevideo advert inside Montevideo", () => {
+    expect(mlPinFits({ latitude: -34.9053785, longitude: -56.1858464 }, "Montevideo")).toBe(true);
+    // Punta del Este: a fine pin for Maldonado, an impossible one for a Montevideo advert.
+    expect(mlPinFits({ latitude: -34.9626271, longitude: -54.941175 }, "Montevideo")).toBe(false);
+    expect(mlPinFits({ latitude: -34.9626271, longitude: -54.941175 }, "Maldonado")).toBe(true);
+  });
+});
+
+describe("which pin locates a property", () => {
+  const offer = (listingId: string, source = "mercadolibre") => ({ listingId, source }) as RentalProperty["offers"][number];
+  const property = (offers: RentalProperty["offers"], latitude: number | null = null) =>
+    ({ department: "Montevideo", latitude, offers }) as Pick<RentalProperty, "department" | "latitude" | "offers">;
+  const pins = new Map<string, MlRentalPin>([
+    ["MLU2", { latitude: -34.90, longitude: -56.18 }],
+    ["MLU1", { latitude: -34.91, longitude: -56.16 }],
+    ["MLU9", { latitude: -34.96, longitude: -54.94 }],
+  ]);
+
+  it("never moves a point another portal published", () => {
+    expect(mlPinFor(property([offer("MLU1")], -34.88), pins)).toBeNull();
+  });
+
+  it("takes the lowest listing id, so the point does not hop between runs", () => {
+    expect(mlPinFor(property([offer("MLU2"), offer("INF7", "infocasas"), offer("MLU1")]), pins)).toEqual(pins.get("MLU1"));
+  });
+
+  it("skips a pin that cannot be in the property's department", () => {
+    expect(mlPinFor(property([offer("MLU9")]), pins)).toBeNull();
+    expect(mlPinFor(property([offer("MLU9"), offer("MLU2")]), pins)).toEqual(pins.get("MLU2"));
   });
 });

@@ -1,5 +1,36 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Mercado Libre en el mapa — 8 de octubre de 2026
+
+Medido el 2026-10-08 sobre las propiedades vistas en los últimos 10 días: Mercado Libre, la fuente
+más grande (28.899), tenía **0 %** de coordenadas (InfoCasas 50 %, El País 100 %, Facebook 13 %).
+Sin punto, el mapa, "más cerca de", el radio alrededor de una sede, los servicios cercanos y la zona
+oficial por coordenada no las veían. La tarjeta de búsqueda no trae ubicación; la ficha sí.
+
+- **Qué se lee.** A nuestra UA (la del bot, sin disfrazar) ML le sirve la ficha **sin** el mapa
+  interactivo, pero con su imagen estática: `<img data-testid="static-map" src="…staticmap?…&center=LAT%2CLNG">`.
+  A un navegador le agrega `map_info.location`, con el mismo punto. `parseMlRentalPin` lee la imagen
+  y, si no está, `map_info`. El `"APPROXIMATE"` que aparece en la página es `geo_information`, el
+  centroide de Uruguay en TODAS las fichas, no el aviso.
+- **Por qué se le cree.** El pin de Marketplace resultó ser una grilla de ~1 km
+  (ver Facebook más abajo), así que antes de publicar éste se midió: contra 38
+  direcciones con número geocodificadas por Google (ROOFTOP o interpolada), **mediana 0 m, p75 27 m,
+  p90 161 m**; los lejanos son números que el vendedor redondea ("Andes 1200"). 40 avisos SIN
+  dirección dieron 39 pines distintos: no cae al centroide del barrio. Dos errores de 1,4 y 14 km
+  fueron de Google (resultado `APPROXIMATE`), no de ML.
+- **Guardas.** Dentro de Uruguay (al sur de -34,3 nada al oeste de Colonia: Buenos Aires cae dentro
+  del rectángulo), nunca el centroide del país, y un aviso de Montevideo con el pin dentro de
+  Montevideo. La zona oficial por coordenada ya ignora un punto compartido por varias propiedades
+  (`classes/propertyzones/assign.ts`), que es lo que pasa con varias unidades de un mismo edificio.
+- **Dónde se escribe.** `currency-rentals-ml-detail` lo guarda en `rentalmldetails` (`latitude`/
+  `longitude`) en la misma lectura que los gastos comunes y completa la coordenada de la propiedad
+  sólo si está VACÍA: un punto de InfoCasas o El País nunca se mueve. Las filas leídas antes no
+  tienen el campo y vuelven a leerse una vez. La cosecha lo reaplica (`applyMlPins`) **después de la
+  deduplicación** y no en el aviso crudo: en el aviso sumaría completitud y cambiaría cuál es el
+  canónico de un grupo multi-portal. Con varios avisos de ML en una propiedad decide el de menor id.
+- Prueba en seco el 2026-10-08 con la UA del bot: 20 de 20 fichas con pin. A 120 fichas por hora, las
+  ~29.000 de ML se cubren en unos 10 días.
+
 ## Gastos comunes de Mercado Libre — 8 de octubre de 2026
 
 Los ~30.000 avisos de Mercado Libre (la mitad del directorio) no tenían gastos comunes: la tarjeta
