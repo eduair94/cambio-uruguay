@@ -51,6 +51,20 @@
               v-bind="field"
               class="rental-search__wide"
             />
+            <VAutocomplete
+              v-model="draft.excludeNeighborhoods"
+              :items="excludeNeighborhoodItems"
+              :custom-filter="rentalTextMatches"
+              :label="t('excludeNeighborhoods')"
+              multiple
+              chips
+              closable-chips
+              clear-on-select
+              clearable
+              v-bind="field"
+              class="rental-search__wide"
+              data-testid="rental-filter-excludeNeighborhoods"
+            />
             <ZonesPicker
               :model-value="directoryZones"
               :department="draft.department"
@@ -105,6 +119,26 @@
               data-testid="rental-filter-type"
             />
             <VSelect
+              v-model="draft.excludeTypes"
+              :items="typeItems"
+              :label="t('excludeTypes')"
+              multiple
+              chips
+              closable-chips
+              clearable
+              v-bind="field"
+              class="rental-search__wide"
+              data-testid="rental-filter-excludeTypes"
+            />
+            <VSelect
+              v-model="draft.sharedLiving"
+              :items="sharedLivingItems"
+              :label="t('sharedLiving')"
+              v-bind="field"
+              class="rental-search__wide"
+              data-testid="rental-filter-sharedLiving"
+            />
+            <VSelect
               v-model="draft.bedrooms"
               :items="bedroomItems"
               :label="t('bedrooms')"
@@ -122,6 +156,10 @@
           <p v-if="draft.types.includes('vivienda')" class="rental-search__hint">
             {{ t('homesHint') }}
           </p>
+          <p v-if="draft.excludeTypes.length" class="rental-search__hint">
+            {{ t('excludeTypesHint') }}
+          </p>
+          <p v-if="draft.sharedLiving" class="rental-search__hint">{{ t('sharedLivingHint') }}</p>
         </fieldset>
         <details
           class="rental-search__group"
@@ -218,7 +256,17 @@
               v-bind="field"
               class="rental-search__wide"
             />
+            <VTextField
+              v-model="excludeWordsText"
+              :label="t('excludeWords')"
+              maxlength="400"
+              clearable
+              v-bind="field"
+              class="rental-search__wide"
+              data-testid="rental-filter-excludeWords"
+            />
           </div>
+          <p class="rental-search__hint">{{ t('excludeWordsHint') }}</p>
           <div class="rental-search__checks">
             <VCheckbox
               v-model="draft.pets"
@@ -384,6 +432,19 @@
               class="rental-search__wide"
             />
             <VSelect
+              v-if="!draft.source"
+              v-model="draft.excludeSources"
+              :items="excludeSourceItems"
+              :label="t('excludeSources')"
+              multiple
+              chips
+              closable-chips
+              clearable
+              v-bind="field"
+              class="rental-search__wide"
+              data-testid="rental-filter-excludeSources"
+            />
+            <VSelect
               v-model="draft.currency"
               :items="currencyItems"
               :label="t('currency')"
@@ -398,6 +459,9 @@
               class="rental-search__wide"
             />
           </div>
+          <p v-if="!draft.source && draft.excludeSources.length" class="rental-search__hint">
+            {{ t('excludeSourcesHint') }}
+          </p>
           <p class="rental-search__hint">{{ availabilityCopy.filterHint }}</p>
           <VCheckbox
             v-model="draft.multi"
@@ -530,7 +594,8 @@ const advancedOpen = ref(
       props.query.parking ||
       props.query.furnished ||
       props.query.pets ||
-      props.query.amenities.length
+      props.query.amenities.length ||
+      props.query.excludeWords?.length
     )
 )
 const costsOpen = ref(
@@ -546,6 +611,7 @@ const sourceOpen = ref(
   !props.mobile &&
     Boolean(
       props.query.source ||
+      props.query.excludeSources?.length ||
       props.query.agency ||
       props.query.currency ||
       props.query.availability !== 'all' ||
@@ -733,30 +799,58 @@ function focusDialogHeading() {
   if (dialogHeading.value?.closest('form')?.contains(document.activeElement)) return
   dialogHeading.value?.focus({ preventScroll: true })
 }
-const copy = (query: RentalQuery): RentalQuery => ({
+/** The form always holds the exclusions, even when a hand-built query left them out. */
+type RentalDraft = RentalQuery &
+  Required<
+    Pick<
+      RentalQuery,
+      'excludeNeighborhoods' | 'excludeTypes' | 'excludeSources' | 'excludeWords' | 'sharedLiving'
+    >
+  >
+const copy = (query: RentalQuery): RentalDraft => ({
   ...query,
   types: [...query.types],
   neighborhoods: [...query.neighborhoods],
+  excludeNeighborhoods: [...(query.excludeNeighborhoods ?? [])],
+  excludeTypes: [...(query.excludeTypes ?? [])],
+  excludeSources: [...(query.excludeSources ?? [])],
+  excludeWords: [...(query.excludeWords ?? [])],
+  sharedLiving: query.sharedLiving ?? '',
   guarantees: [...query.guarantees],
   amenities: [...query.amenities],
   sedes: [...query.sedes],
   servicios: (query.servicios ?? []).map(selection => ({ ...selection })),
 })
 const draft = ref(copy(props.query))
-const directoryZones = computed<RentalZonePreferences>(() => ({
-  mode: 'only',
-  include: draft.value.department
-    ? draft.value.neighborhoods.map(neighborhood => ({
-        department: draft.value.department,
-        neighborhood,
-      }))
-    : [],
-  exclude: [],
-}))
+const directoryZones = computed<RentalZonePreferences>(() => {
+  const zones = (names: string[]) =>
+    draft.value.department
+      ? names.map(neighborhood => ({ department: draft.value.department, neighborhood }))
+      : []
+  return {
+    mode: 'only',
+    include: zones(draft.value.neighborhoods),
+    exclude: zones(draft.value.excludeNeighborhoods),
+  }
+})
+// Typed as text and read only on submit: splitting on every keystroke would eat the comma the
+// person is typing. The query's own parser decides what counts as a word.
+const excludeWordsText = ref(draft.value.excludeWords.join(', '))
+const parseExcludeWords = (text: string | null) =>
+  normalizeRentalQuery({ sinPalabras: text ?? '' }).excludeWords ?? []
+watch(
+  () => draft.value.excludeWords,
+  words => {
+    if (parseExcludeWords(excludeWordsText.value).join(',') !== words.join(','))
+      excludeWordsText.value = words.join(', ')
+  }
+)
 function applyZones(zones: RentalZonePreferences) {
-  if (zones.include.length) draft.value.department = zones.include[0]!.department
+  const first = zones.include[0] ?? zones.exclude[0]
+  if (first) draft.value.department = first.department
   draft.value.neighborhoods = zones.include.map(zone => zone.neighborhood)
   draft.value.neighborhood = zones.include.length === 1 ? zones.include[0]!.neighborhood : ''
+  draft.value.excludeNeighborhoods = zones.exclude.map(zone => zone.neighborhood)
 }
 const institution = ref(
   MUTUALISTA_SEDES.find(s => s.osmId === props.query.sedes[0])?.mutualista || ''
@@ -799,9 +893,25 @@ const departments = computed(() => [
   ).map(value => ({ title: value, value })),
 ])
 const neighborhoods = computed(() =>
-  Array.from(new Set([...props.neighborhoods.map(f => f.value), ...draft.value.neighborhoods])).map(
-    value => ({ title: value, value })
-  )
+  Array.from(
+    new Set([
+      ...props.neighborhoods.map(f => f.value),
+      ...draft.value.neighborhoods,
+      ...draft.value.excludeNeighborhoods,
+    ])
+  ).map(value => ({ title: value, value }))
+)
+// A barrio already chosen to include is not offered to exclude (the query would drop it anyway).
+const excludeNeighborhoodItems = computed(() =>
+  neighborhoods.value.filter(item => !draft.value.neighborhoods.includes(item.value))
+)
+const sharedLivingItems = computed(() => [
+  { title: t('sharedLivingShow'), value: '' },
+  { title: t('sharedLivingHide'), value: 'ocultar' },
+  { title: t('sharedLivingOnly'), value: 'solo' },
+])
+const excludeSourceItems = computed(() =>
+  Object.entries(RENTAL_SOURCE_LABEL).map(([value, title]) => ({ title, value }))
 )
 const typeItems = computed(() => [
   { title: t('homes'), value: 'vivienda' },
@@ -914,12 +1024,14 @@ const costSummary = computed(() =>
     draft.value.withExpenses && t('expensesKnown'),
   ])
 )
+const excludedWords = computed(() => parseExcludeWords(excludeWordsText.value))
 const featureSummary = computed(() =>
   summary([
     draft.value.pets && t('pets'),
     draft.value.parking && t('parking'),
     draft.value.furnished && t('furnished'),
     ...draft.value.amenities.map(value => t(`amenity-${value}`)),
+    excludedWords.value.length > 0 && t('without', { items: excludedWords.value.join(', ') }),
     present(draft.value.bathrooms) &&
       `${t('bathrooms')}: ${t('atLeast', { n: draft.value.bathrooms })}`,
     amountSummary('areaMin'),
@@ -934,6 +1046,11 @@ const sourceSummary = computed(() =>
   summary([
     draft.value.agency && t('selectedAgency'),
     draft.value.source && RENTAL_SOURCE_LABEL[draft.value.source],
+    !draft.value.source &&
+      draft.value.excludeSources.length > 0 &&
+      t('without', {
+        items: draft.value.excludeSources.map(source => RENTAL_SOURCE_LABEL[source]).join(', '),
+      }),
     draft.value.currency,
     draft.value.availability !== 'all' && availabilityCopy.value[draft.value.availability],
     draft.value.multi && t('multi'),
@@ -975,10 +1092,14 @@ async function submit() {
       ?.focus()
     return
   }
+  draft.value.excludeWords = excludedWords.value
+  // Show what will be applied: a one-letter word or an eleventh one is dropped, not kept silently.
+  excludeWordsText.value = excludedWords.value.join(', ')
   emit('search', copy(draft.value))
 }
 function reset() {
-  draft.value = normalizeRentalQuery()
+  draft.value = copy(normalizeRentalQuery())
+  excludeWordsText.value = ''
   institution.value = ''
   advancedOpen.value =
     costsOpen.value =
@@ -992,6 +1113,7 @@ function reset() {
 function clearNeighborhoods() {
   draft.value.neighborhoods = []
   draft.value.neighborhood = ''
+  draft.value.excludeNeighborhoods = []
 }
 </script>
 

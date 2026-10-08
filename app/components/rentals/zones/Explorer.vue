@@ -339,7 +339,8 @@ const draft = ref<RentalZonePreferences>({
   exclude: props.initial.exclude.map(zone => ({ ...zone })),
 })
 const department = ref(
-  props.lockedDepartment || (props.directory ? draft.value.include[0]?.department || '' : '')
+  props.lockedDepartment ||
+    (props.directory ? (draft.value.include[0] ?? draft.value.exclude[0])?.department || '' : '')
 )
 const propertyType = ref<RentalZonePropertyType>('apartamento')
 const bedrooms = ref<RentalZoneBedrooms>('1')
@@ -467,11 +468,9 @@ const mismatched = computed(() =>
 )
 function canAdd(zone: RentalZoneRef) {
   if (selectionCount.value >= 20 && !included(zone) && !excluded(zone)) return false
-  return (
-    !props.directory ||
-    !draft.value.include.length ||
-    fold(draft.value.include[0]!.department) === fold(zone.department)
-  )
+  // The directory filters one department at a time, whether a zone is included or excluded.
+  const first = draft.value.include[0] ?? draft.value.exclude[0]
+  return !props.directory || !first || fold(first.department) === fold(zone.department)
 }
 function toggleZone(zone: RentalZoneRef, kind: 'include' | 'exclude') {
   const existing = draft.value[kind].findIndex(item => key(item) === key(zone))
@@ -544,7 +543,7 @@ const detailProps = (zone: RentalZone) => ({
     included: included(zone.ref),
     excluded: excluded(zone.ref),
     canAdd: canAdd(zone.ref),
-    canExclude: !props.directory,
+    canExclude: true,
   },
 })
 async function selectDetail(id: string) {

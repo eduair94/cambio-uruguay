@@ -29,6 +29,11 @@ import {
   type RentalAvailabilityFilter,
   type RentalAvailabilitySummary,
 } from './rentalAvailability'
+import {
+  normalizeRentalSharedLivingFilter,
+  rentalSharedLivingCondition,
+  type RentalSharedLivingFilter,
+} from './rentalSharedLiving'
 
 /** Portals spell the same barrio as Cordón, CORDON or cordon. Match and group them together. */
 export const RENTAL_COLLATION = { locale: 'es', strength: 1 } as const
@@ -416,6 +421,18 @@ export interface RentalQuery {
   type: string
   /** OR selection. The legacy type mirrors this only when exactly one criterion is selected. */
   types: RentalTypeFilter[]
+  /**
+   * Las exclusiones (`sin*` en la URL). Opcionales para las consultas armadas a mano; las que salen
+   * de `normalizeRentalQuery` las traen siempre. Barrio, tipo y palabra son de la PROPIEDAD; el
+   * portal es del AVISO: ocultar Facebook deja la vivienda si otro portal también la publica.
+   */
+  excludeNeighborhoods?: string[]
+  excludeTypes?: RentalTypeFilter[]
+  excludeSources?: RentalSource[]
+  /** Palabras que el título NO puede contener, sin distinguir acentos ni mayúsculas. */
+  excludeWords?: string[]
+  /** Habitaciones y residencias (ver `rentalSharedLiving.ts`): '' las muestra junto al resto. */
+  sharedLiving?: RentalSharedLivingFilter
   source: string
   bedrooms: number | null
   bedroomsExact: boolean
@@ -532,6 +549,72 @@ function parseNeighborhoods(input: unknown): string[] {
   return [...new Set(values.map(value => value.trim().slice(0, 60)).filter(Boolean))].slice(0, 20)
 }
 
+const foldWord = (value: string) =>
+  value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('es').replace(/\s+/g, ' ').trim()
+
+/** Barrios a excluir; uno que también está elegido para incluir no se excluye (gana lo pedido). */
+function parseExcludedNeighborhoods(input: unknown, included: readonly string[]): string[] {
+  const wanted = new Set(included.map(foldWord))
+  return parseNeighborhoods(input).filter(name => !wanted.has(foldWord(name)))
+}
+
+function parseExcludedSources(input: unknown, included: string): RentalSource[] {
+  const values = new Set(
+    (Array.isArray(input) ? input : [input]).flatMap(value => clean(value, 200).split(','))
+  )
+  return (Object.keys(RENTAL_SOURCE_LABEL) as RentalSource[]).filter(
+    source => values.has(source) && source !== included
+  )
+}
+
+/** Hasta diez palabras de 2 a 40 letras, sin repetir. Una coma separa una de otra. */
+export const RENTAL_EXCLUDE_WORDS_MAX = 10
+function parseExcludedWords(input: unknown): string[] {
+  const words: string[] = []
+  const seen = new Set<string>()
+  const values = (Array.isArray(input) ? input : [input]).flatMap(value =>
+    clean(value, 600).split(',')
+  )
+  for (const raw of values) {
+    const word = raw.replace(/\s+/g, ' ').trim().slice(0, 40)
+    const key = foldWord(word)
+    if (key.length < 2 || seen.has(key)) continue
+    seen.add(key)
+    words.push(word)
+    if (words.length >= RENTAL_EXCLUDE_WORDS_MAX) break
+  }
+  return words
+}
+
+// Mongo no pliega acentos dentro de una expresión regular (la collation no aplica a `$regex`), así
+// que "habitacion" tiene que encontrar "Habitación" por clases explícitas.
+const ACCENT_CLASSES: Readonly<Record<string, string>> = {
+  a: '[aáàâä]',
+  e: '[eéèêë]',
+  i: '[iíìîï]',
+  o: '[oóòôö]',
+  u: '[uúùûü]',
+  n: '[nñ]',
+  c: '[cç]',
+}
+// Una palabra EMPIEZA en un borde: "residencia" saca también "residencias" y "residencial", pero
+// "sol" no saca "Girasol". `\b` no sirve: sin Unicode no ve el borde antes de una "Ú" inicial.
+const WORD_START = '(?:^|[^a-z0-9áàâäéèêëíìîïóòôöúùûüñç])'
+
+/** La expresión que encuentra cualquiera de las palabras, para `$regex`/`RegExp` con 'i'. */
+export function rentalExcludedWordsPattern(words: readonly string[]): string | null {
+  const alternatives = words
+    .map(foldWord)
+    .filter(word => word.length >= 2)
+    .map(word =>
+      [...word]
+        .map(char => ACCENT_CLASSES[char] ?? char.replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&'))
+        .join('')
+        .replace(/ /g, '\\s+')
+    )
+  return alternatives.length ? `${WORD_START}(?:${alternatives.join('|')})` : null
+}
+
 /**
  * The single reading of the query string. Used by the API route AND by the page, so a filter can
  * never mean one thing in the URL and another in the request.
@@ -566,6 +649,17 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     neighborhoods,
     type: types.length === 1 ? types[0]! : '',
     types,
+    excludeNeighborhoods: parseExcludedNeighborhoods(
+      input.sinBarrios ?? input.excludeNeighborhoods,
+      neighborhoods
+    ),
+    excludeTypes: normalizeRentalTypes(input.sinTipos ?? input.excludeTypes),
+    excludeSources: parseExcludedSources(
+      input.sinPortales ?? input.excludeSources,
+      Object.hasOwn(RENTAL_SOURCE_LABEL, source) ? source : ''
+    ),
+    excludeWords: parseExcludedWords(input.sinPalabras ?? input.excludeWords),
+    sharedLiving: normalizeRentalSharedLivingFilter(input.residencias ?? input.sharedLiving),
     source: Object.hasOwn(RENTAL_SOURCE_LABEL, source) ? source : '',
     bedrooms: bedrooms !== null && bedrooms >= 0 && bedrooms <= 10 ? bedrooms : null,
     bedroomsExact: enabled(input.bedroomsExact),
@@ -610,6 +704,12 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   const types = normalizeRentalTypes(query.types ?? query.type)
   if (types.length === 1) params.type = types[0]!
   else if (types.length > 1) params.types = types.join(',')
+  if (query.excludeNeighborhoods?.length) params.sinBarrios = query.excludeNeighborhoods.join(',')
+  const excludedTypes = normalizeRentalTypes(query.excludeTypes ?? [])
+  if (excludedTypes.length) params.sinTipos = excludedTypes.join(',')
+  if (query.excludeSources?.length) params.sinPortales = query.excludeSources.join(',')
+  if (query.excludeWords?.length) params.sinPalabras = query.excludeWords.join(',')
+  if (query.sharedLiving) params.residencias = query.sharedLiving
   if (query.source) params.source = query.source
   if (query.bedrooms !== null) params.bedrooms = String(query.bedrooms)
   if (query.bedroomsExact) params.bedroomsExact = '1'
@@ -711,6 +811,7 @@ export function rentalOfferMatchesQuery(
   usdUyu: number
 ): boolean {
   if (query.source && offer.source !== query.source) return false
+  if (query.excludeSources?.includes(offer.source)) return false
   if (query.currency && offer.currency !== query.currency) return false
   if (!advertiserMatches(offer, query)) return false
   if (query.pets && offer.petsAllowed !== true) return false
@@ -942,16 +1043,19 @@ export function buildRentalFilter(
   const cutoff = new Date(Date.now() - staleDays * 86_400_000).toISOString().slice(0, 10)
   const nonLocation: Record<string, unknown> = { lastSeen: { $gte: cutoff } }
 
+  const storedTypes = (filters: readonly string[]) => [
+    ...new Set(
+      filters.flatMap(type => (isRentalTypeFilter(type) ? RENTAL_TYPE_FILTER_TYPES[type] : []))
+    ),
+  ]
   const typeFilters = query.types ?? (query.type ? [query.type] : [])
+  // "Viviendas" sin "Habitación" son apartamentos y casas: la exclusión se resta del grupo elegido.
+  const excludedTypes = new Set(storedTypes(query.excludeTypes ?? []))
   if (typeFilters.length) {
-    const types = [
-      ...new Set(
-        typeFilters.flatMap(type =>
-          isRentalTypeFilter(type) ? RENTAL_TYPE_FILTER_TYPES[type] : []
-        )
-      ),
-    ]
+    const types = storedTypes(typeFilters).filter(type => !excludedTypes.has(type))
     nonLocation.propertyType = types.length === 1 ? types[0] : { $in: types }
+  } else if (excludedTypes.size) {
+    nonLocation.propertyType = { $nin: [...excludedTypes] }
   }
   if (query.source) nonLocation.sources = query.source
   if (query.bedrooms !== null)
@@ -977,6 +1081,7 @@ export function buildRentalFilter(
   if (query.guarantees.length) nonLocation.guarantees = { $in: query.guarantees }
   const offer: Record<string, unknown> = {}
   if (query.source) offer.source = query.source
+  else if (query.excludeSources?.length) offer.source = { $nin: [...query.excludeSources] }
   if (query.currency) offer.currency = query.currency
   if (query.owner) offer['ownerDirect.declared'] = true
   if (query.agency) offer['agency.key'] = query.agency
@@ -1020,6 +1125,21 @@ export function buildRentalFilter(
     nonLocation.$and = [...previos, ...rentalAmenityConditions(query.amenities)]
   }
 
+  // ── Habitaciones y residencias, y palabras excluidas ── También en `$and`: leen sólo campos
+  // guardados de la propiedad (tipo, título, precio), así que valen igual en el prefiltro indexado
+  // que después de recalcular las ofertas vigentes.
+  const sharedLiving = rentalSharedLivingCondition(query.sharedLiving ?? '')
+  const excludedWords = rentalExcludedWordsPattern(query.excludeWords ?? [])
+  if (sharedLiving || excludedWords) {
+    const previos = Array.isArray(nonLocation.$and) ? (nonLocation.$and as unknown[]) : []
+    nonLocation.$and = [
+      ...previos,
+      ...(sharedLiving ? [sharedLiving] : []),
+      // `$not` con una RegExp y no con `$regex`: es la forma que Mongo acepta en toda versión.
+      ...(excludedWords ? [{ title: { $not: new RegExp(excludedWords, 'i') } }] : []),
+    ]
+  }
+
   // ── Cerca de una sede ──
   //
   // LA GUARDA DE COORDENADA NO ES OPCIONAL. `$degreesToRadians` de un campo ausente da `null`, todo
@@ -1040,8 +1160,20 @@ export function buildRentalFilter(
 
   const filter: Record<string, unknown> = { ...nonLocation }
   if (query.department) filter.department = query.department
+  // The neighbourhood facet ignores exclusions too, so an excluded barrio can still be chosen back.
   const withoutNeighborhood = { ...filter }
-  if (query.neighborhoods.length) filter.neighborhood = { $in: query.neighborhoods }
+  const excludedNeighborhoods = query.excludeNeighborhoods ?? []
+  if (excludedNeighborhoods.length) {
+    const included = query.neighborhoods.length
+      ? query.neighborhoods
+      : query.neighborhood
+        ? [query.neighborhood]
+        : []
+    filter.neighborhood = {
+      ...(included.length ? { $in: included } : {}),
+      $nin: excludedNeighborhoods,
+    }
+  } else if (query.neighborhoods.length) filter.neighborhood = { $in: query.neighborhoods }
   else if (query.neighborhood) filter.neighborhood = query.neighborhood
 
   return { filter, nonLocation, withoutNeighborhood }
@@ -1143,6 +1275,8 @@ function rentalOfferExpression(query: RentalQuery, usdUyu: number): Record<strin
     )
   }
   if (query.source) conditions.push({ $eq: ['$$offer.source', query.source] })
+  if (query.excludeSources?.length)
+    conditions.push({ $not: [{ $in: ['$$offer.source', [...query.excludeSources]] }] })
   if (query.currency) conditions.push({ $eq: ['$$offer.currency', query.currency] })
   if (query.owner || query.agency) conditions.push(advertiserExpression(query, '$$offer.'))
   if (query.pets) conditions.push({ $eq: ['$$offer.petsAllowed', true] })
@@ -1380,6 +1514,7 @@ export function rentalOfferStages(query: RentalQuery, usdUyu: number) {
   // case; derive a different headline price only when an offer-specific filter requires it.
   if (
     !query.source &&
+    !query.excludeSources?.length &&
     !query.currency &&
     !query.owner &&
     !query.agency &&

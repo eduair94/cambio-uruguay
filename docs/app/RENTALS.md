@@ -1,5 +1,40 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Excluir: habitaciones y residencias, barrios, tipos, portales y palabras — 7 de octubre de 2026
+
+Pedido: separar las habitaciones de residencias ("Residencia Amoblada En Belvedere") del resto,
+poder excluir tipos y barrios, y otros atributos que valga la pena excluir. Todo vive en
+`app/utils/rentals.ts` (`normalizeRentalQuery` → `buildRentalFilter`), así que la lista, el mapa,
+las alertas guardadas y las búsquedas guardadas lo entienden igual.
+
+| URL | Qué hace | Nivel |
+|---|---|---|
+| `residencias=ocultar\|solo` | habitaciones y residencias (`app/utils/rentalSharedLiving.ts`) | propiedad |
+| `sinTipos=habitacion,local` | se resta de `types`; sin `types`, `$nin` | propiedad |
+| `sinBarrios=Centro,Cordón` | `$nin` con la collation (acentos plegados); el facet de barrios no lo aplica, para poder volver a elegirlo | propiedad |
+| `sinPortales=facebook` | se ignoran los AVISOS de ese portal; la vivienda queda si otro portal la publica | aviso |
+| `sinPalabras=temporario,pension` | el título no puede contener la palabra donde empieza una palabra; sin acentos ni mayúsculas | propiedad |
+
+**Habitaciones y residencias no es el tipo del portal.** Una residencia estudiantil de 15 cuartos se
+publica como "casa" a $ 9.350 (el precio de una cama). La regla: el tipo `habitacion` entra siempre;
+casa, apartamento y "otro" entran por el título, con dos listas — frases que sólo usa quien alquila
+camas ("residencia estudiantil", "habitaciones individuales", "apartamento compartido", hasta
+$ 30.000) y la palabra sola ("residencia", "pensión", "hostel", hasta $ 15.000), porque la mitad de
+los 290 títulos con "residencia" eran casas de lujo. Medido sobre las 62.181 propiedades públicas:
+`solo` 1.477 + `ocultar` 60.704 = 62.181; 53 entran por el título y 52 de ellas, leídas a mano, son
+camas o cuartos (la otra es un precio mal leído). Misma regla en JS y en Mongo; 0 diferencias.
+
+**El tipo `habitacion` estaba contaminado y se corrigió en el backend** (`inferPropertyType` en
+`classes/rentals/normalize.ts`). Dos tercios de las 1.424 "habitaciones" públicas eran viviendas
+enteras: Facebook titula solo "2 habitaciones 1 baño Casa" cuando el vendedor no escribe nada (624
+filas, sólo 24 "Solo habitación"), y "Apartamento 1 dormitorio en Cordón" caía por "dormitorio en".
+Ahora un CONTEO de cuartos describe una vivienda, el resumen de Facebook se lee por su último campo,
+y un cuarto sólo es habitación si encabeza el título o si la vivienda se declara compartida
+("cochera compartida" no cuenta). Sobre los 6.623 avisos de Facebook: 909 de 1.236 "habitaciones"
+pasan a apartamento (589), casa (277) u "otro" (43); 7 entran a habitación ("Alquilo cuartos",
+"Alquiler compartido") y ninguna vivienda pierde su tipo. Se aplica al volver a leer cada aviso:
+la corrida completa diaria los relee y los que no vuelven a aparecer vencen a los 10 días.
+
 ## Instagram y Facebook Reels — 24 de setiembre de 2026
 
 Séptima y octava fuente, pedidas junto con TikTok ("TikTok, Instagram reels, Facebook reels,

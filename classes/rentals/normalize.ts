@@ -312,8 +312,31 @@ export function parseAttributes(texts: readonly string[]): RentalAttributes {
 
 // --- Property type ---------------------------------------------------------
 
+// A ROOM is rented when a room word heads the advert ("Alquilo habitación en apto céntrico") or the
+// dwelling itself is shared ("Casa compartida para estudiantes"). A COUNT of rooms describes a home:
+// measured 2026-10-07 on the 1.424 public properties typed `habitacion`, 624 were Facebook's own
+// summary ("2 habitaciones 1 baño Casa", only 24 of them "Solo habitación") and ~280 more were
+// "Apartamento 1 dormitorio en Cordón" caught by "dormitorio en" — two thirds of the type were
+// whole homes. "Cochera compartida" and "oficina compartida" are not rooms either.
+const ROOM_WORD = /\b(?:habitacion|habitaciones|pension|cuartos?|piezas?|dormitorio en)\b/;
+const SHARED_DWELLING = /\b(?:casa|apartamento|apto|vivienda|habitacion(?:es)?|alquiler) compartid[oa]s?\b/;
+const DWELLING_WORD = /\b(?:apartamento|apto|apart|monoambiente|penthouse|duplex|loft|casa|chalet|chacra|quinta)\b/;
+// "Una habitación" is how a room is offered; "un dormitorio" is how a flat is described.
+const COUNTED_ROOMS = /\b(?:(?:\d+|dos|tres|cuatro|cinco|seis|siete|ocho)\s*(?:habitacion(?:es)?|dormitorios?|dorms?|cuartos?|piezas?)|(?:un|uno)\s+dormitorios?)\b/g;
+// Facebook Marketplace titles a listing with its own structured summary when the seller wrote
+// none: "<n> habitaciones <n> baños <type>", sometimes with "+" for spaces.
+const MARKETPLACE_SUMMARY = /^\d+ habitacion(?:es)? \d+ banos? (.+)$/;
+
+function marketplaceSummaryType(flat: string): RentalPropertyType | null {
+  const tail = flat.match(MARKETPLACE_SUMMARY)?.[1]?.replace(/^[\s\-–|·:]+/, "");
+  if (!tail) return null;
+  if (/^solo habitacion\b/.test(tail)) return "habitacion";
+  if (/^(?:departamento|apartamento|condominio)\b/.test(tail)) return "apartamento";
+  if (/^(?:casa|townhouse)\b/.test(tail)) return "casa";
+  return null;
+}
+
 const TYPE_PATTERNS: ReadonlyArray<[RegExp, RentalPropertyType]> = [
-  [/\b(habitacion|habitaciones|pension|cuarto|pieza|dormitorio en|compartida)\b/, "habitacion"],
   [/\b(apartamento|apto|apart|monoambiente|penthouse|duplex|loft)\b/, "apartamento"],
   [/\b(casa|chalet|chacra|quinta|duplex de casa|casahabitacion)\b/, "casa"],
   [/\b(local|comercial|galpon|deposito|tienda)\b/, "local"],
@@ -341,13 +364,20 @@ export function inferPropertyType(title: string, hint?: string | null): RentalPr
     if (/\b(?:garages?|garajes?|cocheras?|estacionamientos?|parking)\b/.test(hintFlat)) return "garaje";
     if (/land|lot|terreno|campo/.test(hintFlat)) return "terreno";
   }
-  const flat = flatten(title);
+  const flat = flatten(title.replace(/\+/g, " "));
+  const summary = marketplaceSummaryType(flat);
+  if (summary) return summary;
   if (STANDALONE_GARAGE.test(flat)) {
     // A bundled garage + dwelling is not evidence of a standalone parking-space rental.
     if (/\b(?:y|con|mas|incluye)\s+(?:(?:un|una)\s+)?(?:casa|apartamento|apto|vivienda|local|oficina)\b/.test(flat)) return "otro";
     return "garaje";
   }
-  for (const [pattern, type] of TYPE_PATTERNS) if (pattern.test(flat)) return type;
+  const uncounted = flat.replace(COUNTED_ROOMS, " ");
+  if (SHARED_DWELLING.test(uncounted)) return "habitacion";
+  const room = uncounted.search(ROOM_WORD);
+  const dwelling = uncounted.search(DWELLING_WORD);
+  if (room >= 0 && (dwelling < 0 || room < dwelling)) return "habitacion";
+  for (const [pattern, type] of TYPE_PATTERNS) if (pattern.test(uncounted)) return type;
   return "otro";
 }
 

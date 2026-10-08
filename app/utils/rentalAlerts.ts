@@ -117,6 +117,17 @@ const searchKeys = new Set([
   'comodidades',
   // The normalized query's name for `comodidades`; the directory's alert button sends that shape.
   'amenities',
+  // Exclusions, under their URL name and the normalized query's name.
+  'sinBarrios',
+  'excludeNeighborhoods',
+  'sinTipos',
+  'excludeTypes',
+  'sinPortales',
+  'excludeSources',
+  'sinPalabras',
+  'excludeWords',
+  'residencias',
+  'sharedLiving',
 ])
 const opportunityKeys = new Set([
   'availability',
@@ -138,6 +149,14 @@ const arrayKeys = new Set([
   'sedes',
   'comodidades',
   'amenities',
+  'sinBarrios',
+  'excludeNeighborhoods',
+  'sinTipos',
+  'excludeTypes',
+  'sinPortales',
+  'excludeSources',
+  'sinPalabras',
+  'excludeWords',
 ])
 const searchBooleans = new Set([
   'bedroomsExact',
@@ -215,7 +234,7 @@ export function normalizeRentalAlertFilters(
   )
     throw new RentalAlertValidationError('unsupported_filter')
   if (kind === 'rental-search') {
-    for (const field of ['type', 'types']) {
+    for (const field of ['type', 'types', 'sinTipos', 'excludeTypes']) {
       if (!populated(input[field])) continue
       const value = input[field]
       const types = (Array.isArray(value) ? value : [value])
@@ -229,6 +248,17 @@ export function normalizeRentalAlertFilters(
         throw new RentalAlertValidationError('unsupported_filter')
     }
     if (populated(input.source) && !Object.hasOwn(RENTAL_SOURCE_LABEL, String(input.source)))
+      throw new RentalAlertValidationError('unsupported_filter')
+    const hidden = input.sinPortales ?? input.excludeSources
+    if (
+      (Array.isArray(hidden) ? hidden : [hidden])
+        .flatMap(v => String(v ?? '').split(','))
+        .map(v => v.trim())
+        .some(v => v && !Object.hasOwn(RENTAL_SOURCE_LABEL, v))
+    )
+      throw new RentalAlertValidationError('unsupported_filter')
+    const shared = input.residencias ?? input.sharedLiving
+    if (populated(shared) && !['ocultar', 'solo'].includes(String(shared)))
       throw new RentalAlertValidationError('unsupported_filter')
     if (populated(input.currency) && !['UYU', 'USD'].includes(String(input.currency).toUpperCase()))
       throw new RentalAlertValidationError('unsupported_filter')
@@ -273,7 +303,11 @@ export function normalizeRentalAlertFilters(
     }
     if (populated(input.agency) && !query.agency)
       throw new RentalAlertValidationError('unsupported_filter')
+    // A word the parser drops (one letter, the eleventh) would widen the alert without saying so.
+    if (populated(input.sinPalabras ?? input.excludeWords) && !query.excludeWords?.length)
+      throw new RentalAlertValidationError('unsupported_filter')
     query.neighborhoods.sort((a, b) => a.localeCompare(b, 'es'))
+    query.excludeNeighborhoods?.sort((a, b) => a.localeCompare(b, 'es'))
     query.guarantees.sort()
     query.sedes.sort((a, b) => a - b)
     params = rentalQueryToParams({
