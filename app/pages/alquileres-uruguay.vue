@@ -175,6 +175,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               <p v-if="query.sort === 'total'">{{ t('totalSortHint') }}</p>
               <p v-if="query.sort === 'distancia'">{{ t('distanceSortHint') }}</p>
               <p v-if="query.sort === 'precio-m2'">{{ t('pricePerM2SortHint') }}</p>
+              <p v-if="query.sort === 'baja'">{{ t('dropSortHint') }}</p>
             </div>
             <VSelect
               :model-value="query.sort"

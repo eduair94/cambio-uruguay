@@ -417,7 +417,7 @@ export const RENTAL_SELLER_LABEL: Record<RentalSellerType, string> = {
 }
 
 export type RentalSort =
-  'recientes' | 'precio' | 'precio-desc' | 'total' | 'precio-m2' | 'metros' | 'distancia'
+  'recientes' | 'precio' | 'precio-desc' | 'total' | 'precio-m2' | 'metros' | 'baja' | 'distancia'
 
 export const RENTAL_SORTS: ReadonlyArray<{ value: RentalSort; label: string }> = Object.freeze([
   { value: 'recientes', label: 'Más recientes' },
@@ -426,6 +426,7 @@ export const RENTAL_SORTS: ReadonlyArray<{ value: RentalSort; label: string }> =
   { value: 'total', label: 'Menor total mensual' },
   { value: 'precio-m2', label: 'Menor precio por m²' },
   { value: 'metros', label: 'Más metros' },
+  { value: 'baja', label: 'Mayor baja de precio' },
   { value: 'distancia', label: 'Más cerca del punto elegido' },
 ])
 
@@ -1692,5 +1693,7 @@ export function rentalMongoSort(sort: RentalSort): Record<string, 1 | -1> {
   if (sort === 'precio-m2')
     return { _rentalPricePerM2Unknown: 1, _rentalPricePerM2: 1, priceUyu: 1, key: 1 }
   if (sort === 'metros') return { area: -1, priceUyu: 1, key: 1 }
+  // Largest drop first (see `priceDrop`); a property without one has none and keeps 'recientes' order.
+  if (sort === 'baja') return { 'priceDrop.pct': -1, freshAt: -1, key: 1 }
   return { freshAt: -1, key: 1 }
 }
