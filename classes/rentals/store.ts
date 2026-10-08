@@ -17,7 +17,7 @@ import {
   type RentPriceRow,
 } from "./currency";
 import { RentalMetaModel } from "../models/RentalMeta";
-import { looksLikeRentalAdvert } from "./normalize";
+import { inferPropertyType, looksLikeRentalAdvert } from "./normalize";
 import { detachedRentalKey, partitionRentalOffers, propertyFromRentalOffers } from "./reconcile";
 import { RENTAL_FULL_META_KEY, RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalSource } from "./types";
 
@@ -350,6 +350,45 @@ export async function dropReassignedOffers(
  * reads a slice of the market, and "not in this slice" says nothing about whether a flat is still
  * for rent.
  */
+/**
+ * Re-reads the type of stored Facebook adverts with today's rule. Marketplace's type is a pure
+ * function of the title (sources/facebook.ts), so this is exactly what a fresh read would store — but
+ * the browser only re-reads a slice (2.155 of 7.025 on 2026-10-08), and until then "2 habitaciones 1
+ * baño Casa" stayed a room: two thirds of the public `habitacion` type were whole homes.
+ */
+export async function retypeStoredFacebookOffers(): Promise<{ offers: number; properties: number }> {
+  const slim = await RentalListingModel.find({ "offers.source": "facebook" })
+    .select({ _id: 0, key: 1, "offers.source": 1, "offers.title": 1, "offers.identity.propertyType": 1 })
+    .lean() as unknown as Array<{ key: string; offers?: Array<{ source: string; title?: string; identity?: { propertyType?: string } }> }>;
+  const stale = (offer: { source: string; title?: string; identity?: { propertyType?: string } }) =>
+    offer.source === "facebook" && !!offer.identity?.propertyType && offer.identity.propertyType !== inferPropertyType(String(offer.title || ""));
+  const affected = slim.filter((row) => (row.offers || []).some(stale));
+  let offers = 0;
+  const operations = [];
+  for (let index = 0; index < affected.length; index += CHUNK) {
+    const rows = await RentalListingModel.find({ key: { $in: affected.slice(index, index + CHUNK).map((row) => row.key) } })
+      .select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 })
+      .lean() as unknown as RentalProperty[];
+    for (const property of rows) {
+      if (isRetiredRentalKey(property.key)) continue;
+      let changed = 0;
+      const next = property.offers.map((offer) => {
+        if (!stale(offer) || !offer.identity) return offer;
+        changed++;
+        return { ...offer, identity: { ...offer.identity, propertyType: inferPropertyType(offer.title) } };
+      });
+      if (!changed) continue;
+      offers += changed;
+      const row = recomputeFromOffers(property, next);
+      operations.push({ updateOne: { filter: { key: property.key }, update: { $set: { ...structuredClone(row) } } } });
+    }
+  }
+  for (let index = 0; index < operations.length; index += CHUNK) {
+    await RentalListingModel.bulkWrite(operations.slice(index, index + CHUNK), { ordered: false });
+  }
+  return { offers, properties: operations.length };
+}
+
 /**
  * Takes out stored adverts the CURRENT advert filter rejects: a season ("Alquiler de verano"), a
  * stay priced per night, a castle you hire for a birthday. A full harvest drops them on read, but a

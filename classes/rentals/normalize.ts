@@ -329,6 +329,11 @@ const MARKETPLACE_SUMMARY = /^\d+ habitacion(?:es)? \d+ banos? (.+)$/;
 
 const RESIDENCE_HEADING = /^(?:(?:alquiler|alquilo|alquila|se alquila|renta)\s+(?:de\s+)?)?(?:hogar\s*[-,.]?\s*)?(?:residencias?|hogar(?:es)?|pension(?:es)?)\s+(?:(?:para|de)\s+)?(?:estudiant\w*|universitari\w*|femenin\w*|masculin\w*|mixt\w*|deportistas|trabajador\w*|jovenes|senoritas)\b/;
 
+/** A flattened title without its room COUNTS ("2 habitaciones", "un dormitorio"): what is left names the rented thing. */
+export function withoutRoomCounts(flat: string): string {
+  return flat.replace(COUNTED_ROOMS, " ");
+}
+
 function marketplaceSummaryType(flat: string): RentalPropertyType | null {
   const tail = flat.match(MARKETPLACE_SUMMARY)?.[1]?.replace(/^[\s\-–|·:]+/, "");
   if (!tail) return null;
@@ -380,7 +385,7 @@ export function inferPropertyType(title: string, hint?: string | null): RentalPr
     if (/\b(?:y|con|mas|incluye)\s+(?:(?:un|una)\s+)?(?:casa|apartamento|apto|vivienda|local|oficina)\b/.test(flat)) return "otro";
     return "garaje";
   }
-  const uncounted = flat.replace(COUNTED_ROOMS, " ");
+  const uncounted = withoutRoomCounts(flat);
   if (SHARED_DWELLING.test(uncounted)) return "habitacion";
   const room = uncounted.search(ROOM_WORD);
   const dwelling = uncounted.search(DWELLING_WORD);
