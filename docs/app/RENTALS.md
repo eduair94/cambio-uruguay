@@ -1,5 +1,16 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Publicadas en los últimos N días (`dias=`) — 8 de octubre de 2026
+
+`dias=1|3|7|14|30` (la URL acepta 1–90) filtra por `freshAt`, que es lo mismo que ordena "más
+recientes": la fecha de publicación que da el portal o, si no la da, el día que vimos el aviso por
+primera vez. `1` es "desde ayer": días enteros UTC, como los guarda el job, así que un aviso visto
+anoche sigue siendo nuevo a la mañana. Medido el 2026-10-08 sobre 60.895 propiedades vigentes:
+4.688 de los últimos 3 días y 10.910 de la última semana. Usa el índice `freshAt + key`, y el
+pipeline público lo vuelve a aplicar después de recalcular `freshAt` con los avisos que conserva,
+así que ocultar un portal no deja "nueva" a una vivienda sólo por ese portal. Las alertas guardadas
+lo ignoran: ya mandan sólo avisos nuevos.
+
 ## Pesos que son dólares, temporada y cosas que no son inmuebles — 8 de octubre de 2026
 
 Pedido: "hay alquileres en dólares que figuran en pesos en Facebook Marketplace y otros sitios"

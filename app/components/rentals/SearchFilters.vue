@@ -144,6 +144,13 @@
               :label="t('bedrooms')"
               v-bind="field"
             />
+            <VSelect
+              v-model="draft.sinceDays"
+              :items="sinceDaysItems"
+              :label="t('sinceDays')"
+              v-bind="field"
+              data-testid="rental-filter-sinceDays"
+            />
           </div>
           <VCheckbox
             v-if="draft.bedrooms !== null && draft.bedrooms > 0"
@@ -156,6 +163,7 @@
           <p v-if="draft.types.includes('vivienda')" class="rental-search__hint">
             {{ t('homesHint') }}
           </p>
+          <p v-if="draft.sinceDays" class="rental-search__hint">{{ t('sinceDaysHint') }}</p>
           <p v-if="draft.excludeTypes.length" class="rental-search__hint">
             {{ t('excludeTypesHint') }}
           </p>
@@ -536,6 +544,7 @@ import { VDialog } from 'vuetify/components'
 import { rentalMessages } from '~/utils/rentalMessages'
 import {
   RENTAL_GUARANTEE_PUBLISHED,
+  RENTAL_SINCE_DAYS,
   RENTAL_SOURCE_LABEL,
   normalizeRentalQuery,
   rentalTextMatches,
@@ -816,6 +825,7 @@ const copy = (query: RentalQuery): RentalDraft => ({
   excludeSources: [...(query.excludeSources ?? [])],
   excludeWords: [...(query.excludeWords ?? [])],
   sharedLiving: query.sharedLiving ?? '',
+  sinceDays: query.sinceDays ?? null,
   guarantees: [...query.guarantees],
   amenities: [...query.amenities],
   sedes: [...query.sedes],
@@ -931,6 +941,13 @@ const bedroomItems = computed(() => [
   { title: t('studio'), value: 0 },
   ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(value => ({
     title: draft.value.bedroomsExact ? String(value) : t('atLeast', { n: value }),
+    value,
+  })),
+])
+const sinceDaysItems = computed(() => [
+  { title: t('sinceAny'), value: null },
+  ...RENTAL_SINCE_DAYS.map(value => ({
+    title: value === 1 ? t('sinceYesterday') : t('sinceLastDays', { n: value }),
     value,
   })),
 ])
