@@ -11,7 +11,10 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
       density="compact"
       class="opportunities__breadcrumbs px-0 py-1"
     />
-    <header class="opportunities__header">
+    <header
+      class="opportunities__header"
+      :class="{ 'opportunities__header--method-inline': !budgetMode }"
+    >
       <h1>{{ budgetMode ? budgetCopy.title : t('title') }}</h1>
       <p>
         {{
@@ -876,6 +879,21 @@ useHead(() => ({
 @media (max-width: 959px) {
   .opportunities__header {
     margin-bottom: 12px;
+  }
+  /* "Cómo funciona" cierra la intro en vez de ocupar su propia fila de 44 px: en el teléfono la
+     comparación de la primera oportunidad (precio + evidencia) quedaba cortada por el borde
+     (390×844: 766–853 px). Un enlace dentro de una oración no necesita el blanco de 44 px. */
+  .opportunities__header--method-inline > p {
+    display: inline;
+  }
+  .opportunities__header--method-inline .opportunities__intro-links {
+    display: inline;
+    margin: 0 0 0 0.35em;
+  }
+  .opportunities__header--method-inline .opportunities__intro-links a {
+    display: inline;
+    min-height: 0;
+    font-size: inherit;
   }
   .opportunities__workspace {
     grid-template-columns: minmax(0, 1fr);

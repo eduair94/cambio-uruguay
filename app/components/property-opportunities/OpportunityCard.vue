@@ -658,13 +658,36 @@ html[data-theme='dark'] .opportunity-card__labels .opportunity-card__label--caut
   outline-offset: 3px;
 }
 @media (max-width: 700px) {
+  /* El cuerpo se disuelve en la grilla para que la línea de características vaya a todo el ancho
+     debajo de la foto: al lado, en ~170 px, ocupaba tres renglones y empujaba la comparación fuera
+     de la primera pantalla. */
   .opportunity-card__overview {
     grid-template-columns: 96px minmax(0, 1fr);
-    gap: 12px;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 4px 12px;
     padding: 12px 16px 0;
   }
+  .opportunity-card__body {
+    display: contents;
+  }
+  .opportunity-card__photo {
+    grid-column: 1;
+    grid-row: 1 / 4;
+  }
+  .opportunity-card__zone,
+  .opportunity-card__asking,
+  .opportunity-card__body h3 {
+    grid-column: 2;
+  }
+  .opportunity-card__specs {
+    grid-column: 1 / -1;
+  }
   .opportunity-card__labels {
-    padding: 12px 16px 0;
+    padding: 10px 16px 0;
+  }
+  /* Más justas, las dos etiquetas entran en una fila a 390 px. */
+  .opportunity-card__labels li {
+    padding: 3px 8px;
   }
   .opportunity-card__photo {
     height: 136px;
