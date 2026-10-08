@@ -42,7 +42,9 @@ async function main(): Promise<void> {
   const now = new Date();
   const meta = await appConnection().collection("rentalmetas").findOne({ key: RENTAL_META_KEY }, { projection: { usdUyu: 1 } });
   const usdUyu = Number(meta?.usdUyu) || 0;
-  const targets = await mlDetailTargets(now, number("RENTALS_ML_DETAIL_MAX", 120));
+  // 240 since 2026-10-08: 120 read in ~4 min with zero failures run after run (autos-detail reads
+  // ML from this same IP at up to 400 an hour), and at 120 the ~29.000 adverts took ten days.
+  const targets = await mlDetailTargets(now, number("RENTALS_ML_DETAIL_MAX", 240));
   const summary = { targets: targets.length, read: 0, stated: 0, zeroOrAbsent: 0, unreadable: 0, failed: 0, implausible: 0, written: 0, pinned: 0, located: 0, bedrooms: 0, bedroomsWritten: 0, note: "" };
   if (!targets.length) {
     console.log("[rentals-ml-detail] sin fichas pendientes");
