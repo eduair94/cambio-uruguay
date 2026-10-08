@@ -43,20 +43,42 @@ export interface MlRentalDetail {
    */
   latitude?: number | null;
   longitude?: number | null;
+  /**
+   * The spec table's "Dormitorios"; null = not stated. The card's attribute strip leaves it out for
+   * some adverts: on 2026-10-08, 531 ML homes had no bedrooms without being a monoambiente, and 10 of
+   * 12 sampled pages stated them. Absent on rows read before it was kept.
+   */
+  bedrooms?: number | null;
   /** Always true for a stored row: failed reads are not stored, so the advert is read again. */
   ok: boolean;
 }
 
 const STRING = '"((?:[^"\\\\]|\\\\.)*)"';
 
+/** The value of one row of the item's spec table, as rendered or in the page's JSON; null if absent. */
+function specRow(html: string, label: string): string | null {
+  const table = new RegExp(
+    `<div class="andes-table__header__container">${label}</div></th><td[^>]*>\\s*<span[^>]*class="andes-table__column--value"[^>]*>([^<]*)</span>`
+  ).exec(html);
+  if (table) return table[1]!;
+  const json = new RegExp(`\\{"id":"${label}","text":${STRING}\\}`).exec(html);
+  return json ? String(JSON.parse(`"${json[1]}"`)) : null;
+}
+
+/** The spec table's "Dormitorios", 0 to 10; anything else is not a count of bedrooms. */
+export function parseMlRentalBedrooms(html: string): number | null {
+  const raw = specRow(html, "Dormitorios");
+  if (raw === null || !/^\s*\d{1,2}\s*$/.test(raw)) return null;
+  const value = Number(raw);
+  return value <= 10 ? value : null;
+}
+
 /**
  * The "Gastos comunes" row of the item's spec table. `undefined` = not an item page we can read
  * (an error page, a challenge): nothing is concluded. `null` = an item page that states nothing usable.
  */
 export function parseMlRentalExpenses(html: string): { amount: number; currency: RentalCurrency } | null | undefined {
-  const table = /<div class="andes-table__header__container">Gastos comunes<\/div><\/th><td[^>]*>\s*<span[^>]*class="andes-table__column--value"[^>]*>([^<]*)<\/span>/.exec(html);
-  const json = table ? null : new RegExp(`\\{"id":"Gastos comunes","text":${STRING}\\}`).exec(html);
-  const raw = table?.[1] ?? (json ? JSON.parse(`"${json[1]}"`) : null);
+  const raw = specRow(html, "Gastos comunes");
   if (raw === null) return /andes-table|ui-pdp-/.test(html) ? null : undefined;
   const amount = parseMoney(String(raw));
   const currency = parseCurrency(String(raw));
@@ -188,24 +210,41 @@ export async function writeMlDetailExpenses(
  * The harvest's half: the search card arrives again without common expenses every hour, so what an
  * item page already stated is put back before the property is saved. Returns how many it filled.
  */
-export async function applyMlDetails(rows: RawRental[], usdUyu: number): Promise<number> {
-  const own = rows.filter(row => row.source === "mercadolibre" && row.commonExpenses === null);
-  if (!own.length) return 0;
+export async function applyMlDetails(rows: RawRental[], usdUyu: number): Promise<{ expenses: number; bedrooms: number }> {
+  const filled = { expenses: 0, bedrooms: 0 };
+  const own = rows.filter(row => row.source === "mercadolibre" && (row.commonExpenses === null || row.bedrooms === null));
+  if (!own.length) return filled;
   const stated = new Map<string, MlRentalDetail>();
   for (let i = 0; i < own.length; i += 5_000) {
     const ids = own.slice(i, i + 5_000).map(row => row.listingId);
-    const docs = await details().find({ listingId: { $in: ids }, amount: { $gt: 0 } }, { projection: { _id: 0 } }).toArray();
+    const docs = await details()
+      .find({ listingId: { $in: ids }, $or: [{ amount: { $gt: 0 } }, { bedrooms: { $type: "number" } }] }, { projection: { _id: 0 } })
+      .toArray();
     for (const doc of docs) stated.set(String(doc.listingId), doc as unknown as MlRentalDetail);
   }
-  let filled = 0;
   for (const row of own) {
     const detail = stated.get(row.listingId);
-    if (!detail?.amount || !detail.currency) continue;
-    const expenses = mlDetailExpenses({ amount: detail.amount, currency: detail.currency }, row, usdUyu);
-    if (!expenses) continue;
-    row.commonExpenses = expenses.commonExpenses;
-    row.commonExpensesCurrency = expenses.commonExpensesCurrency;
-    filled++;
+    if (!detail) continue;
+    if (row.commonExpenses === null && detail.amount && detail.currency) {
+      const expenses = mlDetailExpenses({ amount: detail.amount, currency: detail.currency }, row, usdUyu);
+      if (expenses) {
+        row.commonExpenses = expenses.commonExpenses;
+        row.commonExpensesCurrency = expenses.commonExpensesCurrency;
+        filled.expenses++;
+      }
+    }
+    // Only a home: a "Dormitorios" row on an office or a shop is the form's leftover, not a unit.
+    if (row.bedrooms === null && typeof detail.bedrooms === "number" && (row.propertyType === "apartamento" || row.propertyType === "casa")) {
+      row.bedrooms = detail.bedrooms;
+      filled.bedrooms++;
+    }
   }
   return filled;
+}
+
+/** The property's empty bedrooms, right away; the harvest keeps them (`applyMlDetails`). */
+export async function writeMlDetailBedrooms(target: Pick<MlDetailTarget, "key" | "propertyType">, bedrooms: number): Promise<boolean> {
+  if (target.propertyType !== "apartamento" && target.propertyType !== "casa") return false;
+  const result = await listings().updateOne({ key: target.key, bedrooms: null }, { $set: { bedrooms } });
+  return result.modifiedCount > 0;
 }

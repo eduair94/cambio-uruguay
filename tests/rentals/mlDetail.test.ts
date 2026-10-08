@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { pinFits, pinFor, type RentalPin } from "../../classes/rentals/detailPins";
 import {
   mlDetailExpenses,
+  parseMlRentalBedrooms,
   parseMlRentalExpenses,
   parseMlRentalPin,
   prioritizeMlDetailTargets,
@@ -10,8 +11,8 @@ import {
 import type { RentalProperty } from "../../classes/rentals/types";
 
 // The spec table of a Mercado Libre rental item page, as served on 2026-10-08 (MLU-695924825).
-const specRow = (value: string) =>
-  `<tr class="andes-table__row ui-vpp-striped-specs__row"><th class="andes-table__header andes-table__header--left ui-vpp-striped-specs__row__column ui-vpp-striped-specs__row__column--id" scope="row"><div class="andes-table__header__container">Gastos comunes</div></th><td class="andes-table__column andes-table__column--left andes-table__column--vertical-align-center ui-vpp-striped-specs__row__column" id="_R_2jnslb5alcj1qpa_"><span id="_R_2jnslb5alcj1qpa_-value" class="andes-table__column--value" style="">${value}</span></td></tr>`;
+const specRow = (value: string, label = "Gastos comunes") =>
+  `<tr class="andes-table__row ui-vpp-striped-specs__row"><th class="andes-table__header andes-table__header--left ui-vpp-striped-specs__row__column ui-vpp-striped-specs__row__column--id" scope="row"><div class="andes-table__header__container">${label}</div></th><td class="andes-table__column andes-table__column--left andes-table__column--vertical-align-center ui-vpp-striped-specs__row__column" id="_R_2jnslb5alcj1qpa_"><span id="_R_2jnslb5alcj1qpa_-value" class="andes-table__column--value" style="">${value}</span></td></tr>`;
 const page = (rows = "") =>
   `<html><div class="ui-pdp-container__row"><table class="andes-table ui-vpp-striped-specs__table"><tbody>${rows}</tbody></table></div></html>`;
 
@@ -31,6 +32,21 @@ describe("common expenses on a Mercado Libre rental item page", () => {
   it("tells a page it cannot read apart from an advert that states nothing", () => {
     expect(parseMlRentalExpenses("<title>Mercado Libre</title><p>Hubo un error</p>")).toBeUndefined();
     expect(parseMlRentalExpenses(page(specRow("a consultar")))).toBeNull();
+  });
+});
+
+// The card's attribute strip leaves bedrooms out for some adverts: 531 ML homes had none on
+// 2026-10-08 without being a monoambiente, and 10 of 12 sampled pages stated them.
+describe("bedrooms on a Mercado Libre rental item page", () => {
+  it("reads the spec table's count, from 0 to 10", () => {
+    expect(parseMlRentalBedrooms(page(specRow("19.500 UYU") + specRow("2", "Dormitorios")))).toBe(2);
+    expect(parseMlRentalBedrooms(page(specRow("0", "Dormitorios")))).toBe(0);
+  });
+
+  it("refuses what is not a count", () => {
+    expect(parseMlRentalBedrooms(page(specRow("19.500 UYU")))).toBeNull();
+    expect(parseMlRentalBedrooms(page(specRow("2 a 3", "Dormitorios")))).toBeNull();
+    expect(parseMlRentalBedrooms(page(specRow("45", "Dormitorios")))).toBeNull();
   });
 });
 

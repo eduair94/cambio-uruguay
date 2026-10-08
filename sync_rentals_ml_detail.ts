@@ -18,9 +18,11 @@ import {
   ML_DETAIL_COLLECTION,
   mlDetailExpenses,
   mlDetailTargets,
+  parseMlRentalBedrooms,
   parseMlRentalExpenses,
   parseMlRentalPin,
   saveMlDetails,
+  writeMlDetailBedrooms,
   writeMlDetailExpenses,
   type MlRentalDetail,
 } from "./classes/rentals/mlDetail";
@@ -41,7 +43,7 @@ async function main(): Promise<void> {
   const meta = await appConnection().collection("rentalmetas").findOne({ key: RENTAL_META_KEY }, { projection: { usdUyu: 1 } });
   const usdUyu = Number(meta?.usdUyu) || 0;
   const targets = await mlDetailTargets(now, number("RENTALS_ML_DETAIL_MAX", 120));
-  const summary = { targets: targets.length, read: 0, stated: 0, zeroOrAbsent: 0, unreadable: 0, failed: 0, implausible: 0, written: 0, pinned: 0, located: 0, note: "" };
+  const summary = { targets: targets.length, read: 0, stated: 0, zeroOrAbsent: 0, unreadable: 0, failed: 0, implausible: 0, written: 0, pinned: 0, located: 0, bedrooms: 0, bedroomsWritten: 0, note: "" };
   if (!targets.length) {
     console.log("[rentals-ml-detail] sin fichas pendientes");
     return;
@@ -67,6 +69,7 @@ async function main(): Promise<void> {
       consecutiveFailures = 0;
       summary.read++;
       const pin = parseMlRentalPin(html);
+      const bedrooms = parseMlRentalBedrooms(html);
       rows.push({
         listingId: target.listingId,
         readAt,
@@ -74,8 +77,13 @@ async function main(): Promise<void> {
         currency: stated?.currency ?? null,
         latitude: pin?.latitude ?? null,
         longitude: pin?.longitude ?? null,
+        bedrooms,
         ok: true,
       });
+      if (bedrooms !== null) {
+        summary.bedrooms++;
+        if (!dryRun && (await writeMlDetailBedrooms(target, bedrooms))) summary.bedroomsWritten++;
+      }
       if (pin) {
         summary.pinned++;
         if (!dryRun && (await writeDetailPin(target, pin))) summary.located++;

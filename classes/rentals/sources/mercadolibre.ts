@@ -322,9 +322,12 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
   // The card never carries gastos comunes; what the advert's own page stated (currency-rentals-ml-
   // detail, see mlDetail.ts) goes back on before saving, or this harvest would blank it every hour.
   let withExpenses = 0;
+  let withBedrooms = 0;
   if (appDbConfigured()) {
     try {
-      withExpenses = await applyMlDetails(listings, usdUyu);
+      const filled = await applyMlDetails(listings, usdUyu);
+      withExpenses = filled.expenses;
+      withBedrooms = filled.bedrooms;
     } catch (error) {
       console.warn("[rentals] ML: no se pudieron reaplicar los gastos comunes de las fichas", error);
     }
@@ -333,6 +336,6 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
     key: "mercadolibre", complete: false,
     ok: reachable && byId.size > 0,
     listings,
-    note: `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets.size} admiten mascotas, ${particulars.size} de particular, ${withExpenses} con gastos comunes de su ficha; cobertura parcial; ${detail}`,
+    note: `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets.size} admiten mascotas, ${particulars.size} de particular, ${withExpenses} con gastos comunes de su ficha, ${withBedrooms} con dormitorios de su ficha; cobertura parcial; ${detail}`,
   };
 }
