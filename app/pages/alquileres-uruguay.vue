@@ -355,6 +355,26 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             :class="`rentals-grid--${layout}`"
             data-testid="rental-results-grid"
           >
+            <!-- Sólo los atajos apagados: uno aplicado ya es un chip de arriba, que lo saca. Va dentro
+                 de la grilla para poder ubicarlo con `order`: arriba de los avisos en escritorio y
+                 después del primero en el teléfono, donde arriba sacaba el primer precio de pantalla. -->
+            <div
+              v-if="quickFilters.length"
+              class="rentals-quick"
+              role="group"
+              :aria-label="t('quickFilters')"
+              data-testid="rental-quick-filters"
+            >
+              <VChip
+                v-for="key in quickFilters"
+                :key="key"
+                variant="outlined"
+                prepend-icon="mdi-plus"
+                :data-cta="`rental-quick-${key}`"
+                @click="applyQuickFilter(key)"
+                >{{ t(`quick-${key}`) }}</VChip
+              >
+            </div>
             <article v-for="(property, index) in items" :key="property.key" class="rental-card">
               <div class="rental-card__visual">
                 <!-- Con foto la imagen abre la galería sin salir de la búsqueda; sin foto no hay
@@ -754,6 +774,11 @@ import {
   type RentalsResponse,
 } from '~/utils/rentals'
 import { portalPriceGap, rentalListedFor, type PortalPriceGap } from '~/utils/rentalPortals'
+import {
+  rentalQuickFilters,
+  rentalQuickPatch,
+  type RentalQuickFilter,
+} from '~/utils/rentalQuickFilters'
 import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
 import { DIRECTORIOS_HUB } from '~/utils/directorios'
 import { rentalPricePerM2 } from '~/utils/rentalPricePerM2'
@@ -926,6 +951,10 @@ function removeFilter(keys: string[]) {
     Object.entries(requestParams.value).filter(([key]) => ![...keys, 'page'].includes(key))
   )
   void navigate(params)
+}
+const quickFilters = computed(() => rentalQuickFilters(query.value))
+function applyQuickFilter(key: RentalQuickFilter) {
+  search({ ...query.value, ...rentalQuickPatch(key) })
 }
 function changeSort(sort: RentalQuery['sort']) {
   if (sort === 'distancia' && !referencePoint.value) {
@@ -1740,10 +1769,35 @@ useSchemaOrg([
 .rentals-tools {
   margin: 8px 0 12px;
 }
+/* Fila de la grilla de avisos a todo el ancho, siempre la primera en escritorio. */
+.rentals-quick {
+  grid-column: 1 / -1;
+  order: -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 @media (max-width: 959px) {
   .rentals-chips {
     margin-top: 8px;
     gap: 4px;
+  }
+  /* Una sola fila que se desliza, y después del primer aviso: a 320×640 el primer precio
+     quedaba a 15 px del borde y la fila mide 26. */
+  .rentals-grid > article.rental-card:first-of-type {
+    order: -2;
+  }
+  .rentals-quick {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .rentals-quick::-webkit-scrollbar {
+    display: none;
+  }
+  .rentals-quick .v-chip {
+    flex: 0 0 auto;
   }
   .rentals-chips :deep(.v-chip) {
     flex: 0 1 auto;

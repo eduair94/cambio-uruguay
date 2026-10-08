@@ -962,3 +962,32 @@ for (const viewport of [
     expect(state.errors).toEqual([])
   })
 }
+
+// Filter shortcuts (2026-10-08): the newest filters lived at the bottom of a long panel. They write
+// the same URL as the panel, vanish once applied (the active chip removes them) and, on the phone,
+// sit after the first advert so its price stays on the first screen.
+for (const mobile of [true, false]) {
+  test(`${mobile ? '390px mobile' : 'desktop'}: filter shortcuts write the panel URL and leave once applied`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1366, height: 900 })
+    const state = await setup(page)
+    const quick = page.getByTestId('rental-quick-filters')
+    await expect(quick).toBeVisible()
+    const [row, card] = await Promise.all([
+      quick.boundingBox(),
+      page.locator('.rental-card').first().boundingBox(),
+    ])
+    if (mobile) expect(row!.y).toBeGreaterThanOrEqual(card!.y + card!.height - 1)
+    else expect(row!.y + row!.height).toBeLessThanOrEqual(card!.y + 1)
+    if (mobile) expect(row!.height).toBeLessThan(48)
+    await quick.getByText('Bajaron de precio', { exact: true }).click()
+    await expect.poll(() => new URL(page.url()).searchParams.get('bajo')).toBe('1')
+    await expect(quick.getByText('Bajaron de precio', { exact: true })).toHaveCount(0)
+    await quick.getByText('Dueño directo', { exact: true }).click()
+    await expect.poll(() => new URL(page.url()).searchParams.get('dueno')).toBe('1')
+    expect(new URL(page.url()).searchParams.get('bajo')).toBe('1')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    expect(state.errors).toEqual([])
+  })
+}
