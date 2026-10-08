@@ -9,19 +9,29 @@ import type { RawRental, RentalAdvertiserFields, RentalSellerType } from "./type
  * Whether an advert page's <title> names its own reference as a whole word. It opened the title
  * ("CW123 …") until the portal's 2026-10-07 redesign and closes it now ("… - CW123 | Casasweb").
  */
-export function casaswebTitleNames(title: string, id: string): boolean {
-  return new RegExp(`(?:^|\\s)CW${id}(?:\\s|$)`).test(title.replace(/\s+/g, " ").trim());
+export function casaswebTitleNames(title: string, reference: string): boolean {
+  return new RegExp(`(?:^|\\s)${reference}(?:\\s|$)`).test(title.replace(/\s+/g, " ").trim());
+}
+
+/**
+ * The reference an advert page shows for a stored ID. Sales store the bare number
+ * ("casasweb:123" → CW123); rentals keep the card's own reference, Casasweb's or the one an advert
+ * imported from Tokko carries ("casasweb:CW123", "casasweb:TKA7919965").
+ */
+export function casaswebReference(listingId: string): string | null {
+  const match = /^casasweb:([A-Z]{2,4})?(\d{1,18})$/.exec(listingId);
+  return match ? `${match[1] || "CW"}${match[2]}` : null;
 }
 
 /** Only the advert's own visible commercial block, never the recommendation cards/footer. */
 export function readCasaswebAdvertiser(html: string, advert: { listingId: string; url: string; title: string }, observedAt: string):
   (RentalAdvertiserFields & { sellerType: RentalSellerType }) | null {
-  const id = /^casasweb:(\d{1,18})$/.exec(advert.listingId)?.[1];
-  if (!id || !Number.isFinite(Date.parse(observedAt))) return null;
+  const reference = casaswebReference(advert.listingId);
+  if (!reference || !Number.isFinite(Date.parse(observedAt))) return null;
   const $ = cheerio.load(html);
-  if (!casaswebTitleNames($("title").text(), id)) return null;
+  if (!casaswebTitleNames($("title").text(), reference)) return null;
   const references = $("li").toArray().map(node => $(node).text().trim()).filter(value => /^Ref\s*:/i.test(value));
-  if (references.length !== 1 || !new RegExp(`^Ref\\s*:\\s*CW${id}$`, "i").test(references[0]!)) return null;
+  if (references.length !== 1 || !new RegExp(`^Ref\\s*:\\s*${reference}$`, "i").test(references[0]!)) return null;
   const title = rentalDescription($("h1").first().text(), 500);
   if (flatten(title) !== flatten(advert.title)) return null;
   const heading = $("#nombreInmo");
@@ -48,7 +58,7 @@ export async function enrichCasaswebRentalContacts(listings: RawRental[], mode: 
 } = {}): Promise<number> {
   if (process.env.RENTALS_CONTACTS_ENABLED === "0") return 0;
   const now = options.now || (() => new Date()), started = now().getTime();
-  const own = listings.filter(row => row.source === "casasweb" && /^casasweb:\d+$/.test(row.listingId))
+  const own = listings.filter(row => row.source === "casasweb" && casaswebReference(row.listingId))
     .sort((a, b) => a.listingId.localeCompare(b.listingId));
   const limit = Math.min(40, options.maxPages ?? (mode === "fast" ? 8 : 30));
   const offset = own.length ? (Math.floor(started / 3_600_000) * limit) % own.length : 0;

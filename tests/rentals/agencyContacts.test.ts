@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { agencyPathAllowed, enrichAgencyContacts, readInfoCasasAgencyContact, type AgencyContactCacheRow } from "../../classes/rentals/agencyContacts";
-import { readCasaswebAdvertiser } from "../../classes/rentals/casaswebContacts";
+import { enrichCasaswebRentalContacts, readCasaswebAdvertiser } from "../../classes/rentals/casaswebContacts";
 import { readElpaisContact } from "../../classes/rentals/elpaisContacts";
-import type { RentalAgency, RentalAdvertiserFields } from "../../classes/rentals/types";
+import type { RawRental, RentalAgency, RentalAdvertiserFields } from "../../classes/rentals/types";
 
 const NOW = "2026-09-07T10:00:00.000Z";
 const agency: RentalAgency = { version: 1, key: "infocasas:77", name: "Agencia pública", profileUrl: "https://www.infocasas.com.uy/inmobiliarias/perfil/77-agencia", observedAt: NOW };
@@ -74,5 +74,30 @@ describe("bounded public commercial contacts", () => {
     expect(readCasaswebAdvertiser(page.replace("Ref: <b>CW123", "Ref: <b>CW124"), advert, NOW)).toBeNull();
     expect(readCasaswebAdvertiser(page.replace("- CW123 |", "- CW1234 |"), advert, NOW)).toBeNull();
     expect(readCasaswebAdvertiser(page.replace("<h1>Apartamento luminoso", "<h1>Otra propiedad"), advert, NOW)).toBeNull();
+  });
+  // Rentals keep the card's own reference ("casasweb:CW123"); only sales strip the prefix. The
+  // reader and the rotating sample accepted digits alone, so not one of the 3.000 Casasweb rental
+  // offers in the directory ever got its contact (2026-10-08), while El País and InfoCasas did.
+  it("reads the contact of a rental advert, whose ID keeps the portal's CW prefix", async () => {
+    const advert = { listingId: "casasweb:CW123", title: "Apartamento luminoso", url: "https://casasweb.com/ALQUILER__AGENCIA_APARTAMENTO_CENTRO_MONTEVIDEO_CW123" };
+    const page = `<title>Apartamento luminoso - CW123 | Casasweb</title><h1>Apartamento luminoso</h1><li>Ref: <b>CW123 </b></li><center><h2 id="nombreInmo">Agencia pública</h2><a href="https://wa.me/59899123456">WhatsApp</a></center>`;
+    expect(readCasaswebAdvertiser(page, advert, NOW)?.publicContact?.channels).toEqual([{ kind: "whatsapp", value: "+59899123456", sourceUrl: advert.url, observedAt: NOW }]);
+    expect(readCasaswebAdvertiser(page, { ...advert, listingId: "casasweb:CW124" }, NOW)).toBeNull();
+    // An advert imported from Tokko keeps that reference ("TKA…") in its own title and Ref line.
+    expect(readCasaswebAdvertiser(page, { ...advert, listingId: "casasweb:TKA123" }, NOW)).toBeNull();
+    const tokko = { listingId: "casasweb:TKA7919965", title: "Apartamento luminoso", url: "https://casasweb.com/ALQUILER__KW_RED_APARTAMENTO_CENTRO_MONTEVIDEO_TKA7919965" };
+    const tokkoPage = page.replaceAll("CW123", "TKA7919965");
+    expect(readCasaswebAdvertiser(tokkoPage, tokko, NOW)?.publicContact?.channels[0]?.sourceUrl).toBe(tokko.url);
+    expect(readCasaswebAdvertiser(tokkoPage, { ...tokko, listingId: "casasweb:CW7919965" }, NOW)).toBeNull();
+
+    const rows = [
+      { source: "casasweb", ...advert },
+      { source: "casasweb", ...tokko },
+      { source: "casasweb", listingId: "casasweb:otra-cosa", title: "Otro", url: "https://casasweb.com/ALQUILER__X" },
+    ] as unknown as RawRental[];
+    const fetchPage = vi.fn(async (url: string) => url === tokko.url ? tokkoPage : page);
+    expect(await enrichCasaswebRentalContacts(rows, "fast", { fetchPage, now: () => new Date(NOW) })).toBe(2);
+    expect(fetchPage).toHaveBeenCalledTimes(2);
+    expect(rows.map(row => row.publicContact?.channels[0]?.value)).toEqual(["+59899123456", "+59899123456", undefined]);
   });
 });
