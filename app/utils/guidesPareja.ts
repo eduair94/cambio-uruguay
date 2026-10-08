@@ -95,7 +95,7 @@ export const parejaGuides: readonly Guide[] = [
   },
   {
     slug: 'union-concubinaria-uruguay',
-    title: 'Unión concubinaria en Uruguay: derechos y patrimonio',
+    title: 'Unión concubinaria: 5 años y sentencia',
     description:
       'La unión concubinaria de la Ley 18.246: convivencia de al menos cinco años, reconocimiento judicial y los derechos patrimoniales y de pensión que genera.',
     tag: 'CONCUBINATO',

@@ -121,7 +121,7 @@ export const pagosGuides: readonly Guide[] = [
   },
   {
     slug: 'saldo-retenido-tarjeta-debito-uruguay',
-    title: 'Saldo retenido en el débito: qué es y cómo se libera',
+    title: 'Saldo retenido: casi nunca es un préstamo',
     description:
       'Saldo retenido o pendiente de ejecución: una preautorización de hotel, surtidor o alquiler de auto, o una comisión impaga. Cómo se libera y dónde reclamar.',
     tag: 'RETENCIÓN',

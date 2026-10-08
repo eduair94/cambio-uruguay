@@ -19,6 +19,25 @@
   ],
   "experiments": [
     {
+      "id": "titulos-de-las-guias-respuesta-primero-4",
+      "shippedOn": "2026-10-08",
+      "routes": [
+        "/guias/cambiar-pesos-argentinos-uruguay",
+        "/guias/comprar-primera-vivienda-uruguay",
+        "/guias/proteger-ahorros-de-la-inflacion",
+        "/guias/refinanciar-deudas-uruguay",
+        "/guias/union-concubinaria-uruguay",
+        "/guias/saldo-retenido-tarjeta-debito-uruguay",
+        "/guias/ahorrar-en-dolares-o-pesos",
+        "/guias/casas-de-cambio-vs-bancos",
+        "/guias/que-revisar-antes-de-firmar-alquiler",
+        "/guias/evitar-comisiones-cambio",
+        "/guias/como-rescindir-contrato-alquiler-uruguay",
+        "/guias/comprar-auto-0km-o-usado-uruguay"
+      ],
+      "hypothesis": "Octava tanda del snippet de las guias: doce titulos de 73 a 66 caracteres con la marca, que el SERP cortaba, reescritos a 59 o menos con la respuesta adelante. Nueve gastaban el renglon en la etiqueta del tema mas el indice de la guia y tres devolvian la pregunta sin contestarla. Ademas desdobla una canibalizacion: el titulo viejo de ahorrar-en-dolares-o-pesos era casi la misma cadena que el de conviene-ahorrar-en-dolares-uruguay. Tramo contenido (8x el promedio del sitio). Se espera mas clics a igual posicion."
+    },
+    {
       "id": "pagina-desalojo-de-alquiler",
       "shippedOn": "2026-10-08",
       "routes": ["/desalojo-de-alquiler-uruguay"],
