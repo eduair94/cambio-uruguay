@@ -11,8 +11,8 @@ import { advertiserClassification, ownerDirectDeclaration } from "../advertiser"
 import { appDbConfigured } from "../../appdb";
 import { applyMlDetails } from "../mlDetail";
 import { fetchJson } from "../net";
-import { inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, opensWithResidence, parseAttributes, parseLocationLine } from "../normalize";
-import type { RawRental, RentalCurrency } from "../types";
+import { flatten, inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, opensWithResidence, parseAttributes, parseLocationLine } from "../normalize";
+import type { RawRental, RentalCurrency, RentalPropertyType } from "../types";
 import type { RentalSourceResult } from "./types";
 import {
   ML_RENTAL_CATEGORIES, ML_PAGE_SIZE as PAGE_SIZE, ML_OFFSET_CEILING,
@@ -57,6 +57,21 @@ export function collectPolycards(payload: unknown): Polycard[] {
 
 const componentOf = (card: Polycard, type: string) => card.components?.find((component) => component.type === type);
 
+/**
+ * A studio's zero bedrooms, from its title. ML's attribute strip prints "2 dormitorios" but leaves
+ * out "0 dormitorios", so every monoambiente arrived with no bedrooms at all and the directory's
+ * "Monoambiente" filter (bedrooms = 0) found none of them: 1.740 of the 2.271 ML homes without
+ * bedrooms said "monoambiente" in the title on 2026-10-08, and ML had zero properties at 0.
+ * Only a dwelling's title, only "monoambiente", and never one that also counts bedrooms
+ * ("monoambientes y apartamentos de 1 dormitorio" is two units, not a studio).
+ */
+export function studioFromTitle(title: string): boolean {
+  const flat = flatten(title);
+  return /\bmono ?ambientes?\b/.test(flat) && !/\b\d{1,2}\s*(?:dormitorios?|dorms?\.?|habitacion(?:es)?)\b/.test(flat);
+}
+
+const DWELLINGS = new Set(["apartamento", "casa"]);
+
 export function toRawRental(card: Polycard, observedAt = new Date().toISOString()): RawRental | null {
   const id = String(card.metadata?.id || "").trim();
   const category = ML_RENTAL_CATEGORIES.find(row => row.id === card.metadata?.category_id && row.domain === card.metadata?.domain_id);
@@ -79,6 +94,12 @@ export function toRawRental(card: Polycard, observedAt = new Date().toISOString(
     componentOf(card, "location")?.location?.text || params.get("location") || ""
   );
 
+  const propertyType: RentalPropertyType = opensWithResidence(title)
+    ? "habitacion"
+    : category.propertyType === "otro" && inferPropertyType(title) === "garaje"
+      ? "garaje" : category.propertyType;
+  const bedrooms = attributes.bedrooms ?? (DWELLINGS.has(propertyType) && studioFromTitle(title) ? 0 : null);
+
   return {
     parkingSpaces: null,
     furnished: null,
@@ -98,10 +119,7 @@ export function toRawRental(card: Polycard, observedAt = new Date().toISOString(
     image: String(params.get("picture") || params.get("thumbnail") || "").trim() || null,
     publishedAt: null,
     // A residence of beds is filed as a house; the title that opens with it says what is rented.
-    propertyType: opensWithResidence(title)
-      ? "habitacion"
-      : category.propertyType === "otro" && inferPropertyType(title) === "garaje"
-        ? "garaje" : category.propertyType,
+    propertyType,
     department: location.department,
     neighborhood: location.neighborhood,
     address: location.address,
@@ -109,7 +127,7 @@ export function toRawRental(card: Polycard, observedAt = new Date().toISOString(
     streetNumber: location.number,
     latitude: null,
     longitude: null,
-    bedrooms: attributes.bedrooms,
+    bedrooms,
     bathrooms: attributes.bathrooms,
     area: attributes.area,
     // La pasada principal no sabe: el dato NO viene por aviso. Lo pone `markPetFriendly`.
