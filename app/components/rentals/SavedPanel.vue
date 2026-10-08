@@ -13,7 +13,6 @@ const emit = defineEmits<{
   removeFavorite: [key: string]
 }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalSavedMessages })
-const localePath = useLocalePath()
 const selected = ref<string[]>([])
 const showAll = ref(false)
 let initialized = false
@@ -224,9 +223,7 @@ const comparisonRows = computed(() => [
                 <tr>
                   <th scope="col">{{ t('property') }}</th>
                   <th v-for="favorite in compared" :key="favorite.key" scope="col">
-                    <NuxtLink :to="localePath(rentalPropertyPath(favorite.key))">{{
-                      favorite.title
-                    }}</NuxtLink>
+                    <NuxtLink :to="rentalPropertyPath(favorite.key)">{{ favorite.title }}</NuxtLink>
                   </th>
                 </tr>
               </thead>

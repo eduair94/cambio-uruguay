@@ -1052,7 +1052,7 @@ useHead(() => ({
         <p class="rental-page__note">{{ t('similarHint') }}</p>
         <ul>
           <li v-for="entry in data.similar" :key="entry.key">
-            <NuxtLink :to="localePath(rentalPropertyPath(entry.key))">
+            <NuxtLink :to="rentalPropertyPath(entry.key)">
               <span class="rental-page__similar-media">
                 <img
                   v-if="rentalSavedSafeUrl(relatedOffer(entry)?.image)"

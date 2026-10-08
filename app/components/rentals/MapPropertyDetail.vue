@@ -52,7 +52,7 @@
             <h4>{{ title }}</h4>
             <p v-if="address">{{ address }}</p>
             <NuxtLink
-              :to="localePath(rentalPropertyPath(property.key))"
+              :to="rentalPropertyPath(property.key)"
               class="rental-map-detail__full-link"
               @pointerdown="rememberRentalSearch(route.fullPath)"
               @click="rememberRentalSearch(route.fullPath)"
@@ -232,7 +232,6 @@ const emit = defineEmits<{
   favorite: [property: RentalPublicProperty]
 }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })
-const localePath = useLocalePath()
 const route = useRoute()
 const heading = ref<HTMLElement | null>(null)
 const body = ref<HTMLElement | null>(null)

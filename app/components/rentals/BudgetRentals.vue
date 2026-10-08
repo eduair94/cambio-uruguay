@@ -174,7 +174,7 @@
             >
               <div class="budget-card__intro">
                 <NuxtLink
-                  :to="localePath(rentalPropertyPath(item.key))"
+                  :to="rentalPropertyPath(item.key)"
                   class="budget-card__photo"
                   tabindex="-1"
                   aria-hidden="true"
@@ -197,9 +197,7 @@
                     {{ [item.neighborhood, item.department].filter(Boolean).join(' · ') }}
                   </p>
                   <h3>
-                    <NuxtLink :to="localePath(rentalPropertyPath(item.key))">{{
-                      item.title
-                    }}</NuxtLink>
+                    <NuxtLink :to="rentalPropertyPath(item.key)">{{ item.title }}</NuxtLink>
                   </h3>
                   <strong class="budget-card__price">{{ money(item.budget.amountUyu) }}</strong>
                   <p class="budget-card__basis">
@@ -249,12 +247,9 @@
                   :title="item.title"
                 />
                 <div class="budget-card__actions">
-                  <VBtn
-                    :to="localePath(rentalPropertyPath(item.key))"
-                    color="link"
-                    variant="tonal"
-                    >{{ t('detail') }}</VBtn
-                  >
+                  <VBtn :to="rentalPropertyPath(item.key)" color="link" variant="tonal">{{
+                    t('detail')
+                  }}</VBtn>
                   <VBtn
                     v-if="original(item)"
                     :href="original(item)!"
