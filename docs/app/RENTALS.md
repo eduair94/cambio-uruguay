@@ -1,5 +1,45 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Pesos que son dólares, temporada y cosas que no son inmuebles — 8 de octubre de 2026
+
+Pedido: "hay alquileres en dólares que figuran en pesos en Facebook Marketplace y otros sitios"
+(una vivienda en Carrasco a $ 2.500). Medido sobre los avisos públicos del 7/10: los precios
+"irrisorios" en pesos eran casi todos de Facebook con tipo "otro" (piso de $ 2.000) y mezclaban
+tres cosas distintas, que se arreglan por separado.
+
+**1. Moneda deducida (`classes/rentals/currency.ts`, en `sync_rentals.ts` antes de unificar).** Un
+umbral fijo no sirve en ninguna dirección: en Carmelo una casa se alquila de verdad a $ 6.500 (p10
+de la zona $ 10.338), y el departamento no es un mercado (Maldonado mezcla Punta del Este, en
+dólares, con Maldonado ciudad, en pesos: "Apartamento Centro Maldonado Alquiler Anual" a $ 15.000
+es real). Se lee contra el mercado publicado de la misma zona —departamento, barrio y dormitorios,
+la cohorte más específica con 8 viviendas o más— y las dos lecturas tienen que coincidir: en pesos,
+menos de la mitad del p10; en dólares, entre la mitad del p10 y 1,5× el p90. Debajo de $ 5.000
+decide cualquier cohorte; de $ 5.000 a $ 12.000 sólo la del barrio; desde $ 12.000 no se toca. Si
+ninguna lectura es plausible ("Alquiler zona Centro 1 dormitorio" a $ 4.000) queda como se
+publicó. Habitaciones y residencias nunca entran (una cama sí cuesta $ 7.000). Medido: 40
+correcciones —Punta del Este, Maldonado anual, Carrasco, La Tahona, La Barra—, ninguna en el
+interior. La oferta queda marcada `currencyInferred`, la tarjeta y la ficha lo dicen, y
+oportunidades inmobiliarias la deja afuera (una comparación sobre nuestra corrección sólo mediría la
+corrección).
+
+**2. Temporada (`eligibility.ts`, espejo en el app).** "Por días" en plural, "la noche", "segunda
+quincena de enero", "alquiler de verano", "alquiler enero" pasaban como alquiler mensual; Mercado
+Libre e InfoCasas publicaban decenas de "Alquiler de verano" en Punta del Este a US$ 1.100–5.000 por
+la temporada. Salen, salvo que el título ofrezca también una estadía larga ("6 meses o más", anual).
+
+**3. No inmuebles (`looksLikeRentalAdvert`).** Castillos inflables, máquinas de depilación, food
+truck, volquetas, salones "para cumpleaños": salen si el título no nombra un inmueble ("Oficinas con
+sala de reuniones" y "Complejo de 3 edificios con salón de fiestas" se quedan). Las tres reglas
+juntas sacan 108 avisos; leídos a mano, ninguno era una vivienda mensual.
+
+**Y las residencias, en el tipo de origen.** Un título que ABRE con una residencia ("Residencia
+Estudiantil En El Centro", "Hogar - Residencia Estudiantil") es `habitacion` aunque Mercado Libre
+diga casa: eran casas de 8 a 15 dormitorios a $ 8.200–9.500 dentro de la mediana de las casas y de
+sus oportunidades. Más adentro del título describe un uso ("Casa de 5 dormitorios | Cowork |
+Residencia Estudiantil", $ 60.000) y no cambia nada. 24 de 24 correctas.
+
+Todo se aplica cuando la corrida vuelve a leer cada aviso; la completa de las 04:52 relee todos.
+
 ## Excluir: habitaciones y residencias, barrios, tipos, portales y palabras — 7 de octubre de 2026
 
 Pedido: separar las habitaciones de residencias ("Residencia Amoblada En Belvedere") del resto,

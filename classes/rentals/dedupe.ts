@@ -300,6 +300,7 @@ function toOffer(listing: Candidate, context: DedupeContext): RentalOffer {
     title: listing.title,
     price: Math.round(listing.price),
     currency: listing.currency,
+    ...(listing.currencyInferred === true ? { currencyInferred: true as const } : {}),
     priceUyu: listing.priceUyu,
     commonExpenses: listing.commonExpenses === null ? null : Math.round(listing.commonExpenses),
     commonExpensesCurrency: listing.commonExpensesCurrency,

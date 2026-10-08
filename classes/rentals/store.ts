@@ -9,6 +9,7 @@ import { isRetiredRentalKey } from "./retiredKeys";
 // again. Without that rule an hourly "fast" run — which reads only today's adverts — would wipe
 // every other portal's rows off every property it touched.
 import { RentalListingModel } from "../models/RentalListing";
+import { RENT_COHORT_FLOOR_UYU, type RentPriceRow } from "./currency";
 import { RentalMetaModel } from "../models/RentalMeta";
 import { detachedRentalKey, partitionRentalOffers, propertyFromRentalOffers } from "./reconcile";
 import { RENTAL_FULL_META_KEY, RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalSource } from "./types";
@@ -350,6 +351,22 @@ export async function pruneStaleRentals(today: string, days: number): Promise<nu
 
 export async function countRentals(): Promise<number> {
   return RentalListingModel.countDocuments({});
+}
+
+/**
+ * The published home market, for reading misread currencies against it (currency.ts). Only homes
+ * seen in the last `days` and priced where a peso home can be: what a currency fix must agree with,
+ * not what it is fixing.
+ */
+export async function loadRentPriceRows(days = 10): Promise<RentPriceRow[]> {
+  const cutoff = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+  return RentalListingModel.find({
+    lastSeen: { $gte: cutoff },
+    propertyType: { $in: ["casa", "apartamento"] },
+    priceUyu: { $gte: RENT_COHORT_FLOOR_UYU },
+  })
+    .select({ _id: 0, department: 1, neighborhood: 1, bedrooms: 1, priceUyu: 1 })
+    .lean<RentPriceRow[]>();
 }
 
 /**

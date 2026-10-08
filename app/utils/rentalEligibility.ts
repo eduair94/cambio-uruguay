@@ -101,10 +101,21 @@ export function rentalPeriodEvidence(
     affirmed(text, /\b\d[\d.,]*\s*(?:(?:pesos|dolares)\s+)?(?:por|x)\s+(?:dia|noche|quincena)\b/) ||
     affirmed(text, /(?:\$|usd|uyu|u\$s)\s*\d[\d.,]*\s*diari[oa]s?\b/) ||
     affirmed(text, /\b(?:enero|febrero|diciembre)\s+completo\s*(?:[:=]\s*)?(?:\$|usd|u\$s)\s*\d/)
-  const headingStay = affirmed(
-    heading,
-    /\b(?:temporada|temporal|temporario|temporaria|turistico|invernal|(?:por|x)\s+(?:dia|noche|semana|quincena)|fin de semana)\b/
-  )
+  const headingStay =
+    affirmed(
+      heading,
+      /\b(?:temporada|temporal|temporario|temporaria|turistico|invernal|(?:por|x)\s+(?:dias?|noches?|semanas?|quincenas?)|la\s+noche|fin de semana)\b/
+    ) ||
+    // "Segunda quincena de enero", "Alquiler de verano", "Alquiler enero 2 dormitorios": public
+    // titles on 2026-10-07, priced per stay, that the directory showed beside annual rents.
+    affirmed(heading, /\b(?:primer[ao]?|segunda|1r[ao]|2d[ao]|1er)\s+quincena\b/) ||
+    affirmed(heading, /\bquincena\s+de\s+(?:diciembre|enero|febrero|marzo)\b/) ||
+    (affirmed(
+      heading,
+      /\b(?:alquiler|alquilo|alquila)\s+(?:(?:de|para|en|por)\s+)?(?:verano|enero|febrero|carnaval|semana de turismo)\b/
+    ) &&
+      // "Alquiler de verano 6 meses o más" offers a long stay as well.
+      !/\b(?:anual|todo el ano|\d+\s+meses|meses o mas)\b/.test(heading))
   const describedStay =
     affirmed(
       detail,

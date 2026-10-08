@@ -327,6 +327,8 @@ const COUNTED_ROOMS = /\b(?:(?:\d+|dos|tres|cuatro|cinco|seis|siete|ocho)\s*(?:h
 // none: "<n> habitaciones <n> baños <type>", sometimes with "+" for spaces.
 const MARKETPLACE_SUMMARY = /^\d+ habitacion(?:es)? \d+ banos? (.+)$/;
 
+const RESIDENCE_HEADING = /^(?:(?:alquiler|alquilo|alquila|se alquila|renta)\s+(?:de\s+)?)?(?:hogar\s*[-,.]?\s*)?(?:residencias?|hogar(?:es)?|pension(?:es)?)\s+(?:(?:para|de)\s+)?(?:estudiant\w*|universitari\w*|femenin\w*|masculin\w*|mixt\w*|deportistas|trabajador\w*|jovenes|senoritas)\b/;
+
 function marketplaceSummaryType(flat: string): RentalPropertyType | null {
   const tail = flat.match(MARKETPLACE_SUMMARY)?.[1]?.replace(/^[\s\-–|·:]+/, "");
   if (!tail) return null;
@@ -354,6 +356,12 @@ const STANDALONE_GARAGE = /^(?:(?:se\s+)?(?:alquila|alquilo|alquiler|arriendo|ar
  * outvote the category the seller picked from a dropdown.
  */
 export function inferPropertyType(title: string, hint?: string | null): RentalPropertyType {
+  // A title that OPENS with a residence ("Residencia Estudiantil En El Centro", "Hogar - Residencia
+  // Estudiantil Femenina") rents beds, whatever the seller picked from the portal's menu: measured
+  // 2026-10-07, MercadoLibre listed those as houses of 8 to 15 bedrooms at $ 8.200–9.500, the price
+  // of one bed, inside the houses' medians and their "opportunities". Further into the title it
+  // describes a use ("Casa de 5 dormitorios | Cowork | Residencia Estudiantil", $ 60.000).
+  if (RESIDENCE_HEADING.test(flatten(title))) return "habitacion";
   const hintFlat = flatten(hint || "");
   if (hintFlat) {
     if (/apartment|apartamento/.test(hintFlat)) return "apartamento";
@@ -386,10 +394,20 @@ export function inferPropertyType(title: string, hint?: string | null): RentalPr
  * temporary/tourist rentals into the same category; a nightly rate compared against a monthly one
  * is the fastest way to publish a lie.
  */
+// Marketplace's "Propiedades en alquiler" search returns whatever is for hire: measured
+// 2026-10-07, castillos inflables, máquinas de depilación, futbolitos, a food truck and salones
+// "para cumpleaños" were public in the directory as "otro" at $ 2.000–5.000. None is a property.
+// A title that names a home or a premises is about one, even with "juegos para niños" in it.
+const NOT_A_PROPERTY = /\b(?:inflables?|cama elastica|juegos? (?:infantiles|para|de cumple\w*)|ping ?pong|futbolito|metegol|mesa de pool|se alquila pool|food ?truck|volquetas?|decoraciones|equipos? (?:de )?(?:depilacion|sonido|luces|audio)|maquinas?(?: de)? (?:depilacion|soprano|hifu)|depilacion|soprano|hifu|body sculpt|head spa|disfraces|(?:para|de) (?:eventos|cumpleanos|fiestas|reuniones))\b/;
+// "Oficinas con sala de reuniones", "Complejo de 3 edificios con salón de fiestas" and "Ideal clínica
+// o salón de fiestas" are properties that mention an event; measured on the same day.
+const NAMES_A_PROPERTY = /\b(?:apartamentos?|aptos?|casas?|monoambientes?|dormitorios?|locales|local|oficinas?|galpon(?:es)?|depositos?|terrenos?|cocheras?|garajes?|garages?|habitacion(?:es)?|cabanas?|consultorios?|edificios?|complejo|propiedad|chacras?|box(?:es)?|clinica|pizzeria)\b/;
+
 export function looksLikeRentalAdvert(title: string, description = ""): boolean {
   const flat = flatten(title);
   if (/\b(vendo|venta|se vende|permuta|remato)\b/.test(flat) && !/\balquil/.test(flat)) return false;
   if (/\b(busco|necesito|solicito)\b.*\balquil/.test(flat)) return false;
+  if (NOT_A_PROPERTY.test(flat) && !NAMES_A_PROPERTY.test(flat)) return false;
   return !rentalPeriodEvidence(title, description).shortTerm;
 }
 
