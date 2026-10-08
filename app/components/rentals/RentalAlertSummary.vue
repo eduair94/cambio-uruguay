@@ -52,9 +52,18 @@ const rows = computed(() => {
       'anyNeighborhood',
       (q.neighborhoods.length ? q.neighborhoods : [q.neighborhood]).filter(Boolean).join(' · ')
     )
+    if (q.excludeNeighborhoods?.length)
+      add('excludeNeighborhoods', q.excludeNeighborhoods.join(' · '))
     if (q.types.length) add('type', q.types.map(type => t(typeLabels[type] || type)).join(' · '))
+    if (q.excludeTypes?.length)
+      add('excludeTypes', q.excludeTypes.map(type => t(typeLabels[type] || type)).join(' · '))
+    if (q.sharedLiving)
+      add('sharedLiving', t(q.sharedLiving === 'solo' ? 'sharedLivingOnly' : 'sharedLivingHide'))
     if (q.source && q.source !== 'all')
       add('source', RENTAL_SOURCE_LABEL[q.source as keyof typeof RENTAL_SOURCE_LABEL] || q.source)
+    if (q.excludeSources?.length)
+      add('excludeSources', q.excludeSources.map(source => RENTAL_SOURCE_LABEL[source]).join(' · '))
+    if (q.excludeWords?.length) add('excludeWords', q.excludeWords.join(' · '))
     if (q.bedrooms !== null)
       add(
         'bedrooms',

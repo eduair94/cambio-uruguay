@@ -974,10 +974,17 @@ const filterChips = computed(() => {
   const q = query.value
   const chips: Array<{ key: string; keys: string[]; label: string }> = []
   const add = (key: string, label: string, keys = [key]) => chips.push({ key, keys, label })
-  if (q.department) add('department', q.department, ['department', 'neighborhood', 'neighborhoods'])
+  if (q.department)
+    add('department', q.department, ['department', 'neighborhood', 'neighborhoods', 'sinBarrios'])
   if (q.neighborhoods.length)
     add('neighborhoods', q.neighborhoods.join(', '), ['neighborhood', 'neighborhoods'])
+  if (q.excludeNeighborhoods?.length)
+    add('sinBarrios', t('without', { items: q.excludeNeighborhoods.join(', ') }))
   for (const type of q.types) add(`type:${type}`, typeLabel(type))
+  if (q.excludeTypes?.length)
+    add('sinTipos', t('without', { items: q.excludeTypes.map(typeLabel).join(', ') }))
+  if (q.sharedLiving)
+    add('residencias', t(q.sharedLiving === 'solo' ? 'sharedLivingOnly' : 'sharedLivingHideChip'))
   if (q.q) add('q', q.q)
   if (q.agency) add('agency', agencyName.value || t('selectedAgency'))
   if (q.bedrooms !== null)
@@ -1016,6 +1023,10 @@ const filterChips = computed(() => {
       availabilityCopy.value[q.availability === 'hide_multiple' ? 'chipMultiple' : 'chipAny']
     )
   if (q.source) add('source', sourceLabel(q.source))
+  if (q.excludeSources?.length)
+    add('sinPortales', t('without', { items: q.excludeSources.map(sourceLabel).join(', ') }))
+  if (q.excludeWords?.length)
+    add('sinPalabras', t('without', { items: q.excludeWords.map(word => `«${word}»`).join(', ') }))
   if (q.guarantees.length) add('garantia', q.guarantees.map(g => t(g)).join(', '))
   if (q.amenities.length)
     add(

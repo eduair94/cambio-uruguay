@@ -125,7 +125,8 @@ export const rentalZoneMessages = {
     closeDetail: 'Cerrar el panel de la zona',
     reset: 'Limpiar selección',
     selectionLimit: 'Podés elegir hasta 20 zonas en total.',
-    directoryHint: 'Los filtros del directorio admiten varias zonas de un mismo departamento.',
+    directoryHint:
+      'Los filtros del directorio admiten varias zonas de un mismo departamento, para incluirlas o excluirlas.',
     mismatch:
       'Hay zonas elegidas fuera del departamento actual. Revisá el departamento o quitá esas zonas.',
     loading: 'Cargando zonas y sus fuentes…',
@@ -331,7 +332,8 @@ export const rentalZoneMessages = {
     closeDetail: 'Close the area panel',
     reset: 'Clear selection',
     selectionLimit: 'You can select up to 20 areas in total.',
-    directoryHint: 'The rental directory accepts several areas within one department.',
+    directoryHint:
+      'The rental directory accepts several areas within one department, to include or exclude them.',
     mismatch:
       'Some selected areas are outside the current department. Review the department or remove those areas.',
     loading: 'Loading areas and sources…',
@@ -537,7 +539,8 @@ export const rentalZoneMessages = {
     closeDetail: 'Fechar o painel da região',
     reset: 'Limpar seleção',
     selectionLimit: 'Você pode escolher até 20 regiões no total.',
-    directoryHint: 'Os filtros do diretório aceitam várias regiões de um mesmo departamento.',
+    directoryHint:
+      'Os filtros do diretório aceitam várias regiões de um mesmo departamento, para incluí-las ou excluí-las.',
     mismatch:
       'Há regiões escolhidas fora do departamento atual. Revise o departamento ou remova essas regiões.',
     loading: 'Carregando regiões e fontes…',

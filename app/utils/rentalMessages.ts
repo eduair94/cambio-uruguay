@@ -148,6 +148,24 @@ export const rentalMessages = {
     country: 'Todo Uruguay',
     neighborhoods: 'Barrios o localidades',
     neighborhoodHint: 'Podés elegir más de uno.',
+    excludeNeighborhoods: 'Excluir barrios o localidades',
+    excludeTypes: 'Excluir tipos',
+    excludeTypesHint:
+      'Se resta de lo elegido: «Viviendas» sin «Habitación» deja solo casas y apartamentos.',
+    sharedLiving: 'Habitaciones y residencias',
+    sharedLivingShow: 'Mostrarlas junto al resto',
+    sharedLivingHide: 'Ocultarlas',
+    sharedLivingOnly: 'Solo habitaciones y residencias',
+    sharedLivingHideChip: 'Sin habitaciones ni residencias',
+    sharedLivingHint:
+      'Residencias, pensiones y cuartos compartidos: se alquila una cama o un cuarto, no una vivienda. Se reconocen por el tipo del portal o por el título.',
+    excludeWords: 'Excluir avisos que digan',
+    excludeWordsHint:
+      'Palabras del título, separadas por coma. No distingue acentos: «pension» también saca «Pensión».',
+    excludeSources: 'Ocultar portales',
+    excludeSourcesHint:
+      'Si la misma vivienda también está en otro portal, se sigue mostrando con ese aviso.',
+    without: 'Sin {items}',
     type: 'Tipo de propiedad',
     any: 'Cualquiera',
     bedrooms: 'Dormitorios',
@@ -450,6 +468,24 @@ export const rentalMessages = {
     country: 'All Uruguay',
     neighborhoods: 'Neighborhoods or towns',
     neighborhoodHint: 'You can choose more than one.',
+    excludeNeighborhoods: 'Exclude neighborhoods or towns',
+    excludeTypes: 'Exclude types',
+    excludeTypesHint:
+      'Subtracted from your choice: “Homes” without “Room” leaves only houses and apartments.',
+    sharedLiving: 'Rooms and residences',
+    sharedLivingShow: 'Show them with the rest',
+    sharedLivingHide: 'Hide them',
+    sharedLivingOnly: 'Only rooms and residences',
+    sharedLivingHideChip: 'No rooms or residences',
+    sharedLivingHint:
+      'Residences, boarding houses and shared rooms: you rent a bed or a room, not a home. Recognised by the portal’s type or by the title.',
+    excludeWords: 'Exclude adverts that say',
+    excludeWordsHint:
+      'Words in the title, separated by commas. Accents are ignored: “pension” also removes “Pensión”.',
+    excludeSources: 'Hide portals',
+    excludeSourcesHint:
+      'If the same home is also on another portal, it is still shown with that advert.',
+    without: 'Without {items}',
     type: 'Property type',
     any: 'Any',
     bedrooms: 'Bedrooms',
@@ -754,6 +790,24 @@ export const rentalMessages = {
     country: 'Todo o Uruguai',
     neighborhoods: 'Bairros ou localidades',
     neighborhoodHint: 'Você pode escolher mais de um.',
+    excludeNeighborhoods: 'Excluir bairros ou localidades',
+    excludeTypes: 'Excluir tipos',
+    excludeTypesHint:
+      'É descontado do que você escolheu: «Moradias» sem «Quarto» deixa só casas e apartamentos.',
+    sharedLiving: 'Quartos e residências',
+    sharedLivingShow: 'Mostrar junto com o resto',
+    sharedLivingHide: 'Ocultar',
+    sharedLivingOnly: 'Só quartos e residências',
+    sharedLivingHideChip: 'Sem quartos nem residências',
+    sharedLivingHint:
+      'Residências, pensões e quartos compartilhados: aluga-se uma cama ou um quarto, não uma moradia. Reconhecidos pelo tipo do portal ou pelo título.',
+    excludeWords: 'Excluir anúncios que digam',
+    excludeWordsHint:
+      'Palavras do título, separadas por vírgula. Não diferencia acentos: «pension» também tira «Pensión».',
+    excludeSources: 'Ocultar portais',
+    excludeSourcesHint:
+      'Se a mesma moradia também estiver em outro portal, continua aparecendo com esse anúncio.',
+    without: 'Sem {items}',
     type: 'Tipo de imóvel',
     any: 'Qualquer',
     bedrooms: 'Quartos',
