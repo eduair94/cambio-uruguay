@@ -162,7 +162,11 @@ dólares, con Maldonado ciudad, en pesos: "Apartamento Centro Maldonado Alquiler
 es real). Se lee contra el mercado publicado de la misma zona —departamento, barrio y dormitorios,
 la cohorte más específica con 8 viviendas o más— y las dos lecturas tienen que coincidir: en pesos,
 menos de la mitad del p10; en dólares, entre la mitad del p10 y 1,5× el p90. Debajo de $ 5.000
-decide cualquier cohorte; de $ 5.000 a $ 12.000 sólo la del barrio; desde $ 12.000 no se toca. Si
+decide cualquier cohorte; de $ 5.000 a $ 12.000 el departamento solo no alcanza, pero sí el barrio o
+las viviendas del departamento con los mismos dormitorios ("4 habitaciones 2 baños - Casa" a $ 5.500
+no es un precio en pesos en ningún lugar de Maldonado, cuyas casas de 3+ dormitorios arrancan en
+$ 74.430), y en ese caso la lectura en dólares tiene que caer dentro de ese mercado (hasta su p90):
+"1 habitación 2 baños Departamento" a US$ 5.400 queda como se publicó; desde $ 12.000 no se toca. Si
 ninguna lectura es plausible ("Alquiler zona Centro 1 dormitorio" a $ 4.000) queda como se
 publicó. Habitaciones y residencias nunca entran (una cama sí cuesta $ 7.000). Medido: 40
 correcciones —Punta del Este, Maldonado anual, Carrasco, La Tahona, La Barra—, ninguna en el
