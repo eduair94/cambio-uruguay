@@ -1683,6 +1683,28 @@ export function rentalOfferStages(query: RentalQuery, usdUyu: number) {
 export const RENTAL_TOTAL_SORT_FIELDS = ['_rentalMonthlyUnknown', '_rentalMonthlyTotal'] as const
 
 /**
+ * The rent median of a search, as a `$facet` branch of the pass that already counts types and
+ * sources. It was a seventh aggregation run AFTER the other six, and each one pays the whole
+ * `rentalPublicStages` again: measured on 2026-10-08 against production, ~1,4 s of the ~3,5 s an
+ * uncached search took. Mongo 4.4 has no `$median`, so it is the same arithmetic the separate pass
+ * did with `$skip`: one number per home, sorted, the middle one or the mean of the middle two. The
+ * projection still comes BEFORE the sort, or private evidence would enter the sort buffer.
+ */
+export function rentalMedianFacet(priceStages: object[]): object[] {
+  const prices = '$prices'
+  const middle = (round: '$floor' | '$ceil') => ({
+    $arrayElemAt: [prices, { [round]: { $divide: [{ $subtract: [{ $size: prices }, 1] }, 2] } }],
+  })
+  return [
+    ...priceStages,
+    { $project: { _id: 0, priceUyu: 1 } },
+    { $sort: { priceUyu: 1 } },
+    { $group: { _id: null, prices: { $push: '$priceUyu' } } },
+    { $project: { _id: 0, median: { $avg: [middle('$floor'), middle('$ceil')] } } },
+  ]
+}
+
+/**
  * The tie-break inside one day of "más recientes": `freshAt` is a DATE, so every property of the same
  * day tied and `key` broke the tie alphabetically — the first page of Montevideo was all Aguada and
  * Aires Puros (2026-10-08). The document's ObjectId is the moment we first saved the property, so

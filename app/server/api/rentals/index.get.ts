@@ -26,6 +26,7 @@ import {
   RENTAL_INSERTED_SORT_FIELD,
   RENTAL_TOTAL_SORT_FIELDS,
   rentalInsertedProjection,
+  rentalMedianFacet,
   buildRentalFilter,
   normalizeRentalQuery,
   rentalMongoSort,
@@ -164,31 +165,14 @@ const cachedDirectory = defineCachedEventHandler(
                 { $sort: { count: -1 } },
               ],
               price: [...priceStages, { $group: { _id: null, max: { $max: '$priceUyu' } } }],
+              // The median rides this same pass instead of a seventh one (see rentalMedianFacet).
+              median: rentalMedianFacet(priceStages),
             },
           },
         ]).collation(RENTAL_COLLATION),
         getRentalCoverage(meta?.generatedAt, STALE_DAYS),
       ])
       const total = Number(totals[0]?.total) || 0
-
-      // The median is what tells someone whether a price is normal for the filter they built. Taken
-      // by skipping to the middle of the sorted set rather than pushing every price into memory.
-      let medianUyu = 0
-      if (total > 0) {
-        const middle = await RentalListingModel.aggregate([
-          ...publicStages,
-          ...priceStages,
-          // The median needs one number per home, not its offers, galleries or identity evidence.
-          { $project: { _id: 0, priceUyu: 1 } },
-          { $sort: { priceUyu: 1 } },
-          { $skip: Math.floor((total - 1) / 2) },
-          { $limit: total % 2 === 0 ? 2 : 1 },
-        ]).collation(RENTAL_COLLATION)
-        const prices = middle.map(row => Number(row.priceUyu)).filter(Number.isFinite)
-        medianUyu = prices.length
-          ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
-          : 0
-      }
 
       const toFacet = (rows: Array<{ _id: string; count: number }>): RentalFacetValue[] =>
         (rows || [])
@@ -199,6 +183,9 @@ const cachedDirectory = defineCachedEventHandler(
         string,
         Array<{ _id: string; count: number }>
       >
+      // The median is what tells someone whether a price is normal for the filter they built.
+      const median = Number((dimension.median?.[0] as unknown as { median?: number })?.median)
+      const medianUyu = total > 0 && Number.isFinite(median) ? Math.round(median) : 0
 
       return {
         meta: (meta as RentalMeta | null) ?? null,
