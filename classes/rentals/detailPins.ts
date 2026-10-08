@@ -10,6 +10,13 @@
 // The point is only ever written on a property WITHOUT one: a coordinate another portal published
 // (InfoCasas, El País) is never moved. And it is applied after the dedupe, never on the raw advert,
 // where it would add completeness and change which advert is canonical in a multi-portal group.
+//
+// It also goes on the private `identity` of the advert whose page gave it, as the Facebook detail
+// does. "La vida cerca de esta vivienda" only measures distances from a point that an advert of the
+// property published (`rentalNearbyOrigin`, app/utils/propertyNearby.ts); without this the first
+// 120 Mercado Libre properties placed on 2026-10-08 showed on the map and still said "this advert
+// does not publish a location". Coordinates prove nothing about unit identity in the dedupe, so the
+// field changes no merge.
 import { appConnection } from "../appdb";
 import type { RentalProperty, RentalSource } from "./types";
 
@@ -47,27 +54,58 @@ export function pinFor(
   pins: ReadonlyMap<string, RentalPin>,
   source: RentalSource
 ): RentalPin | null {
+  return pinOf(property, pins, source)?.pin ?? null;
+}
+
+function pinOf(
+  property: Pick<RentalProperty, "department" | "latitude" | "offers">,
+  pins: ReadonlyMap<string, RentalPin>,
+  source: RentalSource
+): { listingId: string; pin: RentalPin } | null {
   if (typeof property.latitude === "number") return null;
   const ids = property.offers
     .filter(offer => offer.source === source && pins.has(offer.listingId))
     .map(offer => offer.listingId)
     .sort();
-  for (const id of ids) {
-    const pin = pins.get(id)!;
-    if (pinFits(pin, property.department)) return pin;
+  for (const listingId of ids) {
+    const pin = pins.get(listingId)!;
+    if (pinFits(pin, property.department)) return { listingId, pin };
   }
   return null;
+}
+
+/** Places the property and records the point on the identity of the advert that published it. */
+export function placeProperty(property: Pick<RentalProperty, "latitude" | "longitude" | "offers">, listingId: string, pin: RentalPin): void {
+  property.latitude = pin.latitude;
+  property.longitude = pin.longitude;
+  const identity = property.offers.find(offer => offer.listingId === listingId)?.identity;
+  if (identity?.version === 1 && typeof identity.latitude !== "number") {
+    identity.latitude = pin.latitude;
+    identity.longitude = pin.longitude;
+  }
 }
 
 /**
  * Puts a pin on the stored property right away — only when its coordinate is empty. The harvest
  * keeps it afterwards (`applyDetailPins`).
  */
-export async function writeDetailPin(target: { key: string; department: string }, pin: RentalPin): Promise<boolean> {
+export async function writeDetailPin(target: { key: string; department: string; listingId: string }, pin: RentalPin): Promise<boolean> {
   if (!pinFits(pin, target.department)) return false;
   const result = await appConnection()
     .collection("rentallistings")
-    .updateOne({ key: target.key, latitude: null }, { $set: { latitude: pin.latitude, longitude: pin.longitude } });
+    .updateOne(
+      // The same point again completes an advert identity written before it carried the point.
+      { key: target.key, $or: [{ latitude: null }, { latitude: pin.latitude, longitude: pin.longitude }] },
+      {
+        $set: {
+          latitude: pin.latitude,
+          longitude: pin.longitude,
+          "offers.$[o].identity.latitude": pin.latitude,
+          "offers.$[o].identity.longitude": pin.longitude,
+        },
+      },
+      { arrayFilters: [{ "o.listingId": target.listingId, "o.identity.version": 1 }] }
+    );
   return result.modifiedCount > 0;
 }
 
@@ -99,10 +137,9 @@ export async function applyDetailPins(properties: RentalProperty[]): Promise<Par
       for (const doc of docs) pins.set(String(doc.listingId), { latitude: Number(doc.latitude), longitude: Number(doc.longitude) });
     }
     for (const property of properties) {
-      const pin = pinFor(property, pins, source);
-      if (!pin) continue;
-      property.latitude = pin.latitude;
-      property.longitude = pin.longitude;
+      const found = pinOf(property, pins, source);
+      if (!found) continue;
+      placeProperty(property, found.listingId, found.pin);
       located[source] = (located[source] ?? 0) + 1;
     }
   }

@@ -19,6 +19,10 @@ los :25, sólo propiedades sin coordenada, primero viviendas de Montevideo, cada
   en la cosecha (`applyDetailPins`, `classes/rentals/detailPins.ts`) son las mismas que las de
   Mercado Libre: sólo una coordenada vacía, después del dedupe. Si una propiedad tiene avisos de los
   dos portales, gana el pin de ML.
+- **La `identity` del aviso también lleva el punto** (`placeProperty`). "La vida cerca de esta
+  vivienda" sólo mide desde un punto que publicó un aviso de la propiedad (`rentalNearbyOrigin`), y
+  las primeras 120 propiedades de ML ubicadas el 8/10 salían en el mapa pero decían "este aviso no
+  publica una ubicación". Las coordenadas no prueban identidad en el dedupe: no cambia ninguna unión.
 - Prueba en seco el 2026-10-08: 25 de 25 fichas con marcador.
 
 ## Monoambientes de Mercado Libre — 8 de octubre de 2026
