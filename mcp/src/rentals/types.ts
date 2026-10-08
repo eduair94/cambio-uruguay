@@ -53,7 +53,7 @@ export const SOURCE_LABEL: Record<string, string> = {
   facebookreels: "Facebook Reels",
 };
 
-export const RENTAL_SORTS = ["recientes", "precio", "precio-desc", "total", "precio-m2", "metros", "distancia"] as const;
+export const RENTAL_SORTS = ["recientes", "precio", "precio-desc", "total", "precio-m2", "metros", "baja", "distancia"] as const;
 
 /** Neighbourhood-quality filters: the zone must rank well on that public-data layer. */
 export const NEIGHBORHOOD_QUALITY = ["denuncias", "agua", "luz", "saneamiento", "limpieza", "alumbrado"] as const;
@@ -129,6 +129,8 @@ export interface RawRental {
   availability?: RawAvailability;
   officialZone?: { zone?: string; name?: string; department?: string } | null;
   distanceKm?: number | null;
+  /** The largest drop of a shown advert in the last 30 days (`bajo=1` filters on it). */
+  priceDrop?: { listingId?: string; from: number; to: number; currency?: string; at: string; pct: number } | null;
 }
 
 export interface RawFacet {

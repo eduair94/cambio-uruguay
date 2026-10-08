@@ -51,6 +51,10 @@ export interface RentalSearchInput {
   near?: NearInput;
   neighborhoodQuality?: string[];
   hideReported?: "none" | "any" | "multiple";
+  /** Only adverts published (or first seen) in the last N days. */
+  postedWithinDays?: number;
+  /** Only properties whose asking price dropped in the last 30 days. */
+  priceDropped?: boolean;
   sort?: string;
   page?: number;
   perPage?: number;
@@ -224,6 +228,8 @@ export function rentalSearchParams(
     q: input.text,
     servicios: input.neighborhoodQuality,
     availability: AVAILABILITY[input.hideReported ?? "multiple"],
+    dias: input.postedWithinDays,
+    bajo: input.priceDropped,
     ...(point ? { refLat: point.lat, refLng: point.lng, refLabel: point.label?.slice(0, 60) } : {}),
     sort: point ? "distancia" : input.sort,
     page: input.page && input.page > 1 ? input.page : undefined,
@@ -238,6 +244,7 @@ const SORT_LABEL: Record<string, string> = {
   total: "menor total mensual",
   "precio-m2": "menor precio por m²",
   metros: "más metros",
+  baja: "mayor baja de precio",
   distancia: "más cerca del punto",
 };
 

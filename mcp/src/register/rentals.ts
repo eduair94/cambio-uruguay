@@ -59,7 +59,7 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
       title: "Buscar alquileres en Uruguay",
       description:
         "Busca viviendas en alquiler en todo Uruguay (unión de Mercado Libre, InfoCasas, Inmuebles El País, Casasweb y Facebook Marketplace, ~57.000 propiedades, avisos vistos en los últimos 10 días). " +
-        "Filtra por barrio, tipo, dormitorios, baños, m², precio (UYU o USD), TOTAL MENSUAL con gastos comunes, gastos comunes máximos, mascotas, garaje, amueblado, tipo de garantía (ANDA, Contaduría, seguro, depósito, BHU, propietario), comodidades, dueño directo, inmobiliaria, portal, texto libre, cercanía a un punto y calidad del barrio (pocas denuncias, pocos cortes de agua o reclamos). " +
+        "Filtra por barrio, tipo, dormitorios, baños, m², precio (UYU o USD), TOTAL MENSUAL con gastos comunes, gastos comunes máximos, mascotas, garaje, amueblado, tipo de garantía (ANDA, Contaduría, seguro, depósito, BHU, propietario), comodidades, dueño directo, inmobiliaria, portal, texto libre, cercanía a un punto, calidad del barrio (pocas denuncias, pocos cortes de agua o reclamos), publicados en los últimos N días y alquileres que BAJARON de precio. " +
         "Devuelve cada vivienda con alquiler, gastos comunes y total cuando el MISMO aviso los publica (~70 % no publica gastos comunes), link al aviso original, ficha en cambio-uruguay.com, la mediana de la búsqueda, los barrios con más oferta y un link para guardar la búsqueda o crear una alerta. Para rankear según ingresos y traslados de un hogar usá rank_rentals_for_household.",
       inputSchema: {
         department: department.optional(),
@@ -92,7 +92,9 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
         near: near.optional(),
         neighborhoodQuality: z.array(z.enum(NEIGHBORHOOD_QUALITY)).max(6).optional().describe("Barrios que están entre los mejores en: denuncias (menos delitos), agua (menos cortes), luz, saneamiento, limpieza, alumbrado."),
         hideReported: z.enum(["none", "any", "multiple"]).optional().describe('Avisos que la comunidad reportó como no disponibles. Default "multiple" (oculta con 2+ reportes).'),
-        sort: z.enum(RENTAL_SORTS).optional().describe("recientes (default), precio, precio-desc, total (menor total mensual), precio-m2, metros. Con near se ordena por distancia."),
+        postedWithinDays: z.number().int().min(1).max(90).optional().describe("Sólo avisos publicados (o vistos por primera vez, si el portal no da la fecha) en los últimos N días: 1 = desde ayer, 7 = la última semana."),
+        priceDropped: z.boolean().optional().describe("Sólo viviendas cuyo alquiler pedido BAJÓ en los últimos 30 días (entre 1 % y 50 %, y el aviso sigue pidiendo el precio bajado). Cada resultado dice cuánto bajó, desde cuánto y cuándo."),
+        sort: z.enum(RENTAL_SORTS).optional().describe("recientes (default), precio, precio-desc, total (menor total mensual), precio-m2, metros, baja (mayor baja de precio de los últimos 30 días primero). Con near se ordena por distancia."),
         page: z.number().int().min(1).max(200).optional(),
         perPage: z.number().int().min(1).max(24).optional().describe("Resultados a devolver (default 10)."),
       },
