@@ -329,7 +329,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'como-rescindir-contrato-alquiler-uruguay',
-    title: 'Cómo rescindir un contrato de alquiler en Uruguay',
+    title: 'Rescindir el alquiler: avisá por telegrama',
     description:
       'Cómo terminar un alquiler antes de tiempo en Uruguay: preaviso, multas, cómo notificar en forma válida y recuperar el depósito o liberar la garantía.',
     tag: 'ALQUILER',
@@ -742,7 +742,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'que-revisar-antes-de-firmar-alquiler',
-    title: 'Qué revisar antes de firmar un contrato de alquiler',
+    title: 'Alquiler: el contrato manda, no lo hablado',
     description:
       'Checklist antes de firmar un alquiler en Uruguay: cláusulas clave, estado del inmueble, gastos comunes, reajuste, plazo, garantía y quién paga qué.',
     tag: 'CHECKLIST',
@@ -842,7 +842,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'comprar-primera-vivienda-uruguay',
-    title: 'Comprar tu primera vivienda en Uruguay: guía paso a paso',
+    title: 'Primera vivienda: sumá 5% a 8% al precio',
     description:
       'Guía paso a paso para comprar tu primera casa en Uruguay: ahorro previo, reserva, promesa, escribano y escritura, y dónde se va la plata.',
     tag: 'COMPRA',
@@ -1536,7 +1536,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'comprar-auto-0km-o-usado-uruguay',
-    title: 'Comprar auto 0km o usado en Uruguay: cómo decidir',
+    title: '0km o usado: la depreciación no se factura',
     description:
       '0km o usado en Uruguay: cómo pesan depreciación, financiación, garantía y los costos ocultos del usado para decidir bien.',
     tag: 'COMPRA',
@@ -1838,7 +1838,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'refinanciar-deudas-uruguay',
-    title: 'Refinanciar o unificar deudas en Uruguay: ¿conviene?',
+    title: 'Refinanciar: mirá el total, no la cuota',
     description:
       'Qué significa refinanciar o unificar deudas en Uruguay, cuándo baja el costo, cuándo solo lo esconde y qué señales de alarma mirar.',
     tag: 'DEUDA',

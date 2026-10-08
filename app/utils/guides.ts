@@ -710,7 +710,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'ahorrar-en-dolares-o-pesos',
-    title: '¿Conviene ahorrar en dólares o en pesos en Uruguay?',
+    title: 'Dólares o pesos: la moneda de tu gasto',
     description:
       'Ventajas y riesgos de ahorrar en dólares o en pesos en Uruguay: inflación, tasas de plazo fijo, unidad indexada y cómo elegir según tus gastos futuros.',
     tag: 'AHORRO',
@@ -740,7 +740,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'cambiar-pesos-argentinos-uruguay',
-    title: 'Cambiar pesos argentinos en Uruguay: qué tener en cuenta',
+    title: 'Cambiar pesos argentinos: spread más ancho',
     description:
       'Cómo y dónde cambiar pesos argentinos en Uruguay, por qué su cotización es volátil y tiene spreads amplios, y consejos para zonas de frontera y turismo.',
     tag: 'FRONTERA',
@@ -792,7 +792,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'casas-de-cambio-vs-bancos',
-    title: 'Casas de cambio vs bancos: ¿dónde conviene cambiar?',
+    title: 'Tu banco no siempre da el mejor cambio',
     description:
       'Diferencias entre cambiar divisas en casas de cambio o en bancos en Uruguay: cotizaciones, comodidad, requisitos y cuándo conviene cada opción.',
     tag: 'COMPARATIVA',
@@ -896,7 +896,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'evitar-comisiones-cambio',
-    title: 'Cómo evitar comisiones ocultas al cambiar divisas',
+    title: 'La comisión se esconde en la cotización',
     description:
       'Identificá y evitá comisiones ocultas, mínimos y malas cotizaciones al cambiar divisas en Uruguay, y aprendé a comparar el costo real de cada operación.',
     tag: 'COSTOS',
@@ -1000,7 +1000,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'proteger-ahorros-de-la-inflacion',
-    title: 'Cómo proteger tus ahorros de la inflación en Uruguay',
+    title: 'Contra la inflación: dólares o indexados',
     description:
       'Estrategias prácticas para que la inflación no licúe tus ahorros en Uruguay: dólares, Unidad Indexada, plazos fijos y diversificación.',
     tag: 'AHORRO',

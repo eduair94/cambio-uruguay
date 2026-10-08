@@ -278,9 +278,70 @@ const MEASURED = 146
  * publicar esos dos porcentajes como exactos, y la canasta del BPS lleva el año adelante («En 2025
  * …») porque es un monto que un decreto nuevo cambia cada año.
  *
+ * 37 → 25 el 2026-10-08, octava tanda: doce títulos de 73 a 66 caracteres contando la marca, y la
+ * tanda se eligió con un filtro nuevo que conviene dejar escrito, porque de acá en adelante decide
+ * más que el largo. De los 37 títulos pasados, 35 pertenecen a guías que están DENTRO de una
+ * ventana de medición abierta de `docs/seo/experiments.json` (las siete tandas anteriores se
+ * declararon entre el 2 y el 7 de octubre), y `AGENTS.md` es explícito: dos filas sobre las mismas
+ * rutas arruinan la medición de las dos. Reescribir hoy el título que una fila está midiendo le
+ * cambia el sujeto al experimento. Así que la tanda sale de las 23 que NO tienen ventana abierta
+ * —la misma reserva que `temaHuerfanas.test.ts` y `seoDescriptionBudget.test.ts` ya aplican— y
+ * toma sus doce más largas; las 14 reservadas entran cuando su ventana cierre.
+ *
+ * De las catorce más largas sin ventana quedaron dos afuera, las dos por la misma razón, que es la
+ * que marca el techo de este trinquete: su término de cabecera no deja lugar para una respuesta.
+ * «Certificado Único Departamental» son 31 caracteres de los 43 disponibles, así que contestar
+ * —que el particular que no tributa IRAE ni IMEBA no lo necesita (Decreto 502/007 art. 3)— exige
+ * sacar la frase del título Y del H1 y dejarla sólo en el cuerpo. Puede ser el cambio correcto,
+ * pero es una apuesta sobre el término de cabecera de la página y no un recorte, así que no se
+ * hace de paso en una tanda de doce. `glosario-terminos-cambiarios` queda afuera por lo de abajo.
+ *
+ * El defecto era otra vez el de la cuarta y la séptima tanda: nueve de los doce gastaban el
+ * renglón que el SERP publica en la ETIQUETA DEL TEMA seguida del índice de la guía («Cambiar
+ * pesos argentinos en Uruguay: qué tener en cuenta», «Comprar tu primera vivienda en Uruguay:
+ * guía paso a paso», «Saldo retenido en el débito: qué es y cómo se libera»), y los otros tres
+ * devolvían la pregunta sin contestarla («¿Conviene ahorrar en dólares o en pesos en Uruguay?»,
+ * «Casas de cambio vs bancos: ¿dónde conviene cambiar?», «Refinanciar o unificar deudas en
+ * Uruguay: ¿conviene?»).
+ *
+ * Ahora cada uno contesta: que al cambiar pesos argentinos el spread es más ancho que el del
+ * dólar, que a la primera vivienda hay que sumarle del 5 % al 8 % del precio en escribano, ITP y
+ * certificados, que el saldo retenido casi nunca es un préstamo sino una preautorización o una
+ * comisión impaga, que la moneda del ahorro se elige por la del gasto futuro, que el banco propio
+ * no siempre da el mejor cambio, que lo que decide una refinanciación es el total y no la cuota,
+ * que la unión concubinaria pide cinco años Y sentencia, que el contrato de alquiler manda sobre
+ * lo que se dijo de palabra, que para rescindir el aviso vale por telegrama colacionado, que la
+ * comisión del cambio se esconde en la cotización y que en un 0km la depreciación es el costo que
+ * no se factura.
+ *
+ * Ninguna cifra es nueva: todas ya estaban en el cuerpo de su guía. Y donde el cuerpo hedgea, el
+ * título no afirma, que es lo que descartó dos redacciones. En la rescisión iba a decir «60 días
+ * de preaviso», y el cuerpo dice «suele ser de unos 60 días en el régimen común» contra «unos 30
+ * días» en el arrendamiento sin garantía de la LUC: dos regímenes y las dos cifras aproximadas, o
+ * sea que un título con un número sería más firme que su fuente y además falso para la mitad de
+ * los contratos. Se queda con lo que sí es categórico —la forma de notificar, que el cuerpo llama
+ * «la forma segura y estándar»— y los plazos quedan en el cuerpo con su «suelen». Y en el 0km iba
+ * a decir «lo decide la depreciación», pero el mismo cuerpo aclara que una tasa subsidiada de la
+ * marca puede dar vuelta el total, así que el título publica el hecho («no se factura») y no el
+ * veredicto.
+ *
+ * Y una cuarta aplicación de la regla del buscador propio, que acá además arregló una
+ * canibalización. `scoreDocs` puntúa 110 un título que EMPIEZA por lo tipeado, y medido sobre el
+ * índice ya reescrito: «casas de cambio» lo gana `/casas-de-cambio` (112) y «glosario» lo gana
+ * `/glosario` (142), así que ni el comparador de casas contra bancos abre por «Casas de cambio»
+ * —pasó a «Tu banco no siempre da el mejor cambio»— ni se tocó `glosario-terminos-cambiarios`,
+ * que habría tenido que abrir por la palabra que el hub ya reclama; queda para una tanda que le
+ * encuentre un frente propio. La canibalización es la de ahorro: el título viejo de
+ * `ahorrar-en-dolares-o-pesos` («¿Conviene ahorrar en dólares o en pesos en Uruguay?») era casi la
+ * misma cadena que el de `conviene-ahorrar-en-dolares-uruguay` («¿Conviene ahorrar en dólares en
+ * Uruguay?»), o sea dos guías disputándose una intención; el nuevo («Dólares o pesos: la moneda de
+ * tu gasto») dice lo que esta guía tiene y la otra no. Se verificó después del cambio que cada una
+ * de las doce sigue ganando su propia consulta («rescindir» 80, «refinanciar» 80, «saldo retenido»
+ * 80, «primera vivienda» 80, «0km» 80, «concubinaria» 62, «telegrama» 62, «depreciacion» 62).
+ *
  * SÓLO PUEDE BAJAR.
  */
-const TITLE_OVER_BUDGET = 37
+const TITLE_OVER_BUDGET = 25
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.
