@@ -2,6 +2,11 @@ import { expect, test, type Locator, type Page } from '@playwright/test'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { RentalOffer, RentalProperty, RentalsResponse } from '../../utils/rentals'
+import { familiaNavParaRuta, familiaNavTotal } from '../../utils/familiaNav'
+
+// The section bar's own source: its links are the siblings minus the current page, plus the groups.
+// A hard-coded 12 went stale the day the family grew to 15 links (2026-10-03).
+const familyLinks = familiaNavTotal(familiaNavParaRuta('/alquileres-uruguay')!) - 1
 
 const artifactRoot = fileURLToPath(new URL('../../../', import.meta.url))
 
@@ -25,8 +30,8 @@ test.describe('property navigation before hydration', () => {
     await expect(summary).toBeVisible()
     await expect(section.locator('details')).not.toHaveAttribute('open')
     await expect(section.locator('.familia-nav__menu-list a').first()).toBeHidden()
-    // 5 sibling pages (the current one is not a link) + 4 home searches + 3 guides, each once.
-    await expect(section.locator('.familia-nav__menu a')).toHaveCount(12)
+    // Sibling pages (the current one is not a link), home searches and guides, each once.
+    await expect(section.locator('.familia-nav__menu a')).toHaveCount(familyLinks)
     for (const href of [
       '/analisis-alquileres-uruguay',
       '/fletes-mudanzas-uruguay',
@@ -894,7 +899,7 @@ for (const viewport of [
     await expect(section.locator('details')).not.toHaveAttribute('open')
     await reachable(summary)
     await summary.click()
-    await expect(section.locator('.familia-nav__menu a')).toHaveCount(12)
+    await expect(section.locator('.familia-nav__menu a')).toHaveCount(familyLinks)
     await expect(section.getByRole('link', { name: 'Análisis de alquileres' })).toHaveAttribute(
       'href',
       '/analisis-alquileres-uruguay'

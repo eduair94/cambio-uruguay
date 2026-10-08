@@ -899,7 +899,7 @@ test.describe('rental directory', () => {
       await expect(source).toContainText(count)
     }
     await expect(page.getByTestId('rental-coverage-source-facebook')).toContainText(
-      'No se pudo actualizar en el último repaso.'
+      'No se pudo actualizar en los últimos repasos.'
     )
     const externalSource = page.getByTestId('rental-coverage-source-elpais')
     await expect(externalSource).not.toContainText('0 resultados')
