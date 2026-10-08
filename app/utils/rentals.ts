@@ -835,6 +835,34 @@ export function rentalAgeLabel(iso: string | null | undefined, today = new Date(
   return months <= 1 ? 'hace un mes' : `hace ${months} meses`
 }
 
+/**
+ * The advertiser line of a card and of the map detail: "Inmobiliaria · Grupo Avanza", "Anunciante:
+ * Alicia Camoirano", "Anunciante sin identificar". When the portal does not give the TYPE, the line
+ * must still say it is about the advertiser: a bare "Sin informar" printed on ~41.000 cards read as
+ * nothing in particular. Generic names ("Mercado Libre", "particular") are not names.
+ */
+export function rentalAdvertiserLine(
+  offer:
+    | (Pick<RentalOffer, 'sellerType' | 'sellerName'> & Partial<Pick<RentalOffer, 'ownerDirect'>>)
+    | null
+    | undefined,
+  t: (key: string, values?: Record<string, unknown>) => string
+): string {
+  const name =
+    offer?.sellerName && !/^(?:particular|mercado libre)$/i.test(offer.sellerName)
+      ? offer.sellerName
+      : ''
+  const type = offer?.ownerDirect?.declared
+    ? 'owner'
+    : offer?.sellerType === 'particular'
+      ? 'individual'
+      : offer?.sellerType === 'inmobiliaria'
+        ? 'agency'
+        : null
+  if (type) return name ? `${t(type)} · ${name}` : t(type)
+  return name ? t('advertiserNamed', { name }) : t('advertiserUnknown')
+}
+
 /** The rent as the advert states it, plus the other currency in brackets. */
 
 /**
