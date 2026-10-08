@@ -17,7 +17,6 @@ The user delegated design choices. The composition study informs hierarchy, neve
         <NuxtLink :to="localePath('/donde-vivir-uruguay')">{{ t('whereShort') }}</NuxtLink>
       </p>
     </header>
-    <AssistantCta v-if="editing" topic="hogar" class="mb-4" />
     <div class="fit-private" data-clarity-mask="true">
       <template v-if="editing">
         <nav class="fit-toolbar" :aria-label="t('step', { n: step + 1 })">
@@ -401,6 +400,12 @@ The user delegated design choices. The composition study informs hierarchy, neve
         </VCard>
       </VDialog>
     </div>
+    <!--
+      Después de la herramienta y no antes: entre el título y el primer paso, sus 181 px (más el aviso
+      de cookies de la primera visita) cortaban el presupuesto a 320 px (e2e rental-fit, "320px first
+      visit"), lo mismo que en el directorio.
+    -->
+    <AssistantCta v-if="editing" topic="hogar" class="mt-4 mb-4" />
     <details class="method-details">
       <summary>{{ t('method') }}</summary>
       <p>{{ t('methodText') }}</p>
