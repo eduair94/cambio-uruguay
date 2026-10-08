@@ -384,7 +384,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                 </button>
                 <NuxtLink
                   v-else
-                  :to="localePath(rentalPropertyPath(property.key))"
+                  :to="rentalPropertyPath(property.key)"
                   class="rental-card__media"
                   :aria-label="`${t('detail')}: ${property.title}`"
                   @pointerdown="rememberRentalSearch(route.fullPath)"
@@ -487,7 +487,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
 
                     <h3>
                       <NuxtLink
-                        :to="localePath(rentalPropertyPath(property.key))"
+                        :to="rentalPropertyPath(property.key)"
                         @pointerdown="rememberRentalSearch(route.fullPath)"
                         @click="rememberRentalSearch(route.fullPath)"
                         >{{ property.title }}</NuxtLink
@@ -590,7 +590,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                     >
                   </div>
                   <NuxtLink
-                    :to="localePath(rentalPropertyPath(property.key))"
+                    :to="rentalPropertyPath(property.key)"
                     class="rental-card__detail"
                     data-testid="rental-card-detail-link"
                     :aria-label="`${t('detail')}: ${property.title}`"
@@ -609,9 +609,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             :title="previewProperty?.title || ''"
             :photos="previewPhotos"
             :source="previewSource"
-            :detail-href="
-              previewProperty ? localePath(rentalPropertyPath(previewProperty.key)) : ''
-            "
+            :detail-href="previewProperty ? rentalPropertyPath(previewProperty.key) : ''"
           />
           <div v-if="pageCount > 1 && view === 'lista' && !error" class="mt-6">
             <VPagination
@@ -1549,7 +1547,7 @@ const catalogList = computed(() =>
     ? rentalCatalogItemList(
         items.value.map(property => ({
           name: property.title,
-          url: `https://cambio-uruguay.com${localePath(rentalPropertyPath(property.key))}`,
+          url: `https://cambio-uruguay.com${rentalPropertyPath(property.key)}`,
           image: failedImages.has(property.key) ? null : displayOffer(property)?.image,
         })),
         canonicalUrl.value,

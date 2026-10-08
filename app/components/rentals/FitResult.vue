@@ -14,7 +14,7 @@
     </div>
     <div class="result-main">
       <NuxtLink
-        :to="localePath(rentalPropertyPath(result.property.key))"
+        :to="rentalPropertyPath(result.property.key)"
         target="_blank"
         class="result-photo"
         :aria-label="result.offer.title || result.property.title"
@@ -39,7 +39,7 @@
           }}
         </p>
         <h3>
-          <NuxtLink :to="localePath(rentalPropertyPath(result.property.key))" target="_blank">{{
+          <NuxtLink :to="rentalPropertyPath(result.property.key)" target="_blank">{{
             result.offer.title || result.property.title
           }}</NuxtLink>
         </h3>
@@ -106,7 +106,7 @@
     </details>
     <div class="result-actions">
       <VBtn
-        :to="localePath(rentalPropertyPath(result.property.key))"
+        :to="rentalPropertyPath(result.property.key)"
         target="_blank"
         variant="tonal"
         color="primary"
@@ -133,7 +133,6 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ compare: [] }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalFitMessages })
-const localePath = useLocalePath()
 const photoFailed = ref(false)
 const photo = computed(() => rentalSavedSafeUrl(props.result.offer.image))
 const source = computed(() => rentalSavedSafeUrl(props.result.offer.url))

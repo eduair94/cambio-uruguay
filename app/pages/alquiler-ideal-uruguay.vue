@@ -353,11 +353,9 @@ The user delegated design choices. The composition study informs hierarchy, neve
                   <tr>
                     <th scope="col">{{ t('comparisonData') }}</th>
                     <th v-for="result in compared" :key="result.property.key" scope="col">
-                      <NuxtLink
-                        :to="localePath(rentalPropertyPath(result.property.key))"
-                        target="_blank"
-                        >{{ result.offer.title }}</NuxtLink
-                      >
+                      <NuxtLink :to="rentalPropertyPath(result.property.key)" target="_blank">{{
+                        result.offer.title
+                      }}</NuxtLink>
                     </th>
                   </tr>
                 </thead>

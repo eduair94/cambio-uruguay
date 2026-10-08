@@ -365,9 +365,7 @@ FORM: Inline estimator within the rental analysis page, with a responsive compar
           <tbody>
             <tr v-for="item in visibleComparables" :key="item.propertyKey">
               <td :data-label="t('property')">
-                <NuxtLink :to="localePath(rentalPropertyPath(item.propertyKey))">{{
-                  item.title
-                }}</NuxtLink>
+                <NuxtLink :to="rentalPropertyPath(item.propertyKey)">{{ item.title }}</NuxtLink>
                 <a
                   :href="item.url"
                   target="_blank"
@@ -452,7 +450,6 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ retryFacets: [] }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalEstimateMessages })
-const localePath = useLocalePath()
 const id = useId()
 const form = reactive({
   department: props.department || 'Montevideo',
