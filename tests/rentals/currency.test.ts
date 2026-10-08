@@ -174,3 +174,35 @@ describe("adverts already stored are read the same way", () => {
   });
 });
 
+
+describe("a room COUNT is not a room", () => {
+  it("reads Facebook's own summary as the home it describes", () => {
+    const listing = advert({
+      title: "1 habitación 1 baño Departamento/condominio",
+      price: 2_500, propertyType: "apartamento", department: "Montevideo", neighborhood: "Carrasco", bedrooms: 2,
+    });
+    expect(rentCurrencyVerdict(listing, cohorts, USD).kind).toBe("usd");
+  });
+
+  it("re-reads a stored Facebook advert's type with today's rule before deciding", () => {
+    const stored = {
+      title: "2 habitaciones 1 baño Departamento/condominio",
+      propertyType: "habitacion" as const,
+      department: "Montevideo",
+      neighborhood: "Carrasco",
+      bedrooms: 2,
+      offers: [{
+        source: "facebook" as const, listingId: "facebook:77", url: "https://www.facebook.com/marketplace/item/77",
+        title: "2 habitaciones 1 baño Departamento/condominio", price: 2_500, currency: "UYU" as const, priceUyu: 2_500,
+        commonExpenses: null, commonExpensesCurrency: null, sellerName: "", sellerType: "desconocido" as const,
+        image: null, publishedAt: null, parkingSpaces: null, furnished: null, petsAllowed: null, guarantees: [],
+        firstSeen: "2026-10-01", lastSeen: "2026-10-07",
+        identity: {
+          version: 1 as const, propertyType: "habitacion" as const, department: "Montevideo", neighborhood: "Carrasco",
+          address: "", street: "", streetNumber: "", latitude: null, longitude: null, bedrooms: 2, bathrooms: 1, area: null,
+        },
+      }],
+    };
+    expect(correctStoredRentCurrencies(stored, cohorts, USD).corrected).toBe(1);
+  });
+});

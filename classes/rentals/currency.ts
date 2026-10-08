@@ -26,7 +26,7 @@
 // offer (`currencyInferred`), the page says so, and an inferred currency never counts as evidence
 // elsewhere.
 
-import { flatten, inferPropertyType } from "./normalize";
+import { flatten, inferPropertyType, withoutRoomCounts } from "./normalize";
 import type { RawRental, RentalOffer, RentalProperty } from "./types";
 
 /** Under this, no home rents in pesos anywhere: any cohort may decide. */
@@ -108,7 +108,8 @@ const ROOM_TITLE = /\b(?:residencias?|pension(?:es)?|hostel|hospedaje|compartid[
 
 function isHomeAdvert(listing: Pick<RawRental, "propertyType" | "title" | "bedrooms">): boolean {
   const title = flatten(listing.title);
-  if (inferPropertyType(listing.title) === "habitacion" || ROOM_TITLE.test(title)) return false;
+  // "1 habitación 1 baño Departamento" COUNTS a room; only a room word left after the counts rents one.
+  if (inferPropertyType(listing.title) === "habitacion" || ROOM_TITLE.test(withoutRoomCounts(title))) return false;
   if (listing.propertyType === "casa" || listing.propertyType === "apartamento") return true;
   return listing.propertyType === "otro" && (listing.bedrooms !== null || DWELLING_TITLE.test(title));
 }
@@ -173,7 +174,9 @@ export function correctStoredRentCurrencies(
       currency: offer.currency,
       price: offer.price,
       title: offer.title || property.title,
-      propertyType: own?.propertyType ?? property.propertyType,
+      // Facebook's type is a function of the title alone (sources/facebook.ts): read it with today's rule,
+      // not the one in force when the advert was stored.
+      propertyType: offer.source === "facebook" ? inferPropertyType(offer.title || property.title) : own?.propertyType ?? property.propertyType,
       department: own?.department ?? property.department,
       neighborhood: own?.neighborhood ?? property.neighborhood,
       bedrooms: own ? own.bedrooms : property.bedrooms,
