@@ -1,5 +1,24 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Gastos comunes de Mercado Libre — 8 de octubre de 2026
+
+Los ~30.000 avisos de Mercado Libre (la mitad del directorio) no tenían gastos comunes: la tarjeta
+de búsqueda no los publica, así que "Menor total mensual" y los topes de total y de gastos comunes los
+dejaban afuera a todos. La ficha propia sí los publica, en la tabla de especificaciones ("Gastos
+comunes | 19.500 UYU"). `currency-rentals-ml-detail` (`sync_rentals_ml_detail.ts`,
+`classes/rentals/mlDetail.ts`) lee 120 fichas por hora, primero las viviendas de Montevideo, y cada
+aviso una vez por mes.
+
+- **Un cero no cuenta.** En una muestra de 20 fichas, 16 tenían la fila y 5 de ellas decían "0 UYU",
+  que es lo que el formulario de ML guarda cuando nadie escribe un número. Como en ventas, un cero no
+  es "sin gastos comunes".
+- **Plausibilidad**: se descarta un monto menor a $ 200 o mayor que el alquiler (un cero de más, la
+  cifra anual).
+- Escribe `rentalmldetails` (privada) y completa sólo el `commonExpenses` vacío del mismo aviso. La
+  cosecha lo reaplica, porque cada hora vuelve a llegar la tarjeta sin el dato.
+- Prueba en seco el 2026-10-08 sobre 15 fichas de viviendas de Montevideo: 12 con gastos comunes,
+  3 sin dato, 0 descartadas.
+
 ## Bajó de precio (`bajo=1`) — 8 de octubre de 2026
 
 Cada cosecha ya escribía un punto de precio por aviso en `marketpricelogs`

@@ -8,6 +8,8 @@ import { advertiserClassification, ownerDirectDeclaration } from "../advertiser"
 // `limit`. So we ask for `raw=true`, walk the tree for polycards, and read the card the way the
 // search page renders it: `attributes_list` for "2 dormitorios | 1 baño | 40 m² cubiertos" and
 // `location` for "Av. Garzón 1975 Bis, Colón, Montevideo".
+import { appDbConfigured } from "../../appdb";
+import { applyMlDetails } from "../mlDetail";
 import { fetchJson } from "../net";
 import { inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, opensWithResidence, parseAttributes, parseLocationLine } from "../normalize";
 import type { RawRental, RentalCurrency } from "../types";
@@ -298,10 +300,21 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
   const totals = ML_RENTAL_CATEGORIES.map(category => `${category.name}:${categoryTotals.get(category.id) ?? "?"}`).join(",");
   const detail = `categorías[${totals}]; cortes[falla:${cuts.failed},filtro:${cuts.filters},repetida:${cuts.repeated},tope:${cuts.pages},presupuesto:${cuts.budget},sinPartición:${cuts.unpartitioned},residual:${cuts.residual},totalDesconocido:${cuts.shortUnknown},vacía:${cuts.empty}]; etapas[${phaseNotes.join(";")}]`;
   console.log(`[rentals] ML ${mode}: ${pages} páginas/${requests} solicitudes, ${byId.size} IDs, ${duplicates} repetidos, ${detail}`);
+  const listings = [...byId.values()];
+  // The card never carries gastos comunes; what the advert's own page stated (currency-rentals-ml-
+  // detail, see mlDetail.ts) goes back on before saving, or this harvest would blank it every hour.
+  let withExpenses = 0;
+  if (appDbConfigured()) {
+    try {
+      withExpenses = await applyMlDetails(listings, usdUyu);
+    } catch (error) {
+      console.warn("[rentals] ML: no se pudieron reaplicar los gastos comunes de las fichas", error);
+    }
+  }
   return {
     key: "mercadolibre", complete: false,
     ok: reachable && byId.size > 0,
-    listings: [...byId.values()],
-    note: `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets.size} admiten mascotas, ${particulars.size} de particular; cobertura parcial; ${detail}`,
+    listings,
+    note: `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets.size} admiten mascotas, ${particulars.size} de particular, ${withExpenses} con gastos comunes de su ficha; cobertura parcial; ${detail}`,
   };
 }

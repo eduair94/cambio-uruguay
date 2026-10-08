@@ -432,6 +432,17 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Los gastos comunes de los avisos de Mercado Libre de /alquileres-uruguay, de su ficha propia
+      // (la tarjeta no los trae; classes/rentals/mlDetail.ts). Directo a mercadolibre.com.uy, como
+      // currency-autos-detail (:11) desde la misma IP: por eso a los :35, 120 fichas a 2 s.
+      name: "currency-rentals-ml-detail",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_rentals_ml_detail.js",
+      cron_restart: "35 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Mercado Libre's price guide for the model-years the directory holds: the version catalogue
       // and a second opinion where our own sample is thin (it is ML's median, not a valuation).
       name: "currency-autos-guide",
