@@ -31,6 +31,7 @@ export interface CompactRental {
   lastSeen?: string;
   reported?: string;
   distanceKm?: number;
+  priceDrop?: { pct: number; from: number; currency?: string; at: string };
 }
 
 /** Common expenses of one advert in pesos, or undefined when it does not publish them. */
@@ -79,6 +80,9 @@ export function compactRental(p: RawRental, usdUyu = 0): CompactRental {
     lastSeen: isoDay(p.lastSeen),
     reported: status && status !== "unconfirmed" && (p.availability?.count ?? 0) > 0 ? status : undefined,
     distanceKm: num(p.distanceKm) !== undefined ? Math.round(p.distanceKm! * 100) / 100 : undefined,
+    priceDrop: p.priceDrop
+      ? { pct: p.priceDrop.pct, from: p.priceDrop.from, currency: p.priceDrop.currency, at: p.priceDrop.at }
+      : undefined,
   }) as CompactRental;
 }
 
@@ -114,6 +118,7 @@ export function rentalLine(r: CompactRental): string {
       : `${rent}/mes (gastos comunes no publicados)`;
   const extras = [
     r.distanceKm !== undefined ? `a ${fmt(r.distanceKm, 1)} km` : "",
+    r.priceDrop ? `bajó ${fmt(r.priceDrop.pct, Number.isInteger(r.priceDrop.pct) ? 0 : 1)} % (antes ${money(r.priceDrop.from, r.priceDrop.currency)}, el ${r.priceDrop.at})` : "",
     r.pets === true ? "acepta mascotas" : "",
     r.parking ? "garaje" : "",
     r.furnished ? "amueblado" : "",
