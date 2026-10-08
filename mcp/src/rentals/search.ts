@@ -21,6 +21,13 @@ export interface RentalSearchInput {
   department?: string;
   neighborhoods?: string[];
   types?: string[];
+  /** Exclusions: barrios, types, portals and title words to leave out. */
+  excludeNeighborhoods?: string[];
+  excludeTypes?: string[];
+  excludeSources?: string[];
+  excludeWords?: string[];
+  /** Rooms and residences (beds or rooms, not homes): hide them or keep only them. */
+  roomsAndResidences?: "hide" | "only";
   bedrooms?: number;
   bedroomsExact?: boolean;
   bathrooms?: number;
@@ -191,6 +198,11 @@ export function rentalSearchParams(
     department: input.department,
     ...(neighborhoods.length === 1 ? { neighborhood: neighborhoods[0] } : { neighborhoods }),
     types: input.types,
+    sinBarrios: input.excludeNeighborhoods?.length ? input.excludeNeighborhoods.join(",") : undefined,
+    sinTipos: input.excludeTypes?.length ? input.excludeTypes.join(",") : undefined,
+    sinPortales: input.excludeSources?.length ? input.excludeSources.join(",") : undefined,
+    sinPalabras: input.excludeWords?.length ? input.excludeWords.join(",") : undefined,
+    residencias: input.roomsAndResidences === "hide" ? "ocultar" : input.roomsAndResidences === "only" ? "solo" : undefined,
     bedrooms: input.bedrooms,
     bedroomsExact: input.bedroomsExact,
     bathrooms: input.bathrooms,
