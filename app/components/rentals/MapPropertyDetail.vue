@@ -209,6 +209,7 @@ import { rentalSavedSafeUrl } from '~/utils/rentalSaved'
 import {
   RENTAL_GUARANTEE_PUBLISHED,
   RENTAL_SOURCE_LABEL,
+  rentalAdvertiserLine,
   totalMonthlyUyu,
   type RentalCurrency,
   type RentalMapPoint,
@@ -323,19 +324,7 @@ const guarantees = computed(() =>
     .filter(value => RENTAL_GUARANTEE_PUBLISHED.includes(value))
     .map(value => t(value))
 )
-const sellerLabel = computed(() => {
-  const entry = offer.value
-  const type = t(
-    entry?.sellerType === 'particular'
-      ? 'individual'
-      : entry?.sellerType === 'inmobiliaria'
-        ? 'agency'
-        : 'unknown'
-  )
-  return entry?.sellerName && !/^(?:particular|mercado libre)$/i.test(entry.sellerName)
-    ? `${type} · ${entry.sellerName}`
-    : type
-})
+const sellerLabel = computed(() => rentalAdvertiserLine(offer.value, t))
 const seen = computed(() => {
   const value = offer.value?.lastSeen || ''
   const date = new Date(value)

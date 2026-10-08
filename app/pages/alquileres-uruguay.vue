@@ -713,6 +713,7 @@ import {
   RENTAL_SOURCE_LABEL,
   RENTAL_SORTS,
   normalizeRentalQuery,
+  rentalAdvertiserLine,
   rentalFreshness,
   rentalQueryToParams,
   rentalPriceLabel,
@@ -1429,21 +1430,7 @@ const cardDates = (property: RentalProperty) => {
             : t('ageMonths', { n: months })
   return `${t(fresh.published ? 'publishedAge' : 'firstSeenAge', { age })} · ${t('seenShort', { date: seen })}`
 }
-const sellerLabel = (property: RentalProperty) => {
-  const offer = displayOffer(property)
-  const type = t(
-    offer?.ownerDirect?.declared
-      ? 'owner'
-      : offer?.sellerType === 'particular'
-        ? 'individual'
-        : offer?.sellerType === 'inmobiliaria'
-          ? 'agency'
-          : 'unknown'
-  )
-  return offer?.sellerName && !/^(?:particular|mercado libre)$/i.test(offer.sellerName)
-    ? `${type} · ${offer.sellerName}`
-    : type
-}
+const sellerLabel = (property: RentalProperty) => rentalAdvertiserLine(displayOffer(property), t)
 
 const saved = ref(emptyRentalSaved())
 const showSaved = ref(false)
