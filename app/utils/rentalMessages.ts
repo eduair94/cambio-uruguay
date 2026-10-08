@@ -157,6 +157,12 @@ export const rentalMessages = {
     sharedLivingHide: 'Ocultarlas',
     sharedLivingOnly: 'Solo habitaciones y residencias',
     sharedLivingHideChip: 'Sin habitaciones ni residencias',
+    sinceDays: 'Publicadas',
+    sinceAny: 'Cualquier fecha',
+    sinceYesterday: 'Desde ayer',
+    sinceLastDays: 'En los últimos {n} días',
+    sinceDaysHint:
+      'Por la fecha que publica el portal o, si no la da, por el día que vimos el aviso por primera vez.',
     sharedLivingHint:
       'Residencias, pensiones y cuartos compartidos: se alquila una cama o un cuarto, no una vivienda. Se reconocen por el tipo del portal o por el título.',
     excludeWords: 'Excluir avisos que digan',
@@ -478,6 +484,12 @@ export const rentalMessages = {
     sharedLivingHide: 'Hide them',
     sharedLivingOnly: 'Only rooms and residences',
     sharedLivingHideChip: 'No rooms or residences',
+    sinceDays: 'Posted',
+    sinceAny: 'Any date',
+    sinceYesterday: 'Since yesterday',
+    sinceLastDays: 'In the last {n} days',
+    sinceDaysHint:
+      'By the date the portal publishes or, when it gives none, the day we first saw the listing.',
     sharedLivingHint:
       'Residences, boarding houses and shared rooms: you rent a bed or a room, not a home. Recognised by the portal’s type or by the title.',
     excludeWords: 'Exclude adverts that say',
@@ -801,6 +813,12 @@ export const rentalMessages = {
     sharedLivingHide: 'Ocultar',
     sharedLivingOnly: 'Só quartos e residências',
     sharedLivingHideChip: 'Sem quartos nem residências',
+    sinceDays: 'Publicados',
+    sinceAny: 'Qualquer data',
+    sinceYesterday: 'Desde ontem',
+    sinceLastDays: 'Nos últimos {n} dias',
+    sinceDaysHint:
+      'Pela data que o portal publica ou, quando não informa, pelo dia em que vimos o anúncio pela primeira vez.',
     sharedLivingHint:
       'Residências, pensões e quartos compartilhados: aluga-se uma cama ou um quarto, não uma moradia. Reconhecidos pelo tipo do portal ou pelo título.',
     excludeWords: 'Excluir anúncios que digam',

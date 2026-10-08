@@ -992,6 +992,8 @@ const filterChips = computed(() => {
     add('sinTipos', t('without', { items: q.excludeTypes.map(typeLabel).join(', ') }))
   if (q.sharedLiving)
     add('residencias', t(q.sharedLiving === 'solo' ? 'sharedLivingOnly' : 'sharedLivingHideChip'))
+  if (q.sinceDays)
+    add('dias', q.sinceDays === 1 ? t('sinceYesterday') : t('sinceLastDays', { n: q.sinceDays }))
   if (q.q) add('q', q.q)
   if (q.agency) add('agency', agencyName.value || t('selectedAgency'))
   if (q.bedrooms !== null)

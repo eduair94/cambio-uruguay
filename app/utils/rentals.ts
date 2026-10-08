@@ -413,6 +413,18 @@ export const RENTAL_SORTS: ReadonlyArray<{ value: RentalSort; label: string }> =
 export const RENTAL_PER_PAGE = 24
 export const RENTAL_PER_PAGE_MAX = 48
 
+/** The windows the form offers; the URL accepts any whole number of days up to the maximum. */
+export const RENTAL_SINCE_DAYS = Object.freeze([1, 3, 7, 14, 30])
+const RENTAL_SINCE_DAYS_MAX = 90
+
+/**
+ * First `freshAt` day inside a window of N days. Whole UTC days, as the job stores them: "1" keeps
+ * yesterday and today, so an advert first seen late last night is still "new" this morning.
+ */
+export function rentalSinceCutoff(days: number, now = Date.now()): string {
+  return new Date(now - days * 86_400_000).toISOString().slice(0, 10)
+}
+
 export interface RentalQuery {
   availability: RentalAvailabilityFilter
   q: string
@@ -435,6 +447,12 @@ export interface RentalQuery {
   excludeWords?: string[]
   /** Habitaciones y residencias (ver `rentalSharedLiving.ts`): '' las muestra junto al resto. */
   sharedLiving?: RentalSharedLivingFilter
+  /**
+   * Sólo las publicadas en los últimos N días (`dias` en la URL), por `freshAt`: lo mismo que ordena
+   * "más recientes", la fecha del portal o el día que vimos el aviso por primera vez. Opcional para
+   * las consultas armadas a mano.
+   */
+  sinceDays?: number | null
   source: string
   bedrooms: number | null
   bedroomsExact: boolean
@@ -642,6 +660,8 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
   const expensesMax = toNumber(input.expensesMax)
   const types = normalizeRentalTypes(input.types ?? input.type)
   const source = clean(input.source, 30)
+  const sinceRaw = clean(input.dias ?? input.sinceDays, 3)
+  const sinceDays = /^\d+$/.test(sinceRaw) ? Number(sinceRaw) : null
 
   return {
     availability: normalizeRentalAvailabilityFilter(input.availability),
@@ -662,6 +682,8 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     ),
     excludeWords: parseExcludedWords(input.sinPalabras ?? input.excludeWords),
     sharedLiving: normalizeRentalSharedLivingFilter(input.residencias ?? input.sharedLiving),
+    sinceDays:
+      sinceDays !== null && sinceDays >= 1 && sinceDays <= RENTAL_SINCE_DAYS_MAX ? sinceDays : null,
     source: Object.hasOwn(RENTAL_SOURCE_LABEL, source) ? source : '',
     bedrooms: bedrooms !== null && bedrooms >= 0 && bedrooms <= 10 ? bedrooms : null,
     bedroomsExact: enabled(input.bedroomsExact),
@@ -712,6 +734,7 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   if (query.excludeSources?.length) params.sinPortales = query.excludeSources.join(',')
   if (query.excludeWords?.length) params.sinPalabras = query.excludeWords.join(',')
   if (query.sharedLiving) params.residencias = query.sharedLiving
+  if (query.sinceDays) params.dias = String(query.sinceDays)
   if (query.source) params.source = query.source
   if (query.bedrooms !== null) params.bedrooms = String(query.bedrooms)
   if (query.bedroomsExact) params.bedroomsExact = '1'
@@ -1060,6 +1083,9 @@ export function buildRentalFilter(
     nonLocation.propertyType = { $nin: [...excludedTypes] }
   }
   if (query.source) nonLocation.sources = query.source
+  // Indexed (`freshAt` + `key`). The public pipeline matches it again after recomputing `freshAt`
+  // from the adverts it keeps, so hiding a portal cannot leave a home "new" only through that portal.
+  if (query.sinceDays) nonLocation.freshAt = { $gte: rentalSinceCutoff(query.sinceDays) }
   if (query.bedrooms !== null)
     nonLocation.bedrooms =
       query.bedrooms === 0 || query.bedroomsExact ? query.bedrooms : { $gte: query.bedrooms }

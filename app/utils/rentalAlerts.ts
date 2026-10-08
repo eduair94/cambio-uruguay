@@ -80,7 +80,18 @@ export class RentalAlertValidationError extends Error {
   }
 }
 
-const presentation = new Set(['page', 'perPage', 'sort', 'view', 'refLat', 'refLng', 'refLabel'])
+// The recency window (`dias`) is not a criterion of an alert: it only ever sends new adverts.
+const presentation = new Set([
+  'page',
+  'perPage',
+  'sort',
+  'view',
+  'refLat',
+  'refLng',
+  'refLabel',
+  'dias',
+  'sinceDays',
+])
 const searchKeys = new Set([
   'availability',
   'q',
@@ -315,6 +326,7 @@ export function normalizeRentalAlertFilters(
       page: 1,
       perPage: 24,
       sort: 'recientes',
+      sinceDays: null,
       refLat: null,
       refLng: null,
       refLabel: '',
