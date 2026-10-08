@@ -118,6 +118,22 @@
               class="rental-search__wide"
               data-testid="rental-filter-type"
             />
+            <!-- Dormitorios right under the type: on the phone it was the fourth field, below the
+                 fold of the drawer, behind two exclusions few people use (2026-10-08). -->
+            <VSelect
+              v-model="draft.bedrooms"
+              :items="bedroomItems"
+              :label="t('bedrooms')"
+              v-bind="field"
+              data-testid="rental-filter-bedrooms"
+            />
+            <VSelect
+              v-model="draft.sinceDays"
+              :items="sinceDaysItems"
+              :label="t('sinceDays')"
+              v-bind="field"
+              data-testid="rental-filter-sinceDays"
+            />
             <VSelect
               v-model="draft.excludeTypes"
               :items="typeItems"
@@ -137,19 +153,6 @@
               v-bind="field"
               class="rental-search__wide"
               data-testid="rental-filter-sharedLiving"
-            />
-            <VSelect
-              v-model="draft.bedrooms"
-              :items="bedroomItems"
-              :label="t('bedrooms')"
-              v-bind="field"
-            />
-            <VSelect
-              v-model="draft.sinceDays"
-              :items="sinceDaysItems"
-              :label="t('sinceDays')"
-              v-bind="field"
-              data-testid="rental-filter-sinceDays"
             />
           </div>
           <VCheckbox

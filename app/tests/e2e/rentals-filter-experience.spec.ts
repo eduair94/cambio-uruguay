@@ -991,3 +991,14 @@ for (const mobile of [true, false]) {
     expect(state.errors).toEqual([])
   })
 }
+
+// The most used home filter sits on the first screen of the drawer (2026-10-08): it was the fourth
+// field of "Qué buscás", behind two exclusions few people use, below the fold at 390×844.
+test('390px mobile: bedrooms are on the first screen of the filter drawer', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  const state = await setup(page)
+  const dialog = await openFilters(page)
+  await expect(dialog.getByTestId('rental-filter-type')).toBeInViewport({ ratio: 1 })
+  await expect(dialog.getByTestId('rental-filter-bedrooms')).toBeInViewport({ ratio: 1 })
+  expect(state.errors).toEqual([])
+})
