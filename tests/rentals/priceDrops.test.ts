@@ -41,6 +41,13 @@ describe("which rental adverts dropped their price", () => {
     expect(rentalPriceDrop([offer("infocasas:1", 29_900)], logs, TODAY)).toBeNull();
   });
 
+  it("does not publish a halving as a drop: on the live directory those were loading errors", () => {
+    // Dry run on 62.283 properties (2026-10-08): 2.701 drops, median 5 %, p90 12,5 %; three above
+    // 50 %, e.g. a Carrasco rental "from $ 16.080 to $ 3.800".
+    const logs = new Map([["mercadolibre:MLU1", log("mercadolibre:MLU1", [["2026-09-20", 16_080], ["2026-10-03", 3_800]])]]);
+    expect(rentalPriceDrop([offer("MLU1", 3_800, "UYU", "mercadolibre")], logs, TODAY)).toBeNull();
+  });
+
   it("never reads a change of currency or a loading error as a drop", () => {
     const currency = log("mercadolibre:MLU1", [["2026-09-20", 1_000, "USD"], ["2026-10-03", 40_000, "UYU"], ["2026-10-05", 38_000, "UYU"]]);
     const typo = log("infocasas:9", [["2026-09-20", 300_000], ["2026-10-03", 30_000]]);

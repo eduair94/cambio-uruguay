@@ -10,7 +10,9 @@ cuyo último cambio en 14 días fue una baja, contra 415 subas. Ahora, después 
 leída con la misma normalización que `/cambios-de-precio-uruguay` (`seriesFromMarketLog`: sólo la
 cola en la moneda actual, y un salto de ×5 no es un cambio de precio). Tres condiciones más: el aviso
 todavía pide el precio bajado, en la misma moneda (si se movió otra vez no es el precio que muestra
-la tarjeta); la baja es de al menos 1 % (la tarjeta redondea y diría "Bajó 0 %"); y sólo se escribe lo
+la tarjeta); la baja es de al menos 1 % (la tarjeta redondea y diría "Bajó 0 %") y de no más de la mitad (en la
+prueba sobre las 62.283 propiedades vivas, las tres por encima eran errores de carga: "$ 16.080 →
+$ 3.800" en Carrasco); y sólo se escribe lo
 que cambió. Como `officialZone`, la escribe sólo ese paso y el store nunca la borra.
 
 El filtro va por la fecha de la baja (`priceDrop.at` dentro de la ventana), así que una propiedad que

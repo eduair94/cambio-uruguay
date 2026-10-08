@@ -14,6 +14,7 @@ import { seriesFromMarketLog } from "../pricehistory/normalize";
 
 export const RENTAL_PRICE_DROP_DAYS = 30;
 export const RENTAL_PRICE_DROP_MIN_PCT = 1;
+export const RENTAL_PRICE_DROP_MAX_PCT = 50;
 
 export interface RentalPriceDrop {
   /** The advert that dropped: the page only shows the drop while that advert is among the shown. */
@@ -57,8 +58,9 @@ export function rentalPriceDrop(
     const last = series.points[series.points.length - 1];
     if (series.currency !== offer.currency || last?.p !== offer.price || change.to !== offer.price) continue;
     const pct = Math.round(((change.from - change.to) / change.from) * 1000) / 10;
-    // A retouch under 1 % is not news, and the card rounds it to "Bajó 0 %".
-    if (pct < RENTAL_PRICE_DROP_MIN_PCT) continue;
+    // A retouch under 1 % is not news, and the card rounds it to "Bajó 0 %". Above half, the live
+    // cases were loading errors ("$ 16.080 → $ 3.800" in Carrasco), not a landlord's decision.
+    if (pct < RENTAL_PRICE_DROP_MIN_PCT || pct > RENTAL_PRICE_DROP_MAX_PCT) continue;
     if (!best || pct > best.pct) {
       best = { listingId: offer.listingId, from: change.from, to: change.to, currency: series.currency, at: change.at, pct };
     }
