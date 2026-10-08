@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { pinFits, pinFor, type RentalPin } from "../../classes/rentals/detailPins";
 import {
   mlDetailExpenses,
-  mlPinFits,
-  mlPinFor,
   parseMlRentalExpenses,
   parseMlRentalPin,
   prioritizeMlDetailTargets,
   type MlDetailTarget,
-  type MlRentalPin,
 } from "../../classes/rentals/mlDetail";
 import type { RentalProperty } from "../../classes/rentals/types";
 
@@ -117,10 +115,10 @@ describe("the map pin of a Mercado Libre rental item page", () => {
   });
 
   it("keeps a Montevideo advert inside Montevideo", () => {
-    expect(mlPinFits({ latitude: -34.9053785, longitude: -56.1858464 }, "Montevideo")).toBe(true);
+    expect(pinFits({ latitude: -34.9053785, longitude: -56.1858464 }, "Montevideo")).toBe(true);
     // Punta del Este: a fine pin for Maldonado, an impossible one for a Montevideo advert.
-    expect(mlPinFits({ latitude: -34.9626271, longitude: -54.941175 }, "Montevideo")).toBe(false);
-    expect(mlPinFits({ latitude: -34.9626271, longitude: -54.941175 }, "Maldonado")).toBe(true);
+    expect(pinFits({ latitude: -34.9626271, longitude: -54.941175 }, "Montevideo")).toBe(false);
+    expect(pinFits({ latitude: -34.9626271, longitude: -54.941175 }, "Maldonado")).toBe(true);
   });
 });
 
@@ -128,22 +126,22 @@ describe("which pin locates a property", () => {
   const offer = (listingId: string, source = "mercadolibre") => ({ listingId, source }) as RentalProperty["offers"][number];
   const property = (offers: RentalProperty["offers"], latitude: number | null = null) =>
     ({ department: "Montevideo", latitude, offers }) as Pick<RentalProperty, "department" | "latitude" | "offers">;
-  const pins = new Map<string, MlRentalPin>([
+  const pins = new Map<string, RentalPin>([
     ["MLU2", { latitude: -34.90, longitude: -56.18 }],
     ["MLU1", { latitude: -34.91, longitude: -56.16 }],
     ["MLU9", { latitude: -34.96, longitude: -54.94 }],
   ]);
 
   it("never moves a point another portal published", () => {
-    expect(mlPinFor(property([offer("MLU1")], -34.88), pins)).toBeNull();
+    expect(pinFor(property([offer("MLU1")], -34.88), pins, "mercadolibre")).toBeNull();
   });
 
   it("takes the lowest listing id, so the point does not hop between runs", () => {
-    expect(mlPinFor(property([offer("MLU2"), offer("INF7", "infocasas"), offer("MLU1")]), pins)).toEqual(pins.get("MLU1"));
+    expect(pinFor(property([offer("MLU2"), offer("INF7", "infocasas"), offer("MLU1")]), pins, "mercadolibre")).toEqual(pins.get("MLU1"));
   });
 
   it("skips a pin that cannot be in the property's department", () => {
-    expect(mlPinFor(property([offer("MLU9")]), pins)).toBeNull();
-    expect(mlPinFor(property([offer("MLU9"), offer("MLU2")]), pins)).toEqual(pins.get("MLU2"));
+    expect(pinFor(property([offer("MLU9")]), pins, "mercadolibre")).toBeNull();
+    expect(pinFor(property([offer("MLU9"), offer("MLU2")]), pins, "mercadolibre")).toEqual(pins.get("MLU2"));
   });
 });

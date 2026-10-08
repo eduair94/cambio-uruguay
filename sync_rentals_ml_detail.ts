@@ -22,9 +22,9 @@ import {
   parseMlRentalPin,
   saveMlDetails,
   writeMlDetailExpenses,
-  writeMlDetailPin,
   type MlRentalDetail,
 } from "./classes/rentals/mlDetail";
+import { writeDetailPin } from "./classes/rentals/detailPins";
 import { fetchText, sleep } from "./classes/rentals/net";
 import { RENTAL_META_KEY } from "./classes/rentals/types";
 
@@ -78,7 +78,7 @@ async function main(): Promise<void> {
       });
       if (pin) {
         summary.pinned++;
-        if (!dryRun && (await writeMlDetailPin(target, pin))) summary.located++;
+        if (!dryRun && (await writeDetailPin(target, pin))) summary.located++;
       }
       if (!stated) summary.zeroOrAbsent++;
       else {
