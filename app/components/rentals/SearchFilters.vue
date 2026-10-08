@@ -160,6 +160,14 @@
             density="compact"
             color="primary"
           />
+          <VCheckbox
+            v-model="draft.priceDropped"
+            :label="t('priceDropped')"
+            hide-details
+            density="compact"
+            color="primary"
+            data-testid="rental-filter-priceDropped"
+          />
           <p v-if="draft.types.includes('vivienda')" class="rental-search__hint">
             {{ t('homesHint') }}
           </p>
@@ -826,6 +834,7 @@ const copy = (query: RentalQuery): RentalDraft => ({
   excludeWords: [...(query.excludeWords ?? [])],
   sharedLiving: query.sharedLiving ?? '',
   sinceDays: query.sinceDays ?? null,
+  priceDropped: query.priceDropped ?? false,
   guarantees: [...query.guarantees],
   amenities: [...query.amenities],
   sedes: [...query.sedes],

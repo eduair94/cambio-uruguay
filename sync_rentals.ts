@@ -24,6 +24,7 @@ dotenv.config({ path: "app/.env", quiet: true });
 
 import { appDbConfigured } from "./classes/appdb";
 import { recordRentalPriceLogs } from "./classes/pricehistory/marketLog";
+import { refreshRentalPriceDrops } from "./classes/rentals/priceDrops";
 import { buildRentalProperties } from "./classes/rentals/dedupe";
 import { fetchUsdUyuRate } from "./classes/rentals/rate";
 import { harvestRentalMarket } from "./classes/rentals/sources";
@@ -144,6 +145,13 @@ async function main(): Promise<void> {
     console.log(`[rentals] historial de precio: ${logged.written} avisos`);
   } catch (error) {
     console.error("[rentals] no se pudo registrar el historial de precios", error);
+  }
+  // "Bajó de precio": se lee de la serie que se acaba de escribir. Mismo motivo para el try/catch.
+  try {
+    const drops = await refreshRentalPriceDrops(properties, today);
+    console.log(`[rentals] bajas de precio: ${drops.drops} propiedades, ${drops.written} filas actualizadas`);
+  } catch (error) {
+    console.error("[rentals] no se pudieron calcular las bajas de precio", error);
   }
 
   // Sacar cada aviso de las filas que ya no son su dueña, ANTES de podar: una fila que queda sin

@@ -48,6 +48,8 @@ const RentalListingSchema = new Schema(
     offers: { type: [Schema.Types.Mixed], default: [] },
     /** Official area (INE barrio / UTE locality), written only by currency-property-zones with `$set`. */
     officialZone: { type: Schema.Types.Mixed, default: undefined },
+    /** Last price drop of a shown advert, written only by `refreshRentalPriceDrops` (rentals/priceDrops.ts). */
+    priceDrop: { type: Schema.Types.Mixed, default: undefined },
     sources: { type: [String], default: [] },
     freshAt: { type: String, default: "" },
     firstSeen: { type: String, required: true },
