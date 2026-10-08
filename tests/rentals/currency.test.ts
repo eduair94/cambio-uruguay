@@ -26,6 +26,7 @@ const cohorts = rentPriceCohorts([
   // Maldonado city is in pesos; the department mixes it with Punta del Este's dollars.
   ...market("Maldonado", "Centro", null, 15_000, 30_000, 10),
   ...market("Maldonado", "", null, 33_000, 390_000, 60),
+  ...market("Maldonado", "", 1, 21_000, 153_000),
   ...market("Colonia", "Carmelo", 1, 10_000, 33_000),
   ...market("Canelones", "Viñedos de La Tahona", 3, 124_000, 198_000, 10),
 ]);
@@ -85,6 +86,17 @@ describe("a home priced in pesos below anything its zone costs is a dollar price
     // Maldonado city: $ 9.500 is cheap but real, and only a department-wide cohort is available.
     const listing = advert({ title: "SE ALQUILA CASA DE UN DORMITORIO. BARRIO HIPODROMO", price: 9_500, department: "Maldonado", neighborhood: "Barrio Hipódromo", bedrooms: null, propertyType: "casa" });
     expect(rentCurrencyVerdict(listing, cohorts, USD).kind).toBe("unchanged");
+  });
+
+  it("lets the department's same-bedroom homes decide from $ 5.000 when the advert has no barrio", () => {
+    // Maldonado's 3+ bedroom homes start far above $ 5.500; as US$ 5.500 it sits inside that market.
+    const house = advert({ title: "4 habitaciones 2 baños - Casa", price: 5_500, department: "Maldonado", neighborhood: "", bedrooms: 4, propertyType: "casa" });
+    expect(rentCurrencyVerdict(house, cohorts, USD).kind).toBe("usd");
+  });
+
+  it("but only inside that market: a dollar reading above its 90th percentile stays as published", () => {
+    const flat = advert({ title: "1 habitación 2 baños Departamento/condominio", price: 5_400, department: "Maldonado", neighborhood: "", bedrooms: 1, propertyType: "apartamento" });
+    expect(rentCurrencyVerdict(flat, cohorts, USD).kind).not.toBe("usd");
   });
 
   it("leaves untouched what is absurd in both currencies", () => {

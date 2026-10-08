@@ -18,7 +18,12 @@
 //   - as pesos it has to be absurd: under half the zone's 10th percentile;
 //   - as dollars it has to be ordinary: between half the 10th percentile and 1.5× the 90th.
 // Under $ 5.000 no home rents in pesos anywhere in Uruguay, so any cohort may decide. From $ 5.000
-// to $ 12.000 only the barrio's own cohort can (the Maldonado case above). From $ 12.000 nothing
+// to $ 12.000 the department ALONE cannot (the Maldonado case above), but the barrio can, and so can
+// the department's homes with the same bedrooms: "4 habitaciones 2 baños - Casa" at $ 5.500 is no
+// peso rent anywhere in Maldonado, whose 3+ bedroom homes start at $ 74.430 (p10). That cohort still
+// spans barrios, so its dollar reading must sit inside the market it shows (up to p90, not 1.5×):
+// "1 habitación 2 baños Departamento" at US$ 5.400 and a "10 habitaciones 9 baños" house at
+// US$ 6.500 — a pension by the room, most likely — stay as published. From $ 12.000 nothing
 // changes. When neither reading is plausible ("Alquiler zona Centro 1 dormitorio" at $ 4.000) the
 // advert stays as published: there is nothing to correct it TO.
 //
@@ -31,7 +36,7 @@ import type { RawRental, RentalOffer, RentalProperty } from "./types";
 
 /** Under this, no home rents in pesos anywhere: any cohort may decide. */
 export const RENT_PESOS_ABSURD_UYU = 5_000;
-/** From here to this, only the barrio's own cohort may decide. */
+/** From here to this, the department alone may not decide: the barrio or the bedrooms must. */
 export const RENT_PESOS_SUSPECT_UYU = 12_000;
 export const RENT_COHORT_MIN = 8;
 /** The market a fix is read against: homes at or above the peso floor for a home (normalize.ts). */
@@ -44,10 +49,12 @@ export interface RentPriceRow {
   priceUyu: number;
 }
 
+/** How narrow a market the cohort is: the barrio's, the department's same-bedroom homes, or all of it. */
+type CohortScope = "barrio" | "bedrooms" | "department";
+
 interface CohortBand {
   key: string;
-  /** Barrio-level: department + neighborhood, with or without bedrooms. */
-  local: boolean;
+  scope: CohortScope;
   p10: number;
   p90: number;
 }
@@ -63,11 +70,11 @@ function cohortKeys(department: string, neighborhood: string, bedrooms: number |
   const b = bedroomBucket(bedrooms);
   if (!d) return [];
   return [
-    n && b ? { key: `${d}|${n}|${b}`, local: true } : null,
-    n ? { key: `${d}|${n}`, local: true } : null,
-    b ? { key: `${d}|*|${b}`, local: false } : null,
-    { key: d, local: false },
-  ].filter((value): value is { key: string; local: boolean } => value !== null);
+    n && b ? { key: `${d}|${n}|${b}`, scope: "barrio" as const } : null,
+    n ? { key: `${d}|${n}`, scope: "barrio" as const } : null,
+    b ? { key: `${d}|*|${b}`, scope: "bedrooms" as const } : null,
+    { key: d, scope: "department" as const },
+  ].filter((value): value is { key: string; scope: CohortScope } => value !== null);
 }
 
 const quantile = (sorted: readonly number[], p: number) =>
@@ -94,9 +101,9 @@ export function rentPriceCohorts(rows: readonly RentPriceRow[]): RentPriceCohort
 }
 
 function cohortFor(cohorts: RentPriceCohorts, listing: Pick<RawRental, "department" | "neighborhood" | "bedrooms">): CohortBand | null {
-  for (const { key, local } of cohortKeys(listing.department, listing.neighborhood, listing.bedrooms)) {
+  for (const { key, scope } of cohortKeys(listing.department, listing.neighborhood, listing.bedrooms)) {
     const band = cohorts.get(key);
-    if (band) return { key, local, p10: band.p10, p90: band.p90 };
+    if (band) return { key, scope, p10: band.p10, p90: band.p90 };
   }
   return null;
 }
@@ -131,10 +138,14 @@ export function rentCurrencyVerdict(listing: RentCurrencySubject, cohorts: RentP
   if (listing.price >= RENT_PESOS_SUSPECT_UYU || !(usdUyu > 0) || !isHomeAdvert(listing)) return { kind: "unchanged" };
   const band = cohortFor(cohorts, listing);
   if (!band) return { kind: "unchanged" };
-  if (listing.price >= RENT_PESOS_ABSURD_UYU && !band.local) return { kind: "unchanged" };
+  const suspect = listing.price >= RENT_PESOS_ABSURD_UYU;
+  if (suspect && band.scope === "department") return { kind: "unchanged" };
   if (listing.price >= band.p10 * 0.5) return { kind: "unchanged" };
   const asDollars = listing.price * usdUyu;
-  return asDollars >= band.p10 * 0.5 && asDollars <= band.p90 * 1.5
+  // A bedroom cohort spans the department's barrios: in the suspect range its dollar reading has to
+  // sit inside what that market shows, not beyond it.
+  const ceiling = suspect && band.scope === "bedrooms" ? band.p90 : band.p90 * 1.5;
+  return asDollars >= band.p10 * 0.5 && asDollars <= ceiling
     ? { kind: "usd", cohort: band.key }
     : { kind: "implausible", cohort: band.key };
 }
