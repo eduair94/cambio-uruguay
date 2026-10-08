@@ -1,11 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { rentalNearbyOrigin } from "../../app/utils/propertyNearby";
 import { placeProperty } from "../../classes/rentals/detailPins";
 import type { RentalOfferIdentity, RentalProperty } from "../../classes/rentals/types";
 
 // The first 120 Mercado Libre properties placed on 2026-10-08 showed on the map and still said, in
 // "La vida cerca de esta vivienda", that the advert published no location: the nearby block only
-// measures from a point that an advert of the property published (its private identity).
+// measures from a point that an advert of the property published (its private identity): an offer
+// with `identity.version === 1`, no `addressHidden`, and EXACTLY the property's coordinate
+// (`rentalNearbyOrigin`, app/utils/propertyNearby.ts — not imported here: app/ only compiles with
+// its generated .nuxt tsconfig, which the backend CI does not build).
+const nearbyCanMeasure = (row: Pick<RentalProperty, "latitude" | "longitude" | "offers">) =>
+  typeof row.latitude === "number" &&
+  row.offers.some(
+    ({ identity }) =>
+      identity?.version === 1 && identity.addressHidden !== true && identity.latitude === row.latitude && identity.longitude === row.longitude
+  );
 const identity = (over: Partial<RentalOfferIdentity> = {}): RentalOfferIdentity => ({
   version: 1,
   propertyType: "apartamento",
@@ -28,11 +36,11 @@ const pin = { latitude: -34.9102673, longitude: -56.1471486 };
 describe("a pin from an advert's page", () => {
   it("places the property on the point its advert published, so the nearby block can measure from it", () => {
     const row = property([{ listingId: "mercadolibre:MLU1", identity: identity() }]);
-    expect(rentalNearbyOrigin(row)).toBeNull();
+    expect(nearbyCanMeasure(row)).toBe(false);
     placeProperty(row, "mercadolibre:MLU1", pin);
     expect(row.latitude).toBe(pin.latitude);
     expect(row.offers[0]!.identity).toMatchObject(pin);
-    expect(rentalNearbyOrigin(row)).toMatchObject({ lat: pin.latitude, lng: pin.longitude });
+    expect(nearbyCanMeasure(row)).toBe(true);
   });
 
   it("writes only the identity of the advert that gave the point, and never a legacy one", () => {
