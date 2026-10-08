@@ -36,8 +36,10 @@
           :class="{ 'is-measuring': row.measuring }"
           :title="row.detail"
         >
-          <span class="zone-bars__label" aria-hidden="true">{{ row.label }}</span>
-          <span class="zone-bars__measure" aria-hidden="true">{{ row.measure }}</span>
+          <span class="zone-bars__head" aria-hidden="true">
+            <span class="zone-bars__label">{{ row.label }}</span>
+            <span class="zone-bars__measure">{{ row.measure }}</span>
+          </span>
           <span class="zone-bars__track" aria-hidden="true">
             <span class="zone-bars__fill" :style="{ inlineSize: `${row.percent}%` }" />
           </span>
@@ -228,11 +230,9 @@ const digest = computed(() => {
   line-height: 1.4;
   color: rgba(var(--v-theme-on-surface), 0.76);
 }
+/* Wraps instead of truncating: "peor e…" hid the half of the line that names the weak spot. */
 .zone-bars__digest {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: 0.75rem;
   line-height: 1.4;
   color: rgba(var(--v-theme-on-surface), 0.76);
@@ -244,50 +244,53 @@ const digest = computed(() => {
 .zone-bars__disclosure[open] .zone-bars__chevron {
   transform: rotate(180deg);
 }
+/*
+ * The list owns the columns and every row borrows them (subgrid), so all tracks share one width and
+ * the bars compare across rows; with a grid per row each track was as wide as its own rank text left.
+ */
 .zone-bars__rows {
   /* On a wide card (opportunities) a full-width track stops reading as a comparison. */
   max-inline-size: 34rem;
   list-style: none;
   display: grid;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 10px;
+  row-gap: 8px;
   margin-top: 4px !important;
 }
 /*
  * Two lines per figure: the name and the MEASURED value first, then the bar and its rank. The rank
  * alone ("mejor que 74 %") said where the area stands but not what was measured; the value with its
  * unit is the part a reader can check against their own experience of the barrio.
+ *
+ * The first line wraps instead of sharing a grid row: "160,3 cada 1.000 clientes · 12 meses" does
+ * not fit beside "Denuncias" in a 300 px card, and as an `auto` grid column it squeezed the name to
+ * "D" and the track (same column) to a dot. Now the figure drops under the name, still flush right.
  */
 .zone-bars__row {
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'label measure'
-    'track value';
+  grid-template-columns: subgrid;
   align-items: center;
-  column-gap: 10px;
   row-gap: 3px;
   font-size: 0.75rem;
   line-height: 1.4;
 }
+.zone-bars__head {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+}
 .zone-bars__label {
-  grid-area: label;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-weight: 600;
 }
 .zone-bars__measure {
-  grid-area: measure;
+  margin-inline-start: auto;
   font-variant-numeric: tabular-nums;
   text-align: end;
-  white-space: nowrap;
-}
-.zone-bars__track {
-  grid-area: track;
-}
-.zone-bars__value {
-  grid-area: value;
 }
 .zone-bars__track {
   position: relative;
