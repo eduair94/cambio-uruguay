@@ -13,6 +13,15 @@ import type { Page } from '@playwright/test'
  */
 const catalogueOrigin = process.env.E2E_CATALOGUE_ORIGIN || 'https://cambio-uruguay.com'
 
+/**
+ * Since 2026-09-22 a Cloudflare WAF rule answers any `HeadlessChrome` user agent with a managed
+ * challenge (a crawler sent 55 % of the zone's traffic under that UA). Playwright's own forwarded
+ * reads carried it, got a 403, and every spec on this helper rendered "Volver a intentar" from the
+ * 2026-09-23 run on. The suite says who it is instead of passing as a browser.
+ */
+const catalogueUserAgent =
+  'cambio-uruguay-e2e/1.0 (+https://github.com/eduair94/cambio-uruguay; playwright public catalogue)'
+
 export async function usePublicCatalogue(page: Page) {
   await page.route(
     /\/api\/(?:rentals|property-sales|property-opportunities)(?:[/?]|$)/,
@@ -26,6 +35,7 @@ export async function usePublicCatalogue(page: Page) {
       try {
         const response = await route.fetch({
           url: new URL(source.pathname + source.search, catalogueOrigin).toString(),
+          headers: { ...request.headers(), 'user-agent': catalogueUserAgent },
         })
         await route.fulfill({ response })
       } catch {
