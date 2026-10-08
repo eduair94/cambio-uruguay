@@ -1,5 +1,19 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Dormitorios, baños y metros de Facebook, de su descripción — 8 de octubre de 2026
+
+La cosecha de Facebook ya lee dormitorios, baños y superficie del título y de la descripción que
+dejó `currency-rentals-detail` (`toRawRental` → `parseAttributes`), pero **sólo cuando vuelve a ver el
+aviso**. El job de detalle completaba descripción, barrio, departamento y coordenada, no esos tres:
+de 4.964 avisos leídos, 761 propiedades tenían 936 campos que su descripción declara y seguían
+vacíos (438 superficies, 266 dormitorios, 232 baños). Donde la propiedad ya tenía el dato, la
+descripción coincidía en el 97 % (dormitorios), 98 % (baños) y 99,7 % (superficie).
+
+- `facebookDetailUpdate` completa ahora esos tres campos VACÍOS (y la `identity` del aviso) con la
+  misma regla que la cosecha: `parseAttributes([título, descripción])`.
+- `node dist/sync_rentals_detail.js --reapply` vuelve a pasar todas las fichas guardadas por esa
+  escritura sin abrir Facebook (compare-and-set, sólo campos vacíos). Se corrió una vez al desplegar.
+
 ## Casasweb en el mapa — 8 de octubre de 2026
 
 La tarjeta de Casasweb no trae dirección ni coordenada: sus 2.696 propiedades vigentes tenían 0 % de

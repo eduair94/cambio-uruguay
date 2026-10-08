@@ -2,7 +2,8 @@
 //
 // Two collections: `rentalfacebookdetails` (private, one row per advert read, the audit trail) and
 // `rentallistings` (public), which takes from a detail row ONLY the fields it lacked — a barrio,
-// a department, a coordinate, the description — and only on a property that holds that single
+// a department, a coordinate, the description, and the bedrooms, bathrooms and area the description
+// states — and only on a property that holds that single
 // Facebook advert. Nothing here renews `lastSeen`, moves an advert, or touches another portal's
 // row. Every write is a compare-and-set on the listingId and the offer count, so a harvest that
 // ran in between wins.
@@ -11,7 +12,7 @@ import { INE_DISPLAY_NAMES } from "../propertyzones/names";
 import { RentalFacebookDetailModel, type RentalFacebookDetailDocument } from "../models/RentalFacebookDetail";
 import { RentalListingModel } from "../models/RentalListing";
 import { rentalOfferDetails } from "./details";
-import { flatten } from "./normalize";
+import { flatten, parseAttributes } from "./normalize";
 
 const listings = () => appConnection().collection(RentalListingModel.collection.name);
 const details = () => appConnection().collection(RentalFacebookDetailModel.collection.name);
@@ -119,14 +120,30 @@ export interface StoredFacebookRow {
   neighborhood?: string;
   latitude?: number | null;
   longitude?: number | null;
+  bedrooms?: number | null;
+  bathrooms?: number | null;
+  area?: number | null;
   offers?: Array<{
     source?: string;
     listingId?: string;
+    title?: string;
     image?: string | null;
-    identity?: { version?: number; description?: string; neighborhood?: string; department?: string; latitude?: number | null; longitude?: number | null };
+    identity?: {
+      version?: number;
+      description?: string;
+      neighborhood?: string;
+      department?: string;
+      latitude?: number | null;
+      longitude?: number | null;
+      bedrooms?: number | null;
+      bathrooms?: number | null;
+      area?: number | null;
+    };
     details?: { description?: string };
   }>;
 }
+
+const ATTRIBUTES = ["bedrooms", "bathrooms", "area"] as const;
 
 /**
  * The `$set` that brings a detail into its property, or null when there is nothing to add. Only
@@ -158,6 +175,19 @@ export function facebookDetailUpdate(row: StoredFacebookRow, detail: RentalFaceb
     set["offers.0.identity.latitude"] = detail.latitude;
     set["offers.0.identity.longitude"] = detail.longitude;
   }
+  // The harvest reads these from the title and the description the same way (toRawRental), but only
+  // when it sees the advert again: of 4.964 adverts read on 2026-10-08, 936 fields the description
+  // states were still empty. Where the property already had them, the description agreed 97 %
+  // (bedrooms), 98 % (bathrooms) and 99,7 % (area) of the time.
+  if (detail.description) {
+    const stated = parseAttributes([offer.title || detail.title || "", detail.description]);
+    for (const field of ATTRIBUTES) {
+      const value = stated[field];
+      if (value === null || typeof row[field] === "number") continue;
+      set[field] = value;
+      if (typeof identity[field] !== "number") set[`offers.0.identity.${field}`] = value;
+    }
+  }
   return Object.keys(set).length ? set : null;
 }
 
@@ -165,7 +195,10 @@ export async function applyFacebookDetails(rows: readonly RentalFacebookDetailDo
   const byListing = new Map(rows.filter(row => row.found).map(row => [row.listingId, row]));
   if (!byListing.size) return { candidates: 0, written: 0 };
   const stored = await listings()
-    .find({ "offers.listingId": { $in: [...byListing.keys()] } }, { projection: { key: 1, department: 1, neighborhood: 1, latitude: 1, longitude: 1, offers: 1 } })
+    .find(
+      { "offers.listingId": { $in: [...byListing.keys()] } },
+      { projection: { key: 1, department: 1, neighborhood: 1, latitude: 1, longitude: 1, bedrooms: 1, bathrooms: 1, area: 1, offers: 1 } }
+    )
     .toArray();
   const writes: Array<{ updateOne: { filter: Record<string, unknown>; update: Record<string, unknown> } }> = [];
   for (const doc of stored) {
@@ -183,4 +216,25 @@ export async function applyFacebookDetails(rows: readonly RentalFacebookDetailDo
   if (!writes.length) return { candidates: stored.length, written: 0 };
   const result = await listings().bulkWrite(writes, { ordered: false });
   return { candidates: stored.length, written: result.modifiedCount };
+}
+
+/** Every stored, found detail through `applyFacebookDetails` again, in chunks (see `--reapply`). */
+export async function reapplyStoredFacebookDetails(chunk = 2_000): Promise<{ details: number; candidates: number; written: number }> {
+  const total = { details: 0, candidates: 0, written: 0 };
+  const cursor = details().find({ found: true }, { projection: { _id: 0 } });
+  let batch: RentalFacebookDetailDocument[] = [];
+  const flush = async () => {
+    if (!batch.length) return;
+    const applied = await applyFacebookDetails(batch);
+    total.details += batch.length;
+    total.candidates += applied.candidates;
+    total.written += applied.written;
+    batch = [];
+  };
+  for await (const doc of cursor) {
+    batch.push(doc as unknown as RentalFacebookDetailDocument);
+    if (batch.length >= chunk) await flush();
+  }
+  await flush();
+  return total;
 }
