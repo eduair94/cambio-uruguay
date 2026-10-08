@@ -203,6 +203,45 @@ describe("inferPropertyType", () => {
     expect(inferPropertyType("Alquilo casa 3 dormitorios")).toBe("casa");
     expect(inferPropertyType("Oportunidad única")).toBe("otro");
   });
+
+  // Real public titles, 2026-10-07: two thirds of the `habitacion` type were whole homes.
+  it.each([
+    ["2 habitaciones 1 baño Casa", "casa"],
+    ["3 habitaciones 1 baño Departamento/condominio", "apartamento"],
+    ["1+habitación+1+baño+Departamento/condominio", "apartamento"],
+    ["3 habitaciones 1 baño Apartamento o piso", "apartamento"],
+    ["1 habitación 1 baño Townhouse", "casa"],
+    ["1 habitación 1 baño Solo habitación", "habitacion"],
+    ["Alquilo apto de 1 dormitorio en Maroñas. Consulta wpp", "apartamento"],
+    ["Alquiler Apartamento 1 Dormitorio en Cordon Sur", "apartamento"],
+    ["Alquilo casa de un dormitorio en la bota", "casa"],
+    ["Alquiler amplio apartamento de tres habitaciones y dos baños en ciudad vieja", "apartamento"],
+    ["Alquiler de Apartamento 1 Dormitorio con Salida a balcón en Tres Cruces con Cochera Compartida", "apartamento"],
+    ["Alquiler Atlantida apto con cuarto dos cuadras de la playa mansa", "apartamento"],
+    ["Alquilo! Casa 2 dormitorios living, comedor , cocina y baño Patio,Pieza al fondo", "casa"],
+    ["Alquilo consultorio compartido", "oficina"],
+    ["Alquiler 1 Dormitorio en La Blanqueada", "otro"],
+    ["3 habitaciones 1 baño - Departamento", "apartamento"],
+    ["Alquiler la teja 2 cuartos $17000", "otro"],
+  ])("a counted room describes a home: %s", (title, expected) => {
+    expect(inferPropertyType(title)).toBe(expected);
+  });
+
+  it.each([
+    "Alquilo habitación para persona sola",
+    "Alquiler Habitación Privada en Apartamento compartido Punta del Este",
+    "Alquiler habitación en apto céntrico",
+    "Se alquila una habitación en casa de familia",
+    "Casa Compartida Para Estudiantes Del Interior",
+    "Alquilo Apartamento compartido , CENTRO. Para 2 muchachos",
+    "Alquilo pieza a señora en capurro",
+    "Pension / habitaciones / equipadas / ingreso inmediato",
+    "Alquilo cuartos",
+    "RENTA DE PIEZAS INDIVIDUALES Y COMPARTIDAS EN EL CORAZON DE LA CIUDAD VIEJA",
+    "10 habitaciones 6 baños Solo habitación",
+  ])("a room offered on its own is still a room: %s", (title) => {
+    expect(inferPropertyType(title)).toBe("habitacion");
+  });
 });
 
 
