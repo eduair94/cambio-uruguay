@@ -148,6 +148,8 @@ export interface RentalOffer extends AdvertiserMetadata {
   title: string
   price: number
   currency: RentalCurrency
+  /** The advert said pesos; its zone's market says dollars (backend `classes/rentals/currency.ts`). */
+  currencyInferred?: true
   priceUyu: number
   commonExpenses: number | null
   commonExpensesCurrency: RentalCurrency | null

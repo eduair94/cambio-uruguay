@@ -448,6 +448,13 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                       </p>
                       <p v-else class="rental-card__expenses">{{ expensesLabel(property) }}</p>
                       <p
+                        v-if="displayOffer(property)?.currencyInferred"
+                        class="rental-card__expenses"
+                        data-testid="rental-card-currency-inferred"
+                      >
+                        {{ t('currencyInferred') }}
+                      </p>
+                      <p
                         v-if="priceGaps.get(property.key)"
                         class="rental-card__gap"
                         data-testid="rental-card-gap"

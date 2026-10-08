@@ -63,6 +63,8 @@ export const rentalPageMessages = {
     advertReference: 'Referencia en {source}: {id}',
     monthlyOverview: 'Revisar costos y avisos',
     noGallery: 'Esta propiedad no tiene una foto que podamos mostrar.',
+    currencyInferredLong:
+      'El aviso dice pesos, pero ninguna vivienda de esta zona se alquila a ese monto en pesos y sí en dólares: lo mostramos en dólares. Confirmalo con quien publica.',
     monthlyRent: 'Alquiler por mes',
     costTitle: 'Alquiler y gastos comunes',
     costUnknown: 'Falta confirmar los gastos comunes para conocer el total.',
@@ -220,6 +222,8 @@ export const rentalPageMessages = {
     advertReference: 'Reference on {source}: {id}',
     monthlyOverview: 'Review costs and adverts',
     noGallery: 'There is no photo we can display for this property.',
+    currencyInferredLong:
+      'The advert says pesos, but no home in this area rents for that amount in pesos and many do in dollars, so we show it in dollars. Confirm it with the advertiser.',
     monthlyRent: 'Monthly rent',
     costTitle: 'What you would pay each month',
     costUnknown: 'Common expenses must be confirmed before a monthly total can be calculated.',
@@ -377,6 +381,8 @@ export const rentalPageMessages = {
     advertReference: 'Referência no {source}: {id}',
     monthlyOverview: 'Conferir custos e anúncios',
     noGallery: 'Este imóvel não tem uma foto que possamos mostrar.',
+    currencyInferredLong:
+      'O anúncio diz pesos, mas nenhuma moradia desta região se aluga por esse valor em pesos e sim em dólares: mostramos em dólares. Confirme com quem anuncia.',
     monthlyRent: 'Aluguel por mês',
     costTitle: 'Quanto você pagaria por mês',
     costUnknown: 'É preciso confirmar o condomínio para calcular o total mensal.',
