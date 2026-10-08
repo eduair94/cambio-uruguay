@@ -34,7 +34,7 @@ import {
   correctStoredRentalCurrencies,
   countRentals,
   dropRejectedStoredRentals,
-  retypeStoredFacebookOffers,
+  retypeStoredRentalOffers,
   loadRentPriceRows,
   loadRentalHistory,
   loadRentalMeta,
@@ -181,13 +181,13 @@ async function main(): Promise<void> {
       console.log(`[rentals] ${rejected.offers} avisos guardados que ya no son alquiler mensual de un inmueble (${rejected.properties} filas, ${rejected.deleted} borradas)`);
     }
   }
-  // Facebook's type is a function of its title: re-read the stored ones with today's rule, before the
-  // currency pass, which asks whether an advert is a home.
-  const retyped = await retypeStoredFacebookOffers().catch((error) => {
-    console.warn("[rentals] no se pudieron releer los tipos de Facebook:", error instanceof Error ? error.message : error);
+  // Types that are a function of the title (all of Facebook's; a residence heading anywhere): re-read
+  // the stored ones with today's rule, before the currency pass, which asks whether an advert is a home.
+  const retyped = await retypeStoredRentalOffers().catch((error) => {
+    console.warn("[rentals] no se pudieron releer los tipos guardados:", error instanceof Error ? error.message : error);
     return { offers: 0, properties: 0 };
   });
-  if (retyped.offers) console.log(`[rentals] ${retyped.offers} avisos de Facebook guardados con el tipo de hoy (${retyped.properties} filas)`);
+  if (retyped.offers) console.log(`[rentals] ${retyped.offers} avisos guardados con el tipo de hoy (${retyped.properties} filas)`);
   // Adverts this run did not see again keep their stored price; read those against the market too.
   const storedCurrencies = await correctStoredRentalCurrencies(cohorts, usdUyu).catch((error) => {
     console.warn("[rentals] no se pudieron revisar las monedas guardadas:", error instanceof Error ? error.message : error);

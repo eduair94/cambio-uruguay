@@ -325,13 +325,22 @@ const DWELLING_WORD = /\b(?:apartamento|apto|apart|monoambiente|penthouse|duplex
 const COUNTED_ROOMS = /\b(?:(?:\d+|dos|tres|cuatro|cinco|seis|siete|ocho)\s*(?:habitacion(?:es)?|dormitorios?|dorms?|cuartos?|piezas?)|(?:un|uno)\s+dormitorios?)\b/g;
 // Facebook Marketplace titles a listing with its own structured summary when the seller wrote
 // none: "<n> habitaciones <n> baños <type>", sometimes with "+" for spaces.
-const MARKETPLACE_SUMMARY = /^\d+ habitacion(?:es)? \d+ banos? (.+)$/;
+// A studio has no room to count: "Monoambiente 1 baño Solo habitación".
+const MARKETPLACE_SUMMARY = /^(?:\d+ habitacion(?:es)?|monoambiente) \d+ banos? (.+)$/;
 
 const RESIDENCE_HEADING = /^(?:(?:alquiler|alquilo|alquila|se alquila|renta)\s+(?:de\s+)?)?(?:hogar\s*[-,.]?\s*)?(?:residencias?|hogar(?:es)?|pension(?:es)?)\s+(?:(?:para|de)\s+)?(?:estudiant\w*|universitari\w*|femenin\w*|masculin\w*|mixt\w*|deportistas|trabajador\w*|jovenes|senoritas)\b/;
 
 /** A flattened title without its room COUNTS ("2 habitaciones", "un dormitorio"): what is left names the rented thing. */
 export function withoutRoomCounts(flat: string): string {
   return flat.replace(COUNTED_ROOMS, " ");
+}
+
+/**
+ * Does the title OPEN with a residence that rents beds? It outranks every portal's taxonomy, including
+ * the ones that never call `inferPropertyType` (MercadoLibre's category, El País's structured type).
+ */
+export function opensWithResidence(title: string): boolean {
+  return RESIDENCE_HEADING.test(flatten(title));
 }
 
 function marketplaceSummaryType(flat: string): RentalPropertyType | null {
@@ -366,7 +375,7 @@ export function inferPropertyType(title: string, hint?: string | null): RentalPr
   // 2026-10-07, MercadoLibre listed those as houses of 8 to 15 bedrooms at $ 8.200–9.500, the price
   // of one bed, inside the houses' medians and their "opportunities". Further into the title it
   // describes a use ("Casa de 5 dormitorios | Cowork | Residencia Estudiantil", $ 60.000).
-  if (RESIDENCE_HEADING.test(flatten(title))) return "habitacion";
+  if (opensWithResidence(title)) return "habitacion";
   const hintFlat = flatten(hint || "");
   if (hintFlat) {
     if (/apartment|apartamento/.test(hintFlat)) return "apartamento";

@@ -17,9 +17,9 @@ import {
   type RentPriceRow,
 } from "./currency";
 import { RentalMetaModel } from "../models/RentalMeta";
-import { inferPropertyType, looksLikeRentalAdvert } from "./normalize";
+import { inferPropertyType, looksLikeRentalAdvert, opensWithResidence } from "./normalize";
 import { detachedRentalKey, partitionRentalOffers, propertyFromRentalOffers } from "./reconcile";
-import { RENTAL_FULL_META_KEY, RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalSource } from "./types";
+import { RENTAL_FULL_META_KEY, RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalPropertyType, type RentalSource } from "./types";
 
 const CHUNK = 400;
 
@@ -351,17 +351,23 @@ export async function dropReassignedOffers(
  * for rent.
  */
 /**
- * Re-reads the type of stored Facebook adverts with today's rule. Marketplace's type is a pure
- * function of the title (sources/facebook.ts), so this is exactly what a fresh read would store — but
- * the browser only re-reads a slice (2.155 of 7.025 on 2026-10-08), and until then "2 habitaciones 1
- * baño Casa" stayed a room: two thirds of the public `habitacion` type were whole homes.
+ * Re-reads the type of stored adverts with today's title rules. Marketplace's type is a pure function
+ * of the title (sources/facebook.ts), so this is exactly what a fresh read would store — but the
+ * browser only re-reads a slice (2.155 of 7.025 on 2026-10-08), and until then "2 habitaciones 1 baño
+ * Casa" stayed a room: two thirds of the public `habitacion` type were whole homes. On every portal,
+ * a title that opens with a residence of beds is a room whatever the menu said.
  */
-export async function retypeStoredFacebookOffers(): Promise<{ offers: number; properties: number }> {
-  const slim = await RentalListingModel.find({ "offers.source": "facebook" })
+export async function retypeStoredRentalOffers(): Promise<{ offers: number; properties: number }> {
+  const slim = await RentalListingModel.find({})
     .select({ _id: 0, key: 1, "offers.source": 1, "offers.title": 1, "offers.identity.propertyType": 1 })
     .lean() as unknown as Array<{ key: string; offers?: Array<{ source: string; title?: string; identity?: { propertyType?: string } }> }>;
+  // Facebook's whole type comes from the title; on every portal a title that opens with a
+  // residence of beds outranks the menu the seller picked ("Residencia Estudiantil" filed as a house).
+  const typeToday = (offer: { source: string; title?: string; identity?: { propertyType?: string } }): string | undefined =>
+    offer.source === "facebook" ? inferPropertyType(String(offer.title || ""))
+      : opensWithResidence(String(offer.title || "")) ? "habitacion" : offer.identity?.propertyType;
   const stale = (offer: { source: string; title?: string; identity?: { propertyType?: string } }) =>
-    offer.source === "facebook" && !!offer.identity?.propertyType && offer.identity.propertyType !== inferPropertyType(String(offer.title || ""));
+    !!offer.identity?.propertyType && offer.identity.propertyType !== typeToday(offer);
   const affected = slim.filter((row) => (row.offers || []).some(stale));
   let offers = 0;
   const operations = [];
@@ -375,7 +381,7 @@ export async function retypeStoredFacebookOffers(): Promise<{ offers: number; pr
       const next = property.offers.map((offer) => {
         if (!stale(offer) || !offer.identity) return offer;
         changed++;
-        return { ...offer, identity: { ...offer.identity, propertyType: inferPropertyType(offer.title) } };
+        return { ...offer, identity: { ...offer.identity, propertyType: typeToday(offer) as RentalPropertyType } };
       });
       if (!changed) continue;
       offers += changed;
