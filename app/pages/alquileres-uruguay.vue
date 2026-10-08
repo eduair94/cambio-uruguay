@@ -549,12 +549,8 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                       :preferred="displayOffer(property)"
                       :title="property.title"
                     />
-                    <p class="rental-card__meta">
-                      {{
-                        t('seen', {
-                          date: dateLabel(displayOffer(property)?.lastSeen || property.lastSeen),
-                        })
-                      }}
+                    <p class="rental-card__meta" data-testid="rental-card-dates">
+                      {{ cardDates(property) }}
                     </p>
                   </div>
                 </div>
@@ -717,6 +713,7 @@ import {
   RENTAL_SOURCE_LABEL,
   RENTAL_SORTS,
   normalizeRentalQuery,
+  rentalFreshness,
   rentalQueryToParams,
   rentalPriceLabel,
   staleRentalSources,
@@ -1410,6 +1407,28 @@ const expensesLabel = (property: RentalProperty) => {
 }
 const publishedGuarantees = (property: RentalProperty) =>
   (displayOffer(property)?.guarantees ?? []).filter(g => RENTAL_GUARANTEE_PUBLISHED.includes(g))
+/**
+ * "Publicado ayer · visto 08/10". The age comes first because it is what "más recientes" sorts by
+ * and `dias` filters on; the last reading stays, shorter, as proof the advert is still up. Measured
+ * against the harvest's `generatedAt`, so the server render and the hydration agree.
+ */
+const cardDates = (property: RentalProperty) => {
+  const seen = dateLabel(displayOffer(property)?.lastSeen || property.lastSeen)
+  const fresh = meta.value?.generatedAt ? rentalFreshness(property, meta.value.generatedAt) : null
+  if (!fresh) return t('seen', { date: seen })
+  const months = Math.round(fresh.days / 30)
+  const age =
+    fresh.days === 0
+      ? t('ageToday')
+      : fresh.days === 1
+        ? t('ageYesterday')
+        : fresh.days < 30
+          ? t('ageDays', { n: fresh.days })
+          : months <= 1
+            ? t('ageMonth')
+            : t('ageMonths', { n: months })
+  return `${t(fresh.published ? 'publishedAge' : 'firstSeenAge', { age })} · ${t('seenShort', { date: seen })}`
+}
 const sellerLabel = (property: RentalProperty) => {
   const offer = displayOffer(property)
   const type = t(

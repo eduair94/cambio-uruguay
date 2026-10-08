@@ -771,14 +771,40 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   return params
 }
 
-/** "hoy", "ayer", "hace 5 días" — from an ISO date, without pulling in a date library. */
-export function rentalAgeLabel(iso: string | null | undefined, today = new Date()): string {
-  if (!iso || !/^\d{4}-\d{2}-\d{2}/.test(iso)) return ''
+/**
+ * Whole UTC days from an advert date to `reference`, never negative (a portal's clock can run
+ * ahead of ours). The page passes the harvest's `generatedAt`, not the reader's clock, so the
+ * server render and the hydration say the same thing.
+ */
+export function rentalAgeDays(iso: string | null | undefined, reference: string): number | null {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}/.test(iso) || !/^\d{4}-\d{2}-\d{2}/.test(reference)) return null
   const days = Math.round(
-    (Date.parse(`${today.toISOString().slice(0, 10)}T00:00:00Z`) -
+    (Date.parse(`${reference.slice(0, 10)}T00:00:00Z`) -
       Date.parse(`${iso.slice(0, 10)}T00:00:00Z`)) /
       86_400_000
   )
+  return Number.isFinite(days) ? Math.max(0, days) : null
+}
+
+/**
+ * How old a property's advert is, by `freshAt` — what "más recientes" sorts by and `dias` filters
+ * on. `published` says whether a portal gave the date: otherwise `freshAt` is the day we first saw
+ * the advert, and the page must not call it a publication date.
+ */
+export function rentalFreshness(
+  property: { freshAt: string; offers: ReadonlyArray<{ publishedAt: string | null }> },
+  reference: string
+): { days: number; published: boolean } | null {
+  const days = rentalAgeDays(property.freshAt, reference)
+  return days === null
+    ? null
+    : { days, published: property.offers.some(offer => Boolean(offer.publishedAt)) }
+}
+
+/** "hoy", "ayer", "hace 5 días" — from an ISO date, without pulling in a date library. */
+export function rentalAgeLabel(iso: string | null | undefined, today = new Date()): string {
+  const days = rentalAgeDays(iso, today.toISOString())
+  if (days === null) return ''
   if (days <= 0) return 'hoy'
   if (days === 1) return 'ayer'
   if (days < 30) return `hace ${days} días`
