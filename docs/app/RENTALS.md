@@ -1,5 +1,16 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Monoambientes de Mercado Libre — 8 de octubre de 2026
+
+La tira de atributos de la tarjeta de ML imprime "2 dormitorios" pero omite "0 dormitorios": los
+monoambientes llegaban sin dormitorios y el filtro "Monoambiente" (`bedrooms=0`) no encontraba
+ninguno. Medido el 2026-10-08: ML tenía **cero** propiedades con 0 dormitorios, y de las 2.271
+viviendas de ML sin dormitorios, 1.740 decían "monoambiente" en el título. `toRawRental`
+(`sources/mercadolibre.ts`, `studioFromTitle`) pone el 0 sólo si la tira no dijo nada, la propiedad
+es apartamento o casa y el título dice "monoambiente" sin contar dormitorios ("monoambientes y
+apartamentos de 1 dormitorio" son dos unidades). Va en el aviso crudo, antes del dedupe, porque ese
+día ningún grupo multi-portal tenía un aviso de ML así: no separa ninguno.
+
 ## Mercado Libre en el mapa — 8 de octubre de 2026
 
 Medido el 2026-10-08 sobre las propiedades vistas en los últimos 10 días: Mercado Libre, la fuente
