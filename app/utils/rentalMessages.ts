@@ -203,6 +203,18 @@ export const rentalMessages = {
     pets: 'Admite mascotas',
     parking: 'Con garaje',
     furnished: 'Amueblado',
+    unfurnished: 'Sin muebles',
+    furniture: 'Muebles',
+    furnitureAny: 'Con o sin muebles',
+    furnitureHint:
+      'Según lo que dice cada aviso. Los que no lo aclaran no aparecen en esta búsqueda.',
+    term: 'Plazo',
+    termAny: 'Todos los plazos',
+    termAnnual: 'Anual (todo el año)',
+    termWinter: 'Invernal (marzo a diciembre)',
+    winter: 'Invernal',
+    termHint:
+      '«Anual» incluye los avisos que no aclaran el plazo, que es el alquiler común. Los de temporada (por noche, quincena o mes de verano) no se publican: su precio no es mensual y no se puede comparar.',
     amenities: 'Comodidades',
     amenitiesHint:
       'Solo InfoCasas publica comodidades como dato. Un aviso sin la marca puede tenerlas: confirmalo con quien publica.',
@@ -554,6 +566,18 @@ export const rentalMessages = {
     pets: 'Pets allowed',
     parking: 'With parking',
     furnished: 'Furnished',
+    unfurnished: 'Unfurnished',
+    furniture: 'Furniture',
+    furnitureAny: 'Furnished or not',
+    furnitureHint:
+      'As each listing states it. Listings that do not say are left out of this search.',
+    term: 'Lease',
+    termAny: 'Any lease',
+    termAnnual: 'Year-round',
+    termWinter: 'Winter (March to December)',
+    winter: 'Winter lease',
+    termHint:
+      '“Year-round” includes listings that do not state a period, the usual lease. Summer stays (by the night, fortnight or month) are not published: their price is not monthly and cannot be compared.',
     amenities: 'Amenities',
     amenitiesHint:
       'Only InfoCasas publishes amenities as data. A listing without the mark may still have them: check with the advertiser.',
@@ -907,6 +931,17 @@ export const rentalMessages = {
     pets: 'Aceita animais',
     parking: 'Com garagem',
     furnished: 'Mobiliado',
+    unfurnished: 'Sem mobília',
+    furniture: 'Mobília',
+    furnitureAny: 'Com ou sem mobília',
+    furnitureHint: 'Conforme diz cada anúncio. Os que não informam ficam fora desta busca.',
+    term: 'Prazo',
+    termAny: 'Todos os prazos',
+    termAnnual: 'Anual (o ano todo)',
+    termWinter: 'Inverno (março a dezembro)',
+    winter: 'Inverno',
+    termHint:
+      '“Anual” inclui os anúncios que não informam o prazo, que é o aluguel comum. Os de temporada (por noite, quinzena ou mês de verão) não são publicados: o preço não é mensal e não dá para comparar.',
     amenities: 'Comodidades',
     amenitiesHint:
       'Só o InfoCasas publica comodidades como dado. Um anúncio sem a marca pode tê-las: confirme com o anunciante.',

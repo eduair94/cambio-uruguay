@@ -17,6 +17,7 @@ import { harvestMercadoLibre } from "./mercadolibre";
 // each flat across networks. See ./social/index.ts.
 import { harvestSocial } from "./social";
 import type { RentalSourceResult } from "./types";
+import { applyRentalTextFacts } from "../textFacts";
 
 export type { RentalSourceResult } from "./types";
 
@@ -40,6 +41,9 @@ export async function harvestRentalMarket(mode: "full" | "fast", usdUyu: number)
     harvestSocial(mode, usdUyu),
   ]);
   const runs: RentalSourceResult[] = [mercadolibre, infocasas, facebook, casasweb, elpais, ...social];
+  // What each advert's own words say about furniture and the contract period (textFacts.ts), the
+  // same rule for every portal.
+  for (const run of runs) run.listings = run.listings.map(applyRentalTextFacts);
 
   const listings = runs.flatMap(run => run.listings);
   await enrichAgencyContacts(listings, { maxProfiles: mode === "fast" ? 12 : 80 });

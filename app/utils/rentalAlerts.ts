@@ -115,6 +115,10 @@ const searchKeys = new Set([
   'pets',
   'parking',
   'furnished',
+  'sinMuebles',
+  'unfurnished',
+  'plazo',
+  'term',
   'garantia',
   'guarantees',
   'gc',
@@ -177,6 +181,8 @@ const searchBooleans = new Set([
   'pets',
   'parking',
   'furnished',
+  'sinMuebles',
+  'unfurnished',
   'gc',
   'withExpenses',
   'dueno',
@@ -216,7 +222,7 @@ export function normalizeRentalAlertFilters(
   kind: RentalAlertKind,
   input: unknown
 ): RentalAlertFilters {
-  if (!rentalAlertRecord(input) || Object.keys(input).length > 45)
+  if (!rentalAlertRecord(input) || Object.keys(input).length > 50)
     throw new RentalAlertValidationError('invalid_alert')
   const allowed = kind === 'rental-search' ? searchKeys : opportunityKeys
   for (const [key, value] of Object.entries(input)) {

@@ -84,6 +84,9 @@ export interface RentalAdvertiserFields {
 
 export type RentalCurrency = "UYU" | "USD";
 
+/** A contract period an advert offers in its own words (textFacts.ts). Summer stays are never published. */
+export type RentalTerm = "anual" | "invernal";
+
 /** Original, per-advert facts. Never reconstructed from the merged property's attributes. */
 export interface RentalOfferIdentity {
   version: 1;
@@ -131,8 +134,15 @@ export interface RentalOffer extends RentalAdvertiserFields {
   identity?: RentalOfferIdentity;
   /** Explicit count only; null means the publisher does not state it. */
   parkingSpaces: number | null;
-  /** A positive published amenity; absence is not an unfurnished claim. */
-  furnished: true | null;
+  /**
+   * true/false = the advert says furnished / unfurnished (a portal field or its own words,
+   * textFacts.ts); null = it says neither, or contradicts itself. Absence is never "unfurnished".
+   */
+  furnished: boolean | null;
+  /** The portal's own structured "furnished" (InfoCasas); kept apart so re-reading the text is idempotent. */
+  furnishedPortal?: boolean;
+  /** Contract periods the advert offers in its own words; empty = not stated (textFacts.ts). */
+  terms?: RentalTerm[];
   source: RentalSource;
   /** `<source>:<id>` — stable across runs, the upsert key inside a property. */
   listingId: string;
@@ -189,7 +199,9 @@ export interface RentalOffer extends RentalAdvertiserFields {
 /** A physical property, as far as we can tell. One row on the site. */
 export interface RentalProperty {
   parkingSpaces: number | null;
-  furnished: true | null;
+  furnished: boolean | null;
+  /** Every contract period any of its adverts offers; empty or absent (legacy rows) = none stated. */
+  terms?: RentalTerm[];
   /** Deterministic id derived from the dedupe key — stable while the property stays published. */
   key: string;
   title: string;
@@ -265,7 +277,10 @@ export interface RawRental extends RentalAdvertiserFields {
   description?: string;
   details?: RentalOfferDetails;
   parkingSpaces: number | null;
-  furnished: true | null;
+  furnished: boolean | null;
+  /** The portal's structured "furnished" (InfoCasas' facility), before the text is read. */
+  furnishedPortal?: boolean;
+  terms?: RentalTerm[];
   source: RentalSource;
   listingId: string;
   url: string;

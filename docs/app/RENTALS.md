@@ -1,5 +1,41 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Plazo (anual o invernal), con o sin muebles, y los que buscan — 9 de octubre de 2026
+
+Un lector en r/uruguay: "vi gente que se ofrece para alquilar y aparece como alquiler" y "estaría
+bueno separar por anuales, temporada, invernales, con y sin mueble". Medido ese día sobre las
+63.193 viviendas vistas en diez días:
+
+- **Los que buscan.** 12 avisos publicados eran de alguien BUSCANDO: "Busco Casa", "YO BUSCO UN
+  MONOAMBIENTE", "Necesito urgente apartamento", "Hola buenas noches estoy buscando alquiler", una
+  inmobiliaria que "busca casa con depósito". La regla vieja sólo frenaba "busco… alquil".
+  `isWantedAdvert` (`classes/rentals/normalize.ts`): el verbo de búsqueda abriendo el título (después
+  de un saludo) o, más adentro, en un título que no ofrece nada; "para quienes buscan" es el aviso de
+  un dueño, "busco inquilino" y "necesito alquilar mi casa" también, y "se busca traspaso" ofrece el
+  contrato. Lo guardado sale solo: `dropRejectedStoredRentals` relee los títulos en cada corrida.
+- **Invernal se publica, temporada no.** Hasta ese día se descartaban las dos. El contrato invernal
+  (marzo a diciembre en la costa) cobra un MES, así que entra marcado: `rentalPeriodEvidence` separa
+  `stay` (por noche, quincena o temporada de verano: nunca se publica, su precio no es mensual) de
+  `winter`; "temporada invernal" es invierno. `shortTerm` sigue incluyendo el invierno, así que
+  comparativas, oportunidades, cohortes por zona y el salario mínimo siguen midiendo sólo alquileres
+  de todo el año (y `rentalAdapter.ts` de oportunidades saca además el invierno solo).
+- **Muebles, de las palabras del aviso.** `furnished` era sólo la facility de InfoCasas (2.156); los
+  títulos decían "amueblado" en 2.551 más, las descripciones en 2.152 y "sin muebles" en 492.
+  `furnishedFromText` (`classes/rentals/textFacts.ts`): manda el título, la descripción habla si el
+  título calla, y un aviso que se contradice o ofrece las dos ("con o sin amoblar") no dice nada.
+  "Cocina con muebles aéreos y bajo mesada" es una cocina, no un amueblado. Ahora `furnished` puede
+  ser `false`; la facility de InfoCasas viaja aparte (`furnishedPortal`) para que releer el texto sea
+  idempotente.
+- **Dónde se aplica.** En cada aviso al leerlo (`applyRentalTextFacts` en `sources/index.ts`, igual
+  para todos los portales) y sobre lo guardado en la corrida completa (`refreshStoredRentalTextFacts`,
+  recorre las descripciones con cursor). Para aplicar una regla nueva sin esperar la completa:
+  `node dist/sync_rentals.js --reapply-text`.
+- **La página.** En "Qué buscás", siempre a la vista: **Plazo** (`plazo=anual|invernal`; "anual"
+  incluye los avisos que no aclaran, que son el alquiler común) y **Muebles** (`furnished=1` o
+  `sinMuebles=1`: sólo los avisos que lo DICEN). El checkbox "Amueblado" estaba dentro de "Más
+  filtros" y el lector no lo encontró. La tarjeta muestra "Sin muebles" e "Invernal", la ficha suma
+  la fila "Plazo", y las alertas aceptan los dos criterios.
+
 ## Precios que parecen por noche — 8 de octubre de 2026
 
 Viviendas en dólares a US$ 195–400 en Punta del Este y José Ignacio. Leídas las descripciones, son
@@ -1258,14 +1294,13 @@ Antes de comparar, todo pasa por `normalize.ts`:
 - Un barrio que repite el departamento (`Montevideo, Montevideo`) no es un barrio: dejarlo partía la
   misma oficina de 25 de Mayo 500 en dos filas.
 - Precios: **manda el último separador**. `$ 4.500` es 4500, nunca 4,50.
-- Se descartan ventas, "busco alquiler", alquileres por día/temporada/invernales y cualquier precio que no
+- Se descartan ventas, avisos de quien busca (`isWantedAdvert`), alquileres por día/temporada y cualquier precio que no
   pueda ser una mensualidad (`isPlausibleRent`: pisos por tipo, hasta $900.000; la excepción residencial
   de InfoCasas admite desde $3.000 UYU sólo con contexto propio validado).
-- Un contrato invernal puede tener un precio mensual plausible. Se reconoce su declaración
-  explícita en el título y, para InfoCasas, también «alquiler invernal» en la descripción cuando
-  no se menciona una opción anual. «Jardín de invierno» o ropa de cama no son plazos. Una
-  descripción con opciones anual e invernal no prueba qué precio corresponde a cada una; no se
-  inventa esa atribución ni se copia el texto.
+- Un contrato invernal tiene precio mensual: se publica marcado (`terms: ["invernal"]`, desde el
+  9/10/2026; antes se descartaba). Se reconoce en el título o como «alquiler invernal» en la
+  descripción. «Jardín de invierno» o ropa de cama no son plazos. Una descripción con opciones anual
+  e invernal lleva los dos plazos y no prueba qué precio corresponde a cada uno.
 
 Todo en pesos con **una sola** cotización por corrida (mediana de venta de las casas de cambio, ni
 BCU ni interbancario): dos harvesters con dos dólares distintos discreparían sobre el mismo aviso.

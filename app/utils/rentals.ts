@@ -126,6 +126,13 @@ export type RentalSellerType = 'inmobiliaria' | 'particular' | 'desconocido'
 
 export type RentalCurrency = 'UYU' | 'USD'
 
+/**
+ * Plazo de contrato que el aviso ofrece con sus palabras (classes/rentals/textFacts.ts). Los de
+ * temporada (por noche, quincena o mes de verano) no se publican: su precio no es mensual.
+ */
+export type RentalTerm = 'anual' | 'invernal'
+export type RentalTermFilter = '' | RentalTerm
+
 /** Facts belonging to this advert alone; unavailable on legacy and summary-only sources. */
 export interface RentalOfferDetails {
   description: string
@@ -159,7 +166,10 @@ export interface RentalOffer extends AdvertiserMetadata {
   sellerType: RentalSellerType
   image: string | null
   parkingSpaces: number | null
-  furnished: true | null
+  /** true/false = el aviso dice amueblado / sin muebles; null = no lo dice o se contradice. */
+  furnished: boolean | null
+  /** Plazos que el aviso ofrece con sus palabras; vacío o ausente = no lo dice. */
+  terms?: RentalTerm[]
   petsAllowed?: true | null
   guarantees?: RentalGuarantee[]
   publishedAt: string | null
@@ -253,8 +263,13 @@ export interface RentalProperty {
   area: number | null
   /** Only a count explicitly published by a portal; absence never means no parking. */
   parkingSpaces: number | null
-  /** Only a published affirmative; null means the advert does not say. */
-  furnished: true | null
+  /**
+   * true/false = sus avisos dicen amueblado / sin muebles (y ninguno lo contrario); null = no lo
+   * dicen, o se contradicen. La ausencia nunca es "sin muebles".
+   */
+  furnished: boolean | null
+  /** Plazos que ofrece alguno de sus avisos (anual, invernal); vacío o ausente = no lo dicen. */
+  terms?: RentalTerm[]
   /**
    * ¿El aviso DICE que se aceptan mascotas?
    *
@@ -496,7 +511,16 @@ export interface RentalQuery {
   /** Sólo las que el portal publica como "se aceptan mascotas". Ver `petsAllowed`. */
   pets: boolean
   parking: boolean
+  /** Sólo las que el aviso dice amuebladas (`furnished=1`). */
   furnished: boolean
+  /** Sólo las que el aviso dice sin muebles (`sinMuebles=1`). Opcional para consultas armadas a mano. */
+  unfurnished?: boolean
+  /**
+   * Plazo (`plazo`): 'invernal' = las que ofrecen contrato de invierno; 'anual' = todas menos las que
+   * SÓLO ofrecen invierno (el aviso que no aclara es el alquiler común, de todo el año). Las de
+   * temporada (por noche, quincena o mes de verano) no se publican: su precio no es mensual.
+   */
+  term?: RentalTermFilter
   /** Garantías pedidas. Una propiedad entra si acepta AL MENOS UNA de las marcadas. */
   guarantees: RentalGuarantee[]
   /** Comodidades pedidas (ver `rentalAmenities.ts`). La propiedad tiene que publicarlas TODAS. */
@@ -581,6 +605,22 @@ const toInt = (value: unknown): number | null => {
   return parsed === null ? null : Math.trunc(parsed)
 }
 const enabled = (value: unknown): boolean => scalar(value) === true || clean(value) === '1'
+
+export function normalizeRentalTermFilter(value: unknown): RentalTermFilter {
+  const raw = clean(value).toLowerCase()
+  return raw === 'anual' || raw === 'invernal' ? raw : ''
+}
+
+/** 'invernal' = ofrece invierno; 'anual' = todo menos el invierno solo (el que no aclara es anual). */
+export function rentalOfferTermMatches(
+  terms: readonly RentalTerm[] | undefined,
+  filter: RentalTermFilter
+): boolean {
+  const list = Array.isArray(terms) ? terms : []
+  if (filter === 'invernal') return list.includes('invernal')
+  if (filter === 'anual') return list.includes('anual') || !list.includes('invernal')
+  return true
+}
 const positive = (value: unknown): number | null => {
   const parsed = toNumber(value)
   return parsed !== null && parsed > 0 ? parsed : null
@@ -725,7 +765,10 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     multi: enabled(input.multi),
     pets: enabled(input.pets),
     parking: enabled(input.parking),
-    furnished: enabled(input.furnished),
+    // Pedir las dos cosas es no pedir ninguna.
+    furnished: enabled(input.furnished) && !enabled(input.sinMuebles ?? input.unfurnished),
+    unfurnished: enabled(input.sinMuebles ?? input.unfurnished) && !enabled(input.furnished),
+    term: normalizeRentalTermFilter(input.plazo ?? input.term),
     guarantees: parseGuarantees(input.garantia ?? input.guarantees),
     amenities: normalizeRentalAmenities(input.comodidades ?? input.amenities),
     withExpenses: enabled(input.gc ?? input.withExpenses),
@@ -779,6 +822,8 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   if (query.pets) params.pets = '1'
   if (query.parking) params.parking = '1'
   if (query.furnished) params.furnished = '1'
+  if (query.unfurnished) params.sinMuebles = '1'
+  if (query.term) params.plazo = query.term
   if (query.guarantees.length) params.garantia = query.guarantees.join(',')
   if (query.amenities.length) params.comodidades = query.amenities.join(',')
   if (query.withExpenses) params.gc = '1'
@@ -900,6 +945,8 @@ export function rentalOfferMatchesQuery(
   if (!advertiserMatches(offer, query)) return false
   if (query.pets && offer.petsAllowed !== true) return false
   if (query.furnished && offer.furnished !== true) return false
+  if (query.unfurnished && offer.furnished !== false) return false
+  if (query.term && !rentalOfferTermMatches(offer.terms, query.term)) return false
   if (
     query.parking &&
     (typeof offer.parkingSpaces !== 'number' ||
@@ -1167,6 +1214,7 @@ export function buildRentalFilter(
   if (query.pets) nonLocation.petsAllowed = true
   if (query.parking) nonLocation.parkingSpaces = { $gte: 1 }
   if (query.furnished) nonLocation.furnished = true
+  if (query.unfurnished) nonLocation.furnished = false
   // AL MENOS UNA de las marcadas: quien tiene ANDA y también puede pagar una póliza quiere ver las
   // dos. Pedir que las acepte todas dejaría casi nada y no es lo que nadie busca.
   if (query.guarantees.length) nonLocation.guarantees = { $in: query.guarantees }
@@ -1181,6 +1229,10 @@ export function buildRentalFilter(
   // Group-level unions remain useful prefilters but cannot establish an offer's own terms.
   if (query.pets) offer.petsAllowed = true
   if (query.furnished) offer.furnished = true
+  if (query.unfurnished) offer.furnished = false
+  if (query.term === 'invernal') offer.terms = 'invernal'
+  // Todo menos el invierno solo: lo que dice "anual", y lo que no aclara.
+  if (query.term === 'anual') offer.$or = [{ terms: 'anual' }, { terms: { $ne: 'invernal' } }]
   if (query.parking) offer.parkingSpaces = { $type: 'number', $gte: 1, $lte: Number.MAX_VALUE }
   if (query.guarantees.length) offer.guarantees = { $type: 'array', $in: query.guarantees }
   if (query.withExpenses || query.expensesMax !== null || query.monthlyMax !== null)
@@ -1374,6 +1426,15 @@ function rentalOfferExpression(query: RentalQuery, usdUyu: number): Record<strin
   if (query.owner || query.agency) conditions.push(advertiserExpression(query, '$$offer.'))
   if (query.pets) conditions.push({ $eq: ['$$offer.petsAllowed', true] })
   if (query.furnished) conditions.push({ $eq: ['$$offer.furnished', true] })
+  if (query.unfurnished) conditions.push({ $eq: ['$$offer.furnished', false] })
+  if (query.term) {
+    const terms = { $cond: [{ $isArray: '$$offer.terms' }, '$$offer.terms', []] }
+    conditions.push(
+      query.term === 'invernal'
+        ? { $in: ['invernal', terms] }
+        : { $or: [{ $in: ['anual', terms] }, { $not: [{ $in: ['invernal', terms] }] }] }
+    )
+  }
   if (query.parking)
     conditions.push(
       { $isNumber: '$$offer.parkingSpaces' },
@@ -1455,6 +1516,7 @@ export function rentalPublicStages(
     'sources.1',
     'petsAllowed',
     'furnished',
+    'terms',
     'parkingSpaces',
     'guarantees',
     'priceUyu',
@@ -1552,7 +1614,23 @@ export function rentalPublicStages(
       $set: {
         sources: { $setUnion: ['$offers.source', []] },
         petsAllowed: { $cond: [{ $in: [true, '$offers.petsAllowed'] }, true, null] },
-        furnished: { $cond: [{ $in: [true, '$offers.furnished'] }, true, null] },
+        // Amueblada si algún aviso lo dice y ninguno dice lo contrario (y al revés).
+        furnished: {
+          $cond: [
+            { $in: [true, '$offers.furnished'] },
+            { $cond: [{ $in: [false, '$offers.furnished'] }, null, true] },
+            { $cond: [{ $in: [false, '$offers.furnished'] }, false, null] },
+          ],
+        },
+        terms: {
+          $reduce: {
+            input: '$offers',
+            initialValue: [],
+            in: {
+              $setUnion: ['$$value', { $cond: [{ $isArray: '$$this.terms' }, '$$this.terms', []] }],
+            },
+          },
+        },
         parkingSpaces: { $max: '$offers.parkingSpaces' },
         guarantees: {
           $reduce: {
@@ -1618,6 +1696,8 @@ export function rentalOfferStages(query: RentalQuery, usdUyu: number) {
     !query.agency &&
     !query.pets &&
     !query.furnished &&
+    !query.unfurnished &&
+    !query.term &&
     !query.parking &&
     !query.guarantees.length &&
     query.sort !== 'total' &&

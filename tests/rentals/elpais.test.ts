@@ -29,9 +29,14 @@ describe("El País offline period and metadata checks", () => {
   it.each([
     ["6a41db4c3b79e8db94dc3ac7", "ALQUILER APTO PUNTA DEL ESTE", "Disponible a la fecha, segunda quincena de Enero 2026"],
     ["6a41f4373b79e8db94dcb41d", "mansa primera linea", "Disponible en alquiler en febrero 2023"],
-    ["6a42b0f33b79e8db94e28523", "Apartamento en alquiler c/ cochera en Playa Mansa", "Disponible en alquiler invernal desde el 6 de abril al 30 de noviembre"],
   ])("rejects an explicitly bounded stay despite active rental classification: %s", (_id, title, description) => {
     expect(elpaisToRawRental({ ...base, _id, title, description })).toBeNull();
+  });
+
+  it("publishes a winter contract, a month's rent, to be marked as such (textFacts.ts)", () => {
+    const title = "Apartamento en alquiler c/ cochera en Playa Mansa";
+    const description = "Disponible en alquiler invernal desde el 6 de abril al 30 de noviembre";
+    expect(elpaisToRawRental({ ...base, title, description })).toMatchObject({ price: 550, currency: "USD" });
   });
 
   it.each([

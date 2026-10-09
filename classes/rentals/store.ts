@@ -20,7 +20,8 @@ import {
 import { RentalMetaModel } from "../models/RentalMeta";
 import { inferPropertyType, looksLikeRentalAdvert, opensWithResidence } from "./normalize";
 import { detachedRentalKey, partitionRentalOffers, propertyFromRentalOffers } from "./reconcile";
-import { RENTAL_FULL_META_KEY, RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalPropertyType, type RentalSource } from "./types";
+import { RENTAL_FULL_META_KEY, RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalPropertyType, type RentalSource, type RentalTerm } from "./types";
+import { combineFurnished, furnishedFromText, rentalTermsFromText } from "./textFacts";
 
 const CHUNK = 400;
 
@@ -383,6 +384,81 @@ export async function retypeStoredRentalOffers(): Promise<{ offers: number; prop
         if (!stale(offer) || !offer.identity) return offer;
         changed++;
         return { ...offer, identity: { ...offer.identity, propertyType: typeToday(offer) as RentalPropertyType } };
+      });
+      if (!changed) continue;
+      offers += changed;
+      const row = recomputeFromOffers(property, next);
+      operations.push({ updateOne: { filter: { key: property.key }, update: { $set: { ...structuredClone(row) } } } });
+    }
+  }
+  for (let index = 0; index < operations.length; index += CHUNK) {
+    await RentalListingModel.bulkWrite(operations.slice(index, index + CHUNK), { ordered: false });
+  }
+  return { offers, properties: operations.length };
+}
+
+type TextFactsOffer = Pick<RentalOffer, "source" | "title" | "furnished" | "furnishedPortal" | "terms" | "details" | "identity">;
+
+/** The offer's furniture and periods as today's rules read its own words (textFacts.ts). */
+function textFactsToday(offer: TextFactsOffer): { furnished: boolean | null; furnishedPortal: boolean | undefined; terms: RentalTerm[] } {
+  const description = offer.details?.description || offer.identity?.description || "";
+  // Before 2026-10-09 only InfoCasas' structured facility ever set `furnished`, so a stored `true`
+  // without the separate field is that facility.
+  const portal = typeof offer.furnishedPortal === "boolean"
+    ? offer.furnishedPortal
+    : offer.source === "infocasas" ? offer.furnished === true : undefined;
+  return {
+    furnished: combineFurnished(portal, furnishedFromText(String(offer.title || ""), description)),
+    furnishedPortal: portal,
+    terms: rentalTermsFromText(String(offer.title || ""), description),
+  };
+}
+
+const sameTerms = (a: readonly RentalTerm[] | undefined, b: readonly RentalTerm[]): boolean =>
+  (a ?? []).join() === b.join();
+
+/**
+ * Re-reads furniture and contract period on every stored advert with today's rules. A fresh read
+ * applies them on the way in (sources/index.ts), but the partial portals only re-read a slice, and
+ * the reader's filter has to find the home whatever day it was last read. Streams the rows (the
+ * descriptions are heavy) and loads and writes only the few that change.
+ */
+export async function refreshStoredRentalTextFacts(): Promise<{ offers: number; properties: number }> {
+  const cursor = RentalListingModel.find({})
+    .select({
+      _id: 0, key: 1, "offers.source": 1, "offers.title": 1, "offers.furnished": 1, "offers.furnishedPortal": 1,
+      "offers.terms": 1, "offers.details.description": 1, "offers.identity.description": 1,
+    })
+    .lean()
+    .cursor({ batchSize: 500 }) as AsyncIterable<{ key: string; offers?: TextFactsOffer[] }>;
+  const stale = (offer: TextFactsOffer): boolean => {
+    const today = textFactsToday(offer);
+    return (offer.furnished ?? null) !== today.furnished || offer.furnishedPortal !== today.furnishedPortal || !sameTerms(offer.terms, today.terms);
+  };
+  const affected: string[] = [];
+  for await (const row of cursor) {
+    if ((row.offers || []).some(stale)) affected.push(row.key);
+  }
+  let offers = 0;
+  const operations = [];
+  for (let index = 0; index < affected.length; index += CHUNK) {
+    const rows = await RentalListingModel.find({ key: { $in: affected.slice(index, index + CHUNK) } })
+      .select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 })
+      .lean() as unknown as RentalProperty[];
+    for (const property of rows) {
+      if (isRetiredRentalKey(property.key)) continue;
+      let changed = 0;
+      const next = property.offers.map((offer) => {
+        if (!stale(offer)) return offer;
+        changed++;
+        const today = textFactsToday(offer);
+        const { furnishedPortal: _drop, terms: _terms, ...rest } = offer;
+        return {
+          ...rest,
+          furnished: today.furnished,
+          ...(typeof today.furnishedPortal === "boolean" ? { furnishedPortal: today.furnishedPortal } : {}),
+          ...(today.terms.length ? { terms: today.terms } : {}),
+        };
       });
       if (!changed) continue;
       offers += changed;

@@ -353,17 +353,19 @@ describe("Inmuebles El País's offline public-page samples", () => {
 describe("explicit InfoCasas search amenities", () => {
   const base = { id: 123, title: "Apartamento en alquiler", link: "/apartamento/123", price: { amount: 25000, currency: { name: "UYU" } } };
   it("keeps positive garage counts and published furniture; absence stays unknown", () => {
-    expect(infoCasas({ ...base, garage: 2, facilities: [{ id: 69, name: "Amueblada" }] })).toMatchObject({ parkingSpaces: 2, furnished: true });
-    expect(infoCasas({ ...base, garage: 0, facilities: [] })).toMatchObject({ parkingSpaces: null, furnished: null, commonExpenses: null });
+    // The portal's own field is kept apart; the advert's words are read after, for every portal.
+    expect(infoCasas({ ...base, garage: 2, facilities: [{ id: 69, name: "Amueblada" }] })).toMatchObject({ parkingSpaces: 2, furnishedPortal: true });
+    expect(infoCasas({ ...base, garage: 0, facilities: [] })).toMatchObject({ parkingSpaces: null, furnishedPortal: false, furnished: null, commonExpenses: null });
   });
   it("preserves explicit zero common expenses without coercing missing values", () => {
     expect(infoCasas({ ...base, commonExpenses: { amount: 0 } })).toMatchObject({ commonExpenses: 0 });
     expect(infoCasas({ ...base, commonExpenses: { amount: null } })).toMatchObject({ commonExpenses: null });
     expect(infoCasas({ ...base, commonExpenses: { amount: 4500 } })).toMatchObject({ commonExpenses: 4500, commonExpensesCurrency: null });
   });
-  it("rejects a winter-only contract hidden in a normal rental category", () => {
-    expect(infoCasas({ ...base, operation_type_id: 2, title: "Alquiler invernal en Punta del Este" })).toBeNull();
-    expect(infoCasas({ ...base, operation_type_id: 2, description: "Alquiler invernal de abril a noviembre." })).toBeNull();
+  it("publishes a winter-only contract (a month's rent, marked later), not a summer stay", () => {
+    expect(infoCasas({ ...base, operation_type_id: 2, title: "Alquiler invernal en Punta del Este" })).toMatchObject({ listingId: "infocasas:123" });
+    expect(infoCasas({ ...base, operation_type_id: 2, description: "Alquiler invernal de abril a noviembre." })).toMatchObject({ listingId: "infocasas:123" });
+    expect(infoCasas({ ...base, operation_type_id: 2, title: "Alquiler temporada 2027 en Punta del Este" })).toBeNull();
     expect(infoCasas({ ...base, operation_type_id: 2, title: "Alquiler anual", description: "Jardín de invierno." }))
       .toMatchObject({ listingId: "infocasas:123", price: 25000 });
   });

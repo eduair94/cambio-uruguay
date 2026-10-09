@@ -77,6 +77,8 @@ const rows = computed(() => {
       if (q[key] !== null) add(key, `${number(q[key]!)} m²`)
     for (const key of ['pets', 'parking', 'furnished', 'owner', 'multi'] as const)
       if (q[key]) add('features', t(key))
+    if (q.unfurnished) add('features', t('unfurnished'))
+    if (q.term) add('features', t(q.term === 'invernal' ? 'termWinter' : 'termAnnual'))
     if (q.withExpenses) add('features', t('expensesKnown'))
     if (q.hideStayPrices) add('features', t('hideStayPrices'))
     if (q.guarantees.length) add('anyGuarantee', q.guarantees.map(value => t(value)).join(' · '))

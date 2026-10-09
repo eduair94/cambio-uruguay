@@ -215,7 +215,8 @@ export function rentalPageQualityIssues(property: RentalPublicProperty, usdUyu: 
     Number.isFinite(property.bathrooms) && property.bathrooms! > 0,
     Number.isFinite(property.area) && property.area! > 0,
     Number.isFinite(property.parkingSpaces) && property.parkingSpaces! > 0,
-    property.furnished === true,
+    // Saying "sin muebles" is as specific as saying "amueblado".
+    typeof property.furnished === 'boolean',
   ].filter(Boolean).length
   if (attributes < 3) issues.push('insufficient_specific_attributes')
   if (!rentalPhotos(property).length) issues.push('missing_photo')

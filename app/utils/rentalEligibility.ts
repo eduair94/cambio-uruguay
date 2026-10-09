@@ -62,10 +62,24 @@ export function rentalPeriodEvidence(
 ): {
   rental: boolean
   monthly: boolean
+  /** Any non-annual period, winter included: what comparisons and shortlists leave out. */
   shortTerm: boolean
+  /** Priced per night, week, fortnight or summer season: never a month's rent, never published. */
+  stay: boolean
+  /** A winter contract (March to December on the coast): a month's rent, published and marked. */
+  winter: boolean
+  /** The advert offers a year-round contract (it may offer a winter one as well). */
+  annual: boolean
 } {
-  const heading = plain(title)
-  const detail = plain(description)
+  // "Temporada invernal", "temporal invernal", "temporada de invierno" name the winter contract,
+  // not a summer stay: read as "invernal" before the stay words are looked for.
+  const winterSeason = (value: string): string =>
+    value.replace(
+      /\b(?:temporada|temporal|temporario|temporaria)\s+(?:de\s+)?(?:invierno|invernal)\b/g,
+      'invernal'
+    )
+  const heading = winterSeason(plain(title))
+  const detail = winterSeason(plain(description))
   const text = `${heading}\n${detail}`
   const rental = affirmed(
     text,
@@ -104,7 +118,7 @@ export function rentalPeriodEvidence(
   const headingStay =
     affirmed(
       heading,
-      /\b(?:temporada|temporal|temporario|temporaria|turistico|invernal|(?:por|x)\s+(?:dias?|noches?|semanas?|quincenas?)|la\s+noche|fin de semana)\b/
+      /\b(?:temporada|temporal|temporario|temporaria|turistico|(?:por|x)\s+(?:dias?|noches?|semanas?|quincenas?)|la\s+noche|fin de semana)\b/
     ) ||
     // "Segunda quincena de enero", "Alquiler de verano", "Alquiler enero 2 dormitorios": public
     // titles on 2026-10-07, priced per stay, that the directory showed beside annual rents.
@@ -119,18 +133,37 @@ export function rentalPeriodEvidence(
   const describedStay =
     affirmed(
       detail,
-      /\b(?:alquiler(?:es)?|alquilo|alquila|alquilar|renta|arrendamiento)\s+(?:(?:solo|solamente|exclusivamente|de|por|durante|el|en)\s+){0,3}(?:temporari[oa]s?|temporales?|turistic[oa]s?|invernal(?:es)?|invierno|temporada|(?:x\s+)?(?:dia|noche|semana|quincena)|fin de semana)\b/
+      /\b(?:alquiler(?:es)?|alquilo|alquila|alquilar|renta|arrendamiento)\s+(?:(?:solo|solamente|exclusivamente|de|por|durante|el|en)\s+){0,3}(?:temporari[oa]s?|temporales?|turistic[oa]s?|temporada|(?:x\s+)?(?:dia|noche|semana|quincena)|fin de semana)\b/
     ) ||
     affirmed(
       detail,
       /\b(?:estadia|alquiler)\s+minim[oa]\s+(?:de\s+)?\d{1,2}\s+(?:dias?|noches?)\b/
     ) ||
     affirmed(detail, /(?:^|\n)\s*(?:temporada\s+20\d{2}|(?:alquiler\s+)?temporario)\b/)
-  const winterTitle = affirmed(heading, /\balquiler\s+(?:(?:de|por|durante|el)\s+){0,3}invierno\b/)
+  // A winter contract (March to December on the coast) quotes a month's rent: published and marked
+  // since 2026-10-09, when a reader asked to tell annual and winter rents apart. It stays shortTerm,
+  // so comparisons, opportunities and shortlists still measure year-round rents only.
+  const winterTitle =
+    affirmed(heading, /\binvernal(?:es)?\b/) ||
+    affirmed(heading, /\balquiler\s+(?:(?:de|por|durante|el)\s+){0,3}invierno\b/)
+  const describedWinter = affirmed(
+    detail,
+    /\b(?:alquiler(?:es)?|alquilo|alquila|alquilar|renta|arrendamiento|contrato|disponible)\s+(?:(?:solo|solamente|exclusivamente|de|por|durante|el|en|anual|[eouy])\s+){0,3}(?:invernal(?:es)?|invierno)\b/
+  )
+  const stay = pricedStay || headingStay || (describedStay && !annual)
   return {
     rental,
     monthly,
-    shortTerm: pricedStay || headingStay || winterTitle || (describedStay && !annual),
+    shortTerm: stay || winterTitle || (describedWinter && !annual),
+    stay,
+    winter: winterTitle || describedWinter,
+    annual:
+      annual ||
+      affirmed(heading, /\b(?:anual(?:es)?|todo el ano)\b/) ||
+      affirmed(
+        detail,
+        /\b(?:alquiler(?:es)?|alquilo|alquila|contrato|disponible)\s+(?:(?:de|por|para|en|tipo)\s+){0,2}(?:anual(?:es)?|todo el ano)\b/
+      ),
   }
 }
 

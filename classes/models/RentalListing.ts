@@ -45,6 +45,8 @@ const RentalListingSchema = new Schema(
      * y sólo persiste el de las ofertas, que son Mixed. Lista vacia = el aviso no lo dice.
      */
     guarantees: { type: [String], default: [] },
+    /** Contract periods the adverts offer in their own words (anual, invernal); empty = not stated. */
+    terms: { type: [String], default: [] },
     offers: { type: [Schema.Types.Mixed], default: [] },
     /** Official area (INE barrio / UTE locality), written only by currency-property-zones with `$set`. */
     officialZone: { type: Schema.Types.Mixed, default: undefined },
