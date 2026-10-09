@@ -1122,7 +1122,10 @@ export default defineNuxtConfig({
           ],
         },
         client: {
-          installPrompt: true,
+          // plugins/pwa-install.client.ts owns the install button. The module's prompt read
+          // localStorage during app init, and where the browser blocks site storage that throws
+          // and aborts the whole Nuxt startup (CAMBIO-URUGUAY-BACKEND-17).
+          installPrompt: false,
           // Our pwa-updates plugin preserves polling and handles transient network failures.
           periodicSyncForUpdates: 0,
         },
