@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { largePhotoUrl } from '~/utils/photoSizes'
 import { rentalPageMessages } from '~/utils/rentalPageMessages'
 import { rentalPhotos } from '~/utils/rentalPresentation'
 import { RENTAL_SOURCE_LABEL, type RentalPublicProperty } from '~/utils/rentals'
@@ -9,7 +10,7 @@ const { t } = useI18n({ useScope: 'local', messages: rentalPageMessages })
 const photos = computed(() => rentalPhotos(props.property))
 const media = computed(() =>
   photos.value.map((photo, index) => ({
-    url: photo.url,
+    url: largePhotoUrl(photo.url),
     alt: t('photoDescription', { title: photo.title || props.property.title, n: index + 1 }),
     sourceName: RENTAL_SOURCE_LABEL[photo.source],
     sourceUrl: photo.sourceUrl,

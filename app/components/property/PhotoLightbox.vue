@@ -43,6 +43,7 @@
 
 <script setup lang="ts">
 import type { PhotoViewerMedia, PropertyGallerySource, PropertyPhotoRef } from '~/utils/photoViewer'
+import { largePhotoUrl } from '~/utils/photoSizes'
 
 const props = withDefaults(
   defineProps<{
@@ -68,8 +69,9 @@ const media = computed<PhotoViewerMedia[]>(() => {
   // La galería completa reemplaza a lo de la tarjeta sólo si no tiene MENOS fotos: el orden es el
   // mismo, así que la foto abierta sigue siendo la misma.
   const refs = real(gallery && gallery.length >= props.photos.length ? gallery : props.photos)
+  // A pantalla completa, la foto original aunque la tarjeta muestre la chica (`largePhotoUrl`).
   return refs.map((photo, index) => ({
-    url: photo.url,
+    url: largePhotoUrl(photo.url),
     alt: t('photoViewer.photoAlt', { title: props.title, n: index + 1 }),
     sourceName: photo.sourceName,
     sourceUrl: photo.sourceUrl,
