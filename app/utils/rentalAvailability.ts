@@ -9,6 +9,7 @@ const SOURCES = new Set([
   'tiktok',
   'instagram',
   'facebookreels',
+  'alquileresuy',
 ])
 
 export interface RentalAvailabilitySummary {

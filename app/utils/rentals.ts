@@ -78,6 +78,7 @@ export type RentalSource =
   | 'tiktok'
   | 'instagram'
   | 'facebookreels'
+  | 'alquileresuy'
 
 export type RentalPropertyType =
   'apartamento' | 'casa' | 'habitacion' | 'local' | 'oficina' | 'garaje' | 'terreno' | 'otro'
@@ -414,6 +415,7 @@ export const RENTAL_SOURCE_LABEL: Record<RentalSource, string> = {
   tiktok: 'TikTok',
   instagram: 'Instagram',
   facebookreels: 'Facebook Reels',
+  alquileresuy: 'alquileres.uy',
 }
 
 export const RENTAL_TYPE_LABEL: Record<RentalPropertyType, string> = {

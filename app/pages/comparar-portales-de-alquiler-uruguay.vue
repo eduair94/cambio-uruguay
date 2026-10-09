@@ -13,10 +13,11 @@ de vigencia que la búsqueda. Si la lectura falla, el bloque no se muestra — n
     </h1>
     <p class="text-body-2 text-medium-emphasis mb-4" style="max-width: 72ch">
       En Uruguay los alquileres se publican en varios portales a la vez, y no en todos los mismos.
-      Leemos cinco —Mercado Libre, InfoCasas, Inmuebles El País, Casasweb y Facebook Marketplace— y
-      los mostramos en una sola lista con un solo juego de filtros. Esta página compara qué hace
-      cada uno, con las cifras de nuestro propio catálogo y sin esconder en qué te conviene ir
-      directo al portal.
+      Leemos los cinco grandes —Mercado Libre, InfoCasas, Inmuebles El País, Casasweb y Facebook
+      Marketplace—, además de la red de inmobiliarias de alquileres.uy y los videos que las
+      inmobiliarias publican en TikTok, Instagram y Facebook, y los mostramos en una sola lista con
+      un solo juego de filtros. Esta página compara qué hace cada portal, con las cifras de nuestro
+      propio catálogo y sin esconder en qué te conviene ir directo al portal.
     </p>
 
     <!-- El bloque en vivo. Es el argumento entero de la página, así que va antes de la tabla. -->
@@ -55,7 +56,7 @@ de vigencia que la búsqueda. Si la lectura falla, el bloque no se muestra — n
         <VAlert type="info" variant="tonal" density="comfortable" class="mt-4">
           <p class="mb-1">
             <strong>Los portales casi no se superponen.</strong> Si publicaran el mismo inventario,
-            estos cinco números sumarían mucho más que el total. Suman
+            estos números sumarían mucho más que el total. Suman
             {{ numberFormat(sourceSum) }} contra {{ numberFormat(stats.total) }}: sólo
             {{ numberFormat(stats.multiPortal) }}
             {{ stats.multiPortal === 1 ? 'vivienda aparece' : 'viviendas aparecen' }} en más de un
@@ -161,7 +162,7 @@ de vigencia que la búsqueda. Si la lectura falla, el bloque no se muestra — n
           </li>
         </ul>
         <p class="mb-0">
-          Lo honesto es esto: para <em>encontrar</em> conviene mirar los cinco de una vez, y para
+          Lo honesto es esto: para <em>encontrar</em> conviene mirarlos todos de una vez, y para
           <em>cerrar</em> hay que ir al aviso original. Las dos cosas se usan juntas.
         </p>
       </VCardText>
@@ -176,11 +177,15 @@ de vigencia que la búsqueda. Si la lectura falla, el bloque no se muestra — n
       </VCardItem>
       <VCardText class="text-body-2" style="max-width: 75ch">
         <p>
-          La cobertura es parcial y conviene decirlo con nombre y apellido. No leemos Gallito ni las
-          webs propias de cada inmobiliaria, ni los grupos de WhatsApp y los avisos de vidriera, que
-          en el interior siguen moviendo alquileres. Dentro de los cinco portales que sí leemos
-          tampoco garantizamos el catálogo completo: hay categorías que se recorren por tandas y
-          fuentes que pueden dejar de responder durante una corrida.
+          La cobertura es parcial y conviene decirlo con nombre y apellido. Gallito no aparece con
+          ese nombre porque su catálogo de inmuebles es hoy el de Inmuebles El País, que sí leemos.
+          Las webs propias de cada inmobiliaria no se leen una por una: el 9 de octubre de 2026
+          medimos seis —Remax, ACSA, Braglia, Kosak, Lars y Campiglia— y entre el 76 % y el 97 % de
+          sus alquileres ya estaba en los portales que leemos, publicados por ellas mismas. No
+          leemos los grupos de WhatsApp ni los avisos de vidriera, que en el interior siguen
+          moviendo alquileres. Y dentro de los portales que sí leemos tampoco garantizamos el
+          catálogo completo: hay categorías que se recorren por tandas y fuentes que pueden dejar de
+          responder durante una corrida.
         </p>
         <p class="mb-0">
           Los límites medidos de cada fuente se publican junto a la búsqueda, en
@@ -250,7 +255,7 @@ interface Row {
 const COMPARISON: Row[] = [
   {
     what: 'Cuántos portales mirás de una vez',
-    us: 'Cinco, en una sola lista',
+    us: 'Seis portales y tres redes, en una sola lista',
     them: 'El suyo',
     usIcon: YES,
     themIcon: PART,
@@ -271,7 +276,7 @@ const COMPARISON: Row[] = [
   },
   {
     what: 'Un filtro que vale para todos los portales',
-    us: 'Sí: mismos filtros sobre las cinco fuentes',
+    us: 'Sí: mismos filtros sobre todas las fuentes',
     them: 'Sólo sobre su propio inventario',
     usIcon: YES,
     themIcon: PART,
@@ -313,7 +318,7 @@ const COMPARISON: Row[] = [
   },
   {
     what: 'Avisos nuevos por correo o notificación',
-    us: 'Sí, con tus filtros sobre las cinco fuentes',
+    us: 'Sí, con tus filtros sobre todas las fuentes',
     them: 'Sí, con los suyos',
     usIcon: YES,
     themIcon: YES,
@@ -334,7 +339,7 @@ const COMPARISON: Row[] = [
   },
   {
     what: 'Catálogo completo del país',
-    us: 'No: cinco portales, cobertura parcial',
+    us: 'No: seis portales, cobertura parcial',
     them: 'No: sólo lo suyo',
     usIcon: PART,
     themIcon: PART,
@@ -344,8 +349,8 @@ const COMPARISON: Row[] = [
 const REASONS = [
   {
     icon: 'mdi-magnify',
-    title: 'Un filtro, cinco inventarios',
-    body: 'Barrio, dormitorios, precio, garantía, mascotas y estacionamiento se aplican de una vez sobre las cinco fuentes. No hay que repetir la búsqueda cinco veces ni acordarse de qué filtro se puso en cada portal.',
+    title: 'Un filtro, todos los inventarios',
+    body: 'Barrio, dormitorios, precio, garantía, mascotas y estacionamiento se aplican de una vez sobre todas las fuentes. No hay que repetir la búsqueda en cada portal ni acordarse de qué filtro se puso en cada uno.',
     to: '/alquileres-uruguay',
     linkText: 'Abrir la búsqueda',
   },
@@ -374,7 +379,7 @@ const REASONS = [
   {
     icon: 'mdi-bell-outline',
     title: 'Que te avisen, con tus filtros',
-    body: 'Se puede guardar una búsqueda y recibir las novedades por correo o notificación, sobre las cinco fuentes a la vez. Se activa a mano, canal por canal, y se corta desde el mismo correo.',
+    body: 'Se puede guardar una búsqueda y recibir las novedades por correo o notificación, sobre todas las fuentes a la vez. Se activa a mano, canal por canal, y se corta desde el mismo correo.',
     to: '/alquiler-ideal-uruguay',
     linkText: 'Planificar el alquiler del hogar',
   },
@@ -415,14 +420,14 @@ const COMPARE_FAQ: FaqItem[] = [
     id: 'gallito',
     question: '¿Por qué no está Gallito?',
     answer:
-      'No está entre las fuentes que leemos. Tampoco leemos las webs propias de cada inmobiliaria ni los grupos de WhatsApp. La cobertura es parcial y sus límites se publican junto a la búsqueda.',
+      'Está, aunque no con ese nombre: el catálogo de inmuebles de Gallito es hoy el de Inmuebles El País, y ése sí lo leemos. Lo que no leemos son las webs propias de cada inmobiliaria —medimos seis y casi todo lo que publican ya está en los portales— ni los grupos de WhatsApp. La cobertura es parcial y sus límites se publican junto a la búsqueda.',
   },
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/comparar-portales-de-alquiler-uruguay'
 defineOgImageComponent('Cambio', {
   title: 'Portales de alquiler en Uruguay',
-  subtitle: 'Cinco portales, comparados con datos',
+  subtitle: 'Seis portales, comparados con datos',
   tag: 'Comparativa',
 })
 useSeoMeta({
@@ -447,7 +452,7 @@ useHead(() => ({
             '@type': 'Article',
             headline: 'Dónde buscar alquiler en Uruguay: los portales, comparados',
             description:
-              'Comparativa de los cinco portales de alquiler que lee Cambio Uruguay, con cifras del catálogo vigente.',
+              'Comparativa de los seis portales de alquiler que lee Cambio Uruguay, con cifras del catálogo vigente.',
             mainEntityOfPage: canonicalUrl,
             author: { '@type': 'Organization', name: 'Cambio Uruguay' },
             publisher: { '@type': 'Organization', name: 'Cambio Uruguay' },

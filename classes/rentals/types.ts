@@ -11,9 +11,9 @@ import type { RentalGuarantee } from "./guarantees";
 // `app/utils/rentals.ts` and the parity test keeps the two schemas in step.
 
 /** Portals we read. Coverage limitations are published in the per-source run note. */
-export type RentalSource = "mercadolibre" | "infocasas" | "facebook" | "casasweb" | "elpais" | "tiktok" | "instagram" | "facebookreels";
+export type RentalSource = "mercadolibre" | "infocasas" | "facebook" | "casasweb" | "elpais" | "tiktok" | "instagram" | "facebookreels" | "alquileresuy";
 
-export const RENTAL_SOURCES: readonly RentalSource[] = ["mercadolibre", "infocasas", "facebook", "casasweb", "elpais", "tiktok", "instagram", "facebookreels"];
+export const RENTAL_SOURCES: readonly RentalSource[] = ["mercadolibre", "infocasas", "facebook", "casasweb", "elpais", "tiktok", "instagram", "facebookreels", "alquileresuy"];
 
 export const RENTAL_SOURCE_LABEL: Record<RentalSource, string> = {
   mercadolibre: "Mercado Libre",
@@ -24,6 +24,7 @@ export const RENTAL_SOURCE_LABEL: Record<RentalSource, string> = {
   tiktok: "TikTok",
   instagram: "Instagram",
   facebookreels: "Facebook Reels",
+  alquileresuy: "alquileres.uy",
 };
 
 /**

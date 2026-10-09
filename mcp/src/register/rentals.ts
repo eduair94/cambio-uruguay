@@ -68,7 +68,7 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
         excludeNeighborhoods: z.array(z.string().max(60)).max(20).optional().describe('Barrios a dejar afuera: "Centro", "Cerro"…'),
         excludeTypes: z.array(z.enum(RENTAL_TYPES)).max(5).optional().describe('Tipos a dejar afuera; se restan de types (["vivienda"] sin ["habitacion"] = casas y apartamentos).'),
         roomsAndResidences: z.enum(["hide", "only"]).optional().describe('Habitaciones y residencias (se alquila una cama o un cuarto: residencias estudiantiles, pensiones, cuartos compartidos). "hide" las saca; "only" deja sólo ésas.'),
-        excludeSources: z.array(z.enum(RENTAL_SOURCES)).max(8).optional().describe("Portales a ocultar. Si la misma vivienda está en otro portal, sigue apareciendo con ese aviso."),
+        excludeSources: z.array(z.enum(RENTAL_SOURCES)).max(RENTAL_SOURCES.length).optional().describe("Portales a ocultar. Si la misma vivienda está en otro portal, sigue apareciendo con ese aviso."),
         hidePerNightPrices: z.boolean().optional().describe("Ocultar avisos en dólares con un precio muy por debajo de lo más barato de su zona: casi siempre tarifas por noche de temporada (Punta del Este, José Ignacio). Sin esto se muestran marcados con ⚠."),
         excludeWords: z.array(z.string().min(2).max(40)).max(10).optional().describe('Palabras que el TÍTULO no puede tener, sin importar acentos: ["temporario", "pension"].'),
         bedrooms: z.number().int().min(0).max(10).optional().describe("Dormitorios mínimos (0 = monoambiente). Con bedroomsExact=true, exactos."),

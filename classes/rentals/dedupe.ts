@@ -39,6 +39,8 @@ const SOURCE_RANK: Record<RentalSource, number> = {
   tiktok: 1,
   instagram: 1,
   facebookreels: 1,
+  // Structured card (barrio, dormitorios, m², gastos) plus the advert's own page; rarely a door number.
+  alquileresuy: 2,
 };
 
 export interface DedupeContext {
