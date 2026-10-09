@@ -28,6 +28,8 @@ export interface RentalSearchInput {
   excludeWords?: string[];
   /** Rooms and residences (beds or rooms, not homes): hide them or keep only them. */
   roomsAndResidences?: "hide" | "only";
+  /** Hide adverts whose dollar price is probably per night (far under the zone's cheapest homes). */
+  hidePerNightPrices?: boolean;
   bedrooms?: number;
   bedroomsExact?: boolean;
   bathrooms?: number;
@@ -207,6 +209,7 @@ export function rentalSearchParams(
     sinPortales: input.excludeSources?.length ? input.excludeSources.join(",") : undefined,
     sinPalabras: input.excludeWords?.length ? input.excludeWords.join(",") : undefined,
     residencias: input.roomsAndResidences === "hide" ? "ocultar" : input.roomsAndResidences === "only" ? "solo" : undefined,
+    sinNoche: input.hidePerNightPrices ? 1 : undefined,
     bedrooms: input.bedrooms,
     bedroomsExact: input.bedroomsExact,
     bathrooms: input.bathrooms,

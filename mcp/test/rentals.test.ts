@@ -74,6 +74,8 @@ describe("rentalSearchParams", () => {
       residencias: "ocultar",
     });
     expect(rentalSearchParams({ roomsAndResidences: "only" }).residencias).toBe("solo");
+    expect(rentalSearchParams({ hidePerNightPrices: true }).sinNoche).toBe(1);
+    expect(rentalSearchParams({}).sinNoche).toBeUndefined();
     expect(rentalSearchParams({}).sinBarrios).toBeUndefined();
   });
 
