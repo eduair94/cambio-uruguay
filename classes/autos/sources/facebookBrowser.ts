@@ -3,111 +3,133 @@
 // on :9657, which only offers text search and drops the GraphQL fields): it opens its own tabs,
 // closes them, and disconnects without ever closing the browser. A login or checkpoint page ends
 // Facebook for the run — never retried, never "fixed" from here.
-import type { Browser, HTTPResponse, Page } from "puppeteer-core";
+//
+// Lists are read with the shared scroller (classes/facebook/browser.ts): to the bottom, or to a
+// cap, with the cards taken from the GraphQL stream. Until 2026-10-09 this file scrolled a fixed
+// number of screens and never knew whether the list had ended; measured on `carfbcards` over the
+// previous 72 h, the daily run found 188 cars that no hourly run had seen, and 35 % of new cards
+// were first read more than 2 h after they were published.
+import type { Browser } from "puppeteer-core";
+import { FacebookSessionError, connectFacebookBrowser, readFacebookPageTexts, scrollFacebookList, sleep } from "../../facebook/browser";
+import { acquireFacebookProfile, type ReleaseFacebookProfile } from "../../facebook/lock";
+import { FACEBOOK_BUSY_NOTE } from "../../facebook/search";
 import { FB_VEHICLES_CATEGORY, fbCardsFromText, fbItemFromTexts, type FbCard, type FbItem } from "./facebook";
 
-export class FacebookSessionError extends Error {}
+// One class for every Marketplace reader: the shared scroller throws this one on a login page.
+export { FacebookSessionError };
+// One gate for every Marketplace reader: see classes/facebook/browser.ts for why `error` passes.
+export { facebookSessionOk } from "../../facebook/browser";
 
 const FEED_URL = "https://www.facebook.com/marketplace/montevideo/vehicles?sortBy=creation_time_descend";
 const searchUrl = (query: string): string => `https://www.facebook.com/marketplace/montevideo/search?query=${encodeURIComponent(query)}`;
 const itemUrl = (id: string): string => `https://www.facebook.com/marketplace/item/${id}/`;
-const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
-// One gate for every Marketplace reader: see classes/facebook/browser.ts for why `error` passes.
-export { facebookSessionOk } from "../../facebook/browser";
+/** A first page this full that never grows is Facebook's throttle, not a short list. */
+const STALL_FLOOR = 20;
+/**
+ * Cards older than the reach-back a newest-first feed must show before it counts as read far
+ * enough. More than one: the feed slips a few older "suggested" cards in near the top.
+ */
+const OLD_CARDS_TO_STOP = 10;
 
-function guard(url: string): void {
-  if (/facebook\.com\/(?:login|checkpoint)|\/login\.php/.test(url)) throw new FacebookSessionError("la sesión de Facebook no es válida");
-}
-
-async function pageTexts(page: Page, url: string, work: () => Promise<void>): Promise<string[]> {
-  const texts: string[] = [];
-  const pending: Array<Promise<void>> = [];
-  const onResponse = (response: HTTPResponse): void => {
-    if (!response.url().includes("/api/graphql")) return;
-    pending.push(response.text().then(text => { texts.push(text); }, () => undefined));
-  };
-  page.on("response", onResponse);
-  try {
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
-    guard(page.url());
-    await work();
-    guard(page.url());
-    const embedded = (await page.evaluate(() =>
-      Array.from(document.querySelectorAll("script[type=\"application/json\"]")).map(node => node.textContent || ""),
-    )) as string[];
-    await Promise.all(pending);
-    return [...embedded, ...texts];
-  } finally {
-    page.off("response", onResponse);
-  }
+export interface FacebookListBudget {
+  maxScrolls: number;
+  stagnantRounds: number;
+  /** Newest-first lists only: stop once the list reaches this far back. */
+  reachBackHours?: number;
 }
 
 export interface FacebookRead {
   cards: FbCard[];
   items: FbItem[];
   pages: number;
+  lists: number;
+  /** Lists that ran out of listings (or reached back far enough). */
+  exhausted: number;
+  /** Lists whose full first page never grew: the throttle. */
+  stalled: number;
   note: string | null;
   sessionLost: boolean;
+  busy: boolean;
 }
 
 export async function readFacebookVehicles(options: {
-  feedScrolls: number;
+  feed: FacebookListBudget;
   queries: readonly string[];
-  queryScrolls: number;
+  query: FacebookListBudget;
   /** Given the cards read so far, which item pages to open (see fbDetailQueue). */
   itemIds: (cards: readonly FbCard[]) => Promise<string[]>;
   itemGapMs: number;
   maxDurationMs: number;
-  cdpUrl?: string;
+  lockWaitMs: number;
+  connect?: () => Promise<Browser>;
+  lock?: (owner: string, waitMs: number) => Promise<ReleaseFacebookProfile | null>;
 }): Promise<FacebookRead> {
-  const deadline = Date.now() + options.maxDurationMs;
   const cards = new Map<string, FbCard>();
   const items: FbItem[] = [];
-  const result: FacebookRead = { cards: [], items, pages: 0, note: null, sessionLost: false };
+  const result: FacebookRead = { cards: [], items, pages: 0, lists: 0, exhausted: 0, stalled: 0, note: null, sessionLost: false, busy: false };
+  const release = await (options.lock ?? acquireFacebookProfile)("autos", options.lockWaitMs);
+  if (!release) {
+    result.busy = true;
+    result.note = FACEBOOK_BUSY_NOTE;
+    return result;
+  }
+  const deadline = Date.now() + options.maxDurationMs;
   let browser: Browser | null = null;
-  const withPage = async <T>(task: (page: Page) => Promise<T>): Promise<T> => {
-    const page = await browser!.newPage();
-    try {
-      await page.setViewport({ width: 1400, height: 900 });
-      return await task(page);
-    } finally {
-      await page.close().catch(() => undefined);
-    }
-  };
-  const readList = async (url: string, scrolls: number): Promise<void> => {
-    const texts = await withPage(page => pageTexts(page, url, async () => {
-      await page.waitForSelector("a[href*=\"/marketplace/item/\"]", { timeout: 30_000 }).catch(() => null);
-      for (let index = 0; index < scrolls && Date.now() < deadline; index++) {
-        await page.evaluate(() => window.scrollBy(0, window.innerHeight * 3));
-        await sleep(2_200);
-      }
-      await sleep(1_500);
-    }));
-    result.pages++;
-    for (const text of texts) {
-      for (const card of fbCardsFromText(text)) {
-        // Searches mix every category; the vehicles feed may carry "suggested" items too.
-        if (card.categoryId && card.categoryId !== FB_VEHICLES_CATEGORY) continue;
-        if (!cards.has(card.id)) cards.set(card.id, card);
-      }
-    }
-  };
-  try {
-    const puppeteer = (await import("puppeteer-core")).default;
-    browser = await puppeteer.connect({
-      browserURL: options.cdpUrl || process.env.AUTOS_FB_CDP_URL || "http://127.0.0.1:9224",
-      defaultViewport: { width: 1400, height: 900 },
+  let stalledInARow = 0;
+
+  /** Reads one list; false when the throttle says to stop reading lists. */
+  const readList = async (url: string, budget: FacebookListBudget): Promise<boolean> => {
+    const seenHere = new Set<string>();
+    const cutoff = budget.reachBackHours ? Date.now() - budget.reachBackHours * 3_600_000 : null;
+    let old = 0;
+    const run = await scrollFacebookList(browser!, url, {
+      onText: text => {
+        for (const card of fbCardsFromText(text)) {
+          // Searches mix every category; the vehicles feed may carry "suggested" items too.
+          if (card.categoryId && card.categoryId !== FB_VEHICLES_CATEGORY) continue;
+          if (seenHere.has(card.id)) continue;
+          seenHere.add(card.id);
+          if (cutoff !== null && card.createdAt && Date.parse(card.createdAt) < cutoff) old++;
+          if (!cards.has(card.id)) cards.set(card.id, card);
+        }
+      },
+      count: () => seenHere.size,
+      enough: cutoff === null ? undefined : () => old >= OLD_CARDS_TO_STOP,
+      maxScrolls: budget.maxScrolls,
+      stagnantRounds: budget.stagnantRounds,
+      deadline,
     });
-    await readList(FEED_URL, options.feedScrolls);
+    result.pages++;
+    result.lists++;
+    if (run.exhausted || run.satisfied) result.exhausted++;
+    if (!run.satisfied && run.initial >= STALL_FLOOR && seenHere.size <= run.initial) {
+      result.stalled++;
+      stalledInARow++;
+    } else {
+      stalledInARow = 0;
+    }
+    // Two full first pages in a row that never grew: Facebook throttles a session that scrolled a
+    // lot (see classes/facebook/search.ts). Insisting only spends the account.
+    return stalledInARow < 2;
+  };
+
+  try {
+    browser = await (options.connect ?? connectFacebookBrowser)();
+    let keepReading = await readList(FEED_URL, options.feed);
     for (const query of options.queries) {
+      if (!keepReading) {
+        result.note = "Facebook dejó de cargar más resultados en dos listas seguidas; se corta para no forzar la sesión";
+        break;
+      }
       if (Date.now() >= deadline) {
         result.note = "presupuesto agotado";
         break;
       }
       await sleep(options.itemGapMs);
-      await readList(searchUrl(query), options.queryScrolls);
+      keepReading = await readList(searchUrl(query), options.query);
     }
+    // Item pages do not scroll: the throttle above does not stop them.
     const ids = await options.itemIds([...cards.values()]);
     for (const id of ids) {
       if (Date.now() >= deadline) {
@@ -116,7 +138,7 @@ export async function readFacebookVehicles(options: {
       }
       await sleep(options.itemGapMs);
       const readAt = new Date().toISOString();
-      const texts = await withPage(page => pageTexts(page, itemUrl(id), () => sleep(6_000)));
+      const texts = await readFacebookPageTexts(browser, itemUrl(id));
       result.pages++;
       const item = fbItemFromTexts(id, texts, readAt);
       if (item) items.push(item);
@@ -131,6 +153,7 @@ export async function readFacebookVehicles(options: {
     }
   } finally {
     if (browser) browser.disconnect();
+    release();
   }
   result.cards = [...cards.values()];
   return result;

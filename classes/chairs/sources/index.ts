@@ -56,7 +56,7 @@ export async function harvestChairMarket(fast = false): Promise<ChairHarvest> {
   };
 
   record("mercadolibre", "Mercado Libre Uruguay", "mercadolibre", await safely(harvestMercadoLibre));
-  record("facebook", "Facebook Marketplace", "facebook", await safely(harvestFacebookMarketplace));
+  record("facebook", "Facebook Marketplace", "facebook", await safely(() => harvestFacebookMarketplace(fast)));
 
   for (const store of enabledChairStores()) {
     // Shopify, WooCommerce and VTEX are one JSON request per page; only the Fenicio page-by-page

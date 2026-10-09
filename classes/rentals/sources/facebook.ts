@@ -174,13 +174,18 @@ const searches = (locations: readonly string[], queries: readonly string[]) =>
 function browserPlan(mode: "full" | "fast"): Parameters<typeof readFacebookRentals>[0] {
   const minutes = Number(process.env.RENTALS_FB_BROWSER_MINUTES || (mode === "fast" ? 8 : 60));
   return mode === "fast"
-    ? { searches: searches(LOCATIONS.slice(0, 1), ["alquiler", "alquiler apartamento"]), sort: "newest", maxScrolls: 15, stagnantRounds: 6, maxDurationMs: minutes * 60_000 }
+    ? {
+      searches: searches(LOCATIONS.slice(0, 1), ["alquiler", "alquiler apartamento"]), sort: "newest", maxScrolls: 15, stagnantRounds: 6,
+      maxDurationMs: minutes * 60_000, lockWaitMs: 10 * 60_000,
+    }
     : {
       // Montevideo with every wording, the other anchors with the three broadest: each anchor
       // ranks its own area first (Maldonado alone added 494 adverts Montevideo's seven never
       // showed), and fewer lists spare the session the throttle described in facebookBrowser.ts.
       searches: [...searches(LOCATIONS.slice(0, 1), BROWSER_QUERIES), ...searches(LOCATIONS.slice(1), BROWSER_QUERIES.slice(0, 3))],
       maxScrolls: 150, stagnantRounds: 10, maxDurationMs: minutes * 60_000,
+      // Another job's Marketplace read (autos, retail) lasts minutes; the full sweep waits it out.
+      lockWaitMs: 30 * 60_000,
     };
 }
 
@@ -217,6 +222,11 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
   let fallbackReason = "";
   if (process.env.RENTALS_FB_BROWSER !== "0") {
     const read = await (options.browser ?? readFacebookRentals)(browserPlan(mode));
+    if (read.busy) {
+      // Not the bridge: it drives the same Chrome another job is scrolling right now. ok:false
+      // keeps the stored Marketplace rows instead of declaring them gone.
+      return { key: "facebook", ok: false, complete: false, listings: [], note: read.note || "navegador ocupado" };
+    }
     if (read.lists > 0) {
       const { listings, rejected } = await convert(read.cards, usdUyu, options);
       return {

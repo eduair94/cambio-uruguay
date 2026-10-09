@@ -69,9 +69,16 @@ sólo para candidatas a oportunidad.
 - Se conecta por CDP al Chrome del perfil (`AUTOS_FB_CDP_URL`, `http://127.0.0.1:9224`), después de
   confirmar `sessionStatus: "valid"` en `AUTOS_FB_HEALTH_URL` (`:9246/health`). Abre sus pestañas, las
   cierra y se desconecta **sin cerrar el navegador** (es el de `facebook_profile_browser`, el mismo que
-  usan alquileres y sillas por el puente `:9657`).
-- Lee el feed de Vehículos por más nuevo (80 scrolls la diaria, 15 la horaria) y, en la diaria, busca
-  las 20 marcas con más avisos (4 scrolls cada una). Fichas: hasta 120 por diaria y 15 por horaria,
+  usan alquileres, sillas, equipar y movilidad).
+- Lee el feed de Vehículos por más nuevo con el scroll compartido (`scrollFacebookList`: al fondo de
+  la lista, tarjetas del stream GraphQL): la diaria hasta que Facebook deja de mandar (tope 150
+  páginas) y las 20 marcas con más avisos hasta 20 páginas cada una; la horaria hasta que el feed
+  llega a **6 h atrás** (10 tarjetas más viejas que eso; tope 40). Antes eran 80/15 pantallas fijas y
+  4 por marca: medido en `carfbcards` el 2026-10-08, la diaria encontró 188 autos de las 72 h previas
+  que ninguna horaria había visto, y el 35 % de los nuevos aparecía más de 2 h tarde. Dos listas
+  seguidas con la primera página llena que no crece (el freno de Facebook) cortan las búsquedas, no
+  las fichas. Toma el candado del perfil (`classes/facebook/lock.ts`: 30 min de espera la diaria,
+  10 la horaria; si no, Facebook queda fuera de esa corrida). Fichas: hasta 120 por diaria y 15 por horaria,
   6 s entre una y otra, primero las que el análisis pidió (`uy-cars-fb-wanted`) y después las que no
   dicen año o km. Un login o checkpoint corta Facebook por el resto de la corrida.
 - En Uruguay **todos los campos `vehicle_*` vienen vacíos** y la moneda es siempre "UYU" aunque el

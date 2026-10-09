@@ -35,6 +35,7 @@ const wooProduct = (id: number, name: string): unknown => ({
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe("una barrida, varios clasificadores", () => {
@@ -104,6 +105,8 @@ describe("presupuesto de Marketplace", () => {
   };
 
   it("intercala las categorías, así un corte le cuesta a cada una su cola", async () => {
+    // El puente de respaldo: la misma intercalación vale para el navegador (tests/retail/facebook.test.ts).
+    vi.stubEnv("RETAIL_FB_BROWSER", "0");
     respondEmpty();
     const specs = [
       spec("heladera", /heladera/, ["heladera", "heladera con freezer"]),

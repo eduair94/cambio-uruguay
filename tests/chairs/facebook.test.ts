@@ -1,10 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { harvestFacebookMarketplace } from "../../classes/chairs/sources/facebook";
 
 /**
- * The Marketplace scraper itself lives in the trustpilot repo (it drives the logged-in Chrome).
- * What this repo owns is the contract with it: what we send, what we accept back, and what we
- * refuse to publish. Those are the rules tested here.
+ * The fallback path: the Marketplace service in the trustpilot repo (it drives the same logged-in
+ * Chrome). What this repo owns is the contract with it: what we send, what we accept back, and what
+ * we refuse to publish. The browser path is tested in tests/retail/facebook.test.ts.
  */
 const respondWith = (payload: unknown): void => {
   vi.stubGlobal(
@@ -13,8 +13,13 @@ const respondWith = (payload: unknown): void => {
   );
 };
 
+beforeEach(() => {
+  vi.stubEnv("RETAIL_FB_BROWSER", "0");
+});
+
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   delete process.env.CHAIR_FB_ENABLED;
 });
 
