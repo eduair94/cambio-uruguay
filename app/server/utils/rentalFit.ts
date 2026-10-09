@@ -29,8 +29,12 @@ import {
   type RentalAvailabilityIndex,
 } from './rentalAvailability'
 
-export const RENTAL_FIT_MAX_ROWS = 60_000
-const MAX_CACHE_BYTES = 48 * 1024 * 1024
+// Measured 2026-10-09, the day the household search started answering 503 to everyone: 51.629
+// rows read, 33.532 candidates, 48,3 MB as JSON against a 48 MB cap, 113,5 MB of heap once loaded
+// (the JSON repeats every field name; V8 shares them). The Facebook reader had just started reading
+// whole searches, and the directory grows with it. Caps raised by a third, logged when they bite.
+export const RENTAL_FIT_MAX_ROWS = 80_000
+const MAX_CACHE_BYTES = 64 * 1024 * 1024
 const CACHE_MS = 60_000
 const MAX_SNAPSHOT_AGE_MS = 10 * 60_000
 interface FitIdentity {
@@ -297,11 +301,21 @@ export function createRentalFitCatalogueLoader({
         bytes = 0
       try {
         for await (const row of cursor) {
-          if (++rows > maxRows) throw new RentalFitError(503)
+          if (++rows > maxRows) {
+            console.warn(
+              `[rental-fit] catalogue over ${maxRows} rows: household search unavailable`
+            )
+            throw new RentalFitError(503)
+          }
           const candidate = projectRentalFitCandidate(row, now())
           if (!candidate) continue
           bytes += Buffer.byteLength(JSON.stringify(candidate))
-          if (bytes > maxBytes) throw new RentalFitError(503)
+          if (bytes > maxBytes) {
+            console.warn(
+              `[rental-fit] catalogue over ${Math.round(maxBytes / 1048576)} MB after ${candidates.length} homes: household search unavailable`
+            )
+            throw new RentalFitError(503)
+          }
           candidates.push(candidate)
         }
       } finally {

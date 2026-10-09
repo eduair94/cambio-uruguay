@@ -254,7 +254,7 @@ describe('bounded full catalogue loading', () => {
     expect((await load()).candidates).toHaveLength(1)
     const stages = aggregate.mock.calls[0]![0] as Record<string, any>[]
     expect(stages[0]).toEqual({ $match: { propertyType: { $in: ['casa', 'apartamento'] } } })
-    expect(stages.filter(stage => '$limit' in stage)).toEqual([{ $limit: 60_001 }])
+    expect(stages.filter(stage => '$limit' in stage)).toEqual([{ $limit: 80_001 }])
     expect(stages.some(stage => '$skip' in stage || '$sort' in stage)).toBe(false)
     expect(JSON.stringify(stages)).not.toContain('25000')
     const projection = stages.at(-1)!.$project
