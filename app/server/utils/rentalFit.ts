@@ -30,11 +30,15 @@ import {
 } from './rentalAvailability'
 
 // Measured 2026-10-09, the day the household search started answering 503 to everyone: 51.629
-// rows read, 33.532 candidates, 48,3 MB as JSON against a 48 MB cap, 113,5 MB of heap once loaded
-// (the JSON repeats every field name; V8 shares them). The Facebook reader had just started reading
-// whole searches, and the directory grows with it. Caps raised by a third, logged when they bite.
-export const RENTAL_FIT_MAX_ROWS = 80_000
-const MAX_CACHE_BYTES = 64 * 1024 * 1024
+// rows read, 33.532 candidates, 48,3 MB as JSON against a 48 MB cap. The Facebook reader had just
+// started reading whole searches, and the directory grows with it.
+// The same day, over every row of production: 87,2 MB of heap for the catalogue as it was built
+// (each advert went dictionary-mode on `delete`, every row carried its own copy of each department,
+// date and agency) and 47,7 MB with the interner below, the 33.789 candidates identical field by
+// field and in the same order. At that density the JSON measure tracks the heap about one to one,
+// so 96 MB keeps the memory budget the cache had before the incident and fits about twice the homes.
+export const RENTAL_FIT_MAX_ROWS = 120_000
+const MAX_CACHE_BYTES = 96 * 1024 * 1024
 const CACHE_MS = 60_000
 const MAX_SNAPSHOT_AGE_MS = 10 * 60_000
 interface FitIdentity {
@@ -85,11 +89,46 @@ const guarantees = (value: unknown) =>
       ]
     : []
 
+/**
+ * One copy of each repeated value across a catalogue: the same department, barrio, portal, date or
+ * agency appears in tens of thousands of homes, and every row read from Mongo brings its own copy.
+ * Values and shapes are untouched (a shared string or object is the same value), so the ranking and
+ * the response cannot tell; shared objects are never mutated downstream (annotation copies offers).
+ */
+export interface RentalFitInterner {
+  text<T>(value: T): T
+  object<T>(value: T): T
+}
+export function createRentalFitInterner(): RentalFitInterner {
+  const strings = new Map<string, string>()
+  const objects = new Map<string, unknown>()
+  return {
+    text<T>(value: T): T {
+      if (typeof value !== 'string') return value
+      const seen = strings.get(value)
+      if (seen !== undefined) return seen as T
+      strings.set(value, value)
+      return value
+    },
+    object<T>(value: T): T {
+      if (!value || typeof value !== 'object') return value
+      const signature = JSON.stringify(value)
+      const seen = objects.get(signature)
+      if (seen !== undefined) return seen as T
+      objects.set(signature, value)
+      return value
+    },
+  }
+}
+const NO_INTERNING: RentalFitInterner = { text: value => value, object: value => value }
+
 /** Source evidence never reaches the catalogue cache, API response or ranking function. */
 export function projectRentalFitCandidate(
   row: RentalFitRawProperty,
-  now = Date.now()
+  now = Date.now(),
+  intern: RentalFitInterner = NO_INTERNING
 ): RentalFitCachedCandidate | null {
+  const shared = intern.text.bind(intern)
   if (!row || !['casa', 'apartamento'].includes(row.propertyType) || !text(row.key)) return null
   const cutoff = cutoffAt(now)
   const ownOffers = (Array.isArray(row.offers) ? row.offers : []).filter(own => {
@@ -121,39 +160,50 @@ export function projectRentalFitCandidate(
         .map(own => rentalAvailabilityAdvertId(own.source, own.listingId)!)
     : []
   const offers: RentalOffer[] = ownOffers.map(own => {
+    // Cards do not need contact channels, and copied agency/owner evidence is revalidated above.
+    // Left out here rather than deleted afterwards: `delete` turns every advert of the catalogue
+    // into a dictionary-mode object, several times its size.
+    const {
+      publicContact: _contact,
+      agency,
+      ownerDirect,
+      ...advertiser
+    } = publicAdvertiserMetadata({ ...own, publicContact: undefined }, now)
     const offer: RentalOffer = {
-      source: own.source,
+      source: shared(own.source),
       listingId: own.listingId,
       url: rentalSavedSafeUrl(own.url)!,
       title: text(own.title),
       price: own.price,
       priceUyu: own.priceUyu,
-      currency: own.currency,
+      currency: shared(own.currency),
       commonExpenses: amount(own.commonExpenses),
       commonExpensesCurrency: ['UYU', 'USD'].includes(own.commonExpensesCurrency || '')
-        ? own.commonExpensesCurrency
+        ? shared(own.commonExpensesCurrency)
         : null,
-      sellerName: text(own.sellerName, 160),
+      sellerName: shared(text(own.sellerName, 160)),
       sellerType: ['inmobiliaria', 'particular'].includes(own.sellerType)
-        ? own.sellerType
+        ? shared(own.sellerType)
         : 'desconocido',
       image: rentalSavedSafeUrl(own.image),
       parkingSpaces: amount(own.parkingSpaces),
       furnished: typeof own.furnished === 'boolean' ? own.furnished : null,
       petsAllowed: own.petsAllowed === true ? true : null,
-      guarantees: guarantees(own.guarantees),
-      publishedAt: typeof own.publishedAt === 'string' ? own.publishedAt : null,
-      firstSeen: text(own.firstSeen, 40),
-      lastSeen: text(own.lastSeen, 40),
-      ...publicAdvertiserMetadata({ ...own, publicContact: undefined }, now),
+      guarantees: guarantees(own.guarantees).map(shared),
+      publishedAt: typeof own.publishedAt === 'string' ? shared(own.publishedAt) : null,
+      firstSeen: shared(text(own.firstSeen, 40)),
+      lastSeen: shared(text(own.lastSeen, 40)),
+      ...advertiser,
+      ...(agency !== undefined ? { agency: intern.object(agency) } : {}),
+      ...(ownerDirect !== undefined ? { ownerDirect: intern.object(ownerDirect) } : {}),
     }
-    // Cards do not need contact channels, and copied agency/owner evidence is revalidated above.
-    delete offer.publicContact
-    Object.assign(
-      offer,
-      rentalBudgetOwnExpenses(offer, own.identity?.description || own.details?.description || '')
-    )
-    return offer
+    return {
+      ...offer,
+      ...rentalBudgetOwnExpenses(
+        offer,
+        own.identity?.description || own.details?.description || ''
+      ),
+    }
   })
   const zoneName = (value: unknown) =>
     typeof value === 'string' && value.length <= 100 && !/[\p{Cc}\p{Cf}<>]/u.test(value)
@@ -163,9 +213,12 @@ export function projectRentalFitCandidate(
     const department = zoneName(own.identity?.department),
       neighborhood = zoneName(own.identity?.neighborhood)
     return {
-      source: own.source,
+      source: shared(own.source),
       listingId: own.listingId,
-      zone: department && neighborhood ? { department, neighborhood } : null,
+      zone:
+        department && neighborhood
+          ? intern.object({ department: shared(department), neighborhood: shared(neighborhood) })
+          : null,
     }
   })
   const specification = (field: 'bedrooms' | 'bathrooms' | 'area') => {
@@ -180,9 +233,9 @@ export function projectRentalFitCandidate(
   const property: RentalPublicProperty = {
     key: text(row.key),
     title: selected.title,
-    propertyType: row.propertyType,
-    department: text(row.department, 100),
-    neighborhood: text(row.neighborhood, 160),
+    propertyType: shared(row.propertyType),
+    department: shared(text(row.department, 100)),
+    neighborhood: shared(text(row.neighborhood, 160)),
     // Search cards need the published zone and checked point, never a hidden address fallback.
     address: '',
     latitude: point?.lat ?? null,
@@ -206,12 +259,12 @@ export function projectRentalFitCandidate(
     currency: selected.currency,
     sources: [...new Set(offers.map(offer => offer.source))],
     offers,
-    firstSeen: text(row.firstSeen, 40),
+    firstSeen: shared(text(row.firstSeen, 40)),
     lastSeen: offers
       .map(offer => offer.lastSeen)
       .sort()
       .at(-1)!,
-    freshAt: text(row.freshAt, 40),
+    freshAt: shared(text(row.freshAt, 40)),
   }
   return { property, point, pointAdvertIds, offerZones }
 }
@@ -297,6 +350,8 @@ export function createRentalFitCatalogueLoader({
       cached = null
       const cursor = openCursor()
       const candidates: RentalFitCachedCandidate[] = []
+      // Per load: the catalogue it builds is the only thing that keeps these copies alive.
+      const intern = createRentalFitInterner()
       let rows = 0,
         bytes = 0
       try {
@@ -307,7 +362,7 @@ export function createRentalFitCatalogueLoader({
             )
             throw new RentalFitError(503)
           }
-          const candidate = projectRentalFitCandidate(row, now())
+          const candidate = projectRentalFitCandidate(row, now(), intern)
           if (!candidate) continue
           bytes += Buffer.byteLength(JSON.stringify(candidate))
           if (bytes > maxBytes) {
