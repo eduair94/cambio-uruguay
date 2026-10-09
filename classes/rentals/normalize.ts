@@ -433,6 +433,8 @@ const LANDLORD_LOOKING = /\bbusc\w*\s+(?:inquilin|quien (?:alquile|arriende)|int
 
 export function isWantedAdvert(title: string): boolean {
   const flat = flatten(title).replace(/\+/g, " ")
+    // "Buscooooo alquiler": Spanish never triples a letter, so a run of three or more is emphasis.
+    .replace(/([a-z])\1{2,}/g, "$1")
     // A landlord's pitch: "para quienes buscan", "si buscás", "lo que necesitas".
     .replace(/\b(?:quienes|los que|las que|si|lo que|ideal para|para)\s+(?:\w+\s+)?(?:busca[ns]?|necesita[ns]?)\b/g, " ");
   const verb = flat.search(WANTED_VERB);

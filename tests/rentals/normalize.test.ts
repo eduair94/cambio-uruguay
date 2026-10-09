@@ -186,6 +186,7 @@ describe("looksLikeRentalAdvert", () => {
       "SUSENA GROUP-REAL ESTATE BUSCA CASA CON DEPOSITO Y GARAGE",
       "En Montevideo Necesitamos Propiedades Para Alquilar O Arrendar",
       "Busco cochera úrgente",
+      "Buscooooo+alquiler+",
     ]) expect(isWantedAdvert(title), title).toBe(true);
     for (const title of [
       "Gran Apartamento De 140 M2 En El Centro, Una Excelente Opción Para Quienes Buscan Amplitud",
