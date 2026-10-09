@@ -339,9 +339,66 @@ const MEASURED = 146
  * de las doce sigue ganando su propia consulta («rescindir» 80, «refinanciar» 80, «saldo retenido»
  * 80, «primera vivienda» 80, «0km» 80, «concubinaria» 62, «telegrama» 62, «depreciacion» 62).
  *
+ * 25 → 16 el 2026-10-09, octava tanda y la primera que toca SÓLO el título: son las NUEVE guías
+ * con la ruta libre que pasan de 60 con la descripción ya dentro de los 155, así que no hay
+ * descripción que reescribir y la tanda se nombra por la mitad del snippet que arregla. Es la
+ * simétrica de la del 2026-10-07, que hizo lo mismo del lado de la descripción, y con esto las dos
+ * señales terminaron de separarse: de los 24 excedidos en descripción que quedan, NINGUNO tiene la
+ * ruta libre.
+ *
+ * Iban de 66 a 61 caracteres contando la marca —los sobrantes más chicos de las ocho tandas, 1 a 6
+ * caracteres— y por eso vale decir por qué entraron igual: lo que el SERP les corta es apenas la
+ * marca, así que el defecto que las traía acá no era la longitud sino el de siempre, y en su forma
+ * más pura. Las nueve eran la ETIQUETA DEL TEMA, seis de ellas abriendo literalmente con «Cómo»
+ * («Cómo mejorar tu historial crediticio en Uruguay», «Cómo armar un presupuesto personal en
+ * Uruguay», «Cómo salir de las deudas de tarjeta de crédito», «Cómo proteger tu patrimonio en
+ * pareja en Uruguay», «Cómo leer la cotización del dólar paso a paso», «Fondo de emergencia: cómo
+ * armarlo en Uruguay»), y las otras tres prometían el índice sin contestar nada («Comprar un
+ * terreno en Uruguay: qué verificar», «Ser garante o codeudor en Uruguay: los riesgos»,
+ * «Inflación y dólar en Uruguay: cómo se relacionan»). Un título que abre por «Cómo» promete el
+ * procedimiento y gasta el renglón entero sin decir una sola cosa que el visitante no supiera al
+ * tipear.
+ *
+ * Ahora cada uno contesta: que la inflación y el dólar no van siempre juntos, que en pareja lo que
+ * no puedas probar propio se presume ganancial, que el historial son DOS registros y no uno (el
+ * Clearing privado y la Central de Riesgos del BCU), que al garante solidario le pueden cobrar
+ * directamente a él, que con el pago mínimo no se sale de la deuda de la tarjeta, que en la
+ * cotización la «compra» es lo que la casa TE paga, que el 50/30/20 acá arranca más bien en
+ * 60/25/15, que en un terreno el estudio de título va primero y que el fondo de emergencia son
+ * 3 a 6 meses de gastos.
+ *
+ * Ninguna cifra es nueva: todas ya estaban en el cuerpo de su guía. Y donde el cuerpo hedgea, el
+ * título no afirma, que acá descartó dos redacciones. El presupuesto iba a decir «acá es
+ * 60/25/15», y el cuerpo dice que «mucha gente arranca más cerca de 60/25/15 y está bien» sobre
+ * una regla que él mismo llama «una guía, no una ley»: queda «acá más bien 60/25/15». Y el
+ * patrimonio en pareja iba a decir «es ganancial», cuando el cuerpo dice que «la normativa presume
+ * ganancial lo que no puedas probar como propio» — una presunción que se rebate con papeles no es
+ * un hecho, así que el título publica la presunción.
+ *
+ * Y una quinta aplicación de la regla del buscador propio, que acá además corrigió la tanda a
+ * mitad de camino. Las nueve primeras redacciones ganaban el término corto y PERDÍAN la frase del
+ * slug, que es la que el visitante tipea: medido sobre el índice, «historial crediticio» se lo
+ * llevaba `/saldar-deudas-uruguay` (38 contra 36), «deudas de tarjeta» lo ganaba `/temas` (42
+ * contra 36), «presupuesto personal» `/salud-financiera` (68 contra 62) y «inflacion y dolar» se
+ * caía del top 6. Cinco títulos se reescribieron para ABRIR por esa frase, que es lo que paga el
+ * 110 de `scoreDocs`, y después del cambio las nueve guías ganan su propia consulta y cinco
+ * mejoraron su puntaje («historial crediticio» 92→110, «deudas de tarjeta» 92→110, «presupuesto
+ * personal» 92→110, «terreno» 92→110, «leer la cotizacion» 62→80, «garante» 62→80). Ninguna
+ * página perdió una consulta contra una guía: `/cotizacion` sigue ganando «cotizacion» (142) y
+ * `/salir-del-clearing` sigue siendo el destino de «clearing». La única concesión es «codeudor»,
+ * que baja de 62 a 32 porque el título conserva la precisión del cuerpo («garante SOLIDARIO», que
+ * es el único al que se le puede reclamar sin perseguir antes al titular) en vez de enumerar los
+ * tres roles; sigue siendo el único resultado de esa consulta.
+ *
+ * Y `glosario-terminos-cambiarios` se quedó sin tocar por quinta vez, con la ruta libre: es la
+ * única guía libre que queda pasada del presupuesto y sigue sin frente propio, porque el término
+ * por el que tendría que abrir lo gana el hub `/glosario` (142 contra los 110 que pagaría el
+ * prefijo). Las otras quince excedidas están dentro de ventanas abiertas del libro de cambios y
+ * entran cuando cierren.
+ *
  * SÓLO PUEDE BAJAR.
  */
-const TITLE_OVER_BUDGET = 25
+const TITLE_OVER_BUDGET = 16
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.

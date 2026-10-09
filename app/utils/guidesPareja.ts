@@ -326,7 +326,7 @@ export const parejaGuides: readonly Guide[] = [
   },
   {
     slug: 'proteger-tu-patrimonio-en-pareja-uruguay',
-    title: 'Cómo proteger tu patrimonio en pareja en Uruguay',
+    title: 'En pareja, sin prueba se presume ganancial',
     description:
       'Herramientas legítimas para proteger tu patrimonio en pareja en Uruguay: capitulaciones, separación de bienes, testamento y documentar aportes.',
     tag: 'PATRIMONIO',

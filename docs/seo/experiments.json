@@ -19,6 +19,22 @@
   ],
   "experiments": [
     {
+      "id": "titulos-de-las-guias-respuesta-primero-5",
+      "shippedOn": "2026-10-09",
+      "routes": [
+        "/guias/inflacion-y-dolar-uruguay",
+        "/guias/proteger-tu-patrimonio-en-pareja-uruguay",
+        "/guias/mejorar-historial-crediticio-uruguay",
+        "/guias/ser-garante-o-codeudor-riesgos-uruguay",
+        "/guias/salir-de-deudas-de-tarjeta-uruguay",
+        "/guias/como-leer-cotizacion-dolar",
+        "/guias/armar-un-presupuesto-personal-uruguay",
+        "/guias/comprar-un-terreno-uruguay",
+        "/guias/fondo-de-emergencia-como-armarlo-uruguay"
+      ],
+      "hypothesis": "Octava tanda de titulos de guia y la primera que toca SOLO el titulo: las nueve guias con la ruta libre que pasaban de 60 caracteres y ya tenian la descripcion dentro de los 155. Las nueve eran la etiqueta del tema, seis abriendo literalmente por \"Como\", o sea prometian el procedimiento y no decian nada que el visitante no supiera al tipear. Ahora el titulo trae la respuesta adelante y ninguna cifra es nueva (todas estaban en el cuerpo de su guia): que inflacion y dolar no van siempre juntos, que en pareja se presume ganancial lo que no probas propio, que el historial son dos registros y no uno, que al garante solidario le pueden cobrar directamente, que con el pago minimo no se sale de la deuda de la tarjeta, que la \"compra\" de la cotizacion es lo que la casa TE paga, que el 50/30/20 aca es mas bien 60/25/15, que en un terreno el estudio de titulo va primero y que el fondo de emergencia son 3 a 6 meses de gastos. Cinco se reescribieron una segunda vez para ABRIR por la frase del slug, despues de medir que las primeras redacciones ganaban el termino corto y perdian esa consulta en el buscador propio del sitio. Tramo contenido, que es donde un snippet que no contesta cuesta mas caro. Se mide como porcion de los clics del sitio a los 28 dias."
+    },
+    {
       "id": "pagina-seguro-obligatorio-de-auto",
       "shippedOn": "2026-10-09",
       "routes": [
