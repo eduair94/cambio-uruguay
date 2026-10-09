@@ -211,7 +211,7 @@ export const rentalMessages = {
     term: 'Plazo',
     termAny: 'Todos los plazos',
     termAnnual: 'Anual (todo el año)',
-    termWinter: 'Invernal (marzo a diciembre)',
+    termWinter: 'Invernal (mar.–dic.)',
     winter: 'Invernal',
     termHint:
       '«Anual» incluye los avisos que no aclaran el plazo, que es el alquiler común. Los de temporada (por noche, quincena o mes de verano) no se publican: su precio no es mensual y no se puede comparar.',
@@ -574,7 +574,7 @@ export const rentalMessages = {
     term: 'Lease',
     termAny: 'Any lease',
     termAnnual: 'Year-round',
-    termWinter: 'Winter (March to December)',
+    termWinter: 'Winter (Mar–Dec)',
     winter: 'Winter lease',
     termHint:
       '“Year-round” includes listings that do not state a period, the usual lease. Summer stays (by the night, fortnight or month) are not published: their price is not monthly and cannot be compared.',
@@ -938,7 +938,7 @@ export const rentalMessages = {
     term: 'Prazo',
     termAny: 'Todos os prazos',
     termAnnual: 'Anual (o ano todo)',
-    termWinter: 'Inverno (março a dezembro)',
+    termWinter: 'Inverno (mar.–dez.)',
     winter: 'Inverno',
     termHint:
       '“Anual” inclui os anúncios que não informam o prazo, que é o aluguel comum. Os de temporada (por noite, quinzena ou mês de verão) não são publicados: o preço não é mensal e não dá para comparar.',
