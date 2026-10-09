@@ -1,0 +1,169 @@
+2||
+		<div class="body-content-inner-wrapper">
+				<div class="body-content">
+					<div class="table container">
+						
+						<div class="table-row body">
+							<div class="table-cell body-content-outer-wrapper">
+								<div class="body-content-inner-wrapper">
+									<div class="body-content">
+										<div id="r_resultados" class="x_resultados">
+	
+	<div id="mas_resultados" style="width:100%;overflow:hidden">
+
+
+<div id="div_950TE2626060" class="div_resultados_te_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr0950TE2626060">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="007TE02040"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr1950TE2626060">
+			<td id="td1950TE2626060" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('950TE262606','s',2176,'0');"><b><span class="list_numero">1</span> ALVARO EIRALE</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'950TE262606','TEA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('950TE262606',0);document.getElementById('div_950TE2626060').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'950TE262606','TEA','0')">
+						<img id="corazon2_950TE2626060" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'950TE262606','TEA','0')">
+						<img id="corazon_950TE2626060" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s35 dedo" valign="top" style="font-size:12pt" id="tr4950TE2626060" onclick="cargar_ficha('950TE262606','s',2176,'0');">
+
+	<td colspan=2 id="td5950TE2626060"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/950/950TE262606_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/950/950TE262606_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td5950TE2626060','../fotos/950/950TE262606.jpg');" border=0 title="7 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr2950TE2626060" onclick="cargar_ficha('950TE262606','s',2176,'0');">
+		<td id="td3950TE2626060" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre950TE2626060" >
+			US$ 3.500
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr4950TE2626060"  onclick="cargar_ficha('950TE262606','s',2176,'0');">
+		<td id="td4950TE2626060" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>MONTEVIDEO / PARQUE&nbsp;BATLLE</b> </b><br><span style="font-size:10pt">LUIS A. HERRERA 1961 CASI MAZZINI</span></div>
+		</td>
+	</tr>
+	<tr id="tr2950TE2626060"><td id="td2950TE2626060" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr7950TE2626060" onclick="cargar_ficha('950TE262606','s',2176,'0');">
+		<td colspan="1" id="td7950TE2626060" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td class="haundi" align="right" width="15%">440</b><td class="txiki" width="15%">m&sup2;</td></td><td class="haundi" align="right" width="20%">10<td class="txiki" width="20%">m fte.</td></td><td class="haundi" align="right" width="20%"></td></tr></tbody></table>
+	 </td>
+	<tr class="dedo" id="tr6950TE2626060" onclick="cargar_ficha('950TE262606','s',2176,'0');">
+		<td colspan="1" id="td6950TE2626060"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>A 1000mts del mar<br>Orientaci&oacute;n E</td><td align="right">Nivel normal<br></td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		</span>
+
+</td><td align="right"><span style="font-size:9pt;">11/07/2026</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+
+	</tr>
+	</table>
+	</div>
+
+
+<div id="div_007TE019580" class="div_resultados_te_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr0007TE019580">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="007TE02108"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr1007TE019580">
+			<td id="td1007TE019580" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('007TE01958','n',644,'0');"><b><span class="list_numero">3</span> NIETO</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'007TE01958','TEA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('007TE01958',0);document.getElementById('div_007TE019580').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'007TE01958','TEA','0')">
+						<img id="corazon2_007TE019580" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'007TE01958','TEA','0')">
+						<img id="corazon_007TE019580" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s154 dedo" valign="top" style="font-size:12pt" id="tr4007TE019580" onclick="cargar_ficha('007TE01958','n',644,'0');">
+
+	<td colspan=2 id="td5007TE019580"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/007/007TE01958_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/007/007TE01958_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td5007TE019580','../fotos/007/007TE01958.jpg');" border=0 title="0 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr2007TE019580" onclick="cargar_ficha('007TE01958','n',644,'0');">
+		<td id="td3007TE019580" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre007TE019580" >
+			&iexcl;$ 30.000!
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr4007TE019580"  onclick="cargar_ficha('007TE01958','n',644,'0');">
+		<td id="td4007TE019580" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>CD.&nbsp;DE&nbsp;LA&nbsp;COSTA / LAGOMAR&nbsp;SUR</b> </b><br><span style="font-size:10pt">A DIEZ METROS DE GIANNATTASIO AL SUR KM.21.100</span></div>
+		</td>
+	</tr>
+	<tr id="tr2007TE019580"><td id="td2007TE019580" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr7007TE019580" onclick="cargar_ficha('007TE01958','n',644,'0');">
+		<td colspan="1" id="td7007TE019580" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td class="haundi" align="right" width="15%">150</b><td class="txiki" width="15%">m&sup2;</td></td><td class="haundi" align="right" width="20%">8<td class="txiki" width="20%">m fte.</td></td><td class="haundi" align="right" width="20%"></td></tr></tbody></table>
+	 </td>
+	<tr class="dedo" id="tr6007TE019580" onclick="cargar_ficha('007TE01958','n',644,'0');">
+		<td colspan="1" id="td6007TE019580"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>A 1000mts del mar<br>Orientaci&oacute;n E</td><td align="right">Nivel normal<br></td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		<span style='color:red'>&#9733;&#9733;&#9733;</span></span>
+
+</td><td align="right"><span style="font-size:9pt;">23/05/2023</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+
+	</tr>
+	</table>
+	</div>
+
+
+||950TE262606,s,2176,0||[['950TE262606',-56.14633471725231,-34.891198158521135,'Alvaro Eirale','3500','d'],['007TE01958',-55.98692247019911,-34.8380235782966,'Nieto','30000','p']]

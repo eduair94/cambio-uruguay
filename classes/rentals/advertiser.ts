@@ -9,6 +9,7 @@ const ORIGINS: Record<RentalSource, string> = {
   tiktok: "https://www.tiktok.com",
   instagram: "https://www.instagram.com",
   facebookreels: "https://www.facebook.com",
+  alquileresuy: "https://www.buscandocasa.com",
 };
 const date = (value: unknown): string | null => typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null;
 const name = (value: unknown) => rentalDescription(value, 160).replace(/\s+/g, " ").trim();

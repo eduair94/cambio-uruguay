@@ -1,0 +1,167 @@
+2||
+		<div class="body-content-inner-wrapper">
+				<div class="body-content">
+					<div class="table container">
+						
+						<div class="table-row body">
+							<div class="table-cell body-content-outer-wrapper">
+								<div class="body-content-inner-wrapper">
+									<div class="body-content">
+										<div id="r_resultados" class="x_resultados">
+	
+	<div id="mas_resultados" style="width:100%;overflow:hidden">
+
+
+<div id="div_950LO04260" class="div_resultados_lo_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr0950LO04260">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="259LO003"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr1950LO04260">
+			<td id="td1950LO04260" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('950LO0426','s',2176,'0');"><b><span class="list_numero">1</span> ALVARO EIRALE</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'950LO0426','LOA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('950LO0426',0);document.getElementById('div_950LO04260').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'950LO0426','LOA','0')">
+						<img id="corazon2_950LO04260" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'950LO0426','LOA','0')">
+						<img id="corazon_950LO04260" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s41 dedo" valign="top" style="font-size:12pt" id="tr4950LO04260" onclick="cargar_ficha('950LO0426','s',2176,'0');">
+
+	<td colspan=2 id="td5950LO04260"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/950/950LO0426_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/950/950LO0426_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td5950LO04260','../fotos/950/950LO0426.jpg');" border=0 title="27 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr2950LO04260" onclick="cargar_ficha('950LO0426','s',2176,'0');">
+		<td id="td3950LO04260" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre950LO04260" >
+			US$ 11.000
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr4950LO04260"  onclick="cargar_ficha('950LO0426','s',2176,'0');">
+		<td id="td4950LO04260" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>MONTEVIDEO / BUCEO</b> </b><br><span style="font-size:10pt">RAMBLA REPUBLICA DE CHILE 4255 Y 4261</span></div>
+		</td>
+	</tr>
+	<tr id="tr2950LO04260"><td id="td2950LO04260" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr7950LO04260" onclick="cargar_ficha('950LO0426','s',2176,'0');">
+		<td colspan="1" id="td7950LO04260" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td style="font-weight:bold;line-height:21px;" width="30%">COMERCIAL</td><td class="haundi_2" align="right" width="30%">926/1.060<td class="txiki" width="10%">m&sup2;</td></td><td class="haundi_2" align="right" width="15%">20<td class="txiki" width="15%">m fte.</td></tr></tbody></table>
+	 </td>
+	<tr class="dedo" id="tr6950LO04260" onclick="cargar_ficha('950LO0426','s',2176,'0');">
+		<td colspan="1" id="td6950LO04260"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>600m&sup2; sal&oacute;n ppal. / 5</b>m alto<br>2 plantas / 2 salones<br>2 oficinas<br>5 ba&ntilde;os</td><td align="right">Techo de material<br>Buen Estado<br>Entrada camiones<br></td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		</span>
+
+</td><td align="right"><span style="font-size:9pt;">08/08/2026</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+	</tr>
+	</table>
+	</div>
+
+
+<div id="div_259LO0030" class="div_resultados_lo_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr0259LO0030">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="007LO2097"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr1259LO0030">
+			<td id="td1259LO0030" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('259LO003','s',1257,'0');"><b><span class="list_numero">2</span> ARQUICASA</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'259LO003','LOA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('259LO003',0);document.getElementById('div_259LO0030').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'259LO003','LOA','0')">
+						<img id="corazon2_259LO0030" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'259LO003','LOA','0')">
+						<img id="corazon_259LO0030" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s18 dedo" valign="top" style="font-size:12pt" id="tr4259LO0030" onclick="cargar_ficha('259LO003','s',1257,'0');">
+
+	<td colspan=2 id="td5259LO0030"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/259/259LO003_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/259/259LO003_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td5259LO0030','../fotos/259/259LO003.jpg');" border=0 title="36 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr2259LO0030" onclick="cargar_ficha('259LO003','s',1257,'0');">
+		<td id="td3259LO0030" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre259LO0030" >
+			US$ 8.000
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr4259LO0030"  onclick="cargar_ficha('259LO003','s',1257,'0');">
+		<td id="td4259LO0030" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>MONTEVIDEO / CENTRO</b> </b><br><span style="font-size:10pt">SOBRE COLONIA</span></div>
+		</td>
+	</tr>
+	<tr id="tr2259LO0030"><td id="td2259LO0030" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr7259LO0030" onclick="cargar_ficha('259LO003','s',1257,'0');">
+		<td colspan="1" id="td7259LO0030" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td style="font-weight:bold;line-height:21px;" width="30%">COMERCIAL</td><td class="haundi_2" align="right" width="30%">900/350<td class="txiki" width="10%">m&sup2;</td></td><td class="haundi_2" align="right" width="15%">9<td class="txiki" width="15%">m fte.</td></tr></tbody></table>
+	 </td>
+	<tr class="dedo" id="tr6259LO0030" onclick="cargar_ficha('259LO003','s',1257,'0');">
+		<td colspan="1" id="td6259LO0030"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>70m&sup2; sal&oacute;n ppal. / 3,5</b>m alto<br>3 plantas / 2 salones<br>23 oficinas<br>4 ba&ntilde;os</td><td align="right">Techo de material<br>Buen Estado<br>Sin entrada<br></td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		</span>
+
+</td><td align="right"><span style="font-size:9pt;">27/07/2016</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+	</tr>
+	</table>
+	</div>
+
+
+||950LO0426,s,2176,0||[['950LO0426',-56.12297058105469,-34.89916625088091,'Alvaro Eirale','11000','d']]

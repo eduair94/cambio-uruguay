@@ -16,6 +16,9 @@ import { harvestMercadoLibre } from "./mercadolibre";
 // by headless browsers (only in the full run; the hourly one launches no Chrome), with one copy of
 // each flat across networks. See ./social/index.ts.
 import { harvestSocial } from "./social";
+// alquileres.uy (the BuscandoCasa network): one of the sites the r/uruguay thread "Páginas para
+// buscar alquileres" named that no other source covered. Full run only. See ./alquileresuy.ts.
+import { harvestAlquileresUy } from "./alquileresuy";
 import type { RentalSourceResult } from "./types";
 import { applyRentalTextFacts } from "../textFacts";
 
@@ -32,15 +35,16 @@ export interface RentalHarvest {
  * the same advert.
  */
 export async function harvestRentalMarket(mode: "full" | "fast", usdUyu: number): Promise<RentalHarvest> {
-  const [mercadolibre, infocasas, facebook, casasweb, elpais, social] = await Promise.all([
+  const [mercadolibre, infocasas, facebook, casasweb, elpais, social, alquileresuy] = await Promise.all([
     harvestMercadoLibre(mode, usdUyu),
     harvestInfoCasas(mode, usdUyu),
     harvestFacebookMarketplace(mode, usdUyu),
     harvestCasasweb(mode, usdUyu),
     harvestElpais(mode, usdUyu),
     harvestSocial(mode, usdUyu),
+    harvestAlquileresUy(mode, usdUyu),
   ]);
-  const runs: RentalSourceResult[] = [mercadolibre, infocasas, facebook, casasweb, elpais, ...social];
+  const runs: RentalSourceResult[] = [mercadolibre, infocasas, facebook, casasweb, elpais, ...social, alquileresuy];
   // What each advert's own words say about furniture and the contract period (textFacts.ts), the
   // same rule for every portal.
   for (const run of runs) run.listings = run.listings.map(applyRentalTextFacts);

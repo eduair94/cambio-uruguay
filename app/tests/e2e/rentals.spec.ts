@@ -109,6 +109,7 @@ const fixtureCoverage: RentalCoverage = {
     { key: 'tiktok', properties: 12 },
     { key: 'instagram', properties: 9 },
     { key: 'facebookreels', properties: 4 },
+    { key: 'alquileresuy', properties: 7 },
   ],
 }
 
@@ -892,6 +893,7 @@ test.describe('rental directory', () => {
       ['tiktok', 'TikTok', '12 resultados'],
       ['instagram', 'Instagram', '9 resultados'],
       ['facebookreels', 'Facebook Reels', '4 resultados'],
+      ['alquileresuy', 'alquileres.uy', '7 resultados'],
     ]
     for (const [key, name, count] of expectedSources) {
       const source = page.getByTestId(`rental-coverage-source-${key}`)

@@ -14,6 +14,7 @@ export type OpportunitySource =
   | 'tiktok'
   | 'instagram'
   | 'facebookreels'
+  | 'alquileresuy'
 export type OpportunityAreaBasis = 'built' | 'total' | 'reported'
 
 export interface OpportunityMoney {

@@ -1,5 +1,63 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## alquileres.uy, y las páginas del hilo de r/uruguay — 9 de octubre de 2026
+
+El pedido: revisar que el directorio lea todas las páginas que recomienda el hilo de r/uruguay
+[«Páginas para buscar alquileres»](https://www.reddit.com/r/uruguay/comments/qoou5v/paginas_para_buscar_alquileres/)
+y sumar las que falten. La auditoría sitio por sitio, con sus mediciones, está en
+[`rental-sources-reddit-thread-2026-10-09.md`](../research/rental-sources-reddit-thread-2026-10-09.md).
+En corto: InfoCasas, Marketplace y Mercado Libre ya se leían; Gallito es hoy el catálogo de
+Inmuebles El País; las webs de Remax, ACSA, Braglia, Kosak, Lars y Campiglia publican en los
+portales que se leen (entre el 76 % y el 97 % de lo suyo ya estaba) y no dan número de puerta con
+unidad, así que leerlas sólo duplicaría tarjetas; Dueño Directo es un archivo congelado (su aviso
+más nuevo es de ~agosto de 2024 y nada vence); Baldovino no tiene sitio; la ANV no publica avisos.
+**Lo que faltaba de verdad era alquileres.uy**, y desde ese día es la fuente `alquileresuy`
+(`classes/rentals/sources/alquileresuy.ts`, tests en `tests/rentals/alquileresuy.test.ts`).
+
+- **Una base, dos sitios.** alquileres.uy y www.buscandocasa.com corren el mismo buscador en ASP
+  clásico (operador sasua) y contestan con las mismas referencias; alquileres.uy suma el campo
+  oculto `idinmo=G10`, que amplía las inmobiliarias. Se lee sólo alquileres.uy.
+- **Cómo se lee.** Una POST por categoría de alquiler anual (`ap ca lo of te ga ch`) a
+  `http://alquileres.uy/0/0_ina_v30.asp?fav=0`, con los radios por defecto del formulario (sin ellos
+  contesta cero) y `nresultados=500`: cada categoría entra entera en una página. El sitio sólo
+  contesta por HTTP y en ISO-8859-1 (se lee con `fetchBuffer` y se decodifica `windows-1252`). La
+  respuesta es `total||tarjetas||ref||[pines]`; una página sin total, o con total y sin tarjetas, es
+  una búsqueda fallida, nunca una categoría vacía. Las clases de las tarjetas dependen de campos que
+  no mandamos (en vivo `div_resultados_ap_0_`, en la captura del navegador `_0_0`): sólo el prefijo
+  identifica una tarjeta.
+- **La ficha** (`https://<ref>.ver.uy/`, la dirección que comparte el propio sitio): una por aviso
+  aceptado, viviendas primero, con tope de cantidad y de reloj. Trae la descripción (los
+  comentarios, saneados con `rentalDescription`), las **garantías aceptadas** como lista (90 de 99
+  filas), las superficies edificada y de terreno y las comodidades tildadas: las que se llaman como
+  las de InfoCasas entran solas a los filtros (Ascensor, Balcón, Aire Acondicionado, Jardín, Patio,
+  Parrillero, Barbacoa). Un ✓ es una afirmación; un ✗ es el valor por defecto del formulario y no
+  dice nada. "Amueblado" tildado va como `furnishedPortal`; "Traspaso" tildado, al título.
+  Todos los subdominios salen del mismo servidor y se espacian juntos (`throttleKey: "ver.uy"`,
+  nuevo en `net.ts`). "No existe" retira el aviso; una ficha de OTRO aviso (el `<title>` trae la
+  referencia) no lo enriquece. El bloque de la inmobiliaria (teléfonos, correo, RUT) no se lee.
+- **Frescura.** No hay estado ni vencimiento: la fecha de la tarjeta es la de la última
+  actualización y había avisos de 2016. De los sorteados que nadie tocaba hacía más de 180 días, 1 de
+  14 estaba en otro portal; de los actualizados en 90 días, 12 de 23. Un aviso sin actualizar en
+  `RENTALS_AU_MAX_AGE_DAYS` (180) no se publica — la queja del hilo sobre Gallito. Esa fecha nunca es
+  `publishedAt`.
+- **Lo que no se inventa.** La tarjeta no tiene titular: el título dice sólo lo que ella dice
+  ("Apartamento de 3 dormitorios en alquiler en La Blanqueada", "Monoambiente en alquiler en Barra
+  Carrasco"). El número de puerta, sólo si la línea es una calle y una puerta de 3 a 5 dígitos
+  ("CALLE 77" es una calle de Solymar, no la puerta 77): 5 de 99. "COSTA DE ORO" es un tramo de costa
+  y el barrio nombra el balneario; "CD. DE LA COSTA", "LA PAZ" y "PIRIÁPOLIS" son localidades
+  (`locality`). El vendedor es siempre una inmobiliaria: es una red de inmobiliarias. Un pin que
+  comparten tres avisos es un pin por defecto y no se publica.
+- **Completitud.** `complete: true` sólo si las siete categorías contestaron y cada una trajo tantas
+  tarjetas como su total; entonces un aviso que dejó de verse —o que cruzó los 180 días— caduca. Si
+  con 20 tarjetas o más se descarta todo, cambió la página: la fuente queda caída y se conserva lo
+  anterior.
+- **Sólo la corrida completa.** La horaria no pide nada ("sólo en la corrida completa"), como
+  TikTok: estos avisos se mueven en semanas. `RENTALS_AU_ENABLED=0` la apaga sin desplegar.
+- **Lectura en vivo, 9/10/2026** (sin escribir en la base): 364 s, 7 búsquedas, 191 avisos,
+  **99 publicables** (73 sin actualizar hace más de 180 días, 19 reservados), 99 fichas leídas,
+  `complete: true`. Canelones 54, Montevideo 34, Maldonado 11; 29 apartamentos, 53 casas, 17
+  comerciales y terrenos; 30 con pin. De 40 sorteados el mismo día, 26 no estaban en el índice.
+
 ## Plazo (anual o invernal), con o sin muebles, y los que buscan — 9 de octubre de 2026
 
 Un lector en r/uruguay: "vi gente que se ofrece para alquilar y aparece como alquiler" y "estaría
@@ -914,6 +972,7 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 | **TikTok** | un Chrome real por corrida (puppeteer, **a través del proxy de `proxy.txt`**: desde la IP del VPS toda lista vuelve vacía) lee las páginas de hashtag (`/tag/...`) y de cuenta (`/@user`) capturando `item_list`; un video suelto se lee por HTTP plano de su propia página. Sólo la corrida completa | precio, gastos comunes, dormitorios/baños/m², tipo, barrio y departamento, garantías y **la fecha real de publicación**, todo leído de la LEYENDA (`classes/rentals/sources/tiktok/caption.ts`, precisión sobre recall); coordenada sólo de una esquina del propio texto geocodificada y aceptada | dirección exacta; el teléfono (está en la leyenda y se borra); unificación con otros portales; la foto es el cover firmado del video y vence en ~36–48 h, se refresca al releer la cuenta |
 | **Instagram** | un Chrome headless propio, **sin sesión y sin proxy** (desde la IP del VPS contesta; por el proxy dio error de red): el perfil de cada cuenta del registro (12 posts) y la página de cada post que la memoria no tiene. Sólo la corrida completa | lo mismo que TikTok, leído de la LEYENDA; la fecha real (`taken_at`) y la portada | descubrimiento por hashtag (exige sesión); más de 12 posts por cuenta; el teléfono de la leyenda (se borra); la portada vence en días y se refresca al releer |
 | **Facebook Reels** | un Chrome headless propio, **sin sesión** (nunca el del perfil de Marketplace): búsquedas de video y páginas de hashtag, cada resultado trae su historia entera. Sólo la corrida completa | lo mismo que TikTok, leído de la LEYENDA; `publish_time`, autor, `/reel/<id>/` y miniatura | más de ~5 resultados por página (el resto exige sesión); fotos (no son reels); el teléfono de la leyenda |
+| **alquileres.uy** (red BuscandoCasa) | una POST por categoría de alquiler anual al buscador ASP del sitio (HTTP, ISO-8859-1, `nresultados=500`) y la ficha `https://<ref>.ver.uy/` de cada aviso aceptado. Sólo la corrida completa | precio, gastos comunes (o "NO"), barrio y localidad, dormitorios/baños/m² edificados y de terreno, garaje, inmobiliaria, pin en un tercio de los avisos, fotos por HTTPS (buscandocasa.com); de la ficha, descripción, **garantías aceptadas como lista**, comodidades tildadas y "Amueblado" | número de puerta (5 de 99); fecha de publicación (la de la tarjeta es la última actualización y sólo sirve para descartar lo de más de 180 días); estado del aviso (no hay: se usa la frescura); contactos (no se leen) |
 
 Verificado localmente el **2026-09-04** con la UA propia: Gallito directo devolvió **403 Cloudflare** en
 `https://www.gallito.com.uy/inmuebles/alquiler`; no se sortea esa protección. Su nuevo portal
@@ -1068,7 +1127,7 @@ publicaron reglas allí; no demuestra un permiso contractual ni garantiza acceso
 
 | candidato | evidencia pública | utilidad y condición pendiente |
 |---|---|---|
-| [BuscandoCasa](https://www.buscandocasa.com/) | Inicio, [40 apartamentos](https://www.buscandocasa.com/bc/0_promocion.asp?promo=1) y [40 casas](https://www.buscandocasa.com/bc/0_promocion.asp?promo=2): HTTP 200; robots 404. Las tarjetas incluyen referencia, operación, moneda, precio, ubicación, dormitorios, baños, superficie y una fecha. Una [ficha enlazada](https://885caa866.ver.uy/) respondió 200 y conserva referencia e inmobiliaria. | Candidato útil para investigar cobertura independiente. La página de apartamentos llega hasta septiembre de 2025 y la de casas hasta abril de 2026; sólo 7 de las 80 fechas son del 26 de agosto en adelante. La fecha de tarjeta no certifica disponibilidad. Antes de integrar: validar significado de esa fecha, circuito de bajas, paginación/búsqueda pública y aporte neto contra el índice; estos listados de últimos 40 sólo permitirían cobertura parcial. |
+| [BuscandoCasa](https://www.buscandocasa.com/) | Inicio, [40 apartamentos](https://www.buscandocasa.com/bc/0_promocion.asp?promo=1) y [40 casas](https://www.buscandocasa.com/bc/0_promocion.asp?promo=2): HTTP 200; robots 404. Las tarjetas incluyen referencia, operación, moneda, precio, ubicación, dormitorios, baños, superficie y una fecha. Una [ficha enlazada](https://885caa866.ver.uy/) respondió 200 y conserva referencia e inmobiliaria. | Candidato útil para investigar cobertura independiente. La página de apartamentos llega hasta septiembre de 2025 y la de casas hasta abril de 2026; sólo 7 de las 80 fechas son del 26 de agosto en adelante. La fecha de tarjeta no certifica disponibilidad. Antes de integrar: validar significado de esa fecha, circuito de bajas, paginación/búsqueda pública y aporte neto contra el índice; estos listados de últimos 40 sólo permitirían cobertura parcial. **Resuelto el 2026-10-09:** la fecha es la de la última actualización, no hay bajas (se usa la frescura), la búsqueda completa es la de alquileres.uy (misma base) y 26 de 40 sorteados no estaban: es la fuente `alquileresuy` (sección de arriba). |
 | [Inmuebles.com.uy](https://www.inmuebles.com.uy/) | Inicio y [detalle 254656](https://www.inmuebles.com.uy/detalle.aspx?id=254656): HTTP 200; robots 404. El detalle enlaza fotos, «Nosotros» y marca de Casasweb; referencia 254656. Ofrece campos estructurados adicionales de baños, superficie y gastos. | Evidencia de catálogo compartido con Casasweb, no prueba de una fuente independiente. No añadir otra etiqueta de portal ni contar su espejo como aumento del índice. Explorar eventualmente esos metadatos bajo la fuente existente, verificando antes que los ceros y negativos no sean valores por defecto. |
 
 No se almacenan las descripciones ni se convierten sus afirmaciones comerciales en textos
@@ -1459,6 +1518,15 @@ El País vuelve a tener variables propias, ahora que importa:
 | `RENTALS_EP_BROWSER` | `1` | `0` deja la fuente en HTTP plano: se abren las 3 búsquedas que Cloudflare deja pasar y nada más |
 | `RENTALS_EP_CHROME` | — | ruta al Chrome a usar. Se prueban esta, `PUPPETEER_EXECUTABLE_PATH`, `/usr/bin/google-chrome-stable` y por último el Chromium propio de puppeteer |
 | `RENTALS_EP_BROWSER_BUDGET_MS` | 360000 | techo duro de toda la fase de navegador. Un Chrome colgado en este VPS no es un job lento, es una caída |
+
+alquileres.uy (sólo la corrida completa; ver la sección "alquileres.uy" arriba):
+
+| variable | por defecto | qué hace |
+|---|---|---|
+| `RENTALS_AU_ENABLED` | `1` | `0` apaga la fuente: cero peticiones, cero filas |
+| `RENTALS_AU_MAX_AGE_DAYS` | 180 | un aviso sin actualizar en más días que esto no se publica (y, con `complete`, caduca) |
+| `RENTALS_AU_MAX_DETAILS` | 250 | fichas `<ref>.ver.uy` por corrida; las que no se leen publican la tarjeta sola |
+| `RENTALS_AU_DETAIL_MINUTES` | 12 | tope de reloj para leer fichas |
 
 TikTok (sólo la corrida completa; ver la sección "TikTok" arriba):
 

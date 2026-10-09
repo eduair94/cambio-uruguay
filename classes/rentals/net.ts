@@ -41,6 +41,12 @@ export interface FetchOptions {
   /** Skip the throttle — only for our own bridges on the same box. */
   unthrottled?: boolean;
   /**
+   * Pace this request with others that share the key instead of with its own host. alquileres.uy
+   * serves every advert on its own subdomain (`<ref>.ver.uy`) from ONE server: throttled per host,
+   * a hundred detail pages would each count as a first visit and arrive back to back.
+   */
+  throttleKey?: string;
+  /**
    * Told why the request came back null: `HTTP 403`, `tiempo agotado (40000 ms)`,
    * `error de red ECONNREFUSED`, `cuerpo ilegible`. Run notes are published on the site, and an
    * error MESSAGE names the host it failed to reach, so only a status or an error code is reported.
@@ -143,7 +149,7 @@ async function run<T>(url: string, options: FetchOptions, read: (response: Respo
       return null;
     }
   };
-  return options.unthrottled ? task() : throttled(hostOf(url), task);
+  return options.unthrottled ? task() : throttled(options.throttleKey || hostOf(url), task);
 }
 
 export async function fetchText(url: string, options: FetchOptions = {}): Promise<string | null> {

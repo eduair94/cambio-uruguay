@@ -1,0 +1,704 @@
+9||
+		<div class="body-content-inner-wrapper">
+				<div class="body-content">
+					<div class="table container">
+						
+						<div class="table-row body">
+							<div class="table-cell body-content-outer-wrapper">
+								<div class="body-content-inner-wrapper">
+									<div class="body-content">
+										<div id="r_resultados" class="x_resultados">
+	
+	<div id="mas_resultados" style="width:100%;overflow:hidden">
+
+
+<div id="div_111AP5710" class="div_resultados_ap_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr0111AP5710">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="885AP779"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr1111AP5710">
+			<td id="td1111AP5710" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('111AP571','s',1041,'0');"><b><span class="list_numero">1</span> ANTIBES</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'111AP571','APA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('111AP571',0);document.getElementById('div_111AP5710').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'111AP571','APA','0')">
+						<img id="corazon2_111AP5710" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'111AP571','APA','0')">
+						<img id="corazon_111AP5710" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s38 dedo" valign="top" style="font-size:12pt" id="tr4111AP5710" onclick="cargar_ficha('111AP571','s',1041,'0');">
+
+	<td colspan=2 id="td5111AP5710"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/111/111AP571_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/111/111AP571_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td5111AP5710','../fotos/111/111AP571.jpg');" border=0 title="14 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr2111AP5710" onclick="cargar_ficha('111AP571','s',1041,'0');">
+		<td id="td3111AP5710" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre111AP5710" >
+			US$ 2.150
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr4111AP5710"  onclick="cargar_ficha('111AP571','s',1041,'0');">
+		<td id="td4111AP5710" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>MONTEVIDEO / PUNTA&nbsp;CARRETAS</b> </b><br><span style="font-size:10pt">JULIO MARÍA SOSA Y PATRIA</span></div>
+		</td>
+	</tr>
+	<tr id="tr2111AP5710"><td id="td2111AP5710" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr7111AP5710" onclick="cargar_ficha('111AP571','s',1041,'0');">
+		<td colspan="1" id="td7111AP5710" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td class="haundi" rowspan="2" align="right" width="7%">2</td><td class="txiki" width="33%">2 suits / 2 placares</td><td class="haundi" rowspan="2" align="right" width="10%">2</td><td class="txiki" width="20%">+1 toilette</td><td class="haundi" rowspan="2" align="right" width="20%">130<span class="txiki">m&sup2;</span></td></tr><tr valign="top"><td class="txiki"><b>dorm.</b></td><td class="txiki">ba&ntilde;os</td></tr></tbody></table>
+		</td>
+	</tr>
+	<tr class="dedo" id="tr6111AP5710" onclick="cargar_ficha('111AP571','s',1041,'0');">
+		<td colspan="1" id="td6111AP5710"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>A 200mts del mar<br>Frente<br>Planta Baja<br>Impecable</td><td align="right">Garage 1 auto<br>Gtos. Comunes: <b>$  17.650</b></td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		</span>
+
+</td><td align="right"><span style="font-size:9pt;">28/12/2023</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+	</tr>
+	</table>
+	</div>
+
+
+<div id="div_111AP6070" class="div_resultados_ap_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr0111AP6070">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="003APcv1228"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr1111AP6070">
+			<td id="td1111AP6070" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('111AP607','s',1041,'0');"><b><span class="list_numero">5</span> ANTIBES</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'111AP607','APA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('111AP607',0);document.getElementById('div_111AP6070').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'111AP607','APA','0')">
+						<img id="corazon2_111AP6070" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'111AP607','APA','0')">
+						<img id="corazon_111AP6070" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s3 dedo" valign="top" style="font-size:12pt" id="tr4111AP6070" onclick="cargar_ficha('111AP607','s',1041,'0');">
+
+	<td colspan=2 id="td5111AP6070"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/111/111AP607_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/111/111AP607_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td5111AP6070','../fotos/111/111AP607.jpg');" border=0 title="13 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr2111AP6070" onclick="cargar_ficha('111AP607','s',1041,'0');">
+		<td id="td3111AP6070" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre111AP6070" >
+			US$ 1.300
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr4111AP6070"  onclick="cargar_ficha('111AP607','s',1041,'0');">
+		<td id="td4111AP6070" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>MONTEVIDEO / MALV&Iacute;N</b> </b><br><span style="font-size:10pt">CONCEPCIÓN DEL URUGUAY Y RAMBLA</span></div>
+		</td>
+	</tr>
+	<tr id="tr2111AP6070"><td id="td2111AP6070" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr7111AP6070" onclick="cargar_ficha('111AP607','s',1041,'0');">
+		<td colspan="1" id="td7111AP6070" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td class="haundi" rowspan="2" align="right" width="7%">1</td><td class="txiki" width="33%">1 placard</td><td class="haundi" rowspan="2" align="right" width="10%">1</td><td class="txiki" width="20%"></td><td class="haundi" rowspan="2" align="right" width="20%">41<span class="txiki">m&sup2;</span></td></tr><tr valign="top"><td class="txiki"><b>dorm.</b></td><td class="txiki">ba&ntilde;o</td></tr></tbody></table>
+		</td>
+	</tr>
+	<tr class="dedo" id="tr6111AP6070" onclick="cargar_ficha('111AP607','s',1041,'0');">
+		<td colspan="1" id="td6111AP6070"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>Vista al mar<br>Junto al mar<br>Frente<br>10&ordm; piso<br>Buen Estado</td><td align="right">Gtos. Comunes: NO&nbsp;&nbsp;&nbsp;</td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		</span>
+
+</td><td align="right"><span style="font-size:9pt;">23/01/2026</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+	</tr>
+	</table>
+	</div>
+
+
+<div id="div_259AP50100" class="div_resultados_ap_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr0259AP50100">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="111AP588"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr1259AP50100">
+			<td id="td1259AP50100" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('259AP5010','s',2315,'0');"><b><span class="list_numero">7</span> ARQUICASA</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'259AP5010','APA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('259AP5010',0);document.getElementById('div_259AP50100').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'259AP5010','APA','0')">
+						<img id="corazon2_259AP50100" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'259AP5010','APA','0')">
+						<img id="corazon_259AP50100" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s38 dedo" valign="top" style="font-size:12pt" id="tr4259AP50100" onclick="cargar_ficha('259AP5010','s',2315,'0');">
+
+	<td colspan=2 id="td5259AP50100"  class="resultadost_foto" valign="top" align="center" style="background-image:url('0/TV/foto_blanco.svg');background-color:#444;background-repeat:no-repeat;background-position:center">
+
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr2259AP50100" onclick="cargar_ficha('259AP5010','s',2315,'0');">
+		<td id="td3259AP50100" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre259AP50100" >
+			$ 48.000
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr4259AP50100"  onclick="cargar_ficha('259AP5010','s',2315,'0');">
+		<td id="td4259AP50100" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>MONTEVIDEO / PUNTA&nbsp;CARRETAS</b> </b><br><span style="font-size:10pt">MONTERO 3104 AP</span></div>
+		</td>
+	</tr>
+	<tr id="tr2259AP50100"><td id="td2259AP50100" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr7259AP50100" onclick="cargar_ficha('259AP5010','s',2315,'0');">
+		<td colspan="1" id="td7259AP50100" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td class="haundi" rowspan="2" align="right" width="7%">2</td><td class="txiki" width="33%">&nbsp;</td><td class="haundi" rowspan="2" align="right" width="10%">2</td><td class="txiki" width="20%"></td><td class="haundi" rowspan="2" align="right" width="20%">80<span class="txiki">m&sup2;</span></td></tr><tr valign="top"><td class="txiki"><b>dorm.</b></td><td class="txiki">ba&ntilde;os</td></tr></tbody></table>
+		</td>
+	</tr>
+	<tr class="dedo" id="tr6259AP50100" onclick="cargar_ficha('259AP5010','s',2315,'0');">
+		<td colspan="1" id="td6259AP50100"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>Junto al mar<br>Frente<br>Planta Baja<br>Impecable</td><td align="right">Gtos. Comunes: ?</td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		</span>
+
+</td><td align="right"><span style="font-size:9pt;">16/09/2025</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+	</tr>
+	</table>
+	</div>
+
+
+<div id="div_696AP12260" class="div_resultados_ap_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr0696AP12260">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="0F4APL52"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr1696AP12260">
+			<td id="td1696AP12260" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('696AP1226','s',1829,'0');"><b><span class="list_numero">11</span> ABACOS</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'696AP1226','APA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('696AP1226',0);document.getElementById('div_696AP12260').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'696AP1226','APA','0')">
+						<img id="corazon2_696AP12260" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'696AP1226','APA','0')">
+						<img id="corazon_696AP12260" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s33 dedo" valign="top" style="font-size:12pt" id="tr4696AP12260" onclick="cargar_ficha('696AP1226','s',1829,'0');">
+
+	<td colspan=2 id="td5696AP12260"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/696/696AP1226_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/696/696AP1226_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td5696AP12260','../fotos/696/696AP1226.jpg');" border=0 title="16 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr2696AP12260" onclick="cargar_ficha('696AP1226','s',1829,'0');">
+		<td id="td3696AP12260" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre696AP12260" >
+			$ 35.900
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr4696AP12260"  onclick="cargar_ficha('696AP1226','s',1829,'0');">
+		<td id="td4696AP12260" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>MONTEVIDEO / LA&nbsp;BLANQUEADA</b> </b><br><span style="font-size:10pt">BR ARTIGAS Y MARTIN FIERRO HERMOSO TIPO CASITA!!!</span></div>
+		</td>
+	</tr>
+	<tr id="tr2696AP12260"><td id="td2696AP12260" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr7696AP12260" onclick="cargar_ficha('696AP1226','s',1829,'0');">
+		<td colspan="1" id="td7696AP12260" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td class="haundi" rowspan="2" align="right" width="7%">3</td><td class="txiki" width="33%">2 placares</td><td class="haundi" rowspan="2" align="right" width="10%">2</td><td class="txiki" width="20%"></td><td class="haundi" rowspan="2" align="right" width="20%">70<span class="txiki">m&sup2;</span></td></tr><tr valign="top"><td class="txiki"><b>dorm.</b></td><td class="txiki">ba&ntilde;os</td></tr></tbody></table>
+		</td>
+	</tr>
+	<tr class="dedo" id="tr6696AP12260" onclick="cargar_ficha('696AP1226','s',1829,'0');">
+		<td colspan="1" id="td6696AP12260"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>Frente<br>Planta Baja<br>Impecable</td><td align="right">Garage 1 auto<br>Gtos. Comunes: <b>$  7.800</b></td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		</span>
+
+</td><td align="right"><span style="font-size:9pt;">04/09/2026</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+	</tr>
+	</table>
+	</div>
+
+
+<div id="div_0F4APL520" class="div_resultados_ap_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr00F4APL520">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="033AP03100"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr10F4APL520">
+			<td id="td10F4APL520" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('0F4APL52','s',778,'0');"><b><span class="list_numero">12</span> MIRAMAR</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'0F4APL52','APA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('0F4APL52',0);document.getElementById('div_0F4APL520').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'0F4APL52','APA','0')">
+						<img id="corazon2_0F4APL520" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'0F4APL52','APA','0')">
+						<img id="corazon_0F4APL520" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s231 dedo" valign="top" style="font-size:12pt" id="tr40F4APL520" onclick="cargar_ficha('0F4APL52','s',778,'0');">
+
+	<td colspan=2 id="td50F4APL520"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/0F4/0F4APL52_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/0F4/0F4APL52_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td50F4APL520','../fotos/0F4/0F4APL52.jpg');" border=0 title="17 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr20F4APL520" onclick="cargar_ficha('0F4APL52','s',778,'0');">
+		<td id="td30F4APL520" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre0F4APL520" >
+			$ 35.000
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr40F4APL520"  onclick="cargar_ficha('0F4APL52','s',778,'0');">
+		<td id="td40F4APL520" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>PIRI&Aacute;POLIS / CENTRO</b> </b><br><span style="font-size:10pt">RAMBLA DE LOS ARGENTINOS, PIRIÁPOLIS</span></div>
+		</td>
+	</tr>
+	<tr id="tr20F4APL520"><td id="td20F4APL520" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr70F4APL520" onclick="cargar_ficha('0F4APL52','s',778,'0');">
+		<td colspan="1" id="td70F4APL520" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td class="haundi" rowspan="2" align="right" width="7%">2</td><td class="txiki" width="33%">2 placares</td><td class="haundi" rowspan="2" align="right" width="10%">1</td><td class="txiki" width="20%"></td><td class="haundi" rowspan="2" align="right" width="20%">65<span class="txiki">m&sup2;</span></td></tr><tr valign="top"><td class="txiki"><b>dorm.</b></td><td class="txiki">ba&ntilde;o</td></tr></tbody></table>
+		</td>
+	</tr>
+	<tr class="dedo" id="tr60F4APL520" onclick="cargar_ficha('0F4APL52','s',778,'0');">
+		<td colspan="1" id="td60F4APL520"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>Vista al mar<br>Junto al mar<br>Frente<br>6&ordm; piso<br>Buen Estado</td><td align="right">Garage 1 auto<br>Gtos. Comunes: NO&nbsp;&nbsp;&nbsp;</td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		</span>
+
+</td><td align="right"><span style="font-size:9pt;">24/03/2026</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+	</tr>
+	</table>
+	</div>
+
+
+<div id="div_007AP021020" class="div_resultados_ap_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr0007AP021020">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="007AP01799"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr1007AP021020">
+			<td id="td1007AP021020" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('007AP02102','s',644,'0');"><b><span class="list_numero">17</span> NIETO</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'007AP02102','APA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('007AP02102',0);document.getElementById('div_007AP021020').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'007AP02102','APA','0')">
+						<img id="corazon2_007AP021020" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'007AP02102','APA','0')">
+						<img id="corazon_007AP021020" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s190 dedo" valign="top" style="font-size:12pt" id="tr4007AP021020" onclick="cargar_ficha('007AP02102','s',644,'0');">
+
+	<td colspan=2 id="td5007AP021020"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/007/007AP02102_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/007/007AP02102_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td5007AP021020','../fotos/007/007AP02102.jpg');" border=0 title="15 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr2007AP021020" onclick="cargar_ficha('007AP02102','s',644,'0');">
+		<td id="td3007AP021020" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre007AP021020" >
+			&iexcl;$ 31.500!
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr4007AP021020"  onclick="cargar_ficha('007AP02102','s',644,'0');">
+		<td id="td4007AP021020" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>CD.&nbsp;DE&nbsp;LA&nbsp;COSTA / BARRA&nbsp;CARRASCO</b> </b><br><span style="font-size:10pt">A MTS. DE AVDA. DE LAS AMERICAS - CARRASCO TOWER</span></div>
+		</td>
+	</tr>
+	<tr id="tr2007AP021020"><td id="td2007AP021020" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr7007AP021020" onclick="cargar_ficha('007AP02102','s',644,'0');">
+		<td colspan="1" id="td7007AP021020" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td class="haundi" rowspan="2" align="right" width="7%">1</td><td class="txiki" width="33%">&nbsp;</td><td class="haundi" rowspan="2" align="right" width="10%">1</td><td class="txiki" width="20%"></td><td class="haundi" rowspan="2" align="right" width="20%">30<span class="txiki">m&sup2;</span></td></tr><tr valign="top"><td class="txiki"><b>amb.</b></td><td class="txiki">ba&ntilde;o</td></tr></tbody></table>
+		</td>
+	</tr>
+	<tr class="dedo" id="tr6007AP021020" onclick="cargar_ficha('007AP02102','s',644,'0');">
+		<td colspan="1" id="td6007AP021020"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>Frente<br>6&ordm; piso<br>A estrenar</td><td align="right">Central Losa<br>Gtos. Comunes: <b>$  3.500</b></td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		</span>
+
+</td><td align="right"><span style="font-size:9pt;">28/07/2026</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+	</tr>
+	</table>
+	</div>
+
+
+<div id="div_0F8APAT02122160" class="div_resultados_ap_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr00F8APAT02122160">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="0Z8AP1791"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr10F8APAT02122160">
+			<td id="td10F8APAT02122160" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('0F8APAT0212216','s',784,'0');"><b><span class="list_numero">19</span> MORENO</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'0F8APAT0212216','APA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('0F8APAT0212216',0);document.getElementById('div_0F8APAT02122160').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'0F8APAT0212216','APA','0')">
+						<img id="corazon2_0F8APAT02122160" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'0F8APAT0212216','APA','0')">
+						<img id="corazon_0F8APAT02122160" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s147 dedo" valign="top" style="font-size:12pt" id="tr40F8APAT02122160" onclick="cargar_ficha('0F8APAT0212216','s',784,'0');">
+
+	<td colspan=2 id="td50F8APAT02122160"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/0F8/0F8APAT0212216_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/0F8/0F8APAT0212216_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td50F8APAT02122160','../fotos/0F8/0F8APAT0212216.jpg');" border=0 title="15 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr20F8APAT02122160" onclick="cargar_ficha('0F8APAT0212216','s',784,'0');">
+		<td id="td30F8APAT02122160" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre0F8APAT02122160" >
+			$ 31.000
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr40F8APAT02122160"  onclick="cargar_ficha('0F8APAT0212216','s',784,'0');">
+		<td id="td40F8APAT02122160" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>COSTA&nbsp;DE&nbsp;ORO / ATL&Aacute;NTIDA&nbsp;SUR</b> </b><br><span style="font-size:10pt">APTO PROXIMO AL MAR</span></div>
+		</td>
+	</tr>
+	<tr id="tr20F8APAT02122160"><td id="td20F8APAT02122160" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr70F8APAT02122160" onclick="cargar_ficha('0F8APAT0212216','s',784,'0');">
+		<td colspan="1" id="td70F8APAT02122160" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td class="haundi" rowspan="2" align="right" width="7%">2</td><td class="txiki" width="33%">1 placard</td><td class="haundi" rowspan="2" align="right" width="10%">1</td><td class="txiki" width="20%"></td><td class="haundi" rowspan="2" align="right" width="20%">55<span class="txiki">m&sup2;</span></td></tr><tr valign="top"><td class="txiki"><b>dorm.</b></td><td class="txiki">ba&ntilde;o</td></tr></tbody></table>
+		</td>
+	</tr>
+	<tr class="dedo" id="tr60F8APAT02122160" onclick="cargar_ficha('0F8APAT0212216','s',784,'0');">
+		<td colspan="1" id="td60F8APAT02122160"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>Frente<br>Planta Baja<br>Buen Estado</td><td align="right">Losa Individual A Gas<br>Cochera 1 auto<br>Gtos. Comunes: <b>$  1.500</b></td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		<span style='color:red'>&#9733;&#9733;&#9733;</span></span>
+
+</td><td align="right"><span style="font-size:9pt;">03/10/2026</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+	</tr>
+	</table>
+	</div>
+
+
+<div id="div_696AP16420" class="div_resultados_ap_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr0696AP16420">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="0Z8AP1766"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr1696AP16420">
+			<td id="td1696AP16420" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('696AP1642','s',1829,'0');"><b><span class="list_numero">21</span> ABACOS</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'696AP1642','APA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('696AP1642',0);document.getElementById('div_696AP16420').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'696AP1642','APA','0')">
+						<img id="corazon2_696AP16420" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'696AP1642','APA','0')">
+						<img id="corazon_696AP16420" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s381 dedo" valign="top" style="font-size:12pt" id="tr4696AP16420" onclick="cargar_ficha('696AP1642','s',1829,'0');">
+
+	<td colspan=2 id="td5696AP16420"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/696/696AP1642_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/696/696AP1642_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td5696AP16420','../fotos/696/696AP1642.jpg');" border=0 title="24 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr2696AP16420" onclick="cargar_ficha('696AP1642','s',1829,'0');">
+		<td id="td3696AP16420" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre696AP16420" >
+			$ 30.000
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr4696AP16420"  onclick="cargar_ficha('696AP1642','s',1829,'0');">
+		<td id="td4696AP16420" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>MONTEVIDEO / CORD&Oacute;N&nbsp;SUR</b> </b><br><span style="font-size:10pt">A ESTRENAR CON MÚLTIPLES AMENITIES DE 2 DORM.!!!</span></div>
+		</td>
+	</tr>
+	<tr id="tr2696AP16420"><td id="td2696AP16420" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr7696AP16420" onclick="cargar_ficha('696AP1642','s',1829,'0');">
+		<td colspan="1" id="td7696AP16420" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td class="haundi" rowspan="2" align="right" width="7%">2</td><td class="txiki" width="33%">&nbsp;</td><td class="haundi" rowspan="2" align="right" width="10%">1</td><td class="txiki" width="20%"></td><td class="haundi" rowspan="2" align="right" width="20%">50<span class="txiki">m&sup2;</span></td></tr><tr valign="top"><td class="txiki"><b>dorm.</b></td><td class="txiki">ba&ntilde;o</td></tr></tbody></table>
+		</td>
+	</tr>
+	<tr class="dedo" id="tr6696AP16420" onclick="cargar_ficha('696AP1642','s',1829,'0');">
+		<td colspan="1" id="td6696AP16420"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>A 1000mts del mar<br>Contra Frente<br>3&ordm; piso<br>A estrenar</td><td align="right">Garage 1 auto<br>Gtos. Comunes: <b>$  7.000</b></td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		<span style='color:red'>&#9733;&#9733;&#9733;</span></span>
+
+</td><td align="right"><span style="font-size:9pt;">01/10/2026</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+	</tr>
+	</table>
+	</div>
+
+
+<div id="div_253AP160" class="div_resultados_ap_0_0" style="">
+<table border=0 cellpadding=3 cellspacing=0 class="resultados_0_0" xbgcolor="white">
+
+
+	<tr id="tr0253AP160">
+		
+		<td colspan=3 style="padding:0px;display:none;"><a name="696AP1416"><hr style="margin:0px;padding:0px;border:0px;" width=1 size=1></a></td>
+	</tr>
+	
+
+
+		<tr id="tr1253AP160">
+			<td id="td1253AP160" colspan=2 class="resultadost1" valign="middle">
+				<a href="#" style="color:white;display:inline-block;width:147px;line-height:36px;height:36px;float:left;" onclick="cargar_ficha('253AP16','s',1248,'0');"><b><span class="list_numero">23</span> PABLO MUSETTI & ASOC.</b>
+					<a href="javascript:{};" class="corazon" onclick="pincho_cara(3,'253AP16','APA','0');param1('m_05');param0('m_05','RESULTADOS');f_res(0,0);ref_desactivar('253AP16',0);document.getElementById('div_253AP160').scrollIntoView();">
+						<img class="carita" src="0/TV/cara3.svg"/ title="No me gusta"></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(2,'253AP16','APA','0')">
+						<img id="corazon2_253AP160" class="carita" style="background-color:transparent;" src="0/TV/cara2.svg" title="Hum..."></a>
+					<a href="javascript:{}" class="corazon" onclick="pincho_cara(1,'253AP16','APA','0')">
+						<img id="corazon_253AP160" class="carita" style="background-color:transparent;" src="0/TV/cara1.svg" title="Me gusta"></a>
+			
+			</td>
+		</tr>
+
+		<tr class="dedo" xclass="s39 dedo" valign="top" style="font-size:12pt" id="tr4253AP160" onclick="cargar_ficha('253AP16','s',1248,'0');">
+
+	<td colspan=2 id="td5253AP160"  class="resultadost_foto" valign="top" align="center" style="background-image:url('/fotos/253/253AP16_320.jpg');background-size:cover;background-position:center">
+
+		
+			<img class="rounded" src="/fotos/253/253AP16_320.jpg" style="display:none;max-width:100%;max-height:240px;vertical-align: bottom" onerror="this.onerror=null;foto_peq('td5253AP160','../fotos/253/253AP16.jpg');" border=0 title="13 fotos">
+
+		
+	</td>
+	
+
+
+</tr>
+
+	<tr class="dedo" valign="top" id="tr2253AP160" onclick="cargar_ficha('253AP16','s',1248,'0');">
+		<td id="td3253AP160" colspan=2 class="resultadost3">
+		
+		<div class="precio" id="pre253AP160" >
+			&iexcl;$ 29.000!
+		</div>
+		</td>
+	</tr>
+	<tr class="dedo" valign="top" id="tr4253AP160"  onclick="cargar_ficha('253AP16','s',1248,'0');">
+		<td id="td4253AP160" colspan=2 class="resultadost3">
+		<div class="resultados_lugar_0_0"><b><b>MONTEVIDEO / VILLA&nbsp;BIARRITZ</b> </b><br><span style="font-size:10pt">MONTERO E HIDALGOS</span></div>
+		</td>
+	</tr>
+	<tr id="tr2253AP160"><td id="td2253AP160" class="resultadost3" style="display:none;"></td></tr>
+	
+
+
+	<tr class="dedo" valign="top" id="tr7253AP160" onclick="cargar_ficha('253AP16','s',1248,'0');">
+		<td colspan="1" id="td7253AP160" class="resultadost3">
+		<table width="100%" border=0 cellspacing=0 cellpadding=0><tbody><tr valign="bottom"><td class="haundi" rowspan="2" align="right" width="7%">1</td><td class="txiki" width="33%">1 placard</td><td class="haundi" rowspan="2" align="right" width="10%">1</td><td class="txiki" width="20%"></td><td class="haundi" rowspan="2" align="right" width="20%">22<span class="txiki">m&sup2;</span></td></tr><tr valign="top"><td class="txiki"><b>amb.</b></td><td class="txiki">ba&ntilde;o</td></tr></tbody></table>
+		</td>
+	</tr>
+	<tr class="dedo" id="tr6253AP160" onclick="cargar_ficha('253AP16','s',1248,'0');">
+		<td colspan="1" id="td6253AP160"  class="resultadost5">
+			<table width="96%" align="center">
+				<tr valign="top"><td>Frente<br>4&ordm; piso<br>Impecable</td><td align="right">Gtos. Comunes: <b>$  3.665</b></td></tr>
+				<tr valign="top"><td><span style="font-size:10pt;white-space: nowrap;color:#333;">
+		<span style='color:red'>&#9733;&#9733;&#9733;</span></span>
+
+</td><td align="right"><span style="font-size:9pt;">25/09/2026</span></td></tr>
+			</table>
+		</td>
+	</tr>
+
+	</tr>
+	</table>
+	</div>
+
+
+||111AP571,s,1041,0||[['696AP1226',-56.163788298783416,-34.88131661414981,'Abacos','35900','p'],['007AP02102',-56.03503904485955,-34.87478187777673,'Nieto','31500','p'],['696AP1642',-56.18008226625281,-34.90446679644448,'Abacos','30000','p'],['253AP16',-56.155843894541825,-34.922154370946565,'Pablo Musetti & Asoc.','29000','p']]
