@@ -60,6 +60,9 @@ export async function getRental(site: SiteApi, input: { key: string }): Promise<
       advertiserType: o.sellerType,
       agencyProfile: o.agency?.profileUrl,
       url: o.url,
+      // What THIS advert says: two portals can disagree about the same home.
+      furnished: typeof o.furnished === "boolean" ? o.furnished : undefined,
+      terms: o.terms?.length ? o.terms : undefined,
       publishedAt: isoDay(o.publishedAt),
       lastSeen: isoDay(o.lastSeen),
     })

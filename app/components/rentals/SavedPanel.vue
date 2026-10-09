@@ -164,7 +164,23 @@ const comparisonRows = computed(() => [
   },
   {
     label: t('furnished'),
-    value: (favorite: RentalSavedFavorite) => (favorite.furnished ? t('confirmed') : t('unknown')),
+    value: (favorite: RentalSavedFavorite) =>
+      favorite.furnished === true
+        ? t('confirmed')
+        : favorite.furnished === false
+          ? t('unfurnished')
+          : t('unknown'),
+  },
+  {
+    label: t('term'),
+    value: (favorite: RentalSavedFavorite) =>
+      favorite.terms?.includes('invernal')
+        ? favorite.terms.includes('anual')
+          ? `${t('termAnnual')} · ${t('winter')}`
+          : t('termWinter')
+        : favorite.terms?.includes('anual')
+          ? t('termAnnual')
+          : t('unknown'),
   },
   {
     label: t('pets'),

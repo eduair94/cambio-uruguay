@@ -11,6 +11,8 @@ export const RENTAL_QUICK_FILTERS = Object.freeze([
   'sinceDays',
   'pets',
   'parking',
+  // Asked for by a reader on 2026-10-09: furniture was a checkbox inside "Más filtros".
+  'furnished',
   'owner',
 ] as const)
 
@@ -22,6 +24,8 @@ export function rentalQuickFilters(query: RentalQuery): RentalQuickFilter[] {
     sinceDays: Boolean(query.sinceDays),
     pets: query.pets,
     parking: query.parking,
+    // Either furniture choice is already a chip; offering the other would read as a toggle.
+    furnished: query.furnished || Boolean(query.unfurnished),
     owner: query.owner,
   }
   return RENTAL_QUICK_FILTERS.filter(key => !on[key])
@@ -30,5 +34,6 @@ export function rentalQuickFilters(query: RentalQuery): RentalQuickFilter[] {
 /** What the shortcut turns on: the same field (and so the same URL) the filter panel writes. */
 export function rentalQuickPatch(key: RentalQuickFilter): Partial<RentalQuery> {
   if (key === 'sinceDays') return { sinceDays: 7 }
+  if (key === 'furnished') return { furnished: true, unfurnished: false }
   return { [key]: true }
 }

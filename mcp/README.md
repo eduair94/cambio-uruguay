@@ -83,7 +83,7 @@ For stdio set `MCP_TOOLSETS=alquileres,autos` (default: all).
 
 | Tool | Description |
 |---|---|
-| `search_rentals` | The whole rental directory with every filter: neighbourhoods, type, bedrooms, m², price in pesos, **monthly total with common expenses**, pets, parking, furnished, accepted guarantee (ANDA, Contaduría, insurer, deposit, BHU), amenities, owner-direct, portal, free text, near a point + radius, neighbourhood quality (few crime reports, few water cuts). |
+| `search_rentals` | The whole rental directory with every filter: neighbourhoods, type, bedrooms, m², price in pesos, **monthly total with common expenses**, pets, parking, furnished or unfurnished, lease period (year-round or winter), accepted guarantee (ANDA, Contaduría, insurer, deposit, BHU), amenities, owner-direct, portal, free text, near a point + radius, neighbourhood quality (few crime reports, few water cuts). |
 | `rank_rentals_for_household` | The personalised one: scores every current home for a household of 1–8 people with incomes, remote days and up to 4 daily destinations each (work/study, days per week, travel mode). Budget share, what is left each month, distance per person and destination, reasons and warnings. |
 | `get_rental` | One home: every advert that publishes it (price per portal), description, amenities, guarantee text, market comparison, similar homes, neighbourhood profile. |
 | `rental_market_stats` | Median and typical range of rent, common expenses, monthly total and price per m², by department/neighbourhood/type/bedrooms; cheapest and priciest neighbourhoods. |

@@ -38,6 +38,8 @@ export interface RentalFitInput {
   pets: boolean
   parking: boolean
   furnished: boolean
+  /** Only homes whose advert says unfurnished. Optional for requests built before 2026-10-09. */
+  unfurnished?: boolean
   hideReported: boolean
   includeOverBudget: boolean
   priority: 'balanced' | 'budget' | 'commute'

@@ -17,6 +17,7 @@ const BY_TOOLSET: Record<Toolset, string[]> = {
     "Alquileres — antes de buscar preguntá lo mínimo que falte: presupuesto mensual (¿incluye gastos comunes?), departamento/barrios, dormitorios, mascotas, garantía que tiene (ANDA, Contaduría, seguro, depósito) y dónde trabaja/estudia cada persona y cuántos días va.",
     "Con ingresos o destinos usá rank_rentals_for_household (personalizado). Para explorar, search_rentals. Para el precio de referencia, rental_market_stats o estimate_fair_rent. Para elegir zona, compare_neighborhoods. Para gangas, find_property_opportunities.",
     "Presupuesto real = alquiler + gastos comunes; ~70 % de los avisos no publica gastos comunes: avisalo y no los inventes. Los topes de precio van en PESOS.",
+    "Plazo: el directorio tiene alquileres anuales e invernales (marzo a diciembre, precio mensual; search_rentals term=\"invernal\"). Los de temporada de verano (por noche o quincena) no se publican: si te los piden, decilo y no los busques acá. Muebles: furnished=true (amueblado) o false (sin muebles) sólo encuentra avisos que lo dicen.",
     "Antes de recomendar, abrí 2-3 finalistas con get_rental (precio en cada portal, mercado, barrio). Cerrá con una lista corta, por qué cada una, qué preguntar al visitar y el link para guardar la búsqueda o crear una alerta.",
   ],
   autos: [

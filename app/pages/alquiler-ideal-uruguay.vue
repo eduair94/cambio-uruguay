@@ -247,6 +247,7 @@ The user delegated design choices. The composition study informs hierarchy, neve
                 <VCheckbox v-model="draft.pets" :label="t('pets')" hide-details />
                 <VCheckbox v-model="draft.parking" :label="t('parking')" hide-details />
                 <VCheckbox v-model="draft.furnished" :label="t('furnished')" hide-details />
+                <VCheckbox v-model="draft.unfurnished" :label="t('unfurnished')" hide-details />
                 <p class="field-hint">{{ t('strictHint') }}</p>
                 <VCheckbox v-model="draft.hideReported" :label="t('hideReported')" hide-details />
                 <p class="field-hint">{{ t('reportsHint') }}</p>
@@ -514,11 +515,25 @@ const initial = (): DraftInput => ({
   pets: false,
   parking: false,
   furnished: false,
+  unfurnished: false,
   hideReported: false,
   includeOverBudget: false,
   priority: 'balanced',
 })
 const draft = ref<DraftInput>(initial())
+// One furniture choice at a time: checking one unchecks the other.
+watch(
+  () => draft.value.furnished,
+  on => {
+    if (on) draft.value.unfurnished = false
+  }
+)
+watch(
+  () => draft.value.unfurnished,
+  on => {
+    if (on) draft.value.furnished = false
+  }
+)
 const step = ref(0)
 const steps = ['household', 'places', 'priorities']
 const editing = ref(true)
@@ -550,6 +565,7 @@ const housingExtraSummary = computed(
       draft.value.pets ? t('petsShort') : '',
       draft.value.parking ? t('parkingShort') : '',
       draft.value.furnished ? t('furnishedShort') : '',
+      draft.value.unfurnished ? t('unfurnishedShort') : '',
       draft.value.hideReported ? t('reportsShort') : '',
       draft.value.includeOverBudget ? t('overBudgetShort') : '',
     ]
