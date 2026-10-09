@@ -824,7 +824,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'como-leer-cotizacion-dolar',
-    title: 'Cómo leer la cotización del dólar paso a paso',
+    title: 'Leer la cotización: la compra te la pagan',
     description:
       'Aprendé a leer la cotización del dólar en Uruguay: compra y venta, spread, tipos de operación y cómo identificar rápido el mejor precio para tu caso.',
     tag: 'BÁSICOS',
@@ -876,7 +876,7 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'inflacion-y-dolar-uruguay',
-    title: 'Inflación y dólar en Uruguay: cómo se relacionan',
+    title: 'Inflación y dólar no van siempre juntos',
     description:
       'Cómo se relacionan la inflación y el dólar en Uruguay, por qué muchos ahorran en dólares y qué mirar para entender el poder de compra del peso.',
     tag: 'ECONOMÍA',

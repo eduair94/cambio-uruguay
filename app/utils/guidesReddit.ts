@@ -1195,7 +1195,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'comprar-un-terreno-uruguay',
-    title: 'Comprar un terreno en Uruguay: qué verificar',
+    title: 'Terreno: el estudio de título va primero',
     description:
       'Qué verificar antes de comprar un terreno en Uruguay: padrón, plano de mensura, servidumbres, servicios, zonificación, deudas de contribución y título.',
     tag: 'TERRENO',
@@ -1885,7 +1885,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'mejorar-historial-crediticio-uruguay',
-    title: 'Cómo mejorar tu historial crediticio en Uruguay',
+    title: 'Historial crediticio: dos registros, no uno',
     description:
       'Diferencia entre el Clearing de Informes y la Central de Riesgos del BCU, cómo salir del clearing y hábitos para reconstruir tu perfil.',
     tag: 'HISTORIAL',
@@ -1946,7 +1946,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'ser-garante-o-codeudor-riesgos-uruguay',
-    title: 'Ser garante o codeudor en Uruguay: los riesgos',
+    title: 'Garante solidario: te pueden cobrar a vos',
     description:
       'Qué asumís al firmar como garante, fiador o codeudor en Uruguay, cómo te afecta si el titular no paga y cómo protegerte.',
     tag: 'GARANTÍA',
@@ -1988,7 +1988,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'salir-de-deudas-de-tarjeta-uruguay',
-    title: 'Cómo salir de las deudas de tarjeta de crédito',
+    title: 'Deudas de tarjeta: con el mínimo no salís',
     description:
       'Por qué el pago mínimo es una trampa, cómo aplicar bola de nieve o avalancha y cómo negociar con el emisor para salir de la tarjeta.',
     tag: 'TARJETA',
@@ -2847,7 +2847,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'fondo-de-emergencia-como-armarlo-uruguay',
-    title: 'Fondo de emergencia: cómo armarlo en Uruguay',
+    title: 'Fondo de emergencia: 3 a 6 meses de gastos',
     description:
       'Cómo armar tu fondo de emergencia en Uruguay: cuánto juntar, en qué moneda e instrumento guardarlo, cómo construirlo sin ingresos altos y cuándo usarlo.',
     tag: 'AHORRO',
@@ -3189,7 +3189,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'armar-un-presupuesto-personal-uruguay',
-    title: 'Cómo armar un presupuesto personal en Uruguay',
+    title: 'Presupuesto personal: acá más bien 60/25/15',
     description:
       'Guía práctica para armar un presupuesto personal en Uruguay: método 50/30/20 adaptado, registrar gastos y ajustar a los precios reales.',
     tag: 'PRESUPUESTO',
