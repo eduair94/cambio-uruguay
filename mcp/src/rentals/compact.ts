@@ -17,6 +17,8 @@ export interface CompactRental {
   bathrooms?: number;
   areaM2?: number;
   rent: { amount?: number; currency?: string; uyu?: number };
+  /** Far under the cheapest homes of its zone: probably a per-night or per-stay price. */
+  perNightSuspect?: boolean;
   expensesUyu?: number;
   monthlyUyu?: number;
   guarantees?: string[];
@@ -66,6 +68,7 @@ export function compactRental(p: RawRental, usdUyu = 0): CompactRental {
     bathrooms: num(p.bathrooms),
     areaM2: num(p.area),
     rent: compact({ amount: num(offer?.price) ?? num(p.price), currency: offer?.currency ?? p.currency, uyu: rentUyu }),
+    perNightSuspect: offer?.stayPriceSuspect === true ? true : undefined,
     expensesUyu,
     monthlyUyu: rentUyu !== undefined && expensesUyu !== undefined ? rentUyu + expensesUyu : undefined,
     guarantees: p.guarantees?.length ? p.guarantees : undefined,
@@ -117,6 +120,7 @@ export function rentalLine(r: CompactRental): string {
       ? `${rent} + GC ${money(r.expensesUyu)} = ${money(r.monthlyUyu)}/mes`
       : `${rent}/mes (gastos comunes no publicados)`;
   const extras = [
+    r.perNightSuspect ? "⚠ ¿precio por noche? (muy por debajo de la zona)" : "",
     r.distanceKm !== undefined ? `a ${fmt(r.distanceKm, 1)} km` : "",
     r.priceDrop ? `bajó ${fmt(r.priceDrop.pct, Number.isInteger(r.priceDrop.pct) ? 0 : 1)} % (antes ${money(r.priceDrop.from, r.priceDrop.currency)}, el ${r.priceDrop.at})` : "",
     r.pets === true ? "acepta mascotas" : "",

@@ -470,6 +470,15 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                         {{ t('currencyInferred') }}
                       </p>
                       <p
+                        v-if="displayOffer(property)?.stayPriceSuspect"
+                        class="rental-card__stay"
+                        data-testid="rental-card-stay-price"
+                        :title="t('stayPriceNote')"
+                      >
+                        <VIcon size="14" aria-hidden="true">mdi-weather-night</VIcon>
+                        {{ t('stayPriceChip') }}
+                      </p>
+                      <p
                         v-if="priceGaps.get(property.key)"
                         class="rental-card__gap"
                         data-testid="rental-card-gap"
@@ -1077,6 +1086,7 @@ const filterChips = computed(() => {
     ['furnished', q.furnished, 'furnished'],
     ['dueno', q.owner, 'owner'],
     ['gc', q.withExpenses, 'expensesKnown'],
+    ['sinNoche', q.hideStayPrices ?? false, 'hideStayPrices'],
     ['multi', q.multi, 'multi'],
   ] as const) {
     if (active) add(key, t(label))
@@ -2033,6 +2043,22 @@ button.rental-card__media {
 .rental-card__expenses {
   font-size: 0.8rem;
   margin-top: 4px !important;
+}
+/* Una advertencia, no un dato: tinta del texto (contraste) sobre un fondo de alerta. */
+.rental-card__stay {
+  align-items: center;
+  background: rgba(var(--v-theme-warning), 0.16);
+  border-radius: 6px;
+  color: rgb(var(--v-theme-on-surface));
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 600;
+  gap: 4px;
+  margin-top: 6px !important;
+  padding: 2px 8px;
+}
+.rental-card__stay .v-icon {
+  color: rgb(var(--v-theme-warning));
 }
 /* La única línea de la tarjeta que ningún portal puede escribir: se gana el color. */
 .rental-card__gap {

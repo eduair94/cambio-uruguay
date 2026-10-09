@@ -266,6 +266,12 @@ export const rentalMessages = {
     priceDropped: 'Bajó de precio en los últimos 30 días',
     priceDroppedChip: 'Bajó de precio',
     currencyInferred: 'Publicado en pesos; por el monto y la zona, son dólares.',
+    stayPriceChip: '¿Precio por noche?',
+    stayPriceNote:
+      'Está muy por debajo de lo más barato de la zona: suele ser una tarifa por noche o por temporada. Confirmalo con quien publica.',
+    hideStayPrices: 'Ocultar posibles precios por noche',
+    hideStayPricesHint:
+      'Avisos en dólares que cuestan menos de la mitad de lo más barato de su zona: casi siempre estadías de verano. Algunos son alquileres de invierno reales.',
     gapNote:
       'Compara el alquiler pedido en cada aviso, no el total con gastos comunes; un aviso en dólares se pasa a pesos con la cotización de la lectura. Confirmá precio y condiciones con el anunciante.',
     listedPublished: 'Publicado hace {days} días',
@@ -609,6 +615,12 @@ export const rentalMessages = {
     priceDropped: 'Price dropped in the last 30 days',
     priceDroppedChip: 'Price dropped',
     currencyInferred: 'Listed in pesos; given the amount and the area, it is dollars.',
+    stayPriceChip: 'Per-night price?',
+    stayPriceNote:
+      'Far below the cheapest homes in the area: usually a nightly or seasonal rate. Confirm it with the advertiser.',
+    hideStayPrices: 'Hide likely per-night prices',
+    hideStayPricesHint:
+      'Dollar adverts priced under half the cheapest homes in their area: nearly always summer stays. A few are real winter rents.',
     gapNote:
       'This compares the rent each advert asks for, not the total with common expenses; an advert priced in dollars is converted at the reading’s rate. Confirm price and terms with the advertiser.',
     listedPublished: 'Published {days} days ago',
@@ -958,6 +970,12 @@ export const rentalMessages = {
     priceDropped: 'Baixou de preço nos últimos 30 dias',
     priceDroppedChip: 'Baixou de preço',
     currencyInferred: 'Publicado em pesos; pelo valor e a região, são dólares.',
+    stayPriceChip: 'Preço por noite?',
+    stayPriceNote:
+      'Muito abaixo do mais barato da região: costuma ser uma diária ou um valor de temporada. Confirme com quem anuncia.',
+    hideStayPrices: 'Ocultar possíveis preços por noite',
+    hideStayPricesHint:
+      'Anúncios em dólares que custam menos da metade do mais barato da região: quase sempre estadias de verão. Alguns são aluguéis de inverno reais.',
     gapNote:
       'Compara o aluguel pedido em cada anúncio, não o total com condomínio; um anúncio em dólares é convertido pela cotação da leitura. Confirme preço e condições com o anunciante.',
     listedPublished: 'Publicado há {days} dias',

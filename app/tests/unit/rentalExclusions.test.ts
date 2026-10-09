@@ -287,3 +287,23 @@ describe('saved-search alerts keep every exclusion', () => {
     )
   })
 })
+
+describe('likely per-night prices can be hidden', () => {
+  it('reads sinNoche, filters the advert and keeps the headline price on a shown advert', () => {
+    const query = normalizeRentalQuery({ sinNoche: '1' })
+    expect(query.hideStayPrices).toBe(true)
+    expect(rentalQueryToParams(query)).toEqual({ sinNoche: '1' })
+    const { filter } = buildRentalFilter(query, 10)
+    expect(filter.offers).toEqual({ $elemMatch: { stayPriceSuspect: { $ne: true } } })
+    expect(rentalOfferMatchesQuery(offer({ stayPriceSuspect: true }), query, 40)).toBe(false)
+    expect(rentalOfferMatchesQuery(offer(), query, 40)).toBe(true)
+    expect(rentalOfferStages(query, 40)).not.toHaveLength(0)
+    expect(normalizeRentalQuery({}).hideStayPrices).toBe(false)
+  })
+
+  it('is accepted by saved-search alerts', () => {
+    expect(normalizeRentalAlertFilters('rental-search', { sinNoche: '1' })).toEqual({
+      sinNoche: '1',
+    })
+  })
+})

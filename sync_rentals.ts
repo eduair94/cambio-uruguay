@@ -34,6 +34,7 @@ import {
   carrySourceHistory,
   correctStoredRentalCurrencies,
   countRentals,
+  refreshStoredRentalStayFlags,
   dropRejectedStoredRentals,
   retypeStoredRentalOffers,
   loadRentPriceRows,
@@ -44,7 +45,7 @@ import {
   saveRentalMeta,
   saveRentalProperties,
 } from "./classes/rentals/store";
-import { inferRentalCurrencies, rentPriceCohorts } from "./classes/rentals/currency";
+import { flagRentalStayPrices, inferRentalCurrencies, rentPriceCohorts } from "./classes/rentals/currency";
 import { RENTAL_META_KEY, type RentalMeta } from "./classes/rentals/types";
 
 /** A full run that finds less than this share of what we already had is treated as an outage. */
@@ -105,6 +106,11 @@ async function main(): Promise<void> {
   const currencies = inferRentalCurrencies(harvest.listings, cohorts, usdUyu);
   if (currencies.corrected) console.log(`[rentals] ${currencies.corrected} avisos en pesos leídos como dólares por el mercado de su zona`);
   harvest.listings = currencies.listings;
+  // A home far under its zone's cheapest rents is probably priced per night (summer stays in
+  // Punta del Este): flagged for the reader, never removed.
+  const stays = flagRentalStayPrices(harvest.listings, cohorts, usdUyu);
+  if (stays.flagged) console.log(`[rentals] ${stays.flagged} avisos con un precio que parece por noche`);
+  harvest.listings = stays.listings;
 
   const properties = buildRentalProperties(harvest.listings, {
     usdUyu,
@@ -206,6 +212,12 @@ async function main(): Promise<void> {
     return 0;
   });
   if (storedCurrencies) console.log(`[rentals] ${storedCurrencies} propiedades guardadas con un precio en pesos leído como dólares`);
+  // After the currency pass: the flag reads the price as it now stands.
+  const storedStays = await refreshStoredRentalStayFlags(cohorts, usdUyu).catch((error) => {
+    console.warn("[rentals] no se pudieron revisar los precios por noche:", error instanceof Error ? error.message : error);
+    return { offers: 0, properties: 0 };
+  });
+  if (storedStays.offers) console.log(`[rentals] ${storedStays.offers} avisos guardados con la marca de precio por noche puesta o quitada (${storedStays.properties} filas)`);
 
   const total = await countRentals();
   const meta: RentalMeta = {

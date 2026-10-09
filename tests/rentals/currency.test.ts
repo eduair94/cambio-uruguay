@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   correctStoredRentCurrencies,
+  flagRentalStayPrices,
   inferRentalCurrencies,
+  refreshStoredStayPriceFlags,
+  rentStayPriceSuspect,
   rentCurrencyVerdict,
   rentPriceCohorts,
   type RentPriceRow,
@@ -216,5 +219,62 @@ describe("a room COUNT is not a room", () => {
       }],
     };
     expect(correctStoredRentCurrencies(stored, cohorts, USD).corrected).toBe(1);
+  });
+});
+
+// Real public adverts on 2026-10-08: summer stays priced per night in the monthly category.
+describe("a dollar rent far under its zone is flagged as a possible per-night price", () => {
+  const stay = (changes: Partial<RawRental>) => advert({
+    currency: "USD", price: 240, title: "Apartamento - Península", department: "Maldonado",
+    neighborhood: "Punta del Este", bedrooms: 3, propertyType: "apartamento", ...changes,
+  });
+
+  it("flags a stay priced per night", () => {
+    expect(rentStayPriceSuspect(stay({}), cohorts, USD)).toBe(true);
+    expect(rentStayPriceSuspect(stay({ price: 195, title: "Casa - Santa Monica", propertyType: "casa" }), cohorts, USD)).toBe(true);
+  });
+
+  it("never flags a month's rent of the zone, nor a peso price", () => {
+    expect(rentStayPriceSuspect(stay({ price: 3_000 }), cohorts, USD)).toBe(false);
+    // Pesos: the same test flagged real cheap rents of Maldonado city and Carrasco Norte.
+    expect(rentStayPriceSuspect(stay({ currency: "UYU", price: 9_000 }), cohorts, USD)).toBe(false);
+  });
+
+  it("trusts an advert that offers a long stay itself", () => {
+    expect(rentStayPriceSuspect(stay({ title: "Alquiler anual 3 dormitorios sin muebles" }), cohorts, USD)).toBe(false);
+    expect(rentStayPriceSuspect({ ...stay({}), description: "Alquiler invernal usd 240, temporada aparte" }, cohorts, USD)).toBe(false);
+    // "Anual" that is not about the rent does not count.
+    expect(rentStayPriceSuspect({ ...stay({}), description: "Gastos anuales de impuestos USD 480" }, cohorts, USD)).toBe(true);
+  });
+
+  it("leaves rooms and premises alone", () => {
+    expect(rentStayPriceSuspect(stay({ title: "Habitación en Península" , propertyType: "habitacion" }), cohorts, USD)).toBe(false);
+    expect(rentStayPriceSuspect(stay({ title: "Local comercial", propertyType: "local" }), cohorts, USD)).toBe(false);
+  });
+
+  it("sets the flag on fresh adverts and takes it off a stored one when the price no longer warrants it", () => {
+    const fresh = flagRentalStayPrices([stay({}), stay({ listingId: "facebook:2", price: 3_000 })], cohorts, USD);
+    expect(fresh.flagged).toBe(1);
+    expect(fresh.listings[0]).toMatchObject({ stayPriceSuspect: true });
+    expect(fresh.listings[1]).not.toHaveProperty("stayPriceSuspect");
+
+    const offer = (price: number, flagged: boolean): RentalOffer => ({
+      source: "infocasas", listingId: "infocasas:5", url: "https://www.infocasas.com.uy/5", title: "Apartamento - Península",
+      price, currency: "USD", priceUyu: Math.round(price * USD), commonExpenses: null, commonExpensesCurrency: null,
+      sellerName: "", sellerType: "inmobiliaria", image: null, publishedAt: null, parkingSpaces: null, furnished: null,
+      petsAllowed: null, guarantees: [], firstSeen: "2026-10-01", lastSeen: "2026-10-08",
+      ...(flagged ? { stayPriceSuspect: true as const } : {}),
+    });
+    const property = (offers: RentalOffer[]) => ({
+      title: "Apartamento - Península", propertyType: "apartamento" as const, department: "Maldonado",
+      neighborhood: "Punta del Este", bedrooms: 3, offers,
+    });
+    const set = refreshStoredStayPriceFlags(property([offer(240, false)]), cohorts, USD);
+    expect(set.changed).toBe(1);
+    expect(set.offers[0]).toMatchObject({ stayPriceSuspect: true });
+    const cleared = refreshStoredStayPriceFlags(property([offer(3_000, true)]), cohorts, USD);
+    expect(cleared.changed).toBe(1);
+    expect(cleared.offers[0]).not.toHaveProperty("stayPriceSuspect");
+    expect(refreshStoredStayPriceFlags(property(set.offers), cohorts, USD).changed).toBe(0);
   });
 });

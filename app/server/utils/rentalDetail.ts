@@ -46,6 +46,7 @@ const offerFields: Array<keyof RentalOffer> = [
   'price',
   'currency',
   'currencyInferred',
+  'stayPriceSuspect',
   'priceUyu',
   'commonExpenses',
   'commonExpensesCurrency',

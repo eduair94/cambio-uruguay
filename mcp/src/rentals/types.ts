@@ -81,6 +81,8 @@ export interface RawOffer {
   title?: string;
   price?: number;
   currency?: string;
+  /** Probably a per-night or per-stay price: far under the cheapest homes of its zone. */
+  stayPriceSuspect?: boolean;
   priceUyu?: number;
   commonExpenses?: number | null;
   commonExpensesCurrency?: string | null;

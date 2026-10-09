@@ -78,6 +78,7 @@ const rows = computed(() => {
     for (const key of ['pets', 'parking', 'furnished', 'owner', 'multi'] as const)
       if (q[key]) add('features', t(key))
     if (q.withExpenses) add('features', t('expensesKnown'))
+    if (q.hideStayPrices) add('features', t('hideStayPrices'))
     if (q.guarantees.length) add('anyGuarantee', q.guarantees.map(value => t(value)).join(' · '))
     if (q.amenities.length)
       add('amenities', q.amenities.map(value => t(`amenity-${value}`)).join(' · '))

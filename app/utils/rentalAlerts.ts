@@ -139,6 +139,8 @@ const searchKeys = new Set([
   'excludeWords',
   'residencias',
   'sharedLiving',
+  'sinNoche',
+  'hideStayPrices',
 ])
 const opportunityKeys = new Set([
   'availability',
@@ -179,6 +181,8 @@ const searchBooleans = new Set([
   'withExpenses',
   'dueno',
   'owner',
+  'sinNoche',
+  'hideStayPrices',
 ])
 const searchNumbers = new Set([
   'bedrooms',
