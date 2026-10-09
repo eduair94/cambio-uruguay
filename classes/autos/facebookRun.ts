@@ -7,18 +7,20 @@ import { loadFbCards, loadFbWanted, saveFbItems, upsertFbCards } from "./store";
 import type { CarSourceResult } from "./types";
 
 const DAY = 86_400_000;
-// Each scroll brings ~24 cards. The daily run reads the newest-first feed to its end (or 150
-// pages) and every brand search to 20 pages; the hourly one reads the feed until it reaches 6 h
-// back — measured 2026-10-08, 15 fixed scrolls reached ~1.5 h and missed cars that Facebook
-// surfaces late. The lock wait is for another job's Marketplace read (rentals, retail).
+// The daily run reads the newest-first feed to its end (or 150 rounds) and every brand search to
+// 20 pages; the hourly one reads the feed until it reaches 6 h back — measured 2026-10-08, 15
+// fixed scrolls reached ~1.5 h and missed cars that Facebook surfaces late. The feed loads in
+// small pages (~9 cards) and its first one takes 4–5 rounds to follow (measured 2026-10-09), so
+// it gets 10 quiet rounds before it counts as ended. The lock wait is for another job's
+// Marketplace read (rentals, retail).
 export const FB_BUDGET = {
   full: {
-    feed: { maxScrolls: 150, stagnantRounds: 8 },
+    feed: { maxScrolls: 150, stagnantRounds: 10 },
     query: { maxScrolls: 20, stagnantRounds: 5 },
     items: 120, minutes: 45, lockWaitMinutes: 30,
   },
   fast: {
-    feed: { maxScrolls: 40, stagnantRounds: 6, reachBackHours: 6 },
+    feed: { maxScrolls: 40, stagnantRounds: 10, reachBackHours: 6 },
     query: { maxScrolls: 0, stagnantRounds: 0 },
     items: 15, minutes: 8, lockWaitMinutes: 10,
   },

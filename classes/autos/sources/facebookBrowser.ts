@@ -24,8 +24,11 @@ const FEED_URL = "https://www.facebook.com/marketplace/montevideo/vehicles?sortB
 const searchUrl = (query: string): string => `https://www.facebook.com/marketplace/montevideo/search?query=${encodeURIComponent(query)}`;
 const itemUrl = (id: string): string => `https://www.facebook.com/marketplace/item/${id}/`;
 
-/** A first page this full that never grows is Facebook's throttle, not a short list. */
-const STALL_FLOOR = 20;
+/**
+ * A first page this full (cards of any category) that never grows is Facebook's throttle, not a
+ * short list. The vehicles feed's first page holds ~20 cards, 17 of them vehicles (2026-10-09).
+ */
+const STALL_FLOOR = 15;
 /**
  * Cards older than the reach-back a newest-first feed must show before it counts as read far
  * enough. More than one: the feed slips a few older "suggested" cards in near the top.
@@ -80,16 +83,18 @@ export async function readFacebookVehicles(options: {
 
   /** Reads one list; false when the throttle says to stop reading lists. */
   const readList = async (url: string, budget: FacebookListBudget): Promise<boolean> => {
+    // Every card the list delivered, of any category: whether Facebook is still sending is the stop
+    // signal and the throttle signal; only the vehicles are kept.
     const seenHere = new Set<string>();
     const cutoff = budget.reachBackHours ? Date.now() - budget.reachBackHours * 3_600_000 : null;
     let old = 0;
     const run = await scrollFacebookList(browser!, url, {
       onText: text => {
         for (const card of fbCardsFromText(text)) {
-          // Searches mix every category; the vehicles feed may carry "suggested" items too.
-          if (card.categoryId && card.categoryId !== FB_VEHICLES_CATEGORY) continue;
           if (seenHere.has(card.id)) continue;
           seenHere.add(card.id);
+          // Searches mix every category; the vehicles feed may carry "suggested" items too.
+          if (card.categoryId && card.categoryId !== FB_VEHICLES_CATEGORY) continue;
           if (cutoff !== null && card.createdAt && Date.parse(card.createdAt) < cutoff) old++;
           if (!cards.has(card.id)) cards.set(card.id, card);
         }

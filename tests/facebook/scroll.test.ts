@@ -20,6 +20,8 @@ function fakeBrowser(batches: string[][]) {
     // Two kinds of call: reading the embedded scripts (on load) and scrolling (each round).
     evaluate: async (fn: () => unknown) => {
       if (String(fn).includes("querySelectorAll")) return [JSON.stringify(batches[0] ?? [])];
+      // The bounce before each scroll to the bottom loads nothing by itself.
+      if (!String(fn).includes("scrollTo")) return undefined;
       scrolled++;
       const batch = batches[scrolled];
       if (batch) respond?.({ url: () => "https://www.facebook.com/api/graphql/", text: async () => JSON.stringify(batch) } as unknown as HTTPResponse);

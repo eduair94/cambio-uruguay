@@ -140,6 +140,12 @@ export async function scrollFacebookList(
     let satisfied = !!options.enough?.();
     while (!satisfied && scrolls < options.maxScrolls && stagnant < options.stagnantRounds && Date.now() < options.deadline) {
       const before = options.count();
+      // Bounce, then the bottom. Once the page sits at the bottom, scrollTo(bottom) does not move
+      // it and fires no scroll event, so Facebook loads the next page only on its own slow timer.
+      // Measured 2026-10-09 on the vehicles feed, 16 rounds: 78 cards (7 h back) without the
+      // bounce, 128 (14 h back) with it.
+      await page.evaluate(() => window.scrollBy(0, -600));
+      await sleep(300);
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await sleep(options.gapMs ?? 2_000);
       await Promise.all(pending.splice(0));

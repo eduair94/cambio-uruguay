@@ -73,7 +73,9 @@ sólo para candidatas a oportunidad.
 - Lee el feed de Vehículos por más nuevo con el scroll compartido (`scrollFacebookList`: al fondo de
   la lista, tarjetas del stream GraphQL): la diaria hasta que Facebook deja de mandar (tope 150
   páginas) y las 20 marcas con más avisos hasta 20 páginas cada una; la horaria hasta que el feed
-  llega a **6 h atrás** (10 tarjetas más viejas que eso; tope 40). Antes eran 80/15 pantallas fijas y
+  llega a **6 h atrás** (10 tarjetas más viejas que eso; tope 40). El feed carga de a ~9 tarjetas y
+  sólo si la página se mueve: cada ronda sube 600 px y vuelve al fondo (16 rondas: 78 tarjetas y 7 h
+  sin el rebote, 128 y 14 h con él), y recién 10 rondas quietas lo dan por terminado. Antes eran 80/15 pantallas fijas y
   4 por marca: medido en `carfbcards` el 2026-10-08, la diaria encontró 188 autos de las 72 h previas
   que ninguna horaria había visto, y el 35 % de los nuevos aparecía más de 2 h tarde. Dos listas
   seguidas con la primera página llena que no crece (el freno de Facebook) cortan las búsquedas, no

@@ -12,16 +12,17 @@ vi.mock("../../classes/facebook/browser", async importOriginal => ({
 }));
 
 const HOUR = 3_600_000;
-/** A GraphQL body with one vehicle card per [id, hours since it was published]. */
-const body = (...cards: Array<[string, number]>) => `for (;;);${JSON.stringify({ data: { edges: cards.map(([id, hoursAgo]) => ({ node: { listing: {
-  id, marketplace_listing_title: "Toyota Corolla 2015", marketplace_listing_category_id: FB_VEHICLES_CATEGORY,
+/** A GraphQL body with one card per [id, hours since it was published, category (vehicles by default)]. */
+type Card = [string, number] | [string, number, string];
+const body = (...cards: Card[]) => `for (;;);${JSON.stringify({ data: { edges: cards.map(([id, hoursAgo, category]) => ({ node: { listing: {
+  id, marketplace_listing_title: "Toyota Corolla 2015", marketplace_listing_category_id: category ?? FB_VEHICLES_CATEGORY,
   listing_price: { amount: "15000.00" }, creation_time: Math.floor((Date.now() - hoursAgo * HOUR) / 1000),
 } } })) } })}`;
 const ids = (from: number, count: number, hoursAgo: number): Array<[string, number]> =>
   Array.from({ length: count }, (_, index) => [String(1_000_000 + from + index), hoursAgo]);
 
 /** A list that delivers `first` on load and then each batch, honouring the caller's `enough`. */
-const list = (first: Array<[string, number]>, ...batches: Array<Array<[string, number]>>) =>
+const list = (first: Card[], ...batches: Card[][]) =>
   async (_browser: Browser, _url: string, options: Parameters<typeof scrollFacebookList>[2]) => {
     options.onText(body(...first));
     const initial = options.count();
@@ -82,6 +83,18 @@ describe("readFacebookVehicles", () => {
     expect(read.note).toContain("dos listas seguidas");
     expect(itemIds).toHaveBeenCalled();
     expect(read.pages).toBe(4);
+  });
+
+  it("counts the feed's first page with its suggested items when telling the throttle", async () => {
+    // 17 vehicles and 3 cards of other categories: the real first page of the feed (2026-10-09).
+    const firstPage = (from: number): Card[] => [...ids(from, 17, 1), ...ids(from + 17, 3, 1).map(([id]) => [id, 1, "1583634935226685"] as Card)];
+    vi.mocked(scrollFacebookList)
+      .mockImplementationOnce(list(firstPage(0)))
+      .mockImplementationOnce(list(firstPage(100)));
+    const read = await readFacebookVehicles({ ...base, feed: { maxScrolls: 150, stagnantRounds: 10 }, queries: ["toyota", "fiat"] });
+    expect(read).toMatchObject({ lists: 2, stalled: 2 });
+    // Only the vehicles are kept.
+    expect(read.cards).toHaveLength(34);
   });
 
   it("a short search is not the throttle", async () => {
