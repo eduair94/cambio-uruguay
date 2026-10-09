@@ -165,6 +165,24 @@ export function inferRentalCurrencies(
   return { listings: result, corrected };
 }
 
+type StoredProperty = Pick<RentalProperty, "title" | "propertyType" | "department" | "neighborhood" | "bedrooms" | "offers">;
+
+/** What a stored advert says about itself; the property's fields fill what a legacy advert never recorded. */
+function storedOfferSubject(offer: RentalOffer, property: StoredProperty): RentCurrencySubject {
+  const own = offer.identity;
+  return {
+    currency: offer.currency,
+    price: offer.price,
+    title: offer.title || property.title,
+    // Facebook's type is a function of the title alone (sources/facebook.ts): read it with today's rule,
+    // not the one in force when the advert was stored.
+    propertyType: offer.source === "facebook" ? inferPropertyType(offer.title || property.title) : own?.propertyType ?? property.propertyType,
+    department: own?.department ?? property.department,
+    neighborhood: own?.neighborhood ?? property.neighborhood,
+    bedrooms: own ? own.bedrooms : property.bedrooms,
+  };
+}
+
 /**
  * The same reading for adverts already stored. A run only rewrites the adverts its portals showed it
  * again, and Facebook's browser shows a slice: on 2026-10-08 the full run read 2.155 of the 7.025
@@ -173,28 +191,98 @@ export function inferRentalCurrencies(
  * never recorded. `priceUyu` is re-expressed with today's rate, as a fresh read would be.
  */
 export function correctStoredRentCurrencies(
-  property: Pick<RentalProperty, "title" | "propertyType" | "department" | "neighborhood" | "bedrooms" | "offers">,
+  property: StoredProperty,
   cohorts: RentPriceCohorts,
   usdUyu: number
 ): { offers: RentalOffer[]; corrected: number } {
   let corrected = 0;
   const offers = property.offers.map((offer) => {
     if (offer.currency !== "UYU" || offer.currencyInferred === true) return offer;
-    const own = offer.identity;
-    const subject: RentCurrencySubject = {
-      currency: offer.currency,
-      price: offer.price,
-      title: offer.title || property.title,
-      // Facebook's type is a function of the title alone (sources/facebook.ts): read it with today's rule,
-      // not the one in force when the advert was stored.
-      propertyType: offer.source === "facebook" ? inferPropertyType(offer.title || property.title) : own?.propertyType ?? property.propertyType,
-      department: own?.department ?? property.department,
-      neighborhood: own?.neighborhood ?? property.neighborhood,
-      bedrooms: own ? own.bedrooms : property.bedrooms,
-    };
-    if (rentCurrencyVerdict(subject, cohorts, usdUyu).kind !== "usd") return offer;
+    if (rentCurrencyVerdict(storedOfferSubject(offer, property), cohorts, usdUyu).kind !== "usd") return offer;
     corrected++;
     return { ...offer, currency: "USD" as const, currencyInferred: true as const, priceUyu: Math.round(offer.price * usdUyu) };
   });
   return { offers, corrected };
+}
+
+// --- Per-night prices -----------------------------------------------------------------------------
+//
+// Punta del Este and José Ignacio publish summer stays in the monthly rental category, and the price
+// is the NIGHT's: measured 2026-10-08, "Penthouse Península" at US$ 240 says "Costos por día para 4
+// personas: DICIEMBRE U$S 270, ENERO U$S 310, FEBRERO U$S 240"; "Forest Tower" at US$ 350, "Disponible
+// del 20 al 25 de Enero"; a 3-bedroom house in José Ignacio at US$ 195, where the cheapest tenth of
+// the zone rents from $ 90.970 a month. The text cannot be the rule: 37 of the 66 cheapest dollar
+// homes carry no description (MercadoLibre), and "capacidad para 6 personas" or "temporada" also
+// sit on real US$ 1.500 winter and annual rents. The price against its own zone can: under half the
+// zone's 10th percentile, a home's rent is rarely a month's. It is a FLAG, not a removal: a cheap
+// winter rent in Punta del Este is real, and the reader decides (the page says why).
+
+/** Under this share of the zone's 10th percentile, a home's rent is flagged as a possible stay price. */
+export const RENT_STAY_SUSPECT_SHARE = 0.5;
+
+// The advert itself offers a long stay: "Alquiler anual 3 dormitorios sin muebles" at US$ 2.600 in the
+// Golf, or a winter rent, is cheap for its zone and still a month's price.
+// "Anual" only next to the rent: "Gastos anuales de impuestos USD 480" sits in a summer stay's text.
+const LONG_STAY = /\b(?:alquiler(?:es)?|alquilo|alquila|contrato|renta)\s+(?:[a-z]+\s+){0,2}(?:anual(?:es)?|mensual(?:es)?|invernal|de invierno)\b|\b(?:por|al) mes\b|\btodo el ano\b/;
+
+/**
+ * Is this home's DOLLAR rent so far under its zone that it is probably per night or per stay? Only
+ * dollars: the stays are priced in dollars, and in pesos the same test flagged real cheap rents of
+ * Maldonado city and Carrasco Norte (76 of 76 peso flags in the dry run, 2026-10-08).
+ */
+export function rentStayPriceSuspect(
+  listing: RentCurrencySubject & { description?: string },
+  cohorts: RentPriceCohorts,
+  usdUyu: number
+): boolean {
+  if (listing.currency !== "USD" || !Number.isFinite(listing.price) || listing.price <= 0 || !(usdUyu > 0)) return false;
+  if (!isHomeAdvert(listing)) return false;
+  const band = cohortFor(cohorts, listing);
+  if (!band) return false;
+  const pesos = listing.price * usdUyu;
+  // The department alone mixes markets (Maldonado city in pesos, Punta del Este in dollars).
+  if (band.scope === "department" && pesos >= RENT_PESOS_ABSURD_UYU) return false;
+  if (pesos >= band.p10 * RENT_STAY_SUSPECT_SHARE) return false;
+  return !LONG_STAY.test(flatten(`${listing.title}\n${listing.description || ""}`));
+}
+
+/** Sets the flag on fresh adverts; the price they carry is the one the reading is about. */
+export function flagRentalStayPrices(
+  listings: readonly RawRental[],
+  cohorts: RentPriceCohorts,
+  usdUyu: number
+): { listings: RawRental[]; flagged: number } {
+  let flagged = 0;
+  const result = listings.map((listing) => {
+    const suspect = rentStayPriceSuspect(
+      { ...listing, description: listing.description || listing.details?.description },
+      cohorts,
+      usdUyu
+    );
+    if (suspect) flagged++;
+    if (suspect === (listing.stayPriceSuspect === true)) return listing;
+    if (suspect) return { ...listing, stayPriceSuspect: true as const };
+    const { stayPriceSuspect: _drop, ...rest } = listing;
+    return rest;
+  });
+  return { listings: result, flagged };
+}
+
+/** The same flag on stored adverts, set AND cleared: the zone's market moves between runs. */
+export function refreshStoredStayPriceFlags(
+  property: StoredProperty,
+  cohorts: RentPriceCohorts,
+  usdUyu: number
+): { offers: RentalOffer[]; changed: number } {
+  let changed = 0;
+  const offers = property.offers.map((offer) => {
+    const description = offer.details?.description || offer.identity?.description;
+    const suspect = rentStayPriceSuspect({ ...storedOfferSubject(offer, property), description }, cohorts, usdUyu);
+    if (suspect === (offer.stayPriceSuspect === true)) return offer;
+    changed++;
+    if (suspect) return { ...offer, stayPriceSuspect: true as const };
+    const { stayPriceSuspect: _drop, ...rest } = offer;
+    return rest;
+  });
+  return { offers, changed };
 }

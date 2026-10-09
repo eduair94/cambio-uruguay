@@ -19,6 +19,8 @@ export function rentalOpportunityListings(
       // A currency the market inferred (rentals/currency.ts) is a reading, not the advert's own fact:
       // an opportunity compared on it would only measure our correction.
       if (offer.currencyInferred === true) continue;
+      // A probable per-night price would read as the cheapest "opportunity" of its zone.
+      if (offer.stayPriceSuspect === true) continue;
       const details = offer.details;
       const description = own.description ?? details?.description ?? "";
       const area = details?.builtArea != null && details.builtArea > 0

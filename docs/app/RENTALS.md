@@ -1,5 +1,29 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Precios que parecen por noche — 8 de octubre de 2026
+
+Viviendas en dólares a US$ 195–400 en Punta del Este y José Ignacio. Leídas las descripciones, son
+**tarifas por noche de temporada** publicadas en la categoría de alquiler mensual: "Costos por día
+para 4 personas: DICIEMBRE U$S 270, ENERO U$S 310, FEBRERO U$S 240", "Disponible del 20 al 25 de
+Enero", "Capacidad total: hasta 13 personas… ideal para vacaciones". El texto no sirve de regla: 37
+de los 66 avisos baratos no tienen descripción (Mercado Libre), y "capacidad para 6 personas" o
+"temporada" también están en alquileres reales de US$ 1.500.
+
+**Regla (`rentStayPriceSuspect` en `classes/rentals/currency.ts`):** un precio EN DÓLARES de una vivienda
+que, pasado a pesos, queda por debajo de la mitad del p10 de su zona (misma cohorte que la moneda
+deducida), salvo que el propio aviso ofrezca una estadía larga ("alquiler anual", "mensual", "invernal",
+"por mes", "todo el año"; "gastos anuales" no cuenta). Sólo dólares: en pesos la misma prueba marcaba
+76 alquileres reales baratos de Maldonado ciudad y Carrasco Norte, todos falsos. Medido en seco: 59
+avisos, todos de la costa salvo uno de Carmelo.
+
+**Es una MARCA, no una baja**: un alquiler de invierno barato en Punta del Este es real. La tarjeta
+dice "¿Precio por noche?" (con la explicación al pasar el mouse), la ficha lo explica, el filtro
+`sinNoche=1` ("Ocultar posibles precios por noche", en "Total mensual y gastos comunes") los saca para
+quien ordena por precio, y oportunidades inmobiliarias los deja afuera (una tarifa por noche sería la
+"mejor oportunidad" del barrio). Cada corrida la pone en lo que lee y la recalcula sobre lo guardado
+(`refreshStoredRentalStayFlags`), poniéndola y sacándola: el mercado de la zona se mueve. El MCP la
+muestra con "⚠ ¿precio por noche?" y acepta `hidePerNightPrices`.
+
 ## Dormitorios, baños y metros de Facebook, de su descripción — 8 de octubre de 2026
 
 La cosecha de Facebook ya lee dormitorios, baños y superficie del título y de la descripción que

@@ -13,6 +13,7 @@ import {
   RENT_COHORT_FLOOR_UYU,
   RENT_PESOS_SUSPECT_UYU,
   correctStoredRentCurrencies,
+  refreshStoredStayPriceFlags,
   type RentPriceCohorts,
   type RentPriceRow,
 } from "./currency";
@@ -445,6 +446,47 @@ export async function pruneStaleRentals(today: string, days: number): Promise<nu
  * (currency.ts). Bounded by construction: only rows with a UYU advert under the suspect ceiling.
  * Idempotent: a corrected advert is USD and marked, so it never matches again.
  */
+/**
+ * Sets and clears the per-night flag (currency.ts) on every stored advert. A slim read of all rows
+ * finds the few whose flag changes; only those are loaded whole and written.
+ */
+export async function refreshStoredRentalStayFlags(cohorts: RentPriceCohorts, usdUyu: number): Promise<{ offers: number; properties: number }> {
+  if (!(usdUyu > 0) || !cohorts.size) return { offers: 0, properties: 0 };
+  const slim = await RentalListingModel.find({})
+    .select({
+      _id: 0, key: 1, title: 1, propertyType: 1, department: 1, neighborhood: 1, bedrooms: 1,
+      "offers.listingId": 1, "offers.source": 1, "offers.title": 1, "offers.price": 1, "offers.currency": 1,
+      "offers.stayPriceSuspect": 1, "offers.identity.propertyType": 1, "offers.identity.department": 1,
+      "offers.identity.neighborhood": 1, "offers.identity.bedrooms": 1,
+    })
+    .lean() as unknown as RentalProperty[];
+  // The slim read has no descriptions, so it over-selects; the whole row decides. Rows already flagged
+  // are always re-read, so a flag can also be taken off.
+  const affected = slim.filter((row) => Array.isArray(row.offers) && (
+    row.offers.some((offer) => offer.stayPriceSuspect === true) ||
+    refreshStoredStayPriceFlags(row, cohorts, usdUyu).changed > 0
+  ));
+  let offers = 0;
+  const operations = [];
+  for (let index = 0; index < affected.length; index += CHUNK) {
+    const rows = await RentalListingModel.find({ key: { $in: affected.slice(index, index + CHUNK).map((row) => row.key) } })
+      .select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 })
+      .lean() as unknown as RentalProperty[];
+    for (const property of rows) {
+      if (isRetiredRentalKey(property.key)) continue;
+      const refreshed = refreshStoredStayPriceFlags(property, cohorts, usdUyu);
+      if (!refreshed.changed) continue;
+      offers += refreshed.changed;
+      const row = recomputeFromOffers(property, refreshed.offers);
+      operations.push({ updateOne: { filter: { key: property.key }, update: { $set: { ...structuredClone(row) } } } });
+    }
+  }
+  for (let index = 0; index < operations.length; index += CHUNK) {
+    await RentalListingModel.bulkWrite(operations.slice(index, index + CHUNK), { ordered: false });
+  }
+  return { offers, properties: operations.length };
+}
+
 export async function correctStoredRentalCurrencies(cohorts: RentPriceCohorts, usdUyu: number): Promise<number> {
   if (!(usdUyu > 0) || !cohorts.size) return 0;
   const rows = await RentalListingModel.find({
