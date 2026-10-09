@@ -2,7 +2,9 @@ import {
   RENTAL_SOURCE_LABEL,
   normalizeRentalQuery,
   rentalQueryToParams,
+  type RentalCardPhoto,
   type RentalCurrency,
+  type RentalListItem,
   type RentalOffer,
   type RentalPublicProperty,
 } from './rentals'
@@ -52,17 +54,63 @@ export function rentalStreet(property: RentalPublicProperty): string {
     : address
 }
 
-export function rentalPhotos(property: RentalPublicProperty) {
+/** Photos one property shows anywhere — card, viewer, page. Room for every portal's full gallery. */
+export const RENTAL_PHOTO_LIMIT = 60
+/** Photos that travel with each search result for its carousel; the rest are asked for on demand. */
+export const RENTAL_CARD_PHOTO_PREVIEW = 8
+
+/**
+ * Every distinct photo of a property, in ONE order shared by the card carousel, the viewer and the
+ * property page — so "photo 3" is the same photo in all three. The advert that matches the active
+ * filters is the card's cover, so its photos come first.
+ */
+export function rentalPhotos(property: Pick<RentalPublicProperty, 'offers' | 'matchingOffer'>) {
   const seen = new Set<string>()
-  return property.offers.flatMap(offer => {
+  const matching = property.matchingOffer
+  const offers = matching
+    ? [matching, ...property.offers.filter(offer => offer.listingId !== matching.listingId)]
+    : property.offers
+  return offers.flatMap(offer => {
     const sourceUrl = rentalSavedSafeUrl(offer.url)
     if (!sourceUrl) return []
     return [offer.image, ...(offer.details?.images ?? [])].flatMap(image => {
       const url = rentalSavedSafeUrl(image)
-      if (!url || seen.has(url) || seen.size >= 24) return []
+      if (!url || seen.has(url) || seen.size >= RENTAL_PHOTO_LIMIT) return []
       seen.add(url)
-      return [{ url, sourceUrl, source: offer.source, title: offer.title }]
+      return [
+        { url, sourceUrl, source: offer.source, title: offer.title, listingId: offer.listingId },
+      ]
     })
+  })
+}
+
+/** What a search-result card carries for its carousel: its first photos and how many there are. */
+export function rentalGalleryPreview(
+  property: Pick<RentalPublicProperty, 'offers' | 'matchingOffer'>,
+  limit = RENTAL_CARD_PHOTO_PREVIEW
+): { photos: RentalCardPhoto[]; total: number } {
+  const photos = rentalPhotos(property)
+  return {
+    photos: photos
+      .slice(0, Math.max(0, limit))
+      .map(photo => ({ url: photo.url, listingId: photo.listingId })),
+    total: photos.length,
+  }
+}
+
+/**
+ * The photos a card can show before anything else is asked for, each credited to the advert it
+ * came from: the card's own preview when the list sent one, else every advert's cover.
+ */
+export function rentalCardPhotoRefs(item: RentalListItem): PropertyPhotoRef[] {
+  if (!item.galleryPreview?.length) return rentalPhotoRefs(item)
+  const offers = item.matchingOffer ? [item.matchingOffer, ...item.offers] : item.offers
+  return item.galleryPreview.flatMap(photo => {
+    const offer = offers.find(row => row.listingId === photo.listingId)
+    const url = rentalSavedSafeUrl(photo.url)
+    const sourceUrl = rentalSavedSafeUrl(offer?.url)
+    if (!offer || !url || !sourceUrl) return []
+    return [{ url, sourceName: RENTAL_SOURCE_LABEL[offer.source], sourceUrl }]
   })
 }
 

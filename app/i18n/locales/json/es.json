@@ -12,7 +12,15 @@
     "photoAlt": "{title} · Foto {n}",
     "detail": "Ver la ficha completa",
     "loading": "Buscando el resto de las fotos…",
-    "unavailable": "Esta foto ya no está disponible en el origen."
+    "unavailable": "Esta foto ya no está disponible en el origen.",
+    "carousel": "Fotos de {title}",
+    "carouselRole": "carrusel",
+    "openPhoto": "Ampliar la foto {n} de {total}",
+    "gallery": "Fotos de {title}",
+    "allPhotos": "Ver las {n} fotos",
+    "fewerPhotos": "Ver menos fotos",
+    "morePhotos": "Mostrar {n} fotos más",
+    "credit": "Fotos publicadas en"
   },
   "ads": {
     "label": "Publicidad"

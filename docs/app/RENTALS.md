@@ -1,5 +1,36 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Todas las fotos: carrusel en la tarjeta y grilla en la ficha — 9 de octubre de 2026
+
+Pedido: "incluir todas las imágenes, no únicamente una; carrusel en la plataforma y grilla en la
+página de vivienda". Diseño en `docs/superpowers/specs/2026-10-09-property-photo-carousel-grid-design.md`.
+
+- **La tarjeta es un carrusel** (`components/property/PhotoCarousel.vue`): una tira con
+  `scroll-snap` que el dedo desliza nativo; con mouse, flechas al pasar por encima o con foco, y un
+  contador "3 / 12". En la miniatura angosta de la tarjeta horizontal (menos de 200 px, por
+  container query) no entran flechas ni contador y quedan puntos. Tocar una foto abre el visor **en
+  esa foto**: carrusel, visor y ficha numeran igual porque todos usan `rentalPhotos` (el aviso que
+  coincide con el filtro primero; tope por propiedad 24 → 60).
+- **Las primeras 8 fotos viajan con la búsqueda, el resto se pide al acercarse al final.**
+  `galleryPreview` (URL + aviso, para acreditar cada foto en el visor) y `photoCount` salen de una
+  SEGUNDA consulta por las ~24 claves de la página, después de paginar
+  (`server/utils/rentalGalleryPreview.ts`): la proyección compartida
+  (`rentalPublicPropertyProjection`) no cambia, porque también la usan la búsqueda por hogar —cuyo
+  catálogo estaba en 48 MB contra un tope de 64 el mismo día (#115)—, el presupuesto y las alertas.
+  Cuesta unos 25 KB sin comprimir por página de 24. Una lectura fallida deja cada tarjeta con su
+  portada. El resto de la galería se pide dos fotos antes del final con el mismo caché del visor
+  (`composables/usePropertyGalleries.ts`): tarjeta y visor no la piden dos veces.
+- **La ficha es una grilla** (`components/property/PhotoGrid.vue`, también en las fichas de venta):
+  la principal 2×2 —la LCP, `fetchpriority="high"`— y cuatro más; con más fotos la quinta dice "+N"
+  y "Ver las N fotos" despliega la grilla entera en la página. Grilla y no masonry: las fotos de
+  inmuebles son casi todas horizontales y la masonry por columnas reordena la lectura. Teléfono: dos
+  columnas con la principal a lo ancho. Cada foto abre el visor en esa foto y el foco vuelve a ella.
+- **El País sirve una tarjeta de "sin foto" como si fuera foto.** Medido sobre 96 fotos de 8 avisos:
+  todas las de 338×253 eran el MISMO archivo, byte a byte, con una URL distinta cada vez, y ninguna
+  foto real tenía ese tamaño. La URL no lo delata, el tamaño sí: `utils/photoPlaceholders.ts` las
+  reconoce al cargar y el carrusel, la grilla y el visor las sacan juntos (en un aviso de prueba, 12
+  → 7 fotos reales).
+
 ## alquileres.uy, y las páginas del hilo de r/uruguay — 9 de octubre de 2026
 
 El pedido: revisar que el directorio lea todas las páginas que recomienda el hilo de r/uruguay

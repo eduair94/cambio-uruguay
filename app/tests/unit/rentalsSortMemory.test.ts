@@ -8,6 +8,7 @@ import * as rentals from '../../utils/rentals'
 import * as rentalDistance from '../../utils/rentalDistance'
 import * as rentalPricePerM2 from '../../utils/rentalPricePerM2'
 import { rentalPublicPropertyProjection } from '../../server/utils/rentalDetail'
+import * as rentalGalleryPreview from '../../server/utils/rentalGalleryPreview'
 
 type Stage = Record<string, any>
 const route = readFileSync(join(__dirname, '../../server/api/rentals/index.get.ts'), 'utf8')
@@ -55,6 +56,7 @@ async function capture(query: Record<string, string> = {}, total = 240) {
     '../../utils/rentalCoverage': { getRentalCoverage: async () => [] },
     '../../utils/rentalDirectoryWarm': { rentalDirectoryCacheKey: () => 'default' },
     '../../utils/rentalDetail': { rentalPublicPropertyProjection },
+    '../../utils/rentalGalleryPreview': rentalGalleryPreview,
     '../../utils/rentalAvailability': {
       loadRentalAvailabilityIndex: async () => ({ excludedAdvertIds: () => [] }),
       annotateRentalAvailability: (property: unknown) => property,
