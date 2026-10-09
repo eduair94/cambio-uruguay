@@ -13,6 +13,7 @@ vi.mock('../../server/utils/rentalFit', async importOriginal => ({
 }))
 const {
   projectRentalFitCandidate,
+  createRentalFitInterner,
   createRentalFitCatalogueLoader,
   currentRentalFitCandidates,
   createRentalFitService,
@@ -254,7 +255,7 @@ describe('bounded full catalogue loading', () => {
     expect((await load()).candidates).toHaveLength(1)
     const stages = aggregate.mock.calls[0]![0] as Record<string, any>[]
     expect(stages[0]).toEqual({ $match: { propertyType: { $in: ['casa', 'apartamento'] } } })
-    expect(stages.filter(stage => '$limit' in stage)).toEqual([{ $limit: 80_001 }])
+    expect(stages.filter(stage => '$limit' in stage)).toEqual([{ $limit: 120_001 }])
     expect(stages.some(stage => '$skip' in stage || '$sort' in stage)).toBe(false)
     expect(JSON.stringify(stages)).not.toContain('25000')
     const projection = stages.at(-1)!.$project
@@ -576,5 +577,28 @@ describe('POST transport privacy and byte limit', () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+})
+
+// 2026-10-09: the catalogue halved its heap (87,2 -> 47,7 MB over all of production) by sharing the
+// values tens of thousands of homes repeat. Sharing must be invisible: same values, same order.
+describe('a lighter catalogue that answers the same', () => {
+  const agency = (id: string) =>
+    own(id, { identity: { ...own().identity, department: 'Montevideo', neighborhood: 'Cordón' } })
+
+  it('projects the same candidate, serialized byte for byte, with or without sharing', () => {
+    const row = property('qa-home', [agency('1'), agency('2')]) as never
+    const plain = projectRentalFitCandidate(row, now)
+    const shared = projectRentalFitCandidate(row, now, createRentalFitInterner())
+    expect(JSON.stringify(shared)).toBe(JSON.stringify(plain))
+    expect(shared?.property.offers[0]).not.toHaveProperty('publicContact')
+  })
+
+  it('keeps one copy of what homes repeat, across the whole catalogue', () => {
+    const intern = createRentalFitInterner()
+    const a = projectRentalFitCandidate(property('qa-a', [agency('1')]) as never, now, intern)!
+    const b = projectRentalFitCandidate(property('qa-b', [agency('2')]) as never, now, intern)!
+    expect(a.offerZones![0]!.zone).toBe(b.offerZones![0]!.zone)
+    expect(a.offerZones![0]!.zone).toEqual({ department: 'Montevideo', neighborhood: 'Cordón' })
   })
 })
