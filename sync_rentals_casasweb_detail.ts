@@ -1,10 +1,11 @@
 // Lee la ficha propia de los avisos de Casasweb del directorio de alquileres para traer el punto de
-// su mapa, los gastos comunes y los baños, que la tarjeta de búsqueda no publica
-// (classes/rentals/casaswebDetail.ts). Con presupuesto: primero las viviendas de Montevideo, cada
-// aviso una vez por mes.
+// su mapa, los gastos comunes, los baños y las fotos, que la tarjeta de búsqueda no publica
+// (classes/rentals/casaswebDetail.ts). Con presupuesto: primero los avisos nunca leídos, después las
+// viviendas de Montevideo, cada aviso una vez por mes.
 //
 // Escribe la colección privada `rentalcasaswebdetails` y completa en `rentallistings` sólo campos
-// VACÍOS. La cosecha los reaplica (detailPins.ts para el punto, applyCasaswebDetails para el resto).
+// VACÍOS, más una galería más larga que la que el aviso ya tiene. La cosecha los reaplica
+// (detailPins.ts para el punto, applyCasaswebDetails para el resto).
 //
 // Las fichas se piden con la UA del bot y el espaciado por host de net.ts; a los :25, lejos de la
 // cosecha horaria (:47), que lee las búsquedas del mismo sitio. Cinco fallas seguidas cortan la
@@ -38,8 +39,8 @@ async function main(): Promise<void> {
   const usdUyu = Number(meta?.usdUyu) || 0;
   const targets = await casaswebDetailTargets(new Date(), number("RENTALS_CASASWEB_DETAIL_MAX", 80));
   const summary = {
-    targets: targets.length, read: 0, pinned: 0, noMap: 0, withExpenses: 0, withBathrooms: 0,
-    unreadable: 0, failed: 0, located: 0, completed: 0, note: "",
+    targets: targets.length, rereads: targets.filter(target => target.reread).length, read: 0, pinned: 0, noMap: 0,
+    withExpenses: 0, withBathrooms: 0, withImages: 0, photos: 0, unreadable: 0, failed: 0, located: 0, completed: 0, note: "",
   };
   if (!targets.length) {
     console.log("[rentals-casasweb-detail] sin fichas pendientes");
@@ -63,7 +64,7 @@ async function main(): Promise<void> {
     } else {
       consecutiveFailures = 0;
       summary.read++;
-      const { pin, expenses, bathrooms, bedrooms } = facts;
+      const { pin, expenses, bathrooms, bedrooms, images } = facts;
       rows.push({
         listingId: target.listingId,
         readAt: new Date().toISOString(),
@@ -72,10 +73,15 @@ async function main(): Promise<void> {
         expenses,
         bathrooms,
         bedrooms,
+        images,
         ok: true,
       });
       if (expenses) summary.withExpenses++;
       if (bathrooms !== null) summary.withBathrooms++;
+      if (images.length) {
+        summary.withImages++;
+        summary.photos += images.length;
+      }
       if (!pin) summary.noMap++;
       else {
         summary.pinned++;

@@ -215,6 +215,18 @@ describe("alquileres.uy cards as directory rows", () => {
     expect(rental!.details!.images).toHaveLength(3);
   });
 
+  it("uses the page's first photo, full size, as the cover: the card's thumbnail is that photo at 320 px", () => {
+    const detail = detailOf(fixture("alquileresuy-ficha.html"));
+    const house = card("885CA866", fixture("alquileresuy-ca.txt"));
+    expect(house.photo).toMatch(/_320\.jpg$/);
+    const { rental } = alquileresUyToRawRental(house, "casa", { ...ctx, detail });
+    expect(rental!.image).toBe(detail.images[0]);
+    expect(rental!.details!.images[0]).toBe(rental!.image);
+    // A page read without photos, or not read at all, keeps the card's thumbnail.
+    expect(alquileresUyToRawRental(house, "casa", { ...ctx, detail: { ...detail, images: [] } }).rental!.image).toBe(house.photo);
+    expect(alquileresUyToRawRental(house, "casa", ctx).rental!.image).toBe(house.photo);
+  });
+
   it("names a lease transfer in the title so the budget view can tell it apart", () => {
     const detail = { ...detailOf(fixture("alquileresuy-ficha.html")), transfer: true };
     const { rental } = alquileresUyToRawRental(card("696AP1226"), "apartamento", { ...ctx, detail });

@@ -319,23 +319,26 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
   const detail = `categorías[${totals}]; cortes[falla:${cuts.failed},filtro:${cuts.filters},repetida:${cuts.repeated},tope:${cuts.pages},presupuesto:${cuts.budget},sinPartición:${cuts.unpartitioned},residual:${cuts.residual},totalDesconocido:${cuts.shortUnknown},vacía:${cuts.empty}]; etapas[${phaseNotes.join(";")}]`;
   console.log(`[rentals] ML ${mode}: ${pages} páginas/${requests} solicitudes, ${byId.size} IDs, ${duplicates} repetidos, ${detail}`);
   const listings = [...byId.values()];
-  // The card never carries gastos comunes; what the advert's own page stated (currency-rentals-ml-
-  // detail, see mlDetail.ts) goes back on before saving, or this harvest would blank it every hour.
+  // The card never carries gastos comunes nor the gallery; what the advert's own page stated
+  // (currency-rentals-ml-detail, see mlDetail.ts) goes back on before saving, or this harvest would
+  // blank it every hour.
   let withExpenses = 0;
   let withBedrooms = 0;
+  let withImages = 0;
   if (appDbConfigured()) {
     try {
       const filled = await applyMlDetails(listings, usdUyu);
       withExpenses = filled.expenses;
       withBedrooms = filled.bedrooms;
+      withImages = filled.images;
     } catch (error) {
-      console.warn("[rentals] ML: no se pudieron reaplicar los gastos comunes de las fichas", error);
+      console.warn("[rentals] ML: no se pudieron reaplicar los datos de las fichas", error);
     }
   }
   return {
     key: "mercadolibre", complete: false,
     ok: reachable && byId.size > 0,
     listings,
-    note: `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets.size} admiten mascotas, ${particulars.size} de particular, ${withExpenses} con gastos comunes de su ficha, ${withBedrooms} con dormitorios de su ficha; cobertura parcial; ${detail}`,
+    note: `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets.size} admiten mascotas, ${particulars.size} de particular, ${withExpenses} con gastos comunes de su ficha, ${withBedrooms} con dormitorios de su ficha, ${withImages} con fotos de su ficha; cobertura parcial; ${detail}`,
   };
 }

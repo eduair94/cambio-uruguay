@@ -1,14 +1,23 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { applyGallery } from "../../classes/rentals/detailImages";
 import { pinFits, pinFor, type RentalPin } from "../../classes/rentals/detailPins";
 import {
   mlDetailExpenses,
+  mlDetailIsCurrent,
+  mlPhotoKey,
+  mlPictureId,
   parseMlRentalBedrooms,
   parseMlRentalExpenses,
+  parseMlRentalImages,
   parseMlRentalPin,
   prioritizeMlDetailTargets,
   type MlDetailTarget,
 } from "../../classes/rentals/mlDetail";
-import type { RentalProperty } from "../../classes/rentals/types";
+import type { RawRental, RentalProperty } from "../../classes/rentals/types";
+
+const fixture = (name: string): string => readFileSync(join(__dirname, "fixtures", name), "utf8");
 
 // The spec table of a Mercado Libre rental item page, as served on 2026-10-08 (MLU-695924825).
 const specRow = (value: string, label = "Gastos comunes") =>
@@ -93,6 +102,93 @@ describe("which item pages are read first", () => {
       "mercadolibre:MLU4",
       "mercadolibre:MLU2",
     ]);
+  });
+
+  it("reads an advert never read before re-reading one, so a backfill cannot delay a first total", () => {
+    const rows = [
+      target({ listingId: "mercadolibre:MLU1", department: "Montevideo", reread: true }),
+      target({ listingId: "mercadolibre:MLU2", propertyType: "local" }),
+      target({ listingId: "mercadolibre:MLU3", department: "Montevideo" }),
+    ];
+    expect(prioritizeMlDetailTargets(rows, 3).map(row => row.listingId)).toEqual([
+      "mercadolibre:MLU3",
+      "mercadolibre:MLU2",
+      "mercadolibre:MLU1",
+    ]);
+  });
+
+  it("reads again, once, a page stored before its pin or its photos were kept", () => {
+    const fresh = "2026-09-09T00:00:00.000Z";
+    const row = { ok: true, readAt: "2026-10-08T12:00:00.000Z", latitude: null, images: [] as string[] };
+    expect(mlDetailIsCurrent(row, fresh)).toBe(true);
+    expect(mlDetailIsCurrent({ ...row, images: undefined }, fresh)).toBe(false);
+    expect(mlDetailIsCurrent({ ...row, latitude: undefined }, fresh)).toBe(false);
+    expect(mlDetailIsCurrent({ ...row, readAt: "2026-09-01T12:00:00.000Z" }, fresh)).toBe(false);
+  });
+});
+
+// A rental item page as Mercado Libre serves it to our declared UA (MLU-1517303434, Puertito del
+// Buceo, 2026-10-09), trimmed to its JSON-LD, its photo mosaic, two spec rows and the static map,
+// whose Google key and signature are replaced. The mosaic says "Imagen 1 de 11" and shows five.
+describe("the photos of a Mercado Libre rental item page", () => {
+  const PAGE_IDS = [
+    "846035-MLU117438763806_102026",
+    "744830-MLU119039505193_102026",
+    "787185-MLU119040329225_102026",
+    "774626-MLU119039801661_102026",
+    "766665-MLU117438823376_102026",
+  ];
+  const full = (id: string) => `https://http2.mlstatic.com/D_NQ_NP_${id}-F.webp`;
+
+  it("reads the five photos the page lists, full size and in its order", () => {
+    expect(parseMlRentalImages(fixture("ml-rental-item.html"))).toEqual(PAGE_IDS.map(full));
+  });
+
+  it("is the same page the other facts are read from", () => {
+    const html = fixture("ml-rental-item.html");
+    expect(parseMlRentalExpenses(html)).toEqual({ amount: 24_600, currency: "UYU" });
+    expect(parseMlRentalBedrooms(html)).toBe(4);
+    expect(parseMlRentalPin(html)).toEqual({ latitude: -34.9095071, longitude: -56.1367351 });
+  });
+
+  it("reads every photo of the carousel the mobile layout lists, never its video", () => {
+    // MLU-1517295544 in the mobile layout: 29 photos and a video; slides 4 to 28 left out.
+    expect(parseMlRentalImages(fixture("ml-rental-item-mobile.html"))).toEqual([
+      full("937770-MLU117443505164_102026"),
+      full("887272-MLU119044064785_102026"),
+      full("794337-MLU117100029890_102026"),
+      full("932866-MLU117443256574_102026"),
+    ]);
+  });
+
+  it("takes only photos labelled as this gallery's", () => {
+    const banner = `<link rel="preload" as="image" href="https://http2.mlstatic.com/D_NQ_941966-MLA115518237559_082026-OO.jpg"/>` +
+      `<img src="https://http2.mlstatic.com/D_NQ_NP_123456-MLU100000000001_102026-F.webp" alt="otra publicación"/>`;
+    expect(parseMlRentalImages(page(specRow("19.500 UYU")) + banner)).toBeNull();
+    const elsewhere = `<figure aria-label="Imagen 1 de 3 de x"><img src="https://example.com/D_NQ_NP_123456-MLU100000000001_102026-F.webp"/></figure>`;
+    expect(parseMlRentalImages(elsewhere)).toBeNull();
+  });
+
+  it("knows the card's cover and the page's photo are one picture", () => {
+    const cover = "https://http2.mlstatic.com/D_NQ_NP_2X_846035-MLU117438763806_102026-C.webp";
+    expect(mlPictureId(cover)).toBe(PAGE_IDS[0]);
+    expect(mlPictureId(full(PAGE_IDS[0]!))).toBe(PAGE_IDS[0]);
+    expect(mlPictureId("https://http2.mlstatic.com/D_NQ_NP_846035-MLU117438763806_102026-O.jpg")).toBe(PAGE_IDS[0]);
+    expect(mlPictureId("https://example.com/846035-MLU117438763806_102026-F.webp")).toBeNull();
+    expect(mlPhotoKey("https://example.com/a.jpg")).toBe("https://example.com/a.jpg");
+  });
+
+  it("puts the page's other photos on the card's advert, keeping its cover", () => {
+    const row = { image: "https://http2.mlstatic.com/D_NQ_NP_2X_846035-MLU117438763806_102026-C.webp" } as Pick<RawRental, "image" | "details">;
+    expect(applyGallery(row, PAGE_IDS.map(full), mlPhotoKey)).toBe(true);
+    expect(row.image).toBe("https://http2.mlstatic.com/D_NQ_NP_2X_846035-MLU117438763806_102026-C.webp");
+    expect(row.details).toEqual({
+      description: "", images: PAGE_IDS.slice(1).map(full), builtArea: null, totalArea: null, landArea: null,
+      terraceArea: null, amenities: [], guaranteeText: "",
+    });
+    // Never a shorter gallery than the advert already has.
+    expect(applyGallery(row, PAGE_IDS.slice(0, 3).map(full), mlPhotoKey)).toBe(false);
+    expect(row.details!.images).toHaveLength(4);
   });
 });
 

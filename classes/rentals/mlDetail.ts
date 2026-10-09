@@ -22,8 +22,20 @@
 // centroide del barrio. El "APPROXIMATE" de la página es el centroide del PAÍS (`geo_information`),
 // no el del aviso. Se publica en la propiedad sólo si su coordenada está vacía, después de la
 // deduplicación (`applyDetailPins`, detailPins.ts), para no cambiar qué aviso es el canónico.
+//
+// Y las FOTOS (2026-10-09): los avisos de ML tenían sólo la portada de la tarjeta. La ficha que ML le
+// sirve a nuestra UA declarada es la versión estática para bots (`"isBot":true,"staticMarkup":true`)
+// con un mosaico de CINCO fotos ("Imagen 1 de 11" … "Imagen 5 de 11"; en 3 fichas medidas: 5 de 11,
+// 5 de 13 y 5 de 29). La lista entera sólo está en el estado que se hidrata en un navegador, en la
+// versión móvil —que no trae la tabla de especificaciones, o sea ni gastos comunes ni dormitorios— y
+// en la API de ítems, que contesta 403 sin OAuth. Pedir también la móvil duplicaría los pedidos, así
+// que se guardan las que lista la misma lectura, a tamaño completo; la portada y la escritura en el
+// aviso, en `detailImages.ts`.
+import * as cheerio from "cheerio";
 import { appConnection } from "../appdb";
+import { applyGallery, writeOfferGallery } from "./detailImages";
 import { inUruguay, type RentalPin } from "./detailPins";
+import { rentalImages } from "./details";
 import { parseCurrency, parseMoney } from "./normalize";
 import type { RawRental, RentalCurrency } from "./types";
 
@@ -49,6 +61,11 @@ export interface MlRentalDetail {
    * 12 sampled pages stated them. Absent on rows read before it was kept.
    */
   bedrooms?: number | null;
+  /**
+   * The photos the page lists, full size and in its order; empty = none usable. Absent on rows read
+   * before photos were kept (2026-10-09): those are read again once (see `mlDetailTargets`).
+   */
+  images?: string[];
   /** Always true for a stored row: failed reads are not stored, so the advert is read again. */
   ok: boolean;
 }
@@ -105,6 +122,44 @@ export function parseMlRentalPin(html: string): RentalPin | null {
   return { latitude, longitude };
 }
 
+const PICTURE = /^https:\/\/http2\.mlstatic\.com\/D_N?Q_NP_(?:2X_)?(\d{3,9}-ML[A-Z]\d{6,15}_\d{4,8})-[A-Z]{1,2}(?:-null)?\.(?:webp|jpe?g|png)$/i;
+
+/** The picture id behind any size of a photo: the card's `…_2X_<id>-C.webp` and the page's `…<id>-F.webp`. */
+export function mlPictureId(url: string): string | null {
+  return PICTURE.exec(url.trim())?.[1] ?? null;
+}
+
+/** One photo, one key, whatever size the URL asks for. */
+export const mlPhotoKey = (url: string): string => mlPictureId(url) ?? url;
+
+/** The full-size photo: 1200 px, the same bytes as the `-F-null.webp` the mosaic shows (`-O` is 500 px). */
+export const mlPictureUrl = (id: string): string => `https://http2.mlstatic.com/D_NQ_NP_${id}-F.webp`;
+
+/**
+ * The advert's own photos, in the page's order and full size; null = the page lists none usable.
+ *
+ * Each gallery item is labelled "Imagen k de N": the mosaic of the page served to our UA (a
+ * `<figure aria-label>` around `<img src="…-F-null.webp">`, five of N) and the carousel of the
+ * mobile layout (`<a href="…-O.jpg" aria-label>`, all N). Anything not on ML's image host, or not
+ * labelled as a photo of this gallery (the video slide, a banner, the seller's logo), is not taken.
+ */
+export function parseMlRentalImages(html: string): string[] | null {
+  const $ = cheerio.load(html);
+  const byPosition = new Map<number, string>();
+  $("[aria-label]").each((_, node) => {
+    const label = /^Imagen (\d{1,3}) de \d{1,3}\b/.exec($(node).attr("aria-label") ?? "");
+    if (!label) return;
+    const item = $(node);
+    const urls = [item.attr("href"), item.attr("src"), ...item.find("img").toArray().map(img => $(img).attr("src"))];
+    const id = urls.map(url => (url ? mlPictureId(url) : null)).find((value): value is string => !!value);
+    const position = Number(label[1]);
+    if (id && !byPosition.has(position)) byPosition.set(position, id);
+  });
+  const ids = [...byPosition.entries()].sort((a, b) => a[0] - b[0]).map(([, id]) => id);
+  const images = rentalImages([...new Set(ids)].map(mlPictureUrl));
+  return images.length ? images : null;
+}
+
 /**
  * Whether a stated amount may complete the advert: positive, at least $ 200 a month and not above
  * the rent itself. A typo with a zero too many, or the yearly figure, is larger than the rent; a
@@ -129,22 +184,38 @@ export interface MlDetailTarget {
   department: string;
   propertyType: string;
   lastSeen: string;
+  /** Its page was read before (a month ago, or before a field was kept): after those never read. */
+  reread?: boolean;
 }
 
 const HOMES = new Set(["apartamento", "casa"]);
 
-/** Montevideo homes first (where the total decides most searches), then homes, freshest first. */
+/**
+ * Adverts never read first: a re-read only refreshes, a first read is the advert's only total, pin
+ * and photos. Then Montevideo homes (where the total decides most searches), then homes, freshest first.
+ */
 export function prioritizeMlDetailTargets(rows: readonly MlDetailTarget[], budget: number): MlDetailTarget[] {
   const score = (row: MlDetailTarget) => (HOMES.has(row.propertyType) ? 2 : 0) + (row.department === "Montevideo" ? 1 : 0);
   return [...rows]
-    .sort((a, b) => score(b) - score(a) || b.lastSeen.localeCompare(a.lastSeen) || a.listingId.localeCompare(b.listingId))
+    .sort((a, b) =>
+      Number(a.reread === true) - Number(b.reread === true) ||
+      score(b) - score(a) || b.lastSeen.localeCompare(a.lastSeen) || a.listingId.localeCompare(b.listingId))
     .slice(0, Math.max(0, budget));
+}
+
+/**
+ * A stored read that needs no other: successful, under a month old and with every field this job
+ * keeps. A row without the pin (kept since 2026-10-08) or the photos (since 2026-10-09) predates
+ * them and is read once more.
+ */
+export function mlDetailIsCurrent(row: Record<string, unknown>, freshFrom: string): boolean {
+  return row.ok === true && String(row.readAt ?? "") >= freshFrom && row.latitude !== undefined && row.images !== undefined;
 }
 
 const details = () => appConnection().collection(ML_DETAIL_COLLECTION);
 const listings = () => appConnection().collection("rentallistings");
 
-/** Live Mercado Libre adverts whose item page was never read, or read more than a month ago. */
+/** Live Mercado Libre adverts whose item page was never read, read before a field was kept, or a month ago. */
 export async function mlDetailTargets(now: Date, budget: number, days = 10): Promise<MlDetailTarget[]> {
   const cutoff = new Date(now.getTime() - days * 86_400_000).toISOString().slice(0, 10);
   const rows = await listings()
@@ -169,16 +240,19 @@ export async function mlDetailTargets(now: Date, budget: number, days = 10): Pro
     }
   }
   const fresh = new Date(now.getTime() - ML_DETAIL_REFRESH_DAYS * 86_400_000).toISOString();
-  const read = new Set<string>();
+  const current = new Set<string>();
+  const readBefore = new Set<string>();
   for (let i = 0; i < targets.length; i += 5_000) {
     const ids = targets.slice(i, i + 5_000).map(target => target.listingId);
-    // A row without the pin field predates it: read once more so the map gets it too.
     const docs = await details()
-      .find({ listingId: { $in: ids }, ok: true, readAt: { $gte: fresh }, latitude: { $exists: true } }, { projection: { listingId: 1 } })
+      .find({ listingId: { $in: ids } }, { projection: { listingId: 1, ok: 1, readAt: 1, latitude: 1, images: 1 } })
       .toArray();
-    for (const doc of docs) read.add(String(doc.listingId));
+    for (const doc of docs) (mlDetailIsCurrent(doc, fresh) ? current : readBefore).add(String(doc.listingId));
   }
-  return prioritizeMlDetailTargets(targets.filter(target => !read.has(target.listingId)), budget);
+  const pending = targets
+    .filter(target => !current.has(target.listingId))
+    .map(target => (readBefore.has(target.listingId) ? { ...target, reread: true } : target));
+  return prioritizeMlDetailTargets(pending, budget);
 }
 
 export async function saveMlDetails(rows: readonly MlRentalDetail[]): Promise<void> {
@@ -207,18 +281,22 @@ export async function writeMlDetailExpenses(
 }
 
 /**
- * The harvest's half: the search card arrives again without common expenses every hour, so what an
- * item page already stated is put back before the property is saved. Returns how many it filled.
+ * The harvest's half: the search card arrives again without common expenses, bedrooms or photos
+ * every hour, so what an item page already stated is put back before the property is saved.
+ * Returns how many adverts it filled, per field.
  */
-export async function applyMlDetails(rows: RawRental[], usdUyu: number): Promise<{ expenses: number; bedrooms: number }> {
-  const filled = { expenses: 0, bedrooms: 0 };
-  const own = rows.filter(row => row.source === "mercadolibre" && (row.commonExpenses === null || row.bedrooms === null));
+export async function applyMlDetails(rows: RawRental[], usdUyu: number): Promise<{ expenses: number; bedrooms: number; images: number }> {
+  const filled = { expenses: 0, bedrooms: 0, images: 0 };
+  const own = rows.filter(row => row.source === "mercadolibre");
   if (!own.length) return filled;
   const stated = new Map<string, MlRentalDetail>();
   for (let i = 0; i < own.length; i += 5_000) {
     const ids = own.slice(i, i + 5_000).map(row => row.listingId);
     const docs = await details()
-      .find({ listingId: { $in: ids }, $or: [{ amount: { $gt: 0 } }, { bedrooms: { $type: "number" } }] }, { projection: { _id: 0 } })
+      .find(
+        { listingId: { $in: ids }, $or: [{ amount: { $gt: 0 } }, { bedrooms: { $type: "number" } }, { "images.0": { $exists: true } }] },
+        { projection: { _id: 0 } }
+      )
       .toArray();
     for (const doc of docs) stated.set(String(doc.listingId), doc as unknown as MlRentalDetail);
   }
@@ -238,6 +316,8 @@ export async function applyMlDetails(rows: RawRental[], usdUyu: number): Promise
       row.bedrooms = detail.bedrooms;
       filled.bedrooms++;
     }
+    // The card's cover stays the advert's `image`; the gallery holds the page's other photos.
+    if (applyGallery(row, detail.images, mlPhotoKey)) filled.images++;
   }
   return filled;
 }
@@ -247,4 +327,9 @@ export async function writeMlDetailBedrooms(target: Pick<MlDetailTarget, "key" |
   if (target.propertyType !== "apartamento" && target.propertyType !== "casa") return false;
   const result = await listings().updateOne({ key: target.key, bedrooms: null }, { $set: { bedrooms } });
   return result.modifiedCount > 0;
+}
+
+/** The advert's photos, right away, when they are more than it shows; the harvest keeps them. */
+export async function writeMlDetailImages(target: Pick<MlDetailTarget, "key" | "listingId">, images: readonly string[]): Promise<boolean> {
+  return writeOfferGallery(target, images, mlPhotoKey);
 }

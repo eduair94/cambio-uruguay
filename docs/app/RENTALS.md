@@ -11,6 +11,8 @@ página de vivienda". Diseño en `docs/superpowers/specs/2026-10-09-property-pho
   container query) no entran flechas ni contador y quedan puntos. Tocar una foto abre el visor **en
   esa foto**: carrusel, visor y ficha numeran igual porque todos usan `rentalPhotos` (el aviso que
   coincide con el filtro primero; tope por propiedad 24 → 60).
+- **El panel de la propiedad en el mapa** usa el mismo carrusel y el mismo visor: la propiedad
+  abierta ya llega con su galería entera (`/api/rentals/propiedad/<key>`), así que no pide nada más.
 - **Las primeras 8 fotos viajan con la búsqueda, el resto se pide al acercarse al final.**
   `galleryPreview` (URL + aviso, para acreditar cada foto en el visor) y `photoCount` salen de una
   SEGUNDA consulta por las ~24 claves de la página, después de paginar
@@ -30,6 +32,63 @@ página de vivienda". Diseño en `docs/superpowers/specs/2026-10-09-property-pho
   foto real tenía ese tamaño. La URL no lo delata, el tamaño sí: `utils/photoPlaceholders.ts` las
   reconoce al cargar y el carrusel, la grilla y el visor las sacan juntos (en un aviso de prueba, 12
   → 7 fotos reales).
+
+## Todas las fotos de cada aviso — 9 de octubre de 2026
+
+Medido ese día en producción (`offers[].details.images` por aviso): InfoCasas y El País llegaban
+justo a 12 fotos, el tope de `rentalImages`, o sea que sus galerías se cortaban ahí; **Mercado Libre
+y Casasweb guardaban cero fotos de galería**, sólo la portada de la tarjeta; Facebook, TikTok,
+Instagram y Reels, también sólo la portada.
+
+- **El tope** pasó a 40 por aviso (`RENTAL_IMAGES_PER_OFFER`, `classes/rentals/details.ts`): entra
+  la galería más grande medida (29). La misma función la usan ventas y oportunidades
+  (`classes/propertysales/`, `classes/propertyopportunities/`), que también guardan hasta 40; su API
+  pública sigue recortando a 32.
+- **Mercado Libre: cinco fotos, porque es lo que la ficha lista.** A nuestra UA declarada ML le sirve
+  la versión estática para bots (`"isBot":true,"staticMarkup":true`) con un mosaico de cinco fotos
+  rotuladas "Imagen 1 de N"; en tres fichas: 5 de 11, 5 de 13 y 5 de 29. La lista entera sólo está
+  en el estado que se hidrata en un navegador, en la versión móvil (la cookie `device_force_view=mobile`
+  que la propia página pone en ventanas de hasta 920 px: trae las 29, pero **no la tabla de
+  especificaciones**, o sea ni gastos comunes ni dormitorios) y en la API de ítems, que contesta 403
+  (`PolicyAgent`) sin OAuth. Pedir las dos versiones duplicaría los pedidos del job, así que se
+  guardan las que lista la misma lectura de siempre. `parseMlRentalImages` (`mlDetail.ts`) toma sólo
+  los ítems rotulados "Imagen k de N" —el mosaico y, si un día llega, el carrusel—, nunca el video ni
+  un banner, y arma la URL a tamaño completo desde el id de la foto:
+  `https://http2.mlstatic.com/D_NQ_NP_<id>-F.webp` (1200 px, los mismos bytes que el `-F-null.webp`
+  del mosaico; `-O` es de 500 px).
+- **Casasweb: la galería entera.** Cada foto es un `<a class="gallery-item2" href="/fotos/<n>.jpg">`
+  dentro de `#lightGallery`, también las ocultas hasta abrir el visor (`parseCasaswebImages` en
+  `casaswebDetail.ts`, sólo HTTPS de casasweb.com o static.tokkobroker.com; las miniaturas de
+  "Propiedades similares" son de otros avisos y quedan afuera). En tres fichas: 15, 18 y 0. El 0 es
+  un aviso importado de Tokko (`TKA…`), cuya ficha en Casasweb no dibuja galería.
+- **La portada no se repite.** La portada de la tarjeta es la primera foto en chico y con otra URL
+  (`…_2X_<id>-C.webp`, `/fotos/<n>s.jpg`), y la página arma la galería con `[image,
+  ...details.images]` sacando repetidas por URL. Así que la portada se queda como `image` y
+  `details.images` guarda las DEMÁS fotos (`galleryWithoutCover`, por id de foto, en
+  `classes/rentals/detailImages.ts`). Fotos distintas en la ficha del sitio, antes → después, en las
+  muestras: Mercado Libre 1 → 5 (las tres), Casasweb 1 → 15, 1 → 18 y 1 → 1 (Tokko).
+  Donde la foto se ve grande —la grilla de la ficha y el visor— la portada chica de Casasweb
+  (345×258, 20 KB) se cambia por su original (`/fotos/<n>.jpg`, ~1200 px, 290–420 KB;
+  `app/utils/photoSizes.ts`): era la única foto borrosa de la grilla. La tarjeta sigue con la chica.
+  La de Mercado Libre ya es de 800 px y no se toca.
+- **Dónde se escribe.** La lista entera de la ficha va a `rentalmldetails.images` y
+  `rentalcasaswebdetails.images` (privadas). En `rentallistings` el job la escribe en el acto
+  (`writeOfferGallery`, compare-and-set sobre el propio aviso): un aviso sin `details` recibe uno
+  entero armado con `rentalOfferDetails`, y uno con `details` sólo una lista más larga que la que
+  tiene. La cosecha la reaplica (`applyMlDetails`, `applyCasaswebDetails`) porque cada hora vuelve a
+  llegar la tarjeta sin galería y la oferta fresca reemplaza a la guardada.
+- **La relectura.** Una fila guardada sin `images` es de antes de este cambio y se lee una vez más
+  (`mlDetailIsCurrent`, `casaswebDetailIsCurrent`), la misma regla que cuando llegó el pin. Con el
+  presupuesto de siempre (ML 240 fichas por hora, Casasweb 80) y una regla nueva: **los avisos nunca
+  leídos van primero** (`reread`), para que la relectura no demore el primer total, el pin y las
+  fotos de un aviso nuevo. Las ~29.000 fichas de ML quedan con fotos en unos 5 días (5.760 por día):
+  las que el primer barrido, empezado el 8/10, todavía no había leído entran directamente con fotos,
+  y el resto es la relectura. Las ~2.700 de Casasweb, en un día y medio (1.920 por día).
+- **alquileres.uy**: si la ficha se leyó y tiene fotos, la portada (`image`) es su primera foto a
+  tamaño completo y no la miniatura de 320 px de la tarjeta, que es la misma foto: la galería la
+  mostraba dos veces.
+- **Facebook queda afuera**: no hay en el repo ninguna ficha real de Marketplace guardada con una
+  lista de fotos, y no se adivina un esquema.
 
 ## alquileres.uy, y las páginas del hilo de r/uruguay — 9 de octubre de 2026
 

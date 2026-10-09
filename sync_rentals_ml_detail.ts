@@ -1,11 +1,11 @@
 // Lee la ficha propia de los avisos de Mercado Libre del directorio de alquileres para traer sus
-// gastos comunes y el pin de su mapa, que la tarjeta de búsqueda no publica
-// (classes/rentals/mlDetail.ts). Con presupuesto: primero las viviendas de Montevideo, cada aviso
-// una vez por mes.
+// gastos comunes, el pin de su mapa, los dormitorios y las fotos, que la tarjeta de búsqueda no
+// publica (classes/rentals/mlDetail.ts). Con presupuesto: primero los avisos nunca leídos, después
+// las viviendas de Montevideo, cada aviso una vez por mes.
 //
 // Escribe la colección privada `rentalmldetails` y completa en `rentallistings` sólo el
-// `commonExpenses` VACÍO del mismo aviso y la coordenada VACÍA de su propiedad. La cosecha los
-// reaplica al volver a ver el aviso.
+// `commonExpenses` VACÍO del mismo aviso, la coordenada VACÍA de su propiedad y una galería más
+// larga que la que el aviso ya tiene. La cosecha los reaplica al volver a ver el aviso.
 //
 // Las fichas se piden directo a mercadolibre.com.uy desde el VPS, con la UA del bot y 2 s entre
 // pedidos —como currency-autos-detail (:11), que lee de la misma IP—; por eso esta corre a los :35.
@@ -20,10 +20,12 @@ import {
   mlDetailTargets,
   parseMlRentalBedrooms,
   parseMlRentalExpenses,
+  parseMlRentalImages,
   parseMlRentalPin,
   saveMlDetails,
   writeMlDetailBedrooms,
   writeMlDetailExpenses,
+  writeMlDetailImages,
   type MlRentalDetail,
 } from "./classes/rentals/mlDetail";
 import { writeDetailPin } from "./classes/rentals/detailPins";
@@ -45,7 +47,11 @@ async function main(): Promise<void> {
   // 240 since 2026-10-08: 120 read in ~4 min with zero failures run after run (autos-detail reads
   // ML from this same IP at up to 400 an hour), and at 120 the ~29.000 adverts took ten days.
   const targets = await mlDetailTargets(now, number("RENTALS_ML_DETAIL_MAX", 240));
-  const summary = { targets: targets.length, read: 0, stated: 0, zeroOrAbsent: 0, unreadable: 0, failed: 0, implausible: 0, written: 0, pinned: 0, located: 0, bedrooms: 0, bedroomsWritten: 0, note: "" };
+  const summary = {
+    targets: targets.length, rereads: targets.filter(target => target.reread).length, read: 0, stated: 0, zeroOrAbsent: 0,
+    unreadable: 0, failed: 0, implausible: 0, written: 0, pinned: 0, located: 0, bedrooms: 0, bedroomsWritten: 0,
+    withImages: 0, photos: 0, galleriesWritten: 0, note: "",
+  };
   if (!targets.length) {
     console.log("[rentals-ml-detail] sin fichas pendientes");
     return;
@@ -72,6 +78,7 @@ async function main(): Promise<void> {
       summary.read++;
       const pin = parseMlRentalPin(html);
       const bedrooms = parseMlRentalBedrooms(html);
+      const images = parseMlRentalImages(html);
       rows.push({
         listingId: target.listingId,
         readAt,
@@ -80,8 +87,14 @@ async function main(): Promise<void> {
         latitude: pin?.latitude ?? null,
         longitude: pin?.longitude ?? null,
         bedrooms,
+        images: images ?? [],
         ok: true,
       });
+      if (images) {
+        summary.withImages++;
+        summary.photos += images.length;
+        if (!dryRun && (await writeMlDetailImages(target, images))) summary.galleriesWritten++;
+      }
       if (bedrooms !== null) {
         summary.bedrooms++;
         if (!dryRun && (await writeMlDetailBedrooms(target, bedrooms))) summary.bedroomsWritten++;
@@ -107,7 +120,8 @@ async function main(): Promise<void> {
   if (!dryRun) await saveMlDetails(rows);
   const stored = dryRun ? 0 : await appConnection().collection(ML_DETAIL_COLLECTION).countDocuments({ amount: { $gt: 0 } });
   const pins = dryRun ? 0 : await appConnection().collection(ML_DETAIL_COLLECTION).countDocuments({ latitude: { $type: "number" } });
-  console.log(`[rentals-ml-detail] ${JSON.stringify({ ...summary, dryRun, withExpensesStored: stored, withPinStored: pins })}`);
+  const photos = dryRun ? 0 : await appConnection().collection(ML_DETAIL_COLLECTION).countDocuments({ "images.0": { $exists: true } });
+  console.log(`[rentals-ml-detail] ${JSON.stringify({ ...summary, dryRun, withExpensesStored: stored, withPinStored: pins, withImagesStored: photos })}`);
 }
 
 main()
