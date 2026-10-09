@@ -189,7 +189,8 @@ la lógica que pudiera divergir de producción.
 ## Presupuestos del puente compartido y ventanas silenciosas
 
 `sync_movilidad.ts` reusa `classes/retail/harvest.ts` — el mismo cosechador y el mismo puente de
-MercadoLibre (`:9656`)/Facebook (`:9657`) que sillas, autos, alquileres y equipar—, con un presupuesto
+MercadoLibre (`:9656`) y la misma sesión de Facebook (el Chrome del perfil por CDP, con candado) que
+sillas, autos, alquileres y equipar—, con un presupuesto
 propio, mucho más chico que el de equipar (dos categorías y cinco tiendas contra 38/16):
 
 | | diaria | horaria (`--fast`) |

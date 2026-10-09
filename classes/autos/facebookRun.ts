@@ -7,9 +7,23 @@ import { loadFbCards, loadFbWanted, saveFbItems, upsertFbCards } from "./store";
 import type { CarSourceResult } from "./types";
 
 const DAY = 86_400_000;
+// The daily run reads the newest-first feed to its end (or 150 rounds) and every brand search to
+// 20 pages; the hourly one reads the feed until it reaches 6 h back — measured 2026-10-08, 15
+// fixed scrolls reached ~1.5 h and missed cars that Facebook surfaces late. The feed loads in
+// small pages (~9 cards) and its first one takes 4–5 rounds to follow (measured 2026-10-09), so
+// it gets 10 quiet rounds before it counts as ended. The lock wait is for another job's
+// Marketplace read (rentals, retail).
 export const FB_BUDGET = {
-  full: { feedScrolls: 80, queryScrolls: 4, items: 120, minutes: 30 },
-  fast: { feedScrolls: 15, queryScrolls: 0, items: 15, minutes: 8 },
+  full: {
+    feed: { maxScrolls: 150, stagnantRounds: 10 },
+    query: { maxScrolls: 20, stagnantRounds: 5 },
+    items: 120, minutes: 45, lockWaitMinutes: 30,
+  },
+  fast: {
+    feed: { maxScrolls: 40, stagnantRounds: 10, reachBackHours: 6 },
+    query: { maxScrolls: 0, stagnantRounds: 0 },
+    items: 15, minutes: 8, lockWaitMinutes: 10,
+  },
   itemGapMs: 6_000,
 } as const;
 
@@ -54,18 +68,22 @@ export async function runFacebook(options: {
   const stored = options.dryRun ? [] : await loadFbCards(since);
   const wanted = options.dryRun ? new Set<string>() : await loadFbWanted();
   const read = await readFacebookVehicles({
-    feedScrolls: budget.feedScrolls,
+    feed: budget.feed,
     queries: options.fast ? [] : options.brandQueries,
-    queryScrolls: budget.queryScrolls,
+    query: budget.query,
     itemGapMs: FB_BUDGET.itemGapMs,
     maxDurationMs: budget.minutes * 60_000,
+    lockWaitMs: budget.lockWaitMinutes * 60_000,
     itemIds: async cards => fbDetailQueue(mergeFbCards(stored, cards, [], startedAt), options.dictionary, {
       now: options.now, max: budget.items, wanted, maxYear: options.maxYear,
     }),
   });
   result.requests = read.pages;
-  result.note = read.note;
-  result.ok = !read.sessionLost && !(read.note ?? "").startsWith("falla");
+  result.note = [
+    `${read.lists} listas (${read.exhausted} leídas hasta el final, ${read.stalled} frenadas)`,
+    read.note,
+  ].filter(Boolean).join("; ");
+  result.ok = !read.busy && !read.sessionLost && !(read.note ?? "").startsWith("falla");
   if (!options.dryRun) {
     await upsertFbCards(read.cards, startedAt);
     await saveFbItems(read.items);

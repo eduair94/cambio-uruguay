@@ -1373,6 +1373,13 @@ Lo que pasó ese día, y lo que cambió por eso:
   la lista de Montevideo. Las anclas de ciudad casi no filtran: «rivera» o «mercedes» devuelven
   sobre todo Montevideo y Maldonado. La detención por "sin novedades" se mide por búsqueda, no por la
   unión de la corrida.
+- **Un lector a la vez sobre el perfil** (desde 2026-10-09). El lector de búsquedas ahora es común
+  (`classes/facebook/search.ts`) y lo usan también sillas, equipar y movilidad, y autos usa el mismo
+  scroll. Para que dos jobs nunca scrolleen la misma sesión a la vez, cada uno toma un candado
+  (`classes/facebook/lock.ts`, un directorio en `/tmp` con el pid del dueño; se recupera solo si el
+  proceso murió). La completa espera hasta 30 min, la horaria 10; si no lo consigue, Facebook queda
+  fuera de esa corrida con `ok: false` (se conservan los avisos guardados) y **no** cae al puente,
+  que maneja el mismo Chrome.
 
 ## Variables de entorno
 

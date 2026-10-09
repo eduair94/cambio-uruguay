@@ -14,7 +14,7 @@ sync_chairs.ts                      pm2 currency-chairs, 41 11 * * * UTC (≈08:
 │   ├── mercadolibre.ts   → MLU via the scraper service on 104:9656 (8 queries + category MLU77709)
 │   ├── fenicio.ts        → Bertoni, Divino, Electroventas, La Cueva, Clemur
 │   ├── shopify.ts        → Armo, Grassi, Cover Company
-│   ├── facebook.ts       → Marketplace via the browser service on 104:9657
+│   ├── facebook.ts       → Marketplace via the profile Chrome (CDP :9224); 104:9657 as fallback
 │   └── reddit_global.ts  → r/OfficeChairs, r/ergonomics, r/BuyItForLife, r/homeoffice
 ├── normalize.ts          → is this a desk chair? which chair is it?
 ├── catalog.ts            → group listings, dedupe offers, price stats, price history
@@ -104,10 +104,21 @@ catalogue, which is how to check it is still worth its cost.
 
 ## Facebook Marketplace
 
-The scraper lives in the **trustpilot** repo (`classes/FacebookMarketplace/`,
-`servers/facebook-marketplace-server.ts`, pm2 `facebook_marketplace`, port 9657). It attaches over
-CDP to the already-authenticated Chrome that `facebook_profile_browser` keeps on port 9224 — it must
-never launch its own Chrome on the same `--user-data-dir`.
+Since 2026-10-09 the retail reader (`classes/retail/sources/facebook.ts`, shared with equipar and
+movilidad) attaches over CDP to the already-authenticated Chrome that `facebook_profile_browser`
+keeps on port 9224, through the shared search reader (`classes/facebook/search.ts`): each search is
+scrolled to its end or to its cap (8 pages daily, 3 hourly) and the cards come from Facebook's
+GraphQL stream. It must never launch its own Chrome on the same `--user-data-dir`, and it takes the
+profile lock (`classes/facebook/lock.ts`) so it never scrolls alongside rentals or autos; while
+another job holds it, Marketplace is skipped for that run.
+
+Before, it went through the scraper in the **trustpilot** repo (`classes/FacebookMarketplace/`,
+`servers/facebook-marketplace-server.ts`, pm2 `facebook_marketplace`, port 9657), which scrolls a
+few screens and then reads the visible grid — but the grid is virtualized (never more than ~45 item
+links in the DOM), so what scrolled past was lost, and each search was capped at 40. That service is
+now only the fallback when the browser cannot be reached (`RETAIL_FB_BROWSER=0` forces it). A search
+card carries no condition, so every Marketplace offer is `used`; the seller's name (usually a private
+person) is never copied.
 
 It only produces data while that Facebook profile has a valid session. When the session is expired
 the service answers `FB_MARKETPLACE_LOGGED_OUT`, the harvest records the gap, and the directory
@@ -118,7 +129,8 @@ carries on without Marketplace offers.
 | var | default | meaning |
 |---|---|---|
 | `CHAIR_ML_API` | `http://104.234.204.107:9656/mercadolibre` | MercadoLibre scraper service |
-| `CHAIR_FB_API` | `http://104.234.204.107:9657/facebook/marketplace` | Marketplace service |
+| `CHAIR_FB_API` | `http://104.234.204.107:9657/facebook/marketplace` | Marketplace service (fallback) |
+| `RETAIL_FB_BROWSER` | `1` | `0` reads Marketplace through the :9657 service instead of the profile Chrome |
 | `CHAIR_FB_ENABLED` | `1` | `0` skips Marketplace without failing the run |
 | `CHAIR_STORE_MAX_PDP` | `260` | product pages opened per Fenicio store |
 | `CHAIR_ML_MAX_PAGES` | `4` | pages per MercadoLibre query (50 results each) |

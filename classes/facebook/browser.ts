@@ -5,7 +5,8 @@
 // search). It opens its own tabs, closes them, and disconnects without ever closing the browser:
 // Chrome refuses a second instance on the same profile, so launching one would fight the lock.
 // A login or checkpoint page ends the run — never retried, never "fixed" from here.
-// Same contract as classes/autos/sources/facebookBrowser.ts, which still carries its own copy.
+// The list readers (rentals, autos, retail) also take the profile lock (classes/facebook/lock.ts)
+// for as long as they scroll, so two jobs never scroll the same session at once.
 import type { Browser, HTTPResponse, Page } from "puppeteer-core";
 
 export class FacebookSessionError extends Error {}
@@ -94,6 +95,11 @@ export interface FacebookListScroll {
   /** Epoch ms; the list stops scrolling there and reports `exhausted: false`. */
   deadline: number;
   gapMs?: number;
+  /**
+   * The caller already has what it came for (e.g. a newest-first feed reached back far enough):
+   * stop scrolling there, reported as `satisfied`, not `exhausted`.
+   */
+  enough?: () => boolean;
 }
 
 /**
@@ -104,7 +110,11 @@ export interface FacebookListScroll {
  * not reach the load-more trigger — three such scrolls read 20–26 cards of a search that, scrolled
  * to the bottom, delivered 288. The tab is always closed.
  */
-export async function scrollFacebookList(browser: Browser, url: string, options: FacebookListScroll): Promise<{ scrolls: number; exhausted: boolean; initial: number }> {
+export async function scrollFacebookList(
+  browser: Browser,
+  url: string,
+  options: FacebookListScroll,
+): Promise<{ scrolls: number; exhausted: boolean; satisfied: boolean; initial: number }> {
   const page: Page = await browser.newPage();
   const pending: Array<Promise<void>> = [];
   const onResponse = (response: HTTPResponse): void => {
@@ -127,17 +137,25 @@ export async function scrollFacebookList(browser: Browser, url: string, options:
     const initial = options.count();
     let scrolls = 0;
     let stagnant = 0;
-    while (scrolls < options.maxScrolls && stagnant < options.stagnantRounds && Date.now() < options.deadline) {
+    let satisfied = !!options.enough?.();
+    while (!satisfied && scrolls < options.maxScrolls && stagnant < options.stagnantRounds && Date.now() < options.deadline) {
       const before = options.count();
+      // Bounce, then the bottom. Once the page sits at the bottom, scrollTo(bottom) does not move
+      // it and fires no scroll event, so Facebook loads the next page only on its own slow timer.
+      // Measured 2026-10-09 on the vehicles feed, 16 rounds: 78 cards (7 h back) without the
+      // bounce, 128 (14 h back) with it.
+      await page.evaluate(() => window.scrollBy(0, -600));
+      await sleep(300);
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await sleep(options.gapMs ?? 2_000);
       await Promise.all(pending.splice(0));
       scrolls++;
       stagnant = options.count() === before ? stagnant + 1 : 0;
+      satisfied = !!options.enough?.();
     }
     guard(page.url());
     await Promise.all(pending.splice(0));
-    return { scrolls, exhausted: stagnant >= options.stagnantRounds, initial };
+    return { scrolls, exhausted: !satisfied && stagnant >= options.stagnantRounds, satisfied, initial };
   } finally {
     page.off("response", onResponse);
     await page.close().catch(() => undefined);

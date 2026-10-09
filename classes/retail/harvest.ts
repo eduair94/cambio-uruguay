@@ -118,7 +118,7 @@ export async function harvestRetail(options: HarvestOptions): Promise<RetailHarv
       "facebook",
       "Facebook Marketplace",
       "facebook",
-      await safely(() => harvestFacebookMarketplace(specs, options.maxFbQueries))
+      await safely(() => harvestFacebookMarketplace(specs, options.maxFbQueries, { fast }))
     );
   }
 

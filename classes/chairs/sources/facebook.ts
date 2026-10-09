@@ -3,4 +3,4 @@ import { CHAIR_SPEC } from "../spec";
 import { harvestFacebookMarketplace as harvest } from "../../retail/sources/facebook";
 import type { ChairSourceResult } from "./mercadolibre";
 
-export const harvestFacebookMarketplace = (): Promise<ChairSourceResult> => harvest([CHAIR_SPEC]);
+export const harvestFacebookMarketplace = (fast = false): Promise<ChairSourceResult> => harvest([CHAIR_SPEC], undefined, { fast });

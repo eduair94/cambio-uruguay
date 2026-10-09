@@ -43,7 +43,8 @@ buscan por término— así que **sí** escalan con las categorías y toman pres
 | `currency-equipar-hourly` | `dist/sync_equipar.js --fast` | `53 * * * *` | sólo precios, sin las tiendas Fenicio, medio presupuesto |
 
 12:47 UTC deja una hora limpia después de `currency-chairs` (11:41): pegan a los mismos hosts y a
-los mismos dos puentes (`:9656` ML, `:9657` FB), y superponerlos duplicaría la carga sobre la tienda
+el mismo puente de ML (`:9656`) y la misma sesión de Facebook (el Chrome del perfil por CDP, con
+candado: ver `docs/app/CHAIR_MARKET.md`), y superponerlos duplicaría la carga sobre la tienda
 chica de otro para nada.
 
 `RETAIL_STORE_MAX_PDP` sube a 900 **sólo en este job**. El default de 260 páginas de producto por

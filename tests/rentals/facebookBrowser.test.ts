@@ -18,7 +18,7 @@ const list = (first: string[], ...batches: string[][]) => async (_browser: Brows
   options.onText(body(...first));
   const initial = options.count();
   for (const batch of batches) options.onText(body(...batch));
-  return { scrolls: batches.length, exhausted: true, initial };
+  return { scrolls: batches.length, exhausted: true, satisfied: false, initial };
 };
 const browser = { disconnect: vi.fn() } as unknown as Browser;
 const plan = (queries: string[]) => ({

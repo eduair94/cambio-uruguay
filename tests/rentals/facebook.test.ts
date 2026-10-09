@@ -152,7 +152,8 @@ const node = (id: string, overrides: Record<string, unknown> = {}) => ({
 });
 const graphql = (...nodes: unknown[]) => `for (;;);${JSON.stringify({ data: { marketplace_search: { feed_units: { edges: nodes.map(listing => ({ node: { listing } })) } } } })}`;
 const read = (cards: FacebookRentalRead["cards"], extra: Partial<FacebookRentalRead> = {}): FacebookRentalRead => ({
-  cards, reads: cards.length, lists: 1, exhausted: 1, failed: 0, stalled: 0, sessionLost: false, unreachable: false, note: null, ...extra,
+  cards, perSearch: [cards.map(card => card.id)], reads: cards.length, lists: 1, exhausted: 1, failed: 0, stalled: 0,
+  sessionLost: false, unreachable: false, busy: false, note: null, ...extra,
 });
 
 describe("Facebook through the profile browser", () => {
@@ -209,5 +210,13 @@ describe("Facebook through the profile browser", () => {
     expect(fetchJson).toHaveBeenCalledTimes(2);
     expect(result.listings.map(row => row.listingId)).toEqual(["facebook:9"]);
     expect(result.note).toContain("navegador sin lecturas (navegador del perfil inaccesible)");
+  });
+
+  it("skips Facebook while another job holds the profile, without touching the bridge", async () => {
+    const browser = vi.fn<typeof readFacebookRentals>(async () => read([], { lists: 0, busy: true, note: "ocupado por otra lectura" }));
+    const result = await harvestFacebookMarketplace("fast", 41.5, { browser, details: async () => new Map() });
+    // The bridge drives the same Chrome: falling back would scroll it twice at once.
+    expect(fetchJson).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ ok: false, listings: [], note: "ocupado por otra lectura" });
   });
 });
