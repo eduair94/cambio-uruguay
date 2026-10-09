@@ -14,6 +14,7 @@ vi.mock('../../server/utils/rentalFit', async importOriginal => ({
 const {
   projectRentalFitCandidate,
   createRentalFitInterner,
+  warmRentalFitCatalogue,
   createRentalFitCatalogueLoader,
   currentRentalFitCandidates,
   createRentalFitService,
@@ -600,5 +601,106 @@ describe('a lighter catalogue that answers the same', () => {
     const b = projectRentalFitCandidate(property('qa-b', [agency('2')]) as never, now, intern)!
     expect(a.offerZones![0]!.zone).toBe(b.offerZones![0]!.zone)
     expect(a.offerZones![0]!.zone).toEqual({ department: 'Montevideo', neighborhood: 'Cordón' })
+  })
+})
+
+// 2026-10-09: a reload takes 50–60 s in production. The loader answers with the catalogue it has
+// while the next one is read, a task keeps it warm, and the old guarantees stay: never older than
+// its bound, and a failed refresh still drops it.
+describe('no search waits for a reload', () => {
+  const tick = () => new Promise(resolve => setTimeout(resolve, 0))
+  const loader = (readMeta = vi.fn(meta), openCursor = vi.fn(() => cursor([property()]))) => {
+    const clock = { now }
+    const load = createRentalFitCatalogueLoader({
+      readMeta,
+      openCursor,
+      now: () => clock.now,
+      serveWhileRefreshingMs: 12 * 60_000,
+    })
+    return { load, clock, readMeta, openCursor }
+  }
+
+  it('answers with the catalogue it has while the new harvest loads, then switches', async () => {
+    const { load, clock, readMeta, openCursor } = loader()
+    const first = await load()
+    clock.now += 60_000
+    readMeta.mockResolvedValue({ generatedAt: '2026-09-07T15:01:00.000Z', usdUyu: 40 })
+    // Expired, but young enough: it answers at once and the reload runs behind.
+    expect(await load()).toBe(first)
+    await tick()
+    await tick()
+    const next = await load()
+    expect(next).not.toBe(first)
+    expect(next.generatedAt).toBe('2026-09-07T15:01:00.000Z')
+    expect(openCursor).toHaveBeenCalledTimes(2)
+  })
+
+  it('never answers with a catalogue older than its bound: past it, the search waits', async () => {
+    const { load, clock, openCursor } = loader()
+    const first = await load()
+    clock.now += 12 * 60_000
+    const next = await load()
+    expect(next).not.toBe(first)
+    expect(openCursor).toHaveBeenCalledTimes(2)
+  })
+
+  it('still drops the catalogue when the reload behind it fails', async () => {
+    const { load, clock, readMeta, openCursor } = loader()
+    const first = await load()
+    clock.now += 60_000
+    readMeta.mockResolvedValue({ generatedAt: stamp, usdUyu: 41 })
+    openCursor.mockImplementationOnce(() => {
+      throw new Error('PRIVATE_CURSOR_FAILURE')
+    })
+    expect(await load()).toBe(first)
+    await tick()
+    // The failure dropped it: the next search waits for a fresh read instead of the stale one.
+    const next = await load()
+    expect(next).not.toBe(first)
+    expect(next.usdUyu).toBe(41)
+  })
+
+  it('keeps it warm only while people use it', async () => {
+    const refresh = vi.fn(async () => catalogue() as any)
+    const hours = (n: number) => n * 3_600_000
+    expect(
+      await warmRentalFitCatalogue({
+        loader: { refresh },
+        now,
+        startedAt: now - hours(7),
+        demandAt: 0,
+      })
+    ).toEqual({ status: 'idle' })
+    expect(refresh).not.toHaveBeenCalled()
+    expect(
+      await warmRentalFitCatalogue({
+        loader: { refresh },
+        now,
+        startedAt: now - hours(7),
+        demandAt: now - hours(1),
+      })
+    ).toMatchObject({ status: 'warm' })
+    // Right after boot it warms with no demand yet: the first search after a deploy must not wait.
+    expect(
+      await warmRentalFitCatalogue({
+        loader: { refresh },
+        now,
+        startedAt: now - 60_000,
+        demandAt: 0,
+      })
+    ).toMatchObject({ status: 'warm' })
+    expect(refresh).toHaveBeenCalledTimes(2)
+    expect(refresh).toHaveBeenCalledWith(7 * 60_000)
+  })
+
+  it('renews early when the keep-warm task asks, so a search never finds it expired', async () => {
+    const { load, clock, openCursor } = loader()
+    const first = await load()
+    clock.now += 7 * 60_000
+    // A search at seven minutes still gets the cached one; the task's early renewal rereads it.
+    expect(await load.refresh()).toBe(first)
+    expect(openCursor).toHaveBeenCalledTimes(1)
+    expect(await load.refresh(7 * 60_000)).not.toBe(first)
+    expect(openCursor).toHaveBeenCalledTimes(2)
   })
 })

@@ -317,6 +317,12 @@ export function createRentalFitCatalogueLoader({
   now = Date.now,
   maxRows = RENTAL_FIT_MAX_ROWS,
   maxBytes = MAX_CACHE_BYTES,
+  /**
+   * Up to this age (from its load), an expired catalogue still answers while its refresh runs
+   * behind, so nobody waits the 50–60 s a reload takes in production (measured 2026-10-09). 0 =
+   * every expired catalogue waits for its refresh. Either way a failed refresh drops it.
+   */
+  serveWhileRefreshingMs = 0,
 } = {}) {
   let cached: {
     until: number
@@ -325,10 +331,12 @@ export function createRentalFitCatalogueLoader({
     value: RentalFitCatalogue
   } | null = null
   let loading: Promise<RentalFitCatalogue> | null = null
-  return async (): Promise<RentalFitCatalogue> => {
-    if (cached && cached.until > now()) return cached.value
+  /** Revalidates now, whatever the cache says: one reload at a time. The keep-warm task calls it. */
+  // `reloadAfterMs`: the age at which an unchanged catalogue is reread anyway. Searches use the
+  // ten-minute precaution; the keep-warm task renews earlier, so a search never finds it expired.
+  const refresh = (reloadAfterMs = MAX_SNAPSHOT_AGE_MS): Promise<RentalFitCatalogue> => {
     if (loading) return loading
-    loading = (async () => {
+    const run = (async () => {
       const meta = await readMeta()
       if (!meta?.generatedAt || !Number.isFinite(Date.parse(String(meta.generatedAt))))
         throw new RentalFitError(503)
@@ -339,16 +347,27 @@ export function createRentalFitCatalogueLoader({
       if (
         cached &&
         cached.signature === signature &&
-        checkedAt < cached.loadedAt + MAX_SNAPSHOT_AGE_MS
+        checkedAt < cached.loadedAt + Math.min(reloadAfterMs, MAX_SNAPSHOT_AGE_MS)
       ) {
         // Recheck metadata every minute, while forcing a full refresh within ten minutes
         // even if an out-of-band repair did not update the harvest metadata.
         cached.until = Math.min(checkedAt + CACHE_MS, cached.loadedAt + MAX_SNAPSHOT_AGE_MS)
         return cached.value
       }
-      // No stale fallback after a failed refresh, and no extra full catalogue retained in memory.
-      cached = null
-      const cursor = openCursor()
+      // No stale fallback after a failed refresh. Answering while refreshing keeps the previous
+      // catalogue until the new one is complete; otherwise it goes now, so memory never holds two.
+      const previous = cached
+      if (!serveWhileRefreshingMs) cached = null
+      const failed = (error: unknown): never => {
+        if (cached === previous) cached = null
+        throw error
+      }
+      let cursor: ReturnType<typeof openCursor>
+      try {
+        cursor = openCursor()
+      } catch (error) {
+        return failed(error)
+      }
       const candidates: RentalFitCachedCandidate[] = []
       // Per load: the catalogue it builds is the only thing that keeps these copies alive.
       const intern = createRentalFitInterner()
@@ -373,6 +392,8 @@ export function createRentalFitCatalogueLoader({
           }
           candidates.push(candidate)
         }
+      } catch (error) {
+        failed(error)
       } finally {
         await cursor.close()
       }
@@ -385,14 +406,60 @@ export function createRentalFitCatalogueLoader({
       cached = { until: loadedAt + CACHE_MS, loadedAt, signature, value }
       return value
     })()
-    try {
-      return await loading
-    } finally {
-      loading = null
+    loading = run
+    const settle = () => {
+      if (loading === run) loading = null
     }
+    run.then(settle, settle)
+    return run
   }
+  const load = async (): Promise<RentalFitCatalogue> => {
+    const time = now()
+    if (cached && cached.until > time) return cached.value
+    if (cached && serveWhileRefreshingMs > 0 && time < cached.loadedAt + serveWhileRefreshingMs) {
+      const answer = cached.value
+      // Its failure is the next request's to see: a failed refresh drops the catalogue.
+      refresh().catch(() => undefined)
+      return answer
+    }
+    return refresh()
+  }
+  return Object.assign(load, { refresh })
 }
-export const loadRentalFitCatalogue = createRentalFitCatalogueLoader()
+
+// In production an expired catalogue answers for up to two minutes past the ten-minute full
+// reread while that reread runs behind, so no search waits for it; never older than twelve minutes.
+export const RENTAL_FIT_SERVE_WHILE_REFRESHING_MS = MAX_SNAPSHOT_AGE_MS + 2 * 60_000
+export const loadRentalFitCatalogue = createRentalFitCatalogueLoader({
+  serveWhileRefreshingMs: RENTAL_FIT_SERVE_WHILE_REFRESHING_MS,
+})
+
+/**
+ * Keeps each process's catalogue warm while people use the household search, so the reload that
+ * every new harvest (hourly) and the ten-minute precaution need happens before anyone asks. It only
+ * runs while there was demand in the last hours (or the process just started): an idle site does
+ * not reread 156 MB from Mongo every ten minutes for nobody.
+ */
+const KEEP_WARM_MS = 6 * 60 * 60_000
+// Ticks every 5 minutes: renewing from 7 minutes means it is reread at about 10, before it expires.
+const KEEP_WARM_RELOAD_AFTER_MS = 7 * 60_000
+const processStartedAt = Date.now()
+let lastDemandAt = 0
+export function noteRentalFitDemand(at = Date.now()) {
+  lastDemandAt = at
+}
+export async function warmRentalFitCatalogue({
+  loader = loadRentalFitCatalogue as {
+    refresh(reloadAfterMs?: number): Promise<RentalFitCatalogue>
+  },
+  now = Date.now(),
+  startedAt = processStartedAt,
+  demandAt = lastDemandAt,
+} = {}): Promise<{ status: 'warm' | 'idle'; generatedAt?: string; homes?: number }> {
+  if (now - Math.max(startedAt, demandAt) > KEEP_WARM_MS) return { status: 'idle' }
+  const catalogue = await loader.refresh(KEEP_WARM_RELOAD_AFTER_MS)
+  return { status: 'warm', generatedAt: catalogue.generatedAt, homes: catalogue.candidates.length }
+}
 
 /** Refresh visibility on every evaluation; a cached public point must still have a shown owner. */
 export function currentRentalFitCandidates(
@@ -442,10 +509,11 @@ export function currentRentalFitCandidates(
 }
 
 export function createRentalFitService({
-  loadCatalogue = loadRentalFitCatalogue,
+  loadCatalogue = loadRentalFitCatalogue as () => Promise<RentalFitCatalogue>,
   loadAvailability = loadRentalAvailabilityIndex,
   now = Date.now,
   rank = rankRentalFits,
+  noteDemand = noteRentalFitDemand,
 } = {}) {
   const clients = new Map<string, { count: number; until: number }>()
   let globalWindow = { count: 0, until: 0 },
@@ -476,6 +544,7 @@ export function createRentalFitService({
       } catch {
         throw new RentalFitError(400)
       }
+      noteDemand(now())
       const [catalogue, availability] = await Promise.all([loadCatalogue(), loadAvailability()])
       const candidates = currentRentalFitCandidates(
         catalogue,

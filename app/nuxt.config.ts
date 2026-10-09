@@ -931,6 +931,11 @@ export default defineNuxtConfig({
       // workers del cluster lo disparan y ESO es lo deseado: la caché de Nitro es memoria por proceso
       // y cada worker calienta la suya. Ver server/utils/rentalDirectoryWarm.ts.
       '51,56 * * * *': ['rentals:directory-warm'],
+      // Cada 5 minutos (:03, :08 … :58): mantiene armado el catálogo del ranking por hogar
+      // (/alquiler-ideal-uruguay, POST /api/rentals/fit). Rearmarlo tarda 50–60 s; así lo paga esta
+      // tarea y no la persona que busca. Revalida barato y rearma sólo si cambió la cosecha o cumplió
+      // 10 minutos, y sólo mientras hubo demanda en las últimas horas. Cada worker calienta el suyo.
+      '3-58/5 * * * *': ['rentals:fit-warm'],
       // 11:00 UTC = 08:00 Uruguay: personalized Telegram summary for linked users.
       '0 11 * * *': ['telegram:summary'],
       // 08:15 UTC ≈ 05:15 Uruguay: refresh courier per-kg shipping rates.
