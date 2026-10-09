@@ -120,6 +120,7 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
             'offers.commonExpensesCurrency': 1,
             'offers.petsAllowed': 1,
             'offers.furnished': 1,
+            'offers.terms': 1,
             'offers.parkingSpaces': 1,
             'offers.guarantees': 1,
           },

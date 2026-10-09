@@ -154,6 +154,20 @@
               class="rental-search__wide"
               data-testid="rental-filter-sharedLiving"
             />
+            <VSelect
+              v-model="draft.term"
+              :items="termItems"
+              :label="t('term')"
+              v-bind="field"
+              data-testid="rental-filter-term"
+            />
+            <VSelect
+              v-model="furnitureChoice"
+              :items="furnitureItems"
+              :label="t('furniture')"
+              v-bind="field"
+              data-testid="rental-filter-furniture"
+            />
           </div>
           <VCheckbox
             v-if="draft.bedrooms !== null && draft.bedrooms > 0"
@@ -179,6 +193,8 @@
             {{ t('excludeTypesHint') }}
           </p>
           <p v-if="draft.sharedLiving" class="rental-search__hint">{{ t('sharedLivingHint') }}</p>
+          <p v-if="draft.term" class="rental-search__hint">{{ t('termHint') }}</p>
+          <p v-if="furnitureChoice" class="rental-search__hint">{{ t('furnitureHint') }}</p>
         </fieldset>
         <details
           class="rental-search__group"
@@ -308,12 +324,6 @@
             <VCheckbox
               v-model="draft.parking"
               :label="t('parking')"
-              hide-details
-              density="compact"
-              color="primary"
-            /><VCheckbox
-              v-model="draft.furnished"
-              :label="t('furnished')"
               hide-details
               density="compact"
               color="primary"
@@ -623,7 +633,6 @@ const advancedOpen = ref(
       props.query.areaMin !== null ||
       props.query.areaMax !== null ||
       props.query.parking ||
-      props.query.furnished ||
       props.query.pets ||
       props.query.amenities.length ||
       props.query.excludeWords?.length
@@ -842,6 +851,8 @@ type RentalDraft = RentalQuery &
       | 'excludeWords'
       | 'sharedLiving'
       | 'hideStayPrices'
+      | 'unfurnished'
+      | 'term'
     >
   >
 const copy = (query: RentalQuery): RentalDraft => ({
@@ -854,6 +865,8 @@ const copy = (query: RentalQuery): RentalDraft => ({
   excludeWords: [...(query.excludeWords ?? [])],
   sharedLiving: query.sharedLiving ?? '',
   hideStayPrices: Boolean(query.hideStayPrices),
+  unfurnished: Boolean(query.unfurnished),
+  term: query.term ?? '',
   sinceDays: query.sinceDays ?? null,
   priceDropped: query.priceDropped ?? false,
   guarantees: [...query.guarantees],
@@ -945,6 +958,24 @@ const neighborhoods = computed(() =>
 const excludeNeighborhoodItems = computed(() =>
   neighborhoods.value.filter(item => !draft.value.neighborhoods.includes(item.value))
 )
+const termItems = computed(() => [
+  { title: t('termAny'), value: '' },
+  { title: t('termAnnual'), value: 'anual' },
+  { title: t('termWinter'), value: 'invernal' },
+])
+const furnitureItems = computed(() => [
+  { title: t('furnitureAny'), value: '' },
+  { title: t('furnished'), value: 'con' },
+  { title: t('unfurnished'), value: 'sin' },
+])
+/** Una sola elección sobre dos banderas de la consulta: `furnished=1` o `sinMuebles=1`. */
+const furnitureChoice = computed<'' | 'con' | 'sin'>({
+  get: () => (draft.value.furnished ? 'con' : draft.value.unfurnished ? 'sin' : ''),
+  set: value => {
+    draft.value.furnished = value === 'con'
+    draft.value.unfurnished = value === 'sin'
+  },
+})
 const sharedLivingItems = computed(() => [
   { title: t('sharedLivingShow'), value: '' },
   { title: t('sharedLivingHide'), value: 'ocultar' },
@@ -1077,7 +1108,6 @@ const featureSummary = computed(() =>
   summary([
     draft.value.pets && t('pets'),
     draft.value.parking && t('parking'),
-    draft.value.furnished && t('furnished'),
     ...draft.value.amenities.map(value => t(`amenity-${value}`)),
     excludedWords.value.length > 0 && t('without', { items: excludedWords.value.join(', ') }),
     present(draft.value.bathrooms) &&

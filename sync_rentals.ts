@@ -37,6 +37,7 @@ import {
   refreshStoredRentalStayFlags,
   dropRejectedStoredRentals,
   retypeStoredRentalOffers,
+  refreshStoredRentalTextFacts,
   loadRentPriceRows,
   loadRentalHistory,
   loadRentalMeta,
@@ -65,6 +66,18 @@ async function main(): Promise<void> {
   if (!appDbConfigured()) {
     console.error("[rentals] APP_MONGO_URI/MONGO_URI is missing — refusing to write the wrong DB");
     process.exit(1);
+  }
+
+  if (process.argv.includes("--reapply-text")) {
+    // Today's advert rules over what is stored, without reading any portal: wanted-ads out, winter
+    // contracts and furniture read from each advert's own words. For the day a rule changes.
+    const rejected = await dropRejectedStoredRentals();
+    const facts = await refreshStoredRentalTextFacts();
+    console.log(
+      `[rentals] reaplicado: ${rejected.offers} avisos sacados (${rejected.deleted} filas borradas), ` +
+        `${facts.offers} avisos con muebles o plazo de hoy (${facts.properties} filas)`
+    );
+    process.exit(0);
   }
 
   const mode: "full" | "fast" = process.argv.includes("--fast") || process.env.RENTALS_FAST === "1" ? "fast" : "full";
@@ -206,6 +219,14 @@ async function main(): Promise<void> {
     return { offers: 0, properties: 0 };
   });
   if (retyped.offers) console.log(`[rentals] ${retyped.offers} avisos guardados con el tipo de hoy (${retyped.properties} filas)`);
+  // Furniture and contract period read from each stored advert's own words with today's rules, so
+  // the filters find homes a partial portal has not re-read yet. Only in the full run: it streams
+  // every description, and a fresh read already applies them on the way in (sources/index.ts).
+  const textFacts = mode !== "full" ? { offers: 0, properties: 0 } : await refreshStoredRentalTextFacts().catch((error) => {
+    console.warn("[rentals] no se pudieron releer muebles y plazo guardados:", error instanceof Error ? error.message : error);
+    return { offers: 0, properties: 0 };
+  });
+  if (textFacts.offers) console.log(`[rentals] ${textFacts.offers} avisos guardados con muebles o plazo de hoy (${textFacts.properties} filas)`);
   // Adverts this run did not see again keep their stored price; read those against the market too.
   const storedCurrencies = await correctStoredRentalCurrencies(cohorts, usdUyu).catch((error) => {
     console.warn("[rentals] no se pudieron revisar las monedas guardadas:", error instanceof Error ? error.message : error);

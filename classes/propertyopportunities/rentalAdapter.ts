@@ -21,6 +21,8 @@ export function rentalOpportunityListings(
       if (offer.currencyInferred === true) continue;
       // A probable per-night price would read as the cheapest "opportunity" of its zone.
       if (offer.stayPriceSuspect === true) continue;
+      // A winter-only contract is off-season rent: beside year-round homes it would always look cheap.
+      if (offer.terms?.includes("invernal") && !offer.terms.includes("anual")) continue;
       const details = offer.details;
       const description = own.description ?? details?.description ?? "";
       const area = details?.builtArea != null && details.builtArea > 0
@@ -41,7 +43,7 @@ export function rentalOpportunityListings(
         area, price: { amount: offer.price, currency: offer.currency }, expenses,
         lastSeen: offer.lastSeen, publishedAt: offer.publishedAt,
         description,
-        parkingSpaces: offer.parkingSpaces, furnished: offer.furnished,
+        parkingSpaces: offer.parkingSpaces, furnished: offer.furnished === true ? true : null,
         landArea: details?.landArea ?? null,
         amenities: details?.amenities ?? [],
         ...(own.propertyType === "apartamento" && details?.builtArea && details?.totalArea &&

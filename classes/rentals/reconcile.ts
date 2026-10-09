@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { freshnessOf, priceInPesos, sameUnit, type RentalMatchCandidate } from "./dedupe";
 import { mergeGuarantees } from "./guarantees";
+import { aggregateFurnished, aggregateTerms } from "./textFacts";
 import { matchText, rentalMatchHasConflicts } from "./matchEvidence";
 import { inferPropertyType, parseAttributes } from "./normalize";
 import { RENTAL_PROPERTY_TYPES, type RentalOffer, type RentalProperty } from "./types";
@@ -250,7 +251,8 @@ export function propertyFromRentalOffers(
     bathrooms: attribute("bathrooms"),
     area: attribute("area"),
     parkingSpaces: current.find((offer) => offer.parkingSpaces != null)?.parkingSpaces ?? null,
-    furnished: current.some((offer) => offer.furnished === true) ? true : null,
+    furnished: aggregateFurnished(current.map((offer) => offer.furnished)),
+    terms: aggregateTerms(current.map((offer) => offer.terms)),
     petsAllowed: current.some((offer) => offer.petsAllowed === true) ? true : null,
     guarantees: mergeGuarantees(
       current.map((offer) => (Array.isArray(offer.guarantees) ? offer.guarantees : [])),

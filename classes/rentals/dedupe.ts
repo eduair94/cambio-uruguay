@@ -13,6 +13,7 @@ import { isRetiredRentalKey, RETIRED_RENTAL_KEYS } from "./retiredKeys";
 // none of those signals, nor barrio, coordinates or asking price, establishes unit identity.
 import { flatten, slugify } from "./normalize";
 import { mergeGuarantees } from "./guarantees";
+import { aggregateFurnished, aggregateTerms } from "./textFacts";
 import { checkedRentalArea, rentalDescription, rentalOfferDetails } from "./details";
 import {
   conflictingUnitEvidence,
@@ -293,7 +294,9 @@ function toOffer(listing: Candidate, context: DedupeContext): RentalOffer {
     },
     ...(listing.details ? { details: listing.details } : {}),
     parkingSpaces: listing.parkingSpaces ?? null,
-    furnished: listing.furnished === true ? true : null,
+    furnished: typeof listing.furnished === "boolean" ? listing.furnished : null,
+    ...(typeof listing.furnishedPortal === "boolean" ? { furnishedPortal: listing.furnishedPortal } : {}),
+    ...(listing.terms?.length ? { terms: [...listing.terms] } : {}),
     source: listing.source,
     listingId: listing.listingId,
     url: listing.url,
@@ -399,7 +402,8 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
         bathrooms: cluster.map((item) => item.bathrooms).find((value) => value !== null) ?? null,
         area: cluster.map((item) => item.area).find((value) => value !== null) ?? null,
         parkingSpaces: cluster.map((item) => item.parkingSpaces).find((value) => value != null) ?? null,
-        furnished: cluster.some((item) => item.furnished === true) ? true : null,
+        furnished: aggregateFurnished(cluster.map((item) => item.furnished)),
+        terms: aggregateTerms(cluster.map((item) => item.terms)),
         // Basta con que UN portal lo publique. No es optimismo: la ausencia no es una negativa
         // —ningun portal publica "no acepta mascotas"— asi que un `null` no contradice a un `true`,
         // sólo dice que ese aviso no lo menciona.

@@ -250,7 +250,9 @@ export function toRawRental(row: IcRow, observedAt = new Date().toISOString()): 
     }),
     // InfoCasas fills missing garages with 0, so only a positive count is evidence.
     parkingSpaces: Number.isInteger(row.garage) && Number(row.garage) > 0 ? Number(row.garage) : null,
-    furnished: row.facilities?.some((facility) => /^(?:amueblado|amoblado|amueblada|amoblada)$/i.test(String(facility.name || "").trim())) ? true : null,
+    // The portal's structured flag; the advert's own words are read after (textFacts.ts).
+    furnishedPortal: row.facilities?.some((facility) => /^(?:amueblado|amoblado|amueblada|amoblada)$/i.test(String(facility.name || "").trim())) === true,
+    furnished: null,
     source: "infocasas",
     listingId: `infocasas:${id}`,
     url: link.startsWith("http") ? link : `${ORIGIN}${link.startsWith("/") ? "" : "/"}${link}`,

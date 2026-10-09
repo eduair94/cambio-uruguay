@@ -417,12 +417,39 @@ const NOT_A_PROPERTY = /\b(?:inflables?|cama elastica|juegos? (?:infantiles|para
 // o salón de fiestas" are properties that mention an event; measured on the same day.
 const NAMES_A_PROPERTY = /\b(?:apartamentos?|aptos?|casas?|monoambientes?|dormitorios?|locales|local|oficinas?|galpon(?:es)?|depositos?|terrenos?|cocheras?|garajes?|garages?|habitacion(?:es)?|cabanas?|consultorios?|edificios?|complejo|propiedad|chacras?|box(?:es)?|clinica|pizzeria)\b/;
 
+// Someone LOOKING for a home, posted where the homes are: "Busco casa", "YO BUSCO UN MONOAMBIENTE",
+// "Necesito urgente apartamento", "Hola buenas noches estoy buscando alquiler", an agency's "Busco
+// casa dos dormitorios para cliente concreto" or "SUSENA GROUP BUSCA CASA CON DEPOSITO". A reader
+// saw them among the rentals on 2026-10-09; 12 were public that day, and the old rule only caught a
+// "busco" followed by "alquil". "Ideal para quienes buscan…" is a landlord's pitch, and "se busca
+// traspaso de alquiler" offers the lease: neither is a wanted-ad.
+const WANTED_VERB = /\b(?:busco|buscamos|necesito|necesitamos|preciso|precisamos|solicito|(?:estoy|estamos|ando|andamos) buscando|(?:quiero|queremos) alquilar)\b|\bbusca[n]?\s+(?:alquilar|arrendar|casas?|apartamentos?|aptos?|monoambientes?|propiedad(?:es)?|viviendas?|habitacion(?:es)?|cocheras?|garajes?)\b/;
+const OFFER_VERB = /\b(?:alquilo|alquila|alquilamos|se alquila|se arrienda|arriendo|en alquiler|disponible|ofrezco|ofrecemos)\b/;
+const OPENING = /^(?:(?:hola|buenas|buenos|buen|dias|tardes|noches|gente|grupo|a todos|urgente|yo|nosotros|somos|soy|una|un|familia|pareja)[\s,!.:-]+){0,6}/;
+
+// A landlord can look too: for a tenant ("Busco inquilino"), or to let their own home ("Necesito
+// alquilar mi apartamento").
+const LANDLORD_LOOKING = /\bbusc\w*\s+(?:inquilin|quien (?:alquile|arriende)|interesad)|\bmi (?:casa|apartamento|apto|monoambiente|propiedad|local|cochera|garaje|habitacion|cuarto)\b/;
+
+export function isWantedAdvert(title: string): boolean {
+  const flat = flatten(title).replace(/\+/g, " ")
+    // A landlord's pitch: "para quienes buscan", "si buscás", "lo que necesitas".
+    .replace(/\b(?:quienes|los que|las que|si|lo que|ideal para|para)\s+(?:\w+\s+)?(?:busca[ns]?|necesita[ns]?)\b/g, " ");
+  const verb = flat.search(WANTED_VERB);
+  if (verb < 0 || LANDLORD_LOOKING.test(flat)) return false;
+  // "Busco…" opening the title, after any greeting, is the ad itself. Further in, only when the
+  // title offers nothing: "Alquilo apto, necesito garantía ANDA" is an offer.
+  const opening = flat.length - flat.replace(OPENING, "").length;
+  return verb === opening || !OFFER_VERB.test(flat);
+}
+
 export function looksLikeRentalAdvert(title: string, description = ""): boolean {
   const flat = flatten(title);
   if (/\b(vendo|venta|se vende|permuta|remato)\b/.test(flat) && !/\balquil/.test(flat)) return false;
-  if (/\b(busco|necesito|solicito)\b.*\balquil/.test(flat)) return false;
+  if (isWantedAdvert(title)) return false;
   if (NOT_A_PROPERTY.test(flat) && !NAMES_A_PROPERTY.test(flat)) return false;
-  return !rentalPeriodEvidence(title, description).shortTerm;
+  // A winter contract is a month's rent and is published, marked (textFacts.ts); a stay is not.
+  return !rentalPeriodEvidence(title, description).stay;
 }
 
 /** Stable, human-debuggable id for a property key. */

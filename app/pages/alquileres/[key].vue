@@ -260,8 +260,28 @@ const conditionFacts = computed<Fact[]>(() => {
     {
       key: 'furnished',
       label: t('furnishedCondition'),
-      value: t(offer.furnished ? 'declared' : 'notPublished'),
-      empty: !offer.furnished,
+      value: t(
+        offer.furnished === true
+          ? 'declared'
+          : offer.furnished === false
+            ? 'unfurnishedDeclared'
+            : 'notPublished'
+      ),
+      empty: typeof offer.furnished !== 'boolean',
+    },
+    {
+      key: 'term',
+      label: t('termCondition'),
+      value: t(
+        offer.terms?.includes('invernal')
+          ? offer.terms.includes('anual')
+            ? 'termBoth'
+            : 'termWinter'
+          : offer.terms?.includes('anual')
+            ? 'termAnnual'
+            : 'notPublished'
+      ),
+      empty: !offer.terms?.length,
     },
     {
       key: 'garage',

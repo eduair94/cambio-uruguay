@@ -39,6 +39,8 @@ const RentalListingSchema = new Schema(
      * y sólo persiste el de las ofertas, que son Mixed. Lista vacia = el aviso no lo dice.
      */
     guarantees: { type: [String], default: [] },
+    /** Contract periods the adverts offer in their own words (anual, invernal); empty = not stated. */
+    terms: { type: [String], default: [] },
     offers: { type: [Schema.Types.Mixed], default: [] },
     /** Written by the backend zone job; the app only reads it. */
     officialZone: { type: Schema.Types.Mixed, default: undefined },

@@ -570,6 +570,17 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                       t('furnished')
                     }}</VChip
                     ><VChip
+                      v-if="displayOffer(property)?.furnished === false"
+                      size="small"
+                      variant="tonal"
+                      >{{ t('unfurnished') }}</VChip
+                    ><VChip
+                      v-if="displayOffer(property)?.terms?.includes('invernal')"
+                      size="small"
+                      variant="tonal"
+                      color="info"
+                      >{{ t('winter') }}</VChip
+                    ><VChip
                       v-for="guarantee in publishedGuarantees(property)"
                       :key="guarantee"
                       size="small"
@@ -1084,6 +1095,7 @@ const filterChips = computed(() => {
     ['pets', q.pets, 'pets'],
     ['parking', q.parking, 'parking'],
     ['furnished', q.furnished, 'furnished'],
+    ['sinMuebles', q.unfurnished ?? false, 'unfurnished'],
     ['dueno', q.owner, 'owner'],
     ['gc', q.withExpenses, 'expensesKnown'],
     ['sinNoche', q.hideStayPrices ?? false, 'hideStayPrices'],
@@ -1091,6 +1103,7 @@ const filterChips = computed(() => {
   ] as const) {
     if (active) add(key, t(label))
   }
+  if (q.term) add('plazo', t(q.term === 'invernal' ? 'termWinter' : 'termAnnual'))
   if (q.currency) add('currency', q.currency)
   if (q.availability !== 'all')
     add(

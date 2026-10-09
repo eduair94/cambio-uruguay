@@ -316,6 +316,8 @@ const features = computed(() =>
     offer.value?.petsAllowed ? t('pets') : '',
     (offer.value?.parkingSpaces ?? 0) > 0 ? `${t('parking')} (${offer.value?.parkingSpaces})` : '',
     offer.value?.furnished ? t('furnished') : '',
+    offer.value?.furnished === false ? t('unfurnished') : '',
+    offer.value?.terms?.includes('invernal') ? t('winter') : '',
   ].filter(Boolean)
 )
 const guarantees = computed(() =>

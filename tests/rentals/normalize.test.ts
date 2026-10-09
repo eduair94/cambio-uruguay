@@ -3,6 +3,7 @@ import {
   canonicalDepartment,
   inferPropertyType,
   isPlausibleRent,
+  isWantedAdvert,
   looksLikeRentalAdvert,
   parseAttributes,
   parseCurrency,
@@ -159,12 +160,42 @@ describe("looksLikeRentalAdvert", () => {
     expect(looksLikeRentalAdvert("Alquiler por día en Punta del Este")).toBe(false);
   });
 
-  it("excludes explicit winter-only contracts even when their monthly price is plausible", () => {
-    expect(looksLikeRentalAdvert("ALQUILER INVERNAL PUNTA DEL ESTE 2026")).toBe(false);
-    expect(looksLikeRentalAdvert("Apartamento en alquiler por invierno")).toBe(false);
-    expect(looksLikeRentalAdvert("Apartamento en alquiler", "Alquiler invernal de abril a noviembre: USD 750 mensuales.")).toBe(false);
-    expect(looksLikeRentalAdvert("Apartamento en alquiler", "<p>Alquiler&nbsp;<strong>invernal</strong> de abril a noviembre.</p>")).toBe(false);
+  it("publishes winter contracts, a month's rent, since a reader asked to tell them apart (2026-10-09)", () => {
+    expect(looksLikeRentalAdvert("ALQUILER INVERNAL PUNTA DEL ESTE 2026")).toBe(true);
+    expect(looksLikeRentalAdvert("Apartamento en alquiler por invierno")).toBe(true);
+    expect(looksLikeRentalAdvert("Apartamento en alquiler", "Alquiler invernal de abril a noviembre: USD 750 mensuales.")).toBe(true);
+    expect(looksLikeRentalAdvert("Apartamento en alquiler", "<p>Alquiler&nbsp;<strong>invernal</strong> de abril a noviembre.</p>")).toBe(true);
+    expect(looksLikeRentalAdvert("Se alquila temporada invernal", "U$S 650 por mes, incluye gastos.")).toBe(true);
     expect(isPlausibleRent(750 * 40, "apartamento")).toBe(true);
+  });
+
+  it("still drops summer stays, priced per night or fortnight", () => {
+    expect(looksLikeRentalAdvert("Alquiler temporada 2027 Punta del Este")).toBe(false);
+    expect(looksLikeRentalAdvert("Segunda quincena de enero")).toBe(false);
+    expect(looksLikeRentalAdvert("Apartamento en alquiler", "Alquiler temporario en la playa.")).toBe(false);
+  });
+
+  it("drops someone looking for a home, wherever the verb sits, but not a landlord's pitch", () => {
+    for (const title of [
+      "Busco Casa",
+      "YO BUSCO UN MONOAMBIENTE POR LUC O MES ENTRANTE",
+      "Necesito urgente apartamento o monoambie",
+      "Hola buenas noches estoy buscando alquiler con opción a compra",
+      "Busco casa dos dormitorios para cliente concreto",
+      "Busco+arrendar+chacra+chica+con+casa+cerca+de+melo+",
+      "SUSENA GROUP-REAL ESTATE BUSCA CASA CON DEPOSITO Y GARAGE",
+      "En Montevideo Necesitamos Propiedades Para Alquilar O Arrendar",
+      "Busco cochera úrgente",
+    ]) expect(isWantedAdvert(title), title).toBe(true);
+    for (const title of [
+      "Gran Apartamento De 140 M2 En El Centro, Una Excelente Opción Para Quienes Buscan Amplitud",
+      "Se busca traspaso de alquiler muy linda casa en San José de mayo",
+      "Alquilo apto en Cordón, necesito garantía ANDA",
+      "Busco inquilino para mi apartamento en Pocitos",
+      "Necesito alquilar mi casa en Malvín",
+      "Alquilo apartamento 2 dormitorios en Pocitos",
+    ]) expect(isWantedAdvert(title), title).toBe(false);
+    expect(looksLikeRentalAdvert("Busco Casa")).toBe(false);
   });
 
   it("does not confuse winter amenities or an available annual contract with winter-only rent", () => {
