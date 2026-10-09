@@ -24,7 +24,10 @@ export interface CompactRental {
   guarantees?: string[];
   pets?: boolean;
   parking?: boolean;
+  /** true/false = the advert SAYS furnished / unfurnished; absent = it does not say. */
   furnished?: boolean;
+  /** Contract periods the advert offers: "anual", "invernal" (March–December). */
+  terms?: string[];
   sources?: string[];
   advertiser?: { name?: string; type?: string };
   listingUrl?: string;
@@ -74,7 +77,9 @@ export function compactRental(p: RawRental, usdUyu = 0): CompactRental {
     guarantees: p.guarantees?.length ? p.guarantees : undefined,
     pets: bool(p.petsAllowed ?? offer?.petsAllowed),
     parking: typeof p.parkingSpaces === "number" ? p.parkingSpaces > 0 : undefined,
-    furnished: bool(p.furnished),
+    // The shown advert's own statement first: another portal's advert may say otherwise.
+    furnished: bool(offer?.furnished) ?? bool(p.furnished),
+    terms: offer?.terms?.length ? offer.terms : p.terms?.length ? p.terms : undefined,
     sources: p.sources,
     advertiser: offer?.sellerName ? compact({ name: offer.sellerName, type: offer.sellerType }) : undefined,
     listingUrl: offer?.url,
@@ -125,7 +130,8 @@ export function rentalLine(r: CompactRental): string {
     r.priceDrop ? `bajó ${fmt(r.priceDrop.pct, Number.isInteger(r.priceDrop.pct) ? 0 : 1)} % (antes ${money(r.priceDrop.from, r.priceDrop.currency)}, el ${r.priceDrop.at})` : "",
     r.pets === true ? "acepta mascotas" : "",
     r.parking ? "garaje" : "",
-    r.furnished ? "amueblado" : "",
+    r.furnished === true ? "amueblado" : r.furnished === false ? "sin muebles" : "",
+    r.terms?.includes("invernal") ? (r.terms.includes("anual") ? "contrato anual o invernal" : "invernal (marzo a diciembre)") : "",
     r.guarantees?.length ? `garantía: ${r.guarantees.map((g) => GUARANTEE_LABEL[g] ?? g).join(", ")}` : "",
     r.advertiser?.type === "particular" ? "publica un particular" : "",
     r.reported ? "⚠ reportado como no disponible" : "",

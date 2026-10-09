@@ -947,3 +947,13 @@ describe('household proximity and transparent ranking', () => {
     expect(result.incomplete).toBe(exhaustive.filter(row => !row.complete).length)
   })
 })
+
+// "Con o sin muebles" (2026-10-09): someone with their own furniture wants the unfurnished homes.
+describe('furniture in the household ranking', () => {
+  it('asks for unfurnished homes; asking both ways keeps "amueblado", as the form allows one', () => {
+    expect(normalizeRentalFitInput({ ...input(), unfurnished: true }).unfurnished).toBe(true)
+    expect(
+      normalizeRentalFitInput({ ...input(), furnished: true, unfurnished: true })
+    ).toMatchObject({ furnished: true, unfurnished: false })
+  })
+})

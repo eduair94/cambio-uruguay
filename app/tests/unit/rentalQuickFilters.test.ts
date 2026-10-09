@@ -14,8 +14,11 @@ describe('filter shortcuts of the rental directory', () => {
     expect(rentalQuickFilters(normalizeRentalQuery({}))).toEqual([...RENTAL_QUICK_FILTERS])
     expect(rentalQuickFilters(normalizeRentalQuery({ bajo: '1', pets: '1', dias: '3' }))).toEqual([
       'parking',
+      'furnished',
       'owner',
     ])
+    // Either furniture choice hides the shortcut.
+    expect(rentalQuickFilters(normalizeRentalQuery({ sinMuebles: '1' }))).not.toContain('furnished')
   })
 
   it('turns each shortcut into the same URL the panel writes', () => {
@@ -25,6 +28,7 @@ describe('filter shortcuts of the rental directory', () => {
     expect(apply('sinceDays')).toEqual({ dias: '7' })
     expect(apply('pets')).toEqual({ pets: '1' })
     expect(apply('parking')).toEqual({ parking: '1' })
+    expect(apply('furnished')).toEqual({ furnished: '1' })
     expect(apply('owner')).toEqual({ dueno: '1' })
   })
 

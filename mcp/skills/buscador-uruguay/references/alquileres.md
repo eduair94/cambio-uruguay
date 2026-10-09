@@ -6,7 +6,9 @@
 - Ingresos del hogar (para el ranking personalizado; opcional).
 - Departamento y barrios preferidos o a evitar ("no importa" es válido).
 - Dormitorios mínimos, baños, m² si importa.
-- Mascotas, garaje, amueblado.
+- Mascotas, garaje, con o sin muebles.
+- Plazo: anual o invernal (marzo a diciembre, en la costa). La temporada de verano no está en el
+  directorio: se cobra por noche o quincena.
 - Garantía disponible: ANDA, Contaduría General de la Nación (funcionarios públicos), seguro de
   alquiler (Porto, Sura, Mapfre…), depósito, BHU, propietario fiador. Muchos avisos no la dicen.
 - Dónde trabaja/estudia cada persona, cuántos días por semana va y cómo se mueve.
@@ -36,6 +38,9 @@
 - "Reportado como no disponible" viene de la comunidad del sitio. Por defecto se ocultan los que
   tienen 2 o más reportes.
 - Particular ≠ necesariamente dueño directo; sólo `ownerDirect` filtra dueños declarados.
+- Muebles y plazo salen de lo que DICE cada aviso: `furnished: true`/`false` y `term: "invernal"`
+  sólo encuentran los que lo aclaran. Un invernal tiene precio mensual pero de temporada baja: no lo
+  compares con un anual.
 - Delitos: denuncias del Ministerio del Interior por barrio, no una tasa por habitante. Barrios muy
   comerciales (Centro, Ciudad Vieja) tienen muchas denuncias por la gente que circula.
 - Servicios públicos: niveles bajo/medio/alto de cortes de agua (OSE) y reclamos (Intendencia de

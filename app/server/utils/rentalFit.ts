@@ -135,7 +135,7 @@ export function projectRentalFitCandidate(
         : 'desconocido',
       image: rentalSavedSafeUrl(own.image),
       parkingSpaces: amount(own.parkingSpaces),
-      furnished: own.furnished === true ? true : null,
+      furnished: typeof own.furnished === 'boolean' ? own.furnished : null,
       petsAllowed: own.petsAllowed === true ? true : null,
       guarantees: guarantees(own.guarantees),
       publishedAt: typeof own.publishedAt === 'string' ? own.publishedAt : null,
@@ -188,7 +188,13 @@ export function projectRentalFitCandidate(
     area: specification('area'),
     parkingSpaces:
       offers.reduce((max, offer) => Math.max(max, offer.parkingSpaces || 0), 0) || null,
-    furnished: offers.some(offer => offer.furnished === true) ? true : null,
+    furnished: offers.some(offer => offer.furnished === true)
+      ? offers.some(offer => offer.furnished === false)
+        ? null
+        : true
+      : offers.some(offer => offer.furnished === false)
+        ? false
+        : null,
     petsAllowed: offers.some(offer => offer.petsAllowed === true) ? true : null,
     guarantees: guarantees(offers.flatMap(offer => offer.guarantees || [])),
     price: selected.price,

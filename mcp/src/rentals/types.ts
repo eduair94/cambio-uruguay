@@ -84,6 +84,10 @@ export interface RawOffer {
   /** Probably a per-night or per-stay price: far under the cheapest homes of its zone. */
   stayPriceSuspect?: boolean;
   priceUyu?: number;
+  /** true/false = the advert SAYS furnished / unfurnished; null = it does not say. */
+  furnished?: boolean | null;
+  /** Contract periods the advert offers in its own words: "anual", "invernal". */
+  terms?: string[];
   commonExpenses?: number | null;
   commonExpensesCurrency?: string | null;
   sellerName?: string;
@@ -118,6 +122,7 @@ export interface RawRental {
   area?: number | null;
   parkingSpaces?: number | null;
   furnished?: boolean | null;
+  terms?: string[];
   petsAllowed?: boolean | null;
   guarantees?: string[];
   price?: number;

@@ -35,6 +35,12 @@ bueno separar por anuales, temporada, invernales, con y sin mueble". Medido ese 
   `sinMuebles=1`: sólo los avisos que lo DICEN). El checkbox "Amueblado" estaba dentro de "Más
   filtros" y el lector no lo encontró. La tarjeta muestra "Sin muebles" e "Invernal", la ficha suma
   la fila "Plazo", y las alertas aceptan los dos criterios.
+- **Y en el resto (mismo día, MCP 0.3.1).** `search_rentals` acepta `furnished: true|false` (con o sin
+  muebles) y `term: "anual"|"invernal"`, y cada resultado dice "sin muebles" / "invernal (marzo a
+  diciembre)"; `get_rental` muestra lo que dice cada aviso; `rank_rentals_for_household` y
+  `/alquiler-ideal-uruguay` piden "sin muebles" (`unfurnished` en `/api/rentals/fit`); las
+  instrucciones del asistente y la skill avisan que la temporada de verano no está. En la página:
+  atajo "Amueblados" sobre los resultados, y Muebles/Plazo en la comparación de guardadas.
 
 ## Precios que parecen por noche — 8 de octubre de 2026
 

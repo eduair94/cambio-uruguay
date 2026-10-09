@@ -18,6 +18,7 @@ export const rentalFitMessages = {
     petsShort: 'Mascotas',
     parkingShort: 'Garaje',
     furnishedShort: 'Amueblado',
+    unfurnishedShort: 'Sin muebles',
     reportsShort: 'Ocultar reportados',
     overBudgetShort: 'Incluir fuera de presupuesto',
     privacyShort: 'Sin cuenta · Tus datos y privacidad',
@@ -109,6 +110,7 @@ export const rentalFitMessages = {
     pets: 'El aviso confirma mascotas',
     parking: 'El aviso confirma garaje',
     furnished: 'El aviso confirma amueblado',
+    unfurnished: 'El aviso dice sin muebles',
     strictHint:
       'Estas condiciones excluyen los avisos que no publican el dato. Podrían existir más opciones consultando al anunciante.',
     hideReported: 'Ocultar avisos con reportes de posible alquiler',
@@ -214,6 +216,7 @@ export const rentalFitMessages = {
     petsShort: 'Pets',
     parkingShort: 'Parking',
     furnishedShort: 'Furnished',
+    unfurnishedShort: 'Unfurnished',
     reportsShort: 'Hide reported listings',
     overBudgetShort: 'Include over budget',
     privacyShort: 'No account · Your data and privacy',
@@ -305,6 +308,7 @@ export const rentalFitMessages = {
     pets: 'Advert confirms pets',
     parking: 'Advert confirms parking',
     furnished: 'Advert confirms furnished',
+    unfurnished: 'Advert says unfurnished',
     strictHint:
       'These conditions exclude adverts without the information. More options may be available by contacting the advertiser.',
     hideReported: 'Hide adverts reported as possibly rented',
@@ -408,6 +412,7 @@ export const rentalFitMessages = {
     petsShort: 'Animais',
     parkingShort: 'Garagem',
     furnishedShort: 'Mobiliado',
+    unfurnishedShort: 'Sem mobília',
     reportsShort: 'Ocultar anúncios reportados',
     overBudgetShort: 'Incluir acima do orçamento',
     privacyShort: 'Sem conta · Seus dados e privacidade',
@@ -499,6 +504,7 @@ export const rentalFitMessages = {
     pets: 'Anúncio confirma animais',
     parking: 'Anúncio confirma garagem',
     furnished: 'Anúncio confirma mobiliado',
+    unfurnished: 'Anúncio diz sem mobília',
     strictHint:
       'Essas condições excluem anúncios que não informam o dado. Pode haver mais opções consultando o anunciante.',
     hideReported: 'Ocultar anúncios sinalizados como possivelmente alugados',

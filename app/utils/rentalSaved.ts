@@ -9,6 +9,7 @@ import {
   type RentalPublicProperty,
   type RentalQuery,
   type RentalSource,
+  type RentalTerm,
 } from './rentals'
 
 // Device-local snapshots: these do not claim a listing is still available or create alerts.
@@ -44,8 +45,11 @@ export interface RentalSavedFavorite {
   bathrooms: number | null
   area: number | null
   parkingSpaces: number | null
-  furnished: true | null
+  /** true/false = the advert says furnished / unfurnished; null = it does not say. */
+  furnished: boolean | null
   petsAllowed: true | null
+  /** Contract periods the adverts offer (anual, invernal); absent on favourites saved before 2026-10-09. */
+  terms?: RentalTerm[]
   guarantees: RentalGuarantee[]
   price: number
   currency: RentalCurrency
@@ -182,8 +186,11 @@ function parseFavorite(input: unknown): RentalSavedFavorite | null {
     bathrooms: finiteNumber(input.bathrooms, 0, 30),
     area: finiteNumber(input.area, 0.01, 1_000_000),
     parkingSpaces: finiteNumber(input.parkingSpaces, 0, 50),
-    furnished: input.furnished === true ? true : null,
+    furnished: typeof input.furnished === 'boolean' ? input.furnished : null,
     petsAllowed: input.petsAllowed === true ? true : null,
+    terms: (['anual', 'invernal'] as const).filter(
+      term => Array.isArray(input.terms) && input.terms.includes(term)
+    ),
     guarantees: RENTAL_GUARANTEE_PUBLISHED.filter(value => guarantees.includes(value)),
     price: cheapest.price,
     currency: cheapest.currency,

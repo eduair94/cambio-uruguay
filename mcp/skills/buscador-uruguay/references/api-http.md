@@ -9,7 +9,8 @@ el ranking por hogar admite ~10 consultas por minuto.
   (coma), `types` (vivienda, apartamento, casa, habitacion, local, oficina…), `bedrooms` (+
   `bedroomsExact=1`), `bathrooms`, `areaMin`, `areaMax`, `priceMin`/`priceMax` (PESOS),
   `currency` (UYU/USD: moneda del aviso), `monthlyMax` (total con gastos comunes, pesos),
-  `expensesMax`, `pets=1`, `parking=1`, `furnished=1`, `garantia` (anda, contaduria, aseguradora,
+  `expensesMax`, `pets=1`, `parking=1`, `furnished=1` (dice amueblado) o `sinMuebles=1` (dice sin
+  muebles), `plazo` (anual, invernal), `garantia` (anda, contaduria, aseguradora,
   propietaria, deposito, bhu, aConvenir), `comodidades`, `dueno=1`, `q` (texto),
   `refLat`/`refLng`/`refLabel` + `sort=distancia`, `servicios` (denuncias, agua, luz, saneamiento,
   limpieza, alumbrado), `availability` (hide_any, hide_multiple), `sort` (recientes, precio,

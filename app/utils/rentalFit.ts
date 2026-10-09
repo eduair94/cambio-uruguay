@@ -186,6 +186,8 @@ export function normalizeRentalFitInput(value: unknown): RentalFitInput {
       pets: boolean(raw.pets),
       parking: boolean(raw.parking),
       furnished: boolean(raw.furnished),
+      // Asking both ways asks neither: "amueblado" wins, as the form only lets one be checked.
+      unfurnished: boolean(raw.unfurnished) && !boolean(raw.furnished),
       hideReported: boolean(raw.hideReported),
       includeOverBudget: boolean(raw.includeOverBudget),
       priority: choice(raw.priority, ['balanced', 'budget', 'commute'] as const, 'balanced'),
@@ -235,6 +237,7 @@ function chooseOffer(
         offer.priceUyu === 0 ||
         (input.pets && offer.petsAllowed !== true) ||
         (input.furnished && offer.furnished !== true) ||
+        (input.unfurnished && offer.furnished !== false) ||
         (input.parking && (!nonnegative(offer.parkingSpaces) || offer.parkingSpaces < 1))
       )
         return false

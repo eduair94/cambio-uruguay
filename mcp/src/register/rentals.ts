@@ -59,7 +59,7 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
       title: "Buscar alquileres en Uruguay",
       description:
         "Busca viviendas en alquiler en todo Uruguay (unión de Mercado Libre, InfoCasas, Inmuebles El País, Casasweb y Facebook Marketplace, ~57.000 propiedades, avisos vistos en los últimos 10 días). " +
-        "Filtra por barrio, tipo, dormitorios, baños, m², precio (UYU o USD), TOTAL MENSUAL con gastos comunes, gastos comunes máximos, mascotas, garaje, amueblado, tipo de garantía (ANDA, Contaduría, seguro, depósito, BHU, propietario), comodidades, dueño directo, inmobiliaria, portal, texto libre, cercanía a un punto, calidad del barrio (pocas denuncias, pocos cortes de agua o reclamos), publicados en los últimos N días y alquileres que BAJARON de precio. " +
+        "Filtra por barrio, tipo, dormitorios, baños, m², precio (UYU o USD), TOTAL MENSUAL con gastos comunes, gastos comunes máximos, mascotas, garaje, con o sin muebles, plazo (anual o invernal), tipo de garantía (ANDA, Contaduría, seguro, depósito, BHU, propietario), comodidades, dueño directo, inmobiliaria, portal, texto libre, cercanía a un punto, calidad del barrio (pocas denuncias, pocos cortes de agua o reclamos), publicados en los últimos N días y alquileres que BAJARON de precio. " +
         "Devuelve cada vivienda con alquiler, gastos comunes y total cuando el MISMO aviso los publica (~70 % no publica gastos comunes), link al aviso original, ficha en cambio-uruguay.com, la mediana de la búsqueda, los barrios con más oferta y un link para guardar la búsqueda o crear una alerta. Para rankear según ingresos y traslados de un hogar usá rank_rentals_for_household.",
       inputSchema: {
         department: department.optional(),
@@ -83,7 +83,8 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
         expensesMaxUyu: z.number().min(0).optional().describe("Gastos comunes máximos en pesos. Excluye avisos que no los publican."),
         pets: z.boolean().optional().describe("Sólo avisos que aceptan mascotas explícitamente."),
         parking: z.boolean().optional().describe("Con garaje."),
-        furnished: z.boolean().optional().describe("Amueblado."),
+        furnished: z.boolean().optional().describe("true = sólo avisos que dicen amueblado (incluye semi amueblado); false = sólo los que dicen sin muebles. Los que no lo aclaran quedan afuera con cualquiera de los dos."),
+        term: z.enum(["anual", "invernal"]).optional().describe('Plazo del contrato. "invernal" = alquiler de invierno (marzo a diciembre, sobre todo en la costa), con precio mensual; "anual" = todo menos los que SÓLO ofrecen invierno (incluye los que no aclaran, que son el alquiler común). Los de temporada de verano (por noche o quincena) no se publican.'),
         guarantees: z.array(z.enum(RENTAL_GUARANTEES)).max(7).optional().describe("Garantías aceptadas (cualquiera de ellas): anda, contaduria (Contaduría General de la Nación), aseguradora (Porto, Sura, Mapfre…), propietaria (fiador propietario), deposito, bhu, aConvenir."),
         amenities: z.array(z.enum(RENTAL_AMENITIES)).max(11).optional().describe("Comodidades que debe tener (todas)."),
         ownerDirect: z.boolean().optional().describe("Sólo dueño directo (sin inmobiliaria)."),
@@ -146,7 +147,7 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
         minArea: z.number().min(0).optional().describe("m² mínimos."),
         pets: z.boolean().optional().describe("Necesitan que acepte mascotas."),
         parking: z.boolean().optional(),
-        furnished: z.boolean().optional(),
+        furnished: z.boolean().optional().describe("true = sólo los que el aviso dice amueblados; false = sólo los que dice sin muebles."),
         preferredNeighborhoods: z.array(z.string().max(60)).max(20).optional().describe('Barrios preferidos ("Pocitos" o "Pocitos, Montevideo").'),
         excludedNeighborhoods: z.array(z.string().max(60)).max(20).optional().describe("Barrios a descartar."),
         onlyPreferred: z.boolean().optional().describe("true = sólo los barrios preferidos; false = los prefiere pero no descarta otros."),

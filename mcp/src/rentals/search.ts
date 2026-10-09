@@ -43,7 +43,10 @@ export interface RentalSearchInput {
   expensesMaxUyu?: number;
   pets?: boolean;
   parking?: boolean;
+  /** true = only adverts that say furnished; false = only adverts that say unfurnished. */
   furnished?: boolean;
+  /** Contract period: "invernal" = offers a winter (March–December) lease; "anual" = all but winter-only. */
+  term?: "anual" | "invernal";
   guarantees?: string[];
   amenities?: string[];
   ownerDirect?: boolean;
@@ -222,7 +225,9 @@ export function rentalSearchParams(
     expensesMax: input.expensesMaxUyu,
     pets: input.pets,
     parking: input.parking,
-    furnished: input.furnished,
+    furnished: input.furnished === true ? true : undefined,
+    sinMuebles: input.furnished === false ? 1 : undefined,
+    plazo: input.term,
     garantia: input.guarantees,
     comodidades: input.amenities,
     dueno: input.ownerDirect,
@@ -263,6 +268,14 @@ export async function searchRentals(site: SiteApi, input: RentalSearchInput): Pr
     "El total mensual (alquiler + gastos comunes) sólo aparece cuando el mismo aviso publica sus gastos comunes; la mayoría no lo hace.",
     "Se muestran avisos vistos en los últimos 10 días; confirmá disponibilidad con el anunciante.",
   ];
+  if (typeof input.furnished === "boolean")
+    notes.push(
+      `Sólo avisos que DICEN ${input.furnished ? "amueblado" : "sin muebles"}: los que no lo aclaran quedan afuera, así que puede haber más.`
+    );
+  if (input.term === "invernal")
+    notes.push("Invernal = contrato de marzo a diciembre con precio mensual (sobre todo en la costa). Los alquileres de temporada de verano no se publican: su precio es por noche o quincena.");
+  if (input.term === "anual")
+    notes.push("Anual = todo menos los avisos que sólo ofrecen contrato de invierno; incluye los que no aclaran el plazo, que son el alquiler común.");
   let withinRadius: number | undefined;
   if (point?.radiusKm) {
     const radius = point.radiusKm;
