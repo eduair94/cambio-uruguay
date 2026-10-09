@@ -108,7 +108,9 @@ Since 2026-10-09 the retail reader (`classes/retail/sources/facebook.ts`, shared
 movilidad) attaches over CDP to the already-authenticated Chrome that `facebook_profile_browser`
 keeps on port 9224, through the shared search reader (`classes/facebook/search.ts`): each search is
 scrolled to its end or to its cap (8 pages daily, 3 hourly) and the cards come from Facebook's
-GraphQL stream. It must never launch its own Chrome on the same `--user-data-dir`, and it takes the
+GraphQL stream. Unlike rentals, searches that never grow past their first page do not end the run:
+a price band needs every search's first page more than any search's tail (the first hourly run
+that stopped after two such searches read 3 of 13 and published 105 offers instead of 244). It must never launch its own Chrome on the same `--user-data-dir`, and it takes the
 profile lock (`classes/facebook/lock.ts`) so it never scrolls alongside rentals or autos; while
 another job holds it, Marketplace is skipped for that run.
 

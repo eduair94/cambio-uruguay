@@ -57,7 +57,16 @@ export async function readMarketplaceSearches(options: {
    * whose wordings are all broad, keeps 0.
    */
   stallFloor?: number;
+  /**
+   * Whether two stalled lists in a row end the run. Rentals scrolls deep and stops to spare the
+   * session. Retail reads a few pages a search and needs every search's first page more than its
+   * tail: with 3 rounds a slow search looks stalled, and cutting at the third of thirteen
+   * searches left equipar with 105 offers instead of 244 (2026-10-09 03:03).
+   */
+  stopOnStalls?: boolean;
   connect?: () => Promise<Browser>;
+  /** Attempts to reach the profile browser before falling back (one blip should not cost the run). */
+  connectAttempts?: number;
   lock?: (owner: string, waitMs: number) => Promise<ReleaseFacebookProfile | null>;
 }): Promise<MarketplaceSearchRead> {
   const cards = new Map<string, MarketplaceCard>();
@@ -76,12 +85,22 @@ export async function readMarketplaceSearches(options: {
   let browser: Browser | null = null;
   let stalledInARow = 0;
   try {
-    try {
-      browser = await (options.connect ?? connectFacebookBrowser)();
-    } catch {
-      result.unreachable = true;
-      result.note = "navegador del perfil inaccesible";
-      return result;
+    // 2026-10-09 02:47: the first hourly run after the deploy could not connect once while the
+    // same Chrome answered the bridge and every check after it. A blip, not an outage.
+    const attempts = Math.max(1, options.connectAttempts ?? 3);
+    for (let attempt = 1; !browser; attempt++) {
+      try {
+        browser = await (options.connect ?? connectFacebookBrowser)();
+      } catch (error) {
+        if (attempt < attempts) {
+          await sleep(5_000);
+          continue;
+        }
+        result.unreachable = true;
+        // Only the error class: messages can carry URLs.
+        result.note = `navegador del perfil inaccesible (${String((error as Error)?.name || "Error")}, ${attempts} intentos)`;
+        return result;
+      }
     }
     try {
       for (const [index, { location, query }] of options.searches.entries()) {
@@ -120,7 +139,7 @@ export async function readMarketplaceSearches(options: {
           // 2026-10-05, after an hour of probing, the same search that had delivered 864 cards
           // stopped at its first 24, with any script. One short search happens (a narrow
           // wording); two in a row is the throttle, and insisting only spends the account.
-          if (stalledInARow >= 2) {
+          if (stalledInARow >= 2 && options.stopOnStalls !== false) {
             result.note = "Facebook dejó de cargar más resultados en dos búsquedas seguidas; se corta para no forzar la sesión";
             break;
           }

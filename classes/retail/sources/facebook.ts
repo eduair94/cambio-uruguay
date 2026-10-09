@@ -139,6 +139,8 @@ export async function harvestFacebookMarketplace(
       lockWaitMs: budget.lockWaitMinutes * 60_000,
       // A narrow wording ("juego de ollas") can end on its first page; that is not the throttle.
       stallFloor: 20,
+      // Every search's first page is worth more than stopping early: see stopOnStalls.
+      stopOnStalls: false,
     });
     if (read.busy || (read.sessionLost && !read.lists)) {
       // Not the bridge: it drives the same Chrome, which another job is scrolling right now or

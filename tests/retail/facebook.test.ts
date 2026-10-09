@@ -48,7 +48,7 @@ describe("harvestFacebookMarketplace por el navegador", () => {
     const reader = vi.fn<typeof readMarketplaceSearches>(async () => read([[]]));
     await harvestFacebookMarketplace([olla], Infinity, { reader });
     await harvestFacebookMarketplace([olla], Infinity, { reader, fast: true });
-    expect(reader.mock.calls[0][0]).toMatchObject({ owner: "retail", maxScrolls: RETAIL_FB_BUDGET.daily.maxScrolls, stallFloor: 20 });
+    expect(reader.mock.calls[0][0]).toMatchObject({ owner: "retail", maxScrolls: RETAIL_FB_BUDGET.daily.maxScrolls, stallFloor: 20, stopOnStalls: false });
     expect(reader.mock.calls[1][0]).toMatchObject({ maxScrolls: RETAIL_FB_BUDGET.fast.maxScrolls });
   });
 

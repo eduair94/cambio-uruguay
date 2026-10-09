@@ -56,6 +56,30 @@ describe("readFacebookRentals", () => {
     expect(read.cards).toHaveLength(4);
   });
 
+  it("keeps reading every search after stalls when the caller needs each first page (retail)", async () => {
+    vi.mocked(scrollFacebookList)
+      .mockImplementationOnce(list(["1000001"], ["1000002"]))
+      .mockImplementationOnce(list(["1000003"]))
+      .mockImplementationOnce(list(["1000004"]))
+      .mockImplementationOnce(list(["1000005"], ["1000006"]));
+    const read = await readFacebookRentals({ ...plan(["a", "b", "c", "d"]), stopOnStalls: false });
+    expect(scrollFacebookList).toHaveBeenCalledTimes(4);
+    expect(read).toMatchObject({ lists: 4, stalled: 2, note: null });
+    expect(read.perSearch).toEqual([["1000001", "1000002"], ["1000003"], ["1000004"], ["1000005", "1000006"]]);
+  });
+
+  it("retries a connection blip before falling back, and says why it gave up", async () => {
+    vi.mocked(scrollFacebookList).mockImplementationOnce(list(["1000001"], ["1000002"]));
+    const connect = vi.fn<() => Promise<Browser>>()
+      .mockRejectedValueOnce(new Error("ECONNRESET"))
+      .mockResolvedValueOnce(browser);
+    const read = await readFacebookRentals({ ...plan(["a"]), connect });
+    expect(connect).toHaveBeenCalledTimes(2);
+    expect(read).toMatchObject({ lists: 1, unreachable: false });
+    const down = await readFacebookRentals({ ...plan(["a"]), connect: async () => { throw new TypeError("fetch failed"); } });
+    expect(down.note).toBe("navegador del perfil inaccesible (TypeError, 3 intentos)");
+  });
+
   it("ends the run on a login page, keeping what it read; an unreachable browser reads nothing", async () => {
     vi.mocked(scrollFacebookList)
       .mockImplementationOnce(list(["1000001"], ["1000002"]))
