@@ -76,9 +76,24 @@
         lo dividís entre 12.
       </p>
       <p>
-        Se paga en dos partes al año (habitualmente antes de las fiestas y a mitad de año). Esta
-        estimación toma el nominal; el monto efectivo puede variar por descuentos y partidas
+        Se paga en dos partes al año. En 2026 la primera se pagó dentro de junio, por lo ganado de
+        diciembre a mayo, y la segunda vence el 20 de diciembre (Decreto 113/026), por lo ganado del
+        1.º de junio al 30 de noviembre. Las fechas de cada sector están en
+        <NuxtLink :to="localePath('/cuando-se-cobra-el-aguinaldo-uruguay')"
+          >cuándo se cobra el aguinaldo</NuxtLink
+        >. Esta estimación toma el nominal; el monto efectivo puede variar por descuentos y partidas
         especiales.
+      </p>
+      <p>
+        No hay antigüedad mínima: con pocos meses en la empresa cobrás la parte de esos meses, y eso
+        es lo que calcula el modo "Sueldo mensual fijo". Si trabajaste en negro, estuviste
+        certificado o te fuiste en el semestre, mirá
+        <NuxtLink :to="localePath('/guias/aguinaldo-casos-especiales-uruguay')"
+          >el aguinaldo en los casos especiales</NuxtLink
+        >, y para entender la cuenta,
+        <NuxtLink :to="localePath('/guias/como-se-calcula-el-aguinaldo-uruguay')"
+          >cómo se calcula el aguinaldo</NuxtLink
+        >.
       </p>
     </template>
   </ToolShell>
@@ -88,6 +103,8 @@
 import { computed, ref } from 'vue'
 import { computeAguinaldo } from '~/utils/calculators'
 import { formatUYU } from '~/utils/format'
+
+const localePath = useLocalePath()
 
 const mode = ref<'total' | 'monthly'>('total')
 const totalSemester = ref(300000)
@@ -107,7 +124,15 @@ const faq = [
   },
   {
     q: '¿Cuándo se cobra el aguinaldo?',
-    a: 'Se paga en dos cuotas al año: una antes de fin de año y otra a mitad de año, correspondientes a cada semestre trabajado.',
+    a: 'En dos cuotas: la primera dentro de junio, por lo ganado de diciembre a mayo, y la segunda antes de fin de año, por lo ganado de junio a noviembre. En 2026 la de diciembre se paga hasta el 20 de diciembre (Decreto 113/026).',
+  },
+  {
+    q: '¿Me corresponde aguinaldo si trabajé solo 3 meses?',
+    a: 'Sí. La Ley 12.840 no exige antigüedad mínima: cobrás la doceava parte de lo que te pagaron en dinero en los meses trabajados del semestre. Con 3 meses a $ 50.000 nominales, son $ 12.500 nominales.',
+  },
+  {
+    q: '¿Qué pasa si no me pagan el aguinaldo a tiempo?',
+    a: 'Desde el día siguiente al vencimiento la deuda lleva un recargo automático del 10 % (Ley 18.572, art. 29), y podés denunciarlo en la Inspección General del Trabajo del MTSS.',
   },
 ]
 </script>

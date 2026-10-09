@@ -113,6 +113,19 @@ describe('sitemap with a healthy API', () => {
     expect(byLoc.get('/privacidad')?.lastmod).toBeUndefined()
   })
 
+  it('dates every guide with its own last revision, in all three locales', async () => {
+    const { guides } = await import('../../utils/guides')
+    const urls = await runHandler(HEALTHY)
+    const byLoc = new Map(urls.map(u => [u.loc, u]))
+    for (const guide of guides) {
+      for (const prefix of ['', '/en', '/pt']) {
+        expect(byLoc.get(`${prefix}/guias/${guide.slug}`)?.lastmod, guide.slug).toBe(
+          guide.updatedAt
+        )
+      }
+    }
+  })
+
   it('emits every route for all three locales', async () => {
     const urls = await runHandler(HEALTHY)
     const locs = new Set(urls.map(u => u.loc))

@@ -149,6 +149,9 @@ export const guides: readonly Guide[] = [
       {
         heading: 'Qué mirar en la cotización antes de decidir',
         body: 'En Cambio Uruguay vas a ver, para cada casa de cambio, un precio de compra y uno de venta. Si vos comprás dólares, te importa el precio de venta de la casa (lo que te cobra por cada dólar). La diferencia entre comprar en el mejor y en el peor lugar puede ser de varios pesos por dólar, y en montos altos eso se vuelve dinero real. Nuestra plataforma reúne más de 40 casas de cambio con datos del Banco Central del Uruguay (BCU) actualizados aproximadamente cada 10 minutos, así que la foto que ves es muy cercana al mercado en vivo.',
+        links: [
+          { label: 'Si comprás dólares, mirá la venta', to: '/guias/comprar-dolares-mejor-precio' },
+        ],
       },
       {
         heading: 'El spread: la pista que casi nadie mira',
@@ -815,6 +818,9 @@ export const guides: readonly Guide[] = [
         body: 'Compará siempre: mirá la cotización de tu banco y la de las casas de cambio relevadas en Cambio Uruguay para tu tipo de operación (billete, transferencia, cable). Elegí según el equilibrio entre precio y comodidad que más te sirva. Para montos altos, la diferencia de precio suele inclinar la balanza hacia comparar bien.',
       },
     ],
+    related: [
+      { label: 'Si comprás dólares, mirá la venta', to: '/guias/comprar-dolares-mejor-precio' },
+    ],
   },
   {
     slug: 'como-leer-cotizacion-dolar',
@@ -940,6 +946,9 @@ export const guides: readonly Guide[] = [
         name: 'Negociá si el monto es alto',
         text: 'Para sumas grandes, pedí que te mejoren la cotización usando como referencia el mejor precio que viste.',
       },
+    ],
+    related: [
+      { label: 'Si comprás dólares, mirá la venta', to: '/guias/comprar-dolares-mejor-precio' },
     ],
   },
   {

@@ -275,6 +275,11 @@ const related = [
     icon: 'mdi-credit-card-outline',
   },
   { to: '/estafas-uruguay', label: 'Estafas y fraudes', icon: 'mdi-shield-alert-outline' },
+  {
+    to: '/guias/saldo-retenido-tarjeta-debito-uruguay',
+    label: 'Saldo retenido en el débito',
+    icon: 'mdi-lock-clock',
+  },
 ]
 
 const verifiedDisplay = computed(() =>
