@@ -65,6 +65,8 @@ export const rentalPageMessages = {
     noGallery: 'Esta propiedad no tiene una foto que podamos mostrar.',
     currencyInferredLong:
       'El aviso dice pesos, pero ninguna vivienda de esta zona se alquila a ese monto en pesos y sí en dólares: lo mostramos en dólares. Confirmalo con quien publica.',
+    stayPriceLong:
+      'Este precio está muy por debajo de lo más barato de la zona. En la costa casi siempre es una tarifa por noche o por temporada, no un alquiler mensual: confirmalo con quien publica antes de contar con él.',
     monthlyRent: 'Alquiler por mes',
     costTitle: 'Alquiler y gastos comunes',
     costUnknown: 'Falta confirmar los gastos comunes para conocer el total.',
@@ -224,6 +226,8 @@ export const rentalPageMessages = {
     noGallery: 'There is no photo we can display for this property.',
     currencyInferredLong:
       'The advert says pesos, but no home in this area rents for that amount in pesos and many do in dollars, so we show it in dollars. Confirm it with the advertiser.',
+    stayPriceLong:
+      'This price is far below the cheapest homes in the area. On the coast it is nearly always a nightly or seasonal rate, not a monthly rent: confirm it with the advertiser before counting on it.',
     monthlyRent: 'Monthly rent',
     costTitle: 'What you would pay each month',
     costUnknown: 'Common expenses must be confirmed before a monthly total can be calculated.',
@@ -383,6 +387,8 @@ export const rentalPageMessages = {
     noGallery: 'Este imóvel não tem uma foto que possamos mostrar.',
     currencyInferredLong:
       'O anúncio diz pesos, mas nenhuma moradia desta região se aluga por esse valor em pesos e sim em dólares: mostramos em dólares. Confirme com quem anuncia.',
+    stayPriceLong:
+      'Este preço está muito abaixo do mais barato da região. No litoral quase sempre é uma diária ou um valor de temporada, não um aluguel mensal: confirme com quem anuncia antes de contar com ele.',
     monthlyRent: 'Aluguel por mês',
     costTitle: 'Quanto você pagaria por mês',
     costUnknown: 'É preciso confirmar o condomínio para calcular o total mensal.',

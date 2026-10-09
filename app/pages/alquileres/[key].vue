@@ -978,6 +978,13 @@ useHead(() => ({
         >
           {{ t('currencyInferredLong') }}
         </p>
+        <p
+          v-if="selectedOffer.stayPriceSuspect"
+          class="rental-page__note rental-page__stay"
+          data-testid="rental-stay-price"
+        >
+          {{ t('stayPriceLong') }}
+        </p>
         <dl class="rental-page__monthly">
           <div>
             <dt>{{ t('expenses') }}</dt>
@@ -1333,6 +1340,12 @@ useHead(() => ({
   border-top: 0;
   padding-top: 0;
   margin-top: 28px;
+}
+.rental-page__stay {
+  background: rgba(var(--v-theme-warning), 0.14);
+  border-left: 3px solid rgb(var(--v-theme-warning));
+  border-radius: 6px;
+  padding: 8px 10px;
 }
 .rental-page__note {
   margin-top: 12px;

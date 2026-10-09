@@ -228,6 +228,17 @@
             density="compact"
             color="primary"
           />
+          <VCheckbox
+            v-model="draft.hideStayPrices"
+            :label="t('hideStayPrices')"
+            hide-details
+            density="compact"
+            color="primary"
+            data-testid="rental-filter-hideStayPrices"
+          />
+          <p v-if="draft.hideStayPrices" class="rental-search__hint">
+            {{ t('hideStayPricesHint') }}
+          </p>
         </details>
         <details
           id="rental-advanced"
@@ -622,7 +633,8 @@ const costsOpen = ref(
   !props.mobile &&
     (props.query.monthlyMax !== null ||
       props.query.expensesMax !== null ||
-      props.query.withExpenses)
+      props.query.withExpenses ||
+      Boolean(props.query.hideStayPrices))
 )
 const conditionsOpen = ref(
   !props.mobile && Boolean(props.query.guarantees.length || props.query.owner)
@@ -824,7 +836,12 @@ type RentalDraft = RentalQuery &
   Required<
     Pick<
       RentalQuery,
-      'excludeNeighborhoods' | 'excludeTypes' | 'excludeSources' | 'excludeWords' | 'sharedLiving'
+      | 'excludeNeighborhoods'
+      | 'excludeTypes'
+      | 'excludeSources'
+      | 'excludeWords'
+      | 'sharedLiving'
+      | 'hideStayPrices'
     >
   >
 const copy = (query: RentalQuery): RentalDraft => ({
@@ -836,6 +853,7 @@ const copy = (query: RentalQuery): RentalDraft => ({
   excludeSources: [...(query.excludeSources ?? [])],
   excludeWords: [...(query.excludeWords ?? [])],
   sharedLiving: query.sharedLiving ?? '',
+  hideStayPrices: Boolean(query.hideStayPrices),
   sinceDays: query.sinceDays ?? null,
   priceDropped: query.priceDropped ?? false,
   guarantees: [...query.guarantees],
@@ -1051,6 +1069,7 @@ const costSummary = computed(() =>
     amountSummary('monthlyMax'),
     noExpenses.value ? t('noExpenses') : amountSummary('expensesMax'),
     draft.value.withExpenses && t('expensesKnown'),
+    Boolean(draft.value.hideStayPrices) && t('hideStayPrices'),
   ])
 )
 const excludedWords = computed(() => parseExcludeWords(excludeWordsText.value))

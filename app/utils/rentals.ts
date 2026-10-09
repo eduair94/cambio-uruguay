@@ -150,6 +150,8 @@ export interface RentalOffer extends AdvertiserMetadata {
   currency: RentalCurrency
   /** The advert said pesos; its zone's market says dollars (backend `classes/rentals/currency.ts`). */
   currencyInferred?: true
+  /** Under half its zone's cheapest rents, in dollars: probably per night or per stay (backend `currency.ts`). */
+  stayPriceSuspect?: true
   priceUyu: number
   commonExpenses: number | null
   commonExpensesCurrency: RentalCurrency | null
@@ -501,6 +503,8 @@ export interface RentalQuery {
   amenities: RentalAmenity[]
   /** Sólo las que publican los gastos comunes, para poder comparar el costo real. */
   withExpenses: boolean
+  /** Hide adverts whose price is probably per night (`stayPriceSuspect`). Optional for hand-built queries. */
+  hideStayPrices?: boolean
   /** Own advert explicitly declares direct owner. A private seller classification is insufficient. */
   owner: boolean
   /** Stable source agency identifier, never a name-derived identity. */
@@ -725,6 +729,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     guarantees: parseGuarantees(input.garantia ?? input.guarantees),
     amenities: normalizeRentalAmenities(input.comodidades ?? input.amenities),
     withExpenses: enabled(input.gc ?? input.withExpenses),
+    hideStayPrices: enabled(input.sinNoche ?? input.hideStayPrices),
     owner: enabled(input.dueno ?? input.owner),
     agency: agencyKey(scalar(input.agency)),
     servicios: parseRentalServiceSelections(input.servicios),
@@ -777,6 +782,7 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   if (query.guarantees.length) params.garantia = query.guarantees.join(',')
   if (query.amenities.length) params.comodidades = query.amenities.join(',')
   if (query.withExpenses) params.gc = '1'
+  if (query.hideStayPrices) params.sinNoche = '1'
   if (query.owner) params.dueno = '1'
   if (query.agency) params.agency = query.agency
   if (query.servicios?.length) params.servicios = formatRentalServiceSelections(query.servicios)
@@ -889,6 +895,7 @@ export function rentalOfferMatchesQuery(
 ): boolean {
   if (query.source && offer.source !== query.source) return false
   if (query.excludeSources?.includes(offer.source)) return false
+  if (query.hideStayPrices && offer.stayPriceSuspect === true) return false
   if (query.currency && offer.currency !== query.currency) return false
   if (!advertiserMatches(offer, query)) return false
   if (query.pets && offer.petsAllowed !== true) return false
@@ -1166,6 +1173,7 @@ export function buildRentalFilter(
   const offer: Record<string, unknown> = {}
   if (query.source) offer.source = query.source
   else if (query.excludeSources?.length) offer.source = { $nin: [...query.excludeSources] }
+  if (query.hideStayPrices) offer.stayPriceSuspect = { $ne: true }
   if (query.currency) offer.currency = query.currency
   if (query.owner) offer['ownerDirect.declared'] = true
   if (query.agency) offer['agency.key'] = query.agency
@@ -1361,6 +1369,7 @@ function rentalOfferExpression(query: RentalQuery, usdUyu: number): Record<strin
   if (query.source) conditions.push({ $eq: ['$$offer.source', query.source] })
   if (query.excludeSources?.length)
     conditions.push({ $not: [{ $in: ['$$offer.source', [...query.excludeSources]] }] })
+  if (query.hideStayPrices) conditions.push({ $ne: ['$$offer.stayPriceSuspect', true] })
   if (query.currency) conditions.push({ $eq: ['$$offer.currency', query.currency] })
   if (query.owner || query.agency) conditions.push(advertiserExpression(query, '$$offer.'))
   if (query.pets) conditions.push({ $eq: ['$$offer.petsAllowed', true] })
@@ -1603,6 +1612,7 @@ export function rentalOfferStages(query: RentalQuery, usdUyu: number) {
   if (
     !query.source &&
     !query.excludeSources?.length &&
+    !query.hideStayPrices &&
     !query.currency &&
     !query.owner &&
     !query.agency &&
