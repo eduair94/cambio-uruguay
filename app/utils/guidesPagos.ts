@@ -76,6 +76,7 @@ export const pagosGuides: readonly Guide[] = [
       },
     ],
     related: [
+      { label: 'Saldo retenido en el débito', to: '/guias/saldo-retenido-tarjeta-debito-uruguay' },
       { label: 'Tarjetas de débito en Uruguay', to: '/tarjetas-de-debito-uruguay' },
       { label: 'Descuento de IVA con tarjeta', to: '/descuento-de-iva-con-tarjeta-uruguay' },
       { label: 'Tarjeta de débito vs crédito', to: '/guias/tarjeta-debito-vs-credito-uruguay' },
@@ -201,6 +202,7 @@ export const pagosGuides: readonly Guide[] = [
       },
     ],
     related: [
+      { label: 'El mínimo para pagar con débito', to: '/guias/comercio-no-acepta-debito-uruguay' },
       { label: 'Tarjetas de débito en Uruguay', to: '/tarjetas-de-debito-uruguay' },
       { label: 'Me cobran algo que no autoricé', to: '/me-cobran-algo-que-no-autorice' },
       { label: 'Cómo abrir una cuenta bancaria', to: '/guias/abrir-una-cuenta-bancaria-uruguay' },
@@ -334,6 +336,7 @@ export const pagosGuides: readonly Guide[] = [
       },
     ],
     related: [
+      { label: 'Saldo retenido en el débito', to: '/guias/saldo-retenido-tarjeta-debito-uruguay' },
       { label: 'Estafas en Uruguay', to: '/estafas-uruguay' },
       {
         label: 'Cómo evitar estafas financieras',
@@ -785,6 +788,10 @@ export const pagosGuides: readonly Guide[] = [
       },
     ],
     related: [
+      {
+        label: 'Saldo retenido tras un hotel o un auto de alquiler',
+        to: '/guias/saldo-retenido-tarjeta-debito-uruguay',
+      },
       { label: 'Tarjetas de débito en Uruguay', to: '/tarjetas-de-debito-uruguay' },
       { label: 'Dólar blue hoy', to: '/dolar-blue-hoy' },
       { label: 'Cambiar pesos argentinos', to: '/guias/cambiar-pesos-argentinos-uruguay' },

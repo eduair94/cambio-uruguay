@@ -188,6 +188,8 @@ describe("lo que encontró la primera corrida contra producción (2026-09-20)", 
       "/sala-vip-aeropuerto-uruguay",
       "/alquilar-estando-en-clearing",
       "/mejores-bancos-uruguay",
+      "/que-pasa-si-no-pago-antel",
+      "/mejores-prestamos-uruguay",
     ]) {
       expect(tierOf(path)).toBe(TIER_CONTENIDO);
     }

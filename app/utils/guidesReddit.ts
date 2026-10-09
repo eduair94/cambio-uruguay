@@ -874,6 +874,10 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
+      {
+        label: 'Certificado Único Departamental (CUD)',
+        to: '/guias/certificado-unico-departamental-uruguay',
+      },
       { label: 'Crédito hipotecario', to: '/guias/credito-hipotecario-uruguay' },
       { label: 'Costos de escrituración', to: '/guias/costos-de-escrituracion-uruguay' },
       { label: 'Cómo funciona el BHU', to: '/guias/bhu-como-funciona' },
@@ -1141,6 +1145,10 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
+      {
+        label: 'Certificado Único Departamental (CUD)',
+        to: '/guias/certificado-unico-departamental-uruguay',
+      },
       { label: 'Comprar tu primera vivienda', to: '/guias/comprar-primera-vivienda-uruguay' },
       { label: 'Promesa de compraventa', to: '/guias/promesa-de-compraventa-uruguay' },
       { label: 'Cómo funciona el BHU', to: '/guias/bhu-como-funciona' },
@@ -2164,6 +2172,12 @@ export const redditGuides: readonly Guide[] = [
       {
         heading: 'Aguinaldo al terminar el vínculo',
         body: 'Si dejás la empresa antes de que llegue la fecha del pago, no perdés el aguinaldo acumulado. En la liquidación final se te debe abonar la parte proporcional al tiempo trabajado desde el último medio aguinaldo cobrado hasta el día que te vas. Esto vale tanto si renunciás como si te despiden. Es una de las partidas que más se olvida revisar al cerrar un trabajo, junto con la licencia no gozada y el salario vacacional. Si el monto que te liquidan no refleja los meses que trabajaste en el semestre en curso, conviene reclamarlo o consultarlo antes de firmar conforme.',
+        links: [
+          {
+            label: 'Aguinaldo con 3 meses, en negro o enfermo',
+            to: '/guias/aguinaldo-casos-especiales-uruguay',
+          },
+        ],
       },
       {
         heading: 'Dónde verificar y una aclaración',
@@ -2320,6 +2334,10 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
+      {
+        label: 'El aguinaldo en la liquidación: casos especiales',
+        to: '/guias/aguinaldo-casos-especiales-uruguay',
+      },
       {
         label: 'Licencia y salario vacacional',
         to: '/guias/licencia-y-salario-vacacional-uruguay',
@@ -3295,6 +3313,10 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
+      {
+        label: 'Cobrar la jubilación desde el exterior',
+        to: '/guias/cobrar-jubilacion-uruguaya-desde-el-exterior',
+      },
       { label: 'Planificar tu retiro', to: '/guias/planificar-tu-retiro-uruguay' },
       { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
       { label: 'Cómo empezar a invertir', to: '/guias/como-empezar-a-invertir-uruguay' },
@@ -3369,6 +3391,10 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
+      {
+        label: 'Jubilarte y vivir afuera: el giro del BPS',
+        to: '/guias/cobrar-jubilacion-uruguaya-desde-el-exterior',
+      },
       { label: 'Jubilación y AFAP', to: '/guias/jubilacion-y-afap-como-funciona-uruguay' },
       { label: 'Interés compuesto', to: '/guias/interes-compuesto-explicado-uruguay' },
       { label: 'Cómo empezar a invertir', to: '/guias/como-empezar-a-invertir-uruguay' },
@@ -4699,6 +4725,10 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
+      {
+        label: 'El aguinaldo si estuviste certificado',
+        to: '/guias/aguinaldo-casos-especiales-uruguay',
+      },
       { label: 'Seguro de paro en Uruguay', to: '/seguro-de-paro-uruguay' },
       { label: 'Despido y liquidación', to: '/guias/despido-y-liquidacion-uruguay' },
       {
@@ -5468,6 +5498,10 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
+      {
+        label: 'El aguinaldo si trabajás en negro',
+        to: '/guias/aguinaldo-casos-especiales-uruguay',
+      },
       { label: 'Me deben el sueldo', to: '/guias/me-deben-el-sueldo-uruguay' },
       { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
       { label: 'Jubilación y AFAP', to: '/guias/jubilacion-y-afap-como-funciona-uruguay' },

@@ -607,6 +607,20 @@
         <VBtn :to="localePath('/apps-economia-uruguay')" variant="tonal" size="small">
           <VIcon start size="small">mdi-cellphone</VIcon>Apps de dinero
         </VBtn>
+        <VBtn
+          :to="localePath('/guias/saldo-retenido-tarjeta-debito-uruguay')"
+          variant="tonal"
+          size="small"
+        >
+          <VIcon start size="small">mdi-lock-clock</VIcon>Saldo retenido
+        </VBtn>
+        <VBtn
+          :to="localePath('/guias/comercio-no-acepta-debito-uruguay')"
+          variant="tonal"
+          size="small"
+        >
+          <VIcon start size="small">mdi-store-alert-outline</VIcon>Mínimo para pagar con débito
+        </VBtn>
       </div>
     </VCard>
 

@@ -13,7 +13,7 @@ import { listFronteraSlugs } from '../../../utils/frontera'
 import { glossarySlugs } from '../../../utils/glossary'
 import { importCategoryIndexSlugs } from '../../../utils/importCategoryIndex'
 import { hubSlugs } from '../../../utils/guideHubs'
-import { guideSlugs } from '../../../utils/guides'
+import { guides } from '../../../utils/guides'
 import { listIndicatorSlugs } from '../../../utils/indicators'
 import { PRECIOS_MIN_OBSERVATIONS, preciosSlug } from '../../../utils/preciosCatalog'
 import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
@@ -119,7 +119,13 @@ export default defineEventHandler(async _event => {
   }
 
   // --- Catalogue long tail: pure data, no I/O -------------------------------
-  guideSlugs().forEach(slug => addUrlsForAllLocales(`/guias/${slug}`, 0.7, 'weekly'))
+  // Each guide carries the date of its own last revision, the same `updatedAt` the page prints and
+  // puts in `dateModified`. Without it the 146 guides were the one content family with no lastmod
+  // at all, while 1.859 live-data URLs said "changed today": seven guides, six of them from
+  // September, were still not indexed on 2026-10-08 and Google had never crawled them.
+  guides.forEach(guide =>
+    addUrlsForAllLocales(`/guias/${guide.slug}`, 0.7, 'weekly', guide.updatedAt)
+  )
   importCategoryIndexSlugs().forEach(slug =>
     addUrlsForAllLocales(`/importar/${slug}`, 0.7, 'monthly')
   )

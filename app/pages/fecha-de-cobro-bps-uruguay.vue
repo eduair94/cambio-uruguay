@@ -153,6 +153,12 @@
       <NuxtLink :to="localePath('/elecciones-bps-2026')" class="cu-link">
         Elecciones del BPS 2026
       </NuxtLink>
+      <NuxtLink
+        :to="localePath('/guias/cobrar-jubilacion-uruguaya-desde-el-exterior')"
+        class="cu-link"
+      >
+        Cobrar la jubilación desde el exterior
+      </NuxtLink>
     </div>
   </VContainer>
 </template>

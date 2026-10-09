@@ -296,6 +296,11 @@ const RELATED = [
     label: 'Ranking de tarjetas de crédito',
     icon: 'mdi-credit-card-multiple-outline',
   },
+  {
+    to: '/guias/comercio-no-acepta-debito-uruguay',
+    label: 'El mínimo para pagar con débito',
+    icon: 'mdi-store-alert-outline',
+  },
 ]
 
 const verifiedAt = new Date(`${IVA_TARJETA_VERIFIED_AT}T00:00:00Z`).toLocaleDateString('es-UY', {

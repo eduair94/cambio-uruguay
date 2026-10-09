@@ -216,6 +216,18 @@ const CONTENIDO_PATHS = new Set([
   "/sala-vip-aeropuerto-uruguay",
   "/comprar-auto-con-deuda-uruguay",
   "/multas-de-transito-y-patente-uruguay",
+  // 2026-10-08: la alerta nombró a /que-pasa-si-no-pago-antel; las otras nueve son páginas de
+  // problema con clics o ingreso medido en la misma ventana que seguían valiendo 1×.
+  "/que-pasa-si-no-pago-antel",
+  "/mejores-prestamos-uruguay",
+  "/prestamos-uruguay",
+  "/declarar-compra-exterior-uruguay",
+  "/importar-para-revender-uruguay",
+  "/limite-de-efectivo-uruguay",
+  "/declarar-dinero-en-efectivo-uruguay",
+  "/embargo-de-sueldo-uruguay",
+  "/carne-de-salud-uruguay",
+  "/denunciar-trabajo-en-negro-uruguay",
 ]);
 
 export function tierOf(bucket: string): Tier {

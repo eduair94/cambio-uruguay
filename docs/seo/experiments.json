@@ -19,6 +19,21 @@
   ],
   "experiments": [
     {
+      "id": "guias-sin-indexar-reciben-enlaces",
+      "shippedOn": "2026-10-09",
+      "routes": [
+        "/guias/aguinaldo-casos-especiales-uruguay",
+        "/guias/cobrar-jubilacion-uruguaya-desde-el-exterior",
+        "/guias/comercio-no-acepta-debito-uruguay",
+        "/guias/comprar-dolares-mejor-precio",
+        "/guias/certificado-unico-departamental-uruguay",
+        "/guias/saldo-retenido-tarjeta-debito-uruguay",
+        "/guias/cedula-uruguaya-para-argentinos",
+        "/herramientas/calculadora-aguinaldo"
+      ],
+      "hypothesis": "La inspeccion de URL de Search Console sobre las 146 guias (2026-10-08) dio 139 indexadas y siete fuera del indice, nunca rastreadas: seis 'descubiertas, sin indexar' y una que Google ni conocia. Seis no recibian un solo enlace desde el contenido de otra pagina: solo las listas de /guias y de su tema. Cada una gana dos o tres enlaces desde paginas indexadas de su mismo tema (guias hermanas, tarjetas de debito, fecha de cobro del BPS, cedula, residencia), el sitemap pasa a declarar el updatedAt de cada guia como lastmod (antes las guias eran la unica familia de contenido sin lastmod) y la calculadora de aguinaldo, en posicion 19 para 'calculadora de aguinaldo', suma las fechas 2026 con su decreto, dos preguntas que la cola de demanda marca sin buena respuesta (3 meses, pago atrasado) y enlaces a las dos guias del tema. Se espera que las siete entren al indice y empiecen a sumar impresiones antes de la temporada de aguinaldo de diciembre. Ojo al leerlo: seis de estas rutas estan tambien en filas de titulos y snippets del 3 al 8 de octubre, que no podian moverlas porque Google no las tenia; lo que ganen viene de entrar al indice."
+    },
+    {
       "id": "titulos-de-las-guias-respuesta-primero-4",
       "shippedOn": "2026-10-08",
       "routes": [

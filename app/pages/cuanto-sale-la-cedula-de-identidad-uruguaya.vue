@@ -304,6 +304,7 @@ const verificado = fecha(ID_CARD_VERIFIED_AT)
 const RELATED = [
   { to: '/cuanto-sale-el-pasaporte-uruguayo', label: 'Cuánto sale el pasaporte' },
   { to: '/mudarme-a-uruguay-residencia', label: 'Residencia en Uruguay' },
+  { to: '/guias/cedula-uruguaya-para-argentinos', label: 'Cédula para argentinos (Mercosur)' },
   { to: '/a-quien-le-reclamo-uruguay', label: 'A quién le reclamo' },
   { to: '/prescripcion-de-deudas-con-el-estado-uruguay', label: 'Deudas con el Estado' },
   { to: '/declarar-dinero-en-efectivo-uruguay', label: 'Declarar efectivo en aduana' },
