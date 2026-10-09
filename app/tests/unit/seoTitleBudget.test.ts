@@ -239,7 +239,13 @@ function staticTitle(source: string): string | null {
 // 120 → 144 el 2026-09-20: el bound volvía a tener veinticuatro de sobra, que es el mismo
 // sobrante que la nota de arriba describe como el único accidente que este número existe para
 // evitar. Queda otra vez en el conteo real.
-const MEASURABLE = 144
+// 144 → 175 el 2026-10-09: el bound volvía a tener TREINTA Y UNO de sobra, que es el mismo
+// sobrante que las dos notas de arriba describen como el único accidente que este número existe
+// para evitar — treinta y un títulos medidos se podrían volver dinámicos, o sea salir del control
+// del largo y del de canibalización, sin que nada se ponga en rojo. Las páginas que lo aflojaron se
+// publicaron de a una sin volver a apretarlo, que es exactamente cómo esto se desajusta. Queda otra
+// vez en el conteo real.
+const MEASURABLE = 175
 // 44 → 33 el 2026-09-07: once de los títulos más largos reescritos a 43 caracteres o menos. Los
 // once perdían la cola en el SERP, y la cola era el dato — «2 puntos o 9», «mora y 72 h», «1 mes
 // por año», «6 países», «13 temas», «ChauDeudas o MiDeuda» —, así que en cada uno se conservó la

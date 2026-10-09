@@ -137,7 +137,12 @@ const measured = pageFiles()
 // sólo si alguien vuelve dinámica una que hoy se mide — que es justamente lo que este piso tiene que
 // delatar. Las cuatro que subieron el piso desde el 24/9 se habían publicado sin volver a apretarlo,
 // que es la única forma en que este número se queda flojo.
-const RESOLVED = 146
+//
+// 146 → 156 el 2026-10-09: diez de sobra, por la misma razón que dice el renglón de arriba. Diez
+// páginas publicaron su descripción como literal desde el 27/9 sin que nadie volviera a apretar el
+// piso, así que diez de las que hoy se miden podrían volverse dinámicas —y salir del control de los
+// 155 caracteres y del de descripciones repetidas— sin poner nada en rojo. Queda en el conteo real.
+const RESOLVED = 156
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente

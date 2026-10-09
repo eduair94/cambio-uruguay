@@ -770,6 +770,10 @@
           "label": "Estafas en Uruguay"
         },
         {
+          "to": "/seguro-obligatorio-de-auto-uruguay",
+          "label": "Seguro obligatorio (SOA)"
+        },
+        {
           "to": "/monopatines-electricos-uruguay",
           "label": "Monopatines eléctricos"
         },

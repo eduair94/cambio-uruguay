@@ -836,6 +836,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/estafas-uruguay',
       },
       {
+        label: 'Seguro obligatorio (SOA)',
+        description: 'Qué cubre, a quién no le paga y el tope del artículo 8.',
+        to: '/seguro-obligatorio-de-auto-uruguay',
+      },
+      {
         label: 'Monopatines eléctricos',
         description: 'Precio nuevo y usado, con la normativa de cada departamento.',
         to: '/monopatines-electricos-uruguay',

@@ -3497,6 +3497,33 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El SOA aparecía en el sitio SÓLO como un ítem de costo (`utils/carAdvisor.ts`,
+        // `/que-auto-comprar-uruguay`, `/conviene-auto-moto-o-omnibus-uruguay` lo suman al gasto
+        // mensual) y en ninguna parte se decía qué cubre. El ángulo propio son las dos cosas que la
+        // gente da por sentadas al revés: el art. 6 de la Ley 18.412 saca de la condición de
+        // tercero al propietario, al conductor y a su familia, y el art. 2 define el accidente por
+        // el daño a la PERSONA, así que la chapa no entra. El tope del art. 8 está en UI, que el
+        // sitio ya publica en vivo.
+        to: '/seguro-obligatorio-de-auto-uruguay',
+        labelKey: 'nav.seguroObligatorioAuto',
+        icon: 'mdi-car-emergency',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'seguro obligatorio de auto uruguay',
+          'soa uruguay',
+          'que cubre el soa',
+          'ley 18412',
+          'seguro obligatorio automotores uruguay',
+          'multa por circular sin seguro uruguay',
+          'me choco un auto sin seguro uruguay',
+          'tope del seguro obligatorio uruguay',
+          'soa ciclomotor uruguay',
+          'prescripcion reclamo soa',
+        ],
+      },
+      {
         to: '/autos-usados-uruguay',
         labelKey: 'nav.usedCars',
         icon: 'mdi-car-search-outline',

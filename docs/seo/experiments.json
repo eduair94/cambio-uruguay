@@ -19,6 +19,14 @@
   ],
   "experiments": [
     {
+      "id": "pagina-seguro-obligatorio-de-auto",
+      "shippedOn": "2026-10-09",
+      "routes": [
+        "/seguro-obligatorio-de-auto-uruguay"
+      ],
+      "hypothesis": "Pagina nueva para una intencion que la familia del auto no contestaba. El SOA aparecia en el sitio SOLO como un item de costo (utils/carAdvisor.ts, /que-auto-comprar-uruguay y /conviene-auto-moto-o-omnibus-uruguay lo suman al gasto mensual, y la descripcion del tema \"Comprar y mantener un auto\" lo nombra): en ninguna parte se decia que cubre. El angulo propio son las dos cosas que se dan por sentadas al reves y estan en la ley, no en la letra chica de una poliza: el art. 6 de la Ley 18.412 saca de la condicion de tercero al propietario, al conductor, al conyuge o concubino y a los parientes hasta el segundo grado, y el art. 2 define el accidente por el dano a la PERSONA, asi que los danos del vehiculo no entran. El tope del art. 8 esta en UI (250.000) y el sitio ya publica el valor de la UI en vivo, asi que la equivalencia en pesos se calcula con la lectura del dia o no se publica. Deliberadamente sin precio del seguro: el art. 11 consagra la libertad de contratacion y no hay cifra oficial que citar. Se mide como pagina nueva: clics propios de la ruta a los 28 dias."
+    },
+    {
       "id": "guias-sin-indexar-reciben-enlaces",
       "shippedOn": "2026-10-09",
       "routes": [
