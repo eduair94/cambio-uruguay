@@ -1,5 +1,5 @@
 // Pure logic for the automated review-refresh pipeline behind /casas-de-cambio.
-// The nitro task (server/tasks/casas/refreshReviews.ts) fetches from the
+// The nitro task (server/tasks/casas/reviews.ts) fetches from the
 // Google Places proxy / Trustpilot scraper APIs; everything testable lives here.
 
 /** A review datum as fetched from the Places proxy on one refresh run. */

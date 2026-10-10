@@ -728,7 +728,7 @@ const { data: live } = await useAsyncData('casas-directory', async () => {
   }
 })
 
-// Weekly-refreshed Google/Trustpilot snapshots (server/tasks/casas/refreshReviews.ts).
+// Weekly-refreshed Google/Trustpilot snapshots (server/tasks/casas/reviews.ts).
 // Fails soft: default keeps the researched dataset authoritative.
 const { data: refreshed } = await useFetch('/api/casas-reviews', {
   default: () => ({ reviews: {}, trustpilot: {}, updatedAt: null as string | null }),
