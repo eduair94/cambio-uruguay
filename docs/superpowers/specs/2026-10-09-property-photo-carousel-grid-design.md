@@ -54,11 +54,15 @@ como consideres mejor)". Spec y plan aprobados por la orden permanente de auto-a
 - Cada foto es un botón que abre el visor en esa foto. El crédito queda debajo: "Fotos publicadas
   en InfoCasas · Mercado Libre", con enlace a cada aviso.
 
-### 3. Más fotos guardadas (fase 2, PR aparte)
+### 3. Más fotos guardadas (fase 2, entró en el mismo PR)
 
-Tope por aviso 12 → 40 y por propiedad 24 → 60, y galería completa de Mercado Libre, Casasweb y
-Facebook desde los jobs de ficha que ya leen esas páginas. Esta fase sube el tope de `rentalPhotos`
-a 60 para que lo que se guarde se vea.
+Tope por aviso 12 → 40 y por propiedad 24 → 60, y galería de Mercado Libre y Casasweb desde los
+jobs de ficha que ya leen esas páginas. Esta fase sube el tope de `rentalPhotos` a 60 para que lo
+que se guarde se vea. Resultado medido: Casasweb guarda la galería entera (15 y 18 fotos en dos
+fichas); **Mercado Libre, cinco**, porque la página que le sirve a nuestra UA lista un mosaico de 5
+de N y la lista entera está sólo en la versión móvil (sin gastos comunes ni dormitorios) o en la API
+de ítems (403 sin OAuth). Facebook quedó afuera: no hay ninguna ficha guardada con lista de fotos.
+Detalle en `docs/app/RENTALS.md`, "Todas las fotos de cada aviso".
 
 ## Pruebas
 
