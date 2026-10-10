@@ -1,6 +1,11 @@
 import { loadRentalServiceZoneIds } from '../../utils/rentalZoneServices'
 import { setHeaderUnlessSent } from '../../utils/cachedResponseHeader'
 import { publicRentalAdvertisers, rentalPublicPropertyProjection } from '../../utils/rentalDetail'
+import {
+  rentalGalleryProjection,
+  withRentalGalleryPreviews,
+  type RentalGalleryRow,
+} from '../../utils/rentalGalleryPreview'
 import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
@@ -187,10 +192,22 @@ const cachedDirectory = defineCachedEventHandler(
       const median = Number((dimension.median?.[0] as unknown as { median?: number })?.median)
       const medianUyu = total > 0 && Number.isFinite(median) ? Math.round(median) : 0
 
+      // The card carousels' photos, read for this page only (see rentalGalleryPreview.ts). A failed
+      // read leaves each card with its cover: fewer photos, never a broken search.
+      const pageItems = items as RentalProperty[]
+      const galleries = pageItems.length
+        ? await RentalListingModel.find(
+            { key: { $in: pageItems.map(property => property.key) } },
+            rentalGalleryProjection
+          )
+            .lean<RentalGalleryRow[]>()
+            .catch(() => [])
+        : []
+
       return {
         meta: (meta as RentalMeta | null) ?? null,
         coverage,
-        items: (items as RentalProperty[]).map(property =>
+        items: withRentalGalleryPreviews(pageItems, galleries).map(property =>
           annotateRentalAvailability(publicRentalAdvertisers(property), availability)
         ),
         total,

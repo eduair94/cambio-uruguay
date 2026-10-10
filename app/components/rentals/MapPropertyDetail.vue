@@ -34,15 +34,14 @@
       <template v-else-if="property && offer">
         <div class="rental-map-detail__hero">
           <div class="rental-map-detail__photo">
-            <img
-              v-if="photo && !photoFailed"
-              :src="photo"
-              :alt="title"
-              width="360"
-              height="216"
-              decoding="async"
-              referrerpolicy="no-referrer"
-              @error="photoFailed = true"
+            <!-- La propiedad abierta ya vino con todas sus fotos: el carrusel no pide nada. -->
+            <PropertyPhotoCarousel
+              v-if="photos.length && !photoFailed"
+              :photos="photos"
+              :title="title"
+              eager
+              @open="openViewer"
+              @failed="photoFailed = true"
             />
             <span v-else><VIcon size="28">mdi-home-city-outline</VIcon>{{ t('noPhoto') }}</span>
           </div>
@@ -198,13 +197,25 @@
         >{{ t('mapOpen', { source: sourceLabel(offer.source) }) }}</VBtn
       >
     </footer>
+    <PropertyPhotoLightbox
+      v-if="property"
+      v-model="viewerOpen"
+      :title="title"
+      :photos="photos"
+      :start-index="viewerIndex"
+      :detail-href="rentalPropertyPath(property.key)"
+    />
   </aside>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { rentalMessages } from '~/utils/rentalMessages'
-import { rentalPropertyPath, rememberRentalSearch } from '~/utils/rentalPresentation'
+import {
+  rentalPhotoRefs,
+  rentalPropertyPath,
+  rememberRentalSearch,
+} from '~/utils/rentalPresentation'
 import { rentalSavedSafeUrl } from '~/utils/rentalSaved'
 import {
   RENTAL_GUARANTEE_PUBLISHED,
@@ -268,7 +279,14 @@ const address = computed(() => {
     ? ''
     : value
 })
-const photo = computed(() => rentalSavedSafeUrl(offer.value?.image))
+// Todas las fotos de todos sus avisos, en el orden de la tarjeta y de la ficha.
+const photos = computed(() => (props.property ? rentalPhotoRefs(props.property) : []))
+const viewerOpen = ref(false)
+const viewerIndex = ref(0)
+function openViewer(index: number) {
+  viewerIndex.value = index
+  viewerOpen.value = true
+}
 const offerUrl = computed(() => rentalSavedSafeUrl(offer.value?.url))
 const offers = computed(() =>
   (props.property?.offers ?? []).filter(entry => rentalSavedSafeUrl(entry.url))
@@ -341,9 +359,12 @@ const seen = computed(() => {
       }).format(date)
     : t('unknown')
 })
-watch(photo, () => {
-  photoFailed.value = false
-})
+watch(
+  () => photos.value.map(photo => photo.url).join('\n'),
+  () => {
+    photoFailed.value = false
+  }
+)
 watch(
   () => props.property?.key,
   () => {
@@ -422,12 +443,6 @@ onMounted(async () => {
   margin: 0 -16px;
   height: 180px;
   background: rgba(var(--v-theme-on-surface), 0.06);
-}
-.rental-map-detail__photo img {
-  display: block;
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
 }
 .rental-map-detail__photo > span {
   display: flex;

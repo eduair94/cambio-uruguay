@@ -28,6 +28,13 @@ export function rentalDescription(value: unknown, limit = 8_000): string {
     .trim();
 }
 
+/**
+ * Photos kept per advert. 12 until 2026-10-09, when the InfoCasas and El País adverts were found
+ * stored at exactly 12: their galleries arrived cut. 40 holds every photo of the adverts sampled that
+ * day (the largest had 29) and still bounds what one advert can store.
+ */
+export const RENTAL_IMAGES_PER_OFFER = 40;
+
 /** Property media only. Reject executable URLs, credentials and local-network targets. */
 export function rentalImages(values: readonly unknown[]): string[] {
   const images = new Set<string>();
@@ -42,7 +49,7 @@ export function rentalImages(values: readonly unknown[]): string[] {
       // Signed image links are valid media; do not rewrite their query parameters.
       url.hash = "";
       images.add(url.href);
-      if (images.size === 12) break;
+      if (images.size === RENTAL_IMAGES_PER_OFFER) break;
     } catch { /* An invalid image URL is simply unavailable. */ }
   }
   return [...images];

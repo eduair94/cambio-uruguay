@@ -377,23 +377,19 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             </div>
             <article v-for="(property, index) in items" :key="property.key" class="rental-card">
               <div class="rental-card__visual">
-                <!-- Con foto la imagen abre la galería sin salir de la búsqueda; sin foto no hay
-                     nada que previsualizar y el destino útil sigue siendo la ficha. -->
-                <button
-                  v-if="hasPhoto(property)"
-                  type="button"
-                  class="rental-card__media"
-                  :aria-label="`${t('viewPhotos')}: ${property.title}`"
-                  @click="openPhotoPreview(property)"
-                >
-                  <img
-                    :src="displayOffer(property)?.image || ''"
-                    :alt="property.title"
-                    :loading="index < 3 ? 'eager' : 'lazy'"
-                    decoding="async"
-                    width="400"
-                    height="260"
-                    @error="failedImages.add(property.key)"
+                <!-- Con fotos, un carrusel: se pasan sin salir de la búsqueda y tocar una abre el
+                     visor en esa foto. Sin foto no hay nada que mirar y el destino útil sigue
+                     siendo la ficha. -->
+                <div v-if="hasPhoto(property)" class="rental-card__media">
+                  <PropertyPhotoCarousel
+                    :photos="rentalCardPhotoRefs(property)"
+                    :total="property.photoCount"
+                    :source="gallerySource(property)"
+                    :title="property.title"
+                    :eager="index < 3"
+                    :raised-indicator="property.sources.length > 1"
+                    @open="openPhotoPreview(property, $event)"
+                    @failed="failedImages.add(property.key)"
                   />
                   <span class="rental-card__zoom" aria-hidden="true">
                     <VIcon size="16">mdi-image-multiple-outline</VIcon>
@@ -402,7 +398,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                   <span v-if="property.sources.length > 1" class="rental-card__badge">{{
                     t('portals', { n: property.sources.length })
                   }}</span>
-                </button>
+                </div>
                 <NuxtLink
                   v-else
                   :to="rentalPropertyPath(property.key)"
@@ -650,6 +646,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             :title="previewProperty?.title || ''"
             :photos="previewPhotos"
             :source="previewSource"
+            :start-index="previewIndex"
             :detail-href="previewProperty ? rentalPropertyPath(previewProperty.key) : ''"
           />
           <div v-if="pageCount > 1 && view === 'lista' && !error" class="mt-6">
@@ -764,7 +761,7 @@ import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
 import { rentalMessages } from '~/utils/rentalMessages'
 import {
-  rentalPhotoRefs,
+  rentalCardPhotoRefs,
   rentalPropertyPath,
   rememberRentalSearch,
 } from '~/utils/rentalPresentation'
@@ -786,6 +783,7 @@ import {
   staleRentalSources,
   totalMonthlyUyu,
   type RentalQuery,
+  type RentalListItem,
   type RentalProperty,
   type RentalPublicProperty,
   type RentalPropertyDetailResponse,
@@ -1430,23 +1428,26 @@ const hasPhoto = (property: RentalProperty) =>
   Boolean(displayOffer(property)?.image) && !failedImages.has(property.key)
 // Ver las fotos no debería costar una navegación: la búsqueda, el scroll y los filtros siguen ahí
 // cuando se cierra el visor. La ficha completa sigue a un clic desde el título y desde el pie.
-const previewProperty = shallowRef<RentalProperty | null>(null)
+const previewProperty = shallowRef<RentalListItem | null>(null)
 const previewOpen = ref(false)
+/** La foto del carrusel que se tocó: el visor abre ahí, y no en la primera. */
+const previewIndex = ref(0)
 const previewParams = computed(() => availability.withRevision(mapParams.value))
 const previewPhotos = computed(() =>
-  previewProperty.value ? rentalPhotoRefs(previewProperty.value) : []
+  previewProperty.value ? rentalCardPhotoRefs(previewProperty.value) : []
 )
+// La misma lectura sirve al carrusel que llega al final de sus fotos y al visor (caché compartido).
+const gallerySource = (property: RentalListItem) => ({
+  kind: 'rental' as const,
+  key: property.key,
+  params: previewParams.value,
+})
 const previewSource = computed(() =>
-  previewProperty.value
-    ? {
-        kind: 'rental' as const,
-        key: previewProperty.value.key,
-        params: previewParams.value,
-      }
-    : null
+  previewProperty.value ? gallerySource(previewProperty.value) : null
 )
-function openPhotoPreview(property: RentalProperty) {
+function openPhotoPreview(property: RentalListItem, index = 0) {
   previewProperty.value = property
+  previewIndex.value = index
   previewOpen.value = true
 }
 const offerPrice = (offer: { price: number; currency: string }) =>
@@ -1925,9 +1926,6 @@ useSchemaOrg([
   aspect-ratio: 3 / 2;
   background: rgba(var(--v-theme-on-surface), 0.06);
 }
-button.rental-card__media {
-  cursor: zoom-in;
-}
 .rental-card__media img {
   width: 100%;
   height: 100%;
@@ -1950,9 +1948,11 @@ button.rental-card__media {
   font-weight: 700;
   opacity: 0;
   transition: opacity 160ms ease;
+  /* Va encima del carrusel: el toque tiene que llegar a la foto que está debajo. */
+  pointer-events: none;
 }
 .rental-card__media:hover .rental-card__zoom,
-.rental-card__media:focus-visible .rental-card__zoom {
+.rental-card__media:focus-within .rental-card__zoom {
   opacity: 1;
 }
 @media (hover: none) {
@@ -1985,6 +1985,7 @@ button.rental-card__media {
   color: rgb(var(--v-theme-on-surface));
   font-size: 0.78rem;
   font-weight: 700;
+  pointer-events: none;
 }
 .rental-card__save {
   position: absolute;

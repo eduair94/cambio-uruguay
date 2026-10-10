@@ -3,11 +3,13 @@
   ventas. Ver las fotos no debería costar una navegación — al cerrar, la búsqueda, el scroll y los
   filtros siguen donde estaban.
 
-  Ningún listado manda la galería en el payload de la búsqueda, y es a propósito
+  Ningún listado manda la galería COMPLETA en el payload de la búsqueda, y es a propósito
   (`rentalPublicPropertyProjection`, `propertySaleSummaryProjection`): son decenas de fotos por
-  tarjeta. Así que la portada —lo único que la tarjeta ya tiene— se muestra al instante y el resto
-  se pide al abrir, sólo para la propiedad abierta y una vez por propiedad. Si esa lectura falla,
-  queda la portada: se ve menos, nunca se ve roto.
+  tarjeta. La tarjeta de alquiler trae sus primeras fotos (las del carrusel) y las de venta sólo la
+  portada; eso se muestra al instante y el resto se pide al abrir, sólo para la propiedad abierta y
+  una vez por propiedad (`usePropertyGalleries`, el mismo caché que usa el carrusel). Si esa
+  lectura falla, queda lo que la tarjeta tenía: se ve menos, nunca se ve roto. El visor abre en la
+  foto que se estaba mirando (`startIndex`): tarjeta, visor y ficha usan el mismo orden.
 
   Hay propiedades cuya fuente no publica galería (Mercado Libre, Facebook y Casasweb devuelven
   cero fotos extra): ahí el visor abre igual, con la portada a tamaño completo.
@@ -18,6 +20,7 @@
     :photos="media"
     :title="title"
     :dialog-label="dialogLabel"
+    :start-index="startIndex"
     referrer-policy="no-referrer"
   >
     <template #status>
@@ -40,34 +43,35 @@
 
 <script setup lang="ts">
 import type { PhotoViewerMedia, PropertyGallerySource, PropertyPhotoRef } from '~/utils/photoViewer'
-import { rentalPhotoRefs } from '~/utils/rentalPresentation'
-import { propertySalePhotoRefs } from '~/utils/propertySalesPhotos'
-import type { RentalPropertyDetailResponse } from '~/utils/rentals'
-import type { PropertySaleDetailResponse } from '~/utils/propertySales'
+import { largePhotoUrl } from '~/utils/photoSizes'
 
 const props = withDefaults(
   defineProps<{
     title: string
-    /** Lo que la tarjeta ya tenía; normalmente una sola portada. */
+    /** Lo que la tarjeta ya tenía: su portada, o las fotos de su carrusel. */
     photos: PropertyPhotoRef[]
     source?: PropertyGallerySource | null
     detailHref?: string
+    /** La foto que se estaba mirando en la tarjeta. */
+    startIndex?: number
   }>(),
-  { source: null, detailHref: '' }
+  { source: null, detailHref: '', startIndex: 0 }
 )
 
 const open = defineModel<boolean>({ required: true })
 const { t } = useI18n()
+const { load, cached, real } = usePropertyGalleries()
 
-const galleries = ref(new Map<string, PropertyPhotoRef[]>())
 const pending = ref(false)
-let request: AbortController | null = null
-
 const sourceId = computed(() => (props.source ? `${props.source.kind}:${props.source.key}` : null))
 const media = computed<PhotoViewerMedia[]>(() => {
-  const refs = (sourceId.value ? galleries.value.get(sourceId.value) : null) ?? props.photos
+  const gallery = cached(props.source)
+  // La galería completa reemplaza a lo de la tarjeta sólo si no tiene MENOS fotos: el orden es el
+  // mismo, así que la foto abierta sigue siendo la misma.
+  const refs = real(gallery && gallery.length >= props.photos.length ? gallery : props.photos)
+  // A pantalla completa, la foto original aunque la tarjeta muestre la chica (`largePhotoUrl`).
   return refs.map((photo, index) => ({
-    url: photo.url,
+    url: largePhotoUrl(photo.url),
     alt: t('photoViewer.photoAlt', { title: props.title, n: index + 1 }),
     sourceName: photo.sourceName,
     sourceUrl: photo.sourceUrl,
@@ -75,50 +79,33 @@ const media = computed<PhotoViewerMedia[]>(() => {
 })
 const dialogLabel = computed(() => t('photoViewer.dialogAria', { title: props.title }))
 
-async function fetchGallery(source: PropertyGallerySource): Promise<PropertyPhotoRef[]> {
-  if (source.kind === 'rental') {
-    const detail = await $fetch<RentalPropertyDetailResponse>(
-      `/api/rentals/propiedad/${encodeURIComponent(source.key)}`,
-      { query: source.params, retry: 0, signal: request?.signal }
-    )
-    return detail?.property ? rentalPhotoRefs(detail.property) : []
+let reading = 0
+// Se abre con v-model, sin activador: al cerrar, el foco volvería al principio de la página. Vuelve
+// a lo que lo abrió (la foto del carrusel, la de la tarjeta), si sigue en la página.
+let opener: HTMLElement | null = null
+watch(open, isOpen => {
+  if (!import.meta.client) return
+  if (isOpen) {
+    opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    return
   }
-  const detail = await $fetch<PropertySaleDetailResponse>(
-    `/api/property-sales/ficha/${encodeURIComponent(source.key)}`,
-    { retry: 0, signal: request?.signal }
-  )
-  return detail?.property ? propertySalePhotoRefs(detail.property) : []
-}
-
-async function load(source: PropertyGallerySource, id: string) {
-  if (galleries.value.has(id)) return
-  request?.abort()
-  const current = new AbortController()
-  request = current
-  pending.value = true
-  try {
-    const refs = await fetchGallery(source)
-    // Una ficha sin galería propia no reemplaza la portada por una lista vacía.
-    if (request === current && refs.length) {
-      galleries.value = new Map(galleries.value).set(id, refs)
-    }
-  } catch {
-    // La portada de la tarjeta sigue en pantalla; una galería que no llegó no vacía el visor.
-  } finally {
-    if (request === current) pending.value = false
-  }
-}
+  const target = opener
+  opener = null
+  if (target?.isConnected) void nextTick(() => target.focus({ preventScroll: true }))
+})
 
 watch(
   [open, sourceId],
-  ([isOpen, id]) => {
-    if (!isOpen) {
-      request?.abort()
-      request = null
+  async ([isOpen]) => {
+    const current = ++reading
+    if (!isOpen || !props.source || cached(props.source)) {
       pending.value = false
       return
     }
-    if (props.source && id) void load(props.source, id)
+    pending.value = true
+    await load(props.source)
+    // Una lectura de una propiedad anterior no apaga el aviso de la que está abierta ahora.
+    if (current === reading) pending.value = false
   },
   { immediate: true }
 )

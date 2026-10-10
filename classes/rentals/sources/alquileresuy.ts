@@ -457,7 +457,9 @@ export function alquileresUyToRawRental(card: AlquileresUyCard, type: RentalProp
       sellerName: ctx.pin?.agency || displayAgency(card.agency) || "alquileres.uy",
       // A network of agencies: "Listado de Empresas Inmobiliarias" is the only kind of publisher it has.
       sellerType: "inmobiliaria",
-      image: card.photo ?? images[0] ?? null,
+      // The page's first photo, full size, when the page was read. The card's thumbnail is the same
+      // photo at 320 px under another URL: as the cover, the gallery showed photo 1 twice.
+      image: images[0] ?? card.photo ?? null,
       publishedAt: null,
       propertyType: type,
       department,

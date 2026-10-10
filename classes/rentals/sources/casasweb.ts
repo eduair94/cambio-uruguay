@@ -227,8 +227,9 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
     }
   }
   const listings = [...byId.values()];
-  // The card states neither common expenses nor bathrooms; what each advert's own page stated
-  // (currency-rentals-casasweb-detail) goes back on before saving, or every run would blank it.
+  // The card states neither common expenses nor bathrooms, and shows only its cover; what each
+  // advert's own page stated (currency-rentals-casasweb-detail) goes back on before saving, or
+  // every run would blank it.
   let fromDetail = 0;
   if (appDbConfigured()) {
     try {

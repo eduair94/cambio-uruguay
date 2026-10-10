@@ -20,10 +20,19 @@
 // Montevideo, 11 declaraban gastos comunes y 10 los baños. Se guardan en la misma lectura y la
 // cosecha los reaplica al aviso crudo (`applyCasaswebDetails`): ese día ninguna propiedad de
 // Casasweb estaba unida a otro portal, así que no cambia ninguna deduplicación.
+//
+// Y las FOTOS (2026-10-09): la tarjeta trae sólo la portada (`/fotos/<n>s.jpg`, la chica) y la ficha
+// la galería entera, cada foto en un `<a class="gallery-item2" href="/fotos/<n>.jpg">` dentro de
+// `#lightGallery` — las de más abajo en el mismo bloque, ocultas hasta abrir el visor. Medido en
+// tres fichas: 15, 18 y 0; el 0 es un aviso importado de Tokko (TKA…), cuya ficha en Casasweb no
+// dibuja galería, sólo la portada. Las miniaturas de "Propiedades similares" son de OTROS avisos y
+// quedan fuera del bloque.
 import * as cheerio from "cheerio";
 import { appConnection } from "../appdb";
 import { casaswebReference, casaswebTitleNames } from "./casaswebContacts";
+import { applyGallery, writeOfferGallery } from "./detailImages";
 import { inUruguay, PIN_SOURCES, type RentalPin } from "./detailPins";
+import { rentalImages } from "./details";
 import { mlDetailExpenses } from "./mlDetail";
 import { parseCurrency, parseMoney } from "./normalize";
 import type { RawRental, RentalCurrency } from "./types";
@@ -45,6 +54,11 @@ export interface CasaswebRentalDetail {
   expenses?: { amount: number; currency: RentalCurrency } | null;
   bathrooms?: number | null;
   bedrooms?: number | null;
+  /**
+   * The page's gallery, full size and in its order; empty = none. Absent on rows read before photos
+   * were kept (2026-10-09): those are read again once (see `casaswebDetailTargets`).
+   */
+  images?: string[];
   /** Always true for a stored row: failed reads are not stored, so the advert is read again. */
   ok: true;
 }
@@ -54,6 +68,26 @@ export interface CasaswebPageFacts {
   expenses: { amount: number; currency: RentalCurrency } | null;
   bathrooms: number | null;
   bedrooms: number | null;
+  images: string[];
+}
+
+const OWN_PHOTO = /^https:\/\/(?:(?:www\.)?casasweb\.com\/fotos\/\d{1,12}\.jpe?g|static\.tokkobroker\.com\/pictures\/[\w.-]{1,200}\.(?:jpe?g|png|webp))$/i;
+
+/** Casasweb serves one photo as `<n>.jpg` (full), `<n>u.jpg` and `<n>s.jpg` (the card's cover). */
+export const casaswebPhotoKey = (url: string): string => {
+  const own = /^https?:\/\/(?:www\.)?casasweb\.com\/fotos\/(\d{1,12})[a-z]?\.jpe?g$/i.exec(url.trim());
+  return own ? `casasweb:${own[1]}` : url;
+};
+
+/**
+ * The advert's own gallery: the full-size link of every `gallery-item2` inside `#lightGallery`, the
+ * block the page's photo viewer opens. HTTPS photos of Casasweb or Tokko only; a video, another
+ * host or another advert's card is not a photo of this home.
+ */
+export function parseCasaswebImages(html: string): string[] {
+  const $ = cheerio.load(html);
+  const links = $("#lightGallery a.gallery-item2[href]").toArray().map(node => String($(node).attr("href") ?? "").trim());
+  return rentalImages(links.filter(url => OWN_PHOTO.test(url)));
 }
 
 /** "<li title='Baños'><img …/><b>1</b> baño</li>", the page's own count; an implausible one is not. */
@@ -79,6 +113,7 @@ export function readCasaswebDetail(html: string, listingId: string): CasaswebPag
     expenses: amount && amount > 0 && currency ? { amount, currency } : null,
     bathrooms: countIn(html, "Ba(?:ñ|&#241;|&ntilde;)os", 1),
     bedrooms: countIn(html, "Dormitorios", 0),
+    images: parseCasaswebImages(html),
   };
 }
 
@@ -108,22 +143,38 @@ export interface CasaswebDetailTarget {
   department: string;
   propertyType: string;
   lastSeen: string;
+  /** Its page was read before (a month ago, or before a field was kept): after those never read. */
+  reread?: boolean;
 }
 
 const HOMES = new Set(["apartamento", "casa"]);
 
-/** Montevideo homes first (where "near" and the map are used most), then homes, freshest first. */
+/**
+ * Adverts never read first (a re-read only refreshes), then Montevideo homes (where "near" and the
+ * map are used most), then homes, freshest first.
+ */
 export function prioritizeCasaswebDetailTargets(rows: readonly CasaswebDetailTarget[], budget: number): CasaswebDetailTarget[] {
   const score = (row: CasaswebDetailTarget) => (HOMES.has(row.propertyType) ? 2 : 0) + (row.department === "Montevideo" ? 1 : 0);
   return [...rows]
-    .sort((a, b) => score(b) - score(a) || b.lastSeen.localeCompare(a.lastSeen) || a.listingId.localeCompare(b.listingId))
+    .sort((a, b) =>
+      Number(a.reread === true) - Number(b.reread === true) ||
+      score(b) - score(a) || b.lastSeen.localeCompare(a.lastSeen) || a.listingId.localeCompare(b.listingId))
     .slice(0, Math.max(0, budget));
+}
+
+/**
+ * A stored read that needs no other: successful, under a month old and with every field this job
+ * keeps. A row without the data list (kept since 2026-10-08) or the photos (since 2026-10-09)
+ * predates them and is read once more.
+ */
+export function casaswebDetailIsCurrent(row: Record<string, unknown>, freshFrom: string): boolean {
+  return row.ok === true && String(row.readAt ?? "") >= freshFrom && row.bathrooms !== undefined && row.images !== undefined;
 }
 
 const details = () => appConnection().collection(CASASWEB_DETAIL_COLLECTION);
 const listings = () => appConnection().collection("rentallistings");
 
-/** Live Casasweb adverts whose page was never read, read before its data list was kept, or a month ago. */
+/** Live Casasweb adverts whose page was never read, read before a field was kept, or a month ago. */
 export async function casaswebDetailTargets(now: Date, budget: number, days = 10): Promise<CasaswebDetailTarget[]> {
   const cutoff = new Date(now.getTime() - days * 86_400_000).toISOString().slice(0, 10);
   const rows = await listings()
@@ -148,15 +199,19 @@ export async function casaswebDetailTargets(now: Date, budget: number, days = 10
     }
   }
   const fresh = new Date(now.getTime() - CASASWEB_DETAIL_REFRESH_DAYS * 86_400_000).toISOString();
-  const read = new Set<string>();
+  const current = new Set<string>();
+  const readBefore = new Set<string>();
   for (let i = 0; i < targets.length; i += 5_000) {
     const ids = targets.slice(i, i + 5_000).map(target => target.listingId);
     const docs = await details()
-      .find({ listingId: { $in: ids }, ok: true, readAt: { $gte: fresh }, bathrooms: { $exists: true } }, { projection: { listingId: 1 } })
+      .find({ listingId: { $in: ids } }, { projection: { listingId: 1, ok: 1, readAt: 1, bathrooms: 1, images: 1 } })
       .toArray();
-    for (const doc of docs) read.add(String(doc.listingId));
+    for (const doc of docs) (casaswebDetailIsCurrent(doc, fresh) ? current : readBefore).add(String(doc.listingId));
   }
-  return prioritizeCasaswebDetailTargets(targets.filter(target => !read.has(target.listingId)), budget);
+  const pending = targets
+    .filter(target => !current.has(target.listingId))
+    .map(target => (readBefore.has(target.listingId) ? { ...target, reread: true } : target));
+  return prioritizeCasaswebDetailTargets(pending, budget);
 }
 
 export async function saveCasaswebDetails(rows: readonly CasaswebRentalDetail[]): Promise<void> {
@@ -170,11 +225,12 @@ export async function saveCasaswebDetails(rows: readonly CasaswebRentalDetail[])
 
 /**
  * Completes the stored property right away — only EMPTY fields: the advert's common expenses (when
- * plausible against its rent), the property's bathrooms and bedrooms. The harvest keeps them.
+ * plausible against its rent), the property's bathrooms and bedrooms; and the advert's gallery when
+ * the page has more photos than it shows. The harvest keeps them.
  */
 export async function writeCasaswebFacts(
   target: Pick<CasaswebDetailTarget, "key" | "listingId">,
-  facts: Pick<CasaswebPageFacts, "expenses" | "bathrooms" | "bedrooms">,
+  facts: Pick<CasaswebPageFacts, "expenses" | "bathrooms" | "bedrooms" | "images">,
   usdUyu: number
 ): Promise<number> {
   let written = 0;
@@ -196,14 +252,15 @@ export async function writeCasaswebFacts(
     const result = await listings().updateOne({ key: target.key, [field]: null }, { $set: { [field]: facts[field] } });
     written += result.modifiedCount;
   }
+  if (facts.images.length && (await writeOfferGallery(target, facts.images, casaswebPhotoKey))) written++;
   return written;
 }
 
 /**
- * The harvest's half: the search card states neither common expenses nor bathrooms, so what the
- * advert page stated goes back on the raw advert before it is saved, or every run would blank it.
- * Only empty fields; a "sin gastos comunes" the card's title declared stays. Returns how many
- * adverts it completed.
+ * The harvest's half: the search card states neither common expenses nor bathrooms, and shows only
+ * its cover, so what the advert page stated goes back on the raw advert before it is saved, or every
+ * run would blank it. Only empty fields; a "sin gastos comunes" the card's title declared stays.
+ * Returns how many adverts it completed.
  */
 export async function applyCasaswebDetails(rows: RawRental[], usdUyu: number): Promise<number> {
   const own = rows.filter(row => row.source === "casasweb");
@@ -235,6 +292,8 @@ export async function applyCasaswebDetails(rows: RawRental[], usdUyu: number): P
       row.bedrooms = detail.bedrooms;
       changed = true;
     }
+    // The card's cover stays the advert's `image`; the gallery holds the page's other photos.
+    if (applyGallery(row, detail.images, casaswebPhotoKey)) changed = true;
     if (changed) completed++;
   }
   return completed;

@@ -12,7 +12,15 @@
     "photoAlt": "{title} · Photo {n}",
     "detail": "View the full listing",
     "loading": "Fetching the remaining photos…",
-    "unavailable": "This photo is no longer available at the source."
+    "unavailable": "This photo is no longer available at the source.",
+    "carousel": "Photos of {title}",
+    "carouselRole": "carousel",
+    "openPhoto": "Enlarge photo {n} of {total}",
+    "gallery": "Photos of {title}",
+    "allPhotos": "See all {n} photos",
+    "fewerPhotos": "See fewer photos",
+    "morePhotos": "Show {n} more photos",
+    "credit": "Photos published on"
   },
   "ads": {
     "label": "Advertisement"

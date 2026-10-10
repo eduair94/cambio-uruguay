@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkedRentalArea, rentalDescription, rentalImages, rentalOfferDetails } from "../../classes/rentals/details";
+import { checkedRentalArea, RENTAL_IMAGES_PER_OFFER, rentalDescription, rentalImages, rentalOfferDetails } from "../../classes/rentals/details";
 import { toRawRental as infoCasas } from "../../classes/rentals/sources/infocasas";
 import { elpaisToRawRental } from "../../classes/rentals/sources/elpais";
 import { buildRentalProperties } from "../../classes/rentals/dedupe";
@@ -62,7 +62,11 @@ describe("original advert detail, without executable content or contacts", () =>
       "http://127.0.0.1/a.jpg", "http://192.168.0.1/a.jpg", "http://[::1]/a.jpg", "https://user:pass@images.example.com/a.jpg",
       valid, valid + "#fragment", 42,
     ])).toEqual([valid]);
-    expect(rentalImages(Array.from({ length: 25 }, (_, index) => `https://images.example.com/${index}.jpg`))).toHaveLength(12);
+    // 12 until 2026-10-09 cut InfoCasas and El País galleries short; 40 holds the largest seen (29).
+    const gallery = Array.from({ length: 60 }, (_, index) => `https://images.example.com/${index}.jpg`);
+    expect(RENTAL_IMAGES_PER_OFFER).toBe(40);
+    expect(rentalImages(gallery)).toEqual(gallery.slice(0, 40));
+    expect(rentalOfferDetails({ images: gallery }).images).toHaveLength(40);
   });
 
   it("sanitizes every free-text field and leaves missing or nonsensical measures unknown", () => {

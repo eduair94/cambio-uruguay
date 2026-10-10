@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { rentalPhotos } from '../../utils/rentalPresentation'
+import { RENTAL_PHOTO_LIMIT, rentalPhotos } from '../../utils/rentalPresentation'
 import {
   rentalExpandedPropertyProjection,
   rentalPublicPropertyProjection,
@@ -80,7 +80,9 @@ describe('rental source details stay attributed and off the result payload', () 
         images: Array.from({ length: 80 }, (_, n) => `https://images.example.com/${n}.jpg`),
       },
     } as RentalOffer
-    expect(rentalPhotos({ offers: [many] } as RentalPublicProperty)).toHaveLength(24)
+    expect(rentalPhotos({ offers: [many] } as RentalPublicProperty)).toHaveLength(
+      RENTAL_PHOTO_LIMIT
+    )
     expect(
       rentalPhotos({ offers: [{ ...many, url: 'javascript:alert(1)' }] } as RentalPublicProperty)
     ).toEqual([])

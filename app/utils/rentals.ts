@@ -320,6 +320,22 @@ export interface RentalPriceDrop {
 /** Fields returned publicly; addressKey only supports internal deduplication. */
 export type RentalPublicProperty = Omit<RentalProperty, 'addressKey'>
 
+/**
+ * A search result. On top of the public property it carries what its card carousel needs and
+ * nothing more: the first photos (`rentalGalleryPreview`) and how many distinct photos exist. The
+ * full gallery is fetched from `/api/rentals/propiedad/<key>` only when someone goes past them.
+ */
+export interface RentalListItem extends RentalProperty {
+  galleryPreview?: RentalCardPhoto[]
+  photoCount?: number
+}
+
+/** One preview photo and the advert it belongs to, so the viewer can credit it before it loads. */
+export interface RentalCardPhoto {
+  url: string
+  listingId: string
+}
+
 export interface RentalPropertyDetailResponse {
   property: RentalPublicProperty
   usdUyu: number
@@ -391,7 +407,7 @@ export interface RentalsResponse {
   meta: RentalMeta | null
   /** Null means this count is unavailable; zero is reserved for a successful empty count. */
   coverage?: RentalCoverage | null
-  items: RentalProperty[]
+  items: RentalListItem[]
   total: number
   page: number
   perPage: number
