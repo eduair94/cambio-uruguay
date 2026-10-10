@@ -9,14 +9,18 @@
 //
 // Las fichas se piden con la UA del bot y el espaciado por host de net.ts; a los :25, lejos de la
 // cosecha horaria (:47), que lee las búsquedas del mismo sitio. Cinco fallas seguidas cortan la
-// corrida: un portal que empieza a negarse no se insiste.
+// corrida: un portal que empieza a negarse no se insiste. Un aviso dado de baja NO es una falla:
+// Casasweb contesta con su propia página de búsqueda, eso se guarda (`markCasaswebGone`) y el aviso
+// no se vuelve a pedir en una semana; si no, los mismos avisos muertos encabezaban la cola cada hora.
 //
 // --dry-run lee y muestra, sin escribir.
 import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import {
   CASASWEB_DETAIL_COLLECTION,
+  casaswebAdvertGone,
   casaswebDetailTargets,
+  markCasaswebGone,
   readCasaswebDetail,
   saveCasaswebDetails,
   writeCasaswebFacts,
@@ -40,7 +44,7 @@ async function main(): Promise<void> {
   const targets = await casaswebDetailTargets(new Date(), number("RENTALS_CASASWEB_DETAIL_MAX", 80));
   const summary = {
     targets: targets.length, rereads: targets.filter(target => target.reread).length, read: 0, pinned: 0, noMap: 0,
-    withExpenses: 0, withBathrooms: 0, withImages: 0, photos: 0, unreadable: 0, failed: 0, located: 0, completed: 0, note: "",
+    withExpenses: 0, withBathrooms: 0, withImages: 0, photos: 0, gone: 0, unreadable: 0, failed: 0, located: 0, completed: 0, note: "",
   };
   if (!targets.length) {
     console.log("[rentals-casasweb-detail] sin fichas pendientes");
@@ -49,6 +53,7 @@ async function main(): Promise<void> {
   const gapMs = number("RENTALS_CASASWEB_DETAIL_GAP_MS", 1_500);
   const deadline = Date.now() + number("RENTALS_CASASWEB_DETAIL_MINUTES", 10) * 60_000;
   const rows: CasaswebRentalDetail[] = [];
+  const gone: string[] = [];
   let consecutiveFailures = 0;
   for (const target of targets) {
     if (Date.now() >= deadline) { summary.note = "presupuesto de tiempo agotado"; break; }
@@ -56,7 +61,12 @@ async function main(): Promise<void> {
     let failure = "";
     const html = await fetchText(target.url, { retries: 1, timeoutMs: 20_000, onFailure: reason => { failure = reason; } });
     const facts = html ? readCasaswebDetail(html, target.listingId) : undefined;
-    if (!html || facts === undefined) {
+    if (html && facts === undefined && casaswebAdvertGone(html, target.listingId)) {
+      // Casasweb answered, with its search page: the advert was removed. An answer, not a failure.
+      consecutiveFailures = 0;
+      summary.gone++;
+      gone.push(target.listingId);
+    } else if (!html || facts === undefined) {
       // Not saved: a failed read, or a page that is not this advert's, is simply a target again.
       consecutiveFailures++;
       if (html) summary.unreadable++; else summary.failed++;
@@ -91,7 +101,10 @@ async function main(): Promise<void> {
     }
     await sleep(gapMs);
   }
-  if (!dryRun) await saveCasaswebDetails(rows);
+  if (!dryRun) {
+    await saveCasaswebDetails(rows);
+    await markCasaswebGone(gone, new Date().toISOString());
+  }
   const stored = dryRun ? 0 : await appConnection().collection(CASASWEB_DETAIL_COLLECTION).countDocuments({ latitude: { $type: "number" } });
   console.log(`[rentals-casasweb-detail] ${JSON.stringify({ ...summary, dryRun, withPinStored: stored })}`);
 }

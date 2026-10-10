@@ -40,6 +40,13 @@ import type { RawRental, RentalCurrency } from "./types";
 export const CASASWEB_DETAIL_COLLECTION = PIN_SOURCES.find(row => row.source === "casasweb")!.collection;
 /** A listing's pin does not move; a month between reads only catches an agency that corrects it. */
 export const CASASWEB_DETAIL_REFRESH_DAYS = 30;
+/**
+ * Days an advert whose page is gone is left alone. Casasweb answers a removed advert with its own
+ * search page, and its card stays a target while the directory keeps it (ten days after it was last
+ * seen). Unremembered, the same dead adverts headed the queue every hour and their five "failures"
+ * stopped the run: from 2026-10-09 10:25 every run read zero pages.
+ */
+export const CASASWEB_DETAIL_GONE_DAYS = 7;
 
 export interface CasaswebRentalDetail {
   listingId: string;
@@ -171,6 +178,24 @@ export function casaswebDetailIsCurrent(row: Record<string, unknown>, freshFrom:
   return row.ok === true && String(row.readAt ?? "") >= freshFrom && row.bathrooms !== undefined && row.images !== undefined;
 }
 
+/** An advert whose page was found gone since `goneFrom`: not a target until then. */
+export function casaswebDetailIsGone(row: Record<string, unknown>, goneFrom: string): boolean {
+  return row.gone === true && String(row.readAt ?? "") >= goneFrom;
+}
+
+/**
+ * Casasweb's own page where the advert's was asked for: the advert was removed. Measured on
+ * 2026-10-10 over the eight adverts at the head of the queue: a 200 with the search page of the
+ * advert's own type and zone ("Apartamentos en alquiler en Carrasco, Montevideo | Casasweb"), never
+ * a 404. A page that is not Casasweb's (a challenge, an error from a proxy) is not this answer.
+ */
+export function casaswebAdvertGone(html: string, listingId: string): boolean {
+  const reference = casaswebReference(listingId);
+  if (!reference) return false;
+  const title = cheerio.load(html)("title").first().text().replace(/\s+/g, " ").trim();
+  return /\|\s*Casasweb$/i.test(title) && !casaswebTitleNames(title, reference);
+}
+
 const details = () => appConnection().collection(CASASWEB_DETAIL_COLLECTION);
 const listings = () => appConnection().collection("rentallistings");
 
@@ -199,14 +224,19 @@ export async function casaswebDetailTargets(now: Date, budget: number, days = 10
     }
   }
   const fresh = new Date(now.getTime() - CASASWEB_DETAIL_REFRESH_DAYS * 86_400_000).toISOString();
+  const goneFrom = new Date(now.getTime() - CASASWEB_DETAIL_GONE_DAYS * 86_400_000).toISOString();
   const current = new Set<string>();
   const readBefore = new Set<string>();
   for (let i = 0; i < targets.length; i += 5_000) {
     const ids = targets.slice(i, i + 5_000).map(target => target.listingId);
     const docs = await details()
-      .find({ listingId: { $in: ids } }, { projection: { listingId: 1, ok: 1, readAt: 1, bathrooms: 1, images: 1 } })
+      .find({ listingId: { $in: ids } }, { projection: { listingId: 1, ok: 1, readAt: 1, bathrooms: 1, images: 1, gone: 1 } })
       .toArray();
-    for (const doc of docs) (casaswebDetailIsCurrent(doc, fresh) ? current : readBefore).add(String(doc.listingId));
+    for (const doc of docs) {
+      // A page found gone this week is not asked for again, like one read this month.
+      if (casaswebDetailIsCurrent(doc, fresh) || casaswebDetailIsGone(doc, goneFrom)) current.add(String(doc.listingId));
+      else readBefore.add(String(doc.listingId));
+    }
   }
   const pending = targets
     .filter(target => !current.has(target.listingId))
@@ -218,7 +248,21 @@ export async function saveCasaswebDetails(rows: readonly CasaswebRentalDetail[])
   if (!rows.length) return;
   await details().createIndex({ listingId: 1 }, { unique: true });
   await details().bulkWrite(
-    rows.map(row => ({ updateOne: { filter: { listingId: row.listingId }, update: { $set: row }, upsert: true } })),
+    // A page read whole again is no longer gone.
+    rows.map(row => ({ updateOne: { filter: { listingId: row.listingId }, update: { $set: row, $unset: { gone: "" } }, upsert: true } })),
+    { ordered: false }
+  );
+}
+
+/**
+ * Remembers the adverts whose page is gone, with the date it was found. Only that: a row read whole
+ * before keeps its facts (the harvest re-applies them only to a card it still sees).
+ */
+export async function markCasaswebGone(listingIds: readonly string[], readAt: string): Promise<void> {
+  if (!listingIds.length) return;
+  await details().createIndex({ listingId: 1 }, { unique: true });
+  await details().bulkWrite(
+    listingIds.map(listingId => ({ updateOne: { filter: { listingId }, update: { $set: { listingId, readAt, gone: true } }, upsert: true } })),
     { ordered: false }
   );
 }
