@@ -1009,6 +1009,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/declaracion-de-irpf-uruguay',
       },
       {
+        label: 'Crédito fiscal por alquiler',
+        description: 'El 8 % del alquiler al IRPF, y el requisito que no está en la ley.',
+        to: '/credito-fiscal-por-alquiler-uruguay',
+      },
+      {
         label: 'Devolución de FONASA',
         description: 'Quién cobra el excedente del aporte, cuánto es y desde cuándo se paga.',
         to: '/devolucion-fonasa-uruguay',

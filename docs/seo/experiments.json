@@ -19,6 +19,14 @@
   ],
   "experiments": [
     {
+      "id": "pagina-credito-fiscal-por-alquiler",
+      "shippedOn": "2026-10-10",
+      "routes": [
+        "/credito-fiscal-por-alquiler-uruguay"
+      ],
+      "hypothesis": "Pagina nueva para el unico dato que vive en las DOS familias grandes del sitio -la del alquiler y la del impuesto- y no tenia pagina en ninguna: el credito fiscal de IRPF por arrendamiento. Estaba como UNA respuesta de FAQ en utils/rentFaq.ts y como palabra en la lista de keywords de /declaracion-de-irpf-uruguay, o sea reclamado sin contestar. Lo pidio el propio plan de crecimiento del sitio (docs/seo/2026-09-15-google-trends-oportunidades.md, 3.6 c) como URL aparte y con ventana \"todo el ano\", con \"irpf alquiler\" +120 %. El angulo son las tres cosas que se dan por sentadas al reves y ninguna estaba escrita en el sitio: (1) NO es una devolucion del 8 % del alquiler sino un credito que se imputa hasta la concurrencia con el impuesto del ejercicio, y el excedente \"no podra ser imputado a impuestos de futuros ejercicios ni dara derecho a devolucion\" (Decreto 148/007 art. 77 bis, redaccion del Decreto 118/023 art. 4), asi que quien no genero IRPF no se lleva nada; (2) el requisito que mas gente deja afuera -plazo de un ano o mas- NO esta en la ley ni en el decreto: lo pone la Res. DGI 702/012 art. 3, mientras el art. 51 del Titulo 7 pide solo identificar al arrendador; (3) el contrato puede estar VENCIDO y no necesita estar inscripto, las dos de la ficha de la DGI del 26/01/2026. Se publica ademas el 6 % viejo con su norma, porque sigue circulando como si rigiera (lo subio la Ley 20.124 y lo escribio la Res. DGI 1132/024). Deliberadamente sin fechas ni montos de una campana que la DGI todavia no publico, y sin estimar cuanto le vuelve a una persona: la calculadora da el TECHO del credito sobre el alquiler que el lector escribe y lo rotula como techo. Se mide como pagina nueva: clics propios de la ruta a los 28 dias."
+    },
+    {
       "id": "titulos-de-las-guias-respuesta-primero-5",
       "shippedOn": "2026-10-09",
       "routes": [

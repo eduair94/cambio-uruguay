@@ -142,7 +142,11 @@ const measured = pageFiles()
 // páginas publicaron su descripción como literal desde el 27/9 sin que nadie volviera a apretar el
 // piso, así que diez de las que hoy se miden podrían volverse dinámicas —y salir del control de los
 // 155 caracteres y del de descripciones repetidas— sin poner nada en rojo. Queda en el conteo real.
-const RESOLVED = 156
+//
+// 156 → 157 el 2026-10-10: `/credito-fiscal-por-alquiler-uruguay`, apretado en el mismo commit que
+// publica la página. Es la disciplina que los dos renglones de arriba piden: el piso no se afloja
+// porque alguien lo baje, se afloja porque se publica una página y no se vuelve acá.
+const RESOLVED = 157
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente

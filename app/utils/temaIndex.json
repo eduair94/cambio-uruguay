@@ -920,6 +920,10 @@
           "label": "Declaración de IRPF"
         },
         {
+          "to": "/credito-fiscal-por-alquiler-uruguay",
+          "label": "Crédito fiscal por alquiler"
+        },
+        {
           "to": "/devolucion-fonasa-uruguay",
           "label": "Devolución de FONASA"
         },

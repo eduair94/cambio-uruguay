@@ -245,7 +245,10 @@ function staticTitle(source: string): string | null {
 // del largo y del de canibalización, sin que nada se ponga en rojo. Las páginas que lo aflojaron se
 // publicaron de a una sin volver a apretarlo, que es exactamente cómo esto se desajusta. Queda otra
 // vez en el conteo real.
-const MEASURABLE = 175
+// 175 → 176 el 2026-10-10: `/credito-fiscal-por-alquiler-uruguay`. Se aprieta en el mismo commit
+// que publica la página, que es la disciplina que las cuatro notas de arriba piden a gritos: el
+// desajuste no viene de nadie tocando este número, viene de publicar una página y no volver a él.
+const MEASURABLE = 176
 // 44 → 33 el 2026-09-07: once de los títulos más largos reescritos a 43 caracteres o menos. Los
 // once perdían la cola en el SERP, y la cola era el dato — «2 puntos o 9», «mora y 72 h», «1 mes
 // por año», «6 países», «13 temas», «ChauDeudas o MiDeuda» —, así que en cada uno se conservó la

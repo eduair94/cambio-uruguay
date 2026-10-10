@@ -1488,6 +1488,33 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El crédito por alquiler es el único dato que vive en las DOS familias del sitio —la del
+        // alquiler y la del impuesto— y no tenía página en ninguna: estaba como UNA respuesta de
+        // FAQ en `utils/rentFaq.ts` y como palabra en los `keywords` de la declaración. El ángulo
+        // propio son las tres cosas que se dan por sentadas al revés: no es una devolución del
+        // alquiler (el excedente no se arrastra ni se cobra, Decreto 148/007 art. 77 bis), el
+        // plazo de un año que descalifica a tanta gente NO está en la ley sino en la Res. DGI
+        // 702/012, y el contrato vencido o sin inscribir sí sirve.
+        to: '/credito-fiscal-por-alquiler-uruguay',
+        labelKey: 'nav.creditoFiscalAlquiler',
+        icon: 'mdi-home-percent-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'credito fiscal alquiler uruguay',
+          'irpf alquiler',
+          'deducir alquiler irpf',
+          'descontar alquiler del irpf',
+          'credito fiscal arrendamiento',
+          'requisitos credito fiscal alquiler',
+          'cuanto me descuento por alquiler irpf',
+          'credito alquiler iass',
+          'contrato vencido credito irpf',
+          'padron del propietario para el irpf',
+        ],
+      },
+      {
         to: '/cuanto-me-tienen-que-pagar-uruguay',
         labelKey: 'nav.cuantoMePagan',
         icon: 'mdi-scale-balance',
