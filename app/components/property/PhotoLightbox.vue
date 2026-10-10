@@ -80,6 +80,20 @@ const media = computed<PhotoViewerMedia[]>(() => {
 const dialogLabel = computed(() => t('photoViewer.dialogAria', { title: props.title }))
 
 let reading = 0
+// Se abre con v-model, sin activador: al cerrar, el foco volvería al principio de la página. Vuelve
+// a lo que lo abrió (la foto del carrusel, la de la tarjeta), si sigue en la página.
+let opener: HTMLElement | null = null
+watch(open, isOpen => {
+  if (!import.meta.client) return
+  if (isOpen) {
+    opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    return
+  }
+  const target = opener
+  opener = null
+  if (target?.isConnected) void nextTick(() => target.focus({ preventScroll: true }))
+})
+
 watch(
   [open, sourceId],
   async ([isOpen]) => {

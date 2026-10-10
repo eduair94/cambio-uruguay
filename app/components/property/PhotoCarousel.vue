@@ -135,6 +135,13 @@ async function go(target: number) {
   if (next >= slides.value.length) await loadMore()
   const element = track.value
   if (!element || next >= slides.value.length) return
+  heading = next
+  clearTimeout(headingTimer)
+  // Un dedo que interrumpe el viaje manda: pasada la animación, la posición vuelve a decidir.
+  headingTimer = setTimeout(() => {
+    heading = null
+    onScroll()
+  }, 1000)
   element.scrollTo({
     left: next * element.clientWidth,
     behavior: reducedMotion() ? 'auto' : 'smooth',
@@ -149,13 +156,28 @@ async function go(target: number) {
 }
 
 let frame = 0
+/** The strip's width the current photo was measured against (0 = not known yet). */
+let trackWidth = 0
+/**
+ * The photo an arrow or a key is scrolling to. On the way the strip passes over the photo it left,
+ * and reading that as the current one would flick the counter back until halfway.
+ */
+let heading: number | null = null
+let headingTimer: ReturnType<typeof setTimeout> | undefined
 function onScroll() {
   if (frame) return
   frame = requestAnimationFrame(() => {
     frame = 0
     const element = track.value
     if (!element || !element.clientWidth) return
-    index.value = Math.round(element.scrollLeft / element.clientWidth)
+    // A width change re-snaps the strip before the resize below runs: that scroll is not a swipe.
+    if (trackWidth && element.clientWidth !== trackWidth) return
+    const position = Math.round(element.scrollLeft / element.clientWidth)
+    if (heading !== null) {
+      if (position !== heading) return
+      heading = null
+    }
+    index.value = position
   })
 }
 
@@ -173,6 +195,7 @@ watch(
   () => props.photos.map(photo => photo.url).join('\n'),
   () => {
     index.value = 0
+    heading = null
     failed.value = new Set()
     asked.value = false
     track.value?.scrollTo({ left: 0 })
@@ -181,15 +204,31 @@ watch(
 
 // La primera foto de las tarjetas de arriba llega en el HTML del servidor y puede estar cargada
 // antes de hidratar, cuando `load` ya no se vuelve a disparar: se revisa a mano.
+// Si cambia el ancho (girar el teléfono, el panel del mapa que pasa a miniatura) la tira vuelve a
+// encajar sola, pero en la foto más cercana al desplazamiento viejo, que ya es otra: se la devuelve
+// a la que se estaba mirando.
+let resize: ResizeObserver | null = null
+
 onMounted(() => {
   track.value?.querySelectorAll('img').forEach((image, position) => {
     const photo = slides.value[position]
     if (image.complete && photo) checkLoaded(photo.url, image)
   })
+  const element = track.value
+  if (!element || typeof ResizeObserver === 'undefined') return
+  trackWidth = element.clientWidth
+  resize = new ResizeObserver(() => {
+    if (!element.clientWidth || element.clientWidth === trackWidth) return
+    trackWidth = element.clientWidth
+    element.scrollTo({ left: index.value * trackWidth })
+  })
+  resize.observe(element)
 })
 
 onBeforeUnmount(() => {
   if (frame) cancelAnimationFrame(frame)
+  clearTimeout(headingTimer)
+  resize?.disconnect()
 })
 </script>
 
