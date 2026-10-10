@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Browser } from "puppeteer-core";
 import { FacebookSessionError, scrollFacebookList } from "../../classes/facebook/browser";
+import { marketplaceListUrl } from "../../classes/facebook/search";
 import { FB_RENTALS_CATEGORY, readFacebookRentals } from "../../classes/rentals/sources/facebookBrowser";
 
 vi.mock("../../classes/facebook/browser", async importOriginal => ({
@@ -40,6 +41,19 @@ describe("readFacebookRentals", () => {
     const read = await readFacebookRentals(plan(["alquiler", "alquiler casa"]));
     expect(read).toMatchObject({ lists: 2, stalled: 0, note: null });
     expect(read.cards.map(card => card.id)).toEqual(["1000001", "1000002", "1000003"]);
+  });
+
+  it("reads a category from its own list page, not as a text search", async () => {
+    vi.mocked(scrollFacebookList).mockImplementation(list(["1000001"], ["1000002"]));
+    await readFacebookRentals({
+      ...plan([]), sort: "newest",
+      searches: [{ location: "maldonado", query: "categoría", category: "propertyrentals" }, { location: "montevideo", query: "garantía" }],
+    });
+    expect(vi.mocked(scrollFacebookList).mock.calls.map(call => call[1])).toEqual([
+      "https://www.facebook.com/marketplace/maldonado/propertyrentals?sortBy=creation_time_descend",
+      "https://www.facebook.com/marketplace/montevideo/search?query=garant%C3%ADa&sortBy=creation_time_descend",
+    ]);
+    expect(marketplaceListUrl({ location: "salto", query: "", category: "propertyrentals" })).toBe("https://www.facebook.com/marketplace/salto/propertyrentals");
   });
 
   it("stops after two searches in a row that never loaded past their first page", async () => {

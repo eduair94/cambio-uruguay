@@ -298,6 +298,8 @@ describe("what is not a monthly home rental", () => {
     "Alquiler maquina soprano titanium alma depilación definitiva",
     "SE ALQUILA FOOD TRUCK",
     "Alquiler de volquetas",
+    "Volquetín para alquilar",
+    "Alquiler de baños quimicos y duchas de agua caliente",
     "Alquiler para eventos cumpleaños reuniones",
     "Alquiler de amplio salón de fiestas y eventos",
     "ALQUILO $2390 LA NOCHE 1 cuadra de la playa / 6 PERSONAS",

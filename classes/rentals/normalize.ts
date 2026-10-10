@@ -412,7 +412,9 @@ export function inferPropertyType(title: string, hint?: string | null): RentalPr
 // 2026-10-07, castillos inflables, máquinas de depilación, futbolitos, a food truck and salones
 // "para cumpleaños" were public in the directory as "otro" at $ 2.000–5.000. None is a property.
 // A title that names a home or a premises is about one, even with "juegos para niños" in it.
-const NOT_A_PROPERTY = /\b(?:inflables?|cama elastica|juegos? (?:infantiles|para|de cumple\w*)|ping ?pong|futbolito|metegol|mesa de pool|se alquila pool|food ?truck|volquetas?|decoraciones|equipos? (?:de )?(?:depilacion|sonido|luces|audio)|maquinas?(?: de)? (?:depilacion|soprano|hifu)|depilacion|soprano|hifu|body sculpt|head spa|disfraces|(?:para|de) (?:eventos|cumpleanos|fiestas|reuniones))\b/;
+// 2026-10-10, probing new Marketplace searches: "Volquetín para alquilar" and "Alquiler de baños
+// químicos y duchas de agua caliente" passed as homes.
+const NOT_A_PROPERTY = /\b(?:inflables?|cama elastica|juegos? (?:infantiles|para|de cumple\w*)|ping ?pong|futbolito|metegol|mesa de pool|se alquila pool|food ?truck|volquetas?|volquetin(?:es)?|banos? quimicos?|decoraciones|equipos? (?:de )?(?:depilacion|sonido|luces|audio)|maquinas?(?: de)? (?:depilacion|soprano|hifu)|depilacion|soprano|hifu|body sculpt|head spa|disfraces|(?:para|de) (?:eventos|cumpleanos|fiestas|reuniones))\b/;
 // "Oficinas con sala de reuniones", "Complejo de 3 edificios con salón de fiestas" and "Ideal clínica
 // o salón de fiestas" are properties that mention an event; measured on the same day.
 const NAMES_A_PROPERTY = /\b(?:apartamentos?|aptos?|casas?|monoambientes?|dormitorios?|locales|local|oficinas?|galpon(?:es)?|depositos?|terrenos?|cocheras?|garajes?|garages?|habitacion(?:es)?|cabanas?|consultorios?|edificios?|complejo|propiedad|chacras?|box(?:es)?|clinica|pizzeria)\b/;

@@ -16,6 +16,26 @@ export const marketplaceSearchUrl = (location: string, query: string, sort?: "ne
   `https://www.facebook.com/marketplace/${encodeURIComponent(location)}/search?query=${encodeURIComponent(query)}`
   + (sort === "newest" ? "&sortBy=creation_time_descend" : "");
 
+/** One list to scroll: a text search, or a whole Marketplace category seen from a city anchor. */
+export interface MarketplaceSearch {
+  location: string;
+  /** The words searched. A category list has none; the text only labels it. */
+  query: string;
+  /**
+   * A Marketplace category slug ("propertyrentals"): its own list instead of a text search. A
+   * search is Facebook's ranking of what MATCHES the words; the category lists what was filed in
+   * it, and shows a different slice (rentals, 2026-10-10: 46 % of the Montevideo category was
+   * already stored after every search, 9 % from Maldonado, 4 % from Salto).
+   */
+  category?: string;
+}
+
+export const marketplaceListUrl = (search: MarketplaceSearch, sort?: "newest"): string =>
+  search.category
+    ? `https://www.facebook.com/marketplace/${encodeURIComponent(search.location)}/${encodeURIComponent(search.category)}`
+      + (sort === "newest" ? "?sortBy=creation_time_descend" : "")
+    : marketplaceSearchUrl(search.location, search.query, sort);
+
 export interface MarketplaceSearchRead {
   cards: MarketplaceCard[];
   /** The ids each search delivered, aligned with `searches` (empty for one that was not read). */
@@ -41,8 +61,8 @@ export const FACEBOOK_BUSY_NOTE = "el navegador de Facebook estaba ocupado por o
 export async function readMarketplaceSearches(options: {
   /** Who holds the profile lock while this runs (shows in the lock file). */
   owner: string;
-  /** Each search is a Marketplace city anchor plus a wording, read in this order. */
-  searches: ReadonlyArray<{ location: string; query: string }>;
+  /** Each search is a Marketplace city anchor plus a wording (or a category), read in this order. */
+  searches: ReadonlyArray<MarketplaceSearch>;
   /** "newest" reads the most recent adverts first; default is relevance. */
   sort?: "newest";
   maxScrolls: number;
@@ -103,7 +123,7 @@ export async function readMarketplaceSearches(options: {
       }
     }
     try {
-      for (const [index, { location, query }] of options.searches.entries()) {
+      for (const [index, search] of options.searches.entries()) {
         if (Date.now() >= deadline) {
           result.note = "presupuesto de tiempo agotado";
           break;
@@ -113,7 +133,7 @@ export async function readMarketplaceSearches(options: {
         // cards an earlier one already had would look exhausted and stop early.
         const seenHere = new Set<string>();
         try {
-          const run = await scrollFacebookList(browser, marketplaceSearchUrl(location, query, options.sort), {
+          const run = await scrollFacebookList(browser, marketplaceListUrl(search, options.sort), {
             onText: text => {
               for (const card of marketplaceCardsFromText(text)) {
                 result.reads++;
