@@ -19,6 +19,27 @@
   ],
   "experiments": [
     {
+      "id": "titulos-de-las-guias-respuesta-primero-6",
+      "shippedOn": "2026-10-10",
+      "routes": [
+        "/guias/derechos-del-inquilino-uruguay",
+        "/guias/bhu-como-funciona",
+        "/guias/promesa-de-compraventa-uruguay",
+        "/guias/como-funciona-una-sucesion-uruguay",
+        "/guias/las-deudas-se-heredan-uruguay",
+        "/guias/costos-de-tener-auto-uruguay",
+        "/guias/transferir-un-auto-uruguay",
+        "/guias/como-se-calcula-el-aguinaldo-uruguay",
+        "/guias/como-funciona-el-irpf-uruguay",
+        "/guias/que-seguros-conviene-tener-uruguay",
+        "/guias/planificar-tu-retiro-uruguay",
+        "/guias/abrir-una-cuenta-bancaria-uruguay",
+        "/guias/como-evitar-estafas-financieras-uruguay",
+        "/guias/como-dividir-gastos-en-pareja-uruguay"
+      ],
+      "hypothesis": "Catorce guias del tramo contenido cuyo titulo ya entraba en el SERP pero era la etiqueta del tema: ahora contesta en 43 caracteres, asi que deberian ganar CTR desde la misma posicion."
+    },
+    {
       "id": "pagina-credito-fiscal-por-alquiler",
       "shippedOn": "2026-10-10",
       "routes": [
