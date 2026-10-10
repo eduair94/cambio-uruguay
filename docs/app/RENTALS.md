@@ -254,7 +254,10 @@ los :25, sólo propiedades sin coordenada, primero viviendas de Montevideo, cada
   siendo una falla), el job guarda `gone` con la fecha (`markCasaswebGone`) y `casaswebDetailTargets`
   no lo vuelve a pedir en 7 días (`CASASWEB_DETAIL_GONE_DAYS`). Una lectura entera posterior borra la
   marca. La fila guardada antes conserva sus datos: la cosecha sólo los reaplica a una tarjeta que
-  todavía ve.
+  todavía ve. La primera corrida con el arreglo (10/10, 02:25 UTC) leyó 49 fichas con 791 fotos y
+  marcó 27 avisos borrados; otros 4 contestaron **404** en vez de la página de búsqueda y, contados
+  como falla, iban a volver a encabezar la cola: desde entonces un 404 o un 410 también es "dado de
+  baja" (`casaswebAnswerGone`). Un 403, un 429, un 5xx o un tiempo agotado siguen siendo fallas.
 - **Compartido con ML.** Guarda en `rentalcasaswebdetails`; la escritura inmediata y la reaplicación
   en la cosecha (`applyDetailPins`, `classes/rentals/detailPins.ts`) son las mismas que las de
   Mercado Libre: sólo una coordenada vacía, después del dedupe. Si una propiedad tiene avisos de los

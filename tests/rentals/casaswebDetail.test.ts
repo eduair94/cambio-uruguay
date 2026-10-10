@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   casaswebAdvertGone,
+  casaswebAnswerGone,
   casaswebDetailIsCurrent,
   casaswebDetailIsGone,
   casaswebPhotoKey,
@@ -133,6 +134,16 @@ describe("a Casasweb advert whose page is gone", () => {
     expect(casaswebAdvertGone(search("Just a moment..."), "casasweb:CW249599")).toBe(false);
     expect(casaswebAdvertGone("", "casasweb:CW249599")).toBe(false);
     expect(casaswebAdvertGone(search("Apartamentos en alquiler | Casasweb"), "otra:CW1")).toBe(false);
+  });
+
+  it("is also a 404 or a 410 for the page itself, never a refused or failed request", () => {
+    expect(casaswebAnswerGone(null, "HTTP 404", "casasweb:CW249599")).toBe(true);
+    expect(casaswebAnswerGone(null, "HTTP 410", "casasweb:CW249599")).toBe(true);
+    for (const failure of ["HTTP 403", "HTTP 429", "HTTP 500", "HTTP 4040", "tiempo agotado (20000 ms)", "sin respuesta", "cuerpo ilegible", ""]) {
+      expect(casaswebAnswerGone(null, failure, "casasweb:CW249599")).toBe(false);
+    }
+    expect(casaswebAnswerGone(search("Apartamentos en alquiler en Carrasco, Montevideo | Casasweb"), "", "casasweb:CW249599")).toBe(true);
+    expect(casaswebAnswerGone(search("Just a moment..."), "", "casasweb:CW249599")).toBe(false);
   });
 
   it("is left alone for a week, then asked for again", () => {
