@@ -194,13 +194,29 @@ describe("Facebook through the profile browser", () => {
     // The full sweep reads every anchor city to the end; the hourly one only the newest of Montevideo.
     const full = browser.mock.calls[0][0];
     expect(full.maxScrolls).toBe(150);
-    expect(full.searches.filter(s => s.location === "montevideo")).toHaveLength(9);
+    expect(full.searches).toHaveLength(36);
+    // What nothing else finds is read first, before a throttle can end the run: the broadest
+    // search, then the category of every anchor, then the words without "alquiler".
+    expect(full.searches[0]).toEqual({ location: "montevideo", query: "alquiler" });
+    expect(full.searches.slice(1, 7).map(s => [s.location, s.category])).toEqual(
+      ["montevideo", "ciudad-de-la-costa", "maldonado", "salto", "paysandu", "colonia-del-sacramento"].map(l => [l, "propertyrentals"]),
+    );
+    expect(full.searches.slice(7, 11).map(s => s.query)).toEqual(["departamento", "garantía", "monoambiente", "dormitorios"]);
+    expect(full.searches.filter(s => s.location === "montevideo" && !s.category)).toHaveLength(15);
     expect(full.searches).toContainEqual({ location: "montevideo", query: "apartamento para alquilar" });
+    expect(full.searches).toContainEqual({ location: "montevideo", query: "porto seguro" });
     expect(full.searches).toContainEqual({ location: "colonia-del-sacramento", query: "alquiler" });
-    expect(full.searches.filter(s => s.location === "maldonado")).toHaveLength(3);
+    expect(full.searches.filter(s => s.location === "maldonado")).toHaveLength(4);
+    // Words measured to bring sales or junk stay out.
+    expect(full.searches.map(s => s.query)).not.toContain("renta");
+    expect(full.searches.map(s => s.query)).not.toContain("alquilar");
     await harvestFacebookMarketplace("fast", 41.5, { browser, details: async () => new Map() });
     expect(browser.mock.calls[1][0]).toMatchObject({ sort: "newest" });
-    expect(browser.mock.calls[1][0].searches.every(s => s.location === "montevideo")).toBe(true);
+    expect(browser.mock.calls[1][0].searches).toEqual([
+      { location: "montevideo", query: "alquiler" },
+      { location: "montevideo", query: "alquiler apartamento" },
+      { location: "montevideo", query: "categoría Propiedades en alquiler", category: "propertyrentals" },
+    ]);
   });
 
   it("falls back to the bridge, saying why, when the browser read nothing", async () => {

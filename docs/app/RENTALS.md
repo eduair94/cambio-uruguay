@@ -1,5 +1,50 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Facebook Marketplace: la categoría y seis palabras más — 10 de octubre de 2026
+
+Pedido: "iterar sobre las búsquedas de Facebook Marketplace y agregar términos que amplíen los
+resultados". Se midió antes de agregar nada, con el mismo método del 5/10 (captura-recaptura):
+cada lista candidata, 30 scrolls con el lector de producción y bajo el candado del perfil, filtrada
+con `toRawRental` + `isPlausibleRent`, contra las 9.141 ofertas de Facebook guardadas. El control
+(«alquiler», que la corrida ya lee) dio 99 % guardado: la vara mide bien.
+
+| lista | válidos | ya guardados | nuevos |
+|---|---|---|---|
+| **categoría «Propiedades en alquiler»** desde Montevideo | 202 | 46 % | 110 |
+| la misma categoría desde Maldonado | 102 | 9 % | 93 |
+| la misma categoría desde Salto | 53 | 4 % | 51 |
+| «departamento» | 611 | 73 % | 163 |
+| «garantía» | 244 | 42 % | 142 |
+| «monoambiente» | 503 | 77 % | 116 |
+| «dormitorios» | 468 | 82 % | 85 |
+| «porto seguro» | 196 | 78 % | 44 |
+| «contrato» | 213 | 85 % | 32 |
+| «renta» (afuera) | 453 | 83 % | 78 |
+| «alquilar» (afuera) | 519 | 92 % | 39 |
+| «apartamento» / «habitaciones» / «pieza» / «apto» / «baño» (afuera) | | 79–94 % | 23 / 21 / 7 / 4 / 2 |
+| «inquilino» (afuera) | 0 | — | 0 |
+
+- **La categoría no es una búsqueda.** `/marketplace/<ancla>/propertyrentals` lista lo que el
+  vendedor archivó en «Propiedades en alquiler», no lo que Facebook rankea para unas palabras, y
+  muestra otra tajada: desde Maldonado o Salto, más de 9 de cada 10 avisos válidos no estaban,
+  sobre todo del interior (Colonia, Paysandú, Tacuarembó, Treinta y Tres, Cerro Largo, Rocha).
+  El lector común (`classes/facebook/search.ts`) acepta ahora una lista con `category`
+  (`marketplaceListUrl`); retail no la usa.
+- **Las palabras que no dicen «alquiler».** «departamento» encuentra los títulos que genera el
+  formulario de Facebook («2 habitaciones 1 baño Departamento/condominio»), que la categoría ya
+  declara como alquiler; «garantía» y «porto seguro», a quien escribe de qué garantía acepta.
+- **Afuera a propósito:** «renta» trae ventas que se venden por su rendimiento («Monoambiente con
+  RENTA 6.1%»); «alquilar» trae volquetines y baños químicos — que además dejaron de pasar el
+  filtro de «no es una vivienda» (`NOT_A_PROPERTY`).
+- **Orden por lo que suma.** Facebook frena el scroll de una sesión que scrolleó mucho y dos listas
+  seguidas sin pasar de la primera página cortan la corrida, así que primero va lo que nada más
+  encuentra: «alquiler», la categoría desde las seis anclas, las palabras nuevas junto a
+  «arriendo» y «apartamento para alquilar», después las «alquiler …» que se repiten entre sí y al
+  final las otras anclas. **36 listas** (eran 24) y el reloj de la completa pasó de 60 a 100
+  minutos (`RENTALS_FB_BROWSER_MINUTES`); la corrida termina ~40 min más tarde.
+- **La horaria** suma la categoría de Montevideo ordenada por más nuevos: se queda en sus primeras
+  24 tarjetas (no pagina), pero son las de hoy — 11 de 20 válidas no estaban, en 18 segundos.
+
 ## Todas las fotos: carrusel en la tarjeta y grilla en la ficha — 9 de octubre de 2026
 
 Pedido: "incluir todas las imágenes, no únicamente una; carrusel en la plataforma y grilla en la
@@ -1600,7 +1645,7 @@ Lo que pasó ese día, y lo que cambió por eso:
 | `RENTALS_CW_PAUSE_MS` | 60000 | pausa única por corrida antes de la segunda lectura de las búsquedas de Casasweb que fallaron |
 | `RENTALS_FB_ENABLED` | — | `0` apaga Marketplace |
 | `RENTALS_FB_BROWSER` | — | `0` vuelve al puente `:9657` (20–26 tarjetas por búsqueda) |
-| `RENTALS_FB_BROWSER_MINUTES` | 60 / 8 | tope de reloj del lector por navegador en full / fast; al cortar conserva lo leído |
+| `RENTALS_FB_BROWSER_MINUTES` | 100 / 8 | tope de reloj del lector por navegador en full / fast; al cortar conserva lo leído |
 | `RENTALS_FB_LOCATIONS` | montevideo,ciudad-de-la-costa,maldonado,salto,paysandu,colonia-del-sacramento | anclas de búsqueda en Marketplace; las sugerencias pueden estar en otras zonas |
 | `RENTALS_HOST_GAP_MS` | 1200 | separación mínima entre dos requests al mismo host |
 | `RENTALS_LOCK_FILE` | `/tmp/cambio-uruguay-rentals-sync.lock` | archivo de bloqueo del wrapper Linux; ambos jobs deben compartir el mismo valor |

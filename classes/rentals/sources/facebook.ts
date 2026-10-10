@@ -168,21 +168,55 @@ const BROWSER_QUERIES = [
   "apartamento para alquilar", "arriendo",
 ];
 
+/**
+ * A second capture-recapture (2026-10-10, 19 lists of 30 scrolls against 9.141 stored Facebook
+ * offers; the "alquiler" control found 99 % stored, so the yardstick held). Valid adverts already
+ * stored, and how many were not:
+ * - the "Propiedades en alquiler" CATEGORY, which is not a search: 46 % from Montevideo (110 new),
+ *   9 % from Maldonado (93), 4 % from Salto (51), mostly adverts of the interior;
+ * - words sellers write instead of "alquiler": "departamento" 73 % (163 new; Facebook's generated
+ *   "2 habitaciones 1 baño Departamento/condominio" titles), "garantía" 42 % (142), "monoambiente"
+ *   77 % (116), "dormitorios" 82 % (85), "porto seguro" 78 % (44), "contrato" 85 % (32).
+ * Left out on purpose: "renta" (78 new, but it brings the sales pitched by their yield, "Monoambiente
+ * con RENTA 6.1%"), "alquilar" (39, with dumpsters and chemical toilets), "apartamento" (23),
+ * "habitaciones" (21), "pieza" (7), "baño" (2) and "inquilino" (none).
+ */
+const BROWSER_MORE_QUERIES = ["departamento", "garantía", "monoambiente", "dormitorios", "porto seguro", "contrato"];
+
+/** Marketplace's slug for the "Propiedades en alquiler" category list. */
+export const FB_RENTALS_CATEGORY_SLUG = "propertyrentals";
+
 const searches = (locations: readonly string[], queries: readonly string[]) =>
   locations.flatMap(location => queries.map(query => ({ location, query })));
 
+const categoryLists = (locations: readonly string[]) =>
+  locations.map(location => ({ location, query: "categoría Propiedades en alquiler", category: FB_RENTALS_CATEGORY_SLUG }));
+
 function browserPlan(mode: "full" | "fast"): Parameters<typeof readFacebookRentals>[0] {
-  const minutes = Number(process.env.RENTALS_FB_BROWSER_MINUTES || (mode === "fast" ? 8 : 60));
+  const minutes = Number(process.env.RENTALS_FB_BROWSER_MINUTES || (mode === "fast" ? 8 : 100));
+  const [home] = LOCATIONS;
   return mode === "fast"
     ? {
-      searches: searches(LOCATIONS.slice(0, 1), ["alquiler", "alquiler apartamento"]), sort: "newest", maxScrolls: 15, stagnantRounds: 6,
+      // The category sorted by newest stops at its first 24 cards, but those are today's: 11 of
+      // 20 valid ones were not stored (2026-10-10), for 18 seconds.
+      searches: [...searches([home!], ["alquiler", "alquiler apartamento"]), ...categoryLists([home!])],
+      sort: "newest", maxScrolls: 15, stagnantRounds: 6,
       maxDurationMs: minutes * 60_000, lockWaitMs: 10 * 60_000,
     }
     : {
-      // Montevideo with every wording, the other anchors with the three broadest: each anchor
-      // ranks its own area first (Maldonado alone added 494 adverts Montevideo's seven never
-      // showed), and fewer lists spare the session the throttle described in facebookBrowser.ts.
-      searches: [...searches(LOCATIONS.slice(0, 1), BROWSER_QUERIES), ...searches(LOCATIONS.slice(1), BROWSER_QUERIES.slice(0, 3))],
+      // Ordered by what each list adds, because Facebook throttles a session that scrolls a lot and
+      // two stalled lists end the run: what is read first must be what nothing else finds. The
+      // broadest search, then every anchor's category, then the words without "alquiler", then the
+      // "alquiler" wordings that mostly repeat each other, then the other anchors' searches (each
+      // anchor ranks its own area first: Maldonado alone added 494 adverts Montevideo's never
+      // showed). 36 lists (24 before): the clock went from 60 to 100 minutes.
+      searches: [
+        ...searches([home!], BROWSER_QUERIES.slice(0, 1)),
+        ...categoryLists(LOCATIONS),
+        ...searches([home!], [...BROWSER_MORE_QUERIES.slice(0, 4), ...BROWSER_QUERIES.slice(7), ...BROWSER_MORE_QUERIES.slice(4)]),
+        ...searches([home!], BROWSER_QUERIES.slice(1, 7)),
+        ...searches(LOCATIONS.slice(1), BROWSER_QUERIES.slice(0, 3)),
+      ],
       maxScrolls: 150, stagnantRounds: 10, maxDurationMs: minutes * 60_000,
       // Another job's Marketplace read (autos, retail) lasts minutes; the full sweep waits it out.
       lockWaitMs: 30 * 60_000,
