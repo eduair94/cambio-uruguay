@@ -396,6 +396,85 @@ const MEASURED = 146
  * prefijo). Las otras quince excedidas están dentro de ventanas abiertas del libro de cambios y
  * entran cuando cierren.
  *
+ * 16 → 16 el 2026-10-10, novena tanda, y que el número NO se mueva es exactamente el punto. Son
+ * CATORCE títulos de guía con la ruta libre que ya entraban en el presupuesto (31 a 43
+ * caracteres), así que un trinquete que cuenta caracteres no podía verlos: la octava tanda vació
+ * el conjunto «ruta libre Y pasada de 60», y lo que quedó libre fueron guías DENTRO del
+ * presupuesto cuyo título era la etiqueta del tema de punta a punta, nueve abriendo por «Cómo»,
+ * «Cuánto» o «Qué» («Cómo funciona el IRPF en Uruguay», «Cómo se calcula el aguinaldo en
+ * Uruguay», «Cuánto cuesta tener un auto en Uruguay», «Cómo abrir una cuenta bancaria en
+ * Uruguay»...). Un título que cabe entero en el SERP y no dice NADA que el visitante no supiera al
+ * tipear no es deuda de longitud: es el renglón gastado igual, y es lo que las ocho tandas
+ * anteriores venían arreglando de paso mientras recortaban. Acá se arregla solo, sin recorte que
+ * lo motive.
+ *
+ * El presupuesto real son 43 caracteres y no 60, y conviene decirlo acá porque es el error que
+ * esta tanda cometió primero: `rendered()` agrega SIEMPRE « | Cambio Uruguay», o sea 17
+ * caracteres, así que un título de 59 —cómodo si uno mide el literal— son 76 publicados y quince
+ * ofensores nuevos de un saque. Las catorce redacciones se rehicieron enteras contra los 43, que
+ * es la misma envolvente en la que entraron las nueve de la octava tanda (41 a 45).
+ *
+ * Ahora cada uno contesta: que el IRPF no grava todo a la tasa máxima, que el aguinaldo es la
+ * doceava parte de lo ganado, que al costo de un auto hay que sumarle la depreciación, que la
+ * deuda de patente sigue al auto, que la cuenta básica es gratis por ley, que las deudas SÍ se
+ * heredan y hay cómo limitarlas, que sin sucesión no se vende lo heredado, que la promesa de
+ * compraventa se inscribe y eso protege, que la renta sube una vez al año, que los seguros se
+ * ordenan por lo que te funde, que en el retiro manda el tiempo, que si te cobran por adelantado
+ * es estafa, que los gastos en pareja son 50/50, proporcional o pozo, y que el BHU da el crédito
+ * y la ANV no.
+ *
+ * Ninguna cifra es nueva y donde el cuerpo hedgea el título no afirma, que acá descartó tres
+ * redacciones. El BHU iba a decir «presta en UI» y el cuerpo dice que sus créditos «suelen
+ * otorgarse» en UI «o en pesos». El retiro iba a decir «la jubilación no iguala tu sueldo», cuando
+ * el cuerpo dice «suele ser menor» y que la tasa de reemplazo «casi nunca es del cien por ciento»:
+ * en su lugar va la tesis que el cuerpo SÍ afirma sin matices, que «no es ganar mucho, es el
+ * tiempo». Y las deudas heredadas iban a decir «se heredan hasta lo que recibís», que es verdad
+ * sólo CON beneficio de inventario —aceptando pura y simplemente se responde con el patrimonio
+ * propio—, así que el título afirma lo que vale siempre («se heredan») y promete el mecanismo sin
+ * mutilar el término legal.
+ *
+ * Y una sexta aplicación de la regla del buscador propio, que acá atajó el error más caro de todas
+ * las tandas: una guía apropiándose del término de OTRA página. Tres redacciones se cayeron por
+ * eso, medidas sobre el índice. «El BHU es el banco de la vivienda» le ganaba la consulta pelada
+ * «vivienda» a `/venta-viviendas-uruguay` (92 contra 86) — quien tipea «vivienda» no busca una
+ * guía sobre un banco. «IRPF: por franjas...» le ganaba «irpf» a `/glosario/irpf` (110 contra
+ * 105), porque abrir con el término paga el prefijo. Y «Evitar estafas: te cobran antes de
+ * prestar» le sacaba «prestar» a `/prestamos-p2p-uruguay`. Las tres se reescribieron para NO abrir
+ * por el término ajeno ni nombrarlo: el BHU pasó a la distinción con la ANV (que el cuerpo también
+ * nombra como la confusión frecuente), el IRPF a «El IRPF no grava todo a la tasa máxima» y las
+ * estafas a «por adelantado», que además es la frase textual del cuerpo. Una cuarta se corrigió
+ * por lo contrario: «Aguinaldo: la doceava parte del semestre» le quitaba «semestre» a
+ * `/herramientas/calculadora-aguinaldo`, y «de lo ganado» dice lo mismo sin pisarla.
+ *
+ * Después de las correcciones las catorce ganan su propia consulta: tres mejoraron su puntaje
+ * («planificar el retiro» 36→110, «las deudas se heredan» 46→80, «transferir un auto» 62→80),
+ * tres quedaron igual («bhu» 62, «sucesion» 92, «cuanto cuesta tener un auto» 80) y ocho bajaron
+ * conservando el primer puesto con margen, porque un título de 43 que CONTESTA no puede además
+ * repetir la frase larga del slug que paga el 110: «derechos del inquilino» 110→62 contra 32,
+ * «que seguros conviene tener» 110→62 contra 32, «como se calcula el aguinaldo» y «como funciona
+ * el irpf» 110→62 contra los 42 del hub `/guias`, «promesa de compraventa» 110→92 contra 32,
+ * «dividir gastos en pareja» 92→62 contra 45, «evitar estafas financieras» 92→62 contra 36, y
+ * «abrir una cuenta bancaria» 92→62 siendo el único resultado. Ese canje es deliberado: el puntaje
+ * del buscador propio sólo tiene que alcanzar para no perder la consulta, mientras el renglón del
+ * SERP lo lee todo el tráfico de Google. Ninguna página perdió una consulta que tuviera: lo que
+ * cambió de dueño fuera de estas catorce son consultas que nadie ganaba («doceava»,
+ * «limitarlas»), que su dueño anterior matcheaba en 0 («heredado», «funde») o que eran ruido de
+ * una palabra en 38 («anv», «tiempo»).
+ *
+ * `conviene-comprar-dolares-hoy` quedó FUERA de la tanda teniendo la ruta libre, y es el otro
+ * descarte medido: su título es ya la pregunta exacta del visitante, y toda redacción que contesta
+ * y entra en 43 o pierde la frase del slug o abre por «Comprar dólares», que empata en 80 con
+ * `/guias/comprar-dolares-online-uruguay` y queda primera por desempate. Vale más la pregunta
+ * literal que un empate ganado a otra guía.
+ *
+ * Esta tanda toca SÓLO el título, como la octava, y por una razón medida y no por simetría: las
+ * catorce descripciones ya entran en los 155 (117 a 155), así que no hay nada que reescribir del
+ * otro lado. Con esto ninguna guía de ruta libre queda excedida en ninguna de las dos mitades del
+ * snippet; las 24 descripciones que siguen pasadas están todas dentro de ventanas abiertas.
+ *
+ * `glosario-terminos-cambiarios` se quedó sin tocar por sexta vez, por la razón de siempre: el
+ * término por el que tendría que abrir lo gana el hub `/glosario`.
+ *
  * SÓLO PUEDE BAJAR.
  */
 const TITLE_OVER_BUDGET = 16

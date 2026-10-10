@@ -140,7 +140,7 @@ export const parejaGuides: readonly Guide[] = [
   },
   {
     slug: 'como-dividir-gastos-en-pareja-uruguay',
-    title: 'Cómo dividir los gastos en pareja',
+    title: 'Gastos en pareja: 50/50, proporcional, pozo',
     description:
       'Métodos prácticos para dividir los gastos en pareja: 50/50, proporcional al ingreso o pozo común, con sus ventajas y cómo elegir sin conflictos.',
     tag: 'PAREJA',

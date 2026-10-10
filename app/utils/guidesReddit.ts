@@ -703,7 +703,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'derechos-del-inquilino-uruguay',
-    title: 'Derechos del inquilino en Uruguay',
+    title: 'Inquilino: la renta sube una vez al año',
     description:
       'Derechos del inquilino en Uruguay: topes al aumento de renta, reparaciones, privacidad, causas de desalojo y qué no puede exigirte el propietario.',
     tag: 'DERECHOS',
@@ -1156,7 +1156,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'bhu-como-funciona',
-    title: 'El BHU: cómo funciona y para qué sirve',
+    title: 'El BHU da el crédito, no la ANV',
     description:
       'Qué es el Banco Hipotecario del Uruguay, sus planes de ahorro previo y líneas de crédito para vivienda, la diferencia con la ANV y para quién conviene.',
     tag: 'VIVIENDA',
@@ -1260,7 +1260,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'promesa-de-compraventa-uruguay',
-    title: 'Promesa de compraventa y seña en Uruguay',
+    title: 'Inscribí la promesa de compraventa: protege',
     description:
       'Qué son la promesa de compraventa, la reserva y la seña en Uruguay, qué te protegen, por qué inscribirla y los riesgos de pagar seña sin promesa.',
     tag: 'PROMESA',
@@ -1299,7 +1299,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'como-funciona-una-sucesion-uruguay',
-    title: 'Cómo funciona una sucesión en Uruguay',
+    title: 'Sin sucesión no se vende lo heredado',
     description:
       'Qué es una sucesión en Uruguay, cómo es el proceso paso a paso, quién interviene (abogado y escribano), costos aproximados y cuánto demora.',
     tag: 'SUCESIÓN',
@@ -1360,7 +1360,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'las-deudas-se-heredan-uruguay',
-    title: '¿Las deudas se heredan en Uruguay?',
+    title: 'Las deudas se heredan: hay cómo limitarlas',
     description:
       '¿Se heredan las deudas en Uruguay? Cómo funciona el activo y el pasivo, la aceptación con beneficio de inventario y cuándo conviene repudiar la herencia.',
     tag: 'HERENCIA',
@@ -1644,7 +1644,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'costos-de-tener-auto-uruguay',
-    title: 'Cuánto cuesta tener un auto en Uruguay',
+    title: 'Cuánto cuesta tener un auto: depreciación',
     description:
       'Cuánto cuesta tener un auto en Uruguay: patente, SOA, seguro, combustible, service, cubiertas y la depreciación real.',
     tag: 'COSTOS',
@@ -1703,7 +1703,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'transferir-un-auto-uruguay',
-    title: 'Cómo transferir un auto en Uruguay',
+    title: 'Transferir un auto: la deuda sigue al auto',
     description:
       'Cómo transferir un auto en Uruguay: verificar titularidad y deudas, certificados, intendencia, firmas y cómo evitar estafas.',
     tag: 'TRÁMITE',
@@ -2147,7 +2147,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'como-se-calcula-el-aguinaldo-uruguay',
-    title: 'Cómo se calcula el aguinaldo en Uruguay',
+    title: 'Aguinaldo: la doceava parte de lo ganado',
     description:
       'Qué es el aguinaldo (sueldo anual complementario), cómo se calcula por proporción de lo ganado y cuándo se cobra en Uruguay: junio y diciembre.',
     tag: 'AGUINALDO',
@@ -2570,7 +2570,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'como-funciona-el-irpf-uruguay',
-    title: 'Cómo funciona el IRPF en Uruguay',
+    title: 'El IRPF no grava todo a la tasa máxima',
     description:
       'Cómo funciona el IRPF en Uruguay: impuesto progresivo por franjas, mínimo no imponible, deducciones por hijos y alquiler, y el ajuste anual con devolución.',
     tag: 'IRPF',
@@ -3246,7 +3246,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'que-seguros-conviene-tener-uruguay',
-    title: 'Qué seguros conviene tener en Uruguay',
+    title: 'Qué seguros tener: primero lo que te funde',
     description:
       'Qué seguros conviene tener en Uruguay y en qué orden: salud, vehículo, hogar y vida, según tu riesgo real y sin sobreasegurarte.',
     tag: 'SEGUROS',
@@ -3363,7 +3363,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'planificar-tu-retiro-uruguay',
-    title: 'Cómo planificar tu retiro en Uruguay',
+    title: 'Planificar el retiro: manda el tiempo',
     description:
       'Cómo planificar tu retiro en Uruguay: por qué la jubilación estatal puede no alcanzar y cómo empezar a ahorrar de forma complementaria.',
     tag: 'RETIRO',
@@ -3424,7 +3424,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'abrir-una-cuenta-bancaria-uruguay',
-    title: 'Cómo abrir una cuenta bancaria en Uruguay',
+    title: 'Abrir cuenta: la básica es gratis por ley',
     description:
       'Cómo abrir una cuenta bancaria en Uruguay: requisitos, cuenta en pesos y dólares, cuenta gratuita por ley y qué comisiones mirar.',
     tag: 'CUENTA',
@@ -3494,7 +3494,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'como-evitar-estafas-financieras-uruguay',
-    title: 'Cómo evitar estafas financieras en Uruguay',
+    title: 'Evitar estafas: si te cobran por adelantado',
     description:
       'Cómo evitar estafas financieras en Uruguay: phishing, smishing, falsos préstamos, cómo verificar entidades ante el BCU y qué hacer si caíste.',
     tag: 'ESTAFAS',
