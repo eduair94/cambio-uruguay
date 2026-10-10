@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  casaswebAdvertGone,
   casaswebDetailIsCurrent,
+  casaswebDetailIsGone,
   casaswebPhotoKey,
   parseCasaswebImages,
   parseCasaswebPin,
@@ -111,6 +113,33 @@ describe("which Casasweb pages are read first", () => {
     expect(casaswebDetailIsCurrent({ ...row, images: undefined }, fresh)).toBe(false);
     expect(casaswebDetailIsCurrent({ ...row, bathrooms: undefined }, fresh)).toBe(false);
     expect(casaswebDetailIsCurrent({ ...row, readAt: "2026-09-01T12:00:00.000Z" }, fresh)).toBe(false);
+  });
+});
+
+// From 2026-10-09 10:25 every hourly run read zero pages: the eight adverts heading the queue had
+// been removed, Casasweb answered each with its search page, five such answers ended the run as
+// "Casasweb no está contestando", and nothing was remembered, so the next run began with them again.
+describe("a Casasweb advert whose page is gone", () => {
+  const search = (title: string) => `<html><head><title>${title}</title></head><body><div class="resultados"></div></body></html>`;
+
+  it("is recognized when Casasweb answers with its own search page", () => {
+    expect(casaswebAdvertGone(search("Apartamentos en alquiler en Carrasco, Montevideo | Casasweb"), "casasweb:CW249599")).toBe(true);
+    expect(casaswebAdvertGone(search("Apartamentos en alquiler en Cord&#243;n, Montevideo | Casasweb"), "casasweb:CW254264")).toBe(true);
+  });
+
+  it("is not the advert's own page, nor another site's answer", () => {
+    expect(casaswebAdvertGone(page("CW222638", ""), "casasweb:CW222638")).toBe(false);
+    expect(casaswebAdvertGone(fixture("casasweb-ficha.html"), "casasweb:CW258458")).toBe(false);
+    expect(casaswebAdvertGone(search("Just a moment..."), "casasweb:CW249599")).toBe(false);
+    expect(casaswebAdvertGone("", "casasweb:CW249599")).toBe(false);
+    expect(casaswebAdvertGone(search("Apartamentos en alquiler | Casasweb"), "otra:CW1")).toBe(false);
+  });
+
+  it("is left alone for a week, then asked for again", () => {
+    const goneFrom = "2026-10-03T00:00:00.000Z";
+    expect(casaswebDetailIsGone({ gone: true, readAt: "2026-10-10T01:25:00.000Z" }, goneFrom)).toBe(true);
+    expect(casaswebDetailIsGone({ gone: true, readAt: "2026-10-01T01:25:00.000Z" }, goneFrom)).toBe(false);
+    expect(casaswebDetailIsGone({ ok: true, readAt: "2026-10-10T01:25:00.000Z" }, goneFrom)).toBe(false);
   });
 });
 

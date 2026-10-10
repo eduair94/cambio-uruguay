@@ -243,6 +243,18 @@ los :25, sólo propiedades sin coordenada, primero viviendas de Montevideo, cada
   desacuerdos son nombres ("Puerto del Buceo" contra "Puerto Buceo") o bordes.
 - **Identidad.** `parseCasaswebPin` exige que el `<title>` nombre la referencia del aviso (si no, no
   concluye nada y no guarda) y descarta un marcador rotulado con otra referencia.
+- **Un aviso dado de baja no es una falla (10/10/2026).** Casasweb contesta un aviso borrado con un
+  200 y su propia página de búsqueda del mismo tipo y zona ("Apartamentos en alquiler en Carrasco,
+  Montevideo | Casasweb"), nunca con un 404. El job lo contaba como falla y no guardaba nada; como la
+  tarjeta sigue siendo objetivo mientras el directorio la conserva (10 días desde que se vio), los
+  mismos avisos muertos encabezaban la cola cada hora y sus cinco "fallas seguidas" cortaban la
+  corrida: **desde el 9/10 a las 10:25 cada corrida leyó cero fichas** (los 8 primeros de la cola,
+  medidos, eran avisos borrados). Ahora `casaswebAdvertGone` lo reconoce (el título termina en
+  "| Casasweb" y no nombra la referencia; un desafío o un error de otro sitio no cumple eso y sigue
+  siendo una falla), el job guarda `gone` con la fecha (`markCasaswebGone`) y `casaswebDetailTargets`
+  no lo vuelve a pedir en 7 días (`CASASWEB_DETAIL_GONE_DAYS`). Una lectura entera posterior borra la
+  marca. La fila guardada antes conserva sus datos: la cosecha sólo los reaplica a una tarjeta que
+  todavía ve.
 - **Compartido con ML.** Guarda en `rentalcasaswebdetails`; la escritura inmediata y la reaplicación
   en la cosecha (`applyDetailPins`, `classes/rentals/detailPins.ts`) son las mismas que las de
   Mercado Libre: sólo una coordenada vacía, después del dedupe. Si una propiedad tiene avisos de los
