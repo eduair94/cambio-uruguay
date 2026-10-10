@@ -10,15 +10,16 @@
 // Las fichas se piden con la UA del bot y el espaciado por host de net.ts; a los :25, lejos de la
 // cosecha horaria (:47), que lee las búsquedas del mismo sitio. Cinco fallas seguidas cortan la
 // corrida: un portal que empieza a negarse no se insiste. Un aviso dado de baja NO es una falla:
-// Casasweb contesta con su propia página de búsqueda, eso se guarda (`markCasaswebGone`) y el aviso
-// no se vuelve a pedir en una semana; si no, los mismos avisos muertos encabezaban la cola cada hora.
+// Casasweb contesta con su propia página de búsqueda o con un 404, eso se guarda
+// (`markCasaswebGone`) y el aviso no se vuelve a pedir en una semana; si no, los mismos avisos
+// muertos encabezaban la cola cada hora.
 //
 // --dry-run lee y muestra, sin escribir.
 import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import {
   CASASWEB_DETAIL_COLLECTION,
-  casaswebAdvertGone,
+  casaswebAnswerGone,
   casaswebDetailTargets,
   markCasaswebGone,
   readCasaswebDetail,
@@ -61,8 +62,8 @@ async function main(): Promise<void> {
     let failure = "";
     const html = await fetchText(target.url, { retries: 1, timeoutMs: 20_000, onFailure: reason => { failure = reason; } });
     const facts = html ? readCasaswebDetail(html, target.listingId) : undefined;
-    if (html && facts === undefined && casaswebAdvertGone(html, target.listingId)) {
-      // Casasweb answered, with its search page: the advert was removed. An answer, not a failure.
+    if (facts === undefined && casaswebAnswerGone(html, failure, target.listingId)) {
+      // Casasweb answered that the advert was removed (its search page, or a 404): not a failure.
       consecutiveFailures = 0;
       summary.gone++;
       gone.push(target.listingId);

@@ -196,6 +196,16 @@ export function casaswebAdvertGone(html: string, listingId: string): boolean {
   return /\|\s*Casasweb$/i.test(title) && !casaswebTitleNames(title, reference);
 }
 
+/**
+ * Whether Casasweb's answer for an advert's page says the advert is gone: its search page in the
+ * advert's place, or a 404/410 for the page itself. The first run after the search page counted
+ * (2026-10-10 02:25) found 27 of the first and 4 of the second among 80 targets; left as failures,
+ * the 404s would head the queue again and five in a row stop the run as before.
+ */
+export function casaswebAnswerGone(html: string | null, failure: string, listingId: string): boolean {
+  return html ? casaswebAdvertGone(html, listingId) : /^HTTP 4(?:04|10)$/.test(failure);
+}
+
 const details = () => appConnection().collection(CASASWEB_DETAIL_COLLECTION);
 const listings = () => appConnection().collection("rentallistings");
 
