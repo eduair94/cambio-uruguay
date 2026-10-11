@@ -2,7 +2,7 @@ import type { Browser } from "puppeteer-core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { scrollFacebookList } from "../../classes/facebook/browser";
 import { FB_VEHICLES_CATEGORY } from "../../classes/autos/sources/facebook";
-import { readFacebookVehicles } from "../../classes/autos/sources/facebookBrowser";
+import { FB_VEHICLE_LISTS, readFacebookVehicles } from "../../classes/autos/sources/facebookBrowser";
 
 vi.mock("../../classes/facebook/browser", async importOriginal => ({
   ...(await importOriginal<typeof import("../../classes/facebook/browser")>()),
@@ -105,6 +105,29 @@ describe("readFacebookVehicles", () => {
       .mockImplementationOnce(list(ids(300, 24, 1), ids(324, 10, 1)));
     const read = await readFacebookVehicles({ ...base, feed: { maxScrolls: 150, stagnantRounds: 8 }, queries: ["alfa romeo", "lada", "toyota"] });
     expect(read).toMatchObject({ lists: 4, stalled: 0, note: null });
+  });
+
+  it("reads the deep lists after the feed and before the brand searches", async () => {
+    vi.mocked(scrollFacebookList).mockImplementation(list(ids(0, 20, 1), ids(20, 5, 1)));
+    await readFacebookVehicles({
+      ...base, feed: { maxScrolls: 150, stagnantRounds: 10 }, lists: FB_VEHICLE_LISTS.slice(0, 2), list: { maxScrolls: 40, stagnantRounds: 6 }, queries: ["toyota"],
+    });
+    const calls = vi.mocked(scrollFacebookList).mock.calls;
+    expect(calls.map(call => call[1])).toEqual([
+      "https://www.facebook.com/marketplace/montevideo/vehicles?sortBy=creation_time_descend",
+      "https://www.facebook.com/marketplace/montevideo/vehicles",
+      "https://www.facebook.com/marketplace/montevideo/vehicles?minPrice=1&maxPrice=8000",
+      "https://www.facebook.com/marketplace/montevideo/search?query=toyota",
+    ]);
+    expect(calls[1][2]).toMatchObject({ maxScrolls: 40 });
+    expect(calls[3][2]).toMatchObject({ maxScrolls: 20 });
+  });
+
+  it("splits the vehicles by price and reads the interior from its own anchors", () => {
+    expect(FB_VEHICLE_LISTS.filter(list => list.params?.minPrice !== undefined)).toHaveLength(4);
+    expect(FB_VEHICLE_LISTS.map(list => list.location)).toEqual(expect.arrayContaining(["rivera", "salto", "maldonado", "colonia-del-sacramento"]));
+    expect(FB_VEHICLE_LISTS.filter(list => list.category === "vehicles")).toHaveLength(9);
+    expect(FB_VEHICLE_LISTS.filter(list => !list.category).map(list => list.query)).toEqual(["camioneta", "auto"]);
   });
 
   it("leaves Facebook alone while another job holds the profile", async () => {

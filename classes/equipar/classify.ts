@@ -102,6 +102,7 @@ export function specsFor(registry: readonly EquiparCategory[]): CategorySpec[] {
     mlQueries: category.mlQueries,
     mlCategories: category.mlCategories,
     fbQueries: category.fbQueries,
+    usedOk: category.usedOk,
   }));
 }
 

@@ -48,7 +48,16 @@ import { recordPricewatch } from "./classes/pricewatch/record";
  * that hits the ceiling loses the tea towels, never the line that decides the total.
  */
 const ML_BUDGET = Number(process.env.EQUIPAR_ML_MAX_SCANS || 70);
-const FB_BUDGET = Number(process.env.EQUIPAR_FB_MAX_QUERIES || 26);
+/**
+ * Marketplace searches per run. Until 2026-10-11 the daily run read 26 of the plan's 47 and every
+ * hourly run the same first 13, so the twelve categories from acolchado on had no Marketplace offer
+ * at all. The daily run now reads the whole plan; the hourly one keeps 13 but reads a different slice
+ * every hour (`fbRotation`), so each search comes up about every four hours.
+ */
+const FB_BUDGET = {
+  daily: Number(process.env.EQUIPAR_FB_MAX_QUERIES || 60),
+  fast: Number(process.env.EQUIPAR_FB_FAST_QUERIES || 13),
+};
 
 async function main(): Promise<void> {
   // The app's own env calls this MONGO_URI; the root bridge insists on APP_MONGO_URI so a job can
@@ -73,7 +82,8 @@ async function main(): Promise<void> {
       specs,
       fast,
       maxMlScans: fast ? Math.round(ML_BUDGET / 2) : ML_BUDGET,
-      maxFbQueries: fast ? Math.round(FB_BUDGET / 2) : FB_BUDGET,
+      maxFbQueries: fast ? FB_BUDGET.fast : FB_BUDGET.daily,
+      fbRotation: fast ? new Date().getUTCHours() : 0,
       maxStoreQueries: fast ? EQUIPAR_STORE_QUERIES.fast : EQUIPAR_STORE_QUERIES.daily,
     }),
     fetchUsdUyuRate(),

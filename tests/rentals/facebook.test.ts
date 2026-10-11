@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { harvestFacebookMarketplace, toRawRental } from "../../classes/rentals/sources/facebook";
+import {
+  harvestFacebookMarketplace, RENTAL_LOCAL_ANCHORS, RENTAL_PRICE_BANDS, rentalHourlyRotation, rentalRotatingLists, toRawRental,
+} from "../../classes/rentals/sources/facebook";
 import { fetchJson } from "../../classes/rentals/net";
 import { FB_RENTALS_CATEGORY, rentalCardsFromText, type FacebookRentalRead, type readFacebookRentals } from "../../classes/rentals/sources/facebookBrowser";
 
@@ -194,29 +196,50 @@ describe("Facebook through the profile browser", () => {
     // The full sweep reads every anchor city to the end; the hourly one only the newest of Montevideo.
     const full = browser.mock.calls[0][0];
     expect(full.maxScrolls).toBe(150);
-    expect(full.searches).toHaveLength(36);
+    expect(full.maxDurationMs).toBe(150 * 60_000);
     // What nothing else finds is read first, before a throttle can end the run: the broadest
-    // search, then the category of every anchor, then the words without "alquiler".
+    // search, then Montevideo's category in price bands, then the other anchors' category.
     expect(full.searches[0]).toEqual({ location: "montevideo", query: "alquiler" });
-    expect(full.searches.slice(1, 7).map(s => [s.location, s.category])).toEqual(
-      ["montevideo", "ciudad-de-la-costa", "maldonado", "salto", "paysandu", "colonia-del-sacramento"].map(l => [l, "propertyrentals"]),
+    expect(full.searches.slice(1, 6).map(s => [s.location, s.category, s.params])).toEqual(
+      RENTAL_PRICE_BANDS.map(([minPrice, maxPrice]) => ["montevideo", "propertyrentals", { minPrice, maxPrice }]),
     );
-    expect(full.searches.slice(7, 11).map(s => s.query)).toEqual(["departamento", "garantía", "monoambiente", "dormitorios"]);
-    expect(full.searches.filter(s => s.location === "montevideo" && !s.category)).toHaveLength(15);
+    expect(full.searches.slice(6, 11).map(s => [s.location, s.category, s.params])).toEqual(
+      ["ciudad-de-la-costa", "maldonado", "salto", "paysandu", "colonia-del-sacramento"].map(l => [l, "propertyrentals", undefined]),
+    );
+    expect(full.searches.slice(11, 15).map(s => s.query)).toEqual(["departamento", "garantía", "monoambiente", "dormitorios"]);
+    // Every department capital within its radius, as a list that may end on its first page.
+    const local = full.searches.filter(s => s.params?.radius === 40);
+    expect(local.map(s => s.location)).toEqual(RENTAL_LOCAL_ANCHORS);
+    expect(local.every(s => s.narrow && s.category === "propertyrentals")).toBe(true);
+    expect(full.searches).toContainEqual({ location: "montevideo", query: "alquiler pocitos" });
     expect(full.searches).toContainEqual({ location: "montevideo", query: "apartamento para alquilar" });
     expect(full.searches).toContainEqual({ location: "montevideo", query: "porto seguro" });
     expect(full.searches).toContainEqual({ location: "colonia-del-sacramento", query: "alquiler" });
-    expect(full.searches.filter(s => s.location === "maldonado")).toHaveLength(4);
+    expect(full.searches).toHaveLength(48 + RENTAL_LOCAL_ANCHORS.length);
     // Words measured to bring sales or junk stay out.
     expect(full.searches.map(s => s.query)).not.toContain("renta");
     expect(full.searches.map(s => s.query)).not.toContain("alquilar");
     await harvestFacebookMarketplace("fast", 41.5, { browser, details: async () => new Map() });
-    expect(browser.mock.calls[1][0]).toMatchObject({ sort: "newest" });
-    expect(browser.mock.calls[1][0].searches).toEqual([
+    const fast = browser.mock.calls[1][0];
+    expect(fast).toMatchObject({ sort: "newest" });
+    expect(fast.searches.slice(0, 3)).toEqual([
       { location: "montevideo", query: "alquiler" },
       { location: "montevideo", query: "alquiler apartamento" },
-      { location: "montevideo", query: "categoría Propiedades en alquiler", category: "propertyrentals" },
+      { location: "montevideo", query: "categoría Propiedades en alquiler", category: "propertyrentals", narrow: true },
     ]);
+    // Then two deep lists of the rotation, in Facebook's own order.
+    expect(fast.searches.slice(3)).toHaveLength(2);
+    expect(fast.searches.slice(3).every(s => s.sort === "relevance")).toBe(true);
+  });
+
+  it("brings every band, town and barrio round in the hourly runs of one day", () => {
+    const lists = rentalRotatingLists("montevideo");
+    const read = new Set<string>();
+    for (let hour = 0; hour < 24; hour++) {
+      for (const list of rentalHourlyRotation("montevideo", hour)) read.add(JSON.stringify(list));
+    }
+    expect(read.size).toBe(lists.length);
+    expect(rentalHourlyRotation("montevideo", 0)).not.toEqual(rentalHourlyRotation("montevideo", 1));
   });
 
   it("falls back to the bridge, saying why, when the browser read nothing", async () => {

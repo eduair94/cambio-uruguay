@@ -27,6 +27,7 @@ import { guaranteesFromText } from "../guarantees";
 import type { RawRental, RentalCurrency } from "../types";
 import type { RentalSourceResult } from "./types";
 import { FB_RENTALS_CATEGORY, readFacebookRentals } from "./facebookBrowser";
+import type { MarketplaceSearch } from "../../facebook/search";
 
 const API_BASE = (process.env.RENTALS_FB_API || "http://104.234.204.107:9657/facebook/marketplace").replace(
   /\/+$/,
@@ -186,36 +187,105 @@ const BROWSER_MORE_QUERIES = ["departamento", "garantía", "monoambiente", "dorm
 /** Marketplace's slug for the "Propiedades en alquiler" category list. */
 export const FB_RENTALS_CATEGORY_SLUG = "propertyrentals";
 
-const searches = (locations: readonly string[], queries: readonly string[]) =>
+const searches = (locations: readonly string[], queries: readonly string[]): MarketplaceSearch[] =>
   locations.flatMap(location => queries.map(query => ({ location, query })));
 
-const categoryLists = (locations: readonly string[]) =>
+const categoryLists = (locations: readonly string[]): MarketplaceSearch[] =>
   locations.map(location => ({ location, query: "categoría Propiedades en alquiler", category: FB_RENTALS_CATEGORY_SLUG }));
 
-function browserPlan(mode: "full" | "fast"): Parameters<typeof readFacebookRentals>[0] {
-  const minutes = Number(process.env.RENTALS_FB_BROWSER_MINUTES || (mode === "fast" ? 8 : 100));
+/**
+ * Montevideo's rentals category in price bands (pesos, Marketplace's own filter). A list is a
+ * ranking Facebook cuts at a few hundred cards; each band reaches as deep as the whole category did.
+ * Measured 2026-10-11, 30 scrolls each, valid adverts already stored → new: $ 1–15.000 35 % → 70,
+ * 15–22.000 60 % → 144, 22–32.000 41 % → 192, 32–50.000 34 % → 199, 50.000 and up 18 % → 163. The
+ * top band stops at $ 200.000: past that are the sales misfiled as rentals.
+ */
+export const RENTAL_PRICE_BANDS: ReadonlyArray<readonly [number, number]> = [
+  [1, 15_000], [15_000, 22_000], [22_000, 32_000], [32_000, 50_000], [50_000, 200_000],
+];
+
+const bandLists = (location: string): MarketplaceSearch[] =>
+  RENTAL_PRICE_BANDS.map(([minPrice, maxPrice]) => ({
+    location, query: `categoría $ ${minPrice}–${maxPrice}`, category: FB_RENTALS_CATEGORY_SLUG, params: { minPrice, maxPrice },
+  }));
+
+/**
+ * Department capitals read with Marketplace's own radius. Without it an anchor barely filters: the
+ * category "from Rivera" was Paysandú, Salto and Florida, and "from Tacuarembó" mostly Montevideo.
+ * With `radius=40` it is the town (2026-10-11, new adverts in the anchor's own department): Salto
+ * 79 of 80, Tacuarembó 86/86, Colonia 60/60, Paysandú 40/40, Rivera 24/24, Rocha 23/23, Maldonado
+ * 27/35, San José 31/33, Durazno 25/29, Treinta y Tres 14/15, Artigas 12/12, Canelones 19/42 (the
+ * rest Montevideo's edge). Not here because Facebook does not resolve the slug and answers the
+ * national list: melo, fray-bentos, mercedes, trinidad, florida, minas and, with a radius,
+ * ciudad-de-la-costa. Small towns can end on their first page, so these lists are `narrow`.
+ */
+export const RENTAL_LOCAL_ANCHORS = [
+  "salto", "tacuarembo", "colonia-del-sacramento", "paysandu", "rivera", "rocha", "maldonado", "san-jose-de-mayo",
+  "durazno", "treinta-y-tres", "artigas", "canelones",
+];
+
+const localLists = (anchors: readonly string[]): MarketplaceSearch[] =>
+  anchors.map(location => ({
+    location, query: "categoría local", category: FB_RENTALS_CATEGORY_SLUG, params: { radius: 40 }, narrow: true,
+  }));
+
+/**
+ * The barrio in the words: Facebook ranks first the adverts that name it, which an "alquiler"
+ * search leaves deep. "alquiler pocitos" found 112 adverts not stored (82 % already were), "alquiler
+ * cordon" 81 (2026-10-11). The barrios with the most rentals in the directory.
+ */
+const BARRIO_QUERIES = [
+  "alquiler pocitos", "alquiler cordon", "alquiler centro", "alquiler punta carretas", "alquiler parque rodo",
+  "alquiler tres cruces", "alquiler malvin", "alquiler buceo",
+];
+
+/** The deep lists the hourly run takes two at a time, in Facebook's own order. */
+export function rentalRotatingLists(home: string): MarketplaceSearch[] {
+  return [...bandLists(home), ...localLists(RENTAL_LOCAL_ANCHORS), ...searches([home], BARRIO_QUERIES)]
+    .map(search => ({ ...search, sort: "relevance" as const }));
+}
+
+/** The pair the hourly run reads this hour: a different one every hour, each list about once a day. */
+export function rentalHourlyRotation(home: string, hour: number, size = 2): MarketplaceSearch[] {
+  const lists = rentalRotatingLists(home);
+  const start = (Math.max(0, Math.floor(hour)) * size) % lists.length;
+  return [...lists.slice(start), ...lists.slice(0, start)].slice(0, size);
+}
+
+function browserPlan(mode: "full" | "fast", now = new Date()): Parameters<typeof readFacebookRentals>[0] {
+  const minutes = Number(process.env.RENTALS_FB_BROWSER_MINUTES || (mode === "fast" ? 10 : 150));
   const [home] = LOCATIONS;
   return mode === "fast"
     ? {
-      // The category sorted by newest stops at its first 24 cards, but those are today's: 11 of
-      // 20 valid ones were not stored (2026-10-10), for 18 seconds.
-      searches: [...searches([home!], ["alquiler", "alquiler apartamento"]), ...categoryLists([home!])],
+      // The newest first: two searches and the category sorted by newest, which stops at its first
+      // 24 cards but those are today's (11 of 20 valid ones were not stored, 2026-10-10). Then two
+      // deep lists in Facebook's own order, a different pair every hour, so the price bands, the
+      // towns and the barrios are read again during the day and not only at night.
+      searches: [
+        ...searches([home!], ["alquiler", "alquiler apartamento"]),
+        ...categoryLists([home!]).map(list => ({ ...list, narrow: true })),
+        ...rentalHourlyRotation(home!, now.getUTCHours()),
+      ],
       sort: "newest", maxScrolls: 15, stagnantRounds: 6,
       maxDurationMs: minutes * 60_000, lockWaitMs: 10 * 60_000,
     }
     : {
       // Ordered by what each list adds, because Facebook throttles a session that scrolls a lot and
       // two stalled lists end the run: what is read first must be what nothing else finds. The
-      // broadest search, then every anchor's category, then the words without "alquiler", then the
-      // "alquiler" wordings that mostly repeat each other, then the other anchors' searches (each
-      // anchor ranks its own area first: Maldonado alone added 494 adverts Montevideo's never
-      // showed). 36 lists (24 before): the clock went from 60 to 100 minutes.
+      // broadest search; Montevideo's category in price bands; the other anchors' category (no
+      // radius: each is a different national slice, 4–9 % already stored); the words without
+      // "alquiler"; the department capitals within their radius; the "alquiler" wordings that mostly
+      // repeat each other; the other anchors' searches (Maldonado alone added 494 adverts
+      // Montevideo's never showed); the barrios. 60 lists (24 until 2026-10-10), 150 minutes.
       searches: [
         ...searches([home!], BROWSER_QUERIES.slice(0, 1)),
-        ...categoryLists(LOCATIONS),
+        ...bandLists(home!),
+        ...categoryLists(LOCATIONS.slice(1)),
         ...searches([home!], [...BROWSER_MORE_QUERIES.slice(0, 4), ...BROWSER_QUERIES.slice(7), ...BROWSER_MORE_QUERIES.slice(4)]),
+        ...localLists(RENTAL_LOCAL_ANCHORS),
         ...searches([home!], BROWSER_QUERIES.slice(1, 7)),
         ...searches(LOCATIONS.slice(1), BROWSER_QUERIES.slice(0, 3)),
+        ...searches([home!], BARRIO_QUERIES),
       ],
       maxScrolls: 150, stagnantRounds: 10, maxDurationMs: minutes * 60_000,
       // Another job's Marketplace read (autos, retail) lasts minutes; the full sweep waits it out.

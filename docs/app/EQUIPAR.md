@@ -51,10 +51,26 @@ chica de otro para nada.
 tienda Fenicio es el correcto para una categoría y truncaría 38 en orden de sitemap, lo que sesga en
 silencio todas las bandas hacia lo que la tienda lista primero.
 
-Presupuestos: `EQUIPAR_ML_MAX_SCANS` (70) y `EQUIPAR_FB_MAX_QUERIES` (26). Los planes van
-**intercalados por categoría**, así que un corte le cuesta a cada categoría su cola y no a una
-categoría todo. El orden es el del registro, que pone heladera, colchón y lavarropas arriba: si se
-corta, se cortan los repasadores.
+Presupuestos: `EQUIPAR_ML_MAX_SCANS` (70) y `EQUIPAR_FB_MAX_QUERIES` (60 la diaria;
+`EQUIPAR_FB_FAST_QUERIES`, 13, la horaria). Los planes van **intercalados por categoría**, así que
+un corte le cuesta a cada categoría su cola y no a una categoría todo. El orden es el del registro,
+que pone heladera, colchón y lavarropas arriba: si se corta, se cortan los repasadores.
+
+**Marketplace no puede cortar siempre en el mismo lugar (11/10/2026).** Con 47 búsquedas planeadas,
+la diaria leía las primeras 26 y cada horaria las mismas primeras 13: las doce categorías desde
+«acolchado» (aspiradora, ventilador, estufa, plancha, secarropas, deshumidificador, impresora,
+toallas, cortina, limpieza, tacho) llevaban días sin una sola búsqueda de Marketplace y tenían cero
+avisos usados de Facebook. Tres cambios:
+
+- La diaria lee el plan entero (tope 26 → 60, reloj de Marketplace de retail 25 → 40 min).
+- La horaria sigue en 13, pero **rota**: cada hora arranca en otro tramo (`fbRotation` = hora UTC,
+  el plan empieza en `hora × 13`), así que cada búsqueda vuelve cada ~4 horas.
+- Marketplace sólo alimenta la banda de usados, así que el plan pone primero las categorías que
+  la publican (`usedOk`) y después las que desaconsejan comprar usado (colchón, sábanas…).
+
+Y un segundo término donde la muestra de usados era flaca, cada uno ya dentro del `include` de su
+categoría: «hervidor», «airfryer», «juego de platos», «plancha electrica», «secadora de ropa»,
+«calefactor», «secaplatos», «juego de cubiertos» (55 búsquedas en total).
 
 APP DB (`APP_MONGO_URI`): `equiparitems` (un documento por categoría+variante, con historia diaria
 de hasta un año) y `equiparmeta` (un documento: corrida, fuentes, las tres canastas, lo no cubierto).

@@ -51,6 +51,8 @@ export interface HarvestOptions {
   maxMlScans?: number;
   /** Cap on Facebook Marketplace searches for this run. Unlimited when absent. */
   maxFbQueries?: number;
+  /** Which slice of the Marketplace plan a capped run reads (see RetailFacebookOptions.rotation). */
+  fbRotation?: number;
   /**
    * Cap on distinct search terms per storefront that searches server-side (WooCommerce, VTEX).
    * Absent keeps each adapter's env default (24), which is what the chair directory runs on.
@@ -118,7 +120,7 @@ export async function harvestRetail(options: HarvestOptions): Promise<RetailHarv
       "facebook",
       "Facebook Marketplace",
       "facebook",
-      await safely(() => harvestFacebookMarketplace(specs, options.maxFbQueries, { fast }))
+      await safely(() => harvestFacebookMarketplace(specs, options.maxFbQueries, { fast, rotation: options.fbRotation }))
     );
   }
 

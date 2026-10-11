@@ -2,7 +2,7 @@
 // them privately, then turn every card of the last 4 days that names a dated car into a listing.
 import type { CarDictionary } from "./catalog/dictionary";
 import { fbCardToCar, fbDetailQueue, type FbCard, type FbItem } from "./sources/facebook";
-import { facebookSessionOk, readFacebookVehicles } from "./sources/facebookBrowser";
+import { FB_VEHICLE_LISTS, facebookSessionOk, readFacebookVehicles } from "./sources/facebookBrowser";
 import { loadFbCards, loadFbWanted, saveFbItems, upsertFbCards } from "./store";
 import type { CarSourceResult } from "./types";
 
@@ -13,11 +13,14 @@ const DAY = 86_400_000;
 // small pages (~9 cards) and its first one takes 4–5 rounds to follow (measured 2026-10-09), so
 // it gets 10 quiet rounds before it counts as ended. The lock wait is for another job's
 // Marketplace read (rentals, retail).
+// The deep lists (FB_VEHICLE_LISTS, since 2026-10-11) get 40 rounds each and the run 75 minutes
+// instead of 45: eleven lists at ~1.5 minutes.
 export const FB_BUDGET = {
   full: {
     feed: { maxScrolls: 150, stagnantRounds: 10 },
+    list: { maxScrolls: 40, stagnantRounds: 6 },
     query: { maxScrolls: 20, stagnantRounds: 5 },
-    items: 120, minutes: 45, lockWaitMinutes: 30,
+    items: 120, minutes: 75, lockWaitMinutes: 30,
   },
   fast: {
     feed: { maxScrolls: 40, stagnantRounds: 10, reachBackHours: 6 },
@@ -69,6 +72,8 @@ export async function runFacebook(options: {
   const wanted = options.dryRun ? new Set<string>() : await loadFbWanted();
   const read = await readFacebookVehicles({
     feed: budget.feed,
+    lists: options.fast ? [] : FB_VEHICLE_LISTS,
+    list: options.fast ? undefined : FB_BUDGET.full.list,
     queries: options.fast ? [] : options.brandQueries,
     query: budget.query,
     itemGapMs: FB_BUDGET.itemGapMs,
