@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  harvestFacebookMarketplace, RENTAL_LOCAL_ANCHORS, RENTAL_PRICE_BANDS, rentalHourlyRotation, rentalRotatingLists, toRawRental,
+  harvestFacebookMarketplace, RENTAL_LOCAL_ANCHORS, RENTAL_PRICE_BANDS, rentalHourlyRotation, rentalListsSummary, rentalRotatingLists, toRawRental,
 } from "../../classes/rentals/sources/facebook";
 import { fetchJson } from "../../classes/rentals/net";
 import { FB_RENTALS_CATEGORY, rentalCardsFromText, type FacebookRentalRead, type readFacebookRentals } from "../../classes/rentals/sources/facebookBrowser";
@@ -154,7 +154,7 @@ const node = (id: string, overrides: Record<string, unknown> = {}) => ({
 });
 const graphql = (...nodes: unknown[]) => `for (;;);${JSON.stringify({ data: { marketplace_search: { feed_units: { edges: nodes.map(listing => ({ node: { listing } })) } } } })}`;
 const read = (cards: FacebookRentalRead["cards"], extra: Partial<FacebookRentalRead> = {}): FacebookRentalRead => ({
-  cards, perSearch: [cards.map(card => card.id)], reads: cards.length, lists: 1, exhausted: 1, failed: 0, stalled: 0,
+  cards, perSearch: [cards.map(card => card.id)], fresh: [cards.length], spent: 0, reads: cards.length, lists: 1, exhausted: 1, failed: 0, stalled: 0,
   sessionLost: false, unreachable: false, busy: false, note: null, ...extra,
 });
 
@@ -197,6 +197,7 @@ describe("Facebook through the profile browser", () => {
     const full = browser.mock.calls[0][0];
     expect(full.maxScrolls).toBe(150);
     expect(full.maxDurationMs).toBe(150 * 60_000);
+    expect(full.runNovelty).toEqual({ rounds: 10, minNew: 3 });
     // What nothing else finds is read first, before a throttle can end the run: the broadest
     // search, then Montevideo's category in price bands, then the other anchors' category.
     expect(full.searches[0]).toEqual({ location: "montevideo", query: "alquiler" });
@@ -215,7 +216,8 @@ describe("Facebook through the profile browser", () => {
     expect(full.searches).toContainEqual({ location: "montevideo", query: "apartamento para alquilar" });
     expect(full.searches).toContainEqual({ location: "montevideo", query: "porto seguro" });
     expect(full.searches).toContainEqual({ location: "colonia-del-sacramento", query: "alquiler" });
-    expect(full.searches).toHaveLength(48 + RENTAL_LOCAL_ANCHORS.length);
+    expect(full.searches).toHaveLength(50 + RENTAL_LOCAL_ANCHORS.length);
+    expect(full.searches).toContainEqual({ location: "montevideo", query: "alquiler oficina" });
     // Words measured to bring sales or junk stay out.
     expect(full.searches.map(s => s.query)).not.toContain("renta");
     expect(full.searches.map(s => s.query)).not.toContain("alquilar");
@@ -227,9 +229,20 @@ describe("Facebook through the profile browser", () => {
       { location: "montevideo", query: "alquiler apartamento" },
       { location: "montevideo", query: "categoría Propiedades en alquiler", category: "propertyrentals", narrow: true },
     ]);
-    // Then two deep lists of the rotation, in Facebook's own order.
-    expect(fast.searches.slice(3)).toHaveLength(2);
-    expect(fast.searches.slice(3).every(s => s.sort === "relevance")).toBe(true);
+    // Then three deep lists of the rotation, in Facebook's own order and deeper than the newest.
+    expect(fast.searches.slice(3)).toHaveLength(3);
+    expect(fast.searches.slice(3).every(s => s.sort === "relevance" && s.maxScrolls === 40)).toBe(true);
+  });
+
+  it("logs what each list delivered and how much of it was new to the run", () => {
+    const searches = [
+      { location: "montevideo", query: "alquiler" },
+      { location: "montevideo", query: "categoría", category: "propertyrentals", params: { minPrice: 1, maxPrice: 15000 } },
+      { location: "salto", query: "categoría local", category: "propertyrentals", params: { radius: 40 } },
+      { location: "montevideo", query: "no leída" },
+    ];
+    const summary = rentalListsSummary(searches, { perSearch: [["1", "2", "3"], ["2", "4"], ["5"], []], fresh: [3, 1, 1, 0] });
+    expect(summary).toBe("alquiler 3/3; categoría[minPrice=1,maxPrice=15000] 2/1; salto:categoría local[radius=40] 1/1");
   });
 
   it("brings every band, town and barrio round in the hourly runs of one day", () => {

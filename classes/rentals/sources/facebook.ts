@@ -26,7 +26,7 @@ import { locateFacebookRental } from "../facebookDetail";
 import { guaranteesFromText } from "../guarantees";
 import type { RawRental, RentalCurrency } from "../types";
 import type { RentalSourceResult } from "./types";
-import { FB_RENTALS_CATEGORY, readFacebookRentals } from "./facebookBrowser";
+import { FB_RENTALS_CATEGORY, readFacebookRentals, type FacebookRentalRead } from "./facebookBrowser";
 import type { MarketplaceSearch } from "../../facebook/search";
 
 const API_BASE = (process.env.RENTALS_FB_API || "http://104.234.204.107:9657/facebook/marketplace").replace(
@@ -184,6 +184,24 @@ const BROWSER_QUERIES = [
  */
 const BROWSER_MORE_QUERIES = ["departamento", "garantía", "monoambiente", "dormitorios", "porto seguro", "contrato"];
 
+/**
+ * Premises, measured 2026-10-11 against a store that already held the night's 12.925 adverts:
+ * "alquiler oficina" 83 % stored (107 new), "alquiler local comercial" 80 % (91). "alquiler garaje"
+ * was 93 % (23) and stays out.
+ */
+const PREMISES_QUERIES = ["alquiler oficina", "alquiler local comercial"];
+
+/**
+ * Facebook's bedroom and property-type filters split the Montevideo category too, less than price
+ * (2026-10-11, same store): 1, 2 and 3+ bedrooms 81 % stored, ~50 new each; apartments 78 % (61).
+ * Houses (88 %), a finer price band ($ 18–20.000, 91 %: the night's bands already reach it), the last
+ * seven days (87 %) and Maldonado in price bands (80–89 %, mostly Montevideo) gave less and stay out.
+ * These go to the hourly rotation, not the night.
+ */
+const FILTER_LISTS: ReadonlyArray<Readonly<Record<string, string | number>>> = [
+  { minBedrooms: 1, maxBedrooms: 1 }, { minBedrooms: 2, maxBedrooms: 2 }, { minBedrooms: 3 }, { propertyType: "apartment-condo" },
+];
+
 /** Marketplace's slug for the "Propiedades en alquiler" category list. */
 export const FB_RENTALS_CATEGORY_SLUG = "propertyrentals";
 
@@ -239,27 +257,33 @@ const BARRIO_QUERIES = [
   "alquiler tres cruces", "alquiler malvin", "alquiler buceo",
 ];
 
-/** The deep lists the hourly run takes two at a time, in Facebook's own order. */
+/**
+ * The deep lists the hourly run takes three at a time, in Facebook's own order and 40 scrolls deep
+ * (the newest-first lists stay at 15): read during the day, not only at night.
+ */
 export function rentalRotatingLists(home: string): MarketplaceSearch[] {
-  return [...bandLists(home), ...localLists(RENTAL_LOCAL_ANCHORS), ...searches([home], BARRIO_QUERIES)]
-    .map(search => ({ ...search, sort: "relevance" as const }));
+  const filtered = FILTER_LISTS.map(params => ({
+    location: home, query: "categoría filtrada", category: FB_RENTALS_CATEGORY_SLUG, params,
+  }));
+  return [...bandLists(home), ...localLists(RENTAL_LOCAL_ANCHORS), ...searches([home], BARRIO_QUERIES), ...filtered]
+    .map(search => ({ ...search, sort: "relevance" as const, maxScrolls: 40 }));
 }
 
-/** The pair the hourly run reads this hour: a different one every hour, each list about once a day. */
-export function rentalHourlyRotation(home: string, hour: number, size = 2): MarketplaceSearch[] {
+/** The lists the hourly run reads this hour: a different set every hour, each list about three times a day. */
+export function rentalHourlyRotation(home: string, hour: number, size = 3): MarketplaceSearch[] {
   const lists = rentalRotatingLists(home);
   const start = (Math.max(0, Math.floor(hour)) * size) % lists.length;
   return [...lists.slice(start), ...lists.slice(0, start)].slice(0, size);
 }
 
 function browserPlan(mode: "full" | "fast", now = new Date()): Parameters<typeof readFacebookRentals>[0] {
-  const minutes = Number(process.env.RENTALS_FB_BROWSER_MINUTES || (mode === "fast" ? 10 : 150));
+  const minutes = Number(process.env.RENTALS_FB_BROWSER_MINUTES || (mode === "fast" ? 12 : 150));
   const [home] = LOCATIONS;
   return mode === "fast"
     ? {
       // The newest first: two searches and the category sorted by newest, which stops at its first
-      // 24 cards but those are today's (11 of 20 valid ones were not stored, 2026-10-10). Then two
-      // deep lists in Facebook's own order, a different pair every hour, so the price bands, the
+      // 24 cards but those are today's (11 of 20 valid ones were not stored, 2026-10-10). Then three
+      // deep lists in Facebook's own order, a different set every hour, so the price bands, the
       // towns and the barrios are read again during the day and not only at night.
       searches: [
         ...searches([home!], ["alquiler", "alquiler apartamento"]),
@@ -276,21 +300,38 @@ function browserPlan(mode: "full" | "fast", now = new Date()): Parameters<typeof
       // radius: each is a different national slice, 4–9 % already stored); the words without
       // "alquiler"; the department capitals within their radius; the "alquiler" wordings that mostly
       // repeat each other; the other anchors' searches (Maldonado alone added 494 adverts
-      // Montevideo's never showed); the barrios. 60 lists (24 until 2026-10-10), 150 minutes.
+      // Montevideo's never showed); the barrios. 62 lists (24 until 2026-10-10), 150 minutes, and a
+      // list that stops adding anything new to the run is cut (`runNovelty`) so more of them fit.
       searches: [
         ...searches([home!], BROWSER_QUERIES.slice(0, 1)),
         ...bandLists(home!),
         ...categoryLists(LOCATIONS.slice(1)),
-        ...searches([home!], [...BROWSER_MORE_QUERIES.slice(0, 4), ...BROWSER_QUERIES.slice(7), ...BROWSER_MORE_QUERIES.slice(4)]),
+        ...searches([home!], [...BROWSER_MORE_QUERIES.slice(0, 4), ...BROWSER_QUERIES.slice(7), ...BROWSER_MORE_QUERIES.slice(4), ...PREMISES_QUERIES]),
         ...localLists(RENTAL_LOCAL_ANCHORS),
         ...searches([home!], BROWSER_QUERIES.slice(1, 7)),
         ...searches(LOCATIONS.slice(1), BROWSER_QUERIES.slice(0, 3)),
         ...searches([home!], BARRIO_QUERIES),
       ],
       maxScrolls: 150, stagnantRounds: 10, maxDurationMs: minutes * 60_000,
+      // A list whose last 10 scrolls (~240 cards) added fewer than 3 the run had not seen is spent:
+      // the clock goes to the next list (on 2026-10-11 it ran out at list 35 of 60).
+      runNovelty: { rounds: 10, minNew: 3 },
       // Another job's Marketplace read (autos, retail) lasts minutes; the full sweep waits it out.
       lockWaitMs: 30 * 60_000,
     };
+}
+
+/** "alquiler 864/864; categoría $ 1–15000 301/120; …" — each read list, in the order read. */
+export function rentalListsSummary(searches: readonly MarketplaceSearch[], read: Pick<FacebookRentalRead, "perSearch" | "fresh">): string {
+  const label = (search: MarketplaceSearch) => {
+    const params = Object.entries(search.params ?? {}).map(([name, value]) => `${name}=${value}`).join(",");
+    return `${search.location === "montevideo" ? "" : `${search.location}:`}${search.query}${params ? `[${params}]` : ""}`;
+  };
+  return searches
+    .map((search, index) => ({ search, cards: read.perSearch[index]?.length ?? 0, fresh: read.fresh?.[index] ?? 0 }))
+    .filter(row => row.cards > 0)
+    .map(row => `${label(row.search)} ${row.cards}/${row.fresh}`)
+    .join("; ");
 }
 
 /** Card → row, keeping what the item page taught, and the plausibility floor per type. */
@@ -325,13 +366,17 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
 
   let fallbackReason = "";
   if (process.env.RENTALS_FB_BROWSER !== "0") {
-    const read = await (options.browser ?? readFacebookRentals)(browserPlan(mode));
+    const plan = browserPlan(mode);
+    const read = await (options.browser ?? readFacebookRentals)(plan);
     if (read.busy) {
       // Not the bridge: it drives the same Chrome another job is scrolling right now. ok:false
       // keeps the stored Marketplace rows instead of declaring them gone.
       return { key: "facebook", ok: false, complete: false, listings: [], note: read.note || "navegador ocupado" };
     }
     if (read.lists > 0) {
+      // What each list delivered and how much of it no earlier list had: the data to reorder or
+      // drop lists by, instead of guessing (pm2 log; the stored note stays short).
+      console.log(`[rentals] facebook por lista (tarjetas/nuevas): ${rentalListsSummary(plan.searches, read)}`);
       const { listings, rejected } = await convert(read.cards, usdUyu, options);
       return {
         key: "facebook",
@@ -340,7 +385,8 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
         ok: true,
         listings,
         note: `navegador: ${listings.length} avisos únicos de ${read.cards.length} tarjetas (${read.reads} lecturas); ${rejected} descartados; `
-          + `${read.lists} búsquedas (${read.exhausted} leídas hasta el final, ${read.stalled} sin cargar más que la primera página), ${read.failed} fallidas`
+          + `${read.lists} búsquedas (${read.exhausted} leídas hasta el final, ${read.stalled} sin cargar más que la primera página, `
+          + `${read.spent ?? 0} cortadas por no sumar nada nuevo), ${read.failed} fallidas`
           + (read.note ? `; ${read.note}` : ""),
       };
     }

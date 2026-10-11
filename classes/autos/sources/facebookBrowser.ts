@@ -32,7 +32,13 @@ const itemUrl = (id: string): string => `https://www.facebook.com/marketplace/it
  * 1–8.000 41 % (209), 8.000–15.000 31 % (182), 15.000–30.000 40 % (221), 30.000 and up 32 % (207);
  * from other anchors, Rivera 13 % (150), Salto 40 % (185), Maldonado 53 % (119), Colonia 52 % (118),
  * most of them cars of the interior; and two words no brand search says, "camioneta" 33 % (228) and
- * "auto" 38 % (130). Read by the daily run only, after the feed and before the brand searches.
+ * "auto" 38 % (130). Measured again the next day, with those already stored: Facebook's year filter
+ * splits the category as well as the price does (up to 2005 70 % stored, 109 new; 2006–2012 68 %,
+ * 133; 2013–2018 67 %, 137; 2019 on 49 %, 139), "pick up" 67 % (67), "utilitario" 73 % (72), "vendo
+ * auto" 63 % (63) and "furgon" 80 % (57). A
+ * radius did not make a town of the vehicles category (Tacuarembó, Paysandú, Durazno and Rocha within
+ * 60 km were mostly Montevideo), so the interior stays four anchors without one. Read by the daily
+ * run only, after the feed and before the brand searches.
  */
 export const FB_VEHICLE_LISTS: readonly MarketplaceSearch[] = [
   { location: "montevideo", query: "vehículos", category: "vehicles" },
@@ -41,8 +47,16 @@ export const FB_VEHICLE_LISTS: readonly MarketplaceSearch[] = [
   })),
   { location: "montevideo", query: "vehículos 30.000+", category: "vehicles", params: { minPrice: 30_000 } },
   ...["rivera", "salto", "maldonado", "colonia-del-sacramento"].map(location => ({ location, query: "vehículos", category: "vehicles" })),
+  ...[[0, 2005], [2006, 2012], [2013, 2018], [2019, 0]].map(([minYear, maxYear]) => ({
+    location: "montevideo", query: `vehículos ${minYear || ""}–${maxYear || ""}`, category: "vehicles",
+    params: { ...(minYear ? { minYear } : {}), ...(maxYear ? { maxYear } : {}) },
+  })),
   { location: "montevideo", query: "camioneta" },
   { location: "montevideo", query: "auto" },
+  { location: "montevideo", query: "pick up" },
+  { location: "montevideo", query: "utilitario" },
+  { location: "montevideo", query: "vendo auto" },
+  { location: "montevideo", query: "furgon" },
 ];
 
 /**
@@ -84,6 +98,11 @@ export async function readFacebookVehicles(options: {
   list?: FacebookListBudget;
   queries: readonly string[];
   query: FacebookListBudget;
+  /**
+   * Stop a deep list or a search once its last `rounds` scrolls added fewer than `minNew` vehicles the
+   * run had not seen (see classes/facebook/search.ts). Never the feed: it is the newest cars.
+   */
+  runNovelty?: { rounds: number; minNew: number };
   /** Given the cards read so far, which item pages to open (see fbDetailQueue). */
   itemIds: (cards: readonly FbCard[]) => Promise<string[]>;
   itemGapMs: number;
@@ -106,12 +125,20 @@ export async function readFacebookVehicles(options: {
   let stalledInARow = 0;
 
   /** Reads one list; false when the throttle says to stop reading lists. */
-  const readList = async (url: string, budget: FacebookListBudget): Promise<boolean> => {
+  const readList = async (url: string, budget: FacebookListBudget, novelty?: { rounds: number; minNew: number }): Promise<boolean> => {
     // Every card the list delivered, of any category: whether Facebook is still sending is the stop
     // signal and the throttle signal; only the vehicles are kept.
     const seenHere = new Set<string>();
     const cutoff = budget.reachBackHours ? Date.now() - budget.reachBackHours * 3_600_000 : null;
     let old = 0;
+    const runSizes: number[] = [];
+    const spent = novelty
+      ? () => {
+        runSizes.push(cards.size);
+        const back = runSizes.length - 1 - novelty.rounds;
+        return back >= 0 && cards.size - runSizes[back]! < novelty.minNew;
+      }
+      : null;
     const run = await scrollFacebookList(browser!, url, {
       onText: text => {
         for (const card of fbCardsFromText(text)) {
@@ -124,7 +151,7 @@ export async function readFacebookVehicles(options: {
         }
       },
       count: () => seenHere.size,
-      enough: cutoff === null ? undefined : () => old >= OLD_CARDS_TO_STOP,
+      enough: cutoff !== null ? () => old >= OLD_CARDS_TO_STOP : spent ?? undefined,
       maxScrolls: budget.maxScrolls,
       stagnantRounds: budget.stagnantRounds,
       deadline,
@@ -149,7 +176,7 @@ export async function readFacebookVehicles(options: {
     for (const list of options.lists ?? []) {
       if (!keepReading || Date.now() >= deadline) break;
       await sleep(options.itemGapMs);
-      keepReading = await readList(marketplaceListUrl(list), options.list ?? options.query);
+      keepReading = await readList(marketplaceListUrl(list), options.list ?? options.query, options.runNovelty);
     }
     for (const query of options.queries) {
       if (!keepReading) {
@@ -161,7 +188,7 @@ export async function readFacebookVehicles(options: {
         break;
       }
       await sleep(options.itemGapMs);
-      keepReading = await readList(searchUrl(query), options.query);
+      keepReading = await readList(searchUrl(query), options.query, options.runNovelty);
     }
     // Item pages do not scroll: the throttle above does not stop them.
     const ids = await options.itemIds([...cards.values()]);

@@ -190,7 +190,8 @@ export const MOVILIDAD_CATEGORIES: EquiparCategory[] = [
       "scooter electrico",
       "monopatin electrico plegable",
     ],
-    fbQueries: ["monopatin electrico"],
+    // "scooter electrico" is the same thing in the seller's words (MONOPATIN_INCLUDE already takes it).
+    fbQueries: ["monopatin electrico", "scooter electrico"],
   },
   {
     key: "bicicleta-electrica",
@@ -220,7 +221,7 @@ export const MOVILIDAD_CATEGORIES: EquiparCategory[] = [
       "e-bike",
       "bicicleta electrica carga",
     ],
-    fbQueries: ["bicicleta electrica"],
+    fbQueries: ["bicicleta electrica", "bici electrica"],
   },
 ];
 

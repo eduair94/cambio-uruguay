@@ -37,6 +37,8 @@ export interface MarketplaceSearch {
   params?: Readonly<Record<string, string | number>>;
   /** This list's own order, over the run's `sort` ("relevance" = Facebook's default ranking). */
   sort?: "newest" | "relevance";
+  /** This list's own scroll cap, over the run's `maxScrolls`. */
+  maxScrolls?: number;
   /**
    * A list that can honestly end on its first page (a small town's rentals within its radius, the
    * category sorted by newest). It never counts as a stalled list: two of those in a row are not
@@ -59,6 +61,10 @@ export interface MarketplaceSearchRead {
   cards: MarketplaceCard[];
   /** The ids each search delivered, aligned with `searches` (empty for one that was not read). */
   perSearch: string[][];
+  /** How many of those no earlier search of the run had delivered, aligned with `searches`. */
+  fresh: number[];
+  /** Lists stopped because they had stopped adding anything new to the run (`runNovelty`). */
+  spent: number;
   /** Cards before de-duplication, summed over every list. */
   reads: number;
   lists: number;
@@ -103,6 +109,13 @@ export async function readMarketplaceSearches(options: {
    * searches left equipar with 105 offers instead of 244 (2026-10-09 03:03).
    */
   stopOnStalls?: boolean;
+  /**
+   * Stop scrolling a list once its last `rounds` scrolls added fewer than `minNew` cards that the
+   * whole run had not seen. Deep lists overlap: scrolled to the end, an "alquiler casa" after
+   * "alquiler" and the price bands mostly re-delivers them, while the clock (150 minutes for rentals,
+   * which on 2026-10-11 ran out at list 35 of 60) is better spent on the next list.
+   */
+  runNovelty?: { rounds: number; minNew: number };
   connect?: () => Promise<Browser>;
   /** Attempts to reach the profile browser before falling back (one blip should not cost the run). */
   connectAttempts?: number;
@@ -110,7 +123,8 @@ export async function readMarketplaceSearches(options: {
 }): Promise<MarketplaceSearchRead> {
   const cards = new Map<string, MarketplaceCard>();
   const result: MarketplaceSearchRead = {
-    cards: [], perSearch: options.searches.map(() => []), reads: 0, lists: 0, exhausted: 0, failed: 0, stalled: 0,
+    cards: [], perSearch: options.searches.map(() => []), fresh: options.searches.map(() => 0), spent: 0,
+    reads: 0, lists: 0, exhausted: 0, failed: 0, stalled: 0,
     sessionLost: false, unreachable: false, busy: false, note: null,
   };
   const release = await (options.lock ?? acquireFacebookProfile)(options.owner, options.lockWaitMs ?? 10 * 60_000);
@@ -151,6 +165,10 @@ export async function readMarketplaceSearches(options: {
         // Stagnation is per list: counting the run's union, a second search that keeps delivering
         // cards an earlier one already had would look exhausted and stop early.
         const seenHere = new Set<string>();
+        const runBefore = cards.size;
+        // The run's size after each scroll of this list: whether the list still adds anything new.
+        const runSizes: number[] = [];
+        const novelty = options.runNovelty;
         try {
           const run = await scrollFacebookList(browser, marketplaceListUrl(search, options.sort), {
             onText: text => {
@@ -161,12 +179,21 @@ export async function readMarketplaceSearches(options: {
               }
             },
             count: () => seenHere.size,
-            maxScrolls: options.maxScrolls,
+            enough: novelty
+              ? () => {
+                runSizes.push(cards.size);
+                const back = runSizes.length - 1 - novelty.rounds;
+                return back >= 0 && cards.size - runSizes[back]! < novelty.minNew;
+              }
+              : undefined,
+            maxScrolls: search.maxScrolls ?? options.maxScrolls,
             stagnantRounds: options.stagnantRounds,
             deadline,
           });
           result.lists++;
           result.perSearch[index] = [...seenHere];
+          result.fresh[index] = cards.size - runBefore;
+          if (run.satisfied) result.spent++;
           if (run.exhausted) result.exhausted++;
           if (search.narrow) {
             // Ending on its first page is what a narrow list does: it says nothing about the session.

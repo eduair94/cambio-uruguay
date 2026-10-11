@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { scrollFacebookList } from "../../classes/facebook/browser";
 import { FB_VEHICLES_CATEGORY } from "../../classes/autos/sources/facebook";
 import { FB_VEHICLE_LISTS, readFacebookVehicles } from "../../classes/autos/sources/facebookBrowser";
+import { marketplaceListUrl } from "../../classes/facebook/search";
 
 vi.mock("../../classes/facebook/browser", async importOriginal => ({
   ...(await importOriginal<typeof import("../../classes/facebook/browser")>()),
@@ -123,11 +124,26 @@ describe("readFacebookVehicles", () => {
     expect(calls[3][2]).toMatchObject({ maxScrolls: 20 });
   });
 
+  it("stops a brand search that only repeats what the run has, but never the feed", async () => {
+    vi.mocked(scrollFacebookList)
+      // The feed: never cut, whatever it repeats.
+      .mockImplementationOnce(list(ids(0, 20, 1), ids(20, 20, 1), ids(40, 20, 1)))
+      // A brand search that re-delivers the feed for two rounds and only then brings new cars.
+      .mockImplementationOnce(list(ids(0, 20, 1), ids(20, 20, 1), ids(40, 20, 1), ids(100, 20, 1)));
+    const read = await readFacebookVehicles({
+      ...base, feed: { maxScrolls: 150, stagnantRounds: 10 }, queries: ["toyota"], runNovelty: { rounds: 2, minNew: 1 },
+    });
+    expect(read.cards).toHaveLength(60);
+    expect(read).toMatchObject({ lists: 2, stalled: 0 });
+  });
+
   it("splits the vehicles by price and reads the interior from its own anchors", () => {
     expect(FB_VEHICLE_LISTS.filter(list => list.params?.minPrice !== undefined)).toHaveLength(4);
+    expect(FB_VEHICLE_LISTS.filter(list => list.params?.minYear !== undefined || list.params?.maxYear !== undefined)
+      .map(list => marketplaceListUrl(list).split("?")[1])).toEqual(["maxYear=2005", "minYear=2006&maxYear=2012", "minYear=2013&maxYear=2018", "minYear=2019"]);
     expect(FB_VEHICLE_LISTS.map(list => list.location)).toEqual(expect.arrayContaining(["rivera", "salto", "maldonado", "colonia-del-sacramento"]));
-    expect(FB_VEHICLE_LISTS.filter(list => list.category === "vehicles")).toHaveLength(9);
-    expect(FB_VEHICLE_LISTS.filter(list => !list.category).map(list => list.query)).toEqual(["camioneta", "auto"]);
+    expect(FB_VEHICLE_LISTS.filter(list => list.category === "vehicles")).toHaveLength(13);
+    expect(FB_VEHICLE_LISTS.filter(list => !list.category).map(list => list.query)).toEqual(["camioneta", "auto", "pick up", "utilitario", "vendo auto", "furgon"]);
   });
 
   it("leaves Facebook alone while another job holds the profile", async () => {

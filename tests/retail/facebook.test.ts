@@ -12,7 +12,7 @@ const card = (id: string, title: string, amount = 4500, currency: "UYU" | "USD" 
 });
 const read = (perSearch: MarketplaceCard[][], extra: Partial<MarketplaceSearchRead> = {}): MarketplaceSearchRead => ({
   cards: [...new Map(perSearch.flat().map((item) => [item.id, item])).values()],
-  perSearch: perSearch.map((cards) => cards.map((item) => item.id)),
+  perSearch: perSearch.map((cards) => cards.map((item) => item.id)), fresh: perSearch.map((cards) => cards.length), spent: 0,
   reads: perSearch.flat().length, lists: perSearch.length, exhausted: perSearch.length, failed: 0, stalled: 0,
   sessionLost: false, unreachable: false, busy: false, note: null, ...extra,
 });
