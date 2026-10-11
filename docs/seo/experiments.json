@@ -1273,6 +1273,23 @@
         "topes de ingresos pension viudez"
       ],
       "hypothesis": "El sitio tiene el racimo del BPS entero (cuando me puedo jubilar, fecha de cobro, suplemento solidario, pension a la vejez, reconocer anos trabajados, desvinculacion de AFAP, IASS, certificados) y le faltaba la prestacion que se pide en el peor momento: la pension por sobrevivencia. No habia ninguna pagina del sitio para \"pension de viudez\" ni para \"pension por fallecimiento\". El angulo propio son tres cosas que los resumenes de terceros mezclan o se saltan: (1) la fecha del fallecimiento parte el tema en dos, porque la Ley 20.130 derogo los articulos 25 y 26 de la Ley 16.713 (art. 74) y el BPS publica los dos regimenes en paginas distintas, asi que media respuesta que circula es del regimen equivocado; (2) el plazo lo decide la edad que tenia el beneficiario EL DIA DEL FALLECIMIENTO (Decreto 229/023, art. 17: 40 o mas vitalicia, 30 a 39 cinco anos, menos de 30 dos anos), no la de hoy, y el resumen del propio BPS escribe el ultimo tramo como \"mayores de 40\", que al pie de la letra deja afuera a quien tiene 40 justos; (3) la vitalicia no es solo por edad: el inciso 2.o del mismo articulo la da a cualquier edad si la persona estaba absolutamente incapacitada o si hay hijos incapacitados sin medios en el nucleo familiar, y eso no aparece en ninguna tabla de plazos. Publica tambien los porcentajes del sueldo basico de pension (66 %, 75 % y 50 %, Decreto 229/023 art. 25), el minimo 2026 de $ 20.935 con su exclusion y la serie de topes de ingresos POR FECHA DE FALLECIMIENTO, que el BPS fija por tramo de la causal y no por ano en curso. Lo que deliberadamente NO publica: cuanto va a cobrar una persona (el sueldo basico sale de la historia laboral del causante, que el sitio no tiene), el umbral del abatimiento del art. 26 del decreto (su valor nominal es de 2023 y el BPS no lo publica actualizado) y el incremento por nucleo familiar del regimen anterior (el BPS dice que existe y no publica el porcentaje). Deberia tomar las consultas de pension de viudez y pension por fallecimiento, que hoy no tienen pagina en el sitio."
+    },
+    {
+      "id": "casas-grupo-antes-de-cambiar",
+      "shippedOn": "2026-10-11",
+      "routes": [
+        "/banco-o-casa-de-cambio-uruguay",
+        "/cobrar-giro-del-exterior-uruguay"
+      ],
+      "queries": [
+        "banco o casa de cambio",
+        "conviene cambiar en el banco",
+        "brou o casa de cambio",
+        "cobrar giro del exterior",
+        "donde cobro un giro",
+        "western union uruguay"
+      ],
+      "hypothesis": "Las dos paginas de DECISION de la seccion de casas de cambio eran las unicas dos rutas de la seccion `houses` del menu sin un solo enlace desde el contenido de otra pagina (medido sobre el arbol el 2026-10-11; `/banco-o-casa-de-cambio-uruguay` enlaza a `/avanzado`, `/mejor-casa-de-cambio` y `/mapa` y no recibe ninguno). Solo las tenia el menu, que no es una relacion entre paginas, y el bloque de su tema, que al pie aparece despues de todos los avisos. La barra de la familia `casas` enlazaba solo paginas del directorio -la comparativa, cerca de mi, el mapa, el historico, las analiticas, ultimos cambios y la mejor casa- y el GRUPO es la figura que el registro tiene justo para enlaces que no son del directorio: nadie se la habia puesto a esta familia, la unica de las que llevan barra que no tenia ninguno. Ahora las dos llegan arriba del titulo (antes de ~1.400 px, contra los 10.000-11.000 px del pie que midio el rastreo del 2026-09-21) en las siete paginas de la familia, que son las de mas trafico del sitio. La etiqueta es la PREGUNTA del lector y no el titulo del menu, como en alquileres y autos, porque el que esta comparando cotizaciones no busca un articulo: busca saber si le conviene el banco de la esquina o donde le pagan el giro que le mandaron. Un grupo no da pertenencia, asi que ninguna de las dos pasa a dibujar la barra de casas ni pierde su propio tema. OJO AL LEER EL VALOR: las nueve rutas involucradas valen hoy 1x en el plan -las siete de la barra por ser dato en vivo o por no estar clasificadas, y las dos destinatarias porque son paginas de problema sueltas que no estan en CONTENIDO_PATHS-, asi que esta fila NO supone el diferencial de 8x del tramo contenido; lo que se espera es lo que midieron las filas de huerfanas que entraron a su tema, mas rastreo y mas impresiones en las dos paginas que no recibian un enlace."
     }
   ]
 }

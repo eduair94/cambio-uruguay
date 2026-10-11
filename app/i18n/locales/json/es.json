@@ -1541,6 +1541,7 @@
       "vivienda": "Otras búsquedas de vivienda",
       "antesDeAlquilar": "Antes de alquilar",
       "antesDeComprar": "Antes de comprar",
+      "antesDeCambiar": "Antes de ir a cambiar",
       "tarjetasYBancos": "Otras tarjetas y bancos",
       "otrosVehiculos": "Otras formas de moverse"
     },
@@ -1549,6 +1550,8 @@
       "sinRecibo": "¿Sin recibo de sueldo?",
       "clearing": "¿Estás en el clearing?",
       "antesDeSenar": "¿El auto tiene deudas?",
+      "bancoOCasa": "¿Conviene cambiar en el banco?",
+      "giro": "¿Dónde cobrás un giro?",
       "queConviene": "¿Cuál te conviene?"
     },
     "enlaces": {

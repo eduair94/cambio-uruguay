@@ -1523,6 +1523,7 @@
       "vivienda": "Outras buscas de imóveis",
       "antesDeAlquilar": "Antes de alugar",
       "antesDeComprar": "Antes de comprar",
+      "antesDeCambiar": "Antes de trocar",
       "tarjetasYBancos": "Outros cartões e bancos",
       "otrosVehiculos": "Outras formas de se locomover"
     },
@@ -1531,6 +1532,8 @@
       "sinRecibo": "Sem comprovante de renda?",
       "clearing": "Com restrição de crédito?",
       "antesDeSenar": "O carro tem dívidas?",
+      "bancoOCasa": "Compensa trocar no banco?",
+      "giro": "Onde receber uma remessa?",
       "queConviene": "Qual compensa?"
     },
     "enlaces": {
