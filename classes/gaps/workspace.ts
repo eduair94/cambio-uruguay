@@ -14,6 +14,7 @@
 // rejected push — all of them return a reason and publish nothing.
 
 import { execFile } from "child_process";
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
@@ -130,9 +131,20 @@ export async function formatFiles(files: ReadonlyArray<{ path: string }>): Promi
   }
 }
 
-async function npmRun(script: string, cwd: string, timeout: number): Promise<StepResult> {
+/**
+ * Per-test timeout for the gate's run of the app suite: 30 s instead of vitest's 5.
+ *
+ * The suite runs on the production box, next to the API, the frontend and the scrapers. Measured
+ * 2026-10-11 on a clean `origin/main` with a load average of 27 on 32 cores: two runs, 3 and 4
+ * failures, every one "Test timed out in 5000ms" in an exhaustive-matrix test, and not the same set
+ * twice. With 30 s: 631 files green. A CPU-starved timeout says nothing about the page being
+ * checked, and a gate that rejects for it rejects every page. CI keeps the 5 s default.
+ */
+export const GATE_TEST_ARGS = ["--testTimeout=30000"];
+
+async function npmRun(script: string, cwd: string, timeout: number, args: string[] = []): Promise<StepResult> {
   try {
-    const { stdout, stderr } = await run("npm", ["run", script], {
+    const { stdout, stderr } = await run("npm", ["run", script, ...(args.length ? ["--", ...args] : [])], {
       cwd,
       timeout,
       maxBuffer: 32 * 1024 * 1024,
@@ -144,6 +156,85 @@ async function npmRun(script: string, cwd: string, timeout: number): Promise<Ste
   }
 }
 
+export type Installer = (appDir: string) => Promise<StepResult>;
+
+/** `--force` and never `npm ci`: the same install the app gets everywhere else (see AGENTS.md). */
+async function npmInstall(appDir: string): Promise<StepResult> {
+  try {
+    await run("npm", ["install", "--force", "--no-audit", "--no-fund"], {
+      cwd: appDir,
+      timeout: INSTALL_TIMEOUT,
+      maxBuffer: 32 * 1024 * 1024,
+      shell: process.platform === "win32",
+    });
+    return { ok: true, detail: "npm install terminó" };
+  } catch (e: any) {
+    return { ok: false, detail: `${e?.stdout ?? ""}\n${e?.stderr ?? e?.message ?? e}`.slice(-3000) };
+  }
+}
+
+/** Inside `node_modules` on purpose: wiping the install wipes the record of it. */
+const LOCK_STAMP = ".genpage-lock.sha256";
+
+/**
+ * Install the app's dependencies whenever `origin/main` changed its lockfile.
+ *
+ * `syncWorkspace` resets the tracked tree, but `app/node_modules` is not tracked and nothing ever
+ * reinstalled it. On 2026-09-30 the app moved to ESLint 10 and an `@nuxt/eslint-config` that exports
+ * `createConfigForNuxt`; this clone kept the ESLint 9.28 installed by hand on 2026-08-18, so
+ * `npm run lint` died loading its own config before reading a single file — and every addendum and
+ * every generated page after that was "rejected". A gate running stale tools fails for reasons the
+ * page has nothing to do with.
+ *
+ * The stamp is the hash of the lockfile as `main` has it, taken BEFORE installing: `npm install` may
+ * rewrite `package-lock.json`, the next hard reset puts `main`'s back, and a stamp of the rewritten
+ * one would reinstall on every run. A failed install writes no stamp, so the next run tries again.
+ */
+export async function ensureDependencies(install: Installer = npmInstall): Promise<StepResult> {
+  const appDir = path.join(WORKSPACE_DIR, "app");
+  let lock: Buffer;
+  try {
+    lock = fs.readFileSync(path.join(appDir, "package-lock.json"));
+  } catch {
+    return { ok: true, detail: "sin package-lock.json: no hay contra qué comparar" };
+  }
+
+  const want = crypto.createHash("sha256").update(lock).digest("hex");
+  const stampPath = path.join(appDir, "node_modules", LOCK_STAMP);
+  let have = "";
+  try {
+    have = fs.readFileSync(stampPath, "utf8").trim();
+  } catch {}
+  if (have === want) return { ok: true, detail: "dependencias al día con el lockfile" };
+
+  const installed = await install(appDir);
+  if (!installed.ok) return { ok: false, detail: `npm install falló:\n${installed.detail}` };
+
+  try {
+    fs.mkdirSync(path.dirname(stampPath), { recursive: true });
+    fs.writeFileSync(stampPath, `${want}\n`, "utf8");
+  } catch (e: any) {
+    // Installed but unrecorded: harmless, the next run just installs once more.
+    console.warn(`[genpage] no pude guardar ${stampPath}: ${e?.message ?? e}`);
+  }
+  return { ok: true, detail: "dependencias reinstaladas: el lockfile de main cambió" };
+}
+
+/**
+ * The part of a failure worth putting in a Telegram message: its start AND its end.
+ *
+ * Lint reports its verdict at the bottom ("✖ 2 problems"), but a tool that crashes says why at the
+ * top and then prints a stack trace. Keeping only the tail is what turned the 2026-10-11 rejection
+ * into twenty lines of `config-loader.js` without the one line that named the cause.
+ */
+export function failureExcerpt(detail: string, max: number): string {
+  if (detail.length <= max) return detail;
+  const gap = "\n…\n";
+  const head = Math.floor((max - gap.length) * 0.4);
+  const tail = max - gap.length - head;
+  return `${detail.slice(0, head)}${gap}${detail.slice(-tail)}`;
+}
+
 /**
  * The gate. The app's own lint and test suite, against the generated files.
  *
@@ -151,8 +242,16 @@ async function npmRun(script: string, cwd: string, timeout: number): Promise<Ste
  * and a check that always fails is a check that gets skipped. Lint plus the suite is what CI would
  * have run on a pull request, which is exactly the bar being replaced.
  */
-export async function verifyWorkspace(files: ReadonlyArray<{ path: string }> = []): Promise<StepResult> {
+export async function verifyWorkspace(
+  files: ReadonlyArray<{ path: string }> = [],
+  { install }: { install?: Installer } = {}
+): Promise<StepResult> {
   const appDir = path.join(WORKSPACE_DIR, "app");
+
+  // Before formatting too: the old Prettier formats to the old style just as confidently.
+  const deps = await ensureDependencies(install);
+  if (!deps.ok) return deps;
+
   if (!fs.existsSync(path.join(appDir, "node_modules"))) {
     return {
       ok: false,
@@ -168,7 +267,7 @@ export async function verifyWorkspace(files: ReadonlyArray<{ path: string }> = [
   const lint = await npmRun("lint", appDir, CHECK_TIMEOUT);
   if (!lint.ok) return { ok: false, detail: `lint falló:\n${lint.detail}` };
 
-  const tests = await npmRun("test", appDir, CHECK_TIMEOUT);
+  const tests = await npmRun("test", appDir, CHECK_TIMEOUT, GATE_TEST_ARGS);
   if (!tests.ok) return { ok: false, detail: `los tests de la app fallaron:\n${tests.detail}` };
 
   return { ok: true, detail: "lint y tests en verde" };
