@@ -12,6 +12,7 @@ import { emitAddendum } from "./emit";
 import { enrichPage, maxPagesPerRun, pagesNeedingEnrichment } from "./enrich";
 import {
   commitAndPush,
+  failureExcerpt,
   readWorkspaceFile,
   syncWorkspace,
   verifyWorkspace,
@@ -72,7 +73,7 @@ export async function enrichExistingPages(today: string): Promise<string[]> {
     if (!verified.ok) {
       await notifyAdmin(
         `🚫 *Ampliación rechazada* — ${pagePath}\nNo pasó lint/tests, no se publicó nada.\n\n` +
-          `\`\`\`\n${verified.detail.slice(-700)}\n\`\`\``
+          `\`\`\`\n${failureExcerpt(verified.detail, 1200)}\n\`\`\``
       );
       // Dejar el árbol limpio para la próxima ruta de la cola.
       await syncWorkspace();

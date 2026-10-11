@@ -31,6 +31,7 @@ import { correctionFor, describeProblems, validatePageSpec } from "./pageSpec";
 import { topicByKey } from "./topics";
 import {
   commitAndPush,
+  failureExcerpt,
   readWorkspaceFile,
   syncWorkspace,
   verifyWorkspace,
@@ -177,7 +178,7 @@ export async function publishPageForCluster(cluster: GapCluster, today: string):
   if (!verified.ok) {
     await notifyAdmin(
       `🚫 *Página generada rechazada* — "${spec.title}"\nNo pasó lint/tests, no se publicó nada.\n\n` +
-        `\`\`\`\n${verified.detail.slice(-900)}\n\`\`\``
+        `\`\`\`\n${failureExcerpt(verified.detail, 1200)}\n\`\`\``
     );
     return { status: "failed", reason: `verificación en rojo: ${verified.detail.slice(-400)}` };
   }
