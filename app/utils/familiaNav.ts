@@ -170,6 +170,28 @@ const GRUPOS: Readonly<Record<string, readonly GrupoDef[]>> = {
       ],
     },
   ],
+  // Las dos páginas de DECISIÓN de la sección de casas de cambio. La barra de `casas` enlaza la
+  // comparativa, el mapa, el histórico y las analíticas —todo dato en vivo— y estas dos quedaban
+  // afuera por no ser páginas del directorio. Medido sobre el árbol el 2026-10-11: eran las ÚNICAS
+  // dos rutas de la sección `houses` del menú sin un solo enlace desde el contenido de otra página
+  // (`/banco-o-casa-de-cambio-uruguay` enlaza a `/avanzado`, `/mejor-casa-de-cambio` y `/mapa`, y
+  // no recibe ninguno). Sólo las tenía el menú, que no es una relación entre páginas, y el bloque
+  // de su tema, que al pie aparece después de todos los avisos. Van como GRUPO y no como análisis
+  // porque no SALEN de las pizarras: son dos páginas de decisión que a lo sumo ilustran con una
+  // cifra del día, no un cálculo sobre la serie. Y un grupo no da pertenencia, así que ninguna de
+  // las dos pasa a dibujar la barra de casas ni pierde su propio tema.
+  //
+  // La etiqueta es la PREGUNTA del lector, como en alquileres y autos: el que está comparando
+  // cotizaciones no busca un artículo, busca saber si le conviene el banco de la esquina.
+  casas: [
+    {
+      labelKey: 'familiaNav.grupos.antesDeCambiar',
+      links: [
+        { to: '/banco-o-casa-de-cambio-uruguay', labelKey: 'familiaNav.preguntas.bancoOCasa' },
+        { to: '/cobrar-giro-del-exterior-uruguay', labelKey: 'familiaNav.preguntas.giro' },
+      ],
+    },
+  ],
   tarjetas: [
     {
       labelKey: 'familiaNav.grupos.tarjetasYBancos',

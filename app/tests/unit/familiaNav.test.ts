@@ -175,6 +175,22 @@ describe('los grupos de la barra', () => {
     )
   })
 
+  // Las dos páginas de decisión de la sección de casas de cambio, que eran las únicas dos rutas de
+  // `houses` sin un enlace desde el contenido de otra página (2026-10-11). Van con la pregunta del
+  // lector, no con el título del menú, y llegan a las siete páginas de la familia.
+  it('casas lleva las dos preguntas de antes de ir a cambiar', () => {
+    const nav = familiaNavParaRuta('/casas-de-cambio')!
+    expect(nav.grupos.map(grupo => grupo.labelKey)).toEqual(['familiaNav.grupos.antesDeCambiar'])
+    const items = nav.grupos.flatMap(grupo => grupo.items)
+    expect(items.map(item => [item.to, item.labelKey])).toEqual([
+      ['/banco-o-casa-de-cambio-uruguay', 'familiaNav.preguntas.bancoOCasa'],
+      ['/cobrar-giro-del-exterior-uruguay', 'familiaNav.preguntas.giro'],
+    ])
+    // Un grupo enlaza y no da pertenencia: ninguna de las dos dibuja la barra de casas.
+    expect(familiaNavParaRuta('/banco-o-casa-de-cambio-uruguay')).toBeNull()
+    expect(familiaNavParaRuta('/cobrar-giro-del-exterior-uruguay')).toBeNull()
+  })
+
   it('familiaNavRutas devuelve todo lo que enlaza la barra, o nada si no hay barra', () => {
     const nav = familiaNavParaRuta('/alquileres-uruguay')!
     expect(familiaNavRutas('/alquileres-uruguay')).toEqual(todas(nav))

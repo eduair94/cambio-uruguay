@@ -1530,6 +1530,7 @@
       "vivienda": "Related home searches",
       "antesDeAlquilar": "Before you rent",
       "antesDeComprar": "Before you buy",
+      "antesDeCambiar": "Before you exchange",
       "tarjetasYBancos": "Other cards and banks",
       "otrosVehiculos": "Other ways to get around"
     },
@@ -1538,6 +1539,8 @@
       "sinRecibo": "No payslip?",
       "clearing": "Listed on the credit registry?",
       "antesDeSenar": "Does the car carry debts?",
+      "bancoOCasa": "Is the bank cheaper?",
+      "giro": "Where do you pick up a transfer?",
       "queConviene": "Which one pays off?"
     },
     "enlaces": {
