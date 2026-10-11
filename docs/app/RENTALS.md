@@ -1,5 +1,33 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Facebook Marketplace: bandas de precio, pueblos con radio y barrios — 11 de octubre de 2026
+
+Pedido: "tener en cuenta barrios, ubicaciones y otros parámetros". Medido igual que el 10/10
+(captura-recaptura con el lector de producción, ~9.300 ofertas de Facebook guardadas):
+
+- **Bandas de precio.** La categoría de Montevideo con el filtro de precio de Facebook (`minPrice` /
+  `maxPrice`, pesos), 30 scrolls por banda: $ 1–15.000 35 % ya guardado (70 nuevos), 15–22.000 60 %
+  (144), 22–32.000 41 % (192), 32–50.000 34 % (199), 50.000+ 18 % (163). Una lista es un ranking que
+  Facebook corta en unos cientos de tarjetas; cada banda llega tan hondo como la categoría entera. La
+  banda de arriba termina en $ 200.000: más arriba están las ventas archivadas como alquiler.
+- **Ubicaciones: el radio.** Sin radio, un ancla casi no filtra (la categoría «desde Rivera» era
+  Paysandú, Salto y Florida). Con `radius=40` es el pueblo: Salto 79 de 80 avisos nuevos en Salto,
+  Tacuarembó 86/86, Colonia 60/60, Paysandú 40/40, Rivera 24/24, Rocha 23/23, y así en 12 capitales
+  (`RENTAL_LOCAL_ANCHORS`). Siete slugs no los resuelve Facebook y devuelven la lista nacional (melo,
+  fray-bentos, mercedes, trinidad, florida, minas, ciudad-de-la-costa con radio): quedan afuera
+  hasta encontrar su id. Un pueblo chico termina en su primera página, así que esas listas son
+  `narrow` (`classes/facebook/search.ts`): no cuentan como «frenadas» y no cortan la corrida.
+- **Barrios.** El barrio en las palabras sube los avisos que lo nombran: «alquiler pocitos» 82 % ya
+  guardado (112 nuevos), «alquiler cordon» 88 % (81), «alquiler las piedras» 91 % (29), «alquiler
+  punta del este» desde Maldonado 82 % (40). Van ocho barrios de Montevideo, al final del plan.
+- **El plan completo** pasa a 60 listas en este orden: «alquiler», las 5 bandas, la categoría de
+  las otras 5 anclas sin radio (cada una es otra tajada nacional), las palabras sin «alquiler», las
+  12 capitales con radio, las «alquiler …», las búsquedas de las otras anclas y los barrios. Reloj de
+  la completa: 100 → 150 minutos.
+- **La horaria** suma, además de lo más nuevo, **dos listas rotativas** de las 25 profundas
+  (bandas, capitales, barrios) en orden de Facebook, otro par cada hora (`rentalHourlyRotation`):
+  cada una se lee una o dos veces por día y no sólo de noche. Reloj de la horaria: 8 → 10 minutos.
+
 ## Facebook Marketplace: la categoría y seis palabras más — 10 de octubre de 2026
 
 Pedido: "iterar sobre las búsquedas de Facebook Marketplace y agregar términos que amplíen los
@@ -1645,7 +1673,7 @@ Lo que pasó ese día, y lo que cambió por eso:
 | `RENTALS_CW_PAUSE_MS` | 60000 | pausa única por corrida antes de la segunda lectura de las búsquedas de Casasweb que fallaron |
 | `RENTALS_FB_ENABLED` | — | `0` apaga Marketplace |
 | `RENTALS_FB_BROWSER` | — | `0` vuelve al puente `:9657` (20–26 tarjetas por búsqueda) |
-| `RENTALS_FB_BROWSER_MINUTES` | 100 / 8 | tope de reloj del lector por navegador en full / fast; al cortar conserva lo leído |
+| `RENTALS_FB_BROWSER_MINUTES` | 150 / 10 | tope de reloj del lector por navegador en full / fast; al cortar conserva lo leído |
 | `RENTALS_FB_LOCATIONS` | montevideo,ciudad-de-la-costa,maldonado,salto,paysandu,colonia-del-sacramento | anclas de búsqueda en Marketplace; las sugerencias pueden estar en otras zonas |
 | `RENTALS_HOST_GAP_MS` | 1200 | separación mínima entre dos requests al mismo host |
 | `RENTALS_LOCK_FILE` | `/tmp/cambio-uruguay-rentals-sync.lock` | archivo de bloqueo del wrapper Linux; ambos jobs deben compartir el mismo valor |

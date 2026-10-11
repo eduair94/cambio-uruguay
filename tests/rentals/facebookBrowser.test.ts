@@ -54,6 +54,23 @@ describe("readFacebookRentals", () => {
       "https://www.facebook.com/marketplace/montevideo/search?query=garant%C3%ADa&sortBy=creation_time_descend",
     ]);
     expect(marketplaceListUrl({ location: "salto", query: "", category: "propertyrentals" })).toBe("https://www.facebook.com/marketplace/salto/propertyrentals");
+    expect(marketplaceListUrl({ location: "montevideo", query: "", category: "propertyrentals", params: { minPrice: 15000, maxPrice: 22000 } }, "newest"))
+      .toBe("https://www.facebook.com/marketplace/montevideo/propertyrentals?minPrice=15000&maxPrice=22000&sortBy=creation_time_descend");
+    // A list's own order wins over the run's.
+    expect(marketplaceListUrl({ location: "salto", query: "", category: "propertyrentals", params: { radius: 40 }, sort: "relevance" }, "newest"))
+      .toBe("https://www.facebook.com/marketplace/salto/propertyrentals?radius=40");
+  });
+
+  it("never ends the run on narrow lists that end on their first page", async () => {
+    vi.mocked(scrollFacebookList)
+      .mockImplementationOnce(list(["1000001"]))
+      .mockImplementationOnce(list(["1000002"]))
+      .mockImplementationOnce(list(["1000003"]))
+      .mockImplementationOnce(list(["1000004"], ["1000005"]));
+    const narrow = (location: string) => ({ location, query: "categoría local", category: "propertyrentals", narrow: true });
+    const read = await readFacebookRentals({ ...plan([]), searches: [narrow("artigas"), narrow("trinidad"), narrow("durazno"), { location: "montevideo", query: "alquiler" }] });
+    expect(scrollFacebookList).toHaveBeenCalledTimes(4);
+    expect(read).toMatchObject({ lists: 4, stalled: 0, note: null });
   });
 
   it("stops after two searches in a row that never loaded past their first page", async () => {

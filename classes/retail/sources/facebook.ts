@@ -35,7 +35,9 @@ const SELLER = "Facebook Marketplace";
  * day, 3 pages every hour. The lock wait covers another job's read (rentals, autos).
  */
 export const RETAIL_FB_BUDGET = {
-  daily: { maxScrolls: 8, minutes: 25, lockWaitMinutes: 20 },
+  // 40 minutes since 2026-10-11: equipar's daily run now reads its whole plan (~55 searches at
+  // ~35 s each) instead of the first 26.
+  daily: { maxScrolls: 8, minutes: 40, lockWaitMinutes: 20 },
   fast: { maxScrolls: 3, minutes: 8, lockWaitMinutes: 10 },
   stagnantRounds: 3,
   gapMs: 6_000,
@@ -99,6 +101,13 @@ function toListing(item: FbListing, spec: CategorySpec, observedAt: string): Ret
 export interface RetailFacebookOptions {
   /** The hourly pass: fewer pages per search. */
   fast?: boolean;
+  /**
+   * Which slice of the plan this run reads when the budget is shorter than the plan: it starts at
+   * `rotation × budget`, wrapped. Equipar's hourly run passes the UTC hour. Without it every run read
+   * the SAME first searches: on 2026-10-11 the plan had 47 searches, the daily budget 26 and the
+   * hourly 13, and twelve categories (acolchado onwards) had not had one Marketplace search in days.
+   */
+  rotation?: number;
   /** The browser reader; defaults to the profile Chrome. */
   reader?: typeof readMarketplaceSearches;
 }
@@ -114,16 +123,20 @@ export async function harvestFacebookMarketplace(
   const observedAt = new Date().toISOString();
 
   // Interleaved like the MercadoLibre plan: a budget cut has to cost every category its tail, not
-  // one category everything. Callers put what matters first.
+  // one category everything. Callers put what matters first; Marketplace only feeds the used side,
+  // so the categories that publish a used band come before the ones that advise against used.
+  const ordered = [...specs.filter((spec) => spec.usedOk !== false), ...specs.filter((spec) => spec.usedOk === false)];
   const planned: Array<{ query: string; spec: CategorySpec }> = [];
   for (let round = 0; ; round++) {
-    const slice = specs
+    const slice = ordered
       .map((spec) => ({ query: spec.fbQueries?.[round], spec }))
       .filter((entry): entry is { query: string; spec: CategorySpec } => Boolean(entry.query));
     if (!slice.length) break;
     planned.push(...slice);
   }
-  const budgeted = planned.slice(0, maxQueries);
+  const budget = Math.min(planned.length, Math.max(0, maxQueries));
+  const start = budget && budget < planned.length ? ((Math.max(0, Math.floor(options.rotation ?? 0)) * budget) % planned.length) : 0;
+  const budgeted = [...planned.slice(start), ...planned.slice(0, start)].slice(0, budget);
   const outOfBudget = planned.length > budgeted.length ? `, ${planned.length - budgeted.length} búsquedas fuera de presupuesto` : "";
 
   let fallbackReason = "";

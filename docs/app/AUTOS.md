@@ -83,6 +83,21 @@ sólo para candidatas a oportunidad.
   10 la horaria; si no, Facebook queda fuera de esa corrida). Fichas: hasta 120 por diaria y 15 por horaria,
   6 s entre una y otra, primero las que el análisis pidió (`uy-cars-fb-wanted`) y después las que no
   dicen año o km. Un login o checkpoint corta Facebook por el resto de la corrida.
+- **Listas profundas (desde 2026-10-11, sólo la diaria):** el feed por más nuevos nunca llega a un
+  auto publicado hace un mes. Entre el feed y las marcas, la diaria lee 11 listas más, hasta 40
+  rondas cada una (`FB_VEHICLE_LISTS`; reloj de Facebook de 45 a 75 min). Medido antes, 30 rondas
+  cada lista contra las 30.309 tarjetas guardadas (el feed mismo: 89 % ya guardado):
+
+  | lista | ya guardado | nuevos |
+  |---|---|---|
+  | categoría Vehículos por relevancia | 37 % | 141 |
+  | la categoría con el filtro de precio de Facebook: 1–8.000 / 8.000–15.000 / 15.000–30.000 / 30.000+ | 41 / 31 / 40 / 32 % | 209 / 182 / 221 / 207 |
+  | la categoría desde Rivera / Salto / Maldonado / Colonia | 13 / 40 / 53 / 52 % | 150 / 185 / 119 / 118 |
+  | «camioneta» / «auto» | 33 / 38 % | 228 / 130 |
+
+  Las anclas del interior traen sobre todo autos del interior; la partición por precio funciona aunque
+  el monto de Facebook diga "UYU" con dólares adentro, porque parte el ranking por el número que
+  Facebook guarda.
 - En Uruguay **todos los campos `vehicle_*` vienen vacíos** y la moneda es siempre "UYU" aunque el
   monto sea en dólares. El auto sale del título y la descripción; la moneda se lee **pegada al monto**
   ("U$S 4.000", "4 mil dólares" — "debe 52 mil pesos" no cuenta) y si no está escrita se deduce: de

@@ -128,4 +128,10 @@ export interface CategorySpec {
   acceptFromCategory?: (title: string, attributes: Record<string, string>) => boolean;
   /** Facebook Marketplace searches. */
   fbQueries?: readonly string[];
+  /**
+   * Whether the category publishes a used band. Marketplace only feeds the used side, so its plan
+   * reads these first and a category that advises against buying used (a mattress) after them.
+   * Absent = true.
+   */
+  usedOk?: boolean;
 }

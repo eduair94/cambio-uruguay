@@ -28,13 +28,32 @@ export interface MarketplaceSearch {
    * already stored after every search, 9 % from Maldonado, 4 % from Salto).
    */
   category?: string;
+  /**
+   * Marketplace's own filters on the list (`minPrice`, `maxPrice`, `minYear`…). A list is a ranking
+   * Facebook cuts at a few hundred cards, so splitting it by price lets every band reach as deep as
+   * the whole list did: the Montevideo rentals category from $ 15.000 to $ 22.000 alone had 144
+   * adverts no search had found (2026-10-11).
+   */
+  params?: Readonly<Record<string, string | number>>;
+  /** This list's own order, over the run's `sort` ("relevance" = Facebook's default ranking). */
+  sort?: "newest" | "relevance";
+  /**
+   * A list that can honestly end on its first page (a small town's rentals within its radius, the
+   * category sorted by newest). It never counts as a stalled list: two of those in a row are not
+   * the throttle, and must not end the run as if they were.
+   */
+  narrow?: boolean;
 }
 
-export const marketplaceListUrl = (search: MarketplaceSearch, sort?: "newest"): string =>
-  search.category
-    ? `https://www.facebook.com/marketplace/${encodeURIComponent(search.location)}/${encodeURIComponent(search.category)}`
-      + (sort === "newest" ? "?sortBy=creation_time_descend" : "")
-    : marketplaceSearchUrl(search.location, search.query, sort);
+export function marketplaceListUrl(search: MarketplaceSearch, sort?: "newest"): string {
+  const params = new URLSearchParams();
+  if (!search.category) params.set("query", search.query);
+  for (const [name, value] of Object.entries(search.params ?? {})) params.set(name, String(value));
+  if ((search.sort ?? sort) === "newest") params.set("sortBy", "creation_time_descend");
+  const path = search.category ? encodeURIComponent(search.category) : "search";
+  const query = params.toString();
+  return `https://www.facebook.com/marketplace/${encodeURIComponent(search.location)}/${path}${query ? `?${query}` : ""}`;
+}
 
 export interface MarketplaceSearchRead {
   cards: MarketplaceCard[];
@@ -149,7 +168,9 @@ export async function readMarketplaceSearches(options: {
           result.lists++;
           result.perSearch[index] = [...seenHere];
           if (run.exhausted) result.exhausted++;
-          if (seenHere.size <= run.initial && run.initial >= (options.stallFloor ?? 0)) {
+          if (search.narrow) {
+            // Ending on its first page is what a narrow list does: it says nothing about the session.
+          } else if (seenHere.size <= run.initial && run.initial >= (options.stallFloor ?? 0)) {
             result.stalled++;
             stalledInARow++;
           } else {

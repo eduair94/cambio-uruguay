@@ -71,6 +71,30 @@ describe("harvestFacebookMarketplace por el navegador", () => {
     expect(result.note).toBe("navegador sin lecturas (navegador del perfil inaccesible); 1 publicaciones");
   });
 
+  it("reads the categories that publish a used band first: Marketplace only feeds that side", async () => {
+    const reader = vi.fn<typeof readMarketplaceSearches>(async () => read([[], [], []]));
+    const colchon = { ...spec("colchon", /colchon/, ["colchon"]), usedOk: false };
+    await harvestFacebookMarketplace([colchon, heladera, olla], Infinity, { reader });
+    expect(reader.mock.calls[0][0].searches.map((search) => search.query)).toEqual(["heladera", "ollas", "colchon", "heladera con freezer"]);
+  });
+
+  // 2026-10-11: with 47 searches planned, a daily cap of 26 and an hourly one of 13, every run read
+  // the same first searches and twelve equipar categories had no Marketplace offer at all.
+  it("reads a different slice of a capped plan in each rotation, so every search comes up", async () => {
+    const reader = vi.fn<typeof readMarketplaceSearches>(async () => read([[], []]));
+    const specs = ["a", "b", "c", "d", "e"].map((key) => spec(key, new RegExp(key), [key]));
+    const seen = new Set<string>();
+    for (const rotation of [0, 1, 2]) {
+      await harvestFacebookMarketplace(specs, 2, { reader, rotation });
+      for (const search of reader.mock.calls.at(-1)![0].searches) seen.add(search.query);
+    }
+    expect(reader.mock.calls.map((call) => call[0].searches.map((search) => search.query))).toEqual([["a", "b"], ["c", "d"], ["e", "a"]]);
+    expect([...seen].sort()).toEqual(["a", "b", "c", "d", "e"]);
+    // A budget that covers the plan reads it whole, from the start.
+    await harvestFacebookMarketplace(specs, 60, { reader, rotation: 7 });
+    expect(reader.mock.calls.at(-1)![0].searches.map((search) => search.query)).toEqual(["a", "b", "c", "d", "e"]);
+  });
+
   it("does not open the browser when the budget leaves no search", async () => {
     const reader = vi.fn<typeof readMarketplaceSearches>();
     vi.stubGlobal("fetch", vi.fn());

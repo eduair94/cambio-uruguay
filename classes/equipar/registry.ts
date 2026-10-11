@@ -384,7 +384,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     urlHint: /cubierto/i,
     storeQueries: ["cubiertos", "cubierteria"],
     mlQueries: ["juego de cubiertos", "cubiertos acero inoxidable"],
-    fbQueries: ["cubiertos"],
+    fbQueries: ["cubiertos", "juego de cubiertos"],
   },
   {
     key: "vajilla",
@@ -404,7 +404,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     urlHint: /(vajilla|plato)/i,
     storeQueries: ["vajilla", "platos"],
     mlQueries: ["juego de vajilla", "set de platos"],
-    fbQueries: ["vajilla"],
+    fbQueries: ["vajilla", "juego de platos"],
   },
   {
     key: "vasos",
@@ -464,7 +464,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     urlHint: /(escurridor|secaplatos)/i,
     storeQueries: ["escurridor", "secaplatos"],
     mlQueries: ["escurridor de platos", "secaplatos"],
-    fbQueries: ["escurridor de platos"],
+    fbQueries: ["escurridor de platos", "secaplatos"],
   },
   {
     key: "pava",
@@ -485,7 +485,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     urlHint: /(pava|caldera|hervidor)/i,
     storeQueries: ["pava", "caldera"],
     mlQueries: ["pava electrica", "pava", "caldera"],
-    fbQueries: ["pava electrica"],
+    fbQueries: ["pava electrica", "hervidor"],
   },
   {
     key: "mixer",
@@ -564,7 +564,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     urlHint: /(horno|airfryer)/i,
     storeQueries: ["horno electrico", "airfryer"],
     mlQueries: ["horno electrico", "freidora de aire"],
-    fbQueries: ["horno electrico"],
+    fbQueries: ["horno electrico", "airfryer"],
   },
   // ---------------------------------------------------------------- ropa de cama y baño
   {
@@ -718,7 +718,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     urlHint: /plancha/i,
     storeQueries: ["plancha"],
     mlQueries: ["plancha a vapor", "plancha de ropa"],
-    fbQueries: ["plancha a vapor"],
+    fbQueries: ["plancha a vapor", "plancha electrica"],
   },
   {
     key: "ventilador",
@@ -769,7 +769,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     urlHint: /(estufa|calefactor|caloventor)/i,
     storeQueries: ["estufa", "calefactor", "caloventor"],
     mlQueries: ["caloventor", "estufa electrica", "panel calefactor"],
-    fbQueries: ["estufa electrica", "caloventor"],
+    fbQueries: ["estufa electrica", "caloventor", "calefactor"],
   },
   {
     key: "aspiradora",
@@ -807,7 +807,7 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     urlHint: /(secarropas|secadora)/i,
     storeQueries: ["secarropas"],
     mlQueries: ["secarropas", "secarropas centrifugo"],
-    fbQueries: ["secarropas"],
+    fbQueries: ["secarropas", "secadora de ropa"],
   },
   {
     key: "deshumidificador",

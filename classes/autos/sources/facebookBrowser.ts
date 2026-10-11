@@ -12,7 +12,7 @@
 import type { Browser } from "puppeteer-core";
 import { FacebookSessionError, connectFacebookBrowser, readFacebookPageTexts, scrollFacebookList, sleep } from "../../facebook/browser";
 import { acquireFacebookProfile, type ReleaseFacebookProfile } from "../../facebook/lock";
-import { FACEBOOK_BUSY_NOTE } from "../../facebook/search";
+import { FACEBOOK_BUSY_NOTE, marketplaceListUrl, type MarketplaceSearch } from "../../facebook/search";
 import { FB_VEHICLES_CATEGORY, fbCardsFromText, fbItemFromTexts, type FbCard, type FbItem } from "./facebook";
 
 // One class for every Marketplace reader: the shared scroller throws this one on a login page.
@@ -23,6 +23,27 @@ export { facebookSessionOk } from "../../facebook/browser";
 const FEED_URL = "https://www.facebook.com/marketplace/montevideo/vehicles?sortBy=creation_time_descend";
 const searchUrl = (query: string): string => `https://www.facebook.com/marketplace/montevideo/search?query=${encodeURIComponent(query)}`;
 const itemUrl = (id: string): string => `https://www.facebook.com/marketplace/item/${id}/`;
+
+/**
+ * The vehicles the newest-first feed never reaches: it is read until it ends or reaches 6 h back,
+ * so a car published last month only shows up if Facebook ranks it into a search. Measured
+ * 2026-10-11, 30 scrolls each, against the 30.309 cards ever stored (the feed itself: 89 % stored):
+ * the category in Facebook's own order 37 % stored (141 new); split by Facebook's price filter,
+ * 1–8.000 41 % (209), 8.000–15.000 31 % (182), 15.000–30.000 40 % (221), 30.000 and up 32 % (207);
+ * from other anchors, Rivera 13 % (150), Salto 40 % (185), Maldonado 53 % (119), Colonia 52 % (118),
+ * most of them cars of the interior; and two words no brand search says, "camioneta" 33 % (228) and
+ * "auto" 38 % (130). Read by the daily run only, after the feed and before the brand searches.
+ */
+export const FB_VEHICLE_LISTS: readonly MarketplaceSearch[] = [
+  { location: "montevideo", query: "vehículos", category: "vehicles" },
+  ...[[1, 8_000], [8_000, 15_000], [15_000, 30_000]].map(([minPrice, maxPrice]) => ({
+    location: "montevideo", query: `vehículos ${minPrice}–${maxPrice}`, category: "vehicles", params: { minPrice: minPrice!, maxPrice: maxPrice! },
+  })),
+  { location: "montevideo", query: "vehículos 30.000+", category: "vehicles", params: { minPrice: 30_000 } },
+  ...["rivera", "salto", "maldonado", "colonia-del-sacramento"].map(location => ({ location, query: "vehículos", category: "vehicles" })),
+  { location: "montevideo", query: "camioneta" },
+  { location: "montevideo", query: "auto" },
+];
 
 /**
  * A first page this full (cards of any category) that never grows is Facebook's throttle, not a
@@ -58,6 +79,9 @@ export interface FacebookRead {
 
 export async function readFacebookVehicles(options: {
   feed: FacebookListBudget;
+  /** Deep lists read after the feed and before the searches (FB_VEHICLE_LISTS). */
+  lists?: readonly MarketplaceSearch[];
+  list?: FacebookListBudget;
   queries: readonly string[];
   query: FacebookListBudget;
   /** Given the cards read so far, which item pages to open (see fbDetailQueue). */
@@ -122,6 +146,11 @@ export async function readFacebookVehicles(options: {
   try {
     browser = await (options.connect ?? connectFacebookBrowser)();
     let keepReading = await readList(FEED_URL, options.feed);
+    for (const list of options.lists ?? []) {
+      if (!keepReading || Date.now() >= deadline) break;
+      await sleep(options.itemGapMs);
+      keepReading = await readList(marketplaceListUrl(list), options.list ?? options.query);
+    }
     for (const query of options.queries) {
       if (!keepReading) {
         result.note = "Facebook dejó de cargar más resultados en dos listas seguidas; se corta para no forzar la sesión";
