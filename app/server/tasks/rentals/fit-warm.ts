@@ -14,6 +14,10 @@ export default defineTask({
   async run() {
     // La .env local apunta a la base de producción: en dev no se carga nada por adelantado.
     if (import.meta.dev || process.env.NODE_ENV === 'test') return { result: { status: 'skipped' } }
+    // Both workers fire on the same minute. A reload is ~17 s of CPU on the event loop and the
+    // catalogue's memory: never both at once (on 2026-10-10 they reloaded, and died, together).
+    const instance = Number(process.env.NODE_APP_INSTANCE ?? 0) % 2
+    if (instance) await new Promise(resolve => setTimeout(resolve, 150_000))
     try {
       const result = await warmRentalFitCatalogue()
       if (result.status === 'warm') console.info('[rental-fit] warm', result)
