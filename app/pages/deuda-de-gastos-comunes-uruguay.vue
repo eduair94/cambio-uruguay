@@ -79,7 +79,9 @@
       <div class="text-body-2">{{ r.texto }}</div>
     </VAlert>
 
-    <FaqSection :items="faq" heading="Preguntas frecuentes" expanded />
+    <!-- `:emit-schema="false"`: el FAQPage de esta página va en su propio `@graph`, abajo.
+         Sin esto el componente emite un SEGUNDO nodo FAQPage con las mismas preguntas. -->
+    <FaqSection :items="faq" heading="Preguntas frecuentes" :emit-schema="false" expanded />
 
     <h2 class="text-h6 font-weight-bold mt-8 mb-2">De dónde sale esto</h2>
     <p class="text-body-2 text-medium-emphasis mb-2" style="max-width: 68ch">

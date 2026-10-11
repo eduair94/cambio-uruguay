@@ -146,7 +146,9 @@ const measured = pageFiles()
 // 156 → 157 el 2026-10-10: `/credito-fiscal-por-alquiler-uruguay`, apretado en el mismo commit que
 // publica la página. Es la disciplina que los dos renglones de arriba piden: el piso no se afloja
 // porque alguien lo baje, se afloja porque se publica una página y no se vuelve acá.
-const RESOLVED = 157
+// 157 → 158 el 2026-10-11: `/pension-por-sobrevivencia-uruguay`, apretado en el mismo commit que
+// publica la página, por la misma razón que el renglón de arriba.
+const RESOLVED = 158
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente

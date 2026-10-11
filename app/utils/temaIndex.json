@@ -1261,6 +1261,10 @@
           "label": "Pensión a la vejez"
         },
         {
+          "to": "/pension-por-sobrevivencia-uruguay",
+          "label": "Pensión por sobrevivencia"
+        },
+        {
           "to": "/elecciones-bps-2026",
           "label": "Elecciones del BPS 2026"
         },

@@ -2271,6 +2271,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La otra mitad del racimo del BPS, y la que se pide en el peor momento: la pensión a la
+        // vejez es el piso de quien NUNCA generó jubilación; ésta la genera el trabajo del que
+        // falleció. El ángulo propio es que la fecha del fallecimiento parte el tema en dos (la
+        // Ley 20.130 derogó los arts. 25 y 26 de la Ley 16.713) y que el plazo lo decide la edad
+        // que tenía el beneficiario ESE día, no la de hoy.
+        to: '/pension-por-sobrevivencia-uruguay',
+        labelKey: 'nav.pensionSobrevivencia',
+        icon: 'mdi-account-heart-outline',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'pension por sobrevivencia',
+          'pension de viudez uruguay',
+          'pension por fallecimiento bps',
+          'cuantos anos se cobra la pension de viudez',
+          'pension sobrevivencia ley 20130',
+          'topes de ingresos pension viudez',
+          'pension de viudez concubinato',
+          'minimo pension sobrevivencia 2026',
+        ],
+      },
+      {
         // «bps cobro» es la consulta más grande de todo el racimo del BPS (índice 100 en el
         // barrido de Trends del 15/9/2026, con «fecha de cobro bps» en 37) y no la contestaba
         // ninguna página del sitio. No publica el calendario del mes —envejece el 1.º— sino el

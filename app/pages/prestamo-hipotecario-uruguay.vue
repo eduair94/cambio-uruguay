@@ -188,7 +188,9 @@
       ingreso se lleva la cuota, que es lo que está acá con su fuente.
     </p>
 
-    <FaqSection :items="faq" heading="Preguntas frecuentes" expanded />
+    <!-- `:emit-schema="false"`: el FAQPage de esta página va en su propio `@graph`, abajo.
+         Sin esto el componente emite un SEGUNDO nodo FAQPage con las mismas preguntas. -->
+    <FaqSection :items="faq" heading="Preguntas frecuentes" :emit-schema="false" expanded />
 
     <h2 class="section-heading text-h6 font-weight-bold mt-8 mb-2">De dónde sale esto</h2>
     <p class="body text-body-2 text-medium-emphasis mb-2" style="max-width: 68ch">
