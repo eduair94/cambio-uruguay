@@ -73,6 +73,32 @@ describe("readFacebookRentals", () => {
     expect(read).toMatchObject({ lists: 4, stalled: 0, note: null });
   });
 
+  it("stops scrolling a list that only re-delivers what the run already has, and says so", async () => {
+    const ids = (from: number, count: number) => Array.from({ length: count }, (_, i) => String(1_000_000 + from + i));
+    /** A list that honours the caller's `enough` after each scroll, like the real scroller. */
+    const scrolling = (first: string[], ...batches: string[][]) =>
+      async (_browser: Browser, _url: string, options: Parameters<typeof scrollFacebookList>[2]) => {
+        options.onText(body(...first));
+        const initial = options.count();
+        let scrolls = 0;
+        let satisfied = !!options.enough?.();
+        for (const batch of batches) {
+          if (satisfied) break;
+          options.onText(body(...batch));
+          scrolls++;
+          satisfied = !!options.enough?.();
+        }
+        return { scrolls, exhausted: !satisfied, satisfied, initial };
+      };
+    vi.mocked(scrollFacebookList)
+      .mockImplementationOnce(scrolling(ids(0, 10), ids(10, 10), ids(20, 10)))
+      // The second list repeats the first one batch after batch, then would bring new cards.
+      .mockImplementationOnce(scrolling(ids(0, 5), ids(5, 5), ids(10, 5), ids(15, 5), ids(100, 5)));
+    const read = await readFacebookRentals({ ...plan(["alquiler", "alquiler casa"]), runNovelty: { rounds: 2, minNew: 1 } });
+    expect(read).toMatchObject({ lists: 2, spent: 1, stalled: 0, fresh: [30, 0] });
+    expect(read.cards).toHaveLength(30);
+  });
+
   it("stops after two searches in a row that never loaded past their first page", async () => {
     vi.mocked(scrollFacebookList)
       .mockImplementationOnce(list(["1000001"], ["1000002"]))

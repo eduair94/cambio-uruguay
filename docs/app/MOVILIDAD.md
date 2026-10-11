@@ -490,3 +490,9 @@ la tabla de modelos), nunca `AggregateRating`.
   en los dos lados (`movilidadstoresnapshots` queda afuera a propósito: no tiene espejo en `app/`).
 - `tests/pricewatch/record.test.ts` — el mecanismo genérico que también graba la vertical
   `movilidad` (ver [PRICEWATCH.md](PRICEWATCH.md)).
+
+## Marketplace: un sinónimo por categoría y rotación (11/10/2026)
+
+Facebook buscaba sólo «monopatin electrico» y «bicicleta electrica», aunque el `include` de cada
+categoría ya acepta «scooter eléctrico» y «bici eléctrica». Se suman esas dos búsquedas: la diaria lee
+las cuatro (tope 6) y la horaria dos, otro par cada hora (`fbRotation`, como equipar).

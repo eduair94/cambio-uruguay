@@ -53,6 +53,8 @@ import { applyUnitGuard } from "./classes/retail/unitGuard";
  * pm2 env var added later would silently never reach the VPS.
  */
 const ML_MAX_SCANS = { fast: 6, daily: 16 } as const;
+// Four Marketplace searches since 2026-10-11 (a synonym per category): the daily run reads them all,
+// the hourly two of them, a different pair each hour (`fbRotation`).
 const FB_MAX_QUERIES = { fast: 2, daily: 6 } as const;
 const STORE_MAX_QUERIES = { fast: 6, daily: 16 } as const;
 
@@ -94,6 +96,7 @@ export async function main(): Promise<void> {
       fast,
       maxMlScans: fast ? ML_MAX_SCANS.fast : ML_MAX_SCANS.daily,
       maxFbQueries: fast ? FB_MAX_QUERIES.fast : FB_MAX_QUERIES.daily,
+      fbRotation: fast ? new Date().getUTCHours() : 0,
       maxStoreQueries: fast ? STORE_MAX_QUERIES.fast : STORE_MAX_QUERIES.daily,
     }),
     fetchUsdUyuRate(),

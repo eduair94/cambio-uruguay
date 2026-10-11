@@ -95,6 +95,15 @@ sólo para candidatas a oportunidad.
   | la categoría desde Rivera / Salto / Maldonado / Colonia | 13 / 40 / 53 / 52 % | 150 / 185 / 119 / 118 |
   | «camioneta» / «auto» | 33 / 38 % | 228 / 130 |
 
+  Al día siguiente, contra una base que ya tenía esas listas: el **filtro de año** de Facebook parte
+  igual de bien (hasta 2005 70 % ya guardado, 109 nuevos; 2006–2012 68 %, 133; 2013–2018 67 %, 137;
+  2019 en adelante 49 %, 139), y «pick up» 67 % (67), «utilitario» 73 % (72), «vendo auto» 63 % (63)
+  y «furgon» 80 % (57). Entraron todas: 19 listas, reloj de 90 minutos. Un **radio no vuelve local**
+  la categoría de vehículos (Tacuarembó, Paysandú, Durazno y Rocha a 60 km eran sobre todo
+  Montevideo), así que el interior sigue siendo cuatro anclas sin radio. Y las listas profundas y las
+  búsquedas por marca se cortan cuando sus últimas 10 rondas sumaron menos de 3 vehículos nuevos para
+  la corrida (`runNovelty`; el feed nunca): el 11/10 la pasada de Facebook usó 72 de sus 75 minutos.
+  Esa mañana la diaria leyó las 32 listas y publicó 2.653 autos de Facebook (2.106 el día anterior).
   Las anclas del interior traen sobre todo autos del interior; la partición por precio funciona aunque
   el monto de Facebook diga "UYU" con dólares adentro, porque parte el ranking por el número que
   Facebook guarda.

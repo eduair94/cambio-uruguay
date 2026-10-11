@@ -34,5 +34,5 @@ export const CHAIR_SPEC: CategorySpec = {
   // A category page is already chair-only, so a row only needs to look like a chair by either test.
   acceptFromCategory: (title, attributes) =>
     chairCategory(title, attributes) !== "unknown" || isDeskChairTitle(title),
-  fbQueries: ["silla de escritorio", "silla ergonomica", "silla gamer", "silla oficina"],
+  fbQueries: ["silla de escritorio", "silla ergonomica", "silla gamer", "silla oficina", "silla de computadora", "silla ejecutiva"],
 };

@@ -1,5 +1,27 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Facebook Marketplace: corte por novedad, locales y oficinas, filtros en la rotación — 11 de octubre de 2026 (tarde)
+
+La primera noche con 60 listas guardó **12.925 avisos únicos de Facebook** (eran 3.953), pero se
+quedó sin reloj en la lista 35 de 60, sin que Facebook frenara la sesión. Tres cambios para que entre
+más en el mismo tiempo, y otra tanda medida contra una base que ya tenía esa noche:
+
+- **Corte por novedad** (`runNovelty`, `classes/facebook/search.ts`): una lista cuyas últimas 10
+  rondas (~240 tarjetas) sumaron menos de 3 avisos que la corrida no tenía se deja de scrollear y el
+  reloj pasa a la siguiente. Las «alquiler …» que se repiten entre sí son las que más se cortan. La
+  nota dice cuántas se cortaron así, y el log de pm2 trae **una línea con lo que dio cada lista**
+  (`[rentals] facebook por lista (tarjetas/nuevas)`, `rentalListsSummary`): con eso se reordena o se
+  saca una lista midiendo, no adivinando.
+- **Locales y oficinas** a la nocturna: «alquiler oficina» 83 % ya guardado (107 nuevos), «alquiler
+  local comercial» 80 % (91). «alquiler garaje» 93 % (23) queda afuera.
+- **Filtros de dormitorios y tipo, a la rotación horaria:** 1, 2 y 3+ dormitorios 81 % (~50 nuevos
+  cada uno), apartamentos 78 % (61). Rinden menos que el precio. Quedan afuera: casas (88 %), una
+  banda más fina ($ 18–20.000, 91 %: las bandas de la noche ya llegan), los últimos 7 días (87 %) y
+  Maldonado partido por precio (80–89 %, casi todo Montevideo).
+- **La horaria lee tres listas rotativas** (eran dos), cada una hasta 40 scrolls (`maxScrolls` por
+  lista; las de más nuevos siguen en 15), con reloj de 12 minutos: 29 listas profundas, cada una
+  unas tres veces por día.
+
 ## Facebook Marketplace: bandas de precio, pueblos con radio y barrios — 11 de octubre de 2026
 
 Pedido: "tener en cuenta barrios, ubicaciones y otros parámetros". Medido igual que el 10/10
@@ -1673,7 +1695,7 @@ Lo que pasó ese día, y lo que cambió por eso:
 | `RENTALS_CW_PAUSE_MS` | 60000 | pausa única por corrida antes de la segunda lectura de las búsquedas de Casasweb que fallaron |
 | `RENTALS_FB_ENABLED` | — | `0` apaga Marketplace |
 | `RENTALS_FB_BROWSER` | — | `0` vuelve al puente `:9657` (20–26 tarjetas por búsqueda) |
-| `RENTALS_FB_BROWSER_MINUTES` | 150 / 10 | tope de reloj del lector por navegador en full / fast; al cortar conserva lo leído |
+| `RENTALS_FB_BROWSER_MINUTES` | 150 / 12 | tope de reloj del lector por navegador en full / fast; al cortar conserva lo leído |
 | `RENTALS_FB_LOCATIONS` | montevideo,ciudad-de-la-costa,maldonado,salto,paysandu,colonia-del-sacramento | anclas de búsqueda en Marketplace; las sugerencias pueden estar en otras zonas |
 | `RENTALS_HOST_GAP_MS` | 1200 | separación mínima entre dos requests al mismo host |
 | `RENTALS_LOCK_FILE` | `/tmp/cambio-uruguay-rentals-sync.lock` | archivo de bloqueo del wrapper Linux; ambos jobs deben compartir el mismo valor |

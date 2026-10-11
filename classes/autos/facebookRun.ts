@@ -13,14 +13,17 @@ const DAY = 86_400_000;
 // small pages (~9 cards) and its first one takes 4–5 rounds to follow (measured 2026-10-09), so
 // it gets 10 quiet rounds before it counts as ended. The lock wait is for another job's
 // Marketplace read (rentals, retail).
-// The deep lists (FB_VEHICLE_LISTS, since 2026-10-11) get 40 rounds each and the run 75 minutes
-// instead of 45: eleven lists at ~1.5 minutes.
+// The deep lists (FB_VEHICLE_LISTS, since 2026-10-11) get 40 rounds each and the run 90 minutes
+// instead of 45: nineteen lists at ~1.5 minutes. A deep list or a brand search whose last 10
+// rounds added fewer than 3 vehicles the run had not seen stops there (`runNovelty`): on 2026-10-11
+// the Facebook pass took 72 of its 75 minutes.
 export const FB_BUDGET = {
   full: {
     feed: { maxScrolls: 150, stagnantRounds: 10 },
     list: { maxScrolls: 40, stagnantRounds: 6 },
     query: { maxScrolls: 20, stagnantRounds: 5 },
-    items: 120, minutes: 75, lockWaitMinutes: 30,
+    items: 120, minutes: 90, lockWaitMinutes: 30,
+    runNovelty: { rounds: 10, minNew: 3 },
   },
   fast: {
     feed: { maxScrolls: 40, stagnantRounds: 10, reachBackHours: 6 },
@@ -74,6 +77,7 @@ export async function runFacebook(options: {
     feed: budget.feed,
     lists: options.fast ? [] : FB_VEHICLE_LISTS,
     list: options.fast ? undefined : FB_BUDGET.full.list,
+    runNovelty: options.fast ? undefined : FB_BUDGET.full.runNovelty,
     queries: options.fast ? [] : options.brandQueries,
     query: budget.query,
     itemGapMs: FB_BUDGET.itemGapMs,
