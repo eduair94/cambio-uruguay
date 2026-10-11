@@ -15,6 +15,7 @@ const {
   projectRentalFitCandidate,
   createRentalFitInterner,
   warmRentalFitCatalogue,
+  RENTAL_FIT_SERVE_WHILE_REFRESHING_MS,
   createRentalFitCatalogueLoader,
   currentRentalFitCandidates,
   createRentalFitService,
@@ -702,5 +703,14 @@ describe('no search waits for a reload', () => {
     expect(openCursor).toHaveBeenCalledTimes(1)
     expect(await load.refresh(7 * 60_000)).not.toBe(first)
     expect(openCursor).toHaveBeenCalledTimes(2)
+  })
+})
+
+// 2026-10-10: holding the old catalogue beside the one being built killed both workers six times
+// (heap 580–700 MB of 1 GB already in use). Production drops it before a reload; turning that back on
+// needs heap headroom first, measured.
+describe('production keeps one catalogue in memory', () => {
+  it('does not answer while refreshing', () => {
+    expect(RENTAL_FIT_SERVE_WHILE_REFRESHING_MS).toBe(0)
   })
 })

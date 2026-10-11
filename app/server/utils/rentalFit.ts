@@ -427,9 +427,13 @@ export function createRentalFitCatalogueLoader({
   return Object.assign(load, { refresh })
 }
 
-// In production an expired catalogue answers for up to two minutes past the ten-minute full
-// reread while that reread runs behind, so no search waits for it; never older than twelve minutes.
-export const RENTAL_FIT_SERVE_WHILE_REFRESHING_MS = MAX_SNAPSHOT_AGE_MS + 2 * 60_000
+// NOT answering while refreshing in production. It was on from 2026-10-10 00:07 and both workers
+// died of heap exhaustion six times that day (02:05, 07:33–07:36; pm2.log since 2026-10-09 06:03 had
+// none before): with 580–700 MB of the 1 GB heap already used, holding the old catalogue (~48 MB)
+// beside the one being built was the margin it did not have. The previous catalogue is dropped before
+// a reload, as before 2026-10-10; the keep-warm task renews it before it expires, so a search only
+// waits if it lands during that reload.
+export const RENTAL_FIT_SERVE_WHILE_REFRESHING_MS = 0
 export const loadRentalFitCatalogue = createRentalFitCatalogueLoader({
   serveWhileRefreshingMs: RENTAL_FIT_SERVE_WHILE_REFRESHING_MS,
 })
@@ -437,10 +441,10 @@ export const loadRentalFitCatalogue = createRentalFitCatalogueLoader({
 /**
  * Keeps each process's catalogue warm while people use the household search, so the reload that
  * every new harvest (hourly) and the ten-minute precaution need happens before anyone asks. It only
- * runs while there was demand in the last hours (or the process just started): an idle site does
+ * runs while there was demand in the last two hours (or the process just started): an idle site does
  * not reread 156 MB from Mongo every ten minutes for nobody.
  */
-const KEEP_WARM_MS = 6 * 60 * 60_000
+const KEEP_WARM_MS = 2 * 60 * 60_000
 // Ticks every 5 minutes: renewing from 7 minutes means it is reread at about 10, before it expires.
 const KEEP_WARM_RELOAD_AFTER_MS = 7 * 60_000
 const processStartedAt = Date.now()
