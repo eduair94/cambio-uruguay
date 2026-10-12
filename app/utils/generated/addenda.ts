@@ -85,6 +85,28 @@ export const PAGE_ADDENDA: readonly PageAddendum[] = Object.freeze([
       },
     ],
   },
+  {
+    route: '/guias/enviar-recibir-dinero-exterior',
+    updatedAt: '2026-10-12',
+    items: [
+      {
+        question:
+          '¿Cuánto me cobra el BROU si uso esa cuenta para cobrar mi sueldo en dólares desde el exterior todos los meses?',
+        answer:
+          'El BROU cobra una comisión del 0,4% sobre cada transferencia recibida del exterior, con un mínimo de USD 35 y un máximo de USD 100 por operación. Esa comisión es la que cobra el BROU, pero no incluye los gastos que puedan sumar los bancos emisores o intermediarios en el camino, así que el costo final a veces es más alto. Además, si alguna vez te llega menos de USD 100, el banco directamente te devuelve esa transferencia al remitente, no te la acredita.',
+        sources: [
+          {
+            title: 'brou.com.uy',
+            url: 'https://www.brou.com.uy/personas/servicios/giros-transferencias/recibir-exterior',
+          },
+          {
+            title: 'brou.com.uy',
+            url: 'https://www.brou.com.uy/clientes-empresa/empresas/comisiones-transferencias-recibidas-exterior',
+          },
+        ],
+      },
+    ],
+  },
   // <<< generated-addenda >>>
 ])
 
