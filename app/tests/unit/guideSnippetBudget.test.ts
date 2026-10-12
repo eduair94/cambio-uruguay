@@ -475,6 +475,32 @@ const MEASURED = 146
  * `glosario-terminos-cambiarios` se quedó sin tocar por sexta vez, por la razón de siempre: el
  * término por el que tendría que abrir lo gana el hub `/glosario`.
  *
+ * SÉPTIMA VEZ, el 2026-10-12, y esta vez medida contra el propio buscador en vez de supuesta, que
+ * es lo que la vuelve una decisión y no una postergación. La razón anotada seis veces —«el término
+ * por el que tendría que abrir lo gana el hub `/glosario`»— es cierta pero NO es la que bloquea:
+ * los +30 de palabra clave de esta guía salen de su `tag: 'GLOSARIO'` (ver `searchIndex.ts`, las
+ * guías entran con `keywords: [guide.tag]`), no de su título, así que reescribirlo no le hace
+ * perder «glosario» — esa consulta ya la gana `/glosario` por coincidencia exacta de slug, 142
+ * contra 110, y seguiría ganándola igual.
+ *
+ * Lo que bloquea es que NO QUEDA CONSULTA para abrir. El título tiene que entrar en 43 caracteres
+ * y contestar, y cada término que esta guía podría contestar primero ya tiene su propia ficha del
+ * glosario ganándolo por lejos: «spread cambiario» 105 en `/glosario/spread-cambiario`, «brecha
+ * cambiaria» 105 en `/glosario/brecha-cambiaria`, «dolar interbancario» 105 en
+ * `/glosario/dolar-interbancario`, y «billete» y «cable» 80 y 62 en
+ * `/guias/billete-cable-transferencia`. El techo de esta guía abriendo por cualquiera de ellos es
+ * 62 (56 de inicio de palabra en el título + 6 de tipo), o sea pierde todas; y nombrar «cable» o
+ * «billete» en el título la EMPATA en 62 con la guía que sí trata de eso, que se decide por orden
+ * de inserción. Mientras tanto el título de hoy gana «glosario terminos cambiarios» con 136 y
+ * «terminos cambiarios» con 62, y nadie más pasa de 42 en ninguna de las dos: un título que
+ * contesta y entra en 43 las pierde sin ganar nada a cambio.
+ *
+ * O sea que acá el snippet cortado no es deuda que nadie pagó: es el precio de que la guía sea un
+ * repaso de vocabulario en un sitio donde cada término ya tiene su ficha. Lo que SÍ se arregló el
+ * 2026-10-12 es lo otro que le faltaba y no competía con nada: entró a su tema
+ * (`dolar-y-casas-de-cambio-uruguay`), de 0 a 28 enlaces de contexto — ver
+ * `tests/unit/temaHuerfanas.test.ts`.
+ *
  * SÓLO PUEDE BAJAR.
  */
 const TITLE_OVER_BUDGET = 16
