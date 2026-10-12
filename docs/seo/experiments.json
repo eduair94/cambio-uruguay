@@ -1304,6 +1304,17 @@
         "tasa catastral uruguay"
       ],
       "hypothesis": "Pagina nueva para el dato del que cuelgan DOS paginas de impuestos del sitio y que ninguna contestaba: el valor que la Direccion Nacional de Catastro le pone a cada padron. /contribucion-inmobiliaria-uruguay dice que el impuesto se calcula sobre el \"valor imponible que fija Catastro\" y /impuesto-de-primaria-uruguay dice que \"lo tenes en la factura\", o sea reclamado como base de dos tributos y sin contestar como tramite: en ninguna de las 208 paginas se decia como mirarlo. El angulo son tres cosas que se suponen al reves y las tres estan en la ficha oficial, no en la letra chica: (1) la cedula catastral comun NO se cobra (\"No tiene costo\") y la emision de cedulas esta entre los servicios de ACCESO LIBRE de la Sede Electronica, sin usuario registrado, que es lo contrario de lo que supone quien va a pagar un gestor; (2) lo unico que se paga es la cedula informada, y la revision de valor es GRATIS como solicitud para propiedad comun y horizontal - el gasto esta en la DJCU, que la DNC no cobra y exige firmada por arquitecto o ingeniero agrimensor con 2 timbres profesionales -; (3) la ficha dice que el estudio \"puede cambiar\" el valor, no que lo baje. El angulo propio del sitio es el mismo de /elecciones-bps-2026 y /garantia-de-alquiler-uruguay: la tasa catastral esta fijada en 0,5 UR y ninguna fuente oficial la publica en pesos, y el sitio tiene la UR del dia, asi que publica el equivalente al lado con su vigencia declarada (01/07/2026 al 31/12/2026). Sin lectura viva de la UR imprime 0,5 UR sin convertir, nunca un peso de hace meses presentado como de hoy (liveIndicatorReading, no currentIndicatorValue). Deliberadamente NO publica el valor de ningun padron - es por padron y solo lo dice Catastro - ni el importe de un timbre profesional, que la ficha no trae; un test fija esas dos abstenciones. Se mide como pagina nueva: clics propios de la ruta a los 28 dias."
+    },
+    {
+      "id": "glosario-cambiario-entra-a-su-tema",
+      "shippedOn": "2026-10-12",
+      "routes": ["/guias/glosario-terminos-cambiarios"],
+      "queries": [
+        "glosario terminos cambiarios",
+        "terminos cambiarios uruguay",
+        "que es el spread cambiario"
+      ],
+      "hypothesis": "La guia estaba fuera de TODO tema, asi que \"Mas sobre este tema\" le devolvia cero enlaces y el hub de su tema no la listaba: entra a dolar-y-casas-de-cambio-uruguay y pasa de 0 a 28 enlaces de contexto, mas una tarjeta en /temas/dolar-y-casas-de-cambio-uruguay. Es una de las 23 guias sin tema medidas el 2026-10-12 (todas del racimo dolar/cambio, el tramo que rinde 8x) y la unica con la ruta libre; las otras 22 esperan a que cierre su ventana. Se mide sola porque entrar al tema no le cambia el bloque a ninguna otra pagina: temaVecinosParaRuta arma los enlaces con hub.resources y hub.terms, nunca con hub.guides, verificado antes y despues sobre las 146 guias. El titulo (66 con la marca) NO se toco, y por una razon medida y no por falta de tiempo: cada termino con el que podria abrir ya lo gana su propia ficha del glosario (105 contra un techo de 62), mientras el titulo de hoy gana \"glosario terminos cambiarios\" con 136 y nadie mas pasa de 42 - ver tests/unit/guideSnippetBudget.test.ts."
     }
   ]
 }

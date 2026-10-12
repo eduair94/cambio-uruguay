@@ -65,6 +65,7 @@ export const guideHubs: readonly GuideHub[] = [
       'billete-cable-transferencia',
       'mejor-momento-cambiar-divisas',
       'como-leer-cotizacion-dolar',
+      'glosario-terminos-cambiarios',
       'casas-de-cambio-vs-bancos',
       'evitar-comisiones-cambio',
     ],

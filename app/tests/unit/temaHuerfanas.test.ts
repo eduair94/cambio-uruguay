@@ -1,7 +1,8 @@
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { temasDeRuta } from '../../utils/temaVecinos'
+import { getGuide, guides } from '../../utils/guides'
+import { temaVecinosParaRuta, temasDeRuta } from '../../utils/temaVecinos'
 
 /**
  * Las páginas que no pertenecen a NINGÚN tema, o sea las que no dibujan "Más sobre este tema".
@@ -147,5 +148,98 @@ describe('ninguna página de lectura queda fuera de todos los temas', () => {
   it('una página no puede estar en las dos listas', () => {
     const porDiseno = new Set(FUERA_DE_TEMA_POR_DISENO)
     expect(DEUDA_SIN_TEMA.filter(route => porDiseno.has(route))).toEqual([])
+  })
+})
+
+/**
+ * Lo mismo, para las GUÍAS, que es el agujero que dejaba el recorte de arriba.
+ *
+ * El comentario de cabecera justifica mirar sólo `pages/*.vue` diciendo que las familias
+ * programáticas «no son páginas de lectura de un tema y su enlazado lo resuelven la barra de la
+ * familia y el bloque directorio ↔ análisis». Para `/alquileres/[key]` o `/precio/[slug]` es
+ * cierto; para `pages/guias/[slug].vue` es falso en las dos mitades. Las 146 guías SÍ son páginas
+ * de lectura de un tema —123 de ellas ya están en uno— y NO tienen barra de familia ni bloque de
+ * análisis: el único enlazado recíproco que les toca es el del tema. Así que el trinquete de
+ * arriba cuenta 193 rutas raíz y deja 146 páginas del tramo `contenido` —el que rinde 8× el
+ * promedio del sitio, `classes/revenueplan/value.ts`— donde una guía nueva podía nacer huérfana
+ * sin poner nada en rojo.
+ *
+ * Medido el 2026-10-12: **23 de las 146 fuera de todo tema**, y son un solo racimo —dólar, cambio
+ * de monedas, casas de cambio—, o sea justo el tema del que nació el sitio. Una guía sin tema no
+ * es una guía con menos enlaces: `temaVecinosParaRuta` devuelve `[]`, así que no recibe NINGUNO
+ * del bloque, y el hub de su tema tampoco la lista. `/guias/glosario-terminos-cambiarios` pasó de
+ * 0 a 28 enlaces de contexto con una línea.
+ *
+ * 23 → 22 el 2026-10-12, y la que salió es la ÚNICA de las 23 con la ruta libre: las otras 22
+ * llevan una fila abierta de `docs/seo/experiments.json` (de la del 14/10 a la del 5/11, casi
+ * todas de las tandas de título y descripción de octubre), y entrar a un tema es un cambio
+ * pensado para mover tráfico, así que declara su propia fila y le cambiaría el sujeto al
+ * experimento que ya está midiendo esa página. Es la misma reserva que este archivo ya aplicó el
+ * 2026-09-30 a diecinueve rutas raíz y que `seoDescriptionBudget.test.ts` aplica a
+ * `/fecha-de-cobro-bps-uruguay`. Entran cuando su ventana cierre.
+ *
+ * Y entrar al tema NO le cambia el bloque a ninguna otra página, que es lo que hace que la tanda
+ * se pueda partir de a una sin contaminar nada: `temaVecinosParaRuta` arma sus enlaces con
+ * `hub.resources` y `hub.terms`, nunca con `hub.guides`, así que sumar un slug a `guideSlugs`
+ * sólo agrega la pertenencia de esa guía y una tarjeta en la página del tema. Medido antes y
+ * después sobre las 146 guías más `/temas`, `/glosario`, `/dolar-hoy`, `/pizarra` y
+ * `/casas-de-cambio`: cambió una sola ruta.
+ *
+ * Para bajar este número: el slug en `guideSlugs` del tema que corresponda
+ * (`utils/guideHubs.ts`) y regenerar el índice
+ * (`npx vitest run tests/unit/temaIndex.test.ts -u`). El vínculo queda recíproco solo.
+ */
+const GUIAS_SIN_TEMA = [
+  'ahorrar-en-dolares-o-pesos',
+  'billetes-y-monedas-de-uruguay',
+  'cajeros-automaticos-uruguay-turistas',
+  'cambiar-dolares-aeropuerto-carrasco',
+  'cambiar-monedas-poco-comunes-uruguay',
+  'cambiar-pesos-argentinos-uruguay',
+  'comprar-dolares-online-uruguay',
+  'criptomonedas-regulacion-impuestos-uruguay',
+  'devolucion-iva-turistas-uruguay',
+  'documentos-para-cambiar-dolares-uruguay',
+  'dolar-cripto-usdt-uruguay',
+  'dolares-deteriorados-billetes-rechazados-uruguay',
+  'dolares-para-viajar',
+  'euros-reales-donde-cambiar',
+  'horarios-casas-de-cambio-uruguay',
+  'moneda-de-uruguay',
+  'pagar-en-dolares-o-pesos-uruguay',
+  'precio-del-oro-en-uruguay',
+  'propinas-en-uruguay',
+  'proyeccion-dolar-uruguay-se-puede-predecir',
+  'tipo-de-cambio-fiscal-dgi-uruguay',
+  'ui-ur-bpc-diferencias',
+]
+
+/** El trinquete de las guías. Sólo puede bajar: subirlo es publicar una guía huérfana. */
+const DEUDA_MAXIMA_GUIAS = 22
+
+describe('ninguna guía queda fuera de todos los temas', () => {
+  const sinTema = guides
+    .filter(guide => temasDeRuta(`/guias/${guide.slug}`).length === 0)
+    .map(guide => guide.slug)
+    .sort()
+
+  it('las guías sin tema son exactamente las declaradas', () => {
+    expect(sinTema).toEqual([...GUIAS_SIN_TEMA].sort())
+  })
+
+  it(`la deuda no pasa de ${DEUDA_MAXIMA_GUIAS} guías, y sólo puede bajar`, () => {
+    expect(GUIAS_SIN_TEMA.length).toBeLessThanOrEqual(DEUDA_MAXIMA_GUIAS)
+  })
+
+  // Un slug renombrado dejaría su entrada vieja acá y el conteo seguiría "verde" contra una guía
+  // que ya no existe, igual que con las rutas raíz de arriba.
+  it('la lista no nombra una guía que no existe', () => {
+    for (const slug of GUIAS_SIN_TEMA) expect(getGuide(slug), slug).toBeDefined()
+  })
+
+  // La razón por la que esta lista existe: una guía sin tema no recibe ningún enlace del bloque.
+  it('una guía sin tema no recibe ningún enlace de "Más sobre este tema"', () => {
+    for (const slug of GUIAS_SIN_TEMA)
+      expect(temaVecinosParaRuta(`/guias/${slug}`), slug).toEqual([])
   })
 })
