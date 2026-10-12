@@ -609,6 +609,11 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'La fija cada intendencia: escala, adicionales y en cuántas cuotas se paga.',
         to: '/contribucion-inmobiliaria-uruguay',
       },
+      {
+        label: 'Valor catastral',
+        description: 'El valor del que salen los dos impuestos de arriba: la cédula es gratis.',
+        to: '/valor-catastral-uruguay',
+      },
     ],
     terms: [
       'ui',

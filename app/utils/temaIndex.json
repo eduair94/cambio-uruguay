@@ -574,6 +574,10 @@
         {
           "to": "/contribucion-inmobiliaria-uruguay",
           "label": "Contribución inmobiliaria"
+        },
+        {
+          "to": "/valor-catastral-uruguay",
+          "label": "Valor catastral"
         }
       ],
       "guides": [

@@ -3292,6 +3292,34 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El dato del que cuelgan las dos páginas de al lado y que ninguna contestaba: las dos
+        // dicen que el impuesto se calcula sobre el valor que fija Catastro, y en ninguna de las
+        // 208 páginas se decía cómo mirarlo. Va entre las dos, porque es su insumo.
+        //
+        // El ángulo propio es el de `/elecciones-bps-2026` y `/garantia-de-alquiler-uruguay`: la
+        // tasa catastral está fijada en UR y ninguna fuente oficial la publica en pesos; el sitio
+        // tiene la UR del día. Y el titular es que la cédula catastral común NO se cobra y no pide
+        // usuario, que es justo lo contrario de lo que supone quien va a pagar un gestor.
+        to: '/valor-catastral-uruguay',
+        labelKey: 'nav.valorCatastral',
+        icon: 'mdi-home-search-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'valor catastral uruguay',
+          'cedula catastral uruguay',
+          'consultar valor real catastro',
+          'valor imponible catastro',
+          'numero de padron uruguay',
+          'sede electronica catastro',
+          'revision de valor catastral',
+          'direccion nacional de catastro',
+          'cuanto sale la cedula catastral',
+          'tasa catastral uruguay',
+        ],
+      },
+      {
         // El impuesto de la vivienda que el sitio sólo nombraba de costado: como línea deducible
         // en el IRPF del alquiler y como advertencia en la guía del primer alquiler ("no lo pagás
         // vos"). Va acá, al lado de gastos comunes, porque la pregunta que llega es la misma —qué
