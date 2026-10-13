@@ -2294,6 +2294,37 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El agujero del racimo del BPS: la palabra «incapacidad» no aparecía en NINGUNA entrada
+        // de este archivo ni de `searchIndex.ts`. Lo que el sitio ya tenía es lo de al lado y no
+        // es esto: `/accidente-de-trabajo-uruguay` es la renta del BSE, la guía del subsidio por
+        // enfermedad es la licencia que se cobra mientras dura, y la pensión por invalidez NO
+        // CONTRIBUTIVA vive en `/pension-a-la-vejez-uruguay` porque el BPS las liquida en la misma
+        // fila de su tabla de montos.
+        //
+        // El ángulo propio son dos cosas que la norma dice y los resúmenes no: que la causal por
+        // incapacidad «opera exclusivamente» cuando no hay otra causal posible (Ley 20.130,
+        // art. 41), o sea que no es una vía para jubilarse antes; y que acá el régimen lo decide la
+        // FECHA EN QUE SE PIDE la cobertura y no el año de nacimiento (art. 6, num. 3), al revés
+        // que en la jubilación común. El piso del subsidio es el de la pensión por invalidez y
+        // vejez, que el sitio ya publica.
+        to: '/jubilacion-por-incapacidad-uruguay',
+        labelKey: 'nav.jubilacionIncapacidad',
+        icon: 'mdi-wheelchair-accessibility',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'jubilacion por incapacidad total bps',
+          'subsidio transitorio por incapacidad parcial',
+          'pension por invalidez bps',
+          'incapacidad laboral uruguay',
+          'junta medica bps',
+          'evaluacion de incapacidad bps',
+          'cuanto se cobra por incapacidad uruguay',
+          'ley 20130 incapacidad',
+        ],
+      },
+      {
         // «bps cobro» es la consulta más grande de todo el racimo del BPS (índice 100 en el
         // barrido de Trends del 15/9/2026, con «fecha de cobro bps» en 37) y no la contestaba
         // ninguna página del sitio. No publica el calendario del mes —envejece el 1.º— sino el

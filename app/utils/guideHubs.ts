@@ -1359,6 +1359,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/pension-por-sobrevivencia-uruguay',
       },
       {
+        label: 'Jubilación por incapacidad',
+        description:
+          'El subsidio transitorio dura hasta 3 años y tiene piso; la jubilación total es vitalicia y no.',
+        to: '/jubilacion-por-incapacidad-uruguay',
+      },
+      {
         label: 'Elecciones del BPS 2026',
         description: 'Quién está obligado a votar y cuánto es la multa.',
         to: '/elecciones-bps-2026',

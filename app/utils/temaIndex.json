@@ -1270,6 +1270,10 @@
           "label": "Pensión por sobrevivencia"
         },
         {
+          "to": "/jubilacion-por-incapacidad-uruguay",
+          "label": "Jubilación por incapacidad"
+        },
+        {
           "to": "/elecciones-bps-2026",
           "label": "Elecciones del BPS 2026"
         },

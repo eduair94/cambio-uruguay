@@ -148,7 +148,11 @@ const measured = pageFiles()
 // porque alguien lo baje, se afloja porque se publica una página y no se vuelve acá.
 // 157 → 158 el 2026-10-11: `/pension-por-sobrevivencia-uruguay`, apretado en el mismo commit que
 // publica la página, por la misma razón que el renglón de arriba.
-const RESOLVED = 158
+// 158 → 159 el 2026-10-13: `/jubilacion-por-incapacidad-uruguay`, apretado en el mismo commit
+// que publica la página. Su descripción SÍ entra acá —es un literal, no se arma con un dato
+// del día— y el importe que imprime queda atado a la constante compartida del BPS por
+// `incapacityPension.test.ts`, que es lo que impide que el literal envejezca en silencio.
+const RESOLVED = 159
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente
