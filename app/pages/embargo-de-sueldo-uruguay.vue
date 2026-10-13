@@ -8,10 +8,11 @@
       <p class="lead mb-6">
         El sueldo es, por regla, <strong>inembargable</strong>. El artículo 381 del Código General
         del Proceso lo dice en su primera línea y recién después abre dos excepciones tasadas:
-        deudas por tributos y pensiones alimenticias, {{ capThird }}, y hasta la mitad solo cuando
-        la pensión es de menores o incapaces. Por encima de esos topes rige un piso: la Ley 17.829
-        te garantiza cobrar al menos el {{ RETENTION_FLOOR_PCT }} % de tu nominal después de
-        impuestos y aportes.
+        deudas por tributos y
+        <NuxtLink :to="localePath('/pension-alimenticia-uruguay')">pensiones alimenticias</NuxtLink
+        >, {{ capThird }}, y hasta la mitad solo cuando la pensión es de menores o incapaces. Por
+        encima de esos topes rige un piso: la Ley 17.829 te garantiza cobrar al menos el
+        {{ RETENTION_FLOOR_PCT }} % de tu nominal después de impuestos y aportes.
       </p>
 
       <VCard class="warn-card pa-5 pa-md-6" variant="flat">
@@ -193,9 +194,12 @@
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Si no alcanza, ¿cuál se cae primero?</h2>
       <p class="section-intro text-medium-emphasis mb-5">
-        El orden lo fija el artículo 1 de la Ley 17.829 y no lo negocian los acreedores. Dentro de
-        un mismo nivel prevalece la operación que se comunicó antes a la empresa que actúa como
-        agente de retención.
+        El orden lo fija el artículo 1 de la Ley 17.829 y no lo negocian los acreedores. El primer
+        lugar, por encima de toda retención que hayas firmado, es de
+        <NuxtLink :to="localePath('/pension-alimenticia-uruguay')"
+          >la pensión alimenticia dispuesta por un juez</NuxtLink
+        >. Dentro de un mismo nivel prevalece la operación que se comunicó antes a la empresa que
+        actúa como agente de retención.
       </p>
 
       <ol class="order-list">
@@ -271,6 +275,9 @@
           size="small"
         >
           Calculadora de sueldo líquido
+        </VBtn>
+        <VBtn :to="localePath('/pension-alimenticia-uruguay')" variant="tonal" size="small">
+          Cuánto es la pensión alimenticia
         </VBtn>
       </div>
     </section>
