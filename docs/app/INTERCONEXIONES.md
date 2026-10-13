@@ -138,6 +138,24 @@ glosario, y falla si se editó un tema sin regenerarlo. Para regenerar:
 cd app && npx vitest run tests/unit/temaIndex.test.ts -u
 ```
 
+## El enlace que un lector sí ve (tripwire, 2026-10-13)
+
+Pertenecer a un tema garantiza un enlace, pero no garantiza **dónde**: el bloque del pie aparece a
+11.341 px de una página de 15.868, que es la medición con la que arranca este documento. Una página
+cuyo único vínculo es ése está enlazada para un rastreador y es invisible para un lector.
+
+Eso se midió a mano el 2026-10-11 sobre una sola sección del menú (`houses`), y de ahí salió el
+grupo «antes de cambiar». `tests/unit/enlacesDeContexto.test.ts` lo convierte en trinquete sobre
+todo el sitio: cuenta, por página raíz, los `to`/`href` escritos en el CONTENIDO de otra página, de
+un componente o de un módulo de contenido de `utils/`, más el chip de la barra de su familia (que va
+arriba del título y por eso cuenta). No cuentan los cinco registros que dibuja el layout —`siteNav`,
+`familiaNav`, `directorios`, `guideHubs` y `relatedPages`—, porque son precisamente los bloques cuya
+posición el trinquete existe para no confundir con una relación entre páginas.
+
+Primera medición: **22 páginas de lectura sin un solo enlace de contexto**, de 209 raíz. El número
+sólo puede bajar. Se baja con un enlace en el contenido de la página cuyo lector la necesita, o con
+un chip en la barra; un enlace que nadie seguiría pone el test en verde y no arregla nada.
+
 ## Agregar una página
 
 1. Si tiene datos propios: su directorio en `utils/directorios.ts` (`tambien` o `analisis`).
@@ -153,6 +171,9 @@ cd app && npx vitest run tests/unit/temaIndex.test.ts -u
    de abajo: `familiaNavRutas(path)` es lo primero que descarta.
 5. Si es un directorio: el botón `AssistantCta` con su tema en `utils/assistantPrompt.ts` y su
    pregunta en los tres idiomas (`utils/assistantCtaMessages.ts`), como los otros doce.
+6. Y un enlace desde el **contenido** de la página cuyo lector la necesita, no sólo desde los
+   registros del layout: sin eso la página entra en la deuda de
+   `tests/unit/enlacesDeContexto.test.ts`, que no deja subirla.
 
 El test también exige que todo término del glosario tenga tema y que toda página de datos del
 registro de directorios esté en algún tema: una página nueva sin tema no pasa CI.

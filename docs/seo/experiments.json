@@ -19,6 +19,19 @@
   ],
   "experiments": [
     {
+      "id": "pension-alimenticia-enlaces-de-contexto",
+      "shippedOn": "2026-10-13",
+      "routes": [
+        "/pension-alimenticia-uruguay"
+      ],
+      "queries": [
+        "pension alimenticia uruguay",
+        "que porcentaje del sueldo es la pension alimenticia",
+        "embargo por pension alimenticia uruguay"
+      ],
+      "hypothesis": "La pagina no recibia un solo enlace desde el contenido de otra pagina ni chip en ninguna barra de familia: tres enlaces desde /embargo-de-sueldo-uruguay (entradilla, orden de prelacion y bloque final), donde el lector ya esta leyendo los topes del art. 381, deberian traerle lectores y rastreo que antes solo llegaban por el bloque del tema, al pie."
+    },
+    {
       "id": "titulos-de-las-guias-respuesta-primero-6",
       "shippedOn": "2026-10-10",
       "routes": [
