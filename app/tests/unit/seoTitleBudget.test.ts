@@ -253,7 +253,9 @@ function staticTitle(source: string): string | null {
 // 177 → 178 el 2026-10-12: `/valor-catastral-uruguay`, en el mismo commit que publica la página.
 // Su descripción NO entra en `seoDescriptionBudget` y eso es correcto: lleva la tasa catastral
 // convertida con la UR del día, que es justo lo que ese test deja fuera de su alcance.
-const MEASURABLE = 178
+// 178 → 179 el 2026-10-13: `/jubilacion-por-incapacidad-uruguay`, apretado en el mismo commit
+// que publica la página.
+const MEASURABLE = 179
 // 44 → 33 el 2026-09-07: once de los títulos más largos reescritos a 43 caracteres o menos. Los
 // once perdían la cola en el SERP, y la cola era el dato — «2 puntos o 9», «mora y 72 h», «1 mes
 // por año», «6 países», «13 temas», «ChauDeudas o MiDeuda» —, así que en cada uno se conservó la

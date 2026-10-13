@@ -1315,6 +1315,22 @@
         "que es el spread cambiario"
       ],
       "hypothesis": "La guia estaba fuera de TODO tema, asi que \"Mas sobre este tema\" le devolvia cero enlaces y el hub de su tema no la listaba: entra a dolar-y-casas-de-cambio-uruguay y pasa de 0 a 28 enlaces de contexto, mas una tarjeta en /temas/dolar-y-casas-de-cambio-uruguay. Es una de las 23 guias sin tema medidas el 2026-10-12 (todas del racimo dolar/cambio, el tramo que rinde 8x) y la unica con la ruta libre; las otras 22 esperan a que cierre su ventana. Se mide sola porque entrar al tema no le cambia el bloque a ninguna otra pagina: temaVecinosParaRuta arma los enlaces con hub.resources y hub.terms, nunca con hub.guides, verificado antes y despues sobre las 146 guias. El titulo (66 con la marca) NO se toco, y por una razon medida y no por falta de tiempo: cada termino con el que podria abrir ya lo gana su propia ficha del glosario (105 contra un techo de 62), mientras el titulo de hoy gana \"glosario terminos cambiarios\" con 136 y nadie mas pasa de 42 - ver tests/unit/guideSnippetBudget.test.ts."
+    },
+    {
+      "id": "pagina-jubilacion-por-incapacidad",
+      "shippedOn": "2026-10-13",
+      "routes": [
+        "/jubilacion-por-incapacidad-uruguay"
+      ],
+      "queries": [
+        "jubilacion por incapacidad total bps",
+        "subsidio transitorio por incapacidad parcial",
+        "pension por invalidez bps",
+        "cuanto se cobra por incapacidad uruguay",
+        "junta medica bps",
+        "evaluacion de incapacidad bps"
+      ],
+      "hypothesis": "Pagina nueva. El racimo del BPS estaba casi entero (vejez, sobrevivencia, suplemento solidario, cuando me puedo jubilar, fecha de cobro, AFAP, IASS, certificados) y la palabra \"incapacidad\" no aparecia en NINGUNA entrada de siteNav.ts ni de searchIndex.ts: la prestacion que se pide justo cuando se deja de poder trabajar no tenia pagina. Lo que el sitio ya cubria es lo de al lado: /accidente-de-trabajo-uruguay es la renta del BSE, la guia del subsidio por enfermedad es la licencia que se cobra mientras dura, y la pension por invalidez NO contributiva vive en /pension-a-la-vejez-uruguay porque el BPS las liquida en la misma fila de su tabla de montos. El angulo propio son dos cosas que la norma dice y los resumenes no: que la causal por incapacidad \"opera exclusivamente\" cuando no hay otra causal posible (Ley 20.130, art. 41), o sea que no es una via para jubilarse antes, y que aca el regimen lo decide la FECHA EN QUE SE PIDE la cobertura y no el ano de nacimiento (art. 6, num. 3), al reves que en la jubilacion comun. El snippet lleva las tres cifras que deciden la lectura: 3 anos de plazo, el piso de la prestacion no contributiva por invalidez y vejez (art. 50, importe tomado de la constante compartida del BPS) y que la jubilacion total es vitalicia y no tiene minimo escrito. No publica el 65 % del sueldo basico del regimen anterior a la Ley 20.130, que es el numero que repiten todos los resumenes."
     }
   ]
 }
