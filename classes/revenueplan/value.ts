@@ -146,7 +146,7 @@ const CONTENIDO_BUCKETS = new Set([
 ]);
 
 /** Familias de `bucketOf` con un dato en vivo. */
-const DATO_VIVO_BUCKETS = new Set([
+export const DATO_VIVO_BUCKETS = new Set([
   "/",
   "/historico/*",
   "/historico",
@@ -174,29 +174,77 @@ const DATO_VIVO_BUCKETS = new Set([
  * `/plan-de-vida-uruguay` terminan igual y son tramos opuestos, así que no hay heurística de sufijo
  * que sirva. Se agrega a mano cuando nace un directorio, y mientras tanto la alerta de sin
  * clasificar lo señala.
+ *
+ * Y lo que faltaba era que algo cotejara estas cadenas contra las rutas que el sitio publica de
+ * verdad: `/sillas-de-escritorio-uruguay` estuvo acá desde el principio y NO es una ruta de este
+ * sitio —la de las sillas es `/sillas-escritorio-uruguay`, sin el «de»—, así que la entrada no
+ * clasificaba nada y el directorio valía 1× en vez de 0,2×. Es el mismo modo de fallar que
+ * `tests/revenueplan/experiments_routes.test.ts` ataja en el libro de cambios y por la misma razón:
+ * una ruta mal tipeada no rompe nada, simplemente deja de coincidir, y «no coincide con ninguna
+ * familia» se ve exactamente igual que «esta familia todavía no se clasificó». Lo cuida ahora
+ * `tests/revenueplan/value_routes.test.ts` (2026-10-14).
  */
-const DIRECTORIO_PATHS = new Set([
+export const DIRECTORIO_PATHS = new Set([
   "/alquileres-uruguay",
   "/venta-viviendas-uruguay",
   "/oportunidades-inmobiliarias-uruguay",
+  "/inmobiliarias-uruguay",
   "/autos-usados-uruguay",
   "/oportunidades-autos-usados-uruguay",
   "/mercado-de-autos-usados-uruguay",
   "/autos-chocados-y-con-deuda-uruguay",
+  "/motos-usadas-uruguay",
   "/celulares-uruguay",
   "/equipar-casa-uruguay",
   "/monopatines-electricos-uruguay",
   "/bicicletas-electricas-uruguay",
   "/tiendas-online-uruguay",
-  "/sillas-de-escritorio-uruguay",
+  "/sillas-escritorio-uruguay",
+  "/precios-de-supermercado-uruguay",
   "/ciberlunes-y-black-friday-uruguay",
   "/directorios-uruguay",
   "/alquileres",
+  // Medida por GA4 el 2026-09-16 (0,18× el promedio del sitio, ver `docs/analytics/REVENUE_PLAN.md`)
+  // y sin archivo de página que la sirva hoy. Se conserva porque el tramo tiene que seguir
+  // valuando lo que el informe de ingreso trae, no sólo lo que el router resuelve.
   "/oportunidades",
 ]);
 
-/** Prefijos de ruta suelta que son directorios (las secciones que cuelgan de uno). */
-const DIRECTORIO_PREFIXES = ["/alquileres/", "/alquiler-", "/autos/", "/celulares/", "/equipar/", "/tiendas/"];
+/**
+ * Prefijos de ruta suelta que son directorios (las secciones que cuelgan de uno).
+ *
+ * Acá vive la mitad más cara del error de arriba, y es la mitad que más URLs toca: cuatro de los
+ * seis prefijos —`/autos/`, `/celulares/`, `/equipar/`, `/tiendas/`— no coinciden con NINGUNA ruta
+ * de este sitio y nunca coincidieron (`git log` no registra que esas carpetas hayan existido). Las
+ * fichas reales viven un nivel más abajo de la ruta del directorio
+ * (`/autos-usados-uruguay/<key>`, `/celulares-uruguay/<modelo>`, `/equipar-casa-uruguay/<categoria>`,
+ * `/tiendas-online-uruguay/<tienda>`), y `bucketOf` no pliega esas familias: cada ficha conserva su
+ * path entero, así que caía en `otro` y valía 1×.
+ *
+ * Por qué importa más que la lista de arriba: las fichas son las URLs más numerosas del sitio, y
+ * `attachPages()` le pega a cada oportunidad por consulta la URL con más impresiones — que para una
+ * consulta de directorio ES una ficha. O sea que la cola ordenaba por `clics × 1` justo las
+ * oportunidades de las familias que midieron 0,09× y 0,18×, que es el error que este archivo entero
+ * existe para no cometer: valuar al promedio del sitio lo que rinde una fracción de él.
+ *
+ * `/alquiler-` se queda y no es un error de tipeo: coincide con `/alquiler-ideal-uruguay` y con nada
+ * más. Lo que le faltaba al lado es `/alquiler/`, que es donde viven las páginas por barrio
+ * (`/alquiler/<departamento>/<barrio>`) — barra, no guion.
+ */
+export const DIRECTORIO_PREFIXES = [
+  "/alquileres/",
+  "/alquiler/",
+  "/alquiler-",
+  "/autos-usados-uruguay/",
+  "/celulares-uruguay/",
+  "/equipar-casa-uruguay/",
+  "/inmobiliarias-uruguay/",
+  "/motos-usadas-uruguay/",
+  "/precio/",
+  "/sillas-escritorio-uruguay/",
+  "/tiendas-online-uruguay/",
+  "/venta-viviendas-uruguay/",
+];
 
 /**
  * Páginas de problema sueltas: una guía que se ganó su propia ruta en vez de vivir en `/guias/*`.
@@ -205,7 +253,7 @@ const DIRECTORIO_PREFIXES = ["/alquileres/", "/alquiler-", "/autos/", "/celulare
  * familias con tráfico que todavía valen 1× por no estar clasificadas. Estas ocho salieron de la
  * primera corrida real contra producción (2026-09-20), y las ocho eran contenido.
  */
-const CONTENIDO_PATHS = new Set([
+export const CONTENIDO_PATHS = new Set([
   "/tarjetas-de-credito-uruguay",
   "/mejores-bancos-uruguay",
   "/inversiones-uruguay",
