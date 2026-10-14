@@ -58,6 +58,14 @@ const FB_BUDGET = {
   daily: Number(process.env.EQUIPAR_FB_MAX_QUERIES || 60),
   fast: Number(process.env.EQUIPAR_FB_FAST_QUERIES || 13),
 };
+/**
+ * How deep the daily run scrolls each Marketplace search. Measured 2026-10-14 on ten of the plan's
+ * searches, 30 scrolls instead of 8: none had ended, the cards past the eighth scroll were still
+ * 30–95 % accepted (heladera 91 %, ropero 83 %, smart tv 26 %), and they held 594 accepted adverts
+ * the directory was not showing (seen in the last 4 days) — heladera 121, ropero 129, colchón 72.
+ * At ~80 s a search that does not end, the whole plan needs about 50 minutes.
+ */
+const FB_DEPTH = { maxScrolls: 30, minutes: 60 } as const;
 
 async function main(): Promise<void> {
   // The app's own env calls this MONGO_URI; the root bridge insists on APP_MONGO_URI so a job can
@@ -84,6 +92,7 @@ async function main(): Promise<void> {
       maxMlScans: fast ? Math.round(ML_BUDGET / 2) : ML_BUDGET,
       maxFbQueries: fast ? FB_BUDGET.fast : FB_BUDGET.daily,
       fbRotation: fast ? new Date().getUTCHours() : 0,
+      fbDepth: fast ? undefined : FB_DEPTH,
       maxStoreQueries: fast ? EQUIPAR_STORE_QUERIES.fast : EQUIPAR_STORE_QUERIES.daily,
     }),
     fetchUsdUyuRate(),

@@ -60,6 +60,19 @@ export const FB_VEHICLE_LISTS: readonly MarketplaceSearch[] = [
 ];
 
 /**
+ * Model names, the way sellers title a car without its brand ("Gol g5 2011", "Onix 2021", "Kwid
+ * 2019"): a brand search never ranks those, and the category lists cut before reaching them.
+ * Measured 2026-10-14, 30 scrolls each, identified with the production dictionary: cars that were
+ * not published (no card of the last 4 days) — kwid 146, onix 137, sandero 105, gol 84, hb20 75,
+ * saveiro 72, celerio 63, "peugeot 208" 63, strada 48, corsa 40, clio 37; together about 880, with
+ * Facebook publishing 3.529. "fiesta" found 26, and 160 vehicles among 841 party dresses: out. A bare
+ * number names nothing, so 208 goes with its brand. Read after the deep lists, before the brands.
+ */
+export const FB_MODEL_LISTS: readonly MarketplaceSearch[] = [
+  "kwid", "onix", "sandero", "gol", "hb20", "saveiro", "celerio", "peugeot 208", "corsa", "strada", "clio",
+].map(query => ({ location: "montevideo", query }));
+
+/**
  * A first page this full (cards of any category) that never grows is Facebook's throttle, not a
  * short list. The vehicles feed's first page holds ~20 cards, 17 of them vehicles (2026-10-09).
  */

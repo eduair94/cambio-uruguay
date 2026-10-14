@@ -7,7 +7,7 @@
 // are, so household goods ride along with chairs at no extra request. MercadoLibre and Facebook are
 // the opposite — they are searched per term, so they scale with the number of categories and take a
 // budget.
-import { harvestFacebookMarketplace } from "./sources/facebook";
+import { harvestFacebookMarketplace, type RetailFacebookDepth } from "./sources/facebook";
 import { harvestFenicioStore } from "./sources/fenicio";
 import { harvestMercadoLibre } from "./sources/mercadolibre";
 import { harvestShopifyStore } from "./sources/shopify";
@@ -53,6 +53,8 @@ export interface HarvestOptions {
   maxFbQueries?: number;
   /** Which slice of the Marketplace plan a capped run reads (see RetailFacebookOptions.rotation). */
   fbRotation?: number;
+  /** A deeper Marketplace read for the daily run (see RetailFacebookDepth); the hourly ignores it. */
+  fbDepth?: RetailFacebookDepth;
   /**
    * Cap on distinct search terms per storefront that searches server-side (WooCommerce, VTEX).
    * Absent keeps each adapter's env default (24), which is what the chair directory runs on.
@@ -120,7 +122,7 @@ export async function harvestRetail(options: HarvestOptions): Promise<RetailHarv
       "facebook",
       "Facebook Marketplace",
       "facebook",
-      await safely(() => harvestFacebookMarketplace(specs, options.maxFbQueries, { fast, rotation: options.fbRotation }))
+      await safely(() => harvestFacebookMarketplace(specs, options.maxFbQueries, { fast, rotation: options.fbRotation, depth: options.fbDepth }))
     );
   }
 

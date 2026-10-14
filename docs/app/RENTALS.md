@@ -1,5 +1,28 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Facebook Marketplace ya está saturado por palabras, y herramientas que pasaban por viviendas — 14 de octubre de 2026
+
+Medido con el lector de producción (30 rondas por lista) contra las 20.713 ofertas de Facebook
+guardadas: «se alquila» 95 % ya guardado (31 nuevas), «alquilo» 97 % (17), «alquila» 95 % (35),
+«alquiler invernal» 95 % (29), «deposito» 92 % (32), «sin garantia» 97 % (18); la categoría de
+Canelones y la de Maldonado con radio, partidas en dos bandas de precio, 93–98 % (5–23 cada una); y
+«alquiler» buscado desde Maldonado o Paysandú, 100 %: un ancla sin radio devuelve la lista nacional.
+**No se agregó ninguna lista**: con 13.779 avisos por noche el plan ya cubre lo que Facebook muestra, y
+lo poco nuevo es sobre todo Canelones (Pando, Paso Carrasco, Atlántida, Nicolich), que ya entra por la
+rotación de pueblos con radio. Las búsquedas desde los otros anclas del final del plan nocturno no se
+llegan a leer (el reloj de 150 minutos se agota hacia la lista 37 de 62) y, medido, no traerían nada.
+
+Lo que sí apareció: alquileres de **cosas** publicados como viviendas tipo "otro" a $ 2.000–11.000 —
+«Alquiler Martillo Demoledor 10kg», «Alquiler Generador Monofásico 2 Kw Grupo Electrógeno»,
+«Alquiler Hormigonera 400 L», «Alquiler de trajes centro», «Alquiler de camiones», «Alquiler
+maquinas de café para empresas», andamios, y en la sonda «Se alquila retroexcavadora». `NOT_A_PROPERTY`
+(`normalize.ts`) suma herramientas, maquinaria de obra, generadores, camiones y trajes; y como un
+taller, un predio o un local con metros también pueden nombrarlos, `NAMES_A_PROPERTY` suma taller,
+predio y "N m2". Sobre las 89.314 ofertas guardadas el cambio saca exactamente esas 15 y ninguna
+propiedad ("Se alquila taller de carpintería con herramientas", "Predio 930 m con playa para
+camiones" y "1600 m2 con baños, vestuarios y entrada camiones" siguen). `dropRejectedStoredRentals` las
+retira en la próxima corrida.
+
 ## Facebook Marketplace: corte por novedad, locales y oficinas, filtros en la rotación — 11 de octubre de 2026 (tarde)
 
 La primera noche con 60 listas guardó **12.925 avisos únicos de Facebook** (eran 3.953), pero se

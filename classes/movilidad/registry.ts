@@ -192,6 +192,9 @@ export const MOVILIDAD_CATEGORIES: EquiparCategory[] = [
     ],
     // "scooter electrico" is the same thing in the seller's words (MONOPATIN_INCLUDE already takes it).
     fbQueries: ["monopatin electrico", "scooter electrico"],
+    // 2026-10-14, 30 scrolls each, accepted adverts the directory was not showing after the two
+    // wordings: up to $ 15.000 73, over 85. "monopatin xiaomi" added 4 and stays out.
+    fbPriceBands: [[1, 15_000], [15_000, 200_000]],
   },
   {
     key: "bicicleta-electrica",
@@ -222,6 +225,9 @@ export const MOVILIDAD_CATEGORIES: EquiparCategory[] = [
       "bicicleta electrica carga",
     ],
     fbQueries: ["bicicleta electrica", "bici electrica"],
+    // Same measurement: up to $ 30.000 15, over 42 (the expensive ones the wordings rank last).
+    // "e-bike" lists 36 cards in all and stays out.
+    fbPriceBands: [[1, 30_000], [30_000, 300_000]],
   },
 ];
 

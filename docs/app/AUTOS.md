@@ -107,6 +107,28 @@ sólo para candidatas a oportunidad.
   Las anclas del interior traen sobre todo autos del interior; la partición por precio funciona aunque
   el monto de Facebook diga "UYU" con dólares adentro, porque parte el ranking por el número que
   Facebook guarda.
+- **Búsquedas por modelo (desde 2026-10-14, sólo la diaria):** el vendedor titula "Gol g5 2011",
+  "Onix 2021", "Kwid 2019" — sin la marca que buscan las búsquedas por marca — y las listas profundas
+  se cortan antes de llegar a ellos. Once búsquedas (`FB_MODEL_LISTS`), después de las listas
+  profundas y antes de las marcas, reloj de Facebook de 90 a 115 minutos (el 14/10 la pasada usó 81 de
+  90, con las 120 fichas, que van al final contra el mismo reloj). Medido con el diccionario de
+  producción, 30 rondas cada una, autos que no estaban publicados (ninguna tarjeta de los últimos
+  4 días): kwid 146, onix 137, sandero 105, gol 84, hb20 75, saveiro 72, celerio 63, «peugeot 208» 63,
+  strada 48, corsa 40, clio 37 — unos 880, con 3.529 autos de Facebook publicados. «fiesta» trajo 26
+  y 160 vehículos entre 841 vestidos de fiesta: afuera. Un número solo no nombra nada: 208 va con la
+  marca.
+- **El diccionario borraba a Chevrolet Onix (hasta 2026-10-14).** La regla que saca los "modelos" que
+  en realidad son la versión de un hermano ("Active", "Privilége", que el vendedor de ML elige como
+  modelo) miraba también las versiones que `trims.ts` mina de los títulos, y el minero lee "onix" en
+  cada "Chevrolet Onix Plus". Así desaparecieron Chevrolet Onix (566 avisos de ML, el modelo más
+  publicado), Suzuki Swift (273), Chevrolet Corsa (146), Nissan Frontier (131), Suzuki Alto (122),
+  Renault Stepway y Toyota RAV4: "Chevrolet Onix 2024 ls mt" no nombraba nada, Facebook publicaba 16
+  Onix contra 1.152 de ML y un Corsa sin marca caía en Opel Corsa. Ahora la regla usa sólo las
+  versiones oficiales de ML (`buildCarDictionary(…, mlVocabularies)`) y las minadas siguen sirviendo
+  para reconocer la versión. Medido sobre lo guardado: tarjetas de Facebook de 4 días identificadas
+  con año 5.130 → 5.501 (25 cambian de modelo, todas hacia el nombre que el título dice primero:
+  "Frontier NP300" es Frontier, "Chevrolet 2" pasa a Corsa u Onix); webs de automotoras +23, ninguna
+  cambia ni se pierde.
 - En Uruguay **todos los campos `vehicle_*` vienen vacíos** y la moneda es siempre "UYU" aunque el
   monto sea en dólares. El auto sale del título y la descripción; la moneda se lee **pegada al monto**
   ("U$S 4.000", "4 mil dólares" — "debe 52 mil pesos" no cuenta) y si no está escrita se deduce: de

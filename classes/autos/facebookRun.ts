@@ -2,7 +2,7 @@
 // them privately, then turn every card of the last 4 days that names a dated car into a listing.
 import type { CarDictionary } from "./catalog/dictionary";
 import { fbCardToCar, fbDetailQueue, type FbCard, type FbItem } from "./sources/facebook";
-import { FB_VEHICLE_LISTS, facebookSessionOk, readFacebookVehicles } from "./sources/facebookBrowser";
+import { FB_MODEL_LISTS, FB_VEHICLE_LISTS, facebookSessionOk, readFacebookVehicles } from "./sources/facebookBrowser";
 import { loadFbCards, loadFbWanted, saveFbItems, upsertFbCards } from "./store";
 import type { CarSourceResult } from "./types";
 
@@ -16,13 +16,15 @@ const DAY = 86_400_000;
 // The deep lists (FB_VEHICLE_LISTS, since 2026-10-11) get 40 rounds each and the run 90 minutes
 // instead of 45: nineteen lists at ~1.5 minutes. A deep list or a brand search whose last 10
 // rounds added fewer than 3 vehicles the run had not seen stops there (`runNovelty`): on 2026-10-11
-// the Facebook pass took 72 of its 75 minutes.
+// the Facebook pass took 72 of its 75 minutes. Eleven model searches since 2026-10-14
+// (FB_MODEL_LISTS, ~95 s each) and 115 minutes: on 2026-10-14 the pass took 81 of its 90, the 120
+// item pages included, and those are read last, against the same clock.
 export const FB_BUDGET = {
   full: {
     feed: { maxScrolls: 150, stagnantRounds: 10 },
     list: { maxScrolls: 40, stagnantRounds: 6 },
     query: { maxScrolls: 20, stagnantRounds: 5 },
-    items: 120, minutes: 90, lockWaitMinutes: 30,
+    items: 120, minutes: 115, lockWaitMinutes: 30,
     runNovelty: { rounds: 10, minNew: 3 },
   },
   fast: {
@@ -75,7 +77,7 @@ export async function runFacebook(options: {
   const wanted = options.dryRun ? new Set<string>() : await loadFbWanted();
   const read = await readFacebookVehicles({
     feed: budget.feed,
-    lists: options.fast ? [] : FB_VEHICLE_LISTS,
+    lists: options.fast ? [] : [...FB_VEHICLE_LISTS, ...FB_MODEL_LISTS],
     list: options.fast ? undefined : FB_BUDGET.full.list,
     runNovelty: options.fast ? undefined : FB_BUDGET.full.runNovelty,
     queries: options.fast ? [] : options.brandQueries,
