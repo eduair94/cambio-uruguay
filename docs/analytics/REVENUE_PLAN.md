@@ -88,6 +88,43 @@ multiplicador medido al lado del que el tramo asume, y si se separan más de 3×
 `tier-drift`. La tabla de tramos es una hipótesis con fecha, no una constante — ver
 `classes/revenueplan/value.ts`.
 
+**Y la tabla tiene un tercer modo de fallar, que no es el multiplicador sino la CADENA.** Las listas
+de `value.ts` son rutas y prefijos escritos a mano que se comparan contra las URLs que trae Search
+Console; una cadena que no coincide con ninguna ruta no falla, simplemente no clasifica, y la
+familia cae en `otro` y vale 1×. O sea que se ve exactamente igual que «esta familia todavía no se
+clasificó», que es el estado normal de toda página nueva. Cotejadas por primera vez contra el árbol
+de páginas el 2026-10-14, había dos:
+
+- `/sillas-de-escritorio-uruguay` no es una ruta de este sitio (la de las sillas es
+  `/sillas-escritorio-uruguay`, sin el «de»), así que el directorio valía 1× en vez de 0,2×.
+- cuatro de los seis prefijos de directorio —`/autos/`, `/celulares/`, `/equipar/`, `/tiendas/`— no
+  coinciden con ninguna ruta y nunca coincidieron: las fichas viven un nivel más abajo de la ruta
+  del directorio (`/autos-usados-uruguay/<key>`, `/celulares-uruguay/<modelo>`,
+  `/equipar-casa-uruguay/<categoria>`, `/tiendas-online-uruguay/<tienda>`), y como `bucketOf` no
+  pliega esas familias, cada ficha conservaba su path entero y caía en `otro`. Es la mitad más cara
+  de las dos: las fichas son las URLs más numerosas del sitio y `attachPages()` le pega a cada
+  oportunidad por consulta la URL con más impresiones, que para una consulta de directorio ES una
+  ficha. La cola ordenaba por `clics × 1` justo las oportunidades de las familias que midieron
+  0,09× y 0,18×.
+
+Lo cuidan dos tests, que son a esta tabla lo que `experiments_routes.test.ts` es al libro de
+cambios. `tests/revenueplan/value_routes.test.ts` exige que cada ruta suelta de los tres tramos
+exista en `app/pages` (salvo las declaradas sin página propia, como `/oportunidades`, que GA4 sí
+mide) y que cada prefijo coincida con alguna ruta real. Y `app/tests/unit/directoriosTramoParity.test.ts`
+exige que cada directorio declarado en el registro del propio sitio (`app/utils/directorios.ts`,
+el que dibuja `/directorios-uruguay`) esté valuado como directorio o figure como excepción CON su
+motivo — ahí había tres sin clasificar el 2026-10-14: `/motos-usadas-uruguay`,
+`/inmobiliarias-uruguay` y `/precios-de-supermercado-uruguay`, nacidos después de que la lista se
+escribió. Esa mitad vive en la suite del app y no en la de la raíz por las dos razones de
+`storeConstantsParity.test.ts`: el vitest de la raíz no puede importar un archivo de `app/`, y el
+job de CI del backend no se dispara con un push que sólo toca `app/`, que es justamente cuando nace
+un directorio. Las excepciones de hoy: `/casas-de-cambio` es `dato-vivo` (es una página de
+cotización en vivo), `/tarjetas-de-credito-uruguay` es `contenido` (entró desde la alerta el
+2026-09-20, o sea con medición propia, y la medición le gana a la forma de la página), y las dos
+listas curadas `/couriers-uruguay` y `/apps-utiles-uruguay` siguen en `otro` a propósito, porque no
+son fichas de un relevamiento propio y a una familia que no se midió no se le inventa un
+multiplicador.
+
 ### Por qué el orden sobrevive a que no haya plata medida
 
 El enlace AdSense↔GA4 es del 2026-09-02 y el ingreso diario del sitio, cuando esto se escribió,
