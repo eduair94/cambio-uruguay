@@ -52,6 +52,50 @@ describe("harvestFacebookMarketplace por el navegador", () => {
     expect(reader.mock.calls[1][0]).toMatchObject({ maxScrolls: RETAIL_FB_BUDGET.fast.maxScrolls });
   });
 
+  it("reads a category's first wording again in each price band, after the wordings", async () => {
+    const monopatin: CategorySpec = { ...spec("monopatin", /monopat/, ["monopatin electrico", "scooter electrico"]), fbPriceBands: [[1, 15_000], [15_000, 200_000]] };
+    const reader = vi.fn<typeof readMarketplaceSearches>(async () => read([
+      [], [], [], [card("9", "Monopatín eléctrico Xiaomi 4 Pro", 24_000)], [],
+    ]));
+    const result = await harvestFacebookMarketplace([monopatin, olla], Infinity, { reader });
+    expect(reader.mock.calls[0][0].searches).toEqual([
+      { location: "montevideo", query: "monopatin electrico" },
+      { location: "montevideo", query: "ollas" },
+      { location: "montevideo", query: "scooter electrico" },
+      { location: "montevideo", query: "monopatin electrico", params: { minPrice: 1, maxPrice: 15_000 } },
+      { location: "montevideo", query: "monopatin electrico", params: { minPrice: 15_000, maxPrice: 200_000 } },
+    ]);
+    // A band's cards belong to the category whose band found them.
+    expect(result.listings.map((listing) => [listing.listingId, listing.attributes.CATEGORY_SPEC])).toEqual([["fb:9", "monopatin"]]);
+  });
+
+  it("reads deeper only in the daily run that asks for it", async () => {
+    const reader = vi.fn<typeof readMarketplaceSearches>(async () => read([[]]));
+    const depth = { maxScrolls: 30, minutes: 15 };
+    await harvestFacebookMarketplace([olla], Infinity, { reader, depth });
+    await harvestFacebookMarketplace([olla], Infinity, { reader, depth, fast: true });
+    expect(reader.mock.calls[0][0]).toMatchObject({
+      maxScrolls: 30, maxDurationMs: 15 * 60_000, stagnantRounds: RETAIL_FB_BUDGET.deepStagnantRounds,
+      lockWaitMs: RETAIL_FB_BUDGET.daily.lockWaitMinutes * 60_000,
+    });
+    expect(reader.mock.calls[1][0]).toMatchObject({
+      maxScrolls: RETAIL_FB_BUDGET.fast.maxScrolls, maxDurationMs: RETAIL_FB_BUDGET.fast.minutes * 60_000, stagnantRounds: RETAIL_FB_BUDGET.stagnantRounds,
+    });
+  });
+
+  it("does not send a price band to the bridge, which takes no filter", async () => {
+    const urls: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      urls.push(String(url));
+      return new Response(JSON.stringify({ ok: true, results: [] }), { status: 200, headers: { "content-type": "application/json" } });
+    }));
+    const banded: CategorySpec = { ...olla, fbPriceBands: [[1, 5_000]] };
+    const reader = vi.fn<typeof readMarketplaceSearches>(async () => read([], { lists: 0, unreachable: true, note: "inaccesible" }));
+    await harvestFacebookMarketplace([banded], Infinity, { reader });
+    expect(urls).toHaveLength(1);
+    expect(urls[0]).toContain("q=ollas");
+  });
+
   it("skips Facebook while another job holds the profile, without touching the bridge", async () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal("fetch", fetchSpy);

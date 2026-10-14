@@ -52,6 +52,15 @@ const phrase = (text: string): string => wordText(text).trim();
 export function buildCarDictionary(
   listings: readonly Pick<RawCarListing, "source" | "brandId" | "brand" | "modelId" | "model">[],
   vocabularies: readonly CarModelVocabulary[],
+  /**
+   * The versions that decide whether a model id is really a version of a sibling: Mercado Libre's
+   * own, never the ones mined from titles (classes/autos/catalog/trims.ts). The miner reads "onix"
+   * in every "Chevrolet Onix Plus" title, and with its versions this rule deleted Chevrolet Onix —
+   * the most listed model, 566 Mercado Libre adverts — along with Suzuki Swift, Chevrolet Corsa,
+   * Nissan Frontier and Suzuki Alto (2026-10-14): a Facebook "Chevrolet Onix 2024" named nothing.
+   * Defaults to `vocabularies`.
+   */
+  versionVocabularies: readonly CarModelVocabulary[] = vocabularies,
 ): CarDictionary {
   const brands = new Map<string, CarDictionaryBrand>();
   const models = new Map<string, CarDictionaryModel>();
@@ -86,16 +95,21 @@ export function buildCarDictionary(
   // ML's MODEL facet is seller-chosen: "Active", "Privilége" or "Suzuki" show up as models. A
   // "model" named like its brand or like a version of a sibling model is a version, not a model
   // (measured on 16,301 titles: those ids alone explained most wrong identifications).
+  const versionTrims = new Map<string, readonly string[]>();
+  for (const vocabulary of versionVocabularies) {
+    const key = `${vocabulary.brandId}|${vocabulary.modelId}`;
+    if (models.has(key)) versionTrims.set(key, [...(versionTrims.get(key) ?? []), ...vocabulary.trims]);
+  }
   const trimsByBrand = new Map<string, Set<string>>();
-  for (const model of models.values()) {
+  for (const [key, model] of models) {
     const set = trimsByBrand.get(model.brandId) ?? new Set<string>();
-    model.trims.forEach(trim => set.add(slugify(trim)));
+    (versionTrims.get(key) ?? []).forEach(trim => set.add(slugify(trim)));
     trimsByBrand.set(model.brandId, set);
   }
   for (const [key, model] of models) {
     const brand = brands.get(model.brandId)!;
     const namesBrand = model.slug === brand.slug || brand.aliases.some(alias => slugify(alias) === model.slug);
-    const ownTrims = new Set(model.trims.map(trim => slugify(trim)));
+    const ownTrims = new Set((versionTrims.get(key) ?? []).map(trim => slugify(trim)));
     const namesVersion = trimsByBrand.get(model.brandId)!.has(model.slug) && !ownTrims.has(model.slug);
     if (namesBrand || namesVersion) models.delete(key);
   }

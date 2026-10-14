@@ -36,12 +36,36 @@ const SELLER = "Facebook Marketplace";
  */
 export const RETAIL_FB_BUDGET = {
   // 40 minutes since 2026-10-11: equipar's daily run now reads its whole plan (~55 searches at
-  // ~35 s each) instead of the first 26.
+  // ~35 s each) instead of the first 26. Since 2026-10-14 equipar, movilidad and chairs pass their
+  // own deeper daily budget (`depth`), so this is what a caller gets without one.
   daily: { maxScrolls: 8, minutes: 40, lockWaitMinutes: 20 },
   fast: { maxScrolls: 3, minutes: 8, lockWaitMinutes: 10 },
   stagnantRounds: 3,
+  /** A deep read (`depth`) waits longer before calling a list ended: a slow page is not the end. */
+  deepStagnantRounds: 5,
   gapMs: 6_000,
 } as const;
+
+/**
+ * A daily run that reads deeper than {@link RETAIL_FB_BUDGET}.daily. Since equipar and movilidad
+ * publish every accepted advert in their directories (4 days), depth is coverage there, not only a
+ * price band: measured 2026-10-14, the same searches scrolled 30 times instead of 8 kept 30–95 % of
+ * their cards accepted down to the last page, and none of them had ended.
+ */
+export interface RetailFacebookDepth {
+  maxScrolls: number;
+  minutes: number;
+}
+
+/** A category's Marketplace lists: its wordings, then its first wording in each price band. */
+export function fbSearchesFor(spec: CategorySpec): Array<{ query: string; params?: { minPrice: number; maxPrice: number } }> {
+  const queries = spec.fbQueries ?? [];
+  const banded = queries[0];
+  return [
+    ...queries.map((query) => ({ query })),
+    ...(banded ? (spec.fbPriceBands ?? []).map(([minPrice, maxPrice]) => ({ query: banded, params: { minPrice, maxPrice } })) : []),
+  ];
+}
 
 interface FbListing {
   id?: string;
@@ -108,6 +132,8 @@ export interface RetailFacebookOptions {
    * hourly 13, and twelve categories (acolchado onwards) had not had one Marketplace search in days.
    */
   rotation?: number;
+  /** A deeper daily read (never the hourly pass): see {@link RetailFacebookDepth}. */
+  depth?: RetailFacebookDepth;
   /** The browser reader; defaults to the profile Chrome. */
   reader?: typeof readMarketplaceSearches;
 }
@@ -126,11 +152,16 @@ export async function harvestFacebookMarketplace(
   // one category everything. Callers put what matters first; Marketplace only feeds the used side,
   // so the categories that publish a used band come before the ones that advise against used.
   const ordered = [...specs.filter((spec) => spec.usedOk !== false), ...specs.filter((spec) => spec.usedOk === false)];
-  const planned: Array<{ query: string; spec: CategorySpec }> = [];
+  type Planned = ReturnType<typeof fbSearchesFor>[number] & { spec: CategorySpec };
+  const lists = new Map(ordered.map((spec) => [spec, fbSearchesFor(spec)]));
+  const planned: Planned[] = [];
   for (let round = 0; ; round++) {
     const slice = ordered
-      .map((spec) => ({ query: spec.fbQueries?.[round], spec }))
-      .filter((entry): entry is { query: string; spec: CategorySpec } => Boolean(entry.query));
+      .map((spec) => {
+        const search = lists.get(spec)?.[round];
+        return search ? { ...search, spec } : null;
+      })
+      .filter((entry): entry is Planned => entry !== null);
     if (!slice.length) break;
     planned.push(...slice);
   }
@@ -141,12 +172,13 @@ export async function harvestFacebookMarketplace(
 
   let fallbackReason = "";
   if (process.env.RETAIL_FB_BROWSER !== "0" && budgeted.length) {
-    const budget = options.fast ? RETAIL_FB_BUDGET.fast : RETAIL_FB_BUDGET.daily;
+    const deep = options.fast ? undefined : options.depth;
+    const budget = options.fast ? RETAIL_FB_BUDGET.fast : { ...RETAIL_FB_BUDGET.daily, ...deep };
     const read: MarketplaceSearchRead = await (options.reader ?? readMarketplaceSearches)({
       owner: "retail",
-      searches: budgeted.map(({ query }) => ({ location: location(), query })),
+      searches: budgeted.map(({ query, params }) => ({ location: location(), query, ...(params ? { params } : {}) })),
       maxScrolls: budget.maxScrolls,
-      stagnantRounds: RETAIL_FB_BUDGET.stagnantRounds,
+      stagnantRounds: deep ? RETAIL_FB_BUDGET.deepStagnantRounds : RETAIL_FB_BUDGET.stagnantRounds,
       maxDurationMs: budget.minutes * 60_000,
       gapMs: RETAIL_FB_BUDGET.gapMs,
       lockWaitMs: budget.lockWaitMinutes * 60_000,
@@ -184,7 +216,9 @@ export async function harvestFacebookMarketplace(
   const byId = new Map<string, RetailListing>();
   let reachable = false;
   let lastError = "";
-  for (const { query, spec } of budgeted) {
+  for (const { query, spec, params } of budgeted) {
+    // The bridge takes no filter: a price band would only repeat its wording's search.
+    if (params) continue;
     const url = `${API_BASE}/search?${new URLSearchParams({ q: query, location: location(), limit: String(PER_QUERY) })}`;
     const payload = await fetchJson<FbResponse>(url, { timeoutMs: 120_000, retries: 1, unthrottled: true });
     if (!payload) {

@@ -413,11 +413,17 @@ export function inferPropertyType(title: string, hint?: string | null): RentalPr
 // "para cumpleaños" were public in the directory as "otro" at $ 2.000–5.000. None is a property.
 // A title that names a home or a premises is about one, even with "juegos para niños" in it.
 // 2026-10-10, probing new Marketplace searches: "Volquetín para alquilar" and "Alquiler de baños
-// químicos y duchas de agua caliente" passed as homes.
-const NOT_A_PROPERTY = /\b(?:inflables?|cama elastica|juegos? (?:infantiles|para|de cumple\w*)|ping ?pong|futbolito|metegol|mesa de pool|se alquila pool|food ?truck|volquetas?|volquetin(?:es)?|banos? quimicos?|decoraciones|equipos? (?:de )?(?:depilacion|sonido|luces|audio)|maquinas?(?: de)? (?:depilacion|soprano|hifu)|depilacion|soprano|hifu|body sculpt|head spa|disfraces|(?:para|de) (?:eventos|cumpleanos|fiestas|reuniones))\b/;
+// químicos y duchas de agua caliente" passed as homes. 2026-10-14, public in the directory as "otro"
+// at $ 2.000–11.000: "Alquiler Martillo Demoledor 10kg", "Alquiler Generador Monofásico 2 Kw Grupo
+// Electrógeno", "Alquiler Hormigonera 400 L", "Alquiler de trajes centro", "Alquiler de camiones",
+// "Alquiler maquinas de café para empresas", and a probe read "Se alquila retroexcavadora".
+const NOT_A_PROPERTY = /\b(?:inflables?|cama elastica|juegos? (?:infantiles|para|de cumple\w*)|ping ?pong|futbolito|metegol|mesa de pool|se alquila pool|food ?truck|volquetas?|volquetin(?:es)?|banos? quimicos?|decoraciones|equipos? (?:de )?(?:depilacion|sonido|luces|audio)|maquinas?(?: de)? (?:depilacion|soprano|hifu|cafe)|depilacion|soprano|hifu|body sculpt|head spa|disfraces|(?:para|de) (?:eventos|cumpleanos|fiestas|reuniones)|(?:roto)?martillos?(?: demoledor(?:es)?)?|taladros?|amoladoras?|hidrolavadoras?|motosierras?|herramientas?|generador(?:es)?|grupos? electrogenos?|hormigoneras?|mezcladoras?|(?:retro|mini ?)?excavadoras?|mini ?cargadoras?|bobcat|andamios?|camion(?:es)?|trajes?|smoking)\b/;
 // "Oficinas con sala de reuniones", "Complejo de 3 edificios con salón de fiestas" and "Ideal clínica
-// o salón de fiestas" are properties that mention an event; measured on the same day.
-const NAMES_A_PROPERTY = /\b(?:apartamentos?|aptos?|casas?|monoambientes?|dormitorios?|locales|local|oficinas?|galpon(?:es)?|depositos?|terrenos?|cocheras?|garajes?|garages?|habitacion(?:es)?|cabanas?|consultorios?|edificios?|complejo|propiedad|chacras?|box(?:es)?|clinica|pizzeria)\b/;
+// o salón de fiestas" are properties that mention an event; measured on the same day. So are "Se alquila
+// taller de carpintería con herramientas", "Predio 930 m con playa para camiones" and "1600 m2 con
+// baños, vestuarios y entrada camiones" (2026-10-14, the 7 of 89.314 stored adverts the tools and
+// vehicles above would otherwise have taken out).
+const NAMES_A_PROPERTY = /\b(?:apartamentos?|aptos?|casas?|monoambientes?|dormitorios?|locales|local|oficinas?|galpon(?:es)?|depositos?|terrenos?|cocheras?|garajes?|garages?|habitacion(?:es)?|cabanas?|consultorios?|edificios?|complejo|propiedad|chacras?|box(?:es)?|clinica|pizzeria|taller(?:es)?|predios?|\d+ ?m2)\b/;
 
 // Someone LOOKING for a home, posted where the homes are: "Busco casa", "YO BUSCO UN MONOAMBIENTE",
 // "Necesito urgente apartamento", "Hola buenas noches estoy buscando alquiler", an agency's "Busco

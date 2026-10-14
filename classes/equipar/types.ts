@@ -63,6 +63,8 @@ export interface EquiparCategory {
   mlQueries: readonly string[];
   mlCategories?: readonly string[];
   fbQueries: readonly string[];
+  /** See CategorySpec.fbPriceBands (classes/retail/types.ts). */
+  fbPriceBands?: ReadonlyArray<readonly [number, number]>;
 }
 
 /** One price observation kept for display: the cheapest offers behind a row. */

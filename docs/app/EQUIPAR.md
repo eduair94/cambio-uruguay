@@ -72,6 +72,13 @@ Y un segundo término donde la muestra de usados era flaca, cada uno ya dentro d
 categoría: «hervidor», «airfryer», «juego de platos», «plancha electrica», «secadora de ropa»,
 «calefactor», «secaplatos», «juego de cubiertos» (55 búsquedas en total).
 
+**Y la diaria lee cada búsqueda a fondo (desde 2026-10-14):** 30 rondas en vez de 8 (`FB_DEPTH` en
+`sync_equipar.ts`, reloj de Marketplace de 40 a 60 minutos). El directorio publica cada aviso visto
+en 4 días, así que la profundidad ya no es sólo muestra para la banda: es cobertura. Medido en diez
+búsquedas del plan, ninguna se terminaba en 30 rondas, las tarjetas después de la octava seguían
+aceptadas entre 30 y 95 % (heladera 91 %, ropero 83 %, smart tv 26 %) y traían 594 avisos aceptados que
+el directorio no mostraba (ropero 129, heladera 121, colchón 72). La horaria sigue en 3 rondas.
+
 APP DB (`APP_MONGO_URI`): `equiparitems` (un documento por categoría+variante, con historia diaria
 de hasta un año) y `equiparmeta` (un documento: corrida, fuentes, las tres canastas, lo no cubierto).
 Además, sólo la corrida diaria, `equiparstoresnapshots` (una foto de los avisos de tienda del día,

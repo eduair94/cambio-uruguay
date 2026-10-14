@@ -20,6 +20,22 @@ describe("buildCarDictionary", () => {
     expect(DICT.models.find(model => model.modelId === "60315")!.trims).toEqual(["LE", "XEI"]);
     expect(DICT.brands.find(brand => brand.slug === "volkswagen")!.aliases).toContain("vw");
   });
+
+  // 2026-10-14: the version miner read "onix" in the "Chevrolet Onix Plus" titles, and the rule
+  // below deleted Chevrolet Onix, the most listed model. Only Mercado Libre's own versions decide.
+  it("drops a model named like a sibling's version only by Mercado Libre's own versions", () => {
+    const rows = [ml("67781", "Chevrolet", "67801", "Onix"), ml("67781", "Chevrolet", "67802", "Onix Plus"), ml("67781", "Chevrolet", "67803", "Joy")];
+    const official = [{ brandId: "67781", modelId: "67802", trims: ["LT", "Premier"] }, { brandId: "67781", modelId: "67801", trims: ["Joy", "LT"] }];
+    const mined = [{ brandId: "67781", modelId: "67802", trims: ["LT", "Onix", "Premier"] }, { brandId: "67781", modelId: "67801", trims: ["Joy", "LT"] }];
+    const dictionary = buildCarDictionary(rows, mined, official);
+    // "Joy" is an official version of Onix: a seller-chosen "model", not a model.
+    expect(dictionary.models.map(model => model.model).sort()).toEqual(["Onix", "Onix Plus"]);
+    // The mined versions still feed the version matcher.
+    expect(dictionary.models.find(model => model.modelId === "67802")!.trims).toEqual(["LT", "Onix", "Premier"]);
+    expect(matchCar("Chevrolet Onix 2024 ls mt 54000km.", dictionary, {}, MAX)).toMatchObject({ modelId: "67801", year: 2024 });
+    // Without the official list the mined one decides, as before.
+    expect(buildCarDictionary(rows, mined).models.map(model => model.model)).not.toContain("Onix");
+  });
 });
 
 describe("matchCar", () => {

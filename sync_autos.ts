@@ -138,7 +138,7 @@ async function main(): Promise<void> {
       photoCheck: doc.photoCheck ?? null,
     });
   };
-  const dictionary = buildCarDictionary(stored.map(doc => doc.listing), vocabularies);
+  const dictionary = buildCarDictionary(stored.map(doc => doc.listing), vocabularies, mlVocabularies);
   const guide: Map<string, CarGuideEntry> = dryRun ? new Map() : await loadGuideEntries();
   const sourceResults: CarSourceResult[] = [];
   let dealerRecords: DealerContactRecord[] = [];

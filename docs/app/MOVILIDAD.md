@@ -196,12 +196,21 @@ propio, mucho más chico que el de equipar (dos categorías y cinco tiendas cont
 | | diaria | horaria (`--fast`) |
 |---|---|---|
 | búsquedas de ML | 16 | 6 |
-| consultas de Facebook | 6 | 2 |
+| consultas de Facebook | 8 | 2 |
 | consultas por tienda | 16 | 6 |
 
 Fijo en código (`ML_MAX_SCANS`/`FB_MAX_QUERIES`/`STORE_MAX_QUERIES`, `sync_movilidad.ts`), no una env
 de pm2 — `scripts/deploy-backend.sh` sólo reaplica el `ecosystem.config.js` de una app cuando cambia
 su cron, así que un env agregado después nunca llegaría a una app ya registrada en el VPS.
+
+**La diaria lee Marketplace a fondo (desde 2026-10-14).** Ocho listas: las cuatro palabras y la primera
+de cada categoría partida por el filtro de precio de Facebook (`fbPriceBands`: monopatín hasta
+$ 15.000 y más; bicicleta hasta $ 30.000 y más), 30 rondas cada una en vez de 8 (`FB_DEPTH`, reloj de
+15 minutos). Medido contra lo que el directorio mostraba (avisos vistos en 4 días): a 8 rondas las
+cuatro palabras encontraban 12 avisos aceptados que no estaban; a 30, 310 —ninguna lista se había
+terminado y un tercio de sus tarjetas seguían siendo aceptadas en la última página—, y las bandas
+sumaban 215 más (monopatín de más de $ 15.000: 85). «monopatin xiaomi» (4) y «e-bike» (36 tarjetas en
+total) quedaron afuera. La horaria no cambia: 3 rondas, dos listas que rotan por hora.
 
 **Los horarios evitan pisar a todos los demás consumidores del mismo puente** (comentario de
 `ecosystem.config.js`, junto a los dos jobs): sillas horaria `:23`, autos horaria `:29` y su barrida

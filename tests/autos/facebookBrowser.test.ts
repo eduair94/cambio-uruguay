@@ -2,7 +2,7 @@ import type { Browser } from "puppeteer-core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { scrollFacebookList } from "../../classes/facebook/browser";
 import { FB_VEHICLES_CATEGORY } from "../../classes/autos/sources/facebook";
-import { FB_VEHICLE_LISTS, readFacebookVehicles } from "../../classes/autos/sources/facebookBrowser";
+import { FB_MODEL_LISTS, FB_VEHICLE_LISTS, readFacebookVehicles } from "../../classes/autos/sources/facebookBrowser";
 import { marketplaceListUrl } from "../../classes/facebook/search";
 
 vi.mock("../../classes/facebook/browser", async importOriginal => ({
@@ -144,6 +144,14 @@ describe("readFacebookVehicles", () => {
     expect(FB_VEHICLE_LISTS.map(list => list.location)).toEqual(expect.arrayContaining(["rivera", "salto", "maldonado", "colonia-del-sacramento"]));
     expect(FB_VEHICLE_LISTS.filter(list => list.category === "vehicles")).toHaveLength(13);
     expect(FB_VEHICLE_LISTS.filter(list => !list.category).map(list => list.query)).toEqual(["camioneta", "auto", "pick up", "utilitario", "vendo auto", "furgon"]);
+  });
+
+  it("searches the models sellers name without their brand, a bare number never alone", () => {
+    expect(FB_MODEL_LISTS.every(list => list.location === "montevideo" && !list.category && !list.params)).toBe(true);
+    expect(FB_MODEL_LISTS.map(list => list.query)).toContain("onix");
+    // "fiesta" brought 160 vehicles among 841 party dresses.
+    expect(FB_MODEL_LISTS.map(list => list.query)).not.toContain("fiesta");
+    expect(FB_MODEL_LISTS.filter(list => /^\d+$/.test(list.query.split(" ").pop()!)).map(list => list.query)).toEqual(["peugeot 208"]);
   });
 
   it("leaves Facebook alone while another job holds the profile", async () => {

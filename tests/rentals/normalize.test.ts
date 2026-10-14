@@ -302,6 +302,15 @@ describe("what is not a monthly home rental", () => {
     "Alquiler de baños quimicos y duchas de agua caliente",
     "Alquiler para eventos cumpleaños reuniones",
     "Alquiler de amplio salón de fiestas y eventos",
+    // 2026-10-14, public as "otro".
+    "Alquiler Martillo Demoledor 10kg Para Piso Y Pared",
+    "Alquiler Rotomartillo 11kg Doble Función Martillo Demoledor",
+    "Alquiler Generador Monofásico 2 Kw Grupo Electrógeno",
+    "Alquiler Hormigonera 400 L Mezcladora De Cemento",
+    "Alquiler de trajes centro",
+    "Alquiler de camiones",
+    "Alquiler maquinas de café para empresas",
+    "Se alquila retroexcavadora",
     "ALQUILO $2390 LA NOCHE 1 cuadra de la playa / 6 PERSONAS",
     "ALQUILER por Días COSTA AZUL, CANELONES",
     "Alquiler segunda quincena de enero y febrero",
@@ -321,6 +330,14 @@ describe("what is not a monthly home rental", () => {
     "Apartamento En Alquiler De Verano 6 Meses O Más 1 Dormitorio Santos Dumont",
     "Alquilo apartamento 2 dormitorios, ingreso en enero",
     "Alquilo apartamento, visitas toda la semana",
+    // A property that names a vehicle or a tool is still the property.
+    "Local Comercial, Frente A Dos Calles, Entrada De Camiones",
+    "Alquilo cochera cerrada, espacios para auto o camioneta",
+    "Galpón para herramientas y maquinaria en Paso Molino",
+    "Casa con generador y tanque de agua en Solymar",
+    "SE ALQUILA TALLER DE CARPINTERIA CON HERRAMIENTAS",
+    "Alquilo Predio 930 M  - Con  Instalaciones Y Playa Para Camiones -  Exelente Ubicacion A 100 Mt De Ruta 101 Km 24",
+    "Proximo ruta 102 y Belloni, 1600 m2 con baños, vestuarios y entrada camiones !!",
   ])("keeps %s", (title) => {
     expect(looksLikeRentalAdvert(title)).toBe(true);
   });

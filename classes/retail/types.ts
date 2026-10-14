@@ -129,6 +129,12 @@ export interface CategorySpec {
   /** Facebook Marketplace searches. */
   fbQueries?: readonly string[];
   /**
+   * The first `fbQueries` wording read again split by Marketplace's own price filter (pesos,
+   * `[min, max]`). A search is a ranking Facebook cuts at a few hundred cards, so each band reaches
+   * as deep as the whole search did (see classes/facebook/search.ts, `params`).
+   */
+  fbPriceBands?: ReadonlyArray<readonly [number, number]>;
+  /**
    * Whether the category publishes a used band. Marketplace only feeds the used side, so its plan
    * reads these first and a category that advises against buying used (a mattress) after them.
    * Absent = true.
