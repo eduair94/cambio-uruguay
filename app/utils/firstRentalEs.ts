@@ -130,6 +130,9 @@ export const firstRentalEs: FirstRentalCopy = {
   entryTitle: 'La plata para entrar va por separado',
   entryText:
     'Pedí una liquidación escrita: primer período de alquiler, honorarios inmobiliarios acordados con impuestos, mudanza y cualquier alta o reconexión necesaria. CGN no cobra por elaborar o celebrar el contrato, pero eso no elimina los honorarios de la inmobiliaria. No agregues una garantía o depósito extra por costumbre: verificá qué se acordó. Sumá equipamiento básico y un margen para imprevistos.',
+  paymentNote:
+    'Dejá por escrito también CÓMO se paga el alquiler y cómo se prueba cada pago: desde 2020 ninguna ley obliga a cobrarlo por transferencia, así que lo que manda es el contrato.',
+  paymentLink: 'Qué rige hoy para pagar el alquiler en efectivo',
   budgetTitle: 'Pasá tus facturas a un presupuesto mensual',
   budgetIntro:
     'Ingresá tus propios importes en pesos uruguayos, sin separador de miles: por ejemplo, 25000. Sumá cada gasto una sola vez; escribí 0 si no corresponde y dejá vacío lo que todavía no sabés. Estos datos no se guardan ni se envían.',
@@ -182,6 +185,10 @@ export const firstRentalEs: FirstRentalCopy = {
     { path: '/alquilar-en-uruguay', label: 'Garantías, contrato y búsqueda de vivienda' },
     { path: '/alquileres-uruguay', label: 'Buscar casas y apartamentos en alquiler' },
     { path: '/herramientas/costo-de-vida', label: 'Sumar los demás gastos de vivir en Uruguay' },
+    {
+      path: '/pagar-el-alquiler-en-efectivo-uruguay',
+      label: 'Cómo se paga el alquiler y cómo se prueba cada pago',
+    },
   ],
   sourcesTitle: 'Fuentes para comprobar cada trámite',
   sourceNewTab: 'Abrir fuente en otra pestaña',

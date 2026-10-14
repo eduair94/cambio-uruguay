@@ -130,6 +130,9 @@ export const firstRentalPt: FirstRentalCopy = {
   entryTitle: 'O dinheiro para entrar é calculado à parte',
   entryText:
     'Peça um demonstrativo por escrito: primeiro período de aluguel, honorários imobiliários combinados com impostos, mudança e qualquer ligação ou religação necessária. A CGN não cobra para elaborar ou celebrar o contrato, mas isso não elimina os honorários da imobiliária. Não acrescente uma garantia ou depósito extra por costume: verifique o que foi combinado. Some os equipamentos básicos e uma margem para imprevistos.',
+  paymentNote:
+    'Deixe por escrito também COMO o aluguel é pago e como cada pagamento é provado: desde 2020 nenhuma lei obriga a cobrá-lo por transferência, então vale o que diz o contrato.',
+  paymentLink: 'O que vale hoje para pagar o aluguel em dinheiro',
   budgetTitle: 'Transforme suas faturas em um orçamento mensal',
   budgetIntro:
     'Insira seus próprios valores em pesos uruguaios, sem separador de milhares: por exemplo, 25000. Some cada despesa uma única vez; digite 0 se não for aplicável e deixe em branco o que ainda não souber. Esses dados não são salvos nem enviados.',
@@ -182,6 +185,10 @@ export const firstRentalPt: FirstRentalCopy = {
     { path: '/alquilar-en-uruguay', label: 'Garantias, contrato e busca de moradia' },
     { path: '/alquileres-uruguay', label: 'Buscar casas e apartamentos para alugar' },
     { path: '/herramientas/costo-de-vida', label: 'Somar as demais despesas de morar no Uruguai' },
+    {
+      path: '/pagar-el-alquiler-en-efectivo-uruguay',
+      label: 'Como o aluguel é pago e como provar cada pagamento',
+    },
   ],
   sourcesTitle: 'Fontes para conferir cada procedimento',
   sourceNewTab: 'Abrir fonte em outra aba',

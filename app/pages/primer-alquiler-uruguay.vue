@@ -187,6 +187,12 @@ surface seed 98df6264. Read mode, phone at a viewing or signing; respect the use
     <section id="entrada" class="guide-section reading-block" aria-labelledby="entry-title">
       <h2 id="entry-title">{{ c.entryTitle }}</h2>
       <p>{{ c.entryText }}</p>
+      <p>
+        {{ c.paymentNote }}
+        <NuxtLink :to="localePath('/pagar-el-alquiler-en-efectivo-uruguay')">
+          {{ c.paymentLink }}</NuxtLink
+        >.
+      </p>
       <div class="source-links">
         <a
           :href="sources.cgnFee.url"

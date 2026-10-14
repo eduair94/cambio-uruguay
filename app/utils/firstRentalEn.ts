@@ -130,6 +130,9 @@ export const firstRentalEn: FirstRentalCopy = {
   entryTitle: 'Keep move-in money separate',
   entryText:
     'Ask for a written breakdown: the first rental period, agreed estate agent fees including taxes, moving costs, and any required new connections or reconnections. CGN does not charge for drawing up or signing the contract, but that does not eliminate the estate agent’s fees. Do not add an extra guarantee or deposit out of habit: check what was agreed. Add basic equipment and a cushion for unexpected costs.',
+  paymentNote:
+    'Put in writing HOW the rent is paid and how each payment is proven: since 2020 no law requires it to be collected by bank transfer, so the contract is what rules.',
+  paymentLink: 'What the law says today about paying rent in cash',
   budgetTitle: 'Turn your bills into a monthly budget',
   budgetIntro:
     'Enter your own amounts in Uruguayan pesos without thousands separators: for example, 25000. Include each expense only once; enter 0 if it does not apply and leave unknown amounts blank. These figures are neither saved nor sent anywhere.',
@@ -182,6 +185,10 @@ export const firstRentalEn: FirstRentalCopy = {
     { path: '/alquilar-en-uruguay', label: 'Guarantees, contracts and finding a home' },
     { path: '/alquileres-uruguay', label: 'Find houses and apartments to rent' },
     { path: '/herramientas/costo-de-vida', label: 'Add the other costs of living in Uruguay' },
+    {
+      path: '/pagar-el-alquiler-en-efectivo-uruguay',
+      label: 'How rent is paid, and how each payment is proven',
+    },
   ],
   sourcesTitle: 'Sources to check each procedure',
   sourceNewTab: 'Open source in a new tab',

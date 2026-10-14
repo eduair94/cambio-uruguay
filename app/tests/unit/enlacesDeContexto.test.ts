@@ -152,8 +152,6 @@ const DEUDA_SIN_ENLACE = [
   '/certificado-unico-dgi-uruguay',
   '/cheques-uruguay',
   '/cortes-de-luz-por-barrio-uruguay',
-  '/credito-fiscal-por-alquiler-uruguay',
-  '/desalojo-de-alquiler-uruguay',
   '/donde-conseguir-monedas-uruguay',
   '/fondo-de-solidaridad-uruguay',
   '/grabacion-sin-consentimiento-uruguay',
@@ -169,7 +167,15 @@ const DEUDA_SIN_ENLACE = [
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
-const DEUDA_MAXIMA = 21
+// 21 → 19 el 2026-10-14, y las dos salieron sin que nadie fuera a buscarlas: la página nueva
+// `/pagar-el-alquiler-en-efectivo-uruguay` necesita a las dos en su propio contenido —el crédito
+// del inquilino es el motivo por el que al lector le conviene que el pago deje rastro, y el
+// desalojo es la otra mitad de «estar al día con el IRPF para hacer valer el contrato»—, así que
+// el enlace es uno que un lector sigue y no relleno. Las dos tienen fila abierta del libro de
+// cambios, y la reserva que la nota de arriba describe no se rompe: lo que esas filas miden es su
+// propia descripción, y el enlace entrante nace en una página publicada hoy, sin tráfico todavía.
+// Es además lo que ya hace cada página nueva del repo con su bloque de relacionadas.
+const DEUDA_MAXIMA = 19
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

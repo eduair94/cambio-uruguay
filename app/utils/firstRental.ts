@@ -137,6 +137,8 @@ export interface FirstRentalCopy {
   repairsText: string
   entryTitle: string
   entryText: string
+  paymentNote: string
+  paymentLink: string
   budgetTitle: string
   budgetIntro: string
   fields: Record<BudgetField, { label: string; hint: string }>

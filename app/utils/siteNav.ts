@@ -3278,6 +3278,33 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La regla PROPIA del alquiler, que no es la del tope general de efectivo: otro artículo,
+        // otra unidad (BPC al año, no UI por operación) y otra consecuencia. El ángulo es la cadena
+        // de derogación que nadie publica: la obligación de cobrar por banco la creó el art. 39 de
+        // la Ley 19.210, la borró el art. 224 de la LUC en 2020, y el Decreto 264/015 que la
+        // reglamentaba sigue publicado sin nota de derogación mientras el reglamento del IRPF
+        // (Decreto 148/007 art. 14) todavía lo nombra. Ni "es obligatorio" ni "el decreto no
+        // existe" son ciertos, y las dos respuestas circulan.
+        to: '/pagar-el-alquiler-en-efectivo-uruguay',
+        labelKey: 'nav.pagoDelAlquiler',
+        icon: 'mdi-cash-sync',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'pagar el alquiler en efectivo uruguay',
+          'es obligatorio pagar el alquiler por transferencia',
+          'alquiler en efectivo uruguay',
+          'ley 19210 articulo 39 derogado',
+          'decreto 264/015 alquileres',
+          'multa por cobrar el alquiler en efectivo',
+          'como probar el pago del alquiler',
+          'recibo de alquiler uruguay',
+          'acreditacion en cuenta alquiler',
+          '40 bpc alquiler',
+        ],
+      },
+      {
         to: '/deuda-de-gastos-comunes-uruguay',
         labelKey: 'nav.gastosComunes',
         icon: 'mdi-home-percent-outline',

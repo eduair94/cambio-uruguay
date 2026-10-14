@@ -483,6 +483,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/desalojo-de-alquiler-uruguay',
       },
       {
+        label: 'Pagar el alquiler en efectivo',
+        description: 'La obligación de cobrarlo por banco se derogó en 2020.',
+        to: '/pagar-el-alquiler-en-efectivo-uruguay',
+      },
+      {
         label: 'Comparar portales',
         description: 'Qué portal publica qué, y cuánto se superponen.',
         to: '/comparar-portales-de-alquiler-uruguay',

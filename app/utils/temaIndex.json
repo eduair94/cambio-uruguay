@@ -463,6 +463,10 @@
           "label": "Desalojo de un alquiler"
         },
         {
+          "to": "/pagar-el-alquiler-en-efectivo-uruguay",
+          "label": "Pagar el alquiler en efectivo"
+        },
+        {
           "to": "/comparar-portales-de-alquiler-uruguay",
           "label": "Comparar portales"
         },

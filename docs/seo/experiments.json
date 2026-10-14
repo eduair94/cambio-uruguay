@@ -19,6 +19,20 @@
   ],
   "experiments": [
     {
+      "id": "pagina-pagar-el-alquiler-en-efectivo",
+      "shippedOn": "2026-10-14",
+      "routes": [
+        "/pagar-el-alquiler-en-efectivo-uruguay"
+      ],
+      "queries": [
+        "se puede pagar el alquiler en efectivo",
+        "es obligatorio pagar el alquiler por transferencia",
+        "pagar alquiler en efectivo uruguay",
+        "como probar el pago del alquiler"
+      ],
+      "hypothesis": "La pregunta no la contesta Google en su caja porque la respuesta es una cadena de derogacion: el art. 39 de la Ley 19.210 obligaba a acreditar el alquiler en una cuenta del arrendador, el art. 224 de la LUC lo derogo en 2020 y el Decreto 264/015 sigue publicado sin nota de derogacion mientras el reglamento del IRPF todavia lo nombra. El sitio no tenia pagina: /limite-de-efectivo-uruguay cubre el tope general del art. 35 en UI, que es otro articulo, otra unidad y otra consecuencia."
+    },
+    {
       "id": "pension-alimenticia-enlaces-de-contexto",
       "shippedOn": "2026-10-13",
       "routes": [
