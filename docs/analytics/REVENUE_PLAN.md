@@ -187,11 +187,27 @@ En el **mismo commit** que publica el cambio:
 
 Una ruta que termina en `/` o `*` toma la familia entera; el resto exige coincidencia exacta.
 
-Dos tripwires cuidan el archivo, porque sus dos modos de fallar son **silenciosos**:
+Tres tripwires cuidan el archivo, porque sus tres modos de fallar son **silenciosos**:
 `tests/revenueplan/experiments.test.ts` falla si el JSON que se despliega no parsea (un JSON roto
 desactiva el ledger entero sin decir nada), y `tests/revenueplan/experiments_routes.test.ts` falla si
 una ruta declarada no existe en `app/pages` — una ruta mal tipeada publica "sin datos" para siempre,
 que es el mismo síntoma que "todavía no hay suficiente historia" y por eso nadie lo notaría.
+
+El tercero es `tests/revenueplan/experiments_overlap.test.ts`, y cuida la regla que `AGENTS.md`
+escribe como escarmiento: **dos filas sobre la misma página dentro de la misma ventana arruinan la
+medición de las dos**. Con `|Δfecha| ≤ 28` la ventana posterior de la primera contiene el segundo
+cambio, y la ventana anterior de la segunda queda partida entre días con el primer cambio y días sin
+él, así que ninguno de los dos veredictos habla de su propio cambio. La disciplina que lo evita ya
+estaba escrita a mano en cuatro archivos de test —`temaHuerfanas`, `enlacesDeContexto`,
+`seoDescriptionBudget` y el presupuesto de migas de `seoContract` reservan una ruta mientras su
+ventana esté abierta—, pero nada la verificaba: medidos el 2026-10-15, **ya había 30 pares
+contaminados**, entre ellos tres filas sobre `/declaracion-de-irpf-uruguay`. Esos treinta quedan
+declarados en el test, porque una ventana ya medida sucia no se recalcula limpia; el número sólo
+puede bajar y una fila nueva que pise una ventana abierta pone CI en rojo antes del merge. Las tres
+salidas son esperar a que cierre, publicar sin fila nueva dentro de la que ya está abierta (correcto
+cuando son el mismo cambio en dos mitades, como las tandas de título y descripción de octubre) o
+elegir otra página. El test mide también las **consultas**: el único solape que las rutas no veían
+era un par de filas que declaraban las dos «unidad reajustable» con rutas distintas a propósito.
 
 ---
 
