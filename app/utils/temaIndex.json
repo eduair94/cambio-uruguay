@@ -545,6 +545,10 @@
           "label": "Evolución del precio de las viviendas"
         },
         {
+          "to": "/impuesto-a-las-trasmisiones-patrimoniales-uruguay",
+          "label": "ITP: impuesto de la escritura"
+        },
+        {
           "to": "/comprar-o-alquilar-uruguay",
           "label": "¿Comprar o alquilar?"
         },

@@ -163,10 +163,22 @@ const DEUDA_SIN_ENLACE = [
   '/reconocer-anos-trabajados-uruguay',
   '/ropa-por-kilo-uruguay',
   '/seguro-obligatorio-de-auto-uruguay',
-  '/valor-catastral-uruguay',
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 19 → 18 el 2026-10-15, por lo mismo que las dos del 14/10 y sin ir a buscarlo: la página nueva
+// `/impuesto-a-las-trasmisiones-patrimoniales-uruguay` necesita a `/valor-catastral-uruguay` en su
+// propio contenido, porque el valor que explica esa página ES la base imponible del impuesto que
+// explica ésta —el artículo 5.º del Título 19 la fija ahí y no en el precio—, así que el enlace es
+// el que un lector sigue para poder hacer la cuenta y no relleno. `/valor-catastral-uruguay` tiene
+// fila abierta del libro de cambios hasta el 9/11 y la reserva no se rompe: el enlace entrante nace
+// en una página publicada hoy, sin tráfico todavía, y a la página medida no se le tocó ni el
+// snippet ni el cuerpo.
+//
+// Al mismo tiempo, el enlace de entrada de la página nueva NO salió de ahí, justamente por esa
+// fila: salió de `/comprar-o-alquilar-uruguay`, que no tiene ventana abierta y cuyo lector lo
+// necesita de verdad —la página le pide escribir «Gastos de escrituración» y nunca le dijo de qué
+// está hecha esa cifra, y la mitad que no se negocia es el ITP—.
 // 21 → 19 el 2026-10-14, y las dos salieron sin que nadie fuera a buscarlas: la página nueva
 // `/pagar-el-alquiler-en-efectivo-uruguay` necesita a las dos en su propio contenido —el crédito
 // del inquilino es el motivo por el que al lector le conviene que el pago deje rastro, y el
@@ -175,7 +187,7 @@ const DEUDA_SIN_ENLACE = [
 // cambios, y la reserva que la nota de arriba describe no se rompe: lo que esas filas miden es su
 // propia descripción, y el enlace entrante nace en una página publicada hoy, sin tráfico todavía.
 // Es además lo que ya hace cada página nueva del repo con su bloque de relacionadas.
-const DEUDA_MAXIMA = 19
+const DEUDA_MAXIMA = 18
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

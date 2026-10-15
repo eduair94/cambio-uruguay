@@ -620,8 +620,27 @@ const TITLE_OVER_BUDGET = 16
  * porque el cuerpo lo escribe «en general, alrededor de un año, pero confirmá el plazo vigente ante
  * la DGI» y un snippet no tiene lugar para esa salvedad — publicar «un año» a secas sería
  * exactamente el error recurrente del repo.
+ *
+ * 24 → 22 el 2026-10-15, y son las DOS únicas que quedaban con la ruta libre. Las otras 22 llevan
+ * una fila abierta de `docs/seo/experiments.json` (de la del 20/10 a la del 5/11, casi todas de las
+ * tandas de título de octubre) y reescribirles la descripción hoy le cambiaría el sujeto al
+ * experimento que ya las está midiendo; la reserva es la misma que este archivo y
+ * `temaHuerfanas.test.ts` vienen aplicando desde el 2026-09-30. Las dos de hoy son las que cerraron
+ * su ventana el 14/10:
+ *
+ *  - `salario-minimo-uruguay-cuanto-es` (173 → 149) soltó el paréntesis histórico
+ *    («$ 24.572 hasta junio»), que era la cola que el SERP corta y además el único dato de la
+ *    descripción que ya no rige. Ahora entran los dos montos vigentes y la afirmación que
+ *    diferencia a la guía de la caja de respuestas de Google: que el SMN NO es el mínimo de quien
+ *    la lee, porque ese lo fija el laudo de su categoría.
+ *  - `propinas-en-uruguay` (156 → 151) abría con la etiqueta del tema («Cuánto se deja de propina
+ *    en Uruguay:»), que es el defecto que las nueve corridas anteriores documentan, y después
+ *    enumeraba el índice. Ahora arranca por el 10 %, y la cola se la lleva la otra cifra que el
+ *    cuerpo ya tenía y la descripción no publicaba: los $ 20 a $ 50 del cuidacoches.
+ *
+ * Ninguna cifra es nueva: las cuatro ya estaban en la descripción vieja o en el cuerpo de su guía.
  */
-const DESCRIPTION_OVER_BUDGET = 24
+const DESCRIPTION_OVER_BUDGET = 22
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {

@@ -19,6 +19,37 @@
   ],
   "experiments": [
     {
+      "id": "pagina-impuesto-trasmisiones-patrimoniales",
+      "shippedOn": "2026-10-15",
+      "routes": [
+        "/impuesto-a-las-trasmisiones-patrimoniales-uruguay"
+      ],
+      "queries": [
+        "impuesto a las trasmisiones patrimoniales",
+        "itp uruguay",
+        "cuanto se paga de itp",
+        "impuestos al vender una casa uruguay",
+        "exoneracion itp primera vivienda",
+        "irpf venta de inmueble uruguay"
+      ],
+      "hypothesis": "La caja de respuestas de Google contesta la tasa (2 % y 2 %) y no la base, que es donde esta la pregunta: el art. 5 del Titulo 19 la fija en el valor real de Catastro actualizado por IPC y usa el precio solo como TECHO, asi que en una venta por encima del valor catastral se paga sobre el valor catastral. El sitio tenia toda la cadena alrededor —/valor-catastral-uruguay, /contribucion-inmobiliaria-uruguay, /venta-viviendas-uruguay— y la expresion 'trasmisiones patrimoniales' no aparecia en ninguna de sus 210 paginas fuera de una fila de exoneraciones de vivienda promovida. El snippet esta apuntado DE COSTADO a /guias/costos-de-escrituracion-uruguay, que ya se llama 'Escriturar una casa: entre 5 % y 8 %' y ya dice el 2 % sobre el valor de Catastro: lo que esta pagina tiene y la guia no es el IRPF por incremento patrimonial del vendedor (12 %, o 1,8 % por el ficto de los inmuebles de antes del 1/7/2007) y las tasas de la sucesion (3 % en linea recta, 4 % el resto), asi que el titulo lleva las dos siglas y no el costo de la escritura."
+    },
+    {
+      "id": "descripciones-de-guias-con-ventana-cerrada",
+      "shippedOn": "2026-10-15",
+      "routes": [
+        "/guias/salario-minimo-uruguay-cuanto-es",
+        "/guias/propinas-en-uruguay"
+      ],
+      "queries": [
+        "salario minimo uruguay 2026",
+        "cuanto es el salario minimo",
+        "cuanto se deja de propina en uruguay",
+        "propina uruguay restaurante"
+      ],
+      "hypothesis": "Las dos unicas descripciones del catalogo de guias pasadas de 155 caracteres cuyas ventanas de medicion habian cerrado (las otras 22 esperan la suya). Mismo criterio que las nueve corridas que guideSnippetBudget.test.ts documenta: salario-minimo (173 a 149) solto el parentesis historico '$ 24.572 hasta junio', que era la cola que el SERP corta y el unico dato de la descripcion que ya no rige, y conserva los dos montos vigentes mas la afirmacion que la diferencia de la caja de respuestas (que el SMN no es el minimo de quien lee, porque ese lo fija el laudo de su categoria); propinas (156 a 151) abria con la etiqueta del tema ('Cuanto se deja de propina en Uruguay:') y ahora arranca por el 10 %, con los $ 20 a $ 50 del cuidacoches que el cuerpo ya tenia y la descripcion no publicaba. Ninguna cifra es nueva. Misma apuesta: mismo puesto, mas clics."
+    },
+    {
       "id": "pagina-pagar-el-alquiler-en-efectivo",
       "shippedOn": "2026-10-14",
       "routes": [

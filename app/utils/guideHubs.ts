@@ -571,6 +571,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/evolucion-precio-viviendas-uruguay',
       },
       {
+        label: 'ITP: impuesto de la escritura',
+        description: 'El 2 % de cada parte, y el IRPF que paga el que vende.',
+        to: '/impuesto-a-las-trasmisiones-patrimoniales-uruguay',
+      },
+      {
         label: '¿Comprar o alquilar?',
         description: 'La cuenta completa para decidir, con precios de hoy.',
         to: '/comprar-o-alquilar-uruguay',

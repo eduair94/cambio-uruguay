@@ -3378,6 +3378,37 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El impuesto que se paga UNA vez, en la escritura, y que no estaba en ninguna de las 210
+        // páginas: la expresión «trasmisiones patrimoniales» sólo aparecía en una fila de
+        // exoneraciones de vivienda promovida. Va entre el valor catastral y la contribución
+        // porque los tres cuelgan del mismo número de Catastro, y éste es el único de los tres que
+        // se paga al comprar o al vender.
+        //
+        // El ángulo propio es el que la caja de respuestas de Google no da: la tasa es fácil (2 % y
+        // 2 %) pero la base NO es el precio. El artículo 5.º del Título 19 la fija en el valor real
+        // actualizado por IPC y usa el precio sólo como techo, así que en una venta normal se paga
+        // sobre el valor catastral. Y la pregunta que más llega —exoneración por primera vivienda—
+        // se contesta con un no: el artículo 8.º no la tiene.
+        to: '/impuesto-a-las-trasmisiones-patrimoniales-uruguay',
+        labelKey: 'nav.itpUruguay',
+        icon: 'mdi-home-city-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'impuesto a las trasmisiones patrimoniales',
+          'itp uruguay',
+          'impuesto transmisiones patrimoniales uruguay',
+          'cuanto se paga de itp',
+          'impuestos al comprar una casa uruguay',
+          'impuestos al vender una casa uruguay',
+          'irpf venta de inmueble uruguay',
+          'exoneracion itp primera vivienda',
+          'quien paga el itp comprador o vendedor',
+          'formulario 1700 dgi',
+        ],
+      },
+      {
         // El impuesto de la vivienda que el sitio sólo nombraba de costado: como línea deducible
         // en el IRPF del alquiler y como advertencia en la guía del primer alquiler ("no lo pagás
         // vos"). Va acá, al lado de gastos comunes, porque la pregunta que llega es la misma —qué

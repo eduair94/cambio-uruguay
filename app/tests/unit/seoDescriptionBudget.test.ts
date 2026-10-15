@@ -156,7 +156,7 @@ const measured = pageFiles()
 // que publica la página. Su descripción entra acá porque es literal: las dos cifras que nombra
 // —el art. 224 de la LUC y las 200.000 UI del art. 35— están en la ley y no se mueven con el día,
 // y la conversión de las UI a pesos la página NO la publica justamente para no congelarla.
-const RESOLVED = 160
+const RESOLVED = 161
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente

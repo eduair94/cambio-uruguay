@@ -1448,7 +1448,7 @@ export const guides: readonly Guide[] = [
     slug: 'propinas-en-uruguay',
     title: 'Propinas en Uruguay: cuánto dejar (≈ 10 %)',
     description:
-      'Cuánto se deja de propina en Uruguay: alrededor del 10% en restaurantes (no obligatorio), qué es el cubierto, y qué pasa con taxis, maleteros y cuidacoches.',
+      'De propina, alrededor del 10 % en restaurantes, y ninguna ley la obliga ni la incluye. El cubierto no es propina, y al cuidacoches le toca $ 20 a $ 50.',
     tag: 'PROPINAS',
     updatedAt: '2026-06-20',
     sections: [

@@ -292,6 +292,13 @@
         >
           Costos de escrituración
         </VBtn>
+        <VBtn
+          :to="localePath('/impuesto-a-las-trasmisiones-patrimoniales-uruguay')"
+          variant="tonal"
+          size="small"
+        >
+          ITP: el impuesto de la escritura
+        </VBtn>
         <VBtn :to="localePath('/por-que-no-baja-el-alquiler-uruguay')" variant="tonal" size="small">
           Por qué no baja el alquiler
         </VBtn>
@@ -308,8 +315,15 @@
         La cuota se calcula por sistema francés sobre el monto financiado. Al costo de comprar se le
         suman contribución, gastos comunes, mantenimiento y el costo de oportunidad del anticipo al
         rendimiento que vos indiques. La escrituración no entra en el costo mensual: se amortiza con
-        la ventaja mensual, y de ahí sale en cuántos años se cubre. Modelo revisado el
-        {{ verifiedAt }}. Ninguna cifra la pone el sitio: todas las ponés vos.
+        la ventaja mensual, y de ahí sale en cuántos años se cubre. De esa cifra, la parte que no se
+        negocia es el impuesto: el
+        <NuxtLink
+          :to="localePath('/impuesto-a-las-trasmisiones-patrimoniales-uruguay')"
+          class="cu-link"
+        >
+          ITP del 2 % </NuxtLink
+        >que paga el comprador, calculado sobre el valor catastral y no sobre el precio. Modelo
+        revisado el {{ verifiedAt }}. Ninguna cifra la pone el sitio: todas las ponés vos.
       </p>
     </section>
   </VContainer>

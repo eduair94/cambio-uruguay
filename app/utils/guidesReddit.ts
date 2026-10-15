@@ -4259,7 +4259,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'salario-minimo-uruguay-cuanto-es',
     title: 'Salario mínimo en Uruguay 2026: $ 25.383',
     description:
-      'El Salario Mínimo Nacional es $ 25.383 desde el 1.º de julio de 2026 ($ 24.572 hasta junio): $ 1.015,32 por jornal. Cómo se ajusta y por qué no es el mínimo de tu categoría.',
+      'El Salario Mínimo Nacional es $ 25.383 desde el 1.º de julio de 2026, o $ 1.015,32 por jornal. No es tu mínimo: ese lo fija el laudo de tu categoría.',
     tag: 'SALARIO',
     updatedAt: '2026-08-10',
     sections: [

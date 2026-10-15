@@ -214,7 +214,27 @@ const GUIAS_SIN_TEMA = [
   'ui-ur-bpc-diferencias',
 ]
 
-/** El trinquete de las guías. Sólo puede bajar: subirlo es publicar una guía huérfana. */
+/**
+ * Sigue en 22 el 2026-10-15, y esta vez no por la reserva de la ventana.
+ *
+ * `propinas-en-uruguay` era la única de las 22 con la ventana cerrada (la fila
+ * `titulos-que-responden` cerró el 14/10), así que era la candidata del día. No entró, y la razón
+ * es la misma regla que el presupuesto de migas de `seoContract.test.ts` escribe para el rastro
+ * corto: **un padre inventado es peor que ninguno**. De los 16 temas no hay uno sobre cuánto cuesta
+ * un servicio en la vida diaria; los dos que podrían recibirla la desubican, cada uno a su manera.
+ * `dolar-y-casas-de-cambio-uruguay` es la mecánica de la pizarra (leer una cotización, BILLETE
+ * contra CABLE, qué casa paga mejor) y `economia-y-mercado-uruguay` está armado de macro (por qué
+ * sube el dólar, inflación, UI/UR/BPC) aunque sus recursos sean de precios. Quien llega
+ * preguntando cuánto dejar en un restorán no recibiría de ninguno de los dos un vecino que le
+ * contestara algo, y la tarjeta quedaría en la página de un tema que la guía no trata.
+ *
+ * Lo que SÍ se le arregló hoy es el otro lado de su snippet, que no depende de ningún tema: la
+ * descripción pasó de 156 a 151 caracteres y de abrir por la etiqueta a abrir por el 10 %
+ * (`guideSnippetBudget.test.ts`, 24 → 22). El tema queda pendiente de que exista uno donde entre
+ * sin mentirle al lector, o de que alguien mida que uno de los dos de arriba sí la ayuda.
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
 const DEUDA_MAXIMA_GUIAS = 22
 
 describe('ninguna guía queda fuera de todos los temas', () => {
