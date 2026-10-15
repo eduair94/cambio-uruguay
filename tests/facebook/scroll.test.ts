@@ -13,6 +13,7 @@ function fakeBrowser(batches: string[][]) {
     on: (_: string, handler: (response: HTTPResponse) => void) => { respond = handler; },
     off: () => undefined,
     setViewport: async () => undefined,
+    bringToFront: vi.fn(async () => undefined),
     goto: async () => undefined,
     url: () => "https://www.facebook.com/marketplace/montevideo/vehicles",
     waitForSelector: async () => null,
@@ -44,6 +45,8 @@ describe("scrollFacebookList", () => {
     expect([...list.seen]).toEqual(["1", "2", "3", "4"]);
     expect(run).toMatchObject({ initial: 2, exhausted: true, satisfied: false, scrolls: 4 });
     expect(page.close).toHaveBeenCalled();
+    // A hidden tab never loads a category list past its first page.
+    expect(page.bringToFront).toHaveBeenCalled();
   });
 
   it("stops as soon as the caller has enough, which is not the list running out", async () => {
