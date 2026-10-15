@@ -124,6 +124,13 @@ export async function scrollFacebookList(
   page.on("response", onResponse);
   try {
     await page.setViewport({ width: 1400, height: 900 });
+    // A tab opened over CDP can start hidden (`document.visibilityState`, seen 2026-10-15), and a
+    // hidden tab does not render. That is the likely reason half the hourly rentals runs of 13–15/10
+    // read every category list (bands, bedrooms, towns) at exactly its first 24 cards while their text
+    // searches loaded whole, and the same lists from another process minutes later loaded hundreds.
+    // In front, the tab is visible and focused; whether it ends the stuck runs is measured in the log
+    // (`[rentals] facebook por lista`).
+    await page.bringToFront().catch(() => undefined);
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
     guard(page.url());
     await page.waitForSelector("a[href*=\"/marketplace/item/\"]", { timeout: 30_000 }).catch(() => null);
