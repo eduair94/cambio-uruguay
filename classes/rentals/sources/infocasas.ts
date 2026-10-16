@@ -329,9 +329,11 @@ function matchesPriceRange(payload: unknown, range: InfoCasasPriceRange): boolea
 export async function harvestInfoCasas(
   mode: "full" | "fast", usdUyu: number, options: InfoCasasHarvestOptions = {}
 ): Promise<RentalSourceResult> {
+  // The whole catalogue is ~895 pages (2026-10-11..15: three nights cut at 900 pages, two ended at
+  // 893 and 897), so the full sweep gets room above it instead of stopping a few pages short.
   const maxPages = boundedInteger(options.maxPages ?? (mode === "fast"
-    ? process.env.RENTALS_IC_FAST_PAGES : process.env.RENTALS_IC_MAX_PAGES), mode === "fast" ? 10 : 900, 1800);
-  const maxDurationMs = boundedInteger(options.maxDurationMs ?? process.env.RENTALS_IC_MAX_DURATION_MS, 40 * 60_000, 60 * 60_000);
+    ? process.env.RENTALS_IC_FAST_PAGES : process.env.RENTALS_IC_MAX_PAGES), mode === "fast" ? 10 : 1000, 1800);
+  const maxDurationMs = boundedInteger(options.maxDurationMs ?? process.env.RENTALS_IC_MAX_DURATION_MS, 45 * 60_000, 60 * 60_000);
   const started = Date.now();
   const fetchPage = options.fetchPage || ((url: string, onFailure: (reason: string) => void) =>
     fetchText(url, { timeoutMs: 40_000, retries: 1, onFailure }));
