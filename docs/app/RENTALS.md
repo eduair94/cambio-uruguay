@@ -1071,7 +1071,7 @@ La búsqueda pública de casas/apartamentos hasta $13.000 permitió reproducir d
 - **Profundidad aparente:** a las 00:00 UTC del 7 de septiembre, las páginas nacionales 600 y 850 de `?order=3` entregaron exactamente los mismos 21 IDs, todos de mayo de 2026. El paginador decía página 850/850, pero no estaba llegando a los avisos anteriores. No eran simplemente anuncios nuevos moviendo el listado. Se reemplaza el barrido nacional completo por cinco búsquedas públicas solapadas: hasta 13.000, 13.000–25.000, 25.000–40.000, 40.000–70.000 y desde 70.000 pesos. Cada una tenía menos de 9.000 resultados al comprobarla. Si crece, se divide antes de recorrerla. El repaso horario conserva el feed de novedades.
 - **Piso de precio:** el mínimo de $8.000 para casas/apartamentos descartaba viviendas como los avisos `193952249`, `193666397`, `194116585` y `194137551` de Colonia, publicados a $6.500–$7.000. InfoCasas puede admitir desde $3.000 UYU con evidencia propia de alquiler residencial y sin contradicciones. El piso anterior permanece para fuentes sin ese contexto y para importes en USD de período incierto.
 
-Ahora se validan el número de página efectivo, el paginador y los filtros recibidos; tres páginas sin IDs nuevos detienen una cola repetida. La nota distingue IDs observados, aceptados, descartados y lecturas repetidas. Los presupuestos son **globales**: 900 páginas y 40 minutos por defecto. El recorrido por franjas no constituye un snapshot transaccional: un aviso puede cambiar de precio durante la lectura. Por eso InfoCasas declara cobertura parcial incluso al terminar las franjas y **no permite caducar por ausencia**; se mantiene la conservación histórica y la frescura de cada oferta.
+Ahora se validan el número de página efectivo, el paginador y los filtros recibidos; tres páginas sin IDs nuevos detienen una cola repetida. La nota distingue IDs observados, aceptados, descartados y lecturas repetidas. Los presupuestos son **globales**: 1.000 páginas y 45 minutos por defecto (900 y 40 hasta el 16/10/2026: el catálogo entero son ~895 páginas y tres noches de cinco se cortaron a pocas del final). El recorrido por franjas no constituye un snapshot transaccional: un aviso puede cambiar de precio durante la lectura. Por eso InfoCasas declara cobertura parcial incluso al terminar las franjas y **no permite caducar por ausencia**; se mantiene la conservación histórica y la frescura de cada oferta.
 
 La consulta de ejemplo también contiene tarifas diarias, de fin de semana y avisos clasificados como apartamentos cuyo único uso permitido es depósito u oficina. Esos resultados no prueban que haya igual cantidad de viviendas mensuales. `classes/rentals/eligibility.ts` y su espejo puro `app/utils/rentalEligibility.ts` distinguen evidencia de período, uso residencial y contradicciones para la selección económica; no infieren tasaciones ni disponibilidad real. Se verifica la paridad entre paquetes con pruebas.
 
@@ -1727,8 +1727,8 @@ Lo que pasó ese día, y lo que cambió por eso:
 | var | default | para qué |
 |---|---|---|
 | `APP_MONGO_URI` | — | **obligatoria**: sin ella el job se niega a correr (escribiría la DB equivocada) |
-| `RENTALS_IC_MAX_PAGES` / `RENTALS_IC_FAST_PAGES` | 900 / 10 | presupuesto global de páginas de InfoCasas |
-| `RENTALS_IC_MAX_DURATION_MS` | 2400000 | presupuesto global de 40 minutos; un corte conserva avisos anteriores |
+| `RENTALS_IC_MAX_PAGES` / `RENTALS_IC_FAST_PAGES` | 1000 / 10 | presupuesto global de páginas de InfoCasas |
+| `RENTALS_IC_MAX_DURATION_MS` | 2700000 | presupuesto global de 45 minutos; un corte conserva avisos anteriores |
 | `RENTALS_ML_MAX_PAGES` / `RENTALS_ML_FAST_PAGES` | 120 / 12 | tope de páginas por consulta en ML |
 | `RENTALS_ML_REQUEST_BUDGET` | 1600 / 100 | solicitudes globales en full / fast, incluidos reintentos y enriquecimiento |
 | `RENTALS_ML_TIME_BUDGET_MS` | 2400000 / 240000 | tiempo global de ML en full / fast; conserva los avisos aceptados al cortar |

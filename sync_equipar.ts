@@ -63,9 +63,11 @@ const FB_BUDGET = {
  * searches, 30 scrolls instead of 8: none had ended, the cards past the eighth scroll were still
  * 30–95 % accepted (heladera 91 %, ropero 83 %, smart tv 26 %), and they held 594 accepted adverts
  * the directory was not showing (seen in the last 4 days) — heladera 121, ropero 129, colchón 72.
- * At ~80 s a search that does not end, the whole plan needs about 50 minutes.
+ * At ~80 s a search that does not end, the whole plan needs about 50 minutes. On 2026-10-15, the first
+ * day, it took the 60 and stopped at the 53rd of 55 searches (13.797 adverts, 4.719 the day before):
+ * 75 minutes.
  */
-const FB_DEPTH = { maxScrolls: 30, minutes: 60 } as const;
+const FB_DEPTH = { maxScrolls: 30, minutes: 75 } as const;
 
 async function main(): Promise<void> {
   // The app's own env calls this MONGO_URI; the root bridge insists on APP_MONGO_URI so a job can
