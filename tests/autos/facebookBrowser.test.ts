@@ -91,11 +91,37 @@ describe("readFacebookVehicles", () => {
     const firstPage = (from: number): Card[] => [...ids(from, 17, 1), ...ids(from + 17, 3, 1).map(([id]) => [id, 1, "1583634935226685"] as Card)];
     vi.mocked(scrollFacebookList)
       .mockImplementationOnce(list(firstPage(0)))
-      .mockImplementationOnce(list(firstPage(100)));
+      .mockImplementationOnce(list(firstPage(100)))
+      .mockImplementationOnce(list(firstPage(200)));
     const read = await readFacebookVehicles({ ...base, feed: { maxScrolls: 150, stagnantRounds: 10 }, queries: ["toyota", "fiat"] });
-    expect(read).toMatchObject({ lists: 2, stalled: 2 });
+    expect(read).toMatchObject({ lists: 3, stalled: 3 });
     // Only the vehicles are kept.
-    expect(read.cards).toHaveLength(34);
+    expect(read.cards).toHaveLength(51);
+  });
+
+  // 2026-10-15: every category feed stopped at its first page for the day while text searches loaded
+  // whole, and the run ended at the feed with 22 cards.
+  it("skips the category lists Facebook stopped loading, and still reads the text searches", async () => {
+    const stuck = (from: number) => list(ids(from, 24, 1));
+    vi.mocked(scrollFacebookList)
+      .mockImplementationOnce(stuck(0)) // the feed
+      .mockImplementationOnce(stuck(100)) // the category in Facebook's order
+      .mockImplementationOnce(list(ids(300, 24, 30), ids(324, 24, 30))) // "camioneta"
+      .mockImplementationOnce(list(ids(400, 24, 30), ids(424, 24, 30))); // "toyota"
+    const read = await readFacebookVehicles({
+      ...base, feed: { maxScrolls: 150, stagnantRounds: 10 }, lists: [...FB_VEHICLE_LISTS.slice(0, 3), { location: "montevideo", query: "camioneta" }],
+      list: { maxScrolls: 40, stagnantRounds: 6 }, queries: ["toyota"],
+    });
+    const urls = vi.mocked(scrollFacebookList).mock.calls.map(call => call[1]);
+    expect(urls).toEqual([
+      "https://www.facebook.com/marketplace/montevideo/vehicles?sortBy=creation_time_descend",
+      "https://www.facebook.com/marketplace/montevideo/vehicles",
+      "https://www.facebook.com/marketplace/montevideo/search?query=camioneta",
+      "https://www.facebook.com/marketplace/montevideo/search?query=toyota",
+    ]);
+    expect(read).toMatchObject({ lists: 4, stalled: 2, skipped: 2 });
+    expect(read.note).toBe("Facebook dejó de cargar las listas de categoría; 2 salteadas");
+    expect(read.cards).toHaveLength(144);
   });
 
   it("a short search is not the throttle", async () => {

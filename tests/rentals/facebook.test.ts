@@ -154,7 +154,7 @@ const node = (id: string, overrides: Record<string, unknown> = {}) => ({
 });
 const graphql = (...nodes: unknown[]) => `for (;;);${JSON.stringify({ data: { marketplace_search: { feed_units: { edges: nodes.map(listing => ({ node: { listing } })) } } } })}`;
 const read = (cards: FacebookRentalRead["cards"], extra: Partial<FacebookRentalRead> = {}): FacebookRentalRead => ({
-  cards, perSearch: [cards.map(card => card.id)], fresh: [cards.length], spent: 0, reads: cards.length, lists: 1, exhausted: 1, failed: 0, stalled: 0,
+  cards, perSearch: [cards.map(card => card.id)], fresh: [cards.length], spent: 0, reads: cards.length, lists: 1, exhausted: 1, failed: 0, stalled: 0, skipped: 0,
   sessionLost: false, unreachable: false, busy: false, note: null, ...extra,
 });
 

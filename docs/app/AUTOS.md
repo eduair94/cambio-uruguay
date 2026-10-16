@@ -117,6 +117,13 @@ sólo para candidatas a oportunidad.
   strada 48, corsa 40, clio 37 — unos 880, con 3.529 autos de Facebook publicados. «fiesta» trajo 26
   y 160 vehículos entre 841 vestidos de fiesta: afuera. Un número solo no nombra nada: 208 va con la
   marca.
+- **Un feed trabado ya no corta las búsquedas (desde 2026-10-15).** Facebook frena las listas de
+  categoría (el feed, la categoría Vehículos y sus bandas) aparte de las búsquedas de texto: el 15/10 la
+  diaria leyó el feed y la primera lista en su primera página y se cortó con 22 tarjetas, sin las once
+  búsquedas por modelo ni las veinte por marca, que sí habrían cargado. El feed horario vive trabado a
+  rachas (la mayoría de las horas del 14 y el 15 leyó 15–20 tarjetas). Ahora dos listas de categoría
+  trabadas seguidas saltean las categorías que quedan y la corrida sigue con las de texto (ver
+  `docs/app/RENTALS.md`, 15 de octubre).
 - **El diccionario borraba a Chevrolet Onix (hasta 2026-10-14).** La regla que saca los "modelos" que
   en realidad son la versión de un hermano ("Active", "Privilége", que el vendedor de ML elige como
   modelo) miraba también las versiones que `trims.ts` mina de los títulos, y el minero lee "onix" en
