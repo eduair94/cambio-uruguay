@@ -99,6 +99,8 @@ export interface FacebookRead {
   exhausted: number;
   /** Lists whose full first page never grew: the throttle. */
   stalled: number;
+  /** Category lists not read because Facebook had stopped loading category feeds (see below). */
+  skipped: number;
   note: string | null;
   sessionLost: boolean;
   busy: boolean;
@@ -126,7 +128,7 @@ export async function readFacebookVehicles(options: {
 }): Promise<FacebookRead> {
   const cards = new Map<string, FbCard>();
   const items: FbItem[] = [];
-  const result: FacebookRead = { cards: [], items, pages: 0, lists: 0, exhausted: 0, stalled: 0, note: null, sessionLost: false, busy: false };
+  const result: FacebookRead = { cards: [], items, pages: 0, lists: 0, exhausted: 0, stalled: 0, skipped: 0, note: null, sessionLost: false, busy: false };
   const release = await (options.lock ?? acquireFacebookProfile)("autos", options.lockWaitMs);
   if (!release) {
     result.busy = true;
@@ -135,10 +137,16 @@ export async function readFacebookVehicles(options: {
   }
   const deadline = Date.now() + options.maxDurationMs;
   let browser: Browser | null = null;
-  let stalledInARow = 0;
+  // Facebook throttles category feeds and text searches apart (classes/facebook/search.ts,
+  // `stopOnStalls`): on 2026-10-15 the feed and the first category list stopped at their first page
+  // and the run ended there, 22 cards, without the eleven model and twenty brand searches that would
+  // have loaded. Two stalled lists of a kind in a row stop that kind; the text searches carry on.
+  type Kind = "category" | "search";
+  const stalledInARow: Record<Kind, number> = { category: 0, search: 0 };
+  const throttled: Record<Kind, boolean> = { category: false, search: false };
 
-  /** Reads one list; false when the throttle says to stop reading lists. */
-  const readList = async (url: string, budget: FacebookListBudget, novelty?: { rounds: number; minNew: number }): Promise<boolean> => {
+  /** Reads one list and records whether its kind is being throttled. */
+  const readList = async (url: string, kind: Kind, budget: FacebookListBudget, novelty?: { rounds: number; minNew: number }): Promise<void> => {
     // Every card the list delivered, of any category: whether Facebook is still sending is the stop
     // signal and the throttle signal; only the vehicles are kept.
     const seenHere = new Set<string>();
@@ -174,25 +182,26 @@ export async function readFacebookVehicles(options: {
     if (run.exhausted || run.satisfied) result.exhausted++;
     if (!run.satisfied && run.initial >= STALL_FLOOR && seenHere.size <= run.initial) {
       result.stalled++;
-      stalledInARow++;
+      stalledInARow[kind]++;
     } else {
-      stalledInARow = 0;
+      stalledInARow[kind] = 0;
     }
-    // Two full first pages in a row that never grew: Facebook throttles a session that scrolled a
-    // lot (see classes/facebook/search.ts). Insisting only spends the account.
-    return stalledInARow < 2;
+    // Two full first pages of a kind in a row that never grew: Facebook throttles a session that
+    // scrolled a lot (see classes/facebook/search.ts). Insisting only spends the account.
+    if (stalledInARow[kind] >= 2) throttled[kind] = true;
   };
 
   try {
     browser = await (options.connect ?? connectFacebookBrowser)();
-    let keepReading = await readList(FEED_URL, options.feed);
-    for (const list of options.lists ?? []) {
-      if (!keepReading || Date.now() >= deadline) break;
-      await sleep(options.itemGapMs);
-      keepReading = await readList(marketplaceListUrl(list), options.list ?? options.query, options.runNovelty);
-    }
-    for (const query of options.queries) {
-      if (!keepReading) {
+    await readList(FEED_URL, "category", options.feed);
+    const lists = [
+      ...(options.lists ?? []).map(list => ({
+        url: marketplaceListUrl(list), kind: (list.category ? "category" : "search") as Kind, budget: options.list ?? options.query,
+      })),
+      ...options.queries.map(query => ({ url: searchUrl(query), kind: "search" as Kind, budget: options.query })),
+    ];
+    for (const list of lists) {
+      if (throttled.search) {
         result.note = "Facebook dejó de cargar más resultados en dos listas seguidas; se corta para no forzar la sesión";
         break;
       }
@@ -200,8 +209,16 @@ export async function readFacebookVehicles(options: {
         result.note = "presupuesto agotado";
         break;
       }
+      if (throttled[list.kind]) {
+        result.skipped++;
+        continue;
+      }
       await sleep(options.itemGapMs);
-      keepReading = await readList(searchUrl(query), options.query, options.runNovelty);
+      await readList(list.url, list.kind, list.budget, options.runNovelty);
+    }
+    if (result.skipped) {
+      const skipped = `Facebook dejó de cargar las listas de categoría; ${result.skipped} salteadas`;
+      result.note = result.note ? `${skipped}; ${result.note}` : skipped;
     }
     // Item pages do not scroll: the throttle above does not stop them.
     const ids = await options.itemIds([...cards.values()]);

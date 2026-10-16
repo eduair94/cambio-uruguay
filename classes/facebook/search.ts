@@ -73,6 +73,11 @@ export interface MarketplaceSearchRead {
   failed: number;
   /** Lists that never loaded past their first page. */
   stalled: number;
+  /**
+   * Category lists not read because two before them in a row never loaded past their first page:
+   * Facebook throttles category feeds apart from text searches (see `stopOnStalls`).
+   */
+  skipped: number;
   sessionLost: boolean;
   /** The browser could not be reached at all: the caller falls back to the bridge. */
   unreachable: boolean;
@@ -107,6 +112,13 @@ export async function readMarketplaceSearches(options: {
    * session. Retail reads a few pages a search and needs every search's first page more than its
    * tail: with 3 rounds a slow search looks stalled, and cutting at the third of thirteen
    * searches left equipar with 105 offers instead of 244 (2026-10-09 03:03).
+   *
+   * Category lists and text searches are throttled apart, so they are counted apart. On 2026-10-15
+   * from 05:2x on, every category list stopped at its first 24 cards for the rest of the day while
+   * text searches kept loading a thousand; the rentals sweep stopped at its tenth list and lost its
+   * twenty-five text searches, and the cars run lost its eleven model and twenty brand searches to a
+   * stalled feed. Two stalled category lists in a row now skip the remaining category lists only;
+   * two stalled text searches in a row still end the run.
    */
   stopOnStalls?: boolean;
   /**
@@ -124,7 +136,7 @@ export async function readMarketplaceSearches(options: {
   const cards = new Map<string, MarketplaceCard>();
   const result: MarketplaceSearchRead = {
     cards: [], perSearch: options.searches.map(() => []), fresh: options.searches.map(() => 0), spent: 0,
-    reads: 0, lists: 0, exhausted: 0, failed: 0, stalled: 0,
+    reads: 0, lists: 0, exhausted: 0, failed: 0, stalled: 0, skipped: 0,
     sessionLost: false, unreachable: false, busy: false, note: null,
   };
   const release = await (options.lock ?? acquireFacebookProfile)(options.owner, options.lockWaitMs ?? 10 * 60_000);
@@ -136,7 +148,8 @@ export async function readMarketplaceSearches(options: {
   // The clock starts once the profile is ours: waiting for it is not reading time.
   const deadline = Date.now() + options.maxDurationMs;
   let browser: Browser | null = null;
-  let stalledInARow = 0;
+  const stalledInARow = { category: 0, search: 0 };
+  let categoriesThrottled = false;
   try {
     // 2026-10-09 02:47: the first hourly run after the deploy could not connect once while the
     // same Chrome answered the bridge and every check after it. A blip, not an outage.
@@ -160,6 +173,11 @@ export async function readMarketplaceSearches(options: {
         if (Date.now() >= deadline) {
           result.note = "presupuesto de tiempo agotado";
           break;
+        }
+        const kind = search.category ? "category" : "search";
+        if (kind === "category" && categoriesThrottled) {
+          result.skipped++;
+          continue;
         }
         if (result.lists) await sleep(options.gapMs ?? 15_000);
         // Stagnation is per list: counting the run's union, a second search that keeps delivering
@@ -199,15 +217,20 @@ export async function readMarketplaceSearches(options: {
             // Ending on its first page is what a narrow list does: it says nothing about the session.
           } else if (seenHere.size <= run.initial && run.initial >= (options.stallFloor ?? 0)) {
             result.stalled++;
-            stalledInARow++;
+            stalledInARow[kind]++;
           } else {
-            stalledInARow = 0;
+            stalledInARow[kind] = 0;
           }
           // Facebook throttles the infinite scroll of a session that has scrolled a lot: measured
           // 2026-10-05, after an hour of probing, the same search that had delivered 864 cards
           // stopped at its first 24, with any script. One short search happens (a narrow
           // wording); two in a row is the throttle, and insisting only spends the account.
-          if (stalledInARow >= 2 && options.stopOnStalls !== false) {
+          if (stalledInARow[kind] >= 2 && options.stopOnStalls !== false) {
+            if (kind === "category") {
+              // The text searches still load: only the category feeds are held back.
+              categoriesThrottled = true;
+              continue;
+            }
             result.note = "Facebook dejó de cargar más resultados en dos búsquedas seguidas; se corta para no forzar la sesión";
             break;
           }
@@ -229,5 +252,9 @@ export async function readMarketplaceSearches(options: {
     release();
   }
   result.cards = [...cards.values()];
+  if (result.skipped) {
+    const skipped = `Facebook dejó de cargar las listas de categoría; ${result.skipped} salteadas`;
+    result.note = result.note ? `${skipped}; ${result.note}` : skipped;
+  }
   return result;
 }

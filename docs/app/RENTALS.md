@@ -1,5 +1,23 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Facebook frena las listas de categoría aparte de las búsquedas — 15 de octubre de 2026
+
+Desde las 05:2x del 15/10, en la completa y tras unas 7.000 tarjetas de categoría (las bandas de
+Montevideo), **todas las listas de categoría** —bandas, dormitorios, pueblos con radio, la categoría
+por más nuevos— se quedaron en su primera página (24 tarjetas) por el resto del día, mientras las
+búsquedas de texto de las mismas corridas seguían cargando enteras (un barrio, ~1.000 tarjetas). Ya
+pasaba a rachas el 13 y el 14 (las horarias alternaban horas trabadas y horas sanas). El daño era el
+corte: dos listas trabadas seguidas terminaban la corrida, y la completa del 15 se detuvo en su lista
+10 (5.689 avisos contra 13.779 la noche anterior) sin leer ninguna de sus ~25 búsquedas de texto.
+
+Ahora `readMarketplaceSearches` cuenta las trabas **por tipo**: dos listas de categoría seguidas
+saltean las categorías que quedan (`skipped`, "Facebook dejó de cargar las listas de categoría; N
+salteadas") y la corrida sigue con las de texto; sólo dos búsquedas de texto trabadas la cortan. Lo
+mismo en el lector de autos. Probado el mismo día: con la categoría trabada, «auto», «vendo auto»,
+«camioneta» y «km» leían 360–456 tarjetas cada una. El `bringToFront()` de la víspera no era la causa
+de las rachas (las horarias siguieron trabadas con la pestaña al frente), y una búsqueda de texto
+ordenada por más nuevos NO reemplaza al feed (devuelve avisos de días: «auto» 0 de menos de 6 h).
+
 ## Facebook Marketplace ya está saturado por palabras, y herramientas que pasaban por viviendas — 14 de octubre de 2026
 
 Medido con el lector de producción (30 rondas por lista) contra las 20.713 ofertas de Facebook

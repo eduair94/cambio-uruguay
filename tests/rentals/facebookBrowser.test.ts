@@ -113,6 +113,24 @@ describe("readFacebookRentals", () => {
     expect(read.cards).toHaveLength(4);
   });
 
+  // 2026-10-15: from 05:2x every category list stopped at its first page for the day while text
+  // searches loaded a thousand cards; the sweep stopped at its tenth list and lost every search after.
+  it("skips the category lists Facebook stopped loading, and still reads the text searches", async () => {
+    vi.mocked(scrollFacebookList)
+      .mockImplementationOnce(list(["1000001"], ["1000002"])) // "alquiler"
+      .mockImplementationOnce(list(["1000003"])) // a price band, stuck
+      .mockImplementationOnce(list(["1000004"])) // the next band, stuck
+      .mockImplementationOnce(list(["1000005"], ["1000006"])); // "garantía"
+    const category = (query: string) => ({ location: "montevideo", query, category: "propertyrentals" });
+    const read = await readFacebookRentals({
+      ...plan([]),
+      searches: [{ location: "montevideo", query: "alquiler" }, category("banda 1"), category("banda 2"), category("banda 3"), category("banda 4"), { location: "montevideo", query: "garantía" }],
+    });
+    expect(scrollFacebookList).toHaveBeenCalledTimes(4);
+    expect(read).toMatchObject({ lists: 4, stalled: 2, skipped: 2, note: "Facebook dejó de cargar las listas de categoría; 2 salteadas" });
+    expect(read.perSearch).toEqual([["1000001", "1000002"], ["1000003"], ["1000004"], [], [], ["1000005", "1000006"]]);
+  });
+
   it("keeps reading every search after stalls when the caller needs each first page (retail)", async () => {
     vi.mocked(scrollFacebookList)
       .mockImplementationOnce(list(["1000001"], ["1000002"]))
