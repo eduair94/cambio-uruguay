@@ -1406,6 +1406,8 @@
     "metaDescription": "Cotización del dólar hoy en Uruguay: precio de compra y venta, variación respecto a ayer y tendencia de los últimos días, con la mejor cotización de más de 40 casas de cambio.",
     "footNote": "La variación se calcula sobre la cotización oficial del Banco Central del Uruguay (BCU).",
     "compareCta": "Para operar, compará la cotización del dólar en más de 40 casas de cambio.",
+    "decideNote": "¿Y conviene comprar hoy? El precio del día es el punto de partida, no la respuesta: también pesan el spread de cada casa y el plazo en que vas a necesitar los dólares.",
+    "decideCta": "Qué mirar antes de comprar dólares.",
     "faqQ1": "¿El dólar subió o bajó hoy?",
     "faqA1": "Mostramos la variación del dólar respecto a ayer según la cotización oficial del BCU, junto con la tendencia de los últimos días.",
     "faqQ2": "¿Qué cotización del dólar uso para comprar o vender?",
@@ -1478,6 +1480,7 @@
     "methodologyBody": "Tomamos la cotización diaria del dólar (BROU/BCU) y la comparamos con indicadores que suelen mover al peso: el real brasileño, un índice amplio del dólar (FRED), el bono de EE.UU. a 10 años y el dólar argentino. Calculamos la correlación de Pearson sobre los retornos diarios (variaciones porcentuales), no sobre los niveles, para evitar correlaciones espurias. La correlación mide co-movimiento, no causalidad: un valor alto sugiere que dos cosas se mueven juntas, no que una cause la otra. Algunos días el dólar se mueve por factores locales (flujo, decisiones del BCU) sin un driver externo claro.",
     "sources": "Fuentes: BROU/BCU (cotización), FRED (índice dólar, bono 10 años), argentinadatos.com (dólar Argentina). Datos al {date}.",
     "disclaimer": "Información con fines educativos, no es asesoramiento financiero.",
+    "decideLink": "¿Conviene comprar hoy?",
     "readings": {
       "brl": {
         "pos": "El dólar en Uruguay tiende a subir cuando se debilita el real brasileño.",

@@ -89,6 +89,15 @@
             <NuxtLink :to="localePath('/dolar-hoy')" class="lnk">{{ $t('dolarHoy.nav') }}</NuxtLink>
             <span aria-hidden="true">·</span>
             <NuxtLink :to="localePath('/noticias')" class="lnk">{{ $t('noticias.nav') }}</NuxtLink>
+            <span aria-hidden="true">·</span>
+            <!-- El lector que acaba de leer QUÉ mueve al dólar pregunta después si conviene
+                 comprarlo hoy. La guía es la que encara esa decisión de OPORTUNIDAD (las vecinas
+                 del racimo contestan otra cosa: `comprar-dolares-mejor-precio` es dónde, y
+                 `conviene-ahorrar-en-dolares-uruguay` es el ahorro a largo plazo), y no recibía
+                 ningún enlace desde el contenido de ninguna página. -->
+            <NuxtLink :to="localePath('/guias/conviene-comprar-dolares-hoy')" class="lnk">{{
+              t('porQueDolar.decideLink')
+            }}</NuxtLink>
           </p>
         </VCard>
       </VCol>
