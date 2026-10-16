@@ -1389,6 +1389,20 @@
         "evaluacion de incapacidad bps"
       ],
       "hypothesis": "Pagina nueva. El racimo del BPS estaba casi entero (vejez, sobrevivencia, suplemento solidario, cuando me puedo jubilar, fecha de cobro, AFAP, IASS, certificados) y la palabra \"incapacidad\" no aparecia en NINGUNA entrada de siteNav.ts ni de searchIndex.ts: la prestacion que se pide justo cuando se deja de poder trabajar no tenia pagina. Lo que el sitio ya cubria es lo de al lado: /accidente-de-trabajo-uruguay es la renta del BSE, la guia del subsidio por enfermedad es la licencia que se cobra mientras dura, y la pension por invalidez NO contributiva vive en /pension-a-la-vejez-uruguay porque el BPS las liquida en la misma fila de su tabla de montos. El angulo propio son dos cosas que la norma dice y los resumenes no: que la causal por incapacidad \"opera exclusivamente\" cuando no hay otra causal posible (Ley 20.130, art. 41), o sea que no es una via para jubilarse antes, y que aca el regimen lo decide la FECHA EN QUE SE PIDE la cobertura y no el ano de nacimiento (art. 6, num. 3), al reves que en la jubilacion comun. El snippet lleva las tres cifras que deciden la lectura: 3 anos de plazo, el piso de la prestacion no contributiva por invalidez y vejez (art. 50, importe tomado de la constante compartida del BPS) y que la jubilacion total es vitalicia y no tiene minimo escrito. No publica el 65 % del sueldo basico del regimen anterior a la Ley 20.130, que es el numero que repiten todos los resumenes."
+    },
+    {
+      "id": "pagina-licencia-de-la-construccion",
+      "shippedOn": "2026-10-16",
+      "routes": ["/licencia-de-la-construccion-uruguay"],
+      "queries": [
+        "licencia de la construccion uruguay",
+        "aguinaldo construccion uruguay",
+        "salario vacacional construccion",
+        "cuando paga el bps la licencia de la construccion",
+        "partidas salariales construccion bps",
+        "aporte unificado de la construccion"
+      ],
+      "hypothesis": "Pagina nueva. El barrido de Trends del 2026-09-15 midio \"aguinaldo de la construccion 2026\" en +950 % y el repo no tenia la palabra: la licencia y el salario vacacional de la obra no aparecian en ninguna de las 211 paginas. Lo que SI estaba, y por eso esta pagina no apunta al aguinaldo, es la tercera fila de la tabla de tres regimenes de /cuando-se-cobra-el-aguinaldo-uruguay, que ya trae las dos partes del aguinaldo de la construccion y sus meses; repetirlo le sacaria las impresiones a una pagina propia sin agregar nada, asi que el titulo arranca por la licencia y el aguinaldo se entrega con un enlace. El angulo propio son cuatro cosas que ninguna caja de respuestas da: que estas tres partidas las paga el BPS y no el empleador (viajan en el Aporte Unificado de la Construccion, cuya cuota parte de cargas salariales es del 29,9 %); que la licencia se cobra en DOS pagos partidos por un tope de 16 dias en diciembre, y que 16 justos no abren el segundo; que postergarla se pide en el MTSS y la fecha de esa solicitud decide en cual de los tres pagos cobras; y que cobrarlas configura multiempleo, con declaracion de IRPF obligatoria. Los meses NO se le cuelgan a un decreto: se leyo el 951/975 buscandolos y no los tiene, asi que el calendario se cita de la ficha del BPS. Lo que no se publica, con el motivo escrito en la propia pagina: el dia exacto del pago de diciembre de 2026 (el BPS lo anuncia por edicion y no estaba publicado), las fechas de la Semana de Turismo (movibles), el monto (depende de las nominas) y el ajuste de partidas de la ficha, que corresponde al periodo 1/4/2023-31/3/2024 y ya no rige."
     }
   ]
 }

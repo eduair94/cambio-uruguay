@@ -2027,6 +2027,34 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El régimen de la obra, que es el único del sector privado donde estas tres partidas NO
+        // las paga el empleador. Va pegado a licencias especiales y al salario vacacional porque es
+        // la variante de los dos: mismos derechos, otro pagador y otro calendario.
+        //
+        // Por qué es página propia y no una sección de `/cuando-se-cobra-el-aguinaldo-uruguay`: esa
+        // página ya tiene a la construcción en su tabla de tres regímenes, con las dos partes del
+        // aguinaldo y sus meses. Lo que no estaba en ninguna de las 211 páginas es la otra mitad del
+        // régimen —la licencia y el salario vacacional que el BPS parte en dos pagos por el tope de
+        // 16 días de diciembre—, más la postergación que se pide en el MTSS, la antigüedad que suma
+        // los períodos de todos los empleadores y el multiempleo que obliga a declarar IRPF.
+        to: '/licencia-de-la-construccion-uruguay',
+        labelKey: 'nav.licenciaConstruccion',
+        icon: 'mdi-hard-hat',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'licencia de la construccion uruguay',
+          'aguinaldo construccion uruguay',
+          'salario vacacional construccion',
+          'cuando paga el bps la licencia de la construccion',
+          'partidas salariales construccion bps',
+          'aporte unificado de la construccion',
+          'licencia por antiguedad construccion',
+          'quien paga el aguinaldo en la construccion',
+        ],
+      },
+      {
         to: '/salario-vacacional-uruguay',
         labelKey: 'nav.salarioVacacional',
         icon: 'mdi-beach',

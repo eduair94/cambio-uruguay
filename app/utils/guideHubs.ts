@@ -1096,6 +1096,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/licencias-especiales-uruguay',
       },
       {
+        label: 'Licencia de la construcción',
+        description: 'En la obra las paga el BPS: tres pagos al año y el tope de 16 días.',
+        to: '/licencia-de-la-construccion-uruguay',
+      },
+      {
         label: 'Mercado IT',
         description: 'Cómo ven el trabajo en software en r/CharruaDevs.',
         to: '/mercado-it-uruguay',

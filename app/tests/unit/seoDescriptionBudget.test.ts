@@ -156,7 +156,12 @@ const measured = pageFiles()
 // que publica la página. Su descripción entra acá porque es literal: las dos cifras que nombra
 // —el art. 224 de la LUC y las 200.000 UI del art. 35— están en la ley y no se mueven con el día,
 // y la conversión de las UI a pesos la página NO la publica justamente para no congelarla.
-const RESOLVED = 161
+// 161 → 162 el 2026-10-16: `/licencia-de-la-construccion-uruguay`, apretado en el mismo commit que
+// publica la página. Su descripción entra acá porque es literal: el tope de 16 días de licencia del
+// pago de diciembre y el reparto contra Semana de Turismo son la regla de la ficha del BPS y no una
+// cifra del día. Lo que esa página NO congela en un literal es el monto —depende de las nóminas del
+// trabajador— ni la fecha exacta del pago, que el BPS anuncia por edición.
+const RESOLVED = 162
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente

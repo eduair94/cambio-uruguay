@@ -20,6 +20,14 @@
       casos en los que la ley <strong>no</strong> te da nada.
     </p>
 
+    <p class="text-body-2 text-medium-emphasis mb-4" style="max-width: 68ch">
+      Una aclaración si trabajás en obra: los días son los mismos, pero el pagador no. En la
+      industria de la construcción la licencia anual, el salario vacacional y el aguinaldo
+      <NuxtLink :to="localePath('/licencia-de-la-construccion-uruguay')" class="cu-link">
+        los paga el BPS y no la empresa </NuxtLink
+      >, con un calendario propio de tres pagos al año.
+    </p>
+
     <!-- La tabla por parentesco va primero porque es la pregunta que más se busca, y porque las
          filas de 0 días son las que nadie contesta. -->
     <h2 class="text-h6 font-weight-bold mb-2">Días por fallecimiento, según el parentesco</h2>
@@ -129,6 +137,9 @@
       </NuxtLink>
       <NuxtLink :to="localePath('/cuando-se-cobra-el-aguinaldo-uruguay')" class="cu-link">
         Cuándo se cobra el aguinaldo
+      </NuxtLink>
+      <NuxtLink :to="localePath('/licencia-de-la-construccion-uruguay')" class="cu-link">
+        Licencia de la construcción
       </NuxtLink>
     </div>
 

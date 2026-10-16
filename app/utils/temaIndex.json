@@ -989,6 +989,10 @@
           "label": "Licencias especiales"
         },
         {
+          "to": "/licencia-de-la-construccion-uruguay",
+          "label": "Licencia de la construcción"
+        },
+        {
           "to": "/mercado-it-uruguay",
           "label": "Mercado IT"
         }
