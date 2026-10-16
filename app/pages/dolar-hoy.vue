@@ -64,6 +64,17 @@
               $t('dolarHoy.compareCta')
             }}</NuxtLink>
           </p>
+          <!-- Esta página contesta "subió o bajó", que es la mitad de la pregunta: la otra mitad
+               —si conviene comprar— la contesta la guía, y hasta hoy no recibía un solo enlace
+               desde el contenido de ninguna página (sólo el bloque del tema, al pie). Va fuera del
+               `v-else` de arriba a propósito: ese bloque no se renderiza mientras la cotización
+               está pendiente, y un enlace que a veces no está en el HTML no es un enlace. -->
+          <p class="text-body-2 text-grey-lighten-1 mb-0">
+            {{ $t('dolarHoy.decideNote') }}
+            <NuxtLink :to="localePath('/guias/conviene-comprar-dolares-hoy')" class="lnk">{{
+              $t('dolarHoy.decideCta')
+            }}</NuxtLink>
+          </p>
         </VCard>
       </VCol>
     </VRow>

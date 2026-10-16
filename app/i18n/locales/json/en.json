@@ -1395,6 +1395,8 @@
     "metaDescription": "Dollar exchange rate in Uruguay today: buy and sell price, change vs yesterday and trend over recent days, with the best rate from over 40 exchange houses.",
     "footNote": "The change is calculated against the official rate of the Central Bank of Uruguay (BCU).",
     "compareCta": "To trade, compare the dollar exchange rate across more than 40 exchange houses.",
+    "decideNote": "So should you buy today? The day's price is the starting point, not the answer: each exchange house's spread and how soon you need the dollars matter too.",
+    "decideCta": "What to check before buying dollars.",
     "faqQ1": "Did the dollar rise or fall today?",
     "faqA1": "We show the dollar's change vs yesterday based on the official BCU rate, along with the trend over recent days.",
     "faqQ2": "Which dollar rate should I use to buy or sell?",
@@ -1467,6 +1469,7 @@
     "methodologyBody": "We take the daily dollar exchange rate (BROU/BCU) and compare it against indicators that tend to move the peso: the Brazilian real, a broad dollar index (FRED), the US 10-year bond yield, and the Argentine dollar. We calculate the Pearson correlation on daily returns (percentage changes), not on levels, to avoid spurious correlations. Correlation measures co-movement, not causation: a high value suggests two things move together, not that one causes the other. On some days the dollar moves due to local factors (flow, BCU decisions) with no clear external driver.",
     "sources": "Sources: BROU/BCU (exchange rate), FRED (dollar index, 10-year bond), argentinadatos.com (Argentine dollar). Data as of {date}.",
     "disclaimer": "Information for educational purposes only, not financial advice.",
+    "decideLink": "Should you buy today?",
     "readings": {
       "brl": {
         "pos": "The dollar in Uruguay tends to rise when the Brazilian real weakens.",

@@ -1388,6 +1388,8 @@
     "metaDescription": "Cotação do dólar hoje no Uruguai: preço de compra e venda, variação em relação a ontem e tendência dos últimos dias, com a melhor cotação de mais de 40 casas de câmbio.",
     "footNote": "A variação é calculada com base na cotação oficial do Banco Central do Uruguai (BCU).",
     "compareCta": "Para operar, compare a cotação do dólar em mais de 40 casas de câmbio.",
+    "decideNote": "E convém comprar hoje? O preço do dia é o ponto de partida, não a resposta: também pesam o spread de cada casa de câmbio e o prazo em que você vai precisar dos dólares.",
+    "decideCta": "O que olhar antes de comprar dólares.",
     "faqQ1": "O dólar subiu ou caiu hoje?",
     "faqA1": "Mostramos a variação do dólar em relação a ontem com base na cotação oficial do BCU, junto com a tendência dos últimos dias.",
     "faqQ2": "Qual cotação do dólar devo usar para comprar ou vender?",
@@ -1460,6 +1462,7 @@
     "methodologyBody": "Pegamos a cotação diária do dólar (BROU/BCU) e a comparamos com indicadores que costumam mover o peso: o real brasileiro, um índice amplo do dólar (FRED), o título do Tesouro dos EUA de 10 anos e o dólar argentino. Calculamos a correlação de Pearson sobre os retornos diários (variações percentuais), não sobre os níveis, para evitar correlações espúrias. A correlação mede co-movimento, não causalidade: um valor alto sugere que duas coisas se movem juntas, não que uma cause a outra. Em alguns dias o dólar se move por fatores locais (fluxo, decisões do BCU) sem um driver externo claro.",
     "sources": "Fontes: BROU/BCU (cotação), FRED (índice do dólar, título de 10 anos), argentinadatos.com (dólar argentino). Dados de {date}.",
     "disclaimer": "Informação com fins educativos, não é aconselhamento financeiro.",
+    "decideLink": "Convém comprar hoje?",
     "readings": {
       "brl": {
         "pos": "O dólar no Uruguai tende a subir quando o real brasileiro se enfraquece.",

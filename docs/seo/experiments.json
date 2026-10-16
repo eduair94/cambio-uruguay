@@ -19,6 +19,21 @@
   ],
   "experiments": [
     {
+      "id": "conviene-comprar-dolares-enlaces-de-contexto",
+      "shippedOn": "2026-10-16",
+      "routes": [
+        "/guias/conviene-comprar-dolares-hoy"
+      ],
+      "queries": [
+        "conviene comprar dolares hoy",
+        "conviene comprar dolares uruguay",
+        "es buen momento para comprar dolares",
+        "cuando comprar dolares uruguay",
+        "spread casas de cambio"
+      ],
+      "hypothesis": "La guia que encara la decision de OPORTUNIDAD del racimo del dolar (las vecinas contestan otra cosa: comprar-dolares-mejor-precio es DONDE y conviene-ahorrar-en-dolares-uruguay es el ahorro a largo plazo) no recibia un solo enlace desde el contenido de ninguna pagina: las tres unicas menciones de su slug en todo el arbol son registros del layout (el catalogo de utils/guides.ts, utils/temaIndex.json y utils/guideHubs.ts), o sea que su unico vinculo era el bloque \"Mas sobre este tema\", que el rastreo de produccion del 2026-09-21 midio a 11.341 px de una pagina de 15.868, despues de todos los avisos. Ahora la enlazan las dos paginas del dolar cuyo lector esta haciendo exactamente esa pregunta y que estan libres de toda ventana de medicion abierta: /dolar-hoy, que contesta \"subio o bajo\" y deja sin contestar \"y entonces conviene comprar\", y /por-que-sube-el-dolar, que explica QUE lo mueve y termina en una fila de enlaces donde faltaba la decision. Es el mismo movimiento que la fila pension-alimenticia-enlaces-de-contexto del 2026-10-13 y vale 8x contra 1x: las dos fuentes son del tramo dato-vivo y el destino es del tramo contenido (classes/revenueplan/value.ts), asi que cada lector que cruza el enlace vale un orden de magnitud mas que la vista que lo origino. El enlace de /dolar-hoy va FUERA del bloque que depende de la cotizacion pendiente, para que este en el HTML tambien cuando el dato todavia no resolvio. Ninguna de las dos fuentes cambio su snippet ni su H1, asi que lo unico declarado aca es la ruta de destino."
+    },
+    {
       "id": "pagina-impuesto-trasmisiones-patrimoniales",
       "shippedOn": "2026-10-15",
       "routes": [
