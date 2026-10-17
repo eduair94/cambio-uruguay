@@ -98,6 +98,13 @@
             data-testid="sale-share-trigger"
             @click="shareSearch"
           />
+          <!-- Built from the URL query, never from the saved-only view: favourites are not a search. -->
+          <RentalAlertButton
+            kind="sale-search"
+            :filters="propertySalesQueryToParams(query)"
+            :compact="smAndDown"
+            notify
+          />
         </div>
         <div v-if="chips.length" class="sales-directory__chips">
           <VChip
@@ -252,10 +259,13 @@
     </div>
     <PropertySalesComparison v-model:open="compareOpen" :items="compareItems" />
     <VSnackbar v-model="toastOpen" timeout="4000">{{ toast }}</VSnackbar>
+    <RentalAlertDialog />
   </VContainer>
 </template>
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
+import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
+import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
 import {
   normalizePropertySalesQuery,
   propertySalesQueryToParams,

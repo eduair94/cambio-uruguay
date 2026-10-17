@@ -68,17 +68,25 @@
           <h2 id="cars-results" class="text-h6 mb-0 cars-anchor">
             {{ data ? `${data.total.toLocaleString('es-UY')} avisos` : 'Avisos' }}
           </h2>
-          <VSelect
-            v-if="!smAndDown"
-            :model-value="query.sort"
-            :items="sortItems"
-            label="Ordenar"
-            density="compact"
-            variant="outlined"
-            hide-details
-            class="cars-sort"
-            @update:model-value="value => update({ ...query, sort: value, page: 1 })"
-          />
+          <div class="d-flex align-center ga-3">
+            <RentalAlertButton
+              kind="car-search"
+              :filters="carsQueryParams(query)"
+              :compact="smAndDown"
+              notify
+            />
+            <VSelect
+              v-if="!smAndDown"
+              :model-value="query.sort"
+              :items="sortItems"
+              label="Ordenar"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="cars-sort"
+              @update:model-value="value => update({ ...query, sort: value, page: 1 })"
+            />
+          </div>
         </div>
 
         <AssistantCta topic="autos" :filters="filterChips.map(chip => chip.label)" class="mb-4" />
@@ -172,11 +180,14 @@
         </li>
       </ul>
     </section>
+    <RentalAlertDialog />
   </VContainer>
 </template>
 
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
+import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
+import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { CAR_ADVISOR_PATH } from '~/utils/carAdvisorFigures'

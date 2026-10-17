@@ -14,7 +14,14 @@ import {
 import { connectDb } from './db'
 import { refreshRentalAlertIndex, type RentalAlertIndexResult } from './rentalAlertIndex'
 import { withRentalAlertLease } from './rentalAlertLease'
-import { matchRentalAlertCandidates } from './rentalAlertMatching'
+import {
+  alertEventWanted,
+  alertFiltersCurrent,
+  alertWantsPriceDrops,
+  alertWithStoredFilters,
+  groupAlertCandidates,
+  matchAlertCandidates,
+} from './rentalAlertCandidates'
 import { deliverRentalAlertChannel } from './rentalAlertDelivery'
 
 const EVENT_PAGE = 500
@@ -136,7 +143,10 @@ export function rentalAlertSelectEvents(
 
 const alertFields = '+emailAddress +unsubscribeToken'
 async function currentAlert(id: string) {
-  return (await RentalAlertModel.findById(id).select(alertFields).lean()) as RentalAlertDoc | null
+  const alert = (await RentalAlertModel.findById(id)
+    .select(alertFields)
+    .lean()) as RentalAlertDoc | null
+  return alert ? alertWithStoredFilters(alert) : null
 }
 async function persistCursor(
   alert: RentalAlertDoc,
@@ -178,12 +188,16 @@ async function gather(alert: RentalAlertDoc, index: RentalAlertIndexResult, now:
       )
       .slice(0, EVENT_PAGE)
     if (!page.length) break
-    const matches = await matchRentalAlertCandidates(
-      alert.kind,
-      alert.filters,
-      page.map(event => event.candidateId),
-      now
-    )
+    // Unwanted events are still walked by the selection below, so the cursor moves past them.
+    const wanted = page.filter(event => alertEventWanted(alert, event))
+    const matches = wanted.length
+      ? await matchAlertCandidates(
+          alert.kind,
+          alert.filters,
+          wanted.map(event => event.candidateId),
+          { priceDrops: alertWantsPriceDrops(alert), now }
+        )
+      : []
     const selected = rentalAlertSelectEvents(page, matches, DIGEST_LIMIT - candidates.length)
     candidates.push(...selected.selected)
     if (selected.last)
@@ -191,15 +205,6 @@ async function gather(alert: RentalAlertDoc, index: RentalAlertIndexResult, now:
     if (candidates.length === DIGEST_LIMIT || page.length < EVENT_PAGE) break
   }
   return { candidates, cursor }
-}
-
-function groupCurrentCandidates(candidates: RentalAlertCandidate[]) {
-  const groups = new Map<string, RentalAlertCandidate>()
-  for (const candidate of candidates) {
-    const group = candidate.propertyKey || candidate.id
-    if (!groups.has(group)) groups.set(group, candidate)
-  }
-  return [...groups.values()]
 }
 
 export function rentalAlertOutboxCurrent(
@@ -263,8 +268,10 @@ async function deliverOutbox(
     return 0
   }
   await persistCursor(alert, { at: outbox.cursorAt, id: outbox.cursorId }, guard)
-  const candidates = groupCurrentCandidates(
-    await matchRentalAlertCandidates(alert.kind, alert.filters, outbox.candidateIds)
+  const candidates = groupAlertCandidates(
+    await matchAlertCandidates(alert.kind, alert.filters, outbox.candidateIds, {
+      priceDrops: alertWantsPriceDrops(alert),
+    })
   )
   if (!candidates.length) {
     await RentalAlertOutboxModel.updateOne(
@@ -316,6 +323,9 @@ async function processAlert(alertId: string, index: RentalAlertIndexResult, dryR
   const run = async (guard: () => Promise<void> = async () => {}) => {
     const alert = await currentAlert(alertId)
     if (!alert?.active) return { candidates: 0, sent: 0 }
+    // Filters the directory now reads differently would match more than was asked: send nothing,
+    // pending digests included, until the person recreates the alert (the account panel says so).
+    if (!alertFiltersCurrent(alert)) return { candidates: 0, sent: 0 }
     if (!dryRun) {
       await RentalAlertOutboxModel.updateMany(
         { alertId, state: 'pending', revision: { $ne: alert.revision } },
@@ -337,7 +347,9 @@ async function processAlert(alertId: string, index: RentalAlertIndexResult, dryR
       if (dryRun)
         return {
           candidates: (
-            await matchRentalAlertCandidates(alert.kind, alert.filters, pending.candidateIds)
+            await matchAlertCandidates(alert.kind, alert.filters, pending.candidateIds, {
+              priceDrops: alertWantsPriceDrops(alert),
+            })
           ).length,
           sent: 0,
         }

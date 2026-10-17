@@ -8,8 +8,23 @@ import {
 import { normalizeOpportunityQuery } from './propertyOpportunityQuery'
 import { MUTUALISTA_SEDES } from './mutualistaSedes'
 import { isRentalAmenity } from './rentalAmenities'
+import { RentalAlertValidationError } from './alertErrors'
+import {
+  isListingAlertKind,
+  listingAlertPath,
+  normalizeListingAlertFilters,
+  type ListingAlertKind,
+} from './listingAlerts'
 
-export type RentalAlertKind = 'rental-search' | 'rental-opportunity'
+/** Every saved-search kind. The engine started with rentals, hence the names. */
+export type RentalAlertKind = 'rental-search' | 'rental-opportunity' | ListingAlertKind
+export const RENTAL_ALERT_KINDS: readonly RentalAlertKind[] = [
+  'rental-search',
+  'rental-opportunity',
+  'car-search',
+  'moto-search',
+  'sale-search',
+]
 export type RentalAlertFrequency = 'hourly' | 'daily'
 export type RentalAlertLocale = 'es' | 'en' | 'pt'
 export type RentalAlertFilters = Record<string, string>
@@ -17,7 +32,11 @@ export interface RentalAlertChannels {
   push: boolean
   email: boolean
 }
-export const RENTAL_ALERT_LIMIT = 10
+export const RENTAL_ALERT_LIMIT = 20
+export interface RentalAlertMoney {
+  amount: number
+  currency: 'UYU' | 'USD'
+}
 
 export interface RentalAlertSubscription {
   id: string
@@ -26,6 +45,10 @@ export interface RentalAlertSubscription {
   filters: RentalAlertFilters
   channels: RentalAlertChannels
   frequency: RentalAlertFrequency
+  /** Also notify when an advert that matches the search lowers its price. */
+  priceDrops: boolean
+  /** A stored filter the directory no longer reads the same way: the alert sends nothing. */
+  filtersOutdated: boolean
   active: boolean
   locale: RentalAlertLocale
   createdAt: string
@@ -55,6 +78,7 @@ export interface RentalAlertCreateInput {
   filters: Record<string, unknown>
   channels: RentalAlertChannels
   frequency: RentalAlertFrequency
+  priceDrops?: boolean
   locale: RentalAlertLocale
 }
 
@@ -63,21 +87,19 @@ export interface RentalAlertCandidate {
   propertyKey: string
   title: string
   url: string
-  price: { amount: number; currency: 'UYU' | 'USD' }
-  expenses: { amount: number; currency: 'UYU' | 'USD' } | null
+  price: RentalAlertMoney
+  expenses: RentalAlertMoney | null
   department: string
   neighborhood: string
   bedrooms: number | null
   image: string | null
   opportunityGapPct?: number
-}
-
-export class RentalAlertValidationError extends Error {
-  readonly code: 'invalid_alert' | 'unsupported_filter'
-  constructor(code: 'invalid_alert' | 'unsupported_filter') {
-    super(code)
-    this.code = code
-  }
+  /** Listing kinds: one short line of facts (year · km · department, rooms · m² · zone…). */
+  facts?: string[]
+  /** Set only on a price-drop candidate: the price the advert had before. */
+  previousPrice?: RentalAlertMoney
+  /** External advert, when the directory has no page of its own for it (motos). */
+  link?: string
 }
 
 // The recency window (`dias`) is not a criterion of an alert: it only ever sends new adverts.
@@ -222,6 +244,7 @@ export function normalizeRentalAlertFilters(
   kind: RentalAlertKind,
   input: unknown
 ): RentalAlertFilters {
+  if (isListingAlertKind(kind)) return normalizeListingAlertFilters(kind, input)
   if (!rentalAlertRecord(input) || Object.keys(input).length > 50)
     throw new RentalAlertValidationError('invalid_alert')
   const allowed = kind === 'rental-search' ? searchKeys : opportunityKeys
@@ -392,13 +415,31 @@ export function rentalAlertSearchUrl(alert: {
 }): string {
   const prefix = alert.locale === 'en' || alert.locale === 'pt' ? `/${alert.locale}` : ''
   const params = new URLSearchParams(alert.filters)
-  const path =
-    alert.kind === 'rental-opportunity'
+  const path = isListingAlertKind(alert.kind)
+    ? listingAlertPath(alert.kind)
+    : alert.kind === 'rental-opportunity'
       ? '/oportunidades-inmobiliarias-uruguay'
       : '/alquileres-uruguay'
   if (alert.kind === 'rental-opportunity') params.set('operation', 'rent')
   const query = params.toString()
   return `${prefix}${path}${query ? `?${query}` : ''}`
+}
+
+/**
+ * Do the stored filters still mean what they meant at creation? A directory that renames or drops
+ * an option would otherwise silently widen the alert. Keys the normaliser adds are fine (they can
+ * only narrow); a stored key it drops or rewrites is not.
+ */
+export function rentalAlertFiltersCurrent(kind: RentalAlertKind, stored: unknown): boolean {
+  // An unfiltered alert saved before `minimize: false` has no `filters` field at all.
+  const filters = stored === undefined || stored === null ? {} : stored
+  if (!rentalAlertRecord(filters)) return false
+  try {
+    const normalized = normalizeRentalAlertFilters(kind, filters)
+    return Object.entries(filters).every(([key, value]) => normalized[key] === value)
+  } catch {
+    return false
+  }
 }
 
 export function rentalAlertSignature(kind: RentalAlertKind, filters: RentalAlertFilters): string {

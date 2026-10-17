@@ -130,6 +130,72 @@ describe('rental alert transport without network sends', () => {
     expect(result.listUnsubscribeUrl).toContain('/api/rental-alerts/unsubscribe?token=')
     expect(result.messageId).toMatch(/^<rental-[a-f0-9]{64}@cambio-uruguay.com>$/)
   })
+  it('describes a used-car drop with the previous price and links the car page', () => {
+    const car = {
+      id: 'car:ml-MLU123456~drop~USD~9000~10000',
+      propertyKey: 'car:ml-MLU123456',
+      title: 'Citroën Xsara 1.6',
+      url: '/autos-usados-uruguay/ml-MLU123456',
+      price: { amount: 9000, currency: 'USD' },
+      previousPrice: { amount: 10000, currency: 'USD' },
+      expenses: null,
+      department: 'Montevideo',
+      neighborhood: '',
+      bedrooms: null,
+      image: null,
+      facts: ['2011', '150.000 km', 'Montevideo'],
+    } as RentalAlertCandidate
+    const result = rentalAlertEmail(
+      { ...alert, kind: 'car-search', filters: { brand: 'citroen' } },
+      [car],
+      'digest-car'
+    )
+    expect(result.subject).toBe('Novedades en tu búsqueda de autos usados')
+    expect(result.html).toContain('https://cambio-uruguay.com/autos-usados-uruguay/ml-MLU123456')
+    expect(result.text).toContain('2011 · 150.000 km · Montevideo')
+    expect(result.text).toMatch(/Antes US\$\s?10\.000 \(−10 %\)/)
+    expect(result.text).toContain('1 bajó de precio')
+    expect(result.text).not.toContain('Gastos comunes')
+    expect(result.html).toContain('https://cambio-uruguay.com/autos-usados-uruguay?brand=citroen')
+  })
+  it('names new-only digests by directory and links motos to the original advert or the search', () => {
+    const moto = {
+      id: 'moto:ml-MLU1',
+      propertyKey: 'moto:ml-MLU1',
+      title: 'Honda Wave',
+      url: '/motos-usadas-uruguay',
+      price: { amount: 1500, currency: 'USD' },
+      expenses: null,
+      department: '',
+      neighborhood: '',
+      bedrooms: null,
+      image: null,
+    } as RentalAlertCandidate
+    const linked = { ...moto, id: 'moto:ml-MLU2', link: 'https://moto.mercadolibre.com.uy/MLU-2' }
+    const forged = { ...moto, id: 'moto:ml-MLU3', link: 'https://evil.example/MLU-3' }
+    const result = rentalAlertEmail(
+      { ...alert, kind: 'moto-search', filters: {} },
+      [moto, linked, forged],
+      'digest-moto'
+    )
+    expect(result.subject).toBe('Nuevas motos usadas para tu búsqueda')
+    expect(result.html).toContain('https://moto.mercadolibre.com.uy/MLU-2')
+    expect(result.html).not.toContain('evil.example')
+    expect(result.html).toContain('href="https://cambio-uruguay.com/motos-usadas-uruguay"')
+    expect(result.text).toContain('3 avisos nuevos')
+  })
+  it('counts new adverts and drops in the push body without naming any advert', async () => {
+    const drop = {
+      ...candidate,
+      id: 'x~drop~UYU~1~2',
+      previousPrice: { amount: 2, currency: 'UYU' },
+    }
+    await deliverRentalAlertChannel({
+      ...input('push'),
+      candidates: [candidate, candidate, drop] as RentalAlertCandidate[],
+    })
+    expect(h.sendPush.mock.calls[0]![2]).toBe('2 avisos nuevos · 1 bajó de precio')
+  })
   it('uses the verified current address and stable Message-ID', async () => {
     expect(await deliverRentalAlertChannel(input())).toEqual({ status: 'sent' })
     expect(h.sendMail).toHaveBeenCalledWith(

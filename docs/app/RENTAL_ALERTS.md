@@ -1,4 +1,67 @@
-# Suscripciones a novedades de alquiler
+# Alertas de búsqueda (alquileres, viviendas en venta, autos y motos usados)
+
+El motor nació para alquileres y conserva sus nombres (`rentalAlert*`, colecciones `rentalalert*`):
+desde el 2026-10-17 atiende cinco tipos de suscripción en las mismas colecciones, la misma tarea y
+los mismos leases. Renombrar colecciones con suscripciones vivas no compraba nada. Diseño de la
+extensión: `docs/superpowers/specs/2026-10-17-alertas-de-busqueda-design.md`.
+
+| tipo | página | identidad | catálogo leído | bajas |
+|---|---|---|---|---|
+| `rental-search` | `/alquileres-uruguay` | `rent:<fuente>:<id>` | `rentallistings` (meta `uy-rentals`) | sí |
+| `rental-opportunity` | `/oportunidades-inmobiliarias-uruguay` | `rent:<fuente>:<id>` | `propertyopportunitysnapshots` | no |
+| `car-search` | `/autos-usados-uruguay` | `car:<key>` | `carcatalog` (meta `uy-cars`) | sí |
+| `moto-search` | `/motos-usadas-uruguay` | `moto:<key>` | `motocatalog` (meta `uy-motos`) | sí |
+| `sale-search` | `/venta-viviendas-uruguay` | `sale:<key>` | `propertysalecatalog` (meta `uy-sales`) | sí |
+
+Los filtros de autos, motos y ventas se normalizan con el normalizador y el serializador de la propia
+página (`app/utils/listingAlerts.ts`) y se emparejan con su propio filtro de Mongo, ventana de
+frescura incluida (`app/server/utils/listingAlertSources.ts`). Se descartan `sort`, `page`,
+`perPage`, `view`, `keys` (favoritos), `sinceDays` (autos) y `recent` (ventas): una alerta sólo mira
+lo nuevo. Una clave desconocida o un valor que la página descartaría rechaza el alta. El inventario de
+estos catálogos se lee entre dos lecturas del `generatedAt` de su meta: los tres publicadores
+escriben filas, podan y recién después actualizan la meta, así que un `generatedAt` que cambió durante
+la lectura es una lectura mezclada y se descarta hasta la corrida siguiente. Las motos no tienen
+ficha por aviso: el correo enlaza el aviso original sólo si es `https://…mercadolibre.com.uy/`, si no
+la búsqueda.
+
+## Bajas de precio
+
+Opcionales por suscripción (`priceDrops`; las guardadas antes del 2026-10-17 no tienen el campo y
+valen `false`; el diálogo la ofrece marcada; oportunidades nunca). El índice guarda por tipo y aviso
+el último precio visto y el más bajo visto en esa moneda (`rentalalertprices`, sin TTL). Una baja es
+un precio al menos 1 % por debajo del MÁS BAJO visto —no del anterior: subir 10 % y volver no es una
+rebaja— y como mucho 50 % por debajo: una caída mayor se registra en silencio porque es mucho más
+probable una moneda o un monto mal leído. Su espejo: un precio de más del DOBLE del más bajo también
+reinicia en silencio, porque o el piso era un error de lectura (un dígito de menos) o lo es este; sin
+esa regla un solo error dejaba al aviso sin bajas para siempre. Un cambio de moneda reinicia en
+silencio, y los autos con moneda deducida (`currencyInferred`, Facebook) no entran al libro de
+precios: una moneda deducida tampoco cuenta para las oportunidades. La baja es un evento más del libro `rentalalertevents`, con identificador
+`<aviso>~drop~<moneda>~<precio>~<anterior>`, así que comparte cursor, base silenciosa, outbox y
+reintentos con las novedades. Al enviar se exige que el aviso siga cumpliendo los filtros y que su
+precio actual sea exactamente el de la baja; si en un mismo resumen el aviso es nuevo y bajó, va una
+vez, como baja. El evento se escribe antes que el precio: un corte entre las dos escrituras vuelve a
+detectar la baja en vez de perderla. Activar las bajas después guarda `priceDropsFrom` (la frontera
+de ese momento) y sólo las bajas descubiertas después cuentan; el cursor no se toca, así que los
+avisos nuevos todavía no leídos siguen llegando.
+
+Cada tipo tiene su propio lock de índice (`index:<tipo>`): el evaluador recorre hasta cinco
+catálogos cada 10 minutos y con un lock único cualquier alta de otro tipo esperaba o fallaba mientras
+tanto.
+
+**Filtros que la página ya no lee igual.** Si un directorio renombra o quita una opción (una
+carrocería, un tramo de cilindrada, un departamento con tilde corregida), el normalizador la
+descartaría en silencio y la alerta pasaría a mirar todo el catálogo. Antes de leer o enviar, el
+evaluador comprueba que cada filtro guardado siga normalizándose a sí mismo
+(`rentalAlertFiltersCurrent`); si no, la alerta no manda nada —tampoco lo pendiente— y la cuenta la
+lista con lo guardado y un aviso para eliminarla y crearla de nuevo, en vez de fallar la lista entera.
+Las claves que el normalizador agrega sólo pueden acotar y no cuentan.
+
+**`filters` vacío.** Mongoose borra los objetos vacíos al guardar (`minimize`), así que una alerta sin
+filtros quedaba guardada sin el campo, fallaba en cada corrida y rompía la lista de la cuenta (había
+una así en producción el 2026-10-17). El esquema ahora usa `minimize: false` y la lectura trata un
+campo ausente como `{}`.
+
+## Alquileres
 
 La búsqueda `/alquileres-uruguay` permite crear una alerta con los filtros aplicados. Las búsquedas guardadas en el dispositivo también tienen una entrada «Avisarme». La operación alquiler de `/oportunidades-inmobiliarias-uruguay` permite suscribirse a sus propios filtros de comparación. Se administran en `/cuenta?tab=alerts`, separadas de las alertas de divisas y del newsletter.
 
@@ -17,7 +80,7 @@ Los filtros de alquiler se normalizan con las mismas funciones y se ejecutan con
 - `PATCH /api/me/rental-alerts/:id`: pausa/reanudación, canales, frecuencia o nombre.
 - `DELETE /api/me/rental-alerts/:id`: elimina la suscripción y su historial privado de envíos.
 
-Todas exigen un token Firebase, respetan su revocación, limitan las operaciones al UID autenticado y devuelven `no-store`. Los documentos se proyectan explícitamente: no aparecen UID, email de entrega, token de baja, cursor, firma ni estado interno del envío. Máximo diez suscripciones por cuenta. La firma canónica impide crear otra alerta cambiando solamente el orden de barrios/garantías, la página o el ordenamiento. Un límite adicional acota la creación repetida a diez intentos por minuto.
+Todas exigen un token Firebase, respetan su revocación, limitan las operaciones al UID autenticado y devuelven `no-store`. Los documentos se proyectan explícitamente: no aparecen UID, email de entrega, token de baja, cursor, firma ni estado interno del envío. Máximo veinte suscripciones por cuenta, sumando todos los tipos. La firma canónica impide crear otra alerta cambiando solamente el orden de barrios/garantías, la página o el ordenamiento. Un límite adicional acota la creación repetida a diez intentos por minuto.
 
 El alta y la reanudación establecen su base sincrónicamente, antes de devolver éxito. Cambiar a otro canal también comienza desde una frontera nueva. Reducir consentimiento se permite aunque el otro canal esté temporalmente indisponible; conserva su trabajo pendiente. El enlace de baja anterior sigue siendo válido al modificar sólo push.
 
@@ -33,6 +96,7 @@ La implementación vive completa en `app/` y usa su MongoDB, sin imports desde e
 - `rentalalertoutbox`: lotes con progreso independiente para email y push.
 - `rentalalertleases`: exclusión entre los workers de Nuxt, con dueño y vencimiento.
 - `rentalalertquotas`: límites efímeros de altas.
+- `rentalalertprices`: último y menor precio visto por tipo y aviso, para las bajas.
 - `pushregistrations`: propiedad única de cada dispositivo por hash de token.
 
 Nitro ejecuta `rentals:alerts` a los minutos 2, 12, 22, 32, 42 y 52 de cada hora. Los leases se comparten entre el evaluador, altas, modificaciones y bajas. El índice se lee con paginación y genera fechas UTC con precisión de milisegundos; no usa `firstSeen` diario como cursor. El mismo aviso conserva su evento cuando cambia la URL interna, se separa un grupo o reaparece.

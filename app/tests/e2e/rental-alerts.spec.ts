@@ -142,7 +142,7 @@ async function account(page: Page) {
     await globals.$router.push('/cuenta?tab=alerts')
   })
   await expect(
-    page.getByRole('heading', { name: 'Alertas de alquiler', exact: true })
+    page.getByRole('heading', { name: 'Alertas de búsquedas', exact: true })
   ).toBeVisible()
 }
 

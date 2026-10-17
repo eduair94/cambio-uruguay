@@ -6,7 +6,8 @@ import {
   rentalPublicStages,
   rentalQueryToParams,
 } from '../../utils/rentals'
-import { normalizeRentalAlertFilters, RentalAlertValidationError } from '../../utils/rentalAlerts'
+import { normalizeRentalAlertFilters } from '../../utils/rentalAlerts'
+import { RentalAlertValidationError } from '../../utils/alertErrors'
 import { rentalDirectoryCacheKey } from '../../server/utils/rentalDirectoryWarm'
 import { rentalPublicPropertyProjection } from '../../server/utils/rentalDetail'
 // App tests importing root modules is the established direction (storeConstantsParity.test.ts).

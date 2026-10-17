@@ -10,6 +10,8 @@ const item = {
   filters: { department: 'Montevideo' },
   channels: { email: true, push: false },
   frequency: 'hourly',
+  priceDrops: false,
+  filtersOutdated: false,
   active: true,
   locale: 'es',
   searchUrl: '/alquileres-uruguay',
@@ -44,6 +46,50 @@ beforeEach(() => {
     setItem: (key: string, value: string) => storage.set(key, value),
     getItem: (key: string) => storage.get(key) ?? null,
     removeItem: (key: string) => storage.delete(key),
+  })
+})
+
+describe('saved-search drafts for every directory', () => {
+  it('offers price drops by default except for opportunities', () => {
+    const alerts = useRentalAlerts()
+    alerts.begin('car-search', { brand: 'citroen', sort: 'price_asc' })
+    expect(alerts.draft.value).toMatchObject({
+      kind: 'car-search',
+      filters: { brand: 'citroen' },
+      priceDrops: true,
+    })
+    alerts.begin('rental-opportunity', {})
+    expect(alerts.draft.value?.priceDrops).toBe(false)
+  })
+  it('recovers a used-car draft after login with its price-drop choice', () => {
+    sessionStorage.setItem(
+      'cu_rental_alert_draft_v1',
+      JSON.stringify({
+        version: 1,
+        draft: {
+          kind: 'car-search',
+          filters: { brand: 'citroen' },
+          channels: { push: false, email: true },
+          frequency: 'daily',
+          priceDrops: false,
+          name: '',
+          locale: 'es',
+          origin: '/autos-usados-uruguay?brand=citroen',
+          savedAt: Date.now(),
+        },
+      })
+    )
+    const alerts = useRentalAlerts()
+    alerts.recover()
+    expect(alerts.draft.value).toMatchObject({ kind: 'car-search', priceDrops: false })
+  })
+  it('sends the price-drop choice when creating', async () => {
+    const alerts = useRentalAlerts()
+    alerts.begin('sale-search', { department: 'Montevideo' })
+    alerts.draft.value!.channels.email = true
+    request.mockResolvedValue({ item: { ...item, kind: 'sale-search' }, alreadyExists: false })
+    await alerts.save()
+    expect(request.mock.calls[0]![1].body).toMatchObject({ kind: 'sale-search', priceDrops: true })
   })
 })
 

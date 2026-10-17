@@ -10,13 +10,25 @@ const mocks = vi.hoisted(() => ({
   known: vi.fn(),
   write: vi.fn(),
   state: vi.fn(),
+  prices: vi.fn(),
+  priceWrite: vi.fn(),
+  leases: [] as string[],
+}))
+vi.mock('../../server/models/RentalAlertPrice', () => ({
+  RentalAlertPriceModel: {
+    find: () => ({ select: () => ({ lean: mocks.prices }) }),
+    bulkWrite: mocks.priceWrite,
+  },
 }))
 vi.mock('../../server/utils/db', () => ({ connectDb: vi.fn() }))
 vi.mock('../../server/utils/rentalAlertLease', () => ({
-  withRentalAlertLease: async (_key: string, fn: () => Promise<unknown>) => fn(),
+  withRentalAlertLease: async (key: string, fn: () => Promise<unknown>) => {
+    mocks.leases.push(key)
+    return fn()
+  },
 }))
-vi.mock('../../server/utils/rentalAlertMatching', () => ({
-  readRentalAlertInventory: mocks.inventory,
+vi.mock('../../server/utils/rentalAlertCandidates', () => ({
+  readAlertInventory: mocks.inventory,
 }))
 vi.mock('../../server/models/RentalAlertEvent', () => ({
   RentalAlertEventModel: {
@@ -36,6 +48,68 @@ describe('persistent rental novelty index', () => {
       sourceVersion: 'now',
     })
     mocks.known.mockResolvedValue([])
+    mocks.prices.mockResolvedValue([])
+    mocks.leases.length = 0
+  })
+
+  it('locks the index per kind so a car alert never waits for the rental scan', async () => {
+    await refreshRentalAlertIndex('car-search')
+    await refreshRentalAlertIndex('rental-search')
+    expect(mocks.leases).toEqual(['index:car-search', 'index:rental-search'])
+  })
+
+  it('turns a lower price on a known advert into a drop event, after writing the event', async () => {
+    mocks.previous.mockResolvedValue({
+      scannedAt: new Date('2026-01-01'),
+      baselineAt: new Date('2026-01-01'),
+      algorithm: 'v1',
+    })
+    mocks.inventory.mockResolvedValue({
+      ids: ['rent:infocasas:1'],
+      prices: new Map([['rent:infocasas:1', { amount: 30000, currency: 'UYU' }]]),
+      algorithm: 'v1',
+      sourceVersion: 'later',
+    })
+    mocks.known.mockResolvedValue([{ _id: 'rental-search:rent:infocasas:1' }])
+    mocks.prices.mockResolvedValue([
+      { _id: 'rental-search:rent:infocasas:1', amount: 33000, currency: 'UYU', low: 33000 },
+    ])
+    const result = await refreshRentalAlertIndex('rental-search')
+    expect(result.added.map(row => row.candidateId)).toEqual([
+      'rent:infocasas:1~drop~UYU~30000~33000',
+    ])
+    expect(result.added[0].baseline).toBe(false)
+    expect(mocks.write.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.priceWrite.mock.invocationCallOrder[0]
+    )
+    expect(mocks.priceWrite.mock.calls[0][0][0].updateOne.update.$set).toMatchObject({
+      amount: 30000,
+      currency: 'UYU',
+      low: 30000,
+    })
+  })
+
+  it('seeds prices silently on the first observation of a kind', async () => {
+    mocks.inventory.mockResolvedValue({
+      ids: ['rent:infocasas:1'],
+      prices: new Map([['rent:infocasas:1', { amount: 30000, currency: 'UYU' }]]),
+      algorithm: 'v1',
+      sourceVersion: 'now',
+    })
+    const result = await refreshRentalAlertIndex('rental-search')
+    expect(result.added.map(row => row.candidateId)).toEqual(['rent:infocasas:1'])
+    expect(mocks.priceWrite).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not write prices in dry run', async () => {
+    mocks.inventory.mockResolvedValue({
+      ids: ['rent:infocasas:1'],
+      prices: new Map([['rent:infocasas:1', { amount: 30000, currency: 'UYU' }]]),
+      algorithm: 'v1',
+      sourceVersion: 'now',
+    })
+    await refreshRentalAlertIndex('rental-search', { dryRun: true })
+    expect(mocks.priceWrite).not.toHaveBeenCalled()
   })
 
   it('seeds every existing ID silently before returning an activation boundary', async () => {

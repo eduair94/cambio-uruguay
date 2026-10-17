@@ -1,16 +1,21 @@
 import {
+  RENTAL_ALERT_KINDS,
   normalizeRentalAlertFilters,
+  type RentalAlertKind,
   type RentalAlertSubscription,
   type RentalAlertCapabilities,
   type RentalAlertsResponse,
 } from '~/utils/rentalAlerts'
+import { kindSupportsPriceDrops } from '~/utils/listingAlerts'
 
-type AlertKind = 'rental-search' | 'rental-opportunity'
+type AlertKind = RentalAlertKind
 export interface RentalAlertDraft {
   kind: AlertKind
   filters: Record<string, unknown>
   channels: { push: boolean; email: boolean }
   frequency: 'hourly' | 'daily'
+  /** Also notify when a matching advert lowers its price. */
+  priceDrops: boolean
   name: string
   locale: 'es' | 'en' | 'pt'
   origin: string
@@ -73,7 +78,7 @@ export function useRentalAlerts() {
       if (
         stored?.version !== 1 ||
         !value ||
-        !['rental-search', 'rental-opportunity'].includes(value.kind) ||
+        !RENTAL_ALERT_KINDS.includes(value.kind) ||
         !Number.isFinite(value.savedAt) ||
         Date.now() - value.savedAt > MAX_AGE ||
         value.savedAt > Date.now() + 60000 ||
@@ -98,6 +103,7 @@ export function useRentalAlerts() {
         kind: value.kind,
         filters: value.filters,
         frequency: value.frequency,
+        priceDrops: value.priceDrops === true && kindSupportsPriceDrops(value.kind),
         locale: value.locale,
         channels: { push: value.channels?.push === true, email: value.channels?.email === true },
         name: typeof value.name === 'string' ? value.name.slice(0, 80) : '',
@@ -123,6 +129,7 @@ export function useRentalAlerts() {
       filters: JSON.parse(JSON.stringify(matchingFilters)),
       channels: { push: false, email: false },
       frequency: 'hourly',
+      priceDrops: kindSupportsPriceDrops(kind),
       name: '',
       locale: locale.value.startsWith('en') ? 'en' : locale.value.startsWith('pt') ? 'pt' : 'es',
       origin: route.fullPath,
@@ -138,6 +145,7 @@ export function useRentalAlerts() {
       ownerUid: auth.user?.uid,
       name: item.name,
       frequency: item.frequency,
+      priceDrops: item.priceDrops === true,
       channels: { ...item.channels },
       locale: item.locale,
       activateOnSave,
@@ -196,6 +204,7 @@ export function useRentalAlerts() {
               name: value.name,
               frequency: value.frequency,
               channels: value.channels,
+              ...(kindSupportsPriceDrops(value.kind) ? { priceDrops: value.priceDrops } : {}),
               ...(value.activateOnSave ? { active: true } : {}),
             },
           }
@@ -210,6 +219,7 @@ export function useRentalAlerts() {
               name: value.name,
               channels: value.channels,
               frequency: value.frequency,
+              priceDrops: value.priceDrops,
               locale: value.locale,
             },
           }

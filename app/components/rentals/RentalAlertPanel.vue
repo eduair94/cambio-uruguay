@@ -41,7 +41,7 @@
       >
         <div class="rental-alert-panel__item-heading">
           <h3>
-            {{ item.name || t(item.kind === 'rental-search' ? 'searchAlert' : 'opportunityAlert') }}
+            {{ item.name || t(RENTAL_ALERT_KIND_TITLE[item.kind]) }}
           </h3>
           <span :class="{ 'rental-alert-panel__active': item.active }">{{
             t(item.active ? 'active' : 'paused')
@@ -53,12 +53,16 @@
               item.channels.push ? t('push') : '',
               item.channels.email ? t('email') : '',
               t(item.frequency),
+              item.priceDrops ? t('priceDropsOn') : '',
             ]
               .filter(Boolean)
               .join(' · ')
           }}
         </p>
-        <details>
+        <VAlert v-if="item.filtersOutdated" type="warning" variant="tonal" density="compact">{{
+          t('filtersOutdated')
+        }}</VAlert>
+        <details v-else>
           <summary>{{ t('summary') }}</summary>
           <RentalAlertSummary :kind="item.kind" :filters="item.filters" />
         </details>
@@ -74,6 +78,7 @@
             t('openSearch')
           }}</VBtn>
           <VBtn
+            v-if="!item.filtersOutdated"
             :id="`rental-alert-edit-${item.id}`"
             variant="text"
             prepend-icon="mdi-pencil-outline"
@@ -92,7 +97,7 @@
           <VBtn
             variant="text"
             icon="mdi-delete-outline"
-            :aria-label="`${t('removeAlert')}: ${item.name || t(item.kind === 'rental-search' ? 'searchAlert' : 'opportunityAlert')}`"
+            :aria-label="`${t('removeAlert')}: ${item.name || t(RENTAL_ALERT_KIND_TITLE[item.kind])}`"
             :disabled="!!busy"
             @click="removing = item"
           />
@@ -104,6 +109,9 @@
     }}</VAlert>
     <nav class="rental-alert-panel__actions">
       <VBtn :to="localePath('/alquileres-uruguay')" variant="tonal">{{ t('findRentals') }}</VBtn
+      ><VBtn :to="localePath('/autos-usados-uruguay')" variant="text">{{ t('findCars') }}</VBtn
+      ><VBtn :to="localePath('/venta-viviendas-uruguay')" variant="text">{{ t('findSales') }}</VBtn
+      ><VBtn :to="localePath('/motos-usadas-uruguay')" variant="text">{{ t('findMotos') }}</VBtn
       ><VBtn
         :to="localePath('/oportunidades-inmobiliarias-uruguay?operation=rent')"
         variant="text"
@@ -132,7 +140,7 @@
   </section>
 </template>
 <script setup lang="ts">
-import { rentalAlertMessages } from '~/utils/rentalAlertMessages'
+import { RENTAL_ALERT_KIND_TITLE, rentalAlertMessages } from '~/utils/rentalAlertMessages'
 import RentalAlertSummary from './RentalAlertSummary.vue'
 import { rentalAlertErrorCode } from '~/composables/useRentalAlerts'
 import type { RentalAlertSubscription } from '~/utils/rentalAlerts'

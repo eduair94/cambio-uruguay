@@ -7,7 +7,8 @@ import {
 } from '../models/RentalAlertEvent'
 import { connectDb } from './db'
 import { withRentalAlertLease } from './rentalAlertLease'
-import { readRentalAlertInventory } from './rentalAlertMatching'
+import { readAlertInventory } from './rentalAlertCandidates'
+import { planRentalAlertPrices, writeRentalAlertPrices } from './rentalAlertPrices'
 
 export interface RentalAlertIndexResult {
   state: RentalAlertIndexDoc
@@ -26,7 +27,7 @@ export async function refreshRentalAlertIndex(
   await connectDb()
   const run = async (guard: () => Promise<void> = async () => {}) => {
     const previous = await RentalAlertIndexModel.findById(kind).lean()
-    const inventory = await readRentalAlertInventory(kind, Date.now(), guard)
+    const inventory = await readAlertInventory(kind, Date.now(), guard)
     const frontier = rentalAlertFrontier(previous?.scannedAt, Date.now())
     const baseline = !previous || previous.algorithm !== inventory.algorithm
     const added: RentalAlertEventDoc[] = []
@@ -50,6 +51,11 @@ export async function refreshRentalAlertIndex(
           discoveredAt: frontier,
           baseline,
         }))
+      // Price drops become events in the same ledger, so they share cursor, baseline and outbox.
+      const priced = inventory.prices
+        ? await planRentalAlertPrices(kind, ids, inventory.prices, frontier, baseline)
+        : { events: [], writes: [] }
+      fresh.push(...priced.events)
       added.push(...fresh)
       if (!options.dryRun && fresh.length)
         await RentalAlertEventModel.bulkWrite(
@@ -58,6 +64,10 @@ export async function refreshRentalAlertIndex(
           })),
           { ordered: true }
         )
+      if (!options.dryRun && priced.writes.length) {
+        await guard()
+        await writeRentalAlertPrices(priced.writes)
+      }
     }
     const state: RentalAlertIndexDoc = {
       _id: kind,
@@ -72,7 +82,9 @@ export async function refreshRentalAlertIndex(
     }
     return { state, added }
   }
-  return options.dryRun ? run() : withRentalAlertLease('index', run)
+  // One lock per kind: events, prices and the index document are all per kind, and four catalogues
+  // scanned under one lock made every new subscription of another kind wait or fail meanwhile.
+  return options.dryRun ? run() : withRentalAlertLease(`index:${kind}`, run)
 }
 
 /** Called before subscription creation/resume: observe the existing inventory synchronously, silently for that subscriber. */

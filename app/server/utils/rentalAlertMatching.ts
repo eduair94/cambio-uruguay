@@ -2,6 +2,7 @@ import type {
   RentalAlertCandidate,
   RentalAlertFilters,
   RentalAlertKind,
+  RentalAlertMoney,
 } from '../../utils/rentalAlerts'
 import {
   buildRentalFilter,
@@ -42,8 +43,20 @@ export function rentalAlertCandidateId(source: unknown, listingId: unknown): str
 
 export interface RentalAlertInventory {
   ids: string[]
+  /** Current asking price per id, when the kind can notify price drops. */
+  prices?: Map<string, RentalAlertMoney>
   algorithm: string
   sourceVersion: string
+}
+
+/** A price the drop ledger can compare: positive, finite, in one of the two published currencies. */
+export function rentalAlertMoney(amount: unknown, currency: unknown): RentalAlertMoney | null {
+  return typeof amount === 'number' &&
+    Number.isFinite(amount) &&
+    amount > 0 &&
+    (currency === 'UYU' || currency === 'USD')
+    ? { amount, currency }
+    : null
 }
 
 /** Read directly, bypassing the public route cache when establishing an activation boundary. */
@@ -112,11 +125,19 @@ export async function readRentalAlertInventory(
     .lean()
   if (!before?.generatedAt) throw new Error('Rental inventory is unavailable')
   const ids = new Set<string>()
+  const prices = new Map<string, RentalAlertMoney>()
   let after = ''
   for (;;) {
     await guard()
     const rows = await RentalListingModel.find(after ? { key: { $gt: after } } : {})
-      .select({ _id: 0, key: 1, 'offers.listingId': 1, 'offers.source': 1 })
+      .select({
+        _id: 0,
+        key: 1,
+        'offers.listingId': 1,
+        'offers.source': 1,
+        'offers.price': 1,
+        'offers.currency': 1,
+      })
       .sort({ key: 1 })
       .limit(PAGE)
       .maxTimeMS(15_000)
@@ -124,7 +145,10 @@ export async function readRentalAlertInventory(
     for (const row of rows)
       for (const offer of row.offers || []) {
         const id = rentalAlertCandidateId(offer.source, offer.listingId)
-        if (id) ids.add(id)
+        if (!id) continue
+        ids.add(id)
+        const price = rentalAlertMoney(offer.price, offer.currency)
+        if (price) prices.set(id, price)
       }
     if (rows.length < PAGE) break
     after = rows.at(-1)!.key
@@ -134,7 +158,12 @@ export async function readRentalAlertInventory(
     .lean()
   if (before.generatedAt !== final?.generatedAt || !ids.size)
     throw new Error('Rental inventory changed during observation; retry later')
-  return { ids: [...ids].sort(), algorithm: 'rental-search-v1', sourceVersion: before.generatedAt }
+  return {
+    ids: [...ids].sort(),
+    prices,
+    algorithm: 'rental-search-v1',
+    sourceVersion: before.generatedAt,
+  }
 }
 
 /** Exactly the directory's matching pipeline, with candidate restriction before it and no page truncation. */
