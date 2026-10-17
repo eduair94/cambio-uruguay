@@ -98,11 +98,12 @@
             data-testid="sale-share-trigger"
             @click="shareSearch"
           />
-          <!-- Built from the URL query, never from the saved-only view: favourites are not a search. -->
+          <!-- Built from the URL query, never from the saved-only view: favourites are not a search.
+               On mobile it sits next to the sort instead: at 320 px a fifth control wraps this bar. -->
           <RentalAlertButton
+            v-if="!smAndDown"
             kind="sale-search"
             :filters="propertySalesQueryToParams(query)"
-            :compact="smAndDown"
             notify
           />
         </div>
@@ -130,16 +131,25 @@
                     : t('results', { n: (data?.total || 0).toLocaleString(locale) })
             }}
           </h2>
-          <VSelect
-            :model-value="query.sort"
-            :items="sortItems"
-            :label="t('sort')"
-            variant="outlined"
-            density="compact"
-            hide-details
-            class="sales-directory__sort"
-            @update:model-value="setSort"
-          />
+          <div class="sales-directory__result-actions">
+            <RentalAlertButton
+              v-if="smAndDown"
+              kind="sale-search"
+              :filters="propertySalesQueryToParams(query)"
+              compact
+              notify
+            />
+            <VSelect
+              :model-value="query.sort"
+              :items="sortItems"
+              :label="t('sort')"
+              variant="outlined"
+              density="compact"
+              hide-details
+              class="sales-directory__sort"
+              @update:model-value="setSort"
+            />
+          </div>
         </div>
         <p v-if="savedOnly" class="sales-directory__notice">{{ t('savedUnavailable') }}</p>
         <div v-if="savedOnly && !savedEmpty" class="sales-directory__compare">
@@ -692,6 +702,12 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
   max-width: 230px;
   min-width: 160px;
 }
+.sales-directory__result-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
 .sales-directory__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -770,6 +786,11 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
   outline-offset: 3px;
 }
 @media (max-width: 959px) {
+  /* The alert bell joins the sort here; wrapping keeps the heading from being squeezed to a word. */
+  .sales-directory__result-head {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
   .sales-directory__header {
     padding: 6px 0 12px;
   }
