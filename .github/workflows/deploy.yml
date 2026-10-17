@@ -165,6 +165,14 @@ jobs:
               # este archivo. Sin esta línea un PR que sólo agrega su fila —todos los de la corrida
               # diaria lo hacen— salteaba la suite que lo valida, y ahora esos PRs se mergean solos.
               - 'docs/seo/experiments.json'
+              # El informe de deuda libre (`npm run seo_debt`) lee las listas de deuda declaradas en
+              # estos dos archivos, y `tests/revenueplan/debt_free.test.ts` verifica que las siga
+              # leyendo. Sin estas dos líneas, renombrar uno de esos `const` es un push que sólo
+              # toca `app/`: la suite del app queda verde, la de la raíz no corre, y el informe pasa
+              # a declarar que no hay deuda — que es exactamente el modo de fallar en silencio que
+              # ese informe existe para no tener.
+              - 'app/tests/unit/temaHuerfanas.test.ts'
+              - 'app/tests/unit/enlacesDeContexto.test.ts'
             backend:
               - 'index.ts'
               - 'classes/**'

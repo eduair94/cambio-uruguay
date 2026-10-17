@@ -129,6 +129,13 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
   denominador y el veredicto siempre da "sin cambio". `tests/revenueplan/experiments_routes.test.ts`
   verifica que cada ruta declarada exista — una ruta mal tipeada no rompe nada, publica "sin datos"
   para siempre y tiene el mismo síntoma que "todavía no hay historia". Ver `docs/analytics/REVENUE_PLAN.md`.
+- **Antes de elegir qué deuda de SEO bajar, corré `npm run seo_debt`.** Imprime, de la deuda que los
+  trinquetes del app declaran, cuál se puede tocar HOY y cuál está reservada por una ventana de
+  medición abierta, con la fecha en que se libera y el `id` de la fila que la reserva. La reserva es
+  de 29 días y no de 28 (el test de solape marca `|Δfecha| ≤ 28`, así que la fila nueva entra al día
+  29). Sin esto el cruce se hace a mano, ruta por ruta contra las 96 filas del libro: el 2026-10-17
+  las 59 rutas declaradas estaban todas reservadas y establecerlo fue el trabajo entero de la
+  corrida. No cubre las migas ni los snippets de guía, que declaran un número y no sus miembros.
 - **Este repositorio es PÚBLICO: cero cifras de ingreso en nada versionado.** Ni en código, ni en
   comentarios, ni en este archivo, ni en un mensaje de commit. La convención ya existía para los
   documentos (`docs/seo/adsense-growth-loop.md` es "público sin cifras"; los montos viven en
