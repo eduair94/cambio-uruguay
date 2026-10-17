@@ -209,6 +209,32 @@ cuando son el mismo cambio en dos mitades, como las tandas de título y descripc
 elegir otra página. El test mide también las **consultas**: el único solape que las rutas no veían
 era un par de filas que declaraban las dos «unidad reajustable» con rutas distintas a propósito.
 
+### Y la otra mitad de esa regla: `npm run seo_debt`
+
+El test de solape ataja la fila que se pisa con otra. Lo que no atajaba nada es el **costo de
+obedecerlo**: los cinco trinquetes de deuda de SEO del app reservan sus rutas en PROSA, a mano y una
+por una («entran cuando su ventana cierre», «la última, `/comparar-plataformas-dolar-uruguay`, el
+2026-10-27»), así que para saber qué deuda se puede bajar hoy hay que cruzar cada ruta declarada
+contra cada fila del libro. Medido el 2026-10-17: las 59 rutas de los tres trinquetes con lista
+estaban TODAS reservadas, y establecerlo fue el trabajo entero de esa corrida — una corrida que
+terminó sin publicar nada porque no había nada que publicar, pero que gastó su presupuesto
+averiguándolo.
+
+`scripts/oneoff/seo_debt_report.ts` lee las listas que esos trinquetes ya declaran —no una copia: el
+vitest de la raíz no puede importar de `app/`, así que las lee como texto, y tira excepción si un
+`const` cambió de nombre, porque un lector así falla devolviendo `[]` y «no hay deuda» se lee igual
+que «no hay nada que hacer»— y las cruza con el libro usando el **mismo `routeMatches` del job**, por
+la razón que el test de solape ya da para sus testigos. La reserva es `EXPERIMENT_WINDOW_DAYS + 1`:
+28 días es cuánto mide el libro, 29 es a partir de cuándo se puede declarar otra cosa sobre la misma
+página sin poner CI en rojo, y la diferencia de un día es justo el día en que alguien se equivocaría.
+`tests/revenueplan/debt_free.test.ts` fija ese borde y la lectura de las tres listas reales.
+
+No cubre los otros dos pozos (las migas de `seoContract` y los snippets de guía de
+`guideSnippetBudget`): declaran un número y calculan sus miembros desde el árbol de páginas, así que
+nombrarlos pediría reimplementar esa cuenta, y una segunda cuenta que se separa de la primera en
+silencio es lo que todo este archivo evita. Cubrirlos pide que esos dos trinquetes declaren sus
+miembros como los otros tres.
+
 ---
 
 ## Qué NO hace
