@@ -204,16 +204,19 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
           {{ payload.total.toLocaleString('es-UY') }}
           {{ payload.total === 1 ? 'aviso' : 'avisos' }}
         </h2>
-        <VSelect
-          :model-value="query.sort"
-          :items="sortItems"
-          label="Ordenar"
-          density="compact"
-          variant="outlined"
-          hide-details
-          class="sort-select"
-          @update:model-value="value => update({ ...query, sort: value, page: 1 })"
-        />
+        <div class="results-actions">
+          <RentalAlertButton kind="moto-search" :filters="motoQueryParams(query)" notify />
+          <VSelect
+            :model-value="query.sort"
+            :items="sortItems"
+            label="Ordenar"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="sort-select"
+            @update:model-value="value => update({ ...query, sort: value, page: 1 })"
+          />
+        </div>
       </div>
 
       <p v-if="!payload.items.length" class="empty">
@@ -389,11 +392,14 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
       Esto es una comparación de precios pedidos en avisos públicos, con su fecha. No es una
       tasación, no es una recomendación de compra y no dice si una moto está en buen estado.
     </VAlert>
+    <RentalAlertDialog />
   </VContainer>
 </template>
 
 <script setup lang="ts">
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
+import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
+import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
 import type { FaqItem } from '~/utils/faqAnswers'
 import {
   MOTOS_AUTOS_PATH,
@@ -622,6 +628,12 @@ useHead(() => ({
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
+}
+.results-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
 }
 .results-title {
   margin: 0;

@@ -7,16 +7,21 @@ import { withRentalAlertLease } from './rentalAlertLease'
 import { prepareRentalAlertBaseline } from './rentalAlertIndex'
 import { rentalAlertError, type RentalAlertUser } from './rentalAlertAuth'
 import {
+  RENTAL_ALERT_KINDS,
   RENTAL_ALERT_LIMIT,
   normalizeRentalAlertFilters,
+  rentalAlertFiltersCurrent,
   rentalAlertRecord,
   rentalAlertSearchUrl,
   rentalAlertSignature,
-  RentalAlertValidationError,
   type RentalAlertChannels,
+  type RentalAlertFilters,
+  type RentalAlertKind,
   type RentalAlertSubscription,
   type RentalAlertLocale,
 } from '../../utils/rentalAlerts'
+import { kindSupportsPriceDrops } from '../../utils/listingAlerts'
+import { RentalAlertValidationError } from '../../utils/alertErrors'
 
 export const rentalAlertPublicProjection = {
   _id: 1,
@@ -25,6 +30,7 @@ export const rentalAlertPublicProjection = {
   filters: 1,
   channels: 1,
   frequency: 1,
+  priceDrops: 1,
   active: 1,
   locale: 1,
   createdAt: 1,
@@ -34,7 +40,12 @@ export const rentalAlertPublicProjection = {
 
 /** Explicit nested projection: credentials, recipient addresses and delivery ledgers stay private. */
 export function publicRentalAlert(row: RentalAlertDoc): RentalAlertSubscription {
-  const filters = normalizeRentalAlertFilters(row.kind, row.filters)
+  // An outdated alert is still listed (with what was stored) so it can be seen and deleted;
+  // throwing here used to fail the whole account list.
+  const current = rentalAlertFiltersCurrent(row.kind, row.filters)
+  const filters = current
+    ? normalizeRentalAlertFilters(row.kind, row.filters ?? {})
+    : storedFilters(row.filters)
   const locale = row.locale === 'en' || row.locale === 'pt' ? row.locale : 'es'
   return {
     id: String(row._id),
@@ -43,6 +54,8 @@ export function publicRentalAlert(row: RentalAlertDoc): RentalAlertSubscription 
     filters,
     channels: { push: row.channels.push === true, email: row.channels.email === true },
     frequency: row.frequency,
+    priceDrops: row.priceDrops === true && kindSupportsPriceDrops(row.kind),
+    filtersOutdated: !current,
     active: row.active === true,
     locale,
     createdAt: new Date(row.createdAt).toISOString(),
@@ -50,6 +63,16 @@ export function publicRentalAlert(row: RentalAlertDoc): RentalAlertSubscription 
     lastNotifiedAt: row.lastNotifiedAt ? new Date(row.lastNotifiedAt).toISOString() : null,
     searchUrl: rentalAlertSearchUrl({ kind: row.kind, filters, locale }),
   }
+}
+
+function storedFilters(input: unknown): RentalAlertFilters {
+  if (!rentalAlertRecord(input)) return {}
+  return Object.fromEntries(
+    Object.entries(input)
+      .filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+      .slice(0, 50)
+      .map(([key, value]) => [key.slice(0, 40), value.slice(0, 200)])
+  )
 }
 
 export async function rentalAlertRequest<T>(
@@ -122,14 +145,26 @@ function frequencyValue(value: unknown): 'hourly' | 'daily' {
   return value
 }
 
-function defaultName(kind: string, locale: RentalAlertLocale): string {
-  return kind === 'rental-search'
-    ? { es: 'Nuevos alquileres', en: 'New rentals', pt: 'Novos aluguéis' }[locale]
-    : {
-        es: 'Oportunidades de alquiler',
-        en: 'Rental opportunities',
-        pt: 'Oportunidades de aluguel',
-      }[locale]
+const DEFAULT_NAMES: Record<RentalAlertKind, Record<RentalAlertLocale, string>> = {
+  'rental-search': { es: 'Nuevos alquileres', en: 'New rentals', pt: 'Novos aluguéis' },
+  'rental-opportunity': {
+    es: 'Oportunidades de alquiler',
+    en: 'Rental opportunities',
+    pt: 'Oportunidades de aluguel',
+  },
+  'car-search': { es: 'Autos usados', en: 'Used cars', pt: 'Carros usados' },
+  'moto-search': { es: 'Motos usadas', en: 'Used motorcycles', pt: 'Motos usadas' },
+  'sale-search': { es: 'Viviendas en venta', en: 'Homes for sale', pt: 'Imóveis à venda' },
+}
+function defaultName(kind: RentalAlertKind, locale: RentalAlertLocale): string {
+  return DEFAULT_NAMES[kind][locale]
+}
+
+/** Optional on input; an opportunity has no own price to fall from, so it is always off there. */
+function priceDropsValue(kind: RentalAlertKind, value: unknown, fallback: boolean): boolean {
+  if (value === undefined) return fallback && kindSupportsPriceDrops(kind)
+  if (typeof value !== 'boolean') throw rentalAlertError('invalid_alert')
+  return value && kindSupportsPriceDrops(kind)
 }
 
 export async function listRentalAlertSubscriptions(user: RentalAlertUser) {
@@ -146,10 +181,19 @@ export async function listRentalAlertSubscriptions(user: RentalAlertUser) {
 }
 
 export async function createRentalAlertSubscription(user: RentalAlertUser, input: unknown) {
-  const body = bodyRecord(input, ['kind', 'name', 'filters', 'channels', 'frequency', 'locale'])
-  if (body.kind !== 'rental-search' && body.kind !== 'rental-opportunity')
+  const body = bodyRecord(input, [
+    'kind',
+    'name',
+    'filters',
+    'channels',
+    'frequency',
+    'locale',
+    'priceDrops',
+  ])
+  if (!RENTAL_ALERT_KINDS.includes(body.kind as RentalAlertKind))
     throw rentalAlertError('invalid_alert')
-  const kind = body.kind
+  const kind = body.kind as RentalAlertKind
+  const priceDrops = priceDropsValue(kind, body.priceDrops, false)
   const filters = normalizeRentalAlertFilters(kind, body.filters)
   const channels = channelsValue(body.channels)
   requireChannels(user, channels)
@@ -182,6 +226,7 @@ export async function createRentalAlertSubscription(user: RentalAlertUser, input
       fingerprint,
       channels,
       frequency,
+      priceDrops,
       locale,
       active: true,
       startsAt,
@@ -206,7 +251,7 @@ export async function updateRentalAlertSubscription(
   input: unknown
 ) {
   const key = requireId(id)
-  const body = bodyRecord(input, ['active', 'channels', 'frequency', 'name'])
+  const body = bodyRecord(input, ['active', 'channels', 'frequency', 'name', 'priceDrops'])
   if (!Object.keys(body).length || (body.active !== undefined && typeof body.active !== 'boolean'))
     throw rentalAlertError('invalid_alert')
   return withRentalAlertLease(`uid:${user.uid}`, async assertOwned => {
@@ -227,12 +272,18 @@ export async function updateRentalAlertSubscription(
     // Existing pending work for that remaining channel keeps its original boundary.
     if (reactivating) requireChannels(user, channels)
     else if (enabling.push || enabling.email) requireChannels(user, enabling)
+    const priceDrops = priceDropsValue(row.kind, body.priceDrops, row.priceDrops === true)
+    // Drops seen before consent must not arrive later. Only the drops get a boundary: resetting
+    // the cursor would also skip the new adverts this subscription has not read yet.
+    const enablingDrops = priceDrops && row.priceDrops !== true
     const patch: Record<string, unknown> = {
       name: nameValue(body.name, row.name),
       frequency: body.frequency === undefined ? row.frequency : frequencyValue(body.frequency),
       active,
       channels,
+      priceDrops,
     }
+    if (enablingDrops) patch.priceDropsFrom = await prepareRentalAlertBaseline(row.kind)
     if (reactivating || enabling.push || enabling.email) {
       patch.startsAt = await prepareRentalAlertBaseline(row.kind)
       patch.cursorAt = null

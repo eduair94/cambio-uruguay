@@ -10,7 +10,7 @@
     <VCard class="rental-alert-dialog">
       <header class="rental-alert-dialog__header">
         <h2 :id="headingId" ref="heading" tabindex="-1">
-          {{ t(draft?.kind === 'rental-opportunity' ? 'opportunityAlert' : 'searchAlert') }}
+          {{ t(RENTAL_ALERT_KIND_TITLE[draft?.kind ?? 'rental-search']) }}
         </h2>
         <VBtn
           icon="mdi-close"
@@ -142,6 +142,18 @@
             class="mt-5"
           />
           <p class="rental-alert-dialog__hint">{{ t('frequencyHint') }}</p>
+          <template v-if="kindSupportsPriceDrops(draft.kind)">
+            <VCheckbox
+              v-model="draft.priceDrops"
+              :label="t('priceDrops')"
+              :disabled="saving"
+              hide-details
+              color="primary"
+              class="mt-3"
+              data-testid="rental-alert-price-drops"
+            />
+            <p class="rental-alert-dialog__hint">{{ t('priceDropsHint') }}</p>
+          </template>
           <VTextField
             v-model="draft.name"
             :label="t('name')"
@@ -182,7 +194,8 @@
 </template>
 
 <script setup lang="ts">
-import { rentalAlertMessages } from '~/utils/rentalAlertMessages'
+import { RENTAL_ALERT_KIND_TITLE, rentalAlertMessages } from '~/utils/rentalAlertMessages'
+import { kindSupportsPriceDrops } from '~/utils/listingAlerts'
 import RentalAlertSummary from './RentalAlertSummary.vue'
 import { rentalAlertErrorCode } from '~/composables/useRentalAlerts'
 const alerts = useRentalAlerts()

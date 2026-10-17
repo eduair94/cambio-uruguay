@@ -1,5 +1,11 @@
 <template>
-  <dl v-if="rows.length" class="rental-alert-summary">
+  <ul v-if="chips.length" class="rental-alert-summary__chips">
+    <li v-for="chip in chips" :key="chip">{{ chip }}</li>
+  </ul>
+  <p v-else-if="listing" class="rental-alert-summary__all">
+    {{ t(ALL_LABEL[kind as keyof typeof ALL_LABEL]) }}
+  </p>
+  <dl v-else-if="rows.length" class="rental-alert-summary">
     <div v-for="row in rows" :key="`${row.label}:${row.value}`">
       <dt>{{ row.label }}</dt>
       <dd>{{ row.value }}</dd>
@@ -17,13 +23,21 @@ import { normalizeRentalQuery, RENTAL_SOURCE_LABEL } from '~/utils/rentals'
 import { normalizeOpportunityQuery } from '~/utils/propertyOpportunityQuery'
 import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
 import type { RentalAlertKind } from '~/utils/rentalAlerts'
+import { isListingAlertKind, listingAlertChips } from '~/utils/listingAlerts'
 
 const props = defineProps<{ kind: RentalAlertKind; filters: Record<string, unknown> }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalAlertMessages })
+const ALL_LABEL = { 'car-search': 'allCars', 'moto-search': 'allMotos', 'sale-search': 'allSales' }
+const listing = computed(() => isListingAlertKind(props.kind))
+/** Listing directories: the same chips the page shows above its results. */
+const chips = computed(() =>
+  isListingAlertKind(props.kind) ? listingAlertChips(props.kind, props.filters, locale.value) : []
+)
 const number = (n: number) =>
   new Intl.NumberFormat(locale.value, { maximumFractionDigits: 2 }).format(n)
 const rows = computed(() => {
   const result: { label: string; value: string }[] = []
+  if (isListingAlertKind(props.kind)) return result
   const availability = rentalAvailabilityCopy(locale.value)
   const addAvailability = (value: 'all' | 'hide_multiple' | 'hide_any') => {
     if (value !== 'all') result.push({ label: availability.filter, value: availability[value] })
@@ -129,6 +143,21 @@ const rows = computed(() => {
 }
 .rental-alert-summary dd {
   margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.rental-alert-summary__chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rental-alert-summary__chips li {
+  padding: 4px 12px;
+  border-radius: 16px;
+  background: rgba(var(--v-theme-primary), 0.1);
   font-weight: 600;
   overflow-wrap: anywhere;
 }

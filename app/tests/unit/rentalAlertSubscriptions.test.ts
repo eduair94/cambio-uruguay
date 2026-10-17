@@ -9,6 +9,7 @@ import {
 } from '../../server/utils/rentalAlertSubscriptions'
 import type { RentalAlertDoc } from '../../server/models/RentalAlert'
 import type { RentalAlertUser } from '../../server/utils/rentalAlertAuth'
+import { RENTAL_ALERT_LIMIT } from '../../utils/rentalAlerts'
 
 const mocks = vi.hoisted(() => ({
   find: vi.fn(),
@@ -199,7 +200,7 @@ describe('authenticated rental subscription lifecycle', () => {
   })
 
   it('enforces both the per-account limit and the creation rate before expensive indexing', async () => {
-    mocks.count.mockResolvedValueOnce(10)
+    mocks.count.mockResolvedValueOnce(RENTAL_ALERT_LIMIT)
     await expect(createRentalAlertSubscription(user, request)).rejects.toThrow('limit_reached')
     mocks.quota.mockReturnValueOnce({ lean: async () => ({ attempts: 11 }) })
     await expect(createRentalAlertSubscription(user, request)).rejects.toThrow('too_many_requests')
@@ -250,6 +251,84 @@ describe('authenticated rental subscription lifecycle', () => {
     await deleteRentalAlertSubscription(user, id)
     expect(mocks.remove).toHaveBeenCalledWith({ _id: id, uid: user.uid })
     await expect(deleteRentalAlertSubscription(user, '../all')).rejects.toThrow('not_found')
+  })
+
+  it('creates a used-car search with price drops and a default name in its language', async () => {
+    const result = await createRentalAlertSubscription(user, {
+      ...request,
+      kind: 'car-search',
+      filters: { brand: 'citroen', q: 'Xsara', yearMin: '2010', sort: 'price_asc' },
+      priceDrops: true,
+    })
+    expect(mocks.baseline).toHaveBeenCalledWith('car-search')
+    expect(mocks.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'car-search',
+        name: 'Autos usados',
+        priceDrops: true,
+        filters: { brand: 'citroen', q: 'Xsara', yearMin: '2010' },
+      })
+    )
+    expect(result.item).toMatchObject({
+      kind: 'car-search',
+      priceDrops: true,
+      searchUrl: '/autos-usados-uruguay?brand=citroen&q=Xsara&yearMin=2010',
+    })
+  })
+
+  it('never stores price drops for rental opportunities and defaults them off', async () => {
+    await createRentalAlertSubscription(user, {
+      ...request,
+      kind: 'rental-opportunity',
+      filters: {},
+      priceDrops: true,
+    })
+    expect(mocks.create).toHaveBeenLastCalledWith(expect.objectContaining({ priceDrops: false }))
+    await createRentalAlertSubscription(user, {
+      ...request,
+      locale: 'en',
+      kind: 'sale-search',
+      filters: {},
+    })
+    expect(mocks.create).toHaveBeenLastCalledWith(
+      expect.objectContaining({ priceDrops: false, name: 'Homes for sale' })
+    )
+  })
+
+  it('rejects a non-boolean price-drop choice', async () => {
+    await expect(
+      createRentalAlertSubscription(user, { ...request, priceDrops: 'yes' })
+    ).rejects.toThrow('invalid_alert')
+  })
+
+  it('turning price drops on bounds only the drops, keeping unread new adverts', async () => {
+    mocks.findOne.mockReturnValue({ lean: async () => row({ priceDrops: false }) })
+    mocks.update.mockReturnValue({ lean: async () => row({ priceDrops: true }) })
+    const result = await updateRentalAlertSubscription(user, id, { priceDrops: true })
+    expect(mocks.baseline).toHaveBeenCalledWith('rental-search')
+    const patch = mocks.update.mock.calls[0]![1].$set
+    expect(patch).toMatchObject({ priceDrops: true, priceDropsFrom: at })
+    for (const key of ['revision', 'startsAt', 'cursorAt', 'cursorId'])
+      expect(patch).not.toHaveProperty(key)
+    expect(result.item.priceDrops).toBe(true)
+  })
+
+  it('lists an alert whose filters no longer exist instead of failing the whole account', () => {
+    const outdated = publicRentalAlert(row({ kind: 'car-search', filters: { fuel: 'vapor' } }))
+    expect(outdated).toMatchObject({ filtersOutdated: true, filters: { fuel: 'vapor' } })
+    expect(publicRentalAlert(row()).filtersOutdated).toBe(false)
+  })
+
+  it('lists an unfiltered alert whose empty filters were never stored', () => {
+    expect(publicRentalAlert(row({ filters: undefined }))).toMatchObject({
+      filters: {},
+      filtersOutdated: false,
+      searchUrl: '/alquileres-uruguay',
+    })
+  })
+
+  it('reads a stored subscription without the field as drops off', () => {
+    expect(publicRentalAlert(row()).priceDrops).toBe(false)
   })
 
   it('public projections do not gain new private fields from the stored document', () => {

@@ -1,8 +1,9 @@
 import mongoose, { Schema, type Model, type Types } from 'mongoose'
-import type {
-  RentalAlertFilters,
-  RentalAlertFrequency,
-  RentalAlertKind,
+import {
+  RENTAL_ALERT_KINDS,
+  type RentalAlertFilters,
+  type RentalAlertFrequency,
+  type RentalAlertKind,
 } from '../../utils/rentalAlerts'
 
 export interface RentalAlertDoc {
@@ -14,6 +15,10 @@ export interface RentalAlertDoc {
   fingerprint: string
   channels: { push: boolean; email: boolean }
   frequency: RentalAlertFrequency
+  /** Missing on subscriptions created before price drops existed: read as false. */
+  priceDrops?: boolean
+  /** Drops discovered at or before this frontier predate consent (set when enabled later). */
+  priceDropsFrom?: Date | null
   active: boolean
   locale: 'es' | 'en' | 'pt'
   startsAt: Date
@@ -31,12 +36,14 @@ export interface RentalAlertDoc {
 const schema = new Schema<RentalAlertDoc>(
   {
     uid: { type: String, required: true },
-    kind: { type: String, enum: ['rental-search', 'rental-opportunity'], required: true },
+    kind: { type: String, enum: RENTAL_ALERT_KINDS, required: true },
     name: { type: String, required: true, maxlength: 80 },
     filters: { type: Schema.Types.Mixed, required: true },
     fingerprint: { type: String, required: true },
     channels: { push: { type: Boolean, default: false }, email: { type: Boolean, default: false } },
     frequency: { type: String, enum: ['hourly', 'daily'], default: 'hourly' },
+    priceDrops: { type: Boolean, default: false },
+    priceDropsFrom: { type: Date, default: null },
     active: { type: Boolean, default: true },
     locale: { type: String, enum: ['es', 'en', 'pt'], default: 'es' },
     startsAt: { type: Date, required: true },
@@ -48,7 +55,8 @@ const schema = new Schema<RentalAlertDoc>(
     cursorAt: { type: Date, default: null },
     cursorId: { type: String, default: '' },
   },
-  { timestamps: true }
+  // Without this an unfiltered alert ({}) is saved with no `filters` field at all.
+  { timestamps: true, minimize: false }
 )
 schema.index({ uid: 1, fingerprint: 1 }, { unique: true })
 schema.index({ active: 1, _id: 1 })

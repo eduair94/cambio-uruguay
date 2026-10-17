@@ -4,6 +4,7 @@ import {
   rentalAlertCandidatesFromRows,
   rentalAlertOpportunityMatches,
   matchRentalAlertCandidates,
+  readRentalAlertInventory,
 } from '../../server/utils/rentalAlertMatching'
 import { RentalListingModel } from '../../server/models/RentalListing'
 import { RentalMetaModel } from '../../server/models/RentalMeta'
@@ -192,6 +193,46 @@ describe('rental alert matches preserve the directory semantics', () => {
     expect(rentalAlertOpportunityMatches(data, {}, now + 7 * 3600000)).toEqual([])
     data.items[0].analysis.oldestLastSeen = '2026-09-01'
     expect(rentalAlertOpportunityMatches(data, {}, now)).toEqual([])
+  })
+
+  it('reads each offer price with the inventory so the index can see drops', async () => {
+    const find = vi.spyOn(RentalListingModel, 'find').mockReturnValue({
+      select: () => ({
+        sort: () => ({
+          limit: () => ({
+            maxTimeMS: () => ({
+              lean: async () => [
+                {
+                  key: 'p1',
+                  offers: [
+                    {
+                      source: 'infocasas',
+                      listingId: 'infocasas:1',
+                      price: 30000,
+                      currency: 'UYU',
+                    },
+                    { source: 'infocasas', listingId: 'infocasas:2', price: 0, currency: 'UYU' },
+                  ],
+                },
+              ],
+            }),
+          }),
+        }),
+      }),
+    } as never)
+    const meta = vi
+      .spyOn(RentalMetaModel, 'findOne')
+      .mockReturnValue({ select: () => ({ lean: async () => ({ generatedAt: 'g1' }) }) } as never)
+    try {
+      const inventory = await readRentalAlertInventory('rental-search')
+      expect(inventory.ids).toEqual(['rent:infocasas:1', 'rent:infocasas:2'])
+      expect([...(inventory.prices ?? new Map())]).toEqual([
+        ['rent:infocasas:1', { amount: 30000, currency: 'UYU' }],
+      ])
+    } finally {
+      find.mockRestore()
+      meta.mockRestore()
+    }
   })
 
   it('paginates more than 400 matching properties with the same filter pipeline', async () => {
