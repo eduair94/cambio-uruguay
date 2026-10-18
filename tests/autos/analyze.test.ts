@@ -37,6 +37,10 @@ const trimIndexes = new Map([["58955|123123", buildTrimIndex(["Lt", "Ltz", "Joy"
 const market = (count = 10) => Array.from({ length: count }, (_, i) => car({ price: 12_000 + i * 100, km: 85_000 + i * 1_000 }));
 
 describe("exclusionReason", () => {
+  it("excludes an advert whose title already declares a debt", () => {
+    expect(exclusionReason(car({ title: "Chevrolet Onix 1.4 Lt prendado" }), NOW)).toBe("risk_deuda");
+    expect(exclusionReason(car({ title: "Chevrolet Onix 1.4 Lt sin deudas" }), NOW)).toBeNull();
+  });
   it("names why an advert cannot be analysed", () => {
     expect(exclusionReason(car(), NOW)).toBeNull();
     expect(exclusionReason(car({ lastSeen: "2026-09-13T00:00:00.000Z" }), NOW)).toBe("stale");
@@ -245,6 +249,22 @@ describe("detailVerdict", () => {
     expect(detailVerdict(subject, detailFor(subject, { version: "1.4 Ltz 98cv" }), NOW, trims)).toBe("detail_trim_mismatch");
     expect(detailVerdict(subject, detailFor(subject, { version: "1.0 Lt" }), NOW, trims)).toBe("detail_engine_mismatch");
     expect(detailVerdict(subject, detailFor(subject, { flags: ["damaged"] }), NOW, trims)).toBe("detail_flag_damaged");
+  });
+  // The flags are frozen when the page is read and their vocabulary never had a word for fines,
+  // SUCIVE or a lien: a page that declares one was still called an opportunity (ml-MLU700970425).
+  it("rejects a page whose own text declares a debt, a lien or a crash, read at analysis time", () => {
+    const subject = car();
+    const verdict = (description: string) =>
+      detailVerdict(subject, detailFor(subject, { description, flags: [] }), NOW, trims);
+    expect(verdict("EL precio es porque tiene multas impagable.")).toBe("detail_risk_deuda");
+    expect(verdict("Tiene deuda de SUCIVE")).toBe("detail_risk_deuda");
+    expect(verdict("Está prendado")).toBe("detail_risk_deuda");
+    expect(verdict("Se vende solo con libreta")).toBe("detail_risk_papeles");
+    expect(verdict("Choque leve en la puerta")).toBe("detail_risk_siniestro");
+  });
+  it("keeps a declared ex taxi as a candidate, as before", () => {
+    const subject = car();
+    expect(detailVerdict(subject, detailFor(subject, { description: "Fue taxi, motor nuevo" }), NOW, trims)).toBeNull();
   });
   // The page shows the listed number; the subject may be priced at the cash price its text states.
   it("checks the page against the LISTED number when the price is the stated cash price", () => {

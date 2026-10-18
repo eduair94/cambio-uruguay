@@ -38,7 +38,11 @@ export const RISK_RULES: readonly RiskRule[] = [
     category: "deuda", severity: "alta",
     // An amount is required for the generic "debe"/"deuda de": "deuda" alone is almost always part of
     // "libre de deuda". "Deuda de SUCIVE" and "prenda" name themselves and need no amount.
-    source: "\\b(sucive|prenda(?:d[oa]s?|rio)?|prendad[oa]s?|empeñad[oa]s?|embargad[oa]s?|patente atrasada|patentes atrasadas|multas? (?:impagas?|pendientes?|sin pagar)|con deudas?|tiene (?:una |alguna )?deudas?|deudas? (?:total )?(?:de )?(?:u?\\$s?\\s?)?[1-9]\\w*|debe (?:u?\\$s?\\s?)?[1-9]\\w*)\\b",
+    // A bare "prenda" is a dealer's financing paperwork ("costo de certificados, prenda y títulos") and
+    // "crédito prendario" a loan they offer: only a car that HAS a lien counts.
+    // Fines: "impagable" is how one seller explained a 38 % discount (ml-MLU700970425); `impagas?\b`
+    // stopped at "impaga|ble". "Tiene/con/debe multas" is a disclosure; "sin multas" stays negated.
+    source: "\\b(sucive|prendad[oa]s?|(?:tiene|esta con|bajo) (?:una )?prenda|prenda (?:vigente|pendiente|a cancelar|sin cancelar)|empeñad[oa]s?|embargad[oa]s?|patente atrasada|patentes atrasadas|multas? (?:impag(?:as?|ables?)|pendientes?|sin pagar|por pagar|a pagar|atrasad[oa]s?|vencid[oa]s?)|(?:con|tiene|debe) (?:algunas? |unas? |varias? )?multas?|con deudas?|tiene (?:una |alguna )?deudas?|deudas? (?:total )?(?:de )?(?:u?\\$s?\\s?)?[1-9]\\w*|debe (?:u?\\$s?\\s?)?[1-9]\\w*)\\b",
   },
   {
     category: "papeles", severity: "alta",
@@ -46,7 +50,8 @@ export const RISK_RULES: readonly RiskRule[] = [
   },
   {
     category: "siniestro", severity: "alta",
-    source: "\\b(chocad[oa]s?|choques?|chocamos|siniestros?|siniestrad[oa]s?|accidentad[oa]s?|granizo|inundad[oa]s?|incendiad[oa]s?|volcad[oa]s?|sin (?:los |el |las )?airbags?|no tiene (?:los |el |las )?airbags?|airbags? (?:reventad|activad|disparad|explotad)[oa]s?)\\b",
+    // "Anti granizo" is a cover the seller includes, not hail damage.
+    source: "\\b(chocad[oa]s?|choques?|chocamos|siniestros?|siniestrad[oa]s?|accidentad[oa]s?|(?<!anti )granizo|inundad[oa]s?|incendiad[oa]s?|volcad[oa]s?|sin (?:los |el |las )?airbags?|no tiene (?:los |el |las )?airbags?|airbags? (?:reventad|activad|disparad|explotad)[oa]s?)\\b",
   },
   {
     category: "recupero", severity: "alta",
