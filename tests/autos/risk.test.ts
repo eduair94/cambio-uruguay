@@ -53,6 +53,34 @@ describe("declaredRisks", () => {
     expect(worstSeverity(risks)).toBe("alta");
     expect(worstSeverity([])).toBeNull();
   });
+  // ml-MLU700970425, 2026-10-17: a 2024 C3 at USD 7.990 against a USD 12.990 median, published as an
+  // opportunity. Its own text explained the price; "impagas?" stopped at "impaga|ble".
+  it("reads unpaid fines however the seller spells them", () => {
+    const risks = declaredRisks(
+      "Citroën C3 1.2 Puretech 82 Feel",
+      "El auto esta igual a nuevo.  Cero errores. \nU$S 7990 contado.\nEL precio es porque tiene multas impagable.\nEs para andar así nomas."
+    );
+    expect(risks).toMatchObject([{ category: "deuda", quote: "EL precio es porque tiene multas impagable." }]);
+    for (const text of ["Tiene multas impagables", "Con multas atrasadas", "multas por pagar", "tiene multas de transito", "Debe multas"])
+      expect(riskCategories(declaredRisks("", text)), text).toEqual(["deuda"]);
+    for (const text of ["No tiene multas", "Sin multas ni deudas", "Al día, cero multas"])
+      expect(declaredRisks("", text), text).toEqual([]);
+  });
+  // Measured 2026-10-17 on the 104 live opportunities: once declared risks gate opportunities, these
+  // two read a dealer's financing paperwork and a hail cover as risks.
+  it("does not read financing paperwork or a hail cover as a risk", () => {
+    for (const text of [
+      "En el valor de la cuota incluimos costo de certificados, prenda y títulos del auto a su nombre!",
+      "Financiamos con crédito prendario",
+      "• además tenemos un toldo que es del modelo del auto que es anti granizo",
+      "Incluye funda antigranizo",
+    ])
+      expect(declaredRisks("", text), text).toEqual([]);
+    for (const text of ["Auto prendado", "Tiene prenda", "Está con prenda", "Prenda vigente"])
+      expect(riskCategories(declaredRisks("", text)), text).toEqual(["deuda"]);
+    for (const text of ["Daños por granizo", "Granizo leve en el techo"])
+      expect(riskCategories(declaredRisks("", text)), text).toEqual(["siniestro"]);
+  });
   it("never repeats a category", () => {
     const risks = risksIn("Chocado, siniestrado, accidentado y sin airbags", "title");
     expect(risks).toHaveLength(1);

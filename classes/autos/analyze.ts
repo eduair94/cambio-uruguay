@@ -6,6 +6,7 @@ import { quantile } from "./stats";
 import { buildTrimIndex, matchTrim, type TrimIndex } from "./catalog/trims";
 import { photoRejection } from "./llm/vision";
 import { engineOf, slugify } from "./normalize";
+import { declaredRisks, type CarRiskCategory } from "./risk";
 import type { PublicCarOpportunityStats } from "./publicTypes";
 import type { CarDetail, CarListing, CarTextFlag } from "./types";
 
@@ -56,6 +57,17 @@ export interface CarAnalysis {
 
 const DAY = 86_400_000;
 export const EXCLUDING_FLAGS: ReadonlySet<CarTextFlag> = new Set<CarTextFlag>(["damaged", "financing", "foreign_plate", "paperwork", "price_mismatch", "recovered"]);
+/**
+ * What the advert itself declares, read with the risk vocabulary at analysis time. The flags are
+ * frozen when a page is read, and their vocabulary never had a word for fines, SUCIVE or a lien: a
+ * 2024 C3 whose text said "el precio es porque tiene multas impagable" was published as a 38 %
+ * opportunity (ml-MLU700970425). A declared ex taxi stays a candidate, as it always was.
+ */
+export const EXCLUDING_RISKS: ReadonlySet<CarRiskCategory> = new Set<CarRiskCategory>([
+  "deuda", "papeles", "siniestro", "recupero", "mecanica", "chapa_extranjera",
+]);
+const excludingRisk = (title: string, description: string): CarRiskCategory | null =>
+  declaredRisks(title, description).find(risk => EXCLUDING_RISKS.has(risk.category))?.category ?? null;
 const REFETCH = new Set(["detail_missing", "detail_stale", "detail_price_changed"]);
 const round6 = (value: number): number => Math.round(value * 1e6) / 1e6;
 
@@ -71,6 +83,8 @@ export function exclusionReason(listing: CarListing, now: Date): string | null {
   if (listing.kmQuality !== "ok") return `km_${listing.kmQuality}`;
   const flag = listing.flags.find(item => EXCLUDING_FLAGS.has(item));
   if (flag) return `flag_${flag}`;
+  const risk = excludingRisk(listing.title, "");
+  if (risk) return `risk_${risk}`;
   if (!listing.transmission) return "no_transmission";
   if (!listing.trim) return "no_trim";
   if (!listing.engine) return "no_engine";
@@ -193,6 +207,8 @@ export function detailVerdict(subject: CarListing, detail: CarDetail | undefined
     if (pageEngine && subject.engine && pageEngine.replace("T", "") !== subject.engine.replace("T", "")) return "detail_engine_mismatch";
   }
   if (detail.flags.length) return `detail_flag_${detail.flags[0]}`;
+  const risk = excludingRisk("", detail.description ?? "");
+  if (risk) return `detail_risk_${risk}`;
   return null;
 }
 

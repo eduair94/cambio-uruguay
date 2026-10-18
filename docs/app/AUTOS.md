@@ -494,6 +494,20 @@ Reglas, todas en `classes/autos/risk.ts` y `riskAnalyze.ts`:
   limpio. La página lo dice y enlaza las verificaciones (SUCIVE para la patente, certificado registral
   en la Dirección General de Registros para prenda y embargo; las dos fuentes se abrieron el
   2026-09-18).
+- **Un riesgo declarado saca al aviso de las oportunidades (2026-10-17).** Antes las oportunidades
+  miraban sólo las banderas de `normalize.ts`, que se congelan al leer la ficha y nunca tuvieron una
+  palabra para multas, SUCIVE ni prenda: un C3 2024 a USD 7.990 contra una mediana de 12.990 salió
+  como oportunidad estricta (−38 %) con "el precio es porque tiene multas impagable" en su propio
+  texto (`ml-MLU700970425`; además `impagas?\b` se cortaba en "impaga|ble"). Ahora `analyze.ts` corre
+  `declaredRisks` al analizar, sobre el título (`risk_<categoría>`) y la descripción
+  (`detail_risk_<categoría>`); excluyen deuda, papeles, siniestro, recupero, mecánica y chapa
+  extranjera, y el ex taxi sigue siendo candidato como antes. Medido sobre las 104 oportunidades
+  vivas: sale sólo ésa. Al medirlo aparecieron dos falsos positivos del vocabulario que ya se
+  publicaban como riesgo: "prenda" suelta es el trámite de una financiación ("Título y prenda", "costo
+  de certificados, prenda y títulos", "certificados de prenda y embargo prontos") y "anti granizo"
+  es una funda. Sobre las 495 descripciones con prenda, granizo o multa: 89 riesgos falsos menos, 2
+  multas reales más. Una prenda cuenta sólo si el auto la TIENE ("prendado", "tiene prenda", "prenda
+  vigente").
 
 ## Las fotos, y qué se hace con la IA
 
