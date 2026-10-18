@@ -35,6 +35,17 @@ export interface WithdrawSection {
   paragraphs: string[]
   /** Optional bullet list rendered under the paragraphs. */
   bullets?: string[]
+  /**
+   * Un enlace interno anclado al PUNTO en que la sección deja una pregunta sin contestar, no al
+   * pie. Es la distinción que mide `tests/unit/enlacesDeContexto.test.ts`: el bloque de
+   * relacionadas del final aparece recién a 11.341 px de una página de 15.868, así que un enlace
+   * que vive sólo ahí está puesto para un rastreador y no para quien lee. Este sale dentro de la
+   * tarjeta de la sección, debajo de sus viñetas.
+   *
+   * Opcional a propósito: sólo lo lleva la sección que crea la necesidad. Una sección con un
+   * enlace que su texto no pide es relleno, que es lo que ese trinquete no cuenta como arreglo.
+   */
+  link?: WithdrawLink
 }
 
 /** A row of the ATM-network comparison table. */
@@ -334,6 +345,10 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
           'Pedí billetes chicos (100, 200, 500): los de 1.000 y 2.000 cuestan de cambiar.',
           'Para moverte, usá Uber, Cabify o taxis registrados; evitá dejar valores en el auto.',
         ],
+        link: {
+          label: 'Ya tenés el billete grande: dónde conseguir cambio y monedas',
+          to: '/donde-conseguir-monedas-uruguay',
+        },
       },
     ],
     networkRows: [
@@ -618,6 +633,10 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
           'Ask for small bills (100, 200, 500): 1,000 and 2,000 notes are hard to break.',
           'Get around with Uber, Cabify or registered taxis; don’t leave valuables in the car.',
         ],
+        link: {
+          label: 'Already stuck with a big note: where to get small change and coins',
+          to: '/donde-conseguir-monedas-uruguay',
+        },
       },
     ],
     networkRows: [
@@ -901,6 +920,10 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
           'Peça notas pequenas (100, 200, 500): as de 1.000 e 2.000 são difíceis de trocar.',
           'Para se locomover, use Uber, Cabify ou táxis registrados; evite deixar valores no carro.',
         ],
+        link: {
+          label: 'Já ficou com a nota grande: onde conseguir troco e moedas',
+          to: '/donde-conseguir-monedas-uruguay',
+        },
       },
     ],
     networkRows: [

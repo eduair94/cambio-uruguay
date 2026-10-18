@@ -64,6 +64,22 @@
         <ul v-if="section.bullets?.length" class="withdraw-bullets">
           <li v-for="(b, i) in section.bullets" :key="i">{{ b }}</li>
         </ul>
+        <!--
+          El enlace de contexto de la sección, dentro de su propia tarjeta: la sección que deja la
+          pregunta abierta es la que lleva al lector a la página que la contesta. Ver el comentario
+          de `WithdrawSection.link` en `utils/withdrawCash.ts`.
+        -->
+        <VBtn
+          v-if="section.link"
+          :to="localePath(section.link.to)"
+          variant="text"
+          color="primary"
+          size="small"
+          class="cu-btn-flush mt-3"
+        >
+          {{ section.link.label }}
+          <VIcon end size="small">mdi-arrow-right</VIcon>
+        </VBtn>
       </VCard>
 
       <!-- ATM-network comparison table (right after the networks intro) -->

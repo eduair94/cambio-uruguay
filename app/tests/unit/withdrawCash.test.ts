@@ -68,6 +68,10 @@ describe('withdrawCash content integrity', () => {
       expect(section.paragraphs.length).toBeGreaterThanOrEqual(1)
       section.paragraphs.forEach(required)
       for (const b of section.bullets ?? []) required(b)
+      if (section.link) {
+        required(section.link.label)
+        expect(section.link.to.startsWith('/')).toBe(true)
+      }
     }
 
     expect(c.zones.length).toBeGreaterThanOrEqual(5)
@@ -127,6 +131,10 @@ describe('withdrawCash locale parity', () => {
     faq: c.faq.length,
     tldr: c.tldr.length,
     related: c.related.map(r => r.to),
+    // El enlace de contexto de una sección no es decoración de una traducción: si el inglés o el
+    // portugués lo pierden, esa página deja de enlazar a la que contesta su pregunta en dos de
+    // los tres idiomas y nada avisa.
+    sectionLinks: c.sections.map(s => s.link?.to ?? null),
     uiKeys: Object.keys(c.ui).sort(),
     ivaLiveKeys: Object.keys(c.ivaLive).sort(),
   })
@@ -135,6 +143,17 @@ describe('withdrawCash locale parity', () => {
     const base = shape(withdrawContent.es)
     expect(shape(withdrawContent.en)).toEqual(base)
     expect(shape(withdrawContent.pt)).toEqual(base)
+  })
+
+  // El enlace que baja `tests/unit/enlacesDeContexto.test.ts` de 17 a 16: la sección de seguridad
+  // le dice al lector que pida billetes chicos «porque los de 1.000 y 2.000 cuestan de cambiar» y
+  // nunca le decía dónde cambiarlos. Atado acá para que un refactor del árbol de contenido no lo
+  // borre sin que nada se ponga en rojo.
+  it('la sección de seguridad enlaza a dónde conseguir cambio, en los tres idiomas', () => {
+    for (const locale of LOCALES) {
+      const seguridad = withdrawContent[locale].sections.find(s => s.id === 'seguridad')
+      expect(seguridad?.link?.to, locale).toBe('/donde-conseguir-monedas-uruguay')
+    }
   })
 
   it('section ids are unique within each locale', () => {

@@ -155,7 +155,10 @@ export const guideHubs: readonly GuideHub[] = [
       },
       {
         label: 'Dónde conseguir monedas',
-        description: 'Dónde cambiar billetes por monedas y qué cobran.',
+        // «y qué cobran» prometía un precio que la página no publica porque no existe: nadie cobra
+        // por darte sencillo, lo que decide es el stock de moneda fraccionaria de cada sucursal y
+        // de cada día. La tarjeta decía lo que el lector querría oír y no lo que va a encontrar.
+        description: 'Qué depende de cada sucursal y qué no te va a servir.',
         to: '/donde-conseguir-monedas-uruguay',
       },
       {
