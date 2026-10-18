@@ -135,10 +135,10 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
  * tráfico, así que declara su propia fila y le cambiaría el sujeto al experimento que ya está
  * midiendo esa página — la misma reserva que `temaHuerfanas.test.ts` aplica a diecinueve rutas y
  * `seoDescriptionBudget.test.ts` a `/fecha-de-cobro-bps-uruguay`. La que queda,
- * `/donde-conseguir-monedas-uruguay`, tiene la ruta libre pero sus dos vecinas naturales
- * —`/precio-del-boleto-montevideo` y `/guias/propinas-en-uruguay`— están las dos dentro de una
- * ventana abierta, y su contenido vive en un árbol de cadenas trilingüe (`utils/coins.ts`) donde un
- * enlace no se puede escribir en la prosa. Entra cuando alguna de las dos cierre.
+ * `/donde-conseguir-monedas-uruguay`, tenía la ruta libre pero sus dos vecinas naturales
+ * —`/precio-del-boleto-montevideo` y `/guias/propinas-en-uruguay`— estaban las dos dentro de una
+ * ventana abierta. Salió el 2026-10-18 por una tercera que no se había mirado; ver la nota del
+ * trinquete, al pie de la lista.
  *
  * Para bajar este número: un enlace en el CONTENIDO de la página cuyo lector la necesita, o un chip
  * en la barra de su familia (`utils/familiaNav.ts`) si pertenece a una. Un enlace que nadie seguiría
@@ -152,7 +152,6 @@ const DEUDA_SIN_ENLACE = [
   '/certificado-unico-dgi-uruguay',
   '/cheques-uruguay',
   '/cortes-de-luz-por-barrio-uruguay',
-  '/donde-conseguir-monedas-uruguay',
   '/fondo-de-solidaridad-uruguay',
   '/grabacion-sin-consentimiento-uruguay',
   '/impuesto-temu-uruguay',
@@ -165,6 +164,28 @@ const DEUDA_SIN_ENLACE = [
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 17 → 16 el 2026-10-18, y es la única de las diecisiete con la ruta libre de toda ventana de
+// medición abierta: `npm run seo_debt` imprimió ese día UNA fila libre entre las 58 de los tres
+// trinquetes con lista, y era ésta.
+//
+// La nota de arriba la daba por bloqueada por sus dos vecinas naturales
+// —`/precio-del-boleto-montevideo` y `/guias/propinas-en-uruguay`, las dos con fila abierta—, y lo
+// que faltaba era mirar una tercera: `/retirar-efectivo-uruguay`, que es la página que la de las
+// monedas YA enlaza, y de ida sola, igual que el caso de `/pension-alimenticia-uruguay` del 13/10.
+// Su ruta no tiene ninguna fila en el libro de cambios (ni una sola en las 97), así que el enlace
+// no le cambia el sujeto a ningún experimento.
+//
+// Y el lector lo necesita de verdad: la sección «Consejos de seguridad al sacar efectivo» de esa
+// página le dice, en los tres idiomas, «pedí billetes chicos (100, 200, 500): los de 1.000 y 2.000
+// cuestan de cambiar», o sea nombra el problema entero y no dice dónde se resuelve. La página de
+// las monedas es la que contesta, incluso por la negativa, que es la parte cara: que el cajero
+// entrega billetes y nunca monedas, que el kiosco no fracciona un billete grande y que la casa de
+// cambio cambia divisas y no fracciona moneda nacional — tres viajes que el lector se ahorra.
+//
+// El enlace NO va en el bloque de relacionadas del pie, que es justo lo que el encabezado de este
+// archivo dice que no sirve: va dentro de la tarjeta de esa sección, debajo de la viñeta que crea
+// la pregunta (`WithdrawSection.link`, campo nuevo y opcional). `withdrawCash.test.ts` lo exige en
+// los tres idiomas y lo suma a la paridad de locales.
 // 18 → 17 el 2026-10-18, y otra vez sin ir a buscarlo: la página nueva
 // `/cooperativas-de-vivienda-uruguay` necesita a `/prestamo-hipotecario-uruguay` en su propio
 // contenido, porque la cooperativa y el crédito a nombre de una persona son las dos formas de
@@ -199,7 +220,7 @@ const DEUDA_SIN_ENLACE = [
 // cambios, y la reserva que la nota de arriba describe no se rompe: lo que esas filas miden es su
 // propia descripción, y el enlace entrante nace en una página publicada hoy, sin tráfico todavía.
 // Es además lo que ya hace cada página nueva del repo con su bloque de relacionadas.
-const DEUDA_MAXIMA = 17
+const DEUDA_MAXIMA = 16
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

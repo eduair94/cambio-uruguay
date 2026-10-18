@@ -1434,6 +1434,21 @@
         "cuantos socios necesita una cooperativa de vivienda"
       ],
       "hypothesis": "Pagina nueva. La cooperativa es una de las tres puertas a la vivienda propia en Uruguay y la palabra no aparecia en ninguna entrada de siteNav.ts ni de searchIndex.ts, con el resto del racimo de vivienda ya cubierto (alquilar, comprar, hipotecario, ITP, escrituracion, valor catastral). El angulo propio es el mismo lever que ya usan /prestamo-hipotecario-uruguay y /garantia-de-alquiler-uruguay: el Estado publica el techo de ingreso SOLO en UR y este sitio tiene la UR del dia del BCU, asi que la pagina hace la unica cosa que las fichas del MVOT no pueden hacer, pasarlo a pesos. Y uno nuevo: las DOS fichas del MVOT no coinciden para hogares de una y dos personas (60/66 UR en Programa Cooperativas contra 40/60 UR en Esquema de ingresos); se publican las dos filas con el enlace a cada ficha en vez de arbitrar, porque un hogar chico que planifica con la cifra equivocada planifica mal. Lo que NO se publica, con el motivo escrito en la propia pagina: el porcentaje de ahorro previo o ayuda mutua (lo fija el decreto reglamentario, la ficha remite al 198/2012 y el 2026-10-18 el banco de datos de impo.com.uy devolvia error interno en todas sus rutas, asi que no se pudo cotejar que texto esta vigente), el monto del prestamo y de la cuota, cuanto baja el subsidio (es socio por socio) y los valores de tasacion."
+    },
+    {
+      "id": "donde-conseguir-monedas-enlace-de-contexto",
+      "shippedOn": "2026-10-18",
+      "routes": [
+        "/donde-conseguir-monedas-uruguay"
+      ],
+      "queries": [
+        "donde conseguir monedas uruguay",
+        "cambiar billetes por monedas uruguay",
+        "conseguir sencillo uruguay",
+        "monedas para comercio uruguay",
+        "cambiar un billete de 2000 uruguay"
+      ],
+      "hypothesis": "La pagina no recibia un solo enlace desde el contenido de otra pagina ni chip en ninguna barra de familia: era la ultima de las 17 de enlacesDeContexto.test.ts con la ruta libre de toda ventana abierta, y la unica fila libre que imprimio npm run seo_debt entre las 58 de los tres trinquetes con lista. La nota anterior la daba por bloqueada por /precio-del-boleto-montevideo y /guias/propinas-en-uruguay, las dos con fila abierta; la vecina que faltaba mirar es /retirar-efectivo-uruguay, a la que esta pagina YA enlaza de ida sola y que no tiene ninguna fila en las 97 del libro. Su seccion de seguridad le dice al lector, en los tres idiomas, que pida billetes chicos porque los de 1.000 y 2.000 cuestan de cambiar, o sea nombra el problema entero y nunca dijo donde se resuelve; la de las monedas es la que contesta, sobre todo por la negativa, que es la parte cara: el cajero entrega billetes y nunca monedas, el kiosco no fracciona un billete grande y la casa de cambio cambia divisas pero no fracciona moneda nacional. El enlace NO va en el bloque de relacionadas del pie, que el rastreo del 2026-09-21 midio a 11.341 px de una pagina de 15.868: va dentro de la tarjeta de esa seccion, debajo de la vineta que crea la pregunta, con un campo link nuevo y opcional en WithdrawSection que solo lleva la seccion que deja algo sin contestar. Se espera que la pagina empiece a recibir lectores y rastreo que antes solo llegaban por el bloque del tema, al pie."
     }
   ]
 }
