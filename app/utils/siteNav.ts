@@ -1440,6 +1440,36 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'ahorro previo para comprar vivienda uruguay',
         ],
       },
+      {
+        // La otra puerta a la vivienda propia, y la única que no toma un préstamo a nombre de una
+        // persona: lo toma la cooperativa. La palabra «cooperativa» no aparecía en NINGUNA entrada
+        // de este archivo ni de `searchIndex.ts`. Va en `credit` y no en el racimo de alquiler por
+        // el mismo motivo que `/prestamo-hipotecario-uruguay`: la propia ficha del MVOT titula su
+        // bloque de condiciones «Requisitos para acceder al préstamo hipotecario».
+        //
+        // El ángulo propio es el mismo lever que ya usa el hipotecario y la garantía de alquiler:
+        // el Estado publica el techo de ingreso SÓLO en UR y este sitio tiene la UR del día. Y uno
+        // nuevo: las DOS fichas del MVOT no coinciden para hogares de una y dos personas (60/66
+        // contra 40/60 UR), así que se publican las dos en vez de arbitrar.
+        to: '/cooperativas-de-vivienda-uruguay',
+        labelKey: 'nav.cooperativasVivienda',
+        icon: 'mdi-home-group',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'cooperativas de vivienda uruguay',
+          'como entrar a una cooperativa de vivienda',
+          'requisitos cooperativa de vivienda',
+          'tope de ingresos cooperativa de vivienda',
+          'sorteo de prestamos mvot cooperativas',
+          'instituto de asistencia tecnica iat',
+          'certificado de regularidad cooperativa',
+          'anteproyecto anv cooperativa',
+          'ayuda mutua y ahorro previo',
+          'cuantos socios necesita una cooperativa de vivienda',
+        ],
+      },
     ],
   },
   {

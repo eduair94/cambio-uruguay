@@ -159,13 +159,25 @@ const DEUDA_SIN_ENLACE = [
   '/jubilacion-por-incapacidad-uruguay',
   '/llevar-el-auto-a-brasil-o-argentina',
   '/precio-del-boleto-montevideo',
-  '/prestamo-hipotecario-uruguay',
   '/reconocer-anos-trabajados-uruguay',
   '/ropa-por-kilo-uruguay',
   '/seguro-obligatorio-de-auto-uruguay',
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 18 → 17 el 2026-10-18, y otra vez sin ir a buscarlo: la página nueva
+// `/cooperativas-de-vivienda-uruguay` necesita a `/prestamo-hipotecario-uruguay` en su propio
+// contenido, porque la cooperativa y el crédito a nombre de una persona son las dos formas de
+// financiar la misma compra y el lector que descarta una se va a la otra. La ruta medida tiene
+// fila abierta del libro de cambios hasta el 27/10 y la reserva NO se rompe, por lo mismo que el
+// 15/10: el enlace entrante nace en una página publicada hoy, sin tráfico todavía, y al archivo de
+// la página medida no se lo tocó —ni el snippet, ni el cuerpo, ni un enlace de salida—.
+//
+// Y por eso el enlace de ENTRADA de la página nueva no salió de ahí: salió de
+// `/comprar-o-alquilar-uruguay`, que no tiene ventana abierta y cuyo lector lo necesita de verdad
+// —toda la página compara la cuota de un crédito contra el alquiler, o sea que da por inexistente
+// la tercera puerta, donde el préstamo lo toma la cooperativa y lo que decide no es cuánto te
+// prestan sino un TECHO de ingresos del hogar—.
 // 19 → 18 el 2026-10-15, por lo mismo que las dos del 14/10 y sin ir a buscarlo: la página nueva
 // `/impuesto-a-las-trasmisiones-patrimoniales-uruguay` necesita a `/valor-catastral-uruguay` en su
 // propio contenido, porque el valor que explica esa página ES la base imponible del impuesto que
@@ -187,7 +199,7 @@ const DEUDA_SIN_ENLACE = [
 // cambios, y la reserva que la nota de arriba describe no se rompe: lo que esas filas miden es su
 // propia descripción, y el enlace entrante nace en una página publicada hoy, sin tráfico todavía.
 // Es además lo que ya hace cada página nueva del repo con su bloque de relacionadas.
-const DEUDA_MAXIMA = 18
+const DEUDA_MAXIMA = 17
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

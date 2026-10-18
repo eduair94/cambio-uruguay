@@ -292,6 +292,13 @@
         >
           Costos de escrituración
         </VBtn>
+        <!-- La tercera puerta, que esta página da por inexistente: comparar la cuota contra el
+             alquiler supone que la vivienda se compra con un crédito a nombre de una persona, y en
+             Uruguay la otra vía es la cooperativa, donde el préstamo lo toma el colectivo y el
+             requisito que decide es un TECHO de ingresos del hogar. -->
+        <VBtn :to="localePath('/cooperativas-de-vivienda-uruguay')" variant="tonal" size="small">
+          Cooperativas de vivienda
+        </VBtn>
         <VBtn
           :to="localePath('/impuesto-a-las-trasmisiones-patrimoniales-uruguay')"
           variant="tonal"

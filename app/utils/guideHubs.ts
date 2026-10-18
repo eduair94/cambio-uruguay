@@ -586,6 +586,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/oportunidades-inmobiliarias-uruguay',
       },
       {
+        label: 'Cooperativas de vivienda',
+        description: 'El tope de ingresos del MVOT, pasado a pesos de hoy.',
+        to: '/cooperativas-de-vivienda-uruguay',
+      },
+      {
         label: 'Calculadora de préstamo',
         description: 'Simulá la cuota mensual.',
         to: '/herramientas/calculadora-prestamo',

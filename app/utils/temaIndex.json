@@ -557,6 +557,10 @@
           "label": "Oportunidades"
         },
         {
+          "to": "/cooperativas-de-vivienda-uruguay",
+          "label": "Cooperativas de vivienda"
+        },
+        {
           "to": "/herramientas/calculadora-prestamo",
           "label": "Calculadora de préstamo"
         },
